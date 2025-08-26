@@ -83,11 +83,11 @@ const mediaSettingsSlice = createSlice( {
 			Object.keys( action.payload ).forEach( ( category ) => {
 				if ( state[ category ] ) {
 					// Handle nested structures like global_layers
-					if ( typeof state[ category ] === 'object' && !Array.isArray( state[ category ] ) ) {
+					if ( typeof state[ category ] === 'object' && ! Array.isArray( state[ category ] ) ) {
 						Object.keys( action.payload[ category ] ).forEach( ( key ) => {
 							if ( key in state[ category ] ) {
 								// Handle nested subcategories
-								if ( typeof state[ category ][ key ] === 'object' && !Array.isArray( state[ category ][ key ] ) ) {
+								if ( typeof state[ category ][ key ] === 'object' && ! Array.isArray( state[ category ][ key ] ) ) {
 									Object.keys( action.payload[ category ][ key ] ).forEach( ( subKey ) => {
 										if ( subKey in state[ category ][ key ] ) {
 											if ( state[ category ][ key ][ subKey ] !== action.payload[ category ][ key ][ subKey ] ) {
@@ -96,12 +96,9 @@ const mediaSettingsSlice = createSlice( {
 											}
 										}
 									} );
-								} else {
-									// Handle regular properties
-									if ( state[ category ][ key ] !== action.payload[ category ][ key ] ) {
-										state[ category ][ key ] = action.payload[ category ][ key ];
-										state.isChanged = true;
-									}
+								} else if ( state[ category ][ key ] !== action.payload[ category ][ key ] ) {
+									state[ category ][ key ] = action.payload[ category ][ key ];
+									state.isChanged = true;
 								}
 							}
 						} );
@@ -113,12 +110,9 @@ const mediaSettingsSlice = createSlice( {
 		// Updates a specific setting dynamically
 		updateMediaSetting: ( state, action ) => {
 			const { category, subcategory, key, value } = action.payload;
-			console.log('Redux updateMediaSetting:', { category, subcategory, key, value });
-			console.log('Current state before update:', JSON.stringify(state[category]?.[subcategory], null, 2));
 
 			// Ensure the category exists
 			if ( ! state[ category ] ) {
-				console.log('Creating missing category:', category);
 				state[ category ] = {};
 			}
 
@@ -126,27 +120,19 @@ const mediaSettingsSlice = createSlice( {
 			if ( subcategory ) {
 				// Ensure the subcategory exists
 				if ( ! state[ category ][ subcategory ] ) {
-					console.log('Creating missing subcategory:', subcategory);
 					state[ category ][ subcategory ] = {};
 				}
 
 				// Update the specific key
-				console.log('Updating nested setting:', { category, subcategory, key, oldValue: state[ category ][ subcategory ][ key ], newValue: value });
+
 				state[ category ][ subcategory ][ key ] = value;
 				state.isChanged = true; // Mark as changed
-				console.log('State after update:', JSON.stringify(state[category]?.[subcategory], null, 2));
-			}
-			// Handle regular flat structure
-			else if ( state[ category ] && key in state[ category ] ) {
+			} else if ( state[ category ] && key in state[ category ] ) {
 				// Only update isChanged if the value is different
 				if ( state[ category ][ key ] !== value ) {
 					state[ category ][ key ] = value;
 					state.isChanged = true; // Mark as changed
 				}
-			} else {
-				console.log('Unable to update setting:', { category, subcategory, key, value });
-				console.log('State category exists:', !!state[ category ]);
-				console.log('State subcategory exists:', !!state[ category ]?.[ subcategory ]);
 			}
 		},
 
@@ -163,11 +149,11 @@ const mediaSettingsSlice = createSlice( {
 				Object.keys( action.payload ).forEach( ( category ) => {
 					if ( state[ category ] ) {
 						// Handle nested structures like global_layers
-						if ( typeof state[ category ] === 'object' && !Array.isArray( state[ category ] ) ) {
+						if ( typeof state[ category ] === 'object' && ! Array.isArray( state[ category ] ) ) {
 							Object.keys( action.payload[ category ] ).forEach( ( key ) => {
 								if ( key in state[ category ] ) {
 									// Handle nested subcategories
-									if ( typeof state[ category ][ key ] === 'object' && !Array.isArray( state[ category ][ key ] ) ) {
+									if ( typeof state[ category ][ key ] === 'object' && ! Array.isArray( state[ category ][ key ] ) ) {
 										Object.keys( action.payload[ category ][ key ] ).forEach( ( subKey ) => {
 											if ( subKey in state[ category ][ key ] ) {
 												state[ category ][ key ][ subKey ] = action.payload[ category ][ key ][ subKey ];

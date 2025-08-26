@@ -30,7 +30,7 @@ class Settings extends Base {
 		 */
 	private function get_default_settings() {
 		return array(
-			'video'        => array(
+			'video'         => array(
 				'sync_from_godam'        => false,
 				'adaptive_bitrate'       => false,
 				'optimize_videos'        => false,
@@ -44,17 +44,17 @@ class Settings extends Base {
 				'watermark_image_id'     => null,
 				'use_watermark_image'    => false,
 			),
-			'general'      => array(
+			'general'       => array(
 				'enable_folder_organization' => true,
 			),
-			'video_player' => array(
+			'video_player'  => array(
 				'brand_image'    => '',
 				'brand_color'    => '#2B333FB3',
 				'brand_image_id' => null,
 				'custom_css'     => '',
 				'player_skin'    => 'Default',
 			),
-			'ads_settings' => array(
+			'ads_settings'  => array(
 				'enable_global_video_ads' => false,
 				'adTagUrl'                => '',
 			),
@@ -66,7 +66,7 @@ class Settings extends Base {
 					'position'  => 30,
 					'duration'  => 30,
 				),
-				'forms' => array(
+				'forms'     => array(
 					'enabled'   => false,
 					'plugin'    => '',
 					'form_id'   => '',
@@ -74,7 +74,7 @@ class Settings extends Base {
 					'position'  => 30,
 					'duration'  => 0,
 				),
-				'cta' => array(
+				'cta'       => array(
 					'enabled'          => false,
 					'text'             => '',
 					'url'              => '',
@@ -148,7 +148,7 @@ class Settings extends Base {
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_easydam_settings' ),
 					'permission_callback' => function () {
-						// Allow users who can edit posts to view global settings (for video editor)
+						// Allow users who can edit posts to view global settings (for video editor).
 						return current_user_can( 'edit_posts' ) || current_user_can( 'manage_options' );
 					},
 				),
@@ -176,8 +176,8 @@ class Settings extends Base {
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/detect-form-plugins',
 				'args'      => array(
-					'methods'             => \WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'detect_form_plugins' ),
+					'methods'  => \WP_REST_Server::READABLE,
+					'callback' => array( $this, 'detect_form_plugins' ),
 				),
 			),
 		);
@@ -326,7 +326,7 @@ class Settings extends Base {
 		$default = $this->get_default_settings();
 
 		return array(
-			'video'        => array(
+			'video'         => array(
 				'sync_from_godam'        => rest_sanitize_boolean( $settings['video']['sync_from_godam'] ?? $default['video']['sync_from_godam'] ),
 				'adaptive_bitrate'       => rest_sanitize_boolean( $settings['video']['adaptive_bitrate'] ?? $default['video']['adaptive_bitrate'] ),
 				'optimize_videos'        => rest_sanitize_boolean( $settings['video']['optimize_videos'] ?? $default['video']['optimize_videos'] ),
@@ -341,17 +341,17 @@ class Settings extends Base {
 				'use_watermark_image'    => rest_sanitize_boolean( $settings['video']['use_watermark_image'] ?? $default['video']['use_watermark_image'] ),
 				'video_slug'             => sanitize_title( $settings['video']['video_slug'] ?? $default['video']['video_slug'] ),
 			),
-			'general'      => array(
+			'general'       => array(
 				'enable_folder_organization' => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ?? $default['general']['enable_folder_organization'] ),
 			),
-			'video_player' => array(
+			'video_player'  => array(
 				'brand_image'    => sanitize_text_field( $settings['video_player']['brand_image'] ?? $default['video_player']['brand_image'] ),
 				'brand_color'    => $this->sanitize_color_value( $settings['video_player']['brand_color'] ?? $default['video_player']['brand_color'] ),
 				'brand_image_id' => absint( $settings['video_player']['brand_image_id'] ?? $default['video_player']['brand_image_id'] ),
 				'custom_css'     => sanitize_textarea_field( $settings['video_player']['custom_css'] ?? $default['video_player']['custom_css'] ),
 				'player_skin'    => sanitize_text_field( $settings['video_player']['player_skin'] ?? $default['video_player']['player_skin'] ),
 			),
-			'ads_settings' => array(
+			'ads_settings'  => array(
 				'enable_global_video_ads' => rest_sanitize_boolean( $settings['ads_settings']['enable_global_video_ads'] ?? $default['ads_settings']['enable_global_video_ads'] ),
 				'adTagUrl'                => esc_url_raw( $settings['ads_settings']['adTagUrl'] ?? $default['ads_settings']['adTagUrl'] ),
 			),
@@ -363,7 +363,7 @@ class Settings extends Base {
 					'position'  => absint( $settings['global_layers']['video_ads']['position'] ?? $default['global_layers']['video_ads']['position'] ),
 					'duration'  => absint( $settings['global_layers']['video_ads']['duration'] ?? $default['global_layers']['video_ads']['duration'] ),
 				),
-				'forms' => array(
+				'forms'     => array(
 					'enabled'   => rest_sanitize_boolean( $settings['global_layers']['forms']['enabled'] ?? $default['global_layers']['forms']['enabled'] ),
 					'plugin'    => sanitize_text_field( $settings['global_layers']['forms']['plugin'] ?? $default['global_layers']['forms']['plugin'] ),
 					'form_id'   => sanitize_text_field( $settings['global_layers']['forms']['form_id'] ?? $default['global_layers']['forms']['form_id'] ),
@@ -371,7 +371,7 @@ class Settings extends Base {
 					'position'  => absint( $settings['global_layers']['forms']['position'] ?? $default['global_layers']['forms']['position'] ),
 					'duration'  => absint( $settings['global_layers']['forms']['duration'] ?? $default['global_layers']['forms']['duration'] ),
 				),
-				'cta' => array(
+				'cta'       => array(
 					'enabled'          => rest_sanitize_boolean( $settings['global_layers']['cta']['enabled'] ?? $default['global_layers']['cta']['enabled'] ),
 					'text'             => sanitize_text_field( $settings['global_layers']['cta']['text'] ?? $default['global_layers']['cta']['text'] ),
 					'url'              => esc_url_raw( $settings['global_layers']['cta']['url'] ?? $default['global_layers']['cta']['url'] ),
@@ -429,13 +429,15 @@ class Settings extends Base {
 	public function detect_form_plugins( $request ) {
 		$available_plugins = array();
 
-		// Check for WPForms
+		// Check for WPForms.
 		if ( class_exists( 'WPForms' ) ) {
-			$forms = get_posts( array(
-				'post_type'      => 'wpforms',
-				'posts_per_page' => -1,
-				'post_status'    => 'publish',
-			) );
+			$forms = get_posts(
+				array(
+					'post_type'      => 'wpforms',
+					'posts_per_page' => -1,
+					'post_status'    => 'publish',
+				)
+			);
 
 			$wpforms_list = array();
 			foreach ( $forms as $form ) {
@@ -451,9 +453,9 @@ class Settings extends Base {
 			);
 		}
 
-		// Check for Gravity Forms
+		// Check for Gravity Forms.
 		if ( class_exists( 'GFForms' ) ) {
-			$forms = \GFAPI::get_forms();
+			$forms   = \GFAPI::get_forms();
 			$gf_list = array();
 			foreach ( $forms as $form ) {
 				$gf_list[] = array(
@@ -468,13 +470,15 @@ class Settings extends Base {
 			);
 		}
 
-		// Check for Contact Form 7
+		// Check for Contact Form 7.
 		if ( class_exists( 'WPCF7' ) ) {
-			$forms = get_posts( array(
-				'post_type'      => 'wpcf7_contact_form',
-				'posts_per_page' => -1,
-				'post_status'    => 'publish',
-			) );
+			$forms = get_posts(
+				array(
+					'post_type'      => 'wpcf7_contact_form',
+					'posts_per_page' => -1,
+					'post_status'    => 'publish',
+				)
+			);
 
 			$cf7_list = array();
 			foreach ( $forms as $form ) {
@@ -490,9 +494,9 @@ class Settings extends Base {
 			);
 		}
 
-		// Check for Forminator
+		// Check for Forminator..
 		if ( class_exists( 'Forminator' ) ) {
-			$forms = \Forminator_API::get_forms( null, 1, 999 );
+			$forms           = \Forminator_API::get_forms( null, 1, 999 );
 			$forminator_list = array();
 			if ( is_array( $forms ) ) {
 				foreach ( $forms as $form ) {
@@ -509,7 +513,7 @@ class Settings extends Base {
 			);
 		}
 
-		// Check for Fluent Forms
+		// Check for Fluent Forms.
 		if ( function_exists( 'wpFluentForm' ) ) {
 			$forms = wpFluent()->table( 'fluentform_forms' )
 						->select( array( 'id', 'title' ) )
@@ -530,9 +534,9 @@ class Settings extends Base {
 			);
 		}
 
-		// Check for Ninja Forms
+		// Check for Ninja Forms.
 		if ( class_exists( 'Ninja_Forms' ) ) {
-			$forms = \Ninja_Forms()->form()->get_forms();
+			$forms   = \Ninja_Forms()->form()->get_forms();
 			$nf_list = array();
 			foreach ( $forms as $form ) {
 				$nf_list[] = array(
@@ -547,9 +551,11 @@ class Settings extends Base {
 			);
 		}
 
-		return rest_ensure_response( array(
-			'success' => true,
-			'data'    => $available_plugins,
-		) );
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'data'    => $available_plugins,
+			)
+		);
 	}
 }

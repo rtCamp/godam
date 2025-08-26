@@ -186,52 +186,53 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	/**
 	 * Apply global layers when conditions are met:
 	 * - Video has duration (loaded)
-	 * - Global settings are loaded successfully 
+	 * - Global settings are loaded successfully
 	 * - Global layers haven't been applied yet
 	 * - Forms are loaded if needed for form layers
 	 */
 	useEffect( () => {
 		// Only proceed if we have duration, global settings are loaded, and global layers haven't been applied yet
-		if ( 
-			duration > 0 && 
-			globalSettings && 
-			! isGlobalSettingsLoading && 
+		if (
+			duration > 0 &&
+			globalSettings &&
+			! isGlobalSettingsLoading &&
 			! globalSettingsError &&
 			! globalLayersApplied
 		) {
 			// Check if global settings include forms and if they need to be loaded
 			const hasFormLayer = globalSettings?.global_layers?.forms?.enabled;
 			const formsNeeded = hasFormLayer && isFetching;
-			
+
 			// Don't apply if forms are needed but still loading
 			if ( formsNeeded ) {
 				return;
 			}
-			
+
 			try {
 				// Create global layers from settings
-				const globalLayers = applyGlobalLayersToVideo( 
-					globalSettings, 
-					duration 
+				const globalLayers = applyGlobalLayersToVideo(
+					globalSettings,
+					duration,
 				);
-				
+
 				if ( globalLayers.length > 0 ) {
 					// Merge global layers with existing video layers (get current layers at time of execution)
 					const currentLayers = layers;
 					const updatedLayers = mergeGlobalAndVideoLayers( currentLayers, globalLayers );
-					
+
 					// Update layers in Redux store
 					dispatch( setLayers( updatedLayers ) );
 				}
-				
+
 				// Mark global layers as applied (success or no layers)
 				setGlobalLayersApplied( true );
 			} catch ( error ) {
-				console.error( 'Error applying global layers:', error );
 				setGlobalLayersApplied( true );
 			}
 		}
-	}, [ duration, globalSettings, isGlobalSettingsLoading, globalSettingsError, isFetching, globalLayersApplied, dispatch ] );	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
+	}, [ duration, globalSettings, isGlobalSettingsLoading, globalSettingsError, isFetching, globalLayersApplied, dispatch ] );
+
+	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
 	const handlePlayerReady = ( player ) => {
 		if ( player ) {
 			playerRef.current = player;

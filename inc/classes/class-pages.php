@@ -97,7 +97,7 @@ class Pages {
 
 	/**
 	 * Tools page ID.
-	 * 
+	 *
 	 * @var string
 	 */
 	private $tools_page_id = 'godam_page_rtgodam_tools';
@@ -436,7 +436,7 @@ class Pages {
 				)
 			);
 
-			// Add REST route info for API calls
+			// Add REST route info for API calls.
 			wp_localize_script(
 				'transcoder-page-script-video-editor',
 				'godamRestRoute',

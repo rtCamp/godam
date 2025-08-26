@@ -7,28 +7,32 @@ import { v4 as uuidv4 } from 'uuid';
  * Map form plugin names to video editor form types
  */
 const FORM_PLUGIN_MAP = {
-	'wpforms': 'wpforms',
-	'gravity_forms': 'gravity',
-	'contact_form_7': 'cf7',
-	'sureforms': 'sureforms',
-	'forminator': 'forminator',
-	'fluent_forms': 'fluentforms',
+	wpforms: 'wpforms',
+	gravity_forms: 'gravity',
+	contact_form_7: 'cf7',
+	sureforms: 'sureforms',
+	forminator: 'forminator',
+	fluent_forms: 'fluentforms',
 	'everest-forms': 'everest',
-	'ninja_forms': 'ninja',
-	'metform': 'metform',
+	ninja_forms: 'ninja',
+	metform: 'metform',
 };
 
 /**
  * Map placement values from global settings to display times
+ *
+ * @param placement
+ * @param position
+ * @param duration
  */
-const getDisplayTimeFromPlacement = (placement, position, duration) => {
-	switch (placement) {
+const getDisplayTimeFromPlacement = ( placement, position, duration ) => {
+	switch ( placement ) {
 		case 'start':
 			return 0;
 		case 'middle':
-			return position || Math.floor(duration / 2);
+			return position || Math.floor( duration / 2 );
 		case 'end':
-			return Math.max(0, (duration || 60) - 10); // 10 seconds before end
+			return Math.max( 0, ( duration || 60 ) - 10 ); // 10 seconds before end
 		default:
 			return 0;
 	}
@@ -36,17 +40,21 @@ const getDisplayTimeFromPlacement = (placement, position, duration) => {
 
 /**
  * Convert global layer settings to video editor layer format
+ *
+ * @param globalLayer
+ * @param layerType
+ * @param videoDuration
  */
-export const createLayerFromGlobalSettings = (globalLayer, layerType, videoDuration = 0) => {
+export const createLayerFromGlobalSettings = ( globalLayer, layerType, videoDuration = 0 ) => {
 	const baseLayer = {
 		id: uuidv4(),
 		type: layerType,
 		isGlobalLayer: true, // Mark as global layer for identification
 	};
 
-	switch (layerType) {
+	switch ( layerType ) {
 		case 'form':
-			if (!globalLayer.forms?.enabled || !globalLayer.forms?.plugin || !globalLayer.forms?.form_id) {
+			if ( ! globalLayer.forms?.enabled || ! globalLayer.forms?.plugin || ! globalLayer.forms?.form_id ) {
 				return null;
 			}
 
@@ -55,9 +63,9 @@ export const createLayerFromGlobalSettings = (globalLayer, layerType, videoDurat
 				displayTime: getDisplayTimeFromPlacement(
 					globalLayer.forms.placement,
 					globalLayer.forms.position,
-					videoDuration
+					videoDuration,
 				),
-				form_type: FORM_PLUGIN_MAP[globalLayer.forms.plugin] || 'gravity',
+				form_type: FORM_PLUGIN_MAP[ globalLayer.forms.plugin ] || 'gravity',
 				form_id: globalLayer.forms.form_id,
 				duration: globalLayer.forms.duration || 0,
 				submitted: false,
@@ -71,7 +79,7 @@ export const createLayerFromGlobalSettings = (globalLayer, layerType, videoDurat
 			};
 
 		case 'cta':
-			if (!globalLayer.cta?.enabled || !globalLayer.cta?.text) {
+			if ( ! globalLayer.cta?.enabled || ! globalLayer.cta?.text ) {
 				return null;
 			}
 
@@ -80,7 +88,7 @@ export const createLayerFromGlobalSettings = (globalLayer, layerType, videoDurat
 				displayTime: getDisplayTimeFromPlacement(
 					globalLayer.cta.placement,
 					globalLayer.cta.position,
-					videoDuration
+					videoDuration,
 				),
 				cta_type: 'text',
 				text: globalLayer.cta.text,
@@ -100,7 +108,7 @@ export const createLayerFromGlobalSettings = (globalLayer, layerType, videoDurat
 			};
 
 		case 'video_ads':
-			if (!globalLayer.video_ads?.enabled || !globalLayer.video_ads?.adTagUrl) {
+			if ( ! globalLayer.video_ads?.enabled || ! globalLayer.video_ads?.adTagUrl ) {
 				return null;
 			}
 
@@ -110,7 +118,7 @@ export const createLayerFromGlobalSettings = (globalLayer, layerType, videoDurat
 				displayTime: getDisplayTimeFromPlacement(
 					globalLayer.video_ads.placement,
 					globalLayer.video_ads.position,
-					videoDuration
+					videoDuration,
 				),
 				adTagUrl: globalLayer.video_ads.adTagUrl,
 				duration: globalLayer.video_ads.duration || 30,
@@ -125,9 +133,12 @@ export const createLayerFromGlobalSettings = (globalLayer, layerType, videoDurat
 
 /**
  * Apply global settings to create initial layers for a video
+ *
+ * @param globalSettings
+ * @param videoDuration
  */
-export const applyGlobalLayersToVideo = (globalSettings, videoDuration = 0) => {
-	if (!globalSettings?.global_layers) {
+export const applyGlobalLayersToVideo = ( globalSettings, videoDuration = 0 ) => {
+	if ( ! globalSettings?.global_layers ) {
 		return [];
 	}
 
@@ -135,21 +146,21 @@ export const applyGlobalLayersToVideo = (globalSettings, videoDuration = 0) => {
 	const layersToAdd = [];
 
 	// Add form layer if enabled
-	const formLayer = createLayerFromGlobalSettings(globalLayers, 'form', videoDuration);
-	if (formLayer) {
-		layersToAdd.push(formLayer);
+	const formLayer = createLayerFromGlobalSettings( globalLayers, 'form', videoDuration );
+	if ( formLayer ) {
+		layersToAdd.push( formLayer );
 	}
 
 	// Add CTA layer if enabled
-	const ctaLayer = createLayerFromGlobalSettings(globalLayers, 'cta', videoDuration);
-	if (ctaLayer) {
-		layersToAdd.push(ctaLayer);
+	const ctaLayer = createLayerFromGlobalSettings( globalLayers, 'cta', videoDuration );
+	if ( ctaLayer ) {
+		layersToAdd.push( ctaLayer );
 	}
 
 	// Add video ads layer if enabled
-	const adLayer = createLayerFromGlobalSettings(globalLayers, 'video_ads', videoDuration);
-	if (adLayer) {
-		layersToAdd.push(adLayer);
+	const adLayer = createLayerFromGlobalSettings( globalLayers, 'video_ads', videoDuration );
+	if ( adLayer ) {
+		layersToAdd.push( adLayer );
 	}
 
 	return layersToAdd;
@@ -157,25 +168,32 @@ export const applyGlobalLayersToVideo = (globalSettings, videoDuration = 0) => {
 
 /**
  * Check if a layer is a global layer
+ *
+ * @param layer
  */
-export const isGlobalLayer = (layer) => {
+export const isGlobalLayer = ( layer ) => {
 	return layer?.isGlobalLayer === true;
 };
 
 /**
  * Remove global layers from existing layers array
+ *
+ * @param layers
  */
-export const removeGlobalLayers = (layers) => {
-	return layers.filter(layer => !isGlobalLayer(layer));
+export const removeGlobalLayers = ( layers ) => {
+	return layers.filter( ( layer ) => ! isGlobalLayer( layer ) );
 };
 
 /**
  * Merge global layers with existing video layers
+ *
+ * @param existingLayers
+ * @param globalLayers
  */
-export const mergeGlobalAndVideoLayers = (existingLayers, globalLayers) => {
+export const mergeGlobalAndVideoLayers = ( existingLayers, globalLayers ) => {
 	// Remove any existing global layers first
-	const videoOnlyLayers = removeGlobalLayers(existingLayers);
+	const videoOnlyLayers = removeGlobalLayers( existingLayers );
 
 	// Add new global layers
-	return [...videoOnlyLayers, ...globalLayers];
+	return [ ...videoOnlyLayers, ...globalLayers ];
 };
