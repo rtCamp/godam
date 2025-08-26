@@ -59,6 +59,10 @@ const slice = createSlice( {
 		forminatorPluginActive: false,
 		metforms: [],
 		metformPlugnActive: false,
+		meta: {
+			title: '',
+			description: '',
+		},
 	},
 	reducers: {
 		initializeStore: ( state, action ) => {
@@ -187,6 +191,9 @@ const slice = createSlice( {
 		setMetformPluginActive: ( state, action ) => {
 			state.metformPlugnActive = action.payload;
 		},
+		setMeta( state, action ) {
+			state.meta = { ...state.meta, ...action.payload };
+		},
 	},
 } );
 
@@ -221,5 +228,6 @@ export const {
 	setNinjaPluginActive,
 	setMetforms,
 	setMetformPluginActive,
+	setMeta,
 } = slice.actions;
 export default slice.reducer;

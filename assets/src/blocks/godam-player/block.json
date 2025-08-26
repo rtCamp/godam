@@ -107,6 +107,14 @@
 			"default": {
 				"type": "default"
 			}
+		},
+		"videoTitle": {
+			"type": "string",
+			"default": ""
+		},
+		"videoDescription": {
+			"type": "string",
+			"default": ""
 		}
 	},
 	"supports": {

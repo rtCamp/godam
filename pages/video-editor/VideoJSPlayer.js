@@ -18,6 +18,7 @@ import 'videojs-flvjs-es6';
  */
 import GoDAM from '../../assets/src/images/GoDAM.png';
 import { setCurrentLayer } from './redux/slice/videoSlice';
+import { removeTags } from '../../assets/src/js/godam-player/utils/dataHelpers';
 
 /**
  * WordPress dependencies
@@ -72,6 +73,7 @@ export const VideoJS = ( props ) => {
 	const chapters = videoMeta.chapters;
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
 	const currentTab = useSelector( ( state ) => state.videoReducer.currentTab );
+	const meta = useSelector( ( state ) => state.videoReducer.meta );
 
 	const setCurrentTime = ( timeInSeconds ) => {
 		setSliderValue( timeInSeconds );
@@ -133,6 +135,21 @@ export const VideoJS = ( props ) => {
 			}
 		}
 	}, [ videoRef, videoConfig ] );
+
+	// Add title and description to the player title bar
+	useEffect( () => {
+		const player = playerRef.current;
+		if ( ! player ) {
+			return;
+		}
+		const title = removeTags( meta?.title );
+		const description = removeTags( meta?.description );
+
+		const titleBar = player.getChild( 'TitleBar' );
+		if ( titleBar && typeof titleBar.update === 'function' ) {
+			titleBar.update( { title, description } );
+		}
+	}, [ meta ] );
 
 	useEffect( () => {
 		const captionsButton = document.querySelector( '.vjs-subs-caps-button' );

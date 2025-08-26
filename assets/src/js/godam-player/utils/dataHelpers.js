@@ -4,6 +4,11 @@
  */
 
 /**
+ * WordPress dependencies
+ */
+import { decodeEntities } from '@wordpress/html-entities';
+
+/**
  * Parse data attribute safely from a video element
  *
  * @param {HTMLElement} element      - HTML element containing the dataset
@@ -87,3 +92,15 @@ export function validateTimeString( timeString ) {
 	}
 	return true;
 }
+
+/**
+ * Converts HTML to plain text by removing all HTML tags.
+ *
+ * This function decodes HTML entities and strips out anything between angle brackets,
+ *
+ * @param {string} html
+ * @return {string} The plain text version of the HTML input.
+ */
+export const removeTags = ( html = '' ) => decodeEntities(
+	( String( html ) ).replace( /<[^>]+>/g, '' ).trim(),
+);

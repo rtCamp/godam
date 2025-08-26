@@ -27,7 +27,7 @@ import {
 	useBlockProps,
 	InnerBlocks,
 } from '@wordpress/block-editor';
-import { useRef, useEffect, useState, useMemo } from '@wordpress/element';
+import { useRef, useEffect, useState, useMemo, useCallback } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { __, _x, sprintf } from '@wordpress/i18n';
 import { useInstanceId } from '@wordpress/compose';
@@ -45,6 +45,7 @@ import { Caption } from './caption';
 import VideoSEOModal from './components/VideoSEOModal.js';
 import { appendTimezoneOffsetToUTC, secondsToISO8601 } from './utils/index.js';
 import './editor.scss';
+import { removeTags } from '../../js/godam-player/utils/dataHelpers.js';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
 const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
@@ -103,6 +104,7 @@ function VideoEdit( {
 	const instanceId = useInstanceId( VideoEdit );
 	const videoPlayer = useRef();
 	const posterImageButton = useRef();
+	const playerRef = useRef( null );
 
 	const {
 		id,
@@ -119,6 +121,8 @@ function VideoEdit( {
 		verticalAlignment,
 		overlayTimeRange,
 		showOverlay,
+		videoTitle,
+		videoDescription,
 	} = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 	const [ defaultPoster, setDefaultPoster ] = useState( '' );
@@ -149,6 +153,22 @@ function VideoEdit( {
 		aspectRatio: '16:9',
 	} ), [ controls, autoplay, preload, loop, muted, poster, defaultPoster, sources ] );
 
+	const updateTitleBar = useCallback( ( player ) => {
+		// Remove HTML tags as description surrouned with p tags
+		const title = removeTags( videoTitle || '' );
+		const description = removeTags( videoDescription || '' );
+		if ( ! ( title || description ) ) {
+			return;
+		}
+
+		const titleBar = player.getChild( 'TitleBar' );
+		if ( titleBar ) {
+			titleBar.update( { title, description } );
+			titleBar.addClass( 'vjs-hidden' );
+			player.one( 'play', () => titleBar.removeClass( 'vjs-hidden' ) );
+		}
+	}, [ videoTitle, videoDescription ] );
+
 	// Memoize the video component to prevent rerenders.
 	const videoComponent = useMemo( () => (
 		<Disabled isDisabled={ ! isSingleSelected }>
@@ -156,6 +176,8 @@ function VideoEdit( {
 				options={ videoOptions }
 				onPlayerReady={ ( player ) => {
 					if ( player ) {
+						playerRef.current = player;
+
 						const playerEl = player.el_;
 						const video = playerEl.querySelector( 'video' );
 
@@ -165,11 +187,23 @@ function VideoEdit( {
 							const _duration = player.duration();
 							setDuration( _duration );
 						} );
+
+						updateTitleBar( player );
 					}
 				} }
 			/>
 		</Disabled>
-	), [ isSingleSelected, videoOptions, setAttributes ] );
+	), [ isSingleSelected, videoOptions, setAttributes, updateTitleBar ] );
+
+	// Updates the TitleBar when the video is replaced or when the video’s title or description is updated.
+	useEffect( () => {
+		const player = playerRef.current;
+		if ( ! player ) {
+			return;
+		}
+
+		updateTitleBar( player );
+	}, [ updateTitleBar, id ] );
 
 	useEffect( () => {
 		// Placeholder may be rendered.
@@ -216,6 +250,11 @@ function VideoEdit( {
 
 						// Reverse the sources to ensure the preferred format is first. MPD -> HLS -> Origin
 						setAttributes( { sources: newSources.reverse() } );
+
+						setAttributes( {
+							videoTitle: response.title?.rendered || '',
+							videoDescription: response.description?.rendered || '',
+						} );
 					}
 				} catch ( error ) {
 					// Show error notice if fetching media fails.
@@ -261,6 +300,8 @@ function VideoEdit( {
 			cmmId: media.id,
 			poster: undefined,
 			caption: media.caption,
+			videoTitle: media.title || '',
+			videoDescription: media.description || '',
 		} );
 
 		if ( media.image?.src !== media.icon ) {
