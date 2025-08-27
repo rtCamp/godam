@@ -19,7 +19,8 @@ export default Attachments?.extend( {
 		// Increase the column width for media attachments.
 		this.options.idealColumnWidth = window.innerWidth < BREAKPOINT_WIDTH ? SMALL_COLUMN_WIDTH : LARGE_COLUMN_WIDTH;
 
-		if ( Attachment ) {
+		// This condition to use default Attachment incase of the sortable area.
+		if ( Attachment && ! ( this.$el.hasClass( 'ui-sortable' ) && ! this.$el.hasClass( 'ui-sortable-disabled' ) ) ) {
 			/**
 			 * Override the default AttachmentView with our custom view.
 			 *

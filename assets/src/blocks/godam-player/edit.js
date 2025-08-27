@@ -179,7 +179,7 @@ function VideoEdit( {
 	}, [ poster ] );
 
 	useEffect( () => {
-		if ( id ) {
+		if ( id && ! isNaN( Number( id ) ) ) {
 			( async () => {
 				try {
 					const response = await apiFetch( { path: `/wp/v2/media/${ id }` } );
@@ -280,13 +280,24 @@ function VideoEdit( {
 				},
 			} );
 
+			const mediaSources = [];
+
+			if ( media.url ) {
+				mediaSources.push( {
+					src: media.url,
+					type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
+				} );
+			}
+
+			if ( media.hls_url ) {
+				mediaSources.push( {
+					src: media.hls_url,
+					type: media.hls_url.endsWith( '.m3u8' ) ? 'application/x-mpegURL' : media.mime,
+				} );
+			}
+
 			setAttributes( {
-				sources: [
-					{
-						src: media.url,
-						type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
-					},
-				],
+				sources: mediaSources,
 			} );
 		} else {
 		// Fetch transcoded URL from media meta.
@@ -306,24 +317,36 @@ function VideoEdit( {
 						},
 					} );
 
-					if ( response && response.meta && response.meta.rtgodam_transcoded_url ) {
-						const transcodedUrl = response.meta.rtgodam_transcoded_url;
-
+					if ( response && response.meta ) {
 						if ( response.meta.rtgodam_media_video_thumbnail !== '' ) {
 							setDefaultPoster( response.meta.rtgodam_media_video_thumbnail );
 						}
 
+						const mediaSources = [];
+
+						const transcodedUrl = response.meta.rtgodam_transcoded_url;
+						if ( transcodedUrl ) {
+							mediaSources.push( {
+								src: transcodedUrl,
+								type: transcodedUrl.endsWith( '.mpd' ) ? 'application/dash+xml' : media.mime,
+							} );
+						}
+
+						const hlsTranscodedUrl = response.meta.rtgodam_hls_transcoded_url;
+						if ( hlsTranscodedUrl ) {
+							mediaSources.push( {
+								src: hlsTranscodedUrl,
+								type: hlsTranscodedUrl.endsWith( '.m3u8' ) ? 'application/x-mpegURL' : media.mime,
+							} );
+						}
+
+						mediaSources.push( {
+							src: media.url,
+							type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
+						} );
+
 						setAttributes( {
-							sources: [
-								{
-									src: transcodedUrl,
-									type: transcodedUrl.endsWith( '.mpd' ) ? 'application/dash+xml' : media.mime,
-								},
-								{
-									src: media.url,
-									type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
-								},
-							],
+							sources: mediaSources,
 						} );
 					} else {
 					// If meta not present, use media url.
