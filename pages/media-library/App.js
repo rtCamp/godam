@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useState, useMemo } from 'react';
+import React, { useCallback, useState, useMemo, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
@@ -50,6 +50,7 @@ const App = () => {
 		y: 0,
 		folderId: null,
 	} );
+	const [ isSidebarHidden, setIsSidebarHidden ] = useState( false );
 
 	const handleClick = useCallback( ( id ) => {
 		if ( isMultiSelecting ) {
@@ -78,10 +79,30 @@ const App = () => {
 		if ( mediaModal ) {
 			mediaModal.classList.add( 'hide-sidebar' );
 		}
-		const mediaToggleButton = document.getElementById( 'media-folder-toggle-button' );
-		if ( mediaToggleButton ) {
-			mediaToggleButton.innerHTML = mediaToggleButton.innerHTML.replace( /Hide/g, 'Show' );
+		setIsSidebarHidden( true );
+	};
+
+	// Call closeFolderMenu on mount when window width is less than 900px so that folder sidebar remains closed by default.
+	useEffect( () => {
+		if ( typeof window !== 'undefined' && window.innerWidth < 900 ) {
+			closeFolderMenu();
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [] );
+
+	const toggleSidebar = () => {
+		const sidebar = document.getElementById( 'rt-transcoder-media-library-root' );
+		const mediaModal = document.querySelector( '.media-modal-content' );
+		const newHidden = ! isSidebarHidden;
+
+		if ( sidebar ) {
+			sidebar.classList.toggle( 'hide-sidebar', newHidden );
+		}
+		if ( mediaModal ) {
+			mediaModal.classList.toggle( 'hide-sidebar', newHidden );
+		}
+
+		setIsSidebarHidden( newHidden );
 	};
 
 	const handleContextMenu = ( e, folderId, folder ) => {
@@ -109,6 +130,14 @@ const App = () => {
 				variant="secondary"
 				className="button--full close-folder-menu-mobile"
 				onClick={ () => closeFolderMenu() }
+			/>
+			<Button
+				id="media-folder-toggle-button"
+				__next40pxDefaultSize
+				variant="secondary"
+				className="button--full toggle-folder-button"
+				onClick={ () => toggleSidebar() }
+				icon={ isSidebarHidden ? 'arrow-right-alt2' : 'arrow-left-alt2' }
 			/>
 			<div className="control-buttons">
 				<div className="button-group mb-spacing">
@@ -143,37 +172,39 @@ const App = () => {
 				</div>
 			</div>
 
-			<div className="folder-list">
-				<button
-					className={ `folder-list__item all-media ${
-						selectedFolder.id === -1 ? 'folder-list__item--active' : ''
-					}` }
-					onClick={ () => handleClick( -1 ) }
-				>
-					<p className="folder-list__text">{ __( 'All Media', 'godam' ) }
-						<span className="folder-list__count">{ allMediaCount ?? 0 }</span>
-					</p>
-				</button>
+			<div className="folder-container">
+				<div className="folder-list">
+					<button
+						className={ `folder-list__item all-media ${
+							selectedFolder.id === -1 ? 'folder-list__item--active' : ''
+						}` }
+						onClick={ () => handleClick( -1 ) }
+					>
+						<p className="folder-list__text">{ __( 'All Media', 'godam' ) }
+							<span className="folder-list__count">{ allMediaCount ?? 0 }</span>
+						</p>
+					</button>
 
-				<button
-					className={ `folder-list__item tree-item ${
-						selectedFolder.id === 0 ? 'folder-list__item--active' : ''
-					}` }
-					onClick={ () => handleClick( 0 ) }
-					data-id={ 0 }
-				>
-					<p className="folder-list__text">{ __( 'Uncategorized', 'godam' ) }
-						<span className="folder-list__count">{ uncategorizedCount?.count ?? 0 }</span>
-					</p>
-				</button>
+					<button
+						className={ `folder-list__item tree-item ${
+							selectedFolder.id === 0 ? 'folder-list__item--active' : ''
+						}` }
+						onClick={ () => handleClick( 0 ) }
+						data-id={ 0 }
+					>
+						<p className="folder-list__text">{ __( 'Uncategorized', 'godam' ) }
+							<span className="folder-list__count">{ uncategorizedCount?.count ?? 0 }</span>
+						</p>
+					</button>
+				</div>
+
+				<div className="folder-tabs">
+					<BookmarkTab handleContextMenu={ handleContextMenu } />
+					<LockedTab handleContextMenu={ handleContextMenu } />
+				</div>
+
+				<FolderTree handleContextMenu={ handleContextMenu } />
 			</div>
-
-			<div className="folder-tabs">
-				<BookmarkTab handleContextMenu={ handleContextMenu } />
-				<LockedTab handleContextMenu={ handleContextMenu } />
-			</div>
-
-			<FolderTree handleContextMenu={ handleContextMenu } />
 
 			{ contextMenu.visible && (
 				<ContextMenu
