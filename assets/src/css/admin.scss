@@ -157,6 +157,11 @@ $media-frame-width: calc(300px + 2 * 24px);
 	margin: 12px 0;
 }
 
+.transcoding-status__loader svg {
+	height: 100%;
+	width: 100%;
+}
+
 /**
 * Media Library modal styles.
 *
