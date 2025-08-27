@@ -115,6 +115,25 @@ class Transcoding extends Base {
 					},
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/media/details/(?P<id>\d+)',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_media_details' ),
+					'permission_callback' => function () {
+						return current_user_can( 'edit_others_posts' );
+					},
+					'args'                => array(
+						'id' => array(
+							'required'          => true,
+							'type'              => 'integer',
+							'description'       => __( 'The attachment ID.', 'godam' ),
+							'sanitize_callback' => 'absint',
+						),
+					),
+				),
+			),
 		);
 	}
 
@@ -322,7 +341,7 @@ class Transcoding extends Base {
 				'posts_per_page' => $per_page,
 				'paged'          => $paged,
 				'fields'         => 'ids',
-				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- This is a necessary query to find posts that need retranscoding.
+				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Needed to find posts needing retranscoding.
 					array(
 						'key'     => 'rtgodam_transcoded_url',
 						'compare' => 'NOT EXISTS',
@@ -330,10 +349,10 @@ class Transcoding extends Base {
 				),
 			);
 
-			// If force is set, fetch all video regardless of transcoded_url.
+			// If force is set, fetch all videos regardless of transcoded_url.
 			if ( $force ) {
-				// remove the meta query condition.
-				$args['meta_query'] = null; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- False positive check for meta query.
+				// Remove the meta query condition.
+				$args['meta_query'] = null; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Intentional removal.
 			}
 
 			$query = new \WP_Query( $args );
@@ -346,9 +365,33 @@ class Transcoding extends Base {
 			}
 		} while ( true );
 
+		// Build detailed media objects.
+		$media_data = array();
+		foreach ( $all_posts as $attachment_id ) {
+			$attachment_id = absint( $attachment_id );
+			$title         = get_the_title( $attachment_id );
+			$file_path     = get_attached_file( $attachment_id );
+			$file_size     = 0;
+
+			if ( $file_path && file_exists( $file_path ) ) {
+				$file_size = filesize( $file_path );
+			}
+			if ( empty( $file_size ) ) {
+				// Fallback to stored meta (may be set elsewhere during upload/indexing).
+				$file_size = get_post_meta( $attachment_id, '_video_file_size', true );
+			}
+
+			$media_data[] = array(
+				'id'   => $attachment_id,
+				// translators: %d Attachment ID used as fallback title.
+				'name' => $title ? $title : sprintf( __( 'ID %d', 'godam' ), $attachment_id ),
+				'size' => intval( $file_size ),
+			);
+		}
+
 		return new \WP_REST_Response(
 			array(
-				'data'              => $all_posts,
+				'data'              => $media_data,
 				'total_media_count' => array_sum( (array) wp_count_attachments( 'video' ) ),
 			),
 			200
@@ -423,5 +466,63 @@ class Transcoding extends Base {
 			array( 'message' => $message ),
 			200
 		);
+	}
+
+	/**
+	 * Get media details.
+	 *
+	 * This function retrieves the details of a media attachment, including its ID, name, and size.
+	 * It checks if the attachment ID is provided, if the attachment exists, and retrieves its
+	 * file size from the filesystem or post meta if the file does not exist.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param \WP_REST_Request $request REST request object.
+	 *
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_media_details( \WP_REST_Request $request ) {
+		$attachment_id = $request->get_param( 'id' );
+
+		if ( empty( $attachment_id ) ) {
+			return new \WP_REST_Response(
+				array(
+					'message' => __( 'Attachment ID not provided', 'godam' ),
+				),
+				400
+			);
+		}
+
+		$attachment = get_post( $attachment_id );
+
+		if ( ! $attachment ) {
+			return new \WP_REST_Response(
+				array(
+					'message' => __( 'Attachment not found.', 'godam' ),
+				),
+				404
+			);
+		}
+
+		// Get file path and size.
+		$file_path = get_attached_file( $attachment_id );
+		$file_size = 0;
+
+		if ( file_exists( $file_path ) ) {
+			$file_size = filesize( $file_path );
+		}
+
+		if ( 0 === $file_size ) {
+			// get file size from meta.
+			$file_size = get_post_meta( $attachment_id, '_video_file_size', true );
+		}
+
+		$response = array(
+			'id'   => $attachment_id,
+			'name' => get_the_title( $attachment_id ),
+			'size' => $file_size,
+		);
+
+		return new \WP_REST_Response( $response, 200 );
 	}
 }

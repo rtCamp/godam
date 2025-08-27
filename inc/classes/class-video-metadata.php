@@ -50,7 +50,8 @@ class Video_Metadata {
 		add_action( 'add_attachment', array( $this, 'save_video_metadata' ) );
 
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'set_media_library_thumbnail' ), 10, 3 );
-		add_action( 'init', array( $this, 'filter_vimeo_migrated_urls' ) );
+		add_filter( 'wp_get_attachment_url', array( $this, 'return_vimeo_migrated_uri' ), 10, 2 );
+		add_filter( 'get_attached_file', array( $this, 'return_vimeo_migrated_uri' ), 10, 2 );
 
 		add_filter( 'wp_get_attachment_image', array( $this, 'set_media_library_list_thumbnail' ), 10, 4 );
 	}
@@ -204,29 +205,27 @@ class Video_Metadata {
 	}
 
 	/**
-	 * Filter to return the remote URL for Vimeo migrated videos.
+	 * Return the remote URL or file path for Vimeo migrated videos.
 	 *
-	 * This filter modifies the attachment URL to return the remote URL
-	 * if the video has been migrated from Vimeo.
+	 * This function checks if the video has been migrated from Vimeo
+	 * and returns the remote file URI if available.
 	 *
 	 * @since n.e.x.t
+	 *
+	 * @param string $current_uri The current URI of the attachment.
+	 * @param int    $attachment_id The ID of the attachment.
+	 *
+	 * @return string The remote file URI if the video is migrated, otherwise the current URI.
 	 */
-	public function filter_vimeo_migrated_urls(): void {
-		add_filter(
-			'wp_get_attachment_url',
-			function ( $url, $post_id ) {
-				$is_vimeo_migrated = get_post_meta( $post_id, 'rtgodam_is_migrated_vimeo_video', true );
-				if ( $is_vimeo_migrated ) {
-					$remote_url = get_post_meta( $post_id, '_wp_attached_file', true );
-					if ( ! empty( $remote_url ) ) {
-						return $remote_url;
-					}
-				}
-				return $url;
-			},
-			10,
-			2
-		);
+	public function return_vimeo_migrated_uri( string $current_uri, int $attachment_id ): string {
+		$is_vimeo_migrated = get_post_meta( $attachment_id, 'rtgodam_is_migrated_vimeo_video', true );
+		if ( $is_vimeo_migrated ) {
+			$remote_file_uri = get_post_meta( $attachment_id, '_wp_attached_file', true );
+			if ( ! empty( $remote_file_uri ) ) {
+				return $remote_file_uri;
+			}
+		}
+		return $current_uri;
 	}
 
 	/**

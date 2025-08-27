@@ -54,6 +54,8 @@ use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
 use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
 use RTGODAM\Inc\Everest_Forms\Everest_Forms_Integration;
 use RTGODAM\Inc\Video_Metadata;
+use RTGODAM\Inc\Cron_Jobs\Retranscode_Queue_Processor;
+use RTGODAM\Inc\REST_API\Transcoding_Queue;
 
 use RTGODAM\Inc\Media_Library\Media_Folders_REST_API;
 use RTGODAM\Inc\WPForms\WPForms_Integration;
@@ -111,6 +113,7 @@ class Plugin {
 
 		// Load cron jobs.
 		Retranscode_Failed_Media::get_instance();
+		Retranscode_Queue_Processor::get_instance();
 
 		// Load video metadata.
 		Video_Metadata::get_instance();
@@ -164,6 +167,7 @@ class Plugin {
 		Media_Library::get_instance();
 		Ads::get_instance();
 		Transcoding::get_instance();
+		Transcoding_Queue::get_instance();
 		Analytics::get_instance();
 		Deactivation::get_instance();
 		Polls::get_instance();
