@@ -792,3 +792,11 @@ to ensure proper responsiveness and avoid layout issues.
 		}
 	}
 }
+
+.compat-attachment-fields {
+
+	td.field {
+		$wp-td-field-margin: 1px;
+		width: calc(100% - 2 * $wp-td-field-margin);
+	}
+}
