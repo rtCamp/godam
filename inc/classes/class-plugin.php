@@ -18,6 +18,8 @@ use RTGODAM\Inc\Media_Tracker;
 use RTGODAM\Inc\Rewrite;
 use RTGODAM\Inc\Video_Preview;
 use RTGODAM\Inc\Video_Permalinks;
+use RTGODAM\Inc\Video_Engagement;
+use RTGODAM\Inc\Update;
 
 use RTGODAM\Inc\Post_Types\GoDAM_Video;
 
@@ -30,7 +32,6 @@ use RTGODAM\Inc\REST_API\WPForms;
 use RTGODAM\Inc\REST_API\Forminator_Forms;
 use RTGODAM\INC\REST_API\SureForms;
 use RTGODAM\Inc\REST_API\Fluent_Forms;
-use RTGODAM\Inc\REST_API\Everest_Forms;
 use RTGODAM\Inc\REST_API\Settings;
 use RTGODAM\Inc\REST_API\Meta_Rest_Fields;
 use RTGODAM\Inc\REST_API\Media_Library;
@@ -40,13 +41,18 @@ use RTGODAM\Inc\REST_API\Analytics;
 use RTGODAM\Inc\REST_API\Polls;
 use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
 use RTGODAM\Inc\REST_API\Dynamic_Gallery;
+use RTGODAM\Inc\REST_API\Engagement;
 use RTGODAM\Inc\REST_API\Video_Migration;
+use RTGODAM\Inc\REST_API\Release_Post;
 use RTGODAM\Inc\Gravity_Forms;
+use RTGODAM\Inc\REST_API\MetForm;
+
 
 use RTGODAM\Inc\Shortcodes\GoDAM_Player;
 use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
 
 use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
+use RTGODAM\Inc\Everest_Forms\Everest_Forms_Integration;
 use RTGODAM\Inc\Video_Metadata;
 
 use RTGODAM\Inc\Media_Library\Media_Folders_REST_API;
@@ -54,6 +60,9 @@ use RTGODAM\Inc\WPForms\WPForms_Integration;
 use RTGODAM\Inc\Media_Library\Media_Edit_Enhancements;
 use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Rest_Api;
 use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Integration;
+use RTGODAM\Inc\Metform\Metform_Integration;
+use RTGODAM\Inc\Metform\Metform_Rest_Api;
+use RTGODAM\Inc\Lifter_LMS\Lifter_LMS;
 
 /**
  * Class Plugin.
@@ -68,6 +77,7 @@ class Plugin {
 	protected function __construct() {
 
 		// Load plugin classes.
+		Update::get_instance();
 		Assets::get_instance();
 		Blocks::get_instance();
 		Pages::get_instance();
@@ -77,10 +87,15 @@ class Plugin {
 		Rewrite::get_instance();
 		Video_Preview::get_instance();
 		Video_Permalinks::get_instance();
+		Embed::get_instance();
 
 		// Load shortcodes.
 		GoDAM_Player::get_instance();
 		GoDAM_Video_Gallery::get_instance();
+		Video_Engagement::get_instance();
+
+		Video_Editor_Form_Layer_Handler::get_instance()->init();
+		Everest_Forms_Integration::get_instance()->init();
 
 		$this->load_post_types();
 		$this->load_taxonomies();
@@ -92,6 +107,7 @@ class Plugin {
 
 		WPForms_Integration::get_instance()->init();
 		Ninja_Forms_Integration::get_instance()->init();
+		Metform_Integration::get_instance()->init();
 
 		// Load cron jobs.
 		Retranscode_Failed_Media::get_instance();
@@ -99,14 +115,13 @@ class Plugin {
 		// Load video metadata.
 		Video_Metadata::get_instance();
 
+		// Load LifterLMS integration.
+		Lifter_LMS::get_instance();
+
 		// Load Elementor widgets.
 		$this->load_elementor_widgets();
 
 		$this->load_media_library();
-
-		// Handle layer rendering for video editor.
-		add_filter( 'query_vars', array( $this, 'add_render_layer_query_var_for_video_editor' ) );
-		add_filter( 'template_include', array( $this, 'update_render_layer_template_for_video_editor' ) );
 	}
 
 	/**
@@ -142,8 +157,8 @@ class Plugin {
 		Forminator_Forms::get_instance();
 		SureForms::get_instance();
 		Fluent_Forms::get_instance();
-		Everest_Forms::get_instance();
 		Ninja_Forms_Rest_Api::get_instance();
+		Metform_Rest_Api::get_instance();
 		Settings::get_instance();
 		Meta_Rest_Fields::get_instance();
 		Media_Library::get_instance();
@@ -154,7 +169,9 @@ class Plugin {
 		Polls::get_instance();
 		Dynamic_Shortcode::get_instance();
 		Dynamic_Gallery::get_instance();
+		Engagement::get_instance();
 		Video_Migration::get_instance();
+		Release_Post::get_instance();
 	}
 
 	/**
@@ -205,41 +222,5 @@ class Plugin {
 	 */
 	public function load_fluentforms() {
 		\RTGODAM\Inc\FluentForms\Init::get_instance();
-	}
-
-	/**
-	 * Update the template for rendering layers in the video editor.
-	 *
-	 * @since n.e.x.t
-	 *
-	 * @param string $template The current template.
-	 *
-	 * @return string Updated template path.
-	 */
-	public function update_render_layer_template_for_video_editor( $template ) {
-		$layer_type = get_query_var( 'rtgodam-render-layer' );
-		$layer_id   = get_query_var( 'rtgodam-layer-id' );
-
-		if ( $layer_type && $layer_id ) {
-			$template = untrailingslashit( RTGODAM_PATH ) . '/inc/templates/render-layer-video-editor.php';
-		}
-
-		return $template;
-	}
-
-	/**
-	 * Add query vars for render layer in video editor.
-	 *
-	 * @since n.e.x.t
-	 *
-	 * @param array $query_vars The existing query vars.
-	 *
-	 * @return array Modified query vars.
-	 */
-	public function add_render_layer_query_var_for_video_editor( $query_vars ) {
-		$query_vars[] = 'rtgodam-render-layer';
-		$query_vars[] = 'rtgodam-layer-id';
-
-		return $query_vars;
 	}
 }

@@ -1,10 +1,10 @@
 === GoDAM - Organize WordPress Media Library & File Manager with Unlimited Folders for Images, Videos & more ===
-Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, abhinavbelhekar03, gautam23
+Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia
 Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 6.8.1
 Requires PHP: 7.4
-Stable tag: 1.3.1
+Stable tag: 1.3.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -217,44 +217,21 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
-= v1.3.1 (August 4, 2025) =
+= v1.3.5 (August 26, 2025) =
 
-- Tweak: Added settings for CPT visibility in permalinks
-- Tweak: Improved Media Library interface with search and pagination
-- Tweak: Improved UI for buttons and modals
-- Tweak: Enhanced hover actions for GoDAM Video blocks
-- Tweak: Improved mobile responsiveness for settings sidebar navigation
-- Fix: iPhone compatibility - HLS URL for Transcoded videos
-- Fix: Video SEO data visibility
-- Fix: Virtual Media errors in Analytics requests
-- Fix: GoDAM Video Player style compatibility with themes
-- Fix: Aspect ratio of video container in Form's GoDAM Record submissions
+- Tweak: Set transcoded videos as public by default and add Org support parameters
+- Tweak: Provide HLS URL support for GoDAM Virtual Media
 
-= v1.3.0 (July 22, 2025) =
+= v1.3.4 (August 11, 2025) =
 
-- New: Integrated [Everest Forms](https://godam.io/integrations/everest-forms/)
-- New: Integrated [Forminator Forms](https://godam.io/integrations/forminator-forms/)
-- New: Integrated [Fluent Forms](https://godam.io/integrations/fluent-forms/) and added GoDAM Recorder Field integration
-- New: Integrated [SureForms](https://godam.io/integrations/sureforms/) and added GoDAM Recorder Field integration
-- New: Added GoDAM Recorder Field integration for [WPForms](https://godam.io/integrations/wp-forms/) to capture video submissions
-- New: Implemented theme support for customizable video player appearance
-- New: Added Global Ads settings for centralized advertisement management
-- New: Implemented automatic autoplay disable when video audio is unmuted for better user experience
-- New: Added Bookmarks and Lock functionality for improved Media Library folder organization
-- New: Extended free version support to include MOV files and FLV formats (some codecs)
-- New: Introduced Background Color for Image CTA Layer Button
-- Tweak: Added Custom Post Type support for GoDAM Videos
-- Tweak: Redesigned Media Library user interface for improved usability and navigation
-- Tweak: Improved Layer Selection interface with tabs and search functionality
-- Fix: Resolved overlapping button issues in Video Editor when viewing video content
-- Fix: Added comprehensive translations for previously untranslated interface strings
-- Fix: Eliminated display of "0" value after removing images in Image CTA Layer
-- Fix: Updated Share Button and Share Modal visibility on GoDAM Video block
-- Fix: Added validation for empty form selection in form layers
+- Fix: Video Editor UI issues
 
-= v1.2.1 (July 11, 2025) =
+= v1.3.3 (August 11, 2025) =
 
-- Fix: Resolved thumbnail issue with rtMedia for transcoded videos
+- Tweak: Improved video player controls and HLS URL handling
+- Tweak: Added Video SEO support and duplicate prevention for GoDAM Tab videos
+- Tweak: Player-specific video speed and quality settings
+- Fix: Resolved share button and JavaScript registration issues
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
