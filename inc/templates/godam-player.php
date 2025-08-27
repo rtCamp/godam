@@ -61,8 +61,6 @@ $hover_select  = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSelect'
 $caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
 $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $attachment_id = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
-$width         = ! empty( $attributes['width'] ) ? esc_attr( $attributes['width'] ) : '';
-$height        = ! empty( $attributes['height'] ) ? esc_attr( $attributes['height'] ) : '';
 $playsinline   = isset( $attributes['playsinline'] ) ? rtgodam_convert_boolean_to_numeric( $attributes['playsinline'] ) : 1;
 $start_time    = ! empty( $attributes['start_time'] ) ? floatval( $attributes['start_time'] ) : null;
 $end_time      = ! empty( $attributes['end_time'] ) ? floatval( $attributes['end_time'] ) : null;
@@ -74,6 +72,7 @@ $duration      = ! empty( $attributes['duration'] ) ? esc_attr( $attributes['dur
 $thumbnail_url = ! empty( $attributes['thumbnail_url'] ) ? esc_url( $attributes['thumbnail_url'] ) : '';
 $description   = ! empty( $attributes['description'] ) ? esc_html( $attributes['description'] ) : '';
 $keywords      = ! empty( $attributes['keywords'] ) ? esc_attr( $attributes['keywords'] ) : '';
+$name          = ! empty( $attributes['name'] ) ? esc_attr( $attributes['name'] ) : '';
 
 // Determine whether the attachment ID refers to a virtual (GoDAM) media item.
 // If it's not numeric, we assume it's a virtual reference (e.g., a GoDAM ID).
@@ -225,10 +224,10 @@ $video_setup = array(
 	'controls'    => (bool) $controls,
 	'autoplay'    => (bool) $autoplay,
 	'loop'        => (bool) $loop,
-	'muted'       => (bool) $muted,
+	'muted'       => $autoplay ? true : (bool) $muted, // Autoplay requires muted to be true.
 	'preload'     => $preload,
 	'poster'      => empty( $poster ) ? $poster_image : $poster,
-	'fluid'       => empty( $width ) && empty( $height ), // Only fluid if no specific dimensions.
+	'fluid'       => true, // Only fluid if no specific dimensions.
 	'flvjs'       => array(
 		'mediaDataSource' => array(
 			'isLive'          => true,
@@ -248,14 +247,6 @@ $video_setup = array(
 		),
 	),
 );
-
-// Add custom dimensions if specified.
-if ( ! empty( $width ) ) {
-	$video_setup['width'] = $width;
-}
-if ( ! empty( $height ) ) {
-	$video_setup['height'] = $height;
-}
 
 // Add playback rates if specified.
 if ( ! empty( $playback_rate ) ) {
@@ -297,6 +288,7 @@ $video_config = wp_json_encode(
 		'thumbnailUrl'     => $thumbnail_url,
 		'description'      => $description,
 		'keywords'         => $keywords,
+		'name'             => $name,
 	)
 );
 
@@ -340,14 +332,6 @@ $custom_css_properties = array(
 
 if ( ! empty( $aspect_ratio ) ) {
 	$custom_css_properties['--rtgodam-video-aspect-ratio'] = str_replace( ':', '/', $aspect_ratio );
-}
-
-// Add custom dimensions if specified.
-if ( ! empty( $width ) ) {
-	$custom_css_properties['--rtgodam-video-width'] = $width;
-}
-if ( ! empty( $height ) ) {
-	$custom_css_properties['--rtgodam-video-height'] = $height;
 }
 
 // Build the inline style string, escaping each value.
@@ -424,25 +408,9 @@ if ( $is_shortcode || $is_elementor_widget ) {
 						?>
 						data-volume="<?php echo esc_attr( $volume ); ?>"<?php endif; ?>
 					<?php
-					if ( ! empty( $schema_type ) ) :
+					if ( isset( $autoplay ) && $autoplay ) :
 						?>
-						data-schema-type="<?php echo esc_attr( $schema_type ); ?>"<?php endif; ?>
-					<?php
-					if ( ! empty( $upload_date ) ) :
-						?>
-						data-upload-date="<?php echo esc_attr( $upload_date ); ?>"<?php endif; ?>
-					<?php
-					if ( ! empty( $duration ) ) :
-						?>
-						data-duration="<?php echo esc_attr( $duration ); ?>"<?php endif; ?>
-					<?php
-					if ( ! empty( $thumbnail_url ) ) :
-						?>
-						data-thumbnail-url="<?php echo esc_url( $thumbnail_url ); ?>"<?php endif; ?>
-					<?php
-					if ( ! empty( $description ) ) :
-						?>
-						data-description="<?php echo esc_attr( $description ); ?>"<?php endif; ?>
+						muted="true" autoplay<?php endif; ?>
 					<?php
 					if ( ! empty( $keywords ) ) :
 						?>

@@ -167,8 +167,6 @@ class GoDAM_Player {
 				'showOverlay'       => false,
 				'videoWidth'        => '',
 				'videoHeight'       => '',
-				'width'             => '',
-				'height'            => '',
 				'playsinline'       => true,
 				'start_time'        => '',
 				'end_time'          => '',
@@ -177,6 +175,7 @@ class GoDAM_Player {
 				
 				// SEO attributes.
 				'schema_type'       => 'VideoObject',
+				'name'              => '',
 				'upload_date'       => '',
 				'duration'          => '',
 				'thumbnail_url'     => '',

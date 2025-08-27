@@ -134,6 +134,23 @@ function GODAMPlayer( videoRef = null ) {
 				player.aspectRatio( '16:9' );
 			}
 		}
+
+		player.on( 'loadedmetadata', function() {
+			let startTime = parseFloat( videoSetupOptions.startTime ) || 0;
+
+			if ( isNaN( startTime ) ) {
+				startTime = 0;
+			}
+			if ( startTime < 0 ) {
+				startTime = 0;
+			}
+			if ( startTime > player.duration() ) {
+				startTime = player.duration() - 1; // cap at end minus 1s
+			}
+
+			player.currentTime( startTime );
+		} );
+
 		player.ready( function() {
 			// Set aspect ratio based on context
 			if ( ! isInModal ) {
