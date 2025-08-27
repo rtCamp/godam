@@ -196,8 +196,6 @@ class GoDAM_Player {
 			'godam_video'
 		);
 
-		// Note: Boolean conversion is handled in the template for better compatibility.
-
 		// Note: Numeric conversion is handled in the template for better compatibility.
 
 		// Decode custom placeholders back to square brackets if sources contain them.
