@@ -9,6 +9,9 @@
 @use "./cf7-godam-theme";
 @use './variables';
 
+// Video engagement styles.
+@use "./video-engagement";
+
 .rtgodam-video-caption {
 
 	margin-bottom: 1em;

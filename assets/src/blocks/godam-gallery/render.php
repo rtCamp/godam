@@ -28,6 +28,7 @@ $attributes = wp_parse_args(
 		'search'          => '',
 		'showTitle'       => true,
 		'align'           => '',
+		'engagements'     => true,
 	)
 );
 
@@ -49,6 +50,7 @@ $shortcode_atts = array(
 	'search'            => sanitize_text_field( $attributes['search'] ),
 	'show_title'        => ! empty( $attributes['showTitle'] ),
 	'align'             => sanitize_text_field( $attributes['align'] ),
+	'engagements'       => ! empty( $attributes['engagements'] ),
 );
 
 // Convert attributes to shortcode string.
