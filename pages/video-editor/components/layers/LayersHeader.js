@@ -54,11 +54,10 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 	 */
 	const layerTypeData = layerTypes.find( ( l ) => l.type === layer.type );
 
-	// Base label from type/subtype
-	const baseLabel =
-    layer?.type === 'form' ? layerTypeData?.formType?.[ layer?.form_type ?? 'gravity' ]?.layerText : layerTypeData?.layerText;
+	// Base label from type/subtype.
+	const baseLabel = layer?.type === 'form' ? layerTypeData?.formType?.[ layer?.form_type ?? 'gravity' ]?.layerText : layerTypeData?.layerText;
 
-	// Prefer custom name if present; fall back to base label
+	// Prefer custom name if present; fall back to base label.
 	const titlePrefix = ( layer?.name && String( layer.name ).trim() ) ? layer.name : baseLabel;
 
 	const handleDeleteLayer = () => {
@@ -104,10 +103,10 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 								onClick={ ( e ) => e.stopPropagation() }
 								type="number"
 								onChange={ ( value ) => {
-									// Remove leading zeros
+									// Remove leading zeros.
 									let normalizedValue = value.replace( /^0+(?=\d)/, '' );
 
-									// Limit to 2 decimal places
+									// Limit to 2 decimal places.
 									if ( normalizedValue.includes( '.' ) ) {
 										const [ intPart, decimalPart ] = normalizedValue.split( '.' );
 										normalizedValue = intPart + '.' + decimalPart.slice( 0, 2 );
@@ -120,7 +119,7 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 										return;
 									}
 
-									// Reject empty or over-duration values
+									// Reject empty or over-duration values.
 									if ( normalizedValue === '' || isNaN( floatValue ) ) {
 										setLayerTime( normalizedValue );
 										dispatch( updateLayerField( {
@@ -133,7 +132,7 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 
 									setLayerTime( normalizedValue );
 
-									// Check for duplicate timestamp
+									// Check for duplicate timestamp.
 									const isTimestampExists = layers?.some(
 										( singleLayer ) =>
 											Number( singleLayer.displayTime ) === floatValue &&
