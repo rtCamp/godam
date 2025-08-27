@@ -41,6 +41,7 @@ const LayerComponents = {
  */
 const Layer = ( { layer, goBack, duration } ) => {
 	const Component = LayerComponents[ layer?.type ?? 'cta' ]?.component;
+
 	return <Component layerID={ layer.id } goBack={ goBack } duration={ duration } />;
 };
 
