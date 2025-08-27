@@ -32,7 +32,6 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 	const [ isEditing, setIsEditing ] = useState( false );
 	const [ initialTimePeriod, setInitialTimePeriod ] = useState( '' );
 	const [ layerTime, setLayerTime ] = useState( layer?.id );
-	const [ initialName, setInitialName ] = useState( '' );
 	const [ layerName, setLayerName ] = useState( '' );
 	const dispatch = useDispatch();
 
@@ -40,7 +39,6 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 		setLayerTime( layer?.displayTime );
 		setInitialTimePeriod( layer?.displayTime );
 		setLayerName( layer?.name ?? '' );
-		setInitialName( layer?.name ?? '' );
 	}, [ layer?.displayTime, layer?.name ] );
 
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
@@ -165,42 +163,18 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 					) }
 				</div>
 
-				{ /* Actions: Edit + Delete OR Cancel */ }
-				{ ! isEditing ? (
-					<div className="flex items-center gap-2">
-						<Button
-							icon={ edit }
-							onClick={ () => {
-								setIsEditing( true );
-								setLayerTime( layer?.displayTime );
-								setInitialTimePeriod( layer?.displayTime );
-								setLayerName( layer?.name ?? '' );
-								setInitialName( layer?.name ?? '' );
-							} }
-						/>
-						<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
-					</div>
-				) : (
-					<div className="flex items-center gap-2">
-						<Button
-							onClick={ () => {
-								// Revert both fields in Redux and local state
-								dispatch( updateLayerField( {
-									id: layer.id, field: 'displayTime', value: initialTimePeriod,
-								} ) );
-								dispatch( updateLayerField( {
-									id: layer.id, field: 'name', value: initialName,
-								} ) );
-								dispatch( setCurrentLayer( { ...layer, displayTime: initialTimePeriod, name: initialName } ) );
-								setLayerTime( initialTimePeriod );
-								setLayerName( initialName );
-								setIsEditing( false );
-							} }
-						>
-							{ __( 'Cancel', 'godam' ) }
-						</Button>
-					</div>
-				) }
+				<div className="flex items-center gap-2">
+					<Button
+						icon={ edit }
+						onClick={ () => {
+							setIsEditing( true );
+							setLayerTime( layer?.displayTime );
+							setInitialTimePeriod( layer?.displayTime );
+							setLayerName( layer?.name ?? '' );
+						} }
+					/>
+					<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
+				</div>
 
 				{ isOpen && (
 					<Modal
