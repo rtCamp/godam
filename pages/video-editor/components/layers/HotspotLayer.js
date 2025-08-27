@@ -37,6 +37,16 @@ import FontAwesomeIconPicker from '../hotspot/FontAwesomeIconPicker';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import LayersHeader from './LayersHeader';
 
+/**
+ * HotspotLayer component for managing and rendering interactive hotspots on a video layer.
+ *
+ * @param {Object}   props          - The component props.
+ * @param {string}   props.layerID  - The unique identifier for the layer.
+ * @param {Function} props.goBack   - Callback function to navigate back to the previous screen.
+ * @param {number}   props.duration - The duration (in seconds) for which the layer is visible.
+ *
+ * @return {JSX.Element} The rendered HotspotLayer component.
+ */
 const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) =>
@@ -116,7 +126,17 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	const isValidOrigin = ( url = '' ) =>
 		/^https?:\/\//i.test( url.trim() );
 
-	// Helper: display name with fallback
+	/**
+	 * Generates a display name for a hotspot.
+	 *
+	 * If the hotspot has a custom name, it trims and uses that name.
+	 * Otherwise, it falls back to a default name in the format "Hotspot {index}".
+	 *
+	 * @param {Object} hotspot        - The hotspot object containing its properties.
+	 * @param {string} [hotspot.name] - The custom name of the hotspot (optional).
+	 * @param {number} index          - The index of the hotspot in the list.
+	 * @return {string} The display name for the hotspot.
+	 */
 	const getHotspotDisplayName = ( hotspot, index ) => {
 		const custom = hotspot?.name && String( hotspot.name ).trim();
 		// translators: %d is the index of the hotspot
@@ -188,7 +208,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 							<DropdownMenu
 								icon={ moreVertical }
 								label={ `${ getHotspotDisplayName( hotspot, index ) } ${ __( 'options', 'godam' ) }` }
-								/* translators: %d is the hotspot index */
+								/* translators: %s: hotspot display name */
 								toggleProps={ { 'aria-label': sprintf( __( 'Options for %s', 'godam' ), getHotspotDisplayName( hotspot, index ) ) } }
 
 							>
