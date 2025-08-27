@@ -420,7 +420,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 	&__loader {
 		position: absolute;
 		width: 1.5rem;
-		aspect-ratio: 1;
+		height: 1.5rem;
 		display: flex;
 		justify-content: center;
 		align-items: center;
