@@ -156,8 +156,9 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 								min={ 0 }
 								max={ duration }
 								step={ 0.1 }
+								aria-label={ __( 'Layer timestamp', 'godam' ) }
 							/>
-							<span>s</span>
+							<span>{ __( 's', 'godam' ) }</span>
 						</div>
 					) }
 				</div>
@@ -165,6 +166,7 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 				<div className="flex items-center gap-2">
 					<Button
 						icon={ edit }
+						label={ __( 'Edit layer', 'godam' ) }
 						onClick={ () => {
 							setIsEditing( true );
 							setLayerTime( layer?.displayTime );
