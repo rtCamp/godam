@@ -426,6 +426,8 @@ $media-frame-width: calc(300px + 2 * 24px);
 		position: absolute;
 		width: 1.5rem;
 		height: 1.5rem;
+		max-width: 1.5rem;
+		min-width: 1.5rem;
 		display: flex;
 		justify-content: center;
 		align-items: center;
@@ -524,6 +526,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 	display: flex;
 	align-items: center;
 	gap: 1rem;
+	flex-wrap: wrap;
 
 	.transcoding-status__loader {
 		position: unset;

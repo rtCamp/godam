@@ -334,6 +334,10 @@ $media-library-active-folder: #f5f5f5;
 			margin-left: calc($sidebar-width + 160px);
 		}
 	}
+
+	#the-list .row-actions {
+		margin-left: 0;
+	}
 }
 
 #wpbody:has( #rt-transcoder-media-library-root ){
