@@ -224,7 +224,7 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 							className="godam-button mt-2"
 							disabled={ ! migrationStatus }
 						>
-							{ __( 'Start Migration', 'godam' ) }
+							{ migrationStatus?.status === 'completed' ? __( 'Restart Migration', 'godam' ) : __( 'Start Migration', 'godam' ) }
 						</Button>
 					) }
 				</PanelBody>
