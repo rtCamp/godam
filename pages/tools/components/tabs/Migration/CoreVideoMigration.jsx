@@ -25,6 +25,17 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice }
 	const handleMigrationClick = async () => {
 		const url = window.godamRestRoute?.url + 'godam/v1/video-migrate';
 
+		// Optimistically set UI to processing so users get instant feedback.
+		setMigrationStatus( ( prev ) => ( {
+			...( prev || {} ),
+			total: 0,
+			done: 0,
+			started: Date.now(),
+			completed: null,
+			status: 'processing',
+			message: __( 'Starting…', 'godam' ),
+		} ) );
+
 		axios.post( url, {
 			type: 'core',
 		},
@@ -37,10 +48,11 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice }
 			.then( ( response ) => {
 				setMigrationStatus( response.data );
 			} )
-			.catch( ( error ) => {
-				// Handle error, e.g., show a notification instead of using console.
-				// eslint-disable-next-line no-alert
-				alert( __( 'An error occurred during migration: ', 'godam' ) + error.message );
+			.catch( ( err ) => {
+				// Reset UI as request failed; show an error notice for clarity.
+				setMigrationStatus( { total: 0, done: 0, started: null, completed: null, status: 'pending', message: '' } );
+				const apiMessage = err?.response?.data?.message || err?.message || __( 'Something went wrong while starting migration.', 'godam' );
+				showNotice( apiMessage, 'error' );
 			} );
 	};
 
@@ -101,6 +113,9 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice }
 
 			// Start polling every 5 seconds
 			intervalRef.current = setInterval( fetchMigrationStatus, 5000 );
+
+			// Kick off an immediate fetch to avoid initial delay
+			fetchMigrationStatus();
 
 			// Reset notice flags for a new run
 			noticeShownRef.current = { completed: false, failed: false };
