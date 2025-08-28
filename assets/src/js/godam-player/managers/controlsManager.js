@@ -44,7 +44,7 @@ export default class ControlsManager {
 		this.setupControlBarComponents( controlBarSettings );
 		this.setupCustomPlayButton( controlBarSettings );
 
-		this.setupFullscreenButton();
+		this.setupCustomFullscreenButton();
 	}
 
 	/**
@@ -149,15 +149,21 @@ export default class ControlsManager {
 		return new CustomFullscreenExitButton( this.player );
 	}
 
+	/**
+	 * Check if the device is iOS
+	 *
+	 * @return {boolean} - True if iOS device, false otherwise
+	 */
 	checkIOSDevice() {
 		const userAgent = window.navigator.userAgent.toLowerCase();
 		return /iphone|ipad|ipod/.test( userAgent );
 	}
 
 	/**
-	 * Setup fullscreen button for iOS devices
+	 * Setup custom fullscreen button
+	 * This is for iOS devices that does not support videojs on fullscreen mode
 	 */
-	setupFullscreenButton() {
+	setupCustomFullscreenButton() {
 		// Add custom fullscreen button to control bar
 		const controlBar = this.player.controlBar;
 		const controlBarEl = controlBar.el();
