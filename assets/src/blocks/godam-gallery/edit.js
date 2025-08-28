@@ -48,6 +48,7 @@ export default function Edit( { attributes, setAttributes } ) {
 		search,
 		showTitle,
 		layout,
+		engagements,
 	} = attributes;
 	const blockProps = useBlockProps();
 
@@ -205,6 +206,11 @@ export default function Edit( { attributes, setAttributes } ) {
 							/>
 						</>
 					) }
+					<ToggleControl
+						label={ __( 'Enable engagements', 'godam' ) }
+						checked={ !! engagements }
+						onChange={ ( value ) => setAttributes( { engagements: value } ) }
+					/>
 					<SelectControl
 						label={ __( 'Layout', 'godam' ) }
 						value={ layout }

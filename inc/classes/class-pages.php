@@ -774,8 +774,10 @@ class Pages {
 
 			wp_localize_script(
 				'godam-page-script-whats-new',
-				'version',
-				RTGODAM_VERSION
+				'headerData',
+				array(
+					'version' => RTGODAM_VERSION,
+				)
 			);
 
 			wp_enqueue_script( 'godam-page-script-whats-new' );
