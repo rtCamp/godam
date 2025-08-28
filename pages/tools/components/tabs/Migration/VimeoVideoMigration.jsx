@@ -150,8 +150,8 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 
 	return (
 		<>
-			<Panel header={ __( 'Vimeo video Migration', 'godam' ) } className="godam-panel">
-				<PanelBody opened>
+			<Panel className="godam-panel">
+				<PanelBody title={ __( 'Vimeo video Migration', 'godam' ) } initialOpen={ false }>
 					<p>
 						{ __( 'This tool is used to replace WordPress Vimeo Embed blocks with GoDAM Video block.', 'godam' ) }
 					</p>
