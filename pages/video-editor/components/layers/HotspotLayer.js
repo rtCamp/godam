@@ -37,6 +37,16 @@ import FontAwesomeIconPicker from '../hotspot/FontAwesomeIconPicker';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import LayersHeader from './LayersHeader';
 
+/**
+ * HotspotLayer component for managing and rendering interactive hotspots on a video layer.
+ *
+ * @param {Object}   props          - The component props.
+ * @param {string}   props.layerID  - The unique identifier for the layer.
+ * @param {Function} props.goBack   - Callback function to navigate back to the previous screen.
+ * @param {number}   props.duration - The duration (in seconds) for which the layer is visible.
+ *
+ * @return {JSX.Element} The rendered HotspotLayer component.
+ */
 const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) =>
@@ -116,6 +126,23 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	const isValidOrigin = ( url = '' ) =>
 		/^https?:\/\//i.test( url.trim() );
 
+	/**
+	 * Generates a display name for a hotspot.
+	 *
+	 * If the hotspot has a custom name, it trims and uses that name.
+	 * Otherwise, it falls back to a default name in the format "Hotspot {index}".
+	 *
+	 * @param {Object} hotspot        - The hotspot object containing its properties.
+	 * @param {string} [hotspot.name] - The custom name of the hotspot (optional).
+	 * @param {number} index          - The index of the hotspot in the list.
+	 * @return {string} The display name for the hotspot.
+	 */
+	const getHotspotDisplayName = ( hotspot, index ) => {
+		const custom = hotspot?.name && String( hotspot.name ).trim();
+		// translators: %d is the index of the hotspot
+		return custom || sprintf( __( 'Hotspot %d', 'godam' ), index + 1 );
+	};
+
 	return (
 		<>
 			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
@@ -175,16 +202,14 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 								className="flex-1 text-left"
 								onClick={ () => toggleHotspotExpansion( index ) }
 							>
-								{
-									/* translators: %d is the hotspot index */
-									sprintf( __( 'Hotspot %d', 'godam' ), index + 1 )
-								}
+								{ getHotspotDisplayName( hotspot, index ) }
+
 							</Button>
 							<DropdownMenu
 								icon={ moreVertical }
-								label={ `Hotspot ${ index + 1 } options` }
-								/* translators: %d is the hotspot index */
-								toggleProps={ { 'aria-label': sprintf( __( 'Options for Hotspot %d', 'godam' ), index + 1 ) } }
+								label={ `${ getHotspotDisplayName( hotspot, index ) } ${ __( 'options', 'godam' ) }` }
+								/* translators: %s: hotspot display name */
+								toggleProps={ { 'aria-label': sprintf( __( 'Options for %s', 'godam' ), getHotspotDisplayName( hotspot, index ) ) } }
 
 							>
 								{ () => (
@@ -272,6 +297,28 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 									className={ `${ hotspot.linkInvalid ? 'hotspot-link-error' : undefined } godam-input` }
 									disabled={ ! isValidAPIKey }
 								/>
+
+								{ /* Hotspot Name */ }
+								<TextControl
+									className="godam-input"
+									label={ __( 'Hotspot Name', 'godam' ) }
+									value={ hotspot.name ?? '' }
+									/* translators: %d is the hotspot index */
+									placeholder={ sprintf( __( 'Hotspot %d', 'godam' ), index + 1 ) }
+									maxLength={ 40 }
+									onChange={ ( val ) => {
+										const v = ( val || '' ).slice( 0, 40 );
+										updateField(
+											'hotspots',
+											hotspots.map( ( h2, j ) =>
+												j === index ? { ...h2, name: v } : h2,
+											),
+										);
+									} }
+									help={ __( 'Give this hotspot a descriptive title', 'godam' ) }
+									disabled={ ! isValidAPIKey }
+								/>
+
 								{ hotspot.linkInvalid && (
 									<p className="text-red-600 text-xs mt-1">{ __( 'Invalid origin: must use either http or https as the scheme.', 'godam' ) }</p>
 								) }
