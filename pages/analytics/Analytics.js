@@ -486,7 +486,7 @@ const Analytics = ( { attachmentID } ) => {
 						</div>
 					</div>
 
-					<InteractiveLayerAnalytics />
+					<InteractiveLayerAnalytics attachmentID={ attachmentID } />
 
 					<div className="grid grid-cols-[4fr_2fr_2fr] gap-4 px-10 metrics-container">
 						<PlaybackPerformanceDashboard
