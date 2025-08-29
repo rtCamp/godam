@@ -38,9 +38,24 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 */
 	async fetchAndRender( fetchPromise, renderMethod ) {
 		const data = await fetchPromise;
-		if ( data ) {
-			renderMethod.call( this, data.data );
+
+		const actionsEl = this.$el.find( '.attachment-actions' );
+
+		// If there's no data remove the spinner and show message.
+		if ( ! data ) {
+			const thumbnailContainer = actionsEl?.find( '.attachment-video-thumbnails' );
+
+			thumbnailContainer?.find( '.thumbnail-spinner' )?.remove();
+			const container = thumbnailContainer?.find( '.thumbnail-spinner-container' )?.get( 0 );
+			if ( container ) {
+				container.className = '';
+				container.innerText = __( 'No thumbnails found', 'godam' );
+			}
+
+			return;
 		}
+
+		renderMethod.call( this, data.data );
 	},
 
 	/**
