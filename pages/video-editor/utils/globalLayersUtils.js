@@ -21,9 +21,9 @@ const FORM_PLUGIN_MAP = {
 /**
  * Map placement values from global settings to display times
  *
- * @param placement
- * @param position
- * @param duration
+ * @param {string} placement
+ * @param {number} position
+ * @param {number} duration
  */
 const getDisplayTimeFromPlacement = ( placement, position, duration ) => {
 	switch ( placement ) {
@@ -41,9 +41,9 @@ const getDisplayTimeFromPlacement = ( placement, position, duration ) => {
 /**
  * Convert global layer settings to video editor layer format
  *
- * @param globalLayer
- * @param layerType
- * @param videoDuration
+ * @param {Object} globalLayer
+ * @param {string} layerType
+ * @param {number} videoDuration
  */
 export const createLayerFromGlobalSettings = ( globalLayer, layerType, videoDuration = 0 ) => {
 	const baseLayer = {
@@ -107,25 +107,6 @@ export const createLayerFromGlobalSettings = ( globalLayer, layerType, videoDura
 				css_classes: globalLayer.cta.css_classes || '',
 			};
 
-		case 'video_ads':
-			if ( ! globalLayer.video_ads?.enabled || ! globalLayer.video_ads?.adTagUrl ) {
-				return null;
-			}
-
-			return {
-				...baseLayer,
-				type: 'ad',
-				displayTime: getDisplayTimeFromPlacement(
-					globalLayer.video_ads.placement,
-					globalLayer.video_ads.position,
-					videoDuration,
-				),
-				adTagUrl: globalLayer.video_ads.adTagUrl,
-				duration: globalLayer.video_ads.duration || 30,
-				skippable: true,
-				skip_offset: 5,
-			};
-
 		default:
 			return null;
 	}
@@ -134,8 +115,8 @@ export const createLayerFromGlobalSettings = ( globalLayer, layerType, videoDura
 /**
  * Apply global settings to create initial layers for a video
  *
- * @param globalSettings
- * @param videoDuration
+ * @param {Object} globalSettings
+ * @param {number} videoDuration
  */
 export const applyGlobalLayersToVideo = ( globalSettings, videoDuration = 0 ) => {
 	if ( ! globalSettings?.global_layers ) {
@@ -157,19 +138,13 @@ export const applyGlobalLayersToVideo = ( globalSettings, videoDuration = 0 ) =>
 		layersToAdd.push( ctaLayer );
 	}
 
-	// Add video ads layer if enabled
-	const adLayer = createLayerFromGlobalSettings( globalLayers, 'video_ads', videoDuration );
-	if ( adLayer ) {
-		layersToAdd.push( adLayer );
-	}
-
 	return layersToAdd;
 };
 
 /**
  * Check if a layer is a global layer
  *
- * @param layer
+ * @param {Object} layer
  */
 export const isGlobalLayer = ( layer ) => {
 	return layer?.isGlobalLayer === true;
@@ -178,7 +153,7 @@ export const isGlobalLayer = ( layer ) => {
 /**
  * Remove global layers from existing layers array
  *
- * @param layers
+ * @param {Array} layers
  */
 export const removeGlobalLayers = ( layers ) => {
 	return layers.filter( ( layer ) => ! isGlobalLayer( layer ) );
@@ -187,8 +162,8 @@ export const removeGlobalLayers = ( layers ) => {
 /**
  * Merge global layers with existing video layers
  *
- * @param existingLayers
- * @param globalLayers
+ * @param {Array} existingLayers
+ * @param {Array} globalLayers
  */
 export const mergeGlobalAndVideoLayers = ( existingLayers, globalLayers ) => {
 	// Remove any existing global layers first

@@ -57,8 +57,8 @@ class Ads {
 	 *
 	 * Retrieves the first available ad tag URL from multiple sources in priority order:
 	 * 1. Attachment-specific ad tag URL
-	 * 2. Global ad tag URL
-	 * 3. Dynamically generated ad tag URL from layers
+	 * 2. Dynamically generated ad tag URL from layers
+	 * 3. Global ad tag URL
 	 *
 	 * @return string The ad tag URL if found, empty string otherwise.
 	 */
@@ -69,16 +69,16 @@ class Ads {
 			return $attachment_ad_tag_url;
 		}
 
-		// Try global ad tag URL second.
-		$global_ad_tag_url = $this->get_global_ad_tag_url();
-		if ( ! empty( $global_ad_tag_url ) ) {
-			return $global_ad_tag_url;
-		}
-
 		// Try dynamically generated ad tag URL last.
 		$dynamic_ad_tag_url = $this->generate_ad_tag_url_from_layers();
 		if ( ! empty( $dynamic_ad_tag_url ) ) {
 			return $dynamic_ad_tag_url;
+		}
+
+		// Try global ad tag URL second.
+		$global_ad_tag_url = $this->get_global_ad_tag_url();
+		if ( ! empty( $global_ad_tag_url ) ) {
+			return $global_ad_tag_url;
 		}
 
 		return '';
