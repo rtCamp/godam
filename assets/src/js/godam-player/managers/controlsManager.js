@@ -112,7 +112,9 @@ export default class ControlsManager {
 				}
 			}
 		}
-		videojs.registerComponent( 'CustomFullscreenButton', CustomFullscreenButton );
+		if ( ! videojs.getComponent( 'CustomFullscreenButton' ) ) {
+			videojs.registerComponent( 'CustomFullscreenButton', CustomFullscreenButton );
+		}
 		return new CustomFullscreenButton( this.player );
 	}
 
@@ -145,7 +147,9 @@ export default class ControlsManager {
 				}
 			}
 		}
-		videojs.registerComponent( 'CustomFullscreenExitButton', CustomFullscreenExitButton );
+		if ( ! videojs.getComponent( 'CustomFullscreenExitButton' ) ) {
+			videojs.registerComponent( 'CustomFullscreenExitButton', CustomFullscreenExitButton );
+		}
 		return new CustomFullscreenExitButton( this.player );
 	}
 
