@@ -1906,3 +1906,64 @@ body.godam-share-modal-open {
 .godam-video-wrapper:has(.animate-video-loading) .godam-video-overlay-container {
 	display: none !important;
 }
+
+// Override `video-js button` style for uppy modal button.
+#uppy-godam-video-modal-container {
+
+	.uppy-Dashboard-close {
+		color: #ffffffe6;
+		cursor: pointer;
+		display: block;
+		font-size: 27px;
+		position: absolute;
+		top: -33px;
+		z-index: 1005;
+	}
+
+	.uppy-c-btn {
+		color: inherit;
+		display: inline-flex;
+		font-size: inherit;
+		font-weight: 500;
+		line-height: 1;
+		transition-duration: .3s;
+		transition-property: background-color, color;
+	}
+
+	.uppy-Dashboard-browse {
+		color: #1269cf;
+		cursor: pointer;
+	}
+
+	.uppy-ScreenCapture-button {
+		border-radius: 50%;
+		color: #fff;
+		cursor: pointer;
+		transition: all .3s;
+
+		&--video {
+			background: #e32437;
+			color: #fff;
+		}
+
+		&--submit {
+			background-color: #1269cf;
+			margin-left: 12px;
+		}
+	}
+
+	.uppy-Webcam-button {
+		background-color: #e32437;
+		border-radius: 50%;
+		color: #fff;
+		cursor: pointer;
+		transition: all .3s;
+	}
+
+	@media only screen and (min-width: 820px) {
+
+		.uppy-Dashboard-close {
+			font-size: 35px;
+		}
+	}
+}
