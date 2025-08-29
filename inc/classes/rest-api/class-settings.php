@@ -60,11 +60,8 @@ class Settings extends Base {
 			),
 			'global_layers' => array(
 				'video_ads' => array(
-					'enabled'   => false,
-					'adTagUrl'  => '',
-					'placement' => 'start',
-					'position'  => 30,
-					'duration'  => 30,
+					'enabled'  => false,
+					'adTagUrl' => '',
 				),
 				'forms'     => array(
 					'enabled'   => false,
@@ -357,11 +354,8 @@ class Settings extends Base {
 			),
 			'global_layers' => array(
 				'video_ads' => array(
-					'enabled'   => rest_sanitize_boolean( $settings['global_layers']['video_ads']['enabled'] ?? $default['global_layers']['video_ads']['enabled'] ),
-					'adTagUrl'  => esc_url_raw( $settings['global_layers']['video_ads']['adTagUrl'] ?? $default['global_layers']['video_ads']['adTagUrl'] ),
-					'placement' => sanitize_text_field( $settings['global_layers']['video_ads']['placement'] ?? $default['global_layers']['video_ads']['placement'] ),
-					'position'  => absint( $settings['global_layers']['video_ads']['position'] ?? $default['global_layers']['video_ads']['position'] ),
-					'duration'  => absint( $settings['global_layers']['video_ads']['duration'] ?? $default['global_layers']['video_ads']['duration'] ),
+					'enabled'  => rest_sanitize_boolean( $settings['global_layers']['video_ads']['enabled'] ?? $default['global_layers']['video_ads']['enabled'] ),
+					'adTagUrl' => esc_url_raw( $settings['global_layers']['video_ads']['adTagUrl'] ?? $default['global_layers']['video_ads']['adTagUrl'] ),
 				),
 				'forms'     => array(
 					'enabled'   => rest_sanitize_boolean( $settings['global_layers']['forms']['enabled'] ?? $default['global_layers']['forms']['enabled'] ),

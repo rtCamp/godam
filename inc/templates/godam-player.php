@@ -11,6 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+require_once RTGODAM_PATH . 'inc/templates/class-ads.php';
+
 if ( isset( $is_shortcode ) && $is_shortcode ) {
 	$is_shortcode = true;
 } else {
@@ -187,8 +189,6 @@ $appearance_color       = isset( $easydam_meta_data['videoConfig']['controlBar']
 $brand_image            = isset( $godam_settings['video_player']['brand_image'] ) ? $godam_settings['video_player']['brand_image'] : null;
 $individual_brand_image = isset( $easydam_meta_data['videoConfig']['controlBar']['brand_image'] ) ? $easydam_meta_data['videoConfig']['controlBar']['brand_image'] : null;
 $player_skin            = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : 'Default';
-$ads_settings           = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : array();
-$ads_settings           = wp_json_encode( $ads_settings );
 
 // Build the video setup options for data-setup.
 $video_setup = array(
@@ -257,22 +257,12 @@ $easydam_hover_zoom         = ! empty( $easydam_meta_data['videoConfig']['contro
 $easydam_custom_btn_img     = ! empty( $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] ) ? $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] : '';
 $easydam_control_bar_config = ! empty( $easydam_meta_data['videoConfig']['controlBar'] ) ? $easydam_meta_data['videoConfig']['controlBar'] : array();
 
-$layers     = $easydam_meta_data['layers'] ?? array();
-$ads_layers = array_filter(
-	$layers,
-	function ( $layer ) {
-		return 'ad' === $layer['type'];
-	}
-);
-$ad_tag_url = '';
+$layers = $easydam_meta_data['layers'] ?? array();
 
-$ad_server = isset( $easydam_meta_data['videoConfig']['adServer'] ) ? sanitize_text_field( $easydam_meta_data['videoConfig']['adServer'] ) : 'self-hosted';
-
-if ( ! empty( $ad_server ) && 'ad-server' === $ad_server ) :
-	$ad_tag_url = isset( $easydam_meta_data['videoConfig']['adTagURL'] ) ? $easydam_meta_data['videoConfig']['adTagURL'] : '';
-elseif ( ! empty( $ads_layers ) && 'self-hosted' === $ad_server ) :
-	$ad_tag_url = get_rest_url( get_current_blog_id(), '/godam/v1/adTagURL/' ) . $attachment_id;
-endif;
+/**
+ * Initialize the Ads class which helps get the appropriate ad tag URL.
+ */
+$ads = new Ads( $attachment_id, $godam_settings, $easydam_meta_data );
 
 $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 
@@ -338,12 +328,11 @@ if ( $is_shortcode || $is_elementor_widget ) {
 				<video
 					class="easydam-player video-js vjs-big-play-centered vjs-hidden"
 					data-options="<?php echo esc_attr( $video_config ); ?>"
-					data-ad_tag_url="<?php echo esc_url( $ad_tag_url ); ?>"
+					data-ad_tag_url="<?php echo esc_url( $ads->get_ad_tag_url() ); ?>"
 					data-id="<?php echo esc_attr( $attachment_id ); ?>"
 					data-instance-id="<?php echo esc_attr( $instance_id ); ?>"
 					data-controls="<?php echo esc_attr( $video_setup ); ?>"
 					data-job_id="<?php echo esc_attr( $job_id ); ?>"
-					data-global_ads_settings="<?php echo esc_attr( $ads_settings ); ?>"
 					data-hover-select="<?php echo esc_attr( $hover_select ); ?>"
 				>
 					<?php
