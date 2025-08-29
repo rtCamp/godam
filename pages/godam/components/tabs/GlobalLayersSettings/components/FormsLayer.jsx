@@ -43,20 +43,6 @@ const FormsLayer = () => {
 		dispatch( updateMediaSetting( { category: 'global_layers', subcategory: 'forms', key, value } ) );
 	};
 
-	// Load available form plugins and forms
-	useEffect( () => {
-		loadFormPlugins();
-	}, [] );
-
-	// Load available forms when form plugin is selected
-	useEffect( () => {
-		if ( mediaSettings?.global_layers?.forms?.plugin && formPlugins.length > 0 ) {
-			loadFormsForPlugin( mediaSettings.global_layers.forms.plugin );
-		} else {
-			setAvailableForms( [] );
-		}
-	}, [ mediaSettings?.global_layers?.forms?.plugin, formPlugins, loadFormsForPlugin ] );
-
 	const loadFormPlugins = async () => {
 		setIsLoadingForms( true );
 		try {
@@ -96,6 +82,20 @@ const FormsLayer = () => {
 			setAvailableForms( [] );
 		}
 	}, [ formPlugins ] );
+
+	// Load available form plugins and forms
+	useEffect( () => {
+		loadFormPlugins();
+	}, [] );
+
+	// Load available forms when form plugin is selected
+	useEffect( () => {
+		if ( mediaSettings?.global_layers?.forms?.plugin && formPlugins.length > 0 ) {
+			loadFormsForPlugin( mediaSettings.global_layers.forms.plugin );
+		} else {
+			setAvailableForms( [] );
+		}
+	}, [ mediaSettings?.global_layers?.forms?.plugin, formPlugins, loadFormsForPlugin ] );
 
 	const placementOptions = [
 		{ label: __( 'Start of video', 'godam' ), value: 'start' },

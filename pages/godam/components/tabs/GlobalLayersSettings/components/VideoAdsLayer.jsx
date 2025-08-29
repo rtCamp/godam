@@ -11,8 +11,6 @@ import {
 	Panel,
 	PanelBody,
 	TextareaControl,
-	SelectControl,
-	RangeControl,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -31,12 +29,6 @@ const VideoAdsLayer = () => {
 	const handleSettingChange = ( key, value ) => {
 		dispatch( updateMediaSetting( { category: 'global_layers', subcategory: 'video_ads', key, value } ) );
 	};
-
-	const placementOptions = [
-		{ label: __( 'Start of video', 'godam' ), value: 'start' },
-		{ label: __( 'Middle of video', 'godam' ), value: 'middle' },
-		{ label: __( 'End of video', 'godam' ), value: 'end' },
-	];
 
 	return (
 		<Panel header={ __( 'Video Ads Layer', 'godam' ) } className="godam-panel">
@@ -63,37 +55,6 @@ const VideoAdsLayer = () => {
 								}
 								value={ mediaSettings?.global_layers?.video_ads?.adTagUrl || '' }
 								onChange={ ( value ) => handleSettingChange( 'adTagUrl', value ) }
-							/>
-
-							<SelectControl
-								className="godam-select mb-4"
-								label={ __( 'Ad Placement', 'godam' ) }
-								help={ __( 'Choose when the ad should appear in the video timeline', 'godam' ) }
-								value={ mediaSettings?.global_layers?.video_ads?.placement || 'start' }
-								options={ placementOptions }
-								onChange={ ( value ) => handleSettingChange( 'placement', value ) }
-							/>
-
-							{ mediaSettings?.global_layers?.video_ads?.placement === 'middle' && (
-								<RangeControl
-									className="godam-range mb-4"
-									label={ __( 'Ad Position (seconds)', 'godam' ) }
-									help={ __( 'Specify when the ad should appear in the middle of the video', 'godam' ) }
-									value={ mediaSettings?.global_layers?.video_ads?.position || 30 }
-									onChange={ ( value ) => handleSettingChange( 'position', value ) }
-									min={ 1 }
-									max={ 300 }
-								/>
-							) }
-
-							<RangeControl
-								className="godam-range mb-4"
-								label={ __( 'Ad Duration (seconds)', 'godam' ) }
-								help={ __( 'Maximum duration for the ad', 'godam' ) }
-								value={ mediaSettings?.global_layers?.video_ads?.duration || 30 }
-								onChange={ ( value ) => handleSettingChange( 'duration', value ) }
-								min={ 5 }
-								max={ 120 }
 							/>
 						</>
 					)

@@ -43,9 +43,6 @@ const initialState = {
 		video_ads: {
 			enabled: false,
 			adTagUrl: '',
-			placement: 'start',
-			position: 30,
-			duration: 30,
 		},
 		forms: {
 			enabled: false,
