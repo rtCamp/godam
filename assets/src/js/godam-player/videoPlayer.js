@@ -146,6 +146,27 @@ export default class GodamVideoPlayer {
 		// Attach managers to player for external access
 		this.player.hoverManager = this.hoverManager;
 		this.player.shareManager = this.shareManager;
+		this.player.layersManager = this.layersManager;
+		this.player.controlsManager = this.controlsManager;
+		this.player.configManager = this.configManager;
+		
+		// Register with developer API
+		this.registerWithDeveloperAPI();
+	}
+
+	/**
+	 * Register this player instance with the developer API
+	 */
+	registerWithDeveloperAPI() {
+		// Check if developer API is available
+		if (window.godam && window.godam.player) {
+			window.godam.player.registerPlayer(
+				this.currentPlayerVideoInstanceId,
+				this.player,
+				this.layersManager,
+				this.controlsManager
+			);
+		}
 	}
 
 	/**

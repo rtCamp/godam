@@ -27,6 +27,7 @@ import 'quill/dist/quill.snow.css';
  * Internal dependencies
  */
 import PlayerManager from './managers/playerManager.js';
+import GodamDeveloperAPI from './developer-api.js';
 
 library.add( fas );
 dom.watch();
@@ -34,7 +35,13 @@ dom.watch();
 /**
  * Initialize player on DOM content loaded
  */
-document.addEventListener( 'DOMContentLoaded', () => new PlayerManager() );
+document.addEventListener( 'DOMContentLoaded', () => {
+	// Initialize the developer API first
+	const developerAPI = new GodamDeveloperAPI();
+	
+	// Then initialize the player manager
+	new PlayerManager();
+} );
 
 /**
  * Legacy function for backward compatibility
