@@ -4,12 +4,11 @@
 
 	.video-js .vjs-control-bar {
 		width: 95% !important;
-		position: relative;
 		border-radius: 80px;
 		margin: -50px auto 0 auto;
 		z-index: 999;
 		background-color: var(--rtgodam-control-bar-color, #000) !important;
-		bottom: unset !important;
+		bottom: 0.5rem !important;
 	}
 
 	.video-js .vjs-big-play-button {
