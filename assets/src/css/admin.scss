@@ -147,7 +147,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 	padding: 0 24px 0 8px;
 	min-height: 30px;
 	min-width: 8rem;
-	width: 100%;
+	width: 8rem;
 	border: 1px solid $media-library-sidebar-bg-dark;
 	vertical-align: middle;
 }
@@ -155,6 +155,11 @@ $media-frame-width: calc(300px + 2 * 24px);
 .media-modal-content #media-date-range-filter {
 	vertical-align: bottom;
 	margin: 12px 0;
+}
+
+.transcoding-status__loader svg {
+	height: 100%;
+	width: 100%;
 }
 
 /**
@@ -420,7 +425,9 @@ $media-frame-width: calc(300px + 2 * 24px);
 	&__loader {
 		position: absolute;
 		width: 1.5rem;
-		aspect-ratio: 1;
+		height: 1.5rem;
+		max-width: 1.5rem;
+		min-width: 1.5rem;
 		display: flex;
 		justify-content: center;
 		align-items: center;
@@ -519,6 +526,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 	display: flex;
 	align-items: center;
 	gap: 1rem;
+	flex-wrap: wrap;
 
 	.transcoding-status__loader {
 		position: unset;
@@ -790,5 +798,13 @@ to ensure proper responsiveness and avoid layout issues.
 			color: variables.$godam-primary-text-color;
 			border-radius: 4px;
 		}
+	}
+}
+
+.compat-attachment-fields {
+
+	td.field {
+		$wp-td-field-margin: 1px;
+		width: calc(100% - 2 * $wp-td-field-margin);
 	}
 }

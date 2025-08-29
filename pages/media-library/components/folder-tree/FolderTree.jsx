@@ -173,6 +173,10 @@ const FolderTree = ( { handleContextMenu } ) => {
 		setOffsetLeft( x );
 	}
 
+	// Disable dragging on touch devices so tapping selects folders on mobile.
+	// Desktop behavior remains unchanged.
+	const isTouchDevice = typeof window !== 'undefined' && ( 'ontouchstart' in window || ( navigator && navigator.maxTouchPoints > 0 ) );
+
 	const pointerSensor = useSensor( PointerSensor, {
 		activationConstraint: {
 			// Allow items to be clicked instead of activated by dragging
@@ -182,10 +186,8 @@ const FolderTree = ( { handleContextMenu } ) => {
 
 	const mouseSensor = useSensor( MouseSensor );
 
-	const sensors = useSensors(
-		mouseSensor,
-		pointerSensor,
-	);
+	const sensorsList = isTouchDevice ? [] : [ mouseSensor, pointerSensor ];
+	const sensors = useSensors( ...sensorsList );
 
 	function handleLoadMore() {
 		dispatch( updatePage( { current: page.current + 1 } ) );
