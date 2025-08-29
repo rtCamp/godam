@@ -37,7 +37,7 @@ class UppyVideoUploader {
 
 		// Uppy target for forms used inside godam video.
 		this.uppyModalTarget = document.getElementById( 'uppy-godam-video-modal-container' );
-		this.uppyModalTargetId = this.uppyModalTarget ? this.uppyModalTarget.id : '';
+		this.uppyModalTargetId = null !== this.uppyModalTarget ? this.uppyModalTarget.id ?? '' : '';
 
 		// If necessary DOM elements are missing, abort initialization.
 		if ( ! this.fileInput || ! this.uploadButton ) {
