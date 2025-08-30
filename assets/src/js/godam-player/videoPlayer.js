@@ -93,7 +93,27 @@ export default class GodamVideoPlayer {
 
 			// Now that managers are initialized, we can safely access them
 			this.setupEventListeners();
+			this.handleStartTime();
 		} );
+	}
+
+	/**
+	 * Handle start time setup
+	 */
+	handleStartTime() {
+		let startTime = parseFloat( this.configManager.videoSetupOptions.startTime );
+
+		if ( isNaN( startTime ) ) {
+			startTime = 0;
+		}
+		if ( startTime < 0 ) {
+			startTime = 0;
+		}
+		if ( startTime > this.player.duration() ) {
+			startTime = this.player.duration() - 1; // cap at end minus 1s
+		}
+
+		this.player.currentTime( startTime );
 	}
 
 	/**

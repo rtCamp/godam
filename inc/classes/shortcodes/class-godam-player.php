@@ -149,22 +149,65 @@ class GoDAM_Player {
 	public function render( $atts ) {
 		$attributes = shortcode_atts(
 			array(
-				'id'             => '',
-				'sources'        => '',
-				'src'            => '',
-				'transcoded_url' => '',
-				'poster'         => '',
-				'aspectRatio'    => '',
-				'engagements'    => '',
+				// Core attributes.
+				'id'                => '',
+				'sources'           => '',
+				'src'               => '',
+				'transcoded_url'    => '',
+				'poster'            => '',
+				'aspectRatio'       => '',
+				'engagements'       => '',
+
+				// Player behavior attributes.
+				'autoplay'          => false,
+				'controls'          => true,
+				'loop'              => false,
+				'muted'             => false,
+				'preload'           => 'auto',
+				'caption'           => '',
+				'tracks'            => '',
+				'hoverSelect'       => 'none',
+				'preview'           => false,
+				'verticalAlignment' => 'center',
+				'overlayTimeRange'  => 0,
+				'showOverlay'       => false,
+				'videoWidth'        => '',
+				'videoHeight'       => '',
+				'playsinline'       => true,
+				'start_time'        => '',
+				'end_time'          => '',
+				'playback_rate'     => '',
+				'volume'            => '',
+				
+				// SEO attributes.
+				'schema_type'       => 'VideoObject',
+				'name'              => '',
+				'upload_date'       => '',
+				'duration'          => '',
+				'thumbnail_url'     => '',
+				'description'       => '',
+				'keywords'          => '',
+				
+				// Additional attributes from Gutenberg block.
+				'cmmId'             => '',
+				'layout'            => '',
 			),
 			$atts,
 			'godam_video'
 		);
 
+		// Note: Numeric conversion is handled in the template for better compatibility.
+
 		// Decode custom placeholders back to square brackets if sources contain them.
 		if ( ! empty( $attributes['sources'] ) && is_string( $attributes['sources'] ) ) {
 			// Convert custom placeholders back to square brackets.
 			$attributes['sources'] = str_replace( array( '__rtgob__', '__rtgcb__' ), array( '[', ']' ), $attributes['sources'] );
+		}
+
+		// Decode custom placeholders back to square brackets if tracks contain them.
+		if ( ! empty( $attributes['tracks'] ) && is_string( $attributes['tracks'] ) ) {
+			// Convert custom placeholders back to square brackets.
+			$attributes['tracks'] = str_replace( array( '__rtgob__', '__rtgcb__' ), array( '[', ']' ), $attributes['tracks'] );
 		}
 
 		$is_shortcode = true;

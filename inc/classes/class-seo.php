@@ -36,8 +36,66 @@ class Seo {
 	public function setup_hooks() {
 		add_action( 'save_post', array( $this, 'save_seo_data_as_postmeta' ), 10, 2 );
 		add_action( 'save_post', array( $this, 'elementor_save_seo_data_as_postmeta' ), 10, 1 );
+		add_action( 'save_post', array( $this, 'shortcode_save_seo_data_as_postmeta' ), 10, 2 );
 		add_filter( 'rest_prepare_attachment', array( $this, 'add_video_duration_for_video_seo' ), 10, 2 );
 		add_action( 'wp_head', array( $this, 'add_video_seo_schema' ) );
+	}
+
+	/**
+	 * Save SEO schema data from [godam_video] shortcode attributes as post meta.
+	 *
+	 * @param int     $post_ID Post ID.
+	 * @param WP_Post $post    Post object.
+	 * @return void
+	 */
+	public function shortcode_save_seo_data_as_postmeta( $post_ID, $post ) {
+		// Bail if this is an autosave or revision.
+		if ( wp_is_post_autosave( $post_ID ) || wp_is_post_revision( $post_ID ) ) {
+			return;
+		}
+
+		// Ensure we're working with a valid WP_Post object.
+		if ( ! $post instanceof \WP_Post ) {
+			return;
+		}
+
+		$content = $post->post_content;
+
+		// Bail if no shortcode.
+		if ( empty( $content ) || strpos( $content, '[godam_video' ) === false ) {
+			return;
+		}
+
+		$video_seo_schema = array();
+
+		// Match all godam_video shortcodes.
+		if ( preg_match_all( '/\[godam_video([^\]]*)\]/', $content, $matches ) ) {
+			foreach ( $matches[1] as $raw_attrs ) {
+				$attrs = shortcode_parse_atts( $raw_attrs );
+				if ( ! is_array( $attrs ) ) {
+					continue;
+				}
+				
+				// Build schema object.
+				$video = array(
+					'headline'     => sanitize_text_field( $attrs['name'] ?? get_the_title( $attrs['id'] ) ?? '' ),
+					'description'  => wp_strip_all_tags(
+						! empty( $attrs['description'] ) ? $attrs['description'] : get_post_field( 'post_content', $attrs['id'] ) ?? '' 
+					),
+					'contentUrl'   => esc_url_raw( ! empty( $attrs['id'] ) ? wp_get_attachment_url( $attrs['id'] ) : '' ),
+					'uploadDate'   => sanitize_text_field( $attrs['upload_date'] ?? '' ),
+					'duration'     => ! empty( $attrs['id'] ) ? $this->get_duration_from_post_id( $attrs['id'] ) : '',
+					'thumbnailUrl' => ! empty( $attrs['thumbnail_url'] ) ? esc_url_raw( $attrs['thumbnail_url'] ) : '',
+				);
+
+				$video_seo_schema[] = $video;
+			}
+		}
+
+		if ( ! empty( $video_seo_schema ) ) {
+			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY, $video_seo_schema );
+			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY, time() );
+		}
 	}
 
 	/**
@@ -119,6 +177,38 @@ class Seo {
 	}
 
 	/**
+	 * Helper to get ISO 8601 duration from attachment metadata.
+	 *
+	 * @param int $post_id Attachment post ID.
+	 * @return string ISO 8601 duration string.
+	 */
+	private function get_duration_from_post_id( $post_id ) {
+		$meta = wp_get_attachment_metadata( $post_id );
+
+		if ( empty( $meta['length'] ) || ! is_numeric( $meta['length'] ) ) {
+			return '';
+		}
+
+		$duration_seconds = (int) $meta['length'];
+		$hours            = floor( $duration_seconds / 3600 );
+		$minutes          = floor( ( $duration_seconds % 3600 ) / 60 );
+		$seconds          = $duration_seconds % 60;
+
+		$iso_duration = 'PT';
+		if ( $hours > 0 ) {
+			$iso_duration .= $hours . 'H';
+		}
+		if ( $minutes > 0 ) {
+			$iso_duration .= $minutes . 'M';
+		}
+		if ( $seconds > 0 || 'PT' === $iso_duration ) {
+			$iso_duration .= $seconds . 'S';
+		}
+
+		return $iso_duration;
+	}
+
+	/**
 	 * Add ISO 8601 video duration to REST API response for video attachments.
 	 *
 	 * @param WP_REST_Response $response  The response object.
@@ -127,26 +217,9 @@ class Seo {
 	 */
 	public function add_video_duration_for_video_seo( $response, $post ) {
 		if ( 'video' === $post->post_mime_type || str_starts_with( $post->post_mime_type, 'video/' ) ) {
-			$meta = wp_get_attachment_metadata( $post->ID );
+			$iso_duration = $this->get_duration_from_post_id( $post->ID );
 
-			if ( ! empty( $meta['length'] ) && is_numeric( $meta['length'] ) ) {
-				$duration_seconds = (int) $meta['length'];
-
-				$hours   = floor( $duration_seconds / 3600 );
-				$minutes = floor( ( $duration_seconds % 3600 ) / 60 );
-				$seconds = $duration_seconds % 60;
-
-				$iso_duration = 'PT';
-				if ( $hours > 0 ) {
-					$iso_duration .= $hours . 'H';
-				}
-				if ( $minutes > 0 ) {
-					$iso_duration .= $minutes . 'M';
-				}
-				if ( $seconds > 0 || 'PT' === $iso_duration ) {
-					$iso_duration .= $seconds . 'S';
-				}
-
+			if ( ! empty( $iso_duration ) ) {
 				$response->data['video_duration_iso8601'] = $iso_duration;
 			}
 		}
