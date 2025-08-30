@@ -19,7 +19,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import './video-seo-modal.scss';
-import { isObjectEmpty } from '../utils';
+import { isSEODataEmpty } from '../utils';
 
 /**
  * Video SEO Modal component
@@ -36,38 +36,60 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 	const [ videoData, setVideoData ] = useState( {} );
 
 	useEffect( () => {
-		if ( attributes.seo && ! isObjectEmpty( attributes.seo ) ) {
-			const initialVideoData = {
-				contentUrl: attributes?.seo?.contentUrl || '',
-				headline: attributes?.seo?.headline || '',
-				description: attributes?.seo?.description || '',
-				uploadDate: attributes?.seo?.uploadDate || '',
-				duration: attributes?.seo?.duration || '',
-				thumbnailUrl: attributes?.seo?.thumbnailUrl || '',
-				isFamilyFriendly: attributes?.seo?.isFamilyFriendly || true,
-			};
+		// Always initialize videoData when modal opens or attributes change
+		const defaultVideoData = {
+			contentUrl: '',
+			headline: '',
+			description: '',
+			uploadDate: '',
+			duration: '',
+			thumbnailUrl: '',
+			isFamilyFriendly: true,
+		};
 
-			setVideoData( initialVideoData );
+		// If SEO data exists in attributes, use it; otherwise use defaults
+		const initialVideoData = {
+			contentUrl: attributes?.seo?.contentUrl || defaultVideoData.contentUrl,
+			headline: attributes?.seo?.headline || defaultVideoData.headline,
+			description: attributes?.seo?.description || defaultVideoData.description,
+			uploadDate: attributes?.seo?.uploadDate || defaultVideoData.uploadDate,
+			duration: attributes?.seo?.duration || defaultVideoData.duration,
+			thumbnailUrl: attributes?.seo?.thumbnailUrl || defaultVideoData.thumbnailUrl,
+			isFamilyFriendly: attributes?.seo?.isFamilyFriendly !== undefined ? attributes.seo.isFamilyFriendly : defaultVideoData.isFamilyFriendly,
+		};
 
-			// Only set once if attributes.seo is empty
-			if ( ! attributes?.seo || isObjectEmpty( attributes.seo ) ) {
-				setAttributes( {
-					...attributes,
-					seo: initialVideoData,
-				} );
-			}
+		// Always update the local state with the latest data from attributes
+		setVideoData( initialVideoData );
+
+		// Only initialize attributes.seo if it's empty (for backward compatibility)
+		if ( isSEODataEmpty( attributes.seo ) ) {
+			setAttributes( {
+				seo: initialVideoData,
+			} );
 		}
-	}, [ attributes, setAttributes ] ); // Remove isOpen from dependencies
+	}, [ attributes.seo, isOpen, setAttributes ] ); // Depend on seo attribute and modal state
 
 	const updateField = ( field, value ) => {
 		setVideoData( { ...videoData, [ field ]: value } );
 	};
 
-	const closeModal = () => setIsOpen( false );
+	const closeModal = () => {
+		setIsOpen( false );
+		// Reset videoData to current attributes when modal closes without saving
+		const currentSEOData = {
+			contentUrl: attributes?.seo?.contentUrl || '',
+			headline: attributes?.seo?.headline || '',
+			description: attributes?.seo?.description || '',
+			uploadDate: attributes?.seo?.uploadDate || '',
+			duration: attributes?.seo?.duration || '',
+			thumbnailUrl: attributes?.seo?.thumbnailUrl || '',
+			isFamilyFriendly: attributes?.seo?.isFamilyFriendly !== undefined ? attributes.seo.isFamilyFriendly : true,
+		};
+		setVideoData( currentSEOData );
+	};
 
 	const saveData = () => {
 		setAttributes( {
-			...attributes,
 			seo: videoData,
 		} );
 		closeModal();
@@ -86,21 +108,21 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 			<TextControl
 				className="godam-seo-modal__property"
 				label="Content URL"
-				value={ videoData.contentUrl }
+				value={ videoData?.contentUrl || '' }
 				onChange={ ( value ) => updateField( 'contentUrl', value ) }
 				help={ __( 'URL of the video content can be MOV, MP4, MPD. Example: https://www.example.com/video.mp4', 'godam' ) }
 			/>
 			<TextControl
 				className="godam-seo-modal__property"
 				label="Headline *"
-				value={ videoData.headline }
+				value={ videoData?.headline || '' }
 				onChange={ ( value ) => updateField( 'headline', value ) }
 				help={ __( 'Title of the video', 'godam' ) }
 			/>
 			<TextareaControl
 				className="godam-seo-modal__property"
 				label="Description"
-				value={ videoData.description }
+				value={ videoData?.description || '' }
 				onChange={ ( value ) => updateField( 'description', value ) }
 				help={ __( 'Description of the video', 'godam' ) }
 			/>
@@ -108,7 +130,7 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 				className="godam-seo-modal__property"
 				label="Upload Date"
 				help="Format: YYYY-MM-DD"
-				value={ videoData.uploadDate }
+				value={ videoData?.uploadDate || '' }
 				onChange={ ( value ) => updateField( 'uploadDate', value ) }
 			/>
 			<TextControl
@@ -116,20 +138,20 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 				label="Duration"
 				disabled={ true }
 				help="ISO 8601 format. Example: PT1H30M"
-				value={ videoData.duration }
+				value={ videoData?.duration || '' }
 				onChange={ ( value ) => updateField( 'duration', value ) }
 			/>
 			<TextControl
 				className="godam-seo-modal__property"
 				label="Video Thumbnail URL"
-				value={ videoData.thumbnailUrl }
+				value={ videoData?.thumbnailUrl || '' }
 				onChange={ ( value ) => updateField( 'thumbnailUrl', value ) }
 				help={ __( 'URL of the video thumbnail. Example: https://www.example.com/thumbnail.jpg', 'godam' ) }
 			/>
 			<ToggleControl
 				className="godam-seo-modal__property"
 				label="Is Family Friendly"
-				checked={ videoData.isFamilyFriendly }
+				checked={ videoData?.isFamilyFriendly || false }
 				onChange={ ( value ) => updateField( 'isFamilyFriendly', value ) }
 				help={ __( 'Is the video suitable for all audiences?', 'godam' ) }
 			/>
