@@ -12,9 +12,8 @@ const { __, sprintf } = wp.i18n;
 import MediaLibraryTaxonomyFilter from './filters/media-library-taxonomy-filter';
 import MediaDateRangeFilter from './filters/media-date-range-filter';
 import MediaRetranscode from './filters/media-retranscode';
-import ToggleFoldersButton from './filters/toggle-folders-button';
 
-import { isAPIKeyValid, isUploadPage, isFolderOrgDisabled, getGodamSettings } from '../utility';
+import { isAPIKeyValid, isUploadPage, isFolderOrgDisabled } from '../utility';
 
 const AttachmentsBrowser = wp?.media?.view?.AttachmentsBrowser;
 
@@ -141,7 +140,9 @@ export default AttachmentsBrowser?.extend( {
 			}
 		}
 
-		if ( ! isUploadPage() && ! isFolderOrgDisabled() ) {
+		const hasActiveSortable = this.$el.find( 'ul.ui-sortable:not(.ui-sortable-disabled)' ).length > 0;
+
+		if ( ! isUploadPage() && ! isFolderOrgDisabled() && ! hasActiveSortable ) {
 			/**
 			 * This timeout with the custom event is necessary to ensure that the media frame is fully loaded before dispatching the event.
 			 */
@@ -169,7 +170,7 @@ export default AttachmentsBrowser?.extend( {
 						}
 					}
 				} else {
-					const menu = $( '.media-frame' ).find( '.media-frame-menu' );
+					const menu = $( '.media-frame' ).find( '.media-frame-menu .media-menu' );
 
 					if ( menu.length ) {
 						menu.append( '<div id="rt-transcoder-media-library-root"></div>' );
