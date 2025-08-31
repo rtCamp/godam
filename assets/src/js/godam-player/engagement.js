@@ -572,13 +572,17 @@ function CommentForm( props ) {
 	const textareaRef = useRef( null );
 
 	async function handleSubmit() {
+		const text = commentText.trim();
+		if ( 0 === text.length ) {
+			return;
+		}
 		setIsSending( true );
 		const parentId = comment.id ? comment.id : '';
 		const queryParams = {
 			site_url: siteUrl,
 			video_id: videoAttachmentId,
 			comment_parent_id: parentId,
-			comment_text: commentText,
+			comment_text: text,
 			comment_type: commentType,
 		};
 		apiFetch.use( apiFetch.createNonceMiddleware( nonceData.nonce ) );
@@ -648,7 +652,7 @@ function CommentForm( props ) {
 				<button
 					className={ 'rtgodam-video-engagement--comment-button' +
 					( isSending ? ' is-comment-progressing' : '' ) }
-					disabled={ isSending || ! commentText }
+					disabled={ isSending || 0 === commentText.trim().length }
 					onClick={ handleSubmit }
 				>
 					{ 'thread-reply' === type ? __( 'Reply', 'godam' ) : __( 'Comment', 'godam' ) }
