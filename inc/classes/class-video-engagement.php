@@ -35,6 +35,10 @@ class Video_Engagement {
 	public function add_engagement_to_video( $attributes, $instance_id ) {
 		$attachment_id = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : '';
 
+		if ( ! empty( $attachment_id ) && empty( get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) ) ) {
+			return '';
+		}
+
 		if ( empty( $attachment_id ) && isset( $attributes['cmmId'] ) ) {
 			$attachment_id = 'cmmid_' . $attributes['cmmId'];
 		}

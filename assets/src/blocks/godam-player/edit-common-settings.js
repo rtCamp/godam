@@ -133,6 +133,7 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 				label={ __( 'Engagements visibility', 'godam' ) }
 				onChange={ toggleFactory.engagements }
 				checked={ !! engagements }
+				help={ __( 'Engagement will only be visible for transcoded videos', 'godam' ) }
 			/>
 		</>
 	);
