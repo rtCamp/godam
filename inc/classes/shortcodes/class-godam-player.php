@@ -114,8 +114,8 @@ class GoDAM_Player {
 			array(
 				'apiBase'                 => RTGODAM_API_BASE,
 				'currentLoggedInUserData' => rtgodam_get_current_logged_in_user_data(),
-				'loginUrl'                => apply_filters( 'rtgodam_site_login_url', wp_login_url() ),
-				'registrationUrl'         => apply_filters( 'rtgodam_site_registration_url', wp_registration_url() ),
+				'loginUrl'                => apply_filters( 'rtgodam_site_login_url', wp_login_url() . '?redirect_to=' . get_permalink() ),
+				'registrationUrl'         => apply_filters( 'rtgodam_site_registration_url', wp_registration_url() . '&redirect_to=' . get_permalink() ),
 				'defaultAvatar'           => get_avatar_url( 0 ),
 			)
 		);
