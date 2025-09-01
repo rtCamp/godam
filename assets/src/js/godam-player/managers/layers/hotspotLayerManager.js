@@ -195,7 +195,7 @@ export default class HotspotLayerManager {
 			layer_type: 'hotspot',
 			action_type: 'skipped',
 			layer_timestamp: parentHotspotLayer.displayTime,
-			layer_name: '',
+			layer_name: hotspot.name || '',
 		};
 		addLayerInteraction(
 			this.player.el().dataset.id || this.player.el().dataset.job_id,

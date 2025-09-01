@@ -49,6 +49,7 @@ export default class FormLayerManager {
 				show: true,
 				allowSkip,
 				skipText,
+				name: layer.name || '',
 			};
 
 			this.formLayers.push( layerObj );
@@ -65,11 +66,8 @@ export default class FormLayerManager {
 	 * @param {Object}             [extraData={}] - Any additional data to store
 	 */
 	handleLayerInteraction( layerType, actionType, layer, extraData = {} ) {
-		let layerId = '';
-		let layerName = '';
-
-		layerId = layer.id || 'unknown';
-		layerName = '';
+		const layerId = layer.id || 'unknown';
+		const layerName = layer.name || '';
 
 		const interaction = {
 			layer_id: layerId,
@@ -272,6 +270,7 @@ export default class FormLayerManager {
 				imageCtaBtn.addEventListener( 'click', () => {
 					const layer = {
 						id: layerObj?.layerElement?.id.replace( `layer-${ this.player.el().dataset.instanceId }-`, '' ) || '',
+						name: layerObj?.name || '',
 					};
 
 					this.handleLayerInteraction( 'cta', 'clicked', layer );

@@ -192,7 +192,7 @@ const SingleLayerAnalyticsList = ( { activeTab, dateRange, attachmentID } ) => {
 								<p className="text-2xl font-bold text-green-600">
 									{ layerAnalyticsDataFetched?.cumulative[ metric ] }
 								</p>
-								<p className="text-sm text-zinc-500 mt-1">
+								<p className="text-sm text-zinc-500 mt-1 whitespace-nowrap">
 									Total { labelMap[ metric ] || metric }
 								</p>
 							</div>
