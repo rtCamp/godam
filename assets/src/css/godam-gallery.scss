@@ -235,7 +235,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	z-index: 9999;
+	z-index: 20;
 
 	&.hidden {
 		display: none;
@@ -403,4 +403,36 @@
 @keyframes godam-spin {
 
 	to { transform: rotate(360deg); }
+}
+
+// Compitibility with Like, comments and Views
+.is-gallery {
+	&.godam-modal,
+	.godam-modal-overlay,
+	.godam-modal-content {
+		margin: 0;
+		max-width: 100vw;
+		max-height: 100vh;
+		width: 100vw;
+		height: 100vh;
+		backdrop-filter: blur(40px);
+	}
+
+	.godam-modal-content {
+		opacity: 0;
+		transform: scale(0.9);
+		transition: opacity 0.2s ease, transform 0.2s ease;
+	}
+
+	&::after {
+		content: '';
+		position: absolute;
+		display: inline-block;
+		width: 40px;
+		height: 40px;
+		border: 10px solid rgba(152, 152, 152, 0.3);
+		border-radius: 50%;
+		border-top-color: #fff;
+		animation: godam-spin 1s ease-in-out infinite;
+	}
 }

@@ -53,18 +53,11 @@ const FolderTree = ( { handleContextMenu } ) => {
 	const page = useSelector( ( state ) => state.FolderReducer.page );
 	const currentPage = page.current;
 
-	const { data: folders, error, isLoading, refetch: refetchFolders, isFetching } = useGetFoldersQuery(
+	const { data: folders, error, isLoading, isFetching } = useGetFoldersQuery(
 		{
 			page: currentPage,
 		},
 	);
-
-	useEffect( () => {
-		// Refetch folders when the current page changes
-		if ( page.current > 1 ) {
-			refetchFolders();
-		}
-	}, [ refetchFolders, page ] );
 
 	const dispatch = useDispatch();
 	const data = useSelector( ( state ) => state.FolderReducer.folders );
@@ -75,11 +68,11 @@ const FolderTree = ( { handleContextMenu } ) => {
 
 	useEffect( () => {
 		if ( folders ) {
-			dispatch( setTree( openLocalStorageItem( folders ) ) );
+			dispatch( setTree( openLocalStorageItem( folders?.data ) ) );
 
-			if ( Array.isArray( folders ) && ( folders.length === 0 || folders.length < page.perPage ) && ! isFetching ) {
+			if ( Array.isArray( folders?.data ) && ! isFetching ) {
 				// If no folders are returned, reset to the first page
-				dispatch( updatePage( { hasNext: false } ) );
+				dispatch( updatePage( { totalPages: folders.totalPages } ) );
 			}
 		}
 	}, [ dispatch, folders, currentPage, isFetching, page.perPage ] );
@@ -180,6 +173,10 @@ const FolderTree = ( { handleContextMenu } ) => {
 		setOffsetLeft( x );
 	}
 
+	// Disable dragging on touch devices so tapping selects folders on mobile.
+	// Desktop behavior remains unchanged.
+	const isTouchDevice = typeof window !== 'undefined' && ( 'ontouchstart' in window || ( navigator && navigator.maxTouchPoints > 0 ) );
+
 	const pointerSensor = useSensor( PointerSensor, {
 		activationConstraint: {
 			// Allow items to be clicked instead of activated by dragging
@@ -189,10 +186,8 @@ const FolderTree = ( { handleContextMenu } ) => {
 
 	const mouseSensor = useSensor( MouseSensor );
 
-	const sensors = useSensors(
-		mouseSensor,
-		pointerSensor,
-	);
+	const sensorsList = isTouchDevice ? [] : [ mouseSensor, pointerSensor ];
+	const sensors = useSensors( ...sensorsList );
 
 	function handleLoadMore() {
 		dispatch( updatePage( { current: page.current + 1 } ) );
@@ -412,11 +407,12 @@ const FolderTree = ( { handleContextMenu } ) => {
 						} ) }
 					</SortableContext>
 				</div>
-				{ page.hasNext && ( <button
+				{ ( ( currentPage < page.totalPages ) || ( isFetching && currentPage === page.totalPages ) ) && ( <button
 					className="tree-load-more"
 					onClick={ () => {
 						handleLoadMore();
 					} }
+					disabled={ isFetching }
 				>
 					{ isFetching ? __( 'Loading…', 'godam' ) : __( 'Load More', 'godam' ) }
 				</button> ) }

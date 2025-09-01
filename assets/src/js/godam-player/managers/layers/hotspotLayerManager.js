@@ -11,10 +11,12 @@ export default class HotspotLayerManager {
 	static BASE_WIDTH = 800;
 	static BASE_HEIGHT = 600;
 
-	constructor( player ) {
+	constructor( player, isDisplayingLayers, currentPlayerVideoInstanceId ) {
 		this.player = player;
 		this.hotspotLayers = [];
 		this.wasPlayingBeforeHover = false;
+		this.isDisplayingLayers = isDisplayingLayers;
+		this.currentPlayerVideoInstanceId = currentPlayerVideoInstanceId;
 	}
 
 	/**
@@ -42,6 +44,8 @@ export default class HotspotLayerManager {
 	 * @param {number} currentTime - Current video time in seconds
 	 */
 	handleHotspotLayersTimeUpdate( currentTime ) {
+		const blockedByLayer = this.isDisplayingLayers?.[ this.currentPlayerVideoInstanceId ] === true;
+
 		this.hotspotLayers.forEach( ( layerObj ) => {
 			if ( ! layerObj.show ) {
 				return;
@@ -49,6 +53,14 @@ export default class HotspotLayerManager {
 
 			const endTime = layerObj.displayTime + layerObj.duration;
 			const isActive = currentTime >= layerObj.displayTime && currentTime < endTime;
+
+			if ( blockedByLayer ) {
+				if ( ! layerObj.layerElement.classList.contains( 'overlapped' ) ) {
+					layerObj.layerElement.classList.add( 'overlapped' );
+				}
+			} else if ( layerObj.layerElement.classList.contains( 'overlapped' ) ) {
+				layerObj.layerElement.classList.remove( 'overlapped' );
+			}
 
 			if ( isActive ) {
 				if ( layerObj.layerElement.classList.contains( 'hidden' ) ) {

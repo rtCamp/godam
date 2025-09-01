@@ -20,7 +20,7 @@ export default class LayersManager {
 
 		// Initialize sub-managers
 		this.formLayerManager = new FormLayerManager( player, isDisplayingLayers, currentPlayerVideoInstanceId );
-		this.hotspotLayerManager = new HotspotLayerManager( player );
+		this.hotspotLayerManager = new HotspotLayerManager( player, isDisplayingLayers, currentPlayerVideoInstanceId );
 	}
 
 	/**

@@ -38,9 +38,24 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 */
 	async fetchAndRender( fetchPromise, renderMethod ) {
 		const data = await fetchPromise;
-		if ( data ) {
-			renderMethod.call( this, data.data );
+
+		const actionsEl = this.$el.find( '.attachment-actions' );
+
+		// If there's no data remove the spinner and show message.
+		if ( ! data ) {
+			const thumbnailContainer = actionsEl?.find( '.attachment-video-thumbnails' );
+
+			thumbnailContainer?.find( '.thumbnail-spinner' )?.remove();
+			const container = thumbnailContainer?.find( '.thumbnail-spinner-container' )?.get( 0 );
+			if ( container ) {
+				container.className = '';
+				container.innerText = __( 'No thumbnails found', 'godam' );
+			}
+
+			return;
 		}
+
+		renderMethod.call( this, data.data );
 	},
 
 	/**
@@ -314,6 +329,32 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		const { thumbnails, selected, customThumbnails } = data;
 		const attachmentID = this.model.get( 'id' );
 
+		const selector = `.transcoding-status[data-id="${ attachmentID }"]`;
+		const status = document.querySelector( selector );
+
+		if ( status ) {
+			const statusImg = status.querySelector( 'img' );
+
+			if ( statusImg && statusImg.src !== selected ) {
+				statusImg.src = selected;
+			}
+		}
+
+		setTimeout( () => {
+			// Sometimes helps if .mejs-poster is rendered asynchronously
+			const posterDiv = document.querySelector( '.mejs-poster' );
+			if ( posterDiv && selected ) {
+				posterDiv.style.backgroundImage = `url('${ selected }')`;
+				posterDiv.style.backgroundSize = 'contain';
+
+				const posterImg = posterDiv.querySelector( 'img' );
+				if ( posterImg ) {
+					posterImg.setAttribute( 'src', selected );
+					posterImg.style.opacity = '1';
+				}
+			}
+		}, 20 );
+
 		const customThumbnailsArray = Array.isArray( customThumbnails )
 			? customThumbnails
 			: Object.values( customThumbnails || {} );
@@ -423,6 +464,27 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 				const thumbnailURL = img?.src;
 
+				const posterDiv = document.querySelector( '.mejs-poster' );
+				if ( posterDiv ) {
+					posterDiv.style.backgroundImage = `url('${ thumbnailURL }')`;
+
+					const posterImg = posterDiv.querySelector( 'img' );
+					if ( posterImg ) {
+						posterImg.setAttribute( 'src', thumbnailURL );
+						posterImg.style.opacity = '1';
+					}
+				}
+
+				const selector = `.transcoding-status[data-id="${ attachmentID }"]`;
+				const status = document.querySelector( selector );
+
+				if ( status ) {
+					const statusImg = status.querySelector( 'img' );
+
+					if ( statusImg && statusImg.src !== thumbnailURL ) {
+						statusImg.src = thumbnailURL;
+					}
+				}
 				/**
 				 * Send a POST request to the server to set the selected thumbnail for the video.
 				 */

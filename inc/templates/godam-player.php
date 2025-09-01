@@ -26,6 +26,17 @@ if ( isset( $is_elementor_widget ) && $is_elementor_widget ) {
 // prevent default behavior of Gravity Forms autoscroll on submission.
 add_filter( 'gform_confirmation_anchor', '__return_false' );
 
+// Check if the block attributes are set and is an array.
+if ( ! isset( $attributes ) || ! is_array( $attributes ) ) {
+	$attributes = array();
+}
+
+// Create filter for the block attributes.
+$attributes = apply_filters(
+	'godam_player_block_attributes',
+	$attributes
+);
+
 // attributes.
 $autoplay       = ! empty( $attributes['autoplay'] );
 $controls       = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
@@ -314,7 +325,9 @@ if ( ! empty( $transcript_path ) ) {
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
-	<figure <?php echo wp_kses_data( $figure_attributes ); ?>>
+	<figure 
+		id="godam-player-container-<?php echo esc_attr( $instance_id ); ?>"
+		<?php echo wp_kses_data( $figure_attributes ); ?>>
 		<div class="godam-video-wrapper">
 			<?php if ( $show_overlay && ! empty( $inner_blocks_content ) ) : ?>
 				<div
@@ -382,6 +395,8 @@ if ( ! empty( $transcript_path ) ) {
 					}
 					?>
 				</video>
+				<!-- Add this to target godam uppy modal inside video. -->
+				<div id="uppy-godam-video-modal-container"></div>
 
 				<!-- Dynamically render shortcodes for form layers. -->
 				<?php
@@ -604,6 +619,9 @@ if ( ! empty( $transcript_path ) ) {
 
 		<?php if ( $caption && ! empty( $caption ) ) : ?>
 			<figcaption class="wp-element-caption rtgodam-video-caption"><?php echo esc_html( $caption ); ?></figcaption>
-		<?php endif; ?>
+			<?php
+			endif;
+				do_action( 'rtgodam_after_video_html', $attributes, $instance_id, $easydam_meta_data );
+		?>
 	</figure>
 <?php endif; ?>
