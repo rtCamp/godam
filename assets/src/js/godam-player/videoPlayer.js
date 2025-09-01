@@ -93,6 +93,16 @@ export default class GodamVideoPlayer {
 
 			// Now that managers are initialized, we can safely access them
 			this.setupEventListeners();
+
+			// Emit custom event for external developers
+			const playerReadyEvent = new CustomEvent( 'godamPlayerReady', {
+				detail: {
+					attachmentId: this.video.dataset.id,
+					videoElement: this.video,
+					player: this.player,
+				},
+			} );
+			document.dispatchEvent( playerReadyEvent );
 		} );
 	}
 
