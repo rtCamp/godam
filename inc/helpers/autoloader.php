@@ -69,6 +69,7 @@ function autoloader( $file_resource = '' ) {
 			case 'elementor-controls': // phpcs:ignore
 			case 'wpforms': // phpcs:ignore
 			case 'ninja-forms': // phpcs:ignore
+			case 'everest-forms': // phpcs:ignore
 			case 'metform': // phpcs:ignore
 			case 'lifter-lms': // phpcs:ignore
 				/**

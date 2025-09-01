@@ -192,6 +192,13 @@ const fluentForms = {
 	},
 };
 
+const everestForms = {
+	...sharedConfig,
+	entry: {
+		everestforms: path.resolve( process.cwd(), 'assets', 'src', 'js', 'everestforms', 'index.js' ),
+	},
+};
+
 const godamPlayerSDK = {
 	...sharedConfig,
 	entry: {
@@ -213,6 +220,13 @@ const lifterLMSEmbed = {
 	entry: {
 		lifterLMSEmbed: path.resolve( process.cwd(), 'assets', 'src', 'js', 'lifterlms', 'embed.js' ),
 		'godam-lifterlms-embed': path.resolve( process.cwd(), 'assets', 'src', 'js', 'lifterlms', 'embed.js' ),
+	},
+};
+
+const ninjaForms = {
+	...sharedConfig,
+	entry: {
+		'ninja-forms': path.resolve( process.cwd(), 'assets', 'src', 'js', 'ninja-forms', 'index.js' ),
 	},
 };
 
@@ -300,7 +314,9 @@ module.exports = [
 	elementorEditorJS,
 	godamRecorder,
 	fluentForms,
+	everestForms,
 	godamPlayerSDK,
 	lifterLMSBlock,
 	lifterLMSEmbed,
+	ninjaForms,
 ];
