@@ -1416,31 +1416,27 @@ body.godam-share-modal-open {
 			@include mixins.godam-player-mobile;
 	
 			// override internal @container parts with media queries
-			.vjs-skip-backward-5,
-			.vjs-skip-backward-10,
-			.vjs-skip-backward-15,
-			.vjs-skip-backward-20,
-			.vjs-skip-backward-30 {
+			@media screen and (max-width: 420px) {
+				
+				.vjs-skip-backward-5,
+				.vjs-skip-backward-10,
+				.vjs-skip-backward-15,
+				.vjs-skip-backward-20,
+				.vjs-skip-backward-30 {
 
-				@media screen and (max-width: 420px) {
 					left: 60px;
 				}
-			}
-	
-			.vjs-skip-forward-5,
-			.vjs-skip-forward-10,
-			.vjs-skip-forward-15,
-			.vjs-skip-forward-20,
-			.vjs-skip-forward-30 {
-
-				@media screen and (max-width: 420px) {
+		
+				.vjs-skip-forward-5,
+				.vjs-skip-forward-10,
+				.vjs-skip-forward-15,
+				.vjs-skip-forward-20,
+				.vjs-skip-forward-30 {
 					right: 60px;
 				}
-			}
-	
-			.vjs-time-control {
-				
-				@media screen and (max-width: 420px) {
+		
+				.vjs-time-control {
+					
 					display: none !important;
 				}
 			}
