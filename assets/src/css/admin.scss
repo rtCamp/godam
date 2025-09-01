@@ -530,6 +530,11 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 	.transcoding-status__loader {
 		position: unset;
+
+		&::after {
+			$padding: 0.5rem;
+			width: calc(100% - 2 * $padding);
+		}
 	}
 }
 
