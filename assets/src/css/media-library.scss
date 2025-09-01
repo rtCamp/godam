@@ -115,7 +115,7 @@ $media-library-active-folder: #f5f5f5;
 	.godam-button {
 		padding: 6px 8px;
 		top: 4px;
-	   	margin-left: 0.75rem;
+		margin-left: 0.75rem;
 		margin-bottom: 20px;
 		border: 1px solid $media-library-sidebar-bg-dark;
 		border-radius: 0.25rem;
@@ -163,11 +163,6 @@ $media-library-active-folder: #f5f5f5;
 		flex-wrap: wrap;
 		gap: 12px 0;
 		padding: 6px 10px;
-
-		#media-search-input {
-			padding-left: 36px;
-		}
-
 
 		.actions {
 			display: flex;
@@ -410,13 +405,15 @@ $media-library-active-folder: #f5f5f5;
 		gap: 0.5rem;
 		margin-bottom: 0.5rem;
 
-		&.button {
+		/* stylelint-disable-next-line no-descending-specificity */
+		.button {
 			font-size: .75rem;
 			padding: .5rem 1rem;
 			text-transform: uppercase;
 			font-weight: 700;
 			transition: transform 0.2s ease;
 
+			/* stylelint-disable-next-line no-descending-specificity */
 			&:hover {
 				transform: scale(1.1);
 			}
@@ -424,6 +421,7 @@ $media-library-active-folder: #f5f5f5;
 			&-primary {
 				background: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
 				border: none;
+				color: #fff;
 			}
 
 			&-secondary {
