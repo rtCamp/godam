@@ -597,7 +597,7 @@ function rtgodam_cache_get( $key ) {
  *
  * @return bool True on success, false on failure.
  */
-function rtgodam_cache_set( $key, $value, $expiration = HOUR_IN_SECONDS ) {
+function rtgodam_cache_set( $key, $value, $expiration = 900 ) {
 	if ( is_string( $expiration ) || $expiration < 300 ) {
 		$expiration = 300;
 	}
