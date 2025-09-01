@@ -1,0 +1,166 @@
+@mixin godam-player-mobile {
+    
+	.vjs-modal-dialog-content {
+        padding: 15px 15px 0 15px;
+
+        .vjs-text-track-settings fieldset {
+            margin: 0;
+        }
+    }
+
+    .vjs-control-bar {
+        height: 6em !important;
+
+        .vjs-progress-control {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            height: 2em !important;
+        }
+
+        .vjs-control {
+            height: 3em !important;
+        }
+
+        .vjs-play-control {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+
+        .vjs-skip-backward-5,
+        .vjs-skip-backward-10,
+        .vjs-skip-backward-15,
+        .vjs-skip-backward-20,
+        .vjs-skip-backward-30 {
+            position: absolute;
+            bottom: 120px;
+            background: var(--rtgodam-control-bar-color, #00000085) !important;
+            height: 40px !important;
+            width: 40px;
+            border-radius: 999px;
+            left: 100px;
+
+            .vjs-icon-placeholder::before {
+                line-height: 2;
+            }
+
+            @container godam-player-default-skin (max-width: 420px) {
+                left: 60px;
+            }
+        }
+
+        .vjs-skip-forward-5,
+        .vjs-skip-forward-10,
+        .vjs-skip-forward-15,
+        .vjs-skip-forward-20,
+        .vjs-skip-forward-30 {
+            position: absolute;
+            bottom: 120px;
+            background: var(--rtgodam-control-bar-color, #00000085) !important;
+            height: 40px !important;
+            width: 40px;
+            border-radius: 999px;
+            right: 100px;
+
+            .vjs-icon-placeholder::before {
+                line-height: 2;
+            }
+
+            @container godam-player-default-skin (max-width: 420px) {
+                right: 60px;
+            }
+        }
+
+        .vjs-volume-panel {
+            position: absolute;
+            bottom: 0;
+            left: calc(40px);
+            height: 3em !important;
+        }
+
+        .vjs-fullscreen-control {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            height: 3em !important;
+        }
+
+        .vjs-picture-in-picture-control {
+            position: absolute;
+            bottom: 0;
+            right: 40px;
+            height: 3em !important;
+        }
+
+        .vjs-settings-button {
+            position: absolute;
+            bottom: 0;
+            right: 80px;
+            height: 3em !important;
+            z-index: 99;
+        }
+
+        .vjs-quality-menu-wrapper {
+            position: absolute;
+            bottom: 0;
+            right: calc(3 * 40px);
+            height: 3em !important;
+        }
+
+        .mobile-right-80 {
+            right: 80px;
+        }
+
+        .vjs-menu {
+            background-color: #2b333f;
+            z-index: 10;
+        }
+
+        .vjs-time-control {
+
+            &.vjs-current-time {
+                position: absolute;
+                left: 50%;
+                bottom: 0;
+                transform: translateX(-100%);
+                display: block;
+            }
+
+            &.vjs-time-divider {
+                display: block;
+                height: 3em;
+                position: absolute;
+                left: 50%;
+                bottom: 0;
+                transform: translate(-50%);
+            }
+
+            &.vjs-duration {
+                position: absolute;
+                right: 50%;
+                bottom: 0;
+                transform: translateX(100%);
+                display: block;
+            }
+
+            &.vjs-remaining-time {
+                display: none;
+            }
+
+            @container godam-player-default-skin (max-width: 420px) {
+                display: none !important;
+            }
+        }
+
+    }
+
+    .vjs-control-bar>.vjs-subs-caps-button.vjs-control {
+        position: absolute;
+        bottom: 0;
+        right: calc(3 * 40px);
+        height: 3em !important;
+    }
+}
