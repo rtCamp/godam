@@ -146,29 +146,6 @@
 	}
 }
 
-.easydam-video-container .video-js .vjs-big-play-button {
-	background-color: var(--rtgodam-control-bar-color, #000) !important;
-	border: none;
-	cursor: pointer;
-	border-radius: 50%;
-	padding: 0;
-	z-index: 10;
-	width: 50px;
-	height: 50px;
-	left: 53%;
-	transition: transform 0.3s ease;
-	min-height: unset;
-
-	span::before {
-		font-size: 28px;
-		line-height: 1.8;
-	}
-
-	&:hover, &:focus {
-		transform: scale(1.1);
-	}
-}
-
 .animate-play-btn {
 	display: none;
 }
@@ -1590,6 +1567,29 @@ body.godam-share-modal-open {
 				bottom: initial !important;
 			}
 		}
+	}
+}
+
+.easydam-video-container .video-js .vjs-big-play-button {
+	background-color: var(--rtgodam-control-bar-color, #000) !important;
+	border: none;
+	cursor: pointer;
+	border-radius: 50%;
+	padding: 0;
+	z-index: 10;
+	width: 50px;
+	height: 50px;
+	left: 53%;
+	transition: transform 0.3s ease;
+	min-height: unset;
+
+	span::before {
+		font-size: 28px;
+		line-height: 1.8;
+	}
+
+	&:hover, &:focus {
+		transform: scale(1.1);
 	}
 }
 
