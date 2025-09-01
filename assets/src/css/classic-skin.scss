@@ -53,6 +53,11 @@
 			background: unset !important;
 		}
 
+		button.vjs-subs-caps-button, .vjs-settings-button button {
+			width: auto;
+			height: auto;
+		}
+
 		.vjs-vol-3 {
 			left: 6px;
 
