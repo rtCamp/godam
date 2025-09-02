@@ -588,11 +588,11 @@ if ( ! empty( $transcript_path ) ) {
 								<?php elseif ( 'html' === $layer['cta_type'] && ! empty( $layer['html'] ) ) : ?>
 									<div class="easydam-layer--cta-html">
 										<div id="<?php echo esc_attr( $layer_scope_id ); ?>">
-											<?php 
+											<?php
 											// Process HTML content to scope CSS and JavaScript automatically.
 											$processed_html = rtgodam_process_cta_html_content( $layer['html'], $layer_scope_id );
 											// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-											echo $processed_html; 
+											echo $processed_html;
 											?>
 										</div>
 									</div>

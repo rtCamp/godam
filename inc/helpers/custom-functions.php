@@ -596,38 +596,47 @@ function rtgodam_process_cta_html_content( $html_content, $scope_id ) {
 
 	$processed_content = $html_content;
 
-	// Process CSS styles - scope them to the container.
+	// Process CSS styles - scope them to both the container and video editor.
 	$processed_content = preg_replace_callback(
 		'/<style[^>]*>(.*?)<\/style>/is',
 		function ( $matches ) use ( $scope_id ) {
 			$css_content = $matches[1];
-			
-			// Scope all CSS rules to the container.
+
+			// Scope all CSS rules to both the frontend container and video editor.
 			$scoped_css = preg_replace_callback(
 				'/([^{}]+)\{/',
 				function ( $css_matches ) use ( $scope_id ) {
 					$selector = trim( $css_matches[1] );
-					
-					// Skip @rules like @import, @media, @keyframes.
+					// Return @rules like @import, @media, @keyframes unchanged.
 					if ( strpos( $selector, '@' ) === 0 ) {
 						return $css_matches[0];
 					}
-					
+
 					// Split multiple selectors and scope each one.
 					$selectors        = explode( ',', $selector );
 					$scoped_selectors = array();
-					
+
 					foreach ( $selectors as $single_selector ) {
 						$trimmed_selector = trim( $single_selector );
-						// Add scope prefix to each selector.
-						$scoped_selectors[] = '#' . $scope_id . ' ' . $trimmed_selector;
+
+						// Skip if already scoped to avoid double scoping.
+						if ( strpos( $trimmed_selector, '#' . $scope_id ) !== false || 
+							strpos( $trimmed_selector, '.easydam-layer--cta-html' ) !== false ) {
+							$scoped_selectors[] = $trimmed_selector;
+							continue;
+						}
+
+						// Add both frontend scope and video editor scope.
+						$frontend_scope = '#' . $scope_id . ' ' . $trimmed_selector;
+						$editor_scope   = '.easydam-layer--cta-html ' . $trimmed_selector;
+						
+						$scoped_selectors[] = $frontend_scope . ', ' . $editor_scope;
 					}
-					
+
 					return implode( ', ', $scoped_selectors ) . ' {';
 				},
 				$css_content
 			);
-			
 			return '<style>' . $scoped_css . '</style>';
 		},
 		$processed_content
@@ -671,24 +680,6 @@ function rtgodam_process_cta_html_content( $html_content, $scope_id ) {
 					
 					document.getElementById = function(id) {
 						return scope.querySelector('#' + id);
-					};
-					
-					// Create a scoped API object if it doesn't exist
-					if (typeof window.API === 'undefined') {
-						window.API = {};
-					}
-					
-					// Ensure closeCta function exists
-					if (typeof window.API.closeCta === 'undefined') {
-						window.API.closeCta = function() {
-							const layer = scope.closest('.easydam-layer');
-							if (layer) {
-								layer.classList.add('hidden');
-								// Trigger custom event for video player
-								const event = new CustomEvent('ctaClosed', { detail: { layerId: layer.id } });
-								document.dispatchEvent(event);
-							}
-						};
 					}
 					
 					try {
