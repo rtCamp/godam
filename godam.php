@@ -46,10 +46,6 @@ if ( ! defined( 'RTGODAM_VERSION' ) ) {
 	define( 'RTGODAM_VERSION', '1.3.5' );
 }
 
-if ( ! defined( 'RTGODAM_NO_MAIL' ) && defined( 'VIP_GO_APP_ENVIRONMENT' ) ) {
-	define( 'RTGODAM_NO_MAIL', true );
-}
-
 if ( ! defined( 'RTGODAM_API_BASE' ) ) {
 	define( 'RTGODAM_API_BASE', 'https://app.godam.io' );
 }
@@ -66,6 +62,9 @@ require_once RTGODAM_PATH . 'inc/helpers/autoloader.php'; // phpcs:ignore WordPr
 require_once RTGODAM_PATH . 'inc/helpers/custom-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once RTGODAM_PATH . 'admin/godam-transcoder-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+
+require_once plugin_dir_path( __FILE__ ) . 'vendor/woocommerce/action-scheduler/action-scheduler.php';
+
 
 global $rtgodam_transcoder_admin;
 
@@ -143,3 +142,32 @@ function rtgodam_plugin_deactivate() {
 }
 
 register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );
+
+/**
+ * Runs when the plugin is deleted.
+ */
+function rtgodam_plugin_delete() {
+	// Delete options and transients related to Whats New page.
+	// This is to ensure redirection on a fresh install.
+	if ( is_multisite() ) {
+		// Get all blogs in the network and delete options from each blog.
+		$blogs = get_sites( array( 'fields' => 'ids' ) );
+
+		foreach ( $blogs as $blog_id ) {
+			switch_to_blog( $blog_id );
+
+			delete_option( 'rtgodam_plugin_version' );
+			delete_transient( 'rtgodam_show_whats_new' );
+			delete_transient( 'rtgodam_release_data' );
+
+			restore_current_blog();
+		}
+	} else {
+		// For single site, delete options directly.
+		delete_option( 'rtgodam_plugin_version' );
+		delete_transient( 'rtgodam_show_whats_new' );
+		delete_transient( 'rtgodam_release_data' );
+	}
+}
+
+register_uninstall_hook( __FILE__, 'rtgodam_plugin_delete' );

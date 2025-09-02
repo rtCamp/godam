@@ -277,11 +277,21 @@
 	}
 }
 
-.godam-video-list-wrapper {
-	margin-left: -20px;
+#root-video-editor {
 
-	@media screen and (max-width: 782px) {
-		margin-left: 0;
+	.godam-settings-header-content {
+
+		@media (max-width: 420px) {
+			padding-left: 4px;
+			padding-right: 14px;
+		}
+	}
+
+	.components-button.has-icon.has-text {
+
+		@media (max-width: 640px) {
+			padding: .75rem 0.75rem;
+		}
 	}
 }
 

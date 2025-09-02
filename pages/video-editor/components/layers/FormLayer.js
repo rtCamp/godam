@@ -25,7 +25,9 @@ import CF7 from '../forms/CF7';
 import JetpackForm from '../forms/JetpackForm';
 import SureForm from '../forms/Sureform.js';
 import FluentForm from '../forms/FluentForm.js';
+import MetForm from '../forms/MetForm.js';
 import ForminatorForm from '../forms/forminatorForms.js';
+import NinjaForm from '../forms/NinjaForm.js';
 
 /**
  * FormLayer Components Object mapping.
@@ -86,6 +88,18 @@ export const FormLayerComponentType = {
 		component: EverestForm,
 		idField: 'everest_form_id',
 		settingsUrl: 'admin.php?page=evf-builder&view=fields&form_id={formId}&tab=settings',
+	},
+	ninjaforms: {
+		isActive: Boolean( window?.videoData?.ninjaFormsActive ) ?? false,
+		component: NinjaForm,
+		idField: 'ninja_form_id',
+		settingsUrl: 'admin.php?page=ninja-forms&form_id={formId}',
+	},
+	metform: {
+		isActive: Boolean( window?.videoData?.metformActive ) ?? false,
+		component: MetForm,
+		idField: 'metform_id',
+		settingsUrl: '?post={formId}&action=elementor',
 	},
 };
 

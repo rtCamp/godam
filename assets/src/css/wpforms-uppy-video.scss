@@ -35,7 +35,6 @@
         /* Style the video upload button similar to the submit button. */
         .uppy-video-upload-button {
             background-color: var(--wpforms-button-background-color-alt, var(--wpforms-button-background-color));
-            color: var(--wpforms-button-text-color);
             height: var(--wpforms-button-size-height);
             border-radius: var(--wpforms-button-border-radius);
             border-style: var(--wpforms-button-border-style);
@@ -57,11 +56,15 @@
 
 /** Style the field in the entry view page **/
 .wpforms_page_wpforms-entries {
+
     .wpforms-entries-fields-wrapper {
+
         .wpforms-field-godam_record {
+
             .godam-video-preview {
+
                 figure {
-                    margin: 0px;
+                    margin: 0;
                 }
             }
 
@@ -93,7 +96,7 @@
             .godam-video-preview {
 				
                 figure {
-                    margin: 0px;
+                    margin: 0;
                 }
             }
 

@@ -585,12 +585,8 @@ class RTGODAM_Transcoder_Handler {
 	 * @param int    $attachment_id     ID of attachment.
 	 * @param string $job_for           Whether media uploaded through rtmedia plugin or WordPress media.
 	 */
-	public function add_transcoded_files( $file_post_array, $attachment_id, $job_for = '' ) {
+	public function add_transcoded_files( $file_post_array, $attachment_id, $job_for = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		$transcoded_files = false;
-		$mail             = true;
-		if ( defined( 'RTGODAM_NO_MAIL' ) ) {
-			$mail = false;
-		}
 		global $wpdb;
 
 		do_action( 'rtgodam_before_transcoded_media_store', $attachment_id, $file_post_array );
@@ -599,7 +595,6 @@ class RTGODAM_Transcoder_Handler {
 			foreach ( $file_post_array as $key => $format ) {
 				if ( is_array( $format ) && ( count( $format ) > 0 ) ) {
 					foreach ( $format as $file ) {
-						$flag = false;
 						if ( isset( $file ) ) {
 
 							$download_url                  = urldecode( urldecode( $file ) );
@@ -616,7 +611,7 @@ class RTGODAM_Transcoder_Handler {
 							try {
 								$response = function_exists( 'vip_safe_wp_remote_get' ) ? vip_safe_wp_remote_get( $download_url, '', 3, 3 ) : wp_remote_get( $download_url, array( 'timeout' => $timeout ) ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
 							} catch ( Exception $e ) {
-								$flag = $e->getMessage();
+								return;
 							}
 
 							$file_content = wp_remote_retrieve_body( $response );
@@ -675,36 +670,6 @@ class RTGODAM_Transcoder_Handler {
 										);
 									}
 								}
-							} else {
-								$flag = esc_html__( 'Could not read file.', 'godam' );
-
-								if ( $flag && $mail ) {
-									$download_link = esc_url(
-										add_query_arg(
-											array(
-												'job_id'  => rtgodam_get_job_id_by_attachment_id( $attachment_id ),
-												'job_for' => $job_for,
-												'files[' . $key . '][0]' => esc_url( $download_url ),
-											),
-											home_url()
-										)
-									);
-									$subject       = esc_html__( 'Transcoding: Download Failed', 'godam' );
-									$message       = '<p><a href="' . esc_url( rtgodam_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a> ' . esc_html__( ' was successfully encoded but there was an error while downloading:', 'godam' ) . '</p><p><code>' . esc_html( $flag ) . '</code></p><p>' . esc_html__( 'You can ', 'godam' ) . '<a href="' . esc_url( $download_link ) . '">' . esc_html__( 'retry the download', 'godam' ) . '</a>.</p>';
-									$users         = get_users( array( 'role' => 'administrator' ) );
-									if ( $users ) {
-										$admin_email_ids = array();
-										foreach ( $users as $user ) {
-											$admin_email_ids[] = $user->user_email;
-										}
-										add_filter( 'wp_mail_content_type', array( $this, 'wp_mail_content_type' ) );
-										wp_mail( $admin_email_ids, $subject, $message ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_mail_wp_mail
-										remove_filter( 'wp_mail_content_type', array( $this, 'wp_mail_content_type' ) );
-									}
-									echo esc_html( $flag );
-								} else {
-									esc_html_e( 'Done', 'godam' );
-								}
 							}
 						}
 					}
@@ -745,105 +710,5 @@ class RTGODAM_Transcoder_Handler {
 		} else {
 			return false;
 		}
-	}
-
-	/**
-	 * Send's the email. It's the wrapper function for wp_mail
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param  array   $email_ids       Email id's to send an email.
-	 * @param  string  $subject         Email subject.
-	 * @param  string  $message         Email message.
-	 * @param  boolean $include_admin   If true then send an email to admin also else not.
-	 */
-	public function send_notification( $email_ids, $subject, $message, $include_admin = true ) {
-		if ( defined( 'RTGODAM_NO_MAIL' ) ) {
-			return;
-		}
-
-		if ( ! is_array( $email_ids ) ) {
-			$email_ids = array();
-		}
-
-		if ( empty( $subject ) || empty( $message ) ) {
-			return true;
-		}
-
-		/**
-		 * Filter to disable the notification sent to the admins/users
-		 *
-		 * @param boolean       By default it is true. If false is passed the email wont
-		 *                      get sent to the any user
-		 */
-		$send_notification = apply_filters( 'rtgodam_send_notification', true );
-
-		if ( false === $send_notification ) {
-			return true;
-		}
-
-		if ( $include_admin ) {
-			$users = get_users( array( 'role' => 'administrator' ) );
-			if ( $users ) {
-				foreach ( $users as $user ) {
-					$email_ids[] = $user->user_email;
-				}
-			}
-		}
-
-		add_filter( 'wp_mail_content_type', array( $this, 'wp_mail_content_type' ) );
-		wp_mail( $email_ids, $subject, $message ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_mail_wp_mail
-		remove_filter( 'wp_mail_content_type', array( $this, 'wp_mail_content_type' ) );
-	}
-
-	/**
-	 * Sets the content type of mail to text/html
-	 *
-	 * @since  1.0.0
-	 *
-	 * @return string
-	 */
-	public function wp_mail_content_type() {
-		return 'text/html';
-	}
-
-	/**
-	 * Send notification about failed transcoding job
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param  string $job_id       Transcoding job id.
-	 * @param  string $error_msg    Error message for why transcoding of media failed.
-	 */
-	public function nofity_transcoding_failed( $job_id, $error_msg ) {
-		if ( empty( $job_id ) ) {
-			return false;
-		}
-		$subject       = esc_html__( 'Transcoding: Something went wrong.', 'godam' );
-		$attachment_id = $this->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
-		if ( ! empty( $error_msg ) ) {
-			$message  = '<p>' . esc_html__( ' There was unexpected error occurred while transcoding this following media.', 'godam' ) . '</p>';
-			$message .= '<p><a href="' . esc_url( rtgodam_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a></p>';
-			$message .= '<p>Error message: ' . esc_html( $error_msg ) . '</p>';
-		} else {
-			$message = '<p><a href="' . esc_url( rtgodam_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a> ' .
-				esc_html__( ' there was unexpected error occurred while transcoding this media.', 'godam' ) . '</p>';
-		}
-
-		$email_ids = array();
-		if ( ! empty( $attachment_id ) ) {
-			$author_id   = get_post_field( 'post_author', $attachment_id );
-			$email_ids[] = get_the_author_meta( 'user_email', $author_id );
-		}
-
-		/**
-		 * Allows users/plugins to alter the email id of a user
-		 *
-		 * @param array $email_ids  Email id of the user who owns the media
-		 * @param string $job_id    Job ID sent by the transcoder
-		 */
-		$email_ids = apply_filters( 'rtgodam_nofity_transcoding_failed', $email_ids, $job_id );
-
-		$this->send_notification( $email_ids, $subject, $message, true );
 	}
 }

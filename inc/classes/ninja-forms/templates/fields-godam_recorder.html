@@ -1,0 +1,33 @@
+<script id="tmpl-nf-field-godam_recorder" type="text/template">
+	<input type="hidden" name="max-file-size" value="{{{ data.max_file_size }}}"/>
+	<input
+		type="file"
+		name="files-{{{ data.id }}}"
+		id="files-{{{ data.id }}}"
+		data-form-id="{{{ data.form_id }}}"
+		data-field-id="{{{ data.id }}}"
+		data-max-size="{{{ data.max_file_size }}}"
+		style="display: none;"
+		class="rtgodam-hidden nf-element"
+	/>
+	<input type="hidden" class="nf-godam-recorder-nonce" value="{{{ data.recorder_nonce }}}">
+	<div
+		data-max-size="{{{ data.max_file_size }}}"
+		id="{{{ data.uppy_container_id }}}"
+		class="uppy-video-upload"
+		data-input-id="files-{{{ data.id }}}"
+		data-video-upload-button-id="{{{ data.video_upload_button_id }}}"
+		data-file-selectors="{{{ data.file_selectors }}}"
+	>
+		<button id="{{{ data.video_upload_button_id }}}" class="uppy-video-upload-button btn ninja-forms-field btn-success nf-fu-fileinput-button" type="button">
+			<span class="dashicons dashicons-video-alt"></span>
+			{{{ data.record_button_text }}}
+		</button>
+		<div class="nf-realistic-field--description">
+			{{{ data.max_allowed_file_size_info }}}
+		</div>
+		<div id="{{{ data.uppy_preview_id }}}" class="uppy-video-upload-preview"></div>
+		<div id="{{{ data.uppy_file_name_id }}}" class="uppy-video-upload-filename"></div>
+	</div>
+	<div style="display: none;" class="godam-nf-upload-progress"></div>
+</script>

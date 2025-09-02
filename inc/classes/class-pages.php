@@ -54,6 +54,20 @@ class Pages {
 	private $settings_slug = 'rtgodam_settings';
 
 	/**
+	 * Slug for tools page
+	 *
+	 * @var string
+	 */
+	private $tools_slug = 'rtgodam_tools';
+
+	/**
+	 * Slug for the what's new page.
+	 *
+	 * @var string
+	 */
+	private $whats_new_slug = 'rtgodam_whats_new';
+
+	/**
 	 * Menu pag ID.
 	 *
 	 * @var string
@@ -89,6 +103,20 @@ class Pages {
 	private $settings_page_id = 'godam_page_rtgodam_settings';
 
 	/**
+	 * Tools page ID.
+	 *
+	 * @var string
+	 */
+	private $tools_page_id = 'godam_page_rtgodam_tools';
+
+	/**
+	 * Whats new page ID.
+	 *
+	 * @var string
+	 */
+	private $whats_new_page_id = 'godam_page_rtgodam_whats_new';
+
+	/**
 	 * Construct method.
 	 */
 	protected function __construct() {
@@ -107,6 +135,10 @@ class Pages {
 		add_action( 'admin_menu', array( $this, 'add_admin_pages' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		add_action( 'admin_head', array( $this, 'handle_admin_head' ) );
+
+		// "What's New" page related actions.
+		add_action( 'current_screen', array( $this, 'redirect_to_whats_new' ) );
+		add_action( 'admin_menu', array( $this, 'remove_whats_new_page' ) );
 
 		// Remove anti-spam field during shortcode render for WPForms in Video Editor Page.
 		// @see https://github.com/rtCamp/godam/issues/597 issue link.
@@ -129,7 +161,7 @@ class Pages {
 			$this->menu_slug,
 			array( $this, 'render_dashboard_page' ),
 			'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI1LjU1NzggMjAuMDkxMUw4LjA1NTg3IDM3LjU5M0wzLjQ2Mzk3IDMzLjAwMTFDMC44MTg1MjEgMzAuMzU1NiAyLjA4MjEgMjUuODMzNiA1LjcyMjI4IDI0Ljk0NjRMMjUuNTYzMiAyMC4wOTY0TDI1LjU1NzggMjAuMDkxMVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00Ny4zNzczIDIxLjg4NjdMNDUuNTQzOCAyOS4zODc1TDIyLjY5NzIgNTIuMjM0MUwxMS4yNjA1IDQwLjc5NzRMMzQuMTY2MiAxNy44OTE2TDQxLjU3MDMgMTYuMDc5NkM0NS4wNzA2IDE1LjIyNDcgNDguMjMyMyAxOC4zODYzIDQ3LjM3MiAyMS44ODEzTDQ3LjM3NzMgMjEuODg2N1oiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00My41MDU5IDM4LjEwMzZMMzguNjY2NyA1Ny44OTA3QzM3Ljc3NDEgNjEuNTI1NSAzMy4yNTIxIDYyLjc4OTEgMzAuNjA2NiA2MC4xNDM2TDI2LjAzNjMgNTUuNTczMkw0My41MDU5IDM4LjEwMzZaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K',
-			30
+			11
 		);
 
 		// FIX: Force the admin page hook to use the untranslated slug.
@@ -166,6 +198,19 @@ class Pages {
 			2
 		);
 
+		// Only add Tools submenu if a valid API key is set.
+		if ( rtgodam_is_api_key_valid() ) {
+			add_submenu_page(
+				$this->menu_slug,
+				__( 'Tools', 'godam' ),
+				__( 'Tools', 'godam' ),
+				'manage_options',
+				$this->tools_slug,
+				array( $this, 'render_tools_page' ),
+				5
+			);
+		}
+
 		add_submenu_page(
 			$this->menu_slug,
 			__( 'Settings', 'godam' ),
@@ -185,17 +230,20 @@ class Pages {
 			array( $this, 'render_help_page' ),
 			7
 		);
-	}
 
-	/**
-	 * To render the help page.
-	 *
-	 * @return void
-	 */
-	public function render_help_page() {
-		?>
-		<div id="root-video-help"></div>
-		<?php
+		// Only add "What's New" submenu page if we are on a GoDAM menu.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['page'] ) && false !== strpos( sanitize_key( $_GET['page'] ), $this->menu_slug ) ) {
+			add_submenu_page(
+				$this->menu_slug,
+				__( 'What\'s New', 'godam' ),
+				__( 'What\'s New', 'godam' ),
+				'edit_posts',
+				$this->whats_new_slug,
+				array( $this, 'render_whats_new_page' ),
+				8
+			);
+		}
 	}
 
 	/**
@@ -208,7 +256,7 @@ class Pages {
 		$screen = get_current_screen();
 
 		// Check if this is your custom admin page.
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id, $this->settings_page_id ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id, $this->settings_page_id, $this->tools_page_id, $this->whats_new_page_id ), true ) ) {
 			// Remove admin notices.
 			remove_all_actions( 'admin_notices' );
 			remove_all_actions( 'all_admin_notices' );
@@ -222,49 +270,79 @@ class Pages {
 	}
 
 	/**
+	 * To render the tools page.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function render_tools_page() {
+		?>
+		<div class="godam-admin-root">
+			<div id="root-godam-tools"></div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * To render the help page.
+	 *
+	 * @return void
+	 */
+	public function render_help_page() {
+		?>
+		<div class="godam-admin-root">
+			<div id="root-video-help"></div>
+		</div>
+		<?php
+	}
+
+	/**
 	 * To render the godam page.
 	 *
 	 * @return void
 	 */
 	public function render_godam_page() {
 		?>
-		<div id="root-easydam">
-			<div class="wrap flex min-h-[80vh] gap-4 my-4">
-				<!-- Sidebar Skeleton -->
-				<div class="max-w-[220px] w-full rounded-lg bg-white shadow-md border border-gray-200">
-					<nav class="loading-skeleton flex flex-col gap-4 p-4">
-						<!-- Sidebar Tabs -->
-						<div class="skeleton-container skeleton-container-short">
-							<div class="skeleton-header w-3/4"></div>
-						</div>
-						<div class="skeleton-container skeleton-container-short">
-							<div class="skeleton-header w-3/4"></div>
-						</div>
-						<div class="skeleton-container skeleton-container-short">
-							<div class="skeleton-header w-3/4"></div>
-						</div>
-					</nav>
-				</div>
+		<div class="godam-admin-root">
+			<div id="root-godam-settings">
+				<div class="wrap flex min-h-[80vh] gap-4 my-4">
+					<!-- Sidebar Skeleton -->
+					<div class="max-w-[220px] w-full rounded-lg bg-white shadow-md border border-gray-200">
+						<nav class="loading-skeleton flex flex-col gap-4 p-4">
+							<!-- Sidebar Tabs -->
+							<div class="skeleton-container skeleton-container-short">
+								<div class="skeleton-header w-3/4"></div>
+							</div>
+							<div class="skeleton-container skeleton-container-short">
+								<div class="skeleton-header w-3/4"></div>
+							</div>
+							<div class="skeleton-container skeleton-container-short">
+								<div class="skeleton-header w-3/4"></div>
+							</div>
+						</nav>
+					</div>
 
-				<!-- Main Content Skeleton -->
-				<div id="main-content" class="w-full p-5 bg-white rounded-lg border">
-					<!-- General Settings Form Skeleton -->
-					<div class="loading-skeleton flex flex-col gap-4">
-						<!-- Title -->
-						<div class="skeleton-container skeleton-container-short">
-							<div class="skeleton-header w-1/2"></div>
-						</div>
+					<!-- Main Content Skeleton -->
+					<div id="main-content" class="w-full p-5 bg-white rounded-lg border">
+						<!-- General Settings Form Skeleton -->
+						<div class="loading-skeleton flex flex-col gap-4">
+							<!-- Title -->
+							<div class="skeleton-container skeleton-container-short">
+								<div class="skeleton-header w-1/2"></div>
+							</div>
 
-						<!-- Input Field Skeleton -->
-						<div class="skeleton-container">
-							<div class="skeleton-line w-3/4"></div>
-							<div class="skeleton-line short w-1/2"></div>
-						</div>
+							<!-- Input Field Skeleton -->
+							<div class="skeleton-container">
+								<div class="skeleton-line w-3/4"></div>
+								<div class="skeleton-line short w-1/2"></div>
+							</div>
 
-						<!-- Buttons Skeleton -->
-						<div class="flex gap-2">
-							<div class="skeleton-button w-32 h-10"></div>
-							<div class="skeleton-button w-40 h-10"></div>
+							<!-- Buttons Skeleton -->
+							<div class="flex gap-2">
+								<div class="skeleton-button w-32 h-10"></div>
+								<div class="skeleton-button w-40 h-10"></div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -280,11 +358,13 @@ class Pages {
 	 */
 	public function render_video_editor_page() {
 		?>
-		<div id="root-video-editor">
-			<div class="progress-bar-wrapper">
-				<div class="progress-bar-container">
-					<div class="progress-bar">
-						<div class="progress-bar-inner"></div>
+		<div class="godam-admin-root">
+			<div id="root-video-editor">
+				<div class="progress-bar-wrapper">
+					<div class="progress-bar-container">
+						<div class="progress-bar">
+							<div class="progress-bar-inner"></div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -299,7 +379,9 @@ class Pages {
 	 */
 	public function render_dashboard_page() {
 		?>
-		<div id="root-video-dashboard"></div>
+		<div class="godam-admin-root">
+			<div id="root-video-dashboard"></div>
+		</div>
 		<?php
 	}
 
@@ -310,7 +392,20 @@ class Pages {
 	 */
 	public function render_analytics_page() {
 		?>
-		<div id="root-video-analytics"></div>
+		<div class="godam-admin-root">
+			<div id="root-video-analytics"></div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * To render the what's new page.
+	 *
+	 * @return void
+	 */
+	public function render_whats_new_page() {
+		?>
+		<div id="root-whats-new"></div>
 		<?php
 	}
 
@@ -322,7 +417,7 @@ class Pages {
 	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
 
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id, $this->tools_page_id ), true ) ) {
 
 			wp_register_script(
 				'rtgodam-page-style',
@@ -352,9 +447,13 @@ class Pages {
 			$is_sure_form_active    = is_plugin_active( 'sureforms/sureforms.php' );
 			$is_forminator_active   = is_plugin_active( 'forminator/forminator.php' );
 			$is_fluent_forms_active = is_plugin_active( 'fluentform/fluentform.php' );
+			$is_met_form_active     = is_plugin_active( 'metform/metform.php' );
 
 			// TODO Handle Everest Forms pro versions as well in future.
 			$is_everest_forms_active = is_plugin_active( 'everest-forms/everest-forms.php' );
+
+			$is_ninja_forms_active = is_plugin_active( 'ninja-forms/ninja-forms.php' );
+
 
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
@@ -375,6 +474,8 @@ class Pages {
 					'forminatorActive'   => $is_forminator_active,
 					'fluentformsActive'  => $is_fluent_forms_active,
 					'everestFormsActive' => $is_everest_forms_active,
+					'ninjaFormsActive'   => $is_ninja_forms_active,
+					'metformActive'      => $is_met_form_active,
 				)
 			);
 
@@ -588,6 +689,15 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			// Footer URL data for internal redirection.
+			wp_localize_script(
+				'godam-page-script-help',
+				'footerData',
+				array(
+					'adminUrl' => admin_url( 'admin.php' ),
+				)
+			);
+
 			wp_set_script_translations( 'godam-page-script-help', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'godam-page-script-help' );
 		} elseif ( $screen && $this->settings_page_id === $screen->id ) {
@@ -609,8 +719,68 @@ class Pages {
 				);
 			}
 
+			// Footer URL data for internal redirection.
+			wp_localize_script(
+				'transcoder-page-script-godam',
+				'footerData',
+				array(
+					'adminUrl' => admin_url( 'admin.php' ),
+				)
+			);
+
 			wp_set_script_translations( 'transcoder-page-script-godam', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'transcoder-page-script-godam' );
+		} elseif ( $screen && $this->tools_page_id === $screen->id ) {
+
+			wp_register_script(
+				'godam-page-script-tools',
+				RTGODAM_URL . 'assets/build/pages/tools.min.js',
+				array( 'wp-element', 'wp-i18n' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/tools.min.js' ),
+				true
+			);
+
+			wp_set_script_translations( 'godam-page-script-tools', 'godam', RTGODAM_PATH . 'languages' );
+
+			$rtgodam_user_data = rtgodam_get_user_data( true );
+
+			wp_localize_script(
+				'godam-page-script-tools',
+				'userData',
+				$rtgodam_user_data
+			);
+
+			// Footer URL data for internal redirection.
+			wp_localize_script(
+				'godam-page-script-tools',
+				'footerData',
+				array(
+					'adminUrl' => admin_url( 'admin.php' ),
+				)
+			);
+
+			wp_enqueue_script( 'godam-page-script-tools' );
+		} elseif ( $screen && $this->whats_new_page_id === $screen->id ) {
+
+			wp_register_script(
+				'godam-page-script-whats-new',
+				RTGODAM_URL . 'assets/build/pages/whats-new.min.js',
+				array( 'wp-element', 'wp-i18n' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/whats-new.min.js' ),
+				true
+			);
+
+			wp_set_script_translations( 'godam-page-script-whats-new', 'godam', RTGODAM_PATH . 'languages' );
+
+			wp_localize_script(
+				'godam-page-script-whats-new',
+				'headerData',
+				array(
+					'version' => RTGODAM_VERSION,
+				)
+			);
+
+			wp_enqueue_script( 'godam-page-script-whats-new' );
 		}
 
 		wp_enqueue_style( 'wp-components' );
@@ -627,6 +797,11 @@ class Pages {
 
 		wp_enqueue_script( 'media-library-react' );
 
+		$roles = wp_get_current_user()->roles;
+		if ( current_user_can( 'manage_network' ) ) {
+			$roles[] = 'superadmin';
+		}
+
 		// Add a localized script for the rest nonce.
 		wp_localize_script(
 			'media-library-react',
@@ -634,6 +809,7 @@ class Pages {
 			array(
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
 				'userData' => rtgodam_get_user_data( true ),
+				'roles'    => $roles,
 			)
 		);
 	}
@@ -820,5 +996,41 @@ class Pages {
 		$godam_current_rest_request = null;
 
 		return $form_data;
+	}
+
+	/**
+	 * Redirects to "What's New" submenu page after a plugin update.
+	 *
+	 * @param object $screen The current screen object.
+	 */
+	public function redirect_to_whats_new( $screen ) {
+		// Only redirect if on a valid GoDAM admin page.
+		if (
+			! is_admin() ||
+			! $screen ||
+			false === strpos( $screen->id, $this->menu_slug )
+		) {
+			return;
+		}
+
+		if ( get_transient( 'rtgodam_show_whats_new' ) ) {
+			// Redirect only once, then clean up any related transient data.
+			delete_transient( 'rtgodam_show_whats_new' );
+			delete_transient( 'rtgodam_release_data' );
+
+			// Redirect to "What's New" admin page.
+			wp_safe_redirect( admin_url( 'admin.php?page=' . $this->whats_new_slug ) );
+			exit;
+		}
+	}
+
+	/**
+	 * Remove the "What's New" submenu page once the user navigates away.
+	 */
+	public function remove_whats_new_page() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ( isset( $_GET['page'] ) && sanitize_key( $_GET['page'] ) !== $this->whats_new_slug ) ) {
+			remove_submenu_page( $this->menu_slug, $this->whats_new_slug );
+		}
 	}
 }

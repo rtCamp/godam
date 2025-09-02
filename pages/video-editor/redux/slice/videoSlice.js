@@ -57,6 +57,8 @@ const slice = createSlice( {
 		sureformsPlugnActive: false,
 		forminatorForms: [],
 		forminatorPluginActive: false,
+		metforms: [],
+		metformPlugnActive: false,
 	},
 	reducers: {
 		initializeStore: ( state, action ) => {
@@ -173,6 +175,18 @@ const slice = createSlice( {
 		setForminatorPluginActive: ( state, action ) => {
 			state.forminatorPluginActive = action.payload;
 		},
+		setNinjaForms: ( state, action ) => {
+			state.ninjaForms = action.payload;
+		},
+		setNinjaPluginActive: ( state, action ) => {
+			state.ninjaPluginActive = action.payload;
+		},
+		setMetforms: ( state, action ) => {
+			state.metforms = action.payload;
+		},
+		setMetformPluginActive: ( state, action ) => {
+			state.metformPlugnActive = action.payload;
+		},
 	},
 } );
 
@@ -203,5 +217,9 @@ export const {
 	setSureformsPluginActive,
 	setForminatorForms,
 	setForminatorPluginActive,
+	setNinjaForms,
+	setNinjaPluginActive,
+	setMetforms,
+	setMetformPluginActive,
 } = slice.actions;
 export default slice.reducer;
