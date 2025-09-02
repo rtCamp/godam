@@ -35,6 +35,9 @@ const HtmlCTA = ( { layerID } ) => {
 					dispatch( updateLayerField( { id: layer.id, field: 'html', value } ) )
 				}
 			/>
+			<p className="text-xs text-gray-600 mt-2 italic">
+				{ __( 'Adding JavaScript and CSS can be risky. Please be careful and ensure your code is secure and properly tested.', 'godam' ) }
+			</p>
 		</>
 	);
 };
