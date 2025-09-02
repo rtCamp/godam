@@ -67,6 +67,10 @@
 		"showTitle": {
 			"type": "boolean",
 			"default": true
+		},
+		"engagements": {
+			"type": "boolean",
+			"default": true
 		}
 	},
 	"supports": {

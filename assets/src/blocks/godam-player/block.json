@@ -107,6 +107,10 @@
 			"default": {
 				"type": "default"
 			}
+		},
+		"engagements": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"supports": {

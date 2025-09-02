@@ -1,6 +1,12 @@
 // Alternative inline version (similar to your original)
 const ProgressBar = ( { showInitialProgress, done, total } ) => {
 	const calculateSafePercentage = ( currentDone, currentTotal ) => {
+		// If totals are not available yet but we're in an initial processing state,
+		// show a small fill to indicate activity immediately.
+		if ( ( ! currentTotal || currentTotal === 0 ) && showInitialProgress ) {
+			return 16;
+		}
+
 		if ( ! currentDone || ! currentTotal || currentTotal === 0 ) {
 			return 0;
 		}

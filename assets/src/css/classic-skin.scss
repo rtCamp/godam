@@ -466,6 +466,24 @@
 
 	}
 
+	.video-js {
+
+		&.vjs-fullscreen {
+
+			.vjs-fullscreen-control {
+
+				span::before {
+					background: url(../images/classic-exit-full-screen.svg);
+					background-repeat: no-repeat;
+					background-size: contain !important;
+					display: inline-block;
+					height: 20px;
+					width: 20px;
+				}
+			}
+		}
+	}
+
 	.godam-submenu-open {
 
 		.vjs-settings-button {
