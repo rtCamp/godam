@@ -813,8 +813,18 @@ to ensure proper responsiveness and avoid layout issues.
 
 .compat-attachment-fields {
 
+	th.label {
+		text-align: left;
+		min-width: unset;
+	}
+
 	td.field {
 		$wp-td-field-margin: 1px;
 		width: calc(100% - 2 * $wp-td-field-margin);
+
+		/* stylelint-disable-next-line no-descending-specificity */
+		input {
+			max-width: 600px;
+		}
 	}
 }
