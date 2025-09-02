@@ -377,10 +377,6 @@ class Transcoding extends Base {
 			);
 		}
 
-		// Delete the transcoding job ID from the post meta.
-		// As we are retranscoding the media, we need to remove the previous transcoding job ID.
-		delete_post_meta( $attachment_id, 'rtgodam_transcoding_job_id' );
-
 		$mime_type = get_post_mime_type( $attachment_id );
 		$title     = get_the_title( $attachment_id );
 	
