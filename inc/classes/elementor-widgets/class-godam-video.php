@@ -27,7 +27,7 @@ class GoDAM_Video extends Base {
 			'categories'      => array( 'godam' ),
 			'keywords'        => array( 'godam', 'video' ),
 			'depended_script' => array( 'godam-player-frontend-script', 'godam-player-analytics-script', 'godam-player-frontend-script', 'godam-elementor-frontend' ),
-			'depended_styles' => array( 'godam-player-style', 'godam-player-frontend-style' ),
+			'depended_styles' => array( 'godam-player-style', 'godam-player-frontend-style', 'godam-player-minimal-skin', 'godam-player-pills-skin', 'godam-player-bubble-skin', 'godam-player-classic-skin' ),
 		);
 	}
 

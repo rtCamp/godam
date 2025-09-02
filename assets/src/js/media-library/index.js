@@ -12,6 +12,7 @@ import './transcoding-status';
 import AttachmentsBrowser from './views/attachment-browser.js';
 import Attachments from './views/attachments.js';
 import AttachmentDetailsTwoColumn from './views/attachment-detail-two-column.js';
+import AttachmentDetails from './views/attachment-details.js';
 import mediaFrameSelect from './views/media-frame-select.js';
 
 import MediaDateRangeFilter from './views/filters/media-date-range-filter-list-view.js';
@@ -78,6 +79,10 @@ class MediaLibrary {
 
 		if ( wp?.media?.view?.Attachments && Attachments ) {
 			wp.media.view.Attachments = Attachments;
+		}
+
+		if ( wp?.media?.view?.Attachment?.Details && AttachmentDetails ) {
+			wp.media.view.Attachment.Details = AttachmentDetails;
 		}
 
 		if ( wp?.media?.view?.Attachment?.Details?.TwoColumn && AttachmentDetailsTwoColumn ) {

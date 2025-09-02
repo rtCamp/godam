@@ -29,17 +29,29 @@ if ( isset( $is_elementor_widget ) && $is_elementor_widget ) {
 // prevent default behavior of Gravity Forms autoscroll on submission.
 add_filter( 'gform_confirmation_anchor', '__return_false' );
 
+// Check if the block attributes are set and is an array.
+if ( ! isset( $attributes ) || ! is_array( $attributes ) ) {
+	$attributes = array();
+}
+
+// Create filter for the block attributes.
+$attributes = apply_filters(
+	'godam_player_block_attributes',
+	$attributes
+);
+
 // attributes.
-$autoplay      = ! empty( $attributes['autoplay'] );
-$controls      = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
-$loop          = ! empty( $attributes['loop'] );
-$muted         = ! empty( $attributes['muted'] );
-$poster        = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
-$preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
-$hover_select  = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSelect'] : 'none';
-$caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
-$tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
-$attachment_id = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
+$autoplay       = ! empty( $attributes['autoplay'] );
+$controls       = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
+$loop           = ! empty( $attributes['loop'] );
+$muted          = ! empty( $attributes['muted'] );
+$poster         = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
+$preload        = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
+$hover_select   = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSelect'] : 'none';
+$caption        = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
+$tracks         = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
+$attachment_id  = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
+$show_share_btn = ! empty( $attributes['showShareButton'] );
 
 // Determine whether the attachment ID refers to a virtual (GoDAM) media item.
 // If it's not numeric, we assume it's a virtual reference (e.g., a GoDAM ID).
@@ -147,21 +159,6 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 		);
 	}
 
-	// Only add video source if it's not empty.
-	if ( ! empty( $video_src ) ) {
-		$sources[] = array(
-			'src'  => $video_src,
-			'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
-		);
-	}
-
-	if ( ! empty( $hls_transcoded_url ) ) {
-		$sources[] = array(
-			'src'  => $hls_transcoded_url,
-			'type' => 'application/x-mpegURL',
-		);
-	}
-
 	$sources[] = array(
 		'src'  => $video_src,
 		'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
@@ -259,6 +256,7 @@ $video_config = wp_json_encode(
 		'overlayTimeRange' => $overlay_time_range, // Add overlay time range to video config.
 		'playerSkin'       => $player_skin, // Add player skin to video config. Add brand image to video config.
 		'aspectRatio'      => $aspect_ratio,
+		'showShareBtn'     => $show_share_btn,
 	)
 );
 
@@ -308,10 +306,25 @@ if ( $is_shortcode || $is_elementor_widget ) {
 	$figure_attributes = get_block_wrapper_attributes( $additional_attributes );
 }
 
+/**
+ * Fetch AI Generated video tracks from REST endpoint
+ */
+$transcript_path = godam_get_transcript_path( $job_id );
+
+if ( ! empty( $transcript_path ) ) {
+	$tracks[] = array(
+		'src'     => esc_url( $transcript_path ),
+		'kind'    => 'subtitles',
+		'label'   => 'English',
+		'srclang' => 'en',
+	);
+}
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
-	<figure <?php echo wp_kses_data( $figure_attributes ); ?>>
+	<figure
+		id="godam-player-container-<?php echo esc_attr( $instance_id ); ?>"
+		<?php echo wp_kses_data( $figure_attributes ); ?>>
 		<div class="godam-video-wrapper">
 			<?php if ( $show_overlay && ! empty( $inner_blocks_content ) ) : ?>
 				<div
@@ -378,6 +391,8 @@ if ( $is_shortcode || $is_elementor_widget ) {
 					}
 					?>
 				</video>
+				<!-- Add this to target godam uppy modal inside video. -->
+				<div id="uppy-godam-video-modal-container"></div>
 
 				<!-- Dynamically render shortcodes for form layers. -->
 				<?php
@@ -600,6 +615,9 @@ if ( $is_shortcode || $is_elementor_widget ) {
 
 		<?php if ( $caption && ! empty( $caption ) ) : ?>
 			<figcaption class="wp-element-caption rtgodam-video-caption"><?php echo esc_html( $caption ); ?></figcaption>
-		<?php endif; ?>
+			<?php
+			endif;
+				do_action( 'rtgodam_after_video_html', $attributes, $instance_id, $easydam_meta_data );
+		?>
 	</figure>
 <?php endif; ?>
