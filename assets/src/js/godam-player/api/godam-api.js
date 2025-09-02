@@ -6,7 +6,7 @@ import videojs from 'video.js';
 /**
  * Internal dependencies
  */
-import Player from './player';
+import Player from './player.js';
 
 window.GoDAMAPI = {
 	/**
@@ -50,6 +50,51 @@ window.GoDAMAPI = {
 		}
 
 		return new Player( videoJs, video );
+	},
+
+	/**
+	 * Get all players on the page
+	 *
+	 * @return {Array} Array of player objects with attachment ID and Player instance
+	 */
+	getAllPlayers() {
+		const players = [];
+		const videoContainers = document.querySelectorAll( '[data-id]' );
+
+		videoContainers.forEach( ( container ) => {
+			const attachmentId = container.dataset.id;
+			const videoElement = container.querySelector( 'video' );
+
+			if ( videoElement ) {
+				try {
+					// Check if VideoJS instance exists
+					const videoJsInstance = videojs.getPlayer( videoElement );
+					if ( videoJsInstance ) {
+						const playerInstance = new Player( videoJsInstance, container );
+						players.push( {
+							attachmentId,
+							player: playerInstance,
+							container,
+							videoElement,
+							isReady: videoJsInstance.readyState() > 0,
+						} );
+					}
+				} catch ( error ) {
+					// VideoJS instance might not exist yet
+				}
+			}
+		} );
+
+		return players;
+	},
+
+	/**
+	 * Get all ready players on the page
+	 *
+	 * @return {Array} Array of ready player objects
+	 */
+	getAllReadyPlayers() {
+		return this.getAllPlayers().filter( ( playerObj ) => playerObj.isReady );
 	},
 
 };
