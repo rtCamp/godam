@@ -22,8 +22,8 @@ const GodamHeader = () => {
 			<div className="godam-settings-header border-b -ml-[32px] pl-[32px] bg-white">
 				<div className="godam-settings-header-content max-w-[1440px] mx-auto pl-4 pr-6 flex items-center justify-between">
 					<div className="py-6 m-0 text-4xl leading-4 font-semibold text-slate-900 flex items-end">
-						<img className="h-8 sm:h-9 md:h-12" src={ godamLogo } alt={ __( 'GoDAM Logo', 'godam' ) } />
-						<div className="ml-3">
+						<img className="h-8 my-auto sm:h-9 md:h-12" src={ godamLogo } alt={ __( 'GoDAM Logo', 'godam' ) } />
+						<div className="ml-2 md:ml-3">
 							<div className="text-xs font-normal leading-4">{ `v${ window?.pluginInfo?.version }` }</div>
 							{
 								window?.userData?.userApiData?.active_plan &&
