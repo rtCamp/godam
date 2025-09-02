@@ -4,7 +4,7 @@
  * External dependencies
  */
 import DOMPurify from 'isomorphic-dompurify';
-import videojs from 'video.js';
+
 /**
  * WordPress dependencies
  */
@@ -14,7 +14,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { addIcon, trashIcon } from '../media-library-icons';
-import { canManageAttachment } from '../utility';
+import { canManageAttachment, createVideoJsPlayer } from '../utility';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
 
@@ -557,56 +557,33 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		// Check if the attachment is a video and render the edit buttons.
 		if ( this.model.get( 'type' ) === 'video' ) {
-			const virtual = this.model.get( 'virtual' );
+			const attachmentId = this.model.get( 'id' );
+			const attachmentUrl = this.model.get( 'url' );
+			const attachmentType = this.model.get( 'type' );
 
-			// If the attachment is virtual (e.g. a GoDAM proxy video), override default preview.
-			if ( undefined !== virtual && virtual ) {
-				const videoUrl = this.model.get( 'transcoded_url' ); // Ensure it's a valid .mp4
-				const $container = this.$el.find( '.wp-video' );
-				const videoId = 'videojs-player-' + this.model.get( 'id' ); // Unique ID
+			const hlsUrl = this.model.get( 'hls_url' );
+			const mpdUrl = this.model.get( 'transcoded_url' );
 
-				// Clear default preview, Create a <video> element to be used by Video.js.
-				$container.empty().append( `
-					<video
-						id="${ videoId }"
-						class="video-js vjs-default-skin"
-						controls
-						preload="auto"
-						width="100%"
-						height="auto"
-					>
-						<source src="${ videoUrl }" type="application/dash+xml" />
-					</video>
-				` );
+			if ( attachmentType === 'video' ) {
+				const wpMediaWrapper = this.el.querySelector( '.wp-media-wrapper.wp-video' );
 
-				// Wait for DOM to fully render the core preview container.
-				setTimeout( () => {
-					const videoElement = document.getElementById( videoId );
-					if ( videoElement && typeof videojs !== 'undefined' ) {
-						// Initialize the player with minimal controls.
-						videojs( videoElement, {
-							width: '100%',
-							aspectRatio: '16:9',
-							controlBar: {
-								volumePanel: false,
-								fullscreenToggle: true,
-								currentTimeDisplay: true,
-								timeDivider: true,
-								durationDisplay: true,
-								remainingTimeDisplay: true,
-								progressControl: true,
-								playToggle: true,
-								captionsButton: false,
-								chaptersButton: false,
-								pictureInPictureToggle: false,
-							},
-						} );
-					}
-				}, 100 ); // Slight delay to ensure DOM update.
+				if ( wpMediaWrapper ) {
+					const videoId = `videojs-player-${ attachmentId }`;
+					const sources = [
+						...( mpdUrl ? [ { src: mpdUrl, type: 'application/dash+xml' } ] : [] ),
+						...( hlsUrl ? [ { src: hlsUrl, type: 'application/x-mpegURL' } ] : [] ),
+						{ src: attachmentUrl, type: 'video/mp4' },
+					];
+
+					createVideoJsPlayer( wpMediaWrapper, {
+						videoId,
+						sources,
+						playerOptions: {},
+					} );
+				}
 			}
 
 			this.renderVideoActions();
-			const attachmentId = this.model.get( 'id' );
 
 			this.showLoading();
 
