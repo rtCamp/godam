@@ -1034,8 +1034,25 @@ class Video_Migration extends Base {
 		}
 
 		// Set the attachment thumbnail.
-		if ( ! empty( $video_info['thumbnail_url'] ) ) {
-			update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $video_info['thumbnail_url'] );
+		if ( isset( $video_info['thumbnails'] ) && ! empty( $video_info['thumbnails'] ) ) {
+
+			$thumbnails     = $video_info['thumbnails'];
+			$thumbnail_urls = array();
+
+			foreach ( $thumbnails as $thumb ) {
+				if ( empty( $thumb['thumbnail_url'] ) ) {
+					continue;
+				}
+
+				$thumbnail_urls[] = $thumb['thumbnail_url'];
+
+				// Set as primary thumbnail if set to active.
+				if ( isset( $thumb['is_active'] ) && $thumb['is_active'] ) {
+					update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $thumb['thumbnail_url'] );
+				}
+			}
+
+			update_post_meta( $attachment_id, 'rtgodam_media_thumbnails', $thumbnail_urls );
 		}
 
 		// Set the attachment file size.
