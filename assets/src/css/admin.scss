@@ -150,6 +150,11 @@ $media-frame-width: calc(300px + 2 * 24px);
 	width: 8rem;
 	border: 1px solid $media-library-sidebar-bg-dark;
 	vertical-align: middle;
+
+	@media (max-width: 782px) {
+		min-height: 40px;
+		border-radius: 3px;
+	}
 }
 
 .media-modal-content #media-date-range-filter {
