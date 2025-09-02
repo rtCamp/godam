@@ -10,12 +10,7 @@ import {
 	ToggleControl,
 	Panel,
 	PanelBody,
-	TextControl,
-	TextareaControl,
 	SelectControl,
-	RangeControl,
-	ColorPicker,
-	FontSizePicker,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -23,6 +18,9 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { updateMediaSetting } from '../../../../redux/slice/media-settings.js';
+import TextCTA from './cta/TextCTA.jsx';
+import ImageCTA from './cta/ImageCTA.jsx';
+import HtmlCTA from './cta/HtmlCTA.jsx';
 
 const CTALayer = () => {
 	const dispatch = useDispatch();
@@ -35,30 +33,30 @@ const CTALayer = () => {
 		dispatch( updateMediaSetting( { category: 'global_layers', subcategory: 'cta', key, value } ) );
 	};
 
+	const ctaTypeOptions = [
+		{ label: __( 'Text', 'godam' ), value: 'text' },
+		{ label: __( 'HTML', 'godam' ), value: 'html' },
+		{ label: __( 'Image', 'godam' ), value: 'image' },
+	];
+
 	const placementOptions = [
 		{ label: __( 'Start of video', 'godam' ), value: 'start' },
 		{ label: __( 'Middle of video', 'godam' ), value: 'middle' },
 		{ label: __( 'End of video', 'godam' ), value: 'end' },
 	];
 
-	const positionOptions = [
-		{ label: __( 'Top Left', 'godam' ), value: 'top-left' },
-		{ label: __( 'Top Center', 'godam' ), value: 'top-center' },
-		{ label: __( 'Top Right', 'godam' ), value: 'top-right' },
-		{ label: __( 'Center Left', 'godam' ), value: 'center-left' },
-		{ label: __( 'Center', 'godam' ), value: 'center' },
-		{ label: __( 'Center Right', 'godam' ), value: 'center-right' },
-		{ label: __( 'Bottom Left', 'godam' ), value: 'bottom-left' },
-		{ label: __( 'Bottom Center', 'godam' ), value: 'bottom-center' },
-		{ label: __( 'Bottom Right', 'godam' ), value: 'bottom-right' },
-	];
-
-	const fontSizeOptions = [
-		{ name: __( 'Small', 'godam' ), size: 14, slug: 'small' },
-		{ name: __( 'Medium', 'godam' ), size: 16, slug: 'medium' },
-		{ name: __( 'Large', 'godam' ), size: 18, slug: 'large' },
-		{ name: __( 'Extra Large', 'godam' ), size: 22, slug: 'extra-large' },
-	];
+	const renderSelectedCTAInputs = () => {
+		switch ( mediaSettings?.global_layers?.cta?.cta_type ) {
+			case 'text':
+				return <TextCTA />;
+			case 'image':
+				return <ImageCTA />;
+			case 'html':
+				return <HtmlCTA />;
+			default:
+				return <TextCTA />;
+		}
+	};
 
 	return (
 		<Panel header={ __( 'Call to Action Layer', 'godam' ) } className="godam-panel">
@@ -73,33 +71,17 @@ const CTALayer = () => {
 
 				{
 					mediaSettings?.global_layers?.cta?.enabled && (
-						<>
-							<TextControl
-								className="godam-input mb-4"
-								label={ __( 'CTA Text', 'godam' ) }
-								help={ __( 'The text to display in the call-to-action button', 'godam' ) }
-								value={ mediaSettings?.global_layers?.cta?.text || '' }
-								onChange={ ( value ) => handleSettingChange( 'text', value ) }
-								placeholder={ __( 'Learn More', 'godam' ) }
+						<div className="flex flex-col godam-form-group">
+							<p className="mb-4 label-text">{ __( 'Call to Action', 'godam' ) }</p>
+							<SelectControl
+								className="mb-4"
+								label={ __( 'Select type', 'godam' ) }
+								onChange={ ( value ) => handleSettingChange( 'cta_type', value ) }
+								options={ ctaTypeOptions }
+								value={ mediaSettings?.global_layers?.cta?.cta_type || 'text' }
 							/>
 
-							<TextControl
-								className="godam-input mb-4"
-								label={ __( 'CTA Link URL', 'godam' ) }
-								help={ __( 'The URL where users will be redirected when they click the CTA', 'godam' ) }
-								value={ mediaSettings?.global_layers?.cta?.url || '' }
-								onChange={ ( value ) => handleSettingChange( 'url', value ) }
-								placeholder={ __( 'https://example.com', 'godam' ) }
-								type="url"
-							/>
-
-							<ToggleControl
-								className="godam-toggle mb-4"
-								label={ __( 'Open in New Tab', 'godam' ) }
-								help={ __( 'Open the CTA link in a new browser tab', 'godam' ) }
-								checked={ mediaSettings?.global_layers?.cta?.new_tab || false }
-								onChange={ ( value ) => handleSettingChange( 'new_tab', value ) }
-							/>
+							{ renderSelectedCTAInputs() }
 
 							<SelectControl
 								className="godam-select mb-4"
@@ -109,82 +91,7 @@ const CTALayer = () => {
 								options={ placementOptions }
 								onChange={ ( value ) => handleSettingChange( 'placement', value ) }
 							/>
-
-							{ mediaSettings?.global_layers?.cta?.placement === 'middle' && (
-								<RangeControl
-									className="godam-range mb-4"
-									label={ __( 'CTA Position (seconds)', 'godam' ) }
-									help={ __( 'Specify when the CTA should appear in the middle of the video', 'godam' ) }
-									value={ mediaSettings?.global_layers?.cta?.position || 30 }
-									onChange={ ( value ) => handleSettingChange( 'position', value ) }
-									min={ 1 }
-									max={ 300 }
-								/>
-							) }
-
-							<SelectControl
-								className="godam-select mb-4"
-								label={ __( 'CTA Position on Screen', 'godam' ) }
-								help={ __( 'Choose where the CTA should appear on the video', 'godam' ) }
-								value={ mediaSettings?.global_layers?.cta?.screen_position || 'bottom-center' }
-								options={ positionOptions }
-								onChange={ ( value ) => handleSettingChange( 'screen_position', value ) }
-							/>
-
-							<RangeControl
-								className="godam-range mb-4"
-								label={ __( 'CTA Display Duration (seconds)', 'godam' ) }
-								help={ __( 'How long the CTA should be displayed (0 = until end of video)', 'godam' ) }
-								value={ mediaSettings?.global_layers?.cta?.duration || 10 }
-								onChange={ ( value ) => handleSettingChange( 'duration', value ) }
-								min={ 0 }
-								max={ 60 }
-							/>
-
-							<div className="mb-4">
-								<label className="components-base-control__label">{ __( 'Background Color', 'godam' ) }</label>
-								<ColorPicker
-									color={ mediaSettings?.global_layers?.cta?.background_color || '#0073aa' }
-									onChange={ ( value ) => handleSettingChange( 'background_color', value ) }
-								/>
-							</div>
-
-							<div className="mb-4">
-								<label className="components-base-control__label">{ __( 'Text Color', 'godam' ) }</label>
-								<ColorPicker
-									color={ mediaSettings?.global_layers?.cta?.text_color || '#ffffff' }
-									onChange={ ( value ) => handleSettingChange( 'text_color', value ) }
-								/>
-							</div>
-
-							<div className="mb-4">
-								<label className="components-base-control__label">{ __( 'Font Size', 'godam' ) }</label>
-								<FontSizePicker
-									fontSizes={ fontSizeOptions }
-									value={ mediaSettings?.global_layers?.cta?.font_size || 16 }
-									onChange={ ( value ) => handleSettingChange( 'font_size', value ) }
-								/>
-							</div>
-
-							<RangeControl
-								className="godam-range mb-4"
-								label={ __( 'Border Radius', 'godam' ) }
-								help={ __( 'Roundness of the CTA button corners', 'godam' ) }
-								value={ mediaSettings?.global_layers?.cta?.border_radius || 4 }
-								onChange={ ( value ) => handleSettingChange( 'border_radius', value ) }
-								min={ 0 }
-								max={ 20 }
-							/>
-
-							<TextareaControl
-								className="godam-textarea mb-4"
-								label={ __( 'Additional CSS Classes', 'godam' ) }
-								help={ __( 'Optional CSS classes to apply to the CTA for custom styling', 'godam' ) }
-								value={ mediaSettings?.global_layers?.cta?.css_classes || '' }
-								onChange={ ( value ) => handleSettingChange( 'css_classes', value ) }
-								placeholder={ __( 'custom-cta-class another-class', 'godam' ) }
-							/>
-						</>
+						</div>
 					)
 				}
 			</PanelBody>

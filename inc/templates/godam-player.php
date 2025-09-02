@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 require_once RTGODAM_PATH . 'inc/templates/class-ads.php';
+require_once RTGODAM_PATH . 'inc/templates/class-layers.php';
 
 if ( isset( $is_shortcode ) && $is_shortcode ) {
 	$is_shortcode = true;
@@ -46,7 +47,7 @@ $is_virtual  = ! is_numeric( $attachment_id );
 $original_id = $attachment_id;
 
 if ( $is_virtual ) {
-	// Query the WordPress Media Library to find an attachment post that has
+	// Query the WordPress Media Library to find an attachment post that ha.
 	// a meta key `_godam_original_id` matching this virtual media ID.
 	$query = new \WP_Query(
 		array(
@@ -54,7 +55,7 @@ if ( $is_virtual ) {
 			'posts_per_page' => 1,
 			'post_status'    => 'any',
 			'meta_key'       => '_godam_original_id',
-			'meta_value'     => sanitize_text_field( $attachment_id ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+			'meta_value'     => sanitize_text_field( $attachment_id ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_valu.
 			'fields'         => 'ids',
 		)
 	);
@@ -235,10 +236,25 @@ if ( ! empty( $control_bar_settings ) ) {
 
 $video_setup = wp_json_encode( $video_setup );
 
+$layers = $easydam_meta_data['layers'] ?? array();
+
+// Get video duration for layer timing calculation.
+$video_duration = rtgodam_get_video_duration( $attachment_id );
+
+/**
+ * Initialize the Ads class which helps get the appropriate ad tag URL.
+ */
+$ad_tag_url = Ads::get_ad_tag_url( $attachment_id, $global_settings, $attachment_settings );
+/**
+ * Merge layers with global settings
+ */
+$layers = Layers::merge_layers( $layers, $godam_settings, $easydam_meta_data, $video_duration );
+
+
 $video_config = wp_json_encode(
 	array(
 		'preview'          => $video_preview,
-		'layers'           => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array(), // contains list of layers.
+		'layers'           => ! empty( $layers ) ? $layers : array(), // contains list of layers.
 		'chapters'         => ! empty( $easydam_meta_data['chapters'] ) ? $easydam_meta_data['chapters'] : array(), // contains list of chapters.
 		'overlayTimeRange' => $overlay_time_range, // Add overlay time range to video config.
 		'playerSkin'       => $player_skin, // Add player skin to video config. Add brand image to video config.
@@ -256,13 +272,6 @@ $easydam_hover_color        = ! empty( $easydam_meta_data['videoConfig']['contro
 $easydam_hover_zoom         = ! empty( $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] ) ? $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] : 0;
 $easydam_custom_btn_img     = ! empty( $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] ) ? $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] : '';
 $easydam_control_bar_config = ! empty( $easydam_meta_data['videoConfig']['controlBar'] ) ? $easydam_meta_data['videoConfig']['controlBar'] : array();
-
-$layers = $easydam_meta_data['layers'] ?? array();
-
-/**
- * Initialize the Ads class which helps get the appropriate ad tag URL.
- */
-$ads = new Ads( $attachment_id, $godam_settings, $easydam_meta_data );
 
 $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 
@@ -298,6 +307,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 	}
 	$figure_attributes = get_block_wrapper_attributes( $additional_attributes );
 }
+
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
@@ -321,14 +331,14 @@ if ( $is_shortcode || $is_elementor_widget ) {
 					<div class="godam-player-overlay"></div>
 				<?php endif; ?>
 				<div class="animate-play-btn">
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16".
 						<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
 					</svg>
 				</div>
 				<video
 					class="easydam-player video-js vjs-big-play-centered vjs-hidden"
 					data-options="<?php echo esc_attr( $video_config ); ?>"
-					data-ad_tag_url="<?php echo esc_url( $ads->get_ad_tag_url() ); ?>"
+					data-ad_tag_url="<?php echo esc_url( $ad_tag_url ); ?>"
 					data-id="<?php echo esc_attr( $attachment_id ); ?>"
 					data-instance-id="<?php echo esc_attr( $instance_id ); ?>"
 					data-controls="<?php echo esc_attr( $video_setup ); ?>"
@@ -371,8 +381,8 @@ if ( $is_shortcode || $is_elementor_widget ) {
 
 				<!-- Dynamically render shortcodes for form layers. -->
 				<?php
-				if ( ! empty( $easydam_meta_data['layers'] ) ) :
-					foreach ( $easydam_meta_data['layers'] as $layer ) :
+				if ( ! empty( $layers ) ) :
+					foreach ( $layers as $layer ) :
 						$form_type = ! empty( $layer['form_type'] ) ? $layer['form_type'] : 'gravity';
 						// FORM layer.
 						if ( isset( $layer['type'] ) && 'form' === $layer['type'] ) :
@@ -482,7 +492,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 										<div class="form-container jetpack-form-container" <?php echo ! empty( $origin_post_id ) ? 'data-origin-post-id="' . esc_attr( $origin_post_id ) . '"' : ''; ?>>
 											<?php
 												// HTML generated dynamically using Block content.
-												// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+												// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscape.
 												echo $form_html;
 											?>
 										</div>
