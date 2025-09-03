@@ -159,7 +159,7 @@ GoDAM works seamlessly with popular WordPress plugins to enhance interactivity a
 - [SureForms](https://godam.io/integrations/sureforms/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=sureforms-integration) – Professional form solution with advanced features and analytics.
 - [Everest Forms](https://godam.io/integrations/everest-forms/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=everest-forms-integration) – User-friendly form builder with drag-and-drop functionality.
 - [Ninja Forms](https://godam.io/integrations/ninja-forms/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=ninja-forms-integration) – Powerful form builder with advanced features and conditional logic.
-- [Met Forms](https://godam.io/integrations/metform/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=metform-integration) – Modern form builder with drag-and-drop interface and advanced styling options.
+- [MetForm](https://godam.io/integrations/metform/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=metform-integration) – Modern form builder with drag-and-drop interface and advanced styling options.
 - [WP-Polls](https://wordpress.org/plugins/wp-polls/) – Add live polls to your videos and gather audience opinions in real-time.
 - [Elementor](https://godam.io/integrations/elementor/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=elementor-integration) – Drag-and-drop GoDAM widgets for easy content creation.
 
