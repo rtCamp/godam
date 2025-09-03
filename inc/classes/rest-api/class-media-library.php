@@ -512,8 +512,15 @@ class Media_Library extends Base {
 			}
 
 			$body = json_decode( wp_remote_retrieve_body( $response ) );
+			if ( is_null( $body ) ) {
+				return new \WP_Error( 'invalid_json', __( 'Invalid JSON response from GoDAM API.', 'godam' ), array( 'status' => 500 ) );
+			}
 
-			if ( empty( $body->message->thumbnails ) || ! is_array( $body->message->thumbnails ) ) {
+			if ( ! is_object( $body ) ||
+				! isset( $body->message ) ||
+				! is_object( $body->message ) ||
+				empty( $body->message->thumbnails ) ||
+				! is_array( $body->message->thumbnails ) ) {
 				return new \WP_Error( 'thumbnails_not_found', __( 'No thumbnails found.', 'godam' ), array( 'status' => 204 ) );
 			}
 
