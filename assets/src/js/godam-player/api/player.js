@@ -551,7 +551,10 @@ class Player {
 	 */
 	toggleFullscreen() {
 		try {
-			if ( this.videoJs.isFullscreen() ) {
+			const fullScreenButton = this.video.querySelector( '.godam-fullscreen-button' );
+			if ( fullScreenButton ) {
+				fullScreenButton.click();
+			} else if ( this.videoJs.isFullscreen() ) {
 				this.videoJs.exitFullscreen();
 			} else {
 				this.videoJs.requestFullscreen();
