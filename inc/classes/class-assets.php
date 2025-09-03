@@ -304,6 +304,11 @@ class Assets {
 		wp_set_script_translations( 'easydam-media-library', 'godam', RTGODAM_PATH . 'languages' );
 		wp_enqueue_script( 'easydam-media-library' );
 
+		wp_enqueue_style( 'godam-player-minimal-skin' );
+		wp_enqueue_style( 'godam-player-pills-skin' );
+		wp_enqueue_style( 'godam-player-bubble-skin' );
+		wp_enqueue_style( 'godam-player-classic-skin' );
+
 		/**
 		 * Dependency library for date range picker.
 		 */
@@ -322,10 +327,12 @@ class Assets {
 
 		$brand_image = $godam_settings['video_player']['brand_image'] ?? '';
 		$brand_color = $godam_settings['video_player']['brand_color'] ?? '';
+		$player_skin = $godam_settings['video_player']['player_skin'] ?? 'Default';
 
 		$godam_settings_obj = array(
 			'brandImage' => $brand_image,
 			'brandColor' => $brand_color,
+			'playerSkin' => $player_skin,
 			'apiBase'    => RTGODAM_API_BASE,
 		);
 

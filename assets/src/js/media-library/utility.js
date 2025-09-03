@@ -153,17 +153,20 @@ function createVideoJsPlayer( container, { videoId, sources, playerOptions = {} 
 
 	// Build video HTML
 	const videoHtml = `
-        <video
-            id="${ videoId }"
-            class="video-js vjs-default-skin vjs-big-play-centered vjs-styles-dimensions"
-            controls
-            preload="auto"
-            width="100%"
-            height="auto"
-        >
-            ${ sources.map( ( source ) => `<source src="${ source.src }" type="${ source.type }" />` ).join( '\n' ) }
-        </video>
-    `;
+		<video
+			id="${ videoId }"
+			class="video-js vjs-big-play-centered vjs-fluid vjs-controls-enabled vjs-workinghover vjs-v8 vjs-${ videoId }-dimensions"
+			controls
+			preload="auto"
+			tabindex="-1"
+			lang="en-us"
+			translate="no"
+			role="region"
+			aria-label="Video Player"
+		>
+			${ sources.map( ( source ) => `<source src="${ source.src }" type="${ source.type }" />` ).join( '\n' ) }
+		</video>
+`;
 	container.insertAdjacentHTML( 'beforeend', videoHtml );
 
 	// Initialize Video.js player
@@ -189,6 +192,11 @@ function createVideoJsPlayer( container, { videoId, sources, playerOptions = {} 
 				},
 				...playerOptions,
 			} ).ready( function() {
+				if ( window.godamSettings?.playerSkin ) {
+					const skinClass = `godam-${ window.godamSettings.playerSkin.toLowerCase() }-skin`;
+					container.classList.add( skinClass );
+				}
+
 				if ( typeof this.qualityMenu === 'function' ) {
 					this.qualityMenu();
 				}
