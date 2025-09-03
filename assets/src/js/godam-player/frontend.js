@@ -28,6 +28,8 @@ import 'quill/dist/quill.snow.css';
  */
 import PlayerManager from './managers/playerManager.js';
 
+import './api/godam-api.js';
+
 library.add( fas );
 dom.watch();
 

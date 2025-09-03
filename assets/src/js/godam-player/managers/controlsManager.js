@@ -86,7 +86,7 @@ export default class ControlsManager {
 
 			createEl() {
 				const el = super.createEl();
-				el.classList.add( 'vjs-fullscreen-control', 'vjs-control', 'vjs-button' );
+				el.classList.add( 'vjs-fullscreen-control', 'vjs-control', 'vjs-button', 'godam-fullscreen-button' );
 
 				return el;
 			}
