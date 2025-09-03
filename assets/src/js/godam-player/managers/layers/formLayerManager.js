@@ -155,11 +155,8 @@ export default class FormLayerManager {
 				skipButton.textContent = __( 'Continue', 'godam' );
 				skipButton.classList.remove( 'hidden' );
 
-				const current = this.player.currentTime();
-				const expected = layer.displayTime;
-
 				// only track if we're close to the display time
-				if ( ! layerObj._submittedTracked && Math.abs( current - expected ) < 1 ) {
+				if ( ! layerObj._submittedTracked ) {
 					this.handleLayerInteraction( LAYER_TYPES.FORM, 'submitted', layer );
 					layerObj._submittedTracked = true;
 				}
