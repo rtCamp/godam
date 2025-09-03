@@ -526,6 +526,9 @@ class Media_Library extends Base {
 			}
 
 			$thumbnail_array = array_values( array_unique( $thumbnail_array ) );
+			if ( ! empty( $thumbnail_array ) ) {
+				update_post_meta( $attachment_id, 'rtgodam_media_thumbnails', $thumbnail_array );
+			}
 		}
 
 		$custom_thumbnails = get_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', true );
