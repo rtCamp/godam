@@ -325,7 +325,9 @@ if ( ! empty( $transcript_path ) ) {
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
-	<figure <?php echo wp_kses_data( $figure_attributes ); ?>>
+	<figure 
+		id="godam-player-container-<?php echo esc_attr( $instance_id ); ?>"
+		<?php echo wp_kses_data( $figure_attributes ); ?>>
 		<div class="godam-video-wrapper">
 			<?php if ( $show_overlay && ! empty( $inner_blocks_content ) ) : ?>
 				<div
@@ -393,6 +395,8 @@ if ( ! empty( $transcript_path ) ) {
 					}
 					?>
 				</video>
+				<!-- Add this to target godam uppy modal inside video. -->
+				<div id="uppy-godam-video-modal-container"></div>
 
 				<!-- Dynamically render shortcodes for form layers. -->
 				<?php
@@ -615,6 +619,9 @@ if ( ! empty( $transcript_path ) ) {
 
 		<?php if ( $caption && ! empty( $caption ) ) : ?>
 			<figcaption class="wp-element-caption rtgodam-video-caption"><?php echo esc_html( $caption ); ?></figcaption>
-		<?php endif; ?>
+			<?php
+			endif;
+				do_action( 'rtgodam_after_video_html', $attributes, $instance_id, $easydam_meta_data );
+		?>
 	</figure>
 <?php endif; ?>

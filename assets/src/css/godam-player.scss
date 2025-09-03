@@ -9,6 +9,9 @@
 @use "./cf7-godam-theme";
 @use './variables';
 
+// Video engagement styles.
+@use "./video-engagement";
+
 .rtgodam-video-caption {
 
 	margin-bottom: 1em;
@@ -130,6 +133,17 @@
 			opacity: 0.7;
 		}
 	}
+
+	&.godam-video-fullscreen {
+		position: fixed;
+		inset: 0;
+		width: 100vw;
+		height: 100vh;
+		background: #000;
+		z-index: 99999999;
+		display: flex;
+		align-items: center;
+	}
 }
 
 .easydam-video-container .video-js .vjs-big-play-button {
@@ -204,11 +218,6 @@
 
 .vjs-picture-in-picture-control {
 	order: 7;
-}
-
-.easydam-player.video-js {
-	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9 );
-	cursor: pointer;
 }
 
 .form-container {
@@ -1361,40 +1370,37 @@ body.godam-share-modal-open {
 	}
 }
 
-// Style for video player fullscreen button
+/* Style for video player fullscreen buttons */
 .video-js {
 
-	.vjs-custom-fullscreen-control {
+	.vjs-custom-fullscreen-exit-control {
+		position: fixed !important;
+		top: 0.75rem !important;
+		left: 0.5rem !important;
+		display: none !important;
+		height: 20px;
+		width: 20px;
 
-		.vjs-icon-placeholder {
+		span::before {
+			content: ''; /* Hide default icon */
+			background: url(../images/close.svg);
+			background-position: center;
+			background-repeat: no-repeat;
+			background-size: contain;
+			display: inline-block;
+		}
 
-			&.fullscreen-icon {
-				display: block;
-			}
-
-			&.exitscreen-icon {
-				display: none;
-			}
+		&.vjs-icon-placeholder {
+			color: var(--rtgodam-control-hover-color) !important;
 		}
 	}
 
 	&.vjs-fullscreen {
 
-		.vjs-custom-fullscreen-control {
-
-			.vjs-icon-placeholder {
-
-				&.fullscreen-icon {
-					display: none;
-				}
-
-				&.exitscreen-icon {
-					display: block;
-				}
-			}
+		.vjs-custom-fullscreen-exit-control {
+			display: block !important;
 		}
 	}
-
 
 	@container godam-player-default-skin (max-width: 480px) {
 
@@ -1585,6 +1591,11 @@ body.godam-share-modal-open {
 			}
 		}
 	}
+}
+
+.easydam-player.video-js {
+	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9 );
+	cursor: pointer;
 }
 
 .video-js .vjs-time-tooltip,
@@ -1894,4 +1905,65 @@ body.godam-share-modal-open {
 
 .godam-video-wrapper:has(.animate-video-loading) .godam-video-overlay-container {
 	display: none !important;
+}
+
+// Override `video-js button` style for uppy modal button.
+#uppy-godam-video-modal-container {
+
+	.uppy-Dashboard-close {
+		color: #ffffffe6;
+		cursor: pointer;
+		display: block;
+		font-size: 27px;
+		position: absolute;
+		top: -33px;
+		z-index: 1005;
+	}
+
+	.uppy-c-btn {
+		color: inherit;
+		display: inline-flex;
+		font-size: inherit;
+		font-weight: 500;
+		line-height: 1;
+		transition-duration: .3s;
+		transition-property: background-color, color;
+	}
+
+	.uppy-Dashboard-browse {
+		color: #1269cf;
+		cursor: pointer;
+	}
+
+	.uppy-ScreenCapture-button {
+		border-radius: 50%;
+		color: #fff;
+		cursor: pointer;
+		transition: all .3s;
+
+		&--video {
+			background: #e32437;
+			color: #fff;
+		}
+
+		&--submit {
+			background-color: #1269cf;
+			margin-left: 12px;
+		}
+	}
+
+	.uppy-Webcam-button {
+		background-color: #e32437;
+		border-radius: 50%;
+		color: #fff;
+		cursor: pointer;
+		transition: all .3s;
+	}
+
+	@media only screen and (min-width: 820px) {
+
+		.uppy-Dashboard-close {
+			font-size: 35px;
+		}
+	}
 }

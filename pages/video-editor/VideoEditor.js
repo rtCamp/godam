@@ -411,7 +411,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 						</Tooltip>
 						<Button
 							variant="primary"
-							href={ `/?godam_page=video-preview&id=${ attachmentID }` }
+							href={ `${ window?.godamRestRoute?.homeUrl }?godam_page=video-preview&id=${ attachmentID }` }
 							target="_blank"
 							className="godam-button"
 							icon={ seen }

@@ -390,8 +390,9 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	public function ajax_upload() {
 
 		$field_id = ! empty( $_POST['field_id'] ) ? intval( sanitize_text_field( wp_unslash( $_POST['field_id'] ) ) ) : 0;
+		$nonce    = ! empty( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
 
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'godam_recorder_' . $field_id ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'godam_recorder_' . $field_id ) ) {
 			wp_send_json_error( __( 'Nonce is not valid', 'godam' ), 400 );
 		}
 

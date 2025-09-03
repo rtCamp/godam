@@ -15,6 +15,7 @@ import ChaptersManager from './managers/chaptersManager.js';
 import AdsManager from './managers/adsManager.js';
 import HoverManager from './managers/hoverManager.js';
 import ShareManager from './managers/shareManager.js';
+import MenuButtonHoverManager from './managers/menuButtonHover.js';
 import { getLayerInteractions } from './utils/storage.js';
 
 /**
@@ -94,6 +95,7 @@ export default class GodamVideoPlayer {
 
 			// Now that managers are initialized, we can safely access them
 			this.setupEventListeners();
+			new MenuButtonHoverManager( this.player );
 		} );
 
 		this.player.on( 'play', () => {

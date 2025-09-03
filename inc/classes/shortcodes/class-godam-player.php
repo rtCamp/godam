@@ -29,7 +29,7 @@ class GoDAM_Player {
 		add_action( 'wp_head', array( $this, 'godam_output_admin_player_css' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'godam_skin_styles_enqueue' ) );
 	}
-	
+
 	/**
 	 * Outputs custom css from video player settings tab input field.
 	 */
@@ -53,7 +53,7 @@ class GoDAM_Player {
 		wp_register_script(
 			'godam-player-frontend-script',
 			RTGODAM_URL . 'assets/build/js/godam-player-frontend.min.js',
-			array( 'wp-i18n' ),
+			array( 'wp-data', 'wp-url', 'wp-element', 'wp-i18n', 'wp-api-fetch' ),
 			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.js' ),
 			true
 		);
@@ -112,7 +112,11 @@ class GoDAM_Player {
 			'godam-player-frontend-script',
 			'godamData',
 			array(
-				'apiBase' => RTGODAM_API_BASE,
+				'apiBase'                 => RTGODAM_API_BASE,
+				'currentLoggedInUserData' => rtgodam_get_current_logged_in_user_data(),
+				'loginUrl'                => apply_filters( 'rtgodam_site_login_url', wp_login_url() . '?redirect_to=' . rawurlencode( get_permalink() ) ),
+				'registrationUrl'         => apply_filters( 'rtgodam_site_registration_url', wp_registration_url() . '&redirect_to=' . rawurlencode( get_permalink() ) ),
+				'defaultAvatar'           => get_avatar_url( 0 ),
 			)
 		);
 	}
@@ -151,6 +155,7 @@ class GoDAM_Player {
 				'transcoded_url' => '',
 				'poster'         => '',
 				'aspectRatio'    => '',
+				'engagements'    => '',
 			),
 			$atts,
 			'godam_video'
@@ -168,7 +173,7 @@ class GoDAM_Player {
 		wp_enqueue_script( 'godam-player-analytics-script' );
 		wp_enqueue_style( 'godam-player-frontend-style' );
 		wp_enqueue_style( 'godam-player-style' );
-		
+
 		$godam_settings = get_option( 'rtgodam-settings', array() );
 		$selected_skin  = $godam_settings['video_player']['player_skin'] ?? '';
 		if ( 'Minimal' === $selected_skin ) {
