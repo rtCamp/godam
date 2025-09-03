@@ -556,31 +556,28 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		AttachmentDetailsTwoColumn.prototype.render.apply( this, arguments );
 
 		// Check if the attachment is a video and render the edit buttons.
-		if ( this.model.get( 'type' ) === 'video' ) {
+		if ( 'video' === this.model.get( 'type' ) ) {
 			const attachmentId = this.model.get( 'id' );
 			const attachmentUrl = this.model.get( 'url' );
-			const attachmentType = this.model.get( 'type' );
 
 			const hlsUrl = this.model.get( 'hls_url' );
 			const mpdUrl = this.model.get( 'transcoded_url' );
 
-			if ( attachmentType === 'video' ) {
-				const wpMediaWrapper = this.el.querySelector( '.wp-media-wrapper.wp-video' );
+			const wpMediaWrapper = this.el.querySelector( '.wp-media-wrapper.wp-video' );
 
-				if ( wpMediaWrapper ) {
-					const videoId = `videojs-player-${ attachmentId }`;
-					const sources = [
-						...( mpdUrl ? [ { src: mpdUrl, type: 'application/dash+xml' } ] : [] ),
-						...( hlsUrl ? [ { src: hlsUrl, type: 'application/x-mpegURL' } ] : [] ),
-						{ src: attachmentUrl, type: 'video/mp4' },
-					];
+			if ( wpMediaWrapper ) {
+				const videoId = `videojs-player-${ attachmentId }`;
+				const sources = [
+					...( mpdUrl ? [ { src: mpdUrl, type: 'application/dash+xml' } ] : [] ),
+					...( hlsUrl ? [ { src: hlsUrl, type: 'application/x-mpegURL' } ] : [] ),
+					{ src: attachmentUrl, type: 'video/mp4' },
+				];
 
-					createVideoJsPlayer( wpMediaWrapper, {
-						videoId,
-						sources,
-						playerOptions: {},
-					} );
-				}
+				createVideoJsPlayer( wpMediaWrapper, {
+					videoId,
+					sources,
+					playerOptions: {},
+				} );
 			}
 
 			this.renderVideoActions();

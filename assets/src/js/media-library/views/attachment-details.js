@@ -120,12 +120,11 @@ export default AttachmentDetails?.extend( {
 
 		const attachmentId = this.model.get( 'id' );
 		const attachmentUrl = this.model.get( 'url' );
-		const attachmentType = this.model.get( 'type' );
 
 		const hlsUrl = this.model.get( 'hls_url' );
 		const mpdUrl = this.model.get( 'transcoded_url' );
 
-		if ( attachmentType === 'video' ) {
+		if ( 'video' === this.model.get( 'type' ) ) {
 			const wpMediaWrapper = this.el.querySelector( '.wp-media-wrapper.wp-video' );
 
 			if ( wpMediaWrapper ) {

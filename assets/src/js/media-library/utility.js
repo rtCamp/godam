@@ -152,19 +152,20 @@ function createVideoJsPlayer( container, { videoId, sources, playerOptions = {} 
 	}
 
 	// Build video HTML
-	const videoHtml = `
-        <video
-            id="${ videoId }"
-            class="video-js vjs-default-skin vjs-big-play-centered vjs-styles-dimensions"
-            controls
-            preload="auto"
-            width="100%"
-            height="auto"
-        >
-            ${ sources.map( ( source ) => `<source src="${ source.src }" type="${ source.type }" />` ).join( '\n' ) }
-        </video>
-    `;
-	container.insertAdjacentHTML( 'beforeend', videoHtml );
+	const videoEl = document.createElement( 'video' );
+	videoEl.id = String( videoId );
+	videoEl.className = 'video-js vjs-default-skin vjs-big-play-centered vjs-styles-dimensions';
+	videoEl.setAttribute( 'controls', '' );
+	videoEl.setAttribute( 'preload', 'auto' );
+	videoEl.style.width = '100%';
+	videoEl.style.height = 'auto';
+	sources.forEach( ( source ) => {
+		const sourceEl = document.createElement( 'source' );
+		sourceEl.src = String( source.src );
+		sourceEl.type = String( source.type );
+		videoEl.appendChild( sourceEl );
+	} );
+	container.appendChild( videoEl );
 
 	// Initialize Video.js player
 	setTimeout( () => {
