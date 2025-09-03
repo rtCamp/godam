@@ -99,7 +99,7 @@ function playerAnalytics() {
 			jobId = null,
 			videoLength,
 		) {
-			if ( ( ! videoId && ! jobId ) || Object.keys( layerInteractions ).length === 0 ) {
+			if ( ( ! videoId && ! jobId ) || ! layerInteractions || Object.keys( layerInteractions ).length === 0 ) {
 				return; // Must have at least a videoId and layerType
 			}
 
