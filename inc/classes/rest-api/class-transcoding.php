@@ -377,6 +377,9 @@ class Transcoding extends Base {
 			);
 		}
 
+		delete_post_meta( $attachment_id, 'rtgodam_transcoding_status' );
+		delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg' );
+
 		$mime_type = get_post_mime_type( $attachment_id );
 		$title     = get_the_title( $attachment_id );
 	
