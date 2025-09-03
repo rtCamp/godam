@@ -2,10 +2,10 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "godam/srfm-recorder",
-	"title": "Godam Recorder",
+	"title": "GoDAM Recorder",
 	"icon": "video-alt",
 	"category": "sureforms",
-	"description": "Recorder field for sureforms",
+	"description": "Enable video submissions inside forms using the GoDAM Recorder field that supports webcam and screencast",
 	"keywords": [
 		"sureforms",
 		"godam",
