@@ -119,8 +119,8 @@ class Layers {
 			}
 
 			// Add form layer if configure.
-			if ( isset( $global_layers['form'] ) && is_array( $global_layers['form'] ) ) {
-				$form_layer = self::create_form_layer( $global_layers['form'], $video_duration );
+			if ( isset( $global_layers['forms'] ) && is_array( $global_layers['forms'] ) ) {
+				$form_layer = self::create_form_layer( $global_layers['forms'], $video_duration );
 				if ( ! empty( $form_layer ) ) {
 					$merged_layers[] = $form_layer;
 				}
@@ -213,19 +213,44 @@ class Layers {
 			return array();
 		}
 
-		$defaults  = isset( self::$defaults['form'] ) ? self::$defaults['form'] : array();
 		$placement = isset( $form_config['placement'] ) ? $form_config['placement'] : self::PLACEMENT_START;
+		$form_type = 'gravity'; // TODO: think and make this more dynamic than this one.
 
-		return array(
+		$base_layer = array(
 			'type'        => self::LAYER_TYPE_FORM,
 			'id'          => self::generate_uuid_v4(),
 			'displayTime' => self::get_placement_time( $placement, $video_duration ),
-			'formId'      => isset( $form_config['formId'] ) ? $form_config['formId'] : ( isset( $defaults['formId'] ) ? $defaults['formId'] : '' ),
-			'formTitle'   => isset( $form_config['formTitle'] ) ? $form_config['formTitle'] : ( isset( $defaults['formTitle'] ) ? $defaults['formTitle'] : '' ),
-			'formFields'  => isset( $form_config['formFields'] ) ? $form_config['formFields'] : ( isset( $defaults['formFields'] ) ? $defaults['formFields'] : array() ),
-			'formAction'  => isset( $form_config['formAction'] ) ? $form_config['formAction'] : '',
-			'formMethod'  => isset( $form_config['formMethod'] ) ? $form_config['formMethod'] : 'POST',
 		);
+
+		return self::build_form_layer_by_type( $base_layer, $form_type, $form_config );
+	}
+
+	/**
+	 * Build form layer data based on type.
+	 *
+	 * @param array  $base_layer Base layer configuration.
+	 * @param string $form_type Form type.
+	 * @param array  $form_config Form configuration.
+	 * @return array Complete form layer data.
+	 */
+	private static function build_form_layer_by_type( $base_layer, $form_type, $form_config ) {
+		$defaults = isset( self::$defaults['form'] ) ? self::$defaults['form'] : array();
+
+		switch ( $form_type ) {
+			case 'gravity':
+				return array_merge(
+					$base_layer,
+					array(
+						'form_type' => $form_type,
+						'gf_id'     => isset( $form_config['form_id'] ) ? $form_config['form_id'] : ( isset( $defaults['form_id'] ) ? $defaults['form_id'] : '' ),
+					)
+				);
+
+			// Future form types can be added here.
+
+			default:
+				return $base_layer;
+		}
 	}
 
 	/**

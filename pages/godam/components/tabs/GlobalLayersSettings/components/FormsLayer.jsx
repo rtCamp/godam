@@ -11,7 +11,6 @@ import {
 	Panel,
 	PanelBody,
 	SelectControl,
-	RangeControl,
 	Spinner,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
@@ -32,11 +31,6 @@ const FormsLayer = () => {
 	const [ formPlugins, setFormPlugins ] = useState( [] );
 	const [ availableForms, setAvailableForms ] = useState( [] );
 	const [ isLoadingForms, setIsLoadingForms ] = useState( false );
-
-	// Debug: Watch availableForms changes
-	useEffect( () => {
-
-	}, [ availableForms ] );
 
 	// Function to handle setting change
 	const handleSettingChange = ( key, value ) => {
@@ -121,12 +115,6 @@ const FormsLayer = () => {
 		);
 	}
 
-	// Debug logging - Check if mediaSettings and global_layers structure exists
-
-	// Ensure we have default values if the structure doesn't exist
-	const formsSettings = mediaSettings?.global_layers?.forms || {};
-	const duration = formsSettings.duration ?? 0;
-
 	return (
 		<Panel header={ __( 'Forms Layer', 'godam' ) } className="godam-panel">
 			<PanelBody opened>
@@ -184,28 +172,6 @@ const FormsLayer = () => {
 										value={ mediaSettings?.global_layers?.forms?.placement || 'end' }
 										options={ placementOptions }
 										onChange={ ( value ) => handleSettingChange( 'placement', value ) }
-									/>
-
-									{ mediaSettings?.global_layers?.forms?.placement === 'middle' && (
-										<RangeControl
-											className="godam-range mb-4"
-											label={ __( 'Form Position (seconds)', 'godam' ) }
-											help={ __( 'Specify when the form should appear in the middle of the video', 'godam' ) }
-											value={ mediaSettings?.global_layers?.forms?.position || 30 }
-											onChange={ ( value ) => handleSettingChange( 'position', value ) }
-											min={ 1 }
-											max={ 300 }
-										/>
-									) }
-
-									<RangeControl
-										className="godam-range mb-4"
-										label={ __( 'Form Display Duration (seconds)', 'godam' ) }
-										help={ __( 'How long the form should be displayed (0 = until interaction)', 'godam' ) }
-										value={ duration }
-										onChange={ ( value ) => handleSettingChange( 'duration', value ) }
-										min={ 0 }
-										max={ 60 }
 									/>
 								</>
 							) }

@@ -67,7 +67,7 @@ if ( $is_virtual ) {
 			'posts_per_page' => 1,
 			'post_status'    => 'any',
 			'meta_key'       => '_godam_original_id',
-			'meta_value'     => sanitize_text_field( $attachment_id ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_valu.
+			'meta_value'     => sanitize_text_field( $attachment_id ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			'fields'         => 'ids',
 		)
 	);
@@ -241,12 +241,11 @@ $video_duration = rtgodam_get_video_duration( $attachment_id );
 /**
  * Initialize the Ads class which helps get the appropriate ad tag URL.
  */
-$ad_tag_url = Ads::get_ad_tag_url( $attachment_id, $global_settings, $attachment_settings );
+$ad_tag_url = Ads::get_ad_tag_url( $attachment_id, $godam_settings, $easydam_meta_data );
 /**
  * Merge layers with global settings
  */
 $layers = Layers::merge_layers( $layers, $godam_settings, $easydam_meta_data, $video_duration );
-
 
 $video_config = wp_json_encode(
 	array(
@@ -507,7 +506,7 @@ if ( ! empty( $transcript_path ) ) {
 										<div class="form-container jetpack-form-container" <?php echo ! empty( $origin_post_id ) ? 'data-origin-post-id="' . esc_attr( $origin_post_id ) . '"' : ''; ?>>
 											<?php
 												// HTML generated dynamically using Block content.
-												// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscape.
+												// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 												echo $form_html;
 											?>
 										</div>
