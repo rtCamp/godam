@@ -950,6 +950,23 @@ class Video_Migration extends Base {
 	}
 
 	/**
+	 * Fetch Vimeo video id from url.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $vimeo_url The Vimeo video URL to fetch the ID from.
+	 * @return string The Vimeo video ID or same vimeo URL if not found.
+	 */
+	private function fetch_vimeo_video_id( string $vimeo_url ) {
+		if ( preg_match( '/vimeo\.com\/(?:video\/)?(\d+)/', $vimeo_url, $matches ) ) {
+			return $matches[1];
+		}
+
+		// Strip out the query parameters.
+		$vimeo_url_stripped = strtok( $vimeo_url, '?' );
+	}
+
+	/**
 	 * Create an attachment from a Vimeo video URL.
 	 *
 	 * Fetches video information from GoDAM Central and creates a WordPress attachment
@@ -966,6 +983,9 @@ class Video_Migration extends Base {
 			return new \WP_Error( 'missing_url', __( 'Vimeo URL is required.', 'godam' ) );
 		}
 
+		// Fetch vimeo video id from url.
+		$vimeo_video_id = $this->fetch_vimeo_video_id( $vimeo_url );
+
 		// Get API key from options.
 		$api_key = get_option( 'rtgodam-api-key', '' );
 		if ( empty( $api_key ) ) {
@@ -977,7 +997,7 @@ class Video_Migration extends Base {
 		$request_url = add_query_arg(
 			array(
 				'api_key'   => $api_key,
-				'vimeo_url' => $vimeo_url,
+				'vimeo_url' => $vimeo_video_id,
 			),
 			$request_url
 		);
@@ -1010,7 +1030,8 @@ class Video_Migration extends Base {
 		// Prepare attachment data.
 		$attachment = array(
 			'post_mime_type' => 'video/mp4',
-			'post_title'     => $video_info['orignal_file_name'] ?? '',
+			'post_title'     => $video_info['title'] ?? $video_info['orignal_file_name'] ?? '',
+			'post_content'   => $video_info['description'] ?? '',
 			'post_status'    => 'inherit',
 		);
 
