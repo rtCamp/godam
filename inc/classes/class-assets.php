@@ -320,13 +320,15 @@ class Assets {
 	private function enqueue_godam_settings() {
 		$godam_settings = get_option( 'rtgodam-settings' );
 
-		$brand_image = $godam_settings['video_player']['brand_image'] ?? '';
-		$brand_color = $godam_settings['video_player']['brand_color'] ?? '';
+		$brand_image         = $godam_settings['video_player']['brand_image'] ?? '';
+		$brand_color         = $godam_settings['video_player']['brand_color'] ?? '';
+		$custom_admin_player = $godam_settings['video_player']['use_custom_admin_player'] ?? true;
 
 		$godam_settings_obj = array(
-			'brandImage' => $brand_image,
-			'brandColor' => $brand_color,
-			'apiBase'    => RTGODAM_API_BASE,
+			'brandImage'           => $brand_image,
+			'brandColor'           => $brand_color,
+			'apiBase'              => RTGODAM_API_BASE,
+			'useCustomAdminPlayer' => $custom_admin_player,
 		);
 
 		if ( ! rtgodam_is_api_key_valid() ) {

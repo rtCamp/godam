@@ -48,11 +48,12 @@ class Settings extends Base {
 				'enable_folder_organization' => true,
 			),
 			'video_player' => array(
-				'brand_image'    => '',
-				'brand_color'    => '#2B333FB3',
-				'brand_image_id' => null,
-				'custom_css'     => '',
-				'player_skin'    => 'Default',
+				'brand_image'             => '',
+				'brand_color'             => '#2B333FB3',
+				'brand_image_id'          => null,
+				'custom_css'              => '',
+				'player_skin'             => 'Default',
+				'use_custom_admin_player' => true,
 			),
 			'ads_settings' => array(
 				'enable_global_video_ads' => false,
@@ -239,7 +240,7 @@ class Settings extends Base {
 	public function get_easydam_settings() {
 		// Retrieve settings from the database.
 		$easydam_settings = get_option( 'rtgodam-settings', $this->get_default_settings() );
-		
+
 		return new \WP_REST_Response( $easydam_settings, 200 );
 	}
 
@@ -304,11 +305,12 @@ class Settings extends Base {
 				'enable_folder_organization' => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ?? $default['general']['enable_folder_organization'] ),
 			),
 			'video_player' => array(
-				'brand_image'    => sanitize_text_field( $settings['video_player']['brand_image'] ?? $default['video_player']['brand_image'] ),
-				'brand_color'    => $this->sanitize_color_value( $settings['video_player']['brand_color'] ?? $default['video_player']['brand_color'] ),
-				'brand_image_id' => absint( $settings['video_player']['brand_image_id'] ?? $default['video_player']['brand_image_id'] ),
-				'custom_css'     => sanitize_textarea_field( $settings['video_player']['custom_css'] ?? $default['video_player']['custom_css'] ),
-				'player_skin'    => sanitize_text_field( $settings['video_player']['player_skin'] ?? $default['video_player']['player_skin'] ),
+				'brand_image'             => sanitize_text_field( $settings['video_player']['brand_image'] ?? $default['video_player']['brand_image'] ),
+				'brand_color'             => $this->sanitize_color_value( $settings['video_player']['brand_color'] ?? $default['video_player']['brand_color'] ),
+				'brand_image_id'          => absint( $settings['video_player']['brand_image_id'] ?? $default['video_player']['brand_image_id'] ),
+				'custom_css'              => sanitize_textarea_field( $settings['video_player']['custom_css'] ?? $default['video_player']['custom_css'] ),
+				'player_skin'             => sanitize_text_field( $settings['video_player']['player_skin'] ?? $default['video_player']['player_skin'] ),
+				'use_custom_admin_player' => rest_sanitize_boolean( $settings['video_player']['use_custom_admin_player'] ?? $default['video_player']['use_custom_admin_player'] ),
 			),
 			'ads_settings' => array(
 				'enable_global_video_ads' => rest_sanitize_boolean( $settings['ads_settings']['enable_global_video_ads'] ?? $default['ads_settings']['enable_global_video_ads'] ),
@@ -327,7 +329,7 @@ class Settings extends Base {
 		if ( empty( $color ) ) {
 			return '';
 		}
-		
+
 		// Handle hex colors (3, 6, or 8 characters with alpha).
 		if ( preg_match( '/^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/', $color ) ) {
 			return $color;

@@ -34,6 +34,7 @@ const initialState = {
 		brand_image_id: null,
 		custom_css: VideoCustomCSSTemplate,
 		player_skin: 'Default',
+		use_custom_admin_player: true,
 	},
 	ads_settings: {
 		enable_global_video_ads: false,

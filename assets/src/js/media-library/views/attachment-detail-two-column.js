@@ -555,8 +555,11 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		// Call the parent render method.
 		AttachmentDetailsTwoColumn.prototype.render.apply( this, arguments );
 
+		const isVirtual = this.model.get( 'virtual' );
+		const useCustomPlayer = window.godamSettings?.useCustomAdminPlayer;
+
 		// Check if the attachment is a video and render the edit buttons.
-		if ( 'video' === this.model.get( 'type' ) ) {
+		if ( 'video' === this.model.get( 'type' ) && ( useCustomPlayer || isVirtual ) ) {
 			const attachmentId = this.model.get( 'id' );
 			const attachmentUrl = this.model.get( 'url' );
 

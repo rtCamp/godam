@@ -124,7 +124,10 @@ export default AttachmentDetails?.extend( {
 		const hlsUrl = this.model.get( 'hls_url' );
 		const mpdUrl = this.model.get( 'transcoded_url' );
 
-		if ( 'video' === this.model.get( 'type' ) ) {
+		const isVirtual = this.model.get( 'virtual' );
+		const useCustomPlayer = window.godamSettings?.useCustomAdminPlayer;
+
+		if ( 'video' === this.model.get( 'type' ) && ( useCustomPlayer || isVirtual ) ) {
 			const wpMediaWrapper = this.el.querySelector( '.wp-media-wrapper.wp-video' );
 
 			if ( wpMediaWrapper ) {
