@@ -425,6 +425,12 @@ class RTGODAM_Transcoder_Handler {
 	public function update_usage( $key ) {
 
 		$response = rtgodam_verify_api_key( $key );
+
+		// Check if response is WP_Error before accessing array elements.
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
 		update_option( 'rtgodam-usage', array( $key => (object) $response['data'] ) );
 
 		return $response;
