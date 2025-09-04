@@ -670,3 +670,126 @@ function godam_get_transcript_path( $job_id ) {
 
 	return ! empty( $transcript_path ) ? $transcript_path : false;
 }
+
+/**
+ * Process HTML content to scope CSS and JavaScript automatically for CTA layers
+ * This prevents global scope pollution while allowing unrestricted HTML/CSS/JS
+ *
+ * @param string $html_content Raw HTML content from user.
+ * @param string $scope_id Unique scope identifier for this layer.
+ * @return string Processed HTML with scoped styles and scripts.
+ */
+function rtgodam_process_cta_html_content( $html_content, $scope_id ) {
+	if ( empty( $html_content ) || empty( $scope_id ) ) {
+		return $html_content;
+	}
+
+	$processed_content = $html_content;
+
+	// Process CSS styles - scope them to both the container and video editor.
+	$processed_content = preg_replace_callback(
+		'/<style[^>]*>(.*?)<\/style>/is',
+		function ( $matches ) use ( $scope_id ) {
+			$css_content = $matches[1];
+
+			// Scope all CSS rules to both the frontend container and video editor.
+			$scoped_css = preg_replace_callback(
+				'/([^{}]+)\{/',
+				function ( $css_matches ) use ( $scope_id ) {
+					$selector = trim( $css_matches[1] );
+					// Return @rules like @import, @media, @keyframes unchanged.
+					if ( strpos( $selector, '@' ) === 0 ) {
+						return $css_matches[0];
+					}
+
+					// Split multiple selectors and scope each one.
+					$selectors        = explode( ',', $selector );
+					$scoped_selectors = array();
+
+					foreach ( $selectors as $single_selector ) {
+						$trimmed_selector = trim( $single_selector );
+
+						// Skip if already scoped to avoid double scoping.
+						if ( strpos( $trimmed_selector, '#' . $scope_id ) !== false || 
+							strpos( $trimmed_selector, '.easydam-layer--cta-html' ) !== false ) {
+							$scoped_selectors[] = $trimmed_selector;
+							continue;
+						}
+
+						// Add both frontend scope and video editor scope.
+						$frontend_scope = '#' . $scope_id . ' ' . $trimmed_selector;
+						$editor_scope   = '.easydam-layer--cta-html ' . $trimmed_selector;
+						
+						$scoped_selectors[] = $frontend_scope . ', ' . $editor_scope;
+					}
+
+					return implode( ', ', $scoped_selectors ) . ' {';
+				},
+				$css_content
+			);
+			return '<style>' . $scoped_css . '</style>';
+		},
+		$processed_content
+	);
+
+	// Process JavaScript - wrap in scope and add event delegation.
+	$processed_content = preg_replace_callback(
+		'/<script[^>]*>(.*?)<\/script>/is',
+		function ( $matches ) use ( $scope_id ) {
+			$js_content = $matches[1];
+			
+			// Create scoped JavaScript that works within the container.
+			$scoped_js = "
+				(function() {
+					const scope = document.getElementById('" . esc_js( $scope_id ) . "');
+					if (!scope) return;
+					
+					// Store original functions
+					const originalGetElementsByTagName = document.getElementsByTagName;
+					const originalQuerySelector = document.querySelector;
+					const originalQuerySelectorAll = document.querySelectorAll;
+					const originalGetElementById = document.getElementById;
+					
+					// Override global DOM functions to work within scope
+					document.getElementsByTagName = function(tagName) {
+						if (tagName.toLowerCase() === 'html') {
+							// Return the video container or the scope itself for 'html' queries
+							const videoContainer = scope.closest('.easydam-video-container') || scope.closest('.easydam-layer');
+							return videoContainer ? [videoContainer] : [scope];
+						}
+						return scope.getElementsByTagName(tagName);
+					};
+					
+					document.querySelector = function(selector) {
+						return scope.querySelector(selector);
+					};
+					
+					document.querySelectorAll = function(selector) {
+						return scope.querySelectorAll(selector);
+					};
+					
+					document.getElementById = function(id) {
+						return scope.querySelector('#' + id);
+					}
+					
+					try {
+						" . $js_content . "
+					} catch(error) {
+						console.error('CTA Layer Script Error:', error);
+					} finally {
+						// Restore original functions.
+						document.getElementsByTagName = originalGetElementsByTagName;
+						document.querySelector = originalQuerySelector;
+						document.querySelectorAll = originalQuerySelectorAll;
+						document.getElementById = originalGetElementById;
+					}
+				})();
+			";
+			
+			return '<script>' . $scoped_js . '</script>';
+		},
+		$processed_content
+	);
+
+	return $processed_content;
+}
