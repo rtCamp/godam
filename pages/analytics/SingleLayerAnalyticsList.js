@@ -76,7 +76,7 @@ const SingleLayerAnalyticsList = ( { activeTab, dateRange, attachmentID } ) => {
 		// If daily_breakdown is missing or empty, bail out
 		if (
 			! Array.isArray( dailyBreakdown ) ||
-      dailyBreakdown.length === 0
+		dailyBreakdown.length === 0
 		) {
 			return;
 		}
@@ -128,7 +128,6 @@ const SingleLayerAnalyticsList = ( { activeTab, dateRange, attachmentID } ) => {
 
 			{ ! isLoading && ! isFetching && layerAnalyticsDataFetched?.individual_layers?.length > 0 && (
 				<div className="grid grid-cols-[3fr_3fr_2fr] h-[350px]">
-
 					<div className="overflow-auto">
 						<div className="divide-y px-6">
 							{ layerAnalyticsDataFetched?.individual_layers?.map(
@@ -144,7 +143,7 @@ const SingleLayerAnalyticsList = ( { activeTab, dateRange, attachmentID } ) => {
 													: `${ activeTab } ${ __( 'Layer', 'godam' ) }` }
 											</p>
 											<p className="text-sm text-zinc-500">
-												Position:{ ' ' }
+												{ __( 'Position:', 'godam' ) }{ ' ' }
 												<span className="font-medium text-black">
 													{ item.timestamp.toFixed( 2 ) }
 												</span>{ ' ' }
@@ -193,7 +192,7 @@ const SingleLayerAnalyticsList = ( { activeTab, dateRange, attachmentID } ) => {
 									{ layerAnalyticsDataFetched?.cumulative[ metric ] }
 								</p>
 								<p className="text-sm text-zinc-500 mt-1 whitespace-nowrap">
-									Total { labelMap[ metric ] || metric }
+									{ __( 'Total', 'godam' ) } { labelMap[ metric ] || metric }
 								</p>
 							</div>
 						) ) }

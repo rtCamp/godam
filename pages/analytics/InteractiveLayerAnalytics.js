@@ -13,6 +13,18 @@ import { __ } from '@wordpress/i18n';
  */
 import SingleLayerAnalyticsList from './SingleLayerAnalyticsList.js';
 
+/**
+ * InteractiveLayerAnalytics Component
+ *
+ * Renders the analytics dashboard section for interactive video layers (CTA, Hotspot, Form).
+ * Provides tab-based navigation between layer types and a date range filter to view
+ * performance metrics over different time periods.
+ *
+ * @param {Object}        props              - Component props.
+ * @param {number|string} props.attachmentID - The WordPress media attachment ID of the video
+ *
+ * @return {JSX.Element} A styled container with tabs, date filter, and analytics list.
+ */
 const InteractiveLayerAnalytics = ( { attachmentID } ) => {
 	const [ activeTab, setActiveTab ] = useState( 'CTA' );
 	const [ dateRange, setDateRange ] = useState( '7d' );

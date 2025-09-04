@@ -46,7 +46,7 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 	const isDuplicateTime = layers?.some(
 		( singleLayer ) =>
 			Number( singleLayer.displayTime ) === Number( layerTime ) &&
-        singleLayer?.id !== layer?.id,
+		singleLayer?.id !== layer?.id,
 	);
 
 	/**

@@ -50,8 +50,7 @@ export default class HotspotLayerManager {
 	 * @param {number} currentTime - Current video time in seconds
 	 */
 	handleHotspotLayersTimeUpdate( currentTime ) {
-		const blockedByLayer =
-      this.isDisplayingLayers?.[ this.currentPlayerVideoInstanceId ] === true;
+		const blockedByLayer = this.isDisplayingLayers?.[ this.currentPlayerVideoInstanceId ] === true;
 
 		this.hotspotLayers.forEach( ( layerObj ) => {
 			if ( ! layerObj.show ) {
@@ -60,7 +59,7 @@ export default class HotspotLayerManager {
 
 			const endTime = layerObj.displayTime + layerObj.duration;
 			const isActive =
-        currentTime >= layerObj.displayTime && currentTime < endTime;
+		currentTime >= layerObj.displayTime && currentTime < endTime;
 
 			if ( blockedByLayer ) {
 				if ( ! layerObj.layerElement.classList.contains( 'overlapped' ) ) {
@@ -174,8 +173,7 @@ export default class HotspotLayerManager {
 		hotspotDiv.style.top = `${ pixelY }px`;
 
 		// Sizing
-		const fallbackDiameter =
-      hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
+		const fallbackDiameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
 		const pixelDiameter = ( fallbackDiameter / baseWidth ) * containerWidth;
 		hotspotDiv.style.width = `${ pixelDiameter }px`;
 		hotspotDiv.style.height = `${ pixelDiameter }px`;
@@ -398,8 +396,7 @@ export default class HotspotLayerManager {
 				hotspotDiv.style.top = `${ pixelY }px`;
 
 				// Recalc size
-				const fallbackDiameter =
-          hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
+				const fallbackDiameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
 				const pixelDiameter = ( fallbackDiameter / baseWidth ) * containerWidth;
 				hotspotDiv.style.width = `${ pixelDiameter }px`;
 				hotspotDiv.style.height = `${ pixelDiameter }px`;

@@ -503,22 +503,23 @@ class Analytics extends Base {
 		$transcoded_url = $attachment_id ? rtgodam_get_transcoded_url_from_attachment( $attachment_id ) : '';
 		$job_id         = '';
 
+		if ( empty( $api_key ) || empty( $account_token ) || 'unverified' === $account_token ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => __( 'Missing API key.', 'godam' ),
+					'errorType' => 'missing_key',
+				),
+				200
+			);
+		}
+
 		if ( $attachment_id && ! empty( $transcoded_url ) ) {
 			$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
 
 			if ( empty( $job_id ) ) {
 				$job_id = get_post_meta( $attachment_id, '_godam_original_id', true );
 			}
-		}
-
-		if ( empty( $account_token ) || 'unverified' === $account_token ) {
-			return new WP_REST_Response(
-				array(
-					'status'  => 'error',
-					'message' => __( 'Invalid or unverified API key.', 'godam' ),
-				),
-				401
-			);
 		}
 
 		$microservice_url = RTGODAM_ANALYTICS_BASE . '/processed-layer-analytics/';
@@ -546,13 +547,36 @@ class Analytics extends Base {
 			);
 		}
 
-		$body = wp_remote_retrieve_body( $response );
-		$data = json_decode( $body, true );
+		$http_code = wp_remote_retrieve_response_code( $response );
+		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
+		$detail    = $body['detail'] ?? __( 'Unexpected error from analytics server.', 'godam' );
+
+		if ( 404 === $http_code || 400 === $http_code ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => $detail,
+					'errorType' => 'invalid_key',
+				),
+				200
+			);
+		}
+
+		if ( $http_code >= 500 ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => $detail,
+					'errorType' => 'microservice_error',
+				),
+				200
+			);
+		}
 
 		return new WP_REST_Response(
 			array(
 				'status'          => 'success',
-				'layer_analytics' => $data['layer_analytics'] ?? array(),
+				'layer_analytics' => $body['layer_analytics'] ?? array(),
 			),
 			200
 		);

@@ -40,7 +40,7 @@ export async function fetchAnalyticsData( videoId, siteUrl ) {
 
 		if (
 			result.status === 'error' &&
-      result.message.includes( 'Invalid or unverified API key' )
+	result.message.includes( 'Invalid or unverified API key' )
 		) {
 			showAPIActivationMessage();
 			return null;
@@ -274,7 +274,7 @@ export function singleMetricsChart(
 			// Format value
 			const val = d[ selectedMetric ];
 			const formattedVal =
-        selectedMetric === 'watch_time' ? `${ val.toFixed( 2 ) }s` : `${ val.toFixed( 2 ) }${ metricOption.unit }`;
+		selectedMetric === 'watch_time' ? `${ val.toFixed( 2 ) }s` : `${ val.toFixed( 2 ) }${ metricOption.unit }`;
 
 			// Position tooltip
 			const tooltipX = x( d.date );
@@ -295,7 +295,7 @@ export function singleMetricsChart(
 
 export function calculateEngagementRate( plays, videoLength, playTime ) {
 	const engagementRate =
-    plays && videoLength ? ( playTime / ( plays * videoLength ) ) * 100 : 0;
+	plays && videoLength ? ( playTime / ( plays * videoLength ) ) * 100 : 0;
 	return engagementRate.toFixed( 2 );
 }
 
@@ -304,6 +304,17 @@ export function calculatePlayRate( pageLoad, plays ) {
 	return playRate.toFixed( 2 );
 }
 
+/**
+ * Renders a grouped bar chart for layer analytics using D3.js.
+ *
+ * @param {Array<Object>} data        - The analytics data array where each object contains date and interaction metrics.
+ * @param {string}        containerId - The DOM selector (ID or class) of the container to render the chart in.
+ * @param {string}        duration    - The selected duration for data aggregation ('7d', '30d', '60d', '1y').
+ * @param {Object}        labelMap    - An object mapping metric keys to their display labels.
+ * @param {string}        layerType   - The type of layer being analyzed ('form', 'hotspot', 'cta').
+ *
+ * @return {void}
+ */
 export function layerAnalyticsBarChart(
 	data,
 	containerId,
@@ -311,7 +322,7 @@ export function layerAnalyticsBarChart(
 	labelMap,
 	layerType,
 ) {
-	// -- SETUP --
+	// Set dimensions and margins
 	const margin = { top: 40, right: 30, bottom: 80, left: 60 };
 	const width = 500;
 	const height = 350 - margin.top - margin.bottom;
@@ -373,11 +384,8 @@ export function layerAnalyticsBarChart(
 	const y = d3
 		.scaleLinear()
 		.domain( [
-
 			0,
-
 			d3.max( chartData, ( d ) => d3.max( subgroups, ( key ) => d[ key ] || 0 ) ) * 1.1,
-
 		] ).range( [ height, 0 ] );
 
 	const color = d3
@@ -461,24 +469,29 @@ export function layerAnalyticsBarChart(
 			`;
 
 			metrics.forEach( ( metric ) => {
-				if ( parent[ metric.key ] !== undefined && subgroups.includes( metric.key ) ) {
-					html += `
-						<div class="tooltip-row">
-							<div class="tooltip-label">
-								<span class="tooltip-dot" style="background:${ metric.color };"></span>
-								<span>${ metric.label }</span>
-							</div>
-							<div class="tooltip-value">${ parent[ metric.key ] }</div>
-						</div>
-					`;
+				if (
+					parent[ metric.key ] === undefined ||
+			! subgroups.includes( metric.key )
+				) {
+					return;
 				}
+
+				html += `
+		<div class="tooltip-row">
+			<div class="tooltip-label">
+				<span class="tooltip-dot" style="background:${ metric.color };"></span>
+				<span>${ metric.label }</span>
+			</div>
+			<div class="tooltip-value">${ parent[ metric.key ] }</div>
+		</div>
+	`;
 			} );
 
 			tooltip
 				.html( html )
 				.style( 'opacity', 1 )
-				.style( 'left', event.pageX + 18 + 'px' )
-				.style( 'top', event.pageY - 48 + 'px' );
+				.style( 'left', `${ event.pageX + 18 }px` )
+				.style( 'top', `${ event.pageY - 48 }px` );
 		} )
 		.on( 'mouseleave', function() {
 			tooltip.style( 'opacity', 0 );

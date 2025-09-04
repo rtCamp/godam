@@ -7,6 +7,7 @@ import { Analytics } from 'analytics';
  * Internal dependencies
  */
 import videoAnalyticsPlugin from './video-analytics-plugin';
+import { getLayerInteractions } from './utils/storage';
 
 const analytics = Analytics( {
 	app: 'analytics-cdp-plugin',
@@ -72,11 +73,22 @@ function playerAnalytics() {
 
 			processedVideos.add( uniqueKey );
 
-			const layerInteractions = JSON.parse( localStorage.getItem( 'layerInteractions' ) ) || '{}';
+			const layerInteractions = getLayerInteractions() || '{}';
 
 			trackLayerInteraction( videoId, layerInteractions[ uniqueKey ], jobId, videoLength );
 		} );
 
+		/**
+		 * Updates the video heatmap by sending watched ranges to the analytics system.
+		 *
+		 * @async
+		 * @function updateHeatmap
+		 * @param {Array<{ start: number, end: number }>} ranges       - Array of time ranges (in seconds) that have been watched.
+		 * @param {number}                                videoLength  - The total length of the video in seconds.
+		 * @param {number|string}                         videoId      - The ID of the video being tracked.
+		 * @param {?number|string}                        [jobId=null] - Optional job ID associated with the video.
+		 * @return {void} - Does not return a value. Exits early if required params are missing.
+		 */
 		async function updateHeatmap( ranges, videoLength, videoId, jobId = null ) {
 			if ( ! videoId || ranges.length === 0 ) {
 				return; // Skip sending if no valid data
@@ -85,7 +97,7 @@ function playerAnalytics() {
 			if ( window.analytics ) {
 				window.analytics.track( 'video_heatmap', {
 					type: 2, // Enum: 2 = Heatmap
-					videoId: videoId ? parseInt( videoId, 0 ) : 0,
+					videoId: videoId ? parseInt( videoId, 10 ) : 0,
 					ranges,
 					videoLength,
 					jobId,
@@ -93,6 +105,19 @@ function playerAnalytics() {
 			}
 		}
 
+		/**
+		 * Tracks user interactions with interactive video layers and sends the data
+		 * to the analytics system if available.
+		 *
+		 * @async
+		 * @function trackLayerInteraction
+		 * @param {number|string}  videoId           - The ID of the video being tracked.
+		 * @param {Object}         layerInteractions - An object containing interaction data for layers,
+		 * @param {?number|string} [jobId=null]      - Optional job ID associated with the video.
+		 * @param {number}         videoLength       - The total length of the video in seconds.
+		 * @return {void} - Does not return a value. Exits early if required params are missing.
+		 *
+		 */
 		async function trackLayerInteraction(
 			videoId,
 			layerInteractions,
@@ -106,7 +131,7 @@ function playerAnalytics() {
 			if ( window.analytics ) {
 				window.analytics.track( 'layer_interaction', {
 					type: 3, // Enum: 3 = Layer Interaction
-					videoId: videoId ? parseInt( videoId, 0 ) : 0,
+					videoId: videoId ? parseInt( videoId, 10 ) : 0,
 					jobId, // optional
 					layers: layerInteractions,
 					videoLength,
