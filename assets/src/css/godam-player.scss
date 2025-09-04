@@ -117,6 +117,10 @@
 		}
 	}
 
+	.vjs-text-track-display {
+		bottom: 4em !important;
+	}
+
 	&:hover {
 
 		.vjs-big-play-button {
@@ -167,6 +171,10 @@
 	&:hover, &:focus {
 		transform: scale(1.1);
 	}
+}
+
+.vjs-audio-button.vjs-menu-button {
+	display: none;
 }
 
 .animate-play-btn {
