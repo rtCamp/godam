@@ -964,6 +964,8 @@ class Video_Migration extends Base {
 
 		// Strip out the query parameters.
 		$vimeo_url_stripped = strtok( $vimeo_url, '?' );
+
+		return $vimeo_url_stripped;
 	}
 
 	/**
