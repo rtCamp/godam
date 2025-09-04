@@ -1,4 +1,9 @@
 /**
+ * Internal dependencies
+ */
+import { createVideoJsPlayer, addTranscodedSourcesToMediaElement } from '../utility';
+
+/**
  * WordPress dependencies
  */
 const { __ } = wp.i18n;
@@ -113,15 +118,49 @@ export default AttachmentDetails?.extend( {
 	render() {
 		AttachmentDetails.prototype.render.apply( this, arguments );
 
-		const hlsUrl = this.model.get( 'hls_url' );
+		const attachmentId = this.model.get( 'id' );
 		const attachmentUrl = this.model.get( 'url' );
+
+		const hlsUrl = this.model.get( 'hls_url' );
+		const mpdUrl = this.model.get( 'transcoded_url' );
+
+		const useCustomPlayer = window.godamSettings?.useCustomAdminPlayer;
+
+		if ( 'video' === this.model.get( 'type' ) ) {
+			if ( useCustomPlayer ) {
+				const wpMediaWrapper = this.el.querySelector( '.wp-media-wrapper.wp-video' );
+
+				if ( wpMediaWrapper ) {
+					const videoId = `videojs-player-${ attachmentId }`;
+					const sources = [
+						...( mpdUrl ? [ { src: mpdUrl, type: 'application/dash+xml' } ] : [] ),
+						...( hlsUrl ? [ { src: hlsUrl, type: 'application/x-mpegURL' } ] : [] ),
+						{ src: attachmentUrl, type: 'video/mp4' },
+					];
+
+					createVideoJsPlayer( wpMediaWrapper, {
+						videoId,
+						sources,
+						playerOptions: {},
+					} );
+				}
+			} else {
+				// Add transcoded sources to default player.
+				const mediaElementPlayer = this.el.querySelector( '.wp-video-shortcode.mejs-video video' );
+				if ( mediaElementPlayer ) {
+					addTranscodedSourcesToMediaElement( mediaElementPlayer, {
+						mpdUrl,
+						hlsUrl,
+						attachmentUrl,
+					} );
+				}
+			}
+		}
 
 		// Skip the local Media Library attachments.
 		if ( ( ! attachmentUrl || ! isMpd( attachmentUrl ) ) && ( ! hlsUrl || ! isM3U8( hlsUrl ) ) ) {
 			return this;
 		}
-
-		const attachmentId = this.model.get( 'id' );
 
 		// No need to check if table exists, as if it did we would have returned early on link checks.
 		const tableBody = createTable( this.el );

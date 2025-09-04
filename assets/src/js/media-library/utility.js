@@ -1,4 +1,11 @@
 /**
+ * External dependencies
+ */
+import videojs from 'video.js';
+import 'videojs-contrib-quality-menu';
+import 'videojs-flvjs-es6';
+
+/**
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
@@ -124,4 +131,116 @@ function canManageAttachment( attachmentAuthorId ) {
 	return canEditOthersMedia || currentUserId === __attachmentAuthorId;
 }
 
-export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton, getQuery, getGodamSettings, canManageAttachment };
+/**
+ * Creates and initializes a Video.js player inside a given container.
+ *
+ * @param {HTMLElement} container             - The DOM element to inject the player into.
+ * @param {Object}      options               - Options for the player.
+ * @param {string}      options.videoId       - Unique ID for the video element.
+ * @param {Array}       options.sources       - Array of source objects: [{src, type}]
+ * @param {Object}      options.playerOptions - Video.js player options.
+ */
+function createVideoJsPlayer( container, { videoId, sources, playerOptions = {} } ) {
+	if ( ! container ) {
+		return;
+	}
+
+	// Hide default WP MediaElement player if present
+	const mediaElementPlayer = container.querySelector( '.mejs-container' );
+	if ( mediaElementPlayer ) {
+		mediaElementPlayer.style.display = 'none'; // Hide default player. Only hide to avoid console errors for parts dependent on it.
+	}
+
+	// Build video HTML
+	const videoEl = document.createElement( 'video' );
+	videoEl.id = String( videoId );
+	videoEl.className = 'video-js vjs-default-skin vjs-big-play-centered vjs-styles-dimensions';
+	videoEl.setAttribute( 'controls', '' );
+	videoEl.setAttribute( 'preload', 'auto' );
+	videoEl.style.width = '100%';
+	videoEl.style.height = 'auto';
+	sources.forEach( ( source ) => {
+		const sourceEl = document.createElement( 'source' );
+		sourceEl.src = String( source.src );
+		sourceEl.type = String( source.type );
+		videoEl.appendChild( sourceEl );
+	} );
+	container.appendChild( videoEl );
+
+	// Initialize Video.js player
+	setTimeout( () => {
+		const videoElement = document.getElementById( videoId );
+		if ( videoElement && typeof videojs !== 'undefined' ) {
+			videojs( videoElement, {
+				width: '100%',
+				aspectRatio: '16:9',
+				controlBar: {
+					volumePanel: true,
+					fullscreenToggle: true,
+					currentTimeDisplay: true,
+					timeDivider: true,
+					durationDisplay: true,
+					remainingTimeDisplay: true,
+					progressControl: true,
+					playToggle: true,
+					captionsButton: false,
+					chaptersButton: false,
+					pictureInPictureToggle: false,
+					...( playerOptions.controlBar || {} ),
+				},
+				...playerOptions,
+			} ).ready( function() {
+				if ( typeof this.qualityMenu === 'function' ) {
+					this.qualityMenu();
+				}
+			} );
+		}
+	}, 100 );
+}
+
+/**
+ * Adds transcoded sources (MPD/HLS/MP4) to an existing MediaElement player element.
+ *
+ * @param {HTMLMediaElement} mediaElement       - The <video> DOM element used by MediaElement player.
+ * @param {Object}           urls               - URLs for different formats.
+ * @param {string}           urls.mpdUrl        - MPEG-DASH (MPD) URL.
+ * @param {string}           urls.hlsUrl        - HLS (M3U8) URL.
+ * @param {string}           urls.attachmentUrl - Fallback MP4 URL.
+ */
+function addTranscodedSourcesToMediaElement( mediaElement, { mpdUrl, hlsUrl, attachmentUrl } = {} ) {
+	if ( ! mediaElement ) {
+		return;
+	}
+
+	// Remove existing <source> nodes if any.
+	const existingSources = mediaElement.querySelectorAll( 'source' );
+	existingSources.forEach( ( source ) => {
+		try {
+			source.remove();
+		} catch ( e ) {}
+	} );
+
+	const sources = [
+		...( mpdUrl ? [ { src: mpdUrl, type: 'application/dash+xml' } ] : [] ),
+		...( hlsUrl ? [ { src: hlsUrl, type: 'application/x-mpegURL' } ] : [] ),
+		{ src: attachmentUrl, type: 'video/mp4' },
+	];
+
+	sources.forEach( ( source ) => {
+		const sourceEl = document.createElement( 'source' );
+		sourceEl.src = String( source.src );
+		sourceEl.type = String( source.type );
+		mediaElement.appendChild( sourceEl );
+	} );
+
+	// Give the player a short moment to initialize, then set the preferred source (HLS > MPD).
+	setTimeout( () => {
+		if ( hlsUrl ) {
+			mediaElement.player?.media?.setSrc( hlsUrl );
+		} else if ( mpdUrl ) {
+			mediaElement.player?.media?.setSrc( mpdUrl );
+		}
+	}, 100 );
+}
+
+export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton, getQuery, getGodamSettings, canManageAttachment, createVideoJsPlayer, addTranscodedSourcesToMediaElement };

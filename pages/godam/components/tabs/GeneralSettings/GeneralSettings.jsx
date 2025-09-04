@@ -49,6 +49,11 @@ const GeneralSettings = () => {
 		dispatch( updateMediaSetting( { category: 'general', key, value } ) );
 	};
 
+	// Function to handle setting change for video_player settings.
+	const handleVideoPlayerSettingChange = ( key, value ) => {
+		dispatch( updateMediaSetting( { category: 'video_player', key, value } ) );
+	};
+
 	// Function to handle saving settings
 	const handleSaveSettings = async () => {
 		try {
@@ -98,6 +103,15 @@ const GeneralSettings = () => {
 						help={ __( 'Keep this option enabled to organize media into folders within the media library. Disabling it will remove folder organization.', 'godam' ) }
 						checked={ mediaSettings?.general?.enable_folder_organization }
 						onChange={ ( value ) => handleSettingChange( 'enable_folder_organization', value ) }
+					/>
+
+					<ToggleControl
+						__nextHasNoMarginBottom
+						className="godam-toggle godam-margin-bottom"
+						label={ __( 'Use custom player in media library.', 'godam' ) }
+						help={ __( 'When enabled, GoDAM replaces the default media player with a custom one in the WordPress admin. Disable to keep the default player.', 'godam' ) }
+						checked={ mediaSettings?.video_player?.use_custom_admin_player }
+						onChange={ ( value ) => handleVideoPlayerSettingChange( 'use_custom_admin_player', value ) }
 					/>
 
 				</PanelBody>
