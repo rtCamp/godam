@@ -278,6 +278,7 @@ class RTGODAM_Transcoder_Handler {
 				'timeout'   => 60, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
 				'body'      => array_merge(
 					array(
+						'retranscode'          => empty( $transcoding_job_id ) ? 0 : 1,
 						'api_token'            => $this->api_key,
 						'job_type'             => $job_type,
 						'job_for'              => $job_for,
