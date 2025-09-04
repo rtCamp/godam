@@ -555,32 +555,65 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		// Call the parent render method.
 		AttachmentDetailsTwoColumn.prototype.render.apply( this, arguments );
 
-		const isVirtual = this.model.get( 'virtual' );
 		const useCustomPlayer = window.godamSettings?.useCustomAdminPlayer;
 
 		// Check if the attachment is a video and render the edit buttons.
-		if ( 'video' === this.model.get( 'type' ) && ( useCustomPlayer || isVirtual ) ) {
+		if ( 'video' === this.model.get( 'type' ) ) {
 			const attachmentId = this.model.get( 'id' );
 			const attachmentUrl = this.model.get( 'url' );
 
 			const hlsUrl = this.model.get( 'hls_url' );
 			const mpdUrl = this.model.get( 'transcoded_url' );
 
-			const wpMediaWrapper = this.el.querySelector( '.wp-media-wrapper.wp-video' );
+			if ( useCustomPlayer ) {
+				const wpMediaWrapper = this.el.querySelector( '.wp-media-wrapper.wp-video' );
 
-			if ( wpMediaWrapper ) {
-				const videoId = `videojs-player-${ attachmentId }`;
-				const sources = [
-					...( mpdUrl ? [ { src: mpdUrl, type: 'application/dash+xml' } ] : [] ),
-					...( hlsUrl ? [ { src: hlsUrl, type: 'application/x-mpegURL' } ] : [] ),
-					{ src: attachmentUrl, type: 'video/mp4' },
-				];
+				if ( wpMediaWrapper ) {
+					const videoId = `videojs-player-${ attachmentId }`;
+					const sources = [
+						...( mpdUrl ? [ { src: mpdUrl, type: 'application/dash+xml' } ] : [] ),
+						...( hlsUrl ? [ { src: hlsUrl, type: 'application/x-mpegURL' } ] : [] ),
+						{ src: attachmentUrl, type: 'video/mp4' },
+					];
 
-				createVideoJsPlayer( wpMediaWrapper, {
-					videoId,
-					sources,
-					playerOptions: {},
-				} );
+					createVideoJsPlayer( wpMediaWrapper, {
+						videoId,
+						sources,
+						playerOptions: {},
+					} );
+				}
+			} else {
+				// Add transcoded sources to default player.
+				const mediaElementPlayer = this.el.querySelector( '.wp-video-shortcode.mejs-video video' );
+				if ( mediaElementPlayer ) {
+					const existingSources = mediaElementPlayer.querySelectorAll( 'source' );
+					existingSources.forEach( ( source ) => {
+						try {
+							source.remove();
+						} catch ( e ) {}
+					} );
+
+					const sources = [
+						...( mpdUrl ? [ { src: mpdUrl, type: 'application/dash+xml' } ] : [] ),
+						...( hlsUrl ? [ { src: hlsUrl, type: 'application/x-mpegURL' } ] : [] ),
+						{ src: attachmentUrl, type: 'video/mp4' },
+					];
+
+					sources.forEach( ( source ) => {
+						const sourceEl = document.createElement( 'source' );
+						sourceEl.src = String( source.src );
+						sourceEl.type = String( source.type );
+						mediaElementPlayer.appendChild( sourceEl );
+					} );
+
+					setTimeout( () => {
+						if ( hlsUrl ) {
+							mediaElementPlayer.player?.media?.setSrc( hlsUrl );
+						} else if ( mpdUrl ) {
+							mediaElementPlayer.player?.media?.setSrc( mpdUrl );
+						}
+					}, 300 );
+				}
 			}
 
 			this.renderVideoActions();
