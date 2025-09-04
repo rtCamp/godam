@@ -14,7 +14,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { addIcon, trashIcon } from '../media-library-icons';
-import { canManageAttachment, createVideoJsPlayer } from '../utility';
+import { canManageAttachment, createVideoJsPlayer, addTranscodedSourcesToMediaElement } from '../utility';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
 
@@ -586,33 +586,11 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				// Add transcoded sources to default player.
 				const mediaElementPlayer = this.el.querySelector( '.wp-video-shortcode.mejs-video video' );
 				if ( mediaElementPlayer ) {
-					const existingSources = mediaElementPlayer.querySelectorAll( 'source' );
-					existingSources.forEach( ( source ) => {
-						try {
-							source.remove();
-						} catch ( e ) {}
+					addTranscodedSourcesToMediaElement( mediaElementPlayer, {
+						mpdUrl,
+						hlsUrl,
+						attachmentUrl,
 					} );
-
-					const sources = [
-						...( mpdUrl ? [ { src: mpdUrl, type: 'application/dash+xml' } ] : [] ),
-						...( hlsUrl ? [ { src: hlsUrl, type: 'application/x-mpegURL' } ] : [] ),
-						{ src: attachmentUrl, type: 'video/mp4' },
-					];
-
-					sources.forEach( ( source ) => {
-						const sourceEl = document.createElement( 'source' );
-						sourceEl.src = String( source.src );
-						sourceEl.type = String( source.type );
-						mediaElementPlayer.appendChild( sourceEl );
-					} );
-
-					setTimeout( () => {
-						if ( hlsUrl ) {
-							mediaElementPlayer.player?.media?.setSrc( hlsUrl );
-						} else if ( mpdUrl ) {
-							mediaElementPlayer.player?.media?.setSrc( mpdUrl );
-						}
-					}, 300 );
 				}
 			}
 

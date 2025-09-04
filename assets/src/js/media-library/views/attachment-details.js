@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { createVideoJsPlayer } from '../utility';
+import { createVideoJsPlayer, addTranscodedSourcesToMediaElement } from '../utility';
 
 /**
  * WordPress dependencies
@@ -148,33 +148,11 @@ export default AttachmentDetails?.extend( {
 				// Add transcoded sources to default player.
 				const mediaElementPlayer = this.el.querySelector( '.wp-video-shortcode.mejs-video video' );
 				if ( mediaElementPlayer ) {
-					const existingSources = mediaElementPlayer.querySelectorAll( 'source' );
-					existingSources.forEach( ( source ) => {
-						try {
-							source.remove();
-						} catch ( e ) {}
+					addTranscodedSourcesToMediaElement( mediaElementPlayer, {
+						mpdUrl,
+						hlsUrl,
+						attachmentUrl,
 					} );
-
-					const sources = [
-						...( mpdUrl ? [ { src: mpdUrl, type: 'application/dash+xml' } ] : [] ),
-						...( hlsUrl ? [ { src: hlsUrl, type: 'application/x-mpegURL' } ] : [] ),
-						{ src: attachmentUrl, type: 'video/mp4' },
-					];
-
-					sources.forEach( ( source ) => {
-						const sourceEl = document.createElement( 'source' );
-						sourceEl.src = String( source.src );
-						sourceEl.type = String( source.type );
-						mediaElementPlayer.appendChild( sourceEl );
-					} );
-
-					setTimeout( () => {
-						if ( hlsUrl ) {
-							mediaElementPlayer.player?.media?.setSrc( hlsUrl );
-						} else if ( mpdUrl ) {
-							mediaElementPlayer.player?.media?.setSrc( mpdUrl );
-						}
-					}, 300 );
 				}
 			}
 		}

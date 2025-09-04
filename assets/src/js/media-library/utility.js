@@ -198,4 +198,49 @@ function createVideoJsPlayer( container, { videoId, sources, playerOptions = {} 
 	}, 100 );
 }
 
-export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton, getQuery, getGodamSettings, canManageAttachment, createVideoJsPlayer };
+/**
+ * Adds transcoded sources (MPD/HLS/MP4) to an existing MediaElement player element.
+ *
+ * @param {HTMLMediaElement} mediaElement       - The <video> DOM element used by MediaElement player.
+ * @param {Object}           urls               - URLs for different formats.
+ * @param {string}           urls.mpdUrl        - MPEG-DASH (MPD) URL.
+ * @param {string}           urls.hlsUrl        - HLS (M3U8) URL.
+ * @param {string}           urls.attachmentUrl - Fallback MP4 URL.
+ */
+function addTranscodedSourcesToMediaElement( mediaElement, { mpdUrl, hlsUrl, attachmentUrl } = {} ) {
+	if ( ! mediaElement ) {
+		return;
+	}
+
+	// Remove existing <source> nodes if any.
+	const existingSources = mediaElement.querySelectorAll( 'source' );
+	existingSources.forEach( ( source ) => {
+		try {
+			source.remove();
+		} catch ( e ) {}
+	} );
+
+	const sources = [
+		...( mpdUrl ? [ { src: mpdUrl, type: 'application/dash+xml' } ] : [] ),
+		...( hlsUrl ? [ { src: hlsUrl, type: 'application/x-mpegURL' } ] : [] ),
+		{ src: attachmentUrl, type: 'video/mp4' },
+	];
+
+	sources.forEach( ( source ) => {
+		const sourceEl = document.createElement( 'source' );
+		sourceEl.src = String( source.src );
+		sourceEl.type = String( source.type );
+		mediaElement.appendChild( sourceEl );
+	} );
+
+	// Give the player a short moment to initialize, then set the preferred source (HLS > MPD).
+	setTimeout( () => {
+		if ( hlsUrl ) {
+			mediaElement.player?.media?.setSrc( hlsUrl );
+		} else if ( mpdUrl ) {
+			mediaElement.player?.media?.setSrc( mpdUrl );
+		}
+	}, 100 );
+}
+
+export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton, getQuery, getGodamSettings, canManageAttachment, createVideoJsPlayer, addTranscodedSourcesToMediaElement };
