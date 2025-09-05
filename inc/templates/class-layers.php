@@ -106,23 +106,29 @@ class Layers {
 
 		$merged_layers = $layers;
 
+		$existing_global_layers = self::get_existing_global_layers( $layers );
+
 		// Process global layer.
 		if ( isset( $global_settings['global_layers'] ) && is_array( $global_settings['global_layers'] ) ) {
 			$global_layers = $global_settings['global_layers'];
 
-			// Add CTA layer if configure.
+			// Add CTA layer if configured and not already present or disabled.
 			if ( isset( $global_layers['cta'] ) && is_array( $global_layers['cta'] ) ) {
-				$cta_layer = self::create_cta_layer( $global_layers['cta'], $video_duration );
-				if ( ! empty( $cta_layer ) ) {
-					$merged_layers[] = $cta_layer;
+				if ( ! self::should_skip_global_layer( 'cta', $existing_global_layers ) ) {
+					$cta_layer = self::create_cta_layer( $global_layers['cta'], $video_duration );
+					if ( ! empty( $cta_layer ) ) {
+						$merged_layers[] = $cta_layer;
+					}
 				}
 			}
 
-			// Add form layer if configure.
+			// Add form layer if configured and not already present or disabled.
 			if ( isset( $global_layers['forms'] ) && is_array( $global_layers['forms'] ) ) {
-				$form_layer = self::create_form_layer( $global_layers['forms'], $video_duration );
-				if ( ! empty( $form_layer ) ) {
-					$merged_layers[] = $form_layer;
+				if ( ! self::should_skip_global_layer( 'form', $existing_global_layers ) ) {
+					$form_layer = self::create_form_layer( $global_layers['forms'], $video_duration );
+					if ( ! empty( $form_layer ) ) {
+						$merged_layers[] = $form_layer;
+					}
 				}
 			}
 		}
@@ -261,5 +267,70 @@ class Layers {
 	 */
 	public static function get_default_config( $layer_type ) {
 		return isset( self::$defaults[ $layer_type ] ) ? self::$defaults[ $layer_type ] : array();
+	}
+
+	/**
+	 * Get existing global layers from the layers array
+	 *
+	 * @param array $layers Existing layers array.
+	 * @return array Array with information about existing global layers.
+	 */
+	private static function get_existing_global_layers( $layers ) {
+		$existing = array();
+
+		foreach ( $layers as $layer ) {
+			if ( ! is_array( $layer ) ) {
+				continue;
+			}
+
+			$layer_type = isset( $layer['type'] ) ? $layer['type'] : '';
+			if ( ! $layer_type ) {
+				continue;
+			}
+
+			$is_global_layer     = isset( $layer['isGlobalLayer'] ) && $layer['isGlobalLayer'];
+			$has_global_metadata = isset( $layer['globalLayerSource'] ) || isset( $layer['globalLayerConfig'] );
+			$is_disabled         = isset( $layer['isDisabled'] ) && $layer['isDisabled'];
+
+			// Consider it a global layer if it has the flag OR global metadata.
+			if ( $is_global_layer || $has_global_metadata ) {
+				$existing[ $layer_type ] = array(
+					'exists'              => true,
+					'disabled'            => $is_disabled,
+					'layer'               => $layer,
+					'is_marked_global'    => $is_global_layer,
+					'has_global_metadata' => $has_global_metadata,
+				);
+			}
+
+			// Also track layers that are explicitly disabled with global characteristics.
+			// This handles cases where a user disabled a global layer.
+			if ( $is_disabled && ( $has_global_metadata || strpos( $layer['id'] ?? '', 'global_' ) === 0 ) ) {
+				$existing[ $layer_type ] = array(
+					'exists'              => true,
+					'disabled'            => true,
+					'layer'               => $layer,
+					'is_marked_global'    => $is_global_layer,
+					'has_global_metadata' => $has_global_metadata,
+				);
+			}
+		}
+
+		return $existing;
+	}
+
+	/**
+	 * Check if a global layer should be skipped (already exists or is disabled)
+	 *
+	 * @param string $layer_type Layer type to check.
+	 * @param array  $existing_global_layers Existing global layers info.
+	 * @return bool True if the layer should be skipped.
+	 */
+	private static function should_skip_global_layer( $layer_type, $existing_global_layers ) {
+		if ( isset( $existing_global_layers[ $layer_type ] ) ) {
+			return true;
+		}
+
+		return false;
 	}
 }
