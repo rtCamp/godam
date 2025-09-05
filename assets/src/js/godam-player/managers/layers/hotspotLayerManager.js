@@ -59,7 +59,7 @@ export default class HotspotLayerManager {
 
 			const endTime = layerObj.displayTime + layerObj.duration;
 			const isActive =
-		currentTime >= layerObj.displayTime && currentTime < endTime;
+				currentTime >= layerObj.displayTime && currentTime < endTime;
 
 			if ( blockedByLayer ) {
 				if ( ! layerObj.layerElement.classList.contains( 'overlapped' ) ) {

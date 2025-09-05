@@ -34,7 +34,6 @@ export function writeLocalStorageJSON( key, value ) {
 /**
  * Retrieves all stored layer interactions from localStorage.
  *
- * @function getLayerInteractions
  * @return {Object<string, Array<Object>>} An object where keys are instance IDs and values are arrays of interaction objects.
  */
 export function getLayerInteractions() {
@@ -44,7 +43,6 @@ export function getLayerInteractions() {
 /**
  * Adds a new interaction entry for a given layer instance and saves it to localStorage.
  *
- * @function addLayerInteraction
  * @param {string} instanceId                - Unique identifier of the layer instance.
  * @param {Object} layerData                 - The interaction data to store for the layer.
  * @param {string} layerData.layer_id        - The unique ID of the layer (e.g., hotspot ID, CTA ID).
@@ -67,7 +65,6 @@ export function addLayerInteraction( instanceId, layerData ) {
 /**
  * Updates the action type of an existing layer interaction in localStorage.
  *
- * @function updateLayerInteraction
  * @param {string|number} videoId    - The ID of the video associated with the interactions.
  * @param {string}        hotspotId  - The ID of the hotspot/layer to update.
  * @param {string}        actionType - The new action type to assign (e.g., "clicked", "skipped").

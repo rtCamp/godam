@@ -76,7 +76,7 @@ const SingleLayerAnalyticsList = ( { activeTab, dateRange, attachmentID } ) => {
 		// If daily_breakdown is missing or empty, bail out
 		if (
 			! Array.isArray( dailyBreakdown ) ||
-		dailyBreakdown.length === 0
+			dailyBreakdown.length === 0
 		) {
 			return;
 		}

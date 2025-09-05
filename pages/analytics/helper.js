@@ -40,7 +40,7 @@ export async function fetchAnalyticsData( videoId, siteUrl ) {
 
 		if (
 			result.status === 'error' &&
-	result.message.includes( 'Invalid or unverified API key' )
+			result.message.includes( 'Invalid or unverified API key' )
 		) {
 			showAPIActivationMessage();
 			return null;
@@ -274,7 +274,7 @@ export function singleMetricsChart(
 			// Format value
 			const val = d[ selectedMetric ];
 			const formattedVal =
-		selectedMetric === 'watch_time' ? `${ val.toFixed( 2 ) }s` : `${ val.toFixed( 2 ) }${ metricOption.unit }`;
+				selectedMetric === 'watch_time' ? `${ val.toFixed( 2 ) }s` : `${ val.toFixed( 2 ) }${ metricOption.unit }`;
 
 			// Position tooltip
 			const tooltipX = x( d.date );
@@ -295,7 +295,7 @@ export function singleMetricsChart(
 
 export function calculateEngagementRate( plays, videoLength, playTime ) {
 	const engagementRate =
-	plays && videoLength ? ( playTime / ( plays * videoLength ) ) * 100 : 0;
+		plays && videoLength ? ( playTime / ( plays * videoLength ) ) * 100 : 0;
 	return engagementRate.toFixed( 2 );
 }
 
@@ -471,20 +471,19 @@ export function layerAnalyticsBarChart(
 			metrics.forEach( ( metric ) => {
 				if (
 					parent[ metric.key ] === undefined ||
-			! subgroups.includes( metric.key )
+					! subgroups.includes( metric.key )
 				) {
 					return;
 				}
 
 				html += `
-		<div class="tooltip-row">
-			<div class="tooltip-label">
-				<span class="tooltip-dot" style="background:${ metric.color };"></span>
-				<span>${ metric.label }</span>
-			</div>
-			<div class="tooltip-value">${ parent[ metric.key ] }</div>
-		</div>
-	`;
+				<div class="tooltip-row">
+					<div class="tooltip-label">
+						<span class="tooltip-dot" style="background:${ metric.color };"></span>
+						<span>${ metric.label }</span>
+					</div>
+					<div class="tooltip-value">${ parent[ metric.key ] }</div>
+				</div>`;
 			} );
 
 			tooltip

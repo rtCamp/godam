@@ -500,9 +500,6 @@ class Analytics extends Base {
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
 
-		$transcoded_url = $attachment_id ? rtgodam_get_transcoded_url_from_attachment( $attachment_id ) : '';
-		$job_id         = '';
-
 		if ( empty( $api_key ) || empty( $account_token ) || 'unverified' === $account_token ) {
 			return new WP_REST_Response(
 				array(
@@ -513,6 +510,9 @@ class Analytics extends Base {
 				200
 			);
 		}
+
+		$transcoded_url = $attachment_id ? rtgodam_get_transcoded_url_from_attachment( $attachment_id ) : '';
+		$job_id         = '';
 
 		if ( $attachment_id && ! empty( $transcoded_url ) ) {
 			$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
