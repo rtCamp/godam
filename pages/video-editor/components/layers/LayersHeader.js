@@ -54,7 +54,7 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 	const layerName = 'form' === layer.type ? layerTypeData?.formType[ layer?.form_type ?? 'gravity' ]?.layerText : layerTypeData?.layerText;
 
 	const handleDeleteLayer = () => {
-		dispatch( removeLayer( { id: layer.id } ) );
+		dispatch( removeLayer( layer ) );
 		goBack();
 	};
 
