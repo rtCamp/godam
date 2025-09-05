@@ -425,6 +425,17 @@ export function layerAnalyticsBarChart(
 		tooltip = d3.select( 'body' ).append( 'div' ).attr( 'class', 'bar-tooltip' );
 	}
 
+	/**
+	 * Formats a given label into a human-readable date string
+	 * based on the current duration and label format.
+	 *
+	 * - If `duration` is `'1y'`, expects labels in `YYYY-MM` format and returns a formatted string like `"Jan'25"`.
+	 * - If the label matches `YYYY-MM-DD`, it returns a formatted date like `"05 Sep 2025"`.
+	 * - Otherwise, the label is returned unchanged.
+	 *
+	 * @param {string} label - The label value to format (e.g., a date string).
+	 * @return {string} The formatted label for display on charts.
+	 */
 	function formatLabel( label ) {
 		if ( duration === '1y' ) {
 			const dt = d3.timeParse( '%Y-%m' )( label );

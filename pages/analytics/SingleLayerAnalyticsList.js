@@ -33,12 +33,12 @@ const SingleLayerAnalyticsList = ( { activeTab, dateRange, attachmentID } ) => {
 	}
 
 	const { data: layerAnalyticsDataFetched, isLoading, isFetching } =
-	useFetchProcessedLayerAnalyticsQuery( {
-		layerType: activeTab.toLowerCase(),
-		days,
-		siteUrl,
-		videoId: attachmentID,
-	} );
+		useFetchProcessedLayerAnalyticsQuery( {
+			layerType: activeTab.toLowerCase(),
+			days,
+			siteUrl,
+			videoId: attachmentID,
+		} );
 
 	// Utility function for colors
 	const getClickRateColor = ( rate ) => {
