@@ -165,22 +165,35 @@ class Analytics extends Base {
 					'callback'            => array( $this, 'fetch_top_videos' ),
 					'permission_callback' => '__return_true',
 					'args'                => array(
-						'page'     => array(
+						'page'       => array(
 							'required'          => false,
 							'type'              => 'integer',
 							'default'           => 1,
 							'sanitize_callback' => 'absint',
 						),
-						'limit'    => array(
+						'limit'      => array(
 							'required'          => false,
 							'type'              => 'integer',
 							'default'           => 10,
 							'sanitize_callback' => 'absint',
 						),
-						'site_url' => array(
+						'site_url'   => array(
 							'required'          => true,
 							'type'              => 'string',
 							'sanitize_callback' => 'esc_url_raw',
+						),
+						// New parameters for sorting.
+						'sort_by'    => array(
+							'required'          => false,
+							'type'              => 'string',
+							'default'           => 'total_plays',
+							'sanitize_callback' => 'sanitize_text_field',
+						),  
+						'sort_order' => array(
+							'required'          => false,
+							'type'              => 'string',
+							'default'           => 'asc',
+							'sanitize_callback' => 'sanitize_text_field',
 						),
 					),
 				),
@@ -648,6 +661,8 @@ class Analytics extends Base {
 		$site_url      = $request->get_param( 'site_url' );
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
+		$sort_by       = $request->get_param( 'sort_by' ) ?? 'views';
+		$sort_type     = $request->get_param( 'sort_order' ) ?? 'asc';
 
 		if ( empty( $account_token ) || 'unverified' === $account_token ) {
 			return new WP_REST_Response(
@@ -666,6 +681,8 @@ class Analytics extends Base {
 				'site_url'      => $site_url,
 				'account_token' => $account_token,
 				'api_key'       => $api_key,
+				'sort_by'       => $sort_by,
+				'sort_type'     => $sort_type,
 			),
 			RTGODAM_ANALYTICS_BASE . '/dashboard/top-videos/'
 		);

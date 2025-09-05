@@ -24,6 +24,8 @@ import upgradePlanBackground from '../../assets/src/images/upgrade-plan-dashboar
 
 const Dashboard = () => {
 	const [ topVideosPage, setTopVideosPage ] = useState( 1 );
+	const [ sortBy, setSortBy ] = useState( 'total_plays' );
+	const [ sortOrder, setSortOrder ] = useState( 'asc' );
 	const siteUrl = window.location.origin;
 	const adminUrl = window.videoData?.adminUrl;
 
@@ -34,7 +36,7 @@ const Dashboard = () => {
 	const {
 		data: topVideosResponse,
 		isFetching: isTopVideosFetching,
-	} = useFetchTopVideosQuery( { siteUrl, page: topVideosPage, limit: 10 } );
+	} = useFetchTopVideosQuery( { siteUrl, page: topVideosPage, limit: 10, sortBy, sortOrder } );
 
 	const topVideosData = topVideosResponse?.videos || [];
 	const totalTopVideosPages = topVideosResponse?.totalPages || 1;
@@ -84,6 +86,31 @@ const Dashboard = () => {
 			return () => clearInterval( interval );
 		}
 	}, [ isDashboardMetricsLoading, dashboardMetrics ] );
+
+	const SORT_MAPPING = {
+		playrate: 'play_rate',
+		totalplays: 'total_plays',
+		totalwatchtime: 'avg_watch_time',
+		layerconversionrate: 'layer_conversion_rate',
+		averageengagement: 'engagement_rate',
+	};
+
+	const handleSort = ( columnKey, order = 'asc' ) => {
+		if ( columnKey !== sortBy ) {
+			setSortBy( SORT_MAPPING[ columnKey ] || 'total_plays' );
+		}
+		setSortOrder( order );
+	};
+
+	const tableMetricLabels = [
+		__( 'Name', 'godam' ),
+		__( 'Size', 'godam' ),
+		__( 'Play Rate', 'godam' ),
+		__( 'Total Plays', 'godam' ),
+		__( 'Total Watch Time', 'godam' ),
+		__( 'Layer Conversion Rate ', 'godam' ),
+		__( 'Average Engagement', 'godam' ),
+	];
 
 	const handleExportCSV = () => {
 		const headers = [
@@ -298,21 +325,55 @@ const Dashboard = () => {
 				<div className="top-media-container">
 					<div className="flex justify-between pt-4">
 						<h2>{ __( 'Top Videos', 'godam' ) }</h2>
-						<button onClick={ handleExportCSV } className="export-button">
-							<img src={ ExportBtn } alt="Export" className="export-icon" />
-							{ __( 'Export', 'godam' ) }
-						</button>
+						<div className="flex gap-4 items-center">
+							<button onClick={ handleExportCSV } className="export-button">
+								<img src={ ExportBtn } alt="Export" className="export-icon" />
+								{ __( 'Export', 'godam' ) }
+							</button>
+						</div>
 					</div>
 					<div className="table-container overflow-x-auto">
 						<table className="w-full">
 							<tbody>
 								<tr>
-									<th>{ __( 'Name', 'godam' ) }</th>
-									<th>{ __( 'Size', 'godam' ) }</th>
-									<th>{ __( 'Play Rate', 'godam' ) }</th>
-									<th>{ __( 'Total Plays', 'godam' ) }</th>
-									<th>{ __( 'Total Watch Time', 'godam' ) }</th>
-									<th>{ __( 'Average Engagement', 'godam' ) }</th>
+									{ tableMetricLabels?.map( ( header ) => {
+										const key = header.toLowerCase().replace( /\s+/g, '' );
+										const isActive = sortBy === SORT_MAPPING[ key ];
+										return (
+											<th
+												key={ key }
+												className="cursor-pointer select-none"
+											>
+												<span className="flex items-center gap-1">
+													{ header }
+													{ ! [ 'name', 'size' ].includes( key ) && (
+														<span className="flex flex-col text-xs leading-none">
+															<button
+																className={ `bg-transparent cursor-pointer ${
+																	isActive && 'asc' === sortOrder
+																		? 'text-[#ab3a6c]'
+																		: 'text-gray-400'
+																}` }
+																onClick={ () => handleSort( key, 'asc' ) }
+															>
+																▲
+															</button>
+															<button
+																className={ `bg-transparent cursor-pointer ${
+																	isActive && 'desc' === sortOrder
+																		? 'text-[#ab3a6c]'
+																		: 'text-gray-400'
+																}` }
+																onClick={ () => handleSort( key, 'desc' ) }
+															>
+																▼
+															</button>
+														</span>
+													) }
+												</span>
+											</th>
+										);
+									} ) }
 								</tr>
 								{ isTopVideosFetching ? (
 									<tr>
@@ -364,21 +425,20 @@ const Dashboard = () => {
 												{ item.video_size ? `${ item.video_size.toFixed( 2 ) } MB` : '' }
 											</td>
 											<td>
-												{ item.plays > 0 && item.page_load > 0
-													? ( ( item.plays / item.page_load ) * 100 ).toFixed( 2 ) + '%'
-													: '0%' }
+												{ item.play_rate > 0 ? item.play_rate.toFixed( 2 ) + '%' : '0%' }
 											</td>
 											<td>{ item.plays ?? '-' }</td>
 											<td>{ item.play_time?.toFixed( 2 ) ?? '-' }s</td>
+											<td>{ item.layer_conversion_rate ? `${ item.layer_conversion_rate?.toFixed( 2 ) }%` : '0%' }</td>
 											<td>
-												{ item.plays > 0 && item.video_length > 0
-													? ( ( item.play_time / ( item.plays * item.video_length ) ) * 100 ).toFixed( 2 ) + '%'
+												{ item.engagement_rate > 0
+													? item.engagement_rate.toFixed( 2 ) + '%'
 													: '-' }
 											</td>
 										</tr>
 									) )
 								) }
-								{ topVideosData.length === 0 && (
+								{ topVideosData.length === 0 && ! isTopVideosFetching && (
 									<tr>
 										<td colSpan="6" className="text-center py-4 text-lg">
 											{ __( 'No videos found.', 'godam' ) }

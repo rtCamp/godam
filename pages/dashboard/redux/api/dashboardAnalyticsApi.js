@@ -53,12 +53,14 @@ export const dashboardAnalyticsApi = createApi( {
 		} ),
 		// Fetch Top Videos
 		fetchTopVideos: builder.query( {
-			query: ( { siteUrl, page = 1, limit = 10 } ) => ( {
+			query: ( { siteUrl, page = 1, limit = 10, sortBy, sortOrder } ) => ( {
 				url: 'godam/v1/analytics/top-videos',
 				params: {
 					site_url: siteUrl,
 					page,
 					limit,
+					sort_by: sortBy,
+					sort_order: sortOrder,
 				},
 			} ),
 			transformResponse: ( response ) => {
