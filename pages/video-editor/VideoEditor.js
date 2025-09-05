@@ -21,7 +21,6 @@ import {
 	initializeStore,
 	saveVideoMeta,
 	setCurrentTab,
-	setLayers,
 	setGravityForms,
 	setCF7Forms,
 	setWPForms,
@@ -40,7 +39,7 @@ import { useFetchForms } from './components/forms/fetchForms';
 import Chapters from './components/chapters/Chapters';
 import { copyGoDAMVideoBlock } from './utils/index';
 import { getFormIdFromLayer } from './utils/formUtils';
-import { applyGlobalLayersToVideo, mergeGlobalAndVideoLayers } from './utils/globalLayersUtils';
+import { useGlobalLayers } from './hooks/useGlobalLayers';
 import { canManageAttachment } from '../../assets/src/js/media-library/utility.js';
 
 const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
@@ -50,7 +49,6 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const [ duration, setDuration ] = useState( 0 );
 	const [ snackbarMessage, setSnackbarMessage ] = useState( '' );
 	const [ showSnackbar, setShowSnackbar ] = useState( false );
-	const [ globalLayersApplied, setGlobalLayersApplied ] = useState( false );
 
 	const playerRef = useRef( null );
 
@@ -66,6 +64,36 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
 
 	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, ninjaForms, metforms, isFetching } = useFetchForms();
+
+	/**
+	 * Use this custom hook for the global layers.
+	 */
+	// Use the custom hook for global layers management
+	const { resetGlobalLayersState } = useGlobalLayers( {
+		duration,
+		globalSettings,
+		isGlobalSettingsLoading,
+		globalSettingsError,
+		isFetching,
+		currentLayers: layers,
+		onError: () => {
+			// Could set a snackbar message for user feedback if needed
+			setSnackbarMessage( __( 'Error applying global settings layers', 'godam' ) );
+			setShowSnackbar( true );
+		},
+		onSuccess: () => {
+			// Success is silent by default, but could show a message if needed
+			// Could add debug logging here if needed for development
+		},
+	} );
+
+	// Example: Access the GlobalLayersManager instance for advanced operations
+	// const { getGlobalLayersManager } = useGlobalLayers(...);
+	// const globalLayersManager = getGlobalLayersManager();
+	// if (globalLayersManager) {
+	//   const globalLayers = globalLayersManager.getGlobalLayers(layers);
+	//   const videoLayers = globalLayersManager.removeGlobalLayers(layers);
+	// }
 
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {
@@ -101,7 +129,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		const { rtgodam_meta: rtGodamMeta, source_url: sourceURL, mime_type: mimeType, meta } = attachmentConfig;
 
 		// Reset global layers applied state when a new video is loaded
-		setGlobalLayersApplied( false );
+		resetGlobalLayersState( attachmentID );
 
 		// Initialize the store if meta exists
 		if ( rtGodamMeta ) {
@@ -132,11 +160,8 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		}
 
 		setSources( videoSources );
-	}, [ attachmentConfig, dispatch, onBackToAttachmentPicker ] );
+	}, [ attachmentConfig, dispatch, onBackToAttachmentPicker, resetGlobalLayersState, attachmentID ] );
 
-	/**
-	 * Update the store with the fetched forms.
-	 */
 	useEffect( () => {
 		if ( ! isFetching ) {
 			if ( cf7Forms && cf7Forms.length > 0 ) {
@@ -182,55 +207,6 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 			}
 		}
 	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms, ninjaForms, metforms ] );
-
-	/**
-	 * Apply global layers when conditions are met:
-	 * - Video has duration (loaded)
-	 * - Global settings are loaded successfully
-	 * - Global layers haven't been applied yet
-	 * - Forms are loaded if needed for form layers
-	 */
-	useEffect( () => {
-		// Only proceed if we have duration, global settings are loaded, and global layers haven't been applied yet
-		if (
-			duration > 0 &&
-			globalSettings &&
-			! isGlobalSettingsLoading &&
-			! globalSettingsError &&
-			! globalLayersApplied
-		) {
-			// Check if global settings include forms and if they need to be loaded
-			const hasFormLayer = globalSettings?.global_layers?.forms?.enabled;
-			const formsNeeded = hasFormLayer && isFetching;
-
-			// Don't apply if forms are needed but still loading
-			if ( formsNeeded ) {
-				return;
-			}
-
-			try {
-				// Create global layers from settings
-				const globalLayers = applyGlobalLayersToVideo(
-					globalSettings,
-					duration,
-				);
-
-				if ( globalLayers.length > 0 ) {
-					// Merge global layers with existing video layers (get current layers at time of execution)
-					const currentLayers = layers;
-					const updatedLayers = mergeGlobalAndVideoLayers( currentLayers, globalLayers );
-
-					// Update layers in Redux store
-					dispatch( setLayers( updatedLayers ) );
-				}
-
-				// Mark global layers as applied (success or no layers)
-				setGlobalLayersApplied( true );
-			} catch ( error ) {
-				setGlobalLayersApplied( true );
-			}
-		}
-	}, [ duration, globalSettings, isGlobalSettingsLoading, globalSettingsError, isFetching, globalLayersApplied, dispatch ] );
 
 	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
 	const handlePlayerReady = ( player ) => {
