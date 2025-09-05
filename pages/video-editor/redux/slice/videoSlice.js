@@ -93,7 +93,12 @@ const slice = createSlice( {
 		updateLayerField: ( state, action ) => {
 			const { id, field, value } = action.payload;
 			const ind = state.layers.findIndex( ( l ) => l.id === id );
-			state.layers[ ind ][ field ] = value;
+			if ( ind !== -1 ) {
+				state.layers[ ind ][ field ] = value;
+			}
+			if ( state.currentLayer?.id === id ) {
+				state.currentLayer = { ...state.currentLayer, [ field ]: value };
+			}
 			state.isChanged = true;
 		},
 		addChapter: ( state, action ) => {
