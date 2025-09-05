@@ -24,6 +24,7 @@ import upgradePlanBackground from '../../assets/src/images/upgrade-plan-dashboar
 
 const Dashboard = () => {
 	const [ topVideosPage, setTopVideosPage ] = useState( 1 );
+	const [ sortBy, setSortBy ] = useState( 'views' );
 	const siteUrl = window.location.origin;
 	const adminUrl = window.videoData?.adminUrl;
 
@@ -84,6 +85,16 @@ const Dashboard = () => {
 			return () => clearInterval( interval );
 		}
 	}, [ isDashboardMetricsLoading, dashboardMetrics ] );
+
+	const tableMetricLabels = [
+		__( 'Name', 'godam' ),
+		__( 'Size', 'godam' ),
+		__( 'Play Rate', 'godam' ),
+		__( 'Total Plays', 'godam' ),
+		__( 'Total Watch Time', 'godam' ),
+		__( 'Layer Conversion Rate ', 'godam' ),
+		__( 'Average Engagement', 'godam' ),
+	];
 
 	const handleExportCSV = () => {
 		const headers = [
@@ -298,21 +309,38 @@ const Dashboard = () => {
 				<div className="top-media-container">
 					<div className="flex justify-between pt-4">
 						<h2>{ __( 'Top Videos', 'godam' ) }</h2>
-						<button onClick={ handleExportCSV } className="export-button">
-							<img src={ ExportBtn } alt="Export" className="export-icon" />
-							{ __( 'Export', 'godam' ) }
-						</button>
+						<div className="flex gap-4 items-center">
+							<select
+								className="sort-videos-dropdown rounded-md border border-[var(--border,#E4E4E7)]"
+								value={ sortBy }
+								onChange={ ( e ) => setSortBy( e.target.value ) }
+							>
+								{ tableMetricLabels.slice( 2 ).map( ( header, idx ) => {
+									// generate a key from header text (e.g. "Total Plays" -> totalPlays)
+									const key = header.toLowerCase().replace( /\s+/g, '_' );
+									return (
+										<React.Fragment key={ idx }>
+											<option value={ key }>
+												{ header }
+											</option>
+										</React.Fragment>
+									);
+								} ) }
+							</select>
+							<button onClick={ handleExportCSV } className="export-button">
+								<img src={ ExportBtn } alt="Export" className="export-icon" />
+								{ __( 'Export', 'godam' ) }
+							</button>
+						</div>
 					</div>
 					<div className="table-container overflow-x-auto">
 						<table className="w-full">
 							<tbody>
 								<tr>
-									<th>{ __( 'Name', 'godam' ) }</th>
-									<th>{ __( 'Size', 'godam' ) }</th>
-									<th>{ __( 'Play Rate', 'godam' ) }</th>
-									<th>{ __( 'Total Plays', 'godam' ) }</th>
-									<th>{ __( 'Total Watch Time', 'godam' ) }</th>
-									<th>{ __( 'Average Engagement', 'godam' ) }</th>
+									{ tableMetricLabels?.map( ( header ) => {
+										const key = header.toLowerCase().replace( /\s+/g, '' );
+										return <th key={ key }>{ header }</th>;
+									} ) }
 								</tr>
 								{ isTopVideosFetching ? (
 									<tr>
@@ -370,6 +398,7 @@ const Dashboard = () => {
 											</td>
 											<td>{ item.plays ?? '-' }</td>
 											<td>{ item.play_time?.toFixed( 2 ) ?? '-' }s</td>
+											<td>{ item.layer_conversion_rate ? `${ item.layer_conversion_rate?.toFixed( 2 ) }%` : '0%' }</td>
 											<td>
 												{ item.plays > 0 && item.video_length > 0
 													? ( ( item.play_time / ( item.plays * item.video_length ) ) * 100 ).toFixed( 2 ) + '%'
@@ -378,7 +407,7 @@ const Dashboard = () => {
 										</tr>
 									) )
 								) }
-								{ topVideosData.length === 0 && (
+								{ topVideosData.length === 0 && ! isTopVideosFetching && (
 									<tr>
 										<td colSpan="6" className="text-center py-4 text-lg">
 											{ __( 'No videos found.', 'godam' ) }
