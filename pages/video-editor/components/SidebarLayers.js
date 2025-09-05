@@ -271,6 +271,15 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					<div id="sidebar-layers" className="pt-4 h-max">
 						{
 							sortedLayers?.map( ( layer ) => {
+								/**
+								 * Layers can be present but be disabled.
+								 *
+								 * This feature is needed for global layers as it makes them easier to manage.
+								 */
+								if ( layer.isDisabled ) {
+									return null;
+								}
+
 								let addWarning = false;
 								const layerData = layerTypes.find( ( l ) => l.type === layer.type );
 								const formType = 'form' === layerData?.type ? layerData?.formType[ layer.form_type ?? 'gravity' ] : false;

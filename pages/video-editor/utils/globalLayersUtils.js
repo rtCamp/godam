@@ -61,13 +61,6 @@ class GlobalLayersManager {
 			imageDescription: '',
 			imageCtaOrientation: 'landscape',
 			imageCtaButtonText: 'Buy Now',
-			duration: 10,
-			screen_position: 'bottom-center',
-			background_color: '#0073aa',
-			text_color: '#ffffff',
-			font_size: 16,
-			border_radius: 4,
-			css_classes: '',
 		},
 		form: {
 			form_id: '',
@@ -91,7 +84,6 @@ class GlobalLayersManager {
 	constructor( globalSettings, videoDuration = 0 ) {
 		this.globalSettings = globalSettings;
 		this.videoDuration = videoDuration;
-		this.appliedLayers = [];
 	}
 
 	/**
@@ -189,23 +181,12 @@ class GlobalLayersManager {
 				return {
 					...baseLayer,
 					text: ctaConfig.text || defaults.text,
-					link: ctaConfig.url || '',
-					new_tab: ctaConfig.new_tab !== false,
-					duration: ctaConfig.duration || defaults.duration,
-					screen_position: ctaConfig.screen_position || defaults.screen_position,
-					background_color: ctaConfig.background_color || defaults.background_color,
-					text_color: ctaConfig.text_color || defaults.text_color,
-					font_size: ctaConfig.font_size || defaults.font_size,
-					border_radius: ctaConfig.border_radius || defaults.border_radius,
-					css_classes: ctaConfig.css_classes || defaults.css_classes,
 				};
 
 			case GlobalLayersManager.CTA_TYPE_HTML:
 				return {
 					...baseLayer,
 					html: ctaConfig.html || defaults.html,
-					duration: ctaConfig.duration || defaults.duration,
-					screen_position: ctaConfig.screen_position || defaults.screen_position,
 				};
 
 			case GlobalLayersManager.CTA_TYPE_IMAGE:
@@ -217,8 +198,6 @@ class GlobalLayersManager {
 					imageDescription: ctaConfig.imageDescription || defaults.imageDescription,
 					imageCtaOrientation: ctaConfig.imageCtaOrientation || defaults.imageCtaOrientation,
 					imageCtaButtonText: ctaConfig.imageCtaButtonText || defaults.imageCtaButtonText,
-					duration: ctaConfig.duration || defaults.duration,
-					screen_position: ctaConfig.screen_position || defaults.screen_position,
 				};
 
 			default:
@@ -308,11 +287,63 @@ class GlobalLayersManager {
 	}
 
 	/**
-	 * Apply global settings to create layers for a video
+	 * Get merged layers with existing video layers
 	 *
-	 * @return {Array} Array of global layers
+	 * @param {Array} existingLayers - Existing video layers
+	 * @return {Array} Merged layers array
 	 */
-	applyGlobalLayers() {
+	getMergedLayers( existingLayers ) {
+		if ( ! Array.isArray( existingLayers ) ) {
+			existingLayers = [];
+		}
+
+		// Get existing global layers and check what types are already present or disabled
+		const existingGlobalInfo = this.getExistingGlobalLayersInfo( existingLayers );
+
+		// Only create global layers that don't already exist or aren't disabled
+		const newGlobalLayers = this.createMissingGlobalLayers( existingGlobalInfo );
+
+		return [ ...existingLayers, ...newGlobalLayers ];
+	}
+
+	/**
+	 * Get information about existing global layers
+	 *
+	 * @param {Array} layers - Array of layers to analyze
+	 * @return {Object} Object with info about existing global layers by type
+	 */
+	getExistingGlobalLayersInfo( layers ) {
+		const info = {};
+
+		layers.forEach( ( layer ) => {
+			if ( ! layer?.type ) {
+				return;
+			}
+
+			const isGlobal = GlobalLayersManager.isGlobalLayer( layer );
+			const isDisabled = layer.isDisabled === true;
+			const hasGlobalMetadata = layer.globalLayerSource || layer.globalLayerConfig;
+
+			// Track global layers or disabled layers with global characteristics
+			if ( isGlobal || ( isDisabled && hasGlobalMetadata ) ) {
+				info[ layer.type ] = {
+					exists: true,
+					disabled: isDisabled,
+					layer,
+				};
+			}
+		} );
+
+		return info;
+	}
+
+	/**
+	 * Create only missing global layers (not already present or disabled)
+	 *
+	 * @param {Object} existingGlobalInfo - Info about existing global layers
+	 * @return {Array} Array of new global layers to add
+	 */
+	createMissingGlobalLayers( existingGlobalInfo ) {
 		if ( ! this.globalSettings?.global_layers ) {
 			return [];
 		}
@@ -320,36 +351,23 @@ class GlobalLayersManager {
 		const globalLayers = this.globalSettings.global_layers;
 		const layersToAdd = [];
 
-		// Add form layer if enabled
-		if ( globalLayers.forms ) {
+		// Add form layer only if not already present or disabled
+		if ( globalLayers.forms && ! existingGlobalInfo.form ) {
 			const formLayer = this.createFormLayer( globalLayers.forms );
 			if ( formLayer ) {
 				layersToAdd.push( formLayer );
 			}
 		}
 
-		// Add CTA layer if enabled
-		if ( globalLayers.cta ) {
+		// Add CTA layer only if not already present or disabled
+		if ( globalLayers.cta && ! existingGlobalInfo.cta ) {
 			const ctaLayer = this.createCtaLayer( globalLayers.cta );
 			if ( ctaLayer ) {
 				layersToAdd.push( ctaLayer );
 			}
 		}
 
-		this.appliedLayers = layersToAdd;
 		return layersToAdd;
-	}
-
-	/**
-	 * Get merged layers with existing video layers
-	 *
-	 * @param {Array} existingLayers - Existing video layers
-	 * @return {Array} Merged layers array
-	 */
-	getMergedLayers( existingLayers ) {
-		const globalLayers = this.applyGlobalLayers();
-		const videoOnlyLayers = this.removeGlobalLayers( existingLayers );
-		return [ ...videoOnlyLayers, ...globalLayers ];
 	}
 
 	/**
