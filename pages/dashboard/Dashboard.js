@@ -24,7 +24,8 @@ import upgradePlanBackground from '../../assets/src/images/upgrade-plan-dashboar
 
 const Dashboard = () => {
 	const [ topVideosPage, setTopVideosPage ] = useState( 1 );
-	const [ sortBy, setSortBy ] = useState( 'views' );
+	const [ sortBy, setSortBy ] = useState( 'total_plays' );
+	const [ sortOrder, setSortOrder ] = useState( 'asc' );
 	const siteUrl = window.location.origin;
 	const adminUrl = window.videoData?.adminUrl;
 
@@ -35,7 +36,7 @@ const Dashboard = () => {
 	const {
 		data: topVideosResponse,
 		isFetching: isTopVideosFetching,
-	} = useFetchTopVideosQuery( { siteUrl, page: topVideosPage, limit: 10 } );
+	} = useFetchTopVideosQuery( { siteUrl, page: topVideosPage, limit: 10, sortBy, sortOrder } );
 
 	const topVideosData = topVideosResponse?.videos || [];
 	const totalTopVideosPages = topVideosResponse?.totalPages || 1;
@@ -85,6 +86,21 @@ const Dashboard = () => {
 			return () => clearInterval( interval );
 		}
 	}, [ isDashboardMetricsLoading, dashboardMetrics ] );
+
+	const SORT_MAPPING = {
+		playrate: 'play_rate',
+		totalplays: 'total_plays',
+		totalwatchtime: 'avg_watch_time',
+		layerconversionrate: 'layer_conversion_rate',
+		averageengagement: 'engagement_rate',
+	};
+
+	const handleSort = ( columnKey, order = 'asc' ) => {
+		if ( columnKey !== sortBy ) {
+			setSortBy( SORT_MAPPING[ columnKey ] || 'total_plays' );
+		}
+		setSortOrder( order );
+	};
 
 	const tableMetricLabels = [
 		__( 'Name', 'godam' ),
@@ -310,23 +326,6 @@ const Dashboard = () => {
 					<div className="flex justify-between pt-4">
 						<h2>{ __( 'Top Videos', 'godam' ) }</h2>
 						<div className="flex gap-4 items-center">
-							<select
-								className="sort-videos-dropdown rounded-md border border-[var(--border,#E4E4E7)]"
-								value={ sortBy }
-								onChange={ ( e ) => setSortBy( e.target.value ) }
-							>
-								{ tableMetricLabels.slice( 2 ).map( ( header, idx ) => {
-									// generate a key from header text (e.g. "Total Plays" -> totalPlays)
-									const key = header.toLowerCase().replace( /\s+/g, '_' );
-									return (
-										<React.Fragment key={ idx }>
-											<option value={ key }>
-												{ header }
-											</option>
-										</React.Fragment>
-									);
-								} ) }
-							</select>
 							<button onClick={ handleExportCSV } className="export-button">
 								<img src={ ExportBtn } alt="Export" className="export-icon" />
 								{ __( 'Export', 'godam' ) }
@@ -339,7 +338,41 @@ const Dashboard = () => {
 								<tr>
 									{ tableMetricLabels?.map( ( header ) => {
 										const key = header.toLowerCase().replace( /\s+/g, '' );
-										return <th key={ key }>{ header }</th>;
+										const isActive = sortBy === SORT_MAPPING[ key ];
+										return (
+											<th
+												key={ key }
+												className="cursor-pointer select-none"
+											>
+												<span className="flex items-center gap-1">
+													{ header }
+													{ ! [ 'name', 'size' ].includes( key ) && (
+														<span className="flex flex-col text-xs leading-none">
+															<button
+																className={ `bg-transparent cursor-pointer ${
+																	isActive && 'asc' === sortOrder
+																		? 'text-[#ab3a6c]'
+																		: 'text-gray-400'
+																}` }
+																onClick={ () => handleSort( key, 'asc' ) }
+															>
+																▲
+															</button>
+															<button
+																className={ `bg-transparent cursor-pointer ${
+																	isActive && 'desc' === sortOrder
+																		? 'text-[#ab3a6c]'
+																		: 'text-gray-400'
+																}` }
+																onClick={ () => handleSort( key, 'desc' ) }
+															>
+																▼
+															</button>
+														</span>
+													) }
+												</span>
+											</th>
+										);
 									} ) }
 								</tr>
 								{ isTopVideosFetching ? (
@@ -392,16 +425,14 @@ const Dashboard = () => {
 												{ item.video_size ? `${ item.video_size.toFixed( 2 ) } MB` : '' }
 											</td>
 											<td>
-												{ item.plays > 0 && item.page_load > 0
-													? ( ( item.plays / item.page_load ) * 100 ).toFixed( 2 ) + '%'
-													: '0%' }
+												{ item.play_rate > 0 ? item.play_rate.toFixed( 2 ) + '%' : '0%' }
 											</td>
 											<td>{ item.plays ?? '-' }</td>
 											<td>{ item.play_time?.toFixed( 2 ) ?? '-' }s</td>
 											<td>{ item.layer_conversion_rate ? `${ item.layer_conversion_rate?.toFixed( 2 ) }%` : '0%' }</td>
 											<td>
-												{ item.plays > 0 && item.video_length > 0
-													? ( ( item.play_time / ( item.plays * item.video_length ) ) * 100 ).toFixed( 2 ) + '%'
+												{ item.engagement_rate > 0
+													? item.engagement_rate.toFixed( 2 ) + '%'
 													: '-' }
 											</td>
 										</tr>
