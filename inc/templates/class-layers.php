@@ -148,7 +148,7 @@ class Layers {
 		$base_layer = array(
 			'type'        => self::LAYER_TYPE_CTA,
 			'cta_type'    => $cta_type,
-			'id'          => self::generate_uuid_v4(),
+			'id'          => 'global_' . self::LAYER_TYPE_CTA . '_' . $cta_type,
 			'displayTime' => self::get_placement_time( $placement, $video_duration ),
 		);
 
@@ -218,7 +218,7 @@ class Layers {
 
 		$base_layer = array(
 			'type'        => self::LAYER_TYPE_FORM,
-			'id'          => self::generate_uuid_v4(),
+			'id'          => 'global_' . self::LAYER_TYPE_FORM . '_' . $form_type,
 			'displayTime' => self::get_placement_time( $placement, $video_duration ),
 		);
 
@@ -250,63 +250,6 @@ class Layers {
 
 			default:
 				return $base_layer;
-		}
-	}
-
-	/**
-	 * Create a custom layer (extensible for future layer types).
-	 *
-	 * @param string $layer_type Layer type identifier.
-	 * @param array  $layer_config Layer configuration.
-	 * @param int    $video_duration Video duration in seconds.
-	 * @return array Layer data or empty array if disabled/invalid.
-	 */
-	public static function create_custom_layer( $layer_type, $layer_config, $video_duration ) {
-		if ( ! is_array( $layer_config ) || empty( $layer_config['enabled'] ) ) {
-			return array();
-		}
-
-		$placement = isset( $layer_config['placement'] ) ? $layer_config['placement'] : self::PLACEMENT_START;
-
-		$base_layer = array(
-			'type'        => $layer_type,
-			'id'          => self::generate_uuid_v4(),
-			'displayTime' => self::get_placement_time( $placement, $video_duration ),
-		);
-
-		// Apply custom configuration, excluding standard key.
-		$excluded_keys = array( 'enabled', 'placement' );
-		$custom_config = array();
-
-		foreach ( $layer_config as $key => $value ) {
-			if ( ! in_array( $key, $excluded_keys, true ) ) {
-				$custom_config[ $key ] = $value;
-			}
-		}
-
-		return array_merge( $base_layer, $custom_config );
-	}
-
-	/**
-	 * Generate UUID v4.
-	 *
-	 * @return string UUID v4 string.
-	 */
-	public static function generate_uuid_v4() {
-		try {
-			if ( function_exists( 'random_bytes' ) ) {
-				$data = random_bytes( 16 );
-
-				// Set version to 0100 (UUID v4.
-				$data[6] = chr( ( ord( $data[6] ) & 0x0f ) | 0x40 );
-
-				// Set variant to 10x.
-				$data[8] = chr( ( ord( $data[8] ) & 0x3f ) | 0x80 );
-
-				return vsprintf( '%s%s-%s-%s-%s-%s%s%s', str_split( bin2hex( $data ), 4 ) );
-			}
-		} catch ( Exception $e ) {
-			return uniqid( '', true );
 		}
 	}
 
