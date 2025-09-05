@@ -82,7 +82,6 @@ class RTGODAM_RetranscodeMedia {
 		}
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueues' ) );
-		add_action( 'wp_ajax_retranscodemedia', array( $this, 'ajax_process_retranscode_request' ) );
 		add_filter( 'media_row_actions', array( $this, 'add_media_row_action' ), 10, 2 );
 		add_action( 'admin_head-upload.php', array( $this, 'add_bulk_actions_via_javascript' ) );
 		add_action( 'admin_action_bulk_retranscode_media', array( $this, 'bulk_action_handler' ) ); // Top drowndown.
@@ -544,107 +543,6 @@ class RTGODAM_RetranscodeMedia {
 		</div>
 
 		<?php
-	}
-
-	/**
-	 * Process a single image ID (this is an AJAX handler)
-	 */
-	public function ajax_process_retranscode_request() {
-
-		header( 'Content-type: application/json' );
-		$id = rtgodam_filter_input( INPUT_POST, 'id', FILTER_SANITIZE_NUMBER_INT );
-		$id = intval( $id );
-
-		if ( empty( $id ) || 0 >= $id ) {
-			wp_send_json_error();
-			exit;
-		}
-
-		$media = get_post( $id );
-
-		if ( ! $media || 'attachment' !== $media->post_type ||
-			(
-				'audio/' !== substr( $media->post_mime_type, 0, 6 ) &&
-				'video/' !== substr( $media->post_mime_type, 0, 6 ) &&
-				'application/pdf' !== $media->post_mime_type
-			)
-		) {
-			// translators: Media id of the invalid media type.
-			die( wp_json_encode( array( 'error' => sprintf( __( 'Sending Failed: %d is an invalid media ID/type.', 'godam' ), intval( $id ) ) ) ) );
-		}
-
-		// Safe fallback via filter; PHPCS can't resolve dynamic capability.
-		// phpcs:ignore WordPress.WP.Capabilities.Undetermined
-		if ( ! current_user_can( $this->capability ) ) {
-			$this->die_json_error_msg( $media->ID, __( "Your user account doesn't have permission to transcode", 'godam' ) );
-		}
-
-		// Check if transcoding status is failed and clean up if needed.
-		$transcoding_status = get_post_meta( $media->ID, 'rtgodam_transcoding_status', true );
-		if ( 'Failed' === $transcoding_status ) {
-			// Clean up any existing job ID and status.
-			delete_post_meta( $media->ID, 'rtgodam_transcoding_job_id' );
-		}
-
-		delete_post_meta( $media->ID, 'rtgodam_transcoding_status' );
-		delete_post_meta( $media->ID, 'rtgodam_transcoding_error_msg' );
-
-		// Check if media is already being transcoded.
-		if ( rtgodam_is_file_being_transcoded( $media->ID ) ) {
-			$this->die_json_error_msg( $media->ID, sprintf( __( 'The media is already being transcoded', 'godam' ) ) );
-		}
-
-		/**
-		 * Check if `rtgodam_transcoding_job_id` meta is present for the media
-		 * if it's present then media won't get sent to the transcoder
-		 * so we need to delete `rtgodam_transcoding_job_id` meta before we send
-		 * media back for the retranscoding
-		 */
-		$already_sent = get_post_meta( $media->ID, 'rtgodam_transcoding_job_id', true );
-
-		if ( ! empty( $already_sent ) ) {
-			delete_post_meta( $media->ID, 'rtgodam_transcoding_job_id' );
-		}
-
-		// Get the transcoder object.
-		$transcoder = new RTGODAM_Transcoder_Handler( true );
-
-		$attachment_meta = array( 'mime_type' => $media->post_mime_type );
-
-		$transcoded_files = get_post_meta( $media->ID, 'rtgodam_media_transcoded_files', true );
-
-		// No need to ask for the transcoded (mp4) file if we already have it.
-		// Only asks for the thumbnails.
-
-		if ( ! empty( $transcoded_files ) && is_array( $transcoded_files ) ) {
-			if ( array_key_exists( 'mp4', $transcoded_files ) && count( $transcoded_files['mp4'] ) > 0 ) {
-
-				/**
-				 * We can ask for the new fresh transcoded file even if it already present.
-				 * Use: add_filter( 'rtgodam_force_trancode_media', '__return_true' );
-				 *
-				 * @param bool FALSE by default. Pass TRUE if you want to request for new transcoded file
-				 */
-				$force_transcode = apply_filters( 'rtgodam_force_trancode_media', false );
-				if ( ! $force_transcode ) {
-					$attachment_meta['mime_type'] = 'video/mp4';
-				}
-			}
-		}
-
-		// Send media for (Re)transcoding.
-		$transcoder->wp_media_transcoding( $attachment_meta, $media->ID );
-
-		$is_sent = get_post_meta( $media->ID, 'rtgodam_transcoding_job_id', true );
-
-		if ( ! $is_sent ) {
-			$this->die_json_error_msg( $media->ID, __( 'Unknown failure reason.', 'godam' ) );
-		}
-
-		update_post_meta( $media->ID, 'rtgodam_retranscoding_sent', $is_sent );
-
-		// translators: Media name, Media id and success message for successfull transcode.
-		die( wp_json_encode( array( 'success' => sprintf( __( '&quot;%1$s&quot; (ID %2$s) was successfully sent in %3$s seconds.', 'godam' ), esc_html( get_the_title( $media->ID ) ), $media->ID, timer_stop() ) ) ) );
 	}
 
 	/**
