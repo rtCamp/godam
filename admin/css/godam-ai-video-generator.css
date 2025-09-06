@@ -1,0 +1,222 @@
+/**
+ * GoDAM AI Video Generator Styles
+ * Styles for the AI video generation functionality in WooCommerce product pages
+ */
+
+/* AI Video Generator Meta Box */
+#godam-ai-video-generator .godam-ai-video-section {
+	margin-bottom: 15px;
+}
+
+/* Image Selection Container */
+.godam-image-selection {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	max-height: 200px;
+	overflow-y: auto;
+	border: 1px solid #ddd;
+	padding: 10px;
+	border-radius: 4px;
+	background: #fff;
+}
+
+/* Individual Image Items */
+.godam-image-item {
+	position: relative;
+	cursor: pointer;
+	transition: transform 0.2s ease;
+}
+
+.godam-image-item:hover {
+	transform: scale(1.05);
+}
+
+.godam-image-item input[type="checkbox"] {
+	position: absolute;
+	top: 5px;
+	left: 5px;
+	z-index: 2;
+	width: 16px;
+	height: 16px;
+}
+
+.godam-image-item img {
+	width: 60px;
+	height: 60px;
+	object-fit: cover;
+	border-radius: 4px;
+	border: 2px solid transparent;
+	transition: all 0.2s ease;
+}
+
+.godam-image-item input[type="checkbox"]:checked + img,
+.godam-image-item img.selected {
+	border-color: #007cba !important;
+	box-shadow: 0 0 5px rgba(0, 124, 186, 0.5);
+}
+
+/* Video Prompt Textarea */
+#godam-video-prompt {
+	width: 100%;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	padding: 8px;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	resize: vertical;
+	min-height: 80px;
+	transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#godam-video-prompt:focus {
+	border-color: #007cba;
+	box-shadow: 0 0 0 1px #007cba;
+	outline: none;
+}
+
+/* Generate Button and Spinner */
+#godam-generate-video-btn {
+	margin-right: 10px;
+}
+
+.spinner.is-active {
+	visibility: visible;
+	margin-left: 10px;
+	float: none;
+}
+
+/* Notice Messages */
+.godam-ai-notice {
+	margin: 10px 0;
+	padding: 8px 12px;
+	border-radius: 4px;
+}
+
+/* Video Result Container */
+#godam-video-result {
+	margin-top: 15px;
+	padding: 15px;
+	background: #f9f9f9;
+	border-radius: 4px;
+	border-left: 4px solid #007cba;
+	display: none; /* Initially hidden */
+}
+
+#godam-video-result video {
+	width: 100%;
+	max-width: 300px;
+	height: auto;
+	border-radius: 4px;
+	margin: 10px 0;
+}
+
+/* Success Message Styling */
+.godam-video-success {
+	background: #f9f9f9;
+	padding: 15px;
+	border-radius: 4px;
+	border-left: 4px solid #00a32a;
+}
+
+.godam-video-success video {
+	margin: 10px 0;
+	border-radius: 4px;
+}
+
+.godam-video-success p {
+	margin: 8px 0;
+}
+
+.godam-video-success .button {
+	margin-top: 10px;
+}
+
+/* Error Container */
+#godam-video-error {
+	margin-top: 15px;
+	padding: 8px 12px;
+	display: none; /* Initially hidden */
+}
+
+#godam-video-error-message {
+	margin: 0;
+	font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 782px) {
+	.godam-image-selection {
+		max-height: 150px;
+		gap: 8px;
+		padding: 8px;
+	}
+	
+	.godam-image-item img {
+		width: 50px;
+		height: 50px;
+	}
+	
+	#godam-video-prompt {
+		padding: 6px;
+		font-size: 14px;
+	}
+	
+	#godam-video-result video {
+		max-width: 100%;
+	}
+}
+
+/* Loading States */
+.godam-ai-video-loading {
+	opacity: 0.6;
+	pointer-events: none;
+}
+
+.godam-ai-video-loading::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(255, 255, 255, 0.8);
+	z-index: 1000;
+}
+
+/* Meta Box Header */
+#godam-ai-video-generator h4 {
+	margin: 0 0 10px 0;
+	font-size: 14px;
+	font-weight: 600;
+	color: #23282d;
+}
+
+/* Description Text */
+#godam-ai-video-generator .description {
+	font-style: italic;
+	color: #666;
+	margin-top: 5px;
+}
+
+/* Configuration Notice */
+.godam-config-notice {
+	background: #fff3cd;
+	border: 1px solid #ffeaa7;
+	border-radius: 4px;
+	padding: 10px;
+	margin-bottom: 15px;
+}
+
+.godam-config-notice p {
+	margin: 0;
+	color: #856404;
+}
+
+.godam-config-notice a {
+	color: #007cba;
+	text-decoration: none;
+}
+
+.godam-config-notice a:hover {
+	text-decoration: underline;
+}
