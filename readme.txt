@@ -123,17 +123,17 @@ Check out our source code and contribute to the plugin on GitHub: [Official GoDA
 ✓ GoDAM Pro delivers video through a global CDN with 118+ edge locations, ensuring faster video playback, 99.99% uptime, and improved site performance for a seamless user experience.
 ✓ Offload media to GoDAM Central cloud storage.
 
-### Primary Benefits:
+= Primary Benefits = 
 ✓ Simplifies asset management with automated transcoding and adaptive streaming.
 ✓ Enhances viewer engagement with interactive layers like forms, CTAs, and hotspots.
 ✓ Integrates seamlessly with WordPress for a familiar and user-friendly experience.
 
-### Secondary Benefits:
+= Secondary Benefits = 
 ✓ Cost-efficient pricing tailored to your actual usage.
 ✓ Scalable features suitable for small businesses, educators, and enterprise-level users.
 ✓ Monetization opportunities through ad placement and e-commerce integrations.
 
-### Use Cases:
+= Use Cases = 
 ✓ Education: Deliver interactive video lessons with forms for quizzes or feedback.
 ✓ E-commerce: Use video hotspots to enable in-video product purchases.
 ✓ Marketing: Engage viewers with CTAs and lead capture forms.
@@ -184,12 +184,12 @@ The GoDAM menu should appear on your admin dashboard!
 
 == Frequently Asked Questions ==
 = What is GoDAM, and how does it work? =
-A. GoDAM is a media management service that seamlessly integrates with your WordPress site to optimize and enhance your audio and video content. It automatically converts uploaded audio files to MP3 and video files to MP4 format. Additionally, GoDAM offers a suite of powerful features, including thumbnail generation, shortcode support, customizable video layers (like Gravity Forms, text/image CTAs, video hotspots, and ads), adaptive bitrate streaming for smooth playback, and advanced asset management tools.
+A. GoDAM is a media management service that seamlessly integrates with your WordPress site to optimize and enhance your audio and video content. It automatically converts uploaded audio files to MP3 and video files to MPD format. Additionally, GoDAM offers a suite of powerful features, including thumbnail generation, shortcode support, customizable video layers (like Gravity Forms, text/image CTAs, video hotspots, and ads), adaptive bitrate streaming for smooth playback, and advanced asset management tools.
 
 To get started, you just need to install the GoDAM plugin on your WordPress website and subscribe to a plan. Once set up, GoDAM helps you manage, edit, and deliver media content more efficiently, making it a perfect solution for creators, educators, and businesses.
 
 = Which file types are supported? =
-A. GoDAM converts all supported audio files to MP3 format and video files to MP4 format.
+A. GoDAM converts all supported audio files to MP3 format and video files to MPD format.
 Supported input formats:
 ✓ Audio: MP3, M4A, WAV, OGG
 ✓ Video: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, OGV, WEBM, WMV
