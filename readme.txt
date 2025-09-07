@@ -14,6 +14,7 @@ Manage and optimize digital assets with GoDAM – featuring transcoding, adaptiv
 [GoDAM](https://godam.io/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=description-link) is a powerful file manager, WordPress Media Library organizer and digital asset management solution designed to provide automatic transcoding, adaptive bitrate streaming, and interactive video layers to enhance viewer engagement. It simplifies the entire video workflow, from upload to optimized playback, ensuring smooth delivery across all devices and network conditions.
 
 With GoDAM, WordPress users can leverage advanced video capabilities without requiring extensive technical expertise. It automates the conversion of uploaded videos into multiple resolutions, enabling seamless playback with adaptive bitrate streaming. The integration of interactive elements such as CTAs, forms, interactive video hotspots and ads makes GoDAM an all-in-one solution for content creators, marketers, and eCommerce businesses.
+
 Check out our source code and contribute to the plugin on GitHub: [Official GoDAM GitHub](https://github.com/rtCamp/godam).
 
 👉 Read Our Blog : [link](https://godam.io/blog/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=blog-link)
