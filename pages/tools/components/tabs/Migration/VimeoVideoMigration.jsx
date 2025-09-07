@@ -50,7 +50,14 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 			},
 		} )
 			.then( ( response ) => {
-				setMigrationStatus( response.data );
+				// Check the status in the response data
+				if ( response.data?.message?.migration_status && response.data.message.migration_status !== 'Completed' ) {
+					setGodamMigrationCompleted( false );
+					setMigrationStatus( { total: 0, done: 0, started: null, completed: null, status: 'pending', message: '' } );
+				} else {
+					// Proceed with migration
+					setMigrationStatus( response.data );
+				}
 			} )
 			.catch( ( err ) => {
 				// Check if status is 400, set godamMigrationStatus
@@ -59,7 +66,7 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 				}
 				// Reset UI as request failed; show an error notice for clarity.
 				setMigrationStatus( { total: 0, done: 0, started: null, completed: null, status: 'pending', message: '' } );
-				const apiMessage = err?.response?.data?.message || err?.message || __( 'Something went wrong while starting migration.', 'godam' );
+				const apiMessage = __( 'Something went wrong while starting migration.', 'godam' );
 				showNotice( apiMessage, 'error' );
 			} );
 	};

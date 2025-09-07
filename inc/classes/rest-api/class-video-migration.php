@@ -189,6 +189,7 @@ class Video_Migration extends Base {
 		if ( ! in_array( $migration_type, array( 'core', 'vimeo' ), true ) ) {
 			return new \WP_Error( 'invalid_migration_type', __( 'Invalid migration type specified.', 'godam' ), array( 'status' => 400 ) );
 		}
+		$wp_option_key = 'godam_' . $migration_type . '_video_migration_status';
 
 		if ( 'vimeo' === $migration_type ) {
 			// Check if Vimeo migration is enabled.
@@ -200,15 +201,16 @@ class Video_Migration extends Base {
 			if ( isset( $godam_migration_status['message']['migration_status'] ) ) {
 				$status = $godam_migration_status['message']['migration_status'];
 				if ( 'Completed' !== $status ) {
+					// Reset migration status since Central migration is not completed.
+					delete_option( $wp_option_key );
+					
 					return new \WP_REST_Response(
 						$godam_migration_status,
-						400,
+						200,
 					);
 				}
 			}
 		}
-
-		$wp_option_key = 'godam_' . $migration_type . '_video_migration_status';
 
 		$migration_status = get_option( $wp_option_key, array() );
 
