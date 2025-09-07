@@ -30,9 +30,6 @@ See Our Official GitHub: [Official GoDAM GitHub](https://github.com/rtCamp/godam
 
 👉 Learn More About GoDAM Pro : [All The Features of GoDAM](https://godam.io/features/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=features-link)
 
-👉 Check out our [Chrome Extension](https://chromewebstore.google.com/detail/ojmbobnoagdgblhpbemfamfkcfjdfejl) to easily record and share videos
-
-
 ### Free Features
 
 #### 📌 Media Management
@@ -45,7 +42,7 @@ See Our Official GitHub: [Official GoDAM GitHub](https://github.com/rtCamp/godam
 - Embed [clickable CTAs](https://godam.io/features/video-overlay/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=video-overlay) to drive actions like sign-ups and purchases.
 - Enhance your videos with [customizable hotspots](https://godam.io/features/video-hotspot/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=video-hotspot) that deliver additional context, links, and information exactly when and where your viewers need it.
 - Add interactive forms using [Gravity Forms](https://godam.io/integrations/gravity-forms/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=gravity-forms), [WPForms](https://godam.io/integrations/wp-forms/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=wpforms), [Contact Form 7](https://godam.io/integrations/contact-form-7/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=contact-form-7), [Jetpack Forms](https://godam.io/integrations/jetpack-form/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=jetpack-forms), [Forminator Forms](https://godam.io/integrations/forminator-forms/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=forminator-forms), [Fluent Forms](https://godam.io/integrations/fluent-forms/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=fluent-forms), [SureForms](https://godam.io/integrations/sureforms/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=sureforms), [Ninja Forms](https://godam.io/integrations/ninja-forms/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=ninja-forms), [Met Forms](https://godam.io/integrations/metform/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=metform), and [Everest Forms](https://godam.io/integrations/everest-forms/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=everest-forms) to collect leads.
-- Enable video submissions using the GoDAM Record field that supports webcam and screencast inside Gravity Forms.
+- Enable video submissions with the [GoDAM Form Recorder](https://godam.io/features/form-recorder/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=form-recorder) field, allowing users to record via webcam or screencast, or upload videos directly while filling out a form.
 - Add interactive Polls to gather viewer opinions during playback.
 - Customize video player appearance globally with custom CSS through the Video Player settings menu.
 - Navigate videos easily with chapter markers for better content organization and viewer experience.
@@ -93,6 +90,9 @@ See Our Official GitHub: [Official GoDAM GitHub](https://github.com/rtCamp/godam
 - Organize videos, images, and documents into folders with search, filters, and sharing options.
 - Each video gets a dedicated single video page with time-stamped comments and reactions for team collaboration.
 - Automatically sync uploaded videos with the WordPress Media Library for easy access across your site.
+- One single license for unlimited sites
+- Team Management and Multiple Organizations for maximum collaboration
+- Save time and resources by uploading media once at any connected site or GoDAM Central and reusing it across all other connected sites with the GoDAM Media Tab on WordPress.
 
 #### 📌 Advanced Video Analytics
 - Monitor viewer behavior and engagement through [detailed metrics and heatmaps](https://godam.io/features/analytics/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=analytics).
@@ -109,14 +109,18 @@ See Our Official GitHub: [Official GoDAM GitHub](https://github.com/rtCamp/godam
 - Quickly edit any part of the transcript in the editor for any fixes or additional context.
 
 #### 📌 Video Engagement Features
-- Enable likes, comments, and views tracking for enhanced viewer interaction and community building.
+- Enable likes, comments, and views tracking on GoDAM Video and GoDAM Video Gallery blocks for enhanced viewer interaction and community building.
 - Build a more engaged audience with social features that encourage participation and feedback.
 
-#### 📌 Vimeo Migration Tool
-- Import any core video block seamlessly to GoDAM blocks and GoDAM Central.
+#### 📌 Video Migration Tools
+- Import any core video block seamlessly to GoDAM Video blocks.
 - Import Vimeo videos seamlessly to GoDAM Central and GoDAM Video blocks.
 - Migrate your existing video content without losing quality or functionality.
 - Streamline your video management by consolidating all content in one powerful platform.
+
+#### 📌 Faster Video Playback
+- GoDAM Pro delivers video through a global CDN with 118+ edge locations, ensuring faster video playback, 99.99% uptime, and improved site performance for a seamless user experience.
+- Offload media to GoDAM Central cloud storage.
 
 ### Primary Benefits:
 - **_Simplifies_** asset management with automated transcoding and adaptive streaming.
@@ -160,8 +164,9 @@ GoDAM works seamlessly with popular WordPress plugins to enhance interactivity a
 - [Everest Forms](https://godam.io/integrations/everest-forms/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=everest-forms-integration) – User-friendly form builder with drag-and-drop functionality.
 - [Ninja Forms](https://godam.io/integrations/ninja-forms/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=ninja-forms-integration) – Powerful form builder with advanced features and conditional logic.
 - [MetForm](https://godam.io/integrations/metform/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=metform-integration) – Modern form builder with drag-and-drop interface and advanced styling options.
-- [WP-Polls](https://wordpress.org/plugins/wp-polls/) – Add live polls to your videos and gather audience opinions in real-time.
+- [WP-Polls](https://godam.io/integrations/polls/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=wp-polls-integration) – Add live polls to your videos and gather audience opinions in real-time.
 - [Elementor](https://godam.io/integrations/elementor/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=elementor-integration) – Drag-and-drop GoDAM widgets for easy content creation.
+- [LifterLMS](https://godam.io/integrations/lifterlms/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=lifterlms-integration) – Integrate GoDAM with LifterLMS for course management and video delivery.
 
 ## Installation
 ### Method 1: WordPress Dashboard
