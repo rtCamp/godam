@@ -136,7 +136,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 	}
 }
 
-#menu-item-gallery, #menu-item-gallery-edit {
+#menu-item-gallery, #menu-item-gallery-edit, #menu-item-gallery-library {
 	$margin: 1rem;
 	margin: $margin;
 	width: calc( 100% - 2 * $margin);
@@ -147,10 +147,6 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 #menu-item-cancel {
 	margin-top: 1rem;
-}
-
-#menu-item-gallery-library {
-	margin-bottom: 1rem;
 }
 
 .media-menu .separator {
