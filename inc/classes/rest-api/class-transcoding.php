@@ -358,8 +358,8 @@ class Transcoding extends Base {
 	/**
 	 * Retranscode media.
 	 *
-	 * This function is a placeholder for the retranscoding functionality.
-	 * It should be implemented to handle the retranscoding of media files.
+	 * This function handles the retranscoding of media files, but skips virtual media
+	 * and migrated Vimeo videos, showing appropriate messages instead.
 	 *
 	 * @since n.e.x.t
 	 *
@@ -377,11 +377,53 @@ class Transcoding extends Base {
 			);
 		}
 
+		$title = get_the_title( $attachment_id );
+
+		// Check if this is virtual media (fetched from Central).
+		$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+		if ( ! empty( $godam_original_id ) ) {
+			$message = sprintf(
+				// translators: 1: Attachment title, 2: Attachment ID.
+				__( '%1$s (ID %2$d) is virtual media from GoDAM Central. Please retranscode this video on GoDAM Central.', 'godam' ),
+				esc_html( $title ),
+				absint( $attachment_id )
+			);
+
+			return new \WP_REST_Response(
+				array( 
+					'message' => $message,
+					'skipped' => true,
+					'reason'  => 'virtual_media',
+				),
+				200
+			);
+		}
+
+		// Check if this is migrated Vimeo video.
+		$is_migrated_vimeo = get_post_meta( $attachment_id, 'rtgodam_is_migrated_vimeo_video', true );
+		if ( ! empty( $is_migrated_vimeo ) ) {
+			$message = sprintf(
+				// translators: 1: Attachment title, 2: Attachment ID.
+				__( '%1$s (ID %2$d) is migrated Vimeo video. Please retranscode this video on GoDAM Central.', 'godam' ),
+				esc_html( $title ),
+				absint( $attachment_id )
+			);
+
+			return new \WP_REST_Response(
+				array( 
+					'message' => $message,
+					'skipped' => true,
+					'reason'  => 'migrated_vimeo',
+				),
+				200
+			);
+		}
+
+		// Proceed with normal retranscoding for original media.
 		delete_post_meta( $attachment_id, 'rtgodam_transcoding_status' );
 		delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg' );
 
 		$mime_type = get_post_mime_type( $attachment_id );
-		$title     = get_the_title( $attachment_id );
 	
 		$wp_metadata              = array();
 		$wp_metadata['mime_type'] = $mime_type;
@@ -419,7 +461,11 @@ class Transcoding extends Base {
 		);
 
 		return new \WP_REST_Response(
-			array( 'message' => $message ),
+			array( 
+				'message' => $message,
+				'skipped' => false,
+				'sent'    => true,
+			),
 			200
 		);
 	}
