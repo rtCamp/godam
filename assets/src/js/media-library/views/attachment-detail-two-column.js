@@ -473,7 +473,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 				const thumbnailURL = img?.src;
 
-				const posterDiv = this.querySelector( '.mejs-poster' );
+				const posterDiv = document.querySelector( '.mejs-poster' );
 				if ( posterDiv ) {
 					posterDiv.style.backgroundImage = `url('${ thumbnailURL }')`;
 
