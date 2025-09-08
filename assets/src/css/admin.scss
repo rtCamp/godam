@@ -117,12 +117,22 @@ $media-frame-width: calc(300px + 2 * 24px);
 	#media-folder-toggle-button {
 		top: -24px;
 	}
+
+	#rt-transcoder-media-library-root {
+		height: calc(100% - 48px);
+		min-height: unset;
+	}
 }
 
 .media-frame-menu:has(#menu-item-gallery-edit) {
 
 	#media-folder-toggle-button {
 		top: -124px;
+	}
+
+	#rt-transcoder-media-library-root {
+		height: calc(100% - 150px);
+		min-height: unset;
 	}
 }
 
