@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 6.8.1
 Requires PHP: 7.4
-Stable tag: 1.3.5
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -246,6 +246,21 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v1.4.0 (September 8, 2025) =
+
+- New: Added integration for LifterLMS
+- New: Added Ninja Forms and MetForm layer integration
+- New: Added GoDAM Recorder Field for Everest Forms and Ninja Forms
+- New: Added Engagements for GoDAM Video and Gallery with Views, Likes, and Comments
+- New: Implemented Migration Tools for existing videos and Vimeo videos to GoDAM
+- New: Added Speech-to-text functionality using AI transcriptions
+- New: Added Custom Thumbnail Upload option for videos
+- New: Enabled different Hover-Interactions for videos
+- Tweak: Improved compatibility with Elementor
+- Tweak: Updated Media Library UI
+- Fix: Fixed iOS compatibility
+- Fix: Resolved re-transcoding ID preservation to maintain video continuity and prevent data loss
+
 = v1.3.5 (August 26, 2025) =
 
 - Tweak: Set transcoded videos as public by default and add Org support parameters
@@ -255,12 +270,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 - Fix: Video Editor UI issues
 
-= v1.3.3 (August 11, 2025) =
-
-- Tweak: Improved video player controls and HLS URL handling
-- Tweak: Added Video SEO support and duplicate prevention for GoDAM Tab videos
-- Tweak: Player-specific video speed and quality settings
-- Fix: Resolved share button and JavaScript registration issues
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
