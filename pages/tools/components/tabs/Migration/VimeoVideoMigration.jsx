@@ -125,9 +125,6 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 			// Start polling every 5 seconds
 			intervalRef.current = setInterval( fetchMigrationStatus, 5000 );
 
-			// Kick off an immediate fetch to avoid initial delay
-			fetchMigrationStatus();
-
 			// Reset notice flags for a new run
 			noticeShownRef.current = { completed: false, failed: false };
 		}
@@ -178,7 +175,7 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 			<Panel className="godam-panel">
 				<PanelBody title={ __( 'Vimeo video Migration', 'godam' ) } initialOpen={ false }>
 					<p>
-						{ __( 'This tool is used to replace WordPress Vimeo Embed blocks with GoDAM Video block.', 'godam' ) }
+						{ __( 'This tool replaces WordPress Vimeo Embed blocks with GoDAM Video blocks. It does not replace Vimeo videos added in the WordPress Classic Editor.', 'godam' ) }
 					</p>
 
 					<div className="flex items-center gap-2">
