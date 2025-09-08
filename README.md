@@ -87,6 +87,7 @@ See Our Official GitHub: [Official GoDAM GitHub](https://github.com/rtCamp/godam
 
 #### 📌 GoDAM Central
 - Unified dashboard for managing all assets in one place.
+- Upload and host your videos on powerful GoDAM Central cloud storage powered by global CDN network
 - Organize videos, images, and documents into folders with search, filters, and sharing options.
 - Each video gets a dedicated single video page with time-stamped comments and reactions for team collaboration.
 - Automatically sync uploaded videos with the WordPress Media Library for easy access across your site.
@@ -109,7 +110,7 @@ See Our Official GitHub: [Official GoDAM GitHub](https://github.com/rtCamp/godam
 - Quickly edit any part of the transcript in the editor for any fixes or additional context.
 
 #### 📌 Video Engagement Features
-- Enable likes, comments, and views tracking on GoDAM Video and GoDAM Video Gallery blocks for enhanced viewer interaction and community building.
+- Logged-in viewers can like and comment on GoDAM videos, while view counts are visible to everyone. Admins can enable or disable these features.
 - Build a more engaged audience with social features that encourage participation and feedback.
 
 #### 📌 Video Migration Tools
@@ -126,11 +127,13 @@ See Our Official GitHub: [Official GoDAM GitHub](https://github.com/rtCamp/godam
 - **_Simplifies_** asset management with automated transcoding and adaptive streaming.
 - **_Enhances_** viewer engagement with interactive layers like forms, CTAs, and hotspots.
 - **_Integrates_** seamlessly with WordPress for a familiar and user-friendly experience.
+- Simplifies video hosting and embed for WordPress site at a cost effective price
 
 ### Secondary Benefits:
 - **_Cost-efficient_** pricing tailored to your actual usage.
 - **_Scalable_** features suitable for small businesses, educators, and enterprise-level users.
 - **_Monetization opportunities_** through ad placement and e-commerce integrations.
+- Perfect video marketing solution for your WordPress site to grow your brand
 
 ### Use Cases:
 - **_Education:_** Deliver interactive video lessons with forms for quizzes or feedback.
@@ -250,6 +253,7 @@ Yes, GoDAM provides robust analytics tools to track video engagement, including 
 24. Video Player Style Settings
 25. Global Ads Settings
 26. Chapters Interface
+27. Likes and Comments
 
 ## External Services
 
