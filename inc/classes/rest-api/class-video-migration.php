@@ -4,7 +4,7 @@
  *
  * This class handles the migration of Vimeo videos in Gutenberg blocks.
  *
- * @since n.e.x.t
+ * @since 1.4.0
  *
  * @package GoDAM
  */
@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Video_Migration
  *
- * @since n.e.x.t
+ * @since 1.4.0
  */
 class Video_Migration extends Base {
 
@@ -35,7 +35,7 @@ class Video_Migration extends Base {
 	/**
 	 * Get REST routes.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 */
 	public function get_rest_routes() {
 		return array(
@@ -81,7 +81,7 @@ class Video_Migration extends Base {
 	 * Stops future scheduled actions and resets the stored status to initial state.
 	 * Returns a small summary to display in UI.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param \WP_REST_Request $request Request containing migration type.
 	 *
@@ -128,7 +128,7 @@ class Video_Migration extends Base {
 	 * This function fetches the current Vimeo migration status from GoDAM Central API.
 	 * It requires a valid API key stored in WordPress options.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return array|\WP_Error Migration status or error object on failure.
 	 */
@@ -160,7 +160,7 @@ class Video_Migration extends Base {
 	/**
 	 * Permission callback for video migration endpoints.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return bool True if the user has permission, false otherwise.
 	 */
@@ -175,7 +175,7 @@ class Video_Migration extends Base {
 	 * This endpoint initiates the migration process for Vimeo videos in Gutenberg blocks.
 	 * It queues a background action to process all posts that need migration.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param \WP_REST_Request $request The REST request object.
 	 *
@@ -249,7 +249,7 @@ class Video_Migration extends Base {
 	 * Process the full migration in background.
 	 * This runs as a scheduled action and handles finding + migrating all posts.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $migration_type The type of migration to process (e.g., 'core', 'vimeo').
 	 *
@@ -298,7 +298,7 @@ class Video_Migration extends Base {
 	/**
 	 * Find all posts that need migration across all post types
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param array $post_types Array of post type names to search for.
 	 *
@@ -351,7 +351,7 @@ class Video_Migration extends Base {
 	/**
 	 * Process all posts in manageable batches.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $migration_type The type of migration being processed (e.g., 'core', 'vimeo').
 	 * @param array  $all_post_ids Array of all post IDs to process.
@@ -400,7 +400,7 @@ class Video_Migration extends Base {
 	/**
 	 * Handle migration completion when no posts found.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $wp_option_key The WordPress option key to update with the completion status.
 	 *
@@ -422,7 +422,7 @@ class Video_Migration extends Base {
 	/**
 	 * Update status with error message
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $wp_option_key The WordPress option key to update with the error status.
 	 * @param string $error_message The error message to log and update in the migration status.
@@ -440,7 +440,7 @@ class Video_Migration extends Base {
 	/**
 	 * Enhanced batch processing with better error handling.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $migration_type The type of migration being processed (e.g., 'core', 'vimeo').
 	 * @param array  $post_ids Array of post IDs to process in this batch.
@@ -562,7 +562,7 @@ class Video_Migration extends Base {
 	 *
 	 * Uses add_option as a mutex. If an existing lock is expired, it will be taken over.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $lock_key   Unique option key for the lock.
 	 * @param int    $timeout_s  Lock expiry seconds.
@@ -596,7 +596,7 @@ class Video_Migration extends Base {
 	/**
 	 * Release a previously acquired migration lock.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $lock_key Lock option key.
 	 *
@@ -609,7 +609,7 @@ class Video_Migration extends Base {
 	/**
 	 * Migrate video blocks for a single post.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param int $post_id The ID of the post to migrate.
 	 *
@@ -645,7 +645,7 @@ class Video_Migration extends Base {
 	 *
 	 * Handles nested structures like columns, groups, grids, etc.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param array $blocks  Parsed blocks array (passed by reference).
 	 * @param bool  $changed Whether content changed (by reference).
@@ -696,7 +696,7 @@ class Video_Migration extends Base {
 	/**
 	 * Migrate Vimeo video blocks for a single post.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param int $post_id The ID of the post to migrate.
 	 *
@@ -737,7 +737,7 @@ class Video_Migration extends Base {
 	/**
 	 * Recursively traverse blocks to find and migrate Vimeo embeds inside nested structures.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param array $blocks   Parsed Gutenberg blocks (passed by reference).
 	 * @param int   $post_id  Post ID for logging context.
@@ -809,7 +809,7 @@ class Video_Migration extends Base {
 				/**
 				 * Filter the migration of custom Vimeo blocks.
 				 *
-				 * @since n.e.x.t
+				 * @since 1.4.0
 				 *
 				 * @param array    $args migration arguments.
 				 * @param Video_Migration  $instance The current instance of the class.
@@ -836,7 +836,7 @@ class Video_Migration extends Base {
 	 *
 	 * This function creates the sources array that matches the format expected by the block editor.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param int $attachment_id The attachment ID.
 	 *
@@ -881,7 +881,7 @@ class Video_Migration extends Base {
 	/**
 	 * Build default SEO data for a video attachment to populate block attrs during migration.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param int   $attachment_id Attachment ID.
 	 * @param array $attrs         Source block attributes (optional).
@@ -954,7 +954,7 @@ class Video_Migration extends Base {
 	/**
 	 * Fetch Vimeo video id from url.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $vimeo_url The Vimeo video URL to fetch the ID from.
 	 * @return string The Vimeo video ID or same vimeo URL if not found.
@@ -977,7 +977,7 @@ class Video_Migration extends Base {
 	 * thumbnails, file size, duration, and transcoded URLs for both new and
 	 * existing attachments during Vimeo migration.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param int         $attachment_id The attachment ID to update.
 	 * @param array       $video_info    The video information from GoDAM Central API.
@@ -1083,7 +1083,7 @@ class Video_Migration extends Base {
 	 * with the transcoded video file path. Checks for existing attachment by job ID first.
 	 * If JOB ID is present and attachment exists, replaces all video metadata.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $vimeo_url The Vimeo video URL to create an attachment from.
 	 *
@@ -1181,7 +1181,7 @@ class Video_Migration extends Base {
 	/**
 	 * Get the current migration status.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param \WP_REST_Request $request The REST request object.
 	 *
@@ -1216,7 +1216,7 @@ class Video_Migration extends Base {
 	/**
 	 * Get all post types that have Gutenberg editor enabled.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return array List of post type names that support Gutenberg editor.
 	 */

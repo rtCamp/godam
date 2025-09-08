@@ -303,7 +303,7 @@ class Transcoding extends Base {
 	 *
 	 * @param \WP_REST_Request $request REST request object.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 * 
 	 * @return WP_REST_Response
 	 */
@@ -361,7 +361,7 @@ class Transcoding extends Base {
 	 * This function handles the retranscoding of media files, but skips virtual media
 	 * and migrated Vimeo videos, showing appropriate messages instead.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param \WP_REST_Request $request REST request object.
 	 */

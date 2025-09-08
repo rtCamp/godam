@@ -4,7 +4,7 @@
  *
  * @package GoDAM
  *
- * @since n.e.x.t
+ * @since 1.4.0
  */
 
 // Get the primary field data.

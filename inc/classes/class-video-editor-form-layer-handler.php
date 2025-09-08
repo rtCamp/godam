@@ -2,7 +2,7 @@
 /**
  * Handles the rendering of form layers in the video editor.
  *
- * @since n.e.x.t
+ * @since 1.4.0
  * @package GoDAM
  */
 
@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class for handling video editor form layers rendering.
  *
- * @since n.e.x.t
+ * @since 1.4.0
  */
 class Video_Editor_Form_Layer_Handler {
 	use Singleton;
@@ -23,7 +23,7 @@ class Video_Editor_Form_Layer_Handler {
 	/**
 	 * Initialize.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
@@ -36,7 +36,7 @@ class Video_Editor_Form_Layer_Handler {
 	/**
 	 * Update the template for rendering layers in the video editor.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $template The current template.
 	 *
@@ -56,7 +56,7 @@ class Video_Editor_Form_Layer_Handler {
 	/**
 	 * Add query vars for render layer in video editor.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param array $query_vars The existing query vars.
 	 *
