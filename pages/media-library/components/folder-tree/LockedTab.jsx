@@ -50,7 +50,7 @@ const LockedTab = ( { handleContextMenu } ) => {
 				<Panel className="godam-folder-tab-panel">
 					<PanelBody
 						title={ <><span className="folder-tab__count">{ lockedCount }</span> { __( 'Locked', 'godam' ) } </> }
-						initialOpen={ true }
+						initialOpen={ false }
 						icon={ lock }
 					>
 						<div className="godam-folder-tab__empty-state">
@@ -70,7 +70,7 @@ const LockedTab = ( { handleContextMenu } ) => {
 			<Panel className="godam-folder-tab-panel">
 				<PanelBody
 					title={ <><span className="folder-tab__count">{ lockedCount }</span> { __( 'Locked', 'godam' ) } </> }
-					initialOpen={ true }
+					initialOpen={ false }
 					icon={ lock }
 				>
 					<div className="godam-folder-tab__list">
