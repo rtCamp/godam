@@ -367,7 +367,7 @@ const engagementStore = {
 			video_id: videoAttachmentId,
 			like_status: likeStatus,
 		};
-		apiFetch.use( apiFetch.createNonceMiddleware( nonceData.nonce ) );
+		apiFetch.use( apiFetch.createNonceMiddleware( nonceData?.nonce ) );
 		return await apiFetch( {
 			path: addQueryArgs( '/godam/v1/engagement/user-hit-like' ),
 			method: 'POST',
@@ -585,7 +585,7 @@ function CommentForm( props ) {
 			comment_text: text,
 			comment_type: commentType,
 		};
-		apiFetch.use( apiFetch.createNonceMiddleware( nonceData.nonce ) );
+		apiFetch.use( apiFetch.createNonceMiddleware( nonceData?.nonce ) );
 		const result = await apiFetch( {
 			path: addQueryArgs( '/godam/v1/engagement/user-comment' ),
 			method: 'POST',
@@ -775,7 +775,7 @@ function Comment( props ) {
 			delete_type: deleteType,
 		};
 
-		apiFetch.use( apiFetch.createNonceMiddleware( nonceData.nonce ) );
+		apiFetch.use( apiFetch.createNonceMiddleware( nonceData?.nonce ) );
 		const result = await apiFetch( {
 			path: addQueryArgs( '/godam/v1/engagement/user-delete-comment' ),
 			method: 'POST',
@@ -975,7 +975,7 @@ function GuestLoginForm( props ) {
 			const queryParams = {
 				guest_user_email: guestEmail,
 			};
-			apiFetch.use( apiFetch.createNonceMiddleware( nonceData.nonce ) );
+			apiFetch.use( apiFetch.createNonceMiddleware( nonceData?.nonce ) );
 			const result = await apiFetch( {
 				path: addQueryArgs( '/godam/v1/engagement/guest-user-login' ),
 				method: 'POST',
