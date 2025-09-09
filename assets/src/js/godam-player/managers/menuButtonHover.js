@@ -38,25 +38,50 @@ class MenuButtonHoverManager {
 	}
 
 	attachMenuListeners( btnEl, menuEl ) {
-		// Add your hover listeners here
+		let overBtn = false;
+		let overMenu = false;
+
+		const update = () => {
+			if ( ! overBtn && ! overMenu ) {
+				this.hideMenu( menuEl );
+			}
+		};
+
 		btnEl.addEventListener( 'mouseenter', () => {
+			overBtn = true;
 			menuEl.classList.add( 'vjs-lock-showing' );
+			this.closeOtherMenus( menuEl );
+		} );
+		btnEl.addEventListener( 'mouseleave', () => {
+			overBtn = false;
+			setTimeout( update, 500 ); // small delay to allow moving between
 		} );
 
 		menuEl.addEventListener( 'mouseenter', () => {
+			overMenu = true;
 			menuEl.classList.add( 'vjs-lock-showing' );
+			this.closeOtherMenus( menuEl );
 		} );
-
-		menuEl.addEventListener( 'mouseout', ( e ) => {
-			if ( ! btnEl.contains( e.relatedTarget ) ) {
-				this.hideMenu( menuEl );
-			}
+		menuEl.addEventListener( 'mouseleave', () => {
+			overMenu = false;
+			setTimeout( update, 500 );
 		} );
 	}
 
 	hideMenu( menuEl ) {
 		menuEl.style.display = '';
 		menuEl.classList.remove( 'vjs-lock-showing' );
+	}
+
+	// Hide other menus when entering a new one
+	closeOtherMenus( currentMenu ) {
+		document.querySelectorAll( '.vjs-menu' )
+			.forEach( ( menu ) => {
+				if ( menu !== currentMenu ) {
+					menu.classList.remove( 'vjs-lock-showing' );
+					menu.style.display = '';
+				}
+			} );
 	}
 }
 
