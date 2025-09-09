@@ -40,10 +40,12 @@ class MenuButtonHoverManager {
 	attachMenuListeners( btnEl, menuEl ) {
 		// Add your hover listeners here
 		btnEl.addEventListener( 'mouseenter', () => {
+			this.closeOtherMenus( menuEl );
 			menuEl.classList.add( 'vjs-lock-showing' );
 		} );
 
 		menuEl.addEventListener( 'mouseenter', () => {
+			this.closeOtherMenus( menuEl );
 			menuEl.classList.add( 'vjs-lock-showing' );
 		} );
 
@@ -52,6 +54,17 @@ class MenuButtonHoverManager {
 				this.hideMenu( menuEl );
 			}
 		} );
+	}
+
+	// Hide other menus when entering a new one
+	closeOtherMenus( currentMenu ) {
+		document.querySelectorAll( '.vjs-menu' )
+			.forEach( ( menu ) => {
+				if ( menu !== currentMenu ) {
+					menu.classList.remove( 'vjs-lock-showing' );
+					menu.style.display = '';
+				}
+			} );
 	}
 
 	hideMenu( menuEl ) {
