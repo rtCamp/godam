@@ -9,7 +9,8 @@ import {
 	Button,
 	Panel,
 	PanelBody,
-	Snackbar,
+	Icon,
+	ExternalLink,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import axios from 'axios';
@@ -18,13 +19,26 @@ import axios from 'axios';
  */
 import ProgressBar from '../../ProgressBar.jsx';
 import { useState, useEffect, useRef, useCallback } from '@wordpress/element';
+import { error } from '@wordpress/icons';
 
-const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
+const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice } ) => {
 	const intervalRef = useRef( null );
+	const noticeShownRef = useRef( { completed: false, failed: false } );
 	const [ godamMigrationCompleted, setGodamMigrationCompleted ] = useState( true );
 
 	const handleMigrationClick = async () => {
 		const url = window.godamRestRoute?.url + 'godam/v1/video-migrate';
+
+		// Optimistically set UI to processing so users get instant feedback.
+		setMigrationStatus( ( prev ) => ( {
+			...( prev || {} ),
+			total: 0,
+			done: 0,
+			started: Date.now(),
+			completed: null,
+			status: 'processing',
+			message: __( 'Starting…', 'godam' ),
+		} ) );
 
 		axios.post( url, {
 			type: 'vimeo',
@@ -38,12 +52,45 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 			.then( ( response ) => {
 				setMigrationStatus( response.data );
 			} )
-			.catch( ( error ) => {
+			.catch( ( err ) => {
 				// Check if status is 400, set godamMigrationStatus
-				if ( error.response && error.response.status === 400 ) {
+				if ( err.response && err.response.status === 400 ) {
 					setGodamMigrationCompleted( false );
 				}
+				// Reset UI as request failed; show an error notice for clarity.
+				setMigrationStatus( { total: 0, done: 0, started: null, completed: null, status: 'pending', message: '' } );
+				const apiMessage = err?.response?.data?.message || err?.message || __( 'Something went wrong while starting migration.', 'godam' );
+				showNotice( apiMessage, 'error' );
 			} );
+	};
+
+	const handleAbortClick = async () => {
+		// stop polling immediately
+		if ( intervalRef.current ) {
+			clearInterval( intervalRef.current );
+			intervalRef.current = null;
+		}
+
+		const url = window.godamRestRoute?.url + 'godam/v1/video-migrate/abort';
+		try {
+			const response = await axios.post( url,
+				{ type: 'vimeo' },
+				{
+					headers: {
+						'Content-Type': 'application/json',
+						'X-WP-Nonce': window.godamRestRoute?.nonce,
+					},
+				},
+			);
+
+			const data = response?.data || {};
+			showNotice( `${ data?.message || '' }`, 'warning' );
+
+			// Reset UI to initial state
+			setMigrationStatus( { total: 0, done: 0, started: null, completed: null, status: 'pending', message: '' } );
+		} catch ( e ) {
+			setMigrationStatus( { total: 0, done: 0, started: null, completed: null, status: 'pending', message: '' } );
+		}
 	};
 
 	const fetchMigrationStatus = useCallback( async () => {
@@ -57,7 +104,7 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 				},
 			} );
 			setMigrationStatus( response.data );
-		} catch ( error ) {}
+		} catch ( err ) {}
 	}, [ setMigrationStatus ] );
 
 	// Start polling when migration is processing
@@ -70,6 +117,12 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 
 			// Start polling every 5 seconds
 			intervalRef.current = setInterval( fetchMigrationStatus, 5000 );
+
+			// Kick off an immediate fetch to avoid initial delay
+			fetchMigrationStatus();
+
+			// Reset notice flags for a new run
+			noticeShownRef.current = { completed: false, failed: false };
 		}
 
 		// Stop polling when migration is not processing
@@ -78,13 +131,22 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 			intervalRef.current = null;
 		}
 
+		// Set notice based on migration status (only once per run)
+		if ( migrationStatus?.status === 'completed' && ! noticeShownRef.current.completed ) {
+			noticeShownRef.current.completed = true;
+			showNotice( __( 'Vimeo Video Migration has been successfully completed for all posts and pages 🎉', 'godam' ), 'success' );
+		} else if ( migrationStatus?.status === 'failed' && ! noticeShownRef.current.failed ) {
+			noticeShownRef.current.failed = true;
+			showNotice( __( 'Vimeo Video Migration failed. Please try again.', 'godam' ), 'error' );
+		}
+
 		// Cleanup interval on component unmount
 		return () => {
 			if ( intervalRef.current ) {
 				clearInterval( intervalRef.current );
 			}
 		};
-	}, [ migrationStatus?.status, fetchMigrationStatus ] );
+	}, [ migrationStatus?.status, fetchMigrationStatus, showNotice ] );
 
 	if ( ! migrationStatus ) {
 		return (
@@ -106,14 +168,17 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 
 	return (
 		<>
-			<Panel header={ __( 'Vimeo video Migration', 'godam' ) } className="godam-panel">
-				<PanelBody opened>
+			<Panel className="godam-panel">
+				<PanelBody title={ __( 'Vimeo video Migration', 'godam' ) } initialOpen={ false }>
 					<p>
 						{ __( 'This tool is used to replace WordPress Vimeo Embed blocks with GoDAM Video block.', 'godam' ) }
 					</p>
-					<Snackbar actions={ [ { label: __( 'Open', 'godam' ), url: window.godamRestRoute?.apiBase + '/web/' } ] } className="snackbar-warning">
-						{ __( 'This migrator will only migrate Vimeo videos that are already fetched on GoDAM Central.', 'godam' ) }
-					</Snackbar>
+
+					<div className="flex items-center gap-2">
+						<Icon icon={ error } className="w-4 h-4" style={ { fill: '#EAB308' } } />
+						<p className="text-center m-0 text-[#AB3A6C]">{ __( 'This migrator will only migrate Vimeo videos that are already fetched on GoDAM Central.', 'godam' ) }</p>
+						<ExternalLink href={ `${ window.godamRestRoute?.apiBase }/web` } className="godam-url">{ __( 'Open', 'godam' ) }</ExternalLink>
+					</div>
 
 					{ /* Progressbar indicating video migration progress */ }
 					{ /* Horizontal progressbar, done/total */ }
@@ -122,14 +187,6 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 							<ProgressBar showInitialProgress={ 'processing' === migrationStatus?.status } done={ migrationStatus?.done } total={ migrationStatus?.total } />
 							<div className="mt-1 mb-3 px-1 py-[1px] bg-gray-200 inline-flex rounded">{ migrationStatus?.message }</div>
 						</div>
-					) }
-
-					{ /* Migration status message */ }
-					{ migrationStatus?.status === 'completed' && (
-						<Snackbar className="snackbar-success">{ __( 'Vimeo Video Migration has been successfully completed for all posts and pages 🎉', 'godam' ) }</Snackbar>
-					) }
-					{ migrationStatus?.status === 'failed' && (
-						<Snackbar className="snackbar-error">{ __( 'Vimeo Video Migration failed. Please try again.', 'godam' ) }</Snackbar>
 					) }
 
 					{
@@ -151,15 +208,25 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 					)
 					}
 
-					{ /* Migration button */ }
-					<Button
-						variant="primary"
-						onClick={ handleMigrationClick }
-						className="godam-button mt-2"
-						disabled={ ! migrationStatus || migrationStatus?.status === 'processing' }
-					>
-						{ migrationStatus?.status === 'processing' ? __( 'Migration in progress' ) : __( 'Start Migration', 'godam' ) }
-					</Button>
+					{ /* Migration actions */ }
+					{ migrationStatus?.status === 'processing' ? (
+						<Button
+							variant="secondary"
+							onClick={ handleAbortClick }
+							className="godam-button mt-2"
+						>
+							{ __( 'Abort', 'godam' ) }
+						</Button>
+					) : (
+						<Button
+							variant="primary"
+							onClick={ handleMigrationClick }
+							className="godam-button mt-2"
+							disabled={ ! migrationStatus }
+						>
+							{ migrationStatus?.status === 'completed' ? __( 'Restart Migration', 'godam' ) : __( 'Start Migration', 'godam' ) }
+						</Button>
+					) }
 				</PanelBody>
 			</Panel>
 		</>

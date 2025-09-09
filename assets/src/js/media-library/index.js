@@ -12,6 +12,7 @@ import './transcoding-status';
 import AttachmentsBrowser from './views/attachment-browser.js';
 import Attachments from './views/attachments.js';
 import AttachmentDetailsTwoColumn from './views/attachment-detail-two-column.js';
+import AttachmentDetails from './views/attachment-details.js';
 import mediaFrameSelect from './views/media-frame-select.js';
 
 import MediaDateRangeFilter from './views/filters/media-date-range-filter-list-view.js';
@@ -37,6 +38,7 @@ class MediaLibrary {
 		this.initializeDateRangeFilter();
 		addManageMediaButton();
 		this.addInputPlaceholder();
+		this.handleBannerClose();
 	}
 
 	addInputPlaceholder() {
@@ -50,6 +52,26 @@ class MediaLibrary {
 		}
 	}
 
+	/**
+	 * Handles the closing of the offer banner.
+	 * Hides the banner and sends an AJAX request to dismiss the offer.
+	 */
+	handleBannerClose() {
+		const banner = document.querySelector( '.annual-plan-offer-banner' );
+		if ( banner ) {
+			const closeButton = banner.querySelector( '.annual-plan-offer-banner__dismiss' );
+			if ( closeButton ) {
+				closeButton.addEventListener( 'click', () => {
+					banner.style.display = 'none';
+
+					window.wp.ajax.post( 'godam_dismiss_offer_banner', {
+						nonce: window?.godamSettings?.showOfferBannerNonce || '',
+					} );
+				} );
+			}
+		}
+	}
+
 	setupAttachmentBrowser() {
 		if ( wp?.media?.view?.AttachmentsBrowser && AttachmentsBrowser ) {
 			wp.media.view.AttachmentsBrowser = AttachmentsBrowser;
@@ -57,6 +79,10 @@ class MediaLibrary {
 
 		if ( wp?.media?.view?.Attachments && Attachments ) {
 			wp.media.view.Attachments = Attachments;
+		}
+
+		if ( wp?.media?.view?.Attachment?.Details && AttachmentDetails ) {
+			wp.media.view.Attachment.Details = AttachmentDetails;
 		}
 
 		if ( wp?.media?.view?.Attachment?.Details?.TwoColumn && AttachmentDetailsTwoColumn ) {

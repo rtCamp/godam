@@ -21,6 +21,11 @@ class GoDAM_Product_Gallery {
 
 	use Singleton;
 
+	/**
+	 * Holds the markup instance.
+	 *
+	 * @var WC_Product_Gallery_Video_Markup
+	 */
 	private $markup_instance;
 
 	/**

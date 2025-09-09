@@ -16,7 +16,7 @@ library.add( fas );
 
 const FontAwesomeIconPicker = ( { productHotspot, disabled = false, index, productHotspots, updateField } ) => {
 	const [ searchQuery, setSearchQuery ] = useState( '' );
-	const [ isOpen, setIsOpen ] = useState( false );
+	const [ isOpen, setIsOpen ] = useState( false ); // eslint-disable-line no-unused-vars
 
 	const iconList = Object.values( fas )
 		.map( ( icon ) => ( {

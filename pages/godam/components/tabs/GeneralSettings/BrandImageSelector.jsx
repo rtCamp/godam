@@ -81,7 +81,7 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 	};
 
 	return (
-		<div className="godam-form-group godam-margin-bottom">
+		<div className="godam-form-group">
 			<label
 				className="label-text"
 				htmlFor="custom-brand-logo"
@@ -89,27 +89,30 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 				{ __( 'Custom brand logo', 'godam' ) }
 			</label>
 
-			<Button
-				onClick={ openBrandMediaPicker }
-				variant="primary"
-				disabled={ isBubbleOrClassic }
-				className="godam-button godam-margin-right mt-[0.3rem] mb-[0.7rem]"
-			>
-				{ mediaSettings?.video_player?.brand_image ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
-			</Button>
-			{ mediaSettings?.video_player?.brand_image && (
+			<div className="flex items-center flex-wrap gap-2">
 				<Button
-					onClick={ removeBrandImage }
-					variant="secondary"
-					isDestructive
-					className="godam-button ml-3"
+					onClick={ openBrandMediaPicker }
+					variant="primary"
 					disabled={ isBubbleOrClassic }
+					className="godam-button"
 				>
-					{ __( 'Remove', 'godam' ) }
+					{ mediaSettings?.video_player?.brand_image ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
 				</Button>
-			) }
+				{ mediaSettings?.video_player?.brand_image && (
+					<Button
+						onClick={ removeBrandImage }
+						variant="secondary"
+						isDestructive
+						className="godam-button"
+						disabled={ isBubbleOrClassic }
+					>
+						{ __( 'Remove', 'godam' ) }
+					</Button>
+				) }
+			</div>
+
 			{ mediaSettings?.video_player?.brand_image && 'Bubble' !== mediaSettings?.video_player?.player_skin && 'Classic' !== mediaSettings?.video_player?.player_skin && (
-				<div className="mt-2 border-2 border-blue-700 rounded-lg p-2 block bg-gray-200 w-fit">
+				<div className="mt-3 border-2 border-indigo-200 rounded-lg p-2 block bg-gray-200 w-fit">
 					<img
 						src={ mediaSettings?.video_player?.brand_image }
 						alt={ __( 'Selected custom brand', 'godam' ) }
@@ -127,7 +130,7 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 				</Notice>
 			) }
 
-			<p className="text-[0.75rem] leading-[1.2] text-[#777] mt-2">
+			<p className="text-[0.75rem] leading-[1.2] text-[#777]">
 				{
 					isBubbleOrClassic
 						? ( <div className="flex items-center gap-2">
@@ -138,10 +141,7 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 							) }
 							</p>
 						</div>
-						) : __(
-							'Upload a custom brand logo to display beside the player controls when selected. This can be overridden for individual videos',
-							'godam',
-						)
+						) : __( 'Upload a custom brand logo to display beside the player controls when selected. This can be overridden for individual videos', 'godam' )
 				}
 			</p>
 		</div>

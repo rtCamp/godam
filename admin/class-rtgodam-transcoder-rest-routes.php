@@ -194,7 +194,6 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 		$format      = $request->get_param( 'format' );
 
 		if ( ! empty( $job_id ) && ! empty( $file_status ) && ( 'error' === $file_status ) ) {
-			$this->rtgodam_transcoder_handler->nofity_transcoding_failed( $job_id, $error_msg );
 			return new WP_Error( 'rtgodam_transcoding_error', 'Something went wrong. Invalid post request.', array( 'status' => 400 ) );
 		}
 
@@ -227,6 +226,11 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 							delete_post_meta( $attachment_id, 'rtgodam_retranscoding_sent' );
 
 							$latest_attachment = get_option( 'rtgodam_new_attachment', false );
+
+							// Save hls url as well.
+							if ( isset( $post_array['hls_path'] ) && ! empty( trim( $post_array['hls_path'] ) ) ) {
+								update_post_meta( $attachment_id, 'rtgodam_hls_transcoded_url', sanitize_url( $post_array['hls_path'] ) );
+							}
 
 							if ( ! empty( $latest_attachment ) && $latest_attachment['attachment_id'] === $attachment_id ) {
 								$latest_attachment['transcoding_status'] = 'success';

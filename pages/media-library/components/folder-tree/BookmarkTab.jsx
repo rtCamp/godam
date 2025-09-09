@@ -1,8 +1,7 @@
 /**
  * External dependencies
  */
-import { useSelector } from 'react-redux';
-import { useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 /**
  * WordPress dependencies
@@ -16,18 +15,25 @@ import { starFilled } from '@wordpress/icons';
  */
 import TabItem from './TabItem.jsx';
 import './css/foldertabs.scss';
+import { useGetFoldersQuery } from '../../redux/api/folders.js';
+import { useEffect, useRef } from 'react';
+import { initializeBookmarks } from '../../redux/slice/folders.js';
 
 const BookmarkTab = ( { handleContextMenu } ) => {
-	const folders = useSelector( ( state ) => state.FolderReducer?.folders || [] );
+	const { data: bookmarkData, isLoading: isBookmarkLoading } = useGetFoldersQuery( { bookmark: true } );
+	const dispatch = useDispatch();
+	const initializedRef = useRef( false );
 
-	// Get all the bookmarks from folder where `meta.bookmark` is true
-	// and sort them based on the currentSortOrder
-	const bookmarks = useMemo( () => {
-		return folders
-			?.filter( ( folder ) => folder?.meta?.bookmark ) || [];
-	}, [ folders ] );
+	useEffect( () => {
+		if ( ! isBookmarkLoading && bookmarkData && initializedRef.current === false ) {
+			dispatch( initializeBookmarks( bookmarkData?.data || [] ) );
+			initializedRef.current = true;
+		}
+	}, [ isBookmarkLoading, bookmarkData, dispatch ] );
 
-	const bookmarkCount = bookmarks?.length || 0;
+	const bookmarks = useSelector( ( state ) => state.FolderReducer?.bookmarks || [] );
+
+	const bookmarkCount = bookmarks?.length;
 
 	if ( bookmarkCount === 0 ) {
 		return (

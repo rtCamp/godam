@@ -6,7 +6,6 @@
 import MediaLibraryTaxonomyFilter from './filters/media-library-taxonomy-filter';
 import MediaDateRangeFilter from './filters/media-date-range-filter';
 import MediaRetranscode from './filters/media-retranscode';
-import ToggleFoldersButton from './filters/toggle-folders-button';
 
 import { isAPIKeyValid, isUploadPage, isFolderOrgDisabled } from '../utility';
 
@@ -36,20 +35,9 @@ export default AttachmentsBrowser?.extend( {
 		this.collection.props.on( 'change', this.addUploadParam, this );
 	},
 
-	createToolbar() {
+	async createToolbar() {
 		// Make sure to load the original toolbar
 		AttachmentsBrowser.prototype.createToolbar.call( this );
-
-		if ( ToggleFoldersButton && ! isUploadPage() ) {
-			this.toolbar.set(
-				'ToggleFoldersButton',
-				new ToggleFoldersButton( {
-					controller: this.controller,
-					model: this.collection.props,
-					priority: -105,
-				} ).render(),
-			);
-		}
 
 		if ( MediaLibraryTaxonomyFilter ) {
 			this.toolbar.set(
@@ -86,7 +74,9 @@ export default AttachmentsBrowser?.extend( {
 			}
 		}
 
-		if ( ! isUploadPage() && ! isFolderOrgDisabled() ) {
+		const hasActiveSortable = this.$el.find( 'ul.ui-sortable:not(.ui-sortable-disabled)' ).length > 0;
+
+		if ( ! isUploadPage() && ! isFolderOrgDisabled() && ! hasActiveSortable ) {
 			/**
 			 * This timeout with the custom event is necessary to ensure that the media frame is fully loaded before dispatching the event.
 			 */
@@ -114,7 +104,7 @@ export default AttachmentsBrowser?.extend( {
 						}
 					}
 				} else {
-					const menu = $( '.media-frame' ).find( '.media-frame-menu' );
+					const menu = $( '.media-frame' ).find( '.media-frame-menu .media-menu' );
 
 					if ( menu.length ) {
 						menu.append( '<div id="rt-transcoder-media-library-root"></div>' );

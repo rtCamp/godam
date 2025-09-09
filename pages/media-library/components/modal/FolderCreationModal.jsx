@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
@@ -28,7 +28,12 @@ const FolderCreationModal = () => {
 	const dispatch = useDispatch();
 
 	const isOpen = useSelector( ( state ) => state.FolderReducer.modals.folderCreation );
-	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
+	const selectedFolder = useSelector( ( state ) => state.FolderReducer.currentContextMenuFolder );
+
+	const allFolders = useSelector( ( state ) => state.FolderReducer.folders );
+	const currentFolder = useMemo( () => {
+		return allFolders.find( ( folder ) => folder.id === selectedFolder?.id );
+	}, [ allFolders, selectedFolder ] );
 
 	useEffect( () => {
 		if ( isOpen ) {
@@ -49,9 +54,13 @@ const FolderCreationModal = () => {
 		setIsLoading( true );
 
 		try {
-			let parent = selectedFolder.id;
+			let parent = selectedFolder?.id;
 
-			if ( selectedFolder.id === -1 || ! selectedFolder.id ) {
+			if ( selectedFolder?.id === -1 || ! selectedFolder?.id ) {
+				parent = 0;
+			}
+
+			if ( currentFolder?.meta?.locked ) {
 				parent = 0;
 			}
 
@@ -96,7 +105,7 @@ const FolderCreationModal = () => {
 	};
 
 	return (
-		( isOpen && selectedFolder ) && (
+		isOpen && (
 			<Modal
 				title={ __( 'Create a new folder', 'godam' ) }
 				onRequestClose={ () => dispatch( closeModal( 'folderCreation' ) ) }

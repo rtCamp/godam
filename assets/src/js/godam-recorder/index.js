@@ -35,6 +35,10 @@ class UppyVideoUploader {
 		this.fileInput = document.getElementById( this.inputId );
 		this.uploadButton = container.querySelector( `#${ this.uploadButtonId }` );
 
+		// Uppy target for forms used inside godam video.
+		this.uppyModalTarget = document.getElementById( 'uppy-godam-video-modal-container' );
+		this.uppyModalTargetId = null !== this.uppyModalTarget ? this.uppyModalTarget.id ?? '' : '';
+
 		// If necessary DOM elements are missing, abort initialization.
 		if ( ! this.fileInput || ! this.uploadButton ) {
 			return;
@@ -60,11 +64,12 @@ class UppyVideoUploader {
 			const sureForms = document.querySelector( 'div.srfm-success-box' );
 			const fluentForms = document.querySelector( 'div.ff-message-success' );
 			const wpForms = document.querySelector( 'div.wpforms-confirmation-container-full, div.wpforms-confirmation-container' );
+			const everestForms = document.querySelector( 'div.everest-forms-notice.everest-forms-notice--success' );
 
 			/**
 			 * If any of the forms have confirmation, remove uppy state.
 			 */
-			const removeUppyState = gravityForms || sureForms || fluentForms || wpForms;
+			const removeUppyState = gravityForms || sureForms || fluentForms || wpForms || everestForms;
 
 			if ( removeUppyState ) {
 				Object.keys( localStorage )
@@ -118,6 +123,7 @@ class UppyVideoUploader {
 				showProgressDetails: true,
 				plugins: enabledPlugins,
 				disableLocalFiles: ! localFileInput,
+				target: this.uppyModalTargetId ? `#${ this.uppyModalTargetId }` : 'body',
 			} )
 			.use( GoldenRetriever, { expires: 10 * 60 * 1000 } ); // 10 min persistence.
 
@@ -214,7 +220,7 @@ class UppyVideoUploader {
 		this.fileInput.files = dataTransfer.files;
 		this.fileInput.dispatchEvent(
 			new CustomEvent(
-				'godamffchange',
+				'godamFormInputchange',
 				{
 					bubbles: true,
 					detail: {
@@ -248,7 +254,7 @@ class UppyVideoUploader {
 
 		this.fileInput.dispatchEvent(
 			new CustomEvent(
-				'godamffchange',
+				'godamFormInputchange',
 				{
 					bubbles: true,
 					detail: {
@@ -318,9 +324,12 @@ class UppyVideoUploader {
 document.addEventListener( 'DOMContentLoaded', () => {
 	UppyVideoUploader.clearUppyStateIfConfirmed();
 
-	document.querySelectorAll( '.uppy-video-upload' ).forEach( ( container ) => {
-		new UppyVideoUploader( container );
-	} );
+	// Timeout added to allow DOM updates to settle.
+	setTimeout( () => {
+		document.querySelectorAll( '.uppy-video-upload' ).forEach( ( container ) => {
+			new UppyVideoUploader( container );
+		} );
+	}, 100 );
 } );
 
 /**
@@ -355,5 +364,15 @@ jQuery( document ).ready( function() {
 	 */
 	jQuery( document ).on( 'wpformsAjaxSubmitSuccess', function() {
 		UppyVideoUploader.clearUppyStateIfConfirmed();
+	} );
+
+	/**
+	 * Everest Forms confirmation.
+	 */
+	jQuery( document ).on( 'everest_forms_ajax_submission_success', function() {
+		UppyVideoUploader.clearUppyStateIfConfirmed();
+
+		// Clear the local storage data for Everest Forms.
+		localStorage.removeItem( 'godam-evf-recorder-data' );
 	} );
 } );

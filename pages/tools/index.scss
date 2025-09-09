@@ -1,119 +1,251 @@
 @import './retranscode-media';
 
+// Initialize the variables for the tools page
+$tools-page-color-white: #fff;
+$tools-page-border: 1px solid #e0e0e0;
+$tools-page-breakpoint: 782px;
+
 #godam-tools {
 
-    .godam-tools {
-    
-        /**
-         * Styes used for the tabs for the main settings page.
-          */
-        &__container {
-            margin: 2rem auto;
-            padding-right: 20px;
-            max-width: 1440px;
-            display: flex;
-            justify-content: space-between;
-            gap: 2em;
-    
-            &__tabs {
-                margin-bottom: 2rem;
-    
-                nav {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 0.5rem;
-    
-                    a {
-                        display: flex;
-                        align-items: center;
-                        gap: 0.5rem;
-                        white-space: nowrap;
-    
-                        font-size: 0.875rem;
-                        line-height: 1;
-                        font-weight: 500;
-                        color: rgba(119, 119, 119, 1);
-    
-                        padding: 0.5rem;
-                        border-radius: 0.5rem;
-    
-                        &.active {
-                            color: rgba(33, 33, 33, 1);
-    
-                            background-color: #fff;
-                        }
-    
-                        &:focus {
-                            box-shadow: none;
-                        }
-                    }
-                }
-            }
-    
-            &__content {
-                flex: 1;
-            }
+	.godam-settings-header-content {
 
-            p {
-                margin-top: 0;
-            }
-        }
-    }
-
-    .godam-url {
-        color: #ab3a6c;
-
-        &:hover {
-            color: #9a2b5c;
-        }
-        text-decoration: underline;
-    }
-
-    .sidebar-nav-item {
-
-		@apply flex items-center gap-2 p-2 font-medium rounded-md text-gray-600 hover:text-gray-900 border border-transparent transition-all;
-
-		&.active {
-
-			@apply bg-white font-semibold focus:ring-2 ring-indigo-200 text-gray-900 drop-shadow-sm;
-			border: 1px solid #ddd;
+		@media (max-width: 420px) {
+			padding-left: 4px;
+			padding-right: 14px;
 		}
 	}
 
-    .godam-progress-bar {
+	.components-button.has-icon.has-text {
 
-        @apply w-full h-2 bg-gray-200 rounded-full overflow-hidden;
+		@media (max-width: 640px) {
+			padding: .75rem 0.75rem;
+		}
+	}
 
-        &--fill {
+	.godam-tools {
 
-            @apply h-full bg-[#9a2b5c] transition-all duration-300 ease-in-out;
-        }
+		&__hamburger-container {
+			position: sticky;
+			top: 60px;
+			z-index: 1000;
+			background: $tools-page-color-white;
+			border-radius: .75rem;
+			margin: 20px;
+			border: $tools-page-border;
+
+			@media (min-width: $tools-page-breakpoint) {
+				display: none;
+			}
+
+			@media (max-width: 600px) {
+				top: 10px;
+			}
+		}
+
+		&__hamburger {
+
+			&:hover {
+				background: #f0f0f0;
+			}
+
+			svg {
+				height: 30px;
+				width: 30px;
+				fill: #64748B;
+			}
+
+			@media (max-width: $tools-page-breakpoint) {
+				border-radius: 0.75rem 0 0 0.75rem;
+				padding: 0 12px;
+				border-right: $tools-page-border;
+				font-size: 42px;
+				background: none;
+				cursor: pointer;
+			}
+		}
+
+		&__close-btn {
+			width: fit-content;
+			background: none;
+			border: $tools-page-border;
+			border-radius: 50%;
+			align-self: end;
+			cursor: pointer;
+			padding: 4px;
+			margin-bottom: 10px;
+			transition: all 0.3s ease;
+			display: none;
+
+			@media (max-width: $tools-page-breakpoint) {
+				display: flex;
+			}
+
+			&:hover {
+				background: #f0f0f0;
+			}
+		}
+
+		&__overlay {
+
+			@media (max-width: $tools-page-breakpoint) {
+				position: fixed;
+				inset: 0;
+				background-color: rgba(0, 0, 0, 0.4);
+				backdrop-filter: blur(3px);
+				z-index: 99999;
+			}
+		}
+
+		/**
+		 * Styes used for the tabs for the main settings page.
+		  */
+		&__container {
+			padding: 2rem 20px;
+			max-width: 1440px;
+			display: flex;
+			justify-content: space-between;
+			gap: 2em;
+			position: relative;
+			background-color: #f0f0f1;
+
+			@media (max-width: $tools-page-breakpoint) {
+				margin: 20px auto;
+			}
+
+			&__tabs {
+				margin-bottom: 2rem;
+				display: flex;
+				flex-direction: column;
+				gap: 0.5rem;
+				min-width: 200px;
+
+				@media (max-width: $tools-page-breakpoint) {
+					position: fixed;
+					top: 0;
+					left: 0;
+					width: 270px;
+					height: 100vh;
+					background: $tools-page-color-white;
+					padding: 1rem;
+					box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+					transform: translateX(-100%);
+					overflow: auto;
+					transition: transform 0.3s ease-in-out;
+					z-index: 99999;
+
+					&.open {
+						transform: translateX(0);
+					}
+				}
+
+				nav {
+					display: flex;
+					flex-direction: column;
+					gap: 0.5rem;
+
+					a {
+						display: flex;
+						align-items: center;
+						gap: 0.5rem;
+						white-space: nowrap;
+						font-size: 0.875rem;
+						line-height: 1;
+						font-weight: 500;
+						color: rgba(119, 119, 119, 1);
+						padding: 0.5rem;
+						border-radius: 0.5rem;
+
+						&.active {
+							color: rgba(33, 33, 33, 1);
+							background-color: $tools-page-color-white;
+						}
+
+						&:focus {
+							box-shadow: none;
+						}
+					}
+				}
+			}
+
+			&__content {
+				flex: 1;
+			}
+
+			p {
+				margin-top: 0;
+			}
+		}
+	}
+
+	.godam-url {
+		color: #ab3a6c;
+
+		&:hover {
+			color: #9a2b5c;
+		}
+		text-decoration: underline;
+	}
+
+	.sidebar-nav-item {
+
+		@apply flex items-center gap-2 p-2 font-medium rounded-md focus:ring-2 ring-indigo-200 text-gray-600 hover:text-gray-900 border border-transparent transition-all;
+
+		&.active {
+
+			@apply bg-white font-semibold text-gray-900 drop-shadow-sm;
+			border: 1px solid #ddd;
+		}
+
+		&:not(.active):hover {
+
+			@apply bg-gray-50;
+		}
+	}
+
+	.godam-progress-bar {
+
+		@apply w-full h-2 bg-gray-200 rounded-full overflow-hidden;
+
+		&--fill {
+			background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
+
+			@apply h-full transition-all duration-300 ease-in-out;
+		}
+	}
+
+	.snackbar-success {
+
+		@apply bg-green-100 text-green-800 border border-green-200 p-4 rounded-md shadow-md w-full cursor-text;
+		margin-bottom: 1rem;
+	}
+
+	.snackbar-warning {
+
+		@apply bg-yellow-100 text-yellow-800 border border-yellow-200 p-4 rounded-md shadow-md w-full cursor-text;
+		margin-bottom: 1rem;
+
+		a.is-link {
+
+			@apply text-yellow-800 underline hover:text-yellow-900 font-bold;
+			text-decoration: none;
+		}
+	}
+
+	.snackbar-error {
+
+		@apply bg-red-100 text-red-800 border border-red-200 p-4 rounded-md shadow-md w-full cursor-text;
+		margin-bottom: 1rem;
+	}
+
+	.status-notices-container:not(:empty) {
+		margin-bottom: 2rem;
+	}
+
+    .godam-panel button.components-panel__body-toggle {
+      height: auto;
+      padding: 1.25rem;
+      font-size: 1rem;
+      line-height: 1;
+      font-weight: 600;
     }
-
-    .snackbar-success {
-
-        @apply bg-green-100 text-green-800 border border-green-200 p-4 rounded-md shadow-md w-full cursor-text;
-        margin-bottom: 1rem;
-    }
-
-    .snackbar-warning {
-
-        @apply bg-yellow-100 text-yellow-800 border border-yellow-200 p-4 rounded-md shadow-md w-full cursor-text;
-        margin-bottom: 1rem;
-
-       a.is-link {
-
-            @apply text-yellow-800 underline hover:text-yellow-900 font-bold;
-            text-decoration: none;
-        }
-    }
-
-    .snackbar-error {
-
-        @apply bg-red-100 text-red-800 border border-red-200 p-4 rounded-md shadow-md w-full cursor-text;
-        margin-bottom: 1rem;
-    }
-
 }
-
-

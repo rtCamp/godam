@@ -12,7 +12,8 @@ export default Attachments?.extend( {
 		// Call the parent initialize method
 		Attachments.prototype.initialize.apply( this, arguments );
 
-		if ( Attachment ) {
+		// This condition to use default Attachment incase of the sortable area.
+		if ( Attachment && ! ( this.$el.hasClass( 'ui-sortable' ) && ! this.$el.hasClass( 'ui-sortable-disabled' ) ) ) {
 			/**
 			 * Override the default AttachmentView with our custom view.
 			 *

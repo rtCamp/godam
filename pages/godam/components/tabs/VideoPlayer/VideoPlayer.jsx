@@ -49,6 +49,36 @@ const VideoPlayer = () => {
 	// Function to handle setting changes
 	const handleSettingChange = ( key, value ) => {
 		dispatch( updateMediaSetting( { category: 'video_player', key, value } ) );
+
+		if ( key !== 'custom_css' ) {
+			return; // Only handle custom_css
+		}
+
+		let styleElement = document.querySelector( '#godam-custom-css-inline-style' );
+
+		// If value is empty, clean up any existing style element
+		if ( ! value ) {
+			if ( styleElement ) {
+				styleElement.remove(); // or: styleElement.textContent = '';
+			}
+			return;
+		}
+
+		// Replace .easydam-video-container → .video-player-settings-preview
+		const scopedValue = value.replaceAll(
+			'.easydam-video-container',
+			'.video-player-settings-preview',
+		);
+
+		// Create it only if it doesn't exist
+		if ( ! styleElement ) {
+			styleElement = document.createElement( 'style' );
+			styleElement.id = 'godam-custom-css-inline-style';
+			document.head.appendChild( styleElement );
+		}
+
+		// Update the style content
+		styleElement.textContent = scopedValue;
 	};
 
 	// Function to handle saving settings
@@ -73,7 +103,7 @@ const VideoPlayer = () => {
 		}
 
 		const videoElement = document.createElement( 'video-js' );
-		videoElement.classList.add( 'video-js', 'vjs-big-play-centered', 'video-player-settings-preview' );
+		videoElement.classList.add( 'video-js', 'vjs-big-play-centered' );
 
 		wrapperRef.current.appendChild( videoElement );
 
@@ -88,6 +118,30 @@ const VideoPlayer = () => {
 		};
 
 		const playerSkin = mediaSettings?.video_player?.player_skin || 'Default';
+
+		// apply styles on initial render if user has added css before
+		if ( mediaSettings?.video_player?.custom_css ) {
+			let styleElement = document.querySelector(
+				'#godam-custom-css-inline-style',
+			);
+
+			// Update CSS selectors so styles meant for the frontend video (.easydam-video-container)
+			// are applied to the actual video player preview container (.video-player-settings-preview)
+			const scopedValue = mediaSettings?.video_player?.custom_css.replaceAll(
+				'.easydam-video-container',
+				'.video-player-settings-preview',
+			);
+
+			// Create it only if it doesn't exist
+			if ( ! styleElement ) {
+				styleElement = document.createElement( 'style' );
+				styleElement.id = 'godam-custom-css-inline-style';
+				document.head.appendChild( styleElement ); // or your container
+			}
+
+			// Update the style content
+			styleElement.textContent = scopedValue;
+		}
 
 		// Initialize Video.js player
 		const player = videojs( videoElement, {
@@ -288,6 +342,11 @@ const VideoPlayer = () => {
 				'godam-pills-skin',
 				'godam-bubble-skin',
 				'godam-classic-skin',
+				'video-player-settings-preview',
+			);
+
+			parent.classList.add(
+				'video-player-settings-preview',
 			);
 
 			// Then add the selected skin class
@@ -330,9 +389,9 @@ const VideoPlayer = () => {
 			) }
 
 			<div className="bg-neutral-50 p-6 rounded-lg shadow-sm">
-				<div ref={ wrapperRef } className="text-center w-[650px] mx-auto shadow-xl rounded-lg overflow-hidden"></div>
+				<div ref={ wrapperRef } className="text-center max-w-[650px] mx-auto shadow-xl rounded-lg overflow-hidden"></div>
 
-				<div className="grid grid-cols-3 items-start w-[80%] mt-[35px] mx-auto gap-[3.5rem]">
+				<div className="godam-settings__container__global-settings w-4/5 mt-9 mb-6 mx-auto">
 					<div className="godam-form-group">
 						<label className="label-text" htmlFor="brand-color">
 							{ __( 'Player Skin', 'godam' ) }
@@ -418,7 +477,7 @@ const VideoPlayer = () => {
 					/>
 				</div>
 
-				<div className="godam-form-group mb-8 mx-auto w-[80%]">
+				<div className="godam-form-group godam-settings__container__custom-css mb-8 mx-auto">
 					<label className="label-text" htmlFor="brand-color">{ __( 'Custom CSS', 'godam' ) }</label>
 					<CustomVideoPlayerCSS handleSettingChange={ handleSettingChange } />
 					<div className="text-[0.75rem] leading-[1.2] text-[#777] mt-2">

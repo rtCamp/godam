@@ -49,7 +49,8 @@ const sharedConfig = {
 		},
 		minimizer: defaultConfig.optimization.minimizer.concat( [ new CssMinimizerPlugin() ] ),
 	},
-	devtool: 'source-map',
+	// Only generate source maps in development mode
+	devtool: isProduction ? false : 'source-map',
 };
 
 // Generate a webpack config which includes setup for CSS extraction.
@@ -80,7 +81,8 @@ const styles = {
 			( plugin ) => plugin.constructor.name !== 'DependencyExtractionWebpackPlugin',
 		),
 	],
-	devtool: 'source-map',
+	// Only generate source maps in development mode
+	devtool: isProduction ? false : 'source-map',
 };
 
 // Example of how to add a new entry point for JS file.
@@ -232,6 +234,44 @@ const featuredVideoGalleryJS = {
 	},
 };
 
+const everestForms = {
+	...sharedConfig,
+	entry: {
+		everestforms: path.resolve( process.cwd(), 'assets', 'src', 'js', 'everestforms', 'index.js' ),
+	},
+};
+
+const godamPlayerSDK = {
+	...sharedConfig,
+	entry: {
+		godamPlayerSDK: path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'godam-player-sdk.js' ),
+		'godam-player-sdk': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'godam-player-sdk.js' ),
+	},
+};
+
+const lifterLMSBlock = {
+	...sharedConfig,
+	entry: {
+		lifterLMSBlock: path.resolve( process.cwd(), 'assets', 'src', 'js', 'lifterlms', 'block.js' ),
+		'godam-lifterlms-block': path.resolve( process.cwd(), 'assets', 'src', 'js', 'lifterlms', 'block.js' ),
+	},
+};
+
+const lifterLMSEmbed = {
+	...sharedConfig,
+	entry: {
+		lifterLMSEmbed: path.resolve( process.cwd(), 'assets', 'src', 'js', 'lifterlms', 'embed.js' ),
+		'godam-lifterlms-embed': path.resolve( process.cwd(), 'assets', 'src', 'js', 'lifterlms', 'embed.js' ),
+	},
+};
+
+const ninjaForms = {
+	...sharedConfig,
+	entry: {
+		'ninja-forms': path.resolve( process.cwd(), 'assets', 'src', 'js', 'ninja-forms', 'index.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -272,7 +312,7 @@ const pages = {
 				use: [ 'style-loader', 'css-loader', 'postcss-loader', 'sass-loader' ],
 			},
 			{
-				test: /\.(png|jpg|jpeg|gif|svg)$/, // Handle image files
+				test: /\.(png|jpg|jpeg|gif|svg|webp)$/, // Handle image files
 				use: [
 					{
 						loader: 'file-loader',
@@ -294,7 +334,8 @@ const pages = {
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
 	},
-	devtool: 'source-map',
+	// Only generate source maps in development mode
+	devtool: isProduction ? false : 'source-map',
 };
 
 module.exports = [
@@ -321,4 +362,9 @@ module.exports = [
 	elementorEditorJS,
 	godamRecorder,
 	fluentForms,
+	everestForms,
+	godamPlayerSDK,
+	lifterLMSBlock,
+	lifterLMSEmbed,
+	ninjaForms,
 ];
