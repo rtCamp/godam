@@ -1,6 +1,6 @@
 # Changelog #
 
-## v1.4.0 (September 8, 2025) ##
+## v1.4.0 (September 9, 2025) ##
 
 - New: Added integration for LifterLMS
 - New: Added Ninja Forms and MetForm layer integration
