@@ -329,7 +329,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		const { thumbnails, selected, customThumbnails } = data;
 		const attachmentID = this.model.get( 'id' );
 
-		const selector = `.transcoding-status[data-id="${ attachmentID }"]`;
+		const selector = `.transcoding-status--completed[data-id="${ attachmentID }"]`;
 		const status = document.querySelector( selector );
 
 		if ( status ) {
@@ -338,6 +338,14 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			if ( statusImg && statusImg.src !== selected ) {
 				statusImg.src = selected;
 			}
+		}
+
+		const virtual = this.model.get( 'virtual' );
+
+		// If the attachment is virtual (e.g. a GoDAM proxy video), override default preview.
+		if ( undefined !== virtual && virtual ) {
+			const videoPlayer = videojs( 'videojs-player-' + this.model.get( 'id' ) );
+			videoPlayer.poster( selected );
 		}
 
 		setTimeout( () => {
@@ -448,6 +456,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * @param {number} attachmentID - The ID of the attachment.
 	 */
 	setupThumbnailClickHandler( attachmentID ) {
+		const model = this.model;
 		document.querySelectorAll( '.attachment-video-thumbnails li' ).forEach( ( li ) => {
 			if ( li.classList.contains( 'upload-thumbnail-tile' ) ) {
 				// Skip the upload tile
@@ -475,7 +484,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 					}
 				}
 
-				const selector = `.transcoding-status[data-id="${ attachmentID }"]`;
+				const selector = `.transcoding-status--completed[data-id="${ attachmentID }"]`;
 				const status = document.querySelector( selector );
 
 				if ( status ) {
@@ -485,6 +494,15 @@ export default AttachmentDetailsTwoColumn?.extend( {
 						statusImg.src = thumbnailURL;
 					}
 				}
+
+				const virtual = model.get( 'virtual' );
+
+				// If the attachment is virtual (e.g. a GoDAM proxy video), override default preview.
+				if ( undefined !== virtual && virtual ) {
+					const videoPlayer = videojs( 'videojs-player-' + model.get( 'id' ) );
+					videoPlayer.poster( thumbnailURL );
+				}
+
 				/**
 				 * Send a POST request to the server to set the selected thumbnail for the video.
 				 */
@@ -587,6 +605,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 						videojs( videoElement, {
 							width: '100%',
 							aspectRatio: '16:9',
+							poster: this.model.get( 'image' )?.src || '',
 							controlBar: {
 								volumePanel: false,
 								fullscreenToggle: true,

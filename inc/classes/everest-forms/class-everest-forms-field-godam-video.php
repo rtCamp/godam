@@ -2,7 +2,7 @@
 /**
  * Register the Uppy Video field for Everest_Forms.
  *
- * @since n.e.x.t
+ * @since 1.4.0
  *
  * @package GoDAM
  */
@@ -15,14 +15,14 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 	/**
 	 * Everest_Forms GoDAM Video Field Class
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 */
 	class Everest_Forms_Field_GoDAM_Video extends \EVF_Form_Fields_Upload {
 
 		/**
 		 * Field id.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.4.0
 		 *
 		 * @var string
 		 */
@@ -31,7 +31,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		/**
 		 * Field data.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.4.0
 		 * @var array
 		 */
 		public $field_data;
@@ -39,7 +39,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		/**
 		 * Constructor.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.4.0
 		 */
 		public function __construct() {
 			$this->name     = esc_html__( 'GoDAM Record', 'godam' );
@@ -83,7 +83,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		/**
 		 * Register the script to enqueue on entries.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.4.0
 		 *
 		 * @return void
 		 */
@@ -170,7 +170,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		 * @param array  $entry_meta Entry meta data.
 		 * @param string $context    Context in which the meta is being displayed.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.4.0
 		 *
 		 * @return string
 		 */
@@ -240,7 +240,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		/**
 		 * Define additional field properties.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.4.0
 		 *
 		 * @param array $properties Field properties.
 		 * @param array $field      Field settings.
@@ -266,7 +266,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		/**
 		 * Field preview inside the builder.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.4.0
 		 *
 		 * @param array $field Field data.
 		 */
@@ -311,7 +311,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		/**
 		 * Field display on the form front-end.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.4.0
 		 *
 		 * @param array $field Field Data.
 		 * @param array $field_atts Field attributes.
@@ -331,7 +331,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		/**
 		 * Extract and return file selectors from the field.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.4.0
 		 *
 		 * @param array $field Field data.
 		 * @param array $default_file_selectors Default file selectors.
@@ -423,7 +423,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		 *
 		 * @param array $video_field Field data.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.4.0
 		 *
 		 * @return void
 		 */
@@ -474,7 +474,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		/**
 		 * Format global files array in more manageable structure.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.4.0
 		 *
 		 * @param array $files Global files array.
 		 * @param int   $field_id Field ID.
@@ -506,7 +506,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		/**
 		 * Render Everest Forms recorder scripts.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.4.0
 		 *
 		 * @return void
 		 */
@@ -565,7 +565,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		/**
 		 * Function to render Everest Forms editor scripts.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.4.0
 		 *
 		 * @return void
 		 */

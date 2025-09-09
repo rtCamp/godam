@@ -52,6 +52,7 @@ class MenuButtonHoverManager {
 			menuEl.classList.add( 'vjs-lock-showing' );
 			this.closeOtherMenus( menuEl );
 		} );
+
 		btnEl.addEventListener( 'mouseleave', () => {
 			overBtn = false;
 			setTimeout( update, 500 ); // small delay to allow moving between
@@ -62,6 +63,7 @@ class MenuButtonHoverManager {
 			menuEl.classList.add( 'vjs-lock-showing' );
 			this.closeOtherMenus( menuEl );
 		} );
+
 		menuEl.addEventListener( 'mouseleave', () => {
 			overMenu = false;
 			setTimeout( update, 500 );
