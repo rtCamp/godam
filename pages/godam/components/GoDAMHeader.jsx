@@ -27,7 +27,7 @@ const GodamHeader = () => {
 							<div className="text-xs font-normal leading-4">{ `v${ window?.pluginInfo?.version }` }</div>
 							{
 								window?.userData?.userApiData?.active_plan &&
-								<div className="text-xs font-bold py-[2px] px-2 rounded bg-indigo-100 mt-1">{ window?.userData?.userApiData?.active_plan }</div>
+								<div className="text-center md:text-left text-xs font-bold py-[2px] px-2 rounded bg-indigo-100 mt-1">{ window?.userData?.userApiData?.active_plan }</div>
 							}
 						</div>
 					</div>
