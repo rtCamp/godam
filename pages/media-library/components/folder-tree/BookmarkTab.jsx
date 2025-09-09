@@ -41,7 +41,7 @@ const BookmarkTab = ( { handleContextMenu } ) => {
 				<Panel className="godam-folder-tab-panel">
 					<PanelBody
 						title={ <><span className="folder-tab__count">{ bookmarkCount }</span> { __( 'Bookmarks', 'godam' ) } </> }
-						initialOpen={ true }
+						initialOpen={ false }
 						icon={ starFilled }
 					>
 						<div className="godam-folder-tab__empty-state">
@@ -61,7 +61,7 @@ const BookmarkTab = ( { handleContextMenu } ) => {
 			<Panel className="godam-folder-tab-panel">
 				<PanelBody
 					title={ <><span className="folder-tab__count">{ bookmarkCount }</span> { __( 'Bookmarks', 'godam' ) } </> }
-					initialOpen={ true }
+					initialOpen={ false }
 					icon={ starFilled }
 				>
 					<div className="godam-folder-tab__list">

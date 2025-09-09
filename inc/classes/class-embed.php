@@ -2,7 +2,7 @@
 /**
  * Class to handle GoDAM as oEmbed provider.
  *
- * @since n.e.x.t
+ * @since 1.4.0
  *
  * @package GoDAM
  */
@@ -16,7 +16,7 @@ use RTGODAM\Inc\Traits\Singleton;
 /**
  * Class Embed
  *
- * @since n.e.x.t
+ * @since 1.4.0
  */
 class Embed {
 
@@ -25,7 +25,7 @@ class Embed {
 	/**
 	 * Constant LifterLMS Advanced Video autoplay option.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @var string
 	 */
@@ -51,7 +51,7 @@ class Embed {
 	/**
 	 * Register the oEmbed provider for GoDAM videos.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
@@ -67,7 +67,7 @@ class Embed {
 	/**
 	 * Pre-process the oEmbed result for GoDAM videos.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param mixed  $data data to be filled with oEmbed data.
 	 * @param string $url URL to be processed.
