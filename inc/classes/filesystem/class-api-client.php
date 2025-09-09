@@ -154,6 +154,7 @@ class API_Client {
 		$headers = array(
 			'X-Client-Site-ID' => $this->site_id,
 			'api-key'          => $this->api_key,
+			'site-url'         => home_url(),
 		);
 
 		if ( isset( $request_args['headers'] ) ) {
