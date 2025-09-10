@@ -18,21 +18,21 @@ const GodamHeader = () => {
 	const godamMediaLink = window.godamRestRoute?.apiBase + '/web/media-library';
 
 	return (
-		<header>
-			<div className="godam-settings-header border-b -ml-[32px] pl-[32px] bg-white">
-				<div className="godam-settings-header-content max-w-[1440px] mx-auto pl-4 pr-6 flex items-center justify-between">
-					<div className="py-6 m-0 text-4xl leading-4 font-semibold text-slate-900 flex items-end">
-						<img className="h-8 sm:h-9 md:h-12" src={ godamLogo } alt={ __( 'GoDAM Logo', 'godam' ) } />
-						<div className="ml-3">
-							<div className="text-xs font-normal leading-4">{ `v${ window?.pluginInfo?.version }` }</div>
+		<header data-testid="godam-header">
+			<div className="godam-settings-header border-b -ml-[32px] pl-[32px] bg-white" data-testid="godam-header-content">
+				<div className="godam-settings-header-content max-w-[1440px] mx-auto pl-4 pr-6 flex items-center justify-between" data-testid="godam-header-wrapper">
+					<div className="py-6 m-0 text-4xl leading-4 font-semibold text-slate-900 flex items-end" data-testid="godam-logo-section">
+						<img className="h-8 sm:h-9 md:h-12" src={ godamLogo } alt={ __( 'GoDAM Logo', 'godam' ) } data-testid="godam-logo" />
+						<div className="ml-3" data-testid="godam-version-info">
+							<div className="text-xs font-normal leading-4" data-testid="godam-version">{ `v${ window?.pluginInfo?.version }` }</div>
 							{
 								window?.userData?.userApiData?.active_plan &&
-								<div className="text-xs font-bold py-[2px] px-2 rounded bg-indigo-100 mt-1">{ window?.userData?.userApiData?.active_plan }</div>
+								<div className="text-xs font-bold py-[2px] px-2 rounded bg-indigo-100 mt-1" data-testid="godam-plan-badge">{ window?.userData?.userApiData?.active_plan }</div>
 							}
 						</div>
 					</div>
-					<div className="flex items-center gap-2 sm:gap-3 md:gap-6 transform translate-x-[20px] scale-[0.8] sm:scale-100 sm:translate-x-0">
-						<div className="flex flex-col sm:flex-row md:items-center gap-1 sm:gap-2 md:gap-3">
+					<div className="flex items-center gap-2 sm:gap-3 md:gap-6 transform translate-x-[20px] scale-[0.8] sm:scale-100 sm:translate-x-0" data-testid="godam-header-actions">
+						<div className="flex flex-col sm:flex-row md:items-center gap-1 sm:gap-2 md:gap-3" data-testid="godam-header-buttons-left">
 							<Button
 								variant="tertiary"
 								href={ helpLink }
@@ -40,6 +40,7 @@ const GodamHeader = () => {
 								className="rounded-full godam-button-icon sm:h-10 sm:w-10 [&>svg]:sm:w-7 [&>svg]:sm:h-7"
 								label={ __( 'Need help?', 'godam' ) }
 								icon={ help }
+								data-testid="godam-help-button"
 							/>
 							<Button
 								variant="tertiary"
@@ -48,9 +49,10 @@ const GodamHeader = () => {
 								className="rounded-full godam-button-icon sm:h-10 sm:w-10 [&>svg]:sm:w-6 [&>svg]:sm:h-6"
 								label={ __( 'Install GoDAM Screen Recorder', 'godam' ) }
 								icon={ ChromeExtensionSvg }
+								data-testid="godam-extension-button"
 							/>
 						</div>
-						<div className="flex flex-col sm:flex-row md:items-center gap-1 sm:gap-2 md:gap-3">
+						<div className="flex flex-col sm:flex-row md:items-center gap-1 sm:gap-2 md:gap-3" data-testid="godam-header-buttons-right">
 							<Button
 								className={ `godam-button text-xs md:text-sm ${ ( ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan ) ? 'disabled' : '' }` }
 								variant="primary"
@@ -69,6 +71,7 @@ const GodamHeader = () => {
 								showTooltip={ true }
 								tooltipPosition="bottom center"
 								label={ ( ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan ) ? __( 'Premium feature', 'godam' ) : __( 'GoDAM Central', 'godam' ) }
+								data-testid="godam-manage-media-button"
 								// disabled={ ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan }
 							/>
 
@@ -83,6 +86,7 @@ const GodamHeader = () => {
 										icon={ trendingUp }
 										iconSize={ 16 }
 										text={ __( 'Upgrade plan', 'godam' ) }
+										data-testid="godam-upgrade-button"
 									/>
 								) }
 							{
@@ -96,6 +100,7 @@ const GodamHeader = () => {
 										icon={ download }
 										iconSize={ 16 }
 										text={ __( 'Get GoDAM', 'godam' ) }
+										data-testid="godam-get-godam-button"
 									/>
 								) }
 						</div>

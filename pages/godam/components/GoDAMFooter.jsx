@@ -70,29 +70,29 @@ const SOCIAL_ICONS = [
 
 const GoDAMFooter = () => {
 	return (
-		<footer className="godam-footer">
-			<div className="-ml-[32px] pl-[32px]">
-				<div className="max-w-[1260px] mx-auto pl-4 pr-9 flex items-center justify-center">
-					<div>
-						<p className="text-center font-semibold">{ __( 'Made with ♥ by the GoDAM Team', 'godam' ) }</p>
-						<ul className="godam-footer__links">
+		<footer className="godam-footer" data-testid="godam-footer">
+			<div className="-ml-[32px] pl-[32px]" data-testid="godam-footer-content">
+				<div className="max-w-[1260px] mx-auto pl-4 pr-9 flex items-center justify-center" data-testid="godam-footer-wrapper">
+					<div data-testid="godam-footer-info">
+						<p className="text-center font-semibold" data-testid="godam-footer-text">{ __( 'Made with ♥ by the GoDAM Team', 'godam' ) }</p>
+						<ul className="godam-footer__links" data-testid="godam-footer-links">
 							{
 								DOCS_LINKS.map( ( link, index ) => (
-									<li key={ index } className="godam-footer__links__item">
-										<a href={ link.url } target={ link.target || '_blank' } rel="noreferrer">{ link.title }</a>
+									<li key={ index } className="godam-footer__links__item" data-testid={ `godam-footer-link-${ index }` }>
+										<a href={ link.url } target={ link.target || '_blank' } rel="noreferrer" data-testid={ `godam-footer-link-${ link.title.toLowerCase().replace( /\s+/g, '-' ) }` }>{ link.title }</a>
 									</li>
 								) )
 							}
 						</ul>
-						<ul className="godam-footer__social-links">
+						<ul className="godam-footer__social-links" data-testid="godam-footer-social-links">
 							{
 								SOCIAL_ICONS.map( ( icon, index ) => (
-									<li key={ index } className="godam-footer__social-links__item">
+									<li key={ index } className="godam-footer__social-links__item" data-testid={ `godam-footer-social-${ index }` }>
 										<Tooltip
 											text={ icon.tooltip }
 											placement="bottom"
 										>
-											<a href={ icon.url } target="_blank" rel="noreferrer" aria-label={ icon.title }>{ icon.icon }</a>
+											<a href={ icon.url } target="_blank" rel="noreferrer" aria-label={ icon.title } data-testid={ `godam-footer-social-${ icon.title.toLowerCase().replace( /\s+/g, '-' ) }` }>{ icon.icon }</a>
 										</Tooltip>
 									</li>
 								) )

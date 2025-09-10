@@ -85,15 +85,16 @@ const App = () => {
 	const activeTabData = TABS.find( ( tab ) => tab.id === activeTab );
 
 	return (
-		<div id="godam-settings">
+		<div id="godam-settings" data-testid="godam-settings-container">
 			<GodamHeader />
 
-			<div className="godam-settings__hamburger-container">
+			<div className="godam-settings__hamburger-container" data-testid="godam-hamburger-container">
 				<button
 					className="godam-settings__hamburger lg:hidden"
 					onClick={ () => setIsSidebarOpen( ! isSidebarOpen ) }
 					title="Open Menu"
 					aria-label="Open Menu"
+					data-testid="godam-hamburger-button"
 				>
 					<Icon icon={ alignJustify } className="open-btn" />
 				</button>
@@ -110,16 +111,18 @@ const App = () => {
 							setIsSidebarOpen( false );
 						}
 					} }
+					data-testid="godam-sidebar-overlay"
 				/>
 			) }
 
-			<div className="godam-settings__container">
-				<nav className={ `godam-settings__container__tabs ${ isSidebarOpen ? 'open' : '' }` }>
+			<div className="godam-settings__container" data-testid="godam-settings-content-container">
+				<nav className={ `godam-settings__container__tabs ${ isSidebarOpen ? 'open' : '' }` } data-testid="godam-sidebar-nav">
 					<button
 						className={ `godam-settings__close-btn ${ isSidebarOpen ? 'open' : '' }` }
 						onClick={ () => setIsSidebarOpen( false ) }
 						title="Close Menu"
 						aria-label="Close Menu"
+						data-testid="godam-sidebar-close-button"
 					>
 						<Icon icon={ close } />
 					</button>
@@ -133,13 +136,14 @@ const App = () => {
 								setActiveTab( id );
 								setIsSidebarOpen( false );
 							} }
+							data-testid={ `godam-sidebar-tab-${ id }` }
 						>
 							<Icon icon={ icon } />
 							{ label }
 						</a>
 					) ) }
 				</nav>
-				<div id="main-content" className="godam-settings__container__content">
+				<div id="main-content" className="godam-settings__container__content" data-testid="godam-main-content">
 					{ activeTabData && <activeTabData.component /> }
 				</div>
 			</div>

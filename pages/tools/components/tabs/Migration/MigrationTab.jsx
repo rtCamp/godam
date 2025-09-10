@@ -68,13 +68,14 @@ const MigrationTab = () => {
 	return (
 		<>
 			{ /* Migration status messages */ }
-			<div className="status-notices-container">
+			<div className="status-notices-container" data-testid="godam-migration-notices-container">
 				{ coreMigrationNotice.isVisible && (
 					<Notice
 						status={ coreMigrationNotice.status }
 						className="my-2"
 						isDismissible
 						onRemove={ () => setCoreMigrationNotice( ( prev ) => ( { ...prev, isVisible: false } ) ) }
+						data-testid="godam-core-migration-notice"
 					>
 						{ coreMigrationNotice.message }
 					</Notice>
@@ -85,6 +86,7 @@ const MigrationTab = () => {
 						className="my-2"
 						isDismissible
 						onRemove={ () => setVimeoMigrationNotice( ( prev ) => ( { ...prev, isVisible: false } ) ) }
+						data-testid="godam-vimeo-migration-notice"
 					>
 						{ vimeoMigrationNotice.message }
 					</Notice>
@@ -95,11 +97,13 @@ const MigrationTab = () => {
 				migrationStatus={ migrationStatus }
 				setMigrationStatus={ setMigrationStatus }
 				showNotice={ showCoreNotice }
+				data-testid="godam-core-migration-component"
 			/>
 			<VimeoVideoMigration
 				migrationStatus={ vimeoMigrationStatus }
 				setMigrationStatus={ setVimeoMigrationStatus }
 				showNotice={ showVimeoNotice }
+				data-testid="godam-vimeo-migration-component"
 			/>
 		</>
 	);

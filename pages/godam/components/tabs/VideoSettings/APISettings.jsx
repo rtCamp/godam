@@ -78,16 +78,16 @@ const APISettings = ( { setNotice } ) => {
 	};
 
 	return (
-		<Panel header={ __( 'API Settings', 'godam' ) } className="godam-panel">
-			<PanelBody initialOpen className="flex gap-8 flex-col sm:flex-row">
-				<div className="flex flex-col gap-2 b-4m">
+		<Panel header={ __( 'API Settings', 'godam' ) } className="godam-panel" data-testid="godam-api-settings-panel">
+			<PanelBody initialOpen className="flex gap-8 flex-col sm:flex-row" data-testid="godam-api-settings-panel-body">
+				<div className="flex flex-col gap-2 b-4m" data-testid="godam-api-key-section">
 					<PasswordFieldWithToggle
 						hasValidAPIKey={ hasValidAPIKey }
 						maskedAPIKey={ maskedAPIKey }
 						apiKey={ apiKey }
 						setAPIKey={ setAPIKey }
 					/>
-					<div className="flex gap-2">
+					<div className="flex gap-2" data-testid="godam-api-key-buttons">
 						<Button
 							className="godam-button godam-margin-right"
 							onClick={ handleSaveAPIKey }
@@ -95,6 +95,7 @@ const APISettings = ( { setNotice } ) => {
 							disabled={ isAPIKeyLoading || hasValidAPIKey || ! apiKey.trim() }
 							variant="primary"
 							isBusy={ isAPIKeyLoading }
+							data-testid="godam-save-api-key-button"
 						>
 							{ isAPIKeyLoading ? __( 'Saving…', 'godam' ) : __( 'Save API Key', 'godam' ) }
 						</Button>
@@ -105,6 +106,7 @@ const APISettings = ( { setNotice } ) => {
 							variant="secondary"
 							isDestructive
 							isBusy={ isDeactivateLoading }
+							data-testid="godam-remove-api-key-button"
 						>
 							{ __( 'Remove API Key', 'godam' ) }
 						</Button>

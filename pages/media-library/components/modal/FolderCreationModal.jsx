@@ -110,6 +110,7 @@ const FolderCreationModal = () => {
 				title={ __( 'Create a new folder', 'godam' ) }
 				onRequestClose={ () => dispatch( closeModal( 'folderCreation' ) ) }
 				className="modal__container"
+				data-testid="godam-folder-creation-modal"
 			>
 				<TextControl
 					ref={ inputRef }
@@ -117,20 +118,23 @@ const FolderCreationModal = () => {
 					label={ __( 'Folder Name', 'godam' ) }
 					value={ folderName }
 					onChange={ ( value ) => setFolderName( value ) }
+					data-testid="godam-folder-name-input"
 				/>
 
-				<div className="modal__button-group">
+				<div className="modal__button-group" data-testid="godam-modal-button-group">
 					<Button
 						isBusy={ isLoading }
 						text={ __( 'Create', 'godam' ) }
 						variant="primary"
 						onClick={ () => handleSubmit() }
 						disabled={ ! folderName }
+						data-testid="godam-create-folder-button"
 					/>
 					<Button
 						text={ __( 'Cancel', 'godam' ) }
 						onClick={ () => dispatch( closeModal( 'folderCreation' ) ) }
 						isDestructive
+						data-testid="godam-cancel-folder-button"
 					/>
 				</div>
 			</Modal>

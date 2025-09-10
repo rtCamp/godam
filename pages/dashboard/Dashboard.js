@@ -165,13 +165,13 @@ const Dashboard = () => {
 	}, [] );
 
 	return (
-		<div className="godam-dashboard-container">
+		<div className="godam-dashboard-container" data-testid="godam-dashboard-container">
 			<GodamHeader />
 
-			<div id="loading-analytics-animation" className="progress-bar-wrapper">
-				<div className="progress-bar-container">
-					<div className="progress-bar">
-						<div className="progress-bar-inner"></div>
+			<div id="loading-analytics-animation" className="progress-bar-wrapper" data-testid="godam-loading-animation">
+				<div className="progress-bar-container" data-testid="godam-dashboard-progress-bar-container">
+					<div className="progress-bar" data-testid="godam-dashboard-progress-bar">
+						<div className="progress-bar-inner" data-testid="godam-dashboard-progress-bar-inner"></div>
 					</div>
 				</div>
 			</div>
@@ -189,8 +189,9 @@ const Dashboard = () => {
 						}
 						: {}
 				}
+				data-testid="godam-api-key-overlay"
 			>
-				<div className="api-key-message">
+				<div className="api-key-message" data-testid="godam-api-key-message">
 					{ dashboardMetrics?.errorType === 'invalid_key' || dashboardMetrics?.errorType === 'missing_key'
 						? <div className="api-key-overlay-banner">
 							<p className="api-key-overlay-banner-header">
@@ -199,7 +200,7 @@ const Dashboard = () => {
 									'godam',
 								) }
 
-								<a href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=analytics` } className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
+								<a href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=analytics` } className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer" data-testid="godam-buy-plan-button">{ __( 'Buy Plan', 'godam' ) }</a>
 							</p>
 
 							<p className="api-key-overlay-banner-footer">
@@ -224,9 +225,9 @@ const Dashboard = () => {
 				</div>
 			</div>
 
-			<div id="dashboard-container" className="dashboard-container">
-				<div className="flex-grow">
-					<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-nowrap">
+			<div id="dashboard-container" className="dashboard-container" data-testid="godam-dashboard-main-container">
+				<div className="flex-grow" data-testid="godam-dashboard-content">
+					<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-nowrap" data-testid="godam-analytics-metrics-container">
 
 						<SingleMetrics
 							mode="dashboard"
@@ -401,6 +402,7 @@ const Dashboard = () => {
 								className="previous-btn flex items-center gap-1"
 								disabled={ topVideosPage === 1 }
 								onClick={ () => setTopVideosPage( ( prev ) => Math.max( prev - 1, 1 ) ) }
+								data-testid="godam-pagination-previous-button"
 							>
 								<img
 									src={ chevronLeft }
@@ -413,6 +415,7 @@ const Dashboard = () => {
 								className="next-btn flex items-center gap-1"
 								disabled={ topVideosPage >= totalTopVideosPages }
 								onClick={ () => setTopVideosPage( ( prev ) => prev + 1 ) }
+								data-testid="godam-pagination-next-button"
 							>
 								<span>{ __( 'Next', 'godam' ) }</span>
 								<img

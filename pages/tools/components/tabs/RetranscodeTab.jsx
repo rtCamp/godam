@@ -282,20 +282,21 @@ const RetranscodeTab = () => {
 
 	return (
 		<>
-			<div className="status-notices-container">
+			<div className="status-notices-container" data-testid="godam-status-notices-container">
 				{ notice.isVisible && (
 					<Notice
 						status={ notice.status }
 						className="my-2"
 						onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
+						data-testid="godam-retranscode-notice"
 					>
 						{ notice.message }
 					</Notice>
 				) }
 			</div>
 
-			<Panel header={ __( 'Retranscode Media', 'godam' ) } className="godam-panel">
-				<PanelBody opened>
+			<Panel header={ __( 'Retranscode Media', 'godam' ) } className="godam-panel" data-testid="godam-retranscode-panel">
+				<PanelBody opened data-testid="godam-retranscode-panel-body">
 					<p>
 						{ __(
 							'This tool allows you to retranscode your media files. You can either retranscode specific files selected from the Media Library, or only those that are not yet transcoded.',
@@ -320,14 +321,15 @@ const RetranscodeTab = () => {
 						/* Force retranscode checkbox */
 						! ( selectedIds && selectedIds.length > 0 ) &&
 						( attachments.length === 0 ) &&
-						<div style={ { marginBottom: '1em' } }>
+						<div style={ { marginBottom: '1em' } } data-testid="godam-force-retranscode-container">
 							{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
-							<label>
+							<label data-testid="godam-force-retranscode-label">
 								<input
 									type="checkbox"
 									checked={ forceRetranscode }
 									onChange={ ( e ) => setForceRetranscode( e.target.checked ) }
 									style={ { marginRight: '0.5em' } }
+									data-testid="godam-force-retranscode-checkbox"
 								/>
 								{ __( 'Force retranscode (even if already transcoded)', 'godam' ) }
 							</label>
@@ -400,7 +402,7 @@ const RetranscodeTab = () => {
 						</div>
 					}
 
-					<div className="flex gap-2">
+					<div className="flex gap-2" data-testid="godam-retranscode-buttons">
 						{
 							// Show main action button.
 							! retranscoding &&
@@ -415,6 +417,7 @@ const RetranscodeTab = () => {
 									}
 								} }
 								disabled={ fetchingMedia }
+								data-testid="godam-main-action-button"
 							>
 								{ ( () => {
 									if ( attachments.length === 0 ) {
@@ -435,6 +438,7 @@ const RetranscodeTab = () => {
 								className="godam-button"
 								onClick={ abortRetranscoding }
 								style={ { backgroundColor: '#dc3545', color: 'white' } }
+								data-testid="godam-abort-button"
 							>
 								{ __( 'Abort Operation', 'godam' ) }
 							</Button>
@@ -447,6 +451,7 @@ const RetranscodeTab = () => {
 								variant="tertiary"
 								className="godam-button"
 								onClick={ resetState }
+								data-testid="godam-reset-button"
 							>
 								{ __( 'Reset', 'godam' ) }
 							</Button>

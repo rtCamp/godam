@@ -64,14 +64,15 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 					handleItemClick();
 				}
 			} }
+			data-testid={ `godam-media-item-${ item?.id }` }
 		>
-			<div className="godam-video-list__video__thumbnail">
+			<div className="godam-video-list__video__thumbnail" data-testid={ `godam-media-item-thumbnail-${ item?.id }` }>
 
 				{ item?.image?.src && ! item?.image?.src.includes( '.svg' ) // svg is default image for video.
 					? (
-						<img src={ item?.image?.src } alt="video thumbnail" />
+						<img src={ item?.image?.src } alt="video thumbnail" data-testid={ `godam-media-item-image-${ item?.id }` } />
 					) : (
-						<img src={ NoThumbnailImage } alt="video thumbnail" />
+						<img src={ NoThumbnailImage } alt="video thumbnail" data-testid={ `godam-media-item-default-image-${ item?.id }` } />
 					)
 				}
 
@@ -119,19 +120,21 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 					] }
 					icon={ <Icon icon={ moreHorizontalMobile } /> }
 					label={ __( 'Quick actions.', 'godam' ) }
+					data-testid={ `godam-media-item-dropdown-${ item?.id }` }
 				/>
 
-				{ item?.fileLength && <span className="godam-video-list__video__thumbnail__time text-xs text-white font-bold">{ item?.fileLength }</span> }
+				{ item?.fileLength && <span className="godam-video-list__video__thumbnail__time text-xs text-white font-bold" data-testid={ `godam-media-item-duration-${ item?.id }` }>{ item?.fileLength }</span> }
 			</div>
 
-			<div className="godam-video-list__video__info">
-				<h3 className="text-sm">{ item?.title }</h3>
-				{ item?.description && <p className="text-xs">{ item?.description }</p> }
+			<div className="godam-video-list__video__info" data-testid={ `godam-media-item-info-${ item?.id }` }>
+				<h3 className="text-sm" data-testid={ `godam-media-item-title-${ item?.id }` }>{ item?.title }</h3>
+				{ item?.description && <p className="text-xs" data-testid={ `godam-media-item-description-${ item?.id }` }>{ item?.description }</p> }
 			</div>
 
 			{ showSnackbar && createPortal(
 				<Snackbar className="fixed bottom-4 right-4 opacity-70 z-50"
 					onRemove={ handleOnSnackbarRemove }
+					data-testid={ `godam-media-item-snackbar-${ item?.id }` }
 				>
 					{ snackbarMessage }
 				</Snackbar>, document.body )

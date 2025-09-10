@@ -94,24 +94,26 @@ const MediaGrid = ( { search, page, handleAttachmentClick, setPage, attachments,
 
 	if ( ! fetching && attachments.length === 0 ) {
 		return (
-			<div className="flex justify-end items-center flex-col mt-8">
+			<div className="flex justify-end items-center flex-col mt-8" data-testid="godam-media-grid-empty">
 				<Icon
 					style={ {
 						fill: '#9ca3af',
 					} }
 					icon={ media }
 					size={ 140 }
+					data-testid="godam-media-grid-empty-icon"
 				/>
-				<h2 className="text-gray-400">
+				<h2 className="text-gray-400" data-testid="godam-media-grid-empty-title">
 					{ __( 'No video found', 'godam' ) }
 				</h2>
-				<p className="text-sm text-gray-500 m-0 text-center">
+				<p className="text-sm text-gray-500 m-0 text-center" data-testid="godam-media-grid-empty-description">
 					{ __( 'Upload videos from WordPress ', 'godam' ) }
 					<a
 						href={ `${ window?.videoData?.adminUrl }upload.php` }
 						target="_blank"
 						rel="noopener noreferrer"
 						className="text-blue-500 underline"
+						data-testid="godam-media-grid-upload-link"
 					>
 						{ __( 'media library', 'godam' ) }
 					</a>
@@ -123,20 +125,21 @@ const MediaGrid = ( { search, page, handleAttachmentClick, setPage, attachments,
 
 	return (
 		<>
-			<div className="godam-video-list-videos">
+			<div className="godam-video-list-videos" data-testid="godam-media-grid">
 				{ attachments.map( ( item, index ) => (
 					<MediaItem
 						key={ item.id }
 						item={ item }
 						handleAttachmentClick={ handleAttachmentClick }
 						ref={ index === attachments.length - 1 ? lastItemRef : null }
+						data-testid={ `godam-media-grid-item-${ item.id }` }
 					/>
 				) ) }
 			</div>
 
 			{ ( isLoading || fetching ) &&
-				<div className="flex justify-end items-center flex-col">
-					<p>{ __( 'Loading…', 'godam' ) }</p>
+				<div className="flex justify-end items-center flex-col" data-testid="godam-media-grid-loading">
+					<p data-testid="godam-media-grid-loading-text">{ __( 'Loading…', 'godam' ) }</p>
 				</div>
 			}
 		</>

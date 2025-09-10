@@ -86,30 +86,32 @@ const VideoSettings = () => {
 	}, [ isChanged ] );
 
 	return (
-		<div>
+		<div data-testid="godam-video-settings-container">
 			{ notice.isVisible && (
 				<Notice
 					className="mb-4"
 					status={ notice.status }
 					onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
+					data-testid="godam-video-settings-notice"
 				>
 					{ notice.message }
 				</Notice>
 			) }
 
 			{ ! hasValidAPIKey && (
-				<Panel className="godam-panel godam-margin-bottom godam-api-key-banner">
-					<PanelBody opened>
-						<h2>{ __( 'Ensure Smooth Video Playback', 'godam' ) }</h2>
+				<Panel className="godam-panel godam-margin-bottom godam-api-key-banner" data-testid="godam-api-key-banner">
+					<PanelBody opened data-testid="godam-api-key-banner-body">
+						<h2 data-testid="godam-api-key-banner-title">{ __( 'Ensure Smooth Video Playback', 'godam' ) }</h2>
 
-						<p>{ __( 'Set up your video transcoding settings to optimize playback across all devices and network conditions. 🚀', 'godam' ) }</p>
+						<p data-testid="godam-api-key-banner-description">{ __( 'Set up your video transcoding settings to optimize playback across all devices and network conditions. 🚀', 'godam' ) }</p>
 
-						<div className="button-group">
+						<div className="button-group" data-testid="godam-api-key-banner-button-group">
 							<Button
 								href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=settings` }
 								target="_blank"
 								variant="primary"
 								className="godam-button"
+								data-testid="godam-choose-plan-button"
 							>
 								{ __( 'Choose GoDAM plan', 'godam' ) }
 							</Button>
@@ -136,6 +138,7 @@ const VideoSettings = () => {
 					icon={ saveMediaSettingsLoading && <Spinner /> }
 					isBusy={ saveMediaSettingsLoading }
 					disabled={ saveMediaSettingsLoading || ! isChanged }
+					data-testid="godam-save-video-settings-button"
 				>
 					{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 				</Button>

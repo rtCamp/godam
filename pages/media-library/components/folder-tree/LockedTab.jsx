@@ -46,18 +46,19 @@ const LockedTab = ( { handleContextMenu } ) => {
 
 	if ( lockedCount === 0 ) {
 		return (
-			<div className="godam-folder-tab godam-folder-tab--empty">
-				<Panel className="godam-folder-tab-panel">
+			<div className="godam-folder-tab godam-folder-tab--empty" data-testid="godam-locked-tab-empty">
+				<Panel className="godam-folder-tab-panel" data-testid="godam-locked-tab-empty-panel">
 					<PanelBody
-						title={ <><span className="folder-tab__count">{ lockedCount }</span> { __( 'Locked', 'godam' ) } </> }
+						title={ <><span className="folder-tab__count" data-testid="godam-locked-tab-count">{ lockedCount }</span> { __( 'Locked', 'godam' ) } </> }
 						initialOpen={ false }
 						icon={ lock }
+						data-testid="godam-locked-tab-empty-panel-body"
 					>
-						<div className="godam-folder-tab__empty-state">
-							<div className="godam-folder-tab__empty-icon">
+						<div className="godam-folder-tab__empty-state" data-testid="godam-locked-tab-empty-state">
+							<div className="godam-folder-tab__empty-icon" data-testid="godam-locked-tab-empty-icon">
 								{ lock }
 							</div>
-							<h4>{ __( 'No locked folders yet', 'godam' ) }</h4>
+							<h4 data-testid="godam-locked-tab-empty-title">{ __( 'No locked folders yet', 'godam' ) }</h4>
 						</div>
 					</PanelBody>
 				</Panel>
@@ -66,14 +67,15 @@ const LockedTab = ( { handleContextMenu } ) => {
 	}
 
 	return (
-		<div className="godam-folder-tab">
-			<Panel className="godam-folder-tab-panel">
+		<div className="godam-folder-tab" data-testid="godam-locked-tab">
+			<Panel className="godam-folder-tab-panel" data-testid="godam-locked-tab-panel">
 				<PanelBody
-					title={ <><span className="folder-tab__count">{ lockedCount }</span> { __( 'Locked', 'godam' ) } </> }
+					title={ <><span className="folder-tab__count" data-testid="godam-locked-tab-count">{ lockedCount }</span> { __( 'Locked', 'godam' ) } </> }
 					initialOpen={ false }
 					icon={ lock }
+					data-testid="godam-locked-tab-panel-body"
 				>
-					<div className="godam-folder-tab__list">
+					<div className="godam-folder-tab__list" data-testid="godam-locked-tab-list">
 						{ locked.map( ( lockedFolder, index ) => (
 							<TabItem
 								item={ lockedFolder }
@@ -81,6 +83,7 @@ const LockedTab = ( { handleContextMenu } ) => {
 								index={ index }
 								totalCount={ lockedCount }
 								onContextMenu={ ( e, id ) => handleContextMenu( e, id, lockedFolder ) }
+								data-testid={ `godam-locked-tab-item-${ lockedFolder?.id || index }` }
 							/>
 						) ) }
 					</div>

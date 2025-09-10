@@ -84,13 +84,14 @@ const GeneralSettings = () => {
 					className="mb-4"
 					status={ notice.status }
 					onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
+					data-testid="godam-general-settings-notice"
 				>
 					{ notice.message }
 				</Notice>
 			) }
 
-			<Panel header={ __( 'General Settings', 'godam' ) } className="godam-panel">
-				<PanelBody opened>
+			<Panel header={ __( 'General Settings', 'godam' ) } className="godam-panel" data-testid="godam-general-settings-panel">
+				<PanelBody opened data-testid="godam-general-settings-panel-body">
 					<ToggleControl
 						__nextHasNoMarginBottom
 						className="godam-toggle godam-margin-bottom"
@@ -98,6 +99,7 @@ const GeneralSettings = () => {
 						help={ __( 'Keep this option enabled to organize media into folders within the media library. Disabling it will remove folder organization.', 'godam' ) }
 						checked={ mediaSettings?.general?.enable_folder_organization }
 						onChange={ ( value ) => handleSettingChange( 'enable_folder_organization', value ) }
+						data-testid="godam-folder-organization-toggle"
 					/>
 
 				</PanelBody>
@@ -110,6 +112,7 @@ const GeneralSettings = () => {
 				icon={ saveMediaSettingsLoading && <Spinner /> }
 				isBusy={ saveMediaSettingsLoading }
 				disabled={ saveMediaSettingsLoading || ! isChanged }
+				data-testid="godam-save-settings-button"
 			>
 				{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 			</Button>

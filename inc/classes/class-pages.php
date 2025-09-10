@@ -278,8 +278,8 @@ class Pages {
 	 */
 	public function render_tools_page() {
 		?>
-		<div class="godam-admin-root">
-			<div id="root-godam-tools"></div>
+		<div class="godam-admin-root" data-testid="godam-tools-admin-root">
+			<div id="root-godam-tools" data-testid="godam-tools-root"></div>
 		</div>
 		<?php
 	}
@@ -291,8 +291,8 @@ class Pages {
 	 */
 	public function render_help_page() {
 		?>
-		<div class="godam-admin-root">
-			<div id="root-video-help"></div>
+		<div class="godam-admin-root" data-testid="godam-help-admin-root">
+			<div id="root-video-help" data-testid="godam-help-root"></div>
 		</div>
 		<?php
 	}
@@ -304,44 +304,44 @@ class Pages {
 	 */
 	public function render_godam_page() {
 		?>
-		<div class="godam-admin-root">
-			<div id="root-godam-settings">
-				<div class="wrap flex min-h-[80vh] gap-4 my-4">
+		<div class="godam-admin-root" data-testid="godam-settings-admin-root">
+			<div id="root-godam-settings" data-testid="godam-settings-root">
+				<div class="wrap flex min-h-[80vh] gap-4 my-4" data-testid="godam-settings-wrapper">
 					<!-- Sidebar Skeleton -->
-					<div class="max-w-[220px] w-full rounded-lg bg-white shadow-md border border-gray-200">
-						<nav class="loading-skeleton flex flex-col gap-4 p-4">
+					<div class="max-w-[220px] w-full rounded-lg bg-white shadow-md border border-gray-200" data-testid="godam-sidebar-skeleton">
+						<nav class="loading-skeleton flex flex-col gap-4 p-4" data-testid="godam-sidebar-nav-skeleton">
 							<!-- Sidebar Tabs -->
-							<div class="skeleton-container skeleton-container-short">
-								<div class="skeleton-header w-3/4"></div>
+							<div class="skeleton-container skeleton-container-short" data-testid="godam-skeleton-container-1">
+								<div class="skeleton-header w-3/4" data-testid="godam-skeleton-header-1"></div>
 							</div>
-							<div class="skeleton-container skeleton-container-short">
-								<div class="skeleton-header w-3/4"></div>
+							<div class="skeleton-container skeleton-container-short" data-testid="godam-skeleton-container-2">
+								<div class="skeleton-header w-3/4" data-testid="godam-skeleton-header-2"></div>
 							</div>
-							<div class="skeleton-container skeleton-container-short">
-								<div class="skeleton-header w-3/4"></div>
+							<div class="skeleton-container skeleton-container-short" data-testid="godam-skeleton-container-3">
+								<div class="skeleton-header w-3/4" data-testid="godam-skeleton-header-3"></div>
 							</div>
 						</nav>
 					</div>
 
 					<!-- Main Content Skeleton -->
-					<div id="main-content" class="w-full p-5 bg-white rounded-lg border">
+					<div id="main-content" class="w-full p-5 bg-white rounded-lg border" data-testid="godam-main-content-skeleton">
 						<!-- General Settings Form Skeleton -->
-						<div class="loading-skeleton flex flex-col gap-4">
+						<div class="loading-skeleton flex flex-col gap-4" data-testid="godam-form-skeleton">
 							<!-- Title -->
-							<div class="skeleton-container skeleton-container-short">
-								<div class="skeleton-header w-1/2"></div>
+							<div class="skeleton-container skeleton-container-short" data-testid="godam-form-title-skeleton">
+								<div class="skeleton-header w-1/2" data-testid="godam-form-title-header"></div>
 							</div>
 
 							<!-- Input Field Skeleton -->
-							<div class="skeleton-container">
-								<div class="skeleton-line w-3/4"></div>
-								<div class="skeleton-line short w-1/2"></div>
+							<div class="skeleton-container" data-testid="godam-input-skeleton">
+								<div class="skeleton-line w-3/4" data-testid="godam-input-line-1"></div>
+								<div class="skeleton-line short w-1/2" data-testid="godam-input-line-2"></div>
 							</div>
 
 							<!-- Buttons Skeleton -->
-							<div class="flex gap-2">
-								<div class="skeleton-button w-32 h-10"></div>
-								<div class="skeleton-button w-40 h-10"></div>
+							<div class="flex gap-2" data-testid="godam-buttons-skeleton">
+								<div class="skeleton-button w-32 h-10" data-testid="godam-button-skeleton-1"></div>
+								<div class="skeleton-button w-40 h-10" data-testid="godam-button-skeleton-2"></div>
 							</div>
 						</div>
 					</div>
@@ -358,12 +358,12 @@ class Pages {
 	 */
 	public function render_video_editor_page() {
 		?>
-		<div class="godam-admin-root">
-			<div id="root-video-editor">
-				<div class="progress-bar-wrapper">
-					<div class="progress-bar-container">
-						<div class="progress-bar">
-							<div class="progress-bar-inner"></div>
+		<div class="godam-admin-root" data-testid="godam-video-editor-admin-root">
+			<div id="root-video-editor" data-testid="godam-video-editor-root">
+				<div class="progress-bar-wrapper" data-testid="godam-video-editor-progress-bar-wrapper">
+					<div class="progress-bar-container" data-testid="godam-video-editor-progress-bar-container">
+						<div class="progress-bar" data-testid="godam-video-editor-progress-bar">
+							<div class="progress-bar-inner" data-testid="godam-video-editor-progress-bar-inner"></div>
 						</div>
 					</div>
 				</div>
@@ -379,8 +379,8 @@ class Pages {
 	 */
 	public function render_dashboard_page() {
 		?>
-		<div class="godam-admin-root">
-			<div id="root-video-dashboard"></div>
+		<div class="godam-admin-root" data-testid="godam-dashboard-admin-root">
+			<div id="root-video-dashboard" data-testid="godam-dashboard-root"></div>
 		</div>
 		<?php
 	}
@@ -392,8 +392,8 @@ class Pages {
 	 */
 	public function render_analytics_page() {
 		?>
-		<div class="godam-admin-root">
-			<div id="root-video-analytics"></div>
+		<div class="godam-admin-root" data-testid="godam-analytics-admin-root">
+			<div id="root-video-analytics" data-testid="godam-analytics-root"></div>
 		</div>
 		<?php
 	}
@@ -405,7 +405,7 @@ class Pages {
 	 */
 	public function render_whats_new_page() {
 		?>
-		<div id="root-whats-new"></div>
+		<div id="root-whats-new" data-testid="godam-whats-new-root"></div>
 		<?php
 	}
 

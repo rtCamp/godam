@@ -130,6 +130,7 @@ const App = () => {
 				variant="secondary"
 				className="button--full close-folder-menu-mobile"
 				onClick={ () => closeFolderMenu() }
+				data-testid="godam-close-folder-menu-button"
 			/>
 			<Button
 				id="media-folder-toggle-button"
@@ -138,9 +139,10 @@ const App = () => {
 				className="button--full toggle-folder-button"
 				onClick={ () => toggleSidebar() }
 				icon={ isSidebarHidden ? 'arrow-right-alt2' : 'arrow-left-alt2' }
+				data-testid="godam-toggle-folder-button"
 			/>
-			<div className="control-buttons">
-				<div className="button-group mb-spacing">
+			<div className="control-buttons" data-testid="godam-control-buttons">
+				<div className="button-group mb-spacing" data-testid="godam-search-button-group">
 					<SearchBar />
 					<Button
 						icon="plus-alt2"
@@ -150,15 +152,17 @@ const App = () => {
 						className="button--full mb-spacing new-folder-button"
 						onClick={ () => dispatch( openModal( 'folderCreation' ) ) }
 						disabled={ selectedFolder?.meta?.locked || currentFolder?.meta?.locked || contextSelectedFolder?.meta?.locked }
+						data-testid="godam-new-folder-button"
 					/>
 				</div>
-				<div className="button-group mb-spacing">
+				<div className="button-group mb-spacing" data-testid="godam-bulk-select-group">
 					<Button
 						__next40pxDefaultSize
 						className="multiselect-button"
 						variant="secondary"
 						text={ ! isMultiSelecting ? __( 'Bulk Select', 'godam' ) : __( 'Cancel', 'godam' ) }
 						onClick={ () => dispatch( toggleMultiSelectMode() ) }
+						data-testid="godam-bulk-select-button"
 					/>
 					<SelectControl
 						value={ currentSortOrder }
@@ -168,20 +172,22 @@ const App = () => {
 							{ label: __( 'By Name (Z-A)', 'godam' ), value: 'name-desc' },
 						] }
 						onChange={ ( newOrder ) => dispatch( setSortOrder( newOrder ) ) }
+						data-testid="godam-sort-select"
 					/>
 				</div>
 			</div>
 
-			<div className="folder-container">
-				<div className="folder-list">
+			<div className="folder-container" data-testid="godam-folder-container">
+				<div className="folder-list" data-testid="godam-folder-list">
 					<button
 						className={ `folder-list__item all-media ${
 							selectedFolder.id === -1 ? 'folder-list__item--active' : ''
 						}` }
 						onClick={ () => handleClick( -1 ) }
+						data-testid="godam-all-media-button"
 					>
-						<p className="folder-list__text">{ __( 'All Media', 'godam' ) }
-							<span className="folder-list__count">{ allMediaCount ?? 0 }</span>
+						<p className="folder-list__text" data-testid="godam-all-media-text">{ __( 'All Media', 'godam' ) }
+							<span className="folder-list__count" data-testid="godam-all-media-count">{ allMediaCount ?? 0 }</span>
 						</p>
 					</button>
 
@@ -191,14 +197,15 @@ const App = () => {
 						}` }
 						onClick={ () => handleClick( 0 ) }
 						data-id={ 0 }
+						data-testid="godam-uncategorized-button"
 					>
-						<p className="folder-list__text">{ __( 'Uncategorized', 'godam' ) }
-							<span className="folder-list__count">{ uncategorizedCount?.count ?? 0 }</span>
+						<p className="folder-list__text" data-testid="godam-uncategorized-text">{ __( 'Uncategorized', 'godam' ) }
+							<span className="folder-list__count" data-testid="godam-uncategorized-count">{ uncategorizedCount?.count ?? 0 }</span>
 						</p>
 					</button>
 				</div>
 
-				<div className="folder-tabs">
+				<div className="folder-tabs" data-testid="godam-folder-tabs">
 					<BookmarkTab handleContextMenu={ handleContextMenu } />
 					<LockedTab handleContextMenu={ handleContextMenu } />
 				</div>

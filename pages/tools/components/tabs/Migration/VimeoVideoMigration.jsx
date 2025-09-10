@@ -172,32 +172,32 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 
 	return (
 		<>
-			<Panel className="godam-panel">
-				<PanelBody title={ __( 'Vimeo video Migration', 'godam' ) } initialOpen={ false }>
+			<Panel className="godam-panel" data-testid="godam-vimeo-migration-panel">
+				<PanelBody title={ __( 'Vimeo video Migration', 'godam' ) } initialOpen={ false } data-testid="godam-vimeo-migration-panel-body">
 					<p>
 						{ __( 'This tool replaces WordPress Vimeo Embed blocks with GoDAM Video blocks. It does not replace Vimeo videos added in the WordPress Classic Editor.', 'godam' ) }
 					</p>
 
-					<div className="flex items-center gap-2">
-						<Icon icon={ error } className="w-4 h-4" style={ { fill: '#EAB308' } } />
-						<p className="text-center m-0 text-[#AB3A6C]">{ __( 'This migrator will only migrate Vimeo videos that are already fetched on GoDAM Central.', 'godam' ) }</p>
-						<ExternalLink href={ `${ window.godamRestRoute?.apiBase }/web` } className="godam-url">{ __( 'Open', 'godam' ) }</ExternalLink>
+					<div className="flex items-center gap-2" data-testid="godam-vimeo-migration-warning">
+						<Icon icon={ error } className="w-4 h-4" style={ { fill: '#EAB308' } } data-testid="godam-vimeo-migration-warning-icon" />
+						<p className="text-center m-0 text-[#AB3A6C]" data-testid="godam-vimeo-migration-warning-text">{ __( 'This migrator will only migrate Vimeo videos that are already fetched on GoDAM Central.', 'godam' ) }</p>
+						<ExternalLink href={ `${ window.godamRestRoute?.apiBase }/web` } className="godam-url" data-testid="godam-vimeo-migration-open-link">{ __( 'Open', 'godam' ) }</ExternalLink>
 					</div>
 
 					{ /* Progressbar indicating video migration progress */ }
 					{ /* Horizontal progressbar, done/total */ }
 					{ [ 'processing', 'completed' ].includes( migrationStatus?.status ) && (
-						<div>
-							<ProgressBar showInitialProgress={ 'processing' === migrationStatus?.status } done={ migrationStatus?.done } total={ migrationStatus?.total } />
-							<div className="mt-1 mb-3 px-1 py-[1px] bg-gray-200 inline-flex rounded">{ migrationStatus?.message }</div>
+						<div data-testid="godam-vimeo-migration-progress">
+							<ProgressBar showInitialProgress={ 'processing' === migrationStatus?.status } done={ migrationStatus?.done } total={ migrationStatus?.total } data-testid="godam-vimeo-migration-progress-bar" />
+							<div className="mt-1 mb-3 px-1 py-[1px] bg-gray-200 inline-flex rounded" data-testid="godam-vimeo-migration-progress-message">{ migrationStatus?.message }</div>
 						</div>
 					) }
 
 					{
 						! godamMigrationCompleted && (
-							<div className="godam-migration-status my-2 bg-gray-100 p-2 rounded">
+							<div className="godam-migration-status my-2 bg-gray-100 p-2 rounded" data-testid="godam-vimeo-migration-status">
 								{ __( 'Vimeo video migration in WordPress can only begin after all Vimeo videos have been successfully migrated to GoDAM Central, ', 'godam' ) }
-								<a className="godam-url" href={ `${ window.godamRestRoute?.apiBase || 'https://app.godam.io' }/web/settings` } target="_blank" rel="noreferrer">
+								<a className="godam-url" href={ `${ window.godamRestRoute?.apiBase || 'https://app.godam.io' }/web/settings` } target="_blank" rel="noreferrer" data-testid="godam-vimeo-migration-check-link">
 									{ __( 'Check here!', 'godam' ) }
 								</a>
 							</div>
@@ -206,7 +206,7 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 
 					{ /* Migration status */ }
 					{ migrationStatus?.status === 'processing' && (
-						<div className="godam-migration-status my-2">
+						<div className="godam-migration-status my-2" data-testid="godam-vimeo-migration-processing-status">
 							{ __( 'Migration is in progress. Please wait…', 'godam' ) }
 						</div>
 					)
@@ -218,6 +218,7 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 							variant="secondary"
 							onClick={ handleAbortClick }
 							className="godam-button mt-2"
+							data-testid="godam-vimeo-migration-abort-button"
 						>
 							{ __( 'Abort', 'godam' ) }
 						</Button>
@@ -227,6 +228,7 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 							onClick={ handleMigrationClick }
 							className="godam-button mt-2"
 							disabled={ ! migrationStatus }
+							data-testid="godam-vimeo-migration-start-button"
 						>
 							{ migrationStatus?.status === 'completed' ? __( 'Restart Migration', 'godam' ) : __( 'Start Migration', 'godam' ) }
 						</Button>

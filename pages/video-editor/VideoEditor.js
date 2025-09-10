@@ -344,13 +344,14 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 
 	return (
 		<>
-			<div className="video-editor-container">
-				<div className="py-3 aside relative pl-4">
-					<div id="sidebar-content" className="godam-video-editor">
+			<div className="video-editor-container" data-testid="godam-video-editor-container">
+				<div className="py-3 aside relative pl-4" data-testid="godam-video-editor-sidebar">
+					<div id="sidebar-content" className="godam-video-editor" data-testid="godam-video-editor-sidebar-content">
 						<TabPanel
 							className="godam-video-editor-tabs"
 							tabs={ tabConfig }
 							onSelect={ ( tabName ) => dispatch( setCurrentTab( tabName ) ) }
+							data-testid="godam-video-editor-tab-panel"
 						>
 							{ ( tab ) => tab.component }
 						</TabPanel>
@@ -363,17 +364,18 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 						onClick={ handleSaveAttachmentMeta }
 						isBusy={ isSavingMeta }
 						disabled={ ! isChanged }
+						data-testid="godam-save-video-button"
 					>
 						{ isSavingMeta ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 					</Button>
 				</div>
 
-				<main className="flex flex-col items-center p-4 overflow-y-auto">
+				<main className="flex flex-col items-center p-4 overflow-y-auto" data-testid="godam-video-editor-main">
 
 					{
 						// Display a success message when video changes are saved.
 						showSaveMessage && (
-							<Snackbar className="absolute bottom-4 right-4 opacity-70 z-50">
+							<Snackbar className="absolute bottom-4 right-4 opacity-70 z-50" data-testid="godam-save-success-snackbar">
 								{ __( 'Video changes saved successfully', 'godam' ) }
 							</Snackbar>
 						)
@@ -382,12 +384,13 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 					{ showSnackbar && (
 						<Snackbar className="absolute bottom-4 right-4 opacity-70 z-50"
 							onRemove={ handleOnSnackbarRemove }
+							data-testid="godam-snackbar"
 						>
 							{ snackbarMessage }
 						</Snackbar>
 					) }
 
-					<div className="flex space-x-2 justify-end items-center w-full mb-4">
+					<div className="flex space-x-2 justify-end items-center w-full mb-4" data-testid="godam-video-editor-actions">
 						<Tooltip
 							text={
 								<p>
@@ -405,6 +408,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 								iconPosition="left"
 								onClick={ handleCopyGoDAMVideoBlock }
 								className="godam-button"
+								data-testid="godam-copy-block-button"
 							>
 								{ __( 'Copy Block', 'godam' ) }
 							</Button>
@@ -415,14 +419,15 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 							target="_blank"
 							className="godam-button"
 							icon={ seen }
+							data-testid="godam-preview-button"
 						>
 							{ __( 'Preview', 'godam' ) }
 						</Button>
 					</div>
 
 					{ attachmentConfig && sources.length > 0 && (
-						<div className="w-full video-canvas-wrapper">
-							<div className="relative">
+						<div className="w-full video-canvas-wrapper" data-testid="godam-video-canvas-wrapper">
+							<div className="relative" data-testid="godam-video-player-wrapper">
 								<VideoJSPlayer
 									options={ {
 										controls: true,
@@ -455,6 +460,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 									onReady={ handlePlayerReady }
 									playbackTime={ currentTime }
 									formatTimeForInput={ formatTimeForInput }
+									data-testid="godam-video-js-player"
 								/>
 							</div>
 						</div>

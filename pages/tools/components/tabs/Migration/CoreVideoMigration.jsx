@@ -161,18 +161,18 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice }
 
 	return (
 		<>
-			<Panel className="godam-panel">
-				<PanelBody title={ __( 'Core video Migration', 'godam' ) } initialOpen={ false }>
-					<p className="m-0">
+			<Panel className="godam-panel" data-testid="godam-core-migration-panel">
+				<PanelBody title={ __( 'Core video Migration', 'godam' ) } initialOpen={ false } data-testid="godam-core-migration-panel-body">
+					<p className="m-0" data-testid="godam-core-migration-description">
 						{ __( 'This tool replaces WordPress core video blocks with GoDAM video blocks. It does not replace videos added in the WordPress Classic Editor.', 'godam' ) }
 					</p>
 
 					{ /* Progressbar indicating video migration progress */ }
 					{ /* Horizontal progressbar, done/total */ }
 					{ [ 'processing', 'completed' ].includes( migrationStatus?.status ) && (
-						<div>
-							<ProgressBar showInitialProgress={ 'processing' === migrationStatus?.status } done={ migrationStatus?.done } total={ migrationStatus?.total } />
-							<div className="mt-1 mb-3 px-1 py-[1px] bg-gray-200 inline-flex rounded">{ migrationStatus?.message }</div>
+						<div data-testid="godam-core-migration-progress">
+							<ProgressBar showInitialProgress={ 'processing' === migrationStatus?.status } done={ migrationStatus?.done } total={ migrationStatus?.total } data-testid="godam-core-migration-progress-bar" />
+							<div className="mt-1 mb-3 px-1 py-[1px] bg-gray-200 inline-flex rounded" data-testid="godam-core-migration-progress-message">{ migrationStatus?.message }</div>
 						</div>
 					) }
 
@@ -182,6 +182,7 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice }
 							variant="secondary"
 							onClick={ handleAbortClick }
 							className="godam-button mt-2"
+							data-testid="godam-core-migration-abort-button"
 						>
 							{ __( 'Abort', 'godam' ) }
 						</Button>
@@ -191,6 +192,7 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice }
 							onClick={ handleMigrationClick }
 							className="godam-button mt-2"
 							disabled={ ! migrationStatus }
+							data-testid="godam-core-migration-start-button"
 						>
 							{ migrationStatus?.status === 'completed' ? __( 'Restart Migration', 'godam' ) : __( 'Start Migration', 'godam' ) }
 						</Button>

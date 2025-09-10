@@ -230,6 +230,7 @@ class GoDAM_Video_Gallery {
 				data-custom-date-start="' . esc_attr( $atts['custom_date_start'] ) . '"
 				data-custom-date-end="' . esc_attr( $atts['custom_date_end'] ) . '"
 				data-engagements="' . esc_attr( $atts['engagements'] ) . '"
+				data-testid="godam-video-gallery"
 			>';
 			foreach ( $query->posts as $video ) {
 				// Add action before each video item.
@@ -265,8 +266,8 @@ class GoDAM_Video_Gallery {
 					}
 				}
 			
-				echo '<div class="godam-video-item">';
-				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '">';
+				echo '<div class="godam-video-item" data-testid="godam-video-item">';
+				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '" data-testid="godam-video-thumbnail">';
 				echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
 				if ( $duration ) {
 					echo '<span class="godam-video-duration">' . esc_html( $duration ) . '</span>';
@@ -302,7 +303,7 @@ class GoDAM_Video_Gallery {
 			}
 
 			echo '
-			<div id="godam-video-modal" class="godam-modal hidden">
+			<div id="godam-video-modal" class="godam-modal hidden" data-testid="godam-video-modal">
 				<div class="godam-modal-overlay"></div>
 				<div class="godam-modal-content">
 					<div class="easydam-video-container animate-video-loading"></div>

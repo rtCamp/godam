@@ -37,18 +37,19 @@ const BookmarkTab = ( { handleContextMenu } ) => {
 
 	if ( bookmarkCount === 0 ) {
 		return (
-			<div className="godam-folder-tab godam-folder-tab--empty">
-				<Panel className="godam-folder-tab-panel">
+			<div className="godam-folder-tab godam-folder-tab--empty" data-testid="godam-bookmark-tab-empty">
+				<Panel className="godam-folder-tab-panel" data-testid="godam-bookmark-tab-empty-panel">
 					<PanelBody
-						title={ <><span className="folder-tab__count">{ bookmarkCount }</span> { __( 'Bookmarks', 'godam' ) } </> }
+						title={ <><span className="folder-tab__count" data-testid="godam-bookmark-tab-count">{ bookmarkCount }</span> { __( 'Bookmarks', 'godam' ) } </> }
 						initialOpen={ false }
 						icon={ starFilled }
+						data-testid="godam-bookmark-tab-empty-panel-body"
 					>
-						<div className="godam-folder-tab__empty-state">
-							<div className="godam-folder-tab__empty-icon">
+						<div className="godam-folder-tab__empty-state" data-testid="godam-bookmark-tab-empty-state">
+							<div className="godam-folder-tab__empty-icon" data-testid="godam-bookmark-tab-empty-icon">
 								{ starFilled }
 							</div>
-							<h4>{ __( 'No bookmarks yet', 'godam' ) }</h4>
+							<h4 data-testid="godam-bookmark-tab-empty-title">{ __( 'No bookmarks yet', 'godam' ) }</h4>
 						</div>
 					</PanelBody>
 				</Panel>
@@ -57,14 +58,15 @@ const BookmarkTab = ( { handleContextMenu } ) => {
 	}
 
 	return (
-		<div className="godam-folder-tab">
-			<Panel className="godam-folder-tab-panel">
+		<div className="godam-folder-tab" data-testid="godam-bookmark-tab">
+			<Panel className="godam-folder-tab-panel" data-testid="godam-bookmark-tab-panel">
 				<PanelBody
-					title={ <><span className="folder-tab__count">{ bookmarkCount }</span> { __( 'Bookmarks', 'godam' ) } </> }
+					title={ <><span className="folder-tab__count" data-testid="godam-bookmark-tab-count">{ bookmarkCount }</span> { __( 'Bookmarks', 'godam' ) } </> }
 					initialOpen={ false }
 					icon={ starFilled }
+					data-testid="godam-bookmark-tab-panel-body"
 				>
-					<div className="godam-folder-tab__list">
+					<div className="godam-folder-tab__list" data-testid="godam-bookmark-tab-list">
 						{ bookmarks.map( ( bookmark, index ) => (
 							<TabItem
 								item={ bookmark }
@@ -72,6 +74,7 @@ const BookmarkTab = ( { handleContextMenu } ) => {
 								index={ index }
 								totalCount={ bookmarkCount }
 								onContextMenu={ ( e, id ) => handleContextMenu( e, id, bookmark ) }
+								data-testid={ `godam-bookmark-tab-item-${ bookmark?.id || index }` }
 							/>
 						) ) }
 					</div>

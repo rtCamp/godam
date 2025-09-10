@@ -83,6 +83,7 @@ const RenameModal = () => {
 				title={ __( 'Rename folder', 'godam' ) }
 				onRequestClose={ () => dispatch( closeModal( 'rename' ) ) }
 				className="modal__container"
+				data-testid="godam-rename-modal"
 			>
 				<TextControl
 					label={ __( 'Folder Name', 'godam' ) }
@@ -90,20 +91,23 @@ const RenameModal = () => {
 					onChange={ ( value ) => setFolderName( value ) }
 					ref={ inputRef }
 					onKeyDown={ handleKeyDown }
+					data-testid="godam-rename-folder-input"
 				/>
 
-				<div className="modal__button-group">
+				<div className="modal__button-group" data-testid="godam-rename-modal-buttons">
 					<Button
 						isBusy={ isLoading }
 						text={ __( 'Rename', 'godam' ) }
 						variant="primary"
 						onClick={ () => handleSubmit() }
 						disabled={ ! folderName }
+						data-testid="godam-rename-folder-button"
 					/>
 					<Button
 						text={ __( 'Cancel', 'godam' ) }
 						onClick={ () => dispatch( closeModal( 'rename' ) ) }
 						isDestructive
+						data-testid="godam-rename-cancel-button"
 					/>
 				</div>
 			</Modal>

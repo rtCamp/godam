@@ -31,20 +31,20 @@ if ( ! $video_attachment || 'attachment' !== $video_attachment->post_type ) {
 }
 ?>
 
-	<header class="godam-video-preview--container">
-		<h1 class="godam-video-preview--title">
+	<header class="godam-video-preview--container" data-testid="godam-video-preview-header">
+		<h1 class="godam-video-preview--title" data-testid="godam-video-preview-title">
 			<strong><?php esc_html_e( 'Video Preview: ', 'godam' ); ?></strong>
 			<?php echo esc_html( get_the_title( $video_id ) ); ?>
 		</h1>
 	</header>
 
-	<div class="godam-video-preview--container">
-		<div class="godam-video-preview--notice">
+	<div class="godam-video-preview--container" data-testid="godam-video-preview-notice-container">
+		<div class="godam-video-preview--notice" data-testid="godam-video-preview-notice">
 			<?php esc_html_e( 'Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles.', 'godam' ); ?>
 		</div>
 	</div>
 
-	<div class="godam-video-preview">
+	<div class="godam-video-preview" data-testid="godam-video-preview-player">
 		<?php echo do_shortcode( '[godam_video id="' . $video_id . '"]' ); ?>
 	</div>
 

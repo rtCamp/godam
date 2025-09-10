@@ -168,13 +168,14 @@ const SearchBar = () => {
 	};
 
 	return (
-		<div className="folder-search-bar-container" ref={ inputRef }>
+		<div className="folder-search-bar-container" ref={ inputRef } data-testid="godam-search-bar-container">
 			<SearchControl
 				placeholder={ __( 'Search folders…', 'godam' ) }
 				onChange={ handleSearchChange }
 				className="search-input"
 				value={ searchTerm }
 				__nextHasNoMarginBottom
+				data-testid="godam-search-input"
 			/>
 			{ showPopover && (
 				<Popover
@@ -184,31 +185,34 @@ const SearchBar = () => {
 					focusOnMount={ false }
 					placement="bottom-start"
 					offset={ 8 }
+					data-testid="godam-search-popover"
 				>
-					<div className="search-results-popover-content" ref={ popoverRef }>
+					<div className="search-results-popover-content" ref={ popoverRef } data-testid="godam-search-results-content">
 						{ ! isFetching && ! isError && searchResults.length === 0 && debouncedSearchTerm.length > 0 && (
-							<div className="search-no-results">{ __( 'No folders found.', 'godam' ) }</div>
+							<div className="search-no-results" data-testid="godam-search-no-results">{ __( 'No folders found.', 'godam' ) }</div>
 						) }
 						{ ! isFetching && debouncedSearchTerm.length > 0 && searchResults.length > 0 && ! isDebouncing && (
-							<div className="search-results-list">
-								<ul>
+							<div className="search-results-list" data-testid="godam-search-results-list">
+								<ul data-testid="godam-search-results-ul">
 									{ searchResults.map( ( folder ) => (
-										<li key={ folder.id }>
+										<li key={ folder.id } data-testid={ `godam-search-result-item-${ folder.id }` }>
 											<Button
 												className="search-result-item"
 												onClick={ () => handleFolderSelect( folder.id ) }
+												data-testid={ `godam-search-result-button-${ folder.id }` }
 											>
 												{ folder.name }
 											</Button>
 										</li>
 									) ) }
 									{ currentPage < totalPages && (
-										<div className="search-load-more">
+										<div className="search-load-more" data-testid="godam-search-load-more">
 											<Button
 												onClick={ handleLoadMore }
 												isBusy={ isFetching && currentPage > 1 }
 												disabled={ isFetching }
 												variant="secondary"
+												data-testid="godam-search-load-more-button"
 											>
 												{ __( 'Load More', 'godam' ) }
 											</Button>
@@ -217,8 +221,8 @@ const SearchBar = () => {
 								</ul>
 							</div>
 						) }
-						{ isFetching && <div className="search-loading">{ currentPage <= 1 ? __( 'Searching…', 'godam' ) : __( 'Loading more results…', 'godam' ) }</div> }
-						{ ! isFetching && isError && <div className="search-error">{ __( 'Error fetching results.', 'godam' ) }</div> }
+						{ isFetching && <div className="search-loading" data-testid="godam-search-loading">{ currentPage <= 1 ? __( 'Searching…', 'godam' ) : __( 'Loading more results…', 'godam' ) }</div> }
+						{ ! isFetching && isError && <div className="search-error" data-testid="godam-search-error">{ __( 'Error fetching results.', 'godam' ) }</div> }
 					</div>
 				</Popover>
 			) }

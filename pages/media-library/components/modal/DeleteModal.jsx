@@ -91,23 +91,24 @@ const DeleteModal = () => {
 				title={ __( 'Confirm Delete', 'godam' ) }
 				onRequestClose={ () => dispatch( closeModal( 'delete' ) ) }
 				className="modal__container"
+				data-testid="godam-delete-modal"
 			>
-				<p className="modal__description">
+				<p className="modal__description" data-testid="godam-delete-modal-description">
 					{ isMultiSelecting ? (
 						<>
-							{ __( 'Deleting', 'godam' ) } <span className="modal__highlight">{ __( 'these', 'godam' ) } { multiSelectedFolderIds && multiSelectedFolderIds.length } { __( 'folders', 'godam' ) }</span> { __( 'will remove them and all its subfolders, but', 'godam' ) } <span className="modal__highlight">{ __( 'media associated with them will not be deleted', 'godam' ) }</span>.
+							{ __( 'Deleting', 'godam' ) } <span className="modal__highlight" data-testid="godam-delete-modal-folders-count">{ __( 'these', 'godam' ) } { multiSelectedFolderIds && multiSelectedFolderIds.length } { __( 'folders', 'godam' ) }</span> { __( 'will remove them and all its subfolders, but', 'godam' ) } <span className="modal__highlight" data-testid="godam-delete-modal-media-warning">{ __( 'media associated with them will not be deleted', 'godam' ) }</span>.
 						</>
 					) : (
 						<>
-							{ __( 'Deleting the folder', 'godam' ) } <span className="modal__highlight">{ selectedFolder.name }</span> { __( 'will remove it and all its subfolders, but', 'godam' ) } <span className="modal__highlight">{ __( 'media associated with it will not be deleted', 'godam' ) }</span>.
+							{ __( 'Deleting the folder', 'godam' ) } <span className="modal__highlight" data-testid="godam-delete-modal-folder-name">{ selectedFolder.name }</span> { __( 'will remove it and all its subfolders, but', 'godam' ) } <span className="modal__highlight" data-testid="godam-delete-modal-media-warning">{ __( 'media associated with it will not be deleted', 'godam' ) }</span>.
 						</>
 					) }
 				</p>
-				<p className="modal__warning">
+				<p className="modal__warning" data-testid="godam-delete-modal-warning">
 					{ __( 'Are you sure you want to proceed? This action cannot be undone.', 'godam' ) }
 				</p>
 
-				<div className="modal__button-group">
+				<div className="modal__button-group" data-testid="godam-delete-modal-buttons">
 					<Button
 						isBusy={ isLoading }
 						ref={ ref }
@@ -116,11 +117,13 @@ const DeleteModal = () => {
 						onClick={ () => handleSubmit() }
 						isDestructive
 						onKeyDown={ handleKeyDown }
+						data-testid="godam-delete-folder-button"
 					/>
 					<Button
 						text={ __( 'Cancel', 'godam' ) }
 						onClick={ () => dispatch( closeModal( 'delete' ) ) }
 						isDestructive
+						data-testid="godam-delete-cancel-button"
 					/>
 				</div>
 			</Modal>

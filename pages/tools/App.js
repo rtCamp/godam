@@ -43,15 +43,16 @@ const App = () => {
 	const activeTabData = TABS.find( ( tab ) => tab.id === activeTab );
 
 	return (
-		<div id="godam-tools">
+		<div id="godam-tools" data-testid="godam-tools-container">
 			<GodamHeader />
 
-			<div className="godam-tools__hamburger-container">
+			<div className="godam-tools__hamburger-container" data-testid="godam-tools-hamburger-container">
 				<button
 					className="godam-tools__hamburger"
 					onClick={ () => setIsSidebarOpen( ! isSidebarOpen ) }
 					title="Open Menu"
 					aria-label="Open Menu"
+					data-testid="godam-tools-hamburger-button"
 				>
 					<Icon icon={ alignJustify } className="open-btn" />
 				</button>
@@ -68,16 +69,18 @@ const App = () => {
 							setIsSidebarOpen( false );
 						}
 					} }
+					data-testid="godam-tools-overlay"
 				/>
 			) }
 
-			<div className="godam-tools__container">
-				<nav className={ `godam-tools__container__tabs ${ isSidebarOpen ? 'open' : '' }` }>
+			<div className="godam-tools__container" data-testid="godam-tools-main-container">
+				<nav className={ `godam-tools__container__tabs ${ isSidebarOpen ? 'open' : '' }` } data-testid="godam-tools-sidebar-nav">
 					<button
 						className={ `godam-tools__close-btn ${ isSidebarOpen ? 'open' : '' }` }
 						onClick={ () => setIsSidebarOpen( false ) }
 						title="Close Menu"
 						aria-label="Close Menu"
+						data-testid="godam-tools-close-button"
 					>
 						<Icon icon={ close } />
 					</button>
@@ -91,13 +94,14 @@ const App = () => {
 								setActiveTab( id );
 								setIsSidebarOpen( false );
 							} }
+							data-testid={ `godam-tools-tab-${ id }` }
 						>
 							<Icon icon={ icon } />
 							{ label }
 						</a>
 					) ) }
 				</nav>
-				<div id="main-content" className="godam-tools__container__content">
+				<div id="main-content" className="godam-tools__container__content" data-testid="godam-tools-main-content">
 					{ activeTabData && <activeTabData.component /> }
 				</div>
 			</div>
