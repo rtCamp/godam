@@ -201,6 +201,7 @@ class GoDAM_Product_Gallery {
 			// Logic for "random" argument.
 			if ( strtolower( $atts['product'] ) === 'random' ) {
 				// Fetch all product IDs that have video meta and pick 5 random ones.
+				// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
 				$all_product_ids = get_posts(
 					array(
 						'post_type'      => 'product',
@@ -249,6 +250,7 @@ class GoDAM_Product_Gallery {
 		}
 
 		// 6. Fetch videos.
+		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
 		$video_posts = get_posts( $args );
 
 		// Allow developers to modify fetched video posts before rendering.
@@ -599,11 +601,11 @@ class GoDAM_Product_Gallery {
 		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( $_GET['_wpnonce'] ) : '';
 
 		if ( ! wp_verify_nonce( $nonce, 'godam_get_product_html' ) ) {
-			wp_send_json_error( 'Invalid request.' );
+			wp_send_json_error( 'Invalid request.', 400 );
 		}
 
 		if ( ! isset( $_GET['product_id'] ) ) {
-			wp_send_json_error( 'Missing product ID' );
+			wp_send_json_error( 'Missing product ID', 400 );
 		}
 	
 		$product_id = absint( $_GET['product_id'] );
@@ -625,6 +627,8 @@ class GoDAM_Product_Gallery {
 		setup_postdata( $post );
 
 		$product = wc_get_product( $product_id );
+
+		$product_images = array();
 
 		// Get the main product image first.
 		$main_image_id = $product->get_image_id();

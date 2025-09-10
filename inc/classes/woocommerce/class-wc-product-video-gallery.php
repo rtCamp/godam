@@ -361,6 +361,7 @@ class WC_Product_Video_Gallery {
 		}
 
 		// Remove this product‑ID from any attachment **no longer** in gallery.
+		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
 		$prev_ids = get_posts(
 			array(
 				'post_type'      => 'attachment',

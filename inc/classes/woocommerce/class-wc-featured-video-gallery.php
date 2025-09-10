@@ -326,7 +326,15 @@ class WC_Featured_Video_Gallery {
 		// Get gallery images for current product.
 		$gallery     = get_post_meta( $product_id, '_product_image_gallery', true );
 		$gallery_ids = $gallery ? explode( ',', $gallery ) : array();
-
+		
+		/**
+		 * Parse each alt label to extract its trailing numeric index, convert it to the
+		 * zero-based gallery position (index - 2), then:
+		 * - Append the corresponding gallery attachment ID to $video_ids (when it exists).
+		 * - Append the resolved video thumbnail URL to $video_thumbnails, falling back to
+		 *   self::FALLBACK_THUMBNAIL when no custom thumbnail is set.
+		 * Sanitizes values via absint() and esc_url().
+		 */
 		foreach ( $alts as $alt ) {
 			// Extract numeric index from alt.
 			if ( preg_match( '/\d+$/', $alt, $matches ) ) {

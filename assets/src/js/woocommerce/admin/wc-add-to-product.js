@@ -14,10 +14,8 @@ import {
 	TextControl,
 	Button,
 	Spinner,
-	Tooltip,
-	Icon,
 } from '@wordpress/components';
-import { info } from '@wordpress/icons';
+
 import { __, sprintf } from '@wordpress/i18n';
 import { useRef, useEffect } from 'react';
 
@@ -259,7 +257,11 @@ jQuery( document ).ready( function( $ ) {
 			}, [ selected ] );
 
 			return (
-				<Modal title={ __( 'Attach video to other products', 'godam' ) } onRequestClose={ close } className="rt-godam-modal godam-video-picker-modal wc-godam-product-admin" style={ { top: '18%' } }>
+				<Modal
+					title={ __( 'Attach video to other products', 'godam' ) }
+					onRequestClose={ close } className="rt-godam-modal godam-video-picker-modal wc-godam-product-admin"
+					style={ { top: '18%' } }
+				>
 					<div style={ { display: 'flex' } }>
 
 						{ /* LEFT SIDE - Products */ }

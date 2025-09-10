@@ -481,10 +481,11 @@ class WC extends Base {
 			$child_prices = array_filter( $child_prices );
 			$min_price    = count( $child_prices ) ? min( $child_prices ) : 0;
 		
-			// Format name and price.
-			$name_display  = $product->get_name() . " ({$child_count} items)";
-			$price_display = $min_price > 0 ? 'From: ' . wc_price( $min_price ) . ' + more' : 'N/A';
-
+			/* translators: %s: formatted number of items */
+			$items_label  = sprintf( _n( '%s item', '%s items', $child_count, 'godam' ), number_format_i18n( $child_count ) );
+			$name_display = $product->get_name() . ' (' . $items_label . ')';
+			/* translators: %s: formatted minimum price */
+			$price_display = $min_price > 0 ? sprintf( __( 'From: %s + more', 'godam' ), wc_price( $min_price ) ) : __( 'N/A', 'godam' );
 		} else {
 
 			$price_display = wc_price( $product->get_price() );

@@ -136,7 +136,7 @@ const wcVideoCarousel = {
 
 	hideLoading() {
 		const rtgodamProductVideoGallerySlider = document.querySelector( '.rtgodam-product-video-gallery-slider' );
-		rtgodamProductVideoGallerySlider.classList.remove( 'rtgodam-product-video-gallery-slider-loading' );
+		rtgodamProductVideoGallerySlider?.classList.remove( 'rtgodam-product-video-gallery-slider-loading' );
 	},
 
 	/**
