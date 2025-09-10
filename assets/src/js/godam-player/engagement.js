@@ -831,7 +831,6 @@ function Comment( props ) {
 			comment_id: commentId,
 			delete_type: deleteType,
 		};
-
 		apiFetch.use( apiFetch.createNonceMiddleware( nonce ) );
 		const result = await apiFetch( {
 			path: addQueryArgs( '/godam/v1/engagement/user-delete-comment' ),

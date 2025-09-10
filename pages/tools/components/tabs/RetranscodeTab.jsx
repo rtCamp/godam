@@ -32,6 +32,7 @@ const RetranscodeTab = () => {
 	const [ selectedIds, setSelectedIds ] = useState( null );
 	const [ successCount, setSuccessCount ] = useState( 0 );
 	const [ failureCount, setFailureCount ] = useState( 0 );
+	const [ virtualMediaCount, setVirtualMediaCount ] = useState( 0 );
 	const [ totalMediaCount, setTotalMediaCount ] = useState( 0 );
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
@@ -130,6 +131,7 @@ const RetranscodeTab = () => {
 			abortRef.current = false;
 			setSuccessCount( 0 );
 			setFailureCount( 0 );
+			setVirtualMediaCount( 0 );
 
 			for ( let i = 0; i < attachments.length; i++ ) {
 				// Check if abort was requested.
@@ -154,14 +156,22 @@ const RetranscodeTab = () => {
 					const data = res.data;
 
 					if ( data?.message ) {
-						// Log the success message
+						// Log the message
 						setLogs( ( prevLogs ) => [ ...prevLogs, data.message ] );
-						setSuccessCount( ( prevCount ) => prevCount + 1 );
+
+						// Handle different response types
+						if ( data.skipped === true ) {
+							if ( data.reason === 'virtual_media' || data.reason === 'migrated_vimeo' ) {
+								setVirtualMediaCount( ( prevCount ) => prevCount + 1 );
+							}
+						} else if ( data.skipped === false && data.sent === true ) {
+							setSuccessCount( ( prevCount ) => prevCount + 1 );
+						}
 					}
 				} catch ( err ) {
 					const data = err.response.data;
 					if ( data?.message ) {
-						// Log the success message
+						// Log the error message
 						setLogs( ( prevLogs ) => [ ...prevLogs, data.message ] );
 					}
 					setFailureCount( ( prevCount ) => prevCount + 1 );
@@ -189,6 +199,7 @@ const RetranscodeTab = () => {
 		setDone( false );
 		setForceRetranscode( false );
 		setSelectedIds( null );
+		setVirtualMediaCount( 0 );
 		abortRef.current = false;
 
 		// Reset the URL to remove media_ids, goback and nonce
@@ -210,33 +221,64 @@ const RetranscodeTab = () => {
 		// Show notice if retranscoding is done or aborted with counts
 		if ( done || aborted ) {
 			let message = '';
+			let noticeType = 'success';
+
+			// Handle virtual media warning first
+			if ( virtualMediaCount > 0 ) {
+				message = sprintf(
+					// translators: %d is the number of virtual media files found.
+					__( '%d virtual media file(s) found, which need to be retranscoded on GoDAM Central.', 'godam' ),
+					virtualMediaCount,
+				);
+			}
+
+			// Add success message if there were actual retranscoding requests
 			if ( successCount > 0 ) {
-				message += sprintf(
+				const successMessage = sprintf(
 					// translators: %d is the number of media files retranscoded.
 					__( 'Successfully sent %d media file(s) for retranscoding.', 'godam' ),
 					successCount,
 				);
-			}
-			if ( failureCount > 0 ) {
+
 				if ( message ) {
-					message += ' ';
+					message += ' ' + successMessage;
+				} else {
+					message = successMessage;
 				}
-				message += sprintf(
+			}
+
+			// Add failure message if there were failures
+			if ( failureCount > 0 ) {
+				const failureMessage = sprintf(
 					// translators: %d is the number of media files that failed to retranscode.
 					__( 'Failed to send %d media file(s) for retranscoding.', 'godam' ),
 					failureCount,
 				);
+
+				if ( message ) {
+					message += ' ' + failureMessage;
+				} else {
+					message = failureMessage;
+				}
 			}
 
+			// If no specific messages, show default
 			if ( ! message ) {
 				message = __( 'Operation completed without any media files to retranscode.', 'godam' );
 			}
 
-			const noticeType = successCount > 0 && failureCount === 0 ? 'success' : 'error';
+			// Determine notice type based on what happened
+			if ( virtualMediaCount > 0 && failureCount === 0 ) {
+				noticeType = 'warning';
+			} else if ( successCount > 0 && failureCount === 0 ) {
+				noticeType = 'success';
+			} else if ( failureCount > 0 ) {
+				noticeType = 'error';
+			}
 
 			showNotice( message, noticeType );
 		}
-	}, [ done, aborted, successCount, failureCount ] );
+	}, [ done, aborted, successCount, failureCount, virtualMediaCount ] );
 
 	return (
 		<>
