@@ -32,7 +32,7 @@ class MenuButtonHoverManager {
 				this.attachMenuListeners( btnEl, menuEl );
 			} else {
 				const observer = new MutationObserver( () => {
-					const observedMenuEl = btnEl.querySelector( '.vjs-menu' ); // renamed variable here
+					const observedMenuEl = btnEl.querySelector( '.vjs-menu' );
 					if ( observedMenuEl ) {
 						this.attachMenuListeners( btnEl, observedMenuEl );
 						observer.disconnect();
