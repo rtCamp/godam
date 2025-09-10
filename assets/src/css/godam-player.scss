@@ -1069,6 +1069,19 @@ body.godam-share-modal-open {
 	background-color: rgba(43, 51, 63, 0.9);
 }
 
+.vjs-menu {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.vjs-menu.vjs-lock-showing {
+  opacity: 1;
+}
+
+.vjs-menu.vjs-closing {
+  opacity: 0.5; /* mid-state to hint closing */
+}
+
 .vjs-menu .vjs-menu-content li {
 	margin-left: 0;
 }

@@ -23,17 +23,23 @@ class MenuButtonHoverManager {
 			}
 
 			const btnEl = button.el();
+			if ( ! btnEl ) {
+				return;
+			}
 
-			// Observe for insertion of .vjs-menu
-			const observer = new MutationObserver( () => {
-				const menuEl = btnEl.querySelector( '.vjs-menu' );
-				if ( menuEl ) {
-					this.attachMenuListeners( btnEl, menuEl );
-					observer.disconnect(); // stop after found
-				}
-			} );
-
-			observer.observe( btnEl, { childList: true, subtree: true } );
+			const menuEl = btnEl.querySelector( '.vjs-menu' );
+			if ( menuEl ) {
+				this.attachMenuListeners( btnEl, menuEl );
+			} else {
+				const observer = new MutationObserver( () => {
+					const observedMenuEl = btnEl.querySelector( '.vjs-menu' ); // renamed variable here
+					if ( observedMenuEl ) {
+						this.attachMenuListeners( btnEl, observedMenuEl );
+						observer.disconnect();
+					}
+				} );
+				observer.observe( btnEl, { childList: true, subtree: true } );
+			}
 		} );
 	}
 
@@ -49,6 +55,7 @@ class MenuButtonHoverManager {
 
 		btnEl.addEventListener( 'mouseenter', () => {
 			overBtn = true;
+			menuEl.style.display = 'block';
 			menuEl.classList.add( 'vjs-lock-showing' );
 			this.closeOtherMenus( menuEl );
 		} );
@@ -60,6 +67,7 @@ class MenuButtonHoverManager {
 
 		menuEl.addEventListener( 'mouseenter', () => {
 			overMenu = true;
+			menuEl.style.display = 'block';
 			menuEl.classList.add( 'vjs-lock-showing' );
 			this.closeOtherMenus( menuEl );
 		} );
@@ -71,8 +79,24 @@ class MenuButtonHoverManager {
 	}
 
 	hideMenu( menuEl ) {
-		menuEl.style.display = '';
+		// Start fade-out
+		menuEl.classList.add( 'vjs-closing' );
 		menuEl.classList.remove( 'vjs-lock-showing' );
+
+		// Wait for transition to finish, then reset display
+		setTimeout( () => {
+			if ( menuEl.classList.contains( 'vjs-closing' ) ) {
+				menuEl.classList.remove( 'vjs-closing' );
+				// Now it will animate from 0.5 → 0
+				const onTransitionEnd = () => {
+					if ( ! menuEl.classList.contains( 'vjs-lock-showing' ) ) {
+						menuEl.style.display = '';
+					}
+					menuEl.removeEventListener( 'transitionend', onTransitionEnd );
+				};
+				menuEl.addEventListener( 'transitionend', onTransitionEnd );
+			}
+		}, 300 );
 	}
 
 	// Hide other menus when entering a new one
