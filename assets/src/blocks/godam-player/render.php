@@ -24,7 +24,9 @@ if ( $post && $post instanceof WP_Post ) {
 	 * Set ID attribute if not already set.
 	 */
 	if ( ! empty( $query_loop_attachment_id ) ) {
-		$attributes['id'] = $query_loop_attachment_id;
+		$attributes['id']              = $query_loop_attachment_id;
+		$attributes['showShareButton'] = true;
+		$attributes['engagements']     = true;
 	}
 }
 
