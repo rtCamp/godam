@@ -1620,14 +1620,14 @@ body.godam-share-modal-open {
 			}
 		}
 	}
+}
 
-	.godam-show-controls-on-hover {
+.godam-show-controls-on-hover {
 
-		&:hover {
+	&:hover {
 
-			.vjs-control-bar {
-				display: flex !important;
-			}
+		.vjs-control-bar {
+			display: flex !important;
 		}
 	}
 }
