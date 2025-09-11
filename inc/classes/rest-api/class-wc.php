@@ -95,7 +95,7 @@ class WC extends Base {
 						},
 						'args'                => array(
 							'id' => array(
-								'description'       => 'Attachment (video) ID.',
+								'description'       => __( 'Attachment (video) ID.', 'godam' ),
 								'type'              => 'integer',
 								'required'          => true,
 								'sanitize_callback' => 'absint',
@@ -572,10 +572,10 @@ class WC extends Base {
 		$url           = esc_url_raw( $request->get_param( 'url' ) );
 
 		if ( ! $product_id || ! $attachment_id || ! $url ) {
-			return new \WP_Error( 'missing_params', 'Required parameters missing.', array( 'status' => 400 ) );
+			return new \WP_Error( 'missing_params', __( 'Required parameters missing.', 'godam' ), array( 'status' => 400 ) );
 		}
 
-		/* ---- 1. update product meta ---- */
+		/* ---- 1. update product's video and video_ids meta ---- */
 		$ids  = get_post_meta( $product_id, '_rtgodam_product_video_gallery_ids', true ) ?: array();
 		$urls = get_post_meta( $product_id, '_rtgodam_product_video_gallery', true ) ?: array();
 
@@ -585,6 +585,10 @@ class WC extends Base {
 
 			/**
 			 * Action before video meta is saved.
+			 *
+			 * @param int    $product_id    Product ID.
+			 * @param int    $attachment_id Attachment (video) ID.
+			 * @param string $url           Video URL.
 			 */
 			do_action( 'rtgodam_before_link_video', $product_id, $attachment_id, $url );
 
@@ -593,11 +597,15 @@ class WC extends Base {
 
 			/**
 			 * Action after video is successfully linked to product.
+			 * 
+			 * @param int    $product_id    Product ID.
+			 * @param int    $attachment_id Attachment (video) ID.
+			 * @param string $url           Video URL.
 			 */
 			do_action( 'rtgodam_after_link_video', $product_id, $attachment_id, $url );
 		}
 
-		/* ---- 2. update attachment meta ---- */
+		/* ---- 2. update attachment's product parent meta ---- */
 		$parent_meta_key = '_video_parent_product_id';
 		
 		foreach ( $ids as $attachment_id ) {
@@ -691,7 +699,7 @@ class WC extends Base {
 		$attachment_id = (int) $request->get_param( 'attachment_id' );
 
 		if ( ! $product_id || ! $attachment_id ) {
-			return new \WP_Error( 'missing_params', 'Required parameters missing.', array( 'status' => 400 ) );
+			return new \WP_Error( 'missing_params', __( 'Required parameters missing.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		/**
@@ -771,7 +779,7 @@ class WC extends Base {
 		$meta_value = sanitize_text_field( $request->get_param( 'meta_value' ) );
 
 		if ( empty( $product_id ) || empty( $meta_key ) ) {
-			return new \WP_Error( 'missing_params', 'Product ID and meta key are required.', array( 'status' => 400 ) );
+			return new \WP_Error( 'missing_params', __( 'Product ID and meta key are required.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		/**
@@ -835,7 +843,7 @@ class WC extends Base {
 		do_action( 'godam_before_get_product_meta', $product_id, $attachment_id );
 	
 		if ( empty( $product_id ) || empty( $attachment_id ) ) {
-			return new \WP_Error( 'missing_params', 'Product ID and meta key are required.', array( 'status' => 400 ) );
+			return new \WP_Error( 'missing_params', __( 'Product ID and meta key are required.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		$meta_key = 'godam_product_timestamp_meta_' . $attachment_id;
@@ -886,7 +894,7 @@ class WC extends Base {
 				$child_count = count( $child_ids );
 			
 				// Format name.
-				$name_display = $product->get_name() . " ({$child_count} items)";
+				$name_display = $product->get_name() . ' (' . $child_count . ' ' . _n( 'item', 'items', $child_count, 'godam' ) . ')';
 			}
 
 			if ( $product ) {

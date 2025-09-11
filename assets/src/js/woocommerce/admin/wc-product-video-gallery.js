@@ -130,6 +130,8 @@ jQuery( document ).ready( function( $ ) {
 								} )
 								.catch( () => {
 									// If endpoint fails just leave the default label & an empty list.
+									// eslint-disable-next-line no-console
+									console.warn( 'Could not fetch count of ptofuct for ID:' + data.id );
 								} );
 						} )
 						.catch( () => {

@@ -28,7 +28,7 @@ class WC_Product_Video_Gallery {
 		add_action( 'save_post_product', array( $this, 'save_video_gallery' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
-		add_action( 'woocommerce_single_product_summary', array( $this, 'add_video_slider_to_single_product' ), priority: 70 );
+		add_action( 'woocommerce_single_product_summary', array( $this, 'add_video_slider_to_single_product' ), 70 );
 		add_action( 'delete_attachment', array( $this, 'on_attachment_deleted' ) );
 		add_filter( 'get_user_option_meta-box-order_product', array( $this, 'place_below_wc_gallery' ) );
 	}

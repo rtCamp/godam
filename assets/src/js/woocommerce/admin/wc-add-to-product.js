@@ -15,7 +15,6 @@ import {
 	Button,
 	Spinner,
 } from '@wordpress/components';
-
 import { __, sprintf } from '@wordpress/i18n';
 import { useRef, useEffect } from 'react';
 
@@ -184,7 +183,7 @@ jQuery( document ).ready( function( $ ) {
 			}, [ selected ] );
 
 			/* Fetches GODAM video for display */
-			wp.element.useEffect( () => {
+			useEffect( () => {
 				const fetchVideo = async () => {
 					try {
 						const modalEl = document.querySelector( '.godam-video-picker-modal' );
@@ -239,7 +238,7 @@ jQuery( document ).ready( function( $ ) {
 			}, [ attachmentId ] );
 
 			/* ----- Fetch timestamps when selected products are loaded ----- */
-			wp.element.useEffect( () => {
+			useEffect( () => {
 				selected.forEach( ( p ) => {
 					const input = document.getElementById( `timestamp_${ p.id }` );
 					const attachment = attachmentId;
@@ -259,7 +258,8 @@ jQuery( document ).ready( function( $ ) {
 			return (
 				<Modal
 					title={ __( 'Attach video to other products', 'godam' ) }
-					onRequestClose={ close } className="rt-godam-modal godam-video-picker-modal wc-godam-product-admin"
+					onRequestClose={ close }
+					className="rt-godam-modal godam-video-picker-modal wc-godam-product-admin"
 					style={ { top: '18%' } }
 				>
 					<div style={ { display: 'flex' } }>

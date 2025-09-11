@@ -85,12 +85,10 @@ export function initMinicartAndCtaDropdown() {
 						}
 					}
 
-					const computedStyles = window.getComputedStyle( cloned );
+					const computedStyles = window.getComputedStyle( originalDropdown );
 
-					const parsePx = ( val ) => parseFloat( val ) || 0;
-
-					const paddingTop = parsePx( computedStyles.paddingTop );
-					const paddingBottom = parsePx( computedStyles.paddingBottom );
+					const paddingTop = parseFloat( computedStyles.paddingTop ) || 0;
+					const paddingBottom = parseFloat( computedStyles.paddingBottom ) || 0;
 
 					const extraHeight = paddingTop + paddingBottom;
 

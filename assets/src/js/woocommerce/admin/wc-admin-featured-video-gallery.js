@@ -3,9 +3,12 @@
 // eslint-disable-next-line eslint-comments/disable-enable-pair
 /* eslint-disable no-console */
 
-( function( $, i18n ) {
-	const { __ } = i18n;
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
 
+( function( $ ) {
 	$( document ).ready( function() {
 		const $galleryWrapper = $( '#product_images_container' );
 		const $galleryList = $galleryWrapper.find( 'ul.product_images' );
@@ -88,4 +91,4 @@
 			updateProductGalleryInput();
 		} );
 	} );
-}( jQuery, wp.i18n ) );
+}( jQuery ) );
