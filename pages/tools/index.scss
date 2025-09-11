@@ -107,6 +107,7 @@ $tools-page-breakpoint: 782px;
 			gap: 2em;
 			position: relative;
 			background-color: #f0f0f1;
+			margin: 0 auto;
 
 			@media (max-width: $tools-page-breakpoint) {
 				margin: 20px auto;
