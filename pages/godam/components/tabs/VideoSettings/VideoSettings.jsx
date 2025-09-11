@@ -26,6 +26,7 @@ import APISettings from './APISettings.jsx';
 import VideoCompressQuality from './VideoCompressQuality.jsx';
 import VideoThumbnails from './VideoThumbnails.jsx';
 import VideoWatermark from './VideoWatermark.jsx';
+import VideoEngagement from './VideoEngagement.jsx';
 
 /**
  * Styles
@@ -125,6 +126,7 @@ const VideoSettings = () => {
 					<VideoCompressQuality handleSettingChange={ handleSettingChange } />
 					<VideoThumbnails handleSettingChange={ handleSettingChange } />
 					<VideoWatermark handleSettingChange={ handleSettingChange } />
+					<VideoEngagement handleSettingChange={ handleSettingChange } />
 				</>
 			) }
 
