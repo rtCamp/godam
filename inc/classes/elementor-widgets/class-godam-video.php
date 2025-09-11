@@ -59,7 +59,7 @@ class GoDAM_Video extends Base {
 		$this->add_control(
 			'text_track_settings_popover_toggle',
 			array(
-				'label'        => esc_html__( 'Text tracks', 'godam' ),
+				'label'        => esc_html__( 'Add Video Caption', 'godam' ),
 				'type'         => Controls_Manager::POPOVER_TOGGLE,
 				'label_off'    => esc_html__( 'Default', 'godam' ),
 				'label_on'     => esc_html__( 'Custom', 'godam' ),
