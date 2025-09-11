@@ -350,16 +350,36 @@ function rtgodam_is_api_key_valid() {
 }
 
 /**
+ * Checks if the given filename is an audio file based on its name.
+ * 
+ * Note: The files created by uppy webcam, screen capture, and audio plugin are in same format so we are checking the filename to determine if it's an audio file.
+ *
+ * @since n.e.x.t
+ *
+ * @param string $filename The name of the file to check.
+ *
+ * @return bool True if the file is an audio file, false otherwise.
+ */
+function godam_is_audio_file_by_name( $filename ) {
+	// Extract only the basename (ignores full path).
+	$basename = basename( $filename );
+
+	// Check if 'audio' appears in the filename (case-insensitive).
+	return stripos( $basename, 'audio' ) !== false;
+}
+
+/**
  * Send Video file to GoDAM for transcoding.
  *
  * @param string  $form_type  Form Type.
  * @param string  $form_title Form Title.
  * @param string  $file_url   File URL.
  * @param integer $entry_id   Entry Id.
+ * @param string  $job_type   Job type Default is 'stream'.
  *
  * @return array|WP_Error
  */
-function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_title = '', $file_url = '', $entry_id = 0 ) {
+function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_title = '', $file_url = '', $entry_id = 0, $job_type = 'stream' ) {
 
 	/**
 	 * Extract file extension.
@@ -444,7 +464,7 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	$body = array_merge(
 		array(
 			'api_token'            => $api_key,
-			'job_type'             => 'stream',
+			'job_type'             => $job_type ?? 'stream',
 			'job_for'              => ! empty( $form_type ) ? $form_type . '-godam-recorder' : 'gf-godam-recorder',
 			'file_origin'          => rawurlencode( $file_url ),
 			'callback_url'         => rawurlencode( $callback_url ),
