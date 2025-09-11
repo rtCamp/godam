@@ -43,15 +43,10 @@ class Video_Engagement {
 			$attachment_id = 'cmmid_' . $attributes['cmmId'];
 		}
 
-		if ( empty( $attachment_id ) || ! isset( $attributes['engagements'] ) ) {
+		if ( ! $this->check_if_engagements_enabled( $attachment_id, $attributes ) ) {
 			return '';
 		}
-		if ( is_bool( $attributes['engagements'] ) && ! $attributes['engagements'] ) {
-			return '';
-		}
-		if ( is_string( $attributes['engagements'] ) && 'show' !== $attributes['engagements'] ) {
-			return '';
-		}
+
 		if ( empty( $attributes['title'] ) && ! empty( $attributes['seo']['headline'] ) ) {
 			$attributes['title'] = $attributes['seo']['headline'];
 		}
@@ -125,5 +120,28 @@ class Video_Engagement {
 			</div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Checks if engagements are enabled for a video.
+	 *
+	 * @param int   $attachment_id The attachment ID of the video.
+	 * @param array $attributes    The block attributes.
+	 *
+	 * @return bool True if engagements are enabled, otherwise false.
+	 */
+	public function check_if_engagements_enabled( $attachment_id, $attributes ) {
+
+		if ( empty( $attachment_id ) || ! isset( $attributes['engagements'] ) ) {
+			return false;
+		}
+		if ( is_bool( $attributes['engagements'] ) && ! $attributes['engagements'] ) {
+			return false;
+		}
+		if ( is_string( $attributes['engagements'] ) && 'show' !== $attributes['engagements'] ) {
+			return false;
+		}
+
+		return true;
 	}
 }
