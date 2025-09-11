@@ -650,7 +650,16 @@ function godam_get_transcript_path( $job_id ) {
 			RTGODAM_API_BASE . '/api/method/godam_core.api.process.get_transcription'
 		);
 
-		$response = wp_remote_get( $rest_url, array( 'timeout' => 3 ) );
+		// Add headers to prevent 417 Expectation Failed error.
+		$args = array(
+			'timeout' => 3,
+			'headers' => array(
+				'User-Agent' => 'WordPress/' . get_bloginfo( 'version' ) . '; ' . home_url(),
+				'Accept'     => 'application/json',
+			),
+		);
+
+		$response = wp_remote_get( $rest_url, $args );
 
 		if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
 			$body = wp_remote_retrieve_body( $response );
@@ -665,7 +674,7 @@ function godam_get_transcript_path( $job_id ) {
 				// Cache for 12 hours.
 				set_transient( $cache_key, $transcript_path, 12 * HOUR_IN_SECONDS );
 			}
-		}
+		} 
 	}
 
 	return ! empty( $transcript_path ) ? $transcript_path : false;
