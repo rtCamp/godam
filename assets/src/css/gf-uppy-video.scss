@@ -16,6 +16,14 @@
     }
 }
 
+/* Hide the screenshot button from ScreenCapture plugin */
+.uppy-Dashboard {
+
+    .uppy-ScreenCapture-button--screenshot {
+        display: none !important;
+    }
+}
+
 .upp-video-upload-filename {
     margin-top: 5px;
     font-style: italic;
