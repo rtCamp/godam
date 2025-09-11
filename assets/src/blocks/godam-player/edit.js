@@ -221,7 +221,7 @@ function VideoEdit( {
 					// Show error notice if fetching media fails.
 					const message = sprintf(
 						/* translators: %s: Label of the video text track e.g: "French subtitles". */
-						_x( 'Failed to load video data with id: %d', 'video caption' ),
+						_x( 'Failed to load video data with id: %d', 'video caption', 'godam' ),
 						id,
 					);
 					const { createErrorNotice } = dispatch( noticesStore );
