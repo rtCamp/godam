@@ -108,11 +108,14 @@ class Layers {
 
 		$existing_global_layers = self::get_existing_global_layers( $layers );
 
+		// Remove global layers that are not disabled first.
+		$merged_layers = self::remove_non_disabled_global_layers( $merged_layers, $existing_global_layers );
+
 		// Process global layer.
 		if ( isset( $global_settings['global_layers'] ) && is_array( $global_settings['global_layers'] ) ) {
 			$global_layers = $global_settings['global_layers'];
 
-			// Add CTA layer if configured and not already present or disabled.
+			// Add CTA layer if configured.
 			if ( isset( $global_layers['cta'] ) && is_array( $global_layers['cta'] ) ) {
 				if ( ! self::should_skip_global_layer( 'cta', $existing_global_layers ) ) {
 					$cta_layer = self::create_cta_layer( $global_layers['cta'], $video_duration );
@@ -122,9 +125,9 @@ class Layers {
 				}
 			}
 
-			// Add form layer if configured and not already present or disabled.
+			// Add form layer if configured.
 			if ( isset( $global_layers['forms'] ) && is_array( $global_layers['forms'] ) ) {
-				if ( ! self::should_skip_global_layer( 'form', $existing_global_layers ) ) {
+				if ( self::should_skip_global_layer( 'form', $existing_global_layers ) ) {
 					$form_layer = self::create_form_layer( $global_layers['forms'], $video_duration );
 					if ( ! empty( $form_layer ) ) {
 						$merged_layers[] = $form_layer;
@@ -320,6 +323,45 @@ class Layers {
 	}
 
 	/**
+	 * Remove non-disabled global layers from merged layers
+	 *
+	 * @param array $merged_layers Current merged layers array.
+	 * @param array $existing_global_layers Info about existing global layers.
+	 * @return array Updated merged layers with non-disabled global layers removed.
+	 */
+	private static function remove_non_disabled_global_layers( $merged_layers, $existing_global_layers ) {
+		return array_filter(
+			$merged_layers,
+			function ( $layer ) use ( $existing_global_layers ) {
+				if ( ! is_array( $layer ) || ! isset( $layer['type'] ) ) {
+					return true;
+				}
+
+				$layer_type = $layer['type'];
+
+				// Check if this is a global layer.
+				$is_global_layer     = isset( $layer['isGlobalLayer'] ) && $layer['isGlobalLayer'];
+				$has_global_metadata = isset( $layer['globalLayerSource'] ) || isset( $layer['globalLayerConfig'] );
+				$has_global_id       = isset( $layer['id'] ) && strpos( $layer['id'], 'global_' ) === 0;
+
+				// If it's not a global layer, keep it.
+				if ( ! ( $is_global_layer || $has_global_metadata || $has_global_id ) ) {
+					return true;
+				}
+
+				// If it's a global layer, check if it's disabled.
+				if ( isset( $existing_global_layers[ $layer_type ] ) ) {
+					// Keep the layer only if it's disabled (disabled = true).
+					return true === $existing_global_layers[ $layer_type ]['disabled'];
+				}
+
+				// If no info found, remove it (it's a global layer but not disabled).
+				return false;
+			}
+		);
+	}
+
+	/**
 	 * Check if a global layer should be skipped (already exists or is disabled)
 	 *
 	 * @param string $layer_type Layer type to check.
@@ -327,7 +369,7 @@ class Layers {
 	 * @return bool True if the layer should be skipped.
 	 */
 	private static function should_skip_global_layer( $layer_type, $existing_global_layers ) {
-		if ( isset( $existing_global_layers[ $layer_type ] ) ) {
+		if ( isset( $existing_global_layers[ $layer_type ] ) && $existing_global_layers[ $layer_type ]['disabled'] ) {
 			return true;
 		}
 
