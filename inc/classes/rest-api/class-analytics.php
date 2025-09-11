@@ -123,6 +123,42 @@ class Analytics extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/layer-analytics',
+				'args'      => array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'fetch_layer_analytics' ),
+					'permission_callback' => '__return_true',
+					'args'                => array(
+						'days'       => array(
+							'required'          => true,
+							'type'              => 'integer',
+							'sanitize_callback' => 'absint',
+						),
+						'site_url'   => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'esc_url_raw',
+						),
+						'video_id'   => array(
+							'required'          => true,
+							'type'              => 'integer',
+							'description'       => __( 'The Video ID for fetching analytics data.', 'godam' ),
+							'validate_callback' => function ( $param ) {
+								return is_numeric( $param ) && intval( $param ) > 0;
+							},
+							'sanitize_callback' => 'absint',
+						),
+						'layer_type' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'description'       => __( 'The Layer Type for fetching analytics data.', 'godam' ),
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/top-videos',
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
@@ -445,6 +481,102 @@ class Analytics extends Base {
 			array(
 				'status'            => 'success',
 				'dashboard_metrics' => $body['dashboard_metrics'] ?? $empty_metrics,
+			),
+			200
+		);
+	}
+
+	/**     
+	 * Fetch layer analytics from the external API securely.
+	 *
+	 * @param WP_REST_Request $request REST API request.
+	 * @return WP_REST_Response
+	 */
+	public function fetch_layer_analytics( WP_REST_Request $request ) {
+		$days          = $request->get_param( 'days' );
+		$attachment_id = $request->get_param( 'video_id' );
+		$layer_type    = $request->get_param( 'layer_type' );
+		$site_url      = $request->get_param( 'site_url' );
+		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $api_key ) || empty( $account_token ) || 'unverified' === $account_token ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => __( 'Missing API key.', 'godam' ),
+					'errorType' => 'missing_key',
+				),
+				200
+			);
+		}
+
+		$transcoded_url = $attachment_id ? rtgodam_get_transcoded_url_from_attachment( $attachment_id ) : '';
+		$job_id         = '';
+
+		if ( $attachment_id && ! empty( $transcoded_url ) ) {
+			$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+
+			if ( empty( $job_id ) ) {
+				$job_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+			}
+		}
+
+		$microservice_url = RTGODAM_ANALYTICS_BASE . '/processed-layer-analytics/';
+		$params           = array(
+			'days'          => $days,
+			'video_id'      => $attachment_id,
+			'site_url'      => $site_url,
+			'account_token' => $account_token,
+			'api_key'       => $api_key,
+			'layer_type'    => $layer_type,
+			'job_id'        => $job_id,
+		);
+
+		$history_url = add_query_arg( $params, $microservice_url );
+		$response    = wp_remote_get( $history_url );
+
+		if ( is_wp_error( $response ) ) {
+			return new WP_REST_Response(
+				array(
+					'status'  => 'error',
+					/* translators: %s is the error message from the API response. */
+					'message' => sprintf( __( 'Error fetching history data: %s', 'godam' ), $response->get_error_message() ),
+				),
+				500
+			);
+		}
+
+		$http_code = wp_remote_retrieve_response_code( $response );
+		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
+		$detail    = $body['detail'] ?? __( 'Unexpected error from analytics server.', 'godam' );
+
+		if ( 404 === $http_code || 400 === $http_code ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => $detail,
+					'errorType' => 'invalid_key',
+				),
+				200
+			);
+		}
+
+		if ( $http_code >= 500 ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => $detail,
+					'errorType' => 'microservice_error',
+				),
+				200
+			);
+		}
+
+		return new WP_REST_Response(
+			array(
+				'status'          => 'success',
+				'layer_analytics' => $body['layer_analytics'] ?? array(),
 			),
 			200
 		);

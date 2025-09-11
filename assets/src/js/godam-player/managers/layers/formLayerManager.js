@@ -7,6 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { LAYER_TYPES } from '../../utils/constants.js';
+import { addLayerInteraction } from '../../utils/storage.js';
 
 /**
  * Form Layer Manager
@@ -48,11 +49,36 @@ export default class FormLayerManager {
 				show: true,
 				allowSkip,
 				skipText,
+				name: layer.name || '',
 			};
 
 			this.formLayers.push( layerObj );
-			this.setupFormLayerSkipButton( layerObj );
+			this.setupFormLayerSkipButton( layerObj, layer );
 		}
+	}
+
+	/**
+	 * Handle layer interaction and update localStorage
+	 *
+	 * @param {string}             layerType      - Type of layer: 'form', 'cta', etc.
+	 * @param {string}             actionType     - Action type: 'clicked', 'submitted', 'skipped'
+	 * @param {HTMLElement|Object} layer          - Layer element or layer object
+	 * @param {Object}             [extraData={}] - Any additional data to store
+	 */
+	handleLayerInteraction( layerType, actionType, layer, extraData = {} ) {
+		const layerId = layer.id || 'unknown';
+		const layerName = layer.name || '';
+
+		const interaction = {
+			layer_id: layerId,
+			layer_type: layerType,
+			action_type: actionType,
+			layer_timestamp: parseFloat( layer.displayTime ) || 0,
+			layer_name: layerName,
+			...extraData,
+		};
+
+		addLayerInteraction( this.player.el().dataset.id || this.player.el().dataset.job_id, interaction );
 	}
 
 	/**
@@ -75,8 +101,9 @@ export default class FormLayerManager {
 	 * Setup form layer skip button
 	 *
 	 * @param {Object} layerObj - Layer object containing element and configuration
+	 * @param {Object} layer    - Single Layer configuration object
 	 */
-	setupFormLayerSkipButton( layerObj ) {
+	setupFormLayerSkipButton( layerObj, layer ) {
 		let skipButton = layerObj.layerElement.querySelector( '.skip-button' );
 
 		if ( ! skipButton ) {
@@ -87,8 +114,8 @@ export default class FormLayerManager {
 			skipButton.classList.add( 'hidden' );
 		}
 
-		this.setupFormObserver( layerObj, skipButton );
-		this.setupSkipButtonHandler( layerObj, skipButton );
+		this.setupFormObserver( layerObj, skipButton, layer );
+		this.setupSkipButtonHandler( layerObj, skipButton, layer );
 
 		layerObj.layerElement.appendChild( skipButton );
 	}
@@ -116,12 +143,24 @@ export default class FormLayerManager {
 	 *
 	 * @param {Object}      layerObj   - Layer object containing element and configuration
 	 * @param {HTMLElement} skipButton - Skip button element
+	 * @param {Object}      layer      - Single Layer configuration object
 	 */
-	setupFormObserver( layerObj, skipButton ) {
+	setupFormObserver( layerObj, skipButton, layer ) {
 		const observer = new MutationObserver( () => {
+			if ( ! this.isDisplayingLayers[ this.currentPlayerVideoInstanceId ] ) {
+				return; // ignore if this layer isn’t currently showing
+			}
+
 			if ( this.hasConfirmationMessage( layerObj.layerElement ) ) {
 				skipButton.textContent = __( 'Continue', 'godam' );
 				skipButton.classList.remove( 'hidden' );
+
+				// only track if we're close to the display time
+				if ( ! layerObj._submittedTracked ) {
+					this.handleLayerInteraction( LAYER_TYPES.FORM, 'submitted', layer );
+					layerObj._submittedTracked = true;
+				}
+
 				observer.disconnect();
 			}
 		} );
@@ -182,14 +221,23 @@ export default class FormLayerManager {
 	 *
 	 * @param {Object}      layerObj   - Layer object containing element and configuration
 	 * @param {HTMLElement} skipButton - Skip button element
+	 * @param {Object}      layer      - Single Layer configuration object
 	 */
-	setupSkipButtonHandler( layerObj, skipButton ) {
+	setupSkipButtonHandler( layerObj, skipButton, layer ) {
 		skipButton.addEventListener( 'click', () => {
 			layerObj.show = false;
 			layerObj.layerElement.classList.add( 'hidden' );
 			this.player.controls( true );
 			this.player.play();
 			this.isDisplayingLayers[ this.currentPlayerVideoInstanceId ] = false;
+
+			if ( ! layerObj._ctaClickedTracked && LAYER_TYPES.CTA === layer.type && 'image' === layer.cta_type ) {
+				this.handleLayerInteraction( LAYER_TYPES.CTA, 'skipped', layer ); //update layer type
+			}
+
+			if ( ! layerObj._submittedTracked && LAYER_TYPES.FORM === layer.type ) {
+				this.handleLayerInteraction( LAYER_TYPES.FORM, 'skipped', layer ); //update layer type
+			}
 
 			if ( layerObj === this.formLayers[ this.currentFormLayerIndex ] ) {
 				this.currentFormLayerIndex++;
@@ -214,6 +262,18 @@ export default class FormLayerManager {
 			currentTime >= layerObj.displayTime &&
 			layerObj.layerElement.classList.contains( 'hidden' ) ) {
 			layerObj.layerElement.classList.remove( 'hidden' );
+			const imageCtaBtn = layerObj?.layerElement?.querySelector( '.image-cta-btn' );
+			if ( imageCtaBtn ) {
+				imageCtaBtn.addEventListener( 'click', () => {
+					const layer = {
+						id: layerObj?.layerElement?.id.replace( `layer-${ this.player.el().dataset.instanceId }-`, '' ) || '',
+						name: layerObj?.name || '',
+					};
+
+					this.handleLayerInteraction( 'cta', 'clicked', layer );
+					layerObj._ctaClickedTracked = true;
+				} );
+			}
 			this.player.pause();
 			this.player.controls( false );
 			this.isDisplayingLayers[ this.currentPlayerVideoInstanceId ] = true;
