@@ -594,7 +594,7 @@ class GoDAM_Product_Gallery {
 		$post = get_post( $product_id );
 	
 		if ( ! $post || 'product' !== $post->post_type ) {
-			wp_send_json_error( 'Invalid product ID' );
+			wp_send_json_error( 'Invalid product ID', 400 );
 		}
 	
 		// Set up post and product for WooCommerce template functions.
@@ -602,7 +602,7 @@ class GoDAM_Product_Gallery {
 		$product = wc_get_product( $product_id );
 	
 		if ( ! $product ) {
-			wp_send_json_error( 'Product not found.' );
+			wp_send_json_error( 'Product not found.', 400 );
 		}
 	
 		setup_postdata( $post );
