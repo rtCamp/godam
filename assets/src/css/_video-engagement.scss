@@ -657,6 +657,14 @@
                     }
                 }
             }
+
+            &-emoji-picker {
+                padding-bottom: 5px;
+                
+                .epr-main {
+                    width: 100% !important;
+                }
+            }
         }
 
         &-action {
@@ -737,6 +745,11 @@
 
             &-timestamp {
                 background-image: url( ../images/timestamp.svg ) !important;
+                cursor: pointer;
+            }
+
+            &-emoji {
+                background-image: url( ../images/emoji.svg ) !important;
                 cursor: pointer;
             }
         }

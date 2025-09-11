@@ -3,7 +3,8 @@
  */
 import { __, _x } from '@wordpress/i18n';
 import { ToggleControl, SelectControl } from '@wordpress/components';
-import { useMemo, useCallback } from '@wordpress/element';
+import { useMemo, useCallback, useEffect, useState } from '@wordpress/element';
+import apiFetch from '@wordpress/api-fetch';
 
 const options = [
 	{ value: 'auto', label: __( 'Auto', 'godam' ) },
@@ -26,6 +27,14 @@ const options = [
 const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false } ) => {
 	const { autoplay, controls, loop, muted, preload, showShareButton, engagements } =
 	attributes;
+	const [ showEngagementSetting, setShowEngagementSetting ] = useState( false );
+
+	useEffect( () => {
+		apiFetch( { path: '/godam/v1/settings/godam-settings' } ).then( ( settings ) => {
+			const globalEngagement = settings?.video?.enable_global_video_engagement ?? false;
+			setShowEngagementSetting( globalEngagement );
+		} );
+	}, [] );
 
 	// Show a specific help for autoplay setting.
 	const getAutoplayHelp = useMemo( () => {
@@ -128,13 +137,17 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 					hideCancelButton
 				/>
 			) }
-			<ToggleControl
-				__nextHasNoMarginBottom
-				label={ __( 'Enable Likes & Comments', 'godam' ) }
-				onChange={ toggleFactory.engagements }
-				checked={ !! engagements }
-				help={ __( 'Engagement will only be visible for transcoded videos', 'godam' ) }
-			/>
+			{
+				showEngagementSetting && (
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ __( 'Enable Likes & Comments', 'godam' ) }
+						onChange={ toggleFactory.engagements }
+						checked={ !! engagements }
+						help={ __( 'Engagement will only be visible for transcoded videos', 'godam' ) }
+					/>
+				)
+			}
 		</>
 	);
 };
