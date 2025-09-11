@@ -300,10 +300,36 @@ class GlobalLayersManager {
 		// Get existing global layers and check what types are already present or disabled
 		const existingGlobalInfo = this.getExistingGlobalLayersInfo( existingLayers );
 
-		// Only create global layers that don't already exist or aren't disabled
-		const newGlobalLayers = this.createMissingGlobalLayers( existingGlobalInfo );
+		// Prepare a copy of existingLayers to filter out replaced global layers
+		let mergedLayers = Array.isArray( existingLayers ) ? [ ...existingLayers ] : [];
 
-		return [ ...existingLayers, ...newGlobalLayers ];
+		// Replace global form layer if present and not disabled
+		if ( this.globalSettings?.global_layers?.forms ) {
+			if ( existingGlobalInfo.form && ! existingGlobalInfo.form.disabled ) {
+				mergedLayers = mergedLayers.filter(
+					( layer ) => ! ( GlobalLayersManager.isGlobalLayer( layer ) && layer.type === 'form' ),
+				);
+			}
+			const newFormLayer = this.createFormLayer( this.globalSettings.global_layers.forms );
+			if ( newFormLayer ) {
+				mergedLayers.push( newFormLayer );
+			}
+		}
+
+		// Replace global CTA layer if present and not disabled
+		if ( this.globalSettings?.global_layers?.cta ) {
+			if ( existingGlobalInfo.cta && ! existingGlobalInfo.cta.disabled ) {
+				mergedLayers = mergedLayers.filter(
+					( layer ) => ! ( GlobalLayersManager.isGlobalLayer( layer ) && layer.type === 'cta' ),
+				);
+			}
+			const newCtaLayer = this.createCtaLayer( this.globalSettings.global_layers.cta );
+			if ( newCtaLayer ) {
+				mergedLayers.push( newCtaLayer );
+			}
+		}
+
+		return mergedLayers;
 	}
 
 	/**
@@ -335,39 +361,6 @@ class GlobalLayersManager {
 		} );
 
 		return info;
-	}
-
-	/**
-	 * Create only missing global layers (not already present or disabled)
-	 *
-	 * @param {Object} existingGlobalInfo - Info about existing global layers
-	 * @return {Array} Array of new global layers to add
-	 */
-	createMissingGlobalLayers( existingGlobalInfo ) {
-		if ( ! this.globalSettings?.global_layers ) {
-			return [];
-		}
-
-		const globalLayers = this.globalSettings.global_layers;
-		const layersToAdd = [];
-
-		// Add form layer only if not already present or disabled
-		if ( globalLayers.forms && ! existingGlobalInfo.form ) {
-			const formLayer = this.createFormLayer( globalLayers.forms );
-			if ( formLayer ) {
-				layersToAdd.push( formLayer );
-			}
-		}
-
-		// Add CTA layer only if not already present or disabled
-		if ( globalLayers.cta && ! existingGlobalInfo.cta ) {
-			const ctaLayer = this.createCtaLayer( globalLayers.cta );
-			if ( ctaLayer ) {
-				layersToAdd.push( ctaLayer );
-			}
-		}
-
-		return layersToAdd;
 	}
 
 	/**
