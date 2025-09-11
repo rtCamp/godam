@@ -127,7 +127,7 @@ class Layers {
 
 			// Add form layer if configured.
 			if ( isset( $global_layers['forms'] ) && is_array( $global_layers['forms'] ) ) {
-				if ( self::should_skip_global_layer( 'form', $existing_global_layers ) ) {
+				if ( ! self::should_skip_global_layer( 'form', $existing_global_layers ) ) {
 					$form_layer = self::create_form_layer( $global_layers['forms'], $video_duration );
 					if ( ! empty( $form_layer ) ) {
 						$merged_layers[] = $form_layer;
@@ -223,15 +223,15 @@ class Layers {
 		}
 
 		$placement = isset( $form_config['placement'] ) ? $form_config['placement'] : self::PLACEMENT_START;
-		$form_type = 'gravity'; // TODO: think and make this more dynamic than this one.
+		$plugin    = isset( $form_config['plugin'] ) ? $form_config['plugin'] : 'gravity';
 
 		$base_layer = array(
 			'type'        => self::LAYER_TYPE_FORM,
-			'id'          => 'global_' . self::LAYER_TYPE_FORM . '_' . $form_type,
+			'id'          => 'global_' . self::LAYER_TYPE_FORM . '_' . $plugin,
 			'displayTime' => self::get_placement_time( $placement, $video_duration ),
 		);
 
-		return self::build_form_layer_by_type( $base_layer, $form_type, $form_config );
+		return self::build_form_layer_by_type( $base_layer, $plugin, $form_config );
 	}
 
 	/**
@@ -252,6 +252,30 @@ class Layers {
 					array(
 						'form_type' => $form_type,
 						'gf_id'     => isset( $form_config['form_id'] ) ? $form_config['form_id'] : ( isset( $defaults['form_id'] ) ? $defaults['form_id'] : '' ),
+					)
+				);
+			case 'wpforms':
+				return array_merge(
+					$base_layer,
+					array(
+						'form_type' => $form_type,
+						'wpform_id' => isset( $form_config['form_id'] ) ? $form_config['form_id'] : ( isset( $defaults['form_id'] ) ? $defaults['form_id'] : '' ),
+					)
+				);
+			case 'contact_form_7':
+				return array_merge(
+					$base_layer,
+					array(
+						'form_type' => 'cf7',
+						'cf7_id'    => isset( $form_config['form_id'] ) ? $form_config['form_id'] : ( isset( $defaults['form_id'] ) ? $defaults['form_id'] : '' ),
+					)
+				);
+			case 'fluent_forms':
+				return array_merge(
+					$base_layer,
+					array(
+						'form_type'      => 'fluentforms',
+						'fluent_form_id' => isset( $form_config['form_id'] ) ? $form_config['form_id'] : ( isset( $defaults['form_id'] ) ? $defaults['form_id'] : '' ),
 					)
 				);
 
