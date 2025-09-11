@@ -68,7 +68,6 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	/**
 	 * Use this custom hook for the global layers.
 	 */
-	// Use the custom hook for global layers management
 	const { resetGlobalLayersState } = useGlobalLayers( {
 		duration,
 		globalSettings,
@@ -77,23 +76,13 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		isFetching,
 		currentLayers: layers,
 		onError: () => {
-			// Could set a snackbar message for user feedback if needed
 			setSnackbarMessage( __( 'Error applying global settings layers', 'godam' ) );
 			setShowSnackbar( true );
 		},
 		onSuccess: () => {
 			// Success is silent by default, but could show a message if needed
-			// Could add debug logging here if needed for development
 		},
 	} );
-
-	// Example: Access the GlobalLayersManager instance for advanced operations
-	// const { getGlobalLayersManager } = useGlobalLayers(...);
-	// const globalLayersManager = getGlobalLayersManager();
-	// if (globalLayersManager) {
-	//   const globalLayers = globalLayersManager.getGlobalLayers(layers);
-	//   const videoLayers = globalLayersManager.removeGlobalLayers(layers);
-	// }
 
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {
