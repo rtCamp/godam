@@ -32,7 +32,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { __, _x, sprintf } from '@wordpress/i18n';
 import { useInstanceId } from '@wordpress/compose';
 import { useDispatch } from '@wordpress/data';
-import { external, search, media as icon } from '@wordpress/icons';
+import { search, media as icon } from '@wordpress/icons';
 import { store as noticesStore } from '@wordpress/notices';
 
 /**
@@ -221,7 +221,7 @@ function VideoEdit( {
 					// Show error notice if fetching media fails.
 					const message = sprintf(
 						/* translators: %s: Label of the video text track e.g: "French subtitles". */
-						_x( 'Failed to load video data with id: %d', 'text tracks' ),
+						_x( 'Failed to load video data with id: %d', 'video caption' ),
 						id,
 					);
 					const { createErrorNotice } = dispatch( noticesStore );
@@ -490,12 +490,6 @@ function VideoEdit( {
 						onError={ onUploadError }
 						onReset={ () => onSelectVideo( undefined ) }
 					/>
-					<TracksEditor
-						tracks={ tracks }
-						onChange={ ( newTracks ) => {
-							setAttributes( { tracks: newTracks } );
-						} }
-					/>
 				</BlockControls>
 			) }
 			<InspectorControls>
@@ -584,8 +578,6 @@ function VideoEdit( {
 										href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
 										target="_blank"
 										variant="primary"
-										icon={ external }
-										iconPosition="right"
 									>
 										{ __( 'Customise', 'godam' ) }
 									</Button>
@@ -620,6 +612,19 @@ function VideoEdit( {
 										] }
 										onChange={ ( value ) => setAttributes( { aspectRatio: value } ) }
 										help={ __( 'Choose the aspect ratio for the video player.', 'godam' ) }
+									/>
+								</BaseControl>
+
+								<BaseControl
+									id={ `video-block__tracks-editor-${ instanceId }` }
+									label={ __( 'Subtitles & Captions', 'godam' ) }
+									__nextHasNoMarginBottom
+								>
+									<TracksEditor
+										tracks={ tracks }
+										onChange={ ( newTracks ) => {
+											setAttributes( { tracks: newTracks } );
+										} }
 									/>
 								</BaseControl>
 							</>
