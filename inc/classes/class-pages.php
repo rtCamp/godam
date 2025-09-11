@@ -479,15 +479,6 @@ class Pages {
 				)
 			);
 
-			// Add REST route info for API calls.
-			wp_localize_script(
-				'transcoder-page-script-video-editor',
-				'godamRestRoute',
-				array(
-					'url' => get_rest_url( get_current_blog_id() ),
-				)
-			);
-
 			// Enqueue Gravity Forms styles if the plugin is active.
 			if ( $is_gf_active ) {
 				$this->enqueue_gravity_forms_styles();
