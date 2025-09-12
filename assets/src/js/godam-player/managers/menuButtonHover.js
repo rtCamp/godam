@@ -27,6 +27,9 @@ class MenuButtonHoverManager {
 				return;
 			}
 
+			// initialize clicked state per button
+			btnEl.dataset.clickedOpen = 'false';
+
 			const menuEl = btnEl.querySelector( '.vjs-menu' );
 			if ( menuEl ) {
 				this.attachMenuListeners( btnEl, menuEl );
@@ -47,17 +50,46 @@ class MenuButtonHoverManager {
 		let overBtn = false;
 		let overMenu = false;
 
+		// ensure dataset exists
+		if ( typeof btnEl.dataset.clickedOpen === 'undefined' ) {
+			btnEl.dataset.clickedOpen = 'false';
+		}
+
+		const isClickedOpen = () => btnEl.dataset.clickedOpen === 'true';
+
 		const update = () => {
-			if ( ! overBtn && ! overMenu ) {
+			// only hide if not hovered and not clicked-open for this button
+			if ( ! overBtn && ! overMenu && ! isClickedOpen() ) {
 				this.hideMenu( menuEl );
 			}
 		};
 
+		// Click toggles state for THIS button only
+		btnEl.addEventListener( 'click', () => {
+			// toggle our per-button clicked state
+			const currently = isClickedOpen();
+			if ( ! currently ) {
+				// open this one, mark it clicked-open
+				btnEl.dataset.clickedOpen = 'true';
+				menuEl.style.display = 'block';
+				menuEl.classList.add( 'vjs-lock-showing' );
+				// close other menus AND clear their clicked flags
+				this.closeOtherMenus( menuEl );
+			} else {
+				// user clicked to close
+				btnEl.dataset.clickedOpen = 'false';
+				this.hideMenu( menuEl );
+			}
+		} );
+
+		// Hover logic: only affects non-click-opened menus
 		btnEl.addEventListener( 'mouseenter', () => {
 			overBtn = true;
-			menuEl.style.display = 'block';
-			menuEl.classList.add( 'vjs-lock-showing' );
-			this.closeOtherMenus( menuEl );
+			if ( ! isClickedOpen() ) {
+				menuEl.style.display = 'block';
+				menuEl.classList.add( 'vjs-lock-showing' );
+				this.closeOtherMenus( menuEl );
+			}
 		} );
 
 		btnEl.addEventListener( 'mouseleave', () => {
@@ -67,18 +99,40 @@ class MenuButtonHoverManager {
 
 		menuEl.addEventListener( 'mouseenter', () => {
 			overMenu = true;
-			menuEl.style.display = 'block';
-			menuEl.classList.add( 'vjs-lock-showing' );
-			this.closeOtherMenus( menuEl );
+			if ( ! isClickedOpen() ) {
+				menuEl.style.display = 'block';
+				menuEl.classList.add( 'vjs-lock-showing' );
+				this.closeOtherMenus( menuEl );
+			}
 		} );
 
 		menuEl.addEventListener( 'mouseleave', () => {
 			overMenu = false;
 			setTimeout( update, 500 );
 		} );
+
+		// Detect outside clicks to reset clickedOpen for the specific button
+		document.addEventListener( 'click', ( e ) => {
+			// If clicked outside of this button/menu, clear its clicked flag and hide
+			if ( ! btnEl.contains( e.target ) && ! menuEl.contains( e.target ) ) {
+				btnEl.dataset.clickedOpen = 'false';
+				this.hideMenu( menuEl );
+			}
+		} );
 	}
 
 	hideMenu( menuEl ) {
+		// If menu removed or null, nothing to do
+		if ( ! menuEl ) {
+			return;
+		}
+
+		// also clear the clicked state of its parent button (if present)
+		const parentBtn = menuEl.parentElement;
+		if ( parentBtn && parentBtn.dataset ) {
+			parentBtn.dataset.clickedOpen = 'false';
+		}
+
 		// Start fade-out
 		menuEl.classList.add( 'vjs-closing' );
 		menuEl.classList.remove( 'vjs-lock-showing' );
@@ -87,7 +141,7 @@ class MenuButtonHoverManager {
 		setTimeout( () => {
 			if ( menuEl.classList.contains( 'vjs-closing' ) ) {
 				menuEl.classList.remove( 'vjs-closing' );
-				// Now it will animate from 0.5 → 0
+				// Now it will animate from 0.5 → 0 (if your CSS has that)
 				const onTransitionEnd = () => {
 					if ( ! menuEl.classList.contains( 'vjs-lock-showing' ) ) {
 						menuEl.style.display = '';
@@ -99,10 +153,16 @@ class MenuButtonHoverManager {
 		}, 300 );
 	}
 
-	// Hide other menus when entering a new one
+	// Hide other menus when entering a new one — also clear their clickedOpen
 	closeOtherMenus( currentMenu ) {
 		document.querySelectorAll( '.vjs-menu' ).forEach( ( menu ) => {
 			if ( menu !== currentMenu ) {
+				// clear clickedOpen flag on the parent button if present
+				const parentBtn = menu.parentElement;
+				if ( parentBtn && parentBtn.dataset ) {
+					parentBtn.dataset.clickedOpen = 'false';
+				}
+
 				menu.classList.remove( 'vjs-lock-showing' );
 				menu.style.display = '';
 			}
