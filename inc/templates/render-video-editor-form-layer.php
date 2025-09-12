@@ -14,7 +14,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // Suppress Query Monitor's output for this template.
-do_action( 'qm/cease' );
+do_action( 'qm/cease' ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
 
 // We need to remove the admin bar for this template to avoid to display it on the video editor page.
 add_filter( 'show_admin_bar', '__return_false' ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected

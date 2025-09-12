@@ -232,10 +232,12 @@ if ( ! empty( $control_bar_settings ) ) {
 
 $video_setup = wp_json_encode( $video_setup );
 
+$layers = ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array();
+
 $video_config = wp_json_encode(
 	array(
 		'preview'          => $video_preview,
-		'layers'           => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array(), // contains list of layers.
+		'layers'           => $layers, // contains list of layers.
 		'chapters'         => ! empty( $easydam_meta_data['chapters'] ) ? $easydam_meta_data['chapters'] : array(), // contains list of chapters.
 		'overlayTimeRange' => $overlay_time_range, // Add overlay time range to video config.
 		'playerSkin'       => $player_skin, // Add player skin to video config. Add brand image to video config.
@@ -351,6 +353,16 @@ if ( ! empty( $transcript_path ) ) {
 						<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
 					</svg>
 				</div>
+				<?php foreach ( $layers as $layer ) : ?>
+					<?php if ( isset( $layer['miniCart'] ) ) : ?>
+						<?php if ( true === $layer['miniCart'] ) : ?>
+							<div class="godam-video--cart-basket">
+								<?php echo do_blocks( '<!-- wp:woocommerce/mini-cart /-->' ); // phpcs:ignore ?>
+							</div>
+						<?php endif; ?>
+						<?php break; ?>
+					<?php endif; ?>
+				<?php endforeach; ?>
 				<video
 					class="easydam-player video-js vjs-big-play-centered vjs-hidden"
 					data-options="<?php echo esc_attr( $video_config ); ?>"
@@ -607,6 +619,18 @@ if ( ! empty( $transcript_path ) ) {
 								if ( ! empty( $layer['bg_color'] ) ) :
 									?>
 									style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>"<?php endif; ?>
+							>
+							</div>
+							<?php
+							// WooCommerce layer.
+						elseif ( isset( $layer['type'] ) && 'woo' === $layer['type'] ) :
+							?>
+							<div
+								id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>"
+								class="easydam-layer hidden hotspot-layer"
+								<?php if ( ! empty( $layer['bg_color'] ) ) : ?>
+									style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>"
+								<?php endif; ?>
 							>
 							</div>
 							<?php
