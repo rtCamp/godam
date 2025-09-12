@@ -61,10 +61,6 @@
 		}
 	}
 
-	.video-js .vjs-fullscreen-control {
-		order: 3;
-	}
-
 	.video-js .vjs-settings-button {
 		order: 2;
 	}
@@ -136,6 +132,12 @@
 				z-index: 99;
 			}
 
+			.vjs-volume-panel {
+				bottom: 0;
+				position: absolute;
+				right: 120px;
+			}
+
 			.vjs-subs-caps-button {
 				right: 80px !important;
 			}
@@ -168,7 +170,7 @@
 			height: 3em !important;
 		}
 
-	   .vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-volume-panel, .vjs-remaining-time, .vjs-custom-play-button {
+	   .vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-remaining-time, .vjs-custom-play-button {
 			display: none !important;
 		}
 
