@@ -197,6 +197,13 @@ class Init {
 							<?php esc_html_e( 'Screencast', 'godam' ); ?>
 						</label>
 					</div>
+
+					<div>
+						<input type="checkbox" name="field_godam_video_file_selector" id="field_godam_video_file_selector_audio" value="audio">
+						<label class="inline" for="field_godam_video_file_selector_audio">
+							<?php esc_html_e( 'Audio', 'godam' ); ?>
+						</label>
+					</div>
 				</div>
 			</li>
 			<?php
@@ -245,6 +252,15 @@ class Init {
 			$field_id   = $field->id;
 			$file_value = rgar( $entry, $field_id );
 
+			$file_type = wp_check_filetype( $file_value );
+			$is_audio  = strpos( $file_type['type'], 'audio' ) !== false;
+			$is_video  = strpos( $file_type['type'], 'video' ) !== false;
+
+			if ( 'webm' === $file_type['ext'] && godam_is_audio_file_by_name( $file_value ) ) {
+				$is_video = false;
+				$is_audio = true;
+			}
+
 			if ( empty( $file_value ) ) {
 				continue;
 			}
@@ -257,11 +273,11 @@ class Init {
 				}
 
 				foreach ( $files as $index => $file_url ) {
-					$this->send_to_godam( $form_title, $file_url, $entry['id'], $field_id, $index );
+					$this->send_to_godam( $form_title, $file_url, $entry['id'], $field_id, $index, $is_audio ? 'audio' : 'stream' );
 				}
 			} else {
 				// Single file.
-				$this->send_to_godam( $form_title, $file_value, $entry['id'], $field_id );
+				$this->send_to_godam( $form_title, $file_value, $entry['id'], $field_id, 0, $is_audio ? 'audio' : 'stream' );
 			}
 		}
 	}
@@ -274,8 +290,9 @@ class Init {
 	 * @param int    $entry_id The ID of the entry.
 	 * @param int    $field_id The ID of the field.
 	 * @param int    $index The index of the file (for multiple files).
+	 * @param string $job_type Job type, Default is 'stream'.
 	 */
-	private function send_to_godam( $form_title, $file_url, $entry_id, $field_id, $index = 0 ) {
+	private function send_to_godam( $form_title, $file_url, $entry_id, $field_id, $index = 0, $job_type = 'stream' ) {
 
 		/**
 		 * Bail early if no file to send.
@@ -292,7 +309,7 @@ class Init {
 		/**
 		 * Send for transcoding.
 		 */
-		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding( 'gf', $form_title, $file_url, $entry_id );
+		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding( 'gf', $form_title, $file_url, $entry_id, $job_type );
 
 		/**
 		 * Error handling.
