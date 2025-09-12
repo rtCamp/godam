@@ -39,7 +39,7 @@
 		},
 		"preload": {
 			"type": "string",
-			"default": "metadata"
+			"default": "none"
 		},
 		"blob": {
 			"type": "string",
