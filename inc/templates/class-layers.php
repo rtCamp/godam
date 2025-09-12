@@ -270,12 +270,52 @@ class Layers {
 						'cf7_id'    => isset( $form_config['form_id'] ) ? $form_config['form_id'] : ( isset( $defaults['form_id'] ) ? $defaults['form_id'] : '' ),
 					)
 				);
+			case 'sure_forms':
+				return array_merge(
+					$base_layer,
+					array(
+						'form_type'   => 'sureforms',
+						'sureform_id' => isset( $form_config['form_id'] ) ? $form_config['form_id'] : ( isset( $defaults['form_id'] ) ? $defaults['form_id'] : '' ),
+					)
+				);
+			case 'forminator':
+				return array_merge(
+					$base_layer,
+					array(
+						'form_type'     => 'forminator',
+						'forminator_id' => isset( $form_config['form_id'] ) ? $form_config['form_id'] : ( isset( $defaults['form_id'] ) ? $defaults['form_id'] : '' ),
+					)
+				);
+			case 'everest_forms':
+				return array_merge(
+					$base_layer,
+					array(
+						'form_type'       => 'everestforms',
+						'everest_form_id' => isset( $form_config['form_id'] ) ? $form_config['form_id'] : ( isset( $defaults['form_id'] ) ? $defaults['form_id'] : '' ),
+					)
+				);
 			case 'fluent_forms':
 				return array_merge(
 					$base_layer,
 					array(
 						'form_type'      => 'fluentforms',
 						'fluent_form_id' => isset( $form_config['form_id'] ) ? $form_config['form_id'] : ( isset( $defaults['form_id'] ) ? $defaults['form_id'] : '' ),
+					)
+				);
+			case 'ninja_forms':
+				return array_merge(
+					$base_layer,
+					array(
+						'form_type'     => 'ninjaforms',
+						'ninja_form_id' => isset( $form_config['form_id'] ) ? $form_config['form_id'] : ( isset( $defaults['form_id'] ) ? $defaults['form_id'] : '' ),
+					)
+				);
+			case 'metform':
+				return array_merge(
+					$base_layer,
+					array(
+						'form_type'  => 'metform',
+						'metform_id' => isset( $form_config['form_id'] ) ? $form_config['form_id'] : ( isset( $defaults['form_id'] ) ? $defaults['form_id'] : '' ),
 					)
 				);
 

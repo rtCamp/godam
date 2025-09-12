@@ -35,16 +35,18 @@ class GlobalLayersManager {
 
 	/**
 	 * Map form plugin names to video editor form types
+	 *
+	 * TODO: I guess this map is not necessary now, so consider removing it.
 	 */
 	static FORM_PLUGIN_MAP = {
 		wpforms: 'wpforms',
 		gravity_forms: 'gravity',
 		contact_form_7: 'cf7',
-		sureforms: 'sureforms',
+		sure_forms: 'sureforms',
 		forminator: 'forminator',
 		fluent_forms: 'fluentforms',
-		'everest-forms': 'everest',
-		ninja_forms: 'ninja',
+		everest_forms: 'everestforms',
+		ninja_forms: 'ninjaforms',
 		metform: 'metform',
 	};
 
@@ -268,7 +270,7 @@ class GlobalLayersManager {
 				return {
 					...baseLayer,
 					...commonProps,
-					wpforms_id: formConfig.form_id,
+					wpform_id: formConfig.form_id,
 				};
 
 			case 'cf7':
@@ -276,6 +278,42 @@ class GlobalLayersManager {
 					...baseLayer,
 					...commonProps,
 					cf7_id: formConfig.form_id,
+				};
+			case 'sureforms':
+				return {
+					...baseLayer,
+					...commonProps,
+					sureform_id: formConfig.form_id,
+				};
+			case 'forminator':
+				return {
+					...baseLayer,
+					...commonProps,
+					forminator_id: formConfig.form_id,
+				};
+			case 'everestforms':
+				return {
+					...baseLayer,
+					...commonProps,
+					everest_form_id: formConfig.form_id,
+				};
+			case 'fluentforms':
+				return {
+					...baseLayer,
+					...commonProps,
+					fluent_form_id: formConfig.form_id,
+				};
+			case 'ninjaforms':
+				return {
+					...baseLayer,
+					...commonProps,
+					ninja_form_id: formConfig.form_id,
+				};
+			case 'metform':
+				return {
+					...baseLayer,
+					...commonProps,
+					metform_id: formConfig.form_id,
 				};
 
 			default:

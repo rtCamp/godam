@@ -429,126 +429,50 @@ class Settings extends Base {
 	public function detect_form_plugins( $request ) {
 		$available_plugins = array();
 
-		// Check for WPForms.
-		if ( class_exists( 'WPForms' ) ) {
-			$forms = get_posts(
-				array(
-					'post_type'      => 'wpforms',
-					'posts_per_page' => -1,
-					'post_status'    => 'publish',
-				)
-			);
-
-			$wpforms_list = array();
-			foreach ( $forms as $form ) {
-				$wpforms_list[] = array(
-					'id'    => $form->ID,
-					'title' => $form->post_title,
-				);
-			}
-
-			$available_plugins['wpforms'] = array(
-				'name'  => 'WPForms',
-				'forms' => $wpforms_list,
-			);
+		// TODO: these are all duplicate methods, but the implementation is not consistent, so figure out how to unify them.
+		$gravity_forms = $this->get_gravity_forms_data();
+		if ( $gravity_forms ) {
+			$available_plugins['gravity_forms'] = $gravity_forms;
 		}
 
-		// Check for Gravity Forms.
-		if ( class_exists( 'GFForms' ) ) {
-			$forms   = \GFAPI::get_forms();
-			$gf_list = array();
-			foreach ( $forms as $form ) {
-				$gf_list[] = array(
-					'id'    => $form['id'],
-					'title' => $form['title'],
-				);
-			}
-
-			$available_plugins['gravity_forms'] = array(
-				'name'  => 'Gravity Forms',
-				'forms' => $gf_list,
-			);
+		$wpforms = $this->get_wpforms_data();
+		if ( $wpforms ) {
+			$available_plugins['wpforms'] = $wpforms;
 		}
 
-		// Check for Contact Form 7.
-		if ( class_exists( 'WPCF7' ) ) {
-			$forms = get_posts(
-				array(
-					'post_type'      => 'wpcf7_contact_form',
-					'posts_per_page' => -1,
-					'post_status'    => 'publish',
-				)
-			);
-
-			$cf7_list = array();
-			foreach ( $forms as $form ) {
-				$cf7_list[] = array(
-					'id'    => $form->ID,
-					'title' => $form->post_title,
-				);
-			}
-
-			$available_plugins['contact_form_7'] = array(
-				'name'  => 'Contact Form 7',
-				'forms' => $cf7_list,
-			);
+		$contact_form_7 = $this->get_contact_form_7_data();
+		if ( $contact_form_7 ) {
+			$available_plugins['contact_form_7'] = $contact_form_7;
 		}
 
-		// Check for Forminator..
-		if ( class_exists( 'Forminator' ) ) {
-			$forms           = \Forminator_API::get_forms( null, 1, 999 );
-			$forminator_list = array();
-			if ( is_array( $forms ) ) {
-				foreach ( $forms as $form ) {
-					$forminator_list[] = array(
-						'id'    => $form->id,
-						'title' => $form->name,
-					);
-				}
-			}
-
-			$available_plugins['forminator'] = array(
-				'name'  => 'Forminator',
-				'forms' => $forminator_list,
-			);
+		$sure_forms = $this->get_sureforms_data();
+		if ( $sure_forms ) {
+			$available_plugins['sure_forms'] = $sure_forms;
 		}
 
-		// Check for Fluent Forms.
-		if ( function_exists( 'wpFluentForm' ) ) {
-			$forms = wpFluent()->table( 'fluentform_forms' )
-						->select( array( 'id', 'title' ) )
-						->where( 'status', 'published' )
-						->get();
-
-			$ff_list = array();
-			foreach ( $forms as $form ) {
-				$ff_list[] = array(
-					'id'    => $form->id,
-					'title' => $form->title,
-				);
-			}
-
-			$available_plugins['fluent_forms'] = array(
-				'name'  => 'Fluent Forms',
-				'forms' => $ff_list,
-			);
+		$forminator = $this->get_forminator_data();
+		if ( $forminator ) {
+			$available_plugins['forminator'] = $forminator;
 		}
 
-		// Check for Ninja Forms.
-		if ( class_exists( 'Ninja_Forms' ) ) {
-			$forms   = \Ninja_Forms()->form()->get_forms();
-			$nf_list = array();
-			foreach ( $forms as $form ) {
-				$nf_list[] = array(
-					'id'    => $form->get_id(),
-					'title' => $form->get_setting( 'title' ),
-				);
-			}
+		$everest_forms = $this->get_everest_forms_data();
+		if ( $everest_forms ) {
+			$available_plugins['everest_forms'] = $everest_forms;
+		}
 
-			$available_plugins['ninja_forms'] = array(
-				'name'  => 'Ninja Forms',
-				'forms' => $nf_list,
-			);
+		$fluent_forms = $this->get_fluent_forms_data();
+		if ( $fluent_forms ) {
+			$available_plugins['fluent_forms'] = $fluent_forms;
+		}
+
+		$ninja_forms = $this->get_ninja_forms_data();
+		if ( $ninja_forms ) {
+			$available_plugins['ninja_forms'] = $ninja_forms;
+		}
+
+		$met_forms = $this->get_metforms_data();
+		if ( $met_forms ) {
+			$available_plugins['metform'] = $met_forms;
 		}
 
 		return rest_ensure_response(
@@ -556,6 +480,313 @@ class Settings extends Base {
 				'success' => true,
 				'data'    => $available_plugins,
 			)
+		);
+	}
+
+	/**
+	 * Get WPForms data if available.
+	 *
+	 * @return array|null
+	 */
+	private function get_wpforms_data() {
+		if ( ! class_exists( 'WPForms' ) ) {
+			return null;
+		}
+
+		$forms = get_posts(
+			array(
+				'post_type'      => 'wpforms',
+				'posts_per_page' => -1,
+				'post_status'    => 'publish',
+			)
+		);
+
+		$wpforms_list = array();
+		foreach ( $forms as $form ) {
+			$wpforms_list[] = array(
+				'id'    => $form->ID,
+				'title' => $form->post_title,
+			);
+		}
+
+		return array(
+			'name'  => 'WPForms',
+			'forms' => $wpforms_list,
+		);
+	}
+
+	/**
+	 * Get Gravity Forms data if available.
+	 *
+	 * @return array|null
+	 */
+	private function get_gravity_forms_data() {
+		if ( ! class_exists( 'GFForms' ) ) {
+			return null;
+		}
+
+		$forms   = \GFAPI::get_forms();
+		$gf_list = array();
+		foreach ( $forms as $form ) {
+			$gf_list[] = array(
+				'id'    => $form['id'],
+				'title' => $form['title'],
+			);
+		}
+
+		return array(
+			'name'  => 'Gravity Forms',
+			'forms' => $gf_list,
+		);
+	}
+
+	/**
+	 * Get Contact Form 7 data if available.
+	 *
+	 * @return array|null
+	 */
+	private function get_contact_form_7_data() {
+		if ( ! class_exists( 'WPCF7' ) ) {
+			return null;
+		}
+
+		$forms = get_posts(
+			array(
+				'post_type'      => 'wpcf7_contact_form',
+				'posts_per_page' => -1,
+				'post_status'    => 'publish',
+			)
+		);
+
+		$cf7_list = array();
+		foreach ( $forms as $form ) {
+			$cf7_list[] = array(
+				'id'    => $form->ID,
+				'title' => $form->post_title,
+			);
+		}
+
+		return array(
+			'name'  => 'Contact Form 7',
+			'forms' => $cf7_list,
+		);
+	}
+
+	/**
+	 * Get Forminator data if available.
+	 *
+	 * @return array|null
+	 */
+	private function get_forminator_data() {
+		if ( ! class_exists( 'Forminator' ) ) {
+			return null;
+		}
+
+		$forms           = \Forminator_API::get_forms( null, 1, 999 );
+		$forminator_list = array();
+		if ( is_array( $forms ) ) {
+			foreach ( $forms as $form ) {
+				$forminator_list[] = array(
+					'id'    => $form->id,
+					'title' => $form->name,
+				);
+			}
+		}
+
+		return array(
+			'name'  => 'Forminator',
+			'forms' => $forminator_list,
+		);
+	}
+
+	/**
+	 * Get Fluent Forms data if available.
+	 *
+	 * @return array|null
+	 */
+	private function get_fluent_forms_data() {
+		if ( ! function_exists( 'wpFluentForm' ) ) {
+			return null;
+		}
+
+		$forms = wpFluent()->table( 'fluentform_forms' )
+					->select( array( 'id', 'title' ) )
+					->where( 'status', 'published' )
+					->get();
+
+		$ff_list = array();
+		foreach ( $forms as $form ) {
+			$ff_list[] = array(
+				'id'    => $form->id,
+				'title' => $form->title,
+			);
+		}
+
+		return array(
+			'name'  => 'Fluent Forms',
+			'forms' => $ff_list,
+		);
+	}
+
+	/**
+	 * Get Ninja Forms data if available.
+	 *
+	 * @return array|null
+	 */
+	private function get_ninja_forms_data() {
+		if ( ! class_exists( 'Ninja_Forms' ) ) {
+			return null;
+		}
+
+		$forms   = \Ninja_Forms()->form()->get_forms();
+		$nf_list = array();
+		foreach ( $forms as $form ) {
+			$nf_list[] = array(
+				'id'    => $form->get_id(),
+				'title' => $form->get_setting( 'title' ),
+			);
+		}
+
+		return array(
+			'name'  => 'Ninja Forms',
+			'forms' => $nf_list,
+		);
+	}
+
+	/**
+	 * Get all Sure Forms.
+	 *
+	 * @return array|null
+	 */
+	private function get_sureforms_data() {
+
+		$paged    = 1;
+		$per_page = 50;
+		$forms    = array();
+
+		do {
+			$query = new \WP_Query(
+				array(
+					'post_type'      => 'sureforms_form',
+					'posts_per_page' => $per_page,
+					'paged'          => $paged,
+					'post_status'    => 'publish',
+				)
+			);
+
+			if ( ! empty( $query->posts ) ) {
+				$forms = array_merge( $forms, $query->posts );
+				++$paged;
+			} else {
+				break;
+			}
+		} while ( true );
+
+		$sure_forms = array();
+
+		foreach ( $forms as $form ) {
+			$sure_forms[] = array(
+				'id'    => $form->ID,
+				'title' => $form->post_title,
+			);
+		}
+
+		return array(
+			'name'  => 'Sure Forms',
+			'forms' => $sure_forms,
+		);
+	}
+
+	/**
+	 * Get all Everest Forms.
+	 *
+	 * @return array|null
+	 */
+	private function get_everest_forms_data() {
+
+		$paged    = 1;
+		$per_page = 50;
+		$forms    = array();
+
+		while ( true ) {
+			$query = new \WP_Query(
+				array(
+					'post_type'      => 'everest_form',
+					'posts_per_page' => $per_page,
+					'paged'          => $paged,
+					'post_status'    => 'publish',
+				)
+			);
+
+			if ( ! empty( $query->posts ) ) {
+				$forms = array_merge( $forms, $query->posts );
+				++$paged;
+			} else {
+				break;
+			}
+		}
+
+		$formatted_forms = array();
+
+		if ( ! empty( $forms ) && ! is_wp_error( $forms ) ) {
+			$formatted_forms = array_map(
+				function ( $form ) {
+					return array(
+						'id'    => $form->ID,
+						'title' => $form->post_title,
+					);
+				},
+				$forms
+			);
+		}
+
+		return array(
+			'name'  => 'Everest Forms',
+			'forms' => $formatted_forms,
+		);
+	}
+
+	/**
+	 * Get all Metforms.
+	 *
+	 * @return array|null
+	 */
+	private function get_metforms_data() {
+
+		$paged    = 1;
+		$per_page = 50;
+		$forms    = array();
+
+		do {
+			$query = new \WP_Query(
+				array(
+					'post_type'      => 'metform-form',
+					'posts_per_page' => $per_page,
+					'paged'          => $paged,
+					'post_status'    => 'publish',
+				)
+			);
+
+			if ( ! empty( $query->posts ) ) {
+				$forms = array_merge( $forms, $query->posts );
+				++$paged;
+			} else {
+				break;
+			}
+		} while ( true );
+
+		$met_forms = array();
+
+		foreach ( $forms as $form ) {
+			$met_forms[] = array(
+				'id'    => $form->ID,
+				'title' => $form->post_title,
+			);
+		}
+
+		return array(
+			'name'  => 'Metforms',
+			'forms' => $met_forms,
 		);
 	}
 }
