@@ -86,13 +86,39 @@ const ImageCTA = ( { layerID } ) => {
 				return;
 			}
 
-			dispatch(
-				updateLayerField( {
-					id: layer.id,
-					field: 'image',
-					value: attachment.id,
-				} ),
-			);
+			if ( attachment.origin === 'godam' ) {
+				// Update the layer for GoDAM hosted media.
+				dispatch(
+					updateLayerField( {
+						id: layer.id,
+						field: 'image',
+						value: `godam_${ attachment.id }`,
+					} ),
+				);
+				dispatch(
+					updateLayerField( {
+						id: layer.id,
+						field: 'imageUrlExt',
+						value: attachment.url,
+					} ),
+				);
+			} else {
+				// Update the layer for regular WordPress media.
+				dispatch(
+					updateLayerField( {
+						id: layer.id,
+						field: 'image',
+						value: attachment.id,
+					} ),
+				);
+				dispatch(
+					updateLayerField( {
+						id: layer.id,
+						field: 'imageUrlExt',
+						value: '',
+					} ),
+				);
+			}
 		} );
 
 		fileFrame.open();
@@ -107,6 +133,18 @@ const ImageCTA = ( { layerID } ) => {
 			setSelectedImageUrl( '' );
 			return;
 		}
+
+		// Handle GoDAM hosted media.
+		if ( typeof mediaId === 'string' && mediaId.startsWith( 'godam_' ) ) {
+			if ( layer?.imageUrlExt ) {
+				setSelectedImageUrl( layer.imageUrlExt );
+			} else {
+				setSelectedImageUrl( '' );
+			}
+			return;
+		}
+
+		// For regular WordPress media, fetch from the API.
 		fetch( window.pathJoin( [ restURL, `/wp/v2/media/${ mediaId }` ] ) )
 			.then( ( response ) => {
 				if ( ! response.ok ) {
@@ -121,7 +159,7 @@ const ImageCTA = ( { layerID } ) => {
 				setSelectedImageUrl( '' );
 			} );
 	},
-	[ restURL ] );
+	[ restURL, layer?.imageUrlExt ] );
 
 	useEffect( () => {
 		if ( 'image' === layer?.cta_type && layer?.image && layer?.image !== 0 ) {
