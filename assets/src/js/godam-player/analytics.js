@@ -169,6 +169,9 @@ const observer = new MutationObserver( ( mutations ) => {
 
 		// Handle removals
 		mutation.removedNodes.forEach( ( node ) => {
+			if ( ! ( node instanceof Element ) ) {
+				return;
+			}
 			// Check if removed node is a video
 			if ( node.matches && node.matches( '.easydam-player.video-js' ) ) {
 				const videoId = node.getAttribute( 'data-id' );
@@ -203,7 +206,7 @@ if ( ! window.pageLoadEventTracked ) {
 			.filter( ( id ) => id !== null && id !== '' ) // Null and empty string check
 			.map( ( id ) => parseInt( id, 10 ) ); // Convert to integer
 
-		// Send a single page_load request with all video IDs (existing functionality)
+		// Send a single page_load request with all video IDs
 		if ( window.analytics && videoIds.length > 0 ) {
 			window.analytics.track( 'page_load', {
 				type: 1, // Enum: 1 = Page Load
@@ -212,12 +215,13 @@ if ( ! window.pageLoadEventTracked ) {
 		}
 
 		// Mark initial videos as processed and setup tracking
-		videoIds.forEach( ( id ) => {
-			processedVideos.add( id );
-			const videoElement = document.querySelector( `.easydam-player.video-js[data-id="${ id }"]` );
-			if ( videoElement ) {
-				setupTracking( videoElement );
+		videos.forEach( ( videoElement ) => {
+			const idAttr = videoElement.getAttribute( 'data-id' );
+			if ( ! idAttr ) {
+				return;
 			}
+			processedVideos.add( idAttr );
+			setupTracking( videoElement );
 		} );
 
 		// Initialize video analytics
@@ -232,44 +236,15 @@ if ( ! window.pageLoadEventTracked ) {
 function playerAnalytics() {
 	const videos = document.querySelectorAll( '.easydam-player.video-js' );
 
-	videos.forEach( ( video ) => {
-		// read the data-setup attribute.
-		const player = videojs( video );
-
-		window.addEventListener( 'beforeunload', () => {
-			// Flush all unsent heatmap data on page exit
-			videoState.forEach( ( state, videoId ) => {
-				flushHeatmap( videoId );
-			} );
-
-			// Also handle the original beforeunload logic for initial videos
-			const played = player.played();
-			const ranges = [];
-			const videoLength = player.duration();
-
-			// Extract time ranges from the player.played() object
-			for ( let i = 0; i < played.length; i++ ) {
-				ranges.push( [ played.start( i ), played.end( i ) ] );
-			}
-
-			// Send the ranges using updateHeatmap
-			updateHeatmap( ranges, videoLength );
+	window.addEventListener( 'beforeunload', () => {
+		// Flush all unsent heatmap data on page exit
+		videoState.forEach( ( state, videoId ) => {
+			flushHeatmap( videoId );
 		} );
+	} );
 
-		async function updateHeatmap( ranges, videoLength ) {
-			const videoId = video.getAttribute( 'data-id' );
-			if ( ! videoId || ranges.length === 0 ) {
-				return; // Skip sending if no valid data
-			}
-
-			if ( window.analytics ) {
-				window.analytics.track( 'video_heatmap', {
-					type: 2, // Enum: 2 = Heatmap
-					videoId: parseInt( videoId, 10 ),
-					ranges,
-					videoLength,
-				} );
-			}
-		}
+	// Per-video initialization (no global listeners here)
+	videos.forEach( ( video ) => {
+		videojs( video );
 	} );
 }
