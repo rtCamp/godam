@@ -125,14 +125,6 @@ class Assets {
 			)
 		);
 
-		wp_localize_script(
-			'rtgodam-script',
-			'godamRestRoute',
-			array(
-				'url' => get_rest_url( get_current_blog_id() ),
-			)
-		);
-
 		$this->enqueue_godam_settings();
 
 		wp_set_script_translations( 'rtgodam-script', 'godam', RTGODAM_PATH . 'languages' );

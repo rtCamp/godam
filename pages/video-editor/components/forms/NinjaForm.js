@@ -29,7 +29,7 @@ const NinjaForm = ( { layerID } ) => {
 	const forms = ninjaForms?.map( ( form ) => ( {
 		value: form.id,
 		label: form.title,
-	} ) );
+	} ) ) || [];
 
 	const changeFormID = ( formID ) => {
 		setIsFetching( true );

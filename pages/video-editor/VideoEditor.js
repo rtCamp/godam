@@ -34,10 +34,12 @@ import {
 
 import './video-editor.scss';
 import { useGetAttachmentMetaQuery, useSaveAttachmentMetaMutation } from './redux/api/attachment';
+import { useGetGlobalSettingsQuery } from './redux/api/global-settings';
 import { useFetchForms } from './components/forms/fetchForms';
 import Chapters from './components/chapters/Chapters';
 import { copyGoDAMVideoBlock } from './utils/index';
 import { getFormIdFromLayer } from './utils/formUtils';
+import { useGlobalLayers } from './hooks/useGlobalLayers';
 import { canManageAttachment } from '../../assets/src/js/media-library/utility.js';
 
 const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
@@ -58,9 +60,29 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const isChanged = useSelector( ( state ) => state.videoReducer.isChanged );
 
 	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
+	const { data: globalSettings, isLoading: isGlobalSettingsLoading, error: globalSettingsError } = useGetGlobalSettingsQuery();
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
 
 	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, ninjaForms, metforms, isFetching } = useFetchForms();
+
+	/**
+	 * Use this custom hook for the global layers.
+	 */
+	const { resetGlobalLayersState } = useGlobalLayers( {
+		duration,
+		globalSettings,
+		isGlobalSettingsLoading,
+		globalSettingsError,
+		isFetching,
+		currentLayers: layers,
+		onError: () => {
+			setSnackbarMessage( __( 'Error applying global settings layers', 'godam' ) );
+			setShowSnackbar( true );
+		},
+		onSuccess: () => {
+			// Success is silent by default, but could show a message if needed
+		},
+	} );
 
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {
@@ -95,6 +117,9 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 
 		const { rtgodam_meta: rtGodamMeta, source_url: sourceURL, mime_type: mimeType, meta } = attachmentConfig;
 
+		// Reset global layers applied state when a new video is loaded
+		resetGlobalLayersState( attachmentID );
+
 		// Initialize the store if meta exists
 		if ( rtGodamMeta ) {
 			dispatch( initializeStore( rtGodamMeta ) );
@@ -124,11 +149,8 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		}
 
 		setSources( videoSources );
-	}, [ attachmentConfig, dispatch, onBackToAttachmentPicker ] );
+	}, [ attachmentConfig, dispatch, onBackToAttachmentPicker, resetGlobalLayersState, attachmentID ] );
 
-	/**
-	 * Update the store with the fetched forms.
-	 */
 	useEffect( () => {
 		if ( ! isFetching ) {
 			if ( cf7Forms && cf7Forms.length > 0 ) {

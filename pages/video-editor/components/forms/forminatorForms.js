@@ -28,8 +28,8 @@ const ForminatorForm = ( { layerID } ) => {
 
 	const forms = forminatorForms?.map( ( form ) => ( {
 		value: form.id,
-		label: form.name,
-	} ) );
+		label: form.title,
+	} ) ) || [];
 
 	const changeFormID = ( formID ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'forminator_id', value: formID } ) );
