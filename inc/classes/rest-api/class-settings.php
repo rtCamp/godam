@@ -43,7 +43,7 @@ class Settings extends Base {
 				'watermark_url'                  => '',
 				'watermark_image_id'             => null,
 				'use_watermark_image'            => false,
-				'enable_global_video_engagement' => false,
+				'enable_global_video_engagement' => true,
 				'enable_global_video_share'      => false,
 			),
 			'general'      => array(

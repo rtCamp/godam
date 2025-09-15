@@ -27,11 +27,11 @@ const options = [
 const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false } ) => {
 	const { autoplay, controls, loop, muted, preload, showShareButton, engagements } =
 	attributes;
-	const [ showEngagementSetting, setShowEngagementSetting ] = useState( false );
+	const [ showEngagementSetting, setShowEngagementSetting ] = useState( true );
 
 	useEffect( () => {
 		apiFetch( { path: '/godam/v1/settings/godam-settings' } ).then( ( settings ) => {
-			const globalEngagement = settings?.video?.enable_global_video_engagement ?? false;
+			const globalEngagement = settings?.video?.enable_global_video_engagement ?? true;
 			setShowEngagementSetting( globalEngagement );
 		} );
 	}, [] );

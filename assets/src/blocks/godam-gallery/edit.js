@@ -15,7 +15,8 @@ import {
 } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
@@ -56,6 +57,14 @@ export default function Edit( { attributes, setAttributes } ) {
 	const [ startDatePopoverOpen, setStartDatePopoverOpen ] = useState( false );
 	const [ endDatePopoverOpen, setEndDatePopoverOpen ] = useState( false );
 	const [ dateError, setDateError ] = useState( '' );
+	const [ showEngagementSetting, setShowEngagementSetting ] = useState( true );
+
+	useEffect( () => {
+		apiFetch( { path: '/godam/v1/settings/godam-settings' } ).then( ( settings ) => {
+			const globalEngagement = settings?.video?.enable_global_video_engagement ?? true;
+			setShowEngagementSetting( globalEngagement );
+		} );
+	}, [] );
 
 	// Fetch categories and tags
 	const categories = useSelect( ( select ) => {
@@ -206,12 +215,16 @@ export default function Edit( { attributes, setAttributes } ) {
 							/>
 						</>
 					) }
-					<ToggleControl
-						label={ __( 'Enable Likes & Comments', 'godam' ) }
-						checked={ !! engagements }
-						onChange={ ( value ) => setAttributes( { engagements: value } ) }
-						help={ __( 'Engagement will only be visible for transcoded videos', 'godam' ) }
-					/>
+					{
+						showEngagementSetting && (
+							<ToggleControl
+								label={ __( 'Enable Likes & Comments', 'godam' ) }
+								checked={ !! engagements }
+								onChange={ ( value ) => setAttributes( { engagements: value } ) }
+								help={ __( 'Engagement will only be visible for transcoded videos', 'godam' ) }
+							/>
+						)
+					}
 					<SelectControl
 						label={ __( 'Layout', 'godam' ) }
 						value={ layout }

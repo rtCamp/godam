@@ -142,6 +142,12 @@ class Video_Engagement {
 			return false;
 		}
 
+		$easydam_settings = get_option( 'rtgodam-settings', array() );
+
+		if ( isset( $easydam_settings['video']['enable_global_video_engagement'] ) && ! $easydam_settings['video']['enable_global_video_engagement'] ) {
+			return false;
+		}
+
 		return true;
 	}
 }
