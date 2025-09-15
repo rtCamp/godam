@@ -659,10 +659,17 @@
             }
 
             &-emoji-picker {
+                --epr-preview-height: 50px;
+                --epr-category-navigation-button-size: 1.8rem;
                 padding-bottom: 5px;
-                
+
                 .epr-main {
                     width: 100% !important;
+                }
+
+                .epr-category-nav {
+                    justify-content: flex-start;
+                    flex-wrap: wrap;
                 }
             }
         }
@@ -809,6 +816,16 @@
                         .video-js {
                             max-height: 100%;
                         }
+                    }
+                }
+            }
+
+            &-form {
+
+                &-emoji-picker {
+
+                    .epr-main {
+                        height: 350px !important;
                     }
                 }
             }

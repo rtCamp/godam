@@ -57,7 +57,7 @@ export default function Edit( { attributes, setAttributes } ) {
 	const [ startDatePopoverOpen, setStartDatePopoverOpen ] = useState( false );
 	const [ endDatePopoverOpen, setEndDatePopoverOpen ] = useState( false );
 	const [ dateError, setDateError ] = useState( '' );
-	const [ showEngagementSetting, setShowEngagementSetting ] = useState( true );
+	const [ showEngagementSetting, setShowEngagementSetting ] = useState( false );
 
 	useEffect( () => {
 		apiFetch( { path: '/godam/v1/settings/godam-settings' } ).then( ( settings ) => {

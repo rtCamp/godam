@@ -27,7 +27,7 @@ const options = [
 const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false } ) => {
 	const { autoplay, controls, loop, muted, preload, showShareButton, engagements } =
 	attributes;
-	const [ showEngagementSetting, setShowEngagementSetting ] = useState( true );
+	const [ showEngagementSetting, setShowEngagementSetting ] = useState( false );
 
 	useEffect( () => {
 		apiFetch( { path: '/godam/v1/settings/godam-settings' } ).then( ( settings ) => {
