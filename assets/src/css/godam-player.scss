@@ -1315,11 +1315,11 @@ body.godam-share-modal-open {
 	@media (hover: none) {
 
 		.vjs-volume-control {
-			display: none !important; // disable slider for touch devices
+			display: none !important; // Disable slider for touch devices
 		}
 
 		.vjs-volume-panel {
-			width: 40px !important; //prevent volume slider transition effect.
+			width: 40px !important; //Prevent volume slider transition effect.
 		}
 	}
 
@@ -1356,7 +1356,7 @@ body.godam-share-modal-open {
 			}
 
 			.vjs-volume-control {
-				display: none; //fallback for old browser versions not supporting interaction media features
+				display: none; //Fallback for old browser versions not supporting interaction media features
 			}
 
 			.vjs-skip-backward-5,
