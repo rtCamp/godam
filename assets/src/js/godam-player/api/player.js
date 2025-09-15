@@ -626,6 +626,117 @@ class Player {
 		this.video = null;
 		this.customLayers = [];
 	}
+
+	/**
+	 * Replay player state and layers
+	 *
+	 * This method is necessary if we also want to replay the layers.
+	 *
+	 * @param {boolean} reloadLayers - Whether to reset and replay layers (default: true)
+	 */
+	replay( reloadLayers = true ) {
+		// Reset video state
+		this.videoJs.currentTime( 0 );
+		this.dismissNativeLayer();
+
+		if ( reloadLayers ) {
+			// Reset all custom layers
+			this.layersManager = this.getFormLayerManager();
+			if ( this.layersManager ) {
+				this.layersManager.replay();
+			}
+		}
+	}
+
+	// ==============================
+	// NATIVE LAYER MANAGEMENT METHODS
+	// ==============================
+
+	/**
+	 * Get the FormLayerManager instance if available
+	 *
+	 * @return {Object|null} FormLayerManager instance or null
+	 */
+	getFormLayerManager() {
+		// Alternative: Try to find it through the VideoJS player
+		if ( this.videoJs.layersManager ) {
+			return this.videoJs.layersManager;
+		}
+
+		console.warn( 'LayersManager not found. Make sure the player is fully initialized.' );
+		return null;
+	}
+
+	/**
+	 * Dismiss a native layer - either current active layer or specific layer by HTML ID
+	 *
+	 * @param {string} layerHtmlId - Optional HTML ID of the layer to dismiss. If not provided, dismisses current active layer
+	 * @return {boolean} True if a layer was dismissed successfully
+	 */
+	dismissNativeLayer( layerHtmlId = null ) {
+		const formLayerManager = this.getFormLayerManager();
+
+		if ( ! formLayerManager ) {
+			return false;
+		}
+
+		return formLayerManager.dismissLayer( layerHtmlId );
+	}
+
+	/**
+	 * Get the currently active native layer
+	 *
+	 * @return {Object|null} Current layer object or null if no active layer
+	 */
+	getCurrentNativeLayer() {
+		const formLayerManager = this.getFormLayerManager();
+
+		if ( ! formLayerManager ) {
+			return null;
+		}
+
+		return formLayerManager.getCurrentLayer();
+	}
+
+	/**
+	 * Get all native form layers
+	 *
+	 * @return {Array} Array of layer information objects
+	 */
+	getAllNativeLayers() {
+		const formLayerManager = this.getFormLayerManager();
+
+		if ( ! formLayerManager ) {
+			return [];
+		}
+
+		return formLayerManager.getAllLayers();
+	}
+
+	/**
+	 * Check if there are any native layers currently visible
+	 *
+	 * @return {boolean} True if any native layer is visible
+	 */
+	hasVisibleNativeLayers() {
+		const allLayers = this.getAllNativeLayers();
+		return allLayers.some( ( layer ) => layer.isVisible );
+	}
+
+	/**
+	 * Get the current native layer index
+	 *
+	 * @return {number} Current form layer index or -1 if no FormLayerManager
+	 */
+	getCurrentNativeLayerIndex() {
+		const formLayerManager = this.getFormLayerManager();
+
+		if ( ! formLayerManager ) {
+			return -1;
+		}
+
+		return formLayerManager.currentFormLayerIndex;
+	}
 }
 
 export default Player;
