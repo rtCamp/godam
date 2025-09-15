@@ -39,7 +39,7 @@
 		},
 		"preload": {
 			"type": "string",
-			"default": "metadata"
+			"default": "none"
 		},
 		"blob": {
 			"type": "string",
@@ -100,7 +100,7 @@
 		},
 		"showShareButton": {
 			"type": "boolean",
-			"default": true
+			"default": false
 		},
 		"layout": {
 			"type": "object",

@@ -273,7 +273,7 @@ document.addEventListener( 'click', async function( e ) {
 						}
 
 						const engagementContainer = videoContainer.querySelector( '.rtgodam-video-engagement' );
-						const engagementId = engagementContainer?.getAttribute( 'data-engagement-id' ) || 0;
+						let engagementId = engagementContainer?.getAttribute( 'data-engagement-id' ) || 0;
 						const siteUrl = engagementContainer?.getAttribute( 'data-engagement-site-url' ) || '';
 
 						if ( ! galleryEngagements ) {
@@ -289,22 +289,27 @@ document.addEventListener( 'click', async function( e ) {
 							if ( videoPlayer && videoPlayer.player ) {
 								if ( galleryEngagements ) {
 									// If engagements are enabled, initiate the comment modal with Data
-
+									let skipEngagements = false;
+									if ( 0 === engagementId ) {
+										const vidFigure = videoContainer.querySelector( 'figure' );
+										engagementId = vidFigure?.id.replace( 'godam-player-container', 'engagement' );
+										skipEngagements = true;
+									}
 									const newVideoEngagementsData = select( engagementStore ).getTitles()[ newVideoId ];
 									if ( newVideoEngagementsData ) {
-										dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId ).then( () => {
+										dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId, skipEngagements ).then( () => {
 											window.galleryScroll = true;
 										} );
 										videoPlayer.player.play();
 									} else {
 										initEngagement.then( () => {
-											dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId ).then( () => {
+											dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId, skipEngagements ).then( () => {
 												window.galleryScroll = true;
 											} );
 											videoPlayer.player.play();
 										} );
 									}
-									engagementContainer.remove();
+									engagementContainer?.remove();
 								} else {
 									dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId, true ).then( () => {
 										window.galleryScroll = true;

@@ -367,7 +367,7 @@ const engagementStore = {
 			video_id: videoAttachmentId,
 			like_status: likeStatus,
 		};
-		apiFetch.use( apiFetch.createNonceMiddleware( nonceData.nonce ) );
+		apiFetch.use( apiFetch.createNonceMiddleware( nonceData?.nonce ) );
 		return await apiFetch( {
 			path: addQueryArgs( '/godam/v1/engagement/user-hit-like' ),
 			method: 'POST',
@@ -572,16 +572,20 @@ function CommentForm( props ) {
 	const textareaRef = useRef( null );
 
 	async function handleSubmit() {
+		const text = commentText.trim();
+		if ( 0 === text.length ) {
+			return;
+		}
 		setIsSending( true );
 		const parentId = comment.id ? comment.id : '';
 		const queryParams = {
 			site_url: siteUrl,
 			video_id: videoAttachmentId,
 			comment_parent_id: parentId,
-			comment_text: commentText,
+			comment_text: text,
 			comment_type: commentType,
 		};
-		apiFetch.use( apiFetch.createNonceMiddleware( nonceData.nonce ) );
+		apiFetch.use( apiFetch.createNonceMiddleware( nonceData?.nonce ) );
 		const result = await apiFetch( {
 			path: addQueryArgs( '/godam/v1/engagement/user-comment' ),
 			method: 'POST',
@@ -648,7 +652,7 @@ function CommentForm( props ) {
 				<button
 					className={ 'rtgodam-video-engagement--comment-button' +
 					( isSending ? ' is-comment-progressing' : '' ) }
-					disabled={ isSending || ! commentText }
+					disabled={ isSending || 0 === commentText.trim().length }
 					onClick={ handleSubmit }
 				>
 					{ 'thread-reply' === type ? __( 'Reply', 'godam' ) : __( 'Comment', 'godam' ) }
@@ -771,7 +775,7 @@ function Comment( props ) {
 			delete_type: deleteType,
 		};
 
-		apiFetch.use( apiFetch.createNonceMiddleware( nonceData.nonce ) );
+		apiFetch.use( apiFetch.createNonceMiddleware( nonceData?.nonce ) );
 		const result = await apiFetch( {
 			path: addQueryArgs( '/godam/v1/engagement/user-delete-comment' ),
 			method: 'POST',
@@ -971,7 +975,7 @@ function GuestLoginForm( props ) {
 			const queryParams = {
 				guest_user_email: guestEmail,
 			};
-			apiFetch.use( apiFetch.createNonceMiddleware( nonceData.nonce ) );
+			apiFetch.use( apiFetch.createNonceMiddleware( nonceData?.nonce ) );
 			const result = await apiFetch( {
 				path: addQueryArgs( '/godam/v1/engagement/guest-user-login' ),
 				method: 'POST',

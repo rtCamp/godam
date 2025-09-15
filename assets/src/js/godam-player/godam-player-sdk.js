@@ -3,7 +3,7 @@
  * This is JavaScript SDK for interacting with the GoDAM Player embedded in an iframe.
  * It allows you to control playback, listen for events, and manage player state.
  *
- * @since n.e.x.t
+ * @since 1.4.0
  */
 class GodamPlayer {
 	constructor( iframe, options = {} ) {
@@ -209,7 +209,7 @@ class GodamPlayer {
 				try {
 					callback( data );
 				} catch ( error ) {
-					console.error( `Error in ${ event } event listener:`, error ); // eslint-disable-line no-console -- Required for error logging.
+					console.error( 'Error in %s event listener:', event, error ); // eslint-disable-line no-console -- Required for error logging.
 				}
 			} );
 		}

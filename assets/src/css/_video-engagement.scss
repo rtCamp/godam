@@ -134,27 +134,10 @@
         cursor: not-allowed;
         pointer-events: none;
 
-        .rtgodam-video-engagement--like-link,
-        .rtgodam-video-engagement--comment-link,
-        .rtgodam-video-engagement--view-link {
-            position: relative;
-
-            span {
-                opacity: 0;
-            }
-
-            &::after {
-                content: '';
-                position: absolute;
-                top: 12px;
-                left: 22px;
-                width: 10px;
-                height: 10px;
-                border: 2px solid var( --wp--preset--color--white, #fff );
-                border-top: 2px solid var( --wp--preset--color--black, #000 );
-                border-radius: 50%;
-                animation: comment-loading 1s linear infinite;
-            }
+        .rtgodam-video-engagement--like-count,
+        .rtgodam-video-engagement--comment-count,
+        .rtgodam-video-engagement--view-count {
+            display: none;
         }
     }
 

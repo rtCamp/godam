@@ -1,11 +1,27 @@
-@import "@uppy/core/dist/style.min.css";
-@import "@uppy/dashboard/dist/style.min.css";
-@import "@uppy/webcam/dist/style.min.css";
-@import "@uppy/screen-capture/dist/style.min.css";
+@import "@uppy/core/css/style.min.css";
+@import "@uppy/dashboard/css/style.min.css";
+@import "@uppy/webcam/css/style.min.css";
+@import "@uppy/screen-capture/css/style.min.css";
+@import "@uppy/audio/css/style.min.css";
 
 .uppy-video-upload-preview {
     margin-top: 20px;
     max-width: 100%;
+
+    audio {
+        max-width: 400px;
+        width: 100%;
+        height: 40px;
+        margin: 10px 0;
+    }
+}
+
+/* Hide the screenshot button from ScreenCapture plugin */
+.uppy-Dashboard {
+
+    .uppy-ScreenCapture-button--screenshot {
+        display: none !important;
+    }
 }
 
 .upp-video-upload-filename {

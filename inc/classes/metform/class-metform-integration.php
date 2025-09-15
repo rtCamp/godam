@@ -2,7 +2,7 @@
 /**
  * Handles Metform integration class.
  *
- * @since n.e.x.t
+ * @since 1.4.0
  *
  * @package GoDAM
  */
@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Metform_Integration
  *
- * @since n.e.x.t
+ * @since 1.4.0
  */
 class Metform_Integration {
 
@@ -25,7 +25,7 @@ class Metform_Integration {
 	/**
 	 * Initialize class.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
@@ -40,7 +40,7 @@ class Metform_Integration {
 	/**
 	 * Setup hooks.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
@@ -55,7 +55,7 @@ class Metform_Integration {
 	/**
 	 * Add additional css for video editor.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
@@ -80,7 +80,7 @@ class Metform_Integration {
 	/**
 	 * Add additional css for godam player.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
@@ -97,7 +97,7 @@ class Metform_Integration {
 	/**
 	 * Add css for the layer inside iframe.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $layer Layer name.
 	 * @param string $layer_id Layer ID.
@@ -125,7 +125,7 @@ class Metform_Integration {
 	/**
 	 * Render metform for video editor.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $layer Layer name.
 	 * @param string $layer_id Layer ID.

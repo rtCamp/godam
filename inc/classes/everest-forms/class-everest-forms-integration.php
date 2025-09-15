@@ -2,7 +2,7 @@
 /**
  * Handles Everest Forms integration class.
  *
- * @since n.e.x.t
+ * @since 1.4.0
  *
  * @package GoDAM
  */
@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Everest_Forms_Integration
  *
- * @since n.e.x.t
+ * @since 1.4.0
  */
 class Everest_Forms_Integration {
 
@@ -25,14 +25,14 @@ class Everest_Forms_Integration {
 	/**
 	 * Initialize class.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
 	public function init() {
 		// Backward compatibility for Everest Forms REST API.
 		// Previously it was registered as RTGODAM\Inc\REST_API\Everest_Forms under rest-api directory.
-		// TODO: Remove this in future versions. Added in @n.e.x.t version.
+		// TODO: Remove this in future versions. Added in @1.4.0 version.
 		class_alias( 'RTGODAM\Inc\Everest_Forms\Everest_Forms_Rest_Api', 'RTGODAM\Inc\REST_API\Everest_Forms' );
 
 		if ( ! $this->is_evf_active() ) {
@@ -47,7 +47,7 @@ class Everest_Forms_Integration {
 	/**
 	 * Setup hooks.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
@@ -79,7 +79,7 @@ class Everest_Forms_Integration {
 	 * @param string          $job_for       Job for.
 	 * @param WP_REST_Request $request       Request object.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
@@ -117,7 +117,7 @@ class Everest_Forms_Integration {
 	 *
 	 * @param array $fields Array of Everest Forms fields.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return array
 	 */
@@ -132,7 +132,7 @@ class Everest_Forms_Integration {
 	 *
 	 * @param array $form_data Form data.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return array
 	 */
@@ -154,7 +154,7 @@ class Everest_Forms_Integration {
 	 *
 	 * @param array $fields Fields data.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return array
 	 */
@@ -177,7 +177,7 @@ class Everest_Forms_Integration {
 	 * @param array $form_data   Form data.
 	 * @param int   $entry_id    Entry ID.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
@@ -206,7 +206,7 @@ class Everest_Forms_Integration {
 	/**
 	 * Return true if Everest Forms is active.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return boolean
 	 */
@@ -229,7 +229,7 @@ class Everest_Forms_Integration {
 	 * @param int    $entry_id   Entry Id.
 	 * @param string $file_url   File URL.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
