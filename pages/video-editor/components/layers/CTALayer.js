@@ -9,6 +9,7 @@ import DOMPurify from 'isomorphic-dompurify';
  */
 import {
 	Button,
+	Notice,
 	Panel,
 	PanelBody, SelectControl,
 } from '@wordpress/components';
@@ -167,6 +168,16 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 	return (
 		<>
 			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
+
+			{
+				layer?.isGlobalLayer &&
+				<Notice
+					status="info"
+					isDismissible={ false }
+				>
+					{ __( 'This is a global layer and changes done here will not persist.', 'godam' ) }
+				</Notice>
+			}
 
 			<div className="flex flex-col godam-form-group">
 				<p className="mb-4 label-text">{ __( 'Call to Action', 'godam' ) }</p>
