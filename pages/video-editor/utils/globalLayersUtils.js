@@ -112,11 +112,11 @@ class GlobalLayersManager {
 			case GlobalLayersManager.PLACEMENT_START:
 				return 0;
 			case GlobalLayersManager.PLACEMENT_MIDDLE:
-				return position || Math.floor( this.videoDuration / 2 );
+				return Math.floor( position || Math.floor( this.videoDuration / 2 ) );
 			case GlobalLayersManager.PLACEMENT_END:
-				return Math.max( 0, ( this.videoDuration || 60 ) - 10 ); // 10 seconds before end
+				return Math.floor( Math.max( 0, ( this.videoDuration || 60 ) ) );
 			default:
-				return position || 0;
+				return Math.floor( position || 0 );
 		}
 	}
 
@@ -348,16 +348,13 @@ class GlobalLayersManager {
 				( layer ) => ! ( GlobalLayersManager.isGlobalLayer( layer ) && layer.type === 'form' ),
 			);
 
-			// Add a new form layer only if an enabled one exists
-			if ( existingGlobalInfo.form ) {
-				const newFormLayer = this.createFormLayer( this.globalSettings.global_layers.forms );
-				if ( newFormLayer ) {
-					if ( existingGlobalInfo.form.disabled ) {
-						newFormLayer.isDisabled = true;
-					}
-
-					mergedLayers.push( newFormLayer );
+			const newFormLayer = this.createFormLayer( this.globalSettings.global_layers.forms );
+			if ( newFormLayer ) {
+				if ( existingGlobalInfo.form && existingGlobalInfo.form.disabled ) {
+					newFormLayer.isDisabled = true;
 				}
+
+				mergedLayers.push( newFormLayer );
 			}
 		}
 
@@ -368,14 +365,12 @@ class GlobalLayersManager {
 				( layer ) => ! ( GlobalLayersManager.isGlobalLayer( layer ) && layer.type === 'cta' ),
 			);
 
-			if ( existingGlobalInfo.cta && ! existingGlobalInfo.cta.disabled ) {
-				const newCtaLayer = this.createCtaLayer( this.globalSettings.global_layers.cta );
-				if ( newCtaLayer ) {
-					if ( existingGlobalInfo.cta.disabled ) {
-						newCtaLayer.isDisabled = true;
-					}
-					mergedLayers.push( newCtaLayer );
+			const newCtaLayer = this.createCtaLayer( this.globalSettings.global_layers.cta );
+			if ( newCtaLayer ) {
+				if ( existingGlobalInfo?.cta && existingGlobalInfo?.cta?.disabled ) {
+					newCtaLayer.isDisabled = true;
 				}
+				mergedLayers.push( newCtaLayer );
 			}
 		}
 
