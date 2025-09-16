@@ -50,6 +50,7 @@ export default function Edit( { attributes, setAttributes } ) {
 		showTitle,
 		layout,
 		engagements,
+		openToNewPage,
 	} = attributes;
 	const blockProps = useBlockProps();
 
@@ -225,6 +226,12 @@ export default function Edit( { attributes, setAttributes } ) {
 							/>
 						)
 					}
+					<ToggleControl
+						label={ __( 'Open video to new page', 'godam' ) }
+						checked={ !! openToNewPage }
+						onChange={ ( value ) => setAttributes( { openToNewPage: value } ) }
+						help={ __( 'If enabled, clicking a video will open it in a new page', 'godam' ) }
+					/>
 					<SelectControl
 						label={ __( 'Layout', 'godam' ) }
 						value={ layout }

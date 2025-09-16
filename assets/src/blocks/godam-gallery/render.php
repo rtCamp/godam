@@ -29,6 +29,7 @@ $attributes = wp_parse_args(
 		'showTitle'       => true,
 		'align'           => '',
 		'engagements'     => true,
+		'openToNewPage'   => false,
 	)
 );
 
@@ -51,6 +52,7 @@ $shortcode_atts = array(
 	'show_title'        => ! empty( $attributes['showTitle'] ),
 	'align'             => sanitize_text_field( $attributes['align'] ),
 	'engagements'       => ! empty( $attributes['engagements'] ),
+	'open_to_new_page'  => ! empty( $attributes['openToNewPage'] ),
 );
 
 // Convert attributes to shortcode string.
