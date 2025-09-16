@@ -48,7 +48,6 @@ class Init {
 		add_action( 'gform_field_standard_settings', array( $this, 'add_godam_recorder_field_setting' ), 10, 2 );
 		add_action( 'gform_editor_js', array( $this, 'add_editor_script' ) );
 		add_action( 'gform_after_submission', array( $this, 'process_file_upload_to_godam' ), 10, 2 );
-		add_action( 'gform_entry_detail', array( $this, 'enqueue_entry_detail_scripts' ) );
 		add_action( 'wp_head', array( $this, 'maybe_enqueue_gf_hooks' ) );
 	}
 
@@ -112,19 +111,6 @@ class Init {
 				true
 			);
 		}
-	}
-
-	/**
-	 * Enqueue scripts and styles for the entry detail page.
-	 */
-	public function enqueue_entry_detail_scripts() {
-		wp_enqueue_script(
-			'gf-entry-detail-script',
-			RTGODAM_URL . 'assets/build/js/gf-entry-detail.min.js',
-			array( 'jquery' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/gf-entry-detail.min.js' ),
-			true
-		);
 	}
 
 	/**
@@ -197,6 +183,13 @@ class Init {
 							<?php esc_html_e( 'Screencast', 'godam' ); ?>
 						</label>
 					</div>
+
+					<div>
+						<input type="checkbox" name="field_godam_video_file_selector" id="field_godam_video_file_selector_audio" value="audio">
+						<label class="inline" for="field_godam_video_file_selector_audio">
+							<?php esc_html_e( 'Audio', 'godam' ); ?>
+						</label>
+					</div>
 				</div>
 			</li>
 			<?php
@@ -245,6 +238,15 @@ class Init {
 			$field_id   = $field->id;
 			$file_value = rgar( $entry, $field_id );
 
+			$file_type = wp_check_filetype( $file_value );
+			$is_audio  = strpos( $file_type['type'], 'audio' ) !== false;
+			$is_video  = strpos( $file_type['type'], 'video' ) !== false;
+
+			if ( 'webm' === $file_type['ext'] && godam_is_audio_file_by_name( $file_value ) ) {
+				$is_video = false;
+				$is_audio = true;
+			}
+
 			if ( empty( $file_value ) ) {
 				continue;
 			}
@@ -257,11 +259,11 @@ class Init {
 				}
 
 				foreach ( $files as $index => $file_url ) {
-					$this->send_to_godam( $form_title, $file_url, $entry['id'], $field_id, $index );
+					$this->send_to_godam( $form_title, $file_url, $entry['id'], $field_id, $index, $is_audio ? 'audio' : 'stream' );
 				}
 			} else {
 				// Single file.
-				$this->send_to_godam( $form_title, $file_value, $entry['id'], $field_id );
+				$this->send_to_godam( $form_title, $file_value, $entry['id'], $field_id, 0, $is_audio ? 'audio' : 'stream' );
 			}
 		}
 	}
@@ -274,8 +276,9 @@ class Init {
 	 * @param int    $entry_id The ID of the entry.
 	 * @param int    $field_id The ID of the field.
 	 * @param int    $index The index of the file (for multiple files).
+	 * @param string $job_type Job type, Default is 'stream'.
 	 */
-	private function send_to_godam( $form_title, $file_url, $entry_id, $field_id, $index = 0 ) {
+	private function send_to_godam( $form_title, $file_url, $entry_id, $field_id, $index = 0, $job_type = 'stream' ) {
 
 		/**
 		 * Bail early if no file to send.
@@ -292,7 +295,7 @@ class Init {
 		/**
 		 * Send for transcoding.
 		 */
-		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding( 'gf', $form_title, $file_url, $entry_id );
+		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding( 'gf', $form_title, $file_url, $entry_id, $job_type );
 
 		/**
 		 * Error handling.

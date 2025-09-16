@@ -206,13 +206,14 @@ $video_setup = array(
 	'sources'     => $sources,
 	'playsinline' => true,
 	'controlBar'  => array(
-		'volumePanel' => array(
+		'volumePanel'  => array(
 			'inline' => ! in_array( $player_skin, array( 'Minimal', 'Pills' ), true ),
 		),
-		'skipButtons' => array(
+		'skipButtons'  => array(
 			'forward'  => 10,
 			'backward' => 10,
 		),
+		'brandingIcon' => true, // provide default value for brand logo. 
 	),
 );
 if ( ! empty( $control_bar_settings ) ) {
