@@ -497,6 +497,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 								</div>
 									<?php
 							elseif ( 'everestforms' === $form_type && ! empty( $layer['everest_form_id'] ) ) :
+								Form_Layer::add_form_godam_identifier( $attachment_id, $form_type, $layer['everest_form_id'] );
 								?>
 								<div
 									id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>"
