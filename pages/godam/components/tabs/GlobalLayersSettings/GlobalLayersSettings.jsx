@@ -135,7 +135,7 @@ const GlobalLayersSettings = () => {
 					variant="primary"
 					onClick={ handleSaveSettings }
 					disabled={ ! isChanged || saveMediaSettingsLoading }
-					className="godam-global-layers-settings__save-button"
+					className="godam-global-layers-settings__save-button godam-button"
 				>
 					{ saveMediaSettingsLoading && <Spinner /> }
 					{ __( 'Save Global Layers Settings', 'godam' ) }
