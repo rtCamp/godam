@@ -41,7 +41,7 @@
 		"@wordpress/icons": "^10.18.0",
 		"@wordpress/server-side-render": "^5.18.0",
 		"analytics": "^0.8.16",
-		"axios": "^1.7.9",
+		"axios": "^1.12.2",
 		"clsx": "^2.1.1",
 		"flv.js": "^1.6.2",
 		"isomorphic-dompurify": "^2.21.0",
