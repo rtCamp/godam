@@ -242,6 +242,7 @@ $video_duration = rtgodam_get_video_duration( $attachment_id );
  * Initialize the Ads class which helps get the appropriate ad tag URL.
  */
 $ad_tag_url = Ads::get_ad_tag_url( $attachment_id, $godam_settings, $easydam_meta_data );
+
 /**
  * Merge layers with global settings
  */

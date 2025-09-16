@@ -343,30 +343,34 @@ class GlobalLayersManager {
 
 		// Replace global form layer if present and not disabled
 		if ( this.globalSettings?.global_layers?.forms ) {
+			// Always remove existing global form layers first
+			mergedLayers = mergedLayers.filter(
+				( layer ) => ! ( GlobalLayersManager.isGlobalLayer( layer ) && layer.type === 'form' ),
+			);
+
+			// Add a new form layer only if an enabled one exists
 			if ( existingGlobalInfo.form && ! existingGlobalInfo.form.disabled ) {
-				mergedLayers = mergedLayers.filter(
-					( layer ) => ! ( GlobalLayersManager.isGlobalLayer( layer ) && layer.type === 'form' ),
-				);
-			}
-			const newFormLayer = this.createFormLayer( this.globalSettings.global_layers.forms );
-			if ( newFormLayer ) {
-				mergedLayers.push( newFormLayer );
+				const newFormLayer = this.createFormLayer( this.globalSettings.global_layers.forms );
+				if ( newFormLayer ) {
+					mergedLayers.push( newFormLayer );
+				}
 			}
 		}
 
 		// Replace global CTA layer if present and not disabled
 		if ( this.globalSettings?.global_layers?.cta ) {
+			// Always remove existing global form layers first
+			mergedLayers = mergedLayers.filter(
+				( layer ) => ! ( GlobalLayersManager.isGlobalLayer( layer ) && layer.type === 'cta' ),
+			);
+
 			if ( existingGlobalInfo.cta && ! existingGlobalInfo.cta.disabled ) {
-				mergedLayers = mergedLayers.filter(
-					( layer ) => ! ( GlobalLayersManager.isGlobalLayer( layer ) && layer.type === 'cta' ),
-				);
-			}
-			const newCtaLayer = this.createCtaLayer( this.globalSettings.global_layers.cta );
-			if ( newCtaLayer ) {
-				mergedLayers.push( newCtaLayer );
+				const newCtaLayer = this.createCtaLayer( this.globalSettings.global_layers.cta );
+				if ( newCtaLayer ) {
+					mergedLayers.push( newCtaLayer );
+				}
 			}
 		}
-
 		return mergedLayers;
 	}
 

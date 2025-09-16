@@ -674,7 +674,7 @@ function godam_get_transcript_path( $job_id ) {
 				// Cache for 12 hours.
 				set_transient( $cache_key, $transcript_path, 12 * HOUR_IN_SECONDS );
 			}
-		} 
+		}
 	}
 
 	return ! empty( $transcript_path ) ? $transcript_path : false;
@@ -721,9 +721,9 @@ function rtgodam_get_video_duration( $attachment_id ) {
 		}
 	}
 
-	// Default duration if we still can't determine i.
+	// Default duration if we still can't determine it.
 	if ( empty( $video_duration ) ) {
-		$video_duration = 60; // Default to 60 second.
+		$video_duration = 10; // Default to 10 seconds.
 	}
 
 	return $video_duration;

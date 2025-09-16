@@ -413,13 +413,7 @@ class Layers {
 					return true;
 				}
 
-				// If it's a global layer, check if it's disabled.
-				if ( isset( $existing_global_layers[ $layer_type ] ) ) {
-					// Keep the layer only if it's disabled (disabled = true).
-					return true === $existing_global_layers[ $layer_type ]['disabled'];
-				}
-
-				// If no info found, remove it (it's a global layer but not disabled).
+				// If no info found, remove it (it's a global layer).
 				return false;
 			}
 		);
