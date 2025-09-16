@@ -23,6 +23,7 @@ export const FORM_TYPES = {
 	FORMINATOR: 'forminator',
 	FLUENT: 'fluentforms',
 	NINJA: 'ninjaforms',
+	METFORM: 'metform',
 };
 
 /**
@@ -47,4 +48,17 @@ export const KEYBOARD_CONTROLS = {
 	ENTER: 'Enter',
 	SPACE: ' ',
 	ESCAPE: 'Escape',
+};
+
+/**
+ * Engagements.
+ */
+export const ACTIONS = {
+	LOAD_VIDEO_ENGAGEMENT_DATA: 'LOAD_VIDEO_ENGAGEMENT_DATA',
+	USER_HIT_LIKE: 'USER_HIT_LIKE',
+	USER_COMMENTED: 'USER_COMMENTED',
+	GENERATE_COMMENT_MODAL: 'GENERATE_COMMENT_MODAL',
+	UPDATE_USER_DATA: 'UPDATE_USER_DATA',
+	ERROR: 'ERROR',
+	ADD_VIDEO_MARKUP: 'ADD_VIDEO_MARKUP',
 };

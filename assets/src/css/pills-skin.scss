@@ -4,12 +4,11 @@
 
 	.video-js .vjs-control-bar {
 		width: 95% !important;
-		position: relative;
 		border-radius: 80px;
 		margin: -50px auto 0 auto;
 		z-index: 999;
 		background-color: var(--rtgodam-control-bar-color, #000) !important;
-		bottom: unset !important;
+		bottom: 0.5rem !important;
 	}
 
 	.video-js .vjs-big-play-button {
@@ -35,7 +34,7 @@
 	}
 
 	.video-js .vjs-fullscreen-control {
-		order: 4;
+		order: 8;
 	}
 
 	.video-js .vjs-subs-caps-button {
@@ -124,7 +123,7 @@
 			height: initial !important;
 			margin: -40px auto 0;
 
-			.vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-volume-panel, .vjs-remaining-time {
+			.vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-remaining-time, .vjs-control.vjs-custom-play-button, .vjs-volume-control {
 				display: none !important;
 			}
 
@@ -186,10 +185,6 @@
 
 			.vjs-time-control.vjs-current-time {
 				left: 30px;
-			}
-			
-			.vjs-time-divider, .vjs-picture-in-picture-control, .vjs-volume-panel, .vjs-control.vjs-custom-play-button {
-				display: none !important;
 			}
 
 			.right-80 {

@@ -11,9 +11,21 @@ const options = [
 	{ value: 'none', label: _x( 'None', 'Preload value', 'godam' ) },
 ];
 
-const VideoSettings = ( { setAttributes, attributes } ) => {
-	const { autoplay, controls, loop, muted, preload } =
-		attributes;
+/**
+ * Video settings component.
+ *
+ * This component is used to render common settings like autoplay, loop for a video block.
+ *
+ * @param {Object}   props                           Component props.
+ * @param {Function} props.setAttributes             Function to set block attributes.
+ * @param {Object}   props.attributes                Block attributes.
+ * @param {boolean}  [props.isInsideQueryLoop=false] Whether the video is inside a query loop.
+ *
+ * @return {WPElement} The video settings component.
+ */
+const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false } ) => {
+	const { autoplay, controls, loop, muted, preload, showShareButton, engagements } =
+	attributes;
 
 	// Show a specific help for autoplay setting.
 	const getAutoplayHelp = useMemo( () => {
@@ -33,6 +45,14 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 		return null;
 	}, [ autoplay, muted ] );
 
+	const getShowShareButtonHelp = useMemo( () => {
+		if ( ! showShareButton ) {
+			return __( 'Removes the share button from the video player.', 'godam' );
+		}
+
+		return null;
+	}, [ showShareButton ] );
+
 	const toggleFactory = useMemo( () => {
 		const toggleAttribute = ( attribute ) => {
 			return ( newValue ) => {
@@ -45,12 +65,14 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 			loop: toggleAttribute( 'loop' ),
 			muted: toggleAttribute( 'muted' ),
 			controls: toggleAttribute( 'controls' ),
+			engagements: toggleAttribute( 'engagements' ),
+			showShareButton: toggleAttribute( 'showShareButton' ),
 		};
-	}, [] );
+	}, [ setAttributes ] );
 
 	const onChangePreload = useCallback( ( value ) => {
 		setAttributes( { preload: value } );
-	}, [] );
+	}, [ setAttributes ] );
 
 	return (
 		<>
@@ -88,14 +110,30 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 				onChange={ toggleFactory.controls }
 				checked={ !! controls }
 			/>
-			<SelectControl
-				__next40pxDefaultSize
+			<ToggleControl
 				__nextHasNoMarginBottom
-				label={ __( 'Preload', 'godam' ) }
-				value={ preload }
-				onChange={ onChangePreload }
-				options={ options }
-				hideCancelButton
+				label={ __( 'Share Button', 'godam' ) }
+				onChange={ toggleFactory.showShareButton }
+				checked={ !! showShareButton }
+				help={ getShowShareButtonHelp }
+			/>
+			{ ! isInsideQueryLoop && (
+				<SelectControl
+					__next40pxDefaultSize
+					__nextHasNoMarginBottom
+					label={ __( 'Preload', 'godam' ) }
+					value={ preload }
+					onChange={ onChangePreload }
+					options={ options }
+					hideCancelButton
+				/>
+			) }
+			<ToggleControl
+				__nextHasNoMarginBottom
+				label={ __( 'Enable Likes & Comments', 'godam' ) }
+				onChange={ toggleFactory.engagements }
+				checked={ !! engagements }
+				help={ __( 'Engagement will only be visible for transcoded videos', 'godam' ) }
 			/>
 		</>
 	);

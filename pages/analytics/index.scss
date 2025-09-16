@@ -1,24 +1,4 @@
 /* Video Editor Set up */
-@media screen and (max-width: 782px) {
-
-	.auto-fold #root-video-analytics {
-		margin-left: 0 !important;
-	}
-}
-
-@media screen and (max-width: 960px) {
-
-	.auto-fold #root-video-analytics {
-		margin-left: 36px;
-	}
-}
-
-.godam-button-icon {
-
-	svg {
-		fill: #ab3a6c;
-	}
-}
 
 .tooltip {
 	position: absolute;
@@ -32,19 +12,22 @@
 	transition: opacity 0.2s ease-in-out;
 }
 
+#root-video-analytics {
+
+	.godam-settings-header-content {
+		padding: 0 2.5rem;
+	}
+}
+
 #root-video-analytics, #root-video-dashboard {
 
 	background-color: #fff;
-	position: fixed;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	min-height: calc( 100vh - var(--wp-admin--admin-bar--height, 0) );
-	margin-left: 160px;
-	padding-top: var(--wp-admin--admin-bar--height, 0);
-	overflow: auto;
-	color: #000;
+
+	#analytics-content {
+		max-width: 1440px;
+		margin: 0 auto;
+		width: 100%;
+	}
 
 	// Video JS styles
 	.video-analytics-container {
@@ -283,10 +266,6 @@
 	left: 0;
 }
 
-.folded #root-video-analytics {
-	margin-left: 36px;
-}
-
 .blurred {
 	filter: blur(5px);
 	pointer-events: none;
@@ -423,7 +402,7 @@
 	justify-content: space-between;
 	position: relative;
 	border-bottom: 1px solid #ddd;
-	margin: 0 0 0 40px;
+	margin: 0 40px;
 	padding-bottom: 8px;
 }
 

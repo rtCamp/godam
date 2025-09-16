@@ -15,6 +15,7 @@ import ChaptersManager from './managers/chaptersManager.js';
 import AdsManager from './managers/adsManager.js';
 import HoverManager from './managers/hoverManager.js';
 import ShareManager from './managers/shareManager.js';
+import MenuButtonHoverManager from './managers/menuButtonHover.js';
 
 /**
  * Refactored Video Player Class
@@ -64,6 +65,11 @@ export default class GodamVideoPlayer {
 	 */
 	initializePlayer() {
 		this.player = videojs( this.video, this.configManager.videoSetupControls );
+
+		// Initialize ads manager
+		this.adsManager = new AdsManager( this.player, this.configManager );
+		this.adsManager?.setupAdsIntegration();
+
 		this.setupAspectRatio();
 		this.setupPlayerReady();
 	}
@@ -93,6 +99,7 @@ export default class GodamVideoPlayer {
 
 			// Now that managers are initialized, we can safely access them
 			this.setupEventListeners();
+			new MenuButtonHoverManager( this.player );
 		} );
 	}
 
@@ -132,9 +139,6 @@ export default class GodamVideoPlayer {
 
 		// Initialize chapters manager
 		this.chaptersManager = new ChaptersManager( this.player, this.video );
-
-		// Initialize ads manager
-		this.adsManager = new AdsManager( this.player, this.configManager );
 
 		// Initialize hover and share managers (existing)
 		this.hoverManager = new HoverManager( this.player, this.video );
@@ -189,7 +193,6 @@ export default class GodamVideoPlayer {
 	setupEventListeners() {
 		this.eventsManager?.setupEventListeners();
 		this.layersManager?.setupLayers();
-		this.adsManager?.setupAdsIntegration();
 	}
 
 	/**

@@ -38,7 +38,7 @@ export const folderApi = createApi( {
 
 				const params = {
 					_fields: 'id,name,parent,attachmentCount,meta',
-					per_page: isSpecial ? 100 : 10,
+					per_page: isSpecial ? 100 : 20,
 					...( options.bookmark ? { bookmark: true } : {} ),
 					...( options.locked ? { locked: true } : {} ),
 					...( options.page ? { page: options.page } : {} ),
@@ -50,6 +50,18 @@ export const folderApi = createApi( {
 					headers: {
 						'X-WP-Nonce': window.MediaLibrary.nonce,
 					},
+				};
+			},
+			transformResponse: ( responseData, meta ) => {
+				// Extract headers from meta.response.headers
+				const headers = meta.response.headers;
+				const totalItems = headers.get( 'X-Wp-Total' ) || headers.get( 'x-wp-total' );
+				const totalPages = headers.get( 'X-Wp-Totalpages' ) || headers.get( 'x-wp-totalpages' );
+
+				return {
+					data: responseData, // Your original response data
+					total: totalItems ? parseInt( totalItems, 10 ) : 0,
+					totalPages: totalPages ? parseInt( totalPages, 10 ) : 0,
 				};
 			},
 		} ),

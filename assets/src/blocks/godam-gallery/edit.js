@@ -48,6 +48,7 @@ export default function Edit( { attributes, setAttributes } ) {
 		search,
 		showTitle,
 		layout,
+		engagements,
 	} = attributes;
 	const blockProps = useBlockProps();
 
@@ -205,6 +206,12 @@ export default function Edit( { attributes, setAttributes } ) {
 							/>
 						</>
 					) }
+					<ToggleControl
+						label={ __( 'Enable Likes & Comments', 'godam' ) }
+						checked={ !! engagements }
+						onChange={ ( value ) => setAttributes( { engagements: value } ) }
+						help={ __( 'Engagement will only be visible for transcoded videos', 'godam' ) }
+					/>
 					<SelectControl
 						label={ __( 'Layout', 'godam' ) }
 						value={ layout }

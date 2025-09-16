@@ -21,13 +21,13 @@ class GoDAM_Video extends Base {
 	 */
 	public function set_default_config() {
 		return array(
-			'name'            => 'godam_record',
+			'name'            => 'godam-video',
 			'title'           => _x( 'GoDAM Video', 'Widget Title', 'godam' ),
 			'icon'            => 'eicon-video',
 			'categories'      => array( 'godam' ),
 			'keywords'        => array( 'godam', 'video' ),
 			'depended_script' => array( 'godam-player-frontend-script', 'godam-player-analytics-script', 'godam-player-frontend-script', 'godam-elementor-frontend' ),
-			'depended_styles' => array( 'godam-player-style', 'godam-player-frontend-style' ),
+			'depended_styles' => array( 'godam-player-style', 'godam-player-frontend-style', 'godam-player-minimal-skin', 'godam-player-pills-skin', 'godam-player-bubble-skin', 'godam-player-classic-skin' ),
 		);
 	}
 
@@ -59,7 +59,7 @@ class GoDAM_Video extends Base {
 		$this->add_control(
 			'text_track_settings_popover_toggle',
 			array(
-				'label'        => esc_html__( 'Text tracks', 'godam' ),
+				'label'        => esc_html__( 'Add Video Caption', 'godam' ),
 				'type'         => Controls_Manager::POPOVER_TOGGLE,
 				'label_off'    => esc_html__( 'Default', 'godam' ),
 				'label_on'     => esc_html__( 'Custom', 'godam' ),
@@ -189,12 +189,9 @@ class GoDAM_Video extends Base {
 		$this->add_control(
 			'seo_content_video_thumbnail_url',
 			array(
-				'label'          => esc_html__( 'Video Thumbnail URL', 'godam' ),
-				'type'           => Controls_Manager::TEXT,
-				'label_block'    => true,
-				'picker_options' => array(
-					'enableTime' => false,
-				),
+				'label'       => esc_html__( 'Video Thumbnail URL', 'godam' ),
+				'type'        => Controls_Manager::TEXT,
+				'label_block' => true,
 			)
 		);
 
@@ -371,7 +368,6 @@ class GoDAM_Video extends Base {
 
 		$is_elementor_widget = true;
 
-		ob_start();
 		require RTGODAM_PATH . 'inc/templates/godam-player.php';
 	}
 }

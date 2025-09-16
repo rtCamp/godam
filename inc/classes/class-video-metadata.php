@@ -51,6 +51,8 @@ class Video_Metadata {
 
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'set_media_library_thumbnail' ), 10, 3 );
 		add_action( 'init', array( $this, 'filter_vimeo_migrated_urls' ) );
+
+		add_filter( 'wp_get_attachment_image', array( $this, 'set_media_library_list_thumbnail' ), 10, 4 );
 	}
 
 	/**
@@ -207,7 +209,7 @@ class Video_Metadata {
 	 * This filter modifies the attachment URL to return the remote URL
 	 * if the video has been migrated from Vimeo.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 */
 	public function filter_vimeo_migrated_urls(): void {
 		add_filter(
@@ -223,7 +225,42 @@ class Video_Metadata {
 				return $url;
 			},
 			10,
-			2 
+			2
 		);
+	}
+
+	/**
+	 * Set custom thumbnail for video attachments in the media library list view.
+	 *
+	 * This filter targets the media library list view (upload screen) and
+	 * replaces the default icon/thumbnail with a custom video thumbnail
+	 * from post meta, if available.
+	 *
+	 * @param string     $html          The HTML output for the attachment.
+	 * @param int        $attachment_id The ID of the attachment.
+	 * @param array|bool $size          The size of the image (e.g., array(60, 60)).
+	 * @param bool       $icon          Whether the attachment is displayed as an icon.
+	 * @return string The modified HTML output for the thumbnail.
+	 */
+	public function set_media_library_list_thumbnail( $html, $attachment_id, $size, $icon ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- We dont use icon param.
+		if ( is_admin() && 'upload' === get_current_screen()->id && array( 60, 60 ) === $size ) {
+
+			$thumbnail_url = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
+
+			// Check for icon if it is a virtual media.
+			if ( empty( $thumbnail_url ) ) {
+				$thumbnail_url = get_post_meta( $attachment_id, '_godam_icon', true );
+			}
+
+			$attachment_meta = get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
+
+			if ( ! empty( $thumbnail_url ) ) {
+				$width  = $attachment_meta['width'] ?? self::DEFAULT_THUMBNAIL_WIDTH;
+				$height = $attachment_meta['height'] ?? self::DEFAULT_THUMBNAIL_HEIGHT;
+				$html   = sprintf( '<img width="%s" height="%s" src="%s" style="object-fit: cover; height: 60px;" decoding="async" loading="lazy" />', esc_attr( $width ), esc_attr( $height ), esc_url( $thumbnail_url ) );
+			}
+		}
+
+		return $html;
 	}
 }
