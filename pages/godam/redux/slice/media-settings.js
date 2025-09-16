@@ -84,7 +84,7 @@ const mediaSettingsSlice = createSlice( {
 						Object.keys( action.payload[ category ] ).forEach( ( key ) => {
 							if ( key in state[ category ] ) {
 								// Handle nested subcategories
-								if ( typeof state[ category ][ key ] === 'object' && ! Array.isArray( state[ category ][ key ] ) ) {
+								if ( typeof state[ category ][ key ] === 'object' && state[ category ][ key ] && ! Array.isArray( state[ category ][ key ] ) ) {
 									Object.keys( action.payload[ category ][ key ] ).forEach( ( subKey ) => {
 										if ( subKey in state[ category ][ key ] ) {
 											if ( state[ category ][ key ][ subKey ] !== action.payload[ category ][ key ][ subKey ] ) {
@@ -146,11 +146,11 @@ const mediaSettingsSlice = createSlice( {
 				Object.keys( action.payload ).forEach( ( category ) => {
 					if ( state[ category ] ) {
 						// Handle nested structures like global_layers
-						if ( typeof state[ category ] === 'object' && ! Array.isArray( state[ category ] ) ) {
+						if ( typeof state[ category ] === 'object' && ! Array.isArray( state[ category ] ) && action.payload[ category ] && typeof action.payload[ category ] === 'object' ) {
 							Object.keys( action.payload[ category ] ).forEach( ( key ) => {
 								if ( key in state[ category ] ) {
 									// Handle nested subcategories
-									if ( typeof state[ category ][ key ] === 'object' && ! Array.isArray( state[ category ][ key ] ) ) {
+									if ( typeof state[ category ][ key ] === 'object' && state[ category ][ key ] && ! Array.isArray( state[ category ][ key ] ) && action.payload[ category ][ key ] && typeof action.payload[ category ][ key ] === 'object' ) {
 										Object.keys( action.payload[ category ][ key ] ).forEach( ( subKey ) => {
 											if ( subKey in state[ category ][ key ] ) {
 												state[ category ][ key ][ subKey ] = action.payload[ category ][ key ][ subKey ];

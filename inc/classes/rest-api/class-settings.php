@@ -365,8 +365,6 @@ class Settings extends Base {
 					'plugin'    => sanitize_text_field( $settings['global_layers']['forms']['plugin'] ?? $default['global_layers']['forms']['plugin'] ),
 					'form_id'   => sanitize_text_field( $settings['global_layers']['forms']['form_id'] ?? $default['global_layers']['forms']['form_id'] ),
 					'placement' => sanitize_text_field( $settings['global_layers']['forms']['placement'] ?? $default['global_layers']['forms']['placement'] ),
-					'position'  => absint( $settings['global_layers']['forms']['position'] ?? $default['global_layers']['forms']['position'] ),
-					'duration'  => absint( $settings['global_layers']['forms']['duration'] ?? $default['global_layers']['forms']['duration'] ),
 				),
 				'cta'       => array(
 					'enabled'             => rest_sanitize_boolean( $settings['global_layers']['cta']['enabled'] ?? $default['global_layers']['cta']['enabled'] ),
