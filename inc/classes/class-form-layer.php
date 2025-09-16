@@ -39,6 +39,8 @@ class Form_Layer {
 		 * on POST request, retrieve submitted value for this hidden field.
 		 */
 		add_filter( 'forminator_field_hidden_field_value', array( __CLASS__, 'update_forminator_hidden_field_value' ), 10, 3 );
+		add_filter( 'everest_forms_process_before_form_data', array( __CLASS__, 'add_everest_forms_entry_godam_identifier' ), 10, 2 );
+		add_filter( 'everest_forms_entry_single_data', array( __CLASS__, 'update_' ), 10, 2 );
 	}
 
 	/**
@@ -103,6 +105,13 @@ class Form_Layer {
 				// Add the filter if it hasn't been added yet.
 				if ( ! has_filter( 'fluentform/rendering_form', array( __CLASS__, 'handle_fluentforms' ) ) ) {
 					add_filter( 'fluentform/rendering_form', array( __CLASS__, 'handle_fluentforms' ), 10, 1 );
+				}
+				break;
+
+			case 'everestforms':
+				// Add the filter if it hasn't been added yet.
+				if ( ! has_filter( 'everest_forms_frontend_form_data', array( __CLASS__, 'handle_everest_forms' ) ) ) {
+					add_filter( 'everest_forms_frontend_form_data', array( __CLASS__, 'handle_everest_forms' ), 10, 1 );
 				}
 				break;
 		}
@@ -318,5 +327,134 @@ class Form_Layer {
 		}
 
 		return $form;
+	}
+
+	/**
+	 * Handle Everest Forms integration using frontend form data filter.
+	 * This method modifies the form data to include a hidden field with GoDAM identifier.
+	 *
+	 * @param array $form_data The form data array.
+	 *
+	 * @return array Modified form data with GoDAM hidden field.
+	 */
+	public static function handle_everest_forms( $form_data ) {
+		if ( empty( $form_data ) || empty( $form_data['id'] ) ) {
+			return $form_data;
+		}
+
+		$current_form_id = (int) $form_data['id'];
+
+		if ( ! isset( self::$form_identifiers['everestforms'][ $current_form_id ] ) ) {
+			return $form_data;
+		}
+
+		$godam_identifier = self::$form_identifiers['everestforms'][ $current_form_id ];
+		$hidden_field     = self::build_godam_hidden_field( $current_form_id, $godam_identifier );
+
+		self::inject_godam_hidden_field( $form_data, $hidden_field, $current_form_id );
+
+		return $form_data;
+	}
+
+	/**
+	 * Add submitted GoDAM source back into the form data for entry display or processing.
+	 *
+	 * @param array $form_data The form data array.
+	 * @param array $entry The entry data array.
+	 *
+	 * @return array Modified form data with GoDAM source included.
+	 */
+	public static function add_everest_forms_entry_godam_identifier( $form_data, $entry ) {
+		if ( empty( $form_data ) || empty( $form_data['id'] ) ) {
+			return $form_data;
+		}
+
+		$current_form_id = (int) $form_data['id'];
+		$hidden_field_id = 'hidden_field_godam_source_' . $current_form_id;
+		$entry_fields    = $entry['form_fields'] ?? array();
+
+		if ( ! isset( $entry_fields[ $hidden_field_id ] ) ) {
+			return $form_data;
+		}
+
+		$godam_source = sanitize_text_field( wp_unslash( $entry_fields[ $hidden_field_id ] ) );
+		$hidden_field = self::build_godam_hidden_field( $current_form_id, $godam_source );
+
+		self::inject_godam_hidden_field( $form_data, $hidden_field, $current_form_id );
+
+		return $form_data;
+	}
+
+	/**
+	 * Update the entry's godam_source field for display.
+	 *
+	 * @param array $entry The entry data array.
+	 * @param array $form_data The form data array.
+	 *
+	 * @return array Modified entry data with GoDAM source included.
+	 */
+	public static function update_( $entry, $form_data ) {
+		// Handle both array and object formats.
+		$form_id = is_array( $form_data ) ? ( $form_data['id'] ?? null ) : ( $form_data->form_id ?? null );
+
+		if ( empty( $form_id ) || ! isset( $entry['godam_source'] ) ) {
+			return $entry;
+		}
+
+		$godam_source_raw     = $entry['godam_source'];
+		$godam_source_decoded = json_decode( $godam_source_raw, true );
+
+		if ( is_array( $godam_source_decoded ) ) {
+			$entry['godam_source'] = 'video id: ' . ( $godam_source_decoded['video_id'] ?? 'N/A' );
+		} else {
+			$entry['godam_source'] = sanitize_text_field( wp_unslash( $godam_source_raw ) );
+		}
+
+		return $entry;
+	}
+
+	/**
+	 * Build the hidden GoDAM field.
+	 *
+	 * @param int   $form_id The form ID.
+	 * @param mixed $value   The value to be stored in the hidden field.
+	 */
+	private static function build_godam_hidden_field( $form_id, $value ) {
+		return array(
+			'id'             => 'hidden_field_godam_source_' . $form_id,
+			'type'           => 'hidden',
+			'label'          => 'GoDAM Source',
+			'label_disabled' => 1,
+			'default_value'  => wp_json_encode( $value, JSON_UNESCAPED_SLASHES ),
+			'css'            => 'godam-hidden-field',
+			'meta-key'       => 'godam_source',
+		);
+	}
+
+	/**
+	 * Inject the hidden field into form fields and structure.
+	 *
+	 * @param array $form_data The form data array (passed by reference).
+	 * @param array $hidden_field The hidden field data to be injected.
+	 * @param int   $form_id The form ID.
+	 *
+	 * @return void
+	 */
+	private static function inject_godam_hidden_field( &$form_data, $hidden_field, $form_id ) {
+		$hidden_field_id = $hidden_field['id'];
+
+		if ( ! isset( $form_data['form_fields'] ) || ! is_array( $form_data['form_fields'] ) ) {
+			$form_data['form_fields'] = array();
+		}
+
+		$form_data['form_fields'][ $hidden_field_id ] = $hidden_field;
+
+		if ( ! isset( $form_data['structure'] ) || ! is_array( $form_data['structure'] ) ) {
+			$form_data['structure'] = array();
+		}
+
+		$form_data['structure'][ 'row_godam_source_' . $form_id ] = array(
+			'grid_1' => array( $hidden_field_id ),
+		);
 	}
 }
