@@ -246,11 +246,11 @@ class Layers {
 		$defaults = isset( self::$defaults['form'] ) ? self::$defaults['form'] : array();
 
 		switch ( $form_type ) {
-			case 'gravity':
+			case 'gravity_forms':
 				return array_merge(
 					$base_layer,
 					array(
-						'form_type' => $form_type,
+						'form_type' => 'gravity',
 						'gf_id'     => isset( $form_config['form_id'] ) ? $form_config['form_id'] : ( isset( $defaults['form_id'] ) ? $defaults['form_id'] : '' ),
 					)
 				);
@@ -258,7 +258,7 @@ class Layers {
 				return array_merge(
 					$base_layer,
 					array(
-						'form_type' => $form_type,
+						'form_type' => 'wpforms',
 						'wpform_id' => isset( $form_config['form_id'] ) ? $form_config['form_id'] : ( isset( $defaults['form_id'] ) ? $defaults['form_id'] : '' ),
 					)
 				);
