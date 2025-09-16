@@ -38,6 +38,19 @@ $media-frame-width: calc(300px + 2 * 24px);
 	width: $media-frame-width;
 }
 
+.skeleton-wrapper {
+	display: grid;
+	grid-template-columns: 1fr 2fr;
+	min-height: 80vh;
+	gap: 2em;
+
+	.godam-skeleton-card {
+		height: 250px;
+		display: flex;
+		justify-content: space-between;
+	}
+}
+
 @media (max-width: 900px) {
 
 	.media-frame-menu {
