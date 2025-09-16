@@ -136,6 +136,16 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
 
 			{
+				layer?.isGlobalLayer &&
+				<Notice
+					status="info"
+					isDismissible={ false }
+				>
+					{ __( 'This is a global layer and changes done here will not persist.', 'godam' ) }
+				</Notice>
+			}
+
+			{
 				! isValidAPIKey &&
 				<Notice
 					className="mb-4"

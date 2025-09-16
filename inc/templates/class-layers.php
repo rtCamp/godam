@@ -107,7 +107,7 @@ class Layers {
 		$existing_global_layers = self::get_existing_global_layers( $layers );
 
 		// Remove global layers that are not disabled first.
-		$merged_layers = self::remove_non_disabled_global_layers( $merged_layers, $existing_global_layers );
+		$merged_layers = self::remove_global_layers( $merged_layers, $existing_global_layers );
 
 		// Process global layer.
 		if ( isset( $global_settings['global_layers'] ) && is_array( $global_settings['global_layers'] ) ) {
@@ -391,7 +391,7 @@ class Layers {
 	 * @param array $existing_global_layers Info about existing global layers.
 	 * @return array Updated merged layers with non-disabled global layers removed.
 	 */
-	private static function remove_non_disabled_global_layers( $merged_layers, $existing_global_layers ) {
+	private static function remove_global_layers( $merged_layers, $existing_global_layers ) {
 		return array_filter(
 			$merged_layers,
 			function ( $layer ) use ( $existing_global_layers ) {

@@ -89,10 +89,10 @@ const slice = createSlice( {
 			const currentLayer = action.payload;
 
 			if ( currentLayer.isGlobalLayer ) {
-				// For global layers, don't remove them - just mark as disabled
+				// For global layers, don't remove them - just toggle disabled state
 				const layerIndex = state.layers.findIndex( ( layer ) => layer.id === currentLayer.id );
 				if ( layerIndex !== -1 ) {
-					state.layers[ layerIndex ].isDisabled = true;
+					state.layers[ layerIndex ].isDisabled = ! state.layers[ layerIndex ].isDisabled;
 				}
 			} else {
 				// For regular layers, remove them completely

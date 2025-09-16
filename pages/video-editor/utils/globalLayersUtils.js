@@ -349,9 +349,13 @@ class GlobalLayersManager {
 			);
 
 			// Add a new form layer only if an enabled one exists
-			if ( existingGlobalInfo.form && ! existingGlobalInfo.form.disabled ) {
+			if ( existingGlobalInfo.form ) {
 				const newFormLayer = this.createFormLayer( this.globalSettings.global_layers.forms );
 				if ( newFormLayer ) {
+					if ( existingGlobalInfo.form.disabled ) {
+						newFormLayer.isDisabled = true;
+					}
+
 					mergedLayers.push( newFormLayer );
 				}
 			}
@@ -367,10 +371,14 @@ class GlobalLayersManager {
 			if ( existingGlobalInfo.cta && ! existingGlobalInfo.cta.disabled ) {
 				const newCtaLayer = this.createCtaLayer( this.globalSettings.global_layers.cta );
 				if ( newCtaLayer ) {
+					if ( existingGlobalInfo.cta.disabled ) {
+						newCtaLayer.isDisabled = true;
+					}
 					mergedLayers.push( newCtaLayer );
 				}
 			}
 		}
+
 		return mergedLayers;
 	}
 
