@@ -219,7 +219,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				if ( attachment.type === 'image' ) {
 					onSelect( attachment );
 				} else {
-					this.showGodamSnackbar( __( 'Please select a valid image file.', 'godam' ) );
+					this.showGodamSnackbar( __( 'Please select a valid image file (JPEG, PNG, GIF, etc.).', 'godam' ) );
 				}
 			}
 		} );
