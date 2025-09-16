@@ -342,49 +342,48 @@ class Pages {
 	public function render_godam_page() {
 		?>
 		<div class="godam-admin-root">
-			<div id="root-godam-settings">
-				<div class="wrap flex min-h-[80vh] gap-4 my-4">
+				<div id="root-godam-settings">
+					<div class="wrap skeleton-wrapper">
+					
 					<!-- Sidebar Skeleton -->
-					<div class="max-w-[220px] w-full rounded-lg bg-white shadow-md border border-gray-200">
-						<nav class="loading-skeleton flex flex-col gap-4 p-4">
+						<div class="w-full rounded-lg bg-white shadow-md border border-gray-200">
+							<nav class="loading-skeleton flex flex-col gap-3 p-4">
 							<!-- Sidebar Tabs -->
-							<div class="skeleton-container skeleton-container-short">
-								<div class="skeleton-header w-3/4"></div>
+							<div class="skeleton-container flex items-center gap-2">
+								<div class="skeleton-circle w-5 h-5"></div>
 							</div>
-							<div class="skeleton-container skeleton-container-short">
-								<div class="skeleton-header w-3/4"></div>
+							<div class="skeleton-container flex items-center gap-2">
+								<div class="skeleton-circle w-5 h-5"></div>
 							</div>
-							<div class="skeleton-container skeleton-container-short">
-								<div class="skeleton-header w-3/4"></div>
+							<div class="skeleton-container flex items-center gap-2">
+								<div class="skeleton-circle w-5 h-5"></div>
 							</div>
-						</nav>
-					</div>
+							<div class="skeleton-container flex items-center gap-2">
+								<div class="skeleton-circle w-5 h-5"></div>
+							</div>
+							</nav>
+						</div>
 
-					<!-- Main Content Skeleton -->
-					<div id="main-content" class="w-full p-5 bg-white rounded-lg border">
-						<!-- General Settings Form Skeleton -->
-						<div class="loading-skeleton flex flex-col gap-4">
-							<!-- Title -->
-							<div class="skeleton-container skeleton-container-short">
-								<div class="skeleton-header w-1/2"></div>
+						<!-- Main Content Skeleton -->
+						<div id="main-content" class="w-full p-5 bg-white rounded-lg border flex flex-col gap-6">
+							
+							<!-- Card Title -->
+							<div class="skeleton-container"></div>
+
+							<!-- Toggle + Label -->
+							<div class="skeleton-container flex items-center gap-3">
+								<div class="skeleton-rect w-12 h-6 rounded-full"></div>
 							</div>
 
-							<!-- Input Field Skeleton -->
-							<div class="skeleton-container">
-								<div class="skeleton-line w-3/4"></div>
-								<div class="skeleton-line short w-1/2"></div>
-							</div>
+							<!-- Description -->
+							<div class="skeleton-container flex flex-col gap-2"></div>
 
-							<!-- Buttons Skeleton -->
-							<div class="flex gap-2">
-								<div class="skeleton-button w-32 h-10"></div>
-								<div class="skeleton-button w-40 h-10"></div>
-							</div>
+							<!-- Save Button -->
+							<div class="skeleton-button w-24 h-10"></div>
 						</div>
 					</div>
 				</div>
 			</div>
-		</div>
 		<?php
 	}
 
