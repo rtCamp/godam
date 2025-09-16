@@ -64,9 +64,7 @@ class HoverManager {
 	 * Manages showing/hiding controls based on hover and playback state.
 	 */
 	setupControlsVisibility() {
-		this.videoElement.addEventListener( 'mouseenter', this.handleShowControls.bind( this ) );
-		this.videoElement.addEventListener( 'mouseleave', this.handleHideControls.bind( this ) );
-		this.videoElement.addEventListener( 'click', this.handleControlVisibilityClick.bind( this ) );
+		this.player.addClass( 'godam-show-controls-on-hover' ); // Add class to manage controls visibility on hover
 	}
 
 	/**
@@ -119,45 +117,6 @@ class HoverManager {
 				controlBar.classList.remove( 'hide' );
 			}
 		}
-	}
-
-	/**
-	 * Shows video controls when mouse enters the video element.
-	 */
-	handleShowControls() {
-		if ( this.isVideoClicked || this.player.currentTime() > 0 ) {
-			return;
-		}
-
-		this.player.addClass( 'vjs-has-started', 'godam-hover-started' );
-		this.player.controls( true );
-	}
-
-	/**
-	 * Hides video controls when mouse leaves the video element.
-	 */
-	handleHideControls() {
-		if ( this.isVideoClicked || this.player.currentTime() > 0 ) {
-			return;
-		}
-
-		this.player.removeClass( 'vjs-has-started', 'godam-hover-started' );
-	}
-
-	/**
-	 * Handles click events to toggle control visibility.
-	 * If the video is clicked or has started playing, it does nothing.
-	 * Otherwise, it removes the hover classes to allow normal playback.
-	 * This is used to prevent accidental clicks during hover interactions.
-	 */
-	handleControlVisibilityClick() {
-		if ( this.isVideoClicked || this.player.currentTime() > 0 ) {
-			return;
-		}
-
-		this.player.removeClass( 'vjs-has-started', 'godam-hover-started' );
-
-		this.isVideoClicked = true;
 	}
 
 	/**
