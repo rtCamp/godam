@@ -48,7 +48,6 @@ class Init {
 		add_action( 'gform_field_standard_settings', array( $this, 'add_godam_recorder_field_setting' ), 10, 2 );
 		add_action( 'gform_editor_js', array( $this, 'add_editor_script' ) );
 		add_action( 'gform_after_submission', array( $this, 'process_file_upload_to_godam' ), 10, 2 );
-		add_action( 'gform_entry_detail', array( $this, 'enqueue_entry_detail_scripts' ) );
 		add_action( 'wp_head', array( $this, 'maybe_enqueue_gf_hooks' ) );
 	}
 
@@ -112,19 +111,6 @@ class Init {
 				true
 			);
 		}
-	}
-
-	/**
-	 * Enqueue scripts and styles for the entry detail page.
-	 */
-	public function enqueue_entry_detail_scripts() {
-		wp_enqueue_script(
-			'gf-entry-detail-script',
-			RTGODAM_URL . 'assets/build/js/gf-entry-detail.min.js',
-			array( 'jquery' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/gf-entry-detail.min.js' ),
-			true
-		);
 	}
 
 	/**
