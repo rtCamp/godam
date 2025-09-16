@@ -16,6 +16,11 @@
 			font-size: 0.875rem;
 			padding: 0.25rem 0.5rem;
 			transition: color 0.2s ease, text-decoration-color 0.2s ease;
+			margin-bottom: 1rem;
+
+			@media (max-width: 900px) {
+				margin-bottom: 1.5rem;
+			}
 
 			&:hover {
 				color: #333;
@@ -24,4 +29,3 @@
 		}
 	}
 }
-
