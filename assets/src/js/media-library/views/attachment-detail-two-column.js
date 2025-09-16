@@ -212,12 +212,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			library: { type: [ 'image' ] },
 		} );
 
-		uploader.on( 'ready', () => {
-			uploader.uploader.options.uploader.params = {
-				types: 'image',
-			};
-		} );
-
 		uploader.on( 'select', () => {
 			const attachment = uploader.state().get( 'selection' ).first().toJSON();
 			if ( attachment && attachment.url && attachment.id ) {
