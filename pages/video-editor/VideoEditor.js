@@ -113,7 +113,16 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 			videoSources.push( { src: sourceURL, type: adjustedMimeType } );
 		}
 
-		// Add transcoded video source if valid
+		// Add HLS transcoded video source if valid (for quality menu support)
+		const hlsTranscodedUrl = meta?.rtgodam_hls_transcoded_url;
+		if ( hlsTranscodedUrl && typeof hlsTranscodedUrl === 'string' && hlsTranscodedUrl.trim() !== '' ) {
+			videoSources.push( { 
+				src: hlsTranscodedUrl, 
+				type: 'application/x-mpegURL' 
+			} );
+		}
+
+		// Add DASH transcoded video source if valid (for quality menu support)
 		const transcodedUrl = meta?.rtgodam_transcoded_url;
 		if ( transcodedUrl && typeof transcodedUrl === 'string' && transcodedUrl.trim() !== '' ) {
 			const transcodedType = transcodedUrl.endsWith( '.mpd' )
@@ -122,6 +131,10 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 
 			videoSources.push( { src: transcodedUrl, type: transcodedType } );
 		}
+
+		// Reverse the sources to ensure the preferred format is first (DASH -> HLS -> Original)
+		// This matches the order used in the Gutenberg block editor and main player template
+		videoSources.reverse();
 
 		setSources( videoSources );
 	}, [ attachmentConfig, dispatch, onBackToAttachmentPicker ] );
