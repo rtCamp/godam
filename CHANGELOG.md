@@ -4,7 +4,6 @@
 
 - Tweak: Enhanced Audio Recording support in GoDAM Recorder for Gravity Forms
 - Fix: Video player UI bugs and playback quality issues
-- Fix: Analytics tracking for dynamically rendered videos
 
 ## v1.4.0 (September 9, 2025) ##
 
