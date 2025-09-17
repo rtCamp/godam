@@ -280,10 +280,19 @@ class Pages {
 		?>
 			<div class="godam-admin-root">
 				<div id="root-godam-tools">
-					<div class="wrap skeleton-wrapper">
+					<div class="skeleton-header-broad">
+							<div class="skeleton-button"></div>
+							<div class="skeleton-header"></div>
+							<div class="flex gap-6">
+								<div class="skeleton-button"></div>
+								<div class="skeleton-button"></div>
+							</div>
+					</div>
+					
+					<div class="wrap godam-skeleton-wrapper">
 					
 					<!-- Sidebar Skeleton -->
-					<div class="w-full rounded-lg bg-white shadow-md border border-gray-200 max-w-72">
+					<div class="w-full rounded-lg bg-white shadow-md border border-gray-200 max-w-200">
 						<nav class="loading-skeleton flex flex-col gap-3 p-4">
 						<!-- Sidebar Tabs -->
 						<div class="skeleton-container flex items-center gap-2">
@@ -343,10 +352,18 @@ class Pages {
 		?>
 		<div class="godam-admin-root">
 				<div id="root-godam-settings">
-					<div class="wrap skeleton-wrapper">
-					
+					<div class="skeleton-header-broad">
+							<div class="skeleton-button"></div>
+							<div class="skeleton-header"></div>
+							<div class="flex gap-6">
+								<div class="skeleton-button"></div>
+								<div class="skeleton-button"></div>
+							</div>
+					</div>
+
+					<div class="wrap godam-skeleton-wrapper">
 					<!-- Sidebar Skeleton -->
-						<div class="w-full rounded-lg bg-white shadow-md border border-gray-200">
+						<div class="w-full rounded-lg bg-white shadow-md border border-gray-200 max-w-200">
 							<nav class="loading-skeleton flex flex-col gap-3 p-4">
 							<!-- Sidebar Tabs -->
 							<div class="skeleton-container flex items-center gap-2">
@@ -365,20 +382,11 @@ class Pages {
 						</div>
 
 						<!-- Main Content Skeleton -->
-						<div id="main-content" class="w-full p-5 bg-white rounded-lg border flex flex-col gap-6">
-							
-							<!-- Card Title -->
+						<div id="main-content" class="w-full bg-white rounded-lg border flex flex-col gap-6 p-5">
+	
 							<div class="skeleton-container"></div>
-
-							<!-- Toggle + Label -->
-							<div class="skeleton-container flex items-center gap-3">
-								<div class="skeleton-rect w-12 h-6 rounded-full"></div>
-							</div>
-
-							<!-- Description -->
+							<div class="skeleton-container flex items-center gap-3"></div>
 							<div class="skeleton-container flex flex-col gap-2"></div>
-
-							<!-- Save Button -->
 							<div class="skeleton-button w-24 h-10"></div>
 						</div>
 					</div>
