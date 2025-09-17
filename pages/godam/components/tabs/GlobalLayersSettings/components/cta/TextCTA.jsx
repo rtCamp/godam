@@ -2,17 +2,13 @@
  * External dependencies
  */
 import { useSelector, useDispatch } from 'react-redux';
-
-/**
- * WordPress dependencies
- */
-import { TextareaControl } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * Internal dependencies
  */
 import { updateMediaSetting } from '../../../../../redux/slice/media-settings.js';
+import QuillEditor from '../../../../../../video-editor/components/QuillEditor.js';
 
 const TextCTA = () => {
 	const dispatch = useDispatch();
@@ -25,16 +21,25 @@ const TextCTA = () => {
 		dispatch( updateMediaSetting( { category: 'global_layers', subcategory: 'cta', key, value } ) );
 	};
 
+	const allToolbarOptions = [
+		[ { header: [ 1, 2, 3, false ] } ], // Heading levels
+		[ { font: [] } ],
+		[ 'bold', 'italic', 'underline' ], // Bold, Italic, Underline
+		[ { color: [] }, { background: [] } ], // Text and Background color
+		[ 'blockquote', 'code-block' ],
+		[ { list: 'ordered' }, { list: 'bullet' } ], // Ordered and Bullet lists
+		[ { align: [] } ], // Text alignment
+		[ 'link' ], // Links and Images
+		[ 'clean' ], // Remove formatting
+	];
+
 	return (
 		<div className="mb-4">
-			<TextareaControl
-				className="godam-textarea"
-				label={ __( 'Content', 'godam' ) }
-				help={ __( 'Enter the text content for your call-to-action', 'godam' ) }
-				value={ mediaSettings?.global_layers?.cta?.text || '' }
-				onChange={ ( value ) => handleSettingChange( 'text', value ) }
-				placeholder={ __( 'Enter your CTA text here…', 'godam' ) }
-				rows={ 6 }
+			<QuillEditor
+				initialValue={ mediaSettings?.global_layers?.cta?.text || '' }
+				onHTMLChange={ ( val ) => handleSettingChange( 'text', DOMPurify.sanitize( val ) ) }
+				toolbarOptions={ allToolbarOptions }
+				className="mb-4 wysiwyg-editor"
 			/>
 		</div>
 	);

@@ -186,7 +186,7 @@ const ImageCTA = () => {
 			</div>
 
 			<SelectControl
-				className="mb-4"
+				className="godam-select mb-4"
 				label={ __( 'Select orientation', 'godam' ) }
 				onChange={ ( value ) => handleSettingChange( 'imageCtaOrientation', value ) }
 				options={ imageOrientationOptions }

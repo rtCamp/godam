@@ -74,7 +74,7 @@ const CTALayer = () => {
 						<div className="flex flex-col godam-form-group">
 							<p className="mb-4 label-text">{ __( 'Call to Action', 'godam' ) }</p>
 							<SelectControl
-								className="mb-4"
+								className="godam-select mb-4 max-w-1/2"
 								label={ __( 'Select type', 'godam' ) }
 								onChange={ ( value ) => handleSettingChange( 'cta_type', value ) }
 								options={ ctaTypeOptions }

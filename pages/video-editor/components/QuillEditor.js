@@ -5,7 +5,7 @@ import 'quill/dist/quill.snow.css';
 import Quill from 'quill';
 import { useEffect, useRef } from 'react';
 
-const QuillEditor = ( { className, intialValue, onHTMLChange, toolbarOptions } ) => {
+const QuillEditor = ( { className, initialValue, onHTMLChange, toolbarOptions } ) => {
 	const wrapperRef = useRef();
 
 	useEffect( () => {
@@ -25,7 +25,7 @@ const QuillEditor = ( { className, intialValue, onHTMLChange, toolbarOptions } )
 
 			const quill = new Quill( editor, options );
 
-			quill.clipboard.dangerouslyPasteHTML( intialValue || '' );
+			quill.clipboard.dangerouslyPasteHTML( initialValue || '' );
 
 			quill.on( 'text-change', function( delta, oldDelta, source ) {
 				if ( source === 'user' ) {

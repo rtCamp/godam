@@ -2,12 +2,7 @@
  * External dependencies
  */
 import { useSelector, useDispatch } from 'react-redux';
-
-/**
- * WordPress dependencies
- */
-import { TextareaControl } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import Editor from '@monaco-editor/react';
 
 /**
  * Internal dependencies
@@ -27,14 +22,15 @@ const HtmlCTA = () => {
 
 	return (
 		<div className="mb-4">
-			<TextareaControl
-				className="godam-textarea"
-				label={ __( 'Custom HTML', 'godam' ) }
-				help={ __( 'Enter custom HTML for your call-to-action', 'godam' ) }
-				value={ mediaSettings?.global_layers?.cta?.html || '' }
+			<Editor
+				id="custom-css"
+				className="code-editor"
+				defaultLanguage="html"
+				defaultValue={ mediaSettings?.global_layers?.cta?.html || '' }
+				options={ {
+					minimap: { enabled: false },
+				} }
 				onChange={ ( value ) => handleSettingChange( 'html', value ) }
-				placeholder={ __( 'Enter your HTML code here…', 'godam' ) }
-				rows={ 8 }
 			/>
 		</div>
 	);
