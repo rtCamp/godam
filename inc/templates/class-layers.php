@@ -77,7 +77,7 @@ class Layers {
 				return $video_duration > 0 ? intval( $video_duration / 2 ) : 5;
 
 			case self::PLACEMENT_END:
-				return $video_duration > 10 ? $video_duration - 1 : $video_duration;
+				return $video_duration;
 
 			default:
 				return 0;
