@@ -137,7 +137,7 @@ const FormsLayer = () => {
 					mediaSettings?.global_layers?.forms?.enabled && (
 						<>
 							<SelectControl
-								className="godam-select mb-4"
+								className="godam-select mb-4 w-1/3"
 								label={ __( 'Form Plugin', 'godam' ) }
 								help={ __( 'Choose which form plugin to use', 'godam' ) }
 								value={ mediaSettings?.global_layers?.forms?.plugin || '' }
@@ -154,7 +154,7 @@ const FormsLayer = () => {
 							{ mediaSettings?.global_layers?.forms?.plugin && (
 								<>
 									<SelectControl
-										className="godam-select mb-4"
+										className="godam-select mb-4 w-1/3"
 										label={ __( 'Select Form', 'godam' ) }
 										help={ __( 'Choose which form to display', 'godam' ) }
 										value={ mediaSettings?.global_layers?.forms?.form_id || '' }
@@ -166,7 +166,7 @@ const FormsLayer = () => {
 									/>
 
 									<SelectControl
-										className="godam-select mb-4"
+										className="godam-select mb-4 w-1/3"
 										label={ __( 'Form Placement', 'godam' ) }
 										help={ __( 'Choose when the form should appear in the video timeline', 'godam' ) }
 										value={ mediaSettings?.global_layers?.forms?.placement || 'end' }

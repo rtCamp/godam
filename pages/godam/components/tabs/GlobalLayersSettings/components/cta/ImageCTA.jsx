@@ -186,7 +186,7 @@ const ImageCTA = () => {
 			</div>
 
 			<SelectControl
-				className="godam-select mb-4"
+				className="godam-select mb-4 w-1/3"
 				label={ __( 'Select orientation', 'godam' ) }
 				onChange={ ( value ) => handleSettingChange( 'imageCtaOrientation', value ) }
 				options={ imageOrientationOptions }
@@ -194,7 +194,7 @@ const ImageCTA = () => {
 			/>
 
 			<RangeControl
-				className="godam-input w-full mb-4"
+				className="godam-input mb-4 w-1/3"
 				help={ __( 'Please select how transparent you would like this.', 'godam' ) }
 				max={ 1 }
 				min={ 0 }

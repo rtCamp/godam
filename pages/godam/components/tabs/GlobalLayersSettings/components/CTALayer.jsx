@@ -74,7 +74,7 @@ const CTALayer = () => {
 						<div className="flex flex-col godam-form-group">
 							<p className="mb-4 label-text">{ __( 'Call to Action', 'godam' ) }</p>
 							<SelectControl
-								className="godam-select mb-4 max-w-1/2"
+								className="godam-select mb-4 w-1/3"
 								label={ __( 'Select type', 'godam' ) }
 								onChange={ ( value ) => handleSettingChange( 'cta_type', value ) }
 								options={ ctaTypeOptions }
@@ -84,7 +84,7 @@ const CTALayer = () => {
 							{ renderSelectedCTAInputs() }
 
 							<SelectControl
-								className="godam-select mb-4"
+								className="godam-select mb-4 w-1/3"
 								label={ __( 'CTA Placement', 'godam' ) }
 								help={ __( 'Choose when the CTA should appear in the video timeline', 'godam' ) }
 								value={ mediaSettings?.global_layers?.cta?.placement || 'end' }
