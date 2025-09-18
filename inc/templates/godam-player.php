@@ -97,8 +97,9 @@ $aspect_ratio       = ! empty( $attributes['aspectRatio'] ) && 'responsive' === 
 	)
 	: '16:9';
 
-$src            = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
-$transcoded_url = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attributes['transcoded_url'] ) : '';
+$src                = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
+$transcoded_url     = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attributes['transcoded_url'] ) : '';
+$hls_transcoded_url = ! empty( $attributes['hls_transcoded_url'] ) ? esc_url( $attributes['hls_transcoded_url'] ) : '';
 
 // Retrieve 'rtgodam_meta' for the given attachment ID, defaulting to an empty array if not found.
 $easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_meta', true ) : array();
@@ -121,13 +122,23 @@ if ( empty( $attachment_id ) ) {
 	$job_id = ! empty( $attributes['cmmId'] ) ? sanitize_text_field( $attributes['cmmId'] ) : '';
 }
 
-if (
-	( empty( $attachment_id ) || ( $is_virtual && ! empty( $original_id ) ) ) &&
+if ( ( empty( $attachment_id ) || ( $is_virtual && ! empty( $original_id ) ) ) &&
 	! empty( $attributes['sources'] ) 
-) { // If media is virtual media.
+) {
+	// If media is virtual media.
 	$sources = $attributes['sources'];
-} elseif ( empty( $attachment_id ) && ! ( empty( $src ) && empty( $transcoded_url ) ) ) {   // in case of shortcode with src or transcoded_url attribute.
+} elseif ( empty( $attachment_id ) &&
+	! ( empty( $src ) && empty( $transcoded_url ) && empty( $hls_transcoded_url ) )
+) {
+	// in case of shortcode with src or transcoded_url or hls_transcoded_url attribute.
 	$sources = array();
+
+	if ( ! empty( $hls_transcoded_url ) ) {
+		$sources[] = array(
+			'src'  => $hls_transcoded_url,
+			'type' => 'application/x-mpegURL',
+		);
+	}
 	if ( ! empty( $transcoded_url ) ) {
 		$sources[] = array(
 			'src'  => $transcoded_url,
@@ -141,6 +152,7 @@ if (
 		);
 	}
 } else {
+
 	if ( $is_virtual ) {
 		// For virtual media, we need to get the actual attachment ID first.
 		$attachment_id = $original_id;
