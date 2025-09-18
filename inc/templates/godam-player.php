@@ -47,12 +47,23 @@ $preload        = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['pre
 $hover_select   = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSelect'] : 'none';
 $caption        = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
 $tracks         = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
-$attachment_id  = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
 $show_share_btn = ! empty( $attributes['showShareButton'] );
+
+// Resolve the attachment ID (could be WordPress or virtual media).
+$attachment_id = '';
+
+// Prefer "id" if available.
+if ( ! empty( $attributes['id'] ) ) {
+	$attachment_id = is_numeric( $attributes['id'] )
+		? intval( $attributes['id'] )   // WordPress media ID.
+		: sanitize_text_field( $attributes['id'] ); // Virtual media ID.
+} elseif ( ! empty( $attributes['cmmId'] ) ) { // Fallback to "cmmId" for backward compatibility.
+	$attachment_id = sanitize_text_field( $attributes['cmmId'] );
+}
 
 // Determine whether the attachment ID refers to a virtual (GoDAM) media item.
 // If it's not numeric, we assume it's a virtual reference (e.g., a GoDAM ID).
-$is_virtual  = ! is_numeric( $attachment_id );
+$is_virtual  = ! empty( $attachment_id ) && ! is_numeric( $attachment_id );
 $original_id = $attachment_id;
 
 if ( $is_virtual ) {
@@ -110,9 +121,12 @@ if ( empty( $attachment_id ) ) {
 	$job_id = ! empty( $attributes['cmmId'] ) ? sanitize_text_field( $attributes['cmmId'] ) : '';
 }
 
-if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
+if (
+	( empty( $attachment_id ) || ( $is_virtual && ! empty( $original_id ) ) ) &&
+	! empty( $attributes['sources'] ) 
+) { // If media is virtual media.
 	$sources = $attributes['sources'];
-} elseif ( empty( $attachment_id ) && ! ( empty( $src ) && empty( $transcoded_url ) ) ) {
+} elseif ( empty( $attachment_id ) && ! ( empty( $src ) && empty( $transcoded_url ) ) ) {   // in case of shortcode with src or transcoded_url attribute.
 	$sources = array();
 	if ( ! empty( $transcoded_url ) ) {
 		$sources[] = array(
@@ -127,6 +141,11 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 		);
 	}
 } else {
+	if ( $is_virtual ) {
+		// For virtual media, we need to get the actual attachment ID first.
+		$attachment_id = $original_id;
+	}
+
 	$transcoded_url     = $attachment_id ? rtgodam_get_transcoded_url_from_attachment( $attachment_id ) : '';
 	$hls_transcoded_url = $attachment_id ? rtgodam_get_hls_transcoded_url_from_attachment( $attachment_id ) : '';
 	$video_src          = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
@@ -142,17 +161,17 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	}
 	$sources = array();
 
-	if ( ! empty( $transcoded_url ) ) {
-		$sources[] = array(
-			'src'  => $transcoded_url,
-			'type' => 'application/dash+xml',
-		);
-	}
-
 	if ( ! empty( $hls_transcoded_url ) ) {
 		$sources[] = array(
 			'src'  => $hls_transcoded_url,
 			'type' => 'application/x-mpegURL',
+		);
+	}
+
+	if ( ! empty( $transcoded_url ) ) {
+		$sources[] = array(
+			'src'  => $transcoded_url,
+			'type' => 'application/dash+xml',
 		);
 	}
 
