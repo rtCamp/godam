@@ -354,7 +354,7 @@ function rtgodam_is_api_key_valid() {
  * 
  * Note: The files created by uppy webcam, screen capture, and audio plugin are in the same format. So we are checking the filename to determine if it's an audio file.
  *
- * @since 1.4.1
+ * @since n.e.x.t
  *
  * @param string $filename The name of the file to check.
  *
