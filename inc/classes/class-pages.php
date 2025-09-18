@@ -263,7 +263,7 @@ class Pages {
 		if ( isset( $submenu[ $this->menu_slug ] ) ) {
 			foreach ( $submenu[ $this->menu_slug ] as $key => $menu_item ) {
 				if ( $menu_item[2] === $this->analytics_slug ) {
-					unset( $submenu[ $this->menu_slug ][ $key ] );
+					unset( $submenu[ $this->menu_slug ][ $this->analytics_slug ] );
 					break;
 				}
 			}
