@@ -144,9 +144,6 @@ class Pages {
 		// @see https://github.com/rtCamp/godam/issues/597 issue link.
 		add_filter( 'rest_pre_dispatch', array( $this, 'save_current_rest_api_request' ), 10, 3 );
 		add_filter( 'wpforms_frontend_form_data', array( $this, 'remove_antispam_setting_from_wpforms' ), 10 );
-
-		// Hide Sub Menu pages without breaking page functionality.
-		add_action( 'submenu_file', array( $this, 'remove_submenu_pages' ) );
 	}
 
 	/**
@@ -247,29 +244,6 @@ class Pages {
 				8
 			);
 		}
-	}
-
-	/**
-	 * Removes submenu page appearance from the navigation menu.
-	 *
-	 * @param string|null $submenu_file The submenu file, or null if no submenu is selected.
-	 *
-	 * @return string|null
-	 */
-	public function remove_submenu_pages( ?string $submenu_file ): ?string {
-		global $submenu;
-
-		// Removes Analytics page from the navigation while keeping the functionality.
-		if ( isset( $submenu[ $this->menu_slug ] ) ) {
-			foreach ( $submenu[ $this->menu_slug ] as $key => $menu_item ) {
-				if ( $menu_item[2] === $this->analytics_slug ) {
-					unset( $submenu[ $this->menu_slug ][ $this->analytics_slug ] );
-					break;
-				}
-			}
-		}
-
-		return $submenu_file;
 	}
 
 	/**
