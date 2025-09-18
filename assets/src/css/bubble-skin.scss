@@ -263,6 +263,10 @@
 			.vjs-fullscreen-control {
 				right: 10px
 			}
+
+			.vjs-volume-control {
+				display: none; //Fallback for old browser versions not supporting interaction media features
+			}
 			
 			.vjs-settings-button{
 				right: 55px;
@@ -334,6 +338,10 @@
 				left: unset;
 				right: 152px;
 				z-index: 99;
+			}
+
+			&:has(.vjs-subs-caps-button.vjs-hidden) .vjs-volume-panel {
+				right: 108px;
 			}
 
 			.vjs-time-control.vjs-current-time {

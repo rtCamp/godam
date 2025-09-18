@@ -26,7 +26,17 @@ export default class ConfigurationManager {
 		this.globalAdsSettings = parseDataAttribute( this.video, 'global_ads_settings', {} );
 		this.adTagUrl = this.video.dataset.ad_tag_url;
 		this.videoSetupOptions = parseDataAttribute( this.video, 'options', {} );
-		this.videoSetupControls = parseDataAttribute( this.video, 'controls', this.getDefaultControls() );
+		const videoSetupControls = parseDataAttribute( this.video, 'controls', this.getDefaultControls() );
+		this.videoSetupControls = {
+			...videoSetupControls,
+			html5: {
+				vhs: {
+					bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
+					bandwidthVariance: 1.0, // allow renditions close to estimate
+					limitRenditionByPlayerDimensions: false, // don't cap by video element size
+				},
+			},
+		};
 		this.isPreviewEnabled = this.videoSetupOptions?.preview;
 
 		this.ensureControlBarDefaults();

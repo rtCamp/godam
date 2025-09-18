@@ -1312,6 +1312,17 @@ body.godam-share-modal-open {
 		}
 	}
 
+	@media (hover: none) {
+
+		.vjs-volume-control {
+			display: none !important; // Disable slider for touch devices
+		}
+
+		.vjs-volume-panel {
+			width: 40px !important; //Prevent volume slider transition effect.
+		}
+	}
+
 	@container godam-player-default-skin (max-width: 480px) {
 
 		.vjs-modal-dialog-content {
@@ -1342,6 +1353,10 @@ body.godam-share-modal-open {
 				position: absolute;
 				bottom: 0;
 				left: 0;
+			}
+
+			.vjs-volume-control {
+				display: none; //Fallback for old browser versions not supporting interaction media features
 			}
 
 			.vjs-skip-backward-5,
@@ -1646,6 +1661,7 @@ body.godam-share-modal-open {
 }
 
 .gf-godam-video-preview {
+
 	.easydam-video-container {
 		height: 100%;
 	}
