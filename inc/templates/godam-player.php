@@ -622,7 +622,7 @@ if ( ! empty( $transcript_path ) ) {
 			<figcaption class="wp-element-caption rtgodam-video-caption"><?php echo esc_html( $caption ); ?></figcaption>
 			<?php
 			endif;
-				do_action( 'rtgodam_after_video_html', $attributes, $instance_id, $easydam_meta_data );
+				do_action( 'rtgodam_after_video_html', $attributes, $instance_id, $easydam_meta_data, $godam_settings );
 		?>
 	</figure>
 <?php endif; ?>

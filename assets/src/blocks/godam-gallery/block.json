@@ -71,6 +71,10 @@
 		"engagements": {
 			"type": "boolean",
 			"default": true
+		},
+		"openToNewPage": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"supports": {

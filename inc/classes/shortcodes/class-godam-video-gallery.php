@@ -75,6 +75,7 @@ class GoDAM_Video_Gallery {
 				'show_title'        => true,
 				'align'             => '',
 				'engagements'       => true,
+				'open_to_new_page'  => false,
 			)
 		);
 
@@ -197,6 +198,10 @@ class GoDAM_Video_Gallery {
 			$args['orderby']  = 'meta_value_num';
 		}
 
+		$video_settings = get_option( 'rtgodam_video_post_settings', array() );
+		$cpt_url_slug   = ! empty( $video_settings['video_slug'] ) ? sanitize_title( $video_settings['video_slug'] ) : 'videos';
+		$cpt_base_url   = home_url( '/' . $cpt_url_slug );
+
 		$query = new \WP_Query( $args );
 
 		ob_start();
@@ -230,6 +235,7 @@ class GoDAM_Video_Gallery {
 				data-custom-date-start="' . esc_attr( $atts['custom_date_start'] ) . '"
 				data-custom-date-end="' . esc_attr( $atts['custom_date_end'] ) . '"
 				data-engagements="' . esc_attr( $atts['engagements'] ) . '"
+				data-open-to-new-page="' . esc_attr( $atts['open_to_new_page'] ) . '"
 			>';
 			foreach ( $query->posts as $video ) {
 				// Add action before each video item.
@@ -237,6 +243,7 @@ class GoDAM_Video_Gallery {
 
 				$video_id    = intval( $video->ID );
 				$video_title = get_the_title( $video_id );
+				$video_slug  = get_post_field( 'post_name', $video_id );
 				$video_date  = get_the_date( 'F j, Y', $video_id );
 				
 				// Add filter for video title.
@@ -266,7 +273,7 @@ class GoDAM_Video_Gallery {
 				}
 			
 				echo '<div class="godam-video-item">';
-				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '">';
+				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $cpt_base_url . '/' . $video_slug ) . '">';
 				echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
 				if ( $duration ) {
 					echo '<span class="godam-video-duration">' . esc_html( $duration ) . '</span>';
