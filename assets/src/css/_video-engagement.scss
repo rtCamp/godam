@@ -1,7 +1,7 @@
 :root {
     --godam-video-engagement-background-color: rgb( 0, 0, 0 );
     --godam-video-engagement-modal-background-color: rgba( 0, 0, 0, 0.5 );
-    --godam-video-engagement-icon-color: rgb( 113, 118, 123 );
+    --godam-video-engagement-icon-color: rgba( 255, 255, 255, 0.6 );
     --godam-video-engagement-icon-color--like: rgb( 249, 24, 128 );
     --godam-video-engagement-icon-color--like-background: rgba( 249, 24, 128, 0.1 );
     --godam-video-engagement-icon-color--comment: rgb( 29, 155, 240 );
@@ -53,7 +53,6 @@
     gap: 10px;
     justify-content: flex-end;
     margin-top: 0 !important;
-    border: 1px solid var( --godam-video-engagement-background-color );
     background-color: var( --godam-video-engagement-background-color );
     border-radius: 0 0 8px 8px;
 
