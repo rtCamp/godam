@@ -29,7 +29,7 @@ const MetForm = ( { layerID } ) => {
 	const forms = metforms?.map( ( form ) => ( {
 		value: form.id,
 		label: form.title,
-	} ) );
+	} ) ) || [];
 
 	const changeFormID = ( formID ) => {
 		setIsFetching( true );

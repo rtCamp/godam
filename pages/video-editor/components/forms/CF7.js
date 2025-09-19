@@ -40,7 +40,7 @@ const CF7 = ( { layerID } ) => {
 	const forms = cf7Forms?.map( ( form ) => ( {
 		value: form.id,
 		label: form.title,
-	} ) );
+	} ) ) || [];
 
 	const changeFormID = ( formID ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'cf7_id', value: formID } ) );
@@ -69,6 +69,18 @@ const CF7 = ( { layerID } ) => {
 					{ __( 'Please activate the Contact Form 7 plugin to use this feature.', 'godam' ) }
 				</Notice>
 			}
+
+			{
+				isCF7PluginActive && forms.length === 0 &&
+				<Notice
+					className="mb-4"
+					status="info"
+					isDismissible={ false }
+				>
+					{ __( 'No Contact Form 7 forms found. Please create a form first.', 'godam' ) }
+				</Notice>
+			}
+
 			{
 				<FormSelector disabled={ ! isValidAPIKey || ! isCF7PluginActive } className="mb-4" formID={ layer.cf7_id } forms={ forms } handleChange={ changeFormID } />
 			}
