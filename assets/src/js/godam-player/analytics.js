@@ -50,7 +50,7 @@ function playerAnalytics() {
 		const player = videojs( video );
 
 		// Initialize GTM tracker for this video
-		if ( window.dataLayer !== 'undefined' && window.godamSettings?.enableGTMTracking ) {
+		if ( typeof window.dataLayer !== 'undefined' && window.godamSettings?.enableGTMTracking ) {
 			const gtmTracker = new GTMVideoTracker( player, video );
 			// Store tracker reference for potential cleanup
 			video.gtmTracker = gtmTracker;
