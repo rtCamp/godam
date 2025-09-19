@@ -444,7 +444,7 @@ class WC_Product_Video_Gallery {
 		// Clean up parent reference from attachment.
 		delete_post_meta( $attachment_id, $parent_meta_key );
 	}
-	
+
 	/**
 	 * Renders a video slider in a single product page.
 	 *
@@ -598,9 +598,14 @@ class WC_Product_Video_Gallery {
 	public function rtgodam_single_product_modal_summary() {
 		ob_start();
 		?>
+		<div class="rtgodam-product-video-gallery-slider-modal-content--cart-basket">
+			<?php
+				echo do_blocks( '<!-- wp:woocommerce/mini-cart /-->' ); // phpcs:ignore
+			?>
+		</div>
 		<div class="rtgodam-product-video-gallery-slider-modal-content--images">
 			<div class="rtgodam-product-video-gallery-slider-modal-content--images-desktop">
-				<?php 
+				<?php
 				if ( function_exists( 'woocommerce_show_product_images' ) ) {
 					woocommerce_show_product_images();
 				}
@@ -628,26 +633,15 @@ class WC_Product_Video_Gallery {
 		</div>
 		<div class="rtgodam-product-video-gallery-slider-modal-content--cart">
 			<div class="rtgodam-product-video-gallery-slider-modal-content--cart-form">
-				<?php 
+				<?php
 				if ( function_exists( 'woocommerce_template_single_add_to_cart' ) ) {
 					woocommerce_template_single_add_to_cart();
 				}
 				?>
 			</div>
-			<div class="rtgodam-product-video-gallery-slider-modal-content--cart-basket">
-				<?php
-					echo do_blocks( '<!-- wp:woocommerce/mini-cart /-->' ); // phpcs:ignore
-				?>
-			</div>
 		</div>
 	
 		<?php
-		if ( function_exists( 'woocommerce_template_single_meta' ) ) {
-			woocommerce_template_single_meta();
-		}
-		if ( function_exists( 'woocommerce_template_single_sharing' ) ) {
-			woocommerce_template_single_sharing();
-		}
 		return ob_get_clean();
 	}
 
@@ -658,7 +652,7 @@ class WC_Product_Video_Gallery {
 	 */
 	public function display_main_product_image_only() {
 		global $product;
-		
+
 		if ( ! $product ) {
 			return;
 		}
@@ -669,17 +663,17 @@ class WC_Product_Video_Gallery {
 		if ( $post_thumbnail_id ) {
 			$image_url = wp_get_attachment_image_url( $post_thumbnail_id, 'woocommerce_single' );
 			$image_alt = get_post_meta( $post_thumbnail_id, '_wp_attachment_image_alt', true );
-			
+
 			// Get image dimensions.
 			$image_data   = wp_get_attachment_image_src( $post_thumbnail_id, 'woocommerce_single' );
 			$image_width  = $image_data ? $image_data[1] : '';
 			$image_height = $image_data ? $image_data[2] : '';
-			
+
 			// Fallback alt text to product title if alt is empty.
 			if ( empty( $image_alt ) ) {
 				$image_alt = $product->get_name();
 			}
-			
+
 			if ( $image_url ) {
 				?>
 				<div class="rtgodam-product-video-gallery-slider-modal-content--main-image">
