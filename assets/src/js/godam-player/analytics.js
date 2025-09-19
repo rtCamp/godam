@@ -16,6 +16,90 @@ const analytics = Analytics( {
 } );
 window.analytics = analytics;
 
+// Generic video analytics helper
+( function() {
+	function findVideoElementById( videoId, root ) {
+		const ctx = root && root.querySelector ? root : document;
+		return ctx.querySelector(
+			`.easydam-player.video-js[data-id="${ videoId }"], .video-js[data-id="${ videoId }"]`,
+		);
+	}
+
+	function getPlayer( el ) {
+		if ( ! el ) {
+			return null;
+		}
+		if ( el.player && typeof el.player.played === 'function' ) {
+			return el.player;
+		}
+		try {
+			return videojs( el );
+		} catch ( e ) {
+			return null;
+		}
+	}
+
+	function collectPlayedRanges( player ) {
+		const played = player && player.played && player.played();
+		const ranges = [];
+		if ( played && typeof played.length === 'number' ) {
+			for ( let i = 0; i < played.length; i++ ) {
+				ranges.push( [ played.start( i ), played.end( i ) ] );
+			}
+		}
+		return ranges;
+	}
+
+	// Attach to window.analytics
+	window.analytics.trackVideoEvent = ( { type, videoId, root } = {} ) => {
+		if ( ! type ) {
+			return false;
+		}
+		// Type 2: heatmap (derive ranges and length via videojs)
+		if ( type === 2 ) {
+			const ctx = root && root.querySelector ? root : document;
+			let vid = videoId;
+
+			// If no videoId provided, automatically find the current video
+			if ( ! vid ) {
+				const videoEl = ctx.querySelector( '.easydam-player.video-js, .video-js' );
+				vid = videoEl ? parseInt( videoEl.getAttribute( 'data-id' ), 10 ) : 0;
+			}
+
+			vid = parseInt( vid, 10 ) || 0;
+			if ( ! vid ) {
+				return false;
+			}
+
+			// Send type 1 first (for the current video)
+			window.analytics.track( 'page_load', { type: 1, videoIds: [ vid ] } );
+
+			const el = findVideoElementById( vid, root );
+			const player = getPlayer( el );
+			if ( ! player ) {
+				return false;
+			}
+
+			const ranges = collectPlayedRanges( player );
+			if ( ranges.length === 0 ) {
+				return false;
+			}
+
+			const videoLength = Number( player.duration && player.duration() ) || 0;
+
+			window.analytics.track( 'video_heatmap', {
+				type: 2,
+				videoId: vid,
+				ranges,
+				videoLength,
+			} );
+			return true;
+		}
+
+		return false;
+	};
+}() );
+
 if ( ! window.pageLoadEventTracked ) {
 	window.pageLoadEventTracked = true; // Mark as tracked to avoid duplicate execution
 
