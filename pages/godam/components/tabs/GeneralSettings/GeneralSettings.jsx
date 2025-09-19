@@ -100,6 +100,15 @@ const GeneralSettings = () => {
 						onChange={ ( value ) => handleSettingChange( 'enable_folder_organization', value ) }
 					/>
 
+					<ToggleControl
+						__nextHasNoMarginBottom
+						className="godam-toggle godam-margin-bottom"
+						label={ __( 'Enable GTM Tracking', 'godam' ) }
+						help={ __( 'Enable Google Tag Manager video tracking for analytics and conversion tracking.', 'godam' ) }
+						checked={ mediaSettings?.general?.enable_gtm_tracking }
+						onChange={ ( value ) => handleSettingChange( 'enable_gtm_tracking', value ) }
+					/>
+
 				</PanelBody>
 			</Panel>
 
