@@ -19,7 +19,7 @@ $media-library-sidebar-border: #E0E0E0;
 /*
 Write your Sass code here for admin.
 */
-#toplevel_page_rtgodam .wp-submenu li:nth-child(4) { /** Hide the "Settings" submenu ***/
+#toplevel_page_rtgodam .wp-submenu li a[href="admin.php?page=rtgodam_analytics"] { /** Hide the "Analytics" submenu ***/
 	display: none;
 }
 
