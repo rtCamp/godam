@@ -322,12 +322,16 @@ if ( ! empty( $transcript_path ) ) {
 	);
 }
 
+$attachment_title = '';
+
 if ( ! empty( $attachment_id ) && is_numeric( $attachment_id ) ) {
 	$attachment_title = get_the_title( $attachment_id );
 } elseif ( ! empty( $original_id ) && is_numeric( $original_id ) ) {
 	$attachment_title = get_the_title( $original_id );
-} else {
-	$attachment_title = '';
+}
+// Use the filename as the title.
+if ( empty( $attachment_title ) ) {
+	$attachment_title = basename( get_attached_file( $attachment_id ) );
 }
 
 ?>
