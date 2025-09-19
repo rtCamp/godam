@@ -39,6 +39,7 @@ use RTGODAM\Inc\REST_API\Ads;
 use RTGODAM\Inc\REST_API\Transcoding;
 use RTGODAM\Inc\REST_API\Analytics;
 use RTGODAM\Inc\REST_API\Polls;
+use RTGODAM\Inc\REST_API\WC;
 use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
 use RTGODAM\Inc\REST_API\Dynamic_Gallery;
 use RTGODAM\Inc\REST_API\Engagement;
@@ -50,10 +51,15 @@ use RTGODAM\Inc\REST_API\MetForm;
 
 use RTGODAM\Inc\Shortcodes\GoDAM_Player;
 use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
+use RTGODAM\Inc\Shortcodes\GoDAM_Product_Gallery;
 
 use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
 use RTGODAM\Inc\Everest_Forms\Everest_Forms_Integration;
 use RTGODAM\Inc\Video_Metadata;
+
+use RTGODAM\Inc\WooCommerce\WC_Product_Video_Gallery;
+
+use RTGODAM\Inc\WooCommerce\WC_Featured_Video_Gallery;
 
 use RTGODAM\Inc\Media_Library\Media_Folders_REST_API;
 use RTGODAM\Inc\WPForms\WPForms_Integration;
@@ -92,6 +98,7 @@ class Plugin {
 		// Load shortcodes.
 		GoDAM_Player::get_instance();
 		GoDAM_Video_Gallery::get_instance();
+		GoDAM_Product_Gallery::get_instance();
 		Video_Engagement::get_instance();
 
 		Video_Editor_Form_Layer_Handler::get_instance()->init();
@@ -100,6 +107,7 @@ class Plugin {
 		$this->load_post_types();
 		$this->load_taxonomies();
 		$this->load_plugin_configs();
+		$this->load_woocommerce_configs();
 		$this->load_rest_api();
 		$this->init_gravity_forms();
 		$this->load_sureforms();
@@ -145,6 +153,16 @@ class Plugin {
 	}
 
 	/**
+	 * Load Woocommerce Configs.
+	 */
+	public function load_woocommerce_configs() {
+		if ( is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
+			WC_Product_Video_Gallery::get_instance();
+			WC_Featured_Video_Gallery::get_instance();
+		}
+	}
+
+	/**
 	 * Load REST API.
 	 *
 	 * @return void
@@ -167,6 +185,7 @@ class Plugin {
 		Analytics::get_instance();
 		Deactivation::get_instance();
 		Polls::get_instance();
+		WC::get_instance();
 		Dynamic_Shortcode::get_instance();
 		Dynamic_Gallery::get_instance();
 		Engagement::get_instance();

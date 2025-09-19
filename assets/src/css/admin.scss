@@ -7,6 +7,12 @@ $GREEN: #4CAF50;
 $RED: #F44336;
 $LIGHT_BLUE: #2196F3;
 
+#root-easydam,
+#root-video-editor,
+.wc-godam-product-admin {
+	--wp-components-color-accent: #ab3a6c;
+}
+
 $media-library-sidebar-bg: #fff;
 $media-library-sidebar-bg-dark: #a3a3a3;
 $media-library-sidebar-border: #E0E0E0;
@@ -869,5 +875,26 @@ to ensure proper responsiveness and avoid layout issues.
 	td.field {
 		$wp-td-field-margin: 1px;
 		width: calc(100% - 2 * $wp-td-field-margin);
+	}
+}
+
+.godam-product-timestamp-input input:focus {
+	box-shadow: 0 0 0 0.7px #ab3a6c;
+	border-color: #ab3a6c;
+}
+
+.godam-admin-video-add-to-product-container {
+	.vjs-control.vjs-custom-play-button {
+		width: auto !important;
+
+		@media screen and (max-width: 768px) {
+			display: none;
+		}
+
+		#branding-icon {
+			height: 100%;
+			width: auto;
+			object-fit: fill;
+		}
 	}
 }
