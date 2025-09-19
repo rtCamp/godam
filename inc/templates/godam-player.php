@@ -322,6 +322,13 @@ if ( ! empty( $transcript_path ) ) {
 	);
 }
 
+if ( ! empty( $attachment_id ) && is_numeric( $attachment_id ) ) {
+	$attachment_title = get_the_title( $attachment_id );
+} elseif ( ! empty( $original_id ) && is_numeric( $original_id ) ) {
+	$attachment_title = get_the_title( $original_id );
+} else {
+	$attachment_title = '';
+}
 
 ?>
 
@@ -362,6 +369,7 @@ if ( ! empty( $transcript_path ) ) {
 					data-job_id="<?php echo esc_attr( $job_id ); ?>"
 					data-global_ads_settings="<?php echo esc_attr( $ads_settings ); ?>"
 					data-hover-select="<?php echo esc_attr( $hover_select ); ?>"
+					data-video-title="<?php echo esc_attr( $attachment_title ); ?>"
 				>
 					<?php
 					foreach ( $sources as $source ) :
