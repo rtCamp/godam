@@ -24,7 +24,7 @@ $godam-gradient: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
 	border: 1px solid $media-library-sidebar-border;
 	display: flex;
 	flex-direction: column;
-	min-height: 100vh;
+	overflow: auto;
 	height: 100%;
 
 	@media (max-width: 900px) {
@@ -74,7 +74,7 @@ $godam-gradient: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
 	}
 
 	.tree-container {
-		padding-bottom: 2.5rem;
+		padding-bottom: 5rem;
 	}
 
 	.folder-tabs {
