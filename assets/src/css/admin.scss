@@ -38,6 +38,38 @@ $media-frame-width: calc(300px + 2 * 24px);
 	width: $media-frame-width;
 }
 
+.godam-skeleton-wrapper {
+	display: grid;
+	grid-template-columns: 1fr 2fr;
+	min-height: 80vh;
+	gap: 2em;
+	padding-left: 20px;
+	padding-top: 2rem;
+
+	.godam-skeleton-card {
+		height: 250px;
+		display: flex;
+		justify-content: space-between;
+		padding: 30px;
+	}
+
+	#main-content {
+		padding: 30px 20px 0 20px;
+	}
+}
+
+.skeleton-header-broad {
+	display: flex; 
+	padding: 1rem; 
+	justify-content: space-between; 
+	align-items: center; 
+	border-width: 1px; 
+	border-color: #E5E7EB; 
+	background-color: #fff; 
+	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); 
+	min-height: 96px;
+}
+
 @media (max-width: 900px) {
 
 	.media-frame-menu {
