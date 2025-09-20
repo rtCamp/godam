@@ -55,10 +55,29 @@ export const analyticsApi = createApi( {
 				return response.processed_analytics || [];
 			},
 		} ),
+		fetchProcessedLayerAnalytics: builder.query( {
+			query: ( { layerType, days, siteUrl, videoId } ) => ( {
+				url: 'godam/v1/analytics/layer-analytics',
+				params: {
+					layer_type: layerType,
+					days,
+					site_url: siteUrl,
+					video_id: videoId,
+				},
+			} ),
+			transformResponse: ( response ) => {
+				if ( response.status === 'error' ) {
+					throw new Error( response.message );
+				}
+				return response.layer_analytics || [];
+			},
+		} ),
+
 	} ),
 } );
 
 export const {
 	useFetchAnalyticsDataQuery,
 	useFetchProcessedAnalyticsHistoryQuery,
+	useFetchProcessedLayerAnalyticsQuery,
 } = analyticsApi;

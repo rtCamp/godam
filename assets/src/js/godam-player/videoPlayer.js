@@ -16,6 +16,7 @@ import AdsManager from './managers/adsManager.js';
 import HoverManager from './managers/hoverManager.js';
 import ShareManager from './managers/shareManager.js';
 import MenuButtonHoverManager from './managers/menuButtonHover.js';
+import { getLayerInteractions, writeLocalStorageJSON } from './utils/storage.js';
 
 /**
  * Refactored Video Player Class
@@ -100,6 +101,14 @@ export default class GodamVideoPlayer {
 			// Now that managers are initialized, we can safely access them
 			this.setupEventListeners();
 			new MenuButtonHoverManager( this.player );
+		} );
+
+		this.player.on( 'play', () => {
+			const interactions = getLayerInteractions();
+			if ( ! interactions[ this.player.el().dataset.id ] ) {
+				interactions[ this.player.el().dataset.id ] = [];
+				writeLocalStorageJSON( 'layerInteractions', interactions );
+			}
 		} );
 	}
 
