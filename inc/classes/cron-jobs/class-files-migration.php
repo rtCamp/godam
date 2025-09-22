@@ -160,14 +160,14 @@ class Files_Migration {
 
 			wp_send_json_success(
 				array(
-					'message' => 'Files migration started.',
+					'message' => __( 'Files migration started.', 'godam' ),
 				)
 			);
 		} elseif ( 'stop' === $sub_action ) {
 			self::stop_migration();
 			wp_send_json_success(
 				array(
-					'message' => 'Files migration stopped.',
+					'message' => __( 'Files migration stopped.', 'godam' ),
 				)
 			);
 		} elseif ( 'info' === $sub_action ) {
@@ -176,7 +176,7 @@ class Files_Migration {
 		} else {
 			wp_send_json_error(
 				array(
-					'message' => 'Invalid sub-action specified.',
+					'message' => __( 'Invalid sub-action specified.', 'godam' ),
 				),
 				400
 			);
