@@ -288,7 +288,7 @@ class API_Client {
 			return false;
 		}
 
-		$stats = (array) json_decode( wp_remote_retrieve_body( $response ) );
+		$stats = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( $stats ) {
 			// Save to cache.
 			$this->cache->cache_file_stats( $path, $stats );
