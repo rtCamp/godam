@@ -734,7 +734,7 @@ class Pages {
 						'media_migration_progress'      => Files_Migration::get_info(),
 						'can_migrate'                   => Files_Migration::can_migrate(),
 						'ajax_url'                      => admin_url( 'admin-ajax.php' ),
-						'nonce'                         => wp_create_nonce( 'files_migration_nonce' ),
+						'nonce'                         => wp_create_nonce( 'rtgodam_files_migration_nonce' ),
 					)
 				);
 			}

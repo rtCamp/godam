@@ -141,7 +141,7 @@ class Files_Migration {
 	 * @since n.e.x.t
 	 */
 	public static function ajax_handle_migration() {
-		check_ajax_referer( 'files_migration_nonce', 'nonce' );
+		check_ajax_referer( 'rtgodam_files_migration_nonce', 'nonce' );
 
 		$sub_action = isset( $_POST['subAction'] ) ? sanitize_text_field( $_POST['subAction'] ) : '';
 
