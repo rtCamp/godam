@@ -61,7 +61,7 @@ $media-library-active-folder: #f5f5f5;
 @keyframes godam-snackbar-fadein {
 
 	from { bottom: 0; opacity: 0; }
-	
+
 	to   { bottom: 30px; opacity: 1; }
 }
 
@@ -428,6 +428,16 @@ $media-library-active-folder: #f5f5f5;
 
 		li {
 			margin-bottom: 0;
+		}
+	}
+}
+
+.attachment-compat {
+
+	.compat-field-oembed_url {
+
+		label span {
+			text-align: left;
 		}
 	}
 }
