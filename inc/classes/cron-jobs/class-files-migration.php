@@ -459,7 +459,7 @@ class Files_Migration {
 				'filename' => basename( $current_file ),
 				'size'     => $all_files[ $current_file ] ?? 0,
 			),
-			'cron_scheduled' => self::varify_cron(),
+			'cron_scheduled' => self::verify_cron(),
 		);
 	}
 
@@ -625,7 +625,7 @@ class Files_Migration {
 	 *
 	 * @return bool True if the cron job is scheduled or the status is 'running', false otherwise.
 	 */
-	public static function varify_cron() {
+	public static function verify_cron() {
 		// Check if the cron job is scheduled.
 		if ( wp_next_scheduled( self::CRON_HOOK ) ) {
 			return true;
