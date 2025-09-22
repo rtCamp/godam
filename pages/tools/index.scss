@@ -241,4 +241,11 @@ $tools-page-breakpoint: 782px;
 		margin-bottom: 2rem;
 	}
 
+    .godam-panel button.components-panel__body-toggle {
+      height: auto;
+      padding: 1.25rem;
+      font-size: 1rem;
+      line-height: 1;
+      font-weight: 600;
+    }
 }

@@ -61,10 +61,6 @@
 		}
 	}
 
-	.video-js .vjs-fullscreen-control {
-		order: 3;
-	}
-
 	.video-js .vjs-settings-button {
 		order: 2;
 	}
@@ -92,6 +88,10 @@
 		
 		.video-js .vjs-control-bar {
 			height: 6em !important;
+
+			.vjs-volume-control {
+				display: none; //Fallback for old browser versions not supporting interaction media features
+			}
 
 			.vjs-control {
 				height: 3em !important;
@@ -136,6 +136,17 @@
 				z-index: 99;
 			}
 
+			.vjs-volume-panel {
+				bottom: 0;
+				position: absolute;
+				right: 120px;
+			}
+
+			&:has(.vjs-subs-caps-button.vjs-hidden) .vjs-volume-panel {
+				right: 80px;
+			}
+
+
 			.vjs-subs-caps-button {
 				right: 80px !important;
 			}
@@ -168,7 +179,7 @@
 			height: 3em !important;
 		}
 
-	   .vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-volume-panel, .vjs-remaining-time, .vjs-custom-play-button {
+	   .vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-remaining-time, .vjs-custom-play-button {
 			display: none !important;
 		}
 

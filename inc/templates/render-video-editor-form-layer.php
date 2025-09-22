@@ -6,7 +6,7 @@
  *
  * Currently, this is mainly used for forms integration.
  *
- * @since n.e.x.t
+ * @since 1.4.0
  *
  * @package GoDAM
  */
@@ -36,7 +36,7 @@ $layer_id = get_query_var( 'rtgodam-layer-id' );
 	/**
 	 * Action hook to allow additional content to be added before the layer is rendered.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $layer The type of layer being rendered.
 	 * @param string $layer_id The ID of the layer being rendered.
@@ -53,7 +53,7 @@ $layer_id = get_query_var( 'rtgodam-layer-id' );
 				/**
 				 * Action hook to allow additional content to be added when the layer is rendered.
 				 *
-				 * @since n.e.x.t
+				 * @since 1.4.0
 				 *
 				 * @param string $layer The type of layer being rendered.
 				 * @param string $layer_id The ID of the layer being rendered.
@@ -65,7 +65,7 @@ $layer_id = get_query_var( 'rtgodam-layer-id' );
 		/**
 		 * Action hook to allow additional content to be added after the layer is rendered.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.4.0
 		 *
 		 * @param string $layer The type of layer being rendered.
 		 * @param string $layer_id The ID of the layer being rendered.

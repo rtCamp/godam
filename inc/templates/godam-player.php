@@ -26,21 +26,44 @@ if ( isset( $is_elementor_widget ) && $is_elementor_widget ) {
 // prevent default behavior of Gravity Forms autoscroll on submission.
 add_filter( 'gform_confirmation_anchor', '__return_false' );
 
+// Check if the block attributes are set and is an array.
+if ( ! isset( $attributes ) || ! is_array( $attributes ) ) {
+	$attributes = array();
+}
+
+// Create filter for the block attributes.
+$attributes = apply_filters(
+	'godam_player_block_attributes',
+	$attributes
+);
+
 // attributes.
-$autoplay      = ! empty( $attributes['autoplay'] );
-$controls      = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
-$loop          = ! empty( $attributes['loop'] );
-$muted         = ! empty( $attributes['muted'] );
-$poster        = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
-$preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
-$hover_select  = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSelect'] : 'none';
-$caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
-$tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
-$attachment_id = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
+$autoplay       = ! empty( $attributes['autoplay'] );
+$controls       = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
+$loop           = ! empty( $attributes['loop'] );
+$muted          = ! empty( $attributes['muted'] );
+$poster         = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
+$preload        = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
+$hover_select   = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSelect'] : 'none';
+$caption        = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
+$tracks         = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
+$show_share_btn = ! empty( $attributes['showShareButton'] );
+
+// Resolve the attachment ID (could be WordPress or virtual media).
+$attachment_id = '';
+
+// Prefer "id" if available.
+if ( ! empty( $attributes['id'] ) ) {
+	$attachment_id = is_numeric( $attributes['id'] )
+		? intval( $attributes['id'] )   // WordPress media ID.
+		: sanitize_text_field( $attributes['id'] ); // Virtual media ID.
+} elseif ( ! empty( $attributes['cmmId'] ) ) { // Fallback to "cmmId" for backward compatibility.
+	$attachment_id = sanitize_text_field( $attributes['cmmId'] );
+}
 
 // Determine whether the attachment ID refers to a virtual (GoDAM) media item.
 // If it's not numeric, we assume it's a virtual reference (e.g., a GoDAM ID).
-$is_virtual  = ! is_numeric( $attachment_id );
+$is_virtual  = ! empty( $attachment_id ) && ! is_numeric( $attachment_id );
 $original_id = $attachment_id;
 
 if ( $is_virtual ) {
@@ -74,8 +97,9 @@ $aspect_ratio       = ! empty( $attributes['aspectRatio'] ) && 'responsive' === 
 	)
 	: '16:9';
 
-$src            = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
-$transcoded_url = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attributes['transcoded_url'] ) : '';
+$src                = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
+$transcoded_url     = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attributes['transcoded_url'] ) : '';
+$hls_transcoded_url = ! empty( $attributes['hls_transcoded_url'] ) ? esc_url( $attributes['hls_transcoded_url'] ) : '';
 
 // Retrieve 'rtgodam_meta' for the given attachment ID, defaulting to an empty array if not found.
 $easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_meta', true ) : array();
@@ -98,10 +122,23 @@ if ( empty( $attachment_id ) ) {
 	$job_id = ! empty( $attributes['cmmId'] ) ? sanitize_text_field( $attributes['cmmId'] ) : '';
 }
 
-if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
+if ( ( empty( $attachment_id ) || ( $is_virtual && ! empty( $original_id ) ) ) &&
+	! empty( $attributes['sources'] ) 
+) {
+	// If media is virtual media.
 	$sources = $attributes['sources'];
-} elseif ( empty( $attachment_id ) && ! ( empty( $src ) && empty( $transcoded_url ) ) ) {
+} elseif ( empty( $attachment_id ) &&
+	! ( empty( $src ) && empty( $transcoded_url ) && empty( $hls_transcoded_url ) )
+) {
+	// in case of shortcode with src or transcoded_url or hls_transcoded_url attribute.
 	$sources = array();
+
+	if ( ! empty( $hls_transcoded_url ) ) {
+		$sources[] = array(
+			'src'  => $hls_transcoded_url,
+			'type' => 'application/x-mpegURL',
+		);
+	}
 	if ( ! empty( $transcoded_url ) ) {
 		$sources[] = array(
 			'src'  => $transcoded_url,
@@ -115,6 +152,12 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 		);
 	}
 } else {
+
+	if ( $is_virtual ) {
+		// For virtual media, we need to get the actual attachment ID first.
+		$attachment_id = $original_id;
+	}
+
 	$transcoded_url     = $attachment_id ? rtgodam_get_transcoded_url_from_attachment( $attachment_id ) : '';
 	$hls_transcoded_url = $attachment_id ? rtgodam_get_hls_transcoded_url_from_attachment( $attachment_id ) : '';
 	$video_src          = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
@@ -130,32 +173,17 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	}
 	$sources = array();
 
+	if ( ! empty( $hls_transcoded_url ) ) {
+		$sources[] = array(
+			'src'  => $hls_transcoded_url,
+			'type' => 'application/x-mpegURL',
+		);
+	}
+
 	if ( ! empty( $transcoded_url ) ) {
 		$sources[] = array(
 			'src'  => $transcoded_url,
 			'type' => 'application/dash+xml',
-		);
-	}
-
-	if ( ! empty( $hls_transcoded_url ) ) {
-		$sources[] = array(
-			'src'  => $hls_transcoded_url,
-			'type' => 'application/x-mpegURL',
-		);
-	}
-
-	// Only add video source if it's not empty.
-	if ( ! empty( $video_src ) ) {
-		$sources[] = array(
-			'src'  => $video_src,
-			'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
-		);
-	}
-
-	if ( ! empty( $hls_transcoded_url ) ) {
-		$sources[] = array(
-			'src'  => $hls_transcoded_url,
-			'type' => 'application/x-mpegURL',
 		);
 	}
 
@@ -209,13 +237,14 @@ $video_setup = array(
 	'sources'     => $sources,
 	'playsinline' => true,
 	'controlBar'  => array(
-		'volumePanel' => array(
+		'volumePanel'  => array(
 			'inline' => ! in_array( $player_skin, array( 'Minimal', 'Pills' ), true ),
 		),
-		'skipButtons' => array(
+		'skipButtons'  => array(
 			'forward'  => 10,
 			'backward' => 10,
 		),
+		'brandingIcon' => true, // provide default value for brand logo. 
 	),
 );
 if ( ! empty( $control_bar_settings ) ) {
@@ -243,6 +272,7 @@ $video_config = wp_json_encode(
 		'overlayTimeRange' => $overlay_time_range, // Add overlay time range to video config.
 		'playerSkin'       => $player_skin, // Add player skin to video config. Add brand image to video config.
 		'aspectRatio'      => $aspect_ratio,
+		'showShareBtn'     => $show_share_btn,
 	)
 );
 
@@ -308,10 +338,28 @@ if ( $is_shortcode || $is_elementor_widget ) {
 	}
 	$figure_attributes = get_block_wrapper_attributes( $additional_attributes );
 }
+
+/**
+ * Fetch AI Generated video tracks from REST endpoint
+ */
+$transcript_path = godam_get_transcript_path( $job_id );
+
+if ( ! empty( $transcript_path ) ) {
+	$tracks[] = array(
+		'src'     => esc_url( $transcript_path ),
+		'kind'    => 'subtitles',
+		'label'   => 'English',
+		'srclang' => 'en',
+	);
+}
+
+
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
-	<figure <?php echo wp_kses_data( $figure_attributes ); ?>>
+	<figure 
+		id="godam-player-container-<?php echo esc_attr( $instance_id ); ?>"
+		<?php echo wp_kses_data( $figure_attributes ); ?>>
 		<div class="godam-video-wrapper">
 			<?php if ( $show_overlay && ! empty( $inner_blocks_content ) ) : ?>
 				<div
@@ -379,6 +427,8 @@ if ( $is_shortcode || $is_elementor_widget ) {
 					}
 					?>
 				</video>
+				<!-- Add this to target godam uppy modal inside video. -->
+				<div id="uppy-godam-video-modal-container"></div>
 
 				<!-- Dynamically render shortcodes for form layers. -->
 				<?php
@@ -601,6 +651,9 @@ if ( $is_shortcode || $is_elementor_widget ) {
 
 		<?php if ( $caption && ! empty( $caption ) ) : ?>
 			<figcaption class="wp-element-caption rtgodam-video-caption"><?php echo esc_html( $caption ); ?></figcaption>
-		<?php endif; ?>
+			<?php
+			endif;
+				do_action( 'rtgodam_after_video_html', $attributes, $instance_id, $easydam_meta_data );
+		?>
 	</figure>
 <?php endif; ?>

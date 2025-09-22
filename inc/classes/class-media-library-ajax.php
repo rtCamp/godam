@@ -78,6 +78,7 @@ class Media_Library_Ajax {
 			'origin'                => 'godam',
 			'thumbnail_url'         => $item['thumbnail_url'] ?? '',
 			'duration'              => $item['playtime'] ?? '',
+			'hls_url'               => $item['transcoded_hls_path'] ?? '',
 		);
 
 		if ( 'stream' === $item['job_type'] ) {
@@ -549,10 +550,10 @@ class Media_Library_Ajax {
 							<p class="annual-plan-offer-banner__description">%2$s</p>
 						</div>
 						<div class="annual-plan-offer-banner__cta-container">
-							<a 
-								href="%3$s" 
-								class="annual-plan-offer-banner__cta" 
-								target="_blank" 
+							<a
+								href="%3$s"
+								class="annual-plan-offer-banner__cta"
+								target="_blank"
 								rel="noopener noreferrer"
 								title="%4$s"
 							>
@@ -560,9 +561,9 @@ class Media_Library_Ajax {
 							</a>
 						</div>
 					</div>
-					<button 
-						type="button" 
-						class="annual-plan-offer-banner__dismiss" 
+					<button
+						type="button"
+						class="annual-plan-offer-banner__dismiss"
 						aria-label="Dismiss banner"
 					>
 						&times;

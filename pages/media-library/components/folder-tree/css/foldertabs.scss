@@ -4,14 +4,14 @@
 	padding: 0;
 
 	.components-panel__icon {
-        fill: #1c1c1c;
-        margin: 0 0.375rem 0 0;
+		fill: #1c1c1c;
+		margin: 0 0.375rem 0 0;
 		width: 24px;
 		height: 24px;
 	}
 
 	&:first-child .components-panel__icon {
-	    fill: #F79009;
+		fill: #F79009;
 	}
 
 }
@@ -43,20 +43,20 @@
 	box-sizing: border-box;
 
 	.folder-tab__count {
-        margin-left: auto;
-        margin-right: 0;
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: #1c1c1c;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 1.5rem;
-        height: 1.5rem;
-        min-width: 1.5rem;
-        border-radius: 0.5rem;
-        background-color: #F5F5F5;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+		margin-left: auto;
+		margin-right: 0;
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: #1c1c1c;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0 0.5rem;
+		height: 1.5rem;
+		min-width: 1.5rem;
+		border-radius: 0.5rem;
+		background-color: #F5F5F5;
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 	}
 }
 
@@ -69,26 +69,26 @@
 	padding: 0;
 
 	.components-panel__body-title {
-	    background: #fff;
+		background: #fff;
 
 		.components-button {
-            padding: 1rem 0.25rem;
+			padding: 1rem 0.25rem;
 
 			.components-panel__arrow {
-			    position: relative;
-			    transform: unset;
-                right: unset;
-                top: unset;
-                vertical-align: middle;
+				position: relative;
+				transform: unset;
+				right: unset;
+				top: unset;
+				vertical-align: middle;
 			}
 		}
 	}
 
 	&.is-opened {
 
-    	.components-panel__body-title {
-    	    margin: 0;
-    	}
+		.components-panel__body-title {
+			margin: 0;
+		}
 	}
 }
 
@@ -99,24 +99,24 @@
 	justify-content: flex-end;
 	align-items: center;
 
-    &:hover, &:active {
-        color: #1c1c1c;
-        background-color: #F5F5F5;
-    }
+	&:hover, &:active {
+		color: #1c1c1c;
+		background-color: #F5F5F5;
+	}
 }
 
 .godam-folder-tab__list {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 
-    .tree-item {
-        padding-left: 0.5rem;
+	.tree-item {
+		padding-left: 0.5rem;
 
-        &__count {
-            margin-left: auto;
-        }
-    }
+		&__count {
+			margin-left: auto;
+		}
+	}
 }
 
 .godam-folder-tab-panel .components-panel__body-content {

@@ -32,7 +32,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { __, _x, sprintf } from '@wordpress/i18n';
 import { useInstanceId } from '@wordpress/compose';
 import { useDispatch } from '@wordpress/data';
-import { external, search, media as icon } from '@wordpress/icons';
+import { search, media as icon } from '@wordpress/icons';
 import { store as noticesStore } from '@wordpress/notices';
 
 /**
@@ -147,6 +147,15 @@ function VideoEdit( {
 		poster: poster || defaultPoster,
 		sources,
 		aspectRatio: '16:9',
+		// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
+		// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
+		html5: {
+			vhs: {
+				bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
+				bandwidthVariance: 1.0, // allow renditions close to estimate
+				limitRenditionByPlayerDimensions: false, // don't cap by video element size
+			},
+		},
 	} ), [ controls, autoplay, preload, loop, muted, poster, defaultPoster, sources ] );
 
 	// Memoize the video component to prevent rerenders.
@@ -179,7 +188,7 @@ function VideoEdit( {
 	}, [ poster ] );
 
 	useEffect( () => {
-		if ( id ) {
+		if ( id && ! isNaN( Number( id ) ) ) {
 			( async () => {
 				try {
 					const response = await apiFetch( { path: `/wp/v2/media/${ id }` } );
@@ -189,13 +198,6 @@ function VideoEdit( {
 					}
 
 					if ( response ) {
-						const newSources = [
-							{
-								src: response.source_url,
-								type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
-							},
-						];
-
 						if ( response?.meta && response?.meta?.rtgodam_hls_transcoded_url ) {
 							const hlsTranscodedUrl = response.meta.rtgodam_hls_transcoded_url;
 
@@ -214,14 +216,20 @@ function VideoEdit( {
 							} );
 						}
 
-						// Reverse the sources to ensure the preferred format is first. MPD -> HLS -> Origin
-						setAttributes( { sources: newSources.reverse() } );
+						const newSources = [
+							{
+								src: response.source_url,
+								type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
+							},
+						];
+
+						setAttributes( { sources: newSources } );
 					}
 				} catch ( error ) {
 					// Show error notice if fetching media fails.
 					const message = sprintf(
 						/* translators: %s: Label of the video text track e.g: "French subtitles". */
-						_x( 'Failed to load video data with id: %d', 'text tracks' ),
+						_x( 'Failed to load video data with id: %d', 'video caption', 'godam' ),
 						id,
 					);
 					const { createErrorNotice } = dispatch( noticesStore );
@@ -280,16 +288,27 @@ function VideoEdit( {
 				},
 			} );
 
+			const mediaSources = [];
+
+			if ( media.hls_url ) {
+				mediaSources.push( {
+					src: media.hls_url,
+					type: media.hls_url.endsWith( '.m3u8' ) ? 'application/x-mpegURL' : media.mime,
+				} );
+			}
+
+			if ( media.url ) {
+				mediaSources.push( {
+					src: media.url,
+					type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
+				} );
+			}
+
 			setAttributes( {
-				sources: [
-					{
-						src: media.url,
-						type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
-					},
-				],
+				sources: mediaSources,
 			} );
 		} else {
-		// Fetch transcoded URL from media meta.
+			// Fetch transcoded URL from media meta.
 			( async () => {
 				try {
 					const response = await apiFetch( { path: `/wp/v2/media/${ media.id }` } );
@@ -306,24 +325,36 @@ function VideoEdit( {
 						},
 					} );
 
-					if ( response && response.meta && response.meta.rtgodam_transcoded_url ) {
-						const transcodedUrl = response.meta.rtgodam_transcoded_url;
-
+					if ( response && response.meta ) {
 						if ( response.meta.rtgodam_media_video_thumbnail !== '' ) {
 							setDefaultPoster( response.meta.rtgodam_media_video_thumbnail );
 						}
 
+						const mediaSources = [];
+
+						const hlsTranscodedUrl = response.meta.rtgodam_hls_transcoded_url;
+						if ( hlsTranscodedUrl ) {
+							mediaSources.push( {
+								src: hlsTranscodedUrl,
+								type: hlsTranscodedUrl.endsWith( '.m3u8' ) ? 'application/x-mpegURL' : media.mime,
+							} );
+						}
+
+						const transcodedUrl = response.meta.rtgodam_transcoded_url;
+						if ( transcodedUrl ) {
+							mediaSources.push( {
+								src: transcodedUrl,
+								type: transcodedUrl.endsWith( '.mpd' ) ? 'application/dash+xml' : media.mime,
+							} );
+						}
+
+						mediaSources.push( {
+							src: media.url,
+							type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
+						} );
+
 						setAttributes( {
-							sources: [
-								{
-									src: transcodedUrl,
-									type: transcodedUrl.endsWith( '.mpd' ) ? 'application/dash+xml' : media.mime,
-								},
-								{
-									src: media.url,
-									type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
-								},
-							],
+							sources: mediaSources,
 						} );
 					} else {
 					// If meta not present, use media url.
@@ -467,12 +498,6 @@ function VideoEdit( {
 						onError={ onUploadError }
 						onReset={ () => onSelectVideo( undefined ) }
 					/>
-					<TracksEditor
-						tracks={ tracks }
-						onChange={ ( newTracks ) => {
-							setAttributes( { tracks: newTracks } );
-						} }
-					/>
 				</BlockControls>
 			) }
 			<InspectorControls>
@@ -561,8 +586,6 @@ function VideoEdit( {
 										href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
 										target="_blank"
 										variant="primary"
-										icon={ external }
-										iconPosition="right"
 									>
 										{ __( 'Customise', 'godam' ) }
 									</Button>
@@ -597,6 +620,19 @@ function VideoEdit( {
 										] }
 										onChange={ ( value ) => setAttributes( { aspectRatio: value } ) }
 										help={ __( 'Choose the aspect ratio for the video player.', 'godam' ) }
+									/>
+								</BaseControl>
+
+								<BaseControl
+									id={ `video-block__tracks-editor-${ instanceId }` }
+									label={ __( 'Subtitles & Captions', 'godam' ) }
+									__nextHasNoMarginBottom
+								>
+									<TracksEditor
+										tracks={ tracks }
+										onChange={ ( newTracks ) => {
+											setAttributes( { tracks: newTracks } );
+										} }
 									/>
 								</BaseControl>
 							</>

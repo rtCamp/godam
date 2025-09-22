@@ -209,7 +209,7 @@ class Video_Metadata {
 	 * This filter modifies the attachment URL to return the remote URL
 	 * if the video has been migrated from Vimeo.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 */
 	public function filter_vimeo_migrated_urls(): void {
 		add_filter(
@@ -245,7 +245,13 @@ class Video_Metadata {
 	public function set_media_library_list_thumbnail( $html, $attachment_id, $size, $icon ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- We dont use icon param.
 		if ( is_admin() && 'upload' === get_current_screen()->id && array( 60, 60 ) === $size ) {
 
-			$thumbnail_url   = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
+			$thumbnail_url = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
+
+			// Check for icon if it is a virtual media.
+			if ( empty( $thumbnail_url ) ) {
+				$thumbnail_url = get_post_meta( $attachment_id, '_godam_icon', true );
+			}
+
 			$attachment_meta = get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
 
 			if ( ! empty( $thumbnail_url ) ) {

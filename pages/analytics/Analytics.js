@@ -171,12 +171,24 @@ const Analytics = ( { attachmentID } ) => {
 
 	useEffect( () => {
 		const originalVideoEl = document.getElementById( 'original-analytics-video' );
+
+		const videoOptions = {
+			fluid: true,
+			mute: true,
+			controls: false,
+			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
+			// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
+			html5: {
+				vhs: {
+					bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
+					bandwidthVariance: 1.0, // allow renditions close to estimate
+					limitRenditionByPlayerDimensions: false, // don't cap by video element size
+				},
+			},
+		};
+
 		if ( originalVideoEl && analyticsData ) {
-			const originalVideo = videojs( 'original-analytics-video', {
-				fluid: true,
-				mute: true,
-				controls: false,
-			} );
+			const originalVideo = videojs( 'original-analytics-video', videoOptions );
 
 			generateLineChart(
 				JSON.parse( analyticsData?.all_time_heatmap ),
@@ -191,11 +203,7 @@ const Analytics = ( { attachmentID } ) => {
 		const comparisonVideoEl = document.getElementById( 'comparison-analytics-video' );
 
 		if ( comparisonVideoEl && abTestComparisonAnalyticsData ) {
-			const comparisonVideo = videojs( 'comparison-analytics-video', {
-				fluid: true,
-				mute: true,
-				controls: false,
-			} );
+			const comparisonVideo = videojs( 'comparison-analytics-video', videoOptions );
 
 			generateLineChart(
 				JSON.parse( abTestComparisonAnalyticsData?.all_time_heatmap ),
@@ -222,6 +230,15 @@ const Analytics = ( { attachmentID } ) => {
 
 		videojs( 'analytics-video', {
 			aspectRatio: '16:9',
+			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
+			// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
+			html5: {
+				vhs: {
+					bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
+					bandwidthVariance: 1.0, // allow renditions close to estimate
+					limitRenditionByPlayerDimensions: false, // don't cap by video element size
+				},
+			},
 		} );
 	}, [ analyticsData ] );
 

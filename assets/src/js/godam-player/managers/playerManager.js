@@ -19,6 +19,7 @@ import videojs from 'video.js';
 import VideoPlayer from '../videoPlayer.js';
 import { KEYBOARD_CONTROLS } from '../utils/constants.js';
 import { parseDataAttribute } from '../utils/dataHelpers.js';
+import { engagement } from '../engagement';
 
 /**
  * Main GoDAM Player Manager Class
@@ -51,6 +52,7 @@ export default class PlayerManager {
 		this.initializeDisplayLayers();
 		this.videos.forEach( ( video ) => this.initializeVideo( video ) );
 		this.initializeGlobalKeyboardHandler();
+		this.initEngagement = engagement();
 	}
 
 	/**

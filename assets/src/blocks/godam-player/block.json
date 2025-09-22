@@ -98,11 +98,19 @@
 			"type": "boolean",
 			"default": false
 		},
+		"showShareButton": {
+			"type": "boolean",
+			"default": false
+		},
 		"layout": {
 			"type": "object",
 			"default": {
 				"type": "default"
 			}
+		},
+		"engagements": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"supports": {

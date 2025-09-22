@@ -4,15 +4,35 @@
  * Used to style and display the custom media library.
  */
 
+$media-library-sidebar-bg: #fff;
+$media-library-sidebar-border: #E0E0E0;
+$media-library-active-folder: #F5F5F5;
+$media-library-button-border: #949494;
+$media-library-scrollbar-color:  rgba(128, 128, 128, 0.2);
+$godam-gradient: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
+
 #rt-transcoder-media-library-root {
-	min-width: 280px;
+	$sidebar-width: 280px;
+	$toggle-width: 25px;
+	$toggle-offset: 12px;
+
+	position: relative;
+	overflow: visible;
+
+	min-width: $sidebar-width;
 	padding: 0;
-	border: 1px solid #E0E0E0;
+	border: 1px solid $media-library-sidebar-border;
 	display: flex;
 	flex-direction: column;
-	min-height: calc(100vh - 34px);
-	overflow: auto;
+	min-height: 100vh;
 	height: 100%;
+
+	@media (max-width: 900px) {
+		width: 100%;
+		z-index: 1000;
+		height: 100%;
+		background: $media-library-sidebar-bg;
+	}
 
 	* {
 		box-sizing: border-box;
@@ -20,7 +40,37 @@
 
 	> * {
 		padding: 1.25rem;
-		border-bottom: 1px solid #E0E0E0;
+		border-bottom: 2px solid $media-library-sidebar-border;
+	}
+
+	.folder-container  {
+		padding: 0;
+		overflow: auto;
+
+		/* WebKit browsers (Chrome, Safari, Edge) */
+		&::-webkit-scrollbar {
+			width: 3px;
+		}
+
+		&::-webkit-scrollbar-thumb {
+			background-color: $media-library-scrollbar-color;
+			border-radius: 3px;
+		}
+
+		&::-webkit-scrollbar-track {
+			background: transparent;
+		}
+
+		/* Firefox */
+		@supports (scrollbar-width: thin) {
+			scrollbar-width: thin;
+			scrollbar-color: $media-library-scrollbar-color transparent;
+		}
+
+		> * {
+			padding: 1.25rem;
+			border-bottom: 1px solid $media-library-sidebar-border;
+		}
 	}
 
 	.tree-container {
@@ -60,7 +110,7 @@
 
 	.folder-search-bar-container {
 		border-radius: 0.25rem;
-		border: 1px solid #949494;
+		border: 1px solid $media-library-button-border;
 
 		.components-input-control {
 			background: none;
@@ -72,21 +122,21 @@
 	}
 
 	.new-folder-button {
-		background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%) !important;
+		background: $godam-gradient !important;
 		border-radius: 0.25rem;
 		box-shadow: none;
 	}
 
 	.multiselect-button {
 		color: #1c1c1c;
-		background: #fff;
-		border: 1px solid #949494;
+		background: $media-library-sidebar-bg;
+		border: 1px solid $media-library-button-border;
 		box-shadow: none;
 		width: 100%;
 		justify-content: center;
 
 		&:hover {
-			background: #F5F5F5;
+			background: $media-library-active-folder;
 		}
 	}
 
@@ -116,11 +166,11 @@
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			width: 1.5rem;
+			padding: 0 0.5rem;
 			height: 1.5rem;
 			min-width: 1.5rem;
 			border-radius: 0.5rem;
-			background-color: #F5F5F5;
+			background-color: $media-library-active-folder;
 			box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 		}
 	}
@@ -139,11 +189,11 @@
 		z-index: 1;
 
 		&:hover {
-			background-color: #F5F5F5;
+			background-color: $media-library-active-folder;
 		}
 
 		&--active {
-			background-color: #F5F5F5;
+			background-color: $media-library-active-folder;
 		}
 	}
 
@@ -157,11 +207,60 @@
 	}
 
 	.tree-item:hover {
-		background:#F5F5F5;
+		background: $media-library-active-folder;
+	}
+
+	#media-folder-toggle-button {
+		background: $godam-gradient;
+		color: $media-library-sidebar-bg;
+		box-shadow: 2px 2px 3px $media-library-scrollbar-color;
+		position: absolute;
+		top: 60px;
+		min-width: $toggle-width;
+		width: $toggle-width;
+		height: $toggle-width;
+		right: calc(-1 * $toggle-width);
+		visibility: visible;
+		z-index: 10;
+		transition: right 0.18s ease, transform 0.18s ease;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		pointer-events: auto;
+		padding: 0;
+		margin: 0;
+		border: none;
+		border-radius: 0 0.25rem 0.25rem 0;
+
+		@media (max-width: 900px) {
+			display: none;
+		}
 	}
 
 	&.hide-sidebar {
-		display: none;
+		width: 0;
+		min-width: 0;
+		pointer-events: none;
+		overflow: visible;
+
+		> *:not(#media-folder-toggle-button) {
+			display: none;
+		}
+
+		#media-folder-toggle-button {
+			position: absolute;
+			top: 60px;
+			left: 0;
+			right: $toggle-offset;
+			visibility: visible;
+			pointer-events: auto;
+			transition: left 0.18s ease, transform 0.18s ease;
+
+			@media (max-width: 900px) {
+				top: 40px;
+				display: flex;
+			}
+		}
 	}
 
 	.folder-context-menu__item {
@@ -169,7 +268,7 @@
 	}
 
 	.close-folder-menu-mobile {
-	display: none;
+		display: none;
 		position: absolute;
 		top: 0;
 		right: 0;
@@ -179,9 +278,6 @@
 		box-shadow: none;
 		padding: 0;
 	}
-}
-
-.media-modal-content:has(#rt-transcoder-media-library-root) {
 
 	@media (max-width: 900px) {
 
@@ -195,6 +291,7 @@
 	}
 }
 
+
 .components-button.has-icon.has-text {
 	justify-content: center !important;
 }
@@ -206,7 +303,18 @@
 .media-frame-menu:has( #rt-transcoder-media-library-root ) {
 
 	.media-menu {
-		background: #FFF;
+		background: $media-library-sidebar-bg;
 		z-index: -1;
+		padding: 0;
+		top: 0;
+		max-width: 100%;
+		width: 100%;
+	}
+}
+
+#wpbody > #rt-transcoder-media-library-root {
+
+	@media (max-width: 900px) {
+		position: absolute;
 	}
 }

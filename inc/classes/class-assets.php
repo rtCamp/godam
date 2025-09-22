@@ -290,6 +290,8 @@ class Assets {
 
 		$enable_folder_organization = get_option( 'rtgodam-settings', array() )['general']['enable_folder_organization'] ?? true;
 
+		$current_user_id = get_current_user_id();
+
 		wp_localize_script(
 			'easydam-media-library',
 			'easydamMediaLibrary',
@@ -300,6 +302,8 @@ class Assets {
 				'enableFolderOrganization' => $enable_folder_organization,
 				'isPollPluginActive'       => is_plugin_active( 'wp-polls/wp-polls.php' ),
 				'page'                     => $screen ? $screen->id : '',
+				'userId'                   => $current_user_id,
+				'canEditOthersMedia'       => current_user_can( 'edit_others_posts' ),
 			)
 		);
 
@@ -332,6 +336,7 @@ class Assets {
 		$godam_settings_obj = array(
 			'brandImage' => $brand_image,
 			'brandColor' => $brand_color,
+			'apiBase'    => RTGODAM_API_BASE,
 		);
 
 		if ( ! rtgodam_is_api_key_valid() ) {
