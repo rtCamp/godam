@@ -51,7 +51,35 @@ window.analytics = analytics;
 	}
 
 	// Attach to window.analytics
-	window.analytics.trackVideoEvent = ( { type, videoId, root } = {} ) => {
+	/**
+	 * Tracks video analytics events for engagement and heatmap data.
+	 *
+	 * @param {Object}           params                - The parameters object
+	 * @param {number}           params.type           - Event type (currently only supports type 2 for heatmap)
+	 * @param {number}           [params.videoId]      - Specific video ID to track. If not provided, will auto-detect current video
+	 * @param {Element|Document} [params.root]         - Root element to search for video elements. Defaults to document
+	 *
+	 * @param {boolean}          [params.sendPageLoad] - Whether to send a type 1 'page_load' event before the heatmap event. Defaults to true.
+	 * @return {boolean} Returns true if event was successfully tracked, false otherwise
+	 *
+	 * @description
+	 * This function handles video analytics tracking with the following behavior:
+	 *
+	 * **IMPORTANT: Automatic Type 1 Event Behavior**
+	 * When type 2 (heatmap) is requested, this function automatically sends a type 1 'page_load' (Video Loaded)
+	 * event BEFORE sending the type 2 (Video Played) event, if sendPageLoad is true (default true). This behavior is intentional but may result
+	 * in duplicate type 1 events in certain scenarios:
+	 *
+	 * - Called during video switches: Will send type 2 for the old video
+	 * - Called when videos are closed: Will send type 2 for the closing video
+	 *
+	 * **Event Types:**
+	 * - Type 1: Video Loaded (automatically sent before type 2)
+	 * - Type 2: Video Played (main functionality)
+	 *
+	 * @since n.e.x.t
+	 */
+	window.analytics.trackVideoEvent = ( { type, videoId, root, sendPageLoad = true } = {} ) => {
 		if ( ! type ) {
 			return false;
 		}
@@ -71,8 +99,12 @@ window.analytics = analytics;
 				return false;
 			}
 
-			// Send type 1 first (for the current video)
-			window.analytics.track( 'page_load', { type: 1, videoIds: [ vid ] } );
+			// Send type 1 first (for the current video) if sendPageLoad is true
+			// NOTE: This automatically sends a 'page_load' event before the heatmap event, for ease of use.
+			// This is intentional behavior but may cause duplicate type 1 events in some scenarios
+			if ( sendPageLoad ) {
+				window.analytics.track( 'page_load', { type: 1, videoIds: [ vid ] } );
+			}
 
 			const el = findVideoElementById( vid, root );
 			const player = getPlayer( el );
