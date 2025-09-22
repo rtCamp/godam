@@ -11,7 +11,6 @@
 namespace RTGODAM\Inc\Cron_Jobs;
 
 use RTGODAM\Inc\Filesystem\Plugin;
-use RTGODAM\Inc\Traits\Singleton;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -20,10 +19,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * This class handles the migration of files to a CDN in batches.
  * It provides methods to start, stop, and check the progress of the migration.
+ *
+ * This is a utility class with static methods only.
  */
 class Files_Migration {
-
-	use Singleton;
 
 	/**
 	 * Batch size for processing files.
@@ -68,13 +67,12 @@ class Files_Migration {
 	const CURRENT_FILE_OPTION = 'godam_cdn_migrating_current_file';
 
 	/**
-	 * Constructor.
+	 * Initialize the class.
 	 *
-	 * This method initializes the cron job for files migration to CDN.
-	 * It sets up the necessary hooks and actions to handle the migration process.
+	 * This method should be called once to set up the hooks.
+	 * Since this is now a pure static class, no constructor is needed.
 	 */
-	public function __construct() {
-		// Initialize the cron job.
+	public static function initialize() {
 		self::setup_hooks();
 	}
 
@@ -438,10 +436,10 @@ class Files_Migration {
 	public static function maybe_transcode( $file_path ) {
 		// Get the attachment ID from the file path.
 		if ( function_exists( 'wpcom_vip_attachment_url_to_postid' ) ) {
-			$attachment_id = wpcom_vip_attachment_url_to_postid( $file_path );
+			$attachment_id = \wpcom_vip_attachment_url_to_postid( $file_path );
 		} else {
 			// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.attachment_url_to_postid_attachment_url_to_postid -- Using WordPress core function as fallback.
-			$attachment_id = attachment_url_to_postid( $file_path );
+			$attachment_id = \attachment_url_to_postid( $file_path );
 		}
 
 		// If no attachment ID is found, exit the function.
@@ -621,12 +619,12 @@ class Files_Migration {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Try to find attachment by filename.
 		$attachment_id = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT post_id FROM {$wpdb->postmeta} 
-			WHERE meta_key = '_wp_attached_file' 
-			AND meta_value LIKE %s 
+				"SELECT post_id FROM {$wpdb->postmeta}
+			WHERE meta_key = '_wp_attached_file'
+			AND meta_value LIKE %s
 			LIMIT 1",
 				'%' . $filename
-			) 
+			)
 		);
 
 		return $attachment_id ? (int) $attachment_id : false;
@@ -643,11 +641,11 @@ class Files_Migration {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		return $wpdb->get_col(
 			"
-			SELECT post_id 
-			FROM {$wpdb->postmeta} 
-			WHERE meta_key = '_media_migrated_to_godam_cdn' 
+			SELECT post_id
+			FROM {$wpdb->postmeta}
+			WHERE meta_key = '_media_migrated_to_godam_cdn'
 			AND meta_value = '1'
-		" 
+		"
 		);
 	}
 }

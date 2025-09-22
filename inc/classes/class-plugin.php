@@ -105,7 +105,7 @@ class Plugin {
 
 		// Load cron jobs.
 		Retranscode_Failed_Media::get_instance();
-		Files_Migration::get_instance();
+		Files_Migration::initialize();
 
 		// Load video metadata.
 		Video_Metadata::get_instance();
