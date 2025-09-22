@@ -318,12 +318,21 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 	}
 }
 
-$user_data           = rtgodam_get_user_data();
-$is_api_key_verified = isset( $user_data['valid_api_key'] ) ? $user_data['valid_api_key'] : false;
+add_action( 'init', 'rtgodam_manage_media_columns', 20 );
 
-if ( $is_api_key_verified ) {
-	add_filter( 'manage_media_columns', 'rtgodam_add_status_columns_head' );
-	add_action( 'manage_media_custom_column', 'rtgodam_add_status_columns_content', 10, 2 );
+/**
+ * Manage media columns in admin page
+ *
+ * @since n.e.x.t
+ */
+function rtgodam_manage_media_columns() {
+	$user_data           = rtgodam_get_user_data();
+	$is_api_key_verified = isset( $user_data['valid_api_key'] ) ? $user_data['valid_api_key'] : false;
+
+	if ( $is_api_key_verified ) {
+		add_filter( 'manage_media_columns', 'rtgodam_add_status_columns_head' );
+		add_action( 'manage_media_custom_column', 'rtgodam_add_status_columns_content', 10, 2 );
+	}
 }
 
 /**
@@ -393,7 +402,7 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 	// Prepare request body with site title.
 	$site_url   = get_site_url();
 	$site_title = get_bloginfo( 'name' ); // Get site title from WordPress options.
-	
+
 	$request_body = array(
 		'api_key'    => $api_key,
 		'site_url'   => $site_url,

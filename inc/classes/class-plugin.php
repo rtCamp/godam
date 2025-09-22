@@ -78,6 +78,8 @@ class Plugin {
 	 */
 	protected function __construct() {
 
+		$this->setup_hooks();
+
 		// Load plugin classes.
 		Update::get_instance();
 		Assets::get_instance();
@@ -126,6 +128,29 @@ class Plugin {
 		$this->load_elementor_widgets();
 
 		$this->load_media_library();
+	}
+
+	/**
+	 * Setup hooks.
+	 */
+	public function setup_hooks() {
+		add_action( 'init', array( $this, 'init_filesystem_plugin_class' ) );
+	}
+
+	/**
+	 * Init Filesystem Plugin Class.
+	 */
+	public function init_filesystem_plugin_class() {
+		$instance = \RTGODAM\Inc\Filesystem\Plugin::get_instance();
+		// Always enable URL replacement when the plugin is active.
+		$instance->setup_url_filters();
+
+		$rtgodam_settings = get_option( 'rtgodam-settings', array() );
+		$offload_enabled  = ! empty( $rtgodam_settings['uploads'] ) && ! empty( $rtgodam_settings['uploads']['offload_media'] );
+
+		if ( rtgodam_is_api_key_valid() && $offload_enabled ) {
+			$instance->setup();
+		}
 	}
 
 	/**
