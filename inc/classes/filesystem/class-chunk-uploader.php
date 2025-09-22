@@ -19,6 +19,7 @@ use RTGODAM\Inc\Traits\Singleton;
 // phpcs:disable WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_fwrite
 // phpcs:disable WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_rename
 // phpcs:disable WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents
+// phpcs:disable Generic.PHP.NoSilencedErrors.Forbidden
 
 /**
  * Class Chunk_Uploader
