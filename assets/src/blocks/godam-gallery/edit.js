@@ -207,7 +207,7 @@ export default function Edit( { attributes, setAttributes } ) {
 						</>
 					) }
 					<ToggleControl
-						label={ __( 'Engagements visibility', 'godam' ) }
+						label={ __( 'Enable Likes & Comments', 'godam' ) }
 						checked={ !! engagements }
 						onChange={ ( value ) => setAttributes( { engagements: value } ) }
 						help={ __( 'Engagement will only be visible for transcoded videos', 'godam' ) }

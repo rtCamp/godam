@@ -114,9 +114,6 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice }
 			// Start polling every 5 seconds
 			intervalRef.current = setInterval( fetchMigrationStatus, 5000 );
 
-			// Kick off an immediate fetch to avoid initial delay
-			fetchMigrationStatus();
-
 			// Reset notice flags for a new run
 			noticeShownRef.current = { completed: false, failed: false };
 		}
@@ -167,7 +164,7 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice }
 			<Panel className="godam-panel">
 				<PanelBody title={ __( 'Core video Migration', 'godam' ) } initialOpen={ false }>
 					<p className="m-0">
-						{ __( 'This tool is used to replace WordPress core video blocks with GoDAM video block.', 'godam' ) }
+						{ __( 'This tool replaces WordPress core video blocks with GoDAM video blocks. It does not replace videos added in the WordPress Classic Editor.', 'godam' ) }
 					</p>
 
 					{ /* Progressbar indicating video migration progress */ }

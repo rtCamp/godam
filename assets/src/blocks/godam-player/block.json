@@ -100,7 +100,7 @@
 		},
 		"showShareButton": {
 			"type": "boolean",
-			"default": true
+			"default": false
 		},
 		"layout": {
 			"type": "object",

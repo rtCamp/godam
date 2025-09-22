@@ -3,7 +3,7 @@
  * LifterLMS integration class for GoDAM plugin.
  * Loads required integration script.
  *
- * @since n.e.x.t
+ * @since 1.4.0
  *
  * @package GoDAM
  */
@@ -15,7 +15,7 @@ use RTGODAM\Inc\Traits\Singleton;
 /**
  * Class Lifter_LMS
  *
- * @since n.e.x.t
+ * @since 1.4.0
  */
 class Lifter_LMS {
 
@@ -24,7 +24,7 @@ class Lifter_LMS {
 	/**
 	 * Constant LifterLMS Advanced Video autoplay option.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @var string
 	 */
@@ -51,7 +51,7 @@ class Lifter_LMS {
 	/**
 	 * Check if LifterLMS plugin is active.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return bool
 	 */
@@ -67,7 +67,7 @@ class Lifter_LMS {
 	/**
 	 * Check if LifterLMS Advanced Video plugin is active.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return bool
 	 */
@@ -82,7 +82,7 @@ class Lifter_LMS {
 	/**
 	 * Check if the current content is LifterLMS content (lesson, quiz, course).
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return bool
 	 */
@@ -97,7 +97,7 @@ class Lifter_LMS {
 	/**
 	 * Check if the current post is a LifterLMS lesson.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return bool
 	 */
@@ -112,7 +112,7 @@ class Lifter_LMS {
 	/**
 	 * Check if the autoplay is enabled.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return bool
 	 */
@@ -123,7 +123,7 @@ class Lifter_LMS {
 	/**
 	 * Check if the current post has a Godam video block.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return bool
 	 */
@@ -146,7 +146,7 @@ class Lifter_LMS {
 	/**
 	 * Load LifterLMS integration script.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
@@ -166,7 +166,7 @@ class Lifter_LMS {
 	 * Add autoplay attribute to Godam Player Block attributes,
 	 * if LifterLMS is active and on a lesson page with autoplay enabled.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param mixed $attributes Block attributes.
 	 *
@@ -183,7 +183,7 @@ class Lifter_LMS {
 	/**
 	 * Add GoDAM integration to LifterLMS available integrations.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param array $integrations Array of available integrations.
 	 *

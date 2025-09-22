@@ -2,7 +2,7 @@
 /**
  * GoDAM Recorder Ninja Forms field.
  *
- * @since n.e.x.t
+ * @since 1.4.0
  *
  * @package GoDAM
  */
@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Ninja_Forms_Godam_Recorder
  *
- * @since n.e.x.t
+ * @since 1.4.0
  */
 class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 
@@ -25,7 +25,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	/**
 	 * Field type.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @var string
 	 */
@@ -36,7 +36,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	/**
 	 * Field parent type.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @access protected
 	 *
@@ -47,7 +47,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	/**
 	 * Field section.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @access protected
 	 *
@@ -58,7 +58,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	/**
 	 * Field templates.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @access protected
 	 *
@@ -69,7 +69,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	/**
 	 * Field icon.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @access protected
 	 *
@@ -80,7 +80,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	/**
 	 * Field test value.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @access protected
 	 *
@@ -91,7 +91,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	/**
 	 * All settings fields.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @access protected
 	 *
@@ -112,7 +112,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	/**
 	 * Constructor.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 */
 	public function __construct() {
 
@@ -132,7 +132,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	/**
 	 * Setup hooks.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
@@ -160,7 +160,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	 *
 	 * @param string $file_name File Name to include.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return mixed
 	 */
@@ -173,7 +173,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	 *
 	 * @param string $file_name File Name to include.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return mixed
 	 */
@@ -184,7 +184,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	/**
 	 * Add Template for the field builder.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
@@ -198,7 +198,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	 * @param array  $settings Field settings.
 	 * @param object $form     Form object.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return array
 	 */
@@ -263,7 +263,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	/**
 	 * Process the field value.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param object $field Current field object.
 	 * @param array  $data  Submitted form data.
@@ -301,7 +301,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	 *
 	 * @param array|object $field Field settings or object.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return array|object $field
 	 */
@@ -369,7 +369,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	 *
 	 * @param int $field_id Field ID.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return array
 	 */
@@ -383,7 +383,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	/**
 	 * Ajax upload handler.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
@@ -469,7 +469,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	/**
 	 * Update the filename to be unique.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $filename Current filename.
 	 *
@@ -488,7 +488,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	/**
 	 * Change upload dir to godam directory in uploads.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param array<mixed> $dirs upload directory.
 	 *
@@ -508,7 +508,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	 *
 	 * @param array<mixed> $form_data Form data.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
@@ -545,7 +545,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	/**
 	 * Send files to GoDam for transcoding.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $form_title Form Name.
 	 * @param int    $form_id    Form Id.
@@ -617,7 +617,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	 * @param string          $job_for       Job for.
 	 * @param WP_REST_Request $request       Request object.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */

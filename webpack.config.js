@@ -149,13 +149,6 @@ const gfGodamRecorderEditorJS = {
 	},
 };
 
-const gfEntryDetailJS = {
-	...sharedConfig,
-	entry: {
-		'gf-entry-detail': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gravity-form', 'gf-entry-detail.js' ),
-	},
-};
-
 const wpFormsGodamRecorderEditorJS = {
 	...sharedConfig,
 	entry: {
@@ -350,7 +343,6 @@ module.exports = [
 	adminFeaturedVideoGalleryJS,
 	featuredVideoGalleryJS,
 	gfGodamRecorderEditorJS,
-	gfEntryDetailJS,
 	wpFormsGodamRecorderEditorJS,
 	productVideoGalleryJS,
 	addToProductJS,

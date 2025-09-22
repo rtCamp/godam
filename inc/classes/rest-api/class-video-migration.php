@@ -4,7 +4,7 @@
  *
  * This class handles the migration of Vimeo videos in Gutenberg blocks.
  *
- * @since n.e.x.t
+ * @since 1.4.0
  *
  * @package GoDAM
  */
@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Video_Migration
  *
- * @since n.e.x.t
+ * @since 1.4.0
  */
 class Video_Migration extends Base {
 
@@ -35,7 +35,7 @@ class Video_Migration extends Base {
 	/**
 	 * Get REST routes.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 */
 	public function get_rest_routes() {
 		return array(
@@ -81,7 +81,7 @@ class Video_Migration extends Base {
 	 * Stops future scheduled actions and resets the stored status to initial state.
 	 * Returns a small summary to display in UI.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param \WP_REST_Request $request Request containing migration type.
 	 *
@@ -128,7 +128,7 @@ class Video_Migration extends Base {
 	 * This function fetches the current Vimeo migration status from GoDAM Central API.
 	 * It requires a valid API key stored in WordPress options.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return array|\WP_Error Migration status or error object on failure.
 	 */
@@ -160,7 +160,7 @@ class Video_Migration extends Base {
 	/**
 	 * Permission callback for video migration endpoints.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return bool True if the user has permission, false otherwise.
 	 */
@@ -175,7 +175,7 @@ class Video_Migration extends Base {
 	 * This endpoint initiates the migration process for Vimeo videos in Gutenberg blocks.
 	 * It queues a background action to process all posts that need migration.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param \WP_REST_Request $request The REST request object.
 	 *
@@ -189,6 +189,7 @@ class Video_Migration extends Base {
 		if ( ! in_array( $migration_type, array( 'core', 'vimeo' ), true ) ) {
 			return new \WP_Error( 'invalid_migration_type', __( 'Invalid migration type specified.', 'godam' ), array( 'status' => 400 ) );
 		}
+		$wp_option_key = 'godam_' . $migration_type . '_video_migration_status';
 
 		if ( 'vimeo' === $migration_type ) {
 			// Check if Vimeo migration is enabled.
@@ -200,15 +201,16 @@ class Video_Migration extends Base {
 			if ( isset( $godam_migration_status['message']['migration_status'] ) ) {
 				$status = $godam_migration_status['message']['migration_status'];
 				if ( 'Completed' !== $status ) {
+					// Reset migration status since Central migration is not completed.
+					delete_option( $wp_option_key );
+					
 					return new \WP_REST_Response(
 						$godam_migration_status,
-						400,
+						200,
 					);
 				}
 			}
 		}
-
-		$wp_option_key = 'godam_' . $migration_type . '_video_migration_status';
 
 		$migration_status = get_option( $wp_option_key, array() );
 
@@ -247,7 +249,7 @@ class Video_Migration extends Base {
 	 * Process the full migration in background.
 	 * This runs as a scheduled action and handles finding + migrating all posts.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $migration_type The type of migration to process (e.g., 'core', 'vimeo').
 	 *
@@ -296,7 +298,7 @@ class Video_Migration extends Base {
 	/**
 	 * Find all posts that need migration across all post types
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param array $post_types Array of post type names to search for.
 	 *
@@ -349,7 +351,7 @@ class Video_Migration extends Base {
 	/**
 	 * Process all posts in manageable batches.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $migration_type The type of migration being processed (e.g., 'core', 'vimeo').
 	 * @param array  $all_post_ids Array of all post IDs to process.
@@ -398,7 +400,7 @@ class Video_Migration extends Base {
 	/**
 	 * Handle migration completion when no posts found.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $wp_option_key The WordPress option key to update with the completion status.
 	 *
@@ -420,7 +422,7 @@ class Video_Migration extends Base {
 	/**
 	 * Update status with error message
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $wp_option_key The WordPress option key to update with the error status.
 	 * @param string $error_message The error message to log and update in the migration status.
@@ -438,7 +440,7 @@ class Video_Migration extends Base {
 	/**
 	 * Enhanced batch processing with better error handling.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $migration_type The type of migration being processed (e.g., 'core', 'vimeo').
 	 * @param array  $post_ids Array of post IDs to process in this batch.
@@ -560,7 +562,7 @@ class Video_Migration extends Base {
 	 *
 	 * Uses add_option as a mutex. If an existing lock is expired, it will be taken over.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $lock_key   Unique option key for the lock.
 	 * @param int    $timeout_s  Lock expiry seconds.
@@ -594,7 +596,7 @@ class Video_Migration extends Base {
 	/**
 	 * Release a previously acquired migration lock.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $lock_key Lock option key.
 	 *
@@ -607,7 +609,7 @@ class Video_Migration extends Base {
 	/**
 	 * Migrate video blocks for a single post.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param int $post_id The ID of the post to migrate.
 	 *
@@ -643,7 +645,7 @@ class Video_Migration extends Base {
 	 *
 	 * Handles nested structures like columns, groups, grids, etc.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param array $blocks  Parsed blocks array (passed by reference).
 	 * @param bool  $changed Whether content changed (by reference).
@@ -694,7 +696,7 @@ class Video_Migration extends Base {
 	/**
 	 * Migrate Vimeo video blocks for a single post.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param int $post_id The ID of the post to migrate.
 	 *
@@ -735,7 +737,7 @@ class Video_Migration extends Base {
 	/**
 	 * Recursively traverse blocks to find and migrate Vimeo embeds inside nested structures.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param array $blocks   Parsed Gutenberg blocks (passed by reference).
 	 * @param int   $post_id  Post ID for logging context.
@@ -807,7 +809,7 @@ class Video_Migration extends Base {
 				/**
 				 * Filter the migration of custom Vimeo blocks.
 				 *
-				 * @since n.e.x.t
+				 * @since 1.4.0
 				 *
 				 * @param array    $args migration arguments.
 				 * @param Video_Migration  $instance The current instance of the class.
@@ -834,7 +836,7 @@ class Video_Migration extends Base {
 	 *
 	 * This function creates the sources array that matches the format expected by the block editor.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param int $attachment_id The attachment ID.
 	 *
@@ -879,7 +881,7 @@ class Video_Migration extends Base {
 	/**
 	 * Build default SEO data for a video attachment to populate block attrs during migration.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param int   $attachment_id Attachment ID.
 	 * @param array $attrs         Source block attributes (optional).
@@ -950,72 +952,51 @@ class Video_Migration extends Base {
 	}
 
 	/**
-	 * Create an attachment from a Vimeo video URL.
+	 * Fetch Vimeo video id from url.
 	 *
-	 * Fetches video information from GoDAM Central and creates a WordPress attachment
-	 * with the transcoded video file path.
+	 * @since 1.4.0
 	 *
-	 * @since n.e.x.t
-	 *
-	 * @param string $vimeo_url The Vimeo video URL to create an attachment from.
-	 *
-	 * @return int|WP_Error Attachment ID on success, WP_Error object on failure.
+	 * @param string $vimeo_url The Vimeo video URL to fetch the ID from.
+	 * @return string The Vimeo video ID or same vimeo URL if not found.
 	 */
-	public function create_attachment_from_vimeo_video( $vimeo_url ) {
-		if ( empty( $vimeo_url ) ) {
-			return new \WP_Error( 'missing_url', __( 'Vimeo URL is required.', 'godam' ) );
+	private function fetch_vimeo_video_id( string $vimeo_url ) {
+		if ( preg_match( '/vimeo\.com\/(?:video\/)?(\d+)/', $vimeo_url, $matches ) ) {
+			return $matches[1];
 		}
 
-		// Get API key from options.
-		$api_key = get_option( 'rtgodam-api-key', '' );
-		if ( empty( $api_key ) ) {
-			return new \WP_Error( 'missing_api_key', __( 'GoDAM API key is required.', 'godam' ) );
+		// Strip out the query parameters.
+		$vimeo_url_stripped = strtok( $vimeo_url, '?' );
+
+		return $vimeo_url_stripped;
+	}
+
+	/**
+	 * Update video attachment metadata from Vimeo video info.
+	 *
+	 * This function handles setting all video metadata including dimensions,
+	 * thumbnails, file size, duration, and transcoded URLs for both new and
+	 * existing attachments during Vimeo migration.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param int         $attachment_id The attachment ID to update.
+	 * @param array       $video_info    The video information from GoDAM Central API.
+	 * @param string|null $job_id  The job ID if available.
+	 *
+	 * @return bool True on success, false on failure.
+	 */
+	private function update_video_metadata_from_vimeo_info( $attachment_id, $video_info, $job_id = null ) {
+		if ( empty( $attachment_id ) || empty( $video_info ) ) {
+			return false;
 		}
 
-		// Build request URL for GoDAM Central.
-		$request_url = RTGODAM_API_BASE . '/api/method/godam_core.api.vimeo.get_vimeo_video_details';
-		$request_url = add_query_arg(
-			array(
-				'api_key'   => $api_key,
-				'vimeo_url' => $vimeo_url,
-			),
-			$request_url
+		// Update attachment post data.
+		$attachment_data = array(
+			'ID'           => $attachment_id,
+			'post_title'   => $video_info['title'] ?? $video_info['orignal_file_name'] ?? '',
+			'post_content' => $video_info['description'] ?? '',
 		);
-
-		// Fetch video info from GoDAM Central.
-		$response = wp_remote_get( $request_url );
-		if ( is_wp_error( $response ) ) {
-			return new \WP_Error(
-				'api_error',
-				sprintf(
-				/* translators: %s: error message */
-					__( 'Error fetching video info: %s', 'godam' ),
-					$response->get_error_message()
-				)
-			);
-		}
-
-		$body = wp_remote_retrieve_body( $response );
-		$data = json_decode( $body, true );
-
-		if ( empty( $data['message'] ) || empty( $data['message']['transcoded_file_path'] ) ) {
-			return new \WP_Error(
-				'invalid_response',
-				__( 'Invalid response from GoDAM Central.', 'godam' )
-			);
-		}
-
-		$video_info = $data['message'];
-
-		// Prepare attachment data.
-		$attachment = array(
-			'post_mime_type' => 'video/mp4',
-			'post_title'     => $video_info['orignal_file_name'] ?? '',
-			'post_status'    => 'inherit',
-		);
-
-		// Insert the attachment.
-		$attachment_id = wp_insert_attachment( $attachment );
+		wp_update_post( $attachment_data );
 
 		// Update attachment metadata with dimensions.
 		$metadata = array(
@@ -1029,13 +1010,8 @@ class Video_Migration extends Base {
 		);
 		wp_update_attachment_metadata( $attachment_id, $metadata );
 
-		if ( is_wp_error( $attachment_id ) ) {
-			return $attachment_id;
-		}
-
 		// Set the attachment thumbnail.
 		if ( isset( $video_info['thumbnails'] ) && ! empty( $video_info['thumbnails'] ) ) {
-
 			$thumbnails     = $video_info['thumbnails'];
 			$thumbnail_urls = array();
 
@@ -1074,9 +1050,15 @@ class Video_Migration extends Base {
 		// Set status as transcoded.
 		update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'Transcoded' );
 
+		// Save the job ID if available.
+		if ( ! empty( $job_id ) ) {
+			update_post_meta( $attachment_id, '_godam_original_id', $job_id );
+			update_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', $job_id );
+		}
+
 		// Change the guid of the attachment to the transcoded file path.
 		global $wpdb;
-        //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		//phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->update(
 			$wpdb->posts,
 			array(
@@ -1091,13 +1073,115 @@ class Video_Migration extends Base {
 		update_post_meta( $attachment_id, 'rtgodam_transcoded_url', $video_info['transcoded_file_path'] );
 		update_post_meta( $attachment_id, 'rtgodam_hls_transcoded_url', $video_info['transcoded_hls_path'] );
 
+		return true;
+	}
+
+	/**
+	 * Create an attachment from a Vimeo video URL.
+	 *
+	 * Fetches video information from GoDAM Central and creates a WordPress attachment
+	 * with the transcoded video file path. Checks for existing attachment by job ID first.
+	 * If JOB ID is present and attachment exists, replaces all video metadata.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param string $vimeo_url The Vimeo video URL to create an attachment from.
+	 *
+	 * @return int|WP_Error Attachment ID on success, WP_Error object on failure.
+	 */
+	public function create_attachment_from_vimeo_video( $vimeo_url ) {
+		if ( empty( $vimeo_url ) ) {
+			return new \WP_Error( 'missing_url', __( 'Vimeo URL is required.', 'godam' ) );
+		}
+
+		// Fetch vimeo video id from url.
+		$vimeo_video_id = $this->fetch_vimeo_video_id( $vimeo_url );
+
+		// Get API key from options.
+		$api_key = get_option( 'rtgodam-api-key', '' );
+		if ( empty( $api_key ) ) {
+			return new \WP_Error( 'missing_api_key', __( 'GoDAM API key is required.', 'godam' ) );
+		}
+
+		// Build request URL for GoDAM Central.
+		$request_url = RTGODAM_API_BASE . '/api/method/godam_core.api.vimeo.get_vimeo_video_details';
+		$request_url = add_query_arg(
+			array(
+				'api_key'   => $api_key,
+				'vimeo_url' => $vimeo_video_id,
+			),
+			$request_url
+		);
+
+		// Fetch video info from GoDAM Central.
+		$response = wp_remote_get( $request_url );
+		if ( is_wp_error( $response ) ) {
+			return new \WP_Error(
+				'api_error',
+				sprintf(
+				/* translators: %s: error message */
+					__( 'Error fetching video info: %s', 'godam' ),
+					$response->get_error_message()
+				)
+			);
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode( $body, true );
+
+		if ( empty( $data['message'] ) || empty( $data['message']['transcoded_file_path'] ) ) {
+			return new \WP_Error(
+				'invalid_response',
+				__( 'Invalid response from GoDAM Central.', 'godam' )
+			);
+		}
+
+		$video_info = $data['message'];
+
+		// Check if job ID exists in the response and look for existing attachment.
+		$job_id = $video_info['name'] ?? null;
+
+		if ( ! empty( $job_id ) ) {
+			// Check if attachment with this job ID already exists.
+			if ( class_exists( 'RTGODAM_Transcoder_Handler' ) ) {
+				$transcoder_handler = new \RTGODAM_Transcoder_Handler();
+				if ( method_exists( $transcoder_handler, 'get_post_id_by_meta_key_and_value' ) ) {
+					$existing_attachment_id = $transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
+
+					if ( $existing_attachment_id ) {
+						// Replace all video metadata for existing attachment when JOB ID is present.
+						$this->update_video_metadata_from_vimeo_info( $existing_attachment_id, $video_info, $job_id );
+						return $existing_attachment_id;
+					}
+				}
+			}
+		}
+
+		// Prepare attachment data for new attachment.
+		$attachment = array(
+			'post_mime_type' => 'video/mp4',
+			'post_title'     => $video_info['title'] ?? $video_info['orignal_file_name'] ?? '',
+			'post_content'   => $video_info['description'] ?? '',
+			'post_status'    => 'inherit',
+		);
+
+		// Insert the attachment.
+		$attachment_id = wp_insert_attachment( $attachment );
+
+		if ( is_wp_error( $attachment_id ) ) {
+			return $attachment_id;
+		}
+
+		// Update video metadata using the new reusable function.
+		$this->update_video_metadata_from_vimeo_info( $attachment_id, $video_info, $job_id );
+
 		return $attachment_id;
 	}
 
 	/**
 	 * Get the current migration status.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param \WP_REST_Request $request The REST request object.
 	 *
@@ -1132,7 +1216,7 @@ class Video_Migration extends Base {
 	/**
 	 * Get all post types that have Gutenberg editor enabled.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return array List of post type names that support Gutenberg editor.
 	 */

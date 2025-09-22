@@ -2,7 +2,7 @@
 /**
  * Ninja Forms GoDAM Video Settings.
  *
- * @since n.e.x.t
+ * @since 1.4.0
  *
  * @package GoDAM
  */
