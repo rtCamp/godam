@@ -6,6 +6,11 @@
  */
 
 /**
+ * External dependencies
+ */
+import DOMPurify from 'isomorphic-dompurify';
+
+/**
  * Video Completion Handler Object
  */
 const GoDAMLifterLMSIntegration = {
@@ -323,8 +328,9 @@ const GoDAMLifterLMSIntegration = {
 						llms.Spinner.stop( container );
 					}
 					if ( response?.html ) {
-						container.insertAdjacentHTML( 'beforeend', response.html );
-						self.initializeCountdown( container );
+						const cleanHtml = DOMPurify.sanitize( response.html );
+						container.insertAdjacentHTML( 'beforeend', cleanHtml );
+						self.manageCountdown( self.initializeCountdown( container ) );
 					}
 				},
 			} );
@@ -342,11 +348,29 @@ const GoDAMLifterLMSIntegration = {
 				.then( ( response ) => response.json() )
 				.then( ( data ) => {
 					if ( data?.html ) {
-						container.insertAdjacentHTML( 'beforeend', data.html );
-						self.initializeCountdown( container );
+						const cleanHtml = DOMPurify.sanitize( data.html );
+						container.insertAdjacentHTML( 'beforeend', cleanHtml );
+						self.manageCountdown( self.initializeCountdown( container ) );
 					}
 				} );
 		}
+	},
+
+	/**
+	 * Manage countdown timer for video completion
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param {any} countdown
+	 */
+	manageCountdown( countdown ) {
+		const stopCountdownBtn = document.querySelector( '.llms-av-pv--btn-stop-countdown' );
+		stopCountdownBtn.addEventListener( 'click', () => {
+			if ( countdown ) {
+				clearInterval( countdown );
+			}
+			document.querySelector( '.llms-av-pv' ).remove();
+		} );
 	},
 
 	/**
