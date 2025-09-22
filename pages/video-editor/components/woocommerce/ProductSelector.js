@@ -106,45 +106,47 @@ const ProductSelector = ( { index, value, productHotspot, productHotspots, updat
 	};
 
 	return (
-		<ComboboxControl
-			label={ __( 'Select Product', 'godam' ) }
-			placeholder={ __( 'Type in to find products…', 'godam' ) }
-			expandOnFocus={ false }
-			help={ __( 'Start typing at least two characters to search products by product name, category, tag, brand or ID.', 'godam' ) }
-			value={ productHotspot.productId }
-			options={ products }
-			onChange={ ( val ) => {
-				const fullProduct = getProductById( val );
-				if ( fullProduct ) {
-					setProducts( ( prev ) =>
-						prev.map( ( o ) =>
-							o.value === val ? { ...o, label: fullProduct.name } : o,
-						),
-					);
-					updateField(
-						'productHotspots',
-						productHotspots.map( ( h2, j ) =>
-							j === index
-								? {
-									...h2,
-									productId: val,
-									productDetails: fullProduct,
-								}
-								: h2,
-						),
-					);
-				}
-			} }
-			onFilterValueChange={ ( input ) => {
-				setSearchTerm( input );
-			} }
-			isLoading={ isLoading }
-			disabled={ ! isValidAPIKey }
-			__next40pxDefaultSize
-			__nextHasNoMarginBottom
-			__experimentalShowSuggestionsWhenFieldIsFocused={ true }
-			__experimentalRenderItem={ ( { item } ) => item.view }
-		/>
+		<div className="godam-combobox">
+			<ComboboxControl
+				label={ __( 'Select Product', 'godam' ) }
+				placeholder={ __( 'Type in to find products…', 'godam' ) }
+				expandOnFocus={ false }
+				help={ __( 'Start typing at least two characters to search products by product name, category, tag, brand or ID.', 'godam' ) }
+				value={ productHotspot.productId }
+				options={ products }
+				onChange={ ( val ) => {
+					const fullProduct = getProductById( val );
+					if ( fullProduct ) {
+						setProducts( ( prev ) =>
+							prev.map( ( o ) =>
+								o.value === val ? { ...o, label: fullProduct.name } : o,
+							),
+						);
+						updateField(
+							'productHotspots',
+							productHotspots.map( ( h2, j ) =>
+								j === index
+									? {
+										...h2,
+										productId: val,
+										productDetails: fullProduct,
+									}
+									: h2,
+							),
+						);
+					}
+				} }
+				onFilterValueChange={ ( input ) => {
+					setSearchTerm( input );
+				} }
+				isLoading={ isLoading }
+				disabled={ ! isValidAPIKey }
+				__next40pxDefaultSize
+				__nextHasNoMarginBottom
+				__experimentalShowSuggestionsWhenFieldIsFocused={ true }
+				__experimentalRenderItem={ ( { item } ) => item.view }
+			/>
+		</div>
 	);
 };
 

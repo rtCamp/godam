@@ -88,6 +88,12 @@ export default class WooCommerceLayerManager {
 		this.wooLayers.forEach( ( layerObj ) => {
 			if ( isFullscreen && ! videoContainer.contains( layerObj.layerElement ) ) {
 				videoContainer.appendChild( layerObj.layerElement );
+
+				// Move cart message to fullscreen.
+				const msg = document.querySelector( '.mini-cart-product-message' );
+				if ( msg ) {
+					videoContainer.appendChild( msg );
+				}
 			}
 		} );
 
@@ -265,6 +271,31 @@ export default class WooCommerceLayerManager {
 		productNameDiv.textContent = hotspot.productDetails.name;
 		productDetailsDiv.appendChild( productNameDiv );
 
+		// Redirect image + name to product page if addToCart is false
+		if ( ! hotspot.addToCart ) {
+			imageBox.style.cursor = 'pointer';
+			productNameDiv.style.cursor = 'pointer';
+
+			// Add interactive classes for animation.
+			imageBox.classList.add( 'product-hotspot-image-clickable' );
+			productNameDiv.classList.add( 'product-hotspot-name-clickable' );
+
+			// Dynamic hover color.
+			productNameDiv.addEventListener( 'mouseenter', () => {
+				productNameDiv.style.color = hotspot.backgroundColor || '#ab3a6c';
+			} );
+			productNameDiv.addEventListener( 'mouseleave', () => {
+				productNameDiv.style.color = '';
+			} );
+
+			const goToProduct = () => {
+				window.open( hotspot.productDetails.link, '_blank' );
+			};
+
+			imageBox.addEventListener( 'click', goToProduct );
+			productNameDiv.addEventListener( 'click', goToProduct );
+		}
+
 		// Product price
 		const productPriceDiv = document.createElement( 'div' );
 		productPriceDiv.classList.add( 'product-hotspot-woo-price' );
@@ -275,7 +306,7 @@ export default class WooCommerceLayerManager {
 			// Product link when Mini Cart is false.
 			const productLink = document.createElement( 'a' );
 			productLink.classList.add( 'product-hotspot-woo-link' );
-			productLink.href = hotspot.addToCart ? hotspot.productDetails.link : `/cart/?add-to-cart=${ hotspot.productId }`;
+			productLink.href = hotspot.addToCart ? hotspot.productDetails.link : `${ window.godamWooSettings.url }?add-to-cart=${ hotspot.productId }`;
 			productLink.target = '_blank';
 			productLink.rel = 'noopener noreferrer';
 			productLink.style.background = hotspot.backgroundColor;
@@ -317,12 +348,14 @@ export default class WooCommerceLayerManager {
 						.then( () => {
 							productLinkButton.disabled = false;
 							productLinkButton.classList.remove( 'loading' );
+							this.showCartMessage( __( 'Product added successfully!', 'godam' ), 'success' );
 						} )
 						.catch( ( err ) => {
 							// eslint-disable-next-line no-console
 							console.error( 'Add to cart failed', err );
 							productLinkButton.disabled = false;
 							productLinkButton.classList.remove( 'loading' );
+							this.showCartMessage( __( 'Product adding failed!', 'godam' ), 'error' );
 						} );
 				}
 			} );
@@ -331,6 +364,29 @@ export default class WooCommerceLayerManager {
 		}
 
 		return productBoxDiv;
+	}
+
+	// Helper function to show message
+	showCartMessage( message, type = 'success' ) {
+		const msg = document.createElement( 'div' );
+		msg.textContent = message;
+		msg.classList.add( 'mini-cart-product-message', type );
+
+		// Dynamic positioning.
+		msg.style.position = 'fixed';
+		msg.style.top = '50%';
+		msg.style.left = '50%';
+		msg.style.transform = 'translate(-50%, -50%)';
+		msg.style.zIndex = '9999';
+
+		const container = this.player.el();
+		container.appendChild( msg );
+
+		// Fade out and remove after 2s.
+		setTimeout( () => {
+			msg.style.opacity = '0';
+			setTimeout( () => msg.remove(), 300 );
+		}, 2000 );
 	}
 
 	/**

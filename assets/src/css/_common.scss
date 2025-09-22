@@ -144,6 +144,93 @@
 }
 
 /**
+ * ComboBoxControl Style
+ */
+.godam-combobox {
+
+    label,
+	.components-base-control__label {
+		font-size: 0.875rem !important;
+		line-height: 1 !important;
+		font-weight: 500;
+		color: variables.$godam-black-color;
+		margin-bottom: 0.75rem !important;
+		text-transform: none !important;
+	}
+
+    .components-combobox-control__suggestions-container {
+        border: 1px solid rgba(225, 225, 225, 1);
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+        background: #ffffff;
+    }
+
+	.components-form-token-field__suggestion:hover,
+    .components-form-token-field__suggestion.is-selected {
+        background: variables.$godam-primary-gradient !important;
+    }
+
+    .components-combobox-control__input {
+        width: 100%;
+        background: rgba(255, 255, 255, 1) !important;
+        border-radius: 0.5rem !important;
+        font-size: 0.875rem !important;
+        font-weight: 400;
+        outline: none;
+        box-sizing: border-box;
+    }
+
+    .components-combobox-control__input:focus {
+        border-color: rgba(172, 58, 107, 1);
+        box-shadow: 0 0 0 2px rgba(172, 58, 107, 0.2);
+    }
+
+    button.components-button {
+        margin-left: 0.5rem;
+        padding: 0.5rem;
+        background: rgba(245, 245, 245, 1);
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+    button.components-button:hover {
+        background: rgba(230, 230, 230, 1);
+    }
+
+    .components-combobox-control__item {
+        font-size: 0.875rem;
+        line-height: 1.375;
+        font-weight: 500;
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        border-radius: 0.25rem;
+    }
+
+    .components-combobox-control__item[data-active-item="true"] {
+        background: rgba(245, 245, 245, 1);
+    }
+
+    .components-combobox-control__item[data-autofocus="true"] {
+        color: rgba(172, 58, 107, 1);
+    }
+
+    p.components-base-control__help {
+        font-size: 0.875rem;
+        line-height: 1.375;
+        font-weight: 400;
+        margin-top: 0.5rem;
+        color: rgba(100, 100, 100, 1);
+    }
+
+    p.components-base-control__help a {
+        color: variables.$godam-blue-color;
+        text-decoration: underline;
+    }
+}
+
+/**
  * Toggle Style
  */
 .godam-toggle {

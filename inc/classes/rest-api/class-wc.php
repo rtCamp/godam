@@ -322,11 +322,17 @@ class WC extends Base {
 				$type         = $product->get_type();
 				$name_display = $product->get_name();
 
+				$regular_price = $product->get_regular_price();
+				$sale_price    = $product->get_sale_price();
+				$price_display = '';
+
 				if ( 'variable' === $type ) {
 
 					// Get variation prices.
 					$min_price = $product->get_variation_price( 'min', true );
 					$max_price = $product->get_variation_price( 'max', true );
+
+					// $regular_price = $min_price;
 	
 					if ( $min_price === $max_price ) {
 						$price_display = wc_price( $min_price );
@@ -352,11 +358,17 @@ class WC extends Base {
 	
 					// Format name and price.
 					$name_display  = $product->get_name() . " ({$child_count} items)";
+					// $regular_price = $min_price;
 					$price_display = $min_price > 0 ? 'From: ' . wc_price( $min_price ) . ' + more' : 'N/A';
 	
 				} else {
 	
-					$price_display = wc_price( $product->get_price() );
+					// Simple and External product.
+					if ( $sale_price && $sale_price < $regular_price ) {
+						$price_display = wc_format_sale_price( $regular_price, $sale_price );
+					} else {
+						$price_display = wc_price( $regular_price );
+					}
 				}
 
 				$categories = array_map(
@@ -453,6 +465,10 @@ class WC extends Base {
 		$type         = $product->get_type();
 		$name_display = $product->get_name();
 
+		$regular_price = $product->get_regular_price();
+		$sale_price    = $product->get_sale_price();
+		$price_display = '';
+
 		if ( 'variable' === $type ) {
 
 			// Get variation prices.
@@ -488,7 +504,12 @@ class WC extends Base {
 			$price_display = $min_price > 0 ? sprintf( __( 'From: %s + more', 'godam' ), wc_price( $min_price ) ) : __( 'N/A', 'godam' );
 		} else {
 
-			$price_display = wc_price( $product->get_price() );
+			// Simple and External product.
+			if ( $sale_price && $sale_price < $regular_price ) {
+				$price_display = wc_format_sale_price( $regular_price, $sale_price );
+			} else {
+				$price_display = wc_price( $regular_price );
+			}
 		}
 
 		$categories = array_map(

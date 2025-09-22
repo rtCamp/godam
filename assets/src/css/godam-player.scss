@@ -394,6 +394,7 @@
 .easydam-layer.hotspot-layer {
 	pointer-events: none;
 	background: transparent;
+	z-index: unset;
 
 	&.overlapped {
 		z-index: 0;
@@ -406,8 +407,9 @@
 	inset: 0;
 	z-index: 2;
 	color: var(--wp--preset--color--base, var(--wp--preset--color--secondary, #fff));
-	left: 2%;
-	top: 3%;
+	right: 100%;
+    top: 3%;
+    margin-left: 10px;
 
 	.wc-block-mini-cart.wp-block-woocommerce-mini-cart {
 		background: var(--wp--preset--color--primary, #000);
@@ -490,10 +492,11 @@
 
 	.product-hotspot-woo-image-wrapper {
 		display: flex;
+		aspect-ratio: 1 / 1;
 
 		.product-hotspot-woo-image {
 			width: 100%;
-			height: 100%;
+			height: auto;
 			object-fit: cover;
 			display: block;
 
@@ -530,6 +533,7 @@
 			text-overflow: ellipsis;
 			line-height: 1.3;
 			max-height: 2.6em;
+			min-height: 2.6em;
 
 			@media (max-width: 768px) {
 				font-size: 15px;
@@ -540,6 +544,7 @@
 			color: #000;
 			margin-bottom: 1rem;
 			font-size: 14px;
+			min-height: 2.6em;
 
 			@media (max-width: 768px) {
 				font-size: 13px;
@@ -579,11 +584,65 @@
 		}
 	}
 
+	/* Image subtle tilt + brightness */
+	.product-hotspot-image-clickable {
+		transition: transform 0.3s ease, filter 0.3s ease;
+
+		&:hover {
+			transform: rotate3d(1, 1, 0, 5deg); // small tilt
+			filter: brightness(0.9);
+		}
+
+		&:active {
+			transform: scale(0.98); // tiny press feel
+		}
+	}
+
+	/* Product name underline slide */
+	.product-hotspot-name-clickable {
+		position: relative;
+		transition: color 0.3s ease;
+
+		&::after {
+			content: "";
+			position: absolute;
+			left: 0;
+			bottom: -2px;
+			width: 0;
+			height: 2px;
+			background: currentColor;
+			transition: width 0.3s ease;
+		}
+
+		&:hover::after {
+			width: 100%;
+		}
+	}	
+
 	@media (max-width: 768px) {
 		flex-direction: column;
 		max-width: 100%;
 	}
 }
+
+.mini-cart-product-message {
+	font-size: 14px;
+	padding: 8px 16px;
+	border-radius: 6px;
+	font-weight: 600;
+	text-align: center;
+	color: #fff;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	transition: opacity 0.3s ease;
+  }
+  
+  .mini-cart-product-message.success {
+	background-color: #28a745; /* green */
+  }
+  
+  .mini-cart-product-message.error {
+	background-color: #dc3545; /* red */
+  }
 
 .godam-menu-item-container {
 	align-items: center;
@@ -653,7 +712,6 @@
 .hotspot {
 	pointer-events: auto;
 	position: absolute;
-	z-index: 100;
 	background-color: rgba(12, 128, 223, 0.65);
 	box-sizing: border-box;
 	cursor: pointer;

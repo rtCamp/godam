@@ -404,6 +404,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 								className="hotspot circle"
 								style={ {
 									backgroundColor: hotspot.icon ? 'white' : hotspot.backgroundColor || '#0c80dfa6',
+									zIndex: 20,
 								} }
 							>
 								<div className={ `hotspot-content flex items-center justify-center ${ ! hotspot.icon ? 'no-icon' : '' }` }>

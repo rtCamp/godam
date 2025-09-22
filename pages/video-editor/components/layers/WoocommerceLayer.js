@@ -9,7 +9,6 @@ import { useDispatch, useSelector } from 'react-redux';
  */
 import {
 	Button,
-	Modal,
 	TextControl,
 	ToggleControl,
 	DropdownMenu,
@@ -19,7 +18,6 @@ import {
 	Tooltip,
 } from '@wordpress/components';
 import {
-	arrowLeft,
 	trash,
 	plus,
 	chevronDown,
@@ -27,21 +25,22 @@ import {
 	moreVertical,
 	check,
 } from '@wordpress/icons';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { useState, useRef, useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import { updateLayerField, removeLayer } from '../../redux/slice/videoSlice';
+import { updateLayerField } from '../../redux/slice/videoSlice';
 import { v4 as uuidv4 } from 'uuid';
 import LayerControls from '../LayerControls';
 import ProductSelector from '../woocommerce/ProductSelector';
 import FontAwesomeIconPicker from '../woocommerce/FontAwesomeIconPicker';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
+import LayersHeader from './LayersHeader';
 
-const WoocommerceLayer = ( { layerID, goBack } ) => {
+const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
@@ -57,8 +56,6 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 
 	const productHotspots = layer?.productHotspots || [];
 
-	// Delete modal
-	const [ isDeleteModalOpen, setDeleteModalOpen ] = useState( false );
 	// Track expanded Product hotspot
 	const [ expandedProductHotspotIndex, setExpandedProductHotspotIndex ] = useState( null );
 
@@ -83,10 +80,10 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 			productDetails: '',
 			addToCart: false,
 			shopText: __( 'Shop Me', 'godam' ),
-			position: { x: 50, y: 50 },
+			position: { x: 100, y: 100 },
 			size: { diameter: 48 },
 			oSize: { diameter: 48 },
-			oPosition: { x: 50, y: 50 },
+			oPosition: { x: 100, y: 100 },
 			backgroundColor: '#0c80dfa6',
 			miniCart: true,
 			icon: '',
@@ -99,11 +96,6 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 			'productHotspots',
 			productHotspots.filter( ( _, i ) => i !== index ),
 		);
-	};
-
-	const handleDeleteLayer = () => {
-		dispatch( removeLayer( { id: layer.id } ) );
-		goBack();
 	};
 
 	// Expand/hide a Product hotspot’s panel
@@ -146,43 +138,7 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 
 	return (
 		<>
-			<div className="flex justify-between items-center pb-3 border-b mb-3">
-				<Button icon={ arrowLeft } onClick={ goBack } />
-				<p className="font-semibold">
-					{ __( 'WooCommerce Layer at', 'godam' ) } { layer.displayTime }s
-				</p>
-				<Button
-					icon={ trash }
-					isDestructive
-					onClick={ () => setDeleteModalOpen( true ) }
-				/>
-				{ isDeleteModalOpen && (
-					<Modal
-						title={ __( 'Delete WooCommerce Layer', 'godam' ) }
-						onRequestClose={ () => setDeleteModalOpen( false ) }
-					>
-						<div className="flex justify-between items-center gap-3">
-							<Button
-								className="w-full justify-center godam-button"
-								isTertiary
-								onClick={ () => setDeleteModalOpen( false ) }
-							>
-								{ __( 'Cancel', 'godam' ) }
-							</Button>
-							<Button
-								className="w-full justify-center godam-button"
-								isDestructive
-								onClick={ () => {
-									handleDeleteLayer();
-									setDeleteModalOpen( false );
-								} }
-							>
-								{ __( 'Delete Layer', 'godam' ) }
-							</Button>
-						</div>
-					</Modal>
-				) }
-			</div>
+			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
 
 			{
 				! isValidAPIKey &&
@@ -199,6 +155,7 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 			<div className="mb-4">
 				<TextControl
 					label={ __( 'Layer Duration (seconds)', 'godam' ) }
+					className="godam-input"
 					type="number"
 					min="1"
 					value={ layer?.duration || '' }
@@ -214,6 +171,7 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 			{ /* Pause on hover */ }
 			<div className="mb-4">
 				<ToggleControl
+					className="godam-toggle"
 					label={ __( 'Pause video on hover', 'godam' ) }
 					checked={ layer?.pauseOnHover || false }
 					onChange={ ( isChecked ) => updateField( 'pauseOnHover', isChecked ) }
@@ -230,6 +188,7 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 			{ /* Mini Cart Icon */ }
 			<div className="mb-4">
 				<ToggleControl
+					className="godam-toggle"
 					label={ __( 'Enable/Disable Mini Cart', 'godam' ) }
 					checked={
 						layer?.previousDisplayTime
@@ -257,9 +216,9 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 			</div>
 
 			{ /* Product Hotspots list */ }
-			<div className="flex flex-col gap-4">
+			<div className="flex items-center flex-col gap-4 pb-4">
 				{ productHotspots.map( ( productHotspot, index ) => (
-					<div key={ productHotspot.id } className="p-2 border rounded">
+					<div key={ productHotspot.id } className="p-2 w-full border rounded">
 						<div className="flex justify-between items-center">
 							<Button
 								icon={ expandedProductHotspotIndex === index ? chevronUp : chevronDown }
@@ -273,7 +232,8 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 							<DropdownMenu
 								icon={ moreVertical }
 								label={ `Product Hotspot ${ index + 1 } options` }
-								toggleProps={ { 'aria-label': `Options for Product Hotspot ${ index + 1 }` } }
+								/* translators: %d is the hotspot index */
+								toggleProps={ { 'aria-label': sprintf( __( 'Options for Product Hotspot %d', 'godam' ), index + 1 ) } }
 							>
 								{ () => (
 									<>
@@ -331,6 +291,7 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 						{ expandedProductHotspotIndex === index && (
 							<div className="mt-3">
 								<TextControl
+									className="godam-input"
 									label={ __( 'Shop Button', 'godam' ) }
 									placeholder={ productHotspot.addToCart
 										? __( 'View Product', 'godam' )
@@ -345,6 +306,7 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 										)
 									}
 									disabled={ ! isValidAPIKey }
+									help={ __( 'Shop button color follows Product hotspot color.', 'godam' ) }
 								/>
 								<div className="mt-3">
 									{ ( () => {
@@ -379,6 +341,7 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 
 										return (
 											<ToggleControl
+												className="godam-toggle"
 												label={ __( 'Link to Product Page', 'godam' ) }
 												checked={ productHotspot.addToCart }
 												help={ help }
@@ -449,10 +412,11 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 				) ) }
 
 				<Button
-					isPrimary
+					variant="primary"
 					id="add-hotspot-btn"
 					icon={ plus }
 					iconPosition="left"
+					className="godam-button"
 					onClick={ handleAddProductHotspot }
 					disabled={ ! isValidAPIKey }
 				>
@@ -467,28 +431,30 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 						className="absolute inset-0 woo-mini-cart-button"
 						style={ {
 							zIndex: '11',
-							left: '93%',
+							right: '100%',
 							top: '4%',
 						} }
 					>
 						<Tooltip
 							text={ __( 'This is just a preview for Mini Cart. It will change styles according to your theme.', 'godam' ) }
-							placement="top-end"
+							placement="top-start"
 						>
 							<div
 								className="
 								block
 								transform
-								sm:scale-75 sm:-translate-x-6
-								md:scale-90 md:-translate-x-6
-								lg:scale-95 lg:translate-x-[-10px]
-								xl:scale-105 xl:translate-x-0
+								scale-50
+								sm:scale-75
+								md:scale-90
+								lg:scale-110
+								xl:scale-125
+								2xl:scale-150
 								transition-transform duration-200 ease-in-out
 							"
 							>
 								<Button
-									isPrimary
-									className="cursor-pointer rounded-full !p-2"
+									variant="primary"
+									className="cursor-pointer rounded-full !p-2 ml-2"
 									label={ __( 'Mini Cart', 'godam' ) }
 									icon={ <FontAwesomeIcon icon={ faShoppingCart } /> }
 								/>
@@ -565,6 +531,7 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 								className="hotspot circle"
 								style={ {
 									backgroundColor: productHotspot.icon ? 'white' : productHotspot.backgroundColor || '#0c80dfa6',
+									zIndex: 20,
 								} }
 							>
 								<div className={ `hotspot-content flex items-center justify-center ${ ! productHotspot.icon ? 'no-icon' : '' }` }>
@@ -607,7 +574,7 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 														href={
 															productHotspot.addToCart
 																? productHotspot.productDetails.link
-																: `/cart/?add-to-cart=${ productHotspot.productId }`
+																: `${ window.easydamMediaLibrary.wooCartURL }?add-to-cart=${ productHotspot.productId }`
 														}
 														target="_blank"
 														rel="noopener noreferrer"
