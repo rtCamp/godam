@@ -13,11 +13,15 @@ defined( 'ABSPATH' ) || exit;
  * GoDAM to Local Filter Class
  *
  * Handles converting GoDAM CDN URLs back to local URLs when saving content.
+ *
+ * @since n.e.x.t
  */
 class GoDAM_To_Local extends Base_Filter {
 
 	/**
 	 * Set up the filter hooks.
+	 *
+	 * @since n.e.x.t
 	 */
 	public function setup() {
 		parent::setup();
@@ -40,6 +44,8 @@ class GoDAM_To_Local extends Base_Filter {
 	/**
 	 * Filter post content before saving.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $content The post content.
 	 *
 	 * @return string Filtered content.
@@ -58,6 +64,8 @@ class GoDAM_To_Local extends Base_Filter {
 	/**
 	 * Filter widget save callback.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param array $instance Widget instance.
 	 *
 	 * @return array Filtered instance.
@@ -68,6 +76,8 @@ class GoDAM_To_Local extends Base_Filter {
 
 	/**
 	 * Filter widget block save.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param array $value Widget block value.
 	 *
@@ -88,6 +98,8 @@ class GoDAM_To_Local extends Base_Filter {
 	/**
 	 * Filter customizer image.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $value     Image URL.
 	 * @param string $old_value Previous value.
 	 *
@@ -104,6 +116,8 @@ class GoDAM_To_Local extends Base_Filter {
 
 	/**
 	 * Filter header image data.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param array  $data     Header image data.
 	 * @param string $theme   Theme name.
@@ -128,6 +142,8 @@ class GoDAM_To_Local extends Base_Filter {
 	/**
 	 * Filter custom CSS data update.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param array  $data CSS data.
 	 * @param string $args CSS args.
 	 *
@@ -146,6 +162,8 @@ class GoDAM_To_Local extends Base_Filter {
 	/**
 	 * Check if content should be filtered.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return bool True if content should be filtered.
 	 */
 	protected function should_filter_content() {
@@ -154,6 +172,8 @@ class GoDAM_To_Local extends Base_Filter {
 
 	/**
 	 * Check if URL needs replacing.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $url The URL to check.
 	 *
@@ -171,6 +191,8 @@ class GoDAM_To_Local extends Base_Filter {
 	/**
 	 * Get URL for item source.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param array       $item_source The item source data.
 	 * @param string|null $object_key  Optional object key.
 	 *
@@ -183,16 +205,16 @@ class GoDAM_To_Local extends Base_Filter {
 
 		// Get the original local URL by temporarily removing our filter.
 		$attachment_id = $item_source['id'];
-		
+
 		// Get the original upload directory.
 		$upload_dirs = $this->plugin->get_original_upload_dir();
-		
+
 		// Get the attached file path.
 		$file_path = get_attached_file( $attachment_id );
 		if ( ! $file_path ) {
 			return false;
 		}
-		
+
 		// Convert file path to local URL.
 		if ( strpos( $file_path, 'godam://' ) === 0 ) {
 			// Extract relative path from godam:// protocol.
@@ -201,15 +223,17 @@ class GoDAM_To_Local extends Base_Filter {
 			// Convert local path to relative path.
 			$relative_path = str_replace( $upload_dirs['basedir'], '', $file_path );
 		}
-		
+
 		// Generate local URL using original upload directory.
 		$local_url = rtrim( $upload_dirs['baseurl'], '/' ) . $relative_path;
-		
+
 		return $local_url;
 	}
 
 	/**
 	 * Get attachment ID from CDN URL.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $url The CDN URL.
 	 *
@@ -233,7 +257,7 @@ class GoDAM_To_Local extends Base_Filter {
 
 		// Remove leading slash.
 		$relative_path = ltrim( $relative_path, '/' );
-		
+
 		// Remove 'uploads/' prefix to match _wp_attached_file format.
 		$relative_path = preg_replace( '#^uploads/#', '', $relative_path );
 
@@ -252,7 +276,7 @@ class GoDAM_To_Local extends Base_Filter {
 
 		// Fallback: search by basename.
 		$basename = basename( $url );
-		
+
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$attachment_id = $wpdb->get_var(
 			$wpdb->prepare(

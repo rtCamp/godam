@@ -18,6 +18,8 @@ class Local_To_GoDAM extends Base_Filter {
 
 	/**
 	 * Set up the filter hooks.
+	 *
+	 * @since n.e.x.t
 	 */
 	public function setup() {
 		parent::setup();
@@ -94,6 +96,8 @@ class Local_To_GoDAM extends Base_Filter {
 	/**
 	 * Filter post content.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string|object $content The post content or REST response object.
 	 *
 	 * @return string|object Filtered content or original object.
@@ -124,6 +128,8 @@ class Local_To_GoDAM extends Base_Filter {
 	/**
 	 * Filter content pagination.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param array $pages Array of content pages.
 	 *
 	 * @return array Filtered pages.
@@ -146,6 +152,8 @@ class Local_To_GoDAM extends Base_Filter {
 	/**
 	 * Filter widget display.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param array $instance Widget instance.
 	 *
 	 * @return array Filtered instance.
@@ -157,6 +165,8 @@ class Local_To_GoDAM extends Base_Filter {
 	/**
 	 * Filter widget block for customizer.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param array $value Widget block value.
 	 *
 	 * @return array Filtered value.
@@ -167,6 +177,8 @@ class Local_To_GoDAM extends Base_Filter {
 
 	/**
 	 * Filter widget block content.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $content Widget block content.
 	 *
@@ -185,6 +197,8 @@ class Local_To_GoDAM extends Base_Filter {
 
 	/**
 	 * Filter customizer image.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string|object $value Image URL or header image object.
 	 *
@@ -215,6 +229,8 @@ class Local_To_GoDAM extends Base_Filter {
 	/**
 	 * Filter customizer CSS.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $css  The CSS.
 	 * @param string $type The CSS type.
 	 *
@@ -226,6 +242,8 @@ class Local_To_GoDAM extends Base_Filter {
 
 	/**
 	 * Filter custom CSS.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $css  The CSS.
 	 * @param string $type The CSS type.
@@ -239,6 +257,8 @@ class Local_To_GoDAM extends Base_Filter {
 	/**
 	 * Filter rendered block.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $block_content Block content.
 	 *
 	 * @return string Filtered content.
@@ -249,6 +269,8 @@ class Local_To_GoDAM extends Base_Filter {
 
 	/**
 	 * Filter block templates.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param array  $query_result  Array of block templates.
 	 * @param array  $query         Query arguments.
@@ -270,6 +292,8 @@ class Local_To_GoDAM extends Base_Filter {
 
 	/**
 	 * Filter block template.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param \WP_Block_Template|null $block_template The block template.
 	 * @param string                  $id             Template ID.
@@ -300,6 +324,8 @@ class Local_To_GoDAM extends Base_Filter {
 	/**
 	 * Filter attachment URL.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $url     Attachment URL.
 	 * @param int    $post_id Attachment post ID.
 	 *
@@ -323,6 +349,8 @@ class Local_To_GoDAM extends Base_Filter {
 
 	/**
 	 * Filter attachment image src.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param array|false      $image         Image data or false.
 	 * @param int              $attachment_id Attachment ID.
@@ -357,6 +385,8 @@ class Local_To_GoDAM extends Base_Filter {
 	/**
 	 * Filter attachment image attributes.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param array    $attr       Image attributes.
 	 * @param \WP_Post $attachment Attachment post.
 	 * @param string   $size       Image size.
@@ -387,6 +417,8 @@ class Local_To_GoDAM extends Base_Filter {
 	/**
 	 * Filter attachment image HTML.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $html Image HTML.
 	 *
 	 * @return string Filtered HTML.
@@ -398,6 +430,8 @@ class Local_To_GoDAM extends Base_Filter {
 	/**
 	 * Filter post thumbnail HTML.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $html Thumbnail HTML.
 	 *
 	 * @return string Filtered HTML.
@@ -408,6 +442,8 @@ class Local_To_GoDAM extends Base_Filter {
 
 	/**
 	 * Filter image srcset sources.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param array  $sources       {
 	 *     One or more arrays of source data to include in the 'srcset'.
@@ -465,6 +501,8 @@ class Local_To_GoDAM extends Base_Filter {
 	/**
 	 * Filter image sizes.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $sizes Image sizes.
 	 *
 	 * @return string Filtered sizes.
@@ -475,6 +513,8 @@ class Local_To_GoDAM extends Base_Filter {
 
 	/**
 	 * Filter attachment image srcset.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $srcset Attachment srcset.
 	 *
@@ -487,6 +527,8 @@ class Local_To_GoDAM extends Base_Filter {
 	/**
 	 * Filter attachment image sizes.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $sizes Attachment sizes.
 	 *
 	 * @return string Filtered sizes.
@@ -498,6 +540,8 @@ class Local_To_GoDAM extends Base_Filter {
 	/**
 	 * Filter attachment metadata.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param array $metadata Attachment metadata.
 	 *
 	 * @return array Filtered metadata.
@@ -508,6 +552,8 @@ class Local_To_GoDAM extends Base_Filter {
 
 	/**
 	 * Filter attachment thumbnail URL.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $url Thumbnail URL.
 	 *
@@ -525,6 +571,8 @@ class Local_To_GoDAM extends Base_Filter {
 	/**
 	 * Filter attachment thumbnail file.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $file Thumbnail file path.
 	 *
 	 * @return string Filtered file path.
@@ -535,6 +583,8 @@ class Local_To_GoDAM extends Base_Filter {
 
 	/**
 	 * Filter video shortcode.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $output Video shortcode output.
 	 *
@@ -547,6 +597,8 @@ class Local_To_GoDAM extends Base_Filter {
 	/**
 	 * Filter audio shortcode.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $output Audio shortcode output.
 	 *
 	 * @return string Filtered output.
@@ -557,6 +609,8 @@ class Local_To_GoDAM extends Base_Filter {
 
 	/**
 	 * Set URL scheme.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $url         The URL.
 	 * @param string $scheme      The scheme.
@@ -585,6 +639,8 @@ class Local_To_GoDAM extends Base_Filter {
 	/**
 	 * Check if content should be filtered.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return bool True if content should be filtered.
 	 */
 	protected function should_filter_content() {
@@ -593,6 +649,8 @@ class Local_To_GoDAM extends Base_Filter {
 
 	/**
 	 * Check if URL needs replacing.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $url The URL to check.
 	 *
@@ -612,6 +670,8 @@ class Local_To_GoDAM extends Base_Filter {
 
 	/**
 	 * Get URL for item source.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param array       $item_source The item source data.
 	 * @param string|null $object_key  Optional object key.
@@ -665,6 +725,8 @@ class Local_To_GoDAM extends Base_Filter {
 	/**
 	 * Filter REST API response object content.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param object $response WP_REST_Response object.
 	 *
 	 * @return object Modified response object.
@@ -705,6 +767,8 @@ class Local_To_GoDAM extends Base_Filter {
 	/**
 	 * Process a single content string for URL replacement.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $content The content string to process.
 	 *
 	 * @return string Processed content.
@@ -722,6 +786,8 @@ class Local_To_GoDAM extends Base_Filter {
 
 	/**
 	 * Filter REST API preload paths for block editor.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param array $paths Preload paths.
 	 * @return array Filtered paths.

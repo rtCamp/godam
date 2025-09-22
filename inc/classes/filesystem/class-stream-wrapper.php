@@ -26,12 +26,16 @@ namespace RTGODAM\Inc\Filesystem;
  * This class implements a custom stream wrapper for GoDAM, allowing
  * interaction with files stored in the GoDAM Files API.
  *
+ * @since n.e.x.t
+ *
  * @package RTGODAM\Inc\Filesystem
  */
 class Stream_Wrapper {
 
 	/**
 	 * Default protocol.
+	 *
+	 * @since n.e.x.t
 	 */
 	const DEFAULT_PROTOCOL = 'godam';
 
@@ -42,11 +46,15 @@ class Stream_Wrapper {
 	 * Stream Wrapper works.
 	 * Not supporting `c` and `e` modes as these are rarely used and adds complexity
 	 * to support.
+	 *
+	 * @since n.e.x.t
 	 */
 	const ALLOWED_MODES = array( 'r', 'w', 'a', 'x' );
 
 	/**
 	 * The Stream context. Set by PHP.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @var     resource|null   Stream context.
 	 */
@@ -55,12 +63,16 @@ class Stream_Wrapper {
 	/**
 	 * The GoDAM Files API Client.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @var     API_Client  GoDAM Files API Client.
 	 */
 	public $client;
 
 	/**
 	 * The fopen mode for current file.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @var     string      The fopen mode.
 	 */
@@ -69,12 +81,16 @@ class Stream_Wrapper {
 	/**
 	 * The file resource fetched through the GoDAM Files API.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @var     resource    The file resource.
 	 */
 	protected $file;
 
 	/**
 	 * The path to the opened file.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @var     string      Opened path.
 	 */
@@ -83,12 +99,16 @@ class Stream_Wrapper {
 	/**
 	 * The temp file URI.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @var     string      The file URI.
 	 */
 	protected $uri;
 
 	/**
 	 * Is file seekable.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @var     bool        Is seekable.
 	 */
@@ -97,12 +117,16 @@ class Stream_Wrapper {
 	/**
 	 * Protocol for the stream to register to.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @var string  The defined protocol.
 	 */
 	private $protocol = self::DEFAULT_PROTOCOL;
 
 	/**
 	 * Debug mode flag.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @var     bool    Is debug mode on.
 	 */
@@ -114,12 +138,16 @@ class Stream_Wrapper {
 	 * Flag to determine if an empty file should be flushed to the
 	 * Filesystem.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @var     bool    Should flush empty file.
 	 */
 	private $should_flush_empty;
 
 	/**
 	 * The options for the stream wrapper.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @var     array   Options for the stream wrapper.
 	 */
@@ -128,12 +156,16 @@ class Stream_Wrapper {
 	/**
 	 * HashMap for exact filename lookups to provide O(1) performance
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @var array
 	 */
 	private static $local_files_map = array();
 
 	/**
 	 * HashMap of wildcard patterns for local files
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @var array
 	 */
@@ -142,12 +174,16 @@ class Stream_Wrapper {
 	/**
 	 * File handle for local files
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @var resource|null
 	 */
 	private $handle;
 
 	/**
 	 * Array of directories to be used for local files
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @var array<string, string> Associative array where keys are directory names and values are their paths.
 	 */
@@ -159,12 +195,16 @@ class Stream_Wrapper {
 	 * This is used to determine if a directory is empty or not.
 	 * If the directory contains this file, it is considered empty.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @var     int  The directory index file name
 	 */
 	private int $directory_index;
 
 	/**
 	 * Initialize the stream wrapper.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param Plugin $plugin The plugin instance to use for the stream wrapper.
 	 * @param string $protocol The protocol to use for the stream wrapper.
@@ -194,6 +234,8 @@ class Stream_Wrapper {
 
 	/**
 	 * Opens a file
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param   string $path URL that was passed to the original function.
 	 * @param   string $mode Type of access. See `fopen` docs.
@@ -286,6 +328,8 @@ class Stream_Wrapper {
 
 	/**
 	 * Close a file
+	 *
+	 * @since n.e.x.t
 	 */
 	public function stream_close() {
 		$this->debug( sprintf( 'stream_close => %s + %s', $this->path, $this->uri ) );
@@ -309,6 +353,8 @@ class Stream_Wrapper {
 	/**
 	 * Check for end of file
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return  bool
 	 */
 	public function stream_eof() {
@@ -328,6 +374,8 @@ class Stream_Wrapper {
 
 	/**
 	 * Read the contents of the file
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $count of bytes to read.
 	 *
@@ -361,6 +409,8 @@ class Stream_Wrapper {
 
 	/**
 	 * Flush to a file
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return  bool    True on success. False on failure
 	 */
@@ -422,6 +472,8 @@ class Stream_Wrapper {
 	/**
 	 * Seek a pointer position on a file
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param   int $offset The offset to seek to.
 	 * @param   int $whence The position from where to seek.
 	 *
@@ -455,6 +507,8 @@ class Stream_Wrapper {
 
 	/**
 	 * Write to a file
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param   string $data   The data to be written.
 	 *
@@ -502,6 +556,8 @@ class Stream_Wrapper {
 	/**
 	 * Delete a file
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param   string $path Path to the file to delete.
 	 *
 	 * @return  bool    True if success. False on failure
@@ -548,6 +604,8 @@ class Stream_Wrapper {
 
 	/**
 	 * Get file stats
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return  array   The file statistics
 	 */
@@ -597,6 +655,8 @@ class Stream_Wrapper {
 	 *
 	 * Use by functions like is_dir, file_exists etc.
 	 * See: http://php.net/manual/en/streamwrapper.url-stat.php
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param   string $path Path to the file or directory.
 	 * @param   int    $flags Flags to modify the behavior of the function.
@@ -716,6 +776,8 @@ class Stream_Wrapper {
 	/**
 	 * This method is called in response to fseek() to determine the current position.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return  bool|int    Returns current position or false on failure
 	 */
 	public function stream_tell() {
@@ -726,6 +788,8 @@ class Stream_Wrapper {
 
 	/**
 	 * Called in response to rename() to rename a file or directory.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param   string $path_from  Path to file to rename.
 	 * @param   string $path_to    New path to the file.
@@ -880,6 +944,8 @@ class Stream_Wrapper {
 	/**
 	 * Called in response to mkdir()
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param   string $path The path to the directory to create.
 	 * @param int    $mode Mode to set on the directory.
 	 * @param int    $options Options for the directory creation.
@@ -903,6 +969,8 @@ class Stream_Wrapper {
 
 	/**
 	 * Set metadata on a stream
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @link http://php.net/manual/en/streamwrapper.stream-metadata.php
 	 *
@@ -937,6 +1005,8 @@ class Stream_Wrapper {
 	/**
 	 * Called in response to stream_select()
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @link http://php.net/manual/en/streamwrapper.stream-castt.php
 	 *
 	 * @param   int $cast_as The type of cast to perform.
@@ -955,6 +1025,8 @@ class Stream_Wrapper {
 
 	/**
 	 * Open a directory handler
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param   string $path   The path to the directory to open.
 	 *
@@ -979,6 +1051,8 @@ class Stream_Wrapper {
 	/**
 	 * Read the next directory entry
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return  string|bool    The next directory entry or false if no more entries
 	 */
 	public function dir_readdir() {
@@ -991,6 +1065,8 @@ class Stream_Wrapper {
 	/**
 	 * Rewind the directory handler to the start
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return  bool    True on success. False on failure.
 	 */
 	public function dir_rewinddir() {
@@ -1000,6 +1076,8 @@ class Stream_Wrapper {
 
 	/**
 	 * Close the directory handler
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return  bool    True on success. False on failure.
 	 */
@@ -1011,6 +1089,8 @@ class Stream_Wrapper {
 
 	/**
 	 * Write file to a temporary resource handler
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param   string $data   The file content to be written.
 	 * @param   string $mode   The fopen mode.
@@ -1041,6 +1121,8 @@ class Stream_Wrapper {
 	/**
 	 * Closes the open file handler
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return  bool        True on success. False on failure.
 	 */
 	protected function close_handler() {
@@ -1062,6 +1144,8 @@ class Stream_Wrapper {
 
 	/**
 	 * Get the stream context options available to the current stream
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $option           The option to return. If empty, returns all options.
 	 * @param bool   $remove_context_data Set to true to remove contextual kvp's
@@ -1100,6 +1184,8 @@ class Stream_Wrapper {
 	 * Converted the protocol file path into something the File Service
 	 * API client can use
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param   string $path       Original protocol path.
 	 *
 	 * @return  string      Modified path
@@ -1110,6 +1196,8 @@ class Stream_Wrapper {
 
 	/**
 	 * Validates the provided stream arguments for fopen.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param   string $path   Path to file.
 	 * @param   string $mode   fopen mode.
@@ -1174,6 +1262,8 @@ class Stream_Wrapper {
 	/**
 	 * Log debug message
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param   string $message  Debug message to be logged.
 	 * @param   bool   $force Whether to force debug.
 	 */
@@ -1197,7 +1287,9 @@ class Stream_Wrapper {
 	}
 
 	/**
-	 * Format the debug backtrace to be a bit more readable .
+	 * Format the debug backtrace to be a bit more readable.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return array
 	 */
@@ -1216,7 +1308,9 @@ class Stream_Wrapper {
 	}
 
 	/**
-	 * Add a file to the list of files that should be handled locally
+	 * Add a file to the list of files that should be handled locally.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $file_path Path to the file or a pattern.
 	 * @return bool True if the file was added, false otherwise
@@ -1242,6 +1336,8 @@ class Stream_Wrapper {
 	/**
 	 * Remove a file from the list of files that should be handled locally
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $file_path Path to the file or pattern.
 	 * @return bool True if the file was removed, false otherwise
 	 */
@@ -1254,6 +1350,8 @@ class Stream_Wrapper {
 	/**
 	 * Get the list of files that should be handled locally
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return array List of file paths and patterns
 	 */
 	public static function get_local_files() {
@@ -1262,6 +1360,8 @@ class Stream_Wrapper {
 
 	/**
 	 * Check if a file should be handled locally
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $file_path Path to the file.
 	 * @return bool True if the file should be handled locally, false otherwise
@@ -1284,6 +1384,8 @@ class Stream_Wrapper {
 
 	/**
 	 * Get the local path for a file in the tmp directory
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $file_path Original file path.
 	 * @return string Local path in the tmp directory

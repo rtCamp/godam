@@ -19,12 +19,16 @@ class Media_Library {
 	/**
 	 * The GoDAM Plugin instance.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @var Plugin
 	 */
 	private $plugin;
 
 	/**
 	 * Constructor.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param Plugin $plugin The GoDAM Plugin instance.
 	 */
@@ -35,6 +39,8 @@ class Media_Library {
 
 	/**
 	 * Set up the hooks.
+	 *
+	 * @since n.e.x.t
 	 */
 	public function setup() {
 		// Core attachment URL filters.
@@ -59,6 +65,8 @@ class Media_Library {
 	/**
 	 * Filter attachment URL.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $url     Attachment URL.
 	 * @param int    $post_id Attachment post ID.
 	 *
@@ -78,6 +86,8 @@ class Media_Library {
 
 	/**
 	 * Filter attachment image attributes.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param array    $attr       Image attributes.
 	 * @param \WP_Post $attachment Attachment post.
@@ -104,6 +114,8 @@ class Media_Library {
 
 	/**
 	 * Filter attachment image src.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param array|false      $image         Image data or false.
 	 * @param int              $attachment_id Attachment ID.
@@ -132,6 +144,8 @@ class Media_Library {
 
 	/**
 	 * Filter attachment data for JavaScript.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param array      $response   Attachment data.
 	 * @param int|object $attachment Attachment ID or object.
@@ -171,6 +185,8 @@ class Media_Library {
 	/**
 	 * Filter intermediate image size.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param array        $data    Image size data.
 	 * @param int          $post_id Attachment post ID.
 	 * @param string|array $size    Image size.
@@ -197,6 +213,8 @@ class Media_Library {
 
 	/**
 	 * Filter image srcset calculation.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $srcset       Image srcset.
 	 * @param array  $size_array   Size array.
@@ -238,6 +256,8 @@ class Media_Library {
 	/**
 	 * Filter media shortcode output.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $output   Shortcode output.
 	 * @param array  $atts     Shortcode attributes.
 	 * @param string $audio    Audio file URL.
@@ -262,6 +282,8 @@ class Media_Library {
 	/**
 	 * Filter attached file path.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $file        Attached file path.
 	 * @param int    $attachment_id Attachment ID.
 	 *
@@ -274,6 +296,8 @@ class Media_Library {
 
 	/**
 	 * Get CDN URL for attachment.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param int         $attachment_id Attachment ID.
 	 * @param string|null $size          Image size.

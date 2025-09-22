@@ -21,11 +21,15 @@ defined( 'ABSPATH' ) || exit;
  * It provides methods to start, stop, and check the progress of the migration.
  *
  * This is a utility class with static methods only.
+ *
+ * @since n.e.x.t
  */
 class Files_Migration {
 
 	/**
 	 * Batch size for processing files.
+	 *
+	 * @since n.e.x.t
 	 */
 	const BATCH_SIZE = 10;
 
@@ -34,6 +38,8 @@ class Files_Migration {
 	 *
 	 * This constant defines the hook that will be used to schedule the cron job
 	 * for processing files in batches and migrating them to the CDN.
+	 *
+	 * @since n.e.x.t
 	 */
 	const CRON_HOOK = 'godam_cdn_files_migration_cron';
 
@@ -42,6 +48,8 @@ class Files_Migration {
 	 *
 	 * This constant defines the option name that will be used to store the current
 	 * status of the files migration process, such as 'running', 'stopped', or 'idle'.
+	 *
+	 * @since n.e.x.t
 	 */
 	const STATUS_OPTION = 'godam_cdn_files_migration_status';
 
@@ -50,6 +58,8 @@ class Files_Migration {
 	 *
 	 * This constant defines the option name that will be used to store the list of
 	 * files that have already been migrated to the CDN.
+	 *
+	 * @since n.e.x.t
 	 */
 	const MIGRATED_FILES_OPTION = 'godam_cdn_migrated_files_list';
 
@@ -58,11 +68,15 @@ class Files_Migration {
 	 *
 	 * This constant defines the option name that will be used to store the list of
 	 * files that failed to migrate to the CDN, allowing for retry or manual intervention.
+	 *
+	 * @since n.e.x.t
 	 */
 	const FAILED_FILES_OPTION = 'godam_cdn_failed_files_list';
 
 	/**
 	 * Current migrating file.
+	 *
+	 * @since n.e.x.t
 	 */
 	const CURRENT_FILE_OPTION = 'godam_cdn_migrating_current_file';
 
@@ -71,6 +85,8 @@ class Files_Migration {
 	 *
 	 * This method should be called once to set up the hooks.
 	 * Since this is now a pure static class, no constructor is needed.
+	 *
+	 * @since n.e.x.t
 	 */
 	public static function initialize() {
 		self::setup_hooks();
@@ -81,6 +97,8 @@ class Files_Migration {
 	 *
 	 * This function adds the necessary actions for processing files in batches,
 	 * starting the migration, and handling AJAX requests related to the migration.
+	 *
+	 * @since n.e.x.t
 	 */
 	public static function setup_hooks() {
 		add_action( 'init', array( __CLASS__, 'init' ) );
@@ -94,6 +112,8 @@ class Files_Migration {
 	 *
 	 * This function checks if the cron job is already scheduled but not running.
 	 * If the status is 'scheduled', it schedules the cron job to start processing files.
+	 *
+	 * @since n.e.x.t
 	 */
 	public static function init() {
 		$status = get_option( self::STATUS_OPTION, 'idle' );
@@ -117,6 +137,8 @@ class Files_Migration {
 	 *
 	 * This function checks the nonce for security, processes the sub-action,
 	 * and returns the appropriate response based on the action requested.
+	 *
+	 * @since n.e.x.t
 	 */
 	public static function ajax_handle_migration() {
 		check_ajax_referer( 'files_migration_nonce', 'nonce' );
@@ -167,6 +189,8 @@ class Files_Migration {
 	 *
 	 * This function checks the current status of the migration. If it is already running,
 	 * it does nothing. If it is stopped, it clears the status option and schedules a new cron job.
+	 *
+	 * @since n.e.x.t
 	 */
 	public static function start_migration() {
 		$status = get_option( self::STATUS_OPTION, 'idle' );
@@ -200,6 +224,8 @@ class Files_Migration {
 	 *
 	 * This function checks if the cron job is already scheduled. If not, it schedules a new event
 	 * to process files in batches. It also updates the status of the migration to 'running'.
+	 *
+	 * @since n.e.x.t
 	 */
 	public static function schedule_cron() {
 		// If the cron job is already scheduled, we do not schedule it again.
@@ -229,6 +255,8 @@ class Files_Migration {
 	 *
 	 * This function retrieves a batch of files that have not been migrated yet,
 	 * uploads them to the CDN, and updates their metadata accordingly.
+	 *
+	 * @since n.e.x.t
 	 */
 	public static function process_batch() {
 		// If the status is 'stopped', we do not process the files.
@@ -338,6 +366,8 @@ class Files_Migration {
 	 *
 	 * @param string $relative_path The relative path of the media file.
 	 * @return string|false The full source path for the media file, or false if the directory does not exist.
+	 *
+	 * @since n.e.x.t
 	 */
 	public static function get_source_path( $relative_path ) {
 		$plugin     = Plugin::get_instance();
@@ -358,6 +388,8 @@ class Files_Migration {
 	 *
 	 * @param string $relative_path The relative path of the file.
 	 * @return string The full destination path for the file on the CDN.
+	 *
+	 * @since n.e.x.t
 	 */
 	public static function get_destination_path( $relative_path ) {
 		// Ensure the path is properly formatted.
@@ -375,6 +407,8 @@ class Files_Migration {
 	 * Stop the files migration to CDN.
 	 *
 	 * This function updates the status of the migration to 'stopped'.
+	 *
+	 * @since n.e.x.t
 	 */
 	public static function stop_migration() {
 		update_option( self::STATUS_OPTION, 'stopped' );
@@ -384,6 +418,8 @@ class Files_Migration {
 	 * Get the current status of the files migration to CDN.
 	 *
 	 * @return string The current status of the migration.
+	 *
+	 * @since n.e.x.t
 	 */
 	public static function get_status() {
 		return get_option( self::STATUS_OPTION, 'idle' );
@@ -393,6 +429,8 @@ class Files_Migration {
 	 * Get the progress of the files migration to CDN.
 	 *
 	 * @return array An array containing the status, completed count, and remaining count.
+	 *
+	 * @since n.e.x.t
 	 */
 	public static function get_info() {
 		$status          = self::get_status();
@@ -430,6 +468,8 @@ class Files_Migration {
 	 *
 	 * This function checks if the file needs to be transcoded and performs the transcoding
 	 * if the RTGODAM_Transcoder_Handler class is available and the metadata is present.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $file_path The path of the file to be transcoded.
 	 */
@@ -472,6 +512,8 @@ class Files_Migration {
 	 * This function checks the storage usage and the size of remaining files to determine
 	 * if there is enough space available for migration.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param bool $return_error Whether to return an error if migration cannot proceed.
 	 *
 	 * @return bool|\WP_Error True if files can be migrated, false otherwise.
@@ -502,6 +544,8 @@ class Files_Migration {
 
 	/**
 	 * Get all files from the wp-content/uploads directory.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return array List of file paths relative to the uploads directory.
 	 */
@@ -542,6 +586,8 @@ class Files_Migration {
 	 * This function filters the migrated and failed files options to ensure they only contain
 	 * file paths that are present in the provided list of files.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param array $files List of files with their paths.
 	 */
 	private static function handle_option_data( $files ) {
@@ -575,6 +621,8 @@ class Files_Migration {
 	 * if the status of the migration is 'running'. It returns true if either condition
 	 * is met, indicating that the migration can proceed.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return bool True if the cron job is scheduled or the status is 'running', false otherwise.
 	 */
 	public static function varify_cron() {
@@ -594,6 +642,8 @@ class Files_Migration {
 	/**
 	 * Debugging function to log messages.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $message The message to log.
 	 */
 	public static function debug( $message ) {
@@ -605,6 +655,8 @@ class Files_Migration {
 
 	/**
 	 * Get attachment ID from file path.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $file_path The file path.
 	 * @return int|false The attachment ID or false if not found.
@@ -632,6 +684,8 @@ class Files_Migration {
 
 	/**
 	 * Get list of migrated attachments.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return array Array of attachment IDs.
 	 */

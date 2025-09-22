@@ -17,25 +17,35 @@ use WP_Image_Editor_Imagick;
  * This class extends WP_Image_Editor_Imagick to handle image editing
  * specifically for GoDAM, allowing for remote file handling and temporary
  * file management.
+ *
+ * @since n.e.x.t
  */
 class Image_Editor_Imagick extends WP_Image_Editor_Imagick {
 
 	/**
+	 * @since n.e.x.t
+	 *
 	 * @var ?Imagick
 	 */
 	protected $image;
 
 	/**
+	 * @since n.e.x.t
+	 *
 	 * @var ?string
 	 */
 	protected $file;
 
 	/**
+	 * @since n.e.x.t
+	 *
 	 * @var ?array{width: int, height: int}
 	 */
 	protected $size;
 
 	/**
+	 * @since n.e.x.t
+	 *
 	 * @var ?string
 	 */
 	protected $remote_filename = null;
@@ -45,12 +55,16 @@ class Image_Editor_Imagick extends WP_Image_Editor_Imagick {
 	 *
 	 * These are cleaned up on __destruct.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @var array
 	 */
 	protected $temp_files_to_cleanup = array();
 
 	/**
 	 * Loads image from $this->file into new Imagick Object.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return true|WP_Error True if loaded; WP_Error on failure.
 	 */
@@ -87,6 +101,8 @@ class Image_Editor_Imagick extends WP_Image_Editor_Imagick {
 	 * Imagick by default can't handle godam:// paths
 	 * for saving images. We have instead save it to a file file,
 	 * then copy it to the godam:// path as a workaround.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param Imagick $image Imagick object to save.
 	 * @param ?string $filename Filename to save the image to.
@@ -160,6 +176,8 @@ class Image_Editor_Imagick extends WP_Image_Editor_Imagick {
 	/**
 	 * Clean up temporary files on destruction.
 	 * This will remove all temporary files created during the image editing process.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */

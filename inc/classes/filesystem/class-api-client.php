@@ -18,41 +18,57 @@ use WP_Error;
  * This class handles communication with the GoDAM Filesystem API.
  * It provides methods to upload files, check file existence, get file stats,
  * and manage directories.
+ *
+ * @since n.e.x.t
  */
 class API_Client {
 
 	/**
+	 * @since n.e.x.t
+	 *
 	 * @var int Default request timeout in seconds.
 	 */
 	const DEFAULT_REQUEST_TIMEOUT = 10;
 
 	/**
+	 * @since n.e.x.t
+	 *
 	 * @var string User agent string for API requests.
 	 */
 	private $user_agent;
 
 	/**
+	 * @since n.e.x.t
+	 *
 	 * @var string Base URL for the API.
 	 */
 	private $api_base;
 
 	/**
+	 * @since n.e.x.t
+	 *
 	 * @var string Site ID for the Files API.
 	 */
 	private $site_id;
 
 	/**
+	 * @since n.e.x.t
+	 *
 	 * @var string API token for authentication.
 	 */
 	private $api_key;
 
 	/**
+	 * @since n.e.x.t
+	 *
 	 * @var API_Cache
 	 */
 	private $cache;
 
 	/**
 	 * API_Client constructor.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string    $api_base       Base URL for the API.
 	 * @param string    $site_id  Site ID for the Files API.
@@ -82,6 +98,8 @@ class API_Client {
 	/**
 	 * Trim the path to remove leading slashes and the godam:// protocol.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $path The file path to trim.
 	 *
 	 * @return string The trimmed path.
@@ -102,6 +120,8 @@ class API_Client {
 	 * Check if the given path is a valid file path.
 	 * A valid file path must start with 'wp-content/uploads/'.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $path The file path to check.
 	 *
 	 * @return bool True if the path is valid, false otherwise.
@@ -114,6 +134,8 @@ class API_Client {
 	/**
 	 * Get the full API URL for a given path.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $path The file path to append to the API base URL.
 	 *
 	 * @return string The full API URL.
@@ -125,6 +147,8 @@ class API_Client {
 
 	/**
 	 * Make an API call to the GoDAM Filesystem API.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $path          The file path for the API request.
 	 * @param string $method        The HTTP method to use (GET, PUT, DELETE).
@@ -187,6 +211,8 @@ class API_Client {
 	/**
 	 * List the contents of a directory.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $path The directory path to list.
 	 * @return WP_Error|array The response from the API or a WP_Error on failure.
 	 */
@@ -223,6 +249,8 @@ class API_Client {
 
 	/**
 	 * Get file stats from the API.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $path The file path to get stats for.
 	 * @param array  &$info Optional variable to store file info.
@@ -275,6 +303,8 @@ class API_Client {
 
 	/**
 	 * Upload a file to the API.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $local_path  The local file path to upload.
 	 * @param string $upload_path The remote upload path (relative to `/wp-content/uploads/`).
@@ -351,6 +381,8 @@ class API_Client {
 	/**
 	 * Calculate the upload timeout based on the file size.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param int $file_size The size of the file in bytes.
 	 *
 	 * @return int The calculated timeout in seconds.
@@ -363,6 +395,8 @@ class API_Client {
 
 	/**
 	 * Detect the MIME type of a file.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $filename The file path to check.
 	 *
@@ -393,6 +427,8 @@ class API_Client {
 
 	/**
 	 * Get a file from the API.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $file_path The file path to retrieve.
 	 *
@@ -459,6 +495,8 @@ class API_Client {
 	/**
 	 * Get the content of a file from the API.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $file_path The file path to retrieve content from.
 	 *
 	 * @return WP_Error|string The file content on success, or a WP_Error on failure.
@@ -472,6 +510,8 @@ class API_Client {
 
 	/**
 	 * Delete a file from the API.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $file_path The file path to delete.
 	 *
@@ -503,6 +543,8 @@ class API_Client {
 
 	/**
 	 * Check if a file exists in the API.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string     $file_path File path to check.
 	 * @param array|null &$info Optional variable to store file info.
@@ -553,6 +595,8 @@ class API_Client {
 	 * Use the filesystem API to generate a unique filename based on
 	 * provided file path
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $file_path The file path to generate a unique filename for.
 	 *
 	 * @return string|WP_Error New unique filename
@@ -601,6 +645,8 @@ class API_Client {
 	 *
 	 * This is used for debugging purposes to log API requests.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return void
 	 */
 	private function allow_e_user_notice() {
@@ -616,6 +662,8 @@ class API_Client {
 	 * Log the API request for debugging purposes.
 	 *
 	 * This function logs the method, path, and any X-Action header to the error log.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $path          The API path being requested.
 	 * @param string $method        The HTTP method used for the request.

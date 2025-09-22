@@ -15,6 +15,8 @@ use RTGODAM\Inc\Traits\Singleton;
  *
  * This class handles the caching of API files and their stats.
  * It creates temporary files in the system's temp directory and manages them.
+ *
+ * @since n.e.x.t
  */
 class API_Cache {
 
@@ -22,21 +24,29 @@ class API_Cache {
 
 	/**
 	 * @var array   Array of created local cache files
+	 *
+	 * @since n.e.x.t
 	 */
 	private $files = array();
 
 	/**
 	 * @var array   Array of cached file stats
+	 *
+	 * @since n.e.x.t
 	 */
 	private $file_stats = array();
 
 	/**
 	 * @var string  Temp directory to cache file in
+	 *
+	 * @since n.e.x.t
 	 */
 	private $tmp_dir = '/tmp';
 
 	/**
 	 * API_Cache constructor.
+	 *
+	 * @since n.e.x.t
 	 */
 	protected function __construct() {
 		$this->tmp_dir = get_temp_dir();
@@ -49,6 +59,8 @@ class API_Cache {
 	 *
 	 * This method is called on shutdown to ensure that temporary files are cleaned up.
 	 * It will remove all cached files and empty the file stats cache.
+	 *
+	 * @since n.e.x.t
 	 */
 	public function clear_tmp_files() {
 		if ( empty( $this->files ) && empty( $this->file_stats ) ) {
@@ -67,6 +79,8 @@ class API_Cache {
 	/**
 	 * Get a cached file by its path.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $filepath The path of the file.
 	 *
 	 * @return string|false The local file path if available, false otherwise.
@@ -81,6 +95,8 @@ class API_Cache {
 
 	/**
 	 * Get cached file stats for a specific file.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $filepath The path of the file.
 	 *
@@ -98,6 +114,8 @@ class API_Cache {
 	 * Cache a file with its local path.
 	 *
 	 * This will overwrite existing file if any.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $filepath   The path of the file.
 	 * @param string $local_file The local file path to cache.
@@ -124,6 +142,8 @@ class API_Cache {
 	 *
 	 * If the destination file does not exist, it will create a temporary file
 	 * with a unique name in the system's temp directory.
+
+	 * @since n.e.x.t
 	 *
 	 * @param string $dst The destination path in the cache.
 	 * @param string $src The source file path to copy from.
@@ -143,6 +163,8 @@ class API_Cache {
 	/**
 	 * Remove a file from the cache and delete it from the filesystem.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $filepath The path of the file to be removed.
 	 */
 	public function remove_file( $filepath ) {
@@ -159,6 +181,8 @@ class API_Cache {
 	/**
 	 * Remove cached stats for a specific file.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $filepath The path of the file whose stats should be removed.
 	 */
 	public function remove_stats( $filepath ) {
@@ -168,6 +192,8 @@ class API_Cache {
 
 	/**
 	 * Create a temporary file in the system's temp directory.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return string Path to the created temporary file.
 	 */

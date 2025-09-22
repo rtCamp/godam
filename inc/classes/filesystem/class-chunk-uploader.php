@@ -24,6 +24,8 @@ use RTGODAM\Inc\Traits\Singleton;
  * Class Chunk_Uploader
  * This class handles chunked file uploads using Plupload.
  * It allows large files to be uploaded in smaller chunks to avoid timeouts and memory issues.
+ *
+ * @since n.e.x.t
  */
 class Chunk_Uploader {
 
@@ -33,6 +35,8 @@ class Chunk_Uploader {
 	 * Default max upload size in bytes.
 	 * This is set to 4GB by default.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @var int
 	 */
 	public const DEFAULT_MAX_UPLOAD_SIZE = 4 * GB_IN_BYTES;
@@ -40,6 +44,8 @@ class Chunk_Uploader {
 	/**
 	 * The maximum upload size in bytes.
 	 * This is set to the default WordPress max upload size.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @var int
 	 */
@@ -71,6 +77,8 @@ class Chunk_Uploader {
 	/**
 	 * Filters the Plupload parameters to set the action for chunked uploads.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param array $plupload_params The Plupload parameters.
 	 * @return array Modified Plupload parameters.
 	 */
@@ -81,6 +89,8 @@ class Chunk_Uploader {
 
 	/**
 	 * Filters the Plupload settings to set the upload URL, max file size, and chunk size.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param array $plupload_settings The Plupload settings.
 	 * @return array Modified Plupload settings.
@@ -104,6 +114,8 @@ class Chunk_Uploader {
 	/**
 	 * Return the maximum upload limit in bytes for the current user.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return int
 	 */
 	public function get_upload_limit() {
@@ -113,6 +125,8 @@ class Chunk_Uploader {
 	/**
 	 * Filters the upload size limit to return the maximum upload size set in the settings.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return int The maximum upload size limit in bytes.
 	 */
 	public function filter_upload_size_limit() {
@@ -121,6 +135,8 @@ class Chunk_Uploader {
 
 	/**
 	 * Filters the Gutenberg editor settings to set the maximum upload file size.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param array $editor_settings The Gutenberg editor settings.
 	 * @return array Modified Gutenberg editor settings.
@@ -139,6 +155,8 @@ class Chunk_Uploader {
 	 * https://gist.github.com/jayarjo/5846636
 	 *
 	 * Mirrors /wp-admin/async-upload.php
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @todo Figure out a way to stop further chunks from uploading when there is an error in Gutenberg
 	 */
@@ -444,6 +462,8 @@ class Chunk_Uploader {
 	/**
 	 * Get the filename for the async upload.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return string
 	 */
 	public function get_async_filename() {
@@ -453,6 +473,8 @@ class Chunk_Uploader {
 
 	/**
 	 * Get the temporary file name for the async upload.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return string
 	 */
@@ -464,6 +486,8 @@ class Chunk_Uploader {
 	/**
 	 * Copied from wp-admin/includes/ajax-actions.php because we have to override the args for
 	 * the media_handle_upload function. As of WP 6.0.1.
+	 *
+	 * @since n.e.x.t
 	 */
 	public function wp_ajax_upload_attachment() {
 		check_ajax_referer( 'media-form' );
@@ -588,6 +612,8 @@ class Chunk_Uploader {
 	 *
 	 * This function is hooked into the 'post-upload-ui' action to add custom JavaScript
 	 * that will handle chunk uploads and display the maximum upload size.
+	 *
+	 * @since n.e.x.t
 	 */
 	public function upload_output() {
 		global $pagenow;
@@ -614,6 +640,8 @@ class Chunk_Uploader {
 
 	/**
 	 * Logs debug messages to the error log if WP_DEBUG is enabled or if forced.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $message Message to log.
 	 * @return void

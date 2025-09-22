@@ -17,6 +17,8 @@ class Curl_Streamer {
 	/**
 	 * The file path to upload.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @var string
 	 */
 	private $file_path;
@@ -32,6 +34,8 @@ class Curl_Streamer {
 
 	/**
 	 * Initialize the class by adding the necessary hooks.
+	 *
+	 * @since n.e.x.t
 	 */
 	public function init() {
 		add_action( 'http_api_curl', array( $this, 'init_upload' ), 10 );
@@ -40,6 +44,8 @@ class Curl_Streamer {
 	/**
 	 * Deinitialize the class by removing
 	 * the hooks added in the init method.
+	 *
+	 * @since n.e.x.t
 	 */
 	public function deinit() {
 		remove_action( 'http_api_curl', array( $this, 'init_upload' ) );
@@ -47,6 +53,8 @@ class Curl_Streamer {
 
 	/**
 	 * Initialize the upload process by setting the necessary cURL options.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param resource $curl_handle The cURL handle.
 	 */
@@ -70,6 +78,8 @@ class Curl_Streamer {
 
 	/**
 	 * Handle the upload by reading the file stream.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param resource $curl_handle The cURL handle.
 	 * @param resource $file_stream The file stream to read from.

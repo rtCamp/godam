@@ -19,43 +19,59 @@ class Plugin {
 
 	/**
 	 * Max length allowed for file paths in the Files Service.
+	 *
+	 * @since n.e.x.t
 	 */
 	const MAX_FILE_PATH_LENGTH = 255;
 
 	/**
 	 * Original wp_upload_dir() before being replaced by GoDAM Uploads.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @var ?array{path: string, basedir: string, baseurl: string, url: string}
 	 */
 	public $original_upload_dir;
 
 	/**
+	 * @since n.e.x.t
+	 *
 	 * @var ?API_Client
 	 */
 	private $client = null;
 
 	/**
+	 * @since n.e.x.t
+	 *
 	 * @var ?static
 	 */
 	private static $instance = null;
 
 	/**
+	 * @since n.e.x.t
+	 *
 	 * @var ?string
 	 */
 	public $host = null;
 
 	/**
+	 * @since n.e.x.t
+	 *
 	 * @var ?string
 	 */
 	private $key = null;
 
 	/**
+	 * @since n.e.x.t
+	 *
 	 * @var ?string
 	 */
 	private $cdn_host = null;
 
 	/**
 	 * Local to GoDAM filter instance.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @var ?Local_To_GoDAM
 	 */
@@ -64,6 +80,8 @@ class Plugin {
 	/**
 	 * GoDAM to Local filter instance.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @var ?GoDAM_To_Local
 	 */
 	private $filter_godam_to_local = null;
@@ -71,11 +89,15 @@ class Plugin {
 	/**
 	 * Media Library filter instance.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @var ?Media_Library
 	 */
 	private $media_library_filters = null;
 
 	/**
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return static
 	 */
@@ -94,6 +116,8 @@ class Plugin {
 	/**
 	 * Constructor.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string  $host The host URL for the GoDAM Media API.
 	 * @param ?string $key The API key for accessing GoDAM.
 	 */
@@ -104,6 +128,8 @@ class Plugin {
 
 	/**
 	 * Setup the hooks, urls filtering etc for godam Uploads
+	 *
+	 * @since n.e.x.t
 	 */
 	public function setup() {
 		$this->register_stream_wrapper();
@@ -131,6 +157,8 @@ class Plugin {
 
 	/**
 	 * Tear down the hooks, url filtering etc for godam Uploads
+	 *
+	 * @since n.e.x.t
 	 */
 	public function tear_down() {
 
@@ -146,6 +174,8 @@ class Plugin {
 
 	/**
 	 * Register the stream wrapper for godam
+	 *
+	 * @since n.e.x.t
 	 */
 	public function register_stream_wrapper() {
 		Stream_Wrapper::register( $this );
@@ -156,6 +186,8 @@ class Plugin {
 
 	/**
 	 * Get the original upload directory before it was replaced by S3 uploads.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return array{path: string, basedir: string, baseurl: string, url: string}
 	 */
@@ -181,6 +213,8 @@ class Plugin {
 	/**
 	 * Get the GoDAM URL base for uploads.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return string
 	 */
 	public function get_remote_url() {
@@ -196,6 +230,8 @@ class Plugin {
 
 	/**
 	 * Overwrite the default wp_upload_dir.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param array{path: string, basedir: string, baseurl: string, url: string} $dirs Upload directories and paths.
 	 * @return array{path: string, basedir: string, baseurl: string, url: string}
@@ -221,6 +257,8 @@ class Plugin {
 	 * up the godam files when an attachment is removed, and leave WordPress to try
 	 * a failed attempt at mangling the godam:// urls.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param int $post_id The ID of the attachment post to delete files for.
 	 */
 	public function delete_attachment_files( int $post_id ) {
@@ -241,6 +279,8 @@ class Plugin {
 	}
 
 	/**
+	 * @since n.e.x.t
+	 *
 	 * @return API_Client
 	 */
 	public function client() {
@@ -264,6 +304,8 @@ class Plugin {
 	/**
 	 * Filter the image editors to use our custom Image_Editor_Imagick.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param array $editors List of image editor classes.
 	 * @return array
 	 */
@@ -281,6 +323,8 @@ class Plugin {
 	/**
 	 * Add extra metadata to the attachment when it is added.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param int $attachment_id The ID of the attachment.
 	 */
 	public function add_extra_metadata( int $attachment_id ) {
@@ -292,6 +336,8 @@ class Plugin {
 	 * Copy the file from /tmp to an godam dir so handle_sideload doesn't fail due to
 	 * trying to do a rename() on the file cross streams. This is somewhat of a hack
 	 * to work around the core issue https://core.trac.wordpress.org/ticket/29257
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param array{tmp_name: string} $file File array.
 	 * @return array{tmp_name: string}
@@ -327,6 +373,8 @@ class Plugin {
 	 * Saving the filesize in the attachment metadata when the image is
 	 * uploaded allows core to skip this stat when retrieving and formatting it.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param array{file?: string} $metadata      Attachment metadata.
 	 * @param int                  $attachment_id Attachment ID.
 	 * @return array{file?: string, filesize?: int} Attachment metadata array, with "filesize" value added.
@@ -348,6 +396,8 @@ class Plugin {
 	 * file streams so we need to make a temporary local copy to extract
 	 * exif data from.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param array  $meta The metadata array to filter.
 	 * @param string $file The file path to read metadata from.
 	 * @return array|bool
@@ -365,6 +415,8 @@ class Plugin {
 	/**
 	 * Add the DNS address for the GoDAM Bucket to list for DNS prefetch.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param array  $hints Hints for prefetching.
 	 * @param string $relation_type The relation type, e.g. 'dns-prefetch'.
 	 * @return array
@@ -380,6 +432,8 @@ class Plugin {
 	/**
 	 * Get a local copy of the file.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $file The file path to copy from.
 	 * @return string
 	 */
@@ -394,6 +448,8 @@ class Plugin {
 
 	/**
 	 * Validate the file before we allow uploading it.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param  string[] $file An array of data for a single file.
 	 */
@@ -428,6 +484,8 @@ class Plugin {
 	 * The `unique_filename` API will return an error if file type is not supported
 	 * by the VIP Filesystem.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param   string $file_path   Path starting with /wp-content/uploads.
 	 *
 	 * @return  WP_Error|string        Unique Filename string if filetype is supported. Else WP_Error.
@@ -452,6 +510,8 @@ class Plugin {
 	/**
 	 * Check if file path in within the allowed length.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param  string $file_path Path starting with /wp-content/uploads.
 	 */
 	protected function validate_file_path_length( $file_path ) {
@@ -464,6 +524,8 @@ class Plugin {
 
 	/**
 	 * Set up URL filtering system.
+	 *
+	 * @since n.e.x.t
 	 */
 	public function setup_url_filters() {
 		// Only setup if GoDAM filesystem is enabled.
@@ -488,6 +550,8 @@ class Plugin {
 	/**
 	 * Check if GoDAM filesystem is enabled.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return bool True if enabled.
 	 */
 	public function is_enabled() {
@@ -499,6 +563,8 @@ class Plugin {
 	/**
 	 * Get the local to GoDAM filter instance.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return ?Local_To_GoDAM
 	 */
 	public function get_local_to_godam_filter() {
@@ -508,6 +574,8 @@ class Plugin {
 	/**
 	 * Get the GoDAM to local filter instance.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return ?GoDAM_To_Local
 	 */
 	public function get_godam_to_local_filter() {
@@ -516,6 +584,8 @@ class Plugin {
 
 	/**
 	 * Get the media library filter instance.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return ?Media_Library
 	 */

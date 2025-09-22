@@ -13,11 +13,15 @@ defined( 'ABSPATH' ) || exit;
  * Abstract Base Filter Class
  *
  * Provides common functionality for URL filtering between local and GoDAM CDN.
+ *
+ * @since n.e.x.t
  */
 abstract class Base_Filter {
 
 	/**
 	 * The GoDAM Plugin instance.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @var Plugin
 	 */
@@ -26,12 +30,16 @@ abstract class Base_Filter {
 	/**
 	 * Query cache for avoiding repeated database calls.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @var array
 	 */
 	protected $query_cache = array();
 
 	/**
 	 * Constructor.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param Plugin $plugin The GoDAM Plugin instance.
 	 */
@@ -42,6 +50,8 @@ abstract class Base_Filter {
 
 	/**
 	 * Initialize the filter handler.
+	 *
+	 * @since n.e.x.t
 	 */
 	protected function init() {
 		add_action( 'rtgodam_filters_setup', array( $this, 'setup' ) );
@@ -49,6 +59,8 @@ abstract class Base_Filter {
 
 	/**
 	 * Set up the filter handler.
+	 *
+	 * @since n.e.x.t
 	 */
 	public function setup() {
 		// Purge cache on attachment delete.
@@ -57,6 +69,8 @@ abstract class Base_Filter {
 
 	/**
 	 * Purge cache when attachment is deleted.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param int $attachment_id The attachment ID.
 	 */
@@ -69,6 +83,8 @@ abstract class Base_Filter {
 
 	/**
 	 * Process content for URL replacement.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $content The content to process.
 	 * @param array  $cache   Cache array for storing processed URLs.
@@ -103,6 +119,8 @@ abstract class Base_Filter {
 	/**
 	 * Handle widget processing.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param array $instance Widget instance data.
 	 *
 	 * @return array Processed widget instance.
@@ -131,6 +149,8 @@ abstract class Base_Filter {
 	/**
 	 * Find URLs and replace them.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $value   The content value.
 	 * @param array  $cache   Cache array.
 	 * @param array  $to_cache Array of URLs to cache.
@@ -150,6 +170,8 @@ abstract class Base_Filter {
 
 	/**
 	 * Get URLs from content.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $content The content to search.
 	 * @param array  $cache   Cache array.
@@ -190,6 +212,8 @@ abstract class Base_Filter {
 
 	/**
 	 * Get URLs from img src attributes.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $content  The content to search.
 	 * @param array  $to_cache Array of URLs to cache.
@@ -249,6 +273,8 @@ abstract class Base_Filter {
 	/**
 	 * Replace URLs in content.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $content   The content.
 	 * @param array  $url_pairs Array of URL pairs to replace.
 	 *
@@ -268,6 +294,8 @@ abstract class Base_Filter {
 
 	/**
 	 * Get replacement URL for a given URL.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $url The original URL.
 	 *
@@ -291,6 +319,8 @@ abstract class Base_Filter {
 
 	/**
 	 * Get attachment ID from URL.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $url The URL.
 	 *
@@ -351,6 +381,8 @@ abstract class Base_Filter {
 	/**
 	 * Pre-process content before URL replacement.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $content The content.
 	 *
 	 * @return string Processed content.
@@ -362,6 +394,8 @@ abstract class Base_Filter {
 	/**
 	 * Post-process content after URL replacement.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $content The content.
 	 *
 	 * @return string Processed content.
@@ -372,6 +406,8 @@ abstract class Base_Filter {
 
 	/**
 	 * Check if a URL is usable for processing.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $url The URL to check.
 	 *
@@ -388,6 +424,8 @@ abstract class Base_Filter {
 
 	/**
 	 * Check if a value is a URL.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $value The value to check.
 	 *
