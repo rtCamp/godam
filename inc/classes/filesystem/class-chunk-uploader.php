@@ -8,6 +8,7 @@
 namespace RTGODAM\Inc\Filesystem;
 
 use RTGODAM\Inc\Traits\Singleton;
+use RTGODAM\Inc\Helpers\Debug;
 
 // phpcs:disable WordPress.PHP.DevelopmentFunctions.$this->debug_trigger_error
 // phpcs:disable WordPress.PHP.NoSilencedErrors.Discouraged
@@ -222,16 +223,12 @@ class Chunk_Uploader {
 		$file_path = sprintf( '%s/%d-%s.part', $godam_temp_dir, get_current_blog_id(), sha1( $file_name ) );
 
 		// Debugging.
-		if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-			$size = file_exists( $file_path ) ? size_format( filesize( $file_path ), 3 ) : '0 B';
-			$this->debug( "GoDAM: Processing \"$file_name\" part $current_part of $chunks as $file_path . $size processed so far." );
-		}
+		$size = file_exists( $file_path ) ? size_format( filesize( $file_path ), 3 ) : '0 B';
+		Debug::info( "GoDAM: Processing \"$file_name\" part $current_part of $chunks as $file_path." );
 
 		$godam_max_upload_size = $this->get_upload_limit();
 		if ( file_exists( $file_path ) && filesize( $file_path ) + filesize( $this->get_async_tempname() ) > $godam_max_upload_size ) {
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				$this->debug( 'GoDAM: File size limit exceeded.' );
-			}
+			Debug::info( 'GoDAM: File size limit exceeded.' );
 
 			if ( ! $chunks || $chunk === $chunks - 1 ) {
 				@unlink( $file_path );
@@ -293,7 +290,7 @@ class Chunk_Uploader {
 				// Failed to open input stream. Attempt to clean up unfinished output.
 				@fclose( $out );
 				@unlink( $file_path );
-				$this->debug( "GoDAM: Error reading uploaded part $current_part of $chunks." );
+				Debug::error( "GoDAM: Failed to open input stream to read part $current_part of $chunks." );
 
 				if ( ! isset( $_REQUEST['short'] ) || ! isset( $_REQUEST['type'] ) ) {
 					// translators: %1$d: Current part, %2$d: Total chunks.
@@ -334,7 +331,7 @@ class Chunk_Uploader {
 			@unlink( $this->get_async_tempname() );
 		} else {
 			// Failed to open output stream.
-			$this->debug( "GoDAM: Failed to open output stream $file_path to write part $current_part of $chunks." );
+			Debug::error( "GoDAM: Failed to open output stream $file_path to write part $current_part of $chunks." );
 
 			if ( ! isset( $_REQUEST['short'] ) || ! isset( $_REQUEST['type'] ) ) {
 				echo wp_json_encode(
@@ -369,10 +366,8 @@ class Chunk_Uploader {
 		/** Check if file has finished uploading all parts. */
 		if ( ! $chunks || $chunk === $chunks - 1 ) {
 			// Debugging.
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				$size = file_exists( $file_path ) ? size_format( filesize( $file_path ), 3 ) : '0 B';
-				$this->debug( "GoDAM: Completing \"$file_name\" upload with a $size final size." );
-			}
+			$size = file_exists( $file_path ) ? size_format( filesize( $file_path ), 3 ) : '0 B';
+			Debug::info( "GoDAM: Upload of \"$file_name\" completed with a $size final size." );
 
 			// Recreate upload in $_FILES global and pass off to WordPress.
 			$_FILES['async-upload']['tmp_name'] = $file_path;
@@ -637,21 +632,5 @@ class Chunk_Uploader {
 			});
 		</script>
 		<?php
-	}
-
-	/**
-	 * Logs debug messages to the error log if WP_DEBUG is enabled or if forced.
-	 *
-	 * @since n.e.x.t
-	 *
-	 * @param string $message Message to log.
-	 * @return void
-	 */
-	protected function debug( $message ) {
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			// Log the message to the error log.
-            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-			error_log( "GoDAM: $message" );
-		}
 	}
 }

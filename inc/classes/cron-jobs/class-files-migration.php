@@ -11,6 +11,7 @@
 namespace RTGODAM\Inc\Cron_Jobs;
 
 use RTGODAM\Inc\Filesystem\Plugin;
+use RTGODAM\Inc\Helpers\Debug;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -127,7 +128,7 @@ class Files_Migration {
 		if ( ! wp_next_scheduled( self::CRON_HOOK ) ) {
 			$status = self::schedule_cron();
 			if ( is_wp_error( $status ) ) {
-				self::debug( 'Error scheduling files migration cron job: ' . $status->get_error_message() );
+				Debug::error( 'Error scheduling files migration cron job: ' . $status->get_error_message() );
 			}
 		}
 	}
@@ -149,7 +150,7 @@ class Files_Migration {
 			$status = self::start_migration();
 
 			if ( is_wp_error( $status ) ) {
-				self::debug( 'Error starting files migration: ' . $status->get_error_message() );
+				Debug::error( 'Error starting files migration: ' . $status->get_error_message() );
 				wp_send_json_error(
 					array(
 						'message' => $status->get_error_message(),
@@ -274,7 +275,7 @@ class Files_Migration {
 
 		if ( empty( $batch ) ) {
 			delete_option( self::STATUS_OPTION );
-			self::debug( 'Files migration completed.' );
+			Debug::info( 'Files migration completed.' );
 			return;
 		}
 
@@ -286,25 +287,25 @@ class Files_Migration {
 
 			if ( 'stopped' === get_option( self::STATUS_OPTION, 'idle' ) ) {
 				// If the status is 'stopped', we do not process the files.
-				self::debug( 'Files migration was stopped manually.' );
+				Debug::info( 'Files migration was stopped manually.' );
 				return;
 			}
 
 			update_option( self::CURRENT_FILE_OPTION, $file_path );
 
-			self::debug( 'Processing file: ' . $file_path );
-			self::debug( 'Source path: ' . $source_path );
-			self::debug( 'Destination: ' . $destination );
+			Debug::info( 'Processing file: ' . $file_path );
+			Debug::info( 'Source path: ' . $source_path );
+			Debug::info( 'Destination: ' . $destination );
 
 			if ( file_exists( $destination ) ) {
-				self::debug( 'File with same name exists on CDN!' );
+				Debug::info( 'File with same name exists on CDN!' );
 				self::maybe_transcode( $file_path );
 				$migrated_files[] = $file_path;
 				continue;
 			}
 
 			if ( ! $source_path || ! file_exists( $source_path ) ) {
-				self::debug( 'Source file does not exist: ' . $source_path );
+				Debug::info( 'Source file does not exist: ' . $source_path );
 				continue;
 			}
 
@@ -314,7 +315,7 @@ class Files_Migration {
 			);
 
 			if ( is_wp_error( $status ) ) {
-				self::debug( 'Error uploading file to CDN: ' . $status->get_error_message() );
+				Debug::info( 'Error uploading file to CDN: ' . $status->get_error_message() );
 
 				if ( ! in_array( $file_path, $failed_files, true ) ) {
 					$failed_files[] = $file_path;
@@ -333,10 +334,10 @@ class Files_Migration {
 				update_post_meta( $attachment_id, '_godam_cdn_url', $destination );
 				update_post_meta( $attachment_id, '_godam_migration_date', current_time( 'mysql' ) );
 
-				self::debug( 'Marked attachment ' . $attachment_id . ' as migrated to GoDAM CDN' );
+				Debug::info( 'Marked attachment ' . $attachment_id . ' as migrated to GoDAM CDN' );
 			}
 
-			self::debug( 'Successfully uploaded: ' . $file_path );
+			Debug::info( 'Successfully uploaded: ' . $file_path );
 			$migrated_files[] = $file_path;
 		}
 
@@ -347,7 +348,7 @@ class Files_Migration {
 			// schedule next batch.
 			$status = self::schedule_cron();
 			if ( is_wp_error( $status ) ) {
-				self::debug( 'Error scheduling next batch: ' . $status->get_error_message() );
+				Debug::error( 'Error scheduling next batch: ' . $status->get_error_message() );
 				return;
 			}
 
@@ -357,7 +358,7 @@ class Files_Migration {
 			}
 		} else {
 			delete_option( self::STATUS_OPTION );
-			self::debug( 'Files migration completed.' );
+			Debug::info( 'Files migration completed.' );
 		}
 	}
 
@@ -484,7 +485,7 @@ class Files_Migration {
 
 		// If no attachment ID is found, exit the function.
 		if ( ! $attachment_id ) {
-			self::debug( 'No attachment found for file: ' . $file_path );
+			Debug::info( 'No attachment found for file: ' . $file_path );
 			return;
 		}
 
@@ -492,7 +493,7 @@ class Files_Migration {
 		$attachment = get_post( $attachment_id );
 
 		if ( ! $attachment ) {
-			self::debug( 'No attachment post found for ID: ' . $attachment_id );
+			Debug::info( 'No attachment post found for ID: ' . $attachment_id );
 			return;
 		}
 
@@ -637,20 +638,6 @@ class Files_Migration {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Debugging function to log messages.
-	 *
-	 * @since n.e.x.t
-	 *
-	 * @param string $message The message to log.
-	 */
-	public static function debug( $message ) {
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Debugging messages are logged to error log.
-			error_log( '[GoDAM CronJob FilesMigration] ' . $message );
-		}
 	}
 
 	/**

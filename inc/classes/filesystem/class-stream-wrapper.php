@@ -10,6 +10,8 @@
 
 namespace RTGODAM\Inc\Filesystem;
 
+use RTGODAM\Inc\Helpers\Debug;
+
 // phpcs:disable WordPress.PHP.DevelopmentFunctions.error_log_trigger_error
 // phpcs:disable WordPress.WP.AlternativeFunctions.file_system_read_fopen
 // phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fopen
@@ -123,14 +125,6 @@ class Stream_Wrapper {
 	 */
 	private $protocol = self::DEFAULT_PROTOCOL;
 
-	/**
-	 * Debug mode flag.
-	 *
-	 * @since n.e.x.t
-	 *
-	 * @var     bool    Is debug mode on.
-	 */
-	private $debug_mode;
 
 	/**
 	 * Flush empty file flag.
@@ -332,7 +326,7 @@ class Stream_Wrapper {
 	 * @since n.e.x.t
 	 */
 	public function stream_close() {
-		$this->debug( sprintf( 'stream_close => %s + %s', $this->path, $this->uri ) );
+		Debug::info( sprintf( 'stream_close => %s + %s', $this->path, $this->uri ) );
 
 		$result = true;
 
@@ -382,7 +376,7 @@ class Stream_Wrapper {
 	 * @return  string  The file contents
 	 */
 	public function stream_read( $count ) {
-		$this->debug( sprintf( 'stream_read => %s + %s + %s', $count, $this->path, $this->uri ) );
+		Debug::info( sprintf( 'stream_read => %s + %s + %s', $count, $this->path, $this->uri ) );
 
 		// If this is a local file, use the local file handle.
 		if ( static::is_local_file( $this->uri ) && $this->handle ) {
@@ -415,7 +409,7 @@ class Stream_Wrapper {
 	 * @return  bool    True on success. False on failure
 	 */
 	public function stream_flush() {
-		$this->debug( sprintf( 'stream_flush =>  %s + %s', $this->path, $this->uri ) );
+		Debug::info( sprintf( 'stream_flush =>  %s + %s', $this->path, $this->uri ) );
 
 		if ( ! $this->file ) {
 			return false;
@@ -480,7 +474,7 @@ class Stream_Wrapper {
 	 * @return  bool  True if position was updated, False if not
 	 */
 	public function stream_seek( $offset, $whence ) {
-		$this->debug( sprintf( 'stream_seak =>  %s + %s + %s + %s', $offset, $whence, $this->path, $this->uri ) );
+		Debug::info( sprintf( 'stream_seek =>  %s + %s + %s + %s', $offset, $whence, $this->path, $this->uri ) );
 
 		if ( ! $this->seekable ) {
 			// File not seekable.
@@ -515,7 +509,7 @@ class Stream_Wrapper {
 	 * @return  int|bool    Number of bytes written or false on error
 	 */
 	public function stream_write( $data ) {
-		$this->debug( sprintf( 'stream_write =>  %s + %s', $this->path, $this->uri ) );
+		Debug::info( sprintf( 'stream_write =>  %s + %s', $this->path, $this->uri ) );
 
 		// If this is a local file, use the local file handle.
 		if ( static::is_local_file( $this->uri ) && $this->handle ) {
@@ -781,7 +775,7 @@ class Stream_Wrapper {
 	 * @return  bool|int    Returns current position or false on failure
 	 */
 	public function stream_tell() {
-		$this->debug( sprintf( 'stream_tell =>  %s + %s', $this->path, $this->uri ) );
+		Debug::info( sprintf( 'stream_tell =>  %s + %s', $this->path, $this->uri ) );
 
 		return $this->file ? ftell( $this->file ) : false;
 	}
@@ -981,7 +975,7 @@ class Stream_Wrapper {
 	 * @return  bool
 	 */
 	public function stream_metadata( $path, $option, $value ) {
-		$this->debug( sprintf( 'stream_metadata =>  %s + %s + %s', $path, $option, json_encode( $value ) ) );   // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode
+		Debug::info( sprintf( 'stream_metadata =>  %s + %s + %s', $path, $option, json_encode( $value ) ) );   // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode
 
 		switch ( $option ) {
 			case STREAM_META_TOUCH:
@@ -1014,7 +1008,7 @@ class Stream_Wrapper {
 	 * @return  resource|bool
 	 */
 	public function stream_cast( $cast_as ) {
-		$this->debug( sprintf( 'stream_cast =>  %s + %s + %s', $cast_as, $this->path, $this->uri ) );
+		Debug::info( sprintf( 'stream_cast =>  %s + %s + %s', $cast_as, $this->path, $this->uri ) );
 
 		if ( ! is_null( $this->file ) ) {
 			return $this->file;
@@ -1257,54 +1251,6 @@ class Stream_Wrapper {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Log debug message
-	 *
-	 * @since n.e.x.t
-	 *
-	 * @param   string $message  Debug message to be logged.
-	 * @param   bool   $force Whether to force debug.
-	 */
-	protected function debug( $message, $force = false ) {
-		if ( ! ( $this->debug_mode || $force ) ) {
-			return;
-		}
-
-		$trace = $this->backtrace_fmt();
-
-		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-		error_log(
-			sprintf(
-				'Severity: info | Feature: stream_wrapper_audit_%s | Message: File op %s: %s | Trace: %s',
-				$trace[1]['function'],
-				$trace[1]['function'],
-				$message,
-				wp_json_encode( $trace ) // Ensure trace is properly formatted.
-			)
-		);
-	}
-
-	/**
-	 * Format the debug backtrace to be a bit more readable.
-	 *
-	 * @since n.e.x.t
-	 *
-	 * @return array
-	 */
-	private function backtrace_fmt() {
-		$trace = debug_backtrace( 0, 30 ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace
-		// Discard current frame.
-		unset( $trace[0] );
-		foreach ( $trace as &$frame ) {
-			if ( isset( $frame['file'] ) ) {
-				$frame['file'] = str_replace( ABSPATH, '', $frame['file'] ) . ':' . $frame['line'];
-			}
-			unset( $frame['line'] );
-		}
-
-		return array_values( $trace );
 	}
 
 	/**

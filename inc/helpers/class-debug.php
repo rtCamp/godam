@@ -108,7 +108,7 @@ class Debug {
 	 * @param string $context     Optional. The context (class::method).
 	 * @param bool   $admin_notice Optional. Show admin notice if true.
 	 */
-	public static function log( $message, $level = self::LEVEL_INFO, $context = '', $admin_notice = false ) {
+	private static function log( $message, $level = self::LEVEL_INFO, $context = '', $admin_notice = false ) {
 		self::init();
 
 		// Don't log if debugging is disabled.
