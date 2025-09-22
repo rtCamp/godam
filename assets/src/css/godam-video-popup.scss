@@ -165,6 +165,15 @@
 	transition: all 0.3s ease;
 }
 
+.godam-product-modal-content.godam-product-modal-transcoded{
+    min-height: 95dvh !important;
+    max-height: 95dvh !important;
+	@media (max-width: 768px) {
+		min-height: 85dvh !important;
+		max-height: 85dvh !important;
+	}
+}
+
 .godam-product-modal-content{
 	max-width: 65vw;
 	width: 65vw;
@@ -1102,8 +1111,8 @@
 	.godam-product-video-container{
 		width: 100% !important;
 		height: 100% !important;
-		max-height: 100dvh !important;
-		min-height: 100dvh !important;
+		max-height: 97dvh !important;
+        min-height: 97dvh !important;
 		max-width: 100% !important;
 		min-width: 100% !important;
 	}

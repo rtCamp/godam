@@ -97,17 +97,14 @@ export function initVideoModal() {
 
 		const modal = getModal;
 
-		modal.querySelector( '.godam-sidebar-header-actions' )?.classList.add( 'hide' );
-
 		modal.classList.add( 'open' );
 
 		modal.dataset.currentVideoId = videoId;
 		modal.dataset.isLoading = 'false';
+		modal.dataset.ctaEnabled = String( ctaEnabled );
+		modal.dataset.ctaDisplayPosition = ctaDisplayPosition;
 
 		const sidebarModal = modal.querySelector( '.godam-product-sidebar' );
-
-		document.body.style.overflow = 'hidden';
-
 		/* Determine if user is on mobile or desktop */
 		const isMobile = window.matchMedia( '(pointer: coarse)' ).matches;
 
@@ -122,6 +119,7 @@ export function initVideoModal() {
 
 		/* Close Modal and Product sidebar on clicking x */
 		modal.querySelector( '.godam-product-modal-close' )?.addEventListener( 'click', () => close( modal, sidebarModal, ctaEnabled, ctaDisplayPosition ) );
+
 
 		/* Clicking outside the modal content and sidebar closes the Modal */
 		modal.addEventListener( 'click', ( ev ) => {
@@ -211,6 +209,20 @@ function stopSwipeAnimationLoop() {
 		swipeAnimationInterval = null;
 	}
 }
+
+document.addEventListener( 'keydown', ( e ) => {
+	if ( e.key === 'Escape' || e.key === 'Esc' ) {
+		const openModal = document.querySelector( '.godam-product-modal-container.open' );
+		if ( ! openModal ) {
+			return;
+		}
+		const sidebarModal = openModal.querySelector( '.godam-product-sidebar' );
+		const ctaEnabled = openModal.dataset.ctaEnabled === 'true' || openModal.dataset.ctaEnabled === '1';
+		const ctaDisplayPosition = openModal.dataset.ctaDisplayPosition;
+
+		close( openModal, sidebarModal, ctaEnabled, ctaDisplayPosition );
+	}
+} );
 
 /**
  * Closes the main modal and optional sidebar modal.
