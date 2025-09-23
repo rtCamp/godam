@@ -53,6 +53,10 @@ function autoloader( $file_resource = '' ) {
 				$directory = 'traits';
 				$file_name = sprintf( 'trait-%s', trim( strtolower( $path[2] ) ) );
 				break;
+			case 'helpers':
+				$directory = 'helpers';
+				$file_name = sprintf( 'class-%s', trim( strtolower( $path[2] ) ) );
+				break;
 			case 'providers':
 			case 'media-library': // phpcs:ignore
 			case 'meta-boxes': // phpcs:ignore
