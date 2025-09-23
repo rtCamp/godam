@@ -70,6 +70,12 @@ export default class PlayerManager {
 	 * @param {HTMLElement} video - Video element to initialize
 	 */
 	initializeVideo( video ) {
+		// Skip if already initialized (prevents re-init by external observers)
+		if ( video.dataset.godamInitialized === '1' ) {
+			return;
+		}
+		video.dataset.godamInitialized = '1';
+
 		const playerInstance = new VideoPlayer( video, this.isDisplayingLayers );
 		playerInstance.initialize();
 	}
