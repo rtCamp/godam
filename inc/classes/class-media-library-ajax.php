@@ -628,11 +628,6 @@ class Media_Library_Ajax {
 
 		global $wp_filesystem;
 
-		// Initialize the WP Filesystem API.
-		if ( ! function_exists( 'WP_Filesystem' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/file.php';
-		}
-
 		WP_Filesystem();
 
 		if ( ! $wp_filesystem ) {
@@ -686,7 +681,7 @@ class Media_Library_Ajax {
 	 * @param int             $attachment_id Attachment ID.
 	 * @param string          $job_id        Job ID.
 	 * @param string          $job_for       Job for (e.g., 'wp-media').
-	 * @param WP_REST_Request $request    Request data containing transcoded file info..
+	 * @param WP_REST_Request $request    Request data containing transcoded file info.
 	 *
 	 * @return void
 	 */
