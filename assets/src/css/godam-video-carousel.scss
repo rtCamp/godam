@@ -219,12 +219,13 @@
 			}
 
 			.quantity {
-				display: none;
+				display: none !important;
 			}
 
 			form {
 				display: flex;
 				margin: 0 !important;
+				flex-direction: column;
 			}
 
 			.woocommerce-product-gallery {
@@ -238,23 +239,59 @@
 
 				.flex-viewport {
 					min-height: 200px;
-					width: clamp(300px, 100vw, 375px);
+					max-height: 200px;
+					width: clamp(300px, 100vw, 390px);
+					border-radius: 12px;
+				}
+
+				.video-modal-mini-slider {
+
+					&-wrapper {
+						position: relative;
+						margin-top: 10px;
+					}
+
+					&-parent {
+						width: 88%;
+						margin-left: auto;
+						margin-right: auto;
+						overflow: hidden;
+					}
+
+					&-left,
+					&-right {
+						display: block;
+						position: absolute;
+						top: 50%;
+						transform: translate(0, -50%);
+						width: 20px;
+						height: 20px;
+						position: absolute;
+						top: 50%;
+						transform: translate(0, -50%);
+						background-repeat: no-repeat;
+						background-position: center;
+						cursor: pointer;
+						z-index: 1;
+
+						&:focus {
+							outline: none;
+						}
+					}
+
+					&-left {
+						background-image: url(data:image/svg+xml,%3Csvg%20width%3D%227%22%20height%3D%2212%22%20viewBox%3D%220%200%207%2012%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cpath%20d%3D%22M0.379883%205.18004L5.20988%201.03004C5.90988%200.430038%206.99988%200.930038%206.99988%201.85004V10.14C6.99988%2011.07%205.90988%2011.56%205.20988%2010.96L0.379883%206.82004C-0.120117%206.39004%20-0.120117%205.61004%200.379883%205.18004Z%22%20fill%3D%22black%22%2F%3E%0A%3C%2Fsvg%3E%0A);
+						background-position-x: 6px;
+					}
+
+					&-right {
+						right: 0;
+						background-image: url(data:image/svg+xml,%3Csvg%20width%3D%227%22%20height%3D%2212%22%20viewBox%3D%220%200%207%2012%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cpath%20d%3D%22M6.62012%205.18004L1.79012%201.03004C1.09012%200.430038%200.000122%200.930038%200.000122%201.85004V10.14C0.00012207%2011.07%201.09012%2011.56%201.79012%2010.96L6.62012%206.82004C7.12012%206.39004%207.12012%205.61004%206.62012%205.18004Z%22%20fill%3D%22black%22%2F%3E%0A%3C%2Fsvg%3E%0A);
+					}
 				}
 
 				.flex-control-nav {
-					display: flex;
-					flex-wrap: nowrap;
-					list-style: none;
-					justify-content: center;
-					gap: 10px;
-					margin-top: 10px !important;
-
-					li {
-						cursor: pointer;
-						width: 18%;
-						margin: 0;
-
-					}
+					overflow: visible !important;
 				}
 
 				@media screen and (max-width: 768px) {
@@ -265,7 +302,7 @@
 			&--cart {
 				margin-bottom: 1rem;
 
-				button[name="add-to-cart"] {
+				.single_add_to_cart_button {
 					width: 100%;
 					border-radius: 8px;
 				}
@@ -318,7 +355,7 @@
 					border-radius: 10px;
 					padding: 15px;
 					overflow: visible;
-					max-width: 85vw;
+					max-width: 75vw;
 					left: 0;
 					right: 0;
 				}
@@ -331,8 +368,7 @@
 				}
 
 				.woocommerce-product-details__short-description {
-					height: 0;
-					overflow: hidden;
+					display: none;
 				}
 
 				.rtgodam-product-video-gallery-slider-modal-content--cart-basket {
@@ -457,7 +493,10 @@
 		display: flex;
 		padding: 10px;
 		flex-direction: column;
+		row-gap: 10px;
+		padding-left: 0;
 	}
+
 	.rtgodam-product-video-gallery-slider-modal-content--cart{
 		grid-column: 1 / -1 !important;
 		margin-bottom: 0px !important;

@@ -11,6 +11,7 @@ const wcVideoCarousel = {
 	// Video carousel and modal elements.
 	swiper: null,
 	swiperModal: null,
+	swiperModalMini: null,
 
 	/**
 	 * Initiate the video carousel and show controls on mouse enter.
@@ -86,6 +87,10 @@ const wcVideoCarousel = {
 						prevEl: '.swiper-button-prev',
 					},
 					freeMode: true,
+					noSwiping: true,
+					noSwipingClass: 'flex-control-nav',
+					touchStartPreventDefault: false, // let native scroll kick in
+					threshold: 5,
 					autoplay: false,
 					on: {
 						init() {
@@ -123,6 +128,7 @@ const wcVideoCarousel = {
 
 				const videoElmModal = document.querySelector( '.rtgodam-product-video-gallery-slider-modal' );
 				videoElmModal.classList.add( 'open' );
+				self.videoModalMiniSlider();
 			} );
 		} );
 	},
@@ -181,6 +187,45 @@ const wcVideoCarousel = {
 					subMitButton.classList.remove( 'loading' );
 				} ).catch( ( err ) => {} );
 			} );
+		} );
+	},
+
+	videoModalMiniSlider() {
+		const self = this;
+		if ( self.swiperModalMini ) {
+			return;
+		}
+
+		const videoElmModalMiniSlider = document.querySelectorAll( '.rtgodam-product-video-gallery-slider-modal .flex-control-nav' );
+		videoElmModalMiniSlider.forEach( ( slider ) => {
+			slider.classList.add( 'swiper-wrapper' );
+			slider.querySelectorAll( 'li' ).forEach( ( slide ) => {
+				slide.classList.add( 'swiper-slide' );
+			} );
+			const wrapper = document.createElement( 'div' );
+			wrapper.className = 'video-modal-mini-slider-wrapper';
+			const parent = document.createElement( 'div' );
+			parent.className = 'video-modal-mini-slider-parent';
+			const leftSlide = document.createElement( 'div' );
+			leftSlide.className = 'video-modal-mini-slider-left';
+			const rightSlide = document.createElement( 'div' );
+			rightSlide.className = 'video-modal-mini-slider-right';
+			slider.parentNode.insertBefore( wrapper, slider );
+			parent.appendChild( slider );
+			wrapper.appendChild( parent );
+			wrapper.appendChild( leftSlide );
+			wrapper.appendChild( rightSlide );
+		} );
+		self.swiperModalMini = new Swiper( '.video-modal-mini-slider-parent', {
+			loop: true,
+			navigation: {
+				nextEl: '.video-modal-mini-slider-right',
+				prevEl: '.video-modal-mini-slider-left',
+			},
+			slidesPerView: 4,
+			spaceBetween: 10,
+			autoplay: false,
+			freeMode: true,
 		} );
 	},
 };
