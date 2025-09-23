@@ -235,6 +235,20 @@ class UppyVideoUploader {
 			} );
 		}
 
+		// Add a remove button for audio and video files.
+		if ( previewElement && ( file.type.startsWith( 'audio/' ) || file.type.startsWith( 'video/' ) ) ) {
+			const removeRecordingButton = document.createElement( 'div' );
+			removeRecordingButton.className = 'uppy-remove-recording-button';
+			removeRecordingButton.textContent = '✕'; // Cross mark (X) symbol.
+			removeRecordingButton.title = 'Remove recording';
+			previewElement.appendChild( removeRecordingButton );
+
+			removeRecordingButton.addEventListener( 'click', () => {
+				this.clearVideoUploadUI();
+				this.uppy.removeFile( file.id );
+			} );
+		}
+
 		// Prepare file for the Gravity Forms file input for submission.
 		const dataTransfer = new DataTransfer();
 
