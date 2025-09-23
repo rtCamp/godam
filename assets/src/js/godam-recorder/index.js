@@ -223,6 +223,16 @@ class UppyVideoUploader {
 			audioPreview.src = URL.createObjectURL( file.data );
 			previewElement.innerHTML = '';
 			previewElement.appendChild( audioPreview );
+
+			// Calculate and set duration for audio files.
+			audioPreview.addEventListener( 'loadedmetadata', () => {
+				// Setting currentTime to a large value (1e101) forces the browser to calculate the actual duration.
+				audioPreview.currentTime = 1e101;
+				audioPreview.ontimeupdate = () => {
+					audioPreview.ontimeupdate = null;
+					audioPreview.currentTime = 0; // reset
+				};
+			} );
 		}
 
 		// Prepare file for the Gravity Forms file input for submission.
