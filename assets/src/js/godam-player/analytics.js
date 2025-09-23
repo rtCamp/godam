@@ -33,7 +33,7 @@ window.analytics = analytics;
 			return el.player;
 		}
 		try {
-			return videojs( el );
+			return videojs.getPlayer( el );
 		} catch ( e ) {
 			return null;
 		}
@@ -162,7 +162,7 @@ function playerAnalytics() {
 
 	videos.forEach( ( video ) => {
 		// read the data-setup attribute.
-		const player = videojs( video );
+		const player = videojs.getPlayer( video ) || videojs( video );
 
 		window.addEventListener( 'beforeunload', () => {
 			const played = player.played();
