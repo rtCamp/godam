@@ -22,6 +22,17 @@ class FileSystem {
 	 * Construct method.
 	 */
 	protected function __construct() {
+		$instance = \RTGODAM\Inc\Filesystem\Plugin::get_instance();
+		// Always enable URL replacement when the plugin is active.
+		$instance->setup_url_filters();
+
+		$rtgodam_settings = get_option( 'rtgodam-settings', array() );
+		$offload_enabled  = ! empty( $rtgodam_settings['uploads'] ) && ! empty( $rtgodam_settings['uploads']['offload_media'] );
+
+		if ( rtgodam_is_api_key_valid() && $offload_enabled ) {
+			$instance->setup();
+		}
+
 		$this->init_filesystem();
 	}
 
