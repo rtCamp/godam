@@ -64,7 +64,12 @@ export default class GodamVideoPlayer {
 	 * Initialize VideoJS player
 	 */
 	initializePlayer() {
-		this.player = videojs( this.video, this.configManager.videoSetupControls );
+		const _player = videojs.getPlayer( this.video );
+		if ( ! _player ) {
+			this.player = videojs( this.video, this.configManager.videoSetupControls );
+		} else {
+			this.player = _player;
+		}
 
 		// Initialize ads manager
 		this.adsManager = new AdsManager( this.player, this.configManager );
