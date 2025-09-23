@@ -347,6 +347,12 @@ document.addEventListener( 'click', async function( e ) {
 
 		// Close handlers
 		const close = () => {
+			// Send heatmap (type 2) for the current video on close BEFORE disposing/removing
+			const currentId = parseInt( modal.dataset.currentVideoId || 0, 10 );
+			if ( currentId ) {
+				window.analytics?.trackVideoEvent( { type: 2, videoId: currentId, root: modal } );
+			}
+
 			// Find and dispose any video players in the modal
 			const players = modal.querySelectorAll( '.video-js' );
 			players.forEach( ( player ) => {
@@ -490,10 +496,13 @@ document.addEventListener( 'click', async function( e ) {
 					const newVideoId = newThumbnail.getAttribute( 'data-video-id' );
 					if ( newVideoId && newVideoId !== currentId ) {
 						lastScrollTime = currentTime;
-						const currentPopUp = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
-						if ( currentPopUp ) {
-							currentPopUp.style.display = 'none';
+						const popUpElement = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
+						if ( popUpElement ) {
+							popUpElement.style.display = 'none';
 						}
+						// Send type 2 for the old video
+						window.analytics?.trackVideoEvent( { type: 2, root: document.querySelector( '#rtgodam-video-engagement--comment-modal' ) } );
+
 						loadNewVideo( newVideoId );
 					}
 				}
@@ -574,10 +583,14 @@ document.addEventListener( 'click', async function( e ) {
 					const newVideoId = newThumbnail.getAttribute( 'data-video-id' );
 					if ( newVideoId && newVideoId !== currentId ) {
 						lastScrollTime = currentTime;
-						const currentPopUp = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
-						if ( currentPopUp ) {
-							currentPopUp.style.display = 'none';
+						const popUpElement = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
+						if ( popUpElement ) {
+							popUpElement.style.display = 'none';
 						}
+
+						// Send type 2 for the old video
+						window.analytics?.trackVideoEvent( { type: 2, root: document.querySelector( '#rtgodam-video-engagement--comment-modal' ) } );
+
 						loadNewVideo( newVideoId );
 					}
 				}
