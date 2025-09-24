@@ -41,15 +41,15 @@ jobs:
         shell: bash
         run: |
           # Extract the plugin ZIP to a temporary directory
-          mkdir -p /tmp/plugin-extract
-          unzip -q "${{ steps.deploy.outputs.zip-path }}" -d /tmp/plugin-extract
+          mkdir -p "${{ runner.temp }}/plugin-extract"
+          unzip -q "${{ steps.deploy.outputs.zip-path }}" -d "${{ runner.temp }}/plugin-extract"
           
           # Create a properly structured ZIP for WordPress installation
-          cd /tmp/plugin-extract
-          zip -r -q ../godam.zip .
+          cd "${{ runner.temp }}/plugin-extract"
+          zip -r -q "${{ runner.temp }}/godam.zip" .
           
           # Move the new ZIP to a location where upload-artifact can find it
-          mv /tmp/godam.zip ./godam.zip
+          mv "${{ runner.temp }}/godam.zip" ./godam.zip
 
       - name: Upload Test Artifact
         if: startsWith(github.ref, 'refs/tags/dry') || github.ref == 'refs/heads/develop'
