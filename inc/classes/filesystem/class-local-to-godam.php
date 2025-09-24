@@ -25,7 +25,6 @@ class Local_To_GoDAM extends Base_Filter {
 		parent::setup();
 
 		// Posts and Content.
-		add_action( 'the_post', array( $this, 'filter_post_data' ) );
 		add_filter( 'content_pagination', array( $this, 'filter_content_pagination' ) );
 		add_filter( 'the_content', array( $this, 'filter_post' ), 100 );
 		add_filter( 'the_excerpt', array( $this, 'filter_post' ), 100 );
@@ -39,8 +38,6 @@ class Local_To_GoDAM extends Base_Filter {
 		add_filter( 'get_the_content', array( $this, 'filter_post' ), 100 );
 		add_filter( 'get_the_excerpt', array( $this, 'filter_post' ), 100 );
 
-		// Block editor specific hooks.
-		add_filter( 'block_editor_rest_api_preload_paths', array( $this, 'filter_rest_preload_paths' ), 100 );
 		// Widgets.
 		add_filter( 'widget_form_callback', array( $this, 'filter_widget_display' ) );
 		add_filter( 'widget_display_callback', array( $this, 'filter_widget_display' ) );
@@ -69,12 +66,8 @@ class Local_To_GoDAM extends Base_Filter {
 		add_filter( 'wp_get_attachment_image', array( $this, 'filter_attachment_image' ), 100 );
 		add_filter( 'post_thumbnail_html', array( $this, 'filter_post_thumbnail_html' ), 100 );
 		add_filter( 'wp_calculate_image_srcset', array( $this, 'filter_image_srcset' ), 100, 5 );
-		add_filter( 'wp_calculate_image_sizes', array( $this, 'filter_image_sizes' ), 100 );
 		add_filter( 'wp_get_attachment_image_srcset', array( $this, 'filter_attachment_image_srcset' ), 100 );
-		add_filter( 'wp_get_attachment_image_sizes', array( $this, 'filter_attachment_image_sizes' ), 100 );
-		add_filter( 'wp_get_attachment_metadata', array( $this, 'filter_attachment_metadata' ), 100 );
 		add_filter( 'wp_get_attachment_thumb_url', array( $this, 'filter_attachment_thumb_url' ), 100 );
-		add_filter( 'wp_get_attachment_thumb_file', array( $this, 'filter_attachment_thumb_file' ), 100 );
 
 		// Shortcodes.
 		add_filter( 'wp_video_shortcode', array( $this, 'filter_video_shortcode' ), 100 );
@@ -82,15 +75,6 @@ class Local_To_GoDAM extends Base_Filter {
 
 		// HTTPS Enforcement.
 		add_filter( 'set_url_scheme', array( $this, 'set_url_scheme' ), 10, 3 );
-	}
-
-	/**
-	 * Filter post data.
-	 *
-	 * @param \WP_Post $post The post object.
-	 */
-	public function filter_post_data( $post ) {
-		// Prepare post for filtering.
 	}
 
 	/**
@@ -499,19 +483,6 @@ class Local_To_GoDAM extends Base_Filter {
 	}
 
 	/**
-	 * Filter image sizes.
-	 *
-	 * @since n.e.x.t
-	 *
-	 * @param string $sizes Image sizes.
-	 *
-	 * @return string Filtered sizes.
-	 */
-	public function filter_image_sizes( $sizes ) {
-		return $sizes;
-	}
-
-	/**
 	 * Filter attachment image srcset.
 	 *
 	 * @since n.e.x.t
@@ -522,32 +493,6 @@ class Local_To_GoDAM extends Base_Filter {
 	 */
 	public function filter_attachment_image_srcset( $srcset ) {
 		return $this->filter_post( $srcset );
-	}
-
-	/**
-	 * Filter attachment image sizes.
-	 *
-	 * @since n.e.x.t
-	 *
-	 * @param string $sizes Attachment sizes.
-	 *
-	 * @return string Filtered sizes.
-	 */
-	public function filter_attachment_image_sizes( $sizes ) {
-		return $sizes;
-	}
-
-	/**
-	 * Filter attachment metadata.
-	 *
-	 * @since n.e.x.t
-	 *
-	 * @param array $metadata Attachment metadata.
-	 *
-	 * @return array Filtered metadata.
-	 */
-	public function filter_attachment_metadata( $metadata ) {
-		return $metadata;
 	}
 
 	/**
@@ -566,19 +511,6 @@ class Local_To_GoDAM extends Base_Filter {
 
 		$new_url = $this->get_replacement_url( $url );
 		return $new_url ? $new_url : $url;
-	}
-
-	/**
-	 * Filter attachment thumbnail file.
-	 *
-	 * @since n.e.x.t
-	 *
-	 * @param string $file Thumbnail file path.
-	 *
-	 * @return string Filtered file path.
-	 */
-	public function filter_attachment_thumb_file( $file ) {
-		return $file;
 	}
 
 	/**
@@ -803,18 +735,5 @@ class Local_To_GoDAM extends Base_Filter {
 		$to_cache = array();
 
 		return $this->process_content( $content, $cache, $to_cache );
-	}
-
-	/**
-	 * Filter REST API preload paths for block editor.
-	 *
-	 * @since n.e.x.t
-	 *
-	 * @param array $paths Preload paths.
-	 * @return array Filtered paths.
-	 */
-	public function filter_rest_preload_paths( $paths ) {
-		// This ensures our filters run when the editor loads content via REST API.
-		return $paths;
 	}
 }
