@@ -173,24 +173,64 @@ if ( ( empty( $attachment_id ) || ( $is_virtual && ! empty( $original_id ) ) ) &
 	}
 	$sources = array();
 
+	// Collect all sources first.
+	$all_sources = array();
+
 	if ( ! empty( $hls_transcoded_url ) ) {
-		$sources[] = array(
+		$all_sources[] = array(
 			'src'  => $hls_transcoded_url,
 			'type' => 'application/x-mpegURL',
 		);
 	}
 
 	if ( ! empty( $transcoded_url ) ) {
-		$sources[] = array(
+		$all_sources[] = array(
 			'src'  => $transcoded_url,
 			'type' => 'application/dash+xml',
 		);
 	}
 
-	$sources[] = array(
+	$all_sources[] = array(
 		'src'  => $video_src,
 		'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
 	);
+
+	// Reorder sources based on browser user agent.
+	$user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+	$is_chrome  = strpos( $user_agent, 'Chrome' ) !== false && strpos( $user_agent, 'Safari' ) === false;
+	$is_safari  = strpos( $user_agent, 'Safari' ) !== false && strpos( $user_agent, 'Chrome' ) === false;
+
+	// Separate sources by type.
+	$mpd_sources   = array();
+	$hls_sources   = array();
+	$other_sources = array();
+
+	foreach ( $all_sources as $source ) {
+		$is_mpd = ( isset( $source['type'] ) && $source['type'] === 'application/dash+xml' ) ||
+					( isset( $source['src'] ) && strpos( $source['src'], '.mpd' ) !== false );
+		$is_hls = ( isset( $source['type'] ) && $source['type'] === 'application/x-mpegURL' ) ||
+					( isset( $source['src'] ) && strpos( $source['src'], '.m3u8' ) !== false );
+
+		if ( $is_mpd ) {
+			$mpd_sources[] = $source;
+		} elseif ( $is_hls ) {
+			$hls_sources[] = $source;
+		} else {
+			$other_sources[] = $source;
+		}
+	}
+
+	// Reorder based on browser.
+	if ( $is_safari ) {
+		// Safari: HLS first, then MPD, then others.
+		$sources = array_merge( $hls_sources, $mpd_sources, $other_sources );
+	} elseif ( $is_chrome ) {
+		// Chrome: MPD first, then HLS, then others.
+		$sources = array_merge( $mpd_sources, $hls_sources, $other_sources );
+	} else {
+		// Other browsers: Default order (MPD first).
+		$sources = array_merge( $mpd_sources, $hls_sources, $other_sources );
+	}
 }
 
 // Check if no media is selected - return early to prevent broken output.
