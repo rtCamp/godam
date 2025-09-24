@@ -5,7 +5,7 @@
  * @package GoDAM
  */
 
-namespace RTGODAM\Inc\Filesystem;
+namespace RTGODAM\Inc\Filesystem\Filters;
 
 defined( 'ABSPATH' ) || exit;
 

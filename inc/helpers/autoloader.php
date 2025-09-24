@@ -57,7 +57,7 @@ function autoloader( $file_resource = '' ) {
 				$directory = 'helpers';
 				$file_name = sprintf( 'class-%s', trim( strtolower( $path[2] ) ) );
 				break;
-			case 'providers':
+			case 'filters':
 			case 'media-library': // phpcs:ignore
 			case 'meta-boxes': // phpcs:ignore
 			case 'filesystem': // phpcs:ignore

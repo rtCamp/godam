@@ -10,6 +10,9 @@
 
 namespace RTGODAM\Inc\Filesystem;
 
+use RTGODAM\Inc\Filesystem\Filters\Local_To_GoDAM;
+use RTGODAM\Inc\Filesystem\Filters\GoDAM_To_Local;
+
 use WP_Error;
 
 /**
