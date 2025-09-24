@@ -178,8 +178,9 @@ const wcVideoCarousel = {
 				event.preventDefault();
 				const formData = new FormData( event.target );
 				const quantity = formData.get( 'quantity' );
-				const subMitButton = form.querySelector( 'button[name="add-to-cart"]' );
-				const productId = subMitButton.value;
+				const subMitButton = form.querySelector( '.single_add_to_cart_button' );
+				const variationId = formData.get( 'variation_id' );
+				const productId = variationId || subMitButton?.value;
 				subMitButton.disabled = true;
 				subMitButton.classList.add( 'loading' );
 				dispatch( 'wc/store/cart' ).addItemToCart( productId, quantity ).then( ( response ) => {
@@ -190,6 +191,15 @@ const wcVideoCarousel = {
 		} );
 	},
 
+	/**
+	 * Initializes the mini slider for the video modal.
+	 *
+	 * This method takes all elements with the class `.flex-control-nav` inside the video modal,
+	 * wraps each one in a div with the class `.video-modal-mini-slider-parent`, and initializes
+	 * a Swiper slider with the class `.video-modal-mini-slider-parent`.
+	 *
+	 * @return {void}
+	 */
 	videoModalMiniSlider() {
 		const self = this;
 		if ( self.swiperModalMini ) {
