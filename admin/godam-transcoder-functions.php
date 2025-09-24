@@ -589,6 +589,9 @@ function rtgodam_get_localize_array() {
 	}
 
 	$localize_array['token'] = get_option( 'rtgodam-account-token', 'unverified' );
+	
+	// Admin page detection.
+	$localize_array['isAdminPage'] = is_admin();
 
 	return $localize_array;
 }

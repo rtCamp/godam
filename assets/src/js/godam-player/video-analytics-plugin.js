@@ -13,12 +13,38 @@ const {
 	endpoint,
 	locationIP,
 	token,
+	isAdminPage,
 } = window.videoAnalyticsParams || {};
+
+/**
+ * Check if we should skip analytics tracking.
+ *
+ * @return {boolean} True if analytics should be skipped, false otherwise.
+ */
+function shouldSkipAnalytics() {
+	// Skip on admin pages
+	if ( isAdminPage ) {
+		return true;
+	}
+
+	// Skip on video preview pages
+	const urlParams = new URLSearchParams( window.location.search );
+	if ( urlParams.get( 'godam_page' ) === 'video-preview' ) {
+		return true;
+	}
+
+	return false;
+}
 
 const videoAnalyticsPlugin = () => {
 	return {
 		name: 'video-analytics-plugin',
 		track: async ( { payload } ) => {
+			// Skip analytics tracking on admin pages and video preview pages
+			if ( shouldSkipAnalytics() ) {
+				return;
+			}
+
 			let { properties, meta, anonymousId } = payload;
 
 			properties = {
