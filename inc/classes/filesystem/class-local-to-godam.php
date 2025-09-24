@@ -661,11 +661,32 @@ class Local_To_GoDAM extends Base_Filter {
 			return false;
 		}
 
-		// Check if URL is a local site URL that needs to be converted to CDN.
-		$site_url        = get_site_url();
-		$needs_replacing = strpos( $url, $site_url . '/wp-content/uploads' ) !== false;
+		// Parse the URL to get its components.
+		$parsed_url = wp_parse_url( $url );
+		if ( ! $parsed_url || empty( $parsed_url['host'] ) ) {
+			return false;
+		}
 
-		return $needs_replacing;
+		// Get the current site's host from WordPress home option to avoid infinite loops.
+		$home_url = get_option( 'home' );
+		if ( empty( $home_url ) ) {
+			return false;
+		}
+
+		$home_parsed = wp_parse_url( $home_url );
+		if ( ! $home_parsed || empty( $home_parsed['host'] ) ) {
+			return false;
+		}
+
+		// Remove port from both hosts if present for comparison.
+		$current_host = preg_replace( '/:\d+$/', '', $home_parsed['host'] );
+		$url_host     = preg_replace( '/:\d+$/', '', $parsed_url['host'] );
+
+		// Check if the URL belongs to the current site and contains wp-content/uploads.
+		$is_current_site  = ( $url_host === $current_host );
+		$has_uploads_path = strpos( $url, '/wp-content/uploads' ) !== false;
+
+		return $is_current_site && $has_uploads_path;
 	}
 
 	/**
