@@ -236,6 +236,8 @@ export default class GodamVideoPlayer {
 
 				this.video.addEventListener( 'loadedmetadata', clearTimeoutOnMetadata );
 				this.player.on( 'loadedmetadata', clearTimeoutOnMetadata );
+			} else {
+				this.player.aspectRatio( currentAspectRatio );
 			}
 		} else {
 			this.player.aspectRatio( currentAspectRatio );

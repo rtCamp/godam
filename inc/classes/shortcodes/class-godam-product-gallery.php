@@ -676,7 +676,7 @@ class GoDAM_Product_Gallery {
 			$product_url = get_permalink( $product_id );
 			?>
 		<div class="single-product-sidebar-actions">
-			<?php if ( $product->is_type( 'variable' ) || $product->is_type( 'grouped' ) || $product->is_type( 'external' ) ) : ?>
+			<?php if ( $product->is_type( 'variable' ) || $product->is_type( 'grouped' ) || $product->is_type( 'external' ) || ! $product->is_in_stock() ) : ?>
 				<a class="godam-product-sidebar-view-product-button" href="<?php echo esc_url( $product_url ); ?>" target="_blank" rel="noopener noreferrer">
 					<?php echo esc_html__( 'View Product', 'godam' ); ?>
 				</a>

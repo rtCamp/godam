@@ -302,7 +302,7 @@ class WC_Product_Video_Gallery {
 				<path d="M47.3773 21.8867L45.5438 29.3875L22.6972 52.2341L11.2605 40.7974L34.1662 17.8916L41.5703 16.0796C45.0706 15.2247 48.2323 18.3863 47.372 21.8813L47.3773 21.8867Z" fill="white" />
 				<path d="M43.5059 38.1036L38.6667 57.8907C37.7741 61.5255 33.2521 62.7891 30.6066 60.1436L26.0363 55.5732L43.5059 38.1036Z" fill="white" />
 			</svg>';
-		echo esc_html__( 'Add product Videos', 'godam' );
+		echo esc_html__( 'Add Product Videos', 'godam' );
 		echo '</button></div></div>';
 	}
 

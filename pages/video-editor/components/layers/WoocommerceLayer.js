@@ -313,8 +313,9 @@ const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 										const isGrouped = productHotspot.productDetails.type === 'grouped';
 										const isExternal = productHotspot.productDetails.type === 'external';
 										const isVariable = productHotspot.productDetails.type === 'variable';
-										const forceProductPage = isGrouped || isExternal || isVariable;
-										const isDisabled = ! isValidAPIKey || isGrouped || isExternal || isVariable;
+										const isOutOfStock = productHotspot.productDetails.in_stock === false;
+										const forceProductPage = isGrouped || isExternal || isVariable || isOutOfStock;
+										const isDisabled = ! isValidAPIKey || isGrouped || isExternal || isVariable || isOutOfStock;
 
 										if ( forceProductPage && ! productHotspot.addToCart ) {
 											updateField(
@@ -333,6 +334,8 @@ const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 											help = __( 'External/Affiliate products cannot be added to the cart directly.', 'godam' );
 										} else if ( isVariable ) {
 											help = __( 'Variable products cannot be added to the cart directly.', 'godam' );
+										} else if ( isOutOfStock ) {
+											help = __( 'Products Out of Stock cannot be added to the cart directly.', 'godam' );
 										} else if ( productHotspot.addToCart ) {
 											help = __( 'Users will be redirected to the product page.', 'godam' );
 										} else {

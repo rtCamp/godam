@@ -468,6 +468,11 @@
 
 .godam-admin-video-add-to-product-container figure {
 	margin: 0;
+
+	.rtgodam-video-engagement,
+	.godam-video-wrapper .easydam-video-container .godam-share-button {
+		display: none;
+	}
 }
 
 .godam-form-group {

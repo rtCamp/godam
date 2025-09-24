@@ -118,7 +118,55 @@ jQuery( document ).ready( function( $ ) {
 				} );
 			};
 
+			// Helper to validate timestamp format.
+			const isValidTimestamp = ( value, videoDuration ) => {
+				if ( ! value ) {
+					return true;
+				}
+
+				// Match hh:mm:ss or mm:ss.
+				const parts = value.split( ':' ).map( Number );
+				if ( parts.some( isNaN ) ) {
+					return false;
+				}
+
+				let seconds = 0;
+				if ( parts.length === 3 ) {
+					seconds = ( parts[ 0 ] * 3600 ) + ( parts[ 1 ] * 60 ) + parts[ 2 ];
+				} else if ( parts.length === 2 ) {
+					seconds = ( parts[ 0 ] * 60 ) + parts[ 1 ];
+				} else {
+					return false;
+				}
+
+				return seconds <= videoDuration;
+			};
+
 			const addToProducts = () => {
+				const videoPlayer = document.querySelector( '.godam-admin-video-add-to-product-container video' );
+				const videoDuration = videoPlayer ? Math.floor( videoPlayer.duration ) : Infinity;
+
+				let hasInvalid = false;
+
+				selected.forEach( ( product ) => {
+					const input = document.getElementById( `timestamp_${ product.id }` );
+					const timestampValue = input ? input.value.trim() : '';
+
+					if ( ! isValidTimestamp( timestampValue, videoDuration ) ) {
+						hasInvalid = true;
+						input.style.border = '1px solid red';
+					} else if ( input ) {
+						input.style.border = '1px solid #ddd';
+					}
+				} );
+
+				// Stop saving the Products if Timestamp is Invalid.
+				if ( hasInvalid ) {
+					// eslint-disable-next-line no-alert
+					window.alert( __( 'One or more timestamps are invalid or exceed video duration.', 'godam' ) );
+					return;
+				}
+
 				selected.forEach( ( product ) => {
 					if ( product.id === CURRENT_ID ) {
 						return;

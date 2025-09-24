@@ -423,6 +423,7 @@ class WC extends Base {
 					'categories' => $categories,
 					'tags'       => $tags,
 					'brands'     => $brands,
+					'in_stock'	 => $product->is_in_stock(),
 				);
 
 				/**
@@ -564,6 +565,7 @@ class WC extends Base {
 			'categories' => $categories,
 			'tags'       => $tags,
 			'brands'     => $brands,
+			'in_stock'	 => $product->is_in_stock(),
 		);
 
 		/**
@@ -928,6 +930,7 @@ class WC extends Base {
 					'link'                  => get_permalink( $product->get_id() ),
 					'rating_customer_count' => $product->get_rating_count(),
 					'rating_average'        => $product->get_average_rating(),
+					'in_stock'				=> $product->is_in_stock(),
 				);
 
 				/**
