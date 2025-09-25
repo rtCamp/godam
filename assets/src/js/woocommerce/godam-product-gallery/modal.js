@@ -120,7 +120,6 @@ export function initVideoModal() {
 		/* Close Modal and Product sidebar on clicking x */
 		modal.querySelector( '.godam-product-modal-close' )?.addEventListener( 'click', () => close( modal, sidebarModal, ctaEnabled, ctaDisplayPosition ) );
 
-
 		/* Clicking outside the modal content and sidebar closes the Modal */
 		modal.addEventListener( 'click', ( ev ) => {
 			if (

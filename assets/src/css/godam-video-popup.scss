@@ -165,13 +165,9 @@
 	transition: all 0.3s ease;
 }
 
-.godam-product-modal-content.godam-product-modal-transcoded{
-	min-height: 92dvh !important;
-    max-height: 92dvh !important;
-	@media (max-width: 768px) {
-		min-height: 85dvh !important;
-		max-height: 85dvh !important;
-	}
+.godam-product-modal-content .godam-product-video-container .video-container figure .rtgodam-video-engagement,
+.godam-woocommerce-featured-video-modal-container .godam-product-video-container .video-container figure .rtgodam-video-engagement {
+	display: none !important;
 }
 
 .godam-product-modal-content{
