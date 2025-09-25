@@ -97,6 +97,10 @@ export function initVideoModal() {
 
 		const modal = getModal;
 
+		if ( isSafari() ) {
+			document.body.appendChild( modal );
+		}
+
 		modal.querySelector( '.godam-sidebar-header-actions' )?.classList.add( 'hide' );
 
 		modal.classList.add( 'open' );
@@ -168,6 +172,19 @@ export function initVideoModal() {
 /* ---------------------------------------- Helper Functions --------------------------------------------- */
 
 let swipeAnimationInterval = null;
+
+/**
+ * Checks if the current browser is Safari.
+ *
+ * This function uses the `navigator.userAgent` string to detect
+ * whether the user is browsing with Safari. It excludes Chrome
+ * and Android browsers to avoid false positives.
+ *
+ * @return {boolean} True if the browser is Safari, false otherwise.
+ */
+function isSafari() {
+	return /^((?!chrome|android).)*safari/i.test( navigator.userAgent );
+}
 
 /**
  * Starts a loop that shows swipe hint animations at a regular interval.

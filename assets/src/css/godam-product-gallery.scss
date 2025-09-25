@@ -221,7 +221,6 @@
 			display: -webkit-box;
 			-webkit-line-clamp: 2;
 			-webkit-box-orient: vertical;
-			overflow: hidden;
 			text-overflow: ellipsis;
 			line-height: 1.2em;
 			max-height: 2.4em;
@@ -310,6 +309,7 @@
 		flex: 1;
 	
 		.product-title {
+			font-weight: bold;
 			font-size: 14px;
 			margin: 0;
 		}
@@ -348,7 +348,7 @@
 		width: 0;
 		left: 0;
 		bottom: -2px;
-		height: 2px;
+		height: 1px;
 		background-color: currentColor;
 		transition: width 0.3s ease;
 	}
