@@ -208,4 +208,24 @@ export default class EventsManager {
 			this.player.one( 'play', hideOnFirstPlay );
 		}
 	}
+
+	/**
+	 * Initialize quality button on metadata load
+	 *
+	 * @param {Function} callback The callback to execute when quality levels are available.
+	 */
+	onQualityLevelsAvailable( callback ) {
+		// Run callback when metadata is loaded.
+		this.player.one( 'loadedmetadata', callback );
+
+		// Listen for HLS playlist load, run callback when that happens.
+		if ( this.player.tech_ && this.player.tech_.hls ) {
+			this.player.tech_.hls.one( 'loadedplaylist', callback );
+		}
+
+		// Listen for quality levels being added, run callback when that happens.
+		if ( this.player.qualityLevels ) {
+			this.player.qualityLevels().one( 'addqualitylevel', callback );
+		}
+	}
 }
