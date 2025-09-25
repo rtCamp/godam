@@ -37,20 +37,33 @@ jobs:
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
           VERSION: '${{ github.ref_name }}'
 
+      - name: Repack Artifact
+        shell: bash
+        run: |
+          # Extract the plugin ZIP to a temporary directory
+          mkdir -p "${{ runner.temp }}/plugin-extract"
+          unzip -q "${{ steps.deploy.outputs.zip-path }}" -d "${{ runner.temp }}/plugin-extract"
+          
+          # Create a properly structured ZIP for WordPress installation
+          cd "${{ runner.temp }}/plugin-extract"
+          zip -r -q "${{ runner.temp }}/godam.zip" .
+          
+          # Move the new ZIP to a location where upload-artifact can find it
+          mv "${{ runner.temp }}/godam.zip" ./godam.zip
+
       - name: Upload Test Artifact
         if: startsWith(github.ref, 'refs/tags/dry') || github.ref == 'refs/heads/develop'
         uses: actions/upload-artifact@v4.6.1
         with:
           name: godam
-          path: '${{ steps.deploy.outputs.zip-path }}'
-          compression-level: 0
+          path: '${{ runner.temp }}/plugin-extract/'
 
       - name: Upload Release Artifact
         if: startsWith(github.ref, 'refs/tags/dry') == false && github.ref != 'refs/heads/develop'
         uses: softprops/action-gh-release@v2.2.1
         with:
           files: |
-            ${{ steps.deploy.outputs.zip-path }}
+            './godam.zip'
           token: '${{ github.token }}'
           tag_name: ${{ github.ref_name }}
           draft: true

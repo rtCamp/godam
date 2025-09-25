@@ -38,6 +38,44 @@ $media-library-active-folder: #f5f5f5;
 	}
 }
 
+#godam-snackbar {
+	visibility: hidden;
+	min-width: 250px;
+	background: #cc1818;
+	color: #fff;
+	text-align: center;
+	border-radius: 4px;
+	padding: 16px;
+	position: fixed;
+	right: 40px;
+	bottom: 35px;
+	z-index: 999999;
+	font-size: 14px;
+}
+
+#godam-snackbar.show {
+	visibility: visible;
+	animation: godam-snackbar-fadein 0.3s, godam-snackbar-fadeout 0.3s 2.7s;
+}
+
+@keyframes godam-snackbar-fadein {
+
+	from { bottom: 0; opacity: 0; }
+	
+	to   { bottom: 30px; opacity: 1; }
+}
+
+@keyframes godam-snackbar-fadeout {
+
+	from { bottom: 30px; opacity: 1; }
+
+	to   { bottom: 0; opacity: 0; }
+}
+
+.vjs-poster img {
+	background-color: #000;
+}
+
 .custom-thumbnail-container {
 	display: flex;
 	flex-direction: column;
