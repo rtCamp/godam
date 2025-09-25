@@ -48,8 +48,8 @@ jobs:
           cd "${{ runner.temp }}/plugin-extract"
           zip -r -q "${{ runner.temp }}/godam.zip" .
           
-          # Move the new ZIP to a location where upload-artifact can find it
-          mv "${{ runner.temp }}/godam.zip" ./godam.zip
+          # Move the new ZIP to the workspace root for release upload
+          mv "${{ runner.temp }}/godam.zip" "${{ github.workspace }}/godam.zip"
 
       - name: Upload Test Artifact
         if: startsWith(github.ref, 'refs/tags/dry') || github.ref == 'refs/heads/develop'
@@ -63,7 +63,7 @@ jobs:
         uses: softprops/action-gh-release@v2.2.1
         with:
           files: |
-            './godam.zip'
+            '${{ github.workspace }}/godam.zip'
           token: '${{ github.token }}'
           tag_name: ${{ github.ref_name }}
           draft: true
