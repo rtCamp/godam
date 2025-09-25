@@ -126,6 +126,7 @@
 			align-items: center;
 			z-index: 100;
 			padding: 0;
+			padding-bottom: 2px !important;
 		}
 
 		&-content {
@@ -537,7 +538,7 @@
 	}
 
     .rtgodam-product-video-gallery-slider-modal-close {
-        right: 7vw !important;
+        right: 3vw !important;
         position: fixed !important;
     }
 
