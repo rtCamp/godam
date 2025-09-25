@@ -604,7 +604,7 @@ class Media_Library_Ajax {
 	 * Replace an existing WordPress media attachment with a file from an external URL,
 	 * using the WordPress Filesystem API.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.4.2
 	 *
 	 * @param int    $attachment_id The ID of the existing media attachment.
 	 * @param string $file_url      The external file URL.
