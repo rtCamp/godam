@@ -181,6 +181,20 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			} );
 	},
 
+	showGodamSnackbar( message ) {
+		let snackbar = document.getElementById( 'godam-snackbar' );
+		if ( ! snackbar ) {
+			snackbar = document.createElement( 'div' );
+			snackbar.id = 'godam-snackbar';
+			document.body.appendChild( snackbar );
+		}
+		snackbar.textContent = message;
+		snackbar.className = 'show';
+		setTimeout( () => {
+			snackbar.className = snackbar.className.replace( 'show', '' );
+		}, 3000 ); // 3 seconds
+	},
+
 	/**
 	 * Opens the media uploader to select a custom thumbnail.
 	 *
@@ -201,7 +215,12 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		uploader.on( 'select', () => {
 			const attachment = uploader.state().get( 'selection' ).first().toJSON();
 			if ( attachment && attachment.url && attachment.id ) {
-				onSelect( attachment ); // Use callback for custom behavior
+				// Double-check it's actually an image
+				if ( attachment.type === 'image' ) {
+					onSelect( attachment );
+				} else {
+					this.showGodamSnackbar( __( 'Please select a valid image file (JPEG, PNG, GIF, etc.).', 'godam' ) );
+				}
 			}
 		} );
 

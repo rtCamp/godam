@@ -16,183 +16,121 @@ const analytics = Analytics( {
 } );
 window.analytics = analytics;
 
-// Track which videos have been processed to avoid duplicates
-const processedVideos = new Set();
-
-// Track video states for proper heatmap handling
-const videoState = new Map(); // videoId -> { hasPlayed: false, sent: false, ranges: [], duration: 0 }
-
-// Function to send page_load for a single video
-function sendPageLoadForVideo( videoId ) {
-	if ( window.analytics && videoId ) {
-		window.analytics.track( 'page_load', {
-			type: 1, // Enum: 1 = Page Load
-			videoIds: [ parseInt( videoId, 10 ) ],
-		} );
-	}
-}
-
-// Function to setup tracking for a video
-function setupTracking( videoElement ) {
-	const videoId = videoElement.getAttribute( 'data-id' );
-	if ( ! videoId || videoState.has( videoId ) ) {
-		return;
+// Generic video analytics helper
+( function() {
+	function findVideoElementById( videoId, root ) {
+		const ctx = root && root.querySelector ? root : document;
+		return ctx.querySelector(
+			`.easydam-player.video-js[data-id="${ videoId }"], .video-js[data-id="${ videoId }"]`,
+		);
 	}
 
-	const player = videojs( videoElement );
-	videoState.set( videoId, {
-		hasPlayed: false,
-		sent: false,
-		playedObject: null, // Store the played object directly
-		duration: 0,
-	} );
-
-	const updateCache = () => {
-		const state = videoState.get( videoId );
-		if ( ! state ) {
-			return;
+	function getPlayer( el ) {
+		if ( ! el ) {
+			return null;
 		}
-
+		if ( el.player && typeof el.player.played === 'function' ) {
+			return el.player;
+		}
 		try {
-			// Store the played object directly
-			state.playedObject = player.played();
-			state.duration = Number( player.duration() ) || 0;
-		} catch ( error ) {
-			// Player might be disposed
+			return videojs.getPlayer( el );
+		} catch ( e ) {
+			return null;
 		}
-	};
+	}
 
-	// Track when video starts playing
-	player.on( 'play', () => {
-		const state = videoState.get( videoId );
-		if ( state ) {
-			state.hasPlayed = true;
+	function collectPlayedRanges( player ) {
+		const played = player && player.played && player.played();
+		const ranges = [];
+		if ( played && typeof played.length === 'number' ) {
+			for ( let i = 0; i < played.length; i++ ) {
+				ranges.push( [ played.start( i ), played.end( i ) ] );
+			}
 		}
-	} );
+		return ranges;
+	}
 
-	// Track time updates and cache ranges
-	player.on( 'timeupdate', () => {
-		const state = videoState.get( videoId );
-		if ( ! state ) {
-			return;
+	// Attach to window.analytics
+	/**
+	 * Tracks video analytics events for engagement and heatmap data.
+	 *
+	 * @param {Object}           params                - The parameters object
+	 * @param {number}           params.type           - Event type (currently only supports type 2 for heatmap)
+	 * @param {number}           [params.videoId]      - Specific video ID to track. If not provided, will auto-detect current video
+	 * @param {Element|Document} [params.root]         - Root element to search for video elements. Defaults to document
+	 *
+	 * @param {boolean}          [params.sendPageLoad] - Whether to send a type 1 'page_load' event before the heatmap event. Defaults to true.
+	 * @return {boolean} Returns true if event was successfully tracked, false otherwise
+	 *
+	 * @description
+	 * This function handles video analytics tracking with the following behavior:
+	 *
+	 * **IMPORTANT: Automatic Type 1 Event Behavior**
+	 * When type 2 (heatmap) is requested, this function automatically sends a type 1 'page_load' (Video Loaded)
+	 * event BEFORE sending the type 2 (Video Played) event, if sendPageLoad is true (default true). This behavior is intentional but may result
+	 * in duplicate type 1 events in certain scenarios:
+	 *
+	 * - Called during video switches: Will send type 2 for the old video
+	 * - Called when videos are closed: Will send type 2 for the closing video
+	 *
+	 * **Event Types:**
+	 * - Type 1: Video Loaded (automatically sent before type 2)
+	 * - Type 2: Video Played (main functionality)
+	 *
+	 * @since n.e.x.t
+	 */
+	window.analytics.trackVideoEvent = ( { type, videoId, root, sendPageLoad = true } = {} ) => {
+		if ( ! type ) {
+			return false;
 		}
-		if ( player.currentTime() > 0.01 && ! state.hasPlayed ) {
-			state.hasPlayed = true;
-		}
-		updateCache();
-	} );
+		// Type 2: heatmap (derive ranges and length via videojs)
+		if ( type === 2 ) {
+			const ctx = root && root.querySelector ? root : document;
+			let vid = videoId;
 
-	player.on( 'pause', updateCache );
-	player.on( 'ended', () => {
-		const state = videoState.get( videoId );
-		if ( state ) {
-			state.hasPlayed = true;
-		}
-		updateCache();
-	} );
-
-	// Send heatmap data when player is disposed
-	player.on( 'dispose', () => {
-		flushHeatmap( videoId );
-	} );
-}
-
-// Function to flush heatmap data for a video
-function flushHeatmap( videoId ) {
-	const state = videoState.get( videoId );
-	if ( ! state || state.sent ) {
-		return;
-	}
-
-	// Only send if video was actually played and has meaningful data
-	if ( ! state.hasPlayed || ! state.playedObject || ! state.duration ) {
-		return;
-	}
-
-	// Do the processing of the played object
-	const ranges = [];
-	for ( let i = 0; i < state.playedObject.length; i++ ) {
-		ranges.push( [ state.playedObject.start( i ), state.playedObject.end( i ) ] );
-	}
-
-	if ( ranges.length === 0 ) {
-		return;
-	}
-
-	if ( window.analytics ) {
-		window.analytics.track( 'video_heatmap', {
-			type: 2, // Enum: 2 = Heatmap
-			videoId: parseInt( videoId, 10 ),
-			ranges,
-			videoLength: state.duration,
-		} );
-	}
-	state.sent = true;
-}
-
-// MutationObserver to detect new videos (only after initial page load)
-let observerStarted = false;
-
-const observer = new MutationObserver( ( mutations ) => {
-	// Only process if observer has been started (after initial page load)
-	if ( ! observerStarted ) {
-		return;
-	}
-
-	for ( const mutation of mutations ) {
-		mutation.addedNodes.forEach( ( node ) => {
-			if ( ! ( node instanceof Element ) ) {
-				return;
+			// If no videoId provided, automatically find the current video
+			if ( ! vid ) {
+				const videoEl = ctx.querySelector( '.easydam-player.video-js, .video-js' );
+				vid = videoEl ? parseInt( videoEl.getAttribute( 'data-id' ), 10 ) : 0;
 			}
 
-			// If the node itself is a player
-			if ( node.matches && node.matches( '.easydam-player.video-js' ) ) {
-				const videoId = node.getAttribute( 'data-id' );
-				if ( videoId && ! processedVideos.has( videoId ) ) {
-					processedVideos.add( videoId );
-					sendPageLoadForVideo( videoId );
-					setupTracking( node );
-				}
+			vid = parseInt( vid, 10 ) || 0;
+			if ( ! vid ) {
+				return false;
 			}
 
-			// Or contains players inside it
-			const nested = node.querySelectorAll ? node.querySelectorAll( '.easydam-player.video-js' ) : [];
-			nested.forEach( ( video ) => {
-				const videoId = video.getAttribute( 'data-id' );
-				if ( videoId && ! processedVideos.has( videoId ) ) {
-					processedVideos.add( videoId );
-					sendPageLoadForVideo( videoId );
-					setupTracking( video );
-				}
+			// Send type 1 first (for the current video) if sendPageLoad is true
+			// NOTE: This automatically sends a 'page_load' event before the heatmap event, for ease of use.
+			// This is intentional behavior but may cause duplicate type 1 events in some scenarios
+			if ( sendPageLoad ) {
+				window.analytics.track( 'page_load', { type: 1, videoIds: [ vid ] } );
+			}
+
+			const el = findVideoElementById( vid, root );
+			const player = getPlayer( el );
+			if ( ! player ) {
+				return false;
+			}
+
+			const ranges = collectPlayedRanges( player );
+			if ( ranges.length === 0 ) {
+				return false;
+			}
+
+			const videoLength = Number( player.duration && player.duration() ) || 0;
+
+			window.analytics.track( 'video_heatmap', {
+				type: 2,
+				videoId: vid,
+				ranges,
+				videoLength,
 			} );
-		} );
+			return true;
+		}
 
-		// Handle removals
-		mutation.removedNodes.forEach( ( node ) => {
-			if ( ! ( node instanceof Element ) ) {
-				return;
-			}
-			// Check if removed node is a video
-			if ( node.matches && node.matches( '.easydam-player.video-js' ) ) {
-				const videoId = node.getAttribute( 'data-id' );
-				if ( videoId ) {
-					flushHeatmap( videoId );
-				}
-			}
-
-			// Check if removed node contains videos
-			const nestedVideos = node.querySelectorAll ? node.querySelectorAll( '.easydam-player.video-js' ) : [];
-			if ( nestedVideos.length > 0 ) {
-				nestedVideos.forEach( ( video ) => {
-					const videoId = video.getAttribute( 'data-id' );
-					if ( videoId ) {
-						flushHeatmap( videoId );
-					}
-				} );
-			}
-		} );
-	}
-} );
+		return false;
+	};
+}() );
 
 if ( ! window.pageLoadEventTracked ) {
 	window.pageLoadEventTracked = true; // Mark as tracked to avoid duplicate execution
@@ -214,37 +152,46 @@ if ( ! window.pageLoadEventTracked ) {
 			} );
 		}
 
-		// Mark initial videos as processed and setup tracking
-		videos.forEach( ( videoElement ) => {
-			const idAttr = videoElement.getAttribute( 'data-id' );
-			if ( ! idAttr ) {
-				return;
-			}
-			processedVideos.add( idAttr );
-			setupTracking( videoElement );
-		} );
-
 		// Initialize video analytics
 		playerAnalytics();
-
-		// NOW start the observer for new videos
-		observerStarted = true;
-		observer.observe( document.documentElement, { childList: true, subtree: true } );
 	} );
 }
 
 function playerAnalytics() {
 	const videos = document.querySelectorAll( '.easydam-player.video-js' );
 
-	window.addEventListener( 'beforeunload', () => {
-		// Flush all unsent heatmap data on page exit
-		videoState.forEach( ( state, videoId ) => {
-			flushHeatmap( videoId );
-		} );
-	} );
-
-	// Per-video initialization (no global listeners here)
 	videos.forEach( ( video ) => {
-		videojs( video );
+		// read the data-setup attribute.
+		const player = videojs.getPlayer( video ) || videojs( video );
+
+		window.addEventListener( 'beforeunload', () => {
+			const played = player.played();
+			const ranges = [];
+			const videoLength = player.duration();
+
+			// Extract time ranges from the player.played() object
+			for ( let i = 0; i < played.length; i++ ) {
+				ranges.push( [ played.start( i ), played.end( i ) ] );
+			}
+
+			// Send the ranges using updateHeatmap
+			updateHeatmap( ranges, videoLength );
+		} );
+
+		async function updateHeatmap( ranges, videoLength ) {
+			const videoId = video.getAttribute( 'data-id' );
+			if ( ! videoId || ranges.length === 0 ) {
+				return; // Skip sending if no valid data
+			}
+
+			if ( window.analytics ) {
+				window.analytics.track( 'video_heatmap', {
+					type: 2, // Enum: 2 = Heatmap
+					videoId: parseInt( videoId, 10 ),
+					ranges,
+					videoLength,
+				} );
+			}
+		}
 	} );
 }
