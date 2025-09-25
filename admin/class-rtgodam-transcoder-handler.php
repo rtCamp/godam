@@ -166,7 +166,7 @@ class RTGODAM_Transcoder_Handler {
 	/**
 	 * Send transcoding request for uploaded media in WordPress media library.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.2
 	 *
 	 * @param int $attachment_id    ID of attachment.
 	 */

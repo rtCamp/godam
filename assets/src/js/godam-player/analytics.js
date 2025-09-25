@@ -77,7 +77,7 @@ window.analytics = analytics;
 	 * - Type 1: Video Loaded (automatically sent before type 2)
 	 * - Type 2: Video Played (main functionality)
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.2
 	 */
 	window.analytics.trackVideoEvent = ( { type, videoId, root, sendPageLoad = true } = {} ) => {
 		if ( ! type ) {
