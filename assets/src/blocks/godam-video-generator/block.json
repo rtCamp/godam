@@ -1,0 +1,60 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "godam/video-generator",
+    "version": "1.0.0",
+    "title": "Godam Video Generator",
+    "category": "media",
+    "icon": "video-alt3",
+    "description": "Generate advertisement videos from product images using AI",
+    "example": {},
+    "supports": {
+        "html": false,
+        "align": true,
+        "alignWide": true,
+        "spacing": {
+            "margin": true,
+            "padding": true
+        }
+    },
+    "attributes": {
+        "productImages": {
+            "type": "array",
+            "default": []
+        },
+        "generatedVideoUrl": {
+            "type": "string",
+            "default": ""
+        },
+        "isGenerating": {
+            "type": "boolean",
+            "default": false
+        },
+        "videoTitle": {
+            "type": "string",
+            "default": ""
+        },
+        "videoDescription": {
+            "type": "string",
+            "default": ""
+        },
+        "aiModel": {
+            "type": "string",
+            "default": "runway"
+        },
+        "videoStyle": {
+            "type": "string",
+            "default": "product-showcase"
+        },
+        "videoDuration": {
+            "type": "number",
+            "default": 10
+        }
+    },
+    "textdomain": "godam-video-generator",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./index.css",
+    "style": [
+        "file:./index.css"
+    ]
+}
