@@ -1,7 +1,7 @@
 .godam-product-modal-container, .godam-woocommerce-featured-video-modal-container {
 	position: fixed;
 	inset: 0;
-	z-index: 9999;
+	z-index: 29;
 	background: rgba(0, 0, 0, 0.8);
 	width: 100vw;
 	display: none !important;
@@ -163,6 +163,11 @@
 	pointer-events: none !important;
 	display: none !important;
 	transition: all 0.3s ease;
+}
+
+.godam-product-modal-content .godam-product-video-container .video-container figure .rtgodam-video-engagement,
+.godam-woocommerce-featured-video-modal-container .godam-product-video-container .video-container figure .rtgodam-video-engagement {
+	display: none !important;
 }
 
 .godam-product-modal-content{
@@ -1102,8 +1107,8 @@
 	.godam-product-video-container{
 		width: 100% !important;
 		height: 100% !important;
-		max-height: 100dvh !important;
-		min-height: 100dvh !important;
+		max-height: 97dvh !important;
+        min-height: 97dvh !important;
 		max-width: 100% !important;
 		min-width: 100% !important;
 	}
@@ -1122,8 +1127,8 @@
 		.godam-product-video-container{
 			width: 100% !important;
 			height: 100% !important;
-			max-height: 100dvh !important;
-			min-height: 100dvh !important;
+			max-height: 97dvh !important;
+			min-height: 97dvh !important;
 			max-width: 100% !important;
 			min-width: 100% !important;
 		}

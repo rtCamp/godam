@@ -45,6 +45,11 @@ class Dynamic_Shortcode extends Base {
 							'type'              => 'integer',
 							'sanitize_callback' => 'absint',
 						),
+						'engagements' => array(
+							'required' => false,
+							'type'     => 'string',
+							'default'  => '',
+						),
 					),
 				),
 			),
@@ -59,6 +64,8 @@ class Dynamic_Shortcode extends Base {
 	 */
 	public function render_shortcode( WP_REST_Request $request ) {
 		$id = $request->get_param( 'id' );
+
+		$engagements = $request->get_param( 'engagements' );
 
 		$attachment = get_post( $id );
 
@@ -113,7 +120,7 @@ class Dynamic_Shortcode extends Base {
 		$video_date  = apply_filters( 'rtgodam_shortcode_video_date', $video_date, $id );
 
 		ob_start();
-		$shortcode = "[godam_video id='{$id}' engagements=show sources='{$sources_with_placeholders}']";
+		$shortcode = "[godam_video id='{$id}' engagements='{$engagements}' sources='{$sources_with_placeholders}']";
 
 		// Add filter for shortcode.
 		$shortcode = apply_filters( 'rtgodam_shortcode_output', $shortcode, $id );

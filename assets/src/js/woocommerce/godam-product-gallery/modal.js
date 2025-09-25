@@ -107,11 +107,10 @@ export function initVideoModal() {
 
 		modal.dataset.currentVideoId = videoId;
 		modal.dataset.isLoading = 'false';
+		modal.dataset.ctaEnabled = String( ctaEnabled );
+		modal.dataset.ctaDisplayPosition = ctaDisplayPosition;
 
 		const sidebarModal = modal.querySelector( '.godam-product-sidebar' );
-
-		document.body.style.overflow = 'hidden';
-
 		/* Determine if user is on mobile or desktop */
 		const isMobile = window.matchMedia( '(pointer: coarse)' ).matches;
 
@@ -228,6 +227,20 @@ function stopSwipeAnimationLoop() {
 		swipeAnimationInterval = null;
 	}
 }
+
+document.addEventListener( 'keydown', ( e ) => {
+	if ( e.key === 'Escape' || e.key === 'Esc' ) {
+		const openModal = document.querySelector( '.godam-product-modal-container.open' );
+		if ( ! openModal ) {
+			return;
+		}
+		const sidebarModal = openModal.querySelector( '.godam-product-sidebar' );
+		const ctaEnabled = openModal.dataset.ctaEnabled === 'true' || openModal.dataset.ctaEnabled === '1';
+		const ctaDisplayPosition = openModal.dataset.ctaDisplayPosition;
+
+		close( openModal, sidebarModal, ctaEnabled, ctaDisplayPosition );
+	}
+} );
 
 /**
  * Closes the main modal and optional sidebar modal.

@@ -246,7 +246,7 @@ document.addEventListener( 'click', async function( e ) {
 						status: 'success',
 					};
 				} else {
-					const response = await fetch( `/wp-json/godam/v1/video-shortcode?id=${ newVideoId }` );
+					const response = await fetch( `/wp-json/godam/v1/video-shortcode?id=${ newVideoId }&engagements=show` );
 					data = await response.json();
 
 					if ( data.status === 'success' && data.html ) {
