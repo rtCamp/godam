@@ -11,6 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use RTGODAM\Inc\Form_Layer;
+
 if ( isset( $is_shortcode ) && $is_shortcode ) {
 	$is_shortcode = true;
 } else {
@@ -432,6 +434,7 @@ if ( ! empty( $transcript_path ) ) {
 							<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 								<div class="form-container">
 									<?php
+										Form_Layer::add_form_godam_identifier( $attachment_id, $form_type, $layer['gf_id'] );
 										$theme = ! empty( $layer['theme'] ) ? esc_attr( $layer['theme'] ) : '';
 										echo do_shortcode(
 											sprintf(
@@ -445,6 +448,7 @@ if ( ! empty( $transcript_path ) ) {
 							</div>
 								<?php
 							elseif ( 'cf7' === $form_type && ! empty( $layer['cf7_id'] ) ) :
+								Form_Layer::add_form_godam_identifier( $attachment_id, $form_type, $layer['cf7_id'] );
 								$form_theme = ! empty( $layer['theme'] ) ? $layer['theme'] : 'godam';
 								?>
 								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
@@ -452,7 +456,7 @@ if ( ! empty( $transcript_path ) ) {
 										<?php
 											echo do_shortcode(
 												sprintf(
-													"[contact-form-7 id='%d' title='false' ajax='true']",
+													"[contact-form-7 id='%d' html_class='godam-video' title='false' ajax='true']",
 													intval( $layer['cf7_id'] )
 												)
 											);
@@ -476,6 +480,7 @@ if ( ! empty( $transcript_path ) ) {
 								</div>
 								<?php
 							elseif ( 'sureforms' === $form_type && ! empty( $layer['sureform_id'] ) ) :
+								Form_Layer::add_form_godam_identifier( $attachment_id, $form_type, $layer['sureform_id'] );
 								?>
 								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 									<div class="form-container">
@@ -491,6 +496,7 @@ if ( ! empty( $transcript_path ) ) {
 								</div>
 								<?php
 							elseif ( 'forminator' === $form_type && ! empty( $layer['forminator_id'] ) ) :
+								Form_Layer::add_form_godam_identifier( $attachment_id, $form_type, $layer['forminator_id'] );
 								?>
 								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 									<div class="form-container">
@@ -541,6 +547,7 @@ if ( ! empty( $transcript_path ) ) {
 									<?php
 								endif;
 							elseif ( 'fluentforms' === $form_type && ! empty( $layer['fluent_form_id'] ) ) :
+								Form_Layer::add_form_godam_identifier( $attachment_id, $form_type, $layer['fluent_form_id'] );
 								?>
 								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 									<div class="form-container">
@@ -556,6 +563,7 @@ if ( ! empty( $transcript_path ) ) {
 								</div>
 									<?php
 							elseif ( 'everestforms' === $form_type && ! empty( $layer['everest_form_id'] ) ) :
+								Form_Layer::add_form_godam_identifier( $attachment_id, $form_type, $layer['everest_form_id'] );
 								?>
 								<div
 									id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>"

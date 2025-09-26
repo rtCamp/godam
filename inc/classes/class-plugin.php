@@ -88,6 +88,7 @@ class Plugin {
 		Video_Preview::get_instance();
 		Video_Permalinks::get_instance();
 		Embed::get_instance();
+		Form_Layer::get_instance();
 
 		// Load shortcodes.
 		GoDAM_Player::get_instance();
