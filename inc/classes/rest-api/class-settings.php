@@ -491,13 +491,27 @@ class Settings extends Base {
 			return null;
 		}
 
-		$forms = get_posts(
-			array(
-				'post_type'      => 'wpforms',
-				'posts_per_page' => -1,
-				'post_status'    => 'publish',
-			)
-		);
+		$paged    = 1;
+		$per_page = 50;
+		$forms    = array();
+
+		do {
+			$query = new \WP_Query(
+				array(
+					'post_type'      => 'wpforms',
+					'posts_per_page' => $per_page,
+					'paged'          => $paged,
+					'post_status'    => 'publish',
+				)
+			);
+
+			if ( ! empty( $query->posts ) ) {
+				$forms = array_merge( $forms, $query->posts );
+				++$paged;
+			} else {
+				break;
+			}
+		} while ( true );
 
 		$wpforms_list = array();
 		foreach ( $forms as $form ) {
@@ -548,13 +562,27 @@ class Settings extends Base {
 			return null;
 		}
 
-		$forms = get_posts(
-			array(
-				'post_type'      => 'wpcf7_contact_form',
-				'posts_per_page' => -1,
-				'post_status'    => 'publish',
-			)
-		);
+		$paged    = 1;
+		$per_page = 50;
+		$forms    = array();
+
+		do {
+			$query = new \WP_Query(
+				array(
+					'post_type'      => 'wpcf7_contact_form',
+					'posts_per_page' => $per_page,
+					'paged'          => $paged,
+					'post_status'    => 'publish',
+				)
+			);
+
+			if ( ! empty( $query->posts ) ) {
+				$forms = array_merge( $forms, $query->posts );
+				++$paged;
+			} else {
+				break;
+			}
+		} while ( true );
 
 		$cf7_list = array();
 		foreach ( $forms as $form ) {
