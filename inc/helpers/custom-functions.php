@@ -689,7 +689,7 @@ function godam_get_transcript_path( $job_id ) {
 function rtgodam_get_video_duration( $attachment_id ) {
 	$video_duration = 0;
 
-	// Try to get duration from attachment metadata firs.
+	// Try to get duration from attachment metadata first.
 	if ( $attachment_id ) {
 		$duration_meta = get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
 
@@ -701,7 +701,7 @@ function rtgodam_get_video_duration( $attachment_id ) {
 			$video_duration = absint( get_post_meta( $attachment_id, '_video_duration', true ) );
 		}
 
-		// Another fallback: check if duration is stored in rtgodam_met.
+		// Another fallback: check if duration is stored in rtgodam_meta.
 		if ( empty( $video_duration ) ) {
 			$easydam_meta_data = get_post_meta( $attachment_id, 'rtgodam_meta', true );
 			if ( is_array( $easydam_meta_data ) && ! empty( $easydam_meta_data['duration'] ) ) {
@@ -710,7 +710,7 @@ function rtgodam_get_video_duration( $attachment_id ) {
 		}
 	}
 
-	// If still no duration, try to extract from video file using getID3 if availabl.
+	// If still no duration, try to extract from video file using getID3 if available.
 	if ( empty( $video_duration ) && $attachment_id && function_exists( 'wp_read_video_metadata' ) ) {
 		$file_path = get_attached_file( $attachment_id );
 		if ( $file_path && file_exists( $file_path ) ) {
