@@ -4,6 +4,11 @@
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
+ * Internal dependencies
+ */
+import { addLayerInteraction, updateLayerInteraction } from '../../utils/storage.js';
+
+/**
  * Hotspot Layer Manager
  * Handles hotspot layer functionality including creation, positioning, and interaction
  */
@@ -17,6 +22,7 @@ export default class HotspotLayerManager {
 		this.wasPlayingBeforeHover = false;
 		this.isDisplayingLayers = isDisplayingLayers;
 		this.currentPlayerVideoInstanceId = currentPlayerVideoInstanceId;
+		this.hoveredHotspots = new Set(); // Track which hotspots have already been hovered
 	}
 
 	/**
@@ -52,7 +58,8 @@ export default class HotspotLayerManager {
 			}
 
 			const endTime = layerObj.displayTime + layerObj.duration;
-			const isActive = currentTime >= layerObj.displayTime && currentTime < endTime;
+			const isActive =
+				currentTime >= layerObj.displayTime && currentTime < endTime;
 
 			if ( blockedByLayer ) {
 				if ( ! layerObj.layerElement.classList.contains( 'overlapped' ) ) {
@@ -106,7 +113,15 @@ export default class HotspotLayerManager {
 		const baseHeight = HotspotLayerManager.BASE_HEIGHT;
 
 		layerObj.hotspots.forEach( ( hotspot, index ) => {
-			const hotspotDiv = this.createHotspotElement( hotspot, index, containerWidth, containerHeight, baseWidth, baseHeight );
+			const hotspotDiv = this.createHotspotElement(
+				hotspot,
+				index,
+				containerWidth,
+				containerHeight,
+				baseWidth,
+				baseHeight,
+				layerObj,
+			);
 
 			if ( layerObj.pauseOnHover ) {
 				this.setupHotspotHoverEvents( hotspotDiv );
@@ -126,15 +141,24 @@ export default class HotspotLayerManager {
 	/**
 	 * Create hotspot element
 	 *
-	 * @param {Object} hotspot         - Hotspot configuration object
-	 * @param {number} index           - Index of the hotspot
-	 * @param {number} containerWidth  - Width of the video container
-	 * @param {number} containerHeight - Height of the video container
-	 * @param {number} baseWidth       - Base width for calculations
-	 * @param {number} baseHeight      - Base height for calculations
+	 * @param {Object} hotspot            - Hotspot configuration object
+	 * @param {number} index              - Index of the hotspot
+	 * @param {number} containerWidth     - Width of the video container
+	 * @param {number} containerHeight    - Height of the video container
+	 * @param {number} baseWidth          - Base width for calculations
+	 * @param {number} baseHeight         - Base height for calculations
+	 * @param {Object} parentHotspotLayer - Parent hotspot layer object
 	 * @return {HTMLElement} Created hotspot element
 	 */
-	createHotspotElement( hotspot, index, containerWidth, containerHeight, baseWidth, baseHeight ) {
+	createHotspotElement(
+		hotspot,
+		index,
+		containerWidth,
+		containerHeight,
+		baseWidth,
+		baseHeight,
+		parentHotspotLayer,
+	) {
 		const hotspotDiv = document.createElement( 'div' );
 		hotspotDiv.classList.add( 'hotspot', 'circle' );
 		hotspotDiv.style.position = 'absolute';
@@ -155,11 +179,26 @@ export default class HotspotLayerManager {
 		hotspotDiv.style.height = `${ pixelDiameter }px`;
 
 		// Background color
-		hotspotDiv.style.backgroundColor = hotspot.icon ? 'white' : ( hotspot.backgroundColor || '#0c80dfa6' );
+		hotspotDiv.style.backgroundColor = hotspot.icon
+			? 'white'
+			: hotspot.backgroundColor || '#0c80dfa6';
 
 		// Create content
 		const hotspotContent = this.createHotspotContent( hotspot, index );
 		hotspotDiv.appendChild( hotspotContent );
+
+		// insert default "sipped" entry for hotspots
+		const initialInteraction = {
+			layer_id: hotspot.id,
+			layer_type: 'hotspot',
+			action_type: 'skipped',
+			layer_timestamp: parentHotspotLayer.displayTime,
+			layer_name: hotspot.name || '',
+		};
+		addLayerInteraction(
+			this.player.el().dataset.id || this.player.el().dataset.job_id,
+			initialInteraction,
+		);
 
 		return hotspotDiv;
 	}
@@ -187,6 +226,16 @@ export default class HotspotLayerManager {
 
 		const tooltipDiv = this.createHotspotTooltip( hotspot, index );
 		hotspotContent.appendChild( tooltipDiv );
+
+		hotspotContent.addEventListener( 'mouseover', ( e ) => {
+			e.stopPropagation();
+
+			updateLayerInteraction(
+				this.player.el().dataset.id || this.player.el().dataset.job_id,
+				hotspot.id,
+				'hovered',
+			);
+		} );
 
 		return hotspotContent;
 	}
@@ -234,6 +283,17 @@ export default class HotspotLayerManager {
 			tooltipDiv.textContent = '';
 			tooltipDiv.appendChild( hotspotLink );
 		}
+
+		//event listener to handle clicks
+		tooltipDiv.addEventListener( 'click', ( e ) => {
+			e.stopPropagation();
+
+			updateLayerInteraction(
+				this.player.el().dataset.id || this.player.el().dataset.job_id,
+				hotspot.id,
+				'clicked',
+			);
+		} );
 
 		return tooltipDiv;
 	}

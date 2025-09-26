@@ -40,7 +40,7 @@ export async function fetchAnalyticsData( videoId, siteUrl ) {
 
 		if (
 			result.status === 'error' &&
-      result.message.includes( 'Invalid or unverified API key' )
+			result.message.includes( 'Invalid or unverified API key' )
 		) {
 			showAPIActivationMessage();
 			return null;
@@ -274,7 +274,7 @@ export function singleMetricsChart(
 			// Format value
 			const val = d[ selectedMetric ];
 			const formattedVal =
-        selectedMetric === 'watch_time' ? `${ val.toFixed( 2 ) }s` : `${ val.toFixed( 2 ) }${ metricOption.unit }`;
+				selectedMetric === 'watch_time' ? `${ val.toFixed( 2 ) }s` : `${ val.toFixed( 2 ) }${ metricOption.unit }`;
 
 			// Position tooltip
 			const tooltipX = x( d.date );
@@ -295,13 +295,257 @@ export function singleMetricsChart(
 
 export function calculateEngagementRate( plays, videoLength, playTime ) {
 	const engagementRate =
-    plays && videoLength ? ( playTime / ( plays * videoLength ) ) * 100 : 0;
+		plays && videoLength ? ( playTime / ( plays * videoLength ) ) * 100 : 0;
 	return engagementRate.toFixed( 2 );
 }
 
 export function calculatePlayRate( pageLoad, plays ) {
 	const playRate = pageLoad ? ( plays / pageLoad ) * 100 : 0;
 	return playRate.toFixed( 2 );
+}
+
+/**
+ * Renders a grouped bar chart for layer analytics using D3.js.
+ *
+ * @param {Array<Object>} data        - The analytics data array where each object contains date and interaction metrics.
+ * @param {string}        containerId - The DOM selector (ID or class) of the container to render the chart in.
+ * @param {string}        duration    - The selected duration for data aggregation ('7d', '30d', '60d', '1y').
+ * @param {Object}        labelMap    - An object mapping metric keys to their display labels.
+ * @param {string}        layerType   - The type of layer being analyzed ('form', 'hotspot', 'cta').
+ *
+ * @return {void}
+ */
+export function layerAnalyticsBarChart(
+	data,
+	containerId,
+	duration,
+	labelMap,
+	layerType,
+) {
+	// Set dimensions and margins
+	const margin = { top: 40, right: 30, bottom: 80, left: 60 };
+	const width = 500;
+	const height = 350 - margin.top - margin.bottom;
+	const metricsByLayerType = {
+		form: [ 'submitted', 'skipped' ],
+		hotspot: [ 'clicked', 'hovered' ],
+		cta: [ 'clicked', 'skipped' ],
+	};
+
+	const subgroups = metricsByLayerType[ layerType ] || [];
+
+	// REMOVE previous chart
+	d3.select( containerId ).select( 'svg' ).remove();
+
+	// SVG SETUP
+	const svg = d3
+		.select( containerId )
+		.append( 'svg' )
+		.attr( 'width', width + margin.left + margin.right )
+		.attr( 'height', height + margin.top + margin.bottom )
+		.append( 'g' )
+		.attr( 'transform', `translate(${ margin.left },${ margin.top })` );
+
+	// If yearly, aggregate by month
+	let chartData = data;
+
+	if ( duration === '1y' ) {
+		const monthMap = d3.rollup(
+			data,
+			( v ) => {
+				const agg = {};
+				subgroups.forEach( ( key ) => {
+					agg[ key ] = d3.sum( v, ( d ) => d[ key ] || 0 );
+				} );
+				return agg;
+			},
+			( d ) => d.date.slice( 0, 7 ), // group by "YYYY-MM"
+		);
+
+		chartData = Array.from( monthMap, ( [ date, vals ] ) => ( {
+			date,
+			...vals,
+		} ) );
+	}
+
+	// SCALE
+	const x0 = d3
+		.scaleBand()
+		.domain( chartData.map( ( d ) => d.date ) ) // use aggregated data if 1y
+		.range( [ 0, width ] )
+		.padding( 0.2 );
+
+	const x1 = d3
+		.scaleBand()
+		.domain( subgroups )
+		.range( [ 0, x0.bandwidth() ] )
+		.padding( 0.05 );
+
+	const y = d3
+		.scaleLinear()
+		.domain( [
+			0,
+			d3.max( chartData, ( d ) => d3.max( subgroups, ( key ) => d[ key ] || 0 ) ) * 1.1,
+		] ).range( [ height, 0 ] );
+
+	const color = d3
+		.scaleOrdinal()
+		.domain( subgroups )
+		.range( [ '#3775d1', '#62c2b3' ] );
+
+	// Pick fewer ticks for long durations
+	let tickValues = chartData.map( ( d ) => d.date );
+
+	if ( duration === '30d' ) {
+		tickValues = tickValues.filter( ( d, i ) => i % 5 === 0 );
+	} else if ( duration === '60d' ) {
+		tickValues = tickValues.filter( ( d, i ) => i % 10 === 0 );
+	}
+
+	// X AXIS
+	svg
+		.append( 'g' )
+		.attr( 'transform', `translate(0,${ height })` )
+		.call(
+			d3
+				.axisBottom( x0 )
+				.tickValues( tickValues )
+				.tickFormat( ( d ) => formatLabel( d, duration ) ),
+		)
+		.selectAll( 'text' )
+		.attr( 'transform', 'rotate(0)' )
+		.style( 'text-anchor', 'middle' );
+
+	// Y AXIS
+	svg.append( 'g' ).call( d3.axisLeft( y ) );
+
+	// TOOLTIP DIV
+	let tooltip = d3.select( '.bar-tooltip' );
+	if ( tooltip.empty() ) {
+		tooltip = d3.select( 'body' ).append( 'div' ).attr( 'class', 'bar-tooltip' );
+	}
+
+	/**
+	 * Formats a given label into a human-readable date string
+	 * based on the current duration and label format.
+	 *
+	 * - If `duration` is `'1y'`, expects labels in `YYYY-MM` format and returns a formatted string like `"Jan'25"`.
+	 * - If the label matches `YYYY-MM-DD`, it returns a formatted date like `"05 Sep 2025"`.
+	 * - Otherwise, the label is returned unchanged.
+	 *
+	 * @param {string} label - The label value to format (e.g., a date string).
+	 * @return {string} The formatted label for display on charts.
+	 */
+	function formatLabel( label ) {
+		if ( duration === '1y' ) {
+			const dt = d3.timeParse( '%Y-%m' )( label );
+			return d3.timeFormat( "%b'%y" )( dt ); // "Jan 2025"
+		}
+		if ( /^\d{4}-\d{2}-\d{2}$/.test( label ) ) {
+			const dt = d3.timeParse( '%Y-%m-%d' )( label );
+			return d3.timeFormat( '%d %b %Y' )( dt );
+		}
+		return label;
+	}
+
+	// BARS
+	svg
+		.append( 'g' )
+		.selectAll( 'g' )
+		.data( chartData )
+		.join( 'g' )
+		.attr( 'transform', ( d ) => `translate(${ x0( d.date ) },0)` )
+		.selectAll( 'rect' )
+		.data( ( d ) => subgroups.map( ( key ) => ( { key, value: d[ key ], parent: d } ) ) )
+		.join( 'rect' )
+		.attr( 'x', ( d ) => x1( d.key ) )
+		.attr( 'y', ( d ) => y( d.value ) )
+		.attr( 'width', x1.bandwidth() )
+		.attr( 'height', ( d ) => height - y( d.value ) )
+		.attr( 'fill', ( d ) => color( d.key ) )
+		.on( 'mousemove', function( event, d ) {
+			const parent = d.parent;
+			const displayDate = formatLabel( parent.date );
+
+			const metrics = [
+				{ key: 'clicked', label: __( 'Clicks', 'godam' ), color: '#3775d1' },
+				{ key: 'hovered', label: __( 'Hovers', 'godam' ), color: '#62c2b3' },
+				{ key: 'submitted', label: __( 'Submissions', 'godam' ), color: '#3775d1' },
+				{ key: 'skipped', label: __( 'Skips', 'godam' ), color: '#62c2b3' },
+			];
+
+			// Tooltip HTML with classes
+			let html = `
+				<div class="tooltip-header">${ displayDate }</div>
+			`;
+
+			metrics.forEach( ( metric ) => {
+				if (
+					parent[ metric.key ] === undefined ||
+					! subgroups.includes( metric.key )
+				) {
+					return;
+				}
+
+				html += `
+				<div class="tooltip-row">
+					<div class="tooltip-label">
+						<span class="tooltip-dot" style="background:${ metric.color };"></span>
+						<span>${ metric.label }</span>
+					</div>
+					<div class="tooltip-value">${ parent[ metric.key ] }</div>
+				</div>`;
+			} );
+
+			tooltip
+				.html( html )
+				.style( 'opacity', 1 )
+				.style( 'left', `${ event.pageX + 18 }px` )
+				.style( 'top', `${ event.pageY - 48 }px` );
+		} )
+		.on( 'mouseleave', function() {
+			tooltip.style( 'opacity', 0 );
+		} );
+
+	// LEGEND AT THE BOTTOM, CENTERED
+	const legend = svg
+		.append( 'g' )
+		.attr( 'class', 'legend' )
+		.attr( 'transform', `translate(${ ( width / 2 ) - 90 }, ${ height + 40 })` );
+
+	const legendItem = legend
+		.selectAll( '.legend-item' )
+		.data( subgroups )
+		.enter()
+		.append( 'g' )
+		.attr( 'class', 'legend-item' )
+		.attr( 'transform', ( d, i ) => `translate(${ i * 120 }, 0)` );
+
+	// background box
+	legendItem
+		.append( 'rect' )
+		.attr( 'class', 'legend-bg' )
+		.attr( 'width', 105 )
+		.attr( 'height', 22 )
+		.attr( 'rx', 4 ) // rounded corners optional
+		.attr( 'fill', '#F2F2F7' );
+
+	// color square
+	legendItem
+		.append( 'rect' )
+		.attr( 'x', 8 )
+		.attr( 'y', 5 )
+		.attr( 'width', 12 )
+		.attr( 'height', 12 )
+		.attr( 'fill', ( d ) => color( d ) );
+
+	// label
+	legendItem
+		.append( 'text' )
+		.attr( 'x', 28 )
+		.attr( 'y', 15 ) // vertically aligned with rect
+		.text( ( d ) => labelMap[ d ] || d )
+		.style( 'font-size', '12px' );
 }
 
 export function generateCountryHeatmap(

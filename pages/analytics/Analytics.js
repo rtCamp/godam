@@ -18,6 +18,7 @@ import { calculateEngagementRate, calculatePlayRate, generateLineChart } from '.
 import DOMPurify from 'isomorphic-dompurify';
 import './charts.js';
 import upgradePlanBackground from '../../assets/src/images/upgrade-plan-analytics-bg.png';
+import InteractiveLayerAnalytics from './InteractiveLayerAnalytics.js';
 
 /**
  * WordPress dependencies
@@ -425,6 +426,7 @@ const Analytics = ( { attachmentID } ) => {
 
 						</div>
 					</div>
+
 					<div
 						id="video-analytics-container"
 						className="video-analytics-container hidden"
@@ -500,6 +502,9 @@ const Analytics = ( { attachmentID } ) => {
 							</div>
 						</div>
 					</div>
+
+					<InteractiveLayerAnalytics attachmentID={ attachmentID } />
+
 					<div className="grid grid-cols-[4fr_2fr_2fr] gap-4 px-10 metrics-container">
 						<PlaybackPerformanceDashboard
 							attachmentID={ attachmentID }

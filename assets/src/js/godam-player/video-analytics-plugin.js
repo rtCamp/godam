@@ -59,7 +59,7 @@ const videoAnalyticsPlugin = () => {
 
 			try {
 				// Destructure the ranges array from properties
-				const { ranges = [], videoId, type, videoLength, videoIds } = properties;
+				const { ranges = [], videoId, type, videoLength, videoIds, layers = [], jobId } = properties;
 
 				if ( ! type || ( type === 1 && ( ! videoIds || videoIds.length === 0 ) ) || token === 'unverified' ) {
 					return;
@@ -110,10 +110,12 @@ const videoAnalyticsPlugin = () => {
 						tags,
 						author,
 						type: type || 0,
-						video_id: videoId ? parseInt( videoId, 0 ) : 0,
+						video_id: videoId,
 						video_ids: type === 1 ? videoIds : [],
 						ranges,
 						video_length: videoLength || 0,
+						job_id: type !== 1 ? jobId || null : null,
+						layers: layers || [], // Array of layer interaction objects
 					} ),
 					keepalive: true,
 				} );
