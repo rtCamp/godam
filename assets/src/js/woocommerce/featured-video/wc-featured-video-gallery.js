@@ -175,6 +175,12 @@ jQuery( document ).ready( function( $ ) {
 				closeModal();
 			}
 		} );
+		// Escape key
+		document.addEventListener( 'keydown', ( e ) => {
+			if ( e.key === 'Escape' || e.key === 'Esc' ) {
+				closeModal();
+			}
+		} );
 
 		await loadVideoById( videoId );
 	}

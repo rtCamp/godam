@@ -1002,11 +1002,6 @@
 		padding: 12px !important;
 	}
 
-	.godam-product-modal-close.godam-video-transcoded {
-		top: 53px !important;
-        right: 9px !important;
-	}
-
 	.godam-product-sidebar.single-product-sidebar{
 
 		.godam-thumbnail-carousel{
@@ -1107,8 +1102,8 @@
 	.godam-product-video-container{
 		width: 100% !important;
 		height: 100% !important;
-		max-height: 97dvh !important;
-        min-height: 97dvh !important;
+		max-height: 100dvh !important;
+        min-height: 100dvh !important;
 		max-width: 100% !important;
 		min-width: 100% !important;
 	}
@@ -1127,8 +1122,8 @@
 		.godam-product-video-container{
 			width: 100% !important;
 			height: 100% !important;
-			max-height: 97dvh !important;
-			min-height: 97dvh !important;
+			max-height: 100dvh !important;
+			min-height: 100dvh !important;
 			max-width: 100% !important;
 			min-width: 100% !important;
 		}

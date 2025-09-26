@@ -42,8 +42,6 @@ class WC_Product_Gallery_Video_Markup {
 	 */
 	public function generate_product_gallery_video_modal_markup( $cta_enabled, $cta_display_position, $video_id, $product_ids, $timestamped = false ) {
 
-		$is_transcoded = get_post_meta( $video_id, 'rtgodam_transcoded_url', true );
-
 		if ( $cta_enabled && ( 'inside' === $cta_display_position || 'below-inside' === $cta_display_position ) ) {
 
 			$product_ids_array = array_map( 'absint', explode( ',', $product_ids ) );
@@ -51,14 +49,14 @@ class WC_Product_Gallery_Video_Markup {
 
 			// Mutiple - show all products.
 			if ( $no_of_products ) {
-				echo wp_kses_post( $this->generate_cta_enabled_muliple_product_modal_markup( $product_ids_array, $video_id, $is_transcoded ) );
+				echo wp_kses_post( $this->generate_cta_enabled_muliple_product_modal_markup( $product_ids_array, $video_id ) );
 			} else {
 				// single - show full product.
-				echo wp_kses_post( $this->generate_cta_enabled_single_product_modal_markup( $product_ids, $video_id, $timestamped, $is_transcoded ) );
+				echo wp_kses_post( $this->generate_cta_enabled_single_product_modal_markup( $product_ids, $video_id, $timestamped ) );
 			}       
 		} else {
 			// video modal markup.
-			echo wp_kses_post( $this->generate_video_modal_markup( $video_id, $is_transcoded ) );
+			echo wp_kses_post( $this->generate_video_modal_markup( $video_id ) );
 		}
 	}
 
@@ -80,20 +78,15 @@ class WC_Product_Gallery_Video_Markup {
 	 *
 	 * @param array  $product_ids Array of product IDs associated with the video.
 	 * @param int    $video_id    The ID of the video for which the modal is being rendered.
-	 * @param string $is_transcoded The transcoded video URL if available, otherwise an empty string.
 	 */
-	private function generate_cta_enabled_muliple_product_modal_markup( $product_ids, $video_id, $is_transcoded ) {
+	private function generate_cta_enabled_muliple_product_modal_markup( $product_ids, $video_id ) {
 		$data_product_ids = implode( ',', array_map( 'absint', (array) $product_ids ) );
 		?>
 			<div class="godam-product-modal-container" data-modal-video-id="<?php echo esc_attr( $video_id ); ?>"> <!-- overlay container -->
 				<div class="close">
-					<?php if ( ! empty( $is_transcoded ) ) : ?>
-						<button class="godam-product-modal-close godam-video-transcoded" aria-label="<?php __( 'Close modal', 'godam' ); ?>">
-					<?php else : ?>
-						<button class="godam-product-modal-close" aria-label="<?php __( 'Close modal', 'godam' ); ?>">
-					<?php endif; ?>
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
-						</button>
+					<button class="godam-product-modal-close" aria-label="<?php __( 'Close modal', 'godam' ); ?>">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
+					</button>
 				</div>
 				<div class="godam-product-modal-content">
 					<div class="godam-product-video-container column">
@@ -155,22 +148,17 @@ class WC_Product_Gallery_Video_Markup {
 	 * @param int    $product_id   The single product ID associated with the video.
 	 * @param int    $video_id     The ID of the video the modal is for.
 	 * @param bool   $timestamped  Whether the modal should include timestamping (default false).
-	 * @param string $is_transcoded The transcoded video URL if available, otherwise an empty string.
 	 */
-	private function generate_cta_enabled_single_product_modal_markup( $product_id, $video_id, $timestamped, $is_transcoded ) {
+	private function generate_cta_enabled_single_product_modal_markup( $product_id, $video_id, $timestamped ) {
 		if ( ! $timestamped ) {
 			$timestamped = 0;
 		}
 		?>
 			<div class="godam-product-modal-container" data-modal-video-id="<?php echo esc_attr( $video_id ); ?>" data-modal-timestamped="<?php echo esc_attr( $timestamped ); ?>" data-modal-attached-product-id="<?php echo esc_attr( $product_id ); ?>"> <!-- overlay container -->
 				<div class="close">
-					<?php if ( ! empty( $is_transcoded ) ) : ?>
-						<button class="godam-product-modal-close godam-video-transcoded" aria-label="<?php __( 'Close modal', 'godam' ); ?>">
-					<?php else : ?>
-						<button class="godam-product-modal-close" aria-label="<?php __( 'Close modal', 'godam' ); ?>">
-					<?php endif; ?>
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
-						</button>
+					<button class="godam-product-modal-close" aria-label="<?php __( 'Close modal', 'godam' ); ?>">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
+					</button>
 				</div>
 				<div class="godam-product-modal-content">
 					<div class="godam-product-video-container column">
@@ -225,19 +213,14 @@ class WC_Product_Gallery_Video_Markup {
 	 * This markup is used when no product or CTA is linked to the video, focusing solely on video playback.
 	 *
 	 * @param int    $video_id The ID of the video for which the modal is being rendered.
-	 * @param string $is_transcoded The transcoded video URL if available, otherwise an empty string.
 	 */
-	private function generate_video_modal_markup( $video_id, $is_transcoded ) {
+	private function generate_video_modal_markup( $video_id ) {
 		?>
 		<div class="godam-product-modal-container " data-modal-video-id="<?php echo esc_attr( $video_id ); ?>"> <!-- overlay container -->
 			<div class="close">
-				<?php if ( ! empty( $is_transcoded ) ) : ?>
-					<button class="godam-product-modal-close godam-video-transcoded" aria-label="<?php __( 'Close modal', 'godam' ); ?>">
-				<?php else : ?>
-					<button class="godam-product-modal-close" aria-label="<?php __( 'Close modal', 'godam' ); ?>">
-				<?php endif; ?>
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
-					</button>
+				<button class="godam-product-modal-close" aria-label="<?php __( 'Close modal', 'godam' ); ?>">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
+				</button>
 			</div>
 			<div class="godam-product-modal-content no-sidebar">
 				<div class="godam-product-video-container">
