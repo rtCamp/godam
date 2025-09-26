@@ -35,10 +35,6 @@ const initialState = {
 		custom_css: VideoCustomCSSTemplate,
 		player_skin: 'Default',
 	},
-	ads_settings: {
-		enable_global_video_ads: false,
-		adTagUrl: '',
-	},
 	global_layers: {
 		video_ads: {
 			enabled: false,

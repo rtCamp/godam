@@ -54,10 +54,6 @@ class Settings extends Base {
 				'custom_css'     => '',
 				'player_skin'    => 'Default',
 			),
-			'ads_settings'  => array(
-				'enable_global_video_ads' => false,
-				'adTagUrl'                => '',
-			),
 			'global_layers' => array(
 				'video_ads' => array(
 					'enabled'  => false,
@@ -350,10 +346,6 @@ class Settings extends Base {
 				'brand_image_id' => absint( $settings['video_player']['brand_image_id'] ?? $default['video_player']['brand_image_id'] ),
 				'custom_css'     => sanitize_textarea_field( $settings['video_player']['custom_css'] ?? $default['video_player']['custom_css'] ),
 				'player_skin'    => sanitize_text_field( $settings['video_player']['player_skin'] ?? $default['video_player']['player_skin'] ),
-			),
-			'ads_settings'  => array(
-				'enable_global_video_ads' => rest_sanitize_boolean( $settings['ads_settings']['enable_global_video_ads'] ?? $default['ads_settings']['enable_global_video_ads'] ),
-				'adTagUrl'                => esc_url_raw( $settings['ads_settings']['adTagUrl'] ?? $default['ads_settings']['adTagUrl'] ),
 			),
 			'global_layers' => array(
 				'video_ads' => array(
