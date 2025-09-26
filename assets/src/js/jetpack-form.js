@@ -25,7 +25,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		const fields = {};
 		for ( const [ key, value ] of formData.entries() ) {
 			// Only include user fields, not Jetpack hidden fields
-			if ( ! [ 'action', 'contact-form-id', 'contact-form-hash', '_wpnonce', '_wp_http_referer' ].includes( key ) ) {
+			if ( ! [ 'action', 'contact-form-id', 'contact-form-hash', '_wpnonce', '_wp_http_referer', 'jetpack_contact_form_jwt' ].includes( key ) ) {
 				fields[ key ] = value;
 			}
 		}
