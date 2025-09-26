@@ -155,12 +155,27 @@ const wcVideoCarousel = {
 		const self = this;
 		const videoElmModal = document.querySelector( '.rtgodam-product-video-gallery-slider-modal' );
 		const videoElmModalClose = document.querySelector( '.rtgodam-product-video-gallery-slider-modal-close' );
-		videoElmModalClose?.addEventListener( 'click', ( event ) => {
-			event.preventDefault();
+
+		function handleClose( event ) {
+			event?.preventDefault?.();
 			videoElmModal.classList.remove( 'open' );
-			self.swiperModal.destroy();
-			self.swiperModal = null;
-		} );
+			if ( self.swiperModal ) {
+				self.swiperModal.destroy();
+				self.swiperModal = null;
+			}
+		}
+
+		function handleEscape( e ) {
+			if ( e.key === 'Escape' || e.key === 'Esc' ) {
+				handleClose();
+			}
+		}
+
+		// Close on button click.
+		videoElmModalClose?.addEventListener( 'click', handleClose );
+
+		// Close on Escape key.
+		document.addEventListener( 'keydown', handleEscape );
 	},
 
 	/**
