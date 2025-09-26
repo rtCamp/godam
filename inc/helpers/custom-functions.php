@@ -699,3 +699,49 @@ function godam_get_transcript_path( $job_id ) {
 
 	return ! empty( $transcript_path ) ? $transcript_path : false;
 }
+
+/**
+ * Get attachment sources for a given attachment ID.
+ *
+ * This function retrieves the various source URLs for a media attachment,
+ * including the original file URL and any transcoded versions (DASH, HLS).
+ *
+ * @param int $attachment_id The ID of the media attachment.
+ *
+ * @return array An array of source arrays, each containing 'src' and 'type' keys.
+ */
+function rtgodam_get_attachment_sources( $attachment_id ) {
+	$sources = array();
+
+	if ( empty( $attachment_id ) || 0 === intval( $attachment_id ) ) {
+		return $sources;
+	}
+
+	$transcoded_url     = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+	$hls_transcoded_url = get_post_meta( $attachment_id, 'rtgodam_hls_transcoded_url', true );
+	$video_src          = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
+	$video_src_type     = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
+
+	if ( ! empty( $hls_transcoded_url ) ) {
+		$sources[] = array(
+			'src'  => $hls_transcoded_url,
+			'type' => 'application/x-mpegURL',
+		);
+	}
+
+	if ( ! empty( $transcoded_url ) ) {
+		$sources[] = array(
+			'src'  => $transcoded_url,
+			'type' => 'application/dash+xml',
+		);
+	}
+
+	if ( ! empty( $video_src ) ) {
+		$sources[] = array(
+			'src'  => $video_src,
+			'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
+		);
+	}
+
+	return $sources;
+}
