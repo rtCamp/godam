@@ -122,6 +122,8 @@ class Plugin {
 		$this->load_elementor_widgets();
 
 		$this->load_media_library();
+
+		Backward_Compatibility::get_instance();
 	}
 
 	/**

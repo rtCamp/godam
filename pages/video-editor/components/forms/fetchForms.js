@@ -38,14 +38,12 @@ export const useFetchForms = () => {
 	const { data: everestForms = [], isFetching: isFetchingEverestForms = false } = useGetEverestFormsQuery( undefined, {
 		skip: ! FormLayerComponentType?.everestforms.isActive,
 	} );
-
 	const { data: ninjaForms = [], isFetching: isFetchingNinjaForms = false } = useGetNinjaFormsQuery( undefined, {
 		skip: ! FormLayerComponentType?.ninjaforms.isActive,
 	} );
 	const { data: metforms = [], isFetching: isFetchingMetforms = false } = useGetMetformsQuery( undefined, {
 		skip: ! FormLayerComponentType?.metform.isActive,
-	});
-
+	} );
 
 	const isFetching =
 		isFetchingCF7 ||

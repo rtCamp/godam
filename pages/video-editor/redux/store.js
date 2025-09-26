@@ -20,6 +20,7 @@ import { fluentFormsApi } from './api/fluent-forms';
 import { everestFormsApi } from './api/everest-forms';
 import { ninjaFormsApi } from './api/ninja-forms';
 import { metformApi } from './api/metform';
+import { globalSettingsAPI } from './api/global-settings';
 
 export default configureStore( {
 	reducer: {
@@ -37,6 +38,7 @@ export default configureStore( {
 		[ everestFormsApi.reducerPath ]: everestFormsApi.reducer,
 		[ ninjaFormsApi.reducerPath ]: ninjaFormsApi.reducer,
 		[ metformApi.reducerPath ]: metformApi.reducer,
+		[ globalSettingsAPI.reducerPath ]: globalSettingsAPI.reducer,
 	},
 	middleware: ( getDefaultMiddleware ) => getDefaultMiddleware().concat(
 		videosAPI.middleware,
@@ -52,5 +54,6 @@ export default configureStore( {
 		everestFormsApi.middleware,
 		ninjaFormsApi.middleware,
 		metformApi.middleware,
+		globalSettingsAPI.middleware,
 	),
 } );

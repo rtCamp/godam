@@ -35,9 +35,34 @@ const initialState = {
 		custom_css: VideoCustomCSSTemplate,
 		player_skin: 'Default',
 	},
-	ads_settings: {
-		enable_global_video_ads: false,
-		adTagUrl: '',
+	global_layers: {
+		video_ads: {
+			enabled: false,
+			adTagUrl: '',
+		},
+		forms: {
+			enabled: false,
+			plugin: '',
+			form_id: '',
+			placement: 'end',
+			position: 30,
+			duration: 0,
+		},
+		cta: {
+			enabled: false,
+			text: '',
+			url: '',
+			new_tab: true,
+			placement: 'end',
+			position: 30,
+			screen_position: 'bottom-center',
+			duration: 10,
+			background_color: '#0073aa',
+			text_color: '#ffffff',
+			font_size: 16,
+			border_radius: 4,
+			css_classes: '',
+		},
 	},
 	isChanged: false,
 };
@@ -50,24 +75,52 @@ const mediaSettingsSlice = createSlice( {
 		setMediaSettings: ( state, action ) => {
 			Object.keys( action.payload ).forEach( ( category ) => {
 				if ( state[ category ] ) {
-					Object.keys( action.payload[ category ] ).forEach( ( key ) => {
-						if ( key in state[ category ] ) {
-							// Check if the value is actually different
-							if ( state[ category ][ key ] !== action.payload[ category ][ key ] ) {
-								state[ category ][ key ] = action.payload[ category ][ key ];
-								state.isChanged = true; // Mark as changed
+					// Handle nested structures like global_layers
+					if ( typeof state[ category ] === 'object' && ! Array.isArray( state[ category ] ) ) {
+						Object.keys( action.payload[ category ] ).forEach( ( key ) => {
+							if ( key in state[ category ] ) {
+								// Handle nested subcategories
+								if ( typeof state[ category ][ key ] === 'object' && state[ category ][ key ] && ! Array.isArray( state[ category ][ key ] ) ) {
+									Object.keys( action.payload[ category ][ key ] ).forEach( ( subKey ) => {
+										if ( subKey in state[ category ][ key ] ) {
+											if ( state[ category ][ key ][ subKey ] !== action.payload[ category ][ key ][ subKey ] ) {
+												state[ category ][ key ][ subKey ] = action.payload[ category ][ key ][ subKey ];
+												state.isChanged = true;
+											}
+										}
+									} );
+								} else if ( state[ category ][ key ] !== action.payload[ category ][ key ] ) {
+									state[ category ][ key ] = action.payload[ category ][ key ];
+									state.isChanged = true;
+								}
 							}
-						}
-					} );
+						} );
+					}
 				}
 			} );
 		},
 
 		// Updates a specific setting dynamically
 		updateMediaSetting: ( state, action ) => {
-			const { category, key, value } = action.payload; // e.g., { category: 'video', key: 'video_format', value: 'mp4' }
+			const { category, subcategory, key, value } = action.payload;
 
-			if ( state[ category ] && key in state[ category ] ) {
+			// Ensure the category exists
+			if ( ! state[ category ] ) {
+				state[ category ] = {};
+			}
+
+			// Handle nested structure for global_layers
+			if ( subcategory ) {
+				// Ensure the subcategory exists
+				if ( ! state[ category ][ subcategory ] ) {
+					state[ category ][ subcategory ] = {};
+				}
+
+				// Update the specific key
+
+				state[ category ][ subcategory ][ key ] = value;
+				state.isChanged = true; // Mark as changed
+			} else if ( state[ category ] && key in state[ category ] ) {
 				// Only update isChanged if the value is different
 				if ( state[ category ][ key ] !== value ) {
 					state[ category ][ key ] = value;
@@ -88,11 +141,24 @@ const mediaSettingsSlice = createSlice( {
 				// Update settings and ensure isChanged is false on initial load
 				Object.keys( action.payload ).forEach( ( category ) => {
 					if ( state[ category ] ) {
-						Object.keys( action.payload[ category ] ).forEach( ( key ) => {
-							if ( key in state[ category ] ) {
-								state[ category ][ key ] = action.payload[ category ][ key ];
-							}
-						} );
+						// Handle nested structures like global_layers
+						if ( typeof state[ category ] === 'object' && ! Array.isArray( state[ category ] ) && action.payload[ category ] && typeof action.payload[ category ] === 'object' ) {
+							Object.keys( action.payload[ category ] ).forEach( ( key ) => {
+								if ( key in state[ category ] ) {
+									// Handle nested subcategories
+									if ( typeof state[ category ][ key ] === 'object' && state[ category ][ key ] && ! Array.isArray( state[ category ][ key ] ) && action.payload[ category ][ key ] && typeof action.payload[ category ][ key ] === 'object' ) {
+										Object.keys( action.payload[ category ][ key ] ).forEach( ( subKey ) => {
+											if ( subKey in state[ category ][ key ] ) {
+												state[ category ][ key ][ subKey ] = action.payload[ category ][ key ][ subKey ];
+											}
+										} );
+									} else {
+										// Handle regular properties
+										state[ category ][ key ] = action.payload[ category ][ key ];
+									}
+								}
+							} );
+						}
 					}
 				} );
 				state.isChanged = false; // Ensure isChanged is false after loading
