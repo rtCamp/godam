@@ -7,6 +7,8 @@
 
 namespace RTGODAM\Inc\REST_API;
 
+use RTGODAM\Inc\Filesystem\Chunk_Uploader;
+
 defined( 'ABSPATH' ) || exit;
 
 use RTGODAM\Inc\Post_Types\GoDAM_Video;
@@ -46,6 +48,9 @@ class Settings extends Base {
 			),
 			'general'      => array(
 				'enable_folder_organization' => true,
+			),
+			'uploads'      => array(
+				'offload_media' => false,
 			),
 			'video_player' => array(
 				'brand_image'    => '',
@@ -189,7 +194,13 @@ class Settings extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function deactivate_api_key() {
-		// Delete the API key from the database.
+		// Persist latest token for CDN grace period.
+		$current_token = get_option( 'rtgodam-account-token', '' );
+		if ( ! empty( $current_token ) ) {
+			update_option( 'rtgodam-account-token-stored', $current_token );
+		}
+
+		// Delete current credentials.
 		$deleted_key   = delete_option( 'rtgodam-api-key' );
 		$deleted_token = delete_option( 'rtgodam-account-token' );
 
@@ -302,6 +313,9 @@ class Settings extends Base {
 			),
 			'general'      => array(
 				'enable_folder_organization' => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ?? $default['general']['enable_folder_organization'] ),
+			),
+			'uploads'      => array(
+				'offload_media' => rest_sanitize_boolean( $settings['uploads']['offload_media'] ?? $default['uploads']['offload_media'] ),
 			),
 			'video_player' => array(
 				'brand_image'    => sanitize_text_field( $settings['video_player']['brand_image'] ?? $default['video_player']['brand_image'] ),

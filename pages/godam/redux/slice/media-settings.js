@@ -28,6 +28,9 @@ const initialState = {
 	general: {
 		enable_folder_organization: true,
 	},
+	uploads: {
+		offload_media: false,
+	},
 	video_player: {
 		brand_image: '',
 		brand_color: '#2B333FB3',

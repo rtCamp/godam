@@ -1,3 +1,5 @@
+/* global godamAdminNotices */
+
 /**
  * Write your JS code here for admin.
  */
@@ -136,9 +138,38 @@ class ParticleEffect {
 	}
 }
 
+/**
+ * Handle dismissal of admin notices
+ */
+function initAdminNotices() {
+	// Handle upload limits notice dismissal
+	document.addEventListener( 'click', function( e ) {
+		// Check if the clicked element is our custom dismiss button
+		if ( e.target.closest( '.godam-upload-limits-notice .godam-dismiss-btn' ) ) {
+			e.preventDefault();
+
+			const notice = e.target.closest( '.godam-upload-limits-notice' );
+
+			// Hide the notice immediately
+			notice.style.display = 'none';
+
+			// Send AJAX request to dismiss notice (fire and forget)
+			const formData = new FormData();
+			formData.append( 'action', 'godam_dismiss_upload_limits_notice' );
+			formData.append( 'nonce', godamAdminNotices.nonce );
+
+			fetch( godamAdminNotices.ajaxUrl, {
+				method: 'POST',
+				body: formData,
+			} );
+		}
+	} );
+}
+
 function initAdminUI() {
 	initTogglePostboxes();
 	new ParticleEffect();
+	initAdminNotices();
 }
 
 document.addEventListener( 'DOMContentLoaded', initAdminUI );
