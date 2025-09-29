@@ -333,11 +333,6 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 													}
 													<div className="flex flex-col items-start">
 														<p className="m-0 text-base">
-															{ layer.isGlobalLayer && (
-																<span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded mr-2">
-																	Global
-																</span>
-															) }
 															{ layerText } layer at <b>{ layer.displayTime }s</b>
 														</p>
 														{ layer.isGlobalLayer && (

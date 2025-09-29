@@ -114,7 +114,7 @@ class GlobalLayersManager {
 			case GlobalLayersManager.PLACEMENT_MIDDLE:
 				return Math.floor( position || Math.floor( this.videoDuration / 2 ) );
 			case GlobalLayersManager.PLACEMENT_END:
-				return Math.max( 0, ( this.videoDuration || 60 ) );
+				return Math.max( 0, ( Math.round( this.videoDuration || 60 ) ) );
 			default:
 				return Math.floor( position || 0 );
 		}
