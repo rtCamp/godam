@@ -395,16 +395,6 @@ if ( ! empty( $transcript_path ) ) {
 					data-hover-select="<?php echo esc_attr( $hover_select ); ?>"
 				>
 					<?php
-					foreach ( $sources as $source ) :
-						if ( ! empty( $source['src'] ) && ! empty( $source['type'] ) ) :
-							?>
-							<source
-								src="<?php echo esc_url( $source['src'] ); ?>"
-								type="<?php echo esc_attr( $source['type'] ); ?>"
-							/>
-							<?php
-						endif;
-					endforeach;
 
 					$display_caption = ( ! isset( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) ) ||
 						( isset( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) && $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] );

@@ -215,7 +215,7 @@ class Pages {
 			$this->menu_slug,
 			__( 'Settings', 'godam' ),
 			__( 'Settings', 'godam' ),
-			'edit_posts',
+			'edit_pages',
 			$this->settings_slug,
 			array( $this, 'render_godam_page' ),
 			6

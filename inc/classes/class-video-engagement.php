@@ -63,12 +63,9 @@ class Video_Engagement {
 		if ( ! empty( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ) {
 			$brand_color = $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'];
 		}
-
-		$hover_color           = isset( $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] : '';
-		$icon_hover_background = empty( $hover_color ) ? '' : "--godam-video-engagement-icon-color--like-background: {$hover_color}; --godam-video-engagement-icon-color--comment-background: {$hover_color}; --godam-video-engagement-icon-color--view-background: {$hover_color};";
 		?>
 		<div class="rtgodam-video-engagement rtgodam-video-engagement--link-disabled" 
-		style="--godam-video-engagement-background-color: <?php echo esc_attr( $brand_color ); ?>; <?php echo esc_attr( $icon_hover_background ); ?>"
+		style="--godam-video-engagement-background-color: <?php echo esc_attr( $brand_color ); ?>;"
 		data-engagement-id="engagement-<?php echo esc_attr( $instance_id ); ?>" data-engagement-video-id="<?php echo esc_attr( $attachment_id ); ?>" data-engagement-site-url="<?php echo esc_url( get_site_url() ); ?>" data-engagement-video-title="<?php echo esc_attr( $title ); ?>">
 			<div class="rtgodam-video-engagement--title">
 				<?php echo esc_html( $title ); ?>

@@ -2,7 +2,12 @@
  * External dependencies
  */
 import videojs from 'video.js';
-import 'videojs-contrib-quality-levels';
+
+// Only import qualityLevels if not already registered
+if ( ! videojs.getPlugin( 'qualityLevels' ) ) {
+	import( 'videojs-contrib-quality-levels' );
+}
+
 import DOMPurify from 'isomorphic-dompurify';
 
 /**
