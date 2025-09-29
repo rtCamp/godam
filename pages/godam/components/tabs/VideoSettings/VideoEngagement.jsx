@@ -20,21 +20,6 @@ const VideoEngagement = ( { handleSettingChange } ) => {
 	const enableGlobalEngagement = useSelector( ( state ) => state.mediaSettings.video.enable_global_video_engagement );
 	const enableGlobalShare = useSelector( ( state ) => state.mediaSettings.video.enable_global_video_share );
 
-	/**
-	 * State to manage the notice message and visibility.
-	 */
-	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
-
-	/**
-	 * To show a notice message.
-	 *
-	 * @param {string} message Text to display in the notice.
-	 * @param {string} status  Status of the notice, can be 'success', 'error', etc.
-	 */
-	const showNotice = ( message, status = 'success' ) => {
-		setNotice( { message, status, isVisible: true } );
-	};
-
 	return (
 		<div className="relative">
 			{ ! hasValidAPIKey && (
@@ -65,7 +50,6 @@ const VideoEngagement = ( { handleSettingChange } ) => {
 							}
 							onChange={ ( value ) => {
 								handleSettingChange( 'enable_global_video_engagement', value );
-								setNotice( { ...notice, isVisible: false } );
 							} }
 							disabled={ ! hasValidAPIKey }
 							help={ __(
@@ -82,7 +66,6 @@ const VideoEngagement = ( { handleSettingChange } ) => {
 							}
 							onChange={ ( value ) => {
 								handleSettingChange( 'enable_global_video_share', value );
-								setNotice( { ...notice, isVisible: false } );
 							} }
 							disabled={ ! hasValidAPIKey }
 							help={ __(
