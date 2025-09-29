@@ -1,5 +1,13 @@
 # Changelog #
 
+## v1.4.2 (September 25, 2025) ##
+
+- Tweak: Allow replacing transcoded MP4 video with the original uploaded video
+- Fix: Resolved LifterLMS warnings and applied necessary bug fixes
+- Fix: Restored analytics tracking for GoDAM Gallery videos
+- Fix: Fixed GoDAM Recorder playback issue when rtMedia plugin is active
+- Fix: Addressed Safari browser issue where audio would not play or seek correctly
+
 ## v1.4.1 (September 17, 2025) ##
 
 - Tweak: Enhanced Audio Recording support in GoDAM Recorder for Gravity Forms

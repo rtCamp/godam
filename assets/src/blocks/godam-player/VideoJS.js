@@ -4,7 +4,12 @@
 import React from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
-import 'videojs-contrib-quality-menu';
+
+// Only import qualityMenu if not already registered (this will also load qualityLevels as dependency)
+if ( ! videojs.getPlugin( 'qualityMenu' ) ) {
+	import( 'videojs-contrib-quality-menu' );
+}
+
 import 'videojs-flvjs-es6';
 
 /**

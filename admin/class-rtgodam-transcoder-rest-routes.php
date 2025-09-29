@@ -248,8 +248,6 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 				if ( $flag ) {
 					return new WP_Error( 'rtgodam_transcoding_error', $flag, array( 'status' => 500 ) );
-				} else {
-					return new WP_REST_Response( esc_html_e( 'Media transcoded successfully.', 'godam' ), 200 );
 				}
 			}
 		}
