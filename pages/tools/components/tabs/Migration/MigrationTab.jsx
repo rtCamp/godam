@@ -7,7 +7,7 @@ import axios from 'axios';
 /**
  * WordPress dependencies
  */
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useCallback } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -44,12 +44,20 @@ const MigrationTab = () => {
 		}
 	};
 
-	const showNotice = ( setNoticeMethod, message, status = 'success' ) => {
+	const showNotice = useCallback( ( setNoticeMethod, message, status = 'success' ) => {
 		setNoticeMethod( { message, status, isVisible: true } );
 		if ( window.scrollY > 0 ) {
 			scrollToTop();
 		}
-	};
+	}, [] );
+
+	const showCoreNotice = useCallback( ( message, status ) => {
+		showNotice( setCoreMigrationNotice, message, status );
+	}, [ showNotice ] );
+
+	const showVimeoNotice = useCallback( ( message, status ) => {
+		showNotice( setVimeoMigrationNotice, message, status );
+	}, [ showNotice ] );
 
 	useEffect( () => {
 		// Check if the migration is already in progress or completed
@@ -65,7 +73,8 @@ const MigrationTab = () => {
 					<Notice
 						status={ coreMigrationNotice.status }
 						className="my-2"
-						onRemove={ () => setCoreMigrationNotice( { ...coreMigrationNotice, isVisible: false } ) }
+						isDismissible
+						onRemove={ () => setCoreMigrationNotice( ( prev ) => ( { ...prev, isVisible: false } ) ) }
 					>
 						{ coreMigrationNotice.message }
 					</Notice>
@@ -74,7 +83,8 @@ const MigrationTab = () => {
 					<Notice
 						status={ vimeoMigrationNotice.status }
 						className="my-2"
-						onRemove={ () => setVimeoMigrationNotice( { ...vimeoMigrationNotice, isVisible: false } ) }
+						isDismissible
+						onRemove={ () => setVimeoMigrationNotice( ( prev ) => ( { ...prev, isVisible: false } ) ) }
 					>
 						{ vimeoMigrationNotice.message }
 					</Notice>
@@ -84,12 +94,12 @@ const MigrationTab = () => {
 			<CoreVideoMigration
 				migrationStatus={ migrationStatus }
 				setMigrationStatus={ setMigrationStatus }
-				showNotice={ ( message, status ) => showNotice( setCoreMigrationNotice, message, status ) }
+				showNotice={ showCoreNotice }
 			/>
 			<VimeoVideoMigration
 				migrationStatus={ vimeoMigrationStatus }
 				setMigrationStatus={ setVimeoMigrationStatus }
-				showNotice={ ( message, status ) => showNotice( setVimeoMigrationNotice, message, status ) }
+				showNotice={ showVimeoNotice }
 			/>
 		</>
 	);

@@ -5,7 +5,7 @@
 
 		&-wrapper {
 			margin-left: -20px;
-	
+
 			@media screen and (max-width: 782px) {
 				margin-left: 0;
 			}
@@ -90,7 +90,7 @@
 		}
 
 		&__video {
-
+			position: relative;
 			border: 1px solid rgba(246, 246, 246, 1);
 			border-radius: 12px;
 			overflow: hidden;
@@ -125,6 +125,8 @@
 				}
 
 				&__overlay {
+					z-index: 11;
+					pointer-events: auto;
 					height: 2rem;
 					width: 2rem;
 					border-radius: 50%;
@@ -161,6 +163,27 @@
 					margin-top: 0.75rem;
 				}
 			}
+
+			&.disabled {
+				cursor: not-allowed;
+
+				&:hover, &:focus {
+					border: 1px solid rgba(246, 246, 246, 1);
+					scale: 1;
+				}
+
+				&::after {
+					content: '';
+					position: absolute;
+					top: 0;
+					left: 0;
+					right: 0;
+					bottom: 0;
+					background: rgba(255, 255, 255, 0.5);
+					z-index: 10;
+					border-radius: 12px;
+				}
+			}
 		}
 	}
 
@@ -169,40 +192,6 @@
 
 		@media screen and (min-width: 1440px) {
 			max-width: 80%;
-		}
-	}
-
-	.annual-plan-offer-banner {
-		border: none;
-		margin: 0;
-		margin-left: -2rem;
-		background: linear-gradient(90deg, #AB3A6C, #E6533A);
-		display: flex;
-		justify-content: center;
-		position: relative;
-
-		@media (max-width: 768px) {
-			margin-left: 0;
-		}
-
-		&__img {
-			width: 100%;
-			height: auto;
-			max-width: 1000px;
-		}
-
-		&__dismiss {
-			position: absolute;
-			top: 0;
-			right: 0;
-			background: none;
-			border: none;
-			color: #fff;
-			font-size: 1.5rem;
-			cursor: pointer;
-			padding: 0.25rem 0.5rem;
-			line-height: 1;
-			z-index: 10;
 		}
 	}
 }

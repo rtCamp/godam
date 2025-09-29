@@ -30,6 +30,7 @@ import ForminatorIcon from '../assets/layers/Forminator.png';
 import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
 import EverestFormsIcon from '../assets/layers/EverestFormsIcon.svg';
 import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
+import MetFormIcon from '../assets/layers/MetFormIcon.png';
 
 const Layers = [
 	{
@@ -148,27 +149,39 @@ const Layers = [
 	},
 	{
 		id: 10,
+		title: __( 'MetForm', 'godam' ),
+		description: __( 'Collect user input using MetForm', 'godam' ),
+		image: Form,
+		type: 'form',
+		formType: 'metform',
+		formIcon: MetFormIcon,
+		isRequired: true,
+		isActive: Boolean( window?.videoData?.metformActive ) ?? false,
+		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/metform/">${ __( 'MetForm', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
+	},
+	{
+		id: 11,
 		title: __( 'CTA', 'godam' ),
 		description: __( 'Guide users toward a specific action', 'godam' ),
 		image: CTA,
 		type: 'cta',
 	},
 	{
-		id: 11,
+		id: 12,
 		title: __( 'Hotspot', 'godam' ),
 		description: __( 'Highlighting key areas with focus', 'godam' ),
 		image: Hotspot,
 		type: 'hotspot',
 	},
 	{
-		id: 12,
+		id: 13,
 		title: __( 'Ad', 'godam' ),
 		description: __( 'Redirect user to custom advertisement', 'godam' ),
 		image: Ad,
 		type: 'ad',
 	},
 	{
-		id: 13,
+		id: 14,
 		title: __( 'Poll', 'godam' ),
 		description: __( 'Gather opinions through interactive voting', 'godam' ),
 		image: Poll,

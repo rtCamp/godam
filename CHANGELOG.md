@@ -1,5 +1,53 @@
 # Changelog #
 
+## v1.4.2 (September 25, 2025) ##
+
+- Tweak: Allow replacing transcoded MP4 video with the original uploaded video
+- Fix: Resolved LifterLMS warnings and applied necessary bug fixes
+- Fix: Restored analytics tracking for GoDAM Gallery videos
+- Fix: Fixed GoDAM Recorder playback issue when rtMedia plugin is active
+- Fix: Addressed Safari browser issue where audio would not play or seek correctly
+
+## v1.4.1 (September 17, 2025) ##
+
+- Tweak: Enhanced Audio Recording support in GoDAM Recorder for Gravity Forms
+- Fix: Video player UI bugs and playback quality issues
+
+## v1.4.0 (September 9, 2025) ##
+
+- New: Added integration for LifterLMS
+- New: Added Ninja Forms and MetForm layer integration
+- New: Added GoDAM Recorder Field for Everest Forms and Ninja Forms
+- New: Added Engagements for GoDAM Video and Gallery with Views, Likes, and Comments
+- New: Implemented Migration Tools for existing videos and Vimeo videos to GoDAM
+- New: Added Speech-to-text functionality using AI transcriptions
+- New: Added Custom Thumbnail Upload option for videos
+- New: Enabled different Hover-Interactions for videos
+- Tweak: Improved compatibility with Elementor
+- Tweak: Updated Media Library UI
+- Fix: Fixed iOS compatibility
+- Fix: Resolved re-transcoding ID preservation to maintain video continuity and prevent data loss
+
+## v1.3.5 (August 26, 2025) ##
+
+- Tweak: Set transcoded videos as public by default and add Org support parameters
+- Tweak: Provide HLS URL support for GoDAM Virtual Media
+
+## v1.3.4 (August 11, 2025) ##
+
+- Fix: Video Editor UI issues
+
+## v1.3.3 (August 11, 2025) ##
+
+- Tweak: Improved video player controls and HLS URL handling
+- Tweak: Added Video SEO support and duplicate prevention for GoDAM Tab videos
+- Tweak: Player-specific video speed and quality settings
+- Fix: Resolved share button and JavaScript registration issues
+
+## v1.3.2 (August 6, 2025) ##
+
+- Fix: Resolved PHP Warning on admin pages
+
 ## v1.3.1 (August 4, 2025) ##
 
 - Tweak: Added settings for CPT visibility in permalinks

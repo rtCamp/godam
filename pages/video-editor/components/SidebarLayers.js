@@ -17,6 +17,7 @@ import SureformsIcon from '../assets/layers/SureFormsIcons.svg';
 import ForminatorIcon from '../assets/layers/Forminator.png';
 import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
 import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
+import MetformIcon from '../assets/layers/MetFormIcon.png';
 
 /**
  * WordPress dependencies
@@ -99,6 +100,12 @@ export const layerTypes = [
 				icon: NinjaFormsIcon,
 				isActive: window?.videoData?.ninjaFormsActive ?? false,
 				tooltipMessage: __( 'Ninja Forms plugin is not active', 'godam' ),
+			},
+			metform: {
+				layerText: __( 'MetForm', 'godam' ),
+				icon: MetformIcon,
+				isActive: window?.videoData?.metformActive ?? false,
+				tooltipMessage: __( 'MetForm plugin is not active', 'godam' ),
 			},
 		},
 	},

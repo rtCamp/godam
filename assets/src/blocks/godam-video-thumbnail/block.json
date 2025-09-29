@@ -1,0 +1,59 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "godam/video-thumbnail",
+	"title": "GoDAM Video Thumbnail",
+	"category": "media",
+	"description": "Display GoDAM video thumbnail",
+	"keywords": [ "video", "gallery", "grid", "videos", "thumbnail" ],
+	"textdomain": "godam",
+	"attributes": {
+		"linkToVideo": {
+			"type": "boolean",
+			"default": false
+		},
+		"showPlayButton": {
+			"type": "boolean",
+			"default": false
+		},
+		"openInNewTab": {
+			"type": "boolean",
+			"default": false
+		}
+	},
+	"supports": {
+		"anchor": true,
+		"align": [ "left", "center", "right", "wide", "full" ],
+		"spacing": {
+			"margin": true,
+			"padding": true
+		},
+		"alignWide": true,
+		"color": {
+			"background": true,
+			"gradients": true
+		},
+		"dimensions": {
+			"aspectRatio": true,
+			"minHeight": true
+		},
+		"shadow": true,
+		"customClassName": true,
+		"__experimentalBorder": {
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true,
+			"__experimentalDefaultControls": {
+				"color": true,
+				"radius": true,
+				"style": true,
+				"width": true
+			}
+		}
+	},
+	"editorScript": [ "file:./index.js" ],
+	"style": [ "file:./style-index.css" ],
+	"editorStyle": [ "file:./index.css" ],
+	"render": "file:./render.php"
+}

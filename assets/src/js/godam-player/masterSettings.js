@@ -2,7 +2,12 @@
  * External dependencies
  */
 import videojs from 'video.js';
-import 'videojs-contrib-quality-levels';
+
+// Only import qualityLevels if not already registered
+if ( ! videojs.getPlugin( 'qualityLevels' ) ) {
+	import( 'videojs-contrib-quality-levels' );
+}
+
 import DOMPurify from 'isomorphic-dompurify';
 
 /**
@@ -38,6 +43,8 @@ class SettingsButton extends videojs.getComponent( 'MenuButton' ) {
 	constructor( player, options ) {
 		super( player, options );
 		this.player_ = player;
+		this.player_.selectedSpeed ??= '1x';
+		this.player_.selectedQuality ??= 'Auto';
 		this.addClass( 'vjs-settings-button' );
 		this.controlText( 'Settings' );
 		this.hasQualityItem = false;
@@ -78,6 +85,33 @@ class SettingsButton extends videojs.getComponent( 'MenuButton' ) {
 		super.handleClick( event );
 	}
 
+	// Method for the outside click listener
+	outsideClickListener() {
+		if ( this.el() ) {
+			this.menu.unlockShowing();
+			this.resetToDefaultMenu();
+		}
+	}
+
+	// Method to add an event listener to close the settings menu when clicked outside
+	attachOutsideClickListener() {
+		if ( ! this.el() ) {
+			return;
+		}
+
+		// Attach a new outside click listener and store its reference
+		this._outsideClickListener = this.outsideClickListener.bind( this );
+		document.addEventListener( 'click', this._outsideClickListener, { once: true } );
+	}
+
+	// Method to detach the outside click listener
+	detachOutsideClickListener() {
+		if ( this._outsideClickListener ) {
+			document.removeEventListener( 'click', this._outsideClickListener );
+			this._outsideClickListener = null;
+		}
+	}
+
 	// Method to reset menu to default state
 	resetToDefaultMenu() {
 		if ( this.originalItems_ ) {
@@ -99,10 +133,21 @@ class SettingsButton extends videojs.getComponent( 'MenuButton' ) {
 			this.originalItems_ = null;
 		}
 	}
+
+	// Override the superclass dispose method
+	dispose() {
+		this.detachOutsideClickListener(); // Detach the outside click listener
+		super.dispose();
+	}
 }
 
-let selectedSpeed = '1x';
-let selectedQuality = 'Auto'; // initiated globally so it can be share between multiple instances of the function.
+// Utility function to close menu and reset to default menu
+function closeAndResetMenu( menuButton ) {
+	menuButton.menu.hide();
+	menuButton.menu.unlockShowing();
+	menuButton.resetToDefaultMenu(); // reset to default menu
+}
+
 function openSubmenu( menuButton, items, title = '' ) {
 	// Ensure the menu is created
 	if ( ! menuButton.menu ) {
@@ -163,9 +208,11 @@ function openSubmenu( menuButton, items, title = '' ) {
 
 				let isSelected = false;
 				if ( title === 'Speed' ) {
-					isSelected = selectedSpeed === itemData.label;
+					const currentSpeed = this.player().selectedSpeed || '1x';
+					isSelected = currentSpeed === itemData.label;
 				} else if ( title === 'Quality' ) {
-					isSelected = selectedQuality === itemData.label;
+					const currentQuality = this.player().selectedQuality || 'Auto';
+					isSelected = currentQuality === itemData.label;
 				}
 
 				let html = '';
@@ -213,7 +260,7 @@ function openSubmenu( menuButton, items, title = '' ) {
 					for ( let i = 0; i < qualityLevels.length; i++ ) {
 						qualityLevels[ i ].enabled = true;
 					}
-					selectedQuality = 'Auto';
+					this.player().selectedQuality = 'Auto';
 				} else {
 					// Parse height from label like '720p'
 					const selectedHeight = parseInt( qualityLabel.replace( 'p', '' ), 10 );
@@ -222,34 +269,19 @@ function openSubmenu( menuButton, items, title = '' ) {
 						const level = qualityLevels[ i ];
 						level.enabled = level.height === selectedHeight;
 					}
-					selectedQuality = selectedHeight + 'p';
+					this.player().selectedQuality = selectedHeight + 'p';
 				}
 
-				menuButton.el_.focus(); // keep menu focused
-				openSubmenu( menuButton, items, title ); // refresh menu to update ticks
+				closeAndResetMenu( menuButton );
 			}
 
 			handleSpeedSelection( speed ) {
 				// Implement playback speed change
 				const rate = parseFloat( speed.replace( 'x', '' ) );
 				this.player().playbackRate( rate );
-				selectedSpeed = speed;
+				this.player().selectedSpeed = speed;
 
-				document
-					.querySelectorAll( '.easydam-player.video-js' )
-					.forEach( ( videoElement ) => {
-						try {
-							const player = videojs.getPlayer( videoElement );
-							if ( player ) {
-								player.playbackRate( rate );
-							}
-						} catch ( error ) {
-							// silently fail.
-						}
-					} );
-
-				menuButton.el_.focus();
-				openSubmenu( menuButton, items, title ); // refresh menu to show new tick
+				closeAndResetMenu( menuButton );
 			}
 		}
 
@@ -265,6 +297,11 @@ function openSubmenu( menuButton, items, title = '' ) {
 
 	// Force menu to update
 	menuButton.menu.show();
+
+	// Ensure the outside click listener is attached
+	if ( menuButton && typeof menuButton.attachOutsideClickListener === 'function' ) {
+		menuButton.attachOutsideClickListener();
+	}
 }
 
 class QualityMenuItem extends videojs.getComponent( 'MenuItem' ) {

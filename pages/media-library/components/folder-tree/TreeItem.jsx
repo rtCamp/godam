@@ -10,6 +10,7 @@ import { CSS } from '@dnd-kit/utilities';
  */
 import { Icon, file, lock, starFilled } from '@wordpress/icons';
 import { CheckboxControl } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -18,7 +19,7 @@ import { toggleOpenClose, changeSelectedFolder, toggleMultiSelectedFolder } from
 import { triggerFilterChange } from '../../data/media-grid';
 import './css/tree-item.scss';
 import { FolderTreeChevron } from '../icons';
-import { __ } from '@wordpress/i18n';
+import { utilities } from '../../data/utilities';
 
 const indentPerLevel = 12;
 
@@ -31,6 +32,10 @@ const TreeItem = ( { item, index, depth, onContextMenu, isMultiSelecting } ) => 
 
 	const multiSelectedFolderIds = useSelector( ( state ) => state.FolderReducer.multiSelectedFolderIds );
 	const isChecked = multiSelectedFolderIds.includes( item.id );
+
+	const allFolders = useSelector( ( state ) => state.FolderReducer.folders );
+
+	const isLockedOrParentLocked = utilities.isAnyParentLocked( item.id, allFolders );
 
 	/**
 	 * Handle click on the tree item to change the selected folder
@@ -101,6 +106,7 @@ const TreeItem = ( { item, index, depth, onContextMenu, isMultiSelecting } ) => 
 							onChange={ handleCheckboxChange }
 							onClick={ ( e ) => e.stopPropagation() }
 							__nextHasNoMarginBottom
+							disabled={ isLockedOrParentLocked }
 						/>
 					) }
 					<div className="tree-item__content">

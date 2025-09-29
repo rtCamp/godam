@@ -2,13 +2,14 @@
 /**
  * Handles Ninja Forms integration class.
  *
- * @since n.e.x.t
+ * @since 1.4.0
  *
  * @package GoDAM
  */
 
 namespace RTGODAM\Inc\Ninja_Forms;
 
+use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Field_Godam_Recorder;
 use RTGODAM\Inc\Traits\Singleton;
 
 defined( 'ABSPATH' ) || exit;
@@ -16,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Ninja_Forms_Integration
  *
- * @since n.e.x.t
+ * @since 1.4.0
  */
 class Ninja_Forms_Integration {
 
@@ -25,7 +26,7 @@ class Ninja_Forms_Integration {
 	/**
 	 * Initialize class.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
@@ -40,7 +41,7 @@ class Ninja_Forms_Integration {
 	/**
 	 * Setup hooks.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
@@ -50,17 +51,20 @@ class Ninja_Forms_Integration {
 
 		add_action( 'rtgodam_render_layer_for_video_editor_before', array( $this, 'add_css_for_the_layer_inside_iframe' ), 10, 2 );
 		add_action( 'rtgodam_render_layer_for_video_editor', array( $this, 'render_layer_form_for_video_editor' ), 10, 2 );
+
+		add_filter( 'ninja_forms_register_fields', array( $this, 'register_field' ) );
+		add_filter( 'ninja_forms_field_template_file_paths', array( $this, 'register_template_path' ) );
 	}
 
 	/**
 	 * Add additional css for video editor.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
 	public function add_additional_css_for_video_editor() {
-		$custom_css = <<<CSS
+		$custom_css = '
 			.form-container.ninja-form {
 				margin: unset;
 				height: 100%;
@@ -72,7 +76,7 @@ class Ninja_Forms_Integration {
 			.form-container.ninja-form iframe {
 				height: 100%;
 			}
-		CSS;
+		';
 
 
 		wp_add_inline_style( 'rtgodam-style', $custom_css );
@@ -81,16 +85,16 @@ class Ninja_Forms_Integration {
 	/**
 	 * Add additional css for godam player.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
 	public function add_additional_css_for_godam_player() {
-		$custom_css = <<<CSS
+		$custom_css = '
 			.easydam-layer.ninjaforms .form-container {
 				position: static;
 			}
-		CSS;
+		';
 
 
 		wp_add_inline_style( 'godam-player-style', $custom_css );
@@ -99,7 +103,7 @@ class Ninja_Forms_Integration {
 	/**
 	 * Add css for the layer inside iframe.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $layer Layer name.
 	 * @param string $layer_id Layer ID.
@@ -108,7 +112,7 @@ class Ninja_Forms_Integration {
 	 */
 	public function add_css_for_the_layer_inside_iframe( $layer, $layer_id ) {
 		if ( 'ninja-forms' === $layer && ! empty( $layer_id ) ) {
-			$custom_css = <<<CSS
+			$custom_css = '
 				html {
 					margin: 0 !important;
 					padding: 0 !important;
@@ -119,7 +123,7 @@ class Ninja_Forms_Integration {
 					height: 100vh;
 					align-content: center;
 				}
-			CSS;
+			';
 
 			echo '<style>' . $custom_css . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
@@ -128,7 +132,7 @@ class Ninja_Forms_Integration {
 	/**
 	 * Render ninja form for video editor.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $layer Layer name.
 	 * @param string $layer_id Layer ID.
@@ -139,5 +143,36 @@ class Ninja_Forms_Integration {
 		if ( 'ninja-forms' === $layer && ! empty( $layer_id ) ) {
 			echo do_shortcode( "[ninja_form id='{$layer_id}']" ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
+	}
+
+	/**
+	 * Register field
+	 *
+	 * @param array $fields Fields to register.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @return array
+	 */
+	public function register_field( $fields ) {
+
+		$fields[ Ninja_Forms_Field_Godam_Recorder::$field_type ] = Ninja_Forms_Field_Godam_Recorder::get_instance();
+
+		return $fields;
+	}
+
+	/**
+	 * Provides the template path for GoDAM Recorder.
+	 *
+	 * @param array $paths Paths to template files.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @return array
+	 */
+	public function register_template_path( $paths ) {
+		$paths[] = RTGODAM_PATH . 'inc/classes/ninja-forms/templates/';
+
+		return $paths;
 	}
 }

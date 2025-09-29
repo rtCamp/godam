@@ -124,13 +124,13 @@ $settings-page-breakpoint: 782px;
 		 * Styes used for the tabs for the main settings page.
 		 */
 		&__container {
-			margin: 2rem auto;
-			padding: 0 20px;
+			padding: 2rem 20px;
 			max-width: 1440px;
 			display: flex;
 			justify-content: space-between;
 			gap: 2em;
 			position: relative;
+			background-color: #f0f0f1;
 
 			@media (max-width: $settings-page-breakpoint) {
 				margin: 20px auto;

@@ -3,8 +3,6 @@
 }
 
 #wpbody-content {
-	background-image: url(../../assets/src/images/hero-bg.webp);
-	background-size: cover;
 	height: 100%;
 }
 
@@ -13,6 +11,11 @@
 	&-header {
 		background: #fff;
 	}
+}
+
+#root-video-help {
+	background-image: url(../../assets/src/images/hero-bg.webp);
+	background-size: cover;
 }
 
 .godam-help-container {

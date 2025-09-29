@@ -100,13 +100,13 @@ $tools-page-breakpoint: 782px;
 		 * Styes used for the tabs for the main settings page.
 		  */
 		&__container {
-			margin: 2rem auto;
-			padding: 0 20px;
+			padding: 2rem 20px;
 			max-width: 1440px;
 			display: flex;
 			justify-content: space-between;
 			gap: 2em;
 			position: relative;
+			background-color: #f0f0f1;
 
 			@media (max-width: $tools-page-breakpoint) {
 				margin: 20px auto;
@@ -241,4 +241,11 @@ $tools-page-breakpoint: 782px;
 		margin-bottom: 2rem;
 	}
 
+    .godam-panel button.components-panel__body-toggle {
+      height: auto;
+      padding: 1.25rem;
+      font-size: 1rem;
+      line-height: 1;
+      font-weight: 600;
+    }
 }
