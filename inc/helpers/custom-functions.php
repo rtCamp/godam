@@ -698,7 +698,7 @@ function rtgodam_get_video_duration( $attachment_id ) {
 		}
 
 		if ( empty( $video_duration ) ) {
-			$video_duration = absint( get_post_meta( $attachment_id, '_video_duration', true ) );
+			$video_duration = floatval( get_post_meta( $attachment_id, '_video_duration', true ) );
 		}
 
 		// Another fallback: check if duration is stored in rtgodam_meta.
