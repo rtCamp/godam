@@ -98,11 +98,6 @@
                     color: var( --godam-video-engagement-icon-color--comment );
                     background-color: var( --godam-video-engagement-icon-color--comment-background );
                 }
-
-                & .rtgodam-video-engagement--view-icon {
-                    color: var( --godam-video-engagement-icon-color--view );
-                    background-color: var( --godam-video-engagement-icon-color--view-background );
-                }
             }
 
             &.is-progressing {
@@ -127,6 +122,10 @@
             top: 10px;
             left: -8px;
         }
+    }
+
+    &--view-link {
+        cursor: default;
     }
 
     &--link-disabled {
