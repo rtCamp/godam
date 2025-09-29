@@ -2,7 +2,12 @@
 /**
  * External dependencies
  */
+/**
+ * Internal dependencies
+ */
+const { select, dispatch } = wp.data;
 import DOMPurify from 'isomorphic-dompurify';
+const engagementStore = 'godam-video-engagement';
 
 // Common function to load more videos
 async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVideos ) {
@@ -162,6 +167,7 @@ document.addEventListener( 'click', async function( e ) {
 			modal.className = 'godam-modal';
 			document.body.appendChild( modal );
 		}
+		modal.classList.add( 'is-gallery' );
 
 		// Store current video ID and loading state
 		modal.dataset.currentVideoId = videoId;
@@ -173,6 +179,9 @@ document.addEventListener( 'click', async function( e ) {
 		const galleryOrderby = currentGallery.getAttribute( 'data-orderby' ) || 'date';
 		const galleryOrder = currentGallery.getAttribute( 'data-order' ) || 'DESC';
 		const galleryTotal = parseInt( currentGallery.getAttribute( 'data-total' ) || 0, 10 );
+
+		// Check if engagements are enabled for the gallery
+		const galleryEngagements = currentGallery.getAttribute( 'data-engagements' ) === '1';
 
 		// Show modal immediately with the player
 		modal.innerHTML = `
@@ -207,6 +216,8 @@ document.addEventListener( 'click', async function( e ) {
 				return;
 			}
 
+			window.galleryScroll = false;
+
 			// Set loading state
 			modal.dataset.isLoading = 'true';
 			modal.dataset.currentVideoId = newVideoId;
@@ -227,8 +238,21 @@ document.addEventListener( 'click', async function( e ) {
 			}
 
 			try {
-				const response = await fetch( `/wp-json/godam/v1/video-shortcode?id=${ newVideoId }` );
-				const data = await response.json();
+				let data;
+				const videoMarkUp = select( engagementStore ).getVideoMarkUp()[ newVideoId ];
+				if ( videoMarkUp ) {
+					data = {
+						html: videoMarkUp,
+						status: 'success',
+					};
+				} else {
+					const response = await fetch( `/wp-json/godam/v1/video-shortcode?id=${ newVideoId }` );
+					data = await response.json();
+
+					if ( data.status === 'success' && data.html ) {
+						dispatch( engagementStore ).addVideoMarkUp( newVideoId, data.html );
+					}
+				}
 
 				if ( data.status === 'success' && data.html ) {
 					// Update the video element with the fetched data
@@ -248,13 +272,50 @@ document.addEventListener( 'click', async function( e ) {
 							videoDate.textContent = data.date || '';
 						}
 
+						const engagementContainer = videoContainer.querySelector( '.rtgodam-video-engagement' );
+						let engagementId = engagementContainer?.getAttribute( 'data-engagement-id' ) || 0;
+						const siteUrl = engagementContainer?.getAttribute( 'data-engagement-site-url' ) || '';
+
+						if ( ! galleryEngagements ) {
+							engagementContainer.remove();
+						}
+
 						// Reinitialize the player with the new content
 						if ( typeof GODAMPlayer === 'function' ) {
-							GODAMPlayer( modal );
+							const godamPlayer = GODAMPlayer( modal );
+							const initEngagement = godamPlayer.initEngagement;
 							// Find the video player and start playing
 							const videoPlayer = modal.querySelector( '.video-js' );
 							if ( videoPlayer && videoPlayer.player ) {
-								videoPlayer.player.play();
+								if ( galleryEngagements ) {
+									// If engagements are enabled, initiate the comment modal with Data
+									let skipEngagements = false;
+									if ( 0 === engagementId ) {
+										const vidFigure = videoContainer.querySelector( 'figure' );
+										engagementId = vidFigure?.id.replace( 'godam-player-container', 'engagement' );
+										skipEngagements = true;
+									}
+									const newVideoEngagementsData = select( engagementStore ).getTitles()[ newVideoId ];
+									if ( newVideoEngagementsData ) {
+										dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId, skipEngagements ).then( () => {
+											window.galleryScroll = true;
+										} );
+										videoPlayer.player.play();
+									} else {
+										initEngagement.then( () => {
+											dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId, skipEngagements ).then( () => {
+												window.galleryScroll = true;
+											} );
+											videoPlayer.player.play();
+										} );
+									}
+									engagementContainer?.remove();
+								} else {
+									dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId, true ).then( () => {
+										window.galleryScroll = true;
+									} );
+									videoPlayer.player.play();
+								}
 							}
 						}
 					}
@@ -286,6 +347,12 @@ document.addEventListener( 'click', async function( e ) {
 
 		// Close handlers
 		const close = () => {
+			// Send heatmap (type 2) for the current video on close BEFORE disposing/removing
+			const currentId = parseInt( modal.dataset.currentVideoId || 0, 10 );
+			if ( currentId ) {
+				window.analytics?.trackVideoEvent( { type: 2, videoId: currentId, root: modal } );
+			}
+
 			// Find and dispose any video players in the modal
 			const players = modal.querySelectorAll( '.video-js' );
 			players.forEach( ( player ) => {
@@ -293,9 +360,11 @@ document.addEventListener( 'click', async function( e ) {
 					player.player.dispose();
 				}
 			} );
-			modal.classList.add( 'hidden' );
+			modal.remove();
 			// Re-enable background scrolling
 			document.body.style.overflow = '';
+			document.body.removeEventListener( 'wheel', handleScroll );
+			document.body.removeEventListener( 'touchend', handleTouchend );
 		};
 
 		modal.querySelector( '.godam-modal-close' )?.addEventListener( 'click', close );
@@ -354,13 +423,22 @@ document.addEventListener( 'click', async function( e ) {
 		};
 
 		// Scroll functionality for desktop (wheel events)
-		const SCROLL_COOLDOWN = 800; // milliseconds
+		const SCROLL_COOLDOWN = 1000; // milliseconds
 		let lastScrollTime = 0;
 		let scrollTimeout;
 
-		modal.addEventListener( 'wheel', async ( event ) => {
+		const handleScroll = async ( event ) => {
 			event.preventDefault(); // Prevent background scroll
 			event.stopPropagation(); // Prevent event bubbling
+
+			if ( ! window.galleryScroll ) {
+				return;
+			}
+
+			const currentPopUp = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
+			if ( ! currentPopUp ) {
+				return;
+			}
 
 			// Clear any existing timeout
 			clearTimeout( scrollTimeout );
@@ -418,28 +496,31 @@ document.addEventListener( 'click', async function( e ) {
 					const newVideoId = newThumbnail.getAttribute( 'data-video-id' );
 					if ( newVideoId && newVideoId !== currentId ) {
 						lastScrollTime = currentTime;
+						const popUpElement = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
+						if ( popUpElement ) {
+							popUpElement.style.display = 'none';
+						}
+						// Send type 2 for the old video
+						window.analytics?.trackVideoEvent( { type: 2, root: document.querySelector( '#rtgodam-video-engagement--comment-modal' ) } );
+
 						loadNewVideo( newVideoId );
 					}
 				}
 			}, 150 ); // Debounce delay
-		}, { passive: false } );
+		};
 
-		// Touch functionality for mobile
-		let touchStartY = 0;
-		let touchEndY = 0;
-
-		modal.addEventListener( 'touchstart', ( err ) => {
-			touchStartY = err.touches[ 0 ].clientY;
-		}, { passive: false } );
-
-		modal.addEventListener( 'touchmove', ( err ) => {
-			err.preventDefault(); // Prevent background scroll
-			err.stopPropagation(); // Prevent event bubbling
-		}, { passive: false } );
-
-		modal.addEventListener( 'touchend', async ( err ) => {
+		const handleTouchend = async ( err ) => {
 			touchEndY = err.changedTouches[ 0 ].clientY;
 			const touchDiff = touchStartY - touchEndY;
+
+			if ( ! window.galleryScroll ) {
+				return;
+			}
+
+			const currentPopUp = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
+			if ( ! currentPopUp ) {
+				return;
+			}
 
 			// Minimum swipe distance
 			if ( Math.abs( touchDiff ) < 50 ) {
@@ -502,10 +583,35 @@ document.addEventListener( 'click', async function( e ) {
 					const newVideoId = newThumbnail.getAttribute( 'data-video-id' );
 					if ( newVideoId && newVideoId !== currentId ) {
 						lastScrollTime = currentTime;
+						const popUpElement = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
+						if ( popUpElement ) {
+							popUpElement.style.display = 'none';
+						}
+
+						// Send type 2 for the old video
+						window.analytics?.trackVideoEvent( { type: 2, root: document.querySelector( '#rtgodam-video-engagement--comment-modal' ) } );
+
 						loadNewVideo( newVideoId );
 					}
 				}
 			}, 150 ); // Debounce delay
+		};
+
+		document.body.addEventListener( 'wheel', handleScroll, { passive: false } );
+
+		// Touch functionality for mobile
+		let touchStartY = 0;
+		let touchEndY = 0;
+
+		document.body.addEventListener( 'touchstart', ( err ) => {
+			touchStartY = err.touches[ 0 ].clientY;
 		}, { passive: false } );
+
+		document.body.addEventListener( 'touchmove', ( err ) => {
+			err.preventDefault(); // Prevent background scroll
+			err.stopPropagation(); // Prevent event bubbling
+		}, { passive: false } );
+
+		document.body.addEventListener( 'touchend', handleTouchend, { passive: false } );
 	}
 } );

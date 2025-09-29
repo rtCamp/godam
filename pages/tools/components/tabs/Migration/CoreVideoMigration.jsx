@@ -25,6 +25,17 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice }
 	const handleMigrationClick = async () => {
 		const url = window.godamRestRoute?.url + 'godam/v1/video-migrate';
 
+		// Optimistically set UI to processing so users get instant feedback.
+		setMigrationStatus( ( prev ) => ( {
+			...( prev || {} ),
+			total: 0,
+			done: 0,
+			started: Date.now(),
+			completed: null,
+			status: 'processing',
+			message: __( 'Starting…', 'godam' ),
+		} ) );
+
 		axios.post( url, {
 			type: 'core',
 		},
@@ -37,10 +48,11 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice }
 			.then( ( response ) => {
 				setMigrationStatus( response.data );
 			} )
-			.catch( ( error ) => {
-				// Handle error, e.g., show a notification instead of using console.
-				// eslint-disable-next-line no-alert
-				alert( __( 'An error occurred during migration: ', 'godam' ) + error.message );
+			.catch( ( err ) => {
+				// Reset UI as request failed; show an error notice for clarity.
+				setMigrationStatus( { total: 0, done: 0, started: null, completed: null, status: 'pending', message: '' } );
+				const apiMessage = err?.response?.data?.message || err?.message || __( 'Something went wrong while starting migration.', 'godam' );
+				showNotice( apiMessage, 'error' );
 			} );
 	};
 
@@ -149,10 +161,10 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice }
 
 	return (
 		<>
-			<Panel header={ __( 'Core video Migration', 'godam' ) } className="godam-panel">
-				<PanelBody opened>
+			<Panel className="godam-panel">
+				<PanelBody title={ __( 'Core video Migration', 'godam' ) } initialOpen={ false }>
 					<p className="m-0">
-						{ __( 'This tool is used to replace WordPress core video blocks with GoDAM video block.', 'godam' ) }
+						{ __( 'This tool replaces WordPress core video blocks with GoDAM video blocks. It does not replace videos added in the WordPress Classic Editor.', 'godam' ) }
 					</p>
 
 					{ /* Progressbar indicating video migration progress */ }
@@ -180,7 +192,7 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice }
 							className="godam-button mt-2"
 							disabled={ ! migrationStatus }
 						>
-							{ __( 'Start Migration', 'godam' ) }
+							{ migrationStatus?.status === 'completed' ? __( 'Restart Migration', 'godam' ) : __( 'Start Migration', 'godam' ) }
 						</Button>
 					) }
 				</PanelBody>

@@ -411,7 +411,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 						</Tooltip>
 						<Button
 							variant="primary"
-							href={ `/?godam_page=video-preview&id=${ attachmentID }` }
+							href={ `${ window?.godamRestRoute?.homeUrl }?godam_page=video-preview&id=${ attachmentID }` }
 							target="_blank"
 							className="godam-button"
 							icon={ seen }
@@ -437,6 +437,15 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 										},
 										aspectRatio: '16:9',
 										sources,
+										// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
+										// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
+										html5: {
+											vhs: {
+												bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
+												bandwidthVariance: 1.0, // allow renditions close to estimate
+												limitRenditionByPlayerDimensions: false, // don't cap by video element size
+											},
+										},
 										controlBar: {
 											playToggle: true,
 											volumePanel: true,

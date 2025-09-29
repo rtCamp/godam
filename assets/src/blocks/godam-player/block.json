@@ -100,13 +100,17 @@
 		},
 		"showShareButton": {
 			"type": "boolean",
-			"default": true
+			"default": false
 		},
 		"layout": {
 			"type": "object",
 			"default": {
 				"type": "default"
 			}
+		},
+		"engagements": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"supports": {

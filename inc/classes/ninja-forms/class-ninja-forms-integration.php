@@ -2,7 +2,7 @@
 /**
  * Handles Ninja Forms integration class.
  *
- * @since n.e.x.t
+ * @since 1.4.0
  *
  * @package GoDAM
  */
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Ninja_Forms_Integration
  *
- * @since n.e.x.t
+ * @since 1.4.0
  */
 class Ninja_Forms_Integration {
 
@@ -26,7 +26,7 @@ class Ninja_Forms_Integration {
 	/**
 	 * Initialize class.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
@@ -41,7 +41,7 @@ class Ninja_Forms_Integration {
 	/**
 	 * Setup hooks.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
@@ -59,7 +59,7 @@ class Ninja_Forms_Integration {
 	/**
 	 * Add additional css for video editor.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
@@ -85,7 +85,7 @@ class Ninja_Forms_Integration {
 	/**
 	 * Add additional css for godam player.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
@@ -103,7 +103,7 @@ class Ninja_Forms_Integration {
 	/**
 	 * Add css for the layer inside iframe.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $layer Layer name.
 	 * @param string $layer_id Layer ID.
@@ -132,7 +132,7 @@ class Ninja_Forms_Integration {
 	/**
 	 * Render ninja form for video editor.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $layer Layer name.
 	 * @param string $layer_id Layer ID.
@@ -150,7 +150,7 @@ class Ninja_Forms_Integration {
 	 *
 	 * @param array $fields Fields to register.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return array
 	 */
@@ -166,7 +166,7 @@ class Ninja_Forms_Integration {
 	 *
 	 * @param array $paths Paths to template files.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @return array
 	 */

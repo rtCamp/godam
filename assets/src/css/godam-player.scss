@@ -9,6 +9,9 @@
 @use "./cf7-godam-theme";
 @use './variables';
 
+// Video engagement styles.
+@use "./video-engagement";
+
 .rtgodam-video-caption {
 
 	margin-bottom: 1em;
@@ -98,61 +101,8 @@
 	pointer-events: none; /* Prevent interaction with the overlay */
 }
 
-.easydam-video-container {
-	position: relative;
-	background-color: rgba(149, 149, 149, 0.2);
-	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
-	container-type: inline-size;
-	container-name: godam-player-default-skin;
-
-	&:has(.vjs-has-started) {
-
-		.godam-player-overlay {
-
-			display: none;
-		}
-	}
-
-	&:hover {
-
-		.vjs-big-play-button {
-			transform: scale(1.1);
-		}
-
-		.godam-player-overlay {
-			background: radial-gradient(
-				ellipse at center,
-				rgba(0, 0, 0, 0.05) 0%,
-				rgba(0, 0, 0, 0.1) 50%,
-				rgba(0, 0, 0, 0.15) 100%
-			);
-			opacity: 0.7;
-		}
-	}
-}
-
-.easydam-video-container .video-js .vjs-big-play-button {
-	background-color: var(--rtgodam-control-bar-color, #000) !important;
-	border: none;
-	cursor: pointer;
-	border-radius: 50%;
-	padding: 0;
-	z-index: 10;
-	width: 50px;
-	height: 50px;
-	left: 53%;
-	transition: transform 0.3s ease;
-	min-height: unset;
-
-	span::before {
-		font-size: 28px;
-		line-height: 1.8;
-	}
-
-	&:hover, &:focus {
-		transform: scale(1.1);
-	}
+.vjs-audio-button.vjs-menu-button {
+	display: none;
 }
 
 .animate-play-btn {
@@ -204,11 +154,6 @@
 
 .vjs-picture-in-picture-control {
 	order: 7;
-}
-
-.easydam-player.video-js {
-	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9 );
-	cursor: pointer;
 }
 
 .form-container {
@@ -864,45 +809,6 @@ body.godam-share-modal-open {
 	}
 }
 
-.easydam-video-container .vjs-button.godam-share-button {
-	position: absolute;
-	opacity: 0;
-	visibility: hidden;
-	pointer-events: none;
-	top: 10px;
-	right: 10px;
-	z-index: 10;
-	padding: 10px;
-	background-color: rgba(0, 0, 0, 0.7);
-	color: #fff;
-	border: none;
-	cursor: pointer !important;
-	font-size: 15px !important;
-	border-radius: 50%;
-	display: flex;
-	transition: all 0.3s ease;
-	min-height: unset;
-	margin: 0;
-
-	@media screen and (max-width: 768px) {
-
-		&  {
-			opacity: 1;
-			visibility: visible;
-		}
-	}
-}
-
-.easydam-video-container:hover .vjs-button.godam-share-button {
-	opacity: 1;
-	visibility: visible;
-	pointer-events: auto;
-
-	&:hover{
-		background-color: #AB3A6C;
-	}
-}
-
 /* Tooltip style */
 .hotspot-tooltip {
 	position: absolute;
@@ -1050,6 +956,19 @@ body.godam-share-modal-open {
 
 .vjs-menu-content {
 	background-color: rgba(43, 51, 63, 0.9);
+}
+
+.vjs-menu {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.vjs-menu.vjs-lock-showing {
+  opacity: 1;
+}
+
+.vjs-menu.vjs-closing {
+  opacity: 0.5; /* mid-state to hint closing */
 }
 
 .vjs-menu .vjs-menu-content li {
@@ -1361,40 +1280,48 @@ body.godam-share-modal-open {
 	}
 }
 
-// Style for video player fullscreen button
+/* Style for video player fullscreen buttons */
 .video-js {
 
-	.vjs-custom-fullscreen-control {
+	.vjs-custom-fullscreen-exit-control {
+		position: fixed !important;
+		top: 0.75rem !important;
+		left: 0.5rem !important;
+		display: none !important;
+		height: 20px;
+		width: 20px;
 
-		.vjs-icon-placeholder {
+		span::before {
+			content: ''; /* Hide default icon */
+			background: url(../images/close.svg);
+			background-position: center;
+			background-repeat: no-repeat;
+			background-size: contain;
+			display: inline-block;
+		}
 
-			&.fullscreen-icon {
-				display: block;
-			}
-
-			&.exitscreen-icon {
-				display: none;
-			}
+		&.vjs-icon-placeholder {
+			color: var(--rtgodam-control-hover-color) !important;
 		}
 	}
 
 	&.vjs-fullscreen {
 
-		.vjs-custom-fullscreen-control {
-
-			.vjs-icon-placeholder {
-
-				&.fullscreen-icon {
-					display: none;
-				}
-
-				&.exitscreen-icon {
-					display: block;
-				}
-			}
+		.vjs-custom-fullscreen-exit-control {
+			display: block !important;
 		}
 	}
 
+	@media (hover: none) {
+
+		.vjs-volume-control {
+			display: none !important; // Disable slider for touch devices
+		}
+
+		.vjs-volume-panel {
+			width: 40px !important; //Prevent volume slider transition effect.
+		}
+	}
 
 	@container godam-player-default-skin (max-width: 480px) {
 
@@ -1426,6 +1353,10 @@ body.godam-share-modal-open {
 				position: absolute;
 				bottom: 0;
 				left: 0;
+			}
+
+			.vjs-volume-control {
+				display: none; //Fallback for old browser versions not supporting interaction media features
 			}
 
 			.vjs-skip-backward-5,
@@ -1587,6 +1518,11 @@ body.godam-share-modal-open {
 	}
 }
 
+.easydam-player.video-js {
+	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9 );
+	cursor: pointer;
+}
+
 .video-js .vjs-time-tooltip,
 .video-js .vjs-volume-tooltip,
 .vjs-duration-display,
@@ -1599,14 +1535,135 @@ body.godam-share-modal-open {
 	position: relative;
 }
 
+.easydam-video-container {
+	position: relative;
+	background-color: rgba(149, 149, 149, 0.2);
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
+	container-type: inline-size;
+	container-name: godam-player-default-skin;
+
+	&:has(.vjs-has-started) {
+
+		.godam-player-overlay {
+
+			display: none;
+		}
+	}
+
+	.vjs-text-track-display {
+		bottom: 4em !important;
+	}
+
+	.vjs-button.godam-share-button {
+
+		position: absolute;
+		opacity: 0;
+		visibility: hidden;
+		pointer-events: none;
+		top: 10px;
+		right: 10px;
+		z-index: 10;
+		padding: 10px;
+		background-color: rgba(0, 0, 0, 0.7);
+		color: #fff;
+		border: none;
+		cursor: pointer !important;
+		font-size: 15px !important;
+		border-radius: 50%;
+		display: flex;
+		transition: all 0.3s ease;
+		min-height: unset;
+		margin: 0;
+
+		@media screen and (max-width: 768px) {
+
+			&  {
+				opacity: 1;
+				visibility: visible;
+			}
+		}
+	}
+
+	&:hover {
+
+		.vjs-big-play-button {
+			transform: scale(1.1);
+		}
+
+		.godam-player-overlay {
+			background: radial-gradient(
+				ellipse at center,
+				rgba(0, 0, 0, 0.05) 0%,
+				rgba(0, 0, 0, 0.1) 50%,
+				rgba(0, 0, 0, 0.15) 100%
+			);
+			opacity: 0.7;
+		}
+
+		.vjs-button.godam-share-button {
+			opacity: 1;
+			visibility: visible;
+			pointer-events: auto;
+
+			&:hover{
+				background-color: #AB3A6C;
+			}
+		}
+	}
+
+	&.godam-video-fullscreen {
+		position: fixed;
+		inset: 0;
+		width: 100vw;
+		height: 100vh;
+		background: #000;
+		z-index: 99999999;
+		display: flex;
+		align-items: center;
+	}
+
+	.video-js {
+
+		.vjs-big-play-button {
+			background-color: var(--rtgodam-control-bar-color, #000) !important;
+			border: none;
+			cursor: pointer;
+			border-radius: 50%;
+			padding: 0;
+			z-index: 10;
+			width: 50px;
+			height: 50px;
+			left: 53%;
+			transition: transform 0.3s ease;
+			min-height: unset;
+
+			span::before {
+				font-size: 28px;
+				line-height: 1.8;
+			}
+
+			&:hover, &:focus {
+				transform: scale(1.1);
+			}
+		}
+	}
+}
+
+.godam-show-controls-on-hover {
+
+	&:hover {
+
+		.vjs-control-bar {
+			display: flex !important;
+		}
+	}
+}
+
 .gf-godam-video-preview {
 
 	.easydam-video-container {
 		height: 100%;
-
-		.easydam-player.video-js {
-			margin-top: -2.125rem;
-		}
 	}
 }
 
@@ -1894,4 +1951,65 @@ body.godam-share-modal-open {
 
 .godam-video-wrapper:has(.animate-video-loading) .godam-video-overlay-container {
 	display: none !important;
+}
+
+// Override `video-js button` style for uppy modal button.
+#uppy-godam-video-modal-container {
+
+	.uppy-Dashboard-close {
+		color: #ffffffe6;
+		cursor: pointer;
+		display: block;
+		font-size: 27px;
+		position: absolute;
+		top: -33px;
+		z-index: 1005;
+	}
+
+	.uppy-c-btn {
+		color: inherit;
+		display: inline-flex;
+		font-size: inherit;
+		font-weight: 500;
+		line-height: 1;
+		transition-duration: .3s;
+		transition-property: background-color, color;
+	}
+
+	.uppy-Dashboard-browse {
+		color: #1269cf;
+		cursor: pointer;
+	}
+
+	.uppy-ScreenCapture-button {
+		border-radius: 50%;
+		color: #fff;
+		cursor: pointer;
+		transition: all .3s;
+
+		&--video {
+			background: #e32437;
+			color: #fff;
+		}
+
+		&--submit {
+			background-color: #1269cf;
+			margin-left: 12px;
+		}
+	}
+
+	.uppy-Webcam-button {
+		background-color: #e32437;
+		border-radius: 50%;
+		color: #fff;
+		cursor: pointer;
+		transition: all .3s;
+	}
+
+	@media only screen and (min-width: 820px) {
+
+		.uppy-Dashboard-close {
+			font-size: 35px;
+		}
+	}
 }

@@ -3,7 +3,7 @@
  * Plugin Name: GoDAM
  * Plugin URI: https://godam.io
  * Description: Seamlessly manage and deliver your media assets directly from the cloud-based media management. Store assets efficiently, stream them via a CDN, and enhance your website's performance and user experience. Featuring adaptive bit rate streaming, adding interactive layers in videos, and taking full advantage of a digital asset management solution within WordPress.
- * Version: 1.3.4
+ * Version: 1.4.2
  * Requires at least: 6.5
  * Requires PHP: 7.4
  * Text Domain: godam
@@ -43,7 +43,7 @@ if ( ! defined( 'RTGODAM_VERSION' ) ) {
 	/**
 	 * The version of the plugin
 	 */
-	define( 'RTGODAM_VERSION', '1.3.4' );
+	define( 'RTGODAM_VERSION', '1.4.2' );
 }
 
 if ( ! defined( 'RTGODAM_API_BASE' ) ) {
@@ -147,10 +147,27 @@ register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );
  * Runs when the plugin is deleted.
  */
 function rtgodam_plugin_delete() {
-	// Delete options related to What's New page.
+	// Delete options and transients related to Whats New page.
 	// This is to ensure redirection on a fresh install.
-	delete_option( 'rtgodam_plugin_version' );
-	delete_option( '_transient_rtgodam_release_data' );
+	if ( is_multisite() ) {
+		// Get all blogs in the network and delete options from each blog.
+		$blogs = get_sites( array( 'fields' => 'ids' ) );
+
+		foreach ( $blogs as $blog_id ) {
+			switch_to_blog( $blog_id );
+
+			delete_option( 'rtgodam_plugin_version' );
+			delete_transient( 'rtgodam_show_whats_new' );
+			delete_transient( 'rtgodam_release_data' );
+
+			restore_current_blog();
+		}
+	} else {
+		// For single site, delete options directly.
+		delete_option( 'rtgodam_plugin_version' );
+		delete_transient( 'rtgodam_show_whats_new' );
+		delete_transient( 'rtgodam_release_data' );
+	}
 }
 
 register_uninstall_hook( __FILE__, 'rtgodam_plugin_delete' );

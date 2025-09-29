@@ -13,7 +13,7 @@ const Features = ( { releaseData } ) => {
 	const [ isModalOpen, setIsModalOpen ] = useState( false );
 	const [ activeFeatureId, setActiveFeatureId ] = useState( null );
 
-	const version = releaseData.version ? releaseData.version : window.version;
+	const version = releaseData.version ? releaseData.version : window.headerData?.version;
 	const primaryUpdates = releaseData.features ? releaseData.features.slice( 0, 3 ) : [];
 	const otherUpdates = releaseData.features ? releaseData.features.slice( 3 ) : [];
 

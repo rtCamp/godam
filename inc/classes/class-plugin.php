@@ -18,6 +18,7 @@ use RTGODAM\Inc\Media_Tracker;
 use RTGODAM\Inc\Rewrite;
 use RTGODAM\Inc\Video_Preview;
 use RTGODAM\Inc\Video_Permalinks;
+use RTGODAM\Inc\Video_Engagement;
 use RTGODAM\Inc\Update;
 
 use RTGODAM\Inc\Post_Types\GoDAM_Video;
@@ -40,6 +41,7 @@ use RTGODAM\Inc\REST_API\Analytics;
 use RTGODAM\Inc\REST_API\Polls;
 use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
 use RTGODAM\Inc\REST_API\Dynamic_Gallery;
+use RTGODAM\Inc\REST_API\Engagement;
 use RTGODAM\Inc\REST_API\Video_Migration;
 use RTGODAM\Inc\REST_API\Release_Post;
 use RTGODAM\Inc\Gravity_Forms;
@@ -90,6 +92,7 @@ class Plugin {
 		// Load shortcodes.
 		GoDAM_Player::get_instance();
 		GoDAM_Video_Gallery::get_instance();
+		Video_Engagement::get_instance();
 
 		Video_Editor_Form_Layer_Handler::get_instance()->init();
 		Everest_Forms_Integration::get_instance()->init();
@@ -166,6 +169,7 @@ class Plugin {
 		Polls::get_instance();
 		Dynamic_Shortcode::get_instance();
 		Dynamic_Gallery::get_instance();
+		Engagement::get_instance();
 		Video_Migration::get_instance();
 		Release_Post::get_instance();
 	}

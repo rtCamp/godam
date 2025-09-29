@@ -477,6 +477,67 @@ class Media_Library extends Base {
 
 		$thumbnail_array = get_post_meta( $attachment_id, 'rtgodam_media_thumbnails', true );
 
+		$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+
+		// Fetch thumbnails from CMM if its a virtual media.
+		if ( ! empty( $godam_original_id ) && empty( $thumbnail_array ) ) {
+			$api_key = get_option( 'rtgodam-api-key', '' );
+			$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.file.get_file';
+
+			$request_url = add_query_arg(
+				array(
+					'file_id' => $godam_original_id,
+					'api_key' => $api_key,
+				),
+				$api_url
+			);
+
+			$response = wp_remote_get(
+				$request_url,
+				array(
+					'headers' => array(
+						'Content-Type' => 'application/json',
+					),
+				)
+			);
+
+			if ( is_wp_error( $response ) ) {
+				return new \WP_Error( 'godam_api_error', __( 'Failed to fetch thumbnails from GoDAM.', 'godam' ), array( 'status' => 500 ) );
+			}
+
+			$response_code = wp_remote_retrieve_response_code( $response );
+			if ( 200 !== $response_code ) {
+				// translators: %s is the HTTP status code from the GoDAM API response.
+				return new \WP_Error( 'godam_api_error', sprintf( __( 'GoDAM API returned HTTP status: %s', 'godam' ), $response_code ), array( 'status' => $response_code ) );
+			}
+
+			$body = json_decode( wp_remote_retrieve_body( $response ) );
+			if ( is_null( $body ) ) {
+				return new \WP_Error( 'invalid_json', __( 'Invalid JSON response from GoDAM API.', 'godam' ), array( 'status' => 500 ) );
+			}
+
+			if ( ! is_object( $body ) ||
+				! isset( $body->message ) ||
+				! is_object( $body->message ) ||
+				empty( $body->message->thumbnails ) ||
+				! is_array( $body->message->thumbnails ) ) {
+				return new \WP_Error( 'thumbnails_not_found', __( 'No thumbnails found.', 'godam' ), array( 'status' => 204 ) );
+			}
+
+			// Extract thumbnail URLs from objects.
+			$thumbnail_array = array();
+			foreach ( $body->message->thumbnails as $thumb_obj ) {
+				if ( isset( $thumb_obj->thumbnail_url ) ) {
+					$thumbnail_array[] = $thumb_obj->thumbnail_url;
+				}
+			}
+
+			$thumbnail_array = array_values( array_unique( $thumbnail_array ) );
+			if ( ! empty( $thumbnail_array ) ) {
+				update_post_meta( $attachment_id, 'rtgodam_media_thumbnails', $thumbnail_array );
+			}
+		}
+
 		$custom_thumbnails = get_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', true );
 
 		if ( ! is_array( $thumbnail_array ) ) {
@@ -527,7 +588,7 @@ class Media_Library extends Base {
 			} elseif ( ! empty( $thumbnail_array ) ) {
 				$selected_thumbnail = reset( $thumbnail_array );
 			}
-		
+
 			update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $selected_thumbnail );
 		}
 

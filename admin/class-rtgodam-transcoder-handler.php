@@ -157,10 +157,32 @@ class RTGODAM_Transcoder_Handler {
 					// Enable re-transcoding.
 					include_once RTGODAM_PATH . 'admin/class-rtgodam-retranscodemedia.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
-					add_filter( 'wp_generate_attachment_metadata', array( $this, 'wp_media_transcoding' ), 21, 2 );
+					add_action( 'add_attachment', array( $this, 'send_transcoding_request' ), 21, 1 );
 				}
 			}
 		}
+	}
+
+	/**
+	 * Send transcoding request for uploaded media in WordPress media library.
+	 *
+	 * @since 1.4.2
+	 *
+	 * @param int $attachment_id    ID of attachment.
+	 */
+	public function send_transcoding_request( $attachment_id ) {
+		$metadata = wp_get_attachment_metadata( $attachment_id );
+
+		$mime_type = get_post_mime_type( $attachment_id );
+
+		if ( empty( $metadata ) ) {
+			$metadata = array( 'mime_type' => $mime_type );
+		} elseif ( empty( $metadata['mime_type'] ) ) {
+			$metadata['mime_type'] = $mime_type;
+		}
+
+		// Send the transcoding request.
+		$this->wp_media_transcoding( $metadata, $attachment_id );
 	}
 
 	/**
@@ -179,10 +201,7 @@ class RTGODAM_Transcoder_Handler {
 			return $wp_metadata;
 		}
 
-		$already_sent = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
-		if ( ! empty( $already_sent ) ) {
-			return $wp_metadata;
-		}
+		$transcoding_job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
 
 		$path = get_attached_file( $attachment_id );
 		$url  = wp_get_attachment_url( $attachment_id );
@@ -276,11 +295,12 @@ class RTGODAM_Transcoder_Handler {
 			}
 
 			$args = array(
-				'method'    => 'POST',
+				'method'    => empty( $transcoding_job_id ) ? 'POST' : 'PUT',
 				'sslverify' => false,
 				'timeout'   => 60, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
 				'body'      => array_merge(
 					array(
+						'retranscode'          => empty( $transcoding_job_id ) ? 0 : 1,
 						'api_token'            => $this->api_key,
 						'job_type'             => $job_type,
 						'job_for'              => $job_for,
@@ -304,7 +324,7 @@ class RTGODAM_Transcoder_Handler {
 				),
 			);
 
-			$transcoding_url = $this->transcoding_api_url . 'resource/Transcoder Job';
+			$transcoding_url = $this->transcoding_api_url . 'resource/Transcoder Job' . ( empty( $transcoding_job_id ) ? '' : '/' . $transcoding_job_id );
 
 			// Block if blacklisted ip address.
 			$remote_address_key = 'REMOTE_ADDR';
@@ -313,7 +333,7 @@ class RTGODAM_Transcoder_Handler {
 				return $metadata;
 			}
 
-			$upload_page = wp_remote_post( $transcoding_url, $args );
+			$upload_page = wp_remote_request( $transcoding_url, $args );
 
 			if ( ! is_wp_error( $upload_page ) &&
 				(
@@ -425,6 +445,12 @@ class RTGODAM_Transcoder_Handler {
 	public function update_usage( $key ) {
 
 		$response = rtgodam_verify_api_key( $key );
+
+		// Check if response is WP_Error before accessing array elements.
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
 		update_option( 'rtgodam-usage', array( $key => (object) $response['data'] ) );
 
 		return $response;
