@@ -189,10 +189,48 @@
 .easydam-layer--cta-html {
 	font-size: 1.375rem;
 	font-family: Manrope, sans-serif;
-	width: fit-content;
+	width: 100%;
+	max-width: 90%;
+	max-height: 100%;
 	margin: 0 auto;
-	padding: 10px 20px;
+	padding: 20px;
 	border-radius: 4px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	box-sizing: border-box;
+	word-wrap: break-word;
+	word-break: break-word;
+	
+	// Ensure content doesn't overflow horizontally
+	* {
+		max-width: 100%;
+		box-sizing: border-box;
+	}
+	
+	// Handle long text content
+	p, div, span {
+		word-wrap: break-word;
+		overflow-wrap: break-word;
+	}
+	
+	// Ensure images don't overflow
+	img {
+		max-width: 100%;
+		height: auto;
+	}
+	
+	// Handle tables
+	table {
+		max-width: 100%;
+		overflow-x: auto;
+		display: block;
+	}
+	
+	// Handle forms
+	form, input, textarea, select {
+		max-width: 100%;
+		box-sizing: border-box;
+	}
 }
 
 .easydam-layer--cta-html button,

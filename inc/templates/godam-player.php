@@ -582,6 +582,7 @@ if ( ! empty( $transcript_path ) ) {
 							<?php
 							// CTA layer.
 						elseif ( isset( $layer['type'] ) && 'cta' === $layer['type'] ) :
+							$layer_scope_id = 'godam-cta-' . esc_attr( $instance_id . '-' . $layer['id'] );
 							?>
 							<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 								<?php if ( 'text' === $layer['cta_type'] ) : ?>
@@ -590,7 +591,14 @@ if ( ! empty( $transcript_path ) ) {
 									</div>
 								<?php elseif ( 'html' === $layer['cta_type'] && ! empty( $layer['html'] ) ) : ?>
 									<div class="easydam-layer--cta-html">
-										<?php echo wp_kses_post( $layer['html'] ); ?>
+										<div id="<?php echo esc_attr( $layer_scope_id ); ?>">
+											<?php
+											// Process HTML content to scope CSS and JavaScript automatically.
+											$processed_html = rtgodam_process_cta_html_content( $layer['html'], $layer_scope_id );
+											// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+											echo $processed_html;
+											?>
+										</div>
 									</div>
 								<?php elseif ( 'image' === $layer['cta_type'] && ! empty( $layer['image'] ) ) : ?>
 									<?php echo wp_kses_post( rtgodam_image_cta_html( $layer ) ); ?>

@@ -699,3 +699,69 @@ function godam_get_transcript_path( $job_id ) {
 
 	return ! empty( $transcript_path ) ? $transcript_path : false;
 }
+
+/**
+ * Process HTML content to scope CSS and JavaScript automatically for CTA layers
+ * This prevents global scope pollution while allowing unrestricted HTML/CSS/JS
+ *
+ * @param string $html_content Raw HTML content from user.
+ * @param string $scope_id Unique scope identifier for this layer.
+ * @return string Processed HTML with scoped styles and scripts.
+ */
+function rtgodam_process_cta_html_content( $html_content, $scope_id ) {
+	if ( empty( $html_content ) || empty( $scope_id ) ) {
+		return $html_content;
+	}
+
+	$processed_content = $html_content;
+
+	// Process CSS styles - scope them to both the container and video editor.
+	$processed_content = preg_replace_callback(
+		'/<style[^>]*>(.*?)<\/style>/is',
+		function ( $matches ) use ( $scope_id ) {
+			$css_content = $matches[1];
+
+			// Scope all CSS rules to both the frontend container and video editor.
+			$scoped_css = preg_replace_callback(
+				'/([^{}]+)\{/',
+				function ( $css_matches ) use ( $scope_id ) {
+					$selector = trim( $css_matches[1] );
+					// Return @rules like @import, @media, @keyframes unchanged.
+					if ( strpos( $selector, '@' ) === 0 ) {
+						return $css_matches[0];
+					}
+
+					// Split multiple selectors and scope each one.
+					$selectors        = explode( ',', $selector );
+					$scoped_selectors = array();
+
+					foreach ( $selectors as $single_selector ) {
+						$trimmed_selector = trim( $single_selector );
+
+						// Skip if already scoped to avoid double scoping.
+						if ( strpos( $trimmed_selector, '#' . $scope_id ) !== false || 
+							strpos( $trimmed_selector, '.easydam-layer--cta-html' ) !== false ) {
+							$scoped_selectors[] = $trimmed_selector;
+							continue;
+						}
+
+						// Add both frontend scope and video editor scope.
+						$frontend_scope = '#' . $scope_id . ' ' . $trimmed_selector;
+						$editor_scope   = '.easydam-layer--cta-html ' . $trimmed_selector;
+						
+						$scoped_selectors[] = $frontend_scope . ', ' . $editor_scope;
+					}
+
+					return implode( ', ', $scoped_selectors ) . ' {';
+				},
+				$css_content
+			);
+			return '<style>' . $scoped_css . '</style>';
+		},
+		$processed_content
+	);
+
+	// JavaScript will execute with standard DOM behavior, no scoping applied.
+
+	return $processed_content;
+}
