@@ -732,64 +732,7 @@ function rtgodam_process_cta_html_content( $html_content, $scope_id ) {
 		$processed_content
 	);
 
-	// Process JavaScript - wrap in scope and add event delegation.
-	$processed_content = preg_replace_callback(
-		'/<script[^>]*>(.*?)<\/script>/is',
-		function ( $matches ) use ( $scope_id ) {
-			$js_content = $matches[1];
-			
-			// Create scoped JavaScript that works within the container.
-			$scoped_js = "
-				(function() {
-					const scope = document.getElementById('" . esc_js( $scope_id ) . "');
-					if (!scope) return;
-					
-					// Store original functions
-					const originalGetElementsByTagName = document.getElementsByTagName;
-					const originalQuerySelector = document.querySelector;
-					const originalQuerySelectorAll = document.querySelectorAll;
-					const originalGetElementById = document.getElementById;
-					
-					// Override global DOM functions to work within scope
-					document.getElementsByTagName = function(tagName) {
-						if (tagName.toLowerCase() === 'html') {
-							// Return the video container or the scope itself for 'html' queries
-							const videoContainer = scope.closest('.easydam-video-container') || scope.closest('.easydam-layer');
-							return videoContainer ? [videoContainer] : [scope];
-						}
-						return scope.getElementsByTagName(tagName);
-					};
-					
-					document.querySelector = function(selector) {
-						return scope.querySelector(selector);
-					};
-					
-					document.querySelectorAll = function(selector) {
-						return scope.querySelectorAll(selector);
-					};
-					
-					document.getElementById = function(id) {
-						return scope.querySelector('#' + id);
-					}
-					
-					try {
-						" . $js_content . "
-					} catch(error) {
-						console.error('CTA Layer Script Error:', error);
-					} finally {
-						// Restore original functions.
-						document.getElementsByTagName = originalGetElementsByTagName;
-						document.querySelector = originalQuerySelector;
-						document.querySelectorAll = originalQuerySelectorAll;
-						document.getElementById = originalGetElementById;
-					}
-				})();
-			";
-			
-			return '<script>' . $scoped_js . '</script>';
-		},
-		$processed_content
-	);
+	// JavaScript will execute with standard DOM behavior, no scoping applied.
 
 	return $processed_content;
 }
