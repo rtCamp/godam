@@ -27,7 +27,7 @@ class GoDAM_Video extends Base {
 			'categories'      => array( 'godam' ),
 			'keywords'        => array( 'godam', 'video' ),
 			'depended_script' => array( 'godam-player-frontend-script', 'godam-player-analytics-script', 'godam-player-frontend-script', 'godam-elementor-frontend' ),
-			'depended_styles' => array( 'godam-player-style', 'godam-player-frontend-style' ),
+			'depended_styles' => array( 'godam-player-style', 'godam-player-frontend-style', 'godam-player-minimal-skin', 'godam-player-pills-skin', 'godam-player-bubble-skin', 'godam-player-classic-skin' ),
 		);
 	}
 
@@ -59,7 +59,7 @@ class GoDAM_Video extends Base {
 		$this->add_control(
 			'text_track_settings_popover_toggle',
 			array(
-				'label'        => esc_html__( 'Text tracks', 'godam' ),
+				'label'        => esc_html__( 'Add Video Caption', 'godam' ),
 				'type'         => Controls_Manager::POPOVER_TOGGLE,
 				'label_off'    => esc_html__( 'Default', 'godam' ),
 				'label_on'     => esc_html__( 'Custom', 'godam' ),

@@ -109,4 +109,19 @@ async function getGodamSettings() {
 	} catch ( error ) {
 	}
 }
-export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton, getQuery, getGodamSettings };
+
+/**
+ * Checks if the current user is allowed to manage this attachment.
+ *
+ * @param {number} attachmentAuthorId The ID of the attachment author.
+ * @return {boolean} Returns true if the user can manage the attachment, false otherwise.
+ */
+function canManageAttachment( attachmentAuthorId ) {
+	const currentUserId = Number( window?.easydamMediaLibrary?.userId );
+	const canEditOthersMedia = window?.easydamMediaLibrary?.canEditOthersMedia;
+	const __attachmentAuthorId = Number( attachmentAuthorId ) || 0;
+
+	return canEditOthersMedia || currentUserId === __attachmentAuthorId;
+}
+
+export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton, getQuery, getGodamSettings, canManageAttachment };

@@ -5,7 +5,7 @@
 	"title": "GoDAM Video Gallery",
 	"category": "media",
 	"description": "Display a grid of GoDAM videos.",
-	"keywords": ["video", "gallery", "grid", "videos"],
+	"keywords": [ "video", "gallery", "grid", "videos" ],
 	"textdomain": "godam",
 	"attributes": {
 		"columns": {
@@ -67,6 +67,10 @@
 		"showTitle": {
 			"type": "boolean",
 			"default": true
+		},
+		"engagements": {
+			"type": "boolean",
+			"default": true
 		}
 	},
 	"supports": {
@@ -77,7 +81,7 @@
 			"padding": true
 		}
 	},
-	"editorStyle": ["file:./index.css"],
-	"editorScript": ["file:./index.js"],
+	"editorStyle": [ "file:./index.css" ],
+	"editorScript": [ "file:./index.js" ],
 	"render": "file:./render.php"
 }

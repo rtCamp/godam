@@ -25,7 +25,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		const fields = {};
 		for ( const [ key, value ] of formData.entries() ) {
 			// Only include user fields, not Jetpack hidden fields
-			if ( ! [ 'action', 'contact-form-id', 'contact-form-hash', '_wpnonce', '_wp_http_referer' ].includes( key ) ) {
+			if ( ! [ 'action', 'contact-form-id', 'contact-form-hash', '_wpnonce', '_wp_http_referer', 'jetpack_contact_form_jwt' ].includes( key ) ) {
 				fields[ key ] = value;
 			}
 		}
@@ -121,10 +121,15 @@ document.addEventListener( 'DOMContentLoaded', function() {
 			return;
 		}
 
-		// Completely disable Jetpack's original form handling
-		// Remove any existing event listeners by cloning the form
-		const newForm = form.cloneNode( true );
-		form.parentNode.replaceChild( newForm, form );
+		let newForm = form;
+
+		// If the form doesn't have the is-ajax-form class, skip form replacement.
+		if ( form.classList.contains( 'is-ajax-form' ) ) {
+			// Completely disable Jetpack's original form handling
+			// Remove any existing event listeners by cloning the form
+			newForm = form.cloneNode( true );
+			form.parentNode.replaceChild( newForm, form );
+		}
 
 		// Prevent default form submission with highest priority
 		newForm.addEventListener( 'submit', function( e ) {

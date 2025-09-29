@@ -45,6 +45,8 @@ class Media_Library_Ajax {
 
 		add_action( 'admin_notices', array( $this, 'media_library_offer_banner' ) );
 		add_action( 'wp_ajax_godam_dismiss_offer_banner', array( $this, 'dismiss_offer_banner' ) );
+
+		add_action( 'rtgodam_handle_callback_finished', array( $this, 'download_transcoded_mp4_source' ), 10, 4 );
 	}
 
 	/**
@@ -79,6 +81,7 @@ class Media_Library_Ajax {
 			'origin'                => 'godam',
 			'thumbnail_url'         => $item['thumbnail_url'] ?? '',
 			'duration'              => $item['playtime'] ?? '',
+			'hls_url'               => $item['transcoded_hls_path'] ?? '',
 		);
 
 		if ( 'stream' === $item['job_type'] ) {
@@ -649,6 +652,121 @@ class Media_Library_Ajax {
 					),
 				)
 			);
+		}
+	}
+
+	/**
+	 * Replace an existing WordPress media attachment with a file from an external URL,
+	 * using the WordPress Filesystem API.
+	 * 
+	 * @since 1.4.2
+	 *
+	 * @param int    $attachment_id The ID of the existing media attachment.
+	 * @param string $file_url      The external file URL.
+	 *
+	 * @return int|WP_Error Attachment ID on success, WP_Error on failure.
+	 */
+	private function godam_replace_attachment_with_external_file( $attachment_id, $file_url = '' ) {
+		if ( ! $attachment_id || ! filter_var( $file_url, FILTER_VALIDATE_URL ) || ! wp_http_validate_url( $file_url ) ) {
+			return new \WP_Error( 'invalid_input', __( 'Invalid attachment ID or URL.', 'godam' ) );
+		}
+
+		// Validate the attachment.
+		$attachment = get_post( $attachment_id );
+		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
+			return new \WP_Error( 'invalid_attachment', __( 'Invalid attachment ID.', 'godam' ) );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		require_once ABSPATH . 'wp-admin/includes/media.php';
+		require_once ABSPATH . 'wp-admin/includes/image.php';
+
+		global $wp_filesystem;
+
+		WP_Filesystem();
+
+		if ( ! $wp_filesystem ) {
+			return new \WP_Error( 'fs_unavailable', __( 'Could not initialize WordPress filesystem.', 'godam' ) );
+		}
+
+		// Download file to temporary location.
+		$temp_file = download_url( $file_url );
+
+		if ( is_wp_error( $temp_file ) ) {
+			return $temp_file;
+		}
+
+		// Prepare new file path in uploads.
+		$upload_dir   = wp_upload_dir();
+		$new_filename = wp_basename( wp_parse_url( $file_url, PHP_URL_PATH ) );
+		$new_filepath = trailingslashit( $upload_dir['path'] ) . $new_filename;
+
+		// Move temp file into uploads with WP_Filesystem.
+		$moved = $wp_filesystem->move( $temp_file, $new_filepath, true );
+
+		if ( ! $moved ) {
+			$wp_filesystem->delete( $temp_file );
+			return new \WP_Error( 'file_move_failed', __( 'Could not move file into uploads directory.', 'godam' ) );
+		}
+
+		// Update attachment file info.
+		update_attached_file( $attachment_id, $new_filepath );
+
+		// update mime type.
+		$filetype = wp_check_filetype( $new_filename, null );
+		if ( $filetype['type'] ) {
+			wp_update_post(
+				array(
+					'ID'             => $attachment_id,
+					'post_mime_type' => $filetype['type'],
+				)
+			);
+		}
+
+		// Regenerate metadata.
+		$metadata = wp_generate_attachment_metadata( $attachment_id, $new_filepath );
+		wp_update_attachment_metadata( $attachment_id, $metadata );
+
+		return $attachment_id;
+	}
+
+	/**
+	 * Download the transcoded MP4 source and replace the existing attachment file.
+	 *
+	 * @param int             $attachment_id Attachment ID.
+	 * @param string          $job_id        Job ID.
+	 * @param string          $job_for       Job for (e.g., 'wp-media').
+	 * @param WP_REST_Request $request    Request data containing transcoded file info.
+	 *
+	 * @return void
+	 */
+	public function download_transcoded_mp4_source( $attachment_id, $job_id, $job_for, $request ) {
+		if ( isset( $job_for ) && ( 'wp-media' !== $job_for ) ) {
+			return;
+		}
+
+		// Check if video attachment.
+		$attachment_mime_type = get_post_mime_type( $attachment_id );
+
+		if ( 'video' !== substr( $attachment_mime_type, 0, 5 ) ) {
+			return;
+		}
+
+		// Check if mp4_url is provided in the request.
+		$transcoded_mp4_url = esc_url( $request->get_param( 'mp4_url' ) );
+
+		if ( empty( $transcoded_mp4_url ) ) {
+			return;
+		}
+
+		// Replace the existing attachment file with the transcoded MP4.
+		$attachment_id = $this->godam_replace_attachment_with_external_file( $attachment_id, $transcoded_mp4_url );
+
+		if ( is_wp_error( $attachment_id ) ) {
+			// Log the error for debugging purposes.
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'MP4 video replacement failed: ' . $attachment_id->get_error_message() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Logging for debugging.
+			}
 		}
 	}
 }

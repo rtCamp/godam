@@ -71,6 +71,14 @@ const App = () => {
 		window.history.pushState( {}, '', newUrl );
 	};
 
+	const handleBackToAttachmentPicker = () => {
+		setAttachmentID( null );
+		setRawID( null );
+		const newUrl = new URL( window.location );
+		newUrl.searchParams.delete( 'id' );
+		window.history.replaceState( {}, '', newUrl );
+	};
+
 	if ( ! attachmentID ) {
 		return (
 			<>
@@ -81,7 +89,7 @@ const App = () => {
 	}
 
 	return (
-		<VideoEditor attachmentID={ attachmentID } />
+		<VideoEditor attachmentID={ attachmentID } onBackToAttachmentPicker={ handleBackToAttachmentPicker } />
 	);
 };
 
