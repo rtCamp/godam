@@ -11,6 +11,7 @@ const wcVideoCarousel = {
 	// Video carousel and modal elements.
 	swiper: null,
 	swiperModal: null,
+	swiperModalMini: null,
 
 	/**
 	 * Initiate the video carousel and show controls on mouse enter.
@@ -86,6 +87,10 @@ const wcVideoCarousel = {
 						prevEl: '.swiper-button-prev',
 					},
 					freeMode: true,
+					noSwiping: true,
+					noSwipingClass: 'flex-control-nav',
+					touchStartPreventDefault: false, // let native scroll kick in
+					threshold: 5,
 					autoplay: false,
 					on: {
 						init() {
@@ -123,6 +128,7 @@ const wcVideoCarousel = {
 
 				const videoElmModal = document.querySelector( '.rtgodam-product-video-gallery-slider-modal' );
 				videoElmModal.classList.add( 'open' );
+				self.videoModalMiniSlider();
 			} );
 		} );
 	},
@@ -149,12 +155,27 @@ const wcVideoCarousel = {
 		const self = this;
 		const videoElmModal = document.querySelector( '.rtgodam-product-video-gallery-slider-modal' );
 		const videoElmModalClose = document.querySelector( '.rtgodam-product-video-gallery-slider-modal-close' );
-		videoElmModalClose?.addEventListener( 'click', ( event ) => {
-			event.preventDefault();
+
+		function handleClose( event ) {
+			event?.preventDefault?.();
 			videoElmModal.classList.remove( 'open' );
-			self.swiperModal.destroy();
-			self.swiperModal = null;
-		} );
+			if ( self.swiperModal ) {
+				self.swiperModal.destroy();
+				self.swiperModal = null;
+			}
+		}
+
+		function handleEscape( e ) {
+			if ( e.key === 'Escape' || e.key === 'Esc' ) {
+				handleClose();
+			}
+		}
+
+		// Close on button click.
+		videoElmModalClose?.addEventListener( 'click', handleClose );
+
+		// Close on Escape key.
+		document.addEventListener( 'keydown', handleEscape );
 	},
 
 	/**
@@ -172,8 +193,9 @@ const wcVideoCarousel = {
 				event.preventDefault();
 				const formData = new FormData( event.target );
 				const quantity = formData.get( 'quantity' );
-				const subMitButton = form.querySelector( 'button[name="add-to-cart"]' );
-				const productId = subMitButton.value;
+				const subMitButton = form.querySelector( '.single_add_to_cart_button' );
+				const variationId = formData.get( 'variation_id' );
+				const productId = variationId || subMitButton?.value;
 				subMitButton.disabled = true;
 				subMitButton.classList.add( 'loading' );
 				dispatch( 'wc/store/cart' ).addItemToCart( productId, quantity ).then( ( response ) => {
@@ -181,6 +203,54 @@ const wcVideoCarousel = {
 					subMitButton.classList.remove( 'loading' );
 				} ).catch( ( err ) => {} );
 			} );
+		} );
+	},
+
+	/**
+	 * Initializes the mini slider for the video modal.
+	 *
+	 * This method takes all elements with the class `.flex-control-nav` inside the video modal,
+	 * wraps each one in a div with the class `.video-modal-mini-slider-parent`, and initializes
+	 * a Swiper slider with the class `.video-modal-mini-slider-parent`.
+	 *
+	 * @return {void}
+	 */
+	videoModalMiniSlider() {
+		const self = this;
+		if ( self.swiperModalMini ) {
+			return;
+		}
+
+		const videoElmModalMiniSlider = document.querySelectorAll( '.rtgodam-product-video-gallery-slider-modal .flex-control-nav' );
+		videoElmModalMiniSlider.forEach( ( slider ) => {
+			slider.classList.add( 'swiper-wrapper' );
+			slider.querySelectorAll( 'li' ).forEach( ( slide ) => {
+				slide.classList.add( 'swiper-slide' );
+			} );
+			const wrapper = document.createElement( 'div' );
+			wrapper.className = 'video-modal-mini-slider-wrapper';
+			const parent = document.createElement( 'div' );
+			parent.className = 'video-modal-mini-slider-parent';
+			const leftSlide = document.createElement( 'div' );
+			leftSlide.className = 'video-modal-mini-slider-left';
+			const rightSlide = document.createElement( 'div' );
+			rightSlide.className = 'video-modal-mini-slider-right';
+			slider.parentNode.insertBefore( wrapper, slider );
+			parent.appendChild( slider );
+			wrapper.appendChild( parent );
+			wrapper.appendChild( leftSlide );
+			wrapper.appendChild( rightSlide );
+		} );
+		self.swiperModalMini = new Swiper( '.video-modal-mini-slider-parent', {
+			loop: true,
+			navigation: {
+				nextEl: '.video-modal-mini-slider-right',
+				prevEl: '.video-modal-mini-slider-left',
+			},
+			slidesPerView: 4,
+			spaceBetween: 10,
+			autoplay: false,
+			freeMode: true,
 		} );
 	},
 };
