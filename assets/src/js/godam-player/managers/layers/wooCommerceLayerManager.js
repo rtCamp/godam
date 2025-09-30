@@ -355,7 +355,7 @@ export default class WooCommerceLayerManager {
 							console.error( 'Add to cart failed', err );
 							productLinkButton.disabled = false;
 							productLinkButton.classList.remove( 'loading' );
-							this.showCartMessage( __( 'Product adding failed!', 'godam' ), 'error' );
+							this.showCartMessage( __( 'Something went wrong. Try again.', 'godam' ), 'error' );
 						} );
 				}
 			} );
@@ -368,6 +368,10 @@ export default class WooCommerceLayerManager {
 
 	// Helper function to show message
 	showCartMessage( message, type = 'success' ) {
+		let notifArea = document.querySelector( '.godam-notification-area' );
+		notifArea = document.createElement( 'div' );
+		notifArea.className = 'godam-notification-area';
+
 		const msg = document.createElement( 'div' );
 		msg.textContent = message;
 		msg.classList.add( 'mini-cart-product-message', type );
@@ -376,16 +380,29 @@ export default class WooCommerceLayerManager {
 		msg.style.position = 'fixed';
 		msg.style.top = '50%';
 		msg.style.left = '50%';
-		msg.style.transform = 'translate(-50%, -50%)';
-		msg.style.zIndex = '9999';
+		msg.style.transform = 'translate(-50%, -50%) scale(0.96)';
+		msg.style.zIndex = '999999999999999';
+
+		notifArea.appendChild( msg );
 
 		const container = this.player.el();
-		container.appendChild( msg );
+		container.appendChild( notifArea );
+
+		requestAnimationFrame( () => {
+			requestAnimationFrame( () => {
+				msg.style.opacity = '1';
+				msg.style.transform = 'translate(-50%, -50%) scale(1)';
+			} );
+		} );
 
 		// Fade out and remove after 2s.
 		setTimeout( () => {
 			msg.style.opacity = '0';
-			setTimeout( () => msg.remove(), 300 );
+			msg.style.transform = 'translate(-50%, -50%) scale(0.96)';
+			setTimeout( () => {
+				msg.remove();
+				notifArea.remove();
+			}, 300 );
 		}, 2000 );
 	}
 

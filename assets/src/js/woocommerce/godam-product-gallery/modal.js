@@ -551,11 +551,6 @@ async function loadSidebarProducts( productIds, sidebarModal, ctaEnabled, ctaDis
 		return;
 	}
 
-	// sidebarModal.classList.remove( 'close' );
-
-	// modal.querySelector( '.godam-product-modal-content' )?.classList?.remove( 'no-sidebar' );
-	// modal.querySelector( '.godam-product-modal-content' )?.classList?.add( 'sidebar' );
-
 	const sidebarElement = sidebarModal.querySelector( '.godam-sidebar-product' );
 
 	const idsArray = productIds
@@ -628,6 +623,7 @@ async function loadSidebarProducts( productIds, sidebarModal, ctaEnabled, ctaDis
 					<div class="godam-sidebar-product-content">
 						<div class="godam-sidebar-product-title">${ product.name }</div>
 						<div class="godam-sidebar-product-price">${ product.price }</div>
+						${ renderRatingStars( product.rating_average, product.rating_customer_count ) }
 						${ [ 'variable', 'grouped', 'external' ].includes( product.type ) || ! product.in_stock ? `<a class="godam-product-sidebar-view-product-button" href="${ product.link }" target="_blank" aria-label="${ __( 'View Product', 'godam' ) }">${ __( 'View Product', 'godam' ) }</a>` : `<button class="godam-product-sidebar-add-to-cart-button" data-product-id="${ product.id }" aria-label="${ __( 'Add to Cart', 'godam' ) }">${ __( 'Add to Cart', 'godam' ) }</button>` }
 					</div>
 				</div>` ).join( '' ) }`;
@@ -643,6 +639,56 @@ async function loadSidebarProducts( productIds, sidebarModal, ctaEnabled, ctaDis
 	} catch ( err ) {
 		console.error( 'Failed to load sidebar products:', err );
 	}
+}
+
+/**
+ * Renders a star rating component as SVGs based on the average rating and rating count.
+ *
+ * - Displays up to 5 stars.
+ * - If no ratings exist, shows 5 empty stars.
+ * - Fills stars fully or partially depending on the average rating value.
+ * - Uses linear gradients for partial stars to represent fractional ratings.
+ *
+ * @param {number} average     - The average rating (e.g., 3.7).
+ * @param {number} ratingCount - The total number of ratings.
+ * @return {string} HTML string containing a div with the star rating markup.
+ */
+function renderRatingStars( average, ratingCount ) {
+	const fullStarSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#FFC107" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.568L24 9.423l-6 5.858L19.335 24 12 20.01 4.665 24l1.335-8.719-6-5.858 8.332-1.268z"/></svg>`;
+	const emptyStarSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#e0e0e0" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.568L24 9.423l-6 5.858L19.335 24 12 20.01 4.665 24l1.335-8.719-6-5.858 8.332-1.268z"/></svg>`;
+
+	const partialStarSVG = ( percentage ) => `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+            <defs>
+                <linearGradient id="halfGradient${ Math.random() }" x1="0" x2="100%" y1="0" y2="0">
+                    <stop offset="${ percentage }%" stop-color="#FFC107"/>
+                    <stop offset="${ percentage }%" stop-color="#e0e0e0"/>
+                </linearGradient>
+            </defs>
+            <path fill="url(#halfGradient${ Math.random() })" d="M12 .587l3.668 7.568L24 9.423l-6 5.858L19.335 24 12 20.01 4.665 24l1.335-8.719-6-5.858 8.332-1.268z"/>
+        </svg>`;
+
+	let starsHTML = '';
+
+	// If no rating, render 5 empty stars.
+	if ( ! average || ratingCount === 0 ) {
+		for ( let i = 1; i <= 5; i++ ) {
+			starsHTML += emptyStarSVG;
+		}
+	} else {
+		for ( let i = 1; i <= 5; i++ ) {
+			if ( average >= i ) {
+				starsHTML += fullStarSVG;
+			} else if ( average > i - 1 ) {
+				const partial = ( average - ( i - 1 ) ) * 100;
+				starsHTML += partialStarSVG( partial );
+			} else {
+				starsHTML += emptyStarSVG;
+			}
+		}
+	}
+
+	return `<div class="godam-sidebar-product-rating">${ starsHTML }</div>`;
 }
 
 /**

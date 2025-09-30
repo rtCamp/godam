@@ -1,7 +1,7 @@
 .godam-product-modal-container, .godam-woocommerce-featured-video-modal-container {
 	position: fixed;
 	inset: 0;
-	z-index: 29;
+	z-index: 9999;
 	background: rgba(0, 0, 0, 0.8);
 	width: 100vw;
 	display: none !important;
@@ -26,6 +26,11 @@
 		z-index: 100;
 		border: none !important;
 		outline: none !important;
+	}
+
+	.godam-woocommerce-featured-video-modal-close {
+		background-color: var(--wp--preset--color--primary, #000); /* Background color */
+		color: var(--wp--preset--color--base, var(--wp--preset--color--secondary, #fff)); /* Icon color */
 	}
 
 	.loader {
@@ -552,7 +557,6 @@
 		@media (max-width: 768px) {
 			font-size: 1rem !important;
 			line-height: 1.1rem !important;
-			display: block;
 		}
 	}
 
@@ -568,6 +572,20 @@
 	.godam-sidebar-product-description{
 		opacity: 0.7;
 		margin: 1rem 0 !important;
+	}
+
+	.godam-sidebar-product-rating{
+		display: flex; 
+		align-items: center; 
+		gap: 4px;
+		margin-bottom: 10px;
+		margin-top: 10px;
+
+		.godam-review-count{
+			margin-left: 8px;
+			font-size: 14px;
+			color: #555;
+		}
 	}
 
 	button.godam-product-sidebar-add-to-cart-button,
@@ -1028,6 +1046,7 @@
 
 			.godam-sidebar-product-price{
 				margin-bottom: 10px !important;
+				margin-top: 0;
 			}
 
 			.godam-main-image , .godam-main-image img{
@@ -1050,6 +1069,18 @@
 
 		.godam-product-sidebar-single-price{
 		   font-size: 14px !important;
+		}
+
+		.godam-sidebar-product-rating{
+			display: flex; 
+			align-items: center; 
+			gap: 4px;
+	
+			.godam-review-count{
+				margin-left: 8px;
+				font-size: 14px;
+				color: #555;
+			}
 		}
 
 		.mobile-product-sidebar-content{

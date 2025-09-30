@@ -625,6 +625,10 @@
 	}
 }
 
+.godam-notification-area {
+	pointer-events: none;
+}
+
 .mini-cart-product-message {
 	font-size: 14px;
 	padding: 8px 16px;
@@ -633,16 +637,23 @@
 	text-align: center;
 	color: #fff;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-	transition: opacity 0.3s ease;
-  }
+	transition: opacity 0.28s cubic-bezier(.2,.8,.2,1), transform 0.28s cubic-bezier(.2,.8,.2,1);
+	will-change: opacity, transform;
+	-webkit-backface-visibility: hidden;
+	backface-visibility: hidden;
+	-webkit-transform: translateZ(0);
+	transform: translateZ(0);
+	opacity: 0; /* initial */
+	pointer-events: auto;
+}
   
-  .mini-cart-product-message.success {
+.mini-cart-product-message.success {
 	background-color: #28a745; /* green */
-  }
+}
   
-  .mini-cart-product-message.error {
+.mini-cart-product-message.error {
 	background-color: #dc3545; /* red */
-  }
+}
 
 .godam-menu-item-container {
 	align-items: center;
