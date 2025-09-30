@@ -21,60 +21,63 @@ class WC_Woocommerce_Layer {
 
 	use Singleton;
 
-    /**
+	/**
 	 * Constructor - hook into product update.
 	 */
 	public function __construct() {
-		add_action( 'woocommerce_update_product', [ $this, 'update_hotspot_product_details' ], 10, 1 );
+		add_action( 'woocommerce_update_product', array( $this, 'update_hotspot_product_details' ), 10, 1 );
 	}
 
-    /**
+	/**
 	 * Update all hotspots whenever a WooCommerce product is updated.
 	 *
-	 * @param int     $post_id The product ID.
+	 * @param int $post_id The product ID.
 	 */
 	public function update_hotspot_product_details( $post_id ) {
 		if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
 			return;
 		}
 
-		$request  = new \WP_REST_Request( 'GET', '/godam/v1/wcproduct' );
-        $request->set_param( 'id', $post_id );
+		$request = new \WP_REST_Request( 'GET', '/godam/v1/wcproduct' );
+		$request->set_param( 'id', $post_id );
 
-        $response = rest_do_request( $request );
+		$response = rest_do_request( $request );
 
-        if ( $response->is_error() ) {
-            $error = $response->as_error();
+		if ( $response->is_error() ) {
+			$error = $response->as_error();
 
-            error_log( sprintf(
-                'Updating hotspot_product_details failed (code: %s) - %s',
-                $error->get_error_code(),
-                $error->get_error_message()
-            ) );
-            
-            return;
+			// phpcs:ignore
+			error_log(
+				sprintf(
+					'Updating hotspot_product_details failed (code: %s) - %s',
+					$error->get_error_code(),
+					$error->get_error_message()
+				) 
+			);
+			
+			return;
 		}
 
 		$data = $response->get_data();
 
-        if ( empty( $data ) || ! is_array( $data ) ) {
+		if ( empty( $data ) || ! is_array( $data ) ) {
 			return;
 		}
 
-        $product_data = $data;
+		$product_data = $data;
 
 		// Find all attachments that may contain hotspots.
-		$attachments = get_posts( array(
-			'post_type'      => 'attachment',
-			'posts_per_page' => -1,
-			'meta_key'       => 'rtgodam_meta',
-            'post_mime_type' => 'video/mp4',
-		) );
+		$attachments = get_posts(
+			array(
+				'post_type'      => 'attachment',
+				'posts_per_page' => -1,
+				'meta_key'       => 'rtgodam_meta',
+				'post_mime_type' => 'video/mp4',
+			) 
+		);
 
-        foreach ( $attachments as $attachment ) {
+		foreach ( $attachments as $attachment ) {
 			$meta = get_post_meta( $attachment->ID, 'rtgodam_meta', true );
-
-            // error_log(print_r($meta,true));
 
 			if ( empty( $meta ) || ! is_array( $meta ) ) {
 				continue;
@@ -85,11 +88,11 @@ class WC_Woocommerce_Layer {
 				continue;
 			}
 
-            $updated = false;
+			$updated = false;
 
-            foreach ( $meta['layers'] as &$layer ) {
+			foreach ( $meta['layers'] as &$layer ) {
 				// Only for type = woo.
-				if ( isset( $layer['type'] ) && $layer['type'] === 'woo' ) {
+				if ( 'woo' === isset( $layer['type'] ) && $layer['type'] ) {
 
 					if ( ! empty( $layer['productHotspots'] ) && is_array( $layer['productHotspots'] ) ) {
 						foreach ( $layer['productHotspots'] as &$hotspot ) {
@@ -98,18 +101,17 @@ class WC_Woocommerce_Layer {
 								&& intval( $hotspot['productDetails']['id'] ) === $post_id
 							) {
 								$hotspot['productDetails'] = $product_data;
-								$updated = true;
+								$updated                   = true;
 							}
 						}
 					}
 				}
 			}
 
-            // Save back if anything changed.
+			// Save back if anything changed.
 			if ( $updated ) {
 				update_post_meta( $attachment->ID, 'rtgodam_meta', $meta );
 			}
 		}
 	}
-
 }

@@ -303,7 +303,7 @@ class Assets {
 				'enableFolderOrganization' => $enable_folder_organization,
 				'isPollPluginActive'       => is_plugin_active( 'wp-polls/wp-polls.php' ),
 				'isWooActive'              => is_plugin_active( 'woocommerce/woocommerce.php' ),
-				'wooCartURL'			   => wc_get_cart_url(),
+				'wooCartURL'               => wc_get_cart_url(),
 				'page'                     => $screen ? $screen->id : '',
 				'userId'                   => $current_user_id,
 				'canEditOthersMedia'       => current_user_can( 'edit_others_posts' ),

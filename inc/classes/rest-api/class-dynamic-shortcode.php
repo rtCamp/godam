@@ -40,7 +40,7 @@ class Dynamic_Shortcode extends Base {
 					'callback'            => array( $this, 'render_shortcode' ),
 					'permission_callback' => '__return_true',
 					'args'                => array(
-						'id' => array(
+						'id'          => array(
 							'required'          => true,
 							'type'              => 'integer',
 							'sanitize_callback' => 'absint',

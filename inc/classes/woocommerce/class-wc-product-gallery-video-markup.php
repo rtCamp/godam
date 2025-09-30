@@ -76,8 +76,8 @@ class WC_Product_Gallery_Video_Markup {
 	 * The product IDs are safely cast to integers and embedded as a comma-separated string 
 	 * in the `data-product-ids` attribute of the sidebar for client-side JavaScript access.
 	 *
-	 * @param array  $product_ids Array of product IDs associated with the video.
-	 * @param int    $video_id    The ID of the video for which the modal is being rendered.
+	 * @param array $product_ids Array of product IDs associated with the video.
+	 * @param int   $video_id    The ID of the video for which the modal is being rendered.
 	 */
 	private function generate_cta_enabled_muliple_product_modal_markup( $product_ids, $video_id ) {
 		$data_product_ids = implode( ',', array_map( 'absint', (array) $product_ids ) );
@@ -145,9 +145,9 @@ class WC_Product_Gallery_Video_Markup {
 	 *
 	 * The `$timestamped` value defaults to `0` if not set, and all dynamic attributes are safely rendered.
 	 *
-	 * @param int    $product_id   The single product ID associated with the video.
-	 * @param int    $video_id     The ID of the video the modal is for.
-	 * @param bool   $timestamped  Whether the modal should include timestamping (default false).
+	 * @param int  $product_id   The single product ID associated with the video.
+	 * @param int  $video_id     The ID of the video the modal is for.
+	 * @param bool $timestamped  Whether the modal should include timestamping (default false).
 	 */
 	private function generate_cta_enabled_single_product_modal_markup( $product_id, $video_id, $timestamped ) {
 		if ( ! $timestamped ) {
@@ -212,7 +212,7 @@ class WC_Product_Gallery_Video_Markup {
 	 *
 	 * This markup is used when no product or CTA is linked to the video, focusing solely on video playback.
 	 *
-	 * @param int    $video_id The ID of the video for which the modal is being rendered.
+	 * @param int $video_id The ID of the video for which the modal is being rendered.
 	 */
 	private function generate_video_modal_markup( $video_id ) {
 		?>

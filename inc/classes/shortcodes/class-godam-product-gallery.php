@@ -674,26 +674,58 @@ class GoDAM_Product_Gallery {
 				$average      = $product->get_average_rating();
 				$rating_count = $product->get_rating_count();
 
-				$full_star_svg  = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="#FFC107" d="M12 .587l3.668 7.568L24 9.423l-6 5.858L19.335 24 12 20.01 4.665 24l1.335-8.719-6-5.858 8.332-1.268z"/></svg>';
-				$empty_star_svg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="#e0e0e0" d="M12 .587l3.668 7.568L24 9.423l-6 5.858L19.335 24 12 20.01 4.665 24l1.335-8.719-6-5.858 8.332-1.268z"/></svg>';
-			?>
+				$full_star_svg  = sprintf(
+					'<img src="%s" alt="%s" width="16" height="16" style="vertical-align:middle;" />',
+					esc_url( RTGODAM_URL . 'assets/src/images/rating-full-star.svg' ),
+					esc_attr__( 'Full Star', 'godam' )
+				);
+				$empty_star_svg = sprintf(
+					'<img src="%s" alt="%s" width="16" height="16" style="vertical-align:middle;" />',
+					esc_url( RTGODAM_URL . 'assets/src/images/rating-empty-star.svg' ),
+					esc_attr__( 'Empty Star', 'godam' )
+				);
+
+				$allowed_svg = array(
+					'svg'            => array(
+						'xmlns'   => true,
+						'width'   => true,
+						'height'  => true,
+						'viewBox' => true,
+					),
+					'defs'           => array(),
+					'linearGradient' => array(
+						'id' => true,
+						'x1' => true,
+						'y1' => true,
+						'x2' => true,
+						'y2' => true,
+					),
+					'stop'           => array(
+						'offset'     => true,
+						'stop-color' => true,
+					),
+					'path'           => array(
+						'd'    => true,
+						'fill' => true,
+					),
+				);
+				?>
 
 			<div class="godam-sidebar-product-rating">
 				<?php
 				// Always render 5 stars.
 				for ( $i = 1; $i <= 5; $i++ ) {
-					if ( $rating_count === 0 ) {
+					if ( 0 === $rating_count ) {
 						// No reviews → show all empty stars.
-						echo $empty_star_svg;
+						echo wp_kses_post( $empty_star_svg );
+					} elseif ( $average >= $i ) {
+							echo wp_kses_post( $full_star_svg ); // Full star.
+					} elseif ( $average > $i - 1 ) {
+						$partial = ( $average - ( $i - 1 ) ) * 100; // % fill for partial star.
+						echo $this->utility_instance->get_partial_star_svg( $partial ); /* phpcs:ignore */
 					} else {
-						if ( $average >= $i ) {
-							echo $full_star_svg; // Full star.
-						} elseif ( $average > $i - 1 ) {
-							$partial = ( $average - ( $i - 1 ) ) * 100; // % fill for partial star.
-							echo $this->utility_instance->get_partial_star_svg( $partial );
-						} else {
-							echo $empty_star_svg; // Empty star.
-						}
+						echo wp_kses_post( $empty_star_svg ); // Empty star.
+
 					}
 				}
 				?>

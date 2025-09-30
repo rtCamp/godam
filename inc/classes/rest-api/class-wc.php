@@ -331,8 +331,6 @@ class WC extends Base {
 					// Get variation prices.
 					$min_price = $product->get_variation_price( 'min', true );
 					$max_price = $product->get_variation_price( 'max', true );
-
-					// $regular_price = $min_price;
 	
 					if ( $min_price === $max_price ) {
 						$price_display = wc_price( $min_price );
@@ -358,10 +356,9 @@ class WC extends Base {
 	
 					// Format name and price.
 					$name_display  = $product->get_name() . " ({$child_count} items)";
-					// $regular_price = $min_price;
 					$price_display = $min_price > 0 ? 'From: ' . wc_price( $min_price ) . ' + more' : 'N/A';
 	
-				} else {
+				} elseif ( 'external' === $type || 'simple' === $type ) {
 	
 					// Simple and External product.
 					if ( $sale_price && $sale_price < $regular_price ) {
@@ -423,7 +420,7 @@ class WC extends Base {
 					'categories' => $categories,
 					'tags'       => $tags,
 					'brands'     => $brands,
-					'in_stock'	 => $product->is_in_stock(),
+					'in_stock'   => $product->is_in_stock(),
 				);
 
 				/**
@@ -503,7 +500,7 @@ class WC extends Base {
 			$name_display = $product->get_name() . ' (' . $items_label . ')';
 			/* translators: %s: formatted minimum price */
 			$price_display = $min_price > 0 ? sprintf( __( 'From: %s + more', 'godam' ), wc_price( $min_price ) ) : __( 'N/A', 'godam' );
-		} else {
+		} elseif ( 'external' === $type || 'simple' === $type ) {
 
 			// Simple and External product.
 			if ( $sale_price && $sale_price < $regular_price ) {
@@ -565,7 +562,7 @@ class WC extends Base {
 			'categories' => $categories,
 			'tags'       => $tags,
 			'brands'     => $brands,
-			'in_stock'	 => $product->is_in_stock(),
+			'in_stock'   => $product->is_in_stock(),
 		);
 
 		/**
@@ -930,7 +927,7 @@ class WC extends Base {
 					'link'                  => get_permalink( $product->get_id() ),
 					'rating_customer_count' => $product->get_rating_count(),
 					'rating_average'        => $product->get_average_rating(),
-					'in_stock'				=> $product->is_in_stock(),
+					'in_stock'              => $product->is_in_stock(),
 				);
 
 				/**
