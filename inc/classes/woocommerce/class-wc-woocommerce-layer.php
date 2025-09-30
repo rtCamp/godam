@@ -67,6 +67,7 @@ class WC_Woocommerce_Layer {
 		$product_data = $data;
 
 		// Find all attachments that may contain hotspots.
+		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
 		$attachments = get_posts(
 			array(
 				'post_type'      => 'attachment',
