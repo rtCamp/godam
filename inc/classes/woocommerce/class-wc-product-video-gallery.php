@@ -30,6 +30,7 @@ class WC_Product_Video_Gallery {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
 		add_action( 'woocommerce_single_product_summary', array( $this, 'add_video_slider_to_single_product' ), 70 );
 		add_action( 'delete_attachment', array( $this, 'on_attachment_deleted' ) );
+		add_action( 'before_delete_post', array( $this, 'on_product_deleted' ) );
 		add_filter( 'get_user_option_meta-box-order_product', array( $this, 'place_below_wc_gallery' ) );
 	}
 
@@ -443,6 +444,57 @@ class WC_Product_Video_Gallery {
 
 		// Clean up parent reference from attachment.
 		delete_post_meta( $attachment_id, $parent_meta_key );
+	}
+
+	/**
+	 * Handle cleanup when a product is deleted.
+	 *
+	 * Removes the product ID from all attachment meta,
+	 * and cleans up video gallery meta.
+	 *
+	 * @param int $post_id The ID of the post being deleted.
+	 */
+	public function on_product_deleted( $post_id ) {
+		
+		if ( 'product' !== get_post_type( $post_id ) ) {
+			return;
+		}
+
+		$parent_meta_key = '_video_parent_product_id';
+
+		// Get all attachments linked to this product.
+		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
+		$attachment_ids = get_posts(
+			array(
+				'post_type'      => 'attachment',
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+				'meta_query'     => array( // phpcs:ignore
+					array(
+						'key'   => $parent_meta_key,
+						'value' => $post_id,
+					),
+				),
+			) 
+		);
+
+		foreach ( $attachment_ids as $attachment_id ) {
+			// Remove the product ID from the attachment's parent list.
+			delete_post_meta( $attachment_id, $parent_meta_key, $post_id );
+		}
+
+		// Clean up the product’s own video gallery meta.
+		delete_post_meta( $post_id, '_rtgodam_product_video_gallery' );
+		delete_post_meta( $post_id, '_rtgodam_product_video_gallery_ids' );
+
+		/**
+		 * Hook: rtgodam_product_gallery_product_deleted
+		 *
+		 * Allows additional cleanup when a product is deleted.
+		 *
+		 * @param int $post_id Deleted product ID.
+		 */
+		do_action( 'rtgodam_product_gallery_product_deleted', $post_id );
 	}
 
 	/**
