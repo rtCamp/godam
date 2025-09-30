@@ -130,7 +130,7 @@
 		}
 
 		&-content {
-			max-width: min(calc(100% - 40px), 800px);
+			width: min(calc(100% - 40px), 800px);
 
 			&-left {
 				flex-basis: 50%;
@@ -143,7 +143,7 @@
 					.video-js .vjs-tech{
 						min-height: 100vh !important;
 					}
-					min-width: 100vw;
+					width: 100vw;
 				}
 			}
 
