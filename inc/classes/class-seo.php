@@ -103,6 +103,57 @@ class Seo {
 		if ( isset( $block['blockName'] ) && 'godam/video' === $block['blockName'] ) {
 			if ( isset( $block['attrs']['seo'] ) && ! empty( $block['attrs']['seo'] ) ) {
 				$schemas[] = $block['attrs']['seo'];
+			} elseif ( isset( $block['attrs']['id'] ) && is_numeric( $block['attrs']['id'] ) ) {
+				// Fetch default SEO from attachment metadata.
+				$attachment_id = intval( $block['attrs']['id'] );
+
+				$attachment_title = get_the_title( $attachment_id );
+				$attachment_desc  = get_post_field( 'post_content', $attachment_id );
+				$attachment_url   = wp_get_attachment_url( $attachment_id );
+				$attachment_date  = get_the_date( 'c', $attachment_id );
+				$attachment_thumb = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
+				$attachment_meta  = wp_get_attachment_metadata( $attachment_id );
+				$duration         = '';
+				if ( ! empty( $attachment_meta['length'] ) && is_numeric( $attachment_meta['length'] ) ) {
+					$duration_seconds = (int) $attachment_meta['length'];
+
+					$hours   = floor( $duration_seconds / 3600 );
+					$minutes = floor( ( $duration_seconds % 3600 ) / 60 );
+					$seconds = $duration_seconds % 60;
+
+					$iso_duration = 'PT';
+					if ( $hours > 0 ) {
+						$iso_duration .= $hours . 'H';
+					}
+					if ( $minutes > 0 ) {
+						$iso_duration .= $minutes . 'M';
+					}
+					if ( $seconds > 0 || 'PT' === $iso_duration ) {
+						$iso_duration .= $seconds . 'S';
+					}
+
+					$duration = $iso_duration;
+				}
+
+				if ( empty( $attachment_thumb ) ) {
+					$attachment_thumb = get_the_post_thumbnail_url( $attachment_id, 'full' );
+				}
+
+				$schemas[] = array(
+					'contentUrl'       => esc_url_raw( $attachment_url ),
+					'headline'         => sanitize_text_field( $attachment_title ),
+					'description'      => wp_strip_all_tags( $attachment_desc ),
+					'uploadDate'       => sanitize_text_field( $attachment_date ),
+					'isFamilyFriendly' => false, // Default to false for attachments.
+				);
+
+				if ( ! empty( $attachment_thumb ) ) {
+					$schema['thumbnailUrl'] = esc_url_raw( $attachment_thumb );
+				}
+
+				if ( ! empty( $duration ) ) {
+					$schema['duration'] = sanitize_text_field( $duration );
+				}           
 			}
 		}
 
