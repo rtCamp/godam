@@ -251,6 +251,13 @@ document.addEventListener( 'click', async function( e ) {
 
 					if ( data.status === 'success' && data.html ) {
 						dispatch( engagementStore ).addVideoMarkUp( newVideoId, data.html );
+
+						/* global wpforms */
+						// This ensures that any dynamically added forms or fields are properly bound
+						// to validation, AJAX submission, and other WPForms frontend features.
+						if ( wpforms && wpforms.init ) {
+							wpforms.init();
+						}
 					}
 				}
 
