@@ -28,6 +28,20 @@ if ( $post && $post instanceof WP_Post ) {
 	}
 }
 
+// Conditionally enqueue skin styles based on settings (same as shortcode).
+$godam_settings = get_option( 'rtgodam-settings', array() );
+$selected_skin  = $godam_settings['video_player']['player_skin'] ?? '';
+
+if ( 'Minimal' === $selected_skin ) {
+	wp_enqueue_style( 'godam-player-minimal-skin' );
+} elseif ( 'Pills' === $selected_skin ) {
+	wp_enqueue_style( 'godam-player-pills-skin' );
+} elseif ( 'Bubble' === $selected_skin ) {
+	wp_enqueue_style( 'godam-player-bubble-skin' );
+} elseif ( 'Classic' === $selected_skin ) {
+	wp_enqueue_style( 'godam-player-classic-skin' );
+}
+
 // Get the inner blocks content.
 $inner_blocks_content = '';
 if ( ! empty( $block->inner_blocks ) ) {
