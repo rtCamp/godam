@@ -32,14 +32,16 @@ if ( $post && $post instanceof WP_Post ) {
 $godam_settings = get_option( 'rtgodam-settings', array() );
 $selected_skin  = $godam_settings['video_player']['player_skin'] ?? '';
 
-if ( 'Minimal' === $selected_skin ) {
-	wp_enqueue_style( 'godam-player-minimal-skin' );
-} elseif ( 'Pills' === $selected_skin ) {
-	wp_enqueue_style( 'godam-player-pills-skin' );
-} elseif ( 'Bubble' === $selected_skin ) {
-	wp_enqueue_style( 'godam-player-bubble-skin' );
-} elseif ( 'Classic' === $selected_skin ) {
-	wp_enqueue_style( 'godam-player-classic-skin' );
+// Map skin names to their corresponding style handles.
+$skin_styles = array(
+	'Minimal' => 'godam-player-minimal-skin',
+	'Pills'   => 'godam-player-pills-skin',
+	'Bubble'  => 'godam-player-bubble-skin',
+	'Classic' => 'godam-player-classic-skin',
+);
+
+if ( isset( $skin_styles[ $selected_skin ] ) ) {
+	wp_enqueue_style( $skin_styles[ $selected_skin ] );
 }
 
 // Get the inner blocks content.
