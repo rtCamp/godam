@@ -250,6 +250,20 @@ class Media_Library_Ajax {
 			$response['image']['src'] = $response['icon'];
 		}
 
+		// Get and show the media folder term.
+		$terms = get_the_terms( $attachment->ID, 'media-folder' );
+
+		if ( ! is_wp_error( $terms ) && ! empty( $terms ) && is_array( $terms ) ) {
+			$term                     = array_shift( $terms );
+			$response['media_folder'] = array(
+				'id'   => $term->term_id,
+				'name' => $term->name,
+				'slug' => $term->slug,
+			);
+		} else {
+			$response['media_folder'] = null;
+		}
+
 		return $response;
 	}
 
@@ -603,7 +617,7 @@ class Media_Library_Ajax {
 	/**
 	 * Replace an existing WordPress media attachment with a file from an external URL,
 	 * using the WordPress Filesystem API.
-	 * 
+	 *
 	 * @since 1.4.2
 	 *
 	 * @param int    $attachment_id The ID of the existing media attachment.
