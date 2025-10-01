@@ -125,4 +125,17 @@ class LearnDash {
 
 		return $settings;
 	}
+
+	/**
+	 * Add GoDAM provider if GoDAM video URL is detected.
+	 *
+	 * @param string $video_provider Current video provider.
+	 * @param array  $settings      Lesson settings array.
+	 */
+	public function add_godam_provider( string $video_provider, array $settings ): string {
+		if ( false !== strpos( $settings['lesson_video_url'], '(rtgodam' ) ) {
+			return 'rtgodam';
+		}
+		return $video_provider;
+	}
 }
