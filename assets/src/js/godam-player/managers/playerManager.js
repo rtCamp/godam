@@ -12,6 +12,7 @@ import { __, sprintf } from '@wordpress/i18n';
  * VideoJs dependencies
  */
 import videojs from 'video.js';
+window.videojs = videojs; // Make videojs globally accessible.
 
 /**
  * Internal dependencies
