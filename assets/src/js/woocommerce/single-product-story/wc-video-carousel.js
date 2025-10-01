@@ -1,3 +1,5 @@
+/* eslint-disable eslint-comments/disable-enable-pair */
+/* eslint-disable no-unused-vars */
 /* global Swiper */
 
 const { dispatch } = wp.data;
@@ -34,7 +36,6 @@ const wcVideoCarousel = {
 	 */
 	loadVideoCarousel() {
 		const self = this;
-		// eslint-disable-next-line no-unused-vars
 		this.swiper = new Swiper( '.rtgodam-product-video-gallery-slider', {
 			loop: true,
 			navigation: {

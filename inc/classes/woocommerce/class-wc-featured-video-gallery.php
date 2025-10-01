@@ -44,7 +44,7 @@ class WC_Featured_Video_Gallery {
 		add_action(
 			'wp_enqueue_scripts',
 			function () {
-				if ( ! is_admin() ) {
+				if ( ! is_admin() && is_product() ) {
 					wp_enqueue_script( 'godam-player-frontend-script' );
 					wp_enqueue_script( 'godam-player-analytics-script' );
 					wp_enqueue_style( 'godam-player-frontend-style' );

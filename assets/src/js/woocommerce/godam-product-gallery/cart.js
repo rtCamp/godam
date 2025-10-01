@@ -147,7 +147,7 @@ export function initMinicartAndCtaDropdown() {
 	 * If the product cannot be added via AJAX (e.g., due to validation errors), the user is redirected
 	 * to the product page to complete the action.
 	 *
-	 * @param                 button
+	 * @param {button}        button
 	 * @param {number|string} productId                - The ID of the product to add to the cart.
 	 * @param {string}        [cartAction='mini-cart'] - The action after adding to cart. Either 'mini-cart' or 'redirect'.
 	 * @param {string}        [productURL]             - The fallback product URL to redirect to if add-to-cart fails.
