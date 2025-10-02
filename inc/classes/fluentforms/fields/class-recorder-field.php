@@ -110,7 +110,7 @@ class Recorder_Field extends BaseFieldManager {
 			wp_enqueue_script(
 				'godam-fluentforms-editor',
 				RTGODAM_URL . 'assets/build/js/godam-fluentforms-editor.min.js',
-				array(),
+				array( 'wp-data', 'wp-url' ),
 				filemtime( RTGODAM_PATH . 'assets/build/js/godam-fluentforms-editor.min.js' ),
 				true
 			);
@@ -284,6 +284,10 @@ class Recorder_Field extends BaseFieldManager {
 					array(
 						'value' => 'screen_capture',
 						'label' => __( 'Screencast', 'godam' ),
+					),
+					array(
+						'value' => 'audio',
+						'label' => __( 'Audio Recording', 'godam' ),
 					),
 				),
 			),
@@ -821,9 +825,18 @@ class Recorder_Field extends BaseFieldManager {
 		if ( ! $is_html ) {
 			return $response;
 		}
-
-		// Get video URL.
-		$video_url = $response[0];
+		
+		$file_path = $response[0];
+		$file_type = wp_check_filetype( $file_path );
+		$is_video  = strpos( $file_type['type'], 'video' ) !== false;
+		$is_audio  = strpos( $file_type['type'], 'audio' ) !== false;
+		
+		// if webm file extension and mime type is not detected correctly then check by file name.
+		// The files created by uppy webcam, screen capture, and audio plugin are in same format, so we are checking the filename to determine if it's an audio file.
+		if ( 'webm' === $file_type['ext'] && godam_is_audio_file_by_name( $file_path ) ) {
+			$is_video = false;
+			$is_audio = true;
+		}
 
 		// Fetch the entry id.
 		$entry_id = 0;
@@ -859,31 +872,45 @@ class Recorder_Field extends BaseFieldManager {
 		/**
 		 * Transcoded URL output.
 		 */
-		$transcoded_url_output = '';
+		$transcoded_url_output          = '';
+		$transcoded_url_shortcode_param = '';
 
 		if ( ! empty( $submission_meta ) ) {
-			$transcoded_url        = esc_url( $submission_meta->value );
-			$transcoded_url        = "transcoded_url={$transcoded_url}";
-			$transcoded_url_output = sprintf(
+			$transcoded_url                = esc_url( $submission_meta->value );
+			$transcoded_url_shortcode_param = "transcoded_url={$transcoded_url}";
+			$transcoded_url_output          = sprintf(
 				"<div style='margin: 8px 0;' class='godam-transcoded-url-info'><span class='dashicons dashicons-yes-alt'></span><strong>%s</strong></div>",
 				esc_html__( 'Video saved and transcoded successfully on GoDAM', 'godam' )
 			);
 		}
 
-		/**
-		 * Generate video output.
-		 */
-		$video_output = do_shortcode( "[godam_video src='{$video_url}' ]" );
-		$video_output = '<div class="gf-godam-video-preview">' . $video_output . '</div>';
-
-		$download_url = sprintf(
-			'<div style="margin: 12px 0;"><a type="button" class="el-button el-button--primary el-button--small" target="_blank" href="%s">%s</a></div>',
-			esc_url( $video_url ),
-			__( 'Click to view', 'godam' )
-		);
-
-		$video_output = $download_url . $transcoded_url_output . $video_output;
-
-		return $video_output;
+		if ( $is_video ) {
+			/**
+			 * Generate video output.
+			 */
+			$video_output = do_shortcode( "[godam_video src='$file_path' $transcoded_url_shortcode_param]" );
+			$video_output = '<div class="gf-godam-video-preview">' . $video_output . '</div>';
+			
+			$download_url = sprintf(
+				'<div style="margin: 12px 0;"><a type="button" class="el-button el-button--primary el-button--small" target="_blank" href="%s">%s</a></div>',
+				esc_url( $file_path ),
+				__( 'Click to view', 'godam' )
+			);
+			
+			$video_output = $download_url . $transcoded_url_output . $video_output;
+			return $video_output;
+		}
+		
+		if ( $is_audio ) {
+			$audio_output = sprintf(
+				'<audio controls><source src="%1$s" type="%2$s">Your browser does not support the audio element.</audio>',
+				esc_url( $file_path ),
+				esc_attr( $file_type['type'] )
+			);
+			$audio_output = '<div class="gf-godam-audio-preview">' . $audio_output . '</div>';
+			return $audio_output;
+		}
+		
+		return '';
 	}
 }
