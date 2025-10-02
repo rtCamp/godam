@@ -876,7 +876,7 @@ class Recorder_Field extends BaseFieldManager {
 		$transcoded_url_shortcode_param = '';
 
 		if ( ! empty( $submission_meta ) ) {
-			$transcoded_url                = esc_url( $submission_meta->value );
+			$transcoded_url                 = esc_url( $submission_meta->value );
 			$transcoded_url_shortcode_param = "transcoded_url={$transcoded_url}";
 			$transcoded_url_output          = sprintf(
 				"<div style='margin: 8px 0;' class='godam-transcoded-url-info'><span class='dashicons dashicons-yes-alt'></span><strong>%s</strong></div>",
