@@ -41,6 +41,7 @@ export default function Edit( { attributes, setAttributes } ) {
 		infiniteScroll,
 		category,
 		tag,
+		mediaFolder,
 		author,
 		dateRange,
 		customDateStart,
@@ -74,6 +75,10 @@ export default function Edit( { attributes, setAttributes } ) {
 
 	const tags = useSelect( ( select ) => {
 		return select( coreStore ).getEntityRecords( 'taxonomy', 'post_tag', { per_page: -1 } );
+	}, [] );
+
+	const mediaFolders = useSelect( ( select ) => {
+		return select( coreStore ).getEntityRecords( 'taxonomy', 'media-folder', { per_page: -1 } );
 	}, [] );
 
 	// Fetch authors
@@ -306,6 +311,18 @@ export default function Edit( { attributes, setAttributes } ) {
 							} ) ),
 						] }
 						onChange={ ( value ) => setAttributes( { tag: value } ) }
+					/>
+					<SelectControl
+						label={ __( 'Media Folder', 'godam' ) }
+						value={ mediaFolder }
+						options={ [
+							{ label: __( 'All Folders', 'godam' ), value: '' },
+							...( mediaFolders || [] ).map( ( dir ) => ( {
+								label: dir.name,
+								value: dir.id.toString(),
+							} ) ),
+						] }
+						onChange={ ( value ) => setAttributes( { mediaFolder: value } ) }
 					/>
 					<SelectControl
 						label={ __( 'Author', 'godam' ) }

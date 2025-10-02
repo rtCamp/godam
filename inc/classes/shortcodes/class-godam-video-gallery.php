@@ -66,6 +66,7 @@ class GoDAM_Video_Gallery {
 				'infinite_scroll'   => false,
 				'category'          => '',
 				'tag'               => '',
+				'media_folder'      => '',
 				'author'            => 0,
 				'date_range'        => '',
 				'include'           => '',
@@ -122,6 +123,15 @@ class GoDAM_Video_Gallery {
 				'taxonomy' => 'post_tag',
 				'field'    => 'term_id',
 				'terms'    => intval( $atts['tag'] ),
+			);
+		}
+
+		// Add media_folder filter.
+		if ( ! empty( $atts['media_folder'] ) ) {
+			$args['tax_query'][] = array(
+				'taxonomy' => 'media-folder',
+				'field'    => 'term_id',
+				'terms'    => intval( $atts['media_folder'] ),
 			);
 		}
 

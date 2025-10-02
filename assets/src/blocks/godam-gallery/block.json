@@ -40,6 +40,10 @@
 			"type": "string",
 			"default": ""
 		},
+		"mediaFolder": {
+			"type": "string",
+			"default": ""
+		},
 		"author": {
 			"type": "number",
 			"default": 0
