@@ -357,14 +357,6 @@ class Pages {
 	 * @return void
 	 */
 	public function render_video_editor_page() {
-		// Check if current user can edit posts.
-		if ( ! current_user_can( 'edit_posts' ) ) {
-			?>
-			<p class="godam-page-error"><?php echo esc_html( __( 'You do not have sufficient permissions to access this page.', 'godam' ) ); ?></p>
-			<?php
-			return;
-		}
-
 		// Check if user can media with given id.
 		$attachment_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
