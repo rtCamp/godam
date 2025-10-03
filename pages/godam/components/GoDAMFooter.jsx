@@ -27,6 +27,11 @@ const DOCS_LINKS = [
 		title: __( 'Newsletter', 'godam' ),
 		url: 'https://godam.io/newsletter',
 	},
+	{
+		title: __( 'What\'s New', 'godam' ),
+		url: `${ window.footerData?.adminUrl }?page=rtgodam_whats_new`,
+		target: '_self',
+	},
 ];
 
 const SOCIAL_ICONS = [
@@ -74,7 +79,7 @@ const GoDAMFooter = () => {
 							{
 								DOCS_LINKS.map( ( link, index ) => (
 									<li key={ index } className="godam-footer__links__item">
-										<a href={ link.url } target="_blank" rel="noreferrer">{ link.title }</a>
+										<a href={ link.url } target={ link.target || '_blank' } rel="noreferrer">{ link.title }</a>
 									</li>
 								) )
 							}

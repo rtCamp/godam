@@ -24,6 +24,14 @@ const CustomVideoPlayerCSS = ( { handleSettingChange } ) => {
 					foreground: '999999', // Light gray
 					fontStyle: 'italic',
 				},
+				{
+					token: 'variable',
+					foreground: '007ACC', // Blue for SCSS variables
+				},
+				{
+					token: 'keyword',
+					foreground: 'AF00DB', // Purple keywords
+				},
 			],
 			colors: {
 				'editor.foreground': '#000000',
@@ -50,6 +58,9 @@ const CustomVideoPlayerCSS = ( { handleSettingChange } ) => {
 						theme="godam-theme"
 						options={ {
 							minimap: { enabled: false },
+							fontSize: 14,
+							formatOnType: true,
+							formatOnPaste: true,
 						} }
 						onMount={ handleEditorMount }
 						onChange={ ( value ) => handleSettingChange( 'custom_css', value ) }

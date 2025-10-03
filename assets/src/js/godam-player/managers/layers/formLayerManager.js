@@ -227,6 +227,13 @@ export default class FormLayerManager {
 	 * @param {HTMLElement} videoContainer - Video container element
 	 */
 	handleFullscreenChange( isFullscreen, videoContainer ) {
+		// Handle uppy selector to visible on fullscreen.
+		const uppyContainerModal = document.querySelector( '#uppy-godam-video-modal-container' );
+
+		if ( uppyContainerModal && isFullscreen ) {
+			videoContainer.appendChild( uppyContainerModal );
+		}
+
 		this.formLayers.forEach( ( layerObj ) => {
 			if ( isFullscreen ) {
 				videoContainer.appendChild( layerObj.layerElement );

@@ -12,6 +12,7 @@ import { __, sprintf } from '@wordpress/i18n';
  * VideoJs dependencies
  */
 import videojs from 'video.js';
+window.videojs = videojs; // Make videojs globally accessible.
 
 /**
  * Internal dependencies
@@ -19,6 +20,7 @@ import videojs from 'video.js';
 import VideoPlayer from '../videoPlayer.js';
 import { KEYBOARD_CONTROLS } from '../utils/constants.js';
 import { parseDataAttribute } from '../utils/dataHelpers.js';
+import { engagement } from '../engagement';
 
 /**
  * Main GoDAM Player Manager Class
@@ -51,6 +53,7 @@ export default class PlayerManager {
 		this.initializeDisplayLayers();
 		this.videos.forEach( ( video ) => this.initializeVideo( video ) );
 		this.initializeGlobalKeyboardHandler();
+		this.initEngagement = engagement();
 	}
 
 	/**
@@ -68,6 +71,12 @@ export default class PlayerManager {
 	 * @param {HTMLElement} video - Video element to initialize
 	 */
 	initializeVideo( video ) {
+		// Skip if already initialized (prevents re-init by external observers)
+		if ( video.dataset.godamInitialized === '1' ) {
+			return;
+		}
+		video.dataset.godamInitialized = '1';
+
 		const playerInstance = new VideoPlayer( video, this.isDisplayingLayers );
 		playerInstance.initialize();
 	}

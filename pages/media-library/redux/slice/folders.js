@@ -35,7 +35,7 @@ const slice = createSlice( {
 		page: {
 			current: 1,
 			perPage: 10,
-			hasNext: true,
+			totalPages: 1, // Default to 1; update when real data is loaded.
 		},
 
 		modals: {
@@ -314,11 +314,11 @@ const slice = createSlice( {
 			state.lockedFolders = lockedFolders;
 		},
 		updatePage: ( state, action ) => {
-			const { current, hasNext, perPage } = action.payload;
+			const { current, totalPages, perPage } = action.payload;
 			state.page = {
 				current: current ?? state.page.current,
-				hasNext: hasNext ?? state.page.hasNext,
 				perPage: perPage ?? state.page.perPage,
+				totalPages: totalPages ?? state.page.totalPages,
 			};
 		},
 		setCurrentContextMenuFolder: ( state, action ) => {

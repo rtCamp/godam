@@ -116,7 +116,7 @@ export function generateUsageDonutChart( selector, usedRaw, totalRaw, type = 'ba
 			.attr( 'dy', '-0.25em' )
 			.style( 'font-size', '14px' )
 			.style( 'font-weight', 'bold' )
-			.text( total === 0 ? '0%' : `${ percent.toFixed( 1 ) }%` );
+			.text( total === 0 ? '0%' : `${ percent?.toFixed( 1 ) }%` );
 
 		svg
 			.append( 'text' )
@@ -187,7 +187,7 @@ function main() {
 
 	const watchTimeEl = document.getElementById( 'watch-time' );
 	if ( watchTimeEl ) {
-		watchTimeEl.innerText = `${ formatWatchTime( playTime.toFixed( 2 ) ) }`;
+		watchTimeEl.innerText = `${ formatWatchTime( playTime?.toFixed( 2 ) ) }`;
 	}
 
 	const analyticsContainer = document.getElementById( 'video-analytics-container' );

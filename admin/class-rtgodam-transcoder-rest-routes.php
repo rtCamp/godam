@@ -194,7 +194,6 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 		$format      = $request->get_param( 'format' );
 
 		if ( ! empty( $job_id ) && ! empty( $file_status ) && ( 'error' === $file_status ) ) {
-			$this->rtgodam_transcoder_handler->nofity_transcoding_failed( $job_id, $error_msg );
 			return new WP_Error( 'rtgodam_transcoding_error', 'Something went wrong. Invalid post request.', array( 'status' => 400 ) );
 		}
 
@@ -249,8 +248,6 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 				if ( $flag ) {
 					return new WP_Error( 'rtgodam_transcoding_error', $flag, array( 'status' => 500 ) );
-				} else {
-					return new WP_REST_Response( esc_html_e( 'Media transcoded successfully.', 'godam' ), 200 );
 				}
 			}
 		}

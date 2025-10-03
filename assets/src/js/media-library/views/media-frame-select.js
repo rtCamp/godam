@@ -98,6 +98,7 @@ export default MediaFrameSelect?.extend( {
 				filename: data.filename,
 				name: data.title,
 				url: data.url,
+				hls_url: data.hls_url,
 				mime: 'video/mp4',
 				type: data.type,
 				subtype: data.subtype,

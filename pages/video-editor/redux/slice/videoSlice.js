@@ -30,7 +30,7 @@ const slice = createSlice( {
 					backward: 10,
 				},
 				//custom controls
-				brandingIcon: false,
+				brandingIcon: true,
 				appearanceColor: godamSettings?.brandColor ? godamSettings?.brandColor : '#2b333fb3',
 				hoverColor: '#fff',
 				zoomLevel: 0,

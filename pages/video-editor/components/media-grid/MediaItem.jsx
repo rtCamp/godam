@@ -16,6 +16,7 @@ import { createPortal } from '@wordpress/element';
  */
 import NoThumbnailImage from '../../assets/no-thumbnail.jpg';
 import { copyGoDAMVideoBlock } from '../../utils';
+import { canManageAttachment } from '../../../../assets/src/js/media-library/utility.js';
 
 const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 	const [ snackbarMessage, setSnackbarMessage ] = useState( '' );
@@ -24,6 +25,11 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 	const handleItemClick = ( e ) => {
 		if ( e.target.closest( '.godam-video-list__video__thumbnail__overlay' ) ) {
 			return;
+		}
+
+		// If user cannot manage the attachment, prevent default action.
+		if ( ! canManageAttachment( item?.author ) ) {
+			return e.preventDefault();
 		}
 
 		handleAttachmentClick( item.id );
@@ -46,7 +52,9 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 
 	return (
 		<div
-			className="godam-video-list__video"
+			className={ `godam-video-list__video ${ ! canManageAttachment( item?.author ) ? 'disabled' : '' }` }
+			aria-disabled={ ! canManageAttachment( item?.author ) }
+			disabled={ ! canManageAttachment( item?.author ) }
 			onClick={ handleItemClick }
 			role="button"
 			ref={ ref }
