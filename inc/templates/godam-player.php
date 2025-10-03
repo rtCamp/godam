@@ -482,9 +482,12 @@ function handle_assets( ...$handle_names ) {
 
 									if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 										if ( class_exists( 'GFForms' ) ) {
-											require_once GFCommon::get_base_path() . '/form_display.php';
-											GFFormDisplay::enqueue_form_scripts( null, true );
-											handle_assets( 'gform', 'gravity' );
+											$form_display_path = GFCommon::get_base_path() . '/form_display.php';
+											if ( file_exists( $form_display_path ) ) {
+												require_once $form_display_path;
+												GFFormDisplay::enqueue_form_scripts( null, true );
+												handle_assets( 'gform', 'gravity' );
+											}
 										}
 									}
 
