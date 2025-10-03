@@ -32,7 +32,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { __, _x, sprintf } from '@wordpress/i18n';
 import { useInstanceId } from '@wordpress/compose';
 import { useDispatch } from '@wordpress/data';
-import { search, media as icon } from '@wordpress/icons';
+import { search } from '@wordpress/icons';
 import { store as noticesStore } from '@wordpress/notices';
 
 /**
@@ -45,6 +45,7 @@ import { Caption } from './caption';
 import VideoSEOModal from './components/VideoSEOModal.js';
 import { appendTimezoneOffsetToUTC, isSEODataEmpty, secondsToISO8601 } from './utils/index.js';
 import './editor.scss';
+import { ReactComponent as icon } from '../../images/godam-video-filled.svg';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
 const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
