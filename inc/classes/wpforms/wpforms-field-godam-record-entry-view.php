@@ -18,13 +18,23 @@ $attachment_name    = basename( $value );
 $transcoded_url     = WPForms_Integration_Helper::get_transcoded_url( $form_id, $entry_id, $field_id );
 $hls_transcoded_url = WPForms_Integration_Helper::get_hls_transcoded_url( $form_id, $entry_id, $field_id );
 $transcoded_status  = WPForms_Integration_Helper::get_transcoded_status( $form_id, $entry_id, $field_id );
+
+
+$recorder_url = add_query_arg(
+	array(
+		'form_id'  => $form_id,
+		'entry_id' => $entry_id,
+		'field_id' => $field_id,
+	),
+	site_url( '/godam-recorder/' )
+);
 ?>
 
 <div class="godam-video-preview">
 	<div class="godam-video-link-wrapper">
 		<span><?php esc_html_e( 'URL: ', 'godam' ); ?></span>
 		<a
-			href="<?php echo esc_url( $attachment_url ); ?>"
+			href="<?php echo esc_url( $recorder_url ); ?>"
 			target="_blank"
 			class="godam-video-link <?php echo ( empty( $value ) ? 'hidden' : '' ); ?>"
 		>
