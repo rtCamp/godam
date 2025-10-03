@@ -38,16 +38,17 @@ function updateSelectDropdown( itemId, itemName ) {
 		option.text = itemName;
 		selectBox.add( option );
 		selectBox.value = itemId;
-	}
 
-	const changeEvent = new CustomEvent( 'change', {
-		bubbles: true,
-		detail: {
-			term_id: itemId,
-			name: itemName,
-		},
-	} );
-	selectBox.dispatchEvent( changeEvent );
+		const changeEvent = new CustomEvent( 'change', {
+			bubbles: true,
+			detail: {
+				term_id: itemId,
+				name: itemName,
+			},
+		} );
+
+		selectBox.dispatchEvent( changeEvent );
+	}
 }
 
 function checkIfListSelected() {
