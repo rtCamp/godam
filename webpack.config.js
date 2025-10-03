@@ -231,6 +231,14 @@ const learnDashAdmin = {
 	},
 };
 
+const learnDashBlock = {
+	...sharedConfig,
+	entry: {
+		learnDashBlock: path.resolve( process.cwd(), 'assets', 'src', 'js', 'learndash', 'block.js' ),
+		'godam-learndash-block': path.resolve( process.cwd(), 'assets', 'src', 'js', 'learndash', 'block.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -320,4 +328,5 @@ module.exports = [
 	lifterLMSEmbed,
 	ninjaForms,
 	learnDashAdmin,
+	learnDashBlock,
 ];
