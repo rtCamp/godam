@@ -353,6 +353,53 @@ if ( ! empty( $transcript_path ) ) {
 	);
 }
 
+/**
+ * Print styles and scripts whose handles contain one of the given substrings.
+ *
+ * @param string ...$handle_names One or more substrings to match against registered script/style handles.
+ */
+function handle_assets( ...$handle_names ) {
+	$assets_html = '';
+	global $wp_styles, $wp_scripts;
+
+	// Collect style handles.
+	$style_handles = array();
+	foreach ( $wp_styles->registered as $handle => $data ) {
+		foreach ( $handle_names as $handle_name ) {
+			if ( strpos( $handle, $handle_name ) !== false ) {
+				$style_handles[] = $handle;
+				break;
+			}
+		}
+	}
+
+	// Print styles with dependencies.
+	if ( ! empty( $style_handles ) ) {
+		ob_start();
+		wp_print_styles( $style_handles );
+		$assets_html .= ob_get_clean();
+	}
+
+	// Collect script handles.
+	$script_handles = array();
+	foreach ( $wp_scripts->registered as $handle => $data ) {
+		foreach ( $handle_names as $handle_name ) {
+			if ( strpos( $handle, $handle_name ) !== false ) {
+				$script_handles[] = $handle;
+				break;
+			}
+		}
+	}
+
+	// Print scripts with dependencies.
+	if ( ! empty( $script_handles ) ) {
+		ob_start();
+		wp_print_scripts( $script_handles );
+		$assets_html .= ob_get_clean();
+	}
+
+	echo $assets_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+}
 
 ?>
 
@@ -432,6 +479,18 @@ if ( ! empty( $transcript_path ) ) {
 							<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 								<div class="form-container">
 									<?php
+
+									if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+										if ( class_exists( 'GFForms' ) ) {
+											$form_display_path = GFCommon::get_base_path() . '/form_display.php';
+											if ( file_exists( $form_display_path ) ) {
+												require_once $form_display_path;
+												GFFormDisplay::enqueue_form_scripts( null, true );
+												handle_assets( 'gform', 'gravity' );
+											}
+										}
+									}
+
 										$theme = ! empty( $layer['theme'] ) ? esc_attr( $layer['theme'] ) : '';
 										echo do_shortcode(
 											sprintf(
@@ -450,6 +509,15 @@ if ( ! empty( $transcript_path ) ) {
 								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 									<div class="form-container <?php echo esc_attr( 'godam' === $form_theme ? 'rtgodam-wpcf7-form' : '' ); ?>">
 										<?php
+
+										if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+											if ( function_exists( 'wpcf7_enqueue_scripts' ) ) {
+												wpcf7_enqueue_scripts();
+												wpcf7_enqueue_styles();
+												handle_assets( 'contact-form-7', 'wpcf7' );
+											}
+										}
+
 											echo do_shortcode(
 												sprintf(
 													"[contact-form-7 id='%d' title='false' ajax='true']",
@@ -465,12 +533,25 @@ if ( ! empty( $transcript_path ) ) {
 								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 									<div class="form-container">
 										<?php
+
+										if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+											if ( function_exists( 'wpforms' ) ) {
+												$frontend = wpforms()->get( 'frontend' );
+
+												if ( $frontend ) {
+													$frontend->assets_css();
+													$frontend->assets_js();
+													handle_assets( 'wpforms' );
+												}
+											}
+
 											echo do_shortcode(
 												sprintf(
 													"[wpforms id='%d' title='false' description='false' ajax='true']",
 													intval( $layer['wpform_id'] )
 												)
 											);
+										}
 										?>
 									</div>
 								</div>
@@ -480,6 +561,15 @@ if ( ! empty( $transcript_path ) ) {
 								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 									<div class="form-container">
 										<?php
+
+										if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+											if ( class_exists( 'SRFM\Inc\Frontend_Assets' ) ) {
+												SRFM\Inc\Frontend_Assets::enqueue_scripts_and_styles();
+
+											}
+											handle_assets( 'srfm', 'sureform' );
+										}
+
 											echo do_shortcode(
 												sprintf(
 													"[sureforms id='%d']",
@@ -495,6 +585,7 @@ if ( ! empty( $transcript_path ) ) {
 								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 									<div class="form-container">
 										<?php
+
 											echo do_shortcode(
 												sprintf(
 													"[forminator_form id='%d']",
@@ -579,12 +670,22 @@ if ( ! empty( $transcript_path ) ) {
 								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden <?php echo esc_attr( $form_type ); ?>" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 									<div class="form-container">
 										<?php
+
+										if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+
+											if ( class_exists( 'Ninja_Forms' ) ) {
+												if ( class_exists( 'NF_Display_Render' ) ) {
+													Ninja_Forms()->display( $layer['ninja_form_id'] );
+												}
+												handle_assets( 'ninja', 'nf' );
+											}
 											echo do_shortcode(
 												sprintf(
 													"[ninja_form id='%d']",
 													intval( $layer['ninja_form_id'] )
 												)
 											);
+										}
 										?>
 									</div>
 								</div>
