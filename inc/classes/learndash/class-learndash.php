@@ -34,6 +34,7 @@ class LearnDash {
 	private function setup_hooks() {
 		add_filter( 'learndash_settings_fields', array( $this, 'add_godam_settings' ), 10, 2 );
 		add_filter( 'ld_video_provider', array( $this, 'add_godam_provider' ), 10, 2 );
+		add_filter( 'get_post_metadata', array( $this, 'replace_default_placeholder_video_url' ), 10, 3 );
 		add_filter( 'godam_player_video_element_attributes', array( $this, 'modify_godam_player_video_element_attributes' ), 10, 1 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'load_learndash_admin_integration_scripts' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'load_learndash_frontend_integration_script' ) );
@@ -129,7 +130,7 @@ class LearnDash {
 			),
 		);
 
-		// Insert the godam setting before the 'lesson_video_url' setting.
+		// Insert the GoDAM setting before the 'lesson_video_url' setting.
 		$insert_position = array_search( 'lesson_video_url', array_keys( $settings ), true );
 		if ( false !== $insert_position ) {
 			$settings = array_slice( $settings, 0, $insert_position, true ) +
@@ -155,10 +156,10 @@ class LearnDash {
 	}
 
 	/**
-	 * Add custom attributes to the godam/video block for LearnDash video progression.
+	 * Add custom attributes to the GoDAM/video block for LearnDash video progression.
 	 * This function checks if the video has been completed and modifies attributes accordingly.
 	 *
-	 * @param array $attributes Current attributes of the godam/video block.
+	 * @param array $attributes Current attributes of the GoDAM/video block.
 	 *
 	 * @return array
 	 */
@@ -168,7 +169,7 @@ class LearnDash {
 		$content_video_completed = $this->is_content_video_completed( $post->ID );
 
 		$data_unique_id = ! empty( $attributes['data-unique-id'] ) ? '(rtgodam-' . $attributes['data-unique-id'] . ')' : '(rtgodam-' . wp_generate_uuid4() . ')';
-		$cookie_key     = $this->generate_cookie_key( $data_unique_id );
+		$cookie_key     = $this->build_video_cookie_key( $data_unique_id );
 
 		if ( $content_video_completed ) {
 			$attributes['data-video-cookie-key']  = $cookie_key;
@@ -184,33 +185,40 @@ class LearnDash {
 	}
 
 	/**
-	 * Generate a unique cookie key for storing video progression.
+	 * Builds a unique cookie key for storing video progress.
+	 * Similar to LearnDash's internal function.
 	 *
-	 * @param string $id  Unique ID of the godam/video block.
+	 * @param string $unique_id GoDAM video blocks unique ID.
 	 *
 	 * @return string
 	 */
-	public function generate_cookie_key( string $id ): string {
-		$cookie_key = $this->generate_unique_key();
+	public function build_video_cookie_key( string $unique_id = '' ): string {
+		$cookie_key = $this->get_nonce_slug();
 
-		if ( ! empty( $id ) ) {
-			$cookie_key .= '_' . html_entity_decode( trim( $id ) );
+		if ( ! empty( $unique_id ) ) {
+			$lesson_video_url = html_entity_decode( trim( $unique_id ) );
+			$cookie_key      .= '_' . $lesson_video_url;
 		}
 
 		return 'learndash-video-progress-' . md5( $cookie_key );
 	}
 
 	/**
-	 * Generate a unique key based on user ID, course ID, and post ID.
+	 * Utility function to get the nonce slug.
 	 *
-	 * @return string
+	 * @since 3.2.3
 	 */
-	public function generate_unique_key(): string {
+	protected function get_nonce_slug(): string {
 		$post_id   = get_the_ID();
 		$course_id = learndash_get_course_id( $post_id );
-		$user_id   = (int) get_current_user_id();
+		$user_id   = get_current_user_id();
 
-		return sprintf( '%d_%d_%d', $user_id, $course_id, $post_id );
+		return sprintf(
+			'learndash_video_%d_%d_%d',
+			$user_id,
+			$course_id,
+			$post_id
+		);
 	}
 
 	/**
@@ -229,13 +237,13 @@ class LearnDash {
 	}
 
 	/**
-	 * Get unique ID of the godam/video block from a post.
+	 * Get unique ID of the GoDAM/video block from a post.
 	 *
 	 * @param int $post_id The ID of the post.
 	 *
-	 * @return array|null Attributes of the godam/video block, or null if not found.
+	 * @return mixed Attributes of the GoDAM/video block, or null if not found.
 	 */
-	public function godam_get_video_block_id_attributes( int $post_id ): ?array {
+	public function godam_get_video_block_id_attributes( int $post_id ): mixed {
 		$post = get_post( $post_id );
 
 		if ( ! $post || empty( $post->post_content ) ) {
@@ -269,5 +277,59 @@ class LearnDash {
 		$attrs = $find_block( $blocks );
 
 		return $attrs['uniqueId'];
+	}
+
+	/**
+	 * Filter LearnDash video URL meta to replace placeholder with Godam video ID.
+	 *
+	 * @param mixed  $value     Original meta value.
+	 * @param int    $object_id Post ID.
+	 * @param string $meta_key  Meta key.
+	 *
+	 * @return mixed
+	 */
+	public function replace_default_placeholder_video_url( $value, int $object_id, string $meta_key ) {
+		// Prevent recursion.
+		remove_filter( current_filter(), __FUNCTION__ );
+
+		// Only apply for LearnDash lesson/topic meta.
+		if ( ! in_array( $meta_key, array( '_sfwd-topic', '_sfwd-lessons' ), true ) ) {
+			return $value;
+		}
+
+		// Get meta cache.
+		$meta_cache = wp_cache_get( $object_id, 'post_meta' );
+		if ( ! $meta_cache ) {
+			$meta_cache = update_meta_cache( 'post', array( $object_id ) );
+			$meta_cache = $meta_cache[ $object_id ] ?? null;
+		}
+
+		if ( ! $meta_key || ! isset( $meta_cache[ $meta_key ] ) ) {
+			return $value;
+		}
+
+		$saved = maybe_unserialize( $meta_cache[ $meta_key ][0] );
+		if ( ! is_array( $saved ) ) {
+			return $value;
+		}
+
+		// Detect correct video key.
+		$key = '';
+		if ( array_key_exists( 'sfwd-lessons_lesson_video_url', $saved ) ) {
+			$key = 'sfwd-lessons_lesson_video_url';
+		} elseif ( array_key_exists( 'sfwd-topic_lesson_video_url', $saved ) ) {
+			$key = 'sfwd-topic_lesson_video_url';
+		}
+
+		if ( ! $key || strpos( $saved[ $key ], '(rtgodam' ) === false ) {
+			return $value;
+		}
+
+		// Replace with Godam block video ID.
+		$video_id                   = $this->godam_get_video_block_id_attributes( $object_id );
+		$saved[ $key ]              = "(rtgodam-$video_id)";
+		$meta_cache[ $meta_key ][0] = $saved;
+
+		return $meta_cache[ $meta_key ];
 	}
 }
