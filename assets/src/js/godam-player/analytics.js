@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import videojs from 'video.js';
 import { Analytics } from 'analytics';
 /**
  * Internal dependencies
@@ -33,7 +32,7 @@ window.analytics = analytics;
 			return el.player;
 		}
 		try {
-			return videojs.getPlayer( el );
+			return videojs.getPlayer( el ); // eslint-disable-line no-undef -- variable is defined globally
 		} catch ( e ) {
 			return null;
 		}
@@ -162,7 +161,7 @@ function playerAnalytics() {
 
 	videos.forEach( ( video ) => {
 		// read the data-setup attribute.
-		const player = videojs.getPlayer( video ) || videojs( video );
+		const player = videojs.getPlayer( video ) || videojs( video ); // eslint-disable-line no-undef -- variable is defined globally
 
 		window.addEventListener( 'beforeunload', () => {
 			const played = player.played();
