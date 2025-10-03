@@ -38,9 +38,24 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 */
 	async fetchAndRender( fetchPromise, renderMethod ) {
 		const data = await fetchPromise;
-		if ( data ) {
-			renderMethod.call( this, data.data );
+
+		const actionsEl = this.$el.find( '.attachment-actions' );
+
+		// If there's no data remove the spinner and show message.
+		if ( ! data ) {
+			const thumbnailContainer = actionsEl?.find( '.attachment-video-thumbnails' );
+
+			thumbnailContainer?.find( '.thumbnail-spinner' )?.remove();
+			const container = thumbnailContainer?.find( '.thumbnail-spinner-container' )?.get( 0 );
+			if ( container ) {
+				container.className = '';
+				container.innerText = __( 'No thumbnails found', 'godam' );
+			}
+
+			return;
 		}
+
+		renderMethod.call( this, data.data );
 	},
 
 	/**
@@ -166,6 +181,20 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			} );
 	},
 
+	showGodamSnackbar( message ) {
+		let snackbar = document.getElementById( 'godam-snackbar' );
+		if ( ! snackbar ) {
+			snackbar = document.createElement( 'div' );
+			snackbar.id = 'godam-snackbar';
+			document.body.appendChild( snackbar );
+		}
+		snackbar.textContent = message;
+		snackbar.className = 'show';
+		setTimeout( () => {
+			snackbar.className = snackbar.className.replace( 'show', '' );
+		}, 3000 ); // 3 seconds
+	},
+
 	/**
 	 * Opens the media uploader to select a custom thumbnail.
 	 *
@@ -186,7 +215,12 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		uploader.on( 'select', () => {
 			const attachment = uploader.state().get( 'selection' ).first().toJSON();
 			if ( attachment && attachment.url && attachment.id ) {
-				onSelect( attachment ); // Use callback for custom behavior
+				// Double-check it's actually an image
+				if ( attachment.type === 'image' ) {
+					onSelect( attachment );
+				} else {
+					this.showGodamSnackbar( __( 'Please select a valid image file (JPEG, PNG, GIF, etc.).', 'godam' ) );
+				}
 			}
 		} );
 
@@ -314,6 +348,40 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		const { thumbnails, selected, customThumbnails } = data;
 		const attachmentID = this.model.get( 'id' );
 
+		const selector = `.transcoding-status--completed[data-id="${ attachmentID }"]`;
+		const status = document.querySelector( selector );
+
+		if ( status ) {
+			const statusImg = status.querySelector( 'img' );
+
+			if ( statusImg && statusImg.src !== selected ) {
+				statusImg.src = selected;
+			}
+		}
+
+		const virtual = this.model.get( 'virtual' );
+
+		// If the attachment is virtual (e.g. a GoDAM proxy video), override default preview.
+		if ( undefined !== virtual && virtual ) {
+			const videoPlayer = videojs( 'videojs-player-' + this.model.get( 'id' ) );
+			videoPlayer.poster( selected );
+		}
+
+		setTimeout( () => {
+			// Sometimes helps if .mejs-poster is rendered asynchronously
+			const posterDiv = document.querySelector( '.mejs-poster' );
+			if ( posterDiv && selected ) {
+				posterDiv.style.backgroundImage = `url('${ selected }')`;
+				posterDiv.style.backgroundSize = 'contain';
+
+				const posterImg = posterDiv.querySelector( 'img' );
+				if ( posterImg ) {
+					posterImg.setAttribute( 'src', selected );
+					posterImg.style.opacity = '1';
+				}
+			}
+		}, 20 );
+
 		const customThumbnailsArray = Array.isArray( customThumbnails )
 			? customThumbnails
 			: Object.values( customThumbnails || {} );
@@ -407,6 +475,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * @param {number} attachmentID - The ID of the attachment.
 	 */
 	setupThumbnailClickHandler( attachmentID ) {
+		const model = this.model;
 		document.querySelectorAll( '.attachment-video-thumbnails li' ).forEach( ( li ) => {
 			if ( li.classList.contains( 'upload-thumbnail-tile' ) ) {
 				// Skip the upload tile
@@ -422,6 +491,36 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				const img = this.querySelector( 'img' );
 
 				const thumbnailURL = img?.src;
+
+				const posterDiv = document.querySelector( '.mejs-poster' );
+				if ( posterDiv ) {
+					posterDiv.style.backgroundImage = `url('${ thumbnailURL }')`;
+
+					const posterImg = posterDiv.querySelector( 'img' );
+					if ( posterImg ) {
+						posterImg.setAttribute( 'src', thumbnailURL );
+						posterImg.style.opacity = '1';
+					}
+				}
+
+				const selector = `.transcoding-status--completed[data-id="${ attachmentID }"]`;
+				const status = document.querySelector( selector );
+
+				if ( status ) {
+					const statusImg = status.querySelector( 'img' );
+
+					if ( statusImg && statusImg.src !== thumbnailURL ) {
+						statusImg.src = thumbnailURL;
+					}
+				}
+
+				const virtual = model.get( 'virtual' );
+
+				// If the attachment is virtual (e.g. a GoDAM proxy video), override default preview.
+				if ( undefined !== virtual && virtual ) {
+					const videoPlayer = videojs( 'videojs-player-' + model.get( 'id' ) );
+					videoPlayer.poster( thumbnailURL );
+				}
 
 				/**
 				 * Send a POST request to the server to set the selected thumbnail for the video.
@@ -523,8 +622,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 					if ( videoElement && typeof videojs !== 'undefined' ) {
 						// Initialize the player with minimal controls.
 						videojs( videoElement, {
+							fluid: true,
 							width: '100%',
 							aspectRatio: '16:9',
+							poster: this.model.get( 'image' )?.src || '',
 							controlBar: {
 								volumePanel: false,
 								fullscreenToggle: true,
@@ -538,6 +639,15 @@ export default AttachmentDetailsTwoColumn?.extend( {
 								chaptersButton: false,
 								pictureInPictureToggle: false,
 							},
+							// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
+							// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
+							html5: {
+								vhs: {
+									bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
+									bandwidthVariance: 1.0, // allow renditions close to estimate
+									limitRenditionByPlayerDimensions: false, // don't cap by video element size
+								},
+							},
 						} );
 					}
 				}, 100 ); // Slight delay to ensure DOM update.
@@ -545,6 +655,9 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 			this.renderVideoActions();
 			const attachmentId = this.model.get( 'id' );
+
+			this.showLoading();
+
 			this.fetchAndRender(
 				this.getVideoThumbnails( attachmentId ),
 				this.renderThumbnail,
@@ -557,5 +670,33 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		// Return this view.
 		return this;
+	},
+
+	showLoading() {
+		const actionsEl = this.$el.find( '.attachment-actions' );
+		const ul = document.createElement( 'ul' );
+
+		const li = document.createElement( 'li' );
+		li.className = 'thumbnail-spinner-container';
+		const spinner = document.createElement( 'div' );
+		spinner.className = 'thumbnail-spinner';
+		li.appendChild( spinner );
+		ul.appendChild( li );
+
+		const div = document.createElement( 'div' );
+		div.className = 'attachment-video-thumbnails';
+
+		const containerDiv = document.createElement( 'div' );
+		containerDiv.className = 'attachment-video-title';
+
+		const heading = document.createElement( 'h4' );
+		heading.textContent = __( 'Video Thumbnails', 'godam' );
+
+		containerDiv.appendChild( heading );
+		div.appendChild( containerDiv );
+
+		div.appendChild( ul );
+
+		actionsEl.append( div );
 	},
 } );

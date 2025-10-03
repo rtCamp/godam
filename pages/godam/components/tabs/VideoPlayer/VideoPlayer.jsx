@@ -49,6 +49,36 @@ const VideoPlayer = () => {
 	// Function to handle setting changes
 	const handleSettingChange = ( key, value ) => {
 		dispatch( updateMediaSetting( { category: 'video_player', key, value } ) );
+
+		if ( key !== 'custom_css' ) {
+			return; // Only handle custom_css
+		}
+
+		let styleElement = document.querySelector( '#godam-custom-css-inline-style' );
+
+		// If value is empty, clean up any existing style element
+		if ( ! value ) {
+			if ( styleElement ) {
+				styleElement.remove(); // or: styleElement.textContent = '';
+			}
+			return;
+		}
+
+		// Replace .easydam-video-container → .video-player-settings-preview
+		const scopedValue = value.replaceAll(
+			'.easydam-video-container',
+			'.video-player-settings-preview',
+		);
+
+		// Create it only if it doesn't exist
+		if ( ! styleElement ) {
+			styleElement = document.createElement( 'style' );
+			styleElement.id = 'godam-custom-css-inline-style';
+			document.head.appendChild( styleElement );
+		}
+
+		// Update the style content
+		styleElement.textContent = scopedValue;
 	};
 
 	// Function to handle saving settings
@@ -89,6 +119,30 @@ const VideoPlayer = () => {
 
 		const playerSkin = mediaSettings?.video_player?.player_skin || 'Default';
 
+		// apply styles on initial render if user has added css before
+		if ( mediaSettings?.video_player?.custom_css ) {
+			let styleElement = document.querySelector(
+				'#godam-custom-css-inline-style',
+			);
+
+			// Update CSS selectors so styles meant for the frontend video (.easydam-video-container)
+			// are applied to the actual video player preview container (.video-player-settings-preview)
+			const scopedValue = mediaSettings?.video_player?.custom_css.replaceAll(
+				'.easydam-video-container',
+				'.video-player-settings-preview',
+			);
+
+			// Create it only if it doesn't exist
+			if ( ! styleElement ) {
+				styleElement = document.createElement( 'style' );
+				styleElement.id = 'godam-custom-css-inline-style';
+				document.head.appendChild( styleElement ); // or your container
+			}
+
+			// Update the style content
+			styleElement.textContent = scopedValue;
+		}
+
 		// Initialize Video.js player
 		const player = videojs( videoElement, {
 			controls: true,
@@ -112,6 +166,15 @@ const VideoPlayer = () => {
 				skipButtons: {
 					forward: 10,
 					backward: 10,
+				},
+			},
+			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
+			// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
+			html5: {
+				vhs: {
+					bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
+					bandwidthVariance: 1.0, // allow renditions close to estimate
+					limitRenditionByPlayerDimensions: false, // don't cap by video element size
 				},
 			},
 		}, () => {

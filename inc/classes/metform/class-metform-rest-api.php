@@ -4,7 +4,7 @@
  *
  * Get a single Metform.
  *
- * @since n.e.x.t
+ * @since 1.4.0
  *
  * @package GoDAM
  */
@@ -19,14 +19,14 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Metform_Rest_Api
  *
- * @since n.e.x.t
+ * @since 1.4.0
  */
 class Metform_Rest_Api extends Base {
 
 	/**
 	 * Get REST routes.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 */
 	public function get_rest_routes() {
 		return array(
@@ -70,7 +70,7 @@ class Metform_Rest_Api extends Base {
 	/**
 	 * Get all Metforms.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param \WP_REST_Request $request Request Object.
 	 * @return \WP_REST_Response|\WP_Error
@@ -124,7 +124,7 @@ class Metform_Rest_Api extends Base {
 	/**
 	 * Get a single Metform.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param \WP_REST_Request $request Request Object.
 	 * @return \WP_REST_Response|\WP_Error

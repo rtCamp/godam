@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { ChromeExtensionSvg } from '../assets/svgs';
 import godamLogo from '../../../assets/src/images/godam-logo.png';
 
 const GodamHeader = () => {
@@ -30,15 +31,25 @@ const GodamHeader = () => {
 							}
 						</div>
 					</div>
-					<div className="flex items-center gap-2 sm:gap-3">
-						<Button
-							variant="tertiary"
-							href={ helpLink }
-							target="_blank"
-							className="rounded-full godam-button-icon"
-							label={ __( 'Need help?', 'godam' ) }
-							icon={ help }
-						/>
+					<div className="flex items-center gap-2 sm:gap-3 md:gap-6 transform translate-x-[20px] scale-[0.8] sm:scale-100 sm:translate-x-0">
+						<div className="flex flex-col sm:flex-row md:items-center gap-1 sm:gap-2 md:gap-3">
+							<Button
+								variant="tertiary"
+								href={ helpLink }
+								target="_blank"
+								className="rounded-full godam-button-icon sm:h-10 sm:w-10 [&>svg]:sm:w-7 [&>svg]:sm:h-7"
+								label={ __( 'Need help?', 'godam' ) }
+								icon={ help }
+							/>
+							<Button
+								variant="tertiary"
+								href="https://chromewebstore.google.com/detail/godam-screen-recorder-ann/ojmbobnoagdgblhpbemfamfkcfjdfejl"
+								target="_blank"
+								className="rounded-full godam-button-icon sm:h-10 sm:w-10 [&>svg]:sm:w-6 [&>svg]:sm:h-6"
+								label={ __( 'Install GoDAM Screen Recorder', 'godam' ) }
+								icon={ ChromeExtensionSvg }
+							/>
+						</div>
 						<div className="flex flex-col sm:flex-row md:items-center gap-1 sm:gap-2 md:gap-3">
 							<Button
 								className={ `godam-button text-xs md:text-sm ${ ( ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan ) ? 'disabled' : '' }` }

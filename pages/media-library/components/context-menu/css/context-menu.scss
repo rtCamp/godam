@@ -36,12 +36,12 @@
 			background-color: transparent;
 		}
 
-		&:first-child {
-        border-bottom: 1px solid #E0E0E0;
-		}
-
 		&:nth-last-child(2) {
         border-top: 1px solid #E0E0E0;
+		}
+
+		&:first-child:nth-last-child(n+3) {
+			border-bottom: 1px solid #E0E0E0;
 		}
 	}
 

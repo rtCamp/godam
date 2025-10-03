@@ -1,0 +1,505 @@
+
+// SCSS Variables (better for SCSS usage)
+$primary-red: #AB3A6C;
+$light-red: #f9f8f2;
+$dark-text: #202124;
+$grey-text: #5f6368;
+
+#wpcontent {
+	padding-left: 0;
+	background-color: #fff;
+}
+
+.container {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 0 1.5rem;
+}
+
+// Banner Styles
+.banner {
+	background-color: $light-red;
+	padding: 5rem 0;
+	position: relative;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	overflow: hidden;
+	margin: 1.5rem;
+	border-radius: 1rem;
+	height: 120px;
+	box-sizing: border-box;
+	background-position: center;
+
+	&-content {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 0 1.5rem;
+		z-index: 2;
+		width: 100%;
+
+		&-meta {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			gap: 1rem;
+
+			span {
+				color: $primary-red;
+				font-size: 1.5rem;
+				font-weight: 500;
+			}
+		}
+
+		&-title h1 {
+			font-size: 42px;
+			font-weight: 500;
+			color: #fff;
+			text-align: center;
+			background-clip: text;
+			background-color: #E6533A;
+			background-image: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
+			-webkit-text-fill-color: transparent;
+			line-height: 1.5;
+			margin: 0;
+		}
+	}
+}
+
+.godam-logo {
+	width: fit-content;
+	margin: 0;
+
+	img {
+		width: 3rem;
+		height: 3rem;
+	}
+}
+
+// Loading State
+.loading-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 4rem 0;
+	text-align: center;
+
+	p {
+		margin-top: 1rem;
+		color: $grey-text;
+		font-size: 1.1rem;
+	}
+}
+
+.loading-spinner {
+	width: 40px;
+	height: 40px;
+	border: 3px solid #f3f3f3;
+	border-top: 3px solid $primary-red;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+}
+
+// Error state
+.no-data-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 4rem 0;
+	text-align: center;
+
+	.no-data-icon {
+		color: $grey-text;
+		margin-bottom: 1.5rem;
+	}
+
+	h2 {
+		font-size: 1.8rem;
+		margin-bottom: 1rem;
+		color: $dark-text;
+		font-weight: 500;
+	}
+
+	p {
+		color: $grey-text;
+		font-size: 1.1rem;
+		margin-bottom: 2rem;
+		max-width: 500px;
+		line-height: 1.6;
+	}
+}
+
+.retry-button {
+	background-color: $primary-red;
+	color: $light-red;
+	border: none;
+	padding: 12px 24px;
+	border-radius: 8px;
+	font-size: 1rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+
+	&:hover {
+		background-color: #842d53;
+	}
+
+	&:focus {
+		outline: none;
+		box-shadow: 0 0 0 3px rgba($primary-red, 0.3);
+	}
+}
+
+// Feature Section Styles
+.feature {
+	padding: 4rem 0;
+
+	&-content {
+		display: flex;
+		align-items: center;
+		gap: 3rem;
+
+		&.reverse {
+			flex-direction: row-reverse;
+		}
+
+		// Modal content feature card
+		&-modal {
+			flex-direction: column;
+			gap: 2rem;
+		}
+	}
+
+	&-image {
+		flex: 1;
+		display: flex;
+		justify-content: center;
+		position: relative;
+
+		img {
+			max-width: 100%;
+			border-radius: 8px;
+		}
+	}
+
+	&-text {
+		flex: 1;
+	}
+
+	h2 {
+		font-size: 2rem;
+		margin-top: 0;
+		margin-bottom: 1.5rem;
+		font-weight: 500;
+		line-height: 1.25;
+	}
+
+	p {
+		color: $grey-text;
+		margin-bottom: 1.5rem;
+	}
+
+	ol {
+		padding-left: 1.5rem;
+	}
+
+	strong {
+		font-weight: 500;
+	}
+
+	&-description li {
+		list-style: disc;
+		margin-left: 1.5rem;
+		margin-bottom: 1rem;
+	}
+}
+
+// Tag Style
+.tag {
+	display: inline-block;
+	background-color: $light-red;
+	color: $primary-red;
+	padding: 4px 1rem;
+	border-radius: 1rem;
+	font-size: 12px;
+	font-weight: 500;
+	margin-bottom: 0.5rem;
+	box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+}
+
+// More Features Section Styles
+.more-features {
+	padding: 3rem 0;
+	background-color: #fff;
+
+	h2 {
+		font-size: 2rem;
+		margin-bottom: 3rem;
+		text-align: center;
+		font-weight: 500;
+		line-height: 1.5;
+	}
+}
+
+.features-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+	gap: 1.5rem;
+}
+
+.feature-card {
+	background-color: $light-red;
+	border-radius: 1rem;
+	overflow: hidden;
+	transition: transform 0.2s, box-shadow 0.2s;
+	border: transparent 1px solid;
+	cursor: pointer;
+
+	&:focus {
+		border: 1px solid $primary-red;
+	}
+
+	&:hover {
+		transform: translateY(-4px);
+		border: 1px solid $primary-red;
+	}
+
+	h3 {
+		font-size: 18px;
+		font-weight: 500;
+	}
+}
+
+.card {
+
+	&-image {
+		height: 200px;
+		overflow: hidden;
+
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			border-radius: 1rem;
+		}
+	}
+
+	&-content {
+		padding: 1.5rem;
+	}
+}
+
+// Modal Styles
+.modal {
+	position: fixed;
+	z-index: 1000;
+	left: 160px;
+	right: 0;
+	top: 0;
+	height: 100%;
+	overflow: auto;
+	background-color: rgba(0, 0, 0, 0.5);
+	animation: fadeIn 0.3s;
+
+	&-content {
+		position: relative;
+		background-color: #fff;
+		margin: 5% auto;
+		padding: 70px 40px 40px;
+		width: 80%;
+		max-width: 1200px;
+		border-radius: 1rem;
+		box-shadow: 0 4px 1.5rem rgba(0, 0, 0, 0.1);
+		animation: slideDown 0.3s;
+	}
+
+	&-body {
+		display: none;
+
+		&.active {
+			display: block;
+		}
+
+		h2 {
+			font-size: 2rem;
+			margin-bottom: 1rem;
+			font-weight: 500;
+			line-height: 1.5;
+		}
+
+		p {
+			color: $grey-text;
+			margin-bottom: 1.5rem;
+			font-size: 1rem;
+			line-height: 1.6;
+		}
+
+		ol, ul {
+			padding-left: 1.5rem;
+			margin-bottom: 1.5rem;
+		}
+	}
+
+	&-tag {
+		margin-bottom: 12px;
+	}
+
+	&-image {
+		margin-top: 2rem;
+		border-radius: 12px;
+		overflow: hidden;
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+		img {
+			width: 100%;
+			display: block;
+		}
+	}
+}
+
+.folded #wpcontent .modal {
+	left: 36px;
+}
+
+.close-button {
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	color: #aaa;
+	font-size: 28px;
+	font-weight: 700;
+	cursor: pointer;
+	background: #f1f3f4;
+	width: 36px;
+	height: 36px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+
+	svg {
+		width: 1.5rem;
+		height: 1.5rem;
+		color: rgba(0, 0, 0, 0.6);
+	}
+
+	&:hover {
+		background-color: #ddd;
+		color: $primary-red;
+	}
+}
+
+.date {
+	color: $grey-text;
+	font-size: 14px;
+	margin-bottom: 1.5rem;
+	margin-top: 8px;
+}
+
+// Animations
+@keyframes fadeIn {
+
+	from { opacity: 0; }
+
+	to { opacity: 1; }
+}
+
+@keyframes slideDown {
+
+	from { transform: translateY(-50px); opacity: 0; }
+
+	to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes spin {
+
+	from { transform: rotate(0deg); }
+
+	to { transform: rotate(360deg); }
+}
+
+// Responsive Styles
+@media only screen and (max-width: 960px) {
+
+	.modal {
+		left: 36px;
+	}
+}
+
+@media (max-width: 900px) {
+
+	.feature {
+
+		&-content {
+			flex-direction: column;
+			gap: 2rem;
+
+			&.reverse {
+				flex-direction: column;
+			}
+		}
+	}
+
+	.banner {
+
+		h1 {
+			font-size: 2rem;
+		}
+	}
+
+	.qr-section {
+		position: relative;
+		right: auto;
+		margin-top: 1.5rem;
+	}
+}
+
+@media ( max-width: 782px ) {
+
+	.auto-fold #wpcontent {
+		padding-left: 0;
+	}
+
+	.modal {
+		left: 0;
+	}
+}
+
+@media (max-width: 768px) {
+
+	.modal-content {
+		width: 70%;
+		padding: 70px 30px 30px;
+		margin: 10% auto;
+	}
+
+	.modal-body {
+
+		h2 {
+			font-size: 1.5rem;
+			line-height: 1.4;
+		}
+	}
+}
+
+@media (max-width: 600px) {
+
+	.features-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.feature {
+
+		h2 {
+			font-size: 1.5rem;
+			line-height: 1.4;
+		}
+	}
+}

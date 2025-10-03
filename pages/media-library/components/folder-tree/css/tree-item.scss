@@ -81,8 +81,8 @@
 		}
 
 		&_open {
-            transform: rotate(90deg);
-            transform-origin: center;
+			transform: rotate(90deg);
+			transform-origin: center;
 		}
 	}
 
@@ -107,15 +107,15 @@
 	}
 
 	&__spacer {
-        padding: 0 24px 0 0;
+		padding: 0 24px 0 0;
 	}
 
 	&__status {
-	    margin-left: auto;
+		margin-left: auto;
 		display: flex;
 
 		.bookmark-star {
-		    fill:#F79009;
+			fill:#F79009;
 		}
 	}
 
@@ -127,8 +127,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-
-		width: 1.5rem;
+		padding: 0 0.5rem;
 		height: 1.5rem;
 		min-width: 1.5rem;
 		border-radius: 0.5rem;

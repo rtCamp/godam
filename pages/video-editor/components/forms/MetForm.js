@@ -76,21 +76,19 @@ const MetForm = ( { layerID } ) => {
 					>
 
 						{
-							<div className={ clsx( 'form-container', 'metform', { loading: isFetching } ) }>
-								{ <iframe
-									src={ window.godamRestRoute.homeUrl + '?rtgodam-render-layer=metform&rtgodam-layer-id=' + layer?.metform_id }
-									title="Met Form"
-									scrolling="auto"
-									width="100%"
-									className={ isFetching ? 'hidden' : '' }
-									onLoad={ () => setIsFetching( false ) }
-								></iframe> }
-
-								{
-									isFetching &&
-									<p>{ __( 'Loading form…', 'godam' ) }</p>
-								}
-							</div>
+							layer?.metform_id && (
+								<div className={ clsx( 'form-container', 'metform', { loading: isFetching } ) }>
+									<iframe
+										src={ window.godamRestRoute.homeUrl + '?rtgodam-render-layer=metform&rtgodam-layer-id=' + layer?.metform_id }
+										title="Met Form"
+										scrolling="auto"
+										width="100%"
+										className={ isFetching ? 'hidden' : '' }
+										onLoad={ () => setIsFetching( false ) }
+									></iframe>
+									{ isFetching && <p>{ __( 'Loading form…', 'godam' ) }</p> }
+								</div>
+							)
 						}
 
 						{

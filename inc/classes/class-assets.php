@@ -177,7 +177,10 @@ class Assets {
 			'https://imasdk.googleapis.com/js/sdkloader/ima3.js', // It is required to load the IMA SDK from the Google CDN, else it will show console error.
 			array(),
 			RTGODAM_VERSION,
-			true
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
 		);
 	}
 
@@ -326,6 +329,7 @@ class Assets {
 		$godam_settings_obj = array(
 			'brandImage' => $brand_image,
 			'brandColor' => $brand_color,
+			'apiBase'    => RTGODAM_API_BASE,
 		);
 
 		if ( ! rtgodam_is_api_key_valid() ) {
