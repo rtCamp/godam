@@ -41,6 +41,23 @@ printf(
 >
 	<div class="godam-video-name"><?php echo esc_html( $video_name ); ?></div>
 </a>
+<?php if ( ! empty( $value ) ) : ?>
+    <a
+        href="<?php echo esc_url( add_query_arg(
+            array(
+                'form_id'  => absint( $form_id ),
+                'entry_id' => absint( $entry_id ),
+                'field_id' => absint( $field['id'] ),
+            ),
+            site_url( '/godam-recorder/' )
+        ) ); ?>"
+        target="_blank"
+        class="button godam-recorder-link"
+    >
+        <?php esc_html_e( 'Open Recorder', 'godam' ); ?>
+    </a>
+<?php endif; ?>
+
 <div class="godam-video-media-controls">
 	<button
 		type="button"
