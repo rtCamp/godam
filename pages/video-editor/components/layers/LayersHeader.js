@@ -8,7 +8,7 @@ import React from 'react';
 import { Button, Modal, TextControl, Notice } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
 import { useDispatch, useSelector } from 'react-redux';
-import { arrowLeft, trash } from '@wordpress/icons';
+import { arrowLeft, trash, notAllowed, check } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -54,8 +54,21 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 	const layerName = 'form' === layer.type ? layerTypeData?.formType[ layer?.form_type ?? 'gravity' ]?.layerText : layerTypeData?.layerText;
 
 	const handleDeleteLayer = () => {
-		dispatch( removeLayer( { id: layer.id } ) );
+		dispatch( removeLayer( layer ) );
 		goBack();
+	};
+
+	/**
+	 * Render the appropriate action button based on layer type and state.
+	 */
+	const renderActionButton = () => {
+		if ( layer?.isGlobalLayer ) {
+			if ( layer?.isDisabled ) {
+				return <Button icon={ check } title={ __( 'Enable layer', 'godam' ) } onClick={ handleDeleteLayer } />;
+			}
+			return <Button icon={ notAllowed } isDestructive title={ __( 'Disable layer', 'godam' ) } onClick={ handleDeleteLayer } />;
+		}
+		return <Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } title={ __( 'Delete layer', 'godam' ) } />;
 	};
 
 	return (
@@ -136,7 +149,7 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 						</button>
 					) }
 				</p>
-				<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
+				{ renderActionButton() }
 				{ isOpen && (
 					<Modal
 						title={ __( 'Delete layer', 'godam' ) }

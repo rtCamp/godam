@@ -71,7 +71,7 @@ const TextCTA = ( { layerID } ) => {
 				<label htmlFor="custom-css" className="text-[11px] uppercase font-medium">{ __( 'Content', 'godam' ) }</label>
 			</div>
 			<QuillEditor
-				intialValue={ layer.text }
+				initialValue={ layer.text }
 				onHTMLChange={ ( val ) => {
 					dispatch( updateLayerField( {
 						id: layer.id,

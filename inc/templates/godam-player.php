@@ -11,6 +11,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+require_once RTGODAM_PATH . 'inc/templates/class-ads.php';
+require_once RTGODAM_PATH . 'inc/templates/class-layers.php';
+
 if ( isset( $is_shortcode ) && $is_shortcode ) {
 	$is_shortcode = true;
 } else {
@@ -67,7 +70,7 @@ $is_virtual  = ! empty( $attachment_id ) && ! is_numeric( $attachment_id );
 $original_id = $attachment_id;
 
 if ( $is_virtual ) {
-	// Query the WordPress Media Library to find an attachment post that has
+	// Query the WordPress Media Library to find an attachment post that has.
 	// a meta key `_godam_original_id` matching this virtual media ID.
 	$query = new \WP_Query(
 		array(
@@ -215,8 +218,6 @@ $appearance_color       = isset( $easydam_meta_data['videoConfig']['controlBar']
 $brand_image            = isset( $godam_settings['video_player']['brand_image'] ) ? $godam_settings['video_player']['brand_image'] : null;
 $individual_brand_image = isset( $easydam_meta_data['videoConfig']['controlBar']['brand_image'] ) ? $easydam_meta_data['videoConfig']['controlBar']['brand_image'] : null;
 $player_skin            = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : 'Default';
-$ads_settings           = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : array();
-$ads_settings           = wp_json_encode( $ads_settings );
 
 // Build the video setup options for data-setup.
 $video_setup = array(
@@ -264,10 +265,25 @@ if ( ! empty( $control_bar_settings ) ) {
 
 $video_setup = wp_json_encode( $video_setup );
 
+$layers = $easydam_meta_data['layers'] ?? array();
+
+// Get video duration for layer timing calculation.
+$video_duration = rtgodam_get_video_duration( $attachment_id );
+
+/**
+ * Initialize the Ads class which helps get the appropriate ad tag URL.
+ */
+$ad_tag_url = Ads::get_ad_tag_url( $attachment_id, $godam_settings, $easydam_meta_data );
+
+/**
+ * Merge layers with global settings
+ */
+$layers = Layers::merge_layers( $layers, $godam_settings, $easydam_meta_data, $video_duration );
+
 $video_config = wp_json_encode(
 	array(
 		'preview'          => $video_preview,
-		'layers'           => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array(), // contains list of layers.
+		'layers'           => ! empty( $layers ) ? $layers : array(), // contains list of layers.
 		'chapters'         => ! empty( $easydam_meta_data['chapters'] ) ? $easydam_meta_data['chapters'] : array(), // contains list of chapters.
 		'overlayTimeRange' => $overlay_time_range, // Add overlay time range to video config.
 		'playerSkin'       => $player_skin, // Add player skin to video config. Add brand image to video config.
@@ -286,23 +302,6 @@ $easydam_hover_color        = ! empty( $easydam_meta_data['videoConfig']['contro
 $easydam_hover_zoom         = ! empty( $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] ) ? $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] : 0;
 $easydam_custom_btn_img     = ! empty( $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] ) ? $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] : '';
 $easydam_control_bar_config = ! empty( $easydam_meta_data['videoConfig']['controlBar'] ) ? $easydam_meta_data['videoConfig']['controlBar'] : array();
-
-$layers     = $easydam_meta_data['layers'] ?? array();
-$ads_layers = array_filter(
-	$layers,
-	function ( $layer ) {
-		return 'ad' === $layer['type'];
-	}
-);
-$ad_tag_url = '';
-
-$ad_server = isset( $easydam_meta_data['videoConfig']['adServer'] ) ? sanitize_text_field( $easydam_meta_data['videoConfig']['adServer'] ) : 'self-hosted';
-
-if ( ! empty( $ad_server ) && 'ad-server' === $ad_server ) :
-	$ad_tag_url = isset( $easydam_meta_data['videoConfig']['adTagURL'] ) ? $easydam_meta_data['videoConfig']['adTagURL'] : '';
-elseif ( ! empty( $ads_layers ) && 'self-hosted' === $ad_server ) :
-	$ad_tag_url = get_rest_url( get_current_blog_id(), '/godam/v1/adTagURL/' ) . $attachment_id;
-endif;
 
 $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 
@@ -352,12 +351,10 @@ if ( ! empty( $transcript_path ) ) {
 		'srclang' => 'en',
 	);
 }
-
-
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
-	<figure 
+	<figure
 		id="godam-player-container-<?php echo esc_attr( $instance_id ); ?>"
 		<?php echo wp_kses_data( $figure_attributes ); ?>>
 		<div class="godam-video-wrapper">
@@ -391,7 +388,6 @@ if ( ! empty( $transcript_path ) ) {
 					data-instance-id="<?php echo esc_attr( $instance_id ); ?>"
 					data-controls="<?php echo esc_attr( $video_setup ); ?>"
 					data-job_id="<?php echo esc_attr( $job_id ); ?>"
-					data-global_ads_settings="<?php echo esc_attr( $ads_settings ); ?>"
 					data-hover-select="<?php echo esc_attr( $hover_select ); ?>"
 				>
 					<?php
@@ -422,8 +418,8 @@ if ( ! empty( $transcript_path ) ) {
 
 				<!-- Dynamically render shortcodes for form layers. -->
 				<?php
-				if ( ! empty( $easydam_meta_data['layers'] ) ) :
-					foreach ( $easydam_meta_data['layers'] as $layer ) :
+				if ( ! empty( $layers ) ) :
+					foreach ( $layers as $layer ) :
 						$form_type = ! empty( $layer['form_type'] ) ? $layer['form_type'] : 'gravity';
 						// FORM layer.
 						if ( isset( $layer['type'] ) && 'form' === $layer['type'] ) :

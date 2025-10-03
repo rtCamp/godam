@@ -86,8 +86,19 @@ const slice = createSlice( {
 			state.isChanged = true;
 		},
 		removeLayer: ( state, action ) => {
-			const layerId = action.payload.id;
-			state.layers = state.layers.filter( ( layer ) => layer.id !== layerId );
+			const currentLayer = action.payload;
+
+			if ( currentLayer.isGlobalLayer ) {
+				// For global layers, don't remove them - just toggle disabled state
+				const layerIndex = state.layers.findIndex( ( layer ) => layer.id === currentLayer.id );
+				if ( layerIndex !== -1 ) {
+					state.layers[ layerIndex ].isDisabled = ! state.layers[ layerIndex ].isDisabled;
+				}
+			} else {
+				// For regular layers, remove them completely
+				state.layers = state.layers.filter( ( layer ) => layer.id !== currentLayer.id );
+			}
+
 			state.isChanged = true;
 		},
 		updateLayerField: ( state, action ) => {
@@ -187,6 +198,10 @@ const slice = createSlice( {
 		setMetformPluginActive: ( state, action ) => {
 			state.metformPlugnActive = action.payload;
 		},
+		setLayers: ( state, action ) => {
+			state.layers = action.payload;
+			state.isChanged = true;
+		},
 	},
 } );
 
@@ -195,6 +210,7 @@ export const {
 	addLayer,
 	removeLayer,
 	updateLayerField,
+	setLayers,
 	addChapter,
 	removeChapter,
 	updateChapterField,

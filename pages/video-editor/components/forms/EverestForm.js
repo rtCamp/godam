@@ -29,7 +29,7 @@ const EverestForm = ( { layerID } ) => {
 	const forms = everestForms?.map( ( form ) => ( {
 		value: form.id,
 		label: form.title,
-	} ) );
+	} ) ) || [];
 
 	const changeFormID = ( formID ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'everest_form_id', value: formID } ) );

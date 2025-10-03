@@ -40,7 +40,7 @@ const GravityForm = ( { layerID } ) => {
 	const forms = gforms?.map( ( form ) => ( {
 		value: form.id,
 		label: form.title,
-	} ) );
+	} ) ) || [];
 
 	const changeFormID = ( formID ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'gf_id', value: formID } ) );
@@ -65,6 +65,17 @@ const GravityForm = ( { layerID } ) => {
 					isDismissible={ false }
 				>
 					{ __( 'Please activate the Gravity Forms plugin to use this feature.', 'godam' ) }
+				</Notice>
+			}
+
+			{
+				isGFPluginActive && forms.length === 0 &&
+				<Notice
+					className="mb-4"
+					status="info"
+					isDismissible={ false }
+				>
+					{ __( 'No Gravity Forms found. Please create a form first.', 'godam' ) }
 				</Notice>
 			}
 

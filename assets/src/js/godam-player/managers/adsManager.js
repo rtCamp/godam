@@ -17,11 +17,6 @@ export default class AdsManager {
 				id: 'content_video',
 				adTagUrl: this.config.adTagUrl,
 			} );
-		} else if ( this.config.globalAdsSettings?.enable_global_video_ads && this.config.globalAdsSettings?.adTagUrl ) {
-			this.player.ima( {
-				id: 'content_video',
-				adTagUrl: this.config.globalAdsSettings.adTagUrl,
-			} );
 		}
 	}
 }

@@ -185,12 +185,12 @@ function rtgodam_image_cta_html( $layer ) {
 	<div class= \"image-cta-overlay-container\">
 		<div class=\"image-cta-parent-container\">
 			<div class=\"{$orientation_class}\">
-				<img 
-					src=\"{$image_url}\" 
-					alt=\"CTA ad\" 
-					height=\"300\" 
-					width=\"250\" 
-					style=\"opacity: {$image_opacity};\" 
+				<img
+					src=\"{$image_url}\"
+					alt=\"CTA ad\"
+					height=\"300\"
+					width=\"250\"
+					style=\"opacity: {$image_opacity};\"
 				/>
 				<div class=\"image-cta-description\">
 					" . ( ! empty( $image_text ) ? "<h2>{$image_text}</h2>" : '' ) . '
@@ -455,7 +455,7 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	// Get author name with fallback to username.
 	$author_first_name = $current_user->first_name;
 	$author_last_name  = $current_user->last_name;
-	
+
 	// If first and last names are empty, use username as fallback.
 	if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
 		$author_first_name = $current_user->user_login;
@@ -694,8 +694,57 @@ function godam_get_transcript_path( $job_id ) {
 				// Cache for 12 hours.
 				set_transient( $cache_key, $transcript_path, 12 * HOUR_IN_SECONDS );
 			}
-		} 
+		}
 	}
 
 	return ! empty( $transcript_path ) ? $transcript_path : false;
+}
+
+/**
+ * Get video duration from attachment ID
+ *
+ * @param int $attachment_id WordPress attachment ID.
+ * @return float Video duration in seconds.
+ */
+function rtgodam_get_video_duration( $attachment_id ) {
+	$video_duration = 0;
+
+	// Try to get duration from attachment metadata first.
+	if ( $attachment_id ) {
+		$duration_meta = get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
+
+		if ( is_array( $duration_meta ) && isset( $duration_meta['length'] ) ) {
+			$video_duration = floatval( $duration_meta['length'] );
+		}
+
+		if ( empty( $video_duration ) ) {
+			$video_duration = floatval( get_post_meta( $attachment_id, '_video_duration', true ) );
+		}
+
+		// Another fallback: check if duration is stored in rtgodam_meta.
+		if ( empty( $video_duration ) ) {
+			$easydam_meta_data = get_post_meta( $attachment_id, 'rtgodam_meta', true );
+			if ( is_array( $easydam_meta_data ) && ! empty( $easydam_meta_data['duration'] ) ) {
+				$video_duration = floatval( $easydam_meta_data['duration'] );
+			}
+		}
+	}
+
+	// If still no duration, try to extract from video file using getID3 if available.
+	if ( empty( $video_duration ) && $attachment_id && function_exists( 'wp_read_video_metadata' ) ) {
+		$file_path = get_attached_file( $attachment_id );
+		if ( $file_path && file_exists( $file_path ) ) {
+			$video_metadata = wp_read_video_metadata( $file_path );
+			if ( is_array( $video_metadata ) && isset( $video_metadata['length'] ) ) {
+				$video_duration = floatval( $video_metadata['length'] );
+			}
+		}
+	}
+
+	// Default duration if we still can't determine it.
+	if ( empty( $video_duration ) ) {
+		$video_duration = 10; // Default to 10 seconds.
+	}
+
+	return $video_duration;
 }

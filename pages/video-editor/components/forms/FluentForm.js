@@ -31,7 +31,7 @@ const FluentForm = ( { layerID } ) => {
 	const forms = fluentForms?.map( ( form ) => ( {
 		value: form.id,
 		label: form.title,
-	} ) );
+	} ) ) || [];
 
 	const changeFormID = ( formID ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'fluent_form_id', value: formID } ) );

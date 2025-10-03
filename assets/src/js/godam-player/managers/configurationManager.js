@@ -10,7 +10,6 @@ import { parseDataAttribute } from '../utils/dataHelpers.js';
 export default class ConfigurationManager {
 	constructor( video ) {
 		this.video = video;
-		this.globalAdsSettings = {};
 		this.adTagUrl = null;
 		this.videoSetupOptions = {};
 		this.videoSetupControls = {};
@@ -60,7 +59,6 @@ export default class ConfigurationManager {
 	 * Initialize configuration
 	 */
 	initialize() {
-		this.globalAdsSettings = parseDataAttribute( this.video, 'global_ads_settings', {} );
 		this.adTagUrl = this.video.dataset.ad_tag_url;
 		this.videoSetupOptions = parseDataAttribute( this.video, 'options', {} );
 		const videoSetupControls = parseDataAttribute( this.video, 'controls', this.getDefaultControls() );

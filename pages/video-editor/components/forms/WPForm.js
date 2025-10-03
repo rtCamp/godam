@@ -29,7 +29,7 @@ const WPForm = ( { layerID } ) => {
 	const forms = wpForms?.map( ( form ) => ( {
 		value: form.id,
 		label: form.title,
-	} ) );
+	} ) ) || [];
 
 	const changeFormID = ( formID ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'wpform_id', value: formID } ) );
