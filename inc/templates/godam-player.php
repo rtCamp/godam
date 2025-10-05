@@ -353,6 +353,41 @@ if ( ! empty( $transcript_path ) ) {
 	);
 }
 
+/**
+ * Add hidden fields (nonce, post_id, action) to WPForms.
+ *
+ * This ensures forms submitted via REST or AJAX have the necessary security and context fields.
+ *
+ * @param array $form_data The WPForms form data array.
+ */
+function wpforms_hidden_fields( $form_data ) {
+	if ( empty( $form_data['id'] ) ) {
+		return;
+	}
+
+	$nonce = wp_create_nonce( 'wpforms_frontend' );
+	// Get post ID, if no context, fallback to referer.
+	$post_id = get_the_ID();
+	
+	if ( ! $post_id && defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+		$referer = wp_get_referer();
+		if ( $referer ) {
+			if ( function_exists( 'wpcom_vip_url_to_postid' ) ) {
+				$post_id = wpcom_vip_url_to_postid( $referer );
+			} else {
+				$post_id = url_to_postid( $referer ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.url_to_postid_url_to_postid
+			}       
+		}
+	}
+
+	printf(
+		'<input type="hidden" name="wpforms[nonce]" value="%s">
+		 <input type="hidden" name="wpforms[post_id]" value="%d">
+		 <input type="hidden" name="action" value="wpforms_submit">',
+		esc_attr( $nonce ),
+		absint( $post_id )
+	);
+}
 
 ?>
 
@@ -465,6 +500,12 @@ if ( ! empty( $transcript_path ) ) {
 								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 									<div class="form-container">
 										<?php
+
+										if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+											// Add hidden fields (nonce, post_id, action) to WPForms.
+											add_action( 'wpforms_frontend_output', 'wpforms_hidden_fields', 10, 1 );
+										}
+
 											echo do_shortcode(
 												sprintf(
 													"[wpforms id='%d' title='false' description='false' ajax='true']",
