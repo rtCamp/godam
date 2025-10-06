@@ -38,6 +38,7 @@ class LearnDash {
 		add_filter( 'godam_player_video_element_attributes', array( $this, 'modify_godam_player_video_element_attributes' ), 10, 1 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'load_learndash_admin_integration_scripts' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'load_learndash_frontend_integration_script' ) );
+		add_filter( 'render_block', array( $this, 'maybe_prevent_block_render' ), 10, 2 );
 	}
 
 	/**
@@ -168,7 +169,7 @@ class LearnDash {
 
 		$content_video_completed = $this->is_content_video_completed( $post->ID );
 
-		$data_unique_id = ! empty( $attributes['data-unique-id'] ) ? '(rtgodam-' . $attributes['data-unique-id'] . ')' : '(rtgodam-' . wp_generate_uuid4() . ')';
+		$data_unique_id = ! empty( $attributes['data-unique-id'] ) ? '(rtgodam-' . $attributes['data-unique-id'] . ')' : '(rtgodam-1)';
 		$cookie_key     = $this->build_video_cookie_key( $data_unique_id );
 
 		if ( $content_video_completed ) {
@@ -276,7 +277,7 @@ class LearnDash {
 
 		$attrs = $find_block( $blocks );
 
-		return $attrs['uniqueId'];
+		return ! empty( $attrs['uniqueId'] ) ? $attrs['uniqueId'] : '';
 	}
 
 	/**
@@ -331,5 +332,80 @@ class LearnDash {
 		$meta_cache[ $meta_key ][0] = $saved;
 
 		return $meta_cache[ $meta_key ];
+	}
+
+	/**
+	 * Prevent rendering of GoDAM/video block if progression conditions are not met.
+	 *
+	 * @param mixed $block_content The content of the block.
+	 * @param array $block The block data.
+	 *
+	 * @return mixed|string
+	 */
+	public function maybe_prevent_block_render( $block_content, array $block ) {
+		global $post;
+
+		if ( ! $this->is_learndash_content() ) {
+			return $block_content;
+		}
+
+		if ( 'godam/video' !== $block['blockName'] ) {
+			return $block_content;
+		}
+
+		if ( $this->is_content_video_completed( $post ) ) {
+			return $block_content;
+		}
+
+		if ( $this->is_lesson_progress_complete( $post ) ) {
+			return $block_content;
+		}
+
+
+		return '';
+	}
+
+	/**
+	 * Check if lesson/topic progress is complete.
+	 *
+	 * @param \WP_Post $post The post object.
+	 *
+	 * @return bool
+	 */
+	public function is_lesson_progress_complete( \WP_Post $post ): bool {
+		$lesson_settings = learndash_get_setting( $post );
+
+		if ( ( $lesson_settings['lesson_video_shown'] ?? '' ) !== 'AFTER' ) {
+			return true;
+		}
+
+		if ( 'sfwd-lessons' === $post->post_type && ! learndash_lesson_topics_completed( $post->ID ) ) {
+			return false;
+		}
+
+		return $this->has_completed_all_quizzes( $post );
+	}
+
+	/**
+	 * Check if all quizzes for the lesson/topic are completed.
+	 *
+	 * @param \WP_Post $post The post object.
+	 *
+	 * @return bool
+	 */
+	public function has_completed_all_quizzes( \WP_Post $post ): bool {
+		$lesson_quizzes = learndash_get_lesson_quiz_list( $post->ID );
+
+		if ( empty( $lesson_quizzes ) ) {
+			return true;
+		}
+
+		foreach ( $lesson_quizzes as $quiz ) {
+			if ( ( $quiz['status'] ?? '' ) !== 'completed' ) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 }

@@ -36,8 +36,7 @@ const GoDAMLearnDashBlockIntegration = {
 	 */
 	loadConfiguration() {
 		/* eslint-disable camelcase */
-		if ( typeof window.learndash_video_data === 'undefined' ||
-			learndash_video_data?.videos_found_provider !== 'rtgodam' ) {
+		if ( typeof window.learndash_video_data === 'undefined' || learndash_video_data?.videos_found_provider !== 'rtgodam' ) {
 			return;
 		}
 
@@ -118,39 +117,109 @@ const GoDAMLearnDashBlockIntegration = {
 				LearnDash_watchPlayersEnd();
 			} else {
 				// Bind ended event
-				this.bindEndedEvent( playerKey );
+				this.initializeVideoTracking( playerKey );
 			}
 		} );
 		/* eslint-enable camelcase */
 	},
 
 	/**
-	 * Bind "ended" event for a player
+	 * Setup all event bindings for a video player
 	 *
-	 * @param {string} playerKey Player key
-	 *
+	 * @param {string} playerKey
 	 * @since 1.4.0
 	 */
-	bindEndedEvent( playerKey ) {
+	initializeVideoTracking( playerKey ) {
 		/* eslint-disable camelcase */
 		const video = ld_video_players[ playerKey ].player;
 		if ( ! video ) {
 			return;
 		}
 
+		this.bindFocusPauseEvents( video );
+		this.bindProgressRestoreEvent( video, playerKey );
+		this.bindProgressTrackingEvent( video, playerKey );
+		this.bindPlaybackStateEvents( video, playerKey );
+		this.bindVideoCompletionEvent( video, playerKey );
+		/* eslint-enable camelcase */
+	},
+
+	/**
+	 * Pause on window blur, resume on focus
+	 *
+	 * @param {HTMLVideoElement} video
+	 */
+	bindFocusPauseEvents( video ) {
+		window.addEventListener( 'blur', () => {
+			if ( ! video.paused ) {
+				video.pause();
+			}
+		} );
+
+		window.addEventListener( 'focus', () => {
+			if ( video.paused ) {
+				video.play().catch( () => {} );
+			}
+		} );
+	},
+
+	/**
+	 * Restore last saved progress
+	 *
+	 * @param {HTMLVideoElement} video
+	 * @param {string}           playerKey
+	 */
+	bindProgressRestoreEvent( video, playerKey ) {
+		/* eslint-disable camelcase */
+		video.addEventListener( 'loadedmetadata', () => {
+			const storedProgress = this.getStoredProgress(
+				ld_video_players[ playerKey ].player_cookie_key,
+			);
+			if ( storedProgress && storedProgress.currentTime > 0 ) {
+				video.currentTime = storedProgress.currentTime;
+			}
+		} );
+		/* eslint-enable camelcase */
+	},
+
+	/**
+	 * Store ongoing progress periodically
+	 *
+	 * @param {HTMLVideoElement} video
+	 * @param {string}           playerKey
+	 */
+	bindProgressTrackingEvent( video, playerKey ) {
+		/* eslint-disable camelcase */
 		video.addEventListener( 'timeupdate', () => {
+			const currentTime = video.currentTime;
+
+			if ( currentTime > 1 && currentTime < video.duration - 1 ) {
+				if ( ! this.lastProgressUpdate || Date.now() - this.lastProgressUpdate > 2000 ) {
+					this.storeVideoProgress( currentTime, ld_video_players[ playerKey ].player_cookie_key );
+					this.lastProgressUpdate = Date.now();
+				}
+			}
+
 			LearnDash_Video_Progress_setSetting( ld_video_players[ playerKey ], 'video_duration', video.duration );
 			LearnDash_Video_Progress_setSetting( ld_video_players[ playerKey ], 'video_time', video.currentTime );
 
-			// Check if video has reached the end
 			if ( video.duration && video.duration === video.currentTime ) {
 				LearnDash_Video_Progress_setSetting( ld_video_players[ playerKey ], 'video_state', 'complete' );
-
 				LearnDash_disable_assets( false );
 				LearnDash_watchPlayersEnd();
 			}
 		} );
+		/* eslint-enable camelcase */
+	},
 
+	/**
+	 * Track play and pause states
+	 *
+	 * @param {HTMLVideoElement} video
+	 * @param {string}           playerKey
+	 */
+	bindPlaybackStateEvents( video, playerKey ) {
+		/* eslint-disable camelcase */
 		video.addEventListener( 'play', () => {
 			LearnDash_Video_Progress_setSetting( ld_video_players[ playerKey ], 'video_duration', video.duration );
 			LearnDash_Video_Progress_setSetting( ld_video_players[ playerKey ], 'video_time', video.currentTime );
@@ -161,7 +230,17 @@ const GoDAMLearnDashBlockIntegration = {
 			LearnDash_Video_Progress_setSetting( ld_video_players[ playerKey ], 'video_time', video.currentTime );
 			LearnDash_Video_Progress_setSetting( ld_video_players[ playerKey ], 'video_state', 'pause' );
 		} );
+		/* eslint-enable camelcase */
+	},
 
+	/**
+	 * Handle video completion logic
+	 *
+	 * @param {HTMLVideoElement} video
+	 * @param {string}           playerKey
+	 */
+	bindVideoCompletionEvent( video, playerKey ) {
+		/* eslint-disable camelcase */
 		video.addEventListener( 'ended', () => {
 			LearnDash_Video_Progress_setSetting( ld_video_players[ playerKey ], 'video_state', 'complete' );
 			LearnDash_Video_Progress_setSetting( ld_video_players[ playerKey ], 'video_time', video.currentTime );
@@ -171,6 +250,29 @@ const GoDAMLearnDashBlockIntegration = {
 			LearnDash_watchPlayersEnd();
 		} );
 		/* eslint-enable camelcase */
+	},
+
+	storeVideoProgress( currentTime, key ) {
+		try {
+			const storageKey = key;
+			const progressData = {
+				currentTime: Math.floor( currentTime ),
+				timestamp: Date.now(),
+			};
+			localStorage.setItem( storageKey, JSON.stringify( progressData ) );
+		} catch ( error ) {
+			return null;
+		}
+	},
+
+	getStoredProgress( key ) {
+		try {
+			const storageKey = key;
+			const stored = localStorage.getItem( storageKey );
+			return stored ? JSON.parse( stored ) : null;
+		} catch ( error ) {
+			return null;
+		}
 	},
 };
 
