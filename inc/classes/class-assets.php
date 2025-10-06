@@ -323,13 +323,15 @@ class Assets {
 	private function enqueue_godam_settings() {
 		$godam_settings = get_option( 'rtgodam-settings' );
 
-		$brand_image = $godam_settings['video_player']['brand_image'] ?? '';
-		$brand_color = $godam_settings['video_player']['brand_color'] ?? '';
+		$brand_image         = $godam_settings['video_player']['brand_image'] ?? '';
+		$brand_color         = $godam_settings['video_player']['brand_color'] ?? '';
+		$enable_gtm_tracking = $godam_settings['general']['enable_gtm_tracking'] ?? false;
 
 		$godam_settings_obj = array(
-			'brandImage' => $brand_image,
-			'brandColor' => $brand_color,
-			'apiBase'    => RTGODAM_API_BASE,
+			'brandImage'        => $brand_image,
+			'brandColor'        => $brand_color,
+			'apiBase'           => RTGODAM_API_BASE,
+			'enableGTMTracking' => $enable_gtm_tracking,
 		);
 
 		if ( ! rtgodam_is_api_key_valid() ) {
