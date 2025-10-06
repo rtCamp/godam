@@ -112,10 +112,10 @@ class RTGODAM_Transcoder_Handler {
 	 * @param bool $no_init  If true then do nothing else continue.
 	 */
 	public function __construct( $no_init = false ) {
-		
+
 		$this->api_key        = get_option( 'rtgodam-api-key' );
-		$this->godam_settings = get_option( 'rtgodam-settings', [] );
-		
+		$this->godam_settings = get_option( 'rtgodam-settings', array() );
+
 		$default_settings = array(
 			'video' => array(
 				'adaptive_bitrate'     => false,
