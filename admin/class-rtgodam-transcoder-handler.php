@@ -332,13 +332,6 @@ class RTGODAM_Transcoder_Handler {
 
 			$transcoding_url = $this->transcoding_api_url . 'resource/Transcoder Job' . ( empty( $transcoding_job_id ) ? '' : '/' . $transcoding_job_id );
 
-			// Block if blacklisted ip address.
-			$remote_address_key = 'REMOTE_ADDR';
-			$client_ip          = isset( $_SERVER[ $remote_address_key ] ) ? filter_var( $_SERVER[ $remote_address_key ], FILTER_VALIDATE_IP ) : '';
-			if ( ! empty( $client_ip ) && in_array( $client_ip, rtgodam_get_blacklist_ip_addresses(), true ) ) {
-				return $metadata;
-			}
-
 			$upload_page = wp_remote_request( $transcoding_url, $args );
 
 			if ( ! is_wp_error( $upload_page ) &&
