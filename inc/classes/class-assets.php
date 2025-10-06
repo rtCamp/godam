@@ -234,7 +234,7 @@ class Assets {
 		wp_register_script(
 			'easydam-media-library',
 			RTGODAM_URL . 'assets/build/js/media-library.min.js',
-			array(),
+			array( 'media-editor', 'media-views', 'media-models', 'media-grid' ),
 			filemtime( RTGODAM_PATH . 'assets/build/js/media-library.min.js' ),
 			true
 		);
