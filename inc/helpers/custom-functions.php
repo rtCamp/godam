@@ -717,7 +717,7 @@ function rtgodam_is_local_environment() {
 	// phpcs:disable -- Disabling phpcs as its not manipulating any data, just reading server variables, and function is used for local environment check only.
 	$server_addr = $_SERVER['REMOTE_ADDR'] ?? '';
 	$host        = $_SERVER['HTTP_HOST'] ?? '';
-	// phpcs:phpcs:enable
+	// phpcs:enable
 
 	$is_localhost = (
 		in_array( $server_addr, $whitelist, true ) ||
