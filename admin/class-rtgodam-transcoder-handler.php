@@ -234,9 +234,18 @@ class RTGODAM_Transcoder_Handler {
 
 			$job_type = 'stream';
 
-			if ( ( ! empty( $type_array ) && 'audio' === $type_array[0] ) || in_array( $extension, explode( ',', $this->audio_extensions ), true ) ) {
+			// Prepare clean extension arrays (filter removes empty strings).
+			$audio_extensions = array_filter( explode( ',', $this->audio_extensions ) );
+			$other_extensions = array_filter( explode( ',', $this->other_extensions ) );
+
+			if (
+				( ! empty( $type_array ) && 'audio' === $type_array[0] ) ||
+				( ! empty( $extension ) && in_array( $extension, $audio_extensions, true ) )
+			) {
 				$job_type = 'audio';
-			} elseif ( in_array( $extension, explode( ',', $this->other_extensions ), true ) ) {
+			} elseif (
+				! empty( $extension ) && in_array( $extension, $other_extensions, true )
+			) {
 				$job_type            = $extension;
 				$autoformat          = $extension;
 				$options_video_thumb = 0;
@@ -283,11 +292,11 @@ class RTGODAM_Transcoder_Handler {
 			// Get author name with fallback to username.
 			$author_first_name = '';
 			$author_last_name  = '';
-			
+
 			if ( $attachment_author ) {
 				$author_first_name = $attachment_author->first_name;
 				$author_last_name  = $attachment_author->last_name;
-				
+
 				// If first and last names are empty, use username as fallback.
 				if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
 					$author_first_name = $attachment_author->user_login;
