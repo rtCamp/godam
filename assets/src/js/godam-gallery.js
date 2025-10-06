@@ -210,9 +210,9 @@ document.addEventListener( 'click', async function( e ) {
 		document.body.style.overflow = 'hidden';
 
 		// Function to load a new video
-		const loadNewVideo = async ( newVideoId ) => {
+		const loadNewVideo = async (newVideoId) => {
 			// Check if already loading
-			if ( modal.dataset.isLoading === 'true' ) {
+			if (modal.dataset.isLoading === 'true') {
 				return;
 			}
 
@@ -223,24 +223,24 @@ document.addEventListener( 'click', async function( e ) {
 			modal.dataset.currentVideoId = newVideoId;
 
 			// Show loading state
-			const videoContainer = modal.querySelector( '.easydam-video-container' );
-			if ( videoContainer ) {
+			const videoContainer = modal.querySelector('.easydam-video-container');
+			if (videoContainer) {
 				videoContainer.innerHTML = `
-					<div class="animate-video-loading">
-						<div class="animate-play-btn">
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
-								<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
-							</svg>
-						</div>
-					</div>
-				`;
-				videoContainer.classList.add( 'animate-video-loading' );
+			<div class="animate-video-loading">
+				<div class="animate-play-btn">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+						<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
+					</svg>
+				</div>
+			</div>
+		`;
+				videoContainer.classList.add('animate-video-loading');
 			}
 
 			try {
 				let data;
-				const videoMarkUp = select( engagementStore ).getVideoMarkUp()[ newVideoId ];
-				if ( videoMarkUp ) {
+				const videoMarkUp = select(engagementStore).getVideoMarkUp()[newVideoId];
+				if (videoMarkUp) {
 					data = {
 						html: videoMarkUp,
 						status: 'success',
@@ -249,91 +249,121 @@ document.addEventListener( 'click', async function( e ) {
 					const response = await fetch(`/wp-json/godam/v1/cf7-form?id=${newVideoId}`);
 					data = await response.json();
 
-					if ( data.status === 'success' && data.html ) {
-						dispatch( engagementStore ).addVideoMarkUp( newVideoId, data.html );
+					if (data.status === 'success' && data.html) {
+						dispatch(engagementStore).addVideoMarkUp(newVideoId, data.html);
 					}
 				}
 
-				if ( data.status === 'success' && data.html ) {
+				if (data.status === 'success' && data.html) {
 					// Update the video element with the fetched data
-					if ( videoContainer ) {
+					if (videoContainer) {
 						videoContainer.innerHTML = data.html;
-						videoContainer.classList.remove( 'animate-video-loading' );
+						videoContainer.classList.remove('animate-video-loading');
 
 						// Update video title in the modal header
-						const videoTitle = modal.querySelector( '.godam-video-title' );
-						if ( videoTitle ) {
-							videoTitle.innerHTML = DOMPurify.sanitize( data.title || '' );
+						const videoTitle = modal.querySelector('.godam-video-title');
+						if (videoTitle) {
+							videoTitle.innerHTML = DOMPurify.sanitize(data.title || '');
 						}
 
 						// Update the date
-						const videoDate = modal.querySelector( '.godam-video-date' );
-						if ( videoDate ) {
+						const videoDate = modal.querySelector('.godam-video-date');
+						if (videoDate) {
 							videoDate.textContent = data.date || '';
 						}
 
-						const engagementContainer = videoContainer.querySelector( '.rtgodam-video-engagement' );
-						let engagementId = engagementContainer?.getAttribute( 'data-engagement-id' ) || 0;
-						const siteUrl = engagementContainer?.getAttribute( 'data-engagement-site-url' ) || '';
+						// --- CF7 FORM FIX START ---
+						const form = videoContainer.querySelector('form.wpcf7-form');
+						if (form) {
+							form.addEventListener('submit', async (e) => {
+								e.preventDefault();
 
-						if ( ! galleryEngagements ) {
+								const action = form.getAttribute('action');
+								const matches = action.match(/contact-forms\/(\d+)\/feedback/);
+								if (!matches) {
+									console.error('CF7 formId not found in action URL');
+									return;
+								}
+								const formId = matches[1];
+
+								const response = await fetch(`/wp-json/contact-form-7/v1/contact-forms/${formId}/feedback`, {
+									method: 'POST',
+									body: new FormData(form),
+								});
+								const result = await response.json();
+
+								// Show CF7 feedback message
+								const statusBox = document.createElement('div');
+								statusBox.className = 'cf7-status-message';
+								statusBox.textContent = result.message || 'Form submission complete.';
+								form.appendChild(statusBox);
+							});
+						}
+						// --- CF7 FORM FIX END ---
+
+						const engagementContainer = videoContainer.querySelector('.rtgodam-video-engagement');
+						let engagementId = engagementContainer?.getAttribute('data-engagement-id') || 0;
+						const siteUrl = engagementContainer?.getAttribute('data-engagement-site-url') || '';
+
+						if (!galleryEngagements) {
 							engagementContainer.remove();
 						}
 
 						// Reinitialize the player with the new content
-						if ( typeof GODAMPlayer === 'function' ) {
-							const godamPlayer = GODAMPlayer( modal );
+						if (typeof GODAMPlayer === 'function') {
+							const godamPlayer = GODAMPlayer(modal);
 							const initEngagement = godamPlayer.initEngagement;
 							// Find the video player and start playing
-							const videoPlayer = modal.querySelector( '.video-js' );
-							if ( videoPlayer && videoPlayer.player ) {
-								if ( galleryEngagements ) {
+							const videoPlayer = modal.querySelector('.video-js');
+							if (videoPlayer && videoPlayer.player) {
+								if (galleryEngagements) {
 									// If engagements are enabled, initiate the comment modal with Data
 									let skipEngagements = false;
-									if ( 0 === engagementId ) {
-										const vidFigure = videoContainer.querySelector( 'figure' );
-										engagementId = vidFigure?.id.replace( 'godam-player-container', 'engagement' );
+									if (0 === engagementId) {
+										const vidFigure = videoContainer.querySelector('figure');
+										engagementId = vidFigure?.id.replace('godam-player-container', 'engagement');
 										skipEngagements = true;
 									}
-									const newVideoEngagementsData = select( engagementStore ).getTitles()[ newVideoId ];
-									if ( newVideoEngagementsData ) {
-										dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId, skipEngagements ).then( () => {
+									const newVideoEngagementsData = select(engagementStore).getTitles()[newVideoId];
+									if (newVideoEngagementsData) {
+										dispatch(engagementStore).initiateCommentModal(newVideoId, siteUrl, engagementId, skipEngagements).then(() => {
 											window.galleryScroll = true;
-										} );
+										});
 										videoPlayer.player.play();
 									} else {
-										initEngagement.then( () => {
-											dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId, skipEngagements ).then( () => {
+										initEngagement.then(() => {
+											dispatch(engagementStore).initiateCommentModal(newVideoId, siteUrl, engagementId, skipEngagements).then(() => {
 												window.galleryScroll = true;
-											} );
+											});
 											videoPlayer.player.play();
-										} );
+										});
 									}
 									engagementContainer?.remove();
 								} else {
-									dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId, true ).then( () => {
+									dispatch(engagementStore).initiateCommentModal(newVideoId, siteUrl, engagementId, true).then(() => {
 										window.galleryScroll = true;
-									} );
+									});
 									videoPlayer.player.play();
 								}
 							}
 						}
 					}
-				} else if ( videoContainer ) {
+				} else if (videoContainer) {
 					videoContainer.innerHTML = '<div class="godam-error-message">Video could not be loaded.</div>';
-					videoContainer.classList.remove( 'animate-video-loading' );
+					videoContainer.classList.remove('animate-video-loading');
 				}
-			} catch ( error ) {
+			} catch (error) {
 				// Handle error case
-				if ( videoContainer ) {
+				if (videoContainer) {
 					videoContainer.innerHTML = '<div class="godam-error-message">Video could not be loaded.</div>';
-					videoContainer.classList.remove( 'animate-video-loading' );
+					videoContainer.classList.remove('animate-video-loading');
 				}
 			} finally {
 				// Reset loading state
 				modal.dataset.isLoading = 'false';
 			}
 		};
+
 
 		// Initialize the video player
 		if ( typeof GODAMPlayer === 'function' ) {
