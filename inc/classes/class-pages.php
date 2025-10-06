@@ -154,6 +154,14 @@ class Pages {
 	public function add_admin_pages() {
 		global $admin_page_hooks;
 
+		/**
+		 * If the user do not have capability to publish posts, bail out.
+		 * That means the users is contributor or below, we don't show the menu.
+		 */
+		if ( ! current_user_can( 'publish_posts' ) ) {
+			return;
+		}
+
 		add_menu_page(
 			__( 'GoDAM', 'godam' ),
 			__( 'GoDAM', 'godam' ),
@@ -182,7 +190,7 @@ class Pages {
 			$this->menu_slug,
 			__( 'Video Editor', 'godam' ),
 			__( 'Video Editor', 'godam' ),
-			'edit_posts',
+			'publish_posts',
 			$this->video_editor_slug,
 			array( $this, 'render_video_editor_page' ),
 			3

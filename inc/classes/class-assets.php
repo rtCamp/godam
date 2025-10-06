@@ -282,8 +282,7 @@ class Assets {
 		);
 
 		$enable_folder_organization = get_option( 'rtgodam-settings', array() )['general']['enable_folder_organization'] ?? true;
-
-		$current_user_id = get_current_user_id();
+		$current_user_id            = get_current_user_id();
 
 		wp_localize_script(
 			'easydam-media-library',
@@ -297,6 +296,7 @@ class Assets {
 				'page'                     => $screen ? $screen->id : '',
 				'userId'                   => $current_user_id,
 				'canEditOthersMedia'       => current_user_can( 'edit_others_posts' ),
+				'canManageOptions'         => current_user_can( 'manage_options' ),
 			)
 		);
 
