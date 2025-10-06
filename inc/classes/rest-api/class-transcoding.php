@@ -237,13 +237,13 @@ class Transcoding extends Base {
 		$message = isset( $status_messages[ $status ] ) ? $status_messages[ $status ] : __( 'Unknown transcoding status.', 'godam' );
 
 		// Check if media has thumbnail generated after transcoding.
-		$thumbnail_id = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
+		$thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 
 		return array(
 			'status'    => strtolower( $status ),
 			'progress'  => $progress,
 			'message'   => $message,
-			'thumbnail' => ! empty( $thumbnail_id ) ? $thumbnail_id : '',
+			'thumbnail' => ! empty( $thumbnail ) ? $thumbnail : '',
 		);
 	}
 
