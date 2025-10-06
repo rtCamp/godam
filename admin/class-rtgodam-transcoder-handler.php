@@ -171,6 +171,12 @@ class RTGODAM_Transcoder_Handler {
 	 * @param int $attachment_id    ID of attachment.
 	 */
 	public function send_transcoding_request( $attachment_id ) {
+
+		// // Check if local development environment.
+		if ( rtgodam_is_local_environment() ) {
+			return;
+		}
+
 		$metadata = wp_get_attachment_metadata( $attachment_id );
 
 		$mime_type = get_post_mime_type( $attachment_id );
