@@ -357,7 +357,7 @@ class Pages {
 	 * @return void
 	 */
 	public function render_video_editor_page() {
-		// Check if user can media with given id.
+		// Check if user can edit media with given id.
 		$attachment_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		if ( $attachment_id && ! current_user_can( 'edit_post', $attachment_id ) ) {
