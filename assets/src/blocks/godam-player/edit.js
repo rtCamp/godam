@@ -200,6 +200,10 @@ function VideoEdit( {
 					}
 
 					if ( response ) {
+						// Build sources list safely, declare newSources first.
+						const newSources = [];
+
+						// Prefer HLS if present.
 						if ( response?.meta && response?.meta?.rtgodam_hls_transcoded_url ) {
 							const hlsTranscodedUrl = response.meta.rtgodam_hls_transcoded_url;
 
@@ -209,6 +213,7 @@ function VideoEdit( {
 							} );
 						}
 
+						// Add DASH or other transcoded source if present.
 						if ( response?.meta && response?.meta?.rtgodam_transcoded_url ) {
 							const transcodedUrl = response.meta.rtgodam_transcoded_url;
 
@@ -218,12 +223,11 @@ function VideoEdit( {
 							} );
 						}
 
-						const newSources = [
-							{
-								src: response.source_url,
-								type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
-							},
-						];
+						// Always include original file as fallback.
+						newSources.push( {
+							src: response.source_url,
+							type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
+						} );
 
 						setAttributes( { sources: newSources } );
 					}
