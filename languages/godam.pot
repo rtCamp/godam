@@ -2134,7 +2134,7 @@ msgid "Failed to deactivate the API key. It might not exist."
 msgstr ""
 
 #: inc/classes/rest-api/class-settings.php:272
-msgid "EasyDAM settings updated successfully!"
+msgid "GoDAM settings updated successfully!"
 msgstr ""
 
 #: inc/classes/rest-api/class-sureforms.php:81

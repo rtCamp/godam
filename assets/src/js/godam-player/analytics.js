@@ -21,7 +21,7 @@ window.analytics = analytics;
 	function findVideoElementById( videoId, root ) {
 		const ctx = root && root.querySelector ? root : document;
 		return ctx.querySelector(
-			`.easydam-player.video-js[data-id="${ videoId }"], .video-js[data-id="${ videoId }"]`,
+			`.godam-player.video-js[data-id="${ videoId }"], .video-js[data-id="${ videoId }"]`,
 		);
 	}
 
@@ -90,7 +90,7 @@ window.analytics = analytics;
 
 			// If no videoId provided, automatically find the current video
 			if ( ! vid ) {
-				const videoEl = ctx.querySelector( '.easydam-player.video-js, .video-js' );
+				const videoEl = ctx.querySelector( '.godam-player.video-js, .video-js' );
 				vid = videoEl ? parseInt( videoEl.getAttribute( 'data-id' ), 10 ) : 0;
 			}
 
@@ -136,7 +136,7 @@ if ( ! window.pageLoadEventTracked ) {
 	window.pageLoadEventTracked = true; // Mark as tracked to avoid duplicate execution
 
 	document.addEventListener( 'DOMContentLoaded', () => {
-		const videos = document.querySelectorAll( '.easydam-player.video-js' );
+		const videos = document.querySelectorAll( '.godam-player.video-js' );
 
 		// Collect all video IDs
 		const videoIds = Array.from( videos )
@@ -158,7 +158,7 @@ if ( ! window.pageLoadEventTracked ) {
 }
 
 function playerAnalytics() {
-	const videos = document.querySelectorAll( '.easydam-player.video-js' );
+	const videos = document.querySelectorAll( '.godam-player.video-js' );
 
 	videos.forEach( ( video ) => {
 		// read the data-setup attribute.

@@ -45,7 +45,7 @@ const RetranscodeTab = () => {
 		// Verify the nonce if media_ids are present
 		if ( idsParam && nonce ) {
 			// Process the IDs only if we have a valid nonce from the URL
-			if ( nonce === window.easydamMediaLibrary?.godamToolsNonce ) {
+			if ( nonce === window.godamMediaLibrary?.godamToolsNonce ) {
 				const idsArr = idsParam.split( ',' ).map( ( id ) => parseInt( id, 10 ) ).filter( Boolean );
 				if ( idsArr.length > 0 ) {
 					setAttachments( idsArr );

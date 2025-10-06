@@ -189,7 +189,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 						initialOpen={ false }
 					>
 						{ /* Layer background color */ }
-						<label htmlFor="color" className="easydam-label">{ __( 'Color', 'godam' ) }</label>
+						<label htmlFor="color" className="godam-label">{ __( 'Color', 'godam' ) }</label>
 						<ColorPickerButton
 							className="mb-4"
 							value={ layer?.bg_color ?? '#FFFFFFB3' }
@@ -204,17 +204,17 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 			<LayerControls>
 				<>
 					{ layer?.cta_type === 'text' && (
-						<div className="easydam-layer" style={ { backgroundColor: layer.bg_color } }>
-							<div className="ql-editor easydam-layer--cta-text" dangerouslySetInnerHTML={ { __html: formHTML } } />
+						<div className="godam-layer" style={ { backgroundColor: layer.bg_color } }>
+							<div className="ql-editor godam-layer--cta-text" dangerouslySetInnerHTML={ { __html: formHTML } } />
 						</div>
 					) }
 					{ layer?.cta_type === 'html' && (
-						<div className="easydam-layer" style={ { backgroundColor: layer.bg_color } }>
-							<div className="easydam-layer--cta-html" dangerouslySetInnerHTML={ { __html: DOMPurify.sanitize( formHTML, wpKsesAllowed ) } } />
+						<div className="godam-layer" style={ { backgroundColor: layer.bg_color } }>
+							<div className="godam-layer--cta-html" dangerouslySetInnerHTML={ { __html: DOMPurify.sanitize( formHTML, wpKsesAllowed ) } } />
 						</div>
 					) }
 					{ layer?.cta_type === 'image' && (
-						<div className="easydam-layer" style={ { backgroundColor: layer.bg_color } }>
+						<div className="godam-layer" style={ { backgroundColor: layer.bg_color } }>
 							<div className="image-cta-overlay-container">
 								<div className="image-cta-parent-container">
 									<div

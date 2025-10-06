@@ -93,7 +93,7 @@ export default class ControlsManager {
 
 			handleClick( e ) {
 				const videoContainer = e.target.closest( '.video-js' );
-				const godamVideoContainer = e.target.closest( '.easydam-video-container' );
+				const godamVideoContainer = e.target.closest( '.godam-video-container' );
 
 				const isFullscreen = videoContainer && videoContainer.classList.contains( 'vjs-fullscreen' );
 
@@ -139,7 +139,7 @@ export default class ControlsManager {
 
 			handleClick( e ) {
 				const videoContainer = e.target.closest( '.video-js' );
-				const godamVideoContainer = e.target.closest( '.easydam-video-container' );
+				const godamVideoContainer = e.target.closest( '.godam-video-container' );
 
 				if ( videoContainer ) {
 					videoContainer.classList.remove( 'vjs-fullscreen' );
@@ -243,7 +243,7 @@ export default class ControlsManager {
 
 		// Add click handler
 		imgElement.addEventListener( 'click', () => {
-			const videoPlayer = imgElement.closest( '.easydam-player' );
+			const videoPlayer = imgElement.closest( '.godam-player' );
 			const videoElement = videoPlayer?.querySelector( 'video' );
 			videoElement?.play();
 		} );

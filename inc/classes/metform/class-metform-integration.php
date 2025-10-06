@@ -86,7 +86,7 @@ class Metform_Integration {
 	 */
 	public function add_additional_css_for_godam_player() {
 		$custom_css = <<<'CSS'
-			.easydam-layer.metform .form-container {
+			.godam-layer.metform .form-container {
 				position: static;
 			}
 		CSS;

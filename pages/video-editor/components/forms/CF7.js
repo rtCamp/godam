@@ -89,7 +89,7 @@ const CF7 = ( { layerID } ) => {
 						style={ {
 							backgroundColor: layer.bg_color,
 						} }
-						className="easydam-layer relative"
+						className="godam-layer relative"
 					>
 
 						{

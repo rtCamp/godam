@@ -109,14 +109,14 @@ class RTGODAM_RetranscodeMedia {
 	}
 
 	/**
-	 * Add the Retranscode Media meta box to the EasyDam Tools page.
+	 * Add the Retranscode Media meta box to the GoDAM Tools page.
 	 */
 	public function render_tools_page() {
-		$this->add_easydam_meta_boxes()
+		$this->add_godam_meta_boxes()
 		?>
 		<div>
 			<h1><?php esc_html_e( 'GoDAM Tools', 'godam' ); ?></h1>
-			<div id="easydam-tools-widget">
+			<div id="godam-tools-widget">
 				<?php
 				do_meta_boxes( 'rtgodam_tools', 'normal', null );
 				?>
@@ -126,9 +126,9 @@ class RTGODAM_RetranscodeMedia {
 	}
 
 	/**
-	 * Register the meta box for the EasyDam Tools page.
+	 * Register the meta box for the GoDAM Tools page.
 	 */
-	public function add_easydam_meta_boxes() {
+	public function add_godam_meta_boxes() {
 
 		add_meta_box(
 			'retranscode_media_widget',

@@ -169,7 +169,7 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 				>
 
 					{ /* Layer background color */ }
-					<label htmlFor="color" className="easydam-label">{ __( 'Color', 'godam' ) }</label>
+					<label htmlFor="color" className="godam-label">{ __( 'Color', 'godam' ) }</label>
 					<ColorPickerButton
 						className="mb-4"
 						value={ layer?.bg_color ?? '#FFFFFFB3' }
@@ -179,7 +179,7 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 						disabled={ ! isValidAPIKey || ! isPluginActive }
 					/>
 
-					<label htmlFor="custom-css" className="easydam-label">{ __( 'Custom CSS', 'godam' ) }</label>
+					<label htmlFor="custom-css" className="godam-label">{ __( 'Custom CSS', 'godam' ) }</label>
 
 					<div className={ ( ! isValidAPIKey || ! isPluginActive ) ? 'pointer-events-none opacity-50' : '' }>
 						<Editor

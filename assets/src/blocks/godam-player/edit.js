@@ -401,7 +401,7 @@ function VideoEdit( {
 	}
 
 	const classes = clsx( className, {
-		'easydam-video-block': true,
+		'godam-video-block': true,
 		'is-transient': !! temporaryURL,
 		'godam-editor-video-item': isInsideQueryLoop,
 	} );

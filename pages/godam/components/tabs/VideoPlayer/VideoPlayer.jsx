@@ -64,9 +64,9 @@ const VideoPlayer = () => {
 			return;
 		}
 
-		// Replace .easydam-video-container → .video-player-settings-preview
+		// Replace .godam-video-container → .video-player-settings-preview
 		const scopedValue = value.replaceAll(
-			'.easydam-video-container',
+			'.godam-video-container',
 			'.video-player-settings-preview',
 		);
 
@@ -125,10 +125,10 @@ const VideoPlayer = () => {
 				'#godam-custom-css-inline-style',
 			);
 
-			// Update CSS selectors so styles meant for the frontend video (.easydam-video-container)
+			// Update CSS selectors so styles meant for the frontend video (.godam-video-container)
 			// are applied to the actual video player preview container (.video-player-settings-preview)
 			const scopedValue = mediaSettings?.video_player?.custom_css.replaceAll(
-				'.easydam-video-container',
+				'.godam-video-container',
 				'.video-player-settings-preview',
 			);
 

@@ -217,7 +217,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 
 			// Add override style for everest forms.
 			$style  = '<style>#everest-forms-entry-fields:not(.postbox) table tbody tr td span {margin: 0 !important;}</style>';
-			$style .= '<style>.evf-godam-video-preview .easydam-video-container{height:100%;}.evf-godam-video-preview .easydam-video-container .easydam-player.video-js{margin-top:0;}</style>';
+			$style .= '<style>.evf-godam-video-preview .godam-video-container{height:100%;}.evf-godam-video-preview .godam-video-container .godam-player.video-js{margin-top:0;}</style>';
 
 			$video_output = do_shortcode( "[godam_video src='{$value}' {$transcoded_url} ]" );
 

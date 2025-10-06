@@ -6,7 +6,7 @@ export const VideoCustomCSSTemplate = `
     }
 
     // Video Element Parent Div
-    .easydam-video-container {
+    .godam-video-container {
         // Styles for the video element parent div
     }
 

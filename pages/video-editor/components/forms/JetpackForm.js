@@ -189,7 +189,7 @@ const JetpackForm = ( { layerID } ) => {
 						style={ {
 							backgroundColor: layer.bg_color,
 						} }
-						className="easydam-layer"
+						className="godam-layer"
 					>
 						{
 							// Only show form preview if a form is selected

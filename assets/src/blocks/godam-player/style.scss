@@ -24,7 +24,7 @@
     }
 }
 
-.easydam-video-block {
+.godam-video-block {
 
 	video {
 		width: 100%;
@@ -32,7 +32,7 @@
 	}
 }
 
-.wp-block-easydam-video {
+.wp-block-godam-video {
 
 	video {
 		width: 100%;
@@ -40,7 +40,7 @@
 	}
 }
 
-.easydam-layer {
+.godam-layer {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -85,7 +85,7 @@
 	}
 }
 
-.easydam-video-container {
+.godam-video-container {
 	position: relative;
 	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
 	background-color: rgba(149, 149, 149, 0.2);
@@ -131,7 +131,7 @@
 }
 
 
-.easydam-player.video-js {
+.godam-player.video-js {
 	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
 }
 
@@ -158,15 +158,15 @@
 	}
 }
 
-.easydam-layer--cta-text {
+.godam-layer--cta-text {
 	max-height: 100%;
 	width: 100%;
 	padding: 2rem;
 	overflow: auto;
 }
 
-.easydam-layer--cta-html {
-	font-size: 1.375rem; 
+.godam-layer--cta-html {
+	font-size: 1.375rem;
 	font-family: Manrope, sans-serif;
 	width: fit-content;
 	margin: 0 auto;
@@ -174,8 +174,8 @@
 	border-radius: 4px;
 }
 
-.easydam-layer--cta-html button,
-.video-js .easydam-layer--cta-html button {
+.godam-layer--cta-html button,
+.video-js .godam-layer--cta-html button {
 	all: unset;
 	display: inline-block;
 	padding: 10px 20px;
@@ -190,7 +190,7 @@
 	cursor: pointer;
 }
 
-.easydam-layer--cta-html button:hover {
+.godam-layer--cta-html button:hover {
 	background-color: #1a5d99;
 }
 
@@ -210,13 +210,13 @@
 .poll-container, .fullscreen-layer .poll-container {
 	color: #000;
 	padding: 32px 20%;
-	font-size: 1.375rem; 
+	font-size: 1.375rem;
 	font-family: Manrope, sans-serif;
 	line-height: 1.4;
 }
 
 .poll-container p {
-	font-size: 1.375rem; 
+	font-size: 1.375rem;
 	font-family: Manrope, sans-serif;
 }
 
@@ -225,7 +225,7 @@
 	margin: 0 auto;
 	padding: 10px 20px;
 	border-radius: 4px;
-	font-size: 1.375rem; 
+	font-size: 1.375rem;
 	font-family: Manrope, sans-serif;
 }
 
@@ -264,7 +264,7 @@
     text-transform: uppercase;
 	text-align: center;
 	font-weight: 500;
-	
+
 	a {
 		color: #fff;
 	}
@@ -345,7 +345,7 @@
 	top: 0;
 	bottom: 0;
 	overflow: auto;
-	padding: 2rem 1rem; 
+	padding: 2rem 1rem;
 
 	h2 {
 		margin-block-start: 0;
@@ -369,7 +369,7 @@
 	}
 }
 
-.easydam-layer.hotspot-layer {
+.godam-layer.hotspot-layer {
 	pointer-events: none;
 	background: transparent;
 }
@@ -705,7 +705,7 @@
 	transition: opacity 0.6s ease;
 	pointer-events: auto;
   }
-  
+
   /* Content container */
   .hotspot-content {
 	position: relative;
@@ -717,7 +717,7 @@
   }
 
 
-  /* If there's an icon, we typically don't show the white center dot; 
+  /* If there's an icon, we typically don't show the white center dot;
 	 if you want to keep it, you can adjust the rule to a conditional class. */
   .hotspot-content.no-icon::after {
 	content: "";
@@ -732,7 +732,7 @@
 	background-color: #fff;
 	border-radius: 50%;
   }
-  
+
   /* Index in the top-left corner */
   .hotspot-content .index {
 	position: absolute;
@@ -962,11 +962,11 @@
 .video-js {
 
 	.vjs-custom-fullscreen-control {
-	
+
 		.vjs-icon-placeholder {
 
 			&.fullscreen-icon {
-				display: block;	
+				display: block;
 			}
 
 			&.exitscreen-icon {
@@ -998,7 +998,7 @@
 		.vjs-control-bar {
 			position: relative;
 			height: 6em !important;
-			
+
 			.vjs-progress-control {
 				position: absolute;
 				top: 0;
@@ -1007,17 +1007,17 @@
 				width: 100%;
 				height: 2em !important;
 			}
-	
+
 			.vjs-control {
 				height: 3em !important;
 			}
-	
+
 			.vjs-play-control {
 				position: absolute;
 				bottom: 0;
 				left: 0;
 			}
-	
+
 			.vjs-skip-backward-5,
 			.vjs-skip-backward-10,
 			.vjs-skip-backward-15,
@@ -1039,7 +1039,7 @@
 					display: none !important;
 				}
 			}
-	
+
 			.vjs-skip-forward-5,
 			.vjs-skip-forward-10,
 			.vjs-skip-forward-15,
@@ -1061,21 +1061,21 @@
 					display: none !important;
 				}
 			}
-	
+
 			.vjs-volume-panel {
 				position: absolute;
 				bottom: 0;
 				left: calc(40px);
 				height: 3em !important;
 			}
-			
+
 			.vjs-fullscreen-control {
 				position: absolute;
 				bottom: 0;
 				right: 0;
 				height: 3em !important;
 			}
-	
+
 			.vjs-picture-in-picture-control {
 				position: absolute;
 				bottom: 0;
@@ -1093,7 +1093,7 @@
 			.mobile-right-80 {
 				right: 80px;
 			}
-	
+
 			.vjs-time-control {
 
 				&.vjs-current-time {
@@ -1129,7 +1129,7 @@
 					display: none !important;
 				}
 			}
-	
+
 		}
 
 		.vjs-control-bar > .vjs-subs-caps-button.vjs-control {
@@ -1152,7 +1152,7 @@
 			.vjs-skip-backward-30 {
 				bottom: initial !important;
 			}
-	
+
 			.vjs-skip-forward-5,
 			.vjs-skip-forward-10,
 			.vjs-skip-forward-15,

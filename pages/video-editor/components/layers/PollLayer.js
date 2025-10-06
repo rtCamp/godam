@@ -105,7 +105,7 @@ const PollLayer = ( { layerID, goBack, duration } ) => {
 					<div
 						style={ {
 							backgroundColor: layer.bg_color,
-						} } className="easydam-layer">
+						} } className="godam-layer">
 						<div className="form-container poll-container" dangerouslySetInnerHTML={ { __html: currentPoll?.html } } />
 					</div>
 					{ layer.allow_skip &&

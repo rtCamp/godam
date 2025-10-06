@@ -72,7 +72,7 @@ const NinjaForm = ( { layerID } ) => {
 						style={ {
 							backgroundColor: layer.bg_color,
 						} }
-						className="easydam-layer"
+						className="godam-layer"
 					>
 
 						{ layer?.ninja_form_id &&

@@ -129,7 +129,7 @@ export const layerTypes = [
 		icon: thumbsUp,
 		type: 'poll',
 		layerText: __( 'Poll', 'godam' ),
-		isActive: Boolean( window?.easydamMediaLibrary?.isPollPluginActive ) ?? false,
+		isActive: Boolean( window?.godamMediaLibrary?.isPollPluginActive ) ?? false,
 		tooltipMessage: __( 'Poll plugin is not active', 'godam' ),
 		isPremium: false,
 	},

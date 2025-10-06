@@ -607,7 +607,7 @@ class ShareManager {
 		const jobId = this.video.dataset.job_id;
 		this.player.jobId = jobId;
 
-		const container = this.player.el().closest( '.easydam-video-container' );
+		const container = this.player.el().closest( '.godam-video-container' );
 
 		if ( ! container || jobId === '' || ! this.videoSetupOptions.showShareBtn ) {
 			return;

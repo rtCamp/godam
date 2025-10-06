@@ -32,7 +32,14 @@ localStorageMiddleware.startListening( {
 			return; // If the folder is not found, eat five star
 		}
 
-		const localStorageData = JSON.parse( localStorage.getItem( 'easyDam' ) ) || {};
+		const oldStorageItemKey = 'easyDam'; // for backward compatibility
+		const localStorageItemKey = 'goDam';
+
+		// Check for existing data in new localStorage key (goDam).
+		// If not found, fall back to old key (easyDam) for backward compatibility.
+		// This ensures older saved data is still accessible after the key rename.
+		const goDamLocalStorageData = localStorage.getItem( localStorageItemKey ) || localStorage.getItem( oldStorageItemKey )
+		const localStorageData = JSON.parse( goDamLocalStorageData ) || {};
 		let openItems = localStorageData.openItems || [];
 
 		if ( folder.isOpen ) {
@@ -44,7 +51,13 @@ localStorageMiddleware.startListening( {
 		}
 
 		localStorageData.openItems = openItems;
-		localStorage.setItem( 'easyDam', JSON.stringify( localStorageData ) );
+		localStorage.setItem( localStorageItemKey, JSON.stringify( localStorageData ) );
+
+		// If old localStorage key (easyDam) still exists, remove it.
+		// This cleanup prevents duplicate storage and ensures we only use the new key (goDam).
+		if ( localStorage.getItem( oldStorageItemKey ) ) {
+			localStorage.removeItem( oldStorageItemKey );
+		}
 	},
 } );
 

@@ -390,7 +390,7 @@ const Appearance = () => {
 	}
 
 	return (
-		<div id="easydam-player-settings" className="pb-20">
+		<div id="godam-player-settings" className="pb-20">
 			<div className="accordion-item--content mt-4 flex flex-col gap-6">
 				<div className="display-settings godam-form-group">
 					<label
