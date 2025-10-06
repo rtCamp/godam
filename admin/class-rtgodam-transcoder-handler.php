@@ -172,7 +172,7 @@ class RTGODAM_Transcoder_Handler {
 	 */
 	public function send_transcoding_request( $attachment_id ) {
 
-		// // Check if local development environment.
+		// Check if local development environment.
 		if ( rtgodam_is_local_environment() ) {
 			return;
 		}

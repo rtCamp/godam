@@ -715,8 +715,8 @@ function rtgodam_is_local_environment() {
 	$whitelist = array( '127.0.0.1', '::1', 'localhost' );
 
 	// phpcs:disable -- Disabling phpcs as its not manipulating any data, just reading server variables, and function is used for local environment check only.
-	$server_addr = $_SERVER['REMOTE_ADDR'] ?? '';
-	$host        = $_SERVER['HTTP_HOST'] ?? '';
+	$server_addr = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+	$host        = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
 	// phpcs:enable
 
 	$is_localhost = (
