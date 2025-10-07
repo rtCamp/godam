@@ -248,6 +248,15 @@ const GoDAMLearnDashBlockIntegration = {
 			// Re-enable LD progression.
 			LearnDash_disable_assets( false );
 			LearnDash_watchPlayersEnd();
+
+			// The autocomplete countdown shows two times, this code removes one as soon as it is added.
+			const removeExtraElement = setInterval( () => {
+				const messages = document.querySelectorAll( '.ld-video-delay-message' );
+				if ( messages.length > 1 ) {
+					messages[ messages.length - 1 ].remove();
+					clearInterval( removeExtraElement );
+				}
+			}, 100 );
 		} );
 		/* eslint-enable camelcase */
 	},
