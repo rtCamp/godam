@@ -66,7 +66,7 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 
 			// Add the transcoded URL field.
 			$form_fields['transcoded_url'] = array(
-				'label' => __( 'Transcodsed CDN URL (MPD)', 'godam' ),
+				'label' => __( 'Transcoded CDN URL (MPD)', 'godam' ),
 				'input' => 'html',
 				'html'  => sprintf(
 					'<input type="text" class="widefat" name="attachments[%d][transcoded_url]" id="attachments-%d-transcoded_url" value="%s" readonly>',
