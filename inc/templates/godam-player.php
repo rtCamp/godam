@@ -480,17 +480,6 @@ function handle_assets( ...$handle_names ) {
 								<div class="form-container">
 									<?php
 
-									if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
-										if ( class_exists( 'GFForms' ) ) {
-											$form_display_path = GFCommon::get_base_path() . '/form_display.php';
-											if ( file_exists( $form_display_path ) ) {
-												require_once $form_display_path;
-												GFFormDisplay::enqueue_form_scripts( null, true );
-												handle_assets( 'gform', 'gravity' );
-											}
-										}
-									}
-
 										$theme = ! empty( $layer['theme'] ) ? esc_attr( $layer['theme'] ) : '';
 										echo do_shortcode(
 											sprintf(
@@ -499,6 +488,10 @@ function handle_assets( ...$handle_names ) {
 												$theme ? " theme='$theme'" : ''
 											)
 										);
+
+									if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+										handle_assets( 'gform', 'gravity' );
+									}
 									?>
 								</div>
 							</div>
@@ -510,20 +503,16 @@ function handle_assets( ...$handle_names ) {
 									<div class="form-container <?php echo esc_attr( 'godam' === $form_theme ? 'rtgodam-wpcf7-form' : '' ); ?>">
 										<?php
 
-										if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
-											if ( function_exists( 'wpcf7_enqueue_scripts' ) ) {
-												wpcf7_enqueue_scripts();
-												wpcf7_enqueue_styles();
-												handle_assets( 'contact-form-7', 'wpcf7' );
-											}
-										}
-
 											echo do_shortcode(
 												sprintf(
 													"[contact-form-7 id='%d' title='false' ajax='true']",
 													intval( $layer['cf7_id'] )
 												)
 											);
+
+										if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+											handle_assets( 'contact-form-7', 'wpcf7' );
+										}
 										?>
 									</div>
 								</div>
@@ -534,23 +523,15 @@ function handle_assets( ...$handle_names ) {
 									<div class="form-container">
 										<?php
 
-										if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
-											if ( function_exists( 'wpforms' ) ) {
-												$frontend = wpforms()->get( 'frontend' );
-
-												if ( $frontend ) {
-													$frontend->assets_css();
-													$frontend->assets_js();
-													handle_assets( 'wpforms' );
-												}
-											}
-
 											echo do_shortcode(
 												sprintf(
 													"[wpforms id='%d' title='false' description='false' ajax='true']",
 													intval( $layer['wpform_id'] )
 												)
 											);
+
+										if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+											handle_assets( 'wpforms' );
 										}
 										?>
 									</div>
@@ -562,20 +543,16 @@ function handle_assets( ...$handle_names ) {
 									<div class="form-container">
 										<?php
 
-										if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
-											if ( class_exists( 'SRFM\Inc\Frontend_Assets' ) ) {
-												SRFM\Inc\Frontend_Assets::enqueue_scripts_and_styles();
-
-											}
-											handle_assets( 'srfm', 'sureform' );
-										}
-
 											echo do_shortcode(
 												sprintf(
 													"[sureforms id='%d']",
 													intval( $layer['sureform_id'] )
 												)
 											);
+
+										if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+											handle_assets( 'srfm', 'sureform' );
+										}
 										?>
 									</div>
 								</div>
@@ -592,6 +569,10 @@ function handle_assets( ...$handle_names ) {
 													intval( $layer['forminator_id'] )
 												)
 											);
+
+										if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+											handle_assets( 'forminator' );
+										}
 										?>
 									</div>
 								</div>
@@ -607,6 +588,10 @@ function handle_assets( ...$handle_names ) {
 													intval( $layer['metform_id'] )
 												)
 											);
+
+										if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+											handle_assets( 'metform', 'mf' );
+										}
 										?>
 									</div>
 								</div>
@@ -630,6 +615,11 @@ function handle_assets( ...$handle_names ) {
 										</div>
 									</div>
 									<?php
+
+									if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+										handle_assets( 'grunion', 'jetpack-form' );
+									}
+
 								endif;
 							elseif ( 'fluentforms' === $form_type && ! empty( $layer['fluent_form_id'] ) ) :
 								?>
@@ -642,6 +632,10 @@ function handle_assets( ...$handle_names ) {
 													intval( $layer['fluent_form_id'] )
 												)
 											);
+
+										if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+											handle_assets( 'fluent', 'fluent-form', 'ff_' );
+										}
 										?>
 									</div>
 								</div>
@@ -661,6 +655,10 @@ function handle_assets( ...$handle_names ) {
 													intval( $layer['everest_form_id'] )
 												)
 											);
+
+										if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+											handle_assets( 'everest', 'evf' );
+										}
 										?>
 									</div>
 								</div>
@@ -671,21 +669,17 @@ function handle_assets( ...$handle_names ) {
 									<div class="form-container">
 										<?php
 
-										if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+										echo do_shortcode(
+											sprintf(
+												"[ninja_form id='%d']",
+												intval( $layer['ninja_form_id'] )
+											)
+										);
 
-											if ( class_exists( 'Ninja_Forms' ) ) {
-												if ( class_exists( 'NF_Display_Render' ) ) {
-													Ninja_Forms()->display( $layer['ninja_form_id'] );
-												}
-												handle_assets( 'ninja', 'nf' );
-											}
-											echo do_shortcode(
-												sprintf(
-													"[ninja_form id='%d']",
-													intval( $layer['ninja_form_id'] )
-												)
-											);
+										if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+											handle_assets( 'ninja', 'nf' );
 										}
+
 										?>
 									</div>
 								</div>
