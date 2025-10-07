@@ -212,7 +212,7 @@ class Pages {
 				$this->menu_slug,
 				__( 'Tools', 'godam' ),
 				__( 'Tools', 'godam' ),
-				'manage_options', // Tools is accessible to admins and above.
+				'edit_pages', // Tools is accessible to editors and above.
 				$this->tools_slug,
 				array( $this, 'render_tools_page' ),
 				5
