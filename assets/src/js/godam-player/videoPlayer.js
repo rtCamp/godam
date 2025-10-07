@@ -96,6 +96,7 @@ export default class GodamVideoPlayer {
 			this.setupCaptionsButton();
 			this.player.jobId = this.video.dataset.job_id;
 			this.initializeChapters();
+			this.setupQualitySelector();
 
 			// Now that managers are initialized, we can safely access them
 			this.setupEventListeners();
@@ -206,5 +207,53 @@ export default class GodamVideoPlayer {
 
 		// Handle hotspot layers
 		this.layersManager.handleHotspotLayersTimeUpdate( currentTime );
+	}
+
+	/**
+	 * If quality selector button is not present, render it.
+	 */
+	renderQualitySelectorButton() {
+		if ( this.player.qualityLevels && this.player.qualityLevels().length > 0 ) {
+			// Avoid adding the button multiple times.
+			if ( typeof this.player.hlsQualitySelector === 'function' ) {
+				this.player.hlsQualitySelector();
+			} else if ( typeof this.player.qualityMenuButton === 'function' ) {
+				this.player.qualityMenuButton();
+			}
+
+			// Refresh control bar.
+			this.player.controlBar.show();
+			if ( this.player.qualityLevels ) {
+				this.player.qualityLevels().trigger( 'change' );
+			}
+		}
+	}
+
+	/**
+	 * Setup quality selector button in control bar.
+	 */
+	setupQualitySelector() {
+		// Force load. Required.
+		if ( this.player.readyState() === 0 ) {
+			this.player.load();
+		}
+
+		// Try to render immediately.
+		this.renderQualitySelectorButton();
+
+		/**
+		 * Check if quality button is already present.
+		 * If not, wait for quality levels to be available and then render it.
+		 */
+		if ( ! this.hasQualitySelectorButton() ) {
+			this.eventsManager.onQualityLevelsAvailable( () => this.renderQualitySelectorButton() );
+		}
+	}
+
+	/**
+	 * Check if quality button has been created
+	 */
+	hasQualitySelectorButton() {
+		return !! ( this.player.controlBar.getChild( 'QualityMenuButton' ) || this.player.controlBar.getChild( 'SettingsButton' ) );
 	}
 }

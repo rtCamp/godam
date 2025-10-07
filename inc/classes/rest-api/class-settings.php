@@ -48,6 +48,7 @@ class Settings extends Base {
 			),
 			'general'      => array(
 				'enable_folder_organization' => true,
+				'enable_gtm_tracking'        => false,
 			),
 			'video_player' => array(
 				'brand_image'    => '',
@@ -306,6 +307,7 @@ class Settings extends Base {
 			),
 			'general'      => array(
 				'enable_folder_organization' => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ?? $default['general']['enable_folder_organization'] ),
+				'enable_gtm_tracking'        => rest_sanitize_boolean( $settings['general']['enable_gtm_tracking'] ?? $default['general']['enable_gtm_tracking'] ),
 			),
 			'video_player' => array(
 				'brand_image'    => sanitize_text_field( $settings['video_player']['brand_image'] ?? $default['video_player']['brand_image'] ),

@@ -154,6 +154,14 @@ class Pages {
 	public function add_admin_pages() {
 		global $admin_page_hooks;
 
+		/**
+		 * If the user do not have capability to publish posts, bail out.
+		 * That means the users is contributor or below, we don't show the menu.
+		 */
+		if ( ! current_user_can( 'publish_posts' ) ) {
+			return;
+		}
+
 		add_menu_page(
 			__( 'GoDAM', 'godam' ),
 			__( 'GoDAM', 'godam' ),
@@ -182,7 +190,7 @@ class Pages {
 			$this->menu_slug,
 			__( 'Video Editor', 'godam' ),
 			__( 'Video Editor', 'godam' ),
-			'edit_posts',
+			'publish_posts',
 			$this->video_editor_slug,
 			array( $this, 'render_video_editor_page' ),
 			3
@@ -357,6 +365,16 @@ class Pages {
 	 * @return void
 	 */
 	public function render_video_editor_page() {
+		// Check if user can edit media with given id.
+		$attachment_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		if ( $attachment_id && ! current_user_can( 'edit_post', $attachment_id ) ) {
+			?>
+			<p class="godam-page-error"><?php echo esc_html( __( 'Sorry, you are not allowed to edit this item.', 'godam' ) ); ?></p>
+			<?php
+			return;
+		}
+
 		?>
 		<div class="godam-admin-root">
 			<div id="root-video-editor">

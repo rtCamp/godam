@@ -1,3 +1,7 @@
+/**
+ * Internal dependencies
+ */
+import { canManageOptions } from '../../utility';
 
 let MediaRetranscode = wp?.media?.view?.Button;
 const homeUrl = window.godamRestRoute.homeUrl || window.location.origin; // eslint-disable-line no-unused-vars
@@ -9,6 +13,11 @@ MediaRetranscode = MediaRetranscode?.extend( {
 	},
 
 	initialize() {
+		// If user cannot manage options we don't render the button.
+		if ( ! canManageOptions() ) {
+			return;
+		}
+
 		wp.media.view.Button.prototype.initialize.apply( this, arguments );
 
 		if ( this.options.filters ) {

@@ -282,8 +282,7 @@ class Assets {
 		);
 
 		$enable_folder_organization = get_option( 'rtgodam-settings', array() )['general']['enable_folder_organization'] ?? true;
-
-		$current_user_id = get_current_user_id();
+		$current_user_id            = get_current_user_id();
 
 		wp_localize_script(
 			'easydam-media-library',
@@ -297,6 +296,7 @@ class Assets {
 				'page'                     => $screen ? $screen->id : '',
 				'userId'                   => $current_user_id,
 				'canEditOthersMedia'       => current_user_can( 'edit_others_posts' ),
+				'canManageOptions'         => current_user_can( 'manage_options' ),
 			)
 		);
 
@@ -323,13 +323,15 @@ class Assets {
 	private function enqueue_godam_settings() {
 		$godam_settings = get_option( 'rtgodam-settings' );
 
-		$brand_image = $godam_settings['video_player']['brand_image'] ?? '';
-		$brand_color = $godam_settings['video_player']['brand_color'] ?? '';
+		$brand_image         = $godam_settings['video_player']['brand_image'] ?? '';
+		$brand_color         = $godam_settings['video_player']['brand_color'] ?? '';
+		$enable_gtm_tracking = $godam_settings['general']['enable_gtm_tracking'] ?? false;
 
 		$godam_settings_obj = array(
-			'brandImage' => $brand_image,
-			'brandColor' => $brand_color,
-			'apiBase'    => RTGODAM_API_BASE,
+			'brandImage'        => $brand_image,
+			'brandColor'        => $brand_color,
+			'apiBase'           => RTGODAM_API_BASE,
+			'enableGTMTracking' => $enable_gtm_tracking,
 		);
 
 		if ( ! rtgodam_is_api_key_valid() ) {

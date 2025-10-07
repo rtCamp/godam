@@ -6,6 +6,7 @@ import { Analytics } from 'analytics';
  * Internal dependencies
  */
 import videoAnalyticsPlugin from './video-analytics-plugin';
+import GTMVideoTracker from './gtm-video-tracker';
 
 const analytics = Analytics( {
 	app: 'analytics-cdp-plugin',
@@ -162,6 +163,13 @@ function playerAnalytics() {
 	videos.forEach( ( video ) => {
 		// read the data-setup attribute.
 		const player = videojs.getPlayer( video ) || videojs( video ); // eslint-disable-line no-undef -- variable is defined globally
+
+		// Initialize GTM tracker for this video
+		if ( typeof window.dataLayer !== 'undefined' && window.godamSettings?.enableGTMTracking ) {
+			const gtmTracker = new GTMVideoTracker( player, video );
+			// Store tracker reference for potential cleanup
+			video.gtmTracker = gtmTracker;
+		}
 
 		window.addEventListener( 'beforeunload', () => {
 			const played = player.played();
