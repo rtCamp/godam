@@ -1521,6 +1521,7 @@ body.godam-share-modal-open {
 .easydam-player.video-js {
 	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9 );
 	cursor: pointer;
+	overflow: hidden;
 }
 
 .video-js .vjs-time-tooltip,
