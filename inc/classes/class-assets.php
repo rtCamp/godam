@@ -177,7 +177,10 @@ class Assets {
 			'https://imasdk.googleapis.com/js/sdkloader/ima3.js', // It is required to load the IMA SDK from the Google CDN, else it will show console error.
 			array(),
 			RTGODAM_VERSION,
-			true
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
 		);
 	}
 
@@ -232,7 +235,7 @@ class Assets {
 		wp_enqueue_style( 'rtgodam-style' );
 
 		wp_register_script(
-			'easydam-media-library',
+			'godam-media-library',
 			RTGODAM_URL . 'assets/build/js/media-library.min.js',
 			array(),
 			filemtime( RTGODAM_PATH . 'assets/build/js/media-library.min.js' ),
@@ -240,14 +243,14 @@ class Assets {
 		);
 
 		wp_register_style(
-			'easydam-media-library',
+			'godam-media-library',
 			RTGODAM_URL . 'assets/build/css/media-library.css',
 			array(),
 			filemtime( RTGODAM_PATH . 'assets/build/css/media-library.css' )
 		);
 
 		wp_localize_script(
-			'easydam-media-library',
+			'godam-media-library',
 			'MediaLibraryTaxonomyFilterData',
 			array(
 				'terms' => get_terms(
@@ -260,7 +263,7 @@ class Assets {
 		);
 
 		wp_localize_script(
-			'easydam-media-library',
+			'godam-media-library',
 			'godamTabCallback',
 			array(
 				'apiUrl'      => rest_url( 'godam/v1/media-library/get-godam-cmm-files' ),
@@ -270,7 +273,7 @@ class Assets {
 		);
 
 		wp_localize_script(
-			'easydam-media-library',
+			'godam-media-library',
 			'transcoderSettings',
 			array(
 				'restUrl' => esc_url_raw( rest_url( 'godam/v1/transcoding/transcoding-status' ) ),
@@ -279,30 +282,30 @@ class Assets {
 		);
 
 		$enable_folder_organization = get_option( 'rtgodam-settings', array() )['general']['enable_folder_organization'] ?? true;
-
-		$current_user_id = get_current_user_id();
+		$current_user_id            = get_current_user_id();
 
 		wp_localize_script(
-			'easydam-media-library',
-			'easydamMediaLibrary',
+			'godam-media-library',
+			'godamMediaLibrary',
 			array(
 				'ajaxUrl'                  => admin_url( 'admin-ajax.php' ),
-				'nonce'                    => wp_create_nonce( 'easydam_media_library' ),
+				'nonce'                    => wp_create_nonce( 'godam_media_library' ),
 				'godamToolsNonce'          => wp_create_nonce( 'rtgodam_tools' ),
 				'enableFolderOrganization' => $enable_folder_organization,
 				'isPollPluginActive'       => is_plugin_active( 'wp-polls/wp-polls.php' ),
 				'page'                     => $screen ? $screen->id : '',
 				'userId'                   => $current_user_id,
 				'canEditOthersMedia'       => current_user_can( 'edit_others_posts' ),
+				'canManageOptions'         => current_user_can( 'manage_options' ),
 			)
 		);
 
 		if ( $screen && 'upload' === $screen->id ) {
-			wp_enqueue_style( 'easydam-media-library' );
+			wp_enqueue_style( 'godam-media-library' );
 		}
 
-		wp_set_script_translations( 'easydam-media-library', 'godam', RTGODAM_PATH . 'languages' );
-		wp_enqueue_script( 'easydam-media-library' );
+		wp_set_script_translations( 'godam-media-library', 'godam', RTGODAM_PATH . 'languages' );
+		wp_enqueue_script( 'godam-media-library' );
 
 		/**
 		 * Dependency library for date range picker.
@@ -320,13 +323,15 @@ class Assets {
 	private function enqueue_godam_settings() {
 		$godam_settings = get_option( 'rtgodam-settings' );
 
-		$brand_image = $godam_settings['video_player']['brand_image'] ?? '';
-		$brand_color = $godam_settings['video_player']['brand_color'] ?? '';
+		$brand_image         = $godam_settings['video_player']['brand_image'] ?? '';
+		$brand_color         = $godam_settings['video_player']['brand_color'] ?? '';
+		$enable_gtm_tracking = $godam_settings['general']['enable_gtm_tracking'] ?? false;
 
 		$godam_settings_obj = array(
-			'brandImage' => $brand_image,
-			'brandColor' => $brand_color,
-			'apiBase'    => RTGODAM_API_BASE,
+			'brandImage'        => $brand_image,
+			'brandColor'        => $brand_color,
+			'apiBase'           => RTGODAM_API_BASE,
+			'enableGTMTracking' => $enable_gtm_tracking,
 		);
 
 		if ( ! rtgodam_is_api_key_valid() ) {

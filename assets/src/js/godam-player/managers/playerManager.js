@@ -12,6 +12,7 @@ import { __, sprintf } from '@wordpress/i18n';
  * VideoJs dependencies
  */
 import videojs from 'video.js';
+window.videojs = videojs; // Make videojs globally accessible.
 
 /**
  * Internal dependencies
@@ -41,8 +42,8 @@ export default class PlayerManager {
 	 */
 	getVideos( videoRef ) {
 		return videoRef
-			? videoRef.querySelectorAll( '.easydam-player.video-js' )
-			: document.querySelectorAll( '.easydam-player.video-js' );
+			? videoRef.querySelectorAll( '.godam-player.video-js' )
+			: document.querySelectorAll( '.godam-player.video-js' );
 	}
 
 	/**
@@ -135,14 +136,14 @@ export default class PlayerManager {
 	 */
 	findActivePlayer() {
 		// First priority: player that contains the active element
-		for ( const playerEl of document.querySelectorAll( '.easydam-player.video-js' ) ) {
+		for ( const playerEl of document.querySelectorAll( '.godam-player.video-js' ) ) {
 			if ( playerEl.contains( playerEl.ownerDocument.activeElement ) ) {
 				return videojs.getPlayer( playerEl );
 			}
 		}
 
 		// Second priority: visible player if no player has focus
-		for ( const playerEl of document.querySelectorAll( '.easydam-player.video-js' ) ) {
+		for ( const playerEl of document.querySelectorAll( '.godam-player.video-js' ) ) {
 			const doc = playerEl.ownerDocument;
 			if ( doc.activeElement === doc.body && this.isPlayerVisible( playerEl ) ) {
 				return videojs.getPlayer( playerEl );

@@ -305,7 +305,7 @@ class GoDAM_Video_Gallery {
 			<div id="godam-video-modal" class="godam-modal hidden">
 				<div class="godam-modal-overlay"></div>
 				<div class="godam-modal-content">
-					<div class="easydam-video-container animate-video-loading"></div>
+					<div class="godam-video-container animate-video-loading"></div>
 					<div class="godam-modal-footer">
 						<div class="godam-video-info">
 							<h3 class="godam-video-title"></h3>

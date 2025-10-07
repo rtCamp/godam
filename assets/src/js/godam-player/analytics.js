@@ -1,12 +1,12 @@
 /**
  * External dependencies
  */
-import videojs from 'video.js';
 import { Analytics } from 'analytics';
 /**
  * Internal dependencies
  */
 import videoAnalyticsPlugin from './video-analytics-plugin';
+import GTMVideoTracker from './gtm-video-tracker';
 
 const analytics = Analytics( {
 	app: 'analytics-cdp-plugin',
@@ -21,7 +21,7 @@ window.analytics = analytics;
 	function findVideoElementById( videoId, root ) {
 		const ctx = root && root.querySelector ? root : document;
 		return ctx.querySelector(
-			`.easydam-player.video-js[data-id="${ videoId }"], .video-js[data-id="${ videoId }"]`,
+			`.godam-player.video-js[data-id="${ videoId }"], .video-js[data-id="${ videoId }"]`,
 		);
 	}
 
@@ -33,7 +33,7 @@ window.analytics = analytics;
 			return el.player;
 		}
 		try {
-			return videojs.getPlayer( el );
+			return videojs.getPlayer( el ); // eslint-disable-line no-undef -- variable is defined globally
 		} catch ( e ) {
 			return null;
 		}
@@ -90,7 +90,7 @@ window.analytics = analytics;
 
 			// If no videoId provided, automatically find the current video
 			if ( ! vid ) {
-				const videoEl = ctx.querySelector( '.easydam-player.video-js, .video-js' );
+				const videoEl = ctx.querySelector( '.godam-player.video-js, .video-js' );
 				vid = videoEl ? parseInt( videoEl.getAttribute( 'data-id' ), 10 ) : 0;
 			}
 
@@ -136,7 +136,7 @@ if ( ! window.pageLoadEventTracked ) {
 	window.pageLoadEventTracked = true; // Mark as tracked to avoid duplicate execution
 
 	document.addEventListener( 'DOMContentLoaded', () => {
-		const videos = document.querySelectorAll( '.easydam-player.video-js' );
+		const videos = document.querySelectorAll( '.godam-player.video-js' );
 
 		// Collect all video IDs
 		const videoIds = Array.from( videos )
@@ -158,11 +158,18 @@ if ( ! window.pageLoadEventTracked ) {
 }
 
 function playerAnalytics() {
-	const videos = document.querySelectorAll( '.easydam-player.video-js' );
+	const videos = document.querySelectorAll( '.godam-player.video-js' );
 
 	videos.forEach( ( video ) => {
 		// read the data-setup attribute.
-		const player = videojs.getPlayer( video ) || videojs( video );
+		const player = videojs.getPlayer( video ) || videojs( video ); // eslint-disable-line no-undef -- variable is defined globally
+
+		// Initialize GTM tracker for this video
+		if ( typeof window.dataLayer !== 'undefined' && window.godamSettings?.enableGTMTracking ) {
+			const gtmTracker = new GTMVideoTracker( player, video );
+			// Store tracker reference for potential cleanup
+			video.gtmTracker = gtmTracker;
+		}
 
 		window.addEventListener( 'beforeunload', () => {
 			const played = player.played();

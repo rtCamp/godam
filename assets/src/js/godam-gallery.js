@@ -188,7 +188,7 @@ document.addEventListener( 'click', async function( e ) {
 			<div class="godam-modal-overlay"></div>
 			<div class="godam-modal-content">
 				<span class="godam-modal-close">&times;</span>
-				<div class="easydam-video-container animate-video-loading">
+				<div class="godam-video-container animate-video-loading">
 					<div class="animate-play-btn">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
 							<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
@@ -223,7 +223,7 @@ document.addEventListener( 'click', async function( e ) {
 			modal.dataset.currentVideoId = newVideoId;
 
 			// Show loading state
-			const videoContainer = modal.querySelector( '.easydam-video-container' );
+			const videoContainer = modal.querySelector( '.godam-video-container' );
 			if ( videoContainer ) {
 				videoContainer.innerHTML = `
 					<div class="animate-video-loading">

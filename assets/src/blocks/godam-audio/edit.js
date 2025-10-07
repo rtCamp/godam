@@ -24,7 +24,6 @@ import {
 } from '@wordpress/block-editor';
 import { __, _x } from '@wordpress/i18n';
 import { useDispatch } from '@wordpress/data';
-import { audio as icon } from '@wordpress/icons';
 import { store as noticesStore } from '@wordpress/notices';
 import { useState } from '@wordpress/element';
 
@@ -33,6 +32,7 @@ import { useState } from '@wordpress/element';
  */
 import { Caption } from './caption';
 import './editor.scss';
+import { ReactComponent as icon } from '../../images/godam-audio-filled.svg';
 
 const ALLOWED_MEDIA_TYPES = [ 'audio' ];
 

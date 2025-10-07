@@ -96,13 +96,13 @@ class RTGODAM_Transcoder_Handler {
 	);
 
 	/**
-	 * Store EasyDAM settings.
+	 * Store godam settings.
 	 *
 	 * @since 1.0.0
 	 * @access public
-	 * @var array $easydam_settings Contains user-specified settings for EasyDAM.
+	 * @var array godam_settings Contains user-specified settings for godam.
 	 */
-	public $easydam_settings = array();
+	public godam_settings = array();
 
 	/**
 	 * Initialize the class and set its properties.
@@ -114,7 +114,7 @@ class RTGODAM_Transcoder_Handler {
 	public function __construct( $no_init = false ) {
 
 		$this->api_key          = get_option( 'rtgodam-api-key' );
-		$this->easydam_settings = get_option( 'rtgodam-settings', array() );
+		$this->godam_settings = get_option( 'rtgodam-settings', array() );
 
 		$default_settings = array(
 			'video' => array(
@@ -127,7 +127,7 @@ class RTGODAM_Transcoder_Handler {
 			),
 		);
 
-		$this->easydam_settings = wp_parse_args(
+		$this->godam_settings = wp_parse_args(
 			get_option( 'rtgodam-settings', array() ),
 			$default_settings
 		);
@@ -246,11 +246,11 @@ class RTGODAM_Transcoder_Handler {
 			$job_for = 'wp-media';
 
 			// Media settings.
-			$rtgodam_watermark              = $this->easydam_settings['video']['watermark'];
-			$rtgodam_use_watermark_image    = $this->easydam_settings['video']['use_watermark_image'] ?? false;
-			$rtgodam_watermark_text         = sanitize_text_field( $this->easydam_settings['video']['watermark_text'] );
-			$rtgodam_watermark_url          = esc_url( $this->easydam_settings['video']['watermark_url'] );
-			$rtgodam_video_compress_quality = $this->easydam_settings['video']['video_compress_quality'] ?? 80;
+			$rtgodam_watermark              = $this->godam_settings['video']['watermark'];
+			$rtgodam_use_watermark_image    = $this->godam_settings['video']['use_watermark_image'] ?? false;
+			$rtgodam_watermark_text         = sanitize_text_field( $this->godam_settings['video']['watermark_text'] );
+			$rtgodam_watermark_url          = esc_url( $this->godam_settings['video']['watermark_url'] );
+			$rtgodam_video_compress_quality = $this->godam_settings['video']['video_compress_quality'] ?? 80;
 
 			$watermark_to_use = array();
 
@@ -390,7 +390,7 @@ class RTGODAM_Transcoder_Handler {
 	 */
 	public function get_thumbnails_required( $attachment_id = '' ) {
 
-		$thumb_count = $this->easydam_settings['video']['video_thumbnails'];
+		$thumb_count = $this->godam_settings['video']['video_thumbnails'];
 
 		/**
 		 * Allow user to filter number of thumbnails required to generate for video.
