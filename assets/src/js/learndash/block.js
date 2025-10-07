@@ -4,7 +4,7 @@
  *
  * @since 1.4.0
  */
-/* global learndash_video_data, ld_video_players, LearnDash_disable_assets, LearnDash_watchPlayers, LearnDash_watchPlayersEnd, LearnDash_Video_Progress_initSettings, LearnDash_Video_Progress_setSetting, LearnDash_Video_Progress_getSetting */
+/* global godamData, learndash_video_data, ld_video_players, LearnDash_disable_assets, LearnDash_watchPlayers, LearnDash_watchPlayersEnd, LearnDash_Video_Progress_initSettings, LearnDash_Video_Progress_setSetting, LearnDash_Video_Progress_getSetting */
 
 /**
  * Video Completion Handler Object
@@ -42,10 +42,10 @@ const GoDAMLearnDashBlockIntegration = {
 
 		// Override LearnDash settings as needed.
 		learndash_video_data.video_track_path = '/';
-		learndash_video_data.videos_auto_complete = false;
-		learndash_video_data.videos_auto_complete_delay = undefined;
-		learndash_video_data.videos_auto_complete_delay_message = undefined;
-		learndash_video_data.videos_hide_complete_button = false;
+		learndash_video_data.videos_auto_complete = godamData?.learndash?.lesson_video_auto_complete === 'on';
+		learndash_video_data.videos_auto_complete_delay = godamData?.learndash?.lesson_video_auto_complete_delay;
+		learndash_video_data.videos_auto_complete_delay_message = godamData?.learndash?.videos_auto_complete_delay_message;
+		learndash_video_data.videos_hide_complete_button = learndash_video_data?.videos_shown === 'AFTER' && godamData?.learndash?.lesson_video_hide_complete_button === 'on';
 
 		this.config = learndash_video_data;
 		/* eslint-enable camelcase */

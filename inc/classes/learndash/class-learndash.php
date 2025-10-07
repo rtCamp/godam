@@ -39,6 +39,7 @@ class LearnDash {
 		add_action( 'admin_enqueue_scripts', array( $this, 'load_learndash_admin_integration_scripts' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'load_learndash_frontend_integration_script' ) );
 		add_filter( 'render_block', array( $this, 'maybe_prevent_block_render' ), 10, 2 );
+		add_filter( 'rtgodam_player_frontend_data', array( $this, 'add_learndash_settings' ), 10, 1 );
 	}
 
 	/**
@@ -407,5 +408,49 @@ class LearnDash {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Add LearnDash settings to GoDAM frontend data.
+	 *
+	 * @param array $godam_data Default GoDAM frontend data.
+	 *
+	 * @return array
+	 */
+	public function add_learndash_settings( array $godam_data ): array {
+		if ( ! $this->is_learndash_active() ) {
+			return $godam_data;
+		}
+
+		global $post;
+
+		$learndash_settings = learndash_get_setting( $post );
+
+		// Add custom delay message if auto-complete delay is defined.
+		if ( ! empty( $learndash_settings['lesson_video_auto_complete_delay'] ) ) {
+			$post_type     = get_post_type_object( $post->post_type );
+			$delay_seconds = (int) $learndash_settings['lesson_video_auto_complete_delay'];
+
+			$learndash_settings['videos_auto_complete_delay_message'] = sprintf(
+				wp_kses_post(
+					sprintf(
+						'<p class="ld-video-delay-message">%s</p>',
+						sprintf(
+						// translators: 1: Lesson or Topic label, 2: Countdown in seconds.
+							esc_html__(
+								'%1$s will auto complete in %2$s seconds',
+								'godam'
+							),
+							$post_type->labels->singular_name,
+							sprintf( '<span class="time-countdown">%d</span>', $delay_seconds )
+						)
+					)
+				)
+			);
+		}
+
+		$godam_data['learndash'] = $learndash_settings;
+
+		return $godam_data;
 	}
 }
