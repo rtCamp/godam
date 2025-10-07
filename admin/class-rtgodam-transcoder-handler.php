@@ -203,6 +203,15 @@ class RTGODAM_Transcoder_Handler {
 
 		$transcoding_job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
 
+		// Log virtual media status for transcoding requests.
+		$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+		$is_virtual_media  = ! empty( $godam_original_id );
+
+		// Skip transcoding for virtual media.
+		if ( $is_virtual_media ) {
+			return $wp_metadata;
+		}
+
 		$path = get_attached_file( $attachment_id );
 		$url  = wp_get_attachment_url( $attachment_id );
 
