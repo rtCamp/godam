@@ -31,6 +31,8 @@ class Video_Editor_Form_Layer_Handler {
 		// Handle layer rendering for video editor.
 		add_filter( 'query_vars', array( $this, 'add_render_layer_query_var_for_video_editor' ) );
 		add_filter( 'template_include', array( $this, 'update_render_layer_template_for_video_editor' ) );
+		$this->register_ajax_handler();
+
 	}
 
 	/**
@@ -68,4 +70,38 @@ class Video_Editor_Form_Layer_Handler {
 
 		return $query_vars;
 	}
+
+		/**
+	 * Handle AJAX request to update WooCommerce layer name.
+	 *
+	 * @since 1.4.3
+	 *
+	 * @return void
+	 */
+	public function register_ajax_handler() {
+		add_action( 'wp_ajax_rtgodam_update_wc_layer_name', array( $this, 'update_wc_layer_name' ) );
+	}
+
+	/**
+	 * Update the WooCommerce layer name in post meta.
+	 *
+	 * @since 1.4.3
+	 *
+	 * @return void
+	 */
+	public function update_wc_layer_name() {
+		check_ajax_referer( 'rtgodam_wc_layer_nonce', 'nonce' );
+
+		$layer_id   = isset( $_POST['layer_id'] ) ? absint( $_POST['layer_id'] ) : 0;
+		$new_name   = isset( $_POST['layer_name'] ) ? sanitize_text_field( wp_unslash( $_POST['layer_name'] ) ) : '';
+
+		if ( ! $layer_id || empty( $new_name ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid layer data.', 'godam' ) ) );
+		}
+
+		update_post_meta( $layer_id, '_rtgodam_wc_layer_name', $new_name );
+
+		wp_send_json_success( array( 'message' => __( 'Layer name updated successfully.', 'godam' ) ) );
+	}
+
 }

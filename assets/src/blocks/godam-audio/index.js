@@ -1,9 +1,4 @@
 /**
- * WordPress dependencies
- */
-import { audio as icon } from '@wordpress/icons';
-
-/**
  * Internal dependencies
  */
 import initBlock from '../../utils/init-block';
@@ -11,6 +6,7 @@ import edit from './edit';
 import metadata from './block.json';
 import save from './save';
 import './style.scss';
+import { ReactComponent as icon } from '../../images/godam-audio-filled.svg';
 
 const { name } = metadata;
 
