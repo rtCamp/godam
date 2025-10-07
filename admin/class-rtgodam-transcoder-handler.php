@@ -172,11 +172,6 @@ class RTGODAM_Transcoder_Handler {
 	 */
 	public function send_transcoding_request( $attachment_id ) {
 
-		// Check if local development environment.
-		if ( rtgodam_is_local_environment() ) {
-			return;
-		}
-
 		$metadata = wp_get_attachment_metadata( $attachment_id );
 
 		$mime_type = get_post_mime_type( $attachment_id );
@@ -202,6 +197,10 @@ class RTGODAM_Transcoder_Handler {
 	 * @param bool   $retranscode       If its retranscoding request or not.
 	 */
 	public function wp_media_transcoding( $wp_metadata, $attachment_id, $autoformat = true, $retranscode = false ) {
+		// Check if local development environment.
+		if ( rtgodam_is_local_environment() ) {
+			return;
+		}
 
 		if ( empty( $wp_metadata['mime_type'] ) ) {
 			return $wp_metadata;
