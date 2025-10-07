@@ -115,7 +115,7 @@ class Settings extends Base {
 				'route'     => '/' . $this->rest_base . '/godam-settings',
 				'args'      => array(
 					'methods'             => \WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'get_easydam_settings' ),
+					'callback'            => array( $this, 'get_godam_settings' ),
 					'permission_callback' => function () {
 						return current_user_can( 'manage_options' );
 					},
@@ -126,7 +126,7 @@ class Settings extends Base {
 				'route'     => '/' . $this->rest_base . '/godam-settings',
 				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
-					'callback'            => array( $this, 'update_easydam_settings' ),
+					'callback'            => array( $this, 'update_godam_settings' ),
 					'permission_callback' => function () {
 						return current_user_can( 'manage_options' );
 					},
@@ -233,24 +233,24 @@ class Settings extends Base {
 	}
 
 	/**
-	 * Fetch the EasyDAM settings.
+	 * Fetch the godam settings.
 	 *
 	 * @return \WP_REST_Response
 	 */
-	public function get_easydam_settings() {
+	public function get_godam_settings() {
 		// Retrieve settings from the database.
-		$easydam_settings = get_option( 'rtgodam-settings', $this->get_default_settings() );
+		godam_settings = get_option( 'rtgodam-settings', $this->get_default_settings() );
 		
-		return new \WP_REST_Response( $easydam_settings, 200 );
+		return new \WP_REST_Response( godam_settings, 200 );
 	}
 
 	/**
-	 * Update the easydam settings.
+	 * Update the godam settings.
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response
 	 */
-	public function update_easydam_settings( $request ) {
+	public function update_godam_settings( $request ) {
 		$new_settings = $request->get_param( 'settings' );
 
 		// Retrieve existing settings.
@@ -270,16 +270,16 @@ class Settings extends Base {
 		return new \WP_REST_Response(
 			array(
 				'status'  => 'success',
-				'message' => __( 'EasyDAM settings updated successfully!', 'godam' ),
+				'message' => __( 'godam settings updated successfully!', 'godam' ),
 			),
 			200
 		);
 	}
 
 	/**
-	 * Sanitize easydam settings.
+	 * Sanitize godam settings.
 	 *
-	 * @param array $settings EasyDAM settings to sanitize.
+	 * @param array $settings godam settings to sanitize.
 	 * @return array
 	 */
 	public function sanitize_settings( $settings ) {

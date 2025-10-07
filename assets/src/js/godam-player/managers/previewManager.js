@@ -113,9 +113,9 @@ export default class PreviewManager {
 	 */
 	handleVideoMouseLeave( e ) {
 		const relatedElement = e.relatedTarget || e.toElement;
-		const hasEasydamPlayer = relatedElement?.parentElement?.className?.indexOf( 'easydam-player' ) !== -1;
+		const hasgodamPlayer = relatedElement?.parentElement?.className?.indexOf( 'godam-player' ) !== -1;
 
-		if ( ! this.previewWatcher.value || hasEasydamPlayer ) {
+		if ( ! this.previewWatcher.value || hasgodamPlayer ) {
 			return;
 		}
 

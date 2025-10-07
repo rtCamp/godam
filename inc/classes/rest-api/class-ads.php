@@ -204,15 +204,15 @@ class Ads extends Base {
 			return '';
 		}
 
-		// Get easydam_meta data.
-		$easydam_meta = get_post_meta( $video_id, 'rtgodam_meta', true );
+		// Get godam_meta data.
+		godam_meta = get_post_meta( $video_id, 'rtgodam_meta', true );
 
-		if ( empty( $easydam_meta ) ) {
+		if ( empty( godam_meta ) ) {
 			return '';
 		}
 
 		// Retrieve and sanitize input parameters.
-		$layers = $easydam_meta['layers'] ?? array();
+		$layers = godam_meta['layers'] ?? array();
 
 		// Get all layers with type `ads`.
 		$ads_layers = array_filter(
