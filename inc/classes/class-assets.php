@@ -92,6 +92,16 @@ class Assets {
 			)
 		);
 
+		// Pass nonce and other data to JS.
+        wp_localize_script(
+	         'rtgodam-script', // Must match the registered script handle
+	         'rtgodamData',
+	        array(
+		        'nonce' => wp_create_nonce( 'rtgodam_wc_layer_nonce' ),
+	        )
+        );
+
+
 		include_once ABSPATH . 'wp-admin/includes/plugin.php';
 		$is_gf_active       = is_plugin_active( 'gravityforms/gravityforms.php' );
 		$is_wp_polls_active = is_plugin_active( 'wp-polls/wp-polls.php' );

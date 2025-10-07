@@ -2,6 +2,8 @@
  * External dependencies
  */
 import clsx from 'clsx';
+import jQuery from 'jquery';
+
 
 /**
  * WordPress dependencies
@@ -126,6 +128,53 @@ function VideoEdit( {
 	const [ isSEOModalOpen, setIsSEOModelOpen ] = useState( false );
 	const [ duration, setDuration ] = useState( 0 );
 	const [ isVideoSelecting, setIsVideoSelecting ] = useState( false );
+	// WooCommerce Layer Name State
+	const [wcLayerName, setWcLayerName] = useState(attributes?.wcLayerName || '');
+
+	// Handle name change
+	const handleWcLayerNameChange = (e) => {
+		setWcLayerName(e.target.value);
+	};
+
+	// Save to server via AJAX
+	const saveWcLayerName = () => {
+		if (!wcLayerName.trim()) return;
+
+		jQuery.ajax({
+			url: ajaxurl,
+			type: 'POST',
+			data: {
+				action: 'rtgodam_update_wc_layer_name',
+				nonce: rtgodamData?.nonce || '',
+				layer_id: attributes?.id || attributes?.cmmId || 0,
+				layer_name: wcLayerName,
+			},
+			success: (response) => {
+				if (response.success) {
+					wp.data.dispatch('core/notices').createNotice(
+						'success',
+						'Layer name updated successfully!',
+						{ type: 'snackbar' }
+					);
+					setAttributes({ wcLayerName });
+				} else {
+					wp.data.dispatch('core/notices').createNotice(
+						'error',
+						response.data?.message || 'Failed to update layer name.',
+						{ type: 'snackbar' }
+					);
+				}
+			},
+			error: () => {
+				wp.data.dispatch('core/notices').createNotice(
+					'error',
+					'AJAX request failed. Please try again.',
+					{ type: 'snackbar' }
+				);
+			},
+		});
+	};
+
 	const isInsideQueryLoop = context?.hasOwnProperty( 'queryId' );
 
 	const dispatch = useDispatch();
@@ -739,6 +788,28 @@ function VideoEdit( {
 										} }
 									/>
 								</BaseControl>
+
+								<BaseControl
+									id={`video-block__wc-layer-name-${instanceId}`}
+									label={__('WooCommerce Layer Name', 'godam')}
+									help={__('Change the WooCommerce layer name for this video.', 'godam')}
+									__nextHasNoMarginBottom
+								>
+									<input
+										type="text"
+										value={wcLayerName}
+										onChange={handleWcLayerNameChange}
+										onBlur={saveWcLayerName}
+										placeholder={__('Enter layer name', 'godam')}
+										style={{
+											width: '100%',
+											padding: '8px',
+											border: '1px solid #ccc',
+											borderRadius: '4px',
+										}}
+									/>
+								</BaseControl>
+
 							</>
 						)
 					}
