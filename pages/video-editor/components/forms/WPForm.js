@@ -65,7 +65,7 @@ const WPForm = ( { layerID } ) => {
 						style={ {
 							backgroundColor: layer.bg_color,
 						} }
-						className="easydam-layer"
+						className="godam-layer"
 					>
 
 						{

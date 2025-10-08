@@ -2,7 +2,7 @@
  * To observe the video div and call the frontend scripts.
  */
 const videoDivObserver = new MutationObserver( ( mutationsList, observerInstance ) => {
-	const targetDiv = document.querySelector( '.easydam-player.video-js' );
+	const targetDiv = document.querySelector( '.godam-player.video-js' );
 	if ( targetDiv && 'function' === typeof window.GODAMPlayer ) {
 		window.GODAMPlayer();
 		observerInstance.disconnect();

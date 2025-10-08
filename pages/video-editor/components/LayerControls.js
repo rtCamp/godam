@@ -9,7 +9,7 @@ const LayerControls = ( { children } ) => {
 		<>
 			{ children }
 		</>,
-		document.getElementById( 'easydam-layer-placeholder' ),
+		document.getElementById( 'godam-layer-placeholder' ),
 	);
 };
 

@@ -395,9 +395,9 @@ export const VideoJS = ( props ) => {
 					'--is-controls-visible': displayVideoControls ? '' : 'none',
 				} }
 			>
-				<div id="easydam-video-player" className="relative rounded-lg overflow-hidden" data-vjs-player>
+				<div id="godam-video-player" className="relative rounded-lg overflow-hidden" data-vjs-player>
 					<div ref={ videoRef } />
-					<div id="easydam-layer-placeholder" />
+					<div id="godam-layer-placeholder" />
 				</div>
 			</div>
 

@@ -23,12 +23,12 @@ Write your Sass code here for admin.
 	display: none;
 }
 
-/* EasyDAM Tools Submenu Page */
-#easydam-tools-widget .hndle {
+/* GoDAM Tools Submenu Page */
+#godam-tools-widget .hndle {
 	padding-left: 12px;
 }
 
-#easydam-tools-widget {
+#godam-tools-widget {
 	margin-right: 20px;
 }
 
@@ -98,7 +98,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 }
 
 /**
-* Admin page CSS changes for the top-level EasyDAM page.
+* Admin page CSS changes for the top-level GoDAM page.
 */
 .toplevel_page_rtgodam,
 .godam_page_rtgodam_video_editor,

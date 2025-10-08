@@ -177,7 +177,7 @@
 
                 figure,
                 .godam-video-wrapper,
-                .easydam-video-container,
+                .godam-video-container,
                 .video-js {
                     width: 100%;
                     height: 100% !important;
@@ -191,7 +191,7 @@
 
                 @media screen and ( max-width: 993px ) {
                     flex-basis: 60%;
-                    width: 60%;                
+                    width: 60%;
                 }
             }
 
@@ -458,11 +458,11 @@
                             display: none;
                         }
                     }
-                    
+
                     &-button {
                         display: flex;
                         gap: 5px;
-                        
+
                         button {
                             flex: 1;
                             display: block;
@@ -529,7 +529,7 @@
 
         &-child {
             padding-left: 1rem;
-            
+
             &:last-child {
                 padding-bottom: 0;
             }
@@ -578,7 +578,7 @@
                 line-height: 1.3;
                 font-weight: 600;
             }
-            
+
             &-image {
                 border-radius: 50%;
                 width: 28px;
@@ -779,7 +779,7 @@
 
                         figure,
                         .godam-video-wrapper,
-                        .easydam-video-container,
+                        .godam-video-container,
                         .video-js {
                             max-height: 350px;
                         }
@@ -792,7 +792,7 @@
 
                         figure,
                         .godam-video-wrapper,
-                        .easydam-video-container,
+                        .godam-video-container,
                         .video-js {
                             max-height: 100%;
                         }

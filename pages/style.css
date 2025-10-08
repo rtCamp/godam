@@ -398,16 +398,16 @@ input, textarea, select {
 }
 
 /* Player settings */
-.easydam-label {
+.godam-label {
 
 	@apply text-[11px] uppercase font-medium mb-2 block;
 }
 
-/* #easydam-player-settings .components-base-control__label {
+/* #godam-player-settings .components-base-control__label {
 	@apply font-semibold;
 } */
 
-#easydam-player-settings .easydam-label {
+#godam-player-settings .godam-label {
 
 	@apply text-[11px] uppercase font-semibold mb-2 block;
 }

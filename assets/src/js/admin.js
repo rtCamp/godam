@@ -19,7 +19,7 @@ window.pathJoin = function( parts, sep = '/' ) {
  * Toggle postboxes in admin UI
  */
 function initTogglePostboxes() {
-	const toggleButtons = document.querySelectorAll( '#easydam-tools-widget .handlediv' );
+	const toggleButtons = document.querySelectorAll( '#godam-tools-widget .handlediv' );
 
 	toggleButtons.forEach( ( button ) => {
 		button.addEventListener( 'click', function() {

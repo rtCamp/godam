@@ -28,7 +28,14 @@ import { useAssignFolderMutation, useGetFoldersQuery, useUpdateFolderMutation } 
 import './css/tree.scss';
 
 const openLocalStorageItem = ( folders ) => {
-	const localStorageOpenItem = JSON.parse( localStorage.getItem( 'easyDam' ) ) || {};
+	const oldStorageItemKey = 'easyDam'; // for backward compatibility
+	const localStorageItemKey = 'goDam';
+
+	// Check for existing data in new localStorage key (goDam).
+	// If not found, fall back to old key (easyDam) for backward compatibility.
+	// This ensures older saved data is still accessible after the key rename.
+	const goDamLocalStorageData = localStorage.getItem( localStorageItemKey ) || localStorage.getItem( oldStorageItemKey )
+	const localStorageOpenItem = JSON.parse( goDamLocalStorageData ) || {};
 
 	if ( localStorageOpenItem.openItems ) {
 		const openItems = localStorageOpenItem.openItems;

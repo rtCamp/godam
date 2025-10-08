@@ -36,9 +36,9 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 		$transcoded_url     = rtgodam_get_transcoded_url_from_attachment( $post->ID );
 		$hls_transcoded_url = rtgodam_get_hls_transcoded_url_from_attachment( $post->ID );
 
-		$easydam_settings = get_option( 'rtgodam-settings', array() );
+		$godam_settings = get_option( 'rtgodam-settings', array() );
 
-		$adaptive_bitrate_enabled = ! empty( $easydam_settings['video']['adaptive_bitrate'] );
+		$adaptive_bitrate_enabled = ! empty( $godam_settings['video']['adaptive_bitrate'] );
 
 		// Determine if the site has a valid API key (i.e., Premium user).
 		$api_key = get_option( 'rtgodam-api-key', '' );
@@ -114,9 +114,9 @@ if ( ! function_exists( 'rtgodam_save_transcoded_url_field' ) ) {
 	 */
 	function rtgodam_save_transcoded_url_field( $post, $attachment ) {
 		// Check if adaptive bitrate streaming is enabled.
-		$easydam_settings = get_option( 'rtgodam-settings', array() );
+		$godam_settings = get_option( 'rtgodam-settings', array() );
 
-		$adaptive_bitrate_enabled = ! empty( $easydam_settings['video']['adaptive_bitrate'] );
+		$adaptive_bitrate_enabled = ! empty( $godam_settings['video']['adaptive_bitrate'] );
 
 		if ( ! $adaptive_bitrate_enabled ) {
 			return $post;

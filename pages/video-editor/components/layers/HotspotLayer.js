@@ -337,7 +337,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 			<LayerControls>
 				<div
 					ref={ containerRef }
-					className="easydam-layer hotspot-layer"
+					className="godam-layer hotspot-layer"
 					style={ { backgroundColor: layer.bg_color || 'transparent' } }
 				>
 					<div

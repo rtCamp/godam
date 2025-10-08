@@ -48,14 +48,14 @@ function isUploadPage() {
  * @return {boolean} True if folder organization is disabled, false otherwise.
  */
 function isFolderOrgDisabled() {
-	return ! window.easydamMediaLibrary?.enableFolderOrganization || false;
+	return ! window.godamMediaLibrary?.enableFolderOrganization || false;
 }
 
 function addManageMediaButton() {
 	const referenceElement = document.querySelector( '.wrap .page-title-action' );
 
 	const godamMediaLink = window.godamRestRoute?.apiBase + '/web/media-library';
-	const page = window.easydamMediaLibrary?.page || '';
+	const page = window.godamMediaLibrary?.page || '';
 
 	// Insert the button after referenceElement
 	if ( referenceElement && 'upload' === page ) {
@@ -117,8 +117,8 @@ async function getGodamSettings() {
  * @return {boolean} Returns true if the user can manage the attachment, false otherwise.
  */
 function canManageAttachment( attachmentAuthorId ) {
-	const currentUserId = Number( window?.easydamMediaLibrary?.userId );
-	const canEditOthersMedia = window?.easydamMediaLibrary?.canEditOthersMedia;
+	const currentUserId = Number( window?.godamMediaLibrary?.userId );
+	const canEditOthersMedia = window?.godamMediaLibrary?.canEditOthersMedia;
 	const __attachmentAuthorId = Number( attachmentAuthorId ) || 0;
 
 	return canEditOthersMedia || currentUserId === __attachmentAuthorId;

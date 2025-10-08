@@ -51,7 +51,7 @@ const UsageData = () => {
 								></div>
 							</div>
 							<div className="leading-6">
-								<div className="easydam-settings-label text-base">{ __( 'BANDWIDTH', 'godam' ) }</div>
+								<div className="godam-settings-label text-base">{ __( 'BANDWIDTH', 'godam' ) }</div>
 								<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.totalBandwidth - userData.bandwidthUsed ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
 								<br />
 								<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.bandwidthUsed ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
@@ -68,7 +68,7 @@ const UsageData = () => {
 								></div>
 							</div>
 							<div className="leading-6">
-								<div className="easydam-settings-label text-base">{ __( 'STORAGE', 'godam' ) }</div>
+								<div className="godam-settings-label text-base">{ __( 'STORAGE', 'godam' ) }</div>
 								<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.totalStorage - userData.storageUsed ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
 								<br />
 								<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.storageUsed ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }

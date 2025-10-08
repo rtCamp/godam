@@ -91,7 +91,7 @@ class Ninja_Forms_Integration {
 	 */
 	public function add_additional_css_for_godam_player() {
 		$custom_css = '
-			.easydam-layer.ninjaforms .form-container {
+			.godam-layer.ninjaforms .form-container {
 				position: static;
 			}
 		';

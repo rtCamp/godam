@@ -120,7 +120,7 @@ export default class EventsManager {
 		this.handleFullscreenControlBar();
 
 		// Check container width constraint
-		const videoContainer = this.video.closest( '.easydam-video-container' );
+		const videoContainer = this.video.closest( '.godam-video-container' );
 		if ( videoContainer?.offsetWidth > 480 ) {
 			return;
 		}

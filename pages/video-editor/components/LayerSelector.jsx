@@ -187,7 +187,7 @@ const Layers = [
 		image: Poll,
 		type: 'poll',
 		isRequired: true,
-		isActive: Boolean( window.easydamMediaLibrary.isPollPluginActive ),
+		isActive: Boolean( window.godamMediaLibrary.isPollPluginActive ),
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/wp-polls/">${ __( 'WP-Polls', 'godam' ) }</a> ${ __( 'plugin is required to use Poll layer', 'godam' ) }`,
 	},
 ];

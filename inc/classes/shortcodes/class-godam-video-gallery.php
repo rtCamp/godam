@@ -210,9 +210,9 @@ class GoDAM_Video_Gallery {
 			$shown_videos = count( $query->posts );
 
 			$alignment_class = ! empty( $atts['align'] ) ? ' align' . $atts['align'] : '';
-			echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) . 
-				( 'grid' === $atts['layout'] ? ' columns-' . intval( $atts['columns'] ) : '' ) . 
-				esc_attr( $alignment_class ) . '" 
+			echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) .
+				( 'grid' === $atts['layout'] ? ' columns-' . intval( $atts['columns'] ) : '' ) .
+				esc_attr( $alignment_class ) . '"
 				data-infinite-scroll="' . esc_attr( $atts['infinite_scroll'] ) . '"
 				data-offset="' . esc_attr( $shown_videos ) . '"
 				data-columns="' . esc_attr( $atts['columns'] ) . '"
@@ -288,12 +288,12 @@ class GoDAM_Video_Gallery {
 
 			if ( $shown_videos < $total_videos ) {
 				if ( ! $atts['infinite_scroll'] ) {
-					echo '<button 
-						class="godam-load-more wp-element-button" 
-						data-offset="' . esc_attr( $shown_videos ) . '" 
-						data-columns="' . esc_attr( $atts['columns'] ) . '" 
-						data-count="' . esc_attr( $atts['count'] ) . '" 
-						data-orderby="' . esc_attr( $atts['orderby'] ) . '" 
+					echo '<button
+						class="godam-load-more wp-element-button"
+						data-offset="' . esc_attr( $shown_videos ) . '"
+						data-columns="' . esc_attr( $atts['columns'] ) . '"
+						data-count="' . esc_attr( $atts['count'] ) . '"
+						data-orderby="' . esc_attr( $atts['orderby'] ) . '"
 						data-order="' . esc_attr( $atts['order'] ) . '"
 						data-total="' . esc_attr( $total_videos ) . '"
 					>' . esc_html__( 'Load More', 'godam' ) . '</button>';
@@ -305,7 +305,7 @@ class GoDAM_Video_Gallery {
 			<div id="godam-video-modal" class="godam-modal hidden">
 				<div class="godam-modal-overlay"></div>
 				<div class="godam-modal-content">
-					<div class="easydam-video-container animate-video-loading"></div>
+					<div class="godam-video-container animate-video-loading"></div>
 					<div class="godam-modal-footer">
 						<div class="godam-video-info">
 							<h3 class="godam-video-title"></h3>

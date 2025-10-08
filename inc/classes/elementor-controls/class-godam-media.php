@@ -1,7 +1,7 @@
 <?php
 /**
  * Elementor control - Godam Media control.
- * 
+ *
  * @package GoDAM
  */
 
@@ -78,7 +78,7 @@ class Godam_Media extends \Elementor\Base_Data_Control {
 
 		wp_register_script( 'godam-elementor-editor', RTGODAM_URL . 'assets/build/js/godam-elementor-editor.min.js', array( 'jquery' ), '1.0.0', true );
 		wp_enqueue_script( 'godam-elementor-editor' );
-		wp_enqueue_style( 'easydam-media-library' );
+		wp_enqueue_style( 'godam-media-library' );
 
 		Assets::get_instance()->admin_enqueue_scripts();
 		Pages::get_instance()->admin_enqueue_scripts();

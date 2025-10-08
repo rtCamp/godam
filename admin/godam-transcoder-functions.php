@@ -94,18 +94,18 @@ function rtgodam_get_job_id_by_attachment_id( $attachment_id ) {
 /**
  * Check if track status setting is enabled.
  *
- * This function retrieves the EasyDAM settings and checks the `track_status` value under the `general` section.
+ * This function retrieves the GoDAM settings and checks the `track_status` value under the `general` section.
  *
  * @since 1.0.0
  *
  * @return boolean TRUE if track status is enabled, FALSE otherwise.
  */
 function rtgodam_is_track_status_enabled() {
-	// Fetch EasyDAM settings from the database.
-	$easydam_settings = get_option( 'rtgodam-settings', array() );
+	// Fetch GoDAM settings from the database.
+	$godam_settings = get_option( 'rtgodam-settings', array() );
 
 	// Check and return the track_status value, defaulting to false if not set.
-	return ! empty( $easydam_settings['general']['track_status'] ) && $easydam_settings['general']['track_status'];
+	return ! empty( $godam_settings['general']['track_status'] ) && $godam_settings['general']['track_status'];
 }
 
 /**
@@ -206,11 +206,11 @@ function rtgodam_get_upload_dir() {
  */
 function rtgodam_is_override_thumbnail( $attachment_id = '' ) {
 
-	// Fetch EasyDAM settings directly.
-	$easydam_settings = get_option( 'rtgodam-settings', array() );
+	// Fetch GoDAM settings directly.
+	$godam_settings = get_option( 'rtgodam-settings', array() );
 
 	// Return the 'overwrite_thumbnails' value, defaulting to false if not set.
-	$rtgodam_override_thumbnail = ! empty( $easydam_settings['video']['overwrite_thumbnails'] );
+	$rtgodam_override_thumbnail = ! empty( $godam_settings['video']['overwrite_thumbnails'] );
 
 	/**
 	 * Allow user to override the setting.
