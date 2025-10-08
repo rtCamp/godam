@@ -71,7 +71,7 @@ class LearnDash {
 			return false;
 		}
 
-		return in_array( $post->post_type, array( 'sfwd-lessons', 'sfwd-topic' ) );
+		return in_array( $post->post_type, array( 'sfwd-lessons', 'sfwd-topic' ), true );
 	}
 
 	/**
@@ -113,7 +113,8 @@ class LearnDash {
 			array(
 				'learndash-lesson-display-content-settings',
 				'learndash-topic-display-content-settings',
-			)
+			),
+			true
 		) ) {
 			return $settings;
 		}
