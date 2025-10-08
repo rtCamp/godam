@@ -362,20 +362,6 @@ function rtgodam_get_server_var( $server_key, $filter_type = FILTER_SANITIZE_FUL
 }
 
 /**
- * Get local ip addresses for block.
- *
- * @return array
- */
-function rtgodam_get_blacklist_ip_addresses() {
-	// If custom API URL added then don't block local ips.
-	if ( defined( 'RTGODAM_TRANSCODER_API_URL' ) ) {
-		return array();
-	}
-
-	return array( '127.0.0.1', '::1' );
-}
-
-/**
  * Helper function to verify the api key.
  *
  * @param string $api_key The api key to verify.

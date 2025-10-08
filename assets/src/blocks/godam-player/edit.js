@@ -33,7 +33,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { __, _x, sprintf } from '@wordpress/i18n';
 import { useInstanceId } from '@wordpress/compose';
 import { useDispatch } from '@wordpress/data';
-import { search, media as icon } from '@wordpress/icons';
+import { search } from '@wordpress/icons';
 import { store as noticesStore } from '@wordpress/notices';
 
 /**
@@ -46,6 +46,7 @@ import { Caption } from './caption';
 import VideoSEOModal from './components/VideoSEOModal.js';
 import { appendTimezoneOffsetToUTC, isSEODataEmpty, secondsToISO8601 } from './utils/index.js';
 import './editor.scss';
+import { ReactComponent as icon } from '../../images/godam-video-filled.svg';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
 const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
@@ -207,6 +208,10 @@ function VideoEdit( {
 					}
 
 					if ( response ) {
+						// Build sources list safely, declare newSources first.
+						const newSources = [];
+
+						// Prefer HLS if present.
 						if ( response?.meta && response?.meta?.rtgodam_hls_transcoded_url ) {
 							const hlsTranscodedUrl = response.meta.rtgodam_hls_transcoded_url;
 
@@ -216,6 +221,7 @@ function VideoEdit( {
 							} );
 						}
 
+						// Add DASH or other transcoded source if present.
 						if ( response?.meta && response?.meta?.rtgodam_transcoded_url ) {
 							const transcodedUrl = response.meta.rtgodam_transcoded_url;
 
@@ -225,12 +231,11 @@ function VideoEdit( {
 							} );
 						}
 
-						const newSources = [
-							{
-								src: response.source_url,
-								type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
-							},
-						];
+						// Always include original file as fallback.
+						newSources.push( {
+							src: response.source_url,
+							type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
+						} );
 
 						setAttributes( { sources: newSources } );
 					}
