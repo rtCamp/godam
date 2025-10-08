@@ -51,7 +51,12 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 	};
 
 	const getPreviewTemplateUrl = ( videoItem ) => {
-		return `${ window?.godamRestRoute?.homeUrl }/${ window?.godamSettings?.videoPostSettings?.video_slug }/${ videoItem?.name }` || videoItem?.link;
+		const homeUrl = window?.godamRestRoute?.homeUrl;
+		const videoSlug = window?.godamSettings?.videoPostSettings?.video_slug;
+		const videoName = videoItem?.name;
+		return ( homeUrl && videoSlug && videoName )
+			? `${ homeUrl }/${ videoSlug }/${ videoName }`
+			: videoItem?.link;
 	};
 
 	return (
