@@ -40,6 +40,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import LayersHeader from './LayersHeader';
 
+/**
+ * WoocommerceLayer component for managing and rendering interactive product hotspots on a video layer.
+ *
+ * @param {Object}   props          - The component props.
+ * @param {string}   props.layerID  - The unique identifier for the layer.
+ * @param {Function} props.goBack   - Callback function to navigate back to the previous screen.
+ * @param {number}   props.duration - The duration (in seconds) for which the layer is visible.
+ *
+ * @return {JSX.Element} The rendered WoocommerceLayer component.
+ */
 const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) =>
@@ -136,6 +146,25 @@ const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
+	/**
+	 * Generates a display name for a Product hotspot.
+	 *
+	 * If the Product hotspot has a custom name, it trims and uses that name.
+	 * Otherwise, it falls back to a default name in the format "Product Hotspot {index}".
+	 *
+	 * @param {Object} productHotspot        - The hotspot object containing its properties.
+	 * @param {string} [productHotspot.name] - The custom name of the product hotspot (optional).
+	 * @param {number} index                 - The index of the product hotspot in the list.
+	 * @return {string} The display name for the ptoduct hotspot.
+	 */
+	const getProductHotspotDisplayName = ( productHotspot, index ) => {
+		const custom = productHotspot?.name && String( productHotspot.name ).trim();
+		return custom ||
+		( productHotspot?.productDetails?.name
+			? `${ index + 1 }. ${ productHotspot.productDetails.name }`
+			: `Product Hotspot ${ index + 1 }` );
+	};
+
 	return (
 		<>
 			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
@@ -225,15 +254,13 @@ const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 								className="flex-1 text-left text-flex-left"
 								onClick={ () => toggleProductHotspotExpansion( index ) }
 							>
-								{ productHotspot?.productDetails?.name
-									? `${ index + 1 }. ${ productHotspot.productDetails.name }`
-									: `Product Hotspot ${ index + 1 }` }
+								{ getProductHotspotDisplayName( productHotspot, index ) }
 							</Button>
 							<DropdownMenu
 								icon={ moreVertical }
-								label={ `Product Hotspot ${ index + 1 } options` }
+								label={ `${ getProductHotspotDisplayName( productHotspot, index ) } ${ __( 'options', 'godam' ) }` }
 								/* translators: %d is the hotspot index */
-								toggleProps={ { 'aria-label': sprintf( __( 'Options for Product Hotspot %d', 'godam' ), index + 1 ) } }
+								toggleProps={ { 'aria-label': sprintf( __( 'Options for %s', 'godam' ), getProductHotspotDisplayName( productHotspot, index ) ) } }
 							>
 								{ () => (
 									<>
@@ -290,6 +317,28 @@ const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 
 						{ expandedProductHotspotIndex === index && (
 							<div className="mt-3">
+								{ /* Product Hotspot Name */ }
+								<TextControl
+									className="godam-input"
+									label={ __( 'Product Hotspot Name', 'godam' ) }
+									value={ productHotspot.name ?? '' }
+									/* translators: %d is the hotspot index */
+									placeholder={ productHotspot?.productDetails?.name
+										? `${ index + 1 }. ${ productHotspot.productDetails.name }`
+										: `Product Hotspot ${ index + 1 }` }
+									maxLength={ 40 }
+									onChange={ ( val ) => {
+										const v = ( val || '' ).slice( 0, 40 );
+										updateField(
+											'productHotspots',
+											productHotspots.map( ( h2, j ) =>
+												j === index ? { ...h2, name: v } : h2,
+											),
+										);
+									} }
+									help={ __( 'Give this Product hotspot a descriptive title', 'godam' ) }
+									disabled={ ! isValidAPIKey }
+								/>
 								<TextControl
 									className="godam-input"
 									label={ __( 'Shop Button', 'godam' ) }
