@@ -541,10 +541,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * Renders the Edit Video and Analytics buttons in the attachment details view.
 	 */
 	renderVideoActions() {
-		if ( ! canManageAttachment( this.model.get( 'author' ) ) ) {
-			return;
-		}
-
 		const buttonsHTML = this.getButtonsHTML();
 		this.$el.find( '.attachment-actions' ).append( DOMPurify.sanitize( `<div class="attachment-video-actions">${ buttonsHTML }</div>` ) );
 	},
@@ -570,10 +566,19 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			`;
 		}
 
-		return `
-		<a href="${ editVideoURL }" class="button button-primary" target="_blank">Edit Video</a>
-		<a href="${ analyticsURL }" class="button button-secondary" target="_blank">Analytics</a>
-		`;
+		const editVideoButtonHTML = `<a href="${ editVideoURL }" class="button button-primary" target="_blank">Edit Video</a>`;
+		const analyticsButtonHTML = `<a href="${ analyticsURL }" class="button button-secondary" target="_blank">Analytics</a>`;
+
+		const buttons = [];
+
+		// If the user can manage the attachment, show the Edit Video button, else show only Analytics.
+		if ( canManageAttachment( this.model.get( 'author' ) ) ) {
+			buttons.push( editVideoButtonHTML );
+		}
+
+		buttons.push( analyticsButtonHTML );
+
+		return buttons.join( '' );
 	},
 
 	/**

@@ -121,10 +121,15 @@ document.addEventListener( 'DOMContentLoaded', function() {
 			return;
 		}
 
-		// Completely disable Jetpack's original form handling
-		// Remove any existing event listeners by cloning the form
-		const newForm = form.cloneNode( true );
-		form.parentNode.replaceChild( newForm, form );
+		let newForm = form;
+
+		// If the form doesn't have the is-ajax-form class, skip form replacement.
+		if ( form.classList.contains( 'is-ajax-form' ) ) {
+			// Completely disable Jetpack's original form handling
+			// Remove any existing event listeners by cloning the form
+			newForm = form.cloneNode( true );
+			form.parentNode.replaceChild( newForm, form );
+		}
 
 		// Prevent default form submission with highest priority
 		newForm.addEventListener( 'submit', function( e ) {

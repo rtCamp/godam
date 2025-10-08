@@ -1276,8 +1276,19 @@ class Media_Library extends Base {
 			'guid'           => esc_url_raw( $data['url'] ),
 		);
 
+		// Pre-set virtual media marker before insertion so transcoding handler can detect it.
+		$pre_setter = function ( $new_id ) use ( $godam_id ) {
+			// Ensure virtual marker is available for any listeners on add_attachment.
+			update_post_meta( $new_id, '_godam_original_id', $godam_id );
+		};
+		// Set at early priority so it runs before the handler's priority 21.
+		add_action( 'add_attachment', $pre_setter, 1, 1 );
+
 		// Insert the attachment into WordPress.
 		$attach_id = wp_insert_attachment( $attachment, $data['title'] );
+
+		// Remove the temporary setter.
+		remove_action( 'add_attachment', $pre_setter, 1 );
 
 		// If creation fails, return an error response.
 		if ( is_wp_error( $attach_id ) ) {

@@ -355,6 +355,17 @@ if ( ! empty( $transcript_path ) ) {
 	);
 }
 
+$attachment_title = '';
+
+if ( ! empty( $attachment_id ) && is_numeric( $attachment_id ) ) {
+	$attachment_title = get_the_title( $attachment_id );
+} elseif ( ! empty( $original_id ) && is_numeric( $original_id ) ) {
+	$attachment_title = get_the_title( $original_id );
+}
+// Use the filename as the title.
+if ( empty( $attachment_title ) ) {
+	$attachment_title = basename( get_attached_file( $attachment_id ) );
+}
 
 ?>
 
@@ -405,18 +416,9 @@ if ( ! empty( $transcript_path ) ) {
 					data-job_id="<?php echo esc_attr( $job_id ); ?>"
 					data-global_ads_settings="<?php echo esc_attr( $ads_settings ); ?>"
 					data-hover-select="<?php echo esc_attr( $hover_select ); ?>"
+					data-video-title="<?php echo esc_attr( $attachment_title ); ?>"
 				>
 					<?php
-					foreach ( $sources as $source ) :
-						if ( ! empty( $source['src'] ) && ! empty( $source['type'] ) ) :
-							?>
-							<source
-								src="<?php echo esc_url( $source['src'] ); ?>"
-								type="<?php echo esc_attr( $source['type'] ); ?>"
-							/>
-							<?php
-						endif;
-					endforeach;
 
 					$display_caption = ( ! isset( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) ) ||
 						( isset( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) && $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] );

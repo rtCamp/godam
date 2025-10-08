@@ -390,7 +390,7 @@ const RetranscodeTab = () => {
 						( retranscoding || aborted || done ) &&
 						<div className="mb-4">
 							<ProgressBar total={ attachments?.length } done={ mediaCount } />
-							<pre className="w-full h-[120px] max-h-[120px] overflow-y-auto bg-gray-100 p-3 rounded">
+							<pre className="w-full h-[120px] max-h-[120px] overflow-y-auto bg-gray-100 p-3 rounded whitespace-break-spaces">
 								{ logs.map( ( log, index ) => (
 									<div key={ index } className="text-sm text-gray-700">
 										• { log }

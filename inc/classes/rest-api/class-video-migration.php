@@ -166,7 +166,7 @@ class Video_Migration extends Base {
 	 */
 	public function check_video_migration_permission() {
 		// Check if the user has the capability to manage options.
-		return current_user_can( 'manage_options' );
+		return current_user_can( 'edit_pages' );
 	}
 
 	/**
