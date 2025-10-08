@@ -333,6 +333,7 @@ class Assets {
 			'brandColor'        => $brand_color,
 			'apiBase'           => RTGODAM_API_BASE,
 			'enableGTMTracking' => $enable_gtm_tracking,
+			'videoPostSettings' => get_option( 'rtgodam_video_post_settings', array() ),
 		);
 
 		if ( ! rtgodam_is_api_key_valid() ) {
