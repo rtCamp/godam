@@ -297,6 +297,7 @@ class Assets {
 				'userId'                   => $current_user_id,
 				'canEditOthersMedia'       => current_user_can( 'edit_others_posts' ),
 				'canManageOptions'         => current_user_can( 'manage_options' ),
+				'canEditPages'             => current_user_can( 'edit_pages' ),
 			)
 		);
 

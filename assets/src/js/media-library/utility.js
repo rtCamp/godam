@@ -135,4 +135,15 @@ function canManageOptions() {
 	return _canManageOptions;
 }
 
-export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton, getQuery, getGodamSettings, canManageAttachment, canManageOptions };
+/**
+ * Checks if the current user is allowed to edit pages.
+ *
+ * @return {boolean} Returns true if the user can edit pages, false otherwise.
+ */
+function canEditPages() {
+	const _canEditPages = window?.easydamMediaLibrary?.canEditPages;
+
+	return _canEditPages;
+}
+
+export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton, getQuery, getGodamSettings, canManageAttachment, canManageOptions, canEditPages };

@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { canManageOptions } from '../../utility';
+import { canEditPages } from '../../utility';
 
 let MediaRetranscode = wp?.media?.view?.Button;
 const homeUrl = window.godamRestRoute.homeUrl || window.location.origin; // eslint-disable-line no-unused-vars
@@ -14,7 +14,7 @@ MediaRetranscode = MediaRetranscode?.extend( {
 
 	initialize() {
 		// If user cannot manage options we don't render the button.
-		if ( ! canManageOptions() ) {
+		if ( ! canEditPages() ) {
 			return;
 		}
 
