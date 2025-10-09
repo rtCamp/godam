@@ -707,7 +707,7 @@ function godam_get_transcript_path( $job_id ) {
  * It checks against a whitelist of common localhost IPs and also looks for '.local' or '.test' in the host name.
  * Additionally, it respects the RTGODAM_IS_LOCAL constant if defined.
  * 
- * @since n.e.x.t
+ * @since 1.4.3
  * 
  * @return bool True if the environment is localhost, false otherwise.
  */
