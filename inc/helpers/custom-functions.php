@@ -180,6 +180,8 @@ function rtgodam_image_cta_html( $layer ) {
 	$image_link           = isset( $layer['imageLink'] ) ? $layer['imageLink'] : '/';
 	$cta_background_color = isset( $layer['imageCtaButtonColor'] ) ? $layer['imageCtaButtonColor'] : '#eeab95';
 	$cta_button_text      = ! empty( $layer['imageCtaButtonText'] ) ? $layer['imageCtaButtonText'] : 'Buy Now'; // Null coalescing with empty check.
+	$default_image_url    = RTGODAM_URL . 'assets/src/images/default-cta-image.svg';
+	$image_url            = $image_url ? $image_url : $default_image_url;
 
 	return "
 	<div class= \"image-cta-overlay-container\">

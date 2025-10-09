@@ -626,7 +626,7 @@ if ( empty( $attachment_title ) ) {
 									<div class="easydam-layer--cta-html">
 										<?php echo wp_kses_post( $layer['html'] ); ?>
 									</div>
-								<?php elseif ( 'image' === $layer['cta_type'] && ! empty( $layer['image'] ) ) : ?>
+								<?php elseif ( 'image' === $layer['cta_type'] ) : ?>
 									<?php echo wp_kses_post( rtgodam_image_cta_html( $layer ) ); ?>
 								<?php endif; ?>
 							</div>
