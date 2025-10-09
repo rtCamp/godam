@@ -212,9 +212,13 @@ class LearnDash {
 	 * @since 3.2.3
 	 */
 	protected function get_nonce_slug(): string {
-		$post_id   = get_the_ID();
-		$course_id = learndash_get_course_id( $post_id );
-		$user_id   = get_current_user_id();
+		$post_id = get_the_ID();
+		$user_id = get_current_user_id();
+
+		// Safely get the course ID.
+		$course_id = function_exists( 'learndash_get_course_id' )
+			? learndash_get_course_id( $post_id )
+			: 0;
 
 		return sprintf(
 			'learndash_video_%d_%d_%d',
