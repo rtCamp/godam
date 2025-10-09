@@ -379,6 +379,25 @@ class Transcoding extends Base {
 
 		$title = get_the_title( $attachment_id );
 
+		// Check if local development environment.
+		if ( rtgodam_is_local_environment() ) {
+			$message = sprintf(
+				// translators: 1: Attachment title, 2: Attachment ID.
+				__( '%1$s (ID %2$d) transcoding request failed. Transcoding requests are not allowed in the localhost environment.', 'godam' ),
+				esc_html( $title ),
+				absint( $attachment_id )
+			);
+
+			return new \WP_REST_Response(
+				array( 
+					'message' => $message,
+					'skipped' => true,
+					'reason'  => 'local_environment',
+				),
+				200
+			);
+		}
+
 		// Check if this is virtual media (fetched from Central).
 		$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
 		if ( ! empty( $godam_original_id ) ) {

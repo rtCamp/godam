@@ -98,6 +98,11 @@ class Media_Library_Ajax {
 	 * @return void
 	 */
 	public function upload_media_to_frappe_backend( $attachment_id ) {
+		// Check if local development environment.
+		if ( rtgodam_is_local_environment() ) {
+			return;
+		}
+
 		// Only if attachment type if image.
 		if ( 'image' !== substr( get_post_mime_type( $attachment_id ), 0, 5 ) ) {
 			return;

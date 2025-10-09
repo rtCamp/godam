@@ -124,4 +124,26 @@ function canManageAttachment( attachmentAuthorId ) {
 	return canEditOthersMedia || currentUserId === __attachmentAuthorId;
 }
 
-export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton, getQuery, getGodamSettings, canManageAttachment };
+/**
+ * Checks if the current user is allowed to manage options.
+ *
+ * @return {boolean} Returns true if the user can manage options, false otherwise.
+ */
+function canManageOptions() {
+	const _canManageOptions = window?.easydamMediaLibrary?.canManageOptions;
+
+	return _canManageOptions;
+}
+
+/**
+ * Checks if the current user is allowed to edit pages.
+ *
+ * @return {boolean} Returns true if the user can edit pages, false otherwise.
+ */
+function canEditPages() {
+	const _canEditPages = window?.easydamMediaLibrary?.canEditPages;
+
+	return _canEditPages;
+}
+
+export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton, getQuery, getGodamSettings, canManageAttachment, canManageOptions, canEditPages };
