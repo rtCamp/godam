@@ -1,5 +1,13 @@
 # Changelog #
 
+## v1.4.3 (October 9, 2025) ##
+
+- Tweak: Enhanced Analytics with Google Tag Manager (GTM) event tracking
+- Tweak: Improved overall plugin performance
+- Tweak: Implemented custom branding for GoDAM Gutenberg Blocks
+- Tweak: Updated WordPress role-based access controls
+- Fix: Fixed Quality option visibility inconsistencies
+
 ## v1.4.2 (September 25, 2025) ##
 
 - Tweak: Allow replacing transcoded MP4 video with the original uploaded video
