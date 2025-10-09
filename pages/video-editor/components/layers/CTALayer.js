@@ -15,6 +15,10 @@ import {
 import { chevronRight } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
+/**
+ * Internal dependencies
+ */
+import CtaImage from '../../../../assets/src/images/default-cta-image.svg';
 
 /**
  * Internal dependencies
@@ -45,7 +49,7 @@ const wpKsesAllowed = {
 
 const CTALayer = ( { layerID, goBack, duration } ) => {
 	const [ formHTML, setFormHTML ] = useState( '' );
-	const [ imageCtaUrl, setImageCtaUrl ] = useState( '' );
+	const [ imageCtaUrl, setImageCtaUrl ] = useState( CtaImage );
 	const dispatch = useDispatch();
 
 	const restURL = window.godamRestRoute.url || '';
@@ -81,7 +85,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 
 	const fetchOverlayMediaURL = ( mediaId ) => {
 		if ( 0 === mediaId || ! mediaId ) {
-			setImageCtaUrl( '' );
+			setImageCtaUrl( CtaImage );
 			return;
 		}
 		fetch( window.pathJoin( [ restURL, `/wp/v2/media/${ mediaId }` ] ) )
@@ -95,7 +99,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 				setImageCtaUrl( media.source_url ); // URL of the media file
 			} )
 			.catch( ( ) => {
-				setImageCtaUrl( '' );
+				setImageCtaUrl( CtaImage );
 			} );
 	};
 
@@ -153,7 +157,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 		if ( 'image' === layer?.cta_type && layer?.image && layer?.image !== 0 ) {
 			fetchOverlayMediaURL( layer.image );
 		} else {
-			setImageCtaUrl( '' );
+			setImageCtaUrl( CtaImage );
 		}
 	}, [ layer?.cta_type, layer?.image ] );
 
