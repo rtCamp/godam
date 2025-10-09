@@ -93,7 +93,7 @@ class WC_Woocommerce_Layer {
 
 			foreach ( $meta['layers'] as &$layer ) {
 				// Only for type = woo.
-				if ( 'woo' === isset( $layer['type'] ) && $layer['type'] ) {
+				if ( isset( $layer['type'] ) && 'woo' === $layer['type'] ) {
 
 					if ( ! empty( $layer['productHotspots'] ) && is_array( $layer['productHotspots'] ) ) {
 						foreach ( $layer['productHotspots'] as &$hotspot ) {
