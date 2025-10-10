@@ -141,7 +141,7 @@ if ( ! window.pageLoadEventTracked ) {
 		// Collect all video IDs
 		const videoIds = Array.from( videos )
 			.map( ( video ) => video.getAttribute( 'data-id' ) )
-			.filter( ( id ) => id !== null && id !== '' ) // Null and empty string check
+			.filter( ( id ) => id !== null && id !== '' && ! isNaN( id ) ) // Null and empty string check
 			.map( ( id ) => parseInt( id, 10 ) ); // Convert to integer
 
 		// Send a single page_load request with all video IDs
