@@ -109,6 +109,15 @@ const GeneralSettings = () => {
 						onChange={ ( value ) => handleSettingChange( 'enable_gtm_tracking', value ) }
 					/>
 
+					<ToggleControl
+						__nextHasNoMarginBottom
+						className="godam-toggle godam-margin-bottom"
+						label={ __( 'Delete all data on uninstall', 'godam' ) }
+						help={ __( 'Delete all plugin data when the plugin is uninstalled.', 'godam' ) }
+						checked={ mediaSettings?.general?.delete_data_on_uninstall }
+						onChange={ ( value ) => handleSettingChange( 'delete_data_on_uninstall', value ) }
+					/>
+
 				</PanelBody>
 			</Panel>
 

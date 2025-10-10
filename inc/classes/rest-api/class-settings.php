@@ -47,6 +47,7 @@ class Settings extends Base {
 			'general'      => array(
 				'enable_folder_organization' => true,
 				'enable_gtm_tracking'        => false,
+				'delete_data_on_uninstall'   => false,
 			),
 			'video_player' => array(
 				'brand_image'    => '',
@@ -240,7 +241,7 @@ class Settings extends Base {
 	public function get_easydam_settings() {
 		// Retrieve settings from the database.
 		$easydam_settings = get_option( 'rtgodam-settings', $this->get_default_settings() );
-		
+
 		return new \WP_REST_Response( $easydam_settings, 200 );
 	}
 
@@ -304,6 +305,7 @@ class Settings extends Base {
 			'general'      => array(
 				'enable_folder_organization' => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ?? $default['general']['enable_folder_organization'] ),
 				'enable_gtm_tracking'        => rest_sanitize_boolean( $settings['general']['enable_gtm_tracking'] ?? $default['general']['enable_gtm_tracking'] ),
+				'delete_data_on_uninstall'   => rest_sanitize_boolean( $settings['general']['delete_data_on_uninstall'] ?? $default['general']['delete_data_on_uninstall'] ),
 			),
 			'video_player' => array(
 				'brand_image'    => sanitize_text_field( $settings['video_player']['brand_image'] ?? $default['video_player']['brand_image'] ),
@@ -329,7 +331,7 @@ class Settings extends Base {
 		if ( empty( $color ) ) {
 			return '';
 		}
-		
+
 		// Handle hex colors (3, 6, or 8 characters with alpha).
 		if ( preg_match( '/^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/', $color ) ) {
 			return $color;

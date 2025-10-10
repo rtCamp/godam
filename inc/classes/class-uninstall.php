@@ -27,6 +27,13 @@ class Uninstall {
 			return;
 		}
 
+		$settings                 = get_option( 'rtgodam-settings', array() );
+		$delete_data_on_uninstall = $settings['general']['delete_data_on_uninstall'] ?? false;
+
+		if ( ! $delete_data_on_uninstall ) {
+			return;
+		}
+
 		// Handle multisite.
 		if ( is_multisite() ) {
 			self::uninstall_multisite();
