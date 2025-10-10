@@ -145,29 +145,12 @@ register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );
 
 /**
  * Runs when the plugin is deleted.
+ *
+ * Note: This function is kept for backward compatibility.
+ * The main uninstall process is now handled in uninstall.php
  */
 function rtgodam_plugin_delete() {
-	// Delete options and transients related to Whats New page.
-	// This is to ensure redirection on a fresh install.
-	if ( is_multisite() ) {
-		// Get all blogs in the network and delete options from each blog.
-		$blogs = get_sites( array( 'fields' => 'ids' ) );
-
-		foreach ( $blogs as $blog_id ) {
-			switch_to_blog( $blog_id );
-
-			delete_option( 'rtgodam_plugin_version' );
-			delete_transient( 'rtgodam_show_whats_new' );
-			delete_transient( 'rtgodam_release_data' );
-
-			restore_current_blog();
-		}
-	} else {
-		// For single site, delete options directly.
-		delete_option( 'rtgodam_plugin_version' );
-		delete_transient( 'rtgodam_show_whats_new' );
-		delete_transient( 'rtgodam_release_data' );
-	}
+	\RTGODAM\Inc\Uninstall::get_instance()->start_uninstall();
 }
 
 register_uninstall_hook( __FILE__, 'rtgodam_plugin_delete' );
