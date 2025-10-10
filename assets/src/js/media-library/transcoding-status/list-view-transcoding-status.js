@@ -115,6 +115,8 @@ class ListViewTranscodingStatus {
 		// Handle completed transcoding state
 		if ( data.progress === 100 ) {
 			this._updateCompletedStatus( element, loader, statusText, existingIcon );
+
+			this._updateThumbnailIfAvailable( element, data.thumbnail );
 			return;
 		}
 
@@ -251,6 +253,28 @@ class ListViewTranscodingStatus {
 			existingIcon.remove();
 		}
 		loader.insertAdjacentHTML( 'beforeend', newIconHTML );
+	}
+
+	/**
+	 * Update the thumbnail image if a new thumbnail URL is provided
+	 *
+	 * @param {HTMLElement} element   - The main status element containing the thumbnail
+	 * @param {string}      thumbnail - The URL of the new thumbnail image
+	 */
+	_updateThumbnailIfAvailable( element, thumbnail ) {
+		if ( thumbnail ) {
+			// get parent with `has-row-actions` class
+			const parent = element.closest( 'tr' );
+			const imgElement = parent.querySelector( '.has-media-icon img' );
+
+			if ( imgElement ) {
+				imgElement.src = thumbnail;
+
+				// manually add style attribute for the image.
+				imgElement.style.height = '60px';
+				imgElement.style.objectFit = 'cover';
+			}
+		}
 	}
 }
 
