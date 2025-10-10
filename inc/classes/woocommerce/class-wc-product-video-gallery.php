@@ -207,6 +207,12 @@ class WC_Product_Video_Gallery {
 
 		echo '<ul class="godam-product-video-gallery-list godam-margin-top godam-margin-bottom godam-product-video-gallery-list wc-godam-product-admin">';
 
+		echo '<div class="godam-product-admin-video-spinner-overlay" style="display:none;">
+				<div class="godam-product-admin-video-spinner">
+					<div class="spinner"></div>
+				</div>
+			</div>';
+
 		foreach ( $video_urls as $index => $url ) {
 			$id            = isset( $ids[ $index ] ) ? intval( $ids[ $index ] ) : '';
 			$sanitised_url = esc_url( $url );

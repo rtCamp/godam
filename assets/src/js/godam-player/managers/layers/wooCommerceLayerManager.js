@@ -355,7 +355,15 @@ export default class WooCommerceLayerManager {
 							console.error( 'Add to cart failed', err );
 							productLinkButton.disabled = false;
 							productLinkButton.classList.remove( 'loading' );
-							this.showCartMessage( __( 'Something went wrong. Try again.', 'godam' ), 'error' );
+
+							// Check if error code is WooCommerce stock error.
+							if ( err?.code === 'woocommerce_rest_product_partially_out_of_stock' ) {
+								this.showCartMessage( __( 'Product is partially out of stock.', 'godam' ), 'error' );
+							} else if ( err?.code === 'woocommerce_rest_product_out_of_stock' ) {
+								this.showCartMessage( __( 'Product is out of stock.', 'godam' ), 'error' );
+							} else {
+								this.showCartMessage( __( 'Something went wrong. Try again.', 'godam' ), 'error' );
+							}
 						} );
 				}
 			} );

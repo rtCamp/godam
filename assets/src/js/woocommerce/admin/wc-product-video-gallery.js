@@ -51,6 +51,8 @@ jQuery( document ).ready( function( $ ) {
 				.each( function( attachment ) {
 					const data = attachment.toJSON();
 
+					$( '.godam-product-admin-video-spinner-overlay' ).show();
+
 					// Skip duplicates.
 					if ( videoList.find( `input[data-vid-id="${ data.id }"]` ).length ) {
 						return;
@@ -131,12 +133,18 @@ jQuery( document ).ready( function( $ ) {
 								.catch( () => {
 									// If endpoint fails just leave the default label & an empty list.
 									// eslint-disable-next-line no-console
-									console.warn( 'Could not fetch count of ptofuct for ID:' + data.id );
+									console.warn( 'Could not fetch count of product for ID:' + data.id );
+									$( '.godam-product-admin-video-spinner-overlay' ).hide();
+								} )
+								.finally( () => {
+									// Hide spinner once linked product fetch is done.
+									$( '.godam-product-admin-video-spinner-overlay' ).hide();
 								} );
 						} )
 						.catch( () => {
 							// eslint-disable-next-line no-console
 							console.warn( 'Could not fetch media data for ID: ' + data.id );
+							$( '.godam-product-admin-video-spinner-overlay' ).hide();
 						} );
 				} );
 		} );

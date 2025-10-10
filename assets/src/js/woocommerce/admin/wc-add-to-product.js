@@ -313,7 +313,7 @@ jQuery( document ).ready( function( $ ) {
 					<div style={ { display: 'flex' } }>
 
 						{ /* LEFT SIDE - Products */ }
-						<div style={ { flex: 1, display: 'flex', flexDirection: 'column', paddingRight: '15px', overflow: 'hidden' } }>
+						<div style={ { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '1px 15px 0 4px' } }>
 							<div style={ { display: 'flex', gap: '8px', marginBottom: '0.5rem', width: '100%' } }>
 								<div style={ { flex: 5 } }>
 									<TextControl
