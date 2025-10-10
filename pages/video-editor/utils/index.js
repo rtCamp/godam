@@ -40,12 +40,15 @@ function createVideoAttributes( attachmentId, mediaData ) {
 	const { source_url: sourceUrl, mime_type: mimeType } = mediaData;
 
 	if ( sourceUrl ) {
+		// Convert .mov files to video/mp4 type to match editor behavior
+		const adjustedMimeType = mimeType === 'video/quicktime' ? 'video/mp4' : mimeType;
+
 		return {
 			...baseAttrs,
 			src: sourceUrl,
 			sources: [ {
 				src: sourceUrl,
-				type: mimeType,
+				type: adjustedMimeType,
 			} ],
 		};
 	}
