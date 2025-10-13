@@ -203,6 +203,7 @@ class GoDAM_Product_Gallery {
 		$product_ids = array();
 
 		// Get trashed product IDs to exclude.
+		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
 		$trashed_product_ids = get_posts(
 			array(
 				'post_type'      => 'product',
