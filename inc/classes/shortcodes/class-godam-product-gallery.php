@@ -202,6 +202,16 @@ class GoDAM_Product_Gallery {
 
 		$product_ids = array();
 
+		// Get trashed product IDs to exclude.
+		$trashed_product_ids = get_posts(
+			array(
+				'post_type'      => 'product',
+				'post_status'    => 'trash',
+				'fields'         => 'ids',
+				'posts_per_page' => -1,
+			)
+		);
+
 		// 4. Sanitize product IDs.
 		if ( ! empty( $atts['product'] ) ) {
 			// Logic for "random" argument.
@@ -216,7 +226,7 @@ class GoDAM_Product_Gallery {
 						'posts_per_page' => -1,
 						'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 							array(
-								'key'     => '_video_parent_product_id',
+								'key'     => '_rtgodam_product_video_gallery_ids',
 								'compare' => 'EXISTS',
 							),
 						),
@@ -228,6 +238,12 @@ class GoDAM_Product_Gallery {
 			} else {
 				// Parse comma-separated IDs.
 				$product_ids = array_filter( array_map( 'absint', explode( ',', $atts['product'] ) ) );
+			}
+
+			// Exclude trashed product IDs.
+			if ( ! empty( $product_ids ) ) {
+				$product_ids = array_diff( $product_ids, $trashed_product_ids );
+				$product_ids = array_values( $product_ids );
 			}
 		}
 
@@ -251,7 +267,8 @@ class GoDAM_Product_Gallery {
 		} else {
 			$args['meta_query'][] = array(
 				'key'     => '_video_parent_product_id',
-				'compare' => 'EXISTS',
+				'value'   => $trashed_product_ids,
+				'compare' => 'NOT IN',
 			);
 		}
 
@@ -314,7 +331,7 @@ class GoDAM_Product_Gallery {
 			 * Video Wrapper Begins here.
 			 */
 			$video_attrs = $atts['autoplay'] ? ' autoplay muted loop playsinline' : '';
-			$this->render_video_wrapper( $video_posts, $atts, $video_attrs );
+			$this->render_video_wrapper( $video_posts, $atts, $video_attrs, $trashed_product_ids );
 			/**
 			 * Video Wrapper Ends here.
 			 */
@@ -366,8 +383,9 @@ class GoDAM_Product_Gallery {
 	 * @param array  $video_posts Array of WP_Post video attachments.
 	 * @param array  $atts        Shortcode attributes.
 	 * @param string $video_attrs Extra attributes for video tag (autoplay/muted/loop).
+	 * @param array  $trashed_product_ids  Array of trashed product IDs to exclude.
 	 */
-	private function render_video_wrapper( $video_posts, $atts, $video_attrs ) {
+	private function render_video_wrapper( $video_posts, $atts, $video_attrs, $trashed_product_ids ) {
 
 		foreach ( $video_posts as $video ) {
 			// Add action before each video item.
@@ -384,6 +402,12 @@ class GoDAM_Product_Gallery {
 			$video_url = $video->guid;
 
 			$video_attached_products = get_post_meta( $video_id, '_video_parent_product_id', false );
+
+			// Remove trashed product IDs from the list.
+			if ( ! empty( $trashed_product_ids ) ) {
+				$video_attached_products = array_diff( $video_attached_products, $trashed_product_ids );
+				$video_attached_products = array_values( $video_attached_products );
+			}
 
 			$data_product_ids = implode( ',', array_map( 'absint', (array) $video_attached_products ) );
 

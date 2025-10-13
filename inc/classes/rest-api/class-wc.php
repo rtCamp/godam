@@ -905,6 +905,10 @@ class WC extends Base {
 		foreach ( $ids as $id ) {
 			$product = wc_get_product( $id );
 
+			if ( ! $product ) {
+				continue;
+			}
+
 			$type         = $product->get_type();
 			$name_display = $product->get_name();
 
