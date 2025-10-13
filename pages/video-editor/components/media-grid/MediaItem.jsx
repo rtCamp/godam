@@ -50,6 +50,15 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 		setShowSnackbar( false );
 	};
 
+	const getPreviewTemplateUrl = ( videoItem ) => {
+		const homeUrl = window?.godamRestRoute?.homeUrl;
+		const videoSlug = window?.godamSettings?.videoPostSettings?.video_slug;
+		const videoName = videoItem?.name;
+		return ( homeUrl && videoSlug && videoName )
+			? `${ homeUrl }/${ videoSlug }/${ videoName }`
+			: videoItem?.link;
+	};
+
 	return (
 		<div
 			className={ `godam-video-list__video ${ ! canManageAttachment( item?.author ) ? 'disabled' : '' }` }
@@ -84,7 +93,7 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 						{
 							icon: <Icon icon={ seen } />,
 							onClick: () => {
-								window.open( item.link, '_blank' );
+								window.open( getPreviewTemplateUrl( item ), '_blank' );
 							},
 							title: __( 'Preview template', 'godam' ),
 						},
