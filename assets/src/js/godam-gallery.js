@@ -1,13 +1,5 @@
 /* global GODAMPlayer */
-/**
- * External dependencies
- */
-/**
- * Internal dependencies
- */
-const { select, dispatch } = wp.data;
-import DOMPurify from 'isomorphic-dompurify';
-const engagementStore = 'godam-video-engagement';
+// Removed unused imports: select, dispatch, DOMPurify, engagementStore
 
 // Common function to load more videos
 async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVideos ) {
@@ -180,8 +172,7 @@ document.addEventListener( 'click', async function( e ) {
 		const galleryOrder = currentGallery.getAttribute( 'data-order' ) || 'DESC';
 		const galleryTotal = parseInt( currentGallery.getAttribute( 'data-total' ) || 0, 10 );
 
-		// Check if engagements are enabled for the gallery
-		const galleryEngagements = currentGallery.getAttribute( 'data-engagements' ) === '1';
+		// Note: Engagements are now handled within the iframe
 
 		// Show modal immediately with the player
 		modal.innerHTML = `
@@ -205,9 +196,13 @@ document.addEventListener( 'click', async function( e ) {
 		`;
 
 		modal.classList.remove( 'hidden' );
+		modal.classList.add( 'is-visible' );
 
 		// Prevent background scrolling when modal is open
 		document.body.style.overflow = 'hidden';
+
+		// Declare message handler at modal scope
+		let currentMessageHandler = null;
 
 		// Function to load a new video
 		const loadNewVideo = async ( newVideoId ) => {
@@ -238,92 +233,95 @@ document.addEventListener( 'click', async function( e ) {
 			}
 
 			try {
-				let data;
-				const videoMarkUp = select( engagementStore ).getVideoMarkUp()[ newVideoId ];
-				if ( videoMarkUp ) {
-					data = {
-						html: videoMarkUp,
-						status: 'success',
-					};
-				} else {
-					const response = await fetch( `/wp-json/godam/v1/video-shortcode?id=${ newVideoId }` );
-					data = await response.json();
-
-					if ( data.status === 'success' && data.html ) {
-						dispatch( engagementStore ).addVideoMarkUp( newVideoId, data.html );
-					}
+				// Remove previous message listener if exists
+				if ( currentMessageHandler ) {
+					window.removeEventListener( 'message', currentMessageHandler );
+					currentMessageHandler = null;
 				}
 
-				if ( data.status === 'success' && data.html ) {
-					// Update the video element with the fetched data
-					if ( videoContainer ) {
-						videoContainer.innerHTML = data.html;
-						videoContainer.classList.remove( 'animate-video-loading' );
+				// Create iframe for video modal
+				const iframe = document.createElement( 'iframe' );
+				iframe.src = `${ window.location.origin }/godam-video-modal/?id=${ newVideoId }`;
+				iframe.style.width = '100%';
+				iframe.style.height = '600px';
+				iframe.style.border = 'none';
+				iframe.style.background = '#000';
+				iframe.title = 'GoDAM Video Player';
+				iframe.setAttribute( 'aria-label', 'GoDAM Video Player' );
 
-						// Update video title in the modal header
+				// Add debugging for iframe load events
+				iframe.addEventListener( 'load', function() {
+					// eslint-disable-next-line no-console
+					console.log( 'GoDAM Gallery: Iframe loaded successfully' );
+				} );
+
+				iframe.addEventListener( 'error', function() {
+					// eslint-disable-next-line no-console
+					console.error( 'GoDAM Gallery: Iframe failed to load' );
+					if ( videoContainer ) {
+						videoContainer.innerHTML = '<div class="godam-error-message">Failed to load video. Please check if the rewrite rules are flushed.</div>';
+						videoContainer.classList.remove( 'animate-video-loading' );
+					}
+				} );
+
+				// Clear loading state and add iframe
+				if ( videoContainer ) {
+					videoContainer.innerHTML = '';
+					iframe.style.minHeight = '400px';
+					videoContainer.appendChild( iframe );
+					// Don't remove loading class here - wait for postMessage
+				}
+
+				// Listen for messages from iframe
+				currentMessageHandler = ( event ) => {
+					// eslint-disable-next-line no-console
+					console.log( 'GoDAM Gallery: Received message:', event.data );
+
+					if ( event.data && event.data.type === 'rtgodam:modal-ready' ) {
+						// eslint-disable-next-line no-console
+						console.log( 'GoDAM Gallery: Modal ready message received' );
+
+						// Update modal title and date
 						const videoTitle = modal.querySelector( '.godam-video-title' );
-						if ( videoTitle ) {
-							videoTitle.innerHTML = DOMPurify.sanitize( data.title || '' );
+						if ( videoTitle && event.data.title ) {
+							videoTitle.textContent = event.data.title;
 						}
 
-						// Update the date
 						const videoDate = modal.querySelector( '.godam-video-date' );
 						if ( videoDate ) {
-							videoDate.textContent = data.date || '';
+							// Use date from postMessage if available
+							videoDate.textContent = event.data.date || new Date().toLocaleDateString();
 						}
 
-						const engagementContainer = videoContainer.querySelector( '.rtgodam-video-engagement' );
-						let engagementId = engagementContainer?.getAttribute( 'data-engagement-id' ) || 0;
-						const siteUrl = engagementContainer?.getAttribute( 'data-engagement-site-url' ) || '';
-
-						if ( ! galleryEngagements ) {
-							engagementContainer.remove();
+						// Resize iframe to content height
+						if ( event.data.height ) {
+							iframe.style.height = Math.max( event.data.height, 400 ) + 'px';
 						}
-
-						// Reinitialize the player with the new content
-						if ( typeof GODAMPlayer === 'function' ) {
-							const godamPlayer = GODAMPlayer( modal );
-							const initEngagement = godamPlayer.initEngagement;
-							// Find the video player and start playing
-							const videoPlayer = modal.querySelector( '.video-js' );
-							if ( videoPlayer && videoPlayer.player ) {
-								if ( galleryEngagements ) {
-									// If engagements are enabled, initiate the comment modal with Data
-									let skipEngagements = false;
-									if ( 0 === engagementId ) {
-										const vidFigure = videoContainer.querySelector( 'figure' );
-										engagementId = vidFigure?.id.replace( 'godam-player-container', 'engagement' );
-										skipEngagements = true;
-									}
-									const newVideoEngagementsData = select( engagementStore ).getTitles()[ newVideoId ];
-									if ( newVideoEngagementsData ) {
-										dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId, skipEngagements ).then( () => {
-											window.galleryScroll = true;
-										} );
-										videoPlayer.player.play();
-									} else {
-										initEngagement.then( () => {
-											dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId, skipEngagements ).then( () => {
-												window.galleryScroll = true;
-											} );
-											videoPlayer.player.play();
-										} );
-									}
-									engagementContainer?.remove();
-								} else {
-									dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId, true ).then( () => {
-										window.galleryScroll = true;
-									} );
-									videoPlayer.player.play();
-								}
-							}
+						// Remove loading state
+						if ( videoContainer ) {
+							videoContainer.classList.remove( 'animate-video-loading' );
+						}
+					} else if ( event.data && event.data.type === 'rtgodam:modal-resize' ) {
+						// Handle resize messages
+						if ( event.data.height ) {
+							iframe.style.height = Math.max( event.data.height, 400 ) + 'px';
 						}
 					}
-				} else if ( videoContainer ) {
-					videoContainer.innerHTML = '<div class="godam-error-message">Video could not be loaded.</div>';
-					videoContainer.classList.remove( 'animate-video-loading' );
-				}
+				};
+
+				window.addEventListener( 'message', currentMessageHandler );
+
+				// Fallback timeout to remove loading state if postMessage fails
+				setTimeout( function() {
+					if ( videoContainer && videoContainer.classList.contains( 'animate-video-loading' ) ) {
+						// eslint-disable-next-line no-console
+						console.warn( 'GoDAM Gallery: PostMessage timeout - removing loading state' );
+						videoContainer.classList.remove( 'animate-video-loading' );
+					}
+				}, 3000 );
 			} catch ( error ) {
+				// eslint-disable-next-line no-console
+				console.error( 'GoDAM Gallery: Error loading video:', error );
 				// Handle error case
 				if ( videoContainer ) {
 					videoContainer.innerHTML = '<div class="godam-error-message">Video could not be loaded.</div>';
@@ -353,13 +351,18 @@ document.addEventListener( 'click', async function( e ) {
 				window.analytics?.trackVideoEvent( { type: 2, videoId: currentId, root: modal } );
 			}
 
-			// Find and dispose any video players in the modal
-			const players = modal.querySelectorAll( '.video-js' );
-			players.forEach( ( player ) => {
-				if ( player.player ) {
-					player.player.dispose();
-				}
-			} );
+			// Clean up message listener
+			if ( currentMessageHandler ) {
+				window.removeEventListener( 'message', currentMessageHandler );
+				currentMessageHandler = null;
+			}
+
+			// Remove iframe content
+			const videoContainer = modal.querySelector( '.easydam-video-container' );
+			if ( videoContainer ) {
+				videoContainer.innerHTML = '';
+			}
+
 			modal.remove();
 			// Re-enable background scrolling
 			document.body.style.overflow = '';

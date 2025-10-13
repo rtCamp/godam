@@ -424,6 +424,11 @@
 		transition: opacity 0.2s ease, transform 0.2s ease;
 	}
 
+	&.is-visible .godam-modal-content {
+		opacity: 1;
+		transform: scale(1);
+	}
+
 	&::after {
 		content: '';
 		position: absolute;
