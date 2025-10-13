@@ -107,6 +107,8 @@ class Assets {
 		$is_ninja_forms_active     = is_plugin_active( 'ninja-forms/ninja-forms.php' );
 		$is_met_form_active        = is_plugin_active( 'metform/metform.php' );
 
+		$is_woocommerce_active = is_plugin_active( 'woocommerce/woocommerce.php' );
+
 		wp_localize_script(
 			'rtgodam-script',
 			'godamPluginDependencies',
@@ -122,6 +124,7 @@ class Assets {
 				'everestForms' => $is_everest_forms_active,
 				'ninjaForms'   => $is_ninja_forms_active,
 				'metform'      => $is_met_form_active,
+				'woocommerce'  => $is_woocommerce_active,
 			)
 		);
 
@@ -130,6 +133,14 @@ class Assets {
 			'godamRestRoute',
 			array(
 				'url' => get_rest_url( get_current_blog_id() ),
+			)
+		);
+
+		wp_localize_script(
+			'rtgodam-script',
+			'godamWooSettings',
+			array(
+				'url' => wc_get_cart_url(),
 			)
 		);
 
@@ -293,6 +304,8 @@ class Assets {
 				'godamToolsNonce'          => wp_create_nonce( 'rtgodam_tools' ),
 				'enableFolderOrganization' => $enable_folder_organization,
 				'isPollPluginActive'       => is_plugin_active( 'wp-polls/wp-polls.php' ),
+				'isWooActive'              => is_plugin_active( 'woocommerce/woocommerce.php' ),
+				'wooCartURL'               => wc_get_cart_url(),
 				'page'                     => $screen ? $screen->id : '',
 				'userId'                   => $current_user_id,
 				'canEditOthersMedia'       => current_user_can( 'edit_others_posts' ),

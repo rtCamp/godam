@@ -34,6 +34,7 @@ export const LAYER_TYPES = {
 	CTA: 'cta',
 	POLL: 'poll',
 	HOTSPOT: 'hotspot',
+	WOOCOMMERCE: 'woo',
 };
 
 /**
