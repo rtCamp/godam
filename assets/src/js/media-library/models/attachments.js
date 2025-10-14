@@ -128,7 +128,6 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 				},
 			} );
 		},
-
 	},
 
 	/**
