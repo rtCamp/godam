@@ -218,7 +218,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 		$settings['recorder_nonce']        = $nonce_data['nonce'];
 		$settings['recorder_nonce_expiry'] = $nonce_data['nonce_expiry'];
 
-		$settings['record_button_text'] = ! empty( $settings['record_button_text'] ) ? $settings['record_button_text'] : __( 'Record Video', 'godam' );
+		$settings['record_button_text'] = ! empty( $settings['record_button_text'] ) ? $settings['record_button_text'] : __( 'Start Recording', 'godam' );
 
 		$file_selector_arr = array();
 
@@ -230,6 +230,9 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 		}
 		if ( ! empty( $settings['file_selector-screen_capture'] ) ) {
 			$file_selector_arr[] = 'screen_capture';
+		}
+		if ( ! empty( $settings['file_selector-audio'] ) ) {
+			$file_selector_arr[] = 'audio';
 		}
 
 		// If none are set, default to webcam and screen_capture.

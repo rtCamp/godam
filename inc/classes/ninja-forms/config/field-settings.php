@@ -54,4 +54,12 @@ return array(
 		'group' => 'primary',
 		'value' => '1',
 	),
+	'file_selector-audio'         => array(
+		'name'  => 'file_selector-audio',
+		'type'  => 'toggle',
+		'label' => __( 'Audio', 'godam' ),
+		'width' => 'one-half',
+		'group' => 'primary',
+		'value' => '1',
+	),
 );
