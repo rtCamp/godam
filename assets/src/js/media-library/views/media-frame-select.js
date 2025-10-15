@@ -48,7 +48,6 @@ export default MediaFrameSelect?.extend( {
 		const state = this.state();
 
 		let mimeTypes = state.get( 'library' )?.props?.get( 'type' );
-		this.cleanGlobalItemState();
 
 		if ( ! mimeTypes ) {
 			mimeTypes = 'all';
@@ -68,8 +67,6 @@ export default MediaFrameSelect?.extend( {
 
 		this.content.set( RenderedContent );
 
-		state.once( 'select', this.addItemToGlobalState, this );
-
 		// Attaches callback to create attachment entry in WordPress for GoDAM Video.
 		if ( 'video' === mimeTypes ) {
 			state.off( 'select', this.onGoDAMSelect, this );
@@ -87,6 +84,7 @@ export default MediaFrameSelect?.extend( {
 		const selection = this.state().get( 'selection' );
 		const selected = selection?.first();
 		const data = selected.attributes;
+
 		// API call to website to create the attachment.
 		fetch( '/wp-json/godam/v1/media-library/create-media-entry', {
 			method: 'POST',
@@ -116,21 +114,5 @@ export default MediaFrameSelect?.extend( {
 				description: data.description,
 			} ),
 		} ).then( ( res ) => res.json() );
-	},
-
-	/**
-	 * Clear the global selected item state
-	 */
-	cleanGlobalItemState() {
-		window.godamSelectedItem = null;
-	},
-
-	/**
-	 * Set the global selected item state
-	 *
-	 * This is needed because wp.media does not provide a way to get the
-	 */
-	addItemToGlobalState() {
-		window.godamSelectedItem = this.state().get( 'selection' )?.first()?.toJSON() || null;
 	},
 } );

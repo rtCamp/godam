@@ -883,36 +883,3 @@ to ensure proper responsiveness and avoid layout issues.
 		width: calc(100% - 2 * $wp-td-field-margin);
 	}
 }
-
-.wp-block-file-with-thumbnail {
-	display: flex;
-	gap: 20px;
-	align-items: flex-start;
-}
-
-.wp-block-file-with-thumbnail .file-thumbnail {
-	flex-shrink: 0;
-	width: 150px;
-}
-
-.wp-block-file-with-thumbnail .file-thumbnail img {
-	width: 100%;
-	height: auto;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-}
-
-.wp-block-file-with-thumbnail .file-content {
-	flex: 1;
-}
-
-@media (max-width: 600px) {
-
-	.wp-block-file-with-thumbnail {
-		flex-direction: column;
-	}
-
-	.wp-block-file-with-thumbnail .file-thumbnail {
-		width: 100%;
-	}
-}

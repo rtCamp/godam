@@ -2,11 +2,6 @@
  * Write your JS code here for admin.
  */
 
-/**
- * Internal dependencies
- */
-import './block-extension/core-file.js';
-
 // Utility function to join URL paths
 window.pathJoin = function( parts, sep = '/' ) {
 	return parts
