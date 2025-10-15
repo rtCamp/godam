@@ -703,6 +703,10 @@ $media-frame-width: calc(300px + 2 * 24px);
 	}
 }
 
+.wpf_entry_value:has(.gf-godam-video-preview) {
+	white-space: inherit;
+}
+
 .godam_no_license {
 
 	pointer-events: none;
@@ -881,5 +885,29 @@ to ensure proper responsiveness and avoid layout issues.
 	td.field {
 		$wp-td-field-margin: 1px;
 		width: calc(100% - 2 * $wp-td-field-margin);
+	}
+}
+
+#ff_form_editor_app .el-input__inner[type="file"] {
+	padding: 0;
+	background: variables.$godam-blue-overlay;
+	color: transparent;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 14px;
+	position: relative;
+	width: 130px;
+
+	&::before {
+		content: 'Start Recording';
+		color: white;
+		display: inline-block;
+		position: absolute;
+		inset-inline-start: 15px;
+	}
+
+	&::file-selector-button {
+		display: none;
 	}
 }
