@@ -157,10 +157,33 @@ class RTGODAM_Transcoder_Handler {
 					// Enable re-transcoding.
 					include_once RTGODAM_PATH . 'admin/class-rtgodam-retranscodemedia.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
-					add_filter( 'wp_generate_attachment_metadata', array( $this, 'wp_media_transcoding' ), 21, 2 );
+					add_action( 'add_attachment', array( $this, 'send_transcoding_request' ), 21, 1 );
 				}
 			}
 		}
+	}
+
+	/**
+	 * Send transcoding request for uploaded media in WordPress media library.
+	 *
+	 * @since 1.4.2
+	 *
+	 * @param int $attachment_id    ID of attachment.
+	 */
+	public function send_transcoding_request( $attachment_id ) {
+
+		$metadata = wp_get_attachment_metadata( $attachment_id );
+
+		$mime_type = get_post_mime_type( $attachment_id );
+
+		if ( empty( $metadata ) ) {
+			$metadata = array( 'mime_type' => $mime_type );
+		} elseif ( empty( $metadata['mime_type'] ) ) {
+			$metadata['mime_type'] = $mime_type;
+		}
+
+		// Send the transcoding request.
+		$this->wp_media_transcoding( $metadata, $attachment_id );
 	}
 
 	/**
@@ -174,12 +197,25 @@ class RTGODAM_Transcoder_Handler {
 	 * @param bool   $retranscode       If its retranscoding request or not.
 	 */
 	public function wp_media_transcoding( $wp_metadata, $attachment_id, $autoformat = true, $retranscode = false ) {
+		// Check if local development environment.
+		if ( rtgodam_is_local_environment() ) {
+			return;
+		}
 
 		if ( empty( $wp_metadata['mime_type'] ) ) {
 			return $wp_metadata;
 		}
 
 		$transcoding_job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+
+		// Log virtual media status for transcoding requests.
+		$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+		$is_virtual_media  = ! empty( $godam_original_id );
+
+		// Skip transcoding for virtual media.
+		if ( $is_virtual_media ) {
+			return $wp_metadata;
+		}
 
 		$path = get_attached_file( $attachment_id );
 		$url  = wp_get_attachment_url( $attachment_id );
@@ -303,13 +339,6 @@ class RTGODAM_Transcoder_Handler {
 			);
 
 			$transcoding_url = $this->transcoding_api_url . 'resource/Transcoder Job' . ( empty( $transcoding_job_id ) ? '' : '/' . $transcoding_job_id );
-
-			// Block if blacklisted ip address.
-			$remote_address_key = 'REMOTE_ADDR';
-			$client_ip          = isset( $_SERVER[ $remote_address_key ] ) ? filter_var( $_SERVER[ $remote_address_key ], FILTER_VALIDATE_IP ) : '';
-			if ( ! empty( $client_ip ) && in_array( $client_ip, rtgodam_get_blacklist_ip_addresses(), true ) ) {
-				return $metadata;
-			}
 
 			$upload_page = wp_remote_request( $transcoding_url, $args );
 

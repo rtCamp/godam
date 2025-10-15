@@ -89,6 +89,10 @@
 		.video-js .vjs-control-bar {
 			height: 6em !important;
 
+			.vjs-volume-control {
+				display: none; //Fallback for old browser versions not supporting interaction media features
+			}
+
 			.vjs-control {
 				height: 3em !important;
 			}
@@ -137,6 +141,11 @@
 				position: absolute;
 				right: 120px;
 			}
+
+			&:has(.vjs-subs-caps-button.vjs-hidden) .vjs-volume-panel {
+				right: 80px;
+			}
+
 
 			.vjs-subs-caps-button {
 				right: 80px !important;

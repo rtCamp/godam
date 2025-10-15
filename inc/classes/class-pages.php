@@ -154,10 +154,18 @@ class Pages {
 	public function add_admin_pages() {
 		global $admin_page_hooks;
 
+		/**
+		 * If the user do not have capability to publish posts, bail out.
+		 * That means the users is contributor or below, we don't show the menu.
+		 */
+		if ( ! current_user_can( 'publish_posts' ) ) {
+			return;
+		}
+
 		add_menu_page(
 			__( 'GoDAM', 'godam' ),
 			__( 'GoDAM', 'godam' ),
-			'manage_options',
+			'edit_pages',
 			$this->menu_slug,
 			array( $this, 'render_dashboard_page' ),
 			'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI1LjU1NzggMjAuMDkxMUw4LjA1NTg3IDM3LjU5M0wzLjQ2Mzk3IDMzLjAwMTFDMC44MTg1MjEgMzAuMzU1NiAyLjA4MjEgMjUuODMzNiA1LjcyMjI4IDI0Ljk0NjRMMjUuNTYzMiAyMC4wOTY0TDI1LjU1NzggMjAuMDkxMVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00Ny4zNzczIDIxLjg4NjdMNDUuNTQzOCAyOS4zODc1TDIyLjY5NzIgNTIuMjM0MUwxMS4yNjA1IDQwLjc5NzRMMzQuMTY2MiAxNy44OTE2TDQxLjU3MDMgMTYuMDc5NkM0NS4wNzA2IDE1LjIyNDcgNDguMjMyMyAxOC4zODYzIDQ3LjM3MiAyMS44ODEzTDQ3LjM3NzMgMjEuODg2N1oiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00My41MDU5IDM4LjEwMzZMMzguNjY2NyA1Ny44OTA3QzM3Ljc3NDEgNjEuNTI1NSAzMy4yNTIxIDYyLjc4OTEgMzAuNjA2NiA2MC4xNDM2TDI2LjAzNjMgNTUuNTczMkw0My41MDU5IDM4LjEwMzZaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K',
@@ -172,7 +180,7 @@ class Pages {
 			$this->menu_slug,
 			__( 'Dashboard', 'godam' ),
 			__( 'Dashboard', 'godam' ),
-			'manage_options',
+			'edit_pages', // Dashboard is accessible to editors and above.
 			$this->menu_slug,
 			array( $this, 'render_dashboard_page' ),
 			1
@@ -182,7 +190,7 @@ class Pages {
 			$this->menu_slug,
 			__( 'Video Editor', 'godam' ),
 			__( 'Video Editor', 'godam' ),
-			'edit_posts',
+			'upload_files', // Video Editor is accessible to authors and above.
 			$this->video_editor_slug,
 			array( $this, 'render_video_editor_page' ),
 			3
@@ -192,7 +200,7 @@ class Pages {
 			$this->menu_slug,
 			__( 'Analytics', 'godam' ),
 			__( 'Analytics', 'godam' ),
-			'edit_posts',
+			'upload_files', // Analytics is accessible to authors and above.
 			$this->analytics_slug,
 			array( $this, 'render_analytics_page' ),
 			2
@@ -204,7 +212,7 @@ class Pages {
 				$this->menu_slug,
 				__( 'Tools', 'godam' ),
 				__( 'Tools', 'godam' ),
-				'manage_options',
+				'edit_pages', // Tools is accessible to editors and above.
 				$this->tools_slug,
 				array( $this, 'render_tools_page' ),
 				5
@@ -215,7 +223,7 @@ class Pages {
 			$this->menu_slug,
 			__( 'Settings', 'godam' ),
 			__( 'Settings', 'godam' ),
-			'edit_posts',
+			'manage_options', // Settings is accessible to admins and above.
 			$this->settings_slug,
 			array( $this, 'render_godam_page' ),
 			6
@@ -357,6 +365,16 @@ class Pages {
 	 * @return void
 	 */
 	public function render_video_editor_page() {
+		// Check if user can edit media with given id.
+		$attachment_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		if ( $attachment_id && ! current_user_can( 'edit_post', $attachment_id ) ) {
+			?>
+			<p class="godam-page-error"><?php echo esc_html( __( 'Sorry, you are not allowed to edit this item.', 'godam' ) ); ?></p>
+			<?php
+			return;
+		}
+
 		?>
 		<div class="godam-admin-root">
 			<div id="root-video-editor">
