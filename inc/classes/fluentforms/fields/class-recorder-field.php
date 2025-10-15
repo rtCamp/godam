@@ -119,53 +119,28 @@ class Recorder_Field extends BaseFieldManager {
 		wp_enqueue_script(
 			'godam-player-frontend',
 			RTGODAM_URL . 'assets/build/js/godam-player-frontend.min.js',
-			array( 'godam-fluentforms-editor' ),
+			array( 'godam-fluentforms-editor', 'wp-data', 'wp-element', 'wp-i18n', 'wp-api-fetch' ),
 			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.js' ),
 			true
 		);
 
-		wp_enqueue_script(
-			'godam-player-analytics',
-			RTGODAM_URL . 'assets/build/js/godam-player-analytics.min.js',
-			array( 'godam-player-frontend' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-analytics.min.js' ),
-			true
-		);
 
-		wp_enqueue_style(
-			'godam-player-frontend-style',
-			RTGODAM_URL . 'assets/build/css/godam-player-frontend.css',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/css/godam-player-frontend.css' )
-		);
+		wp_enqueue_style( 'godam-player-frontend-style' );
 
-		wp_enqueue_style(
-			'godam-player-style',
-			RTGODAM_URL . 'assets/build/css/godam-player.css',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/css/godam-player.css' )
-		);
+		wp_enqueue_style( 'godam-player-style' );
 
-		wp_enqueue_style(
-			'godam-player-minimal-skin',
-			RTGODAM_URL . 'assets/build/css/minimal-skin.css',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/css/minimal-skin.css' )
-		);
+		$godam_settings = get_option( 'rtgodam-settings', array() );
+		$selected_skin  = $godam_settings['video_player']['player_skin'] ?? '';
+		if ( 'Minimal' === $selected_skin ) {
+			wp_enqueue_style( 'godam-player-minimal-skin' );
+		} elseif ( 'Pills' === $selected_skin ) {
+			wp_enqueue_style( 'godam-player-pills-skin' );
+		} elseif ( 'Bubble' === $selected_skin ) {
+			wp_enqueue_style( 'godam-player-bubble-skin' );
+		} elseif ( 'Classic' === $selected_skin ) {
+			wp_enqueue_style( 'godam-player-classic-skin' );
+		}
 
-		wp_enqueue_style(
-			'godam-player-pills-skin',
-			RTGODAM_URL . 'assets/build/css/pills-skin.css',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/css/pills-skin.css' )
-		);
-
-		wp_enqueue_style(
-			'godam-player-bubble-skin',
-			RTGODAM_URL . 'assets/build/css/bubble-skin.css',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/css/bubble-skin.css' )
-		);
 
 		/**
 		 * Localize the script.
@@ -873,7 +848,7 @@ class Recorder_Field extends BaseFieldManager {
 		/**
 		 * Generate video output.
 		 */
-		$video_output = do_shortcode( "[godam_video src='{$video_url}' ]" );
+		$video_output = do_shortcode( "[godam_video src='{$video_url}' transcoded_url='{$transcoded_url}' aspectRatio='' ]" );
 		$video_output = '<div class="gf-godam-video-preview">' . $video_output . '</div>';
 
 		$download_url = sprintf(
