@@ -223,6 +223,22 @@ const ninjaForms = {
 	},
 };
 
+const learnDashAdmin = {
+	...sharedConfig,
+	entry: {
+		learnDashAdmin: path.resolve( process.cwd(), 'assets', 'src', 'js', 'learndash', 'admin.js' ),
+		'godam-learndash-admin': path.resolve( process.cwd(), 'assets', 'src', 'js', 'learndash', 'admin.js' ),
+	},
+};
+
+const learnDashBlock = {
+	...sharedConfig,
+	entry: {
+		learnDashBlock: path.resolve( process.cwd(), 'assets', 'src', 'js', 'learndash', 'block.js' ),
+		'godam-learndash-block': path.resolve( process.cwd(), 'assets', 'src', 'js', 'learndash', 'block.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -311,4 +327,6 @@ module.exports = [
 	lifterLMSBlock,
 	lifterLMSEmbed,
 	ninjaForms,
+	learnDashAdmin,
+	learnDashBlock,
 ];

@@ -63,6 +63,7 @@ use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Integration;
 use RTGODAM\Inc\Metform\Metform_Integration;
 use RTGODAM\Inc\Metform\Metform_Rest_Api;
 use RTGODAM\Inc\Lifter_LMS\Lifter_LMS;
+use RTGODAM\Inc\LearnDash\LearnDash;
 
 /**
  * Class Plugin.
@@ -117,6 +118,9 @@ class Plugin {
 
 		// Load LifterLMS integration.
 		Lifter_LMS::get_instance();
+
+		// Load LearnDash integration.
+		LearnDash::get_instance();
 
 		// Load Elementor widgets.
 		$this->load_elementor_widgets();
