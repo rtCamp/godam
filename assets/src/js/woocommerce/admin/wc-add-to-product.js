@@ -342,7 +342,7 @@ jQuery( document ).ready( function( $ ) {
 
 							<ul style={ { maxHeight: '115px', overflowY: 'auto', listStyle: 'none', padding: 0 } }>
 								{ results.map( ( p ) => {
-									const isSelected = selected.includes( p );
+									const isSelected = selected.some( ( sel ) => sel.id === p.id );
 									return (
 										<li key={ p.id } className="wc-godam-product-admin" style={ { listStyle: 'none' } }>
 											<button
