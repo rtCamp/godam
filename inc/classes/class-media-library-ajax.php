@@ -62,12 +62,16 @@ class Media_Library_Ajax {
 			return array();
 		}
 
+		$job_type      = $item['job_type'] ?? '';
+		$api_mime_type = $item['mime_type'] ?? '';
+		$computed_mime = $this->get_mime_type_for_job_type( $job_type, $api_mime_type );
+
 		$result = array(
 			'id'                    => $item['name'],
 			'title'                 => isset( $item['orignal_file_name'] ) ? pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) : $item['name'],
 			'filename'              => $item['orignal_file_name'] ?? $item['name'],
 			'url'                   => ( $item['job_type'] ?? '' ) === 'image' ? ( $item['file_origin'] ?? '' ) : ( $item['transcoded_file_path'] ?? $item['file_origin'] ?? '' ),
-			'mime'                  => 'application/dash+xml',
+			'mime'                  => $computed_mime,
 			'type'                  => $item['job_type'] ?? '',
 			'subtype'               => ( isset( $item['mime_type'] ) && strpos( $item['mime_type'], '/' ) !== false ) ? explode( '/', $item['mime_type'] )[1] : 'jpg',
 			'status'                => $item['status'] ?? '',
@@ -89,6 +93,26 @@ class Media_Library_Ajax {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Get appropriate MIME type based on job type.
+	 *
+	 * @param string $job_type Job type from GoDAM API.
+	 * @param string $mime_type Original MIME type from API.
+	 * @return string Appropriate MIME type.
+	 */
+	private function get_mime_type_for_job_type( $job_type, $mime_type ) {
+		switch ( $job_type ) {
+			case 'stream':
+				return 'application/dash+xml';
+			case 'audio':
+				return ! empty( $mime_type ) ? $mime_type : 'audio/mpeg';
+			case 'image':
+				return ! empty( $mime_type ) ? $mime_type : 'image/jpeg';
+			default:
+				return ! empty( $mime_type ) ? $mime_type : 'application/dash+xml';
+		}
 	}
 
 	/**
