@@ -7,8 +7,11 @@ The GoDAM Player API provides a simple and powerful interface for developers to 
 - [Getting Started](#getting-started)
 - [Main API Methods](#main-api-methods)
 - [Player Instance Methods](#player-instance-methods)
-  - [Layer Management](#layer-management)
+  - [Custom Layer Management](#custom-layer-management)
+  - [Native Layer Management](#native-layer-management)
   - [Playback Control](#playback-control)
+  - [Player State Methods](#player-state-methods)
+  - [Utility Methods](#utility-methods)
 - [Examples](#examples)
 - [Error Handling](#error-handling)
 
@@ -92,7 +95,7 @@ readyPlayers.forEach(playerObj => {
 
 Once you have a player instance, you can use the following methods:
 
-### Layer Management
+### Custom Layer Management
 
 #### `createLayer(layerConfig)`
 
@@ -117,6 +120,187 @@ The returned element has these additional methods:
 - `dismiss()`: Permanently hide the layer
 - `show()`: Manually show the layer (if not dismissed)
 - `hide()`: Manually hide the layer
+
+#### `removeCustomLayer(layerId)`
+
+Remove a specific custom layer by its ID.
+
+**Parameters:**
+
+- `layerId` (string): The ID of the layer to remove
+
+**Returns:** `boolean` - True if layer was removed successfully
+
+**Example:**
+
+```javascript
+const layer = player.createLayer({
+    html: '<div>My Layer</div>',
+    displayTime: 10
+});
+
+// Later, remove the layer
+const layerObj = player.getCustomLayers()[0];
+player.removeCustomLayer(layerObj.id);
+```
+
+#### `removeAllCustomLayers()`
+
+Remove all custom layers from the player.
+
+**Returns:** `number` - Number of layers removed
+
+**Example:**
+
+```javascript
+const removedCount = player.removeAllCustomLayers();
+console.log(`Removed ${removedCount} custom layers`);
+```
+
+#### `getCustomLayer(layerId)`
+
+Get a specific custom layer element by its ID.
+
+**Parameters:**
+
+- `layerId` (string): The ID of the layer to retrieve
+
+**Returns:** `HTMLElement|null` - Layer element or null if not found
+
+**Example:**
+
+```javascript
+const layerElement = player.getCustomLayer('custom-1-12345');
+if (layerElement) {
+    layerElement.style.backgroundColor = 'red';
+}
+```
+
+#### `getCustomLayers()`
+
+Get all custom layers with their configuration details.
+
+**Returns:** Array of layer objects with properties:
+
+- `id`: Layer ID
+- `element`: Layer DOM element
+- `displayTime`: When the layer should display
+- `duration`: How long the layer should display
+- `pauseOnShow`: Whether video pauses when layer shows
+- `visible`: Whether the layer is currently visible
+- `isDismissed`: Whether the layer was manually dismissed
+- `createdAt`: Timestamp when layer was created
+
+**Example:**
+
+```javascript
+const layers = player.getCustomLayers();
+layers.forEach(layer => {
+    console.log(`Layer ${layer.id} is ${layer.visible ? 'visible' : 'hidden'}`);
+});
+```
+
+#### `updateLayer(layerId, updates)`
+
+Update an existing layer's configuration.
+
+**Parameters:**
+
+- `layerId` (string): The ID of the layer to update
+- `updates` (Object): Properties to update (displayTime, duration, pauseOnShow, onShow, html, backgroundColor)
+
+**Returns:** `boolean` - True if layer was updated successfully
+
+**Example:**
+
+```javascript
+const layerObj = player.getCustomLayers()[0];
+player.updateLayer(layerObj.id, {
+    displayTime: 15,
+    duration: 5,
+    html: '<div>Updated content!</div>',
+    backgroundColor: '#FF0000'
+});
+```
+
+### Native Layer Management
+
+These methods interact with GoDAM's built-in form layers (CTA, email capture, etc.).
+
+#### `dismissNativeLayer(layerHtmlId?)`
+
+Dismiss a native layer - either the current active layer or a specific layer by HTML ID.
+
+**Parameters:**
+
+- `layerHtmlId` (string, optional): HTML ID of the layer to dismiss. If not provided, dismisses current active layer
+
+**Returns:** `boolean` - True if a layer was dismissed successfully
+
+**Example:**
+
+```javascript
+// Dismiss current active layer
+player.dismissNativeLayer();
+
+// Dismiss specific layer by ID
+player.dismissNativeLayer('layer-123-cta-1');
+```
+
+#### `getCurrentNativeLayer()`
+
+Get the currently active native layer.
+
+**Returns:** `Object|null` - Current layer object or null if no active layer
+
+**Example:**
+
+```javascript
+const currentLayer = player.getCurrentNativeLayer();
+if (currentLayer) {
+    console.log('Active layer:', currentLayer);
+}
+```
+
+#### `getAllNativeLayers()`
+
+Get all native form layers configured for this video.
+
+**Returns:** Array of layer information objects
+
+**Example:**
+
+```javascript
+const nativeLayers = player.getAllNativeLayers();
+console.log(`Found ${nativeLayers.length} native layers`);
+```
+
+#### `hasVisibleNativeLayers()`
+
+Check if there are any native layers currently visible.
+
+**Returns:** `boolean` - True if any native layer is visible
+
+**Example:**
+
+```javascript
+if (player.hasVisibleNativeLayers()) {
+    console.log('Native layers are visible');
+}
+```
+
+#### `getCurrentNativeLayerIndex()`
+
+Get the current native layer index.
+
+**Returns:** `number` - Current form layer index or -1 if no FormLayerManager
+
+**Example:**
+
+```javascript
+const layerIndex = player.getCurrentNativeLayerIndex();
+console.log(`Current layer index: ${layerIndex}`);
+```
 
 **Example:**
 
@@ -329,6 +513,59 @@ if (player.isReady()) {
 } else {
     console.log('Player is not ready yet');
 }
+```
+
+### Utility Methods
+
+#### `replay(reloadLayers?)`
+
+Replay the video from the beginning, optionally resetting layers.
+
+**Parameters:**
+
+- `reloadLayers` (boolean, optional): Whether to reset and replay layers (default: true)
+
+**Example:**
+
+```javascript
+// Replay video and reset all layers
+player.replay();
+
+// Replay video but keep layer states
+player.replay(false);
+```
+
+#### `destroy()`
+
+Clean up resources when the player is no longer needed. This removes event listeners and clears custom layers.
+
+**Example:**
+
+```javascript
+// Clean up player resources
+player.destroy();
+```
+
+#### `convertToAbsoluteTime(timeValue)`
+
+Convert percentage or absolute time to absolute seconds. This is useful for working with time-based features.
+
+**Parameters:**
+
+- `timeValue` (string|number): Time value (e.g., "25%" or 30)
+
+**Returns:** `number` - Absolute time in seconds
+
+**Example:**
+
+```javascript
+// Convert percentage to seconds
+const timeInSeconds = player.convertToAbsoluteTime('50%');
+console.log(`50% of video is ${timeInSeconds} seconds`);
+
+// Pass through absolute time
+const absoluteTime = player.convertToAbsoluteTime(30);
+console.log(`Absolute time: ${absoluteTime} seconds`);
 ```
 
 ## Examples
