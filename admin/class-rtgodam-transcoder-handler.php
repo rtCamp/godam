@@ -157,10 +157,33 @@ class RTGODAM_Transcoder_Handler {
 					// Enable re-transcoding.
 					include_once RTGODAM_PATH . 'admin/class-rtgodam-retranscodemedia.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
-					add_filter( 'wp_generate_attachment_metadata', array( $this, 'wp_media_transcoding' ), 21, 2 );
+					add_action( 'add_attachment', array( $this, 'send_transcoding_request' ), 21, 1 );
 				}
 			}
 		}
+	}
+
+	/**
+	 * Send transcoding request for uploaded media in WordPress media library.
+	 *
+	 * @since 1.4.2
+	 *
+	 * @param int $attachment_id    ID of attachment.
+	 */
+	public function send_transcoding_request( $attachment_id ) {
+
+		$metadata = wp_get_attachment_metadata( $attachment_id );
+
+		$mime_type = get_post_mime_type( $attachment_id );
+
+		if ( empty( $metadata ) ) {
+			$metadata = array( 'mime_type' => $mime_type );
+		} elseif ( empty( $metadata['mime_type'] ) ) {
+			$metadata['mime_type'] = $mime_type;
+		}
+
+		// Send the transcoding request.
+		$this->wp_media_transcoding( $metadata, $attachment_id );
 	}
 
 	/**
@@ -174,13 +197,23 @@ class RTGODAM_Transcoder_Handler {
 	 * @param bool   $retranscode       If its retranscoding request or not.
 	 */
 	public function wp_media_transcoding( $wp_metadata, $attachment_id, $autoformat = true, $retranscode = false ) {
+		// Check if local development environment.
+		if ( rtgodam_is_local_environment() ) {
+			return;
+		}
 
 		if ( empty( $wp_metadata['mime_type'] ) ) {
 			return $wp_metadata;
 		}
 
-		$already_sent = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
-		if ( ! empty( $already_sent ) ) {
+		$transcoding_job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+
+		// Log virtual media status for transcoding requests.
+		$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+		$is_virtual_media  = ! empty( $godam_original_id );
+
+		// Skip transcoding for virtual media.
+		if ( $is_virtual_media ) {
 			return $wp_metadata;
 		}
 
@@ -256,40 +289,58 @@ class RTGODAM_Transcoder_Handler {
 			 */
 			$status_callback_url = get_rest_url( get_current_blog_id(), '/godam/v1/transcoding/transcoding-status' );
 
+			// Get attachment author information.
+			$attachment_author_id = get_post_field( 'post_author', $attachment_id );
+			$attachment_author    = get_user_by( 'id', $attachment_author_id );
+			$site_url             = get_site_url();
+
+			// Get author name with fallback to username.
+			$author_first_name = '';
+			$author_last_name  = '';
+			
+			if ( $attachment_author ) {
+				$author_first_name = $attachment_author->first_name;
+				$author_last_name  = $attachment_author->last_name;
+				
+				// If first and last names are empty, use username as fallback.
+				if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
+					$author_first_name = $attachment_author->user_login;
+				}
+			}
+
 			$args = array(
-				'method'    => 'POST',
+				'method'    => empty( $transcoding_job_id ) ? 'POST' : 'PUT',
 				'sslverify' => false,
 				'timeout'   => 60, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
 				'body'      => array_merge(
 					array(
-						'api_token'       => $this->api_key,
-						'job_type'        => $job_type,
-						'job_for'         => $job_for,
-						'file_origin'     => rawurlencode( $url ),
-						'callback_url'    => rawurlencode( $callback_url ),
-						'status_callback' => rawurlencode( $status_callback_url ),
-						'force'           => 0,
-						'formats'         => ( true === $autoformat ) ? ( ( ( isset( $type_array[0] ) ) && 'video' === $type_array[0] ) ? 'mp4' : 'mp3' ) : $autoformat,
-						'thumbnail_count' => $options_video_thumb,
-						'stream'          => true,
-						'watermark'       => boolval( $rtgodam_watermark ),
-						'resolutions'     => array( 'auto' ),
-						'video_quality'   => $rtgodam_video_compress_quality,
+						'retranscode'          => empty( $transcoding_job_id ) ? 0 : 1,
+						'api_token'            => $this->api_key,
+						'job_type'             => $job_type,
+						'job_for'              => $job_for,
+						'file_origin'          => rawurlencode( $url ),
+						'callback_url'         => rawurlencode( $callback_url ),
+						'status_callback'      => rawurlencode( $status_callback_url ),
+						'force'                => 0,
+						'formats'              => ( true === $autoformat ) ? ( ( ( isset( $type_array[0] ) ) && 'video' === $type_array[0] ) ? 'mp4' : 'mp3' ) : $autoformat,
+						'thumbnail_count'      => $options_video_thumb,
+						'stream'               => true,
+						'watermark'            => boolval( $rtgodam_watermark ),
+						'resolutions'          => array( 'auto' ),
+						'video_quality'        => $rtgodam_video_compress_quality,
+						'wp_author_email'      => $attachment_author ? $attachment_author->user_email : '',
+						'wp_site'              => $site_url,
+						'wp_author_first_name' => $author_first_name,
+						'wp_author_last_name'  => $author_last_name,
+						'public'               => 1,
 					),
 					$watermark_to_use
 				),
 			);
 
-			$transcoding_url = $this->transcoding_api_url . 'resource/Transcoder Job';
+			$transcoding_url = $this->transcoding_api_url . 'resource/Transcoder Job' . ( empty( $transcoding_job_id ) ? '' : '/' . $transcoding_job_id );
 
-			// Block if blacklisted ip address.
-			$remote_address_key = 'REMOTE_ADDR';
-			$client_ip          = isset( $_SERVER[ $remote_address_key ] ) ? filter_var( $_SERVER[ $remote_address_key ], FILTER_VALIDATE_IP ) : '';
-			if ( ! empty( $client_ip ) && in_array( $client_ip, rtgodam_get_blacklist_ip_addresses(), true ) ) {
-				return $metadata;
-			}
-
-			$upload_page = wp_remote_post( $transcoding_url, $args );
+			$upload_page = wp_remote_request( $transcoding_url, $args );
 
 			if ( ! is_wp_error( $upload_page ) &&
 				(
@@ -401,6 +452,12 @@ class RTGODAM_Transcoder_Handler {
 	public function update_usage( $key ) {
 
 		$response = rtgodam_verify_api_key( $key );
+
+		// Check if response is WP_Error before accessing array elements.
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
 		update_option( 'rtgodam-usage', array( $key => (object) $response['data'] ) );
 
 		return $response;

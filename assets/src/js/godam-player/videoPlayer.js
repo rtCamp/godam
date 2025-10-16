@@ -15,6 +15,7 @@ import ChaptersManager from './managers/chaptersManager.js';
 import AdsManager from './managers/adsManager.js';
 import HoverManager from './managers/hoverManager.js';
 import ShareManager from './managers/shareManager.js';
+import MenuButtonHoverManager from './managers/menuButtonHover.js';
 
 /**
  * Refactored Video Player Class
@@ -64,6 +65,11 @@ export default class GodamVideoPlayer {
 	 */
 	initializePlayer() {
 		this.player = videojs( this.video, this.configManager.videoSetupControls );
+
+		// Initialize ads manager
+		this.adsManager = new AdsManager( this.player, this.configManager );
+		this.adsManager?.setupAdsIntegration();
+
 		this.setupAspectRatio();
 		this.setupPlayerReady();
 	}
@@ -90,9 +96,21 @@ export default class GodamVideoPlayer {
 			this.setupCaptionsButton();
 			this.player.jobId = this.video.dataset.job_id;
 			this.initializeChapters();
+			this.setupQualitySelector();
 
 			// Now that managers are initialized, we can safely access them
 			this.setupEventListeners();
+			new MenuButtonHoverManager( this.player );
+
+			// Emit custom event for external developers
+			const playerReadyEvent = new CustomEvent( 'godamPlayerReady', {
+				detail: {
+					attachmentId: this.video.dataset.id,
+					videoElement: this.video,
+					player: this.player,
+				},
+			} );
+			document.dispatchEvent( playerReadyEvent );
 		} );
 	}
 
@@ -132,9 +150,6 @@ export default class GodamVideoPlayer {
 
 		// Initialize chapters manager
 		this.chaptersManager = new ChaptersManager( this.player, this.video );
-
-		// Initialize ads manager
-		this.adsManager = new AdsManager( this.player, this.configManager );
 
 		// Initialize hover and share managers (existing)
 		this.hoverManager = new HoverManager( this.player, this.video );
@@ -189,7 +204,6 @@ export default class GodamVideoPlayer {
 	setupEventListeners() {
 		this.eventsManager?.setupEventListeners();
 		this.layersManager?.setupLayers();
-		this.adsManager?.setupAdsIntegration();
 	}
 
 	/**
@@ -203,5 +217,53 @@ export default class GodamVideoPlayer {
 
 		// Handle hotspot layers
 		this.layersManager.handleHotspotLayersTimeUpdate( currentTime );
+	}
+
+	/**
+	 * If quality selector button is not present, render it.
+	 */
+	renderQualitySelectorButton() {
+		if ( this.player.qualityLevels && this.player.qualityLevels().length > 0 ) {
+			// Avoid adding the button multiple times.
+			if ( typeof this.player.hlsQualitySelector === 'function' ) {
+				this.player.hlsQualitySelector();
+			} else if ( typeof this.player.qualityMenuButton === 'function' ) {
+				this.player.qualityMenuButton();
+			}
+
+			// Refresh control bar.
+			this.player.controlBar.show();
+			if ( this.player.qualityLevels ) {
+				this.player.qualityLevels().trigger( 'change' );
+			}
+		}
+	}
+
+	/**
+	 * Setup quality selector button in control bar.
+	 */
+	setupQualitySelector() {
+		// Force load. Required.
+		if ( this.player.readyState() === 0 ) {
+			this.player.load();
+		}
+
+		// Try to render immediately.
+		this.renderQualitySelectorButton();
+
+		/**
+		 * Check if quality button is already present.
+		 * If not, wait for quality levels to be available and then render it.
+		 */
+		if ( ! this.hasQualitySelectorButton() ) {
+			this.eventsManager.onQualityLevelsAvailable( () => this.renderQualitySelectorButton() );
+		}
+	}
+
+	/**
+	 * Check if quality button has been created
+	 */
+	hasQualitySelectorButton() {
+		return !! ( this.player.controlBar.getChild( 'QualityMenuButton' ) || this.player.controlBar.getChild( 'SettingsButton' ) );
 	}
 }

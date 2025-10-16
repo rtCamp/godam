@@ -6,7 +6,7 @@
  *
  * Currently, this is mainly used for forms integration.
  *
- * @since n.e.x.t
+ * @since 1.4.0
  *
  * @package GoDAM
  */
@@ -14,7 +14,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // Suppress Query Monitor's output for this template.
-do_action( 'qm/cease' );
+do_action( 'qm/cease' ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
 
 // We need to remove the admin bar for this template to avoid to display it on the video editor page.
 add_filter( 'show_admin_bar', '__return_false' ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
@@ -35,7 +35,7 @@ $layer_id = get_query_var( 'rtgodam-layer-id' );
 	/**
 	 * Action hook to allow additional content to be added before the layer is rendered.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.4.0
 	 *
 	 * @param string $layer The type of layer being rendered.
 	 * @param string $layer_id The ID of the layer being rendered.
@@ -52,7 +52,7 @@ $layer_id = get_query_var( 'rtgodam-layer-id' );
 				/**
 				 * Action hook to allow additional content to be added when the layer is rendered.
 				 *
-				 * @since n.e.x.t
+				 * @since 1.4.0
 				 *
 				 * @param string $layer The type of layer being rendered.
 				 * @param string $layer_id The ID of the layer being rendered.
@@ -64,7 +64,7 @@ $layer_id = get_query_var( 'rtgodam-layer-id' );
 		/**
 		 * Action hook to allow additional content to be added after the layer is rendered.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.4.0
 		 *
 		 * @param string $layer The type of layer being rendered.
 		 * @param string $layer_id The ID of the layer being rendered.

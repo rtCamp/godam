@@ -350,16 +350,36 @@ function rtgodam_is_api_key_valid() {
 }
 
 /**
+ * Checks if the given filename is an audio file based on its name.
+ * 
+ * Note: The files created by uppy webcam, screen capture, and audio plugin are in the same format. So we are checking the filename to determine if it's an audio file.
+ *
+ * @since 1.4.1
+ *
+ * @param string $filename The name of the file to check.
+ *
+ * @return bool True if the file is an audio file, false otherwise.
+ */
+function godam_is_audio_file_by_name( $filename ) {
+	// Extract only the basename (ignores full path).
+	$basename = basename( $filename );
+
+	// Check if 'audio' appears in the filename (case-insensitive).
+	return stripos( $basename, 'audio' ) !== false;
+}
+
+/**
  * Send Video file to GoDAM for transcoding.
  *
  * @param string  $form_type  Form Type.
  * @param string  $form_title Form Title.
  * @param string  $file_url   File URL.
  * @param integer $entry_id   Entry Id.
+ * @param string  $job_type   Job type Default is 'stream'.
  *
  * @return array|WP_Error
  */
-function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_title = '', $file_url = '', $entry_id = 0 ) {
+function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_title = '', $file_url = '', $entry_id = 0, $job_type = 'stream' ) {
 
 	/**
 	 * Extract file extension.
@@ -428,21 +448,39 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	/**
 	 * Prepare data to send as post request to CMM.
 	 */
+	// Get current user information for form submissions (since no specific attachment).
+	$current_user = wp_get_current_user();
+	$site_url     = get_site_url();
+
+	// Get author name with fallback to username.
+	$author_first_name = $current_user->first_name;
+	$author_last_name  = $current_user->last_name;
+	
+	// If first and last names are empty, use username as fallback.
+	if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
+		$author_first_name = $current_user->user_login;
+	}
+
 	$body = array_merge(
 		array(
-			'api_token'       => $api_key,
-			'job_type'        => 'stream',
-			'job_for'         => ! empty( $form_type ) ? $form_type . '-godam-recorder' : 'gf-godam-recorder',
-			'file_origin'     => rawurlencode( $file_url ),
-			'callback_url'    => rawurlencode( $callback_url ),
-			'status_callback' => rawurlencode( $status_callback_url ),
-			'force'           => 0,
-			'formats'         => $file_extension,
-			'thumbnail_count' => 0,
-			'stream'          => true,
-			'watermark'       => boolval( $rtgodam_watermark ),
-			'resolutions'     => array( 'auto' ),
-			'folder_name'     => ! empty( $form_title ) ? $form_title : __( 'Gravity forms', 'godam' ),
+			'api_token'            => $api_key,
+			'job_type'             => $job_type ?? 'stream',
+			'job_for'              => ! empty( $form_type ) ? $form_type . '-godam-recorder' : 'gf-godam-recorder',
+			'file_origin'          => rawurlencode( $file_url ),
+			'callback_url'         => rawurlencode( $callback_url ),
+			'status_callback'      => rawurlencode( $status_callback_url ),
+			'force'                => 0,
+			'formats'              => $file_extension,
+			'thumbnail_count'      => 0,
+			'stream'               => true,
+			'watermark'            => boolval( $rtgodam_watermark ),
+			'resolutions'          => array( 'auto' ),
+			'folder_name'          => ! empty( $form_title ) ? $form_title : __( 'Gravity forms', 'godam' ),
+			'wp_author_email'      => $current_user->user_email,
+			'wp_site'              => $site_url,
+			'wp_author_first_name' => $author_first_name,
+			'wp_author_last_name'  => $author_last_name,
+			'public'               => 1,
 		),
 		$watermark_to_use
 	);
@@ -487,7 +525,7 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
  *
  * @param string $duration        The raw duration value in seconds.
  * @param string $duration_format The format to use (default, minutes, seconds).
- * 
+ *
  * @return string The formatted duration string.
  */
 function rtgodam_block_format_video_duration( $duration, $duration_format = 'default' ) {
@@ -519,6 +557,96 @@ function rtgodam_block_format_video_duration( $duration, $duration_format = 'def
 }
 
 /**
+ * Retrieves user data for the current session.
+ *
+ * This function checks if a user is logged in and returns their email and display name.
+ * If no user is logged in, it checks for a guest user cookie and returns the guest user's
+ * email and constructed name. If neither is available, it defaults to a bot email and
+ * guest name.
+ *
+ * @return array An associative array containing 'email' and 'name' of the user or guest.
+ */
+function rtgodam_get_current_logged_in_user_data() {
+	if ( is_user_logged_in() ) {
+		$current_user = wp_get_current_user();
+		return array(
+			'email' => $current_user->user_email,
+			'name'  => $current_user->display_name,
+			'type'  => 'user',
+		);
+	}
+
+	// @To-do: Check for guest user cookie when we introduce this feature.
+
+	$domain = preg_replace( '/^www\./', '', wp_parse_url( home_url(), PHP_URL_HOST ) );
+	return array(
+		'email' => 'anonymous@' . $domain,
+		'name'  => __( 'Anonymous', 'godam' ),
+		'type'  => 'non-user',
+	);
+}
+
+/**
+ * Retrieves a cached value by key.
+ *
+ * This function checks if the external object cache is being used.
+ * If so, it retrieves the cached value using the WordPress cache API.
+ * Otherwise, it retrieves the value from the transient API.
+ *
+ * @param string $key The cache key to retrieve the value for.
+ * @return mixed The cached value, or false if the value does not exist.
+ */
+function rtgodam_cache_get( $key ) {
+	if ( wp_using_ext_object_cache() ) {
+		return wp_cache_get( $key );
+	} else {
+		return get_transient( $key );
+	}
+}
+
+/**
+ * Sets a value in the cache for a given key.
+ *
+ * This function checks if the external object cache is being used.
+ * If so, it sets the value using the WordPress cache API.
+ * Otherwise, it sets the value using the transient API.
+ *
+ * @param string $key     The cache key to set the value for.
+ * @param mixed  $value   The value to set.
+ * @param int    $expiration Optional. The time until the value expires in seconds.
+ *
+ * @return bool True on success, false on failure.
+ */
+function rtgodam_cache_set( $key, $value, $expiration = 900 ) {
+	if ( is_string( $expiration ) || $expiration < 300 ) {
+		$expiration = 300;
+	}
+	if ( wp_using_ext_object_cache() ) {
+		return wp_cache_set( $key, $value, '', $expiration ); // phpcs:ignore
+	} else {
+		return set_transient( $key, $value, $expiration );
+	}
+}
+
+/**
+ * Deletes a cached value by key.
+ *
+ * This function checks if the external object cache is being used.
+ * If so, it deletes the cached value using the WordPress cache API.
+ * Otherwise, it deletes the value using the transient API.
+ *
+ * @param string $key The cache key to delete the value for.
+ * @return bool True on success, false on failure.
+ */
+function rtgodam_cache_delete( $key ) {
+	if ( wp_using_ext_object_cache() ) {
+		return wp_cache_delete( $key );
+	} else {
+		return delete_transient( $key );
+	}
+}
+
+/**
  * Fetch AI-generated video transcript path.
  *
  * @param string $job_id  The transcription job ID.
@@ -542,7 +670,16 @@ function godam_get_transcript_path( $job_id ) {
 			RTGODAM_API_BASE . '/api/method/godam_core.api.process.get_transcription'
 		);
 
-		$response = wp_remote_get( $rest_url, array( 'timeout' => 3 ) );
+		// Add headers to prevent 417 Expectation Failed error.
+		$args = array(
+			'timeout' => 3,
+			'headers' => array(
+				'User-Agent' => 'WordPress/' . get_bloginfo( 'version' ) . '; ' . home_url(),
+				'Accept'     => 'application/json',
+			),
+		);
+
+		$response = wp_remote_get( $rest_url, $args );
 
 		if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
 			$body = wp_remote_retrieve_body( $response );
@@ -557,8 +694,37 @@ function godam_get_transcript_path( $job_id ) {
 				// Cache for 12 hours.
 				set_transient( $cache_key, $transcript_path, 12 * HOUR_IN_SECONDS );
 			}
-		}
+		} 
 	}
 
 	return ! empty( $transcript_path ) ? $transcript_path : false;
+}
+
+/**
+ * Check if the current environment is localhost.
+ * 
+ * This function checks the server's remote address and host to determine if the site is running in a local development environment.
+ * It checks against a whitelist of common localhost IPs and also looks for '.local' or '.test' in the host name.
+ * Additionally, it respects the RTGODAM_IS_LOCAL constant if defined.
+ * 
+ * @since 1.4.3
+ * 
+ * @return bool True if the environment is localhost, false otherwise.
+ */
+function rtgodam_is_local_environment() {
+
+	$whitelist = array( '127.0.0.1', '::1', 'localhost' );
+
+	// phpcs:disable -- Disabling phpcs as its not manipulating any data, just reading server variables, and function is used for local environment check only.
+	$server_addr = isset( $_SERVER['REMOTE_ADDR'] ) ? filter_var( $_SERVER[ 'REMOTE_ADDR' ], FILTER_VALIDATE_IP ) : '';
+	$host        = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
+	// phpcs:enable
+
+	$is_localhost = (
+		in_array( $server_addr, $whitelist, true ) ||
+		strpos( $host, '.local' ) !== false ||
+		strpos( $host, '.test' ) !== false
+	);
+
+	return ( $is_localhost || ( defined( 'RTGODAM_IS_LOCAL' ) && RTGODAM_IS_LOCAL ) );
 }

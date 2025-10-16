@@ -6,6 +6,7 @@ import Uppy from '@uppy/core';
 import Dashboard from '@uppy/dashboard';
 import Webcam from '@uppy/webcam';
 import ScreenCapture from '@uppy/screen-capture';
+import Audio from '@uppy/audio';
 import GoldenRetriever from '@uppy/golden-retriever';
 
 /**
@@ -35,6 +36,10 @@ class UppyVideoUploader {
 		this.fileInput = document.getElementById( this.inputId );
 		this.uploadButton = container.querySelector( `#${ this.uploadButtonId }` );
 
+		// Uppy target for forms used inside godam video.
+		this.uppyModalTarget = document.getElementById( 'uppy-godam-video-modal-container' );
+		this.uppyModalTargetId = null !== this.uppyModalTarget ? this.uppyModalTarget.id ?? '' : '';
+
 		// If necessary DOM elements are missing, abort initialization.
 		if ( ! this.fileInput || ! this.uploadButton ) {
 			return;
@@ -60,11 +65,12 @@ class UppyVideoUploader {
 			const sureForms = document.querySelector( 'div.srfm-success-box' );
 			const fluentForms = document.querySelector( 'div.ff-message-success' );
 			const wpForms = document.querySelector( 'div.wpforms-confirmation-container-full, div.wpforms-confirmation-container' );
+			const everestForms = document.querySelector( 'div.everest-forms-notice.everest-forms-notice--success' );
 
 			/**
 			 * If any of the forms have confirmation, remove uppy state.
 			 */
-			const removeUppyState = gravityForms || sureForms || fluentForms || wpForms;
+			const removeUppyState = gravityForms || sureForms || fluentForms || wpForms || everestForms;
 
 			if ( removeUppyState ) {
 				Object.keys( localStorage )
@@ -80,12 +86,21 @@ class UppyVideoUploader {
 	 * @return {Uppy} Configured Uppy instance.
 	 */
 	initializeUppy() {
+		let allowedFileTypes = [ ];
+		if ( this.selectorArray.includes( 'audio' ) && ( this.selectorArray.includes( 'webcam' ) || this.selectorArray.includes( 'screen_capture' ) ) ) {
+			allowedFileTypes = [ 'video/*', 'audio/*' ];
+		} else if ( this.selectorArray.includes( 'audio' ) ) {
+			allowedFileTypes = [ 'audio/*' ];
+		} else {
+			allowedFileTypes = [ 'video/*' ];
+		}
+
 		return new Uppy( {
 			id: `uppy-${ this.inputId }-${ this.uploadButtonId }`,
 			autoProceed: false,
 			restrictions: {
 				maxNumberOfFiles: 1,
-				allowedFileTypes: [ 'video/*' ],
+				allowedFileTypes,
 				maxFileSize: this.maxFileSize,
 			},
 		} );
@@ -118,6 +133,7 @@ class UppyVideoUploader {
 				showProgressDetails: true,
 				plugins: enabledPlugins,
 				disableLocalFiles: ! localFileInput,
+				target: this.uppyModalTargetId ? `#${ this.uppyModalTargetId }` : 'body',
 			} )
 			.use( GoldenRetriever, { expires: 10 * 60 * 1000 } ); // 10 min persistence.
 
@@ -136,6 +152,13 @@ class UppyVideoUploader {
 			this.uppy.use( ScreenCapture, { audio: true } );
 		}
 
+		// Optional Audio recording support.
+		if ( this.selectorArray.includes( 'audio' ) ) {
+			this.uppy.use( Audio, {
+				showRecordingLength: true,
+			} );
+		}
+
 		// Restore previous upload on reload if persisted.
 		this.uppy.on( 'restored', () => {
 			const restoredFile = this.uppy.getFiles()?.[ 0 ];
@@ -147,9 +170,9 @@ class UppyVideoUploader {
 		} );
 
 		// Handle file addition: process video and close modal.
-		this.uppy.on( 'file-added', ( file ) => {
+		this.uppy.on( 'file-added', async ( file ) => {
 			this.processVideoUpload( file, 'added' );
-			this.uppy.getPlugin( 'Dashboard' ).closeModal();
+			await this.uppy.getPlugin( 'Dashboard' ).closeModal();
 		} );
 
 		// Handle modal close without upload: clear UI preview.
@@ -192,6 +215,16 @@ class UppyVideoUploader {
 			previewElement.appendChild( videoPreview );
 		}
 
+		// Create an audio preview.
+		if ( previewElement && file.type.startsWith( 'audio/' ) ) {
+			const audioPreview = document.createElement( 'audio' );
+			audioPreview.controls = true;
+			audioPreview.style.width = '100%';
+			audioPreview.src = URL.createObjectURL( file.data );
+			previewElement.innerHTML = '';
+			previewElement.appendChild( audioPreview );
+		}
+
 		// Prepare file for the Gravity Forms file input for submission.
 		const dataTransfer = new DataTransfer();
 
@@ -199,6 +232,17 @@ class UppyVideoUploader {
 			// Convert blob data to a File object with correct type.
 			const fileName = file.name || 'video.webm';
 			const fileType = file.type || 'video/webm';
+			const fileBlob = new Blob( [ file.data ], { type: fileType } );
+			const fileObject = new File( [ fileBlob ], fileName, {
+				...file,
+				type: fileType,
+				lastModified: Date.now(),
+			} );
+			dataTransfer.items.add( fileObject );
+		} else if ( file.source === 'Audio' ) {
+			// Convert blob data to a File object with correct type.
+			const fileName = file.name || 'audio.webm';
+			const fileType = file.type || 'audio/webm';
 			const fileBlob = new Blob( [ file.data ], { type: fileType } );
 			const fileObject = new File( [ fileBlob ], fileName, {
 				...file,
@@ -214,7 +258,7 @@ class UppyVideoUploader {
 		this.fileInput.files = dataTransfer.files;
 		this.fileInput.dispatchEvent(
 			new CustomEvent(
-				'godamffchange',
+				'godamFormInputchange',
 				{
 					bubbles: true,
 					detail: {
@@ -248,7 +292,7 @@ class UppyVideoUploader {
 
 		this.fileInput.dispatchEvent(
 			new CustomEvent(
-				'godamffchange',
+				'godamFormInputchange',
 				{
 					bubbles: true,
 					detail: {
@@ -318,9 +362,12 @@ class UppyVideoUploader {
 document.addEventListener( 'DOMContentLoaded', () => {
 	UppyVideoUploader.clearUppyStateIfConfirmed();
 
-	document.querySelectorAll( '.uppy-video-upload' ).forEach( ( container ) => {
-		new UppyVideoUploader( container );
-	} );
+	// Timeout added to allow DOM updates to settle.
+	setTimeout( () => {
+		document.querySelectorAll( '.uppy-video-upload' ).forEach( ( container ) => {
+			new UppyVideoUploader( container );
+		} );
+	}, 100 );
 } );
 
 /**
@@ -355,5 +402,15 @@ jQuery( document ).ready( function() {
 	 */
 	jQuery( document ).on( 'wpformsAjaxSubmitSuccess', function() {
 		UppyVideoUploader.clearUppyStateIfConfirmed();
+	} );
+
+	/**
+	 * Everest Forms confirmation.
+	 */
+	jQuery( document ).on( 'everest_forms_ajax_submission_success', function() {
+		UppyVideoUploader.clearUppyStateIfConfirmed();
+
+		// Clear the local storage data for Everest Forms.
+		localStorage.removeItem( 'godam-evf-recorder-data' );
 	} );
 } );

@@ -15,8 +15,15 @@ import 'videojs-flvjs-es6';
 /**
  * FontAwesome dependencies
  */
-import { library, dom } from '@fortawesome/fontawesome-svg-core';
-import { fas } from '@fortawesome/free-solid-svg-icons';
+
+async function loadHotspotIcons() {
+	const { library, dom } = await import( '@fortawesome/fontawesome-svg-core' );
+	const { fas } = await import( '@fortawesome/free-solid-svg-icons' );
+	library.add( fas );
+	dom.watch();
+}
+
+loadHotspotIcons();
 
 /**
  * Quill dependencies dependencies for the CTA text layer
@@ -28,8 +35,7 @@ import 'quill/dist/quill.snow.css';
  */
 import PlayerManager from './managers/playerManager.js';
 
-library.add( fas );
-dom.watch();
+import './api/godam-api.js';
 
 /**
  * Initialize player on DOM content loaded

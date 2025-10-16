@@ -362,20 +362,6 @@ function rtgodam_get_server_var( $server_key, $filter_type = FILTER_SANITIZE_FUL
 }
 
 /**
- * Get local ip addresses for block.
- *
- * @return array
- */
-function rtgodam_get_blacklist_ip_addresses() {
-	// If custom API URL added then don't block local ips.
-	if ( defined( 'RTGODAM_TRANSCODER_API_URL' ) ) {
-		return array();
-	}
-
-	return array( '127.0.0.1', '::1' );
-}
-
-/**
  * Helper function to verify the api key.
  *
  * @param string $api_key The api key to verify.
@@ -385,16 +371,19 @@ function rtgodam_get_blacklist_ip_addresses() {
  */
 function rtgodam_verify_api_key( $api_key, $save = false ) {
 	if ( empty( $api_key ) ) {
-		return new \WP_Error( 'missing_api_key', 'API key is required.', array( 'status' => 400 ) );
+		return new \WP_Error( 'missing_api_key', __( 'API key is required.', 'godam' ), array( 'status' => 400 ) );
 	}
 
 	$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.verification.verify_api_key';
 
-	// Prepare request body.
-	$site_url     = get_site_url();
+	// Prepare request body with site title.
+	$site_url   = get_site_url();
+	$site_title = get_bloginfo( 'name' ); // Get site title from WordPress options.
+	
 	$request_body = array(
-		'api_key'  => $api_key,
-		'site_url' => $site_url,
+		'api_key'    => $api_key,
+		'site_url'   => $site_url,
+		'site_title' => $site_title, // Add site title to request.
 	);
 
 	$args = array(
@@ -576,6 +565,9 @@ function rtgodam_get_localize_array() {
 	}
 
 	$localize_array['token'] = get_option( 'rtgodam-account-token', 'unverified' );
+	
+	// Admin page detection.
+	$localize_array['isAdminPage'] = is_admin();
 
 	return $localize_array;
 }

@@ -14,6 +14,7 @@ import { __ } from '@wordpress/i18n';
 import GoDAM from '../../../../../assets/src/images/GoDAM.png';
 import SettingsButton from '../masterSettings.js';
 import { PLAYER_SKINS } from '../utils/constants.js';
+import MenuButtonHoverManager from './menuButtonHover.js';
 
 /**
  * Controls Manager
@@ -32,6 +33,7 @@ export default class ControlsManager {
 	setupPlayerConfiguration() {
 		this.setupControlBarConfiguration();
 		this.setupCustomButtons();
+		new MenuButtonHoverManager( this.player );
 	}
 
 	/**
@@ -43,6 +45,8 @@ export default class ControlsManager {
 		this.setupPlayButtonPosition( controlBarSettings );
 		this.setupControlBarComponents( controlBarSettings );
 		this.setupCustomPlayButton( controlBarSettings );
+
+		this.setupCustomFullscreenButton();
 	}
 
 	/**
@@ -65,6 +69,118 @@ export default class ControlsManager {
 		const position = controlBarSettings?.playButtonPosition;
 		if ( position && alignments.includes( `${ position }-align` ) ) {
 			playButton.addClass( `${ position }-align` );
+		}
+	}
+
+	/**
+	 * Create a custom fullscreen button
+	 *
+	 * @return {Object} - The custom fullscreen button instance
+	 */
+	createCustomFullscreenButton() {
+		class CustomFullscreenButton extends videojs.getComponent( 'Button' ) {
+			constructor( player, options ) {
+				super( player, options );
+				this.controlText( __( 'Custom Fullscreen', 'godam' ) );
+			}
+
+			createEl() {
+				const el = super.createEl();
+				el.classList.add( 'vjs-fullscreen-control', 'vjs-control', 'vjs-button', 'godam-fullscreen-button' );
+
+				return el;
+			}
+
+			handleClick( e ) {
+				const videoContainer = e.target.closest( '.video-js' );
+				const godamVideoContainer = e.target.closest( '.easydam-video-container' );
+
+				const isFullscreen = videoContainer && videoContainer.classList.contains( 'vjs-fullscreen' );
+
+				if ( isFullscreen ) {
+					if ( videoContainer ) {
+						videoContainer.classList.remove( 'vjs-fullscreen' );
+					}
+					if ( godamVideoContainer ) {
+						godamVideoContainer.classList.remove( 'godam-video-fullscreen' );
+					}
+				} else {
+					if ( videoContainer ) {
+						videoContainer.classList.add( 'vjs-fullscreen' );
+					}
+					if ( godamVideoContainer ) {
+						godamVideoContainer.classList.add( 'godam-video-fullscreen' );
+					}
+				}
+			}
+		}
+		if ( ! videojs.getComponent( 'CustomFullscreenButton' ) ) {
+			videojs.registerComponent( 'CustomFullscreenButton', CustomFullscreenButton );
+		}
+		return new CustomFullscreenButton( this.player );
+	}
+
+	/**
+	 * Exit fullscreen button
+	 */
+	createCustomFullscreenExitButton() {
+		class CustomFullscreenExitButton extends videojs.getComponent( 'Button' ) {
+			constructor( player, options ) {
+				super( player, options );
+				this.controlText( __( 'Exit Fullscreen', 'godam' ) );
+			}
+
+			createEl() {
+				const el = super.createEl();
+				el.classList.add( 'vjs-custom-fullscreen-exit-control', 'vjs-control', 'vjs-button' );
+
+				return el;
+			}
+
+			handleClick( e ) {
+				const videoContainer = e.target.closest( '.video-js' );
+				const godamVideoContainer = e.target.closest( '.easydam-video-container' );
+
+				if ( videoContainer ) {
+					videoContainer.classList.remove( 'vjs-fullscreen' );
+				}
+				if ( godamVideoContainer ) {
+					godamVideoContainer.classList.remove( 'godam-video-fullscreen' );
+				}
+			}
+		}
+		if ( ! videojs.getComponent( 'CustomFullscreenExitButton' ) ) {
+			videojs.registerComponent( 'CustomFullscreenExitButton', CustomFullscreenExitButton );
+		}
+		return new CustomFullscreenExitButton( this.player );
+	}
+
+	/**
+	 * Check if the device is iOS
+	 *
+	 * @return {boolean} - True if iOS device, false otherwise
+	 */
+	checkIOSDevice() {
+		const userAgent = window.navigator.userAgent.toLowerCase();
+		return /iphone|ipad|ipod/.test( userAgent );
+	}
+
+	/**
+	 * Setup custom fullscreen button
+	 * This is for iOS devices that does not support videojs on fullscreen mode
+	 */
+	setupCustomFullscreenButton() {
+		// Add custom fullscreen button to control bar
+		const controlBar = this.player.controlBar;
+		const controlBarEl = controlBar.el();
+		const _fullscreenButton = controlBarEl.querySelector( '.vjs-fullscreen-control.vjs-control.vjs-button' );
+		if ( _fullscreenButton && this.checkIOSDevice() ) { // Also check if is iOS device.
+			// Replace fullscreen button with custom implementation
+			const customFullscreenButton = this.createCustomFullscreenButton();
+			_fullscreenButton.parentNode.replaceChild( customFullscreenButton.el(), _fullscreenButton );
+			// Add exit button
+			const customFullscreenExitButton = this.createCustomFullscreenExitButton();
+			controlBar.addChild( customFullscreenExitButton );
 		}
 	}
 

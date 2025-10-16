@@ -24,7 +24,7 @@ const options = [
  * @return {WPElement} The video settings component.
  */
 const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false } ) => {
-	const { autoplay, controls, loop, muted, preload, showShareButton } =
+	const { autoplay, controls, loop, muted, preload, showShareButton, engagements } =
 	attributes;
 
 	// Show a specific help for autoplay setting.
@@ -65,6 +65,7 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 			loop: toggleAttribute( 'loop' ),
 			muted: toggleAttribute( 'muted' ),
 			controls: toggleAttribute( 'controls' ),
+			engagements: toggleAttribute( 'engagements' ),
 			showShareButton: toggleAttribute( 'showShareButton' ),
 		};
 	}, [ setAttributes ] );
@@ -127,6 +128,13 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 					hideCancelButton
 				/>
 			) }
+			<ToggleControl
+				__nextHasNoMarginBottom
+				label={ __( 'Enable Likes & Comments', 'godam' ) }
+				onChange={ toggleFactory.engagements }
+				checked={ !! engagements }
+				help={ __( 'Engagement will only be visible for transcoded videos', 'godam' ) }
+			/>
 		</>
 	);
 };

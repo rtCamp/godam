@@ -26,6 +26,17 @@ if ( isset( $is_elementor_widget ) && $is_elementor_widget ) {
 // prevent default behavior of Gravity Forms autoscroll on submission.
 add_filter( 'gform_confirmation_anchor', '__return_false' );
 
+// Check if the block attributes are set and is an array.
+if ( ! isset( $attributes ) || ! is_array( $attributes ) ) {
+	$attributes = array();
+}
+
+// Create filter for the block attributes.
+$attributes = apply_filters(
+	'godam_player_block_attributes',
+	$attributes
+);
+
 // attributes.
 $autoplay       = ! empty( $attributes['autoplay'] );
 $controls       = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
@@ -36,12 +47,23 @@ $preload        = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['pre
 $hover_select   = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSelect'] : 'none';
 $caption        = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
 $tracks         = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
-$attachment_id  = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
 $show_share_btn = ! empty( $attributes['showShareButton'] );
+
+// Resolve the attachment ID (could be WordPress or virtual media).
+$attachment_id = '';
+
+// Prefer "id" if available.
+if ( ! empty( $attributes['id'] ) ) {
+	$attachment_id = is_numeric( $attributes['id'] )
+		? intval( $attributes['id'] )   // WordPress media ID.
+		: sanitize_text_field( $attributes['id'] ); // Virtual media ID.
+} elseif ( ! empty( $attributes['cmmId'] ) ) { // Fallback to "cmmId" for backward compatibility.
+	$attachment_id = sanitize_text_field( $attributes['cmmId'] );
+}
 
 // Determine whether the attachment ID refers to a virtual (GoDAM) media item.
 // If it's not numeric, we assume it's a virtual reference (e.g., a GoDAM ID).
-$is_virtual  = ! is_numeric( $attachment_id );
+$is_virtual  = ! empty( $attachment_id ) && ! is_numeric( $attachment_id );
 $original_id = $attachment_id;
 
 if ( $is_virtual ) {
@@ -75,8 +97,9 @@ $aspect_ratio       = ! empty( $attributes['aspectRatio'] ) && 'responsive' === 
 	)
 	: '16:9';
 
-$src            = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
-$transcoded_url = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attributes['transcoded_url'] ) : '';
+$src                = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
+$transcoded_url     = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attributes['transcoded_url'] ) : '';
+$hls_transcoded_url = ! empty( $attributes['hls_transcoded_url'] ) ? esc_url( $attributes['hls_transcoded_url'] ) : '';
 
 // Retrieve 'rtgodam_meta' for the given attachment ID, defaulting to an empty array if not found.
 $easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_meta', true ) : array();
@@ -99,10 +122,23 @@ if ( empty( $attachment_id ) ) {
 	$job_id = ! empty( $attributes['cmmId'] ) ? sanitize_text_field( $attributes['cmmId'] ) : '';
 }
 
-if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
+if ( ( empty( $attachment_id ) || ( $is_virtual && ! empty( $original_id ) ) ) &&
+	! empty( $attributes['sources'] ) 
+) {
+	// If media is virtual media.
 	$sources = $attributes['sources'];
-} elseif ( empty( $attachment_id ) && ! ( empty( $src ) && empty( $transcoded_url ) ) ) {
+} elseif ( empty( $attachment_id ) &&
+	! ( empty( $src ) && empty( $transcoded_url ) && empty( $hls_transcoded_url ) )
+) {
+	// in case of shortcode with src or transcoded_url or hls_transcoded_url attribute.
 	$sources = array();
+
+	if ( ! empty( $hls_transcoded_url ) ) {
+		$sources[] = array(
+			'src'  => $hls_transcoded_url,
+			'type' => 'application/x-mpegURL',
+		);
+	}
 	if ( ! empty( $transcoded_url ) ) {
 		$sources[] = array(
 			'src'  => $transcoded_url,
@@ -116,6 +152,12 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 		);
 	}
 } else {
+
+	if ( $is_virtual ) {
+		// For virtual media, we need to get the actual attachment ID first.
+		$attachment_id = $original_id;
+	}
+
 	$transcoded_url     = $attachment_id ? rtgodam_get_transcoded_url_from_attachment( $attachment_id ) : '';
 	$hls_transcoded_url = $attachment_id ? rtgodam_get_hls_transcoded_url_from_attachment( $attachment_id ) : '';
 	$video_src          = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
@@ -131,17 +173,17 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	}
 	$sources = array();
 
-	if ( ! empty( $transcoded_url ) ) {
-		$sources[] = array(
-			'src'  => $transcoded_url,
-			'type' => 'application/dash+xml',
-		);
-	}
-
 	if ( ! empty( $hls_transcoded_url ) ) {
 		$sources[] = array(
 			'src'  => $hls_transcoded_url,
 			'type' => 'application/x-mpegURL',
+		);
+	}
+
+	if ( ! empty( $transcoded_url ) ) {
+		$sources[] = array(
+			'src'  => $transcoded_url,
+			'type' => 'application/dash+xml',
 		);
 	}
 
@@ -195,13 +237,14 @@ $video_setup = array(
 	'sources'     => $sources,
 	'playsinline' => true,
 	'controlBar'  => array(
-		'volumePanel' => array(
+		'volumePanel'  => array(
 			'inline' => ! in_array( $player_skin, array( 'Minimal', 'Pills' ), true ),
 		),
-		'skipButtons' => array(
+		'skipButtons'  => array(
 			'forward'  => 10,
 			'backward' => 10,
 		),
+		'brandingIcon' => true, // provide default value for brand logo. 
 	),
 );
 if ( ! empty( $control_bar_settings ) ) {
@@ -310,11 +353,24 @@ if ( ! empty( $transcript_path ) ) {
 	);
 }
 
+$attachment_title = '';
+
+if ( ! empty( $attachment_id ) && is_numeric( $attachment_id ) ) {
+	$attachment_title = get_the_title( $attachment_id );
+} elseif ( ! empty( $original_id ) && is_numeric( $original_id ) ) {
+	$attachment_title = get_the_title( $original_id );
+}
+// Use the filename as the title.
+if ( empty( $attachment_title ) ) {
+	$attachment_title = basename( get_attached_file( $attachment_id ) );
+}
 
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
-	<figure <?php echo wp_kses_data( $figure_attributes ); ?>>
+	<figure 
+		id="godam-player-container-<?php echo esc_attr( $instance_id ); ?>"
+		<?php echo wp_kses_data( $figure_attributes ); ?>>
 		<div class="godam-video-wrapper">
 			<?php if ( $show_overlay && ! empty( $inner_blocks_content ) ) : ?>
 				<div
@@ -342,24 +398,15 @@ if ( ! empty( $transcript_path ) ) {
 					class="easydam-player video-js vjs-big-play-centered vjs-hidden"
 					data-options="<?php echo esc_attr( $video_config ); ?>"
 					data-ad_tag_url="<?php echo esc_url( $ad_tag_url ); ?>"
-					data-id="<?php echo esc_attr( $attachment_id ); ?>"
+					data-id="<?php echo esc_attr( is_numeric( $attachment_id ) ? $attachment_id : $original_id ); ?>"
 					data-instance-id="<?php echo esc_attr( $instance_id ); ?>"
 					data-controls="<?php echo esc_attr( $video_setup ); ?>"
 					data-job_id="<?php echo esc_attr( $job_id ); ?>"
 					data-global_ads_settings="<?php echo esc_attr( $ads_settings ); ?>"
 					data-hover-select="<?php echo esc_attr( $hover_select ); ?>"
+					data-video-title="<?php echo esc_attr( $attachment_title ); ?>"
 				>
 					<?php
-					foreach ( $sources as $source ) :
-						if ( ! empty( $source['src'] ) && ! empty( $source['type'] ) ) :
-							?>
-							<source
-								src="<?php echo esc_url( $source['src'] ); ?>"
-								type="<?php echo esc_attr( $source['type'] ); ?>"
-							/>
-							<?php
-						endif;
-					endforeach;
 
 					$display_caption = ( ! isset( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) ) ||
 						( isset( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) && $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] );
@@ -382,6 +429,8 @@ if ( ! empty( $transcript_path ) ) {
 					}
 					?>
 				</video>
+				<!-- Add this to target godam uppy modal inside video. -->
+				<div id="uppy-godam-video-modal-container"></div>
 
 				<!-- Dynamically render shortcodes for form layers. -->
 				<?php
@@ -604,6 +653,9 @@ if ( ! empty( $transcript_path ) ) {
 
 		<?php if ( $caption && ! empty( $caption ) ) : ?>
 			<figcaption class="wp-element-caption rtgodam-video-caption"><?php echo esc_html( $caption ); ?></figcaption>
-		<?php endif; ?>
+			<?php
+			endif;
+				do_action( 'rtgodam_after_video_html', $attributes, $instance_id, $easydam_meta_data );
+		?>
 	</figure>
 <?php endif; ?>

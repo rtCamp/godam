@@ -20,7 +20,15 @@ export default class LayersManager {
 
 		// Initialize sub-managers
 		this.formLayerManager = new FormLayerManager( player, isDisplayingLayers, currentPlayerVideoInstanceId );
-		this.hotspotLayerManager = new HotspotLayerManager( player );
+		this.hotspotLayerManager = new HotspotLayerManager( player, isDisplayingLayers, currentPlayerVideoInstanceId );
+
+		/**
+		 * Naming convention is bit unusual here to avoid confusion with the main player instance.
+		 *
+		 * Basically we only need this for the player developer API.
+		 * in future if we also need hotspot layer, this can be thought of again.
+		 */
+		this.player.layersManager = this.formLayerManager;
 	}
 
 	/**

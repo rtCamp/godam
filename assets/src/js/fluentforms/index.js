@@ -37,7 +37,7 @@ class FluentForms {
 				'.ff-uploaded-list.godam-recorder',
 			);
 
-			fileInput.addEventListener( 'godamffchange', ( e ) =>
+			fileInput.addEventListener( 'godamFormInputchange', ( e ) =>
 				this.handleFileUpload( e, uploadedList ),
 			);
 		} );

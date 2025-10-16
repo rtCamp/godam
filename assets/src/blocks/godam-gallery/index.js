@@ -2,13 +2,13 @@
  * WordPress dependencies
  */
 import { registerBlockType } from '@wordpress/blocks';
-import { grid as icon } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import edit from './edit';
 import metadata from './block.json';
+import { ReactComponent as icon } from '../../images/godam-gallery-filled.svg';
 
 /**
  * Register the block
