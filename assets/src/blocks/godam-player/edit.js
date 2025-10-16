@@ -46,6 +46,7 @@ import VideoSEOModal from './components/VideoSEOModal.js';
 import { appendTimezoneOffsetToUTC, isSEODataEmpty, secondsToISO8601 } from './utils/index.js';
 import './editor.scss';
 import { ReactComponent as icon } from '../../images/godam-video-filled.svg';
+import { canManageAttachment } from '../../js/media-library/utility';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
 const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
@@ -126,6 +127,7 @@ function VideoEdit( {
 	const [ isSEOModalOpen, setIsSEOModelOpen ] = useState( false );
 	const [ duration, setDuration ] = useState( 0 );
 	const [ isVideoSelecting, setIsVideoSelecting ] = useState( false );
+	const [ attachmentAuthorId, setattachmentAuthorId ] = useState( null );
 	const isInsideQueryLoop = context?.hasOwnProperty( 'queryId' );
 
 	const dispatch = useDispatch();
@@ -194,6 +196,10 @@ function VideoEdit( {
 			( async () => {
 				try {
 					const response = await apiFetch( { path: `/wp/v2/media/${ id }` } );
+
+					if ( response.author ) {
+						setattachmentAuthorId( response.author );
+					}
 
 					if ( response.meta.rtgodam_media_video_thumbnail !== '' ) {
 						setDefaultPoster( response.meta.rtgodam_media_video_thumbnail );
@@ -679,20 +685,22 @@ function VideoEdit( {
 									</MediaUploadCheck>
 								</BaseControl>
 
-								<BaseControl
-									id={ `video-block__video-editor-${ instanceId }` }
-									label={ __( 'Customise Video', 'godam' ) }
-									__nextHasNoMarginBottom
-								>
-									<Button
-										__next40pxDefaultSize
-										href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
-										target="_blank"
-										variant="primary"
+								{ canManageAttachment( attachmentAuthorId ) && (
+									<BaseControl
+										id={ `video-block__video-editor-${ instanceId }` }
+										label={ __( 'Customise Video', 'godam' ) }
+										__nextHasNoMarginBottom
 									>
-										{ __( 'Customise', 'godam' ) }
-									</Button>
-								</BaseControl>
+										<Button
+											__next40pxDefaultSize
+											href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
+											target="_blank"
+											variant="primary"
+										>
+											{ __( 'Customise', 'godam' ) }
+										</Button>
+									</BaseControl>
+								) }
 
 								<BaseControl
 									id={ `video-block__video-seo-${ instanceId }` }
