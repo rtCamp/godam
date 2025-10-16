@@ -13,7 +13,7 @@
  * - Managing layer lifecycle (show, hide, dismiss)
  * - Converting between absolute and percentage-based timing
  *
- * @since n.e.x.t
+ * @since 1.4.4
  */
 
 /* eslint-disable no-console */
@@ -45,7 +45,7 @@
  * player.pause();
  * player.seek(30);
  *
- * @since n.e.x.t
+ * @since 1.4.4
  */
 class Player {
 	videoJs = null;

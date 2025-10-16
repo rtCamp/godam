@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GoDAM 1.4.3\n"
+"Project-Id-Version: GoDAM 1.4.4\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-10-09T09:20:00+00:00\n"
+"POT-Creation-Date: 2025-10-15T09:42:32+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -277,41 +277,49 @@ msgstr ""
 msgid "Invalid API key."
 msgstr ""
 
-#: admin/godam-transcoder-actions.php:49
+#: admin/godam-transcoder-actions.php:54
+msgid "oEmbed URL"
+msgstr ""
+
+#: admin/godam-transcoder-actions.php:63
+msgid "The oEmbed URL of the file is generated automatically and cannot be edited."
+msgstr ""
+
+#: admin/godam-transcoder-actions.php:69
 #: assets/src/js/media-library/views/attachment-details.js:134
 msgid "Transcoded CDN URL (MPD)"
 msgstr ""
 
-#: admin/godam-transcoder-actions.php:58
+#: admin/godam-transcoder-actions.php:78
 #: assets/src/js/media-library/views/attachment-details.js:136
 msgid "The URL of the transcoded file is generated automatically and cannot be edited."
 msgstr ""
 
-#: admin/godam-transcoder-actions.php:64
+#: admin/godam-transcoder-actions.php:84
 #: assets/src/js/media-library/views/attachment-details.js:146
 msgid "Transcoded CDN URL (HLS)"
 msgstr ""
 
-#: admin/godam-transcoder-actions.php:73
+#: admin/godam-transcoder-actions.php:93
 #: assets/src/js/media-library/views/attachment-details.js:148
 msgid "The HLS URL of the transcoded file is generated automatically and cannot be edited."
 msgstr ""
 
-#: admin/godam-transcoder-actions.php:79
+#: admin/godam-transcoder-actions.php:99
 msgid "Transcoded CDN URL "
 msgstr ""
 
-#: admin/godam-transcoder-actions.php:87
+#: admin/godam-transcoder-actions.php:107
 msgid "Available in Premium version"
 msgstr ""
 
 #. translators: %1$s URL to the settings page, %2$s API key label.
-#: admin/godam-transcoder-actions.php:92
+#: admin/godam-transcoder-actions.php:112
 #, php-format
 msgid "Activate the <a href=\"%1$s\" target=\"_blank\" rel=\"noopener noreferrer\">%2$s</a> to enable transcoding and adaptive bitrate streaming."
 msgstr ""
 
-#: admin/godam-transcoder-actions.php:94
+#: admin/godam-transcoder-actions.php:114
 msgid "API key"
 msgstr ""
 
@@ -3268,7 +3276,7 @@ msgstr ""
 msgid "copy icon"
 msgstr ""
 
-#: assets/src/js/godam-player/masterSettings.js:230
+#: assets/src/js/godam-player/masterSettings.js:264
 msgid "Invalid item"
 msgstr ""
 
