@@ -1,4 +1,4 @@
-@use "./common"; 
+@use "./_common"; // stylelint-disable-line scss/load-no-partial-leading-underscore
 @use './variables';
 @import url(https://vjs.zencdn.net/8.3.0/video-js.css);
 
