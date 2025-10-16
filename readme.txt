@@ -246,7 +246,7 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
-= v1.4.4 (October 15, 2025) =
+= v1.4.4 (October 16, 2025) =
 
 - Tweak: Introduced GoDAM Player SDK for developer integrations
 - Fix: Fixed the Copy Block feature for .mov videos
