@@ -130,7 +130,7 @@ class Recorder_Field extends BaseFieldManager {
 		wp_enqueue_style( 'godam-player-style' );
 
 		$godam_settings = get_option( 'rtgodam-settings', array() );
-		$selected_skin  = $godam_settings['video_player']['player_skin'] ?? '';
+		$selected_skin  = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : '';
 		if ( 'Minimal' === $selected_skin ) {
 			wp_enqueue_style( 'godam-player-minimal-skin' );
 		} elseif ( 'Pills' === $selected_skin ) {
@@ -835,6 +835,7 @@ class Recorder_Field extends BaseFieldManager {
 		 * Transcoded URL output.
 		 */
 		$transcoded_url_output = '';
+		$transcoded_url        = '';
 
 		if ( ! empty( $submission_meta ) ) {
 			$transcoded_url        = esc_url( $submission_meta->value );

@@ -175,7 +175,7 @@ class GoDAM_Player {
 		wp_enqueue_style( 'godam-player-style' );
 
 		$godam_settings = get_option( 'rtgodam-settings', array() );
-		$selected_skin  = $godam_settings['video_player']['player_skin'] ?? '';
+		$selected_skin  = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : '';
 		if ( 'Minimal' === $selected_skin ) {
 			wp_enqueue_style( 'godam-player-minimal-skin' );
 		} elseif ( 'Pills' === $selected_skin ) {
