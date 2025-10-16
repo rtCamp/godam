@@ -59,14 +59,7 @@ export default function Edit( { attributes, setAttributes } ) {
 	const [ startDatePopoverOpen, setStartDatePopoverOpen ] = useState( false );
 	const [ endDatePopoverOpen, setEndDatePopoverOpen ] = useState( false );
 	const [ dateError, setDateError ] = useState( '' );
-	const [ showEngagementSetting, setShowEngagementSetting ] = useState( false );
-
-	useEffect( () => {
-		apiFetch( { path: '/godam/v1/settings/godam-settings' } ).then( ( settings ) => {
-			const globalEngagement = settings?.video?.enable_global_video_engagement ?? true;
-			setShowEngagementSetting( globalEngagement );
-		} );
-	}, [] );
+	const showEngagementSetting = window?.godamSettings?.enableGlobalVideoEngagement ?? false;
 
 	// Fetch categories and tags
 	const categories = useSelect( ( select ) => {

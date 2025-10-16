@@ -3,8 +3,7 @@
  */
 import { __, _x } from '@wordpress/i18n';
 import { ToggleControl, SelectControl } from '@wordpress/components';
-import { useMemo, useCallback, useEffect, useState } from '@wordpress/element';
-import apiFetch from '@wordpress/api-fetch';
+import { useMemo, useCallback } from '@wordpress/element';
 
 const options = [
 	{ value: 'auto', label: __( 'Auto', 'godam' ) },
@@ -27,14 +26,7 @@ const options = [
 const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false } ) => {
 	const { autoplay, controls, loop, muted, preload, showShareButton, engagements } =
 	attributes;
-	const [ showEngagementSetting, setShowEngagementSetting ] = useState( false );
-
-	useEffect( () => {
-		apiFetch( { path: '/godam/v1/settings/godam-settings' } ).then( ( settings ) => {
-			const globalEngagement = settings?.video?.enable_global_video_engagement ?? true;
-			setShowEngagementSetting( globalEngagement );
-		} );
-	}, [] );
+	const showEngagementSetting = window?.godamSettings?.enableGlobalVideoEngagement ?? false;
 
 	// Show a specific help for autoplay setting.
 	const getAutoplayHelp = useMemo( () => {
