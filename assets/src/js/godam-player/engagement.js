@@ -2,13 +2,16 @@
  * Internal dependencies
  */
 import { ACTIONS } from './utils/constants';
+/**
+ * External dependencies
+ */
+import EmojiPicker from 'emoji-picker-react';
 const { createReduxStore, register, select, dispatch, subscribe } = wp.data;
 const { apiFetch } = wp;
 const { addQueryArgs } = wp.url;
 const { createRoot, useState, useMemo, useEffect, useRef } = wp.element;
 const { __ } = wp.i18n;
-const { nonceData, godamData } = window;
-const { currentLoggedInUserData, loginUrl, registrationUrl, defaultAvatar } = godamData;
+const { currentLoggedInUserData, loginUrl, registrationUrl, defaultAvatar, nonce } = window.godamData;
 const storeName = 'godam-video-engagement';
 
 const DEFAULT_STATE = {
@@ -335,7 +338,12 @@ const engagementStore = {
 		const views = state.views;
 		const comments = state.commentsCount;
 		const videoIds = document.querySelectorAll( '.rtgodam-video-engagement' );
-		if ( 0 === videoIds.length ) {
+		if (
+			0 === videoIds.length ||
+			( 0 === Object.keys( likes ).length ||
+			0 === Object.keys( views ).length ||
+			0 === Object.keys( comments ).length )
+		) {
 			return null;
 		}
 		videoIds.forEach( ( item ) => {
@@ -367,7 +375,7 @@ const engagementStore = {
 			video_id: videoAttachmentId,
 			like_status: likeStatus,
 		};
-		apiFetch.use( apiFetch.createNonceMiddleware( nonceData?.nonce ) );
+		apiFetch.use( apiFetch.createNonceMiddleware( nonce ) );
 		return await apiFetch( {
 			path: addQueryArgs( '/godam/v1/engagement/user-hit-like' ),
 			method: 'POST',
@@ -569,6 +577,7 @@ function CommentForm( props ) {
 		return 'edit' === commentType ? comment.text : '';
 	} );
 	const [ isSending, setIsSending ] = useState( false );
+	const [ showEmojiPicker, setShowEmojiPicker ] = useState( false );
 	const textareaRef = useRef( null );
 
 	async function handleSubmit() {
@@ -585,7 +594,7 @@ function CommentForm( props ) {
 			comment_text: text,
 			comment_type: commentType,
 		};
-		apiFetch.use( apiFetch.createNonceMiddleware( nonceData?.nonce ) );
+		apiFetch.use( apiFetch.createNonceMiddleware( nonce ) );
 		const result = await apiFetch( {
 			path: addQueryArgs( '/godam/v1/engagement/user-comment' ),
 			method: 'POST',
@@ -610,6 +619,27 @@ function CommentForm( props ) {
 		} );
 	}
 
+	/**
+	 * Puts content at the current position of a textarea.
+	 *
+	 * @param {string} content The content to be inserted.
+	 *
+	 * @return {string} The new value of the textarea.
+	 */
+	function putContentToCursor( content ) {
+		const ta = textareaRef.current;
+		const start = ta.selectionStart;
+		const end = ta.selectionEnd;
+		const value = ta.value;
+		return value.substring( 0, start ) + content + value.substring( end );
+	}
+
+	/**
+	 * Grabs the current video timestamp and inserts it into the comment text field.
+	 *
+	 * It formats the timestamp as `@HH:MM:SS` and inserts it at the current cursor
+	 * position in the comment text field.
+	 */
 	function handleTimestamp() {
 		const videoPlayer = videoContainerRef.current.querySelector( 'video' );
 		if ( videoPlayer ) {
@@ -618,17 +648,38 @@ function CommentForm( props ) {
 			const mins = String( Math.floor( ( currentTime % 3600 ) / 60 ) ).padStart( 2, '0' );
 			const secs = String( Math.floor( currentTime % 60 ) ).padStart( 2, '0' );
 			const timestamp = `@${ hrs }:${ mins }:${ secs }`;
-			const ta = textareaRef.current;
-			const start = ta.selectionStart;
-			const end = ta.selectionEnd;
-			const value = ta.value;
-			const newValue = value.substring( 0, start ) + timestamp + value.substring( end );
+			const newValue = putContentToCursor( timestamp );
 			setCommentText( newValue );
 		}
 	}
 
+	/**
+	 * Inserts an emoji into the comment text field.
+	 *
+	 * @param {Object} emojiObject The object containing the emoji.
+	 *
+	 * @return {void}
+	 */
+	function handleEmoji( emojiObject ) {
+		const emoji = emojiObject.emoji;
+		const newValue = putContentToCursor( emoji );
+		setCommentText( newValue );
+		setShowEmojiPicker( false );
+	}
+
 	return (
 		<div className="rtgodam-video-engagement--comment-form">
+			{
+				showEmojiPicker && (
+					<div className="rtgodam-video-engagement--comment-form-emoji-picker">
+						<EmojiPicker
+							onEmojiClick={ ( emojiObject ) => {
+								handleEmoji( emojiObject );
+							} }
+						/>
+					</div>
+				)
+			}
 			<div className="rtgodam-video-engagement--comment-form-textarea">
 				<textarea
 					name="comment"
@@ -648,6 +699,12 @@ function CommentForm( props ) {
 					onClick={ handleTimestamp }
 				>
 					{ __( 'Add timestamp', 'godam' ) }
+				</button>
+				<button
+					className="rtgodam-video-engagement--comment-button-emoji"
+					onClick={ () => setShowEmojiPicker( ! showEmojiPicker ) }
+				>
+					{ __( 'Add emoji', 'godam' ) }
 				</button>
 				<button
 					className={ 'rtgodam-video-engagement--comment-button' +
@@ -774,8 +831,7 @@ function Comment( props ) {
 			comment_id: commentId,
 			delete_type: deleteType,
 		};
-
-		apiFetch.use( apiFetch.createNonceMiddleware( nonceData?.nonce ) );
+		apiFetch.use( apiFetch.createNonceMiddleware( nonce ) );
 		const result = await apiFetch( {
 			path: addQueryArgs( '/godam/v1/engagement/user-delete-comment' ),
 			method: 'POST',
@@ -975,7 +1031,7 @@ function GuestLoginForm( props ) {
 			const queryParams = {
 				guest_user_email: guestEmail,
 			};
-			apiFetch.use( apiFetch.createNonceMiddleware( nonceData?.nonce ) );
+			apiFetch.use( apiFetch.createNonceMiddleware( nonce ) );
 			const result = await apiFetch( {
 				path: addQueryArgs( '/godam/v1/engagement/guest-user-login' ),
 				method: 'POST',

@@ -20,6 +20,7 @@ $attributes = wp_parse_args(
 		'infiniteScroll'  => false,
 		'category'        => '',
 		'tag'             => '',
+		'mediaFolder'     => '',
 		'author'          => 0,
 		'dateRange'       => '',
 		'customDateStart' => '',
@@ -29,6 +30,7 @@ $attributes = wp_parse_args(
 		'showTitle'       => true,
 		'align'           => '',
 		'engagements'     => true,
+		'openToNewPage'   => false,
 	)
 );
 
@@ -42,6 +44,7 @@ $shortcode_atts = array(
 	'infinite_scroll'   => ! empty( $attributes['infiniteScroll'] ),
 	'category'          => sanitize_text_field( $attributes['category'] ),
 	'tag'               => sanitize_text_field( $attributes['tag'] ),
+	'media_folder'      => sanitize_text_field( $attributes['mediaFolder'] ),
 	'author'            => intval( $attributes['author'] ),
 	'date_range'        => sanitize_text_field( $attributes['dateRange'] ),
 	'custom_date_start' => sanitize_text_field( $attributes['customDateStart'] ),
@@ -51,6 +54,7 @@ $shortcode_atts = array(
 	'show_title'        => ! empty( $attributes['showTitle'] ),
 	'align'             => sanitize_text_field( $attributes['align'] ),
 	'engagements'       => ! empty( $attributes['engagements'] ),
+	'open_to_new_page'  => ! empty( $attributes['openToNewPage'] ),
 );
 
 // Convert attributes to shortcode string.
