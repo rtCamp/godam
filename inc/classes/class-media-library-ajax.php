@@ -83,8 +83,9 @@ class Media_Library_Ajax {
 			'hls_url'               => $item['transcoded_hls_path'] ?? '',
 		);
 
+		$result['icon'] = $item['thumbnail_url'] ?? '';
+
 		if ( 'stream' === $item['job_type'] ) {
-			$result['icon'] = $item['thumbnail_url'] ?? '';
 			$result['type'] = 'video';
 		}
 
@@ -608,7 +609,7 @@ class Media_Library_Ajax {
 	/**
 	 * Replace an existing WordPress media attachment with a file from an external URL,
 	 * using the WordPress Filesystem API.
-	 * 
+	 *
 	 * @since 1.4.2
 	 *
 	 * @param int    $attachment_id The ID of the existing media attachment.
