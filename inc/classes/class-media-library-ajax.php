@@ -66,11 +66,24 @@ class Media_Library_Ajax {
 		$api_mime_type = $item['mime_type'] ?? '';
 		$computed_mime = $this->get_mime_type_for_job_type( $job_type, $api_mime_type );
 
+		// Determine the correct URL based on job type.
+		$media_url = '';
+		if ( 'image' === ( $item['job_type'] ?? '' ) ) {
+			// For images, use CDN URL (transcoded_file_path) if available.
+			$media_url = $item['transcoded_file_path'] ?? '';
+		} elseif ( 'stream' === ( $item['job_type'] ?? '' ) ) {
+			// For videos, use MP4 URL for core/video block compatibility.
+			$media_url = $item['transcoded_mp4_url'] ?? $item['transcoded_file_path'] ?? '';
+		} else {
+			// For other types (audio, etc.), use CDN URL (transcoded_file_path) if available.
+			$media_url = $item['transcoded_file_path'] ?? '';
+		}
+
 		$result = array(
 			'id'                    => $item['name'],
 			'title'                 => isset( $item['orignal_file_name'] ) ? pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) : $item['name'],
 			'filename'              => $item['orignal_file_name'] ?? $item['name'],
-			'url'                   => ( $item['job_type'] ?? '' ) === 'image' ? ( $item['file_origin'] ?? '' ) : ( $item['transcoded_file_path'] ?? $item['file_origin'] ?? '' ),
+			'url'                   => $media_url,
 			'mime'                  => $computed_mime,
 			'type'                  => $item['job_type'] ?? '',
 			'subtype'               => ( isset( $item['mime_type'] ) && strpos( $item['mime_type'], '/' ) !== false ) ? explode( '/', $item['mime_type'] )[1] : 'jpg',
