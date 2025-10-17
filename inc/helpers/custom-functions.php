@@ -339,6 +339,35 @@ function rtgodam_get_usage_data() {
 }
 
 /**
+ * Get the storage and bandwidth usage data.
+ *
+ * @param string $base_path Optional base path to append to the CDN host.
+ *
+ * @return string
+ */
+function rtgodam_get_cdn_host( $base_path = '' ) {
+
+	// Use current token; fall back to stored token for grace period.
+	$account_token        = get_option( 'rtgodam-account-token', '' );
+	$stored_account_token = get_option( 'rtgodam-account-token-stored', '' );
+	$token                = ! empty( $account_token ) ? $account_token : $stored_account_token;
+
+	if ( ! empty( $token ) ) {
+		if ( ! empty( $base_path ) ) {
+			return sprintf( 'https://%s.gdcdn.us/%s', $token, ltrim( $base_path, '/' ) );
+		}
+
+		return sprintf( 'https://%s.gdcdn.us', $token );
+	}
+
+	// Fallback: use local uploads base URL (avoid breaking paths).
+	$uploads       = wp_get_upload_dir();
+	$fallback_base = is_array( $uploads ) && ! empty( $uploads['baseurl'] ) ? $uploads['baseurl'] : get_home_url();
+
+	return $fallback_base;
+}
+
+/**
  * Check if the api key is valid.
  *
  * @return bool

@@ -53,6 +53,8 @@ use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
 
 use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
 use RTGODAM\Inc\Everest_Forms\Everest_Forms_Integration;
+use RTGODAM\Inc\Cron_Jobs\Files_Migration;
+
 use RTGODAM\Inc\Video_Metadata;
 
 use RTGODAM\Inc\Media_Library\Media_Folders_REST_API;
@@ -80,6 +82,7 @@ class Plugin {
 		Update::get_instance();
 		Assets::get_instance();
 		Blocks::get_instance();
+		Filesystem::get_instance();
 		Pages::get_instance();
 		Media_Library_Ajax::get_instance();
 		Media_Tracker::get_instance();
@@ -111,6 +114,7 @@ class Plugin {
 
 		// Load cron jobs.
 		Retranscode_Failed_Media::get_instance();
+		Files_Migration::initialize();
 
 		// Load video metadata.
 		Video_Metadata::get_instance();
