@@ -14,6 +14,7 @@ import Attachments from './views/attachments.js';
 import AttachmentDetailsTwoColumn from './views/attachment-detail-two-column.js';
 import AttachmentDetails from './views/attachment-details.js';
 import mediaFrameSelect from './views/media-frame-select.js';
+import mediaFramePost from './views/media-frame-post.js';
 
 import MediaDateRangeFilter from './views/filters/media-date-range-filter-list-view.js';
 import MediaListViewTableDragHandler from './views/attachment-list.js';
@@ -91,6 +92,10 @@ class MediaLibrary {
 
 		if ( wp?.media?.view?.MediaFrame?.Select && mediaFrameSelect ) {
 			wp.media.view.MediaFrame.Select = mediaFrameSelect;
+		}
+
+		if ( wp?.media?.view?.MediaFrame?.Post && mediaFramePost ) {
+			wp.media.view.MediaFrame.Post = mediaFramePost;
 		}
 
 		new MediaListViewTableDragHandler();
