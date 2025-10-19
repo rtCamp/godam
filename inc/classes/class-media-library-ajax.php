@@ -70,7 +70,7 @@ class Media_Library_Ajax {
 			'id'                    => $item['name'],
 			'title'                 => isset( $item['orignal_file_name'] ) ? pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) : $item['name'],
 			'filename'              => $item['orignal_file_name'] ?? $item['name'],
-			'url'                   => ( $item['job_type'] ?? '' ) === 'image' ? ( $item['file_origin'] ?? '' ) : ( $item['transcoded_file_path'] ?? $item['file_origin'] ?? '' ),
+			'url'                   => $item['transcoded_file_path'] ?? '',
 			'mime'                  => $computed_mime,
 			'type'                  => $item['job_type'] ?? '',
 			'subtype'               => ( isset( $item['mime_type'] ) && strpos( $item['mime_type'], '/' ) !== false ) ? explode( '/', $item['mime_type'] )[1] : 'jpg',
