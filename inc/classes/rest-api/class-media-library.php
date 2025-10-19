@@ -1105,10 +1105,7 @@ class Media_Library extends Base {
 			// For video, GoDAM expects `job_type=stream`.
 			if ( 'video' === $type ) {
 				$request_args['job_type'] = 'stream';
-			} elseif ( 'image-video' === $type ) {
-				// Core blocks won't support Dash video, only send image.
-				$request_args['job_type'] = 'image';
-			} else {
+			} elseif ( 'image-video' !== $type ) {
 				$request_args['job_type'] = $type;
 			}
 
