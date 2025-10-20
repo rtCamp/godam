@@ -1187,6 +1187,10 @@ class Media_Library extends Base {
 					$all_items[ $key ]['meta']['artist'] = isset( $all_items[ $key ]['meta']['artist'] ) ? $all_items[ $key ]['meta']['artist'] : '';
 					$all_items[ $key ]['meta']['album']  = isset( $all_items[ $key ]['meta']['album'] ) ? $all_items[ $key ]['meta']['album'] : '';
 				}
+
+				if ( 'image' === $type && isset( $item->transcoded_file_path ) ) {
+					$all_items[ $key ]['url'] = $item->transcoded_file_path;
+				}
 			}
 		}
 
