@@ -2,9 +2,9 @@
 Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia
 Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
-Tested up to: 6.8.1
+Tested up to: 6.8.3
 Requires PHP: 7.4
-Stable tag: 1.4.3
+Stable tag: 1.4.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -246,6 +246,12 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v1.4.4 (October 16, 2025) =
+
+- Tweak: Introduced GoDAM Player SDK for developer integrations
+- Fix: Fixed the Copy Block feature for .mov videos
+- Fix: Fixed network errors for analytics
+
 = v1.4.3 (October 9, 2025) =
 
 - Tweak: Enhanced Analytics with Google Tag Manager (GTM) event tracking
@@ -261,11 +267,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: Restored analytics tracking for GoDAM Gallery videos
 - Fix: Fixed GoDAM Recorder playback issue when rtMedia plugin is active
 - Fix: Addressed Safari browser issue where audio would not play or seek correctly
-
-= v1.4.1 (September 17, 2025) =
-
-- Tweak: Enhanced Audio Recording support in GoDAM Recorder for Gravity Forms
-- Fix: Video player UI bugs and playback quality issues
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
