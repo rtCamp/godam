@@ -688,7 +688,7 @@ class RTGODAM_RetranscodeMedia {
 }
 
 // Start up this plugin.
-add_action( 'init', 'rtgodam_retranscode_media' );
+add_action( 'admin_init', 'rtgodam_retranscode_media' );
 
 /**
  * Execute RetranscodeMedia constructor.
