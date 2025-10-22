@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { forwardRef, useState } from 'react';
+import React, { forwardRef, useState, useEffect } from 'react';
 
 /**
  * WordPress dependencies
@@ -15,7 +15,7 @@ import { createPortal } from '@wordpress/element';
  * Internal dependencies
  */
 import NoThumbnailImage from '../../assets/no-thumbnail.jpg';
-import { copyGoDAMVideoBlock } from '../../utils';
+import { copyGoDAMVideoBlock, prefetchMediaDataForCopy } from '../../utils';
 import { canManageAttachment } from '../../../../assets/src/js/media-library/utility.js';
 
 const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
@@ -49,6 +49,11 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 	const handleOnSnackbarRemove = () => {
 		setShowSnackbar( false );
 	};
+
+	// Pre-fetch data on mount to ensure copy always works
+	useEffect( () => {
+		prefetchMediaDataForCopy( item.id );
+	}, [ item.id ] );
 
 	return (
 		<div
