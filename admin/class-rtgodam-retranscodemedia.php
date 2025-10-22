@@ -57,8 +57,7 @@ class RTGODAM_RetranscodeMedia {
 		$this->api_key        = get_option( 'rtgodam-api-key' );
 		$this->stored_api_key = get_option( 'rtgodam-api-key-stored' );
 
-		$api_check = rtgodam_verify_api_key( $this->api_key );
-		if ( is_wp_error( $api_check ) ) {
+		if ( ! rtgodam_is_api_key_valid() ) {
 			return; // Abort initializing retranscoding if api is invalid.
 		}
 
@@ -688,7 +687,7 @@ class RTGODAM_RetranscodeMedia {
 }
 
 // Start up this plugin.
-add_action( 'init', 'rtgodam_retranscode_media' );
+add_action( 'admin_init', 'rtgodam_retranscode_media' );
 
 /**
  * Execute RetranscodeMedia constructor.
