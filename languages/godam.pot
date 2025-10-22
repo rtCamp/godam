@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GoDAM 1.4.4\n"
+"Project-Id-Version: GoDAM 1.4.5\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-10-15T09:42:32+00:00\n"
+"POT-Creation-Date: 2025-10-22T06:07:59+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -43,147 +43,147 @@ msgstr ""
 msgid "https://rtcamp.com/?utm_source=dashboard&utm_medium=plugin&utm_campaign=godam"
 msgstr ""
 
-#: admin/class-rtgodam-retranscodemedia.php:118
+#: admin/class-rtgodam-retranscodemedia.php:117
 msgid "GoDAM Tools"
 msgstr ""
 
-#: admin/class-rtgodam-retranscodemedia.php:135
-#: admin/class-rtgodam-retranscodemedia.php:264
-#: admin/class-rtgodam-retranscodemedia.php:285
+#: admin/class-rtgodam-retranscodemedia.php:134
+#: admin/class-rtgodam-retranscodemedia.php:263
+#: admin/class-rtgodam-retranscodemedia.php:284
 #: admin/js/godam-retranscode-media.js:6
 #: pages/tools/App.js:20
 #: pages/tools/components/tabs/RetranscodeTab.jsx:297
 msgid "Retranscode Media"
 msgstr ""
 
-#: admin/class-rtgodam-retranscodemedia.php:162
-#: admin/class-rtgodam-retranscodemedia.php:362
+#: admin/class-rtgodam-retranscodemedia.php:161
+#: admin/class-rtgodam-retranscodemedia.php:361
 msgid "Cheatin&#8217; uh?"
 msgstr ""
 
 #. translators: Link to the media page.
-#: admin/class-rtgodam-retranscodemedia.php:184
-#: admin/class-rtgodam-retranscodemedia.php:396
+#: admin/class-rtgodam-retranscodemedia.php:183
+#: admin/class-rtgodam-retranscodemedia.php:395
 #, php-format
 msgid "Unable to find any media. Are you sure <a href='%s'>some exist</a>?"
 msgstr ""
 
-#: admin/class-rtgodam-retranscodemedia.php:204
+#: admin/class-rtgodam-retranscodemedia.php:203
 msgid "Stopping..."
 msgstr ""
 
 #. translators: The URL to go back to the previous page.
-#: admin/class-rtgodam-retranscodemedia.php:207
-#: admin/class-rtgodam-retranscodemedia.php:476
+#: admin/class-rtgodam-retranscodemedia.php:206
+#: admin/class-rtgodam-retranscodemedia.php:475
 #, php-format
 msgid "To go back to the previous page, <a href=\"%s\">click here</a>."
 msgstr ""
 
-#: admin/class-rtgodam-retranscodemedia.php:263
+#: admin/class-rtgodam-retranscodemedia.php:262
 msgid "Retranscode this single media"
 msgstr ""
 
-#: admin/class-rtgodam-retranscodemedia.php:418
+#: admin/class-rtgodam-retranscodemedia.php:417
 msgid "There are no media available to send for transcoding."
 msgstr ""
 
-#: admin/class-rtgodam-retranscodemedia.php:428
+#: admin/class-rtgodam-retranscodemedia.php:427
 msgid "You do not have sufficient bandwidth remaining to perform the transcoding."
 msgstr ""
 
-#: admin/class-rtgodam-retranscodemedia.php:429
+#: admin/class-rtgodam-retranscodemedia.php:428
 msgid "Your remaining bandwidth is : "
 msgstr ""
 
-#: admin/class-rtgodam-retranscodemedia.php:430
+#: admin/class-rtgodam-retranscodemedia.php:429
 msgid "Required bandwidth is: "
 msgstr ""
 
-#: admin/class-rtgodam-retranscodemedia.php:434
+#: admin/class-rtgodam-retranscodemedia.php:433
 msgid "You can select the files manually and try again."
 msgstr ""
 
-#: admin/class-rtgodam-retranscodemedia.php:441
-#: admin/class-rtgodam-retranscodemedia.php:455
+#: admin/class-rtgodam-retranscodemedia.php:440
+#: admin/class-rtgodam-retranscodemedia.php:454
 msgid "Proceed with retranscoding"
 msgstr ""
 
-#: admin/class-rtgodam-retranscodemedia.php:469
+#: admin/class-rtgodam-retranscodemedia.php:468
 msgid "Your files are being re-transcoded. Do not navigate away from this page until the process is completed, as doing so will prematurely abort the script. Retranscoding can take a while, especially for larger files. You can view the progress below."
 msgstr ""
 
 #. translators: Count of media which were successfully and media which were failed transcoded with the time in seconds and previout page link.
-#: admin/class-rtgodam-retranscodemedia.php:479
+#: admin/class-rtgodam-retranscodemedia.php:478
 #, php-format
 msgid "All done! %1$s media file(s) were successfully sent for transcoding in %2$s seconds and there were %3$s failure(s). To try transcoding the failed media again, <a href=\"%4$s\">click here</a>. %5$s"
 msgstr ""
 
 #. translators: Count of media which were successfully transcoded with the time in seconds and previout page link.
-#: admin/class-rtgodam-retranscodemedia.php:481
+#: admin/class-rtgodam-retranscodemedia.php:480
 #, php-format
 msgid "All done! %1$s media file(s) were successfully sent for transcoding in %2$s seconds and there were 0 failures. %3$s"
 msgstr ""
 
-#: admin/class-rtgodam-retranscodemedia.php:484
-#: admin/class-rtgodam-retranscodemedia.php:537
+#: admin/class-rtgodam-retranscodemedia.php:483
+#: admin/class-rtgodam-retranscodemedia.php:536
 msgid "You must enable Javascript in order to proceed!"
 msgstr ""
 
-#: admin/class-rtgodam-retranscodemedia.php:490
+#: admin/class-rtgodam-retranscodemedia.php:489
 msgid "Abort the Operation"
 msgstr ""
 
-#: admin/class-rtgodam-retranscodemedia.php:492
+#: admin/class-rtgodam-retranscodemedia.php:491
 msgid "Debugging Information"
 msgstr ""
 
 #. translators: Total count of the media.
-#: admin/class-rtgodam-retranscodemedia.php:497
+#: admin/class-rtgodam-retranscodemedia.php:496
 #, php-format
 msgid "Total Media: %s"
 msgstr ""
 
 #. translators: Count of media which were successfully sent to the transcoder server.
-#: admin/class-rtgodam-retranscodemedia.php:502
+#: admin/class-rtgodam-retranscodemedia.php:501
 #, php-format
 msgid "Media Sent for Retranscoding: %s"
 msgstr ""
 
 #. translators: Count of media which were failed while sending to the transcoder server.
-#: admin/class-rtgodam-retranscodemedia.php:507
+#: admin/class-rtgodam-retranscodemedia.php:506
 #, php-format
 msgid "Failed While Sending: %s"
 msgstr ""
 
-#: admin/class-rtgodam-retranscodemedia.php:522
+#: admin/class-rtgodam-retranscodemedia.php:521
 msgid "This tool will retranscode ALL audio/video media uploaded to your website. This can be handy if you need to transcode media files uploaded in the past."
 msgstr ""
 
-#: admin/class-rtgodam-retranscodemedia.php:524
+#: admin/class-rtgodam-retranscodemedia.php:523
 msgid "Sending your entire media library for retranscoding can consume a lot of your bandwidth allowance, so use this tool with care."
 msgstr ""
 
 #. translators: Placeholder is for admin media section link.
-#: admin/class-rtgodam-retranscodemedia.php:529
+#: admin/class-rtgodam-retranscodemedia.php:528
 #, php-format
 msgid "You can retranscode specific media files (rather than ALL media) from the <a href='%s'>Media</a> page using Bulk Action via drop down or mouse hover a specific media (audio/video) file."
 msgstr ""
 
-#: admin/class-rtgodam-retranscodemedia.php:533
+#: admin/class-rtgodam-retranscodemedia.php:532
 msgid "To begin, just press the button below."
 msgstr ""
 
-#: admin/class-rtgodam-retranscodemedia.php:535
+#: admin/class-rtgodam-retranscodemedia.php:534
 msgid "Retranscode All Media"
 msgstr ""
 
 #. translators: Media name, Media ID and message for failed transcode.
-#: admin/class-rtgodam-retranscodemedia.php:556
+#: admin/class-rtgodam-retranscodemedia.php:555
 #, php-format
 msgid "&quot;%1$s&quot; (ID %2$s) failed to send. The error message was: %3$s"
 msgstr ""
 
-#: admin/class-rtgodam-retranscodemedia.php:577
+#: admin/class-rtgodam-retranscodemedia.php:576
 msgid "Insufficient bandwidth!"
 msgstr ""
 
