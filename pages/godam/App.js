@@ -1,4 +1,3 @@
-
 /**
  * External dependencies
  */
@@ -7,7 +6,7 @@ import { useDispatch } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { cog, video, alignJustify, close } from '@wordpress/icons';
+import { cog, video, upload, alignJustify, close } from '@wordpress/icons';
 import { Icon } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
@@ -20,11 +19,13 @@ import GodamHeader from './components/GoDAMHeader.jsx';
 import GoDAMFooter from './components/GoDAMFooter.jsx';
 import GeneralSettings from './components/tabs/GeneralSettings/GeneralSettings.jsx';
 import VideoSettings from './components/tabs/VideoSettings/VideoSettings.jsx';
-import VideoPlayer from './components/tabs/VideoPlayer/VideoPlayer.jsx';
-import AdsSettings from './components/tabs/AdsSettings/AdsSettings.jsx';
+import UploadsSettings from './components/tabs/UploadsSettings/UploadsSettings.jsx';
 
 import { useGetMediaSettingsQuery } from './redux/api/media-settings.js';
 import { setMediaSettings } from './redux/slice/media-settings.js';
+import VideoPlayer from './components/tabs/VideoPlayer/VideoPlayer.jsx';
+import { isPremiumUser } from './utils';
+import AdsSettings from './components/tabs/AdsSettings/AdsSettings.jsx';
 
 const TABS = [
 	{
@@ -32,12 +33,14 @@ const TABS = [
 		label: __( 'General Settings', 'godam' ),
 		component: GeneralSettings,
 		icon: cog,
+		weight: 10,
 	},
 	{
 		id: 'video-settings',
 		label: __( 'Video Settings', 'godam' ),
 		component: VideoSettings,
 		icon: video,
+		weight: 20,
 	},
 	{
 		id: 'video-player',
@@ -47,6 +50,7 @@ const TABS = [
 			<path d="M8 5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3m4 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M5.5 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m.5 6a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
 			<path d="M16 8c0 3.15-1.866 2.585-3.567 2.07C11.42 9.763 10.465 9.473 10 10c-.603.683-.475 1.819-.351 2.92C9.826 14.495 9.996 16 8 16a8 8 0 1 1 8-8m-8 7c.611 0 .654-.171.655-.176.078-.146.124-.464.07-1.119-.014-.168-.037-.37-.061-.591-.052-.464-.112-1.005-.118-1.462-.01-.707.083-1.61.704-2.314.369-.417.845-.578 1.272-.618.404-.038.812.026 1.16.104.343.077.702.186 1.025.284l.028.008c.346.105.658.199.953.266.653.148.904.083.991.024C14.717 9.38 15 9.161 15 8a7 7 0 1 0-7 7" />
 		</svg>,
+		weight: 30,
 	},
 	{
 		id: 'video-ads',
@@ -56,8 +60,41 @@ const TABS = [
 			<path d="m3.7 11 .47-1.542h2.004L6.644 11h1.261L5.901 5.001H4.513L2.5 11zm1.503-4.852.734 2.426H4.416l.734-2.426zm4.759.128c-1.059 0-1.753.765-1.753 2.043v.695c0 1.279.685 2.043 1.74 2.043.677 0 1.222-.33 1.367-.804h.057V11h1.138V4.685h-1.16v2.36h-.053c-.18-.475-.68-.77-1.336-.77zm.387.923c.58 0 1.002.44 1.002 1.138v.602c0 .76-.396 1.2-.984 1.2-.598 0-.972-.449-.972-1.248v-.453c0-.795.37-1.24.954-1.24z" />
 			<path d="M14 3a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM2 2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" />
 		</svg>,
+		weight: 40,
 	},
 ];
+
+const addTab = ( isPremium, id, label, component, icon, weight ) => {
+	// Return early if the tab already exists
+	if ( TABS.some( ( tab ) => tab.id === id ) ) {
+		return;
+	}
+
+	if ( isPremium ) {
+		if ( isPremiumUser() ) {
+			TABS.push( {
+				id,
+				label,
+				component,
+				icon,
+				weight,
+			} );
+		}
+
+		return;
+	}
+
+	TABS.push( {
+		id,
+		label,
+		component,
+		icon,
+		weight,
+	} );
+};
+
+// Add tabs dynamically based on the API key validity
+addTab( true, 'uploads-settings', __( 'Uploads Settings', 'godam' ), UploadsSettings, upload, 15 );
 
 const App = () => {
 	const [ activeTab, setActiveTab ] = useState( TABS[ 0 ].id );
@@ -81,6 +118,9 @@ const App = () => {
 	if ( isLoading ) {
 		return <Skeleton />;
 	}
+
+	// Sort tabs by weight
+	TABS.sort( ( a, b ) => a.weight - b.weight );
 
 	const activeTabData = TABS.find( ( tab ) => tab.id === activeTab );
 

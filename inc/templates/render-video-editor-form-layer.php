@@ -14,6 +14,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // Suppress Query Monitor's output for this template.
+// phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores -- This is a valid hook.
 do_action( 'qm/cease' );
 
 // We need to remove the admin bar for this template to avoid to display it on the video editor page.

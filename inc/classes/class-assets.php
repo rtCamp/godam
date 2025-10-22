@@ -222,6 +222,16 @@ class Assets {
 			)
 		);
 
+		// Add admin notices localization data.
+		wp_localize_script(
+			'rtgodam-script',
+			'godamAdminNotices',
+			array(
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'nonce'   => wp_create_nonce( 'godam-dismiss-upload-limits-notice-nonce' ),
+			)
+		);
+
 		wp_register_style(
 			'rtgodam-style',
 			RTGODAM_URL . 'assets/build/css/admin.css',

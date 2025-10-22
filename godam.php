@@ -58,6 +58,18 @@ if ( ! defined( 'RTGODAM_IO_API_BASE' ) ) {
 	define( 'RTGODAM_IO_API_BASE', 'https://godam.io' );
 }
 
+if ( ! defined( 'GODAM_UPLOAD_MEDIA_API_HOST' ) ) {
+	define( 'GODAM_UPLOAD_MEDIA_API_HOST', 'https://upload.godam.io' );
+}
+
+if ( ! defined( 'GODAM_UPLOAD_MEDIA_API_KEY' ) ) {
+	define( 'GODAM_UPLOAD_MEDIA_API_KEY', get_option( 'rtgodam-api-key', '' ) );
+}
+
+if ( ! defined( 'GODAM_ENABLE_CHUNK_UPLOADING' ) ) {
+	define( 'GODAM_ENABLE_CHUNK_UPLOADING', true );
+}
+
 require_once RTGODAM_PATH . 'inc/helpers/autoloader.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once RTGODAM_PATH . 'inc/helpers/custom-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once RTGODAM_PATH . 'admin/godam-transcoder-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant

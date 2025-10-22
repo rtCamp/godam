@@ -9,6 +9,8 @@ namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 
+use RTGODAM\Inc\Cron_Jobs\Files_Migration;
+use RTGODAM\Inc\Filesystem\Chunk_Uploader;
 use RTGODAM\Inc\Traits\Singleton;
 use WP_REST_Request;
 
@@ -734,6 +736,24 @@ class Pages {
 					'transcoder-page-script-godam',
 					'userData',
 					$rtgodam_user_data
+				);
+			}
+
+			// Pass data only if the API key is valid.
+			if ( rtgodam_is_api_key_valid() ) {
+				$chunk_uploader = Chunk_Uploader::get_instance();
+
+				wp_localize_script(
+					'transcoder-page-script-godam',
+					'goDAMUploadsData',
+					array(
+						'max_upload_size'               => $chunk_uploader->max_upload_size,
+						'godam_default_max_upload_size' => $chunk_uploader->get_upload_limit(),
+						'media_migration_progress'      => Files_Migration::get_info(),
+						'can_migrate'                   => Files_Migration::can_migrate(),
+						'ajax_url'                      => admin_url( 'admin-ajax.php' ),
+						'nonce'                         => wp_create_nonce( 'rtgodam_files_migration_nonce' ),
+					)
 				);
 			}
 
