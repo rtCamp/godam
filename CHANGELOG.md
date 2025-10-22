@@ -1,5 +1,9 @@
 # Changelog #
 
+## v1.4.5 (October 22, 2025) ##
+
+- Fix: Optimized API requests
+
 ## v1.4.4 (October 16, 2025) ##
 
 - Tweak: Introduced GoDAM Player SDK for developer integrations
