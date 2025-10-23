@@ -105,6 +105,27 @@ const ProductSelector = ( { index, value, productHotspot, productHotspots, updat
 		return products.find( ( p ) => p.value === id )?.product;
 	};
 
+	useEffect( () => {
+		const input = document.querySelector(
+			'.godam-combobox input.components-combobox-control__input',
+		);
+		if ( ! input ) {
+			return;
+		}
+
+		const stopEnter = ( e ) => {
+			if ( e.key === 'Enter' ) {
+				e.preventDefault();
+				e.stopPropagation();
+				return false;
+			}
+		};
+
+		input.addEventListener( 'keydown', stopEnter );
+
+		return () => input.removeEventListener( 'keydown', stopEnter );
+	}, [] );
+
 	return (
 		<div className="godam-combobox">
 			<ComboboxControl
