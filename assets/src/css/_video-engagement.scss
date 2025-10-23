@@ -226,6 +226,10 @@
                     background: var( --wp--preset--color--black, #000 );
                 }
 
+                &-close {
+                    display: none;
+                }
+
                 &-title {
                     font-size: clamp( 0.875rem, 3vw, 1rem );
                     font-weight: 600;
@@ -512,6 +516,10 @@
                     width: 100%;
                 }
             }
+        }
+
+        &--mobile-engagements {
+            display: none;
         }
     }
 
@@ -826,6 +834,172 @@
                         height: 350px !important;
                     }
                 }
+            }
+        }
+
+        &-dynamic-ratio-9-16 {
+        
+            .rtgodam-video-engagement--comment-modal-content {
+                position: relative;
+                height: 95%;
+                max-height: 95%;
+                width: 95%;
+                background-color: transparent;
+            }
+
+            .rtgodam-video-engagement--comment-modal--video-info {
+                position: absolute;
+                bottom: 10px;
+                left: 10px;
+                right: 10px;
+                background-color: #fff;
+                z-index: -1;
+                transform: translateY(100%);
+                opacity: 0;
+                transition: transform 0.4s ease, opacity 0.4s ease;
+
+                &.show {
+                    opacity: 1;
+                    transform: translateY(0);
+                    z-index: 10;
+                }
+            }
+
+            .rtgodam-video-engagement--comment-modal--video-figure {
+                height: 100%;
+
+                figure,
+                .godam-video-wrapper,
+                .easydam-video-container,
+                .video-js {
+                    max-height: 100%;
+                }
+            }
+
+            .rtgodam-video-engagement--comment-modal--mobile-engagements {
+                display: flex;
+                flex-direction: column;
+                max-width: 30px;
+                position: absolute;
+                bottom: 130px;
+                right: 15px;
+                gap: 25px;
+            }
+
+            .rtgodam-video-engagement--comment-modal--mobile-engagements-button {
+                background: none;
+                outline: none;
+                border: none;
+                font-size: 15px;
+                font-weight: 500;
+                line-height: 1;
+                color: #fff;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 3px;
+
+                &:hover {
+                    cursor: pointer;
+                }
+
+                &::before {
+                    content: '';
+                    display: block;
+                    width: 30px;
+                    height: 28px;
+                    background-size: 100% 100%;
+                    background-position: center;
+                    background-repeat: no-repeat;
+                }
+
+                &.like {
+                    &::before {
+                        background-image: url( ../images/unlike-mobile-icon.svg );
+                    }
+
+                    &.is-progressing {
+                        cursor: not-allowed;
+                        pointer-events: none;
+                        opacity: 0.6;
+                        animation: pop 0.4s ease;
+                        animation-iteration-count: infinite;
+                    }
+
+                    &.is-liked {
+                        &::before {
+                            background-image: url( ../images/like-mobile-icon.svg );
+                        }
+                    }
+                }
+
+                &.comment {
+                    &::before {
+                        background-image: url( ../images/comment-mobile-icon.svg );
+                    }
+                }
+
+                &.view {
+                    &::before {
+                        background-image: url( ../images/view-mobile-icon.svg );
+                    }
+                }
+            }
+
+            .rtgodam-video-engagement--comment-modal-header {
+                flex-direction: row-reverse;
+                position: absolute;
+                left: 25px;
+                right: 25px;
+                padding: clamp(16px, 3.5vw, 40px);
+                z-index: 1;
+                color: #fff;
+                background: linear-gradient(
+                    to bottom,
+                    transparent,
+                    rgba(0, 0, 0, 0.3),
+                    transparent
+                );
+                border-radius: 8px;
+                gap: 1rem;
+            }
+
+            .rtgodam-video-engagement--comment-modal--video {
+                height: 100%;
+            }
+
+            .rtgodam-video-engagement--comment-modal--close-button {
+                background-image: url( ../images/close-comment-modal-mobile-icon.svg );
+                width: 24px;
+                height: 24px;
+            }
+
+            .rtgodam-video-engagement--comment-modal-title {
+                font-size: 1.1rem;
+                font-weight: 600;
+            }
+
+            .rtgodam-video-engagement--comment-modal--video-info-title {
+                justify-content: space-between;
+            }
+
+            .rtgodam-video-engagement--comment-modal--video-info-close {
+                display: block;
+                background-color: transparent;
+                border: none;
+                color: transparent;
+                width: 12px;
+                height: 12px;
+                background-image: url( ../images/close-modal-comment-box-mobile-icon.svg );
+                background-repeat: no-repeat;
+                background-position: center;
+                background-size: 100% 100%;
+                cursor: pointer;
+            }
+
+            .rtgodam-video-engagement--comment-modal--video-info-expend {
+                display: none;
             }
         }
     }
