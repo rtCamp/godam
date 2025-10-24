@@ -149,17 +149,38 @@ class GoDAM_Player {
 	public function render( $atts ) {
 		$attributes = shortcode_atts(
 			array(
-				'id'             => '',
-				'sources'        => '',
-				'src'            => '',
-				'transcoded_url' => '',
-				'poster'         => '',
-				'aspectRatio'    => '',
-				'engagements'    => '',
+				'id'              => '',
+				'autoplay'        => false,
+				'controls'        => true,
+				'loop'            => false,
+				'muted'           => false,
+				'hoverSelect'     => 'none',
+				'poster'          => '',
+				'preload'         => 'metadata',
+				'src'             => '',
+				'sources'         => '',
+				'transcoded_url'  => '',
+				'aspectRatio'     => '', // Note: "responsive" aspect ratio is not working for shortcode. To be fixed later.
+				'tracks'          => '',
+				'caption'         => '',
+				'engagements'     => false,
+				'preview'         => false,
+				'showShareButton' => false,
 			),
 			$atts,
 			'godam_video'
 		);
+
+		// handle boolean attributes passed as strings.
+		$boolean_attributes = array( 'autoplay', 'controls', 'loop', 'muted', 'engagements', 'preview', 'showShareButton' );
+		foreach ( $boolean_attributes as $bool_attr ) {
+			$attributes[ $bool_attr ] = filter_var( $attributes[ $bool_attr ], FILTER_VALIDATE_BOOLEAN );
+		}
+
+		// If autoplay is true, muted must be true for most browsers to allow autoplay.
+		if ( $attributes['autoplay'] ) {
+			$attributes['muted'] = true;
+		}
 
 		// Decode custom placeholders back to square brackets if sources contain them.
 		if ( ! empty( $attributes['sources'] ) && is_string( $attributes['sources'] ) ) {
@@ -167,7 +188,12 @@ class GoDAM_Player {
 			$attributes['sources'] = str_replace( array( '__rtgob__', '__rtgcb__' ), array( '[', ']' ), $attributes['sources'] );
 		}
 
-		$is_shortcode = true;
+		// Decode tracks if it's a JSON string.
+		if ( ! empty( $attributes['tracks'] ) && is_string( $attributes['tracks'] ) ) {
+			$attributes['tracks'] = str_replace( array( '__rtgob__', '__rtgcb__' ), array( '[', ']' ), $attributes['tracks'] );
+		}
+
+		$is_shortcode = true; // Do not remove this line, this variable is being used in godam-player template.
 
 		wp_enqueue_script( 'godam-player-frontend-script' );
 		wp_enqueue_script( 'godam-player-analytics-script' );
