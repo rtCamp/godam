@@ -1,4 +1,7 @@
-@use "tailwindcss";
+/* stylelint-disable scss/at-rule-no-unknown */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Video Editor Set up */
 

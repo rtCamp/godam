@@ -1,4 +1,7 @@
-@use "tailwindcss";
+/* stylelint-disable scss/at-rule-no-unknown */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 // Initialize the variables for the settings page
 $settings-page-color-white: #fff;

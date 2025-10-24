@@ -1,5 +1,9 @@
-@use "tailwindcss";
 @use './retranscode-media';
+/* stylelint-disable scss/at-rule-no-unknown */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 
 // Initialize the variables for the tools page
 $tools-page-color-white: #fff;

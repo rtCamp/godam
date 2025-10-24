@@ -1,5 +1,7 @@
 /* stylelint-disable scss/at-rule-no-unknown */
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
 
@@ -30,6 +32,7 @@ input, textarea, select {
 }
 
 .godam-button-icon {
+
 	svg {
 		fill: #ab3a6c !important;
 	}
