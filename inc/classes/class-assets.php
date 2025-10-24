@@ -324,20 +324,23 @@ class Assets {
 	private function enqueue_godam_settings() {
 		$godam_settings = get_option( 'rtgodam-settings' );
 
-		$brand_image         = $godam_settings['video_player']['brand_image'] ?? '';
-		$brand_color         = $godam_settings['video_player']['brand_color'] ?? '';
-		$enable_gtm_tracking = $godam_settings['general']['enable_gtm_tracking'] ?? false;
+		$brand_image                    = $godam_settings['video_player']['brand_image'] ?? '';
+		$brand_color                    = $godam_settings['video_player']['brand_color'] ?? '';
+		$enable_gtm_tracking            = $godam_settings['general']['enable_gtm_tracking'] ?? false;
+		$enable_global_video_engagement = $godam_settings['video']['enable_global_video_engagement'] ?? false;
 
 		$godam_settings_obj = array(
-			'brandImage'        => $brand_image,
-			'brandColor'        => $brand_color,
-			'apiBase'           => RTGODAM_API_BASE,
-			'enableGTMTracking' => $enable_gtm_tracking,
+			'brandImage'                  => $brand_image,
+			'brandColor'                  => $brand_color,
+			'apiBase'                     => RTGODAM_API_BASE,
+			'enableGTMTracking'           => $enable_gtm_tracking,
+			'enableGlobalVideoEngagement' => $enable_global_video_engagement,
 		);
 
 		if ( ! rtgodam_is_api_key_valid() ) {
-			$godam_settings_obj['showOfferBanner']      = get_option( 'rtgodam-offer-banner', '1' );
-			$godam_settings_obj['showOfferBannerNonce'] = wp_create_nonce( 'godam-dismiss-offer-banner-nonce' );
+			$godam_settings_obj['showOfferBanner']             = get_option( 'rtgodam-offer-banner', '1' );
+			$godam_settings_obj['showOfferBannerNonce']        = wp_create_nonce( 'godam-dismiss-offer-banner-nonce' );
+			$godam_settings_obj['enableGlobalVideoEngagement'] = false;
 		}
 
 		wp_localize_script(

@@ -2,13 +2,16 @@
  * Internal dependencies
  */
 import { ACTIONS } from './utils/constants';
+/**
+ * External dependencies
+ */
+import EmojiPicker from 'emoji-picker-react';
 const { createReduxStore, register, select, dispatch, subscribe } = wp.data;
 const { apiFetch } = wp;
 const { addQueryArgs } = wp.url;
 const { createRoot, useState, useMemo, useEffect, useRef } = wp.element;
 const { __ } = wp.i18n;
-const { nonceData, godamData } = window;
-const { currentLoggedInUserData, loginUrl, registrationUrl, defaultAvatar } = godamData;
+const { currentLoggedInUserData, loginUrl, registrationUrl, defaultAvatar, nonce } = window.godamData;
 const storeName = 'godam-video-engagement';
 
 const DEFAULT_STATE = {
@@ -335,7 +338,12 @@ const engagementStore = {
 		const views = state.views;
 		const comments = state.commentsCount;
 		const videoIds = document.querySelectorAll( '.rtgodam-video-engagement' );
-		if ( 0 === videoIds.length ) {
+		if (
+			0 === videoIds.length ||
+			( 0 === Object.keys( likes ).length ||
+			0 === Object.keys( views ).length ||
+			0 === Object.keys( comments ).length )
+		) {
 			return null;
 		}
 		videoIds.forEach( ( item ) => {
@@ -367,7 +375,7 @@ const engagementStore = {
 			video_id: videoAttachmentId,
 			like_status: likeStatus,
 		};
-		apiFetch.use( apiFetch.createNonceMiddleware( nonceData?.nonce ) );
+		apiFetch.use( apiFetch.createNonceMiddleware( nonce ) );
 		return await apiFetch( {
 			path: addQueryArgs( '/godam/v1/engagement/user-hit-like' ),
 			method: 'POST',
@@ -569,6 +577,7 @@ function CommentForm( props ) {
 		return 'edit' === commentType ? comment.text : '';
 	} );
 	const [ isSending, setIsSending ] = useState( false );
+	const [ showEmojiPicker, setShowEmojiPicker ] = useState( false );
 	const textareaRef = useRef( null );
 
 	async function handleSubmit() {
@@ -585,7 +594,7 @@ function CommentForm( props ) {
 			comment_text: text,
 			comment_type: commentType,
 		};
-		apiFetch.use( apiFetch.createNonceMiddleware( nonceData?.nonce ) );
+		apiFetch.use( apiFetch.createNonceMiddleware( nonce ) );
 		const result = await apiFetch( {
 			path: addQueryArgs( '/godam/v1/engagement/user-comment' ),
 			method: 'POST',
@@ -610,6 +619,27 @@ function CommentForm( props ) {
 		} );
 	}
 
+	/**
+	 * Puts content at the current position of a textarea.
+	 *
+	 * @param {string} content The content to be inserted.
+	 *
+	 * @return {string} The new value of the textarea.
+	 */
+	function putContentToCursor( content ) {
+		const ta = textareaRef.current;
+		const start = ta.selectionStart;
+		const end = ta.selectionEnd;
+		const value = ta.value;
+		return value.substring( 0, start ) + content + value.substring( end );
+	}
+
+	/**
+	 * Grabs the current video timestamp and inserts it into the comment text field.
+	 *
+	 * It formats the timestamp as `@HH:MM:SS` and inserts it at the current cursor
+	 * position in the comment text field.
+	 */
 	function handleTimestamp() {
 		const videoPlayer = videoContainerRef.current.querySelector( 'video' );
 		if ( videoPlayer ) {
@@ -618,17 +648,38 @@ function CommentForm( props ) {
 			const mins = String( Math.floor( ( currentTime % 3600 ) / 60 ) ).padStart( 2, '0' );
 			const secs = String( Math.floor( currentTime % 60 ) ).padStart( 2, '0' );
 			const timestamp = `@${ hrs }:${ mins }:${ secs }`;
-			const ta = textareaRef.current;
-			const start = ta.selectionStart;
-			const end = ta.selectionEnd;
-			const value = ta.value;
-			const newValue = value.substring( 0, start ) + timestamp + value.substring( end );
+			const newValue = putContentToCursor( timestamp );
 			setCommentText( newValue );
 		}
 	}
 
+	/**
+	 * Inserts an emoji into the comment text field.
+	 *
+	 * @param {Object} emojiObject The object containing the emoji.
+	 *
+	 * @return {void}
+	 */
+	function handleEmoji( emojiObject ) {
+		const emoji = emojiObject.emoji;
+		const newValue = putContentToCursor( emoji );
+		setCommentText( newValue );
+		setShowEmojiPicker( false );
+	}
+
 	return (
 		<div className="rtgodam-video-engagement--comment-form">
+			{
+				showEmojiPicker && (
+					<div className="rtgodam-video-engagement--comment-form-emoji-picker">
+						<EmojiPicker
+							onEmojiClick={ ( emojiObject ) => {
+								handleEmoji( emojiObject );
+							} }
+						/>
+					</div>
+				)
+			}
 			<div className="rtgodam-video-engagement--comment-form-textarea">
 				<textarea
 					name="comment"
@@ -648,6 +699,12 @@ function CommentForm( props ) {
 					onClick={ handleTimestamp }
 				>
 					{ __( 'Add timestamp', 'godam' ) }
+				</button>
+				<button
+					className="rtgodam-video-engagement--comment-button-emoji"
+					onClick={ () => setShowEmojiPicker( ! showEmojiPicker ) }
+				>
+					{ __( 'Add emoji', 'godam' ) }
 				</button>
 				<button
 					className={ 'rtgodam-video-engagement--comment-button' +
@@ -774,8 +831,7 @@ function Comment( props ) {
 			comment_id: commentId,
 			delete_type: deleteType,
 		};
-
-		apiFetch.use( apiFetch.createNonceMiddleware( nonceData?.nonce ) );
+		apiFetch.use( apiFetch.createNonceMiddleware( nonce ) );
 		const result = await apiFetch( {
 			path: addQueryArgs( '/godam/v1/engagement/user-delete-comment' ),
 			method: 'POST',
@@ -975,7 +1031,7 @@ function GuestLoginForm( props ) {
 			const queryParams = {
 				guest_user_email: guestEmail,
 			};
-			apiFetch.use( apiFetch.createNonceMiddleware( nonceData?.nonce ) );
+			apiFetch.use( apiFetch.createNonceMiddleware( nonce ) );
 			const result = await apiFetch( {
 				path: addQueryArgs( '/godam/v1/engagement/guest-user-login' ),
 				method: 'POST',
@@ -1072,12 +1128,23 @@ function CommentBox( props ) {
 	const getUserData = memoizedStoreObj.select.getUserData();
 	const loginStatus = 'guest' === getUserData?.type || 'user' === getUserData?.type;
 	const [ isUserLoggedIn, setIsUserLoggedIn ] = useState( loginStatus );
+	const [ videoRatioClass, setVideoRatioClass ] = useState( 'rtgodam-video-engagement-dynamic-ratio-16-9' );
+	const videoInfoForMobile = useRef( null );
 
 	useEffect( () => {
 		const currentVideoParent = document.getElementById( videoFigureId );
 		const currentVideo = currentVideoParent.querySelector( '.godam-video-wrapper' );
 		const currentVideoClass = currentVideoParent.className;
 		const currentVideoStyles = currentVideoParent.getAttribute( 'style' );
+		const video = currentVideo.querySelector( 'video' );
+
+		if ( video.readyState >= 1 ) {
+			loadVideoRatio( video );
+		} else {
+			video.addEventListener( 'loadedmetadata', () => {
+				loadVideoRatio( video );
+			} );
+		}
 
 		const videoContainer = videoContainerRef.current;
 		videoContainer.className = currentVideoClass;
@@ -1096,6 +1163,15 @@ function CommentBox( props ) {
 			}
 		};
 	}, [ videoFigureId, memoizedStoreObj ] );
+
+	function loadVideoRatio( video ) {
+		const width = video.videoWidth;
+		const height = video.videoHeight;
+		const aspectRatio = width / height;
+		if ( aspectRatio <= 0.75 ) {
+			setVideoRatioClass( 'rtgodam-video-engagement-dynamic-ratio-9-16' );
+		}
+	}
 
 	/**
 	 * Handles the like button click event.
@@ -1117,7 +1193,7 @@ function CommentBox( props ) {
 	}
 
 	return (
-		<div className={ baseClass }>
+		<div className={ `${ baseClass } ${ videoRatioClass }` }>
 			<div className={ baseClass + '-content' + ( skipEngagements ? ' is-skip-engagements' : '' ) }>
 				<div className={ baseClass + '-header' }>
 					<h3 className={ baseClass + '-title' }>{ titles }</h3>
@@ -1128,38 +1204,68 @@ function CommentBox( props ) {
 						<figure ref={ videoContainerRef }></figure>
 					</div>
 					{ ! skipEngagements && (
-						<div
-							className={ baseClass + '--video-info' + ( expendComment ? ' is-comment-expanded' : '' ) }
-							onWheel={ ( e ) => e.stopPropagation() }
-						>
-							<h3 className={ baseClass + '--video-info-title' }>
-								{
-									commentsCount > 3 && (
-										<button
-											className={ baseClass + '--video-info-expend' }
-											onClick={ () => setExpendComment( ! expendComment ) }>
-											{ expendComment ? '-' : '+' }
-										</button>
-									)
-								}
-								{ __( 'Comments', 'godam' ) } ({ commentsCount })
-							</h3>
-							<CommentList { ...props } commentsData={ commentsData } setCommentsData={ setCommentsData } isUserLoggedIn={ isUserLoggedIn } storeObj={ memoizedStoreObj } videoContainerRef={ videoContainerRef } />
-							<div className={ baseClass + '-leave-comment' }>
-								<div className={ baseClass + '-leave-comment-impressions' }>
+						<>
+							<div
+								className={ baseClass + '--video-info' + ( expendComment ? ' is-comment-expanded' : '' ) }
+								onWheel={ ( e ) => e.stopPropagation() }
+								ref={ videoInfoForMobile }
+							>
+								<h3 className={ baseClass + '--video-info-title' }>
+									{
+										commentsCount > 3 && (
+											<button
+												className={ baseClass + '--video-info-expend' }
+												onClick={ () => setExpendComment( ! expendComment ) }>
+												{ expendComment ? '-' : '+' }
+											</button>
+										)
+									}
+									{ __( 'Comments', 'godam' ) } ({ commentsCount })
 									<button
-										onClick={ handleLike }
-										className={ baseClass + '-leave-comment-impressions-likes' + ( isUserLiked ? ' is-liked' : '' ) + ( isSending ? ' is-progressing' : '' ) }
-									>{ likesCount }</button>
-									<span className={ baseClass + '-leave-comment-impressions-views' }>{ viewsCount }</span>
+										className={ baseClass + '--video-info-close' }
+										onClick={ () => videoInfoForMobile.current.classList.toggle( 'show' ) }
+									>
+										{ __( 'Hide Comments', 'godam' ) }
+									</button>
+								</h3>
+								<CommentList { ...props } commentsData={ commentsData } setCommentsData={ setCommentsData } isUserLoggedIn={ isUserLoggedIn } storeObj={ memoizedStoreObj } videoContainerRef={ videoContainerRef } />
+								<div className={ baseClass + '-leave-comment' }>
+									<div className={ baseClass + '-leave-comment-impressions' }>
+										<button
+											onClick={ handleLike }
+											className={ baseClass + '-leave-comment-impressions-likes' + ( isUserLiked ? ' is-liked' : '' ) + ( isSending ? ' is-progressing' : '' ) }
+										>{ likesCount }</button>
+										<span className={ baseClass + '-leave-comment-impressions-views' }>{ viewsCount }</span>
+									</div>
+									{ isUserLoggedIn ? (
+										<CommentForm setCommentsData={ setCommentsData } storeObj={ memoizedStoreObj } videoContainerRef={ videoContainerRef } videoAttachmentId={ videoAttachmentId } comment={ {} } siteUrl={ siteUrl } type="reply" commentType="new" />
+									) : (
+										<GuestLoginForm setIsUserLoggedIn={ setIsUserLoggedIn } siteUrl={ siteUrl } baseClass={ baseClass } storeObj={ memoizedStoreObj } />
+									) }
 								</div>
-								{ isUserLoggedIn ? (
-									<CommentForm setCommentsData={ setCommentsData } storeObj={ memoizedStoreObj } videoContainerRef={ videoContainerRef } videoAttachmentId={ videoAttachmentId } comment={ {} } siteUrl={ siteUrl } type="reply" commentType="new" />
-								) : (
-									<GuestLoginForm setIsUserLoggedIn={ setIsUserLoggedIn } siteUrl={ siteUrl } baseClass={ baseClass } storeObj={ memoizedStoreObj } />
-								) }
 							</div>
-						</div>
+							{
+								'rtgodam-video-engagement-dynamic-ratio-9-16' === videoRatioClass && (
+									<div className={ baseClass + '--mobile-engagements' }>
+										<button
+											className={ baseClass + '--mobile-engagements-button like' + ( isUserLiked ? ' is-liked' : '' ) + ( isSending ? ' is-progressing' : '' ) }
+											onClick={ handleLike }
+										>
+											{ likesCount }
+										</button>
+										<button
+											className={ baseClass + '--mobile-engagements-button comment' } onClick={ () => videoInfoForMobile.current.classList.toggle( 'show' ) }>
+											{ commentsCount }
+										</button>
+										<span
+											className={ baseClass + '--mobile-engagements-button view' }
+										>
+											{ viewsCount }
+										</span>
+									</div>
+								)
+							}
+						</>
 					) }
 				</div>
 			</div>
