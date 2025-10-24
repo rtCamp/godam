@@ -1,7 +1,6 @@
-
+@use "./_common"; // stylelint-disable-line scss/load-no-partial-leading-underscore
 @use './variables';
 @import url(https://vjs.zencdn.net/8.3.0/video-js.css);
-@import "_common"; // stylelint-disable-line scss/load-no-partial-leading-underscore
 
 $GREEN: #4CAF50;
 $RED: #F44336;
@@ -12,8 +11,7 @@ $media-library-sidebar-bg-dark: #a3a3a3;
 $media-library-sidebar-border: #E0E0E0;
 
 #wpbody-content {
-	/* stylelint-disable-next-line value-keyword-case */
-	container: wpBodyContent / inline-size;
+	container: wpBodyContent / inline-size; // stylelint-disable-line value-keyword-case
 }
 
 /*

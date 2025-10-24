@@ -1,4 +1,9 @@
-@import './retranscode-media';
+@use './retranscode-media';
+/* stylelint-disable scss/at-rule-no-unknown */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 
 // Initialize the variables for the tools page
 $tools-page-color-white: #fff;
@@ -187,7 +192,7 @@ $tools-page-breakpoint: 782px;
 	}
 
 	.sidebar-nav-item {
-
+		
 		@apply flex items-center gap-2 p-2 font-medium rounded-md focus:ring-2 ring-indigo-200 text-gray-600 hover:text-gray-900 border border-transparent transition-all;
 
 		&.active {

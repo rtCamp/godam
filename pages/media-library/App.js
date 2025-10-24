@@ -163,6 +163,7 @@ const App = () => {
 					<SelectControl
 						value={ currentSortOrder }
 						className="folder-sort-select"
+						__next40pxDefaultSize
 						options={ [
 							{ label: __( 'By Name (A-Z)', 'godam' ), value: 'name-asc' },
 							{ label: __( 'By Name (Z-A)', 'godam' ), value: 'name-desc' },
