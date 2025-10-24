@@ -64,6 +64,8 @@ use RTGODAM\Inc\Metform\Metform_Integration;
 use RTGODAM\Inc\Metform\Metform_Rest_Api;
 use RTGODAM\Inc\Lifter_LMS\Lifter_LMS;
 
+use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Video;
+
 /**
  * Class Plugin.
  */
@@ -120,6 +122,9 @@ class Plugin {
 
 		// Load Elementor widgets.
 		$this->load_elementor_widgets();
+
+		// Load WPBakery elements.
+		$this->load_wpbakery_elements();
 
 		$this->load_media_library();
 	}
@@ -197,6 +202,21 @@ class Plugin {
 		}
 
 		Elementor_Widgets::get_instance();
+	}
+
+	/**
+	 * Registers the WPBakery elements if required.
+	 *
+	 * @return void
+	 */
+	public function load_wpbakery_elements() {
+		$is_wpbakery_active = is_plugin_active( 'js_composer/js_composer.php' );
+
+		if ( ! $is_wpbakery_active ) {
+			return;
+		}
+
+		WPB_GoDAM_Video::get_instance();
 	}
 
 	/**
