@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 6.8.3
 Requires PHP: 7.4
-Stable tag: 1.4.4
+Stable tag: 1.4.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -246,6 +246,10 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v1.4.5 (October 22, 2025) =
+
+- Fix: Optimized API requests
+
 = v1.4.4 (October 16, 2025) =
 
 - Tweak: Introduced GoDAM Player SDK for developer integrations
@@ -259,14 +263,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Tweak: Implemented custom branding for GoDAM Gutenberg Blocks
 - Tweak: Updated WordPress role-based access controls
 - Fix: Fixed Quality option visibility inconsistencies
-
-= v1.4.2 (September 25, 2025) =
-
-- Tweak: Allow replacing transcoded MP4 video with the original uploaded video
-- Fix: Resolved LifterLMS warnings and applied necessary bug fixes
-- Fix: Restored analytics tracking for GoDAM Gallery videos
-- Fix: Fixed GoDAM Recorder playback issue when rtMedia plugin is active
-- Fix: Addressed Safari browser issue where audio would not play or seek correctly
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
