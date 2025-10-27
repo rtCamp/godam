@@ -12,29 +12,29 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $attachment_id = absint( get_query_var( 'id' ) );
-$attachment = get_post( $attachment_id );
+$attachment    = get_post( $attachment_id );
 
 if ( ! $attachment ) {
 	status_header( 404 );
 	exit;
 }
 
-// Get video title and date
+// Get video title and date.
 $video_title = get_the_title( $attachment_id );
-$video_date = get_the_date( 'F j, Y', $attachment_id );
+$video_date  = get_the_date( 'F j, Y', $attachment_id );
 
-// Enqueue necessary assets
+// Enqueue necessary assets.
 wp_enqueue_script( 'godam-player-frontend-script' );
 wp_enqueue_script( 'godam-player-analytics-script' );
 wp_enqueue_style( 'godam-player-frontend-style' );
 wp_enqueue_style( 'godam-player-style' );
 
-// Get video sources for the shortcode
-$transcoded_url = strval( rtgodam_get_transcoded_url_from_attachment( $attachment_id ) );
+// Get video sources for the shortcode.
+$transcoded_url     = strval( rtgodam_get_transcoded_url_from_attachment( $attachment_id ) );
 $hls_transcoded_url = strval( rtgodam_get_hls_transcoded_url_from_attachment( $attachment_id ) );
-$video_src = strval( wp_get_attachment_url( $attachment_id ) );
-$video_src_type = strval( get_post_mime_type( $attachment_id ) );
-$sources = array();
+$video_src          = strval( wp_get_attachment_url( $attachment_id ) );
+$video_src_type     = strval( get_post_mime_type( $attachment_id ) );
+$sources            = array();
 
 if ( ! empty( $transcoded_url ) ) {
 	$sources[] = array(
@@ -55,8 +55,8 @@ $sources[] = array(
 	'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
 );
 
-// Convert JSON to use custom placeholders instead of square brackets
-$sources_json = wp_json_encode( $sources );
+// Convert JSON to use custom placeholders instead of square brackets.
+$sources_json              = wp_json_encode( $sources );
 $sources_with_placeholders = str_replace( array( '[', ']' ), array( '__rtgob__', '__rtgcb__' ), $sources_json );
 
 ?>
@@ -70,17 +70,20 @@ $sources_with_placeholders = str_replace( array( '[', ']' ), array( '__rtgob__',
 	<style>
 		body {
 			margin: 0;
-			padding: 20px;
+			padding: 0;
 			background: #000;
 			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+			height: auto;
+			overflow: hidden;
 		}
 		.godam-modal-container {
 			max-width: 100%;
 			margin: 0 auto;
+			height: auto;
 		}
+		/* Hide the iframe's internal header; parent shows title/date in footer. */
 		.godam-modal-header {
-			color: #fff;
-			margin-bottom: 20px;
+			display: none;
 		}
 		.godam-modal-title {
 			font-size: 24px;
@@ -95,6 +98,23 @@ $sources_with_placeholders = str_replace( array( '[', ']' ), array( '__rtgob__',
 		.godam-modal-video {
 			width: 100%;
 			max-width: 100%;
+			position: relative;
+			height: auto;
+		}
+		/* Ensure video.js player is responsive. */
+		.video-js {
+			width: 100% !important;
+			height: auto !important;
+			aspect-ratio: 16/9;
+		}
+		.video-js .vjs-tech {
+			width: 100%;
+			height: 100%;
+		}
+		/* Prevent overflow issues. */
+		.easydam-video-container {
+			overflow: hidden;
+			height: auto;
 		}
 	</style>
 </head>
@@ -107,7 +127,7 @@ $sources_with_placeholders = str_replace( array( '[', ']' ), array( '__rtgob__',
 		
 		<div class="godam-modal-video">
 			<?php
-			// Render the video using the godam_video shortcode
+			// Render the video using the godam_video shortcode.
 			$shortcode = "[godam_video id='{$attachment_id}' engagements=show sources='{$sources_with_placeholders}']";
 			echo do_shortcode( $shortcode );
 			?>
@@ -115,11 +135,11 @@ $sources_with_placeholders = str_replace( array( '[', ']' ), array( '__rtgob__',
 	</div>
 
 	<script>
-		// Notify parent window when content is ready
+		// Notify parent window when content is ready.
 		document.addEventListener( 'DOMContentLoaded', function() {
 			console.log( 'GoDAM Modal: DOM loaded, preparing to send message' );
 			
-			// Wait a bit for video player to initialize
+			// Wait a bit for video player to initialize.
 			setTimeout( function() {
 				const data = {
 					type: 'rtgodam:modal-ready',
@@ -140,7 +160,7 @@ $sources_with_placeholders = str_replace( array( '[', ']' ), array( '__rtgob__',
 			}, 500 );
 		} );
 
-		// Handle window resize to notify parent of height changes
+		// Handle window resize to notify parent of height changes.
 		let resizeTimeout;
 		window.addEventListener( 'resize', function() {
 			clearTimeout( resizeTimeout );
