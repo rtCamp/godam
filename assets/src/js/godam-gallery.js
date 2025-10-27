@@ -95,7 +95,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 									}
 									isLoading = false;
 								} )
-								.catch( ( ) => {
+								.catch( () => {
 									isLoading = false;
 								} );
 						}
@@ -241,7 +241,7 @@ document.addEventListener( 'click', async function( e ) {
 
 				// Create iframe for video modal
 				const iframe = document.createElement( 'iframe' );
-				iframe.src = `${ window.location.origin }/godam-video-modal/?id=${ newVideoId }`;
+				iframe.src = `?godam_page=gallery-modal&id=${ newVideoId }`;
 				iframe.style.width = '100%';
 				iframe.style.height = '600px';
 				iframe.style.border = 'none';
@@ -259,7 +259,7 @@ document.addEventListener( 'click', async function( e ) {
 					// eslint-disable-next-line no-console
 					console.error( 'GoDAM Gallery: Iframe failed to load' );
 					if ( videoContainer ) {
-						videoContainer.innerHTML = '<div class="godam-error-message">Failed to load video. Please check if the rewrite rules are flushed.</div>';
+						videoContainer.innerHTML = '<div class="godam-error-message">Failed to load video.</div>';
 						videoContainer.classList.remove( 'animate-video-loading' );
 					}
 				} );
