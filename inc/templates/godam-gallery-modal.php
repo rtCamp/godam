@@ -59,6 +59,10 @@ $sources[] = array(
 $sources_json              = wp_json_encode( $sources );
 $sources_with_placeholders = str_replace( array( '[', ']' ), array( '__rtgob__', '__rtgcb__' ), $sources_json );
 
+// Hide redundant admin bar for iframe to avoid duplication.
+// phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
+add_filter( 'show_admin_bar', '__return_false' );
+
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -115,6 +119,26 @@ $sources_with_placeholders = str_replace( array( '[', ']' ), array( '__rtgob__',
 		.easydam-video-container {
 			overflow: hidden;
 			height: auto;
+		}
+
+		html {
+			margin-top: 0 !important;
+		}
+
+		body.admin-bar {
+			padding-top: 0 !important;
+		}
+
+		/* Hide Query Monitor */
+		#query-monitor-main,
+		#qm,
+		[class*="query-monitor"],
+		[id*="query-monitor"],
+		[data-qm],
+		.qm {
+			display: none !important;
+			visibility: hidden !important;
+			opacity: 0 !important;
 		}
 	</style>
 </head>
