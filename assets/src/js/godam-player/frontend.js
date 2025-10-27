@@ -35,6 +35,8 @@ import 'quill/dist/quill.snow.css';
  */
 import PlayerManager from './managers/playerManager.js';
 
+import './api/godam-api.js';
+
 /**
  * Initialize player on DOM content loaded
  */

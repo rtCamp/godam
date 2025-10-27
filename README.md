@@ -7,11 +7,11 @@ Tags: transcoder, video, media library, folders, file manager
 
 Requires at least: 6.5
 
-Tested up to: 6.8.1
+Tested up to: 6.8.3
 
 Requires PHP: 7.4
 
-Stable tag: 1.4.3
+Stable tag: 1.4.5
 
 License: [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)
 
