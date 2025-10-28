@@ -272,6 +272,9 @@ document.addEventListener( 'click', async function( e ) {
 						if ( event.data.height ) {
 							iframe.style.height = event.data.height + 'px';
 						}
+					} else if ( event.data && event.data.type === 'rtgodam:change-video' ) {
+						// Handle video change requests from iframe
+						handleVideoChange( event.data.direction );
 					}
 				};
 
@@ -292,6 +295,74 @@ document.addEventListener( 'click', async function( e ) {
 			} finally {
 				// Reset loading state
 				modal.dataset.isLoading = 'false';
+			}
+		};
+
+		// Function to handle video change from iframe scroll
+		const handleVideoChange = async ( direction ) => {
+			// Get current video items
+			let videoItems = getCurrentVideoItems();
+
+			// Get current video index
+			const currentId = modal.dataset.currentVideoId;
+			const currentIndex = Array.from( videoItems ).findIndex( ( item ) =>
+				item.querySelector( '.godam-video-thumbnail' ).getAttribute( 'data-video-id' ) === currentId,
+			);
+
+			if ( currentIndex === -1 ) {
+				return;
+			}
+
+			let newIndex;
+
+			if ( direction === 'next' ) {
+				// Next video
+				if ( currentIndex === videoItems.length - 1 ) {
+					// At last video, try to load more
+					const moreLoaded = await loadMoreIfNeeded( currentIndex, videoItems );
+					if ( moreLoaded ) {
+						// Refresh video items after loading more
+						videoItems = getCurrentVideoItems();
+						newIndex = currentIndex + 1;
+					} else {
+						// No more videos available
+						return;
+					}
+				} else {
+					newIndex = currentIndex + 1;
+				}
+			} else if ( direction === 'previous' ) {
+				// Previous video
+				if ( currentIndex === 0 ) {
+					// At first video, do nothing
+					return;
+				}
+				newIndex = currentIndex - 1;
+			} else {
+				return;
+			}
+
+			// Get the new video ID
+			const newThumbnail = videoItems[ newIndex ]?.querySelector( '.godam-video-thumbnail' );
+			if ( newThumbnail ) {
+				const newVideoId = newThumbnail.getAttribute( 'data-video-id' );
+				if ( newVideoId && newVideoId !== currentId ) {
+					// Hide engagement popup if visible
+					const popUpElement = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
+					if ( popUpElement ) {
+						popUpElement.style.display = 'none';
+					}
+
+					// Send analytics event for old video
+					window.analytics?.trackVideoEvent( {
+						type: 2,
+						videoId: parseInt( currentId, 10 ),
+						root: modal,
+					} );
+
+					// Load new video
+					loadNewVideo( newVideoId );
+				}
 			}
 		};
 
@@ -396,12 +467,9 @@ document.addEventListener( 'click', async function( e ) {
 			event.preventDefault(); // Prevent background scroll
 			event.stopPropagation(); // Prevent event bubbling
 
-			if ( ! window.galleryScroll ) {
-				return;
-			}
-
-			const currentPopUp = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
-			if ( ! currentPopUp ) {
+			const currentModal = document.getElementById( 'godam-video-modal' );
+			const isGalleryModal = currentModal && currentModal.classList.contains( 'is-gallery' );
+			if ( ! isGalleryModal ) {
 				return;
 			}
 
@@ -478,12 +546,9 @@ document.addEventListener( 'click', async function( e ) {
 			touchEndY = err.changedTouches[ 0 ].clientY;
 			const touchDiff = touchStartY - touchEndY;
 
-			if ( ! window.galleryScroll ) {
-				return;
-			}
-
-			const currentPopUp = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
-			if ( ! currentPopUp ) {
+			const currentModal = document.getElementById( 'godam-video-modal' );
+			const isGalleryModal = currentModal && currentModal.classList.contains( 'is-gallery' );
+			if ( ! isGalleryModal ) {
 				return;
 			}
 

@@ -180,6 +180,88 @@ add_filter( 'show_admin_bar', '__return_false' );
 				}
 			}, 250 );
 		} );
+
+		// Scroll/swipe detection within iframe to change videos acting on parent scroll logic
+		( function() {
+			const SCROLL_COOLDOWN = 1000; // milliseconds
+			let lastScrollTime = 0;
+			let scrollTimeout;
+
+			// Desktop: wheel event
+			const handleWheel = function( event ) {
+				// Handle scroll within iframe to change videos
+				event.preventDefault();
+				event.stopPropagation();
+
+				clearTimeout( scrollTimeout );
+				scrollTimeout = setTimeout( function() {
+					const currentTime = Date.now();
+					if ( currentTime - lastScrollTime < SCROLL_COOLDOWN ) {
+						return;
+					}
+
+					lastScrollTime = currentTime;
+
+					// Send message to parent to change video
+					if ( window.parent && window.parent !== window ) {
+						const direction = event.deltaY > 0 ? 'next' : 'previous';
+						window.parent.postMessage( {
+							type: 'rtgodam:change-video',
+							direction: direction
+						}, '*' );
+					}
+				}, 150 );
+			};
+
+			// Mobile: touch events
+			let touchStartY = 0;
+			let touchEndY = 0;
+
+			const handleTouchStart = function( event ) {
+				touchStartY = event.touches[ 0 ].clientY;
+			};
+
+			const handleTouchMove = function( event ) {
+				event.preventDefault();
+				event.stopPropagation();
+			};
+
+			const handleTouchEnd = function( event ) {
+				// Handle swipe within iframe to change videos
+				touchEndY = event.changedTouches[ 0 ].clientY;
+				const touchDiff = touchStartY - touchEndY;
+
+				// Minimum swipe distance
+				if ( Math.abs( touchDiff ) < 30 ) {
+					return;
+				}
+
+				clearTimeout( scrollTimeout );
+				scrollTimeout = setTimeout( function() {
+					const currentTime = Date.now();
+					if ( currentTime - lastScrollTime < SCROLL_COOLDOWN ) {
+						return;
+					}
+
+					lastScrollTime = currentTime;
+
+					// Send message to parent to change video
+					if ( window.parent && window.parent !== window ) {
+						const direction = touchDiff > 0 ? 'next' : 'previous';
+						window.parent.postMessage( {
+							type: 'rtgodam:change-video',
+							direction: direction
+						}, '*' );
+					}
+				}, 150 );
+			};
+
+			// Attach event listeners
+			document.body.addEventListener( 'wheel', handleWheel, { passive: false } );
+			document.body.addEventListener( 'touchstart', handleTouchStart, { passive: false } );
+			document.body.addEventListener( 'touchmove', handleTouchMove, { passive: false } );
+			document.body.addEventListener( 'touchend', handleTouchEnd, { passive: false } );
+		} )();
 	</script>
 
 	<?php wp_footer(); ?>
