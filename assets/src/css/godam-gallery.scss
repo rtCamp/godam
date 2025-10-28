@@ -252,13 +252,10 @@
 
 	.godam-modal-content {
 		position: relative;
-		background: #fff;
-		border-radius: 4px;
-		padding: 4px;
+		background: transparent;
+
 		width: 100vw;
 		max-width: none;
-		max-height: 95vh;
-		box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 		z-index: 10;
 
 		@media (min-width: 1728px) {

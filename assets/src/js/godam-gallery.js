@@ -186,12 +186,6 @@ document.addEventListener( 'click', async function( e ) {
 						</svg>
 					</div>
 				</div>
-				<div class="godam-modal-footer">
-					<div class="godam-video-info">
-						<h3 class="godam-video-title"></h3>
-						<span class="godam-video-date"></span>
-					</div>
-				</div>
 			</div>
 		`;
 
@@ -248,16 +242,7 @@ document.addEventListener( 'click', async function( e ) {
 				iframe.style.background = '#000';
 				iframe.title = 'GoDAM Video Player';
 				iframe.setAttribute( 'aria-label', 'GoDAM Video Player' );
-
-				// Add debugging for iframe load events
-				iframe.addEventListener( 'load', function() {
-					// eslint-disable-next-line no-console
-					console.log( 'GoDAM Gallery: Iframe loaded successfully' );
-				} );
-
 				iframe.addEventListener( 'error', function() {
-					// eslint-disable-next-line no-console
-					console.error( 'GoDAM Gallery: Iframe failed to load' );
 					if ( videoContainer ) {
 						videoContainer.innerHTML = '<div class="godam-error-message">Failed to load video.</div>';
 						videoContainer.classList.remove( 'animate-video-loading' );
@@ -267,35 +252,16 @@ document.addEventListener( 'click', async function( e ) {
 				// Clear loading state and add iframe
 				if ( videoContainer ) {
 					videoContainer.innerHTML = '';
-					iframe.style.minHeight = '400px';
 					videoContainer.appendChild( iframe );
 					// Don't remove loading class here - wait for postMessage
 				}
 
 				// Listen for messages from iframe
 				currentMessageHandler = ( event ) => {
-					// eslint-disable-next-line no-console
-					console.log( 'GoDAM Gallery: Received message:', event.data );
-
 					if ( event.data && event.data.type === 'rtgodam:modal-ready' ) {
-						// eslint-disable-next-line no-console
-						console.log( 'GoDAM Gallery: Modal ready message received' );
-
-						// Update modal title and date
-						const videoTitle = modal.querySelector( '.godam-video-title' );
-						if ( videoTitle && event.data.title ) {
-							videoTitle.textContent = event.data.title;
-						}
-
-						const videoDate = modal.querySelector( '.godam-video-date' );
-						if ( videoDate ) {
-							// Use date from postMessage if available
-							videoDate.textContent = event.data.date || new Date().toLocaleDateString();
-						}
-
 						// Resize iframe to content height
 						if ( event.data.height ) {
-							iframe.style.height = Math.max( event.data.height, 400 ) + 'px';
+							iframe.style.height = event.data.height + 'px';
 						}
 						// Remove loading state
 						if ( videoContainer ) {
@@ -304,7 +270,7 @@ document.addEventListener( 'click', async function( e ) {
 					} else if ( event.data && event.data.type === 'rtgodam:modal-resize' ) {
 						// Handle resize messages
 						if ( event.data.height ) {
-							iframe.style.height = Math.max( event.data.height, 400 ) + 'px';
+							iframe.style.height = event.data.height + 'px';
 						}
 					}
 				};
@@ -314,14 +280,10 @@ document.addEventListener( 'click', async function( e ) {
 				// Fallback timeout to remove loading state if postMessage fails
 				setTimeout( function() {
 					if ( videoContainer && videoContainer.classList.contains( 'animate-video-loading' ) ) {
-						// eslint-disable-next-line no-console
-						console.warn( 'GoDAM Gallery: PostMessage timeout - removing loading state' );
 						videoContainer.classList.remove( 'animate-video-loading' );
 					}
 				}, 3000 );
 			} catch ( error ) {
-				// eslint-disable-next-line no-console
-				console.error( 'GoDAM Gallery: Error loading video:', error );
 				// Handle error case
 				if ( videoContainer ) {
 					videoContainer.innerHTML = '<div class="godam-error-message">Video could not be loaded.</div>';

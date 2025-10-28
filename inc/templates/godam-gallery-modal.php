@@ -85,20 +85,6 @@ add_filter( 'show_admin_bar', '__return_false' );
 			margin: 0 auto;
 			height: auto;
 		}
-		/* Hide the iframe's internal header; parent shows title/date in footer. */
-		.godam-modal-header {
-			display: none;
-		}
-		.godam-modal-title {
-			font-size: 24px;
-			font-weight: 600;
-			margin: 0 0 8px 0;
-		}
-		.godam-modal-date {
-			font-size: 14px;
-			color: #ccc;
-			margin: 0;
-		}
 		.godam-modal-video {
 			width: 100%;
 			max-width: 100%;
@@ -144,11 +130,6 @@ add_filter( 'show_admin_bar', '__return_false' );
 </head>
 <body>
 	<div class="godam-modal-container">
-		<div class="godam-modal-header">
-			<h1 class="godam-modal-title"><?php echo esc_html( $video_title ); ?></h1>
-			<p class="godam-modal-date"><?php echo esc_html( $video_date ); ?></p>
-		</div>
-		
 		<div class="godam-modal-video">
 			<?php
 			// Render the video using the godam_video shortcode.
