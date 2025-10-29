@@ -23,11 +23,14 @@ if ( ! $attachment ) {
 $video_title = get_the_title( $attachment_id );
 $video_date  = get_the_date( 'F j, Y', $attachment_id );
 
-// Enqueue necessary assets.
-wp_enqueue_script( 'godam-player-frontend-script' );
-wp_enqueue_script( 'godam-player-analytics-script' );
-wp_enqueue_style( 'godam-player-frontend-style' );
-wp_enqueue_style( 'godam-player-style' );
+	// Enqueue necessary assets.
+	wp_enqueue_script( 'godam-player-frontend-script' );
+	wp_enqueue_script( 'godam-player-analytics-script' );
+	wp_enqueue_style( 'godam-player-frontend-style' );
+	wp_enqueue_style( 'godam-player-style' );
+
+	// Prevent automatic page_load events in iframe - we'll handle them manually.
+	add_filter( 'godam_analytics_skip_auto_page_load', '__return_true' );
 
 // Get video sources for the shortcode.
 $transcoded_url     = strval( rtgodam_get_transcoded_url_from_attachment( $attachment_id ) );
@@ -158,22 +161,32 @@ add_filter( 'show_admin_bar', '__return_false' );
 	</div>
 
 	<script>
+		// Skip automatic analytics page_load in iframe context
+		window.godamAnalyticsSkipAutoPageLoad = true;
+
 		// Notify parent window when content is ready.
 		document.addEventListener( 'DOMContentLoaded', function() {
-			// Wait a bit for video player to initialize.
-			setTimeout( function() {
-				const data = {
-					type: 'rtgodam:modal-ready',
-					title: '<?php echo esc_js( $video_title ); ?>',
-					date: '<?php echo esc_js( $video_date ); ?>',
-					height: document.body.scrollHeight,
-					attachmentId: <?php echo intval( $attachment_id ); ?>
-				};
+			// Wait for analytics to be ready before signaling modal ready
+			const checkAnalyticsReady = function() {
+				if ( window.analytics && window.analytics.trackVideoEvent ) {
+					const data = {
+						type: 'rtgodam:modal-ready',
+						title: '<?php echo esc_js( $video_title ); ?>',
+						date: '<?php echo esc_js( $video_date ); ?>',
+						height: document.body.scrollHeight,
+						attachmentId: <?php echo intval( $attachment_id ); ?>
+					};
 
-				if ( window.parent && window.parent !== window ) {
-					window.parent.postMessage( data, '*' );
+					if ( window.parent && window.parent !== window ) {
+						window.parent.postMessage( data, '*' );
+					}
+				} else {
+					setTimeout( checkAnalyticsReady, 100 );
 				}
-			}, 500 );
+			};
+
+			// Start checking after a short delay
+			setTimeout( checkAnalyticsReady, 500 );
 		} );
 
 		// Handle window resize to notify parent of height changes.
@@ -225,6 +238,113 @@ add_filter( 'show_admin_bar', '__return_false' );
 		window.addEventListener( 'rtgodam:comments-closed', function() {
 			// Revert to measured height when comments close
 			notifyHeightChange();
+		} );
+
+		// Function to save current video ranges to sessionStorage
+		function saveVideoRanges(videoId) {
+			try {
+				const videoEl = document.querySelector(`.easydam-player.video-js[data-id="${videoId}"]`);
+				if (videoEl && videoEl.player) {
+					const player = videoEl.player;
+					const ranges = [];
+					const played = player.played();
+					if (played && typeof played.length === 'number') {
+						for (let i = 0; i < played.length; i++) {
+							ranges.push([played.start(i), played.end(i)]);
+						}
+					}
+					if (ranges.length > 0) {
+						const rangeData = {
+							ranges: ranges,
+							videoLength: Number(player.duration && player.duration()) || 0,
+							timestamp: Date.now()
+						};
+						sessionStorage.setItem(`godam_video_ranges_${videoId}`, JSON.stringify(rangeData));
+					}
+				}
+			} catch {
+			}
+		}
+
+		// Auto-save ranges periodically and on video events
+		setInterval(() => {
+			const currentVideoId = <?php echo intval( $attachment_id ); ?>;
+			if (currentVideoId) {
+				saveVideoRanges(currentVideoId);
+			}
+		}, 5000); // Save every 5 seconds
+
+		// Save ranges when page is about to unload
+		window.addEventListener('beforeunload', () => {
+			const currentVideoId = <?php echo intval( $attachment_id ); ?>;
+			if (currentVideoId) {
+				saveVideoRanges(currentVideoId);
+			}
+		});
+
+		// Function to get stored video ranges from sessionStorage
+		function getStoredVideoRanges(videoId) {
+			try {
+				const stored = sessionStorage.getItem(`godam_video_ranges_${videoId}`);
+				if (stored) {
+					const data = JSON.parse(stored);
+					return data;
+				}
+			} catch {
+			}
+			return null;
+		}
+
+		// Listen for messages from parent window
+		window.addEventListener( 'message', function( event ) {
+			if ( event.data && event.data.type === 'rtgodam:save-ranges' ) {
+				// Parent is asking us to save ranges for a video before iframe destruction
+				const { videoId } = event.data;
+				saveVideoRanges(videoId);
+			} else if ( event.data && event.data.type === 'rtgodam:analytics-event' ) {
+				const { analyticsType, videoId } = event.data;
+
+				if ( analyticsType === 1 ) {
+					// Type 1: Video Loaded/Page Load event
+					if ( window.analytics && videoId ) {
+						window.analytics.track( 'page_load', {
+							type: 1,
+							videoIds: [ parseInt( videoId, 10 ) ]
+						} );
+					}
+				} else if ( analyticsType === 2 ) {
+					// Type 2: Video Played/Heatmap event
+
+					// First save current video ranges if it exists
+					const currentVideoId = <?php echo intval( $attachment_id ); ?>;
+					if (currentVideoId && currentVideoId !== videoId) {
+						saveVideoRanges(currentVideoId);
+					}
+
+					if ( window.analytics && window.analytics.trackVideoEvent ) {
+						// Check if we have stored ranges for this video in sessionStorage
+						const storedData = getStoredVideoRanges(videoId);
+						if (storedData) {
+							window.analytics.trackVideoEvent( {
+								type: 2,
+								videoId: parseInt( videoId, 10 ),
+								ranges: storedData.ranges,
+								videoLength: storedData.videoLength,
+								sendPageLoad: false // Don't send duplicate type 1
+							} );
+							// Clear stored data after sending to prevent duplicate sends
+							sessionStorage.removeItem(`godam_video_ranges_${videoId}`);
+						} else {
+							// Try to get ranges from current player (for same video)
+							window.analytics.trackVideoEvent( {
+								type: 2,
+								videoId: parseInt( videoId, 10 ),
+								sendPageLoad: false // Don't send duplicate type 1
+							} );
+						}
+					}
+				}
+			}
 		} );
 
 		// Scroll/swipe detection within iframe to change videos acting on parent scroll logic

@@ -84,6 +84,13 @@ class Assets {
 			$localize_array
 		);
 
+		// Also localize to analytics script for iframe compatibility.
+		wp_localize_script(
+			'godam-player-analytics-script',
+			'videoAnalyticsParams',
+			$localize_array
+		);
+
 		wp_localize_script(
 			'rtgodam-script',
 			'godamAPIKeyData',

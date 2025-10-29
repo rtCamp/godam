@@ -1,6 +1,23 @@
 /* global GODAMPlayer */
 // Removed unused imports: select, dispatch, DOMPurify, engagementStore
 
+// Helper function to send analytics events to iframe
+function sendAnalyticsToIframe( modal, analyticsType, videoId ) {
+	if ( analyticsType === 1 && modal.dataset.isIframeReady !== 'true' ) {
+		// For type 1 events, wait for iframe to be ready
+		return;
+	}
+
+	const iframe = modal.querySelector( 'iframe' );
+	if ( iframe && iframe.contentWindow ) {
+		iframe.contentWindow.postMessage( {
+			type: 'rtgodam:analytics-event',
+			analyticsType,
+			videoId,
+		}, '*' );
+	}
+}
+
 // Common function to load more videos
 async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVideos ) {
 	const loadCount = 3 * columns;
@@ -164,6 +181,7 @@ document.addEventListener( 'click', async function( e ) {
 		// Store current video ID and loading state
 		modal.dataset.currentVideoId = videoId;
 		modal.dataset.isLoading = 'false';
+		modal.dataset.isIframeReady = 'false'; // Track if iframe has signaled it's ready
 
 		// Get gallery pagination info
 		const galleryOffset = parseInt( currentGallery.getAttribute( 'data-offset' ) || 0, 10 );
@@ -267,6 +285,16 @@ document.addEventListener( 'click', async function( e ) {
 						if ( videoContainer ) {
 							videoContainer.classList.remove( 'animate-video-loading' );
 						}
+						// Mark iframe as ready and send initial type 1 analytics
+						modal.dataset.isIframeReady = 'true';
+						sendAnalyticsToIframe( modal, 1, parseInt( newVideoId, 10 ) );
+
+						// Send any pending type 2 analytics for previously viewed video
+						const pendingType2VideoId = modal.dataset.pendingType2VideoId;
+						if ( pendingType2VideoId ) {
+							sendAnalyticsToIframe( modal, 2, parseInt( pendingType2VideoId, 10 ) );
+							delete modal.dataset.pendingType2VideoId;
+						}
 					} else if ( event.data && event.data.type === 'rtgodam:comments-opened' && event.data.action === 'expand-to-fullscreen' ) {
 						const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
 						const commentsHeight = viewportHeight - 100; // Full height minus 100px margin
@@ -361,12 +389,17 @@ document.addEventListener( 'click', async function( e ) {
 						popUpElement.style.display = 'none';
 					}
 
-					// Send analytics event for old video
-					window.analytics?.trackVideoEvent( {
-						type: 2,
-						videoId: parseInt( currentId, 10 ),
-						root: modal,
-					} );
+					// Tell current iframe to save ranges for the video before it's destroyed
+					const currentIframe = modal.querySelector( 'iframe' );
+					if ( currentIframe && currentIframe.contentWindow ) {
+						currentIframe.contentWindow.postMessage( {
+							type: 'rtgodam:save-ranges',
+							videoId: currentId,
+						}, '*' );
+					}
+
+					// Store type 2 analytics for old video to be sent when new iframe is ready
+					modal.dataset.pendingType2VideoId = currentId;
 
 					// Load new video
 					loadNewVideo( newVideoId );
@@ -384,15 +417,47 @@ document.addEventListener( 'click', async function( e ) {
 			}
 		}
 
+		// Helper function to send analytics directly using stored sessionStorage data
+		function sendAnalyticsFromStorage( _videoId ) {
+			try {
+				const stored = sessionStorage.getItem( `godam_video_ranges_${ _videoId }` );
+				if ( stored ) {
+					const data = JSON.parse( stored );
+
+					// Send analytics directly (similar to how iframe does it)
+					if ( window.analytics && window.analytics.track ) {
+						window.analytics.track( 'video_heatmap', {
+							type: 2,
+							videoId: parseInt( _videoId, 10 ),
+							ranges: data.ranges,
+							videoLength: data.videoLength,
+						} );
+
+						// Remove the stored data after sending to prevent duplicate sends
+						sessionStorage.removeItem( `godam_video_ranges_${ _videoId }` );
+					}
+				}
+			} catch {
+
+			}
+		}
+
 		// Close handlers
 		const close = () => {
-			// Send heatmap (type 2) for the current video on close BEFORE disposing/removing
+			// Send heatmap (type 2) for the current video on close using stored data
 			const currentId = parseInt( modal.dataset.currentVideoId || 0, 10 );
 			if ( currentId ) {
-				window.analytics?.trackVideoEvent( { type: 2, videoId: currentId, root: modal } );
+				sendAnalyticsFromStorage( currentId );
 			}
 
-			// Clean up message listener
+			// Also send any pending type 2 analytics
+			const pendingType2VideoId = modal.dataset.pendingType2VideoId;
+			if ( pendingType2VideoId ) {
+				sendAnalyticsFromStorage( pendingType2VideoId );
+				delete modal.dataset.pendingType2VideoId;
+			}
+
+			// Clean up immediately since analytics are sent synchronously
 			if ( currentMessageHandler ) {
 				window.removeEventListener( 'message', currentMessageHandler );
 				currentMessageHandler = null;
@@ -541,8 +606,17 @@ document.addEventListener( 'click', async function( e ) {
 						if ( popUpElement ) {
 							popUpElement.style.display = 'none';
 						}
-						// Send type 2 for the old video
-						window.analytics?.trackVideoEvent( { type: 2, root: document.querySelector( '#rtgodam-video-engagement--comment-modal' ) } );
+						// Tell current iframe to save ranges for the video before it's destroyed
+						const currentIframe = modal.querySelector( 'iframe' );
+						if ( currentIframe && currentIframe.contentWindow ) {
+							currentIframe.contentWindow.postMessage( {
+								type: 'rtgodam:save-ranges',
+								videoId: currentId,
+							}, '*' );
+						}
+
+						// Queue type 2 analytics for old video to be sent when new iframe is ready
+						modal.dataset.pendingType2VideoId = currentId;
 
 						loadNewVideo( newVideoId );
 					}
@@ -626,8 +700,17 @@ document.addEventListener( 'click', async function( e ) {
 							popUpElement.style.display = 'none';
 						}
 
-						// Send type 2 for the old video
-						window.analytics?.trackVideoEvent( { type: 2, root: document.querySelector( '#rtgodam-video-engagement--comment-modal' ) } );
+						// Tell current iframe to save ranges for the video before it's destroyed
+						const currentIframe = modal.querySelector( 'iframe' );
+						if ( currentIframe && currentIframe.contentWindow ) {
+							currentIframe.contentWindow.postMessage( {
+								type: 'rtgodam:save-ranges',
+								videoId: currentId,
+							}, '*' );
+						}
+
+						// Queue type 2 analytics for old video to be sent when new iframe is ready
+						modal.dataset.pendingType2VideoId = currentId;
 
 						loadNewVideo( newVideoId );
 					}
