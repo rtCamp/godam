@@ -267,10 +267,18 @@ document.addEventListener( 'click', async function( e ) {
 						if ( videoContainer ) {
 							videoContainer.classList.remove( 'animate-video-loading' );
 						}
+					} else if ( event.data && event.data.type === 'rtgodam:comments-opened' && event.data.action === 'expand-to-fullscreen' ) {
+						const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+						const commentsHeight = viewportHeight - 100; // Full height minus 100px margin
+						iframe.style.height = commentsHeight + 'px';
 					} else if ( event.data && event.data.type === 'rtgodam:modal-resize' ) {
 						// Handle resize messages
 						if ( event.data.height ) {
-							iframe.style.height = event.data.height + 'px';
+							const newHeight = event.data.height;
+
+							// For comments modal, use the height as sent (already optimized)
+							// Only apply mobile cap for other resize events
+							iframe.style.height = newHeight + 'px';
 						}
 					} else if ( event.data && event.data.type === 'rtgodam:change-video' ) {
 						// Handle video change requests from iframe

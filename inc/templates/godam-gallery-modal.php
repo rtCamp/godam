@@ -142,8 +142,6 @@ add_filter( 'show_admin_bar', '__return_false' );
 	<script>
 		// Notify parent window when content is ready.
 		document.addEventListener( 'DOMContentLoaded', function() {
-			console.log( 'GoDAM Modal: DOM loaded, preparing to send message' );
-			
 			// Wait a bit for video player to initialize.
 			setTimeout( function() {
 				const data = {
@@ -153,14 +151,9 @@ add_filter( 'show_admin_bar', '__return_false' );
 					height: document.body.scrollHeight,
 					attachmentId: <?php echo intval( $attachment_id ); ?>
 				};
-				
-				console.log( 'GoDAM Modal: Sending message to parent:', data );
-				
+
 				if ( window.parent && window.parent !== window ) {
 					window.parent.postMessage( data, '*' );
-					console.log( 'GoDAM Modal: Message sent successfully' );
-				} else {
-					console.warn( 'GoDAM Modal: No parent window found' );
 				}
 			}, 500 );
 		} );
@@ -174,11 +167,89 @@ add_filter( 'show_admin_bar', '__return_false' );
 					type: 'rtgodam:modal-resize',
 					height: document.body.scrollHeight
 				};
-				
+
 				if ( window.parent && window.parent !== window ) {
 					window.parent.postMessage( data, '*' );
 				}
 			}, 250 );
+		} );
+
+		// Watch for comments modal changes to adjust iframe height
+		const commentModalId = 'rtgodam-video-engagement--comment-modal';
+		let modalObserverTimeout;
+
+		const notifyHeightChange = function() {
+			clearTimeout( modalObserverTimeout );
+			modalObserverTimeout = setTimeout( function() {
+				// For modal changes, wait longer to ensure React has fully rendered
+				const checkHeight = function() {
+					const data = {
+						type: 'rtgodam:modal-resize',
+						height: document.body.scrollHeight
+					};
+
+					if ( window.parent && window.parent !== window ) {
+						window.parent.postMessage( data, '*' );
+					}
+				};
+
+				// Check height immediately, then again after a delay to catch React rendering
+				checkHeight();
+				setTimeout( checkHeight, 300 );
+				setTimeout( checkHeight, 600 );
+			}, 150 ); // Initial delay
+		};
+
+		// Use MutationObserver to watch for comments modal
+		const observer = new MutationObserver( function( mutations ) {
+			let shouldNotify = false;
+			mutations.forEach( function( mutation ) {
+				if ( mutation.type === 'childList' ) {
+					// Check if comments modal was added or removed
+					const addedNodes = Array.from( mutation.addedNodes );
+					const removedNodes = Array.from( mutation.removedNodes );
+
+					const modalAdded = addedNodes.some( node =>
+						node.id === commentModalId || ( node.querySelector && node.querySelector( '#' + commentModalId ) )
+					);
+					const modalRemoved = removedNodes.some( node =>
+						node.id === commentModalId || ( node.querySelector && node.querySelector( '#' + commentModalId ) )
+					);
+
+					if ( modalAdded || modalRemoved ) {
+						shouldNotify = true;
+					}
+				}
+			} );
+
+			if ( shouldNotify ) {
+				notifyHeightChange();
+			}
+		} );
+
+		observer.observe( document.body, {
+			childList: true,
+			subtree: true
+		} );
+
+		// Listen for custom events from the engagement system
+		window.addEventListener( 'rtgodam:comments-opened', function() {
+			// Request parent to set full-screen height for comments
+			setTimeout( function() {
+				const data = {
+					type: 'rtgodam:comments-opened',
+					action: 'expand-to-fullscreen'
+				};
+
+				if ( window.parent && window.parent !== window ) {
+					window.parent.postMessage( data, '*' );
+				}
+			}, 300 );
+		} );
+
+		window.addEventListener( 'rtgodam:comments-closed', function() {
+			// Revert to measured height when comments close
+			setTimeout( notifyHeightChange, 200 );
 		} );
 
 		// Scroll/swipe detection within iframe to change videos acting on parent scroll logic
