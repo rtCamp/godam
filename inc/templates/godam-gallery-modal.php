@@ -126,6 +126,24 @@ add_filter( 'show_admin_bar', '__return_false' );
 			visibility: hidden !important;
 			opacity: 0 !important;
 		}
+
+		/* Ensure form layers are scrollable when content overflows */
+		.easydam-layer .form-container {
+			overflow-y: auto;
+			max-height: calc(100vh - 40px);
+			-webkit-overflow-scrolling: touch;
+			scrollbar-width: thin;
+		}
+
+		/* Ensure scrollbar is visible on mobile */
+		.easydam-layer .form-container::-webkit-scrollbar {
+			width: 8px;
+		}
+
+		.easydam-layer .form-container::-webkit-scrollbar-thumb {
+			background-color: rgba(255, 255, 255, 0.5);
+			border-radius: 4px;
+		}
 	</style>
 </head>
 <body>
@@ -174,65 +192,22 @@ add_filter( 'show_admin_bar', '__return_false' );
 			}, 250 );
 		} );
 
-		// Watch for comments modal changes to adjust iframe height
-		const commentModalId = 'rtgodam-video-engagement--comment-modal';
-		let modalObserverTimeout;
-
+		// Listen for custom events from the engagement system
+		let heightChangeTimeout;
 		const notifyHeightChange = function() {
-			clearTimeout( modalObserverTimeout );
-			modalObserverTimeout = setTimeout( function() {
-				// For modal changes, wait longer to ensure React has fully rendered
-				const checkHeight = function() {
-					const data = {
-						type: 'rtgodam:modal-resize',
-						height: document.body.scrollHeight
-					};
-
-					if ( window.parent && window.parent !== window ) {
-						window.parent.postMessage( data, '*' );
-					}
+			clearTimeout( heightChangeTimeout );
+			heightChangeTimeout = setTimeout( function() {
+				const data = {
+					type: 'rtgodam:modal-resize',
+					height: document.body.scrollHeight
 				};
 
-				// Check height immediately, then again after a delay to catch React rendering
-				checkHeight();
-				setTimeout( checkHeight, 300 );
-				setTimeout( checkHeight, 600 );
-			}, 150 ); // Initial delay
+				if ( window.parent && window.parent !== window ) {
+					window.parent.postMessage( data, '*' );
+				}
+			}, 200 );
 		};
 
-		// Use MutationObserver to watch for comments modal
-		const observer = new MutationObserver( function( mutations ) {
-			let shouldNotify = false;
-			mutations.forEach( function( mutation ) {
-				if ( mutation.type === 'childList' ) {
-					// Check if comments modal was added or removed
-					const addedNodes = Array.from( mutation.addedNodes );
-					const removedNodes = Array.from( mutation.removedNodes );
-
-					const modalAdded = addedNodes.some( node =>
-						node.id === commentModalId || ( node.querySelector && node.querySelector( '#' + commentModalId ) )
-					);
-					const modalRemoved = removedNodes.some( node =>
-						node.id === commentModalId || ( node.querySelector && node.querySelector( '#' + commentModalId ) )
-					);
-
-					if ( modalAdded || modalRemoved ) {
-						shouldNotify = true;
-					}
-				}
-			} );
-
-			if ( shouldNotify ) {
-				notifyHeightChange();
-			}
-		} );
-
-		observer.observe( document.body, {
-			childList: true,
-			subtree: true
-		} );
-
-		// Listen for custom events from the engagement system
 		window.addEventListener( 'rtgodam:comments-opened', function() {
 			// Request parent to set full-screen height for comments
 			setTimeout( function() {
@@ -249,7 +224,7 @@ add_filter( 'show_admin_bar', '__return_false' );
 
 		window.addEventListener( 'rtgodam:comments-closed', function() {
 			// Revert to measured height when comments close
-			setTimeout( notifyHeightChange, 200 );
+			notifyHeightChange();
 		} );
 
 		// Scroll/swipe detection within iframe to change videos acting on parent scroll logic
@@ -257,9 +232,40 @@ add_filter( 'show_admin_bar', '__return_false' );
 			const SCROLL_COOLDOWN = 1000; // milliseconds
 			let lastScrollTime = 0;
 			let scrollTimeout;
+			let touchStartElement = null;
+
+			// Check if element is within form or modal that should allow normal scrolling
+			const isScrollableElement = function( element ) {
+				if ( ! element ) {
+					return false;
+				}
+
+				// Check if element is within engagement forms or modals
+				const scrollableSelectors = [
+					'.rtgodam-video-engagement--comment-form',
+					'.rtgodam-video-engagement--comment-modal',
+					'.leave-comment-login-guest-form',
+					'.easydam-layer', // Video editor form layers
+					'.form-container', // Form container within video layers
+					'input',
+					'textarea',
+					'select',
+					'button',
+					'[contenteditable="true"]'
+				];
+
+				return scrollableSelectors.some( selector => {
+					return element.closest( selector );
+				} );
+			};
 
 			// Desktop: wheel event
 			const handleWheel = function( event ) {
+				// Allow normal scrolling in form elements and modals
+				if ( isScrollableElement( event.target ) ) {
+					return;
+				}
+
 				// Handle scroll within iframe to change videos
 				event.preventDefault();
 				event.stopPropagation();
@@ -290,20 +296,33 @@ add_filter( 'show_admin_bar', '__return_false' );
 
 			const handleTouchStart = function( event ) {
 				touchStartY = event.touches[ 0 ].clientY;
+				touchStartElement = event.target;
 			};
 
 			const handleTouchMove = function( event ) {
+				// Allow normal scrolling in form elements and modals
+				if ( isScrollableElement( touchStartElement ) ) {
+					return;
+				}
+
 				event.preventDefault();
 				event.stopPropagation();
 			};
 
 			const handleTouchEnd = function( event ) {
+				// Allow normal scrolling in form elements and modals
+				if ( isScrollableElement( touchStartElement ) ) {
+					touchStartElement = null;
+					return;
+				}
+
 				// Handle swipe within iframe to change videos
 				touchEndY = event.changedTouches[ 0 ].clientY;
 				const touchDiff = touchStartY - touchEndY;
 
 				// Minimum swipe distance
 				if ( Math.abs( touchDiff ) < 30 ) {
+					touchStartElement = null;
 					return;
 				}
 
@@ -311,6 +330,7 @@ add_filter( 'show_admin_bar', '__return_false' );
 				scrollTimeout = setTimeout( function() {
 					const currentTime = Date.now();
 					if ( currentTime - lastScrollTime < SCROLL_COOLDOWN ) {
+						touchStartElement = null;
 						return;
 					}
 
@@ -325,6 +345,8 @@ add_filter( 'show_admin_bar', '__return_false' );
 						}, '*' );
 					}
 				}, 150 );
+
+				touchStartElement = null;
 			};
 
 			// Attach event listeners
