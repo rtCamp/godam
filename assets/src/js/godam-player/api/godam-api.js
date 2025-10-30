@@ -52,9 +52,6 @@ window.GoDAMAPI = {
 			} else {
 				// It's the container div, find the video tag inside
 				video = videoElement;
-				if ( ! video ) {
-					throw new Error( ERROR_NO_VIDEO_FOUND );
-				}
 				const videoTag = video.querySelector( 'video' );
 				if ( ! videoTag ) {
 					throw new Error( ERROR_NO_VIDEO_FOUND );
