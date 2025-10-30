@@ -88,7 +88,8 @@ class Assets {
 			'rtgodam-script',
 			'godamAPIKeyData',
 			array(
-				'validApiKey' => rtgodam_is_api_key_valid(),
+				'validApiKey'  => rtgodam_is_api_key_valid(),
+				'noVideoFound' => __( 'No video found for attachment ID', 'godam' ),
 			)
 		);
 

@@ -20,6 +20,11 @@ window.GoDAMAPI = {
 	getPlayer( attachmentID, videoElement = null, player = null ) {
 		let video, videoJs;
 
+		// Error message constant for better maintainability
+		const ERROR_NO_VIDEO_FOUND = window.godamAPIKeyData?.noVideoFound
+			? window.godamAPIKeyData.noVideoFound + ' ' + attachmentID
+			: `No video found for attachment ID ${ attachmentID }`;
+
 		if ( videoElement && player ) {
 			// Both provided, use them directly
 			videoJs = player;
@@ -28,6 +33,9 @@ window.GoDAMAPI = {
 			if ( videoElement.tagName.toLowerCase() === 'video' ) {
 				// It's the <video> tag, find the parent container div
 				video = videoElement.closest( `.easydam-player.video-js[data-id="${ attachmentID }"]` );
+				if ( ! video ) {
+					throw new Error( ERROR_NO_VIDEO_FOUND );
+				}
 			} else {
 				// It's the container div, use it directly
 				video = videoElement;
@@ -37,17 +45,32 @@ window.GoDAMAPI = {
 			if ( videoElement.tagName.toLowerCase() === 'video' ) {
 				// It's the <video> tag, find the parent container and get VideoJS instance
 				video = videoElement.closest( `.easydam-player.video-js[data-id="${ attachmentID }"]` );
+				if ( ! video ) {
+					throw new Error( ERROR_NO_VIDEO_FOUND );
+				}
 				videoJs = videojs.getPlayer( videoElement ) || videojs( videoElement );
 			} else {
 				// It's the container div, find the video tag inside
 				video = videoElement;
+				if ( ! video ) {
+					throw new Error( ERROR_NO_VIDEO_FOUND );
+				}
 				const videoTag = video.querySelector( 'video' );
+				if ( ! videoTag ) {
+					throw new Error( ERROR_NO_VIDEO_FOUND );
+				}
 				videoJs = videojs.getPlayer( videoTag ) || videojs( videoTag );
 			}
 		} else {
 			// Nothing provided, search by attachment ID
-			video = document.querySelector( `[data-id="${ attachmentID }"]` );
+			video = document.querySelector( `.easydam-player.video-js[data-id="${ attachmentID }"]` );
+			if ( ! video ) {
+				throw new Error( ERROR_NO_VIDEO_FOUND );
+			}
 			const videoTag = video.querySelector( 'video' );
+			if ( ! videoTag ) {
+				throw new Error( ERROR_NO_VIDEO_FOUND );
+			}
 			videoJs = videojs.getPlayer( videoTag ) || videojs( videoTag );
 		}
 
