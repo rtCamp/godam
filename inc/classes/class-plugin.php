@@ -65,6 +65,7 @@ use RTGODAM\Inc\Metform\Metform_Rest_Api;
 use RTGODAM\Inc\Lifter_LMS\Lifter_LMS;
 
 use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Video;
+use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Video_Gallery;
 
 /**
  * Class Plugin.
@@ -217,6 +218,7 @@ class Plugin {
 		}
 
 		WPB_GoDAM_Video::get_instance();
+		WPB_GoDAM_Video_Gallery::get_instance();
 	}
 
 	/**

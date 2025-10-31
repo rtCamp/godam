@@ -83,6 +83,12 @@ class GoDAM_Video_Gallery {
 		// Add filter for processed attributes.
 		$atts = apply_filters( 'rtgodam_gallery_attributes', $atts );
 
+		// handle boolean attributes passed as strings.
+		$boolean_attributes = array( 'infinite_scroll', 'show_title', 'engagements' );
+		foreach ( $boolean_attributes as $bool_attr ) {
+			$atts[ $bool_attr ] = filter_var( $atts[ $bool_attr ], FILTER_VALIDATE_BOOLEAN );
+		}
+
 		wp_enqueue_style( 'godam-gallery-style' );
 
 		wp_enqueue_script( 'godam-gallery-script' );
