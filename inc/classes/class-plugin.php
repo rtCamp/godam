@@ -50,6 +50,7 @@ use RTGODAM\Inc\REST_API\MetForm;
 
 use RTGODAM\Inc\Shortcodes\GoDAM_Player;
 use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
+use RTGODAM\Inc\Shortcodes\GoDAM_Audio;
 
 use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
 use RTGODAM\Inc\Everest_Forms\Everest_Forms_Integration;
@@ -95,6 +96,7 @@ class Plugin {
 		// Load shortcodes.
 		GoDAM_Player::get_instance();
 		GoDAM_Video_Gallery::get_instance();
+		GoDAM_Audio::get_instance();
 		Video_Engagement::get_instance();
 
 		Video_Editor_Form_Layer_Handler::get_instance()->init();
