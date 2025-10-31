@@ -49,12 +49,6 @@ class WPB_GoDAM_Video {
 			return;
 		}
 
-		vc_add_shortcode_param(
-			'attachment_video',
-			array( $this, 'attachment_video_param_html' ),
-			RTGODAM_URL . 'assets/build/js/wpbakery-attachment-video.min.js'
-		);
-
 		vc_map(
 			array(
 				'name'        => esc_html__( 'GoDAM Video', 'godam' ),
