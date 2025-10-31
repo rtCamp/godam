@@ -67,6 +67,7 @@ use RTGODAM\Inc\Lifter_LMS\Lifter_LMS;
 
 use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Video;
 use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Video_Gallery;
+use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Audio;
 
 /**
  * Class Plugin.
@@ -221,6 +222,7 @@ class Plugin {
 
 		WPB_GoDAM_Video::get_instance();
 		WPB_GoDAM_Video_Gallery::get_instance();
+		WPB_GoDAM_Audio::get_instance();
 	}
 
 	/**
