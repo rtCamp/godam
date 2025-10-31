@@ -1,5 +1,15 @@
 # Changelog #
 
+## v1.4.5 (October 22, 2025) ##
+
+- Fix: Optimized API requests
+
+## v1.4.4 (October 16, 2025) ##
+
+- Tweak: Introduced GoDAM Player SDK for developer integrations
+- Fix: Fixed the Copy Block feature for .mov videos
+- Fix: Fixed network errors for analytics
+
 ## v1.4.3 (October 9, 2025) ##
 
 - Tweak: Enhanced Analytics with Google Tag Manager (GTM) event tracking

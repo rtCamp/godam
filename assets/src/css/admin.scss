@@ -1,7 +1,6 @@
-
+@use "./_common"; // stylelint-disable-line scss/load-no-partial-leading-underscore
 @use './variables';
 @import url(https://vjs.zencdn.net/8.3.0/video-js.css);
-@import "_common"; // stylelint-disable-line scss/load-no-partial-leading-underscore
 
 $GREEN: #4CAF50;
 $RED: #F44336;
@@ -18,8 +17,7 @@ $media-library-sidebar-bg-dark: #a3a3a3;
 $media-library-sidebar-border: #E0E0E0;
 
 #wpbody-content {
-	/* stylelint-disable-next-line value-keyword-case */
-	container: wpBodyContent / inline-size;
+	container: wpBodyContent / inline-size; // stylelint-disable-line value-keyword-case
 }
 
 /*
@@ -890,12 +888,14 @@ to ensure proper responsiveness and avoid layout issues.
 	}
 }
 
+/* stylelint-disable-next-line no-descending-specificity */
 .godam-product-timestamp-input input:focus {
 	box-shadow: 0 0 0 0.7px #ab3a6c;
 	border-color: #ab3a6c;
 }
 
 .godam-admin-video-add-to-product-container {
+
 	.vjs-control.vjs-custom-play-button {
 		width: auto !important;
 
@@ -933,7 +933,9 @@ to ensure proper responsiveness and avoid layout issues.
 	}
 
 	@keyframes spin {
+
 		from { transform: rotate(0deg); }
+
 		to { transform: rotate(360deg); }
 	}
 }
