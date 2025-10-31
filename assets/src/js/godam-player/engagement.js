@@ -746,7 +746,6 @@ function timeToSeconds( h, m, s ) {
  * @param {Object}                   props          - Component props.
  * @param {string}                   props.text     - Text to render.
  * @param {function(number, string)} [props.onJump] - Callback to handle clicking a timestamp.
- *
  */
 function TimeLinkedText( { text, onJump } ) {
 	// Matches @HH:MM:SS or @MM:SS
@@ -1055,7 +1054,7 @@ function GuestLoginForm( props ) {
 			{
 				! showGuestForm && (
 					<div className={ baseClass + '-leave-comment-login' }>
-						<a href={ registrationUrl }>{ __( 'Register', 'godam' ) }</a> / <a href={ loginUrl }>{ __( 'Login', 'godam' ) }</a> { __( ' to comment', 'godam' ) }
+						<a href={ registrationUrl }>{ __( 'Register', 'godam' ) }</a> / <a href={ loginUrl }>{ __( 'Login', 'godam' ) }</a> { __( 'to comment', 'godam' ) }
 					</div>
 				)
 			}
@@ -1128,7 +1127,7 @@ function CommentBox( props ) {
 	const getUserData = memoizedStoreObj.select.getUserData();
 	const loginStatus = 'guest' === getUserData?.type || 'user' === getUserData?.type;
 	const [ isUserLoggedIn, setIsUserLoggedIn ] = useState( loginStatus );
-	const [ videoRatioClass, setVideoRatioClass ] = useState( 'rtgodam-video-engagement-dynamic-ratio-16-9' );
+	const videoRatioClass = 'rtgodam-video-engagement-dynamic-ratio-9-16';
 	const videoInfoForMobile = useRef( null );
 
 	useEffect( () => {
@@ -1136,15 +1135,6 @@ function CommentBox( props ) {
 		const currentVideo = currentVideoParent.querySelector( '.godam-video-wrapper' );
 		const currentVideoClass = currentVideoParent.className;
 		const currentVideoStyles = currentVideoParent.getAttribute( 'style' );
-		const video = currentVideo.querySelector( 'video' );
-
-		if ( video.readyState >= 1 ) {
-			loadVideoRatio( video );
-		} else {
-			video.addEventListener( 'loadedmetadata', () => {
-				loadVideoRatio( video );
-			} );
-		}
 
 		const videoContainer = videoContainerRef.current;
 		videoContainer.className = currentVideoClass;
@@ -1163,15 +1153,6 @@ function CommentBox( props ) {
 			}
 		};
 	}, [ videoFigureId, memoizedStoreObj ] );
-
-	function loadVideoRatio( video ) {
-		const width = video.videoWidth;
-		const height = video.videoHeight;
-		const aspectRatio = width / height;
-		if ( aspectRatio <= 0.75 ) {
-			setVideoRatioClass( 'rtgodam-video-engagement-dynamic-ratio-9-16' );
-		}
-	}
 
 	/**
 	 * Handles the like button click event.
