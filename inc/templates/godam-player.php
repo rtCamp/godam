@@ -244,7 +244,7 @@ $video_setup = array(
 			'forward'  => 10,
 			'backward' => 10,
 		),
-		'brandingIcon' => true, // provide default value for brand logo. 
+		'brandingIcon' => true, // provide default value for brand logo.
 	),
 );
 if ( ! empty( $control_bar_settings ) ) {
@@ -340,17 +340,11 @@ if ( $is_shortcode || $is_elementor_widget ) {
 }
 
 /**
- * Fetch AI Generated video tracks from REST endpoint
+ * Fetch AI Generated video tracks from stored transcript path
+ * Construct transcript path for backward compatibility if not already stored
  */
-$transcript_path = godam_get_transcript_path( $job_id );
-
-if ( ! empty( $transcript_path ) ) {
-	$tracks[] = array(
-		'src'     => esc_url( $transcript_path ),
-		'kind'    => 'subtitles',
-		'label'   => 'English',
-		'srclang' => 'en',
-	);
+if ( ! empty( $attachment_id ) ) {
+	$tracks = rtgodam_get_video_transcript_tracks( $attachment_id, $tracks );
 }
 
 $attachment_title = '';

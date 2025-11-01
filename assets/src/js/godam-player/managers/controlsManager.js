@@ -321,6 +321,74 @@ export default class ControlsManager {
 		if ( captionsButton?.classList.contains( 'vjs-hidden' ) && durationElement ) {
 			durationElement.classList.add( 'right-80' );
 		}
+
+		// Check and remove invalid text tracks (404 errors)
+		this.player.ready( () => {
+			const remoteTextTracks = this.player.remoteTextTracks();
+
+			if ( ! remoteTextTracks || remoteTextTracks.length === 0 ) {
+				// No tracks available, hide captions button
+				if ( captionsButton ) {
+					captionsButton.classList.add( 'vjs-hidden' );
+				}
+				return;
+			}
+
+			const tracksToRemove = new Set();
+			const trackValidationPromises = [];
+
+			// Check each track for HTTP errors
+			for ( let i = 0; i < remoteTextTracks.length; i++ ) {
+				const track = remoteTextTracks[ i ];
+				// Get track source - VideoJS tracks might have src in different properties
+				const trackSrc = track.src || ( track.srces && track.srces.length > 0 ? track.srces[ 0 ].src : null );
+
+				if ( ! trackSrc || trackSrc.trim() === '' ) {
+					// Track has no source, mark for removal
+					tracksToRemove.add( track );
+					continue;
+				}
+
+				// Validate track URL by making a HEAD request
+				const validationPromise = fetch( trackSrc, { method: 'HEAD' } )
+					.then( ( response ) => {
+						// Remove track if response is not successful (any non-2xx status code)
+						if ( ! response.ok ) {
+							tracksToRemove.add( track );
+						}
+					} )
+					.catch( () => {
+						// Ignore fetch errors (CORS, network, etc.)
+					} );
+
+				trackValidationPromises.push( validationPromise );
+			}
+
+			// Wait for all validations to complete
+			Promise.allSettled( trackValidationPromises ).then( () => {
+				// Remove tracks that returned HTTP errors
+				tracksToRemove.forEach( ( track ) => {
+					try {
+						this.player.removeRemoteTextTrack( track );
+					} catch {
+					}
+				} );
+
+				// Check remaining valid tracks after removal
+				const remainingTracks = this.player.remoteTextTracks();
+				const validRemainingTracks = Array.from( remainingTracks ).filter( ( track ) => {
+					const trackSrc = track.src || ( track.srces && track.srces.length > 0 ? track.srces[ 0 ].src : null );
+					return trackSrc && trackSrc.trim() !== '' && ! tracksToRemove.has( track );
+				} );
+
+				// Hide captions button if no valid tracks remain
+				if ( validRemainingTracks.length === 0 && captionsButton ) {
+					captionsButton.classList.add( 'vjs-hidden' );
+				} else if ( validRemainingTracks.length > 0 && captionsButton ) {
+					captionsButton.classList.remove( 'vjs-hidden' );
+				}
+			} );
+		} );
 	}
 
 	/**

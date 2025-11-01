@@ -379,7 +379,7 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 	// Prepare request body with site title.
 	$site_url   = get_site_url();
 	$site_title = get_bloginfo( 'name' ); // Get site title from WordPress options.
-	
+
 	$request_body = array(
 		'api_key'    => $api_key,
 		'site_url'   => $site_url,
@@ -565,7 +565,7 @@ function rtgodam_get_localize_array() {
 	}
 
 	$localize_array['token'] = get_option( 'rtgodam-account-token', 'unverified' );
-	
+
 	// Admin page detection.
 	$localize_array['isAdminPage'] = is_admin();
 
@@ -728,4 +728,134 @@ function rtgodam_get_transcoded_error_message_from_attachment( $attachment ) {
 	}
 
 	return strval( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ) );
+}
+
+/**
+ * Get transcript path for a video attachment.
+ *
+ * Fetches AI Generated video tracks from stored transcript path.
+ * Constructs transcript path for backward compatibility if not already stored.
+ *
+ * @since 1.0.0
+ *
+ * @param string|int $attachment_id Attachment ID (can be numeric WordPress ID or virtual media ID).
+ * @param array      $tracks        Existing tracks array to append to.
+ *
+ * @return array Array of track data with 'src', 'kind', 'label', and 'srclang' keys.
+ */
+function rtgodam_get_video_transcript_tracks( $attachment_id, $tracks = array() ) {
+	if ( empty( $attachment_id ) ) {
+		return $tracks;
+	}
+
+	$transcript_path = get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
+
+	// If transcript path is not stored, construct it ONLY ONCE and then store it.
+	if ( empty( $transcript_path ) ) {
+		// Get the account token.
+		$account_token = get_option( 'rtgodam-account-token', '' );
+
+		if ( ! empty( $account_token ) ) {
+			$filename       = '';
+			$current_job_id = '';
+
+			if ( is_numeric( $attachment_id ) ) {
+				// Original media - get job_id from post meta and filename from attachment.
+				$current_job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+
+				if ( empty( $current_job_id ) ) {
+					$current_job_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+				}
+
+				// Get filename from attached file.
+				$attached_file = get_attached_file( $attachment_id );
+				if ( $attached_file ) {
+					$filename = pathinfo( $attached_file, PATHINFO_FILENAME );
+				}
+			} else {
+				// Virtual media - attachment_id is the job_id, get filename via API.
+				$current_job_id = $attachment_id;
+
+				// Call get_file API to get the exact filename from file_origin ONLY ONCE.
+				$api_key = get_option( 'rtgodam-api-key', '' );
+
+				if ( ! empty( $api_key ) ) {
+					$rest_url = add_query_arg(
+						array(
+							'file_id' => rawurlencode( $current_job_id ),
+							'api_key' => rawurlencode( $api_key ),
+						),
+						RTGODAM_API_BASE . '/api/method/godam_core.api.file.get_file'
+					);
+
+					$args = array(
+						'headers' => array(
+							'User-Agent' => 'WordPress/' . get_bloginfo( 'version' ) . '; ' . home_url(),
+							'Accept'     => 'application/json',
+						),
+					);
+
+					$response = wp_remote_get( $rest_url, $args );
+
+					if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
+						$body     = wp_remote_retrieve_body( $response );
+						$api_data = json_decode( $body, true );
+
+						if (
+							is_array( $api_data ) &&
+							isset( $api_data['message']['file_origin'] )
+						) {
+							$file_origin = $api_data['message']['file_origin'];
+							$filename    = pathinfo( $file_origin, PATHINFO_FILENAME );
+						}
+					}
+				}
+			}
+
+			// Construct the VTT URL if we have both job_id and filename.
+			if ( ! empty( $current_job_id ) && ! empty( $filename ) ) {
+				$transcript_path = 'https://' . $account_token . '.gdcdn.us/' . $current_job_id . '/' . $filename . '.vtt';
+
+				// Store the constructed VTT URL in post meta for future use.
+				update_post_meta( $attachment_id, 'rtgodam_transcript_path', $transcript_path );
+			}
+		}
+	}
+
+	if ( ! empty( $transcript_path ) ) {
+		// For virtual media, skip verification and directly add the track.
+		if ( ! is_numeric( $attachment_id ) ) {
+			$tracks[] = array(
+				'src'     => esc_url( $transcript_path ),
+				'kind'    => 'subtitles',
+				'label'   => 'English',
+				'srclang' => 'en',
+			);
+		} else {
+			// For original media, verify the transcript file exists.
+			$transcript_verified = get_post_meta( $attachment_id, 'rtgodam_transcript_exists', true );
+
+			if ( '1' !== $transcript_verified ) { // Only check if we haven't confirmed it exists.
+				// Verify the transcript file actually exists by making a HEAD request.
+				$response            = wp_remote_head( $transcript_path );
+				$transcript_verified = ( ! is_wp_error( $response ) && wp_remote_retrieve_response_code( $response ) === 200 ) ? '1' : '0';
+
+				// Only store '1' permanently (confirmed existence), never store '0' so we can re-check later.
+				if ( '1' === $transcript_verified ) {
+					update_post_meta( $attachment_id, 'rtgodam_transcript_exists', $transcript_verified );
+				}
+			}
+
+			if ( '1' === $transcript_verified ) {
+				$tracks[] = array(
+					'src'     => esc_url( $transcript_path ),
+					'kind'    => 'subtitles',
+					'label'   => 'English',
+					'srclang' => 'en',
+				);
+			}
+		}
+	}
+
+	return $tracks;
 }
