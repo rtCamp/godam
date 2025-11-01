@@ -748,7 +748,28 @@ function rtgodam_get_video_transcript_tracks( $attachment_id, $tracks = array() 
 		return $tracks;
 	}
 
-	$transcript_path = get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
+	$is_virtual = ! is_numeric( $attachment_id );
+	$storage_id = $attachment_id;
+
+	// For virtual media, check if there's a WordPress attachment ID we can use for storage.
+	if ( $is_virtual ) {
+		// Use existing built-in function to get post ID by meta key and value from wp_postmeta table.
+		if ( class_exists( 'RTGODAM_Transcoder_Handler' ) ) {
+			$transcoder_handler = new \RTGODAM_Transcoder_Handler( false );
+			if ( method_exists( $transcoder_handler, 'get_post_id_by_meta_key_and_value' ) ) {
+				// For virtual media, the attachment_id is the job_id, search by rtgodam_transcoding_job_id.
+				$found_attachment_id = $transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $attachment_id );
+
+				if ( ! empty( $found_attachment_id ) ) {
+					// Use WordPress attachment ID for storage.
+					$storage_id = $found_attachment_id;
+				}
+			}
+		}
+	}
+
+	// Retrieve transcript path from post meta.
+	$transcript_path = get_post_meta( $storage_id, 'rtgodam_transcript_path', true );
 
 	// If transcript path is not stored, construct it ONLY ONCE and then store it.
 	if ( empty( $transcript_path ) ) {
@@ -816,15 +837,17 @@ function rtgodam_get_video_transcript_tracks( $attachment_id, $tracks = array() 
 			if ( ! empty( $current_job_id ) && ! empty( $filename ) ) {
 				$transcript_path = 'https://' . $account_token . '.gdcdn.us/' . $current_job_id . '/' . $filename . '.vtt';
 
-				// Store the constructed VTT URL in post meta for future use.
-				update_post_meta( $attachment_id, 'rtgodam_transcript_path', $transcript_path );
+				// Store the constructed VTT URL in post meta for future use (only if we have a valid WordPress attachment ID).
+				if ( ! empty( $storage_id ) && is_numeric( $storage_id ) ) {
+					update_post_meta( $storage_id, 'rtgodam_transcript_path', $transcript_path );
+				}
 			}
 		}
 	}
 
 	if ( ! empty( $transcript_path ) ) {
 		// For virtual media, skip verification and directly add the track.
-		if ( ! is_numeric( $attachment_id ) ) {
+		if ( $is_virtual ) {
 			$tracks[] = array(
 				'src'     => esc_url( $transcript_path ),
 				'kind'    => 'subtitles',
