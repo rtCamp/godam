@@ -340,9 +340,16 @@ if ( $is_shortcode || $is_elementor_widget ) {
 }
 
 /**
- * Fetch AI Generated video tracks from REST endpoint
+ * Fetch AI Generated video tracks from post meta
  */
-$transcript_path = godam_get_transcript_path( $job_id );
+$transcript_path = '';
+
+// Get transcript path from post meta if attachment ID is available.
+if ( ! empty( $attachment_id ) && is_numeric( $attachment_id ) ) {
+	$transcript_path = get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
+} elseif ( ! empty( $original_id ) && is_numeric( $original_id ) ) {
+	$transcript_path = get_post_meta( $original_id, 'rtgodam_transcript_path', true );
+}
 
 if ( ! empty( $transcript_path ) ) {
 	$tracks[] = array(
