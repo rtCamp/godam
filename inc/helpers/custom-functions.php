@@ -213,7 +213,7 @@ function rtgodam_image_cta_html( $layer ) {
  * @param bool $use_for_localize_array Whether to use the data for localizing scripts. Defaults to false.
  * @param int  $timeout                The time in seconds after which the user data should be refreshed.
  */
-function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = 300 ) {
+function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR_IN_SECONDS ) {
 	$rtgodam_user_data = get_option( 'rtgodam_user_data', false );
 	$api_key           = get_option( 'rtgodam-api-key', '' );
 
@@ -709,7 +709,7 @@ function godam_get_transcript_path( $job_id ) {
  * It checks against a whitelist of common localhost IPs and also looks for '.local' or '.test' in the host name.
  * Additionally, it respects the RTGODAM_IS_LOCAL constant if defined.
  * 
- * @since n.e.x.t
+ * @since 1.4.3
  * 
  * @return bool True if the environment is localhost, false otherwise.
  */

@@ -36,7 +36,7 @@ import './video-editor.scss';
 import { useGetAttachmentMetaQuery, useSaveAttachmentMetaMutation } from './redux/api/attachment';
 import { useFetchForms } from './components/forms/fetchForms';
 import Chapters from './components/chapters/Chapters';
-import { copyGoDAMVideoBlock } from './utils/index';
+import { copyGoDAMVideoBlock, prefetchMediaDataForCopy } from './utils/index';
 import { getFormIdFromLayer } from './utils/formUtils';
 import { canManageAttachment } from '../../assets/src/js/media-library/utility.js';
 
@@ -47,6 +47,11 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const [ duration, setDuration ] = useState( 0 );
 	const [ snackbarMessage, setSnackbarMessage ] = useState( '' );
 	const [ showSnackbar, setShowSnackbar ] = useState( false );
+
+	// Pre-fetch data on mount to ensure copy always works
+	useEffect( () => {
+		prefetchMediaDataForCopy( attachmentID );
+	}, [ attachmentID ] );
 
 	const playerRef = useRef( null );
 
@@ -257,6 +262,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 
 	const handleCopyGoDAMVideoBlock = async () => {
 		const result = await copyGoDAMVideoBlock( attachmentID );
+
 		if ( result ) {
 			setSnackbarMessage( __( 'GoDAM Video Block copied to clipboard', 'godam' ) );
 			setShowSnackbar( true );

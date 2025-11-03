@@ -175,15 +175,16 @@ class GoDAM_Player {
 		wp_enqueue_style( 'godam-player-style' );
 
 		$godam_settings = get_option( 'rtgodam-settings', array() );
-		$selected_skin  = $godam_settings['video_player']['player_skin'] ?? '';
-		if ( 'Minimal' === $selected_skin ) {
-			wp_enqueue_style( 'godam-player-minimal-skin' );
-		} elseif ( 'Pills' === $selected_skin ) {
-			wp_enqueue_style( 'godam-player-pills-skin' );
-		} elseif ( 'Bubble' === $selected_skin ) {
-			wp_enqueue_style( 'godam-player-bubble-skin' );
-		} elseif ( 'Classic' === $selected_skin ) {
-			wp_enqueue_style( 'godam-player-classic-skin' );
+		$selected_skin  = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : '';
+		$skins          = array(
+			'Minimal' => 'godam-player-minimal-skin',
+			'Pills'   => 'godam-player-pills-skin',
+			'Bubble'  => 'godam-player-bubble-skin',
+			'Classic' => 'godam-player-classic-skin',
+		);
+
+		if ( isset( $skins[ $selected_skin ] ) ) {
+			wp_enqueue_style( $skins[ $selected_skin ] );
 		}
 
 		ob_start();

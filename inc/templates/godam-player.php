@@ -398,7 +398,7 @@ if ( empty( $attachment_title ) ) {
 					class="easydam-player video-js vjs-big-play-centered vjs-hidden"
 					data-options="<?php echo esc_attr( $video_config ); ?>"
 					data-ad_tag_url="<?php echo esc_url( $ad_tag_url ); ?>"
-					data-id="<?php echo esc_attr( $attachment_id ); ?>"
+					data-id="<?php echo esc_attr( is_numeric( $attachment_id ) ? $attachment_id : $original_id ); ?>"
 					data-instance-id="<?php echo esc_attr( $instance_id ); ?>"
 					data-controls="<?php echo esc_attr( $video_setup ); ?>"
 					data-job_id="<?php echo esc_attr( $job_id ); ?>"

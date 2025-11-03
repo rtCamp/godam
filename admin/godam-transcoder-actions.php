@@ -35,6 +35,7 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 
 		$transcoded_url     = rtgodam_get_transcoded_url_from_attachment( $post->ID );
 		$hls_transcoded_url = rtgodam_get_hls_transcoded_url_from_attachment( $post->ID );
+		$job_id             = rtgodam_get_job_id_by_attachment_id( $post->ID );
 
 		$easydam_settings = get_option( 'rtgodam-settings', array() );
 
@@ -44,6 +45,25 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 		$api_key = get_option( 'rtgodam-api-key', '' );
 
 		if ( ! empty( $api_key ) ) {
+
+			// If $job_id is present then show the oEmbed URL.
+			if ( ! empty( $job_id ) ) {
+				$oembed_url = RTGODAM_API_BASE . '/web/video/' . $job_id;
+
+				$form_fields['oembed_url'] = array(
+					'label' => __( 'oEmbed URL', 'godam' ),
+					'input' => 'html',
+					'html'  => sprintf(
+						'<input type="text" class="widefat" name="attachments[%d][oembed_url]" id="attachments-%d-oembed_url" value="%s" readonly>',
+						(int) $post->ID,
+						(int) $post->ID,
+						esc_url( $oembed_url )
+					),
+					'value' => esc_url( $oembed_url ),
+					'helps' => __( 'The oEmbed URL of the file is generated automatically and cannot be edited.', 'godam' ),
+				);
+			}
+
 			// Add the transcoded URL field.
 			$form_fields['transcoded_url'] = array(
 				'label' => __( 'Transcoded CDN URL (MPD)', 'godam' ),
