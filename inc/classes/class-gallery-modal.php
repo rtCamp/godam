@@ -31,8 +31,8 @@ class Gallery_Modal {
 	/**
 	 * To setup action/filter.
 	 *
-	 * @since 1.4.0
-	 * 
+	 * @since n.e.x.t
+	 *
 	 * @return void
 	 */
 	protected function setup_hooks() {
@@ -41,9 +41,9 @@ class Gallery_Modal {
 
 	/**
 	 * Load the gallery modal template.
-	 * 
+	 *
 	 * @since n.e.x.t
-	 * 
+	 *
 	 * @param string $template The current template.
 	 * @return string The path to the gallery modal template.
 	 */

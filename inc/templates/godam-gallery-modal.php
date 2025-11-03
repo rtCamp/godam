@@ -23,14 +23,14 @@ if ( ! $attachment ) {
 $video_title = get_the_title( $attachment_id );
 $video_date  = get_the_date( 'F j, Y', $attachment_id );
 
-	// Enqueue necessary assets.
-	wp_enqueue_script( 'godam-player-frontend-script' );
-	wp_enqueue_script( 'godam-player-analytics-script' );
-	wp_enqueue_style( 'godam-player-frontend-style' );
-	wp_enqueue_style( 'godam-player-style' );
+// Enqueue necessary assets.
+wp_enqueue_script( 'godam-player-frontend-script' );
+wp_enqueue_script( 'godam-player-analytics-script' );
+wp_enqueue_style( 'godam-player-frontend-style' );
+wp_enqueue_style( 'godam-player-style' );
 
-	// Prevent automatic page_load events in iframe - we'll handle them manually.
-	add_filter( 'godam_analytics_skip_auto_page_load', '__return_true' );
+// Prevent automatic page_load events in iframe - we'll handle them manually.
+add_filter( 'godam_analytics_skip_auto_page_load', '__return_true' );
 
 // Get video sources for the shortcode.
 $transcoded_url     = strval( rtgodam_get_transcoded_url_from_attachment( $attachment_id ) );

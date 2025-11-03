@@ -1,5 +1,4 @@
 /* global GODAMPlayer */
-// Removed unused imports: select, dispatch, DOMPurify, engagementStore
 
 // Helper function to send analytics events to iframe
 function sendAnalyticsToIframe( modal, analyticsType, videoId ) {
@@ -189,8 +188,6 @@ document.addEventListener( 'click', async function( e ) {
 		const galleryOrderby = currentGallery.getAttribute( 'data-orderby' ) || 'date';
 		const galleryOrder = currentGallery.getAttribute( 'data-order' ) || 'DESC';
 		const galleryTotal = parseInt( currentGallery.getAttribute( 'data-total' ) || 0, 10 );
-
-		// Note: Engagements are now handled within the iframe
 
 		// Show modal immediately with the player
 		modal.innerHTML = `
