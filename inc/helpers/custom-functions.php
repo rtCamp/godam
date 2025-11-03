@@ -308,14 +308,24 @@ function rtgodam_get_usage_data() {
 
 	$endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.stats.get_bandwidth_and_storage';
 
-	$url = add_query_arg(
-		array(
-			'api_key' => $api_key,
-		),
-		$endpoint
+	// Prepare request body with API key.
+	$request_body = array(
+		'api_key' => $api_key,
 	);
 
-	$response = wp_safe_remote_get( $url );
+	$args = array(
+		'body'    => wp_json_encode( $request_body ),
+		'headers' => array(
+			'Content-Type' => 'application/json',
+		),
+	);
+
+	// Use vip_safe_wp_remote_post as primary and wp_safe_remote_post as fallback.
+	if ( function_exists( 'vip_safe_wp_remote_post' ) ) {
+		$response = vip_safe_wp_remote_post( $endpoint, $args, 3, 3 );
+	} else {
+		$response = wp_safe_remote_post( $endpoint, $args );
+	}
 
 	if ( is_wp_error( $response ) ) {
 		return $response;
@@ -662,24 +672,31 @@ function godam_get_transcript_path( $job_id ) {
 
 	if ( false === $transcript_path ) {
 		$api_key  = get_option( 'rtgodam-api-key', '' );
-		$rest_url = add_query_arg(
-			array(
-				'job_name' => rawurlencode( $job_id ),
-				'api_key'  => rawurlencode( $api_key ),
-			),
-			RTGODAM_API_BASE . '/api/method/godam_core.api.process.get_transcription'
+		$rest_url = RTGODAM_API_BASE . '/api/method/godam_core.api.process.get_transcription';
+
+		// Prepare request body with job name and API key.
+		$request_body = array(
+			'job_name' => $job_id,
+			'api_key'  => $api_key,
 		);
 
 		// Add headers to prevent 417 Expectation Failed error.
 		$args = array(
 			'timeout' => 3,
+			'body'    => wp_json_encode( $request_body ),
 			'headers' => array(
-				'User-Agent' => 'WordPress/' . get_bloginfo( 'version' ) . '; ' . home_url(),
-				'Accept'     => 'application/json',
+				'User-Agent'   => 'WordPress/' . get_bloginfo( 'version' ) . '; ' . home_url(),
+				'Accept'       => 'application/json',
+				'Content-Type' => 'application/json',
 			),
 		);
 
-		$response = wp_remote_get( $rest_url, $args );
+		// Use vip_safe_wp_remote_post as primary and wp_safe_remote_post as fallback.
+		if ( function_exists( 'vip_safe_wp_remote_post' ) ) {
+			$response = vip_safe_wp_remote_post( $rest_url, $args, 3, 3 );
+		} else {
+			$response = wp_safe_remote_post( $rest_url, $args );
+		}
 
 		if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
 			$body = wp_remote_retrieve_body( $response );
