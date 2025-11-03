@@ -15,10 +15,6 @@ import {
 import { chevronRight } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
-/**
- * Internal dependencies
- */
-import CtaImage from '../../../../assets/src/images/default-cta-image.svg';
 
 /**
  * Internal dependencies
@@ -49,7 +45,7 @@ const wpKsesAllowed = {
 
 const CTALayer = ( { layerID, goBack, duration } ) => {
 	const [ formHTML, setFormHTML ] = useState( '' );
-	const [ imageCtaUrl, setImageCtaUrl ] = useState( CtaImage );
+	const [ imageCtaUrl, setImageCtaUrl ] = useState( '' );
 	const dispatch = useDispatch();
 
 	const restURL = window.godamRestRoute.url || '';
@@ -85,7 +81,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 
 	const fetchOverlayMediaURL = ( mediaId ) => {
 		if ( 0 === mediaId || ! mediaId ) {
-			setImageCtaUrl( CtaImage );
+			setImageCtaUrl( '' );
 			return;
 		}
 		fetch( window.pathJoin( [ restURL, `/wp/v2/media/${ mediaId }` ] ) )
@@ -98,8 +94,8 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 			.then( ( media ) => {
 				setImageCtaUrl( media.source_url ); // URL of the media file
 			} )
-			.catch( ( ) => {
-				setImageCtaUrl( CtaImage );
+			.catch( () => {
+				setImageCtaUrl( '' );
 			} );
 	};
 
@@ -117,19 +113,20 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 	};
 
 	const imageCtaHtml = () => {
-		// Don't generate HTML if there's no image URL
-		if ( ! imageCtaUrl ) {
-			return '';
+		let imageBox = `<div class="image-cta-no-image" style="opacity: ${ layer?.imageOpacity ?? 1 }">${ __( 'No Image', 'godam' ) }</div>`;
+
+		if ( imageCtaUrl ) {
+			imageBox = `<img
+							src="${ imageCtaUrl }"
+							alt="CTA ad"
+							height="300"
+							width="250"
+							style="opacity: ${ layer?.imageOpacity ?? 1 }"
+						/>`;
 		}
 
 		return `<div class="${ 'portrait' === layer?.imageCtaOrientation ? 'vertical-image-cta-container' : 'image-cta-container' }">
-					<img
-						src="${ imageCtaUrl }"
-						alt="CTA ad"
-						height="300"
-						width="250"
-						style="opacity: ${ layer?.imageOpacity ?? 1 }"
-					/>
+					${ imageBox }
 					<div class="image-cta-description">
 						${ layer?.imageText ? `<h2>${ layer.imageText }</h2>` : '' }
 						${ layer?.imageDescription ? `<p>${ layer.imageDescription }</p>` : '' }
@@ -157,14 +154,14 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 		if ( 'image' === layer?.cta_type && layer?.image && layer?.image !== 0 ) {
 			fetchOverlayMediaURL( layer.image );
 		} else {
-			setImageCtaUrl( CtaImage );
+			setImageCtaUrl( '' );
 		}
 	}, [ layer?.cta_type, layer?.image ] );
 
 	// Update the HTML only after imageCtaUrl is updated
 	useEffect( () => {
 		if ( 'image' === layer?.cta_type ) {
-			setFormHTML( imageCtaUrl ? imageCtaHtml() : '' );
+			setFormHTML( imageCtaHtml() );
 		}
 	}, [ imageCtaUrl, layer ] );
 

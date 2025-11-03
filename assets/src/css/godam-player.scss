@@ -291,6 +291,17 @@
 	}
 }
 
+.image-cta-no-image {
+	width: clamp(100px, 20vw, 250px);
+    height: clamp(100px, 20vw, 200px);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 1rem;
+	text-align: center;
+	background: linear-gradient(135deg, #f0f0f0 0%, #a7a7a7 100%);
+}
+
 .image-cta-container,
 .vertical-image-cta-container {
 	display: flex;
