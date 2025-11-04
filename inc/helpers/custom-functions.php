@@ -157,6 +157,7 @@ function rtgodam_fetch_overlay_media_url( $media_id ) {
  *
  * @param array $layer Associative array containing CTA details:
  *     - 'image' (int): Media ID for the image.
+ *     - 'imageUrlExt' (string): External URL for the image (GoDAM hosted).
  *     - 'imageCtaOrientation' (string): Orientation of the CTA ('portrait' or other).
  *     - 'imageOpacity' (float): Opacity of the image (default is 1).
  *     - 'imageText' (string): Heading text for the CTA.
@@ -168,7 +169,15 @@ function rtgodam_fetch_overlay_media_url( $media_id ) {
  * @return string The generated HTML string for the image CTA overlay.
  */
 function rtgodam_image_cta_html( $layer ) {
-	$image_url = rtgodam_fetch_overlay_media_url( $layer['image'] );
+	// Determine if the image is a GoDAM hosted media.
+	$is_godam_media = is_string( $layer['image'] ) && str_starts_with( $layer['image'], 'godam_' );
+
+	if ( $is_godam_media && ! empty( $layer['imageUrlExt'] ) ) {
+		$image_url = $layer['imageUrlExt'];
+	} else {
+		$image_url = rtgodam_fetch_overlay_media_url( $layer['image'] );
+	}
+
 	// Ensure $layer is an associative array and has required fields.
 	$orientation_class = isset( $layer['imageCtaOrientation'] ) && 'portrait' === $layer['imageCtaOrientation']
 		? 'vertical-image-cta-container'
@@ -455,7 +464,7 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	// Get author name with fallback to username.
 	$author_first_name = $current_user->first_name;
 	$author_last_name  = $current_user->last_name;
-	
+
 	// If first and last names are empty, use username as fallback.
 	if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
 		$author_first_name = $current_user->user_login;

@@ -234,6 +234,7 @@ class Assets {
 
 		wp_enqueue_script( 'rtgodam-script' );
 		wp_enqueue_style( 'rtgodam-style' );
+		wp_enqueue_media();
 
 		wp_register_script(
 			'easydam-media-library',
