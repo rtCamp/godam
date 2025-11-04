@@ -113,6 +113,17 @@ export default MediaFrameSelect?.extend( {
 				caption: data.caption,
 				description: data.description,
 			} ),
-		} ).then( ( res ) => res.json() );
+		} )
+			.then( ( res ) => res.json() )
+			.then( ( response ) => {
+				if ( response && response.success ) {
+					const attachment = response.attachment;
+
+					// Trigger custom JS event godam-virtual-attachment-created
+					const event = new CustomEvent( 'godam-virtual-attachment-created', { detail: { virtualMediaId: data.id, attachment } } );
+
+					document.dispatchEvent( event );
+				}
+			} );
 	},
 } );
