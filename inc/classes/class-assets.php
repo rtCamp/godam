@@ -191,7 +191,13 @@ class Assets {
 	 * @return void
 	 */
 	public function admin_enqueue_scripts() {
-		$screen = get_current_screen();
+		$screen           = get_current_screen();
+		$is_upload_screen = ( $screen && 'upload' === $screen->id );
+
+		// Ensure WordPress media modal assets are available on admin pages where we open wp.media.
+		if ( function_exists( 'wp_enqueue_media' ) ) {
+			wp_enqueue_media();
+		}
 
 		wp_register_script(
 			'rtgodam-script',
@@ -303,7 +309,7 @@ class Assets {
 			)
 		);
 
-		if ( $screen && 'upload' === $screen->id ) {
+		if ( $is_upload_screen ) {
 			wp_enqueue_style( 'easydam-media-library' );
 		}
 
