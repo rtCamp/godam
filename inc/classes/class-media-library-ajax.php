@@ -46,6 +46,8 @@ class Media_Library_Ajax {
 		add_action( 'wp_ajax_godam_dismiss_offer_banner', array( $this, 'dismiss_offer_banner' ) );
 
 		add_action( 'rtgodam_handle_callback_finished', array( $this, 'download_transcoded_mp4_source' ), 10, 4 );
+
+		add_filter( 'wp_get_attachment_url', array( $this, 'filter_attachment_url_for_virtual_media' ), 10, 2 );
 	}
 
 	/**
@@ -743,5 +745,31 @@ class Media_Library_Ajax {
 				error_log( 'MP4 video replacement failed: ' . $attachment_id->get_error_message() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Logging for debugging.
 			}
 		}
+	}
+
+	/**
+	 * Filter attachment URL for virtual media.
+	 *
+	 * @param string $url    The original attachment URL.
+	 * @param int    $post_id The attachment post ID.
+	 *
+	 * @since n.e.x.t 
+	 *
+	 * @return string The filtered attachment URL.
+	 */
+	public function filter_attachment_url_for_virtual_media( $url, $post_id ) {
+
+		$godam_original_id = get_post_meta( $post_id, '_godam_original_id', true );
+
+		if ( ! empty( $godam_original_id ) ) {
+			$attachment         = get_post( $post_id );
+			$transcoded_mp4_url = $attachment->guid; // For virtual media, we store the transcoded MP4 URL in the guid.
+
+			if ( ! empty( $transcoded_mp4_url ) ) {
+				return esc_url( $transcoded_mp4_url );
+			}
+		}
+
+		return $url;
 	}
 }
