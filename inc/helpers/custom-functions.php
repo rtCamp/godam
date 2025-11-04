@@ -647,60 +647,6 @@ function rtgodam_cache_delete( $key ) {
 }
 
 /**
- * Fetch AI-generated video transcript path.
- *
- * @param string $job_id  The transcription job ID.
- * @return string|false   Transcript path if available, false otherwise.
- */
-function godam_get_transcript_path( $job_id ) {
-	if ( empty( $job_id ) ) {
-		return false;
-	}
-
-	$cache_key       = 'transcript_path_' . md5( $job_id );
-	$transcript_path = get_transient( $cache_key );
-
-	if ( false === $transcript_path ) {
-		$api_key  = get_option( 'rtgodam-api-key', '' );
-		$rest_url = add_query_arg(
-			array(
-				'job_name' => rawurlencode( $job_id ),
-				'api_key'  => rawurlencode( $api_key ),
-			),
-			RTGODAM_API_BASE . '/api/method/godam_core.api.process.get_transcription'
-		);
-
-		// Add headers to prevent 417 Expectation Failed error.
-		$args = array(
-			'timeout' => 3,
-			'headers' => array(
-				'User-Agent' => 'WordPress/' . get_bloginfo( 'version' ) . '; ' . home_url(),
-				'Accept'     => 'application/json',
-			),
-		);
-
-		$response = wp_remote_get( $rest_url, $args );
-
-		if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
-			$body = wp_remote_retrieve_body( $response );
-			$data = json_decode( $body, true );
-
-			if (
-				is_array( $data ) &&
-				isset( $data['message']['transcript_path'], $data['message']['transcription_status'] ) &&
-				'Transcribed' === $data['message']['transcription_status']
-			) {
-				$transcript_path = $data['message']['transcript_path'];
-				// Cache for 12 hours.
-				set_transient( $cache_key, $transcript_path, 12 * HOUR_IN_SECONDS );
-			}
-		} 
-	}
-
-	return ! empty( $transcript_path ) ? $transcript_path : false;
-}
-
-/**
  * Check if the current environment is localhost.
  * 
  * This function checks the server's remote address and host to determine if the site is running in a local development environment.

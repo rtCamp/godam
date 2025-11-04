@@ -396,6 +396,15 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 		$transcription_status = $request->get_param( 'transcription_status' );
 		$transcript_path      = $request->get_param( 'transcript_path' );
 		$job_id               = $request->get_param( 'job_id' );
+		$api_key              = $request->get_param( 'api_key' );
+
+		// Verify API key first before processing the request.
+		$stored_api_key = get_option( 'rtgodam-api-key' );
+
+		if ( empty( $api_key ) || empty( $stored_api_key ) || $api_key !== $stored_api_key ) {
+			$error_message = empty( $api_key ) ? __( 'API key is required.', 'godam' ) : ( empty( $stored_api_key ) ? __( 'API key not configured on the site.', 'godam' ) : __( 'Invalid API key.', 'godam' ) );
+			return new WP_Error( 'rtgodam_transcription_error', $error_message, array( 'status' => 403 ) );
+		}
 
 		// Validate required parameters.
 		if ( empty( $job_id ) ) {
