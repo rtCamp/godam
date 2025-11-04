@@ -70,8 +70,8 @@ class Media_Library_Ajax {
 			'id'                    => $item['name'],
 			'title'                 => isset( $item['orignal_file_name'] ) ? pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) : $item['name'],
 			'filename'              => $item['orignal_file_name'] ?? $item['name'],
-			'url'                   => $item['transcoded_file_path'] ?? '',
-			'mime'                  => $computed_mime,
+			'url'                   => isset( $item['transcoded_mp4_url'] ) ? $item['transcoded_mp4_url'] : ( isset( $item['transcoded_file_path'] ) ? $item['transcoded_file_path'] : '' ),
+			'mime'                  => isset( $item['transcoded_mp4_url'] ) ? 'video/mp4' : $computed_mime,
 			'type'                  => $item['job_type'] ?? '',
 			'subtype'               => ( isset( $item['mime_type'] ) && strpos( $item['mime_type'], '/' ) !== false ) ? explode( '/', $item['mime_type'] )[1] : 'jpg',
 			'status'                => $item['status'] ?? '',
@@ -85,6 +85,7 @@ class Media_Library_Ajax {
 			'thumbnail_url'         => $item['thumbnail_url'] ?? '',
 			'duration'              => $item['playtime'] ?? '',
 			'hls_url'               => $item['transcoded_hls_path'] ?? '',
+			'mpd_url'               => $item['transcoded_file_path'] ?? '',
 		);
 
 		if ( 'stream' === $item['job_type'] ) {
