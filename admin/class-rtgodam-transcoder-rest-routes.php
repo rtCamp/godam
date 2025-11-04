@@ -327,6 +327,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 						array(
 							'response_id' => $entry_id,
 							'form_id'     => $form_id,
+							// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for storing transcoded URL metadata.
 							'meta_key'    => 'rtgodam_transcoded_url_fluentforms_' . $form_id . '_' . $entry_id,
 							'value'       => $post_array['download_url'],
 							'status'      => 'success',

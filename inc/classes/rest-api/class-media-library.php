@@ -1248,6 +1248,7 @@ class Media_Library extends Base {
 		$existing = new \WP_Query(
 			array(
 				'post_type'      => 'attachment',
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for finding attachment by transcoding job ID.
 				'meta_key'       => 'rtgodam_transcoding_job_id',
 				'meta_value'     => $godam_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'post_status'    => 'any',
@@ -1349,6 +1350,7 @@ class Media_Library extends Base {
 		$query = new \WP_Query(
 			array(
 				'post_type'      => 'attachment',
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for finding attachment by GoDAM original ID.
 				'meta_key'       => '_godam_original_id',
 				'meta_value'     => $godam_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'post_status'    => 'inherit',
