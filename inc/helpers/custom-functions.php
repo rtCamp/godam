@@ -743,8 +743,6 @@ function godam_get_transcript_path( $attachment_id, $job_id = null ) {
 		'timeout' => 3,
 		'headers' => array(
 			'Content-Type' => 'application/json',
-			'User-Agent'   => 'WordPress/' . get_bloginfo( 'version' ) . '; ' . home_url(),
-			'Accept'       => 'application/json',
 		),
 		'body'    => wp_json_encode( $request_body ),
 	);
