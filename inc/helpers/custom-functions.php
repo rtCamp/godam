@@ -769,7 +769,7 @@ function godam_get_transcript_path( $attachment_id, $job_id = null ) {
 		isset( $data['message']['transcript_path'], $data['message']['transcription_status'] ) &&
 		'Transcribed' === $data['message']['transcription_status']
 	) {
-		$transcript_path = sanitize_url( $data['message']['transcript_path'] );
+		$transcript_path = esc_url_raw( $data['message']['transcript_path'] );
 
 		// Save to post meta using the attachment ID.
 		if ( ! empty( $transcript_path ) ) {
