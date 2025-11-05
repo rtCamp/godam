@@ -673,25 +673,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			);
 		}
 
-		if ( this.model.get( 'type' ) === 'application' && this.model.get( 'subtype' ) === 'pdf' ) {
-			const imagePreview = this.model.get( 'image' );
-
-			if ( imagePreview && imagePreview.src ) {
-				// Find the thumbnail container and replace it with the full image preview
-				const $thumbnail = this.$el.find( '.thumbnail' );
-
-				if ( $thumbnail.length ) {
-					$thumbnail.empty().append( `
-						<img
-							class="details-image"
-							src="${ DOMPurify.sanitize( imagePreview.src ) }"
-							alt="PDF Preview"
-						/>
-					` );
-				}
-			}
-		}
-
 		// Return this view.
 		return this;
 	},
