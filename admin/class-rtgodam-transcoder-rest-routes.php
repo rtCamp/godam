@@ -244,14 +244,6 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 					$post_array            = $request->get_params();
 					$post_array['post_id'] = $attachment_id;
 
-					// If thumbnail array is empty but thumbnail_url is provided, use it.
-					if ( empty( $post_array['thumbnail'] ) && ! empty( $post_array['thumbnail_url'] ) ) {
-						$post_array['thumbnail'] = array(
-							$post_array['thumbnail_url'],
-						);
-						$has_thumbs              = true;
-					}
-
 					if ( $has_thumbs && ! empty( $post_array['thumbnail'] ) ) {
 						$thumbnail = $this->rtgodam_transcoder_handler->add_media_thumbnails( $post_array );
 					}
@@ -360,6 +352,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 						array(
 							'response_id' => $entry_id,
 							'form_id'     => $form_id,
+							// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for storing transcoded URL metadata.
 							'meta_key'    => 'rtgodam_transcoded_url_fluentforms_' . $form_id . '_' . $entry_id,
 							'value'       => $post_array['download_url'],
 							'status'      => 'success',

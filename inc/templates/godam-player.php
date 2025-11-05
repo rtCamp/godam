@@ -74,6 +74,7 @@ if ( $is_virtual ) {
 			'post_type'      => 'attachment',
 			'posts_per_page' => 1,
 			'post_status'    => 'any',
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for finding attachment by GoDAM ID.
 			'meta_key'       => '_godam_original_id',
 			'meta_value'     => sanitize_text_field( $attachment_id ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			'fields'         => 'ids',

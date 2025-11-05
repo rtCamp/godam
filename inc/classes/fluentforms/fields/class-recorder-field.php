@@ -94,7 +94,7 @@ class Recorder_Field extends BaseFieldManager {
 		/**
 		 * Get entry details page.
 		 */
-		$fluent_form_route = empty( $_GET['route'] ) ? '' : sanitize_text_field( $_GET['route'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$fluent_form_route = empty( $_GET['route'] ) ? '' : sanitize_text_field( wp_unslash( $_GET['route'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		/**
 		 * Check for fluent forms page.
@@ -540,7 +540,7 @@ class Recorder_Field extends BaseFieldManager {
 		/**
 		 * Get form ID.
 		 */
-		$form_id = ! empty( $_REQUEST['ff-form-id'] ) ? sanitize_text_field( $_REQUEST['ff-form-id'] ) : 0;
+		$form_id = ! empty( $_REQUEST['ff-form-id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['ff-form-id'] ) ) : 0;
 
 		if ( ! function_exists( 'wpFluent' ) ) {
 			wp_send_json_error(
