@@ -344,11 +344,31 @@ if ( $is_shortcode || $is_elementor_widget ) {
  */
 $transcript_path = '';
 
-// Get transcript path from post meta if attachment ID is available.
+// First, check post meta for existing transcript path.
 if ( ! empty( $attachment_id ) && is_numeric( $attachment_id ) ) {
 	$transcript_path = get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
-} elseif ( ! empty( $original_id ) && is_numeric( $original_id ) ) {
-	$transcript_path = get_post_meta( $original_id, 'rtgodam_transcript_path', true );
+}
+
+// If not found in post meta, check API and save to post meta if found.
+if ( empty( $transcript_path ) ) {
+	// Determine which attachment ID to use for transcript check.
+	// If attachment_id is a string, it's a job ID - resolve it to attachment ID.
+	$transcript_attachment_id = $attachment_id;
+
+	if ( ! empty( $attachment_id ) && ! is_numeric( $attachment_id ) ) {
+		// It's a job ID string, find the actual attachment ID.
+		if ( ! class_exists( 'RTGODAM_Transcoder_Handler' ) ) {
+			include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-handler.php';
+		}
+
+		$transcoder_handler       = new RTGODAM_Transcoder_Handler();
+		$transcript_attachment_id = $transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $attachment_id );
+	}
+
+	// Check for transcription if we have a valid numeric attachment ID.
+	if ( ! empty( $transcript_attachment_id ) && is_numeric( $transcript_attachment_id ) ) {
+		$transcript_path = godam_get_transcript_path( $transcript_attachment_id, $job_id );
+	}
 }
 
 if ( ! empty( $transcript_path ) ) {

@@ -674,3 +674,91 @@ function rtgodam_is_local_environment() {
 
 	return ( $is_localhost || ( defined( 'RTGODAM_IS_LOCAL' ) && RTGODAM_IS_LOCAL ) );
 }
+
+/**
+ * Fetch AI-generated video transcript path.
+ *
+ * @param int         $attachment_id The attachment ID (must be numeric).
+ * @param string|null $job_id        Optional. The transcription job ID. If not provided, will be retrieved from post meta.
+ * @return string|false Transcript path if available, false otherwise.
+ */
+function godam_get_transcript_path( $attachment_id, $job_id = null ) {
+	if ( empty( $attachment_id ) || ! is_numeric( $attachment_id ) ) {
+		return false;
+	}
+
+	// Check post meta first.
+	$transcript_path = get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
+	if ( ! empty( $transcript_path ) ) {
+		return $transcript_path;
+	}
+
+	// Get job_id from parameter or post meta.
+	if ( empty( $job_id ) ) {
+		$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+		if ( empty( $job_id ) ) {
+			$job_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+		}
+	}
+
+	if ( empty( $job_id ) ) {
+		return false;
+	}
+
+	// Get API key.
+	$api_key = get_option( 'rtgodam-api-key', '' );
+	if ( empty( $api_key ) ) {
+		return false;
+	}
+
+	// Make POST request to Frappe API.
+	$rest_url = RTGODAM_API_BASE . '/api/method/godam_core.api.process.get_transcription';
+
+	$request_body = array(
+		'job_name' => sanitize_text_field( $job_id ),
+		'api_key'  => sanitize_text_field( $api_key ),
+	);
+
+	$args = array(
+		'method'  => 'POST',
+		'timeout' => 3,
+		'headers' => array(
+			'Content-Type' => 'application/json',
+			'User-Agent'   => 'WordPress/' . get_bloginfo( 'version' ) . '; ' . home_url(),
+			'Accept'       => 'application/json',
+		),
+		'body'    => wp_json_encode( $request_body ),
+	);
+
+	$response = wp_remote_post( $rest_url, $args );
+
+	if ( is_wp_error( $response ) ) {
+		return false;
+	}
+
+	$response_code = wp_remote_retrieve_response_code( $response );
+
+	if ( 200 !== $response_code ) {
+		return false;
+	}
+
+	$body = wp_remote_retrieve_body( $response );
+	$data = json_decode( $body, true );
+
+	if (
+		is_array( $data ) &&
+		isset( $data['message']['transcript_path'], $data['message']['transcription_status'] ) &&
+		'Transcribed' === $data['message']['transcription_status']
+	) {
+		$transcript_path = sanitize_url( $data['message']['transcript_path'] );
+
+		// Save to post meta using the attachment ID.
+		if ( ! empty( $transcript_path ) ) {
+			update_post_meta( $attachment_id, 'rtgodam_transcript_path', $transcript_path );
+		}
+
+		return $transcript_path;
+	}
+
+	return false;
+}
