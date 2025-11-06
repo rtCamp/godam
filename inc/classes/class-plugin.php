@@ -192,10 +192,6 @@ class Plugin {
 	 * @return void
 	 */
 	public function load_elementor_widgets() {
-		if ( ! did_action( 'elementor/loaded' ) ) {
-			return;
-		}
-
 		Elementor_Widgets::get_instance();
 	}
 
