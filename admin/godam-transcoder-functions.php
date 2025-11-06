@@ -455,7 +455,7 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 	if ( ! empty( $existing_api_key ) ) {
 		return array(
 			'status'  => 'success',
-			'message' => __( 'API key verification temporarily unavailable. Existing API key preserved.', 'godam' ),
+			'message' => __( 'API key verification temporarily unavailable.', 'godam' ),
 			'data'    => array(),
 		);
 	}
