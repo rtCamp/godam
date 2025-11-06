@@ -104,8 +104,6 @@ export default class ControlsManager {
 					if ( godamVideoContainer ) {
 						godamVideoContainer.classList.remove( 'godam-video-fullscreen' );
 					}
-					// Restore scrolling
-					document.body.style.overflow = '';
 				} else {
 					if ( videoContainer ) {
 						videoContainer.classList.add( 'vjs-fullscreen' );
@@ -113,8 +111,6 @@ export default class ControlsManager {
 					if ( godamVideoContainer ) {
 						godamVideoContainer.classList.add( 'godam-video-fullscreen' );
 					}
-					// Prevent scrolling on iOS
-					document.body.style.overflow = 'hidden';
 				}
 			}
 		}
@@ -151,9 +147,6 @@ export default class ControlsManager {
 				if ( godamVideoContainer ) {
 					godamVideoContainer.classList.remove( 'godam-video-fullscreen' );
 				}
-
-				// Restore scrolling
-				document.body.style.overflow = '';
 			}
 		}
 		if ( ! videojs.getComponent( 'CustomFullscreenExitButton' ) ) {
