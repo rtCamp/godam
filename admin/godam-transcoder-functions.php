@@ -400,8 +400,19 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		$response = wp_safe_remote_post( $api_url, $args );
 	}
 
+	// Check for existing API key to preserve it on unexpected errors.
+	$existing_api_key = get_option( 'rtgodam-api-key', '' );
+
+	// Handle network/connection errors - preserve existing API key if it exists.
 	if ( is_wp_error( $response ) ) {
-		return new \WP_Error( 'api_error', 'An error occurred while verifying the API. Please try again.', array( 'status' => 500 ) );
+		if ( ! empty( $existing_api_key ) ) {
+			return array(
+				'status'  => 'success',
+				'message' => __( 'API key verification temporarily unavailable.', 'godam' ),
+				'data'    => array(),
+			);
+		}
+		return new \WP_Error( 'api_error', __( 'An error occurred while verifying the API. Please try again.', 'godam' ), array( 'status' => 500 ) );
 	}
 
 	$status_code = wp_remote_retrieve_response_code( $response );
@@ -411,7 +422,7 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		return new \WP_Error( 'invalid_api_key', $body['message']['error'], array( 'status' => 400 ) );
 	}
 
-	// Handle success response.
+	// Handle 200 Success - Save the API key.
 	if ( 200 === $status_code && isset( $body['message']['account_token'] ) ) {
 
 		$account_token = $body['message']['account_token'];
@@ -429,7 +440,7 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 
 		return array(
 			'status'  => 'success',
-			'message' => 'API key verified and stored successfully!',
+			'message' => __( 'API key verified and stored successfully!', 'godam' ),
 			'data'    => $body['message'],
 		);
 	}
@@ -439,8 +450,17 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		return new \WP_Error( 'invalid_api_key', 'Invalid API key. Please try again.', array( 'status' => 404 ) );
 	}
 
-	// Handle unexpected responses.
-	return new \WP_Error( 'unexpected_error', 'An unexpected error occurred. Please try again later.', array( 'status' => 500 ) );
+	// Handle other errors (5xx, unexpected responses) - Preserve existing API key.
+	// If existing API key exists, preserve it. If not, don't save new key.
+	if ( ! empty( $existing_api_key ) ) {
+		return array(
+			'status'  => 'success',
+			'message' => __( 'API key verification temporarily unavailable. Existing API key preserved.', 'godam' ),
+			'data'    => array(),
+		);
+	}
+
+	return new \WP_Error( 'unexpected_error', __( 'An unexpected error occurred. Please try again later.', 'godam' ), array( 'status' => 500 ) );
 }
 
 /**
