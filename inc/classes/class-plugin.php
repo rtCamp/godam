@@ -192,6 +192,11 @@ class Plugin {
 	 * @return void
 	 */
 	public function load_elementor_widgets() {
+
+		if ( ! is_plugin_active( 'elementor/elementor.php' ) ) {
+			return;
+		}
+
 		Elementor_Widgets::get_instance();
 	}
 
