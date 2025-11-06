@@ -447,7 +447,7 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 
 	// Handle failure response.
 	if ( 404 === $status_code ) {
-		return new \WP_Error( 'invalid_api_key', 'Invalid API key. Please try again.', array( 'status' => 404 ) );
+		return new \WP_Error( 'invalid_api_key', __( 'Invalid API key. Please try again.', 'godam' ), array( 'status' => 404 ) );
 	}
 
 	// Handle other errors (5xx, unexpected responses) - Preserve existing API key.
