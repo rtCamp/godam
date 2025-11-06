@@ -192,7 +192,8 @@ class Plugin {
 	 * @return void
 	 */
 	public function load_elementor_widgets() {
-		if ( ! did_action( 'elementor/loaded' ) ) {
+
+		if ( ! is_plugin_active( 'elementor/elementor.php' ) ) {
 			return;
 		}
 
