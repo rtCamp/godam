@@ -90,14 +90,18 @@ const App = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );
 
-	const toggleSidebar = () => {
-		const sidebar = document.getElementById( 'rt-transcoder-media-library-root' );
-		const mediaModal = document.querySelector( '.media-modal-content' );
+	const toggleSidebar = ( e ) => {
+		const target = e.target;
+
+		const sidebar = target.closest( '#rt-transcoder-media-library-root' );
+
+		const mediaModal = target.closest( '.media-modal-content' );
 		const newHidden = ! isSidebarHidden;
 
 		if ( sidebar ) {
 			sidebar.classList.toggle( 'hide-sidebar', newHidden );
 		}
+
 		if ( mediaModal ) {
 			mediaModal.classList.toggle( 'hide-sidebar', newHidden );
 		}
@@ -136,7 +140,7 @@ const App = () => {
 				__next40pxDefaultSize
 				variant="secondary"
 				className="button--full toggle-folder-button"
-				onClick={ () => toggleSidebar() }
+				onClick={ toggleSidebar }
 				icon={ isSidebarHidden ? 'arrow-right-alt2' : 'arrow-left-alt2' }
 			/>
 			<div className="control-buttons">
