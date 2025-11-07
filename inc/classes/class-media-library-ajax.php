@@ -62,9 +62,11 @@ class Media_Library_Ajax {
 			return array();
 		}
 
+		$title = isset( $item['title'] ) ? $item['title'] : ( isset( $item['orignal_file_name'] ) ? pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) : $item['name'] );
+
 		$result = array(
 			'id'                    => $item['name'],
-			'title'                 => isset( $item['orignal_file_name'] ) ? pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) : $item['name'],
+			'title'                 => $title,
 			'filename'              => $item['orignal_file_name'] ?? $item['name'],
 			'url'                   => ( $item['job_type'] ?? '' ) === 'image' ? ( $item['file_origin'] ?? '' ) : ( $item['transcoded_file_path'] ?? $item['file_origin'] ?? '' ),
 			'mime'                  => 'application/dash+xml',
