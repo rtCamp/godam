@@ -75,9 +75,8 @@ export default AttachmentsBrowser?.extend( {
 		}
 
 		const hasActiveSortable = this.$el.find( 'ul.ui-sortable:not(.ui-sortable-disabled)' ).length > 0;
-		const isMainMediaUploader = this.isMainMediaUploader();
 
-		if ( ! isUploadPage() && ! isFolderOrgDisabled() && ! hasActiveSortable && isMainMediaUploader ) {
+		if ( ! isUploadPage() && ! isFolderOrgDisabled() && ! hasActiveSortable ) {
 			/**
 			 * This timeout with the custom event is necessary to ensure that the media frame is fully loaded before dispatching the event.
 			 */
@@ -115,8 +114,6 @@ export default AttachmentsBrowser?.extend( {
 				const event = new CustomEvent( 'media-frame-opened' );
 				document.dispatchEvent( event );
 			}, 50 );
-		} else if ( ! isMainMediaUploader ) {
-			$( '.media-frame' ).addClass( 'hide-menu' );
 		}
 	},
 
@@ -155,28 +152,6 @@ export default AttachmentsBrowser?.extend( {
 		} else {
 			this.collection.unobserve( wp.Uploader.queue );
 		}
-	},
-
-	/**
-	 * Check if this is the main media uploader page
-	 *
-	 * @return {boolean} True if on main media uploader page, false otherwise
-	 */
-	isMainMediaUploader() {
-		// Check for main media library page.
-		const isMediaLibraryPage = document.querySelector( '.upload-php' ) ||
-			window.location.href.includes( 'upload.php' ) ||
-			window.location.href.includes( 'media-new.php' );
-
-		// Check for non-modal media uploader.
-		const isNonModalUploader = document.body.classList.contains( 'wp-admin' ) &&
-			! document.querySelector( '.media-modal-content' );
-
-		// Check for non-restricted media type.
-		const isNonRestrictedMedia = this.controller?.options?.library?.type === undefined ||
-			this.controller?.options?.library?.type === 'all';
-
-		return isMediaLibraryPage || ( isNonModalUploader && isNonRestrictedMedia );
 	},
 
 	/**
