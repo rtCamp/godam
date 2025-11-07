@@ -46,14 +46,22 @@ function initializeMediaLibrary() {
 		return;
 	}
 
-	const rootElement = document.getElementById( 'rt-transcoder-media-library-root' );
+	// Find all visible media frames (same logic as attachment-browser.js)
+	const visibleFrames = Array.from( document.querySelectorAll( '.media-frame' ) )
+		.filter( ( frame ) => getComputedStyle( frame ).display !== 'none' );
 
-	if ( rootElement ) {
-		// Check if React is already mounted to avoid reinitializing
-		if ( ! rootElement._reactRoot ) {
-			const root = ReactDOM.createRoot( rootElement );
-			rootElement._reactRoot = root; // Store the root in a custom property
-			root.render( <Index /> );
+	const activeFrame = visibleFrames.at( -1 ); // Most recently opened visible frame
+
+	if ( activeFrame ) {
+		const rootElement = activeFrame.querySelector( '#rt-transcoder-media-library-root' );
+
+		if ( rootElement ) {
+			// Check if React is already mounted to avoid reinitializing
+			if ( ! rootElement._reactRoot ) {
+				const root = ReactDOM.createRoot( rootElement );
+				rootElement._reactRoot = root; // Store the root in a custom property
+				root.render( <Index /> );
+			}
 		}
 	}
 }
