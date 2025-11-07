@@ -23,6 +23,21 @@ const Index = () => {
 document.addEventListener( 'DOMContentLoaded', initializeMediaLibrary );
 document.addEventListener( 'media-frame-opened', initializeMediaLibrary );
 
+// Clean up React when media modal is closed - important to ensure clean state on modal reopen
+document.addEventListener( 'click', ( event ) => {
+	if ( event.target.closest( '.media-modal-close, .media-modal-backdrop' ) ) {
+		setTimeout( () => {
+			const rootElements = document.querySelectorAll( '#rt-transcoder-media-library-root' );
+			rootElements.forEach( ( rootElement ) => {
+				if ( rootElement._reactRoot ) {
+					rootElement._reactRoot.unmount();
+					delete rootElement._reactRoot;
+				}
+			} );
+		}, 100 );
+	}
+} );
+
 function initializeMediaLibrary() {
 	if ( window.elementor ) {
 		const visibleContainers = Array.from( document.querySelectorAll( '.supports-drag-drop' ) )
