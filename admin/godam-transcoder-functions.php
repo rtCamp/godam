@@ -400,24 +400,16 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		$response = wp_safe_remote_post( $api_url, $args );
 	}
 
-	// Check for existing API key to preserve it on unexpected errors.
+	// Check for existing API key and user data to preserve on unexpected errors.
 	$existing_api_key = get_option( 'rtgodam-api-key', '' );
-
-	// Handle network/connection errors - preserve existing API key if it exists.
-	if ( is_wp_error( $response ) ) {
-		if ( ! empty( $existing_api_key ) ) {
-			return array(
-				'status'  => 'success',
-				'message' => __( 'API key verification temporarily unavailable.', 'godam' ),
-				'data'    => array(),
-			);
-		}
-		return new \WP_Error( 'api_error', __( 'An error occurred while verifying the API. Please try again.', 'godam' ), array( 'status' => 500 ) );
-	}
+	$existing_usage   = get_option( 'rtgodam-usage', array() );
+	$user_data        = ! empty( $existing_usage ) && isset( $existing_usage[ $existing_api_key ] ) ? $existing_usage[ $existing_api_key ] : array();
+	$preserved_data   = is_object( $user_data ) ? (array) $user_data : $user_data;
 
 	$status_code = wp_remote_retrieve_response_code( $response );
 	$body        = json_decode( wp_remote_retrieve_body( $response ), true );
 
+	// Central sends 200 status code with error if API Key is invalid.
 	if ( isset( $body['message']['error'] ) ) {
 		return new \WP_Error( 'invalid_api_key', $body['message']['error'], array( 'status' => 400 ) );
 	}
@@ -445,18 +437,13 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		);
 	}
 
-	// Handle failure response.
-	if ( 404 === $status_code ) {
-		return new \WP_Error( 'invalid_api_key', __( 'Invalid API key. Please try again.', 'godam' ), array( 'status' => 404 ) );
-	}
-
-	// Handle other errors (5xx, unexpected responses) - Preserve existing API key.
+	// Handle other errors - Preserve existing API key and user data.
 	// If existing API key exists, preserve it. If not, don't save new key.
 	if ( ! empty( $existing_api_key ) ) {
 		return array(
 			'status'  => 'success',
 			'message' => __( 'API key verification temporarily unavailable.', 'godam' ),
-			'data'    => array(),
+			'data'    => $preserved_data,
 		);
 	}
 
