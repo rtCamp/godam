@@ -75,9 +75,8 @@ export default AttachmentsBrowser?.extend( {
 		}
 
 		const hasActiveSortable = this.$el.find( 'ul.ui-sortable:not(.ui-sortable-disabled)' ).length > 0;
-		const isMainMediaUploader = this.isMainMediaUploader();
 
-		if ( ! isUploadPage() && ! isFolderOrgDisabled() && ! hasActiveSortable && isMainMediaUploader ) {
+		if ( ! isUploadPage() && ! isFolderOrgDisabled() && ! hasActiveSortable ) {
 			/**
 			 * This timeout with the custom event is necessary to ensure that the media frame is fully loaded before dispatching the event.
 			 */
@@ -105,18 +104,29 @@ export default AttachmentsBrowser?.extend( {
 						}
 					}
 				} else {
-					const menu = $( '.media-frame' ).find( '.media-frame-menu .media-menu' );
+					// Find all visible media frames (same logic as Elementor)
+					const visibleFrames = Array.from( document.querySelectorAll( '.media-frame' ) ).filter(
+						( frame ) => getComputedStyle( frame ).display !== 'none',
+					);
 
-					if ( menu.length ) {
-						menu.append( '<div id="rt-transcoder-media-library-root"></div>' );
+					const activeFrame = visibleFrames.at( -1 ); // most recently opened visible one
+
+					if ( activeFrame ) {
+						const menu = activeFrame.querySelector( '.media-frame-menu .media-menu' );
+						if ( menu ) {
+							// Remove any existing instances
+							menu.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( el ) => el.remove() );
+							// Create and append new div
+							const div = document.createElement( 'div' );
+							div.id = 'rt-transcoder-media-library-root';
+							menu.appendChild( div );
+						}
 					}
 				}
 
 				const event = new CustomEvent( 'media-frame-opened' );
 				document.dispatchEvent( event );
 			}, 50 );
-		} else if ( ! isMainMediaUploader ) {
-			$( '.media-frame' ).addClass( 'hide-menu' );
 		}
 	},
 
@@ -155,28 +165,6 @@ export default AttachmentsBrowser?.extend( {
 		} else {
 			this.collection.unobserve( wp.Uploader.queue );
 		}
-	},
-
-	/**
-	 * Check if this is the main media uploader page
-	 *
-	 * @return {boolean} True if on main media uploader page, false otherwise
-	 */
-	isMainMediaUploader() {
-		// Check for main media library page.
-		const isMediaLibraryPage = document.querySelector( '.upload-php' ) ||
-			window.location.href.includes( 'upload.php' ) ||
-			window.location.href.includes( 'media-new.php' );
-
-		// Check for non-modal media uploader.
-		const isNonModalUploader = document.body.classList.contains( 'wp-admin' ) &&
-			! document.querySelector( '.media-modal-content' );
-
-		// Check for non-restricted media type.
-		const isNonRestrictedMedia = this.controller?.options?.library?.type === undefined ||
-			this.controller?.options?.library?.type === 'all';
-
-		return isMediaLibraryPage || ( isNonModalUploader && isNonRestrictedMedia );
 	},
 
 	/**

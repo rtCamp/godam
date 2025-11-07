@@ -46,7 +46,23 @@ function initializeMediaLibrary() {
 		return;
 	}
 
-	const rootElement = document.getElementById( 'rt-transcoder-media-library-root' );
+	// Find all visible media frames (same logic as attachment-browser.js)
+	const visibleFrames = Array.from( document.querySelectorAll( '.media-frame' ) )
+		.filter( ( frame ) => getComputedStyle( frame ).display !== 'none' );
+
+	const activeFrame = visibleFrames.at( -1 ); // Most recently opened visible frame
+
+	let rootElement = null;
+
+	// If we have an active media frame, look for root element inside it
+	if ( activeFrame ) {
+		rootElement = activeFrame.querySelector( '#rt-transcoder-media-library-root' );
+	}
+
+	// Fallback: Check if root element exists outside media-frame (e.g., upload page)
+	if ( ! rootElement ) {
+		rootElement = document.getElementById( 'rt-transcoder-media-library-root' );
+	}
 
 	if ( rootElement ) {
 		// Check if React is already mounted to avoid reinitializing
