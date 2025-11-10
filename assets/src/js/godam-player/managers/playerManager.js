@@ -78,7 +78,11 @@ export default class PlayerManager {
 		video.dataset.godamInitialized = '1';
 
 		const playerInstance = new VideoPlayer( video, this.isDisplayingLayers );
-		playerInstance.initialize();
+		// Handle async initialization (plugins loaded dynamically)
+		playerInstance.initialize().catch( ( error ) => {
+			// eslint-disable-next-line no-console
+			console.error( 'Failed to initialize video player:', error );
+		} );
 	}
 
 	/**
@@ -232,7 +236,7 @@ export default class PlayerManager {
 		const skipSeconds = skipSettings.forward;
 
 		player.currentTime( player.currentTime() + skipSeconds );
-		/* translators: %s: number of seconds to seek forward */
+		/* translators: %d: number of seconds to seek forward */
 		this.showIndicator( player.el(), 'forward', sprintf( '%s <i class="fa-solid fa-forward"></i>', sprintf( __( '%ds', 'godam' ), skipSeconds ) ) );
 	}
 

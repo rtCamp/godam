@@ -6,11 +6,6 @@
  * VideoJs dependencies
  */
 import 'video.js/dist/video-js.css';
-import 'videojs-contrib-ads/dist/videojs.ads.css';
-import 'videojs-ima/dist/videojs.ima.css';
-import 'videojs-contrib-ads';
-import 'videojs-ima';
-import 'videojs-flvjs-es6';
 
 /**
  * FontAwesome dependencies
@@ -24,11 +19,6 @@ async function loadHotspotIcons() {
 }
 
 loadHotspotIcons();
-
-/**
- * Quill dependencies dependencies for the CTA text layer
- */
-import 'quill/dist/quill.snow.css';
 
 /**
  * Internal dependencies

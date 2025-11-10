@@ -16,6 +16,7 @@ import AdsManager from './managers/adsManager.js';
 import HoverManager from './managers/hoverManager.js';
 import ShareManager from './managers/shareManager.js';
 import MenuButtonHoverManager from './managers/menuButtonHover.js';
+import { loadFlvPlugin, requiresFlvPlugin } from './utils/pluginLoader.js';
 
 /**
  * Refactored Video Player Class
@@ -43,9 +44,29 @@ export default class GodamVideoPlayer {
 	/**
 	 * Initialize the video player
 	 */
-	initialize() {
+	async initialize() {
 		this.setupVideoElement();
+		await this.loadRequiredPlugins();
 		this.initializePlayer();
+	}
+
+	/**
+	 * Load required plugins based on video sources
+	 */
+	async loadRequiredPlugins() {
+		const sources = this.configManager.videoSetupControls?.sources || [];
+
+		// Check if FLV plugin is needed
+		const needsFlv = sources.some( ( source ) => requiresFlvPlugin( source.src || source.type ) );
+
+		if ( needsFlv ) {
+			try {
+				await loadFlvPlugin();
+			} catch ( error ) {
+				// eslint-disable-next-line no-console
+				console.error( 'Failed to load FLV plugin:', error );
+			}
+		}
 	}
 
 	/**
@@ -66,9 +87,12 @@ export default class GodamVideoPlayer {
 	initializePlayer() {
 		this.player = videojs( this.video, this.configManager.videoSetupControls );
 
-		// Initialize ads manager
+		// Initialize ads manager (async - loads plugins dynamically)
 		this.adsManager = new AdsManager( this.player, this.configManager );
-		this.adsManager?.setupAdsIntegration();
+		this.adsManager?.setupAdsIntegration().catch( ( error ) => {
+			// eslint-disable-next-line no-console
+			console.error( 'Ads integration failed:', error );
+		} );
 
 		this.setupAspectRatio();
 		this.setupPlayerReady();

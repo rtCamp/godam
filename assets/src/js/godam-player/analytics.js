@@ -1,20 +1,45 @@
 /**
- * External dependencies
- */
-import { Analytics } from 'analytics';
-/**
  * Internal dependencies
  */
 import videoAnalyticsPlugin from './video-analytics-plugin';
 import GTMVideoTracker from './gtm-video-tracker';
 
-const analytics = Analytics( {
-	app: 'analytics-cdp-plugin',
-	plugins: [
-		videoAnalyticsPlugin(),
-	],
-} );
-window.analytics = analytics;
+/**
+ * Initialize analytics library lazily
+ *
+ * @return {Promise<Object>} Analytics instance
+ */
+async function initializeAnalytics() {
+	if ( window.analytics ) {
+		return window.analytics;
+	}
+
+	try {
+		const { Analytics } = await import( 'analytics' );
+
+		const analytics = Analytics( {
+			app: 'analytics-cdp-plugin',
+			plugins: [
+				videoAnalyticsPlugin(),
+			],
+		} );
+
+		window.analytics = analytics;
+		return analytics;
+	} catch ( error ) {
+		// eslint-disable-next-line no-console
+		console.error( 'Failed to load analytics library:', error );
+		// Provide a fallback analytics object
+		window.analytics = {
+			track: () => {},
+			trackVideoEvent: () => false,
+		};
+		return window.analytics;
+	}
+}
+
+// Initialize analytics on first interaction or page load
+initializeAnalytics();
 
 // Generic video analytics helper
 ( function() {
