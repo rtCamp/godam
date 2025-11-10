@@ -42,6 +42,7 @@ use RTGODAM\Inc\REST_API\Polls;
 use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
 use RTGODAM\Inc\REST_API\Dynamic_Gallery;
 use RTGODAM\Inc\REST_API\Engagement;
+use RTGODAM\Inc\REST_API\Site;
 use RTGODAM\Inc\REST_API\Video_Migration;
 use RTGODAM\Inc\REST_API\Release_Post;
 use RTGODAM\Inc\Gravity_Forms;
@@ -170,6 +171,7 @@ class Plugin {
 		Dynamic_Shortcode::get_instance();
 		Dynamic_Gallery::get_instance();
 		Engagement::get_instance();
+		Site::get_instance();
 		Video_Migration::get_instance();
 		Release_Post::get_instance();
 	}
