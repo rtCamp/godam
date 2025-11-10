@@ -8,19 +8,6 @@
 import 'video.js/dist/video-js.css';
 
 /**
- * FontAwesome dependencies
- */
-
-async function loadHotspotIcons() {
-	const { library, dom } = await import( '@fortawesome/fontawesome-svg-core' );
-	const { fas } = await import( '@fortawesome/free-solid-svg-icons' );
-	library.add( fas );
-	dom.watch();
-}
-
-loadHotspotIcons();
-
-/**
  * Internal dependencies
  */
 import PlayerManager from './managers/playerManager.js';

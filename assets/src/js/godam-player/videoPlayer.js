@@ -224,10 +224,16 @@ export default class GodamVideoPlayer {
 
 	/**
 	 * Setup event listeners
+	 * Handles async layer setup for FontAwesome loading
 	 */
 	setupEventListeners() {
 		this.eventsManager?.setupEventListeners();
-		this.layersManager?.setupLayers();
+
+		// Setup layers asynchronously (loads FontAwesome if needed)
+		this.layersManager?.setupLayers().catch( ( error ) => {
+			// eslint-disable-next-line no-console
+			console.error( 'Failed to setup layers:', error );
+		} );
 	}
 
 	/**

@@ -11,6 +11,7 @@ const loadedPlugins = {
 	ima: false,
 	flvjs: false,
 	quill: false,
+	fontAwesome: false,
 };
 
 /**
@@ -106,6 +107,55 @@ export function requiresFlvPlugin( src ) {
 		lowerSrc.includes( 'type=flv' ) ||
 		lowerSrc.includes( 'video/flv' ) ||
 		lowerSrc.includes( 'video/x-flv' );
+}
+
+/**
+ * Load FontAwesome icons for hotspot layers
+ * Only loads when hotspot layers with icons are present
+ *
+ * @return {Promise<void>} Promise that resolves when FontAwesome is loaded
+ */
+export async function loadFontAwesome() {
+	if ( loadedPlugins.fontAwesome ) {
+		return; // Already loaded
+	}
+
+	try {
+		// Load FontAwesome core and solid icons
+		const { library, dom } = await import( '@fortawesome/fontawesome-svg-core' );
+		const { fas } = await import( '@fortawesome/free-solid-svg-icons' );
+
+		library.add( fas );
+		dom.watch();
+
+		loadedPlugins.fontAwesome = true;
+	} catch ( error ) {
+		// eslint-disable-next-line no-console
+		console.error( 'Failed to load FontAwesome:', error );
+		throw error;
+	}
+}
+
+/**
+ * Check if any hotspots in layers have icons
+ *
+ * @param {Array} layers - Array of layer configurations
+ * @return {boolean} True if any hotspot has an icon
+ */
+export function hasHotspotsWithIcons( layers ) {
+	if ( ! layers || ! Array.isArray( layers ) ) {
+		return false;
+	}
+
+	return layers.some( ( layer ) => {
+		// Check if it's a hotspot layer
+		if ( layer.type !== 'hotspot' ) {
+			return false;
+		}
+
+		// Check if any hotspot in this layer has an icon
+		return layer.hotspots?.some( ( hotspot ) => hotspot.icon );
+	} );
 }
 
 /**
