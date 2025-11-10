@@ -154,7 +154,7 @@ export function hasHotspotsWithIcons( layers ) {
 		}
 
 		// Check if any hotspot in this layer has an icon
-		return layer.hotspots?.some( ( hotspot ) => hotspot.icon );
+		return layer.hotspots?.some( ( hotspot ) => hotspot.showIcon );
 	} );
 }
 
