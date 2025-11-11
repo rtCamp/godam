@@ -111,7 +111,7 @@ class Jetpack extends Base {
 								'description'       => __( 'The contact form ID.', 'godam' ),
 								'type'              => 'string',
 								'required'          => true,
-								'sanitize_callback' => 'absint',
+								'sanitize_callback' => 'sanitize_key',
 							),
 							'contact-form-hash' => array(
 								'description'       => __( 'The contact form hash.', 'godam' ),
@@ -123,7 +123,7 @@ class Jetpack extends Base {
 								'description'       => __( 'The origin post ID.', 'godam' ),
 								'type'              => 'string',
 								'required'          => false,
-								'sanitize_callback' => 'absint',
+								'sanitize_callback' => 'sanitize_key',
 							),
 							'fields'            => array(
 								'description' => __( 'The form fields data as JSON string.', 'godam' ),
