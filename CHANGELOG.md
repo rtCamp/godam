@@ -12,7 +12,7 @@
 - Fix: Fixed virtual media attachment creation in WP Media Library
 - Fix: Made improvements in media selection UI
 - Fix: Fixed Elementor widgets not appearing when GoDAM plugin is network activated
-- Fix: Fixed fullscreen toggle inconsistencies iOS
+- Fix: Fixed fullscreen toggle inconsistencies on iOS
 - Fix: Fixed a search issue in the GoDAM media tab
 
 ## v1.4.5 (October 22, 2025) ##
