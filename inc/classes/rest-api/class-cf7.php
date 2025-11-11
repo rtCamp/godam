@@ -33,15 +33,16 @@ class CF7 extends Base {
 							$this->get_collection_params(), // Default collection params.
 							array(
 								'id'    => array(
-									'description' => __( 'The ID of the Contact Form 7 Form.', 'godam' ),
-									'type'        => 'string',
-									'required'    => true,
+									'description'       => __( 'The ID of the Contact Form 7 Form.', 'godam' ),
+									'type'              => 'integer',
+									'required'          => true,
+									'sanitize_callback' => 'sanitize_key',
 								),
 								'theme' => array(
 									'description'       => __( 'The theme to be applied to the Contact Form 7 Form.', 'godam' ),
 									'type'              => 'string',
 									'required'          => false,
-									'sanitize_callback' => 'sanitize_text_field',
+									'sanitize_callback' => 'sanitize_key',
 								),
 							)
 						),
@@ -52,13 +53,12 @@ class CF7 extends Base {
 	}
 
 	/**
-	 * Get a single Gravity Form.
+	 * Get a single Contact Form 7 form.
 	 *
-	 * @param \WP_REST_Request $request Request Object.
-	 * @return \WP_REST_Response
+	 * @param \WP_REST_Request $request Request object.
+	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function get_cf7_form( $request ) {
-		// Check if Gravity Forms plugin is active.
 		if ( ! class_exists( 'WPCF7_ShortcodeManager' ) ) {
 			return new \WP_Error( 'contactform7_not_active', __( 'Contact Form 7 plugin is not active.', 'godam' ), array( 'status' => 404 ) );
 		}
