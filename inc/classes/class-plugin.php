@@ -192,6 +192,7 @@ class Plugin {
 	 * @return void
 	 */
 	public function load_elementor_widgets() {
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 
 		if ( ! is_plugin_active( 'elementor/elementor.php' ) ) {
 			return;
