@@ -88,7 +88,7 @@ export default AttachmentsBrowser?.extend( {
 						( container ) => getComputedStyle( container ).display !== 'none',
 					);
 
-					const activeContainer = visibleContainers.at( -1 ); // most recently opened visible one
+					const activeContainer = visibleContainers[ visibleContainers.length - 1 ]; // most recently opened visible one
 
 					if ( activeContainer ) {
 						const menu = activeContainer.querySelector( '.media-frame-menu' );
@@ -109,7 +109,7 @@ export default AttachmentsBrowser?.extend( {
 						( frame ) => getComputedStyle( frame ).display !== 'none',
 					);
 
-					const activeFrame = visibleFrames.at( -1 ); // most recently opened visible one
+					const activeFrame = visibleFrames[ visibleFrames.length - 1 ]; // most recently opened visible one
 
 					if ( activeFrame ) {
 						const menu = activeFrame.querySelector( '.media-frame-menu .media-menu' );

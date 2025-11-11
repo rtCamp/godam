@@ -7,7 +7,7 @@ function getActiveMediaFrame() {
 	const visibleFrames = Array.from( document.querySelectorAll( '.media-frame' ) )
 		.filter( ( frame ) => getComputedStyle( frame ).display !== 'none' );
 
-	return visibleFrames.at( -1 ) || null; // Most recently opened visible frame
+	return visibleFrames[ visibleFrames.length - 1 ] || null; // Most recently opened visible frame
 }
 
 /**

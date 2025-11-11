@@ -43,7 +43,7 @@ function initializeMediaLibrary() {
 		const visibleContainers = Array.from( document.querySelectorAll( '.supports-drag-drop' ) )
 			.filter( ( container ) => getComputedStyle( container ).display !== 'none' );
 
-		const activeContainer = visibleContainers.at( -1 ); // Most recent visible container
+		const activeContainer = visibleContainers[ visibleContainers.length - 1 ]; // Most recent visible container
 
 		if ( activeContainer ) {
 			const rootElement = activeContainer.querySelector( '#rt-transcoder-media-library-root' );
@@ -65,7 +65,7 @@ function initializeMediaLibrary() {
 	const visibleFrames = Array.from( document.querySelectorAll( '.media-frame' ) )
 		.filter( ( frame ) => getComputedStyle( frame ).display !== 'none' );
 
-	const activeFrame = visibleFrames.at( -1 ); // Most recently opened visible frame
+	const activeFrame = visibleFrames[ visibleFrames.length - 1 ]; // Most recently opened visible frame
 
 	let rootElement = null;
 
