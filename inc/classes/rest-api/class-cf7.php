@@ -34,7 +34,7 @@ class CF7 extends Base {
 							array(
 								'id'    => array(
 									'description'       => __( 'The ID of the Contact Form 7 Form.', 'godam' ),
-									'type'              => 'integer',
+									'type'              => 'string',
 									'required'          => true,
 									'sanitize_callback' => 'sanitize_key',
 								),
