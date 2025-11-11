@@ -28,10 +28,10 @@ export async function loadAdsPlugins() {
 	try {
 		// Load CSS and JS in parallel
 		await Promise.all( [
-			import( 'videojs-contrib-ads/dist/videojs.ads.css' ),
-			import( 'videojs-ima/dist/videojs.ima.css' ),
-			import( 'videojs-contrib-ads' ),
-			import( 'videojs-ima' ),
+			import( /* webpackChunkName: "videojs-contrib-ads-css" */ 'videojs-contrib-ads/dist/videojs.ads.css' ),
+			import( /* webpackChunkName: "videojs-ima-css" */ 'videojs-ima/dist/videojs.ima.css' ),
+			import( /* webpackChunkName: "videojs-contrib-ads" */ 'videojs-contrib-ads' ),
+			import( /* webpackChunkName: "videojs-ima" */ 'videojs-ima' ),
 		] );
 
 		loadedPlugins.ads = true;
@@ -55,7 +55,7 @@ export async function loadFlvPlugin() {
 	}
 
 	try {
-		await import( 'videojs-flvjs-es6' );
+		await import( /* webpackChunkName: "videojs-flvjs-es6" */ 'videojs-flvjs-es6' );
 		loadedPlugins.flvjs = true;
 	} catch ( error ) {
 		// eslint-disable-next-line no-console
@@ -77,8 +77,8 @@ export async function loadQuill() {
 
 	try {
 		// Load CSS and JS
-		await import( 'quill/dist/quill.snow.css' );
-		const Quill = await import( 'quill' );
+		await import( /* webpackChunkName: "quill-css" */ 'quill/dist/quill.snow.css' );
+		const Quill = await import( /* webpackChunkName: "quill" */ 'quill' );
 
 		loadedPlugins.quill = true;
 		window.Quill = Quill.default || Quill;
@@ -122,8 +122,8 @@ export async function loadFontAwesome() {
 
 	try {
 		// Load FontAwesome core and solid icons
-		const { library, dom } = await import( '@fortawesome/fontawesome-svg-core' );
-		const { fas } = await import( '@fortawesome/free-solid-svg-icons' );
+		const { library, dom } = await import( /* webpackChunkName: "fontawesome-core" */ '@fortawesome/fontawesome-svg-core' );
+		const { fas } = await import( /* webpackChunkName: "fontawesome-icons" */ '@fortawesome/free-solid-svg-icons' );
 
 		library.add( fas );
 		dom.watch();
