@@ -48,6 +48,7 @@ $hover_select   = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSelect
 $caption        = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
 $tracks         = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $show_share_btn = ! empty( $attributes['showShareButton'] );
+$unique_id      = ! empty( $attributes['uniqueId'] ) ? esc_attr( $attributes['uniqueId'] ) : wp_generate_uuid4();
 
 // Resolve the attachment ID (could be WordPress or virtual media).
 $attachment_id = '';
@@ -124,7 +125,7 @@ if ( empty( $attachment_id ) ) {
 }
 
 if ( ( empty( $attachment_id ) || ( $is_virtual && ! empty( $original_id ) ) ) &&
-	! empty( $attributes['sources'] ) 
+	! empty( $attributes['sources'] )
 ) {
 	// If media is virtual media.
 	$sources = $attributes['sources'];
@@ -245,7 +246,7 @@ $video_setup = array(
 			'forward'  => 10,
 			'backward' => 10,
 		),
-		'brandingIcon' => true, // provide default value for brand logo. 
+		'brandingIcon' => true, // provide default value for brand logo.
 	),
 );
 if ( ! empty( $control_bar_settings ) ) {
@@ -386,10 +387,21 @@ if ( empty( $attachment_title ) ) {
 	$attachment_title = basename( get_attached_file( $attachment_id ) );
 }
 
+/**
+ * Extra attributes added on the video element.
+ * To add custom extra attributes use the filter
+ * `godam_player_video_element_attributes`
+ */
+$video_element_attributes = apply_filters(
+	'godam_player_video_element_attributes',
+	array(
+		'data-unique-id' => $unique_id,
+	)
+);
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
-	<figure 
+	<figure
 		id="godam-player-container-<?php echo esc_attr( $instance_id ); ?>"
 		<?php echo wp_kses_data( $figure_attributes ); ?>>
 		<div class="godam-video-wrapper">
@@ -426,6 +438,11 @@ if ( empty( $attachment_title ) ) {
 					data-global_ads_settings="<?php echo esc_attr( $ads_settings ); ?>"
 					data-hover-select="<?php echo esc_attr( $hover_select ); ?>"
 					data-video-title="<?php echo esc_attr( $attachment_title ); ?>"
+					<?php
+					foreach ( $video_element_attributes as $key => $value ) {
+						printf( '%s="%s" ', esc_attr( $key ), esc_attr( $value ) );
+					}
+					?>
 				>
 					<?php
 

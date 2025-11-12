@@ -2,6 +2,7 @@
  * External dependencies
  */
 import clsx from 'clsx';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * WordPress dependencies
@@ -121,6 +122,7 @@ function VideoEdit( {
 		verticalAlignment,
 		overlayTimeRange,
 		showOverlay,
+		uniqueId,
 	} = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 	const [ defaultPoster, setDefaultPoster ] = useState( '' );
@@ -183,6 +185,12 @@ function VideoEdit( {
 			/>
 		</Disabled>
 	), [ isSingleSelected, videoOptions, setAttributes ] );
+
+	useEffect( () => {
+		if ( ! uniqueId ) {
+			setAttributes( { uniqueId: uuidv4() } );
+		}
+	}, [ uniqueId ] );
 
 	useEffect( () => {
 		// Placeholder may be rendered.
@@ -516,6 +524,7 @@ function VideoEdit( {
 	} );
 
 	const blockProps = useBlockProps( {
+		id: uniqueId,
 		className: classes,
 	} );
 
