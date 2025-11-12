@@ -246,7 +246,7 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
-= v1.4.6 (November 11, 2025) =
+= v1.4.6 (November 12, 2025) =
 
 - Tweak: Added audio recorder support for Ninja Forms with GoDAM Recorder
 - Tweak: Added GoDAM Media Tab to Video Ad, CTA background, watermark selectors & more
