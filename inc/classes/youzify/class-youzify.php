@@ -34,7 +34,21 @@ class Youzify {
 	 * Setup WordPress hooks and filters.
 	 */
 	private function setup_hooks() {
-		add_filter( 'youzify_get_wall_post_video', array( $this, 'replace_youzify_wall_video_player' ), 10, 4 );
+		add_filter( 'youzify_get_wall_post_video', array( $this, 'replace_youzify_wall_video_player' ), 10, 3 );
+		add_action( 'youzify_after_wp_media_upload', array( $this, 'send_transcoding_request' ), 21, 1 );
+	}
+
+	/**
+	 * Send transcoding request to GoDAM when a video is uploaded via Youzify.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int $attachment_id Attachment ID of the uploaded video.
+	 */
+	public function send_transcoding_request( $attachment_id ) {
+		$transcoder = new \RTGODAM_Transcoder_Handler();
+
+		$transcoder->send_transcoding_request( $attachment_id );
 	}
 
 	/**
@@ -49,14 +63,13 @@ class Youzify {
 	 * @return string Modified video HTML with GoDAM player.
 	 */
 	public function replace_youzify_wall_video_player( $video_html, $video_url, $media_id ) {
-
 		$media_id = absint( $media_id );
 
 		if ( ! $media_id ) {
 			return $video_html;
 		}
 
-		return do_shortcode( '[godam_video id="' . esc_attr( $media_id ) . '"]' );
+		return do_shortcode( '[godam_video id="' . esc_attr( $media_id ) . '" aspectRatio="16:9"]' );
 	}
 
 	/**
