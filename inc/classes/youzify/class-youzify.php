@@ -35,6 +35,10 @@ class Youzify {
 	 */
 	private function setup_hooks() {
 		add_filter( 'youzify_get_wall_post_video', array( $this, 'replace_youzify_wall_video_player' ), 10, 3 );
+
+		// Todo : Check `youzify_get_wall_post_audio` hook existence in Youzify.
+		// It dose not returning audio media_id currently, hence GoDAM audio player integration is disabled for now.
+		add_filter( 'youzify_get_wall_post_audio', array( $this, 'replace_youzify_wall_audio_player' ), 10, 3 );
 	}
 
 	/**
@@ -48,14 +52,35 @@ class Youzify {
 	 *
 	 * @return string Modified video HTML with GoDAM player.
 	 */
-	public function replace_youzify_wall_video_player( $video_html, $video_url, $media_id ) {
-		$media_id = absint( $media_id );
+	public function replace_youzify_wall_video_player( $video_html, $video_url, $media_id = 0 ) {
+		$media_id = intval( $media_id );
 
-		if ( ! $media_id ) {
+		if ( empty( $media_id ) ) {
 			return $video_html;
 		}
 
 		return do_shortcode( '[godam_video id="' . esc_attr( $media_id ) . '" aspectRatio="16:9"]' );
+	}
+
+	/**
+	 * Replace Youzify wall audio player with GoDAM player.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $audio_html Original Youzify audio HTML.
+	 * @param string $audio_url Audio URL.
+	 * @param int    $media_id Media ID.
+	 *
+	 * @return string Modified audio HTML with GoDAM player.
+	 */
+	public function replace_youzify_wall_audio_player( $audio_html, $audio_url, $media_id = 0 ) {
+		$media_id = intval( $media_id );
+		
+		if ( empty( $media_id ) ) {
+			return $audio_html;
+		}
+
+		return do_shortcode( '[godam_audio id="' . esc_attr( $media_id ) . '"]' );
 	}
 
 	/**
