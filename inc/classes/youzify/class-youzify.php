@@ -35,20 +35,6 @@ class Youzify {
 	 */
 	private function setup_hooks() {
 		add_filter( 'youzify_get_wall_post_video', array( $this, 'replace_youzify_wall_video_player' ), 10, 3 );
-		add_action( 'youzify_after_wp_media_upload', array( $this, 'send_transcoding_request' ), 21, 1 );
-	}
-
-	/**
-	 * Send transcoding request to GoDAM when a video is uploaded via Youzify.
-	 *
-	 * @since n.e.x.t
-	 *
-	 * @param int $attachment_id Attachment ID of the uploaded video.
-	 */
-	public function send_transcoding_request( $attachment_id ) {
-		$transcoder = new \RTGODAM_Transcoder_Handler();
-
-		$transcoder->send_transcoding_request( $attachment_id );
 	}
 
 	/**
