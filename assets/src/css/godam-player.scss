@@ -1538,6 +1538,18 @@ body.godam-share-modal-open {
 	position: relative;
 }
 
+/* Elementor Widget Fix - Prevent collapse and overlap */
+figure[id^="godam-player-container"] {
+	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
+	display: block;
+}
+
+/* Ensure Elementor widget wrapper maintains proper dimensions */
+.elementor-widget-godam-video {
+	width: 100%;
+	flex-shrink: 0;
+}
+
 .easydam-video-container {
 	position: relative;
 	background-color: rgba(149, 149, 149, 0.2);
