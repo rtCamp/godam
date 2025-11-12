@@ -63,6 +63,7 @@ use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Integration;
 use RTGODAM\Inc\Metform\Metform_Integration;
 use RTGODAM\Inc\Metform\Metform_Rest_Api;
 use RTGODAM\Inc\Lifter_LMS\Lifter_LMS;
+use RTGODAM\Inc\Youzify\Youzify;
 
 /**
  * Class Plugin.
@@ -120,6 +121,9 @@ class Plugin {
 
 		// Load Elementor widgets.
 		$this->load_elementor_widgets();
+
+		// Load Youzify integration.
+		$this->load_youzify_integration();
 
 		$this->load_media_library();
 	}
@@ -224,5 +228,16 @@ class Plugin {
 	 */
 	public function load_fluentforms() {
 		\RTGODAM\Inc\FluentForms\Init::get_instance();
+	}
+
+	/**
+	 * Load Youzify integration.
+	 * 
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function load_youzify_integration() {
+		Youzify::get_instance();
 	}
 }
