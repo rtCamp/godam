@@ -426,6 +426,7 @@ if ( empty( $attachment_title ) ) {
 					data-global_ads_settings="<?php echo esc_attr( $ads_settings ); ?>"
 					data-hover-select="<?php echo esc_attr( $hover_select ); ?>"
 					data-video-title="<?php echo esc_attr( $attachment_title ); ?>"
+					data-autoplay-on-view="<?php echo esc_attr( $autoplay ? 'true' : 'false' ); ?>"
 				>
 					<?php
 
