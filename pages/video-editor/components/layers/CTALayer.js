@@ -84,6 +84,18 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 			setImageCtaUrl( '' );
 			return;
 		}
+
+		// Handle GoDAM hosted media.
+		if ( typeof mediaId === 'string' && mediaId.startsWith( 'godam_' ) ) {
+			if ( layer?.imageUrlExt ) {
+				setImageCtaUrl( layer.imageUrlExt );
+			} else {
+				setImageCtaUrl( '' );
+			}
+			return;
+		}
+
+		// For regular WordPress media, fetch from the API
 		fetch( window.pathJoin( [ restURL, `/wp/v2/media/${ mediaId }` ] ) )
 			.then( ( response ) => {
 				if ( ! response.ok ) {

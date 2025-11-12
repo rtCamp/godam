@@ -1,3 +1,8 @@
+/* stylelint-disable scss/at-rule-no-unknown */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Video Editor Set up */
 
 .tooltip {
@@ -31,7 +36,7 @@
 
 	// Video JS styles
 	.video-analytics-container {
-
+		
 		@apply flex bg-white justify-between py-6 overflow-auto md:px-10 pt-8;
 	}
 

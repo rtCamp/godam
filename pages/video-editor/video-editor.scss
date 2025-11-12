@@ -31,3 +31,12 @@
 		}
 	}
 }
+
+// Override media library styles for video editor save button
+.video-editor-container .aside .video-editor-save-button {
+	position: absolute !important;
+	top: auto !important;
+	bottom: 2rem;
+	right: 1rem;
+	margin: 0 !important;
+}

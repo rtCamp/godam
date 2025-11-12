@@ -74,6 +74,7 @@ if ( $is_virtual ) {
 			'post_type'      => 'attachment',
 			'posts_per_page' => 1,
 			'post_status'    => 'any',
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for finding attachment by GoDAM ID.
 			'meta_key'       => '_godam_original_id',
 			'meta_value'     => sanitize_text_field( $attachment_id ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			'fields'         => 'ids',
@@ -340,9 +341,29 @@ if ( $is_shortcode || $is_elementor_widget ) {
 }
 
 /**
- * Fetch AI Generated video tracks from REST endpoint
+ * Fetch AI Generated video tracks from post meta
  */
-$transcript_path = godam_get_transcript_path( $job_id );
+$transcript_path = '';
+
+// Determine which attachment ID to use for transcript check.
+// If attachment_id is a string, it's a job ID - resolve it to attachment ID.
+$transcript_attachment_id = $attachment_id;
+
+if ( ! empty( $attachment_id ) && ! is_numeric( $attachment_id ) ) {
+	// It's a job ID string, find the actual attachment ID.
+	if ( ! class_exists( 'RTGODAM_Transcoder_Handler' ) ) {
+		include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-handler.php';
+	}
+
+	$transcoder_handler       = new RTGODAM_Transcoder_Handler();
+	$transcript_attachment_id = $transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $attachment_id );
+}
+
+// Check for transcription if we have a valid numeric attachment ID.
+// The function will check post meta first before making API calls.
+if ( ! empty( $transcript_attachment_id ) && is_numeric( $transcript_attachment_id ) ) {
+	$transcript_path = godam_get_transcript_path( $transcript_attachment_id, $job_id );
+}
 
 if ( ! empty( $transcript_path ) ) {
 	$tracks[] = array(

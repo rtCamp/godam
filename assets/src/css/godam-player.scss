@@ -195,9 +195,10 @@
 	border-radius: 4px;
 }
 
-.easydam-layer--cta-html button,
-.video-js .easydam-layer--cta-html button {
-	all: unset;
+// Only apply default styles to plain buttons without any classes
+.easydam-layer--cta-html button:not([class]),
+.video-js .easydam-layer--cta-html button:not([class]) {
+	appearance: none;
 	display: inline-block;
 	padding: 10px 20px;
 	border-radius: 4px;
@@ -211,7 +212,8 @@
 	cursor: pointer;
 }
 
-.easydam-layer--cta-html button:hover {
+.easydam-layer--cta-html button:not([class]):hover,
+.video-js .easydam-layer--cta-html button:not([class]):hover {
 	background-color: #1a5d99;
 }
 
@@ -1521,6 +1523,7 @@ body.godam-share-modal-open {
 .easydam-player.video-js {
 	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9 );
 	cursor: pointer;
+	overflow: hidden;
 }
 
 .video-js .vjs-time-tooltip,
