@@ -39,6 +39,8 @@ class Youzify {
 		// Todo : Check `youzify_get_wall_post_audio` hook existence in Youzify.
 		// It dose not returning audio media_id currently, hence GoDAM audio player integration is disabled for now.
 		add_filter( 'youzify_get_wall_post_audio', array( $this, 'replace_youzify_wall_audio_player' ), 10, 3 );
+
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_activity_observer_script' ), 20 );
 	}
 
 	/**
@@ -81,6 +83,27 @@ class Youzify {
 		}
 
 		return do_shortcode( '[godam_audio id="' . esc_attr( $media_id ) . '"]' );
+	}
+
+	/**
+	 * Enqueue IntersectionObserver script for BuddyPress activity page.
+	 *
+	 * @since n.e.x.t
+	 */
+	public function enqueue_activity_observer_script() {
+		if ( ! function_exists( 'bp_is_activity_component' ) || ! bp_is_activity_component() ) {
+			return;
+		}
+
+		wp_register_script(
+			'godam-youzify-activity-observer',
+			RTGODAM_URL . 'assets/build/js/youzify-activity-observer.min.js',
+			array( 'godam-player-frontend-script' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/youzify-activity-observer.min.js' ),
+			true
+		);
+
+		wp_enqueue_script( 'godam-youzify-activity-observer' );
 	}
 
 	/**
