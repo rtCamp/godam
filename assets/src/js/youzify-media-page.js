@@ -1,12 +1,26 @@
 document.addEventListener( 'DOMContentLoaded', function() {
-	const mediaItems = document.querySelectorAll( '.youzify-media-item' );
+	// Store processed items to avoid duplicate processing
+	const processedItems = new WeakSet();
 
-	mediaItems.forEach( function( item ) {
+	/**
+	 * Process a single media item
+	 *
+	 * @param {HTMLElement} item The media item element
+	 */
+	function processMediaItem( item ) {
+		// Skip if already processed
+		if ( processedItems.has( item ) ) {
+			return;
+		}
+
 		const videoWrapper = item.querySelector( 'div.youzify-media-item-godam-video' );
 
 		if ( ! videoWrapper ) {
 			return;
 		}
+
+		// Mark as processed
+		processedItems.add( item );
 
 		const contentEl = item.querySelector( '.youzify-media-item-content' );
 
@@ -35,6 +49,40 @@ document.addEventListener( 'DOMContentLoaded', function() {
 				openVideoPopup( videoWrapper );
 			} );
 		}
+	}
+
+	// Process existing media items on page load
+	const existingMediaItems = document.querySelectorAll( '.youzify-media-item' );
+	existingMediaItems.forEach( processMediaItem );
+
+	// Set up MutationObserver to watch for dynamically added media items
+	const observer = new MutationObserver( function( mutations ) {
+		mutations.forEach( function( mutation ) {
+			// Check added nodes
+			mutation.addedNodes.forEach( function( node ) {
+				// Skip non-element nodes
+				if ( node.nodeType !== Node.ELEMENT_NODE ) {
+					return;
+				}
+
+				// Check if the added node itself is a media item
+				if ( node.classList && node.classList.contains( 'youzify-media-item' ) ) {
+					processMediaItem( node );
+				}
+
+				// Check for media items within the added node
+				if ( node.querySelectorAll ) {
+					const mediaItems = node.querySelectorAll( '.youzify-media-item' );
+					mediaItems.forEach( processMediaItem );
+				}
+			} );
+		} );
+	} );
+
+	// Start observing the document body for changes
+	observer.observe( document.body, {
+		childList: true,
+		subtree: true,
 	} );
 
 	/**
