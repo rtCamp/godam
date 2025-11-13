@@ -97,6 +97,7 @@ class Youzify {
 	 * @since n.e.x.t
 	 */
 	public function enqueue_youzify_scripts() {
+		// Activity Observer Script.
 		if ( function_exists( 'bp_is_activity_component' ) && bp_is_activity_component() ) {
 			wp_register_script(
 				'godam-youzify-activity-observer',
@@ -108,22 +109,25 @@ class Youzify {
 			wp_enqueue_script( 'godam-youzify-activity-observer' );
 		}
 
-		wp_register_style(
-			'godam-youzify-media-page',
-			RTGODAM_URL . 'assets/build/css/youzify-media-page.css',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/css/youzify-media-page.css' )
-		);
-		wp_enqueue_style( 'godam-youzify-media-page' );
+		// Only enqueue on user profile media page (e.g., /members/username/media/).
+		if ( function_exists( 'bp_is_user' ) && bp_is_user() && function_exists( 'bp_current_action' ) && 'media' === bp_current_action() ) {
+			wp_register_style(
+				'godam-youzify-media-page',
+				RTGODAM_URL . 'assets/build/css/youzify-media-page.css',
+				array(),
+				filemtime( RTGODAM_PATH . 'assets/build/css/youzify-media-page.css' )
+			);
+			wp_enqueue_style( 'godam-youzify-media-page' );
 
-		wp_register_script(
-			'godam-youzify-media-page',
-			RTGODAM_URL . 'assets/build/js/youzify-media-page.min.js',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/js/youzify-media-page.min.js' ),
-			true
-		);
-		wp_enqueue_script( 'godam-youzify-media-page' );
+			wp_register_script(
+				'godam-youzify-media-page',
+				RTGODAM_URL . 'assets/build/js/youzify-media-page.min.js',
+				array(),
+				filemtime( RTGODAM_PATH . 'assets/build/js/youzify-media-page.min.js' ),
+				true
+			);
+			wp_enqueue_script( 'godam-youzify-media-page' );
+		}
 	}
 
 	/**
