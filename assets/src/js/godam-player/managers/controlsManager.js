@@ -188,7 +188,40 @@ export default class ControlsManager {
 			// Add exit button
 			const customFullscreenExitButton = this.createCustomFullscreenExitButton();
 			controlBar.addChild( customFullscreenExitButton );
+			// Setup dynamic viewport height for iOS to avoid bottom bar overlap
+			this.setupIOSViewportHeight();
 		}
+	}
+
+	/**
+	 * Setup iOS dynamic viewport height variable (--vh)
+	 * Ensures fullscreen container height matches the visible viewport
+	 */
+	setupIOSViewportHeight() {
+		const setViewportHeight = () => {
+			// Calculate and set the custom CSS property --vh to match viewport height.
+			// Multiply by 0.01 to convert to viewport height percentage. (1vh = 1% of viewport height).
+			const vh = window.innerHeight * 0.01;
+			document.documentElement.style.setProperty( '--vh', `${ vh }px` );
+		};
+
+		// Initialize on load
+		setViewportHeight();
+
+		// Debounced resize handler
+		let resizeTimer = null;
+		window.addEventListener( 'resize', () => {
+			if ( resizeTimer ) {
+				clearTimeout( resizeTimer );
+			}
+			resizeTimer = setTimeout( setViewportHeight, 100 );
+		}, { passive: true } );
+
+		// Handle orientation changes
+		window.addEventListener( 'orientationchange', () => {
+			// Give iOS a moment to recalc innerHeight
+			setTimeout( setViewportHeight, 200 );
+		} );
 	}
 
 	/**
