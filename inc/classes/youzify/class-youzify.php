@@ -124,9 +124,11 @@ class Youzify {
 		if ( function_exists( 'bp_is_activity_component' ) && bp_is_activity_component() ) {
 			wp_enqueue_script( 'godam-youzify-activity-observer' );
 		}
+
+		$pages = array( 'videos', 'all' );
 		
 		// Only enqueue on user profile media page (e.g., /members/username/media/).
-		if ( function_exists( 'bp_is_user' ) && bp_is_user() && function_exists( 'bp_current_action' ) && 'all' === bp_current_action() ) {
+		if ( function_exists( 'bp_is_user' ) && bp_is_user() && function_exists( 'bp_current_action' ) && in_array( bp_current_action(), $pages, true ) ) {
 			wp_enqueue_script( 'godam-youzify-activity-observer' );
 			wp_enqueue_style( 'godam-youzify-media-page' );
 			wp_enqueue_script( 'godam-youzify-media-page' );
