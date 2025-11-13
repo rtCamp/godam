@@ -36,11 +36,9 @@ class Youzify {
 	private function setup_hooks() {
 		add_filter( 'youzify_get_wall_post_video', array( $this, 'replace_youzify_wall_video_player' ), 10, 3 );
 
-		// Todo : Check `youzify_get_wall_post_audio` hook existence in Youzify.
-		// It dose not returning audio media_id currently, hence GoDAM audio player integration is disabled for now.
-		add_filter( 'youzify_get_wall_post_audio', array( $this, 'replace_youzify_wall_audio_player' ), 10, 3 );
+		add_action( 'youzify_after_media_item', array( $this, 'add_youzify_godam_player' ), 10, 2 );
 
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_activity_observer_script' ), 20 );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_youzify_scripts' ) );
 	}
 
 	/**
@@ -65,45 +63,67 @@ class Youzify {
 	}
 
 	/**
-	 * Replace Youzify wall audio player with GoDAM player.
+	 * Add GoDAM player after Youzify media item.
 	 *
 	 * @since n.e.x.t
 	 *
-	 * @param string $audio_html Original Youzify audio HTML.
-	 * @param string $audio_url Audio URL.
-	 * @param int    $media_id Media ID.
-	 *
-	 * @return string Modified audio HTML with GoDAM player.
+	 * @param int   $media_id Media ID.
+	 * @param array $args Media arguments.
 	 */
-	public function replace_youzify_wall_audio_player( $audio_html, $audio_url, $media_id = 0 ) {
+	public function add_youzify_godam_player( $media_id = 0, $args = array() ) {
 		$media_id = intval( $media_id );
-		
-		if ( empty( $media_id ) ) {
-			return $audio_html;
-		}
 
-		return do_shortcode( '[godam_audio id="' . esc_attr( $media_id ) . '"]' );
+		if ( 'videos' === $args['type'] ) {
+			?>
+				<div class="youzify-media-item-godam-video" id="godam-video-<?php echo esc_attr( $media_id ); ?>">
+					<div class="youzify-media-item-godam-video--tools">
+						<!-- We don't have item_id hence unable to generate permalink -->
+						<a href="#">
+							<i class="fas fa-link youzify-media-post-link"></i>
+						</a>
+						<a class="youzify-media-item-godam-video--play-button">
+							<i class="fas fa-play-circle youzify-media-video-play"></i>
+						</a>
+					</div>
+					<?php echo do_shortcode( '[godam_video id="' . esc_attr( $media_id ) . '" aspectRatio="16:9"]' ); ?>
+				</div>
+			<?php
+		}
 	}
 
 	/**
-	 * Enqueue IntersectionObserver script for BuddyPress activity page.
+	 * Enqueue Youzify related scripts.
 	 *
 	 * @since n.e.x.t
 	 */
-	public function enqueue_activity_observer_script() {
-		if ( ! function_exists( 'bp_is_activity_component' ) || ! bp_is_activity_component() ) {
-			return;
+	public function enqueue_youzify_scripts() {
+		if ( function_exists( 'bp_is_activity_component' ) && bp_is_activity_component() ) {
+			wp_register_script(
+				'godam-youzify-activity-observer',
+				RTGODAM_URL . 'assets/build/js/youzify-activity-observer.min.js',
+				array( 'godam-player-frontend-script' ),
+				filemtime( RTGODAM_PATH . 'assets/build/js/youzify-activity-observer.min.js' ),
+				true
+			);
+			wp_enqueue_script( 'godam-youzify-activity-observer' );
 		}
 
+		wp_register_style(
+			'godam-youzify-media-page',
+			RTGODAM_URL . 'assets/build/css/youzify-media-page.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/youzify-media-page.css' )
+		);
+		wp_enqueue_style( 'godam-youzify-media-page' );
+
 		wp_register_script(
-			'godam-youzify-activity-observer',
-			RTGODAM_URL . 'assets/build/js/youzify-activity-observer.min.js',
-			array( 'godam-player-frontend-script' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/youzify-activity-observer.min.js' ),
+			'godam-youzify-media-page',
+			RTGODAM_URL . 'assets/build/js/youzify-media-page.min.js',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/js/youzify-media-page.min.js' ),
 			true
 		);
-
-		wp_enqueue_script( 'godam-youzify-activity-observer' );
+		wp_enqueue_script( 'godam-youzify-media-page' );
 	}
 
 	/**

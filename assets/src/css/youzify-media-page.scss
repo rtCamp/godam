@@ -1,0 +1,34 @@
+.youzify-media-item-godam-video {
+    position: relative;
+
+    &--tools {
+
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        z-index: 9999;
+
+        svg {
+            color: #fff;
+            width: 45px;
+            height: 45px;
+            text-align: center;
+            border-radius: 100%;
+            background: rgba(0, 0, 0, .3);
+        }
+    }
+
+    .godam-video-wrapper {
+
+        .vjs-big-play-button {
+
+            display: none;
+        }
+    }
+}
