@@ -37,7 +37,7 @@ const BookmarkTab = ( { handleContextMenu } ) => {
 
 	if ( bookmarkCount === 0 ) {
 		return (
-			<div className="godam-folder-tab godam-folder-tab--empty">
+			<div className="godam-folder-tab godam-folder-tab--empty no-drop">
 				<Panel className="godam-folder-tab-panel">
 					<PanelBody
 						title={ <><span className="folder-tab__count">{ bookmarkCount }</span> { __( 'Bookmarks', 'godam' ) } </> }

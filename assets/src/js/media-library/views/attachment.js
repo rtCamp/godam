@@ -87,6 +87,39 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 					$( event.target ).draggable( 'cancel' );
 				}
 			},
+			drag: ( event, ui ) => {
+				// Find what’s under the current cursor position
+				const $helper = ui.helper;
+				const $targetUnderCursor = $( document.elementFromPoint( event.clientX, event.clientY ) );
+
+				// Disallowed if hovered over a locked folder or some no-drop zone
+				const isDisallowed =
+				$targetUnderCursor.closest( '.no-drop' ).length > 0;
+
+				if ( isDisallowed ) {
+					$( 'body' ).css( 'cursor', 'not-allowed' );
+					$helper
+						.css( {
+							background: '#8b0000',
+							color: '#fff',
+							boxShadow: '0 2px 5px rgba(255,0,0,0.6)',
+						} )
+						.text( '🚫 Drop not allowed' );
+				} else {
+					$( 'body' ).css( 'cursor', 'move' );
+					const draggedItemIds = this.$el.data( 'draggedItems' );
+					$helper
+						.css( {
+							background: '#333',
+							color: '#fff',
+							boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
+						} )
+						.text( `Moving ${ draggedItemIds.length } item${ draggedItemIds.length > 1 ? 's' : '' }` );
+				}
+			},
+			stop: () => {
+				$( 'body' ).removeClass( 'is-dragging' ).css( 'cursor', '' );
+			},
 		} );
 	},
 

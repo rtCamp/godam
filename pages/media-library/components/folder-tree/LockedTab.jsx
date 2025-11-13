@@ -46,7 +46,7 @@ const LockedTab = ( { handleContextMenu } ) => {
 
 	if ( lockedCount === 0 ) {
 		return (
-			<div className="godam-folder-tab godam-folder-tab--empty">
+			<div className="godam-folder-tab godam-folder-tab--empty no-drop">
 				<Panel className="godam-folder-tab-panel">
 					<PanelBody
 						title={ <><span className="folder-tab__count">{ lockedCount }</span> { __( 'Locked', 'godam' ) } </> }
