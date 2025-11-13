@@ -37,6 +37,9 @@
 		"poster": {
 			"type": "string"
 		},
+		"preloadPoster": {
+			"type": "boolean"
+		},
 		"preload": {
 			"type": "string",
 			"default": "metadata"
