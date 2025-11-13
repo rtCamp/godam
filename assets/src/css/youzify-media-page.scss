@@ -120,6 +120,7 @@ body.godam-video-popup-open {
 // Youzify Media Item Video Styles
 .youzify-media-item-godam-video {
     position: relative;
+    container: youzify-media-item-godam-video / inline-size;
 
     &--tools {
 
@@ -134,13 +135,22 @@ body.godam-video-popup-open {
         gap: 10px;
         z-index: 9999;
 
-        svg {
+        a {
             color: #fff;
             width: 45px;
             height: 45px;
             text-align: center;
             border-radius: 100%;
             background: rgba(0, 0, 0, .3);
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        svg {
+            width: 20px;
+            height: 20px;
+            fill: #fff;
         }
     }
 
@@ -150,7 +160,6 @@ body.godam-video-popup-open {
 
         &:hover svg {
             transform: scale(1.1);
-            background: rgba(0, 0, 0, .5);
         }
     }
 
@@ -167,6 +176,20 @@ body.godam-video-popup-open {
 
         .vjs-big-play-button {
             display: none;
+        }
+    }
+}
+
+@container youzify-media-item-godam-video (max-width: 120px) {
+
+    .youzify-media-item-godam-video--tools a {
+
+        width: 20px;
+        height: 20px;
+
+        svg {
+            width: 16px;
+            height: 16px;
         }
     }
 }
