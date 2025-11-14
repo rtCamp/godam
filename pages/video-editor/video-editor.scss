@@ -40,3 +40,8 @@
 	right: 1rem;
 	margin: 0 !important;
 }
+
+// Hide layer controls fallback when portal target is not available
+.layer-controls-fallback {
+	display: none;
+}
