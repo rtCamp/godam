@@ -133,7 +133,9 @@ document.addEventListener( 'DOMContentLoaded', function() {
 
 		if ( window.GoDAMAPI && mediaId ) {
 			try {
-				player = window.GoDAMAPI.getPlayer( mediaId );
+				// Get the video element reference
+				const videoElement = figureElement.querySelector( 'video' );
+				player = window.GoDAMAPI.getPlayer( mediaId, videoElement );
 
 				if ( player ) {
 					// Show controls and attempt auto-play
@@ -173,7 +175,9 @@ document.addEventListener( 'DOMContentLoaded', function() {
 			// Stop the video if playing using GoDAMAPI
 			if ( window.GoDAMAPI && mediaId ) {
 				try {
-					const godamPlayer = window.GoDAMAPI.getPlayer( mediaId );
+					// Get the video element reference
+					const videoElement = figureElement.querySelector( 'video' );
+					const godamPlayer = window.GoDAMAPI.getPlayer( mediaId, videoElement );
 					if ( godamPlayer ) {
 						godamPlayer.pause();
 						godamPlayer.currentTime( 0 );
