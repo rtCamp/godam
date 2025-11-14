@@ -121,6 +121,9 @@ $sources = array();
 
 if ( empty( $attachment_id ) ) {
 	$job_id = ! empty( $attributes['cmmId'] ) ? sanitize_text_field( $attributes['cmmId'] ) : '';
+} elseif ( $is_virtual ) {
+	// For virtual media, the attachment_id is the GoDAM ID, which is the job_id.
+	$job_id = $attachment_id;
 }
 
 if ( ( empty( $attachment_id ) || ( $is_virtual && ! empty( $original_id ) ) ) &&
