@@ -120,7 +120,8 @@ body.godam-video-popup-open {
 // Youzify Media Item Video Styles
 .youzify-media-item-godam-video {
     position: relative;
-    container: youzify-media-item-godam-video / inline-size;
+    container-name: youzify-media-item-godam-video;
+    container-type: inline-size;
 
     &--tools {
 
