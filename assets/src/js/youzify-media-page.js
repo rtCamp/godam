@@ -159,7 +159,17 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		const closeButton = modal.querySelector( '.godam-video-popup-close' );
 		const overlay = modal.querySelector( '.godam-video-popup-overlay' );
 
+		// Close on Escape key
+		function escapeHandler( e ) {
+			if ( e.key === 'Escape' ) {
+				closeModal();
+			}
+		}
+
 		function closeModal() {
+			// Remove escape key handler first
+			document.removeEventListener( 'keydown', escapeHandler );
+
 			// Stop the video if playing using GoDAMAPI
 			if ( window.GoDAMAPI && mediaId ) {
 				try {
@@ -187,16 +197,9 @@ document.addEventListener( 'DOMContentLoaded', function() {
 			modal.remove();
 		}
 
+		document.addEventListener( 'keydown', escapeHandler );
 		closeButton.addEventListener( 'click', closeModal );
 		overlay.addEventListener( 'click', closeModal );
-
-		// Close on Escape key
-		document.addEventListener( 'keydown', function escapeHandler( e ) {
-			if ( e.key === 'Escape' ) {
-				closeModal();
-				document.removeEventListener( 'keydown', escapeHandler );
-			}
-		} );
 	}
 } );
 
