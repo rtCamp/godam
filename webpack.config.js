@@ -235,7 +235,7 @@ const youzifyMediaPage = {
 	entry: {
 		'youzify-media-page': path.resolve( process.cwd(), 'assets', 'src', 'js', 'youzify-media-page.js' ),
 	},
-}
+};
 
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );

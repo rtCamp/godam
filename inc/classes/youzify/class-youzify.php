@@ -108,30 +108,33 @@ class Youzify {
 
 		// Media Page Scripts.
 		wp_register_style(
-			'godam-youzify-media-page',
-			RTGODAM_URL . 'assets/build/css/youzify-media-page.css',
+			'godam-youzify-media-component-style',
+			RTGODAM_URL . 'assets/build/css/youzify-media-component.css',
 			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/css/youzify-media-page.css' )
+			filemtime( RTGODAM_PATH . 'assets/build/css/youzify-media-component.css' )
 		);
 		wp_register_script(
-			'godam-youzify-media-page',
+			'godam-youzify-media-page-script',
 			RTGODAM_URL . 'assets/build/js/youzify-media-page.min.js',
-			array(),
+			array( 'godam-player-frontend-script' ),
 			filemtime( RTGODAM_PATH . 'assets/build/js/youzify-media-page.min.js' ),
 			true
 		);
-		
-		if ( function_exists( 'bp_is_activity_component' ) && bp_is_activity_component() ) {
-			wp_enqueue_script( 'godam-youzify-activity-observer' );
-		}
 
-		$pages = array( 'videos', 'all' );
 		
-		// Only enqueue on user profile media page (e.g., /members/username/media/).
-		if ( function_exists( 'bp_is_user' ) && bp_is_user() && function_exists( 'bp_current_action' ) && in_array( bp_current_action(), $pages, true ) ) {
+		// Enqueue if BuddyPress component.
+		if ( function_exists( 'is_buddypress' ) && is_buddypress() ) {
+
+			rtgodam_enqueue_godam_player_scripts();
 			wp_enqueue_script( 'godam-youzify-activity-observer' );
-			wp_enqueue_style( 'godam-youzify-media-page' );
-			wp_enqueue_script( 'godam-youzify-media-page' );
+			wp_enqueue_script( 'godam-youzify-media-page-script' );
+			wp_enqueue_style( 'godam-youzify-media-component-style' );
+
+		} elseif ( function_exists( 'bp_is_activity_component' ) && bp_is_activity_component() ) {
+
+			rtgodam_enqueue_godam_player_scripts();
+			wp_enqueue_script( 'godam-youzify-activity-observer' );
+
 		}
 	}
 
@@ -152,3 +155,4 @@ class Youzify {
 		return true;
 	}
 }
+
