@@ -78,7 +78,7 @@ class Youzify {
 				<div class="youzify-media-item-godam-video" id="godam-video-<?php echo esc_attr( $media_id ); ?>">
 					<div class="youzify-media-item-godam-video--tools">
 						<!-- We don't have item_id hence unable to generate permalink -->
-						<a href="#">
+						<a href="javascript:void(0);">
 							<i class="fas fa-link youzify-media-post-link"></i>
 						</a>
 						<a class="youzify-media-item-godam-video--play-button">

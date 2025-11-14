@@ -149,6 +149,9 @@ document.addEventListener( 'DOMContentLoaded', function() {
 				}
 			} catch ( error ) {
 				// Error getting player instance
+				// This may occur if the GoDAM player API is not available (e.g., not loaded),
+				// or if no player instance is found for the given mediaId.
+				// No further action is taken here as modal will still
 			}
 		}
 
@@ -167,6 +170,8 @@ document.addEventListener( 'DOMContentLoaded', function() {
 					}
 				} catch ( error ) {
 					// Error stopping player
+					// eslint-disable-next-line no-console
+					console.error( 'Error stopping GoDAM player instance:', error );
 				}
 			}
 
