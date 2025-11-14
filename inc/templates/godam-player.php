@@ -43,6 +43,7 @@ $controls       = isset( $attributes['controls'] ) ? $attributes['controls'] : t
 $loop           = ! empty( $attributes['loop'] );
 $muted          = ! empty( $attributes['muted'] );
 $poster         = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
+$preload_poster = ! empty( $attributes['preloadPoster'] );
 $preload        = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
 $hover_select   = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSelect'] : 'none';
 $caption        = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
@@ -74,6 +75,7 @@ if ( $is_virtual ) {
 			'post_type'      => 'attachment',
 			'posts_per_page' => 1,
 			'post_status'    => 'any',
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for finding attachment by GoDAM ID.
 			'meta_key'       => '_godam_original_id',
 			'meta_value'     => sanitize_text_field( $attachment_id ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			'fields'         => 'ids',
@@ -218,6 +220,8 @@ $player_skin            = isset( $godam_settings['video_player']['player_skin'] 
 $ads_settings           = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : array();
 $ads_settings           = wp_json_encode( $ads_settings );
 
+$video_poster = empty( $poster ) ? $poster_image : $poster;
+
 // Build the video setup options for data-setup.
 $video_setup = array(
 	'controls'    => $controls,
@@ -225,7 +229,7 @@ $video_setup = array(
 	'loop'        => $loop,
 	'muted'       => $muted,
 	'preload'     => $preload,
-	'poster'      => empty( $poster ) ? $poster_image : $poster,
+	'poster'      => $video_poster,
 	'fluid'       => true,
 	'flvjs'       => array(
 		'mediaDataSource' => array(
@@ -340,9 +344,29 @@ if ( $is_shortcode || $is_elementor_widget ) {
 }
 
 /**
- * Fetch AI Generated video tracks from REST endpoint
+ * Fetch AI Generated video tracks from post meta
  */
-$transcript_path = godam_get_transcript_path( $job_id );
+$transcript_path = '';
+
+// Determine which attachment ID to use for transcript check.
+// If attachment_id is a string, it's a job ID - resolve it to attachment ID.
+$transcript_attachment_id = $attachment_id;
+
+if ( ! empty( $attachment_id ) && ! is_numeric( $attachment_id ) ) {
+	// It's a job ID string, find the actual attachment ID.
+	if ( ! class_exists( 'RTGODAM_Transcoder_Handler' ) ) {
+		include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-handler.php';
+	}
+
+	$transcoder_handler       = new RTGODAM_Transcoder_Handler();
+	$transcript_attachment_id = $transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $attachment_id );
+}
+
+// Check for transcription if we have a valid numeric attachment ID.
+// The function will check post meta first before making API calls.
+if ( ! empty( $transcript_attachment_id ) && is_numeric( $transcript_attachment_id ) ) {
+	$transcript_path = godam_get_transcript_path( $transcript_attachment_id, $job_id );
+}
 
 if ( ! empty( $transcript_path ) ) {
 	$tracks[] = array(
@@ -363,6 +387,16 @@ if ( ! empty( $attachment_id ) && is_numeric( $attachment_id ) ) {
 // Use the filename as the title.
 if ( empty( $attachment_title ) ) {
 	$attachment_title = basename( get_attached_file( $attachment_id ) );
+}
+
+// Preload poster image if enabled to improve performance, especially LCP.
+if ( $preload_poster && ! empty( $video_poster ) ) {
+	add_action(
+		'wp_head',
+		function () use ( $video_poster ) {
+			printf( '<link rel="preload" as="image" fetchpriority="high" href="%s">', esc_url( $video_poster ) );
+		}
+	);
 }
 
 ?>
@@ -394,6 +428,14 @@ if ( empty( $attachment_title ) ) {
 						<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
 					</svg>
 				</div>
+				<?php if ( $preload_poster && ! empty( $video_poster ) ) : ?>
+					<img
+						class="godam-poster-image"
+						src="<?php echo esc_url( $video_poster ); ?>"
+						alt=""
+						fetchpriority="high"
+					/>
+				<?php endif; ?>
 				<video
 					class="easydam-player video-js vjs-big-play-centered vjs-hidden"
 					data-options="<?php echo esc_attr( $video_config ); ?>"

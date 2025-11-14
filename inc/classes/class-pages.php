@@ -447,6 +447,16 @@ class Pages {
 
 			wp_enqueue_script( 'rtgodam-page-style' );
 			wp_enqueue_media();
+
+			wp_register_style(
+				'easydam-media-library',
+				RTGODAM_URL . 'assets/build/css/media-library.css',
+				array(),
+				filemtime( RTGODAM_PATH . 'assets/build/css/media-library.css' )
+			);
+
+			wp_enqueue_style( 'easydam-media-library' );
+
 		}
 		// Check if this is your custom admin page.
 		if ( $screen && $this->video_editor_page_id === $screen->id ) {
@@ -540,31 +550,6 @@ class Pages {
 
 			if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
 				$this->enqueue_gravity_forms_styles();
-			}
-
-			$poll_ajax_style = get_option( 'poll_ajax_style' );
-
-			if ( is_plugin_active( 'wp-polls/wp-polls.php' ) && isset( $poll_ajax_style['loading'] ) && $poll_ajax_style['loading'] ) {
-
-				if ( ! defined( 'WP_POLLS_VERSION' ) ) {
-					define( 'WP_POLLS_VERSION', '2.77.3' );
-				}
-
-				wp_enqueue_script( 'wp-polls', plugins_url( 'wp-polls/polls-js.js' ), array( 'jquery' ), WP_POLLS_VERSION, true );
-				wp_enqueue_style( 'wp-polls', plugins_url( 'wp-polls/polls-css.css' ), false, WP_POLLS_VERSION, 'all' );
-
-				wp_localize_script(
-					'wp-polls',
-					'pollsL10n',
-					array(
-						'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
-						'textWait'     => __( 'Your last request is still being processed. Please wait a while ...', 'godam' ),
-						'textValid'    => __( 'Please choose a valid poll answer.', 'godam' ),
-						'textMultiple' => __( 'Maximum number of choices allowed: ', 'godam' ),
-						'showLoading'  => (int) $poll_ajax_style['loading'],
-						'showFading'   => (int) $poll_ajax_style['fading'],
-					)
-				);
 			}
 
 			$poll_ajax_style = get_option( 'poll_ajax_style' );

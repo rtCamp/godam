@@ -1,5 +1,30 @@
 # Changelog #
 
+## v1.4.6 (November 12, 2025) ##
+
+- Tweak: Added audio recorder support for Ninja Forms with GoDAM Recorder
+- Tweak: Added GoDAM Media Tab to Video Ad, CTA background, watermark selectors & more
+- Fix: Resolved copy block issue on Safari
+- Fix: Improved security measures for HTTP requests
+- Fix: Fixed critical Node package vulnerabilities
+- Fix: Fixed API key being removed on 5xx server errors
+- Fix: Fixed GoDAM Recorder videos visibility in Fluent Forms entry pages
+- Fix: Fixed virtual media attachment creation in WP Media Library
+- Fix: Made improvements in media selection UI
+- Fix: Fixed Elementor widgets not appearing when GoDAM plugin is network activated
+- Fix: Fixed fullscreen toggle inconsistencies on iOS
+- Fix: Fixed a search issue in the GoDAM media tab
+
+## v1.4.5 (October 22, 2025) ##
+
+- Fix: Optimized API requests
+
+## v1.4.4 (October 16, 2025) ##
+
+- Tweak: Introduced GoDAM Player SDK for developer integrations
+- Fix: Fixed the Copy Block feature for .mov videos
+- Fix: Fixed network errors for analytics
+
 ## v1.4.3 (October 9, 2025) ##
 
 - Tweak: Enhanced Analytics with Google Tag Manager (GTM) event tracking

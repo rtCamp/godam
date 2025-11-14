@@ -101,6 +101,7 @@ class Everest_Forms_Integration {
 
 					$entry_metadata = array(
 						'entry_id'   => $entry_id,
+						// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for storing transcoded URL metadata.
 						'meta_key'   => 'rtgodam_transcoded_url_everestforms_' . $form_id . '_' . $entry_id,
 						'meta_value' => $post_array['download_url'], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 					);

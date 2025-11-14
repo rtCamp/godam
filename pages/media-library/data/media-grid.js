@@ -1,11 +1,30 @@
 /**
+ * Get the most recently opened media frame
+ *
+ * @return {Element|null} The active media frame element
+ */
+function getActiveMediaFrame() {
+	const visibleFrames = Array.from( document.querySelectorAll( '.media-frame' ) )
+		.filter( ( frame ) => getComputedStyle( frame ).display !== 'none' );
+
+	return visibleFrames[ visibleFrames.length - 1 ] || null; // Most recently opened visible frame
+}
+
+/**
  * This function triggers the select box change outside of the react component.
  *
  * @param {number} itemId The ID of the folder to be selected
  */
 function triggerFilterChange( itemId ) {
-	// Find the select box for the media library folder filter.
-	const selectBox = document.querySelector( '#media-folder-filter' );
+	// Find the most recently opened media frame
+	const activeFrame = getActiveMediaFrame();
+
+	if ( ! activeFrame ) {
+		return;
+	}
+
+	// Find the select box within the active frame
+	const selectBox = activeFrame.querySelector( '#media-folder-filter' );
 
 	if ( selectBox ) {
 		selectBox.value = itemId;
@@ -16,7 +35,7 @@ function triggerFilterChange( itemId ) {
 	}
 
 	// If the post-query-submit button is present, click it to update the media library.
-	const postQuerySubmitButton = document.querySelector( '#post-query-submit' );
+	const postQuerySubmitButton = activeFrame.querySelector( '#post-query-submit' );
 
 	if ( postQuerySubmitButton ) {
 		postQuerySubmitButton.click();
@@ -30,7 +49,15 @@ function triggerFilterChange( itemId ) {
  * @param {string} itemName Term Name
  */
 function updateSelectDropdown( itemId, itemName ) {
-	const selectBox = document.querySelector( '#media-folder-filter' );
+	// Find the most recently opened media frame
+	const activeFrame = getActiveMediaFrame();
+
+	if ( ! activeFrame ) {
+		return;
+	}
+
+	// Find the select box within the active frame
+	const selectBox = activeFrame.querySelector( '#media-folder-filter' );
 
 	if ( selectBox ) {
 		const option = document.createElement( 'option' );
@@ -52,7 +79,14 @@ function updateSelectDropdown( itemId, itemName ) {
 }
 
 function checkIfListSelected() {
-	const anchorTag = document.querySelector( '.wp-filter .filter-items .view-switch a.current' );
+	// Find the most recently opened media frame
+	const activeFrame = getActiveMediaFrame();
+
+	if ( ! activeFrame ) {
+		return false;
+	}
+
+	const anchorTag = activeFrame.querySelector( '.wp-filter .filter-items .view-switch a.current' );
 
 	if ( anchorTag && anchorTag.id === 'view-switch-list' ) {
 		return true;
