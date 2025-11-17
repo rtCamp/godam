@@ -1,0 +1,20 @@
+{
+	"$schema": "https://playground.wordpress.net/blueprint-schema.json",
+	"login": true,
+	"siteOptions": {
+	  "blogname": "GoDAM Demo Site"
+	},
+	"plugins": [
+	  "godam"
+	],
+	"steps": [
+	  {
+		"step": "resetData"
+	  },
+	  {
+		"step": "runPHP",
+		"code": "<?php\nrequire '/wordpress/wp-load.php';\n\n// Ensure uploads directory exists\n$upload_dir = wp_upload_dir();\nwp_mkdir_p($upload_dir['path']);\n\n// Download the video\n$video_url = 'https://n8e0ka87m9.gdcdn.us/vo15od683f/rtcamp-video-1-orignal.mp4';\n$video_path = $upload_dir['path'] . '/rtcamp-video.mp4';\n\n$response = wp_remote_get($video_url, array('timeout' => 300));\n\nif (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {\n    $success = file_put_contents($video_path, wp_remote_retrieve_body($response));\n    \n    if ($success) {\n        echo 'Video downloaded successfully!';\n        \n        // Create attachment\n        $attachment_data = array(\n            'post_title' => 'rtCamp Demo Video',\n            'post_content' => '',\n            'post_status' => 'inherit',\n            'post_mime_type' => 'video/mp4'\n        );\n        $attachment_id = wp_insert_attachment($attachment_data, $video_path);\n        \n        if (!is_wp_error($attachment_id)) {\n            require_once(ABSPATH . 'wp-admin/includes/image.php');\n            wp_generate_attachment_metadata($attachment_id, $video_path);\n            \n            echo ' Video added to Media Library! Attachment ID: ' . $attachment_id;\n        }\n    } else {\n        echo 'Failed to save video file.';\n    }\n} else {\n    echo 'Failed to download video from URL.';\n}\n"
+	  }
+	]
+  }
+  
