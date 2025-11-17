@@ -102,12 +102,13 @@
 }
 
 .godam-poster-image {
+	display: none;
 	position:absolute;
 	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
 	width: 100%;
 	height: auto;
 	max-height: 100%;
-	object-fit:contain;
+	object-fit: contain;
 	background-color: #000;
 }
 
@@ -1561,6 +1562,13 @@ body.godam-share-modal-open {
 		.godam-player-overlay {
 
 			display: none;
+		}
+	}
+
+	&:has(.vjs-hidden) {
+
+		.godam-poster-image {
+			display: block;
 		}
 	}
 

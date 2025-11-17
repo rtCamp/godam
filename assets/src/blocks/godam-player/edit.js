@@ -685,13 +685,15 @@ function VideoEdit( {
 									</MediaUploadCheck>
 								</BaseControl>
 
-								<ToggleControl
-									__nextHasNoMarginBottom
-									label={ __( 'Preload Video Thumbnail', 'godam' ) }
-									help={ __( 'Enable to show the video thumbnail faster when the page loads. Recommended for videos placed near the top of your page.', 'godam' ) }
-									onChange={ ( value ) => setAttributes( { preloadPoster: value } ) }
-									checked={ attributes?.preloadPoster }
-								/>
+								{ !! poster && (
+									<ToggleControl
+										__nextHasNoMarginBottom
+										label={ __( 'Preload Video Thumbnail', 'godam' ) }
+										help={ __( 'Enable to show the video thumbnail faster when the page loads. Recommended for videos placed near the top of your page.', 'godam' ) }
+										onChange={ ( value ) => setAttributes( { preloadPoster: value } ) }
+										checked={ attributes?.preloadPoster }
+									/>
+								) }
 
 								{ canManageAttachment( attachmentAuthorId ) && (
 									<BaseControl
