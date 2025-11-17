@@ -389,8 +389,10 @@ if ( empty( $attachment_title ) ) {
 	$attachment_title = basename( get_attached_file( $attachment_id ) );
 }
 
+$should_preload_poster = $preload_poster && ! empty( $video_poster );
+
 // Preload poster image if enabled to improve performance, especially LCP.
-if ( $preload_poster && ! empty( $video_poster ) ) {
+if ( $should_preload_poster ) {
 	add_action(
 		'wp_head',
 		function () use ( $video_poster ) {
@@ -428,12 +430,12 @@ if ( $preload_poster && ! empty( $video_poster ) ) {
 						<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
 					</svg>
 				</div>
-				<?php if ( $preload_poster && ! empty( $video_poster ) ) : ?>
+				<?php if ( $should_preload_poster ) : ?>
 					<img
 						class="godam-poster-image"
 						src="<?php echo esc_url( $video_poster ); ?>"
-						alt=""
 						fetchpriority="high"
+						aria-hidden="true"
 					/>
 				<?php endif; ?>
 				<video
