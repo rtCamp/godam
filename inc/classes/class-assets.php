@@ -140,7 +140,7 @@ class Assets {
 			'rtgodam-script',
 			'godamWooSettings',
 			array(
-				'url' => wc_get_cart_url(),
+				'url' => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '',
 			)
 		);
 
@@ -305,7 +305,7 @@ class Assets {
 				'enableFolderOrganization' => $enable_folder_organization,
 				'isPollPluginActive'       => is_plugin_active( 'wp-polls/wp-polls.php' ),
 				'isWooActive'              => is_plugin_active( 'woocommerce/woocommerce.php' ),
-				'wooCartURL'               => wc_get_cart_url(),
+				'wooCartURL'               => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '',
 				'page'                     => $screen ? $screen->id : '',
 				'userId'                   => $current_user_id,
 				'canEditOthersMedia'       => current_user_can( 'edit_others_posts' ),
