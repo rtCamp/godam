@@ -1108,6 +1108,8 @@ class Media_Library extends Base {
 			// For video, GoDAM expects `job_type=stream`.
 			if ( 'video' === $type ) {
 				$request_body['job_type'] = 'stream';
+			} elseif ( 'application/pdf' === $type ) { // For application/pdf, GoDAM expects `job_type=pdf`.
+				$request_body['job_type'] = 'pdf';
 			} elseif ( 'all' !== $type ) {
 				$request_body['job_type'] = $type;
 			}
