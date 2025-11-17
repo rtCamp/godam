@@ -12,7 +12,6 @@ import {
 	PanelBody,
 	RangeControl,
 	Spinner,
-	ToggleControl,
 } from '@wordpress/components';
 import {
 	BlockControls,
@@ -55,15 +54,8 @@ function PdfEdit( {
 	isSelected: isSingleSelected,
 	insertBlocksAfter,
 } ) {
-	const { id, showDownloadButton, showFullScreen, height, src } = attributes;
+	const { id, height, src } = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
-
-	function toggleAttribute( attribute ) {
-		return ( newValue ) => {
-			setAttributes( { [ attribute ]: newValue } );
-		};
-	}
-
 	const { createErrorNotice } = useDispatch( noticesStore );
 	function onUploadError( message ) {
 		createErrorNotice( message, { type: 'snackbar' } );
@@ -140,18 +132,6 @@ function PdfEdit( {
 			) }
 			<InspectorControls>
 				<PanelBody title={ __( 'Settings', 'godam' ) }>
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={ __( 'Show download button', 'godam' ) }
-						onChange={ toggleAttribute( 'showDownloadButton' ) }
-						checked={ showDownloadButton }
-					/>
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={ __( 'Show fullscreen button', 'godam' ) }
-						onChange={ toggleAttribute( 'showFullScreen' ) }
-						checked={ showFullScreen }
-					/>
 					<RangeControl
 						__nextHasNoMarginBottom
 						label={ __( 'Height (px)', 'godam' ) }

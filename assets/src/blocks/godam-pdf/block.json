@@ -24,14 +24,6 @@
 			"type": "number",
 			"role": "content"
 		},
-		"showDownloadButton": {
-			"type": "boolean",
-			"default": true
-		},
-		"showFullScreen": {
-			"type": "boolean",
-			"default": true
-		},
 		"height": {
 			"type": "number",
 			"default": 600

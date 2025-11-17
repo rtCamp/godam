@@ -9,11 +9,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$attachment_id   = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
-$caption         = ! empty( $attributes['caption'] ) ? $attributes['caption'] : '';
-$show_download   = ! empty( $attributes['showDownloadButton'] ) ? $attributes['showDownloadButton'] : true;
-$show_fullscreen = ! empty( $attributes['showFullScreen'] ) ? $attributes['showFullScreen'] : true;
-$height          = ! empty( $attributes['height'] ) ? intval( $attributes['height'] ) : 600;
+$attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
+$caption       = ! empty( $attributes['caption'] ) ? $attributes['caption'] : '';
+$height        = ! empty( $attributes['height'] ) ? intval( $attributes['height'] ) : 600;
 
 if ( ! $attachment_id ) {
 	return;
@@ -33,7 +31,6 @@ if ( ! empty( $pdf_url ) ) {
 ?>
 
 <figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>>
-	<h1>Hello from PDF Blockkk</h1>
 	<div class="godam-pdf-wrapper" style="height: <?php echo esc_attr( $height ); ?>px;">
 		<object
 			id="pdfObject"
