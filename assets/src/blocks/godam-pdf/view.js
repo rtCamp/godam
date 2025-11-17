@@ -22,8 +22,6 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		try {
 			sources = JSON.parse( sourcesData );
 		} catch ( e ) {
-			// eslint-disable-next-line no-console
-			console.error( 'Failed to parse PDF sources:', e );
 			return;
 		}
 
@@ -41,8 +39,6 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		function tryNextSource( index ) {
 			if ( index >= sources.length ) {
 				// No more sources to try
-				// eslint-disable-next-line no-console
-				console.error( 'No available PDF sources found' );
 				const currentObject = wrapper.querySelector( 'object[type="application/pdf"]' );
 				const fallbackMessage = currentObject ? currentObject.querySelector( 'p' ) : null;
 				if ( fallbackMessage ) {
@@ -53,8 +49,6 @@ document.addEventListener( 'DOMContentLoaded', function() {
 			}
 
 			const currentSource = sources[ index ];
-			// eslint-disable-next-line no-console
-			console.log( 'Trying PDF source:', currentSource );
 
 			// Update the object with the new source
 			updatePDFObject( currentSource, index );
@@ -72,8 +66,6 @@ document.addEventListener( 'DOMContentLoaded', function() {
 				const fallbackContent = currentObject ? currentObject.querySelector( 'p' ) : null;
 				if ( fallbackContent && isVisible( fallbackContent ) ) {
 					// Fallback content is visible, meaning PDF didn't load
-					// eslint-disable-next-line no-console
-					console.warn( 'PDF source failed to load:', currentSource );
 					tryNextSource( index + 1 );
 				}
 			}, 10000 ); // 10 second timeout
@@ -130,8 +122,6 @@ document.addEventListener( 'DOMContentLoaded', function() {
 
 			// Add error event listener to the new object
 			newObject.addEventListener( 'error', function() {
-				// eslint-disable-next-line no-console
-				console.error( 'PDF error event triggered for:', newObject.getAttribute( 'data' ) );
 				const currentIndex = parseInt( newObject.getAttribute( 'data-current-index' ) || '0', 10 );
 
 				// Clear the load check timeout since we got an error
@@ -145,16 +135,11 @@ document.addEventListener( 'DOMContentLoaded', function() {
 
 			// Replace the old object with the new one
 			currentObject.parentNode.replaceChild( newObject, currentObject );
-
-			// eslint-disable-next-line no-console
-			console.log( 'PDF object replaced with new source:', newSource );
 		}
 
 		// Handle error event on the initial object
 		// This fires when the object tag fails to load
 		pdfObject.addEventListener( 'error', function() {
-			// eslint-disable-next-line no-console
-			console.error( 'PDF error event triggered for:', pdfObject.getAttribute( 'data' ) );
 			const currentIndex = parseInt( pdfObject.getAttribute( 'data-current-index' ) || '0', 10 );
 
 			// Clear the load check timeout since we got an error
