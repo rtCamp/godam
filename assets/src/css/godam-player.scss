@@ -1565,7 +1565,7 @@ body.godam-share-modal-open {
 		}
 	}
 
-	&:has(.vjs-hidden) {
+	&:has(.easydam-player.vjs-hidden) {
 
 		.godam-poster-image {
 			display: block;
