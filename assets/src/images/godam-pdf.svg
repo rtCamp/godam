@@ -1,0 +1,18 @@
+<svg width="24" height="24" viewBox="0 0 28 24" style="color: transparent;" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="28" height="24" rx="4" fill="url(#paint0_linear_pdf)"/>
+<path d="M8 5.5C8 5.22386 8.22386 5 8.5 5H14L20 11V18.5C20 18.7761 19.7761 19 19.5 19H8.5C8.22386 19 8 18.7761 8 18.5V5.5Z" fill="white" stroke="white" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M14 5V11H20" stroke="white" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M10.5 13.5H12.5C12.7761 13.5 13 13.7239 13 14V16C13 16.2761 12.7761 16.5 12.5 16.5H10.5V13.5Z" stroke="white" stroke-width="0.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M14 13.5H15.5C15.7761 13.5 16 13.7239 16 14V14.5C16 14.7761 15.7761 15 15.5 15H14V13.5Z" stroke="white" stroke-width="0.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M14 16.5V13.5" stroke="white" stroke-width="0.6" stroke-linecap="round"/>
+<path d="M17 13.5V16.5" stroke="white" stroke-width="0.6" stroke-linecap="round"/>
+<path d="M17 14.5H18" stroke="white" stroke-width="0.6" stroke-linecap="round"/>
+<defs>
+<linearGradient id="paint0_linear_pdf" x1="-2" y1="31.0435" x2="37.5761" y2="26.0701" gradientUnits="userSpaceOnUse">
+<stop stop-color="#E74C3C"/>
+<stop offset="1" stop-color="#C0392B"/>
+</linearGradient>
+</defs>
+</svg>
+
+
