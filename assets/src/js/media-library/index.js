@@ -13,8 +13,7 @@ import AttachmentsBrowser from './views/attachment-browser.js';
 import Attachments from './views/attachments.js';
 import AttachmentDetailsTwoColumn from './views/attachment-detail-two-column.js';
 import AttachmentDetails from './views/attachment-details.js';
-import mediaFrameSelect from './views/media-frame-select.js';
-import mediaFramePost from './views/media-frame-post.js';
+import GoDAMMediaFrameShared from './views/godam-media-frame-shared.js';
 
 import MediaDateRangeFilter from './views/filters/media-date-range-filter-list-view.js';
 import MediaListViewTableDragHandler from './views/attachment-list.js';
@@ -90,12 +89,36 @@ class MediaLibrary {
 			wp.media.view.Attachment.Details.TwoColumn = AttachmentDetailsTwoColumn;
 		}
 
-		if ( wp?.media?.view?.MediaFrame?.Select && mediaFrameSelect ) {
-			wp.media.view.MediaFrame.Select = mediaFrameSelect;
+		if ( wp?.media?.view?.MediaFrame?.Select ) {
+			const OriginalSelect = wp.media.view.MediaFrame.Select;
+			wp.media.view.MediaFrame.Select = OriginalSelect.extend( {
+				initialize() {
+					// Call the original Select initialize method
+					OriginalSelect.prototype.initialize.apply( this, arguments );
+
+					// Initialize GoDAM functionality
+					this.on( 'content:render:godam', this.GoDAMCreate, this );
+				},
+
+				// Include all other GoDAM methods from the shared object
+				...GoDAMMediaFrameShared,
+			} );
 		}
 
-		if ( wp?.media?.view?.MediaFrame?.Post && mediaFramePost ) {
-			wp.media.view.MediaFrame.Post = mediaFramePost;
+		if ( wp?.media?.view?.MediaFrame?.Post ) {
+			const OriginalPost = wp.media.view.MediaFrame.Post;
+			wp.media.view.MediaFrame.Post = OriginalPost.extend( {
+				initialize() {
+					// Call the original Post initialize method
+					OriginalPost.prototype.initialize.apply( this, arguments );
+
+					// Initialize GoDAM functionality
+					this.on( 'content:render:godam', this.GoDAMCreate, this );
+				},
+
+				// Include all other GoDAM methods from the shared object
+				...GoDAMMediaFrameShared,
+			} );
 		}
 
 		new MediaListViewTableDragHandler();
