@@ -484,22 +484,25 @@ class Media_Library extends Base {
 			$api_key = get_option( 'rtgodam-api-key', '' );
 			$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.file.get_file';
 
-			$request_url = add_query_arg(
-				array(
-					'file_id' => $godam_original_id,
-					'api_key' => $api_key,
-				),
-				$api_url
+			// Prepare request body with file ID and API key.
+			$request_body = array(
+				'file_id' => $godam_original_id,
+				'api_key' => $api_key,
 			);
 
-			$response = wp_remote_get(
-				$request_url,
-				array(
-					'headers' => array(
-						'Content-Type' => 'application/json',
-					),
-				)
+			$args = array(
+				'body'    => wp_json_encode( $request_body ),
+				'headers' => array(
+					'Content-Type' => 'application/json',
+				),
 			);
+
+			// Use vip_safe_wp_remote_post as primary and wp_safe_remote_post as fallback.
+			if ( function_exists( 'vip_safe_wp_remote_post' ) ) {
+				$response = vip_safe_wp_remote_post( $api_url, $args, 3, 3 );
+			} else {
+				$response = wp_safe_remote_post( $api_url, $args );
+			}
 
 			if ( is_wp_error( $response ) ) {
 				return new \WP_Error( 'godam_api_error', __( 'Failed to fetch thumbnails from GoDAM.', 'godam' ), array( 'status' => 500 ) );
@@ -1095,8 +1098,8 @@ class Media_Library extends Base {
 			// Construct the GoDAM API endpoint URL.
 			$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.file.get_list_of_files_with_api_key';
 
-			// Prepare query arguments.
-			$request_args = array(
+			// Prepare request body with API key and parameters.
+			$request_body = array(
 				'api_key'   => $api_key,
 				'page_size' => $per_page,
 				'page'      => $page,
@@ -1104,31 +1107,29 @@ class Media_Library extends Base {
 
 			// For video, GoDAM expects `job_type=stream`.
 			if ( 'video' === $type ) {
-				$request_args['job_type'] = 'stream';
-			} else {
-				$request_args['job_type'] = $type;
+				$request_body['job_type'] = 'stream';
+			} elseif ( 'all' !== $type ) {
+				$request_body['job_type'] = $type;
 			}
 
 			// Set the search argument.
 			if ( ! empty( $search ) ) {
-				$request_args['search'] = $search;
+				$request_body['search'] = $search;
 			}
 
-			// Add query params to the API URL.
-			$api_url = add_query_arg(
-				$request_args,
-				$api_url
+			$args = array(
+				'body'    => wp_json_encode( $request_body ),
+				'headers' => array(
+					'Content-Type' => 'application/json',
+				),
 			);
 
-			// Make the API request to GoDAM.
-			$response = wp_remote_get(
-				$api_url,
-				array(
-					'headers' => array(
-						'Content-Type' => 'application/json',
-					),
-				)
-			);
+			// Use vip_safe_wp_remote_post as primary and wp_safe_remote_post as fallback.
+			if ( function_exists( 'vip_safe_wp_remote_post' ) ) {
+				$response = vip_safe_wp_remote_post( $api_url, $args, 3, 3 );
+			} else {
+				$response = wp_safe_remote_post( $api_url, $args );
+			}
 
 			// Check for WP_Error or non-200 status codes.
 			if ( is_wp_error( $response ) ) {
@@ -1246,6 +1247,7 @@ class Media_Library extends Base {
 		$existing = new \WP_Query(
 			array(
 				'post_type'      => 'attachment',
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for finding attachment by transcoding job ID.
 				'meta_key'       => 'rtgodam_transcoding_job_id',
 				'meta_value'     => $godam_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'post_status'    => 'any',
@@ -1347,6 +1349,7 @@ class Media_Library extends Base {
 		$query = new \WP_Query(
 			array(
 				'post_type'      => 'attachment',
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for finding attachment by GoDAM original ID.
 				'meta_key'       => '_godam_original_id',
 				'meta_value'     => $godam_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'post_status'    => 'inherit',
