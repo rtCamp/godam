@@ -75,9 +75,10 @@ export default MediaFrameSelect?.extend( {
 	},
 
 	onGoDAMSelect() {
-		const tab = this.state().get( 'content' );
+		// Use the actual content mode instead of stale state
+		const isGodamTab = this.content.mode() === 'godam';
 
-		if ( 'godam' !== tab ) {
+		if ( ! isGodamTab ) {
 			return;
 		}
 

@@ -140,11 +140,27 @@ class Video_Migration extends Base {
 			return new \WP_Error( 'missing_api_key', __( 'GoDAM API key is required to access this endpoint.', 'godam' ), array( 'status' => 403 ) );
 		}
 
-		// Add api_key query parameter.
+		// Build API URL.
 		$url = RTGODAM_API_BASE . '/api/method/godam_core.api.vimeo.check_migration_status';
-		$url = add_query_arg( 'api_key', $api_key, $url ); // Add api_key query parameter.
 
-		$response = wp_remote_get( $url );
+		// Prepare request body with API key.
+		$request_body = array(
+			'api_key' => $api_key,
+		);
+
+		$args = array(
+			'body'    => wp_json_encode( $request_body ),
+			'headers' => array(
+				'Content-Type' => 'application/json',
+			),
+		);
+
+		// Use vip_safe_wp_remote_post as primary and wp_safe_remote_post as fallback.
+		if ( function_exists( 'vip_safe_wp_remote_post' ) ) {
+			$response = vip_safe_wp_remote_post( $url, $args, 3, 3 );
+		} else {
+			$response = wp_safe_remote_post( $url, $args );
+		}
 
 		if ( is_wp_error( $response ) ) {
 			return new \WP_Error( 'api_error', __( 'Error fetching migration status from GoDAM Central.', 'godam' ), array( 'status' => 500 ) );
@@ -1105,16 +1121,26 @@ class Video_Migration extends Base {
 
 		// Build request URL for GoDAM Central.
 		$request_url = RTGODAM_API_BASE . '/api/method/godam_core.api.vimeo.get_vimeo_video_details';
-		$request_url = add_query_arg(
-			array(
-				'api_key'   => $api_key,
-				'vimeo_url' => $vimeo_video_id,
-			),
-			$request_url
+
+		// Prepare request body with API key and Vimeo URL.
+		$request_body = array(
+			'api_key'   => $api_key,
+			'vimeo_url' => $vimeo_video_id,
 		);
 
-		// Fetch video info from GoDAM Central.
-		$response = wp_remote_get( $request_url );
+		$args = array(
+			'body'    => wp_json_encode( $request_body ),
+			'headers' => array(
+				'Content-Type' => 'application/json',
+			),
+		);
+
+		// Use vip_safe_wp_remote_post as primary and wp_safe_remote_post as fallback.
+		if ( function_exists( 'vip_safe_wp_remote_post' ) ) {
+			$response = vip_safe_wp_remote_post( $request_url, $args, 3, 3 );
+		} else {
+			$response = wp_safe_remote_post( $request_url, $args );
+		}
 		if ( is_wp_error( $response ) ) {
 			return new \WP_Error(
 				'api_error',

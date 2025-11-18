@@ -265,7 +265,7 @@ function VideoEdit( {
 				} catch ( error ) {
 					// Show error notice if fetching media fails.
 					const message = sprintf(
-						/* translators: %s: Label of the video text track e.g: "French subtitles". */
+						/* translators: %d: Label of the video text track e.g: "French subtitles". */
 						_x( 'Failed to load video data with id: %d', 'video caption', 'godam' ),
 						id,
 					);
@@ -709,6 +709,14 @@ function VideoEdit( {
 										</div>
 									</MediaUploadCheck>
 								</BaseControl>
+
+								<ToggleControl
+									__nextHasNoMarginBottom
+									label={ __( 'Preload Video Thumbnail', 'godam' ) }
+									help={ __( 'Enable to show the video thumbnail faster when the page loads. Recommended for videos placed near the top of your page.', 'godam' ) }
+									onChange={ ( value ) => setAttributes( { preloadPoster: value } ) }
+									checked={ attributes?.preloadPoster }
+								/>
 
 								{ canManageAttachment( attachmentAuthorId ) && (
 									<BaseControl

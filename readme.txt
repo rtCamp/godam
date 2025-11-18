@@ -2,9 +2,9 @@
 Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia
 Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
-Tested up to: 6.8.1
+Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.4.3
+Stable tag: 1.4.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -246,26 +246,30 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
-= v1.4.3 (October 9, 2025) =
+= v1.4.6 (November 12, 2025) =
 
-- Tweak: Enhanced Analytics with Google Tag Manager (GTM) event tracking
-- Tweak: Improved overall plugin performance
-- Tweak: Implemented custom branding for GoDAM Gutenberg Blocks
-- Tweak: Updated WordPress role-based access controls
-- Fix: Fixed Quality option visibility inconsistencies
+- Tweak: Added audio recorder support for Ninja Forms with GoDAM Recorder
+- Tweak: Added GoDAM Media Tab to Video Ad, CTA background, watermark selectors & more
+- Fix: Resolved copy block issue on Safari
+- Fix: Improved security measures for HTTP requests
+- Fix: Fixed critical Node package vulnerabilities
+- Fix: Fixed API key being removed on 5xx server errors
+- Fix: Fixed GoDAM Recorder videos visibility in Fluent Forms entry pages
+- Fix: Fixed virtual media attachment creation in WP Media Library
+- Fix: Made improvements in media selection UI
+- Fix: Fixed Elementor widgets not appearing when GoDAM plugin is network activated
+- Fix: Fixed fullscreen toggle inconsistencies on iOS
+- Fix: Fixed a search issue in the GoDAM media tab
 
-= v1.4.2 (September 25, 2025) =
+= v1.4.5 (October 22, 2025) =
 
-- Tweak: Allow replacing transcoded MP4 video with the original uploaded video
-- Fix: Resolved LifterLMS warnings and applied necessary bug fixes
-- Fix: Restored analytics tracking for GoDAM Gallery videos
-- Fix: Fixed GoDAM Recorder playback issue when rtMedia plugin is active
-- Fix: Addressed Safari browser issue where audio would not play or seek correctly
+- Fix: Optimized API requests
 
-= v1.4.1 (September 17, 2025) =
+= v1.4.4 (October 16, 2025) =
 
-- Tweak: Enhanced Audio Recording support in GoDAM Recorder for Gravity Forms
-- Fix: Video player UI bugs and playback quality issues
+- Tweak: Introduced GoDAM Player SDK for developer integrations
+- Fix: Fixed the Copy Block feature for .mov videos
+- Fix: Fixed network errors for analytics
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 

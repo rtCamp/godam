@@ -67,10 +67,11 @@ class Media_Library_Ajax {
 		$job_type      = $item['job_type'] ?? '';
 		$api_mime_type = $item['mime_type'] ?? '';
 		$computed_mime = $this->get_mime_type_for_job_type( $job_type, $api_mime_type );
+		$title         = isset( $item['title'] ) ? $item['title'] : ( isset( $item['orignal_file_name'] ) ? pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) : $item['name'] );
 
 		$result = array(
 			'id'                    => $item['name'],
-			'title'                 => isset( $item['orignal_file_name'] ) ? pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) : $item['name'],
+			'title'                 => $title,
 			'filename'              => $item['orignal_file_name'] ?? $item['name'],
 			'url'                   => isset( $item['transcoded_mp4_url'] ) ? $item['transcoded_mp4_url'] : ( isset( $item['transcoded_file_path'] ) ? $item['transcoded_file_path'] : '' ),
 			'mime'                  => isset( $item['transcoded_mp4_url'] ) ? 'video/mp4' : $computed_mime,
