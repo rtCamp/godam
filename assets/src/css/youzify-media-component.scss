@@ -159,7 +159,7 @@ body.godam-video-popup-open {
         cursor: pointer;
         transition: transform 0.2s ease;
 
-        &:hover svg {
+        &:hover i {
             transform: scale(1.1);
         }
     }

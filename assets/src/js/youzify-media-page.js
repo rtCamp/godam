@@ -89,6 +89,8 @@ document.addEventListener( 'DOMContentLoaded', function() {
 	 * Open video player in popup modal
 	 *
 	 * @param {HTMLElement} videoWrapper The video wrapper element
+	 *
+	 * @return {void}
 	 */
 	function openVideoPopup( videoWrapper ) {
 		// Get the figure element (GoDAM player container)
@@ -153,7 +155,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 				// Error getting player instance
 				// This may occur if the GoDAM player API is not available (e.g., not loaded),
 				// or if no player instance is found for the given mediaId.
-				// No further action is taken here as modal will still
+				// No further action is taken here as the modal will still be displayed, allowing the user to close it.
 			}
 		}
 

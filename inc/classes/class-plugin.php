@@ -232,7 +232,7 @@ class Plugin {
 
 	/**
 	 * Load Youzify integration.
-	 * 
+	 *
 	 * @since n.e.x.t
 	 *
 	 * @return void
