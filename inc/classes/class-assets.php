@@ -241,11 +241,13 @@ class Assets {
 		wp_enqueue_script( 'rtgodam-script' );
 		wp_enqueue_style( 'rtgodam-style' );
 
+		$easydam_media_library_script_assets = include RTGODAM_PATH . 'assets/build/js/media-library.min.asset.php';
+
 		wp_register_script(
 			'easydam-media-library',
 			RTGODAM_URL . 'assets/build/js/media-library.min.js',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/js/media-library.min.js' ),
+			$easydam_media_library_script_assets['dependencies'],
+			$easydam_media_library_script_assets['version'],
 			true
 		);
 
