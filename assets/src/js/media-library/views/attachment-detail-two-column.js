@@ -673,6 +673,15 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			);
 		}
 
+		// Adding functionality to replace media button
+		const replaceBtn = this.$el.find( '.compat-field-replace_media #rtgodam-replace-media-button' );
+		if ( replaceBtn.length ) {
+			replaceBtn.on( 'click', ( event ) => {
+				event.preventDefault();
+				event.stopPropagation();
+				this.replaceMedia( event );
+			} );
+		}
 		// Return this view.
 		return this;
 	},
@@ -703,5 +712,54 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		div.appendChild( ul );
 
 		actionsEl.append( div );
+	},
+
+	replaceMedia( elm ) {
+		const postId = elm.currentTarget.getAttribute( 'data-post-id' );
+		if ( ! postId ) {
+			return;
+		}
+
+		const config = {
+			title: __( 'Upload Media', 'godam' ),
+			button: {
+				text: __( 'Use this media', 'godam' ),
+			},
+			multiple: false,
+			contentUserSetting: false,
+		};
+		const fileFrame = wp.media( config );
+
+		fileFrame.on( 'ready', function() {
+			const mediaUploader = fileFrame.uploader;
+
+			if ( mediaUploader && mediaUploader.uploader ) {
+				const mu = mediaUploader.uploader.uploader;
+				mu.bind( 'BeforeUpload', function( up ) {
+					up.settings.multipart_params = {
+						...up.settings.multipart_params,
+						origin_post_id: postId,
+					};
+				} );
+				mu.bind( 'FileUploaded', function( up, file, response ) {
+					try {
+						const json = JSON.parse( response.response );
+						if ( json && json.success ) {
+							const attachmentID = json.data.id;
+							const el = document.querySelector( `[data-id="${ attachmentID }"]` );
+							el.remove();
+						}
+					} catch ( e ) {}
+				} );
+				mu.bind( 'UploadComplete', function() {
+					fileFrame.close();
+				} );
+			}
+		} );
+		fileFrame.on( 'open', function() {
+			fileFrame.$el.find( '.media-frame-router .media-router' ).find( ':not(#menu-item-upload)' ).remove();
+			fileFrame.$el.find( '#menu-item-upload' ).click();
+		} );
+		fileFrame.open();
 	},
 } );
