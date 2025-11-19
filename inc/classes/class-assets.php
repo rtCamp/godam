@@ -139,38 +139,6 @@ class Assets {
 		wp_set_script_translations( 'rtgodam-script', 'godam', RTGODAM_PATH . 'languages' );
 		wp_enqueue_script( 'rtgodam-script' );
 		wp_enqueue_style( 'rtgodam-style' );
-
-		// Add Jetpack form script.
-		wp_register_script(
-			'rtgodam-jetpack-form',
-			RTGODAM_URL . 'assets/build/js/jetpack-form.min.js',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/js/jetpack-form.min.js' ),
-			true
-		);
-
-		wp_localize_script(
-			'rtgodam-jetpack-form',
-			'godamJetpackFormData',
-			array(
-				'submittingText'      => __( 'Submitting...', 'godam' ),
-				'successHeading'      => __( 'Success!', 'godam' ),
-				'successMessage'      => __( 'Your message has been sent successfully.', 'godam' ),
-				'errorMessage'        => __( 'An error occurred. Please try again.', 'godam' ),
-				'networkErrorMessage' => __( 'Network error. Please try again.', 'godam' ),
-			)
-		);
-
-		wp_localize_script(
-			'rtgodam-jetpack-form',
-			'wpAjax',
-			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'jetpack_form_nonce' ),
-			),
-		);
-
-		wp_enqueue_script( 'rtgodam-jetpack-form' );
 	}
 
 	/**

@@ -8,6 +8,7 @@
  */
 
 use RTGODAM\Inc\Assets\IMA_Assets;
+use RTGODAM\Inc\Assets\Jetpack_Form_Assets;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -589,6 +590,9 @@ if ( $godam_should_preload_poster ) {
 							elseif ( 'jetpack' === $godam_form_type && ! empty( $godam_layer['jp_id'] ) ) :
 								// Get the origin post ID from the layer data.
 								$godam_origin_post_id = isset( $godam_layer['origin_post_id'] ) ? $godam_layer['origin_post_id'] : '';
+
+								// Enqueue GoDAM specific jetpack form script only if Jetpack form is used in this GoDAM player block.
+								Jetpack_Form_Assets::get_instance();
 
 								// Use the static helper method to get the rendered form HTML.
 								$godam_form_html = \RTGODAM\Inc\REST_API\Jetpack::get_rendered_form_html_static( $godam_layer['jp_id'] );
