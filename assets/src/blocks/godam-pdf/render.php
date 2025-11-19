@@ -36,6 +36,10 @@ if ( empty( $attachment_id ) ) {
 	}
 }
 
+if ( empty( $sources ) ) {
+	return;
+}
+
 ?>
 
 <figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>>
