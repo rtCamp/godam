@@ -212,7 +212,7 @@ if ( ! function_exists( 'rtgodam_rtt_set_video_thumbnail' ) ) {
 					$final_file_url = $uploads['baseurl'] . '/' . $file_url;
 				}
 
-				$final_file_url = apply_filters( 'transcoded_file_url', $final_file_url, $attachment_id );
+				$final_file_url = apply_filters( 'godam_transcoded_file_url', $final_file_url, $attachment_id );
 
 				update_post_meta( $attachment_id, '_rt_media_video_thumbnail', $thumbnail );
 			}

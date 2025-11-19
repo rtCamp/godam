@@ -49,4 +49,7 @@ if ( ! $video_attachment || 'attachment' !== $video_attachment->post_type ) {
 	</div>
 
 
-<?php do_action( 'wp_footer' ); ?>
+<?php 
+// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- This hooks is not associated with godam plugin.
+do_action( 'wp_footer' ); 
+?>

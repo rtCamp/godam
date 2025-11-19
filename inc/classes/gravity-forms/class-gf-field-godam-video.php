@@ -297,7 +297,7 @@ if ( class_exists( 'GF_Field' ) ) {
 					 * @param string              $file_path The file path of the download file.
 					 * @param GF_Field_FileUpload $field     The field object for further context.
 					 */
-					$field_ssl = apply_filters( 'gform_secure_file_download_is_https', true, $file_path, $this );
+					$field_ssl = apply_filters( 'gform_secure_file_download_is_https', true, $file_path, $this ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- This hooks is associated with gravity form plugin.
 
 					if ( \GFCommon::is_ssl() && strpos( $file_path, 'http:' ) && $field_ssl ) {
 						$file_path = str_replace( 'http:', 'https:', $file_path );
@@ -311,7 +311,7 @@ if ( class_exists( 'GF_Field' ) ) {
 					 * @param string              $file_path The file path of the download file.
 					 * @param GF_Field_FileUpload $field     The field object for further context.
 					 */
-					$file_path    = str_replace( ' ', '%20', apply_filters( 'gform_fileupload_entry_value_file_path', $file_path, $this ) );
+					$file_path    = str_replace( ' ', '%20', apply_filters( 'gform_fileupload_entry_value_file_path', $file_path, $this ) ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- This hooks is associated with gravity form plugin.
 					$output_arr[] = 'text' == $format ? $file_path : sprintf( "<li><strong>%s:</strong> <a href='%s' target='_blank' aria-label='%s'>%s</a></li>", _x( 'URL', 'GF entry detail page', 'godam' ), esc_attr( $file_path ), esc_attr__( 'Click to view', 'godam' ), $basename );
 
 					// Get the entry ID from GFAPI context.

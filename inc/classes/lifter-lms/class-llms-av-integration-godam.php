@@ -166,7 +166,7 @@ if ( class_exists( 'LLMS_AV_Abstract_Integration' ) ) {
 			/**
 			 * Filter the player theme color for a given lesson.
 			 */
-			return apply_filters( 'llms_av_godam_get_player_theme_color', $color, $lesson_id );
+			return apply_filters( 'godam_llms_av_godam_get_player_theme_color', $color, $lesson_id );
 		}
 	}
 
