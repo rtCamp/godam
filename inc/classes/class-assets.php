@@ -171,18 +171,6 @@ class Assets {
 		);
 
 		wp_enqueue_script( 'rtgodam-jetpack-form' );
-
-		// Register IMA SDK.
-		wp_enqueue_script(
-			'ima-sdk',
-			'https://imasdk.googleapis.com/js/sdkloader/ima3.js', // It is required to load the IMA SDK from the Google CDN, else it will show console error.
-			array(),
-			RTGODAM_VERSION,
-			array(
-				'strategy'  => 'defer',
-				'in_footer' => true,
-			)
-		);
 	}
 
 	/**

@@ -7,6 +7,8 @@
  * @package GoDAM
  */
 
+use RTGODAM\Inc\Assets\IMA_Assets;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -310,6 +312,11 @@ if ( ! empty( $godam_ad_server ) && 'ad-server' === $godam_ad_server ) :
 elseif ( ! empty( $godam_ads_layers ) && 'self-hosted' === $godam_ad_server ) :
 	$godam_ad_tag_url = get_rest_url( get_current_blog_id(), '/godam/v1/adTagURL/' ) . $godam_attachment_id;
 endif;
+
+// Enqueue IMA SDK assets only if Ad is enabled for this GoDAM player block.
+if ( ! empty( $ad_tag_url ) ) {
+	IMA_Assets::get_instance();
+}
 
 $godam_instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 

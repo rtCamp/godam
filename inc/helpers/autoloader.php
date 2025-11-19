@@ -54,6 +54,7 @@ function autoloader( $file_resource = '' ) {
 				$file_name = sprintf( 'trait-%s', trim( strtolower( $path[2] ) ) );
 				break;
 			case 'providers':
+			case 'assets':
 			case 'media-library': // phpcs:ignore
 			case 'meta-boxes': // phpcs:ignore
 			case 'rest-controller': // phpcs:ignore
