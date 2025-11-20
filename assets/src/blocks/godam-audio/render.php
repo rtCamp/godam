@@ -10,20 +10,28 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
+$src           = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
 $caption       = ! empty( $attributes['caption'] ) ? $attributes['caption'] : '';
 $autoplay      = ! empty( $attributes['autoplay'] ) ? 'autoplay' : '';
 $loop          = ! empty( $attributes['loop'] ) ? 'loop' : '';
 $preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'metadata';
 
-if ( ! $attachment_id ) {
+
+if ( ! $attachment_id && empty( $src ) ) {
 	return;
 }
 
-$primary_audio = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
-$backup_audio  = wp_get_attachment_url( $attachment_id );
+if ( ! $attachment_id && ! empty( $src ) ) {
+	// Virtual attachment scenario.
+	$primary_audio = $src;
+	$backup_audio  = '';
+} else {
+	$primary_audio = wp_get_attachment_url( $attachment_id );
+	$backup_audio  = wp_get_attachment_url( $attachment_id );
 
-if ( empty( $primary_audio ) && empty( $backup_audio ) ) {
-	return;
+	if ( empty( $primary_audio ) && empty( $backup_audio ) ) {
+		return;
+	}
 }
 
 ?>
@@ -33,12 +41,12 @@ if ( empty( $primary_audio ) && empty( $backup_audio ) ) {
 		<?php if ( ! empty( $primary_audio ) ) : ?>
 			<source src="<?php echo esc_url( $primary_audio ); ?>" type="audio/mpeg" />
 		<?php endif; ?>
-		
+
 		<?php if ( ! empty( $backup_audio ) ) : ?>
 			<source src="<?php echo esc_url( $backup_audio ); ?>" type="audio/mpeg" />
 		<?php endif; ?>
-		
-		<?php __( 'Your browser does not support the audio element.', 'godam' ); ?>
+
+		<?php esc_html_e( 'Your browser does not support the audio element.', 'godam' ); ?>
 	</audio>
 
 	<?php if ( $caption ) : ?>

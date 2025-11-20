@@ -94,13 +94,12 @@ function AudioEdit( {
 			return;
 		}
 
-		// Sets the block's attribute and updates the edit component from the
-		// selected media, then switches off the editing UI.
+		// Always store the src and id returned by the media selection.
 		setAttributes( {
 			blob: undefined,
 			src: media.url,
 			id: media.id,
-			caption: media.caption,
+			caption: media.caption || media.title,
 		} );
 		setTemporaryURL();
 	}
