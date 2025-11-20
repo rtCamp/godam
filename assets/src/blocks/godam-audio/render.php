@@ -46,7 +46,7 @@ if ( ! $attachment_id && ! empty( $src ) ) {
 			<source src="<?php echo esc_url( $backup_audio ); ?>" type="audio/mpeg" />
 		<?php endif; ?>
 
-		<?php __( 'Your browser does not support the audio element.', 'godam' ); ?>
+		<?php esc_html_e( 'Your browser does not support the audio element.', 'godam' ); ?>
 	</audio>
 
 	<?php if ( $caption ) : ?>
