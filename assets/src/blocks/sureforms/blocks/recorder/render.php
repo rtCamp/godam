@@ -48,15 +48,14 @@ $godam_uppy_preview_id   = sprintf( 'uppy_preview_%s_%s', $godam_form_id, $godam
 /**
  * Wrapper attributes.
  */
-// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- WordPress core variable.
-$wrapper_attributes = get_block_wrapper_attributes(
+$godam_wrapper_attributes = get_block_wrapper_attributes(
 	array(
 		'class' => 'godam_srfm_input_recorder_container srfm-block srfm-block-single srfm-upload-block',
 	)
 );
 ?>
 
-<div <?php echo $wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+<div <?php echo $godam_wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 	<input
 		type="hidden"
 		name="<?php echo esc_attr( 'godam-file-' . $godam_block_id . '-lbl-' . rtrim( base64_encode( 'file-input' ), '=' ) . '-max-file-size' ); ?>"

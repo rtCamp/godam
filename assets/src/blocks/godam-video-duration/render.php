@@ -8,8 +8,7 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- WordPress core variable.
-$wrapper_attributes = get_block_wrapper_attributes();
+$godam_wrapper_attributes = get_block_wrapper_attributes();
 // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- WordPress core variable.
 $attributes            = $block->attributes;
 $godam_duration_format = isset( $attributes['durationFormat'] ) ? $attributes['durationFormat'] : 'default';
@@ -33,7 +32,7 @@ if ( ! empty( $godam_video_duration ) ) {
 ?>
 
 <?php if ( ! empty( $godam_formatted_duration ) ) : ?>
-	<div <?php echo wp_kses_data( $wrapper_attributes ); ?>>
+	<div <?php echo wp_kses_data( $godam_wrapper_attributes ); ?>>
 		<time datetime="PT<?php echo esc_attr( $godam_video_duration ); ?>S"><?php echo esc_html( $godam_formatted_duration ); ?></time>
 	</div>
 <?php endif; ?>

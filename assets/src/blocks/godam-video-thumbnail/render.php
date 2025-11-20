@@ -37,15 +37,14 @@ if ( $godam_show_play_button ) {
 	$godam_wrapper_classes .= ' godam-video-thumbnail--with-play-button';
 }
 
-// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- WordPress core variable.
-$wrapper_attributes = get_block_wrapper_attributes(
+$godam_wrapper_attributes = get_block_wrapper_attributes(
 	array(
 		'class' => $godam_wrapper_classes,
 	)
 );
 ?>
 
-<div <?php echo wp_kses_data( $wrapper_attributes ); ?>>
+<div <?php echo wp_kses_data( $godam_wrapper_attributes ); ?>>
 	<?php
 
 	// Link attributes.
