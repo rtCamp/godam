@@ -171,6 +171,13 @@ function playerAnalytics() {
 			video.gtmTracker = gtmTracker;
 		}
 
+		// Initialize GTM tracker for this video
+		if ( typeof window.dataLayer !== 'undefined' && window.godamSettings?.enableGTMTracking ) {
+			const gtmTracker = new GTMVideoTracker( player, video );
+			// Store tracker reference for potential cleanup
+			video.gtmTracker = gtmTracker;
+		}
+
 		window.addEventListener( 'beforeunload', () => {
 			const played = player.played();
 			const ranges = [];
