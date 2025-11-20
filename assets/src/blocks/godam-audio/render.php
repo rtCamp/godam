@@ -10,40 +10,42 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
-$cmm_id        = ! empty( $attributes['cmmId'] ) ? $attributes['cmmId'] : '';
-$godam_url     = ! empty( $attributes['godamUrl'] ) ? $attributes['godamUrl'] : '';
+$src           = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
 $caption       = ! empty( $attributes['caption'] ) ? $attributes['caption'] : '';
 $autoplay      = ! empty( $attributes['autoplay'] ) ? 'autoplay' : '';
 $loop          = ! empty( $attributes['loop'] ) ? 'loop' : '';
 $preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'metadata';
 
-// Handle GoDAM audio directly.
-if ( ! empty( $godam_url ) && ! empty( $cmm_id ) ) {
-	$audio_src = esc_url( $godam_url );
-} elseif ( $attachment_id ) {
-	// Handle WordPress media library audio.
-	$primary_audio = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
-	$backup_audio  = wp_get_attachment_url( $attachment_id );
 
-	if ( ! empty( $primary_audio ) ) {
-		$audio_src = esc_url( $primary_audio );
-	} elseif ( ! empty( $backup_audio ) ) {
-		$audio_src = esc_url( $backup_audio );
-	} else {
-		return;
-	}
-} else {
+if ( ! $attachment_id && empty( $src ) ) {
 	return;
 }
 
-if ( empty( $audio_src ) ) {
-	return;
+if ( ! $attachment_id && ! empty( $src ) ) {
+	// Virtual attachment scenario.
+	$primary_audio = $src;
+	$backup_audio  = '';
+} else {
+	$primary_audio = wp_get_attachment_url( $attachment_id );
+	$backup_audio  = wp_get_attachment_url( $attachment_id );
+
+	if ( empty( $primary_audio ) && empty( $backup_audio ) ) {
+		return;
+	}
 }
 
 ?>
 
 <figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>>
-	<audio controls src="<?php echo esc_url( $audio_src ); ?>" <?php echo esc_attr( $autoplay ); ?> <?php echo esc_attr( $loop ); ?> preload="<?php echo esc_attr( $preload ); ?>">
+	<audio controls <?php echo esc_attr( $autoplay ); ?> <?php echo esc_attr( $loop ); ?> preload="<?php echo esc_attr( $preload ); ?>">
+		<?php if ( ! empty( $primary_audio ) ) : ?>
+			<source src="<?php echo esc_url( $primary_audio ); ?>" type="audio/mpeg" />
+		<?php endif; ?>
+
+		<?php if ( ! empty( $backup_audio ) ) : ?>
+			<source src="<?php echo esc_url( $backup_audio ); ?>" type="audio/mpeg" />
+		<?php endif; ?>
+
 		<?php __( 'Your browser does not support the audio element.', 'godam' ); ?>
 	</audio>
 

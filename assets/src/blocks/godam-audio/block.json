@@ -24,14 +24,6 @@
 			"type": "number",
 			"role": "content"
 		},
-		"cmmId": {
-			"type": "string",
-			"default": ""
-		},
-		"godamUrl": {
-			"type": "string",
-			"default": ""
-		},
 		"autoplay": {
 			"type": "boolean",
 			"default": false

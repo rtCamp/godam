@@ -82,8 +82,6 @@ function AudioEdit( {
 			setAttributes( {
 				src: undefined,
 				id: undefined,
-				cmmId: undefined,
-				godamUrl: undefined,
 				caption: undefined,
 				blob: undefined,
 			} );
@@ -96,30 +94,13 @@ function AudioEdit( {
 			return;
 		}
 
-		// Check if this is GoDAM media
-		const isGodamMedia = media?.origin === 'godam';
-
-		if ( isGodamMedia ) {
-			// Handle GoDAM audio - store GoDAM-specific data
-			setAttributes( {
-				blob: undefined,
-				src: media.url,
-				id: undefined, // No WordPress attachment ID for GoDAM media
-				cmmId: media.id,
-				godamUrl: media.url,
-				caption: media.caption || media.title,
-			} );
-		} else {
-			// Handle WordPress media library audio
-			setAttributes( {
-				blob: undefined,
-				src: media.url,
-				id: media.id,
-				cmmId: undefined,
-				godamUrl: undefined,
-				caption: media.caption,
-			} );
-		}
+		// Always store the src and id returned by the media selection.
+		setAttributes( {
+			blob: undefined,
+			src: media.url,
+			id: media.id,
+			caption: media.caption || media.title,
+		} );
 		setTemporaryURL();
 	}
 
