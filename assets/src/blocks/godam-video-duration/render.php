@@ -8,31 +8,32 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-
+// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- WordPress core variable.
 $wrapper_attributes = get_block_wrapper_attributes();
-$attributes         = $block->attributes;
-$duration_format    = isset( $attributes['durationFormat'] ) ? $attributes['durationFormat'] : 'default';
+// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- WordPress core variable.
+$attributes            = $block->attributes;
+$godam_duration_format = isset( $attributes['durationFormat'] ) ? $attributes['durationFormat'] : 'default';
 
-$video_post_id = get_the_ID();
+$godam_video_post_id = get_the_ID();
 
-if ( $video_post_id ) {
+if ( $godam_video_post_id ) {
 
 	// Get attachment ID from post meta.
-	$attachment_id = get_post_meta( $video_post_id, '_godam_attachment_id', true );
+	$godam_attachment_id = get_post_meta( $godam_video_post_id, '_godam_attachment_id', true );
 
 	// Get video duration directly from attachment's meta.
-	$video_duration = absint( get_post_meta( $attachment_id, '_video_duration', true ) );
+	$godam_video_duration = absint( get_post_meta( $godam_attachment_id, '_video_duration', true ) );
 }
 
 // Format the duration using the formatting function.
-$formatted_duration = '';
-if ( ! empty( $video_duration ) ) {
-	$formatted_duration = rtgodam_block_format_video_duration( $video_duration, $duration_format );
+$godam_formatted_duration = '';
+if ( ! empty( $godam_video_duration ) ) {
+	$godam_formatted_duration = rtgodam_block_format_video_duration( $godam_video_duration, $godam_duration_format );
 }
 ?>
 
-<?php if ( ! empty( $formatted_duration ) ) : ?>
+<?php if ( ! empty( $godam_formatted_duration ) ) : ?>
 	<div <?php echo wp_kses_data( $wrapper_attributes ); ?>>
-		<time datetime="PT<?php echo esc_attr( $video_duration ); ?>S"><?php echo esc_html( $formatted_duration ); ?></time>
+		<time datetime="PT<?php echo esc_attr( $godam_video_duration ); ?>S"><?php echo esc_html( $godam_formatted_duration ); ?></time>
 	</div>
 <?php endif; ?>

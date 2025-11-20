@@ -212,6 +212,7 @@ if ( ! function_exists( 'rtgodam_rtt_set_video_thumbnail' ) ) {
 					$final_file_url = $uploads['baseurl'] . '/' . $file_url;
 				}
 
+				// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Legacy hook name kept for backward compatibility.
 				$final_file_url = apply_filters( 'transcoded_file_url', $final_file_url, $attachment_id );
 
 				update_post_meta( $attachment_id, '_rt_media_video_thumbnail', $thumbnail );
