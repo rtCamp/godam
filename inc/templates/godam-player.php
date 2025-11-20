@@ -122,6 +122,9 @@ $sources = array();
 
 if ( empty( $attachment_id ) ) {
 	$job_id = ! empty( $attributes['cmmId'] ) ? sanitize_text_field( $attributes['cmmId'] ) : '';
+} elseif ( $is_virtual ) {
+	// For virtual media, the attachment_id is the GoDAM ID, which is the job_id.
+	$job_id = $attachment_id;
 }
 
 if ( ( empty( $attachment_id ) || ( $is_virtual && ! empty( $original_id ) ) ) &&
@@ -391,8 +394,10 @@ if ( empty( $attachment_title ) ) {
 	$attachment_title = basename( get_attached_file( $attachment_id ) );
 }
 
+$should_preload_poster = $preload_poster && ! empty( $video_poster );
+
 // Preload poster image if enabled to improve performance, especially LCP.
-if ( $preload_poster && ! empty( $video_poster ) ) {
+if ( $should_preload_poster ) {
 	add_action(
 		'wp_head',
 		function () use ( $video_poster ) {
@@ -440,12 +445,12 @@ if ( $preload_poster && ! empty( $video_poster ) ) {
 						<?php break; ?>
 					<?php endif; ?>
 				<?php endforeach; ?>
-				<?php if ( $preload_poster && ! empty( $video_poster ) ) : ?>
+				<?php if ( $should_preload_poster ) : ?>
 					<img
 						class="godam-poster-image"
 						src="<?php echo esc_url( $video_poster ); ?>"
-						alt=""
 						fetchpriority="high"
+						aria-hidden="true"
 					/>
 				<?php endif; ?>
 				<video

@@ -1108,7 +1108,7 @@ class Media_Library extends Base {
 			// For video, GoDAM expects `job_type=stream`.
 			if ( 'video' === $type ) {
 				$request_body['job_type'] = 'stream';
-			} elseif ( 'all' !== $type ) {
+			} elseif ( 'image-video' !== $type && 'all' !== $type ) {
 				$request_body['job_type'] = $type;
 			}
 
@@ -1309,7 +1309,7 @@ class Media_Library extends Base {
 		update_post_meta( $attach_id, '_filesize_human', sanitize_text_field( $data['filesizeHumanReadable'] ?? '' ) );
 		update_post_meta( $attach_id, '_godam_label', sanitize_text_field( $data['label'] ?? '' ) );
 		update_post_meta( $attach_id, '_owner_email', sanitize_email( $data['owner'] ?? '' ) );
-		update_post_meta( $attach_id, 'rtgodam_transcoded_url', esc_url_raw( $data['url'] ?? '' ) );
+		update_post_meta( $attach_id, 'rtgodam_transcoded_url', esc_url_raw( $data['mpd_url'] ?? '' ) );
 		update_post_meta( $attach_id, 'rtgodam_transcoding_status', 'transcoded' );
 		update_post_meta( $attach_id, 'icon', $data['icon'] );
 		update_post_meta( $attach_id, 'rtgodam_hls_transcoded_url', esc_url_raw( $data['hls_url'] ?? '' ) );
