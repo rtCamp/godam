@@ -30,7 +30,7 @@ class WPB_GoDAM_Params {
 		$is_wpbakery_active = is_plugin_active( 'js_composer/js_composer.php' );
 
 		if ( $is_wpbakery_active ) {
-			$this->setup_custom_params();
+			add_action( 'vc_before_init', array( $this, 'setup_custom_params' ), 9 );
 		}
 	}
 
@@ -41,7 +41,7 @@ class WPB_GoDAM_Params {
 	 *
 	 * @return void
 	 */
-	protected function setup_custom_params() {
+	public function setup_custom_params() {
 
 		vc_add_shortcode_param( 
 			'video_selector',
