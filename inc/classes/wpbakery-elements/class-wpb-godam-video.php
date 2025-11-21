@@ -21,6 +21,8 @@ class WPB_GoDAM_Video {
 
 	/**
 	 * WPB_GoDAM_Video constructor.
+	 *
+	 * @since n.e.x.t
 	 */
 	protected function __construct() {
 		$is_wpbakery_active = \is_plugin_active( 'js_composer/js_composer.php' );
@@ -33,14 +35,63 @@ class WPB_GoDAM_Video {
 	/**
 	 * Setup hooks.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return void
 	 */
 	protected function setup_hooks() {
 		add_action( 'vc_before_init', array( $this, 'godam_video' ) );
+
+		vc_add_shortcode_param( 
+			'video_selector',
+			array( $this, 'video_selector_settings_field' ),
+			RTGODAM_URL . 'assets/build/js/wpbakery-godam-params.min.js'
+		);
+	}
+
+	/**
+	 * Video selector settings field.
+	 * 
+	 * @since n.e.x.t
+	 *
+	 * @param array  $settings Field settings.
+	 * @param string $value    Field value.
+	 * @return string
+	 */
+	public function video_selector_settings_field( $settings, $value ) {
+		$button_text   = ! empty( $value ) ? esc_html__( 'Replace', 'godam' ) : esc_html__( 'Select video', 'godam' );
+		$preview_html  = '';
+		$remove_button = '';
+		
+		// If a video is selected, show preview and remove button.
+		if ( ! empty( $value ) && is_numeric( $value ) ) {
+			$attachment = wp_get_attachment_url( $value );
+			if ( $attachment ) {
+				$preview_html  = '<div class="video-selector-preview" style="margin-top: 10px;">
+					<video width="100%" height="auto" controls style="max-width: 300px;">
+						<source src="' . esc_url( $attachment ) . '" type="video/mp4">
+					</video>
+				</div>';
+				$remove_button = '<button class="button video-selector-remove" data-param="' . esc_attr( $settings['param_name'] ) . '" style="margin-left: 5px;">' . esc_html__( 'Remove', 'godam' ) . '</button>';
+			}
+		}
+		
+		return '<div class="video_selector_block">'
+			. '<input name="' . esc_attr( $settings['param_name'] ) . '" class="wpb_vc_param_value wpb-textinput video_selector_field ' .
+			esc_attr( $settings['param_name'] ) . ' ' .
+			esc_attr( $settings['type'] ) . '_field" type="hidden" value="' . esc_attr( $value ) . '" />'
+			. '<div class="video_selector-buttons-wrapper" style="display: flex; align-items: center;">'
+			. '<button class="button video-selector-button" data-param="' . esc_attr( $settings['param_name'] ) . '">' . $button_text . '</button>'
+			. $remove_button
+			. '</div>'
+			. $preview_html
+			. '</div>';
 	}
 
 	/**
 	 * Map video element to WPBakery.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */
@@ -59,7 +110,7 @@ class WPB_GoDAM_Video {
 				'params'      => array(
 					// Video Selection.
 					array(
-						'type'        => 'textfield',
+						'type'        => 'video_selector',
 						'heading'     => esc_html__( 'Select Video', 'godam' ),
 						'param_name'  => 'id',
 						'value'       => '',

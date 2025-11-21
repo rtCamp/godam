@@ -223,6 +223,13 @@ const ninjaForms = {
 	},
 };
 
+const wpBakeyGodAMParams = {
+	...sharedConfig,
+	entry: {
+		'wpbakery-godam-params': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery-godam-params.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -311,4 +318,5 @@ module.exports = [
 	lifterLMSBlock,
 	lifterLMSEmbed,
 	ninjaForms,
+	wpBakeyGodAMParams,
 ];
