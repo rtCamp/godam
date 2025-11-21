@@ -59,7 +59,7 @@ class WPB_GoDAM_Audio {
 				'params'      => array(
 					// Audio Selection.
 					array(
-						'type'        => 'textfield',
+						'type'        => 'audio_selector',
 						'heading'     => esc_html__( 'Audio ID', 'godam' ),
 						'param_name'  => 'id',
 						'value'       => '',

@@ -223,10 +223,17 @@ const ninjaForms = {
 	},
 };
 
-const wpBakeyGodAMParams = {
+const wpBakeryVideoSelectorParam = {
 	...sharedConfig,
 	entry: {
-		'wpbakery-godam-params': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery-godam-params.js' ),
+		'wpbakery-video-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-video-selector-param.js' ),
+	},
+};
+
+const wpBakeryAudioSelectorParam = {
+	...sharedConfig,
+	entry: {
+		'wpbakery-audio-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-audio-selector-param.js' ),
 	},
 };
 
@@ -318,5 +325,6 @@ module.exports = [
 	lifterLMSBlock,
 	lifterLMSEmbed,
 	ninjaForms,
-	wpBakeyGodAMParams,
+	wpBakeryVideoSelectorParam,
+	wpBakeryAudioSelectorParam,
 ];

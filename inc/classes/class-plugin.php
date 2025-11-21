@@ -65,6 +65,7 @@ use RTGODAM\Inc\Metform\Metform_Integration;
 use RTGODAM\Inc\Metform\Metform_Rest_Api;
 use RTGODAM\Inc\Lifter_LMS\Lifter_LMS;
 
+use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Params;
 use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Video;
 use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Video_Gallery;
 use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Audio;
@@ -221,6 +222,8 @@ class Plugin {
 		if ( ! $is_wpbakery_active ) {
 			return;
 		}
+
+		WPB_GoDAM_Params::get_instance();
 
 		WPB_GoDAM_Video::get_instance();
 		WPB_GoDAM_Video_Gallery::get_instance();
