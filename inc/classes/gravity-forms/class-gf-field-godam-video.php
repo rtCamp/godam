@@ -297,6 +297,7 @@ if ( class_exists( 'GF_Field' ) ) {
 					 * @param string              $file_path The file path of the download file.
 					 * @param GF_Field_FileUpload $field     The field object for further context.
 					 */
+					// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Gravity Forms hook.
 					$field_ssl = apply_filters( 'gform_secure_file_download_is_https', true, $file_path, $this );
 
 					if ( \GFCommon::is_ssl() && strpos( $file_path, 'http:' ) && $field_ssl ) {
@@ -311,6 +312,7 @@ if ( class_exists( 'GF_Field' ) ) {
 					 * @param string              $file_path The file path of the download file.
 					 * @param GF_Field_FileUpload $field     The field object for further context.
 					 */
+					// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Gravity Forms hook.
 					$file_path    = str_replace( ' ', '%20', apply_filters( 'gform_fileupload_entry_value_file_path', $file_path, $this ) );
 					$output_arr[] = 'text' == $format ? $file_path : sprintf( "<li><strong>%s:</strong> <a href='%s' target='_blank' aria-label='%s'>%s</a></li>", _x( 'URL', 'GF entry detail page', 'godam' ), esc_attr( $file_path ), esc_attr__( 'Click to view', 'godam' ), $basename );
 
