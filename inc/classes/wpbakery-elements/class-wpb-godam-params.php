@@ -54,6 +54,12 @@ class WPB_GoDAM_Params {
 			array( $this, 'audio_selector_settings_field' ),
 			RTGODAM_URL . 'assets/build/js/wpbakery-audio-selector-param.min.js'
 		);
+
+		vc_add_shortcode_param(
+			'image_src_selector',
+			array( $this, 'image_src_selector_settings_field' ),
+			RTGODAM_URL . 'assets/build/js/wpbakery-image-src-selector-param.min.js'
+		);
 	}
 
 	/**
@@ -128,6 +134,40 @@ class WPB_GoDAM_Params {
 			esc_attr( $settings['type'] ) . '_field" type="hidden" value="' . esc_attr( $value ) . '" />'
 			. '<div class="audio_selector-buttons-wrapper" style="display: flex; align-items: center;">'
 			. '<button class="button audio-selector-button" data-param="' . esc_attr( $settings['param_name'] ) . '">' . $button_text . '</button>'
+			. $remove_button
+			. '</div>'
+			. $preview_html
+			. '</div>';
+	}
+
+	/**
+	 * Image Src selector settings field.
+	 * 
+	 * @since n.e.x.t
+	 *
+	 * @param array  $settings Field settings.
+	 * @param string $value    Field value.
+	 * @return string
+	 */
+	public function image_src_selector_settings_field( $settings, $value ) {
+		$button_text   = ! empty( $value ) ? esc_html__( 'Replace', 'godam' ) : esc_html__( 'Select image', 'godam' );
+		$preview_html  = '';
+		$remove_button = '';
+		
+		// If an image is selected, show preview and remove button.
+		if ( ! empty( $value ) ) {
+			$preview_html  = '<div class="image-src-selector-preview" style="margin-top: 10px;">
+                <img src="' . esc_url( $value ) . '" alt="" style="max-width: 300px; height: auto;" />
+            </div>';
+			$remove_button = '<button class="button image-src-selector-remove" data-param="' . esc_attr( $settings['param_name'] ) . '" style="margin-left: 5px;">' . esc_html__( 'Remove', 'godam' ) . '</button>';            
+		}
+		
+		return '<div class="image_src_selector_block">'
+			. '<input name="' . esc_attr( $settings['param_name'] ) . '" class="wpb_vc_param_value wpb-textinput image_src_selector_field ' .
+			esc_attr( $settings['param_name'] ) . ' ' .
+			esc_attr( $settings['type'] ) . '_field" type="hidden" value="' . esc_attr( $value ) . '" />'
+			. '<div class="image_src_selector-buttons-wrapper" style="display: flex; align-items: center;">'
+			. '<button class="button image-src-selector-button" data-param="' . esc_attr( $settings['param_name'] ) . '">' . $button_text . '</button>'
 			. $remove_button
 			. '</div>'
 			. $preview_html

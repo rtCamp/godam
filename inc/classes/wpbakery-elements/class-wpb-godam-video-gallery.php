@@ -13,6 +13,8 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class WPB_GoDAM_Video_Gallery
+ * 
+ * @since n.e.x.t
  *
  * @package GoDAM
  */
@@ -21,6 +23,8 @@ class WPB_GoDAM_Video_Gallery {
 
 	/**
 	 * WPB_GoDAM_Video_Gallery constructor.
+	 * 
+	 * @since n.e.x.t
 	 */
 	protected function __construct() {
 		$is_wpbakery_active = is_plugin_active( 'js_composer/js_composer.php' );
@@ -32,6 +36,8 @@ class WPB_GoDAM_Video_Gallery {
 
 	/**
 	 * Setup hooks.
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */
@@ -41,6 +47,8 @@ class WPB_GoDAM_Video_Gallery {
 
 	/**
 	 * Map video gallery element to WPBakery.
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */
@@ -240,6 +248,8 @@ class WPB_GoDAM_Video_Gallery {
 
 	/**
 	 * Get categories for dropdown.
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @return array
 	 */
@@ -265,6 +275,8 @@ class WPB_GoDAM_Video_Gallery {
 
 	/**
 	 * Get tags for dropdown.
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @return array
 	 */
@@ -290,6 +302,8 @@ class WPB_GoDAM_Video_Gallery {
 
 	/**
 	 * Get authors for dropdown.
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @return array
 	 */

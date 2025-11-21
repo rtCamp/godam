@@ -13,6 +13,8 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class WPB_GoDAM_Audio
+ * 
+ * @since n.e.x.t
  *
  * @package GoDAM
  */
@@ -21,6 +23,8 @@ class WPB_GoDAM_Audio {
 
 	/**
 	 * WPB_GoDAM_Audio constructor.
+	 * 
+	 * @since n.e.x.t
 	 */
 	protected function __construct() {
 		$is_wpbakery_active = is_plugin_active( 'js_composer/js_composer.php' );
@@ -32,6 +36,8 @@ class WPB_GoDAM_Audio {
 
 	/**
 	 * Setup hooks.
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */
@@ -41,6 +47,8 @@ class WPB_GoDAM_Audio {
 
 	/**
 	 * Map audio element to WPBakery.
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */

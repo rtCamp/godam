@@ -177,7 +177,7 @@ class WPB_GoDAM_Video {
 						),
 					),
 					array(
-						'type'        => 'attach_image',
+						'type'        => 'image_src_selector',
 						'heading'     => esc_html__( 'Video Thumbnail', 'godam' ),
 						'param_name'  => 'poster',
 						'value'       => '',
