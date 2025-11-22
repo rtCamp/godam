@@ -14,10 +14,12 @@ import {
 	useFetchAnalyticsDataQuery,
 	useFetchProcessedAnalyticsHistoryQuery,
 } from './redux/api/analyticsApi';
-import { calculateEngagementRate, calculatePlayRate, generateLineChart } from './helper';
+import { calculateEngagementRate, calculatePlayRate } from './helper';
 import DOMPurify from 'isomorphic-dompurify';
 import './charts.js';
 import upgradePlanBackground from '../../assets/src/images/upgrade-plan-analytics-bg.png';
+
+import VideoLineChart from './charts/VideoLineChart.js';
 
 /**
  * WordPress dependencies
@@ -190,13 +192,16 @@ const Analytics = ( { attachmentID } ) => {
 		if ( originalVideoEl && analyticsData ) {
 			const originalVideo = videojs( 'original-analytics-video', videoOptions );
 
-			generateLineChart(
-				JSON.parse( analyticsData?.all_time_heatmap ),
+			new VideoLineChart(
+				JSON.parse( analyticsData?.all_time_heatmap ?? [] ),
 				'#performance-line-chart',
 				originalVideo,
+				{
+					width: 525,
+					height: 300,
+					margin: { top: 0, right: 0, bottom: 0, left: 0 },
+				},
 				'.performance-line-chart-tooltip',
-				525,
-				300,
 			);
 		}
 
@@ -205,13 +210,16 @@ const Analytics = ( { attachmentID } ) => {
 		if ( comparisonVideoEl && abTestComparisonAnalyticsData ) {
 			const comparisonVideo = videojs( 'comparison-analytics-video', videoOptions );
 
-			generateLineChart(
-				JSON.parse( abTestComparisonAnalyticsData?.all_time_heatmap ),
+			new VideoLineChart(
+				JSON.parse( abTestComparisonAnalyticsData?.all_time_heatmap ?? [] ),
 				'#comparison-line-chart',
 				comparisonVideo,
+				{
+					width: 525,
+					height: 300,
+					margin: { top: 0, right: 0, bottom: 0, left: 0 },
+				},
 				'.comparison-line-chart-tooltip',
-				525,
-				300,
 			);
 		}
 	}, [ analyticsData, abTestComparisonAnalyticsData ] );

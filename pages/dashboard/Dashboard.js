@@ -11,7 +11,8 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { generateCountryHeatmap } from '../analytics/helper';
+
+import CountryHeatmapChart from '../analytics/charts/CountryHeatmapChart.js';
 import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.png';
 import ExportBtn from '../../assets/src/images/export.svg';
 import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, useFetchTopVideosQuery } from './redux/api/dashboardAnalyticsApi';
@@ -73,7 +74,8 @@ const Dashboard = () => {
 				const tableContainer = document.querySelector( '#table-container' );
 				if ( mapContainer && tableContainer ) {
 					clearInterval( interval );
-					generateCountryHeatmap(
+
+					new CountryHeatmapChart(
 						dashboardMetrics.country_views,
 						'#map-container',
 						'#table-container',
