@@ -12,7 +12,7 @@ use RTGODAM\Inc\Traits\Singleton;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class WPB_GoDAM_Audio
+ * Class WPB_GoDAM_Params
  *
  * @since n.e.x.t
  * 
@@ -27,6 +27,10 @@ class WPB_GoDAM_Params {
 	 * @since n.e.x.t
 	 */
 	protected function __construct() {
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
 		$is_wpbakery_active = is_plugin_active( 'js_composer/js_composer.php' );
 
 		if ( $is_wpbakery_active ) {
@@ -120,7 +124,7 @@ class WPB_GoDAM_Params {
 			$attachment = wp_get_attachment_url( $value );
 			if ( $attachment ) {
 				$preview_html  = '<div class="audio-selector-preview" style="margin-top: 10px;">
-					<audio width="100%" controls style="max-width: 300px;">
+					<audio controls style="max-width: 300px;">
 						<source src="' . esc_url( $attachment ) . '" type="audio/mpeg">
 					</audio>
 				</div>';

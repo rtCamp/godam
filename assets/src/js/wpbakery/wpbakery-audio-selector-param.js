@@ -44,7 +44,7 @@
 				}
 
 				$preview.html(
-					'<audio width="100%" height="auto" controls style="max-width: 300px;">' +
+					'<audio controls style="max-width: 300px;">' +
 					'<source src="' + attachment.url + '" type="' + attachment.mime + '">' +
 					'</audio>',
 				);

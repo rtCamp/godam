@@ -217,6 +217,10 @@ class Plugin {
 	 * @return void
 	 */
 	public function load_wpbakery_elements() {
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
 		$is_wpbakery_active = is_plugin_active( 'js_composer/js_composer.php' );
 
 		if ( ! $is_wpbakery_active ) {

@@ -171,7 +171,7 @@ class GoDAM_Player {
 			'godam_video'
 		);
 
-		// handle boolean attributes passed as strings.
+		// Handle boolean attributes passed as strings.
 		$boolean_attributes = array( 'autoplay', 'controls', 'loop', 'muted', 'engagements', 'preview', 'showShareButton' );
 		foreach ( $boolean_attributes as $bool_attr ) {
 			$attributes[ $bool_attr ] = filter_var( $attributes[ $bool_attr ], FILTER_VALIDATE_BOOLEAN );

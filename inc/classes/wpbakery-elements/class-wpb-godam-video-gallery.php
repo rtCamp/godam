@@ -27,6 +27,10 @@ class WPB_GoDAM_Video_Gallery {
 	 * @since n.e.x.t
 	 */
 	protected function __construct() {
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
 		$is_wpbakery_active = is_plugin_active( 'js_composer/js_composer.php' );
 
 		if ( $is_wpbakery_active ) {
