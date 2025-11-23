@@ -1,32 +1,21 @@
 {
 	"$schema": "https://playground.wordpress.net/blueprint-schema.json",
 	"login": true,
-	"siteOptions": {
-		"blogname": "GoDAM Demo Site"
-	},
 	"plugins": [
-		{
-			"resource": "wordpress.org/plugins",
-			"slug": "sureforms"
-		},
-		{
-			"resource": "wordpress.org/plugins", 
-			"slug": "godam"
-		}
+		"sureforms",
+		"godam",
+		"elementor",
+		"insert-headers-and-footers"
 	],
 	"steps": [
 		{
 			"step": "resetData"
 		},
 		{
-			"step": "runPHP",
-			"code": "<?php\nrequire '/wordpress/wp-load.php';\n\n// Bypass SureForms setup wizard by setting the redirect option to false\nupdate_option('__srfm_do_redirect', false);\n\n// Additional bypass options\ndelete_transient('sureforms_activation_redirect');\n\n// Set basic settings to avoid prompts\nupdate_option('sureforms_settings', array(\n    'general' => array(\n        'email_smtp' => 'default',\n        'from_email' => get_option('admin_email'),\n        'from_name' => get_bloginfo('name')\n    )\n));\n\necho 'SureForms setup wizard bypassed successfully.';\n"
-		},
-		{
 			"step": "importWxr",
 			"file": {
 				"resource": "url",
-				"url": "https://raw.githubusercontent.com/rtCamp/godam/test/live-preview/blueprints/subodh-testrtgw.WordPress.2025-11-17.xml"
+				"url": "https://raw.githubusercontent.com/rtCamp/godam/test/live-preview/assets/blueprints/godamdemo.WordPress.2025-11-18.xml"
 			}
 		}
 	]
