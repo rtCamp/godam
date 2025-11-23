@@ -258,43 +258,6 @@
 </image> 
 <site xmlns="com-wordpress:feed-additions:1">246459476</site>
 					<item>
-		<title><![CDATA[surfing-and-ocean_1]]></title>
-		<link>https://demo.godam.io/surfing-and-ocean/surfing-and-ocean_1/</link>
-		<pubDate>Tue, 01 Apr 2025 04:46:38 +0000</pubDate>
-		<dc:creator><![CDATA[]]></dc:creator>
-		<guid isPermaLink="false">https://demo.godam.io/surfing-and-ocean/surfing-and-ocean_1/</guid>
-		<description></description>
-		<content:encoded><![CDATA[]]></content:encoded>
-		<excerpt:encoded><![CDATA[]]></excerpt:encoded>
-		<wp:post_id>9</wp:post_id>
-		<wp:post_date><![CDATA[2025-04-01 04:46:38]]></wp:post_date>
-		<wp:post_date_gmt><![CDATA[2025-04-01 04:46:38]]></wp:post_date_gmt>
-		<wp:post_modified><![CDATA[2025-04-01 04:46:38]]></wp:post_modified>
-		<wp:post_modified_gmt><![CDATA[2025-04-01 04:46:38]]></wp:post_modified_gmt>
-		<wp:comment_status><![CDATA[open]]></wp:comment_status>
-		<wp:ping_status><![CDATA[closed]]></wp:ping_status>
-		<wp:post_name><![CDATA[surfing-and-ocean_1]]></wp:post_name>
-		<wp:status><![CDATA[inherit]]></wp:status>
-		<wp:post_parent>8</wp:post_parent>
-		<wp:menu_order>0</wp:menu_order>
-		<wp:post_type><![CDATA[attachment]]></wp:post_type>
-		<wp:post_password><![CDATA[]]></wp:post_password>
-		<wp:is_sticky>0</wp:is_sticky>
-						<wp:attachment_url><![CDATA[https://demo.godam.io/wp-content/uploads/2025/04/surfing-and-ocean_1.jpg]]></wp:attachment_url>
-											<wp:postmeta>
-		<wp:meta_key><![CDATA[_wp_attached_file]]></wp:meta_key>
-		<wp:meta_value><![CDATA[2025/04/surfing-and-ocean_1.jpg]]></wp:meta_value>
-		</wp:postmeta>
-							<wp:postmeta>
-		<wp:meta_key><![CDATA[_wp_attachment_metadata]]></wp:meta_key>
-		<wp:meta_value><![CDATA[a:6:{s:5:"width";i:1280;s:6:"height";i:720;s:4:"file";s:31:"2025/04/surfing-and-ocean_1.jpg";s:8:"filesize";i:5620;s:5:"sizes";a:4:{s:6:"medium";a:5:{s:4:"file";s:31:"surfing-and-ocean_1-300x169.jpg";s:5:"width";i:300;s:6:"height";i:169;s:9:"mime-type";s:10:"image/jpeg";s:8:"filesize";i:1524;}s:5:"large";a:5:{s:4:"file";s:32:"surfing-and-ocean_1-1024x576.jpg";s:5:"width";i:1024;s:6:"height";i:576;s:9:"mime-type";s:10:"image/jpeg";s:8:"filesize";i:9904;}s:9:"thumbnail";a:5:{s:4:"file";s:31:"surfing-and-ocean_1-150x150.jpg";s:5:"width";i:150;s:6:"height";i:150;s:9:"mime-type";s:10:"image/jpeg";s:8:"filesize";i:1088;}s:12:"medium_large";a:5:{s:4:"file";s:31:"surfing-and-ocean_1-768x432.jpg";s:5:"width";i:768;s:6:"height";i:432;s:9:"mime-type";s:10:"image/jpeg";s:8:"filesize";i:5872;}}s:10:"image_meta";a:12:{s:8:"aperture";s:1:"0";s:6:"credit";s:0:"";s:6:"camera";s:0:"";s:7:"caption";s:0:"";s:17:"created_timestamp";s:1:"0";s:9:"copyright";s:0:"";s:12:"focal_length";s:1:"0";s:3:"iso";s:1:"0";s:13:"shutter_speed";s:1:"0";s:5:"title";s:0:"";s:11:"orientation";s:1:"0";s:8:"keywords";a:0:{}}}]]></wp:meta_value>
-		</wp:postmeta>
-							<wp:postmeta>
-		<wp:meta_key><![CDATA[rtgodam_amp_is_poster]]></wp:meta_key>
-		<wp:meta_value><![CDATA[1]]></wp:meta_value>
-		</wp:postmeta>
-							</item>
-					<item>
 		<title><![CDATA[pexels-albinberlin-919073]]></title>
 		<link>https://demo.godam.io/pexels-albinberlin-919073/</link>
 		<pubDate>Tue, 01 Apr 2025 04:47:07 +0000</pubDate>
