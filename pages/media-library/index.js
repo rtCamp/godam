@@ -9,8 +9,29 @@ import { Provider } from 'react-redux';
  * Internal dependencies
  */
 import store from './redux/store';
+import { resetUIState } from './redux/slice/folders';
 import App from './App';
 import './index.scss';
+
+/**
+ * SOLUTION FOR MULTIPLE MEDIA MODAL STATE SYNC ISSUE:
+ *
+ * Problem: When multiple WordPress Media Modal instances are opened and closed:
+ * - The WordPress Media Modal instance is fresh every time
+ * - But the React Redux state persists between modal instances
+ * - This results in inconsistent syncing between UI + attachment selection
+ *
+ * Solution:
+ * 1. Added `resetUIState` action in folders slice to selectively reset UI state
+ * 2. Implemented multiple detection methods for modal close events:
+ * - MutationObserver to detect DOM removal of modal elements
+ * - Periodic check for modal visibility changes (fallback)
+ * - Hook into wp.media.view.Modal.prototype.close method
+ * 3. Reset only UI-related state (selected folder, modals, multi-selection, etc.)
+ * while preserving folders data, bookmarks, and sort order for performance
+ *
+ * Performance Impact: Minimal - only resets UI state, preserves expensive data
+ */
 
 const Index = () => {
 	return (
@@ -22,6 +43,75 @@ const Index = () => {
 
 document.addEventListener( 'DOMContentLoaded', initializeMediaLibrary );
 document.addEventListener( 'media-frame-opened', initializeMediaLibrary );
+
+// Set up media modal close detection
+setupMediaModalCloseDetection();
+
+/**
+ * Set up detection for when WordPress media modals are closed
+ * and reset the React state to ensure fresh UI state for new modal instances
+ */
+function setupMediaModalCloseDetection() {
+	// Track active media modal instances to detect when they close
+	let lastModalCount = 0;
+
+	// Use MutationObserver to detect when modal elements are removed from DOM
+	const observer = new MutationObserver( ( mutations ) => {
+		mutations.forEach( ( mutation ) => {
+			if ( mutation.type === 'childList' ) {
+				// Check if any media modal elements were removed
+				mutation.removedNodes.forEach( ( node ) => {
+					if ( node.nodeType === Node.ELEMENT_NODE ) {
+						// Check if this is a media modal that was removed
+						if ( node.classList && node.classList.contains( 'media-modal' ) ) {
+							// Media modal was closed, reset React state
+							store.dispatch( resetUIState() );
+						// Also check if it contains media modal children
+						} else if ( node.querySelector && node.querySelector( '.media-modal' ) ) {
+							store.dispatch( resetUIState() );
+						}
+					}
+				} );
+			}
+		} );
+	} );
+
+	// Observe changes to the document body
+	observer.observe( document.body, {
+		childList: true,
+		subtree: true,
+	} );
+
+	// Also detect modal state changes by checking visibility periodically
+	// This is a fallback for cases where DOM removal isn't detected
+	setInterval( () => {
+		const currentModalCount = document.querySelectorAll( '.media-modal:not([style*="display: none"])' ).length;
+
+		// If modal count decreased, a modal was closed
+		if ( currentModalCount < lastModalCount ) {
+			store.dispatch( resetUIState() );
+		}
+
+		lastModalCount = currentModalCount;
+	}, 500 ); // Check every 500ms
+
+	// Listen for WordPress media frame close events if available
+	if ( typeof wp !== 'undefined' && wp.media ) {
+		// Hook into wp.media to detect when frames are closed
+		const originalClose = wp.media.view.Modal.prototype.close;
+		wp.media.view.Modal.prototype.close = function( ...args ) {
+			// Call original close method
+			const result = originalClose.apply( this, args );
+
+			// Reset React state after modal closes
+			setTimeout( () => {
+				store.dispatch( resetUIState() );
+			}, 100 ); // Small delay to ensure modal is fully closed
+
+			return result;
+		};
+	}
+}
 
 function initializeMediaLibrary() {
 	if ( window.elementor ) {
