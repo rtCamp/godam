@@ -37,6 +37,7 @@ class RTGODAM_Transcoder_Admin {
 				add_action( 'network_admin_notices', array( $this, 'api_activation_admin_notice' ) );
 			}
 			add_action( 'admin_notices', array( $this, 'api_activation_admin_notice' ) );
+			add_action( 'admin_notices', array( $this, 'dashboard_offer_banner' ) );
 		}
 	}
 
@@ -68,16 +69,6 @@ class RTGODAM_Transcoder_Admin {
 
 		// Otherwise, show regular admin notice.
 		if ( empty( $api_key ) ) {
-			$this->render_admin_notice(
-				sprintf(
-					// translators: %s is the URL to the plugin settings page where the API key can be activated.
-					__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, <a href="%s">please activate your api key.</a>', 'godam' ),
-					esc_url( $video_editor_settings_url )
-				),
-				'warning',
-				true,
-				true
-			);
 			return;
 		}
 
@@ -259,6 +250,81 @@ class RTGODAM_Transcoder_Admin {
 			</div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Display BFCM offer banner on the WordPress dashboard.
+	 *
+	 * @return void
+	 */
+	public function dashboard_offer_banner() {
+		if ( ! $this->is_dashboard_screen() ) {
+			return;
+		}
+
+		$show_offer_banner = get_option( 'rtgodam-offer-banner', 1 );
+
+		if ( ! rtgodam_is_api_key_valid() && $show_offer_banner ) {
+			$host = wp_parse_url( home_url(), PHP_URL_HOST );
+
+			$banner_image = RTGODAM_URL . 'assets/src/images/BFCM.webp';
+
+			$banner_html = sprintf(
+				'<div class="notice annual-plan-offer-banner">
+					<a
+						href="%1$s"
+						class="annual-plan-offer-banner__link"
+						target="_blank"
+						rel="noopener noreferrer"
+						aria-label="%2$s"
+					>
+						<img
+							src="%3$s"
+							class="annual-plan-offer-banner__image"
+							alt="%4$s"
+							loading="lazy"
+						/>
+					</a>
+					<button
+						type="button"
+						class="annual-plan-offer-banner__dismiss"
+						aria-label="%5$s"
+					>
+						&times;
+					</button>
+				</div>',
+				esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=bfcm-offer&utm_source=' . $host . '&utm_medium=plugin&utm_content=dashboard-banner' ),
+				esc_attr__( 'Claim the GoDAM Black Friday & Cyber Monday offer', 'godam' ),
+				esc_url( $banner_image ),
+				esc_attr__( 'Black Friday & Cyber Monday offer from GoDAM', 'godam' ),
+				esc_html__( 'Dismiss banner', 'godam' )
+			);
+
+			echo wp_kses(
+				$banner_html,
+				array(
+					'div'    => array( 'class' => array() ),
+					'a'      => array(
+						'href'       => array(),
+						'class'      => array(),
+						'target'     => array(),
+						'rel'        => array(),
+						'aria-label' => array(),
+					),
+					'img'    => array(
+						'src'     => array(),
+						'alt'     => array(),
+						'class'   => array(),
+						'loading' => array(),
+					),
+					'button' => array(
+						'type'       => array(),
+						'class'      => array(),
+						'aria-label' => array(),
+					),
+				)
+			);
+		}
 	}
 
 	/**
