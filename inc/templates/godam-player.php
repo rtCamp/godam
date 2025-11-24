@@ -315,7 +315,7 @@ elseif ( ! empty( $godam_ads_layers ) && 'self-hosted' === $godam_ad_server ) :
 endif;
 
 // Enqueue IMA SDK assets only if Ad is enabled for this GoDAM player block.
-if ( ! empty( $ad_tag_url ) ) {
+if ( ! empty( $godam_ad_tag_url ) ) {
 	IMA_Assets::get_instance();
 }
 
