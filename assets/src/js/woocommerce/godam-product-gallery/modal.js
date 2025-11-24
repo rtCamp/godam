@@ -14,6 +14,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
@@ -342,8 +343,7 @@ async function loadNewVideo( newVideoId, modal ) {
 	}
 
 	try {
-		const res = await fetch( `${ godamVars.namespaceRoot }${ godamVars.videoShortcodeEP }?id=${ newVideoId }` );
-		const data = await res.json();
+		const data = await apiFetch( { path: `${ godamVars.namespaceRoot }${ godamVars.videoShortcodeEP }?id=${ newVideoId }` } );
 
 		if ( data.status === 'success' && data.html ) {
 			let html = data.html;
@@ -600,15 +600,14 @@ async function loadSidebarProducts( productIds, sidebarModal, ctaEnabled, ctaDis
 
 	// Multiple products mode: fetch lightweight data from REST API.
 	try {
-		const res = await fetch( `${ godamVars.namespaceRoot }${ godamVars.productByIdsEP }`, {
+		const products = await apiFetch( {
+			path: `${ godamVars.namespaceRoot }${ godamVars.productByIdsEP }`,
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify( { ids: idsArray } ),
 		} );
-
-		const products = await res.json();
 
 		sidebarModal.classList.remove( 'single-product-sidebar' );
 

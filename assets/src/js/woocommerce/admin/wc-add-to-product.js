@@ -243,8 +243,7 @@ jQuery( document ).ready( function( $ ) {
 							return;
 						}
 
-						const response = await fetch( `/wp-json/godam/v1/video-shortcode?id=${ attachmentId }` );
-						const data = await response.json();
+						const data = await apiFetch( { path: `${ RTGodamVideoGallery.namespace }/video-shortcode?id=${ attachmentId }` } );
 
 						if ( data.status === 'success' && data.html ) {
 							const tempDiv = document.createElement( 'div' );

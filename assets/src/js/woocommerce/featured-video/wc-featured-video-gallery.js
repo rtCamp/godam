@@ -45,7 +45,7 @@ jQuery( document ).ready( function( $ ) {
 		}
 
 		// Get Product Id.
-		const productId = $( 'button[name="add-to-cart"]' ).val();
+		const productId = $( 'body' ).attr( 'class' ).split( ' ' ).find( ( c ) => c.startsWith( 'postid-' ) ).replace( 'postid-', '' );
 		if ( ! productId || ! myGalleryAjaxData?.ajax_url || ! myGalleryAjaxData?.nonce ) {
 			return;
 		}
@@ -212,7 +212,8 @@ jQuery( document ).ready( function( $ ) {
 		`;
 
 		try {
-			const res = await fetch( `/wp-json/godam/v1/video-shortcode?id=${ videoId }` );
+			const restURL = window.godamRestRoute.url || '';
+			const res = await fetch( `${ restURL }godam/v1/video-shortcode?id=${ videoId }` );
 			const data = await res.json();
 
 			if ( data.status === 'success' && data.html ) {

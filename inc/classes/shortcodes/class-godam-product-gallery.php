@@ -78,7 +78,7 @@ class GoDAM_Product_Gallery {
 			'godam-product-gallery-script',
 			'godamVars',
 			array(
-				'namespaceRoot'        => '/wp-json/godam/v1',
+				'namespaceRoot'        => '/godam/v1',
 				'videoShortcodeEP'     => '/video-shortcode',
 				'productByIdsEP'       => '/wcproducts-by-ids',
 				'addToCartAjax'        => 'wc/store/cart',

@@ -1,3 +1,5 @@
+/* eslint-disable eslint-comments/disable-enable-pair */
+/* eslint-disable react-hooks/exhaustive-deps */
 /**
  * WordPress dependencies
  */
@@ -11,6 +13,8 @@ const ProductSelector = ( { index, value, productHotspot, productHotspots, updat
 	const [ isLoading, setIsLoading ] = useState( false );
 	const [ searchTerm, setSearchTerm ] = useState( '' );
 
+	const restURL = window.godamRestRoute.url || '';
+
 	const fetchProducts = useCallback(
 		( term ) => {
 			if ( ! isValidAPIKey || ! term ) {
@@ -20,7 +24,7 @@ const ProductSelector = ( { index, value, productHotspot, productHotspots, updat
 			setIsLoading( true );
 
 			apiFetch( {
-				path: `/wp-json/godam/v1/wcproducts?search=${ encodeURIComponent( term ) }`,
+				url: `${ restURL }godam/v1/wcproducts?search=${ encodeURIComponent( term ) }`,
 			} )
 				.then( ( getProducts ) => {
 					const formatted = getProducts.map( ( product ) => {
@@ -59,7 +63,7 @@ const ProductSelector = ( { index, value, productHotspot, productHotspots, updat
             ! products.find( ( p ) => p.value === value )
 		) {
 			apiFetch( {
-				path: `/wp-json/godam/v1/wcproduct?id=${ value }`,
+				url: `${ restURL }godam/v1/wcproduct?id=${ value }`,
 			} )
 				.then( ( product ) => {
 					const searchBlob = [
