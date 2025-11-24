@@ -14,17 +14,17 @@ wp_enqueue_style( 'godam-video-preview-style' );
 
 wp_head();
 
-$video_id = isset( $_GET['id'] ) ? intval( wp_unslash( $_GET['id'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- no nonce verification needed for this page.
+$godam_video_id = isset( $_GET['id'] ) ? intval( wp_unslash( $_GET['id'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- no nonce verification needed for this page.
 
-if ( empty( $video_id ) ) {
+if ( empty( $godam_video_id ) ) {
 	echo '<div class="godam-video-preview--container"><h1 class="godam-video-preview--title">' . esc_html__( 'Video Preview', 'godam' ) . '</h1>';
 	echo '<p class="video-not-found">' . esc_html__( 'Oops! We could not locate your video', 'godam' ) . '</p><div>';
 	return;
 }
 
 	// Check if video attachment exists.
-	$video_attachment = get_post( $video_id );
-if ( ! $video_attachment || 'attachment' !== $video_attachment->post_type ) {
+	$godam_video_attachment = get_post( $godam_video_id );
+if ( ! $godam_video_attachment || 'attachment' !== $godam_video_attachment->post_type ) {
 	echo '<div class="godam-video-preview--container"><h1 class="godam-video-preview--title">' . esc_html__( 'Video Preview', 'godam' ) . '</h1>';
 	echo '<p class="video-not-found">' . esc_html__( 'Oops! We could not locate your video', 'godam' ) . '</p></div>';
 	return;
@@ -34,7 +34,7 @@ if ( ! $video_attachment || 'attachment' !== $video_attachment->post_type ) {
 	<header class="godam-video-preview--container">
 		<h1 class="godam-video-preview--title">
 			<strong><?php esc_html_e( 'Video Preview: ', 'godam' ); ?></strong>
-			<?php echo esc_html( get_the_title( $video_id ) ); ?>
+			<?php echo esc_html( get_the_title( $godam_video_id ) ); ?>
 		</h1>
 	</header>
 
@@ -45,8 +45,8 @@ if ( ! $video_attachment || 'attachment' !== $video_attachment->post_type ) {
 	</div>
 
 	<div class="godam-video-preview">
-		<?php echo do_shortcode( '[godam_video id="' . $video_id . '"]' ); ?>
+		<?php echo do_shortcode( '[godam_video id="' . $godam_video_id . '"]' ); ?>
 	</div>
 
-
-<?php do_action( 'wp_footer' ); ?>
+<?php 
+do_action( 'wp_footer' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WordPress core hook.

@@ -101,6 +101,17 @@
 	pointer-events: none; /* Prevent interaction with the overlay */
 }
 
+.godam-poster-image {
+	display: none;
+	position:absolute;
+	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
+	width: 100%;
+	height: auto;
+	max-height: 100%;
+	object-fit: contain;
+	background-color: #000;
+}
+
 .vjs-audio-button.vjs-menu-button {
 	display: none;
 }
@@ -195,6 +206,15 @@
 	border-radius: 4px;
 }
 
+.poll-container button:hover {
+	background-color: #1a5d99;
+}
+
+.poll-container button:disabled {
+	background-color: #ccc;
+	cursor: not-allowed;
+}
+
 // Only apply default styles to plain buttons without any classes
 .easydam-layer--cta-html button:not([class]),
 .video-js .easydam-layer--cta-html button:not([class]) {
@@ -256,15 +276,6 @@
 .poll-container .wp-polls-form {
 	max-width: 300px;
 	margin: auto;
-}
-
-.poll-container button:hover {
-	background-color: #1a5d99;
-}
-
-.poll-container button:disabled {
-	background-color: #ccc;
-	cursor: not-allowed;
 }
 
 .editor-video-customisation-cta,
@@ -1551,6 +1562,13 @@ body.godam-share-modal-open {
 		.godam-player-overlay {
 
 			display: none;
+		}
+	}
+
+	&:has(.easydam-player.vjs-hidden) {
+
+		.godam-poster-image {
+			display: block;
 		}
 	}
 
