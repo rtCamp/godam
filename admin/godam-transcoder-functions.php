@@ -318,10 +318,10 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 	}
 }
 
-$user_data           = rtgodam_get_user_data();
-$is_api_key_verified = isset( $user_data['valid_api_key'] ) ? $user_data['valid_api_key'] : false;
+$godam_user_data           = rtgodam_get_user_data();
+$godam_is_api_key_verified = isset( $godam_user_data['valid_api_key'] ) ? $godam_user_data['valid_api_key'] : false;
 
-if ( $is_api_key_verified ) {
+if ( $godam_is_api_key_verified ) {
 	add_filter( 'manage_media_columns', 'rtgodam_add_status_columns_head' );
 	add_action( 'manage_media_custom_column', 'rtgodam_add_status_columns_content', 10, 2 );
 }
@@ -400,18 +400,21 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		$response = wp_safe_remote_post( $api_url, $args );
 	}
 
-	if ( is_wp_error( $response ) ) {
-		return new \WP_Error( 'api_error', 'An error occurred while verifying the API. Please try again.', array( 'status' => 500 ) );
-	}
+	// Check for existing API key and user data to preserve on unexpected errors.
+	$existing_api_key = get_option( 'rtgodam-api-key', '' );
+	$existing_usage   = get_option( 'rtgodam-usage', array() );
+	$user_data        = ! empty( $existing_usage ) && isset( $existing_usage[ $existing_api_key ] ) ? $existing_usage[ $existing_api_key ] : array();
+	$preserved_data   = is_object( $user_data ) ? (array) $user_data : $user_data;
 
 	$status_code = wp_remote_retrieve_response_code( $response );
 	$body        = json_decode( wp_remote_retrieve_body( $response ), true );
 
+	// Central sends 200 status code with error if API Key is invalid.
 	if ( isset( $body['message']['error'] ) ) {
 		return new \WP_Error( 'invalid_api_key', $body['message']['error'], array( 'status' => 400 ) );
 	}
 
-	// Handle success response.
+	// Handle 200 Success - Save the API key.
 	if ( 200 === $status_code && isset( $body['message']['account_token'] ) ) {
 
 		$account_token = $body['message']['account_token'];
@@ -429,18 +432,22 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 
 		return array(
 			'status'  => 'success',
-			'message' => 'API key verified and stored successfully!',
+			'message' => __( 'API key verified and stored successfully!', 'godam' ),
 			'data'    => $body['message'],
 		);
 	}
 
-	// Handle failure response.
-	if ( 404 === $status_code ) {
-		return new \WP_Error( 'invalid_api_key', 'Invalid API key. Please try again.', array( 'status' => 404 ) );
+	// Handle other errors - Preserve existing API key and user data.
+	// If existing API key exists, preserve it. If not, don't save new key.
+	if ( ! empty( $existing_api_key ) ) {
+		return array(
+			'status'  => 'success',
+			'message' => __( 'API key verification temporarily unavailable.', 'godam' ),
+			'data'    => $preserved_data,
+		);
 	}
 
-	// Handle unexpected responses.
-	return new \WP_Error( 'unexpected_error', 'An unexpected error occurred. Please try again later.', array( 'status' => 500 ) );
+	return new \WP_Error( 'unexpected_error', __( 'An unexpected error occurred. Please try again later.', 'godam' ), array( 'status' => 500 ) );
 }
 
 /**

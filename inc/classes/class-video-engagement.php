@@ -37,7 +37,7 @@ class Video_Engagement {
 	public function add_engagement_to_video( $attributes, $instance_id, $easydam_meta_data, $godam_settings ) {
 		$attachment_id = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : '';
 
-		if ( ! empty( $attachment_id ) && 'Transcoded' !== get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) ) {
+		if ( ! empty( $attachment_id ) && 'transcoded' !== strtolower( get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) ) ) {
 			return '';
 		}
 

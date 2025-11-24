@@ -201,9 +201,11 @@ class GoDAM_Video_Gallery {
 
 		// Handle custom orderby options.
 		if ( 'duration' === $atts['orderby'] ) {
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for sorting by video duration.
 			$args['meta_key'] = '_video_duration';
 			$args['orderby']  = 'meta_value_num';
 		} elseif ( 'size' === $atts['orderby'] ) {
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for sorting by video file size.
 			$args['meta_key'] = '_video_file_size';
 			$args['orderby']  = 'meta_value_num';
 		}
