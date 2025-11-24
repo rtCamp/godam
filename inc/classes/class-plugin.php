@@ -202,7 +202,9 @@ class Plugin {
 	 * @return void
 	 */
 	public function load_elementor_widgets() {
-		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
 
 		if ( ! is_plugin_active( 'elementor/elementor.php' ) ) {
 			return;
@@ -221,9 +223,7 @@ class Plugin {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
 
-		$is_wpbakery_active = is_plugin_active( 'js_composer/js_composer.php' );
-
-		if ( ! $is_wpbakery_active ) {
+		if ( ! is_plugin_active( 'js_composer/js_composer.php' ) ) {
 			return;
 		}
 

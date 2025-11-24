@@ -124,7 +124,7 @@ class WPB_GoDAM_Params {
 			$attachment = wp_get_attachment_url( $value );
 			if ( $attachment ) {
 				$preview_html  = '<div class="audio-selector-preview" style="margin-top: 10px;">
-					<audio controls style="max-width: 300px;">
+					<audio controls style="max-width: 300px; width: 100%;">
 						<source src="' . esc_url( $attachment ) . '" type="audio/mpeg">
 					</audio>
 				</div>';
