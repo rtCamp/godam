@@ -20,7 +20,7 @@ import { useGetFoldersQuery } from '../../redux/api/folders.js';
 import { initializeLockedFolders } from '../../redux/slice/folders.js';
 
 const LockedTab = ( { handleContextMenu } ) => {
-	const { data: lockedData, isLoading: isLockedLoading } = useGetFoldersQuery( { locked: true } );
+	const { data: lockedData, isLoading: isLockedLoading, refetch } = useGetFoldersQuery( { locked: true } );
 	const dispatch = useDispatch();
 	const initializedRef = useRef( false );
 
@@ -41,6 +41,19 @@ const LockedTab = ( { handleContextMenu } ) => {
 
 		window.dispatchEvent( event );
 	}, [ locked ] );
+
+	// Listen for media type filter changes and refetch locked data
+	useEffect( () => {
+		const handleMediaTypeChange = () => {
+			refetch();
+		};
+
+		document.addEventListener( 'godam-attachment-browser:changed', handleMediaTypeChange );
+
+		return () => {
+			document.removeEventListener( 'godam-attachment-browser:changed', handleMediaTypeChange );
+		};
+	}, [ refetch ] );
 
 	const lockedCount = locked?.length;
 

@@ -20,7 +20,7 @@ import { useEffect, useRef } from 'react';
 import { initializeBookmarks } from '../../redux/slice/folders.js';
 
 const BookmarkTab = ( { handleContextMenu } ) => {
-	const { data: bookmarkData, isLoading: isBookmarkLoading } = useGetFoldersQuery( { bookmark: true } );
+	const { data: bookmarkData, isLoading: isBookmarkLoading, refetch } = useGetFoldersQuery( { bookmark: true } );
 	const dispatch = useDispatch();
 	const initializedRef = useRef( false );
 
@@ -30,6 +30,19 @@ const BookmarkTab = ( { handleContextMenu } ) => {
 			initializedRef.current = true;
 		}
 	}, [ isBookmarkLoading, bookmarkData, dispatch ] );
+
+	// Listen for media type filter changes and refetch bookmark data
+	useEffect( () => {
+		const handleMediaTypeChange = () => {
+			refetch();
+		};
+
+		document.addEventListener( 'godam-attachment-browser:changed', handleMediaTypeChange );
+
+		return () => {
+			document.removeEventListener( 'godam-attachment-browser:changed', handleMediaTypeChange );
+		};
+	}, [ refetch ] );
 
 	const bookmarks = useSelector( ( state ) => state.FolderReducer?.bookmarks || [] );
 

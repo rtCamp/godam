@@ -11,10 +11,41 @@ export const folderApi = createApi( {
 	endpoints: ( builder ) => ( {
 		getAllMediaCount: builder.query( {
 			async queryFn( arg, api, extraOptions, baseQuery ) {
+				// Detect current media type filter.
+				const getCurrentMimeTypeFilter = () => {
+					// Check URL parameters.
+					const urlParams = new URLSearchParams( window.location.search );
+					const postMimeType = urlParams.get( 'post_mime_type' );
+
+					if ( postMimeType ) {
+						return { media_type: postMimeType };
+					}
+
+					// Check for media library state (for AJAX requests).
+					if ( typeof wp !== 'undefined' && wp.media && wp.media.frame ) {
+						const collection = wp.media.frame.state().get( 'library' );
+						if ( collection && collection.props ) {
+							const mimeType = collection.props.get( 'type' );
+							if ( mimeType && mimeType !== 'all' ) {
+								return { media_type: mimeType };
+							}
+						}
+					}
+
+					return {};
+				};
+
+				const mimeTypeParams = getCurrentMimeTypeFilter();
+
 				const result = await baseQuery( {
 					url: 'wp/v2/media',
-					params: { _fields: 'id', per_page: 1 },
+					params: {
+						_fields: 'id',
+						per_page: 1,
+						...mimeTypeParams,
+					},
 				} );
+
 				if ( result.error ) {
 					return { error: result.error };
 				}
@@ -25,16 +56,71 @@ export const folderApi = createApi( {
 			},
 		} ),
 		getCategoryMediaCount: builder.query( {
-			query: ( { folderId } ) => ( {
-				url: `godam/v1/media-library/category-count/${ folderId }`,
-				headers: {
-					'X-WP-Nonce': window.MediaLibrary.nonce,
-				},
-			} ),
+			query: ( { folderId } ) => {
+				// Detect current media type filter.
+				const getCurrentMimeTypeFilter = () => {
+					// Check URL parameters.
+					const urlParams = new URLSearchParams( window.location.search );
+					const postMimeType = urlParams.get( 'post_mime_type' );
+
+					if ( postMimeType ) {
+						return { post_mime_type: postMimeType };
+					}
+
+					// Check for media library state (for AJAX requests).
+					if ( typeof wp !== 'undefined' && wp.media && wp.media.frame ) {
+						const collection = wp.media.frame.state().get( 'library' );
+						if ( collection && collection.props ) {
+							const mimeType = collection.props.get( 'type' );
+							if ( mimeType && mimeType !== 'all' ) {
+								return { post_mime_type: mimeType };
+							}
+						}
+					}
+
+					return {};
+				};
+
+				const mimeTypeParams = getCurrentMimeTypeFilter();
+
+				return {
+					url: `godam/v1/media-library/category-count/${ folderId }`,
+					params: mimeTypeParams,
+					headers: {
+						'X-WP-Nonce': window.MediaLibrary.nonce,
+					},
+				};
+			},
 		} ),
 		getFolders: builder.query( {
 			query: ( options = {} ) => {
 				const isSpecial = options.bookmark || options.locked;
+
+				// Detect current media type filter from URL or media library state.
+				const getCurrentMimeTypeFilter = () => {
+					// Check URL parameters.
+					const urlParams = new URLSearchParams( window.location.search );
+					const postMimeType = urlParams.get( 'post_mime_type' );
+
+					if ( postMimeType ) {
+						return { post_mime_type: postMimeType };
+					}
+
+					// Check for media library state (for AJAX requests).
+					if ( typeof wp !== 'undefined' && wp.media && wp.media.frame ) {
+						const collection = wp.media.frame.state().get( 'library' );
+						if ( collection && collection.props ) {
+							const mimeType = collection.props.get( 'type' );
+							if ( mimeType && mimeType !== 'all' ) {
+								return { post_mime_type: mimeType };
+							}
+						}
+					}
+
+					return {};
+				};
+
+				const mimeTypeParams = getCurrentMimeTypeFilter();
 
 				const params = {
 					_fields: 'id,name,parent,attachmentCount,meta',
@@ -42,6 +128,7 @@ export const folderApi = createApi( {
 					...( options.bookmark ? { bookmark: true } : {} ),
 					...( options.locked ? { locked: true } : {} ),
 					...( options.page ? { page: options.page } : {} ),
+					...mimeTypeParams,
 				};
 
 				return {
