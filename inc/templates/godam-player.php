@@ -701,6 +701,18 @@ if ( $godam_should_preload_poster ) {
 							>
 							</div>
 							<?php
+							// WooCommerce layer.
+						elseif ( isset( $godam_layer['type'] ) && 'woo' === $godam_layer['type'] ) :
+							?>
+							<div
+								id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>"
+								class="easydam-layer hidden hotspot-layer"
+								<?php if ( ! empty( $godam_layer['bg_color'] ) ) : ?>
+									style="background-color: <?php echo esc_attr( $godam_layer['bg_color'] ); ?>"
+								<?php endif; ?>
+							>
+							</div>
+							<?php
 						endif;
 					endforeach;
 					?>
