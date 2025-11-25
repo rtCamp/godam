@@ -318,10 +318,10 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 	}
 }
 
-$user_data           = rtgodam_get_user_data();
-$is_api_key_verified = isset( $user_data['valid_api_key'] ) ? $user_data['valid_api_key'] : false;
+$godam_user_data           = rtgodam_get_user_data();
+$godam_is_api_key_verified = isset( $godam_user_data['valid_api_key'] ) ? $godam_user_data['valid_api_key'] : false;
 
-if ( $is_api_key_verified ) {
+if ( $godam_is_api_key_verified ) {
 	add_filter( 'manage_media_columns', 'rtgodam_add_status_columns_head' );
 	add_action( 'manage_media_custom_column', 'rtgodam_add_status_columns_content', 10, 2 );
 }
