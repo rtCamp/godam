@@ -218,10 +218,18 @@ export default class ControlsManager {
 		}, { passive: true } );
 
 		// Handle orientation changes
-		window.addEventListener( 'orientationchange', () => {
-			// Give iOS a moment to recalc innerHeight
-			setTimeout( setViewportHeight, 200 );
-		} );
+		if ( screen.orientation ) {
+			screen.orientation.addEventListener( 'change', () => {
+				// Give iOS a moment to recalc innerHeight
+				setTimeout( setViewportHeight, 200 );
+			} );
+		} else {
+			// Fallback for browsers that don't support ScreenOrientation API
+			window.addEventListener( 'orientationchange', () => {
+				// Give iOS a moment to recalc innerHeight
+				setTimeout( setViewportHeight, 200 );
+			} );
+		}
 	}
 
 	/**
