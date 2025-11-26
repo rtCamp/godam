@@ -249,7 +249,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 					}
 
 					if ( isset( $format ) && 'thumbnail' === $format ) {
-						return new WP_REST_Response( esc_html_e( 'Thumbnail created successfully.', 'godam' ), 200 );
+						return new WP_REST_Response( esc_html__( 'Thumbnail created successfully.', 'godam' ), 200 );
 					}
 
 					if ( ! empty( $post_array['files'] ) ) {
