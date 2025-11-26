@@ -43,6 +43,7 @@ class Settings extends Base {
 				'watermark_url'          => '',
 				'watermark_image_id'     => null,
 				'use_watermark_image'    => false,
+				'video_slug'             => 'video',
 			),
 			'general'      => array(
 				'enable_folder_organization' => true,
@@ -58,6 +59,10 @@ class Settings extends Base {
 			'ads_settings' => array(
 				'enable_global_video_ads' => false,
 				'adTagUrl'                => '',
+			),
+			'ai_video'     => array(
+				'api_key' => '',
+				'model'   => 'kling-1.5',
 			),
 		);
 	}
@@ -315,6 +320,10 @@ class Settings extends Base {
 			'ads_settings' => array(
 				'enable_global_video_ads' => rest_sanitize_boolean( $settings['ads_settings']['enable_global_video_ads'] ?? $default['ads_settings']['enable_global_video_ads'] ),
 				'adTagUrl'                => esc_url_raw( $settings['ads_settings']['adTagUrl'] ?? $default['ads_settings']['adTagUrl'] ),
+			),
+			'ai_video'     => array(
+				'api_key' => sanitize_text_field( $settings['ai_video']['api_key'] ?? $default['ai_video']['api_key'] ),
+				'model'   => sanitize_text_field( $settings['ai_video']['model'] ?? $default['ai_video']['model'] ),
 			),
 		);
 	}

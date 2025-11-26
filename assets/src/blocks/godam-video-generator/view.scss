@@ -1,0 +1,495 @@
+/**
+ * Frontend/View Styles for Godam Video Generator Block
+ */
+
+// Variables
+$primary-color: #0073aa;
+$secondary-color: #005177;
+$accent-color: #00a0d2;
+$text-color: #333;
+$light-text: #666;
+$border-color: #e0e0e0;
+$background-light: #f9f9f9;
+$white: #ffffff;
+
+$border-radius: 8px;
+$box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+$transition: all 0.3s ease;
+
+// Base block styles
+.wp-block-godam-video-generator {
+    margin: 2rem 0;
+
+    // Placeholder state
+    .godam-video-generator-placeholder {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: $background-light;
+        border: 2px dashed $border-color;
+        border-radius: $border-radius;
+
+        .godam-placeholder-content {
+            max-width: 400px;
+            margin: 0 auto;
+
+            .godam-placeholder-icon {
+                margin-bottom: 1rem;
+                color: $light-text;
+
+                svg {
+                    width: 48px;
+                    height: 48px;
+                }
+            }
+
+            h3 {
+                margin: 0 0 0.5rem 0;
+                font-size: 1.5rem;
+                color: $text-color;
+                font-weight: 600;
+            }
+
+            p {
+                margin: 0;
+                color: $light-text;
+                font-size: 1rem;
+                line-height: 1.5;
+            }
+        }
+    }
+}
+
+// Frontend video display
+.godam-video-generator-frontend {
+    background: $white;
+    border-radius: $border-radius;
+    box-shadow: $box-shadow;
+    overflow: hidden;
+
+    .godam-video-wrapper {
+        padding: 2rem;
+    }
+}
+
+// Video title and description
+.godam-video-title {
+    margin: 0 0 1rem 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: $text-color;
+    line-height: 1.3;
+}
+
+.godam-video-description {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.1rem;
+    color: $light-text;
+    line-height: 1.6;
+}
+
+// Video container
+.godam-video-container {
+    position: relative;
+    margin-bottom: 1.5rem;
+    background: #000;
+    border-radius: $border-radius;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+
+    .godam-generated-video {
+        width: 100%;
+        height: auto;
+        display: block;
+
+        &:focus {
+            outline: 3px solid $accent-color;
+            outline-offset: 2px;
+        }
+    }
+
+    // Loading state overlay
+    &.loading::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 1;
+    }
+
+    &.loading::after {
+        content: 'Loading...';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 1.1rem;
+        z-index: 2;
+    }
+}
+
+// Video metadata
+.godam-video-meta {
+    margin-bottom: 1.5rem;
+
+    .godam-video-info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        font-size: 0.9rem;
+
+        .godam-meta-item {
+            color: $light-text;
+
+            strong {
+                color: $text-color;
+                font-weight: 600;
+            }
+        }
+    }
+}
+
+// Source images section
+.godam-source-images {
+    margin-bottom: 2rem;
+
+    h4 {
+        margin: 0 0 1rem 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: $text-color;
+    }
+
+    .godam-source-images-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+        gap: 0.75rem;
+        max-width: 400px;
+    }
+
+    .godam-source-image {
+        aspect-ratio: 1;
+        border-radius: 6px;
+        overflow: hidden;
+        background: $background-light;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+
+            &:hover {
+                transform: scale(1.05);
+            }
+        }
+
+        &.godam-more-images {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: $border-color;
+            color: $text-color;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+    }
+}
+
+// Action buttons
+.godam-video-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+
+    button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: $transition;
+        text-decoration: none;
+
+        svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        &:focus {
+            outline: 2px solid $accent-color;
+            outline-offset: 2px;
+        }
+    }
+
+    .godam-download-button {
+        background: $primary-color;
+        color: white;
+
+        &:hover {
+            background: $secondary-color;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 115, 170, 0.3);
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+    }
+
+    .godam-share-button {
+        background: $background-light;
+        color: $text-color;
+        border: 1px solid $border-color;
+
+        &:hover {
+            background: $border-color;
+            border-color: $light-text;
+        }
+    }
+}
+
+// Powered by section
+.godam-powered-by {
+    text-align: center;
+    padding-top: 1rem;
+    border-top: 1px solid $border-color;
+
+    small {
+        color: $light-text;
+        font-size: 0.8rem;
+        font-style: italic;
+    }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+    .wp-block-godam-video-generator {
+        margin: 1.5rem 0;
+
+        .godam-video-generator-frontend {
+            .godam-video-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        .godam-video-title {
+            font-size: 1.5rem;
+        }
+
+        .godam-video-description {
+            font-size: 1rem;
+        }
+
+        .godam-video-meta {
+            .godam-video-info {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+
+        .godam-video-actions {
+            flex-direction: column;
+
+            button {
+                justify-content: center;
+            }
+        }
+
+        .godam-source-images-grid {
+            grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+            gap: 0.5rem;
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .wp-block-godam-video-generator {
+        .godam-video-generator-placeholder {
+            padding: 2rem 1rem;
+
+            .godam-placeholder-content {
+                .godam-placeholder-icon svg {
+                    width: 36px;
+                    height: 36px;
+                }
+
+                h3 {
+                    font-size: 1.25rem;
+                }
+
+                p {
+                    font-size: 0.9rem;
+                }
+            }
+        }
+
+        .godam-video-generator-frontend {
+            .godam-video-wrapper {
+                padding: 1rem;
+            }
+        }
+
+        .godam-video-title {
+            font-size: 1.25rem;
+        }
+
+        .godam-video-actions {
+            gap: 0.75rem;
+
+            button {
+                padding: 0.6rem 1.25rem;
+                font-size: 0.9rem;
+            }
+        }
+    }
+}
+
+// Accessibility improvements
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+    .wp-block-godam-video-generator {
+        .godam-video-generator-frontend {
+            border: 2px solid $text-color;
+        }
+
+        .godam-download-button,
+        .godam-share-button {
+            border: 2px solid currentColor;
+        }
+
+        .godam-video-container {
+            border: 2px solid $text-color;
+        }
+    }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+    .wp-block-godam-video-generator {
+        --text-color: #ffffff;
+        --light-text: #cccccc;
+        --border-color: #3c3c3c;
+        --background-light: #2c2c2c;
+        --white: #1e1e1e;
+
+        .godam-video-generator-placeholder {
+            background: var(--background-light);
+            border-color: var(--border-color);
+
+            .godam-placeholder-content {
+                .godam-placeholder-icon {
+                    color: var(--light-text);
+                }
+
+                h3 {
+                    color: var(--text-color);
+                }
+
+                p {
+                    color: var(--light-text);
+                }
+            }
+        }
+
+        .godam-video-generator-frontend {
+            background: var(--white);
+        }
+
+        .godam-video-title {
+            color: var(--text-color);
+        }
+
+        .godam-video-description {
+            color: var(--light-text);
+        }
+
+        .godam-video-meta {
+            .godam-meta-item {
+                color: var(--light-text);
+
+                strong {
+                    color: var(--text-color);
+                }
+            }
+        }
+
+        .godam-source-images {
+            h4 {
+                color: var(--text-color);
+            }
+
+            .godam-source-image {
+                background: var(--background-light);
+
+                &.godam-more-images {
+                    background: var(--border-color);
+                    color: var(--text-color);
+                }
+            }
+        }
+
+        .godam-share-button {
+            background: var(--background-light);
+            color: var(--text-color);
+            border-color: var(--border-color);
+
+            &:hover {
+                background: var(--border-color);
+            }
+        }
+
+        .godam-powered-by {
+            border-color: var(--border-color);
+
+            small {
+                color: var(--light-text);
+            }
+        }
+    }
+}
+
+// Print styles
+@media print {
+    .wp-block-godam-video-generator {
+
+        .godam-video-actions,
+        .godam-powered-by {
+            display: none;
+        }
+
+        .godam-video-container {
+            background: transparent;
+            box-shadow: none;
+            border: 1px solid #000;
+        }
+
+        .godam-generated-video {
+            background: #f0f0f0;
+
+            &::after {
+                content: '[Video content - not printable]';
+                display: block;
+                text-align: center;
+                padding: 2rem;
+                color: #666;
+                font-style: italic;
+            }
+        }
+    }
+}

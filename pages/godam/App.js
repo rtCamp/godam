@@ -22,6 +22,7 @@ import GeneralSettings from './components/tabs/GeneralSettings/GeneralSettings.j
 import VideoSettings from './components/tabs/VideoSettings/VideoSettings.jsx';
 import VideoPlayer from './components/tabs/VideoPlayer/VideoPlayer.jsx';
 import AdsSettings from './components/tabs/AdsSettings/AdsSettings.jsx';
+import AIVideoSettings from './components/tabs/AIVideoSettings/index.js';
 
 import { useGetMediaSettingsQuery } from './redux/api/media-settings.js';
 import { setMediaSettings } from './redux/slice/media-settings.js';
@@ -38,6 +39,16 @@ const TABS = [
 		label: __( 'Video Settings', 'godam' ),
 		component: VideoSettings,
 		icon: video,
+	},
+	{
+		id: 'ai-video-settings',
+		label: __( 'AI Video', 'godam' ),
+		component: AIVideoSettings,
+		icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+			<path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zM4.5 7.5a.5.5 0 0 1 .5-.5h1.5V5.5a.5.5 0 0 1 1 0V7h1.5a.5.5 0 0 1 0 1H7.5v1.5a.5.5 0 0 1-1 0V8H5a.5.5 0 0 1-.5-.5z"/>
+			<path d="M15 8a1 1 0 0 0-1-1h-3V4a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1v3H2a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h3v3a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-3h3a1 1 0 0 0 1-1V8z" opacity="0.4"/>
+			<circle cx="8" cy="8" r="2" fill="currentColor"/>
+		</svg>,
 	},
 	{
 		id: 'video-player',
