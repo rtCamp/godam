@@ -267,7 +267,7 @@ class RTGODAM_Transcoder_Admin {
 		if ( ! rtgodam_is_api_key_valid() && $show_offer_banner ) {
 			$host = wp_parse_url( home_url(), PHP_URL_HOST );
 
-			$banner_image = RTGODAM_URL . 'assets/src/images/BFCM.webp';
+			$banner_image = RTGODAM_URL . 'assets/src/images/BFCM.png';
 
 			$banner_html = sprintf(
 				'<div class="notice annual-plan-offer-banner">

@@ -14,7 +14,7 @@ import { Icon, search } from '@wordpress/icons';
  */
 import MediaGrid from './components/media-grid/MediaGrid.jsx';
 import './attachment-picker.scss';
-import BFCMBanner from '../../assets/src/images/BFCM.webp';
+import BFCMBanner from '../../assets/src/images/BFCM.png';
 
 const AttachmentPicker = ( { handleAttachmentClick } ) => {
 	const [ searchTerm, setSearchTerm ] = useState( '' );
