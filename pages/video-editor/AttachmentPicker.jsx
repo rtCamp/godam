@@ -14,6 +14,7 @@ import { Icon, search } from '@wordpress/icons';
  */
 import MediaGrid from './components/media-grid/MediaGrid.jsx';
 import './attachment-picker.scss';
+import BFCMBanner from '../../assets/src/images/BFCM.png';
 
 const AttachmentPicker = ( { handleAttachmentClick } ) => {
 	const [ searchTerm, setSearchTerm ] = useState( '' );
@@ -34,30 +35,21 @@ const AttachmentPicker = ( { handleAttachmentClick } ) => {
 	return (
 		<>
 			{ showOfferBanner && ! window?.userData?.validApiKey && (
-				<div className="notice annual-plan-offer-banner px-10">
-					<canvas id="godam-particle-canvas"></canvas>
-					<div className="annual-plan-offer-banner__content">
-						<div className="annual-plan-offer-banner__message">
-							<h3 className="annual-plan-offer-banner__title">
-								{ __( 'Pay for 10 months and get 2 months free with our annual plan.', 'godam' ) }
-							</h3>
-							<p className="annual-plan-offer-banner__description">
-								{ __( 'Elevate your media management, transcoding, storage, delivery and more.', 'godam' ) }
-							</p>
-						</div>
-						<div className="annual-plan-offer-banner__cta-container">
-							<a
-								href={ `${ window?.videoData?.godamBaseUrl }/pricing?utm_campaign=annual-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=banner` }
-								className="annual-plan-offer-banner__cta"
-								target="_blank"
-								rel="noopener noreferrer"
-								title={ __( 'Buy Now', 'godam' ) }
-							>
-								{ __( 'Buy Now', 'godam' ) }
-							</a>
-						</div>
-					</div>
-
+				<div className="notice annual-plan-offer-banner">
+					<a
+						href={ `${ window?.videoData?.godamBaseUrl }/pricing?utm_campaign=bfcm-offer&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=video-editor-banner` }
+						className="annual-plan-offer-banner__link"
+						target="_blank"
+						rel="noopener noreferrer"
+						aria-label={ __( 'Claim the GoDAM Black Friday & Cyber Monday offer', 'godam' ) }
+					>
+						<img
+							src={ BFCMBanner }
+							alt={ __( 'Black Friday & Cyber Monday offer from GoDAM', 'godam' ) }
+							className="annual-plan-offer-banner__image"
+							loading="lazy"
+						/>
+					</a>
 					<button
 						type="button"
 						className="annual-plan-offer-banner__dismiss"

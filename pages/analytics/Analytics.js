@@ -379,16 +379,17 @@ const Analytics = ( { attachmentID } ) => {
 									'Upgrade to unlock the media performance report.',
 									'godam',
 								) }
-
-								<a href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=analytics` } className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
 							</p>
 
 							<p className="api-key-overlay-banner-footer">
-								{ __( 'If you already have a premium plan, connect your ' ) }
+								{ __( 'If you already have a premium plan, connect your', 'godam' ) }
+								{ ' ' }
 								<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
 									{ __( 'API in the settings', 'godam' ) }
 								</a>
 							</p>
+
+							<a href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=analytics` } className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
 						</div>
 						:	<div className="api-key-overlay-banner">
 							<p>
