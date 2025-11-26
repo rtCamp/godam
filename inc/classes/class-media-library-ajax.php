@@ -757,7 +757,7 @@ class Media_Library_Ajax {
 	 * @param string $url    The original attachment URL.
 	 * @param int    $post_id The attachment post ID.
 	 *
-	 * @since n.e.x.t 
+	 * @since 1.4.7
 	 *
 	 * @return string The filtered attachment URL.
 	 */
