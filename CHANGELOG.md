@@ -1,5 +1,14 @@
 # Changelog #
 
+## v1.4.7 (November 26, 2025) ##
+
+- Tweak: Improved GoDAM Video block performance with preload poster functionality
+- Fix: Control and scroll on iOS fullscreen
+- Fix: GoDAM media tab for WP core blocks
+- Fix: Virtual media player and preview template
+- Fix: Error handling for Ads layer
+- Fix: PHP naming conventions as per WP PCP
+
 ## v1.4.6 (November 12, 2025) ##
 
 - Tweak: Added audio recorder support for Ninja Forms with GoDAM Recorder
