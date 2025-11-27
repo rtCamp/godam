@@ -587,6 +587,14 @@ class Player {
 	 */
 	isFullscreen() {
 		try {
+			if ( this.video.classList.contains( 'vjs-fullscreen' ) ) {
+				return true;
+			}
+			// Check for our custom fullscreen CSS class.
+			const parent = this.video.closest( '.easydam-video-container' );
+			if ( parent && parent.classList.contains( 'godam-video-fullscreen' ) ) {
+				return true;
+			}
 			return this.videoJs.isFullscreen();
 		} catch ( error ) {
 			console.error( 'Error checking fullscreen state:', error );
