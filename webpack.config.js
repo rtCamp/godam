@@ -223,6 +223,27 @@ const ninjaForms = {
 	},
 };
 
+const wpBakeryVideoSelectorParam = {
+	...sharedConfig,
+	entry: {
+		'wpbakery-video-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-video-selector-param.js' ),
+	},
+};
+
+const wpBakeryAudioSelectorParam = {
+	...sharedConfig,
+	entry: {
+		'wpbakery-audio-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-audio-selector-param.js' ),
+	},
+};
+
+const wpBakeryImageSrcSelectorParam = {
+	...sharedConfig,
+	entry: {
+		'wpbakery-image-src-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-image-src-selector-param.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -311,4 +332,7 @@ module.exports = [
 	lifterLMSBlock,
 	lifterLMSEmbed,
 	ninjaForms,
+	wpBakeryVideoSelectorParam,
+	wpBakeryAudioSelectorParam,
+	wpBakeryImageSrcSelectorParam,
 ];
