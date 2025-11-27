@@ -37,7 +37,7 @@ const LayerControls = ( { children } ) => {
 
 	// Render hidden fallback if portal target is not available
 	if ( ! portalTarget ) {
-		return <div className="layer-controls-fallback" style={ { display: 'none' } } />;
+		return <div className="layer-controls-fallback" />;
 	}
 
 	return ReactDOM.createPortal(
