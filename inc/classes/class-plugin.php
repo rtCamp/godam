@@ -18,6 +18,7 @@ use RTGODAM\Inc\Media_Tracker;
 use RTGODAM\Inc\Rewrite;
 use RTGODAM\Inc\Video_Preview;
 use RTGODAM\Inc\Video_Permalinks;
+use RTGODAM\Inc\Gallery_Modal;
 use RTGODAM\Inc\Video_Engagement;
 use RTGODAM\Inc\Update;
 
@@ -87,6 +88,7 @@ class Plugin {
 		Rewrite::get_instance();
 		Video_Preview::get_instance();
 		Video_Permalinks::get_instance();
+		Gallery_Modal::get_instance();
 		Embed::get_instance();
 
 		// Load shortcodes.

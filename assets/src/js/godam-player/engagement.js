@@ -487,6 +487,11 @@ const engagementStore = {
 		document.body.appendChild( commentModal );
 		this.root = createRoot( commentModal );
 		this.root.render( <CommentBox videoAttachmentId={ videoAttachmentId } siteUrl={ siteUrl } storeObj={ this } videoId={ videoId } skipEngagements={ skipEngagements } /> );
+
+		// Notify iframe about modal opening (after React has started rendering)
+		setTimeout( () => {
+			window.dispatchEvent( new CustomEvent( 'rtgodam:comments-opened' ) );
+		}, 300 );
 	},
 };
 
@@ -686,10 +691,9 @@ function timeToSeconds( h, m, s ) {
 /**
  * Component to render a text with @HH:MM:SS or @MM:SS timestamps linked to video positions.
  *
- * @param {Object}                   props          - Component props.
- * @param {string}                   props.text     - Text to render.
- * @param {function(number, string)} [props.onJump] - Callback to handle clicking a timestamp.
- *
+ * @param {Object}   props        - Component props.
+ * @param {string}   props.text   - Text to render.
+ * @param {Function} props.onJump - Callback to handle clicking a timestamp.
  */
 function TimeLinkedText( { text, onJump } ) {
 	// Matches @HH:MM:SS or @MM:SS
@@ -999,7 +1003,7 @@ function GuestLoginForm( props ) {
 			{
 				! showGuestForm && (
 					<div className={ baseClass + '-leave-comment-login' }>
-						<a href={ registrationUrl }>{ __( 'Register', 'godam' ) }</a> / <a href={ loginUrl }>{ __( 'Login', 'godam' ) }</a> { __( ' to comment', 'godam' ) }
+						<a href={ registrationUrl }>{ __( 'Register', 'godam' ) }</a> / <a href={ loginUrl }>{ __( 'Login', 'godam' ) }</a> { __( 'to comment', 'godam' ) }
 					</div>
 				)
 			}
@@ -1121,7 +1125,11 @@ function CommentBox( props ) {
 			<div className={ baseClass + '-content' + ( skipEngagements ? ' is-skip-engagements' : '' ) }>
 				<div className={ baseClass + '-header' }>
 					<h3 className={ baseClass + '-title' }>{ titles }</h3>
-					<button className={ `${ baseClass }--close-button` } onClick={ () => memoizedStoreObj.root.unmount() }>&times;</button>
+					<button className={ `${ baseClass }--close-button` } onClick={ () => {
+						// Notify iframe about modal closing
+						window.dispatchEvent( new CustomEvent( 'rtgodam:comments-closed' ) );
+						memoizedStoreObj.root.unmount();
+					} }>&times;</button>
 				</div>
 				<div className={ baseClass + '--video' }>
 					<div className={ `${ baseClass }--video-figure` }>

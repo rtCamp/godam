@@ -252,13 +252,10 @@
 
 	.godam-modal-content {
 		position: relative;
-		background: #fff;
-		border-radius: 4px;
-		padding: 4px;
+		background: transparent;
+
 		width: 100vw;
 		max-width: none;
-		max-height: 95vh;
-		box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 		z-index: 10;
 
 		@media (min-width: 1728px) {
@@ -407,9 +404,9 @@
 
 // Compitibility with Like, comments and Views
 .is-gallery {
+
 	&.godam-modal,
-	.godam-modal-overlay,
-	.godam-modal-content {
+	.godam-modal-overlay {
 		margin: 0;
 		max-width: 100vw;
 		max-height: 100vh;
@@ -422,6 +419,19 @@
 		opacity: 0;
 		transform: scale(0.9);
 		transition: opacity 0.2s ease, transform 0.2s ease;
+		width: 100vw;
+		max-width: none;
+		height: auto;
+		max-height: 95vh;
+	}
+
+	&.is-visible .godam-modal-content {
+		opacity: 1;
+		transform: scale(1);
+	}
+
+	&.is-visible::after {
+		display: none;
 	}
 
 	&::after {
@@ -434,5 +444,14 @@
 		border-radius: 50%;
 		border-top-color: #fff;
 		animation: godam-spin 1s ease-in-out infinite;
+	}
+
+	// Style the iframe to fill its container
+	.easydam-video-container iframe {
+		width: 100%;
+		height: auto;
+		display: block;
+		border: 0;
+		background: #000;
 	}
 }
