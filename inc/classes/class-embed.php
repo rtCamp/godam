@@ -80,9 +80,17 @@ class Embed {
 			return null;
 		}
 
-		$embed_url = RTGODAM_API_BASE . '/api/method/godam_core.api.oembed.get_oembed?url=' . rawurlencode( $url );
+		$embed_url = RTGODAM_API_BASE . '/api/method/godam_core.api.oembed.get_oembed';
 
-		$response = wp_remote_get( $embed_url );
+		$response = wp_remote_post(
+			$embed_url,
+			array(
+				'body'    => wp_json_encode( array( 'url' => $url ) ),
+				'headers' => array(
+					'Content-Type' => 'application/json',
+				),
+			)
+		);
 
 		if ( is_wp_error( $response ) ) {
 			return false;
