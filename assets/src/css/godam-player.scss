@@ -1538,16 +1538,15 @@ body.godam-share-modal-open {
 	position: relative;
 }
 
-/* Elementor Widget Fix - Prevent collapse and overlap */
-.elementor-widget-godam-video figure[id^="godam-player-container"] {
-	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
-	display: block;
-}
-
 /* Ensure Elementor widget wrapper maintains proper dimensions */
 .elementor-widget-godam-video {
 	width: 100%;
 	flex-shrink: 0;
+
+	figure[id^="godam-player-container"] {
+		aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
+		display: block;
+	}
 }
 
 .easydam-video-container {
