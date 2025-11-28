@@ -576,57 +576,60 @@ class Media_Library_Ajax {
 		if ( $screen && 'upload' === $screen->base && ! rtgodam_is_api_key_valid() && $show_offer_banner ) {
 			$host = wp_parse_url( home_url(), PHP_URL_HOST );
 
+			$banner_image = RTGODAM_URL . 'assets/src/images/BFCM.png';
+
 			$banner_html = sprintf(
-				'<div class="notice annual-plan-offer-banner px-10">
-					<canvas id="godam-particle-canvas"></canvas>
-					<div class="annual-plan-offer-banner__content">
-						<div class="annual-plan-offer-banner__message">
-							<h3 class="annual-plan-offer-banner__title">%1$s</h3>
-							<p class="annual-plan-offer-banner__description">%2$s</p>
-						</div>
-						<div class="annual-plan-offer-banner__cta-container">
-							<a
-								href="%3$s"
-								class="annual-plan-offer-banner__cta"
-								target="_blank"
-								rel="noopener noreferrer"
-								title="%4$s"
-							>
-								%4$s
-							</a>
-						</div>
-					</div>
+				'<div class="notice annual-plan-offer-banner">
+					<a
+						href="%1$s"
+						class="annual-plan-offer-banner__link"
+						target="_blank"
+						rel="noopener noreferrer"
+						aria-label="%2$s"
+					>
+						<img
+							src="%3$s"
+							class="annual-plan-offer-banner__image"
+							alt="%4$s"
+							loading="lazy"
+						/>
+					</a>
 					<button
 						type="button"
 						class="annual-plan-offer-banner__dismiss"
-						aria-label="Dismiss banner"
+						aria-label="%5$s"
 					>
 						&times;
 					</button>
 				</div>',
-				esc_html__( 'Pay for 10 months and get 2 months free with our annual plan.', 'godam' ),
-				esc_html__( 'Elevate your media management, transcoding, storage, delivery and more.', 'godam' ),
-				esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=annual-plan&utm_source=' . $host . '&utm_medium=plugin&utm_content=banner' ),
-				esc_html__( 'Buy Now', 'godam' )
+				esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=bfcm-offer&utm_source=' . $host . '&utm_medium=plugin&utm_content=media-library-banner' ),
+				esc_attr__( 'Claim the GoDAM Black Friday & Cyber Monday offer', 'godam' ),
+				esc_url( $banner_image ),
+				esc_attr__( 'Black Friday & Cyber Monday offer from GoDAM', 'godam' ),
+				esc_html__( 'Dismiss banner', 'godam' )
 			);
 
 			echo wp_kses(
 				$banner_html,
 				array(
 					'div'    => array( 'class' => array() ),
-					'canvas' => array( 'id' => array() ),
-					'h3'     => array( 'class' => array() ),
-					'p'      => array( 'class' => array() ),
 					'a'      => array(
-						'href'   => array(),
-						'class'  => array(),
-						'target' => array(),
-						'rel'    => array(),
-						'title'  => array(),
+						'href'       => array(),
+						'class'      => array(),
+						'target'     => array(),
+						'rel'        => array(),
+						'aria-label' => array(),
+					),
+					'img'    => array(
+						'src'     => array(),
+						'alt'     => array(),
+						'class'   => array(),
+						'loading' => array(),
 					),
 					'button' => array(
-						'type'  => array(),
-						'class' => array(),
+						'type'       => array(),
+						'class'      => array(),
+						'aria-label' => array(),
 					),
 				)
 			);
@@ -754,7 +757,7 @@ class Media_Library_Ajax {
 	 * @param string $url    The original attachment URL.
 	 * @param int    $post_id The attachment post ID.
 	 *
-	 * @since n.e.x.t 
+	 * @since 1.4.7
 	 *
 	 * @return string The filtered attachment URL.
 	 */

@@ -1906,7 +1906,9 @@ body.godam-share-modal-open {
 		position: fixed;
 		inset: 0;
 		width: 100vw;
-		height: 100vh;
+		// Dynamic height calculation for iOS using --vh variable set by JS.
+		// Fallback to 100vh if --vh is not set, for non-iOS devices.
+		height: calc(var(--vh, 1vh) * 100);
 		background: #000;
 		z-index: 99999999;
 		display: flex;

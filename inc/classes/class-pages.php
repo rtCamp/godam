@@ -609,7 +609,8 @@ class Pages {
 				'godam-page-script-dashboard',
 				'videoData',
 				array(
-					'adminUrl' => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
+					'adminUrl'     => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
+					'godamBaseUrl' => RTGODAM_IO_API_BASE,
 				)
 			);
 
@@ -658,6 +659,7 @@ class Pages {
 					'currentUserId'    => get_current_user_id(),            // Current user ID.
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
 					'adminUrl'         => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
+					'godamBaseUrl'     => RTGODAM_IO_API_BASE,
 				)
 			);
 
