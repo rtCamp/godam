@@ -95,7 +95,9 @@ export default class ControlsManager {
 				const videoContainer = e.target.closest( '.video-js' );
 				const godamVideoContainer = e.target.closest( '.easydam-video-container' );
 
-				const isFullscreen = videoContainer && videoContainer.classList.contains( 'vjs-fullscreen' );
+				// Check both containers for fullscreen classes
+				const isFullscreen = ( videoContainer && videoContainer.classList.contains( 'vjs-fullscreen' ) ) ||
+									( godamVideoContainer && godamVideoContainer.classList.contains( 'godam-video-fullscreen' ) );
 
 				if ( isFullscreen ) {
 					if ( videoContainer ) {
@@ -116,6 +118,8 @@ export default class ControlsManager {
 					// Prevent scrolling on iOS
 					document.body.style.overflow = 'hidden';
 				}
+				// Trigger fullscreenchange event on the VideoJS player
+				this.player().trigger( 'fullscreenchange' );
 			}
 		}
 		if ( ! videojs.getComponent( 'CustomFullscreenButton' ) ) {
@@ -154,6 +158,8 @@ export default class ControlsManager {
 
 				// Restore scrolling
 				document.body.style.overflow = '';
+				// Trigger fullscreenchange event
+				this.player().trigger( 'fullscreenchange' );
 			}
 		}
 		if ( ! videojs.getComponent( 'CustomFullscreenExitButton' ) ) {
