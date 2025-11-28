@@ -8,7 +8,7 @@ const LayerControls = ( { children } ) => {
 	const [ portalTarget, setPortalTarget ] = useState( null );
 
 	useEffect( () => {
-		const MAX_RETRIES = 100; // 5 seconds total (100 * 50ms)
+		const MAX_RETRIES = 10; // 5 seconds total (100 * 50ms)
 		let retryCount = 0;
 		let timeoutId = null;
 		let isMounted = true;
@@ -19,7 +19,7 @@ const LayerControls = ( { children } ) => {
 				setPortalTarget( target );
 			} else if ( isMounted && retryCount < MAX_RETRIES ) {
 				retryCount++;
-				timeoutId = setTimeout( checkForPortalTarget, 50 );
+				timeoutId = setTimeout( checkForPortalTarget, 500 );
 			}
 		};
 
