@@ -64,10 +64,36 @@ function setupMediaModalCloseDetection() {
 					if ( node.nodeType === Node.ELEMENT_NODE ) {
 						// Check if this is a media modal that was removed
 						if ( node.classList && node.classList.contains( 'media-modal' ) ) {
+							// Clean up React roots before resetting state
+							const rootElements = node.querySelectorAll( '#rt-transcoder-media-library-root' );
+							rootElements.forEach( ( element ) => {
+								if ( element._reactRoot ) {
+									try {
+										element._reactRoot.unmount();
+									} catch ( e ) {
+										// Ignore unmounting errors
+									}
+									element._reactRoot = null;
+								}
+							} );
+
 							// Media modal was closed, reset React state
 							store.dispatch( resetUIState() );
 						// Also check if it contains media modal children
 						} else if ( node.querySelector && node.querySelector( '.media-modal' ) ) {
+							// Clean up any React roots in child modals
+							const rootElements = node.querySelectorAll( '#rt-transcoder-media-library-root' );
+							rootElements.forEach( ( element ) => {
+								if ( element._reactRoot ) {
+									try {
+										element._reactRoot.unmount();
+									} catch ( e ) {
+										// Ignore unmounting errors
+									}
+									element._reactRoot = null;
+								}
+							} );
+
 							store.dispatch( resetUIState() );
 						}
 					}
@@ -103,8 +129,22 @@ function setupMediaModalCloseDetection() {
 			// Call original close method
 			const result = originalClose.apply( this, args );
 
-			// Reset React state after modal closes
+			// Clean up React roots in modal elements before they're removed
 			setTimeout( () => {
+				// Find all React root elements in closing modals and clean them up
+				const modalElements = document.querySelectorAll( '.media-modal #rt-transcoder-media-library-root' );
+				modalElements.forEach( ( element ) => {
+					if ( element._reactRoot ) {
+						try {
+							element._reactRoot.unmount();
+						} catch ( e ) {
+							// Ignore unmounting errors
+						}
+						element._reactRoot = null;
+					}
+				} );
+
+				// Reset React state after modal closes
 				store.dispatch( resetUIState() );
 			}, 100 ); // Small delay to ensure modal is fully closed
 
@@ -124,10 +164,23 @@ function initializeMediaLibrary() {
 			const rootElement = activeContainer.querySelector( '#rt-transcoder-media-library-root' );
 
 			if ( rootElement ) {
-			// Check if React is already mounted to avoid reinitializing
-				if ( ! rootElement._reactRoot ) {
+				// Check if React root needs to be created/recreated
+				const needsNewRoot = ! rootElement._reactRoot ||
+					! rootElement._reactRoot._internalRoot ||
+					! rootElement.hasChildNodes();
+
+				if ( needsNewRoot ) {
+					// Unmount existing root if it exists but is stale
+					if ( rootElement._reactRoot ) {
+						try {
+							rootElement._reactRoot.unmount();
+						} catch ( e ) {
+							// Ignore unmounting errors for stale roots
+						}
+					}
+
 					const root = ReactDOM.createRoot( rootElement );
-					rootElement._reactRoot = root; // Store the root in a custom property
+					rootElement._reactRoot = root;
 					root.render( <Index /> );
 				}
 			}
@@ -155,10 +208,23 @@ function initializeMediaLibrary() {
 	}
 
 	if ( rootElement ) {
-		// Check if React is already mounted to avoid reinitializing
-		if ( ! rootElement._reactRoot ) {
+		// Check if React root needs to be created/recreated
+		const needsNewRoot = ! rootElement._reactRoot ||
+			! rootElement._reactRoot._internalRoot ||
+			! rootElement.hasChildNodes();
+
+		if ( needsNewRoot ) {
+			// Unmount existing root if it exists but is stale
+			if ( rootElement._reactRoot ) {
+				try {
+					rootElement._reactRoot.unmount();
+				} catch ( e ) {
+					// Ignore unmounting errors for stale roots
+				}
+			}
+
 			const root = ReactDOM.createRoot( rootElement );
-			rootElement._reactRoot = root; // Store the root in a custom property
+			rootElement._reactRoot = root;
 			root.render( <Index /> );
 		}
 	}
