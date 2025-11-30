@@ -42,6 +42,10 @@ if ( 'list' === checkMediaLibraryView() ) {
 				success() {
 					// Add this new attachment to the collection.
 					gridView.reAttachEvent();
+
+					// Trigger count refresh for React components
+					const event = new CustomEvent( 'godam-attachment-browser:changed' );
+					document.dispatchEvent( event );
 				},
 			} );
 		}( jQuery ) );

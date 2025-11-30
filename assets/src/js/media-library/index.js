@@ -1,3 +1,5 @@
+/* global jQuery */
+
 /**
  * WordPress dependencies
  */
@@ -39,6 +41,7 @@ class MediaLibrary {
 		addManageMediaButton();
 		this.addInputPlaceholder();
 		this.handleBannerClose();
+		this.setupDeleteEventListeners();
 	}
 
 	addInputPlaceholder() {
@@ -139,6 +142,68 @@ class MediaLibrary {
 			'media-date-range-filter-start',
 			'media-date-range-filter-end',
 		);
+	}
+
+	/**
+	 * Set up event listeners for attachment deletion to trigger count refresh
+	 */
+	setupDeleteEventListeners() {
+		// Monitor for WordPress admin AJAX actions that delete attachments
+		const originalAjaxPost = jQuery.post;
+		jQuery.post = function( url, data, ...args ) {
+			const result = originalAjaxPost.apply( this, [ url, data, ...args ] );
+
+			// Check if this is a delete attachment action
+			if ( data && (
+				data.action === 'delete-post' ||
+				data.action === 'delete-attachment' ||
+				( typeof data === 'string' && data.includes( 'action=delete-post' ) ) ||
+				( typeof data === 'string' && data.includes( 'action=delete-attachment' ) )
+			) ) {
+				// Trigger count refresh after successful deletion
+				result.done( () => {
+					setTimeout( () => {
+						const event = new CustomEvent( 'godam-attachment-browser:changed' );
+						document.dispatchEvent( event );
+					}, 100 );
+				} );
+			}
+
+			return result;
+		};
+
+		// Monitor for bulk actions
+		const originalSubmit = HTMLFormElement.prototype.submit;
+		HTMLFormElement.prototype.submit = function() {
+			const actionSelect = this.querySelector( 'select[name="action"], select[name="action2"]' );
+			const isBulkDelete = actionSelect && actionSelect.value === 'delete';
+
+			if ( isBulkDelete ) {
+				// Set up a delayed event trigger for bulk deletion
+				setTimeout( () => {
+					const event = new CustomEvent( 'godam-attachment-browser:changed' );
+					document.dispatchEvent( event );
+				}, 1000 ); // Longer delay for bulk operations
+			}
+
+			return originalSubmit.call( this );
+		};
+
+		// Monitor for attachment removals in media modal
+		if ( wp?.media?.model?.Attachments ) {
+			const originalRemove = wp.media.model.Attachments.prototype.remove;
+			wp.media.model.Attachments.prototype.remove = function( ...args ) {
+				const result = originalRemove.apply( this, args );
+
+				// Trigger count refresh when attachments are removed from collections
+				setTimeout( () => {
+					const event = new CustomEvent( 'godam-attachment-browser:changed' );
+					document.dispatchEvent( event );
+				}, 100 );
+
+				return result;
+			};
+		}
 	}
 }
 
