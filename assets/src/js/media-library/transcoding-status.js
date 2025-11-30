@@ -8,6 +8,24 @@ import GridViewTranscodingStatus from './transcoding-status/grid-view-transcodin
 
 import { checkMediaLibraryView } from './utility';
 
+// Set up upload success handler for both list and grid views
+if ( wp?.Uploader ) {
+	( function( $ ) {
+		$.extend( wp.Uploader.prototype, {
+			success() {
+				// Trigger count refresh for React components - works for both list and grid views
+				const event = new CustomEvent( 'godam-attachment-browser:changed' );
+				document.dispatchEvent( event );
+
+				// For grid view, also re-attach transcoding events
+				if ( 'list' !== checkMediaLibraryView() && window.gridView ) {
+					window.gridView.reAttachEvent();
+				}
+			},
+		} );
+	}( jQuery ) );
+}
+
 if ( 'list' === checkMediaLibraryView() ) {
 	new ListViewTranscodingStatus();
 } else {
@@ -16,6 +34,8 @@ if ( 'list' === checkMediaLibraryView() ) {
 	const initGridView = () => {
 		if ( ! gridView ) {
 			gridView = new GridViewTranscodingStatus();
+			// Make gridView accessible globally for the upload success handler
+			window.gridView = gridView;
 		}
 	};
 
@@ -35,19 +55,4 @@ if ( 'list' === checkMediaLibraryView() ) {
 		initGridView();
 		gridView.reAttachEvent();
 	} );
-
-	if ( wp?.Uploader ) {
-		( function( $ ) {
-			$.extend( wp.Uploader.prototype, {
-				success() {
-					// Add this new attachment to the collection.
-					gridView.reAttachEvent();
-
-					// Trigger count refresh for React components
-					const event = new CustomEvent( 'godam-attachment-browser:changed' );
-					document.dispatchEvent( event );
-				},
-			} );
-		}( jQuery ) );
-	}
 }
