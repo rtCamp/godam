@@ -27,11 +27,9 @@ import { caption as captionIcon } from '@wordpress/icons';
  * @param {boolean}     props.isSelected                - Whether the block is currently selected.
  * @param {Function}    props.insertBlocksAfter         - Function to insert blocks after the current block.
  * @param {string}      [props.placeholder]             - Placeholder text for the caption.
- * @param {string}      [props.label]                   - Label for the caption.
  * @param {boolean}     [props.showToolbarButton]       - Whether to show the toolbar button to toggle the caption.
  * @param {string}      [props.excludeElementClassName] - Class name to exclude from the caption element.
  * @param {string}      [props.className]               - Class name for the caption element.
- * @param {string}      [props.tagName]                 - Tag name for the caption element.
  * @param {string}      [props.addLabel]                - Label for the "Add caption" button.
  * @param {string}      [props.removeLabel]             - Label for the "Remove caption" button.
  * @param {JSX.Element} [props.icon]                    - Icon for the caption button.
@@ -44,11 +42,9 @@ export function Caption( {
 	isSelected,
 	insertBlocksAfter,
 	placeholder = __( 'Add caption', 'godam' ),
-	label = __( 'Caption text', 'godam' ),
 	showToolbarButton = true,
 	excludeElementClassName,
 	className,
-	tagName = 'figcaption',
 	addLabel = __( 'Add caption', 'godam' ),
 	removeLabel = __( 'Remove caption', 'godam' ),
 	icon = captionIcon,
@@ -103,8 +99,6 @@ export function Caption( {
 			) }
 			{ showCaption && (
 				<TextControl
-					identifier={ attributeKey }
-					tagName={ tagName }
 					className={ clsx(
 						className,
 						excludeElementClassName
@@ -112,7 +106,6 @@ export function Caption( {
 							: 'rtgodam-pdf-caption',
 					) }
 					ref={ ref }
-					aria-label={ label }
 					placeholder={ placeholder }
 					value={ caption }
 					onChange={ ( value ) => {

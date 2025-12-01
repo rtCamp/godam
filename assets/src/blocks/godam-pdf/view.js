@@ -3,6 +3,11 @@
  * Handles PDF source fallback if the primary source is unavailable
  */
 
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
 document.addEventListener( 'DOMContentLoaded', function() {
 	const pdfWrappers = document.querySelectorAll( '.godam-pdf-wrapper' );
 	// Check if safari browser or iOS device
@@ -103,7 +108,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 					const fallbackMessage = currentObject ? currentObject.querySelector( 'p' ) : null;
 					if ( fallbackMessage ) {
 						fallbackMessage.innerHTML =
-							'<strong>Unable to load PDF.</strong> All sources are unavailable.';
+							__( '<strong>Unable to load PDF.</strong> All sources are unavailable.', 'godam' );
 					}
 					return;
 				}

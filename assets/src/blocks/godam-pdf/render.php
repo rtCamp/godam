@@ -9,28 +9,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$attachment_id = ! empty( $attributes['id'] ) ? sanitize_text_field( $attributes['id'] ) : null;
+$attachment_id = ! empty( $attributes['id'] ) ? ( is_numeric( $attributes['id'] ) ? absint( $attributes['id'] ) : sanitize_text_field( $attributes['id'] ) ) : null;
 $caption       = ! empty( $attributes['caption'] ) ? $attributes['caption'] : '';
 $height        = ! empty( $attributes['height'] ) ? intval( $attributes['height'] ) : 600;
-$src           = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : ''; 
+$src           = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
 
 if ( ! $attachment_id && empty( $src ) ) {
 	return;
 }
 
-$sources = array();
-if ( empty( $attachment_id ) ) {
-	$sources[] = $src;
-} elseif ( ! is_numeric( $attachment_id ) ) { // For GoDAM Tab attachments.
-	$sources[] = $src;
-} else { 
+$sources = array( $src );
+if ( ! empty( $attachment_id ) && is_numeric( $attachment_id ) ) { 
 	$pdf_url            = wp_get_attachment_url( $attachment_id );
 	$pdf_transcoded_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
-
 	if ( ! empty( $pdf_transcoded_url ) ) {
 		$sources[] = $pdf_transcoded_url;
 	}
-
 	if ( ! empty( $pdf_url ) ) {
 		$sources[] = $pdf_url;
 	}

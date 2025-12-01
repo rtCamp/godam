@@ -275,13 +275,12 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 						}
 					}
 
-					if ( 'pdf' === $job_type ) {
+					if ( 'pdf' === $job_type && isset( $post_array['download_url'] ) && ! empty( $post_array['download_url'] ) ) {
 						// Setting the transcoded PDF URL.
-						update_post_meta( $attachment_id, 'rtgodam_transcoded_url', $post_array['download_url'] );
-						update_post_meta( $attachment_id, 'rtgodam_transcoded_pdf_url', $post_array['download_url'] );
-					}               
+						update_post_meta( $attachment_id, 'rtgodam_transcoded_url', esc_url_raw( $post_array['download_url'] ) );
+					}
 				} else {
-					$flag = 'Something went wrong. The required attachment id does not exists. It must have been deleted.';
+					$flag = __( 'Something went wrong. The required attachment id does not exists. It must have been deleted.', 'godam' );
 				}
 
 				$this->rtgodam_transcoder_handler->update_usage( $this->rtgodam_transcoder_handler->api_key );
