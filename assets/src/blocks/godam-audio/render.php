@@ -26,7 +26,7 @@ if ( ! $godam_attachment_id && ! empty( $godam_src ) ) {
 	$godam_primary_audio = $godam_src;
 	$godam_backup_audio  = '';
 } else {
-	$godam_primary_audio = wp_get_attachment_url( $godam_attachment_id );
+	$godam_primary_audio = get_post_meta( $godam_attachment_id, 'rtgodam_transcoded_url', true );
 	$godam_backup_audio  = wp_get_attachment_url( $godam_attachment_id );
 
 	if ( empty( $godam_primary_audio ) && empty( $godam_backup_audio ) ) {
