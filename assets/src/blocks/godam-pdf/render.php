@@ -18,7 +18,7 @@ if ( ! $attachment_id && empty( $src ) ) {
 	return;
 }
 
-$sources = array( $src );
+$sources = array();
 if ( ! empty( $attachment_id ) && is_numeric( $attachment_id ) ) { 
 	$pdf_url            = wp_get_attachment_url( $attachment_id );
 	$pdf_transcoded_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
@@ -28,6 +28,8 @@ if ( ! empty( $attachment_id ) && is_numeric( $attachment_id ) ) {
 	if ( ! empty( $pdf_url ) ) {
 		$sources[] = $pdf_url;
 	}
+} else {
+	$sources[] = $src;
 }
 
 if ( empty( $sources ) ) {
