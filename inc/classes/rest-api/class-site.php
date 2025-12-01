@@ -39,7 +39,7 @@ class Site extends Base {
 						'methods'             => WP_REST_Server::READABLE,
 						'callback'            => array( $this, 'get_site_data' ),
 						'permission_callback' => function () {
-							return current_user_can( 'publish_posts' );
+							return current_user_can( 'edit_posts' );
 						},
 					),
 				),
