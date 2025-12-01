@@ -6,8 +6,7 @@ import { useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Notice, ToggleControl, Button, Panel, PanelBody } from '@wordpress/components';
-import { useState } from '@wordpress/element';
+import { ToggleControl, Button, Panel, PanelBody } from '@wordpress/components';
 import { unlock } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
@@ -69,8 +68,7 @@ const VideoEngagement = ( { handleSettingChange } ) => {
 							} }
 							disabled={ ! hasValidAPIKey }
 							help={ __(
-								'If enabled, Shares will be added to the transcoded video',
-								'godam',
+								'If enabled, sharing options (such as social sharing buttons) will be available for videos globally.',
 							) }
 						/>
 					</div>

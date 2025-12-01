@@ -139,8 +139,8 @@ class Video_Engagement {
 	/**
 	 * Checks if engagements are enabled for a video.
 	 *
-	 * @param int   $attachment_id The attachment ID of the video.
-	 * @param array $attributes    The block attributes.
+	 * @param int|string $attachment_id The attachment ID of the video.
+	 * @param array      $attributes    The block attributes.
 	 *
 	 * @return bool True if engagements are enabled, otherwise false.
 	 */

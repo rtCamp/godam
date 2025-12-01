@@ -1,11 +1,13 @@
 /**
- * Internal dependencies
- */
-import { ACTIONS } from './utils/constants';
-/**
  * External dependencies
  */
 import EmojiPicker from 'emoji-picker-react';
+
+/**
+ * Internal dependencies
+ */
+import { ACTIONS } from './utils/constants';
+
 const { createReduxStore, register, select, dispatch, subscribe } = wp.data;
 const { apiFetch } = wp;
 const { addQueryArgs } = wp.url;
@@ -340,8 +342,8 @@ const engagementStore = {
 		const videoIds = document.querySelectorAll( '.rtgodam-video-engagement' );
 		if (
 			0 === videoIds.length ||
-			( 0 === Object.keys( likes ).length ||
-			0 === Object.keys( views ).length ||
+			( 0 === Object.keys( likes ).length &&
+			0 === Object.keys( views ).length &&
 			0 === Object.keys( comments ).length )
 		) {
 			return null;
@@ -627,7 +629,12 @@ function CommentForm( props ) {
 	 * @return {string} The new value of the textarea.
 	 */
 	function putContentToCursor( content ) {
-		const ta = textareaRef.current;
+		const ta = textareaRef?.current;
+
+		if ( ! ta ) {
+			return content;
+		}
+
 		const start = ta.selectionStart;
 		const end = ta.selectionEnd;
 		const value = ta.value;
