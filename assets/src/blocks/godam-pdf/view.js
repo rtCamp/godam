@@ -67,7 +67,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 				}
 			}
 
-			// Wait 1 second before checking (Safari-friendly delay)
+			// Wait 100 milliseconds before checking (Safari-friendly delay)
 			setTimeout( loadFirstAvailablePDF, 100 );
 		} );
 	} else {

@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$attachment_id = ! empty( $attributes['id'] ) ? ( is_numeric( $attributes['id'] ) ? absint( $attributes['id'] ) : sanitize_text_field( $attributes['id'] ) ) : null;
+$attachment_id = ! empty( $attributes['id'] ) ? ( is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : sanitize_text_field( $attributes['id'] ) ) : null;
 $caption       = ! empty( $attributes['caption'] ) ? $attributes['caption'] : '';
 $height        = ! empty( $attributes['height'] ) ? intval( $attributes['height'] ) : 600;
 $src           = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
@@ -18,7 +18,7 @@ if ( ! $attachment_id && empty( $src ) ) {
 	return;
 }
 
-$sources = array( $src );
+$sources = array();
 if ( ! empty( $attachment_id ) && is_numeric( $attachment_id ) ) { 
 	$pdf_url            = wp_get_attachment_url( $attachment_id );
 	$pdf_transcoded_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
@@ -28,6 +28,8 @@ if ( ! empty( $attachment_id ) && is_numeric( $attachment_id ) ) {
 	if ( ! empty( $pdf_url ) ) {
 		$sources[] = $pdf_url;
 	}
+} else {
+	$sources[] = $src;
 }
 
 if ( empty( $sources ) ) {
