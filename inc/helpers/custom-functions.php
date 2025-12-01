@@ -170,7 +170,7 @@ function rtgodam_fetch_overlay_media_url( $media_id ) {
  */
 function rtgodam_image_cta_html( $layer ) {
 	// Determine if the image is a GoDAM hosted media.
-	$is_godam_media = is_string( $layer['image'] ) && str_starts_with( $layer['image'], 'godam_' );
+	$is_godam_media = is_string( $layer['image'] ) && strpos( $layer['image'], 'godam_' ) === 0;
 
 	if ( $is_godam_media && ! empty( $layer['imageUrlExt'] ) ) {
 		$image_url = $layer['imageUrlExt'];
