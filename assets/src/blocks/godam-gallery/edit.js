@@ -52,6 +52,7 @@ export default function Edit( { attributes, setAttributes } ) {
 		engagements,
 		openToNewPage,
 	} = attributes;
+	const showOpenToNewPage = window?.godamSettings?.videoPostSettings?.allow_single ?? false;
 	const blockProps = useBlockProps();
 
 	// Add state for date picker popovers
@@ -223,12 +224,16 @@ export default function Edit( { attributes, setAttributes } ) {
 							/>
 						)
 					}
-					<ToggleControl
-						label={ __( 'Open video to new page', 'godam' ) }
-						checked={ !! openToNewPage }
-						onChange={ ( value ) => setAttributes( { openToNewPage: value } ) }
-						help={ __( 'If enabled, clicking a video will open it in a new page', 'godam' ) }
-					/>
+					{
+						showOpenToNewPage && (
+							<ToggleControl
+								label={ __( 'Open video to new page', 'godam' ) }
+								checked={ !! openToNewPage }
+								onChange={ ( value ) => setAttributes( { openToNewPage: value } ) }
+								help={ __( 'If enabled, clicking a video will open it in a new page', 'godam' ) }
+							/>
+						)
+					}
 					<SelectControl
 						label={ __( 'Layout', 'godam' ) }
 						value={ layout }

@@ -27,6 +27,7 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 	const { autoplay, controls, loop, muted, preload, showShareButton, engagements } =
 	attributes;
 	const showEngagementSetting = window?.godamSettings?.enableGlobalVideoEngagement ?? false;
+	const showShareButtonSetting = window?.godamSettings?.enableGlobalVideoShare ?? false;
 
 	// Show a specific help for autoplay setting.
 	const getAutoplayHelp = useMemo( () => {
@@ -111,13 +112,17 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 				onChange={ toggleFactory.controls }
 				checked={ !! controls }
 			/>
-			<ToggleControl
-				__nextHasNoMarginBottom
-				label={ __( 'Share Button', 'godam' ) }
-				onChange={ toggleFactory.showShareButton }
-				checked={ !! showShareButton }
-				help={ getShowShareButtonHelp }
-			/>
+			{
+				showShareButtonSetting && (
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ __( 'Share Button', 'godam' ) }
+						onChange={ toggleFactory.showShareButton }
+						checked={ !! showShareButton }
+						help={ getShowShareButtonHelp }
+					/>
+				)
+			}
 			{ ! isInsideQueryLoop && (
 				<SelectControl
 					__next40pxDefaultSize

@@ -335,6 +335,7 @@ class Assets {
 		$brand_color                    = $godam_settings['video_player']['brand_color'] ?? '';
 		$enable_gtm_tracking            = $godam_settings['general']['enable_gtm_tracking'] ?? false;
 		$enable_global_video_engagement = $godam_settings['video']['enable_global_video_engagement'] ?? false;
+		$enable_global_share            = $godam_settings['video']['enable_global_video_share'] ?? false;
 
 		$godam_settings_obj = array(
 
@@ -344,6 +345,7 @@ class Assets {
 			'enableGTMTracking'           => $enable_gtm_tracking,
 			'videoPostSettings'           => get_option( 'rtgodam_video_post_settings', array() ),
 			'enableGlobalVideoEngagement' => $enable_global_video_engagement,
+			'enableGlobalVideoShare'      => $enable_global_share,
 
 		);
 

@@ -222,6 +222,7 @@ $godam_individual_brand_image = isset( $godam_meta_data['videoConfig']['controlB
 $godam_player_skin            = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : 'Default';
 $godam_ads_settings           = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : array();
 $godam_ads_settings           = wp_json_encode( $godam_ads_settings );
+$godam_global_video_share     = isset( $godam_settings['video']['enable_global_video_share'] ) ? $godam_settings['video']['enable_global_video_share'] : false;
 
 $godam_video_poster = empty( $godam_poster ) ? $godam_poster_image : $godam_poster;
 
@@ -279,7 +280,7 @@ $godam_video_config = wp_json_encode(
 		'overlayTimeRange' => $godam_overlay_time_range, // Add overlay time range to video config.
 		'playerSkin'       => $godam_player_skin, // Add player skin to video config. Add brand image to video config.
 		'aspectRatio'      => $godam_aspect_ratio,
-		'showShareBtn'     => $godam_show_share_btn,
+		'showShareBtn'     => ! empty( $godam_global_video_share ) ? $godam_show_share_btn : false,
 	)
 );
 
