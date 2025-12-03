@@ -1,0 +1,196 @@
+// Video Popup Modal Styles
+.godam-video-popup-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.godam-video-popup-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(4px);
+}
+
+.godam-video-popup-content {
+    position: relative;
+    width: 90%;
+    max-width: 880px;
+    max-height: 90vh;
+    z-index: 1;
+    animation: slideUp 0.3s ease;
+}
+
+.godam-video-popup-close {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 2;
+
+    svg {
+        width: 20px;
+        height: 20px;
+        fill: #fff;
+    }
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: rotate(90deg);
+    }
+}
+
+.godam-video-popup-player {
+    position: relative;
+    width: 100%;
+    
+    figure {
+        margin: 0;
+    }
+
+    .godam-video-wrapper {
+        width: 100%;
+    }
+}
+
+// Prevent body scroll when popup is open
+body.godam-video-popup-open {
+    overflow: hidden;
+}
+
+// Animations
+@keyframes fadeIn {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+
+    .godam-video-popup-content {
+        width: 95%;
+        max-height: 80vh;
+    }
+
+    .godam-video-popup-close {
+        top: -35px;
+        width: 32px;
+        height: 32px;
+    }
+}
+
+// Youzify Media Item Video Styles
+.youzify-media-item-godam-video {
+    position: relative;
+    container-name: youzify-media-item-godam-video;
+    container-type: inline-size;
+
+    &--tools {
+
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        z-index: 9999;
+
+        a {
+            color: #fff;
+            width: 45px;
+            height: 45px;
+            text-align: center;
+            border-radius: 100%;
+            background: rgba(0, 0, 0, .3);
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        svg {
+            width: 20px;
+            height: 20px;
+            fill: #fff;
+        }
+    }
+
+    &--play-button {
+        cursor: pointer;
+        transition: transform 0.2s ease;
+
+        &:hover i {
+            transform: scale(1.1);
+        }
+    }
+
+    .video-js .vjs-control-bar {
+        display: none;
+    }
+
+    figure,
+    :where(figure) {
+        margin: 0 !important;
+    }
+
+    .godam-video-wrapper {
+
+        .vjs-big-play-button {
+            display: none;
+        }
+    }
+}
+
+@container youzify-media-item-godam-video (max-width: 120px) {
+
+    .youzify-media-item-godam-video--tools a {
+
+        width: 20px;
+        height: 20px;
+
+        svg {
+            width: 16px;
+            height: 16px;
+        }
+    }
+}

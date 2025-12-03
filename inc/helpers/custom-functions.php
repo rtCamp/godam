@@ -779,3 +779,28 @@ function godam_get_transcript_path( $attachment_id, $job_id = null ) {
 
 	return false;
 }
+
+/**
+ * Enqueue GoDAM player scripts and styles.
+ *
+ * @since n.e.x.t
+ */
+function rtgodam_enqueue_godam_player_scripts() {
+	wp_enqueue_script( 'godam-player-frontend-script' );
+	wp_enqueue_script( 'godam-player-analytics-script' );
+	wp_enqueue_style( 'godam-player-frontend-style' );
+	wp_enqueue_style( 'godam-player-style' );
+
+	$godam_settings = get_option( 'rtgodam-settings', array() );
+	$selected_skin  = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : '';
+	$skins          = array(
+		'Minimal' => 'godam-player-minimal-skin',
+		'Pills'   => 'godam-player-pills-skin',
+		'Bubble'  => 'godam-player-bubble-skin',
+		'Classic' => 'godam-player-classic-skin',
+	);
+
+	if ( isset( $skins[ $selected_skin ] ) ) {
+		wp_enqueue_style( $skins[ $selected_skin ] );
+	}
+}

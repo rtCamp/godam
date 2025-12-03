@@ -223,6 +223,20 @@ const ninjaForms = {
 	},
 };
 
+const youzifyActivityObserver = {
+	...sharedConfig,
+	entry: {
+		'youzify-activity-observer': path.resolve( process.cwd(), 'assets', 'src', 'js', 'youzify-activity-observer.js' ),
+	},
+};
+
+const youzifyMediaPage = {
+	...sharedConfig,
+	entry: {
+		'youzify-media-page': path.resolve( process.cwd(), 'assets', 'src', 'js', 'youzify-media-page.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -311,4 +325,6 @@ module.exports = [
 	lifterLMSBlock,
 	lifterLMSEmbed,
 	ninjaForms,
+	youzifyActivityObserver,
+	youzifyMediaPage,
 ];
