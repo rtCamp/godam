@@ -130,6 +130,39 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 				),
 			)
 		);
+
+		// Register `transcription-callback` route to handle transcription completion notifications.
+		register_rest_route(
+			self::$namespace_prefix,
+			'/transcription-callback',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'handle_transcription_callback' ),
+				'permission_callback' => array( $this, 'verify_callback_permission' ),
+				'args'                => array(
+					'transcription_status' => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'transcript_path'      => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'esc_url_raw',
+					),
+					'job_id'               => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'api_key'              => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
+			)
+		);
 	}
 
 	/**
@@ -210,6 +243,14 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 					$attachment_id         = $id;
 					$post_array            = $request->get_params();
 					$post_array['post_id'] = $attachment_id;
+
+					// If thumbnail array is empty but thumbnail_url is provided, use it.
+					if ( empty( $post_array['thumbnail'] ) && ! empty( $post_array['thumbnail_url'] ) ) {
+						$post_array['thumbnail'] = array(
+							$post_array['thumbnail_url'],
+						);
+						$has_thumbs              = true;
+					}
 
 					if ( $has_thumbs && ! empty( $post_array['thumbnail'] ) ) {
 						$thumbnail = $this->rtgodam_transcoder_handler->add_media_thumbnails( $post_array );
@@ -319,6 +360,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 						array(
 							'response_id' => $entry_id,
 							'form_id'     => $form_id,
+							// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for storing transcoded URL metadata.
 							'meta_key'    => 'rtgodam_transcoded_url_fluentforms_' . $form_id . '_' . $entry_id,
 							'value'       => $post_array['download_url'],
 							'status'      => 'success',
@@ -342,6 +384,65 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 		 * @param \WP_Request $request      WP_Request instance.
 		 */
 		do_action( 'rtgodam_handle_callback_finished', $attachment_id, $job_id, $job_for, $request );
+	}
+
+	/**
+	 * Function to handle the transcription callback request.
+	 *
+	 * @param WP_REST_Request $request Object of WP_REST_Request.
+	 *
+	 * @return WP_Error|WP_REST_Response REST API response.
+	 */
+	public function handle_transcription_callback( WP_REST_Request $request ) {
+		$transcription_status = $request->get_param( 'transcription_status' );
+		$transcript_path      = $request->get_param( 'transcript_path' );
+		$job_id               = $request->get_param( 'job_id' );
+
+		// API key verification is handled by the permission callback.
+
+		// Validate required parameters.
+		if ( empty( $job_id ) ) {
+			return new WP_Error( 'rtgodam_transcription_error', __( 'Job ID is required.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		if ( empty( $transcription_status ) ) {
+			return new WP_Error( 'rtgodam_transcription_error', __( 'Transcription status is required.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		if ( empty( $transcript_path ) ) {
+			return new WP_Error( 'rtgodam_transcription_error', __( 'Transcript path is required.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		// Find video attachment by job ID.
+		$attachment_id = $this->rtgodam_transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
+
+		if ( empty( $attachment_id ) || ! is_numeric( $attachment_id ) ) {
+			return new WP_Error( 'rtgodam_transcription_error', __( 'Video attachment not found for the provided job ID.', 'godam' ), array( 'status' => 404 ) );
+		}
+
+		// If status is "Transcribed", save the transcript path.
+		if ( 'Transcribed' === $transcription_status ) {
+			// Save transcript path as post meta.
+			// The transcript_path parameter is already sanitized by the REST API framework via esc_url_raw sanitize_callback.
+			update_post_meta( $attachment_id, 'rtgodam_transcript_path', $transcript_path );
+
+			return new WP_REST_Response(
+				array(
+					'success' => true,
+					'message' => __( 'Transcript path saved successfully.', 'godam' ),
+				),
+				200
+			);
+		}
+
+		// Return success response even if status is not "Transcribed" (e.g., "Processing", "Failed", etc.).
+		return new WP_REST_Response(
+			array(
+				'success' => true,
+				'message' => __( 'Transcription callback received.', 'godam' ),
+			),
+			200
+		);
 	}
 
 	/**

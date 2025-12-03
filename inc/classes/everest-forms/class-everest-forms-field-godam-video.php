@@ -74,92 +74,8 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 			// Add parent ajax events.
 			parent::add_ajax_events();
 
-			add_action( 'admin_enqueue_scripts', array( $this, 'render_frontend_player_script' ) );
-
 			// To display field HTML in the entry meta.
 			add_filter( 'everest_forms_html_field_value', array( $this, 'update_entry_meta_display_godam_recorder' ), 10, 4 );
-		}
-
-		/**
-		 * Register the script to enqueue on entries.
-		 *
-		 * @since 1.4.0
-		 *
-		 * @return void
-		 */
-		public function render_frontend_player_script() {
-
-			/**
-			 * Get entry details page.
-			 */
-			$evf_route = empty( $_GET['page'] ) ? '' : sanitize_text_field( $_GET['page'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$entry_id  = empty( $_GET['view-entry'] ) ? 0 : absint( $_GET['view-entry'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-
-			if ( 0 === $entry_id || 'evf-entries' !== $evf_route ) {
-				return;
-			}
-
-			wp_enqueue_script(
-				'godam-player-frontend',
-				RTGODAM_URL . 'assets/build/js/godam-player-frontend.min.js',
-				array( 'godam-fluentforms-editor' ),
-				filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.js' ),
-				true
-			);
-
-			wp_enqueue_script(
-				'godam-player-analytics',
-				RTGODAM_URL . 'assets/build/js/godam-player-analytics.min.js',
-				array( 'godam-player-frontend' ),
-				filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-analytics.min.js' ),
-				true
-			);
-
-			wp_enqueue_style(
-				'godam-player-frontend-style',
-				RTGODAM_URL . 'assets/build/css/godam-player-frontend.css',
-				array(),
-				filemtime( RTGODAM_PATH . 'assets/build/css/godam-player-frontend.css' )
-			);
-
-			wp_enqueue_style(
-				'godam-player-style',
-				RTGODAM_URL . 'assets/build/css/godam-player.css',
-				array(),
-				filemtime( RTGODAM_PATH . 'assets/build/css/godam-player.css' )
-			);
-
-			wp_enqueue_style(
-				'godam-player-minimal-skin',
-				RTGODAM_URL . 'assets/build/css/minimal-skin.css',
-				array(),
-				filemtime( RTGODAM_PATH . 'assets/build/css/minimal-skin.css' )
-			);
-
-			wp_enqueue_style(
-				'godam-player-pills-skin',
-				RTGODAM_URL . 'assets/build/css/pills-skin.css',
-				array(),
-				filemtime( RTGODAM_PATH . 'assets/build/css/pills-skin.css' )
-			);
-
-			wp_enqueue_style(
-				'godam-player-bubble-skin',
-				RTGODAM_URL . 'assets/build/css/bubble-skin.css',
-				array(),
-				filemtime( RTGODAM_PATH . 'assets/build/css/bubble-skin.css' )
-			);
-
-			/**
-			 * Localize the script.
-			 */
-			wp_localize_script(
-				'godam-player-frontend',
-				'godamData',
-				array(
-					'apiBase' => RTGODAM_API_BASE,
-				)
-			);
 		}
 
 		/**
@@ -318,7 +234,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		 * @param array $form_data All Form Data.
 		 */
 		public function field_display( $field, $field_atts, $form_data ) {
-			$file_selectors = $this->extract_file_selectors_from_field( $field );
+			$godam_file_selectors = $this->extract_file_selectors_from_field( $field );
 
 			/**
 			 * Render the frontend scripts for the recorder.

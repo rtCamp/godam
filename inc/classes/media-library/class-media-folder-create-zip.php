@@ -239,8 +239,7 @@ class Media_Folder_Create_Zip {
 		if ( 0 === $added_files ) {
 			// Delete empty ZIP file.
 			if ( file_exists( $zip_path ) ) {
-				// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_unlink -- We are making changes in upload directory.
-				unlink( $zip_path );
+				wp_delete_file( $zip_path );
 			}
 			return new \WP_Error(
 				'no_files_added',
@@ -373,8 +372,7 @@ class Media_Folder_Create_Zip {
 
 		// Ensure the file exists before attempting to delete it.
 		if ( file_exists( $zip_path ) ) {
-			// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_unlink -- We are making changes in upload directory.
-			unlink( $zip_path );
+			wp_delete_file( $zip_path );
 		}
 	}
 }

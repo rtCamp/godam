@@ -88,7 +88,7 @@ export default AttachmentsBrowser?.extend( {
 						( container ) => getComputedStyle( container ).display !== 'none',
 					);
 
-					const activeContainer = visibleContainers.at( -1 ); // most recently opened visible one
+					const activeContainer = visibleContainers[ visibleContainers.length - 1 ]; // most recently opened visible one
 
 					if ( activeContainer ) {
 						const menu = activeContainer.querySelector( '.media-frame-menu' );
@@ -104,10 +104,23 @@ export default AttachmentsBrowser?.extend( {
 						}
 					}
 				} else {
-					const menu = $( '.media-frame' ).find( '.media-frame-menu .media-menu' );
+					// Find all visible media frames (same logic as Elementor)
+					const visibleFrames = Array.from( document.querySelectorAll( '.media-frame' ) ).filter(
+						( frame ) => getComputedStyle( frame ).display !== 'none',
+					);
 
-					if ( menu.length ) {
-						menu.append( '<div id="rt-transcoder-media-library-root"></div>' );
+					const activeFrame = visibleFrames[ visibleFrames.length - 1 ]; // most recently opened visible one
+
+					if ( activeFrame ) {
+						const menu = activeFrame.querySelector( '.media-frame-menu .media-menu' );
+						if ( menu ) {
+							// Remove any existing instances
+							menu.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( el ) => el.remove() );
+							// Create and append new div
+							const div = document.createElement( 'div' );
+							div.id = 'rt-transcoder-media-library-root';
+							menu.appendChild( div );
+						}
 					}
 				}
 

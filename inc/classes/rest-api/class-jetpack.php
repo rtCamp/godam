@@ -91,7 +91,7 @@ class Jetpack extends Base {
 									'description'       => __( 'The ID of the Jetpack Form.', 'godam' ),
 									'type'              => 'string',
 									'required'          => true,
-									'sanitize_callback' => 'sanitize_text_field',
+									'sanitize_callback' => 'sanitize_key',
 								),
 							)
 						),
@@ -111,7 +111,7 @@ class Jetpack extends Base {
 								'description'       => __( 'The contact form ID.', 'godam' ),
 								'type'              => 'string',
 								'required'          => true,
-								'sanitize_callback' => 'sanitize_text_field',
+								'sanitize_callback' => 'sanitize_key',
 							),
 							'contact-form-hash' => array(
 								'description'       => __( 'The contact form hash.', 'godam' ),
@@ -123,7 +123,7 @@ class Jetpack extends Base {
 								'description'       => __( 'The origin post ID.', 'godam' ),
 								'type'              => 'string',
 								'required'          => false,
-								'sanitize_callback' => 'sanitize_text_field',
+								'sanitize_callback' => 'sanitize_key',
 							),
 							'fields'            => array(
 								'description' => __( 'The form fields data as JSON string.', 'godam' ),
@@ -584,9 +584,9 @@ class Jetpack extends Base {
 		}
 
 		// Use the correct hash from the original form.
-		global $correct_form_hash;
-		if ( isset( $correct_form_hash ) ) {
-			$form_hash = $correct_form_hash;
+		global $godam_correct_form_hash;
+		if ( isset( $godam_correct_form_hash ) ) {
+			$form_hash = $godam_correct_form_hash;
 		}
 
 		// Verify the form is now in memory.
@@ -806,8 +806,8 @@ class Jetpack extends Base {
 			Contact_Form::$forms[ $correct_hash ] = $form;
 			
 			// Store the correct hash globally for later use.
-			global $correct_form_hash;
-			$correct_form_hash = $correct_hash;
+			global $godam_correct_form_hash;
+			$godam_correct_form_hash = $correct_hash;
 			
 			return true;
 			

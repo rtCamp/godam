@@ -1,5 +1,7 @@
 /* stylelint-disable scss/at-rule-no-unknown */
 @tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
 
@@ -8,9 +10,6 @@
 		text-decoration: none;
 	}
 }
-
-@tailwind components;
-@tailwind utilities;
 
 *, ::before, ::after {
     box-sizing: border-box;
@@ -33,6 +32,7 @@ input, textarea, select {
 }
 
 .godam-button-icon {
+
 	svg {
 		fill: #ab3a6c !important;
 	}
@@ -175,7 +175,7 @@ input, textarea, select {
 
 /* WYSIWYG editor */
 .wysiwyg-editor .ql-toolbar.ql-snow {
-
+	
   @apply flex items-center justify-center flex-wrap gap-2;
 }
 
