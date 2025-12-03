@@ -495,10 +495,10 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 			'watermark'            => boolval( $rtgodam_watermark ),
 			'resolutions'          => array( 'auto' ),
 			'folder_name'          => ! empty( $form_title ) ? $form_title : __( 'Gravity forms', 'godam' ),
-			'wp_author_email'      => $current_user->user_email,
+			'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $current_user->user_email, 0 ),
 			'wp_site'              => $site_url,
-			'wp_author_first_name' => $author_first_name,
-			'wp_author_last_name'  => $author_last_name,
+			'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, 0 ),
+			'wp_author_last_name'  => apply_filters( 'godam_author_last_name_to_send', $author_last_name, 0 ),
 			'public'               => 1,
 		),
 		$watermark_to_use
