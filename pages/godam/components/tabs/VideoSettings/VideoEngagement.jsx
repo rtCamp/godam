@@ -52,7 +52,7 @@ const VideoEngagement = ( { handleSettingChange } ) => {
 							} }
 							disabled={ ! hasValidAPIKey }
 							help={ __(
-								'If disabled, Engagement will be disabled globally for all GODAM Video and GODAM Gallery blocks. Users will not be able to like, comment, or share videos. By enabling this option, Engagement will be enabled globally for all GODAM Video and GODAM Gallery blocks. But you can still disable Engagement on individual blocks from the block settings panel.',
+								'If disabled, Likes and Comments will be disabled globally for all GoDAM Video and GoDAM Video Gallery blocks. If enabled, it can be overridden in the block settings panel.',
 								'godam',
 							) }
 						/>
@@ -68,7 +68,7 @@ const VideoEngagement = ( { handleSettingChange } ) => {
 							} }
 							disabled={ ! hasValidAPIKey }
 							help={ __(
-								'If disabled, sharing options (such as social sharing buttons) will not be available for GODAM videos GODAM Gallery block globally. By enabling this option, sharing options will be available globally for all GODAM Video and GODAM Gallery blocks. But you can still disable sharing on individual blocks from the block settings panel.',
+								'If disabled, sharing options (such as social sharing buttons) will not be available for GoDAM videos. If enabled, it can be overridden in the block settings panel.',
 							) }
 						/>
 					</div>
