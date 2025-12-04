@@ -13,7 +13,7 @@ const { apiFetch } = wp;
 const { addQueryArgs } = wp.url;
 const { createRoot, useState, useMemo, useEffect, useRef } = wp.element;
 const { __ } = wp.i18n;
-const { currentLoggedInUserData, loginUrl, registrationUrl, defaultAvatar, nonce } = window.godamData;
+const { currentLoggedInUserData, loginUrl, registrationUrl, defaultAvatar, nonce } = window.godamData || {};
 const storeName = 'godam-video-engagement';
 
 const DEFAULT_STATE = {
