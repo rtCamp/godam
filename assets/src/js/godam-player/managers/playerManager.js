@@ -140,7 +140,7 @@ export default class PlayerManager {
 			const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
 			const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
 
-			// Calculate intersection ratio manually (matching threshold 0.5)
+			// Calculate intersection ratio manually (matching threshold 0.35)
 			const visibleTop = Math.max( 0, Math.min( rect.bottom, viewportHeight ) - Math.max( rect.top, 0 ) );
 			const visibleLeft = Math.max( 0, Math.min( rect.right, viewportWidth ) - Math.max( rect.left, 0 ) );
 			const visibleArea = visibleTop * visibleLeft;
