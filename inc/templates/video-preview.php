@@ -27,6 +27,8 @@ $godam_page_title = empty( $godam_video_id ) ? __( 'Video Preview', 'godam' ) : 
 </head>
 <body <?php body_class(); ?>>
 	<?php
+	wp_body_open();
+
 	// Check if video ID is provided and if video attachment exists.
 	$godam_video_attachment = null;
 	$godam_show_video       = false;
