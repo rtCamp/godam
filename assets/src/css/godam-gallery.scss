@@ -162,6 +162,7 @@
 					white-space: normal;
 					overflow: visible;
 					text-overflow: initial;
+					word-break: break-word;
 
 					@media (max-width: 765px) {
 						font-size: 14px;
