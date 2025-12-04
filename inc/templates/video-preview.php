@@ -69,6 +69,6 @@ $godam_page_title = empty( $godam_video_id ) ? __( 'Video Preview', 'godam' ) : 
 	}
 	?>
 
-	<?php do_action( 'wp_footer' ); ?>
+	<?php wp_footer(); ?>
 </body>
 </html>
