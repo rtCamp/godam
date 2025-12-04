@@ -21,7 +21,7 @@
 			"role": "content"
 		},
 		"id": {
-			"type": "string",
+			"type": "number",
 			"role": "content"
 		},
 		"height": {
