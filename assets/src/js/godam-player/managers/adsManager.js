@@ -29,7 +29,9 @@ export default class AdsManager {
 
 	/**
 	 * Setup ads integration
-	 * Dynamically loads ads plugins only when ads are configured
+	 * NOTE: Ads plugins should already be loaded by videoPlayer.loadRequiredPlugins()
+	 * before player initialization. This call to loadAdsPlugins() is a safety check
+	 * that will skip if plugins are already loaded.
 	 *
 	 * @return {Promise<void>} Promise that resolves when ads are set up
 	 */
@@ -39,7 +41,7 @@ export default class AdsManager {
 		}
 
 		try {
-			// Dynamically load ads plugins
+			// Ensure ads plugins are loaded (will skip if already loaded)
 			await loadAdsPlugins();
 			this.adsLoaded = true;
 

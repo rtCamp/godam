@@ -16,7 +16,7 @@ import AdsManager from './managers/adsManager.js';
 import HoverManager from './managers/hoverManager.js';
 import ShareManager from './managers/shareManager.js';
 import MenuButtonHoverManager from './managers/menuButtonHover.js';
-import { loadFlvPlugin, requiresFlvPlugin } from './utils/pluginLoader.js';
+import { loadFlvPlugin, requiresFlvPlugin, loadAdsPlugins } from './utils/pluginLoader.js';
 
 /**
  * Refactored Video Player Class
@@ -45,28 +45,58 @@ export default class GodamVideoPlayer {
 	 * Initialize the video player
 	 */
 	async initialize() {
+		// Mark as initializing to prevent double initialization
+		this.video.dataset.videojsInitializing = 'true';
+
 		this.setupVideoElement();
 		await this.loadRequiredPlugins();
 		this.initializePlayer();
+
+		// Remove initializing flag after initialization
+		delete this.video.dataset.videojsInitializing;
 	}
 
 	/**
-	 * Load required plugins based on video sources
+	 * Load required plugins based on video sources and configuration
+	 * IMPORTANT: This must run BEFORE player initialization to avoid
+	 * videojs-contrib-ads missing the loadstart event
 	 */
 	async loadRequiredPlugins() {
 		const sources = this.configManager.videoSetupControls?.sources || [];
 
+		// Check if ads are configured
+		const needsAds = !! (
+			this.configManager.adTagUrl ||
+			( this.configManager.globalAdsSettings?.enable_global_video_ads &&
+				this.configManager.globalAdsSettings?.adTagUrl )
+		);
+
 		// Check if FLV plugin is needed
 		const needsFlv = sources.some( ( source ) => requiresFlvPlugin( source.src || source.type ) );
 
-		if ( needsFlv ) {
-			try {
-				await loadFlvPlugin();
-			} catch ( error ) {
-				// eslint-disable-next-line no-console
-				console.error( 'Failed to load FLV plugin:', error );
-			}
+		// Load plugins in parallel
+		const loadPromises = [];
+
+		if ( needsAds ) {
+			loadPromises.push(
+				loadAdsPlugins().catch( ( error ) => {
+					// eslint-disable-next-line no-console
+					console.error( 'Failed to load ads plugins:', error );
+				} ),
+			);
 		}
+
+		if ( needsFlv ) {
+			loadPromises.push(
+				loadFlvPlugin().catch( ( error ) => {
+					// eslint-disable-next-line no-console
+					console.error( 'Failed to load FLV plugin:', error );
+				} ),
+			);
+		}
+
+		// Wait for all required plugins to load
+		await Promise.all( loadPromises );
 	}
 
 	/**
@@ -85,7 +115,15 @@ export default class GodamVideoPlayer {
 	 * Initialize VideoJS player
 	 */
 	initializePlayer() {
-		this.player = videojs( this.video, this.configManager.videoSetupControls );
+		// Check if player already exists (safety check)
+		const existingPlayer = videojs.getPlayer( this.video );
+		if ( existingPlayer ) {
+			// Use existing player instance (should rarely happen with proper initialization guards)
+			this.player = existingPlayer;
+		} else {
+			// Normal initialization path
+			this.player = videojs( this.video, this.configManager.videoSetupControls );
+		}
 
 		// Initialize ads manager (async - loads plugins dynamically)
 		this.adsManager = new AdsManager( this.player, this.configManager );
