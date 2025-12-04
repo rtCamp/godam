@@ -308,6 +308,12 @@ Data Sent:
 
 2. API Key
 
+3. Author Email (optional, can be filtered out)
+
+4. Author First Name (optional, can be filtered out)
+
+5. Author Last Name (optional, can be filtered out)
+
 When Data is Sent:
 
 1. During media transcoding when the user uploads a video.
