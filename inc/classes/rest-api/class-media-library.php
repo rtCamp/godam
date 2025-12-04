@@ -1108,7 +1108,9 @@ class Media_Library extends Base {
 			// For video, GoDAM expects `job_type=stream`.
 			if ( 'video' === $type ) {
 				$request_body['job_type'] = 'stream';
-			} elseif ( 'image-video' !== $type && 'all' !== $type ) {
+			} elseif ( 'application/pdf' === $type ) { // For application/pdf, GoDAM expects `job_type=pdf`.
+				$request_body['job_type'] = 'pdf';
+			} elseif ( 'image-video' !== $type && 'all' !== $type ) { // TODO: For job type 'image-video', we need to add support on Central.
 				$request_body['job_type'] = $type;
 			}
 
