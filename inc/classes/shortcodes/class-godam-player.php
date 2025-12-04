@@ -49,12 +49,14 @@ class GoDAM_Player {
 		// Allow external stylesheets to be enqueued.
 		do_action( 'godam_player_enqueue_styles' );
 
+		$godam_player_frontend_assets = include RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.asset.php';
+
 		// Register your scripts and styles here.
 		wp_register_script(
 			'godam-player-frontend-script',
 			RTGODAM_URL . 'assets/build/js/godam-player-frontend.min.js',
-			array( 'wp-data', 'wp-url', 'wp-element', 'wp-i18n', 'wp-api-fetch' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.js' ),
+			$godam_player_frontend_assets['dependencies'],
+			$godam_player_frontend_assets['version'],
 			true
 		);
 

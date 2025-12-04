@@ -11,7 +11,7 @@ Tested up to: 6.8.3
 
 Requires PHP: 7.4
 
-Stable tag: 1.4.5
+Stable tag: 1.4.7
 
 License: [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)
 
@@ -283,7 +283,7 @@ This plugin relies on third-party services to provide specific features. Below i
     <tr>
       <td>app.godam.io</td>
       <td>Transcoding &amp; API key verification</td>
-      <td>Site URL, API Key</td>
+      <td>Site URL, API Key, Author Email*, Author First Name*, Author Last Name*</td>
       <td>On media upload &amp; API key check</td>
       <td>
         app.godam.io<br>
@@ -302,5 +302,7 @@ This plugin relies on third-party services to provide specific features. Below i
     </tr>
   </tbody>
 </table>
+
+<small>*Author data can be filtered out using WordPress filters for privacy control.</small>
 
 Want to suggest a feature? Please submit it [here](https://github.com/rtCamp/godam/discussions/categories/feature-requests)

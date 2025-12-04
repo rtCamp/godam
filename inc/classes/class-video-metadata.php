@@ -189,7 +189,7 @@ class Video_Metadata {
 	 * @return array
 	 */
 	public function set_media_library_thumbnail( $response, $attachment, $meta ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $attachment and $meta are not modified.
-		if ( strpos( $response['mime'], 'video/' ) === 0 ) {
+		if ( 0 === strpos( $response['mime'], 'video/' ) || 'application/pdf' === $response['mime'] ) {
 
 			$thumbnail_url   = get_post_meta( $response['id'], 'rtgodam_media_video_thumbnail', true );
 			$attachment_meta = get_post_meta( $response['id'], '_wp_attachment_metadata', true );

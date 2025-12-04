@@ -139,50 +139,6 @@ class Assets {
 		wp_set_script_translations( 'rtgodam-script', 'godam', RTGODAM_PATH . 'languages' );
 		wp_enqueue_script( 'rtgodam-script' );
 		wp_enqueue_style( 'rtgodam-style' );
-
-		// Add Jetpack form script.
-		wp_register_script(
-			'rtgodam-jetpack-form',
-			RTGODAM_URL . 'assets/build/js/jetpack-form.min.js',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/js/jetpack-form.min.js' ),
-			true
-		);
-
-		wp_localize_script(
-			'rtgodam-jetpack-form',
-			'godamJetpackFormData',
-			array(
-				'submittingText'      => __( 'Submitting...', 'godam' ),
-				'successHeading'      => __( 'Success!', 'godam' ),
-				'successMessage'      => __( 'Your message has been sent successfully.', 'godam' ),
-				'errorMessage'        => __( 'An error occurred. Please try again.', 'godam' ),
-				'networkErrorMessage' => __( 'Network error. Please try again.', 'godam' ),
-			)
-		);
-
-		wp_localize_script(
-			'rtgodam-jetpack-form',
-			'wpAjax',
-			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'jetpack_form_nonce' ),
-			),
-		);
-
-		wp_enqueue_script( 'rtgodam-jetpack-form' );
-
-		// Register IMA SDK.
-		wp_enqueue_script(
-			'ima-sdk',
-			'https://imasdk.googleapis.com/js/sdkloader/ima3.js', // It is required to load the IMA SDK from the Google CDN, else it will show console error.
-			array(),
-			RTGODAM_VERSION,
-			array(
-				'strategy'  => 'defer',
-				'in_footer' => true,
-			)
-		);
 	}
 
 	/**
@@ -240,13 +196,14 @@ class Assets {
 
 		wp_enqueue_script( 'rtgodam-script' );
 		wp_enqueue_style( 'rtgodam-style' );
-		wp_enqueue_media();
+
+		$easydam_media_library_script_assets = include RTGODAM_PATH . 'assets/build/js/media-library.min.asset.php';
 
 		wp_register_script(
 			'easydam-media-library',
 			RTGODAM_URL . 'assets/build/js/media-library.min.js',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/js/media-library.min.js' ),
+			$easydam_media_library_script_assets['dependencies'],
+			$easydam_media_library_script_assets['version'],
 			true
 		);
 
@@ -341,6 +298,7 @@ class Assets {
 			'brandColor'        => $brand_color,
 			'apiBase'           => RTGODAM_API_BASE,
 			'enableGTMTracking' => $enable_gtm_tracking,
+			'videoPostSettings' => get_option( 'rtgodam_video_post_settings', array() ),
 		);
 
 		if ( ! rtgodam_is_api_key_valid() ) {

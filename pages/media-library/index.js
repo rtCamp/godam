@@ -23,27 +23,12 @@ const Index = () => {
 document.addEventListener( 'DOMContentLoaded', initializeMediaLibrary );
 document.addEventListener( 'media-frame-opened', initializeMediaLibrary );
 
-// Clean up React when media modal is closed - important to ensure clean state on modal reopen
-document.addEventListener( 'click', ( event ) => {
-	if ( event.target.closest( '.media-modal-close, .media-modal-backdrop' ) ) {
-		setTimeout( () => {
-			const rootElements = document.querySelectorAll( '#rt-transcoder-media-library-root' );
-			rootElements.forEach( ( rootElement ) => {
-				if ( rootElement._reactRoot ) {
-					rootElement._reactRoot.unmount();
-					delete rootElement._reactRoot;
-				}
-			} );
-		}, 100 );
-	}
-} );
-
 function initializeMediaLibrary() {
 	if ( window.elementor ) {
 		const visibleContainers = Array.from( document.querySelectorAll( '.supports-drag-drop' ) )
 			.filter( ( container ) => getComputedStyle( container ).display !== 'none' );
 
-		const activeContainer = visibleContainers.at( -1 ); // Most recent visible container
+		const activeContainer = visibleContainers[ visibleContainers.length - 1 ]; // Most recent visible container
 
 		if ( activeContainer ) {
 			const rootElement = activeContainer.querySelector( '#rt-transcoder-media-library-root' );
@@ -65,7 +50,7 @@ function initializeMediaLibrary() {
 	const visibleFrames = Array.from( document.querySelectorAll( '.media-frame' ) )
 		.filter( ( frame ) => getComputedStyle( frame ).display !== 'none' );
 
-	const activeFrame = visibleFrames.at( -1 ); // Most recently opened visible frame
+	const activeFrame = visibleFrames[ visibleFrames.length - 1 ]; // Most recently opened visible frame
 
 	let rootElement = null;
 

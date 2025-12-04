@@ -2,11 +2,16 @@
  * Internal dependencies
  */
 import { ACTIONS } from './utils/constants';
-const { createReduxStore, register, select, dispatch, subscribe } = wp.data;
-const { apiFetch } = wp;
-const { addQueryArgs } = wp.url;
-const { createRoot, useState, useMemo, useEffect, useRef } = wp.element;
-const { __ } = wp.i18n;
+
+/**
+ * WordPress dependencies
+ */
+import { createReduxStore, register, select, dispatch, subscribe } from '@wordpress/data';
+import apiFetch from '@wordpress/api-fetch';
+import { addQueryArgs } from '@wordpress/url';
+import { createRoot, useState, useMemo, useEffect, useRef } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
+
 const { nonceData, godamData } = window;
 const { currentLoggedInUserData, loginUrl, registrationUrl, defaultAvatar } = godamData;
 const storeName = 'godam-video-engagement';
@@ -686,10 +691,9 @@ function timeToSeconds( h, m, s ) {
 /**
  * Component to render a text with @HH:MM:SS or @MM:SS timestamps linked to video positions.
  *
- * @param {Object}                   props          - Component props.
- * @param {string}                   props.text     - Text to render.
- * @param {function(number, string)} [props.onJump] - Callback to handle clicking a timestamp.
- *
+ * @param {Object}                           props          - Component props.
+ * @param {string}                           props.text     - Text to render.
+ * @param {(function(number, string): void)} [props.onJump] - Callback to handle clicking a timestamp.
  */
 function TimeLinkedText( { text, onJump } ) {
 	// Matches @HH:MM:SS or @MM:SS
@@ -999,7 +1003,7 @@ function GuestLoginForm( props ) {
 			{
 				! showGuestForm && (
 					<div className={ baseClass + '-leave-comment-login' }>
-						<a href={ registrationUrl }>{ __( 'Register', 'godam' ) }</a> / <a href={ loginUrl }>{ __( 'Login', 'godam' ) }</a> { __( ' to comment', 'godam' ) }
+						<a href={ registrationUrl }>{ __( 'Register', 'godam' ) }</a> / <a href={ loginUrl }>{ __( 'Login', 'godam' ) }</a> { __( 'to comment', 'godam' ) }
 					</div>
 				)
 			}
