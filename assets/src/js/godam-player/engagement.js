@@ -8,12 +8,17 @@ import EmojiPicker from 'emoji-picker-react';
  */
 import { ACTIONS } from './utils/constants';
 
-const { createReduxStore, register, select, dispatch, subscribe } = wp.data;
-const { apiFetch } = wp;
-const { addQueryArgs } = wp.url;
-const { createRoot, useState, useMemo, useEffect, useRef } = wp.element;
-const { __ } = wp.i18n;
+/**
+ * WordPress dependencies
+ */
+import { createReduxStore, register, select, dispatch, subscribe } from '@wordpress/data';
+import apiFetch from '@wordpress/api-fetch';
+import { addQueryArgs } from '@wordpress/url';
+import { createRoot, useState, useMemo, useEffect, useRef } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
+
 const { currentLoggedInUserData, loginUrl, registrationUrl, defaultAvatar, nonce } = window.godamData || {};
+
 const storeName = 'godam-video-engagement';
 
 const DEFAULT_STATE = {

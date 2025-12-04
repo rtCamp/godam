@@ -38,11 +38,13 @@ class GoDAM_Video_Gallery {
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-gallery.css' )
 		);
 
+		$godam_gallery_script_assets = include RTGODAM_PATH . 'assets/build/js/godam-gallery.min.asset.php';
+
 		wp_register_script(
 			'godam-gallery-script',
 			RTGODAM_URL . 'assets/build/js/godam-gallery.min.js',
-			array( 'wp-data' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/godam-gallery.min.js' ),
+			$godam_gallery_script_assets['dependencies'],
+			$godam_gallery_script_assets['version'],
 			true
 		);
 	}

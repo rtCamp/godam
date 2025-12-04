@@ -349,7 +349,7 @@ const Analytics = ( { attachmentID } ) => {
 			<div id="media-not-found-overlay" className={ `api-key-overlay ${ ! mediaNotFound ? 'hidden' : '' }` }>
 				<div className="api-key-message">
 					<p>
-						{ __( 'This media doesn\'t exist. ', 'godam' ) }
+						{ __( 'This media doesn\'t exist.', 'godam' ) }
 						<a href="admin.php?page=rtgodam">
 							{ __( 'Go to Dashboard', 'godam' ) }
 						</a>
@@ -408,7 +408,7 @@ const Analytics = ( { attachmentID } ) => {
 
 			<div id="screen-size-overlay" className="screen-size-overlay hidden">
 				<div className="screen-size-message">
-					<p>{ __( 'You need to use desktop to access this feature. ', 'godam' ) }</p>
+					<p>{ __( 'You need to use desktop to access this feature.', 'godam' ) }</p>
 				</div>
 			</div>
 
@@ -417,7 +417,7 @@ const Analytics = ( { attachmentID } ) => {
 					<div>
 						<div className="subheading-container pt-6">
 							{ attachmentData?.title?.rendered
-								? <div className="subheading">{ __( 'Analytics report of ', 'godam' ) }
+								? <div className="subheading">{ __( 'Analytics report of', 'godam' ) }
 									<span dangerouslySetInnerHTML={ {
 										__html: DOMPurify.sanitize( attachmentData?.title?.rendered ),
 									} }></span></div> : <div className="subheading">{ __( 'Analytics report', 'godam' ) }</div>
@@ -559,7 +559,7 @@ const Analytics = ( { attachmentID } ) => {
 												onClick={ () => startABTesting() }
 												className="godam-button"
 											>
-												{ __( 'Start Test ', 'godam' ) }
+												{ __( 'Start Test', 'godam' ) }
 											</Button>
 										</div>
 									) }

@@ -1,12 +1,15 @@
 /* global GODAMPlayer */
+
+/**
+ * WordPress dependencies
+ */
+import { select, dispatch } from '@wordpress/data';
+
 /**
  * External dependencies
  */
-/**
- * Internal dependencies
- */
-const { select, dispatch } = wp.data;
 import DOMPurify from 'isomorphic-dompurify';
+
 const engagementStore = 'godam-video-engagement';
 
 // Common function to load more videos
@@ -103,7 +106,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 									}
 									isLoading = false;
 								} )
-								.catch( ( ) => {
+								.catch( () => {
 									isLoading = false;
 								} );
 						}

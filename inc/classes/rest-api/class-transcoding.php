@@ -195,7 +195,7 @@ class Transcoding extends Base {
 		if ( empty( $job_id ) ) {
 			return array(
 				'status'  => 'not_transcoding',
-				'message' => __( 'Video has not been transcoded.', 'godam' ),
+				'message' => __( 'Media has not been transcoded.', 'godam' ),
 			);
 		}
 

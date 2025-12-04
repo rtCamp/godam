@@ -150,12 +150,36 @@ class Media_Library_Ajax {
 		$file_title = get_the_title( $attachment_id );
 		$file_name  = pathinfo( $attachment_url, PATHINFO_FILENAME ) . '.' . pathinfo( $attachment_url, PATHINFO_EXTENSION );
 
+		// Get attachment author information.
+		$attachment_author_id = get_post_field( 'post_author', $attachment_id );
+		$attachment_author    = get_user_by( 'id', $attachment_author_id );
+		$site_url             = get_site_url();
+
+		// Get author name with fallback to username.
+		$author_first_name = '';
+		$author_last_name  = '';
+
+		if ( $attachment_author ) {
+			$author_first_name = $attachment_author->first_name;
+			$author_last_name  = $attachment_author->last_name;
+
+			// If first and last names are empty, use username as fallback.
+			if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
+				$author_first_name = $attachment_author->user_login;
+			}
+		}
+
 		// Request params.
 		$params = array(
-			'api_token'         => $api_key,
-			'job_type'          => 'image',
-			'file_origin'       => $attachment_url,
-			'orignal_file_name' => $file_name ?? $file_title,
+			'api_token'            => $api_key,
+			'job_type'             => 'image',
+			'file_origin'          => $attachment_url,
+			'orignal_file_name'    => $file_name ?? $file_title,
+			'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $attachment_author ? $attachment_author->user_email : '', $attachment_id ),
+			'wp_site'              => $site_url,
+			'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, $attachment_id ),
+			'wp_author_last_name'  => apply_filters( 'godam_author_last_name_to_send', $author_last_name, $attachment_id ),
+			'public'               => 1,
 		);
 
 		$upload_media = wp_remote_post(
