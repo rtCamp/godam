@@ -794,6 +794,7 @@ function godam_preview_page_content( $video_id ) {
 	// Check if video ID is provided and if video attachment exists.
 	$video_attachment = null;
 	$show_video       = false;
+	$video_id         = intval( $video_id );
 
 	if ( ! empty( $video_id ) ) {
 		$video_attachment = get_post( $video_id );
