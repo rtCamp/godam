@@ -2,6 +2,8 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
+import apiFetch from '@wordpress/api-fetch';
+
 /**
  * Internal dependencies
  */
@@ -119,7 +121,7 @@ async function getGodamSettings() {
 	const url = 'godam/v1/settings/godam-settings';
 
 	try {
-		const response = await wp.apiFetch( {
+		const response = await apiFetch( {
 			path: url,
 			method: 'GET',
 		} );
