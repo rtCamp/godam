@@ -3,6 +3,11 @@
  */
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
+/**
+ * Internal dependencies
+ */
+import { getCurrentMimeTypeFilter } from '../../data/utilities';
+
 const restURL = window.godamRestRoute.url || '';
 
 export const folderApi = createApi( {
@@ -11,31 +16,7 @@ export const folderApi = createApi( {
 	endpoints: ( builder ) => ( {
 		getAllMediaCount: builder.query( {
 			async queryFn( arg, api, extraOptions, baseQuery ) {
-				// Detect current media type filter.
-				const getCurrentMimeTypeFilter = () => {
-					// Check URL parameters.
-					const urlParams = new URLSearchParams( window.location.search );
-					const postMimeType = urlParams.get( 'post_mime_type' );
-
-					if ( postMimeType ) {
-						return { media_type: postMimeType };
-					}
-
-					// Check for media library state (for AJAX requests).
-					if ( typeof wp !== 'undefined' && wp.media && wp.media.frame ) {
-						const collection = wp.media.frame.state().get( 'library' );
-						if ( collection && collection.props ) {
-							const mimeType = collection.props.get( 'type' );
-							if ( mimeType && mimeType !== 'all' ) {
-								return { media_type: mimeType };
-							}
-						}
-					}
-
-					return {};
-				};
-
-				const mimeTypeParams = getCurrentMimeTypeFilter();
+				const mimeTypeParams = getCurrentMimeTypeFilter( 'media_type' );
 
 				const result = await baseQuery( {
 					url: 'wp/v2/media',
@@ -57,30 +38,6 @@ export const folderApi = createApi( {
 		} ),
 		getCategoryMediaCount: builder.query( {
 			query: ( { folderId } ) => {
-				// Detect current media type filter.
-				const getCurrentMimeTypeFilter = () => {
-					// Check URL parameters.
-					const urlParams = new URLSearchParams( window.location.search );
-					const postMimeType = urlParams.get( 'post_mime_type' );
-
-					if ( postMimeType ) {
-						return { post_mime_type: postMimeType };
-					}
-
-					// Check for media library state (for AJAX requests).
-					if ( typeof wp !== 'undefined' && wp.media && wp.media.frame ) {
-						const collection = wp.media.frame.state().get( 'library' );
-						if ( collection && collection.props ) {
-							const mimeType = collection.props.get( 'type' );
-							if ( mimeType && mimeType !== 'all' ) {
-								return { post_mime_type: mimeType };
-							}
-						}
-					}
-
-					return {};
-				};
-
 				const mimeTypeParams = getCurrentMimeTypeFilter();
 
 				return {
@@ -95,30 +52,6 @@ export const folderApi = createApi( {
 		getFolders: builder.query( {
 			query: ( options = {} ) => {
 				const isSpecial = options.bookmark || options.locked;
-
-				// Detect current media type filter from URL or media library state.
-				const getCurrentMimeTypeFilter = () => {
-					// Check URL parameters.
-					const urlParams = new URLSearchParams( window.location.search );
-					const postMimeType = urlParams.get( 'post_mime_type' );
-
-					if ( postMimeType ) {
-						return { post_mime_type: postMimeType };
-					}
-
-					// Check for media library state (for AJAX requests).
-					if ( typeof wp !== 'undefined' && wp.media && wp.media.frame ) {
-						const collection = wp.media.frame.state().get( 'library' );
-						if ( collection && collection.props ) {
-							const mimeType = collection.props.get( 'type' );
-							if ( mimeType && mimeType !== 'all' ) {
-								return { post_mime_type: mimeType };
-							}
-						}
-					}
-
-					return {};
-				};
 
 				const mimeTypeParams = getCurrentMimeTypeFilter();
 
