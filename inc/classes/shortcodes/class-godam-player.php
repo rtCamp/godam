@@ -119,6 +119,7 @@ class GoDAM_Player {
 				'loginUrl'                => apply_filters( 'rtgodam_site_login_url', wp_login_url() . '?redirect_to=' . rawurlencode( get_permalink() ) ),
 				'registrationUrl'         => apply_filters( 'rtgodam_site_registration_url', wp_registration_url() . '&redirect_to=' . rawurlencode( get_permalink() ) ),
 				'defaultAvatar'           => get_avatar_url( 0 ),
+				'nonce'                   => wp_create_nonce( 'wp_rest' ),
 			)
 		);
 	}
