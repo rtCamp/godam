@@ -15,7 +15,7 @@ window.GoDAMAPI = {
 	 * @param {string}      attachmentID - The attachment ID of the video
 	 * @param {HTMLElement} videoElement - (optional) an actual video tag element
 	 * @param {Object}      player       - (optional) the video.js player instance
-	 * @return {Player} Player instance
+	 * @return {Player} Player instance, only return player if it is ready.
 	 */
 	getPlayer( attachmentID, videoElement = null, player = null ) {
 		let video, videoJs;
@@ -48,7 +48,11 @@ window.GoDAMAPI = {
 				if ( ! video ) {
 					throw new Error( ERROR_NO_VIDEO_FOUND );
 				}
-				videoJs = videojs.getPlayer( videoElement ) || videojs( videoElement );
+				// Don't initialize if already initializing
+				if ( video.dataset.videojsInitializing === 'true' ) {
+					throw new Error( `Player for attachment ID ${ attachmentID } is currently initializing. Please wait.` );
+				}
+				videoJs = videojs.getPlayer( videoElement );
 			} else {
 				// It's the container div, find the video tag inside
 				video = videoElement;
@@ -56,7 +60,11 @@ window.GoDAMAPI = {
 				if ( ! videoTag ) {
 					throw new Error( ERROR_NO_VIDEO_FOUND );
 				}
-				videoJs = videojs.getPlayer( videoTag ) || videojs( videoTag );
+				// Don't initialize if already initializing
+				if ( video.dataset.videojsInitializing === 'true' ) {
+					throw new Error( `Player for attachment ID ${ attachmentID } is currently initializing. Please wait.` );
+				}
+				videoJs = videojs.getPlayer( videoTag );
 			}
 		} else {
 			// Nothing provided, search by attachment ID
@@ -68,7 +76,11 @@ window.GoDAMAPI = {
 			if ( ! videoTag ) {
 				throw new Error( ERROR_NO_VIDEO_FOUND );
 			}
-			videoJs = videojs.getPlayer( videoTag ) || videojs( videoTag );
+			// Don't initialize if already initializing
+			if ( video.dataset.videojsInitializing === 'true' ) {
+				throw new Error( `Player for attachment ID ${ attachmentID } is currently initializing. Please wait.` );
+			}
+			videoJs = videojs.getPlayer( videoTag );
 		}
 
 		return new Player( videoJs, video );

@@ -461,6 +461,7 @@ if ( $godam_should_preload_poster ) {
 					data-global_ads_settings="<?php echo esc_attr( $godam_ads_settings ); ?>"
 					data-hover-select="<?php echo esc_attr( $godam_hover_select ); ?>"
 					data-video-title="<?php echo esc_attr( $godam_attachment_title ); ?>"
+					data-autoplay-on-view="<?php echo esc_attr( $godam_autoplay ? 'true' : 'false' ); ?>"
 				>
 					<?php
 

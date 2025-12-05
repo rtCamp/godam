@@ -5,7 +5,7 @@ import videojs from 'video.js';
 
 // Only import qualityLevels if not already registered
 if ( ! videojs.getPlugin( 'qualityLevels' ) ) {
-	import( 'videojs-contrib-quality-levels' );
+	await import( /* webpackChunkName: "videojs-quality-levels" */ 'videojs-contrib-quality-levels' );
 }
 
 import DOMPurify from 'isomorphic-dompurify';
