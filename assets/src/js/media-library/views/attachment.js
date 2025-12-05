@@ -121,7 +121,7 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 								.text( '🚫 Drop not allowed' );
 						} else {
 							$( 'body' ).css( 'cursor', 'move' );
-							const draggedItemIds = this.$el.data( 'draggedItems' );
+							const draggedItemIds = this.$el.data( 'draggedItems' ) || [];
 							$helper
 								.css( {
 									background: '#333',
