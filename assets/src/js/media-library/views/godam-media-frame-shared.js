@@ -130,6 +130,10 @@ const GoDAMMediaFrameShared = {
 					} );
 
 					document.dispatchEvent( event );
+
+					// Also trigger count refresh for React components
+					const countRefreshEvent = new CustomEvent( 'godam-attachment-browser:changed' );
+					document.dispatchEvent( countRefreshEvent );
 				}
 			} );
 	},

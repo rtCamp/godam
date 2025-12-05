@@ -1378,7 +1378,7 @@ class Media_Library extends Base {
 	}
 
 	/**
-	 * Get the number of items in a media folder by id.
+	 * Get the number of items in a media folder by id with mime type filtering support.
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response|\WP_Error
@@ -1413,6 +1413,23 @@ class Media_Library extends Base {
 			'no_found_rows'  => false,
 			'tax_query'      => $tax_query, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 		);
+
+		// Add mime type filtering if available.
+		$mime_type_filter = Media_Folder_Utils::get_instance()->get_current_mime_type_filter();
+
+		if ( $mime_type_filter ) {
+			if ( is_array( $mime_type_filter ) ) {
+				$args['post_mime_type'] = $mime_type_filter;
+			} elseif ( 'image/' === $mime_type_filter ) {
+				$args['post_mime_type'] = 'image';
+			} elseif ( 'video/' === $mime_type_filter ) {
+				$args['post_mime_type'] = 'video';
+			} elseif ( 'audio/' === $mime_type_filter ) {
+				$args['post_mime_type'] = 'audio';
+			} else {
+				$args['post_mime_type'] = $mime_type_filter;
+			}
+		}
 
 		$query = new \WP_Query( $args );
 
@@ -1598,6 +1615,9 @@ class Media_Library extends Base {
 			$locked   = ( '1' === $locked_raw || 1 === $locked_raw || true === $locked_raw || 'true' === $locked_raw ) ? true : false;
 			$bookmark = ( '1' === $bookmark_raw || 1 === $bookmark_raw || true === $bookmark_raw || 'true' === $bookmark_raw ) ? true : false;
 
+			// Get current mime type filter to return filtered counts.
+			$mime_type_filter = Media_Folder_Utils::get_instance()->get_current_mime_type_filter();
+
 			$prepared[] = array(
 				'id'              => $term->term_id,
 				'name'            => $term->name,
@@ -1606,7 +1626,7 @@ class Media_Library extends Base {
 					'locked'   => $locked,
 					'bookmark' => $bookmark,
 				),
-				'attachmentCount' => (int) Media_Folder_Utils::get_instance()->get_attachment_count( $term->term_id ),
+				'attachmentCount' => (int) Media_Folder_Utils::get_instance()->get_attachment_count( $term->term_id, false, $mime_type_filter ),
 			);
 		}
 

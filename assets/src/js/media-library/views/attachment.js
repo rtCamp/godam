@@ -36,6 +36,11 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 		 * Attach drag event to the attachment element, this will allow the user to drag the attachment.
 		 * It's more useful to do this here, because on re-render, the draggable event will be lost.
 		 */
+		const dragState = {
+			lastAllowed: null,
+			debounceTimeout: null,
+		};
+
 		this.$el.draggable( {
 			cursor: 'move',
 
@@ -72,6 +77,7 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 						boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
 						zIndex: 160001, // Ensure that the helper is above media library popup
 						PointerEvent: 'none',
+						pointerEvents: 'none', // Prevent helper from interfering with element detection
 						position: 'relative',
 					},
 				} );
@@ -86,6 +92,52 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 					event.preventDefault();
 					$( event.target ).draggable( 'cancel' );
 				}
+			},
+			drag: ( event, ui ) => {
+				// Find what’s under the current cursor position
+				const $helper = ui.helper;
+				const $targetUnderCursor = $( document.elementFromPoint( event.clientX, event.clientY ) );
+
+				// Disallowed if hovered over a locked folder or some no-drop zone
+				const isDisallowed = $targetUnderCursor.closest( '.no-drop' ).length > 0;
+
+				// Only process if state actually changed
+				if ( dragState.lastAllowed !== isDisallowed ) {
+					// Clear any pending state change
+					clearTimeout( dragState.debounceTimeout );
+
+					// Debounce to prevent rapid flickering
+					dragState.debounceTimeout = setTimeout( () => {
+						dragState.lastAllowed = isDisallowed;
+
+						if ( isDisallowed ) {
+							$( 'body' ).css( 'cursor', 'not-allowed' );
+							$helper
+								.css( {
+									background: '#8b0000',
+									color: '#fff',
+									boxShadow: '0 2px 5px rgba(255,0,0,0.6)',
+								} )
+								.text( '🚫 Drop not allowed' );
+						} else {
+							$( 'body' ).css( 'cursor', 'move' );
+							const draggedItemIds = this.$el.data( 'draggedItems' ) || [];
+							$helper
+								.css( {
+									background: '#333',
+									color: '#fff',
+									boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
+								} )
+								.text( `Moving ${ draggedItemIds.length } item${ draggedItemIds.length > 1 ? 's' : '' }` );
+						}
+					}, 50 ); // 50ms debounce - prevents rapid state changes
+				}
+			},
+			stop: () => {
+				// Clean up on drag end
+				clearTimeout( dragState.debounceTimeout );
+				dragState.lastAllowed = null;
+				$( 'body' ).removeClass( 'is-dragging' ).css( 'cursor', '' );
 			},
 		} );
 	},
