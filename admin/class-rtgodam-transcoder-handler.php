@@ -583,7 +583,17 @@ class RTGODAM_Transcoder_Handler {
 
 			$is_retranscoding_job = get_post_meta( $post_id, 'rtgodam_retranscoding_sent', true );
 
-			if ( ! $is_retranscoding_job || rtgodam_is_override_thumbnail() ) {
+			/**
+			 * Determines the default thumbnail behavior:
+			 * - For newly uploaded videos: always assign the first generated thumbnail.
+			 * - For retranscoding jobs: assign the first thumbnail only when either:
+			 *     • the overwrite option is enabled, or
+			 *     • no existing thumbnail is currently set.
+			 */
+			$current_thumbnail    = get_post_meta( $post_id, 'rtgodam_media_video_thumbnail', true );
+			$should_set_thumbnail = ! $is_retranscoding_job || rtgodam_is_override_thumbnail() || empty( $current_thumbnail );
+
+			if ( $should_set_thumbnail ) {
 				// rtMedia support.
 				update_post_meta( $post_id, '_rt_media_video_thumbnail', $first_thumbnail_url );
 

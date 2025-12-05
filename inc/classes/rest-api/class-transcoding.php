@@ -236,10 +236,34 @@ class Transcoding extends Base {
 		// Set default message for unknown status.
 		$message = isset( $status_messages[ $status ] ) ? $status_messages[ $status ] : __( 'Unknown transcoding status.', 'godam' );
 
+		// Check if media has thumbnail generated after transcoding.
+		$thumbnail_id = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
+
+		// Handle retry logic for missing thumbnails when transcoding is complete.
+		if ( 'Transcoded' === $status && empty( $thumbnail_id ) ) {
+			$retry_count = intval( get_post_meta( $attachment_id, 'rtgodam_thumbnail_retry_count', true ) );
+			$max_retries = 3;
+
+			if ( $retry_count < $max_retries ) {
+				// Increment retry count.
+				update_post_meta( $attachment_id, 'rtgodam_thumbnail_retry_count', $retry_count + 1 );
+
+				// Return transcoding status with 95% progress to indicate waiting for thumbnail.
+				return array(
+					'status'    => 'transcoding',
+					'progress'  => 95,
+					'message'   => __( 'Transcoding complete, generating thumbnail...', 'godam' ),
+					'thumbnail' => '',
+				);
+			}
+			// If max retries reached, continue with normal flow (return transcoded status without thumbnail).
+		}
+
 		return array(
-			'status'   => strtolower( $status ),
-			'progress' => $progress,
-			'message'  => $message,
+			'status'    => strtolower( $status ),
+			'progress'  => $progress,
+			'message'   => $message,
+			'thumbnail' => ! empty( $thumbnail_id ) ? $thumbnail_id : '',
 		);
 	}
 
@@ -304,7 +328,7 @@ class Transcoding extends Base {
 	 * @param \WP_REST_Request $request REST request object.
 	 *
 	 * @since 1.4.0
-	 * 
+	 *
 	 * @return WP_REST_Response
 	 */
 	public function get_media_require_retranscoding( $request ) {
@@ -389,7 +413,7 @@ class Transcoding extends Base {
 			);
 
 			return new \WP_REST_Response(
-				array( 
+				array(
 					'message' => $message,
 					'skipped' => true,
 					'reason'  => 'local_environment',
@@ -409,7 +433,7 @@ class Transcoding extends Base {
 			);
 
 			return new \WP_REST_Response(
-				array( 
+				array(
 					'message' => $message,
 					'skipped' => true,
 					'reason'  => 'virtual_media',
@@ -429,7 +453,7 @@ class Transcoding extends Base {
 			);
 
 			return new \WP_REST_Response(
-				array( 
+				array(
 					'message' => $message,
 					'skipped' => true,
 					'reason'  => 'migrated_vimeo',
@@ -443,10 +467,10 @@ class Transcoding extends Base {
 		delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg' );
 
 		$mime_type = get_post_mime_type( $attachment_id );
-	
+
 		$wp_metadata              = array();
 		$wp_metadata['mime_type'] = $mime_type;
-		
+
 		// Retranscode the media.
 		$transcoder = new \RTGODAM_Transcoder_Handler( true );
 		$transcoder->wp_media_transcoding( $wp_metadata, $attachment_id );
@@ -480,7 +504,7 @@ class Transcoding extends Base {
 		);
 
 		return new \WP_REST_Response(
-			array( 
+			array(
 				'message' => $message,
 				'skipped' => false,
 				'sent'    => true,
