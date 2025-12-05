@@ -126,13 +126,15 @@ class Media_Folder_Utils {
 			global $wpdb;
 
 			// Delete all cache entries for this folder (all mime types).
-			$pattern = '_transient_attachment_count_' . $folder_id . '_%';
+			$pattern         = '_transient_attachment_count_' . $folder_id . '_%';
+			$timeout_pattern = '_transient_timeout_attachment_count_' . $folder_id . '_%';
 
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Direct SQL query to clear multiple transients efficiently.
 			$wpdb->query(
 				$wpdb->prepare(
-					"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
-					$pattern
+					"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
+					$pattern,
+					$timeout_pattern
 				)
 			);
 		}
@@ -167,16 +169,23 @@ class Media_Folder_Utils {
 	public function clear_all_attachment_count_caches() {
 		global $wpdb;
 
-		// Get all transient keys related to attachment counts.
+		// Get all transient keys and timeout keys related to attachment counts.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Direct SQL query to fetch transient keys.
 		$transient_keys = $wpdb->get_col(
 			"SELECT option_name FROM {$wpdb->options}
-			WHERE option_name LIKE '_transient_attachment_count_%'"
+			WHERE option_name LIKE '_transient_attachment_count_%'
+			OR option_name LIKE '_transient_timeout_attachment_count_%'"
 		);
 
 		foreach ( $transient_keys as $key ) {
-			$transient_name = str_replace( '_transient_', '', $key );
-			delete_transient( $transient_name );
+			if ( strpos( $key, '_transient_timeout_' ) === 0 ) {
+				// This is a timeout key, delete directly.
+				delete_option( $key );
+			} else {
+				// This is a transient key, use delete_transient.
+				$transient_name = str_replace( '_transient_', '', $key );
+				delete_transient( $transient_name );
+			}
 		}
 	}
 
