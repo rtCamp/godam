@@ -14,11 +14,45 @@ import { getQuery } from '../utility.js';
 const l10n = wp?.media?.view?.l10n;
 
 /**
+ * Check if the current frame is a featured image context.
+ *
+ * Note: This will not cover the media modal opened from the core feature image block.
+ *
+ * @since n.e.x.t
+ *
+ * @param {*} frame
+ * @return {boolean} True if featured image context, false otherwise.
+ */
+const checkIfFeatureImage = ( frame ) => {
+	// Check if this is a featured image context.
+	if ( frame && frame.state && frame.state() ) {
+		const state = frame.state();
+		const stateId = state.id || '';
+
+		// Featured image context
+		if ( stateId === 'featured-image' || frame.id === 'featured-image' ) {
+			return true;
+		}
+	}
+
+	// Check frame title for featured image
+	if ( frame && frame.title && typeof frame.title === 'string' ) {
+		if ( frame.title.toLowerCase().includes( 'featured' ) ) {
+			return true;
+		}
+	}
+
+	return false;
+};
+
+/**
  * Shared object containing GoDAM-specific media frame functionality
  */
 const GoDAMMediaFrameShared = {
 	browseRouter( routerView ) {
-		if ( window.godamTabCallback && window.godamTabCallback.validAPIKey ) {
+		const isFeatureImage = checkIfFeatureImage( this );
+
+		if ( window.godamTabCallback && window.godamTabCallback.validAPIKey && ! isFeatureImage ) {
 			routerView.set( {
 				upload: {
 					text: l10n.uploadFilesTitle,
