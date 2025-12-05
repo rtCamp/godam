@@ -239,6 +239,26 @@ class Transcoding extends Base {
 		// Check if media has thumbnail generated after transcoding.
 		$thumbnail_id = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 
+		// Handle retry logic for missing thumbnails when transcoding is complete.
+		if ( 'Transcoded' === $status && empty( $thumbnail_id ) ) {
+			$retry_count = intval( get_post_meta( $attachment_id, 'rtgodam_thumbnail_retry_count', true ) );
+			$max_retries = 3;
+
+			if ( $retry_count < $max_retries ) {
+				// Increment retry count.
+				update_post_meta( $attachment_id, 'rtgodam_thumbnail_retry_count', $retry_count + 1 );
+
+				// Return transcoding status with 95% progress to indicate waiting for thumbnail.
+				return array(
+					'status'    => 'transcoding',
+					'progress'  => 95,
+					'message'   => __( 'Transcoding complete, generating thumbnail...', 'godam' ),
+					'thumbnail' => '',
+				);
+			}
+			// If max retries reached, continue with normal flow (return transcoded status without thumbnail).
+		}
+
 		return array(
 			'status'    => strtolower( $status ),
 			'progress'  => $progress,
@@ -393,7 +413,7 @@ class Transcoding extends Base {
 			);
 
 			return new \WP_REST_Response(
-				array( 
+				array(
 					'message' => $message,
 					'skipped' => true,
 					'reason'  => 'local_environment',
