@@ -22,6 +22,8 @@ import MediaListViewTableDragHandler from './views/attachment-list.js';
 
 import { isFolderOrgDisabled, isUploadPage, addManageMediaButton } from './utility.js';
 
+const $ = jQuery;
+
 /**
  * MediaLibrary class.
  */
@@ -101,6 +103,66 @@ class MediaLibrary {
 
 					// Initialize GoDAM functionality
 					this.on( 'content:render:godam', this.GoDAMCreate, this );
+
+					// Initialize sidebar immediately
+					this.initializeMediaLibrarySidebar();
+				},
+
+				initializeMediaLibrarySidebar() {
+					const hasActiveSortable = this.$el.find( 'ul.ui-sortable:not(.ui-sortable-disabled)' ).length > 0;
+
+					if ( ! isUploadPage() && ! isFolderOrgDisabled() && ! hasActiveSortable ) {
+						/**
+						 * This timeout with the custom event is necessary to ensure that the media frame is fully loaded before dispatching the event.
+						 */
+						setTimeout( () => {
+							$( '.media-frame' ).removeClass( 'hide-menu' );
+
+							if ( window.elementor ) {
+								const visibleContainers = Array.from( document.querySelectorAll( '.supports-drag-drop' ) ).filter(
+									( container ) => getComputedStyle( container ).display !== 'none',
+								);
+
+								const activeContainer = visibleContainers[ visibleContainers.length - 1 ]; // most recently opened visible one
+
+								if ( activeContainer ) {
+									const menu = activeContainer.querySelector( '.media-frame-menu' );
+									if ( menu ) {
+										menu.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( el ) => el.remove() );
+										const div = document.createElement( 'div' );
+										div.id = 'rt-transcoder-media-library-root';
+										if ( menu.firstChild ) {
+											menu.firstChild.appendChild( div );
+										} else {
+											menu.appendChild( div );
+										}
+									}
+								}
+							} else {
+								// Find all visible media frames (same logic as Elementor)
+								const visibleFrames = Array.from( document.querySelectorAll( '.media-frame' ) ).filter(
+									( frame ) => getComputedStyle( frame ).display !== 'none',
+								);
+
+								const activeFrame = visibleFrames[ visibleFrames.length - 1 ]; // most recently opened visible one
+
+								if ( activeFrame ) {
+									const menu = activeFrame.querySelector( '.media-frame-menu .media-menu' );
+									if ( menu ) {
+										// Remove any existing instances
+										menu.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( el ) => el.remove() );
+										// Create and append new div
+										const div = document.createElement( 'div' );
+										div.id = 'rt-transcoder-media-library-root';
+										menu.appendChild( div );
+									}
+								}
+							}
+
+							const event = new CustomEvent( 'media-frame-opened' );
+							document.dispatchEvent( event );
+						}, 100 );
+					}
 				},
 
 				// Include all other GoDAM methods from the shared object
@@ -117,6 +179,65 @@ class MediaLibrary {
 
 					// Initialize GoDAM functionality
 					this.on( 'content:render:godam', this.GoDAMCreate, this );
+
+					this.initializeMediaLibrarySidebar();
+				},
+
+				initializeMediaLibrarySidebar() {
+					const hasActiveSortable = this.$el.find( 'ul.ui-sortable:not(.ui-sortable-disabled)' ).length > 0;
+
+					if ( ! isUploadPage() && ! isFolderOrgDisabled() && ! hasActiveSortable ) {
+						/**
+						 * This timeout with the custom event is necessary to ensure that the media frame is fully loaded before dispatching the event.
+						 */
+						setTimeout( () => {
+							$( '.media-frame' ).removeClass( 'hide-menu' );
+
+							if ( window.elementor ) {
+								const visibleContainers = Array.from( document.querySelectorAll( '.supports-drag-drop' ) ).filter(
+									( container ) => getComputedStyle( container ).display !== 'none',
+								);
+
+								const activeContainer = visibleContainers[ visibleContainers.length - 1 ]; // most recently opened visible one
+
+								if ( activeContainer ) {
+									const menu = activeContainer.querySelector( '.media-frame-menu' );
+									if ( menu ) {
+										menu.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( el ) => el.remove() );
+										const div = document.createElement( 'div' );
+										div.id = 'rt-transcoder-media-library-root';
+										if ( menu.firstChild ) {
+											menu.firstChild.appendChild( div );
+										} else {
+											menu.appendChild( div );
+										}
+									}
+								}
+							} else {
+								// Find all visible media frames (same logic as Elementor)
+								const visibleFrames = Array.from( document.querySelectorAll( '.media-frame' ) ).filter(
+									( frame ) => getComputedStyle( frame ).display !== 'none',
+								);
+
+								const activeFrame = visibleFrames[ visibleFrames.length - 1 ]; // most recently opened visible one
+
+								if ( activeFrame ) {
+									const menu = activeFrame.querySelector( '.media-frame-menu .media-menu' );
+									if ( menu ) {
+										// Remove any existing instances
+										menu.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( el ) => el.remove() );
+										// Create and append new div
+										const div = document.createElement( 'div' );
+										div.id = 'rt-transcoder-media-library-root';
+										menu.appendChild( div );
+									}
+								}
+							}
+
+							const event = new CustomEvent( 'media-frame-opened' );
+							document.dispatchEvent( event );
+						}, 100 );
+					}
 				},
 
 				// Include all other GoDAM methods from the shared object
