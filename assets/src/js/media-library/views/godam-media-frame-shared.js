@@ -20,7 +20,7 @@ const l10n = wp?.media?.view?.l10n;
  *
  * @since n.e.x.t
  *
- * @param {*} frame
+ * @param {wp.media.view.MediaFrame} frame
  * @return {boolean} True if featured image context, false otherwise.
  */
 const checkIfFeatureImage = ( frame ) => {
@@ -31,13 +31,6 @@ const checkIfFeatureImage = ( frame ) => {
 
 		// Featured image context
 		if ( stateId === 'featured-image' || frame.id === 'featured-image' ) {
-			return true;
-		}
-	}
-
-	// Check frame title for featured image
-	if ( frame && frame.title && typeof frame.title === 'string' ) {
-		if ( frame.title.toLowerCase().includes( 'featured' ) ) {
 			return true;
 		}
 	}
