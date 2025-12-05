@@ -20,13 +20,13 @@ if ( ! $godam_attachment_id && empty( $godam_src ) ) {
 
 $godam_sources = array();
 if ( ! empty( $godam_attachment_id ) && is_numeric( $godam_attachment_id ) ) { 
-	$pdf_url            = wp_get_attachment_url( $godam_attachment_id );
-	$pdf_transcoded_url = get_post_meta( $godam_attachment_id, 'rtgodam_transcoded_url', true );
-	if ( ! empty( $pdf_transcoded_url ) ) {
-		$godam_sources[] = $pdf_transcoded_url;
+	$godam_pdf_url            = wp_get_attachment_url( $godam_attachment_id );
+	$godam_pdf_transcoded_url = get_post_meta( $godam_attachment_id, 'rtgodam_transcoded_url', true );
+	if ( ! empty( $godam_pdf_transcoded_url ) ) {
+		$godam_sources[] = $godam_pdf_transcoded_url;
 	}
-	if ( ! empty( $pdf_url ) ) {
-		$godam_sources[] = $pdf_url;
+	if ( ! empty( $godam_pdf_url ) ) {
+		$godam_sources[] = $godam_pdf_url;
 	}
 } else {
 	$godam_sources[] = $godam_src;
