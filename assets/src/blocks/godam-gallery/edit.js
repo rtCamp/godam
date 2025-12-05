@@ -227,7 +227,7 @@ export default function Edit( { attributes, setAttributes } ) {
 					{
 						showOpenToNewPage && (
 							<ToggleControl
-								label={ __( 'Open video to new page', 'godam' ) }
+								label={ __( 'Open Video To New Page', 'godam' ) }
 								checked={ !! openToNewPage }
 								onChange={ ( value ) => setAttributes( { openToNewPage: value } ) }
 								help={ __( 'If enabled, clicking a video will open it in a new page', 'godam' ) }
