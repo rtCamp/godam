@@ -808,5 +808,5 @@ to ensure proper responsiveness and avoid layout issues.
  * generated thumbnail sizes available.
  */
 .wp-core-ui .attachments-browser .attachment .thumbnail .centered img.icon {
-	transform: translate(-50%, -50%) !important;
+		transform: translate(-50%, -50%);
 }
