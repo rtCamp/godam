@@ -79,7 +79,22 @@ class WPB_GoDAM_Audio {
 						'admin_label' => true,
 						'save_always' => true,
 					),
-					
+
+					// Source URL.
+					array(
+						'type'        => 'textfield_hidden',
+						'heading'     => esc_html__( 'Source URL', 'godam' ),
+						'param_name'  => 'src',
+						'value'       => '',
+						'admin_label' => true,
+						'description' => esc_html__( 'The source URL for the audio file.', 'godam' ),
+						'save_always' => true,
+						'dependency'  => array(
+							'element'   => 'id',
+							'not_empty' => true,
+						),
+					),
+
 					// Audio Playback Controls.
 					array(
 						'type'        => 'dropdown',

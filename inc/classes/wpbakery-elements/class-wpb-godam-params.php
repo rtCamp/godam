@@ -64,6 +64,11 @@ class WPB_GoDAM_Params {
 			array( $this, 'image_src_selector_settings_field' ),
 			RTGODAM_URL . 'assets/build/js/wpbakery-image-src-selector-param.min.js'
 		);
+
+		vc_add_shortcode_param(
+			'textfield_hidden',
+			array( $this, 'textfield_hidden_settings_field' ),
+		);
 	}
 
 	/**
@@ -176,5 +181,20 @@ class WPB_GoDAM_Params {
 			. '</div>'
 			. $preview_html
 			. '</div>';
+	}
+
+	/**
+	 * Textfield hidden settings field.
+	 * 
+	 * @since n.e.x.t
+	 *
+	 * @param array  $settings Field settings.
+	 * @param string $value    Field value.
+	 * @return string
+	 */
+	public function textfield_hidden_settings_field( $settings, $value ) {
+		return '<input style="pointer-events: none; opacity: 0.5;" name="' . esc_attr( $settings['param_name'] ) . '" class="wpb_vc_param_value wpb-textinput textfield_hidden_field ' .
+			esc_attr( $settings['param_name'] ) . ' ' .
+			esc_attr( $settings['type'] ) . '_field" value="' . esc_attr( $value ) . '" />';        
 	}
 }

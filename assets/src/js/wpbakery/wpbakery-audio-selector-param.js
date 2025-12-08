@@ -10,9 +10,11 @@
 			e.preventDefault();
 
 			const $button = $( this );
+			const $attributeContainer = $button.closest( '.wpb_el_type_audio_selector' ).parent();
 			const paramName = $button.data( 'param' );
 			const $container = $button.closest( '.audio_selector_block' );
 			const $input = $container.find( '.audio_selector_field' );
+			const $srcInput = $attributeContainer.find( '.textfield_hidden_field' );
 
 			// Create WordPress media frame
 			const frame = wp.media( {
@@ -32,6 +34,7 @@
 
 				// Update the hidden input value
 				$input.val( attachment.id ).trigger( 'change' );
+				$srcInput.val( attachment.url ).trigger( 'change' );
 
 				// Update button text
 				$button.text( 'Replace' );
@@ -74,12 +77,15 @@
 			e.preventDefault();
 
 			const $button = $( this );
+			const $attributeConatienr = $button.closest( '.wpb_el_type_audio_selector' ).parent();
 			const $container = $button.closest( '.audio_selector_block' );
 			const $input = $container.find( '.audio_selector_field' );
 			const $selectButton = $container.find( '.audio-selector-button' );
+			const $srcInput = $attributeConatienr.find( '.textfield_hidden_field' );
 
 			// Clear the input value
 			$input.val( '' ).trigger( 'change' );
+			$srcInput.val( '' ).trigger( 'change' );
 
 			// Remove preview
 			$container.find( '.audio-selector-preview' ).remove();
