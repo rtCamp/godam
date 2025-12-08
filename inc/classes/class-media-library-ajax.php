@@ -40,7 +40,6 @@ class Media_Library_Ajax {
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_media_transcoding_status_js' ), 10, 2 );
 
 		add_action( 'pre_delete_term', array( $this, 'delete_child_media_folder' ), 10, 2 );
-		add_action( 'delete_attachment', array( $this, 'handle_media_deletion' ), 10, 1 );
 
 		add_action( 'admin_notices', array( $this, 'media_library_offer_banner' ) );
 		add_action( 'wp_ajax_godam_dismiss_offer_banner', array( $this, 'dismiss_offer_banner' ) );
@@ -532,42 +531,6 @@ class Media_Library_Ajax {
 		}
 
 		return $sanitized_query;
-	}
-
-	/**
-	 * Handle media deletion and notify the external API.
-	 *
-	 * @param int $attachment_id Attachment ID.
-	 * @return void
-	 */
-	public function handle_media_deletion( $attachment_id ) {
-		$job_id        = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
-		$account_token = get_option( 'rtgodam-account-token', '' );
-		$api_key       = get_option( 'rtgodam-api-key', '' );
-
-		// Ensure all required data is available.
-		if ( empty( $job_id ) || empty( $account_token ) || empty( $api_key ) ) {
-			return;
-		}
-
-		// API URL using RTGODAM_API_BASE.
-		$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.mutate.delete_attachment';
-
-		// Request params.
-		$params = array(
-			'job_id'        => $job_id,
-			'api_key'       => $api_key,
-			'account_token' => $account_token,
-		);
-
-		// Send POST request.
-		wp_remote_post(
-			$api_url,
-			array(
-				'body'    => wp_json_encode( $params ),
-				'headers' => array( 'Content-Type' => 'application/json' ),
-			)
-		);
 	}
 
 	/**
