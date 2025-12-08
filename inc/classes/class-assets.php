@@ -292,8 +292,8 @@ class Assets {
 		$brand_image                    = $godam_settings['video_player']['brand_image'] ?? '';
 		$brand_color                    = $godam_settings['video_player']['brand_color'] ?? '';
 		$enable_gtm_tracking            = $godam_settings['general']['enable_gtm_tracking'] ?? false;
-		$enable_global_video_engagement = $godam_settings['video']['enable_global_video_engagement'] ?? false;
-		$enable_global_share            = $godam_settings['video']['enable_global_video_share'] ?? false;
+		$enable_global_video_engagement = $godam_settings['video']['enable_global_video_engagement'] ?? true;
+		$enable_global_share            = $godam_settings['video']['enable_global_video_share'] ?? true;
 
 		$godam_settings_obj = array(
 

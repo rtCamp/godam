@@ -25,7 +25,7 @@ const initialState = {
 		watermark_url: '',
 		watermark_image_id: null,
 		enable_global_video_engagement: true,
-		enable_global_video_share: false,
+		enable_global_video_share: true,
 	},
 	general: {
 		enable_folder_organization: true,
