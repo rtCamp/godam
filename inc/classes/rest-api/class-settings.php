@@ -44,7 +44,7 @@ class Settings extends Base {
 				'watermark_image_id'             => null,
 				'use_watermark_image'            => false,
 				'enable_global_video_engagement' => true,
-				'enable_global_video_share'      => false,
+				'enable_global_video_share'      => true,
 			),
 			'general'      => array(
 				'enable_folder_organization' => true,

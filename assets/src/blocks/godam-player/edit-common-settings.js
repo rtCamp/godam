@@ -47,14 +47,6 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 		return null;
 	}, [ autoplay, muted ] );
 
-	const getShowShareButtonHelp = useMemo( () => {
-		if ( ! showShareButton ) {
-			return __( 'Removes the share button from the video player.', 'godam' );
-		}
-
-		return null;
-	}, [ showShareButton ] );
-
 	const toggleFactory = useMemo( () => {
 		const toggleAttribute = ( attribute ) => {
 			return ( newValue ) => {
@@ -119,7 +111,7 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 						label={ __( 'Share Button', 'godam' ) }
 						onChange={ toggleFactory.showShareButton }
 						checked={ !! showShareButton }
-						help={ getShowShareButtonHelp }
+						help={ __( 'Adds a share button on the video player for transcoded videos', 'godam' ) }
 					/>
 				)
 			}
