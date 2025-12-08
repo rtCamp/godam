@@ -473,7 +473,7 @@ class Transcoding extends Base {
 
 		// Retranscode the media.
 		$transcoder = new \RTGODAM_Transcoder_Handler( true );
-		$transcoder->wp_media_transcoding( $wp_metadata, $attachment_id );
+		$transcoder->wp_media_transcoding( $wp_metadata, $attachment_id, true, true );
 
 		// Check if the transcoding job ID is set.
 		$is_sent = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
