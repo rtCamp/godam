@@ -84,7 +84,7 @@ class Site extends Base {
 				return $site_data_response;
 			}
 
-			if ( ! isset( $site_data_response['message']['error'] ) ) {
+			if ( ! empty( $site_data_response['message']['folder_id'] ) ) {
 				// Cache the response data for future requests.
 				rtgodam_cache_set( $cache_key, $site_data_response, 86400 );
 				$site_data = $site_data_response;
