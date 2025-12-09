@@ -83,9 +83,12 @@ class Site extends Base {
 			if ( $site_data_response instanceof WP_REST_Response ) {
 				return $site_data_response;
 			}
-			// Cache the response data for future requests.
-			rtgodam_cache_set( $cache_key, $site_data_response, 86400 );
-			$site_data = $site_data_response;
+
+			if ( ! isset( $site_data_response['message']['error'] ) ) {
+				// Cache the response data for future requests.
+				rtgodam_cache_set( $cache_key, $site_data_response, 86400 );
+				$site_data = $site_data_response;
+			}
 		}
 
 		return new WP_REST_Response(
