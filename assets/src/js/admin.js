@@ -136,8 +136,31 @@ class ParticleEffect {
 	}
 }
 
+/**
+ * Handles the closing of the offer banner.
+ * Hides the banner and sends an AJAX request to dismiss the offer.
+ */
+function handleBannerClose() {
+	const banner = document.querySelector( '.annual-plan-offer-banner' );
+	if ( banner ) {
+		const closeButton = banner.querySelector( '.annual-plan-offer-banner__dismiss' );
+		if ( closeButton ) {
+			closeButton.addEventListener( 'click', () => {
+				banner.style.display = 'none';
+
+				if ( window.wp && window.wp.ajax ) {
+					window.wp.ajax.post( 'godam_dismiss_offer_banner', {
+						nonce: window?.godamSettings?.showOfferBannerNonce || '',
+					} );
+				}
+			} );
+		}
+	}
+}
+
 function initAdminUI() {
 	initTogglePostboxes();
+	handleBannerClose();
 	new ParticleEffect();
 }
 

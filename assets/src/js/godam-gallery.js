@@ -1,12 +1,15 @@
 /* global GODAMPlayer */
+
+/**
+ * WordPress dependencies
+ */
+import { select, dispatch } from '@wordpress/data';
+
 /**
  * External dependencies
  */
-/**
- * Internal dependencies
- */
-const { select, dispatch } = wp.data;
 import DOMPurify from 'isomorphic-dompurify';
+
 const engagementStore = 'godam-video-engagement';
 
 // Common function to load more videos
@@ -103,7 +106,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 									}
 									isLoading = false;
 								} )
-								.catch( ( ) => {
+								.catch( () => {
 									isLoading = false;
 								} );
 						}
@@ -149,6 +152,7 @@ document.addEventListener( 'click', async function( e ) {
 	if ( e.target.closest( '.godam-video-thumbnail' ) ) {
 		const thumbnail = e.target.closest( '.godam-video-thumbnail' );
 		const videoId = thumbnail.getAttribute( 'data-video-id' );
+		const videoCptUrl = thumbnail.getAttribute( 'data-video-url' );
 		if ( ! videoId ) {
 			return;
 		}
@@ -182,6 +186,14 @@ document.addEventListener( 'click', async function( e ) {
 
 		// Check if engagements are enabled for the gallery
 		const galleryEngagements = currentGallery.getAttribute( 'data-engagements' ) === '1';
+
+		// If open to new page is enabled, open the video in a new tab instead of modal
+		const openToNewPage = currentGallery.getAttribute( 'data-open-to-new-page' ) === '1';
+
+		if ( openToNewPage ) {
+			window.open( videoCptUrl, '_blank' );
+			return;
+		}
 
 		// Show modal immediately with the player
 		modal.innerHTML = `

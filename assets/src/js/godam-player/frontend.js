@@ -6,29 +6,14 @@
  * VideoJs dependencies
  */
 import 'video.js/dist/video-js.css';
-import 'videojs-contrib-ads/dist/videojs.ads.css';
-import 'videojs-ima/dist/videojs.ima.css';
-import 'videojs-contrib-ads';
-import 'videojs-ima';
-import 'videojs-flvjs-es6';
-
 /**
- * FontAwesome dependencies
+ * NOTE: Ads plugins (videojs-contrib-ads & videojs-ima) are loaded dynamically
+ * in videoPlayer.js BEFORE player initialization when ads are detected.
+ * This is required because videojs-contrib-ads must be initialized in the same
+ * tick as video.js to avoid missing the loadstart event.
+ * @see videoPlayer.js loadRequiredPlugins()
+ * @see pluginLoader.js loadAdsPlugins()
  */
-
-async function loadHotspotIcons() {
-	const { library, dom } = await import( '@fortawesome/fontawesome-svg-core' );
-	const { fas } = await import( '@fortawesome/free-solid-svg-icons' );
-	library.add( fas );
-	dom.watch();
-}
-
-loadHotspotIcons();
-
-/**
- * Quill dependencies dependencies for the CTA text layer
- */
-import 'quill/dist/quill.snow.css';
 
 /**
  * Internal dependencies

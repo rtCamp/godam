@@ -236,6 +236,10 @@ class Dynamic_Gallery extends Base {
 		// Add filter for dynamic gallery query args.
 		$args = apply_filters( 'rtgodam_dynamic_gallery_query_args', $args, $atts );
 
+		$video_settings = get_option( 'rtgodam_video_post_settings', array() );
+		$cpt_url_slug   = ! empty( $video_settings['video_slug'] ) ? sanitize_title( $video_settings['video_slug'] ) : 'videos';
+		$cpt_base_url   = home_url( '/' . $cpt_url_slug );
+
 		$query = new \WP_Query( $args );
 		ob_start();
 		if ( $query->have_posts() ) {
@@ -272,6 +276,7 @@ class Dynamic_Gallery extends Base {
 	
 				$video_id    = intval( $video->ID );
 				$video_title = apply_filters( 'rtgodam_dynamic_gallery_video_title', get_the_title( $video_id ), $video_id );
+				$video_slug  = get_post_field( 'post_name', $video_id );
 				$video_date  = apply_filters( 'rtgodam_dynamic_gallery_video_date', get_the_date( 'F j, Y', $video_id ), $video_id );
 	
 				$custom_thumbnail = get_post_meta( $video_id, 'rtgodam_media_video_thumbnail', true );
@@ -292,7 +297,7 @@ class Dynamic_Gallery extends Base {
 				}
 	
 				echo '<div class="godam-video-item">';
-				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '">';
+				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $cpt_base_url . '/' . $video_slug ) . '">';
 				echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
 				if ( $duration ) {
 					echo '<span class="godam-video-duration">' . esc_html( $duration ) . '</span>';

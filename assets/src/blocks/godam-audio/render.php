@@ -9,49 +9,51 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
-$src           = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
-$caption       = ! empty( $attributes['caption'] ) ? $attributes['caption'] : '';
-$autoplay      = ! empty( $attributes['autoplay'] ) ? 'autoplay' : '';
-$loop          = ! empty( $attributes['loop'] ) ? 'loop' : '';
-$preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'metadata';
+$godam_attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
+$godam_src           = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
+$godam_caption       = ! empty( $attributes['caption'] ) ? $attributes['caption'] : '';
+$godam_autoplay      = ! empty( $attributes['autoplay'] ) ? 'autoplay' : '';
+$godam_loop          = ! empty( $attributes['loop'] ) ? 'loop' : '';
+$godam_preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'metadata';
+$godam_css_class   = ! empty( $attributes['css_class'] ) ? esc_attr( $attributes['css_class'] ) : '';
 
-
-if ( ! $attachment_id && empty( $src ) ) {
+if ( ! $godam_attachment_id && empty( $godam_src ) ) {
 	return;
 }
 
-if ( ! $attachment_id && ! empty( $src ) ) {
+if ( ! $godam_attachment_id && ! empty( $godam_src ) ) {
 	// Virtual attachment scenario.
-	$primary_audio = $src;
-	$backup_audio  = '';
+	$godam_primary_audio = $godam_src;
+	$godam_backup_audio  = '';
 } else {
-	$primary_audio = wp_get_attachment_url( $attachment_id );
-	$backup_audio  = wp_get_attachment_url( $attachment_id );
+	$godam_primary_audio = get_post_meta( $godam_attachment_id, 'rtgodam_transcoded_url', true );
+	$godam_backup_audio  = wp_get_attachment_url( $godam_attachment_id );
 
-	if ( empty( $primary_audio ) && empty( $backup_audio ) ) {
+	if ( empty( $godam_primary_audio ) && empty( $godam_backup_audio ) ) {
 		return;
 	}
 }
 
+$godam_block_wrapper_attributes = get_block_wrapper_attributes();
+$godam_css_classes              = trim( $godam_block_wrapper_attributes . ' ' . $godam_css_class );
 ?>
 
-<figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>>
-	<audio controls <?php echo esc_attr( $autoplay ); ?> <?php echo esc_attr( $loop ); ?> preload="<?php echo esc_attr( $preload ); ?>">
-		<?php if ( ! empty( $primary_audio ) ) : ?>
-			<source src="<?php echo esc_url( $primary_audio ); ?>" type="audio/mpeg" />
+<figure <?php echo wp_kses_data( get_block_wrapper_attributes( array( 'class' => $godam_css_classes ) ) ); ?>>
+	<audio style="display: block; width: 100%;" controls <?php echo esc_attr( $godam_autoplay ); ?> <?php echo esc_attr( $godam_loop ); ?> preload="<?php echo esc_attr( $godam_preload ); ?>">
+		<?php if ( ! empty( $godam_primary_audio ) ) : ?>
+			<source src="<?php echo esc_url( $godam_primary_audio ); ?>" type="audio/mpeg" />
 		<?php endif; ?>
 
-		<?php if ( ! empty( $backup_audio ) ) : ?>
-			<source src="<?php echo esc_url( $backup_audio ); ?>" type="audio/mpeg" />
+		<?php if ( ! empty( $godam_backup_audio ) ) : ?>
+			<source src="<?php echo esc_url( $godam_backup_audio ); ?>" type="audio/mpeg" />
 		<?php endif; ?>
 
 		<?php esc_html_e( 'Your browser does not support the audio element.', 'godam' ); ?>
 	</audio>
 
-	<?php if ( $caption ) : ?>
+	<?php if ( $godam_caption ) : ?>
 		<figcaption class="wp-element-caption">
-			<?php echo wp_kses_post( $caption ); ?>
+			<?php echo wp_kses_post( $godam_caption ); ?>
 		</figcaption>
 	<?php endif; ?>
 </figure>
