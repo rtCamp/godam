@@ -15,7 +15,7 @@ $godam_caption       = ! empty( $attributes['caption'] ) ? $attributes['caption'
 $godam_autoplay      = ! empty( $attributes['autoplay'] ) ? 'autoplay' : '';
 $godam_loop          = ! empty( $attributes['loop'] ) ? 'loop' : '';
 $godam_preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'metadata';
-$godam_css_class   = ! empty( $attributes['css_class'] ) ? esc_attr( $attributes['css_class'] ) : '';
+$godam_css_class     = ! empty( $attributes['css_class'] ) ? esc_attr( $attributes['css_class'] ) : '';
 
 if ( ! $godam_attachment_id && empty( $godam_src ) ) {
 	return;
