@@ -296,9 +296,9 @@ document.addEventListener( 'click', async function( e ) {
 						if ( typeof GODAMPlayer === 'function' ) {
 							const godamPlayer = GODAMPlayer( modal );
 							const initEngagement = godamPlayer.initEngagement;
-							// Find the video player and start playing
-							const videoPlayer = modal.querySelector( '.video-js' );
-							if ( videoPlayer && videoPlayer.player ) {
+
+							// Helper function to setup player once it's ready
+							const setupGalleryPlayer = ( playerInstance ) => {
 								if ( galleryEngagements ) {
 									// If engagements are enabled, initiate the comment modal with Data
 									let skipEngagements = false;
@@ -308,26 +308,45 @@ document.addEventListener( 'click', async function( e ) {
 										skipEngagements = true;
 									}
 									const newVideoEngagementsData = select( engagementStore ).getTitles()[ newVideoId ];
-									if ( newVideoEngagementsData ) {
+
+									const startPlayback = () => {
 										dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId, skipEngagements ).then( () => {
 											window.galleryScroll = true;
 										} );
-										videoPlayer.player.play();
+										playerInstance.play();
+									};
+
+									if ( newVideoEngagementsData ) {
+										startPlayback();
 									} else {
-										initEngagement.then( () => {
-											dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId, skipEngagements ).then( () => {
-												window.galleryScroll = true;
-											} );
-											videoPlayer.player.play();
-										} );
+										initEngagement.then( startPlayback );
 									}
 									engagementContainer?.remove();
 								} else {
 									dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId, true ).then( () => {
 										window.galleryScroll = true;
 									} );
-									videoPlayer.player.play();
+									playerInstance.play();
 								}
+							};
+
+							// Get the video element for this modal
+							const videoPlayerElement = modal.querySelector( '.video-js' );
+							const videojs = window.videojs;
+							// Check if player is already ready (fallback for synchronous initialization)
+							const existingPlayer = videoPlayerElement ? videojs.getPlayer( videoPlayerElement ) : null;
+							if ( existingPlayer ) {
+								setupGalleryPlayer( existingPlayer );
+							} else {
+								// Listen for the godamPlayerReady event (async initialization)
+								const onPlayerReady = ( event ) => {
+									// Ensure this event is for our video element
+									if ( event.detail.videoElement === videoPlayerElement || videoPlayerElement.contains( event.detail.videoElement ) ) {
+										setupGalleryPlayer( event.detail.player );
+										document.removeEventListener( 'godamPlayerReady', onPlayerReady );
+									}
+								};
+								document.addEventListener( 'godamPlayerReady', onPlayerReady );
 							}
 						}
 					}
