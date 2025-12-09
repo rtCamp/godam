@@ -245,6 +245,14 @@ class WPB_GoDAM_Video_Gallery {
 						),
 						'group'       => esc_html__( 'Filters', 'godam' ),
 					),
+					
+					// WPBakery Design Options tab.
+					array(
+						'type'       => 'css_editor',
+						'heading'    => esc_html__( 'Design Options', 'godam' ),
+						'param_name' => 'css',
+						'group'      => esc_html__( 'Design Options', 'godam' ),
+					),
 				),
 			)
 		);

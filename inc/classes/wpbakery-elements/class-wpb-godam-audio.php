@@ -160,6 +160,13 @@ class WPB_GoDAM_Audio {
 							'not_empty' => true,
 						),
 					),
+					// WPBakery Design Options tab.
+					array(
+						'type'       => 'css_editor',
+						'heading'    => esc_html__( 'Design Options', 'godam' ),
+						'param_name' => 'css',
+						'group'      => esc_html__( 'Design Options', 'godam' ),
+					),
 				),
 			)
 		);

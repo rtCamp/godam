@@ -41,6 +41,7 @@ class GoDAM_Audio {
 				'autoplay' => false,
 				'loop'     => false,
 				'preload'  => 'metadata',
+				'css'      => '',
 			),
 			$atts,
 			'godam_audio'
@@ -50,6 +51,12 @@ class GoDAM_Audio {
 		$boolean_attributes = array( 'autoplay', 'loop' );
 		foreach ( $boolean_attributes as $bool_attr ) {
 			$attributes[ $bool_attr ] = filter_var( $attributes[ $bool_attr ], FILTER_VALIDATE_BOOLEAN );
+		}
+
+		// Get WPBakery Design Options CSS class if available.
+		$attributes['css_class'] = '';
+		if ( ! empty( $attributes['css'] ) && function_exists( 'vc_shortcode_custom_css_class' ) ) {
+			$attributes['css_class'] = vc_shortcode_custom_css_class( $attributes['css'], ' ' );
 		}
 
 		ob_start();

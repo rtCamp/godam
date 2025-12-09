@@ -166,6 +166,7 @@ class GoDAM_Player {
 				'engagements'     => false,
 				'preview'         => false,
 				'showShareButton' => false,
+				'css'             => '',
 			),
 			$atts,
 			'godam_video'
@@ -175,6 +176,12 @@ class GoDAM_Player {
 		$boolean_attributes = array( 'autoplay', 'controls', 'loop', 'muted', 'engagements', 'preview', 'showShareButton' );
 		foreach ( $boolean_attributes as $bool_attr ) {
 			$attributes[ $bool_attr ] = filter_var( $attributes[ $bool_attr ], FILTER_VALIDATE_BOOLEAN );
+		}
+
+		// Get WPBakery Design Options CSS class if available.
+		$attributes['css_class'] = '';
+		if ( ! empty( $attributes['css'] ) && function_exists( 'vc_shortcode_custom_css_class' ) ) {
+			$attributes['css_class'] = vc_shortcode_custom_css_class( $attributes['css'], ' ' );
 		}
 
 		// If autoplay is true, muted must be true for most browsers to allow autoplay.

@@ -333,13 +333,24 @@ foreach ( $custom_css_properties as $property => $value ) {
 	}
 }
 
+// Get WPBakery Design Options CSS class if available.
+$css_class = ! empty( $attributes['css_class'] ) ? trim( $attributes['css_class'] ) : '';
+
 // Build the figure attributes for the <figure> element.
 if ( $is_shortcode || $is_elementor_widget ) {
-	$figure_attributes = ! empty( $custom_inline_styles )
+	$class_attr = '';
+	if ( ! empty( $css_class ) ) {
+		$class_attr = 'class="' . esc_attr( $css_class ) . '"';
+	}
+	$style_attr        = ! empty( $custom_inline_styles )
 		? 'style="' . esc_attr( $custom_inline_styles ) . '"'
 		: '';
+	$figure_attributes = trim( $class_attr . ' ' . $style_attr );
 } else {
 	$additional_attributes = array();
+	if ( ! empty( $css_class ) ) {
+		$additional_attributes['class'] = esc_attr( $css_class );
+	}
 	if ( ! empty( $custom_inline_styles ) ) {
 		$additional_attributes['style'] = esc_attr( $custom_inline_styles );
 	}
