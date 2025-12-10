@@ -87,6 +87,11 @@
 	&.hidden {
 		display: none;
 	}
+
+	svg {
+		position: relative;
+		top: 2px;
+	}
 }
 
 .godam-player-overlay {
