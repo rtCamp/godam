@@ -308,7 +308,11 @@ class Assets {
 		);
 
 		if ( ! rtgodam_is_api_key_valid() ) {
-			$godam_settings_obj['showOfferBanner']             = get_option( 'rtgodam-offer-banner', '1' );
+			$timezone     = wp_timezone();
+			$current_time = new \DateTime( 'now', $timezone );
+			$end_time     = new \DateTime( '2025-12-14 23:59:59', $timezone );
+
+			$godam_settings_obj['showOfferBanner']             = ( $current_time <= $end_time ) && ( '0' !== get_option( 'rtgodam-offer-banner', '1' ) );
 			$godam_settings_obj['showOfferBannerNonce']        = wp_create_nonce( 'godam-dismiss-offer-banner-nonce' );
 			$godam_settings_obj['enableGlobalVideoEngagement'] = false;
 		}

@@ -20,7 +20,8 @@ const AttachmentPicker = ( { handleAttachmentClick } ) => {
 	const [ searchTerm, setSearchTerm ] = useState( '' );
 	const [ page, setPage ] = useState( 1 );
 	const [ attachments, setAttachments ] = useState( [] );
-	const [ showOfferBanner, setShowOfferBanner ] = useState( ( '0' !== window?.godamSettings?.showOfferBanner ) );
+	// showOfferBanner will now be a boolean (true/false) based on PHP calculation passed via godamSettings, or '0' if dismissed
+	const [ showOfferBanner, setShowOfferBanner ] = useState( window?.godamSettings?.showOfferBanner && '0' !== window?.godamSettings?.showOfferBanner );
 
 	const handleDismissBanner = () => {
 		setShowOfferBanner( false );
