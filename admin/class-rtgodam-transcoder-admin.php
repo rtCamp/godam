@@ -263,8 +263,11 @@ class RTGODAM_Transcoder_Admin {
 		}
 
 		$show_offer_banner = get_option( 'rtgodam-offer-banner', 1 );
-
-		if ( ! rtgodam_is_api_key_valid() && $show_offer_banner ) {
+		$timezone          = wp_timezone();
+		$current_time      = new \DateTime( 'now', $timezone );
+		$end_time          = new \DateTime( '2025-12-14 23:59:59', $timezone );
+		
+		if ( $current_time <= $end_time && ! rtgodam_is_api_key_valid() && $show_offer_banner ) {
 			$host = wp_parse_url( home_url(), PHP_URL_HOST );
 
 			$banner_image = RTGODAM_URL . 'assets/src/images/BFCM.png';

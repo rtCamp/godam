@@ -2,7 +2,7 @@
 Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia
 Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
-Tested up to: 6.8
+Tested up to: 6.9
 Requires PHP: 7.4
 Stable tag: 1.4.7
 License: GPLv2 or later
@@ -307,6 +307,12 @@ Data Sent:
 1. Site URL
 
 2. API Key
+
+3. Author Email (optional, can be filtered out)
+
+4. Author First Name (optional, can be filtered out)
+
+5. Author Last Name (optional, can be filtered out)
 
 When Data is Sent:
 

@@ -39,6 +39,7 @@ class GridViewTranscodingStatus {
 	updateAttachmentStatus( attachmentId, data ) {
 		const progress = data.progress;
 		const status = data.status;
+		const thumbnail = data.thumbnail;
 
 		this.transcodingStatusElement = document.querySelector( `.transcoding-status[data-id="${ attachmentId }"]` );
 
@@ -51,6 +52,15 @@ class GridViewTranscodingStatus {
 
 		if ( progress === 100 ) {
 			this.updateCompletedStatus();
+
+			// If thumbnail is available, update the thumbnail image.
+			if ( thumbnail ) {
+				const imgElement = this.transcodingStatusElement.querySelector( 'img' );
+
+				if ( imgElement ) {
+					imgElement.src = thumbnail;
+				}
+			}
 		}
 
 		if ( status === 'failed' ) {

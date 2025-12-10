@@ -7,6 +7,9 @@
  * @package GoDAM
  */
 
+use RTGODAM\Inc\Assets\IMA_Assets;
+use RTGODAM\Inc\Assets\Jetpack_Form_Assets;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -222,6 +225,7 @@ $godam_individual_brand_image = isset( $godam_meta_data['videoConfig']['controlB
 $godam_player_skin            = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : 'Default';
 $godam_ads_settings           = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : array();
 $godam_ads_settings           = wp_json_encode( $godam_ads_settings );
+$godam_global_video_share     = isset( $godam_settings['video']['enable_global_video_share'] ) ? $godam_settings['video']['enable_global_video_share'] : true;
 
 $godam_video_poster = empty( $godam_poster ) ? $godam_poster_image : $godam_poster;
 
@@ -279,7 +283,7 @@ $godam_video_config = wp_json_encode(
 		'overlayTimeRange' => $godam_overlay_time_range, // Add overlay time range to video config.
 		'playerSkin'       => $godam_player_skin, // Add player skin to video config. Add brand image to video config.
 		'aspectRatio'      => $godam_aspect_ratio,
-		'showShareBtn'     => $godam_show_share_btn,
+		'showShareBtn'     => true === $godam_global_video_share ? $godam_show_share_btn : false,
 	)
 );
 
@@ -310,6 +314,11 @@ if ( ! empty( $godam_ad_server ) && 'ad-server' === $godam_ad_server ) :
 elseif ( ! empty( $godam_ads_layers ) && 'self-hosted' === $godam_ad_server ) :
 	$godam_ad_tag_url = get_rest_url( get_current_blog_id(), '/godam/v1/adTagURL/' ) . $godam_attachment_id;
 endif;
+
+// Enqueue IMA SDK assets only if Ad is enabled for this GoDAM player block.
+if ( ! empty( $godam_ad_tag_url ) ) {
+	IMA_Assets::get_instance();
+}
 
 $godam_instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 
@@ -452,6 +461,7 @@ if ( $godam_should_preload_poster ) {
 					data-global_ads_settings="<?php echo esc_attr( $godam_ads_settings ); ?>"
 					data-hover-select="<?php echo esc_attr( $godam_hover_select ); ?>"
 					data-video-title="<?php echo esc_attr( $godam_attachment_title ); ?>"
+					data-autoplay-on-view="<?php echo esc_attr( $godam_autoplay ? 'true' : 'false' ); ?>"
 				>
 					<?php
 
@@ -583,6 +593,9 @@ if ( $godam_should_preload_poster ) {
 								// Get the origin post ID from the layer data.
 								$godam_origin_post_id = isset( $godam_layer['origin_post_id'] ) ? $godam_layer['origin_post_id'] : '';
 
+								// Enqueue GoDAM specific jetpack form script only if Jetpack form is used in this GoDAM player block.
+								Jetpack_Form_Assets::get_instance();
+
 								// Use the static helper method to get the rendered form HTML.
 								$godam_form_html = \RTGODAM\Inc\REST_API\Jetpack::get_rendered_form_html_static( $godam_layer['jp_id'] );
 
@@ -702,7 +715,7 @@ if ( $godam_should_preload_poster ) {
 			<figcaption class="wp-element-caption rtgodam-video-caption"><?php echo esc_html( $godam_caption ); ?></figcaption>
 			<?php
 			endif;
-				do_action( 'rtgodam_after_video_html', $attributes, $godam_instance_id, $godam_meta_data );
+				do_action( 'rtgodam_after_video_html', $attributes, $godam_instance_id, $godam_meta_data, $godam_settings );
 		?>
 	</figure>
 <?php endif; ?>

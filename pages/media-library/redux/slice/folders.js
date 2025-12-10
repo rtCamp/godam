@@ -3,6 +3,11 @@
  */
 import { createSlice } from '@reduxjs/toolkit';
 
+/**
+ * Internal dependencies
+ */
+import { triggerFilterChange } from '../../data/media-grid.js';
+
 let selectedFolderId = -1;
 
 const urlParams = new URLSearchParams( window.location.search );
@@ -324,6 +329,47 @@ const slice = createSlice( {
 		setCurrentContextMenuFolder: ( state, action ) => {
 			state.currentContextMenuFolder = action.payload;
 		},
+		/**
+		 * Reset UI-related state when a media modal is closed.
+		 * Preserves folders data, bookmarks, and other persistent data for performance.
+		 *
+		 * @param {Object} state Current slice state
+		 */
+		resetUIState: ( state ) => {
+			// Reset selected folder to 'All'
+			state.selectedFolder = {
+				id: -1,
+			};
+
+			// Also trigger WordPress media filter change to sync
+			triggerFilterChange( 'all' );
+
+			// Close all modals
+			state.modals = {
+				folderCreation: false,
+				rename: false,
+				delete: false,
+			};
+
+			// Reset multi-selection state
+			state.isMultiSelecting = false;
+			state.multiSelectedFolderIds = [];
+
+			// Clear context menu state
+			state.currentContextMenuFolder = null;
+
+			// Clear snackbar
+			state.snackbar = {
+				message: '',
+				type: 'success',
+			};
+
+			// Reset page to first page
+			state.page.current = 1;
+
+			// Note: We preserve folders, bookmarks, lockedFolders, and sortOrder
+			// for performance and user experience
+		},
 	},
 } );
 
@@ -350,6 +396,7 @@ export const {
 	updatePage,
 	expandParents,
 	setCurrentContextMenuFolder,
+	resetUIState,
 } = slice.actions;
 
 export default slice.reducer;
