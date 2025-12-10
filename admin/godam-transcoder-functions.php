@@ -362,24 +362,6 @@ function rtgodam_get_server_var( $server_key, $filter_type = FILTER_SANITIZE_FUL
 }
 
 /**
- * Check if API request should be blocked due to HTTP or localhost environment.
- *
- * @since n.e.x.t
- *
- * @return bool True if request should be blocked, false otherwise.
- */
-function rtgodam_should_block_api_request() {
-	// Check if current request is over HTTP (not HTTPS).
-	$is_http = ! is_ssl();
-
-	// Check if request is from localhost using existing helper function.
-	$is_localhost = rtgodam_is_local_environment();
-
-	// Block if either condition is met (HTTP OR localhost).
-	return $is_http || $is_localhost;
-}
-
-/**
  * Helper function to verify the api key.
  *
  * @param string $api_key The api key to verify.
@@ -393,7 +375,7 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 	}
 
 	// Check if request should be blocked due to HTTP or localhost environment.
-	if ( rtgodam_should_block_api_request() ) {
+	if ( rtgodam_is_local_environment() ) {
 		// Check if RTGODAM_API_KEY constant is defined in wp-config.php.
 		if ( ! defined( 'RTGODAM_API_KEY' ) ) {
 			return new \WP_Error(
