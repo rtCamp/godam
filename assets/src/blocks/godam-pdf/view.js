@@ -92,7 +92,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 					const exists = await pdfExists( busted );
 
 					if ( exists ) {
-						pdfObject.setAttribute( 'data', busted );
+						pdfObject.setAttribute( 'data', encodeURI( busted ) );
 						return;
 					}
 				}
@@ -211,7 +211,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 				newObject.type = 'application/pdf';
 				newObject.width = '100%';
 				newObject.height = '100%';
-				newObject.setAttribute( 'data', newSource );
+				newObject.setAttribute( 'data', encodeURI( newSource ) );
 				newObject.setAttribute( 'data-sources', sourcesData );
 				newObject.setAttribute( 'data-current-index', sourceIndex );
 
