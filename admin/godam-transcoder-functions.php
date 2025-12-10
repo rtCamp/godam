@@ -362,24 +362,6 @@ function rtgodam_get_server_var( $server_key, $filter_type = FILTER_SANITIZE_FUL
 }
 
 /**
- * Check if API request should be blocked due to HTTP or localhost environment.
- *
- * @since n.e.x.t
- *
- * @return bool True if request should be blocked, false otherwise.
- */
-function rtgodam_should_block_api_request() {
-	// Check if current request is over HTTP (not HTTPS).
-	$is_http = ! is_ssl();
-
-	// Check if request is from localhost using existing helper function.
-	$is_localhost = rtgodam_is_local_environment();
-
-	// Block if either condition is met (HTTP OR localhost).
-	return $is_http || $is_localhost;
-}
-
-/**
  * Helper function to verify the api key.
  *
  * @param string $api_key The api key to verify.
@@ -390,27 +372,6 @@ function rtgodam_should_block_api_request() {
 function rtgodam_verify_api_key( $api_key, $save = false ) {
 	if ( empty( $api_key ) ) {
 		return new \WP_Error( 'missing_api_key', __( 'API key is required.', 'godam' ), array( 'status' => 400 ) );
-	}
-
-	// Check if request should be blocked due to HTTP or localhost environment.
-	if ( rtgodam_should_block_api_request() ) {
-		// Check if RTGODAM_API_KEY constant is defined in wp-config.php.
-		if ( ! defined( 'RTGODAM_API_KEY' ) ) {
-			return new \WP_Error(
-				'localhost_blocked',
-				__( 'API key verification is blocked for HTTP connections or localhost environments. To use production API keys on localhost, please add the following constant to your wp-config.php file: define(\'RTGODAM_API_KEY\', \'your-api-key-here\');', 'godam' ),
-				array( 'status' => 403 )
-			);
-		}
-
-		// Match the provided API key with the RTGODAM_API_KEY constant.
-		if ( RTGODAM_API_KEY !== $api_key ) {
-			return new \WP_Error(
-				'api_key_mismatch',
-				__( 'The provided API key does not match the RTGODAM_API_KEY constant defined in wp-config.php.', 'godam' ),
-				array( 'status' => 403 )
-			);
-		}
 	}
 
 	$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.verification.verify_api_key';
