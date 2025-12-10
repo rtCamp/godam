@@ -222,7 +222,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 					const downloadLink = newFallback.querySelector( 'a' );
 					if ( downloadLink ) {
 						if ( isSafePdfUrl( newSource ) ) {
-							downloadLink.href = newSource;
+							downloadLink.href = encodeURI( newSource );
 						}
 					}
 					newObject.appendChild( newFallback );
