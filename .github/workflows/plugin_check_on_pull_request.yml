@@ -48,6 +48,7 @@ jobs:
           unzip -q "${{ steps.bundle.outputs.zip-path }}" -d "${{ runner.temp }}"
 
       - name: Perform Plugin Check 🔍
+        # TODO: Switch to specific action version once PR comment features are released in wordpress/plugin-check-action
         uses: wordpress/plugin-check-action@main
         with:
           build-dir: '${{ runner.temp }}/godam'
