@@ -10,6 +10,32 @@ import { __ } from '@wordpress/i18n';
 
 document.addEventListener( 'DOMContentLoaded', function() {
 	const pdfWrappers = document.querySelectorAll( '.godam-pdf-wrapper' );
+
+	/**
+	 * Checks if a given URL is a safe PDF source for embedding.
+	 * Allows http, https, relative, absolute, or allowed blob/data URLs.
+	 * Disallows schemes like javascript:, data: (except data:application/pdf), etc.
+	 *
+	 * @param {string} url The URL to validate
+	 * @return {boolean} True if valid, false otherwise
+	 */
+	function isSafePdfUrl( url ) {
+		try {
+			// Remove leading/trailing whitespace
+			url = String( url ).trim();
+
+			const parsed = new URL( url, window.location.href );
+			if ( parsed.protocol === 'http:' || parsed.protocol === 'https:' ) {
+				// Check .pdf extension before query/fragment removal
+				const pathname = parsed.pathname.toLowerCase();
+				return pathname.endsWith( '.pdf' );
+			}
+			return false;
+		} catch ( e ) {
+			return false;
+		}
+	}
+
 	// Check if safari browser or iOS device
 	const isIOS = /iPad|iPhone|iPod/.test( navigator.userAgent ) && ! window.MSStream;
 	const isSafari = /^((?!chrome|android).)*safari/i.test( navigator.userAgent );
@@ -57,6 +83,11 @@ document.addEventListener( 'DOMContentLoaded', function() {
 
 			async function loadFirstAvailablePDF() {
 				for ( const src of sources ) {
+					// Validate URL before processing
+					if ( ! isSafePdfUrl( src ) ) {
+						continue;
+					}
+
 					const busted = bust( src );
 					const exists = await pdfExists( busted );
 
@@ -116,7 +147,12 @@ document.addEventListener( 'DOMContentLoaded', function() {
 				const currentSource = sources[ index ];
 
 				// Update the object with the new source
-				updatePDFObject( currentSource, index );
+				if ( isSafePdfUrl( currentSource ) ) {
+					updatePDFObject( currentSource, index );
+				} else {
+					// Try next source if URL is unsafe
+					tryNextSource( index + 1 );
+				}
 
 				// Set a timeout to check if PDF loads
 				// If it doesn't load within 10 seconds, try the next source
@@ -153,6 +189,11 @@ document.addEventListener( 'DOMContentLoaded', function() {
 			 * @param {number} sourceIndex - The index of the source
 			 */
 			function updatePDFObject( newSource, sourceIndex ) {
+				// Defense-in-depth: ensure only safe URLs get set
+				if ( ! isSafePdfUrl( newSource ) ) {
+					return;
+				}
+
 				// Get the current object from the wrapper (in case it was replaced)
 				const currentObject = wrapper.querySelector( 'object[type="application/pdf"]' );
 				if ( ! currentObject ) {
@@ -180,7 +221,9 @@ document.addEventListener( 'DOMContentLoaded', function() {
 					const newFallback = fallbackContent.cloneNode( true );
 					const downloadLink = newFallback.querySelector( 'a' );
 					if ( downloadLink ) {
-						downloadLink.href = newSource;
+						if ( isSafePdfUrl( newSource ) ) {
+							downloadLink.href = newSource;
+						}
 					}
 					newObject.appendChild( newFallback );
 				}
