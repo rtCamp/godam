@@ -495,10 +495,10 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 			'watermark'            => boolval( $rtgodam_watermark ),
 			'resolutions'          => array( 'auto' ),
 			'folder_name'          => ! empty( $form_title ) ? $form_title : __( 'Gravity forms', 'godam' ),
-			'wp_author_email'      => $current_user->user_email,
+			'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $current_user->user_email, 0 ),
 			'wp_site'              => $site_url,
-			'wp_author_first_name' => $author_first_name,
-			'wp_author_last_name'  => $author_last_name,
+			'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, 0 ),
+			'wp_author_last_name'  => apply_filters( 'godam_author_last_name_to_send', $author_last_name, 0 ),
 			'public'               => 1,
 		),
 		$watermark_to_use
@@ -778,4 +778,57 @@ function godam_get_transcript_path( $attachment_id, $job_id = null ) {
 	}
 
 	return false;
+}
+
+/**
+ * Generate the HTML content for the video preview page.
+ *
+ * This function constructs the HTML structure for a video preview page based on the provided video ID.
+ * It checks if the video exists and displays either the video player or an error message accordingly.
+ *
+ * @param int $video_id The ID of the video attachment to preview.
+ * @return string The generated HTML content for the video preview page.
+ */
+function godam_preview_page_content( $video_id ) {
+	ob_start();
+	// Check if video ID is provided and if video attachment exists.
+	$video_attachment = null;
+	$show_video       = false;
+	$video_id         = intval( $video_id );
+
+	if ( ! empty( $video_id ) ) {
+		$video_attachment = get_post( $video_id );
+		$show_video       = $video_attachment && 'attachment' === $video_attachment->post_type;
+	}
+
+	if ( ! $show_video ) {
+		// Display error message for missing or invalid video.
+		?>
+		<div class="godam-video-preview--container">
+			<h1 class="godam-video-preview--title"><?php esc_html_e( 'Video Preview', 'godam' ); ?></h1>
+			<p class="video-not-found"><?php esc_html_e( 'Oops! We could not locate your video', 'godam' ); ?></p>
+		</div>
+		<?php
+	} else {
+		// Display video content.
+		?>
+		<header class="godam-video-preview--container">
+			<h1 class="godam-video-preview--title">
+				<strong><?php esc_html_e( 'Video Preview: ', 'godam' ); ?></strong>
+				<?php echo esc_html( get_the_title( $video_id ) ); ?>
+			</h1>
+		</header>
+
+		<div class="godam-video-preview--container">
+			<div class="godam-video-preview--notice">
+				<?php esc_html_e( 'Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles.', 'godam' ); ?>
+			</div>
+		</div>
+
+		<div class="godam-video-preview">
+			<?php echo do_shortcode( '[godam_video id="' . $video_id . '"]' ); ?>
+		</div>
+		<?php
+	}
+	return ob_get_clean();
 }

@@ -40,12 +40,13 @@ class Media_Library_Ajax {
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_media_transcoding_status_js' ), 10, 2 );
 
 		add_action( 'pre_delete_term', array( $this, 'delete_child_media_folder' ), 10, 2 );
-		add_action( 'delete_attachment', array( $this, 'handle_media_deletion' ), 10, 1 );
 
 		add_action( 'admin_notices', array( $this, 'media_library_offer_banner' ) );
 		add_action( 'wp_ajax_godam_dismiss_offer_banner', array( $this, 'dismiss_offer_banner' ) );
 
 		add_action( 'rtgodam_handle_callback_finished', array( $this, 'download_transcoded_mp4_source' ), 10, 4 );
+
+		add_filter( 'wp_get_attachment_url', array( $this, 'filter_attachment_url_for_virtual_media' ), 10, 2 );
 	}
 
 	/**
@@ -62,14 +63,17 @@ class Media_Library_Ajax {
 			return array();
 		}
 
-		$title = isset( $item['title'] ) ? $item['title'] : ( isset( $item['orignal_file_name'] ) ? pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) : $item['name'] );
+		$job_type      = $item['job_type'] ?? '';
+		$api_mime_type = $item['mime_type'] ?? '';
+		$computed_mime = $this->get_mime_type_for_job_type( $job_type, $api_mime_type );
+		$title         = isset( $item['title'] ) ? $item['title'] : ( isset( $item['orignal_file_name'] ) ? pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) : $item['name'] );
 
 		$result = array(
 			'id'                    => $item['name'],
 			'title'                 => $title,
 			'filename'              => $item['orignal_file_name'] ?? $item['name'],
-			'url'                   => ( $item['job_type'] ?? '' ) === 'image' ? ( $item['file_origin'] ?? '' ) : ( $item['transcoded_file_path'] ?? $item['file_origin'] ?? '' ),
-			'mime'                  => 'application/dash+xml',
+			'url'                   => isset( $item['transcoded_mp4_url'] ) ? $item['transcoded_mp4_url'] : ( isset( $item['transcoded_file_path'] ) ? $item['transcoded_file_path'] : '' ),
+			'mime'                  => isset( $item['transcoded_mp4_url'] ) ? 'video/mp4' : $computed_mime,
 			'type'                  => $item['job_type'] ?? '',
 			'subtype'               => ( isset( $item['mime_type'] ) && strpos( $item['mime_type'], '/' ) !== false ) ? explode( '/', $item['mime_type'] )[1] : 'jpg',
 			'status'                => $item['status'] ?? '',
@@ -83,14 +87,36 @@ class Media_Library_Ajax {
 			'thumbnail_url'         => $item['thumbnail_url'] ?? '',
 			'duration'              => $item['playtime'] ?? '',
 			'hls_url'               => $item['transcoded_hls_path'] ?? '',
+			'mpd_url'               => $item['transcoded_file_path'] ?? '',
 		);
 
+		$result['icon'] = $item['thumbnail_url'] ?? '';
+
 		if ( 'stream' === $item['job_type'] ) {
-			$result['icon'] = $item['thumbnail_url'] ?? '';
 			$result['type'] = 'video';
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Get appropriate MIME type based on job type.
+	 *
+	 * @param string $job_type Job type from GoDAM API.
+	 * @param string $mime_type Original MIME type from API.
+	 * @return string Appropriate MIME type.
+	 */
+	private function get_mime_type_for_job_type( $job_type, $mime_type ) {
+		switch ( $job_type ) {
+			case 'stream':
+				return 'application/dash+xml';
+			case 'audio':
+				return ! empty( $mime_type ) ? $mime_type : 'audio/mpeg';
+			case 'image':
+				return ! empty( $mime_type ) ? $mime_type : 'image/jpeg';
+			default:
+				return ! empty( $mime_type ) ? $mime_type : 'application/dash+xml';
+		}
 	}
 
 	/**
@@ -123,12 +149,36 @@ class Media_Library_Ajax {
 		$file_title = get_the_title( $attachment_id );
 		$file_name  = pathinfo( $attachment_url, PATHINFO_FILENAME ) . '.' . pathinfo( $attachment_url, PATHINFO_EXTENSION );
 
+		// Get attachment author information.
+		$attachment_author_id = get_post_field( 'post_author', $attachment_id );
+		$attachment_author    = get_user_by( 'id', $attachment_author_id );
+		$site_url             = get_site_url();
+
+		// Get author name with fallback to username.
+		$author_first_name = '';
+		$author_last_name  = '';
+
+		if ( $attachment_author ) {
+			$author_first_name = $attachment_author->first_name;
+			$author_last_name  = $attachment_author->last_name;
+
+			// If first and last names are empty, use username as fallback.
+			if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
+				$author_first_name = $attachment_author->user_login;
+			}
+		}
+
 		// Request params.
 		$params = array(
-			'api_token'         => $api_key,
-			'job_type'          => 'image',
-			'file_origin'       => $attachment_url,
-			'orignal_file_name' => $file_name ?? $file_title,
+			'api_token'            => $api_key,
+			'job_type'             => 'image',
+			'file_origin'          => $attachment_url,
+			'orignal_file_name'    => $file_name ?? $file_title,
+			'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $attachment_author ? $attachment_author->user_email : '', $attachment_id ),
+			'wp_site'              => $site_url,
+			'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, $attachment_id ),
+			'wp_author_last_name'  => apply_filters( 'godam_author_last_name_to_send', $author_last_name, $attachment_id ),
+			'public'               => 1,
 		);
 
 		$upload_media = wp_remote_post(
@@ -484,42 +534,6 @@ class Media_Library_Ajax {
 	}
 
 	/**
-	 * Handle media deletion and notify the external API.
-	 *
-	 * @param int $attachment_id Attachment ID.
-	 * @return void
-	 */
-	public function handle_media_deletion( $attachment_id ) {
-		$job_id        = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
-		$account_token = get_option( 'rtgodam-account-token', '' );
-		$api_key       = get_option( 'rtgodam-api-key', '' );
-
-		// Ensure all required data is available.
-		if ( empty( $job_id ) || empty( $account_token ) || empty( $api_key ) ) {
-			return;
-		}
-
-		// API URL using RTGODAM_API_BASE.
-		$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.mutate.delete_attachment';
-
-		// Request params.
-		$params = array(
-			'job_id'        => $job_id,
-			'api_key'       => $api_key,
-			'account_token' => $account_token,
-		);
-
-		// Send POST request.
-		wp_remote_post(
-			$api_url,
-			array(
-				'body'    => wp_json_encode( $params ),
-				'headers' => array( 'Content-Type' => 'application/json' ),
-			)
-		);
-	}
-
-	/**
 	 * Dismiss the offer banner by updating the option in the database.
 	 *
 	 * @return void
@@ -546,61 +560,68 @@ class Media_Library_Ajax {
 
 		$show_offer_banner = get_option( 'rtgodam-offer-banner', 1 );
 
+		$timezone     = wp_timezone();
+		$current_time = new \DateTime( 'now', $timezone );
+		$end_time     = new \DateTime( '2025-12-14 23:59:59', $timezone );
+
 		// Only show on the Media Library page.
-		if ( $screen && 'upload' === $screen->base && ! rtgodam_is_api_key_valid() && $show_offer_banner ) {
+		if ( $current_time <= $end_time && $screen && 'upload' === $screen->base && ! rtgodam_is_api_key_valid() && $show_offer_banner ) {
 			$host = wp_parse_url( home_url(), PHP_URL_HOST );
 
+			$banner_image = RTGODAM_URL . 'assets/src/images/BFCM.png';
+
 			$banner_html = sprintf(
-				'<div class="notice annual-plan-offer-banner px-10">
-					<canvas id="godam-particle-canvas"></canvas>
-					<div class="annual-plan-offer-banner__content">
-						<div class="annual-plan-offer-banner__message">
-							<h3 class="annual-plan-offer-banner__title">%1$s</h3>
-							<p class="annual-plan-offer-banner__description">%2$s</p>
-						</div>
-						<div class="annual-plan-offer-banner__cta-container">
-							<a
-								href="%3$s"
-								class="annual-plan-offer-banner__cta"
-								target="_blank"
-								rel="noopener noreferrer"
-								title="%4$s"
-							>
-								%4$s
-							</a>
-						</div>
-					</div>
+				'<div class="notice annual-plan-offer-banner">
+					<a
+						href="%1$s"
+						class="annual-plan-offer-banner__link"
+						target="_blank"
+						rel="noopener noreferrer"
+						aria-label="%2$s"
+					>
+						<img
+							src="%3$s"
+							class="annual-plan-offer-banner__image"
+							alt="%4$s"
+							loading="lazy"
+						/>
+					</a>
 					<button
 						type="button"
 						class="annual-plan-offer-banner__dismiss"
-						aria-label="Dismiss banner"
+						aria-label="%5$s"
 					>
 						&times;
 					</button>
 				</div>',
-				esc_html__( 'Pay for 10 months and get 2 months free with our annual plan.', 'godam' ),
-				esc_html__( 'Elevate your media management, transcoding, storage, delivery and more.', 'godam' ),
-				esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=annual-plan&utm_source=' . $host . '&utm_medium=plugin&utm_content=banner' ),
-				esc_html__( 'Buy Now', 'godam' )
+				esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=bfcm-offer&utm_source=' . $host . '&utm_medium=plugin&utm_content=media-library-banner' ),
+				esc_attr__( 'Claim the GoDAM Black Friday & Cyber Monday offer', 'godam' ),
+				esc_url( $banner_image ),
+				esc_attr__( 'Black Friday & Cyber Monday offer from GoDAM', 'godam' ),
+				esc_html__( 'Dismiss banner', 'godam' )
 			);
 
 			echo wp_kses(
 				$banner_html,
 				array(
 					'div'    => array( 'class' => array() ),
-					'canvas' => array( 'id' => array() ),
-					'h3'     => array( 'class' => array() ),
-					'p'      => array( 'class' => array() ),
 					'a'      => array(
-						'href'   => array(),
-						'class'  => array(),
-						'target' => array(),
-						'rel'    => array(),
-						'title'  => array(),
+						'href'       => array(),
+						'class'      => array(),
+						'target'     => array(),
+						'rel'        => array(),
+						'aria-label' => array(),
+					),
+					'img'    => array(
+						'src'     => array(),
+						'alt'     => array(),
+						'class'   => array(),
+						'loading' => array(),
 					),
 					'button' => array(
-						'type'  => array(),
-						'class' => array(),
+						'type'       => array(),
+						'class'      => array(),
+						'aria-label' => array(),
 					),
 				)
 			);
@@ -610,7 +631,7 @@ class Media_Library_Ajax {
 	/**
 	 * Replace an existing WordPress media attachment with a file from an external URL,
 	 * using the WordPress Filesystem API.
-	 * 
+	 *
 	 * @since 1.4.2
 	 *
 	 * @param int    $attachment_id The ID of the existing media attachment.
@@ -720,5 +741,31 @@ class Media_Library_Ajax {
 				error_log( 'MP4 video replacement failed: ' . $attachment_id->get_error_message() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Logging for debugging.
 			}
 		}
+	}
+
+	/**
+	 * Filter attachment URL for virtual media.
+	 *
+	 * @param string $url    The original attachment URL.
+	 * @param int    $post_id The attachment post ID.
+	 *
+	 * @since 1.4.7
+	 *
+	 * @return string The filtered attachment URL.
+	 */
+	public function filter_attachment_url_for_virtual_media( $url, $post_id ) {
+
+		$godam_original_id = get_post_meta( $post_id, '_godam_original_id', true );
+
+		if ( ! empty( $godam_original_id ) ) {
+			$attachment         = get_post( $post_id );
+			$transcoded_mp4_url = $attachment->guid; // For virtual media, we store the transcoded MP4 URL in the guid.
+
+			if ( ! empty( $transcoded_mp4_url ) ) {
+				return esc_url( $transcoded_mp4_url );
+			}
+		}
+
+		return $url;
 	}
 }

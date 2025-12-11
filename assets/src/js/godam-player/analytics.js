@@ -152,53 +152,91 @@ if ( ! window.pageLoadEventTracked ) {
 			} );
 		}
 
-		// Initialize video analytics
+		// Set up analytics for each player when it's ready
+		// This prevents double initialization issues during async plugin loading
+		document.addEventListener( 'godamPlayerReady', ( event ) => {
+			setupPlayerAnalytics( event.detail.player, event.detail.videoElement );
+		} );
+
+		// Also try to set up analytics for any players that are already ready
+		// (in case this runs after some players are initialized)
 		playerAnalytics();
 	} );
 }
 
+/**
+ * Setup analytics for a single player
+ * Extracted to avoid double initialization
+ *
+ * @param {Object}      player - VideoJS player instance
+ * @param {HTMLElement} video  - Video container element
+ */
+function setupPlayerAnalytics( player, video ) {
+	// Skip if already set up
+	if ( video.dataset.analyticsSetup === 'true' ) {
+		return;
+	}
+	video.dataset.analyticsSetup = 'true';
+
+	// Initialize GTM tracker for this video
+	if ( typeof window.dataLayer !== 'undefined' && window.godamSettings?.enableGTMTracking ) {
+		const gtmTracker = new GTMVideoTracker( player, video );
+		// Store tracker reference for potential cleanup
+		video.gtmTracker = gtmTracker;
+	}
+
+	window.addEventListener( 'beforeunload', () => {
+		const played = player.played();
+		const ranges = [];
+		const videoLength = player.duration();
+
+		// Extract time ranges from the player.played() object
+		for ( let i = 0; i < played.length; i++ ) {
+			ranges.push( [ played.start( i ), played.end( i ) ] );
+		}
+
+		// Send the ranges using updateHeatmap
+		updateHeatmap( ranges, videoLength );
+	} );
+
+	async function updateHeatmap( ranges, videoLength ) {
+		const videoId = video.getAttribute( 'data-id' );
+		if ( ! videoId || ranges.length === 0 ) {
+			return; // Skip sending if no valid data
+		}
+
+		if ( window.analytics ) {
+			window.analytics.track( 'video_heatmap', {
+				type: 2, // Enum: 2 = Heatmap
+				videoId: parseInt( videoId, 10 ),
+				ranges,
+				videoLength,
+			} );
+		}
+	}
+}
+
+/**
+ * Initialize analytics for all players on the page
+ * Only sets up analytics for players that are already initialized
+ */
 function playerAnalytics() {
 	const videos = document.querySelectorAll( '.easydam-player.video-js' );
 
 	videos.forEach( ( video ) => {
-		// read the data-setup attribute.
-		const player = videojs.getPlayer( video ) || videojs( video ); // eslint-disable-line no-undef -- variable is defined globally
-
-		// Initialize GTM tracker for this video
-		if ( typeof window.dataLayer !== 'undefined' && window.godamSettings?.enableGTMTracking ) {
-			const gtmTracker = new GTMVideoTracker( player, video );
-			// Store tracker reference for potential cleanup
-			video.gtmTracker = gtmTracker;
+		// Skip if player is still initializing
+		if ( video.dataset.videojsInitializing === 'true' ) {
+			return;
 		}
 
-		window.addEventListener( 'beforeunload', () => {
-			const played = player.played();
-			const ranges = [];
-			const videoLength = player.duration();
-
-			// Extract time ranges from the player.played() object
-			for ( let i = 0; i < played.length; i++ ) {
-				ranges.push( [ played.start( i ), played.end( i ) ] );
-			}
-
-			// Send the ranges using updateHeatmap
-			updateHeatmap( ranges, videoLength );
-		} );
-
-		async function updateHeatmap( ranges, videoLength ) {
-			const videoId = video.getAttribute( 'data-id' );
-			if ( ! videoId || ranges.length === 0 ) {
-				return; // Skip sending if no valid data
-			}
-
-			if ( window.analytics ) {
-				window.analytics.track( 'video_heatmap', {
-					type: 2, // Enum: 2 = Heatmap
-					videoId: parseInt( videoId, 10 ),
-					ranges,
-					videoLength,
-				} );
-			}
+		// Get existing player, don't initialize new ones here
+		const player = videojs.getPlayer( video ); // eslint-disable-line no-undef -- variable is defined globally
+		if ( ! player ) {
+			// Player not ready yet, skip analytics setup for now
+			// It will be set up via godamPlayerReady event
+			return;
 		}
+
+		setupPlayerAnalytics( player, video );
 	} );
 }

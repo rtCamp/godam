@@ -124,7 +124,7 @@
 				position: absolute;
 				bottom: 25px;
 				right: 90px;
-				z-index: 99;
+				z-index: 19;
 			}
 		}
 
@@ -137,7 +137,7 @@
 				position: absolute;
 				left: 40px;
 				bottom: 25px;
-				z-index: 99;
+				z-index: 19;
 			}
 		}
 
@@ -270,14 +270,14 @@
 			
 			.vjs-settings-button{
 				right: 55px;
-				z-index: 99;
+				z-index: 19;
 			}
 
 			div.vjs-subs-caps-button {
 				right: 100px !important;
 				left: unset;
 				bottom: 3px !important;
-				z-index: 99;
+				z-index: 19;
 			}
 
 			.vjs-control.vjs-custom-play-button {
@@ -337,7 +337,7 @@
 				bottom: 0;
 				left: unset;
 				right: 152px;
-				z-index: 99;
+				z-index: 19;
 			}
 
 			&:has(.vjs-subs-caps-button.vjs-hidden) .vjs-volume-panel {
@@ -350,8 +350,8 @@
 				left: 20px;
 				position: absolute;
 				transform: translateY(-120%);
-				z-index: 99;
-	
+				z-index: 19;
+
 				.vjs-current-time-display {
 					position: unset;
 				}
@@ -363,8 +363,8 @@
 				position: absolute;
 				right: 20px;
 				transform: translateY(-120%);
-				z-index: 99;
-	
+				z-index: 19;
+
 				.vjs-duration-display {
 					position: unset;
 				}

@@ -1,0 +1,50 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "godam/pdf",
+	"title": "GoDAM PDF",
+	"category": "media",
+	"description": "Embed a PDF file with preview.",
+	"keywords": [ "document", "pdf", "file", "preview" ],
+	"textdomain": "godam",
+	"attributes": {
+		"blob": {
+			"type": "string",
+			"role": "local"
+		},
+		"src": {
+			"type": "string",
+			"role": "content"
+		},
+		"caption": {
+			"type": "string",
+			"role": "content"
+		},
+		"id": {
+			"type": "number",
+			"role": "content"
+		},
+		"height": {
+			"type": "number",
+			"default": 600
+		}
+	},
+	"supports": {
+		"anchor": true,
+		"align": true,
+		"spacing": {
+			"margin": true,
+			"padding": true
+		},
+		"interactivity": {
+			"clientNavigation": true
+		}
+	},
+	"editorStyle": [ "file:./index.css" ],
+	"style": [ "file:./style-index.css" ],
+	"editorScript": [ "file:./index.js" ],
+	"viewScript": [ "file:./view.js" ],
+	"render": "file:./render.php"
+}
+
+

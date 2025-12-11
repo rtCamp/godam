@@ -1,21 +1,51 @@
 /**
+ * GoDAM Media Frame Shared
+ *
+ * Shared functionality for GoDAM integration in WordPress media frames.
+ * Used by both MediaFrame.Select and MediaFrame.Post to provide consistent
+ * GoDAM tab functionality and virtual attachment creation.
+ */
+
+/**
  * Internal dependencies
  */
 import { getQuery } from '../utility.js';
 
-const MediaFrameSelect = wp?.media?.view?.MediaFrame?.Select;
 const l10n = wp?.media?.view?.l10n;
 
-export default MediaFrameSelect?.extend( {
-	initialize() {
-		// Call the parent initialize method
-		MediaFrameSelect.prototype.initialize.apply( this, arguments );
+/**
+ * Check if the current frame is a featured image context.
+ *
+ * Note: This will not cover the media modal opened from the core feature image block.
+ *
+ * @since n.e.x.t
+ *
+ * @param {wp.media.view.MediaFrame} frame
+ * @return {boolean} True if featured image context, false otherwise.
+ */
+const checkIfFeatureImage = ( frame ) => {
+	// Check if this is a featured image context.
+	if ( frame && frame.state && frame.state() ) {
+		const state = frame.state();
+		const stateId = state.id || '';
 
-		this.on( 'content:render:godam', this.GoDAMCreate, this );
-	},
+		// Featured image context
+		if ( stateId === 'featured-image' || frame.id === 'featured-image' ) {
+			return true;
+		}
+	}
 
+	return false;
+};
+
+/**
+ * Shared object containing GoDAM-specific media frame functionality
+ */
+const GoDAMMediaFrameShared = {
 	browseRouter( routerView ) {
-		if ( window.godamTabCallback && window.godamTabCallback.validAPIKey ) {
+		const isFeatureImage = checkIfFeatureImage( this );
+
+		if ( window.godamTabCallback && window.godamTabCallback.validAPIKey && ! isFeatureImage ) {
 			routerView.set( {
 				upload: {
 					text: l10n.uploadFilesTitle,
@@ -100,6 +130,7 @@ export default MediaFrameSelect?.extend( {
 				name: data.title,
 				url: data.url,
 				hls_url: data.hls_url,
+				mpd_url: data.mpd_url,
 				mime: 'video/mp4',
 				type: data.type,
 				subtype: data.subtype,
@@ -114,6 +145,25 @@ export default MediaFrameSelect?.extend( {
 				caption: data.caption,
 				description: data.description,
 			} ),
-		} ).then( ( res ) => res.json() );
+		} )
+			.then( ( res ) => res.json() )
+			.then( ( response ) => {
+				if ( response && response.success ) {
+					const attachment = response.attachment;
+
+					// Trigger custom JS event godam-virtual-attachment-created
+					const event = new CustomEvent( 'godam-virtual-attachment-created', {
+						detail: { virtualMediaId: data.id, attachment },
+					} );
+
+					document.dispatchEvent( event );
+
+					// Also trigger count refresh for React components
+					const countRefreshEvent = new CustomEvent( 'godam-attachment-browser:changed' );
+					document.dispatchEvent( countRefreshEvent );
+				}
+			} );
 	},
-} );
+};
+
+export default GoDAMMediaFrameShared;

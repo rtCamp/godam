@@ -50,6 +50,15 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 		setShowSnackbar( false );
 	};
 
+	const getPreviewTemplateUrl = ( videoItem ) => {
+		const homeUrl = window?.godamRestRoute?.homeUrl;
+		const videoSlug = window?.godamSettings?.videoPostSettings?.video_slug;
+		const videoName = videoItem?.name;
+		return ( homeUrl && videoSlug && videoName )
+			? `${ homeUrl }/${ videoSlug }/${ videoName }`
+			: videoItem?.link;
+	};
+
 	// Pre-fetch data on mount to ensure copy always works
 	useEffect( () => {
 		prefetchMediaDataForCopy( item.id );
@@ -89,7 +98,7 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 						{
 							icon: <Icon icon={ seen } />,
 							onClick: () => {
-								window.open( item.link, '_blank' );
+								window.open( getPreviewTemplateUrl( item ), '_blank' );
 							},
 							title: __( 'Preview template', 'godam' ),
 						},

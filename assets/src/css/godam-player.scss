@@ -87,6 +87,11 @@
 	&.hidden {
 		display: none;
 	}
+
+	svg {
+		position: relative;
+		top: 2px;
+	}
 }
 
 .godam-player-overlay {
@@ -102,12 +107,13 @@
 }
 
 .godam-poster-image {
+	display: none;
 	position:absolute;
 	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
 	width: 100%;
 	height: auto;
 	max-height: 100%;
-	object-fit:contain;
+	object-fit: contain;
 	background-color: #000;
 }
 
@@ -1548,6 +1554,17 @@ body.godam-share-modal-open {
 	position: relative;
 }
 
+/* Ensure Elementor widget wrapper maintains proper dimensions */
+.elementor-widget-godam-video {
+	width: 100%;
+	flex-shrink: 0;
+
+	figure[id^="godam-player-container"] {
+		aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
+		display: block;
+	}
+}
+
 .easydam-video-container {
 	position: relative;
 	background-color: rgba(149, 149, 149, 0.2);
@@ -1561,6 +1578,13 @@ body.godam-share-modal-open {
 		.godam-player-overlay {
 
 			display: none;
+		}
+	}
+
+	&:has(.easydam-player.vjs-hidden) {
+
+		.godam-poster-image {
+			display: block;
 		}
 	}
 
@@ -1629,7 +1653,9 @@ body.godam-share-modal-open {
 		position: fixed;
 		inset: 0;
 		width: 100vw;
-		height: 100vh;
+		// Dynamic height calculation for iOS using --vh variable set by JS.
+		// Fallback to 100vh if --vh is not set, for non-iOS devices.
+		height: calc(var(--vh, 1vh) * 100);
 		background: #000;
 		z-index: 99999999;
 		display: flex;
