@@ -26,7 +26,7 @@ const VideoEngagement = ( { handleSettingChange } ) => {
 					<Button
 						className="godam-button"
 						icon={ unlock }
-						href="https://app.godam.io/subscription/plans"
+						href="https://app.godam.io/web/billing?tab=Plans"
 						target="_blank"
 						variant="primary"
 					>
