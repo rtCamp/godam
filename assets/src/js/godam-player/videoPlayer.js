@@ -55,7 +55,9 @@ export default class GodamVideoPlayer {
 		} finally {
 			// Remove initializing flag after initialization
 			delete this.video.dataset.videojsInitializing;
-			delete this.video.parentElement.dataset.videojsInitializing;
+			if ( this.video.parentElement ) {
+				delete this.video.parentElement.dataset.videojsInitializing;
+			}
 		}
 	}
 

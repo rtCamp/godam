@@ -58,7 +58,7 @@ export default class PlayerManager {
 		} );
 
 		// Dispatch event when all players are initialized
-		Promise.all( initPromises ).then( () => {
+		Promise.allSettled( initPromises ).then( () => {
 			const allPlayersReadyEvent = new CustomEvent( 'godamAllPlayersReady', {
 				detail: {
 					players: window.GoDAMAPI ? window.GoDAMAPI.getAllPlayers() : [],

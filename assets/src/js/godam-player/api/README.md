@@ -17,14 +17,51 @@ The GoDAM Player API provides a simple and powerful interface for developers to 
 
 ## Getting Started
 
-The GoDAM Player API is available globally as `window.GoDAMAPI` once the GoDAM player scripts are loaded.
+The GoDAM Player API is available globally as `window.GoDAMAPI`. However, to ensure all players are fully initialized before interacting with them, you should listen for the `godamAllPlayersReady` event.
 
 ```javascript
-// Check if API is available
-if (window.GoDAMAPI) {
-    // API is ready to use
-    const player = window.GoDAMAPI.getPlayer('1641');
-}
+// Wait for all players to be ready
+document.addEventListener('godamAllPlayersReady', () => {
+    // API is safe to use
+    if (window.GoDAMAPI) {
+        const player = window.GoDAMAPI.getPlayer('1641');
+        // ...
+    }
+});
+```
+
+## Initialization Events
+
+To correctly time your API calls, you can use the following events:
+
+### `godamAllPlayersReady`
+
+This event is dispatched on the `document` when **all** GoDAM players on the page have finished initializing. This is the recommended event to wait for before calling `getPlayer()` or `getAllPlayers()`.
+
+**Usage:**
+
+```javascript
+document.addEventListener('godamAllPlayersReady', () => {
+    console.log('All players are ready!');
+    const allPlayers = window.GoDAMAPI.getAllPlayers();
+    // ...
+});
+```
+
+### `godamPlayerReady`
+
+This event is dispatched on the `document` when a **single** player instance is ready. The event detail contains the player instance.
+
+**Usage:**
+
+```javascript
+document.addEventListener('godamPlayerReady', (event) => {
+    const { player, attachmentId } = event.detail;
+    console.log(`Player ${attachmentId} is ready!`);
+    
+    // You can interact with this specific player immediately
+    player.play();
+});
 ```
 
 ## Main API Methods
@@ -32,6 +69,8 @@ if (window.GoDAMAPI) {
 ### `getPlayer(attachmentID, videoElement?, player?)`
 
 Get a player instance for a specific video.
+
+> **Important:** This function should only be called after the `godamAllPlayersReady` event has fired. Calling it earlier may result in an error if the player is still initializing.
 
 **Parameters:**
 
@@ -55,6 +94,8 @@ const player = window.GoDAMAPI.getPlayer('1641', videoEl);
 ### `getAllPlayers()`
 
 Get all player instances on the current page.
+
+> **Important:** This function should only be called after the `godamAllPlayersReady` event has fired.
 
 **Returns:** Array of player objects with properties:
 
@@ -844,9 +885,10 @@ try {
 ### Common Error Scenarios
 
 1. **Player not found**: Check that the attachment ID exists and the video has loaded
-2. **Invalid layer configuration**: Ensure required properties (`html`, `displayTime`) are provided
-3. **Playback restrictions**: Some browsers require user interaction before allowing autoplay
-4. **API not loaded**: Make sure the GoDAM scripts have loaded before using the API
+2. **Initialization Error**: "Player ... is currently initializing". This happens if you call `getPlayer` before `godamAllPlayersReady` event.
+3. **Invalid layer configuration**: Ensure required properties (`html`, `displayTime`) are provided
+4. **Playback restrictions**: Some browsers require user interaction before allowing autoplay
+5. **API not loaded**: Make sure the GoDAM scripts have loaded before using the API
 
 ---
 
