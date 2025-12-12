@@ -705,6 +705,17 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			} );
 		}
 
+		if ( this.model ) {
+			this.listenTo(
+				this.model,
+				'change',
+				function() {
+					window.tcm = this;
+					console.log( this );
+				},
+			);
+		}
+
 		// Return this view.
 		return this;
 	},

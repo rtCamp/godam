@@ -47,14 +47,15 @@ class RTGODAM_Media_Version {
 				$options .= '<option ' . selected( $origin_post_version, $get_origin_post_base_version, false ) . ' value="' . $origin_post_version . '">' . get_the_title( $origin_post_version ) . '</option>';
 			}
 			$form_fields['media_versions'] = array(
-				'label' => __( 'Replace media with following versions', 'godam' ),
-				'input' => 'html',
-				'html'  => sprintf(
+				'label'        => __( 'Replace media with following versions', 'godam' ),
+				'input'        => 'html',
+				'html'         => sprintf(
 					'<select id="rtgodam-update-media-versions" style="width:100%%;" name="attachments[%1$d][media_versions]">%2$s</select>',
 					(int) $post->ID,
 					$options
 				),
-				'helps' => '',
+				'helps'        => '',
+				'show_in_edit' => true,
 			);
 		}
 		$form_fields['replace_media'] = array(
@@ -66,7 +67,7 @@ class RTGODAM_Media_Version {
 				__( 'Add Media version', 'godam' )
 			),
 			'value'        => '',
-			'show_in_edit' => false,
+			'show_in_edit' => true,
 		);
 		return $form_fields;
 	}
