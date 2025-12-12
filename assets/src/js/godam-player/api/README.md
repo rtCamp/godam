@@ -56,11 +56,24 @@ This event is dispatched on the `document` when a **single** player instance is 
 
 ```javascript
 document.addEventListener('godamPlayerReady', (event) => {
-    const { player, attachmentId } = event.detail;
+    const { player, attachmentId, videoElement } = event.detail;
     console.log(`Player ${attachmentId} is ready!`);
     
-    // You can interact with this specific player immediately
-    player.play();
+    // The 'player' property in event.detail is the native VideoJS instance.
+    // To use GoDAM API methods, obtain the GoDAM Player wrapper:
+    if (window.GoDAMAPI) {
+        let godamPlayer;
+        if (attachmentId) {
+             godamPlayer = window.GoDAMAPI.getPlayer(attachmentId);
+        } else if (videoElement) {
+             // Pass videoElement as second argument if attachmentId is missing
+             godamPlayer = window.GoDAMAPI.getPlayer(null, videoElement);
+        }
+
+        if (godamPlayer) {
+            godamPlayer.play();
+        }
+    }
 });
 ```
 
