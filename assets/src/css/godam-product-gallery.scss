@@ -388,3 +388,8 @@
 .godam-product-video-gallery-sidebar--cart-basket .wc-block-mini-cart__badge {
 	font-size: 0.6em !important;
 }
+
+/* Only apply flex-wrap: nowrap to Stack blocks that contain the gallery */
+.wp-block-group.is-layout-flex:has(.godam-product-gallery) {
+    flex-wrap: nowrap !important;
+}

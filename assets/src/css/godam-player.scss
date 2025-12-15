@@ -87,6 +87,11 @@
 	&.hidden {
 		display: none;
 	}
+
+	svg {
+		position: relative;
+		top: 2px;
+	}
 }
 
 .godam-player-overlay {
@@ -1816,6 +1821,17 @@ body.godam-share-modal-open {
 /* GoDAM Video Heading Overlay Styles */
 .godam-video-wrapper {
 	position: relative;
+}
+
+/* Ensure Elementor widget wrapper maintains proper dimensions */
+.elementor-widget-godam-video {
+	width: 100%;
+	flex-shrink: 0;
+
+	figure[id^="godam-player-container"] {
+		aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
+		display: block;
+	}
 }
 
 .easydam-video-container {

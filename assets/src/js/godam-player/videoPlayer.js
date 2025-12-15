@@ -16,6 +16,7 @@ import AdsManager from './managers/adsManager.js';
 import HoverManager from './managers/hoverManager.js';
 import ShareManager from './managers/shareManager.js';
 import MenuButtonHoverManager from './managers/menuButtonHover.js';
+import { loadFlvPlugin, requiresFlvPlugin, loadAdsPlugins } from './utils/pluginLoader.js';
 
 /**
  * Refactored Video Player Class
@@ -43,9 +44,59 @@ export default class GodamVideoPlayer {
 	/**
 	 * Initialize the video player
 	 */
-	initialize() {
+	async initialize() {
+		// Mark as initializing to prevent double initialization
+		this.video.dataset.videojsInitializing = 'true';
+
 		this.setupVideoElement();
+		await this.loadRequiredPlugins();
 		this.initializePlayer();
+
+		// Remove initializing flag after initialization
+		delete this.video.dataset.videojsInitializing;
+	}
+
+	/**
+	 * Load required plugins based on video sources and configuration
+	 * IMPORTANT: This must run BEFORE player initialization to avoid
+	 * videojs-contrib-ads missing the loadstart event
+	 */
+	async loadRequiredPlugins() {
+		const sources = this.configManager.videoSetupControls?.sources || [];
+
+		// Check if ads are configured
+		const needsAds = !! (
+			this.configManager.adTagUrl ||
+			( this.configManager.globalAdsSettings?.enable_global_video_ads &&
+				this.configManager.globalAdsSettings?.adTagUrl )
+		);
+
+		// Check if FLV plugin is needed
+		const needsFlv = sources.some( ( source ) => requiresFlvPlugin( source.src || source.type ) );
+
+		// Load plugins in parallel
+		const loadPromises = [];
+
+		if ( needsAds ) {
+			loadPromises.push(
+				loadAdsPlugins().catch( ( error ) => {
+					// eslint-disable-next-line no-console
+					console.error( 'Failed to load ads plugins:', error );
+				} ),
+			);
+		}
+
+		if ( needsFlv ) {
+			loadPromises.push(
+				loadFlvPlugin().catch( ( error ) => {
+					// eslint-disable-next-line no-console
+					console.error( 'Failed to load FLV plugin:', error );
+				} ),
+			);
+		}
+
+		// Wait for all required plugins to load
+		await Promise.all( loadPromises );
 	}
 
 	/**
@@ -64,11 +115,22 @@ export default class GodamVideoPlayer {
 	 * Initialize VideoJS player
 	 */
 	initializePlayer() {
-		this.player = videojs( this.video, this.configManager.videoSetupControls );
+		// Check if player already exists (safety check)
+		const existingPlayer = videojs.getPlayer( this.video );
+		if ( existingPlayer ) {
+			// Use existing player instance (should rarely happen with proper initialization guards)
+			this.player = existingPlayer;
+		} else {
+			// Normal initialization path
+			this.player = videojs( this.video, this.configManager.videoSetupControls );
+		}
 
-		// Initialize ads manager
+		// Initialize ads manager (async - loads plugins dynamically)
 		this.adsManager = new AdsManager( this.player, this.configManager );
-		this.adsManager?.setupAdsIntegration();
+		this.adsManager?.setupAdsIntegration().catch( ( error ) => {
+			// eslint-disable-next-line no-console
+			console.error( 'Ads integration failed:', error );
+		} );
 
 		this.setupAspectRatio();
 		this.setupPlayerReady();
@@ -141,6 +203,47 @@ export default class GodamVideoPlayer {
 						return ( w / divisor ) + ':' + ( h / divisor );
 					}
 
+					function getClosestAspectRatioOrientation( w, h ) {
+						const knownRatios = {
+							'1:1': 1,
+							'4:3': 4 / 3,
+							'3:2': 3 / 2,
+							'5:4': 5 / 4,
+							'16:9': 16 / 9,
+							'21:9': 21 / 9,
+							'9:16': 9 / 16,
+							'2:3': 2 / 3,
+							'3:4': 3 / 4,
+						};
+
+						const orientationMap = {
+							'1:1': 'landscape',
+							'4:3': 'landscape',
+							'3:2': 'landscape',
+							'5:4': 'landscape',
+							'16:9': 'landscape',
+							'21:9': 'landscape',
+							'9:16': 'portrait',
+							'2:3': 'portrait',
+							'3:4': 'portrait',
+						};
+
+						const value = w / h;
+
+						let closestKey = null;
+						let minDiff = Infinity;
+
+						for ( const key in knownRatios ) {
+							const diff = Math.abs( value - knownRatios[ key ] );
+							if ( diff < minDiff ) {
+								minDiff = diff;
+								closestKey = key;
+							}
+						}
+
+						return orientationMap[ closestKey ] || 'landscape';
+					}
+
 					// Check if dimensions are valid.
 					if ( ! width || ! height || width === 0 || height === 0 ) {
 						// Try to get dimensions from the player.
@@ -163,7 +266,11 @@ export default class GodamVideoPlayer {
 								'3:4': 'portrait',
 							};
 
-							const aspectRatioClass = aspectRatioOrientation[ aspectRatio ];
+							let aspectRatioClass = aspectRatioOrientation[ aspectRatio ];
+
+							if ( ! aspectRatioClass ) {
+								aspectRatioClass = getClosestAspectRatioOrientation( width, height );
+							}
 
 							const godamProductModalContainer = document.querySelector( '.godam-product-modal-container.open' ) || document.querySelector( '.godam-woocommerce-featured-video-modal-container.open' );
 
@@ -204,7 +311,11 @@ export default class GodamVideoPlayer {
 						'3:4': 'portrait',
 					};
 
-					const aspectRatioClass = aspectRatioOrientation[ aspectRatio ];
+					let aspectRatioClass = aspectRatioOrientation[ aspectRatio ];
+
+					if ( ! aspectRatioClass ) {
+						aspectRatioClass = getClosestAspectRatioOrientation( width, height );
+					}
 
 					const godamProductModalContainer = document.querySelector( '.godam-product-modal-container.open' ) || document.querySelector( '.godam-woocommerce-featured-video-modal-container.open' );
 
@@ -329,10 +440,16 @@ export default class GodamVideoPlayer {
 
 	/**
 	 * Setup event listeners
+	 * Handles async layer setup for FontAwesome loading
 	 */
 	setupEventListeners() {
 		this.eventsManager?.setupEventListeners();
-		this.layersManager?.setupLayers();
+
+		// Setup layers asynchronously (loads FontAwesome if needed)
+		this.layersManager?.setupLayers().catch( ( error ) => {
+			// eslint-disable-next-line no-console
+			console.error( 'Failed to setup layers:', error );
+		} );
 	}
 
 	/**

@@ -40,7 +40,6 @@ class Media_Library_Ajax {
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_media_transcoding_status_js' ), 10, 2 );
 
 		add_action( 'pre_delete_term', array( $this, 'delete_child_media_folder' ), 10, 2 );
-		add_action( 'delete_attachment', array( $this, 'handle_media_deletion' ), 10, 1 );
 
 		add_action( 'admin_notices', array( $this, 'media_library_offer_banner' ) );
 		add_action( 'wp_ajax_godam_dismiss_offer_banner', array( $this, 'dismiss_offer_banner' ) );
@@ -91,8 +90,9 @@ class Media_Library_Ajax {
 			'mpd_url'               => $item['transcoded_file_path'] ?? '',
 		);
 
+		$result['icon'] = $item['thumbnail_url'] ?? '';
+
 		if ( 'stream' === $item['job_type'] ) {
-			$result['icon'] = $item['thumbnail_url'] ?? '';
 			$result['type'] = 'video';
 		}
 
@@ -149,12 +149,36 @@ class Media_Library_Ajax {
 		$file_title = get_the_title( $attachment_id );
 		$file_name  = pathinfo( $attachment_url, PATHINFO_FILENAME ) . '.' . pathinfo( $attachment_url, PATHINFO_EXTENSION );
 
+		// Get attachment author information.
+		$attachment_author_id = get_post_field( 'post_author', $attachment_id );
+		$attachment_author    = get_user_by( 'id', $attachment_author_id );
+		$site_url             = get_site_url();
+
+		// Get author name with fallback to username.
+		$author_first_name = '';
+		$author_last_name  = '';
+
+		if ( $attachment_author ) {
+			$author_first_name = $attachment_author->first_name;
+			$author_last_name  = $attachment_author->last_name;
+
+			// If first and last names are empty, use username as fallback.
+			if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
+				$author_first_name = $attachment_author->user_login;
+			}
+		}
+
 		// Request params.
 		$params = array(
-			'api_token'         => $api_key,
-			'job_type'          => 'image',
-			'file_origin'       => $attachment_url,
-			'orignal_file_name' => $file_name ?? $file_title,
+			'api_token'            => $api_key,
+			'job_type'             => 'image',
+			'file_origin'          => $attachment_url,
+			'orignal_file_name'    => $file_name ?? $file_title,
+			'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $attachment_author ? $attachment_author->user_email : '', $attachment_id ),
+			'wp_site'              => $site_url,
+			'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, $attachment_id ),
+			'wp_author_last_name'  => apply_filters( 'godam_author_last_name_to_send', $author_last_name, $attachment_id ),
+			'public'               => 1,
 		);
 
 		$upload_media = wp_remote_post(
@@ -510,42 +534,6 @@ class Media_Library_Ajax {
 	}
 
 	/**
-	 * Handle media deletion and notify the external API.
-	 *
-	 * @param int $attachment_id Attachment ID.
-	 * @return void
-	 */
-	public function handle_media_deletion( $attachment_id ) {
-		$job_id        = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
-		$account_token = get_option( 'rtgodam-account-token', '' );
-		$api_key       = get_option( 'rtgodam-api-key', '' );
-
-		// Ensure all required data is available.
-		if ( empty( $job_id ) || empty( $account_token ) || empty( $api_key ) ) {
-			return;
-		}
-
-		// API URL using RTGODAM_API_BASE.
-		$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.mutate.delete_attachment';
-
-		// Request params.
-		$params = array(
-			'job_id'        => $job_id,
-			'api_key'       => $api_key,
-			'account_token' => $account_token,
-		);
-
-		// Send POST request.
-		wp_remote_post(
-			$api_url,
-			array(
-				'body'    => wp_json_encode( $params ),
-				'headers' => array( 'Content-Type' => 'application/json' ),
-			)
-		);
-	}
-
-	/**
 	 * Dismiss the offer banner by updating the option in the database.
 	 *
 	 * @return void
@@ -572,8 +560,12 @@ class Media_Library_Ajax {
 
 		$show_offer_banner = get_option( 'rtgodam-offer-banner', 1 );
 
+		$timezone     = wp_timezone();
+		$current_time = new \DateTime( 'now', $timezone );
+		$end_time     = new \DateTime( '2025-12-14 23:59:59', $timezone );
+
 		// Only show on the Media Library page.
-		if ( $screen && 'upload' === $screen->base && ! rtgodam_is_api_key_valid() && $show_offer_banner ) {
+		if ( $current_time <= $end_time && $screen && 'upload' === $screen->base && ! rtgodam_is_api_key_valid() && $show_offer_banner ) {
 			$host = wp_parse_url( home_url(), PHP_URL_HOST );
 
 			$banner_image = RTGODAM_URL . 'assets/src/images/BFCM.png';
@@ -639,7 +631,7 @@ class Media_Library_Ajax {
 	/**
 	 * Replace an existing WordPress media attachment with a file from an external URL,
 	 * using the WordPress Filesystem API.
-	 * 
+	 *
 	 * @since 1.4.2
 	 *
 	 * @param int    $attachment_id The ID of the existing media attachment.

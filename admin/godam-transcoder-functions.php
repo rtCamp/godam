@@ -374,6 +374,27 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		return new \WP_Error( 'missing_api_key', __( 'API key is required.', 'godam' ), array( 'status' => 400 ) );
 	}
 
+	// Check if request should be blocked due to HTTP or localhost environment.
+	if ( rtgodam_is_local_environment() ) {
+		// Check if RTGODAM_API_KEY constant is defined in wp-config.php.
+		if ( ! defined( 'RTGODAM_API_KEY' ) ) {
+			return new \WP_Error(
+				'localhost_blocked',
+				__( 'API key verification is blocked for HTTP connections or localhost environments. To use production API keys on localhost, please add the following constant to your wp-config.php file: define(\'RTGODAM_API_KEY\', \'your-api-key-here\');', 'godam' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		// Match the provided API key with the RTGODAM_API_KEY constant.
+		if ( RTGODAM_API_KEY !== $api_key ) {
+			return new \WP_Error(
+				'api_key_mismatch',
+				__( 'The provided API key does not match the RTGODAM_API_KEY constant defined in wp-config.php.', 'godam' ),
+				array( 'status' => 403 )
+			);
+		}
+	}
+
 	$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.verification.verify_api_key';
 
 	// Prepare request body with site title.

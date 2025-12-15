@@ -19,7 +19,25 @@ function triggerFilterChange( itemId ) {
 	// Find the most recently opened media frame
 	const activeFrame = getActiveMediaFrame();
 
+	// If no active frame (we're on upload.php page), handle URL navigation
 	if ( ! activeFrame ) {
+		// Check if we're on the upload.php page
+		if ( window.location.pathname.includes( 'upload.php' ) ) {
+			const url = new URL( window.location );
+
+			// Handle different folder types
+			if ( itemId === 'all' || itemId === -1 ) {
+				url.searchParams.delete( 'media-folder' );
+			} else if ( itemId === 'uncategorized' || itemId === 0 ) {
+				url.searchParams.set( 'media-folder', 'uncategorized' );
+			} else {
+				url.searchParams.set( 'media-folder', itemId );
+			}
+
+			// Navigate to the new URL
+			window.location.href = url.toString();
+			return;
+		}
 		return;
 	}
 

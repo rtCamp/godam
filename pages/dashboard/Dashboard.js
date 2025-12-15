@@ -40,6 +40,8 @@ const Dashboard = () => {
 	const topVideosData = topVideosResponse?.videos || [];
 	const totalTopVideosPages = topVideosResponse?.totalPages || 1;
 
+	const showBFCMBanner = window.videoData?.showBFCMBanner;
+
 	useEffect( () => {
 		const loadingEl = document.getElementById( 'loading-analytics-animation' );
 		const container = document.getElementById( 'dashboard-container' );
@@ -195,22 +197,24 @@ const Dashboard = () => {
 
 					{ dashboardMetrics?.errorType === 'invalid_key' || dashboardMetrics?.errorType === 'missing_key'
 						? <>
-							<div className="annual-plan-offer-banner dashboard-modal-banner">
-								<a
-									href={ `${ window?.videoData?.godamBaseUrl }/pricing?utm_campaign=bfcm-offer&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=dashboard-modal-banner` }
-									className="annual-plan-offer-banner__link"
-									target="_blank"
-									rel="noopener noreferrer"
-									aria-label={ __( 'Claim the GoDAM Black Friday & Cyber Monday offer', 'godam' ) }
-								>
-									<img
-										src={ BFCMBanner }
-										alt={ __( 'Black Friday & Cyber Monday offer from GoDAM', 'godam' ) }
-										className="annual-plan-offer-banner__image"
-										loading="lazy"
-									/>
-								</a>
-							</div>
+							{ showBFCMBanner && (
+								<div className="annual-plan-offer-banner dashboard-modal-banner">
+									<a
+										href={ `${ window?.videoData?.godamBaseUrl }/pricing?utm_campaign=bfcm-offer&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=dashboard-modal-banner` }
+										className="annual-plan-offer-banner__link"
+										target="_blank"
+										rel="noopener noreferrer"
+										aria-label={ __( 'Claim the GoDAM Black Friday & Cyber Monday offer', 'godam' ) }
+									>
+										<img
+											src={ BFCMBanner }
+											alt={ __( 'Black Friday & Cyber Monday offer from GoDAM', 'godam' ) }
+											className="annual-plan-offer-banner__image"
+											loading="lazy"
+										/>
+									</a>
+								</div>
+							) }
 							<div className="api-key-overlay-banner">
 								<p className="api-key-overlay-banner-header">
 									{ __(

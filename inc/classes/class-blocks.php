@@ -49,6 +49,13 @@ class Blocks {
 			'window.RTGoDAMProductGalleryBlockSettings = { isWooActive: ' . ( is_plugin_active( 'woocommerce/woocommerce.php' ) ? 'true' : 'false' ) . ' };',
 			'before'
 		);
+
+		wp_enqueue_style(
+			'godam-product-editor-gallery-style',
+			RTGODAM_URL . 'assets/build/css/godam-product-editor-gallery.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/godam-product-editor-gallery.css' )
+		);
 	}
 
 	/**
@@ -81,6 +88,10 @@ class Blocks {
 
 		register_block_type(
 			RTGODAM_PATH . '/assets/build/blocks/godam-video-duration/'
+		);
+
+		register_block_type(
+			RTGODAM_PATH . '/assets/build/blocks/godam-pdf/'
 		);
 	}
 }

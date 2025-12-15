@@ -1,0 +1,4 @@
+/* Gutenberg Editor: Prevent flex wrapping for stacks that contain your gallery */
+.block-editor-block-list__layout .is-layout-flex:has(.wp-block-godam-product-gallery) {
+    flex-wrap: nowrap !important;
+}

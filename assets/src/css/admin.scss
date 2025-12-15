@@ -850,3 +850,21 @@ to ensure proper responsiveness and avoid layout issues.
 		to { transform: rotate(360deg); }
 	}
 }
+
+/**
+ * Center custom icon images in media library thumbnails.
+ *
+ * When WordPress dynamically creates thumbnails for attachments without proper image sizes,
+ * it falls back to displaying an icon with class="icon". WordPress core applies
+ * transform: translate(-50%, -70%) to these icon images by default.
+ *
+ * However, our custom styling changes for thumbnail items interfere with this positioning,
+ * causing the icons to be misaligned. This override ensures proper centering by resetting
+ * the transform to the standard (-50%, -50%) which works correctly with our layout.
+ *
+ * This particularly affects GoDAM virtual attachments and other media that may not have
+ * generated thumbnail sizes available.
+ */
+.wp-core-ui .attachments-browser .attachment .thumbnail .centered img.icon {
+		transform: translate(-50%, -50%);
+}
