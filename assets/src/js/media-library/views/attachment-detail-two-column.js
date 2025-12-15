@@ -15,6 +15,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { addIcon, trashIcon } from '../media-library-icons';
 import { canManageAttachment } from '../utility';
+import MideaVersion from '../media-version';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
 
@@ -695,26 +696,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			}
 		}
 
-		// Adding functionality to add media button
-		const addMediaBtn = this.$el.find( '.compat-field-replace_media #rtgodam-add-media-button' );
-		if ( addMediaBtn.length ) {
-			addMediaBtn.on( 'click', ( event ) => {
-				event.preventDefault();
-				event.stopPropagation();
-				this.addMediaVersion( event, this );
-			} );
-		}
-
-		if ( this.model ) {
-			this.listenTo(
-				this.model,
-				'change',
-				function() {
-					window.tcm = this;
-					console.log( this );
-				},
-			);
-		}
+		// Adding functionality to add media version from media library
+		const mediaVersion = new MideaVersion();
+		mediaVersion.addMediaVersionFromMediaLibrary( this );
+		mediaVersion.updateAttachmentVersionPreviewFromMediaLibrary( this );
 
 		// Return this view.
 		return this;
@@ -746,56 +731,5 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		div.appendChild( ul );
 
 		actionsEl.append( div );
-	},
-
-	addMediaVersion( elm, context ) {
-		const postId = elm.currentTarget.getAttribute( 'data-post-id' );
-		if ( ! postId ) {
-			return;
-		}
-
-		const config = {
-			title: __( 'Upload Media', 'godam' ),
-			multiple: false,
-			contentUserSetting: false,
-		};
-		const fileFrame = wp.media( config );
-
-		fileFrame.on( 'ready', function() {
-			const mediaUploader = fileFrame.uploader;
-
-			if ( mediaUploader && mediaUploader.uploader ) {
-				const mu = mediaUploader.uploader.uploader;
-				mu.bind( 'BeforeUpload', function( up ) {
-					up.settings.multipart_params = {
-						...up.settings.multipart_params,
-						origin_post_id: postId,
-					};
-				} );
-				mu.bind( 'FileUploaded', function( up, file, response ) {
-					window.rtcontext = context;
-					const editModal = context.$el.parent().parent().find( '.media-modal-close' );
-					try {
-						const json = JSON.parse( response.response );
-						if ( json && json.success ) {
-							fileFrame.$el.parent().parent().css( 'pointer-events', 'none' );
-							context.showGodamSnackbar( __( 'Media version uploaded successfully.', 'godam' ), () => {
-								window.location.reload();
-							} );
-						} else {
-							context.showGodamSnackbar( `Upload failed: ${ json?.data?.message }` );
-							fileFrame.close();
-							editModal.trigger( 'click' );
-						}
-					} catch ( e ) {}
-				} );
-			}
-		} );
-		fileFrame.on( 'open', function() {
-			fileFrame.$el.find( '.media-frame-router .media-router' ).find( ':not(#menu-item-upload)' ).remove();
-			fileFrame.$el.find( '.media-frame-toolbar' ).remove();
-			fileFrame.$el.find( '#menu-item-upload' ).click();
-		} );
-		fileFrame.open();
 	},
 } );
