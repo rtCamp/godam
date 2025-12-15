@@ -403,15 +403,21 @@ export default class ControlsManager {
 				}
 
 				// Validate track URL by making a HEAD request
-				const validationPromise = fetch( trackSrc, { method: 'HEAD' } )
+				const validationPromise = fetch( trackSrc, {
+					method: 'HEAD',
+				} )
 					.then( ( response ) => {
 						// Remove track if response is not successful (any non-2xx status code)
 						if ( ! response.ok ) {
 							tracksToRemove.add( track );
 						}
 					} )
-					.catch( () => {
-						// Ignore fetch errors (CORS, network, etc.)
+					.catch( ( error ) => {
+						// If CORS error, assume track is valid since it was added by PHP
+						// This handles cases where CDN doesn't support CORS but file exists
+						if ( ! ( error.message.includes( 'CORS' ) || error.message.includes( 'cross-origin' ) ) ) {
+							tracksToRemove.add( track );
+						}
 					} );
 
 				trackValidationPromises.push( validationPromise );
@@ -423,7 +429,8 @@ export default class ControlsManager {
 				tracksToRemove.forEach( ( track ) => {
 					try {
 						this.player.removeRemoteTextTrack( track );
-					} catch {
+					} catch ( error ) {
+						// Silently handle removal errors
 					}
 				} );
 

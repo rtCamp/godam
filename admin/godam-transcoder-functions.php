@@ -874,38 +874,13 @@ function rtgodam_get_video_transcript_tracks( $attachment_id, $tracks = array() 
 	}
 
 	if ( ! empty( $transcript_path ) ) {
-		// For virtual media, skip verification and directly add the track.
-		if ( $is_virtual ) {
-			$tracks[] = array(
-				'src'     => esc_url( $transcript_path ),
-				'kind'    => 'subtitles',
-				'label'   => 'English',
-				'srclang' => 'en',
-			);
-		} else {
-			// For original media, verify the transcript file exists.
-			$transcript_verified = get_post_meta( $attachment_id, 'rtgodam_transcript_exists', true );
-
-			if ( '1' !== $transcript_verified ) { // Only check if we haven't confirmed it exists.
-				// Verify the transcript file actually exists by making a HEAD request.
-				$response            = wp_remote_head( $transcript_path );
-				$transcript_verified = ( ! is_wp_error( $response ) && wp_remote_retrieve_response_code( $response ) === 200 ) ? '1' : '0';
-
-				// Only store '1' permanently (confirmed existence), never store '0' so we can re-check later.
-				if ( '1' === $transcript_verified ) {
-					update_post_meta( $attachment_id, 'rtgodam_transcript_exists', $transcript_verified );
-				}
-			}
-
-			if ( '1' === $transcript_verified ) {
-				$tracks[] = array(
-					'src'     => esc_url( $transcript_path ),
-					'kind'    => 'subtitles',
-					'label'   => 'English',
-					'srclang' => 'en',
-				);
-			}
-		}
+		// Add the track for client-side verification.
+		$tracks[] = array(
+			'src'     => esc_url( $transcript_path ),
+			'kind'    => 'subtitles',
+			'label'   => 'English',
+			'srclang' => 'en',
+		);
 	}
 
 	return $tracks;
