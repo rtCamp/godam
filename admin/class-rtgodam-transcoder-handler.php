@@ -297,11 +297,11 @@ class RTGODAM_Transcoder_Handler {
 			// Get author name with fallback to username.
 			$author_first_name = '';
 			$author_last_name  = '';
-			
+
 			if ( $attachment_author ) {
 				$author_first_name = $attachment_author->first_name;
 				$author_last_name  = $attachment_author->last_name;
-				
+
 				// If first and last names are empty, use username as fallback.
 				if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
 					$author_first_name = $attachment_author->user_login;
@@ -328,10 +328,10 @@ class RTGODAM_Transcoder_Handler {
 						'watermark'            => boolval( $rtgodam_watermark ),
 						'resolutions'          => array( 'auto' ),
 						'video_quality'        => $rtgodam_video_compress_quality,
-						'wp_author_email'      => $attachment_author ? $attachment_author->user_email : '',
+						'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $attachment_author ? $attachment_author->user_email : '', $attachment_id ),
 						'wp_site'              => $site_url,
-						'wp_author_first_name' => $author_first_name,
-						'wp_author_last_name'  => $author_last_name,
+						'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, $attachment_id ),
+						'wp_author_last_name'  => apply_filters( 'godam_author_last_name_to_send', $author_last_name, $attachment_id ),
 						'public'               => 1,
 					),
 					$watermark_to_use
@@ -583,7 +583,17 @@ class RTGODAM_Transcoder_Handler {
 
 			$is_retranscoding_job = get_post_meta( $post_id, 'rtgodam_retranscoding_sent', true );
 
-			if ( ! $is_retranscoding_job || rtgodam_is_override_thumbnail() ) {
+			/**
+			 * Determines the default thumbnail behavior:
+			 * - For newly uploaded videos: always assign the first generated thumbnail.
+			 * - For retranscoding jobs: assign the first thumbnail only when either:
+			 *     • the overwrite option is enabled, or
+			 *     • no existing thumbnail is currently set.
+			 */
+			$current_thumbnail    = get_post_meta( $post_id, 'rtgodam_media_video_thumbnail', true );
+			$should_set_thumbnail = ! $is_retranscoding_job || rtgodam_is_override_thumbnail() || empty( $current_thumbnail );
+
+			if ( $should_set_thumbnail ) {
 				// rtMedia support.
 				update_post_meta( $post_id, '_rt_media_video_thumbnail', $first_thumbnail_url );
 

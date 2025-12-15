@@ -157,6 +157,7 @@ function rtgodam_fetch_overlay_media_url( $media_id ) {
  *
  * @param array $layer Associative array containing CTA details:
  *     - 'image' (int): Media ID for the image.
+ *     - 'imageUrlExt' (string): External URL for the image (GoDAM hosted).
  *     - 'imageCtaOrientation' (string): Orientation of the CTA ('portrait' or other).
  *     - 'imageOpacity' (float): Opacity of the image (default is 1).
  *     - 'imageText' (string): Heading text for the CTA.
@@ -168,7 +169,15 @@ function rtgodam_fetch_overlay_media_url( $media_id ) {
  * @return string The generated HTML string for the image CTA overlay.
  */
 function rtgodam_image_cta_html( $layer ) {
-	$image_url = rtgodam_fetch_overlay_media_url( $layer['image'] );
+	// Determine if the image is a GoDAM hosted media.
+	$is_godam_media = is_string( $layer['image'] ) && strpos( $layer['image'], 'godam_' ) === 0;
+
+	if ( $is_godam_media && ! empty( $layer['imageUrlExt'] ) ) {
+		$image_url = $layer['imageUrlExt'];
+	} else {
+		$image_url = rtgodam_fetch_overlay_media_url( $layer['image'] );
+	}
+
 	// Ensure $layer is an associative array and has required fields.
 	$orientation_class = isset( $layer['imageCtaOrientation'] ) && 'portrait' === $layer['imageCtaOrientation']
 		? 'vertical-image-cta-container'
@@ -308,14 +317,24 @@ function rtgodam_get_usage_data() {
 
 	$endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.stats.get_bandwidth_and_storage';
 
-	$url = add_query_arg(
-		array(
-			'api_key' => $api_key,
-		),
-		$endpoint
+	// Prepare request body with API key.
+	$request_body = array(
+		'api_key' => $api_key,
 	);
 
-	$response = wp_safe_remote_get( $url );
+	$args = array(
+		'body'    => wp_json_encode( $request_body ),
+		'headers' => array(
+			'Content-Type' => 'application/json',
+		),
+	);
+
+	// Use vip_safe_wp_remote_post as primary and wp_safe_remote_post as fallback.
+	if ( function_exists( 'vip_safe_wp_remote_post' ) ) {
+		$response = vip_safe_wp_remote_post( $endpoint, $args, 3, 3 );
+	} else {
+		$response = wp_safe_remote_post( $endpoint, $args );
+	}
 
 	if ( is_wp_error( $response ) ) {
 		return $response;
@@ -455,7 +474,7 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	// Get author name with fallback to username.
 	$author_first_name = $current_user->first_name;
 	$author_last_name  = $current_user->last_name;
-	
+
 	// If first and last names are empty, use username as fallback.
 	if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
 		$author_first_name = $current_user->user_login;
@@ -476,10 +495,10 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 			'watermark'            => boolval( $rtgodam_watermark ),
 			'resolutions'          => array( 'auto' ),
 			'folder_name'          => ! empty( $form_title ) ? $form_title : __( 'Gravity forms', 'godam' ),
-			'wp_author_email'      => $current_user->user_email,
+			'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $current_user->user_email, 0 ),
 			'wp_site'              => $site_url,
-			'wp_author_first_name' => $author_first_name,
-			'wp_author_last_name'  => $author_last_name,
+			'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, 0 ),
+			'wp_author_last_name'  => apply_filters( 'godam_author_last_name_to_send', $author_last_name, 0 ),
 			'public'               => 1,
 		),
 		$watermark_to_use
@@ -673,4 +692,143 @@ function rtgodam_is_local_environment() {
 	);
 
 	return ( $is_localhost || ( defined( 'RTGODAM_IS_LOCAL' ) && RTGODAM_IS_LOCAL ) );
+}
+
+/**
+ * Fetch AI-generated video transcript path.
+ *
+ * @param int         $attachment_id The attachment ID (must be numeric).
+ * @param string|null $job_id        Optional. The transcription job ID. If not provided, will be retrieved from post meta.
+ * @return string|false Transcript path if available, false otherwise.
+ */
+function godam_get_transcript_path( $attachment_id, $job_id = null ) {
+	if ( empty( $attachment_id ) || ! is_numeric( $attachment_id ) ) {
+		return false;
+	}
+
+	// Check post meta first.
+	$transcript_path = get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
+	if ( ! empty( $transcript_path ) ) {
+		return $transcript_path;
+	}
+
+	// Get job_id from parameter or post meta.
+	if ( empty( $job_id ) ) {
+		$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+		if ( empty( $job_id ) ) {
+			$job_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+		}
+	}
+
+	if ( empty( $job_id ) ) {
+		return false;
+	}
+
+	// Get API key.
+	$api_key = get_option( 'rtgodam-api-key', '' );
+	if ( empty( $api_key ) ) {
+		return false;
+	}
+
+	// Make POST request to Frappe API.
+	$rest_url = RTGODAM_API_BASE . '/api/method/godam_core.api.process.get_transcription';
+
+	$request_body = array(
+		'job_name' => sanitize_text_field( $job_id ),
+		'api_key'  => sanitize_text_field( $api_key ),
+	);
+
+	$args = array(
+		'method'  => 'POST',
+		'timeout' => 3,
+		'headers' => array(
+			'Content-Type' => 'application/json',
+		),
+		'body'    => wp_json_encode( $request_body ),
+	);
+
+	$response = wp_remote_post( $rest_url, $args );
+
+	if ( is_wp_error( $response ) ) {
+		return false;
+	}
+
+	$response_code = wp_remote_retrieve_response_code( $response );
+
+	if ( 200 !== $response_code ) {
+		return false;
+	}
+
+	$body = wp_remote_retrieve_body( $response );
+	$data = json_decode( $body, true );
+
+	if (
+		is_array( $data ) &&
+		isset( $data['message']['transcript_path'], $data['message']['transcription_status'] ) &&
+		'Transcribed' === $data['message']['transcription_status']
+	) {
+		$transcript_path = esc_url_raw( $data['message']['transcript_path'] );
+
+		// Save to post meta using the attachment ID.
+		if ( ! empty( $transcript_path ) ) {
+			update_post_meta( $attachment_id, 'rtgodam_transcript_path', $transcript_path );
+		}
+
+		return $transcript_path;
+	}
+
+	return false;
+}
+
+/**
+ * Generate the HTML content for the video preview page.
+ *
+ * This function constructs the HTML structure for a video preview page based on the provided video ID.
+ * It checks if the video exists and displays either the video player or an error message accordingly.
+ *
+ * @param int $video_id The ID of the video attachment to preview.
+ * @return string The generated HTML content for the video preview page.
+ */
+function godam_preview_page_content( $video_id ) {
+	ob_start();
+	// Check if video ID is provided and if video attachment exists.
+	$video_attachment = null;
+	$show_video       = false;
+	$video_id         = intval( $video_id );
+
+	if ( ! empty( $video_id ) ) {
+		$video_attachment = get_post( $video_id );
+		$show_video       = $video_attachment && 'attachment' === $video_attachment->post_type;
+	}
+
+	if ( ! $show_video ) {
+		// Display error message for missing or invalid video.
+		?>
+		<div class="godam-video-preview--container">
+			<h1 class="godam-video-preview--title"><?php esc_html_e( 'Video Preview', 'godam' ); ?></h1>
+			<p class="video-not-found"><?php esc_html_e( 'Oops! We could not locate your video', 'godam' ); ?></p>
+		</div>
+		<?php
+	} else {
+		// Display video content.
+		?>
+		<header class="godam-video-preview--container">
+			<h1 class="godam-video-preview--title">
+				<strong><?php esc_html_e( 'Video Preview: ', 'godam' ); ?></strong>
+				<?php echo esc_html( get_the_title( $video_id ) ); ?>
+			</h1>
+		</header>
+
+		<div class="godam-video-preview--container">
+			<div class="godam-video-preview--notice">
+				<?php esc_html_e( 'Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles.', 'godam' ); ?>
+			</div>
+		</div>
+
+		<div class="godam-video-preview">
+			<?php echo do_shortcode( '[godam_video id="' . $video_id . '"]' ); ?>
+		</div>
+		<?php
+	}
+	return ob_get_clean();
 }

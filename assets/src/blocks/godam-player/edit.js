@@ -192,6 +192,31 @@ function VideoEdit( {
 	}, [ poster ] );
 
 	useEffect( () => {
+		/**
+		 * Handle virtual attachment created event
+		 * Updates the block's id attribute when a virtual attachment is created
+		 *
+		 * @param {CustomEvent} event - The custom event containing attachment details
+		 */
+		const handleVirtualAttachmentCreated = ( event ) => {
+			const { attachment, virtualMediaId } = event.detail || {};
+
+			// Update id attribute only if it's undefined or matches the virtualMediaId
+			if ( attachment && ( id === undefined || id === virtualMediaId ) ) {
+				setAttributes( { id: attachment.id } );
+			}
+		};
+
+		// Attach event listener
+		document.addEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
+
+		// Cleanup function to remove event listener
+		return () => {
+			document.removeEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
+		};
+	}, [ id, setAttributes ] );
+
+	useEffect( () => {
 		if ( id && ! isNaN( Number( id ) ) ) {
 			( async () => {
 				try {
@@ -240,7 +265,7 @@ function VideoEdit( {
 				} catch ( error ) {
 					// Show error notice if fetching media fails.
 					const message = sprintf(
-						/* translators: %s: Label of the video text track e.g: "French subtitles". */
+						/* translators: %d: Label of the video text track e.g: "French subtitles". */
 						_x( 'Failed to load video data with id: %d', 'video caption', 'godam' ),
 						id,
 					);
@@ -684,6 +709,14 @@ function VideoEdit( {
 										</div>
 									</MediaUploadCheck>
 								</BaseControl>
+
+								<ToggleControl
+									__nextHasNoMarginBottom
+									label={ __( 'Preload Video Thumbnail', 'godam' ) }
+									help={ __( 'Enable to show the video thumbnail faster when the page loads. Recommended for videos placed near the top of your page.', 'godam' ) }
+									onChange={ ( value ) => setAttributes( { preloadPoster: value } ) }
+									checked={ attributes?.preloadPoster }
+								/>
 
 								{ canManageAttachment( attachmentAuthorId ) && (
 									<BaseControl

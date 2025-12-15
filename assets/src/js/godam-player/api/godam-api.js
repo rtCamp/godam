@@ -15,10 +15,15 @@ window.GoDAMAPI = {
 	 * @param {string}      attachmentID - The attachment ID of the video
 	 * @param {HTMLElement} videoElement - (optional) an actual video tag element
 	 * @param {Object}      player       - (optional) the video.js player instance
-	 * @return {Player} Player instance
+	 * @return {Player} Player instance, only return player if it is ready.
 	 */
 	getPlayer( attachmentID, videoElement = null, player = null ) {
 		let video, videoJs;
+
+		// Error message constant for better maintainability
+		const ERROR_NO_VIDEO_FOUND = window.godamAPIKeyData?.noVideoFound
+			? window.godamAPIKeyData.noVideoFound + ' ' + attachmentID
+			: `No video found for attachment ID ${ attachmentID }`;
 
 		if ( videoElement && player ) {
 			// Both provided, use them directly
@@ -27,7 +32,10 @@ window.GoDAMAPI = {
 			// Check if videoElement is the actual <video> tag or the container div
 			if ( videoElement.tagName.toLowerCase() === 'video' ) {
 				// It's the <video> tag, find the parent container div
-				video = videoElement.closest( `[data-id="${ attachmentID }"]` );
+				video = videoElement.closest( `.easydam-player.video-js[data-id="${ attachmentID }"]` );
+				if ( ! video ) {
+					throw new Error( ERROR_NO_VIDEO_FOUND );
+				}
 			} else {
 				// It's the container div, use it directly
 				video = videoElement;
@@ -36,17 +44,43 @@ window.GoDAMAPI = {
 			// Only videoElement provided
 			if ( videoElement.tagName.toLowerCase() === 'video' ) {
 				// It's the <video> tag, find the parent container and get VideoJS instance
-				video = videoElement.closest( `[data-id="${ attachmentID }"]` );
-				videoJs = videojs( videoElement );
+				video = videoElement.closest( `.easydam-player.video-js[data-id="${ attachmentID }"]` );
+				if ( ! video ) {
+					throw new Error( ERROR_NO_VIDEO_FOUND );
+				}
+				// Don't initialize if already initializing
+				if ( video.dataset.videojsInitializing === 'true' ) {
+					throw new Error( `Player for attachment ID ${ attachmentID } is currently initializing. Please wait.` );
+				}
+				videoJs = videojs.getPlayer( videoElement );
 			} else {
 				// It's the container div, find the video tag inside
 				video = videoElement;
-				videoJs = videojs( video.querySelector( 'video' ) );
+				const videoTag = video.querySelector( 'video' );
+				if ( ! videoTag ) {
+					throw new Error( ERROR_NO_VIDEO_FOUND );
+				}
+				// Don't initialize if already initializing
+				if ( video.dataset.videojsInitializing === 'true' ) {
+					throw new Error( `Player for attachment ID ${ attachmentID } is currently initializing. Please wait.` );
+				}
+				videoJs = videojs.getPlayer( videoTag );
 			}
 		} else {
 			// Nothing provided, search by attachment ID
-			video = document.querySelector( `[data-id="${ attachmentID }"]` );
-			videoJs = videojs( video.querySelector( 'video' ) );
+			video = document.querySelector( `.easydam-player.video-js[data-id="${ attachmentID }"]` );
+			if ( ! video ) {
+				throw new Error( ERROR_NO_VIDEO_FOUND );
+			}
+			const videoTag = video.querySelector( 'video' );
+			if ( ! videoTag ) {
+				throw new Error( ERROR_NO_VIDEO_FOUND );
+			}
+			// Don't initialize if already initializing
+			if ( video.dataset.videojsInitializing === 'true' ) {
+				throw new Error( `Player for attachment ID ${ attachmentID } is currently initializing. Please wait.` );
+			}
+			videoJs = videojs.getPlayer( videoTag );
 		}
 
 		return new Player( videoJs, video );

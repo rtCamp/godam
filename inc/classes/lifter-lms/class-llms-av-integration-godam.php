@@ -166,6 +166,7 @@ if ( class_exists( 'LLMS_AV_Abstract_Integration' ) ) {
 			/**
 			 * Filter the player theme color for a given lesson.
 			 */
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- LifterLMS integration hook, follows their naming convention.
 			return apply_filters( 'llms_av_godam_get_player_theme_color', $color, $lesson_id );
 		}
 	}
