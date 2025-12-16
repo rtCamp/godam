@@ -152,33 +152,50 @@ class GoDAM_Player {
 	public function render( $atts ) {
 		$attributes = shortcode_atts(
 			array(
-				'id'              => '',
-				'autoplay'        => false,
-				'controls'        => true,
-				'loop'            => false,
-				'muted'           => false,
-				'hoverSelect'     => 'none',
-				'poster'          => '',
-				'preload'         => 'metadata',
-				'src'             => '',
-				'sources'         => '',
-				'transcoded_url'  => '',
-				'aspectRatio'     => '', // Note: "responsive" aspect ratio is not working for shortcode. To be fixed later.
-				'tracks'          => '',
-				'caption'         => '',
-				'engagements'     => false,
-				'preview'         => false,
-				'showShareButton' => false,
-				'css'             => '',
+				'id'                => '',
+				'autoplay'          => false,
+				'controls'          => true,
+				'loop'              => false,
+				'muted'             => false,
+				'hoverSelect'       => 'none',
+				'hover_select'      => 'none', // WPBakery format (lowercase with underscore).
+				'poster'            => '',
+				'preload'           => 'metadata',
+				'src'               => '',
+				'sources'           => '',
+				'transcoded_url'    => '',
+				'aspectRatio'       => '', // Note: "responsive" aspect ratio is not working for shortcode. To be fixed later.
+				'aspect_ratio'      => '', // WPBakery format (lowercase with underscore).
+				'tracks'            => '',
+				'caption'           => '',
+				'engagements'       => false,
+				'preview'           => false,
+				'showShareButton'   => false,
+				'show_share_button' => false, // WPBakery format (lowercase with underscore).
+				'css'               => '',
 			),
 			$atts,
 			'godam_video'
 		);
 
-		// Handle boolean attributes passed as strings.
-		$boolean_attributes = array( 'autoplay', 'controls', 'loop', 'muted', 'engagements', 'preview', 'showShareButton' );
+		// Handle boolean attributes passed as strings (do this before mapping).
+		$boolean_attributes = array( 'autoplay', 'controls', 'loop', 'muted', 'engagements', 'preview', 'showShareButton', 'show_share_button' );
 		foreach ( $boolean_attributes as $bool_attr ) {
-			$attributes[ $bool_attr ] = filter_var( $attributes[ $bool_attr ], FILTER_VALIDATE_BOOLEAN );
+			if ( isset( $attributes[ $bool_attr ] ) ) {
+				$attributes[ $bool_attr ] = filter_var( $attributes[ $bool_attr ], FILTER_VALIDATE_BOOLEAN );
+			}
+		}
+
+		// Map WPBakery format (lowercase_underscore) to camelCase for backward compatibility.
+		// Check if WPBakery format exists and camelCase doesn't, then use WPBakery format.
+		if ( isset( $attributes['aspect_ratio'] ) && '' != $attributes['aspect_ratio'] && ( ! isset( $attributes['aspectRatio'] ) || '' === $attributes['aspectRatio'] ) ) {
+			$attributes['aspectRatio'] = $attributes['aspect_ratio'];
+		}
+		if ( isset( $attributes['hover_select'] ) && '' != $attributes['hover_select'] && ( ! isset( $attributes['hoverSelect'] ) || 'none' === $attributes['hoverSelect'] ) ) {
+			$attributes['hoverSelect'] = $attributes['hover_select'];
+		}
+		if ( isset( $attributes['show_share_button'] ) && '' != $attributes['show_share_button'] && ( ! isset( $attributes['showShareButton'] ) || false === $attributes['showShareButton'] ) ) {
+			$attributes['showShareButton'] = $attributes['show_share_button'];
 		}
 
 		// Get WPBakery Design Options CSS class if available.

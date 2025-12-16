@@ -160,26 +160,7 @@ class WPB_GoDAM_Video {
 							'not_empty' => true,
 						),
 					),
-					
-					// Video Display Settings.
-					array(
-						'type'        => 'dropdown',
-						'heading'     => esc_html__( 'Aspect Ratio', 'godam' ),
-						'param_name'  => 'aspectRatio',
-						'value'       => array(
-							esc_html__( '16:9 (Standard)', 'godam' ) => '16:9',
-							esc_html__( '4:3', 'godam' ) => '4:3',
-							esc_html__( '1:1', 'godam' ) => '1:1',
-							esc_html__( 'Responsive', 'godam' ) => 'responsive',
-						),
-						'std'         => '16:9',
-						'description' => esc_html__( 'Choose the aspect ratio for the video player.', 'godam' ),
-						'save_always' => true,
-						'dependency'  => array(
-							'element'   => 'id',
-							'not_empty' => true,
-						),
-					),
+
 					array(
 						'type'        => 'image_src_selector',
 						'heading'     => esc_html__( 'Video Thumbnail', 'godam' ),
@@ -195,7 +176,7 @@ class WPB_GoDAM_Video {
 					array(
 						'type'        => 'dropdown',
 						'heading'     => esc_html__( 'Hover Option', 'godam' ),
-						'param_name'  => 'hoverSelect',
+						'param_name'  => 'hover_select',
 						'value'       => array(
 							esc_html__( 'None', 'godam' ) => 'none',
 							esc_html__( 'Show Player Controls', 'godam' ) => 'show-player-controls',
@@ -231,7 +212,7 @@ class WPB_GoDAM_Video {
 					array(
 						'type'        => 'dropdown',
 						'heading'     => esc_html__( 'Share Button', 'godam' ),
-						'param_name'  => 'showShareButton',
+						'param_name'  => 'show_share_button',
 						'value'       => array(
 							esc_html__( 'No', 'godam' )  => '0',
 							esc_html__( 'Yes', 'godam' ) => '1',
