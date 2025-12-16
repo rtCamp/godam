@@ -79,7 +79,7 @@ class MideaVersion {
 			'change',
 			function( event ) {
 				const attrUpdated = event?.changed;
-				if ( attrUpdated && attrUpdated.hasOwnProperty( 'modified' ) ) {
+				if ( attrUpdated && attrUpdated.hasOwnProperty( 'modified' ) && attrUpdated.hasOwnProperty( 'compat' ) ) {
 					context.showGodamSnackbar( __( 'Media version updated successfully.', 'godam' ), () => {
 						window.location.reload();
 					} );

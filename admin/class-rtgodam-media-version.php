@@ -186,6 +186,8 @@ class RTGODAM_Media_Version {
 	}
 
 	public function rtgodam_replace_attachment_version( $post, $attachment_data ) {
+		$current_time = new DateTime( 'now', wp_timezone() );
+		$timestamp    = $current_time->getTimestamp();
 
 		if ( is_array( $attachment_data ) && isset( $attachment_data['media_versions'] ) ) {
 			$source_id = intval( $attachment_data['media_versions'] );
@@ -235,6 +237,8 @@ class RTGODAM_Media_Version {
 					update_post_meta( $target_id, '_video_duration', intval( $metadata['length'] ) );
 					update_post_meta( $target_id, '_video_file_size', filesize( $source_file ) );
 				}
+
+				update_post_meta( $target_id, 'media_version_updated_at', $timestamp );
 			}
 		}
 
