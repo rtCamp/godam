@@ -12,6 +12,11 @@ The GoDAM Player API provides a simple and powerful interface for developers to 
   - [Playback Control](#playback-control)
   - [Player State Methods](#player-state-methods)
   - [Utility Methods](#utility-methods)
+- [Event System](#event-system)
+  - [Available Events](#available-events)
+  - [Basic Usage](#basic-usage)
+  - [Advanced Usage](#advanced-usage)
+  - [Event Data Reference](#event-data-reference)
 - [Examples](#examples)
 - [Error Handling](#error-handling)
 
@@ -567,6 +572,230 @@ console.log(`50% of video is ${timeInSeconds} seconds`);
 const absoluteTime = player.convertToAbsoluteTime(30);
 console.log(`Absolute time: ${absoluteTime} seconds`);
 ```
+
+## Event System
+
+The Player API includes a custom event system that allows you to listen for and respond to various player events.
+
+### Available Events
+
+- `fullscreenchange` - Triggered when fullscreen mode changes
+- `play` - Triggered when video starts playing
+- `pause` - Triggered when video is paused
+- `ended` - Triggered when video playback ends
+- `timeupdate` - Triggered during video playback (updates frequently)
+- `volumechange` - Triggered when volume changes
+- `seeking` - Triggered when user starts seeking
+- `seeked` - Triggered when seeking completes
+
+### Basic Usage
+
+#### Listening to Fullscreen Changes
+
+```javascript
+// Get player instance
+const player = window.GoDAMAPI.getPlayer('1641');
+
+// Listen for fullscreen changes
+player.on('fullscreenchange', (data) => {
+    console.log('Fullscreen state:', data.isFullscreen);
+    
+    if (data.isFullscreen) {
+        console.log('Entered fullscreen mode');
+        // Your custom logic here
+    } else {
+        console.log('Exited fullscreen mode');
+        // Your custom logic here
+    }
+});
+```
+
+#### Listening to Playback Events
+
+```javascript
+// Listen for play event
+player.on('play', () => {
+    console.log('Video started playing');
+});
+
+// Listen for pause event
+player.on('pause', () => {
+    console.log('Video paused');
+});
+
+// Listen for ended event
+player.on('ended', () => {
+    console.log('Video finished playing');
+});
+```
+
+#### Listening to Time Updates
+
+```javascript
+// Listen for time updates (fires frequently during playback)
+player.on('timeupdate', (data) => {
+    console.log('Current time:', data.currentTime);
+    
+    // Example: Show custom UI at specific times
+    if (data.currentTime >= 30 && data.currentTime < 31) {
+        // Do something at 30 seconds
+    }
+});
+```
+
+#### Listening to Volume Changes
+
+```javascript
+player.on('volumechange', (data) => {
+    console.log('Volume changed to:', data.volume);
+});
+```
+
+#### Listening to Seek Events
+
+```javascript
+// When user starts seeking
+player.on('seeking', (data) => {
+    console.log('User is seeking to:', data.currentTime);
+});
+
+// When seeking completes
+player.on('seeked', (data) => {
+    console.log('Seeked to:', data.currentTime);
+});
+```
+
+### Advanced Usage
+
+#### Removing Event Listeners
+
+```javascript
+// Remove a specific listener
+const handler = (data) => {
+    console.log('Fullscreen:', data.isFullscreen);
+};
+
+player.on('fullscreenchange', handler);
+// Later...
+player.off('fullscreenchange', handler);
+
+// Remove all listeners for an event
+player.off('fullscreenchange');
+```
+
+#### Listen Once (One-time Event)
+
+```javascript
+// This listener will only fire once
+player.once('play', () => {
+    console.log('Video played for the first time');
+    // Great for analytics tracking
+});
+```
+
+#### Storing Unsubscribe Function
+
+```javascript
+// on() returns an unsubscribe function
+const unsubscribe = player.on('fullscreenchange', (data) => {
+    console.log('Fullscreen:', data.isFullscreen);
+});
+
+// Later, when you want to stop listening:
+unsubscribe();
+```
+
+#### Triggering Custom Events
+
+```javascript
+// You can also trigger custom events
+player.trigger('myCustomEvent', { message: 'Hello World' });
+
+// Listen for your custom event
+player.on('myCustomEvent', (data) => {
+    console.log(data.message); // "Hello World"
+});
+```
+
+#### Complete Event System Example
+
+```javascript
+// Get the player
+const player = window.GoDAMAPI.getPlayer('1641');
+
+// Track fullscreen changes
+player.on('fullscreenchange', (data) => {
+    if (data.isFullscreen) {
+        document.body.classList.add('video-is-fullscreen');
+    } else {
+        document.body.classList.remove('video-is-fullscreen');
+    }
+});
+
+// Show notification when video starts
+player.once('play', () => {
+    console.log('Thanks for watching!');
+});
+
+// Track progress
+player.on('timeupdate', (data) => {
+    const progress = (data.currentTime / player.duration()) * 100;
+    console.log(`Progress: ${progress.toFixed(2)}%`);
+});
+
+// Show "Replay" button when video ends
+player.on('ended', () => {
+    const replayButton = document.createElement('button');
+    replayButton.textContent = 'Replay';
+    replayButton.onclick = () => {
+        player.seek(0);
+        player.play();
+    };
+    document.body.appendChild(replayButton);
+});
+
+// Clean up when done
+// player.destroy(); // This removes all event listeners
+```
+
+### Event Data Reference
+
+#### fullscreenchange
+```javascript
+{
+    isFullscreen: boolean  // true if in fullscreen, false otherwise
+}
+```
+
+#### timeupdate
+```javascript
+{
+    currentTime: number  // Current playback time in seconds
+}
+```
+
+#### volumechange
+```javascript
+{
+    volume: number  // Volume level from 0 to 1
+}
+```
+
+#### seeking / seeked
+```javascript
+{
+    currentTime: number  // Time position being seeked to
+}
+```
+
+#### play, pause, ended
+These events don't include additional data (data will be `null`).
+
+**Notes:**
+
+- Events are automatically cleaned up when `player.destroy()` is called
+- The `timeupdate` event fires frequently during playback - use throttling if doing heavy operations
+- All event callbacks are wrapped in try-catch to prevent one failing callback from breaking others
 
 ## Examples
 

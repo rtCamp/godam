@@ -296,9 +296,9 @@ document.addEventListener( 'click', async function( e ) {
 						if ( typeof GODAMPlayer === 'function' ) {
 							const godamPlayer = GODAMPlayer( modal );
 							const initEngagement = godamPlayer.initEngagement;
-							// Find the video player and start playing
-							const videoPlayer = modal.querySelector( '.video-js' );
-							if ( videoPlayer && videoPlayer.player ) {
+
+							// Helper function to setup player once it's ready
+							const setupGalleryPlayer = ( playerInstance ) => {
 								if ( galleryEngagements ) {
 									// If engagements are enabled, initiate the comment modal with Data
 									let skipEngagements = false;
@@ -308,26 +308,65 @@ document.addEventListener( 'click', async function( e ) {
 										skipEngagements = true;
 									}
 									const newVideoEngagementsData = select( engagementStore ).getTitles()[ newVideoId ];
-									if ( newVideoEngagementsData ) {
+
+									const startPlayback = () => {
 										dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId, skipEngagements ).then( () => {
 											window.galleryScroll = true;
 										} );
-										videoPlayer.player.play();
-									} else {
-										initEngagement.then( () => {
-											dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId, skipEngagements ).then( () => {
-												window.galleryScroll = true;
-											} );
-											videoPlayer.player.play();
+										playerInstance.play().catch( ( error ) => {
+											// eslint-disable-next-line no-console
+											console.warn( 'Failed to start gallery playback:', error );
 										} );
+									};
+
+									if ( newVideoEngagementsData ) {
+										startPlayback();
+									} else {
+										initEngagement.then( startPlayback );
 									}
 									engagementContainer?.remove();
 								} else {
 									dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId, true ).then( () => {
 										window.galleryScroll = true;
 									} );
-									videoPlayer.player.play();
+									playerInstance.play().catch( ( error ) => {
+										// eslint-disable-next-line no-console
+										console.warn( 'Failed to start gallery playback:', error );
+									} );
 								}
+							};
+
+							// Get the video element for this modal
+							const videoPlayerElement = modal.querySelector( '.video-js' );
+							const videojs = window.videojs;
+
+							// Clean up any previous event listener for this modal
+							if ( modal._galleryPlayerReadyHandler ) {
+								document.removeEventListener( 'godamPlayerReady', modal._galleryPlayerReadyHandler );
+								modal._galleryPlayerReadyHandler = null;
+							}
+
+							if ( videojs ) {
+								// Check if player is already ready (fallback for synchronous initialization)
+								const existingPlayer = videoPlayerElement ? videojs.getPlayer( videoPlayerElement ) : null;
+								if ( existingPlayer ) {
+									setupGalleryPlayer( existingPlayer );
+								} else {
+									// Listen for the godamPlayerReady event (async initialization)
+									const onPlayerReady = ( event ) => {
+										// Ensure this event is for our video element
+										if ( event.detail.videoElement === videoPlayerElement ) {
+											setupGalleryPlayer( event.detail.player );
+											document.removeEventListener( 'godamPlayerReady', onPlayerReady );
+											modal._galleryPlayerReadyHandler = null;
+										}
+									};
+									modal._galleryPlayerReadyHandler = onPlayerReady;
+									document.addEventListener( 'godamPlayerReady', onPlayerReady );
+								}
+							} else {
+								// eslint-disable-next-line no-console
+								console.error( 'Video.js is not loaded. Cannot initialize player.' );
 							}
 						}
 					}
@@ -350,15 +389,51 @@ document.addEventListener( 'click', async function( e ) {
 		// Initialize the video player
 		if ( typeof GODAMPlayer === 'function' ) {
 			GODAMPlayer( modal );
-			// Find the video player and start playing
-			const videoPlayer = modal.querySelector( '.video-js' );
-			if ( videoPlayer && videoPlayer.player ) {
-				videoPlayer.player.play();
+			// Wait for player to be ready before trying to play
+			const videoPlayerElement = modal.querySelector( '.video-js' );
+			const videojs = window.videojs;
+
+			// Clean up any previous event listener for this modal
+			if ( modal._initialPlayerReadyHandler ) {
+				document.removeEventListener( 'godamPlayerReady', modal._initialPlayerReadyHandler );
+				modal._initialPlayerReadyHandler = null;
+			}
+
+			if ( videojs && videoPlayerElement ) {
+				// Check if player is already ready
+				const existingPlayer = videojs.getPlayer( videoPlayerElement );
+				if ( existingPlayer ) {
+					existingPlayer.play().catch( ( error ) => {
+						// eslint-disable-next-line no-console
+						console.warn( 'Failed to start initial playback:', error );
+					} );
+				} else {
+					// Listen for the godamPlayerReady event
+					const onInitialPlayerReady = ( event ) => {
+						if ( event.detail.videoElement === videoPlayerElement ) {
+							event.detail.player.play();
+							document.removeEventListener( 'godamPlayerReady', onInitialPlayerReady );
+							modal._initialPlayerReadyHandler = null;
+						}
+					};
+					modal._initialPlayerReadyHandler = onInitialPlayerReady;
+					document.addEventListener( 'godamPlayerReady', onInitialPlayerReady );
+				}
 			}
 		}
 
 		// Close handlers
 		const close = () => {
+			// Clean up event listeners to prevent memory leaks
+			if ( modal._initialPlayerReadyHandler ) {
+				document.removeEventListener( 'godamPlayerReady', modal._initialPlayerReadyHandler );
+				modal._initialPlayerReadyHandler = null;
+			}
+			if ( modal._galleryPlayerReadyHandler ) {
+				document.removeEventListener( 'godamPlayerReady', modal._galleryPlayerReadyHandler );
+				modal._galleryPlayerReadyHandler = null;
+			}
+
 			// Send heatmap (type 2) for the current video on close BEFORE disposing/removing
 			const currentId = parseInt( modal.dataset.currentVideoId || 0, 10 );
 			if ( currentId ) {

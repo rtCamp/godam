@@ -105,12 +105,6 @@
 			"type": "boolean",
 			"default": false
 		},
-		"layout": {
-			"type": "object",
-			"default": {
-				"type": "default"
-			}
-		},
 		"engagements": {
 			"type": "boolean",
 			"default": false
@@ -156,14 +150,6 @@
 				"core/html",
 				"core/shortcode"
 			]
-		},
-		"layout": {
-			"allowSwitching": true,
-			"allowEditing": true,
-			"allowInheriting": true,
-			"default": {
-				"type": "default"
-			}
 		}
 	},
 	"usesContext": [ "queryId" ],

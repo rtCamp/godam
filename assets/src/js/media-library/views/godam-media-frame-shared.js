@@ -18,7 +18,7 @@ const l10n = wp?.media?.view?.l10n;
  *
  * Note: This will not cover the media modal opened from the core feature image block.
  *
- * @since n.e.x.t
+ * @since 1.4.8
  *
  * @param {wp.media.view.MediaFrame} frame
  * @return {boolean} True if featured image context, false otherwise.

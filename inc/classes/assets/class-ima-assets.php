@@ -19,7 +19,7 @@ class IMA_Assets {
 	 * Constructor register hooks if not already registered.
 	 *
 	 * @return void
-	 * @since n.e.x.t
+	 * @since 1.4.8
 	 */
 	protected function __construct() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
@@ -29,7 +29,7 @@ class IMA_Assets {
 	 * Enqueue the IMA SDK.
 	 *
 	 * @return void
-	 * @since n.e.x.t
+	 * @since 1.4.8
 	 */
 	public function enqueue_scripts() {
 		// No need to set dns-prefetch resource hint for IMA SDK as WordPress automatically does that for 3rd party scripts.

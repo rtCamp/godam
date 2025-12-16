@@ -87,6 +87,11 @@
 	&.hidden {
 		display: none;
 	}
+
+	svg {
+		position: relative;
+		top: 2px;
+	}
 }
 
 .godam-player-overlay {
@@ -1644,13 +1649,29 @@ body.godam-share-modal-open {
 		}
 	}
 
+	// FULLSCREEN CONTAINER STYLES - Critical for iOS Safari compatibility
 	&.godam-video-fullscreen {
+		// Position the player to cover the entire viewport
 		position: fixed;
 		inset: 0;
 		width: 100vw;
-		// Dynamic height calculation for iOS using --vh variable set by JS.
-		// Fallback to 100vh if --vh is not set, for non-iOS devices.
+
+		// DYNAMIC HEIGHT HANDLING FOR iOS (Critical Fix)
+		// Problem: iOS Safari viewport height changes dynamically when address bar collapses/expands
+		// Solution: Use multiple height declarations for maximum compatibility
+
+		// Method 1: JavaScript-controlled CSS custom property (--vh)
+		// - Calculated by setupIOSViewportHeight() function in controlsManager.js
+		// - Uses visualViewport API when available (iOS 13+)
+		// - Accounts for address bar, keyboard, and pinch-zoom changes
+		// - Fallback to 1vh if --vh is not set (older browsers)
 		height: calc(var(--vh, 1vh) * 100);
+
+		// Method 2: Native CSS dvh unit (Dynamic Viewport Height)
+		// - Modern browsers (iOS 15.4+, Chrome 108+, etc.)
+		// - Automatically adjusts when address bar collapses/expands
+		// - Most performant solution when supported
+		height: 100dvh;
 		background: #000;
 		z-index: 99999999;
 		display: flex;
