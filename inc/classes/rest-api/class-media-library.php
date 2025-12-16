@@ -303,6 +303,126 @@ class Media_Library extends Base {
 					},
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/generate-image-subsizes-callback',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'generate_image_subsizes_callback' ),
+					// 'permission_callback' => array( $this, 'verify_callback_permission' ),
+					'permission_callback' => '__return_true',
+				),
+			)
+		);
+	}
+
+	/**
+	 * Verify callback permission by checking API key.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return bool|WP_Error True if permission granted, WP_Error otherwise.
+	 */
+	public function verify_callback_permission( $request ) {
+		$provided_api_key = $request->get_param( 'api_key' );
+		$stored_api_key   = get_option( 'rtgodam-api-key' );
+
+		// Validate API Key.
+		if ( empty( $provided_api_key ) ) {
+			return new WP_Error( 'forbidden', __( 'API key is required.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		if ( empty( $stored_api_key ) ) {
+			return new WP_Error( 'forbidden', __( 'API key not configured on the site.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		if ( $provided_api_key !== $stored_api_key ) {
+			return new WP_Error( 'forbidden', __( 'Invalid API key.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		return true;
+	}
+
+	public function generate_image_subsizes_callback( $request ) {
+		$data = $request->get_json_params();
+
+		if ( 'image_resize' !== $data['event'] ) {
+			return rest_ensure_response(
+				array(
+					'success' => false,
+					'message' => __( 'Invalid event.', 'godam' ),
+				)
+			);
+		}
+
+		$job_id = $data['data']['job_id'];
+		$sizes  = $data['data']['resized_images'];
+
+		$attachment_id = rtgodam_get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
+
+		$subsizes = array();
+		foreach ( $sizes as $size ) {
+			$subsizes[] = array(
+				'file' => $size['url'],
+				'filesize' => $size['file_size'],
+				'width' => $size['width'],
+				'height' => $size['height'],
+			);
+		}
+
+		$attachme_meta = get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
+
+		// Get registered image sizes from WordPress Settings > Media.
+		$registered_sizes = wp_get_registered_image_subsizes();
+		$additional_sizes = wp_get_additional_image_sizes();
+
+		// Remove additional sizes from registered sizes to avoid duplicates.
+		foreach ( $additional_sizes as $size_name => $size_data ) {
+			if ( isset( $registered_sizes[ $size_name ] ) ) {
+				unset( $registered_sizes[ $size_name ] );
+			}
+		}
+
+		foreach ( $subsizes as $size ) {
+			$external_size_name = '';
+			$min_diff = PHP_INT_MAX;
+			foreach ( $registered_sizes as $size_name => $registered_size_data ) {
+				if ( $registered_size_data['width'] === $size['width'] && $registered_size_data['height'] === $size['height'] ) {
+					$external_size_name = $size_name;
+					break;
+				} elseif ( $size['width'] <= $registered_size_data['width'] && $size['height'] <= $registered_size_data['height'] ) {
+					$diff = $registered_size_data['width'] - $size['width'] + $registered_size_data['height'] - $size['height'];
+					if ( $diff < $min_diff ) {
+						$min_diff = $diff;
+						$external_size_name = $size_name;
+					}
+				}
+			}
+
+			if ( empty( $external_size_name ) ) {
+				continue;
+			}
+
+			$attachme_meta['sizes'][$external_size_name] = array(
+				'file' => $size['file'],
+				'filesize' => $size['filesize'],
+				'width' => $size['width'],
+				'height' => $size['height'],
+			);
+		}
+
+		update_post_meta( $attachment_id, '_wp_attachment_metadata', $attachme_meta );
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+			)
+		);
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => __( 'Image subsizes successfully generated.', 'godam' ),
+			)
 		);
 	}
 
@@ -1322,9 +1442,20 @@ class Media_Library extends Base {
 
 			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
 		} elseif ( 'image' === $data['type'] ) {
+			// Initialize metadata with basic info.
 			$wp_attachment_metadata = array(
-				'filesize' => $data['filesizeInBytes'],
+				'filesize' => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,
+				'sizes'    => array(),
 			);
+
+			// Add width and height if available.
+			if ( ! empty( $data['width'] ) && ! empty( $data['height'] ) ) {
+				$wp_attachment_metadata['width']  = (int) $data['width'];
+				$wp_attachment_metadata['height'] = (int) $data['height'];
+			}
+
+			// Request image subsizes from GoDAM Central.
+			$this->request_image_subsizes_from_godam( $godam_id, $attach_id );
 
 			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
 		} elseif ( 'audio' === $data['type'] ) {
@@ -1658,5 +1789,161 @@ class Media_Library extends Base {
 		}
 
 		return $prepared;
+	}
+
+	/**
+	 * Request image subsizes generation from GoDAM Central.
+	 *
+	 * Sends a request to GoDAM Central API to generate image subsizes based on
+	 * WordPress registered image sizes (from Settings > Media). The API endpoint
+	 * should accept:
+	 * - job_id: The GoDAM file ID
+	 * - api_key: The GoDAM API key
+	 * - sizes_data: Array of size requests with width, height, crop
+	 * - events_callback_url: The URL to send events to.
+	 *
+	 * @param string $job_id        The GoDAM job ID.
+	 * @param int    $attachment_id The WordPress attachment ID.
+	 * @return bool True if request was successful, false otherwise.
+	 */
+	private function request_image_subsizes_from_godam( $job_id, $attachment_id ) {
+		
+		error_log( 'Requesting image subsizes from GoDAM for attachment ID: ' . $attachment_id );
+
+		$api_key = get_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $api_key ) ) {
+			return array();
+		}
+
+		// Get registered image sizes from WordPress Settings > Media.
+		$registered_sizes = wp_get_registered_image_subsizes();
+		$additional_sizes = wp_get_additional_image_sizes();
+
+		// Remove additional sizes from registered sizes to avoid duplicates.
+		foreach ( $additional_sizes as $size_name => $size_data ) {
+			if ( isset( $registered_sizes[ $size_name ] ) ) {
+				unset( $registered_sizes[ $size_name ] );
+			}
+		}
+
+		// Remove sizes with width or height set to 0.
+		foreach ( $registered_sizes as $size_name => $size_data ) {
+			if ( $size_data['width'] === 0 || $size_data['height'] === 0 ) {
+				unset( $registered_sizes[ $size_name ] );
+			}
+		}
+
+		error_log( 'Registered sizes: ' . print_r( $registered_sizes, true ) );
+
+		if ( empty( $registered_sizes ) ) {
+			return array();
+		}
+
+		error_log( 'Registered sizes: ' . print_r( $registered_sizes, true ) );
+
+		// Prepare size requests for GoDAM Central.
+		$size_requests = array();
+		foreach ( $registered_sizes as $size_name => $size_data ) {
+			$size_requests[] = array(
+				'width'  => $size_data['width'],
+				'height' => $size_data['height'],
+				'crop'   => $size_data['crop'],
+			);
+		}
+
+		error_log( 'Size requests: ' . print_r( $size_requests, true ) );
+
+		// Construct the GoDAM API endpoint URL.
+		$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.image.generate_resized_images';
+
+		$events_callback_url = rest_url( 'godam/v1/media-library/generate-image-subsizes-callback' );
+
+		error_log( 'Events callback URL: ' . $events_callback_url );
+
+		// Prepare request body.
+		$request_body = array(
+			'job_id'              => $job_id,
+			'api_key'             => $api_key,
+			'sizes_data'          => $size_requests,
+			'events_callback_url' => $events_callback_url,
+		);
+
+		$args = array(
+			'body'    => wp_json_encode( $request_body ),
+			'headers' => array(
+				'Content-Type' => 'application/json',
+			),
+			'timeout' => 30, // Allow enough time for image processing.
+		);
+
+		// Use vip_safe_wp_remote_post as primary and wp_safe_remote_post as fallback.
+		if ( function_exists( 'vip_safe_wp_remote_post' ) ) {
+			$response = vip_safe_wp_remote_post( $api_url, $args, 3, 3 );
+		} else {
+			$response = wp_safe_remote_post( $api_url, $args );
+		}
+
+		// Check for WP_Error or non-200 status codes.
+		if ( is_wp_error( $response ) ) {
+			// Log error but don't fail the attachment creation.
+			error_log( 'GoDAM image subsize request failed: ' . $response->get_error_message() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			return array();
+		}
+
+		$response_code = wp_remote_retrieve_response_code( $response );
+
+		if ( 200 !== $response_code ) {
+			// Log error but don't fail the attachment creation.
+			error_log( sprintf( 'GoDAM image subsize API returned HTTP status: %s', $response_code ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			return false;
+		}
+
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( empty( $body ) || ! is_array( $body ) ) {
+			return false;
+		}
+
+		// If empty message, return false.
+		if ( ! isset( $body['message'] ) ) {
+			return false;
+		}
+
+		error_log( 'Generate image subsizes callback response: ' . print_r( $body, true ) );
+		return true;
+
+		// $subsizes = array();
+
+		// foreach ( $body['message']['subsizes'] as $subsize_data ) {
+		// 	if ( empty( $subsize_data['name'] ) || empty( $subsize_data['url'] ) ) {
+		// 		continue;
+		// 	}
+
+		// 	$size_name = sanitize_key( $subsize_data['name'] );
+
+		// 	// Build WordPress metadata format for this size.
+		// 	$subsize_meta = array(
+		// 		'file'      => basename( parse_url( $subsize_data['url'], PHP_URL_PATH ) ), // Store just filename.
+		// 		'width'     => isset( $subsize_data['width'] ) ? (int) $subsize_data['width'] : 0,
+		// 		'height'    => isset( $subsize_data['height'] ) ? (int) $subsize_data['height'] : 0,
+		// 		'mime-type' => isset( $subsize_data['mime_type'] ) ? $subsize_data['mime_type'] : get_post_mime_type( $attachment_id ),
+		// 	);
+
+		// 	// Add filesize if available.
+		// 	if ( isset( $subsize_data['filesize'] ) ) {
+		// 		$subsize_meta['filesize'] = (int) $subsize_data['filesize'];
+		// 	}
+
+		// 	// Store the full GoDAM URL in the metadata (WordPress doesn't use this field, but we can access it via filters).
+		// 	$subsize_meta['godam_url'] = esc_url_raw( $subsize_data['url'] );
+
+		// 	// Also store in post meta for easy retrieval.
+		// 	update_post_meta( $attachment_id, '_godam_subsize_url_' . $size_name, esc_url_raw( $subsize_data['url'] ) );
+
+		// 	$subsizes[ $size_name ] = $subsize_meta;
+		// }
+
+		// return $subsizes;
 	}
 }
