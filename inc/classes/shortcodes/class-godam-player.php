@@ -188,13 +188,13 @@ class GoDAM_Player {
 
 		// Map WPBakery format (lowercase_underscore) to camelCase for backward compatibility.
 		// Check if WPBakery format exists and camelCase doesn't, then use WPBakery format.
-		if ( isset( $attributes['aspect_ratio'] ) && '' != $attributes['aspect_ratio'] && ( ! isset( $attributes['aspectRatio'] ) || '' === $attributes['aspectRatio'] ) ) {
+		if ( isset( $attributes['aspect_ratio'] ) && '' !== $attributes['aspect_ratio'] && ( ! isset( $attributes['aspectRatio'] ) || '' === $attributes['aspectRatio'] ) ) {
 			$attributes['aspectRatio'] = $attributes['aspect_ratio'];
 		}
-		if ( isset( $attributes['hover_select'] ) && '' != $attributes['hover_select'] && ( ! isset( $attributes['hoverSelect'] ) || 'none' === $attributes['hoverSelect'] ) ) {
+		if ( isset( $attributes['hover_select'] ) && '' !== $attributes['hover_select'] && ( ! isset( $attributes['hoverSelect'] ) || 'none' === $attributes['hoverSelect'] ) ) {
 			$attributes['hoverSelect'] = $attributes['hover_select'];
 		}
-		if ( isset( $attributes['show_share_button'] ) && '' != $attributes['show_share_button'] && ( ! isset( $attributes['showShareButton'] ) || false === $attributes['showShareButton'] ) ) {
+		if ( isset( $attributes['show_share_button'] ) && '' !== $attributes['show_share_button'] && ( ! isset( $attributes['showShareButton'] ) || false === $attributes['showShareButton'] ) ) {
 			$attributes['showShareButton'] = $attributes['show_share_button'];
 		}
 
