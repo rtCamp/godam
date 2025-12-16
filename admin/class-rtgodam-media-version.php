@@ -300,6 +300,26 @@ class RTGODAM_Media_Version {
 		if ( isset( $file['type'] ) && $mime !== $file['type'] ) {
 			$file['error'] = __( 'The uploaded file type does not match the original media type.', 'godam' );
 		}
+
+		if ( wp_attachment_is_image( $origin_post_id ) ) {
+			$origin_post_meta   = wp_get_attachment_metadata( $origin_post_id );
+			$origin_post_width  = absint( $origin_post_meta['width'] );
+			$origin_post_height = absint( $origin_post_meta['height'] );
+			$file_dimentions    = getimagesize( $file['tmp_name'] );
+			$file_width         = absint( $file_dimentions[0] );
+			$file_height        = absint( $file_dimentions[1] );
+
+			if ( $origin_post_width !== $file_width || $origin_post_height !== $file_height ) {
+				$file['error'] = sprintf(
+					/* translators: 1: file width, 2: file height, 3: origin width, 4: origin height */
+					__( 'The uploaded file width %1$d and height %2$d should match the original media width %3$d & height %4$d.', 'godam' ),
+					$file_width,
+					$file_height,
+					$origin_post_width,
+					$origin_post_height
+				);
+			}
+		}
 		return $file;
 	}
 }
