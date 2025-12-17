@@ -234,7 +234,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		 * @param array $form_data All Form Data.
 		 */
 		public function field_display( $field, $field_atts, $form_data ) {
-			$file_selectors = $this->extract_file_selectors_from_field( $field );
+			$godam_file_selectors = $this->extract_file_selectors_from_field( $field );
 
 			/**
 			 * Render the frontend scripts for the recorder.

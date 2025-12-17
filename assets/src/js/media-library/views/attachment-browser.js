@@ -1,4 +1,4 @@
-/* global jQuery, _ */
+/* global _ */
 
 /**
  * Internal dependencies
@@ -7,11 +7,9 @@ import MediaLibraryTaxonomyFilter from './filters/media-library-taxonomy-filter'
 import MediaDateRangeFilter from './filters/media-date-range-filter';
 import MediaRetranscode from './filters/media-retranscode';
 
-import { isAPIKeyValid, isUploadPage, isFolderOrgDisabled } from '../utility';
+import { isAPIKeyValid, isUploadPage } from '../utility';
 
 const AttachmentsBrowser = wp?.media?.view?.AttachmentsBrowser;
-
-const $ = jQuery;
 
 /**
  * Attachment Browser with Custom Filters
@@ -73,51 +71,6 @@ export default AttachmentsBrowser?.extend( {
 				);
 			}
 		}
-
-		const hasActiveSortable = this.$el.find( 'ul.ui-sortable:not(.ui-sortable-disabled)' ).length > 0;
-		const isMainMediaUploader = this.isMainMediaUploader();
-
-		if ( ! isUploadPage() && ! isFolderOrgDisabled() && ! hasActiveSortable && isMainMediaUploader ) {
-			/**
-			 * This timeout with the custom event is necessary to ensure that the media frame is fully loaded before dispatching the event.
-			 */
-			setTimeout( () => {
-				$( '.media-frame' ).removeClass( 'hide-menu' );
-
-				if ( window.elementor ) {
-					const visibleContainers = Array.from( document.querySelectorAll( '.supports-drag-drop' ) ).filter(
-						( container ) => getComputedStyle( container ).display !== 'none',
-					);
-
-					const activeContainer = visibleContainers.at( -1 ); // most recently opened visible one
-
-					if ( activeContainer ) {
-						const menu = activeContainer.querySelector( '.media-frame-menu' );
-						if ( menu ) {
-							menu.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( el ) => el.remove() );
-							const div = document.createElement( 'div' );
-							div.id = 'rt-transcoder-media-library-root';
-							if ( menu.firstChild ) {
-								menu.firstChild.appendChild( div );
-							} else {
-								menu.appendChild( div );
-							}
-						}
-					}
-				} else {
-					const menu = $( '.media-frame' ).find( '.media-frame-menu .media-menu' );
-
-					if ( menu.length ) {
-						menu.append( '<div id="rt-transcoder-media-library-root"></div>' );
-					}
-				}
-
-				const event = new CustomEvent( 'media-frame-opened' );
-				document.dispatchEvent( event );
-			}, 50 );
-		} else if ( ! isMainMediaUploader ) {
-			$( '.media-frame' ).addClass( 'hide-menu' );
-		}
 	},
 
 	/**
@@ -155,28 +108,6 @@ export default AttachmentsBrowser?.extend( {
 		} else {
 			this.collection.unobserve( wp.Uploader.queue );
 		}
-	},
-
-	/**
-	 * Check if this is the main media uploader page
-	 *
-	 * @return {boolean} True if on main media uploader page, false otherwise
-	 */
-	isMainMediaUploader() {
-		// Check for main media library page.
-		const isMediaLibraryPage = document.querySelector( '.upload-php' ) ||
-			window.location.href.includes( 'upload.php' ) ||
-			window.location.href.includes( 'media-new.php' );
-
-		// Check for non-modal media uploader.
-		const isNonModalUploader = document.body.classList.contains( 'wp-admin' ) &&
-			! document.querySelector( '.media-modal-content' );
-
-		// Check for non-restricted media type.
-		const isNonRestrictedMedia = this.controller?.options?.library?.type === undefined ||
-			this.controller?.options?.library?.type === 'all';
-
-		return isMediaLibraryPage || ( isNonModalUploader && isNonRestrictedMedia );
 	},
 
 	/**
