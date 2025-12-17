@@ -147,7 +147,7 @@ class WC extends Base {
 								'type'              => 'integer',
 								'sanitize_callback' => 'absint',
 							),
-							'meta_key'   => array(
+							'meta_key'   => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 								'required'          => true,
 								'type'              => 'string',
 								'sanitize_callback' => 'sanitize_text_field',

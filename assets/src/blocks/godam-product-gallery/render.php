@@ -14,6 +14,7 @@ if ( ! is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
 	return;
 }
 
+// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- WordPress core variable.
 $attributes = wp_parse_args(
 	$attributes,
 	array(
@@ -54,7 +55,7 @@ $attributes = wp_parse_args(
 	)
 );
 
-if ( ! function_exists( 'sanitize_rgba_color' ) ) {
+if ( ! function_exists( 'godam_sanitize_rgba_color' ) ) {
 
 	/**
 	 * Sanitizes a color value to ensure it is a valid RGBA or HEX color string.
@@ -67,7 +68,7 @@ if ( ! function_exists( 'sanitize_rgba_color' ) ) {
 	 *
 	 * @return string Sanitized color string if valid, otherwise an empty string.
 	 */
-	function sanitize_rgba_color( $color ) {
+	function godam_sanitize_rgba_color( $color ) {
 		if ( empty( $color ) || is_array( $color ) ) {
 			return '';
 		}
@@ -94,22 +95,22 @@ if ( ! function_exists( 'sanitize_rgba_color' ) ) {
 }
 
 // Build the shortcode attributes.
-$shortcode_atts = array(
+$godam_product_gallery_shortcode_atts = array(
 	'layout'                      => sanitize_text_field( $attributes['layout'] ),
 	'view'                        => sanitize_text_field( $attributes['view'] ),
 	'product'                     => sanitize_text_field( $attributes['product'] ),
 	'align'                       => sanitize_text_field( $attributes['align'] ),
 	'autoplay'                    => filter_var( $attributes['autoplay'], FILTER_VALIDATE_BOOLEAN ),
 	'play_button_enabled'         => filter_var( $attributes['playButtonEnabled'], FILTER_VALIDATE_BOOLEAN ),
-	'play_button_bg_color'        => sanitize_rgba_color( $attributes['playButtonBgColor'] ),
+	'play_button_bg_color'        => godam_sanitize_rgba_color( $attributes['playButtonBgColor'] ),
 	'play_button_icon_color'      => sanitize_hex_color( $attributes['playButtonIconColor'] ),
 	'play_button_size'            => intval( $attributes['playButtonSize'] ),
 	'play_button_radius'          => intval( $attributes['playButtonBorderRadius'] ),
 	'unmute_button_enabled'       => filter_var( $attributes['unmuteButtonEnabled'], FILTER_VALIDATE_BOOLEAN ),
-	'unmute_button_bg_color'      => sanitize_rgba_color( $attributes['unmuteButtonBgColor'] ),
+	'unmute_button_bg_color'      => godam_sanitize_rgba_color( $attributes['unmuteButtonBgColor'] ),
 	'unmute_button_icon_color'    => sanitize_hex_color( $attributes['unmuteButtonIconColor'] ),
 	'card_width'                  => intval( $attributes['cardWidth'] ),
-	'arrow_bg_color'              => sanitize_rgba_color( $attributes['arrowBgColor'] ),
+	'arrow_bg_color'              => godam_sanitize_rgba_color( $attributes['arrowBgColor'] ),
 	'arrow_icon_color'            => sanitize_hex_color( $attributes['arrowIconColor'] ),
 	'arrow_size'                  => intval( $attributes['arrowSize'] ),
 	'arrow_border_radius'         => intval( $attributes['arrowBorderRadius'] ),
@@ -120,8 +121,8 @@ $shortcode_atts = array(
 	'grid_card_alignment'         => sanitize_text_field( $attributes['gridCardAlignment'] ),
 	'cta_enabled'                 => filter_var( $attributes['ctaEnabled'], FILTER_VALIDATE_BOOLEAN ),
 	'cta_display_position'        => sanitize_text_field( $attributes['ctaDisplayPosition'] ),
-	'cta_bg_color'                => sanitize_rgba_color( $attributes['ctaBgColor'] ),
-	'cta_button_bg_color'         => sanitize_rgba_color( $attributes['ctaButtonBgColor'] ),
+	'cta_bg_color'                => godam_sanitize_rgba_color( $attributes['ctaBgColor'] ),
+	'cta_button_bg_color'         => godam_sanitize_rgba_color( $attributes['ctaButtonBgColor'] ),
 	'cta_button_icon_color'       => sanitize_hex_color( $attributes['ctaButtonIconColor'] ),
 	'cta_button_border_radius'    => intval( $attributes['ctaButtonBorderRadius'] ),
 	'cta_product_name_font_size'  => intval( $attributes['ctaProductNameFontSize'] ),
@@ -132,10 +133,10 @@ $shortcode_atts = array(
 );
 
 // Convert attributes to shortcode string.
-$shortcode_atts_string = '';
-foreach ( $shortcode_atts as $key => $value ) {
-	$shortcode_atts_string .= sprintf( ' %s="%s"', $key, esc_attr( $value ) );
+$godam_product_gallery_shortcode_atts_string = '';
+foreach ( $godam_product_gallery_shortcode_atts as $godam_key => $godam_value ) {
+	$godam_product_gallery_shortcode_atts_string .= sprintf( ' %s="%s"', $godam_key, esc_attr( $godam_value ) );
 }
 
 // Output the shortcode.
-echo do_shortcode( '[godam_product_gallery' . $shortcode_atts_string . ']' );
+echo do_shortcode( '[godam_product_gallery' . $godam_product_gallery_shortcode_atts_string . ']' );

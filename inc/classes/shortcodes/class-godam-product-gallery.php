@@ -59,18 +59,20 @@ class GoDAM_Product_Gallery {
 	 * Register gallery-specific scripts and styles.
 	 */
 	public function register_scripts() {
-		wp_enqueue_style(
+		wp_register_style(
 			'godam-product-gallery-style',
 			RTGODAM_URL . 'assets/build/css/godam-product-gallery.css',
 			array(),
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-product-gallery.css' )
 		);
 
+		$godam_product_gallery_script_assets = include RTGODAM_PATH . 'assets/build/js/godam-product-gallery.min.asset.php';
+
 		wp_register_script(
 			'godam-product-gallery-script',
 			RTGODAM_URL . 'assets/build/js/godam-product-gallery.min.js',
-			array( 'wp-data', 'wp-element', 'wp-hooks' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/godam-product-gallery.min.js' ),
+			$godam_product_gallery_script_assets['dependencies'],
+			$godam_product_gallery_script_assets['version'],
 			true
 		);
 		
@@ -88,8 +90,6 @@ class GoDAM_Product_Gallery {
 				'api_nonce'            => wp_create_nonce( 'wc_store_api' ),
 			) 
 		);
-		
-		wp_enqueue_script( 'godam-product-gallery-script' );
 	}
 
 	/**
@@ -191,6 +191,10 @@ class GoDAM_Product_Gallery {
 			// Add CSS for Video Modal.
 			$this->define_css_for_modal( $atts );
 		}
+
+		wp_enqueue_style( 'godam-product-gallery-style' );
+
+		wp_enqueue_script( 'godam-product-gallery-script' );
 
 		// Enqueue GoDAM Player.
 		if ( ! is_admin() ) {
@@ -604,7 +608,7 @@ class GoDAM_Product_Gallery {
 	 */
 	public function godam_get_product_html_callback() {
 
-		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( $_GET['_wpnonce'] ) : '';
+		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
 
 		if ( ! wp_verify_nonce( $nonce, 'godam_get_product_html' ) ) {
 			wp_send_json_error( 'Invalid request.', 400 );
@@ -624,7 +628,7 @@ class GoDAM_Product_Gallery {
 	
 		// Set up post and product for WooCommerce template functions.
 		global $product;
-		$product = wc_get_product( $product_id );
+		$product = wc_get_product( $product_id ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- WordPress core variable.
 	
 		if ( ! $product ) {
 			wp_send_json_error( 'Product not found.', 400 );
@@ -632,7 +636,7 @@ class GoDAM_Product_Gallery {
 	
 		setup_postdata( $post );
 
-		$product = wc_get_product( $product_id );
+		$product = wc_get_product( $product_id ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- WordPress core variable.
 
 		$product_images = array();
 

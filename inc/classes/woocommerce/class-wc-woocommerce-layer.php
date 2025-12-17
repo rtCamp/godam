@@ -72,7 +72,7 @@ class WC_Woocommerce_Layer {
 			array(
 				'post_type'      => 'attachment',
 				'posts_per_page' => -1,
-				'meta_key'       => 'rtgodam_meta',
+				'meta_key'       => 'rtgodam_meta', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 				'post_mime_type' => 'video/mp4',
 			) 
 		);

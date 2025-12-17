@@ -206,14 +206,15 @@ class WC_Featured_Video_Gallery {
 			return;
 		}
 
-		$nonce = isset( $_POST['woocommerce_meta_nonce'] ) ? sanitize_text_field( $_POST['woocommerce_meta_nonce'] ) : '';
+		$nonce = isset( $_POST['woocommerce_meta_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['woocommerce_meta_nonce'] ) ) : '';
 
 		if ( ! wp_verify_nonce( $nonce, 'woocommerce_save_data' ) ) {
 			return;
 		}
 
 		if ( isset( $_POST['product_image_gallery'] ) ) {
-			$gallery_ids = array_filter( array_map( 'absint', explode( ',', sanitize_text_field( $_POST['product_image_gallery'] ) ) ) );
+			$raw_gallery = isset( $_POST['product_image_gallery'] ) ? sanitize_text_field( wp_unslash( $_POST['product_image_gallery'] ) ) : '';
+			$gallery_ids = array_filter( array_map( 'absint', explode( ',', $raw_gallery ) ) );
 			update_post_meta( $post_id, '_product_image_gallery', implode( ',', $gallery_ids ) );
 
 			do_action( 'rtgodam_featured_gallery_after_save_gallery_ids', $gallery_ids, $post_id );

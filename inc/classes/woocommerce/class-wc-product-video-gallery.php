@@ -341,7 +341,7 @@ class WC_Product_Video_Gallery {
 		}
 
 		$urls = isset( $_POST['rtgodam_product_video_gallery_urls'] )
-			? array_filter( array_map( 'esc_url_raw', $_POST['rtgodam_product_video_gallery_urls'] ) )
+			? array_filter( array_map( 'esc_url_raw', wp_unslash( $_POST['rtgodam_product_video_gallery_urls'] ) ) )
 			: array();
 
 		$ids = isset( $_POST['rtgodam_product_video_gallery_ids'] )
