@@ -377,4 +377,234 @@ class RTGODAM_Transcoder_Admin {
 		$current_screen = get_current_screen();
 		return isset( $current_screen->id ) && 'dashboard' === $current_screen->id;
 	}
+
+	/**
+	 * Display usage limit notices when bandwidth/storage usage is high.
+	 */
+	public function usage_limit_notices() {
+		// Only show on admin pages.
+		if ( ! is_admin() || wp_doing_ajax() ) {
+			return;
+		}
+
+		// Only show to users who can manage options.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		// Handle cache clearing request.
+		if ( isset( $_GET['clear_godam_cache'] ) && current_user_can( 'manage_options' ) && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'clear_godam_cache' ) ) {
+			delete_option( 'rtgodam_user_data' );
+			// Redirect back to the same page without the query parameter.
+			$current_url = remove_query_arg( array( 'clear_godam_cache', '_wpnonce' ) );
+			wp_safe_redirect( $current_url );
+			exit;
+		}
+
+		// Get user data with usage information.
+		$user_data = rtgodam_get_user_data( true );
+
+		// Check if we have valid usage data.
+		if ( empty( $user_data ) || ! isset( $user_data['bandwidthUsed'] ) || ! isset( $user_data['totalBandwidth'] ) ||
+			! isset( $user_data['storageUsed'] ) || ! isset( $user_data['totalStorage'] ) ) {
+			return;
+		}
+
+		// Calculate usage percentages.
+		$bandwidth_used  = floatval( $user_data['bandwidthUsed'] );
+		$bandwidth_total = floatval( $user_data['totalBandwidth'] );
+		$storage_used    = floatval( $user_data['storageUsed'] );
+		$storage_total   = floatval( $user_data['totalStorage'] );
+
+		$bandwidth_percentage = $bandwidth_total > 0 ? ( $bandwidth_used / $bandwidth_total ) * 100 : 0;
+		$storage_percentage   = $storage_total > 0 ? ( $storage_used / $storage_total ) * 100 : 0;
+
+		// Check for exceeded limits (highest priority) - only storage blocks transcoding.
+		$bandwidth_exceeded = $bandwidth_used > $bandwidth_total;
+		$storage_exceeded   = $storage_used > $storage_total;
+
+		if ( $storage_exceeded ) {
+			$this->display_limit_exceeded_notice( $bandwidth_exceeded, $storage_exceeded, $bandwidth_percentage, $storage_percentage );
+			return; // Don't show warning notice if storage limits are exceeded.
+		}
+
+		// Check for bandwidth exceeded (warning but transcoding still works).
+		if ( $bandwidth_exceeded ) {
+			$this->display_bandwidth_exceeded_notice( $bandwidth_percentage );
+			return; // Don't show regular warning notice if bandwidth is exceeded.
+		}
+
+		// Check for 80% warning level.
+		$bandwidth_warning = $bandwidth_percentage >= 80;
+		$storage_warning   = $storage_percentage >= 80;
+
+		if ( $bandwidth_warning || $storage_warning ) {
+			$this->display_limit_warning_notice( $bandwidth_warning, $storage_warning, $bandwidth_percentage, $storage_percentage );
+		}
+	}
+
+	/**
+	 * Display notice when usage limits are exceeded.
+	 *
+	 * @param bool  $bandwidth_exceeded Whether bandwidth limit is exceeded.
+	 * @param bool  $storage_exceeded Whether storage limit is exceeded.
+	 * @param float $bandwidth_percentage Current bandwidth usage percentage.
+	 * @param float $storage_percentage Current storage usage percentage.
+	 */
+	private function display_limit_exceeded_notice( $bandwidth_exceeded, $storage_exceeded, $bandwidth_percentage, $storage_percentage ) {
+		$message_parts = array();
+
+		if ( $bandwidth_exceeded && $storage_exceeded ) {
+			$message_parts[] = sprintf(
+				/* translators: %1$s: bandwidth percentage, %2$s: storage percentage */
+				__( 'Your bandwidth (%1$s%%) and storage (%2$s%%) usage have exceeded your plan limits.', 'godam' ),
+				number_format( $bandwidth_percentage, 1 ),
+				number_format( $storage_percentage, 1 )
+			);
+		} elseif ( $bandwidth_exceeded ) {
+			$message_parts[] = sprintf(
+				/* translators: %s: bandwidth percentage */
+				__( 'Your bandwidth usage (%s%%) has exceeded your plan limit.', 'godam' ),
+				number_format( $bandwidth_percentage, 1 )
+			);
+		} elseif ( $storage_exceeded ) {
+			$message_parts[] = sprintf(
+				/* translators: %s: storage percentage */
+				__( 'Your storage usage (%s%%) has exceeded your plan limit.', 'godam' ),
+				number_format( $storage_percentage, 1 )
+			);
+		}
+
+		$message_parts[] = __( 'Transcoding requests may be blocked until you upgrade your plan.', 'godam' );
+
+		$message = implode( ' ', $message_parts );
+
+		// Get the GoDAM logo URL.
+		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', __DIR__ );
+
+		?>
+		<div class="notice notice-error is-dismissible">
+			<div class="godam-notice-header">
+				<img src="<?php echo esc_url( $logo_url ); ?>" alt="GoDAM Logo" class="godam-logo">
+				<div>
+					<p><strong><?php esc_html_e( 'GoDAM Usage Limit Exceeded', 'godam' ); ?></strong></p>
+					<p><?php echo esc_html( $message ); ?></p>
+					<p>
+						<a href="https://app.godam.io/web/billing?tab=Plans" target="_blank" class="button button-primary">
+							<?php esc_html_e( 'Upgrade Your Plan', 'godam' ); ?>
+						</a>
+						<a href="https://godam.io/pricing?utm_source=wordpress-plugin&utm_medium=admin-notice&utm_campaign=limit-exceeded&utm_content=learn-more-button" target="_blank" class="button button-secondary">
+							<?php esc_html_e( 'Learn More', 'godam' ); ?>
+						</a>
+						<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'clear_godam_cache', '1' ), 'clear_godam_cache' ) ); ?>" class="button button-secondary">
+							<?php esc_html_e( 'Refresh Status', 'godam' ); ?>
+						</a>
+					</p>
+				</div>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Display warning notice when usage reaches 80%.
+	 *
+	 * @param bool  $bandwidth_warning Whether bandwidth is at warning level.
+	 * @param bool  $storage_warning Whether storage is at warning level.
+	 * @param float $bandwidth_percentage Current bandwidth usage percentage.
+	 * @param float $storage_percentage Current storage usage percentage.
+	 */
+	private function display_limit_warning_notice( $bandwidth_warning, $storage_warning, $bandwidth_percentage, $storage_percentage ) {
+		$message_parts = array();
+
+		if ( $bandwidth_warning && $storage_warning ) {
+			$message_parts[] = sprintf(
+				/* translators: %1$s: bandwidth percentage, %2$s: storage percentage */
+				__( 'Your bandwidth (%1$s%%) and storage (%2$s%%) usage are approaching your plan limits.', 'godam' ),
+				number_format( $bandwidth_percentage, 1 ),
+				number_format( $storage_percentage, 1 )
+			);
+		} elseif ( $bandwidth_warning ) {
+			$message_parts[] = sprintf(
+				/* translators: %s: bandwidth percentage */
+				__( 'Your bandwidth usage (%s%%) is approaching your plan limit.', 'godam' ),
+				number_format( $bandwidth_percentage, 1 )
+			);
+		} elseif ( $storage_warning ) {
+			$message_parts[] = sprintf(
+				/* translators: %s: storage percentage */
+				__( 'Your storage usage (%s%%) is approaching your plan limit.', 'godam' ),
+				number_format( $storage_percentage, 1 )
+			);
+		}
+
+		$message_parts[] = __( 'Consider upgrading your plan to avoid service interruptions.', 'godam' );
+
+		$message = implode( ' ', $message_parts );
+
+		// Get the GoDAM logo URL.
+		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', __DIR__ );
+
+		?>
+		<div class="notice notice-warning is-dismissible">
+			<div class="godam-notice-header">
+				<img src="<?php echo esc_url( $logo_url ); ?>" alt="GoDAM Logo" class="godam-logo">
+				<div>
+					<p><strong><?php esc_html_e( 'GoDAM Usage Warning', 'godam' ); ?></strong></p>
+					<p><?php echo esc_html( $message ); ?></p>
+					<p>
+						<a href="https://app.godam.io/web/billing?tab=Plans" target="_blank" class="button button-primary">
+							<?php esc_html_e( 'View Plans', 'godam' ); ?>
+						</a>
+						<a href="https://godam.io/pricing?utm_source=wordpress-plugin&utm_medium=admin-notice&utm_campaign=usage-warning&utm_content=learn-more-button" target="_blank" class="button button-secondary">
+							<?php esc_html_e( 'Learn More', 'godam' ); ?>
+						</a>
+						<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'clear_godam_cache', '1' ), 'clear_godam_cache' ) ); ?>" class="button button-secondary">
+							<?php esc_html_e( 'Refresh Status', 'godam' ); ?>
+						</a>
+					</p>
+				</div>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Display notice when bandwidth limit is exceeded (but transcoding still works).
+	 *
+	 * @param float $bandwidth_percentage Current bandwidth usage percentage.
+	 */
+	private function display_bandwidth_exceeded_notice( $bandwidth_percentage ) {
+		$message = sprintf(
+			/* translators: %s: bandwidth percentage */
+			__( 'Your bandwidth usage (%s%%) has exceeded your plan limit. Videos might not be served from CDN on frontend.', 'godam' ),
+			number_format( $bandwidth_percentage, 1 )
+		);
+
+		// Get the GoDAM logo URL.
+		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', __DIR__ );
+
+		?>
+		<div class="notice notice-error is-dismissible">
+			<div class="godam-notice-header">
+				<img src="<?php echo esc_url( $logo_url ); ?>" alt="GoDAM Logo" class="godam-logo">
+				<div>
+					<p><strong><?php esc_html_e( 'GoDAM Bandwidth Exceeded', 'godam' ); ?></strong></p>
+					<p><?php echo esc_html( $message ); ?> <?php esc_html_e( 'Transcoding will continue to work.', 'godam' ); ?></p>
+					<p>
+						<a href="https://app.godam.io/web/billing?tab=Plans" target="_blank" class="button button-primary">
+							<?php esc_html_e( 'Upgrade Your Plan', 'godam' ); ?>
+						</a>
+						<a href="https://godam.io/pricing?utm_source=wordpress-plugin&utm_medium=admin-notice&utm_campaign=bandwidth-exceeded&utm_content=learn-more-button" target="_blank" class="button button-secondary">
+							<?php esc_html_e( 'Learn More', 'godam' ); ?>
+						</a>
+						<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'clear_godam_cache', '1' ), 'clear_godam_cache' ) ); ?>" class="button button-secondary">
+							<?php esc_html_e( 'Refresh Status', 'godam' ); ?>
+						</a>
+					</p>
+				</div>
+			</div>
+		</div>
+		<?php
+	}
 }
