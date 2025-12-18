@@ -595,9 +595,9 @@ class Media_Library_Ajax {
 					</button>
 				</div>',
 				esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=new-year-sale-2026&utm_source=' . $host . '&utm_medium=plugin&utm_content=media-library-banner' ),
-				esc_attr__( 'Claim the GoDAM Black Friday & Cyber Monday offer', 'godam' ),
+				esc_attr__( 'Claim the GoDAM New Year Sale 2026 offer', 'godam' ),
 				esc_url( $banner_image ),
-				esc_attr__( 'Black Friday & Cyber Monday offer from GoDAM', 'godam' ),
+				esc_attr__( 'New Year Sale 2026 offer from GoDAM', 'godam' ),
 				esc_html__( 'Dismiss banner', 'godam' )
 			);
 
