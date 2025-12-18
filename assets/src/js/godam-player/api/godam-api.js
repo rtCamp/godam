@@ -50,7 +50,7 @@ window.GoDAMAPI = {
 				}
 				// Don't initialize if already initializing
 				if ( video.dataset.videojsInitializing === 'true' ) {
-					throw new Error( `Player for attachment ID ${ attachmentID } is currently initializing. Please wait.` );
+					throw new Error( `Player for attachment ID ${ attachmentID } is currently initializing. Please wait, you must call the function only after "godamAllPlayersReady" event is dispatched.` );
 				}
 				videoJs = videojs.getPlayer( videoElement );
 			} else {
@@ -62,7 +62,7 @@ window.GoDAMAPI = {
 				}
 				// Don't initialize if already initializing
 				if ( video.dataset.videojsInitializing === 'true' ) {
-					throw new Error( `Player for attachment ID ${ attachmentID } is currently initializing. Please wait.` );
+					throw new Error( `Player for attachment ID ${ attachmentID } is currently initializing. Please wait, you must call the function only after "godamAllPlayersReady" event is dispatched.` );
 				}
 				videoJs = videojs.getPlayer( videoTag );
 			}
@@ -78,7 +78,7 @@ window.GoDAMAPI = {
 			}
 			// Don't initialize if already initializing
 			if ( video.dataset.videojsInitializing === 'true' ) {
-				throw new Error( `Player for attachment ID ${ attachmentID } is currently initializing. Please wait.` );
+				throw new Error( `Player for attachment ID ${ attachmentID } is currently initializing. Please wait, you must call the function only after "godamAllPlayersReady" event is dispatched.` );
 			}
 			videoJs = videojs.getPlayer( videoTag );
 		}
