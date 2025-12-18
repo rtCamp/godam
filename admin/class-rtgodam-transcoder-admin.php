@@ -38,7 +38,8 @@ class RTGODAM_Transcoder_Admin {
 			}
 			add_action( 'admin_notices', array( $this, 'api_activation_admin_notice' ) );
 			add_action( 'admin_notices', array( $this, 'dashboard_offer_banner' ) );
-			add_action( 'admin_notices', array( $this, 'usage_limit_notices' ) );
+			add_action( 'admin_notices', array( $this, 'free_plan_admin_notice' ) );
+			add_action( 'wp_ajax_rtgodam_dismiss_free_plan_notice', array( $this, 'dismiss_free_plan_notice' ) );
 		}
 	}
 
@@ -62,13 +63,7 @@ class RTGODAM_Transcoder_Admin {
 		$activation_time       = get_option( 'rtgodam_plugin_activation_time', 0 );
 		$days_since_activation = ( time() - $activation_time ) / DAY_IN_SECONDS;
 
-		// If more than 3 days have passed and no api key is activated, show scheduled notice.
-		if ( empty( $api_key ) && $days_since_activation >= 3 ) {
-			$this->scheduled_admin_notice();
-			return;
-		}
-
-		// Otherwise, show regular admin notice.
+		// Show regular admin notice.
 		if ( empty( $api_key ) ) {
 			return;
 		}
@@ -227,34 +222,7 @@ class RTGODAM_Transcoder_Admin {
 	}
 
 	/**
-	 * Display the scheduled admin notice for activating the API key.
-	 */
-	public function scheduled_admin_notice() {
-		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', __DIR__ );
-
-		?>
-		<div class="notice notice-warning is-dismissible rt-transcoder-api-key-notice">
-			<div class="godam-notice-header">
-				<img src="<?php echo esc_url( $logo_url ); ?>" alt="<?php esc_attr_e( 'GoDAM Logo', 'godam' ); ?>" class="godam-logo" />
-				<div>
-					<p><strong><?php echo esc_html__( 'Hey, you’re missing out on our advanced features!', 'godam' ); ?></strong></p>
-					<p><?php echo esc_html__( 'Unlock high-speed transcoding, advanced analytics, adaptive streaming, and more by activating your API key.', 'godam' ); ?></p>
-					<p>
-						<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtgodam_settings#video-settings' ) ); ?>" class="button button-primary">
-							<?php echo esc_html__( 'Activate API Key', 'godam' ); ?>
-						</a>
-						<a href="https://godam.io/adaptive-bitrate-streaming/" class="button button-secondary" target="_blank">
-							<?php echo esc_html__( 'Learn More', 'godam' ); ?>
-						</a>
-					</p>
-				</div>
-			</div>
-		</div>
-		<?php
-	}
-
-	/**
-	 * Display BFCM offer banner on the WordPress dashboard.
+	 * Display New Year Sale offer banner on the WordPress dashboard.
 	 *
 	 * @return void
 	 */
@@ -266,12 +234,12 @@ class RTGODAM_Transcoder_Admin {
 		$show_offer_banner = get_option( 'rtgodam-offer-banner', 1 );
 		$timezone          = wp_timezone();
 		$current_time      = new \DateTime( 'now', $timezone );
-		$end_time          = new \DateTime( '2025-12-14 23:59:59', $timezone );
-
-		if ( $current_time <= $end_time && ! rtgodam_is_api_key_valid() && $show_offer_banner ) {
+		$end_time          = new \DateTime( '2026-01-20 23:59:59', $timezone );
+		
+		if ( $current_time <= $end_time && $show_offer_banner ) {
 			$host = wp_parse_url( home_url(), PHP_URL_HOST );
 
-			$banner_image = RTGODAM_URL . 'assets/src/images/BFCM.png';
+			$banner_image = RTGODAM_URL . 'assets/src/images/new-year-sale-2026.webp';
 
 			$banner_html = sprintf(
 				'<div class="notice annual-plan-offer-banner">
@@ -297,10 +265,10 @@ class RTGODAM_Transcoder_Admin {
 						&times;
 					</button>
 				</div>',
-				esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=bfcm-offer&utm_source=' . $host . '&utm_medium=plugin&utm_content=dashboard-banner' ),
-				esc_attr__( 'Claim the GoDAM Black Friday & Cyber Monday offer', 'godam' ),
+				esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=new-year-sale-2026&utm_source=' . $host . '&utm_medium=plugin&utm_content=dashboard-banner' ),
+				esc_attr__( 'Claim the GoDAM New Year Sale 2026 offer', 'godam' ),
 				esc_url( $banner_image ),
-				esc_attr__( 'Black Friday & Cyber Monday offer from GoDAM', 'godam' ),
+				esc_attr__( 'New Year Sale 2026 offer from GoDAM', 'godam' ),
 				esc_html__( 'Dismiss banner', 'godam' )
 			);
 
@@ -329,6 +297,75 @@ class RTGODAM_Transcoder_Admin {
 				)
 			);
 		}
+	}
+
+	/**
+	 * Display free plan admin notice for users without API key.
+	 *
+	 * @return void
+	 */
+	public function free_plan_admin_notice() {
+		if ( ! $this->is_dashboard_screen() ) {
+			return;
+		}
+
+		// Only show to users without an API key.
+		if ( rtgodam_is_api_key_valid() ) {
+			return;
+		}
+
+		// Check if user has dismissed this notice.
+		$dismissed = get_option( 'rtgodam_free_plan_notice_dismissed', false );
+		if ( $dismissed ) {
+			return;
+		}
+
+		// Get the GoDAM logo URL.
+		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', __DIR__ );
+
+		?>
+		<div class="notice notice-info is-dismissible rtgodam-free-plan-notice">
+			<div class="godam-notice-header">
+				<img src="<?php echo esc_url( $logo_url ); ?>" alt="<?php esc_attr_e( 'GoDAM Logo', 'godam' ); ?>" class="godam-logo" />
+				<div>
+					<p style="font-size: 16px; font-weight: 600; margin-bottom: 15px;">
+						<?php esc_html_e( 'GoDAM now has a Free Plan with 20GB of storage and bandwidth. Unlimited sites and users.', 'godam' ); ?>
+					</p>
+					<div style="display: flex; gap: 10px; margin-top: 10px; margin-bottom: 15px;">
+						<a href="<?php echo esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=free-plan-notice&utm_source=plugin&utm_medium=admin-notice&utm_content=dashboard' ); ?>" target="_blank" rel="noopener noreferrer" class="button button-primary">
+							<?php esc_html_e( 'Get your Free Plan', 'godam' ); ?>
+						</a>
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtgodam_settings#video-settings' ) ); ?>" class="button button-secondary">
+							<?php esc_html_e( 'Activate API Key', 'godam' ); ?>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script>
+			jQuery(document).ready(function($) {
+				$('.rtgodam-free-plan-notice .notice-dismiss').on('click', function() {
+					$.post(ajaxurl, {
+						action: 'rtgodam_dismiss_free_plan_notice',
+						nonce: '<?php echo esc_js( wp_create_nonce( 'dismiss_free_plan_notice' ) ); ?>'
+					});
+				});
+			});
+		</script>
+		<?php
+	}
+
+	/**
+	 * Dismiss the free plan notice.
+	 *
+	 * @return void
+	 */
+	public function dismiss_free_plan_notice() {
+		check_ajax_referer( 'dismiss_free_plan_notice', 'nonce' );
+
+		update_option( 'rtgodam_free_plan_notice_dismissed', true );
+
+		wp_die();
 	}
 
 	/**

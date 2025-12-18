@@ -589,13 +589,13 @@ class Media_Library_Ajax {
 
 		$timezone     = wp_timezone();
 		$current_time = new \DateTime( 'now', $timezone );
-		$end_time     = new \DateTime( '2025-12-14 23:59:59', $timezone );
+		$end_time     = new \DateTime( '2026-01-20 23:59:59', $timezone );
 
 		// Only show on the Media Library page.
-		if ( $current_time <= $end_time && $screen && 'upload' === $screen->base && ! rtgodam_is_api_key_valid() && $show_offer_banner ) {
+		if ( $current_time <= $end_time && $screen && 'upload' === $screen->base && $show_offer_banner ) {
 			$host = wp_parse_url( home_url(), PHP_URL_HOST );
 
-			$banner_image = RTGODAM_URL . 'assets/src/images/BFCM.png';
+			$banner_image = RTGODAM_URL . 'assets/src/images/new-year-sale-2026.webp';
 
 			$banner_html = sprintf(
 				'<div class="notice annual-plan-offer-banner">
@@ -621,10 +621,10 @@ class Media_Library_Ajax {
 						&times;
 					</button>
 				</div>',
-				esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=bfcm-offer&utm_source=' . $host . '&utm_medium=plugin&utm_content=media-library-banner' ),
-				esc_attr__( 'Claim the GoDAM Black Friday & Cyber Monday offer', 'godam' ),
+				esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=new-year-sale-2026&utm_source=' . $host . '&utm_medium=plugin&utm_content=media-library-banner' ),
+				esc_attr__( 'Claim the GoDAM New Year Sale 2026 offer', 'godam' ),
 				esc_url( $banner_image ),
-				esc_attr__( 'Black Friday & Cyber Monday offer from GoDAM', 'godam' ),
+				esc_attr__( 'New Year Sale 2026 offer from GoDAM', 'godam' ),
 				esc_html__( 'Dismiss banner', 'godam' )
 			);
 

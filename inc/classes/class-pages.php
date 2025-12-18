@@ -607,15 +607,15 @@ class Pages {
 
 			$timezone     = wp_timezone();
 			$current_time = new \DateTime( 'now', $timezone );
-			$end_time     = new \DateTime( '2025-12-14 23:59:59', $timezone );
+			$end_time     = new \DateTime( '2026-01-20 23:59:59', $timezone );
 
 			wp_localize_script(
 				'godam-page-script-dashboard',
 				'videoData',
 				array(
-					'adminUrl'       => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
-					'godamBaseUrl'   => RTGODAM_IO_API_BASE,
-					'showBFCMBanner' => ( $current_time <= $end_time ),
+					'adminUrl'              => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
+					'godamBaseUrl'          => RTGODAM_IO_API_BASE,
+					'showNewYearSaleBanner' => ( $current_time <= $end_time ),
 				)
 			);
 
