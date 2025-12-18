@@ -291,6 +291,27 @@ class Media_Library_Ajax {
 			$response['transcoded_url'] = false;
 		}
 
+		// Check if item is blocked but limits are no longer exceeded - change to not_started.
+		if ( 'blocked' === strtolower( $transcoding_status ) ) {
+			$usage = rtgodam_get_usage_data();
+			if ( ! is_wp_error( $usage ) ) {
+				$bandwidth_exceeded = isset( $usage['bandwidth_used'], $usage['total_bandwidth'] )
+					&& $usage['bandwidth_used'] > $usage['total_bandwidth'];
+				$storage_exceeded   = isset( $usage['storage_used'], $usage['total_storage'] )
+					&& $usage['storage_used'] > $usage['total_storage'];
+
+				// If storage limit is no longer exceeded, change status to not_started.
+				// (Bandwidth exceeded doesn't block transcoding, so don't reset based on bandwidth).
+				if ( ! $storage_exceeded ) {
+					$transcoding_status = 'not_started';
+					// Update the stored status so it persists.
+					update_post_meta( $attachment->ID, 'rtgodam_transcoding_status', 'not_started' );
+					// Clear the error message since it's no longer blocked.
+					delete_post_meta( $attachment->ID, 'rtgodam_transcoding_error_msg' );
+				}
+			}
+		}
+
 		// Add transcoding status to response.
 		$response['transcoding_status'] = $transcoding_status ? strtolower( $transcoding_status ) : 'not_started';
 
