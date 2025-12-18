@@ -293,7 +293,13 @@ class Media_Library_Ajax {
 
 		// Check if item is blocked but limits are no longer exceeded - change to not_started.
 		if ( 'blocked' === strtolower( $transcoding_status ) ) {
-			$usage = rtgodam_get_usage_data();
+			// Cache usage data per request to avoid repeated external API calls
+			// when multiple blocked attachments are processed in the same view.
+			static $usage_cache = null;
+			if ( null === $usage_cache ) {
+				$usage_cache = rtgodam_get_usage_data();
+			}
+			$usage = $usage_cache;
 			if ( ! is_wp_error( $usage ) ) {
 				$bandwidth_exceeded = isset( $usage['bandwidth_used'], $usage['total_bandwidth'] )
 					&& $usage['bandwidth_used'] > $usage['total_bandwidth'];
