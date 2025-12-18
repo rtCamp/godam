@@ -438,7 +438,7 @@ class Transcoding extends Base {
 		if ( is_string( $ids_param ) ) {
 			$attachment_ids = array_map( 'intval', explode( ',', $ids_param ) );
 		} else {
-			$attachment_ids = $ids_param;
+			$attachment_ids = array_map( 'intval', (array) $ids_param );
 		}
 
 		$transcode_count   = 0;
