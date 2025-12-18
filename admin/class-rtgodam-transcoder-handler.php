@@ -240,14 +240,6 @@ class RTGODAM_Transcoder_Handler {
 				update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'blocked' );
 				update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', $reason );
 
-				// Show immediate admin notice for the current request.
-				add_action(
-					'admin_notices',
-					function () use ( $reason ) {
-						echo '<div class="notice notice-error is-dismissible"><p><strong>Transcoding Blocked:</strong> ' . esc_html( $reason ) . '</p></div>';
-					}
-				);
-
 				return $wp_metadata; // Stop before calling the transcoder API.
 			}
 		}
