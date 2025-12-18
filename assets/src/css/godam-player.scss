@@ -1671,7 +1671,9 @@ body.godam-share-modal-open {
 		// - Modern browsers (iOS 15.4+, Chrome 108+, etc.)
 		// - Automatically adjusts when address bar collapses/expands
 		// - Most performant solution when supported
-		height: 100dvh;
+		@supports (height: 100dvh) {
+			height: 100dvh;
+		}
 		background: #000;
 		z-index: 99999999;
 		display: flex;
