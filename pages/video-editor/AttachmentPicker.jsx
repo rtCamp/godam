@@ -14,7 +14,7 @@ import { Icon, search } from '@wordpress/icons';
  */
 import MediaGrid from './components/media-grid/MediaGrid.jsx';
 import './attachment-picker.scss';
-import BFCMBanner from '../../assets/src/images/BFCM.png';
+import NewYearSaleBanner from '../../assets/src/images/new-year-sale-2026.webp';
 
 const AttachmentPicker = ( { handleAttachmentClick } ) => {
 	const [ searchTerm, setSearchTerm ] = useState( '' );
@@ -35,18 +35,18 @@ const AttachmentPicker = ( { handleAttachmentClick } ) => {
 
 	return (
 		<>
-			{ showOfferBanner && ! window?.userData?.validApiKey && (
+			{ showOfferBanner && (
 				<div className="notice annual-plan-offer-banner">
 					<a
-						href={ `${ window?.videoData?.godamBaseUrl }/pricing?utm_campaign=bfcm-offer&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=video-editor-banner` }
+						href={ `${ window?.videoData?.godamBaseUrl }/pricing?utm_campaign=new-year-sale-2026&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=video-editor-banner` }
 						className="annual-plan-offer-banner__link"
 						target="_blank"
 						rel="noopener noreferrer"
-						aria-label={ __( 'Claim the GoDAM Black Friday & Cyber Monday offer', 'godam' ) }
+						aria-label={ __( 'Claim the GoDAM New Year Sale 2026 offer', 'godam' ) }
 					>
 						<img
-							src={ BFCMBanner }
-							alt={ __( 'Black Friday & Cyber Monday offer from GoDAM', 'godam' ) }
+							src={ NewYearSaleBanner }
+							alt={ __( 'New Year Sale 2026 offer from GoDAM', 'godam' ) }
 							className="annual-plan-offer-banner__image"
 							loading="lazy"
 						/>
