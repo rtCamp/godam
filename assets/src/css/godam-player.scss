@@ -56,6 +56,8 @@
 	background: rgba(255, 255, 255, 0.7);
 	z-index: 10;
 	color: initial;
+	container-type: inline-size;
+	container-name: easydam-layer-container;
 }
 
 .hidden {
@@ -320,7 +322,7 @@
 	padding: 20px;
 
 	h2 {
-		font-size: 32px;
+		font-size: clamp(20px, 4vw, 32px);
 		font-weight: 700;
 		line-height: 1.125;
 	}
@@ -328,6 +330,8 @@
 	p {
 		color: #8c8c8c;
 		font-size: 16px;
+		margin-top: 0;
+		margin-bottom: 5px;
 	}
 
 	.image-cta-btn {
@@ -370,6 +374,11 @@
 		text-decoration: none;
 		margin: 0 auto;
 	}
+
+	@container easydam-layer-container (max-width: 645px) {
+		width: 200px;
+		gap: 15px;
+	}
 }
 
 .image-cta-parent-container {
@@ -378,6 +387,10 @@
 	align-items: center;
 	height: 100%;
 	width: 100%;
+
+	@container easydam-layer-container (max-width: 500px) {
+		height: auto;
+	}
 }
 
 .image-cta-overlay-container {
