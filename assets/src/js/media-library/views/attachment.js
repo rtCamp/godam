@@ -11,6 +11,13 @@ import { __ } from '@wordpress/i18n';
 import { isAPIKeyValid, isFolderOrgDisabled } from '../utility';
 import GodamLogo from '../../../images/godam-logo-gradient.svg';
 
+/**
+ * SVG icons for transcoding states
+ */
+const ICONS = {
+	exclamation: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#fa0000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M13.995 1.827a1.745 1.745 0 0 0-2.969 0l-9.8 17.742a1.603 1.603 0 0 0 0 1.656 1.678 1.678 0 0 0 1.48.775H22.28a1.68 1.68 0 0 0 1.484-.775 1.608 1.608 0 0 0 .003-1.656zM12 8h1v7h-1zm.5 10.5a1 1 0 1 1 1-1 1.002 1.002 0 0 1-1 1z"></path><path fill="none" d="M0 0h24v24H0z"></path></g></svg>`,
+};
+
 const $ = jQuery;
 
 const Attachment = wp?.media?.view?.Attachment?.extend( {
@@ -179,6 +186,16 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 
 				this.$el.addClass( 'transcoding-status' );
 				this.$el.addClass( 'transcoding-status--completed' );
+			} else if ( transcodingStatus === 'blocked' ) {
+				// Show blocked status with warning icon (same as transcoding failed)
+				this.$el.append( `
+					<div class="transcoding-status__loader" data-percent="100">
+						${ ICONS.exclamation }
+					</div>
+				` );
+
+				this.$el.addClass( 'transcoding-status' );
+				this.$el.addClass( 'transcoding-status--blocked' );
 			} else {
 				this.$el.append( `
 					<div class="transcoding-status__loader" data-percent="100">

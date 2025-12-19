@@ -380,7 +380,7 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		if ( ! defined( 'RTGODAM_API_KEY' ) ) {
 			return new \WP_Error(
 				'localhost_blocked',
-				__( 'API key verification is blocked for HTTP connections or localhost environments. To use production API keys on localhost, please add the following constant to your wp-config.php file: define(\'RTGODAM_API_KEY\', \'your-api-key-here\');', 'godam' ),
+				__( 'API key verification is blocked for localhost environments. To use production API keys on localhost, please add the following constant to your wp-config.php file: define(\'RTGODAM_API_KEY\', \'your-api-key-here\');', 'godam' ),
 				array( 'status' => 403 )
 			);
 		}
