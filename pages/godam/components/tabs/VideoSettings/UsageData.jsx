@@ -52,9 +52,9 @@ const UsageData = () => {
 							</div>
 							<div className="leading-6">
 								<div className="easydam-settings-label text-base">{ __( 'BANDWIDTH', 'godam' ) }</div>
-								<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.totalBandwidth - userData.bandwidthUsed ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
+								<strong>{ __( 'Available:', 'godam' ) } </strong>{ parseFloat( Math.max( 0, userData.totalBandwidth - userData.bandwidthUsed ) ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
 								<br />
-								<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.bandwidthUsed ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
+								<strong>{ __( 'Used:', 'godam' ) } </strong>{ parseFloat( userData.bandwidthUsed ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
 							</div>
 						</div>
 						<div className="flex gap-3 items-center">
@@ -69,9 +69,9 @@ const UsageData = () => {
 							</div>
 							<div className="leading-6">
 								<div className="easydam-settings-label text-base">{ __( 'STORAGE', 'godam' ) }</div>
-								<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.totalStorage - userData.storageUsed ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
+								<strong>{ __( 'Available:', 'godam' ) } </strong>{ parseFloat( Math.max( 0, userData.totalStorage - userData.storageUsed ) ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
 								<br />
-								<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.storageUsed ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
+								<strong>{ __( 'Used:', 'godam' ) } </strong>{ parseFloat( userData.storageUsed ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
 							</div>
 						</div>
 					</>
