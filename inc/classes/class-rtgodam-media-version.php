@@ -8,9 +8,11 @@
  * @subpackage GoDAM/TranscoderHandler
  */
 
-use function Crontrol\Event\delete;
+namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
+
+use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Handle request/response with trancoder api.
@@ -21,6 +23,9 @@ defined( 'ABSPATH' ) || exit;
  * @subpackage GoDAM/TranscoderHandler
  */
 class RTGODAM_Media_Version {
+
+	use Singleton;
+
 	/**
 	 * Constructor.
 	 *
@@ -28,15 +33,66 @@ class RTGODAM_Media_Version {
 	 */
 	public function __construct() {
 		add_filter( 'attachment_fields_to_edit', array( $this, 'rtgodam_add_attachment_version_field' ), 10, 2 );
-		add_filter( 'attachment_fields_to_save', array( $this, 'rtgodam_replace_attachment_version' ), 10, 2 );
+		// add_filter( 'attachment_fields_to_save', array( $this, 'rtgodam_replace_attachment_version' ), 10, 2 );
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'rtgodam_update_media_versions' ), 10, 3 );
 		add_filter( 'intermediate_image_sizes_advanced', array( $this, 'rtgodam_disable_intermediate_image_sizes_advanced_media_versions' ), 10, 3 );
 		add_filter( 'wp_handle_upload_prefilter', array( $this, 'rtgodam_check_media_versions_eligibility' ) );
 		add_action( 'add_attachment', array( $this, 'rtgodam_create_media_versions' ), 10 );
 		add_action( 'delete_attachment', array( $this, 'rtgodam_delete_media_versions' ), 10 );
+		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueues' ) );
+		add_action( 'attachment_updated', array( $this, 'rtgodam_replace_attachment_version' ), 10, 2 );
+	}
+
+	public function admin_enqueues( $hook_suffix ) {
+
+		global $post;
+		if ( ! $this->rtgodam_check_attachment_edit_page( $post ) ) {
+			return;
+		}
+
+		wp_register_script(
+			'rtgodam-media-version-admin',
+			RTGODAM_URL . '/admin/js/godam-media-version-admin.js',
+			array( 'jquery' ),
+			filemtime( RTGODAM_PATH . '/admin/js/godam-media-version-admin.js' ),
+			true
+		);
+
+		wp_localize_script(
+			'rtgodam-media-version-admin',
+			'rtgodamMediaVersionAdmin',
+			array(
+				'uploadFailedMessage'  => __( 'Upload failed: ', 'godam' ),
+				'uploadSuccessMessage' => __( 'Media version uploaded successfully.', 'godam' ),
+			)
+		);
+
+		wp_enqueue_script( 'rtgodam-media-version-admin' );
+	}
+
+	public function rtgodam_check_attachment_edit_page( $post ) {
+
+		if ( ! is_admin() ) {
+			return false;
+		}
+
+		global $pagenow;
+		$action = filter_input( INPUT_GET, 'action', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+
+		return (
+			'post.php' === $pagenow
+			&& isset( $action )
+			&& 'edit' === $action
+			&& $post instanceof \WP_Post
+			&& 'attachment' === $post->post_type
+		);
 	}
 
 	public function rtgodam_add_attachment_version_field( $form_fields, $post ) {
+
+		if ( ! $this->rtgodam_check_attachment_edit_page( $post ) ) {
+			return $form_fields;
+		}
 
 		$get_origin_post_base_version = get_post_meta( $post->ID, 'rtgodam_attachment_base_version', true );
 		$origin_post_versions         = get_post_meta( $post->ID, 'rtgodam_media_versions', true );
@@ -185,64 +241,103 @@ class RTGODAM_Media_Version {
 		add_post_meta( $attachment_id, 'rtgodam_attachment_base_version', $new_attachment_id );
 	}
 
-	public function rtgodam_replace_attachment_version( $post, $attachment_data ) {
-		$current_time = new DateTime( 'now', wp_timezone() );
-		$timestamp    = $current_time->getTimestamp();
+	public function rtgodam_replace_attachment_version( $attachment_id, $post ) {
 
-		if ( is_array( $attachment_data ) && isset( $attachment_data['media_versions'] ) ) {
-			$source_id = intval( $attachment_data['media_versions'] );
-			$target_id = intval( $post['ID'] );
-
-			if ( $source_id && 'base-version' !== $source_id ) {
-				update_post_meta( $target_id, 'rtgodam_attachment_base_version', $source_id );
-
-				$target_id = absint( $target_id );
-				$source_id = absint( $source_id );
-
-				if ( ! $target_id || ! $source_id ) {
-					return new WP_Error( 'invalid_ids', 'Invalid attachment IDs.' );
-				}
-
-				$target_file = get_attached_file( $target_id );
-				$source_file = get_attached_file( $source_id );
-
-				if ( ! $target_file || ! file_exists( $target_file ) ) {
-					return new WP_Error( 'missing_target', 'Target attachment file not found.' );
-				}
-
-				if ( ! $source_file || ! file_exists( $source_file ) ) {
-					return new WP_Error( 'missing_source', 'Source attachment file not found.' );
-				}
-
-				$target_mime = get_post_mime_type( $target_id );
-				$source_mime = get_post_mime_type( $source_id );
-				if ( $target_mime && $source_mime && $target_mime !== $source_mime ) {
-					return new WP_Error( 'mime_mismatch', 'Source and target mime types do not match.' );
-				}
-
-				$this->rtgoam_remove_attachment_files_only( $target_id );
-
-				if ( ! copy( $source_file, $target_file ) ) {
-					return new WP_Error( 'copy_failed', 'Failed to replace file on disk.' );
-				}
-
-				$metadata = wp_generate_attachment_metadata( $target_id, $target_file );
-				if ( ! is_wp_error( $metadata ) && ! empty( $metadata ) ) {
-					wp_update_attachment_metadata( $target_id, $metadata );
-				}
-
-				if ( 0 === strpos( $source_mime, 'video/' ) ) {
-
-					$metadata = wp_read_video_metadata( $source_file );
-					update_post_meta( $target_id, '_video_duration', intval( $metadata['length'] ) );
-					update_post_meta( $target_id, '_video_file_size', filesize( $source_file ) );
-				}
-
-				update_post_meta( $target_id, 'media_version_updated_at', $timestamp );
-			}
+		// 1. Prevent autosave
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			return;
 		}
 
-		return $post;
+		// 2. Prevent revisions
+		if ( wp_is_post_revision( $attachment_id ) ) {
+			return;
+		}
+
+		// 3. Check post type
+		if ( 'attachment' !== $post->post_type ) {
+			return;
+		}
+
+		// 4. Capability check
+		if ( ! current_user_can( 'edit_post', $attachment_id ) ) {
+			return;
+		}
+
+		$attachment_data = filter_input( INPUT_POST, 'attachments', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
+
+		if ( ! isset( $attachment_data[ $attachment_id ] ) ) {
+			return;
+		}
+
+		$media_version = $attachment_data[ $attachment_id ]['media_versions'] ?? '';
+
+		if ( empty( $media_version ) ) {
+			return;
+		}
+
+		$get_origin_post_base_version = get_post_meta( $post->ID, 'rtgodam_attachment_base_version', true );
+
+		if ( empty( $get_origin_post_base_version ) ) {
+			return;
+		}
+
+		if ( $media_version === $get_origin_post_base_version ) {
+			return;
+		}
+
+		$current_time = new \DateTime( 'now', wp_timezone() );
+		$timestamp    = $current_time->getTimestamp();
+
+		$source_id = intval( $media_version );
+		$target_id = intval( $attachment_id );
+
+		if ( $source_id && 'base-version' !== $source_id ) {
+			update_post_meta( $target_id, 'rtgodam_attachment_base_version', $source_id );
+
+			$target_id = absint( $target_id );
+			$source_id = absint( $source_id );
+
+			if ( ! $target_id || ! $source_id ) {
+				return new \WP_Error( 'invalid_ids', 'Invalid attachment IDs.' );
+			}
+
+			$target_file = get_attached_file( $target_id );
+			$source_file = get_attached_file( $source_id );
+
+			if ( ! $target_file || ! file_exists( $target_file ) ) {
+				return new \WP_Error( 'missing_target', 'Target attachment file not found.' );
+			}
+
+			if ( ! $source_file || ! file_exists( $source_file ) ) {
+				return new \WP_Error( 'missing_source', 'Source attachment file not found.' );
+			}
+
+			$target_mime = get_post_mime_type( $target_id );
+			$source_mime = get_post_mime_type( $source_id );
+			if ( $target_mime && $source_mime && $target_mime !== $source_mime ) {
+				return new \WP_Error( 'mime_mismatch', 'Source and target mime types do not match.' );
+			}
+
+			$this->rtgoam_remove_attachment_files_only( $target_id );
+
+			if ( ! copy( $source_file, $target_file ) ) {
+				return new \WP_Error( 'copy_failed', 'Failed to replace file on disk.' );
+			}
+
+			$metadata = wp_generate_attachment_metadata( $target_id, $target_file );
+			if ( ! is_wp_error( $metadata ) && ! empty( $metadata ) ) {
+				wp_update_attachment_metadata( $target_id, $metadata );
+			}
+
+			if ( 0 === strpos( $source_mime, 'video/' ) ) {
+
+				$metadata = wp_read_video_metadata( $source_file );
+				update_post_meta( $target_id, '_video_duration', intval( $metadata['length'] ) );
+				update_post_meta( $target_id, '_video_file_size', filesize( $source_file ) );
+			}
+
+			update_post_meta( $target_id, 'media_version_updated_at', $timestamp );
+		}
 	}
 
 	public function rtgodam_delete_media_versions( $attachment_id ) {
