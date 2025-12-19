@@ -13,7 +13,7 @@ import {
 	Notice,
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import { useState, useRef, useEffect } from '@wordpress/element';
+import { useState, useRef, useEffect, useMemo } from '@wordpress/element';
 /**
  * Internal dependencies
  */
@@ -37,12 +37,12 @@ const RetranscodeTab = () => {
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
 	// Calculate storage exceeded status reactively
-	const storageExceeded = ( () => {
+	const storageExceeded = useMemo( () => {
 		const userData = window?.userData || {};
 		const storageUsed = Number( userData.storageUsed || 0 );
 		const totalStorage = Number( userData.totalStorage || 0 );
 		return storageUsed > totalStorage;
-	} )();
+	}, [] );
 
 	// On mount, check for 'media_ids' in the URL and storage limits
 	useEffect( () => {
@@ -390,8 +390,8 @@ const RetranscodeTab = () => {
 								totalMediaCount,
 							) }
 							{ forceRetranscode && sprintf(
-								// translators: 1: number of media files that will be retranscoded.
-								__( '%1$d/%1$d media file(s) will be retranscoded regardless of their current state.', 'godam' ),
+								// translators: 1: number of media files that will be retranscoded regardless of their current state, 2: total number of media files.
+								__( '%1$d/%2$d media file(s) will be retranscoded regardless of their current state.', 'godam' ),
 								attachments.length,
 								totalMediaCount,
 							) }
