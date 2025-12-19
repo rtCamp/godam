@@ -586,6 +586,17 @@ $media-frame-width: calc(300px + 2 * 24px);
 			}
 		}
 	}
+
+	&--blocked {
+
+		.transcoding-status__loader {
+			--status-text: "Transcoding Blocked - Usage Limit Exceeded";
+
+			svg {
+				fill: $RED;
+			}
+		}
+	}
 }
 
 /* override list view specific styles */

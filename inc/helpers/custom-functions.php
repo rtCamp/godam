@@ -681,12 +681,13 @@ function rtgodam_is_local_environment() {
 	$whitelist = array( '127.0.0.1', '::1', 'localhost' );
 
 	// phpcs:disable -- Disabling phpcs as its not manipulating any data, just reading server variables, and function is used for local environment check only.
-	$server_addr = isset( $_SERVER['REMOTE_ADDR'] ) ? filter_var( $_SERVER[ 'REMOTE_ADDR' ], FILTER_VALIDATE_IP ) : '';
-	$host        = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
+	// We do NOT use REMOTE_ADDR because it can be 127.0.0.1 for loopback requests (Server processes) on hosted sites.
+	// Instead, we rely on HTTP_HOST to detect if the site is actually hosted on localhost/local domains.
+	$host = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
 	// phpcs:enable
 
 	$is_localhost = (
-		in_array( $server_addr, $whitelist, true ) ||
+		in_array( $host, $whitelist, true ) ||
 		strpos( $host, '.local' ) !== false ||
 		strpos( $host, '.test' ) !== false
 	);

@@ -217,6 +217,33 @@ class RTGODAM_Transcoder_Handler {
 			return $wp_metadata;
 		}
 
+		/** Block if bandwidth or storage limits are exceeded */
+		$usage = rtgodam_get_usage_data();
+		if ( ! is_wp_error( $usage ) ) {
+			$bandwidth_exceeded = isset( $usage['bandwidth_used'], $usage['total_bandwidth'] )
+				&& $usage['bandwidth_used'] > $usage['total_bandwidth'];
+			$storage_exceeded   = isset( $usage['storage_used'], $usage['total_storage'] )
+				&& $usage['storage_used'] > $usage['total_storage'];
+
+			// Only block transcoding when storage is exceeded (bandwidth exceeded still allows transcoding).
+			if ( $storage_exceeded ) {
+				$reason_parts   = array();
+				$reason_parts[] = sprintf(
+					/* translators: %s: storage usage percent */
+					__( 'Storage exceeded (%s%%).', 'godam' ),
+					number_format( ( $usage['storage_used'] / max( 1, $usage['total_storage'] ) ) * 100, 1 )
+				);
+
+				$reason = implode( ' ', $reason_parts ) . ' ' . __( 'Please upgrade your plan to continue transcoding.', 'godam' );
+
+				// Persist status on the attachment so UI can show it.
+				update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'blocked' );
+				update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', $reason );
+
+				return $wp_metadata; // Stop before calling the transcoder API.
+			}
+		}
+
 		$path = get_attached_file( $attachment_id );
 		$url  = wp_get_attachment_url( $attachment_id );
 
@@ -364,7 +391,6 @@ class RTGODAM_Transcoder_Handler {
 					}
 				}
 			}
-
 
 			if ( is_wp_error( $upload_page ) || 500 <= intval( $upload_page['response']['code'] ) ) {
 				$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
