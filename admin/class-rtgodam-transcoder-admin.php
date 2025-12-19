@@ -465,20 +465,20 @@ class RTGODAM_Transcoder_Admin {
 			$message_parts[] = sprintf(
 				/* translators: %1$s: bandwidth percentage, %2$s: storage percentage */
 				__( 'Your bandwidth (%1$s%%) and storage (%2$s%%) usage have exceeded your plan limits.', 'godam' ),
-				number_format( $bandwidth_percentage, 1 ),
-				number_format( $storage_percentage, 1 )
+				'<strong>' . number_format( $bandwidth_percentage, 1 ) . '</strong>',
+				'<strong>' . number_format( $storage_percentage, 1 ) . '</strong>'
 			);
 		} elseif ( $bandwidth_exceeded ) {
 			$message_parts[] = sprintf(
 				/* translators: %s: bandwidth percentage */
 				__( 'Your bandwidth usage (%s%%) has exceeded your plan limit.', 'godam' ),
-				number_format( $bandwidth_percentage, 1 )
+				'<strong>' . number_format( $bandwidth_percentage, 1 ) . '</strong>'
 			);
 		} elseif ( $storage_exceeded ) {
 			$message_parts[] = sprintf(
 				/* translators: %s: storage percentage */
 				__( 'Your storage usage (%s%%) has exceeded your plan limit.', 'godam' ),
-				number_format( $storage_percentage, 1 )
+				'<strong>' . number_format( $storage_percentage, 1 ) . '</strong>'
 			);
 		}
 
@@ -495,7 +495,7 @@ class RTGODAM_Transcoder_Admin {
 				<img src="<?php echo esc_url( $logo_url ); ?>" alt="GoDAM Logo" class="godam-logo">
 				<div>
 					<p><strong><?php esc_html_e( 'GoDAM Usage Limit Exceeded', 'godam' ); ?></strong></p>
-					<p><?php echo esc_html( $message ); ?></p>
+					<p><?php echo wp_kses( $message, array( 'strong' => array() ) ); ?></p>
 					<p>
 						<a href="https://app.godam.io/web/billing?tab=Plans" target="_blank" class="button button-primary">
 							<?php esc_html_e( 'Upgrade Your Plan', 'godam' ); ?>
@@ -528,20 +528,20 @@ class RTGODAM_Transcoder_Admin {
 			$message_parts[] = sprintf(
 				/* translators: %1$s: bandwidth percentage, %2$s: storage percentage */
 				__( 'Your bandwidth (%1$s%%) and storage (%2$s%%) usage are approaching your plan limits.', 'godam' ),
-				number_format( $bandwidth_percentage, 1 ),
-				number_format( $storage_percentage, 1 )
+				'<strong>' . number_format( $bandwidth_percentage, 1 ) . '</strong>',
+				'<strong>' . number_format( $storage_percentage, 1 ) . '</strong>'
 			);
 		} elseif ( $bandwidth_warning ) {
 			$message_parts[] = sprintf(
 				/* translators: %s: bandwidth percentage */
 				__( 'Your bandwidth usage (%s%%) is approaching your plan limit.', 'godam' ),
-				number_format( $bandwidth_percentage, 1 )
+				'<strong>' . number_format( $bandwidth_percentage, 1 ) . '</strong>'
 			);
 		} elseif ( $storage_warning ) {
 			$message_parts[] = sprintf(
 				/* translators: %s: storage percentage */
 				__( 'Your storage usage (%s%%) is approaching your plan limit.', 'godam' ),
-				number_format( $storage_percentage, 1 )
+				'<strong>' . number_format( $storage_percentage, 1 ) . '</strong>'
 			);
 		}
 
@@ -558,7 +558,7 @@ class RTGODAM_Transcoder_Admin {
 				<img src="<?php echo esc_url( $logo_url ); ?>" alt="GoDAM Logo" class="godam-logo">
 				<div>
 					<p><strong><?php esc_html_e( 'GoDAM Usage Warning', 'godam' ); ?></strong></p>
-					<p><?php echo esc_html( $message ); ?></p>
+					<p><?php echo wp_kses( $message, array( 'strong' => array() ) ); ?></p>
 					<p>
 						<a href="https://app.godam.io/web/billing?tab=Plans" target="_blank" class="button button-primary">
 							<?php esc_html_e( 'View Plans', 'godam' ); ?>
@@ -585,7 +585,7 @@ class RTGODAM_Transcoder_Admin {
 		$message = sprintf(
 			/* translators: %s: bandwidth percentage */
 			__( 'Your bandwidth usage (%s%%) has exceeded your plan limit. Videos might not be served from CDN on frontend.', 'godam' ),
-			number_format( $bandwidth_percentage, 1 )
+			'<strong>' . number_format( $bandwidth_percentage, 1 ) . '</strong>'
 		);
 
 		// Get the GoDAM logo URL.
@@ -597,7 +597,7 @@ class RTGODAM_Transcoder_Admin {
 				<img src="<?php echo esc_url( $logo_url ); ?>" alt="GoDAM Logo" class="godam-logo">
 				<div>
 					<p><strong><?php esc_html_e( 'GoDAM Bandwidth Exceeded', 'godam' ); ?></strong></p>
-					<p><?php echo esc_html( $message ); ?> <?php esc_html_e( 'Transcoding will continue to work.', 'godam' ); ?></p>
+					<p><?php echo wp_kses( $message, array( 'strong' => array() ) ); ?> <?php esc_html_e( 'Transcoding will continue to work.', 'godam' ); ?></p>
 					<p>
 						<a href="https://app.godam.io/web/billing?tab=Plans" target="_blank" class="button button-primary">
 							<?php esc_html_e( 'Upgrade Your Plan', 'godam' ); ?>
