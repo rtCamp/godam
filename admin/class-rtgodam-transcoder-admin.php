@@ -315,9 +315,9 @@ class RTGODAM_Transcoder_Admin {
 			return;
 		}
 
-		// Check if user has dismissed this notice.
-		$dismissed = get_option( 'rtgodam_free_plan_notice_dismissed', false );
-		if ( $dismissed ) {
+		// Check if user has dismissed this notice recently (within 7 days).
+		$dismissed_timestamp = get_option( 'rtgodam_free_plan_notice_dismissed_timestamp', false );
+		if ( $dismissed_timestamp && ( time() - $dismissed_timestamp ) < ( 7 * DAY_IN_SECONDS ) ) {
 			return;
 		}
 
@@ -345,8 +345,16 @@ class RTGODAM_Transcoder_Admin {
 		</div>
 		<script>
 			jQuery(document).ready(function($) {
-				$('.rtgodam-free-plan-notice .notice-dismiss').on('click', function() {
-					$.post(ajaxurl, {
+				// Use event delegation to handle the click even if the button is added dynamically
+				$(document).on('click', '.rtgodam-free-plan-notice .notice-dismiss', function() {
+					var $notice = $(this).closest('.rtgodam-free-plan-notice');
+
+					// Hide the notice immediately when clicked
+					$notice.fadeOut();
+
+					// Store dismissal timestamp via AJAX
+					var url = (typeof ajaxurl !== 'undefined') ? ajaxurl : 'admin-ajax.php';
+					$.post(url, {
 						action: 'rtgodam_dismiss_free_plan_notice',
 						nonce: '<?php echo esc_js( wp_create_nonce( 'dismiss_free_plan_notice' ) ); ?>'
 					});
@@ -364,7 +372,8 @@ class RTGODAM_Transcoder_Admin {
 	public function dismiss_free_plan_notice() {
 		check_ajax_referer( 'dismiss_free_plan_notice', 'nonce' );
 
-		update_option( 'rtgodam_free_plan_notice_dismissed', true );
+		// Store timestamp for 7-day temporary dismissal.
+		update_option( 'rtgodam_free_plan_notice_dismissed_timestamp', time() );
 
 		wp_die();
 	}
