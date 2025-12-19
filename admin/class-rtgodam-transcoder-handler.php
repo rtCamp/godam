@@ -218,12 +218,9 @@ class RTGODAM_Transcoder_Handler {
 		}
 
 		/** Block if bandwidth or storage limits are exceeded */
-		$usage = rtgodam_get_usage_data();
-		if ( ! is_wp_error( $usage ) ) {
-			$bandwidth_exceeded = isset( $usage['bandwidth_used'], $usage['total_bandwidth'] )
-				&& $usage['bandwidth_used'] > $usage['total_bandwidth'];
-			$storage_exceeded   = isset( $usage['storage_used'], $usage['total_storage'] )
-				&& $usage['storage_used'] > $usage['total_storage'];
+		$user_data = rtgodam_get_user_data();
+		if ( ! empty( $user_data ) && isset( $user_data['bandwidth_used'], $user_data['total_bandwidth'], $user_data['storage_used'], $user_data['total_storage'] ) ) {
+			$storage_exceeded = $user_data['storage_used'] > $user_data['total_storage'];
 
 			// Only block transcoding when storage is exceeded (bandwidth exceeded still allows transcoding).
 			if ( $storage_exceeded ) {
@@ -231,7 +228,7 @@ class RTGODAM_Transcoder_Handler {
 				$reason_parts[] = sprintf(
 					/* translators: %s: storage usage percent */
 					__( 'Storage exceeded (%s%%).', 'godam' ),
-					number_format( ( $usage['storage_used'] / max( 1, $usage['total_storage'] ) ) * 100, 1 )
+					number_format( ( $user_data['storage_used'] / max( 1, $user_data['total_storage'] ) ) * 100, 1 )
 				);
 
 				$reason = implode( ' ', $reason_parts ) . ' ' . __( 'Please upgrade your plan to continue transcoding.', 'godam' );

@@ -21,6 +21,11 @@ const GodamHeader = () => {
 	const [ mediaLink, setMediaLink ] = useState( godamMediaLink );
 
 	useEffect( () => {
+		// Only fetch site data if there's a valid API key
+		if ( ! window?.userData?.validApiKey ) {
+			return;
+		}
+
 		const fetchMediaLink = async () => {
 			try {
 				const response = await apiFetch(

@@ -254,6 +254,32 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 
 		if ( ! is_wp_error( $usage_data ) ) {
 			$rtgodam_user_data = array_merge( $rtgodam_user_data, $usage_data );
+
+			// Check for exceeded limits and set error messages.
+			$bandwidth_exceeded = isset( $usage_data['bandwidth_used'], $usage_data['total_bandwidth'] )
+				&& $usage_data['bandwidth_used'] > $usage_data['total_bandwidth'];
+			$storage_exceeded   = isset( $usage_data['storage_used'], $usage_data['total_storage'] )
+				&& $usage_data['storage_used'] > $usage_data['total_storage'];
+
+			if ( $storage_exceeded ) {
+				$storage_percentage                         = $usage_data['total_storage'] > 0
+					? number_format( ( $usage_data['storage_used'] / $usage_data['total_storage'] ) * 100, 1 )
+					: '0';
+				$rtgodam_user_data['storageBandwidthError'] = sprintf(
+					/* translators: %s: storage usage percentage */
+					__( 'Storage limit exceeded (%s%%). Please upgrade your plan to continue.', 'godam' ),
+					$storage_percentage
+				);
+			} elseif ( $bandwidth_exceeded ) {
+				$bandwidth_percentage                       = $usage_data['total_bandwidth'] > 0
+					? number_format( ( $usage_data['bandwidth_used'] / $usage_data['total_bandwidth'] ) * 100, 1 )
+					: '0';
+				$rtgodam_user_data['storageBandwidthError'] = sprintf(
+					/* translators: %s: bandwidth usage percentage */
+					__( 'Bandwidth limit exceeded (%s%%). Please upgrade your plan to continue.', 'godam' ),
+					$bandwidth_percentage
+				);
+			}
 		} elseif ( ! $valid_api_key ) {
 			$rtgodam_user_data['storageBandwidthError'] = __( 'Oops! It looks like your API key is incorrect or has expired. Please update it and try again.', 'godam' );
 		} else {

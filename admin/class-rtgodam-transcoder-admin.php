@@ -39,6 +39,7 @@ class RTGODAM_Transcoder_Admin {
 			add_action( 'admin_notices', array( $this, 'api_activation_admin_notice' ) );
 			add_action( 'admin_notices', array( $this, 'dashboard_offer_banner' ) );
 			add_action( 'admin_notices', array( $this, 'free_plan_admin_notice' ) );
+			add_action( 'admin_notices', array( $this, 'usage_limit_notices' ) );
 			add_action( 'wp_ajax_rtgodam_dismiss_free_plan_notice', array( $this, 'dismiss_free_plan_notice' ) );
 		}
 	}
@@ -329,7 +330,7 @@ class RTGODAM_Transcoder_Admin {
 				<img src="<?php echo esc_url( $logo_url ); ?>" alt="<?php esc_attr_e( 'GoDAM Logo', 'godam' ); ?>" class="godam-logo" />
 				<div>
 					<p style="font-size: 16px; font-weight: 600; margin-bottom: 15px;">
-						<?php esc_html_e( 'GoDAM now has a Free Plan with 20GB of storage and bandwidth. Unlimited sites and users.', 'godam' ); ?>
+						<?php esc_html_e( 'Try GoDAM free for 60 days with all features, unlimited sites and users.', 'godam' ); ?>
 					</p>
 					<div style="display: flex; gap: 10px; margin-top: 10px; margin-bottom: 15px;">
 						<a href="<?php echo esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=free-plan-notice&utm_source=plugin&utm_medium=admin-notice&utm_content=dashboard' ); ?>" target="_blank" rel="noopener noreferrer" class="button button-primary">
@@ -389,6 +390,12 @@ class RTGODAM_Transcoder_Admin {
 
 		// Only show to users who can manage options.
 		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		// Don't show usage notices if no API key is configured.
+		$api_key = get_option( 'rtgodam-api-key', '' );
+		if ( empty( $api_key ) ) {
 			return;
 		}
 
@@ -458,20 +465,20 @@ class RTGODAM_Transcoder_Admin {
 			$message_parts[] = sprintf(
 				/* translators: %1$s: bandwidth percentage, %2$s: storage percentage */
 				__( 'Your bandwidth (%1$s%%) and storage (%2$s%%) usage have exceeded your plan limits.', 'godam' ),
-				number_format( $bandwidth_percentage, 1 ),
-				number_format( $storage_percentage, 1 )
+				'<strong>' . number_format( $bandwidth_percentage, 1 ) . '</strong>',
+				'<strong>' . number_format( $storage_percentage, 1 ) . '</strong>'
 			);
 		} elseif ( $bandwidth_exceeded ) {
 			$message_parts[] = sprintf(
 				/* translators: %s: bandwidth percentage */
 				__( 'Your bandwidth usage (%s%%) has exceeded your plan limit.', 'godam' ),
-				number_format( $bandwidth_percentage, 1 )
+				'<strong>' . number_format( $bandwidth_percentage, 1 ) . '</strong>'
 			);
 		} elseif ( $storage_exceeded ) {
 			$message_parts[] = sprintf(
 				/* translators: %s: storage percentage */
 				__( 'Your storage usage (%s%%) has exceeded your plan limit.', 'godam' ),
-				number_format( $storage_percentage, 1 )
+				'<strong>' . number_format( $storage_percentage, 1 ) . '</strong>'
 			);
 		}
 
@@ -488,12 +495,12 @@ class RTGODAM_Transcoder_Admin {
 				<img src="<?php echo esc_url( $logo_url ); ?>" alt="GoDAM Logo" class="godam-logo">
 				<div>
 					<p><strong><?php esc_html_e( 'GoDAM Usage Limit Exceeded', 'godam' ); ?></strong></p>
-					<p><?php echo esc_html( $message ); ?></p>
+					<p><?php echo wp_kses( $message, array( 'strong' => array() ) ); ?></p>
 					<p>
-						<a href="https://app.godam.io/web/billing?tab=Plans" target="_blank" class="button button-primary">
+						<a href="https://app.godam.io/web/billing?tab=Plans" target="_blank" rel="noopener noreferrer" class="button button-primary">
 							<?php esc_html_e( 'Upgrade Your Plan', 'godam' ); ?>
 						</a>
-						<a href="https://godam.io/pricing?utm_source=wordpress-plugin&utm_medium=admin-notice&utm_campaign=limit-exceeded&utm_content=learn-more-button" target="_blank" class="button button-secondary">
+						<a href="https://godam.io/docs/troubleshooting/bandwidth-storage?utm_source=wordpress-plugin&utm_medium=admin-notice&utm_campaign=limit-exceeded&utm_content=learn-more-button" target="_blank" rel="noopener noreferrer" class="button button-secondary">
 							<?php esc_html_e( 'Learn More', 'godam' ); ?>
 						</a>
 						<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'clear_godam_cache', '1' ), 'clear_godam_cache' ) ); ?>" class="button button-secondary">
@@ -521,20 +528,20 @@ class RTGODAM_Transcoder_Admin {
 			$message_parts[] = sprintf(
 				/* translators: %1$s: bandwidth percentage, %2$s: storage percentage */
 				__( 'Your bandwidth (%1$s%%) and storage (%2$s%%) usage are approaching your plan limits.', 'godam' ),
-				number_format( $bandwidth_percentage, 1 ),
-				number_format( $storage_percentage, 1 )
+				'<strong>' . number_format( $bandwidth_percentage, 1 ) . '</strong>',
+				'<strong>' . number_format( $storage_percentage, 1 ) . '</strong>'
 			);
 		} elseif ( $bandwidth_warning ) {
 			$message_parts[] = sprintf(
 				/* translators: %s: bandwidth percentage */
 				__( 'Your bandwidth usage (%s%%) is approaching your plan limit.', 'godam' ),
-				number_format( $bandwidth_percentage, 1 )
+				'<strong>' . number_format( $bandwidth_percentage, 1 ) . '</strong>'
 			);
 		} elseif ( $storage_warning ) {
 			$message_parts[] = sprintf(
 				/* translators: %s: storage percentage */
 				__( 'Your storage usage (%s%%) is approaching your plan limit.', 'godam' ),
-				number_format( $storage_percentage, 1 )
+				'<strong>' . number_format( $storage_percentage, 1 ) . '</strong>'
 			);
 		}
 
@@ -551,12 +558,12 @@ class RTGODAM_Transcoder_Admin {
 				<img src="<?php echo esc_url( $logo_url ); ?>" alt="GoDAM Logo" class="godam-logo">
 				<div>
 					<p><strong><?php esc_html_e( 'GoDAM Usage Warning', 'godam' ); ?></strong></p>
-					<p><?php echo esc_html( $message ); ?></p>
+					<p><?php echo wp_kses( $message, array( 'strong' => array() ) ); ?></p>
 					<p>
-						<a href="https://app.godam.io/web/billing?tab=Plans" target="_blank" class="button button-primary">
+						<a href="https://app.godam.io/web/billing?tab=Plans" target="_blank" rel="noopener noreferrer" class="button button-primary">
 							<?php esc_html_e( 'View Plans', 'godam' ); ?>
 						</a>
-						<a href="https://godam.io/pricing?utm_source=wordpress-plugin&utm_medium=admin-notice&utm_campaign=usage-warning&utm_content=learn-more-button" target="_blank" class="button button-secondary">
+						<a href="https://godam.io/docs/troubleshooting/bandwidth-storage?utm_source=wordpress-plugin&utm_medium=admin-notice&utm_campaign=usage-warning&utm_content=learn-more-button" target="_blank" rel="noopener noreferrer" class="button button-secondary">
 							<?php esc_html_e( 'Learn More', 'godam' ); ?>
 						</a>
 						<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'clear_godam_cache', '1' ), 'clear_godam_cache' ) ); ?>" class="button button-secondary">
@@ -578,7 +585,7 @@ class RTGODAM_Transcoder_Admin {
 		$message = sprintf(
 			/* translators: %s: bandwidth percentage */
 			__( 'Your bandwidth usage (%s%%) has exceeded your plan limit. Videos might not be served from CDN on frontend.', 'godam' ),
-			number_format( $bandwidth_percentage, 1 )
+			'<strong>' . number_format( $bandwidth_percentage, 1 ) . '</strong>'
 		);
 
 		// Get the GoDAM logo URL.
@@ -590,12 +597,12 @@ class RTGODAM_Transcoder_Admin {
 				<img src="<?php echo esc_url( $logo_url ); ?>" alt="GoDAM Logo" class="godam-logo">
 				<div>
 					<p><strong><?php esc_html_e( 'GoDAM Bandwidth Exceeded', 'godam' ); ?></strong></p>
-					<p><?php echo esc_html( $message ); ?> <?php esc_html_e( 'Transcoding will continue to work.', 'godam' ); ?></p>
+					<p><?php echo wp_kses( $message, array( 'strong' => array() ) ); ?> <?php esc_html_e( 'Transcoding will continue to work.', 'godam' ); ?></p>
 					<p>
-						<a href="https://app.godam.io/web/billing?tab=Plans" target="_blank" class="button button-primary">
+						<a href="https://app.godam.io/web/billing?tab=Plans" target="_blank" rel="noopener noreferrer" class="button button-primary">
 							<?php esc_html_e( 'Upgrade Your Plan', 'godam' ); ?>
 						</a>
-						<a href="https://godam.io/pricing?utm_source=wordpress-plugin&utm_medium=admin-notice&utm_campaign=bandwidth-exceeded&utm_content=learn-more-button" target="_blank" class="button button-secondary">
+						<a href="https://godam.io/docs/troubleshooting/bandwidth-storage?utm_source=wordpress-plugin&utm_medium=admin-notice&utm_campaign=bandwidth-exceeded&utm_content=learn-more-button" target="_blank" rel="noopener noreferrer" class="button button-secondary">
 							<?php esc_html_e( 'Learn More', 'godam' ); ?>
 						</a>
 						<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'clear_godam_cache', '1' ), 'clear_godam_cache' ) ); ?>" class="button button-secondary">

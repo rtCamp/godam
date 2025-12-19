@@ -13,7 +13,7 @@ import {
 	Notice,
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import { useState, useRef, useEffect } from '@wordpress/element';
+import { useState, useRef, useEffect, useMemo } from '@wordpress/element';
 /**
  * Internal dependencies
  */
@@ -36,7 +36,15 @@ const RetranscodeTab = () => {
 	const [ totalMediaCount, setTotalMediaCount ] = useState( 0 );
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
-	// On mount, check for 'media_ids' in the URL
+	// Calculate storage exceeded status reactively
+	const storageExceeded = useMemo( () => {
+		const userData = window?.userData || {};
+		const storageUsed = Number( userData.storageUsed || 0 );
+		const totalStorage = Number( userData.totalStorage || 0 );
+		return storageUsed > totalStorage;
+	}, [] );
+
+	// On mount, check for 'media_ids' in the URL and storage limits
 	useEffect( () => {
 		const params = new URLSearchParams( window.location.search );
 		const idsParam = params.get( 'media_ids' );
@@ -88,7 +96,9 @@ const RetranscodeTab = () => {
 			},
 		} )
 			.then( ( response ) => {
-				if ( response.data?.data && Array.isArray( response.data.data ) && response.data.data.length > 0 ) {
+				if ( response.data?.storage_exceeded ) {
+					showNotice( response.data.message, 'error' );
+				} else if ( response.data?.data && Array.isArray( response.data.data ) && response.data.data.length > 0 ) {
 					setAttachments( response.data.data );
 					if ( response.data?.total_media_count ) {
 						setTotalMediaCount( response.data.total_media_count );
@@ -317,6 +327,21 @@ const RetranscodeTab = () => {
 					</p>
 
 					{
+						storageExceeded && (
+							<div className="notice notice-error godam-storage-exceeded-notice">
+								<p>
+									<strong>{ __( 'Storage Limit Exceeded:', 'godam' ) }</strong>{ ' ' }
+									{ sprintf(
+										// translators: %s is the storage usage percentage.
+										__( 'Your storage usage has exceeded your plan limit (%s%%). Retranscoding is currently blocked. Please upgrade your plan to continue.', 'godam' ),
+										( ( Number( window?.userData?.storageUsed || 0 ) / Math.max( 1, Number( window?.userData?.totalStorage || 0 ) ) ) * 100 ).toFixed( 1 ),
+									) }
+								</p>
+							</div>
+						)
+					}
+
+					{
 						/* Force retranscode checkbox */
 						! ( selectedIds && selectedIds.length > 0 ) &&
 						( attachments.length === 0 ) &&
@@ -359,14 +384,14 @@ const RetranscodeTab = () => {
 								sprintf( __( '%d selected media file(s) will be retranscoded.', 'godam' ), selectedIds.length )
 							) }
 							{ ! selectedIds && ! forceRetranscode && sprintf(
-								// translators: %d is the number of media files that require retranscoding.
+								// translators: 1: number of media files that require retranscoding, 2: total number of media files.
 								__( '%1$d/%2$d media file(s) require retranscoding.', 'godam' ),
 								attachments.length,
 								totalMediaCount,
 							) }
 							{ forceRetranscode && sprintf(
-								// translators: %d is the number of media files that will be retranscoded.
-								__( '%1$d/%1$d media file(s) will be retranscoded regardless of their current state.', 'godam' ),
+								// translators: 1: number of media files that will be retranscoded regardless of their current state, 2: total number of media files.
+								__( '%1$d/%2$d media file(s) will be retranscoded regardless of their current state.', 'godam' ),
 								attachments.length,
 								totalMediaCount,
 							) }
@@ -378,7 +403,7 @@ const RetranscodeTab = () => {
 						// Show x/y media retranscoded.
 						<span className="text-gray-600">
 							{ sprintf(
-								// translators: %d is the number of media files sent for retranscoding.
+								// translators: 1: number of media files sent for retranscoding, 2: total number of media files selected.
 								__( '%1$d/%2$d media files sent for retranscoding…', 'godam' ),
 								mediaCount,
 								attachments.length,
@@ -414,7 +439,7 @@ const RetranscodeTab = () => {
 										fetchRetranscodeMedia();
 									}
 								} }
-								disabled={ fetchingMedia }
+								disabled={ fetchingMedia || storageExceeded }
 							>
 								{ ( () => {
 									if ( attachments.length === 0 ) {
