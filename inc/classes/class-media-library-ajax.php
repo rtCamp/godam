@@ -326,11 +326,15 @@ class Media_Library_Ajax {
 		if ( ! empty( $godam_original_id ) ) {
 			// Indicate that this is a virtual attachment.
 			$response['virtual'] = true;
+
 			// Set the icon to be used for the virtual media preview.
-			$response['icon'] = get_post_meta( $attachment->ID, 'icon', true );
 			// Populate the image field used by the media library to show previews.
-			$response['image']        = array();
-			$response['image']['src'] = $response['icon'];
+			$icon_url          = wp_mime_type_icon( $attachment->ID, '.svg' );
+			$response['image'] = array();
+			if ( empty( $icon_url ) ) {
+				$response['icon']         = $icon_url;
+				$response['image']['src'] = $icon_url;
+			}
 		}
 
 		return $response;

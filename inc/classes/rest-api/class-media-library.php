@@ -312,7 +312,7 @@ class Media_Library extends Base {
 					// 'permission_callback' => array( $this, 'verify_callback_permission' ),
 					'permission_callback' => '__return_true',
 				),
-			)
+			),
 		);
 	}
 
@@ -362,10 +362,10 @@ class Media_Library extends Base {
 		$subsizes = array();
 		foreach ( $sizes as $size ) {
 			$subsizes[] = array(
-				'file' => $size['url'],
+				'file'     => $size['url'],
 				'filesize' => $size['file_size'],
-				'width' => $size['width'],
-				'height' => $size['height'],
+				'width'    => $size['width'],
+				'height'   => $size['height'],
 			);
 		}
 
@@ -384,7 +384,7 @@ class Media_Library extends Base {
 
 		foreach ( $subsizes as $size ) {
 			$external_size_name = '';
-			$min_diff = PHP_INT_MAX;
+			$min_diff           = PHP_INT_MAX;
 			foreach ( $registered_sizes as $size_name => $registered_size_data ) {
 				if ( $registered_size_data['width'] === $size['width'] && $registered_size_data['height'] === $size['height'] ) {
 					$external_size_name = $size_name;
@@ -392,7 +392,7 @@ class Media_Library extends Base {
 				} elseif ( $size['width'] <= $registered_size_data['width'] && $size['height'] <= $registered_size_data['height'] ) {
 					$diff = $registered_size_data['width'] - $size['width'] + $registered_size_data['height'] - $size['height'];
 					if ( $diff < $min_diff ) {
-						$min_diff = $diff;
+						$min_diff           = $diff;
 						$external_size_name = $size_name;
 					}
 				}
@@ -402,11 +402,11 @@ class Media_Library extends Base {
 				continue;
 			}
 
-			$attachme_meta['sizes'][$external_size_name] = array(
-				'file' => $size['file'],
+			$attachme_meta['sizes'][ $external_size_name ] = array(
+				'file'     => $size['file'],
 				'filesize' => $size['filesize'],
-				'width' => $size['width'],
-				'height' => $size['height'],
+				'width'    => $size['width'],
+				'height'   => $size['height'],
 			);
 		}
 
@@ -1917,32 +1917,32 @@ class Media_Library extends Base {
 		// $subsizes = array();
 
 		// foreach ( $body['message']['subsizes'] as $subsize_data ) {
-		// 	if ( empty( $subsize_data['name'] ) || empty( $subsize_data['url'] ) ) {
-		// 		continue;
-		// 	}
+		// if ( empty( $subsize_data['name'] ) || empty( $subsize_data['url'] ) ) {
+		// continue;
+		// }
 
-		// 	$size_name = sanitize_key( $subsize_data['name'] );
+		// $size_name = sanitize_key( $subsize_data['name'] );
 
-		// 	// Build WordPress metadata format for this size.
-		// 	$subsize_meta = array(
-		// 		'file'      => basename( parse_url( $subsize_data['url'], PHP_URL_PATH ) ), // Store just filename.
-		// 		'width'     => isset( $subsize_data['width'] ) ? (int) $subsize_data['width'] : 0,
-		// 		'height'    => isset( $subsize_data['height'] ) ? (int) $subsize_data['height'] : 0,
-		// 		'mime-type' => isset( $subsize_data['mime_type'] ) ? $subsize_data['mime_type'] : get_post_mime_type( $attachment_id ),
-		// 	);
+		// Build WordPress metadata format for this size.
+		// $subsize_meta = array(
+		// 'file'      => basename( parse_url( $subsize_data['url'], PHP_URL_PATH ) ), // Store just filename.
+		// 'width'     => isset( $subsize_data['width'] ) ? (int) $subsize_data['width'] : 0,
+		// 'height'    => isset( $subsize_data['height'] ) ? (int) $subsize_data['height'] : 0,
+		// 'mime-type' => isset( $subsize_data['mime_type'] ) ? $subsize_data['mime_type'] : get_post_mime_type( $attachment_id ),
+		// );
 
-		// 	// Add filesize if available.
-		// 	if ( isset( $subsize_data['filesize'] ) ) {
-		// 		$subsize_meta['filesize'] = (int) $subsize_data['filesize'];
-		// 	}
+		// Add filesize if available.
+		// if ( isset( $subsize_data['filesize'] ) ) {
+		// $subsize_meta['filesize'] = (int) $subsize_data['filesize'];
+		// }
 
-		// 	// Store the full GoDAM URL in the metadata (WordPress doesn't use this field, but we can access it via filters).
-		// 	$subsize_meta['godam_url'] = esc_url_raw( $subsize_data['url'] );
+		// Store the full GoDAM URL in the metadata (WordPress doesn't use this field, but we can access it via filters).
+		// $subsize_meta['godam_url'] = esc_url_raw( $subsize_data['url'] );
 
-		// 	// Also store in post meta for easy retrieval.
-		// 	update_post_meta( $attachment_id, '_godam_subsize_url_' . $size_name, esc_url_raw( $subsize_data['url'] ) );
+		// Also store in post meta for easy retrieval.
+		// update_post_meta( $attachment_id, '_godam_subsize_url_' . $size_name, esc_url_raw( $subsize_data['url'] ) );
 
-		// 	$subsizes[ $size_name ] = $subsize_meta;
+		// $subsizes[ $size_name ] = $subsize_meta;
 		// }
 
 		// return $subsizes;
