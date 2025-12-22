@@ -15,7 +15,6 @@ import { __ } from '@wordpress/i18n';
  */
 import { addIcon, trashIcon } from '../media-library-icons';
 import { canManageAttachment } from '../utility';
-import MideaVersion from '../media-version';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
 
@@ -182,7 +181,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			} );
 	},
 
-	showGodamSnackbar( message, callback = false ) {
+	showGodamSnackbar( message ) {
 		let snackbar = document.getElementById( 'godam-snackbar' );
 		if ( ! snackbar ) {
 			snackbar = document.createElement( 'div' );
@@ -193,9 +192,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		snackbar.className = 'show';
 		setTimeout( () => {
 			snackbar.className = snackbar.className.replace( 'show', '' );
-			if ( callback && typeof callback === 'function' ) {
-				callback();
-			}
 		}, 3000 ); // 3 seconds
 	},
 
@@ -695,11 +691,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				}
 			}
 		}
-
-		// Adding functionality to add media version from media library
-		const mediaVersion = new MideaVersion();
-		mediaVersion.addMediaVersionFromMediaLibrary( this );
-		mediaVersion.updateAttachmentVersionPreviewFromMediaLibrary( this );
 
 		// Return this view.
 		return this;
