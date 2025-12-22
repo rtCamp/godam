@@ -277,8 +277,15 @@ class Media_Library_Ajax {
 	 * @return array $response Attachment response.
 	 */
 	public function add_media_transcoding_status_js( $response, $attachment ) {
-		// Check if attachment type is video.
-		if ( 'video' !== substr( $attachment->post_mime_type, 0, 5 ) ) {
+		// Check if attachment type is video, audio, PDF, or image.
+		$mime_type = $attachment->post_mime_type;
+		$is_video  = 'video' === substr( $mime_type, 0, 5 );
+		$is_audio  = 'audio' === substr( $mime_type, 0, 5 );
+		$is_pdf    = 'application/pdf' === $mime_type;
+		$is_image  = 'image' === substr( $mime_type, 0, 5 );
+
+		// Only process supported attachment types.
+		if ( ! $is_video && ! $is_audio && ! $is_pdf && ! $is_image ) {
 			return $response;
 		}
 
