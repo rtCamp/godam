@@ -1,5 +1,11 @@
 # Changelog #
 
+## v1.4.9 (December 19, 2025) ##
+
+- Feat: Added Free Plan for GoDAM
+- Fix: Background scroll issues in full screen on iOS
+- Fix: SDK event errors
+
 ## v1.4.8 (December 10, 2025) ##
 
 - Feat: Added support for PDF files
