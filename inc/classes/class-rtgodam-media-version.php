@@ -40,6 +40,7 @@ class RTGODAM_Media_Version {
 		add_filter( 'wp_get_attachment_url', array( $this, 'rtgodam_add_media_version_to_attachment' ), 10, 2 );
 		add_filter( 'wp_get_attachment_image_src', array( $this, 'rtgodam_add_media_version_to_image' ), 10, 2 );
 		add_filter( 'wp_calculate_image_srcset', array( $this, 'rtgodam_add_media_version_to_image_srcset' ), 10, 5 );
+		add_filter( 'godam_player_block_attributes', array( $this, 'rtgodam_add_media_version_to_godam_player_block_attributes' ) );
 
 		add_action( 'add_attachment', array( $this, 'rtgodam_create_media_versions' ), 10 );
 		add_action( 'delete_attachment', array( $this, 'rtgodam_delete_media_versions' ), 10 );
@@ -513,5 +514,37 @@ class RTGODAM_Media_Version {
 			}
 		}
 		return $sources;
+	}
+
+	public function rtgodam_add_media_version_to_godam_player_block_attributes( $attributes ) {
+		$attachment_id = $attributes['id'] ?? null;
+
+		if ( ! $attachment_id ) {
+			return $attributes;
+		}
+
+		$version = $this->rtgoam_get_media_version_from_attachment( $attachment_id );
+
+		if ( ! $version ) {
+			return $attributes;
+		}
+
+		if ( isset( $attributes['src'] ) ) {
+			$attributes['src'] = $this->rtgodam_add_version_to_url( (string) $attributes['src'], $version );
+		}
+
+		if ( isset( $attributes['sources'] ) ) {
+			$attributes['sources'] = array_map(
+				function ( $source ) use ( $version ) {
+					if ( isset( $source['src'] ) ) {
+						$source['src'] = $this->rtgodam_add_version_to_url( (string) $source['src'], $version );
+					}
+					return $source;
+				},
+				$attributes['sources']
+			);
+		}
+
+		return $attributes;
 	}
 }
