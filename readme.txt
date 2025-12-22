@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.4.7
+Stable tag: 1.4.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -246,6 +246,26 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v1.4.9 (December 19, 2025) =
+
+- Feat: Added Free Plan for GoDAM
+- Fix: Background scroll issues in full screen on iOS
+- Fix: SDK event errors
+
+= v1.4.8 (December 10, 2025) =
+
+- Feat: Added support for PDF files
+- Tweak: Implemented enhancements for Likes & Comments functionality
+- Tweak: Integrated further performance improvements, optimized asset loading
+- Tweak: Updated “Manage media” button to point directly to the specific folder
+- Tweak: Addressed various media library issues and general improvements
+- Fix: Full-screen inconsistencies on iOS (SDK)
+- Fix: Blank page issue when navigating unsaved video editor pages
+- Fix: Media Uploader UI issues
+- Fix: Form submission issues in preview
+- Fix: Player skin overlap issues
+- Fix: Media metadata display on Central
+
 = v1.4.7 (November 26, 2025) =
 
 - Tweak: Improved GoDAM Video block performance with preload poster functionality
@@ -254,25 +274,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: Virtual media player and preview template
 - Fix: Error handling for Ads layer
 - Fix: PHP naming conventions as per WP PCP
-
-= v1.4.6 (November 12, 2025) =
-
-- Tweak: Added audio recorder support for Ninja Forms with GoDAM Recorder
-- Tweak: Added GoDAM Media Tab to Video Ad, CTA background, watermark selectors & more
-- Fix: Resolved copy block issue on Safari
-- Fix: Improved security measures for HTTP requests
-- Fix: Fixed critical Node package vulnerabilities
-- Fix: Fixed API key being removed on 5xx server errors
-- Fix: Fixed GoDAM Recorder videos visibility in Fluent Forms entry pages
-- Fix: Fixed virtual media attachment creation in WP Media Library
-- Fix: Made improvements in media selection UI
-- Fix: Fixed Elementor widgets not appearing when GoDAM plugin is network activated
-- Fix: Fixed fullscreen toggle inconsistencies on iOS
-- Fix: Fixed a search issue in the GoDAM media tab
-
-= v1.4.5 (October 22, 2025) =
-
-- Fix: Optimized API requests
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 

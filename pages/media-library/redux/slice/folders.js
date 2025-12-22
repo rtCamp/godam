@@ -3,11 +3,6 @@
  */
 import { createSlice } from '@reduxjs/toolkit';
 
-/**
- * Internal dependencies
- */
-import { triggerFilterChange } from '../../data/media-grid.js';
-
 let selectedFolderId = -1;
 
 const urlParams = new URLSearchParams( window.location.search );
@@ -340,9 +335,6 @@ const slice = createSlice( {
 			state.selectedFolder = {
 				id: -1,
 			};
-
-			// Also trigger WordPress media filter change to sync
-			triggerFilterChange( 'all' );
 
 			// Close all modals
 			state.modals = {

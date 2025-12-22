@@ -254,6 +254,32 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 
 		if ( ! is_wp_error( $usage_data ) ) {
 			$rtgodam_user_data = array_merge( $rtgodam_user_data, $usage_data );
+
+			// Check for exceeded limits and set error messages.
+			$bandwidth_exceeded = isset( $usage_data['bandwidth_used'], $usage_data['total_bandwidth'] )
+				&& $usage_data['bandwidth_used'] > $usage_data['total_bandwidth'];
+			$storage_exceeded   = isset( $usage_data['storage_used'], $usage_data['total_storage'] )
+				&& $usage_data['storage_used'] > $usage_data['total_storage'];
+
+			if ( $storage_exceeded ) {
+				$storage_percentage                         = $usage_data['total_storage'] > 0
+					? number_format( ( $usage_data['storage_used'] / $usage_data['total_storage'] ) * 100, 1 )
+					: '0';
+				$rtgodam_user_data['storageBandwidthError'] = sprintf(
+					/* translators: %s: storage usage percentage */
+					__( 'Storage limit exceeded (%s%%). Please upgrade your plan to continue.', 'godam' ),
+					$storage_percentage
+				);
+			} elseif ( $bandwidth_exceeded ) {
+				$bandwidth_percentage                       = $usage_data['total_bandwidth'] > 0
+					? number_format( ( $usage_data['bandwidth_used'] / $usage_data['total_bandwidth'] ) * 100, 1 )
+					: '0';
+				$rtgodam_user_data['storageBandwidthError'] = sprintf(
+					/* translators: %s: bandwidth usage percentage */
+					__( 'Bandwidth limit exceeded (%s%%). Please upgrade your plan to continue.', 'godam' ),
+					$bandwidth_percentage
+				);
+			}
 		} elseif ( ! $valid_api_key ) {
 			$rtgodam_user_data['storageBandwidthError'] = __( 'Oops! It looks like your API key is incorrect or has expired. Please update it and try again.', 'godam' );
 		} else {
@@ -681,12 +707,13 @@ function rtgodam_is_local_environment() {
 	$whitelist = array( '127.0.0.1', '::1', 'localhost' );
 
 	// phpcs:disable -- Disabling phpcs as its not manipulating any data, just reading server variables, and function is used for local environment check only.
-	$server_addr = isset( $_SERVER['REMOTE_ADDR'] ) ? filter_var( $_SERVER[ 'REMOTE_ADDR' ], FILTER_VALIDATE_IP ) : '';
-	$host        = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
+	// We do NOT use REMOTE_ADDR because it can be 127.0.0.1 for loopback requests (Server processes) on hosted sites.
+	// Instead, we rely on HTTP_HOST to detect if the site is actually hosted on localhost/local domains.
+	$host = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
 	// phpcs:enable
 
 	$is_localhost = (
-		in_array( $server_addr, $whitelist, true ) ||
+		in_array( $host, $whitelist, true ) ||
 		strpos( $host, '.local' ) !== false ||
 		strpos( $host, '.test' ) !== false
 	);

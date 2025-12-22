@@ -95,29 +95,57 @@ export default class ControlsManager {
 				const videoContainer = e.target.closest( '.video-js' );
 				const godamVideoContainer = e.target.closest( '.easydam-video-container' );
 
-				// Check both containers for fullscreen classes
+				// Determine current fullscreen state by checking for fullscreen classes
 				const isFullscreen = ( videoContainer && videoContainer.classList.contains( 'vjs-fullscreen' ) );
 
 				if ( isFullscreen ) {
+					// EXIT FULLSCREEN MODE
+
+					// Remove fullscreen CSS classes from video containers
 					if ( videoContainer ) {
 						videoContainer.classList.remove( 'vjs-fullscreen' );
 					}
 					if ( godamVideoContainer ) {
 						godamVideoContainer.classList.remove( 'godam-video-fullscreen' );
 					}
-					// Restore scrolling
+
+					// RESTORE BACKGROUND SCROLLING (iOS-compatible method)
+					// Step 1: Get the saved scroll position from body's top style
+					const scrollY = document.body.style.top;
+					// Step 2: Reset all scroll-prevention styles
 					document.body.style.overflow = '';
+					document.body.style.position = '';
+					document.body.style.top = '';
+					document.body.style.width = '';
+					document.documentElement.style.overflow = '';
+					// Step 3: Restore the original scroll position (multiply by -1 because it was stored as negative)
+					if ( scrollY ) {
+						window.scrollTo( 0, parseInt( scrollY || '0' ) * -1 );
+					}
 				} else {
+					// ENTER FULLSCREEN MODE
+
+					// Add fullscreen CSS classes to video containers
 					if ( videoContainer ) {
 						videoContainer.classList.add( 'vjs-fullscreen' );
 					}
 					if ( godamVideoContainer ) {
 						godamVideoContainer.classList.add( 'godam-video-fullscreen' );
 					}
-					// Prevent scrolling on iOS
+
+					// PREVENT BACKGROUND SCROLLING (robust iOS method)
+					// iOS Safari doesn't respect overflow: hidden alone, so we use position: fixed
+					// Step 1: Save current scroll position
+					const scrollY = window.scrollY;
+					// Step 2: Prevent scrolling by fixing body position and offsetting it
 					document.body.style.overflow = 'hidden';
+					document.documentElement.style.overflow = 'hidden';
+					document.body.style.position = 'fixed';
+					document.body.style.top = `-${ scrollY }px`; // Negative offset to keep content in place
+					document.body.style.width = '100%'; // Prevent horizontal scrollbar
 				}
-				// Trigger customfullscreenchange event on the VideoJS player
+
+				// Notify other components about fullscreen state change
 				this.player().trigger( 'customfullscreenchange' );
 			}
 		}
@@ -145,9 +173,13 @@ export default class ControlsManager {
 			}
 
 			handleClick( e ) {
+				// Find the video containers that need fullscreen styling removed
 				const videoContainer = e.target.closest( '.video-js' );
 				const godamVideoContainer = e.target.closest( '.easydam-video-container' );
 
+				// EXIT FULLSCREEN MODE (always exit when this button is clicked)
+
+				// Remove fullscreen CSS classes from video containers
 				if ( videoContainer ) {
 					videoContainer.classList.remove( 'vjs-fullscreen' );
 				}
@@ -155,9 +187,21 @@ export default class ControlsManager {
 					godamVideoContainer.classList.remove( 'godam-video-fullscreen' );
 				}
 
-				// Restore scrolling
+				// RESTORE BACKGROUND SCROLLING (iOS-compatible method)
+				// Step 1: Get the saved scroll position from body's top style
+				const scrollY = document.body.style.top;
+				// Step 2: Reset all scroll-prevention styles
 				document.body.style.overflow = '';
-				// Trigger customfullscreenchange event on the VideoJS player
+				document.body.style.position = '';
+				document.body.style.top = '';
+				document.body.style.width = '';
+				document.documentElement.style.overflow = '';
+				// Step 3: Restore the original scroll position (multiply by -1 because it was stored as negative)
+				if ( scrollY ) {
+					window.scrollTo( 0, parseInt( scrollY || '0' ) * -1 );
+				}
+
+				// Notify other components about fullscreen state change
 				this.player().trigger( 'customfullscreenchange' );
 			}
 		}
@@ -202,36 +246,81 @@ export default class ControlsManager {
 	 * Setup iOS dynamic viewport height variable (--vh)
 	 * Ensures fullscreen container height matches the visible viewport
 	 */
+	/**
+	 * Setup dynamic viewport height tracking for iOS devices
+	 *
+	 * PROBLEM: On iOS Safari, the viewport height changes dynamically when:
+	 * - Address bar collapses/expands during scrolling
+	 * - On-screen keyboard appears/disappears
+	 * - Device rotates between portrait/landscape
+	 *
+	 * SOLUTION: Use the visualViewport API (iOS 13+) which provides accurate
+	 * viewport dimensions that account for dynamic UI elements. This ensures
+	 * fullscreen containers always fill the available screen space.
+	 */
 	setupIOSViewportHeight() {
+		/**
+		 * Calculate and update the CSS custom property --vh with current viewport height
+		 *
+		 * This function is called whenever the viewport size changes to ensure
+		 * the fullscreen player container always matches the visible viewport.
+		 */
 		const setViewportHeight = () => {
-			// Calculate and set the custom CSS property --vh to match viewport height.
-			// Multiply by 0.01 to convert to viewport height percentage. (1vh = 1% of viewport height).
-			const vh = window.innerHeight * 0.01;
+			// Get accurate viewport height accounting for dynamic UI elements
+			let vh;
+
+			// PREFERRED: Use visualViewport API (iOS 13+, modern browsers)
+			// - Accounts for on-screen keyboard
+			// - Accounts for dynamic address bar (iOS Safari)
+			// - Accounts for pinch-to-zoom scaling
+			if ( window.visualViewport ) {
+				vh = window.visualViewport.height * 0.01; // Convert to vh units (1% of viewport height)
+			} else {
+				// FALLBACK: Use window.innerHeight (older browsers)
+				// Less accurate but better than nothing
+				vh = window.innerHeight * 0.01;
+			}
+
+			// Set CSS custom property that can be used in stylesheets
+			// Example usage: height: calc(var(--vh, 1vh) * 100);
 			document.documentElement.style.setProperty( '--vh', `${ vh }px` );
 		};
 
-		// Initialize on load
+		// INITIALIZATION: Set viewport height immediately when called
 		setViewportHeight();
 
-		// Debounced resize handler
+		// EVENT LISTENER 1: visualViewport API (most accurate, iOS 13+)
+		if ( window.visualViewport ) {
+			// Listen for viewport resize events (address bar, keyboard, etc.)
+			window.visualViewport.addEventListener( 'resize', setViewportHeight );
+
+			// Also listen for scroll events as viewport can change during scrolling
+			window.visualViewport.addEventListener( 'scroll', setViewportHeight );
+		}
+
+		// EVENT LISTENER 2: Window resize (fallback for older browsers)
+		// Use requestAnimationFrame for smooth updates instead of setTimeout
 		let resizeTimer = null;
 		window.addEventListener( 'resize', () => {
+			// Cancel previous animation frame to debounce rapid events
 			if ( resizeTimer ) {
-				clearTimeout( resizeTimer );
+				cancelAnimationFrame( resizeTimer );
 			}
-			resizeTimer = setTimeout( setViewportHeight, 100 );
-		}, { passive: true } );
+			// Schedule update for next animation frame (smooth, performant)
+			resizeTimer = requestAnimationFrame( setViewportHeight );
+		}, { passive: true } ); // passive: true for better scroll performance
 
-		// Handle orientation changes
+		// EVENT LISTENER 3: Orientation changes (device rotation)
 		if ( screen.orientation ) {
+			// Modern Screen Orientation API (preferred)
 			screen.orientation.addEventListener( 'change', () => {
-				// Give iOS a moment to recalc innerHeight
+				// Delay slightly to allow iOS to finish recalculating viewport
 				setTimeout( setViewportHeight, 200 );
 			} );
 		} else {
-			// Fallback for browsers that don't support ScreenOrientation API
+			// FALLBACK: Legacy orientationchange event
 			window.addEventListener( 'orientationchange', () => {
-				// Give iOS a moment to recalc innerHeight
+				// Delay slightly to allow iOS to finish recalculating viewport
 				setTimeout( setViewportHeight, 200 );
 			} );
 		}
