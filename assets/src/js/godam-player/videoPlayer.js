@@ -48,12 +48,17 @@ export default class GodamVideoPlayer {
 		// Mark as initializing to prevent double initialization
 		this.video.dataset.videojsInitializing = 'true';
 
-		this.setupVideoElement();
-		await this.loadRequiredPlugins();
-		this.initializePlayer();
-
-		// Remove initializing flag after initialization
-		delete this.video.dataset.videojsInitializing;
+		try {
+			this.setupVideoElement();
+			await this.loadRequiredPlugins();
+			this.initializePlayer();
+		} finally {
+			// Remove initializing flag after initialization
+			delete this.video.dataset.videojsInitializing;
+			if ( this.video.parentElement ) {
+				delete this.video.parentElement.dataset.videojsInitializing;
+			}
+		}
 	}
 
 	/**

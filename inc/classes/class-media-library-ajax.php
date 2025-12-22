@@ -291,6 +291,25 @@ class Media_Library_Ajax {
 			$response['transcoded_url'] = false;
 		}
 
+		// Check if item is blocked but limits are no longer exceeded - change to not_started.
+		if ( 'blocked' === strtolower( $transcoding_status ) ) {
+			// Use cached usage data to avoid external API calls.
+			$user_data = rtgodam_get_user_data();
+			if ( ! empty( $user_data ) && isset( $user_data['bandwidth_used'], $user_data['total_bandwidth'], $user_data['storage_used'], $user_data['total_storage'] ) ) {
+				$storage_exceeded = $user_data['storage_used'] > $user_data['total_storage'];
+
+				// If storage limit is no longer exceeded, change status to not_started.
+				// (Bandwidth exceeded doesn't block transcoding, so don't reset based on bandwidth).
+				if ( ! $storage_exceeded ) {
+					$transcoding_status = 'not_started';
+					// Update the stored status so it persists.
+					update_post_meta( $attachment->ID, 'rtgodam_transcoding_status', 'not_started' );
+					// Clear the error message since it's no longer blocked.
+					delete_post_meta( $attachment->ID, 'rtgodam_transcoding_error_msg' );
+				}
+			}
+		}
+
 		// Add transcoding status to response.
 		$response['transcoding_status'] = $transcoding_status ? strtolower( $transcoding_status ) : 'not_started';
 
@@ -562,13 +581,13 @@ class Media_Library_Ajax {
 
 		$timezone     = wp_timezone();
 		$current_time = new \DateTime( 'now', $timezone );
-		$end_time     = new \DateTime( '2025-12-14 23:59:59', $timezone );
+		$end_time     = new \DateTime( '2026-01-20 23:59:59', $timezone );
 
 		// Only show on the Media Library page.
-		if ( $current_time <= $end_time && $screen && 'upload' === $screen->base && ! rtgodam_is_api_key_valid() && $show_offer_banner ) {
+		if ( $current_time <= $end_time && $screen && 'upload' === $screen->base && $show_offer_banner ) {
 			$host = wp_parse_url( home_url(), PHP_URL_HOST );
 
-			$banner_image = RTGODAM_URL . 'assets/src/images/BFCM.png';
+			$banner_image = RTGODAM_URL . 'assets/src/images/new-year-sale-2026.webp';
 
 			$banner_html = sprintf(
 				'<div class="notice annual-plan-offer-banner">
@@ -594,10 +613,10 @@ class Media_Library_Ajax {
 						&times;
 					</button>
 				</div>',
-				esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=bfcm-offer&utm_source=' . $host . '&utm_medium=plugin&utm_content=media-library-banner' ),
-				esc_attr__( 'Claim the GoDAM Black Friday & Cyber Monday offer', 'godam' ),
+				esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=new-year-sale-2026&utm_source=' . $host . '&utm_medium=plugin&utm_content=media-library-banner' ),
+				esc_attr__( 'Claim the GoDAM New Year Sale 2026 offer', 'godam' ),
 				esc_url( $banner_image ),
-				esc_attr__( 'Black Friday & Cyber Monday offer from GoDAM', 'godam' ),
+				esc_attr__( 'New Year Sale 2026 offer from GoDAM', 'godam' ),
 				esc_html__( 'Dismiss banner', 'godam' )
 			);
 
