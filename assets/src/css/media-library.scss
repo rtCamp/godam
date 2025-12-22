@@ -8,7 +8,7 @@ $media-library-sidebar-fg: #1c1c1c;
 $media-library-sidebar-bg-dark: #a3a3a3;
 $media-library-active-folder: #f5f5f5;
 
- .godam-button {
+.upload-php .godam-button { // Only apply to the media library page.
 	position: relative;
 	top: 9px;
 	font-weight: 400;

@@ -351,6 +351,28 @@ class Transcoding extends Base {
 	 * @return WP_REST_Response
 	 */
 	public function get_media_require_retranscoding( $request ) {
+		// Check if storage limits are exceeded (only storage blocks transcoding).
+		$user_data = rtgodam_get_user_data();
+		if ( ! empty( $user_data ) && isset( $user_data['storage_used'], $user_data['total_storage'] ) ) {
+			$storage_exceeded = $user_data['storage_used'] > $user_data['total_storage'];
+
+			if ( $storage_exceeded ) {
+				return new \WP_REST_Response(
+					array(
+						'data'              => array(),
+						'total_media_count' => array_sum( (array) wp_count_attachments( 'video' ) ),
+						'storage_exceeded'  => true,
+						'message'           => sprintf(
+							// translators: %s is the storage usage percentage.
+							__( 'Storage limit exceeded (%s%%). Retranscoding is currently blocked. Please upgrade your plan to continue.', 'godam' ),
+							number_format( ( $user_data['storage_used'] / max( 1, $user_data['total_storage'] ) ) * 100, 1 )
+						),
+					),
+					200
+				);
+			}
+		}
+
 		$all_posts = array();
 		$paged     = 1;
 		$per_page  = 200;
@@ -544,6 +566,31 @@ class Transcoding extends Base {
 				),
 				200
 			);
+		}
+
+		// Check if storage limits are exceeded (only storage blocks transcoding).
+		$user_data = rtgodam_get_user_data();
+		if ( ! empty( $user_data ) && isset( $user_data['storage_used'], $user_data['total_storage'] ) ) {
+			$storage_exceeded = $user_data['storage_used'] > $user_data['total_storage'];
+
+			if ( $storage_exceeded ) {
+				$message = sprintf(
+					// translators: 1: Attachment title, 2: Attachment ID, 3: storage usage percent.
+					__( '%1$s (ID %2$d) cannot be retranscoded. Storage limit exceeded (%3$s%%). Please upgrade your plan to continue transcoding.', 'godam' ),
+					esc_html( $title ),
+					absint( $attachment_id ),
+					number_format( ( $user_data['storage_used'] / max( 1, $user_data['total_storage'] ) ) * 100, 1 )
+				);
+
+				return new \WP_REST_Response(
+					array(
+						'message' => $message,
+						'skipped' => true,
+						'reason'  => 'storage_exceeded',
+					),
+					200
+				);
+			}
 		}
 
 		// Proceed with normal retranscoding for original media.
