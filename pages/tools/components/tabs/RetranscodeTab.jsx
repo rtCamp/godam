@@ -475,11 +475,7 @@ const RetranscodeTab = () => {
 						// Show x/y media retranscoded.
 						<span className="text-gray-600">
 							{ sprintf(
-<<<<<<< HEAD
-								// translators: %1$d is the current count, %2$d is the total count.
-=======
 								// translators: 1: number of media files sent for retranscoding, 2: total number of media files selected.
->>>>>>> develop
 								__( '%1$d/%2$d media files sent for retranscoding…', 'godam' ),
 								mediaCount,
 								attachments.length,
