@@ -1473,6 +1473,11 @@ class Media_Library extends Base {
 			);
 
 			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
+
+			// Set PDF thumbnail from icon URL if provided.
+			if ( ! empty( $data['icon'] ) ) {
+				update_post_meta( $attach_id, 'rtgodam_media_pdf_thumbnail', esc_url_raw( $data['icon'] ) );
+			}
 		}
 
 
