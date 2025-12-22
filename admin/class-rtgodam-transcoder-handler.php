@@ -172,6 +172,11 @@ class RTGODAM_Transcoder_Handler {
 	 */
 	public function send_transcoding_request( $attachment_id ) {
 
+		$rtgodam_is_attachment_version = get_post_meta( $attachment_id, 'rtgodam_is_attachment_version', true );
+		if ( ! empty( $rtgodam_is_attachment_version ) && 'yes' === $rtgodam_is_attachment_version ) {
+			return;
+		}
+
 		$metadata = wp_get_attachment_metadata( $attachment_id );
 
 		$mime_type = get_post_mime_type( $attachment_id );
