@@ -141,7 +141,7 @@ function rtgodam_fetch_overlay_media_url( $media_id ) {
 	$media = get_post( $media_id );
 
 	if ( ! $media || 'attachment' !== $media->post_type ) {
-		throw new Exception( 'Media not found' );
+		return '';
 	}
 
 	$media_url = wp_get_attachment_url( $media_id );
