@@ -36,6 +36,11 @@ class RTGODAM_Media_Version {
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'rtgodam_update_media_versions' ), 10, 3 );
 		add_filter( 'intermediate_image_sizes_advanced', array( $this, 'rtgodam_disable_intermediate_image_sizes_advanced_media_versions' ), 10, 3 );
 		add_filter( 'wp_handle_upload_prefilter', array( $this, 'rtgodam_check_media_versions_eligibility' ) );
+		add_filter( 'render_block', array( $this, 'rtgodam_flush_media_cache_for_version' ), 10, 3 );
+		add_filter( 'wp_get_attachment_url', array( $this, 'rtgodam_add_media_version_to_attachment' ), 10, 2 );
+		add_filter( 'wp_get_attachment_image_src', array( $this, 'rtgodam_add_media_version_to_image' ), 10, 2 );
+		add_filter( 'wp_calculate_image_srcset', array( $this, 'rtgodam_add_media_version_to_image_srcset' ), 10, 5 );
+
 		add_action( 'add_attachment', array( $this, 'rtgodam_create_media_versions' ), 10 );
 		add_action( 'delete_attachment', array( $this, 'rtgodam_delete_media_versions' ), 10 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueues' ) );
@@ -410,5 +415,103 @@ class RTGODAM_Media_Version {
 			}
 		}
 		return $file;
+	}
+
+	public function rtgodam_flush_media_cache_for_version( $block_content, $block, $instance ) {
+
+		$media_blocks = array(
+			'core/image',
+			'core/gallery',
+			'core/video',
+			'core/audio',
+			'core/file',
+			'core/cover',
+			'core/media-text',
+		);
+
+		if ( ! in_array( $block['blockName'], $media_blocks, true ) ) {
+			return $block_content;
+		}
+
+		$attrs = $block['attrs'] ?? array();
+
+		$attachment_id = $attrs['id'] ?? $attrs['mediaId'] ?? null;
+
+		if ( ! $attachment_id ) {
+			return $block_content;
+		}
+
+		$version = $this->rtgoam_get_media_version_from_attachment( $attachment_id );
+
+		if ( ! $version ) {
+			return $block_content;
+		}
+
+		return preg_replace_callback(
+			'/(src|href)="([^"]+)"/',
+			function ( $matches ) use ( $version ) {
+				$url = $this->rtgodam_add_version_to_url( $matches[2], $version );
+				return sprintf( '%s="%s"', $matches[1], esc_url( $url ) );
+			},
+			$block_content
+		);
+	}
+
+	public function rtgodam_add_version_to_url( string $url, ?string $ver ): string {
+		if ( ! $ver || ! $url ) {
+			return $url;
+		}
+
+		// Avoid stacking multiple ver params.
+		$url = remove_query_arg( 'version', $url );
+		return add_query_arg( 'version', rawurlencode( $ver ), $url );
+	}
+
+	public function rtgoam_get_media_version_from_attachment( $attachment_id ) {
+		$version = get_post_meta( $attachment_id, 'media_version_updated_at', true );
+
+		if ( ! $version ) {
+			return null;
+		}
+
+		return rawurlencode( $version );
+	}
+
+	public function rtgodam_add_media_version_to_attachment( $url, $attachment_id ) {
+		$version = $this->rtgoam_get_media_version_from_attachment( $attachment_id );
+
+		if ( ! $version ) {
+			return $url;
+		}
+
+		return $this->rtgodam_add_version_to_url( $url, $version );
+	}
+
+	public function rtgodam_add_media_version_to_image( $image, $attachment_id ) {
+		$version = $this->rtgoam_get_media_version_from_attachment( $attachment_id );
+
+		if ( ! $version ) {
+			return $image;
+		}
+
+		if ( is_array( $image ) && ! empty( $image[0] ) ) {
+			$image[0] = $this->rtgodam_add_version_to_url( (string) $image[0], $version );
+		}
+		return $image;
+	}
+
+	public function rtgodam_add_media_version_to_image_srcset( $sources, $size_array, $image_src, $image_meta, $attachment_id ) {
+		$version = $this->rtgoam_get_media_version_from_attachment( $attachment_id );
+
+		if ( ! $version ) {
+			return $sources;
+		}
+
+		foreach ( $sources as &$source ) {
+			if ( ! empty( $source['url'] ) ) {
+				$source['url'] = $this->rtgodam_add_version_to_url( $source['url'], $version );
+			}
+		}
+		return $sources;
 	}
 }
