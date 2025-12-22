@@ -1431,6 +1431,7 @@ class Media_Library extends Base {
 		update_post_meta( $attach_id, 'rtgodam_transcoded_url', esc_url_raw( $data['mpd_url'] ?? '' ) );
 		update_post_meta( $attach_id, 'rtgodam_transcoding_status', 'transcoded' );
 		update_post_meta( $attach_id, 'rtgodam_transcoding_job_id', $godam_id );
+		update_post_meta( $attach_id, '_wp_attached_file', esc_url_raw( $data['filename'] ) );
 
 
 		if ( 'video' === $data['type'] ) {
