@@ -33,7 +33,6 @@ class RTGODAM_Media_Version {
 	 */
 	public function __construct() {
 		add_filter( 'attachment_fields_to_edit', array( $this, 'rtgodam_add_attachment_version_field' ), 10, 2 );
-		// add_filter( 'attachment_fields_to_save', array( $this, 'rtgodam_replace_attachment_version' ), 10, 2 );
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'rtgodam_update_media_versions' ), 10, 3 );
 		add_filter( 'intermediate_image_sizes_advanced', array( $this, 'rtgodam_disable_intermediate_image_sizes_advanced_media_versions' ), 10, 3 );
 		add_filter( 'wp_handle_upload_prefilter', array( $this, 'rtgodam_check_media_versions_eligibility' ) );
@@ -51,15 +50,15 @@ class RTGODAM_Media_Version {
 		}
 
 		wp_register_script(
-			'rtgodam-media-version-admin',
-			RTGODAM_URL . '/admin/js/godam-media-version-admin.js',
+			'rtgodam-media-version',
+			RTGODAM_URL . '/assets/build/js/media-version.min.js',
 			array( 'jquery' ),
-			filemtime( RTGODAM_PATH . '/admin/js/godam-media-version-admin.js' ),
+			filemtime( RTGODAM_PATH . '/assets/build/js/media-version.min.js' ),
 			true
 		);
 
 		wp_localize_script(
-			'rtgodam-media-version-admin',
+			'rtgodam-media-version',
 			'rtgodamMediaVersionAdmin',
 			array(
 				'uploadFailedMessage'  => __( 'Upload failed: ', 'godam' ),
@@ -67,7 +66,7 @@ class RTGODAM_Media_Version {
 			)
 		);
 
-		wp_enqueue_script( 'rtgodam-media-version-admin' );
+		wp_enqueue_script( 'rtgodam-media-version' );
 	}
 
 	public function rtgodam_check_attachment_edit_page( $post ) {
