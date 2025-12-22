@@ -427,6 +427,28 @@ function godam_is_audio_file_by_name( $filename ) {
 function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_title = '', $file_url = '', $entry_id = 0, $job_type = 'stream' ) {
 
 	/**
+	 * Filter to allow external developers to disable automatic transcoding for form uploads.
+	 * This allows clients to have manual control over when form-recorded videos get transcoded.
+	 *
+	 * This is the same filter used for media library uploads, providing unified control.
+	 * When disabled, form submissions will fail with an error message indicating transcoding is disabled.
+	 * Manual retranscoding via the admin interface will still work regardless of this setting.
+	 *
+	 * Example usage:
+	 * add_filter( 'godam_auto_transcode_on_upload', '__return_false' ); // Disable globally
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param bool $auto_transcode_on_upload Whether to automatically transcode form uploads. Default true.
+	 */
+	if ( ! apply_filters( 'godam_auto_transcode_on_upload', true ) ) {
+		return new WP_Error(
+			'transcoding_disabled',
+			__( 'Form transcoding has been disabled by the site administrator.', 'godam' )
+		);
+	}
+
+	/**
 	 * Extract file extension.
 	 */
 	$file_extension = pathinfo( $file_url, PATHINFO_EXTENSION );
