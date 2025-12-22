@@ -57,15 +57,6 @@ class RTGODAM_Media_Version {
 			true
 		);
 
-		wp_localize_script(
-			'rtgodam-media-version',
-			'rtgodamMediaVersionAdmin',
-			array(
-				'uploadFailedMessage'  => __( 'Upload failed: ', 'godam' ),
-				'uploadSuccessMessage' => __( 'Media version uploaded successfully.', 'godam' ),
-			)
-		);
-
 		wp_enqueue_script( 'rtgodam-media-version' );
 	}
 
@@ -114,12 +105,12 @@ class RTGODAM_Media_Version {
 			);
 		}
 		$form_fields['replace_media'] = array(
-			'label'        => '',
+			'label'        => __( 'Add a Media version', 'godam' ),
 			'input'        => 'html',
 			'html'         => sprintf(
 				'<button type="button" data-post-id="%1$s" class="button button-secondary" id="rtgodam-add-media-button">%2$s</button>',
 				esc_attr( $post->ID ),
-				__( 'Add Media version', 'godam' )
+				__( 'Upload Media version', 'godam' )
 			),
 			'value'        => '',
 			'show_in_edit' => true,

@@ -1,3 +1,8 @@
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
 class MideaVersionAdmin {
 	init() {
 		this.addMediaVersion();
@@ -56,11 +61,11 @@ class MideaVersionAdmin {
 							const json = JSON.parse( response.response );
 							if ( json && json.success ) {
 								fileFrame.$el.parent().parent().css( 'pointer-events', 'none' );
-								this.showGodamSnackbar( window.rtgodamMediaVersionAdmin.uploadSuccessMessage, () => {
+								self.showGodamSnackbar( __( 'Media version uploaded successfully.', 'godam' ), () => {
 									window.location.reload();
 								} );
 							} else {
-								self.showGodamSnackbar( `${ window.rtgodamMediaVersionAdmin.uploadFailedMessage } ${ json?.data?.message }` );
+								self.showGodamSnackbar( `${ __( 'Upload failed:', 'godam' ) } ${ json?.data?.message }` );
 								fileFrame.close();
 							}
 						} catch ( e ) {}
