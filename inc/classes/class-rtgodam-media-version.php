@@ -46,6 +46,8 @@ class RTGODAM_Media_Version {
 		add_action( 'delete_attachment', array( $this, 'rtgodam_delete_media_versions' ), 10 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueues' ) );
 		add_action( 'attachment_updated', array( $this, 'rtgodam_replace_attachment_version' ), 10, 2 );
+		add_action( 'admin_post_rtgodam_delete_attachment_version', array( $this, 'rtgodam_delete_attachment_version' ) );
+		add_action( 'admin_notices', array( $this, 'rtgodam_admin_notices' ) );
 	}
 
 	public function admin_enqueues( $hook_suffix ) {
@@ -98,13 +100,38 @@ class RTGODAM_Media_Version {
 			foreach ( $origin_post_versions as $origin_post_version ) {
 				$options .= '<option ' . selected( $origin_post_version, $get_origin_post_base_version, false ) . ' value="' . $origin_post_version . '">' . get_the_title( $origin_post_version ) . '</option>';
 			}
-			$form_fields['media_versions'] = array(
+			$version_details = '';
+			foreach ( $origin_post_versions as $origin_post_version ) {
+				$version_delete_url = wp_nonce_url(
+					add_query_arg(
+						array(
+							'action'     => 'rtgodam_delete_attachment_version',
+							'version_id' => $origin_post_version,
+							'origin_id'  => $post->ID,
+						),
+						admin_url( 'admin-post.php' )
+					),
+					'rtgodam_delete_attachment_version_' . $origin_post_version
+				);
+				$version_details   .= '<li>' . get_the_title( $origin_post_version ) . ' <a onclick="return confirm(\'' . __( 'Are you sure you want to delete?', 'godam' ) . '\')" href="' . esc_url( $version_delete_url ) . '">' . __( 'Remove', 'godam' ) . '</a></li>';
+			}
+			$form_fields['media_versions']        = array(
 				'label'        => __( 'Replace media with following versions', 'godam' ),
 				'input'        => 'html',
 				'html'         => sprintf(
-					'<select id="rtgodam-update-media-versions" style="width:100%%;" name="attachments[%1$d][media_versions]">%2$s</select>',
+					'<select id="rtgodam-update-media-versions" style="width:100%%; max-width: 100%%;" name="attachments[%1$d][media_versions]">%2$s</select>',
 					(int) $post->ID,
 					$options
+				),
+				'helps'        => '',
+				'show_in_edit' => true,
+			);
+			$form_fields['media_versions_delete'] = array(
+				'label'        => __( 'Remove media versions', 'godam' ),
+				'input'        => 'html',
+				'html'         => sprintf(
+					'<ul id="rtgodam-delete-media-versions" style="width:100%%;">%1$s</ul>',
+					$version_details
 				),
 				'helps'        => '',
 				'show_in_edit' => true,
@@ -546,5 +573,107 @@ class RTGODAM_Media_Version {
 		}
 
 		return $attributes;
+	}
+
+	public function rtgodam_delete_attachment_version() {
+		$version_id = (int) filter_input( INPUT_GET, 'version_id', FILTER_VALIDATE_INT );
+		$origin_id  = (int) filter_input( INPUT_GET, 'origin_id', FILTER_VALIDATE_INT );
+		$nonce      = filter_input( INPUT_GET, '_wpnonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+
+		if ( ! $version_id || ! wp_verify_nonce( $nonce, 'rtgodam_delete_attachment_version_' . $version_id ) ) {
+			$this->rtgodam_show_message( 'invalid_request' );
+		}
+
+		if ( ! current_user_can( 'upload_files' ) ) {
+			$this->rtgodam_show_message( 'permission_denied' );
+		}
+
+		$version_post = get_post( $version_id );
+
+		if ( ! $version_post || 'attachment-version' !== $version_post->post_type ) {
+			$this->rtgodam_show_message( 'invalid_attachment_version' );
+		}
+
+		$origin_post_versions = get_post_meta( $origin_id, 'rtgodam_media_versions', true );
+
+		if ( empty( $origin_post_versions ) ) {
+			$this->rtgodam_show_message( 'invalid_version_collection' );
+		}
+		$origin_post_versions         = is_array( $origin_post_versions ) ? $origin_post_versions : array();
+		$get_origin_post_base_version = (int) get_post_meta( $origin_id, 'rtgodam_attachment_base_version', true );
+
+		if ( $get_origin_post_base_version === $version_id ) {
+			$this->rtgodam_show_message( 'base_version_selected' );
+		}
+
+		$updated_versions = array_values( array_diff( $origin_post_versions, array( $version_id ) ) );
+
+		$origin_post_version_id = wp_update_post(
+			array(
+				'ID'        => (int) $version_id,
+				'post_type' => 'attachment',
+			)
+		);
+		if ( ! is_wp_error( $origin_post_version_id ) ) {
+			wp_delete_attachment( $origin_post_version_id, true );
+		}
+
+		update_post_meta( $origin_id, 'rtgodam_media_versions', $updated_versions );
+		$this->rtgodam_show_message( 'version-removed' );
+	}
+
+	public function rtgodam_show_message( $type ) {
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'media-version-notice' => $type,
+				),
+				wp_get_referer()
+			)
+		);
+		exit;
+	}
+
+	public function rtgodam_admin_notices() {
+		if ( ! is_admin() ) {
+			return;
+		}
+
+		$notice = filter_input( INPUT_GET, 'media-version-notice', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+
+		if ( ! $notice ) {
+			return;
+		}
+
+		switch ( $notice ) {
+			case 'base_version_selected':
+				$message = __( 'You are not allowed to remove currently selected version.', 'godam' );
+				$class   = 'notice notice-error is-dismissible';
+				break;
+			case 'invalid_version_collection':
+				$message = __( 'invalid_version_collection.', 'godam' );
+				$class   = 'notice notice-error is-dismissible';
+				break;
+			case 'invalid_attachment_version':
+				$message = __( 'Invalid attachment version.', 'godam' );
+				$class   = 'notice notice-error is-dismissible';
+				break;
+			case 'permission_denied':
+				$message = __( 'You do not have permission to delete this version.', 'godam' );
+				$class   = 'notice notice-error is-dismissible';
+				break;
+			case 'invalid_request':
+				$message = __( 'Invalid request.', 'godam' );
+				$class   = 'notice notice-error is-dismissible';
+				break;
+			case 'version-removed':
+				$message = __( 'Version deleted successfully.', 'godam' );
+				$class   = 'notice notice-success is-dismissible';
+				break;
+			default:
+				return;
+		}
+
+		printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), esc_html( $message ) );
 	}
 }

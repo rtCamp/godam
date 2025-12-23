@@ -3,9 +3,10 @@
  */
 import { __ } from '@wordpress/i18n';
 
-class MideaVersionAdmin {
+class MediaVersionAdmin {
 	init() {
 		this.addMediaVersion();
+		this.removeMediaVersionQueryStringNotice();
 	}
 
 	showGodamSnackbar( message, callback = false ) {
@@ -97,12 +98,23 @@ class MideaVersionAdmin {
 		};
 		return [ wp.media( config ), postId ];
 	}
+
+	removeMediaVersionQueryStringNotice() {
+		if ( ! window.history.replaceState ) {
+			return;
+		}
+
+		const url = new URL( window.location.href );
+		url.searchParams.delete( 'media-version-notice' );
+
+		window.history.replaceState( {}, document.title, url.toString() );
+	}
 }
 
-MideaVersionAdmin = new MideaVersionAdmin();
+MediaVersionAdmin = new MediaVersionAdmin();
 
 /* global jQuery */
 
 jQuery( document ).ready( function() {
-	MideaVersionAdmin.init();
+	MediaVersionAdmin.init();
 } );
