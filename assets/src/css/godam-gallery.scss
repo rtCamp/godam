@@ -162,6 +162,7 @@
 					white-space: normal;
 					overflow: visible;
 					text-overflow: initial;
+					word-break: break-word;
 
 					@media (max-width: 765px) {
 						font-size: 14px;
@@ -259,7 +260,7 @@
 		max-width: none;
 		max-height: 95vh;
 		box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-		z-index: 10;
+		z-index: 200;
 
 		@media (min-width: 1728px) {
 			width: 65vw;
@@ -338,7 +339,7 @@
 		justify-content: center;
 		cursor: pointer;
 		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-		z-index: 11;
+		z-index: 201;
 
 		@media (max-width: 1099px) {
 			top: -40px;
@@ -346,7 +347,7 @@
 			color: #fff;
 			background-color: rgba(0, 0, 0, 0.7);
 			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-			z-index: 12;
+			z-index: 201;
 			border: 1px solid rgba(255, 255, 255, 0.2);
 			transition: background-color 0.2s ease;
 

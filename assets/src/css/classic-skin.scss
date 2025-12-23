@@ -278,7 +278,7 @@
 			bottom: 0;
 			right: 80px;
 			height: 3em !important;
-			z-index: 99;
+			z-index: 19;
 
 			.vjs-menu-item:hover {
 				background-color: initial !important;
@@ -398,7 +398,7 @@
 			bottom: 0;
 			left: calc(3 * 40px);
 			height: 3em !important;
-			z-index: 99;
+			z-index: 19;
 		}
 
 		.vjs-quality-menu-wrapper {
@@ -522,7 +522,7 @@
 		bottom: 0;
 		right: calc(3 * 40px);
 		height: 3em !important;
-		z-index: 99;
+		z-index: 19;
 	}
 
 	.video-js .vjs-subs-caps-button.vjs-menu-button.vjs-menu-button-popup.vjs-control.vjs-button {
@@ -566,7 +566,7 @@
 			}
 
 			.vjs-settings-button, div.vjs-subs-caps-button {
-				z-index: 99;
+				z-index: 19;
 			}
 
 			.vjs-volume-panel {

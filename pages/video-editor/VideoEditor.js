@@ -363,7 +363,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 					</div>
 
 					<Button
-						className="godam-button absolute right-4 bottom-8"
+						className="godam-button absolute right-4 bottom-8 video-editor-save-button"
 						variant="primary"
 						icon={ isSavingMeta && <Spinner /> }
 						onClick={ handleSaveAttachmentMeta }

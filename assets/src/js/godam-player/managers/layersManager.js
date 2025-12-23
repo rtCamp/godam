@@ -5,6 +5,7 @@ import { LAYER_TYPES } from '../utils/constants.js';
 import LayerValidator from './layers/layerValidator.js';
 import FormLayerManager from './layers/formLayerManager.js';
 import HotspotLayerManager from './layers/hotspotLayerManager.js';
+import { loadFontAwesome, hasHotspotsWithIcons } from '../utils/pluginLoader.js';
 
 /**
  * Layers Manager
@@ -33,9 +34,20 @@ export default class LayersManager {
 
 	/**
 	 * Setup layers
+	 * Loads FontAwesome dynamically if hotspots with icons exist
 	 */
-	setupLayers() {
+	async setupLayers() {
 		const layers = this.config.videoSetupOptions?.layers || [];
+
+		// Check if we need to load FontAwesome for hotspot icons
+		if ( hasHotspotsWithIcons( layers ) ) {
+			try {
+				await loadFontAwesome();
+			} catch ( error ) {
+				// eslint-disable-next-line no-console
+				console.error( 'Failed to load FontAwesome for hotspot icons:', error );
+			}
+		}
 
 		if ( ! this.config.isPreviewEnabled ) {
 			layers.forEach( ( layer ) => this.processLayer( layer ) );
