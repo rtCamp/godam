@@ -113,7 +113,16 @@ class RTGODAM_Media_Version {
 					),
 					'rtgodam_delete_attachment_version_' . $origin_post_version
 				);
-				$version_details   .= '<li>' . get_the_title( $origin_post_version ) . ' <a onclick="return confirm(\'' . __( 'Are you sure you want to delete?', 'godam' ) . '\')" href="' . esc_url( $version_delete_url ) . '">' . __( 'Remove', 'godam' ) . '</a></li>';
+				$version_details   .= '
+				<li style="
+					display: flex;
+					gap: 10px;
+					justify-content: space-between;
+					padding-right: 5px;"
+				><strong style="white-space: nowrap;overflow: hidden; text-overflow: ellipsis; max-width: 90%;">' .
+					get_the_title( $origin_post_version ) .
+					'</strong> <a class="button button-primary button-large" onclick="return confirm(\'' . __( 'Are you sure you want to delete?', 'godam' ) . '\')" href="' . esc_url( $version_delete_url ) . '">' . __( 'Remove', 'godam' ) . '</a>
+				</li>';
 			}
 			$form_fields['media_versions']        = array(
 				'label'        => __( 'Replace media with following versions', 'godam' ),
@@ -130,7 +139,7 @@ class RTGODAM_Media_Version {
 				'label'        => __( 'Remove media versions', 'godam' ),
 				'input'        => 'html',
 				'html'         => sprintf(
-					'<ul id="rtgodam-delete-media-versions" style="width:100%%;">%1$s</ul>',
+					'<ul id="rtgodam-delete-media-versions" style="width:100%%;max-height: 200px; overflow-y: auto;">%s</ul>',
 					$version_details
 				),
 				'helps'        => '',
