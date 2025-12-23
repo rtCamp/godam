@@ -131,7 +131,6 @@ function rtgodam_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT, 
  * @param int $media_id The ID of the media attachment.
  *
  * @return string The URL of the media file, or an empty string if invalid or not found.
- * @throws Exception If the media is not found or is not an attachment.
  */
 function rtgodam_fetch_overlay_media_url( $media_id ) {
 	if ( empty( $media_id ) || 0 === intval( $media_id ) ) {
@@ -141,7 +140,7 @@ function rtgodam_fetch_overlay_media_url( $media_id ) {
 	$media = get_post( $media_id );
 
 	if ( ! $media || 'attachment' !== $media->post_type ) {
-		throw new Exception( 'Media not found' );
+		return '';
 	}
 
 	$media_url = wp_get_attachment_url( $media_id );
