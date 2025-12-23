@@ -65,6 +65,12 @@ export default class ConfigurationManager {
 		this.videoSetupOptions = parseDataAttribute( this.video, 'options', {} );
 		const videoSetupControls = parseDataAttribute( this.video, 'controls', this.getDefaultControls() );
 
+		// Disable default autoplay if autoplay-on-view is enabled
+		// This allows intersection observer to handle autoplay when video enters viewport
+		if ( this.video.dataset.autoplayOnView === 'true' ) {
+			videoSetupControls.autoplay = false;
+		}
+
 		// Get mpd, m3
 		const sources = this.rearrangeVideoSources( videoSetupControls.sources || [] );
 

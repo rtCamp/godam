@@ -484,22 +484,25 @@ class Media_Library extends Base {
 			$api_key = get_option( 'rtgodam-api-key', '' );
 			$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.file.get_file';
 
-			$request_url = add_query_arg(
-				array(
-					'file_id' => $godam_original_id,
-					'api_key' => $api_key,
-				),
-				$api_url
+			// Prepare request body with file ID and API key.
+			$request_body = array(
+				'file_id' => $godam_original_id,
+				'api_key' => $api_key,
 			);
 
-			$response = wp_remote_get(
-				$request_url,
-				array(
-					'headers' => array(
-						'Content-Type' => 'application/json',
-					),
-				)
+			$args = array(
+				'body'    => wp_json_encode( $request_body ),
+				'headers' => array(
+					'Content-Type' => 'application/json',
+				),
 			);
+
+			// Use vip_safe_wp_remote_post as primary and wp_safe_remote_post as fallback.
+			if ( function_exists( 'vip_safe_wp_remote_post' ) ) {
+				$response = vip_safe_wp_remote_post( $api_url, $args, 3, 3 );
+			} else {
+				$response = wp_safe_remote_post( $api_url, $args );
+			}
 
 			if ( is_wp_error( $response ) ) {
 				return new \WP_Error( 'godam_api_error', __( 'Failed to fetch thumbnails from GoDAM.', 'godam' ), array( 'status' => 500 ) );
@@ -1095,8 +1098,8 @@ class Media_Library extends Base {
 			// Construct the GoDAM API endpoint URL.
 			$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.file.get_list_of_files_with_api_key';
 
-			// Prepare query arguments.
-			$request_args = array(
+			// Prepare request body with API key and parameters.
+			$request_body = array(
 				'api_key'   => $api_key,
 				'page_size' => $per_page,
 				'page'      => $page,
@@ -1104,31 +1107,31 @@ class Media_Library extends Base {
 
 			// For video, GoDAM expects `job_type=stream`.
 			if ( 'video' === $type ) {
-				$request_args['job_type'] = 'stream';
-			} else {
-				$request_args['job_type'] = $type;
+				$request_body['job_type'] = 'stream';
+			} elseif ( 'application/pdf' === $type ) { // For application/pdf, GoDAM expects `job_type=pdf`.
+				$request_body['job_type'] = 'pdf';
+			} elseif ( 'image-video' !== $type && 'all' !== $type ) { // TODO: For job type 'image-video', we need to add support on Central.
+				$request_body['job_type'] = $type;
 			}
 
 			// Set the search argument.
 			if ( ! empty( $search ) ) {
-				$request_args['search'] = $search;
+				$request_body['search'] = $search;
 			}
 
-			// Add query params to the API URL.
-			$api_url = add_query_arg(
-				$request_args,
-				$api_url
+			$args = array(
+				'body'    => wp_json_encode( $request_body ),
+				'headers' => array(
+					'Content-Type' => 'application/json',
+				),
 			);
 
-			// Make the API request to GoDAM.
-			$response = wp_remote_get(
-				$api_url,
-				array(
-					'headers' => array(
-						'Content-Type' => 'application/json',
-					),
-				)
-			);
+			// Use vip_safe_wp_remote_post as primary and wp_safe_remote_post as fallback.
+			if ( function_exists( 'vip_safe_wp_remote_post' ) ) {
+				$response = vip_safe_wp_remote_post( $api_url, $args, 3, 3 );
+			} else {
+				$response = wp_safe_remote_post( $api_url, $args );
+			}
 
 			// Check for WP_Error or non-200 status codes.
 			if ( is_wp_error( $response ) ) {
@@ -1246,6 +1249,7 @@ class Media_Library extends Base {
 		$existing = new \WP_Query(
 			array(
 				'post_type'      => 'attachment',
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for finding attachment by transcoding job ID.
 				'meta_key'       => 'rtgodam_transcoding_job_id',
 				'meta_value'     => $godam_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'post_status'    => 'any',
@@ -1307,7 +1311,7 @@ class Media_Library extends Base {
 		update_post_meta( $attach_id, '_filesize_human', sanitize_text_field( $data['filesizeHumanReadable'] ?? '' ) );
 		update_post_meta( $attach_id, '_godam_label', sanitize_text_field( $data['label'] ?? '' ) );
 		update_post_meta( $attach_id, '_owner_email', sanitize_email( $data['owner'] ?? '' ) );
-		update_post_meta( $attach_id, 'rtgodam_transcoded_url', esc_url_raw( $data['url'] ?? '' ) );
+		update_post_meta( $attach_id, 'rtgodam_transcoded_url', esc_url_raw( $data['mpd_url'] ?? '' ) );
 		update_post_meta( $attach_id, 'rtgodam_transcoding_status', 'transcoded' );
 		update_post_meta( $attach_id, 'icon', $data['icon'] );
 		update_post_meta( $attach_id, 'rtgodam_hls_transcoded_url', esc_url_raw( $data['hls_url'] ?? '' ) );
@@ -1347,6 +1351,7 @@ class Media_Library extends Base {
 		$query = new \WP_Query(
 			array(
 				'post_type'      => 'attachment',
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for finding attachment by GoDAM original ID.
 				'meta_key'       => '_godam_original_id',
 				'meta_value'     => $godam_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'post_status'    => 'inherit',
@@ -1373,7 +1378,7 @@ class Media_Library extends Base {
 	}
 
 	/**
-	 * Get the number of items in a media folder by id.
+	 * Get the number of items in a media folder by id with mime type filtering support.
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response|\WP_Error
@@ -1408,6 +1413,23 @@ class Media_Library extends Base {
 			'no_found_rows'  => false,
 			'tax_query'      => $tax_query, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 		);
+
+		// Add mime type filtering if available.
+		$mime_type_filter = Media_Folder_Utils::get_instance()->get_current_mime_type_filter();
+
+		if ( $mime_type_filter ) {
+			if ( is_array( $mime_type_filter ) ) {
+				$args['post_mime_type'] = $mime_type_filter;
+			} elseif ( 'image/' === $mime_type_filter ) {
+				$args['post_mime_type'] = 'image';
+			} elseif ( 'video/' === $mime_type_filter ) {
+				$args['post_mime_type'] = 'video';
+			} elseif ( 'audio/' === $mime_type_filter ) {
+				$args['post_mime_type'] = 'audio';
+			} else {
+				$args['post_mime_type'] = $mime_type_filter;
+			}
+		}
 
 		$query = new \WP_Query( $args );
 
@@ -1593,6 +1615,9 @@ class Media_Library extends Base {
 			$locked   = ( '1' === $locked_raw || 1 === $locked_raw || true === $locked_raw || 'true' === $locked_raw ) ? true : false;
 			$bookmark = ( '1' === $bookmark_raw || 1 === $bookmark_raw || true === $bookmark_raw || 'true' === $bookmark_raw ) ? true : false;
 
+			// Get current mime type filter to return filtered counts.
+			$mime_type_filter = Media_Folder_Utils::get_instance()->get_current_mime_type_filter();
+
 			$prepared[] = array(
 				'id'              => $term->term_id,
 				'name'            => $term->name,
@@ -1601,7 +1626,7 @@ class Media_Library extends Base {
 					'locked'   => $locked,
 					'bookmark' => $bookmark,
 				),
-				'attachmentCount' => (int) Media_Folder_Utils::get_instance()->get_attachment_count( $term->term_id ),
+				'attachmentCount' => (int) Media_Folder_Utils::get_instance()->get_attachment_count( $term->term_id, false, $mime_type_filter ),
 			);
 		}
 

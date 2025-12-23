@@ -21,7 +21,7 @@ class Video_Engagement {
 	 * Construct method.
 	 */
 	protected function __construct() {
-		add_action( 'rtgodam_after_video_html', array( $this, 'add_engagement_to_video' ), 10, 2 );
+		add_action( 'rtgodam_after_video_html', array( $this, 'add_engagement_to_video' ), 10, 4 );
 	}
 
 	/**
@@ -29,13 +29,15 @@ class Video_Engagement {
 	 *
 	 * @param array $attributes  Video block attributes.
 	 * @param int   $instance_id The instance ID.
+	 * @param array $easydam_meta_data The EasyDAM meta data.
+	 * @param array $godam_settings The GoDAM settings.
 	 *
 	 * @return string|void
 	 */
-	public function add_engagement_to_video( $attributes, $instance_id ) {
+	public function add_engagement_to_video( $attributes, $instance_id, $easydam_meta_data, $godam_settings ) {
 		$attachment_id = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : '';
 
-		if ( ! empty( $attachment_id ) && 'Transcoded' !== get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) ) {
+		if ( ! empty( $attachment_id ) && 'transcoded' !== strtolower( get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) ) ) {
 			return '';
 		}
 
@@ -43,21 +45,28 @@ class Video_Engagement {
 			$attachment_id = 'cmmid_' . $attributes['cmmId'];
 		}
 
-		if ( empty( $attachment_id ) || ! isset( $attributes['engagements'] ) ) {
+		if ( ! $this->check_if_engagements_enabled( $attachment_id, $attributes ) ) {
 			return '';
 		}
-		if ( is_bool( $attributes['engagements'] ) && ! $attributes['engagements'] ) {
-			return '';
-		}
-		if ( is_string( $attributes['engagements'] ) && 'show' !== $attributes['engagements'] ) {
-			return '';
-		}
+
 		if ( empty( $attributes['title'] ) && ! empty( $attributes['seo']['headline'] ) ) {
 			$attributes['title'] = $attributes['seo']['headline'];
 		}
 		$title = ! empty( $attributes['title'] ) ? $attributes['title'] : get_the_title( $attachment_id );
+
+		$brand_color = '#000'; // Default brand color.
+
+		if ( ! empty( $godam_settings['video_player']['brand_color'] ) ) {
+			$brand_color = $godam_settings['video_player']['brand_color'];
+		}
+
+		if ( ! empty( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ) {
+			$brand_color = $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'];
+		}
 		?>
-		<div class="rtgodam-video-engagement rtgodam-video-engagement--link-disabled" data-engagement-id="engagement-<?php echo esc_attr( $instance_id ); ?>" data-engagement-video-id="<?php echo esc_attr( $attachment_id ); ?>" data-engagement-site-url="<?php echo esc_url( get_site_url() ); ?>" data-engagement-video-title="<?php echo esc_attr( $title ); ?>">
+		<div class="rtgodam-video-engagement rtgodam-video-engagement--link-disabled" 
+		style="--godam-video-engagement-background-color: <?php echo esc_attr( $brand_color ); ?>;"
+		data-engagement-id="engagement-<?php echo esc_attr( $instance_id ); ?>" data-engagement-video-id="<?php echo esc_attr( $attachment_id ); ?>" data-engagement-site-url="<?php echo esc_url( get_site_url() ); ?>" data-engagement-video-title="<?php echo esc_attr( $title ); ?>">
 			<div class="rtgodam-video-engagement--title">
 				<?php echo esc_html( $title ); ?>
 			</div>
@@ -125,5 +134,39 @@ class Video_Engagement {
 			</div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Checks if engagements are enabled for a video.
+	 *
+	 * @param int|string $attachment_id The attachment ID of the video.
+	 * @param array      $attributes    The block attributes.
+	 *
+	 * @return bool True if engagements are enabled, otherwise false.
+	 */
+	public function check_if_engagements_enabled( $attachment_id, $attributes ) {
+
+		if ( empty( $attachment_id ) || ! isset( $attributes['engagements'] ) ) {
+			return false;
+		}
+		if ( is_bool( $attributes['engagements'] ) && ! $attributes['engagements'] ) {
+			return false;
+		}
+		if ( is_string( $attributes['engagements'] ) && 'show' !== $attributes['engagements'] ) {
+			return false;
+		}
+
+		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
+		if ( empty( $account_token ) || 'unverified' === $account_token ) {
+			return false;
+		}
+
+		$easydam_settings = get_option( 'rtgodam-settings', array() );
+
+		if ( isset( $easydam_settings['video']['enable_global_video_engagement'] ) && ! $easydam_settings['video']['enable_global_video_engagement'] ) {
+			return false;
+		}
+
+		return true;
 	}
 }

@@ -95,7 +95,8 @@ class Assets {
 			'rtgodam-script',
 			'godamAPIKeyData',
 			array(
-				'validApiKey' => rtgodam_is_api_key_valid(),
+				'validApiKey'  => rtgodam_is_api_key_valid(),
+				'noVideoFound' => __( 'No video found for attachment ID', 'godam' ),
 			)
 		);
 
@@ -145,50 +146,6 @@ class Assets {
 		wp_set_script_translations( 'rtgodam-script', 'godam', RTGODAM_PATH . 'languages' );
 		wp_enqueue_script( 'rtgodam-script' );
 		wp_enqueue_style( 'rtgodam-style' );
-
-		// Add Jetpack form script.
-		wp_register_script(
-			'rtgodam-jetpack-form',
-			RTGODAM_URL . 'assets/build/js/jetpack-form.min.js',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/js/jetpack-form.min.js' ),
-			true
-		);
-
-		wp_localize_script(
-			'rtgodam-jetpack-form',
-			'godamJetpackFormData',
-			array(
-				'submittingText'      => __( 'Submitting...', 'godam' ),
-				'successHeading'      => __( 'Success!', 'godam' ),
-				'successMessage'      => __( 'Your message has been sent successfully.', 'godam' ),
-				'errorMessage'        => __( 'An error occurred. Please try again.', 'godam' ),
-				'networkErrorMessage' => __( 'Network error. Please try again.', 'godam' ),
-			)
-		);
-
-		wp_localize_script(
-			'rtgodam-jetpack-form',
-			'wpAjax',
-			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'jetpack_form_nonce' ),
-			),
-		);
-
-		wp_enqueue_script( 'rtgodam-jetpack-form' );
-
-		// Register IMA SDK.
-		wp_enqueue_script(
-			'ima-sdk',
-			'https://imasdk.googleapis.com/js/sdkloader/ima3.js', // It is required to load the IMA SDK from the Google CDN, else it will show console error.
-			array(),
-			RTGODAM_VERSION,
-			array(
-				'strategy'  => 'defer',
-				'in_footer' => true,
-			)
-		);
 	}
 
 	/**
@@ -197,7 +154,13 @@ class Assets {
 	 * @return void
 	 */
 	public function admin_enqueue_scripts() {
-		$screen = get_current_screen();
+		$screen           = get_current_screen();
+		$is_upload_screen = ( $screen && 'upload' === $screen->id );
+
+		// Ensure WordPress media modal assets are available on admin pages where we open wp.media.
+		if ( function_exists( 'wp_enqueue_media' ) ) {
+			wp_enqueue_media();
+		}
 
 		wp_register_script(
 			'rtgodam-script',
@@ -241,11 +204,13 @@ class Assets {
 		wp_enqueue_script( 'rtgodam-script' );
 		wp_enqueue_style( 'rtgodam-style' );
 
+		$easydam_media_library_script_assets = include RTGODAM_PATH . 'assets/build/js/media-library.min.asset.php';
+
 		wp_register_script(
 			'easydam-media-library',
 			RTGODAM_URL . 'assets/build/js/media-library.min.js',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/js/media-library.min.js' ),
+			$easydam_media_library_script_assets['dependencies'],
+			$easydam_media_library_script_assets['version'],
 			true
 		);
 
@@ -308,7 +273,7 @@ class Assets {
 			)
 		);
 
-		if ( $screen && 'upload' === $screen->id ) {
+		if ( $is_upload_screen ) {
 			wp_enqueue_style( 'easydam-media-library' );
 		}
 
@@ -331,20 +296,33 @@ class Assets {
 	private function enqueue_godam_settings() {
 		$godam_settings = get_option( 'rtgodam-settings' );
 
-		$brand_image         = $godam_settings['video_player']['brand_image'] ?? '';
-		$brand_color         = $godam_settings['video_player']['brand_color'] ?? '';
-		$enable_gtm_tracking = $godam_settings['general']['enable_gtm_tracking'] ?? false;
+		$brand_image                    = $godam_settings['video_player']['brand_image'] ?? '';
+		$brand_color                    = $godam_settings['video_player']['brand_color'] ?? '';
+		$enable_gtm_tracking            = $godam_settings['general']['enable_gtm_tracking'] ?? false;
+		$enable_global_video_engagement = $godam_settings['video']['enable_global_video_engagement'] ?? true;
+		$enable_global_share            = $godam_settings['video']['enable_global_video_share'] ?? true;
 
 		$godam_settings_obj = array(
-			'brandImage'        => $brand_image,
-			'brandColor'        => $brand_color,
-			'apiBase'           => RTGODAM_API_BASE,
-			'enableGTMTracking' => $enable_gtm_tracking,
+
+			'brandImage'                  => $brand_image,
+			'brandColor'                  => $brand_color,
+			'apiBase'                     => RTGODAM_API_BASE,
+			'enableGTMTracking'           => $enable_gtm_tracking,
+			'videoPostSettings'           => get_option( 'rtgodam_video_post_settings', array() ),
+			'enableGlobalVideoEngagement' => $enable_global_video_engagement,
+			'enableGlobalVideoShare'      => $enable_global_share,
+
 		);
 
+		$timezone     = wp_timezone();
+		$current_time = new \DateTime( 'now', $timezone );
+		$end_time     = new \DateTime( '2026-01-20 23:59:59', $timezone );
+
+		$godam_settings_obj['showOfferBanner']      = ( $current_time <= $end_time ) && ( '0' !== get_option( 'rtgodam-offer-banner', '1' ) );
+		$godam_settings_obj['showOfferBannerNonce'] = wp_create_nonce( 'godam-dismiss-offer-banner-nonce' );
+
 		if ( ! rtgodam_is_api_key_valid() ) {
-			$godam_settings_obj['showOfferBanner']      = get_option( 'rtgodam-offer-banner', '1' );
-			$godam_settings_obj['showOfferBannerNonce'] = wp_create_nonce( 'godam-dismiss-offer-banner-nonce' );
+			$godam_settings_obj['enableGlobalVideoEngagement'] = false;
 		}
 
 		wp_localize_script(
