@@ -309,8 +309,7 @@ class Media_Library extends Base {
 				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'generate_image_subsizes_callback' ),
-					// 'permission_callback' => array( $this, 'verify_callback_permission' ),
-					'permission_callback' => '__return_true',
+					'permission_callback' => array( $this, 'verify_callback_permission' ),
 				),
 			),
 		);
@@ -328,20 +327,28 @@ class Media_Library extends Base {
 
 		// Validate API Key.
 		if ( empty( $provided_api_key ) ) {
-			return new WP_Error( 'forbidden', __( 'API key is required.', 'godam' ), array( 'status' => 403 ) );
+			return new \WP_Error( 'forbidden', __( 'API key is required.', 'godam' ), array( 'status' => 403 ) );
 		}
 
 		if ( empty( $stored_api_key ) ) {
-			return new WP_Error( 'forbidden', __( 'API key not configured on the site.', 'godam' ), array( 'status' => 403 ) );
+			return new \WP_Error( 'forbidden', __( 'API key not configured on the site.', 'godam' ), array( 'status' => 403 ) );
 		}
 
 		if ( $provided_api_key !== $stored_api_key ) {
-			return new WP_Error( 'forbidden', __( 'Invalid API key.', 'godam' ), array( 'status' => 403 ) );
+			return new \WP_Error( 'forbidden', __( 'Invalid API key.', 'godam' ), array( 'status' => 403 ) );
 		}
 
 		return true;
 	}
 
+	/**
+	 * Generate image subsizes callback.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response|WP_Error Success response or WP_Error on invalid event.
+	 *
+	 * @since n.e.x.t
+	 */
 	public function generate_image_subsizes_callback( $request ) {
 		$data = $request->get_json_params();
 
@@ -370,6 +377,15 @@ class Media_Library extends Base {
 		}
 
 		$attachme_meta = get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
+
+		// Normalize attachment meta to an array with a sizes key.
+		if ( ! is_array( $attachme_meta ) ) {
+			$attachme_meta = array();
+		}
+
+		if ( empty( $attachme_meta['sizes'] ) || ! is_array( $attachme_meta['sizes'] ) ) {
+			$attachme_meta['sizes'] = array();
+		}
 
 		// Get registered image sizes from WordPress Settings > Media.
 		$registered_sizes = wp_get_registered_image_subsizes();
@@ -402,21 +418,46 @@ class Media_Library extends Base {
 				continue;
 			}
 
+			// Get last string after the last slash in the file url.
+			$file_basename = basename( $size['file'] );
+
 			$attachme_meta['sizes'][ $external_size_name ] = array(
-				'file'     => $size['file'],
+				'file'     => $file_basename,
 				'filesize' => $size['filesize'],
 				'width'    => $size['width'],
 				'height'   => $size['height'],
 			);
 		}
 
-		update_post_meta( $attachment_id, '_wp_attachment_metadata', $attachme_meta );
+		// Ensure top-level width/height exist for srcset calculation, fall back to the largest generated size.
+		if ( ( empty( $attachme_meta['width'] ) || empty( $attachme_meta['height'] ) ) && ! empty( $subsizes ) ) {
+			$largest = array_reduce(
+				$subsizes,
+				function ( $carry, $item ) {
+					if ( null === $carry ) {
+						return $item;
+					}
+					return ( $item['width'] > $carry['width'] ) ? $item : $carry;
+				},
+				null
+			);
 
-		return rest_ensure_response(
-			array(
-				'success' => true,
-			)
-		);
+			if ( $largest ) {
+				$attachme_meta['width']  = (int) $largest['width'];
+				$attachme_meta['height'] = (int) $largest['height'];
+			}
+		}
+
+		// Backfill the "file" key so WordPress does not bail early while building srcset.
+		if ( empty( $attachme_meta['file'] ) ) {
+			$full_url = wp_get_attachment_url( $attachment_id );
+			if ( $full_url ) {
+				$path                  = wp_parse_url( $full_url, PHP_URL_PATH );
+				$attachme_meta['file'] = ltrim( wp_basename( $path ), '/' );
+			}
+		}
+
+		update_post_meta( $attachment_id, '_wp_attachment_metadata', $attachme_meta );
 
 		return rest_ensure_response(
 			array(
@@ -1813,9 +1854,6 @@ class Media_Library extends Base {
 	 * @return bool True if request was successful, false otherwise.
 	 */
 	private function request_image_subsizes_from_godam( $job_id, $attachment_id ) {
-		
-		error_log( 'Requesting image subsizes from GoDAM for attachment ID: ' . $attachment_id );
-
 		$api_key = get_option( 'rtgodam-api-key', '' );
 
 		if ( empty( $api_key ) ) {
@@ -1835,18 +1873,15 @@ class Media_Library extends Base {
 
 		// Remove sizes with width or height set to 0.
 		foreach ( $registered_sizes as $size_name => $size_data ) {
-			if ( $size_data['width'] === 0 || $size_data['height'] === 0 ) {
+			if ( 0 === $size_data['width'] || 0 === $size_data['height'] ) {
 				unset( $registered_sizes[ $size_name ] );
 			}
 		}
-
-		error_log( 'Registered sizes: ' . print_r( $registered_sizes, true ) );
 
 		if ( empty( $registered_sizes ) ) {
 			return array();
 		}
 
-		error_log( 'Registered sizes: ' . print_r( $registered_sizes, true ) );
 
 		// Prepare size requests for GoDAM Central.
 		$size_requests = array();
@@ -1858,14 +1893,10 @@ class Media_Library extends Base {
 			);
 		}
 
-		error_log( 'Size requests: ' . print_r( $size_requests, true ) );
-
 		// Construct the GoDAM API endpoint URL.
 		$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.image.generate_resized_images';
 
 		$events_callback_url = rest_url( 'godam/v1/media-library/generate-image-subsizes-callback' );
-
-		error_log( 'Events callback URL: ' . $events_callback_url );
 
 		// Prepare request body.
 		$request_body = array(
@@ -1880,7 +1911,6 @@ class Media_Library extends Base {
 			'headers' => array(
 				'Content-Type' => 'application/json',
 			),
-			'timeout' => 30, // Allow enough time for image processing.
 		);
 
 		// Use vip_safe_wp_remote_post as primary and wp_safe_remote_post as fallback.
@@ -1892,16 +1922,12 @@ class Media_Library extends Base {
 
 		// Check for WP_Error or non-200 status codes.
 		if ( is_wp_error( $response ) ) {
-			// Log error but don't fail the attachment creation.
-			error_log( 'GoDAM image subsize request failed: ' . $response->get_error_message() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-			return array();
+			return false;
 		}
 
 		$response_code = wp_remote_retrieve_response_code( $response );
 
 		if ( 200 !== $response_code ) {
-			// Log error but don't fail the attachment creation.
-			error_log( sprintf( 'GoDAM image subsize API returned HTTP status: %s', $response_code ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			return false;
 		}
 
@@ -1911,45 +1937,9 @@ class Media_Library extends Base {
 			return false;
 		}
 
-		// If empty message, return false.
 		if ( ! isset( $body['message'] ) ) {
 			return false;
 		}
-
-		error_log( 'Generate image subsizes callback response: ' . print_r( $body, true ) );
 		return true;
-
-		// $subsizes = array();
-
-		// foreach ( $body['message']['subsizes'] as $subsize_data ) {
-		// if ( empty( $subsize_data['name'] ) || empty( $subsize_data['url'] ) ) {
-		// continue;
-		// }
-
-		// $size_name = sanitize_key( $subsize_data['name'] );
-
-		// Build WordPress metadata format for this size.
-		// $subsize_meta = array(
-		// 'file'      => basename( parse_url( $subsize_data['url'], PHP_URL_PATH ) ), // Store just filename.
-		// 'width'     => isset( $subsize_data['width'] ) ? (int) $subsize_data['width'] : 0,
-		// 'height'    => isset( $subsize_data['height'] ) ? (int) $subsize_data['height'] : 0,
-		// 'mime-type' => isset( $subsize_data['mime_type'] ) ? $subsize_data['mime_type'] : get_post_mime_type( $attachment_id ),
-		// );
-
-		// Add filesize if available.
-		// if ( isset( $subsize_data['filesize'] ) ) {
-		// $subsize_meta['filesize'] = (int) $subsize_data['filesize'];
-		// }
-
-		// Store the full GoDAM URL in the metadata (WordPress doesn't use this field, but we can access it via filters).
-		// $subsize_meta['godam_url'] = esc_url_raw( $subsize_data['url'] );
-
-		// Also store in post meta for easy retrieval.
-		// update_post_meta( $attachment_id, '_godam_subsize_url_' . $size_name, esc_url_raw( $subsize_data['url'] ) );
-
-		// $subsizes[ $size_name ] = $subsize_meta;
-		// }
-
-		// return $subsizes;
 	}
 }
