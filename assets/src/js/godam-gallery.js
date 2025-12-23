@@ -5,11 +5,6 @@
  */
 import { select, dispatch } from '@wordpress/data';
 
-/**
- * External dependencies
- */
-import DOMPurify from 'isomorphic-dompurify';
-
 const engagementStore = 'godam-video-engagement';
 
 // Helper function to send analytics events to iframe
@@ -217,7 +212,6 @@ document.addEventListener( 'click', async function( e ) {
 		modal.innerHTML = `
 			<div class="godam-modal-overlay"></div>
 			<div class="godam-modal-content">
-				<span class="godam-modal-close">&times;</span>
 				<div class="easydam-video-container animate-video-loading">
 					<div class="animate-play-btn">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
@@ -276,7 +270,7 @@ document.addEventListener( 'click', async function( e ) {
 				const iframe = document.createElement( 'iframe' );
 				iframe.src = `?godam_page=gallery-modal&id=${ newVideoId }`;
 				iframe.style.width = '100%';
-				iframe.style.height = '600px';
+				iframe.style.height = '100vh'; // Fullscreen height
 				iframe.style.border = 'none';
 				iframe.style.background = '#000';
 				iframe.title = 'GoDAM Video Player';
@@ -285,18 +279,6 @@ document.addEventListener( 'click', async function( e ) {
 					if ( videoContainer ) {
 						videoContainer.innerHTML = '<div class="godam-error-message">Failed to load video.</div>';
 						videoContainer.classList.remove( 'animate-video-loading' );
-
-						// Update video title in the modal header
-						const videoTitle = modal.querySelector( '.godam-video-title' );
-						if ( videoTitle ) {
-							videoTitle.innerHTML = DOMPurify.sanitize( data.title || '' );
-						}
-
-						// Update the date
-						const videoDate = modal.querySelector( '.godam-video-date' );
-						if ( videoDate ) {
-							videoDate.textContent = data.date || '';
-						}
 
 						const engagementContainer = videoContainer.querySelector( '.rtgodam-video-engagement' );
 						let engagementId = engagementContainer?.getAttribute( 'data-engagement-id' ) || 0;
@@ -396,10 +378,8 @@ document.addEventListener( 'click', async function( e ) {
 				// Listen for messages from iframe
 				currentMessageHandler = ( event ) => {
 					if ( event.data && event.data.type === 'rtgodam:modal-ready' ) {
-						// Resize iframe to content height
-						if ( event.data.height ) {
-							iframe.style.height = event.data.height + 'px';
-						}
+						// Keep fullscreen height instead of resizing to content height
+						iframe.style.height = '100vh';
 						// Remove loading state
 						if ( videoContainer ) {
 							videoContainer.classList.remove( 'animate-video-loading' );
@@ -415,21 +395,17 @@ document.addEventListener( 'click', async function( e ) {
 							delete modal.dataset.pendingType2VideoId;
 						}
 					} else if ( event.data && event.data.type === 'rtgodam:comments-opened' && event.data.action === 'expand-to-fullscreen' ) {
-						const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-						const commentsHeight = viewportHeight - 100; // Full height minus 100px margin
-						iframe.style.height = commentsHeight + 'px';
+						// Keep fullscreen height for comments
+						iframe.style.height = '100vh';
 					} else if ( event.data && event.data.type === 'rtgodam:modal-resize' ) {
-						// Handle resize messages
-						if ( event.data.height ) {
-							const newHeight = event.data.height;
-
-							// For comments modal, use the height as sent (already optimized)
-							// Only apply mobile cap for other resize events
-							iframe.style.height = newHeight + 'px';
-						}
+						// Keep fullscreen height for modal resize
+						iframe.style.height = '100vh';
 					} else if ( event.data && event.data.type === 'rtgodam:change-video' ) {
 						// Handle video change requests from iframe
 						handleVideoChange( event.data.direction );
+					} else if ( event.data && event.data.type === 'rtgodam:close-gallery-modal' ) {
+						// Handle gallery modal close request from iframe (when auto_open_comments close button is clicked)
+						close();
 					}
 				};
 
@@ -618,20 +594,30 @@ document.addEventListener( 'click', async function( e ) {
 				currentMessageHandler = null;
 			}
 
-			// Remove iframe content
+			// Remove iframe content and destroy iframe
 			const videoContainer = modal.querySelector( '.easydam-video-container' );
 			if ( videoContainer ) {
-				videoContainer.innerHTML = '';
+				// Find and destroy the iframe
+				const iframe = videoContainer.querySelector( 'iframe' );
+				if ( iframe ) {
+					iframe.src = 'about:blank'; // Clear the src to stop any loading
+					iframe.remove(); // Explicitly remove the iframe element
+				}
+				videoContainer.innerHTML = ''; // Clear any remaining content
 			}
 
-			modal.remove();
+			// Force remove modal after a short delay to ensure cleanup
+			setTimeout( () => {
+				if ( modal && modal.parentNode ) {
+					modal.remove();
+				}
+			}, 100 );
 			// Re-enable background scrolling
 			document.body.style.overflow = '';
 			document.body.removeEventListener( 'wheel', handleScroll );
 			document.body.removeEventListener( 'touchend', handleTouchend );
 		};
 
-		modal.querySelector( '.godam-modal-close' )?.addEventListener( 'click', close );
 		modal.addEventListener( 'click', ( err ) => {
 			if ( ! err.target.closest( '.godam-modal-content' ) ) {
 				close();

@@ -104,10 +104,26 @@ add_filter( 'show_admin_bar', '__return_false' );
 			width: 100%;
 			height: 100%;
 		}
-		/* Prevent overflow issues. */
+		/* Allow modal overflow for visibility */
 		.easydam-video-container {
-			overflow: hidden;
+			overflow: visible;
 			height: auto;
+			position: relative;
+		}
+
+		/* Initially hide video player and engagement in gallery modal */
+		.godam-modal-video .godam-video-wrapper,
+		.godam-modal-video .rtgodam-video-engagement {
+			opacity: 0 !important;
+			pointer-events: none !important;
+			transition: opacity 0.3s ease !important;
+		}
+
+		/* Show video player when comments modal is open */
+		body.comments-modal-open .godam-modal-video .godam-video-wrapper,
+		body.comments-modal-open .godam-modal-video .rtgodam-video-engagement {
+			opacity: 1 !important;
+			pointer-events: auto !important;
 		}
 
 		html {
@@ -154,7 +170,7 @@ add_filter( 'show_admin_bar', '__return_false' );
 		<div class="godam-modal-video">
 			<?php
 			// Render the video using the godam_video shortcode.
-			$shortcode = "[godam_video id='{$attachment_id}' engagements=show sources='{$sources_with_placeholders}']";
+			$shortcode = "[godam_video id='{$attachment_id}' engagements=show auto_open_comments=\"true\" sources='{$sources_with_placeholders}']";
 			echo do_shortcode( $shortcode );
 			?>
 		</div>
@@ -163,6 +179,19 @@ add_filter( 'show_admin_bar', '__return_false' );
 	<script>
 		// Skip automatic analytics page_load in iframe context
 		window.godamAnalyticsSkipAutoPageLoad = true;
+
+		// Handle comments modal visibility - show video when comments open
+		window.addEventListener('rtgodam:comments-opened', function() {
+			document.body.classList.add('comments-modal-open');
+		});
+
+		// Auto-open comments immediately to show video
+		setTimeout(function() {
+			const commentButton = document.querySelector('.rtgodam-video-engagement--comment-link');
+			if (commentButton) {
+				commentButton.click();
+			}
+		}, 100);
 
 		// Notify parent window when content is ready.
 		document.addEventListener( 'DOMContentLoaded', function() {

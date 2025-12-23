@@ -760,9 +760,9 @@ function timeToSeconds( h, m, s ) {
 /**
  * Component to render a text with @HH:MM:SS or @MM:SS timestamps linked to video positions.
  *
- * @param {Object}                   props          - Component props.
- * @param {string}                   props.text     - Text to render.
- * @param {function(number, string)} [props.onJump] - Callback to handle clicking a timestamp.
+ * @param {Object}                                 props          - Component props.
+ * @param {string}                                 props.text     - Text to render.
+ * @param {(time: number, format: string) => void} [props.onJump] - Callback to handle clicking a timestamp.
  */
 function TimeLinkedText( { text, onJump } ) {
 	// Matches @HH:MM:SS or @MM:SS
@@ -1196,9 +1196,20 @@ function CommentBox( props ) {
 				<div className={ baseClass + '-header' }>
 					<h3 className={ baseClass + '-title' }>{ titles }</h3>
 					<button className={ `${ baseClass }--close-button` } onClick={ () => {
-						// Notify iframe about modal closing
-						window.dispatchEvent( new CustomEvent( 'rtgodam:comments-closed' ) );
-						memoizedStoreObj.root.unmount();
+						// Check if we're in a gallery modal iframe
+						const isInIframe = window !== window.top;
+						const isGalleryModal = window.godamAnalyticsSkipAutoPageLoad === true;
+
+						if ( isInIframe && isGalleryModal ) {
+							// Close the entire gallery modal instead of just the comment modal
+							window.parent.postMessage( {
+								type: 'rtgodam:close-gallery-modal',
+							}, '*' );
+						} else {
+							// Normal behavior: just close the comment modal
+							window.dispatchEvent( new CustomEvent( 'rtgodam:comments-closed' ) );
+							memoizedStoreObj.root.unmount();
+						}
 					} }>&times;</button>
 				</div>
 				<div className={ baseClass + '--video' }>

@@ -41,17 +41,18 @@ $attributes = apply_filters(
 );
 
 // attributes.
-$godam_autoplay       = ! empty( $attributes['autoplay'] );
-$godam_controls       = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
-$godam_loop           = ! empty( $attributes['loop'] );
-$godam_muted          = ! empty( $attributes['muted'] );
-$godam_poster         = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
-$godam_preload_poster = ! empty( $attributes['preloadPoster'] );
-$godam_preload        = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
-$godam_hover_select   = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSelect'] : 'none';
-$godam_caption        = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
-$godam_tracks         = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
-$godam_show_share_btn = ! empty( $attributes['showShareButton'] );
+$godam_autoplay           = ! empty( $attributes['autoplay'] );
+$godam_controls           = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
+$godam_loop               = ! empty( $attributes['loop'] );
+$godam_muted              = ! empty( $attributes['muted'] );
+$godam_poster             = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
+$godam_preload_poster     = ! empty( $attributes['preloadPoster'] );
+$godam_preload            = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
+$godam_hover_select       = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSelect'] : 'none';
+$godam_caption            = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
+$godam_tracks             = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
+$godam_show_share_btn     = ! empty( $attributes['showShareButton'] );
+$godam_auto_open_comments = ! empty( $attributes['auto_open_comments'] );
 
 // Resolve the attachment ID (could be WordPress or virtual media).
 $godam_attachment_id = '';
@@ -718,4 +719,30 @@ if ( $godam_should_preload_poster ) {
 				do_action( 'rtgodam_after_video_html', $attributes, $godam_instance_id, $godam_meta_data, $godam_settings );
 		?>
 	</figure>
+
+	<?php if ( $godam_auto_open_comments ) : ?>
+	<script>
+		// Auto-open comment modal when video is ready
+		document.addEventListener('DOMContentLoaded', function() {
+			let attempts = 0;
+			const maxAttempts = 10; // Try for up to 2 seconds
+
+			// Wait for video player to be ready, then auto-open comments
+			const checkForCommentButton = function() {
+				attempts++;
+				const commentButton = document.querySelector('.rtgodam-video-engagement--comment-link');
+
+				if (commentButton) {
+					commentButton.click();
+				} else if (attempts < maxAttempts) {
+					// Try again in a moment
+					setTimeout(checkForCommentButton, 200);
+				}
+			};
+
+			// Start checking after video should be loaded
+			setTimeout(checkForCommentButton, 200);
+		});
+	</script>
+	<?php endif; ?>
 <?php endif; ?>
