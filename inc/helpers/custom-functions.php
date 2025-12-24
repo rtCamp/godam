@@ -131,7 +131,6 @@ function rtgodam_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT, 
  * @param int $media_id The ID of the media attachment.
  *
  * @return string The URL of the media file, or an empty string if invalid or not found.
- * @throws Exception If the media is not found or is not an attachment.
  */
 function rtgodam_fetch_overlay_media_url( $media_id ) {
 	if ( empty( $media_id ) || 0 === intval( $media_id ) ) {
@@ -141,7 +140,7 @@ function rtgodam_fetch_overlay_media_url( $media_id ) {
 	$media = get_post( $media_id );
 
 	if ( ! $media || 'attachment' !== $media->post_type ) {
-		throw new Exception( 'Media not found' );
+		return '';
 	}
 
 	$media_url = wp_get_attachment_url( $media_id );
@@ -189,18 +188,23 @@ function rtgodam_image_cta_html( $layer ) {
 	$image_link           = isset( $layer['imageLink'] ) ? $layer['imageLink'] : '/';
 	$cta_background_color = isset( $layer['imageCtaButtonColor'] ) ? $layer['imageCtaButtonColor'] : '#eeab95';
 	$cta_button_text      = ! empty( $layer['imageCtaButtonText'] ) ? $layer['imageCtaButtonText'] : 'Buy Now'; // Null coalescing with empty check.
+	$image_box            = "<div class=\"image-cta-no-image\" style=\"opacity: {$image_opacity};\"> " . __( 'No Image', 'godam' ) . '</div>';
+
+	if ( ! empty( $image_url ) ) {
+		$image_box = "<img 
+						src=\"{$image_url}\" 
+						alt=\"CTA ad\" 
+						height=\"300\" 
+						width=\"250\" 
+						style=\"opacity: {$image_opacity};\" 
+					/>";
+	}
 
 	return "
 	<div class= \"image-cta-overlay-container\">
 		<div class=\"image-cta-parent-container\">
 			<div class=\"{$orientation_class}\">
-				<img 
-					src=\"{$image_url}\" 
-					alt=\"CTA ad\" 
-					height=\"300\" 
-					width=\"250\" 
-					style=\"opacity: {$image_opacity};\" 
-				/>
+				{$image_box}
 				<div class=\"image-cta-description\">
 					" . ( ! empty( $image_text ) ? "<h2>{$image_text}</h2>" : '' ) . '
 					' . ( ! empty( $image_description ) ? "<p>{$image_description}</p>" : '' ) . "
@@ -396,7 +400,7 @@ function rtgodam_is_api_key_valid() {
 
 /**
  * Checks if the given filename is an audio file based on its name.
- * 
+ *
  * Note: The files created by uppy webcam, screen capture, and audio plugin are in the same format. So we are checking the filename to determine if it's an audio file.
  *
  * @since 1.4.1
@@ -715,13 +719,13 @@ function rtgodam_cache_delete( $key ) {
 
 /**
  * Check if the current environment is localhost.
- * 
+ *
  * This function checks the server's remote address and host to determine if the site is running in a local development environment.
  * It checks against a whitelist of common localhost IPs and also looks for '.local' or '.test' in the host name.
  * Additionally, it respects the RTGODAM_IS_LOCAL constant if defined.
- * 
+ *
  * @since 1.4.3
- * 
+ *
  * @return bool True if the environment is localhost, false otherwise.
  */
 function rtgodam_is_local_environment() {
