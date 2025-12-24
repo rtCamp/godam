@@ -1148,19 +1148,54 @@ function CommentBox( props ) {
 	const videoInfoForMobile = useRef( null );
 
 	useEffect( () => {
-		const currentVideoParent = document.getElementById( videoFigureId );
-		const currentVideo = currentVideoParent.querySelector( '.godam-video-wrapper' );
-		const currentVideoClass = currentVideoParent.className;
-		const currentVideoStyles = currentVideoParent.getAttribute( 'style' );
+		let currentVideoParent = document.getElementById( videoFigureId );
+		let currentVideo;
+
+		// Primary approach: Try to find expected video elements
+		if ( currentVideoParent ) {
+			currentVideo = currentVideoParent.querySelector( '.godam-video-wrapper' );
+		}
+
+		// Fallback approach: If expected elements don't exist, look for any video container
+		if ( ! currentVideo ) {
+			// Look for any video container that might exist (for non-transcoded videos)
+			const fallbackVideoContainer = document.querySelector( '.godam-modal-video .godam-video-wrapper' ) ||
+											document.querySelector( '.easydam-video-container' ) ||
+											document.querySelector( '.video-js' )?.closest( '.wp-block-godam-video' ) ||
+											document.querySelector( '.video-js' )?.parentElement;
+
+			if ( fallbackVideoContainer ) {
+				currentVideo = fallbackVideoContainer.querySelector( '.godam-video-wrapper' ) ||
+								fallbackVideoContainer.querySelector( '.easydam-video-container' ) ||
+								fallbackVideoContainer;
+				currentVideoParent = fallbackVideoContainer;
+			}
+		}
+
+		// If still no video found, skip manipulation but still show modal
+		if ( ! currentVideo || ! currentVideoParent ) {
+			document.body.classList.add( 'no-scroll' );
+			return () => {
+				document.body.classList.remove( 'no-scroll' );
+			};
+		}
+
+		const currentVideoClass = currentVideoParent.className || '';
+		const currentVideoStyles = currentVideoParent.getAttribute( 'style' ) || '';
 
 		const videoContainer = videoContainerRef.current;
-		videoContainer.className = currentVideoClass;
-		videoContainer.style = currentVideoStyles;
-		videoContainer.appendChild( currentVideo );
+		if ( videoContainer ) {
+			videoContainer.className = currentVideoClass;
+			videoContainer.style = currentVideoStyles;
+			videoContainer.appendChild( currentVideo );
+		}
+
 		document.body.classList.add( 'no-scroll' );
 
 		return () => {
-			currentVideoParent.insertBefore( currentVideo, currentVideoParent.firstChild );
+			if ( currentVideoParent && currentVideo ) {
+				currentVideoParent.insertBefore( currentVideo, currentVideoParent.firstChild );
+			}
 			document.body.classList.remove( 'no-scroll' );
 
 			// Godam gallery cleanup if needed

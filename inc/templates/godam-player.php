@@ -724,24 +724,36 @@ if ( $godam_should_preload_poster ) {
 	<script>
 		// Auto-open comment modal when video is ready
 		document.addEventListener('DOMContentLoaded', function() {
-			let attempts = 0;
-			const maxAttempts = 10; // Try for up to 2 seconds
+			setTimeout(function() {
+				const videoContainer = document.querySelector('.video-js');
+				if (videoContainer) {
+					const videoId = videoContainer.getAttribute('data-id');
+					const siteUrl = '<?php echo esc_url( get_site_url() ); ?>';
+					let engagementId = 'engagement-' + videoId;
 
-			// Wait for video player to be ready, then auto-open comments
-			const checkForCommentButton = function() {
-				attempts++;
-				const commentButton = document.querySelector('.rtgodam-video-engagement--comment-link');
+					// Check if engagement container exists
+					const engagementContainer = document.querySelector('.rtgodam-video-engagement');
+					if (engagementContainer) {
+						const containerId = engagementContainer.getAttribute('data-engagement-id');
+						if (containerId) {
+							engagementId = containerId;
+						}
+					}
 
-				if (commentButton) {
-					commentButton.click();
-				} else if (attempts < maxAttempts) {
-					// Try again in a moment
-					setTimeout(checkForCommentButton, 200);
+						// Determine if we should skip engagements
+						const skipEngagements = !engagementContainer;
+
+					if (window.wp && window.wp.data && window.wp.data.dispatch) {
+						const engagementStore = 'godam-video-engagement';
+						window.wp.data.dispatch(engagementStore).initiateCommentModal(
+							videoId,
+							siteUrl,
+							engagementId,
+							skipEngagements
+						);
+					}
 				}
-			};
-
-			// Start checking after video should be loaded
-			setTimeout(checkForCommentButton, 200);
+			}, 500);
 		});
 	</script>
 	<?php endif; ?>
