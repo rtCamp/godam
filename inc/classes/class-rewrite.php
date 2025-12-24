@@ -50,6 +50,7 @@ class Rewrite {
 	public function add_query_vars( $vars ) {
 		// Add 'godam_page' to the list of query vars.
 		$vars[] = 'godam_page';
+		$vars[] = 'id';
 		return $vars;
 	}
 }
