@@ -48,6 +48,10 @@ class RTGODAM_Media_Version {
 		add_action( 'attachment_updated', array( $this, 'rtgodam_replace_attachment_version' ), 10, 2 );
 		add_action( 'admin_post_rtgodam_delete_attachment_version', array( $this, 'rtgodam_delete_attachment_version' ) );
 		add_action( 'admin_notices', array( $this, 'rtgodam_admin_notices' ) );
+		add_action( 'show_user_profile', array( $this, 'rtgodam_add_media_replacement_enable_setting_for_user' ) );
+		add_action( 'edit_user_profile', array( $this, 'rtgodam_add_media_replacement_enable_setting_for_user' ) );
+		add_action( 'personal_options_update', array( $this, 'rtgodam_update_media_replacement_enable_setting_for_user' ) );
+		add_action( 'edit_user_profile_update', array( $this, 'rtgodam_update_media_replacement_enable_setting_for_user' ) );
 	}
 
 	public function admin_enqueues( $hook_suffix ) {
@@ -696,6 +700,13 @@ class RTGODAM_Media_Version {
 			return true;
 		}
 
+		$current_user_id           = get_current_user_id();
+		$disable_media_replacement = get_user_meta( $current_user_id, 'rtgodam_disable_media_replacement', true );
+
+		if ( ! empty( $disable_media_replacement ) && 'yes' === $disable_media_replacement ) {
+			return true;
+		}
+
 		$godam_settings         = get_option( 'rtgodam-settings', array() );
 		$media_general_settings = $godam_settings['general'] ?? array();
 
@@ -708,6 +719,42 @@ class RTGODAM_Media_Version {
 
 		if ( $is_virtual_media ) {
 			return true;
+		}
+	}
+
+	public function rtgodam_add_media_replacement_enable_setting_for_user( $user ) {
+
+		if ( ! current_user_can( 'edit_user' ) ) {
+			return;
+		}
+
+		$disable_media_replacement = get_user_meta( $user->ID, 'rtgodam_disable_media_replacement', true );
+		?>
+		<h3><?php esc_html_e( 'GoDAM Media Replacement Settings', 'godam' ); ?></h3>
+		<table class="form-table">
+			<tr>
+				<th><?php esc_html_e( 'Disable Media Replacement', 'godam' ); ?></th>
+				<td><label for="rtgodam_disable_media_replacement">
+						<input type="checkbox" name="rtgodam_disable_media_replacement" id="rtgodam_disable_media_replacement" value="yes" <?php checked( $disable_media_replacement, 'yes' ); ?> />
+						<?php esc_html_e( 'Disable media replacement feature for this account.', 'godam' ); ?>
+					</label>
+				</td>
+			</tr>
+		</table>
+		<?php
+	}
+
+	public function rtgodam_update_media_replacement_enable_setting_for_user( $user_id ) {
+		if ( ! current_user_can( 'edit_user' ) ) {
+			return;
+		}
+
+		$disable_media_replacement = filter_input( INPUT_POST, 'rtgodam_disable_media_replacement', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+
+		if ( 'yes' === $disable_media_replacement ) {
+			update_user_meta( $user_id, 'rtgodam_disable_media_replacement', 'yes' );
+		} else {
+			delete_user_meta( $user_id, 'rtgodam_disable_media_replacement' );
 		}
 	}
 }
