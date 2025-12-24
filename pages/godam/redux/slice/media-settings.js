@@ -30,6 +30,7 @@ const initialState = {
 	general: {
 		enable_folder_organization: true,
 		enable_gtm_tracking: false,
+		enable_global_media_replacement: true,
 	},
 	video_player: {
 		brand_image: '',

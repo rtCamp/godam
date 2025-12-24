@@ -88,6 +88,10 @@ class RTGODAM_Media_Version {
 
 	public function rtgodam_add_attachment_version_field( $form_fields, $post ) {
 
+		if ( $this->rtgodam_disable_media_version_feature( $post ) ) {
+			return $form_fields;
+		}
+
 		if ( ! $this->rtgodam_check_attachment_edit_page( $post ) ) {
 			return $form_fields;
 		}
@@ -684,5 +688,26 @@ class RTGODAM_Media_Version {
 		}
 
 		printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), esc_html( $message ) );
+	}
+
+	public function rtgodam_disable_media_version_feature( $post ) {
+
+		if ( apply_filters( 'rtgodam_disable_media_version_feature', false ) ) {
+			return true;
+		}
+
+		$godam_settings         = get_option( 'rtgodam-settings', array() );
+		$media_general_settings = $godam_settings['general'] ?? array();
+
+		if ( empty( $media_general_settings['enable_global_media_replacement'] ) ) {
+			return true;
+		}
+
+		$godam_original_id = get_post_meta( $post->ID, '_godam_original_id', true );
+		$is_virtual_media  = ! empty( $godam_original_id );
+
+		if ( $is_virtual_media ) {
+			return true;
+		}
 	}
 }
