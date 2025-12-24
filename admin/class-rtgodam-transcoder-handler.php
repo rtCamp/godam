@@ -207,6 +207,29 @@ class RTGODAM_Transcoder_Handler {
 			return;
 		}
 
+		/**
+		 * Filter to allow external developers to disable automatic transcoding on upload.
+		 * This allows users to have manual control over when videos get transcoded.
+		 *
+		 * Note: This filter only applies to automatic uploads. Manual retranscoding requests
+		 * (via bulk actions, tools page, etc.) will always proceed regardless of this setting.
+		 * Form integrations will also use this filter to disable transcoding for form uploads.
+		 *
+		 * Example usage:
+		 * add_filter( 'godam_auto_transcode_on_upload', '__return_false' ); // Disable globally
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param bool $auto_transcode_on_upload Whether to automatically transcode on upload. Default true.
+		 */
+		if ( ! $retranscode ) {
+			$auto_transcode_on_upload = apply_filters( 'godam_auto_transcode_on_upload', true );
+
+			if ( ! $auto_transcode_on_upload ) {
+				return $wp_metadata;
+			}
+		}
+
 		if ( empty( $wp_metadata['mime_type'] ) ) {
 			return $wp_metadata;
 		}
