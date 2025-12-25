@@ -65,40 +65,81 @@ class Dynamic_Shortcode extends Base {
 		];
 	}
 
-	function godam_expand_assets( $handles, $type = 'script' ) {
+	/**
+	 * Recursively expand a single asset with its dependencies.
+	 *
+	 * @param string $handle Asset handle.
+	 * @param string $type Asset type ('script' or 'style').
+	 * @param array  $visited Visited handles to prevent circular dependencies.
+	 * @return array|null Asset data with expanded dependencies, or null if not found.
+	 */
+	private function godam_expand_single_asset( $handle, $type = 'script', &$visited = array() ) {
 		global $wp_scripts, $wp_styles;
-	
-		$registry = ( $type === 'script' ) ? $wp_scripts : $wp_styles;
-		$assets   = [];
-	
-		foreach ( $handles as $handle ) {
-			if ( empty( $registry->registered[ $handle ] ) ) {
-				continue;
-			}
-	
-			$obj = $registry->registered[ $handle ];
-	
-			// Get the full URL (handles both absolute and relative URLs)
-			$src = $obj->src;
-			if ( ! preg_match( '|^(https?:)?//|', $src ) ) {
-				// Relative URL, convert to absolute
-				$src = $registry->base_url . $src;
-			}
-	
-			// Add version query string if available
-			if ( $obj->ver ) {
-				$separator = ( strpos( $src, '?' ) !== false ) ? '&' : '?';
-				$src      .= $separator . 'ver=' . $obj->ver;
-			}
-	
-			$assets[] = [
-				'handle' => $handle,
-				'src'    => $src,
-				'deps'   => $obj->deps,
-				'ver'    => $obj->ver,
-			];
+
+		// Prevent circular dependencies
+		if ( isset( $visited[ $handle ] ) ) {
+			return null;
 		}
-	
+
+		$registry = ( $type === 'script' ) ? $wp_scripts : $wp_styles;
+
+		if ( empty( $registry->registered[ $handle ] ) ) {
+			return null;
+		}
+
+		$visited[ $handle ] = true;
+		$obj                 = $registry->registered[ $handle ];
+
+		// Get the full URL (handles both absolute and relative URLs)
+		$src = $obj->src;
+		if ( ! preg_match( '|^(https?:)?//|', $src ) ) {
+			// Relative URL, convert to absolute
+			$src = $registry->base_url . $src;
+		}
+
+		// Add version query string if available
+		if ( $obj->ver ) {
+			$separator = ( strpos( $src, '?' ) !== false ) ? '&' : '?';
+			$src      .= $separator . 'ver=' . $obj->ver;
+		}
+
+		// Recursively expand dependencies
+		$expanded_deps = array();
+		if ( ! empty( $obj->deps ) && is_array( $obj->deps ) ) {
+			foreach ( $obj->deps as $dep_handle ) {
+				$dep_asset = $this->godam_expand_single_asset( $dep_handle, $type, $visited );
+				if ( $dep_asset ) {
+					$expanded_deps[] = $dep_asset;
+				}
+			}
+		}
+
+		return array(
+			'handle' => $handle,
+			'src'    => $src,
+			'deps'   => $expanded_deps,
+			'ver'    => $obj->ver,
+		);
+	}
+
+	/**
+	 * Expand assets with recursively resolved dependencies.
+	 *
+	 * @param array  $handles Array of asset handles.
+	 * @param string $type Asset type ('script' or 'style').
+	 * @return array Array of expanded assets with full dependency data.
+	 */
+	function godam_expand_assets( $handles, $type = 'script' ) {
+		$assets   = array();
+		$visited  = array();
+
+		foreach ( $handles as $handle ) {
+			$asset = $this->godam_expand_single_asset( $handle, $type, $visited );
+			if ( $asset ) {
+				$assets[] = $asset;
+			}
+		}
+
 		return $assets;
 	}
 	

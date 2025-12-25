@@ -65,38 +65,58 @@ function isStyleLoaded( href ) {
 }
 
 /**
+ * Load dependencies recursively
+ *
+ * @param {Array} deps - Array of dependency asset objects
+ * @return {Promise} Promise that resolves when all dependencies are loaded
+ */
+async function loadDependencies( deps ) {
+	if ( ! deps || ! Array.isArray( deps ) || deps.length === 0 ) {
+		return Promise.resolve();
+	}
+
+	const promises = deps.map( async ( dep ) => {
+		// Check if already loaded
+		if ( isScriptLoaded( dep.src ) ) {
+			return Promise.resolve();
+		}
+
+		// Recursively load dependencies first
+		if ( dep.deps && dep.deps.length > 0 ) {
+			await loadDependencies( dep.deps );
+		}
+
+		// Load this dependency
+		return loadScript( dep );
+	} );
+
+	return Promise.all( promises );
+}
+
+/**
  * Load a script dynamically
  *
  * @param {Object} asset - Asset object with handle, src, deps, ver
  * @return {Promise} Promise that resolves when script is loaded
  */
 function loadScript( asset ) {
-	return new Promise( ( resolve, reject ) => {
+	return new Promise( async ( resolve, reject ) => {
 		// Check if already loaded
 		if ( isScriptLoaded( asset.src ) ) {
 			resolve();
 			return;
 		}
 
-		// Check dependencies first (if WordPress wp object is available)
-		if ( window.wp && window.wp.dependencies ) {
-			const deps = asset.deps || [];
-			const depPromises = deps.map( ( dep ) => {
-				// Try to find the dependency script in the page
-				const depScripts = document.querySelectorAll( 'script[src]' );
-				for ( const script of depScripts ) {
-					// Simple check - in real scenario, you might need to map handles to URLs
-					if ( script.src.includes( dep ) ) {
-						return Promise.resolve();
-					}
-				}
-				return Promise.resolve(); // Resolve anyway to continue
-			} );
-			Promise.all( depPromises ).then( () => {
-				createScriptTag( asset, resolve, reject );
-			} );
-		} else {
+		try {
+			// Load dependencies first (recursively)
+			if ( asset.deps && Array.isArray( asset.deps ) && asset.deps.length > 0 ) {
+				await loadDependencies( asset.deps );
+			}
+
+			// Now load this script
 			createScriptTag( asset, resolve, reject );
+		} catch ( error ) {
+			reject( error );
 		}
 	} );
 }
@@ -125,37 +145,76 @@ function createScriptTag( asset, resolve, reject ) {
 }
 
 /**
+ * Load style dependencies recursively
+ *
+ * @param {Array} deps - Array of dependency asset objects
+ * @return {Promise} Promise that resolves when all dependencies are loaded
+ */
+async function loadStyleDependencies( deps ) {
+	if ( ! deps || ! Array.isArray( deps ) || deps.length === 0 ) {
+		return Promise.resolve();
+	}
+
+	const promises = deps.map( async ( dep ) => {
+		// Check if already loaded
+		if ( isStyleLoaded( dep.src ) ) {
+			return Promise.resolve();
+		}
+
+		// Recursively load dependencies first
+		if ( dep.deps && dep.deps.length > 0 ) {
+			await loadStyleDependencies( dep.deps );
+		}
+
+		// Load this dependency
+		return loadStyle( dep );
+	} );
+
+	return Promise.all( promises );
+}
+
+/**
  * Load a stylesheet dynamically
  *
  * @param {Object} asset - Asset object with handle, src, deps, ver
  * @return {Promise} Promise that resolves when stylesheet is loaded
  */
 function loadStyle( asset ) {
-	return new Promise( ( resolve, reject ) => {
+	return new Promise( async ( resolve, reject ) => {
 		// Check if already loaded
 		if ( isStyleLoaded( asset.src ) ) {
 			resolve();
 			return;
 		}
 
-		const link = document.createElement( 'link' );
-		link.rel = 'stylesheet';
-		link.href = asset.src;
-		link.onload = () => {
-			loadedStyles.add( asset.src );
-			resolve();
-		};
-		link.onerror = () => {
-			// eslint-disable-next-line no-console
-			console.warn( `Failed to load stylesheet: ${ asset.src }` );
-			reject( new Error( `Failed to load stylesheet: ${ asset.src }` ) );
-		};
-		document.head.appendChild( link );
+		try {
+			// Load dependencies first (recursively)
+			if ( asset.deps && Array.isArray( asset.deps ) && asset.deps.length > 0 ) {
+				await loadStyleDependencies( asset.deps );
+			}
+
+			// Now load this stylesheet
+			const link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.href = asset.src;
+			link.onload = () => {
+				loadedStyles.add( asset.src );
+				resolve();
+			};
+			link.onerror = () => {
+				// eslint-disable-next-line no-console
+				console.warn( `Failed to load stylesheet: ${ asset.src }` );
+				reject( new Error( `Failed to load stylesheet: ${ asset.src }` ) );
+			};
+			document.head.appendChild( link );
+		} catch ( error ) {
+			reject( error );
+		}
 	} );
 }
 
 /**
- * Load assets (scripts and styles) conditionally
+ * Load assets (scripts and styles) conditionally with dependency resolution
  *
  * @param {Object} assets - Assets object with scripts and styles arrays
  * @return {Promise} Promise that resolves when all assets are loaded
@@ -167,7 +226,8 @@ async function loadAssets( assets ) {
 
 	const promises = [];
 
-	// Load styles first (they don't block)
+	// Load styles first (they don't block rendering)
+	// Dependencies are handled recursively within loadStyle
 	if ( assets.styles && Array.isArray( assets.styles ) ) {
 		assets.styles.forEach( ( style ) => {
 			if ( style.src ) {
@@ -178,12 +238,15 @@ async function loadAssets( assets ) {
 		} );
 	}
 
-	// Load scripts
+	// Load scripts with dependency resolution
+	// Dependencies are handled recursively within loadScript
 	if ( assets.scripts && Array.isArray( assets.scripts ) ) {
 		assets.scripts.forEach( ( script ) => {
 			if ( script.src ) {
-				promises.push( loadScript( script ).catch( () => {
-					// Silently fail for scripts
+				promises.push( loadScript( script ).catch( ( error ) => {
+					// eslint-disable-next-line no-console
+					console.warn( `Failed to load script: ${ script.src }`, error );
+					// Silently fail for scripts to continue loading others
 				} ) );
 			}
 		} );
