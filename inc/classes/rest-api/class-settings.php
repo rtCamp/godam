@@ -47,8 +47,9 @@ class Settings extends Base {
 				'enable_global_video_share'      => true,
 			),
 			'general'      => array(
-				'enable_folder_organization' => true,
-				'enable_gtm_tracking'        => false,
+				'enable_folder_organization'      => true,
+				'enable_gtm_tracking'             => false,
+				'enable_global_media_replacement' => true,
 			),
 			'video_player' => array(
 				'brand_image'    => '',
@@ -306,8 +307,9 @@ class Settings extends Base {
 				'video_slug'                     => sanitize_title( $settings['video']['video_slug'] ?? $default['video']['video_slug'] ),
 			),
 			'general'      => array(
-				'enable_folder_organization' => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ?? $default['general']['enable_folder_organization'] ),
-				'enable_gtm_tracking'        => rest_sanitize_boolean( $settings['general']['enable_gtm_tracking'] ?? $default['general']['enable_gtm_tracking'] ),
+				'enable_folder_organization'      => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ?? $default['general']['enable_folder_organization'] ),
+				'enable_gtm_tracking'             => rest_sanitize_boolean( $settings['general']['enable_gtm_tracking'] ?? $default['general']['enable_gtm_tracking'] ),
+				'enable_global_media_replacement' => rest_sanitize_boolean( $settings['general']['enable_global_media_replacement'] ?? $default['general']['enable_global_media_replacement'] ),
 			),
 			'video_player' => array(
 				'brand_image'    => sanitize_text_field( $settings['video_player']['brand_image'] ?? $default['video_player']['brand_image'] ),

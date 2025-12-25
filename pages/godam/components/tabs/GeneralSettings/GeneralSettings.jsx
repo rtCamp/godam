@@ -109,6 +109,15 @@ const GeneralSettings = () => {
 						onChange={ ( value ) => handleSettingChange( 'enable_gtm_tracking', value ) }
 					/>
 
+					<ToggleControl
+						__nextHasNoMarginBottom
+						className="godam-toggle godam-margin-bottom"
+						label={ __( 'Enable global media replacement', 'godam' ) }
+						help={ __( 'Enable Google Tag Manager video tracking for analytics and conversion tracking.', 'godam' ) }
+						checked={ mediaSettings?.general?.enable_global_media_replacement }
+						onChange={ ( value ) => handleSettingChange( 'enable_global_media_replacement', value ) }
+					/>
+
 				</PanelBody>
 			</Panel>
 
