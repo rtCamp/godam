@@ -336,6 +336,7 @@
 		font-size: clamp(20px, 4vw, 32px);
 		font-weight: 700;
 		line-height: 1.125;
+		text-wrap: auto;
 	}
 
 	p {
@@ -343,6 +344,7 @@
 		font-size: 16px;
 		margin-top: 0;
 		margin-bottom: 5px;
+		text-wrap: auto;
 	}
 
 	.image-cta-btn {
