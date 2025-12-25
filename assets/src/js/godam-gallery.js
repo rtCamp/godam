@@ -12,6 +12,186 @@ import DOMPurify from 'isomorphic-dompurify';
 
 const engagementStore = 'godam-video-engagement';
 
+// Track loaded assets to avoid duplicates
+const loadedScripts = new Set();
+const loadedStyles = new Set();
+
+/**
+ * Check if a script is already loaded in the DOM
+ *
+ * @param {string} src - Script source URL
+ * @return {boolean} True if script is already loaded
+ */
+function isScriptLoaded( src ) {
+	// Check if already tracked
+	if ( loadedScripts.has( src ) ) {
+		return true;
+	}
+
+	// Check if script tag exists in DOM
+	const scripts = document.querySelectorAll( 'script[src]' );
+	for ( const script of scripts ) {
+		if ( script.src === src || script.src.includes( src.split( '?' )[ 0 ] ) ) {
+			loadedScripts.add( src );
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Check if a stylesheet is already loaded in the DOM
+ *
+ * @param {string} href - Stylesheet source URL
+ * @return {boolean} True if stylesheet is already loaded
+ */
+function isStyleLoaded( href ) {
+	// Check if already tracked
+	if ( loadedStyles.has( href ) ) {
+		return true;
+	}
+
+	// Check if link tag exists in DOM
+	const links = document.querySelectorAll( 'link[rel="stylesheet"]' );
+	for ( const link of links ) {
+		if ( link.href === href || link.href.includes( href.split( '?' )[ 0 ] ) ) {
+			loadedStyles.add( href );
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Load a script dynamically
+ *
+ * @param {Object} asset - Asset object with handle, src, deps, ver
+ * @return {Promise} Promise that resolves when script is loaded
+ */
+function loadScript( asset ) {
+	return new Promise( ( resolve, reject ) => {
+		// Check if already loaded
+		if ( isScriptLoaded( asset.src ) ) {
+			resolve();
+			return;
+		}
+
+		// Check dependencies first (if WordPress wp object is available)
+		if ( window.wp && window.wp.dependencies ) {
+			const deps = asset.deps || [];
+			const depPromises = deps.map( ( dep ) => {
+				// Try to find the dependency script in the page
+				const depScripts = document.querySelectorAll( 'script[src]' );
+				for ( const script of depScripts ) {
+					// Simple check - in real scenario, you might need to map handles to URLs
+					if ( script.src.includes( dep ) ) {
+						return Promise.resolve();
+					}
+				}
+				return Promise.resolve(); // Resolve anyway to continue
+			} );
+			Promise.all( depPromises ).then( () => {
+				createScriptTag( asset, resolve, reject );
+			} );
+		} else {
+			createScriptTag( asset, resolve, reject );
+		}
+	} );
+}
+
+/**
+ * Create and append script tag
+ *
+ * @param {Object}   asset   - Asset object
+ * @param {Function} resolve - Promise resolve
+ * @param {Function} reject  - Promise reject
+ */
+function createScriptTag( asset, resolve, reject ) {
+	const script = document.createElement( 'script' );
+	script.src = asset.src;
+	script.async = false;
+	script.onload = () => {
+		loadedScripts.add( asset.src );
+		resolve();
+	};
+	script.onerror = () => {
+		// eslint-disable-next-line no-console
+		console.warn( `Failed to load script: ${ asset.src }` );
+		reject( new Error( `Failed to load script: ${ asset.src }` ) );
+	};
+	document.head.appendChild( script );
+}
+
+/**
+ * Load a stylesheet dynamically
+ *
+ * @param {Object} asset - Asset object with handle, src, deps, ver
+ * @return {Promise} Promise that resolves when stylesheet is loaded
+ */
+function loadStyle( asset ) {
+	return new Promise( ( resolve, reject ) => {
+		// Check if already loaded
+		if ( isStyleLoaded( asset.src ) ) {
+			resolve();
+			return;
+		}
+
+		const link = document.createElement( 'link' );
+		link.rel = 'stylesheet';
+		link.href = asset.src;
+		link.onload = () => {
+			loadedStyles.add( asset.src );
+			resolve();
+		};
+		link.onerror = () => {
+			// eslint-disable-next-line no-console
+			console.warn( `Failed to load stylesheet: ${ asset.src }` );
+			reject( new Error( `Failed to load stylesheet: ${ asset.src }` ) );
+		};
+		document.head.appendChild( link );
+	} );
+}
+
+/**
+ * Load assets (scripts and styles) conditionally
+ *
+ * @param {Object} assets - Assets object with scripts and styles arrays
+ * @return {Promise} Promise that resolves when all assets are loaded
+ */
+async function loadAssets( assets ) {
+	if ( ! assets || ( ! assets.scripts && ! assets.styles ) ) {
+		return Promise.resolve();
+	}
+
+	const promises = [];
+
+	// Load styles first (they don't block)
+	if ( assets.styles && Array.isArray( assets.styles ) ) {
+		assets.styles.forEach( ( style ) => {
+			if ( style.src ) {
+				promises.push( loadStyle( style ).catch( () => {
+					// Silently fail for styles
+				} ) );
+			}
+		} );
+	}
+
+	// Load scripts
+	if ( assets.scripts && Array.isArray( assets.scripts ) ) {
+		assets.scripts.forEach( ( script ) => {
+			if ( script.src ) {
+				promises.push( loadScript( script ).catch( () => {
+					// Silently fail for scripts
+				} ) );
+			}
+		} );
+	}
+
+	return Promise.all( promises );
+}
+
 // Common function to load more videos
 async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVideos ) {
 	const loadCount = 3 * columns;
@@ -267,6 +447,11 @@ document.addEventListener( 'click', async function( e ) {
 				}
 
 				if ( data.status === 'success' && data.html ) {
+					// Load assets conditionally before inserting HTML
+					if ( data.assets ) {
+						await loadAssets( data.assets );
+					}
+
 					// Update the video element with the fetched data
 					if ( videoContainer ) {
 						videoContainer.innerHTML = data.html;

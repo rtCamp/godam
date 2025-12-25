@@ -37,7 +37,7 @@ class Dynamic_Shortcode extends Base {
 				'route'     => '/' . $this->rest_base,
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'render_shortcode' ),
+					'callback'            => array( $this, 'godam_render_shortcode_with_assets' ),
 					'permission_callback' => '__return_true',
 					'args'                => array(
 						'id' => array(
@@ -50,6 +50,110 @@ class Dynamic_Shortcode extends Base {
 			),
 		);
 	}
+
+
+	public function godam_capture_assets() {
+		global $wp_scripts, $wp_styles;
+
+		// Ensure clean state
+		wp_scripts();
+		wp_styles();
+	
+		return [
+			'scripts' => array_values( $wp_scripts->queue ),
+			'styles'  => array_values( $wp_styles->queue ),
+		];
+	}
+
+	function godam_expand_assets( $handles, $type = 'script' ) {
+		global $wp_scripts, $wp_styles;
+	
+		$registry = ( $type === 'script' ) ? $wp_scripts : $wp_styles;
+		$assets   = [];
+	
+		foreach ( $handles as $handle ) {
+			if ( empty( $registry->registered[ $handle ] ) ) {
+				continue;
+			}
+	
+			$obj = $registry->registered[ $handle ];
+	
+			// Get the full URL (handles both absolute and relative URLs)
+			$src = $obj->src;
+			if ( ! preg_match( '|^(https?:)?//|', $src ) ) {
+				// Relative URL, convert to absolute
+				$src = $registry->base_url . $src;
+			}
+	
+			// Add version query string if available
+			if ( $obj->ver ) {
+				$separator = ( strpos( $src, '?' ) !== false ) ? '&' : '?';
+				$src      .= $separator . 'ver=' . $obj->ver;
+			}
+	
+			$assets[] = [
+				'handle' => $handle,
+				'src'    => $src,
+				'deps'   => $obj->deps,
+				'ver'    => $obj->ver,
+			];
+		}
+	
+		return $assets;
+	}
+	
+
+	public function godam_render_shortcode_with_assets( $request ) {
+		$id = $request->get_param( 'id' );
+
+		$attachment = get_post( $id );
+
+		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
+			return new WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => 'Video not found.',
+				),
+				404
+			);
+		}
+	
+		// Snapshot BEFORE
+		$before = $this->godam_capture_assets();
+	
+		/**
+		 * CRITICAL:
+		 * Some plugins enqueue assets only here
+		 */
+		do_action( 'wp_enqueue_scripts' );
+	
+		// Render shortcode
+		$html = do_shortcode( '[godam_video id=' . $id . ']' );
+	
+		// Snapshot AFTER
+		$after = $this->godam_capture_assets();
+	
+		// Diff
+		$scripts = array_values( array_diff( $after['scripts'], $before['scripts'] ) );
+		$styles  = array_values( array_diff( $after['styles'],  $before['styles'] ) );
+	
+		// Expand assets to get full URLs and metadata
+		$expanded_scripts = $this->godam_expand_assets( $scripts, 'script' );
+		$expanded_styles  = $this->godam_expand_assets( $styles, 'style' );
+	
+		return [
+			'status'  => 'success',
+			'html'    => $html,
+			'title'   => get_the_title( $id ),
+			'date'    => get_the_date( 'F j, Y', $id ),
+			'assets'  => [
+				'scripts' => $expanded_scripts,
+				'styles'  => $expanded_styles,
+			],
+		];
+	}
+	
+	
 
 	/**
 	 * Callback to render the shortcode.
