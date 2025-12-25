@@ -121,14 +121,14 @@ class Dynamic_Shortcode extends Base {
 		// Snapshot BEFORE
 		$before = $this->godam_capture_assets();
 	
+		// Render shortcode
+		$html = do_shortcode( '[godam_video id=' . $id . ']' );
+
 		/**
 		 * CRITICAL:
 		 * Some plugins enqueue assets only here
 		 */
 		do_action( 'wp_enqueue_scripts' );
-	
-		// Render shortcode
-		$html = do_shortcode( '[godam_video id=' . $id . ']' );
 	
 		// Snapshot AFTER
 		$after = $this->godam_capture_assets();
