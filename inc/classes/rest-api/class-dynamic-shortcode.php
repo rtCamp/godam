@@ -51,18 +51,17 @@ class Dynamic_Shortcode extends Base {
 		);
 	}
 
-
 	public function godam_capture_assets() {
 		global $wp_scripts, $wp_styles;
 
-		// Ensure clean state
+		// Ensure clean state.
 		wp_scripts();
 		wp_styles();
 	
-		return [
+		return array(
 			'scripts' => array_values( $wp_scripts->queue ),
 			'styles'  => array_values( $wp_styles->queue ),
-		];
+		);
 	}
 
 	/**
@@ -76,7 +75,7 @@ class Dynamic_Shortcode extends Base {
 	private function godam_expand_single_asset( $handle, $type = 'script', &$visited = array() ) {
 		global $wp_scripts, $wp_styles;
 
-		// Prevent circular dependencies
+		// Prevent circular dependencies.
 		if ( isset( $visited[ $handle ] ) ) {
 			return null;
 		}
@@ -88,22 +87,22 @@ class Dynamic_Shortcode extends Base {
 		}
 
 		$visited[ $handle ] = true;
-		$obj                 = $registry->registered[ $handle ];
+		$obj                = $registry->registered[ $handle ];
 
-		// Get the full URL (handles both absolute and relative URLs)
+		// Get the full URL (handles both absolute and relative URLs).
 		$src = $obj->src;
 		if ( ! preg_match( '|^(https?:)?//|', $src ) ) {
-			// Relative URL, convert to absolute
+			// Relative URL, convert to absolute.
 			$src = $registry->base_url . $src;
 		}
 
-		// Add version query string if available
+		// Add version query string if available.
 		if ( $obj->ver ) {
 			$separator = ( strpos( $src, '?' ) !== false ) ? '&' : '?';
 			$src      .= $separator . 'ver=' . $obj->ver;
 		}
 
-		// Recursively expand dependencies
+		// Recursively expand dependencies.
 		$expanded_deps = array();
 		if ( ! empty( $obj->deps ) && is_array( $obj->deps ) ) {
 			foreach ( $obj->deps as $dep_handle ) {
@@ -130,8 +129,8 @@ class Dynamic_Shortcode extends Base {
 	 * @return array Array of expanded assets with full dependency data.
 	 */
 	function godam_expand_assets( $handles, $type = 'script' ) {
-		$assets   = array();
-		$visited  = array();
+		$assets  = array();
+		$visited = array();
 
 		foreach ( $handles as $handle ) {
 			$asset = $this->godam_expand_single_asset( $handle, $type, $visited );
@@ -142,7 +141,6 @@ class Dynamic_Shortcode extends Base {
 
 		return $assets;
 	}
-	
 
 	public function godam_render_shortcode_with_assets( $request ) {
 		$id = $request->get_param( 'id' );
@@ -159,42 +157,59 @@ class Dynamic_Shortcode extends Base {
 			);
 		}
 	
-		// Snapshot BEFORE
+		// Snapshot BEFORE.
 		$before = $this->godam_capture_assets();
 	
-		// Render shortcode
-		$html = do_shortcode( '[godam_video id=' . $id . ']' );
+		// Render shortcode.
+		$shortcode_html = do_shortcode( '[godam_video id=' . $id . ']' );
 
 		/**
 		 * CRITICAL:
-		 * Some plugins enqueue assets only here
+		 * Need to make sure we covers all wp_head and wp_footer hooks for assets to be properly enqueued.
 		 */
-		do_action( 'wp_enqueue_scripts' );
+		ob_start();
+		?>
+		<!DOCTYPE html>
+		<html <?php language_attributes(); ?>>
+		<head>
+			<meta charset="<?php bloginfo( 'charset' ); ?>">
+			<?php wp_head(); ?>
+		</head>
+		<body <?php body_class(); ?>>
+			<?php
+			wp_body_open();
+
+			echo $shortcode_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is escaped in the function.
+
+			wp_footer();
+			?>
+		</body>
+		</html>
+		<?php
+		$html = ob_get_clean();
 	
-		// Snapshot AFTER
+		// Snapshot AFTER.
 		$after = $this->godam_capture_assets();
 	
-		// Diff
+		// Difference.
 		$scripts = array_values( array_diff( $after['scripts'], $before['scripts'] ) );
-		$styles  = array_values( array_diff( $after['styles'],  $before['styles'] ) );
+		$styles  = array_values( array_diff( $after['styles'], $before['styles'] ) );
 	
-		// Expand assets to get full URLs and metadata
+		// Expand assets to get full URLs and metadata.
 		$expanded_scripts = $this->godam_expand_assets( $scripts, 'script' );
 		$expanded_styles  = $this->godam_expand_assets( $styles, 'style' );
 	
-		return [
-			'status'  => 'success',
-			'html'    => $html,
-			'title'   => get_the_title( $id ),
-			'date'    => get_the_date( 'F j, Y', $id ),
-			'assets'  => [
+		return array(
+			'status' => 'success',
+			'html'   => $html,
+			'title'  => get_the_title( $id ),
+			'date'   => get_the_date( 'F j, Y', $id ),
+			'assets' => array(
 				'scripts' => $expanded_scripts,
 				'styles'  => $expanded_styles,
-			],
-		];
+			),
+		);
 	}
-	
-	
 
 	/**
 	 * Callback to render the shortcode.
