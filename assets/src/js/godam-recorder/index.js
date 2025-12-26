@@ -356,6 +356,29 @@ class UppyVideoUploader {
 }
 
 /**
+ * Initialize UppyVideoUploader for a container element.
+ * Checks if already initialized to prevent duplicates.
+ *
+ * @param {HTMLElement} container - The container element to initialize.
+ */
+function initializeUppyForContainer( container ) {
+	// Check if already initialized by looking for a data attribute
+	if ( container.hasAttribute( 'data-uppy-initialized' ) ) {
+		return;
+	}
+
+	try {
+		new UppyVideoUploader( container );
+		container.setAttribute( 'data-uppy-initialized', 'true' );
+	} catch ( error ) {
+		// eslint-disable-next-line no-console
+		console.error( '[godam-recorder] Failed to initialize UppyVideoUploader:', error, {
+			container,
+		} );
+	}
+}
+
+/**
  * Initialize all video uploaders on DOM ready,
  * clearing persisted states if form submission were confirmed.
  */
@@ -365,9 +388,50 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	// Timeout added to allow DOM updates to settle.
 	setTimeout( () => {
 		document.querySelectorAll( '.uppy-video-upload' ).forEach( ( container ) => {
-			new UppyVideoUploader( container );
+			initializeUppyForContainer( container );
 		} );
 	}, 100 );
+} );
+
+/**
+ * Listen for dynamically rendered godam video blocks.
+ * This handles video blocks rendered in galleries or other dynamic contexts.
+ */
+document.addEventListener( 'godamPlayerRendered', ( event ) => {
+	const container = event.detail?.container;
+	if ( ! container ) {
+		return;
+	}
+
+	// Find all uppy-video-upload containers within the rendered block
+	const uppyContainers = container.querySelectorAll( '.uppy-video-upload' );
+
+	if ( uppyContainers.length === 0 ) {
+		return;
+	}
+
+	uppyContainers.forEach( ( uppyContainer ) => {
+		initializeUppyForContainer( uppyContainer );
+	} );
+} );
+
+// Also listen on window for events dispatched from window
+window.addEventListener( 'godamPlayerRendered', ( event ) => {
+	const container = event.detail?.container;
+	if ( ! container ) {
+		return;
+	}
+
+	// Find all uppy-video-upload containers within the rendered block
+	const uppyContainers = container.querySelectorAll( '.uppy-video-upload' );
+
+	if ( uppyContainers.length === 0 ) {
+		return;
+	}
+
+	uppyContainers.forEach( ( uppyContainer ) => {
+		initializeUppyForContainer( uppyContainer );
+	} );
 } );
 
 /**
