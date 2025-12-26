@@ -543,6 +543,19 @@ document.addEventListener( 'click', async function( e ) {
 						// Reinitialize the player with the new content
 						if ( typeof GODAMPlayer === 'function' ) {
 							const godamPlayer = GODAMPlayer( modal );
+
+							// Dispatch the custom godamPlayerRendered event.
+							const godamPlayerRenderedEvent = new CustomEvent(
+								'godamPlayerRendered',
+								{
+									detail: {
+										container: modal,
+										source: 'godam-gallery-block',
+									},
+								},
+							);
+							document.dispatchEvent( godamPlayerRenderedEvent );
+
 							const initEngagement = godamPlayer.initEngagement;
 
 							// Helper function to setup player once it's ready
@@ -637,6 +650,19 @@ document.addEventListener( 'click', async function( e ) {
 		// Initialize the video player
 		if ( typeof GODAMPlayer === 'function' ) {
 			GODAMPlayer( modal );
+
+			// Dispatch the custom godamPlayerRendered event.
+			const godamPlayerRenderedEvent = new CustomEvent(
+				'godamPlayerRendered',
+				{
+					detail: {
+						container: modal,
+						source: 'godam-gallery-block',
+					},
+				},
+			);
+			document.dispatchEvent( godamPlayerRenderedEvent );
+
 			// Wait for player to be ready before trying to play
 			const videoPlayerElement = modal.querySelector( '.video-js' );
 			const videojs = window.videojs;
