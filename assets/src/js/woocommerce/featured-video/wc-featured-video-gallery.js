@@ -237,8 +237,7 @@ jQuery( document ).ready( function( $ ) {
 				container.classList.remove( 'animate-video-loading' );
 
 				if ( typeof GODAMPlayer === 'function' ) {
-					const godamPlayer = GODAMPlayer( modal );
-					const initEngagement = godamPlayer.initEngagement;
+					GODAMPlayer( modal );
 
 					const videoPlayerElement = modal.querySelector( '.video-js' );
 					const videojs = window.videojs;
