@@ -12,3 +12,11 @@
     object-position: center;
 }
 
+.godam-woocommerce-featured-video-modal-content .godam-pills-skin .video-js .vjs-control-bar {
+	padding-left: 10px;
+    padding-right: 0;
+}
+
+.godam-woocommerce-featured-video-modal-content .is-landscape .godam-bubble-skin .video-js .vjs-control-bar .vjs-progress-control {
+	max-width: 81%;
+}

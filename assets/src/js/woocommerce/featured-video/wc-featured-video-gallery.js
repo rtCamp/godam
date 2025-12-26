@@ -237,9 +237,33 @@ jQuery( document ).ready( function( $ ) {
 				container.classList.remove( 'animate-video-loading' );
 
 				if ( typeof GODAMPlayer === 'function' ) {
-					GODAMPlayer( modal );
-					const playerEl = modal.querySelector( '.video-js' );
-					playerEl?.player?.play?.();
+					const godamPlayer = GODAMPlayer( modal );
+					const initEngagement = godamPlayer.initEngagement;
+
+					const videoPlayerElement = modal.querySelector( '.video-js' );
+					const videojs = window.videojs;
+
+					if ( videojs ) {
+						// Check if player is already ready (fallback for synchronous initialization)
+						const existingPlayer = videoPlayerElement ? videojs.getPlayer( videoPlayerElement ) : null;
+						if ( existingPlayer ) {
+							existingPlayer.play();
+						} else {
+							const onPlayerReady = ( event ) => {
+								// Ensure this event is for our video element
+								if ( event.detail.videoElement === videoPlayerElement ) {
+									event.detail.player.play();
+									document.removeEventListener( 'godamPlayerReady', onPlayerReady );
+									modal._galleryPlayerReadyHandler = null;
+								}
+							};
+							modal._galleryPlayerReadyHandler = onPlayerReady;
+							document.addEventListener( 'godamPlayerReady', onPlayerReady );
+						}
+					} else {
+						// eslint-disable-next-line no-console
+						console.error( 'Video.js is not loaded. Cannot initialize player.' );
+					}
 				}
 			} else {
 				container.innerHTML = '<div class="godam-error-message">Video could not be loaded.</div>';
