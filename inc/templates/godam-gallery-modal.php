@@ -149,7 +149,6 @@ add_filter( 'show_admin_bar', '__return_false' );
 		/* Ensure form layers are scrollable when content overflows */
 		.easydam-layer .form-container {
 			overflow-y: auto;
-			max-height: calc(100vh - 40px);
 			-webkit-overflow-scrolling: touch;
 			scrollbar-width: thin;
 		}
