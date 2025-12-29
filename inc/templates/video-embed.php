@@ -23,7 +23,7 @@ $godam_page_title = empty( $godam_video_id ) ? __( 'Video Embed', 'godam' ) : sp
 <html <?php language_attributes(); ?>>
 <head>
 	<meta charset="<?php bloginfo( 'charset' ); ?>">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 	<title><?php echo esc_html( $godam_page_title ); ?></title>
 	<?php wp_head(); ?>
 </head>
