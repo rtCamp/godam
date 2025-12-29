@@ -123,7 +123,7 @@ const videoAnalyticsPlugin = () => {
 						`Video analytics POST failed with status ${ response.status }`,
 					);
 				}
-			} catch ( err ) {
+			} catch {
 				// Error is silently ignored, not console logged.
 			}
 		},
