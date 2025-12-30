@@ -220,7 +220,7 @@ class GoDAM_Video_Gallery {
 
 		$video_settings = get_option( 'rtgodam_video_post_settings', array() );
 		$cpt_url_slug   = ! empty( $video_settings['video_slug'] ) ? sanitize_title( $video_settings['video_slug'] ) : 'videos';
-		$cpt_base_url   = home_url( '/' . $cpt_url_slug );
+		$cpt_base_url   = home_url( '/' );
 
 		$query = new \WP_Query( $args );
 
@@ -293,7 +293,7 @@ class GoDAM_Video_Gallery {
 				}
 
 				echo '<div class="godam-video-item">';
-				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $cpt_base_url . '/' . $video_slug ) . '">';
+				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $cpt_base_url . '?godam_page=video-embed&id=' . $video_id ) . '">';
 				echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
 				if ( $duration ) {
 					echo '<span class="godam-video-duration">' . esc_html( $duration ) . '</span>';

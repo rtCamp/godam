@@ -408,6 +408,7 @@
 
 // Compitibility with Like, comments and Views
 .is-gallery {
+
 	&.godam-modal,
 	.godam-modal-overlay,
 	.godam-modal-content {
@@ -435,5 +436,83 @@
 		border-radius: 50%;
 		border-top-color: #fff;
 		animation: godam-spin 1s ease-in-out infinite;
+	}
+}
+
+// Video ID Modal Styles
+.godam-video-id-modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 999999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	.godam-modal-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.8);
+		backdrop-filter: blur(10px);
+	}
+
+	.godam-modal-content {
+		position: relative;
+		background: #fff;
+		padding: 30px 40px;
+		border-radius: 12px;
+		max-width: min(90vw, 1200px);
+		max-height: 80vh;
+		width: 100%;
+		height: 100%;
+		text-align: center;
+		z-index: 1;
+		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+		animation: modalFadeIn 0.3s ease;
+	}
+
+	.godam-modal-close {
+		position: absolute;
+		top: 10px;
+		right: 15px;
+		font-size: 28px;
+		cursor: pointer;
+		color: #333;
+		line-height: 1;
+		transition: color 0.2s ease, transform 0.2s ease;
+
+		&:hover {
+			color: #000;
+			transform: scale(1.1);
+		}
+	}
+
+	.godam-modal-body {
+		height: 100%;
+
+		iframe {
+			width: 100%;
+			height: 100%;
+			border: none;
+			border-radius: 8px;
+		}
+	}
+}
+
+@keyframes modalFadeIn {
+
+	from {
+		opacity: 0;
+		transform: scale(0.9);
+	}
+
+	to {
+		opacity: 1;
+		transform: scale(1);
 	}
 }
