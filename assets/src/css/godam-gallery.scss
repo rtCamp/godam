@@ -403,7 +403,13 @@
 
 @keyframes godam-spin {
 
-	to { transform: rotate(360deg); }
+	from {
+		transform: rotate(0deg);
+	}
+
+	to {
+		transform: rotate(360deg);
+	}
 }
 
 // Compitibility with Like, comments and Views
@@ -459,6 +465,20 @@
 		height: 100%;
 		background: rgba(0, 0, 0, 0.8);
 		backdrop-filter: blur(10px);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		.godam-overlay-loading-spinner {
+			display: inline-block;
+			width: 50px;
+			height: 50px;
+			border: 5px solid rgba(255, 255, 255, 0.3);
+			border-radius: 50%;
+			border-top-color: #fff;
+			animation: godam-spin 1s ease-in-out infinite;
+			z-index: 10;
+		}
 	}
 
 	.godam-modal-content {
@@ -473,7 +493,18 @@
 		text-align: center;
 		z-index: 1;
 		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-		animation: modalFadeIn 0.3s ease;
+		transition: opacity 0.3s ease;
+
+		&.godam-modal-content-hidden {
+			opacity: 0;
+			pointer-events: none;
+		}
+
+		&.godam-modal-content-visible {
+			opacity: 1;
+			pointer-events: auto;
+			animation: modalFadeIn 0.3s ease;
+		}
 	}
 
 	.godam-modal-close {
@@ -494,6 +525,24 @@
 
 	.godam-modal-body {
 		height: 100%;
+		position: relative;
+		transition: transform 0.3s ease, opacity 0.3s ease;
+
+		&.slide-out-up {
+			animation: slideOutUp 0.3s ease forwards;
+		}
+
+		&.slide-out-down {
+			animation: slideOutDown 0.3s ease forwards;
+		}
+
+		&.slide-in-up {
+			animation: slideInUp 0.3s ease forwards;
+		}
+
+		&.slide-in-down {
+			animation: slideInDown 0.3s ease forwards;
+		}
 
 		iframe {
 			width: 100%;
