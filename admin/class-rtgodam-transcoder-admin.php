@@ -665,9 +665,8 @@ class RTGODAM_Transcoder_Admin {
 		echo '<p style="margin-top: 0;"><strong>' . esc_html__( 'Data we collect:', 'godam' ) . '</strong></p>';
 		echo '<ul style="list-style: disc; margin-left: 20px;">';
 		echo '<li>' . esc_html__( 'Server environment details (PHP, MySQL, Server, and WordPress versions)', 'godam' ) . '</li>';
-		echo '<li>' . esc_html__( 'Site details (Name, URL, Language, and number of users)', 'godam' ) . '</li>';
+		echo '<li>' . esc_html__( 'Site details (Name, URL, Language, Admin user, email and number of users)', 'godam' ) . '</li>';
 		echo '<li>' . esc_html__( 'Plugin details (Number of active and inactive plugins)', 'godam' ) . '</li>';
-		echo '<li>' . esc_html__( 'Your details (Name and email address)', 'godam' ) . '</li>';
 		echo '<li>' . esc_html__( 'Usage data (Interactions, navigation, session replays, heatmaps, and errors via PostHog)', 'godam' ) . '</li>';
 		echo '</ul>';
 		echo '<p style="margin-bottom: 0;">';
