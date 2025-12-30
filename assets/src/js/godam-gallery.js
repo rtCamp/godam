@@ -265,9 +265,70 @@ document.addEventListener( 'click', function( e ) {
 			return false;
 		};
 
+		// Function to navigate to next/previous video (used by postMessage handler)
+		const navigateVideo = async ( direction ) => {
+			// Check if modal is ready for navigation
+			if ( modal.dataset.isLoading === 'true' ) {
+				return;
+			}
+
+			// Get current video items (refreshed)
+			let videoItems = getCurrentVideoItems();
+
+			// Get current video index
+			const currentId = modal.dataset.currentVideoId;
+			const currentIndex = Array.from( videoItems ).findIndex( ( item ) =>
+				item.querySelector( '.godam-video-thumbnail' ).getAttribute( 'data-video-id' ) === currentId,
+			);
+
+			if ( currentIndex === -1 ) {
+				return;
+			}
+
+			let newIndex;
+
+			if ( direction === 'next' ) {
+				// Navigate to next video
+				if ( currentIndex === videoItems.length - 1 ) {
+					// At last video, try to load more
+					modal.dataset.isLoading = 'true';
+					const moreLoaded = await loadMoreIfNeeded( currentIndex, videoItems );
+					modal.dataset.isLoading = 'false';
+
+					if ( moreLoaded ) {
+						// Refresh video items after loading more
+						videoItems = getCurrentVideoItems();
+						newIndex = currentIndex + 1;
+					} else {
+						// No more videos available, do nothing
+						return;
+					}
+				} else {
+					newIndex = currentIndex + 1;
+				}
+			} else {
+				// Navigate to previous video
+				if ( currentIndex === 0 ) {
+					// At first video, do nothing
+					return;
+				}
+				newIndex = currentIndex - 1;
+			}
+
+			// Get the new video ID
+			const newThumbnail = videoItems[ newIndex ]?.querySelector( '.godam-video-thumbnail' );
+			if ( newThumbnail ) {
+				const newVideoId = newThumbnail.getAttribute( 'data-video-id' );
+				const newVideoUrl = newThumbnail.getAttribute( 'data-video-url' );
+				if ( newVideoId && newVideoId !== currentId && newVideoUrl ) {
+					updateModalVideo( newVideoId, newVideoUrl, direction );
+				}
+			}
+		};
+
 		// Scroll functionality with cooldown and threshold
 		const SCROLL_COOLDOWN = 1000; // milliseconds
-		const SCROLL_THRESHOLD = 50; // Minimum scroll distance to trigger
+		const SCROLL_THRESHOLD = 200; // Minimum scroll distance to trigger
 		let lastScrollTime = 0;
 		let scrollTimeout;
 		let accumulatedDelta = 0;
@@ -468,12 +529,34 @@ document.addEventListener( 'click', function( e ) {
 		document.body.addEventListener( 'touchmove', handleTouchMove, { passive: false } );
 		document.body.addEventListener( 'touchend', handleTouchEnd, { passive: false } );
 
+		// Handle postMessage from iframe
+		const handlePostMessage = async ( event ) => {
+			// Only handle messages when modal exists and is open
+			if ( ! modal || ! document.body.contains( modal ) ) {
+				return;
+			}
+
+			// Verify message is from the iframe (check origin if needed)
+			// For security, you might want to check event.origin
+			if ( event.data && event.data.type ) {
+				if ( event.data.type === 'godamScrollNext' ) {
+					await navigateVideo( 'next' );
+				} else if ( event.data.type === 'godamScrollPrevious' ) {
+					await navigateVideo( 'prev' );
+				}
+			}
+		};
+
+		// Add message listener
+		window.addEventListener( 'message', handlePostMessage );
+
 		// Close modal function
 		const closeModal = () => {
 			document.removeEventListener( 'wheel', handleScroll );
 			document.body.removeEventListener( 'touchstart', handleTouchStart );
 			document.body.removeEventListener( 'touchmove', handleTouchMove );
 			document.body.removeEventListener( 'touchend', handleTouchEnd );
+			window.removeEventListener( 'message', handlePostMessage );
 			iframe.removeEventListener( 'load', () => {} );
 			modal.remove();
 			document.body.style.overflow = '';

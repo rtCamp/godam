@@ -3,7 +3,7 @@
  * GoDAM video embed page class.
  *
  * @package godam
- * @since 1.2.0
+ * @since n.e.x.t
  */
 
 namespace RTGODAM\Inc;
@@ -27,7 +27,7 @@ class Video_Embed {
 	/**
 	 * To setup action/filter.
 	 *
-	 * @since 1.2.0
+	 * @since n.e.x.t
 	 * 
 	 * @return void
 	 */
@@ -41,7 +41,7 @@ class Video_Embed {
 	/**
 	 * Load the video embed template.
 	 * 
-	 * @since 1.2.0
+	 * @since n.e.x.t
 	 * 
 	 * @param string $template The current template.
 	 * @return string The path to the video embed template.
@@ -56,9 +56,9 @@ class Video_Embed {
 	/**
 	 * Enqueue assets for the video embed page.
 	 * 
-	 * @since 1.2.0
+	 * @since n.e.x.t
 	 * 
-	 * This method registers the styles needed for the video embed page.
+	 * This method registers the styles and scripts needed for the video embed page.
 	 */
 	public function rtgodam_enqueue_video_embed_assets() {
 		// Enqueue style for the video embed page.
@@ -68,12 +68,21 @@ class Video_Embed {
 			array(),
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-video-embed.css' )
 		);
+
+		// Enqueue script for the video embed page.
+		wp_register_script(
+			'godam-video-embed-script',
+			RTGODAM_URL . 'assets/build/js/godam-video-embed.min.js',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/js/godam-video-embed.min.js' ),
+			true
+		);
 	}
 
 	/**
 	 * Hide the admin bar on the video embed page.
 	 * 
-	 * @since 1.2.0
+	 * @since n.e.x.t
 	 * 
 	 * @param bool $show_admin_bar Whether to show the admin bar.
 	 * @return bool False if on embed page, otherwise the original value.
@@ -88,7 +97,7 @@ class Video_Embed {
 	/**
 	 * Disable Query Monitor on the video embed page.
 	 * 
-	 * @since 1.2.0
+	 * @since n.e.x.t
 	 * 
 	 * @param bool $dispatch Whether to dispatch Query Monitor output.
 	 * @return bool False if on embed page, otherwise the original value.

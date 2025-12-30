@@ -9,8 +9,9 @@
 // Ensure this is being accessed via WordPress.
 defined( 'ABSPATH' ) || exit;
 
-// Enqueue styles for the video embed page.
+// Enqueue styles and scripts for the video embed page.
 wp_enqueue_style( 'godam-video-embed-style' );
+wp_enqueue_script( 'godam-video-embed-script' );
 
 $godam_video_id = isset( $_GET['id'] ) ? intval( wp_unslash( $_GET['id'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- no nonce verification needed for this page.
 
