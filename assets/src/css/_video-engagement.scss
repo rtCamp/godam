@@ -510,9 +510,13 @@
             box-sizing: border-box;
 
             &.is-embed-page {
-                width: 100%;
-                max-width: none;
-                height: 100%;
+                width: 100% !important;
+                max-width: none !important;
+                height: 100% !important;
+
+                @media screen and ( max-width: 768px ) {
+                    padding: 0;
+                }
             }
 
             &.is-skip-engagements {
@@ -989,6 +993,7 @@
             .rtgodam-video-engagement--comment-modal-title {
                 font-size: 1.1rem;
                 font-weight: 600;
+                color: #fff;
             }
 
             .rtgodam-video-engagement--comment-modal--video-info-title {
