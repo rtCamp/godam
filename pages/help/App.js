@@ -170,7 +170,7 @@ const App = () => {
 				</section>
 			</div>
 			<div className="flex justify-center flex-wrap gap-8 py-6 max-w-[1260px] mx-auto px-4">
-				{ content.map( ( section, index ) => (
+				{ content && content.map( ( section, index ) => (
 					<div key={ index } className="single-container">
 						<div
 							className="single-container-img"
@@ -187,8 +187,8 @@ const App = () => {
 						<div className="single-container-content">
 							<h3>{ section.section_name }</h3>
 							<ul>
-								{ section.articles_list.map( ( article ) => (
-									<li key={ article.section_name }>
+								{ section.articles_list && section.articles_list.map( ( article ) => (
+									<li key={ article.link }>
 										<Icon className="icon" icon={ chevronRight } />
 										<a
 											target="_blank"
