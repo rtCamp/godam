@@ -109,15 +109,6 @@ const GeneralSettings = () => {
 						onChange={ ( value ) => handleSettingChange( 'enable_gtm_tracking', value ) }
 					/>
 
-					<ToggleControl
-						__nextHasNoMarginBottom
-						className="godam-toggle godam-margin-bottom"
-						label={ __( 'Enable PostHog Analytics', 'godam' ) }
-						help={ __( 'Allows the GoDAM plugin to track events for analytics purposes. This helps us improve the product experience.', 'godam' ) }
-						checked={ mediaSettings?.general?.enable_posthog_tracking }
-						onChange={ ( value ) => handleSettingChange( 'enable_posthog_tracking', value ) }
-					/>
-
 				</PanelBody>
 			</Panel>
 

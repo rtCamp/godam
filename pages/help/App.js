@@ -1,8 +1,16 @@
 /**
+ * External dependencies
+ */
+import { useSelector, useDispatch } from 'react-redux';
+
+/**
  * WordPress dependencies
  */
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import { Icon, ToggleControl } from '@wordpress/components';
+import { chevronRight } from '@wordpress/icons';
+
 /**
  * Internal dependencies
  */
@@ -10,11 +18,33 @@ import Customize from '../../assets/src/images/customize.png';
 import Folder from '../../assets/src/images/folder.png';
 import WebDesign from '../../assets/src/images/web-design.png';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
-import { Icon } from '@wordpress/components';
-import { chevronRight } from '@wordpress/icons';
 import GoDAMFooter from '../godam/components/GoDAMFooter.jsx';
+import { useSaveMediaSettingsMutation, useGetMediaSettingsQuery } from '../godam/redux/api/media-settings.js';
+import { updateMediaSetting } from '../godam/redux/slice/media-settings.js';
 
 const App = () => {
+	const dispatch = useDispatch();
+	const { mediaSettings } = useSelector( ( state ) => ( {
+		mediaSettings: state.mediaSettings,
+	} ) );
+
+	const { isLoading: isSettingsLoading } = useGetMediaSettingsQuery();
+	const [ saveMediaSettings ] = useSaveMediaSettingsMutation();
+
+	const handlePostHogToggle = async ( value ) => {
+		dispatch( updateMediaSetting( { category: 'general', key: 'enable_posthog_tracking', value } ) );
+
+		// Save immediately since it's a single toggle in help page
+		const updatedSettings = {
+			...mediaSettings,
+			general: {
+				...mediaSettings.general,
+				enable_posthog_tracking: value,
+			},
+		};
+		await saveMediaSettings( { settings: updatedSettings } );
+	};
+
 	const content = [
 		{
 			section_name: 'Settings and configuration',
@@ -173,6 +203,26 @@ const App = () => {
 						</div>
 					</div>
 				) ) }
+			</div>
+
+			<div className="max-w-[1260px] mx-auto px-4 py-8 border-t border-gray-200 mt-8">
+				<div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg border border-gray-100">
+					<div>
+						<h4 className="text-sm font-medium text-gray-900 m-0">
+							{ __( 'Help us improve GoDAM', 'godam' ) }
+						</h4>
+						<p className="text-xs text-gray-500 mb-0">
+							{ __( 'Allows the GoDAM plugin to track events for analytics purposes. This helps us improve the product experience.', 'godam' ) }
+						</p>
+					</div>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						className="godam-toggle-small mb-0"
+						checked={ mediaSettings?.general?.enable_posthog_tracking }
+						onChange={ handlePostHogToggle }
+						disabled={ isSettingsLoading }
+					/>
+				</div>
 			</div>
 
 			<GoDAMFooter />

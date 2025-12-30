@@ -47,7 +47,7 @@ class Settings extends Base {
 			'general'      => array(
 				'enable_folder_organization' => true,
 				'enable_gtm_tracking'        => false,
-				'enable_posthog_tracking'    => true,
+				'enable_posthog_tracking'    => false,
 			),
 			'video_player' => array(
 				'brand_image'    => '',
@@ -174,6 +174,7 @@ class Settings extends Base {
 		if ( ! empty( $result['data']['api_key'] ) ) {
 			$result['data']['api_key'] = rtgodam_mask_string( $result['data']['api_key'] );
 		}
+
 
 		return new \WP_REST_Response(
 			array(
