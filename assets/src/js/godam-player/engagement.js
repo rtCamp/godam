@@ -217,12 +217,14 @@ const engagementStore = {
 		 * @param {string}  videoId           - The ID of the video.
 		 * @param {boolean} skipEngagements   - Whether to skip engagements.
 		 *
+		 * @param           isEmbedPage
 		 * @return {Object} An action object containing the type.
 		 */
-		initiateCommentModal: ( videoAttachmentId, siteUrl, videoId, skipEngagements = false ) => {
-			engagementStore.generateCommentModal( videoAttachmentId, siteUrl, videoId, skipEngagements );
+		initiateCommentModal: ( videoAttachmentId, siteUrl, videoId, skipEngagements = false, isEmbedPage = false ) => {
+			engagementStore.generateCommentModal( videoAttachmentId, siteUrl, videoId, skipEngagements, isEmbedPage );
 			return {
 				type: ACTIONS.GENERATE_COMMENT_MODAL,
+				isEmbedPage,
 			};
 		},
 
@@ -489,8 +491,9 @@ const engagementStore = {
 	 * @param {string}  siteUrl           The site URL.
 	 * @param {string}  videoId           The video attachment ID.
 	 * @param {boolean} skipEngagements   Whether to skip engagements.
+	 * @param {boolean} isEmbedPage       Whether the comment modal is for an embed page.
 	 */
-	generateCommentModal( videoAttachmentId, siteUrl, videoId, skipEngagements = false ) {
+	generateCommentModal( videoAttachmentId, siteUrl, videoId, skipEngagements = false, isEmbedPage = false ) {
 		const modalId = 'rtgodam-video-engagement--comment-modal';
 		let commentModal = document.getElementById( modalId );
 
@@ -501,7 +504,16 @@ const engagementStore = {
 		commentModal.setAttribute( 'id', modalId );
 		document.body.appendChild( commentModal );
 		this.root = createRoot( commentModal );
-		this.root.render( <CommentBox videoAttachmentId={ videoAttachmentId } siteUrl={ siteUrl } storeObj={ this } videoId={ videoId } skipEngagements={ skipEngagements } /> );
+		this.root.render(
+			<CommentBox
+				videoAttachmentId={ videoAttachmentId }
+				siteUrl={ siteUrl }
+				storeObj={ this }
+				videoId={ videoId }
+				skipEngagements={ skipEngagements }
+				isEmbedPage={ isEmbedPage }
+			/>,
+		);
 	},
 };
 
@@ -1121,7 +1133,9 @@ function GuestLoginForm( props ) {
  * @return {JSX.Element} A React element representing the comment box modal.
  */
 function CommentBox( props ) {
-	const { videoAttachmentId, storeObj, siteUrl, videoId, skipEngagements } = props;
+	const { videoAttachmentId, storeObj, siteUrl, videoId, skipEngagements, isEmbedPage } = props;
+	console.log( 'isEmbedPage', isEmbedPage );
+	
 	const baseClass = 'rtgodam-video-engagement--comment-modal';
 	const memoizedStoreObj = useMemo( () => storeObj, [ storeObj ] );
 	const commentsCount = memoizedStoreObj.select.getCommentsCount()[ videoAttachmentId ] || 0;
@@ -1187,10 +1201,14 @@ function CommentBox( props ) {
 
 	return (
 		<div className={ `${ baseClass } ${ videoRatioClass }` }>
-			<div className={ baseClass + '-content' + ( skipEngagements ? ' is-skip-engagements' : '' ) }>
+			<div className={ baseClass + '-content' + ( skipEngagements ? ' is-skip-engagements' : '' ) + ( isEmbedPage ? ' is-embed-page' : '' ) }>
 				<div className={ baseClass + '-header' }>
 					<h3 className={ baseClass + '-title' }>{ titles }</h3>
-					<button className={ `${ baseClass }--close-button` } onClick={ () => memoizedStoreObj.root.unmount() }>&times;</button>
+					{
+						! isEmbedPage && (
+							<button className={ `${ baseClass }--close-button` } onClick={ () => memoizedStoreObj.root.unmount() }>&times;</button>
+						)
+					}
 				</div>
 				<div className={ baseClass + '--video' }>
 					<div className={ `${ baseClass }--video-figure` }>

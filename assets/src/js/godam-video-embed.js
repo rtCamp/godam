@@ -212,3 +212,87 @@ document.addEventListener( 'DOMContentLoaded', function() {
 	document.body.addEventListener( 'touchend', handleTouchEnd, { passive: false } );
 } );
 
+/**
+ * Render CommentBox component on video embed page by default.
+ *
+ * @since n.e.x.t
+ */
+document.addEventListener( 'DOMContentLoaded', function() {
+	// Get video ID from URL query parameter.
+	const urlParams = new URLSearchParams( window.location.search );
+	const videoId = urlParams.get( 'id' );
+
+	if ( ! videoId ) {
+		return;
+	}
+
+	const videoIdNum = parseInt( videoId, 10 );
+	if ( ! videoIdNum || isNaN( videoIdNum ) ) {
+		return;
+	}
+
+	function renderCommentBox() {
+		// Wait for WordPress data and React to be available.
+		if ( typeof wp === 'undefined' || ! wp.data || ! wp.element || ! wp.element.createRoot ) {
+			setTimeout( renderCommentBox, 100 );
+			return;
+		}
+
+		const storeName = 'godam-video-engagement';
+		const select = wp.data.select( storeName );
+
+		// Check if store is registered, if not wait a bit more.
+		if ( ! select ) {
+			setTimeout( renderCommentBox, 100 );
+			return;
+		}
+
+		// Find the video element to get its instance ID.
+		const videoElement = document.querySelector( '.easydam-player.video-js[data-id="' + videoIdNum + '"]' );
+		if ( ! videoElement ) {
+			// Video not found yet, wait a bit more.
+			setTimeout( renderCommentBox, 100 );
+			return;
+		}
+
+		const videoInstanceId = videoElement.getAttribute( 'data-instance-id' );
+		if ( ! videoInstanceId ) {
+			// Instance ID not set yet, wait a bit more.
+			setTimeout( renderCommentBox, 100 );
+			return;
+		}
+
+		// Wait a bit more for PlayerManager to initialize the engagement store.
+		// Then dispatch the action to render CommentBox.
+		// The initiateCommentModal action will call engagementStore.generateCommentModal
+		// which is accessible via closure in the engagement.js module.
+		setTimeout( function() {
+			// Get dispatch now that we know the store is available.
+			const dispatch = wp.data.dispatch( storeName );
+
+			// Get site URL from godamData or use current origin.
+			// Try to get the actual site URL from various sources.
+			let siteUrl = window.location.origin;
+			if ( window.godamData && window.godamData.apiBase ) {
+				try {
+					const apiUrl = new URL( window.godamData.apiBase );
+					siteUrl = apiUrl.origin;
+				} catch ( e ) {
+					// If URL parsing fails, fall back to current origin.
+					siteUrl = window.location.origin;
+				}
+			}
+
+			const videoAttachmentId = videoIdNum;
+			const videoIdForEngagement = 'engagement-' + videoInstanceId;
+
+			// Dispatch action to initiate comment modal.
+			// This action internally calls engagementStore.generateCommentModal.
+			dispatch.initiateCommentModal( videoAttachmentId, siteUrl, videoIdForEngagement, false, true );
+		}, 1000 );
+	}
+
+	// Start rendering after a short delay to ensure scripts are loaded.
+	setTimeout( renderCommentBox, 500 );
+} );
+
