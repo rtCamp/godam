@@ -50,6 +50,7 @@ class Settings extends Base {
 				'enable_folder_organization' => true,
 				'enable_gtm_tracking'        => false,
 				'enable_posthog_tracking'    => false,
+				'posthog_initialized'        => false,
 			),
 			'video_player' => array(
 				'brand_image'    => '',
@@ -243,9 +244,13 @@ class Settings extends Base {
 	 */
 	public function get_easydam_settings() {
 		// Retrieve settings from the database.
-		$easydam_settings = get_option( 'rtgodam-settings', $this->get_default_settings() );
+		$easydam_settings = get_option( 'rtgodam-settings', array() );
+		$default_settings = $this->get_default_settings();
 
-		return new \WP_REST_Response( $easydam_settings, 200 );
+		// Merge defaults with saved settings.
+		$merged_settings = array_replace_recursive( $default_settings, $easydam_settings );
+
+		return new \WP_REST_Response( $merged_settings, 200 );
 	}
 
 	/**
@@ -311,6 +316,7 @@ class Settings extends Base {
 				'enable_folder_organization' => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ?? $default['general']['enable_folder_organization'] ),
 				'enable_gtm_tracking'        => rest_sanitize_boolean( $settings['general']['enable_gtm_tracking'] ?? $default['general']['enable_gtm_tracking'] ),
 				'enable_posthog_tracking'    => rest_sanitize_boolean( $settings['general']['enable_posthog_tracking'] ?? $default['general']['enable_posthog_tracking'] ),
+				'posthog_initialized'        => rest_sanitize_boolean( $settings['general']['posthog_initialized'] ?? $default['general']['posthog_initialized'] ),
 			),
 			'video_player' => array(
 				'brand_image'    => sanitize_text_field( $settings['video_player']['brand_image'] ?? $default['video_player']['brand_image'] ),

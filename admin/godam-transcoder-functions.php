@@ -440,11 +440,15 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 
 		$account_token = $body['message']['account_token'];
 
-		// Enable PostHog tracking once API key is activated.
+		// Enable PostHog tracking once API key is activated or plugin is updated with active API key.
 		$settings = get_option( 'rtgodam-settings', array() );
-		if ( ! isset( $settings['general']['posthog_initialized'] ) ) {
+		if ( $save || empty( $settings['general']['posthog_initialized'] ) ) {
 			$settings['general']['enable_posthog_tracking'] = true;
 			$settings['general']['posthog_initialized']     = true;
+			update_option( 'rtgodam-settings', $settings );
+		} elseif ( ! empty( $settings['general']['posthog_initialized'] ) && ! $settings['general']['enable_posthog_tracking'] && $save ) {
+			// If user previously opted out but is now activating an API key, re-enable tracking.
+			$settings['general']['enable_posthog_tracking'] = true;
 			update_option( 'rtgodam-settings', $settings );
 		}
 

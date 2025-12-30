@@ -886,11 +886,40 @@ class Pages {
 		$settings        = get_option( 'rtgodam-settings', array() );
 		$enable_tracking = isset( $settings['general']['enable_posthog_tracking'] ) ? $settings['general']['enable_posthog_tracking'] : true;
 
-		return array(
+		$config = array(
 			'key'     => 'phc_9P3X3py1SfwrF78SXXkIyL2cHjkRTpvWzqf8RZJDaSk',
 			'host'    => 'https://us.i.posthog.com',
 			'enabled' => (int) $enable_tracking, // Convert boolean to int (0/1) for proper JS encoding.
 		);
+
+		if ( $enable_tracking ) {
+			global $wpdb, $wp_version;
+
+			if ( ! function_exists( 'get_plugins' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
+
+			$current_user   = wp_get_current_user();
+			$all_plugins    = get_plugins();
+			$active_plugins = get_option( 'active_plugins', array() );
+
+			$config['properties'] = array(
+				'php_version'          => phpversion(),
+				'mysql_version'        => $wpdb->db_version(),
+				'server_software'      => isset( $_SERVER['SERVER_SOFTWARE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) ) : '',
+				'wp_version'           => $wp_version,
+				'site_language'        => get_locale(),
+				'site_name'            => get_bloginfo( 'name' ),
+				'site_url'             => get_site_url(),
+				'user_name'            => $current_user->display_name,
+				'user_email'           => $current_user->user_email,
+				'active_plugins_count' => count( $active_plugins ),
+				'total_plugins_count'  => count( $all_plugins ),
+				'user_count'           => count_users()['total_users'] ?? 0,
+			);
+		}
+
+		return $config;
 	}
 
 	/**
