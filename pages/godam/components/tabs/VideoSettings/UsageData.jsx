@@ -28,55 +28,45 @@ const calculatePercentage = ( used, total ) => {
 const UsageData = () => {
 	const userData = window?.userData || {};
 
-	const isBandwidthError = userData?.storageBandwidthError ?? false;
-	const percentageBandwidthUsed = ! isBandwidthError ? calculatePercentage( userData.bandwidthUsed, userData.totalBandwidth ) : 0;
-	const percentageStorageUsed = ! isBandwidthError ? calculatePercentage( userData.storageUsed, userData.totalStorage ) : 0;
+	const percentageBandwidthUsed = calculatePercentage( userData.bandwidthUsed, userData.totalBandwidth );
+	const percentageStorageUsed = calculatePercentage( userData.storageUsed, userData.totalStorage );
 
 	return (
 		<div className="flex gap-4 flex-wrap">
-
-			{
-				userData.storageBandwidthError ? (
-					<p className="text-yellow-700 text-xs h-max">{ isBandwidthError }</p>
-				) : (
-					<>
-						<div className="flex gap-3 items-center">
-							<div className="circle-container">
-								<div className="data text-xs">{ percentageBandwidthUsed }%</div>
-								<div
-									className={ `circle ${
-										percentageBandwidthUsed > 90 ? 'red' : ''
-									}` }
-									style={ { '--percentage': percentageBandwidthUsed + '%' } }
-								></div>
-							</div>
-							<div className="leading-6">
-								<div className="easydam-settings-label text-base">{ __( 'BANDWIDTH', 'godam' ) }</div>
-								<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.totalBandwidth - userData.bandwidthUsed ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
-								<br />
-								<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.bandwidthUsed ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
-							</div>
-						</div>
-						<div className="flex gap-3 items-center">
-							<div className="circle-container">
-								<div className="data text-xs">{ percentageStorageUsed }%</div>
-								<div
-									className={ `circle ${
-										percentageStorageUsed > 90 ? 'red' : ''
-									}` }
-									style={ { '--percentage': percentageStorageUsed + '%' } }
-								></div>
-							</div>
-							<div className="leading-6">
-								<div className="easydam-settings-label text-base">{ __( 'STORAGE', 'godam' ) }</div>
-								<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.totalStorage - userData.storageUsed ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
-								<br />
-								<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.storageUsed ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
-							</div>
-						</div>
-					</>
-				)
-			}
+			<div className="flex gap-3 items-center">
+				<div className="circle-container">
+					<div className="data text-xs">{ percentageBandwidthUsed }%</div>
+					<div
+						className={ `circle ${
+							percentageBandwidthUsed > 90 ? 'red' : ''
+						}` }
+						style={ { '--percentage': percentageBandwidthUsed + '%' } }
+					></div>
+				</div>
+				<div className="leading-6">
+					<div className="easydam-settings-label text-base">{ __( 'BANDWIDTH', 'godam' ) }</div>
+					<strong>{ __( 'Available:', 'godam' ) } </strong>{ parseFloat( Math.max( 0, ( userData.totalBandwidth || 0 ) - ( userData.bandwidthUsed || 0 ) ) ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
+					<br />
+					<strong>{ __( 'Used:', 'godam' ) } </strong>{ parseFloat( userData.bandwidthUsed || 0 ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
+				</div>
+			</div>
+			<div className="flex gap-3 items-center">
+				<div className="circle-container">
+					<div className="data text-xs">{ percentageStorageUsed }%</div>
+					<div
+						className={ `circle ${
+							percentageStorageUsed > 90 ? 'red' : ''
+						}` }
+						style={ { '--percentage': percentageStorageUsed + '%' } }
+					></div>
+				</div>
+				<div className="leading-6">
+					<div className="easydam-settings-label text-base">{ __( 'STORAGE', 'godam' ) }</div>
+					<strong>{ __( 'Available:', 'godam' ) } </strong>{ parseFloat( Math.max( 0, ( userData.totalStorage || 0 ) - ( userData.storageUsed || 0 ) ) ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
+					<br />
+					<strong>{ __( 'Used:', 'godam' ) } </strong>{ parseFloat( userData.storageUsed || 0 ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
+				</div>
+			</div>
 		</div>
 	);
 };

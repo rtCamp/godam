@@ -562,11 +562,15 @@ class Pages {
 
 			if ( is_plugin_active( 'wp-polls/wp-polls.php' ) && isset( $poll_ajax_style['loading'] ) && $poll_ajax_style['loading'] ) {
 
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- WP Polls plugin constant.
 				if ( ! defined( 'WP_POLLS_VERSION' ) ) {
+					// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- WP Polls plugin constant.
 					define( 'WP_POLLS_VERSION', '2.77.3' );
 				}
 
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- WP Polls plugin constant.
 				wp_enqueue_script( 'wp-polls', plugins_url( 'wp-polls/polls-js.js' ), array( 'jquery' ), WP_POLLS_VERSION, true );
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- WP Polls plugin constant.
 				wp_enqueue_style( 'wp-polls', plugins_url( 'wp-polls/polls-css.css' ), false, WP_POLLS_VERSION, 'all' );
 
 				wp_localize_script(
@@ -607,6 +611,10 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			$timezone     = wp_timezone();
+			$current_time = new \DateTime( 'now', $timezone );
+			$end_time     = new \DateTime( '2026-01-20 23:59:59', $timezone );
+
 			wp_localize_script(
 				'godam-page-script-dashboard',
 				'posthogConfig',
@@ -617,7 +625,9 @@ class Pages {
 				'godam-page-script-dashboard',
 				'videoData',
 				array(
-					'adminUrl' => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
+					'adminUrl'              => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
+					'godamBaseUrl'          => RTGODAM_IO_API_BASE,
+					'showNewYearSaleBanner' => ( $current_time <= $end_time ),
 				)
 			);
 
@@ -666,6 +676,7 @@ class Pages {
 					'currentUserId'    => get_current_user_id(),            // Current user ID.
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
 					'adminUrl'         => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
+					'godamBaseUrl'     => RTGODAM_IO_API_BASE,
 				)
 			);
 

@@ -225,6 +225,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 		$job_for     = $request->get_param( 'job_for' );
 		$thumbnail   = $request->get_param( 'thumbnail' );
 		$format      = $request->get_param( 'format' );
+		$job_type    = $request->get_param( 'job_type' );
 
 		if ( ! empty( $job_id ) && ! empty( $file_status ) && ( 'error' === $file_status ) ) {
 			return new WP_Error( 'rtgodam_transcoding_error', 'Something went wrong. Invalid post request.', array( 'status' => 400 ) );
@@ -243,6 +244,14 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 					$attachment_id         = $id;
 					$post_array            = $request->get_params();
 					$post_array['post_id'] = $attachment_id;
+
+					// If thumbnail array is empty but thumbnail_url is provided, use it.
+					if ( empty( $post_array['thumbnail'] ) && ! empty( $post_array['thumbnail_url'] ) ) {
+						$post_array['thumbnail'] = array(
+							$post_array['thumbnail_url'],
+						);
+						$has_thumbs              = true;
+					}
 
 					if ( $has_thumbs && ! empty( $post_array['thumbnail'] ) ) {
 						$thumbnail = $this->rtgodam_transcoder_handler->add_media_thumbnails( $post_array );
@@ -273,8 +282,13 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 							$this->rtgodam_transcoder_handler->add_transcoded_files( $post_array['files'], $attachment_id, $job_for );
 						}
 					}
+
+					if ( 'pdf' === $job_type && isset( $post_array['download_url'] ) && ! empty( $post_array['download_url'] ) ) {
+						// Setting the transcoded PDF URL.
+						update_post_meta( $attachment_id, 'rtgodam_transcoded_url', esc_url_raw( $post_array['download_url'] ) );
+					}
 				} else {
-					$flag = 'Something went wrong. The required attachment id does not exists. It must have been deleted.';
+					$flag = __( 'Something went wrong. The required attachment id does not exists. It must have been deleted.', 'godam' );
 				}
 
 				$this->rtgodam_transcoder_handler->update_usage( $this->rtgodam_transcoder_handler->api_key );

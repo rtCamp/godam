@@ -87,6 +87,11 @@
 	&.hidden {
 		display: none;
 	}
+
+	svg {
+		position: relative;
+		top: 2px;
+	}
 }
 
 .godam-player-overlay {
@@ -99,6 +104,17 @@
 	opacity: 0;
 	transition: opacity 0.3s ease;
 	pointer-events: none; /* Prevent interaction with the overlay */
+}
+
+.godam-poster-image {
+	display: none;
+	position:absolute;
+	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
+	width: 100%;
+	height: auto;
+	max-height: 100%;
+	object-fit: contain;
+	background-color: #000;
 }
 
 .vjs-audio-button.vjs-menu-button {
@@ -195,6 +211,15 @@
 	border-radius: 4px;
 }
 
+.poll-container button:hover {
+	background-color: #1a5d99;
+}
+
+.poll-container button:disabled {
+	background-color: #ccc;
+	cursor: not-allowed;
+}
+
 // Only apply default styles to plain buttons without any classes
 .easydam-layer--cta-html button:not([class]),
 .video-js .easydam-layer--cta-html button:not([class]) {
@@ -258,15 +283,6 @@
 	margin: auto;
 }
 
-.poll-container button:hover {
-	background-color: #1a5d99;
-}
-
-.poll-container button:disabled {
-	background-color: #ccc;
-	cursor: not-allowed;
-}
-
 .editor-video-customisation-cta,
 .editor-enable-preview {
 	margin-top: 20px;
@@ -291,6 +307,17 @@
 	a {
 		color: #fff;
 	}
+}
+
+.image-cta-no-image {
+	width: clamp(100px, 20vw, 250px);
+    height: clamp(100px, 20vw, 200px);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 1rem;
+	text-align: center;
+	background: linear-gradient(135deg, #f0f0f0 0%, #a7a7a7 100%);
 }
 
 .image-cta-container,
@@ -1538,6 +1565,17 @@ body.godam-share-modal-open {
 	position: relative;
 }
 
+/* Ensure Elementor widget wrapper maintains proper dimensions */
+.elementor-widget-godam-video {
+	width: 100%;
+	flex-shrink: 0;
+
+	figure[id^="godam-player-container"] {
+		aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
+		display: block;
+	}
+}
+
 .easydam-video-container {
 	position: relative;
 	background-color: rgba(149, 149, 149, 0.2);
@@ -1551,6 +1589,13 @@ body.godam-share-modal-open {
 		.godam-player-overlay {
 
 			display: none;
+		}
+	}
+
+	&:has(.easydam-player.vjs-hidden) {
+
+		.godam-poster-image {
+			display: block;
 		}
 	}
 
@@ -1615,11 +1660,31 @@ body.godam-share-modal-open {
 		}
 	}
 
+	// FULLSCREEN CONTAINER STYLES - Critical for iOS Safari compatibility
 	&.godam-video-fullscreen {
+		// Position the player to cover the entire viewport
 		position: fixed;
 		inset: 0;
 		width: 100vw;
-		height: 100vh;
+
+		// DYNAMIC HEIGHT HANDLING FOR iOS (Critical Fix)
+		// Problem: iOS Safari viewport height changes dynamically when address bar collapses/expands
+		// Solution: Use multiple height declarations for maximum compatibility
+
+		// Method 1: JavaScript-controlled CSS custom property (--vh)
+		// - Calculated by setupIOSViewportHeight() function in controlsManager.js
+		// - Uses visualViewport API when available (iOS 13+)
+		// - Accounts for address bar, keyboard, and pinch-zoom changes
+		// - Fallback to 1vh if --vh is not set (older browsers)
+		height: calc(var(--vh, 1vh) * 100);
+
+		// Method 2: Native CSS dvh unit (Dynamic Viewport Height)
+		// - Modern browsers (iOS 15.4+, Chrome 108+, etc.)
+		// - Automatically adjusts when address bar collapses/expands
+		// - Most performant solution when supported
+		@supports (height: 100dvh) {
+			height: 100dvh;
+		}
 		background: #000;
 		z-index: 99999999;
 		display: flex;

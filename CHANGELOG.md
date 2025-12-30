@@ -1,5 +1,34 @@
 # Changelog #
 
+## v1.4.9 (December 19, 2025) ##
+
+- Feat: Added Free Plan for GoDAM
+- Fix: Background scroll issues in full screen on iOS
+- Fix: SDK event errors
+
+## v1.4.8 (December 10, 2025) ##
+
+- Feat: Added support for PDF files
+- Tweak: Implemented enhancements for Likes & Comments functionality
+- Tweak: Integrated further performance improvements, optimized asset loading
+- Tweak: Updated “Manage media” button to point directly to the specific folder
+- Tweak: Addressed various media library issues and general improvements
+- Fix: Full-screen inconsistencies on iOS (SDK)
+- Fix: Blank page issue when navigating unsaved video editor pages
+- Fix: Media Uploader UI issues
+- Fix: Form submission issues in preview
+- Fix: Player skin overlap issues
+- Fix: Media metadata display on Central
+
+## v1.4.7 (November 26, 2025) ##
+
+- Tweak: Improved GoDAM Video block performance with preload poster functionality
+- Fix: Control and scroll on iOS fullscreen
+- Fix: GoDAM media tab for WP core blocks
+- Fix: Virtual media player and preview template
+- Fix: Error handling for Ads layer
+- Fix: PHP naming conventions as per WP PCP
+
 ## v1.4.6 (November 12, 2025) ##
 
 - Tweak: Added audio recorder support for Ninja Forms with GoDAM Recorder

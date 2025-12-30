@@ -584,9 +584,9 @@ class Jetpack extends Base {
 		}
 
 		// Use the correct hash from the original form.
-		global $correct_form_hash;
-		if ( isset( $correct_form_hash ) ) {
-			$form_hash = $correct_form_hash;
+		global $godam_correct_form_hash;
+		if ( isset( $godam_correct_form_hash ) ) {
+			$form_hash = $godam_correct_form_hash;
 		}
 
 		// Verify the form is now in memory.
@@ -650,7 +650,7 @@ class Jetpack extends Base {
 
 			// Set DOING_AJAX constant to ensure process_submission returns success message.
 			if ( ! defined( 'DOING_AJAX' ) ) {
-				define( 'DOING_AJAX', true );
+				define( 'DOING_AJAX', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- required for Jetpack form processing.
 			}
 			
 			// Process the submission using Jetpack's built-in method.
@@ -806,8 +806,8 @@ class Jetpack extends Base {
 			Contact_Form::$forms[ $correct_hash ] = $form;
 			
 			// Store the correct hash globally for later use.
-			global $correct_form_hash;
-			$correct_form_hash = $correct_hash;
+			global $godam_correct_form_hash;
+			$godam_correct_form_hash = $correct_hash;
 			
 			return true;
 			

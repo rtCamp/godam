@@ -3,6 +3,11 @@
  */
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
+/**
+ * Internal dependencies
+ */
+import { getCurrentMimeTypeFilter } from '../../data/utilities';
+
 const restURL = window.godamRestRoute.url || '';
 
 export const folderApi = createApi( {
@@ -11,10 +16,17 @@ export const folderApi = createApi( {
 	endpoints: ( builder ) => ( {
 		getAllMediaCount: builder.query( {
 			async queryFn( arg, api, extraOptions, baseQuery ) {
+				const mimeTypeParams = getCurrentMimeTypeFilter( 'media_type' );
+
 				const result = await baseQuery( {
 					url: 'wp/v2/media',
-					params: { _fields: 'id', per_page: 1 },
+					params: {
+						_fields: 'id',
+						per_page: 1,
+						...mimeTypeParams,
+					},
 				} );
+
 				if ( result.error ) {
 					return { error: result.error };
 				}
@@ -25,16 +37,23 @@ export const folderApi = createApi( {
 			},
 		} ),
 		getCategoryMediaCount: builder.query( {
-			query: ( { folderId } ) => ( {
-				url: `godam/v1/media-library/category-count/${ folderId }`,
-				headers: {
-					'X-WP-Nonce': window.MediaLibrary.nonce,
-				},
-			} ),
+			query: ( { folderId } ) => {
+				const mimeTypeParams = getCurrentMimeTypeFilter();
+
+				return {
+					url: `godam/v1/media-library/category-count/${ folderId }`,
+					params: mimeTypeParams,
+					headers: {
+						'X-WP-Nonce': window.MediaLibrary.nonce,
+					},
+				};
+			},
 		} ),
 		getFolders: builder.query( {
 			query: ( options = {} ) => {
 				const isSpecial = options.bookmark || options.locked;
+
+				const mimeTypeParams = getCurrentMimeTypeFilter();
 
 				const params = {
 					_fields: 'id,name,parent,attachmentCount,meta',
@@ -42,6 +61,7 @@ export const folderApi = createApi( {
 					...( options.bookmark ? { bookmark: true } : {} ),
 					...( options.locked ? { locked: true } : {} ),
 					...( options.page ? { page: options.page } : {} ),
+					...mimeTypeParams,
 				};
 
 				return {
