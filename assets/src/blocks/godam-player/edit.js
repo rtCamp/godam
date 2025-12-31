@@ -43,6 +43,7 @@ import Video from './VideoJS';
 import TracksEditor from './track-uploader';
 import { Caption } from './caption';
 import VideoSEOModal from './components/VideoSEOModal.js';
+import AITranscription from './components/AITranscription';
 import { appendTimezoneOffsetToUTC, isSEODataEmpty, secondsToISO8601 } from './utils/index.js';
 import './editor.scss';
 import { ReactComponent as icon } from '../../images/godam-video-filled.svg';
@@ -150,7 +151,17 @@ function VideoEdit( {
 		muted,
 		poster: poster || defaultPoster,
 		sources,
+		tracks: tracks || [], // Add tracks
 		aspectRatio: '16:9',
+		controlBar: {
+			playToggle: true,
+			volumePanel: true,
+			currentTimeDisplay: true,
+			timeDivider: true,
+			durationDisplay: true,
+			fullscreenToggle: true,
+			subsCapsButton: true, // Enable captions button
+		},
 		// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
 		// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
 		html5: {
@@ -160,7 +171,7 @@ function VideoEdit( {
 				limitRenditionByPlayerDimensions: false, // don't cap by video element size
 			},
 		},
-	} ), [ controls, autoplay, preload, loop, muted, poster, defaultPoster, sources ] );
+	} ), [ controls, autoplay, preload, loop, muted, poster, defaultPoster, sources, tracks ] );
 
 	// Memoize the video component to prevent rerenders.
 	const videoComponent = useMemo( () => (
@@ -734,6 +745,11 @@ function VideoEdit( {
 										</Button>
 									</BaseControl>
 								) }
+
+								<AITranscription
+									attachmentId={ id }
+									instanceId={ instanceId }
+								/>
 
 								<BaseControl
 									id={ `video-block__video-seo-${ instanceId }` }

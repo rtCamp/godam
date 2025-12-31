@@ -41,6 +41,13 @@ export const VideoJS = ( props ) => {
 			// Add quality menu
 			playerRef.current.qualityMenu();
 
+			// Add text tracks if provided
+			if ( options.tracks && options.tracks.length > 0 ) {
+				options.tracks.forEach( ( track ) => {
+					playerRef.current.addRemoteTextTrack( track, false );
+				} );
+			}
+
 			// You could update an existing player in the `else` block here
 			// on prop change, for example:
 		} else {
