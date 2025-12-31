@@ -318,10 +318,10 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 	}
 }
 
-$user_data           = rtgodam_get_user_data();
-$is_api_key_verified = isset( $user_data['valid_api_key'] ) ? $user_data['valid_api_key'] : false;
+$godam_user_data           = rtgodam_get_user_data();
+$godam_is_api_key_verified = isset( $godam_user_data['valid_api_key'] ) ? $godam_user_data['valid_api_key'] : false;
 
-if ( $is_api_key_verified ) {
+if ( $godam_is_api_key_verified ) {
 	add_filter( 'manage_media_columns', 'rtgodam_add_status_columns_head' );
 	add_action( 'manage_media_custom_column', 'rtgodam_add_status_columns_content', 10, 2 );
 }
@@ -362,20 +362,6 @@ function rtgodam_get_server_var( $server_key, $filter_type = FILTER_SANITIZE_FUL
 }
 
 /**
- * Get local ip addresses for block.
- *
- * @return array
- */
-function rtgodam_get_blacklist_ip_addresses() {
-	// If custom API URL added then don't block local ips.
-	if ( defined( 'RTGODAM_TRANSCODER_API_URL' ) ) {
-		return array();
-	}
-
-	return array( '127.0.0.1', '::1' );
-}
-
-/**
  * Helper function to verify the api key.
  *
  * @param string $api_key The api key to verify.
@@ -386,6 +372,27 @@ function rtgodam_get_blacklist_ip_addresses() {
 function rtgodam_verify_api_key( $api_key, $save = false ) {
 	if ( empty( $api_key ) ) {
 		return new \WP_Error( 'missing_api_key', __( 'API key is required.', 'godam' ), array( 'status' => 400 ) );
+	}
+
+	// Check if request should be blocked due to HTTP or localhost environment.
+	if ( rtgodam_is_local_environment() ) {
+		// Check if RTGODAM_API_KEY constant is defined in wp-config.php.
+		if ( ! defined( 'RTGODAM_API_KEY' ) ) {
+			return new \WP_Error(
+				'localhost_blocked',
+				__( 'API key verification is blocked for localhost environments. To use production API keys on localhost, please add the following constant to your wp-config.php file: define(\'RTGODAM_API_KEY\', \'your-api-key-here\');', 'godam' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		// Match the provided API key with the RTGODAM_API_KEY constant.
+		if ( RTGODAM_API_KEY !== $api_key ) {
+			return new \WP_Error(
+				'api_key_mismatch',
+				__( 'The provided API key does not match the RTGODAM_API_KEY constant defined in wp-config.php.', 'godam' ),
+				array( 'status' => 403 )
+			);
+		}
 	}
 
 	$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.verification.verify_api_key';
@@ -414,18 +421,21 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		$response = wp_safe_remote_post( $api_url, $args );
 	}
 
-	if ( is_wp_error( $response ) ) {
-		return new \WP_Error( 'api_error', 'An error occurred while verifying the API. Please try again.', array( 'status' => 500 ) );
-	}
+	// Check for existing API key and user data to preserve on unexpected errors.
+	$existing_api_key = get_option( 'rtgodam-api-key', '' );
+	$existing_usage   = get_option( 'rtgodam-usage', array() );
+	$user_data        = ! empty( $existing_usage ) && isset( $existing_usage[ $existing_api_key ] ) ? $existing_usage[ $existing_api_key ] : array();
+	$preserved_data   = is_object( $user_data ) ? (array) $user_data : $user_data;
 
 	$status_code = wp_remote_retrieve_response_code( $response );
 	$body        = json_decode( wp_remote_retrieve_body( $response ), true );
 
+	// Central sends 200 status code with error if API Key is invalid.
 	if ( isset( $body['message']['error'] ) ) {
 		return new \WP_Error( 'invalid_api_key', $body['message']['error'], array( 'status' => 400 ) );
 	}
 
-	// Handle success response.
+	// Handle 200 Success - Save the API key.
 	if ( 200 === $status_code && isset( $body['message']['account_token'] ) ) {
 
 		$account_token = $body['message']['account_token'];
@@ -443,18 +453,22 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 
 		return array(
 			'status'  => 'success',
-			'message' => 'API key verified and stored successfully!',
+			'message' => __( 'API key verified and stored successfully!', 'godam' ),
 			'data'    => $body['message'],
 		);
 	}
 
-	// Handle failure response.
-	if ( 404 === $status_code ) {
-		return new \WP_Error( 'invalid_api_key', 'Invalid API key. Please try again.', array( 'status' => 404 ) );
+	// Handle other errors - Preserve existing API key and user data.
+	// If existing API key exists, preserve it. If not, don't save new key.
+	if ( ! empty( $existing_api_key ) ) {
+		return array(
+			'status'  => 'success',
+			'message' => __( 'API key verification temporarily unavailable.', 'godam' ),
+			'data'    => $preserved_data,
+		);
 	}
 
-	// Handle unexpected responses.
-	return new \WP_Error( 'unexpected_error', 'An unexpected error occurred. Please try again later.', array( 'status' => 500 ) );
+	return new \WP_Error( 'unexpected_error', __( 'An unexpected error occurred. Please try again later.', 'godam' ), array( 'status' => 500 ) );
 }
 
 /**
@@ -579,6 +593,9 @@ function rtgodam_get_localize_array() {
 	}
 
 	$localize_array['token'] = get_option( 'rtgodam-account-token', 'unverified' );
+	
+	// Admin page detection.
+	$localize_array['isAdminPage'] = is_admin();
 
 	return $localize_array;
 }

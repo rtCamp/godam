@@ -1,3 +1,8 @@
+/* stylelint-disable scss/at-rule-no-unknown */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Video Editor Set up */
 
 .tooltip {
@@ -345,6 +350,14 @@
 	&-footer {
 		font-size: 0.975rem;
 		font-weight: 400;
+		margin-top: 0;
+	}
+
+	// Style the buy button to not take full width
+	a.components-button.godam-button.is-primary {
+		align-self: center;
+		width: auto;
+		display: inline-block;
 	}
 }
 

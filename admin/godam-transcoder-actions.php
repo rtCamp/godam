@@ -29,12 +29,18 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 		// Check if attachment is of type video.
 		$mime_type = get_post_mime_type( $post->ID );
 
-		if ( ! preg_match( '/^(video|audio)\//', $mime_type ) ) {
+		$is_allowed = (
+			str_starts_with( $mime_type, 'video/' ) ||
+			str_starts_with( $mime_type, 'audio/' ) ||
+			'application/pdf' === $mime_type
+		);
+
+		if ( ! $is_allowed ) {
 			return $form_fields;
 		}
 
-		$transcoded_url     = rtgodam_get_transcoded_url_from_attachment( $post->ID );
-		$hls_transcoded_url = rtgodam_get_hls_transcoded_url_from_attachment( $post->ID );
+		$transcoded_url = rtgodam_get_transcoded_url_from_attachment( $post->ID );
+		$job_id         = rtgodam_get_job_id_by_attachment_id( $post->ID );
 
 		$easydam_settings = get_option( 'rtgodam-settings', array() );
 
@@ -44,9 +50,33 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 		$api_key = get_option( 'rtgodam-api-key', '' );
 
 		if ( ! empty( $api_key ) ) {
+
+			// If $job_id is present then show the oEmbed URL.
+			if ( ! empty( $job_id ) ) {
+				$oembed_url = RTGODAM_API_BASE . '/web/video/' . $job_id;
+
+				$form_fields['oembed_url'] = array(
+					'label' => __( 'oEmbed URL', 'godam' ),
+					'input' => 'html',
+					'html'  => sprintf(
+						'<input type="text" class="widefat" name="attachments[%d][oembed_url]" id="attachments-%d-oembed_url" value="%s" readonly>',
+						(int) $post->ID,
+						(int) $post->ID,
+						esc_url( $oembed_url )
+					),
+					'value' => esc_url( $oembed_url ),
+					'helps' => __( 'The oEmbed URL of the file is generated automatically and cannot be edited.', 'godam' ),
+				);
+			}
+
+			$transcoded_url_label = __( 'Transcoded CDN URL', 'godam' );
+			if ( strpos( $mime_type, 'video/' ) === 0 ) {
+				$transcoded_url_label = __( 'Transcoded CDN URL (MPD)', 'godam' );
+			}
+
 			// Add the transcoded URL field.
 			$form_fields['transcoded_url'] = array(
-				'label' => __( 'Transcoded CDN URL (MPD)', 'godam' ),
+				'label' => $transcoded_url_label,
 				'input' => 'html',
 				'html'  => sprintf(
 					'<input type="text" class="widefat" name="attachments[%d][transcoded_url]" id="attachments-%d-transcoded_url" value="%s" readonly>',
@@ -60,6 +90,8 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 
 			// Show the HLS transcoded URL field only for video files.
 			if ( strpos( $mime_type, 'video/' ) === 0 ) {
+				$hls_transcoded_url = rtgodam_get_hls_transcoded_url_from_attachment( $post->ID );
+
 				$form_fields['hls_transcoded_url'] = array(
 					'label' => __( 'Transcoded CDN URL (HLS)', 'godam' ),
 					'input' => 'html',
@@ -192,6 +224,7 @@ if ( ! function_exists( 'rtgodam_rtt_set_video_thumbnail' ) ) {
 					$final_file_url = $uploads['baseurl'] . '/' . $file_url;
 				}
 
+				// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Legacy hook name kept for backward compatibility.
 				$final_file_url = apply_filters( 'transcoded_file_url', $final_file_url, $attachment_id );
 
 				update_post_meta( $attachment_id, '_rt_media_video_thumbnail', $thumbnail );

@@ -84,6 +84,18 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 			setImageCtaUrl( '' );
 			return;
 		}
+
+		// Handle GoDAM hosted media.
+		if ( typeof mediaId === 'string' && mediaId.startsWith( 'godam_' ) ) {
+			if ( layer?.imageUrlExt ) {
+				setImageCtaUrl( layer.imageUrlExt );
+			} else {
+				setImageCtaUrl( '' );
+			}
+			return;
+		}
+
+		// For regular WordPress media, fetch from the API
 		fetch( window.pathJoin( [ restURL, `/wp/v2/media/${ mediaId }` ] ) )
 			.then( ( response ) => {
 				if ( ! response.ok ) {
@@ -94,7 +106,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 			.then( ( media ) => {
 				setImageCtaUrl( media.source_url ); // URL of the media file
 			} )
-			.catch( ( ) => {
+			.catch( () => {
 				setImageCtaUrl( '' );
 			} );
 	};
@@ -113,19 +125,20 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 	};
 
 	const imageCtaHtml = () => {
-		// Don't generate HTML if there's no image URL
-		if ( ! imageCtaUrl ) {
-			return '';
+		let imageBox = `<div class="image-cta-no-image" style="opacity: ${ layer?.imageOpacity ?? 1 }">${ __( 'No Image', 'godam' ) }</div>`;
+
+		if ( imageCtaUrl ) {
+			imageBox = `<img
+							src="${ imageCtaUrl }"
+							alt="CTA ad"
+							height="300"
+							width="250"
+							style="opacity: ${ layer?.imageOpacity ?? 1 }"
+						/>`;
 		}
 
 		return `<div class="${ 'portrait' === layer?.imageCtaOrientation ? 'vertical-image-cta-container' : 'image-cta-container' }">
-					<img
-						src="${ imageCtaUrl }"
-						alt="CTA ad"
-						height="300"
-						width="250"
-						style="opacity: ${ layer?.imageOpacity ?? 1 }"
-					/>
+					${ imageBox }
 					<div class="image-cta-description">
 						${ layer?.imageText ? `<h2>${ layer.imageText }</h2>` : '' }
 						${ layer?.imageDescription ? `<p>${ layer.imageDescription }</p>` : '' }
@@ -160,7 +173,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 	// Update the HTML only after imageCtaUrl is updated
 	useEffect( () => {
 		if ( 'image' === layer?.cta_type ) {
-			setFormHTML( imageCtaUrl ? imageCtaHtml() : '' );
+			setFormHTML( imageCtaHtml() );
 		}
 	}, [ imageCtaUrl, layer ] );
 

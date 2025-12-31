@@ -124,7 +124,7 @@
 				position: absolute;
 				bottom: 25px;
 				right: 90px;
-				z-index: 99;
+				z-index: 19;
 			}
 		}
 
@@ -137,7 +137,7 @@
 				position: absolute;
 				left: 40px;
 				bottom: 25px;
-				z-index: 99;
+				z-index: 19;
 			}
 		}
 
@@ -263,17 +263,21 @@
 			.vjs-fullscreen-control {
 				right: 10px
 			}
+
+			.vjs-volume-control {
+				display: none; //Fallback for old browser versions not supporting interaction media features
+			}
 			
 			.vjs-settings-button{
 				right: 55px;
-				z-index: 99;
+				z-index: 19;
 			}
 
 			div.vjs-subs-caps-button {
 				right: 100px !important;
 				left: unset;
 				bottom: 3px !important;
-				z-index: 99;
+				z-index: 19;
 			}
 
 			.vjs-control.vjs-custom-play-button {
@@ -329,14 +333,25 @@
 				}
 			}
 
+			.vjs-volume-panel {
+				bottom: 0;
+				left: unset;
+				right: 152px;
+				z-index: 19;
+			}
+
+			&:has(.vjs-subs-caps-button.vjs-hidden) .vjs-volume-panel {
+				right: 108px;
+			}
+
 			.vjs-time-control.vjs-current-time {
 				bottom: 0;
 				display: block !important;
 				left: 20px;
 				position: absolute;
 				transform: translateY(-120%);
-				z-index: 99;
-	
+				z-index: 19;
+
 				.vjs-current-time-display {
 					position: unset;
 				}
@@ -348,8 +363,8 @@
 				position: absolute;
 				right: 20px;
 				transform: translateY(-120%);
-				z-index: 99;
-	
+				z-index: 19;
+
 				.vjs-duration-display {
 					position: unset;
 				}
@@ -359,7 +374,7 @@
 				margin: 0 30px !important;
 			}
 	
-		   .vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-volume-panel {
+		   .vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control {
 				display: none !important;
 			}
 		}

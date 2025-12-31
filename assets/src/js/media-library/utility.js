@@ -2,6 +2,8 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
+import apiFetch from '@wordpress/api-fetch';
+
 /**
  * Internal dependencies
  */
@@ -51,7 +53,7 @@ function isFolderOrgDisabled() {
 	return ! window.easydamMediaLibrary?.enableFolderOrganization || false;
 }
 
-function addManageMediaButton() {
+async function addManageMediaButton() {
 	const referenceElement = document.querySelector( '.wrap .page-title-action' );
 
 	const godamMediaLink = window.godamRestRoute?.apiBase + '/web/media-library';
@@ -63,12 +65,6 @@ function addManageMediaButton() {
 		button.className = 'button godam-button';
 		button.href = godamMediaLink ?? '#';
 		button.target = '_blank';
-		if ( ! isAPIKeyValid() ) {
-			button.classList.add( 'disable' );
-			button.title = __( 'Premium Feature', 'godam' );
-			button.href = '#';
-			button.target = '';
-		}
 		const icon = document.createElement( 'span' );
 		icon.classList.add( 'godam-icon' );
 		button.appendChild( icon );
@@ -77,6 +73,31 @@ function addManageMediaButton() {
 		text.textContent = __( 'Manage Media', 'godam' );
 		button.appendChild( text );
 		referenceElement.insertAdjacentElement( 'afterend', button );
+		if ( ! isAPIKeyValid() ) {
+			button.classList.add( 'disable' );
+			button.title = __( 'Premium Feature', 'godam' );
+			button.href = '#';
+			button.target = '';
+			return;
+		}
+
+		try {
+			const response = await fetch(
+				window.godamRestRoute?.url + 'godam/v1/site/site-data',
+				{
+					headers: {
+						'Content-Type': 'application/json',
+						'X-WP-Nonce': window.wpApiSettings.nonce,
+					},
+				} );
+			const result = await response.json();
+			if ( 'success' === result?.status && false !== result?.data && null !== result?.data?.message?.folder_id ) {
+				const mediaUrl = `${ godamMediaLink }?page=1&viewMode=grid&tab=Folder&folder=${ result?.data?.message?.folder_id }`;
+				button.href = mediaUrl;
+			}
+		} catch ( error ) {
+			throw new Error( 'Error fetching media link:', error );
+		}
 	}
 }
 
@@ -100,7 +121,7 @@ async function getGodamSettings() {
 	const url = 'godam/v1/settings/godam-settings';
 
 	try {
-		const response = await wp.apiFetch( {
+		const response = await apiFetch( {
 			path: url,
 			method: 'GET',
 		} );
@@ -124,4 +145,26 @@ function canManageAttachment( attachmentAuthorId ) {
 	return canEditOthersMedia || currentUserId === __attachmentAuthorId;
 }
 
-export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton, getQuery, getGodamSettings, canManageAttachment };
+/**
+ * Checks if the current user is allowed to manage options.
+ *
+ * @return {boolean} Returns true if the user can manage options, false otherwise.
+ */
+function canManageOptions() {
+	const _canManageOptions = window?.easydamMediaLibrary?.canManageOptions;
+
+	return _canManageOptions;
+}
+
+/**
+ * Checks if the current user is allowed to edit pages.
+ *
+ * @return {boolean} Returns true if the user can edit pages, false otherwise.
+ */
+function canEditPages() {
+	const _canEditPages = window?.easydamMediaLibrary?.canEditPages;
+
+	return _canEditPages;
+}
+
+export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton, getQuery, getGodamSettings, canManageAttachment, canManageOptions, canEditPages };

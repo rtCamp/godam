@@ -171,12 +171,24 @@ const Analytics = ( { attachmentID } ) => {
 
 	useEffect( () => {
 		const originalVideoEl = document.getElementById( 'original-analytics-video' );
+
+		const videoOptions = {
+			fluid: true,
+			mute: true,
+			controls: false,
+			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
+			// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
+			html5: {
+				vhs: {
+					bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
+					bandwidthVariance: 1.0, // allow renditions close to estimate
+					limitRenditionByPlayerDimensions: false, // don't cap by video element size
+				},
+			},
+		};
+
 		if ( originalVideoEl && analyticsData ) {
-			const originalVideo = videojs( 'original-analytics-video', {
-				fluid: true,
-				mute: true,
-				controls: false,
-			} );
+			const originalVideo = videojs( 'original-analytics-video', videoOptions );
 
 			generateLineChart(
 				JSON.parse( analyticsData?.all_time_heatmap ),
@@ -191,11 +203,7 @@ const Analytics = ( { attachmentID } ) => {
 		const comparisonVideoEl = document.getElementById( 'comparison-analytics-video' );
 
 		if ( comparisonVideoEl && abTestComparisonAnalyticsData ) {
-			const comparisonVideo = videojs( 'comparison-analytics-video', {
-				fluid: true,
-				mute: true,
-				controls: false,
-			} );
+			const comparisonVideo = videojs( 'comparison-analytics-video', videoOptions );
 
 			generateLineChart(
 				JSON.parse( abTestComparisonAnalyticsData?.all_time_heatmap ),
@@ -222,6 +230,15 @@ const Analytics = ( { attachmentID } ) => {
 
 		videojs( 'analytics-video', {
 			aspectRatio: '16:9',
+			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
+			// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
+			html5: {
+				vhs: {
+					bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
+					bandwidthVariance: 1.0, // allow renditions close to estimate
+					limitRenditionByPlayerDimensions: false, // don't cap by video element size
+				},
+			},
 		} );
 	}, [ analyticsData ] );
 
@@ -329,7 +346,7 @@ const Analytics = ( { attachmentID } ) => {
 			<div id="media-not-found-overlay" className={ `api-key-overlay ${ ! mediaNotFound ? 'hidden' : '' }` }>
 				<div className="api-key-message">
 					<p>
-						{ __( 'This media doesn\'t exist. ', 'godam' ) }
+						{ __( 'This media doesn\'t exist.', 'godam' ) }
 						<a href="admin.php?page=rtgodam">
 							{ __( 'Go to Dashboard', 'godam' ) }
 						</a>
@@ -359,16 +376,17 @@ const Analytics = ( { attachmentID } ) => {
 									'Upgrade to unlock the media performance report.',
 									'godam',
 								) }
-
-								<a href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=analytics` } className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
 							</p>
 
 							<p className="api-key-overlay-banner-footer">
-								{ __( 'If you already have a premium plan, connect your ' ) }
+								{ __( 'If you already have a premium plan, connect your', 'godam' ) }
+								{ ' ' }
 								<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
 									{ __( 'API in the settings', 'godam' ) }
 								</a>
 							</p>
+
+							<a href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=analytics` } className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
 						</div>
 						:	<div className="api-key-overlay-banner">
 							<p>
@@ -390,7 +408,7 @@ const Analytics = ( { attachmentID } ) => {
 					<div>
 						<div className="subheading-container flex flex-row max-md:flex-row-reverse pt-6">
 							{ attachmentData?.title?.rendered
-								? <div className="subheading">{ __( 'Analytics report of ', 'godam' ) }
+								? <div className="subheading">{ __( 'Analytics report of', 'godam' ) }
 									<span dangerouslySetInnerHTML={ {
 										__html: DOMPurify.sanitize( attachmentData?.title?.rendered ),
 									} }></span></div> : <div className="subheading">{ __( 'Analytics report', 'godam' ) }</div>
@@ -532,7 +550,7 @@ const Analytics = ( { attachmentID } ) => {
 												onClick={ () => startABTesting() }
 												className="godam-button"
 											>
-												{ __( 'Start Test ', 'godam' ) }
+												{ __( 'Start Test', 'godam' ) }
 											</Button>
 										</div>
 									) }

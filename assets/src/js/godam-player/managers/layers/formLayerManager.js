@@ -104,8 +104,8 @@ export default class FormLayerManager {
 		skipButton.textContent = skipText;
 		skipButton.classList.add( 'skip-button' );
 
-		const arrowIcon = document.createElement( 'i' );
-		arrowIcon.className = 'fa-solid fa-chevron-right';
+		const arrowIcon = document.createElement( 'span' );
+		arrowIcon.innerHTML = `<svg viewBox="0 0 320 512" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg>`;
 		skipButton.appendChild( arrowIcon );
 
 		return skipButton;
@@ -271,10 +271,100 @@ export default class FormLayerManager {
 	}
 
 	/**
+	 * Dismiss a layer - either current active layer or specific layer by HTML ID
+	 *
+	 * @param {string} layerHtmlId - Optional HTML ID of the layer to dismiss. If not provided, dismisses current active layer
+	 * @return {boolean} True if a layer was dismissed successfully
+	 */
+	dismissLayer( layerHtmlId = null ) {
+		let layerIndex;
+
+		if ( layerHtmlId ) {
+			// Find layer by HTML ID
+			layerIndex = this.formLayers.findIndex( ( layerObj ) => layerObj.layerElement.id === layerHtmlId );
+
+			if ( layerIndex === -1 ) {
+				return false;
+			}
+		} else {
+			// Use current active layer
+			layerIndex = this.currentFormLayerIndex;
+
+			if ( layerIndex >= this.formLayers.length ) {
+				return false;
+			}
+		}
+
+		const layerObj = this.formLayers[ layerIndex ];
+
+		// Hide the layer
+		layerObj.show = false;
+		layerObj.layerElement.classList.add( 'hidden' );
+
+		// If this was the current layer, handle playback and move to next
+		if ( layerIndex === this.currentFormLayerIndex ) {
+			this.player.controls( true );
+			this.player.play();
+			this.isDisplayingLayers[ this.currentPlayerVideoInstanceId ] = false;
+			this.currentFormLayerIndex++;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Get the currently active layer
+	 *
+	 * @return {Object|null} Current layer object or null if no active layer
+	 */
+	getCurrentLayer() {
+		if ( this.currentFormLayerIndex >= this.formLayers.length ) {
+			return null;
+		}
+
+		const layerObj = this.formLayers[ this.currentFormLayerIndex ];
+		return {
+			index: this.currentFormLayerIndex,
+			element: layerObj.layerElement,
+			displayTime: layerObj.displayTime,
+			allowSkip: layerObj.allowSkip,
+			isVisible: ! layerObj.layerElement.classList.contains( 'hidden' ),
+			show: layerObj.show,
+		};
+	}
+
+	/**
+	 * Get all form layers
+	 *
+	 * @return {Array} Array of layer information objects
+	 */
+	getAllLayers() {
+		return this.formLayers.map( ( layerObj, index ) => ( {
+			index,
+			element: layerObj.layerElement,
+			displayTime: layerObj.displayTime,
+			allowSkip: layerObj.allowSkip,
+			isVisible: ! layerObj.layerElement.classList.contains( 'hidden' ),
+			show: layerObj.show,
+		} ) );
+	}
+
+	/**
 	 * Reset form layer state
 	 */
 	reset() {
 		this.formLayers = [];
 		this.currentFormLayerIndex = 0;
+	}
+
+	/**
+	 * Replay all form layers from the beginning
+	 */
+	replay() {
+		this.currentFormLayerIndex = 0;
+		this.formLayers.forEach( ( layerObj ) => {
+			layerObj.show = true;
+			layerObj.layerElement.classList.add( 'hidden' );
+		} );
 	}
 }

@@ -1,17 +1,16 @@
 ![Banner V3](https://github.com/user-attachments/assets/73cfb2c2-0779-44c2-85e7-67e812dd82b6)
 
 # GoDAM - Organize WordPress Media Library & File Manager with Unlimited Folders for Images, Videos & more
-Contributors: [rtcamp](https://profiles.wordpress.org/rtcamp), [elifvish](https://profiles.wordpress.org/elifvish), [subodhrajpopat](https://profiles.wordpress.org/subodhrajpopat), [kuldipchaudhary](https://profiles.wordpress.org/kuldipchaudhary), [prachigarg19](https://profiles.wordpress.org/prachigarg19), [juzar](https://profiles.wordpress.org/juzar), [geekofshire](https://profiles.wordpress.org/geekofshire), [nazmulhassann20](https://profiles.wordpress.org/nazmulhassann20), [abhinavbelhekar03](https://profiles.wordpress.org/abhinavbelhekar03), [gautam23](https://profiles.wordpress.org/gautam23), [mukulsingh27](https://profiles.wordpress.org/mukulsingh27), [hbhalodia](https://profiles.wordpress.org/hbhalodia)
-
+Contributors: [rtcamp](https://profiles.wordpress.org/rtcamp), [elifvish](https://profiles.wordpress.org/elifvish), [subodhrajpopat](https://profiles.wordpress.org/subodhrajpopat), [kuldipchaudhary](https://profiles.wordpress.org/kuldipchaudhary), [prachigarg19](https://profiles.wordpress.org/prachigarg19), [juzar](https://profiles.wordpress.org/juzar), [geekofshire](https://profiles.wordpress.org/geekofshire), [nazmulhassann20](https://profiles.wordpress.org/nazmulhassann20), [abhinavbelhekar03](https://profiles.wordpress.org/abhinavbelhekar03), [gautam23](https://profiles.wordpress.org/gautam23), [mukulsingh27](https://profiles.wordpress.org/mukulsingh27), [hbhalodia](https://profiles.wordpress.org/hbhalodia), [utsavladani](https://profiles.wordpress.org/utsavladani), [kishu7270](https://profiles.wordpress.org/kishu7270)
 Tags: transcoder, video, media library, folders, file manager
 
 Requires at least: 6.5
 
-Tested up to: 6.8.1
+Tested up to: 6.9
 
 Requires PHP: 7.4
 
-Stable tag: 1.4.0
+Stable tag: 1.4.9
 
 License: [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)
 
@@ -283,7 +282,7 @@ This plugin relies on third-party services to provide specific features. Below i
     <tr>
       <td>app.godam.io</td>
       <td>Transcoding &amp; API key verification</td>
-      <td>Site URL, API Key</td>
+      <td>Site URL, API Key, Author Email*, Author First Name*, Author Last Name*</td>
       <td>On media upload &amp; API key check</td>
       <td>
         app.godam.io<br>
@@ -302,5 +301,7 @@ This plugin relies on third-party services to provide specific features. Below i
     </tr>
   </tbody>
 </table>
+
+<small>*Author data can be filtered out using WordPress filters for privacy control.</small>
 
 Want to suggest a feature? Please submit it [here](https://github.com/rtCamp/godam/discussions/categories/feature-requests)

@@ -157,10 +157,33 @@ class RTGODAM_Transcoder_Handler {
 					// Enable re-transcoding.
 					include_once RTGODAM_PATH . 'admin/class-rtgodam-retranscodemedia.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
-					add_filter( 'wp_generate_attachment_metadata', array( $this, 'wp_media_transcoding' ), 21, 2 );
+					add_action( 'add_attachment', array( $this, 'send_transcoding_request' ), 21, 1 );
 				}
 			}
 		}
+	}
+
+	/**
+	 * Send transcoding request for uploaded media in WordPress media library.
+	 *
+	 * @since 1.4.2
+	 *
+	 * @param int $attachment_id    ID of attachment.
+	 */
+	public function send_transcoding_request( $attachment_id ) {
+
+		$metadata = wp_get_attachment_metadata( $attachment_id );
+
+		$mime_type = get_post_mime_type( $attachment_id );
+
+		if ( empty( $metadata ) ) {
+			$metadata = array( 'mime_type' => $mime_type );
+		} elseif ( empty( $metadata['mime_type'] ) ) {
+			$metadata['mime_type'] = $mime_type;
+		}
+
+		// Send the transcoding request.
+		$this->wp_media_transcoding( $metadata, $attachment_id );
 	}
 
 	/**
@@ -174,12 +197,72 @@ class RTGODAM_Transcoder_Handler {
 	 * @param bool   $retranscode       If its retranscoding request or not.
 	 */
 	public function wp_media_transcoding( $wp_metadata, $attachment_id, $autoformat = true, $retranscode = false ) {
+		// Check if local development environment.
+		if ( rtgodam_is_local_environment() ) {
+			return;
+		}
+
+		/**
+		 * Filter to allow external developers to disable automatic transcoding on upload.
+		 * This allows users to have manual control over when videos get transcoded.
+		 *
+		 * Note: This filter only applies to automatic uploads. Manual retranscoding requests
+		 * (via bulk actions, tools page, etc.) will always proceed regardless of this setting.
+		 * Form integrations will also use this filter to disable transcoding for form uploads.
+		 *
+		 * Example usage:
+		 * add_filter( 'godam_auto_transcode_on_upload', '__return_false' ); // Disable globally
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param bool $auto_transcode_on_upload Whether to automatically transcode on upload. Default true.
+		 */
+		if ( ! $retranscode ) {
+			$auto_transcode_on_upload = apply_filters( 'godam_auto_transcode_on_upload', true );
+
+			if ( ! $auto_transcode_on_upload ) {
+				return $wp_metadata;
+			}
+		}
 
 		if ( empty( $wp_metadata['mime_type'] ) ) {
 			return $wp_metadata;
 		}
 
 		$transcoding_job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+
+		// Log virtual media status for transcoding requests.
+		$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+		$is_virtual_media  = ! empty( $godam_original_id );
+
+		// Skip transcoding for virtual media.
+		if ( $is_virtual_media ) {
+			return $wp_metadata;
+		}
+
+		/** Block if bandwidth or storage limits are exceeded */
+		$user_data = rtgodam_get_user_data();
+		if ( ! empty( $user_data ) && isset( $user_data['bandwidth_used'], $user_data['total_bandwidth'], $user_data['storage_used'], $user_data['total_storage'] ) ) {
+			$storage_exceeded = $user_data['storage_used'] > $user_data['total_storage'];
+
+			// Only block transcoding when storage is exceeded (bandwidth exceeded still allows transcoding).
+			if ( $storage_exceeded ) {
+				$reason_parts   = array();
+				$reason_parts[] = sprintf(
+					/* translators: %s: storage usage percent */
+					__( 'Storage exceeded (%s%%).', 'godam' ),
+					number_format( ( $user_data['storage_used'] / max( 1, $user_data['total_storage'] ) ) * 100, 1 )
+				);
+
+				$reason = implode( ' ', $reason_parts ) . ' ' . __( 'Please upgrade your plan to continue transcoding.', 'godam' );
+
+				// Persist status on the attachment so UI can show it.
+				update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'blocked' );
+				update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', $reason );
+
+				return $wp_metadata; // Stop before calling the transcoder API.
+			}
+		}
 
 		$path = get_attached_file( $attachment_id );
 		$url  = wp_get_attachment_url( $attachment_id );
@@ -261,11 +344,11 @@ class RTGODAM_Transcoder_Handler {
 			// Get author name with fallback to username.
 			$author_first_name = '';
 			$author_last_name  = '';
-			
+
 			if ( $attachment_author ) {
 				$author_first_name = $attachment_author->first_name;
 				$author_last_name  = $attachment_author->last_name;
-				
+
 				// If first and last names are empty, use username as fallback.
 				if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
 					$author_first_name = $attachment_author->user_login;
@@ -292,10 +375,10 @@ class RTGODAM_Transcoder_Handler {
 						'watermark'            => boolval( $rtgodam_watermark ),
 						'resolutions'          => array( 'auto' ),
 						'video_quality'        => $rtgodam_video_compress_quality,
-						'wp_author_email'      => $attachment_author ? $attachment_author->user_email : '',
+						'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $attachment_author ? $attachment_author->user_email : '', $attachment_id ),
 						'wp_site'              => $site_url,
-						'wp_author_first_name' => $author_first_name,
-						'wp_author_last_name'  => $author_last_name,
+						'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, $attachment_id ),
+						'wp_author_last_name'  => apply_filters( 'godam_author_last_name_to_send', $author_last_name, $attachment_id ),
 						'public'               => 1,
 					),
 					$watermark_to_use
@@ -303,13 +386,6 @@ class RTGODAM_Transcoder_Handler {
 			);
 
 			$transcoding_url = $this->transcoding_api_url . 'resource/Transcoder Job' . ( empty( $transcoding_job_id ) ? '' : '/' . $transcoding_job_id );
-
-			// Block if blacklisted ip address.
-			$remote_address_key = 'REMOTE_ADDR';
-			$client_ip          = isset( $_SERVER[ $remote_address_key ] ) ? filter_var( $_SERVER[ $remote_address_key ], FILTER_VALIDATE_IP ) : '';
-			if ( ! empty( $client_ip ) && in_array( $client_ip, rtgodam_get_blacklist_ip_addresses(), true ) ) {
-				return $metadata;
-			}
 
 			$upload_page = wp_remote_request( $transcoding_url, $args );
 
@@ -335,7 +411,6 @@ class RTGODAM_Transcoder_Handler {
 					}
 				}
 			}
-
 
 			if ( is_wp_error( $upload_page ) || 500 <= intval( $upload_page['response']['code'] ) ) {
 				$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
@@ -554,7 +629,17 @@ class RTGODAM_Transcoder_Handler {
 
 			$is_retranscoding_job = get_post_meta( $post_id, 'rtgodam_retranscoding_sent', true );
 
-			if ( ! $is_retranscoding_job || rtgodam_is_override_thumbnail() ) {
+			/**
+			 * Determines the default thumbnail behavior:
+			 * - For newly uploaded videos: always assign the first generated thumbnail.
+			 * - For retranscoding jobs: assign the first thumbnail only when either:
+			 *     • the overwrite option is enabled, or
+			 *     • no existing thumbnail is currently set.
+			 */
+			$current_thumbnail    = get_post_meta( $post_id, 'rtgodam_media_video_thumbnail', true );
+			$should_set_thumbnail = ! $is_retranscoding_job || rtgodam_is_override_thumbnail() || empty( $current_thumbnail );
+
+			if ( $should_set_thumbnail ) {
 				// rtMedia support.
 				update_post_meta( $post_id, '_rt_media_video_thumbnail', $first_thumbnail_url );
 

@@ -32,7 +32,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { __, _x, sprintf } from '@wordpress/i18n';
 import { useInstanceId } from '@wordpress/compose';
 import { useDispatch } from '@wordpress/data';
-import { search, media as icon } from '@wordpress/icons';
+import { search } from '@wordpress/icons';
 import { store as noticesStore } from '@wordpress/notices';
 
 /**
@@ -43,8 +43,10 @@ import Video from './VideoJS';
 import TracksEditor from './track-uploader';
 import { Caption } from './caption';
 import VideoSEOModal from './components/VideoSEOModal.js';
-import { appendTimezoneOffsetToUTC, secondsToISO8601 } from './utils/index.js';
+import { appendTimezoneOffsetToUTC, isSEODataEmpty, secondsToISO8601 } from './utils/index.js';
 import './editor.scss';
+import { ReactComponent as icon } from '../../images/godam-video-filled.svg';
+import { canManageAttachment } from '../../js/media-library/utility';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
 const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
@@ -124,6 +126,8 @@ function VideoEdit( {
 	const [ defaultPoster, setDefaultPoster ] = useState( '' );
 	const [ isSEOModalOpen, setIsSEOModelOpen ] = useState( false );
 	const [ duration, setDuration ] = useState( 0 );
+	const [ isVideoSelecting, setIsVideoSelecting ] = useState( false );
+	const [ attachmentAuthorId, setattachmentAuthorId ] = useState( null );
 	const isInsideQueryLoop = context?.hasOwnProperty( 'queryId' );
 
 	const dispatch = useDispatch();
@@ -147,6 +151,15 @@ function VideoEdit( {
 		poster: poster || defaultPoster,
 		sources,
 		aspectRatio: '16:9',
+		// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
+		// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
+		html5: {
+			vhs: {
+				bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
+				bandwidthVariance: 1.0, // allow renditions close to estimate
+				limitRenditionByPlayerDimensions: false, // don't cap by video element size
+			},
+		},
 	} ), [ controls, autoplay, preload, loop, muted, poster, defaultPoster, sources ] );
 
 	// Memoize the video component to prevent rerenders.
@@ -179,23 +192,49 @@ function VideoEdit( {
 	}, [ poster ] );
 
 	useEffect( () => {
+		/**
+		 * Handle virtual attachment created event
+		 * Updates the block's id attribute when a virtual attachment is created
+		 *
+		 * @param {CustomEvent} event - The custom event containing attachment details
+		 */
+		const handleVirtualAttachmentCreated = ( event ) => {
+			const { attachment, virtualMediaId } = event.detail || {};
+
+			// Update id attribute only if it's undefined or matches the virtualMediaId
+			if ( attachment && ( id === undefined || id === virtualMediaId ) ) {
+				setAttributes( { id: attachment.id } );
+			}
+		};
+
+		// Attach event listener
+		document.addEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
+
+		// Cleanup function to remove event listener
+		return () => {
+			document.removeEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
+		};
+	}, [ id, setAttributes ] );
+
+	useEffect( () => {
 		if ( id && ! isNaN( Number( id ) ) ) {
 			( async () => {
 				try {
 					const response = await apiFetch( { path: `/wp/v2/media/${ id }` } );
+
+					if ( response.author ) {
+						setattachmentAuthorId( response.author );
+					}
 
 					if ( response.meta.rtgodam_media_video_thumbnail !== '' ) {
 						setDefaultPoster( response.meta.rtgodam_media_video_thumbnail );
 					}
 
 					if ( response ) {
-						const newSources = [
-							{
-								src: response.source_url,
-								type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
-							},
-						];
+						// Build sources list safely, declare newSources first.
+						const newSources = [];
 
+						// Prefer HLS if present.
 						if ( response?.meta && response?.meta?.rtgodam_hls_transcoded_url ) {
 							const hlsTranscodedUrl = response.meta.rtgodam_hls_transcoded_url;
 
@@ -205,6 +244,7 @@ function VideoEdit( {
 							} );
 						}
 
+						// Add DASH or other transcoded source if present.
 						if ( response?.meta && response?.meta?.rtgodam_transcoded_url ) {
 							const transcodedUrl = response.meta.rtgodam_transcoded_url;
 
@@ -214,13 +254,18 @@ function VideoEdit( {
 							} );
 						}
 
-						// Reverse the sources to ensure the preferred format is first. MPD -> HLS -> Origin
-						setAttributes( { sources: newSources.reverse() } );
+						// Always include original file as fallback.
+						newSources.push( {
+							src: response.source_url,
+							type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
+						} );
+
+						setAttributes( { sources: newSources } );
 					}
 				} catch ( error ) {
 					// Show error notice if fetching media fails.
 					const message = sprintf(
-						/* translators: %s: Label of the video text track e.g: "French subtitles". */
+						/* translators: %d: Label of the video text track e.g: "French subtitles". */
 						_x( 'Failed to load video data with id: %d', 'video caption', 'godam' ),
 						id,
 					);
@@ -231,7 +276,64 @@ function VideoEdit( {
 		}
 	}, [ id, setAttributes, dispatch ] );
 
+	// Backward compatibility: Initialize SEO data for existing blocks
+	useEffect( () => {
+		// Don't run during video selection process
+		if ( isVideoSelecting ) {
+			return;
+		}
+
+		// Only run if we have a video source but no SEO data
+		if ( ( id || src ) && isSEODataEmpty( attributes.seo ) ) {
+			const defaultSEOData = {
+				contentUrl: src || '',
+				headline: '',
+				description: '',
+				uploadDate: '',
+				duration: '',
+				thumbnailUrl: '',
+				isFamilyFriendly: true,
+			};
+
+			// If we have an attachment ID, try to fetch more data
+			if ( id && ! isNaN( Number( id ) ) ) {
+				( async () => {
+					try {
+						const response = await apiFetch( { path: `/wp/v2/media/${ id }` } );
+
+						const enhancedSEOData = {
+							contentUrl: response.meta?.rtgodam_transcoded_url || response.source_url || src || '',
+							headline: response.title?.rendered || '',
+							description: response.description?.rendered || '',
+							uploadDate: appendTimezoneOffsetToUTC( response.date_gmt || '' ),
+							duration: response.video_duration_iso8601 || '',
+							thumbnailUrl: response.meta?.rtgodam_media_video_thumbnail || '',
+							isFamilyFriendly: true,
+						};
+
+						setAttributes( {
+							seo: enhancedSEOData,
+						} );
+					} catch ( error ) {
+						// Fallback to basic SEO data if API call fails
+						setAttributes( {
+							seo: defaultSEOData,
+						} );
+					}
+				} )();
+			} else {
+				// For custom URLs or when ID is not available
+				setAttributes( {
+					seo: defaultSEOData,
+				} );
+			}
+		}
+	}, [ id, src, attributes.seo, isVideoSelecting, setAttributes ] );
+
 	function onSelectVideo( media ) {
+		// Set flag to prevent backward compatibility logic during video selection
+		setIsVideoSelecting( true );
+
 		if ( ! media || ! media.url ) {
 			// In this case there was an error
 			// previous attributes should be removed
@@ -242,52 +344,36 @@ function VideoEdit( {
 				poster: undefined,
 				caption: undefined,
 				blob: undefined,
+				seo: undefined, // Clear SEO data when no media selected
 			} );
 			setTemporaryURL();
+			setIsVideoSelecting( false );
 			return;
 		}
 
 		if ( isBlobURL( media.url ) ) {
 			setTemporaryURL( media.url );
+			setIsVideoSelecting( false );
 			return;
 		}
-
-		// Sets the block's attribute and updates the edit component from the
-		// selected media.
-		setAttributes( {
-			blob: undefined,
-			src: media.url,
-			id: media.id,
-			cmmId: media.id,
-			poster: undefined,
-			caption: media.caption,
-		} );
 
 		if ( media.image?.src !== media.icon ) {
 			setDefaultPoster( media.image?.src );
 		}
 
 		if ( media?.origin === 'godam' ) {
-			setAttributes( {
-				seo: {
-					contentUrl: media?.url,
-					headline: media?.title || '',
-					description: media?.description || '',
-					uploadDate: appendTimezoneOffsetToUTC( media?.date || '' ),
-					duration: secondsToISO8601( media?.duration || '' ),
-					thumbnailUrl: media?.thumbnail_url || '',
-					isFamilyFriendly: true, // Default value
-				},
-			} );
+			// Create new SEO data from GoDAM media
+			const newSEOData = {
+				contentUrl: media?.url,
+				headline: media?.title || '',
+				description: media?.description || '',
+				uploadDate: appendTimezoneOffsetToUTC( media?.date || '' ),
+				duration: secondsToISO8601( media?.duration || '' ),
+				thumbnailUrl: media?.thumbnail_url || '',
+				isFamilyFriendly: true, // Default value
+			};
 
 			const mediaSources = [];
-
-			if ( media.url ) {
-				mediaSources.push( {
-					src: media.url,
-					type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
-				} );
-			}
 
 			if ( media.hls_url ) {
 				mediaSources.push( {
@@ -296,26 +382,54 @@ function VideoEdit( {
 				} );
 			}
 
+			if ( media.url ) {
+				mediaSources.push( {
+					src: media.url,
+					type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
+				} );
+			}
+
+			// Set all attributes updates into single setAttributes call
 			setAttributes( {
+				blob: undefined,
+				src: media.url,
+				id: media.id,
+				cmmId: media.id,
+				poster: undefined,
+				caption: media.caption,
+				seo: newSEOData,
 				sources: mediaSources,
 			} );
+
+			setTemporaryURL();
+			setIsVideoSelecting( false );
 		} else {
-		// Fetch transcoded URL from media meta.
+			// Handle WordPress media - batch initial attributes and fetch additional data
+			const baseAttributes = {
+				blob: undefined,
+				src: media.url,
+				id: media.id,
+				cmmId: media.id,
+				poster: undefined,
+				caption: media.caption,
+				seo: undefined, // Will be set after API call
+			};
+
+			// Fetch transcoded URL from media meta.
 			( async () => {
 				try {
 					const response = await apiFetch( { path: `/wp/v2/media/${ media.id }` } );
 
-					setAttributes( {
-						seo: {
-							contentUrl: response.meta?.rtgodam_transcoded_url || response.source_url,
-							headline: response.title?.rendered || '',
-							description: response.description?.rendered || '',
-							uploadDate: appendTimezoneOffsetToUTC( response.date_gmt ),
-							duration: response.video_duration_iso8601 || '',
-							thumbnailUrl: response.meta?.rtgodam_media_video_thumbnail || '',
-							isFamilyFriendly: true, // Default value
-						},
-					} );
+					// Create new SEO data from WordPress media
+					const newSEOData = {
+						contentUrl: response.meta?.rtgodam_transcoded_url || response.source_url,
+						headline: response.title?.rendered || '',
+						description: response.description?.rendered || '',
+						uploadDate: appendTimezoneOffsetToUTC( response.date_gmt ),
+						duration: response.video_duration_iso8601 || '',
+						thumbnailUrl: response.meta?.rtgodam_media_video_thumbnail || '',
+						isFamilyFriendly: true, // Default value
+					};
 
 					if ( response && response.meta ) {
 						if ( response.meta.rtgodam_media_video_thumbnail !== '' ) {
@@ -323,14 +437,6 @@ function VideoEdit( {
 						}
 
 						const mediaSources = [];
-
-						const transcodedUrl = response.meta.rtgodam_transcoded_url;
-						if ( transcodedUrl ) {
-							mediaSources.push( {
-								src: transcodedUrl,
-								type: transcodedUrl.endsWith( '.mpd' ) ? 'application/dash+xml' : media.mime,
-							} );
-						}
 
 						const hlsTranscodedUrl = response.meta.rtgodam_hls_transcoded_url;
 						if ( hlsTranscodedUrl ) {
@@ -340,17 +446,30 @@ function VideoEdit( {
 							} );
 						}
 
+						const transcodedUrl = response.meta.rtgodam_transcoded_url;
+						if ( transcodedUrl ) {
+							mediaSources.push( {
+								src: transcodedUrl,
+								type: transcodedUrl.endsWith( '.mpd' ) ? 'application/dash+xml' : media.mime,
+							} );
+						}
+
 						mediaSources.push( {
 							src: media.url,
 							type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
 						} );
 
+						// Batch all final attributes into single setAttributes call
 						setAttributes( {
+							...baseAttributes,
+							seo: newSEOData,
 							sources: mediaSources,
 						} );
 					} else {
-					// If meta not present, use media url.
+						// If meta not present, use media url.
 						setAttributes( {
+							...baseAttributes,
+							seo: newSEOData,
 							sources: [
 								{
 									src: media.url,
@@ -360,7 +479,20 @@ function VideoEdit( {
 						} );
 					}
 				} catch ( error ) {
+					// Create basic SEO data on error
+					const fallbackSEOData = {
+						contentUrl: media.url,
+						headline: '',
+						description: '',
+						uploadDate: '',
+						duration: '',
+						thumbnailUrl: '',
+						isFamilyFriendly: true,
+					};
+
 					setAttributes( {
+						...baseAttributes,
+						seo: fallbackSEOData,
 						sources: [
 							{
 								src: media.url,
@@ -369,21 +501,31 @@ function VideoEdit( {
 						],
 					} );
 				}
+
+				setTemporaryURL();
+				setIsVideoSelecting( false );
 			} )();
 		}
-
-		setTemporaryURL();
 	}
 
 	function onSelectURL( newSrc ) {
 		if ( newSrc !== src ) {
+			// Set flag to prevent backward compatibility logic during URL selection
+			setIsVideoSelecting( true );
+
 			setAttributes( {
 				blob: undefined,
 				src: newSrc,
 				id: undefined,
 				poster: undefined,
+				seo: undefined, // Clear SEO data when new URL is selected
 			} );
 			setTemporaryURL();
+
+			// Reset flag after a brief delay to allow attribute changes to settle
+			setTimeout( () => {
+				setIsVideoSelecting( false );
+			}, 100 );
 		}
 	}
 
@@ -568,24 +710,35 @@ function VideoEdit( {
 									</MediaUploadCheck>
 								</BaseControl>
 
-								<BaseControl
-									id={ `video-block__video-editor-${ instanceId }` }
-									label={ __( 'Customise Video', 'godam' ) }
+								<ToggleControl
 									__nextHasNoMarginBottom
-								>
-									<Button
-										__next40pxDefaultSize
-										href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
-										target="_blank"
-										variant="primary"
+									label={ __( 'Preload Video Thumbnail', 'godam' ) }
+									help={ __( 'Enable to show the video thumbnail faster when the page loads. Recommended for videos placed near the top of your page.', 'godam' ) }
+									onChange={ ( value ) => setAttributes( { preloadPoster: value } ) }
+									checked={ attributes?.preloadPoster }
+								/>
+
+								{ canManageAttachment( attachmentAuthorId ) && (
+									<BaseControl
+										id={ `video-block__video-editor-${ instanceId }` }
+										label={ __( 'Customise Video', 'godam' ) }
+										__nextHasNoMarginBottom
 									>
-										{ __( 'Customise', 'godam' ) }
-									</Button>
-								</BaseControl>
+										<Button
+											__next40pxDefaultSize
+											href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
+											target="_blank"
+											variant="primary"
+										>
+											{ __( 'Customise', 'godam' ) }
+										</Button>
+									</BaseControl>
+								) }
 
 								<BaseControl
 									id={ `video-block__video-seo-${ instanceId }` }
 									label={ __( 'SEO Settings', 'godam' ) }
+									help={ __( 'Configure SEO metadata for this video. Note: SEO data will be cleared when replacing the video.', 'godam' ) }
 									__nextHasNoMarginBottom
 								>
 									<Button

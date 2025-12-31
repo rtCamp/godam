@@ -2,9 +2,9 @@
 Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia
 Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
-Tested up to: 6.8.1
+Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.4.0
+Stable tag: 1.4.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -246,30 +246,34 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
-= v1.4.0 (September 9, 2025) =
+= v1.4.9 (December 19, 2025) =
 
-- New: Added integration for LifterLMS
-- New: Added Ninja Forms and MetForm layer integration
-- New: Added GoDAM Recorder Field for Everest Forms and Ninja Forms
-- New: Added Engagements for GoDAM Video and Gallery with Views, Likes, and Comments
-- New: Implemented Migration Tools for existing videos and Vimeo videos to GoDAM
-- New: Added Speech-to-text functionality using AI transcriptions
-- New: Added Custom Thumbnail Upload option for videos
-- New: Enabled different Hover-Interactions for videos
-- Tweak: Improved compatibility with Elementor
-- Tweak: Updated Media Library UI
-- Fix: Fixed iOS compatibility
-- Fix: Resolved re-transcoding ID preservation to maintain video continuity and prevent data loss
+- Feat: Added Free Plan for GoDAM
+- Fix: Background scroll issues in full screen on iOS
+- Fix: SDK event errors
 
-= v1.3.5 (August 26, 2025) =
+= v1.4.8 (December 10, 2025) =
 
-- Tweak: Set transcoded videos as public by default and add Org support parameters
-- Tweak: Provide HLS URL support for GoDAM Virtual Media
+- Feat: Added support for PDF files
+- Tweak: Implemented enhancements for Likes & Comments functionality
+- Tweak: Integrated further performance improvements, optimized asset loading
+- Tweak: Updated “Manage media” button to point directly to the specific folder
+- Tweak: Addressed various media library issues and general improvements
+- Fix: Full-screen inconsistencies on iOS (SDK)
+- Fix: Blank page issue when navigating unsaved video editor pages
+- Fix: Media Uploader UI issues
+- Fix: Form submission issues in preview
+- Fix: Player skin overlap issues
+- Fix: Media metadata display on Central
 
-= v1.3.4 (August 11, 2025) =
+= v1.4.7 (November 26, 2025) =
 
-- Fix: Video Editor UI issues
-
+- Tweak: Improved GoDAM Video block performance with preload poster functionality
+- Fix: Control and scroll on iOS fullscreen
+- Fix: GoDAM media tab for WP core blocks
+- Fix: Virtual media player and preview template
+- Fix: Error handling for Ads layer
+- Fix: PHP naming conventions as per WP PCP
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
@@ -304,6 +308,12 @@ Data Sent:
 1. Site URL
 
 2. API Key
+
+3. Author Email (optional, can be filtered out)
+
+4. Author First Name (optional, can be filtered out)
+
+5. Author Last Name (optional, can be filtered out)
 
 When Data is Sent:
 

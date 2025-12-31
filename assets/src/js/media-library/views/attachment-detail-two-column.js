@@ -181,6 +181,20 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			} );
 	},
 
+	showGodamSnackbar( message ) {
+		let snackbar = document.getElementById( 'godam-snackbar' );
+		if ( ! snackbar ) {
+			snackbar = document.createElement( 'div' );
+			snackbar.id = 'godam-snackbar';
+			document.body.appendChild( snackbar );
+		}
+		snackbar.textContent = message;
+		snackbar.className = 'show';
+		setTimeout( () => {
+			snackbar.className = snackbar.className.replace( 'show', '' );
+		}, 3000 ); // 3 seconds
+	},
+
 	/**
 	 * Opens the media uploader to select a custom thumbnail.
 	 *
@@ -201,7 +215,12 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		uploader.on( 'select', () => {
 			const attachment = uploader.state().get( 'selection' ).first().toJSON();
 			if ( attachment && attachment.url && attachment.id ) {
-				onSelect( attachment ); // Use callback for custom behavior
+				// Double-check it's actually an image
+				if ( attachment.type === 'image' ) {
+					onSelect( attachment );
+				} else {
+					this.showGodamSnackbar( __( 'Please select a valid image file (JPEG, PNG, GIF, etc.).', 'godam' ) );
+				}
 			}
 		} );
 
@@ -522,10 +541,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * Renders the Edit Video and Analytics buttons in the attachment details view.
 	 */
 	renderVideoActions() {
-		if ( ! canManageAttachment( this.model.get( 'author' ) ) ) {
-			return;
-		}
-
 		const buttonsHTML = this.getButtonsHTML();
 		this.$el.find( '.attachment-actions' ).append( DOMPurify.sanitize( `<div class="attachment-video-actions">${ buttonsHTML }</div>` ) );
 	},
@@ -551,10 +566,19 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			`;
 		}
 
-		return `
-		<a href="${ editVideoURL }" class="button button-primary" target="_blank">Edit Video</a>
-		<a href="${ analyticsURL }" class="button button-secondary" target="_blank">Analytics</a>
-		`;
+		const editVideoButtonHTML = `<a href="${ editVideoURL }" class="button button-primary" target="_blank">Edit Video</a>`;
+		const analyticsButtonHTML = `<a href="${ analyticsURL }" class="button button-secondary" target="_blank">Analytics</a>`;
+
+		const buttons = [];
+
+		// If the user can manage the attachment, show the Edit Video button, else show only Analytics.
+		if ( canManageAttachment( this.model.get( 'author' ) ) ) {
+			buttons.push( editVideoButtonHTML );
+		}
+
+		buttons.push( analyticsButtonHTML );
+
+		return buttons.join( '' );
 	},
 
 	/**
@@ -603,6 +627,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 					if ( videoElement && typeof videojs !== 'undefined' ) {
 						// Initialize the player with minimal controls.
 						videojs( videoElement, {
+							fluid: true,
 							width: '100%',
 							aspectRatio: '16:9',
 							poster: this.model.get( 'image' )?.src || '',
@@ -618,6 +643,15 @@ export default AttachmentDetailsTwoColumn?.extend( {
 								captionsButton: false,
 								chaptersButton: false,
 								pictureInPictureToggle: false,
+							},
+							// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
+							// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
+							html5: {
+								vhs: {
+									bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
+									bandwidthVariance: 1.0, // allow renditions close to estimate
+									limitRenditionByPlayerDimensions: false, // don't cap by video element size
+								},
 							},
 						} );
 					}
@@ -637,6 +671,25 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				this.getExifDetails( attachmentId ),
 				this.renderExifDetails,
 			);
+		}
+
+		if ( this.model.get( 'type' ) === 'application' && this.model.get( 'subtype' ) === 'pdf' ) {
+			const imagePreview = this.model.get( 'image' );
+
+			if ( imagePreview && imagePreview.src ) {
+				// Find the thumbnail container and replace it with the full image preview
+				const $thumbnail = this.$el.find( '.thumbnail' );
+
+				if ( $thumbnail.length ) {
+					$thumbnail.empty().append( `
+						<img
+							class="details-image"
+							src="${ DOMPurify.sanitize( imagePreview.src ) }"
+							alt="PDF Preview"
+						/>
+					` );
+				}
+			}
 		}
 
 		// Return this view.

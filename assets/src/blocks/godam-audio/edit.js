@@ -24,7 +24,6 @@ import {
 } from '@wordpress/block-editor';
 import { __, _x } from '@wordpress/i18n';
 import { useDispatch } from '@wordpress/data';
-import { audio as icon } from '@wordpress/icons';
 import { store as noticesStore } from '@wordpress/notices';
 import { useState } from '@wordpress/element';
 
@@ -33,6 +32,7 @@ import { useState } from '@wordpress/element';
  */
 import { Caption } from './caption';
 import './editor.scss';
+import { ReactComponent as icon } from '../../images/godam-audio-filled.svg';
 
 const ALLOWED_MEDIA_TYPES = [ 'audio' ];
 
@@ -94,13 +94,12 @@ function AudioEdit( {
 			return;
 		}
 
-		// Sets the block's attribute and updates the edit component from the
-		// selected media, then switches off the editing UI.
+		// Always store the src and id returned by the media selection.
 		setAttributes( {
 			blob: undefined,
 			src: media.url,
 			id: media.id,
-			caption: media.caption,
+			caption: media.caption || media.title,
 		} );
 		setTemporaryURL();
 	}

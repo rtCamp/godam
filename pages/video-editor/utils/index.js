@@ -40,12 +40,15 @@ function createVideoAttributes( attachmentId, mediaData ) {
 	const { source_url: sourceUrl, mime_type: mimeType } = mediaData;
 
 	if ( sourceUrl ) {
+		// Convert .mov files to video/mp4 type to match editor behavior
+		const adjustedMimeType = mimeType === 'video/quicktime' ? 'video/mp4' : mimeType;
+
 		return {
 			...baseAttrs,
 			src: sourceUrl,
 			sources: [ {
 				src: sourceUrl,
-				type: mimeType,
+				type: adjustedMimeType,
 			} ],
 		};
 	}
@@ -62,10 +65,32 @@ async function fetchMediaData( attachmentId ) {
 	}
 }
 
+// Cache for media data
+const mediaDataCache = new Map();
+
+export const prefetchMediaDataForCopy = async ( attachmentId ) => {
+	if ( mediaDataCache.has( attachmentId ) ) {
+		return; // Already cached
+	}
+	try {
+		const mediaData = await fetchMediaData( attachmentId );
+		const attrs = createVideoAttributes( attachmentId, mediaData );
+		const html = createGoDAMVideoBlockMarkup( attrs );
+		mediaDataCache.set( attachmentId, html );
+	} catch {
+	}
+};
+
 export const copyGoDAMVideoBlock = async ( attachmentId ) => {
 	// Check clipboard API availability.
 	if ( ! navigator.clipboard?.writeText ) {
 		return false;
+	}
+	// Check if we have cached data
+	if ( mediaDataCache.has( attachmentId ) ) {
+		const html = mediaDataCache.get( attachmentId );
+		await navigator.clipboard.writeText( html );
+		return true;
 	}
 
 	try {
@@ -75,6 +100,7 @@ export const copyGoDAMVideoBlock = async ( attachmentId ) => {
 
 		const html = createGoDAMVideoBlockMarkup( attrs );
 
+		mediaDataCache.set( attachmentId, html );
 		await navigator.clipboard.writeText( html );
 
 		return true;

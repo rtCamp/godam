@@ -40,6 +40,10 @@
 			"type": "string",
 			"default": ""
 		},
+		"mediaFolder": {
+			"type": "string",
+			"default": ""
+		},
 		"author": {
 			"type": "number",
 			"default": 0
@@ -71,6 +75,10 @@
 		"engagements": {
 			"type": "boolean",
 			"default": true
+		},
+		"openToNewPage": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"supports": {

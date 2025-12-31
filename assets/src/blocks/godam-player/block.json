@@ -37,6 +37,9 @@
 		"poster": {
 			"type": "string"
 		},
+		"preloadPoster": {
+			"type": "boolean"
+		},
 		"preload": {
 			"type": "string",
 			"default": "metadata"
@@ -102,12 +105,6 @@
 			"type": "boolean",
 			"default": false
 		},
-		"layout": {
-			"type": "object",
-			"default": {
-				"type": "default"
-			}
-		},
 		"engagements": {
 			"type": "boolean",
 			"default": false
@@ -153,19 +150,11 @@
 				"core/html",
 				"core/shortcode"
 			]
-		},
-		"layout": {
-			"allowSwitching": true,
-			"allowEditing": true,
-			"allowInheriting": true,
-			"default": {
-				"type": "default"
-			}
 		}
 	},
 	"usesContext": [ "queryId" ],
 	"editorStyle": [ "file:./index.css", "godam-player-frontend-style" ],
-	"style": [ "godam-player-style", "godam-player-frontend-style", "godam-player-minimal-skin", "godam-player-pills-skin", "godam-player-bubble-skin", "godam-player-classic-skin" ],
+	"style": [ "godam-player-style", "godam-player-frontend-style" ],
 	"editorScript": [ "file:./index.js" ],
 	"viewScript": [ "godam-player-frontend-script", "godam-player-analytics-script" ],
 	"render": "file:./render.php"
