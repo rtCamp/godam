@@ -72,8 +72,8 @@ class AI_Transcription extends Base {
 	 *
 	 * @return \WP_REST_Response|\WP_Error
 	 */
-	public function get_transcription( \WP_REST_Request $request ) {
-		$attachment_id = $request->get_param( 'attachment_id' );
+	public function get_transcription( \WP_REST_Request $request ): \WP_REST_Response|\WP_Error {
+		$attachment_id = absint( $request->get_param( 'attachment_id' ) );
 
 		// Check if attachment exists and is a video.
 		if ( ! $this->is_valid_video_attachment( $attachment_id ) ) {
@@ -112,8 +112,8 @@ class AI_Transcription extends Base {
 	 *
 	 * @return \WP_REST_Response|\WP_Error
 	 */
-	public function process_transcription( \WP_REST_Request $request ) {
-		$attachment_id = $request->get_param( 'attachment_id' );
+	public function process_transcription( \WP_REST_Request $request ): \WP_REST_Response|\WP_Error {
+		$attachment_id = absint( $request->get_param( 'attachment_id' ) );
 
 		// Check if attachment exists and is a video.
 		if ( ! $this->is_valid_video_attachment( $attachment_id ) ) {
@@ -232,7 +232,7 @@ class AI_Transcription extends Base {
 	 *
 	 * @return bool
 	 */
-	private function is_valid_video_attachment( $attachment_id ) {
+	private function is_valid_video_attachment( int $attachment_id ): bool {
 		$attachment = get_post( $attachment_id );
 
 		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
@@ -251,8 +251,8 @@ class AI_Transcription extends Base {
 	 *
 	 * @return bool
 	 */
-	public function verify_permission( $request ) {
-		$attachment_id = $request->get_param( 'attachment_id' );
+	public function verify_permission( \WP_REST_Request $request ): bool {
+		$attachment_id = absint( $request->get_param( 'attachment_id' ) );
 
 		// Check if user can edit this attachment.
 		if ( ! current_user_can( 'edit_post', $attachment_id ) ) {

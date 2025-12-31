@@ -27,7 +27,7 @@ import {
 	useBlockProps,
 	InnerBlocks,
 } from '@wordpress/block-editor';
-import { useRef, useEffect, useState, useMemo } from '@wordpress/element';
+import { useRef, useEffect, useState, useMemo, useCallback } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { __, _x, sprintf } from '@wordpress/i18n';
 import { useInstanceId } from '@wordpress/compose';
@@ -133,6 +133,46 @@ function VideoEdit( {
 
 	const dispatch = useDispatch();
 
+	/**
+	 * Check if transcription already exists for this video.
+	 */
+	const checkExistingTranscription = useCallback( async () => {
+		try {
+			const response = await apiFetch( {
+				path: `/godam/v1/ai-transcription/get?attachment_id=${ id }`,
+				method: 'GET',
+			} );
+
+			if ( response.success && response.transcription_status === 'Transcribed' ) {
+				const transcriptPath = response?.transcript_path || '';
+
+				// Build tracks array with AI transcription
+				const allTracks = [];
+
+				if ( transcriptPath ) {
+					allTracks.push( {
+						src: transcriptPath,
+						kind: 'subtitles',
+						label: 'English',
+						srclang: 'en',
+					} );
+				}
+
+				// Update attributes with fetched tracks
+				if ( allTracks.length > 0 && JSON.stringify( tracks ) !== JSON.stringify( allTracks ) ) {
+					setAttributes( { tracks: allTracks } );
+				}
+
+				return true; // Return true if transcription exists
+			}
+
+			return false; // Return false if no transcription
+		} catch ( error ) {
+			// Transcription doesn't exist yet, which is fine.
+			return false; // Return false on error
+		}
+	}, [ id, setAttributes ] );
+
 	// Memoize video options to prevent unnecessary rerenders.
 	const videoOptions = useMemo( () => ( {
 		controls,
@@ -151,7 +191,7 @@ function VideoEdit( {
 		muted,
 		poster: poster || defaultPoster,
 		sources,
-		tracks: tracks || [], // Add tracks
+		tracks: tracks || [],
 		aspectRatio: '16:9',
 		controlBar: {
 			playToggle: true,
@@ -340,6 +380,15 @@ function VideoEdit( {
 			}
 		}
 	}, [ id, src, attributes.seo, isVideoSelecting, setAttributes ] );
+
+	// Check if transcription already exists on mount.
+	useEffect( () => {
+		if ( ! id || isInsideQueryLoop ) {
+			return;
+		}
+
+		checkExistingTranscription();
+	}, [ id, isInsideQueryLoop, checkExistingTranscription ] );
 
 	function onSelectVideo( media ) {
 		// Set flag to prevent backward compatibility logic during video selection
@@ -749,6 +798,8 @@ function VideoEdit( {
 								<AITranscription
 									attachmentId={ id }
 									instanceId={ instanceId }
+									hasTranscription={ tracks && tracks.length > 0 }
+									onTranscriptionComplete={ checkExistingTranscription }
 								/>
 
 								<BaseControl

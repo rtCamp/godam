@@ -1,7 +1,7 @@
 /**
  * WordPress dependencies
  */
-import { useState, useEffect, useCallback } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 import { BaseControl, Button, Spinner, Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
@@ -14,48 +14,22 @@ import transcriptIcon from '../../../images/ai-transcript.svg';
 /**
  * AI Transcription component for GoDAM video block.
  *
- * @param {Object} props              Component props.
- * @param {number} props.attachmentId The attachment ID.
- * @param {number} props.instanceId   The instance ID for unique control IDs.
+ * @param {Object}   props                         Component props.
+ * @param {number}   props.attachmentId            The attachment ID.
+ * @param {number}   props.instanceId              The instance ID for unique control IDs.
+ * @param {boolean}  props.hasTranscription        Whether transcription already exists.
+ * @param {Function} props.onTranscriptionComplete Callback when transcription is generated.
  *
  * @return {JSX.Element} The AI Transcription component.
  */
-export default function AITranscription( { attachmentId, instanceId } ) {
+export default function AITranscription( {
+	attachmentId,
+	instanceId,
+	hasTranscription = false,
+	onTranscriptionComplete,
+} ) {
 	const [ isLoading, setIsLoading ] = useState( false );
-	const [ hasTranscription, setHasTranscription ] = useState( false );
 	const [ notice, setNotice ] = useState( null );
-	const [ isCheckingExisting, setIsCheckingExisting ] = useState( true );
-
-	/**
-	 * Check if transcription already exists for this video.
-	 */
-	const checkExistingTranscription = useCallback( async () => {
-		try {
-			const response = await apiFetch( {
-				path: `/godam/v1/ai-transcription/get?attachment_id=${ attachmentId }`,
-				method: 'GET',
-			} );
-
-			if ( response.success && response.transcription_status === 'Transcribed' ) {
-				setHasTranscription( true );
-			}
-		} catch ( error ) {
-			// Transcription doesn't exist yet, which is fine.
-			setHasTranscription( false );
-		} finally {
-			setIsCheckingExisting( false );
-		}
-	}, [ attachmentId ] );
-
-	// Check if transcription already exists on mount.
-	useEffect( () => {
-		if ( ! attachmentId || isNaN( Number( attachmentId ) ) ) {
-			setIsCheckingExisting( false );
-			return;
-		}
-
-		checkExistingTranscription();
-	}, [ attachmentId, checkExistingTranscription ] );
 
 	/**
 	 * Handle generate transcription button click.
@@ -74,11 +48,14 @@ export default function AITranscription( { attachmentId, instanceId } ) {
 			} );
 
 			if ( response.success ) {
-				setHasTranscription( true );
+				// Call the callback to update tracks in parent component
+				if ( onTranscriptionComplete ) {
+					await onTranscriptionComplete();
+				}
 			} else {
 				throw new Error(
 					response.message ||
-						__( 'Failed to generate transcription.', 'godam' ),
+					__( 'Failed to generate transcription.', 'godam' ),
 				);
 			}
 		} catch ( error ) {
@@ -98,21 +75,7 @@ export default function AITranscription( { attachmentId, instanceId } ) {
 		return null;
 	}
 
-	// Show spinner while checking existing transcription.
-	if ( isCheckingExisting ) {
-		return (
-			<BaseControl
-				id={ `video-block__ai-transcription-${ instanceId }` }
-				label={ __( 'AI Transcription', 'godam' ) }
-				__nextHasNoMarginBottom
-			>
-				<Spinner />
-			</BaseControl>
-		);
-	}
-
 	let buttonLabel = __( 'Generate AI Transcription', 'godam' );
-
 	if ( isLoading ) {
 		buttonLabel = __( 'Generating…', 'godam' );
 	} else if ( hasTranscription ) {
