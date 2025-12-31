@@ -923,7 +923,7 @@ function godam_embed_page_content( $video_id, $show_engagements = false ) {
 	} else {
 		// Display video content.
 		?>
-		<div class="godam-video-embed">
+		<div class="godam-video-embed" data-show-engagements="<?php echo esc_attr( $show_engagements ? 'true' : 'false' ); ?>">
 			<?php echo do_shortcode( '[godam_video id="' . $video_id . '" show_engagements="' . $show_engagements . '"]' ); ?>
 		</div>
 		<?php

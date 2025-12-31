@@ -292,17 +292,32 @@ class GoDAM_Video_Gallery {
 					}
 				}
 
-				$video_url = add_query_arg(
-					array(
-						'godam_page'  => 'video-embed',
-						'id'          => $video_id,
-						'engagements' => $atts['engagements'] ? 'show' : '',
-					),
-					$cpt_base_url 
+				// Check if engagements are enabled for the video.
+				$engagements_enabled = $atts['engagements'];
+				if ( ! $engagements_enabled ) {
+					$item_engagements_enabled = false;
+				} else {
+					// Check if engagements are enabled for the video is transcoded.
+					$transcoded_job_id        = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
+					$tanscoded_status         = get_post_meta( $video_id, 'rtgodam_transcoding_status', true );
+					$item_engagements_enabled = ! empty( $transcoded_job_id ) && 'transcoded' === $tanscoded_status;
+				}
+
+				// Build the query arguments for the video embed page.
+				$query_args = array(
+					'godam_page' => 'video-embed',
+					'id'         => $video_id,
 				);
 
+				// Add the engagements query argument if it is enabled.
+				if ( $item_engagements_enabled ) {
+					$query_args['engagements'] = 'show';
+				}
+
+				$video_url = add_query_arg( $query_args, $cpt_base_url );
+
 				echo '<div class="godam-video-item">';
-				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $video_url ) . '">';
+				echo '<div class="godam-video-thumbnail" data-gallery-item-engagements="' . esc_attr( $item_engagements_enabled ? 'true' : 'false' ) . '" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $video_url ) . '">';
 				echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
 				if ( $duration ) {
 					echo '<span class="godam-video-duration">' . esc_html( $duration ) . '</span>';

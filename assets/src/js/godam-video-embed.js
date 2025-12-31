@@ -286,9 +286,15 @@ document.addEventListener( 'DOMContentLoaded', function() {
 			const videoAttachmentId = videoIdNum;
 			const videoIdForEngagement = 'engagement-' + videoInstanceId;
 
+			let skipEngagements = true;
+			const showEngagements = document.querySelector( '.godam-video-embed' ).getAttribute( 'data-show-engagements' );
+			if ( showEngagements && showEngagements === 'true' ) {
+				skipEngagements = false;
+			}
+
 			// Dispatch action to initiate comment modal.
 			// This action internally calls engagementStore.generateCommentModal.
-			dispatch.initiateCommentModal( videoAttachmentId, siteUrl, videoIdForEngagement, true, true );
+			dispatch.initiateCommentModal( videoAttachmentId, siteUrl, videoIdForEngagement, skipEngagements, true );
 		}, 1000 );
 	}
 

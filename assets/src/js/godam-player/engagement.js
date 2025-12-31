@@ -216,8 +216,8 @@ const engagementStore = {
 		 * @param {string}  siteUrl           - The URL of the site where the video is hosted.
 		 * @param {string}  videoId           - The ID of the video.
 		 * @param {boolean} skipEngagements   - Whether to skip engagements.
+		 * @param {boolean} isEmbedPage       - Whether the comment modal is for an embed page.
 		 *
-		 * @param           isEmbedPage
 		 * @return {Object} An action object containing the type.
 		 */
 		initiateCommentModal: ( videoAttachmentId, siteUrl, videoId, skipEngagements = false, isEmbedPage = false ) => {
@@ -767,9 +767,9 @@ function timeToSeconds( h, m, s ) {
 /**
  * Component to render a text with @HH:MM:SS or @MM:SS timestamps linked to video positions.
  *
- * @param {Object}                   props          - Component props.
- * @param {string}                   props.text     - Text to render.
- * @param {function(number, string)} [props.onJump] - Callback to handle clicking a timestamp.
+ * @param {Object}   props          - Component props.
+ * @param {string}   props.text     - Text to render.
+ * @param {Function} [props.onJump] - Callback to handle clicking a timestamp.
  */
 function TimeLinkedText( { text, onJump } ) {
 	// Matches @HH:MM:SS or @MM:SS
@@ -1134,8 +1134,6 @@ function GuestLoginForm( props ) {
  */
 function CommentBox( props ) {
 	const { videoAttachmentId, storeObj, siteUrl, videoId, skipEngagements, isEmbedPage } = props;
-	console.log( 'isEmbedPage', isEmbedPage );
-	
 	const baseClass = 'rtgodam-video-engagement--comment-modal';
 	const memoizedStoreObj = useMemo( () => storeObj, [ storeObj ] );
 	const commentsCount = memoizedStoreObj.select.getCommentsCount()[ videoAttachmentId ] || 0;
