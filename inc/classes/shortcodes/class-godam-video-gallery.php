@@ -292,8 +292,17 @@ class GoDAM_Video_Gallery {
 					}
 				}
 
+				$video_url = add_query_arg(
+					array(
+						'godam_page'  => 'video-embed',
+						'id'          => $video_id,
+						'engagements' => $atts['engagements'] ? 'show' : '',
+					),
+					$cpt_base_url 
+				);
+
 				echo '<div class="godam-video-item">';
-				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $cpt_base_url . '?godam_page=video-embed&id=' . $video_id ) . '">';
+				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $video_url ) . '">';
 				echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
 				if ( $duration ) {
 					echo '<span class="godam-video-duration">' . esc_html( $duration ) . '</span>';

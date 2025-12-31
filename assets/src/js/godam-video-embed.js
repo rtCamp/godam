@@ -288,7 +288,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 
 			// Dispatch action to initiate comment modal.
 			// This action internally calls engagementStore.generateCommentModal.
-			dispatch.initiateCommentModal( videoAttachmentId, siteUrl, videoIdForEngagement, false, true );
+			dispatch.initiateCommentModal( videoAttachmentId, siteUrl, videoIdForEngagement, true, true );
 		}, 1000 );
 	}
 

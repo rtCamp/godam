@@ -893,19 +893,24 @@ function godam_preview_page_content( $video_id ) {
  * It displays the video player only, without any headers or notices,
  * making it suitable for embedding in iframes or modals.
  *
- * @param int $video_id The ID of the video attachment to embed.
+ * @param int  $video_id The ID of the video attachment to embed.
+ * @param bool $show_engagements Whether to show engagements.
+ *
+ * @since n.e.x.t
+ *
  * @return string The generated HTML content for the video embed page.
  */
-function godam_embed_page_content( $video_id ) {
+function godam_embed_page_content( $video_id, $show_engagements = false ) {
 	ob_start();
 	// Check if video ID is provided and if video attachment exists.
 	$video_attachment = null;
 	$show_video       = false;
 	$video_id         = intval( $video_id );
+	$show_engagements = $show_engagements ? 'show' : '';
 
 	if ( ! empty( $video_id ) ) {
 		$video_attachment = get_post( $video_id );
-		$show_video       = $video_attachment && 'attachment' === $video_attachment->post_type;
+		$show_video       = $video_attachment && 'attachment' === $video_attachment->post_type && 'video/' === substr( $video_attachment->post_mime_type, 0, 6 );
 	}
 
 	if ( ! $show_video ) {
@@ -919,7 +924,7 @@ function godam_embed_page_content( $video_id ) {
 		// Display video content.
 		?>
 		<div class="godam-video-embed">
-			<?php echo do_shortcode( '[godam_video id="' . $video_id . '"]' ); ?>
+			<?php echo do_shortcode( '[godam_video id="' . $video_id . '" show_engagements="' . $show_engagements . '"]' ); ?>
 		</div>
 		<?php
 	}
