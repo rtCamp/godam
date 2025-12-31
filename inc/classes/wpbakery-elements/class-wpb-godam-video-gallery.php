@@ -67,7 +67,7 @@ class WPB_GoDAM_Video_Gallery {
 				'base'        => 'godam_video_gallery',
 				'category'    => esc_html__( 'GoDAM', 'godam' ),
 				'description' => esc_html__( 'Embed video gallery from GoDAM Media Library', 'godam' ),
-				'icon'        => 'icon-wpb-application-icon-large',
+				'icon'        => RTGODAM_URL . 'assets/src/images/godam-gallery-filled.svg',
 				'params'      => array(
 					// Layout Settings.
 					array(

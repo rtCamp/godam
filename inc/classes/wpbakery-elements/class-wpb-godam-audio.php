@@ -67,7 +67,7 @@ class WPB_GoDAM_Audio {
 				'base'        => 'godam_audio',
 				'category'    => esc_html__( 'GoDAM', 'godam' ),
 				'description' => esc_html__( 'Embed audio from GoDAM Media Library', 'godam' ),
-				'icon'        => 'icon-wpb-music',
+				'icon'        => RTGODAM_URL . 'assets/src/images/godam-audio-filled.svg',
 				'params'      => array(
 					// Audio Selection.
 					array(
