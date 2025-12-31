@@ -230,6 +230,30 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		return;
 	}
 
+	// Create and show loading overlay
+	const loadingOverlay = document.createElement( 'div' );
+	loadingOverlay.className = 'godam-video-embed-loading';
+	loadingOverlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;';
+
+	// Create spinner element
+	const spinner = document.createElement( 'div' );
+	spinner.className = 'godam-video-embed-spinner';
+	loadingOverlay.appendChild( spinner );
+
+	document.body.appendChild( loadingOverlay );
+
+	// Function to hide loading overlay
+	const hideLoadingOverlay = () => {
+		if ( loadingOverlay && loadingOverlay.parentNode ) {
+			loadingOverlay.style.opacity = '0';
+			loadingOverlay.style.pointerEvents = 'none';
+			loadingOverlay.style.transition = 'opacity 0.3s ease-out';
+			setTimeout( () => {
+				loadingOverlay.remove();
+			}, 300 );
+		}
+	};
+
 	// Listen for the engagement store to be initialized.
 	document.addEventListener( 'engagementStoreInitialized', renderCommentBox );
 
@@ -271,6 +295,9 @@ document.addEventListener( 'DOMContentLoaded', function() {
 			skipEngagements,
 			true,
 		);
+
+		// Hide loading overlay after modal is initiated
+		hideLoadingOverlay();
 	}
 } );
 
