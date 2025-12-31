@@ -1288,6 +1288,9 @@ function CommentBox( props ) {
  * This function should be called once to initialize the video engagement store.
  * It is called automatically on page load by the Godam plugin.
  */
-export function engagement() {
-	return engagementStore.init();
+export async function engagement() {
+	const engagementStoreInstance = await engagementStore.init();
+	// Dispatch custom event to notify that the engagement store is initialized.
+	document.dispatchEvent( new CustomEvent( 'engagementStoreInitialized', { detail: { engagementStoreInstance } } ) );
+	return engagementStoreInstance;
 }
