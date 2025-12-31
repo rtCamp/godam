@@ -49,6 +49,34 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 
 	const containerRef = useRef( null );
 
+	/**
+	 * Safely parse and validate duration value.
+	 *
+	 * @param {string|number} val - The input value to parse.
+	 * @return {number} Validated duration value between 1 and 3600 seconds.
+	 */
+	const parseSafeDuration = ( val ) => {
+		// Convert to string and remove any non-numeric characters except decimal point
+		const cleanedVal = String( val ).replace( /[^0-9.]/g, '' );
+
+		// Parse as float first, then convert to integer
+		const parsed = parseFloat( cleanedVal );
+
+		// Check if parsing resulted in a valid number
+		if ( isNaN( parsed ) || ! isFinite( parsed ) ) {
+			return 1;
+		}
+
+		// Convert to integer and apply bounds (1 to 3600 seconds = 1 hour max)
+		const intVal = Math.floor( parsed );
+
+		// Ensure safe integer range and reasonable maximum duration
+		const MAX_DURATION = 3600; // 1 hour in seconds
+		const MIN_DURATION = 1;
+
+		return Math.max( MIN_DURATION, Math.min( MAX_DURATION, intVal ) );
+	};
+
 	// ratio { x, y } for px <-> ratio
 	const [ ratio, setRatio ] = useState( { x: 1, y: 1 } );
 
@@ -138,12 +166,14 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 					className="godam-input"
 					type="number"
 					min="1"
+					max="3600"
 					value={ layer?.duration || '' }
 					onChange={ ( val ) => {
-						const newVal = parseInt( val, 10 ) || 0;
+						const newVal = parseSafeDuration( val );
 						updateField( 'duration', newVal );
 					} }
-					help={ __( 'Duration (in seconds) this layer will stay visible', 'godam' ) }
+					/* translators: Maximum duration limit for hotspot layers */
+					help={ __( 'Duration (in seconds) this layer will stay visible. Maximum: 1 hour (3600 seconds)', 'godam' ) }
 					disabled={ ! isValidAPIKey }
 				/>
 			</div>
