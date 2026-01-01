@@ -38,9 +38,7 @@ class AI_Transcription extends Base {
 					'args'                => array(
 						'attachment_id' => array(
 							'required'          => true,
-							'validate_callback' => function ( $param ) {
-								return is_numeric( $param );
-							},
+							'validate_callback' => array( $this, 'validate_attachment_id' ),
 						),
 					),
 				),
@@ -55,14 +53,23 @@ class AI_Transcription extends Base {
 					'args'                => array(
 						'attachment_id' => array(
 							'required'          => true,
-							'validate_callback' => function ( $param ) {
-								return is_numeric( $param );
-							},
+							'validate_callback' => array( $this, 'validate_attachment_id' ),
 						),
 					),
 				),
 			),
 		);
+	}
+
+	/**
+	 * Validate attachment ID parameter.
+	 *
+	 * @param mixed $param Parameter value.
+	 *
+	 * @return bool
+	 */
+	public function validate_attachment_id( $param ): bool {
+		return is_numeric( $param ) && intval( $param ) > 0;
 	}
 
 	/**
@@ -158,9 +165,11 @@ class AI_Transcription extends Base {
 			'api_key'  => sanitize_text_field( $api_key ),
 		);
 
+		// Increased timeout to 300 seconds since the backend process API is a blocking one. This is a temporary solution and eventually
+		// once the backednd API is updated this logic will get updated as well.
 		$args = array(
 			'method'  => 'POST',
-			'timeout' => 60, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
+			'timeout' => 300, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
 			'headers' => array(
 				'Content-Type' => 'application/json',
 			),
@@ -186,7 +195,13 @@ class AI_Transcription extends Base {
 		$data          = json_decode( $body, true );
 
 		// Handle API errors.
-		if ( 200 !== $response_code || empty( $data['message']['success'] ) ) {
+		if (
+			200 !== $response_code ||
+			! is_array( $data ) ||
+			! isset( $data['message'] ) ||
+			! is_array( $data['message'] ) ||
+			empty( $data['message']['success'] )
+		) {
 			$error_message = $data['message']['error'] ?? __( 'Unknown error occurred.', 'godam' );
 
 			// Parse server messages for more specific errors.
@@ -239,6 +254,10 @@ class AI_Transcription extends Base {
 		}
 
 		$mime_type = get_post_mime_type( $attachment_id );
+
+		if ( ! is_string( $mime_type ) ) {
+			return false;
+		}
 
 		return 'video' === substr( $mime_type, 0, 5 );
 	}

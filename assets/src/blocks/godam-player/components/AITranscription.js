@@ -83,7 +83,7 @@ export default function AITranscription( {
 	}
 
 	const helpText = __(
-		'Generate AI-powered captions for the video. After generation, turn on captions in the player to view them.',
+		'Generate AI-powered captions for the video. Once generated, captions will be available automatically in the player.',
 		'godam',
 	);
 
@@ -108,7 +108,7 @@ export default function AITranscription( {
 					<span className="ai_transcription_control__button_content">
 						{ buttonLabel }
 						<TranscriptIcon
-							aria-label={ __( 'AI transcription Icon', 'godam' ) }
+							aria-label={ __( 'AI transcription icon', 'godam' ) }
 							role="img"
 							className={
 								`ai_transcription_control__icon` +

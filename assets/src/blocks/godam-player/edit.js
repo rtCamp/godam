@@ -146,21 +146,24 @@ function VideoEdit( {
 			if ( response.success && response.transcription_status === 'Transcribed' ) {
 				const transcriptPath = response?.transcript_path || '';
 
-				// Build tracks array with AI transcription
-				const allTracks = [];
+				// Build tracks array with AI transcription.
+				const existingTracks = Array.isArray( tracks ) ? tracks : [];
 
-				if ( transcriptPath ) {
-					allTracks.push( {
+				// Check if this transcription path already exists in tracks.
+				const transcriptAlreadyExists = existingTracks.some(
+					( track ) => track.src === transcriptPath,
+				);
+
+				// Only add if not already present.
+				if ( ! transcriptAlreadyExists ) {
+					const newTrack = {
 						src: transcriptPath,
 						kind: 'subtitles',
 						label: 'English',
 						srclang: 'en',
-					} );
-				}
+					};
 
-				// Update attributes with fetched tracks
-				if ( allTracks.length > 0 && JSON.stringify( tracks ) !== JSON.stringify( allTracks ) ) {
-					setAttributes( { tracks: allTracks } );
+					setAttributes( { tracks: [ ...existingTracks, newTrack ] } );
 				}
 
 				return true; // Return true if transcription exists
@@ -171,7 +174,7 @@ function VideoEdit( {
 			// Transcription doesn't exist yet, which is fine.
 			return false; // Return false on error
 		}
-	}, [ id, setAttributes ] );
+	}, [ id, setAttributes, tracks ] );
 
 	// Memoize video options to prevent unnecessary rerenders.
 	const videoOptions = useMemo( () => ( {

@@ -356,52 +356,49 @@ if ( $godam_is_shortcode || $godam_is_elementor_widget ) {
 }
 
 /**
- * Fetch AI Generated video tracks from post meta
- * Only add if not already present in block attributes
+ * Fetch AI Generated video tracks from post meta.
  */
 $godam_transcript_path = '';
 
-// Check if AI transcription track already exists in block attributes.
+// Determine which attachment ID to use for transcript check.
+// If attachment_id is a string, it's a job ID - resolve it to attachment ID.
+$godam_transcript_attachment_id = $godam_attachment_id;
+
+if ( ! empty( $godam_attachment_id ) && ! is_numeric( $godam_attachment_id ) ) {
+	// It's a job ID string, find the actual attachment ID.
+	if ( ! class_exists( 'RTGODAM_Transcoder_Handler' ) ) {
+		include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-handler.php';
+	}
+
+	$godam_transcoder_handler       = new RTGODAM_Transcoder_Handler();
+	$godam_transcript_attachment_id = $godam_transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $godam_attachment_id );
+}
+
+// Check for transcription if we have a valid numeric attachment ID.
+// The function will check post meta first before making API calls.
+if ( ! empty( $godam_transcript_attachment_id ) && is_numeric( $godam_transcript_attachment_id ) ) {
+	$godam_transcript_path = godam_get_transcript_path( $godam_transcript_attachment_id, $godam_job_id );
+}
+
+// Check if the transcript path already exists in $godam_tracks by comparing src URLs.
 $godam_has_ai_track_in_attributes = false;
-if ( ! empty( $godam_tracks ) ) {
+if ( ! empty( $godam_transcript_path ) && ! empty( $godam_tracks ) ) {
 	foreach ( $godam_tracks as $godam_track ) {
-		if ( ! empty( $godam_track['kind'] ) && 'subtitles' === $godam_track['kind'] ) {
+		if ( ! empty( $godam_track['src'] ) && $godam_track['src'] === $godam_transcript_path ) {
 			$godam_has_ai_track_in_attributes = true;
 			break;
 		}
 	}
 }
 
-// Only fetch and add AI transcription if not already in attributes.
-if ( ! $godam_has_ai_track_in_attributes ) {
-	// Determine which attachment ID to use for transcript check.
-	// If attachment_id is a string, it's a job ID - resolve it to attachment ID.
-	$godam_transcript_attachment_id = $godam_attachment_id;
-
-	if ( ! empty( $godam_attachment_id ) && ! is_numeric( $godam_attachment_id ) ) {
-		// It's a job ID string, find the actual attachment ID.
-		if ( ! class_exists( 'RTGODAM_Transcoder_Handler' ) ) {
-			include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-handler.php';
-		}
-
-		$godam_transcoder_handler       = new RTGODAM_Transcoder_Handler();
-		$godam_transcript_attachment_id = $godam_transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $godam_attachment_id );
-	}
-
-	// Check for transcription if we have a valid numeric attachment ID.
-	// The function will check post meta first before making API calls.
-	if ( ! empty( $godam_transcript_attachment_id ) && is_numeric( $godam_transcript_attachment_id ) ) {
-		$godam_transcript_path = godam_get_transcript_path( $godam_transcript_attachment_id, $godam_job_id );
-	}
-
-	if ( ! empty( $godam_transcript_path ) ) {
-		$godam_tracks[] = array(
-			'src'     => esc_url( $godam_transcript_path ),
-			'kind'    => 'subtitles',
-			'label'   => 'English',
-			'srclang' => 'en',
-		);
-	}
+// Only add the AI transcription track if it doesn't already exist in attributes.
+if ( ! empty( $godam_transcript_path ) && ! $godam_has_ai_track_in_attributes ) {
+	$godam_tracks[] = array(
+		'src'     => esc_url( $godam_transcript_path ),
+		'kind'    => 'subtitles',
+		'label'   => 'English',
+		'srclang' => 'en',
+	);
 }
 
 $godam_attachment_title = '';
