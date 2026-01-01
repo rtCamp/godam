@@ -9,7 +9,7 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import transcriptIcon from '../../../images/ai-transcript.svg';
+import { ReactComponent as TranscriptIcon } from '../../../images/ai-transcript.svg';
 
 /**
  * AI Transcription component for GoDAM video block.
@@ -107,9 +107,9 @@ export default function AITranscription( {
 				>
 					<span className="ai_transcription_control__button_content">
 						{ buttonLabel }
-						<img
-							src={ transcriptIcon }
-							alt=""
+						<TranscriptIcon
+							aria-label={ __( 'AI transcription Icon', 'godam' ) }
+							role="img"
 							className={
 								`ai_transcription_control__icon` +
 								( isButtonDisabled
