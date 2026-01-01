@@ -118,12 +118,11 @@ class RTGODAM_Transcoder_Handler {
 
 		$default_settings = array(
 			'video' => array(
-				'adaptive_bitrate'     => false,
-				'watermark'            => false,
-				'watermark_text'       => '',
-				'watermark_url'        => '',
-				'video_thumbnails'     => 5,
-				'overwrite_thumbnails' => false,
+				'adaptive_bitrate' => false,
+				'watermark'        => false,
+				'watermark_text'   => '',
+				'watermark_url'    => '',
+				'video_thumbnails' => 5,
 			),
 		);
 
@@ -627,27 +626,20 @@ class RTGODAM_Transcoder_Handler {
 
 		if ( $first_thumbnail_url ) {
 
-			$is_retranscoding_job = get_post_meta( $post_id, 'rtgodam_retranscoding_sent', true );
+			// rtMedia support.
+			update_post_meta( $post_id, '_rt_media_video_thumbnail', $first_thumbnail_url );
 
-			/**
-			 * Determines the default thumbnail behavior:
-			 * - For newly uploaded videos: always assign the first generated thumbnail.
-			 * - For retranscoding jobs: assign the first thumbnail only when either:
-			 *     • the overwrite option is enabled, or
-			 *     • no existing thumbnail is currently set.
-			 */
-			$current_thumbnail    = get_post_meta( $post_id, 'rtgodam_media_video_thumbnail', true );
-			$should_set_thumbnail = ! $is_retranscoding_job || rtgodam_is_override_thumbnail() || empty( $current_thumbnail );
+			if ( class_exists( 'RTMediaModel' ) ) {
+				$model->update( array( 'cover_art' => $first_thumbnail_url ), array( 'media_id' => $post_id ) );
+				update_activity_after_thumb_set( $media_id );
+			}
 
-			if ( $should_set_thumbnail ) {
-				// rtMedia support.
-				update_post_meta( $post_id, '_rt_media_video_thumbnail', $first_thumbnail_url );
+			$current_thumbnail = get_post_meta( $post_id, 'rtgodam_media_video_thumbnail', true );
+			$custom_thumbnails = get_post_meta( $post_id, 'rtgodam_custom_media_thumbnails', true );
+			$custom_thumbnails = is_array( $custom_thumbnails ) ? $custom_thumbnails : array();
 
-				if ( class_exists( 'RTMediaModel' ) ) {
-					$model->update( array( 'cover_art' => $first_thumbnail_url ), array( 'media_id' => $post_id ) );
-					update_activity_after_thumb_set( $media_id );
-				}
-
+			// If the current selected thumbnail is NOT one of the custom uploaded thumbnails, overwrite it.
+			if ( empty( $current_thumbnail ) || ! in_array( $current_thumbnail, $custom_thumbnails, true ) ) {
 				update_post_meta( $post_id, 'rtgodam_media_video_thumbnail', $first_thumbnail_url );
 			}
 
