@@ -162,7 +162,7 @@ class AI_Transcription extends Base {
 
 		$request_body = array(
 			'job_name' => sanitize_text_field( $job_id ),
-			'api_key'  => sanitize_text_field( $api_key ),
+			'api_key'  => $api_key,
 		);
 
 		// Increased timeout to 300 seconds since the backend process API is a blocking one. This is a temporary solution and eventually
@@ -207,9 +207,19 @@ class AI_Transcription extends Base {
 			// Parse server messages for more specific errors.
 			if ( ! empty( $data['_server_messages'] ) ) {
 				$server_messages = json_decode( $data['_server_messages'], true );
-				if ( is_array( $server_messages ) && ! empty( $server_messages[0] ) ) {
+
+				if (
+					JSON_ERROR_NONE === json_last_error() &&
+					is_array( $server_messages ) &&
+					! empty( $server_messages[0] )
+				) {
 					$first_message = json_decode( $server_messages[0], true );
-					if ( isset( $first_message['message'] ) ) {
+
+					if (
+						JSON_ERROR_NONE === json_last_error() &&
+						is_array( $first_message ) &&
+						isset( $first_message['message'] )
+					) {
 						$error_message = $first_message['message'];
 					}
 				}
@@ -226,9 +236,19 @@ class AI_Transcription extends Base {
 		$transcript_path      = $data['message']['transcript_path'] ?? '';
 		$transcription_status = $data['message']['status'] ?? 'Transcribed';
 
-		if ( ! empty( $transcript_path ) ) {
-			update_post_meta( $attachment_id, 'rtgodam_transcript_path', esc_url_raw( $transcript_path ) );
+		if ( ! $this->is_valid_transcript_url( $transcript_path ) ) {
+			return new \WP_Error(
+				'invalid_transcript_url',
+				__( 'Invalid transcript URL received from API.', 'godam' ),
+				array( 'status' => 500 )
+			);
 		}
+
+		update_post_meta(
+			$attachment_id,
+			'rtgodam_transcript_path',
+			esc_url_raw( $transcript_path )
+		);
 
 		return rest_ensure_response(
 			array(
@@ -263,6 +283,33 @@ class AI_Transcription extends Base {
 	}
 
 	/**
+	 * Validate transcript URL.
+	 *
+	 * @param string $url Transcript URL.
+	 *
+	 * @return bool
+	 */
+	private function is_valid_transcript_url( $url ) {
+		if ( empty( $url ) || ! is_string( $url ) ) {
+			return false;
+		}
+
+		// Validate URL format.
+		if ( ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
+			return false;
+		}
+
+		// Allow only .vtt files.
+		$path = wp_parse_url( $url, PHP_URL_PATH );
+
+		if ( empty( $path ) || ! str_ends_with( strtolower( $path ), '.vtt' ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Permission callback to verify user can edit attachments.
 	 *
 	 * @param \WP_REST_Request $request REST request object.
@@ -271,6 +318,10 @@ class AI_Transcription extends Base {
 	 */
 	public function verify_permission( \WP_REST_Request $request ): bool {
 		$attachment_id = absint( $request->get_param( 'attachment_id' ) );
+
+		if ( empty( $attachment_id ) || ! is_numeric( $attachment_id ) || 0 === $attachment_id ) {
+			return false;
+		}
 
 		// Check if user can edit this attachment.
 		if ( ! current_user_can( 'edit_post', $attachment_id ) ) {

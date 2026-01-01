@@ -382,7 +382,7 @@ if ( ! empty( $godam_transcript_attachment_id ) && is_numeric( $godam_transcript
 
 // Check if the transcript path already exists in $godam_tracks by comparing src URLs.
 $godam_has_ai_track_in_attributes = false;
-if ( ! empty( $godam_transcript_path ) && ! empty( $godam_tracks ) ) {
+if ( ! empty( $godam_transcript_path ) && ! empty( $godam_tracks ) && is_array( $godam_tracks ) ) {
 	foreach ( $godam_tracks as $godam_track ) {
 		if ( ! empty( $godam_track['src'] ) && $godam_track['src'] === $godam_transcript_path ) {
 			$godam_has_ai_track_in_attributes = true;

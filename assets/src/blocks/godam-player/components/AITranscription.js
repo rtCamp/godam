@@ -96,7 +96,7 @@ export default function AITranscription( {
 			help={ helpText }
 			__nextHasNoMarginBottom
 		>
-			<div className="ai_transcription_control__content">
+			<div className="ai-transcription-control__content">
 				<Button
 					__next40pxDefaultSize
 					variant="primary"
@@ -105,15 +105,15 @@ export default function AITranscription( {
 					icon={ isLoading && <Spinner /> }
 					isBusy={ isLoading }
 				>
-					<span className="ai_transcription_control__button_content">
+					<span className="ai-transcription-control__button-content">
 						{ buttonLabel }
 						<TranscriptIcon
 							aria-label={ __( 'AI transcription icon', 'godam' ) }
 							role="img"
 							className={
-								`ai_transcription_control__icon` +
+								`ai-transcription-control__icon` +
 								( isButtonDisabled
-									? ' ai_transcription_control__icon_disabled'
+									? ' ai-transcription-control__icon--disabled'
 									: '' )
 							}
 						/>
@@ -121,7 +121,7 @@ export default function AITranscription( {
 				</Button>
 
 				{ notice && (
-					<div className="ai_transcription_control__notice_wrapper">
+					<div className="ai-transcription-control__notice-wrapper">
 						<Notice
 							status={ notice.type }
 							isDismissible={ false }

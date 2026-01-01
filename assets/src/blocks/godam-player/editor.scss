@@ -12,13 +12,13 @@
 	aspect-ratio: 16 / 9;
 }
 
-.ai_transcription_control {
+.ai-transcription-control {
 
 	&__content {
 		margin-top: 8px;
 	}
 
-	&__button_content {
+	&__button-content {
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
@@ -31,11 +31,11 @@
 		transition: opacity 0.15s ease;
 	}
 
-	&__icon_disabled {
+	&__icon--disabled {
 		opacity: 0.5;
 	}
 
-	&__notice_wrapper {
+	&__notice-wrapper {
 		margin-top: 8px;
 	}
 }
