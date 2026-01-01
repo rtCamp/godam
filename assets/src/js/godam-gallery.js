@@ -12,6 +12,249 @@ import DOMPurify from 'isomorphic-dompurify';
 
 const engagementStore = 'godam-video-engagement';
 
+// Track loaded assets to avoid duplicates
+const loadedScripts = new Set();
+const loadedStyles = new Set();
+
+/**
+ * Check if a script is already loaded in the DOM
+ *
+ * @param {string} src - Script source URL
+ * @return {boolean} True if script is already loaded
+ */
+function isScriptLoaded( src ) {
+	// Check if already tracked
+	if ( loadedScripts.has( src ) ) {
+		return true;
+	}
+
+	// Check if script tag exists in DOM
+	const scripts = document.querySelectorAll( 'script[src]' );
+	for ( const script of scripts ) {
+		if ( script.src === src || script.src.includes( src.split( '?' )[ 0 ] ) ) {
+			loadedScripts.add( src );
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Check if a stylesheet is already loaded in the DOM
+ *
+ * @param {string} href - Stylesheet source URL
+ * @return {boolean} True if stylesheet is already loaded
+ */
+function isStyleLoaded( href ) {
+	// Check if already tracked
+	if ( loadedStyles.has( href ) ) {
+		return true;
+	}
+
+	// Check if link tag exists in DOM
+	const links = document.querySelectorAll( 'link[rel="stylesheet"]' );
+	for ( const link of links ) {
+		if ( link.href === href || link.href.includes( href.split( '?' )[ 0 ] ) ) {
+			loadedStyles.add( href );
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Load dependencies recursively
+ *
+ * @param {Array} deps - Array of dependency asset objects
+ * @return {Promise} Promise that resolves when all dependencies are loaded
+ */
+async function loadDependencies( deps ) {
+	if ( ! deps || ! Array.isArray( deps ) || deps.length === 0 ) {
+		return Promise.resolve();
+	}
+
+	const promises = deps.map( async ( dep ) => {
+		// Check if already loaded
+		if ( isScriptLoaded( dep.src ) ) {
+			return Promise.resolve();
+		}
+
+		// Recursively load dependencies first
+		if ( dep.deps && dep.deps.length > 0 ) {
+			await loadDependencies( dep.deps );
+		}
+
+		// Load this dependency
+		return loadScript( dep );
+	} );
+
+	return Promise.all( promises );
+}
+
+/**
+ * Load a script dynamically
+ *
+ * @param {Object} asset - Asset object with handle, src, deps, ver
+ * @return {Promise} Promise that resolves when script is loaded
+ */
+function loadScript( asset ) {
+	return new Promise( async ( resolve, reject ) => {
+		// Check if already loaded
+		if ( isScriptLoaded( asset.src ) ) {
+			resolve();
+			return;
+		}
+
+		try {
+			// Load dependencies first (recursively)
+			if ( asset.deps && Array.isArray( asset.deps ) && asset.deps.length > 0 ) {
+				await loadDependencies( asset.deps );
+			}
+
+			// Now load this script
+			createScriptTag( asset, resolve, reject );
+		} catch ( error ) {
+			reject( error );
+		}
+	} );
+}
+
+/**
+ * Create and append script tag
+ *
+ * @param {Object}   asset   - Asset object
+ * @param {Function} resolve - Promise resolve
+ * @param {Function} reject  - Promise reject
+ */
+function createScriptTag( asset, resolve, reject ) {
+	const script = document.createElement( 'script' );
+	script.src = asset.src;
+	script.async = false;
+	script.onload = () => {
+		loadedScripts.add( asset.src );
+		resolve();
+	};
+	script.onerror = () => {
+		// eslint-disable-next-line no-console
+		console.warn( `Failed to load script: ${ asset.src }` );
+		reject( new Error( `Failed to load script: ${ asset.src }` ) );
+	};
+	document.head.appendChild( script );
+}
+
+/**
+ * Load style dependencies recursively
+ *
+ * @param {Array} deps - Array of dependency asset objects
+ * @return {Promise} Promise that resolves when all dependencies are loaded
+ */
+async function loadStyleDependencies( deps ) {
+	if ( ! deps || ! Array.isArray( deps ) || deps.length === 0 ) {
+		return Promise.resolve();
+	}
+
+	const promises = deps.map( async ( dep ) => {
+		// Check if already loaded
+		if ( isStyleLoaded( dep.src ) ) {
+			return Promise.resolve();
+		}
+
+		// Recursively load dependencies first
+		if ( dep.deps && dep.deps.length > 0 ) {
+			await loadStyleDependencies( dep.deps );
+		}
+
+		// Load this dependency
+		return loadStyle( dep );
+	} );
+
+	return Promise.all( promises );
+}
+
+/**
+ * Load a stylesheet dynamically
+ *
+ * @param {Object} asset - Asset object with handle, src, deps, ver
+ * @return {Promise} Promise that resolves when stylesheet is loaded
+ */
+function loadStyle( asset ) {
+	return new Promise( async ( resolve, reject ) => {
+		// Check if already loaded
+		if ( isStyleLoaded( asset.src ) ) {
+			resolve();
+			return;
+		}
+
+		try {
+			// Load dependencies first (recursively)
+			if ( asset.deps && Array.isArray( asset.deps ) && asset.deps.length > 0 ) {
+				await loadStyleDependencies( asset.deps );
+			}
+
+			// Now load this stylesheet
+			const link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.href = asset.src;
+			link.onload = () => {
+				loadedStyles.add( asset.src );
+				resolve();
+			};
+			link.onerror = () => {
+				// eslint-disable-next-line no-console
+				console.warn( `Failed to load stylesheet: ${ asset.src }` );
+				reject( new Error( `Failed to load stylesheet: ${ asset.src }` ) );
+			};
+			document.head.appendChild( link );
+		} catch ( error ) {
+			reject( error );
+		}
+	} );
+}
+
+/**
+ * Load assets (scripts and styles) conditionally with dependency resolution
+ *
+ * @param {Object} assets - Assets object with scripts and styles arrays
+ * @return {Promise} Promise that resolves when all assets are loaded
+ */
+async function loadAssets( assets ) {
+	if ( ! assets || ( ! assets.scripts && ! assets.styles ) ) {
+		return Promise.resolve();
+	}
+
+	const promises = [];
+
+	// Load styles first (they don't block rendering)
+	// Dependencies are handled recursively within loadStyle
+	if ( assets.styles && Array.isArray( assets.styles ) ) {
+		assets.styles.forEach( ( style ) => {
+			if ( style.src ) {
+				promises.push( loadStyle( style ).catch( () => {
+					// Silently fail for styles
+				} ) );
+			}
+		} );
+	}
+
+	// Load scripts with dependency resolution
+	// Dependencies are handled recursively within loadScript
+	if ( assets.scripts && Array.isArray( assets.scripts ) ) {
+		assets.scripts.forEach( ( script ) => {
+			if ( script.src ) {
+				promises.push( loadScript( script ).catch( ( error ) => {
+					// eslint-disable-next-line no-console
+					console.warn( `Failed to load script: ${ script.src }`, error );
+					// Silently fail for scripts to continue loading others
+				} ) );
+			}
+		} );
+	}
+
+	return Promise.all( promises );
+}
+
 // Common function to load more videos
 async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVideos ) {
 	const loadCount = 3 * columns;
@@ -267,6 +510,11 @@ document.addEventListener( 'click', async function( e ) {
 				}
 
 				if ( data.status === 'success' && data.html ) {
+					// Load assets conditionally before inserting HTML
+					if ( data.assets ) {
+						await loadAssets( data.assets );
+					}
+
 					// Update the video element with the fetched data
 					if ( videoContainer ) {
 						videoContainer.innerHTML = data.html;
@@ -295,6 +543,19 @@ document.addEventListener( 'click', async function( e ) {
 						// Reinitialize the player with the new content
 						if ( typeof GODAMPlayer === 'function' ) {
 							const godamPlayer = GODAMPlayer( modal );
+
+							// Dispatch the custom godamPlayerRendered event.
+							const godamPlayerRenderedEvent = new CustomEvent(
+								'godamPlayerRendered',
+								{
+									detail: {
+										container: modal,
+										source: 'godam-gallery-block',
+									},
+								},
+							);
+							document.dispatchEvent( godamPlayerRenderedEvent );
+
 							const initEngagement = godamPlayer.initEngagement;
 
 							// Helper function to setup player once it's ready
@@ -389,6 +650,19 @@ document.addEventListener( 'click', async function( e ) {
 		// Initialize the video player
 		if ( typeof GODAMPlayer === 'function' ) {
 			GODAMPlayer( modal );
+
+			// Dispatch the custom godamPlayerRendered event.
+			const godamPlayerRenderedEvent = new CustomEvent(
+				'godamPlayerRendered',
+				{
+					detail: {
+						container: modal,
+						source: 'godam-gallery-block',
+					},
+				},
+			);
+			document.dispatchEvent( godamPlayerRenderedEvent );
+
 			// Wait for player to be ready before trying to play
 			const videoPlayerElement = modal.querySelector( '.video-js' );
 			const videojs = window.videojs;

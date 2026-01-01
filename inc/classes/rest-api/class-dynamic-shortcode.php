@@ -37,7 +37,7 @@ class Dynamic_Shortcode extends Base {
 				'route'     => '/' . $this->rest_base,
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'render_shortcode' ),
+					'callback'            => array( $this, 'godam_render_shortcode_with_assets' ),
 					'permission_callback' => '__return_true',
 					'args'                => array(
 						'id' => array(
@@ -47,6 +47,166 @@ class Dynamic_Shortcode extends Base {
 						),
 					),
 				),
+			),
+		);
+	}
+
+	public function godam_capture_assets() {
+		global $wp_scripts, $wp_styles;
+
+		// Ensure clean state.
+		wp_scripts();
+		wp_styles();
+	
+		return array(
+			'scripts' => array_values( $wp_scripts->queue ),
+			'styles'  => array_values( $wp_styles->queue ),
+		);
+	}
+
+	/**
+	 * Recursively expand a single asset with its dependencies.
+	 *
+	 * @param string $handle Asset handle.
+	 * @param string $type Asset type ('script' or 'style').
+	 * @param array  $visited Visited handles to prevent circular dependencies.
+	 * @return array|null Asset data with expanded dependencies, or null if not found.
+	 */
+	private function godam_expand_single_asset( $handle, $type = 'script', &$visited = array() ) {
+		global $wp_scripts, $wp_styles;
+
+		// Prevent circular dependencies.
+		if ( isset( $visited[ $handle ] ) ) {
+			return null;
+		}
+
+		$registry = ( $type === 'script' ) ? $wp_scripts : $wp_styles;
+
+		if ( empty( $registry->registered[ $handle ] ) ) {
+			return null;
+		}
+
+		$visited[ $handle ] = true;
+		$obj                = $registry->registered[ $handle ];
+
+		// Get the full URL (handles both absolute and relative URLs).
+		$src = $obj->src;
+		if ( ! preg_match( '|^(https?:)?//|', $src ) ) {
+			// Relative URL, convert to absolute.
+			$src = $registry->base_url . $src;
+		}
+
+		// Add version query string if available.
+		if ( $obj->ver ) {
+			$separator = ( strpos( $src, '?' ) !== false ) ? '&' : '?';
+			$src      .= $separator . 'ver=' . $obj->ver;
+		}
+
+		// Recursively expand dependencies.
+		$expanded_deps = array();
+		if ( ! empty( $obj->deps ) && is_array( $obj->deps ) ) {
+			foreach ( $obj->deps as $dep_handle ) {
+				$dep_asset = $this->godam_expand_single_asset( $dep_handle, $type, $visited );
+				if ( $dep_asset ) {
+					$expanded_deps[] = $dep_asset;
+				}
+			}
+		}
+
+		return array(
+			'handle' => $handle,
+			'src'    => $src,
+			'deps'   => $expanded_deps,
+			'ver'    => $obj->ver,
+		);
+	}
+
+	/**
+	 * Expand assets with recursively resolved dependencies.
+	 *
+	 * @param array  $handles Array of asset handles.
+	 * @param string $type Asset type ('script' or 'style').
+	 * @return array Array of expanded assets with full dependency data.
+	 */
+	function godam_expand_assets( $handles, $type = 'script' ) {
+		$assets  = array();
+		$visited = array();
+
+		foreach ( $handles as $handle ) {
+			$asset = $this->godam_expand_single_asset( $handle, $type, $visited );
+			if ( $asset ) {
+				$assets[] = $asset;
+			}
+		}
+
+		return $assets;
+	}
+
+	public function godam_render_shortcode_with_assets( $request ) {
+		$id = $request->get_param( 'id' );
+
+		$attachment = get_post( $id );
+
+		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
+			return new WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => 'Video not found.',
+				),
+				404
+			);
+		}
+	
+		// Snapshot BEFORE.
+		$before = $this->godam_capture_assets();
+	
+		// Render shortcode.
+		$shortcode_html = do_shortcode( '[godam_video id=' . $id . ']' );
+
+		/**
+		 * CRITICAL:
+		 * Need to make sure we covers all wp_head and wp_footer hooks for assets to be properly enqueued.
+		 */
+		ob_start();
+		?>
+		<!DOCTYPE html>
+		<html <?php language_attributes(); ?>>
+		<head>
+			<meta charset="<?php bloginfo( 'charset' ); ?>">
+			<?php wp_head(); ?>
+		</head>
+		<body <?php body_class(); ?>>
+			<?php
+			wp_body_open();
+
+			echo $shortcode_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is escaped in the function.
+
+			wp_footer();
+			?>
+		</body>
+		</html>
+		<?php
+		$html = ob_get_clean();
+	
+		// Snapshot AFTER.
+		$after = $this->godam_capture_assets();
+	
+		// Difference.
+		$scripts = array_values( array_diff( $after['scripts'], $before['scripts'] ) );
+		$styles  = array_values( array_diff( $after['styles'], $before['styles'] ) );
+	
+		// Expand assets to get full URLs and metadata.
+		$expanded_scripts = $this->godam_expand_assets( $scripts, 'script' );
+		$expanded_styles  = $this->godam_expand_assets( $styles, 'style' );
+	
+		return array(
+			'status' => 'success',
+			'html'   => $html,
+			'title'  => get_the_title( $id ),
+			'date'   => get_the_date( 'F j, Y', $id ),
+			'assets' => array(
+				'scripts' => $expanded_scripts,
+				'styles'  => $expanded_styles,
 			),
 		);
 	}
