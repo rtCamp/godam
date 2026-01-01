@@ -11,3 +11,31 @@
 	position: relative;
 	aspect-ratio: 16 / 9;
 }
+
+.ai-transcription-control {
+
+	&__content {
+		margin-top: 8px;
+	}
+
+	&__button-content {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	&__icon {
+		width: 16px;
+		height: 16px;
+		opacity: 1;
+		transition: opacity 0.15s ease;
+	}
+
+	&__icon--disabled {
+		opacity: 0.5;
+	}
+
+	&__notice-wrapper {
+		margin-top: 8px;
+	}
+}

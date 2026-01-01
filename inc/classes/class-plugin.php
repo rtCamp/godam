@@ -47,6 +47,7 @@ use RTGODAM\Inc\REST_API\Video_Migration;
 use RTGODAM\Inc\REST_API\Release_Post;
 use RTGODAM\Inc\Gravity_Forms;
 use RTGODAM\Inc\REST_API\MetForm;
+use RTGODAM\Inc\REST_API\AI_Transcription;
 
 
 use RTGODAM\Inc\Shortcodes\GoDAM_Player;
@@ -174,6 +175,7 @@ class Plugin {
 		Site::get_instance();
 		Video_Migration::get_instance();
 		Release_Post::get_instance();
+		AI_Transcription::get_instance();
 	}
 
 	/**
