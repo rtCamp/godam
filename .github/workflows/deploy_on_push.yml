@@ -5,6 +5,10 @@ on:
       - develop
   workflow_dispatch:
 name: Deploy on Push
+
+permissions:
+  contents: read
+
 jobs:
   deploy:
     name: Deploy
