@@ -213,7 +213,6 @@ class AI_Transcription extends Base {
 
 		if ( ! empty( $transcript_path ) ) {
 			update_post_meta( $attachment_id, 'rtgodam_transcript_path', esc_url_raw( $transcript_path ) );
-			update_post_meta( $attachment_id, 'rtgodam_transcription_status_ai', sanitize_text_field( $transcription_status ) );
 		}
 
 		return rest_ensure_response(
