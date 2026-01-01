@@ -9,6 +9,7 @@ import { library } from '@fortawesome/fontawesome-svg-core';
  * WordPress dependencies
  */
 import { Dropdown, TextControl, Button } from '@wordpress/components';
+import { trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
 // Add all free solid icons to the library
@@ -39,9 +40,61 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 		updateField(
 			'hotspots',
 			hotspots.map( ( h2, j ) =>
-				j === index ? { ...h2, icon: null } : h2,
+				j === index ? { ...h2, icon: null, customIconUrl: null, customIconId: null } : h2,
 			),
 		);
+	};
+
+	// Handle custom icon upload
+	const handleUploadCustomIcon = () => {
+		const fileFrame = wp.media( {
+			title: __( 'Select or Upload SVG Icon', 'godam' ),
+			button: {
+				text: __( 'Use this SVG icon', 'godam' ),
+			},
+			library: {
+				type: [ 'image/svg+xml' ], // Restrict to SVG files only
+			},
+			multiple: false, // Disable multiple selection
+		} );
+
+		fileFrame.on( 'select', function() {
+			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
+
+			// Check if the selected file is an SVG
+			if ( attachment.mime !== 'image/svg+xml' && ! attachment.url?.endsWith( '.svg' ) ) {
+				return;
+			}
+
+			// Update hotspot with custom icon and clear FontAwesome icon
+			updateField(
+				'hotspots',
+				hotspots.map( ( h2, j ) =>
+					j === index
+						? {
+							...h2,
+							customIconUrl: attachment.url,
+							customIconId: attachment.id,
+							icon: null, // Clear FontAwesome icon when custom icon is selected
+						}
+						: h2,
+				),
+			);
+		} );
+
+		// If there's already a custom icon selected, pre-select it in the media library
+		if ( hotspot.customIconId ) {
+			const attachment = wp.media.attachment( hotspot.customIconId );
+			attachment.fetch();
+
+			fileFrame.on( 'open', function() {
+				const selection = fileFrame.state().get( 'selection' );
+				selection.reset();
+				selection.add( attachment );
+			} );
+		}
+
+		fileFrame.open();
 	};
 
 	return (
@@ -61,7 +114,7 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 							aria-expanded={ isDropDownOpen }
 							variant="secondary"
 							size="compact"
-							className="flex-grow flex items-center gap-2 godam-button"
+							className="flex-grow flex items-center gap-2 godam-button px-3"
 							disabled={ disabled }
 						>
 							{ hotspot.icon ? (
@@ -117,7 +170,7 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 													'hotspots',
 													hotspots.map( ( h2, j ) =>
 														j === index
-															? { ...h2, icon: iconName }
+															? { ...h2, icon: iconName, customIconUrl: null, customIconId: null }
 															: h2,
 													),
 												);
@@ -145,13 +198,39 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 					) }
 				/>
 
-				{ hotspot.icon && (
+				<Button
+					variant="secondary"
+					size="compact"
+					onClick={ handleUploadCustomIcon }
+					className="flex-shrink-0 flex items-center gap-2 godam-button px-3"
+					disabled={ disabled }
+				>
+					{ hotspot.customIconUrl ? (
+						<>
+							<img
+								src={ hotspot.customIconUrl }
+								alt={ __( 'Custom Icon', 'godam' ) }
+								style={ {
+									width: '20px',
+									height: '20px',
+									objectFit: 'contain',
+								} }
+							/>
+							<span>{ __( 'Custom Icon', 'godam' ) }</span>
+						</>
+					) : (
+						<span>{ __( 'Custom Icon', 'godam' ) }</span>
+					) }
+				</Button>
+
+				{ ( hotspot.icon || hotspot.customIconUrl ) && (
 					<Button
 						variant="secondary"
+						size="compact"
 						onClick={ handleReset }
-						className="flex-shrink-0"
+						className="flex-shrink-0 godam-button"
+						icon={ trash }
 					>
-						{ __( 'Reset', 'godam' ) }
 					</Button>
 				) }
 			</div>

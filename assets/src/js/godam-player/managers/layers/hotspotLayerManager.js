@@ -249,7 +249,7 @@ export default class HotspotLayerManager {
 		hotspotDiv.style.height = `${ pixelDiameter }px`;
 
 		// Background color
-		hotspotDiv.style.backgroundColor = hotspot.icon ? 'white' : ( hotspot.backgroundColor || '#0c80dfa6' );
+		hotspotDiv.style.backgroundColor = ( hotspot.icon || hotspot.customIconUrl ) ? 'white' : ( hotspot.backgroundColor || '#0c80dfa6' );
 
 		// Create content
 		const hotspotContent = this.createHotspotContent( hotspot, index );
@@ -275,6 +275,9 @@ export default class HotspotLayerManager {
 		if ( hotspot.icon ) {
 			const iconEl = this.createHotspotIcon( hotspot.icon );
 			hotspotContent.appendChild( iconEl );
+		} else if ( hotspot.customIconUrl ) {
+			const customIconEl = this.createCustomIcon( hotspot.customIconUrl );
+			hotspotContent.appendChild( customIconEl );
 		} else {
 			hotspotContent.classList.add( 'no-icon' );
 		}
@@ -304,6 +307,34 @@ export default class HotspotLayerManager {
 		iconEl.style.color = '#000';
 
 		return iconEl;
+	}
+
+	/**
+	 * Create custom icon element
+	 *
+	 * @param {string} customIconUrl - URL of the custom icon
+	 * @return {HTMLElement} Created custom icon element
+	 */
+	createCustomIcon( customIconUrl ) {
+		const customIconEl = document.createElement( 'img' );
+		customIconEl.src = customIconUrl;
+		customIconEl.alt = 'Custom Icon';
+		customIconEl.style.width = '50%';
+		customIconEl.style.height = '50%';
+		customIconEl.style.maxWidth = '100%';
+		customIconEl.style.maxHeight = '100%';
+		customIconEl.style.objectFit = 'contain';
+		customIconEl.style.display = 'block';
+		customIconEl.style.margin = 'auto';
+		customIconEl.style.pointerEvents = 'none';
+
+		// Add error handling for failed image loads
+		customIconEl.onerror = function() {
+			// Hide the element if image fails to load
+			customIconEl.style.display = 'none';
+		};
+
+		return customIconEl;
 	}
 
 	/**
