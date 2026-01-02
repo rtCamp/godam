@@ -139,7 +139,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			// Render upload button.
 			printf( '<button type="button" class="wpforms-btn uppy-video-upload-button">' );
 			printf( '<span class="dashicons dashicons-video-alt"></span>' );
-			printf( esc_html__( 'Record Video', 'godam' ) );
+			printf( esc_html__( 'Start Recording', 'godam' ) );
 			printf( '</button>' );
 
 			// Description.
@@ -193,6 +193,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				'file_input'     => esc_html__( 'Local Files', 'godam' ),
 				'webcam'         => esc_html__( 'Webcam', 'godam' ),
 				'screen_capture' => esc_html__( 'Screencast', 'godam' ),
+				'audio'          => esc_html__( 'Audio', 'godam' ),
 			);
 
 			$checkboxes = '';
@@ -388,8 +389,11 @@ if ( class_exists( 'WPForms_Field' ) ) {
 					continue;
 				}
 
-				// Check if the file is a video.
-				if ( ! isset( $file['type'] ) || ! str_starts_with( $file['type'], 'video/' ) ) {
+				// Check if the file is a video or audio.
+				$is_video = isset( $file['type'] ) && str_starts_with( $file['type'], 'video/' );
+				$is_audio = isset( $file['type'] ) && str_starts_with( $file['type'], 'audio/' );
+				
+				if ( ! $is_video && ! $is_audio ) {
 					continue;
 				}
 

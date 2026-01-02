@@ -161,7 +161,27 @@ class WPForms_Integration {
 				continue;
 			}
 
-			$response = rtgodam_send_video_to_godam_for_transcoding( 'wpforms', $form_title, $field['value'], $entry_id );
+			// Detect file type.
+			$file_type = wp_check_filetype( $field['value'] );
+			$is_audio  = strpos( $file_type['type'], 'audio' ) !== false;
+			$is_video  = strpos( $file_type['type'], 'video' ) !== false;
+			
+			// Handle .webm files that might be audio.
+			if ( 'webm' === $file_type['ext'] && godam_is_audio_file_by_name( $field['value'] ) ) {
+				$is_audio = true;
+				$is_video = false;
+			}
+			
+			// Set job_type based on file type.
+			$job_type = $is_audio ? 'audio' : 'stream';
+			
+			$response = rtgodam_send_video_to_godam_for_transcoding( 
+				'wpforms', 
+				$form_title, 
+				$field['value'], 
+				$entry_id,
+				$job_type
+			);
 
 			if ( is_wp_error( $response ) ) {
 				return wp_send_json_error(
