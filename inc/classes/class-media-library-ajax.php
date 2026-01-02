@@ -47,6 +47,9 @@ class Media_Library_Ajax {
 		add_action( 'rtgodam_handle_callback_finished', array( $this, 'download_transcoded_mp4_source' ), 10, 4 );
 
 		add_filter( 'wp_get_attachment_url', array( $this, 'filter_attachment_url_for_virtual_media' ), 10, 2 );
+
+		// Add filters for virtual media srcset support.
+		add_filter( 'wp_calculate_image_srcset', array( $this, 'filter_virtual_media_srcset' ), 10, 5 );
 	}
 
 	/**
@@ -277,8 +280,15 @@ class Media_Library_Ajax {
 	 * @return array $response Attachment response.
 	 */
 	public function add_media_transcoding_status_js( $response, $attachment ) {
-		// Check if attachment type is video.
-		if ( 'video' !== substr( $attachment->post_mime_type, 0, 5 ) ) {
+		// Check if attachment type is video, audio, PDF, or image.
+		$mime_type = $attachment->post_mime_type;
+		$is_video  = 'video' === substr( $mime_type, 0, 5 );
+		$is_audio  = 'audio' === substr( $mime_type, 0, 5 );
+		$is_pdf    = 'application/pdf' === $mime_type;
+		$is_image  = 'image' === substr( $mime_type, 0, 5 );
+
+		// Only process supported attachment types.
+		if ( ! $is_video && ! $is_audio && ! $is_pdf && ! $is_image ) {
 			return $response;
 		}
 
@@ -319,11 +329,16 @@ class Media_Library_Ajax {
 		if ( ! empty( $godam_original_id ) ) {
 			// Indicate that this is a virtual attachment.
 			$response['virtual'] = true;
+
 			// Set the icon to be used for the virtual media preview.
-			$response['icon'] = get_post_meta( $attachment->ID, 'icon', true );
 			// Populate the image field used by the media library to show previews.
-			$response['image']        = array();
-			$response['image']['src'] = $response['icon'];
+			$icon_url          = wp_mime_type_icon( $attachment->ID, '.svg' );
+			$response['image'] = array();
+
+			if ( ! empty( $icon_url ) ) {
+				$response['icon']         = $icon_url;
+				$response['image']['src'] = $icon_url;
+			}
 		}
 
 		return $response;
@@ -786,5 +801,94 @@ class Media_Library_Ajax {
 		}
 
 		return $url;
+	}
+
+	/**
+	 * Filter srcset calculation for virtual media to use full URLs.
+	 *
+	 * @param array|false $sources       Array of image sources for srcset or false.
+	 * @param array       $size_array    Array of width and height values.
+	 * @param string      $image_src     The 'src' of the image.
+	 * @param array       $image_meta    The image meta data.
+	 * @param int         $attachment_id The image attachment ID.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return array|false Filtered sources array or false.
+	 */
+	public function filter_virtual_media_srcset( $sources, $size_array, $image_src, $image_meta, $attachment_id ) {
+		$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+
+		if ( empty( $godam_original_id ) ) {
+			return $sources;
+		}
+
+		// Check if image attachment.
+		$attachment_mime_type = get_post_mime_type( $attachment_id );
+		if ( 'image' !== substr( $attachment_mime_type, 0, 5 ) ) {
+			return $sources;
+		}
+
+		if ( empty( $image_meta['sizes'] ) || ! is_array( $image_meta['sizes'] ) ) {
+			return $sources;
+		}
+
+		// Use the current image URL as the base for all subsizes.
+		$base_url = trailingslashit( untrailingslashit( dirname( $image_src ) ) );
+
+		// Skip srcset entirely when the requested size is the thumbnail variant.
+		if ( ! empty( $image_meta['sizes']['thumbnail'] ) ) {
+			$thumb_meta = $image_meta['sizes']['thumbnail'];
+			$is_thumb   = false;
+
+			if ( isset( $size_array[0], $size_array[1], $thumb_meta['width'], $thumb_meta['height'] )
+				&& (int) $size_array[0] === (int) $thumb_meta['width']
+				&& (int) $size_array[1] === (int) $thumb_meta['height']
+			) {
+				$is_thumb = true;
+			} elseif ( isset( $thumb_meta['file'] ) ) {
+				$thumb_file = $thumb_meta['file'];
+				$thumb_url  = filter_var( $thumb_file, FILTER_VALIDATE_URL ) ? $thumb_file : $base_url . ltrim( $thumb_file, '/' );
+				if ( ! empty( $image_src ) && $thumb_url === $image_src ) {
+					$is_thumb = true;
+				}
+			}
+
+			if ( $is_thumb ) {
+				return false;
+			}
+		}
+
+		foreach ( $image_meta['sizes'] as $size_data ) {
+			if ( empty( $size_data['file'] ) || empty( $size_data['width'] ) ) {
+				continue;
+			}
+
+			$width  = (int) $size_data['width'];
+			$height = isset( $size_data['height'] ) ? (int) $size_data['height'] : 0;
+
+			$file = $size_data['file'];
+
+			// If the file already is a URL, use it. Otherwise append it to the base URL.
+			if ( filter_var( $file, FILTER_VALIDATE_URL ) ) {
+				// Get last string after the last slash in the file url.
+				$file_basename = basename( $file );
+				// Rebuild the full URL using the base URL and the file basename.
+				$url = $base_url . ltrim( $file_basename, '/' );
+			} else {
+				$url = $base_url . ltrim( $file, '/' );
+			}
+
+			// Override or set the source keyed by width.
+			$sources[ $width ] = array(
+				'url'        => esc_url_raw( $url ),
+				'descriptor' => 'w',
+				'value'      => $width,
+			);
+		}
+
+		ksort( $sources );
+
+		return $sources;
 	}
 }
