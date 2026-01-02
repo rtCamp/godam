@@ -170,7 +170,7 @@ document.addEventListener( 'click', function( e ) {
 				<div class="godam-overlay-loading-spinner"></div>
 			</div>
 			<div class="godam-modal-content godam-modal-content-hidden">
-				<span class="godam-modal-close">&times;</span>
+				<button class="godam-modal-close">&times;</button>
 				<div class="godam-modal-body">
 					<iframe
 						src="${ DOMPurify.sanitize( videoUrl ) }"

@@ -568,17 +568,37 @@
 
 	.godam-modal-close {
 		position: absolute;
-		top: 10px;
-		right: 15px;
+		top: 32px;
+		right: 32px;
 		font-size: 28px;
 		cursor: pointer;
 		color: #333;
 		line-height: 1;
 		transition: color 0.2s ease, transform 0.2s ease;
+		z-index: 1;
+		background-color: #fff;
+		border-radius: 100px;
+		border: 1px solid #333;
+		outline: none;
 
 		&:hover {
 			color: #000;
+			border-color: #000;
 			transform: scale(1.1);
+		}
+
+		@media screen and (max-width: 768px) {
+			color: rgba(255, 255, 255, 0.8);
+			background-color: rgba(0, 0, 0, 0.7);
+			border: 1px solid rgba(255, 255, 255, 0.8);
+			top: 14px;
+			right: 14px;
+	
+			&:hover {
+				background-color: rgba(0, 0, 0, 0.9);
+				color: #fff;
+				border-color: #fff;
+			}
 		}
 	}
 
