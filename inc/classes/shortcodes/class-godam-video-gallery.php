@@ -230,14 +230,19 @@ class GoDAM_Video_Gallery {
 			// Add action before gallery output.
 			do_action( 'rtgodam_gallery_before_output', $query, $atts );
 
+			$godam_figure_attributes = get_block_wrapper_attributes(
+				array(
+					'class' => 'godam-video-gallery-wrapper',
+				) 
+			);
+
 			// Calculate these values before using them.
 			$total_videos = $query->found_posts;
 			$shown_videos = count( $query->posts );
 
-			$alignment_class = ! empty( $atts['align'] ) ? ' align' . $atts['align'] : '';
+			echo '<div ' . wp_kses_data( $godam_figure_attributes ) . '>';
 			echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) .
-				( 'grid' === $atts['layout'] ? ' columns-' . intval( $atts['columns'] ) : '' ) .
-				esc_attr( $alignment_class ) . '" 
+				( 'grid' === $atts['layout'] ? ' columns-' . intval( $atts['columns'] ) : '' ) . '" 
 				data-infinite-scroll="' . esc_attr( $atts['infinite_scroll'] ) . '"
 				data-offset="' . esc_attr( $shown_videos ) . '"
 				data-columns="' . esc_attr( $atts['columns'] ) . '"
@@ -350,6 +355,8 @@ class GoDAM_Video_Gallery {
 				}
 				echo '<div class="godam-spinner-container"><div class="godam-spinner"></div></div>';
 			}
+
+			echo '</div>';
 
 			echo '
 			<div id="godam-video-modal" class="godam-modal hidden">

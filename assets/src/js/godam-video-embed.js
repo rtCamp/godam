@@ -15,7 +15,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 
 	// Scroll functionality with cooldown and threshold
 	const SCROLL_COOLDOWN = 1000; // milliseconds
-	const SCROLL_THRESHOLD = 400; // Minimum scroll distance to trigger
+	const SCROLL_THRESHOLD = 280; // Minimum scroll distance to trigger
 	let lastScrollTime = 0;
 	let scrollTimeout;
 	let accumulatedDelta = 0;
