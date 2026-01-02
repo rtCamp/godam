@@ -140,6 +140,7 @@ const GoDAMMediaFrameShared = {
 				owner: data.owner,
 				label: data.label,
 				icon: data.icon,
+				thumbnail_url: data.thumbnail_url,
 				caption: data.caption,
 				description: data.description,
 			} ),

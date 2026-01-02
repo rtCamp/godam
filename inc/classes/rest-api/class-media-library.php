@@ -1520,6 +1520,11 @@ class Media_Library extends Base {
 				'filesize' => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,
 			);
 
+			// Set Video thumbnail from icon URL if provided.
+			if ( ! empty( $data['icon'] ) ) {
+				update_post_meta( $attach_id, 'rtgodam_media_video_thumbnail', esc_url_raw( $data['icon'] ) );
+			}
+
 			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
 		} elseif ( 'image' === $data['type'] ) {
 			// Initialize metadata with basic info.
