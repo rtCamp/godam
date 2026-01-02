@@ -334,7 +334,8 @@ class Media_Library_Ajax {
 			// Populate the image field used by the media library to show previews.
 			$icon_url          = wp_mime_type_icon( $attachment->ID, '.svg' );
 			$response['image'] = array();
-			if ( empty( $icon_url ) ) {
+
+			if ( ! empty( $icon_url ) ) {
 				$response['icon']         = $icon_url;
 				$response['image']['src'] = $icon_url;
 			}

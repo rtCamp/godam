@@ -379,15 +379,15 @@ class Media_Library extends Base {
 			);
 		}
 
-		$attachme_meta = get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
+		$attachment_meta = get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
 
 		// Normalize attachment meta to an array with a sizes key.
-		if ( ! is_array( $attachme_meta ) ) {
-			$attachme_meta = array();
+		if ( ! is_array( $attachment_meta ) ) {
+			$attachment_meta = array();
 		}
 
-		if ( empty( $attachme_meta['sizes'] ) || ! is_array( $attachme_meta['sizes'] ) ) {
-			$attachme_meta['sizes'] = array();
+		if ( empty( $attachment_meta['sizes'] ) || ! is_array( $attachment_meta['sizes'] ) ) {
+			$attachment_meta['sizes'] = array();
 		}
 
 		// Get registered image sizes from WordPress Settings > Media.
@@ -424,7 +424,7 @@ class Media_Library extends Base {
 			// Get last string after the last slash in the file url.
 			$file_basename = basename( $size['file'] );
 
-			$attachme_meta['sizes'][ $external_size_name ] = array(
+			$attachment_meta['sizes'][ $external_size_name ] = array(
 				'file'     => $file_basename,
 				'filesize' => $size['filesize'],
 				'width'    => $size['width'],
@@ -433,7 +433,7 @@ class Media_Library extends Base {
 		}
 
 		// Ensure top-level width/height exist for srcset calculation, fall back to the largest generated size.
-		if ( ( empty( $attachme_meta['width'] ) || empty( $attachme_meta['height'] ) ) && ! empty( $subsizes ) ) {
+		if ( ( empty( $attachment_meta['width'] ) || empty( $attachment_meta['height'] ) ) && ! empty( $subsizes ) ) {
 			$largest = array_reduce(
 				$subsizes,
 				function ( $carry, $item ) {
@@ -446,21 +446,21 @@ class Media_Library extends Base {
 			);
 
 			if ( $largest ) {
-				$attachme_meta['width']  = (int) $largest['width'];
-				$attachme_meta['height'] = (int) $largest['height'];
+				$attachment_meta['width']  = (int) $largest['width'];
+				$attachment_meta['height'] = (int) $largest['height'];
 			}
 		}
 
 		// Backfill the "file" key so WordPress does not bail early while building srcset.
-		if ( empty( $attachme_meta['file'] ) ) {
+		if ( empty( $attachment_meta['file'] ) ) {
 			$full_url = wp_get_attachment_url( $attachment_id );
 			if ( $full_url ) {
-				$path                  = wp_parse_url( $full_url, PHP_URL_PATH );
-				$attachme_meta['file'] = ltrim( wp_basename( $path ), '/' );
+				$path                    = wp_parse_url( $full_url, PHP_URL_PATH );
+				$attachment_meta['file'] = ltrim( wp_basename( $path ), '/' );
 			}
 		}
 
-		update_post_meta( $attachment_id, '_wp_attachment_metadata', $attachme_meta );
+		update_post_meta( $attachment_id, '_wp_attachment_metadata', $attachment_meta );
 		return true;
 	}
 
@@ -1513,7 +1513,7 @@ class Media_Library extends Base {
 			update_post_meta( $attach_id, 'rtgodam_hls_transcoded_url', esc_url_raw( $data['hls_url'] ?? '' ) );
 
 			$wp_attachment_metadata = array(
-				'filesize' => $data['filesizeInBytes'],
+				'filesize' => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,
 			);
 
 			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
@@ -1536,15 +1536,14 @@ class Media_Library extends Base {
 			$result = $this->request_image_subsizes_from_godam( $godam_id, $attach_id );
 		} elseif ( 'audio' === $data['type'] ) {
 			$wp_attachment_metadata = array(
-				'filesize'  => $data['filesizeInBytes'],
+				'filesize'  => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,
 				'mime_type' => $data['mime'],
 			);
 
 			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
 		} elseif ( 'pdf' === $data['type'] ) {
 			$wp_attachment_metadata = array(
-				'filesize' => $data['filesizeInBytes'],
-
+				'filesize' => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,
 			);
 
 			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
