@@ -196,36 +196,6 @@ function rtgodam_get_upload_dir() {
 }
 
 /**
- * Check if override media thumbnail setting is ON or OFF.
- *
- * @since 1.1.0
- *
- * @param int|string $attachment_id ID of attachment.
- *
- * @return boolean TRUE if override is ON, FALSE is OFF
- */
-function rtgodam_is_override_thumbnail( $attachment_id = '' ) {
-
-	// Fetch EasyDAM settings directly.
-	$easydam_settings = get_option( 'rtgodam-settings', array() );
-
-	// Return the 'overwrite_thumbnails' value, defaulting to false if not set.
-	$rtgodam_override_thumbnail = ! empty( $easydam_settings['video']['overwrite_thumbnails'] );
-
-	/**
-	 * Allow user to override the setting.
-	 *
-	 * @since 1.1.0
-	 *
-	 * @param boolean   $rtgodam_override_thumbnail     Number of thumbnails set in setting.
-	 * @param int       $attachment_id              ID of attachment.
-	 */
-	$rtgodam_override_thumbnail = apply_filters( 'rtgodam_is_override_thumbnail', $rtgodam_override_thumbnail, $attachment_id );
-
-	return $rtgodam_override_thumbnail;
-}
-
-/**
  * Get remote IP address
  *
  * @return string Remote IP address
