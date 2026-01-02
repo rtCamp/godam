@@ -238,7 +238,7 @@ class Dynamic_Gallery extends Base {
 
 		$video_settings = get_option( 'rtgodam_video_post_settings', array() );
 		$cpt_url_slug   = ! empty( $video_settings['video_slug'] ) ? sanitize_title( $video_settings['video_slug'] ) : 'videos';
-		$cpt_base_url   = home_url( '/' . $cpt_url_slug );
+		$cpt_base_url   = home_url( '/' );
 
 		$query = new \WP_Query( $args );
 		ob_start();
@@ -295,9 +295,18 @@ class Dynamic_Gallery extends Base {
 						$duration = $metadata['length_formatted'];
 					}
 				}
+
+				$video_url = add_query_arg(
+					array(
+						'godam_page'  => 'video-embed',
+						'id'          => $video_id,
+						'engagements' => $atts['engagements'] ? 'show' : '',
+					),
+					$cpt_base_url 
+				);
 	
 				echo '<div class="godam-video-item">';
-				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $cpt_base_url . '/' . $video_slug ) . '">';
+				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $video_url ) . '">';
 				echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
 				if ( $duration ) {
 					echo '<span class="godam-video-duration">' . esc_html( $duration ) . '</span>';

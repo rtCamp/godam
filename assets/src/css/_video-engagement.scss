@@ -507,6 +507,17 @@
             height: calc( 100% - clamp( 72px, 24vw, 170px ) );
             max-height: 826px;
             position: relative;
+            box-sizing: border-box;
+
+            &.is-embed-page {
+                width: 100% !important;
+                max-width: none !important;
+                height: 100% !important;
+
+                @media screen and ( max-width: 768px ) {
+                    padding: 0;
+                }
+            }
 
             &.is-skip-engagements {
 
@@ -915,6 +926,7 @@
                 }
 
                 &.like {
+
                     &::before {
                         background-image: url( ../images/unlike-mobile-icon.svg );
                     }
@@ -928,6 +940,7 @@
                     }
 
                     &.is-liked {
+
                         &::before {
                             background-image: url( ../images/like-mobile-icon.svg );
                         }
@@ -935,12 +948,14 @@
                 }
 
                 &.comment {
+
                     &::before {
                         background-image: url( ../images/comment-mobile-icon.svg );
                     }
                 }
 
                 &.view {
+
                     &::before {
                         background-image: url( ../images/view-mobile-icon.svg );
                     }
@@ -978,6 +993,7 @@
             .rtgodam-video-engagement--comment-modal-title {
                 font-size: 1.1rem;
                 font-weight: 600;
+                color: #fff;
             }
 
             .rtgodam-video-engagement--comment-modal--video-info-title {
