@@ -484,8 +484,12 @@ class Media_Library extends Base {
 			);
 		}
 
-		$job_id = $data['data']['job_id'];
-		$sizes  = $data['data']['resized_images'];
+		$job_id = isset( $data['data']['job_id'] ) ? $data['data']['job_id'] : '';
+		$sizes  = isset( $data['data']['resized_images'] ) && is_array( $data['data']['resized_images'] ) ? $data['data']['resized_images'] : array();
+
+		if ( empty( $job_id ) || empty( $sizes ) ) {
+			return new \WP_Error( 'invalid_data', __( 'job_id and resized_images are required.', 'godam' ), array( 'status' => 400 ) );
+		}
 
 		$result = $this->update_image_attachment_meta( $sizes, $job_id );
 
@@ -1506,7 +1510,7 @@ class Media_Library extends Base {
 		update_post_meta( $attach_id, 'rtgodam_transcoded_url', esc_url_raw( $data['mpd_url'] ?? '' ) );
 		update_post_meta( $attach_id, 'rtgodam_transcoding_status', 'transcoded' );
 		update_post_meta( $attach_id, 'rtgodam_transcoding_job_id', $godam_id );
-		update_post_meta( $attach_id, '_wp_attached_file', esc_url_raw( $data['filename'] ) );
+		update_post_meta( $attach_id, '_wp_attached_file', sanitize_text_field( $data['filename'] ) ); // Virtual media path.
 
 
 		if ( 'video' === $data['type'] ) {
@@ -1533,7 +1537,7 @@ class Media_Library extends Base {
 			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
 
 			// Request image subsizes from GoDAM Central.
-			$result = $this->request_image_subsizes_from_godam( $godam_id, $attach_id );
+			$this->request_image_subsizes_from_godam( $godam_id, $attach_id );
 		} elseif ( 'audio' === $data['type'] ) {
 			$wp_attachment_metadata = array(
 				'filesize'  => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,

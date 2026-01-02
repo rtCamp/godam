@@ -33,10 +33,10 @@ const withVirtualAttachmentHandler = createHigherOrderComponent(
 				const handleVirtualAttachmentCreated = ( event ) => {
 					const { attachment, virtualMediaId } = event.detail || {};
 
-					// Update id attribute only if it's undefined or matches the virtualMediaId
+					// Update id attribute only if it's undefined, null or matches the virtualMediaId
 					if (
 						attachment &&
-						( id === undefined || id === virtualMediaId )
+						( id === undefined || id === null || id === virtualMediaId )
 					) {
 						setAttributes( { id: attachment.id } );
 					}
