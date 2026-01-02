@@ -49,7 +49,6 @@ class Media_Library_Ajax {
 		add_filter( 'wp_get_attachment_url', array( $this, 'filter_attachment_url_for_virtual_media' ), 10, 2 );
 
 		// Add filters for virtual media srcset support.
-		add_filter( 'wp_calculate_image_srcset_meta', array( $this, 'filter_virtual_media_srcset_meta' ), 10, 4 );
 		add_filter( 'wp_calculate_image_srcset', array( $this, 'filter_virtual_media_srcset' ), 10, 5 );
 	}
 
@@ -804,39 +803,6 @@ class Media_Library_Ajax {
 	}
 
 	/**
-	 * Ensure virtual images have enough metadata for srcset generation.
-	 *
-	 * WordPress bails early in wp_calculate_image_srcset() when the attachment
-	 * metadata is missing the "file" key. Virtual images created by GoDAM do not
-	 * live in the local uploads directory, so we backfill "file" from the current
-	 * image URL to keep the core calculation running.
-	 *
-	 * @param array  $image_meta    Attachment metadata.
-	 * @param array  $size_array    Requested size array.
-	 * @param string $image_src    Current image URL.
-	 * @param int    $attachment_id   Attachment ID.
-	 *
-	 * @since n.e.x.t
-	 *
-	 * @return array Filtered image meta.
-	 */
-	public function filter_virtual_media_srcset_meta( $image_meta, $size_array, $image_src, $attachment_id ) {
-		$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
-
-		if ( empty( $godam_original_id ) ) {
-			return $image_meta;
-		}
-
-		// Backfill the "file" key so core does not bail out early.
-		if ( empty( $image_meta['file'] ) && ! empty( $image_src ) ) {
-			$path               = wp_parse_url( $image_src, PHP_URL_PATH );
-			$image_meta['file'] = ltrim( wp_basename( $path ), '/' );
-		}
-
-		return $image_meta;
-	}
-
-	/**
 	 * Filter srcset calculation for virtual media to use full URLs.
 	 *
 	 * @param array|false $sources       Array of image sources for srcset or false.
@@ -904,7 +870,10 @@ class Media_Library_Ajax {
 
 			// If the file already is a URL, use it. Otherwise append it to the base URL.
 			if ( filter_var( $file, FILTER_VALIDATE_URL ) ) {
-				$url = $file;
+				// Get last string after the last slash in the file url.
+				$file_basename = basename( $size['file'] );
+				// Rebuild the full URL using the base URL and the file basename.
+				$url = $base_url . ltrim( $file_basename, '/' );
 			} else {
 				$url = $base_url . ltrim( $file, '/' );
 			}
@@ -916,17 +885,6 @@ class Media_Library_Ajax {
 				'value'      => $width,
 				'width'      => $width,
 				'height'     => $height,
-			);
-		}
-
-		// Ensure the full size URL is present.
-		if ( ! empty( $image_meta['width'] ) && ! isset( $sources[ $image_meta['width'] ] ) ) {
-			$sources[ (int) $image_meta['width'] ] = array(
-				'url'        => esc_url_raw( $image_src ),
-				'descriptor' => 'w',
-				'value'      => (int) $image_meta['width'],
-				'width'      => (int) $image_meta['width'],
-				'height'     => isset( $image_meta['height'] ) ? (int) $image_meta['height'] : 0,
 			);
 		}
 
