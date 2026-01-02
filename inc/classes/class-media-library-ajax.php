@@ -871,7 +871,7 @@ class Media_Library_Ajax {
 			// If the file already is a URL, use it. Otherwise append it to the base URL.
 			if ( filter_var( $file, FILTER_VALIDATE_URL ) ) {
 				// Get last string after the last slash in the file url.
-				$file_basename = basename( $size['file'] );
+				$file_basename = basename( $file );
 				// Rebuild the full URL using the base URL and the file basename.
 				$url = $base_url . ltrim( $file_basename, '/' );
 			} else {
@@ -883,8 +883,6 @@ class Media_Library_Ajax {
 				'url'        => esc_url_raw( $url ),
 				'descriptor' => 'w',
 				'value'      => $width,
-				'width'      => $width,
-				'height'     => $height,
 			);
 		}
 
