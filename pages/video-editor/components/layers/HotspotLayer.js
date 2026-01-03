@@ -404,45 +404,41 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 				</Button>
 			</div>
 
-			{ /* The actual layer content */ }
 			<LayerControls>
 				<div
 					ref={ containerRef }
 					className="easydam-layer hotspot-layer"
-					style={ { backgroundColor: layer.bg_color || 'transparent' } }
+					style={ {
+						backgroundColor: layer.bg_color || 'transparent',
+						position: 'absolute',
+						left: contentRect?.left || 0,
+						top: contentRect?.top || 0,
+						width: contentRect?.width || '100%',
+						height: contentRect?.height || '100%',
+					} }
 				>
 					<div
 						className="absolute inset-0 bg-transparent z-10 pointer-events-auto"
 					></div>
 					{ hotspots.map( ( hotspot, index ) => {
-						const posX = hotspot.position?.x ?? 50;
-						const posY = hotspot.position?.y ?? 50;
-						const diameter = hotspot.size?.diameter ?? 15;
+						const posX = hotspot.oPosition?.x ?? hotspot.position?.x ?? 50;
+						const posY = hotspot.oPosition?.y ?? hotspot.position?.y ?? 50;
+						const diameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? ( hotspot.unit === 'percent' ? 15 : 48 );
 
 						let pixelX, pixelY, pixelDiameter;
 
 						if ( hotspot.unit === 'percent' ) {
 							// Calculate pixel values for rendering
-							pixelX = ( contentRect?.left || 0 ) + percentToPx( posX, 'x' );
-							pixelY = ( contentRect?.top || 0 ) + percentToPx( posY, 'y' );
+							pixelX = percentToPx( posX, 'x' );
+							pixelY = percentToPx( posY, 'y' );
 							pixelDiameter = percentToPx( diameter, 'x' );
 						} else {
 							// Legacy handling in editor (relative to 800x600)
 							const baseWidth = 800;
 							const baseHeight = 600;
-							const effectiveRect = contentRect || {
-								left: 0,
-								top: 0,
-								width: 800,
-								height: 600,
-							};
-							pixelX =
-								effectiveRect.left +
-								( ( posX / baseWidth ) * effectiveRect.width );
-							pixelY =
-								effectiveRect.top +
-								( ( posY / baseHeight ) * effectiveRect.height );
-							pixelDiameter = Math.max( 30, ( ( diameter / baseWidth ) * effectiveRect.width ) );
+							pixelX = ( posX / baseWidth ) * ( contentRect?.width || 800 );
+							pixelY = ( posY / baseHeight ) * ( contentRect?.height || 600 );
+							pixelDiameter = ( diameter / baseWidth ) * ( contentRect?.width || 800 );
 						}
 
 						return (
@@ -459,33 +455,17 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 								bounds="parent"
 								maxWidth={ contentRect?.width || '100%' }
 								maxHeight={ contentRect?.height || '100%' }
-								minWidth={ 30 }
-								minHeight={ 30 }
+								minWidth={ 10 }
+								minHeight={ 10 }
 								lockAspectRatio
 								onDragStop={ ( e, d ) => {
 									if ( ! contentRect ) {
 										return;
 									}
 
-									// Get current diameter in pixels for clamping
-									let currentDiameterPx;
-									if ( hotspot.unit === 'percent' ) {
-										currentDiameterPx = percentToPx( diameter, 'x' );
-									} else {
-										currentDiameterPx = ( diameter / 800 ) * contentRect.width;
-									}
-
-									const minX = contentRect.left;
-									const minY = contentRect.top;
-									const maxX = contentRect.left + contentRect.width - currentDiameterPx;
-									const maxY = contentRect.top + contentRect.height - currentDiameterPx;
-
-									const clampedX = Math.max( minX, Math.min( d.x, maxX ) );
-									const clampedY = Math.max( minY, Math.min( d.y, maxY ) );
-
-									// Calculate relative position to content rect
-									const relativeX = clampedX - contentRect.left;
-									const relativeY = clampedY - contentRect.top;
+									// d.x and d.y are relative to the parent (contentRect div)
+									const relativeX = d.x;
+									const relativeY = d.y;
 
 									const newHotspots = hotspots.map( ( h2, j ) => {
 										if ( j === index ) {
@@ -493,10 +473,10 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 											const newY = pxToPercent( relativeY, 'y' );
 
 											// If converting from legacy, also convert diameter to percentage
-											let newDiameter = h2.size?.diameter ?? 10;
+											let newDiameter = h2.oSize?.diameter ?? h2.size?.diameter ?? ( h2.unit === 'percent' ? 15 : 48 );
 											if ( h2.unit !== 'percent' ) {
-												// Ensure it's at least 30px equivalent in percentage
-												const minPercent = contentRect ? ( 30 / contentRect.width ) * 100 : 10;
+												// Ensure it's at least 10px equivalent in percentage
+												const minPercent = contentRect ? ( 10 / contentRect.width ) * 100 : 5;
 												newDiameter = Math.max( minPercent, ( newDiameter / 800 ) * 100 );
 											}
 
@@ -527,9 +507,9 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 									const newDiameterPx = ref.offsetWidth;
 									const newDiameterPercent = pxToPercent( newDiameterPx, 'x' );
 
-									// Calculate relative position to content rect
-									const relativeX = position.x - contentRect.left;
-									const relativeY = position.y - contentRect.top;
+									// position.x and position.y are relative to the parent
+									const relativeX = position.x;
+									const relativeY = position.y;
 
 									const newHotspots = hotspots.map( ( h2, j ) => {
 										if ( j === index ) {
