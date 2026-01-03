@@ -504,17 +504,24 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 										return;
 									}
 
-									const newDiameterPx = ref.offsetWidth;
-									const newDiameterPercent = pxToPercent( newDiameterPx, 'x' );
+									let newDiameterPx = ref.offsetWidth;
+									let relativeX = position.x;
+									let relativeY = position.y;
 
-									// position.x and position.y are relative to the parent
-									const relativeX = position.x;
-									const relativeY = position.y;
+									// Clamp position to ensure it stays within contentRect
+									relativeX = Math.max( 0, Math.min( relativeX, contentRect.width - newDiameterPx ) );
+									relativeY = Math.max( 0, Math.min( relativeY, contentRect.height - newDiameterPx ) );
+
+									// Clamp diameter to ensure it doesn't exceed the remaining space from the current position
+									const maxAllowedDiameter = Math.min( contentRect.width - relativeX, contentRect.height - relativeY );
+									newDiameterPx = Math.min( newDiameterPx, maxAllowedDiameter );
+
+									const newDiameterPercent = pxToPercent( newDiameterPx, 'x' );
+									const newX = pxToPercent( relativeX, 'x' );
+									const newY = pxToPercent( relativeY, 'y' );
 
 									const newHotspots = hotspots.map( ( h2, j ) => {
 										if ( j === index ) {
-											const newX = pxToPercent( relativeX, 'x' );
-											const newY = pxToPercent( relativeY, 'y' );
 											return {
 												...h2,
 												unit: 'percent',
