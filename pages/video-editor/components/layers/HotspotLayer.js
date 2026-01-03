@@ -49,29 +49,44 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 
 	const containerRef = useRef( null );
 
-	// ratio { x, y } for px <-> ratio
-	const [ ratio, setRatio ] = useState( { x: 1, y: 1 } );
+	const [ contentRect, setContentRect ] = useState( null );
 
 	// Helper to dispatch updates
 	const updateField = ( field, value ) => {
 		dispatch( updateLayerField( { id: layer.id, field, value } ) );
 	};
 
-	const pxToRatio = ( px, dimension ) => px * ratio[ dimension ];
-	const ratioToPx = ( val, dimension ) => val / ratio[ dimension ];
+	const percentToPx = ( percent, dimension ) => {
+		if ( ! contentRect ) {
+			return 0;
+		}
+		const size = dimension === 'x' ? contentRect.width : contentRect.height;
+		return ( percent / 100 ) * size;
+	};
+
+	const pxToPercent = ( px, dimension ) => {
+		if ( ! contentRect ) {
+			return 0;
+		}
+		const size = dimension === 'x' ? contentRect.width : contentRect.height;
+		return ( px / size ) * 100;
+	};
 
 	// Add a new hotspot
 	const handleAddHotspot = () => {
+		const diameterPercent = 15;
+
 		const newHotspot = {
 			id: uuidv4(),
 			tooltipText: __( 'New Hotspot', 'godam' ),
 			link: '',
 			position: { x: 50, y: 50 },
-			size: { diameter: 48 },
-			oSize: { diameter: 48 },
+			size: { diameter: diameterPercent },
+			oSize: { diameter: diameterPercent },
 			oPosition: { x: 50, y: 50 },
 			backgroundColor: '#0c80dfa6',
 			icon: '',
+			unit: 'percent',
 		};
 		updateField( 'hotspots', [ ...hotspots, newHotspot ] );
 	};
@@ -88,23 +103,79 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 		setExpandedHotspotIndex( expandedHotspotIndex === index ? null : index );
 	};
 
-	const recalcRatio = () => {
-		if ( containerRef.current ) {
-			const { offsetWidth, offsetHeight } = containerRef.current;
-			const baseWidth = 800;
-			const baseHeight = 600;
+	const computeContentRect = () => {
+		const videoEl = document.querySelector( 'video' );
+		const containerEl = document.getElementById( 'easydam-video-player' );
 
-			setRatio( {
-				x: baseWidth / offsetWidth,
-				y: baseHeight / offsetHeight,
-			} );
+		if ( ! videoEl || ! containerEl ) {
+			setContentRect( null );
+			return;
 		}
+
+		const nativeW = videoEl.videoWidth || 0;
+		const nativeH = videoEl.videoHeight || 0;
+
+		const elW = containerEl.offsetWidth;
+		const elH = containerEl.offsetHeight;
+
+		// If video dimensions aren't loaded yet, use full container
+		if ( ! nativeW || ! nativeH ) {
+			setContentRect( {
+				left: 0,
+				top: 0,
+				width: elW,
+				height: elH,
+			} );
+			return;
+		}
+
+		const videoAspectRatio = nativeW / nativeH;
+		const containerAspectRatio = elW / elH;
+
+		let contentW, contentH, offsetX, offsetY;
+
+		if ( containerAspectRatio > videoAspectRatio ) {
+			// Pillarboxed (black bars on left/right)
+			contentH = elH;
+			contentW = elH * videoAspectRatio;
+			offsetX = ( elW - contentW ) / 2;
+			offsetY = 0;
+		} else {
+			// Letterboxed (black bars on top/bottom)
+			contentW = elW;
+			contentH = elW / videoAspectRatio;
+			offsetX = 0;
+			offsetY = ( elH - contentH ) / 2;
+		}
+
+		const newRect = {
+			left: Math.round( offsetX ),
+			top: Math.round( offsetY ),
+			width: Math.round( contentW ),
+			height: Math.round( contentH ),
+		};
+
+		setContentRect( newRect );
 	};
 
 	useEffect( () => {
-		recalcRatio();
-		window.addEventListener( 'resize', recalcRatio );
-		return () => window.removeEventListener( 'resize', recalcRatio );
+		computeContentRect();
+		window.addEventListener( 'resize', computeContentRect );
+		document.addEventListener( 'fullscreenchange', computeContentRect );
+
+		// Also listen for video metadata loaded
+		const videoEl = document.querySelector( 'video' );
+		if ( videoEl ) {
+			videoEl.addEventListener( 'loadedmetadata', computeContentRect );
+		}
+
+		return () => {
+			window.removeEventListener( 'resize', computeContentRect );
+			document.removeEventListener( 'fullscreenchange', computeContentRect );
+			if ( videoEl ) {
+				videoEl.removeEventListener( 'loadedmetadata', computeContentRect );
+			}
+		};
 	}, [] );
 
 	// If we want to disable the premium layers the we can use this code
@@ -344,40 +415,103 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 						className="absolute inset-0 bg-transparent z-10 pointer-events-auto"
 					></div>
 					{ hotspots.map( ( hotspot, index ) => {
-						const fallbackPosX = hotspot.oPosition?.x ?? hotspot.position.x;
-						const fallbackPosY = hotspot.oPosition?.y ?? hotspot.position.y;
+						const posX = hotspot.position?.x ?? 50;
+						const posY = hotspot.position?.y ?? 50;
+						const diameter = hotspot.size?.diameter ?? 15;
+
+						let pixelX, pixelY, pixelDiameter;
+
+						if ( hotspot.unit === 'percent' ) {
+							// Calculate pixel values for rendering
+							pixelX = ( contentRect?.left || 0 ) + percentToPx( posX, 'x' );
+							pixelY = ( contentRect?.top || 0 ) + percentToPx( posY, 'y' );
+							pixelDiameter = percentToPx( diameter, 'x' );
+						} else {
+							// Legacy handling in editor (relative to 800x600)
+							const baseWidth = 800;
+							const baseHeight = 600;
+							const effectiveRect = contentRect || {
+								left: 0,
+								top: 0,
+								width: 800,
+								height: 600,
+							};
+							pixelX =
+								effectiveRect.left +
+								( ( posX / baseWidth ) * effectiveRect.width );
+							pixelY =
+								effectiveRect.top +
+								( ( posY / baseHeight ) * effectiveRect.height );
+							pixelDiameter = Math.max( 30, ( ( diameter / baseWidth ) * effectiveRect.width ) );
+						}
 
 						return (
 							<Rnd
 								key={ hotspot.id }
 								position={ {
-									x: ratioToPx( fallbackPosX, 'x' ),
-									y: ratioToPx( fallbackPosY, 'y' ),
+									x: pixelX,
+									y: pixelY,
 								} }
 								size={ {
-									width: ratioToPx(
-										hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48,
-										'x',
-									),
-									height: ratioToPx(
-										hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48,
-										'x',
-									),
+									width: pixelDiameter,
+									height: pixelDiameter,
 								} }
 								bounds="parent"
-								maxWidth={ 100 }
-								maxHeight={ 100 }
-								minWidth={ 20 }
-								minHeight={ 20 }
+								maxWidth={ contentRect?.width || '100%' }
+								maxHeight={ contentRect?.height || '100%' }
+								minWidth={ 30 }
+								minHeight={ 30 }
 								lockAspectRatio
 								onDragStop={ ( e, d ) => {
+									if ( ! contentRect ) {
+										return;
+									}
+
+									// Get current diameter in pixels for clamping
+									let currentDiameterPx;
+									if ( hotspot.unit === 'percent' ) {
+										currentDiameterPx = percentToPx( diameter, 'x' );
+									} else {
+										currentDiameterPx = ( diameter / 800 ) * contentRect.width;
+									}
+
+									const minX = contentRect.left;
+									const minY = contentRect.top;
+									const maxX = contentRect.left + contentRect.width - currentDiameterPx;
+									const maxY = contentRect.top + contentRect.height - currentDiameterPx;
+
+									const clampedX = Math.max( minX, Math.min( d.x, maxX ) );
+									const clampedY = Math.max( minY, Math.min( d.y, maxY ) );
+
+									// Calculate relative position to content rect
+									const relativeX = clampedX - contentRect.left;
+									const relativeY = clampedY - contentRect.top;
+
 									const newHotspots = hotspots.map( ( h2, j ) => {
 										if ( j === index ) {
+											const newX = pxToPercent( relativeX, 'x' );
+											const newY = pxToPercent( relativeY, 'y' );
+
+											// If converting from legacy, also convert diameter to percentage
+											let newDiameter = h2.size?.diameter ?? 10;
+											if ( h2.unit !== 'percent' ) {
+												// Ensure it's at least 30px equivalent in percentage
+												const minPercent = contentRect ? ( 30 / contentRect.width ) * 100 : 10;
+												newDiameter = Math.max( minPercent, ( newDiameter / 800 ) * 100 );
+											}
+
 											return {
 												...h2,
+												unit: 'percent',
+												size: { diameter: newDiameter },
+												oSize: { diameter: newDiameter },
 												oPosition: {
-													x: pxToRatio( d.x, 'x' ),
-													y: pxToRatio( d.y, 'y' ),
+													x: newX,
+													y: newY,
+												},
+												position: {
+													x: newX,
+													y: newY,
 												},
 											};
 										}
@@ -385,14 +519,38 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 									} );
 									updateField( 'hotspots', newHotspots );
 								} }
-								onResizeStop={ ( e, direction, ref ) => {
+								onResizeStop={ ( e, direction, ref, delta, position ) => {
+									if ( ! contentRect ) {
+										return;
+									}
+
 									const newDiameterPx = ref.offsetWidth;
+									const newDiameterPercent = pxToPercent( newDiameterPx, 'x' );
+
+									// Calculate relative position to content rect
+									const relativeX = position.x - contentRect.left;
+									const relativeY = position.y - contentRect.top;
+
 									const newHotspots = hotspots.map( ( h2, j ) => {
 										if ( j === index ) {
+											const newX = pxToPercent( relativeX, 'x' );
+											const newY = pxToPercent( relativeY, 'y' );
 											return {
 												...h2,
+												unit: 'percent',
 												oSize: {
-													diameter: pxToRatio( newDiameterPx, 'x' ),
+													diameter: newDiameterPercent,
+												},
+												size: {
+													diameter: newDiameterPercent,
+												},
+												oPosition: {
+													x: newX,
+													y: newY,
+												},
+												position: {
+													x: newX,
+													y: newY,
 												},
 											};
 										}

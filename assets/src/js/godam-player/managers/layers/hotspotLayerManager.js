@@ -89,7 +89,10 @@ export default class HotspotLayerManager {
 			}
 		} );
 
-		this.updateHotspotPositions();
+		// Small delay to ensure browser has finished resizing for fullscreen
+		setTimeout( () => {
+			this.updateHotspotPositions();
+		}, 100 );
 	}
 
 	/**
@@ -124,6 +127,64 @@ export default class HotspotLayerManager {
 	}
 
 	/**
+	 * Compute content rectangle
+	 *
+	 * @return {Object|null} Content rectangle {left, top, width, height} or null
+	 */
+	computeContentRect() {
+		const videoEl = this.player.tech( true )?.el() || this.player.el().querySelector( 'video' );
+		const containerEl = this.player.el();
+
+		if ( ! videoEl || ! containerEl ) {
+			return null;
+		}
+
+		const nativeW = videoEl.videoWidth || this.player.videoWidth() || 0;
+		const nativeH = videoEl.videoHeight || this.player.videoHeight() || 0;
+
+		const elW = containerEl.offsetWidth;
+		const elH = containerEl.offsetHeight;
+
+		// If video dimensions aren't loaded yet, use full container
+		if ( ! nativeW || ! nativeH ) {
+			return {
+				left: 0,
+				top: 0,
+				width: elW,
+				height: elH,
+			};
+		}
+
+		const videoAspectRatio = nativeW / nativeH;
+		const containerAspectRatio = elW / elH;
+
+		let contentW, contentH, offsetX, offsetY;
+
+		if ( containerAspectRatio > videoAspectRatio ) {
+			// Pillarboxed (black bars on left/right)
+			contentH = elH;
+			contentW = elH * videoAspectRatio;
+			offsetX = ( elW - contentW ) / 2;
+			offsetY = 0;
+		} else {
+			// Letterboxed (black bars on top/bottom)
+			contentW = elW;
+			contentH = elW / videoAspectRatio;
+			offsetX = 0;
+			offsetY = ( elH - contentH ) / 2;
+		}
+
+		const result = {
+			left: Math.round( offsetX ),
+			top: Math.round( offsetY ),
+			width: Math.round( contentW ),
+			height: Math.round( contentH ),
+		};
+
+		return result;
+	}
+
+	/**
 	 * Create hotspot element
 	 *
 	 * @param {Object} hotspot         - Hotspot configuration object
@@ -139,18 +200,35 @@ export default class HotspotLayerManager {
 		hotspotDiv.classList.add( 'hotspot', 'circle' );
 		hotspotDiv.style.position = 'absolute';
 
+		const contentRect = this.computeContentRect();
+
 		// Positioning
 		const fallbackPosX = hotspot.oPosition?.x ?? hotspot.position.x;
 		const fallbackPosY = hotspot.oPosition?.y ?? hotspot.position.y;
-		const pixelX = ( fallbackPosX / baseWidth ) * containerWidth;
-		const pixelY = ( fallbackPosY / baseHeight ) * containerHeight;
+
+		let fallbackDiameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter;
+		if ( ! fallbackDiameter ) {
+			fallbackDiameter = hotspot.unit === 'percent' ? 15 : 48;
+		}
+
+		let pixelX, pixelY, pixelDiameter;
+
+		if ( hotspot.unit === 'percent' && contentRect ) {
+			// New percentage-based positioning
+			pixelX = contentRect.left + ( ( fallbackPosX / 100 ) * contentRect.width );
+			pixelY = contentRect.top + ( ( fallbackPosY / 100 ) * contentRect.height );
+			pixelDiameter = ( fallbackDiameter / 100 ) * contentRect.width;
+		} else {
+			// Legacy pixel-based positioning (relative to 800x600)
+			// We now map these to the contentRect instead of the full container to avoid black bars
+			const effectiveRect = contentRect || { left: 0, top: 0, width: containerWidth, height: containerHeight };
+			pixelX = effectiveRect.left + ( ( fallbackPosX / baseWidth ) * effectiveRect.width );
+			pixelY = effectiveRect.top + ( ( fallbackPosY / baseHeight ) * effectiveRect.height );
+			pixelDiameter = ( fallbackDiameter / baseWidth ) * effectiveRect.width;
+		}
 
 		hotspotDiv.style.left = `${ pixelX }px`;
 		hotspotDiv.style.top = `${ pixelY }px`;
-
-		// Sizing
-		const fallbackDiameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
-		const pixelDiameter = ( fallbackDiameter / baseWidth ) * containerWidth;
 		hotspotDiv.style.width = `${ pixelDiameter }px`;
 		hotspotDiv.style.height = `${ pixelDiameter }px`;
 
@@ -322,6 +400,8 @@ export default class HotspotLayerManager {
 		const baseWidth = HotspotLayerManager.BASE_WIDTH;
 		const baseHeight = HotspotLayerManager.BASE_HEIGHT;
 
+		const contentRect = this.computeContentRect();
+
 		this.hotspotLayers.forEach( ( layerObj ) => {
 			const hotspotDivs = layerObj.layerElement.querySelectorAll( '.hotspot' );
 			hotspotDivs.forEach( ( hotspotDiv, index ) => {
@@ -330,14 +410,26 @@ export default class HotspotLayerManager {
 				// Recalc position
 				const fallbackPosX = hotspot.oPosition?.x ?? hotspot.position.x;
 				const fallbackPosY = hotspot.oPosition?.y ?? hotspot.position.y;
-				const pixelX = ( fallbackPosX / baseWidth ) * containerWidth;
-				const pixelY = ( fallbackPosY / baseHeight ) * containerHeight;
+				const fallbackDiameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
+
+				let pixelX, pixelY, pixelDiameter;
+
+				if ( hotspot.unit === 'percent' && contentRect ) {
+					// New percentage-based positioning
+					pixelX = contentRect.left + ( ( fallbackPosX / 100 ) * contentRect.width );
+					pixelY = contentRect.top + ( ( fallbackPosY / 100 ) * contentRect.height );
+					pixelDiameter = ( fallbackDiameter / 100 ) * contentRect.width;
+				} else {
+					// Legacy pixel-based positioning
+					// We now map these to the contentRect instead of the full container to avoid black bars
+					const effectiveRect = contentRect || { left: 0, top: 0, width: containerWidth, height: containerHeight };
+					pixelX = effectiveRect.left + ( ( fallbackPosX / baseWidth ) * effectiveRect.width );
+					pixelY = effectiveRect.top + ( ( fallbackPosY / baseHeight ) * effectiveRect.height );
+					pixelDiameter = ( fallbackDiameter / baseWidth ) * effectiveRect.width;
+				}
+
 				hotspotDiv.style.left = `${ pixelX }px`;
 				hotspotDiv.style.top = `${ pixelY }px`;
-
-				// Recalc size
-				const fallbackDiameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
-				const pixelDiameter = ( fallbackDiameter / baseWidth ) * containerWidth;
 				hotspotDiv.style.width = `${ pixelDiameter }px`;
 				hotspotDiv.style.height = `${ pixelDiameter }px`;
 
