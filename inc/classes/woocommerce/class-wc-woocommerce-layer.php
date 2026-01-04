@@ -26,6 +26,7 @@ class WC_Woocommerce_Layer {
 	 */
 	public function __construct() {
 		add_action( 'woocommerce_update_product', array( $this, 'update_hotspot_product_details' ), 10, 1 );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
 	}
 
 	/**
@@ -114,5 +115,28 @@ class WC_Woocommerce_Layer {
 				update_post_meta( $attachment->ID, 'rtgodam_meta', $meta );
 			}
 		}
+	}
+
+	/**
+	 * Enqueue frontend JavaScript assets for the WooCommerce Layer Product Hotspots.
+	 *
+	 * The script is enqueued only on the cart page
+	 *
+	 * @since 1.0.0
+	 * 
+	 * @return void
+	 */
+	public function enqueue_frontend_assets() {
+		if ( ! function_exists( 'is_cart' ) || ! is_cart() ) {
+			return;
+		}
+
+		wp_enqueue_script(
+			'rtgodam-wc-woo-layer-cart-url-editor',
+			RTGODAM_URL . 'assets/build/js/wc-woo-layer-cart-url-editor.min.js',
+			array( 'jquery' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/wc-woo-layer-cart-url-editor.min.js' ),
+			true
+		);
 	}
 }

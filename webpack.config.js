@@ -227,6 +227,13 @@ const featuredVideoGalleryJS = {
 	},
 };
 
+const wcWooLayerJS = {
+	...sharedConfig,
+	entry: {
+		'wc-woo-layer-cart-url-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'woocommerce', 'woocommerce-layer', 'wc-woo-layer-cart-url-editor.js' ),
+	},
+};
+
 const everestForms = {
 	...sharedConfig,
 	entry: {
@@ -347,6 +354,7 @@ module.exports = [
 	productVideoGalleryJS,
 	addToProductJS,
 	wcVideoCarouselJS,
+	wcWooLayerJS,
 	jetpackFormJS,
 	styles, // Do not remove this.
 	pages,

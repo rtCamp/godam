@@ -306,7 +306,7 @@ export default class WooCommerceLayerManager {
 			// Product link when Mini Cart is false.
 			const productLink = document.createElement( 'a' );
 			productLink.classList.add( 'product-hotspot-woo-link' );
-			productLink.href = hotspot.addToCart ? hotspot.productDetails.link : `${ window.godamWooSettings.url }?add-to-cart=${ hotspot.productId }`;
+			productLink.href = hotspot.addToCart ? hotspot.productDetails.link : `${ window.godamWooSettings.url }?add-to-cart=${ hotspot.productId }&source=productHotspot`;
 			productLink.target = '_blank';
 			productLink.rel = 'noopener noreferrer';
 			productLink.style.background = hotspot.backgroundColor;

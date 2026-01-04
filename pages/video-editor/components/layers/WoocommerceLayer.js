@@ -626,7 +626,7 @@ const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 														href={
 															productHotspot.addToCart
 																? productHotspot.productDetails.link
-																: `${ window.easydamMediaLibrary.wooCartURL }?add-to-cart=${ productHotspot.productId }`
+																: `${ window.easydamMediaLibrary.wooCartURL }?add-to-cart=${ productHotspot.productId }&source=productHotspot`
 														}
 														target="_blank"
 														rel="noopener noreferrer"
