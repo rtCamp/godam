@@ -415,11 +415,9 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 						top: contentRect?.top || 0,
 						width: contentRect?.width || '100%',
 						height: contentRect?.height || '100%',
+						zIndex: 5,
 					} }
 				>
-					<div
-						className="absolute inset-0 bg-transparent z-10 pointer-events-auto"
-					></div>
 					{ hotspots.map( ( hotspot, index ) => {
 						const posX = hotspot.oPosition?.x ?? hotspot.position?.x ?? 50;
 						const posY = hotspot.oPosition?.y ?? hotspot.position?.y ?? 50;

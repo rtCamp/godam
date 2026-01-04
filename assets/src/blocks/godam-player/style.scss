@@ -379,6 +379,11 @@
 .easydam-layer.hotspot-layer {
 	pointer-events: none;
 	background: transparent;
+	z-index: 5;
+}
+
+.video-js .vjs-control-bar {
+	z-index: 8;
 }
 
 
