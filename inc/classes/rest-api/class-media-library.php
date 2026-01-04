@@ -1086,9 +1086,10 @@ class Media_Library extends Base {
 		$type     = $request->get_param( 'type' ) ?? 'all';
 		$search   = $request->get_param( 'search' );
 
-		// For now, we hardcode total count as 20 for all types till we get the API endpoint ready.
-		$total     = 'video' === $type ? 20 : ( 'audio' === $type ? 20 : 20 );
+		// For now, we hardcode total count as 0 till we get the API endpoint ready.
+		$total     = 0;
 		$all_items = array();
+		$has_more  = false;
 
 		// Retrieve the GoDAM API key stored in WordPress options.
 		$api_key = get_option( 'rtgodam-api-key', '' );
@@ -1164,16 +1165,17 @@ class Media_Library extends Base {
 
 			$body = json_decode( wp_remote_retrieve_body( $response ) );
 
-			if ( empty( $body->message->files ) || ! is_array( $body->message->files ) ) {
+			if ( ! isset( $body->message->files ) || ! is_array( $body->message->files ) ) {
 				return rest_ensure_response(
 					array(
 						'success' => false,
-						'message' => __( 'Unexpected API response format or no files found.', 'godam' ),
+						'message' => __( 'Unexpected API response format.', 'godam' ),
 					)
 				);
 			}
 
 			$response = $body->message->files;
+			$has_more = isset( $body->message->has_more ) ? $body->message->has_more : false;
 
 			$all_items = array();
 
@@ -1203,7 +1205,7 @@ class Media_Library extends Base {
 				'mime_type'   => $type,
 				'page'        => $page,
 				'per_page'    => $per_page,
-				'has_more'    => $body->message->has_more,
+				'has_more'    => $has_more,
 			)
 		);
 	}
