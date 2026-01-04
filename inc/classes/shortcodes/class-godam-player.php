@@ -152,13 +152,14 @@ class GoDAM_Player {
 	public function render( $atts ) {
 		$attributes = shortcode_atts(
 			array(
-				'id'             => '',
-				'sources'        => '',
-				'src'            => '',
-				'transcoded_url' => '',
-				'poster'         => '',
-				'aspectRatio'    => '',
-				'engagements'    => '',
+				'id'                 => '',
+				'sources'            => '',
+				'src'                => '',
+				'transcoded_url'     => '',
+				'poster'             => '',
+				'aspectRatio'        => '',
+				'engagements'        => '',
+				'auto_open_comments' => '',
 			),
 			$atts,
 			'godam_video'

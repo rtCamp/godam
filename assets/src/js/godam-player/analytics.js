@@ -60,6 +60,8 @@ window.analytics = analytics;
 	 * @param {Element|Document} [params.root]         - Root element to search for video elements. Defaults to document
 	 *
 	 * @param {boolean}          [params.sendPageLoad] - Whether to send a type 1 'page_load' event before the heatmap event. Defaults to true.
+	 * @param {Array}            [params.ranges]       - Pre-collected played ranges for the video
+	 * @param {number}           [params.videoLength]  - Pre-collected video length
 	 * @return {boolean} Returns true if event was successfully tracked, false otherwise
 	 *
 	 * @description
@@ -79,45 +81,54 @@ window.analytics = analytics;
 	 *
 	 * @since 1.4.2
 	 */
-	window.analytics.trackVideoEvent = ( { type, videoId, root, sendPageLoad = true } = {} ) => {
+	window.analytics.trackVideoEvent = ( { type, videoId, root, sendPageLoad = true, ranges: providedRanges, videoLength: providedLength } = {} ) => {
 		if ( ! type ) {
 			return false;
 		}
-		// Type 2: heatmap (derive ranges and length via videojs)
+		// Type 2: heatmap (derive ranges and length via videojs or use provided data)
 		if ( type === 2 ) {
-			const ctx = root && root.querySelector ? root : document;
 			let vid = videoId;
+			let ranges = providedRanges;
+			let videoLength = providedLength;
 
-			// If no videoId provided, automatically find the current video
-			if ( ! vid ) {
-				const videoEl = ctx.querySelector( '.easydam-player.video-js, .video-js' );
-				vid = videoEl ? parseInt( videoEl.getAttribute( 'data-id' ), 10 ) : 0;
+			// If ranges not provided, try to collect from current player
+			if ( ! ranges ) {
+				const ctx = root && root.querySelector ? root : document;
+
+				// If no videoId provided, automatically find the current video
+				if ( ! vid ) {
+					const videoEl = ctx.querySelector( '.easydam-player.video-js, .video-js' );
+					vid = videoEl ? parseInt( videoEl.getAttribute( 'data-id' ), 10 ) : 0;
+				}
+
+				vid = parseInt( vid, 10 ) || 0;
+				if ( ! vid ) {
+					return false;
+				}
+
+				// Send type 1 first (for the current video) if sendPageLoad is true
+				// NOTE: This automatically sends a 'page_load' event before the heatmap event, for ease of use.
+				// This is intentional behavior but may cause duplicate type 1 events in some scenarios
+				if ( sendPageLoad ) {
+					window.analytics.track( 'page_load', { type: 1, videoIds: [ vid ] } );
+				}
+
+				const el = findVideoElementById( vid, root );
+				const player = getPlayer( el );
+				if ( ! player ) {
+					return false;
+				}
+
+				ranges = collectPlayedRanges( player );
+				videoLength = Number( player.duration && player.duration() ) || 0;
+			} else {
+				vid = parseInt( vid, 10 ) || 0;
 			}
 
-			vid = parseInt( vid, 10 ) || 0;
-			if ( ! vid ) {
+			// Only send type 2 if there are actually played ranges
+			if ( ! ranges || ranges.length === 0 ) {
 				return false;
 			}
-
-			// Send type 1 first (for the current video) if sendPageLoad is true
-			// NOTE: This automatically sends a 'page_load' event before the heatmap event, for ease of use.
-			// This is intentional behavior but may cause duplicate type 1 events in some scenarios
-			if ( sendPageLoad ) {
-				window.analytics.track( 'page_load', { type: 1, videoIds: [ vid ] } );
-			}
-
-			const el = findVideoElementById( vid, root );
-			const player = getPlayer( el );
-			if ( ! player ) {
-				return false;
-			}
-
-			const ranges = collectPlayedRanges( player );
-			if ( ranges.length === 0 ) {
-				return false;
-			}
-
-			const videoLength = Number( player.duration && player.duration() ) || 0;
 
 			window.analytics.track( 'video_heatmap', {
 				type: 2,
@@ -136,6 +147,13 @@ if ( ! window.pageLoadEventTracked ) {
 	window.pageLoadEventTracked = true; // Mark as tracked to avoid duplicate execution
 
 	document.addEventListener( 'DOMContentLoaded', () => {
+		// Skip automatic page_load if filter is set (e.g., in iframe contexts)
+		if ( window.godamAnalyticsSkipAutoPageLoad ) {
+			// Initialize video analytics without automatic page_load
+			playerAnalytics();
+			return;
+		}
+
 		const videos = document.querySelectorAll( '.easydam-player.video-js' );
 
 		// Collect all video IDs

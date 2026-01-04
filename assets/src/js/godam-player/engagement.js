@@ -502,6 +502,11 @@ const engagementStore = {
 		document.body.appendChild( commentModal );
 		this.root = createRoot( commentModal );
 		this.root.render( <CommentBox videoAttachmentId={ videoAttachmentId } siteUrl={ siteUrl } storeObj={ this } videoId={ videoId } skipEngagements={ skipEngagements } /> );
+
+		// Notify iframe about modal opening (after React has started rendering)
+		setTimeout( () => {
+			window.dispatchEvent( new CustomEvent( 'rtgodam:comments-opened' ) );
+		}, 300 );
 	},
 };
 
@@ -755,9 +760,9 @@ function timeToSeconds( h, m, s ) {
 /**
  * Component to render a text with @HH:MM:SS or @MM:SS timestamps linked to video positions.
  *
- * @param {Object}                   props          - Component props.
- * @param {string}                   props.text     - Text to render.
- * @param {function(number, string)} [props.onJump] - Callback to handle clicking a timestamp.
+ * @param {Object}                                 props          - Component props.
+ * @param {string}                                 props.text     - Text to render.
+ * @param {(time: number, format: string) => void} [props.onJump] - Callback to handle clicking a timestamp.
  */
 function TimeLinkedText( { text, onJump } ) {
 	// Matches @HH:MM:SS or @MM:SS
@@ -1143,19 +1148,54 @@ function CommentBox( props ) {
 	const videoInfoForMobile = useRef( null );
 
 	useEffect( () => {
-		const currentVideoParent = document.getElementById( videoFigureId );
-		const currentVideo = currentVideoParent.querySelector( '.godam-video-wrapper' );
-		const currentVideoClass = currentVideoParent.className;
-		const currentVideoStyles = currentVideoParent.getAttribute( 'style' );
+		let currentVideoParent = document.getElementById( videoFigureId );
+		let currentVideo;
+
+		// Primary approach: Try to find expected video elements
+		if ( currentVideoParent ) {
+			currentVideo = currentVideoParent.querySelector( '.godam-video-wrapper' );
+		}
+
+		// Fallback approach: If expected elements don't exist, look for any video container
+		if ( ! currentVideo ) {
+			// Look for any video container that might exist (for non-transcoded videos)
+			const fallbackVideoContainer = document.querySelector( '.godam-modal-video .godam-video-wrapper' ) ||
+											document.querySelector( '.easydam-video-container' ) ||
+											document.querySelector( '.video-js' )?.closest( '.wp-block-godam-video' ) ||
+											document.querySelector( '.video-js' )?.parentElement;
+
+			if ( fallbackVideoContainer ) {
+				currentVideo = fallbackVideoContainer.querySelector( '.godam-video-wrapper' ) ||
+								fallbackVideoContainer.querySelector( '.easydam-video-container' ) ||
+								fallbackVideoContainer;
+				currentVideoParent = fallbackVideoContainer;
+			}
+		}
+
+		// If still no video found, skip manipulation but still show modal
+		if ( ! currentVideo || ! currentVideoParent ) {
+			document.body.classList.add( 'no-scroll' );
+			return () => {
+				document.body.classList.remove( 'no-scroll' );
+			};
+		}
+
+		const currentVideoClass = currentVideoParent.className || '';
+		const currentVideoStyles = currentVideoParent.getAttribute( 'style' ) || '';
 
 		const videoContainer = videoContainerRef.current;
-		videoContainer.className = currentVideoClass;
-		videoContainer.style = currentVideoStyles;
-		videoContainer.appendChild( currentVideo );
+		if ( videoContainer ) {
+			videoContainer.className = currentVideoClass;
+			videoContainer.style = currentVideoStyles;
+			videoContainer.appendChild( currentVideo );
+		}
+
 		document.body.classList.add( 'no-scroll' );
 
 		return () => {
-			currentVideoParent.insertBefore( currentVideo, currentVideoParent.firstChild );
+			if ( currentVideoParent && currentVideo ) {
+				currentVideoParent.insertBefore( currentVideo, currentVideoParent.firstChild );
+			}
 			document.body.classList.remove( 'no-scroll' );
 
 			// Godam gallery cleanup if needed
@@ -1190,7 +1230,22 @@ function CommentBox( props ) {
 			<div className={ baseClass + '-content' + ( skipEngagements ? ' is-skip-engagements' : '' ) }>
 				<div className={ baseClass + '-header' }>
 					<h3 className={ baseClass + '-title' }>{ titles }</h3>
-					<button className={ `${ baseClass }--close-button` } onClick={ () => memoizedStoreObj.root.unmount() }>&times;</button>
+					<button className={ `${ baseClass }--close-button` } onClick={ () => {
+						// Check if we're in a gallery modal iframe
+						const isInIframe = window !== window.top;
+						const isGalleryModal = window.godamAnalyticsSkipAutoPageLoad === true;
+
+						if ( isInIframe && isGalleryModal ) {
+							// Close the entire gallery modal instead of just the comment modal
+							window.parent.postMessage( {
+								type: 'rtgodam:close-gallery-modal',
+							}, '*' );
+						} else {
+							// Normal behavior: just close the comment modal
+							window.dispatchEvent( new CustomEvent( 'rtgodam:comments-closed' ) );
+							memoizedStoreObj.root.unmount();
+						}
+					} }>&times;</button>
 				</div>
 				<div className={ baseClass + '--video' }>
 					<div className={ `${ baseClass }--video-figure` }>

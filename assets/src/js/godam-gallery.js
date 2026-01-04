@@ -5,12 +5,24 @@
  */
 import { select, dispatch } from '@wordpress/data';
 
-/**
- * External dependencies
- */
-import DOMPurify from 'isomorphic-dompurify';
-
 const engagementStore = 'godam-video-engagement';
+
+// Helper function to send analytics events to iframe
+function sendAnalyticsToIframe( modal, analyticsType, videoId ) {
+	if ( analyticsType === 1 && modal.dataset.isIframeReady !== 'true' ) {
+		// For type 1 events, wait for iframe to be ready
+		return;
+	}
+
+	const iframe = modal.querySelector( 'iframe' );
+	if ( iframe && iframe.contentWindow ) {
+		iframe.contentWindow.postMessage( {
+			type: 'rtgodam:analytics-event',
+			analyticsType,
+			videoId,
+		}, '*' );
+	}
+}
 
 // Common function to load more videos
 async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVideos ) {
@@ -176,6 +188,7 @@ document.addEventListener( 'click', async function( e ) {
 		// Store current video ID and loading state
 		modal.dataset.currentVideoId = videoId;
 		modal.dataset.isLoading = 'false';
+		modal.dataset.isIframeReady = 'false'; // Track if iframe has signaled it's ready
 
 		// Get gallery pagination info
 		const galleryOffset = parseInt( currentGallery.getAttribute( 'data-offset' ) || 0, 10 );
@@ -199,7 +212,6 @@ document.addEventListener( 'click', async function( e ) {
 		modal.innerHTML = `
 			<div class="godam-modal-overlay"></div>
 			<div class="godam-modal-content">
-				<span class="godam-modal-close">&times;</span>
 				<div class="easydam-video-container animate-video-loading">
 					<div class="animate-play-btn">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
@@ -207,19 +219,17 @@ document.addEventListener( 'click', async function( e ) {
 						</svg>
 					</div>
 				</div>
-				<div class="godam-modal-footer">
-					<div class="godam-video-info">
-						<h3 class="godam-video-title"></h3>
-						<span class="godam-video-date"></span>
-					</div>
-				</div>
 			</div>
 		`;
 
 		modal.classList.remove( 'hidden' );
+		modal.classList.add( 'is-visible' );
 
 		// Prevent background scrolling when modal is open
 		document.body.style.overflow = 'hidden';
+
+		// Declare message handler at modal scope
+		let currentMessageHandler = null;
 
 		// Function to load a new video
 		const loadNewVideo = async ( newVideoId ) => {
@@ -250,39 +260,25 @@ document.addEventListener( 'click', async function( e ) {
 			}
 
 			try {
-				let data;
-				const videoMarkUp = select( engagementStore ).getVideoMarkUp()[ newVideoId ];
-				if ( videoMarkUp ) {
-					data = {
-						html: videoMarkUp,
-						status: 'success',
-					};
-				} else {
-					const response = await fetch( `/wp-json/godam/v1/video-shortcode?id=${ newVideoId }` );
-					data = await response.json();
-
-					if ( data.status === 'success' && data.html ) {
-						dispatch( engagementStore ).addVideoMarkUp( newVideoId, data.html );
-					}
+				// Remove previous message listener if exists
+				if ( currentMessageHandler ) {
+					window.removeEventListener( 'message', currentMessageHandler );
+					currentMessageHandler = null;
 				}
 
-				if ( data.status === 'success' && data.html ) {
-					// Update the video element with the fetched data
+				// Create iframe for video modal
+				const iframe = document.createElement( 'iframe' );
+				iframe.src = `?godam_page=gallery-modal&id=${ newVideoId }`;
+				iframe.style.width = '100%';
+				iframe.style.height = '100vh'; // Fullscreen height
+				iframe.style.border = 'none';
+				iframe.style.background = '#000';
+				iframe.title = 'GoDAM Video Player';
+				iframe.setAttribute( 'aria-label', 'GoDAM Video Player' );
+				iframe.addEventListener( 'error', function() {
 					if ( videoContainer ) {
-						videoContainer.innerHTML = data.html;
+						videoContainer.innerHTML = '<div class="godam-error-message">Failed to load video.</div>';
 						videoContainer.classList.remove( 'animate-video-loading' );
-
-						// Update video title in the modal header
-						const videoTitle = modal.querySelector( '.godam-video-title' );
-						if ( videoTitle ) {
-							videoTitle.innerHTML = DOMPurify.sanitize( data.title || '' );
-						}
-
-						// Update the date
-						const videoDate = modal.querySelector( '.godam-video-date' );
-						if ( videoDate ) {
-							videoDate.textContent = data.date || '';
-						}
 
 						const engagementContainer = videoContainer.querySelector( '.rtgodam-video-engagement' );
 						let engagementId = engagementContainer?.getAttribute( 'data-engagement-id' ) || 0;
@@ -370,10 +366,57 @@ document.addEventListener( 'click', async function( e ) {
 							}
 						}
 					}
-				} else if ( videoContainer ) {
-					videoContainer.innerHTML = '<div class="godam-error-message">Video could not be loaded.</div>';
-					videoContainer.classList.remove( 'animate-video-loading' );
+				} );
+
+				// Clear loading state and add iframe
+				if ( videoContainer ) {
+					videoContainer.innerHTML = '';
+					videoContainer.appendChild( iframe );
+					// Don't remove loading class here - wait for postMessage
 				}
+
+				// Listen for messages from iframe
+				currentMessageHandler = ( event ) => {
+					if ( event.data && event.data.type === 'rtgodam:modal-ready' ) {
+						// Keep fullscreen height instead of resizing to content height
+						iframe.style.height = '100vh';
+						// Remove loading state
+						if ( videoContainer ) {
+							videoContainer.classList.remove( 'animate-video-loading' );
+						}
+						// Mark iframe as ready and send initial type 1 analytics
+						modal.dataset.isIframeReady = 'true';
+						sendAnalyticsToIframe( modal, 1, parseInt( newVideoId, 10 ) );
+
+						// Send any pending type 2 analytics for previously viewed video
+						const pendingType2VideoId = modal.dataset.pendingType2VideoId;
+						if ( pendingType2VideoId ) {
+							sendAnalyticsToIframe( modal, 2, parseInt( pendingType2VideoId, 10 ) );
+							delete modal.dataset.pendingType2VideoId;
+						}
+					} else if ( event.data && event.data.type === 'rtgodam:comments-opened' && event.data.action === 'expand-to-fullscreen' ) {
+						// Keep fullscreen height for comments
+						iframe.style.height = '100vh';
+					} else if ( event.data && event.data.type === 'rtgodam:modal-resize' ) {
+						// Keep fullscreen height for modal resize
+						iframe.style.height = '100vh';
+					} else if ( event.data && event.data.type === 'rtgodam:change-video' ) {
+						// Handle video change requests from iframe
+						handleVideoChange( event.data.direction );
+					} else if ( event.data && event.data.type === 'rtgodam:close-gallery-modal' ) {
+						// Handle gallery modal close request from iframe (when auto_open_comments close button is clicked)
+						close();
+					}
+				};
+
+				window.addEventListener( 'message', currentMessageHandler );
+
+				// Fallback timeout to remove loading state if postMessage fails
+				setTimeout( function() {
+					if ( videoContainer && videoContainer.classList.contains( 'animate-video-loading' ) ) {
+						videoContainer.classList.remove( 'animate-video-loading' );
+					}
+				}, 3000 );
 			} catch ( error ) {
 				// Handle error case
 				if ( videoContainer ) {
@@ -383,6 +426,79 @@ document.addEventListener( 'click', async function( e ) {
 			} finally {
 				// Reset loading state
 				modal.dataset.isLoading = 'false';
+			}
+		};
+
+		// Function to handle video change from iframe scroll
+		const handleVideoChange = async ( direction ) => {
+			// Get current video items
+			let videoItems = getCurrentVideoItems();
+
+			// Get current video index
+			const currentId = modal.dataset.currentVideoId;
+			const currentIndex = Array.from( videoItems ).findIndex( ( item ) =>
+				item.querySelector( '.godam-video-thumbnail' ).getAttribute( 'data-video-id' ) === currentId,
+			);
+
+			if ( currentIndex === -1 ) {
+				return;
+			}
+
+			let newIndex;
+
+			if ( direction === 'next' ) {
+				// Next video
+				if ( currentIndex === videoItems.length - 1 ) {
+					// At last video, try to load more
+					const moreLoaded = await loadMoreIfNeeded( currentIndex, videoItems );
+					if ( moreLoaded ) {
+						// Refresh video items after loading more
+						videoItems = getCurrentVideoItems();
+						newIndex = currentIndex + 1;
+					} else {
+						// No more videos available
+						return;
+					}
+				} else {
+					newIndex = currentIndex + 1;
+				}
+			} else if ( direction === 'previous' ) {
+				// Previous video
+				if ( currentIndex === 0 ) {
+					// At first video, do nothing
+					return;
+				}
+				newIndex = currentIndex - 1;
+			} else {
+				return;
+			}
+
+			// Get the new video ID
+			const newThumbnail = videoItems[ newIndex ]?.querySelector( '.godam-video-thumbnail' );
+			if ( newThumbnail ) {
+				const newVideoId = newThumbnail.getAttribute( 'data-video-id' );
+				if ( newVideoId && newVideoId !== currentId ) {
+					// Hide engagement popup if visible
+					const popUpElement = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
+					if ( popUpElement ) {
+						popUpElement.style.display = 'none';
+					}
+
+					// Tell current iframe to save ranges for the video before it's destroyed
+					const currentIframe = modal.querySelector( 'iframe' );
+					if ( currentIframe && currentIframe.contentWindow ) {
+						currentIframe.contentWindow.postMessage( {
+							type: 'rtgodam:save-ranges',
+							videoId: currentId,
+						}, '*' );
+					}
+
+					// Store type 2 analytics for old video to be sent when new iframe is ready
+					modal.dataset.pendingType2VideoId = currentId;
+
+					// Load new video
+					loadNewVideo( newVideoId );
+				}
 			}
 		};
 
@@ -422,6 +538,31 @@ document.addEventListener( 'click', async function( e ) {
 			}
 		}
 
+		// Helper function to send analytics directly using stored sessionStorage data
+		function sendAnalyticsFromStorage( _videoId ) {
+			try {
+				const stored = sessionStorage.getItem( `godam_video_ranges_${ _videoId }` );
+				if ( stored ) {
+					const data = JSON.parse( stored );
+
+					// Send analytics directly (similar to how iframe does it)
+					if ( window.analytics && window.analytics.track ) {
+						window.analytics.track( 'video_heatmap', {
+							type: 2,
+							videoId: parseInt( _videoId, 10 ),
+							ranges: data.ranges,
+							videoLength: data.videoLength,
+						} );
+
+						// Remove the stored data after sending to prevent duplicate sends
+						sessionStorage.removeItem( `godam_video_ranges_${ _videoId }` );
+					}
+				}
+			} catch {
+
+			}
+		}
+
 		// Close handlers
 		const close = () => {
 			// Clean up event listeners to prevent memory leaks
@@ -437,24 +578,46 @@ document.addEventListener( 'click', async function( e ) {
 			// Send heatmap (type 2) for the current video on close BEFORE disposing/removing
 			const currentId = parseInt( modal.dataset.currentVideoId || 0, 10 );
 			if ( currentId ) {
-				window.analytics?.trackVideoEvent( { type: 2, videoId: currentId, root: modal } );
+				sendAnalyticsFromStorage( currentId );
 			}
 
-			// Find and dispose any video players in the modal
-			const players = modal.querySelectorAll( '.video-js' );
-			players.forEach( ( player ) => {
-				if ( player.player ) {
-					player.player.dispose();
+			// Also send any pending type 2 analytics
+			const pendingType2VideoId = modal.dataset.pendingType2VideoId;
+			if ( pendingType2VideoId ) {
+				sendAnalyticsFromStorage( pendingType2VideoId );
+				delete modal.dataset.pendingType2VideoId;
+			}
+
+			// Clean up immediately since analytics are sent synchronously
+			if ( currentMessageHandler ) {
+				window.removeEventListener( 'message', currentMessageHandler );
+				currentMessageHandler = null;
+			}
+
+			// Remove iframe content and destroy iframe
+			const videoContainer = modal.querySelector( '.easydam-video-container' );
+			if ( videoContainer ) {
+				// Find and destroy the iframe
+				const iframe = videoContainer.querySelector( 'iframe' );
+				if ( iframe ) {
+					iframe.src = 'about:blank'; // Clear the src to stop any loading
+					iframe.remove(); // Explicitly remove the iframe element
 				}
-			} );
-			modal.remove();
+				videoContainer.innerHTML = ''; // Clear any remaining content
+			}
+
+			// Force remove modal after a short delay to ensure cleanup
+			setTimeout( () => {
+				if ( modal && modal.parentNode ) {
+					modal.remove();
+				}
+			}, 100 );
 			// Re-enable background scrolling
 			document.body.style.overflow = '';
 			document.body.removeEventListener( 'wheel', handleScroll );
 			document.body.removeEventListener( 'touchend', handleTouchend );
 		};
 
-		modal.querySelector( '.godam-modal-close' )?.addEventListener( 'click', close );
 		modal.addEventListener( 'click', ( err ) => {
 			if ( ! err.target.closest( '.godam-modal-content' ) ) {
 				close();
@@ -518,12 +681,9 @@ document.addEventListener( 'click', async function( e ) {
 			event.preventDefault(); // Prevent background scroll
 			event.stopPropagation(); // Prevent event bubbling
 
-			if ( ! window.galleryScroll ) {
-				return;
-			}
-
-			const currentPopUp = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
-			if ( ! currentPopUp ) {
+			const currentModal = document.getElementById( 'godam-video-modal' );
+			const isGalleryModal = currentModal && currentModal.classList.contains( 'is-gallery' );
+			if ( ! isGalleryModal ) {
 				return;
 			}
 
@@ -587,8 +747,17 @@ document.addEventListener( 'click', async function( e ) {
 						if ( popUpElement ) {
 							popUpElement.style.display = 'none';
 						}
-						// Send type 2 for the old video
-						window.analytics?.trackVideoEvent( { type: 2, root: document.querySelector( '#rtgodam-video-engagement--comment-modal' ) } );
+						// Tell current iframe to save ranges for the video before it's destroyed
+						const currentIframe = modal.querySelector( 'iframe' );
+						if ( currentIframe && currentIframe.contentWindow ) {
+							currentIframe.contentWindow.postMessage( {
+								type: 'rtgodam:save-ranges',
+								videoId: currentId,
+							}, '*' );
+						}
+
+						// Queue type 2 analytics for old video to be sent when new iframe is ready
+						modal.dataset.pendingType2VideoId = currentId;
 
 						loadNewVideo( newVideoId );
 					}
@@ -600,12 +769,9 @@ document.addEventListener( 'click', async function( e ) {
 			touchEndY = err.changedTouches[ 0 ].clientY;
 			const touchDiff = touchStartY - touchEndY;
 
-			if ( ! window.galleryScroll ) {
-				return;
-			}
-
-			const currentPopUp = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
-			if ( ! currentPopUp ) {
+			const currentModal = document.getElementById( 'godam-video-modal' );
+			const isGalleryModal = currentModal && currentModal.classList.contains( 'is-gallery' );
+			if ( ! isGalleryModal ) {
 				return;
 			}
 
@@ -675,8 +841,17 @@ document.addEventListener( 'click', async function( e ) {
 							popUpElement.style.display = 'none';
 						}
 
-						// Send type 2 for the old video
-						window.analytics?.trackVideoEvent( { type: 2, root: document.querySelector( '#rtgodam-video-engagement--comment-modal' ) } );
+						// Tell current iframe to save ranges for the video before it's destroyed
+						const currentIframe = modal.querySelector( 'iframe' );
+						if ( currentIframe && currentIframe.contentWindow ) {
+							currentIframe.contentWindow.postMessage( {
+								type: 'rtgodam:save-ranges',
+								videoId: currentId,
+							}, '*' );
+						}
+
+						// Queue type 2 analytics for old video to be sent when new iframe is ready
+						modal.dataset.pendingType2VideoId = currentId;
 
 						loadNewVideo( newVideoId );
 					}
