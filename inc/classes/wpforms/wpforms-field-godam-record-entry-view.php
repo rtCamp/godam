@@ -21,8 +21,8 @@ $godam_transcoded_status  = WPForms_Integration_Helper::get_transcoded_status( $
 
 // Detect if this is an audio file.
 $file_type = wp_check_filetype( $godam_attachment_url );
-$mime_type = ! empty( $file_type['type'] ) ? $file_type['type'] : 'application/octet-stream';
-$is_audio  = strpos( $mime_type, 'audio' ) !== false;
+$mime_type = ! empty( $file_type['type'] ) ? $file_type['type'] : '';
+$is_audio  = ! empty( $mime_type ) && strpos( $mime_type, 'audio' ) !== false;
 
 // Handle .webm audio files.
 if ( 'webm' === $file_type['ext'] && godam_is_audio_file_by_name( $godam_attachment_url ) ) {
