@@ -1311,6 +1311,16 @@ body.godam-share-modal-open {
 
 /* Style for video player fullscreen buttons */
 .video-js {
+	-webkit-tap-highlight-color: transparent !important;
+
+	* {
+
+		&:focus,
+		&:active,
+		&:focus-visible {
+			outline: none;
+		}
+	}
 
 	.vjs-custom-fullscreen-exit-control {
 		position: fixed !important;
