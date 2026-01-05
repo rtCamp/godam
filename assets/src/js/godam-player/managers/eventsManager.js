@@ -103,13 +103,14 @@ export default class EventsManager {
 		this.player.on( 'resize', () => this.handleVideoResize() );
 		window.addEventListener( 'resize', () => this.handleVideoResize() );
 		this.player.on( 'fullscreenchange', () => this.handleVideoResize() );
+		this.player.on( 'customfullscreenchange', () => this.handleVideoResize() );
 	}
 
 	/**
 	 * Handle video resize events
 	 */
 	handleVideoResize() {
-		// Skip if video is fullscreen or classic skin
+		// Skip if video is classic skin
 		if ( ! this.player ||
 			typeof this.player.isFullscreen !== 'function' ||
 			this.config.videoSetupOptions?.playerSkin === PLAYER_SKINS.CLASSIC ) {
@@ -119,9 +120,13 @@ export default class EventsManager {
 		// Handle control bar positioning during fullscreen
 		this.handleFullscreenControlBar();
 
-		// Check container width constraint
+		// For Minimal and Pills skins, we always want to run the resize logic to keep controls centered
+		const skin = this.config.videoSetupOptions?.playerSkin;
+		const isCenteredSkin = skin === PLAYER_SKINS.MINIMAL || skin === PLAYER_SKINS.PILLS;
+
+		// Check container width constraint for other skins
 		const videoContainer = this.video.closest( '.easydam-video-container' );
-		if ( videoContainer?.offsetWidth > 480 ) {
+		if ( ! isCenteredSkin && videoContainer?.offsetWidth > 480 ) {
 			return;
 		}
 

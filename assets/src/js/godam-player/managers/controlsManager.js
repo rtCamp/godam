@@ -537,19 +537,27 @@ export default class ControlsManager {
 	 * @param {number}      newHeight   - New height value
 	 */
 	setupStandardControlLayout( playButton, skipButtons, newWidth, newHeight ) {
-		if ( this.config.videoSetupOptions?.playerSkin === PLAYER_SKINS.MINIMAL ) {
-			playButton.style.setProperty( 'bottom', `${ ( newHeight / 2 ) + 4 }px` );
+		const skin = this.config.videoSetupOptions?.playerSkin;
+
+		if ( skin === PLAYER_SKINS.MINIMAL ) {
+			// For Minimal skin, center the play button and skip buttons vertically and horizontally
+			if ( playButton ) {
+				// Assuming standard button size of ~40px; using fixed offset to avoid 0px issues if button is hidden
+				playButton.style.setProperty( 'bottom', `${ ( newHeight / 2 ) - 20 }px` );
+				playButton.style.setProperty( 'left', `${ ( newWidth / 2 ) - 20 }px` );
+			}
+
 			skipButtons.forEach( ( button ) => {
-				button.style.setProperty( 'bottom', `${ ( newHeight / 2 ) - 5 }px` );
+				// Align skip buttons to the same vertical center as the play button
+				button.style.setProperty( 'bottom', `${ ( newHeight / 2 ) - 20 }px` );
 			} );
-		}
+		} else if ( skin !== PLAYER_SKINS.DEFAULT ) {
+			// For other non-default skins (excluding PILLS)
+			if ( playButton ) {
+				playButton.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
+				playButton.style.setProperty( 'left', `${ ( newWidth / 2 ) - 20 }px` );
+			}
 
-		if ( this.config.videoSetupOptions?.playerSkin !== PLAYER_SKINS.DEFAULT ) {
-			playButton.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
-			playButton.style.setProperty( 'left', `${ ( newWidth / 2 ) - 20 }px` );
-		}
-
-		if ( this.config.videoSetupOptions?.playerSkin !== PLAYER_SKINS.MINIMAL ) {
 			skipButtons.forEach( ( button ) => {
 				button.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
 			} );
