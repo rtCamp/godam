@@ -231,10 +231,22 @@ class Form_Submit {
 		 */
 		$form_title = ! empty( $form_title ) ? $form_title : __( 'Sureforms', 'godam' );
 
+		// Detect file type to determine job_type.
+		$is_audio = godam_is_audio_file( $file_url );
+		
+		// Set job_type based on file type.
+		$job_type = $is_audio ? 'audio' : 'stream';
+		
 		/**
 		 * Send for transcoding.
 		 */
-		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding( 'sureforms', $form_title, $file_url, $entry_id );
+		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding( 
+			'sureforms', 
+			$form_title, 
+			$file_url, 
+			$entry_id,
+			$job_type
+		);
 
 		/**
 		 * Error handling.
@@ -326,6 +338,11 @@ class Form_Submit {
 
 		$form_id = $entry_data['form_id'];
 
+		$file_type = wp_check_filetype( $value );
+
+		// Detect if this is an audio file.
+		$is_audio = godam_is_audio_file( $value );
+
 		/**
 		 * Fetch the transcoding URL from meta.
 		 */
@@ -338,12 +355,11 @@ class Form_Submit {
 			$transcoded_url        = "transcoded_url={$transcoded_url}";
 			$transcoded_url_output = sprintf(
 				"<div style='margin: 8px 0;' class='godam-transcoded-url-info'><span class='dashicons dashicons-yes-alt'></span><strong>%s</strong></div>",
-				esc_html__( 'Video saved and transcoded successfully on GoDAM', 'godam' )
+				$is_audio 
+					? esc_html__( 'Audio saved and transcoded successfully on GoDAM', 'godam' )
+					: esc_html__( 'Video saved and transcoded successfully on GoDAM', 'godam' )
 			);
 		}
-
-		$video_output = do_shortcode( "[godam_video src='{$value}' {$transcoded_url} ]" );
-		$video_output = '<div class="gf-godam-video-preview">' . $video_output . '</div>';
 
 		$download_url = sprintf(
 			'<div style="margin: 12px 0;"><a class="button" target="_blank" href="%s">%s</a></div>',
@@ -351,9 +367,25 @@ class Form_Submit {
 			__( 'Click to view', 'godam' )
 		);
 
-		$video_output = '<td style="width: 75%;">' . $download_url . $transcoded_url_output . $video_output . '</td>';
-
-		return $video_output;
+		// Render audio or video player.
+		if ( $is_audio ) {
+			$audio_output = '<audio controls">';
+			if ( ! empty( $transcoded_url ) ) {
+				$audio_output .= sprintf( '<source src="%s" type="audio/mpeg">', esc_url( str_replace( 'transcoded_url=', '', $transcoded_url ) ) );
+			}
+			$audio_output .= sprintf( '<source src="%s" type="%s">', esc_url( $value ), esc_attr( $file_type['type'] ) );
+			$audio_output .= esc_html__( 'Your browser does not support the audio element.', 'godam' );
+			$audio_output .= '</audio>';
+			
+			$media_output = '<div class="gf-godam-audio-preview">' . $audio_output . '</div>';
+		} else {
+			$video_output = do_shortcode( "[godam_video src='{$value}' {$transcoded_url} ]" );
+			$media_output = '<div class="gf-godam-video-preview">' . $video_output . '</div>';
+		}
+		
+		$output = '<td style="width: 75%;">' . $download_url . $transcoded_url_output . $media_output . '</td>';
+		
+		return $output;
 	}
 
 	/**
