@@ -25,7 +25,15 @@
 		display: none;
 	}
 
-	.vjs-current-time, .vjs-time-divider, .vjs-duration {
+	.vjs-current-time {
+		display: flex;
+		padding: 0 0 0 15px;
+		align-items: center;
+		justify-content: center;
+		min-width: 1.2em;
+	}
+
+	.vjs-time-divider, .vjs-duration {
 		display: flex !important;
 		padding: 0 !important;
 		align-items: center;
