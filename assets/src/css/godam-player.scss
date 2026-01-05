@@ -441,6 +441,8 @@
 @container godam-player-default-skin (max-width: 580px) {
 
 	.image-cta-container {
+
+		/* Switch to vertical layout on smaller screens */
 		flex-direction: column;
 		gap: 10px;
 		padding: 15px;
@@ -449,6 +451,8 @@
 		max-height: 95%;
 
 		img {
+
+			/* Scale down image for mobile */
 			width: 150px;
 			max-height: 120px;
 			object-fit: contain;
@@ -460,6 +464,8 @@
 		}
 
 		h2 {
+
+			/* Adjust font sizes for mobile readability */
 			font-size: 22px;
 			margin-bottom: 5px;
 		}
@@ -1066,11 +1072,15 @@ body.godam-share-modal-open {
 
 .vjs-menu {
   opacity: 0;
-  transition: opacity 0.3s ease;
+
+  /* Use visibility in addition to opacity for better Safari compatibility */
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .vjs-menu.vjs-lock-showing {
   opacity: 1;
+  visibility: visible;
 }
 
 .vjs-menu.vjs-closing {
@@ -1388,10 +1398,13 @@ body.godam-share-modal-open {
 
 /* Style for video player fullscreen buttons */
 .video-js {
+
+	/* Remove blue tap highlight on mobile devices */
 	-webkit-tap-highlight-color: transparent !important;
 
 	* {
 
+		/* Remove focus outlines and box shadows from all player controls */
 		&:focus,
 		&:active,
 		&:focus-visible {
