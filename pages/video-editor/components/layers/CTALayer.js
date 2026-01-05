@@ -137,16 +137,14 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 						/>`;
 		}
 
-		return `<div class="${ 'portrait' === layer?.imageCtaOrientation ? 'vertical-image-cta-container' : 'image-cta-container' }">
-					${ imageBox }
+		return `${ imageBox }
 					<div class="image-cta-description">
 						${ layer?.imageText ? `<h2>${ layer.imageText }</h2>` : '' }
 						${ layer?.imageDescription ? `<p>${ layer.imageDescription }</p>` : '' }
 						<a class="image-cta-btn" href="${ layer?.imageLink || '/' }" target="_blank" style="background-color: ${ layer?.imageCtaButtonColor ?? '#eeab95' }">
 							${ layer?.imageCtaButtonText || __( 'Buy Now', 'godam' ) }
 						</a>
-					</div>
-   				 </div>`;
+					</div>`;
 	};
 
 	useEffect( () => {
