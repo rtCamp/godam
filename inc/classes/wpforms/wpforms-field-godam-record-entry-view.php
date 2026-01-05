@@ -21,7 +21,8 @@ $godam_transcoded_status  = WPForms_Integration_Helper::get_transcoded_status( $
 
 // Detect if this is an audio file.
 $file_type = wp_check_filetype( $godam_attachment_url );
-$is_audio  = strpos( $file_type['type'], 'audio' ) !== false;
+$mime_type = ! empty( $file_type['type'] ) ? $file_type['type'] : 'application/octet-stream';
+$is_audio  = strpos( $mime_type, 'audio' ) !== false;
 
 // Handle .webm audio files.
 if ( 'webm' === $file_type['ext'] && godam_is_audio_file_by_name( $godam_attachment_url ) ) {
@@ -56,7 +57,7 @@ if ( 'webm' === $file_type['ext'] && godam_is_audio_file_by_name( $godam_attachm
 			<?php if ( $godam_transcoded_url ) : ?>
 				<source src="<?php echo esc_url( $godam_transcoded_url ); ?>" type="audio/mpeg">
 			<?php endif; ?>
-			<source src="<?php echo esc_url( $godam_attachment_url ); ?>" type="<?php echo esc_attr( $file_type['type'] ); ?>">
+			<source src="<?php echo esc_url( $godam_attachment_url ); ?>" type="<?php echo esc_attr( $mime_type ); ?>">
 			<?php esc_html_e( 'Your browser does not support the audio element.', 'godam' ); ?>
 		</audio>
 	<?php else : ?>

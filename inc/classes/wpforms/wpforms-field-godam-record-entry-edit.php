@@ -33,7 +33,8 @@ printf(
 
 // Detect if this is an audio file.
 $file_type = wp_check_filetype( $godam_value );
-$is_audio  = strpos( $file_type['type'], 'audio' ) !== false;
+$mime_type = ! empty( $file_type['type'] ) ? $file_type['type'] : 'application/octet-stream';
+$is_audio  = strpos( $mime_type, 'audio' ) !== false;
 
 if ( 'webm' === $file_type['ext'] && godam_is_audio_file_by_name( $godam_value ) ) {
 	$is_audio = true;
@@ -45,7 +46,7 @@ if ( 'webm' === $file_type['ext'] && godam_is_audio_file_by_name( $godam_value )
 			<?php if ( $godam_transcoded_url ) : ?>
 				<source src="<?php echo esc_url( $godam_transcoded_url ); ?>" type="audio/mpeg">
 			<?php endif; ?>
-			<source src="<?php echo esc_url( $godam_value ); ?>" type="<?php echo esc_attr( $file_type['type'] ); ?>">
+			<source src="<?php echo esc_url( $godam_value ); ?>" type="<?php echo esc_attr( $mime_type ); ?>">
 			<?php esc_html_e( 'Your browser does not support the audio element.', 'godam' ); ?>
 		</audio>
 	<?php else : ?>
