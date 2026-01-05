@@ -193,6 +193,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				'file_input'     => esc_html__( 'Local Files', 'godam' ),
 				'webcam'         => esc_html__( 'Webcam', 'godam' ),
 				'screen_capture' => esc_html__( 'Screencast', 'godam' ),
+				'audio'          => esc_html__( 'Audio', 'godam' ),
 			);
 
 			$checkboxes = '';

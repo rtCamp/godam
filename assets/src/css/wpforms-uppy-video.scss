@@ -121,3 +121,40 @@
     }
 }
 
+#uppy-DashboardContent-panel--Audio {
+    overflow: auto;
+
+    .uppy-Audio-canvas {
+        max-height: 100%;
+        max-width: 98%;
+        margin: auto;
+        display: block;
+        aspect-ratio: 16/9;
+    }
+
+    .uppy-Audio-buttonContainer {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 70px;
+        gap: 10px;
+
+        button {
+            width: 60px;
+            height: 60px;
+            background-color: #e32437;
+            border-radius: 50%;
+        }
+    }
+
+    .uppy-Audio-recordingLength {
+        text-align: center;
+    }
+
+    .uppy-c-icon {
+        width: 25px;
+        height: 25px;
+        fill: #fff;
+    }
+}
+
