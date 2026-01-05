@@ -542,8 +542,9 @@ export default class ControlsManager {
 		if ( skin === PLAYER_SKINS.MINIMAL ) {
 			// For Minimal skin, center the play button and skip buttons vertically and horizontally
 			if ( playButton ) {
-				// Assuming standard button size of ~40px; using fixed offset to avoid 0px issues if button is hidden
-				playButton.style.setProperty( 'bottom', `${ ( newHeight / 2 ) - 20 }px` );
+				// Use -15px offset for play button and -20px for skip buttons to align their centers
+				// The play button is typically smaller than the skip button containers
+				playButton.style.setProperty( 'bottom', `${ ( newHeight / 2 ) - 15 }px` );
 				playButton.style.setProperty( 'left', `${ ( newWidth / 2 ) - 20 }px` );
 			}
 
