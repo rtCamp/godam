@@ -116,6 +116,11 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 
 			$entry_data = $entry_id ? evf_get_entry( $entry_id, false ) : false;
 
+			$file_type = wp_check_filetype( $value );
+
+			// Detect file type.
+			$is_audio = godam_is_audio_file( $value );
+
 			$transcoded_url_meta_key = 'rtgodam_transcoded_url_everestforms_' . $form_id . '_' . $entry_id;
 			$transcoded_url_output   = '';
 
@@ -126,7 +131,9 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 					$transcoded_url        = "transcoded_url={$transcoded_url}";
 					$transcoded_url_output = sprintf(
 						"<div style='margin: 8px 0;' class='godam-transcoded-url-info'><span class='dashicons dashicons-yes-alt'></span><strong>%s</strong></div>",
-						esc_html__( 'Video saved and transcoded successfully on GoDAM', 'godam' )
+						$is_audio 
+							? esc_html__( 'Audio saved and transcoded successfully on GoDAM', 'godam' )
+							: esc_html__( 'Video saved and transcoded successfully on GoDAM', 'godam' )
 					);
 				}
 			}
@@ -135,11 +142,31 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 			$style  = '<style>#everest-forms-entry-fields:not(.postbox) table tbody tr td span {margin: 0 !important;}</style>';
 			$style .= '<style>.evf-godam-video-preview .easydam-video-container{height:100%;}.evf-godam-video-preview .easydam-video-container .easydam-player.video-js{margin-top:0;}</style>';
 
-			$video_output = do_shortcode( "[godam_video src='{$value}' {$transcoded_url} ]" );
+			// Render audio or video player.
+			if ( $is_audio ) {
+				$audio_output = '<audio controls style="width: 100%; margin-top: 10px;">';
+				if ( ! empty( $transcoded_url ) ) {
+					$audio_src     = str_replace( 'transcoded_url=', '', $transcoded_url );
+					$audio_output .= sprintf( '<source src="%s" type="audio/mpeg">', esc_url( $audio_src ) );
+				}
+				$audio_output .= sprintf( '<source src="%s" type="%s">', esc_url( $value ), esc_attr( $file_type['type'] ) );
+				$audio_output .= esc_html__( 'Your browser does not support the audio element.', 'godam' );
+				$audio_output .= '</audio>';
+				
+				// Workaround, replace all line breaks and new lines with empty string.
+				$audio_output = str_replace( array( "\r", "\n" ), '', $audio_output );
+				$audio_output = '<div class="evf-godam-audio-preview">' . $audio_output . '</div>';
+				
+				$media_output = $audio_output;
+			} else {
+				$video_output = do_shortcode( "[godam_video src='{$value}' {$transcoded_url} ]" );
 
-			// Workaround, replace all line breaks and new lines with empty string.
-			$video_output = str_replace( array( "\r", "\n" ), '', $video_output );
-			$video_output = '<div class="gf-godam-video-preview evf-godam-video-preview">' . $video_output . '</div>';
+				// Workaround, replace all line breaks and new lines with empty string.
+				$video_output = str_replace( array( "\r", "\n" ), '', $video_output );
+				$video_output = '<div class="gf-godam-video-preview evf-godam-video-preview">' . $video_output . '</div>';
+				
+				$media_output = $video_output;
+			}
 
 			// Download URL.
 			$download_url = sprintf(
@@ -148,9 +175,9 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 				__( 'Click to view', 'godam' )
 			);
 
-			$video_output = $style . $download_url . $transcoded_url_output . $video_output;
+			$output = $style . $download_url . $transcoded_url_output . $media_output;
 
-			return $video_output;
+			return $output;
 		}
 
 		/**
@@ -205,7 +232,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 			// Render upload button.
 			printf( '<button type="button" class="button uppy-video-upload-button">' );
 			printf( '<span class="dashicons dashicons-video-alt"></span>' );
-			printf( esc_html( $field['button_text'] ?? __( 'Record Video', 'godam' ) ) );
+			printf( esc_html( $field['button_text'] ?? __( 'Start Recording', 'godam' ) ) );
 			printf( '</button>' );
 
 			// Description.
@@ -305,6 +332,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 				'file_input'     => esc_html__( 'Local Files', 'godam' ),
 				'webcam'         => esc_html__( 'Webcam', 'godam' ),
 				'screen_capture' => esc_html__( 'Screencast', 'godam' ),
+				'audio'          => esc_html__( 'Audio', 'godam' ),
 			);
 
 			$checkboxes = '';
@@ -354,7 +382,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 				array(
 					'slug'    => 'button-text-label',
 					'value'   => esc_html__( 'Record Button Text', 'godam' ),
-					'tooltip' => esc_html__( 'Text for the record video button', 'godam' ),
+					'tooltip' => esc_html__( 'Text for the start recording button', 'godam' ),
 				),
 				false
 			);
@@ -367,9 +395,9 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 				$video_field,
 				array(
 					'slug'    => 'button_text',
-					'value'   => ! empty( $video_field['button_text'] ) ? $video_field['button_text'] : esc_html__( 'Record Video', 'godam' ),
+					'value'   => ! empty( $video_field['button_text'] ) ? $video_field['button_text'] : esc_html__( 'Start Recording', 'godam' ),
 					'label'   => esc_html__( 'Button Text', 'godam' ),
-					'tooltip' => esc_html__( 'Text for the record video button', 'godam' ),
+					'tooltip' => esc_html__( 'Text for the start recording button', 'godam' ),
 				),
 				false
 			);

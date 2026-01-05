@@ -418,6 +418,32 @@ function godam_is_audio_file_by_name( $filename ) {
 }
 
 /**
+ * Check if the given file is an audio file.
+ *
+ * @since 1.4.9
+ *
+ * @param string $file The file path or URL to check.
+ *
+ * @return bool True if the file is an audio file, false otherwise.
+ */
+function godam_is_audio_file( $file ) {
+	$file_type = wp_check_filetype( $file );
+	$mime_type = ! empty( $file_type['type'] ) ? $file_type['type'] : '';
+
+	// Check if the MIME type indicates an audio file.
+	if ( ! empty( $mime_type ) && strpos( $mime_type, 'audio' ) !== false ) {
+		return true;
+	}
+
+	// Handle .webm files that might be audio.
+	if ( 'webm' === $file_type['ext'] && godam_is_audio_file_by_name( $file ) ) {
+		return true;
+	}
+
+	return false;
+}
+
+/**
  * Send Video file to GoDAM for transcoding.
  *
  * @param string  $form_type  Form Type.

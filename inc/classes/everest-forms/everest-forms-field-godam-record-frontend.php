@@ -18,7 +18,7 @@ $godam_field_id               = $field['id'] ?? 0;
 $godam_class                  = ! empty( $godam_primary['class'] ) ? join( ' ', $godam_primary['class'] ) : 'godam-recorder';
 $godam_video_upload_button_id = wp_unique_id( 'uppy-video-upload-' );
 $godam_description            = $field['description'] ?? '';
-$godam_button_text            = empty( $field['button_text'] ) ? __( 'Record Video', 'godam' ) : $field['button_text'];
+$godam_button_text            = empty( $field['button_text'] ) ? __( 'Start Recording', 'godam' ) : $field['button_text'];
 $godam_file_selectors         = empty( $godam_file_selectors ) ? array( 'screen_capture', 'webcam' ) : $godam_file_selectors;
 $godam_form_id                = $form_data['id'] ?? 0;
 $godam_required               = 'required' === $godam_primary['required'] ? true : false;
