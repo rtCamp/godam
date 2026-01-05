@@ -552,6 +552,11 @@ export default class ControlsManager {
 				// Align skip buttons to the same vertical center as the play button
 				button.style.setProperty( 'bottom', `${ ( newHeight / 2 ) - 20 }px` );
 			} );
+		} else if ( skin === PLAYER_SKINS.DEFAULT ) {
+			// For Default skin, ONLY center the skip buttons. Play button stays at bottom left (CSS).
+			skipButtons.forEach( ( button ) => {
+				button.style.setProperty( 'bottom', `${ ( newHeight / 2 ) - 20 }px` );
+			} );
 		} else if ( skin !== PLAYER_SKINS.DEFAULT ) {
 			// For other non-default skins (excluding PILLS)
 			if ( playButton ) {

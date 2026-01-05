@@ -120,9 +120,9 @@ export default class EventsManager {
 		// Handle control bar positioning during fullscreen
 		this.handleFullscreenControlBar();
 
-		// For Minimal and Pills skins, we always want to run the resize logic to keep controls centered
+		// For Minimal, Pills and Default skins, we always want to run the resize logic to keep controls centered
 		const skin = this.config.videoSetupOptions?.playerSkin;
-		const isCenteredSkin = skin === PLAYER_SKINS.MINIMAL || skin === PLAYER_SKINS.PILLS;
+		const isCenteredSkin = skin === PLAYER_SKINS.MINIMAL || skin === PLAYER_SKINS.PILLS || skin === PLAYER_SKINS.DEFAULT;
 
 		// Check container width constraint for other skins
 		const videoContainer = this.video.closest( '.easydam-video-container' );
