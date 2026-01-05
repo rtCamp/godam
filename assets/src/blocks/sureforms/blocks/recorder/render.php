@@ -17,11 +17,11 @@ $godam_max_file_size = wp_max_upload_size();
 /**
  * Get all required attributes.
  */
-$godam_label         = ! empty( $attributes['label'] ) ? $attributes['label'] : __( 'Record Video', 'godam' );
+$godam_label         = ! empty( $attributes['label'] ) ? $attributes['label'] : __( 'Start Recording', 'godam' );
 $godam_help          = ! empty( $attributes['description'] ) ? $attributes['description'] : '';
 $godam_block_id      = ! empty( $attributes['blockId'] ) ? $attributes['blockId'] : '';
 $godam_required      = ! empty( $attributes['required'] ) ? $attributes['required'] : false;
-$godam_record_button = ! empty( $attributes['recordButton'] ) ? $attributes['recordButton'] : __( 'Record Video', 'godam' );
+$godam_record_button = ! empty( $attributes['recordButton'] ) ? $attributes['recordButton'] : __( 'Start Recording', 'godam' );
 $godam_file_selector = ! empty( $attributes['fileSelector'] ) ? $attributes['fileSelector'] : array( 'file_input' );
 $godam_max_file_size = ! empty( $attributes['maxFileSize'] ) ? absint( $attributes['maxFileSize'] ) * 1048576 : $godam_max_file_size;
 $godam_form_id       = ! empty( $attributes['formId'] ) ? $attributes['formId'] : '';

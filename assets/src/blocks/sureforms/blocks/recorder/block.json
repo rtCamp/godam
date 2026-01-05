@@ -42,7 +42,7 @@
 		},
 		"fileSelector": {
 			"type": "array",
-			"default": [ "screen_capture", "webcam" ]
+			"default": [ "screen_capture", "webcam", "audio" ]
 		},
 		"maxFileSize": {
 			"type": "number"

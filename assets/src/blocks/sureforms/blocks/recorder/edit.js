@@ -225,6 +225,12 @@ export default function Edit( props ) {
 						checked={ checkFileSelector( 'screen_capture' ) }
 						onChange={ () => updateFileSelector( 'screen_capture' ) }
 					/>
+					<CheckboxControl
+						__nextHasNoMarginBottom
+						label={ __( 'Audio', 'godam' ) }
+						checked={ checkFileSelector( 'audio' ) }
+						onChange={ () => updateFileSelector( 'audio' ) }
+					/>
 				</>
 			),
 		},
