@@ -101,6 +101,10 @@ class Dynamic_Gallery extends Base {
 							'type'    => 'string',
 							'default' => '',
 						),
+						'engagements'       => array(
+							'type'    => 'boolean',
+							'default' => true,
+						),
 					),
 				),
 			),
@@ -131,6 +135,7 @@ class Dynamic_Gallery extends Base {
 			'date_range'        => $request->get_param( 'date_range' ),
 			'custom_date_start' => $request->get_param( 'custom_date_start' ),
 			'custom_date_end'   => $request->get_param( 'custom_date_end' ),
+			'engagements'       => $request->get_param( 'engagements' ),
 		);
 
 		// Add filter for dynamic gallery attributes.
@@ -296,15 +301,31 @@ class Dynamic_Gallery extends Base {
 					}
 				}
 
-				$video_url = add_query_arg(
-					array(
-						'godam_page'  => 'video-embed',
-						'id'          => $video_id,
-						'engagements' => $atts['engagements'] ? 'show' : '',
-					),
-					$cpt_base_url 
+				// Check if engagements are enabled for the video.
+				$engagements_enabled = $atts['engagements'];
+
+				if ( ! $engagements_enabled ) {
+					$item_engagements_enabled = false;
+				} else {
+					// Check if engagements are enabled for the video is transcoded.
+					$transcoded_job_id        = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
+					$tanscoded_status         = get_post_meta( $video_id, 'rtgodam_transcoding_status', true );
+					$item_engagements_enabled = ! empty( $transcoded_job_id ) && 'transcoded' === $tanscoded_status;
+				}
+
+				// Build the query arguments for the video embed page.
+				$query_args = array(
+					'godam_page' => 'video-embed',
+					'id'         => $video_id,
 				);
-	
+
+				// Add the engagements query argument if it is enabled.
+				if ( $item_engagements_enabled ) {
+					$query_args['engagements'] = 'show';
+				}
+
+				$video_url = add_query_arg( $query_args, $cpt_base_url );
+
 				echo '<div class="godam-video-item">';
 				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $video_url ) . '">';
 				echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
