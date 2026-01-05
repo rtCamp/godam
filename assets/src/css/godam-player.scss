@@ -324,21 +324,34 @@
 .vertical-image-cta-container {
 	display: flex;
 	flex-direction: row;
-	gap: 30px;
+	gap: 20px;
 	max-width: 600px;
 	background-color: #fff;
 	align-items: center;
 	padding: 20px;
+	border-radius: 12px;
+	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+	box-sizing: border-box;
 
 	h2 {
 		font-size: 32px;
 		font-weight: 700;
 		line-height: 1.125;
+		margin: 0 0 10px;
 	}
 
 	p {
 		color: #8c8c8c;
 		font-size: 16px;
+		margin: 0 0 20px;
+	}
+
+	img {
+		max-width: 100%;
+		width: 200px;
+		height: auto;
+		border-radius: 8px;
+		object-fit: cover;
 	}
 
 	.image-cta-btn {
@@ -348,12 +361,9 @@
 }
 
 .image-cta-description {
-	flex-basis: 50%;
-	border-radius: 0 20px 20px 0;
+	flex: 1;
 	display: flex;
 	flex-direction: column;
-	gap: 20px;
-	align-content: center;
 	justify-content: center;
 	padding-left: 0;
 
@@ -366,6 +376,7 @@
 	flex-direction: column;
 	width: 300px;
 	border-radius: 36px;
+	text-align: center;
 
 	img {
 		border-radius: 25px;
@@ -373,12 +384,11 @@
 	}
 
 	.image-cta-description {
-		text-align: center;
 		padding: 0;
+		align-items: center;
 	}
 
 	.image-cta-btn {
-		text-decoration: none;
 		margin: 0 auto;
 	}
 }
@@ -389,6 +399,8 @@
 	align-items: center;
 	height: 100%;
 	width: 100%;
+	padding: 20px;
+	box-sizing: border-box;
 }
 
 .image-cta-overlay-container {
@@ -397,18 +409,23 @@
 	bottom: 0;
 	overflow: auto;
 	padding: 2rem 1rem;
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
 
 	h2 {
 		margin-block-start: 0;
-		margin-block-end: 0;
+		margin-block-end: 10px;
 	}
 
 	p {
 		font-size: 13px;
+		margin-bottom: 15px;
 	}
 
 	img {
 		height: auto;
+		max-width: 100%;
 	}
 
 	a {
@@ -417,6 +434,66 @@
 
 	.image-cta-description {
 		gap: 10px;
+	}
+}
+
+/* Responsive CTA Image Layer using Container Queries */
+@container godam-player-default-skin (max-width: 580px) {
+
+	.image-cta-container {
+		flex-direction: column;
+		gap: 10px;
+		padding: 15px;
+		text-align: center;
+		width: 90%;
+		max-height: 95%;
+
+		img {
+			width: 150px;
+			max-height: 120px;
+			object-fit: contain;
+		}
+
+		.image-cta-description {
+			align-items: center;
+			flex: none;
+		}
+
+		h2 {
+			font-size: 22px;
+			margin-bottom: 5px;
+		}
+
+		p {
+			font-size: 14px;
+			margin-bottom: 15px;
+		}
+
+		.image-cta-btn {
+			font-size: 14px;
+			padding: 8px 12px;
+		}
+	}
+}
+
+@container godam-player-default-skin (max-width: 400px) {
+
+	.image-cta-container {
+		padding: 10px;
+		gap: 10px;
+
+		h2 {
+			font-size: 18px;
+		}
+
+		p {
+			font-size: 12px;
+			margin-bottom: 10px;
+		}
+
+		img {
+			max-height: 100px;
+		}
 	}
 }
 
