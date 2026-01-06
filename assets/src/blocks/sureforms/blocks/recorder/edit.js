@@ -327,7 +327,7 @@ export default function Edit( props ) {
 					>
 						<RichText
 							type="label"
-							value={ recordButton ?? 'Start Recording' }
+							value={ recordButton ?? __( 'Start Recording', 'godam' ) }
 							onChange={ ( value ) => {
 								setAttributes( { recordButton: value } );
 							} }
