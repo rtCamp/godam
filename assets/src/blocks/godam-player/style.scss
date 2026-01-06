@@ -95,6 +95,74 @@
 	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
 	background-color: rgba(149, 149, 149, 0.2);
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	container-type: inline-size;
+	container-name: godam-player-default-skin;
+}
+
+/* Responsive CTA Image Layer using Container Queries */
+@container (max-width: 580px) {
+
+	.image-cta-container {
+		gap: 15px;
+		padding: 15px;
+		width: 96%;
+		height: auto;
+		overflow-y: auto;
+
+		img {
+
+			/* Scale down image for mobile but keep aspect ratio */
+			width: 120px;
+			height: auto;
+			object-fit: contain;
+			flex-shrink: 0;
+		}
+
+		.image-cta-description {
+			gap: 10px;
+			justify-content: flex-start;
+		}
+
+		h2 {
+			font-size: 20px;
+			margin-bottom: 5px;
+		}
+
+		p {
+			font-size: 13px;
+			margin-bottom: 10px;
+			line-height: 1.4;
+		}
+
+		.image-cta-btn {
+			font-size: 13px;
+			padding: 8px 12px;
+		}
+	}
+}
+
+@container (max-width: 400px) {
+
+	.image-cta-container {
+		padding: 10px;
+		gap: 10px;
+
+		img {
+			width: 100px;
+		}
+
+		h2 {
+			font-size: 16px;
+		}
+
+		p {
+			font-size: 12px;
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+		}
+	}
 }
 
 .animate-play-btn {
