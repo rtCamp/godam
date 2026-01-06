@@ -1810,6 +1810,12 @@ body.godam-share-modal-open {
 		}
 	}
 
+	// Hide share button in standard fullscreen
+	.video-js.vjs-fullscreen .vjs-button.godam-share-button {
+		display: none !important;
+	}
+
+
 	.video-js {
 
 		.vjs-big-play-button {
