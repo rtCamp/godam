@@ -179,10 +179,13 @@
 				padding-top: 8px;
 			}
 
-			.vjs-menu-item:hover {
-				font-weight: 900;
-				background-color: unset !important;
-				color: #cdc5c5 !important;
+			.vjs-menu-item:not(.vjs-selected):hover {
+				font-weight: 400;
+				background-color: rgba(255, 255, 255, 0.1);
+			}
+
+			.vjs-menu-item.vjs-selected:hover {
+				background-color: #fff !important;
 			}
 	
 			span::before {
