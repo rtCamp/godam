@@ -420,7 +420,7 @@ function godam_is_audio_file_by_name( $filename ) {
 /**
  * Check if the given file is an audio file.
  *
- * @since 1.4.9
+ * @since n.e.x.t
  *
  * @param string $file The file path or URL to check.
  *
@@ -431,7 +431,7 @@ function godam_is_audio_file( $file ) {
 	$mime_type = ! empty( $file_type['type'] ) ? $file_type['type'] : '';
 
 	// Check if the MIME type indicates an audio file.
-	if ( ! empty( $mime_type ) && strpos( $mime_type, 'audio' ) !== false ) {
+	if ( ! empty( $mime_type ) && str_starts_with( $mime_type, 'audio/' ) ) {
 		return true;
 	}
 
