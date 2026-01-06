@@ -1732,35 +1732,13 @@ body.godam-share-modal-open {
 		}
 	}
 
-	&:hover {
-
-		.vjs-big-play-button {
-			transform: scale(1.1);
-		}
-
-		.godam-player-overlay {
-			background: radial-gradient(
-				ellipse at center,
-				rgba(0, 0, 0, 0.05) 0%,
-				rgba(0, 0, 0, 0.1) 50%,
-				rgba(0, 0, 0, 0.15) 100%
-			);
-			opacity: 0.7;
-		}
-
-		.vjs-button.godam-share-button {
-			opacity: 1;
-			visibility: visible;
-			pointer-events: auto;
-
-			&:hover{
-				background-color: #AB3A6C;
-			}
-		}
-	}
-
 	// FULLSCREEN CONTAINER STYLES - Critical for iOS Safari compatibility
 	&.godam-video-fullscreen {
+		// Hide share button in custom fullscreen (consistency with other devices)
+		.vjs-button.godam-share-button {
+			display: none !important;
+		}
+
 		// Position the player to cover the entire viewport
 		position: fixed;
 		inset: 0;
@@ -1788,6 +1766,33 @@ body.godam-share-modal-open {
 		z-index: 99999999;
 		display: flex;
 		align-items: center;
+	}
+
+	&:hover {
+
+		.vjs-big-play-button {
+			transform: scale(1.1);
+		}
+
+		.godam-player-overlay {
+			background: radial-gradient(
+				ellipse at center,
+				rgba(0, 0, 0, 0.05) 0%,
+				rgba(0, 0, 0, 0.1) 50%,
+				rgba(0, 0, 0, 0.15) 100%
+			);
+			opacity: 0.7;
+		}
+
+		.vjs-button.godam-share-button {
+			opacity: 1;
+			visibility: visible;
+			pointer-events: auto;
+
+			&:hover{
+				background-color: #AB3A6C;
+			}
+		}
 	}
 
 	.video-js {
