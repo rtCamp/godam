@@ -94,6 +94,17 @@ export default class FormLayerManager {
 	}
 
 	/**
+	 * Create arrow icon for skip button
+	 *
+	 * @return {HTMLElement} Created arrow icon element
+	 */
+	createArrowIcon() {
+		const arrowIcon = document.createElement( 'span' );
+		arrowIcon.innerHTML = `<svg viewBox="0 0 320 512" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg>`;
+		return arrowIcon;
+	}
+
+	/**
 	 * Create skip button
 	 *
 	 * @param {string} skipText - Text to display on the skip button
@@ -103,10 +114,7 @@ export default class FormLayerManager {
 		const skipButton = document.createElement( 'button' );
 		skipButton.textContent = skipText;
 		skipButton.classList.add( 'skip-button' );
-
-		const arrowIcon = document.createElement( 'span' );
-		arrowIcon.innerHTML = `<svg viewBox="0 0 320 512" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg>`;
-		skipButton.appendChild( arrowIcon );
+		skipButton.appendChild( this.createArrowIcon() );
 
 		return skipButton;
 	}
@@ -121,16 +129,20 @@ export default class FormLayerManager {
 		const observer = new MutationObserver( () => {
 			if ( this.hasConfirmationMessage( layerObj.layerElement ) ) {
 				// Update button text while preserving the arrow icon
-				const textNode = Array.from( skipButton.childNodes ).find( ( node ) => node.nodeType === Node.TEXT_NODE );
+				let textNode = null;
+				for ( let i = 0; i < skipButton.childNodes.length; i++ ) {
+					if ( skipButton.childNodes[ i ].nodeType === Node.TEXT_NODE ) {
+						textNode = skipButton.childNodes[ i ];
+						break;
+					}
+				}
+
 				if ( textNode ) {
 					textNode.textContent = __( 'Continue', 'godam' );
 				} else {
 					// Fallback: if no text node exists, update all content
 					skipButton.textContent = __( 'Continue', 'godam' );
-					// Re-add the arrow icon
-					const arrowIcon = document.createElement( 'span' );
-					arrowIcon.innerHTML = `<svg viewBox="0 0 320 512" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg>`;
-					skipButton.appendChild( arrowIcon );
+					skipButton.appendChild( this.createArrowIcon() );
 				}
 				skipButton.classList.remove( 'hidden' );
 				observer.disconnect();
