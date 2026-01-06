@@ -117,6 +117,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 			$entry_data = $entry_id ? evf_get_entry( $entry_id, false ) : false;
 
 			$file_type = wp_check_filetype( $value );
+			$mime_type = ! empty( $file_type['type'] ) ? $file_type['type'] : '';
 
 			// Detect file type.
 			$is_audio = godam_is_audio_file( $value );
@@ -131,7 +132,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 					$transcoded_url        = "transcoded_url={$transcoded_url}";
 					$transcoded_url_output = sprintf(
 						"<div style='margin: 8px 0;' class='godam-transcoded-url-info'><span class='dashicons dashicons-yes-alt'></span><strong>%s</strong></div>",
-						$is_audio 
+						$is_audio
 							? esc_html__( 'Audio saved and transcoded successfully on GoDAM', 'godam' )
 							: esc_html__( 'Video saved and transcoded successfully on GoDAM', 'godam' )
 					);
@@ -149,14 +150,14 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 					$audio_src     = str_replace( 'transcoded_url=', '', $transcoded_url );
 					$audio_output .= sprintf( '<source src="%s" type="audio/mpeg">', esc_url( $audio_src ) );
 				}
-				$audio_output .= sprintf( '<source src="%s" type="%s">', esc_url( $value ), esc_attr( $file_type['type'] ) );
+				$audio_output .= sprintf( '<source src="%s" type="%s">', esc_url( $value ), esc_attr( $mime_type ) );
 				$audio_output .= esc_html__( 'Your browser does not support the audio element.', 'godam' );
 				$audio_output .= '</audio>';
-				
+
 				// Workaround, replace all line breaks and new lines with empty string.
 				$audio_output = str_replace( array( "\r", "\n" ), '', $audio_output );
 				$audio_output = '<div class="evf-godam-audio-preview">' . $audio_output . '</div>';
-				
+
 				$media_output = $audio_output;
 			} else {
 				$video_output = do_shortcode( "[godam_video src='{$value}' {$transcoded_url} ]" );
@@ -164,7 +165,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 				// Workaround, replace all line breaks and new lines with empty string.
 				$video_output = str_replace( array( "\r", "\n" ), '', $video_output );
 				$video_output = '<div class="gf-godam-video-preview evf-godam-video-preview">' . $video_output . '</div>';
-				
+
 				$media_output = $video_output;
 			}
 

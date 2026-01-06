@@ -249,10 +249,10 @@ class Everest_Forms_Integration {
 		// Set job_type based on file type.
 		$job_type = $is_audio ? 'audio' : 'stream';
 
-		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding( 
-			'everestforms', 
-			$form_title, 
-			$file_url, 
+		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding(
+			'everestforms',
+			$form_title,
+			$file_url,
 			$entry_id,
 			$job_type
 		);
