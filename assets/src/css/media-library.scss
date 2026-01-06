@@ -118,6 +118,40 @@ $media-library-active-folder: #f5f5f5;
 	}
 }
 
+.godam-custom-tooltip {
+    position: fixed;
+    background: #000;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+
+    color: #f0f0f0;
+    text-align: center;
+    line-height: 1.4;
+    font-size: 12px;
+    padding: 4px 8px;
+    z-index: 1000000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 2px 3px rgba(0, 0, 0, 0.04), 0 6px 6px rgba(0, 0, 0, 0.03), 0 8px 8px rgba(0, 0, 0, 0.02);
+    max-width: 300px;
+    word-wrap: break-word;
+
+    &.show {
+        opacity: 1;
+    }
+
+    &::before {
+        content: '';
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 6px;
+        border-style: solid;
+        border-color: transparent transparent #000 transparent;
+    }
+}
+
 .elementor-editor-active .attachments-browser #media-date-range-filter {
 	background-color: unset;
 }

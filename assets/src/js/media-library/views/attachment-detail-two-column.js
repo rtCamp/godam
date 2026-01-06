@@ -239,9 +239,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		const li = document.createElement( 'li' );
 		li.className = 'upload-thumbnail-tile';
-		li.title = uploadDisabled
-			? __( 'Only 3 custom thumbnails allowed', 'godam' )
-			: __( 'Upload Custom Thumbnail', 'godam' );
 
 		const button = document.createElement( 'button' );
 		button.type = 'button';
@@ -251,6 +248,9 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			button.disabled = true;
 			button.style.opacity = '0.5';
 			button.style.cursor = 'not-allowed';
+			button.setAttribute( 'data-tooltip', __( 'Only 3 custom thumbnails allowed', 'godam' ) );
+		} else {
+			button.setAttribute( 'data-tooltip', __( 'Upload Custom Thumbnail', 'godam' ) );
 		}
 
 		const span = document.createElement( 'span' );
@@ -333,6 +333,60 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		img.alt = __( 'Video Thumbnail', 'godam' );
 		li.appendChild( img );
 		return li;
+	},
+
+	/**
+	 * Sets up custom tooltips for elements with data-tooltip attribute.
+	 */
+	setupCustomTooltips() {
+		const elementsWithTooltip = this.$el.find( '[data-tooltip]' );
+
+		elementsWithTooltip.each( ( index, element ) => {
+			const $element = this.$( element );
+			const tooltipText = $element.attr( 'data-tooltip' );
+
+			if ( ! tooltipText ) {
+				return;
+			}
+
+			// Create tooltip element
+			const tooltip = document.createElement( 'div' );
+			tooltip.className = 'godam-custom-tooltip';
+			tooltip.textContent = tooltipText;
+			tooltip.style.display = 'none';
+
+			// Append tooltip to body
+			document.body.appendChild( tooltip );
+
+			// Mouse enter handler
+			const handleMouseEnter = () => {
+				const rect = element.getBoundingClientRect();
+				const tooltipRect = tooltip.getBoundingClientRect();
+
+				// Position tooltip below the element
+				tooltip.style.left = `${ rect.left + ( rect.width / 2 ) - ( tooltipRect.width / 2 ) }px`;
+				tooltip.style.top = `${ rect.bottom }px`;
+				tooltip.style.display = 'block';
+				tooltip.classList.add( 'show' );
+			};
+
+			// Mouse leave handler
+			const handleMouseLeave = () => {
+				tooltip.style.display = 'none';
+				tooltip.classList.remove( 'show' );
+			};
+
+			// Add event listeners
+			$element.on( 'mouseenter', handleMouseEnter );
+			$element.on( 'mouseleave', handleMouseLeave );
+
+			// Clean up on element removal
+			$element.on( 'remove', () => {
+				tooltip.remove();
+				$element.off( 'mouseenter', handleMouseEnter );
+				$element.off( 'mouseleave', handleMouseLeave );
+			} );
+		} );
 	},
 
 	/**
@@ -425,6 +479,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		this.setupThumbnailClickHandler( attachmentID );
 		this.setupThumbnailActions();
+		this.setupCustomTooltips();
 
 		// Set upload click after DOM added
 		setTimeout( () => {
