@@ -1072,6 +1072,7 @@ body.godam-share-modal-open {
 
 .vjs-menu {
   opacity: 0;
+  z-index: 19;
 
   /* Use visibility in addition to opacity for better Safari compatibility */
   visibility: hidden;
@@ -1476,6 +1477,7 @@ body.godam-share-modal-open {
 
 			.vjs-control {
 				height: 3em !important;
+				z-index: 10;
 			}
 
 			.vjs-play-control {
@@ -1574,7 +1576,7 @@ body.godam-share-modal-open {
 
 			.vjs-menu {
 				background-color: #2b333f;
-				z-index: 10;
+				z-index: 19;
 			}
 
 			.vjs-time-control {
@@ -1620,6 +1622,7 @@ body.godam-share-modal-open {
 			bottom: 0;
 			right: calc(3 * 40px);
 			height: 3em !important;
+			z-index: 19;
 		}
 	}
 
