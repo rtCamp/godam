@@ -630,6 +630,15 @@
 			border-radius: 8px;
 		}
 	}
+
+	&.godam-modal-fullscreen {
+
+		.godam-modal-body {
+
+			position: fixed;
+			inset: 0;
+		}
+	}
 }
 
 @keyframes modalFadeIn {

@@ -212,6 +212,32 @@ document.addEventListener( 'DOMContentLoaded', function() {
 	document.body.addEventListener( 'touchend', handleTouchEnd, { passive: false } );
 } );
 
+// Listen for GoDAM Player ready event to set up fullscreen change listener
+document.addEventListener( 'godamAllPlayersReady', () => {
+	// Check if GoDAM API is available
+	if ( ! window.GoDAMAPI ) {
+		return;
+	}
+
+	// Get all ready players
+	const players = window.GoDAMAPI.getAllPlayers();
+
+	// Listen for fullscreen changes on all players
+	players.forEach( ( playerObj ) => {
+		if ( playerObj.player ) {
+			// Listen for fullscreen change event
+			playerObj.player.on( 'fullscreenchange', ( data ) => {
+				// Send postMessage to parent window
+				window.parent.postMessage( {
+					type: 'godamFullscreenChange',
+					isFullscreen: data.isFullscreen,
+					attachmentId: playerObj.attachmentId,
+				}, '*' );
+			} );
+		}
+	} );
+} );
+
 /**
  * Render CommentBox component on video embed page by default.
  *

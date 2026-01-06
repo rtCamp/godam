@@ -551,6 +551,16 @@ document.addEventListener( 'click', function( e ) {
 					await navigateVideo( 'next' );
 				} else if ( event.data.type === 'godamScrollPrevious' ) {
 					await navigateVideo( 'prev' );
+				} else if ( event.data.type === 'godamFullscreenChange' ) {
+					// Custom logic for fullscreen change event
+					const { isFullscreen } = event.data;
+
+					// Add or remove fullscreen class to modal
+					if ( isFullscreen ) {
+						modal.classList.add( 'godam-modal-fullscreen' );
+					} else {
+						modal.classList.remove( 'godam-modal-fullscreen' );
+					}
 				}
 			}
 		};
