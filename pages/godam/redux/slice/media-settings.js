@@ -30,6 +30,7 @@ const initialState = {
 	general: {
 		enable_folder_organization: true,
 		enable_gtm_tracking: false,
+		delete_data_on_uninstall: false,
 	},
 	video_player: {
 		brand_image: '',
