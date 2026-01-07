@@ -321,6 +321,23 @@ class GoDAM_Video_Gallery {
 
 				$video_url = add_query_arg( $query_args, $cpt_base_url );
 
+				if ( isset( $atts['open_to_new_page'] ) && $atts['open_to_new_page'] ) {
+					$video_slug     = get_post_field( 'post_name', $video_id );
+					$video_settings = get_option( 'rtgodam_video_post_settings', array() );
+					$cpt_url_slug   = ! empty( $video_settings['video_slug'] ) ? sanitize_title( $video_settings['video_slug'] ) : 'videos';
+					$cpt_base_url   = home_url( '/' . $cpt_url_slug ); 
+					$video_url      = $cpt_base_url . '/' . $video_slug;
+
+					if ( $item_engagements_enabled ) {
+						$video_url = add_query_arg(
+							array(
+								'engagements' => 'show',
+							),
+							$video_url 
+						);
+					}
+				}
+
 				echo '<div class="godam-video-item">';
 				echo '<div class="godam-video-thumbnail" data-gallery-item-engagements="' . esc_attr( $item_engagements_enabled ? 'true' : 'false' ) . '" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $video_url ) . '">';
 				echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
@@ -352,6 +369,7 @@ class GoDAM_Video_Gallery {
 						data-order="' . esc_attr( $atts['order'] ) . '"
 						data-total="' . esc_attr( $total_videos ) . '"
 						data-engagements="' . esc_attr( $atts['engagements'] ) . '"
+						data-open-to-new-page="' . esc_attr( $atts['open_to_new_page'] ) . '"
 					>' . esc_html__( 'Load More', 'godam' ) . '</button>';
 				}
 				echo '<div class="godam-spinner-container"><div class="godam-spinner"></div></div>';

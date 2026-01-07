@@ -31,6 +31,8 @@ async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVi
 			date_range: gallery.dataset.dateRange || '',
 			custom_date_start: gallery.dataset.customDateStart || '',
 			custom_date_end: gallery.dataset.customDateEnd || '',
+			engagements: gallery.dataset.engagements === '1',
+			open_to_new_page: gallery.dataset.openToNewPage === '1',
 		} );
 		const response = await fetch( `/wp-json/godam/v1/gallery-shortcode?${ params.toString() }` );
 		const data = await response.json();
@@ -123,11 +125,12 @@ document.addEventListener( 'click', async function( e ) {
 		const order = btn.getAttribute( 'data-order' );
 		const totalVideos = parseInt( btn.getAttribute( 'data-total' ), 10 );
 		const engagements = btn.getAttribute( 'data-engagements' ) === '1';
+		const openToNewPage = btn.getAttribute( 'data-open-to-new-page' ) === '1';
 
 		// Hide button
 		btn.style.display = 'none';
 
-		const newOffset = await loadMoreVideos( gallery, offset, columns, orderby, order, totalVideos, engagements );
+		const newOffset = await loadMoreVideos( gallery, offset, columns, orderby, order, totalVideos, engagements, openToNewPage );
 
 		if ( newOffset ) {
 			btn.setAttribute( 'data-offset', newOffset );
