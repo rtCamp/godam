@@ -56,6 +56,8 @@
 	background: rgba(255, 255, 255, 0.7);
 	z-index: 10;
 	color: initial;
+	container-type: inline-size;
+	container-name: easydam-layer-container;
 }
 
 .hidden {
@@ -332,9 +334,10 @@
 	border-radius: 12px;
 	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 	box-sizing: border-box;
+	margin: auto;
 
 	h2 {
-		font-size: 32px;
+		font-size: clamp(20px, 4vw, 32px);
 		font-weight: 700;
 		line-height: 1.125;
 		margin: 0 0 10px;
@@ -382,7 +385,7 @@
 
 .vertical-image-cta-container {
 	flex-direction: column;
-	width: 300px;
+	max-width: 300px;
 	border-radius: 36px;
 	text-align: center;
 
@@ -399,13 +402,18 @@
 	.image-cta-btn {
 		margin: 0 auto;
 	}
+
+	@container easydam-layer-container (max-width: 445px) {
+		width: 200px;
+		gap: 15px;
+	}
 }
 
 .image-cta-parent-container {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	height: 100%;
+	min-height: 100%;
 	width: 100%;
 	padding: 20px;
 	box-sizing: border-box;
@@ -415,6 +423,8 @@
 	position: absolute;
 	top: 0;
 	bottom: 0;
+	left: 0;
+	right: 0;
 	overflow: auto;
 	padding: 2rem 1rem;
 	width: 100%;

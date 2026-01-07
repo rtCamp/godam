@@ -357,6 +357,7 @@
     background-color: #fff;
     align-items: center;
 	padding: 20px;
+	margin: auto;
 
     h2 {
         font-size: 32px;
@@ -400,7 +401,7 @@
 
 .vertical-image-cta-container {
     flex-direction: column;
-    width: 300px;
+    max-width: 300px;
     border-radius: 36px;
 
     img {
@@ -423,7 +424,7 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	height: 100%;
+	min-height: 100%;
 	width: 100%;
 }
 
