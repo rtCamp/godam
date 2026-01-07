@@ -4,12 +4,17 @@
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
+ * Internal dependencies
+ */
+import { HOTSPOT_CONSTANTS } from '../../utils/constants';
+
+/**
  * Hotspot Layer Manager
  * Handles hotspot layer functionality including creation, positioning, and interaction
  */
 export default class HotspotLayerManager {
-	static BASE_WIDTH = 800;
-	static BASE_HEIGHT = 600;
+	static BASE_WIDTH = HOTSPOT_CONSTANTS.BASE_WIDTH;
+	static BASE_HEIGHT = HOTSPOT_CONSTANTS.BASE_HEIGHT;
 
 	constructor( player, isDisplayingLayers, currentPlayerVideoInstanceId ) {
 		this.player = player;
@@ -89,10 +94,17 @@ export default class HotspotLayerManager {
 			}
 		} );
 
-		// Small delay to ensure browser has finished resizing for fullscreen
-		setTimeout( () => {
-			this.updateHotspotPositions();
-		}, 100 );
+		// Use requestAnimationFrame to wait for layout to stabilize after fullscreen resize
+		let framesToWait = 2;
+		const waitForResize = () => {
+			if ( framesToWait > 0 ) {
+				framesToWait--;
+				window.requestAnimationFrame( waitForResize );
+			} else {
+				this.updateHotspotPositions();
+			}
+		};
+		window.requestAnimationFrame( waitForResize );
 	}
 
 	/**
@@ -208,7 +220,7 @@ export default class HotspotLayerManager {
 
 		let fallbackDiameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter;
 		if ( ! fallbackDiameter ) {
-			fallbackDiameter = hotspot.unit === 'percent' ? 15 : 48;
+			fallbackDiameter = hotspot.unit === 'percent' ? HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PERCENT : HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PX;
 		}
 
 		let pixelX, pixelY, pixelDiameter;

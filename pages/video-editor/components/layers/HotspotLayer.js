@@ -36,6 +36,7 @@ import LayerControls from '../LayerControls';
 import FontAwesomeIconPicker from '../hotspot/FontAwesomeIconPicker';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import LayersHeader from './LayersHeader';
+import { HOTSPOT_CONSTANTS } from '../../../../assets/src/js/godam-player/utils/constants';
 
 const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
@@ -48,6 +49,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	const [ expandedHotspotIndex, setExpandedHotspotIndex ] = useState( null );
 
 	const containerRef = useRef( null );
+	const videoRef = useRef( null );
 
 	const [ contentRect, setContentRect ] = useState( null );
 
@@ -74,7 +76,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 
 	// Add a new hotspot
 	const handleAddHotspot = () => {
-		const diameterPercent = 15;
+		const diameterPercent = HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PERCENT;
 
 		const newHotspot = {
 			id: uuidv4(),
@@ -165,6 +167,8 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 
 		// Also listen for video metadata loaded
 		const videoEl = document.querySelector( 'video' );
+		videoRef.current = videoEl;
+
 		if ( videoEl ) {
 			videoEl.addEventListener( 'loadedmetadata', computeContentRect );
 		}
@@ -172,8 +176,8 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 		return () => {
 			window.removeEventListener( 'resize', computeContentRect );
 			document.removeEventListener( 'fullscreenchange', computeContentRect );
-			if ( videoEl ) {
-				videoEl.removeEventListener( 'loadedmetadata', computeContentRect );
+			if ( videoRef.current ) {
+				videoRef.current.removeEventListener( 'loadedmetadata', computeContentRect );
 			}
 		};
 	}, [] );
@@ -421,7 +425,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 					{ hotspots.map( ( hotspot, index ) => {
 						const posX = hotspot.oPosition?.x ?? hotspot.position?.x ?? 50;
 						const posY = hotspot.oPosition?.y ?? hotspot.position?.y ?? 50;
-						const diameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? ( hotspot.unit === 'percent' ? 15 : 48 );
+						const diameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? ( hotspot.unit === 'percent' ? HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PERCENT : HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PX );
 
 						let pixelX, pixelY, pixelDiameter;
 
@@ -431,12 +435,12 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 							pixelY = percentToPx( posY, 'y' );
 							pixelDiameter = percentToPx( diameter, 'x' );
 						} else {
-							// Legacy handling in editor (relative to 800x600)
-							const baseWidth = 800;
-							const baseHeight = 600;
-							pixelX = ( posX / baseWidth ) * ( contentRect?.width || 800 );
-							pixelY = ( posY / baseHeight ) * ( contentRect?.height || 600 );
-							pixelDiameter = ( diameter / baseWidth ) * ( contentRect?.width || 800 );
+							// Legacy handling in editor (relative to base dimensions)
+							const baseWidth = HOTSPOT_CONSTANTS.BASE_WIDTH;
+							const baseHeight = HOTSPOT_CONSTANTS.BASE_HEIGHT;
+							pixelX = ( posX / baseWidth ) * ( contentRect?.width || HOTSPOT_CONSTANTS.BASE_WIDTH );
+							pixelY = ( posY / baseHeight ) * ( contentRect?.height || HOTSPOT_CONSTANTS.BASE_HEIGHT );
+							pixelDiameter = ( diameter / baseWidth ) * ( contentRect?.width || HOTSPOT_CONSTANTS.BASE_WIDTH );
 						}
 
 						return (
@@ -453,8 +457,8 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 								bounds="parent"
 								maxWidth={ contentRect?.width || '100%' }
 								maxHeight={ contentRect?.height || '100%' }
-								minWidth={ 10 }
-								minHeight={ 10 }
+								minWidth={ HOTSPOT_CONSTANTS.MIN_PX }
+								minHeight={ HOTSPOT_CONSTANTS.MIN_PX }
 								lockAspectRatio
 								onDragStop={ ( e, d ) => {
 									if ( ! contentRect ) {
@@ -471,11 +475,11 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 											const newY = pxToPercent( relativeY, 'y' );
 
 											// If converting from legacy, also convert diameter to percentage
-											let newDiameter = h2.oSize?.diameter ?? h2.size?.diameter ?? ( h2.unit === 'percent' ? 15 : 48 );
+											let newDiameter = h2.oSize?.diameter ?? h2.size?.diameter ?? ( h2.unit === 'percent' ? HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PERCENT : HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PX );
 											if ( h2.unit !== 'percent' ) {
 												// Ensure it's at least 10px equivalent in percentage
-												const minPercent = contentRect ? ( 10 / contentRect.width ) * 100 : 5;
-												newDiameter = Math.max( minPercent, ( newDiameter / 800 ) * 100 );
+												const minPercent = contentRect ? ( HOTSPOT_CONSTANTS.MIN_PX / contentRect.width ) * 100 : HOTSPOT_CONSTANTS.MIN_PERCENT_FALLBACK;
+												newDiameter = Math.max( minPercent, ( newDiameter / HOTSPOT_CONSTANTS.BASE_WIDTH ) * 100 );
 											}
 
 											return {
