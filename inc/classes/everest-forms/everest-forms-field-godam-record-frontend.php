@@ -75,7 +75,7 @@ $godam_uppy_preview_id   = sprintf( 'uppy_preview_%s_%s', $godam_input_id, $goda
 		);
 		?>
 	</div>
-	<div id="<?php echo esc_attr( $godam_uppy_preview_id ); ?>" class="uppy-video-upload-preview"></div>
+	<div id="<?php echo esc_attr( $godam_uppy_preview_id ); ?>" class="uppy-video-upload-preview" style="margin-top: 0;"></div>
 	<div id="<?php echo esc_attr( $godam_uppy_file_name_id ); ?>" class="uppy-video-upload-filename"></div>
 </div>
 <div style="display: none;" class="evf-uploaded-list godam-recorder">
