@@ -392,7 +392,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				// Check if the file is a video or audio.
 				$mime_type = ! empty( $file['type'] ) ? $file['type'] : '';
 				$is_video  = ! empty( $mime_type ) && str_starts_with( $mime_type, 'video/' );
-				$is_audio  = ! empty( $mime_type ) && str_starts_with( $mime_type, 'audio/' );
+				$is_audio  = godam_is_audio_file( $file );
 				
 				if ( ! $is_video && ! $is_audio ) {
 					continue;

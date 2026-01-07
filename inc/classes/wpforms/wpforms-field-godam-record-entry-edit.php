@@ -32,16 +32,10 @@ printf(
 );
 
 // Detect if this is an audio file.
-$file_type = wp_check_filetype( $godam_value );
-$mime_type = ! empty( $file_type['type'] ) ? $file_type['type'] : '';
-$is_audio  = ! empty( $mime_type ) && strpos( $mime_type, 'audio' ) !== false;
-
-if ( 'webm' === $file_type['ext'] && godam_is_audio_file_by_name( $godam_value ) ) {
-	$is_audio = true;
-}
+$godam_is_audio = godam_is_audio_file( $godam_value );
 ?>
 <div class="godam-video-preview">
-	<?php if ( $is_audio ) : ?>
+	<?php if ( $godam_is_audio ) : ?>
 		<audio controls>
 			<?php if ( $godam_transcoded_url ) : ?>
 				<source src="<?php echo esc_url( $godam_transcoded_url ); ?>" type="audio/mpeg">

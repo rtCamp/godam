@@ -161,15 +161,8 @@ class WPForms_Integration {
 				continue;
 			}
 
-			// Detect file type.
-			$file_type = wp_check_filetype( $field['value'] );
-			$mime_type = ! empty( $file_type['type'] ) ? $file_type['type'] : '';
-			$is_audio  = ! empty( $mime_type ) && strpos( $mime_type, 'audio' ) !== false;
-			
-			// Handle .webm files that might be audio.
-			if ( 'webm' === $file_type['ext'] && godam_is_audio_file_by_name( $field['value'] ) ) {
-				$is_audio = true;
-			}
+			// Detect file type to determine job_type.
+			$is_audio = godam_is_audio_file( $field['value'] );
 			
 			// Set job_type based on file type.
 			$job_type = $is_audio ? 'audio' : 'stream';

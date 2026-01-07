@@ -20,14 +20,7 @@ $godam_hls_transcoded_url = WPForms_Integration_Helper::get_hls_transcoded_url( 
 $godam_transcoded_status  = WPForms_Integration_Helper::get_transcoded_status( $godam_form_id, $godam_entry_id, $godam_field_id );
 
 // Detect if this is an audio file.
-$file_type = wp_check_filetype( $godam_attachment_url );
-$mime_type = ! empty( $file_type['type'] ) ? $file_type['type'] : '';
-$is_audio  = ! empty( $mime_type ) && strpos( $mime_type, 'audio' ) !== false;
-
-// Handle .webm audio files.
-if ( 'webm' === $file_type['ext'] && godam_is_audio_file_by_name( $godam_attachment_url ) ) {
-	$is_audio = true;
-}
+$godam_is_audio = godam_is_audio_file( $godam_attachment_url );
 ?>
 
 <div class="godam-video-preview">
@@ -52,7 +45,7 @@ if ( 'webm' === $file_type['ext'] && godam_is_audio_file_by_name( $godam_attachm
 		<?php endif; ?>
 	</div>
 
-	<?php if ( $is_audio ) : ?>
+	<?php if ( $godam_is_audio ) : ?>
 		<audio controls>
 			<?php if ( $godam_transcoded_url ) : ?>
 				<source src="<?php echo esc_url( $godam_transcoded_url ); ?>" type="audio/mpeg">
