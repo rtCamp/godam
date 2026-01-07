@@ -54,23 +54,18 @@ export const VideoJS = ( props ) => {
 			player.preload( options.preload || '' );
 			player.playsinline( options.playsinline );
 			player.src( options.sources );
+			// Verify if aspectRatio is in valid format x:y
+			if ( /^\d+:\d+$/.test( options.aspectRatio ) ) {
+				player.aspectRatio( options.aspectRatio || '16:9' );
+			}
 		}
-	}, [ options, videoRef ] );
+	}, [ onReady, options, videoRef ] );
 
 	// Dispose the Video.js player when the functional component unmounts
 	useEffect( () => {
 		const player = playerRef.current;
 
 		onPlayerReady( player );
-
-		if ( playerRef.current ) {
-			const playerEl = playerRef.current.el_;
-			const video = playerEl.querySelector( 'video' );
-
-			video.addEventListener( 'loadedmetadata', () => {
-				playerEl.style.paddingTop = `${ ( video.videoHeight / video.videoWidth ) * 100 }%`;
-			} );
-		}
 
 		return () => {
 			if ( player && ! player.isDisposed() ) {
