@@ -401,7 +401,7 @@
 
 .vertical-image-cta-container {
     flex-direction: column;
-    max-width: 300px;
+    max-width: 250px;
     border-radius: 36px;
 
     img {
@@ -412,6 +412,7 @@
     .image-cta-description {
         text-align: center;
 		padding: 0;
+		gap: 0;
     }
 
 	.image-cta-btn {
@@ -433,7 +434,6 @@
 	top: 0;
 	bottom: 0;
 	overflow: auto;
-	padding: 2rem 1rem; 
 
 	h2 {
 		margin-block-start: 0;
@@ -450,10 +450,6 @@
 
 	a {
 		text-decoration: none;
-	}
-
-	.image-cta-description {
-		gap: 10px;
 	}
 }
 
