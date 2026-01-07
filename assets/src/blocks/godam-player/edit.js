@@ -140,7 +140,7 @@ function VideoEdit( {
 		if ( aspectRatio === 'responsive' && videoWidth && videoHeight ) {
 			return `${ videoWidth }:${ videoHeight }`;
 		}
-		// Return aspectRatio if it's in x:y format, otherwise return '16:9' as default
+		// Return aspectRatio if it's in x:y format, otherwise return '' as default
 		if ( aspectRatio && /^\d+:\d+$/.test( aspectRatio ) ) {
 			return aspectRatio;
 		}

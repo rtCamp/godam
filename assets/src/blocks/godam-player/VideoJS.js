@@ -56,10 +56,10 @@ export const VideoJS = ( props ) => {
 			player.src( options.sources );
 			// Verify if aspectRatio is in valid format x:y
 			if ( /^\d+:\d+$/.test( options.aspectRatio ) ) {
-				player.aspectRatio( options.aspectRatio || '16:9' );
+				player.aspectRatio( options.aspectRatio );
 			}
 		}
-	}, [ onReady, options, videoRef ] );
+	}, [ options, videoRef ] );
 
 	// Dispose the Video.js player when the functional component unmounts
 	useEffect( () => {
