@@ -31,7 +31,7 @@
 		},
 		"label": {
 			"type": "string",
-			"default": ""
+			"default": "GoDAM Recorder"
 		},
 		"description": {
 			"type": "string",

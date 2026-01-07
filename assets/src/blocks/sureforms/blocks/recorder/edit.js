@@ -162,7 +162,7 @@ export default function Edit( props ) {
 			id: 'label',
 			component: (
 				<TextControl
-					placeholder={ __( 'Enter label', 'godam' ) }
+					placeholder={ __( 'GoDAM Recorder', 'godam' ) }
 					__next40pxDefaultSize
 					label={ __( 'Label', 'godam' ) }
 					help={ __( 'Enter label for the field', 'godam' ) }
