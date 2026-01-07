@@ -422,12 +422,12 @@ function godam_is_audio_file_by_name( $filename ) {
  *
  * @since n.e.x.t
  *
- * @param string $file The file path or URL to check.
+ * @param string $file_path_or_url The file path or URL to check.
  *
  * @return bool True if the file is an audio file, false otherwise.
  */
-function godam_is_audio_file( $file ) {
-	$file_type = wp_check_filetype( $file );
+function godam_is_audio_file( $file_path_or_url ) {
+	$file_type = wp_check_filetype( $file_path_or_url );
 	$mime_type = ! empty( $file_type['type'] ) ? $file_type['type'] : '';
 
 	// Check if the MIME type indicates an audio file.
@@ -435,8 +435,17 @@ function godam_is_audio_file( $file ) {
 		return true;
 	}
 
-	// Handle .webm files that might be audio.
-	if ( 'webm' === $file_type['ext'] && godam_is_audio_file_by_name( $file ) ) {
+	// Container formats that can hold both audio and video.
+	// These require filename-based detection to distinguish audio from video.
+	$ambiguous_extensions = array( 'webm', 'mp4' );
+
+	// Handle ambiguous container formats that might be audio.
+	// Browser-specific behavior:
+	// - Chromium (Chrome, Edge): Saves both video and audio as .webm
+	// - Firefox: Saves audio as .ogg, video as .webm
+	// - Safari: Saves both audio and video as .mp4
+	// We check the filename for 'audio' keyword to determine if it's an audio file.
+	if ( in_array( $file_type['ext'], $ambiguous_extensions, true ) && godam_is_audio_file_by_name( $file_path_or_url ) ) {
 		return true;
 	}
 
