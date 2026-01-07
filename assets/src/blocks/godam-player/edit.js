@@ -178,7 +178,7 @@ function VideoEdit( {
 			},
 		};
 
-		// Only add aspectRatio if it's in valid x:y format
+		// Only add aspectRatio if it's set (it is already validated in calculatedAspectRatio useMemo)
 		if ( calculatedAspectRatio && /^\d+:\d+$/.test( calculatedAspectRatio ) ) {
 			options.aspectRatio = calculatedAspectRatio;
 		}
