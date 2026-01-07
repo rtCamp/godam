@@ -220,7 +220,11 @@ export default class HotspotLayerManager {
 
 		let fallbackDiameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter;
 		if ( ! fallbackDiameter ) {
-			fallbackDiameter = hotspot.unit === 'percent' ? HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PERCENT : HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PX;
+			if ( hotspot.unit === 'percent' && contentRect ) {
+				fallbackDiameter = ( HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PX / contentRect.width ) * 100;
+			} else {
+				fallbackDiameter = hotspot.unit === 'percent' ? HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PERCENT : HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PX;
+			}
 		}
 
 		let pixelX, pixelY, pixelDiameter;

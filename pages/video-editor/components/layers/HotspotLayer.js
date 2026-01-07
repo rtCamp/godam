@@ -74,9 +74,20 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 		return ( px / size ) * 100;
 	};
 
+	const getDefaultDiameter = ( unit ) => {
+		if ( unit !== 'percent' ) {
+			return HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PX;
+		}
+
+		return contentRect?.width
+			? pxToPercent( HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PX, 'x' )
+			: HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PERCENT;
+	};
+
 	// Add a new hotspot
 	const handleAddHotspot = () => {
-		const diameterPercent = HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PERCENT;
+		// Calculate percentage dynamically to maintain a consistent physical size (approx 48px)
+		const diameterPercent = getDefaultDiameter( 'percent' );
 
 		const newHotspot = {
 			id: uuidv4(),
@@ -425,7 +436,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 					{ hotspots.map( ( hotspot, index ) => {
 						const posX = hotspot.oPosition?.x ?? hotspot.position?.x ?? 50;
 						const posY = hotspot.oPosition?.y ?? hotspot.position?.y ?? 50;
-						const diameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? ( hotspot.unit === 'percent' ? HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PERCENT : HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PX );
+						const diameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? getDefaultDiameter( hotspot.unit );
 
 						let pixelX, pixelY, pixelDiameter;
 
@@ -475,7 +486,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 											const newY = pxToPercent( relativeY, 'y' );
 
 											// If converting from legacy, also convert diameter to percentage
-											let newDiameter = h2.oSize?.diameter ?? h2.size?.diameter ?? ( h2.unit === 'percent' ? HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PERCENT : HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PX );
+											let newDiameter = h2.oSize?.diameter ?? h2.size?.diameter ?? getDefaultDiameter( h2.unit );
 											if ( h2.unit !== 'percent' ) {
 												// Ensure it's at least 10px equivalent in percentage
 												const minPercent = contentRect ? ( HOTSPOT_CONSTANTS.MIN_PX / contentRect.width ) * 100 : HOTSPOT_CONSTANTS.MIN_PERCENT_FALLBACK;
