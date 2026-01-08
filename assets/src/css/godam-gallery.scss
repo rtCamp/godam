@@ -618,9 +618,12 @@
 	&.godam-modal-fullscreen {
 
 		.godam-modal-body {
-
 			position: fixed;
 			inset: 0;
+		}
+
+		.godam-modal-close {
+			z-index: 0;
 		}
 	}
 }
