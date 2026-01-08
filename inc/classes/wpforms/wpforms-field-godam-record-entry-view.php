@@ -21,6 +21,9 @@ $godam_transcoded_status  = WPForms_Integration_Helper::get_transcoded_status( $
 
 // Detect if this is an audio file.
 $godam_is_audio = godam_is_audio_file( $godam_attachment_url );
+
+// Set content type for messages.
+$godam_content_type = $godam_is_audio ? __( 'Audio', 'godam' ) : __( 'Video', 'godam' );
 ?>
 
 <div class="godam-video-preview">
@@ -37,11 +40,29 @@ $godam_is_audio = godam_is_audio_file( $godam_attachment_url );
 
 	<div class="godam-transcoded-url-info">
 		<?php if ( 'not_started' === $godam_transcoded_status ) : ?>
-			<span class='dashicons dashicons-controls-play'></span><strong><?php esc_html_e( 'Video transcoding process has not started.', 'godam' ); ?></strong>
+			<span class='dashicons dashicons-controls-play'></span><strong>
+				<?php
+				/* translators: %s: Content type (Audio or Video) */
+				echo esc_html( sprintf( __( '%s transcoding process has not started.', 'godam' ), $godam_content_type ) );
+				?>
+			</strong>
 		<?php elseif ( 'transcoded' === $godam_transcoded_status ) : ?>
-			<span class='dashicons dashicons-yes-alt'></span><strong><?php esc_html_e( 'Video saved and transcoded successfully on GoDAM', 'godam' ); ?></strong>
+			<span class='dashicons dashicons-yes-alt'></span><strong>
+				<?php
+				/* translators: %s: Content type (Audio or Video) */
+				echo esc_html( sprintf( __( '%s saved and transcoded successfully on GoDAM', 'godam' ), $godam_content_type ) );
+				?>
+			</strong>
 		<?php else : ?>
-			<span class='dashicons dashicons-hourglass'></span><strong><?php esc_html_e( 'Video transcoding process is in-progress.', 'godam' ); ?></strong>
+			<?php if ( $godam_is_audio ) : ?>
+				<span class='dashicons dashicons-yes-alt'></span><strong>
+					<?php echo esc_html__( 'Audio saved successfully on GoDAM', 'godam' ); ?>
+				</strong>
+			<?php else : ?>
+				<span class='dashicons dashicons-hourglass'></span><strong>
+					<?php echo esc_html__( 'Video transcoding process is in-progress.', 'godam' ); ?>
+				</strong>
+			<?php endif; ?>
 		<?php endif; ?>
 	</div>
 

@@ -392,7 +392,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				// Check if the file is a video or audio.
 				$mime_type = ! empty( $file['type'] ) ? $file['type'] : '';
 				$is_video  = ! empty( $mime_type ) && str_starts_with( $mime_type, 'video/' );
-				$is_audio  = godam_is_audio_file( $file );
+				$is_audio  = godam_is_audio_file( $file['name'] );
 				
 				if ( ! $is_video && ! $is_audio ) {
 					continue;
@@ -465,8 +465,11 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				return $value;
 			}
 
+			// Get the full file path/URL.
+			$file_path = ! empty( $field['value'] ) ? $field['value'] : $value;
+
 			// Default formatting style.
-			$formatted_value = sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $value ), esc_html( basename( $value ) ) );
+			$formatted_value = sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $file_path ), esc_html( basename( $file_path ) ) );
 
 			// Format for entry view page.
 			if ( 'entry-single' === $context && \wpforms_is_admin_page( 'entries', 'details' ) ) {
