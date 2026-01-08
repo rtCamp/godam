@@ -159,7 +159,7 @@ function VideoEdit( {
 					const newTrack = {
 						src: transcriptPath,
 						kind: 'subtitles',
-						label: 'English',
+						label: __( 'English', 'godam' ),
 						srclang: 'en',
 					};
 

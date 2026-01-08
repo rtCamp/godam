@@ -396,7 +396,7 @@ if ( ! empty( $godam_transcript_path ) && ! $godam_has_ai_track_in_attributes ) 
 	$godam_tracks[] = array(
 		'src'     => esc_url( $godam_transcript_path ),
 		'kind'    => 'subtitles',
-		'label'   => 'English',
+		'label'   => __( 'English', 'godam' ),
 		'srclang' => 'en',
 	);
 }

@@ -1,6 +1,10 @@
 <?php
 /**
  * REST API class for AI Transcription.
+ * 
+ * This class handles the REST API endpoints for AI-based transcription of video attachments.
+ * 
+ * @since n.e.x.t
  *
  * @package GoDAM
  */
@@ -11,22 +15,30 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class AI_Transcription
+ * 
+ * @since n.e.x.t
+ * 
+ * @package GoDAM
  */
 class AI_Transcription extends Base {
 
 	/**
 	 * REST route base.
-	 *
-	 * @var string
+	 * 
+	 * @since  n.e.x.t
+	 * @access protected
+	 * @var    string    $rest_base The REST api base.
 	 */
 	protected $rest_base = 'ai-transcription';
 
 	/**
 	 * Register custom REST API.
+	 * 
+	 * @since  n.e.x.t
 	 *
 	 * @return array Array of registered REST API routes
 	 */
-	public function get_rest_routes() {
+	public function get_rest_routes(): array {
 		return array(
 			array(
 				'namespace' => $this->namespace,
@@ -38,7 +50,9 @@ class AI_Transcription extends Base {
 					'args'                => array(
 						'attachment_id' => array(
 							'required'          => true,
-							'validate_callback' => array( $this, 'validate_attachment_id' ),
+							'type'              => 'integer',
+							'minimum'           => 1,
+							'sanitize_callback' => 'absint',
 						),
 					),
 				),
@@ -53,7 +67,9 @@ class AI_Transcription extends Base {
 					'args'                => array(
 						'attachment_id' => array(
 							'required'          => true,
-							'validate_callback' => array( $this, 'validate_attachment_id' ),
+							'type'              => 'integer',
+							'minimum'           => 1,
+							'sanitize_callback' => 'absint',
 						),
 					),
 				),
@@ -62,18 +78,9 @@ class AI_Transcription extends Base {
 	}
 
 	/**
-	 * Validate attachment ID parameter.
-	 *
-	 * @param mixed $param Parameter value.
-	 *
-	 * @return bool
-	 */
-	public function validate_attachment_id( $param ): bool {
-		return is_numeric( $param ) && intval( $param ) > 0;
-	}
-
-	/**
 	 * Get transcription for an attachment.
+	 * 
+	 * @since  n.e.x.t
 	 *
 	 * @param \WP_REST_Request $request REST request object.
 	 *
@@ -99,7 +106,7 @@ class AI_Transcription extends Base {
 				array(
 					'success'              => true,
 					'transcript_path'      => $transcript_path,
-					'transcription_status' => 'Transcribed',
+					'transcription_status' => __( 'Transcribed', 'godam' ),
 				)
 			);
 		}
@@ -107,13 +114,15 @@ class AI_Transcription extends Base {
 		return rest_ensure_response(
 			array(
 				'success'              => false,
-				'transcription_status' => 'Not Available',
+				'transcription_status' => __( 'Not Available', 'godam' ),
 			)
 		);
 	}
 
 	/**
 	 * Process transcription for an attachment.
+	 * 
+	 * @since  n.e.x.t
 	 *
 	 * @param \WP_REST_Request $request REST request object.
 	 *
@@ -121,6 +130,17 @@ class AI_Transcription extends Base {
 	 */
 	public function process_transcription( \WP_REST_Request $request ): \WP_REST_Response|\WP_Error {
 		$attachment_id = absint( $request->get_param( 'attachment_id' ) );
+
+		// Get API key.
+		$api_key = get_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $api_key ) ) {
+			return new \WP_Error(
+				'no_api_key',
+				__( 'GoDAM API key is not configured.', 'godam' ),
+				array( 'status' => 401 )
+			);
+		}
 
 		// Check if attachment exists and is a video.
 		if ( ! $this->is_valid_video_attachment( $attachment_id ) ) {
@@ -142,17 +162,6 @@ class AI_Transcription extends Base {
 			return new \WP_Error(
 				'no_job_id',
 				__( 'No transcoding job ID found for this video.', 'godam' ),
-				array( 'status' => 400 )
-			);
-		}
-
-		// Get API key.
-		$api_key = get_option( 'rtgodam-api-key', '' );
-
-		if ( empty( $api_key ) ) {
-			return new \WP_Error(
-				'no_api_key',
-				__( 'GoDAM API key is not configured.', 'godam' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -194,47 +203,74 @@ class AI_Transcription extends Base {
 		$body          = wp_remote_retrieve_body( $response );
 		$data          = json_decode( $body, true );
 
-		// Handle API errors.
-		if (
-			200 !== $response_code ||
-			! is_array( $data ) ||
-			! isset( $data['message'] ) ||
-			! is_array( $data['message'] ) ||
-			empty( $data['message']['success'] )
-		) {
+		// Handle non-200 response codes.
+		if ( 200 !== $response_code ) {
+			return new \WP_Error(
+				'api_error',
+				sprintf(
+					/* translators: %d: HTTP response code */
+					__( 'GoDAM API returned error code: %d', 'godam' ),
+					$response_code
+				),
+				array( 'status' => 500 )
+			);
+		}
+		
+		// Validate response structure.
+		if ( ! is_array( $data ) || ! isset( $data['message'] ) || ! is_array( $data['message'] ) ) {
+			return new \WP_Error(
+				'invalid_response',
+				__( 'Invalid response structure from GoDAM API.', 'godam' ),
+				array( 'status' => 500 )
+			);
+		}
+		
+		// Check for success flag.
+		if ( empty( $data['message']['success'] ) ) {
 			$error_message = $data['message']['error'] ?? __( 'Unknown error occurred.', 'godam' );
 
-			// Parse server messages for more specific errors.
-			if ( ! empty( $data['_server_messages'] ) ) {
-				$server_messages = json_decode( $data['_server_messages'], true );
-
-				if (
-					JSON_ERROR_NONE === json_last_error() &&
-					is_array( $server_messages ) &&
-					! empty( $server_messages[0] )
-				) {
-					$first_message = json_decode( $server_messages[0], true );
-
-					if (
-						JSON_ERROR_NONE === json_last_error() &&
-						is_array( $first_message ) &&
-						isset( $first_message['message'] )
-					) {
-						$error_message = $first_message['message'];
-					}
-				}
+			// Try to parse server messages for more specific errors.
+			if ( empty( $data['_server_messages'] ) ) {
+				return new \WP_Error(
+					'transcription_failed',
+					$error_message,
+					array( 'status' => 400 )
+				);
 			}
 
+			$server_messages = json_decode( $data['_server_messages'], true );
+			
+			// Bail early if JSON decode failed or invalid structure.
+			if ( JSON_ERROR_NONE !== json_last_error() || ! is_array( $server_messages ) || empty( $server_messages[0] ) ) {
+				return new \WP_Error(
+					'transcription_failed',
+					$error_message,
+					array( 'status' => 400 )
+				);
+			}
+
+			$first_message = json_decode( $server_messages[0], true );
+			
+			// Bail early if second JSON decode failed or invalid structure.
+			if ( JSON_ERROR_NONE !== json_last_error() || ! is_array( $first_message ) || ! isset( $first_message['message'] ) ) {
+				return new \WP_Error(
+					'transcription_failed',
+					$error_message,
+					array( 'status' => 400 )
+				);
+			}
+
+			// Use the more specific error message from server.
 			return new \WP_Error(
 				'transcription_failed',
-				$error_message,
+				$first_message['message'],
 				array( 'status' => 400 )
 			);
 		}
 
 		// Save transcription data to post meta.
 		$transcript_path      = $data['message']['transcript_path'] ?? '';
-		$transcription_status = $data['message']['status'] ?? 'Transcribed';
+		$transcription_status = $data['message']['status'] ?? __( 'Transcribed', 'godam' );
 
 		if ( ! $this->is_valid_transcript_url( $transcript_path ) ) {
 			return new \WP_Error(
@@ -261,10 +297,12 @@ class AI_Transcription extends Base {
 
 	/**
 	 * Check if attachment is a valid video.
+	 * 
+	 * @since  n.e.x.t
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *
-	 * @return bool
+	 * @return bool True if valid video attachment, false otherwise.
 	 */
 	private function is_valid_video_attachment( int $attachment_id ): bool {
 		$attachment = get_post( $attachment_id );
@@ -279,53 +317,61 @@ class AI_Transcription extends Base {
 			return false;
 		}
 
-		return 'video' === substr( $mime_type, 0, 5 );
+		return str_starts_with( $mime_type, 'video/' );
 	}
 
 	/**
 	 * Validate transcript URL.
+	 * 
+	 * @since  n.e.x.t
 	 *
 	 * @param string $url Transcript URL.
 	 *
-	 * @return bool
+	 * @return bool True if valid, false otherwise.
 	 */
-	private function is_valid_transcript_url( $url ) {
+	private function is_valid_transcript_url( string $url ): bool {
 		if ( empty( $url ) || ! is_string( $url ) ) {
 			return false;
 		}
 
-		// Validate URL format.
-		if ( ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
+		// Parse URL to get path component.
+		$parsed_url = wp_parse_url( $url );
+		
+		if ( false === $parsed_url || empty( $parsed_url['path'] ) ) {
 			return false;
 		}
 
-		// Allow only .vtt files.
-		$path = wp_parse_url( $url, PHP_URL_PATH );
-
-		if ( empty( $path ) || ! str_ends_with( strtolower( $path ), '.vtt' ) ) {
-			return false;
-		}
-
-		return true;
+		// Check if path ends with .vtt (case-insensitive).
+		return str_ends_with( strtolower( $parsed_url['path'] ), '.vtt' );
 	}
 
 	/**
 	 * Permission callback to verify user can edit attachments.
+	 * 
+	 * @since  n.e.x.t
 	 *
 	 * @param \WP_REST_Request $request REST request object.
 	 *
-	 * @return bool
+	 * @return bool|\WP_Error True if user has permission, error otherwise.
 	 */
-	public function verify_permission( \WP_REST_Request $request ): bool {
+	public function verify_permission( \WP_REST_Request $request ): bool|\WP_Error {
 		$attachment_id = absint( $request->get_param( 'attachment_id' ) );
 
-		if ( empty( $attachment_id ) || ! is_numeric( $attachment_id ) || 0 === $attachment_id ) {
-			return false;
+		if ( empty( $attachment_id ) || ! is_numeric( $attachment_id ) ) {
+			return new \WP_Error(
+				'invalid_attachment_id',
+				__( 'Invalid attachment ID.', 'godam' ),
+				array( 'status' => 400 )
+			);
 		}
 
 		// Check if user can edit this attachment.
 		if ( ! current_user_can( 'edit_post', $attachment_id ) ) {
-			return false;
+			return new \WP_Error(
+				'forbidden',
+				__( 'You do not have permission to edit this attachment.', 'godam' ),
+				array( 'status' => 403 )
+			);
 		}
 
 		return true;
