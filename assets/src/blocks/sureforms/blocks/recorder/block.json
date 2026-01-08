@@ -5,7 +5,7 @@
 	"title": "GoDAM Recorder",
 	"icon": "video-alt",
 	"category": "sureforms",
-	"description": "Enable video submissions inside forms using the GoDAM Recorder field that supports webcam and screencast",
+	"description": "Enable audio/video submissions inside forms using the GoDAM Recorder field that supports webcam, screencast, and audio recording",
 	"keywords": [
 		"sureforms",
 		"godam",
