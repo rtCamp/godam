@@ -51,7 +51,7 @@
 		"tailwind-merge": "^3.0.1",
 		"tailwindcss-animate": "^1.0.7",
 		"uuid": "^11.1.0",
-		"video.js": "^8.23.3",
+		"video.js": "8.19.0",
 		"videojs-contrib-ads": "^7.5.2",
 		"videojs-contrib-quality-levels": "4.1.0",
 		"videojs-contrib-quality-menu": "1.0.4",
