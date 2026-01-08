@@ -439,10 +439,15 @@
 .easydam-layer.hotspot-layer {
 	pointer-events: none;
 	background: transparent;
+	z-index: 5;
 
 	&.overlapped {
 		z-index: 0;
 	}
+}
+
+.video-js .vjs-control-bar {
+	z-index: 8;
 }
 
 .godam-menu-item-container {

@@ -54,6 +54,7 @@ export default class EventsManager {
 		this.onPlayerConfigurationSetup = callbacks.onPlayerConfigurationSetup;
 		this.onTimeUpdate = callbacks.onTimeUpdate;
 		this.onFullscreenChange = callbacks.onFullscreenChange;
+		this.onVideoResize = callbacks.onVideoResize;
 		this.onPlay = callbacks.onPlay;
 		this.onControlsMove = callbacks.onControlsMove;
 	}
@@ -109,6 +110,10 @@ export default class EventsManager {
 	 * Handle video resize events
 	 */
 	handleVideoResize() {
+		if ( this.onVideoResize ) {
+			this.onVideoResize();
+		}
+
 		// Skip if video is fullscreen or classic skin
 		if ( ! this.player ||
 			typeof this.player.isFullscreen !== 'function' ||

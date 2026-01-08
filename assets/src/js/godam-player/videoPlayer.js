@@ -239,6 +239,7 @@ export default class GodamVideoPlayer {
 			onPlayerConfigurationSetup: () => this.controlsManager.setupPlayerConfiguration(),
 			onTimeUpdate: ( currentTime ) => this.handleTimeUpdate( currentTime ),
 			onFullscreenChange: () => this.layersManager.handleFullscreenChange(),
+			onVideoResize: () => this.layersManager.handleVideoResize(),
 			onPlay: () => this.layersManager.handlePlay(),
 			onControlsMove: () => this.controlsManager.moveVideoControls(),
 		} );
