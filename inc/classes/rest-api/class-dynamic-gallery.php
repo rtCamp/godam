@@ -317,7 +317,7 @@ class Dynamic_Gallery extends Base {
 					// Check if engagements are enabled for the video is transcoded.
 					$transcoded_job_id        = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
 					$tanscoded_status         = get_post_meta( $video_id, 'rtgodam_transcoding_status', true );
-					$item_engagements_enabled = ! empty( $transcoded_job_id ) && 'transcoded' === $tanscoded_status;
+					$item_engagements_enabled = ! empty( $transcoded_job_id ) && 'transcoded' === strtolower( $tanscoded_status );
 				}
 
 				// Build the query arguments for the video embed page.
