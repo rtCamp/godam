@@ -557,8 +557,8 @@ export default class ControlsManager {
 			skipButtons.forEach( ( button ) => {
 				button.style.setProperty( 'bottom', `${ ( newHeight / 2 ) - 20 }px` );
 			} );
-		} else if ( skin !== PLAYER_SKINS.DEFAULT ) {
-			// For other non-default skins (excluding PILLS)
+		} else {
+			// For other non-default skins
 			if ( playButton ) {
 				playButton.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
 				playButton.style.setProperty( 'left', `${ ( newWidth / 2 ) - 20 }px` );
