@@ -113,6 +113,25 @@ export default AttachmentDetails?.extend( {
 	render() {
 		AttachmentDetails.prototype.render.apply( this, arguments );
 
+        const godamFolder = this.model.get( 'godam_folder' );
+        
+        // Display folder name if attachment belongs to a GoDAM folder.
+        if ( godamFolder && godamFolder.name && ! this.el.querySelector( '.compat-field-godam_folder' ) ) {
+        	const tableBody =
+        		this.el.querySelector( 'tbody' ) || createTable( this.el );
+        
+        	tableBody.appendChild(
+        		createAttachmentField( {
+        			id: this.model.get( 'id' ),
+        			fieldName: 'godam_folder',
+        			fieldLabel: __( 'Folder', 'godam' ),
+        			url: godamFolder.name,
+        			helpText: __( 'Media folder this file belongs to.', 'godam' ),
+        		} )
+        	);
+        }
+
+
 		const hlsUrl = this.model.get( 'hls_url' );
 		const attachmentUrl = this.model.get( 'url' );
 
@@ -123,8 +142,11 @@ export default AttachmentDetails?.extend( {
 
 		const attachmentId = this.model.get( 'id' );
 
-		// No need to check if table exists, as if it did we would have returned early on link checks.
-		const tableBody = createTable( this.el );
+		// Reuse existing compat table or create one if needed.
+
+		const tableBody =
+	this.el.querySelector( 'tbody' ) || createTable( this.el );
+
 
 		if ( attachmentUrl && isMpd( attachmentUrl ) ) {
 			tableBody.appendChild(
