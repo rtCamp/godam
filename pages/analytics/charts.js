@@ -298,7 +298,8 @@ async function main() {
 	const heatmapData = JSON.parse( allTimeHeatmap );
 
 	const videoPlayer = videojs( 'analytics-video', {
-		fluid: true,
+		width: 830,
+		height: 467, // 16:9 ratio for 830 width
 		mute: true,
 		controls: false,
 		// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
@@ -323,7 +324,7 @@ async function main() {
 		'#line-chart',
 		videoPlayer,
 		'.line-chart-tooltip',
-		Math.min( 830, window.innerWidth - 100 ),
+		830,
 		300,
 	);
 	generateHeatmap( heatmapData, '#heatmap', videoPlayer );

@@ -40,6 +40,7 @@
 		@apply flex bg-white justify-between py-6 md:px-10 pt-8;
 
 		.analytics-info-container {
+
 			.analytics-info {
 
 				width: calc(50% - 8px);
@@ -138,12 +139,17 @@
 
 	// Video Chart styles
 	.video-container {
-		position: relative;
-		width: 830px;
+		width: 100%;
+		overflow-x: auto;
 
 		@media screen and (max-width: 1024px) {
-			width: 100%;
+			width: calc(100vw - 80px); // Constraint width to viewport minus padding.
 		}
+	}
+
+	.video-inner-container {
+		position: relative;
+		width: 830px;
 	}
 
 	.video-chart-container {
@@ -169,6 +175,7 @@
 		svg {
 			position: relative;
 			top: 4px;
+			max-width: none;
 		}
 
 		.line {

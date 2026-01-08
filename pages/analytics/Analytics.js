@@ -173,7 +173,8 @@ const Analytics = ( { attachmentID } ) => {
 		const originalVideoEl = document.getElementById( 'original-analytics-video' );
 
 		const videoOptions = {
-			fluid: true,
+			width: 525,
+			height: 320,
 			mute: true,
 			controls: false,
 			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
@@ -229,7 +230,8 @@ const Analytics = ( { attachmentID } ) => {
 		}
 
 		videojs( 'analytics-video', {
-			aspectRatio: '16:9',
+			width: 830,
+			height: 467,
 			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
 			// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
 			html5: {
@@ -306,30 +308,6 @@ const Analytics = ( { attachmentID } ) => {
 		}
 		return 'left-greater right-greater';
 	};
-
-	useEffect( () => {
-		const handleResize = () => {
-			const smallSize = window.innerWidth <= 1024;
-			const analyticsContainer = document.getElementById( 'root-video-analytics' );
-
-			if ( analyticsContainer ) {
-				if ( smallSize ) {
-					analyticsContainer.style.overflow = 'hidden';
-				} else {
-					analyticsContainer.style.overflow = 'auto';
-				}
-			}
-		};
-
-		// Initial check
-		handleResize();
-
-		// Add listener
-		window.addEventListener( 'resize', handleResize );
-
-		// Cleanup
-		return () => window.removeEventListener( 'resize', handleResize );
-	}, [] );
 
 	return (
 		<div className="godam-analytics-container">
@@ -408,7 +386,7 @@ const Analytics = ( { attachmentID } ) => {
 					<div>
 						<div className="subheading-container flex flex-row max-md:flex-row-reverse pt-6">
 							{ attachmentData?.title?.rendered
-								? <div className="subheading">{ __( 'Analytics report of', 'godam' ) }
+								? <div className="subheading">{ __( 'Analytics report of', 'godam' ) } { ' ' }
 									<span dangerouslySetInnerHTML={ {
 										__html: DOMPurify.sanitize( attachmentData?.title?.rendered ),
 									} }></span></div> : <div className="subheading">{ __( 'Analytics report', 'godam' ) }</div>
@@ -473,15 +451,17 @@ const Analytics = ( { attachmentID } ) => {
 								<div className="min-w-full lg:min-w-[750px]">
 									<div>
 										<div className="video-container">
-											<RenderVideo
-												attachmentData={ attachmentData }
-												attachmentID={ attachmentID }
-												videoId={ 'analytics-video' }
-											/>
-											<div className="video-chart-container">
-												<div id="chart-container">
-													<svg id="line-chart" width="640" height="300"></svg>
-													<div className="line-chart-tooltip"></div>
+											<div className="video-inner-container">
+												<RenderVideo
+													attachmentData={ attachmentData }
+													attachmentID={ attachmentID }
+													videoId={ 'analytics-video' }
+												/>
+												<div className="video-chart-container">
+													<div id="chart-container">
+														<svg id="line-chart" width="830" height="300"></svg>
+														<div className="line-chart-tooltip"></div>
+													</div>
 												</div>
 											</div>
 										</div>
@@ -607,8 +587,8 @@ const Analytics = ( { attachmentID } ) => {
 											</div>
 										) }
 										{ mediaLibraryAttachment && (
-											<div className="flex gap-12 w-full h-full pt-6 justify-center">
-												<div className="block w-[525px] h-[350px]">
+											<div className="flex gap-12 w-full h-full pt-6 justify-center min-w-max">
+												<div className="block w-[525px] h-[350px] shrink-0">
 													<div className="relative">
 														<RenderVideo
 															attachmentData={ attachmentData }
@@ -628,7 +608,7 @@ const Analytics = ( { attachmentID } ) => {
 													</div>
 												</div>
 												<div className="w-px bg-gray-200 mx-4 divide-dashed"></div>
-												<div className="block w-[525px] h-[350px]">
+												<div className="block w-[525px] h-[350px] shrink-0">
 													<div className="relative">
 														<RenderVideo
 															attachmentData={ mediaLibraryAttachment }
