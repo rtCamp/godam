@@ -220,22 +220,8 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 						type,
 						duration: 5,
 						pauseOnHover: false,
-						hotspots: [
-							{
-								id: uuidv4(),
-								tooltipText: __( 'Click me!', 'godam' ),
-								position: { x: 50, y: 50 },
-								size: { diameter: 15 },
-								oSize: { diameter: 15 },
-								oPosition: { x: 50, y: 50 },
-								link: '',
-								backgroundColor: '#0c80dfa6',
-								showStyle: false,
-								showIcon: false,
-								icon: '',
-								unit: 'percent',
-							},
-						],
+						hotspots: [],
+						isNew: true,
 					} ),
 				);
 				break;

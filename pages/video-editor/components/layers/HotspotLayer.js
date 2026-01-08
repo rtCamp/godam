@@ -25,7 +25,7 @@ import {
 	check,
 } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
-import { useState, useRef, useEffect } from '@wordpress/element';
+import { useState, useRef, useEffect, useCallback } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -54,27 +54,27 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	const [ contentRect, setContentRect ] = useState( null );
 
 	// Helper to dispatch updates
-	const updateField = ( field, value ) => {
+	const updateField = useCallback( ( field, value ) => {
 		dispatch( updateLayerField( { id: layer.id, field, value } ) );
-	};
+	}, [ dispatch, layer?.id ] );
 
-	const percentToPx = ( percent, dimension ) => {
+	const percentToPx = useCallback( ( percent, dimension ) => {
 		if ( ! contentRect ) {
 			return 0;
 		}
 		const size = dimension === 'x' ? contentRect.width : contentRect.height;
 		return ( percent / 100 ) * size;
-	};
+	}, [ contentRect ] );
 
-	const pxToPercent = ( px, dimension ) => {
+	const pxToPercent = useCallback( ( px, dimension ) => {
 		if ( ! contentRect ) {
 			return 0;
 		}
 		const size = dimension === 'x' ? contentRect.width : contentRect.height;
 		return ( px / size ) * 100;
-	};
+	}, [ contentRect ] );
 
-	const getDefaultDiameter = ( unit ) => {
+	const getDefaultDiameter = useCallback( ( unit ) => {
 		if ( unit !== 'percent' ) {
 			return HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PX;
 		}
@@ -82,10 +82,10 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 		return contentRect?.width
 			? pxToPercent( HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PX, 'x' )
 			: HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PERCENT;
-	};
+	}, [ contentRect?.width, pxToPercent ] );
 
 	// Add a new hotspot
-	const handleAddHotspot = () => {
+	const handleAddHotspot = useCallback( () => {
 		// Calculate percentage dynamically to maintain a consistent physical size (approx 48px)
 		const diameterPercent = getDefaultDiameter( 'percent' );
 
@@ -102,7 +102,15 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 			unit: 'percent',
 		};
 		updateField( 'hotspots', [ ...hotspots, newHotspot ] );
-	};
+	}, [ getDefaultDiameter, hotspots, updateField ] );
+
+	// Auto-add the first hotspot if none exist and it's a new layer
+	useEffect( () => {
+		if ( layer?.isNew && hotspots.length === 0 && contentRect?.width ) {
+			handleAddHotspot();
+			updateField( 'isNew', false ); // Mark as not new anymore
+		}
+	}, [ layer?.isNew, hotspots.length, contentRect?.width, handleAddHotspot, updateField ] );
 
 	const handleDeleteHotspot = ( index ) => {
 		updateField(
