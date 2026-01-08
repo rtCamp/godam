@@ -195,7 +195,7 @@ class Video_Metadata {
 			$attachment_meta = get_post_meta( $response['id'], '_wp_attachment_metadata', true );
 
 			if ( ! empty( $thumbnail_url ) ) {
-				$response['image']['src']    = esc_url( $thumbnail_url );
+				$response['image']['src']    = esc_url( rtgodam_convert_to_https_url( $thumbnail_url ) );
 				$response['image']['width']  = $attachment_meta['width'] ?? self::DEFAULT_THUMBNAIL_WIDTH;
 				$response['image']['height'] = $attachment_meta['height'] ?? self::DEFAULT_THUMBNAIL_HEIGHT;
 			}
