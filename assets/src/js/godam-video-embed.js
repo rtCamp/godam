@@ -113,10 +113,10 @@ document.addEventListener( 'DOMContentLoaded', function() {
 			// Determine scroll direction
 			if ( accumulatedDelta > 0 ) {
 				// Scrolling down (next video)
-				window.parent.postMessage( { type: 'godamScrollNext' }, '*' );
+				window.parent.postMessage( { type: 'godamScrollNext' }, window.location.origin );
 			} else {
 				// Scrolling up (previous video)
-				window.parent.postMessage( { type: 'godamScrollPrevious' }, '*' );
+				window.parent.postMessage( { type: 'godamScrollPrevious' }, window.location.origin );
 			}
 
 			lastScrollTime = currentTime;
@@ -193,10 +193,10 @@ document.addEventListener( 'DOMContentLoaded', function() {
 			// Determine swipe direction
 			if ( touchDiff > 0 ) {
 				// Swiping up (next video)
-				window.parent.postMessage( { type: 'godamScrollNext' }, '*' );
+				window.parent.postMessage( { type: 'godamScrollNext' }, window.location.origin );
 			} else {
 				// Swiping down (previous video)
-				window.parent.postMessage( { type: 'godamScrollPrevious' }, '*' );
+				window.parent.postMessage( { type: 'godamScrollPrevious' }, window.location.origin );
 			}
 
 			lastScrollTime = currentTime;
@@ -232,7 +232,7 @@ document.addEventListener( 'godamAllPlayersReady', () => {
 					type: 'godamFullscreenChange',
 					isFullscreen: data.isFullscreen,
 					attachmentId: playerObj.attachmentId,
-				}, '*' );
+				}, window.location.origin );
 			} );
 		}
 	} );

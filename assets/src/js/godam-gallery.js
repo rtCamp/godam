@@ -203,12 +203,14 @@ document.addEventListener( 'click', function( e ) {
 		const modalContent = modal.querySelector( '.godam-modal-content' );
 
 		// Show modal content when iframe loads
-		iframe.addEventListener( 'load', () => {
+		const showModalContent = () => {
 			overlaySpinner.style.display = 'none';
 			modalContent.classList.remove( 'godam-modal-content-hidden' );
 			modalContent.classList.add( 'godam-modal-content-visible' );
 			modal.dataset.isLoading = 'false';
-		} );
+		};
+
+		iframe.addEventListener( 'load', showModalContent );
 
 		// Function to update modal with new video
 		const updateModalVideo = ( newVideoId, newVideoUrl, direction = 'next' ) => {
@@ -426,7 +428,6 @@ document.addEventListener( 'click', function( e ) {
 					const newVideoUrl = newThumbnail.getAttribute( 'data-video-url' );
 					if ( newVideoId && newVideoId !== currentId && newVideoUrl ) {
 						lastScrollTime = currentTime;
-						accumulatedDelta = 0;
 
 						const direction = accumulatedDelta > 0 ? 'next' : 'prev';
 						updateModalVideo( newVideoId, newVideoUrl, direction );
@@ -548,7 +549,11 @@ document.addEventListener( 'click', function( e ) {
 			}
 
 			// Verify message is from the iframe (check origin if needed)
-			// For security, you might want to check event.origin
+			// For security, you might want to check event.origin is same as your site origin.
+			if ( event.origin !== window.location.origin ) {
+				return;
+			}
+
 			if ( event.data && event.data.type ) {
 				if ( event.data.type === 'godamScrollNext' ) {
 					await navigateVideo( 'next' );
@@ -571,6 +576,14 @@ document.addEventListener( 'click', function( e ) {
 		// Add message listener
 		window.addEventListener( 'message', handlePostMessage );
 
+		// Close on ESC key
+		const handleEscape = ( event ) => {
+			if ( event.key === 'Escape' ) {
+				closeModal();
+			}
+		};
+		document.addEventListener( 'keydown', handleEscape );
+
 		// Close modal function
 		const closeModal = () => {
 			document.removeEventListener( 'wheel', handleScroll );
@@ -578,7 +591,8 @@ document.addEventListener( 'click', function( e ) {
 			document.body.removeEventListener( 'touchmove', handleTouchMove );
 			document.body.removeEventListener( 'touchend', handleTouchEnd );
 			window.removeEventListener( 'message', handlePostMessage );
-			iframe.removeEventListener( 'load', () => {} );
+			document.removeEventListener( 'keydown', handleEscape );
+			iframe.removeEventListener( 'load', showModalContent );
 			modal.remove();
 			document.body.style.overflow = '';
 		};
@@ -588,14 +602,5 @@ document.addEventListener( 'click', function( e ) {
 
 		// Close on overlay click
 		modal.querySelector( '.godam-modal-overlay' ).addEventListener( 'click', closeModal );
-
-		// Close on ESC key
-		const handleEscape = ( event ) => {
-			if ( event.key === 'Escape' ) {
-				closeModal();
-				document.removeEventListener( 'keydown', handleEscape );
-			}
-		};
-		document.addEventListener( 'keydown', handleEscape );
 	}
 } );

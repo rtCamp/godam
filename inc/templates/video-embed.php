@@ -18,7 +18,6 @@ $godam_show_engagements = isset( $_GET['engagements'] ) ? sanitize_text_field( w
 
 $godam_show_engagements = 'show' === $godam_show_engagements ? true : false;
 
-
 $godam_embed_content = godam_embed_page_content( $godam_video_id, $godam_show_engagements );
 
 // translators: %s: video ID.

@@ -11,7 +11,7 @@
 		grid-template-columns: repeat(2, 1fr);
 
 		@media screen and (max-width: 320px) {
-			grid-template-columns: 1fr;			
+			grid-template-columns: 1fr;
 		}
 	}
 
@@ -23,7 +23,7 @@
 		}
 
 		@media screen and (max-width: 320px) {
-			grid-template-columns: 1fr;			
+			grid-template-columns: 1fr;
 		}
 	}
 
@@ -39,7 +39,7 @@
 		}
 
 		@media screen and (max-width: 320px) {
-			grid-template-columns: 1fr;			
+			grid-template-columns: 1fr;
 		}
 	}
 
@@ -59,7 +59,7 @@
 		}
 
 		@media screen and (max-width: 320px) {
-			grid-template-columns: 1fr;			
+			grid-template-columns: 1fr;
 		}
 	}
 
@@ -83,7 +83,7 @@
 		}
 
 		@media screen and (max-width: 320px) {
-			grid-template-columns: 1fr;			
+			grid-template-columns: 1fr;
 		}
 	}
 
@@ -606,22 +606,6 @@
 		height: 100%;
 		position: relative;
 		transition: transform 0.3s ease, opacity 0.3s ease;
-
-		&.slide-out-up {
-			animation: slideOutUp 0.3s ease forwards;
-		}
-
-		&.slide-out-down {
-			animation: slideOutDown 0.3s ease forwards;
-		}
-
-		&.slide-in-up {
-			animation: slideInUp 0.3s ease forwards;
-		}
-
-		&.slide-in-down {
-			animation: slideInDown 0.3s ease forwards;
-		}
 
 		iframe {
 			width: 100%;
