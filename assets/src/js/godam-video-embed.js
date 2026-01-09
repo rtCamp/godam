@@ -281,7 +281,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 	};
 
 	// Listen for the engagement store to be initialized.
-	document.addEventListener( 'engagementStoreInitialized', renderCommentBox );
+	document.addEventListener( 'godamEngagementStoreInitialized', renderCommentBox );
 
 	// Render the comment box.
 	function renderCommentBox() {

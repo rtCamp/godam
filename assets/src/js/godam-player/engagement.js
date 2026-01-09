@@ -1214,7 +1214,10 @@ function CommentBox( props ) {
 					<h3 className={ baseClass + '-title' }>{ titles }</h3>
 					{
 						! isEmbedPage && (
-							<button className={ `${ baseClass }--close-button` } onClick={ () => memoizedStoreObj.root.unmount() }>&times;</button>
+							<button
+								className={ `${ baseClass }--close-button` }
+								onClick={ () => memoizedStoreObj.root.unmount() }
+							>&times;</button>
 						)
 					}
 				</div>
@@ -1301,6 +1304,6 @@ function CommentBox( props ) {
 export async function engagement() {
 	const engagementStoreInstance = await engagementStore.init();
 	// Dispatch custom event to notify that the engagement store is initialized.
-	document.dispatchEvent( new CustomEvent( 'engagementStoreInitialized', { detail: { engagementStoreInstance } } ) );
+	document.dispatchEvent( new CustomEvent( 'godamEngagementStoreInitialized', { detail: { engagementStoreInstance } } ) );
 	return engagementStoreInstance;
 }

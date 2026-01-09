@@ -16,7 +16,7 @@ wp_enqueue_script( 'godam-video-embed-script' );
 $godam_video_id         = isset( $_GET['id'] ) ? intval( wp_unslash( $_GET['id'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- no nonce verification needed for this page.
 $godam_show_engagements = isset( $_GET['engagements'] ) ? sanitize_text_field( wp_unslash( $_GET['engagements'] ) ) : false; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- no nonce verification needed for this page.
 
-$godam_show_engagements = 'show' === $godam_show_engagements ? true : false;
+$godam_show_engagements = 'show' === strtolower( $godam_show_engagements ) ? true : false;
 
 $godam_embed_content = godam_embed_page_content( $godam_video_id, $godam_show_engagements );
 

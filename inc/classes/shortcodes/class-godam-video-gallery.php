@@ -298,10 +298,9 @@ class GoDAM_Video_Gallery {
 				}
 
 				// Check if engagements are enabled for the video.
-				$engagements_enabled = $atts['engagements'];
-				if ( ! $engagements_enabled ) {
-					$item_engagements_enabled = false;
-				} else {
+				$engagements_enabled      = $atts['engagements'];
+				$item_engagements_enabled = false;
+				if ( $engagements_enabled ) {
 					// Check if the video is transcoded when engagements are enabled.
 					$transcoded_job_id        = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
 					$transcoded_status        = get_post_meta( $video_id, 'rtgodam_transcoding_status', true );
