@@ -85,6 +85,28 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		return false;
 	};
 
+	// Helper function to check if any player is in fullscreen mode
+	const isAnyPlayerFullscreen = () => {
+		// Check if GoDAM API is available
+		if ( ! window.GoDAMAPI ) {
+			return false;
+		}
+
+		try {
+			const players = window.GoDAMAPI.getAllPlayers();
+			for ( const playerObj of players ) {
+				if ( playerObj.player && playerObj.player.isFullscreen && playerObj.player.isFullscreen() ) {
+					return true;
+				}
+			}
+		} catch ( error ) {
+			// If API call fails, assume not fullscreen
+			return false;
+		}
+
+		return false;
+	};
+
 	// Handle wheel scroll events
 	const handleScroll = ( event ) => {
 		// Find the target element and check if it's within a scrollable container
@@ -129,6 +151,12 @@ document.addEventListener( 'DOMContentLoaded', function() {
 
 			// Don't send scroll event if easydam-layer is visible (excluding hotspot-layer)
 			if ( isGoDAMLayerVisible() ) {
+				accumulatedDelta = 0;
+				return;
+			}
+
+			// Don't send scroll event if any player is in fullscreen mode
+			if ( isAnyPlayerFullscreen() ) {
 				accumulatedDelta = 0;
 				return;
 			}
@@ -215,6 +243,11 @@ document.addEventListener( 'DOMContentLoaded', function() {
 
 			// Don't send scroll event if easydam-layer is visible (excluding hotspot-layer)
 			if ( isGoDAMLayerVisible() ) {
+				return;
+			}
+
+			// Don't send scroll event if any player is in fullscreen mode
+			if ( isAnyPlayerFullscreen() ) {
 				return;
 			}
 
