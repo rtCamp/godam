@@ -68,6 +68,23 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		return element.scrollTop > 0;
 	};
 
+	// Helper function to check if easydam-layer is visible (excluding hotspot-layer)
+	const isGoDAMLayerVisible = () => {
+		const layers = document.querySelectorAll( '.easydam-layer' );
+		for ( const layer of layers ) {
+			// Skip hotspot-layer
+			if ( layer.classList.contains( 'hotspot-layer' ) ) {
+				continue;
+			}
+			// Check if layer is visible
+			const style = window.getComputedStyle( layer );
+			if ( style.display !== 'none' && style.visibility !== 'hidden' ) {
+				return true;
+			}
+		}
+		return false;
+	};
+
 	// Handle wheel scroll events
 	const handleScroll = ( event ) => {
 		// Find the target element and check if it's within a scrollable container
@@ -106,6 +123,12 @@ document.addEventListener( 'DOMContentLoaded', function() {
 
 			const currentTime = Date.now();
 			if ( currentTime - lastScrollTime < SCROLL_COOLDOWN ) {
+				accumulatedDelta = 0;
+				return;
+			}
+
+			// Don't send scroll event if easydam-layer is visible (excluding hotspot-layer)
+			if ( isGoDAMLayerVisible() ) {
 				accumulatedDelta = 0;
 				return;
 			}
@@ -187,6 +210,11 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		scrollTimeout = setTimeout( () => {
 			const currentTime = Date.now();
 			if ( currentTime - lastScrollTime < SCROLL_COOLDOWN ) {
+				return;
+			}
+
+			// Don't send scroll event if easydam-layer is visible (excluding hotspot-layer)
+			if ( isGoDAMLayerVisible() ) {
 				return;
 			}
 
