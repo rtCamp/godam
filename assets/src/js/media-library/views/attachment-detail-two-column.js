@@ -363,9 +363,12 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				const rect = element.getBoundingClientRect();
 				const tooltipRect = tooltip.getBoundingClientRect();
 
+				const horizontalOffset = 60;
+				const verticalOffset = 24;
+
 				// Position tooltip below the element
-				tooltip.style.left = `${ rect.left + ( rect.width / 2 ) - ( tooltipRect.width / 2 ) }px`;
-				tooltip.style.top = `${ rect.bottom }px`;
+				tooltip.style.left = `${ rect.left + ( rect.width / 2 ) - ( tooltipRect.width / 2 ) - horizontalOffset }px`;
+				tooltip.style.top = `${ rect.bottom + verticalOffset }px`;
 				tooltip.style.display = 'block';
 				tooltip.classList.add( 'show' );
 			};
