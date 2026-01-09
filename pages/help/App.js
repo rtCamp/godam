@@ -33,6 +33,7 @@ const App = () => {
 
 	const handlePostHogToggle = async ( value ) => {
 		dispatch( updateMediaSetting( { category: 'general', key: 'enable_posthog_tracking', value } ) );
+		dispatch( updateMediaSetting( { category: 'general', key: 'posthog_initialized', value: true } ) );
 
 		// Save immediately since it's a single toggle in help page
 		const updatedSettings = {
@@ -40,6 +41,7 @@ const App = () => {
 			general: {
 				...mediaSettings.general,
 				enable_posthog_tracking: value,
+				posthog_initialized: true,
 			},
 		};
 		await saveMediaSettings( { settings: updatedSettings } );

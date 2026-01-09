@@ -884,7 +884,7 @@ class Pages {
 	 */
 	private function get_posthog_config() {
 		$settings        = get_option( 'rtgodam-settings', array() );
-		$enable_tracking = isset( $settings['general']['enable_posthog_tracking'] ) ? $settings['general']['enable_posthog_tracking'] : true;
+		$enable_tracking = isset( $settings['general']['enable_posthog_tracking'] ) ? $settings['general']['enable_posthog_tracking'] : false;
 
 		$config = array(
 			'key'     => 'phc_9P3X3py1SfwrF78SXXkIyL2cHjkRTpvWzqf8RZJDaSk',
