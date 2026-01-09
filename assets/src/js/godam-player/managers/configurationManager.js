@@ -85,6 +85,19 @@ export default class ConfigurationManager {
 				},
 			},
 		};
+
+		const isIOS = /iPad|iPhone|iPod/.test( navigator.userAgent ) && ! window.MSStream;
+		const isSafari = /^((?!chrome|android).)*safari/i.test( navigator.userAgent );
+
+		if ( isIOS || isSafari ) {
+			// forces VHS even on Safari and iOS devices
+			// This will override native HLS playback with VHS to support features like quality selection.
+			this.videoSetupControls.html5.vhs.overrideNative = true;
+			this.videoSetupControls.html5.nativeAudioTracks = true;
+			this.videoSetupControls.html5.nativeVideoTracks = true;
+			this.videoSetupControls.html5.nativeTextTracks = true;
+		}
+
 		this.isPreviewEnabled = this.videoSetupOptions?.preview;
 
 		this.ensureControlBarDefaults();
