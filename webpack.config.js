@@ -230,6 +230,13 @@ const ninjaForms = {
 	},
 };
 
+const mediaVersion = {
+	...sharedConfig,
+	entry: {
+		'media-version': path.resolve( process.cwd(), 'assets', 'src', 'js', 'media-version.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -319,4 +326,5 @@ module.exports = [
 	lifterLMSBlock,
 	lifterLMSEmbed,
 	ninjaForms,
+	mediaVersion,
 ];

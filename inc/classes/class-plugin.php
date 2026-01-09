@@ -21,6 +21,7 @@ use RTGODAM\Inc\Video_Embed;
 use RTGODAM\Inc\Video_Permalinks;
 use RTGODAM\Inc\Video_Engagement;
 use RTGODAM\Inc\Update;
+use RTGODAM\Inc\RTGODAM_Media_Version;
 
 use RTGODAM\Inc\Post_Types\GoDAM_Video;
 
@@ -96,6 +97,7 @@ class Plugin {
 		GoDAM_Player::get_instance();
 		GoDAM_Video_Gallery::get_instance();
 		Video_Engagement::get_instance();
+		RTGODAM_Media_Version::get_instance();
 
 		Video_Editor_Form_Layer_Handler::get_instance()->init();
 		Everest_Forms_Integration::get_instance()->init();
