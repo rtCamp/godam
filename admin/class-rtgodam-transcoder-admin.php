@@ -688,13 +688,6 @@ class RTGODAM_Transcoder_Admin {
 		echo '&nbsp;<a href="' . esc_url( $optin_url ) . '" class="button-primary button-large">' . esc_html__( 'Allow', 'godam' ) . '</a>';
 		echo '&nbsp;<a href="' . esc_url( $optout_url ) . '" class="button-secondary button-large">' . esc_html__( 'No thanks', 'godam' ) . '</a>';
 		echo '</p></div>';
-
-		echo "<script type='text/javascript'>
-			jQuery('.godam-insights-data-we-collect').on('click', function(e) {
-				e.preventDefault();
-				jQuery(this).parents('.updated').find('.description').slideToggle('fast');
-			});
-		</script>";
 	}
 
 	/**
