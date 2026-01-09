@@ -446,10 +446,6 @@
 	}
 }
 
-.video-js .vjs-control-bar {
-	z-index: 8;
-}
-
 .godam-menu-item-container {
 	align-items: center;
 	width: 100%;
@@ -1036,6 +1032,7 @@ body.godam-share-modal-open {
 .vjs-control-bar {
 	background-color: var(--rtgodam-control-bar-color, #2b333fb3) !important;
 	display: flex;
+	z-index: 8;
 }
 
 .vjs-control:hover {
@@ -1356,6 +1353,15 @@ body.godam-share-modal-open {
 	}
 
 	&.vjs-fullscreen {
+
+		// Fix for Forms confirmation message font size issue for fullscreen videos
+		.form-container {
+			font-size: initial;
+		}
+
+		.easydam-layer {
+			font-size: initial;
+		}
 
 		.vjs-custom-fullscreen-exit-control {
 			display: block !important;
