@@ -30,12 +30,6 @@ const initPostHog = () => {
 
 	if ( posthogConfig.properties ) {
 		posthog.register( posthogConfig.properties );
-		if ( posthogConfig.properties.user_email ) {
-			posthog.identify( posthogConfig.properties.user_email, {
-				email: posthogConfig.properties.user_email,
-				name: posthogConfig.properties.user_name,
-			} );
-		}
 	}
 
 	return posthog;

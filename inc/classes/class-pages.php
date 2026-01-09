@@ -899,7 +899,6 @@ class Pages {
 				require_once ABSPATH . 'wp-admin/includes/plugin.php';
 			}
 
-			$current_user   = wp_get_current_user();
 			$all_plugins    = get_plugins();
 			$active_plugins = get_option( 'active_plugins', array() );
 
@@ -909,10 +908,6 @@ class Pages {
 				'server_software'      => isset( $_SERVER['SERVER_SOFTWARE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) ) : '',
 				'wp_version'           => $wp_version,
 				'site_language'        => get_locale(),
-				'site_name'            => get_bloginfo( 'name' ),
-				'site_url'             => get_site_url(),
-				'user_name'            => $current_user->display_name,
-				'user_email'           => $current_user->user_email,
 				'active_plugins_count' => count( $active_plugins ),
 				'total_plugins_count'  => count( $all_plugins ),
 				'user_count'           => count_users()['total_users'] ?? 0,

@@ -212,7 +212,7 @@ const App = () => {
 							{ __( 'Help us improve GoDAM', 'godam' ) }
 						</h4>
 						<p className="text-xs text-gray-500 mb-0">
-							{ __( 'Allows the GoDAM plugin to track events for analytics purposes. This helps us improve the product experience.', 'godam' ) }
+							{ __( 'Allows the GoDAM plugin to track anonymous events for analytics purposes. This helps us improve the product experience.', 'godam' ) }
 						</p>
 					</div>
 					<ToggleControl

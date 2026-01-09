@@ -653,7 +653,7 @@ class RTGODAM_Transcoder_Admin {
 		$optout_url = wp_nonce_url( add_query_arg( 'godam_tracker_optout', 'true' ), 'godam_tracker_action' );
 
 		$notice = sprintf(
-			__( 'Want to help make <strong>GoDAM</strong> even more awesome? Allow GoDAM to collect diagnostic data and usage information.', 'godam' )
+			__( 'Want to help make <strong>GoDAM</strong> even more awesome? Allow GoDAM to collect anonymous diagnostic data and usage information.', 'godam' )
 		);
 
 		$policy_url = 'https://posthog.com/privacy';
@@ -665,7 +665,7 @@ class RTGODAM_Transcoder_Admin {
 		echo '<p style="margin-top: 0;"><strong>' . esc_html__( 'Data we collect:', 'godam' ) . '</strong></p>';
 		echo '<ul style="list-style: disc; margin-left: 20px;">';
 		echo '<li>' . esc_html__( 'Server environment details (PHP, MySQL, Server, and WordPress versions)', 'godam' ) . '</li>';
-		echo '<li>' . esc_html__( 'Site details (Name, URL, Language, Admin user, email and number of users)', 'godam' ) . '</li>';
+		echo '<li>' . esc_html__( 'Site and user count (Language and number of users)', 'godam' ) . '</li>';
 		echo '<li>' . esc_html__( 'Plugin details (Number of active and inactive plugins)', 'godam' ) . '</li>';
 		echo '<li>' . esc_html__( 'Usage data (Interactions, navigation, session replays, heatmaps, and errors via PostHog)', 'godam' ) . '</li>';
 		echo '</ul>';
@@ -673,7 +673,7 @@ class RTGODAM_Transcoder_Admin {
 		printf(
 			wp_kses(
 				/* translators: %s: PostHog privacy policy URL */
-				__( 'We are using PostHog to collect your data. <a href="%s" target="_blank">Learn more</a>. This can be disabled from the settings on the Help page.', 'godam' ),
+				__( 'We are using PostHog to collect anonymous data. <a href="%s" target="_blank">Learn more</a>. This can be disabled from the settings on the Help page.', 'godam' ),
 				array(
 					'a' => array(
 						'href'   => array(),
