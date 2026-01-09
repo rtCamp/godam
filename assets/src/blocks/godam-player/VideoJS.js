@@ -57,6 +57,13 @@ export const VideoJS = ( props ) => {
 			// Verify if aspectRatio is in valid format x:y
 			if ( /^\d+:\d+$/.test( options.aspectRatio ) ) {
 				player.aspectRatio( options.aspectRatio );
+
+				// Get x and y from aspectRatio
+				const [ x, y ] = options.aspectRatio.split( ':' );
+				if ( playerRef.current && x && y ) {
+					const playerEl = playerRef.current.el_;
+					playerEl.style.paddingTop = `${ ( y / x ) * 100 }%`;
+				}
 			}
 		}
 	}, [ options, videoRef ] );
