@@ -127,8 +127,11 @@ $media-library-active-folder: #f5f5f5;
 	padding: 4px 8px;
 	z-index: 1000002;
 	pointer-events: none;
+	opacity: 0;
+	visibility: hidden;
 
 	&.show {
+		visibility: visible;
 		opacity: 1;
 	}
 }
