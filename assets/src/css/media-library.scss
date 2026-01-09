@@ -131,17 +131,6 @@ $media-library-active-folder: #f5f5f5;
 	&.show {
 		opacity: 1;
 	}
-
-	&::before {
-		content: '';
-		position: absolute;
-		bottom: 100%;
-		left: 50%;
-		transform: translateX(-50%);
-		border-width: 6px;
-		border-style: solid;
-		border-color: transparent transparent #000 transparent;
-	}
 }
 
 .elementor-editor-active .attachments-browser #media-date-range-filter {
