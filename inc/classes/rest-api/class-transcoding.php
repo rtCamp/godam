@@ -259,7 +259,7 @@ class Transcoding extends Base {
 		$thumbnail_id = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 
 		// Handle retry logic for missing thumbnails when transcoding is complete.
-		if ( 'Transcoded' === $status && empty( $thumbnail_id ) ) {
+		if ( 'transcoded' === strtolower( $status ) && empty( $thumbnail_id ) ) {
 			$retry_count = intval( get_post_meta( $attachment_id, 'rtgodam_thumbnail_retry_count', true ) );
 			$max_retries = 3;
 

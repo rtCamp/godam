@@ -135,6 +135,13 @@ const godamGallery = {
 	},
 };
 
+const godamVideoEmbed = {
+	...sharedConfig,
+	entry: {
+		'godam-video-embed': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-video-embed.js' ),
+	},
+};
+
 const gfGodamRecorderEditorJS = {
 	...sharedConfig,
 	entry: {
@@ -297,6 +304,7 @@ module.exports = [
 	godamPlayerAnalytics,
 	deactivationJS,
 	godamGallery,
+	godamVideoEmbed,
 	gfGodamRecorderEditorJS,
 	wpFormsGodamRecorderEditorJS,
 	jetpackFormJS,
