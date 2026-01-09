@@ -1354,6 +1354,15 @@ body.godam-share-modal-open {
 
 	&.vjs-fullscreen {
 
+		// Fix for Forms confirmation message font size issue for fullscreen videos
+		.form-container {
+			font-size: initial;
+		}
+
+		.easydam-layer {
+			font-size: initial;
+		}
+
 		.vjs-custom-fullscreen-exit-control {
 			display: block !important;
 		}
@@ -1569,15 +1578,6 @@ body.godam-share-modal-open {
 	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9 );
 	cursor: pointer;
 	overflow: hidden;
-
-	// Fix for Forms confirmation message font size issue for fullscreen videos
-	.form-container {
-		font-size: initial;
-	}
-
-	.easydam-layer {
-		font-size: initial;
-	}
 }
 
 .video-js .vjs-time-tooltip,
