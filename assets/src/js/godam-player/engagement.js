@@ -1140,7 +1140,17 @@ function CommentBox( props ) {
 	const likesCount = memoizedStoreObj.select.getLikes()[ videoAttachmentId ] || 0;
 	const viewsCount = memoizedStoreObj.select.getViews()[ videoAttachmentId ] || 0;
 	const isUserLiked = memoizedStoreObj.select.getIsUserLiked()[ videoAttachmentId ] || false;
-	const titles = memoizedStoreObj.select.getTitles()[ videoAttachmentId ] || __( 'GoDAM Video', 'godam' );
+
+	// Get title from store or fallback to video element's data-video-title attribute
+	let titles = memoizedStoreObj.select.getTitles()[ videoAttachmentId ];
+	if ( ! titles ) {
+		const videoKey = videoId.replace( 'engagement-', '' );
+		const videoFigureId = `godam-player-container-${ videoKey }`;
+		const videoContainer = document.getElementById( videoFigureId );
+		const videoElement = videoContainer?.querySelector( 'video[data-video-title]' );
+		titles = videoElement?.getAttribute( 'data-video-title' ) || __( 'GoDAM Video', 'godam' );
+	}
+
 	const comments = memoizedStoreObj.select.getComments()[ videoAttachmentId ] || [];
 	const [ commentsData, setCommentsData ] = useState( comments );
 	const videoKey = videoId.replace( 'engagement-', '' );
