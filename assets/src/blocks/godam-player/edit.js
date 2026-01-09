@@ -27,7 +27,7 @@ import {
 	useBlockProps,
 	InnerBlocks,
 } from '@wordpress/block-editor';
-import { useRef, useEffect, useState, useMemo } from '@wordpress/element';
+import { useRef, useEffect, useState, useMemo, useCallback } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { __, _x, sprintf } from '@wordpress/i18n';
 import { useInstanceId } from '@wordpress/compose';
@@ -43,6 +43,7 @@ import Video from './VideoJS';
 import TracksEditor from './track-uploader';
 import { Caption } from './caption';
 import VideoSEOModal from './components/VideoSEOModal.js';
+import AITranscription from './components/AITranscription';
 import { appendTimezoneOffsetToUTC, isSEODataEmpty, secondsToISO8601 } from './utils/index.js';
 import './editor.scss';
 import { ReactComponent as icon } from '../../images/godam-video-filled.svg';
@@ -132,6 +133,49 @@ function VideoEdit( {
 
 	const dispatch = useDispatch();
 
+	/**
+	 * Check if transcription already exists for this video.
+	 */
+	const checkExistingTranscription = useCallback( async () => {
+		try {
+			const response = await apiFetch( {
+				path: `/godam/v1/ai-transcription/get?attachment_id=${ id }`,
+				method: 'GET',
+			} );
+
+			if ( response.success && response.transcription_status === 'Transcribed' ) {
+				const transcriptPath = response?.transcript_path || '';
+
+				// Build tracks array with AI transcription.
+				const existingTracks = Array.isArray( tracks ) ? tracks : [];
+
+				// Check if this transcription path already exists in tracks.
+				const transcriptAlreadyExists = existingTracks.some(
+					( track ) => track.src === transcriptPath,
+				);
+
+				// Only add if not already present.
+				if ( ! transcriptAlreadyExists ) {
+					const newTrack = {
+						src: transcriptPath,
+						kind: 'subtitles',
+						label: __( 'English', 'godam' ),
+						srclang: 'en',
+					};
+
+					setAttributes( { tracks: [ ...existingTracks, newTrack ] } );
+				}
+
+				return true; // Return true if transcription exists
+			}
+
+			return false; // Return false if no transcription
+		} catch ( error ) {
+			// Transcription doesn't exist yet, which is fine.
+			return false; // Return false on error
+		}
+	}, [ id, setAttributes, tracks ] );
+
 	// Memoize video options to prevent unnecessary rerenders.
 	const videoOptions = useMemo( () => ( {
 		controls,
@@ -150,7 +194,17 @@ function VideoEdit( {
 		muted,
 		poster: poster || defaultPoster,
 		sources,
+		tracks: tracks || [],
 		aspectRatio: '16:9',
+		controlBar: {
+			playToggle: true,
+			volumePanel: true,
+			currentTimeDisplay: true,
+			timeDivider: true,
+			durationDisplay: true,
+			fullscreenToggle: true,
+			subsCapsButton: true, // Enable captions button
+		},
 		// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
 		// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
 		html5: {
@@ -160,7 +214,7 @@ function VideoEdit( {
 				limitRenditionByPlayerDimensions: false, // don't cap by video element size
 			},
 		},
-	} ), [ controls, autoplay, preload, loop, muted, poster, defaultPoster, sources ] );
+	} ), [ controls, autoplay, preload, loop, muted, poster, defaultPoster, sources, tracks ] );
 
 	// Memoize the video component to prevent rerenders.
 	const videoComponent = useMemo( () => (
@@ -329,6 +383,15 @@ function VideoEdit( {
 			}
 		}
 	}, [ id, src, attributes.seo, isVideoSelecting, setAttributes ] );
+
+	// Check if transcription already exists on mount.
+	useEffect( () => {
+		if ( ! id || isInsideQueryLoop ) {
+			return;
+		}
+
+		checkExistingTranscription();
+	}, [ id, isInsideQueryLoop, checkExistingTranscription ] );
 
 	function onSelectVideo( media ) {
 		// Set flag to prevent backward compatibility logic during video selection
@@ -734,6 +797,13 @@ function VideoEdit( {
 										</Button>
 									</BaseControl>
 								) }
+
+								<AITranscription
+									attachmentId={ id }
+									instanceId={ instanceId }
+									hasTranscription={ tracks && tracks.length > 0 }
+									onTranscriptionComplete={ checkExistingTranscription }
+								/>
 
 								<BaseControl
 									id={ `video-block__video-seo-${ instanceId }` }

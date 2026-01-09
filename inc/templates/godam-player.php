@@ -356,7 +356,7 @@ if ( $godam_is_shortcode || $godam_is_elementor_widget ) {
 }
 
 /**
- * Fetch AI Generated video tracks from post meta
+ * Fetch AI Generated video tracks from post meta.
  */
 $godam_transcript_path = '';
 
@@ -380,11 +380,23 @@ if ( ! empty( $godam_transcript_attachment_id ) && is_numeric( $godam_transcript
 	$godam_transcript_path = godam_get_transcript_path( $godam_transcript_attachment_id, $godam_job_id );
 }
 
-if ( ! empty( $godam_transcript_path ) ) {
+// Check if the transcript path already exists in $godam_tracks by comparing src URLs.
+$godam_has_ai_track_in_attributes = false;
+if ( ! empty( $godam_transcript_path ) && ! empty( $godam_tracks ) && is_array( $godam_tracks ) ) {
+	foreach ( $godam_tracks as $godam_track ) {
+		if ( ! empty( $godam_track['src'] ) && $godam_track['src'] === $godam_transcript_path ) {
+			$godam_has_ai_track_in_attributes = true;
+			break;
+		}
+	}
+}
+
+// Only add the AI transcription track if it doesn't already exist in attributes.
+if ( ! empty( $godam_transcript_path ) && ! $godam_has_ai_track_in_attributes ) {
 	$godam_tracks[] = array(
 		'src'     => esc_url( $godam_transcript_path ),
 		'kind'    => 'subtitles',
-		'label'   => 'English',
+		'label'   => __( 'English', 'godam' ),
 		'srclang' => 'en',
 	);
 }
