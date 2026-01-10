@@ -86,6 +86,10 @@
 
 	@container godam-player-minimal-skin (max-width: 480px) {
 		
+		.video-js .vjs-big-play-button {
+			left: 55%;
+		}
+
 		.video-js .vjs-control-bar {
 			height: 6em !important;
 

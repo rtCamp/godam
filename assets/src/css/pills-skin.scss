@@ -119,6 +119,10 @@
 
 	@container godam-player-pills-skin (max-width: 480px) {
 
+		.video-js .vjs-big-play-button {
+			left: 55%;
+		}
+
 		.video-js 		.godam-central-controls {
 			display: flex;
 			align-items: center;

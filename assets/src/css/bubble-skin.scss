@@ -257,6 +257,10 @@
 
 	@container godam-player-bubble-skin (max-width: 480px) {
 
+		.video-js .vjs-big-play-button {
+			left: 55%;
+		}
+
 		.video-js .vjs-control-bar {
 			margin: -55px auto 0;
 			height: 5em !important;
