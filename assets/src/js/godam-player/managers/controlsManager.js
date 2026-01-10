@@ -544,13 +544,8 @@ export default class ControlsManager {
 			if ( playButton ) {
 				// Use -15px offset for play button and -20px for skip buttons to align their centers
 				// The play button is typically smaller than the skip button containers
-				if ( newWidth < 480 ) {
-					playButton.style.setProperty( 'bottom', `${ ( newHeight / 2 ) - 15 }px` );
-					playButton.style.setProperty( 'left', `${ ( newWidth / 2 ) - 20 }px` );
-				} else {
-					playButton.style.removeProperty( 'bottom' );
-					playButton.style.removeProperty( 'left' );
-				}
+				playButton.style.setProperty( 'bottom', `${ ( newHeight / 2 ) - 15 }px` );
+				playButton.style.setProperty( 'left', `${ ( newWidth / 2 ) - 20 }px` );
 			}
 
 			skipButtons.forEach( ( button ) => {
