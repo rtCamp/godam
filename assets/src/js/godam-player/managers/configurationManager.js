@@ -99,9 +99,9 @@ export default class ConfigurationManager {
 			// forces VHS even on Safari and iOS devices
 			// This will override native HLS playback with VHS to support features like quality selection.
 			this.videoSetupControls.html5.vhs.overrideNative = true;
-			this.videoSetupControls.html5.nativeAudioTracks = true;
-			this.videoSetupControls.html5.nativeVideoTracks = true;
-			this.videoSetupControls.html5.nativeTextTracks = true;
+			this.videoSetupControls.html5.nativeAudioTracks = false;
+			this.videoSetupControls.html5.nativeVideoTracks = false;
+			this.videoSetupControls.html5.nativeTextTracks = false;
 		}
 
 		this.isPreviewEnabled = this.videoSetupOptions?.preview;
