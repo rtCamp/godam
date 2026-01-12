@@ -312,8 +312,9 @@
 }
 
 .image-cta-no-image {
-	width: clamp(100px, 20vw, 250px);
-    height: clamp(100px, 20vw, 200px);
+	width: 100%;
+	max-width: 250px;
+	aspect-ratio: 1 / 1;
 	display: flex;
 	justify-content: center;
 	align-items: center;
