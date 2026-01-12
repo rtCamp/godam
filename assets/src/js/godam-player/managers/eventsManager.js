@@ -104,6 +104,7 @@ export default class EventsManager {
 		this.player.on( 'resize', () => this.handleVideoResize() );
 		window.addEventListener( 'resize', () => this.handleVideoResize() );
 		this.player.on( 'fullscreenchange', () => this.handleVideoResize() );
+		this.player.on( 'customfullscreenchange', () => this.handleVideoResize() );
 	}
 
 	/**
@@ -124,7 +125,7 @@ export default class EventsManager {
 		// Handle control bar positioning during fullscreen
 		this.handleFullscreenControlBar();
 
-		// Check container width constraint
+		// Check container width constraint for other skins
 		const videoContainer = this.video.closest( '.easydam-video-container' );
 		if ( videoContainer?.offsetWidth > 480 ) {
 			return;

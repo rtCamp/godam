@@ -77,7 +77,13 @@ export default class ConfigurationManager {
 		this.videoSetupControls = {
 			...videoSetupControls,
 			sources,
+			// Disable native text tracks to use Video.js custom UI (crucial for Safari/iOS hover menus)
+			nativeTextTracks: false,
+			// Ensure video plays inline on mobile devices instead of forcing native fullscreen
+			playsinline: true,
 			html5: {
+				// Redundant but safe: ensure HTML5 tech also respects custom text tracks
+				nativeTextTracks: false,
 				vhs: {
 					bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
 					bandwidthVariance: 1.0, // allow renditions close to estimate

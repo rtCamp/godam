@@ -385,10 +385,10 @@ export default class PlayerManager {
 	togglePlayPause( player ) {
 		if ( player.paused() ) {
 			player.play();
-			this.showIndicator( player.el(), 'play-indicator', '<i class="fa-solid fa-play"></i>' );
+			this.showIndicator( player.el(), 'play-indicator', '<span class="vjs-icon-placeholder vjs-icon-play" aria-hidden="true"></span>' );
 		} else {
 			player.pause();
-			this.showIndicator( player.el(), 'pause-indicator', '<i class="fa-solid fa-pause"></i>' );
+			this.showIndicator( player.el(), 'pause-indicator', '<span class="vjs-icon-placeholder vjs-icon-pause" aria-hidden="true"></span>' );
 		}
 	}
 
