@@ -166,15 +166,16 @@ class Settings extends Base {
 
 	/**
 	 * Verify GoDAM Central permission using stored API key.
-	 * 
+	 *
 	 * @since n.e.x.t
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return true|\WP_Error
 	 */
 	public function verify_godam_permission( $request ) {
-		$provided_api_key = $request->get_header( 'api_key' );
-		$stored_api_key   = get_option( 'rtgodam-api-key' );
+		$json_params      = $request->get_json_params();
+		$provided_api_key = isset( $json_params['api_key'] ) ? $json_params['api_key'] : '';
+		$stored_api_key   = get_option( 'rtgodam-api-key' ) ?? '';
 
 		if ( empty( $provided_api_key ) ) {
 			return new \WP_Error( 'api_key_required', __( 'API key is required.', 'godam' ), array( 'status' => 403 ) );
