@@ -913,6 +913,7 @@ function rtgodam_get_post_id_by_meta_key_and_value( $key, $value ) {
 		return $meta->post_id;
 	}
 	return false;
+}
 
 /**
  * Generate HTML content for the video embed page.
