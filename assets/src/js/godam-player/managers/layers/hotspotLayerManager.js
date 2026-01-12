@@ -351,57 +351,100 @@ export default class HotspotLayerManager {
 	}
 
 	/**
-	 * Position tooltip relative to hotspot
+	 * Position tooltip relative to hotspot, constrained within the video container
 	 *
 	 * @param {HTMLElement} hotspotDiv - The hotspot element for positioning reference
 	 * @param {HTMLElement} tooltipDiv - The tooltip element to position
 	 */
 	positionTooltip( hotspotDiv, tooltipDiv ) {
+		const videoContainer = this.player.el();
+		const containerRect = videoContainer.getBoundingClientRect();
 		const hotspotRect = hotspotDiv.getBoundingClientRect();
-		const tooltipRect = tooltipDiv.getBoundingClientRect();
-		const viewportWidth = window.innerWidth;
 
-		// Vertical positioning
-		const spaceAbove = hotspotRect.top;
-		if ( spaceAbove < tooltipRect.height + 10 ) {
-			// Place below
-			tooltipDiv.style.bottom = 'auto';
-			tooltipDiv.style.top = '100%';
-			tooltipDiv.classList.add( 'tooltip-bottom' );
-			tooltipDiv.classList.remove( 'tooltip-top' );
-		} else {
+		// Temporarily make tooltip visible to measure it accurately
+		const originalVisibility = tooltipDiv.style.visibility;
+		const originalOpacity = tooltipDiv.style.opacity;
+		tooltipDiv.style.visibility = 'hidden';
+		tooltipDiv.style.opacity = '0';
+		tooltipDiv.style.display = 'block';
+
+		const tooltipRect = tooltipDiv.getBoundingClientRect();
+
+		// Restore original styles
+		tooltipDiv.style.visibility = originalVisibility;
+		tooltipDiv.style.opacity = originalOpacity;
+
+		// Calculate space relative to video container (not viewport)
+		const spaceAbove = hotspotRect.top - containerRect.top;
+		const spaceBelow = containerRect.bottom - hotspotRect.bottom;
+
+		const tooltipHeight = tooltipRect.height;
+		const tooltipWidth = tooltipRect.width;
+
+		// Minimum padding from container edges
+		const edgePadding = 8;
+
+		// Reset all positioning classes and styles first
+		tooltipDiv.classList.remove( 'tooltip-top', 'tooltip-bottom', 'tooltip-left', 'tooltip-right', 'no-arrow' );
+		tooltipDiv.style.top = '';
+		tooltipDiv.style.bottom = '';
+		tooltipDiv.style.left = '';
+		tooltipDiv.style.right = '';
+		tooltipDiv.style.transform = '';
+
+		// Vertical positioning - prefer above, fallback to below
+		if ( spaceAbove >= tooltipHeight + edgePadding ) {
 			// Place above
 			tooltipDiv.style.bottom = '100%';
 			tooltipDiv.style.top = 'auto';
 			tooltipDiv.classList.add( 'tooltip-top' );
-			tooltipDiv.classList.remove( 'tooltip-bottom' );
+		} else if ( spaceBelow >= tooltipHeight + edgePadding ) {
+			// Place below
+			tooltipDiv.style.bottom = 'auto';
+			tooltipDiv.style.top = '100%';
+			tooltipDiv.classList.add( 'tooltip-bottom' );
+		} else if ( spaceAbove >= spaceBelow ) {
+			tooltipDiv.style.bottom = '100%';
+			tooltipDiv.style.top = 'auto';
+			tooltipDiv.classList.add( 'tooltip-top' );
+		} else {
+			tooltipDiv.style.bottom = 'auto';
+			tooltipDiv.style.top = '100%';
+			tooltipDiv.classList.add( 'tooltip-bottom' );
 		}
 
-		// Horizontal positioning
-		const spaceLeft = hotspotRect.left;
-		const spaceRight = viewportWidth - hotspotRect.right;
+		// Horizontal positioning - calculate where tooltip would overflow
+		const hotspotCenterInContainer = ( hotspotRect.left + ( hotspotRect.width / 2 ) ) - containerRect.left;
+		const tooltipHalfWidth = tooltipWidth / 2;
 
-		if ( spaceLeft < 10 ) {
-			// Adjust to the right
-			tooltipDiv.style.left = '0';
-			tooltipDiv.style.transform = 'translateX(0)';
-			tooltipDiv.classList.add( 'tooltip-left' );
-			tooltipDiv.classList.remove( 'tooltip-right' );
+		// Check if centered tooltip would overflow left or right of container
+		const wouldOverflowLeft = ( hotspotCenterInContainer - tooltipHalfWidth ) < edgePadding;
+		const wouldOverflowRight = ( hotspotCenterInContainer + tooltipHalfWidth ) > ( containerRect.width - edgePadding );
+
+		if ( wouldOverflowLeft && wouldOverflowRight ) {
+			// Tooltip is wider than available space, center it as best as possible
+			tooltipDiv.style.left = '50%';
+			tooltipDiv.style.transform = 'translateX(-50%)';
 			tooltipDiv.classList.add( 'no-arrow' );
-		} else if ( spaceRight < 10 ) {
-			// Adjust to the left
+		} else if ( wouldOverflowLeft ) {
+			// Align tooltip to the left edge of hotspot, but ensure it stays within container
+			const leftOffset = Math.max( edgePadding - ( hotspotRect.left - containerRect.left ), 0 );
+			tooltipDiv.style.left = `${ leftOffset }px`;
+			tooltipDiv.style.right = 'auto';
+			tooltipDiv.style.transform = 'translateX(0)';
+			tooltipDiv.classList.add( 'tooltip-left', 'no-arrow' );
+		} else if ( wouldOverflowRight ) {
+			// Align tooltip to the right edge of hotspot, but ensure it stays within container
+			const rightOffset = Math.max( edgePadding - ( containerRect.right - hotspotRect.right ), 0 );
 			tooltipDiv.style.left = 'auto';
-			tooltipDiv.style.right = '0';
+			tooltipDiv.style.right = `${ rightOffset }px`;
 			tooltipDiv.style.transform = 'translateX(0)';
-			tooltipDiv.classList.add( 'tooltip-right' );
-			tooltipDiv.classList.remove( 'tooltip-left' );
-			tooltipDiv.classList.add( 'no-arrow' );
+			tooltipDiv.classList.add( 'tooltip-right', 'no-arrow' );
 		} else {
-			// Centered horizontally
+			// Centered horizontally - tooltip fits within container
 			tooltipDiv.style.left = '50%';
 			tooltipDiv.style.right = 'auto';
 			tooltipDiv.style.transform = 'translateX(-50%)';
-			tooltipDiv.classList.remove( 'tooltip-left', 'tooltip-right', 'no-arrow' );
 		}
 	}
 

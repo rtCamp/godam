@@ -961,6 +961,24 @@ body.godam-share-modal-open {
 	opacity: 0;
 	transition: opacity 0.2s ease, visibility 0.2s ease;
 	word-wrap: break-word;
+
+	/* Create an invisible bridge between hotspot and tooltip for smooth hover */
+	&::before {
+		content: "";
+		position: absolute;
+		left: 0;
+		right: 0;
+		height: 10px;
+
+		/* Default: tooltip is above hotspot, so bridge is below tooltip */
+		top: 100%;
+	}
+
+	/* When tooltip is below hotspot, bridge should be above tooltip */
+	&.tooltip-bottom::before {
+		top: auto;
+		bottom: 100%;
+	}
 }
 
 .fullscreen-layer .hotspot-tooltip {
