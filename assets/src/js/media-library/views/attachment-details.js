@@ -114,10 +114,10 @@ export default AttachmentDetails?.extend( {
 		AttachmentDetails.prototype.render.apply( this, arguments );
 
 		const hlsUrl = this.model.get( 'hls_url' );
-		const attachmentUrl = this.model.get( 'url' );
+		const mpdUrl = this.model.get( 'mpd_url' );
 
 		// Skip the local Media Library attachments.
-		if ( ( ! attachmentUrl || ! isMpd( attachmentUrl ) ) && ( ! hlsUrl || ! isM3U8( hlsUrl ) ) ) {
+		if ( ( ! mpdUrl || ! isMpd( mpdUrl ) ) && ( ! hlsUrl || ! isM3U8( hlsUrl ) ) ) {
 			return this;
 		}
 
@@ -126,13 +126,13 @@ export default AttachmentDetails?.extend( {
 		// No need to check if table exists, as if it did we would have returned early on link checks.
 		const tableBody = createTable( this.el );
 
-		if ( attachmentUrl && isMpd( attachmentUrl ) ) {
+		if ( mpdUrl && isMpd( mpdUrl ) ) {
 			tableBody.appendChild(
 				createAttachmentField( {
 					id: attachmentId,
 					fieldName: 'transcoded_url',
 					fieldLabel: __( 'Transcoded CDN URL (MPD)', 'godam' ),
-					url: attachmentUrl,
+					url: mpdUrl,
 					helpText: __( 'The URL of the transcoded file is generated automatically and cannot be edited.', 'godam' ),
 				} ),
 			);

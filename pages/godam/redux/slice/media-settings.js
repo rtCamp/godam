@@ -30,6 +30,8 @@ const initialState = {
 	general: {
 		enable_folder_organization: true,
 		enable_gtm_tracking: false,
+		enable_posthog_tracking: false,
+		posthog_initialized: false,
 	},
 	video_player: {
 		brand_image: '',

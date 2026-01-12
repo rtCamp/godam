@@ -77,7 +77,13 @@ export default class ConfigurationManager {
 		this.videoSetupControls = {
 			...videoSetupControls,
 			sources,
+			// Disable native text tracks to use Video.js custom UI (crucial for Safari/iOS hover menus)
+			nativeTextTracks: false,
+			// Ensure video plays inline on mobile devices instead of forcing native fullscreen
+			playsinline: true,
 			html5: {
+				// Redundant but safe: ensure HTML5 tech also respects custom text tracks
+				nativeTextTracks: false,
 				vhs: {
 					bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
 					bandwidthVariance: 1.0, // allow renditions close to estimate
@@ -85,6 +91,19 @@ export default class ConfigurationManager {
 				},
 			},
 		};
+
+		const isIOS = /iPad|iPhone|iPod/.test( navigator.userAgent ) && ! window.MSStream;
+		const isSafari = /^((?!chrome|android).)*safari/i.test( navigator.userAgent );
+
+		if ( isIOS || isSafari ) {
+			// forces VHS even on Safari and iOS devices
+			// This will override native HLS playback with VHS to support features like quality selection.
+			this.videoSetupControls.html5.vhs.overrideNative = true;
+			this.videoSetupControls.html5.nativeAudioTracks = true;
+			this.videoSetupControls.html5.nativeVideoTracks = true;
+			this.videoSetupControls.html5.nativeTextTracks = true;
+		}
+
 		this.isPreviewEnabled = this.videoSetupOptions?.preview;
 
 		this.ensureControlBarDefaults();

@@ -35,7 +35,7 @@ $godam_transcoded_status  = WPForms_Integration_Helper::get_transcoded_status( $
 	<div class="godam-transcoded-url-info">
 		<?php if ( 'not_started' === $godam_transcoded_status ) : ?>
 			<span class='dashicons dashicons-controls-play'></span><strong><?php esc_html_e( 'Video transcoding process has not started.', 'godam' ); ?></strong>
-		<?php elseif ( 'transcoded' === $godam_transcoded_status ) : ?>
+		<?php elseif ( 'transcoded' === strtolower( $godam_transcoded_status ) ) : ?>
 			<span class='dashicons dashicons-yes-alt'></span><strong><?php esc_html_e( 'Video saved and transcoded successfully on GoDAM', 'godam' ); ?></strong>
 		<?php else : ?>
 			<span class='dashicons dashicons-hourglass'></span><strong><?php esc_html_e( 'Video transcoding process is in-progress.', 'godam' ); ?></strong>

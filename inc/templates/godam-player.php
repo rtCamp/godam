@@ -686,7 +686,7 @@ if ( $godam_should_preload_poster ) {
 									<div class="easydam-layer--cta-html">
 										<?php echo wp_kses_post( $godam_layer['html'] ); ?>
 									</div>
-								<?php elseif ( 'image' === $godam_layer['cta_type'] && ! empty( $godam_layer['image'] ) ) : ?>
+								<?php elseif ( 'image' === $godam_layer['cta_type'] ) : ?>
 									<?php echo wp_kses_post( rtgodam_image_cta_html( $godam_layer ) ); ?>
 								<?php endif; ?>
 							</div>

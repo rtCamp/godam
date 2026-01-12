@@ -190,3 +190,11 @@
 		padding-left: 0 !important;
 	}
 }
+
+.godam-toggle-small {
+	
+	.components-form-toggle {
+		transform: scale(0.8);
+		margin-right: 0;
+	}
+}

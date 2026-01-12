@@ -121,6 +121,9 @@ function VideoEdit( {
 		verticalAlignment,
 		overlayTimeRange,
 		showOverlay,
+		aspectRatio,
+		videoWidth,
+		videoHeight,
 	} = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 	const [ defaultPoster, setDefaultPoster ] = useState( '' );
@@ -132,35 +135,56 @@ function VideoEdit( {
 
 	const dispatch = useDispatch();
 
+	// Calculate aspect ratio in x:y format, matching frontend logic.
+	const calculatedAspectRatio = useMemo( () => {
+		if ( aspectRatio === 'responsive' && videoWidth && videoHeight ) {
+			return `${ videoWidth }:${ videoHeight }`;
+		}
+		// Return aspectRatio if it's in x:y format, otherwise return '' as default
+		if ( aspectRatio && /^\d+:\d+$/.test( aspectRatio ) ) {
+			return aspectRatio;
+		}
+
+		return '';
+	}, [ aspectRatio, videoWidth, videoHeight ] );
+
 	// Memoize video options to prevent unnecessary rerenders.
-	const videoOptions = useMemo( () => ( {
-		controls,
-		autoplay,
-		preload,
-		fluid: true,
-		playsinline: true,
-		flvjs: {
-			mediaDataSource: {
-				isLive: true,
-				cors: false,
-				withCredentials: false,
+	const videoOptions = useMemo( () => {
+		const options = {
+			controls,
+			autoplay,
+			preload,
+			fluid: true,
+			playsinline: true,
+			flvjs: {
+				mediaDataSource: {
+					isLive: true,
+					cors: false,
+					withCredentials: false,
+				},
 			},
-		},
-		loop,
-		muted,
-		poster: poster || defaultPoster,
-		sources,
-		aspectRatio: '16:9',
-		// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
-		// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
-		html5: {
-			vhs: {
-				bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
-				bandwidthVariance: 1.0, // allow renditions close to estimate
-				limitRenditionByPlayerDimensions: false, // don't cap by video element size
+			loop,
+			muted,
+			poster: poster || defaultPoster,
+			sources,
+			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
+			// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
+			html5: {
+				vhs: {
+					bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
+					bandwidthVariance: 1.0, // allow renditions close to estimate
+					limitRenditionByPlayerDimensions: false, // don't cap by video element size
+				},
 			},
-		},
-	} ), [ controls, autoplay, preload, loop, muted, poster, defaultPoster, sources ] );
+		};
+
+		// Only add aspectRatio if it's set (it is already validated in calculatedAspectRatio useMemo)
+		if ( calculatedAspectRatio && /^\d+:\d+$/.test( calculatedAspectRatio ) ) {
+			options.aspectRatio = calculatedAspectRatio;
+		}
+
+		return options;
+	}, [ controls, autoplay, preload, loop, muted, poster, defaultPoster, sources, calculatedAspectRatio ] );
 
 	// Memoize the video component to prevent rerenders.
 	const videoComponent = useMemo( () => (
