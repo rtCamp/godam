@@ -148,17 +148,9 @@ class Settings extends Base {
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/get-godam-settings', // Route to share the WordPress site GoDAM settings with external service (Here GoDAM Central).
 				'args'      => array(
-					'methods'             => \WP_REST_Server::CREATABLE,
+					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_easydam_settings' ),
-					'permission_callback' => array( $this, 'verify_godam_permission' ),
-					'args'                => array(
-						'api_key' => array(
-							'required'          => true,
-							'type'              => 'string',
-							'description'       => __( 'The API key to verify GoDAM Central permission.', 'godam' ),
-							'sanitize_callback' => 'sanitize_text_field',
-						),
-					),
+					'permission_callback' => array( $this, 'verify_api_key_permission' ),
 				),
 			),
 		);
@@ -172,13 +164,17 @@ class Settings extends Base {
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return true|\WP_Error
 	 */
-	public function verify_godam_permission( $request ) {
-		$json_params      = $request->get_json_params();
-		$provided_api_key = isset( $json_params['api_key'] ) ? $json_params['api_key'] : '';
-		$stored_api_key   = get_option( 'rtgodam-api-key' ) ?? '';
+	public function verify_api_key_permission( $request ) {
+		$authorization_header = $request->get_header( 'authorization' );
+		$provided_api_key     = trim( str_replace( 'Bearer ', '', $authorization_header ) );
+		$stored_api_key       = get_option( 'rtgodam-api-key' );
 
 		if ( empty( $provided_api_key ) ) {
-			return new \WP_Error( 'api_key_required', __( 'API key is required.', 'godam' ), array( 'status' => 403 ) );
+			return new \WP_Error( 'api_key_required', __( 'GoDAM API key is required.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		if ( empty( $stored_api_key ) ) {
+			return new \WP_Error( 'api_key_not_set', __( 'GoDAM API key is not set on this site.', 'godam' ), array( 'status' => 403 ) );
 		}
 
 		if ( ! hash_equals( $stored_api_key, $provided_api_key ) ) {
