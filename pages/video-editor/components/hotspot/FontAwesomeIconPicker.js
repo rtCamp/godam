@@ -48,12 +48,12 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 	// Handle custom icon upload
 	const handleUploadCustomIcon = () => {
 		const fileFrame = wp.media( {
-			title: __( 'Select or Upload SVG Icon', 'godam' ),
+			title: __( 'Select or Upload Custom Icon', 'godam' ),
 			button: {
-				text: __( 'Use this SVG icon', 'godam' ),
+				text: __( 'Use this icon', 'godam' ),
 			},
 			library: {
-				type: [ 'image/svg+xml' ], // Restrict to SVG files only
+				type: 'image', // Allow all image types
 			},
 			multiple: false, // Disable multiple selection
 		} );
@@ -61,8 +61,8 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 		fileFrame.on( 'select', function() {
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
 
-			// Check if the selected file is an SVG
-			if ( attachment.mime !== 'image/svg+xml' && ! attachment.url?.endsWith( '.svg' ) ) {
+			// Check if the selected file is an image
+			if ( attachment.type !== 'image' ) {
 				return;
 			}
 
