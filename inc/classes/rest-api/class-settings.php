@@ -144,7 +144,47 @@ class Settings extends Base {
 					),
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/get-godam-settings', // Route to share the WordPress site GoDAM settings with external service (Here GoDAM Central).
+				'args'      => array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'get_easydam_settings' ),
+					'permission_callback' => array( $this, 'verify_godam_permission' ),
+					'args'                => array(
+						'api_key' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'description'       => __( 'The API key to verify GoDAM Central permission.', 'godam' ),
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+					),
+				),
+			),
 		);
+	}
+
+	/**
+	 * Verify GoDAM Central permission using stored API key.
+	 * 
+	 * @since n.e.x.t
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return true|\WP_Error
+	 */
+	public function verify_godam_permission( $request ) {
+		$provided_api_key = $request->get_header( 'api_key' );
+		$stored_api_key   = get_option( 'rtgodam-api-key' );
+
+		if ( empty( $provided_api_key ) ) {
+			return new \WP_Error( 'api_key_required', __( 'API key is required.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		if ( ! hash_equals( $stored_api_key, $provided_api_key ) ) {
+			return new \WP_Error( 'forbidden', __( 'Invalid API key.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		return true;
 	}
 
 	/**
