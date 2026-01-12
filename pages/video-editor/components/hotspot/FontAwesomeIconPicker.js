@@ -8,7 +8,7 @@ import { library } from '@fortawesome/fontawesome-svg-core';
 /**
  * WordPress dependencies
  */
-import { Dropdown, TextControl, Button } from '@wordpress/components';
+import { Dropdown, TextControl, Button, Notice } from '@wordpress/components';
 import { trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
@@ -18,6 +18,7 @@ library.add( fas );
 const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, updateField } ) => {
 	const [ searchQuery, setSearchQuery ] = useState( '' );
 	const [ isOpen, setIsOpen ] = useState( false ); // eslint-disable-line no-unused-vars
+	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
 	const iconList = Object.values( fas )
 		.map( ( icon ) => ( {
@@ -43,6 +44,19 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 				j === index ? { ...h2, icon: null, customIconUrl: null, customIconId: null } : h2,
 			),
 		);
+		setNotice( { ...notice, isVisible: false } );
+	};
+
+	/**
+	 * To show a notice message.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param {string} message Text to display in the notice.
+	 * @param {string} status  Status of the notice, can be 'success', 'error', etc.
+	 */
+	const showNotice = ( message, status = 'success' ) => {
+		setNotice( { message, status, isVisible: true } );
 	};
 
 	// Handle custom icon upload
@@ -63,6 +77,7 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 
 			// Check if the selected file is an image
 			if ( attachment.type !== 'image' ) {
+				showNotice( __( 'Only image files are allowed', 'godam' ), 'error' );
 				return;
 			}
 
@@ -80,6 +95,7 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 						: h2,
 				),
 			);
+			setNotice( { ...notice, isVisible: false } );
 		} );
 
 		// If there's already a custom icon selected, pre-select it in the media library
@@ -105,6 +121,16 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 			>
 				{ __( 'HOTSPOT ICON', 'godam' ) }
 			</label>
+
+			{ notice.isVisible && (
+				<Notice
+					className="my-2"
+					status={ notice.status }
+					onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
+				>
+					{ notice.message }
+				</Notice>
+			) }
 
 			<div className="flex items-center gap-2">
 				<Dropdown
@@ -175,6 +201,7 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 													),
 												);
 												setIsOpen( false ); // Close the dropdown
+												setNotice( { ...notice, isVisible: false } );
 											} }
 											style={ {
 												border: isSelected
@@ -214,6 +241,9 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 									width: '20px',
 									height: '20px',
 									objectFit: 'contain',
+								} }
+								onError={ ( event ) => {
+									event.currentTarget.style.display = 'none';
 								} }
 							/>
 							<span>{ __( 'Custom Icon', 'godam' ) }</span>

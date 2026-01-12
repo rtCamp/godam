@@ -428,6 +428,9 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 												height: '50%',
 												objectFit: 'contain',
 											} }
+											onError={ ( event ) => {
+												event.currentTarget.style.display = 'none';
+											} }
 										/>
 									) : null }
 
