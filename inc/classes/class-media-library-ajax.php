@@ -288,7 +288,7 @@ class Media_Library_Ajax {
 		$is_image  = 'image' === substr( $mime_type, 0, 5 );
 
 		// Only process supported attachment types.
-		if ( ! $is_video && ! $is_audio && ! $is_pdf && ! $is_image ) {
+		if ( ! ( $is_video || $is_audio || $is_pdf || $is_image ) ) {
 			return $response;
 		}
 
@@ -806,13 +806,13 @@ class Media_Library_Ajax {
 	/**
 	 * Filter srcset calculation for virtual media to use full URLs.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param array|false $sources       Array of image sources for srcset or false.
 	 * @param array       $size_array    Array of width and height values.
 	 * @param string      $image_src     The 'src' of the image.
 	 * @param array       $image_meta    The image meta data.
 	 * @param int         $attachment_id The image attachment ID.
-	 *
-	 * @since n.e.x.t
 	 *
 	 * @return array|false Filtered sources array or false.
 	 */
@@ -849,9 +849,7 @@ class Media_Library_Ajax {
 			} elseif ( isset( $thumb_meta['file'] ) ) {
 				$thumb_file = $thumb_meta['file'];
 				$thumb_url  = filter_var( $thumb_file, FILTER_VALIDATE_URL ) ? $thumb_file : $base_url . ltrim( $thumb_file, '/' );
-				if ( ! empty( $image_src ) && $thumb_url === $image_src ) {
-					$is_thumb = true;
-				}
+				$is_thumb   = ! empty( $image_src ) && $thumb_url === $image_src;
 			}
 
 			if ( $is_thumb ) {
@@ -859,18 +857,18 @@ class Media_Library_Ajax {
 			}
 		}
 
+		// Rebuild the sources array using full URLs.
 		foreach ( $image_meta['sizes'] as $size_data ) {
 			if ( empty( $size_data['file'] ) || empty( $size_data['width'] ) ) {
 				continue;
 			}
 
-			$width  = (int) $size_data['width'];
-			$height = isset( $size_data['height'] ) ? (int) $size_data['height'] : 0;
+			$width = (int) $size_data['width'];
 
 			$file = $size_data['file'];
 
 			// If the file already is a URL, use it. Otherwise append it to the base URL.
-			if ( filter_var( $file, FILTER_VALIDATE_URL ) ) {
+			if ( wp_http_validate_url( $file ) ) {
 				// Get last string after the last slash in the file url.
 				$file_basename = basename( $file );
 				// Rebuild the full URL using the base URL and the file basename.

@@ -162,7 +162,12 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 			return this;
 		}
 
-		if ( isAPIKeyValid() && ( this.model.get( 'type' ) === 'video' || this.model.get( 'type' ) === 'audio' || ( this.model.get( 'type' ) === 'application' && this.model.get( 'subtype' ) === 'pdf' ) || this.model.get( 'type' ) === 'image' ) ) {
+		const modelTypes = [ 'video', 'audio', 'image' ];
+
+		if ( isAPIKeyValid() && (
+			modelTypes.includes( this.model.get( 'type' ) ) ||
+			( this.model.get( 'type' ) === 'application' && this.model.get( 'subtype' ) === 'pdf' )
+		) ) {
 			// Get the transcoding status from the model
 			const transcodingStatus = this.model.get( 'transcoding_status' );
 			const virtual = this.model.get( 'virtual' );

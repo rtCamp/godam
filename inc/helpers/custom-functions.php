@@ -877,7 +877,7 @@ function rtgodam_get_post_id_by_meta_key_and_value( $key, $value ) {
 	$meta = rtgodam_cache_get( $cache_key );
 	if ( empty( $meta ) ) {
 		$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s", $key, $value ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		rtgodam_cache_set( $cache_key, $meta, 3600 );
+		rtgodam_cache_set( $cache_key, $meta, HOUR_IN_SECONDS );
 	}
 
 	if ( is_array( $meta ) && ! empty( $meta ) && isset( $meta[0] ) ) {

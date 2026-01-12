@@ -327,19 +327,19 @@ class Media_Library extends Base {
 		$event = $request->get_param( 'event' );
 		$data  = $request->get_param( 'data' );
 
-		if ( 'image_resize' !== $event ) {
-			return new \WP_Error( 'forbidden', __( 'Invalid event.', 'godam' ), array( 'status' => 403 ) );
-		}
-
 		if ( empty( $data['api_key'] ) ) {
-			return new \WP_Error( 'forbidden', __( 'API key is required.', 'godam' ), array( 'status' => 403 ) );
+			return new \WP_Error( 'api_key_required', __( 'API key is required.', 'godam' ), array( 'status' => 403 ) );
 		}
 
 		$provided_api_key = $data['api_key'];
 		$stored_api_key   = get_option( 'rtgodam-api-key' );
 
-		if ( $provided_api_key !== $stored_api_key ) {
+		if ( ! hash_equals( $stored_api_key, $provided_api_key ) ) {
 			return new \WP_Error( 'forbidden', __( 'Invalid API key.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		if ( 'image_resize' !== $event ) {
+			return new \WP_Error( 'invalid_event', __( 'Invalid event.', 'godam' ), array( 'status' => 403 ) );
 		}
 
 		return true;
@@ -348,11 +348,11 @@ class Media_Library extends Base {
 	/**
 	 * Update image attachment meta with subsizes.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param array $sizes         Array of sizes data.
 	 * @param int   $job_id        Job ID.
-	 * @param int   $attachment_id Attachment ID.
-	 *
-	 * @since n.e.x.t
+	 * @param int   $attachment_id Attachment ID. Default to 0.
 	 *
 	 * @return bool True if successful, false otherwise.
 	 */
@@ -401,6 +401,8 @@ class Media_Library extends Base {
 			}
 		}
 
+		// Map received subsizes to registered size names.
+		// Determine the closest matching registered size for each received size.
 		foreach ( $subsizes as $size ) {
 			$external_size_name = '';
 			$min_diff           = PHP_INT_MAX;
@@ -1890,6 +1892,8 @@ class Media_Library extends Base {
 	 * - api_key: The GoDAM API key
 	 * - sizes_data: Array of size requests with width, height, crop
 	 * - events_callback_url: The URL to send events to.
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @param string $job_id        The GoDAM job ID.
 	 * @param int    $attachment_id The WordPress attachment ID.
