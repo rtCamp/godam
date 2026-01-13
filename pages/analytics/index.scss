@@ -434,7 +434,7 @@
 	justify-content: start;
 	border-bottom: 1px solid #ddd;
 	margin: 0 40px;
-	padding-bottom: 8px;
+	padding-bottom: 0;
 
 	@media screen and (min-width: 768px) {
 		justify-content: space-between;
@@ -446,16 +446,8 @@
 	cursor: pointer;
 	position: relative;
 	font-weight: 500;
-
-	&::after {
-		content: "";
-		position: absolute;
-		left: 0;
-		bottom: -17px;
-		width: 100%;
-		height: 2px;
-		background-color: #AB3A6C;
-	}
+	border-bottom: 2px solid #AB3A6C;
+	padding: 8px 0;
 }
 
 .ab-testing-table {
