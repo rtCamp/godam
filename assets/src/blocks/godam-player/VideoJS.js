@@ -40,9 +40,9 @@ export const VideoJS = ( props ) => {
 			videoElement.classList.add( 'vjs-styles-dimensions' );
 			videoRef.current.appendChild( videoElement );
 
-			const videojsOptions = options;
+			const videojsOptions = { ...options };
 
-			if ( ! /^\d+:\d+$/.test( options.aspectRatio ) ) {
+			if ( options.aspectRatio && ! /^\d+:\d+$/.test( options.aspectRatio ) ) {
 				// Remove aspectRatio from options as we will set it later
 				delete videojsOptions.aspectRatio;
 			}
@@ -52,6 +52,7 @@ export const VideoJS = ( props ) => {
 					onReady( playerRef.current );
 				}
 
+				// Video.js player initialize instantly and hides the video loading spinner, so add a slight delay to hide it smoothly
 				setTimeout( () => {
 					if ( videoRef.current ) {
 						// Hide the video player loading animation
@@ -119,7 +120,7 @@ export const VideoJS = ( props ) => {
 			<div style={ { paddingTop: paddingTopValue } } className="godam-video-loading">
 				<div className="godam-video-loading-spinner"></div>
 			</div>
-			<div style={ { display: 'hidden' } } ref={ videoRef } />
+			<div style={ { display: 'none' } } ref={ videoRef } />
 		</div>
 	);
 };
