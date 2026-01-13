@@ -20,7 +20,7 @@ jobs:
           echo "Current working dir: '$(pwd)'"
           echo 'Going to own a dir above the working dir.'
           bash -c "sudo chown -R $(whoami):$(whoami) \"$(dirname '${{ github.workspace }}')\""
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Get node version
         id: node-version
         run: |
