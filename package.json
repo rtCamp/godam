@@ -56,7 +56,7 @@
 		"videojs-contrib-quality-levels": "4.1.0",
 		"videojs-contrib-quality-menu": "1.0.4",
 		"videojs-flvjs-es6": "1.0.1",
-		"videojs-ima": "2.4.0"
+		"videojs-ima": "2.5.0"
 	},
 	"devDependencies": {
 		"@babel/core": "7.28.0",
