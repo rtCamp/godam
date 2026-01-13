@@ -1,3 +1,5 @@
+/* global jQuery */
+
 /**
  * WordPress dependencies
  */
@@ -19,6 +21,7 @@ import MediaDateRangeFilter from './views/filters/media-date-range-filter-list-v
 import MediaListViewTableDragHandler from './views/attachment-list.js';
 
 import { isFolderOrgDisabled, isUploadPage, addManageMediaButton } from './utility.js';
+import MediaUploaderHandler from './media-uploader-handler.js';
 
 const $ = jQuery;
 
@@ -33,6 +36,14 @@ class MediaLibrary {
 	initialize() {
 		this.setupAttachmentBrowser();
 		document.addEventListener( 'DOMContentLoaded', () => this.onDOMContentLoaded() );
+
+		jQuery( () => {
+			this.jQueryReadyFunction();
+		} );
+	}
+
+	jQueryReadyFunction() {
+		new MediaUploaderHandler();
 	}
 
 	onDOMContentLoaded() {
