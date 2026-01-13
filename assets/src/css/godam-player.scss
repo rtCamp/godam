@@ -360,10 +360,13 @@
 	}
 
 	img {
-		max-width: 100%;
-		width: 200px;
+		max-width: 200px;
+		max-height: 200px;
+		width: auto;
 		height: auto;
+		min-height: 0;
 		border-radius: 8px;
+		object-fit: contain;
 		object-fit: cover;
 	}
 
@@ -388,17 +391,23 @@
 .vertical-image-cta-container {
 	flex-direction: column;
 	max-width: 250px;
+	max-height: 100%;
 	border-radius: 36px;
 	text-align: center;
+	overflow: hidden;
 
 	img {
 		border-radius: 25px;
 		width: 100%;
+		min-height: 0;
+		flex: 1 1 auto;
+		object-fit: cover;
 	}
 
 	.image-cta-description {
 		padding: 0;
 		align-items: center;
+		flex-shrink: 0;      /* Text section won't shrink */
 	}
 
 	.image-cta-btn {
@@ -408,6 +417,26 @@
 	@container easydam-layer-container (max-width: 445px) {
 		width: 200px;
 		gap: 15px;
+
+		h2 {
+			font-size: 20px;
+			margin-bottom: 5px;
+			display: -webkit-box;
+			-webkit-line-clamp: 1;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+		}
+
+		p {
+			font-size: 13px;
+			margin-bottom: 10px;
+			line-height: 1.4;
+			display: -webkit-box;
+			-webkit-line-clamp: 1;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+		}
+
 	}
 }
 
@@ -415,9 +444,9 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	min-height: 100%;
+	height: 100%;
 	width: 100%;
-	padding: 20px;
+	padding: 5px;
 	box-sizing: border-box;
 }
 
@@ -444,7 +473,6 @@
 
 	img {
 		height: auto;
-		max-width: 100%;
 	}
 
 	a {
@@ -459,14 +487,15 @@
 		gap: 15px;
 		padding: 15px;
 		width: 96%;
-		height: auto;
+		height: 100%;
+		max-height: 250px;
 		overflow-y: auto;
 
 		img {
 
 			/* Scale down image for mobile but keep aspect ratio */
-			width: 120px;
-			height: auto;
+			max-width: 150px;
+			height: 100%;
 			object-fit: contain;
 			flex-shrink: 0;
 		}
@@ -501,13 +530,14 @@
 		gap: 10px;
 
 		img {
-			width: 100px;
+			max-width: 100px;
+			height: 100%;
 		}
 
 		h2 {
 			font-size: 16px;
 			display: -webkit-box;
-			-webkit-line-clamp: 2;
+			-webkit-line-clamp: 1;
 			-webkit-box-orient: vertical;
 			overflow: hidden;
 		}
@@ -515,7 +545,7 @@
 		p {
 			font-size: 12px;
 			display: -webkit-box;
-			-webkit-line-clamp: 2;
+			-webkit-line-clamp: 1;
 			-webkit-box-orient: vertical;
 			overflow: hidden;
 		}
