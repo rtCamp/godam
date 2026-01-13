@@ -68,7 +68,7 @@
 		"@wordpress/components": "30.1.0",
 		"@wordpress/env": "10.28.0",
 		"@wordpress/eslint-plugin": "22.14.0",
-		"@wordpress/i18n": "6.1.0",
+		"@wordpress/i18n": "6.10.0",
 		"@wordpress/icons": "10.28.0",
 		"@wordpress/jest-preset-default": "12.28.0",
 		"@wordpress/scripts": "30.21.0",
