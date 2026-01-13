@@ -372,7 +372,6 @@
 		height: auto;
 		min-height: 0;
 		border-radius: 8px;
-		object-fit: contain;
 		object-fit: cover;
 	}
 
@@ -419,7 +418,7 @@
 	.image-cta-description {
 		padding: 0;
 		align-items: center;
-		flex-shrink: 0;      /* Text section won't shrink */
+		flex-shrink: 0; /* Text section won't shrink */
 	}
 
 	.image-cta-btn {
