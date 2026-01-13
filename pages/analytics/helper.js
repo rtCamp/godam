@@ -617,8 +617,8 @@ export function generateLineChart( data, selector, videoPlayer, tooltipSelector,
 
 	const svg = d3
 		.select( selector )
-		.attr( 'width', width + margin.left + margin.right )
-		.attr( 'height', height + margin.top + margin.bottom )
+		.attr( 'viewBox', `0 0 ${ width + margin.left + margin.right } ${ height + margin.top + margin.bottom }` )
+		.attr( 'preserveAspectRatio', 'none' )
 		.append( 'g' )
 		.attr( 'transform', `translate(${ margin.left },${ margin.top })` );
 
@@ -695,9 +695,14 @@ export function generateLineChart( data, selector, videoPlayer, tooltipSelector,
 					.attr( 'x1', xScale( index ) )
 					.attr( 'x2', xScale( index ) );
 
+				const svgElement = d3.select( selector ).node();
+				const containerRect = svgElement.parentElement.getBoundingClientRect();
+				const scaleX = containerRect.width / width;
+				const scaledX = xScale( index ) * scaleX;
+
 				tooltip
 					.style( 'opacity', 1 )
-					.style( 'left', `${ xScale( index ) - 30 }px` )
+					.style( 'left', `${ scaledX }px` )
 					.style( 'top', 0 )
 					.html(
 						`<div class="heatmap-tooltip-html">
