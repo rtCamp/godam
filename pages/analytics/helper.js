@@ -618,6 +618,7 @@ export function generateLineChart( data, selector, videoPlayer, tooltipSelector,
 	const svg = d3
 		.select( selector )
 		.attr( 'viewBox', `0 0 ${ width + margin.left + margin.right } ${ height + margin.top + margin.bottom }` )
+		// Allow SVG to stretch to fill container without maintaining aspect ratio - required for bottom-anchored responsive video overlay
 		.attr( 'preserveAspectRatio', 'none' )
 		.append( 'g' )
 		.attr( 'transform', `translate(${ margin.left },${ margin.top })` );
