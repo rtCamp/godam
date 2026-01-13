@@ -617,8 +617,7 @@ class RTGODAM_RetranscodeMedia {
 	}
 
 	/**
-	 * Add the current thumbnail image in the newly added thumbnails if
-	 * user wants to preserve the thumbnails set to the media
+	 * Update the primary thumbnail image with the newly added thumbnails.
 	 *
 	 * @param  number $media_id     Post ID of the media.
 	 */
@@ -627,28 +626,26 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
-		$is_retranscoding_job = get_post_meta( $media_id, 'rtgodam_retranscoding_sent', true );
+		$current_thumbnail = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
+		$custom_thumbnails = get_post_meta( $media_id, 'rtgodam_custom_media_thumbnails', true );
+		$custom_thumbnails = is_array( $custom_thumbnails ) ? $custom_thumbnails : array();
+
+		// If the current selected thumbnail is one of the custom uploaded thumbnails, do not overwrite it.
+		if ( ! empty( $current_thumbnail ) && in_array( $current_thumbnail, $custom_thumbnails, true ) ) {
+			return;
+		}
 
 		$new_thumbs = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true );
 		$new_thumbs = is_array( $new_thumbs ) ? $new_thumbs : array();
 
-		if ( $is_retranscoding_job && ! rtgodam_is_override_thumbnail() ) {
-			$current_selected_thumb = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
+		if ( ! empty( $new_thumbs ) ) {
+			update_post_meta( $media_id, 'rtgodam_media_video_thumbnail', $new_thumbs[0] );
+		}
 
-			if ( $current_selected_thumb && ! empty( $current_selected_thumb ) && ! in_array( $current_selected_thumb, $new_thumbs, true ) ) {
-				$new_thumbs[] = $current_selected_thumb;
-				update_post_meta( $media_id, 'rtgodam_media_thumbnails', $new_thumbs );
-			}
-		} else {
-			if ( ! empty( $new_thumbs ) ) {
-				update_post_meta( $media_id, 'rtgodam_media_video_thumbnail', $new_thumbs[0] );
-			}
+		$primary_remote_thumbnail_url = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
 
-			$primary_remote_thumbnail_url = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
-
-			if ( ! empty( $primary_remote_thumbnail_url ) ) {
-				do_action( 'rtgodam_primary_remote_thumbnail_set', $media_id, $primary_remote_thumbnail_url );
-			}
+		if ( ! empty( $primary_remote_thumbnail_url ) ) {
+			do_action( 'rtgodam_primary_remote_thumbnail_set', $media_id, $primary_remote_thumbnail_url );
 		}
 	}
 

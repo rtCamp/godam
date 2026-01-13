@@ -462,13 +462,12 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	 */
 	$default_settings = array(
 		'video' => array(
-			'adaptive_bitrate'     => true,
-			'watermark'            => false,
-			'watermark_text'       => '',
-			'watermark_url'        => '',
-			'video_thumbnails'     => 0,
-			'overwrite_thumbnails' => false,
-			'use_watermark_image'  => false,
+			'adaptive_bitrate'    => true,
+			'watermark'           => false,
+			'watermark_text'      => '',
+			'watermark_url'       => '',
+			'video_thumbnails'    => 0,
+			'use_watermark_image' => false,
 		),
 	);
 
