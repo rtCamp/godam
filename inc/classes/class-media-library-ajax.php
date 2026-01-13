@@ -53,6 +53,19 @@ class Media_Library_Ajax {
 	}
 
 	/**
+	 * Validate if a URL is valid.
+	 * Ref: https://cmljnelson.blog/2018/08/31/url-validation-in-wordpress
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $url The URL to validate.
+	 * @return bool True if valid, false otherwise.
+	 */
+	public function is_valid_url( $url ) {
+		return esc_url_raw( $url ) === $url;
+	}
+
+	/**
 	 * Prepare a single Godam media item to match WordPress media format.
 	 *
 	 * @param array $item The media item data from the API.
@@ -674,7 +687,7 @@ class Media_Library_Ajax {
 	 * @return int|WP_Error Attachment ID on success, WP_Error on failure.
 	 */
 	private function godam_replace_attachment_with_external_file( $attachment_id, $file_url = '' ) {
-		if ( ! $attachment_id || ! filter_var( $file_url, FILTER_VALIDATE_URL ) || ! wp_http_validate_url( $file_url ) ) {
+		if ( ! $attachment_id || ! $this->is_valid_url( $file_url ) ) {
 			return new \WP_Error( 'invalid_input', __( 'Invalid attachment ID or URL.', 'godam' ) );
 		}
 
@@ -848,7 +861,7 @@ class Media_Library_Ajax {
 				$is_thumb = true;
 			} elseif ( isset( $thumb_meta['file'] ) ) {
 				$thumb_file = $thumb_meta['file'];
-				$thumb_url  = filter_var( $thumb_file, FILTER_VALIDATE_URL ) ? $thumb_file : $base_url . ltrim( $thumb_file, '/' );
+				$thumb_url  = $this->is_valid_url( $thumb_file ) ? $thumb_file : $base_url . ltrim( $thumb_file, '/' );
 				$is_thumb   = ! empty( $image_src ) && $thumb_url === $image_src;
 			}
 
@@ -868,7 +881,7 @@ class Media_Library_Ajax {
 			$file = $size_data['file'];
 
 			// If the file already is a URL, use it. Otherwise append it to the base URL.
-			if ( wp_http_validate_url( $file ) ) {
+			if ( $this->is_valid_url( $file ) ) {
 				// Get last string after the last slash in the file url.
 				$file_basename = basename( $file );
 				// Rebuild the full URL using the base URL and the file basename.
