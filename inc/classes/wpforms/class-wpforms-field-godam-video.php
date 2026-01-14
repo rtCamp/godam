@@ -460,8 +460,10 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				return $value;
 			}
 
+			$raw_value = isset( $field['value'] ) ? trim( $field['value'] ) : $value;
+
 			// Default formatting style.
-			$formatted_value = sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $value ), esc_html( basename( $value ) ) );
+			$formatted_value = sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $raw_value ), esc_html( basename( $value ) ) );
 
 			// Format for entry view page.
 			if ( 'entry-single' === $context && \wpforms_is_admin_page( 'entries', 'details' ) ) {

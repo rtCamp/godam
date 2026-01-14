@@ -46,7 +46,7 @@ class Ninja_Forms_Integration {
 	 * @return void
 	 */
 	public function setup_hooks() {
-		add_action( 'admin_enqueue_scripts', array( $this, 'add_additional_css_for_video_editor' ), 11 );
+		add_action( 'admin_enqueue_scripts', array( $this, 'add_additional_scripts' ), 11 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'add_additional_css_for_godam_player' ), 11 );
 
 		add_action( 'rtgodam_render_layer_for_video_editor_before', array( $this, 'add_css_for_the_layer_inside_iframe' ), 10, 2 );
@@ -57,13 +57,13 @@ class Ninja_Forms_Integration {
 	}
 
 	/**
-	 * Add additional css for video editor.
+	 * Add additional scripts.
 	 *
 	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
-	public function add_additional_css_for_video_editor() {
+	public function add_additional_scripts() {
 		$custom_css = '
 			.form-container.ninja-form {
 				margin: unset;
@@ -78,8 +78,68 @@ class Ninja_Forms_Integration {
 			}
 		';
 
-
 		wp_add_inline_style( 'rtgodam-style', $custom_css );
+
+		$screen = get_current_screen();
+		if ( ! $screen ) {
+			return;
+		}
+
+		if ( 'ninja-forms_page_nf-submissions' !== $screen->id ) {
+			return;
+		}
+
+		$custom_script = "
+			document.addEventListener('DOMContentLoaded', () => {
+				const processCells = () => {
+					const list = document.querySelector('#the-list');
+
+					if ( !list ) {
+						return;
+					}
+
+					list.querySelectorAll('.nf-submissions-cell').forEach(cell => {
+
+						// Prevent re-processing
+						if (cell?.dataset?.godamProcessed === '1') {
+							return;
+						}
+
+						const text = cell.textContent.trim();
+
+						if (
+							(text.startsWith('http://') || text.startsWith('https://')) &&
+							text.includes('/wp-content/uploads/')
+						) {
+							const link = document.createElement('a');
+							link.href = text;
+							link.target = '_blank';
+							link.rel = 'noopener noreferrer';
+							link.textContent = 'View Recording';
+
+							cell.textContent = '';
+							cell.appendChild(link);
+
+							cell.dataset.godamProcessed = '1';
+						}
+					});
+				};
+
+				// Initial run
+				processCells();
+
+				const ninjaFormEntriesObserver = new MutationObserver(() => {
+					processCells();
+				});
+
+				ninjaFormEntriesObserver.observe(document.body, {
+					childList: true,
+					subtree: true
+				});
+			});
+			";
+
+			wp_add_inline_script( 'rtgodam-script', $custom_script );
 	}
 
 	/**
@@ -95,7 +155,6 @@ class Ninja_Forms_Integration {
 				position: static;
 			}
 		';
-
 
 		wp_add_inline_style( 'godam-player-style', $custom_css );
 	}
