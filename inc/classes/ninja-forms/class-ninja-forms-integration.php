@@ -94,7 +94,7 @@ class Ninja_Forms_Integration {
 				const processCells = () => {
 					const list = document.querySelector('#the-list');
 
-					if ( !list ) {
+					if ( ! list ) {
 						return;
 					}
 
