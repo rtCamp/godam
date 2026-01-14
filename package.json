@@ -33,7 +33,7 @@
 		"@reduxjs/toolkit": "2.8.2",
 		"@uppy/audio": "3.0.0",
 		"@uppy/core": "5.0.1",
-		"@uppy/dashboard": "5.0.1",
+		"@uppy/dashboard": "5.1.0",
 		"@uppy/golden-retriever": "5.0.0",
 		"@uppy/screen-capture": "5.0.0",
 		"@uppy/webcam": "5.0.0",
