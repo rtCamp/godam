@@ -16,7 +16,7 @@ export { metadata, name };
  * Block registration settings.
  */
 export const settings = {
-	icon: <img src={ icon } alt="" />,
+	icon: <img src={ icon } alt="GoDAM Audio Block icon" />,
 	example: {
 		attributes: {
 			src: 'https://upload.wikimedia.org/wikipedia/commons/d/dd/Armstrong_Small_Step.ogg',

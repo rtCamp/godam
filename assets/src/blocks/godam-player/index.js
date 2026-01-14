@@ -21,7 +21,7 @@ import icon from '../../images/godam-video-filled.svg';
  * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/
  */
 registerBlockType( 'godam/video', {
-	icon: <img src={ icon } alt="" />,
+	icon: <img src={ icon } alt="GoDAM Video Block icon" />,
 	usesContext: [ 'queryId' ],
 	/**
 	 * @see ./edit.js

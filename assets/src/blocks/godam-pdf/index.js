@@ -16,7 +16,7 @@ export { metadata, name };
  * Block registration settings.
  */
 export const settings = {
-	icon: <img src={ icon } alt="" />,
+	icon: <img src={ icon } alt="GoDAM PDF Block icon" />,
 	edit,
 	save,
 };

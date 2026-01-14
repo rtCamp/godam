@@ -15,7 +15,7 @@ import icon from '../../images/godam-gallery-filled.svg';
  */
 registerBlockType( metadata.name, {
 	...metadata,
-	icon: <img src={ icon } alt="" />,
+	icon: <img src={ icon } alt="GoDAM Gallery Block icon" />,
 	edit,
 	save: () => null, // Dynamic block, so save returns null
 } );
