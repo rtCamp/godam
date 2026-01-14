@@ -1632,4 +1632,45 @@ class Media_Library extends Base {
 
 		return $prepared;
 	}
+
 }
+
+
+
+
+/**
+ * Add media folder information to attachment REST API response.
+ *
+ * This enables displaying the folder name
+ * in Media Library attachment details.
+ */
+add_filter( 'rest_prepare_attachment', function ( $response, $post, $request ) {
+
+	// Ensure this is a valid attachment response.
+	if ( empty( $response->data ) || 'attachment' !== $post->post_type ) {
+		return $response;
+	}
+
+	// Get assigned media-folder terms.
+	$terms = wp_get_object_terms( $post->ID, 'media-folder' );
+
+	if ( is_wp_error( $terms ) || empty( $terms ) ) {
+		$response->data['godam_folder'] = null;
+		return $response;
+	}
+
+	// GoDAM currently supports one folder per attachment.
+	$term = $terms[0];
+
+	$response->data['godam_folder'] = array(
+		'id'   => $term->term_id,
+		'name' => $term->name,
+	);
+
+	return $response;
+}, 10, 3 );
+
+
+
+
+
