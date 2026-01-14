@@ -101,7 +101,7 @@ class Ninja_Forms_Integration {
 					list.querySelectorAll('.nf-submissions-cell').forEach(cell => {
 
 						// Prevent re-processing
-						if (cell?.dataset?.godamProcessed === '1') {
+						if (cell && cell.dataset && cell.dataset.godamProcessed === '1') {
 							return;
 						}
 
