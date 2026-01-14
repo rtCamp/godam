@@ -223,6 +223,30 @@ class UppyVideoUploader {
 			audioPreview.src = URL.createObjectURL( file.data );
 			previewElement.innerHTML = '';
 			previewElement.appendChild( audioPreview );
+
+			// Calculate and set duration for audio files.
+			audioPreview.addEventListener( 'loadedmetadata', () => {
+				// Setting currentTime to a large value (1e101) forces the browser to calculate the actual duration.
+				audioPreview.currentTime = 1e101;
+				audioPreview.ontimeupdate = () => {
+					audioPreview.ontimeupdate = null;
+					audioPreview.currentTime = 0; // reset
+				};
+			} );
+		}
+
+		// Add a remove button for audio and video files.
+		if ( previewElement && ( file.type.startsWith( 'audio/' ) || file.type.startsWith( 'video/' ) ) ) {
+			const removeRecordingButton = document.createElement( 'div' );
+			removeRecordingButton.className = 'uppy-remove-recording-button';
+			removeRecordingButton.textContent = '✕'; // Cross mark (X) symbol.
+			removeRecordingButton.title = 'Remove recording';
+			previewElement.appendChild( removeRecordingButton );
+
+			removeRecordingButton.addEventListener( 'click', () => {
+				this.clearVideoUploadUI();
+				this.uppy.removeFile( file.id );
+			} );
 		}
 
 		// Prepare file for the Gravity Forms file input for submission.
