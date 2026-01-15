@@ -200,8 +200,26 @@
 .easydam-layer--cta-text {
 	max-height: 100%;
 	width: 100%;
-	padding: 2rem;
 	overflow: auto;
+
+	/**
+	 * Quill Styles.
+	 */
+	.ql-align-center {
+		text-align: center;
+	}
+
+	.ql-align-right {
+		text-align: right;
+	}
+
+	.ql-align-justify {
+		text-align: justify;
+	}
+
+	strong {
+		font-weight: bold;
+	}
 }
 
 .easydam-layer--cta-html {
