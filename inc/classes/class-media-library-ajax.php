@@ -184,7 +184,7 @@ class Media_Library_Ajax {
 			}
 		}
 
-		if ( ! defined( 'RTGODAM_TRANSCODER_CALLBACK_URL' ) || empty( RTGODAM_TRANSCODER_CALLBACK_URL ) ) {
+		if ( ! defined( 'RTGODAM_TRANSCODER_CALLBACK_URL' ) ) {
 			include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-rest-routes.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 			define( 'RTGODAM_TRANSCODER_CALLBACK_URL', \RTGODAM_Transcoder_Rest_Routes::get_callback_url() );
 		}
