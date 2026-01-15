@@ -184,12 +184,27 @@ class Media_Library_Ajax {
 			}
 		}
 
+		if ( ! defined( 'RTGODAM_TRANSCODER_CALLBACK_URL' ) ) {
+			include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-rest-routes.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+			define( 'RTGODAM_TRANSCODER_CALLBACK_URL', \RTGODAM_Transcoder_Rest_Routes::get_callback_url() );
+		}
+
+		$callback_url = RTGODAM_TRANSCODER_CALLBACK_URL;
+
+		/**
+		 * Manually setting the rest api endpoint, we can refactor that later to use similar functionality as callback_url.
+		 */
+		$status_callback_url = get_rest_url( get_current_blog_id(), '/godam/v1/transcoding/transcoding-status' );
+
 		// Request params.
 		$params = array(
 			'api_token'            => $api_key,
 			'job_type'             => 'image',
+			'job_for'              => 'wp-media',
 			'file_origin'          => $attachment_url,
 			'orignal_file_name'    => $file_name ?? $file_title,
+			'callback_url'         => rawurlencode( $callback_url ),
+			'status_callback'      => rawurlencode( $status_callback_url ),
 			'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $attachment_author ? $attachment_author->user_email : '', $attachment_id ),
 			'wp_site'              => $site_url,
 			'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, $attachment_id ),
