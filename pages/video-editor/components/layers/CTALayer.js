@@ -56,16 +56,16 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 
 	const ctaLayerOptions = [
 		{
+			label: __( 'Image', 'godam' ),
+			value: 'image',
+		},
+		{
 			label: __( 'Text', 'godam' ),
 			value: 'text',
 		},
 		{
 			label: __( 'HTML', 'godam' ),
 			value: 'html',
-		},
-		{
-			label: __( 'Image', 'godam' ),
-			value: 'image',
 		},
 	];
 
@@ -120,7 +120,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 			case 'html':
 				return <HtmlCTA layerID={ layer.id } />;
 			default:
-				return <TextCTA layerID={ layer.id } />;
+				return <ImageCTA layerID={ layer.id } />;
 		}
 	};
 
@@ -180,21 +180,21 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
 
 			<div className="flex flex-col godam-form-group">
-				<p className="mb-4 label-text">{ __( 'Call to Action', 'godam' ) }</p>
+				<label htmlFor="cta-type-select" className="mb-4 label-text">{ __( 'Call to Action', 'godam' ) }</label>
 				<SelectControl
 					__next40pxDefaultSize
 					className="mb-4"
-					label={ __( 'Select type', 'godam' ) }
 					onChange={ handleCTATypeSelect }
 					options={ ctaLayerOptions }
 					value={ layer.cta_type }
+					help={ __( 'Select the type of Call to Action layer.', 'godam' ) }
 				/>
 
 				{ renderSelectedCTAInputs() }
 
 				{ /* Common settings */ }
 
-				<Panel className="-mx-4 border-x-0">
+				<Panel className="-mx-4 border-x-0 mb-4">
 					<PanelBody
 						title={ __( 'Advanced', 'godam' ) }
 						initialOpen={ false }

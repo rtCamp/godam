@@ -7,7 +7,6 @@
 import {
 	Button,
 	Notice,
-	RangeControl, SelectControl,
 	TextareaControl,
 	TextControl,
 	Icon,
@@ -51,17 +50,6 @@ const ImageCTA = ( { layerID } ) => {
 	const dispatch = useDispatch();
 
 	const restURL = window.godamRestRoute.url || '';
-
-	const imageOrientationOptions = [
-		{
-			label: __( 'Landscape', 'godam' ),
-			value: 'landscape',
-		},
-		{
-			label: __( 'Portrait', 'godam' ),
-			value: 'portrait',
-		},
-	];
 
 	const openImageCTAUploader = () => {
 		const fileFrame = wp.media( {
@@ -309,35 +297,6 @@ const ImageCTA = ( { layerID } ) => {
 						<Icon icon={ closeSmall } />
 					</button>
 				) }
-			</div>
-
-			<SelectControl
-				__next40pxDefaultSize
-				className="mb-4"
-				label={ __( 'Select orientation', 'godam' ) }
-				onChange={ ( value ) => {
-					updateField( 'imageCtaOrientation', value );
-				} }
-				options={ imageOrientationOptions }
-				value={ layer.imageCtaOrientation }
-			/>
-
-			<div className="mb-4">
-				<div className="hover-control-input-container">
-					<RangeControl
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						className="godam-input w-full"
-						help={ __( 'Please select how transparent you would like this.', 'godam' ) }
-						initialPosition={ 1 }
-						max={ 1 }
-						min={ 0 }
-						onChange={ ( value ) => updateField( 'imageOpacity', value ) }
-						step={ 0.1 }
-						value={ layer.imageOpacity ?? 1 }
-						label={ __( 'Opacity of background image', 'godam' ) }
-					/>
-				</div>
 			</div>
 		</div>
 	);
