@@ -274,7 +274,7 @@
 			}
 
 			.vjs-volume-control {
-				display: none; //Fallback for old browser versions not supporting interaction media features
+				display: none !important; //Fallback for old browser versions not supporting interaction media features
 			}
 			
 			.vjs-settings-button{
@@ -351,6 +351,7 @@
 
 			&:has(.vjs-subs-caps-button.vjs-hidden) .vjs-volume-panel {
 				right: 108px;
+				width: 4em;
 			}
 
 			.vjs-time-control.vjs-current-time {
