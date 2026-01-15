@@ -94,15 +94,27 @@ class Ads extends Base {
 	 */
 	public function get_ad_tag_url( $request ) {
 		// Retrieve and sanitize input parameters.
-		$display_time = intval( $request->get_param( 'display_time' ) );
-		$ad_duration  = intval( $request->get_param( 'duration' ) );
-		$ad_title     = sanitize_text_field( $request->get_param( 'title' ) ?? '' );
-		$skippable    = rest_sanitize_boolean( $request->get_param( 'skippable' ) ?? false );
-		$skip_offset  = intval( $request->get_param( 'skip_offset' ) );
-		$ad_url       = esc_url( $request->get_param( 'ad_url' ) ?? '' );
-		$click_link   = esc_url( $request->get_param( 'click_link' ) ?? '' );
-		$use_vmap     = rest_sanitize_boolean( $request->get_param( 'use_vmap' ) ?? false );
-		
+		$display_time  = intval( $request->get_param( 'display_time' ) );
+		$ad_duration   = intval( $request->get_param( 'duration' ) );
+		$ad_title      = sanitize_text_field( $request->get_param( 'title' ) ?? '' );
+		$skippable     = rest_sanitize_boolean( $request->get_param( 'skippable' ) ?? false );
+		$skip_offset   = intval( $request->get_param( 'skip_offset' ) );
+		$ad_url        = esc_url( $request->get_param( 'ad_url' ) ?? '' );
+		$click_link    = esc_url( $request->get_param( 'click_link' ) ?? '' );
+		$use_vmap      = rest_sanitize_boolean( $request->get_param( 'use_vmap' ) ?? false );
+		$attachment_id = intval( $request->get_param( 'attachment_id' ) ?? 0 );
+
+		if ( ! empty( $attachment_id ) ) {
+			$sources = rtgodam_get_attachment_sources( $attachment_id );
+		} else {
+			$sources = array(
+				array(
+					'src'  => $ad_url,
+					'type' => 'video/mp4',
+				),
+			);
+		}
+
 		// convert ad duration to HH:MM:SS format.  e.g. 16 seconds = 00:00:16.
 		$display_time = gmdate( 'H:i:s', $display_time );
 		$ad_duration  = gmdate( 'H:i:s', $ad_duration );
@@ -124,9 +136,18 @@ class Ads extends Base {
 							<Linear <?php echo $skippable ? ' skipoffset="' . esc_attr( gmdate( 'H:i:s', $skip_offset ) ) . '"' : ''; ?>>
 								<Duration><?php echo esc_html( $ad_duration ); ?></Duration>
 								<MediaFiles>
-									<MediaFile id="5241" delivery="progressive" type="video/mp4" bitrate="2000" width="1280" height="720" minBitrate="1500" maxBitrate="2500" scalable="1" maintainAspectRatio="1" codec="H.264">
-										<![CDATA[<?php echo esc_url( $ad_url ); ?>]]>
-									</MediaFile>
+									<?php
+									foreach ( $sources as $source ) : 
+										if ( 'application/x-mpegURL' === $source['type'] || 'application/dash+xml' === $source['type'] ) :
+											$delivery = 'streaming';
+										else :
+											$delivery = 'progressive';
+										endif;
+										?>
+										<MediaFile id="5241" delivery="<?php echo esc_attr( $delivery ); ?>" type="<?php echo esc_attr( $source['type'] ?? '' ); ?>" width="1280" height="720">
+											<![CDATA[<?php echo esc_url( $source['src'] ); ?>]]>
+										</MediaFile>
+									<?php endforeach; ?>
 								</MediaFiles>
 								<VideoClicks>
 									<?php if ( ! empty( $click_link ) ) : ?>
@@ -230,23 +251,25 @@ class Ads extends Base {
 				<?php 
 				foreach ( $ads_layers as $layer ) :
 					// Current endpoint URL.
-					$display_time = intval( $layer['displayTime'] ?? 0 );
-					$ad_duration  = intval( $layer['duration'] ?? 0 );
-					$ad_title     = $layer['title'] ?? '';
-					$skippable    = $layer['skippable'] ?? false;
-					$skip_offset  = intval( $layer['skip_offset'] ?? 0 );
-					$ad_url       = esc_url( $layer['ad_url'] ) ?? '';
-					$click_link   = esc_url( $layer['click_link'] ?? '' );
-					
+					$display_time  = intval( $layer['displayTime'] ?? 0 );
+					$ad_duration   = intval( $layer['duration'] ?? 0 );
+					$ad_title      = $layer['title'] ?? '';
+					$skippable     = $layer['skippable'] ?? false;
+					$skip_offset   = intval( $layer['skip_offset'] ?? 0 );
+					$ad_url        = esc_url( $layer['ad_url'] ) ?? '';
+					$click_link    = esc_url( $layer['click_link'] ?? '' );
+					$attachment_id = intval( $layer['attachment_id'] ?? 0 );
+
 					$endpoint_url = rest_url( $this->namespace . sprintf( '/%s', empty( $this->rest_base ) ? 'adTagURL' : $this->rest_base . 'adTagURL' ) );
 					$vast_url     = add_query_arg(
 						array(
-							'duration'    => $ad_duration,
-							'title'       => $ad_title,
-							'skippable'   => $skippable,
-							'skip_offset' => $skip_offset,
-							'ad_url'      => $ad_url,
-							'click_link'  => $click_link,
+							'duration'      => $ad_duration,
+							'title'         => $ad_title,
+							'skippable'     => $skippable,
+							'skip_offset'   => $skip_offset,
+							'ad_url'        => $ad_url,
+							'click_link'    => $click_link,
+							'attachment_id' => $attachment_id,
 						),
 						$endpoint_url 
 					);
