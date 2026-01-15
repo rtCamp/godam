@@ -149,7 +149,13 @@ export default class GodamVideoPlayer {
 
 		if ( isInModal ) {
 			const aspectRatio = window.innerWidth < 420 ? '9:16' : '16:9';
-			this.player.aspectRatio( aspectRatio );
+			// Check if aspect ratio is valid x:y format
+			if ( ! /^\d+:\d+$/.test( aspectRatio ) ) {
+				// eslint-disable-next-line no-console
+				console.warn( `Invalid aspect ratio format: "${ aspectRatio }". Falling back to "16:9".` );
+			} else {
+				this.player.aspectRatio( aspectRatio );
+			}
 		}
 	}
 
@@ -187,9 +193,18 @@ export default class GodamVideoPlayer {
 	handleAspectRatioSetup() {
 		const isInModal = this.video.closest( '.godam-modal' ) !== null;
 
-		const currentAspectRatio = this.configManager.videoSetupOptions?.aspectRatio || '16:9';
-
 		if ( ! isInModal ) {
+			const currentAspectRatio = this.configManager.videoSetupOptions?.aspectRatio || '16:9';
+
+			// Check if aspect ratio is valid x:y format
+			if ( ! /^\d+:\d+$/.test( currentAspectRatio ) ) {
+				// eslint-disable-next-line no-console
+				console.warn( `Invalid aspect ratio format: "${ currentAspectRatio }". Falling back to "16:9".` );
+			} else {
+				this.player.aspectRatio( currentAspectRatio );
+			}
+
+			// For GoDAM WooCommerce Blocks.
 			if ( currentAspectRatio === 'responsive' ) {
 				// Add a flag to prevent multiple executions.
 				const aspectRatioHandled = false;
@@ -366,8 +381,6 @@ export default class GodamVideoPlayer {
 			} else {
 				this.player.aspectRatio( currentAspectRatio );
 			}
-		} else {
-			this.player.aspectRatio( currentAspectRatio );
 		}
 	}
 
@@ -417,6 +430,7 @@ export default class GodamVideoPlayer {
 			onPlayerConfigurationSetup: () => this.controlsManager.setupPlayerConfiguration(),
 			onTimeUpdate: ( currentTime ) => this.handleTimeUpdate( currentTime ),
 			onFullscreenChange: () => this.layersManager.handleFullscreenChange(),
+			onVideoResize: () => this.layersManager.handleVideoResize(),
 			onPlay: () => this.layersManager.handlePlay(),
 			onControlsMove: () => this.controlsManager.moveVideoControls(),
 		} );

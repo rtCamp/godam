@@ -136,6 +136,14 @@ export default class LayersManager {
 	}
 
 	/**
+	 * Handle video resize events
+	 */
+	handleVideoResize() {
+		this.hotspotLayerManager.updateHotspotPositions();
+		this.wooCommerceLayerManager.updateProductHotspotPositions();
+	}
+
+	/**
 	 * Handle fullscreen changes for layers
 	 */
 	handleFullscreenChange() {

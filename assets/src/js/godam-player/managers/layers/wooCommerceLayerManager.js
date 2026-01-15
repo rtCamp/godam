@@ -5,12 +5,17 @@ import { __ } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
 
 /**
+ * Internal dependencies
+ */
+import { PRODUCT_HOTSPOT_CONSTANTS } from '../../utils/constants';
+
+/**
  * WooCommerce Layer Manager
  * Handles WooCommerce layer functionality including creation, positioning, and interaction
  */
 export default class WooCommerceLayerManager {
-	static BASE_WIDTH = 800;
-	static BASE_HEIGHT = 600;
+	static BASE_WIDTH = PRODUCT_HOTSPOT_CONSTANTS.BASE_WIDTH;
+	static BASE_HEIGHT = PRODUCT_HOTSPOT_CONSTANTS.BASE_HEIGHT;
 
 	constructor( player, isDisplayingLayers, currentPlayerVideoInstanceId ) {
 		this.player = player;
@@ -97,7 +102,17 @@ export default class WooCommerceLayerManager {
 			}
 		} );
 
-		this.updateProductHotspotPositions();
+		// Use requestAnimationFrame to wait for layout to stabilize after fullscreen resize.
+		let framesToWait = 2;
+		const waitForResize = () => {
+			if ( framesToWait > 0 ) {
+				framesToWait--;
+				window.requestAnimationFrame( waitForResize );
+			} else {
+				this.updateProductHotspotPositions();
+			}
+		};
+		window.requestAnimationFrame( waitForResize );
 	}
 
 	/**
@@ -134,6 +149,64 @@ export default class WooCommerceLayerManager {
 	}
 
 	/**
+	 * Compute content rectangle
+	 *
+	 * @return {Object|null} Content rectangle {left, top, width, height} or null
+	 */
+	computeContentRect() {
+		const videoEl = this.player.tech( true )?.el() || this.player.el().querySelector( 'video' );
+		const containerEl = this.player.el();
+
+		if ( ! videoEl || ! containerEl ) {
+			return null;
+		}
+
+		const nativeW = videoEl.videoWidth || this.player.videoWidth() || 0;
+		const nativeH = videoEl.videoHeight || this.player.videoHeight() || 0;
+
+		const elW = containerEl.offsetWidth;
+		const elH = containerEl.offsetHeight;
+
+		// If video dimensions aren't loaded yet, use full container
+		if ( ! nativeW || ! nativeH ) {
+			return {
+				left: 0,
+				top: 0,
+				width: elW,
+				height: elH,
+			};
+		}
+
+		const videoAspectRatio = nativeW / nativeH;
+		const containerAspectRatio = elW / elH;
+
+		let contentW, contentH, offsetX, offsetY;
+
+		if ( containerAspectRatio > videoAspectRatio ) {
+			// Pillarboxed (black bars on left/right)
+			contentH = elH;
+			contentW = elH * videoAspectRatio;
+			offsetX = ( elW - contentW ) / 2;
+			offsetY = 0;
+		} else {
+			// Letterboxed (black bars on top/bottom)
+			contentW = elW;
+			contentH = elW / videoAspectRatio;
+			offsetX = 0;
+			offsetY = ( elH - contentH ) / 2;
+		}
+
+		const result = {
+			left: Math.round( offsetX ),
+			top: Math.round( offsetY ),
+			width: Math.round( contentW ),
+			height: Math.round( contentH ),
+		};
+
+		return result;
+	}
+
+	/**
 	 * Create Product hotspot element
 	 *
 	 * @param {Object}  hotspot         - Product Hotspot configuration object
@@ -149,18 +222,39 @@ export default class WooCommerceLayerManager {
 		hotspotDiv.classList.add( 'hotspot', 'circle' );
 		hotspotDiv.style.position = 'absolute';
 
+		const contentRect = this.computeContentRect();
+
 		// Positioning
 		const fallbackPosX = hotspot.oPosition?.x ?? hotspot.position.x;
 		const fallbackPosY = hotspot.oPosition?.y ?? hotspot.position.y;
-		const pixelX = ( fallbackPosX / baseWidth ) * containerWidth;
-		const pixelY = ( fallbackPosY / baseHeight ) * containerHeight;
+
+		let fallbackDiameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
+		if ( ! fallbackDiameter ) {
+			if ( hotspot.unit === 'percent' && contentRect ) {
+				fallbackDiameter = ( PRODUCT_HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PX / contentRect.width ) * 100;
+			} else {
+				fallbackDiameter = hotspot.unit === 'percent' ? PRODUCT_HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PERCENT : PRODUCT_HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PX;
+			}
+		}
+
+		let pixelX, pixelY, pixelDiameter;
+
+		if ( hotspot.unit === 'percent' && contentRect ) {
+			// New percentage-based positioning
+			pixelX = contentRect.left + ( ( fallbackPosX / 100 ) * contentRect.width );
+			pixelY = contentRect.top + ( ( fallbackPosY / 100 ) * contentRect.height );
+			pixelDiameter = ( fallbackDiameter / 100 ) * contentRect.width;
+		} else {
+			// Legacy pixel-based positioning (relative to 800x600)
+			// We now map these to the contentRect instead of the full container to avoid black bars
+			const effectiveRect = contentRect || { left: 0, top: 0, width: containerWidth, height: containerHeight };
+			pixelX = effectiveRect.left + ( ( fallbackPosX / baseWidth ) * effectiveRect.width );
+			pixelY = effectiveRect.top + ( ( fallbackPosY / baseHeight ) * effectiveRect.height );
+			pixelDiameter = ( fallbackDiameter / baseWidth ) * effectiveRect.width;
+		}
 
 		hotspotDiv.style.left = `${ pixelX }px`;
 		hotspotDiv.style.top = `${ pixelY }px`;
-
-		// Sizing
-		const fallbackDiameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
-		const pixelDiameter = ( fallbackDiameter / baseWidth ) * containerWidth;
 		hotspotDiv.style.width = `${ pixelDiameter }px`;
 		hotspotDiv.style.height = `${ pixelDiameter }px`;
 
@@ -433,57 +527,100 @@ export default class WooCommerceLayerManager {
 	}
 
 	/**
-	 * Position product box relative to hotspot
+	 * Position product box relative to hotspot, constrained within the video container
 	 *
 	 * @param {HTMLElement} hotspotDiv    - The product hotspot element for positioning reference
 	 * @param {HTMLElement} productBoxDiv - The product box element to position
 	 */
 	positionProductBox( hotspotDiv, productBoxDiv ) {
+		const videoContainer = this.player.el();
+		const containerRect = videoContainer.getBoundingClientRect();
 		const hotspotRect = hotspotDiv.getBoundingClientRect();
-		const tooltipRect = productBoxDiv.getBoundingClientRect();
-		const viewportWidth = window.innerWidth;
 
-		// Vertical positioning
-		const spaceAbove = hotspotRect.top;
-		if ( spaceAbove < tooltipRect.height + 10 ) {
-			// Place below
-			productBoxDiv.style.bottom = 'auto';
-			productBoxDiv.style.top = '100%';
-			productBoxDiv.classList.add( 'product-bottom' );
-			productBoxDiv.classList.remove( 'tooltip-top' );
-		} else {
+		// Temporarily make tooltip visible to measure it accurately
+		const originalVisibility = productBoxDiv.style.visibility;
+		const originalOpacity = productBoxDiv.style.opacity;
+		productBoxDiv.style.visibility = 'hidden';
+		productBoxDiv.style.opacity = '0';
+		productBoxDiv.style.display = 'block';
+
+		const productBoxRect = productBoxDiv.getBoundingClientRect();
+
+		// Restore original styles
+		productBoxDiv.style.visibility = originalVisibility;
+		productBoxDiv.style.opacity = originalOpacity;
+
+		// Calculate space relative to video container (not viewport)
+		const spaceAbove = hotspotRect.top - containerRect.top;
+		const spaceBelow = containerRect.bottom - hotspotRect.bottom;
+
+		const productBoxHeight = productBoxRect.height;
+		const productBoxWidth = productBoxRect.width;
+
+		// Minimum padding from container edges
+		const edgePadding = 8;
+
+		// Reset all positioning classes and styles first
+		productBoxDiv.classList.remove( 'tooltip-top', 'tooltip-bottom', 'tooltip-left', 'tooltip-right', 'no-arrow', 'product-bottom' );
+		productBoxDiv.style.top = '';
+		productBoxDiv.style.bottom = '';
+		productBoxDiv.style.left = '';
+		productBoxDiv.style.right = '';
+		productBoxDiv.style.transform = '';
+
+		// Vertical positioning - prefer above, fallback to below
+		if ( spaceAbove >= productBoxHeight + edgePadding ) {
 			// Place above
 			productBoxDiv.style.bottom = '100%';
 			productBoxDiv.style.top = 'auto';
 			productBoxDiv.classList.add( 'tooltip-top' );
-			productBoxDiv.classList.remove( 'tooltip-bottom' );
+		} else if ( spaceBelow >= productBoxHeight + edgePadding ) {
+			// Place below
+			productBoxDiv.style.bottom = 'auto';
+			productBoxDiv.style.top = '100%';
+			productBoxDiv.classList.add( 'product-bottom' );
+		} else if ( spaceAbove >= spaceBelow ) {
+			productBoxDiv.style.bottom = '100%';
+			productBoxDiv.style.top = 'auto';
+			productBoxDiv.classList.add( 'tooltip-top' );
+		} else {
+			productBoxDiv.style.bottom = 'auto';
+			productBoxDiv.style.top = '100%';
+			productBoxDiv.classList.add( 'product-bottom' );
 		}
 
-		// Horizontal positioning
-		const spaceLeft = hotspotRect.left;
-		const spaceRight = viewportWidth - hotspotRect.right;
+		// Horizontal positioning - calculate where tooltip would overflow
+		const hotspotCenterInContainer = ( hotspotRect.left + ( hotspotRect.width / 2 ) ) - containerRect.left;
+		const productBoxHalfWidth = productBoxWidth / 2;
 
-		if ( spaceLeft < 10 ) {
-			// Adjust to the right
-			productBoxDiv.style.left = '0';
-			productBoxDiv.style.transform = 'translateX(0)';
-			productBoxDiv.classList.add( 'tooltip-left' );
-			productBoxDiv.classList.remove( 'tooltip-right' );
+		// Check if centered productBox would overflow left or right of container
+		const wouldOverflowLeft = ( hotspotCenterInContainer - productBoxHalfWidth ) < edgePadding;
+		const wouldOverflowRight = ( hotspotCenterInContainer + productBoxHalfWidth ) > ( containerRect.width - edgePadding );
+
+		if ( wouldOverflowLeft && wouldOverflowRight ) {
+			// Tooltip is wider than available space, center it as best as possible
+			productBoxDiv.style.left = '50%';
+			productBoxDiv.style.transform = 'translateX(-50%)';
 			productBoxDiv.classList.add( 'no-arrow' );
-		} else if ( spaceRight < 10 ) {
-			// Adjust to the left
+		} else if ( wouldOverflowLeft ) {
+			// Align tooltip to the left edge of hotspot, but ensure it stays within container
+			const leftOffset = Math.max( edgePadding - ( hotspotRect.left - containerRect.left ), 0 );
+			productBoxDiv.style.left = `${ leftOffset }px`;
+			productBoxDiv.style.right = 'auto';
+			productBoxDiv.style.transform = 'translateX(0)';
+			productBoxDiv.classList.add( 'tooltip-left', 'no-arrow' );
+		} else if ( wouldOverflowRight ) {
+			// Align tooltip to the right edge of hotspot, but ensure it stays within container
+			const rightOffset = Math.max( edgePadding - ( containerRect.right - hotspotRect.right ), 0 );
 			productBoxDiv.style.left = 'auto';
-			productBoxDiv.style.right = '0';
+			productBoxDiv.style.right = `${ rightOffset }px`;
 			productBoxDiv.style.transform = 'translateX(0)';
-			productBoxDiv.classList.add( 'tooltip-right' );
-			productBoxDiv.classList.remove( 'tooltip-left' );
-			productBoxDiv.classList.add( 'no-arrow' );
+			productBoxDiv.classList.add( 'tooltip-right', 'no-arrow' );
 		} else {
-			// Centered horizontally
+			// Centered horizontally - tooltip fits within container
 			productBoxDiv.style.left = '50%';
 			productBoxDiv.style.right = 'auto';
 			productBoxDiv.style.transform = 'translateX(-50%)';
-			productBoxDiv.classList.remove( 'tooltip-left', 'tooltip-right', 'no-arrow' );
 		}
 	}
 
@@ -498,6 +635,8 @@ export default class WooCommerceLayerManager {
 		const baseWidth = WooCommerceLayerManager.BASE_WIDTH;
 		const baseHeight = WooCommerceLayerManager.BASE_HEIGHT;
 
+		const contentRect = this.computeContentRect();
+
 		this.wooLayers.forEach( ( layerObj ) => {
 			const hotspotDivs = layerObj.layerElement.querySelectorAll( '.hotspot' );
 			hotspotDivs.forEach( ( hotspotDiv, index ) => {
@@ -506,14 +645,26 @@ export default class WooCommerceLayerManager {
 				// Recalc position
 				const fallbackPosX = hotspot.oPosition?.x ?? hotspot.position.x;
 				const fallbackPosY = hotspot.oPosition?.y ?? hotspot.position.y;
-				const pixelX = ( fallbackPosX / baseWidth ) * containerWidth;
-				const pixelY = ( fallbackPosY / baseHeight ) * containerHeight;
+				const fallbackDiameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
+
+				let pixelX, pixelY, pixelDiameter;
+
+				if ( hotspot.unit === 'percent' && contentRect ) {
+					// New percentage-based positioning
+					pixelX = contentRect.left + ( ( fallbackPosX / 100 ) * contentRect.width );
+					pixelY = contentRect.top + ( ( fallbackPosY / 100 ) * contentRect.height );
+					pixelDiameter = ( fallbackDiameter / 100 ) * contentRect.width;
+				} else {
+					// Legacy pixel-based positioning
+					// We now map these to the contentRect instead of the full container to avoid black bars
+					const effectiveRect = contentRect || { left: 0, top: 0, width: containerWidth, height: containerHeight };
+					pixelX = effectiveRect.left + ( ( fallbackPosX / baseWidth ) * effectiveRect.width );
+					pixelY = effectiveRect.top + ( ( fallbackPosY / baseHeight ) * effectiveRect.height );
+					pixelDiameter = ( fallbackDiameter / baseWidth ) * effectiveRect.width;
+				}
+
 				hotspotDiv.style.left = `${ pixelX }px`;
 				hotspotDiv.style.top = `${ pixelY }px`;
-
-				// Recalc size
-				const fallbackDiameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
-				const pixelDiameter = ( fallbackDiameter / baseWidth ) * containerWidth;
 				hotspotDiv.style.width = `${ pixelDiameter }px`;
 				hotspotDiv.style.height = `${ pixelDiameter }px`;
 

@@ -162,6 +162,29 @@ function initAdminUI() {
 	initTogglePostboxes();
 	handleBannerClose();
 	new ParticleEffect();
+	initHandleInsightsDataNotice();
+}
+
+/**
+ * Toggle insights data description in admin notice.
+ */
+function initHandleInsightsDataNotice() {
+	document.body.addEventListener( 'click', function( e ) {
+		if ( e.target && e.target.classList.contains( 'godam-insights-data-we-collect' ) ) {
+			e.preventDefault();
+			const updatedpParent = e.target.closest( '.updated' );
+			if ( updatedpParent ) {
+				const description = updatedpParent.querySelector( '.description' );
+				if ( description ) {
+					if ( description.style.display === 'none' ) {
+						description.style.display = 'block';
+					} else {
+						description.style.display = 'none';
+					}
+				}
+			}
+		}
+	} );
 }
 
 document.addEventListener( 'DOMContentLoaded', initAdminUI );

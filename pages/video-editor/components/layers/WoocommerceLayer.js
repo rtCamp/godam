@@ -26,7 +26,7 @@ import {
 	check,
 } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
-import { useState, useRef, useEffect } from '@wordpress/element';
+import { useState, useRef, useEffect, useCallback } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -39,6 +39,7 @@ import FontAwesomeIconPicker from '../woocommerce/FontAwesomeIconPicker';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import LayersHeader from './LayersHeader';
+import { PRODUCT_HOTSPOT_CONSTANTS } from '../../../../assets/src/js/godam-player/utils/constants';
 
 /**
  * WoocommerceLayer component for managing and rendering interactive product hotspots on a video layer.
@@ -70,36 +71,71 @@ const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 	const [ expandedProductHotspotIndex, setExpandedProductHotspotIndex ] = useState( null );
 
 	const containerRef = useRef( null );
+	const videoRef = useRef( null );
 
-	// ratio { x, y } for px <-> ratio
-	const [ ratio, setRatio ] = useState( { x: 1, y: 1 } );
+	const [ contentRect, setContentRect ] = useState( null );
 
 	// Helper to dispatch updates
-	const updateField = ( field, value ) => {
+	const updateField = useCallback( ( field, value ) => {
 		dispatch( updateLayerField( { id: layer.id, field, value } ) );
-	};
+	}, [ dispatch, layer?.id ] );
 
-	const pxToRatio = ( px, dimension ) => px * ratio[ dimension ];
-	const ratioToPx = ( val, dimension ) => val / ratio[ dimension ];
+	const percentToPx = useCallback( ( percent, dimension ) => {
+		if ( ! contentRect ) {
+			return 0;
+		}
+		const size = dimension === 'x' ? contentRect.width : contentRect.height;
+		return ( percent / 100 ) * size;
+	}, [ contentRect ] );
+
+	const pxToPercent = useCallback( ( px, dimension ) => {
+		if ( ! contentRect ) {
+			return 0;
+		}
+		const size = dimension === 'x' ? contentRect.width : contentRect.height;
+		return ( px / size ) * 100;
+	}, [ contentRect ] );
+
+	const getDefaultDiameter = useCallback( ( unit ) => {
+		if ( unit !== 'percent' ) {
+			return PRODUCT_HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PX;
+		}
+
+		return contentRect?.width
+			? pxToPercent( PRODUCT_HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PX, 'x' )
+			: PRODUCT_HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PERCENT;
+	}, [ contentRect?.width, pxToPercent ] );
 
 	// Add a new Product hotspot
-	const handleAddProductHotspot = () => {
+	const handleAddProductHotspot = useCallback( () => {
+		// Calculate percentage dynamically to maintain a consistent physical size (approx 48px)
+		const diameterPercent = getDefaultDiameter( 'percent' );
+
 		const newProductHotspot = {
 			id: uuidv4(),
 			productId: '',
 			productDetails: '',
 			addToCart: false,
 			shopText: __( 'Shop Me', 'godam' ),
-			position: { x: 100, y: 100 },
-			size: { diameter: 48 },
-			oSize: { diameter: 48 },
-			oPosition: { x: 100, y: 100 },
+			position: { x: 50, y: 50 },
+			size: { diameter: diameterPercent },
+			oSize: { diameter: diameterPercent },
+			oPosition: { x: 50, y: 50 },
 			backgroundColor: '#0c80dfa6',
 			miniCart: true,
 			icon: '',
+			unit: 'percent',
 		};
 		updateField( 'productHotspots', [ ...productHotspots, newProductHotspot ] );
-	};
+	}, [ getDefaultDiameter, productHotspots, updateField ] );
+
+	// Auto-add the first hotspot if none exist and it's a new layer
+	useEffect( () => {
+		if ( layer?.isNew && productHotspots.length === 0 && contentRect?.width ) {
+			handleAddProductHotspot();
+			updateField( 'isNew', false ); // Mark as not new anymore
+		}
+	}, [ layer?.isNew, productHotspots.length, contentRect?.width, handleAddProductHotspot, updateField ] );
 
 	const handleDeleteProductHotspot = ( index ) => {
 		updateField(
@@ -113,23 +149,81 @@ const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 		setExpandedProductHotspotIndex( expandedProductHotspotIndex === index ? null : index );
 	};
 
-	const recalcRatio = () => {
-		if ( containerRef.current ) {
-			const { offsetWidth, offsetHeight } = containerRef.current;
-			const baseWidth = 800;
-			const baseHeight = 600;
+	const computeContentRect = () => {
+		const videoEl = document.querySelector( 'video' );
+		const containerEl = document.getElementById( 'easydam-video-player' );
 
-			setRatio( {
-				x: baseWidth / offsetWidth,
-				y: baseHeight / offsetHeight,
-			} );
+		if ( ! videoEl || ! containerEl ) {
+			setContentRect( null );
+			return;
 		}
+
+		const nativeW = videoEl.videoWidth || 0;
+		const nativeH = videoEl.videoHeight || 0;
+
+		const elW = containerEl.offsetWidth;
+		const elH = containerEl.offsetHeight;
+
+		// If video dimensions aren't loaded yet, use full container
+		if ( ! nativeW || ! nativeH ) {
+			setContentRect( {
+				left: 0,
+				top: 0,
+				width: elW,
+				height: elH,
+			} );
+			return;
+		}
+
+		const videoAspectRatio = nativeW / nativeH;
+		const containerAspectRatio = elW / elH;
+
+		let contentW, contentH, offsetX, offsetY;
+
+		if ( containerAspectRatio > videoAspectRatio ) {
+			// Pillarboxed (black bars on left/right)
+			contentH = elH;
+			contentW = elH * videoAspectRatio;
+			offsetX = ( elW - contentW ) / 2;
+			offsetY = 0;
+		} else {
+			// Letterboxed (black bars on top/bottom)
+			contentW = elW;
+			contentH = elW / videoAspectRatio;
+			offsetX = 0;
+			offsetY = ( elH - contentH ) / 2;
+		}
+
+		const newRect = {
+			left: Math.round( offsetX ),
+			top: Math.round( offsetY ),
+			width: Math.round( contentW ),
+			height: Math.round( contentH ),
+		};
+
+		setContentRect( newRect );
 	};
 
 	useEffect( () => {
-		recalcRatio();
-		window.addEventListener( 'resize', recalcRatio );
-		return () => window.removeEventListener( 'resize', recalcRatio );
+		computeContentRect();
+		window.addEventListener( 'resize', computeContentRect );
+		document.addEventListener( 'fullscreenchange', computeContentRect );
+
+		// Also listen for video metadata loaded
+		const videoEl = document.querySelector( 'video' );
+		videoRef.current = videoEl;
+
+		if ( videoEl ) {
+			videoEl.addEventListener( 'loadedmetadata', computeContentRect );
+		}
+
+		return () => {
+			window.removeEventListener( 'resize', computeContentRect );
+			document.removeEventListener( 'fullscreenchange', computeContentRect );
+			if ( videoRef.current ) {
+				videoRef.current.removeEventListener( 'loadedmetadata', computeContentRect );
+			}
+		};
 	}, [] );
 
 	const updateAllWooLayersMiniCart = ( isChecked ) => {
@@ -517,46 +611,90 @@ const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 				<div
 					ref={ containerRef }
 					className="easydam-layer hotspot-layer"
-					style={ { backgroundColor: layer.bg_color || 'transparent' } }
+					style={ {
+						backgroundColor: layer.bg_color || 'transparent',
+						position: 'absolute',
+						left: contentRect?.left || 0,
+						top: contentRect?.top || 0,
+						width: contentRect?.width || '100%',
+						height: contentRect?.height || '100%',
+						zIndex: 5,
+					} }
 				>
 					<div
 						className="absolute inset-0 bg-transparent z-10 pointer-events-auto"
 					></div>
 					{ productHotspots.map( ( productHotspot, index ) => {
-						const fallbackPosX = productHotspot.oPosition?.x ?? productHotspot.position.x;
-						const fallbackPosY = productHotspot.oPosition?.y ?? productHotspot.position.y;
+						const posX = productHotspot.oPosition?.x ?? productHotspot.position?.x ?? 50;
+						const posY = productHotspot.oPosition?.y ?? productHotspot.position?.y ?? 50;
+						const diameter = productHotspot.oSize?.diameter ?? productHotspot.size?.diameter ?? getDefaultDiameter( productHotspot.unit );
+
+						let pixelX, pixelY, pixelDiameter;
+
+						if ( productHotspot.unit === 'percent' ) {
+							// Calculate pixel values for rendering
+							pixelX = percentToPx( posX, 'x' );
+							pixelY = percentToPx( posY, 'y' );
+							pixelDiameter = percentToPx( diameter, 'x' );
+						} else {
+							// Legacy handling in editor (relative to base dimensions)
+							const baseWidth = PRODUCT_HOTSPOT_CONSTANTS.BASE_WIDTH;
+							const baseHeight = PRODUCT_HOTSPOT_CONSTANTS.BASE_HEIGHT;
+							pixelX = ( posX / baseWidth ) * ( contentRect?.width || PRODUCT_HOTSPOT_CONSTANTS.BASE_WIDTH );
+							pixelY = ( posY / baseHeight ) * ( contentRect?.height || PRODUCT_HOTSPOT_CONSTANTS.BASE_HEIGHT );
+							pixelDiameter = ( diameter / baseWidth ) * ( contentRect?.width || PRODUCT_HOTSPOT_CONSTANTS.BASE_WIDTH );
+						}
 
 						return (
 							<Rnd
 								key={ productHotspot.id }
 								position={ {
-									x: ratioToPx( fallbackPosX, 'x' ),
-									y: ratioToPx( fallbackPosY, 'y' ),
+									x: pixelX,
+									y: pixelY,
 								} }
 								size={ {
-									width: ratioToPx(
-										productHotspot.oSize?.diameter ?? productHotspot.size?.diameter ?? 48,
-										'x',
-									),
-									height: ratioToPx(
-										productHotspot.oSize?.diameter ?? productHotspot.size?.diameter ?? 48,
-										'x',
-									),
+									width: pixelDiameter,
+									height: pixelDiameter,
 								} }
 								bounds="parent"
-								maxWidth={ 100 }
-								maxHeight={ 100 }
-								minWidth={ 20 }
-								minHeight={ 20 }
+								maxWidth={ contentRect?.width || '100%' }
+								maxHeight={ contentRect?.height || '100%' }
+								minWidth={ PRODUCT_HOTSPOT_CONSTANTS.MIN_PX }
+								minHeight={ PRODUCT_HOTSPOT_CONSTANTS.MIN_PX }
 								lockAspectRatio
 								onDragStop={ ( e, d ) => {
+									if ( ! contentRect ) {
+										return;
+									}
+
+									// d.x and d.y are relative to the parent (contentRect div)
+									const relativeX = d.x;
+									const relativeY = d.y;
+
 									const newProductHotspots = productHotspots.map( ( h2, j ) => {
 										if ( j === index ) {
+											const newX = pxToPercent( relativeX, 'x' );
+											const newY = pxToPercent( relativeY, 'y' );
+
+											// If converting from legacy, also convert diameter to percentage
+											let newDiameter = h2.oSize?.diameter ?? h2.size?.diameter ?? getDefaultDiameter( h2.unit );
+											if ( h2.unit !== 'percent' ) {
+												// Ensure it's at least 10px equivalent in percentage
+												const minPercent = contentRect ? ( PRODUCT_HOTSPOT_CONSTANTS.MIN_PX / contentRect.width ) * 100 : PRODUCT_HOTSPOT_CONSTANTS.MIN_PERCENT_FALLBACK;
+												newDiameter = Math.max( minPercent, ( newDiameter / PRODUCT_HOTSPOT_CONSTANTS.BASE_WIDTH ) * 100 );
+											}
 											return {
 												...h2,
+												unit: 'percent',
+												size: { diameter: newDiameter },
+												oSize: { diameter: newDiameter },
 												oPosition: {
-													x: pxToRatio( d.x, 'x' ),
-													y: pxToRatio( d.y, 'y' ),
+													x: newX,
+													y: newY,
+												},
+												position: {
+													x: newX,
+													y: newY,
 												},
 											};
 										}
@@ -564,14 +702,45 @@ const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 									} );
 									updateField( 'productHotspots', newProductHotspots );
 								} }
-								onResizeStop={ ( e, direction, ref ) => {
-									const newDiameterPx = ref.offsetWidth;
+								onResizeStop={ ( e, direction, ref, delta, position ) => {
+									if ( ! contentRect ) {
+										return;
+									}
+
+									let newDiameterPx = ref.offsetWidth;
+									let relativeX = position.x;
+									let relativeY = position.y;
+
+									// Clamp position to ensure it stays within contentRect
+									relativeX = Math.max( 0, Math.min( relativeX, contentRect.width - newDiameterPx ) );
+									relativeY = Math.max( 0, Math.min( relativeY, contentRect.height - newDiameterPx ) );
+
+									// Clamp diameter to ensure it doesn't exceed the remaining space from the current position
+									const maxAllowedDiameter = Math.min( contentRect.width - relativeX, contentRect.height - relativeY );
+									newDiameterPx = Math.min( newDiameterPx, maxAllowedDiameter );
+
+									const newDiameterPercent = pxToPercent( newDiameterPx, 'x' );
+									const newX = pxToPercent( relativeX, 'x' );
+									const newY = pxToPercent( relativeY, 'y' );
+
 									const newProductHotspots = productHotspots.map( ( h2, j ) => {
 										if ( j === index ) {
 											return {
 												...h2,
+												unit: 'percent',
 												oSize: {
-													diameter: pxToRatio( newDiameterPx, 'x' ),
+													diameter: newDiameterPercent,
+												},
+												size: {
+													diameter: newDiameterPercent,
+												},
+												oPosition: {
+													x: newX,
+													y: newY,
+												},
+												position: {
+													x: newX,
+													y: newY,
 												},
 											};
 										}

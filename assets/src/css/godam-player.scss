@@ -56,6 +56,8 @@
 	background: rgba(255, 255, 255, 0.7);
 	z-index: 10;
 	color: initial;
+	container-type: inline-size;
+	container-name: easydam-layer-container;
 }
 
 .hidden {
@@ -149,8 +151,8 @@
 		}
 
 		@container godam-player-default-skin (max-width: 480px) {
-			width: 50px;
-			height: 30px;
+			width: 40px;
+			height: 40px;
 
 			svg {
 				width: 20px;
@@ -309,25 +311,59 @@
 	}
 }
 
+.image-cta-no-image {
+	width: clamp(100px, 20vw, 250px);
+    height: clamp(100px, 20vw, 200px);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 1rem;
+	text-align: center;
+	background: linear-gradient(135deg, #f0f0f0 0%, #a7a7a7 100%);
+}
+
 .image-cta-container,
 .vertical-image-cta-container {
 	display: flex;
 	flex-direction: row;
-	gap: 30px;
+	gap: 20px;
 	max-width: 600px;
+	width: 100%;
 	background-color: #fff;
 	align-items: center;
 	padding: 20px;
+	border-radius: 12px;
+	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+	box-sizing: border-box;
+	margin: auto;
 
 	h2 {
-		font-size: 32px;
+		font-size: clamp(20px, 4vw, 32px);
 		font-weight: 700;
 		line-height: 1.125;
+		margin: 0 0 10px;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
 	}
 
 	p {
 		color: #8c8c8c;
 		font-size: 16px;
+		margin: 0 0 20px;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	img {
+		max-width: 100%;
+		width: 200px;
+		height: auto;
+		border-radius: 8px;
+		object-fit: cover;
 	}
 
 	.image-cta-btn {
@@ -337,12 +373,9 @@
 }
 
 .image-cta-description {
-	flex-basis: 50%;
-	border-radius: 0 20px 20px 0;
+	flex: 1;
 	display: flex;
 	flex-direction: column;
-	gap: 20px;
-	align-content: center;
 	justify-content: center;
 	padding-left: 0;
 
@@ -353,8 +386,9 @@
 
 .vertical-image-cta-container {
 	flex-direction: column;
-	width: 300px;
+	max-width: 250px;
 	border-radius: 36px;
+	text-align: center;
 
 	img {
 		border-radius: 25px;
@@ -362,13 +396,17 @@
 	}
 
 	.image-cta-description {
-		text-align: center;
 		padding: 0;
+		align-items: center;
 	}
 
 	.image-cta-btn {
-		text-decoration: none;
 		margin: 0 auto;
+	}
+
+	@container easydam-layer-container (max-width: 445px) {
+		width: 200px;
+		gap: 15px;
 	}
 }
 
@@ -376,43 +414,118 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	height: 100%;
+	min-height: 100%;
 	width: 100%;
+	padding: 20px;
+	box-sizing: border-box;
 }
 
 .image-cta-overlay-container {
 	position: absolute;
 	top: 0;
 	bottom: 0;
+	left: 0;
+	right: 0;
 	overflow: auto;
-	padding: 2rem 1rem;
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
 
 	h2 {
 		margin-block-start: 0;
-		margin-block-end: 0;
+		margin-block-end: 10px;
 	}
 
 	p {
-		font-size: 13px;
+		font-size: 16px;
+		margin-bottom: 15px;
 	}
 
 	img {
 		height: auto;
+		max-width: 100%;
 	}
 
 	a {
 		text-decoration: none;
 	}
+}
 
-	.image-cta-description {
+/* Responsive CTA Image Layer using Container Queries */
+@container (max-width: 580px) {
+
+	.image-cta-container {
+		gap: 15px;
+		padding: 15px;
+		width: 96%;
+		height: auto;
+		overflow-y: auto;
+
+		img {
+
+			/* Scale down image for mobile but keep aspect ratio */
+			width: 120px;
+			height: auto;
+			object-fit: contain;
+			flex-shrink: 0;
+		}
+
+		.image-cta-description {
+			gap: 0;
+			justify-content: flex-start;
+		}
+
+		h2 {
+			font-size: 20px;
+			margin-bottom: 5px;
+		}
+
+		p {
+			font-size: 13px;
+			margin-bottom: 10px;
+			line-height: 1.4;
+		}
+
+		.image-cta-btn {
+			font-size: 13px;
+			padding: 8px 12px;
+		}
+	}
+}
+
+@container (max-width: 400px) {
+
+	.image-cta-container {
+		padding: 10px;
 		gap: 10px;
+
+		img {
+			width: 100px;
+		}
+
+		h2 {
+			font-size: 16px;
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+		}
+
+		p {
+			font-size: 12px;
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+		}
 	}
 }
 
 .easydam-layer.hotspot-layer {
 	pointer-events: none;
 	background: transparent;
-	z-index: unset;
+	z-index: 5;
+	// z-index: unset;
 
 	&.overlapped {
 		z-index: 0;
@@ -1102,6 +1215,24 @@ body.godam-share-modal-open {
 	opacity: 0;
 	transition: opacity 0.2s ease, visibility 0.2s ease;
 	word-wrap: break-word;
+
+	/* Create an invisible bridge between hotspot and tooltip for smooth hover */
+	&::before {
+		content: "";
+		position: absolute;
+		left: 0;
+		right: 0;
+		height: 10px;
+
+		/* Default: tooltip is above hotspot, so bridge is below tooltip */
+		top: 100%;
+	}
+
+	/* When tooltip is below hotspot, bridge should be above tooltip */
+	&.tooltip-bottom::before {
+		top: auto;
+		bottom: 100%;
+	}
 }
 
 .fullscreen-layer .hotspot-tooltip,
@@ -1247,11 +1378,16 @@ body.godam-share-modal-open {
 
 .vjs-menu {
   opacity: 0;
-  transition: opacity 0.3s ease;
+  z-index: 19;
+
+  /* Use visibility in addition to opacity for better Safari compatibility */
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .vjs-menu.vjs-lock-showing {
   opacity: 1;
+  visibility: visible;
 }
 
 .vjs-menu.vjs-closing {
@@ -1273,6 +1409,7 @@ body.godam-share-modal-open {
 .vjs-control-bar {
 	background-color: var(--rtgodam-control-bar-color, #2b333fb3) !important;
 	display: flex;
+	z-index: 8;
 }
 
 .vjs-control:hover {
@@ -1570,6 +1707,19 @@ body.godam-share-modal-open {
 /* Style for video player fullscreen buttons */
 .video-js {
 
+	/* Remove blue tap highlight on mobile devices */
+	-webkit-tap-highlight-color: transparent !important;
+
+	* {
+
+		/* Remove focus outlines and box shadows from all player controls */
+		&:focus,
+		&:active,
+		&:focus-visible {
+			outline: none;
+		}
+	}
+
 	.vjs-custom-fullscreen-exit-control {
 		position: fixed !important;
 		top: 0.75rem !important;
@@ -1594,6 +1744,15 @@ body.godam-share-modal-open {
 
 	&.vjs-fullscreen {
 
+		// Fix for Forms confirmation message font size issue for fullscreen videos
+		.form-container {
+			font-size: initial;
+		}
+
+		.easydam-layer {
+			font-size: initial;
+		}
+
 		.vjs-custom-fullscreen-exit-control {
 			display: block !important;
 		}
@@ -1611,6 +1770,10 @@ body.godam-share-modal-open {
 	}
 
 	@container godam-player-default-skin (max-width: 480px) {
+
+		.vjs-big-play-button {
+			left: 55% !important;
+		}
 
 		.vjs-modal-dialog-content {
 			padding: 15px 15px 0 15px;
@@ -1634,6 +1797,7 @@ body.godam-share-modal-open {
 
 			.vjs-control {
 				height: 3em !important;
+				z-index: 10;
 			}
 
 			.vjs-play-control {
@@ -1732,7 +1896,7 @@ body.godam-share-modal-open {
 
 			.vjs-menu {
 				background-color: #2b333f;
-				z-index: 10;
+				z-index: 19;
 			}
 
 			.vjs-time-control {
@@ -1778,6 +1942,7 @@ body.godam-share-modal-open {
 			bottom: 0;
 			right: calc(3 * 40px);
 			height: 3em !important;
+			z-index: 19;
 		}
 	}
 
@@ -1866,7 +2031,6 @@ body.godam-share-modal-open {
 		position: absolute;
 		opacity: 0;
 		visibility: hidden;
-		pointer-events: none;
 		top: 10px;
 		right: 10px;
 		z-index: 10;
@@ -1889,6 +2053,42 @@ body.godam-share-modal-open {
 				visibility: visible;
 			}
 		}
+	}
+
+	// FULLSCREEN CONTAINER STYLES - Critical for iOS Safari compatibility
+	&.godam-video-fullscreen {
+		// Hide share button in custom fullscreen (consistency with other devices)
+		.vjs-button.godam-share-button {
+			display: none !important;
+		}
+
+		// Position the player to cover the entire viewport
+		position: fixed;
+		inset: 0;
+		width: 100vw;
+
+		// DYNAMIC HEIGHT HANDLING FOR iOS (Critical Fix)
+		// Problem: iOS Safari viewport height changes dynamically when address bar collapses/expands
+		// Solution: Use multiple height declarations for maximum compatibility
+
+		// Method 1: JavaScript-controlled CSS custom property (--vh)
+		// - Calculated by setupIOSViewportHeight() function in controlsManager.js
+		// - Uses visualViewport API when available (iOS 13+)
+		// - Accounts for address bar, keyboard, and pinch-zoom changes
+		// - Fallback to 1vh if --vh is not set (older browsers)
+		height: calc(var(--vh, 1vh) * 100);
+
+		// Method 2: Native CSS dvh unit (Dynamic Viewport Height)
+		// - Modern browsers (iOS 15.4+, Chrome 108+, etc.)
+		// - Automatically adjusts when address bar collapses/expands
+		// - Most performant solution when supported
+		@supports (height: 100dvh) {
+			height: 100dvh;
+		}
+		background: #000;
+		z-index: 99999999;
+		display: flex;
+		align-items: center;
 	}
 
 	&:hover {
@@ -1918,36 +2118,11 @@ body.godam-share-modal-open {
 		}
 	}
 
-	// FULLSCREEN CONTAINER STYLES - Critical for iOS Safari compatibility
-	&.godam-video-fullscreen {
-		// Position the player to cover the entire viewport
-		position: fixed;
-		inset: 0;
-		width: 100vw;
-
-		// DYNAMIC HEIGHT HANDLING FOR iOS (Critical Fix)
-		// Problem: iOS Safari viewport height changes dynamically when address bar collapses/expands
-		// Solution: Use multiple height declarations for maximum compatibility
-
-		// Method 1: JavaScript-controlled CSS custom property (--vh)
-		// - Calculated by setupIOSViewportHeight() function in controlsManager.js
-		// - Uses visualViewport API when available (iOS 13+)
-		// - Accounts for address bar, keyboard, and pinch-zoom changes
-		// - Fallback to 1vh if --vh is not set (older browsers)
-		height: calc(var(--vh, 1vh) * 100);
-
-		// Method 2: Native CSS dvh unit (Dynamic Viewport Height)
-		// - Modern browsers (iOS 15.4+, Chrome 108+, etc.)
-		// - Automatically adjusts when address bar collapses/expands
-		// - Most performant solution when supported
-		@supports (height: 100dvh) {
-			height: 100dvh;
-		}
-		background: #000;
-		z-index: 99999999;
-		display: flex;
-		align-items: center;
+	// Hide share button in standard fullscreen
+	.video-js.vjs-fullscreen .vjs-button.godam-share-button {
+		display: none !important;
 	}
+
 
 	.video-js {
 

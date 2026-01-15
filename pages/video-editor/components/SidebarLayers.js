@@ -23,7 +23,7 @@ import MetformIcon from '../assets/layers/MetFormIcon.png';
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { Button, Icon, Tooltip } from '@wordpress/components';
 import { plus, preformatted, customLink, arrowRight, video, customPostType, thumbsUp, error } from '@wordpress/icons';
 import { useState } from '@wordpress/element';
@@ -230,21 +230,8 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 						type,
 						duration: 5,
 						pauseOnHover: false,
-						hotspots: [
-							{
-								id: uuidv4(),
-								tooltipText: __( 'Click me!', 'godam' ),
-								position: { x: 50, y: 50 },
-								size: { diameter: 48 },
-								oSize: { diameter: 48 },
-								oPosition: { x: 50, y: 50 },
-								link: '',
-								backgroundColor: '#0c80dfa6',
-								showStyle: false,
-								showIcon: false,
-								icon: '',
-							},
-						],
+						hotspots: [],
+						isNew: true,
 					} ),
 				);
 				break;
@@ -290,23 +277,8 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 						duration: 5,
 						pauseOnHover: false,
 						miniCart: firstWooLayerMiniCart,
-						productHotspots: [
-							{
-								id: uuidv4(),
-								productId: '',
-								productDetails: '',
-								addToCart: false,
-								shopText: __( 'Shop Me', 'godam' ),
-								position: { x: 100, y: 100 },
-								size: { diameter: 48 },
-								oSize: { diameter: 48 },
-								oPosition: { x: 100, y: 100 },
-								backgroundColor: '#0c80dfa6',
-								showStyle: false,
-								showIcon: false,
-								icon: '',
-							},
-						],
+						productHotspots: [],
+						isNew: true,
 					} ),
 				);
 				break;
@@ -428,7 +400,11 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 										iconPosition="left"
 										onClick={ openModal }
 										disabled={ ! currentTime || layers.find( ( l ) => ( l.displayTime ) === ( currentTime ) ) }
-									>{ __( 'Add layer at ', 'godam' ) } { currentTime }s
+									>
+										{
+											// translators: %s is the current time in seconds.
+											sprintf( __( 'Add layer at %ss', 'godam' ), currentTime )
+										}
 									</Button>
 									{ layers.find( ( l ) => l.displayTime === currentTime ) && (
 										<p className="text-slate-500 text-center">

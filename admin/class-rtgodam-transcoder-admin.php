@@ -40,6 +40,8 @@ class RTGODAM_Transcoder_Admin {
 			add_action( 'admin_notices', array( $this, 'dashboard_offer_banner' ) );
 			add_action( 'admin_notices', array( $this, 'free_plan_admin_notice' ) );
 			add_action( 'admin_notices', array( $this, 'usage_limit_notices' ) );
+			add_action( 'admin_notices', array( $this, 'posthog_tracking_notice' ) );
+			add_action( 'admin_init', array( $this, 'handle_posthog_tracking_action' ) );
 			add_action( 'wp_ajax_rtgodam_dismiss_free_plan_notice', array( $this, 'dismiss_free_plan_notice' ) );
 		}
 	}
@@ -622,5 +624,109 @@ class RTGODAM_Transcoder_Admin {
 			</div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Display PostHog tracking notice.
+	 *
+	 * @since n.e.x.t
+	 */
+	public function posthog_tracking_notice() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$settings = get_option( 'rtgodam-settings', array() );
+		$api_key  = get_option( 'rtgodam-api-key', '' );
+
+		// If API key is present, we don't show the notice (it's auto-enabled or already handled).
+		if ( ! empty( $api_key ) ) {
+			return;
+		}
+
+		// If posthog_initialized is true, it means the user has already made a choice or it was auto-enabled.
+		if ( ! empty( $settings['general']['posthog_initialized'] ) ) {
+			return;
+		}
+
+		$optin_url  = wp_nonce_url( add_query_arg( 'godam_tracker_optin', 'true' ), 'godam_tracker_action' );
+		$optout_url = wp_nonce_url( add_query_arg( 'godam_tracker_optout', 'true' ), 'godam_tracker_action' );
+
+		$notice = sprintf(
+			__( 'Want to help make <strong>GoDAM</strong> even more awesome? Allow GoDAM to collect anonymous diagnostic data and usage information.', 'godam' )
+		);
+
+		$policy_url = 'https://posthog.com/privacy';
+
+		echo '<div class="updated"><p>';
+		echo wp_kses_post( $notice );
+		echo ' (<a class="godam-insights-data-we-collect" href="#">' . esc_html__( 'what we collect', 'godam' ) . '</a>)';
+		echo '<div class="description" style="display:none; margin-top: 10px; padding: 10px; background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 4px;">';
+		echo '<p style="margin-top: 0;"><strong>' . esc_html__( 'Data we collect:', 'godam' ) . '</strong></p>';
+		echo '<ul style="list-style: disc; margin-left: 20px;">';
+		echo '<li>' . esc_html__( 'Server environment details (PHP, MySQL, Server, and WordPress versions)', 'godam' ) . '</li>';
+		echo '<li>' . esc_html__( 'Site and user count (Language and number of users)', 'godam' ) . '</li>';
+		echo '<li>' . esc_html__( 'Plugin details (Number of active and inactive plugins)', 'godam' ) . '</li>';
+		echo '<li>' . esc_html__( 'Usage data (Interactions, navigation, session replays, heatmaps, and errors via PostHog)', 'godam' ) . '</li>';
+		echo '</ul>';
+		echo '<p style="margin-bottom: 0;">';
+		printf(
+			wp_kses(
+				/* translators: %s: PostHog privacy policy URL */
+				__( 'We are using PostHog to collect anonymous data. <a href="%s" target="_blank">Learn more</a>. This can be disabled from the settings on the Help page.', 'godam' ),
+				array(
+					'a' => array(
+						'href'   => array(),
+						'target' => array(),
+					),
+				)
+			),
+			esc_url( $policy_url )
+		);
+		echo '</p></div>';
+		echo '</p><p class="submit">';
+		echo '&nbsp;<a href="' . esc_url( $optin_url ) . '" class="button-primary button-large">' . esc_html__( 'Allow', 'godam' ) . '</a>';
+		echo '&nbsp;<a href="' . esc_url( $optout_url ) . '" class="button-secondary button-large">' . esc_html__( 'No thanks', 'godam' ) . '</a>';
+		echo '</p></div>';
+	}
+
+	/**
+	 * Handle PostHog tracking action.
+	 *
+	 * @since 1.4.9
+	 */
+	public function handle_posthog_tracking_action() {
+		if ( ! isset( $_GET['godam_tracker_optin'] ) && ! isset( $_GET['godam_tracker_optout'] ) ) {
+			return;
+		}
+
+		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+
+		if ( ! wp_verify_nonce( $nonce, 'godam_tracker_action' ) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$settings = get_option( 'rtgodam-settings', array() );
+
+		if ( ! isset( $settings['general'] ) ) {
+			$settings['general'] = array();
+		}
+
+		if ( isset( $_GET['godam_tracker_optin'] ) && 'true' === $_GET['godam_tracker_optin'] ) {
+			$settings['general']['enable_posthog_tracking'] = true;
+			$settings['general']['posthog_initialized']     = true;
+		} elseif ( isset( $_GET['godam_tracker_optout'] ) && 'true' === $_GET['godam_tracker_optout'] ) {
+			$settings['general']['enable_posthog_tracking'] = false;
+			$settings['general']['posthog_initialized']     = true;
+		}
+
+		update_option( 'rtgodam-settings', $settings );
+
+		wp_safe_redirect( esc_url_raw( remove_query_arg( array( 'godam_tracker_optin', 'godam_tracker_optout', '_wpnonce' ) ) ) );
+		exit;
 	}
 }

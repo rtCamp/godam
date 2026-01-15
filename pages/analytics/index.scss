@@ -36,8 +36,23 @@
 
 	// Video JS styles
 	.video-analytics-container {
-		
-		@apply flex bg-white justify-between py-6 overflow-auto md:px-10 pt-8;
+
+		@apply flex bg-white justify-between py-6 md:px-10 pt-8;
+
+		.analytics-info-container {
+			.analytics-info {
+
+				width: calc(50% - 8px);
+
+				@media screen and (min-width: 1535px) {
+					width: 350px;
+				}
+
+				@media screen and (max-width: 640px) {
+					width: 100%;
+				}
+			}
+		}
 	}
 
 	.country-heatmap-container {
@@ -124,8 +139,11 @@
 	// Video Chart styles
 	.video-container {
 		position: relative;
-		width: 100%;
 		width: 830px;
+
+		@media screen and (max-width: 1024px) {
+			width: 100%;
+		}
 	}
 
 	.video-chart-container {
@@ -412,11 +430,15 @@
 .subheading-container {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
 	position: relative;
+	justify-content: start;
 	border-bottom: 1px solid #ddd;
 	margin: 0 40px;
 	padding-bottom: 8px;
+
+	@media screen and (min-width: 768px) {
+		justify-content: space-between;
+	}
 }
 
 .subheading {
