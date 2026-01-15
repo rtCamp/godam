@@ -788,7 +788,7 @@ class RTGODAM_Transcoder_Handler {
 		$meta = wp_cache_get( $cache_key, 'godam' );
 		if ( empty( $meta ) ) {
 			$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s", $key, $value ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-			wp_cache_set( $cache_key, $meta, 'godam', 3600 );
+			wp_cache_set( $cache_key, $meta, 'godam', HOUR_IN_SECONDS );
 		}
 
 		if ( is_array( $meta ) && ! empty( $meta ) && isset( $meta[0] ) ) {
