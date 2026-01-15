@@ -443,15 +443,15 @@ if ( $godam_should_preload_poster ) {
 					</svg>
 				</div>
 				<?php foreach ( $godam_layers as $godam_layer ) : ?>
-                    <?php if ( isset( $godam_layer['miniCart'] ) ) : ?>
-                        <?php if ( true === $godam_layer['miniCart'] ) : ?>
-                            <div class="godam-video--cart-basket">
+					<?php if ( isset( $godam_layer['miniCart'] ) ) : ?>
+						<?php if ( true === $godam_layer['miniCart'] ) : ?>
+							<div class="godam-video--cart-basket">
                                 <?php echo do_blocks( '<!-- wp:woocommerce/mini-cart /-->' ); // phpcs:ignore ?>
-                            </div>
-                        <?php endif; ?>
-                        <?php break; ?>
-                    <?php endif; ?>
-                <?php endforeach; ?>
+							</div>
+						<?php endif; ?>
+						<?php break; ?>
+					<?php endif; ?>
+				<?php endforeach; ?>
 				<?php if ( $godam_should_preload_poster ) : ?>
 					<img
 						class="godam-poster-image"
@@ -715,17 +715,17 @@ if ( $godam_should_preload_poster ) {
 							</div>
 							<?php
 							// WooCommerce layer.
-                        elseif ( isset( $godam_layer['type'] ) && 'woo' === $godam_layer['type'] ) :
-                            ?>
-                            <div
-                                id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>"
-                                class="easydam-layer hidden hotspot-layer"
-                                <?php if ( ! empty( $godam_layer['bg_color'] ) ) : ?>
-                                    style="background-color: <?php echo esc_attr( $godam_layer['bg_color'] ); ?>"
-                                <?php endif; ?>
-                            >
-                            </div>
-                            <?php
+						elseif ( isset( $godam_layer['type'] ) && 'woo' === $godam_layer['type'] ) :
+							?>
+							<div
+								id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>"
+								class="easydam-layer hidden hotspot-layer"
+								<?php if ( ! empty( $godam_layer['bg_color'] ) ) : ?>
+									style="background-color: <?php echo esc_attr( $godam_layer['bg_color'] ); ?>"
+								<?php endif; ?>
+							>
+							</div>
+							<?php
 						endif;
 					endforeach;
 					?>

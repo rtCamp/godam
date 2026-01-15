@@ -10,6 +10,10 @@
 
 namespace RTGODAM\Inc\WooCommerce;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use RTGODAM\Inc\Traits\Singleton;
 
 /**
