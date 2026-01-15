@@ -1,3 +1,25 @@
+/**
+ * GoDAM Video Block - Editor styles
+ * These styles ensure the block works correctly in the editor,
+ * including in flex layouts (Row/Stack).
+ */
+.wp-block-godam-video {
+	width: 100%;
+	min-width: 0; // Allow shrinking in flex layouts (Row/Stack)
+	
+	// Ensure the figure takes full width
+	> figure {
+		width: 100%;
+		margin: 0;
+	}
+
+	// Ensure the video wrapper maintains proper dimensions in editor
+	.godam-video-wrapper {
+		position: relative;
+		width: 100%;
+	}
+}
+
 .wp-block-godam-video .godam-editor-video-placeholder {
 	width: 100%;
 	height: 100%;

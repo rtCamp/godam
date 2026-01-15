@@ -36,7 +36,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		processCells();
 	} );
 
-	ninjaFormEntriesObserver.observe( document.body, {
+	ninjaFormEntriesObserver.observe( document.getElementById( 'nf-submissions-element' ), {
 		childList: true,
 		subtree: true,
 	} );

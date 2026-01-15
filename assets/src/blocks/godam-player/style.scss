@@ -9,6 +9,28 @@
 @use "./cf7-godam-theme";
 @use './variables';
 
+/**
+ * GoDAM Video Block - Main wrapper styles
+ * These styles ensure the block works correctly in all layout contexts,
+ * including flex layouts (Row, Stack) and standard layouts (Group, Columns).
+ */
+.wp-block-godam-video {
+	width: 100%;
+	min-width: 0; // Allow shrinking in flex layouts (Row/Stack)
+	
+	// Ensure the figure takes full width
+	figure[id^="godam-player-container"] {
+		width: 100%;
+		margin: 0;
+	}
+
+	// Ensure the video wrapper maintains proper dimensions
+	.godam-video-wrapper {
+		position: relative;
+		width: 100%;
+	}
+}
+
 .rtgodam-video-caption {
 	margin-bottom: 1em;
     margin-top: .5em;

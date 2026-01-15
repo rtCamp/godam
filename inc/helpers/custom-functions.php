@@ -887,6 +887,35 @@ function godam_preview_page_content( $video_id ) {
 }
 
 /**
+ * Get post id from meta key and value.
+ * 
+ * @since n.e.x.t
+ *
+ * @param string $key   Meta key.
+ * @param mixed  $value Meta value.
+ *
+ * @return int|bool     Return post id if found else false.
+ */
+function rtgodam_get_post_id_by_meta_key_and_value( $key, $value ) {
+	global $wpdb;
+	$cache_key = md5( 'meta_key_' . $key . '_meta_value_' . $value );
+
+	$meta = rtgodam_cache_get( $cache_key );
+	if ( empty( $meta ) ) {
+		$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s", $key, $value ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		rtgodam_cache_set( $cache_key, $meta, HOUR_IN_SECONDS );
+	}
+
+	if ( is_array( $meta ) && ! empty( $meta ) && isset( $meta[0] ) ) {
+		$meta = $meta[0];
+	}
+	if ( is_object( $meta ) ) {
+		return $meta->post_id;
+	}
+	return false;
+}
+
+/**
  * Generate HTML content for the video embed page.
  *
  * This function produces the HTML markup for embedding a single video.
