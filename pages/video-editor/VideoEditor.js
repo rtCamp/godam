@@ -47,6 +47,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const [ duration, setDuration ] = useState( 0 );
 	const [ snackbarMessage, setSnackbarMessage ] = useState( '' );
 	const [ showSnackbar, setShowSnackbar ] = useState( false );
+	const [ aspectRatio, setAspectRatio ] = useState( '16:9' );
 
 	// Pre-fetch data on mount to ensure copy always works
 	useEffect( () => {
@@ -98,7 +99,17 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 			onBackToAttachmentPicker();
 		}
 
-		const { rtgodam_meta: rtGodamMeta, source_url: sourceURL, mime_type: mimeType, meta } = attachmentConfig;
+		const { rtgodam_meta: rtGodamMeta, source_url: sourceURL, mime_type: mimeType, meta, media_details: mediaDetails } = attachmentConfig;
+
+		// Calculate aspect ratio from video dimensions if available
+		// WordPress stores video dimensions in media_details object
+		const videoWidth = mediaDetails?.width || meta?.width;
+		const videoHeight = mediaDetails?.height || meta?.height;
+
+		if ( videoWidth && videoHeight ) {
+			const calculatedAspectRatio = `${ videoWidth }:${ videoHeight }`;
+			setAspectRatio( calculatedAspectRatio );
+		}
 
 		// Initialize the store if meta exists
 		if ( rtGodamMeta ) {
@@ -191,6 +202,18 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 			if ( video ) {
 				video.addEventListener( 'loadedmetadata', () => {
 					setDuration( player.duration() );
+
+					// Set width based on aspect ratio for 600px height
+					if ( video.videoWidth && video.videoHeight ) {
+						const targetHeight = 600;
+						const calculatedWidth = Math.round( targetHeight * ( video.videoWidth / video.videoHeight ) );
+
+						// Find the easydam-video-player wrapper and set its width
+						const videoPlayerElement = document.querySelector( '#easydam-video-player' );
+						if ( videoPlayerElement ) {
+							videoPlayerElement.style.width = `${ calculatedWidth }px`;
+						}
+					}
 				} );
 			}
 		}
@@ -441,7 +464,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 												withCredentials: false,
 											},
 										},
-										aspectRatio: '16:9',
+										aspectRatio,
 										sources,
 										// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
 										// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.

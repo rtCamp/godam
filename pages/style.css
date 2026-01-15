@@ -137,6 +137,7 @@ input, textarea, select {
 .video-editor-container main {
 
   @apply h-full flex-1;
+  overflow: hidden;
 }
 
 /* Sidebar */
