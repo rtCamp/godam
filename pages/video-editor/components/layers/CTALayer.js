@@ -127,7 +127,6 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 	const imageCtaHtml = () => {
 		const layout = layer?.cardLayout || 'card-layout--text-imagecover';
 		const hasImage = imageCtaUrl && imageCtaUrl !== '';
-		
 		// Generate image element
 		const imageElement = hasImage
 			? `<img src="${ imageCtaUrl }" alt="CTA Card Image" style="opacity: ${ layer?.imageOpacity ?? 1 }" />`
@@ -168,9 +167,8 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 		// Return based on layout order
 		if ( layout === 'card-layout--text-imagecover' || layout === 'card-layout--text-image' || layout === 'card-layout--image-bottom' ) {
 			return contentElement + imageContent;
-		} else {
-			return imageContent + contentElement;
 		}
+		return imageContent + contentElement;
 	};
 
 	useEffect( () => {
