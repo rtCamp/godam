@@ -36,14 +36,13 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 		 * Initialize the custom query with pagination variables.
 		 */
 		initialize() {
-			this._hasMore = false;
-			this._page = 1;
-			this._totalPages = 5;
-			this._perPage = 40;
-			this.totalAttachments = 0;
-
 			// Call parent initialize method.
 			wp.media.model.Query.prototype.initialize.apply( this, arguments );
+
+			this._hasMore = true;
+			this._page = 1;
+			this._perPage = 40;
+			this.totalAttachments = 0;
 		},
 
 		/**
@@ -76,9 +75,6 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 			// Trigger fetch and update internal state
 			return ( this._more = this.fetch( options ).done( () => {
 				this._page++;
-				if ( this._page > this._totalPages ) {
-					this._hasMore = false;
-				}
 			} ) );
 		},
 
@@ -112,18 +108,27 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 					if ( response.success && Array.isArray( response?.data ) ) {
 						const items = response.data;
 
-						// Calculate total pages and update pagination state.
-						this._hasMore = response.has_more;
+						// Update pagination state.
+						this._hasMore = !! response.has_more;
 
-						if ( response.has_more ) {
-							this._totalPages++;
+						// If no items found on first page, ensure loading stops.
+						if ( this._page === 1 && items.length === 0 ) {
+							this._hasMore = false;
 						}
 
 						options.success?.( items );
+
+						// Update total count to match the number of items loaded so far.
+						this.totalAttachments = this.length;
+
 						return items;
 					}
+
+					this._hasMore = false;
+					options.error?.( response );
 				},
 				error: ( xhr ) => {
+					this._hasMore = false;
 					options.error?.( xhr );
 				},
 			} );
@@ -149,12 +154,20 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 				delete props.query;
 				_.defaults( props );
 
-				const query = new wp.media.godamQuery( [], {
-					props,
-					args: {},
-					...options,
+				// Check if we already have a query with these props to prevent redundant instances.
+				let query = _.find( queries, ( q ) => {
+					return _.isEqual( q.props.toJSON(), props );
 				} );
-				queries.push( query );
+
+				if ( ! query ) {
+					query = new wp.media.godamQuery( [], {
+						props,
+						args: {},
+						...options,
+					} );
+					queries.push( query );
+				}
+
 				return query;
 			};
 		} )(),
