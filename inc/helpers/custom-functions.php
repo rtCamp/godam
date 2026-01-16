@@ -186,6 +186,11 @@ function rtgodam_image_cta_html( $layer ) {
 	$cta_background_color = isset( $layer['imageCtaButtonColor'] ) ? $layer['imageCtaButtonColor'] : '#000000';
 	$cta_button_text      = ! empty( $layer['imageCtaButtonText'] ) ? $layer['imageCtaButtonText'] : __( 'Check now', 'godam' );
 
+	// If no image is provided, force text-only layout on frontend.
+	if ( ! $has_image ) {
+		$layout = 'desktop-text-only';
+	}
+
 	// Generate image element.
 	$image_element = $has_image
 		? "<img src=\"{$image_url}\" alt=\"CTA Card Image\" style=\"opacity: {$image_opacity};\" />"
