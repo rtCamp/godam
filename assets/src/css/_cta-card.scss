@@ -58,7 +58,7 @@ $cta-card-max-width-vertical: 400px !default;
     // Layout: Text Left, Image Right (Full Height)
     &.card-layout--text-imagecover {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: calc(100% - var(--image-width, 50%)) var(--image-width, 50%);
         gap: $cta-spacing-md;
 
         .godam-cta-card-image {
@@ -69,7 +69,7 @@ $cta-card-max-width-vertical: 400px !default;
     // Layout: Image Left, Text Right (Full Height)
     &.card-layout--imagecover-text {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: var(--image-width, 50%) calc(100% - var(--image-width, 50%));
         gap: $cta-spacing-md;
 
         .godam-cta-card-image {
@@ -81,7 +81,7 @@ $cta-card-max-width-vertical: 400px !default;
     // Layout: Text Left, Image Right (Half Height)
     &.card-layout--text-image {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: calc(100% - var(--image-width, 50%)) var(--image-width, 50%);
         gap: $cta-spacing-md;
         align-items: center;
 
@@ -93,7 +93,7 @@ $cta-card-max-width-vertical: 400px !default;
     // Layout: Image Left, Text Right (Half Height)
     &.card-layout--image-text {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: var(--image-width, 50%) calc(100% - var(--image-width, 50%));
         gap: $cta-spacing-md;
         align-items: center;
 

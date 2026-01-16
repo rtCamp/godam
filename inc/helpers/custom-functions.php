@@ -180,6 +180,7 @@ function rtgodam_image_cta_html( $layer ) {
 	$layout               = isset( $layer['cardLayout'] ) ? $layer['cardLayout'] : 'card-layout--text-imagecover';
 	$has_image            = ! empty( $image_url );
 	$image_opacity        = isset( $layer['imageOpacity'] ) ? $layer['imageOpacity'] : 1;
+	$image_width          = isset( $layer['imageWidth'] ) ? $layer['imageWidth'] : 50;
 	$image_text           = isset( $layer['imageText'] ) ? $layer['imageText'] : '';
 	$image_description    = isset( $layer['imageDescription'] ) ? $layer['imageDescription'] : '';
 	$image_link           = isset( $layer['imageLink'] ) ? $layer['imageLink'] : '#';
@@ -241,7 +242,7 @@ function rtgodam_image_cta_html( $layer ) {
 
 	return "
 	<div class=\"godam-cta-overlay-container\">
-		<div class=\"godam-cta-card {$layout}\">
+		<div class=\"godam-cta-card {$layout}\" style=\"--image-width: {$image_width}%;\">
 			{$card_content}
 		</div>
 	</div>

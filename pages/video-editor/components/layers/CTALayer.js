@@ -270,7 +270,10 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 					{ layer?.cta_type === 'image' && (
 						<div className="easydam-layer" style={ { backgroundColor: layer.bg_color } }>
 							<div className="godam-cta-overlay-container">
-								<div className={ `godam-cta-card ${ layer?.cardLayout || 'card-layout--text-imagecover' }` }>
+								<div
+									className={ `godam-cta-card ${ layer?.cardLayout || 'card-layout--text-imagecover' }` }
+									style={ { '--image-width': `${ layer?.imageWidth ?? 50 }%` } }
+								>
 									{ renderImageCTA() }
 								</div>
 							</div>

@@ -11,6 +11,7 @@ import {
 	TextControl,
 	Icon,
 	Tooltip,
+	RangeControl,
 } from '@wordpress/components';
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -262,6 +263,37 @@ const ImageCTA = ( { layerID } ) => {
 
 	return (
 		<div className="mt-2 flex flex-col gap-6">
+			<div className="flex flex-col gap-2">
+				<div className="godam-input-label">
+					{ __( 'Layout', 'godam' ) }
+				</div>
+				<div className="grid grid-cols-4 gap-3">
+					{ layoutOptions.map( ( layout ) => {
+						const isSelected = ( layer?.cardLayout || 'card-layout--text-imagecover' ) === layout.value;
+						const IconComponent = LayoutIcons[ layout.icon ];
+						return (
+							<Tooltip key={ layout.value } text={ layout.label } placement="top">
+								<button
+									type="button"
+									onClick={ () => updateField( 'cardLayout', layout.value ) }
+									className={ `flex items-center justify-center p-4 rounded-lg border-2 transition-all hover:border-brand-primary-500 hover:bg-brand-primary-50 ${
+										isSelected
+											? 'border-brand-primary-600 bg-brand-primary-50'
+											: 'border-gray-300 bg-white'
+									}` }
+									aria-label={ layout.label }
+									style={ {
+										color: isSelected ? 'var(--wp-components-color-accent, #3858e9)' : '#6b7280',
+									} }
+								>
+									<IconComponent />
+								</button>
+							</Tooltip>
+						);
+					} ) }
+				</div>
+			</div>
+
 			<div>
 				<label
 					htmlFor="custom-play-button"
@@ -311,36 +343,19 @@ const ImageCTA = ( { layerID } ) => {
 				) }
 			</div>
 
-			<div className="flex flex-col gap-2">
-				<div className="godam-input-label">
-					{ __( 'Layout', 'godam' ) }
-				</div>
-				<div className="grid grid-cols-4 gap-3">
-					{ layoutOptions.map( ( layout ) => {
-						const isSelected = ( layer?.cardLayout || 'card-layout--text-imagecover' ) === layout.value;
-						const IconComponent = LayoutIcons[ layout.icon ];
-						return (
-							<Tooltip key={ layout.value } text={ layout.label } placement="top">
-								<button
-									type="button"
-									onClick={ () => updateField( 'cardLayout', layout.value ) }
-									className={ `flex items-center justify-center p-4 rounded-lg border-2 transition-all hover:border-brand-primary-500 hover:bg-brand-primary-50 ${
-										isSelected
-											? 'border-brand-primary-600 bg-brand-primary-50'
-											: 'border-gray-300 bg-white'
-									}` }
-									aria-label={ layout.label }
-									style={ {
-										color: isSelected ? 'var(--wp-components-color-accent, #3858e9)' : '#6b7280',
-									} }
-								>
-									<IconComponent />
-								</button>
-							</Tooltip>
-						);
-					} ) }
-				</div>
-			</div>
+			{ selectedImageUrl && (
+				<RangeControl
+					__nextHasNoMarginBottom
+					__next40pxDefaultSize
+					label={ __( 'Image Width (%)', 'godam' ) }
+					value={ layer?.imageWidth ?? 50 }
+					onChange={ ( value ) => updateField( 'imageWidth', value ) }
+					min={ 15 }
+					max={ 85 }
+					step={ 1 }
+					help={ __( 'Applies to horizontal layouts only', 'godam' ) }
+				/>
+			) }
 
 			<TextControl
 				__nextHasNoMarginBottom
