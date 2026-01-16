@@ -7,6 +7,10 @@
  * @since 1.3.0
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use RTGODAM\Inc\WPForms\WPForms_Integration_Helper;
 
 $godam_form_id  = absint( $form_data['id'] );

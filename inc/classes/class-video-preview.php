@@ -8,6 +8,10 @@
 
 namespace RTGODAM\Inc;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use RTGODAM\Inc\Traits\Singleton;
 
 /**
