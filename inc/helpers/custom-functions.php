@@ -157,7 +157,7 @@ function rtgodam_fetch_overlay_media_url( $media_id ) {
  * @param array $layer Associative array containing CTA details:
  *     - 'image' (int): Media ID for the image.
  *     - 'imageUrlExt' (string): External URL for the image (GoDAM hosted).
- *     - 'imageCtaOrientation' (string): Orientation of the CTA ('portrait' or other).
+ *     - 'cardLayout' (string): Layout type for the CTA card.
  *     - 'imageOpacity' (float): Opacity of the image (default is 1).
  *     - 'imageText' (string): Heading text for the CTA.
  *     - 'imageDescription' (string): Description text for the CTA.
@@ -177,45 +177,70 @@ function rtgodam_image_cta_html( $layer ) {
 		$image_url = rtgodam_fetch_overlay_media_url( $layer['image'] );
 	}
 
-	// Ensure $layer is an associative array and has required fields.
-	$orientation_class = isset( $layer['imageCtaOrientation'] ) && 'portrait' === $layer['imageCtaOrientation']
-		? 'vertical-image-cta-container'
-		: 'image-cta-container';
-
+	$layout               = isset( $layer['cardLayout'] ) ? $layer['cardLayout'] : 'card-layout--text-imagecover';
+	$has_image            = ! empty( $image_url );
 	$image_opacity        = isset( $layer['imageOpacity'] ) ? $layer['imageOpacity'] : 1;
 	$image_text           = isset( $layer['imageText'] ) ? $layer['imageText'] : '';
 	$image_description    = isset( $layer['imageDescription'] ) ? $layer['imageDescription'] : '';
-	$image_link           = isset( $layer['imageLink'] ) ? $layer['imageLink'] : '/';
-	$cta_background_color = isset( $layer['imageCtaButtonColor'] ) ? $layer['imageCtaButtonColor'] : '#eeab95';
-	$cta_button_text      = ! empty( $layer['imageCtaButtonText'] ) ? $layer['imageCtaButtonText'] : 'Buy Now'; // Null coalescing with empty check.
-	$image_box            = "<div class=\"image-cta-no-image\" style=\"opacity: {$image_opacity};\"> " . __( 'No Image', 'godam' ) . '</div>';
+	$image_link           = isset( $layer['imageLink'] ) ? $layer['imageLink'] : '#';
+	$cta_background_color = isset( $layer['imageCtaButtonColor'] ) ? $layer['imageCtaButtonColor'] : '#000000';
+	$cta_button_text      = ! empty( $layer['imageCtaButtonText'] ) ? $layer['imageCtaButtonText'] : __( 'Check now', 'godam' );
 
-	if ( ! empty( $image_url ) ) {
-		$image_box = "<img 
-						src=\"{$image_url}\" 
-						alt=\"CTA ad\" 
-						height=\"300\" 
-						width=\"250\" 
-						style=\"opacity: {$image_opacity};\" 
-					/>";
+	// Generate image element.
+	$image_element = $has_image
+		? "<img src=\"{$image_url}\" alt=\"CTA Card Image\" style=\"opacity: {$image_opacity};\" />"
+		: "<div class=\"godam-cta-card-image-placeholder\" style=\"opacity: {$image_opacity};\">" . __( 'No Image', 'godam' ) . '</div>';
+
+	// Generate content element.
+	$content_element = '
+		<div class="godam-cta-card-content">
+			' . ( ! empty( $image_text ) ? "<h1 class=\"card-title\">{$image_text}</h1>" : '' ) . '
+			' . ( ! empty( $image_description ) ? "<p class=\"card-description\">{$image_description}</p>" : '' );
+
+	if ( ! empty( $cta_button_text ) || ! empty( $image_link ) ) {
+		$content_element .= "
+			<div class=\"btns\">
+				<a class=\"godam-cta-btn\" href=\"{$image_link}\" target=\"_blank\" style=\"background-color: {$cta_background_color}; text-decoration: none;\">
+					{$cta_button_text}
+				</a>
+			</div>";
+	}
+
+	$content_element .= '
+		</div>
+	';
+
+	// Handle different layouts.
+	$card_content = '';
+
+	if ( 'desktop-text-only' === $layout ) {
+		// Text only - no image.
+		$card_content = $content_element;
+	} elseif ( 'card-layout--image-background' === $layout ) {
+		// Image background layout.
+		$card_content = "
+			<div class=\"godam-cta-card-image-bg\" style=\"background-image: url('{$image_url}'); opacity: {$image_opacity};\"></div>
+			{$content_element}
+		";
+	} else {
+		// All other layouts with image element.
+		$image_content = "<div class=\"godam-cta-card-image\">{$image_element}</div>";
+
+		// Return based on layout order.
+		if ( 'card-layout--text-imagecover' === $layout || 'card-layout--text-image' === $layout || 'card-layout--image-bottom' === $layout ) {
+			$card_content = $content_element . $image_content;
+		} else {
+			$card_content = $image_content . $content_element;
+		}
 	}
 
 	return "
-	<div class= \"image-cta-overlay-container\">
-		<div class=\"image-cta-parent-container\">
-			<div class=\"{$orientation_class}\">
-				{$image_box}
-				<div class=\"image-cta-description\">
-					" . ( ! empty( $image_text ) ? "<h2>{$image_text}</h2>" : '' ) . '
-					' . ( ! empty( $image_description ) ? "<p>{$image_description}</p>" : '' ) . "
-					<a class=\"image-cta-btn\" href=\"{$image_link}\" target=\"_blank\" style=\"background-color: {$cta_background_color};\">
-						{$cta_button_text}
-					</a>
-				</div>
-			</div>
+	<div class=\"godam-cta-overlay-container\">
+		<div class=\"godam-cta-card {$layout}\">
+			{$card_content}
 		</div>
 	</div>
-    ";
+	";
 }
 
 /**

@@ -125,26 +125,52 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 	};
 
 	const imageCtaHtml = () => {
-		let imageBox = `<div class="image-cta-no-image" style="opacity: ${ layer?.imageOpacity ?? 1 }">${ __( 'No Image', 'godam' ) }</div>`;
+		const layout = layer?.cardLayout || 'card-layout--text-imagecover';
+		const hasImage = imageCtaUrl && imageCtaUrl !== '';
+		
+		// Generate image element
+		const imageElement = hasImage
+			? `<img src="${ imageCtaUrl }" alt="CTA Card Image" style="opacity: ${ layer?.imageOpacity ?? 1 }" />`
+			: `<div class="godam-cta-card-image-placeholder" style="opacity: ${ layer?.imageOpacity ?? 1 }">${ __( 'No Image', 'godam' ) }</div>`;
 
-		if ( imageCtaUrl ) {
-			imageBox = `<img
-							src="${ imageCtaUrl }"
-							alt="CTA ad"
-							height="300"
-							width="250"
-							style="opacity: ${ layer?.imageOpacity ?? 1 }"
-						/>`;
+		// Generate content element
+		const contentElement = `
+			<div class="godam-cta-card-content">
+				${ layer?.imageText ? `<h1 class="card-title">${ layer.imageText }</h1>` : '' }
+				${ layer?.imageDescription ? `<p class="card-description">${ layer.imageDescription }</p>` : '' }
+				${ layer?.imageCtaButtonText || layer?.imageLink ? `
+					<div class="btns">
+						<a class="godam-cta-btn" href="${ layer?.imageLink || '#' }" target="_blank" style="background-color: ${ layer?.imageCtaButtonColor ?? '#000' }; text-decoration: none;">
+							${ layer?.imageCtaButtonText || __( 'Check now', 'godam' ) }
+						</a>
+					</div>
+				` : '' }
+			</div>
+		`;
+
+		// Handle different layouts
+		if ( layout === 'desktop-text-only' ) {
+			// Text only - no image
+			return contentElement;
 		}
 
-		return `${ imageBox }
-					<div class="image-cta-description">
-						${ layer?.imageText ? `<h2>${ layer.imageText }</h2>` : '' }
-						${ layer?.imageDescription ? `<p>${ layer.imageDescription }</p>` : '' }
-						<a class="image-cta-btn" href="${ layer?.imageLink || '/' }" target="_blank" style="background-color: ${ layer?.imageCtaButtonColor ?? '#eeab95' }">
-							${ layer?.imageCtaButtonText || __( 'Buy Now', 'godam' ) }
-						</a>
-					</div>`;
+		// Image background layout
+		if ( layout === 'card-layout--image-background' ) {
+			return `
+				<div class="godam-cta-card-image-bg" style="background-image: url('${ imageCtaUrl }'); opacity: ${ layer?.imageOpacity ?? 1 }"></div>
+				${ contentElement }
+			`;
+		}
+
+		// All other layouts with image element
+		const imageContent = `<div class="godam-cta-card-image">${ imageElement }</div>`;
+
+		// Return based on layout order
+		if ( layout === 'card-layout--text-imagecover' || layout === 'card-layout--text-image' || layout === 'card-layout--image-bottom' ) {
+			return contentElement + imageContent;
+		} else {
+			return imageContent + contentElement;
+		}
 	};
 
 	useEffect( () => {
@@ -226,15 +252,11 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 					) }
 					{ layer?.cta_type === 'image' && (
 						<div className="easydam-layer" style={ { backgroundColor: layer.bg_color } }>
-							<div className="image-cta-overlay-container">
-								<div className="image-cta-parent-container">
-									<div
-										className={ layer?.imageCtaOrientation === 'portrait'
-											? 'vertical-image-cta-container'
-											: 'image-cta-container' }
-										dangerouslySetInnerHTML={ { __html: formHTML } }
-									/>
-								</div>
+							<div className="godam-cta-overlay-container">
+								<div
+									className={ `godam-cta-card ${ layer?.cardLayout || 'card-layout--text-imagecover' }` }
+									dangerouslySetInnerHTML={ { __html: formHTML } }
+								/>
 							</div>
 						</div>
 					) }

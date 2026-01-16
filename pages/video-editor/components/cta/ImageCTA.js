@@ -31,14 +31,6 @@ import { updateLayerField } from '../../redux/slice/videoSlice';
  * Layout SVG Icon Components
  */
 const LayoutIcons = {
-	TextMediaCover: () => (
-		<svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 28 20" fill="none">
-			<rect x="15" y="0" width="13" height="20" rx="2" fill="currentColor" />
-			<rect x="2" y="7" width="6" height="1.5" rx="0.75" fill="currentColor" />
-			<rect x="2" y="10" width="9" height="1.5" rx="0.75" fill="currentColor" />
-			<rect x="2" y="13" width="7" height="1.5" rx="0.75" fill="currentColor" />
-		</svg>
-	),
 	MediaTextCover: () => (
 		<svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 28 20" fill="none">
 			<rect x="0" y="0" width="13" height="20" rx="2" fill="currentColor" />
@@ -47,9 +39,9 @@ const LayoutIcons = {
 			<rect x="17" y="13" width="7" height="1.5" rx="0.75" fill="currentColor" />
 		</svg>
 	),
-	TextMedia: () => (
+	TextMediaCover: () => (
 		<svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 28 20" fill="none">
-			<rect x="15" y="5" width="13" height="10" rx="2" fill="currentColor" />
+			<rect x="15" y="0" width="13" height="20" rx="2" fill="currentColor" />
 			<rect x="2" y="7" width="6" height="1.5" rx="0.75" fill="currentColor" />
 			<rect x="2" y="10" width="9" height="1.5" rx="0.75" fill="currentColor" />
 			<rect x="2" y="13" width="7" height="1.5" rx="0.75" fill="currentColor" />
@@ -61,6 +53,14 @@ const LayoutIcons = {
 			<rect x="17" y="7" width="6" height="1.5" rx="0.75" fill="currentColor" />
 			<rect x="17" y="10" width="9" height="1.5" rx="0.75" fill="currentColor" />
 			<rect x="17" y="13" width="7" height="1.5" rx="0.75" fill="currentColor" />
+		</svg>
+	),
+	TextMedia: () => (
+		<svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 28 20" fill="none">
+			<rect x="15" y="5" width="13" height="10" rx="2" fill="currentColor" />
+			<rect x="2" y="7" width="6" height="1.5" rx="0.75" fill="currentColor" />
+			<rect x="2" y="10" width="9" height="1.5" rx="0.75" fill="currentColor" />
+			<rect x="2" y="13" width="7" height="1.5" rx="0.75" fill="currentColor" />
 		</svg>
 	),
 	MediaTop: () => (
@@ -315,7 +315,7 @@ const ImageCTA = ( { layerID } ) => {
 				<div className="godam-input-label">
 					{ __( 'Layout', 'godam' ) }
 				</div>
-				<div className="grid grid-cols-3 gap-3">
+				<div className="grid grid-cols-4 gap-3">
 					{ layoutOptions.map( ( layout ) => {
 						const isSelected = ( layer?.cardLayout || 'card-layout--text-imagecover' ) === layout.value;
 						const IconComponent = LayoutIcons[ layout.icon ];
@@ -346,12 +346,12 @@ const ImageCTA = ( { layerID } ) => {
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
 				className="godam-input"
-				label={ __( 'Text', 'godam' ) }
+				label={ __( 'Title', 'godam' ) }
 				value={ layer.imageText }
 				onChange={ ( value ) => {
 					updateField( 'imageText', value );
 				} }
-				placeholder={ __( 'Your text', 'godam' ) }
+				placeholder={ __( 'Add title here', 'godam' ) }
 			/>
 
 			<TextControl
@@ -387,12 +387,12 @@ const ImageCTA = ( { layerID } ) => {
 				onChange={ ( value ) => {
 					updateField( 'imageCtaButtonText', value );
 				} }
-				placeholder={ __( 'Buy Now', 'godam' ) }
+				placeholder={ __( 'Check now', 'godam' ) }
 			/>
 
 			<div className="flex items-center gap-2">
 				<ColorPickerButton
-					value={ layer?.imageCtaButtonColor ?? '#eeab95' }
+					value={ layer?.imageCtaButtonColor ?? '#000000' }
 					label={ __( 'CTA Button Background Color', 'godam' ) }
 					className="mb-0"
 					enableAlpha={ true }
@@ -402,7 +402,7 @@ const ImageCTA = ( { layerID } ) => {
 					<button
 						type="button"
 						className="text-xs text-red-500 underline hover:text-red-600 bg-transparent cursor-pointer"
-						onClick={ () => updateField( 'imageCtaButtonColor', '#eeab95' )
+						onClick={ () => updateField( 'imageCtaButtonColor', '#000000' )
 						}
 						aria-haspopup="true"
 						aria-label={ __( 'Remove', 'godam' ) }
