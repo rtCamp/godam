@@ -470,6 +470,54 @@
 		}
 	}
 
+	@container godam-player-bubble-skin (min-width: 768px) {
+
+		.video-js .vjs-control-bar {
+
+			justify-content: center;
+
+			.vjs-duration {
+				position: relative !important;
+				display: flex !important;
+				align-items: center;
+				order: 1 !important;
+				z-index: 19;
+				margin-left: -65px;
+				transform: translateY(-50%);
+
+				.vjs-duration-display {
+					position: static !important;
+					padding-left: 0;
+					right: unset !important;
+					bottom: unset !important;
+				}
+			}
+
+			.vjs-current-time {
+				position: relative !important;
+				display: flex !important;
+				align-items: center;
+				order: 3 !important;
+				z-index: 19;
+				margin-right: -65px;
+				transform: translateY(-50%);
+				left: unset !important;
+
+				.vjs-current-time-display {
+					position: static !important;
+					padding-right: 0;
+					left: unset !important;
+					bottom: unset !important;
+				}
+			}
+
+			.vjs-progress-control {
+				order: 2 !important;
+				margin: 0;
+			}
+		}
+	}
+
 	@media screen and (min-width: 768px) {
 
 		.video-js.vjs-fullscreen .vjs-control-bar {
