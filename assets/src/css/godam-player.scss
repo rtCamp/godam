@@ -1151,6 +1151,7 @@ body.godam-share-modal-open {
 	display: block !important;
 	padding: 0 !important;
 	margin: 0 !important;
+	max-height: 300px;
 	overflow: auto;
 	font-size: 12px !important;
 }
@@ -1715,6 +1716,10 @@ body.godam-share-modal-open {
 			.vjs-skip-forward-30 {
 				bottom: initial !important;
 			}
+		}
+
+		.vjs-menu-content {
+			max-height: 120px !important;
 		}
 	}
 }

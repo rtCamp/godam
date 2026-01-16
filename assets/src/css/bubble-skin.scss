@@ -166,6 +166,8 @@
 			gap: 8px;
 			padding: 4px 0 !important;
 			flex-direction: column;
+			max-height: 300px;
+			overflow: auto;
 			
 			li {
 				padding: 0;
@@ -389,6 +391,9 @@
 			}
 		}
 
+		.vjs-menu-content {
+			max-height: 120px !important;
+		}
 
 		.vjs-button.godam-share-button {
 			bottom: 136px !important;
