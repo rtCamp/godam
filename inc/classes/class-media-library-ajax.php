@@ -106,7 +106,17 @@ class Media_Library_Ajax {
 			'mpd_url'               => $item['transcoded_file_path'] ?? '',
 		);
 
+		// Set icon with fallback to default mime type icon for audio and PDF.
 		$result['icon'] = $item['thumbnail_url'] ?? '';
+
+		// If no thumbnail URL, use WordPress default icons for audio and PDF.
+		if ( empty( $result['icon'] ) ) {
+			if ( 'audio' === $item['job_type'] ) {
+				$result['icon'] = includes_url( 'images/media/audio.png' );
+			} elseif ( 'application/pdf' === $item['mime_type'] ) {
+				$result['icon'] = includes_url( 'images/media/document.png' );
+			}
+		}
 
 		if ( 'stream' === $item['job_type'] ) {
 			$result['type'] = 'video';
@@ -360,7 +370,17 @@ class Media_Library_Ajax {
 
 			// Set the icon to be used for the virtual media preview.
 			// Populate the image field used by the media library to show previews.
-			$icon_url          = wp_mime_type_icon( $attachment->ID, '.svg' );
+			$icon_url = wp_mime_type_icon( $attachment->ID );
+			
+			// For audio and PDF, ensure we use the default icons.
+			if ( empty( $icon_url ) || strpos( $icon_url, '.svg' ) !== false ) {
+				if ( $is_audio ) {
+					$icon_url = includes_url( 'images/media/audio.png' );
+				} elseif ( $is_pdf ) {
+					$icon_url = includes_url( 'images/media/document.png' );
+				}
+			}
+			
 			$response['image'] = array();
 
 			if ( ! empty( $icon_url ) ) {

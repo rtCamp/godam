@@ -137,7 +137,7 @@ export default AttachmentDetails?.extend( {
 		// No need to check if table exists, as if it did we would have returned early on link checks.
 		const tableBody = createTable( this.el );
 
-		if ( mime.startsWith( 'video/' ) && oEmbeddedVideoUrl ) {
+		if ( oEmbeddedVideoUrl ) {
 			tableBody.appendChild(
 				createAttachmentField( {
 					id: attachmentId,
