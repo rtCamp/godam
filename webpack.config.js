@@ -135,6 +135,13 @@ const godamGallery = {
 	},
 };
 
+const godamProductGallery = {
+	...sharedConfig,
+	entry: {
+		'godam-product-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'woocommerce', 'godam-product-gallery', 'godam-product-gallery.js' ),
+	},
+};
+
 const godamVideoEmbed = {
 	...sharedConfig,
 	entry: {
@@ -189,6 +196,48 @@ const fluentForms = {
 	entry: {
 		fluentforms: path.resolve( process.cwd(), 'assets', 'src', 'js', 'fluentforms', 'index.js' ),
 		'godam-fluentforms-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'fluentforms', 'editor.js' ),
+	},
+};
+
+const productVideoGalleryJS = {
+	...sharedConfig,
+	entry: {
+		'wc-product-video-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'woocommerce', 'admin', 'wc-product-video-gallery.js' ),
+	},
+};
+
+const addToProductJS = {
+	...sharedConfig,
+	entry: {
+		'wc-add-to-product': path.resolve( process.cwd(), 'assets', 'src', 'js', 'woocommerce', 'admin', 'wc-add-to-product.js' ),
+	},
+};
+
+const wcVideoCarouselJS = {
+	...sharedConfig,
+	entry: {
+		'wc-video-carousel': path.resolve( process.cwd(), 'assets', 'src', 'js', 'woocommerce', 'single-product-story', 'wc-video-carousel.js' ),
+	},
+};
+
+const adminFeaturedVideoGalleryJS = {
+	...sharedConfig,
+	entry: {
+		'wc-admin-featured-video-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'woocommerce', 'admin', 'wc-admin-featured-video-gallery.js' ),
+	},
+};
+
+const featuredVideoGalleryJS = {
+	...sharedConfig,
+	entry: {
+		'wc-featured-video-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'woocommerce', 'featured-video', 'wc-featured-video-gallery.js' ),
+	},
+};
+
+const wcWooLayerJS = {
+	...sharedConfig,
+	entry: {
+		'wc-woo-layer-cart-url-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'woocommerce', 'woocommerce-layer', 'wc-woo-layer-cart-url-editor.js' ),
 	},
 };
 
@@ -318,9 +367,16 @@ module.exports = [
 	godamPlayerAnalytics,
 	deactivationJS,
 	godamGallery,
+	godamProductGallery,
+	adminFeaturedVideoGalleryJS,
+	featuredVideoGalleryJS,
 	godamVideoEmbed,
 	gfGodamRecorderEditorJS,
 	wpFormsGodamRecorderEditorJS,
+	productVideoGalleryJS,
+	addToProductJS,
+	wcVideoCarouselJS,
+	wcWooLayerJS,
 	jetpackFormJS,
 	styles, // Do not remove this.
 	pages,
