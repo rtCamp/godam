@@ -15,12 +15,20 @@ import 'videojs-flvjs-es6';
 /**
  * WordPress dependencies
  */
-import { useRef, useEffect } from '@wordpress/element';
+import { useRef, useEffect, useMemo } from '@wordpress/element';
 
 export const VideoJS = ( props ) => {
 	const videoRef = useRef( null );
 	const playerRef = useRef( null );
 	const { options, onReady, onPlayerReady } = props;
+
+	const paddingTopValue = useMemo( () => {
+		if ( options.aspectRatio ) {
+			const [ x, y ] = options.aspectRatio.split( ':' );
+			return `${ ( y / x ) * 100 }%`;
+		}
+		return '56.25%';
+	}, [ options.aspectRatio ] );
 
 	useEffect( () => {
 		// Make sure Video.js player is only initialized once
@@ -32,10 +40,35 @@ export const VideoJS = ( props ) => {
 			videoElement.classList.add( 'vjs-styles-dimensions' );
 			videoRef.current.appendChild( videoElement );
 
-			playerRef.current = videojs( videoElement, options, () => {
+			const videojsOptions = { ...options };
+
+			if ( options.aspectRatio && ! /^\d+:\d+$/.test( options.aspectRatio ) ) {
+				// Remove aspectRatio from options as we will set it later
+				delete videojsOptions.aspectRatio;
+			}
+
+			playerRef.current = videojs( videoElement, videojsOptions, () => {
 				if ( onReady ) {
 					onReady( playerRef.current );
 				}
+
+				// Video.js player initialize instantly and hides the video loading spinner, so add a slight delay to hide it smoothly
+				setTimeout( () => {
+					if ( videoRef.current ) {
+						// Hide the video player loading animation
+						const parentElement = videoRef.current.parentElement;
+
+						if ( parentElement ) {
+							// Remove the child element with class name 'godam-video-loading'
+							const childElement = parentElement.querySelector( '.godam-video-loading' );
+							if ( childElement ) {
+								childElement.classList.add( 'hide' );
+							}
+						}
+
+						videoRef.current.style.display = 'block';
+					}
+				}, 500 );
 			} );
 
 			// Add quality menu
@@ -84,7 +117,10 @@ export const VideoJS = ( props ) => {
 
 	return (
 		<div data-vjs-player>
-			<div ref={ videoRef } />
+			<div style={ { paddingTop: paddingTopValue } } className="godam-video-loading">
+				<div className="godam-video-loading-spinner"></div>
+			</div>
+			<div style={ { display: 'none' } } ref={ videoRef } />
 		</div>
 	);
 };
