@@ -225,6 +225,11 @@ class RTGODAM_Transcoder_Handler {
 			}
 		}
 
+		// Skip transcoding and re-transcoding for images.
+		if ( preg_match( '/image/i', $wp_metadata['mime_type'], $type_array ) ) {
+			return $wp_metadata;
+		}
+
 		if ( empty( $wp_metadata['mime_type'] ) ) {
 			return $wp_metadata;
 		}
@@ -278,7 +283,6 @@ class RTGODAM_Transcoder_Handler {
 		$type             = strtolower( $type_arry[ count( $type_arry ) - 1 ] );
 		$extension        = pathinfo( $path, PATHINFO_EXTENSION );
 		$not_allowed_type = array();
-		preg_match( '/video|audio/i', $metadata['mime_type'], $type_array );
 
 		if ( (
 				preg_match( '/video|audio/i', $metadata['mime_type'], $type_array ) ||

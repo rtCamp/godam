@@ -148,12 +148,47 @@ class Media_Library_Ajax {
 	/**
 	 * Upload media to the Frappe backend.
 	 *
-	 * @param int $attachment_id Attachment ID.
+	 * @param int  $attachment_id Attachment ID.
+	 * @param bool $retranscode Whether this is a retranscode request.
 	 * @return void
 	 */
-	public function upload_media_to_frappe_backend( $attachment_id ) {
+	public function upload_media_to_frappe_backend( $attachment_id, $retranscode = false ) {
 		// Check if local development environment.
 		if ( rtgodam_is_local_environment() ) {
+			return;
+		}
+
+		/**
+		 * Filter to allow external developers to disable automatic transcoding on upload.
+		 * This allows users to have manual control over when videos get transcoded.
+		 *
+		 * Note: This filter only applies to automatic uploads. Manual retranscoding requests
+		 * (via bulk actions, tools page, etc.) will always proceed regardless of this setting.
+		 * Form integrations will also use this filter to disable transcoding for form uploads.
+		 *
+		 * Example usage:
+		 * add_filter( 'godam_auto_transcode_on_upload', '__return_false' ); // Disable globally
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param bool $auto_transcode_on_upload Whether to automatically transcode on upload. Default true.
+		 */
+		if ( ! $retranscode ) {
+			$auto_transcode_on_upload = apply_filters( 'godam_auto_transcode_on_upload', true );
+
+			if ( ! $auto_transcode_on_upload ) {
+				return;
+			}
+		}
+
+		$transcoding_job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+
+		// Check virtual media status for transcoding requests.
+		$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+		$is_virtual_media  = ! empty( $godam_original_id );
+
+		// Skip transcoding for virtual media.
+		if ( $is_virtual_media ) {
 			return;
 		}
 
@@ -168,7 +203,7 @@ class Media_Library_Ajax {
 			return;
 		}
 
-		$api_url = RTGODAM_API_BASE . '/api/resource/Transcoder Job';
+		$api_url = RTGODAM_API_BASE . '/api/resource/Transcoder Job' . ( empty( $transcoding_job_id ) ? '' : '/' . $transcoding_job_id );
 
 		$attachment_url = wp_get_attachment_url( $attachment_id );
 
@@ -208,6 +243,7 @@ class Media_Library_Ajax {
 
 		// Request params.
 		$params = array(
+			'retranscode'          => empty( $transcoding_job_id ) ? 0 : 1,
 			'api_token'            => $api_key,
 			'job_type'             => 'image',
 			'job_for'              => 'wp-media',
@@ -222,9 +258,10 @@ class Media_Library_Ajax {
 			'public'               => 1,
 		);
 
-		$upload_media = wp_remote_post(
+		$upload_media = wp_remote_request(
 			$api_url,
 			array(
+				'method'  => empty( $transcoding_job_id ) ? 'POST' : 'PUT',
 				'body'    => wp_json_encode( $params ),
 				'headers' => array(
 					'Content-Type' => 'application/json',
