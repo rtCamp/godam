@@ -30,6 +30,34 @@ import { useState } from '@wordpress/element';
 import Layer from './layers/Layer';
 import LayerSelector from './LayerSelector.jsx';
 
+// Build the base text used for default names (handles form subtypes)
+const getBaseLayerText = ( type, formKey ) => {
+	const layerData = layerTypes.find( ( l ) => l.type === type );
+	if ( ! layerData ) {
+		return '';
+	}
+	if ( type === 'form' ) {
+		const ft = layerData.formType?.[ formKey ?? 'gravity' ];
+		return ft?.layerText || __( 'Form', 'godam' );
+	}
+	return layerData.layerText || '';
+};
+
+// Default fallback name if no custom name set
+const getDefaultLayerName = ( layer ) => {
+	const base = getBaseLayerText( layer.type, layer.form_type );
+
+	const tNum = Number( layer?.displayTime ?? 0 );
+	let t;
+	if ( Number.isFinite( tNum ) ) {
+		t = tNum % 1 === 0 ? tNum : tNum.toFixed( 2 );
+	} else {
+		t = layer?.displayTime;
+	}
+
+	return `${ base } ${ __( 'layer at', 'godam' ) } ${ t }s`;
+};
+
 /**
  * Layer types with detail related to title, text and premium feature.
  */
@@ -262,7 +290,6 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								const layerData = layerTypes.find( ( l ) => l.type === layer.type );
 								const formType = 'form' === layerData?.type ? layerData?.formType[ layer.form_type ?? 'gravity' ] : false;
 								const icon = formType ? formType?.icon : layerData?.icon;
-								const layerText = formType ? formType?.layerText : layerData.layerText;
 
 								/**
 								 * Get Tooltip message.
@@ -314,7 +341,11 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 															<Icon icon={ icon } />
 														)
 													}
-													<p className="m-0 text-base">{ layerText } layer at <b>{ layer.displayTime }s</b></p>
+													<p className="m-0 text-base truncate max-w-[17rem]" title={ layer.name && layer.name.trim() ? layer.name : getDefaultLayerName( layer ) }>
+														{ ( layer.name && layer.name.trim() )
+															? layer.name
+															: getDefaultLayerName( layer ) }
+													</p>
 												</div>
 												<div>
 													<Icon icon={ arrowRight } />
