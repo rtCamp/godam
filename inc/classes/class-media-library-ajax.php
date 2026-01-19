@@ -160,7 +160,7 @@ class Media_Library_Ajax {
 
 		/**
 		 * Filter to allow external developers to disable automatic transcoding on upload.
-		 * This allows users to have manual control over when videos get transcoded.
+		 * This allows users to have manual control over when media files get transcoded.
 		 *
 		 * Note: This filter only applies to automatic uploads. Manual retranscoding requests
 		 * (via bulk actions, tools page, etc.) will always proceed regardless of this setting.
@@ -192,7 +192,7 @@ class Media_Library_Ajax {
 			return;
 		}
 
-		// Only if attachment type if image.
+		// Only if attachment type is image.
 		if ( 'image' !== substr( get_post_mime_type( $attachment_id ), 0, 5 ) ) {
 			return;
 		}
