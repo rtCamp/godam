@@ -914,63 +914,26 @@ class Media_Library_Ajax {
 			return $sources;
 		}
 
-		if ( empty( $image_meta['sizes'] ) || ! is_array( $image_meta['sizes'] ) ) {
+		// Rebuild sources array for virtual media.
+		if ( empty( $sources ) || ! is_array( $sources ) ) {
 			return $sources;
 		}
 
 		// Use the current image URL as the base for all subsizes.
 		$base_url = trailingslashit( untrailingslashit( dirname( $image_src ) ) );
 
-		// Skip srcset entirely when the requested size is the thumbnail variant.
-		if ( ! empty( $image_meta['sizes']['thumbnail'] ) ) {
-			$thumb_meta = $image_meta['sizes']['thumbnail'];
-			$is_thumb   = false;
+		// Rebuild sources array for virtual media.
+		foreach ( $sources as &$source ) {
 
-			if ( isset( $size_array[0], $size_array[1], $thumb_meta['width'], $thumb_meta['height'] )
-				&& (int) $size_array[0] === (int) $thumb_meta['width']
-				&& (int) $size_array[1] === (int) $thumb_meta['height']
-			) {
-				$is_thumb = true;
-			} elseif ( isset( $thumb_meta['file'] ) ) {
-				$thumb_file = $thumb_meta['file'];
-				$thumb_url  = $this->is_valid_url( $thumb_file ) ? $thumb_file : $base_url . ltrim( $thumb_file, '/' );
-				$is_thumb   = ! empty( $image_src ) && $thumb_url === $image_src;
-			}
+			// Get last string after the last slash in the file url.
+			$file_basename = basename( $source['url'] );
 
-			if ( $is_thumb ) {
-				return false;
-			}
+			// Rebuild the full URL using the base URL and the file basename.
+			$url = $base_url . ltrim( $file_basename, '/' );
+
+			$source['url'] = esc_url( $url );
 		}
-
-		// Rebuild the sources array using full URLs.
-		foreach ( $image_meta['sizes'] as $size_data ) {
-			if ( empty( $size_data['file'] ) || empty( $size_data['width'] ) ) {
-				continue;
-			}
-
-			$width = (int) $size_data['width'];
-
-			$file = $size_data['file'];
-
-			// If the file already is a URL, use it. Otherwise append it to the base URL.
-			if ( $this->is_valid_url( $file ) ) {
-				// Get last string after the last slash in the file url.
-				$file_basename = basename( $file );
-				// Rebuild the full URL using the base URL and the file basename.
-				$url = $base_url . ltrim( $file_basename, '/' );
-			} else {
-				$url = $base_url . ltrim( $file, '/' );
-			}
-
-			// Override or set the source keyed by width.
-			$sources[ $width ] = array(
-				'url'        => esc_url_raw( $url ),
-				'descriptor' => 'w',
-				'value'      => $width,
-			);
-		}
-
-		ksort( $sources );
+		unset( $source ); // Break the reference.
 
 		return $sources;
 	}
