@@ -914,7 +914,8 @@ class Media_Library_Ajax {
 			return $sources;
 		}
 
-		if ( empty( $image_meta['sizes'] ) || ! is_array( $image_meta['sizes'] ) ) {
+		// Rebuild sources array for virtual media.
+		if ( empty( $sources ) || ! is_array( $sources ) ) {
 			return $sources;
 		}
 
@@ -926,7 +927,7 @@ class Media_Library_Ajax {
 
 			// Get last string after the last slash in the file url.
 			$file_basename = basename( $source['url'] );
-				
+
 			// Rebuild the full URL using the base URL and the file basename.
 			$url = $base_url . ltrim( $file_basename, '/' );
 
