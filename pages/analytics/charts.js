@@ -323,7 +323,7 @@ async function main() {
 		'#line-chart',
 		videoPlayer,
 		'.line-chart-tooltip',
-		830,
+		Math.min( 830, window.innerWidth - 100 ),
 		300,
 	);
 	generateHeatmap( heatmapData, '#heatmap', videoPlayer );
