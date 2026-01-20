@@ -363,8 +363,12 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		// If the attachment is virtual (e.g. a GoDAM proxy video), override default preview.
 		if ( undefined !== virtual && virtual ) {
-			const videoPlayer = videojs( 'videojs-player-' + this.model.get( 'id' ) );
-			videoPlayer.poster( selected );
+			const playerId = 'videojs-player-' + this.model.get( 'id' );
+			const player = videojs.getPlayer( playerId );
+
+			if ( player ) {
+				player.poster( selected );
+			}
 		}
 
 		setTimeout( () => {
@@ -518,8 +522,12 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 				// If the attachment is virtual (e.g. a GoDAM proxy video), override default preview.
 				if ( undefined !== virtual && virtual ) {
-					const videoPlayer = videojs( 'videojs-player-' + model.get( 'id' ) );
-					videoPlayer.poster( thumbnailURL );
+					const playerId = 'videojs-player-' + model.get( 'id' );
+					const player = videojs.getPlayer( playerId );
+
+					if ( player ) {
+						player.poster( thumbnailURL );
+					}
 				}
 
 				/**
