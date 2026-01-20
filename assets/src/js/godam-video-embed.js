@@ -4,7 +4,7 @@
  * Listens for scroll events on the video embed page and sends postMessage
  * to the parent window to trigger video navigation.
  *
- * @since n.e.x.t
+ * @since 1.5.0
  */
 
 document.addEventListener( 'DOMContentLoaded', function() {
@@ -302,7 +302,7 @@ document.addEventListener( 'godamAllPlayersReady', () => {
 /**
  * Render CommentBox component on video embed page by default.
  *
- * @since n.e.x.t
+ * @since 1.5.0
  */
 document.addEventListener( 'DOMContentLoaded', function() {
 	const urlParams = new URLSearchParams( window.location.search );

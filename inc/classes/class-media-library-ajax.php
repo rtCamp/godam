@@ -56,7 +56,7 @@ class Media_Library_Ajax {
 	 * Validate if a URL is valid.
 	 * Ref: https://cmljnelson.blog/2018/08/31/url-validation-in-wordpress
 	 *
-	 * @since n.e.x.t
+	 * @since 1.5.0
 	 *
 	 * @param string $url The URL to validate.
 	 * @return bool True if valid, false otherwise.
@@ -169,7 +169,7 @@ class Media_Library_Ajax {
 		 * Example usage:
 		 * add_filter( 'godam_auto_transcode_on_upload', '__return_false' ); // Disable globally
 		 *
-		 * @since n.e.x.t
+		 * @since 1.5.0
 		 *
 		 * @param bool $auto_transcode_on_upload Whether to automatically transcode on upload. Default true.
 		 */
@@ -891,7 +891,7 @@ class Media_Library_Ajax {
 	/**
 	 * Filter srcset calculation for virtual media to use full URLs.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.5.0
 	 *
 	 * @param array|false $sources       Array of image sources for srcset or false.
 	 * @param array       $size_array    Array of width and height values.

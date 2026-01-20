@@ -213,7 +213,7 @@ class RTGODAM_Transcoder_Handler {
 		 * Example usage:
 		 * add_filter( 'godam_auto_transcode_on_upload', '__return_false' ); // Disable globally
 		 *
-		 * @since n.e.x.t
+		 * @since 1.5.0
 		 *
 		 * @param bool $auto_transcode_on_upload Whether to automatically transcode on upload. Default true.
 		 */

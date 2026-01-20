@@ -285,7 +285,7 @@ class Assets {
 	/**
 	 * Enqueue block editor assets.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.5.0
 	 *
 	 * @return void
 	 */
