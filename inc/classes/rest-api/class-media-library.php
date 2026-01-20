@@ -318,7 +318,7 @@ class Media_Library extends Base {
 	/**
 	 * Verify callback permission by checking API key.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.5.0
 	 *
 	 * @param WP_REST_Request $request The request object.
 	 * @return bool|WP_Error True if permission granted, WP_Error otherwise.
@@ -348,7 +348,7 @@ class Media_Library extends Base {
 	/**
 	 * Update image attachment meta with subsizes.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.5.0
 	 *
 	 * @param array $sizes         Array of sizes data.
 	 * @param int   $job_id        Job ID.
@@ -472,7 +472,7 @@ class Media_Library extends Base {
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response|WP_Error Success response or WP_Error on invalid event.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.5.0
 	 */
 	public function generate_image_subsizes_callback( $request ) {
 		$data = $request->get_json_params();
@@ -1893,7 +1893,7 @@ class Media_Library extends Base {
 	 * - sizes_data: Array of size requests with width, height, crop
 	 * - events_callback_url: The URL to send events to.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.5.0
 	 *
 	 * @param string $job_id        The GoDAM job ID.
 	 * @param int    $attachment_id The WordPress attachment ID.

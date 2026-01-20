@@ -3,7 +3,7 @@
  * GoDAM video embed page class.
  *
  * @package godam
- * @since n.e.x.t
+ * @since 1.5.0
  */
 
 namespace RTGODAM\Inc;
@@ -31,7 +31,7 @@ class Video_Embed {
 	/**
 	 * To setup action/filter.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.5.0
 	 * 
 	 * @return void
 	 */
@@ -45,7 +45,7 @@ class Video_Embed {
 	/**
 	 * Load the video embed template.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.5.0
 	 * 
 	 * @param string $template The current template.
 	 * @return string The path to the video embed template.
@@ -60,7 +60,7 @@ class Video_Embed {
 	/**
 	 * Enqueue assets for the video embed page.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.5.0
 	 * 
 	 * This method registers the styles and scripts needed for the video embed page.
 	 */
@@ -86,7 +86,7 @@ class Video_Embed {
 	/**
 	 * Hide the admin bar on the video embed page.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.5.0
 	 * 
 	 * @param bool $show_admin_bar Whether to show the admin bar.
 	 * @return bool False if on embed page, otherwise the original value.
@@ -101,7 +101,7 @@ class Video_Embed {
 	/**
 	 * Disable Query Monitor on the video embed page.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.5.0
 	 * 
 	 * @param bool $dispatch Whether to dispatch Query Monitor output.
 	 * @return bool False if on embed page, otherwise the original value.
