@@ -51,7 +51,6 @@ class Assets {
 		 * Get current post to check.
 		 */
 		$current_post = get_post();
-		$preview_page = get_query_var( 'godam_page' );
 
 		if ( $current_post instanceof WP_Post ) {
 			$load_assets = ( SRFM_FORMS_POST_TYPE === $current_post->post_type || ( false !== strpos( $current_post->post_content, 'wp:srfm/form' ) || has_shortcode( $current_post->post_content, 'sureforms' ) ) );
@@ -63,45 +62,31 @@ class Assets {
 			if ( ! $load_assets && ! $is_godam ) {
 				return;
 			}
-			$this->load_scripts();
-		}
 
-		if ( 'video-preview' === $preview_page ) {
-			$this->load_scripts();
-		}
-	}
+			if ( ! wp_script_is( 'godam-recorder-script' ) ) {
+				/**
+				 * Enqueue script if not already enqueued.
+				 */
+				wp_enqueue_script(
+					'godam-recorder-script',
+					RTGODAM_URL . 'assets/build/js/godam-recorder.min.js',
+					array( 'jquery' ),
+					filemtime( RTGODAM_PATH . 'assets/build/js/godam-recorder.min.js' ),
+					true
+				);
+			}
 
-	/**
-	 * Load the necessary scripts for sureforms and godam.
-	 *
-	 * This function will enqueue the godam-recorder-script and godam-uppy-video-style if they are not already enqueued.
-	 *
-	 * @return void
-	 */
-	public function load_scripts() {
-		if ( ! wp_script_is( 'godam-recorder-script' ) ) {
-			/**
-			 * Enqueue script if not already enqueued.
-			 */
-			wp_enqueue_script(
-				'godam-recorder-script',
-				RTGODAM_URL . 'assets/build/js/godam-recorder.min.js',
-				array( 'jquery' ),
-				filemtime( RTGODAM_PATH . 'assets/build/js/godam-recorder.min.js' ),
-				true
-			);
-		}
-
-		if ( ! wp_script_is( 'godam-uppy-video-style' ) ) {
-			/**
-			 * Enqueue style for the uppy video.
-			 */
-			wp_enqueue_style(
-				'godam-uppy-video-style',
-				RTGODAM_URL . 'assets/build/css/gf-uppy-video.css',
-				array(),
-				filemtime( RTGODAM_PATH . 'assets/build/css/gf-uppy-video.css' )
-			);
+			if ( ! wp_script_is( 'godam-uppy-video-style' ) ) {
+				/**
+				 * Enqueue style for the uppy video.
+				 */
+				wp_enqueue_style(
+					'godam-uppy-video-style',
+					RTGODAM_URL . 'assets/build/css/gf-uppy-video.css',
+					array(),
+					filemtime( RTGODAM_PATH . 'assets/build/css/gf-uppy-video.css' )
+				);
+			}
 		}
 	}
 }

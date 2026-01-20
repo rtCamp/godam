@@ -191,13 +191,7 @@ class Video_Metadata {
 	public function set_media_library_thumbnail( $response, $attachment, $meta ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $attachment and $meta are not modified.
 		if ( 0 === strpos( $response['mime'], 'video/' ) || 'application/pdf' === $response['mime'] ) {
 
-			$thumbnail_url = get_post_meta( $response['id'], 'rtgodam_media_video_thumbnail', true );
-
-			// Check for icon if it is a virtual media (for PDFs imported from GoDAM).
-			if ( empty( $thumbnail_url ) ) {
-				$thumbnail_url = get_post_meta( $response['id'], 'rtgodam_media_pdf_thumbnail', true );
-			}
-
+			$thumbnail_url   = get_post_meta( $response['id'], 'rtgodam_media_video_thumbnail', true );
 			$attachment_meta = get_post_meta( $response['id'], '_wp_attachment_metadata', true );
 
 			if ( ! empty( $thumbnail_url ) ) {

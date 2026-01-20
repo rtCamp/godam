@@ -98,11 +98,8 @@
 	}
 
 	&.godam-input__api-key {
-
 		.components-text-control__input{
-
 			/* Adjust width to account for padding */
-
 			/* @see: https://github.com/rtCamp/godam/issues/749 */
 			width: calc(100% + 0.75rem);
 		}

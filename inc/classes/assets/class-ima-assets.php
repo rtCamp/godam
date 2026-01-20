@@ -7,10 +7,6 @@
 
 namespace RTGODAM\Inc\Assets;
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
 use RTGODAM\Inc\Traits\Singleton;
 
 /**

@@ -9,28 +9,6 @@
 @use "./cf7-godam-theme";
 @use './variables';
 
-/**
- * GoDAM Video Block - Main wrapper styles
- * These styles ensure the block works correctly in all layout contexts,
- * including flex layouts (Row, Stack) and standard layouts (Group, Columns).
- */
-.wp-block-godam-video {
-	width: 100%;
-	min-width: 0; // Allow shrinking in flex layouts (Row/Stack)
-	
-	// Ensure the figure takes full width
-	figure[id^="godam-player-container"] {
-		width: 100%;
-		margin: 0;
-	}
-
-	// Ensure the video wrapper maintains proper dimensions
-	.godam-video-wrapper {
-		position: relative;
-		width: 100%;
-	}
-}
-
 .rtgodam-video-caption {
 	margin-bottom: 1em;
     margin-top: .5em;
@@ -117,77 +95,6 @@
 	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
 	background-color: rgba(149, 149, 149, 0.2);
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-	container-type: inline-size;
-	container-name: godam-player-default-skin;
-}
-
-/* Responsive CTA Image Layer using Container Queries */
-@container (max-width: 580px) {
-
-	.image-cta-container {
-		gap: 15px;
-		padding: 15px;
-		width: 96%;
-		height: auto;
-		overflow-y: auto;
-
-		img {
-
-			/* Scale down image for mobile but keep aspect ratio */
-			width: 120px;
-			height: auto;
-			object-fit: contain;
-			flex-shrink: 0;
-		}
-
-		.image-cta-description {
-			justify-content: flex-start;
-		}
-
-		h2 {
-			font-size: 20px;
-			margin-bottom: 5px;
-		}
-
-		p {
-			font-size: 13px;
-			margin-bottom: 10px;
-			line-height: 1.4;
-		}
-
-		.image-cta-btn {
-			font-size: 13px;
-			padding: 8px 12px;
-		}
-	}
-}
-
-@container (max-width: 400px) {
-
-	.image-cta-container {
-		padding: 10px;
-		gap: 10px;
-
-		img {
-			width: 100px;
-		}
-
-		h2 {
-			font-size: 16px;
-			display: -webkit-box;
-			-webkit-line-clamp: 2;
-			-webkit-box-orient: vertical;
-			overflow: hidden;
-		}
-
-		p {
-			font-size: 12px;
-			display: -webkit-box;
-			-webkit-line-clamp: 2;
-			-webkit-box-orient: vertical;
-			overflow: hidden;
-		}
-	}
 }
 
 .animate-play-btn {
@@ -259,8 +166,8 @@
 .easydam-layer--cta-text {
 	max-height: 100%;
 	width: 100%;
+	padding: 2rem;
 	overflow: auto;
-	padding: 0 2rem;
 }
 
 .easydam-layer--cta-html {
@@ -375,30 +282,20 @@
     flex-direction: row;
     gap: 30px;
     max-width: 600px;
-	width: 100%;
     background-color: #fff;
     align-items: center;
 	padding: 20px;
-	margin: auto;
 
     h2 {
         font-size: 32px;
         font-weight: 700;
 		line-height: 1.125;
-		display: -webkit-box;
-		-webkit-line-clamp: 2;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-	}
+    }
 
     p {
         color: #8c8c8c;
 		font-size: 16px;
-		display: -webkit-box;
-		-webkit-line-clamp: 2;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-	}
+    }
 
 	.image-cta-btn {
 		width: fit-content;
@@ -411,7 +308,7 @@
     border-radius: 0 20px 20px 0;
     display: flex;
     flex-direction: column;
-	gap: 0;
+    gap: 20px;
     align-content: center;
     justify-content: center;
     padding-left: 0;
@@ -423,7 +320,7 @@
 
 .vertical-image-cta-container {
     flex-direction: column;
-    max-width: 250px;
+    width: 300px;
     border-radius: 36px;
 
     img {
@@ -434,7 +331,6 @@
     .image-cta-description {
         text-align: center;
 		padding: 0;
-		gap: 0;
     }
 
 	.image-cta-btn {
@@ -447,7 +343,7 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	min-height: 100%;
+	height: 100%;
 	width: 100%;
 }
 
@@ -455,9 +351,8 @@
 	position: absolute;
 	top: 0;
 	bottom: 0;
-	left: 0;
-	right: 0;
 	overflow: auto;
+	padding: 2rem 1rem; 
 
 	h2 {
 		margin-block-start: 0;
@@ -465,7 +360,7 @@
 	}
 
 	p {
-		font-size: 16px;
+		font-size: 13px;
 	}
 
 	img {
@@ -475,16 +370,15 @@
 	a {
 		text-decoration: none;
 	}
+
+	.image-cta-description {
+		gap: 10px;
+	}
 }
 
 .easydam-layer.hotspot-layer {
 	pointer-events: none;
 	background: transparent;
-	z-index: 5;
-}
-
-.video-js .vjs-control-bar {
-	z-index: 8;
 }
 
 
@@ -932,7 +826,6 @@
     display: block !important;
     padding: 0 !important;
     margin: 0 !important;
-    max-height: 300px;
     overflow: auto;
     font-size: 12px !important;
 }

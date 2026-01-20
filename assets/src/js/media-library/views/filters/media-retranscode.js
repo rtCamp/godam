@@ -28,7 +28,7 @@ MediaRetranscode = MediaRetranscode?.extend( {
 
 		this.controller.on( 'select:activate select:deactivate', this.toggleButtonSelectClass, this );
 
-		this.model.set( 'text', 'Transcode Media' );
+		this.model.set( 'text', 'Retranscode Media' );
 	},
 
 	toggleButtonSelectClass() {

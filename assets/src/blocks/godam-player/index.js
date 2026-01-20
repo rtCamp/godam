@@ -13,7 +13,7 @@ import { registerBlockType } from '@wordpress/blocks';
  */
 import Edit from './edit';
 import save from './save';
-import icon from '../../images/godam-video-filled.svg';
+import { ReactComponent as icon } from '../../images/godam-video-filled.svg';
 
 /**
  * Every block starts by registering a new block type definition.
@@ -21,7 +21,7 @@ import icon from '../../images/godam-video-filled.svg';
  * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/
  */
 registerBlockType( 'godam/video', {
-	icon: <img src={ icon } alt="GoDAM Video Block icon" />,
+	icon,
 	usesContext: [ 'queryId' ],
 	/**
 	 * @see ./edit.js

@@ -7,10 +7,6 @@
  * @since 1.3.0
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
 $godam_video_upload_button_id = wp_unique_id( 'uppy-video-upload-' );
 
 // Define data.

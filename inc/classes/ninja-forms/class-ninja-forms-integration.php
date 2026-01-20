@@ -46,7 +46,7 @@ class Ninja_Forms_Integration {
 	 * @return void
 	 */
 	public function setup_hooks() {
-		add_action( 'admin_enqueue_scripts', array( $this, 'add_additional_scripts' ), 11 );
+		add_action( 'admin_enqueue_scripts', array( $this, 'add_additional_css_for_video_editor' ), 11 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'add_additional_css_for_godam_player' ), 11 );
 
 		add_action( 'rtgodam_render_layer_for_video_editor_before', array( $this, 'add_css_for_the_layer_inside_iframe' ), 10, 2 );
@@ -57,13 +57,13 @@ class Ninja_Forms_Integration {
 	}
 
 	/**
-	 * Add additional scripts.
+	 * Add additional css for video editor.
 	 *
 	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
-	public function add_additional_scripts() {
+	public function add_additional_css_for_video_editor() {
 		$custom_css = '
 			.form-container.ninja-form {
 				margin: unset;
@@ -78,24 +78,8 @@ class Ninja_Forms_Integration {
 			}
 		';
 
+
 		wp_add_inline_style( 'rtgodam-style', $custom_css );
-
-		$screen = get_current_screen();
-		if ( ! $screen ) {
-			return;
-		}
-
-		if ( 'ninja-forms_page_nf-submissions' !== $screen->id ) {
-			return;
-		}
-
-		wp_enqueue_script(
-			'rtgodam-ninja-forms-submissions-list',
-			RTGODAM_URL . 'assets/build/js/ninja-forms-submissions-list.min.js',
-			array( 'jquery', 'rtgodam-script' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/ninja-forms-submissions-list.min.js' ),
-			true
-		);
 	}
 
 	/**
@@ -111,6 +95,7 @@ class Ninja_Forms_Integration {
 				position: static;
 			}
 		';
+
 
 		wp_add_inline_style( 'godam-player-style', $custom_css );
 	}

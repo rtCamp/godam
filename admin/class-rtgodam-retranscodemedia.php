@@ -111,7 +111,7 @@ class RTGODAM_RetranscodeMedia {
 	 * Add the Retranscode Media meta box to the EasyDam Tools page.
 	 */
 	public function render_tools_page() {
-		$this->add_easydam_meta_boxes();
+		$this->add_easydam_meta_boxes()
 		?>
 		<div>
 			<h1><?php esc_html_e( 'GoDAM Tools', 'godam' ); ?></h1>
