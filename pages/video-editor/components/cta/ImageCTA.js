@@ -155,8 +155,8 @@ const ImageCTA = ( { layerID } ) => {
 			.then( ( media ) => {
 				setSelectedImageUrl( media.source_url );
 			} )
-			.catch( () => {
-				removeCTAImage();
+			.catch( ( ) => {
+				setSelectedImageUrl( '' );
 			} );
 	},
 	[ restURL, layer?.imageUrlExt ] );

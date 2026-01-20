@@ -37,8 +37,6 @@
 		background-color: #fff !important;
 		color: #000;
 		border-radius: 4px;
-		max-height: 300px;
-		overflow: auto;
 		
 		li {
 			padding: 8px;
@@ -88,10 +86,6 @@
 
 	@container godam-player-minimal-skin (max-width: 480px) {
 		
-		.video-js .vjs-big-play-button {
-			left: 55%;
-		}
-
 		.video-js .vjs-control-bar {
 			height: 6em !important;
 
@@ -197,11 +191,8 @@
 
 		.video-js .vjs-menu {
 			width: 8em;
-			z-index: 19;
 
 			.vjs-menu-content {
-
-				max-height: 120px !important;
 
 				.godam-back-item-container::after {
 					top: 24.5px;

@@ -507,12 +507,6 @@ class Pages {
 				)
 			);
 
-			wp_localize_script(
-				'transcoder-page-script-video-editor',
-				'posthogConfig',
-				$this->get_posthog_config()
-			);
-
 			// Enqueue Gravity Forms styles if the plugin is active.
 			if ( $is_gf_active ) {
 				$this->enqueue_gravity_forms_styles();
@@ -617,12 +611,6 @@ class Pages {
 
 			wp_localize_script(
 				'godam-page-script-dashboard',
-				'posthogConfig',
-				$this->get_posthog_config()
-			);
-
-			wp_localize_script(
-				'godam-page-script-dashboard',
 				'videoData',
 				array(
 					'adminUrl'              => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
@@ -680,12 +668,6 @@ class Pages {
 				)
 			);
 
-			wp_localize_script(
-				'transcoder-page-script-analytics',
-				'posthogConfig',
-				$this->get_posthog_config()
-			);
-
 			$rtgodam_user_data = rtgodam_get_user_data( true );
 
 			wp_localize_script(
@@ -721,12 +703,6 @@ class Pages {
 				$rtgodam_user_data
 			);
 
-			wp_localize_script(
-				'godam-page-script-help',
-				'posthogConfig',
-				$this->get_posthog_config()
-			);
-
 			// Footer URL data for internal redirection.
 			wp_localize_script(
 				'godam-page-script-help',
@@ -756,12 +732,6 @@ class Pages {
 					$rtgodam_user_data
 				);
 			}
-
-			wp_localize_script(
-				'transcoder-page-script-godam',
-				'posthogConfig',
-				$this->get_posthog_config()
-			);
 
 			// Footer URL data for internal redirection.
 			wp_localize_script(
@@ -794,12 +764,6 @@ class Pages {
 				$rtgodam_user_data
 			);
 
-			wp_localize_script(
-				'godam-page-script-tools',
-				'posthogConfig',
-				$this->get_posthog_config()
-			);
-
 			// Footer URL data for internal redirection.
 			wp_localize_script(
 				'godam-page-script-tools',
@@ -828,12 +792,6 @@ class Pages {
 				array(
 					'version' => RTGODAM_VERSION,
 				)
-			);
-
-			wp_localize_script(
-				'godam-page-script-whats-new',
-				'posthogConfig',
-				$this->get_posthog_config()
 			);
 
 			wp_enqueue_script( 'godam-page-script-whats-new' );
@@ -868,53 +826,6 @@ class Pages {
 				'roles'    => $roles,
 			)
 		);
-
-		wp_localize_script(
-			'media-library-react',
-			'posthogConfig',
-			$this->get_posthog_config()
-		);
-	}
-
-	/**
-	 * Get PostHog configuration for internal GoDAM analytics tracking.
-	 * These are hardcoded public keys - clients don't need to configure anything.
-	 *
-	 * @return array PostHog configuration array with 'key', 'host', and 'enabled' settings.
-	 */
-	private function get_posthog_config() {
-		$settings        = get_option( 'rtgodam-settings', array() );
-		$enable_tracking = isset( $settings['general']['enable_posthog_tracking'] ) ? $settings['general']['enable_posthog_tracking'] : false;
-
-		$config = array(
-			'key'     => 'phc_9P3X3py1SfwrF78SXXkIyL2cHjkRTpvWzqf8RZJDaSk',
-			'host'    => 'https://us.i.posthog.com',
-			'enabled' => (int) $enable_tracking, // Convert boolean to int (0/1) for proper JS encoding.
-		);
-
-		if ( $enable_tracking ) {
-			global $wpdb, $wp_version;
-
-			if ( ! function_exists( 'get_plugins' ) ) {
-				require_once ABSPATH . 'wp-admin/includes/plugin.php';
-			}
-
-			$all_plugins    = get_plugins();
-			$active_plugins = get_option( 'active_plugins', array() );
-
-			$config['properties'] = array(
-				'php_version'          => phpversion(),
-				'mysql_version'        => $wpdb->db_version(),
-				'server_software'      => isset( $_SERVER['SERVER_SOFTWARE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) ) : '',
-				'wp_version'           => $wp_version,
-				'site_language'        => get_locale(),
-				'active_plugins_count' => count( $active_plugins ),
-				'total_plugins_count'  => count( $all_plugins ),
-				'user_count'           => count_users()['total_users'] ?? 0,
-			);
-		}
-
-		return $config;
 	}
 
 	/**

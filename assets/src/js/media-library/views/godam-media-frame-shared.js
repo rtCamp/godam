@@ -98,8 +98,10 @@ const GoDAMMediaFrameShared = {
 		this.content.set( RenderedContent );
 
 		// Attaches callback to create attachment entry in WordPress for GoDAM Video.
-		state.off( 'select', this.onGoDAMSelect, this );
-		state.on( 'select', this.onGoDAMSelect, this );
+		if ( 'video' === mimeTypes ) {
+			state.off( 'select', this.onGoDAMSelect, this );
+			state.on( 'select', this.onGoDAMSelect, this );
+		}
 	},
 
 	onGoDAMSelect() {
@@ -129,7 +131,7 @@ const GoDAMMediaFrameShared = {
 				url: data.url,
 				hls_url: data.hls_url,
 				mpd_url: data.mpd_url,
-				mime: data.mime,
+				mime: 'video/mp4',
 				type: data.type,
 				subtype: data.subtype,
 				status: data.status,
@@ -140,7 +142,6 @@ const GoDAMMediaFrameShared = {
 				owner: data.owner,
 				label: data.label,
 				icon: data.icon,
-				thumbnail_url: data.thumbnail_url,
 				caption: data.caption,
 				description: data.description,
 			} ),

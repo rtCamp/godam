@@ -1,24 +1,4 @@
-/**
- * GoDAM Video Block - Editor styles
- * These styles ensure the block works correctly in the editor,
- * including in flex layouts (Row/Stack).
- */
-.wp-block-godam-video {
-	width: 100%;
-	min-width: 0; // Allow shrinking in flex layouts (Row/Stack)
-	
-	// Ensure the figure takes full width
-	> figure {
-		width: 100%;
-		margin: 0;
-	}
-
-	// Ensure the video wrapper maintains proper dimensions in editor
-	.godam-video-wrapper {
-		position: relative;
-		width: 100%;
-	}
-}
+@import url(https://vjs.zencdn.net/8.3.0/video-js.css);
 
 .wp-block-godam-video .godam-editor-video-placeholder {
 	width: 100%;
@@ -30,50 +10,4 @@
 	border-radius: 6px;
 	position: relative;
 	aspect-ratio: 16 / 9;
-}
-
-.wp-block-godam-video {
-
-	.godam-video-container {
-		position: relative;
-		width: 100%;
-	}
-
-	.godam-video-loading {
-		width: 100%;
-		background-color: #000;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 10;
-
-		.godam-video-loading-spinner:not(.hide) {
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-
-			&::after {
-				content: '';
-				display: block;
-				width: 40px;
-				height: 40px;
-				border: 4px solid #fff;
-				border-top-color: transparent;
-				border-radius: 50%;
-				animation: godam-spin 1s linear infinite;
-			}
-		}
-	}
-
-	@keyframes godam-spin {
-
-		0% {
-			transform: rotate(0deg);
-		}
-
-		100% {
-			transform: rotate(360deg);
-		}
-	}
 }

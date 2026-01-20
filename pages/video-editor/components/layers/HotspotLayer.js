@@ -25,7 +25,7 @@ import {
 	check,
 } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
-import { useState, useRef, useEffect, useCallback } from '@wordpress/element';
+import { useState, useRef, useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -36,7 +36,6 @@ import LayerControls from '../LayerControls';
 import FontAwesomeIconPicker from '../hotspot/FontAwesomeIconPicker';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import LayersHeader from './LayersHeader';
-import { HOTSPOT_CONSTANTS } from '../../../../assets/src/js/godam-player/utils/constants';
 
 const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
@@ -49,68 +48,33 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	const [ expandedHotspotIndex, setExpandedHotspotIndex ] = useState( null );
 
 	const containerRef = useRef( null );
-	const videoRef = useRef( null );
 
-	const [ contentRect, setContentRect ] = useState( null );
+	// ratio { x, y } for px <-> ratio
+	const [ ratio, setRatio ] = useState( { x: 1, y: 1 } );
 
 	// Helper to dispatch updates
-	const updateField = useCallback( ( field, value ) => {
+	const updateField = ( field, value ) => {
 		dispatch( updateLayerField( { id: layer.id, field, value } ) );
-	}, [ dispatch, layer?.id ] );
+	};
 
-	const percentToPx = useCallback( ( percent, dimension ) => {
-		if ( ! contentRect ) {
-			return 0;
-		}
-		const size = dimension === 'x' ? contentRect.width : contentRect.height;
-		return ( percent / 100 ) * size;
-	}, [ contentRect ] );
-
-	const pxToPercent = useCallback( ( px, dimension ) => {
-		if ( ! contentRect ) {
-			return 0;
-		}
-		const size = dimension === 'x' ? contentRect.width : contentRect.height;
-		return ( px / size ) * 100;
-	}, [ contentRect ] );
-
-	const getDefaultDiameter = useCallback( ( unit ) => {
-		if ( unit !== 'percent' ) {
-			return HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PX;
-		}
-
-		return contentRect?.width
-			? pxToPercent( HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PX, 'x' )
-			: HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PERCENT;
-	}, [ contentRect?.width, pxToPercent ] );
+	const pxToRatio = ( px, dimension ) => px * ratio[ dimension ];
+	const ratioToPx = ( val, dimension ) => val / ratio[ dimension ];
 
 	// Add a new hotspot
-	const handleAddHotspot = useCallback( () => {
-		// Calculate percentage dynamically to maintain a consistent physical size (approx 48px)
-		const diameterPercent = getDefaultDiameter( 'percent' );
-
+	const handleAddHotspot = () => {
 		const newHotspot = {
 			id: uuidv4(),
 			tooltipText: __( 'New Hotspot', 'godam' ),
 			link: '',
 			position: { x: 50, y: 50 },
-			size: { diameter: diameterPercent },
-			oSize: { diameter: diameterPercent },
+			size: { diameter: 48 },
+			oSize: { diameter: 48 },
 			oPosition: { x: 50, y: 50 },
 			backgroundColor: '#0c80dfa6',
 			icon: '',
-			unit: 'percent',
 		};
 		updateField( 'hotspots', [ ...hotspots, newHotspot ] );
-	}, [ getDefaultDiameter, hotspots, updateField ] );
-
-	// Auto-add the first hotspot if none exist and it's a new layer
-	useEffect( () => {
-		if ( layer?.isNew && hotspots.length === 0 && contentRect?.width ) {
-			handleAddHotspot();
-			updateField( 'isNew', false ); // Mark as not new anymore
-		}
-	}, [ layer?.isNew, hotspots.length, contentRect?.width, handleAddHotspot, updateField ] );
+	};
 
 	const handleDeleteHotspot = ( index ) => {
 		updateField(
@@ -124,81 +88,23 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 		setExpandedHotspotIndex( expandedHotspotIndex === index ? null : index );
 	};
 
-	const computeContentRect = () => {
-		const videoEl = document.querySelector( 'video' );
-		const containerEl = document.getElementById( 'easydam-video-player' );
+	const recalcRatio = () => {
+		if ( containerRef.current ) {
+			const { offsetWidth, offsetHeight } = containerRef.current;
+			const baseWidth = 800;
+			const baseHeight = 600;
 
-		if ( ! videoEl || ! containerEl ) {
-			setContentRect( null );
-			return;
-		}
-
-		const nativeW = videoEl.videoWidth || 0;
-		const nativeH = videoEl.videoHeight || 0;
-
-		const elW = containerEl.offsetWidth;
-		const elH = containerEl.offsetHeight;
-
-		// If video dimensions aren't loaded yet, use full container
-		if ( ! nativeW || ! nativeH ) {
-			setContentRect( {
-				left: 0,
-				top: 0,
-				width: elW,
-				height: elH,
+			setRatio( {
+				x: baseWidth / offsetWidth,
+				y: baseHeight / offsetHeight,
 			} );
-			return;
 		}
-
-		const videoAspectRatio = nativeW / nativeH;
-		const containerAspectRatio = elW / elH;
-
-		let contentW, contentH, offsetX, offsetY;
-
-		if ( containerAspectRatio > videoAspectRatio ) {
-			// Pillarboxed (black bars on left/right)
-			contentH = elH;
-			contentW = elH * videoAspectRatio;
-			offsetX = ( elW - contentW ) / 2;
-			offsetY = 0;
-		} else {
-			// Letterboxed (black bars on top/bottom)
-			contentW = elW;
-			contentH = elW / videoAspectRatio;
-			offsetX = 0;
-			offsetY = ( elH - contentH ) / 2;
-		}
-
-		const newRect = {
-			left: Math.round( offsetX ),
-			top: Math.round( offsetY ),
-			width: Math.round( contentW ),
-			height: Math.round( contentH ),
-		};
-
-		setContentRect( newRect );
 	};
 
 	useEffect( () => {
-		computeContentRect();
-		window.addEventListener( 'resize', computeContentRect );
-		document.addEventListener( 'fullscreenchange', computeContentRect );
-
-		// Also listen for video metadata loaded
-		const videoEl = document.querySelector( 'video' );
-		videoRef.current = videoEl;
-
-		if ( videoEl ) {
-			videoEl.addEventListener( 'loadedmetadata', computeContentRect );
-		}
-
-		return () => {
-			window.removeEventListener( 'resize', computeContentRect );
-			document.removeEventListener( 'fullscreenchange', computeContentRect );
-			if ( videoRef.current ) {
-				videoRef.current.removeEventListener( 'loadedmetadata', computeContentRect );
-			}
-		};
+		recalcRatio();
+		window.addEventListener( 'resize', recalcRatio );
+		return () => window.removeEventListener( 'resize', recalcRatio );
 	}, [] );
 
 	// If we want to disable the premium layers the we can use this code
@@ -427,92 +333,51 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 				</Button>
 			</div>
 
+			{ /* The actual layer content */ }
 			<LayerControls>
 				<div
 					ref={ containerRef }
 					className="easydam-layer hotspot-layer"
-					style={ {
-						backgroundColor: layer.bg_color || 'transparent',
-						position: 'absolute',
-						left: contentRect?.left || 0,
-						top: contentRect?.top || 0,
-						width: contentRect?.width || '100%',
-						height: contentRect?.height || '100%',
-						zIndex: 5,
-					} }
+					style={ { backgroundColor: layer.bg_color || 'transparent' } }
 				>
+					<div
+						className="absolute inset-0 bg-transparent z-10 pointer-events-auto"
+					></div>
 					{ hotspots.map( ( hotspot, index ) => {
-						const posX = hotspot.oPosition?.x ?? hotspot.position?.x ?? 50;
-						const posY = hotspot.oPosition?.y ?? hotspot.position?.y ?? 50;
-						const diameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? getDefaultDiameter( hotspot.unit );
-
-						let pixelX, pixelY, pixelDiameter;
-
-						if ( hotspot.unit === 'percent' ) {
-							// Calculate pixel values for rendering
-							pixelX = percentToPx( posX, 'x' );
-							pixelY = percentToPx( posY, 'y' );
-							pixelDiameter = percentToPx( diameter, 'x' );
-						} else {
-							// Legacy handling in editor (relative to base dimensions)
-							const baseWidth = HOTSPOT_CONSTANTS.BASE_WIDTH;
-							const baseHeight = HOTSPOT_CONSTANTS.BASE_HEIGHT;
-							pixelX = ( posX / baseWidth ) * ( contentRect?.width || HOTSPOT_CONSTANTS.BASE_WIDTH );
-							pixelY = ( posY / baseHeight ) * ( contentRect?.height || HOTSPOT_CONSTANTS.BASE_HEIGHT );
-							pixelDiameter = ( diameter / baseWidth ) * ( contentRect?.width || HOTSPOT_CONSTANTS.BASE_WIDTH );
-						}
+						const fallbackPosX = hotspot.oPosition?.x ?? hotspot.position.x;
+						const fallbackPosY = hotspot.oPosition?.y ?? hotspot.position.y;
 
 						return (
 							<Rnd
 								key={ hotspot.id }
 								position={ {
-									x: pixelX,
-									y: pixelY,
+									x: ratioToPx( fallbackPosX, 'x' ),
+									y: ratioToPx( fallbackPosY, 'y' ),
 								} }
 								size={ {
-									width: pixelDiameter,
-									height: pixelDiameter,
+									width: ratioToPx(
+										hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48,
+										'x',
+									),
+									height: ratioToPx(
+										hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48,
+										'x',
+									),
 								} }
 								bounds="parent"
-								maxWidth={ contentRect?.width || '100%' }
-								maxHeight={ contentRect?.height || '100%' }
-								minWidth={ HOTSPOT_CONSTANTS.MIN_PX }
-								minHeight={ HOTSPOT_CONSTANTS.MIN_PX }
+								maxWidth={ 100 }
+								maxHeight={ 100 }
+								minWidth={ 20 }
+								minHeight={ 20 }
 								lockAspectRatio
 								onDragStop={ ( e, d ) => {
-									if ( ! contentRect ) {
-										return;
-									}
-
-									// d.x and d.y are relative to the parent (contentRect div)
-									const relativeX = d.x;
-									const relativeY = d.y;
-
 									const newHotspots = hotspots.map( ( h2, j ) => {
 										if ( j === index ) {
-											const newX = pxToPercent( relativeX, 'x' );
-											const newY = pxToPercent( relativeY, 'y' );
-
-											// If converting from legacy, also convert diameter to percentage
-											let newDiameter = h2.oSize?.diameter ?? h2.size?.diameter ?? getDefaultDiameter( h2.unit );
-											if ( h2.unit !== 'percent' ) {
-												// Ensure it's at least 10px equivalent in percentage
-												const minPercent = contentRect ? ( HOTSPOT_CONSTANTS.MIN_PX / contentRect.width ) * 100 : HOTSPOT_CONSTANTS.MIN_PERCENT_FALLBACK;
-												newDiameter = Math.max( minPercent, ( newDiameter / HOTSPOT_CONSTANTS.BASE_WIDTH ) * 100 );
-											}
-
 											return {
 												...h2,
-												unit: 'percent',
-												size: { diameter: newDiameter },
-												oSize: { diameter: newDiameter },
 												oPosition: {
-													x: newX,
-													y: newY,
-												},
-												position: {
-													x: newX,
-													y: newY,
+													x: pxToRatio( d.x, 'x' ),
+													y: pxToRatio( d.y, 'y' ),
 												},
 											};
 										}
@@ -520,45 +385,14 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 									} );
 									updateField( 'hotspots', newHotspots );
 								} }
-								onResizeStop={ ( e, direction, ref, delta, position ) => {
-									if ( ! contentRect ) {
-										return;
-									}
-
-									let newDiameterPx = ref.offsetWidth;
-									let relativeX = position.x;
-									let relativeY = position.y;
-
-									// Clamp position to ensure it stays within contentRect
-									relativeX = Math.max( 0, Math.min( relativeX, contentRect.width - newDiameterPx ) );
-									relativeY = Math.max( 0, Math.min( relativeY, contentRect.height - newDiameterPx ) );
-
-									// Clamp diameter to ensure it doesn't exceed the remaining space from the current position
-									const maxAllowedDiameter = Math.min( contentRect.width - relativeX, contentRect.height - relativeY );
-									newDiameterPx = Math.min( newDiameterPx, maxAllowedDiameter );
-
-									const newDiameterPercent = pxToPercent( newDiameterPx, 'x' );
-									const newX = pxToPercent( relativeX, 'x' );
-									const newY = pxToPercent( relativeY, 'y' );
-
+								onResizeStop={ ( e, direction, ref ) => {
+									const newDiameterPx = ref.offsetWidth;
 									const newHotspots = hotspots.map( ( h2, j ) => {
 										if ( j === index ) {
 											return {
 												...h2,
-												unit: 'percent',
 												oSize: {
-													diameter: newDiameterPercent,
-												},
-												size: {
-													diameter: newDiameterPercent,
-												},
-												oPosition: {
-													x: newX,
-													y: newY,
-												},
-												position: {
-													x: newX,
-													y: newY,
+													diameter: pxToRatio( newDiameterPx, 'x' ),
 												},
 											};
 										}

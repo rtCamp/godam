@@ -1,10 +1,10 @@
 === GoDAM - Organize WordPress Media Library & File Manager with Unlimited Folders for Images, Videos & more ===
-Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia, kishu7270, opurockey, utsavladani, whiteshadow01, ahmarzaidi
+Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia
 Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.5.0
+Stable tag: 1.4.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -246,24 +246,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
-= v1.5.0 (January 20, 2026) =
-
-- Feat: Implemented GoDAM virtual attachment support for Image, Audio, and PDF media. This allows users to import a wide range of media directly from GoDAM Central.
-- Feat: Added support for the video quality menu on the Desktop Safari browser.
-- Tweak: Made the Dashboard and Analytics pages mobile-responsive.
-- Tweak: Improved the video player mobile view for different player skins, including Default, Classic, Minimal, Pills, and Bubble.
-- Tweak: Improved layer styles for mobile device sizes.
-- Tweak: Improved keyboard forward and backward shortcuts for the video player.
-- Fix: Resolved interactive form and poll layer submission issues in the GoDAM Gallery block.
-- Fix: Constrained hotspot layer points within the video canvas to ensure consistency across devices.
-- Fix: Skipped poll label updates on poll submission to improve user experience.
-- Fix: Displayed media item metadata (such as transcoded and embed URLs) in the GoDAM tab.
-- Fix: Improved real-time aspect ratio updates for the GoDAM Block.
-- Fix: Resolved an issue where input was not possible when a form was used in fullscreen mode on Safari with GoDAM Video.
-- Fix: Made the video preview page work correctly for all layers.
-- Fix: Fixed overlap issues between the GoDAM Video block UI and the engagement modal on mobile screens.
-- Fix: Resolved GoDAM block rendering issues when used as a child block of Row, Columns, or Grid blocks.
-
 = v1.4.9 (December 19, 2025) =
 
 - Feat: Added Free Plan for GoDAM
@@ -283,6 +265,15 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: Form submission issues in preview
 - Fix: Player skin overlap issues
 - Fix: Media metadata display on Central
+
+= v1.4.7 (November 26, 2025) =
+
+- Tweak: Improved GoDAM Video block performance with preload poster functionality
+- Fix: Control and scroll on iOS fullscreen
+- Fix: GoDAM media tab for WP core blocks
+- Fix: Virtual media player and preview template
+- Fix: Error handling for Ads layer
+- Fix: PHP naming conventions as per WP PCP
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 

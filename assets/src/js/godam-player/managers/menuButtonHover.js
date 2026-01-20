@@ -9,7 +9,7 @@ class MenuButtonHoverManager {
 		this.player = player;
 
 		// Add more menu button component names as needed
-		this.menuButtons = [ 'SubsCapsButton', 'SettingsButton', 'CaptionsButton', 'SubtitlesButton' ];
+		this.menuButtons = [ 'SubsCapsButton', 'SettingsButton' ];
 
 		this.init();
 	}
@@ -17,24 +17,12 @@ class MenuButtonHoverManager {
 	init() {
 		this.menuButtons.forEach( ( buttonName ) => {
 			const button = this.player.controlBar?.getChild( buttonName );
-			let btnEl = button?.el();
 
-			// Fallback to DOM search if component not found via getChild (common in Safari/iOS)
-			if ( ! btnEl ) {
-				const classMap = {
-					SubsCapsButton: '.vjs-subs-caps-button',
-					SettingsButton: '.vjs-settings-button',
-					CaptionsButton: '.vjs-captions-button',
-					SubtitlesButton: '.vjs-subtitles-button',
-				};
-
-				const className = classMap[ buttonName ] || null;
-
-				if ( className ) {
-					btnEl = this.player.el().querySelector( className );
-				}
+			if ( ! button ) {
+				return;
 			}
 
+			const btnEl = button.el();
 			if ( ! btnEl ) {
 				return;
 			}
@@ -100,15 +88,12 @@ class MenuButtonHoverManager {
 			if ( ! isClickedOpen() ) {
 				menuEl.style.display = 'block';
 				menuEl.classList.add( 'vjs-lock-showing' );
-				// Add vjs-hover class to button to maintain active state in Safari
-				btnEl.classList.add( 'vjs-hover' );
 				this.closeOtherMenus( menuEl );
 			}
 		} );
 
 		btnEl.addEventListener( 'mouseleave', () => {
 			overBtn = false;
-			btnEl.classList.remove( 'vjs-hover' );
 			setTimeout( update, 500 ); // small delay to allow moving between
 		} );
 
@@ -117,15 +102,12 @@ class MenuButtonHoverManager {
 			if ( ! isClickedOpen() ) {
 				menuEl.style.display = 'block';
 				menuEl.classList.add( 'vjs-lock-showing' );
-				// Keep button in hover state while interacting with menu
-				btnEl.classList.add( 'vjs-hover' );
 				this.closeOtherMenus( menuEl );
 			}
 		} );
 
 		menuEl.addEventListener( 'mouseleave', () => {
 			overMenu = false;
-			btnEl.classList.remove( 'vjs-hover' );
 			setTimeout( update, 500 );
 		} );
 

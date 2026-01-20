@@ -17,6 +17,13 @@
 	transition: opacity 0.2s ease-in-out;
 }
 
+#root-video-analytics {
+
+	.godam-settings-header-content {
+		padding: 0 2.5rem;
+	}
+}
+
 #root-video-analytics, #root-video-dashboard {
 
 	background-color: #fff;
@@ -29,23 +36,8 @@
 
 	// Video JS styles
 	.video-analytics-container {
-
-		@apply flex bg-white justify-between py-6 md:px-10 pt-8;
-
-		.analytics-info-container {
-			.analytics-info {
-
-				width: calc(50% - 8px);
-
-				@media screen and (min-width: 1535px) {
-					width: 350px;
-				}
-
-				@media screen and (max-width: 640px) {
-					width: 100%;
-				}
-			}
-		}
+		
+		@apply flex bg-white justify-between py-6 overflow-auto md:px-10 pt-8;
 	}
 
 	.country-heatmap-container {
@@ -132,24 +124,13 @@
 	// Video Chart styles
 	.video-container {
 		position: relative;
+		width: 100%;
 		width: 830px;
-
-		@media screen and (max-width: 1024px) {
-			width: 100%;
-		}
 	}
 
 	.video-chart-container {
 		position: absolute;
 		bottom: 0;
-		left: 0;
-		width: 100%;
-		height: 75%;
-		pointer-events: none;
-
-		#chart-container {
-			pointer-events: auto;
-		}
 	}
 
 	.comparison-video-container {
@@ -166,16 +147,10 @@
 
 	#chart-container, #original-chart-container, #comparison-chart-container {
 		width: 100%;
-		height: 100%;
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		justify-content: flex-end;
 
 		svg {
-			width: 100%;
-			height: 100%;
-			display: block;
+			position: relative;
+			top: 4px;
 		}
 
 		.line {
@@ -201,7 +176,6 @@
 			box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 			text-align: center;
 			opacity: 0;
-			transform: translateX(-50%);
 		}
 
 		.line-chart-tooltip::after, .performance-line-chart-tooltip::after {
@@ -438,15 +412,11 @@
 .subheading-container {
 	display: flex;
 	align-items: center;
+	justify-content: space-between;
 	position: relative;
-	justify-content: start;
 	border-bottom: 1px solid #ddd;
 	margin: 0 40px;
-	padding-bottom: 0;
-
-	@media screen and (min-width: 768px) {
-		justify-content: space-between;
-	}
+	padding-bottom: 8px;
 }
 
 .subheading {
@@ -454,8 +424,16 @@
 	cursor: pointer;
 	position: relative;
 	font-weight: 500;
-	border-bottom: 2px solid #AB3A6C;
-	padding: 8px 0;
+
+	&::after {
+		content: "";
+		position: absolute;
+		left: 0;
+		bottom: -17px;
+		width: 100%;
+		height: 2px;
+		background-color: #AB3A6C;
+	}
 }
 
 .ab-testing-table {

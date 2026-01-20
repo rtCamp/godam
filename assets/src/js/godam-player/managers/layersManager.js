@@ -123,13 +123,6 @@ export default class LayersManager {
 	}
 
 	/**
-	 * Handle video resize events
-	 */
-	handleVideoResize() {
-		this.hotspotLayerManager.updateHotspotPositions();
-	}
-
-	/**
 	 * Handle fullscreen changes for layers
 	 */
 	handleFullscreenChange() {

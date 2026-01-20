@@ -9,9 +9,6 @@
 		background-color: var(--rtgodam-control-bar-color, #000) !important;
 		bottom: 0.5rem !important;
 		z-index: 19;
-
-		/* Add horizontal padding to prevent controls from touching the edges of the pill shape */
-		padding: 0 10px;
 	}
 
 	.video-js .vjs-big-play-button {
@@ -28,17 +25,7 @@
 		display: none;
 	}
 
-	.vjs-current-time {
-		display: flex;
-
-		/* Add left padding to separate time from the volume control in Pills skin */
-		padding: 0 0 0 15px;
-		align-items: center;
-		justify-content: center;
-		min-width: 1.2em;
-	}
-
-	.vjs-time-divider, .vjs-duration {
+	.vjs-current-time, .vjs-time-divider, .vjs-duration {
 		display: flex !important;
 		padding: 0 !important;
 		align-items: center;
@@ -73,8 +60,6 @@
 		background-color: #fff !important;
 		color: #000;
 		border-radius: 4px;
-		max-height: 300px;
-		overflow: auto;
 		
 		li {
 			padding: 8px;
@@ -120,10 +105,6 @@
 	}
 
 	@container godam-player-pills-skin (max-width: 480px) {
-
-		.video-js .vjs-big-play-button {
-			left: 55%;
-		}
 
 		.video-js 		.godam-central-controls {
 			display: flex;
@@ -224,8 +205,6 @@
 			width: 8em;
 
 			.vjs-menu-content {
-
-				max-height: 120px !important;
 				
 				.godam-back-item-container::after {
 					top: 24.5px;

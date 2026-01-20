@@ -310,12 +310,15 @@ const Analytics = ( { attachmentID } ) => {
 	useEffect( () => {
 		const handleResize = () => {
 			const smallSize = window.innerWidth <= 1024;
+			const responsiveOverlay = document.getElementById( 'screen-size-overlay' );
 			const analyticsContainer = document.getElementById( 'root-video-analytics' );
 
-			if ( analyticsContainer ) {
+			if ( responsiveOverlay && analyticsContainer ) {
 				if ( smallSize ) {
+					responsiveOverlay.classList.remove( 'hidden' );
 					analyticsContainer.style.overflow = 'hidden';
 				} else {
+					responsiveOverlay.classList.add( 'hidden' );
 					analyticsContainer.style.overflow = 'auto';
 				}
 			}
@@ -403,17 +406,23 @@ const Analytics = ( { attachmentID } ) => {
 				</div>
 			</div>
 
+			<div id="screen-size-overlay" className="screen-size-overlay hidden">
+				<div className="screen-size-message">
+					<p>{ __( 'You need to use desktop to access this feature.', 'godam' ) }</p>
+				</div>
+			</div>
+
 			{ attachmentData && ! mediaNotFound && (
 				<div id="analytics-content" className="hidden">
 					<div>
-						<div className="subheading-container flex flex-row max-md:flex-row-reverse pt-6">
+						<div className="subheading-container pt-6">
 							{ attachmentData?.title?.rendered
-								? <div className="subheading">{ __( 'Analytics report of', 'godam' ) }{ ' ' }
+								? <div className="subheading">{ __( 'Analytics report of', 'godam' ) }
 									<span dangerouslySetInnerHTML={ {
 										__html: DOMPurify.sanitize( attachmentData?.title?.rendered ),
 									} }></span></div> : <div className="subheading">{ __( 'Analytics report', 'godam' ) }</div>
 							}
-							<Button className="godam-analytics-back-btn" icon={ arrowLeft } onClick={ () => window.location.href = 'admin.php?page=rtgodam_video_editor' }><span className="max-md:hidden">{ __( 'Back to Video Editor', 'godam' ) }</span></Button>
+							<Button className="godam-analytics-back-btn" icon={ arrowLeft } onClick={ () => window.location.href = 'admin.php?page=rtgodam_video_editor' }>{ __( 'Back to Video Editor', 'godam' ) }</Button>
 
 						</div>
 					</div>
@@ -422,9 +431,9 @@ const Analytics = ( { attachmentID } ) => {
 						className="video-analytics-container hidden"
 					>
 						<div>
-							<div className="flex gap-10 items-center flex-wrap flex-row">
+							<div className="flex gap-10 items-center max-lg:flex-col">
 								<div className="flex-grow">
-									<div className="w-full analytics-info-container flex flex-wrap flex-row items-center 2xl:flex-col">
+									<div className="w-[350px] analytics-info-container max-lg:flex-row flex-col items-center">
 										<SingleMetrics
 											metricType={ 'engagement-rate' }
 											label={ __( 'Average Engagement', 'godam' ) }
@@ -470,7 +479,7 @@ const Analytics = ( { attachmentID } ) => {
 										/>
 									</div>
 								</div>
-								<div className="min-w-full lg:min-w-[750px]">
+								<div className="min-w-[750px]">
 									<div>
 										<div className="video-container">
 											<RenderVideo
