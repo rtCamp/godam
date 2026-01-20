@@ -8,6 +8,7 @@
 		color: #1c1b1b !important;
 		height: 60px !important;
 		width: 60px !important;
+		left: 53% !important;
 
 		span::before {
 			font-size: 38px !important;
@@ -271,6 +272,8 @@
 			gap: 8px;
 			align-items: center;
 			padding: 2px 4px !important;
+			max-height: 300px;
+			overflow: auto;
 		}
 
 		.vjs-settings-button {
@@ -414,7 +417,7 @@
 
 		.vjs-menu {
 		   background-color: #2b333f;
-		   z-index: 10;
+		   z-index: 19;
 		}
 
 		.vjs-time-control {
@@ -542,6 +545,7 @@
 		.video-js .vjs-big-play-button {
 			height: 50px;
 			width: 50px;
+			left: 55% !important;
 
 			span::before {
 				font-size: 1.7rem;
@@ -618,6 +622,10 @@
 
 		.video-js .godam-chevron-icon {
 			display: block;
+		}
+
+		.vjs-menu-content {
+			max-height: 150px !important;
 		}
 	}
 }

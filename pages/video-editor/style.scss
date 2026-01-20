@@ -46,6 +46,7 @@
 
 	.vjs-control-bar {
 		display: var(--is-controls-visible, flex);
+		z-index: 8;
 	}
 }
 

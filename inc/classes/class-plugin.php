@@ -17,6 +17,7 @@ use RTGODAM\Inc\Deactivation;
 use RTGODAM\Inc\Media_Tracker;
 use RTGODAM\Inc\Rewrite;
 use RTGODAM\Inc\Video_Preview;
+use RTGODAM\Inc\Video_Embed;
 use RTGODAM\Inc\Video_Permalinks;
 use RTGODAM\Inc\Video_Engagement;
 use RTGODAM\Inc\Update;
@@ -87,6 +88,7 @@ class Plugin {
 		Seo::get_instance();
 		Rewrite::get_instance();
 		Video_Preview::get_instance();
+		Video_Embed::get_instance();
 		Video_Permalinks::get_instance();
 		Embed::get_instance();
 
