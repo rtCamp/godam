@@ -524,12 +524,13 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	$site_url     = get_site_url();
 
 	// Get author name with fallback to username.
-	$author_first_name = $current_user->first_name;
-	$author_last_name  = $current_user->last_name;
+	$author_first_name = $current_user->first_name ?? '';
+	$author_last_name  = $current_user->last_name ?? '';
+	$author_email      = $current_user->user_email ?? '';
 
 	// If first and last names are empty, use username as fallback.
 	if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
-		$author_first_name = $current_user->user_login;
+		$author_first_name = $current_user->user_login ?? '';
 	}
 
 	$body = array_merge(
@@ -547,7 +548,7 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 			'watermark'            => boolval( $rtgodam_watermark ),
 			'resolutions'          => array( 'auto' ),
 			'folder_name'          => ! empty( $form_title ) ? $form_title : __( 'Gravity forms', 'godam' ),
-			'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $current_user->user_email, 0 ),
+			'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $author_email, 0 ),
 			'wp_site'              => $site_url,
 			'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, 0 ),
 			'wp_author_last_name'  => apply_filters( 'godam_author_last_name_to_send', $author_last_name, 0 ),

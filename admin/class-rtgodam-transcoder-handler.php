@@ -348,14 +348,16 @@ class RTGODAM_Transcoder_Handler {
 			// Get author name with fallback to username.
 			$author_first_name = '';
 			$author_last_name  = '';
+			$author_email      = '';
 
 			if ( $attachment_author ) {
-				$author_first_name = $attachment_author->first_name;
-				$author_last_name  = $attachment_author->last_name;
+				$author_first_name = $attachment_author->first_name ?? '';
+				$author_last_name  = $attachment_author->last_name ?? '';
+				$author_email      = $attachment_author->user_email ?? '';
 
 				// If first and last names are empty, use username as fallback.
 				if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
-					$author_first_name = $attachment_author->user_login;
+					$author_first_name = $attachment_author->user_login ?? '';
 				}
 			}
 
@@ -379,7 +381,7 @@ class RTGODAM_Transcoder_Handler {
 						'watermark'            => boolval( $rtgodam_watermark ),
 						'resolutions'          => array( 'auto' ),
 						'video_quality'        => $rtgodam_video_compress_quality,
-						'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $attachment_author ? $attachment_author->user_email : '', $attachment_id ),
+						'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $author_email, $attachment_id ),
 						'wp_site'              => $site_url,
 						'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, $attachment_id ),
 						'wp_author_last_name'  => apply_filters( 'godam_author_last_name_to_send', $author_last_name, $attachment_id ),
