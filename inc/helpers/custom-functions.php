@@ -441,7 +441,7 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	 * Example usage:
 	 * add_filter( 'godam_auto_transcode_on_upload', '__return_false' ); // Disable globally
 	 *
-	 * @since n.e.x.t
+	 * @since 1.5.0
 	 *
 	 * @param bool $auto_transcode_on_upload Whether to automatically transcode form uploads. Default true.
 	 */
@@ -890,7 +890,7 @@ function godam_preview_page_content( $video_id ) {
 /**
  * Get post id from meta key and value.
  * 
- * @since n.e.x.t
+ * @since 1.5.0
  *
  * @param string $key   Meta key.
  * @param mixed  $value Meta value.
@@ -926,7 +926,7 @@ function rtgodam_get_post_id_by_meta_key_and_value( $key, $value ) {
  * @param int  $video_id The ID of the video attachment to embed.
  * @param bool $show_engagements Whether to show engagements.
  *
- * @since n.e.x.t
+ * @since 1.5.0
  *
  * @return string The generated HTML content for the video embed page.
  */
