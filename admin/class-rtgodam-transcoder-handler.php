@@ -264,6 +264,30 @@ class RTGODAM_Transcoder_Handler {
 			}
 		}
 
+		// Check if HTTP auth is enabled.
+		if ( rtgodam_has_http_auth() ) {
+			if ( $retranscode ) {
+				// Store in failed transcoding list for retry later.
+				$failed_transcoding_attachments                   = get_option( 'rtgodam-failed-transcoding-attachments', array() );
+				$failed_transcoding_attachments[ $attachment_id ] = array(
+					'wp_metadata'   => $wp_metadata,
+					'attachment_id' => $attachment_id,
+					'autoformat'    => $autoformat,
+				);
+				update_option( 'rtgodam-failed-transcoding-attachments', $failed_transcoding_attachments );
+			}
+			
+			// Update status to failed.
+			update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'failed' );
+			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', __( 'HTTP authentication is enabled on your site, preventing transcoding.', 'godam' ) );
+			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', 'http_auth_enabled' );
+
+			return $wp_metadata;
+		}
+
+		// Clear the dismissed notice transient when successfully sending a transcoding request.
+		delete_transient( 'godam_http_auth_notice_dismissed' );
+
 		$path = get_attached_file( $attachment_id );
 		$url  = wp_get_attachment_url( $attachment_id );
 

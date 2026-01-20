@@ -47,6 +47,10 @@ class Media_Library_Ajax {
 		add_action( 'rtgodam_handle_callback_finished', array( $this, 'download_transcoded_mp4_source' ), 10, 4 );
 
 		add_filter( 'wp_get_attachment_url', array( $this, 'filter_attachment_url_for_virtual_media' ), 10, 2 );
+
+		add_action( 'admin_notices', array( $this, 'http_auth_warning_notice' ) );
+		add_action( 'wp_ajax_godam_dismiss_http_auth_notice', array( $this, 'dismiss_http_auth_notice' ) );
+		add_action( 'wp_ajax_godam_save_http_auth_status', array( $this, 'save_http_auth_status' ) );
 	}
 
 	/**
@@ -291,6 +295,19 @@ class Media_Library_Ajax {
 			$response['transcoded_url'] = false;
 		}
 
+		// Check if item failed due to HTTP auth but auth is now disabled - change to not_started.
+		if ( 'failed' === strtolower( $transcoding_status ) ) {
+			$error_code = get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_code', true );
+
+			// If failed due to HTTP auth but auth is now disabled, reset status.
+			if ( 'http_auth_enabled' === $error_code && ! rtgodam_has_http_auth() ) {
+				$transcoding_status = 'not_started';
+				update_post_meta( $attachment->ID, 'rtgodam_transcoding_status', 'not_started' );
+				delete_post_meta( $attachment->ID, 'rtgodam_transcoding_error_msg' );
+				delete_post_meta( $attachment->ID, 'rtgodam_transcoding_error_code' );
+			}
+		}
+
 		// Check if item is blocked but limits are no longer exceeded - change to not_started.
 		if ( 'blocked' === strtolower( $transcoding_status ) ) {
 			// Use cached usage data to avoid external API calls.
@@ -306,6 +323,7 @@ class Media_Library_Ajax {
 					update_post_meta( $attachment->ID, 'rtgodam_transcoding_status', 'not_started' );
 					// Clear the error message since it's no longer blocked.
 					delete_post_meta( $attachment->ID, 'rtgodam_transcoding_error_msg' );
+					delete_post_meta( $attachment->ID, 'rtgodam_transcoding_error_code' );
 				}
 			}
 		}
@@ -786,5 +804,113 @@ class Media_Library_Ajax {
 		}
 
 		return $url;
+	}
+
+	/**
+	 * AJAX handler to save HTTP auth detection result.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function save_http_auth_status() {
+		check_ajax_referer( 'godam-http-auth-detector', 'nonce' );
+	
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'godam' ) ) );
+		}
+	
+		$has_http_auth = isset( $_POST['has_http_auth'] ) && '1' === $_POST['has_http_auth'];
+	
+		// Save status.
+		update_option(
+			'rtgodam_http_auth_status',
+			array(
+				'enabled'   => $has_http_auth,
+				'timestamp' => time(),
+			)
+		);
+
+		wp_send_json_success(
+			array(
+				'message'       => __( 'HTTP auth status saved.', 'godam' ),
+				'has_http_auth' => $has_http_auth,
+			)
+		);
+	}
+	
+	/**
+	 * Dismiss the HTTP auth warning notice.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function dismiss_http_auth_notice() {
+		check_ajax_referer( 'godam-dismiss-http-auth-notice', 'nonce' );
+
+		// Set transient for 24 hours.
+		set_transient( 'godam_http_auth_notice_dismissed', true, DAY_IN_SECONDS );
+
+		wp_send_json_success();
+	}
+	
+	/**
+	 * Display HTTP authentication warning notice.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function http_auth_warning_notice() {
+		// Only show on media library page.
+		$screen = get_current_screen();
+		if ( ! $screen || 'upload' !== $screen->id ) {
+			return;
+		}
+
+		// Check if HTTP auth is enabled.
+		if ( ! rtgodam_has_http_auth() ) {
+			return;
+		}
+
+		// Check if notice was dismissed.
+		$dismissed = get_transient( 'godam_http_auth_notice_dismissed' );
+		if ( $dismissed ) {
+			return;
+		}
+
+		// Get the GoDAM logo URL.
+		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', dirname( __DIR__ ) );
+
+		?>
+		<div class="notice notice-error is-dismissible godam-http-auth-notice">
+			<div class="godam-notice-header">
+				<img src="<?php echo esc_url( $logo_url ); ?>" alt="<?php esc_attr_e( 'GoDAM Logo', 'godam' ); ?>" class="godam-logo">
+				<div>
+					<p><strong><?php esc_html_e( 'GoDAM Transcoding Blocked', 'godam' ); ?></strong></p>
+					<p>
+						<?php
+						esc_html_e( 'HTTP authentication is enabled on your site, which prevents GoDAM from accessing media files for transcoding. Please disable HTTP authentication to enable transcoding.', 'godam' );
+						?>
+					</p>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript">
+		jQuery( document ).ready( function( $ ) {
+			$( document ).on( 'click', '.godam-http-auth-notice .notice-dismiss', function() {
+				var $notice = $( this ).closest( '.godam-http-auth-notice' );
+				$notice.fadeOut();
+
+				var url = ( typeof ajaxurl !== 'undefined' ) ? ajaxurl : 'admin-ajax.php';
+				$.post( url, {
+					action: 'godam_dismiss_http_auth_notice',
+					nonce: '<?php echo esc_js( wp_create_nonce( 'godam-dismiss-http-auth-notice' ) ); ?>'
+				} );
+			} );
+		} );
+		</script>
+		<?php
 	}
 }

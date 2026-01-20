@@ -207,9 +207,23 @@ class Transcoding extends Base {
 	 * @return string
 	 */
 	private function get_status_object_from_attachment( int $attachment_id ) {
-
 		// Check if video has a transcoding job ID.
 		$job_id = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) );
+
+		// Get and sanitize the transcoding status.
+		$status = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) );
+
+		// Handle failure even if job id is missing.
+		if ( ! empty( $status ) && 'failed' === strtolower( $status ) ) {
+			$error_code = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', true ) );
+			$error_msg  = sanitize_textarea_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ) );
+
+			return array(
+				'status'     => 'failed',
+				'error_code' => $error_code,
+				'error_msg'  => $error_msg,
+			);
+		}
 
 		if ( empty( $job_id ) ) {
 			return array(
@@ -218,25 +232,10 @@ class Transcoding extends Base {
 			);
 		}
 
-		// Get and sanitize the transcoding status.
-		$status = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) );
-
 		if ( empty( $status ) ) {
 			return array(
 				'status'  => 'not_started',
 				'message' => __( 'Transcoding has not started.', 'godam' ),
-			);
-		}
-
-		// Handle failure case with error details.
-		if ( 'Failed' === $status ) {
-			$error_code = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', true ) );
-			$error_msg  = sanitize_textarea_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ) );
-
-			return array(
-				'status'     => 'failed',
-				'error_code' => $error_code,
-				'error_msg'  => $error_msg,
 			);
 		}
 
@@ -593,9 +592,29 @@ class Transcoding extends Base {
 			}
 		}
 
+		// Check if HTTP auth is enabled.
+		if ( rtgodam_has_http_auth() ) {
+			$message = sprintf(
+				// translators: 1: Attachment title, 2: Attachment ID.
+				__( '%1$s (ID %2$d) cannot be transcoded. HTTP authentication is enabled on your site. Please disable it to allow transcoding.', 'godam' ),
+				esc_html( $title ),
+				absint( $attachment_id )
+			);
+
+			return new \WP_REST_Response(
+				array(
+					'message' => $message,
+					'skipped' => true,
+					'reason'  => 'http_auth_enabled',
+				),
+				200
+			);
+		}
+
 		// Proceed with normal retranscoding for original media.
 		delete_post_meta( $attachment_id, 'rtgodam_transcoding_status' );
 		delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg' );
+		delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_code' );
 
 		$mime_type = get_post_mime_type( $attachment_id );
 

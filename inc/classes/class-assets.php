@@ -279,6 +279,29 @@ class Assets {
 		wp_enqueue_script( 'moment-js', RTGODAM_URL . 'assets/src/libs/moment-js.min.js', array(), filemtime( RTGODAM_PATH . 'assets/src/libs/moment-js.min.js' ), true );
 		wp_enqueue_script( 'daterangepicker-js', RTGODAM_URL . 'assets/src/libs/daterangepicker.min.js', array( 'moment-js' ), filemtime( RTGODAM_PATH . 'assets/src/libs/daterangepicker.min.js' ), true );
 		wp_enqueue_style( 'daterangepicker-css', RTGODAM_URL . 'assets/src/libs/daterangepicker.css', array(), filemtime( RTGODAM_PATH . 'assets/src/libs/daterangepicker.css' ) );
+
+		// Only enqueue HTTP auth detector on upload page.
+		if ( $is_upload_screen ) {
+			wp_register_script(
+				'godam-http-auth-detector',
+				RTGODAM_URL . 'assets/src/js/http-auth-detector.js',
+				array( 'jquery' ),
+				filemtime( RTGODAM_PATH . 'assets/src/js/http-auth-detector.js' ),
+				true
+			);
+
+			wp_localize_script(
+				'godam-http-auth-detector',
+				'godamHttpAuthDetector',
+				array(
+					'testUrl' => home_url( '/' ),
+					'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+					'nonce'   => wp_create_nonce( 'godam-http-auth-detector' ),
+				)
+			);
+
+			wp_enqueue_script( 'godam-http-auth-detector' );
+		}
 	}
 
 	/**
