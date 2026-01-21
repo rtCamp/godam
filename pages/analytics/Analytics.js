@@ -408,7 +408,7 @@ const Analytics = ( { attachmentID } ) => {
 					<div>
 						<div className="subheading-container flex flex-row max-md:flex-row-reverse pt-6">
 							{ attachmentData?.title?.rendered
-								? <div className="subheading">{ __( 'Analytics report of', 'godam' ) }
+								? <div className="subheading">{ __( 'Analytics report of', 'godam' ) }{ ' ' }
 									<span dangerouslySetInnerHTML={ {
 										__html: DOMPurify.sanitize( attachmentData?.title?.rendered ),
 									} }></span></div> : <div className="subheading">{ __( 'Analytics report', 'godam' ) }</div>

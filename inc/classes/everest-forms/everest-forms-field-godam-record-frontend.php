@@ -7,6 +7,10 @@
  * @since 1.4.0
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 // Get the primary field data.
 $godam_primary = $field['properties']['inputs']['primary'] ?? array();
 

@@ -537,19 +537,33 @@ export default class ControlsManager {
 	 * @param {number}      newHeight   - New height value
 	 */
 	setupStandardControlLayout( playButton, skipButtons, newWidth, newHeight ) {
-		if ( this.config.videoSetupOptions?.playerSkin === PLAYER_SKINS.MINIMAL ) {
-			playButton.style.setProperty( 'bottom', `${ ( newHeight / 2 ) + 4 }px` );
+		const skin = this.config.videoSetupOptions?.playerSkin;
+
+		if ( skin === PLAYER_SKINS.MINIMAL ) {
+			// For Minimal skin, center the play button and skip buttons vertically and horizontally
+			if ( playButton ) {
+				// Use -15px offset for play button and -20px for skip buttons to align their centers
+				// The play button is typically smaller than the skip button containers
+				playButton.style.setProperty( 'bottom', `${ ( newHeight / 2 ) - 15 }px` );
+				playButton.style.setProperty( 'left', `${ ( newWidth / 2 ) - 20 }px` );
+			}
+
 			skipButtons.forEach( ( button ) => {
-				button.style.setProperty( 'bottom', `${ ( newHeight / 2 ) - 5 }px` );
+				// Align skip buttons to the same vertical center as the play button
+				button.style.setProperty( 'bottom', `${ ( newHeight / 2 ) - 20 }px` );
 			} );
-		}
+		} else if ( skin === PLAYER_SKINS.DEFAULT ) {
+			// For Default skin, ONLY center the skip buttons. Play button stays at bottom left (CSS).
+			skipButtons.forEach( ( button ) => {
+				button.style.setProperty( 'bottom', `${ ( newHeight / 2 ) - 20 }px` );
+			} );
+		} else {
+			// For other non-default skins
+			if ( playButton ) {
+				playButton.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
+				playButton.style.setProperty( 'left', `${ ( newWidth / 2 ) - 20 }px` );
+			}
 
-		if ( this.config.videoSetupOptions?.playerSkin !== PLAYER_SKINS.DEFAULT ) {
-			playButton.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
-			playButton.style.setProperty( 'left', `${ ( newWidth / 2 ) - 20 }px` );
-		}
-
-		if ( this.config.videoSetupOptions?.playerSkin !== PLAYER_SKINS.MINIMAL ) {
 			skipButtons.forEach( ( button ) => {
 				button.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
 			} );
