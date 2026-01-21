@@ -31,14 +31,14 @@ import { useState, useRef, useEffect, useCallback } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { updateLayerField } from '../../redux/slice/videoSlice';
+import { updateLayerField } from '../../../../pages/video-editor/redux/slice/videoSlice';
 import { v4 as uuidv4 } from 'uuid';
-import LayerControls from '../LayerControls';
-import ProductSelector from '../woocommerce/ProductSelector';
-import FontAwesomeIconPicker from '../woocommerce/FontAwesomeIconPicker';
+import LayerControls from '../../../../pages/video-editor/components/LayerControls';
+import ProductSelector from './ProductSelector';
+import FontAwesomeIconPicker from './FontAwesomeIconPicker';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
-import LayersHeader from './LayersHeader';
+import LayersHeader from '../../../../pages/video-editor/components/layers/LayersHeader';
 import { PRODUCT_HOTSPOT_CONSTANTS } from '../../../../assets/src/js/godam-player/utils/constants';
 
 /**

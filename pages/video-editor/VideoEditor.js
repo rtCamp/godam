@@ -59,6 +59,8 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
+	console.log( 'Video editor js is loaded' );
+	console.log( layers );
 	const chapters = useSelector( ( state ) => state.videoReducer.chapters );
 	const isChanged = useSelector( ( state ) => state.videoReducer.isChanged );
 

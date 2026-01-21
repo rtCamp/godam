@@ -1,5 +1,10 @@
 
 /**
+ * WordPress dependencies
+ */
+import { applyFilters, addFilter } from '@wordpress/hooks';
+
+/**
  * Internal dependencies
  */
 import FormLayer from './FormLayer';
@@ -7,12 +12,12 @@ import CTALayer from './CTALayer';
 import HotspotLayer from './HotspotLayer';
 import Ads from './AdsLayer';
 import PollLayer from './PollLayer';
-import WoocommerceLayer from './WoocommerceLayer';
 
 /**
- * Layer Component that needs to be used.
+ * Core Layer Components.
+ * Additional layer types can be registered via the 'godam.videoEditor.layerComponents' filter.
  */
-const LayerComponents = {
+const coreLayerComponents = {
 	form: {
 		component: FormLayer,
 	},
@@ -28,9 +33,15 @@ const LayerComponents = {
 	poll: {
 		component: PollLayer,
 	},
-	woo: {
-		component: WoocommerceLayer,
-	},
+};
+
+/**
+ * Get all registered layer components (core + filtered).
+ *
+ * @return {Object} Object containing all registered layer components.
+ */
+const getLayerComponents = () => {
+	return applyFilters( 'godam.videoEditor.layerComponents', coreLayerComponents );
 };
 
 /**
@@ -44,7 +55,20 @@ const LayerComponents = {
  * @return {JSX.Element} The rendered Layer component.
  */
 const Layer = ( { layer, goBack, duration } ) => {
-	const Component = LayerComponents[ layer?.type ?? 'cta' ]?.component;
+	const LayerComponents = getLayerComponents();
+	const layerType = layer?.type ?? 'cta';
+	const Component = LayerComponents[ layerType ]?.component;
+	console.log( 'Layer is init' );
+	console.log( LayerComponents );
+
+	// Fallback to CTA layer if component is not found
+	if ( ! Component ) {
+		const FallbackComponent = LayerComponents[ 'cta' ]?.component;
+		if ( ! FallbackComponent ) {
+			return <div>Error: No layer components registered</div>;
+		}
+		return <FallbackComponent layerID={ layer.id } goBack={ goBack } duration={ duration } />;
+	}
 
 	return <Component layerID={ layer.id } goBack={ goBack } duration={ duration } />;
 };

@@ -120,6 +120,7 @@ class Module {
 		add_action( 'init', array( $this, 'init_woocommerce_integration' ), 20 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ), 20 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ), 20 );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_video_editor_assets' ), 5 ); // Priority 5 to load before video-editor at 10
 	}
 
 	/**
@@ -217,6 +218,52 @@ class Module {
 					true
 				);
 			}
+		}
+	}
+
+	/**
+	 * Enqueue WooCommerce layer registration for video editor.
+	 *
+	 * This script registers the WooCommerce layer component using WordPress hooks,
+	 * allowing the integration to extend the video editor without direct dependency.
+	 * This must load BEFORE the video-editor.min.js to properly register the layer type.
+	 */
+	public function enqueue_video_editor_assets() {
+		// Only load on video editor page.
+		if ( ! isset( $_GET['page'] ) || 'rtgodam_video_editor' !== $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return;
+		}
+
+		// Enqueue wc-layer-registration with proper dependencies and make video-editor depend on it.
+		$layer_registration_path  = RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'js/wc-layer-registration.min.js';
+		$layer_registration_asset = RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'js/wc-layer-registration.min.asset.php';
+
+		if ( file_exists( $layer_registration_path ) ) {
+			// Base dependencies for hooks system
+			$dependencies = array( 'wp-hooks', 'wp-element', 'react' );
+			$version      = RTGODAM_VERSION;
+
+			// Load asset file if it exists for proper dependencies.
+			if ( file_exists( $layer_registration_asset ) ) {
+				$asset_data   = require $layer_registration_asset;
+				$dependencies = $asset_data['dependencies'] ?? $dependencies;
+				$version      = $asset_data['version'] ?? $version;
+			}
+
+			// Add dependencies to ensure this loads before video-editor
+			$dependencies = array_merge( $dependencies, array( 'rtgodam-script', 'easydam-media-library' ) );
+
+			// Register the script first
+			wp_register_script(
+				'godam-wc-layer-registration',
+				RTGODAM_URL . 'assets/build/integrations/woocommerce/js/wc-layer-registration.min.js',
+				$dependencies,
+				$version,
+				false // Load in footer but before video-editor
+			);
+
+			// Enqueue it
+			wp_enqueue_script( 'godam-wc-layer-registration' );
 		}
 	}
 }
