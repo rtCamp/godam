@@ -14,7 +14,14 @@ import { __ } from '@wordpress/i18n';
 		const $galleryList = $galleryWrapper.find( 'ul.product_images' );
 		const $galleryInput = $( '#product_image_gallery' );
 		const $container = document.getElementById( 'godam-featured-gallery' );
-		$container.querySelector( '.woocommerce-help-tip' ).remove();
+
+		// Remove help tip if it exists
+		if ( $container ) {
+			const helpTip = $container.querySelector( '.woocommerce-help-tip' );
+			if ( helpTip ) {
+				helpTip.remove();
+			}
+		}
 
 		/**
 		 * Update the hidden input field with current gallery attachment IDs.

@@ -138,7 +138,7 @@ const godamGallery = {
 const godamProductGallery = {
 	...sharedConfig,
 	entry: {
-		'godam-product-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'woocommerce', 'godam-product-gallery', 'godam-product-gallery.js' ),
+		'godam-product-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'godam-product-gallery', 'godam-product-gallery.js' ),
 	},
 };
 
@@ -199,46 +199,46 @@ const fluentForms = {
 	},
 };
 
-const productVideoGalleryJS = {
+// WooCommerce Integration Module - Consolidated build configuration
+const woocommerceIntegration = {
+	mode,
 	...sharedConfig,
 	entry: {
-		'wc-product-video-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'woocommerce', 'admin', 'wc-product-video-gallery.js' ),
-	},
-};
+		// Admin scripts
+		'admin/wc-product-video-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'admin', 'wc-product-video-gallery.js' ),
+		'admin/wc-add-to-product': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'admin', 'wc-add-to-product.js' ),
+		'admin/wc-admin-featured-video-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'admin', 'wc-admin-featured-video-gallery.js' ),
 
-const addToProductJS = {
-	...sharedConfig,
-	entry: {
-		'wc-add-to-product': path.resolve( process.cwd(), 'assets', 'src', 'js', 'woocommerce', 'admin', 'wc-add-to-product.js' ),
-	},
-};
+		// Frontend scripts
+		'wc-video-carousel': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'single-product-story', 'wc-video-carousel.js' ),
+		'wc-featured-video-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'featured-video', 'wc-featured-video-gallery.js' ),
+		'wc-woo-layer-cart-url-editor': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'woocommerce-layer', 'wc-woo-layer-cart-url-editor.js' ),
 
-const wcVideoCarouselJS = {
-	...sharedConfig,
-	entry: {
-		'wc-video-carousel': path.resolve( process.cwd(), 'assets', 'src', 'js', 'woocommerce', 'single-product-story', 'wc-video-carousel.js' ),
+		// CSS files
+		'godam-video-carousel': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-video-carousel.scss' ),
+		'godam-featured-video': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-featured-video.scss' ),
+		'godam-product-editor-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-product-editor-gallery.scss' ),
+		'godam-product-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-product-gallery.scss' ),
 	},
-};
-
-const adminFeaturedVideoGalleryJS = {
-	...sharedConfig,
-	entry: {
-		'wc-admin-featured-video-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'woocommerce', 'admin', 'wc-admin-featured-video-gallery.js' ),
+	output: {
+		path: path.resolve( process.cwd(), 'assets', 'build', 'integrations', 'woocommerce', 'js' ),
+		filename: '[name].min.js',
+		chunkFilename: '[name].min.js',
 	},
-};
-
-const featuredVideoGalleryJS = {
-	...sharedConfig,
-	entry: {
-		'wc-featured-video-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'woocommerce', 'featured-video', 'wc-featured-video-gallery.js' ),
-	},
-};
-
-const wcWooLayerJS = {
-	...sharedConfig,
-	entry: {
-		'wc-woo-layer-cart-url-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'woocommerce', 'woocommerce-layer', 'wc-woo-layer-cart-url-editor.js' ),
-	},
+	plugins: [
+		...sharedConfig.plugins
+			.filter( ( plugin ) => plugin.constructor.name !== 'RtlCssPlugin' )
+			.map(
+				( plugin ) => {
+					if ( plugin.constructor.name === 'MiniCssExtractPlugin' ) {
+						plugin.options.filename = '../css/[name].css';
+					}
+					return plugin;
+				},
+			),
+		new RemoveEmptyScriptsPlugin(),
+	],
+	devtool: isProduction ? false : 'source-map',
 };
 
 const everestForms = {
@@ -361,15 +361,10 @@ module.exports = [
 	deactivationJS,
 	godamGallery,
 	godamProductGallery,
-	adminFeaturedVideoGalleryJS,
-	featuredVideoGalleryJS,
 	godamVideoEmbed,
 	gfGodamRecorderEditorJS,
 	wpFormsGodamRecorderEditorJS,
-	productVideoGalleryJS,
-	addToProductJS,
-	wcVideoCarouselJS,
-	wcWooLayerJS,
+	woocommerceIntegration, // WooCommerce module (consolidated)
 	jetpackFormJS,
 	styles, // Do not remove this.
 	pages,

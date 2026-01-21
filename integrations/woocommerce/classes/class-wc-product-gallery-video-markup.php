@@ -1,7 +1,7 @@
 <?php
 /**
  * WooCommerce GoDAM Product Gallery Block Video Markup Logic
- * 
+ *
  * Depending on CTA settings and product association, it dynamically outputs:
  * - A basic video modal,
  * - A single-product modal with optional timestamping,
@@ -49,21 +49,21 @@ class WC_Product_Gallery_Video_Markup {
 
 			// Mutiple - show all products.
 			if ( $no_of_products ) {
-				echo wp_kses_post( $this->generate_cta_enabled_muliple_product_modal_markup( $product_ids_array, $video_id ) );
+				echo wp_kses_post( (string) $this->generate_cta_enabled_muliple_product_modal_markup( $product_ids_array, $video_id ) );
 			} else {
 				// single - show full product.
-				echo wp_kses_post( $this->generate_cta_enabled_single_product_modal_markup( $product_ids, $video_id, $timestamped ) );
-			}       
+				echo wp_kses_post( (string) $this->generate_cta_enabled_single_product_modal_markup( $product_ids, $video_id, $timestamped ) );
+			}
 		} else {
 			// video modal markup.
-			echo wp_kses_post( $this->generate_video_modal_markup( $video_id ) );
+			echo wp_kses_post( (string) $this->generate_video_modal_markup( $video_id ) );
 		}
 	}
 
 	/**
 	 * Outputs the modal HTML markup for videos with multiple associated products and CTA enabled.
 	 *
-	 * This private function generates the complete modal structure when a video is linked to 
+	 * This private function generates the complete modal structure when a video is linked to
 	 * multiple products and the Call-To-Action (CTA) is active. It includes:
 	 * - A modal container with a close button.
 	 * - A video placeholder with a play icon and swipe hints.
@@ -73,13 +73,15 @@ class WC_Product_Gallery_Video_Markup {
 	 *   - A close button for the sidebar.
 	 *   - A placeholder for dynamically loaded product content.
 	 *
-	 * The product IDs are safely cast to integers and embedded as a comma-separated string 
+	 * The product IDs are safely cast to integers and embedded as a comma-separated string
 	 * in the `data-product-ids` attribute of the sidebar for client-side JavaScript access.
 	 *
 	 * @param array $product_ids Array of product IDs associated with the video.
 	 * @param int   $video_id    The ID of the video for which the modal is being rendered.
 	 */
 	private function generate_cta_enabled_muliple_product_modal_markup( $product_ids, $video_id ) {
+		ob_start();
+
 		$data_product_ids = implode( ',', array_map( 'absint', (array) $product_ids ) );
 		?>
 			<div class="godam-product-modal-container" data-modal-video-id="<?php echo esc_attr( $video_id ); ?>"> <!-- overlay container -->
@@ -111,11 +113,12 @@ class WC_Product_Gallery_Video_Markup {
 					<div class="godam-product-sidebar" data-product-ids="<?php echo esc_attr( $data_product_ids ); ?>">
 						<div class="godam-sidebar-header">
 							<h3 class="godam-header-text"><?php esc_html_e( 'Products seen in the video', 'godam' ); ?></h3>
-			
+
 							<div class="godam-sidebar-header-actions">
 								<div class="godam-product-video-gallery-sidebar--cart-basket">
 									<?php
-										echo do_blocks( '<!-- wp:woocommerce/mini-cart /-->' ); // phpcs:ignore
+										$mini_cart_block = do_blocks( '<!-- wp:woocommerce/mini-cart /-->' );
+										echo ! empty( $mini_cart_block ) ? $mini_cart_block : ''; // phpcs:ignore
 									?>
 								</div>
 							</div>
@@ -127,6 +130,9 @@ class WC_Product_Gallery_Video_Markup {
 				</div>
 			</div>
 		<?php
+
+		$html = ob_get_clean();
+		return is_string( $html ) ? $html : '';
 	}
 
 	/**
@@ -150,6 +156,8 @@ class WC_Product_Gallery_Video_Markup {
 	 * @param bool $timestamped  Whether the modal should include timestamping (default false).
 	 */
 	private function generate_cta_enabled_single_product_modal_markup( $product_id, $video_id, $timestamped ) {
+		ob_start();
+
 		if ( ! $timestamped ) {
 			$timestamped = 0;
 		}
@@ -187,7 +195,8 @@ class WC_Product_Gallery_Video_Markup {
 							<div class="godam-sidebar-header-actions">
 								<div class="godam-product-video-gallery-sidebar--cart-basket">
 									<?php
-										echo do_blocks( '<!-- wp:woocommerce/mini-cart /-->' ); // phpcs:ignore
+										$mini_cart_block = do_blocks( '<!-- wp:woocommerce/mini-cart /-->' );
+										echo ! empty( $mini_cart_block ) ? $mini_cart_block : ''; // phpcs:ignore
 									?>
 								</div>
 							</div>
@@ -199,6 +208,9 @@ class WC_Product_Gallery_Video_Markup {
 				</div>
 			</div>
 		<?php
+
+		$html = ob_get_clean();
+		return is_string( $html ) ? $html : '';
 	}
 
 	/**
@@ -215,6 +227,8 @@ class WC_Product_Gallery_Video_Markup {
 	 * @param int $video_id The ID of the video for which the modal is being rendered.
 	 */
 	private function generate_video_modal_markup( $video_id ) {
+		ob_start();
+
 		?>
 		<div class="godam-product-modal-container " data-modal-video-id="<?php echo esc_attr( $video_id ); ?>"> <!-- overlay container -->
 			<div class="close">
@@ -242,5 +256,8 @@ class WC_Product_Gallery_Video_Markup {
 			</div>
 		</div>
 		<?php
+
+		$html = ob_get_clean();
+		return is_string( $html ) ? $html : '';
 	}
 }

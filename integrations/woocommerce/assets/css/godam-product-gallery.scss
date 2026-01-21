@@ -1,4 +1,4 @@
-@import './godam-video-popup.scss'	;
+@import '../../../../assets/src/css/godam-video-popup.scss';
 
 .godam-product-gallery {
 	width: 100%;
@@ -64,11 +64,11 @@
 		transition: transform 0.2s ease;
 		padding: 0;
 		z-index: 10;
-	
+
 		svg {
 			display: block;
 		}
-	
+
 		&:hover {
 			transform: translate(-50%, -50%) scale(1.1);
 		}
@@ -78,7 +78,7 @@
 		position: relative;
 		width: 100%;
 		display: block;
-	
+
 		video {
 			width: 100%;
 			height: 100%;
@@ -95,7 +95,7 @@
 		justify-content: center;
 		overflow: hidden;
 		position: relative;
-	
+
 		img {
 			width: 100%;
 			height: 100%;
@@ -161,7 +161,7 @@
 		cursor: pointer;
 		border: none;
 		padding: 0;
-	
+
 		&.left {
 			left: 0;
 		}
@@ -282,7 +282,7 @@
 
 	.cta-thumbnail-small {
 		position: relative;
-	
+
 		> img:first-child {
 			width: 50px;
 			height: 50px;
@@ -307,13 +307,13 @@
 
 	.cta-product-info {
 		flex: 1;
-	
+
 		.product-title {
 			font-weight: bold;
 			font-size: 14px;
 			margin: 0;
 		}
-	
+
 		.product-price {
 			font-size: 13px;
 			margin: 2px 0 0;
@@ -328,7 +328,7 @@
 		cursor: pointer;
 		font-size: 16px;
 		line-height: 1;
-	
+
 		&.loading {
 			opacity: 0.5;
 			pointer-events: none;

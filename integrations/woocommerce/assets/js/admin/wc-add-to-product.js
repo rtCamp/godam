@@ -21,7 +21,7 @@ import { useRef, useEffect } from 'react';
 /**
  * Internal dependencies
  */
-import Ptag from '../../../images/product-tag.svg';
+import Ptag from '../../images/product-tag.svg';
 
 jQuery( document ).ready( function( $ ) {
 	const videoList = $( '.godam-product-video-gallery-list' );
@@ -214,8 +214,11 @@ jQuery( document ).ready( function( $ ) {
 			};
 
 			const close = () => {
-				root.unmount();
-				container.remove();
+				// Defer unmount to avoid race condition with React rendering
+				setTimeout( () => {
+					root.unmount();
+					container.remove();
+				}, 0 );
 			};
 
 			/* Adds Automatic Scroll for Selected Products */

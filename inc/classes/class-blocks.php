@@ -38,7 +38,7 @@ class Blocks {
 
 	/**
 	 * Enqueue Block Assets.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function enqueue_block_assets() {
@@ -52,9 +52,9 @@ class Blocks {
 
 		wp_enqueue_style(
 			'godam-product-editor-gallery-style',
-			RTGODAM_URL . 'assets/build/css/godam-product-editor-gallery.css',
+			RTGODAM_URL . 'assets/build/integrations/woocommerce/css/godam-product-editor-gallery.css',
 			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/css/godam-product-editor-gallery.css' )
+			filemtime( RTGODAM_PATH . 'assets/build/integrations/woocommerce/css/godam-product-editor-gallery.css' )
 		);
 	}
 
@@ -78,9 +78,8 @@ class Blocks {
 			RTGODAM_PATH . '/assets/build/blocks/godam-gallery/'
 		);
 
-		register_block_type(
-			RTGODAM_PATH . '/assets/build/blocks/godam-product-gallery/'
-		);
+		// WooCommerce product gallery block is loaded from the WooCommerce module
+		// if WooCommerce is active. See: integrations/woocommerce/bootstrap.php
 
 		register_block_type(
 			RTGODAM_PATH . '/assets/build/blocks/godam-video-thumbnail/'

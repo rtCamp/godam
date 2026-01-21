@@ -35,6 +35,12 @@ const wcVideoCarousel = {
 	 * Uses Swiper for the carousel.
 	 */
 	loadVideoCarousel() {
+		if ( 'undefined' === typeof Swiper ) {
+			// Swiper failed to load; skip initialization to avoid runtime errors.
+			console.warn( 'Swiper library is not available; skipping video carousel init.' );
+			return;
+		}
+
 		const self = this;
 		this.swiper = new Swiper( '.rtgodam-product-video-gallery-slider', {
 			loop: true,
@@ -80,6 +86,11 @@ const wcVideoCarousel = {
 		document.querySelectorAll( '.rtgodam-product-video-gallery-slider .swiper-slide' ).forEach( ( video ) => {
 			video.addEventListener( 'click', ( event ) => {
 				event.preventDefault();
+
+				if ( 'undefined' === typeof Swiper ) {
+					console.warn( 'Swiper library is not available; skipping modal slider init.' );
+					return;
+				}
 
 				self.swiperModal = new Swiper( '.rtgodam-product-video-gallery-slider-modal-content-items', {
 					loop: true,

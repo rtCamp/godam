@@ -54,7 +54,7 @@ class WC_Featured_Video_Gallery {
 					wp_enqueue_style( 'godam-player-frontend-style' );
 					wp_enqueue_style( 'godam-player-style' );
 				}
-			} 
+			}
 		);
 	}
 
@@ -71,9 +71,9 @@ class WC_Featured_Video_Gallery {
 
 		wp_enqueue_script(
 			'rtgodam-wc-admin-featured-video-gallery',
-			RTGODAM_URL . 'assets/build/js/wc-admin-featured-video-gallery.min.js',
+			RTGODAM_URL . 'assets/build/integrations/woocommerce/js/admin/wc-admin-featured-video-gallery.min.js',
 			array( 'jquery', 'media-editor', 'media-views', 'wp-i18n' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/wc-admin-featured-video-gallery.min.js' ),
+			filemtime( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'js/admin/wc-admin-featured-video-gallery.min.js' ),
 			true
 		);
 
@@ -83,7 +83,7 @@ class WC_Featured_Video_Gallery {
 			array(
 				'ajaxurl' => admin_url( 'admin-ajax.php' ),
 				'nonce'   => wp_create_nonce( 'godam_admin_featured_video_gallery_nonce' ),
-			) 
+			)
 		);
 
 		do_action( 'rtgodam_featured_gallery_after_enqueue_admin_scripts' );
@@ -95,19 +95,22 @@ class WC_Featured_Video_Gallery {
 	 * Includes player styles, analytics tracking, and gallery functionality.
 	 */
 	public function register_frontend_scripts() {
+		if ( ! function_exists( 'is_product' ) || ! is_product() ) {
+			return;
+		}
 
 		wp_enqueue_style(
 			'godam-featured-video-style',
-			RTGODAM_URL . 'assets/build/css/godam-featured-video.css',
+			RTGODAM_URL . 'assets/build/integrations/woocommerce/css/godam-featured-video.css',
 			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/css/godam-featured-video.css' )
+			filemtime( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'css/godam-featured-video.css' )
 		);
 
 		wp_register_script(
 			'rtgodam-wc-featured-video-gallery',
-			RTGODAM_URL . 'assets/build/js/wc-featured-video-gallery.min.js',
+			RTGODAM_URL . 'assets/build/integrations/woocommerce/js/wc-featured-video-gallery.min.js',
 			array( 'jquery' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/wc-featured-video-gallery.min.js' ),
+			filemtime( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'js/wc-featured-video-gallery.min.js' ),
 			true
 		);
 
@@ -117,7 +120,7 @@ class WC_Featured_Video_Gallery {
 			array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),
 				'nonce'    => wp_create_nonce( 'godam_featured_video_gallery_nonce' ),
-			) 
+			)
 		);
 
 		wp_enqueue_script( 'rtgodam-wc-featured-video-gallery' );
@@ -159,13 +162,13 @@ class WC_Featured_Video_Gallery {
 	/**
 	 * Generates the HTML for a product gallery thumbnail (image or video).
 	 *
-	 * This function creates a `<li>` element containing the thumbnail image 
-	 * for a WooCommerce product gallery. If the attachment is a video, 
-	 * it retrieves a custom video thumbnail (or a fallback image if not set). 
+	 * This function creates a `<li>` element containing the thumbnail image
+	 * for a WooCommerce product gallery. If the attachment is a video,
+	 * it retrieves a custom video thumbnail (or a fallback image if not set).
 	 * For non-video attachments, it uses the default WordPress attachment image.
-	 * 
+	 *
 	 * @param int  $attachment_id The ID of the media attachment.
-	 * @param bool $is_video      Whether the attachment is a video. 
+	 * @param bool $is_video      Whether the attachment is a video.
 	 *                                - true  → Uses a custom video thumbnail or fallback image.
 	 *                                - false → Uses the standard WordPress image thumbnail.
 	 *
@@ -313,7 +316,7 @@ class WC_Featured_Video_Gallery {
 	public function handle_send_empty_alts() {
 
 		check_ajax_referer( 'godam_featured_video_gallery_nonce', 'nonce' );
-	
+
 		$alts = isset( $_POST['alts'] ) && is_array( $_POST['alts'] )
 		? array_map( 'sanitize_text_field', wp_unslash( $_POST['alts'] ) )
 		: array();
@@ -331,7 +334,7 @@ class WC_Featured_Video_Gallery {
 		// Get gallery images for current product.
 		$gallery     = get_post_meta( $product_id, '_product_image_gallery', true );
 		$gallery_ids = $gallery ? explode( ',', $gallery ) : array();
-		
+
 		/**
 		 * Parse each alt label to extract its trailing numeric index, convert it to the
 		 * zero-based gallery position (index - 2), then:
@@ -363,7 +366,7 @@ class WC_Featured_Video_Gallery {
 				'message'     => 'Fetched video IDs successfully',
 				'videoIds'    => $video_ids,
 				'videoThumbs' => $video_thumbnails,
-			) 
+			)
 		);
 	}
 }

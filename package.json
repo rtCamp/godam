@@ -94,12 +94,16 @@
 		"webpack-remove-empty-scripts": "1.1.1"
 	},
 	"scripts": {
-		"start:blocks": "wp-scripts start --config ./node_modules/@wordpress/scripts/config/webpack.config.js --webpack-src-dir=./assets/src/blocks/ --output-path=./assets/build/blocks/",
+		"start:blocks": "npm-run-all --parallel start:blocks:main start:blocks:wc",
+		"start:blocks:main": "wp-scripts start --config ./node_modules/@wordpress/scripts/config/webpack.config.js --webpack-src-dir=./assets/src/blocks/ --output-path=./assets/build/blocks/",
+		"start:blocks:wc": "wp-scripts start --config ./node_modules/@wordpress/scripts/config/webpack.config.js --webpack-src-dir=./integrations/woocommerce/blocks/ --output-path=./assets/build/integrations/woocommerce/blocks/",
 		"start:js": "wp-scripts start --config ./webpack.config.js",
 		"start": "npm-run-all --parallel start:*",
 		"build:dev": "cross-env NODE_ENV=development npm-run-all 'build:!(dev|prod)'",
 		"build:prod": "cross-env NODE_ENV=production npm-run-all 'build:!(dev|prod)'",
-		"build:blocks": "wp-scripts build --config ./node_modules/@wordpress/scripts/config/webpack.config.js --webpack-src-dir=./assets/src/blocks/ --output-path=./assets/build/blocks/",
+		"build:blocks": "npm-run-all --parallel build:blocks:main build:blocks:wc",
+		"build:blocks:main": "wp-scripts build --config ./node_modules/@wordpress/scripts/config/webpack.config.js --webpack-src-dir=./assets/src/blocks/ --output-path=./assets/build/blocks/",
+		"build:blocks:wc": "wp-scripts build --config ./node_modules/@wordpress/scripts/config/webpack.config.js --webpack-src-dir=./integrations/woocommerce/blocks/ --output-path=./assets/build/integrations/woocommerce/blocks/",
 		"build:js": "wp-scripts build --config ./webpack.config.js",
 		"lint": "npm-run-all --parallel lint:*",
 		"lint:css": "wp-scripts lint-style",

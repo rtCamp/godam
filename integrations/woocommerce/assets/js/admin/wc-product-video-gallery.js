@@ -1,9 +1,22 @@
-/* global jQuery, RTGodamVideoGallery */
+/* global jQuery, RTGodamVideoGallery, mejs */
 
 jQuery( document ).ready( function( $ ) {
 	const { __, sprintf } = wp.i18n;
 
 	const videoList = $( '.godam-product-video-gallery-list' );
+
+	// Prevent MediaElement from auto-initializing on our gallery items
+	// This fixes the "Cannot read properties of null (reading 'length')" error
+	if ( typeof mejs !== 'undefined' && mejs.MediaElementPlayer ) {
+		const originalInit = mejs.MediaElementPlayer.prototype.init;
+		mejs.MediaElementPlayer.prototype.init = function() {
+			// Skip initialization if the element is inside our video gallery metabox
+			if ( this.node && $( this.node ).closest( '.godam-product-video-gallery-list' ).length > 0 ) {
+				return;
+			}
+			return originalInit.apply( this, arguments );
+		};
+	}
 
 	const tagIconSVG = `<img src="${ RTGodamVideoGallery.Ptag }" width="14" height="14" alt="Tag Icon" style="vertical-align:middle; margin-right:4px;" />`;
 
