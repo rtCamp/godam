@@ -1,224 +1,265 @@
+@mixin pill-mobile-brand-logo($logoWidth: 16px) {
+
+    /* Control bar as flex container */
+    .vjs-control-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* Branding logo stays INSIDE bar */
+    .vjs-control.vjs-custom-play-button {
+        position: relative;
+        width: $logoWidth;
+        height: 2.2em;
+
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+
+        margin-left: auto; // push to right
+        z-index: 25;
+    }
+
+    /* Logo image safety */
+    .vjs-control.vjs-custom-play-button img {
+        max-height: 100%;
+        width: calc(#{$logoWidth} + 8px);
+        object-fit: contain;
+        display: block;
+        border-top-right-radius: 999px;
+        border-bottom-right-radius: 999px;
+    }
+}
+
 .godam-pills-skin {
-	container-type: inline-size;
-	container-name: godam-player-pills-skin;
+    container-type: inline-size;
+    container-name: godam-player-pills-skin;
 
-	.video-js .vjs-control-bar {
-		width: 95% !important;
-		border-radius: 80px;
-		margin: -50px auto 0 auto;
-		background-color: var(--rtgodam-control-bar-color, #000) !important;
-		bottom: 0.5rem !important;
-		z-index: 19;
-	}
+    .video-js .vjs-control-bar {
+        width: 95% !important;
+        border-radius: 80px;
+        margin: -50px auto 0 auto;
+        background-color: var(--rtgodam-control-bar-color, #000) !important;
+        bottom: 0.5rem !important;
+        z-index: 19;
+    }
 
-	.video-js .vjs-big-play-button {
-		background-color: var(--rtgodam-control-bar-color, #000) !important;
-		border-radius: 10px !important;
-	}
+    .video-js .vjs-big-play-button {
+        background-color: var(--rtgodam-control-bar-color, #000) !important;
+        border-radius: 10px !important;
+    }
 
-	.video-js .vjs-volume-control.vjs-control.vjs-volume-vertical {
-		background-color: transparent !important;
-	}
+    .video-js .vjs-volume-control.vjs-control.vjs-volume-vertical {
+        background-color: transparent !important;
+    }
 
-	.video-js [class^="vjs-skip-backward-"],
-	.video-js [class^="vjs-skip-forward-"] {
-		display: none;
-	}
+    .video-js [class^="vjs-skip-backward-"],
+    .video-js [class^="vjs-skip-forward-"] {
+        display: none;
+    }
 
-	.vjs-current-time, .vjs-time-divider, .vjs-duration {
-		display: flex !important;
-		padding: 0 !important;
-		align-items: center;
-		justify-content: center;
-		min-width: 1.2em;
-	}
+    .vjs-current-time,
+    .vjs-time-divider,
+    .vjs-duration {
+        display: flex !important;
+        padding: 0 !important;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.2em;
+    }
 
-	.video-js .vjs-fullscreen-control {
-		order: 8;
-	}
+    .video-js .vjs-fullscreen-control {
+        order: 8;
+    }
 
-	.video-js .vjs-subs-caps-button {
-		order: 2;
-	}
+    .video-js .vjs-subs-caps-button {
+        order: 2;
+    }
 
-	.video-js .vjs-volume-panel {
-		order: 1;
-	}
+    .video-js .vjs-volume-panel {
+        order: 1;
+    }
 
-	.video-js .vjs-settings-button {
-		order: 3;
-	}
+    .video-js .vjs-settings-button {
+        order: 3;
+    }
 
-	.video-js .vjs-custom-play-button img {
-		height: 100%;
-		width: auto;
-		object-fit: fill;
-		margin-right: 20px;
-	}
+    .video-js .vjs-menu-content {
+        background-color: #fff !important;
+        color: #000;
+        border-radius: 4px;
 
-	.video-js .vjs-menu-content {
-		background-color: #fff !important;
-		color: #000;
-		border-radius: 4px;
-		
-		li {
-			padding: 8px;
-			font-size: 14px;
-		}
+        li {
+            padding: 8px;
+            font-size: 14px;
+        }
 
-		.master-settings-back-icon {
-			display: none;
-		}
+        .master-settings-back-icon {
+            display: none;
+        }
 
-		span::before {
-			font-size: 16px;
-			color: #000;
-		}
+        span::before {
+            font-size: 16px;
+            color: #000;
+        }
 
-		.godam-back-item-container::after{
-			top: 35.5px;
-		}
+        .godam-back-item-container::after {
+            top: 35.5px;
+        }
 
-		.master-settings-back-icon, .godam-check-icon {
-			color: #000;
-		}
-	}
+        .master-settings-back-icon,
+        .godam-check-icon {
+            color: #000;
+        }
+    }
 
-	.vjs-button.godam-share-button{
-		background: #FFFFFF24;
-		border-radius: 4px;
-		width: 40px;
-		height: 36px;		
-		display: flex;
-		align-items: center;
-		justify-content: center;
+    .vjs-button.godam-share-button {
+        background: #ffffff24;
+        border-radius: 4px;
+        width: 40px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
-		img {
-			height: 18px;
-			width: 16px;
-			max-width: unset;
-		}
-	}
+        img {
+            height: 18px;
+            width: 16px;
+            max-width: unset;
+        }
+    }
 
-	.video-js .vjs-remaining-time {
-		display: none;
-	}
+    .video-js .vjs-remaining-time {
+        display: none;
+    }
 
-	@container godam-player-pills-skin (max-width: 480px) {
+    @container godam-player-pills-skin (max-width: 480px) {
 
-		.video-js 		.godam-central-controls {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			gap: 12px;
-			background-color: var(--rtgodam-control-bar-color, #000000AD) !important;
-			border-radius: 999px;
-			padding: 6px 12px;
-			width: 164px;
-			height: 30px;
-			z-index: 19;
-		}
-	
-		.video-js .vjs-control-bar {
-			height: initial !important;
-			margin: -40px auto 0;
+        @include pill-mobile-brand-logo();
 
-			.vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-remaining-time, .vjs-control.vjs-custom-play-button, .vjs-volume-control {
-				display: none !important;
-			}
+        .video-js .godam-central-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(
+                --rtgodam-control-bar-color,
+                #000000ad
+            ) !important;
+            border-radius: 999px;
+            padding: 6px 10px;
+            width: 164px;
+            height: 30px;
+            z-index: 19;
+        }
 
-			.vjs-control {
-				height: 3em !important;
-			}
+        .video-js .vjs-control-bar {
+            height: initial !important;
 
-			.vjs-settings-button, div.vjs-subs-caps-button {
-				z-index: 19;
-			}
+            .vjs-duration,
+            .vjs-current-time,
+            .vjs-time-divider,
+            .vjs-picture-in-picture-control,
+            .vjs-remaining-time,
+            .vjs-volume-control {
+                display: none !important;
+            }
 
-			.vjs-fullscreen-control, .vjs-settings-button, div.vjs-subs-caps-button {
-				position: relative !important;
-				right: 0 !important;
-			}
+            .vjs-control {
+                height: 2.6em !important;
+            }
 
-			[class^="vjs-skip-backward-"] {
-				left: 0;
-				bottom: -6px;
-			}
+            .vjs-settings-button,
+            div.vjs-subs-caps-button {
+                z-index: 19;
+            }
 
-			[class^="vjs-skip-forward-"] {
-				right: 0;
-				bottom: -6px;
-			}
+            .vjs-fullscreen-control,
+            .vjs-settings-button,
+            div.vjs-subs-caps-button {
+                position: relative !important;
+                right: 0 !important;
+            }
 
-			[class^="vjs-skip-backward-"], [class^="vjs-skip-forward-"] {
-				display: block;
-				background-color: unset;
-				height: 40px !important;
-				width: 40px;
-				position: absolute;
+            [class^="vjs-skip-backward-"] {
+                left: 0;
+                bottom: -6px;
+            }
 
-				.vjs-icon-placeholder::before {
-					line-height: 2;
-				}
-			}
+            [class^="vjs-skip-forward-"] {
+                right: 0;
+                bottom: -6px;
+            }
 
-			.vjs-progress-control {
-				height: unset !important;
-				position: unset;
-				margin: 0 auto;
-				padding: 0 !important;
-			}
+            [class^="vjs-skip-backward-"],
+            [class^="vjs-skip-forward-"] {
+                display: block;
+                background-color: unset;
+                height: 40px !important;
+                width: 40px;
+                position: absolute;
 
-			.vjs-play-control {
-				bottom: -4px;
-				position: absolute;
+                .vjs-icon-placeholder::before {
+                    line-height: 2;
+                }
+            }
 
-				span::before{
-					line-height: 1.3;
-				}
-			}
+            .vjs-progress-control {
+                height: unset !important;
+                position: unset;
+                margin: 0 auto;
+                padding: 0 !important;
+            }
 
-			.vjs-time-control.vjs-duration {
-				right: 120px;
-				transform: translateX(0%);
-			}
+            .vjs-play-control {
+                bottom: -4px;
+                position: absolute;
 
-			.vjs-time-control.vjs-current-time {
-				left: 30px;
-			}
+                span::before {
+                    line-height: 1.3;
+                }
+            }
 
-			.right-80 {
-				right: 80px !important;
-			}
-		}
+            .vjs-time-control.vjs-duration {
+                right: 120px;
+                transform: translateX(0%);
+            }
 
+            .vjs-time-control.vjs-current-time {
+                left: 30px;
+            }
 
-		.vjs-button.godam-share-button {
-			background-color: var(--rtgodam-control-bar-color, #000000AD);
-			border: 0.26px solid #FFF3;
-			height: 24px;
-			padding: 4px 20px;
-			border-radius: 12px;
-		}
+            .right-80 {
+                right: 80px !important;
+            }
+        }
 
-		.video-js .vjs-menu {
-			width: 8em;
+        .vjs-button.godam-share-button {
+            background-color: var(--rtgodam-control-bar-color, #000000ad);
+            border: 0.26px solid #fff3;
+            height: 24px;
+            padding: 4px 20px;
+            border-radius: 12px;
+        }
 
-			.vjs-menu-content {
-				
-				.godam-back-item-container::after {
-					top: 24.5px;
-				}
+        .video-js .vjs-menu {
+            width: 8em;
 
-				li {
-					font-size: 12px;
-					padding: 4px;
-				}
+            .vjs-menu-content {
 
-				.vjs-menu-item-text span {
-					display: flex;
-				}
-			}
-		}
-	}
+                .godam-back-item-container::after {
+                    top: 24.5px;
+                }
+
+                li {
+                    font-size: 12px;
+                    padding: 4px;
+                }
+
+                .vjs-menu-item-text span {
+                    display: flex;
+                }
+            }
+        }
+    }
 }
