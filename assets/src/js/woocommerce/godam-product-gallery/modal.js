@@ -73,6 +73,7 @@ export function initVideoModal() {
 		const ctaDisplayPosition = getCTADisplayPosition;
 
 		let gallery = ( playButton || timestampBtn ).closest( '.godam-product-gallery' );
+		// const galleryId = gallery.dataset.galleryId;
 
 		let getModal = null;
 
@@ -88,7 +89,7 @@ export function initVideoModal() {
 				gallery = originalDropdown?.closest( '.godam-product-gallery' );
 			}
 		} else {
-			getModal = document.querySelector(
+			getModal = gallery.querySelector(
 				`.godam-product-modal-container[data-modal-video-id="${ videoId }"]:not([data-modal-timestamped]), 
 				 .godam-product-modal-container[data-modal-video-id="${ videoId }"][data-modal-timestamped="0"]`,
 			);
