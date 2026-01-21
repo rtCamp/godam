@@ -1,4 +1,4 @@
-@mixin pill-mobile-brand-logo($logoWidth: 16px) {
+@mixin pills-mobile-brand-logo($logoWidth: 16px) {
 
     /* Control bar as flex container */
     .vjs-control-bar {
@@ -136,7 +136,7 @@
 
     @container godam-player-pills-skin (max-width: 480px) {
 
-        @include pill-mobile-brand-logo();
+        @include pills-mobile-brand-logo();
 
         .video-js .godam-central-controls {
             display: flex;
@@ -147,7 +147,7 @@
                 #000000ad
             ) !important;
             border-radius: 999px;
-            padding: 6px 10px;
+            padding: 6px 12px;
             width: 164px;
             height: 30px;
             z-index: 19;
@@ -166,7 +166,7 @@
             }
 
             .vjs-control {
-                height: 2.6em !important;
+                height: 3em !important;
             }
 
             .vjs-settings-button,
