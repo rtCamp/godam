@@ -700,3 +700,10 @@ input, textarea, select {
 .godam-admin-root #root-video-help {
 	margin-left: 20px;
 }
+
+@media screen and (max-width: 782px) {
+
+	.godam-admin-root {
+		margin-left: -10px;
+	}
+}
