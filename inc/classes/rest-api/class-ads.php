@@ -238,7 +238,7 @@ class Ads extends Base {
 				foreach ( $ads_layers as $layer ) :
 					// Current endpoint URL.
 					$display_time = intval( $layer['displayTime'] ?? 0 );
-					$ad_duration  = intval( $layer['duration'] ?? 0 );
+					$ad_duration  = intval( $layer['ad_duration'] ?? $layer['duration'] ?? 0 );
 					$ad_title     = $layer['title'] ?? '';
 					$skippable    = $layer['skippable'] ?? false;
 					$skip_offset  = intval( $layer['skip_offset'] ?? 0 );
