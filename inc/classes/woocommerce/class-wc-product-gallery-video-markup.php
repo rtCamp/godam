@@ -38,9 +38,10 @@ class WC_Product_Gallery_Video_Markup {
 	 * @param string $cta_display_position Position of the CTA (e.g., 'inside', 'below-inside').
 	 * @param int    $video_id            The ID of the video.
 	 * @param string $product_ids         Comma-separated list of product IDs.
+	 * @param string $instance_id         Unique ID for each GoDAM Gallery Block.
 	 * @param bool   $timestamped         Whether the modal should be timestamp-aware (default false).
 	 */
-	public function generate_product_gallery_video_modal_markup( $cta_enabled, $cta_display_position, $video_id, $product_ids, $timestamped = false ) {
+	public function generate_product_gallery_video_modal_markup( $cta_enabled, $cta_display_position, $video_id, $product_ids, $instance_id, $timestamped = false ) {
 
 		if ( $cta_enabled && ( 'inside' === $cta_display_position || 'below-inside' === $cta_display_position ) ) {
 
@@ -49,14 +50,14 @@ class WC_Product_Gallery_Video_Markup {
 
 			// Mutiple - show all products.
 			if ( $no_of_products ) {
-				echo wp_kses_post( $this->generate_cta_enabled_muliple_product_modal_markup( $product_ids_array, $video_id ) );
+				echo wp_kses_post( $this->generate_cta_enabled_muliple_product_modal_markup( $product_ids_array, $video_id, $instance_id, ) );
 			} else {
 				// single - show full product.
-				echo wp_kses_post( $this->generate_cta_enabled_single_product_modal_markup( $product_ids, $video_id, $timestamped ) );
+				echo wp_kses_post( $this->generate_cta_enabled_single_product_modal_markup( $product_ids, $video_id, $timestamped, $instance_id, ) );
 			}       
 		} else {
 			// video modal markup.
-			echo wp_kses_post( $this->generate_video_modal_markup( $video_id ) );
+			echo wp_kses_post( $this->generate_video_modal_markup( $video_id, $instance_id, ) );
 		}
 	}
 
@@ -76,13 +77,14 @@ class WC_Product_Gallery_Video_Markup {
 	 * The product IDs are safely cast to integers and embedded as a comma-separated string 
 	 * in the `data-product-ids` attribute of the sidebar for client-side JavaScript access.
 	 *
-	 * @param array $product_ids Array of product IDs associated with the video.
-	 * @param int   $video_id    The ID of the video for which the modal is being rendered.
+	 * @param array  $product_ids         Array of product IDs associated with the video.
+	 * @param int    $video_id            The ID of the video for which the modal is being rendered.
+	 * @param string $instance_id         Unique ID for each GoDAM Gallery Block.
 	 */
-	private function generate_cta_enabled_muliple_product_modal_markup( $product_ids, $video_id ) {
+	private function generate_cta_enabled_muliple_product_modal_markup( $product_ids, $video_id, $instance_id, ) {
 		$data_product_ids = implode( ',', array_map( 'absint', (array) $product_ids ) );
 		?>
-			<div class="godam-product-modal-container" data-modal-video-id="<?php echo esc_attr( $video_id ); ?>"> <!-- overlay container -->
+			<div class="godam-product-modal-container" data-modal-video-id="<?php echo esc_attr( $video_id ); ?>" data-gallery-id="<?php echo esc_attr( $instance_id ); ?>"> <!-- overlay container -->
 				<div class="close">
 					<button class="godam-product-modal-close" aria-label="<?php __( 'Close modal', 'godam' ); ?>">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
@@ -145,16 +147,17 @@ class WC_Product_Gallery_Video_Markup {
 	 *
 	 * The `$timestamped` value defaults to `0` if not set, and all dynamic attributes are safely rendered.
 	 *
-	 * @param int  $product_id   The single product ID associated with the video.
-	 * @param int  $video_id     The ID of the video the modal is for.
-	 * @param bool $timestamped  Whether the modal should include timestamping (default false).
+	 * @param int    $product_id          The single product ID associated with the video.
+	 * @param int    $video_id            The ID of the video the modal is for.
+	 * @param bool   $timestamped         Whether the modal should include timestamping (default false).
+	 * @param string $instance_id         Unique ID for each GoDAM Gallery Block.
 	 */
-	private function generate_cta_enabled_single_product_modal_markup( $product_id, $video_id, $timestamped ) {
+	private function generate_cta_enabled_single_product_modal_markup( $product_id, $video_id, $timestamped, $instance_id, ) {
 		if ( ! $timestamped ) {
 			$timestamped = 0;
 		}
 		?>
-			<div class="godam-product-modal-container" data-modal-video-id="<?php echo esc_attr( $video_id ); ?>" data-modal-timestamped="<?php echo esc_attr( $timestamped ); ?>" data-modal-attached-product-id="<?php echo esc_attr( $product_id ); ?>"> <!-- overlay container -->
+			<div class="godam-product-modal-container" data-modal-video-id="<?php echo esc_attr( $video_id ); ?>" data-modal-timestamped="<?php echo esc_attr( $timestamped ); ?>" data-modal-attached-product-id="<?php echo esc_attr( $product_id ); ?>" data-gallery-id="<?php echo esc_attr( $instance_id ); ?>"> <!-- overlay container -->
 				<div class="close">
 					<button class="godam-product-modal-close" aria-label="<?php __( 'Close modal', 'godam' ); ?>">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
@@ -212,11 +215,12 @@ class WC_Product_Gallery_Video_Markup {
 	 *
 	 * This markup is used when no product or CTA is linked to the video, focusing solely on video playback.
 	 *
-	 * @param int $video_id The ID of the video for which the modal is being rendered.
+	 * @param int    $video_id            The ID of the video for which the modal is being rendered.
+	 * @param string $instance_id         Unique ID for each GoDAM Gallery Block.
 	 */
-	private function generate_video_modal_markup( $video_id ) {
+	private function generate_video_modal_markup( $video_id, $instance_id, ) {
 		?>
-		<div class="godam-product-modal-container " data-modal-video-id="<?php echo esc_attr( $video_id ); ?>"> <!-- overlay container -->
+		<div class="godam-product-modal-container " data-modal-video-id="<?php echo esc_attr( $video_id ); ?>" data-gallery-id="<?php echo esc_attr( $instance_id ); ?>"> <!-- overlay container -->
 			<div class="close">
 				<button class="godam-product-modal-close" aria-label="<?php __( 'Close modal', 'godam' ); ?>">
 					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>

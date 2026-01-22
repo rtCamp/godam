@@ -73,7 +73,6 @@ export function initVideoModal() {
 		const ctaDisplayPosition = getCTADisplayPosition;
 
 		let gallery = ( playButton || timestampBtn ).closest( '.godam-product-gallery' );
-		// const galleryId = gallery.dataset.galleryId;
 
 		let getModal = null;
 

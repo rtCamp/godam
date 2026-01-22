@@ -69,7 +69,7 @@ class GoDAM_Product_Gallery {
 		$gallery_asset_path = RTGODAM_PATH . 'assets/build/js/godam-product-gallery.min.asset.php';
 
 		$godam_product_gallery_script_assets = file_exists( $gallery_asset_path )
-			? include $gallery_asset_path
+			? include $gallery_asset_path // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- Safe: path is plugin-controlled, no user input.
 			: array(
 				'dependencies' => array(),
 				'version'      => RTGODAM_VERSION,
@@ -127,7 +127,7 @@ class GoDAM_Product_Gallery {
 			[data-gallery-id=\"{$instance_id}\"] .godam-product-sidebar a {
 				background-color: {$icon_bg_color};
 				color: {$icon_color};
-				border-radius: {$radius}%;
+				border-radius: {$radius}% !important;
 			}
 			#{$instance_id} .godam-product-modal-close,
 			[data-gallery-id=\"{$instance_id}\"] .godam-product-modal-close {
@@ -626,7 +626,7 @@ class GoDAM_Product_Gallery {
 												echo '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/></svg>';
 											echo '</button>';
 
-											$this->markup_instance->generate_product_gallery_video_modal_markup( $atts['cta_enabled'], $atts['cta_display_position'], $video_id, $product_id, true );
+											$this->markup_instance->generate_product_gallery_video_modal_markup( $atts['cta_enabled'], $atts['cta_display_position'], $video_id, $product_id, $instance_id, true );
 										}
 											echo '</div>'; // .cta-thumbnail-small ends.
 											echo '<div class="cta-product-info">';
@@ -662,7 +662,7 @@ class GoDAM_Product_Gallery {
 					}
 				}
 				
-				$this->markup_instance->generate_product_gallery_video_modal_markup( $atts['cta_enabled'], $atts['cta_display_position'], $video_id, $data_product_ids );
+				$this->markup_instance->generate_product_gallery_video_modal_markup( $atts['cta_enabled'], $atts['cta_display_position'], $video_id, $data_product_ids, $instance_id );
 			}
 
 			echo '</div>'; // .godam-product-video-item ends.
