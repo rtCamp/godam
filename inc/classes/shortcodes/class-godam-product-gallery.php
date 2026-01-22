@@ -127,7 +127,7 @@ class GoDAM_Product_Gallery {
 			[data-gallery-id=\"{$instance_id}\"] .godam-product-sidebar a {
 				background-color: {$icon_bg_color};
 				color: {$icon_color};
-				border-radius: {$radius}% !important;
+				border-radius: {$radius}%;
 			}
 			#{$instance_id} .godam-product-modal-close,
 			[data-gallery-id=\"{$instance_id}\"] .godam-product-modal-close {
