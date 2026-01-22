@@ -76,9 +76,6 @@ const Layer = ( { layer, goBack, duration } ) => {
 	const layerType = layer?.type ?? 'cta';
 	const Component = LayerComponents[ layerType ]?.component;
 
-	console.log( 'Sabbir Video scripts loaded' );
-	console.log( LayerComponents )
-
 	// Fallback to CTA layer if component is not found
 	if ( ! Component ) {
 		const FallbackComponent = LayerComponents.cta?.component;

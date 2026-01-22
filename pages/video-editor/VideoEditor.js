@@ -39,6 +39,7 @@ import Chapters from './components/chapters/Chapters';
 import { copyGoDAMVideoBlock, prefetchMediaDataForCopy } from './utils/index';
 import { getFormIdFromLayer } from './utils/formUtils';
 import { canManageAttachment } from '../../assets/src/js/media-library/utility.js';
+import { ensureWooLayerRegistered } from './utils/loadWooLayer';
 
 const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );
@@ -52,6 +53,11 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	useEffect( () => {
 		prefetchMediaDataForCopy( attachmentID );
 	}, [ attachmentID ] );
+
+	useEffect( () => {
+		// Load WooCommerce layer component lazily when the integration is enabled via PHP filters.
+		ensureWooLayerRegistered();
+	}, [] );
 
 	const playerRef = useRef( null );
 

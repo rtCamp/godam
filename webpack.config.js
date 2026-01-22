@@ -214,9 +214,6 @@ const woocommerceIntegration = {
 		'wc-featured-video-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'featured-video', 'wc-featured-video-gallery.js' ),
 		'wc-woo-layer-cart-url-editor': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'woocommerce-layer', 'wc-woo-layer-cart-url-editor.js' ),
 
-		// Video editor integration
-		'wc-layer-registration': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'pages', 'register-layer.js' ),
-
 		// CSS files
 		'godam-video-carousel': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-video-carousel.scss' ),
 		'godam-featured-video': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-featured-video.scss' ),

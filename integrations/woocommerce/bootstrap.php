@@ -265,47 +265,11 @@ class Module {
 	/**
 	 * Enqueue WooCommerce layer registration for video editor.
 	 *
-	 * This script registers the WooCommerce layer component using WordPress hooks,
-	 * allowing the integration to extend the video editor without direct dependency.
-	 * This must load BEFORE the video-editor.min.js to properly register the layer type.
+	 * The WooCommerce layer is now lazy-loaded from the main video editor bundle,
+	 * so no separate registration script is needed here.
 	 */
 	public function enqueue_video_editor_assets() {
-		// Only load on video editor page.
-		if ( ! isset( $_GET['page'] ) || 'rtgodam_video_editor' !== $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			return;
-		}
-
-		// Enqueue wc-layer-registration with proper dependencies and make video-editor depend on it.
-		$layer_registration_path  = RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'js/wc-layer-registration.min.js';
-		$layer_registration_asset = RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'js/wc-layer-registration.min.asset.php';
-
-		if ( file_exists( $layer_registration_path ) ) {
-			// Base dependencies for hooks system
-			$dependencies = array( 'wp-hooks', 'wp-element', 'react' );
-			$version      = RTGODAM_VERSION;
-
-			// Load asset file if it exists for proper dependencies.
-			if ( file_exists( $layer_registration_asset ) ) {
-				$asset_data   = require $layer_registration_asset;
-				$dependencies = $asset_data['dependencies'] ?? $dependencies;
-				$version      = $asset_data['version'] ?? $version;
-			}
-
-			// Ensure this loads AFTER video-editor so Redux is already initialized
-			$dependencies = array_merge( $dependencies, array( 'transcoder-page-script-video-editor' ) );
-
-			// Register the script first
-			wp_register_script(
-				'godam-wc-layer-component',
-				RTGODAM_URL . 'assets/build/integrations/woocommerce/js/wc-layer-registration.min.js',
-				$dependencies,
-				$version,
-				true // Load in footer AFTER video-editor
-			);
-
-			// Enqueue it
-			wp_enqueue_script( 'godam-wc-layer-component' );
-		}
+		return; // No-op: handled by the main video editor bundle.
 	}
 }
 
