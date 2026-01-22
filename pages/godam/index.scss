@@ -131,6 +131,7 @@ $settings-page-breakpoint: 782px;
 		&__container {
 			padding: 2rem 20px;
 			max-width: 1440px;
+			margin: 0 auto;
 			display: flex;
 			justify-content: space-between;
 			gap: 2em;
