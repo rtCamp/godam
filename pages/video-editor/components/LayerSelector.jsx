@@ -213,13 +213,13 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 	const [ activeTab, setActiveTab ] = useState( 'all' );
 
 	const uniqueLayerTypes = useMemo( () => {
-		return Layers.reduce( ( acc, layer ) => {
+		return AllLayers.reduce( ( acc, layer ) => {
 			if ( ! acc.includes( layer.type ) ) {
 				acc.push( layer.type );
 			}
 			return acc;
 		}, [] );
-	}, [] );
+	}, [ AllLayers ] );
 
 	// Create tabs array with "all" as the first item
 	const allTabs = useMemo( () => {

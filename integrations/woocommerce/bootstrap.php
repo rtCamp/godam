@@ -236,6 +236,8 @@ class Module {
 			'id'             => 15,
 			'title'          => __( 'WooCommerce', 'godam' ),
 			'description'    => __( 'Display products using hotspots', 'godam' ),
+			'image'          => RTGODAM_WC_MODULE_URL . 'pages/components/images/Hotspot.png',
+			'formIcon'       => RTGODAM_WC_MODULE_URL . 'pages/components/images/woo.svg',
 			'type'           => 'woo',
 			'requiresWoo'    => true,
 			'isRequired'     => true,
