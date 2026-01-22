@@ -60,17 +60,6 @@
 	}
 
 	/**
-	 * Check if the HTTP auth notice is already displayed.
-	 *
-	 * @since n.e.x.t
-	 *
-	 * @return {boolean} True if notice is displayed, false otherwise.
-	 */
-	const isNoticeDisplayed = () => {
-		return document.querySelector( '.godam-http-auth-notice' ) !== null;
-	};
-
-	/**
 	 * Intercept media uploads and check for HTTP auth before proceeding.
 	 *
 	 * @since n.e.x.t
@@ -95,11 +84,7 @@
 			if ( this.uploader ) {
 				this.uploader.bind( 'BeforeUpload', async function() {
 					// Detect HTTP auth status.
-					const hasHttpAuth = await detectHttpAuth();
-					if ( hasHttpAuth?.data?.has_http_auth && ! isNoticeDisplayed() ) {
-						// Only reload if the notice isn't already displayed.
-						window.location.reload();
-					}
+					await detectHttpAuth();
 				} );
 			}
 
