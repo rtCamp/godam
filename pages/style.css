@@ -694,32 +694,9 @@ input, textarea, select {
 
 /* Style for GoDAM admin pages container container */
 .godam-admin-root {
-	position: fixed;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	margin-left: 160px;
-	min-height: calc( 100vh - var(--wp-admin--admin-bar--height, 0) );
-	padding-top: var(--wp-admin--admin-bar--height, 0);
-	overflow: auto;
-	color: #000;
+	margin-left: -20px;
 }
 
-.folded .godam-admin-root  {
-	margin-left: 36px;
-}
-
-@media screen and (max-width: 960px) {
-
-	.auto-fold .godam-admin-root  {
-		margin-left: 36px;
-	}
-}
-
-@media screen and (max-width: 782px) {
-
-	.auto-fold .godam-admin-root  {
-		margin-left: 0;
-	}
+.godam-admin-root #root-video-help {
+	margin-left: 20px;
 }
