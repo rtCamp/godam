@@ -167,6 +167,7 @@ function VideoEdit( {
 			muted,
 			poster: poster || defaultPoster,
 			sources,
+			aspectRatio: calculatedAspectRatio,
 			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
 			// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
 			html5: {
@@ -177,11 +178,6 @@ function VideoEdit( {
 				},
 			},
 		};
-
-		// Only add aspectRatio if it's set (it is already validated in calculatedAspectRatio useMemo)
-		if ( calculatedAspectRatio && /^\d+:\d+$/.test( calculatedAspectRatio ) ) {
-			options.aspectRatio = calculatedAspectRatio;
-		}
 
 		return options;
 	}, [ controls, autoplay, preload, loop, muted, poster, defaultPoster, sources, calculatedAspectRatio ] );

@@ -200,8 +200,27 @@
 .easydam-layer--cta-text {
 	max-height: 100%;
 	width: 100%;
-	padding: 2rem;
 	overflow: auto;
+	padding: 0 2rem;
+
+	/**
+	 * Quill Styles.
+	 */
+	.ql-align-center {
+		text-align: center;
+	}
+
+	.ql-align-right {
+		text-align: right;
+	}
+
+	.ql-align-justify {
+		text-align: justify;
+	}
+
+	strong {
+		font-weight: 700;
+	}
 }
 
 .easydam-layer--cta-html {
@@ -1133,6 +1152,7 @@ body.godam-share-modal-open {
 	display: block !important;
 	padding: 0 !important;
 	margin: 0 !important;
+	max-height: 300px;
 	overflow: auto;
 	font-size: 12px !important;
 }
@@ -1464,7 +1484,7 @@ body.godam-share-modal-open {
 			background: url(../images/close.svg);
 			background-position: center;
 			background-repeat: no-repeat;
-			background-size: contain;
+			background-size: auto;
 			display: inline-block;
 		}
 
@@ -1698,6 +1718,10 @@ body.godam-share-modal-open {
 				bottom: initial !important;
 			}
 		}
+
+		.vjs-menu-content {
+			max-height: 120px !important;
+		}
 	}
 }
 
@@ -1714,9 +1738,26 @@ body.godam-share-modal-open {
 	white-space: nowrap;
 }
 
+/**
+ * GoDAM Video Block - Main wrapper styles
+ * These styles ensure the block works correctly in all layout contexts,
+ * including flex layouts (Row, Stack) and standard layouts (Group, Columns).
+ */
+.wp-block-godam-video {
+	width: 100%;
+	min-width: 0; // Allow shrinking in flex layouts (Row/Stack)
+	
+	// Ensure the figure takes full width
+	figure[id^="godam-player-container"] {
+		width: 100%;
+		margin: 0;
+	}
+}
+
 /* GoDAM Video Heading Overlay Styles */
 .godam-video-wrapper {
 	position: relative;
+	width: 100%;
 }
 
 /* Ensure Elementor widget wrapper maintains proper dimensions */
