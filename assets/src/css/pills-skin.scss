@@ -1,3 +1,37 @@
+@mixin pills-mobile-brand-logo($logoWidth: 16px) {
+
+    /* Control bar as flex container */
+    .vjs-control-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* Branding logo stays INSIDE bar */
+    .vjs-control.vjs-custom-play-button {
+        position: relative;
+        width: $logoWidth;
+        height: 2.2em;
+
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+
+        margin-left: auto; // push to right
+        z-index: 25;
+    }
+
+    /* Logo image safety */
+    .vjs-control.vjs-custom-play-button img {
+        max-height: 100%;
+        width: calc(#{$logoWidth} + 8px);
+        object-fit: contain;
+        display: block;
+        border-top-right-radius: 999px;
+        border-bottom-right-radius: 999px;
+    }
+}
+
 .godam-pills-skin {
 	container-type: inline-size;
 	container-name: godam-player-pills-skin;
@@ -10,8 +44,6 @@
 		bottom: 0.5rem !important;
 		z-index: 19;
 
-		/* Add horizontal padding to prevent controls from touching the edges of the pill shape */
-		padding: 0 10px;
 	}
 
 	.video-js .vjs-big-play-button {
@@ -65,8 +97,10 @@
 	.video-js .vjs-custom-play-button img {
 		height: 100%;
 		width: auto;
-		object-fit: fill;
-		margin-right: 20px;
+		object-fit: contain;
+        display: block;
+        border-top-right-radius: 999px;
+        border-bottom-right-radius: 999px;
 	}
 
 	.video-js .vjs-menu-content {
@@ -121,6 +155,8 @@
 
 	@container godam-player-pills-skin (max-width: 480px) {
 
+		@include pills-mobile-brand-logo();
+		
 		.video-js .vjs-big-play-button {
 			left: 55%;
 		}
@@ -142,7 +178,7 @@
 			height: initial !important;
 			margin: -40px auto 0;
 
-			.vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-remaining-time, .vjs-control.vjs-custom-play-button, .vjs-volume-control {
+			.vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-remaining-time, .vjs-control.vjs-custom-play- {
 				display: none !important;
 			}
 

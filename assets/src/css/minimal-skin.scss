@@ -1,3 +1,58 @@
+@mixin minimal-mobile-brand-logo($logo-width: 66px, $control-btn-width: 30px) {
+
+    .vjs-control-bar {
+        --godam-logo-width: #{$logo-width};
+        --godam-btn-width: #{$control-btn-width};
+    }
+
+    .vjs-control.vjs-custom-play-button {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: var(--godam-logo-width);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 25;
+    }
+
+    .vjs-control.vjs-custom-play-button img {
+        max-height: 2.2em;
+        max-width: 100%;
+        object-fit: contain;
+        display: block;
+        margin: auto;
+    }
+
+    .vjs-fullscreen-control,
+    .vjs-settings-button,
+    .vjs-volume-panel {
+        position: absolute;
+        bottom: 0;
+        height: 3em;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .vjs-fullscreen-control {
+        right: var(--godam-logo-width) !important;
+    }
+
+    .vjs-volume-panel {
+        right: calc(
+            var(--godam-logo-width) + (var(--godam-btn-width))
+        ) !important;
+    }
+
+    .vjs-settings-button {
+        right: calc(
+            var(--godam-logo-width) + (2 * var(--godam-btn-width))
+        ) !important;
+    }
+}
+
 .godam-minimal-skin {
 	container-type: inline-size;
 	container-name: godam-player-minimal-skin;
@@ -87,6 +142,8 @@
 	}
 
 	@container godam-player-minimal-skin (max-width: 480px) {
+
+		@include minimal-mobile-brand-logo();
 		
 		.video-js .vjs-big-play-button {
 			left: 55%;
@@ -185,7 +242,7 @@
 			height: 3em !important;
 		}
 
-	   .vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-remaining-time, .vjs-custom-play-button {
+	   .vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-remaining-time {
 			display: none !important;
 		}
 
