@@ -141,7 +141,12 @@ $tools-page-breakpoint: 782px;
 
 					&.open {
 						transform: translateX(0);
+
+						&.is-safari {
+							transform: translateX(-10px);
+						}
 					}
+
 				}
 
 				nav {

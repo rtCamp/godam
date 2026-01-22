@@ -26,3 +26,26 @@ export const isOnStarterPlan = window?.userData?.userApiData?.active_plan === 'S
  * GODAM API base URL
  */
 export const GODAM_API_BASE = window?.godamSettings?.apiBase || '';
+
+/**
+ * Detect if the browser is Safari
+ *
+ * @return {boolean} True if the browser is Safari, false otherwise
+ */
+export const isSafari = () => {
+	if ( typeof window === 'undefined' ) {
+		return false;
+	}
+
+	const userAgent = window.navigator.userAgent;
+
+	// Check for Safari but exclude Chrome and other Chromium-based browsers
+	// Safari's user agent contains "Safari" but not "Chrome"
+	const isSafariBrowser =
+		/Safari/.test( userAgent ) &&
+		! /Chrome/.test( userAgent ) &&
+		! /Chromium/.test( userAgent ) &&
+		! /Edg/.test( userAgent );
+
+	return isSafariBrowser;
+};
