@@ -191,19 +191,11 @@ const Layers = [
 		isActive: Boolean( window.easydamMediaLibrary.isPollPluginActive ),
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/wp-polls/">${ __( 'WP-Polls', 'godam' ) }</a> ${ __( 'plugin is required to use Poll layer', 'godam' ) }`,
 	},
-	{
-		id: 15,
-		title: __( 'WooCommerce', 'godam' ),
-		description: __( 'Display products using hotspots', 'godam' ),
-		image: Hotspot,
-		type: 'woo',
-		requiresWoo: true,
-		formIcon: Woo,
-		isRequired: true,
-		isActive: Boolean( window.easydamMediaLibrary.isWooActive ) ?? false,
-		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/woocommerce/">${ __( 'WooCommerce', 'godam' ) }</a> ${ __( 'plugin is required to use WooCommerce layer', 'godam' ) }`,
-	},
 ];
+
+// Merge with PHP-filtered layers (e.g., WooCommerce)
+const phpFilteredLayers = window.godamVideoEditorConfig?.layerOptions || [];
+const AllLayers = [ ...Layers, ...phpFilteredLayers ];
 
 /**
  * Modal to select the layer to be added on the video at a particular timestamp.
@@ -217,7 +209,7 @@ const Layers = [
 const LayerSelector = ( { closeModal, addNewLayer } ) => {
 	const [ selectedLayer, setSelectedLayer ] = useState( null );
 	const [ searchQuery, setSearchQuery ] = useState( '' );
-	const [ filteredLayers, setFilteredLayers ] = useState( Layers );
+	const [ filteredLayers, setFilteredLayers ] = useState( AllLayers );
 	const [ activeTab, setActiveTab ] = useState( 'all' );
 
 	const uniqueLayerTypes = useMemo( () => {
@@ -287,7 +279,7 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 			setActiveTab( 'all' );
 		}
 
-		const filtered = Layers.filter( ( layer ) =>
+		const filtered = AllLayers.filter( ( layer ) =>
 			layer.title.toLowerCase().includes( lowerCaseQuery ) ||
 		layer.description.toLowerCase().includes( lowerCaseQuery ),
 		);
@@ -303,7 +295,7 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 	const handleTabClick = ( type ) => {
 		if ( activeTab === type ) {
 			setActiveTab( 'all' );
-			setFilteredLayers( Layers );
+			setFilteredLayers( AllLayers );
 			return;
 		}
 
@@ -312,9 +304,9 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 
 		setActiveTab( type );
 		if ( type === 'all' ) {
-			setFilteredLayers( Layers );
+			setFilteredLayers( AllLayers );
 		} else {
-			const filtered = Layers.filter( ( layer ) => layer.type === type );
+			const filtered = AllLayers.filter( ( layer ) => layer.type === type );
 			setFilteredLayers( filtered );
 		}
 	};

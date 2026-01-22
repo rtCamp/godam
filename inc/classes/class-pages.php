@@ -574,6 +574,19 @@ class Pages {
 				)
 			);
 
+			// Localize video editor layer options and components via PHP filters
+			$layer_options    = apply_filters( 'godam_video_editor_layer_options', array() );
+			$layer_components = apply_filters( 'godam_video_editor_layer_components', array() );
+
+			wp_localize_script(
+				'transcoder-page-script-video-editor',
+				'godamVideoEditorConfig',
+				array(
+					'layerOptions'    => $layer_options,
+					'layerComponents' => $layer_components,
+				)
+			);
+
 			wp_set_script_translations( 'transcoder-page-script-video-editor', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
 

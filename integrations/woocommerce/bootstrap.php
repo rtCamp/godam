@@ -120,7 +120,11 @@ class Module {
 		add_action( 'init', array( $this, 'init_woocommerce_integration' ), 20 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ), 20 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ), 20 );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_video_editor_assets' ), 5 ); // Priority 5 to load before video-editor at 10
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_video_editor_assets' ), 15 );
+
+		// Register WooCommerce layer via PHP filters
+		add_filter( 'godam_video_editor_layer_options', array( $this, 'register_woocommerce_layer_option' ), 10 );
+		add_filter( 'godam_video_editor_layer_components', array( $this, 'register_woocommerce_layer_component' ), 10 );
 	}
 
 	/**
@@ -222,6 +226,41 @@ class Module {
 	}
 
 	/**
+	 * Register WooCommerce layer option via PHP filter.
+	 *
+	 * @param array $layers Existing layer options.
+	 * @return array Modified layer options.
+	 */
+	public function register_woocommerce_layer_option( $layers ) {
+		$layers[] = array(
+			'id'             => 15,
+			'title'          => __( 'WooCommerce', 'godam' ),
+			'description'    => __( 'Display products using hotspots', 'godam' ),
+			'type'           => 'woo',
+			'requiresWoo'    => true,
+			'isRequired'     => true,
+			'isActive'       => is_plugin_active( 'woocommerce/woocommerce.php' ),
+			'requireMessage' => sprintf(
+				'<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/woocommerce/">%s</a> %s',
+				__( 'WooCommerce', 'godam' ),
+				__( 'plugin is required to use WooCommerce layer', 'godam' )
+			),
+		);
+		return $layers;
+	}
+
+	/**
+	 * Register WooCommerce layer component via PHP filter.
+	 *
+	 * @param array $components Existing layer components.
+	 * @return array Modified layer components.
+	 */
+	public function register_woocommerce_layer_component( $components ) {
+		$components['woo'] = 'WoocommerceLayer';
+		return $components;
+	}
+
+	/**
 	 * Enqueue WooCommerce layer registration for video editor.
 	 *
 	 * This script registers the WooCommerce layer component using WordPress hooks,
@@ -250,20 +289,20 @@ class Module {
 				$version      = $asset_data['version'] ?? $version;
 			}
 
-			// Add dependencies to ensure this loads before video-editor
-			$dependencies = array_merge( $dependencies, array( 'rtgodam-script', 'easydam-media-library' ) );
+			// Ensure this loads AFTER video-editor so Redux is already initialized
+			$dependencies = array_merge( $dependencies, array( 'transcoder-page-script-video-editor' ) );
 
 			// Register the script first
 			wp_register_script(
-				'godam-wc-layer-registration',
+				'godam-wc-layer-component',
 				RTGODAM_URL . 'assets/build/integrations/woocommerce/js/wc-layer-registration.min.js',
 				$dependencies,
 				$version,
-				false // Load in footer but before video-editor
+				true // Load in footer AFTER video-editor
 			);
 
 			// Enqueue it
-			wp_enqueue_script( 'godam-wc-layer-registration' );
+			wp_enqueue_script( 'godam-wc-layer-component' );
 		}
 	}
 }

@@ -2,9 +2,9 @@
 /**
  * WooCommerce Layer Integration
  *
- * This class is responsible for synchronizing WooCommerce product data 
- * with video hotspots stored in attachments. Whenever a product is 
- * updated or its stock changes, the relevant product details in all 
+ * This class is responsible for synchronizing WooCommerce product data
+ * with video hotspots stored in attachments. Whenever a product is
+ * updated or its stock changes, the relevant product details in all
  * related video hotspots are updated automatically.
  *
  * @package RTGODAM
@@ -57,9 +57,9 @@ class WC_Woocommerce_Layer {
 					'Updating hotspot_product_details failed (code: %s) - %s',
 					$error->get_error_code(),
 					$error->get_error_message()
-				) 
+				)
 			);
-			
+
 			return;
 		}
 
@@ -79,7 +79,7 @@ class WC_Woocommerce_Layer {
 				'posts_per_page' => -1,
 				'meta_key'       => 'rtgodam_meta', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 				'post_mime_type' => 'video/mp4',
-			) 
+			)
 		);
 
 		foreach ( $attachments as $attachment ) {
@@ -127,7 +127,7 @@ class WC_Woocommerce_Layer {
 	 * The script is enqueued only on the cart page
 	 *
 	 * @since 1.0.0
-	 * 
+	 *
 	 * @return void
 	 */
 	public function enqueue_frontend_assets() {
@@ -135,11 +135,17 @@ class WC_Woocommerce_Layer {
 			return;
 		}
 
+		$script_path = RTGODAM_PATH . 'assets/build/integrations/woocommerce/js/wc-woo-layer-cart-url-editor.min.js';
+
+		if ( ! file_exists( $script_path ) ) {
+			return;
+		}
+
 		wp_enqueue_script(
 			'rtgodam-wc-woo-layer-cart-url-editor',
-			RTGODAM_URL . 'assets/build/js/wc-woo-layer-cart-url-editor.min.js',
+			RTGODAM_URL . 'assets/build/integrations/woocommerce/js/wc-woo-layer-cart-url-editor.min.js',
 			array( 'jquery' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/wc-woo-layer-cart-url-editor.min.js' ),
+			filemtime( $script_path ),
 			true
 		);
 	}

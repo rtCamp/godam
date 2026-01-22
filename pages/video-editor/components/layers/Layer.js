@@ -2,7 +2,7 @@
 /**
  * WordPress dependencies
  */
-import { applyFilters, addFilter } from '@wordpress/hooks';
+import { Suspense } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -15,7 +15,7 @@ import PollLayer from './PollLayer';
 
 /**
  * Core Layer Components.
- * Additional layer types can be registered via the 'godam.videoEditor.layerComponents' filter.
+ * Additional layer types can be registered via PHP filters.
  */
 const coreLayerComponents = {
 	form: {
@@ -36,12 +36,29 @@ const coreLayerComponents = {
 };
 
 /**
- * Get all registered layer components (core + filtered).
+ * Get all registered layer components (core + PHP filtered).
+ * PHP filtered components are loaded from window.godamVideoEditorConfig and
+ * their actual components are loaded from window.godamLayerComponents.
  *
  * @return {Object} Object containing all registered layer components.
  */
 const getLayerComponents = () => {
-	return applyFilters( 'godam.videoEditor.layerComponents', coreLayerComponents );
+	const components = { ...coreLayerComponents };
+
+	// Merge with PHP-filtered components (e.g., WooCommerce)
+	const phpComponents = window.godamVideoEditorConfig?.layerComponents || {};
+	const loadedComponents = window.godamLayerComponents || {};
+
+	Object.keys( phpComponents ).forEach( ( key ) => {
+		const componentName = phpComponents[ key ];
+		if ( loadedComponents[ componentName ] ) {
+			components[ key ] = {
+				component: loadedComponents[ componentName ],
+			};
+		}
+	} );
+
+	return components;
 };
 
 /**
@@ -58,19 +75,24 @@ const Layer = ( { layer, goBack, duration } ) => {
 	const LayerComponents = getLayerComponents();
 	const layerType = layer?.type ?? 'cta';
 	const Component = LayerComponents[ layerType ]?.component;
-	console.log( 'Layer is init' );
-	console.log( LayerComponents );
+
+	console.log( 'Sabbir Video scripts loaded' );
+	console.log( LayerComponents )
 
 	// Fallback to CTA layer if component is not found
 	if ( ! Component ) {
-		const FallbackComponent = LayerComponents[ 'cta' ]?.component;
+		const FallbackComponent = LayerComponents.cta?.component;
 		if ( ! FallbackComponent ) {
 			return <div>Error: No layer components registered</div>;
 		}
 		return <FallbackComponent layerID={ layer.id } goBack={ goBack } duration={ duration } />;
 	}
 
-	return <Component layerID={ layer.id } goBack={ goBack } duration={ duration } />;
+	return (
+		<Suspense fallback={ <div>Loading layer...</div> }>
+			<Component layerID={ layer.id } goBack={ goBack } duration={ duration } />
+		</Suspense>
+	);
 };
 
 /**
