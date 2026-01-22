@@ -1,4 +1,5 @@
 @mixin minimal-mobile-brand-logo($logo-width: 66px, $control-btn-width: 30px) {
+
     .vjs-control-bar {
         --godam-logo-width: #{$logo-width};
         --godam-btn-width: #{$control-btn-width};
@@ -147,12 +148,14 @@
     }
 
     @container godam-player-minimal-skin (max-width: 480px) {
+
         @include minimal-mobile-brand-logo();
+
         .video-js .vjs-control-bar {
             height: 6em !important;
 
             .vjs-volume-control {
-                display: none; //Fallback for old browser versions not supporting interaction media features
+                display: none;
             }
 
             .vjs-control {
@@ -256,6 +259,7 @@
             width: 8em;
 
             .vjs-menu-content {
+
                 .godam-back-item-container::after {
                     top: 24.5px;
                 }

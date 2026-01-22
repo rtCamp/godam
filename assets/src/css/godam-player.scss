@@ -13,6 +13,7 @@
 @use "./video-engagement";
 
 @mixin godam-mobile-brand-logo($logoWidth, $btnWidth) {
+
     .vjs-control-bar {
         --godam-logo-width: #{$logoWidth};
         --godam-btn-width: #{$btnWidth};
@@ -34,6 +35,7 @@
         max-width: 100%;
         object-fit: contain;
         display: block;
+        // For Proper Alignment
         margin: auto;
     }
 
@@ -76,6 +78,7 @@
 }
 
 .easydam-video-block {
+
     video {
         width: 100%;
         height: auto;
@@ -83,6 +86,7 @@
 }
 
 .wp-block-easydam-video {
+
     video {
         width: 100%;
         height: auto;
@@ -517,6 +521,7 @@
 
 /* Responsive CTA Image Layer using Container Queries */
 @container (max-width: 580px) {
+
     .image-cta-container {
         gap: 15px;
         padding: 15px;
@@ -525,6 +530,7 @@
         overflow-y: auto;
 
         img {
+
             /* Scale down image for mobile but keep aspect ratio */
             width: 120px;
             height: auto;
@@ -556,6 +562,7 @@
 }
 
 @container (max-width: 400px) {
+
     .image-cta-container {
         padding: 10px;
         gap: 10px;
@@ -696,6 +703,7 @@
 }
 
 .vjs-has-started.godam-hover-started {
+
     .vjs-poster {
         display: block;
     }
@@ -918,6 +926,7 @@ body.godam-share-modal-open {
     }
 
     &__timestamp-container {
+
         label {
             display: flex;
             align-items: center;
@@ -951,6 +960,7 @@ body.godam-share-modal-open {
 }
 
 @keyframes fadeInScale {
+
     from {
         opacity: 0;
         transform: scale(0.9);
@@ -963,6 +973,7 @@ body.godam-share-modal-open {
 }
 
 @keyframes fadeOutScale {
+
     from {
         opacity: 1;
         transform: scale(1);
@@ -975,6 +986,7 @@ body.godam-share-modal-open {
 }
 
 @keyframes fadeOverlayIn {
+
     from {
         opacity: 0;
     }
@@ -985,6 +997,7 @@ body.godam-share-modal-open {
 }
 
 @keyframes fadeOverlayOut {
+
     from {
         opacity: 1;
     }
@@ -1331,6 +1344,7 @@ body.godam-share-modal-open {
 }
 
 @container godam-player-default-skin (max-width: 480px) {
+
     @include godam-mobile-brand-logo(66px, 30px);
 }
 
@@ -1412,6 +1426,7 @@ body.godam-share-modal-open {
         scrollbar-color: #e5e5e5 #fff;
 
         fieldset {
+
             legend {
                 color: #fff;
                 text-align: center;
@@ -1469,6 +1484,7 @@ body.godam-share-modal-open {
 }
 
 @keyframes fadeInOut {
+
     0% {
         opacity: 0;
     }
@@ -1483,6 +1499,7 @@ body.godam-share-modal-open {
 }
 
 @keyframes pulse {
+
     50% {
         opacity: 0.5;
     }
@@ -1490,10 +1507,12 @@ body.godam-share-modal-open {
 
 /* Style for video player fullscreen buttons */
 .video-js {
+
     /* Remove blue tap highlight on mobile devices */
     -webkit-tap-highlight-color: transparent !important;
 
     * {
+
         /* Remove focus outlines and box shadows from all player controls */
         &:focus,
         &:active,
@@ -1540,6 +1559,7 @@ body.godam-share-modal-open {
     }
 
     @media (hover: none) {
+
         .vjs-volume-control {
             display: none !important; // Disable slider for touch devices
         }
@@ -1550,6 +1570,7 @@ body.godam-share-modal-open {
     }
 
     @container godam-player-default-skin (max-width: 480px) {
+
         .vjs-big-play-button {
             left: 55% !important;
         }
@@ -1685,6 +1706,7 @@ body.godam-share-modal-open {
             }
 
             .vjs-time-control {
+
                 &.vjs-current-time {
                     position: absolute;
                     left: 50%;
@@ -1731,7 +1753,9 @@ body.godam-share-modal-open {
 
     // Screen size greater than 480px
     @container godam-player-default-skin (min-width: 480px) {
+
         .vjs-control-bar {
+
             .vjs-skip-backward-5,
             .vjs-skip-backward-10,
             .vjs-skip-backward-15,
@@ -1810,12 +1834,14 @@ body.godam-share-modal-open {
     container-name: godam-player-default-skin;
 
     &:has(.vjs-has-started) {
+
         .godam-player-overlay {
             display: none;
         }
     }
 
     &:has(.easydam-player.vjs-hidden) {
+
         .godam-poster-image {
             display: block;
         }
@@ -1845,6 +1871,7 @@ body.godam-share-modal-open {
         margin: 0;
 
         @media screen and (max-width: 768px) {
+
             & {
                 opacity: 1;
                 visibility: visible;
@@ -1889,6 +1916,7 @@ body.godam-share-modal-open {
     }
 
     &:hover {
+
         .vjs-big-play-button {
             transform: scale(1.1);
         }
@@ -1920,6 +1948,7 @@ body.godam-share-modal-open {
     }
 
     .video-js {
+
         .vjs-big-play-button {
             background-color: var(--rtgodam-control-bar-color, #000) !important;
             border: none;
@@ -1947,7 +1976,9 @@ body.godam-share-modal-open {
 }
 
 .godam-show-controls-on-hover {
+
     &:hover {
+
         .vjs-control-bar {
             display: flex !important;
         }
@@ -1955,6 +1986,7 @@ body.godam-share-modal-open {
 }
 
 .gf-godam-video-preview {
+
     .easydam-video-container {
         height: 100%;
     }
@@ -2162,6 +2194,7 @@ body.godam-share-modal-open {
         }
 
         @container godam-player-default-skin (max-width: 480px) {
+
             &:not(.is-not-stacked-on-mobile) {
                 flex-direction: column;
 
@@ -2240,6 +2273,7 @@ body.godam-share-modal-open {
 
 // Override `video-js button` style for uppy modal button.
 #uppy-godam-video-modal-container {
+
     .uppy-Dashboard-close {
         color: #ffffffe6;
         cursor: pointer;
@@ -2291,6 +2325,7 @@ body.godam-share-modal-open {
     }
 
     @media only screen and (min-width: 820px) {
+
         .uppy-Dashboard-close {
             font-size: 35px;
         }
