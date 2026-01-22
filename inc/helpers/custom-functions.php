@@ -766,9 +766,6 @@ function rtgodam_has_http_auth() {
 	// If we have a recent detection result, use it.
 	if ( ! empty( $cached_status ) && isset( $cached_status['enabled'] ) ) {
 		$has_http_auth = (bool) $cached_status['enabled'];
-	} else {
-		// Fallback: attempt server-side check.
-		$has_http_auth = rtgodam_detect_http_auth_server_side();
 	}
 
 	/**
@@ -779,50 +776,6 @@ function rtgodam_has_http_auth() {
 	 * @param bool $has_http_auth Whether HTTP auth is enforced.
 	 */
 	return apply_filters( 'godam_has_http_auth', $has_http_auth );
-}
-
-/**
- * Server-side HTTP auth detection fallback.
- *
- * Attempts to make a request to the home URL without credentials.
- * This is less reliable than JavaScript detection but serves as a fallback.
- *
- * @since n.e.x.t
- *
- * @return bool True if HTTP auth appears to be enabled.
- */
-function rtgodam_detect_http_auth_server_side() {
-	$home_url = home_url( '/' );
-	
-	$response = wp_remote_get(
-		$home_url,
-		array(
-			'timeout'     => 5, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
-			'redirection' => 0,
-			'sslverify'   => false,
-		)
-	);
-
-	// If we get a 401, HTTP auth is likely enabled.
-	if ( ! is_wp_error( $response ) ) {
-		$status_code = wp_remote_retrieve_response_code( $response );
-		return 401 === $status_code;
-	}
-
-	// On error, assume no HTTP auth (fail-safe).
-	return false;
-}
-
-/**
- * Manually trigger HTTP auth detection. 
- *
- * @since n.e.x.t
- *
- * @return void
- */
-function rtgodam_trigger_http_auth_detection() {
-	// This will be picked up by JavaScript on next admin page load.
-	delete_option( 'rtgodam_http_auth_status' );
 }
 
 /**

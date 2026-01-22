@@ -285,9 +285,6 @@ class RTGODAM_Transcoder_Handler {
 			return $wp_metadata;
 		}
 
-		// Clear the dismissed notice transient when successfully sending a transcoding request.
-		delete_transient( 'godam_http_auth_notice_dismissed' );
-
 		$path = get_attached_file( $attachment_id );
 		$url  = wp_get_attachment_url( $attachment_id );
 

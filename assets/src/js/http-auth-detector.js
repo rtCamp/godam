@@ -28,11 +28,11 @@
 			credentials: 'omit',
 			cache: 'no-store',
 		} )
-			.then( function( response ) {
+			.then( async function( response ) {
 				const hasHttpAuth = 401 === response.status;
 				return saveHttpAuthStatus( hasHttpAuth );
 			} )
-			.catch( function() {
+			.catch( async function() {
 				// On error, assume no HTTP auth (fail-safe).
 				return saveHttpAuthStatus( false );
 			} );
@@ -60,6 +60,76 @@
 	}
 
 	/**
+	 * Check if the HTTP auth notice is already displayed.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return {boolean} True if notice is displayed, false otherwise.
+	 */
+	const isNoticeDisplayed = () => {
+		return document.querySelector( '.godam-http-auth-notice' ) !== null;
+	};
+
+	/**
+	 * Intercept media uploads and check for HTTP auth before proceeding.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return {void}
+	 */
+	function interceptMediaUploads() {
+		// Hook into WordPress media uploader (Plupload).
+		if ( typeof wp === 'undefined' || ! wp.Uploader ) {
+			return;
+		}
+
+		// Store original init method.
+		const originalInit = wp.Uploader.prototype.init;
+
+		// Override the init method.
+		wp.Uploader.prototype.init = function() {
+			// Call original init.
+			const result = originalInit.apply( this, arguments );
+
+			// Before files are uploaded, check for HTTP auth.
+			if ( this.uploader ) {
+				this.uploader.bind( 'BeforeUpload', async function() {
+					// Detect HTTP auth status.
+					const hasHttpAuth = await detectHttpAuth();
+					if ( hasHttpAuth?.data?.has_http_auth && ! isNoticeDisplayed() ) {
+						// Only reload if the notice isn't already displayed.
+						window.location.reload();
+					}
+				} );
+			}
+
+			return result;
+		};
+	}
+
+	/**
+	 * Initialize immediately (before DOM ready) to ensure we catch uploader initialization.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return {void}
+	 */
+	function initializeEarly() {
+		// Check if godamHttpAuthDetector is available.
+		if ( typeof godamHttpAuthDetector === 'undefined' ) {
+			return false;
+		}
+
+		// Intercept media uploads immediately.
+		interceptMediaUploads();
+
+		return true;
+	}
+
+	// Try to initialize immediately (before DOM ready).
+	const earlyInitSuccess = initializeEarly();
+
+	/**
 	 * Initialize on document ready.
 	 *
 	 * @since n.e.x.t
@@ -72,7 +142,15 @@
 			return;
 		}
 
-		// Run detection on every page load.
+		// If early initialization failed, try again.
+		if ( ! earlyInitSuccess ) {
+			interceptMediaUploads();
+		}
+
+		// Run initial detection on page load.
 		detectHttpAuth();
 	} );
+
+	// Expose detectHttpAuth globally for external use if needed.
+	window.godamDetectHttpAuth = detectHttpAuth;
 }( jQuery ) );

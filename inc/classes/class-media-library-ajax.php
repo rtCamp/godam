@@ -49,7 +49,6 @@ class Media_Library_Ajax {
 		add_filter( 'wp_get_attachment_url', array( $this, 'filter_attachment_url_for_virtual_media' ), 10, 2 );
 
 		add_action( 'admin_notices', array( $this, 'http_auth_warning_notice' ) );
-		add_action( 'wp_ajax_godam_dismiss_http_auth_notice', array( $this, 'dismiss_http_auth_notice' ) );
 		add_action( 'wp_ajax_godam_save_http_auth_status', array( $this, 'save_http_auth_status' ) );
 	}
 
@@ -302,7 +301,7 @@ class Media_Library_Ajax {
 			// If failed due to HTTP auth but auth is now disabled, reset status.
 			if ( 'http_auth_enabled' === $error_code && ! rtgodam_has_http_auth() ) {
 				$transcoding_status = 'not_started';
-				update_post_meta( $attachment->ID, 'rtgodam_transcoding_status', 'not_started' );
+				update_post_meta( $attachment->ID, 'rtgodam_transcoding_status', strtolower( $transcoding_status ) );
 				delete_post_meta( $attachment->ID, 'rtgodam_transcoding_error_msg' );
 				delete_post_meta( $attachment->ID, 'rtgodam_transcoding_error_code' );
 			}
@@ -840,22 +839,6 @@ class Media_Library_Ajax {
 	}
 	
 	/**
-	 * Dismiss the HTTP auth warning notice.
-	 *
-	 * @since n.e.x.t
-	 *
-	 * @return void
-	 */
-	public function dismiss_http_auth_notice() {
-		check_ajax_referer( 'godam-dismiss-http-auth-notice', 'nonce' );
-
-		// Set transient for 24 hours.
-		set_transient( 'godam_http_auth_notice_dismissed', true, DAY_IN_SECONDS );
-
-		wp_send_json_success();
-	}
-	
-	/**
 	 * Display HTTP authentication warning notice.
 	 *
 	 * @since n.e.x.t
@@ -874,17 +857,11 @@ class Media_Library_Ajax {
 			return;
 		}
 
-		// Check if notice was dismissed.
-		$dismissed = get_transient( 'godam_http_auth_notice_dismissed' );
-		if ( $dismissed ) {
-			return;
-		}
-
 		// Get the GoDAM logo URL.
 		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', dirname( __DIR__ ) );
 
 		?>
-		<div class="notice notice-error is-dismissible godam-http-auth-notice">
+		<div class="notice notice-error godam-http-auth-notice">
 			<div class="godam-notice-header">
 				<img src="<?php echo esc_url( $logo_url ); ?>" alt="<?php esc_attr_e( 'GoDAM Logo', 'godam' ); ?>" class="godam-logo">
 				<div>
@@ -897,20 +874,6 @@ class Media_Library_Ajax {
 				</div>
 			</div>
 		</div>
-		<script type="text/javascript">
-		jQuery( document ).ready( function( $ ) {
-			$( document ).on( 'click', '.godam-http-auth-notice .notice-dismiss', function() {
-				var $notice = $( this ).closest( '.godam-http-auth-notice' );
-				$notice.fadeOut();
-
-				var url = ( typeof ajaxurl !== 'undefined' ) ? ajaxurl : 'admin-ajax.php';
-				$.post( url, {
-					action: 'godam_dismiss_http_auth_notice',
-					nonce: '<?php echo esc_js( wp_create_nonce( 'godam-dismiss-http-auth-notice' ) ); ?>'
-				} );
-			} );
-		} );
-		</script>
 		<?php
 	}
 }
