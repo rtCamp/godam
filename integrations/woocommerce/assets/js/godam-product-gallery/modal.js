@@ -89,7 +89,7 @@ export function initVideoModal() {
 			}
 		} else {
 			getModal = document.querySelector(
-				`.godam-product-modal-container[data-modal-video-id="${ videoId }"]:not([data-modal-timestamped]), 
+				`.godam-product-modal-container[data-modal-video-id="${ videoId }"]:not([data-modal-timestamped]),
 				 .godam-product-modal-container[data-modal-video-id="${ videoId }"][data-modal-timestamped="0"]`,
 			);
 		}
@@ -97,6 +97,12 @@ export function initVideoModal() {
 		const currentGallery = gallery;
 
 		const modal = getModal;
+
+		// If modal is not found, exit early
+		if ( ! modal ) {
+			console.warn( 'GoDAM Product Modal not found for video ID:', videoId );
+			return;
+		}
 
 		if ( isSafari() ) {
 			document.body.appendChild( modal );
@@ -269,10 +275,16 @@ function close( modal, sidebarModal, ctaEnabled, ctaDisplayPosition ) {
 	if ( ctaEnabled && ( ctaDisplayPosition === 'below-inside' || ctaDisplayPosition === 'inside' ) ) {
 		sidebarModal?.classList.remove( 'close' );
 
-		modal.querySelector( '.godam-product-modal-content' ).classList.remove( 'no-sidebar' );
-		modal.querySelector( '.godam-product-modal-content' ).classList.add( 'sidebar' );
+		const modalContent = modal.querySelector( '.godam-product-modal-content' );
+		if ( modalContent ) {
+			modalContent.classList.remove( 'no-sidebar' );
+			modalContent.classList.add( 'sidebar' );
+		}
 
-		modal.querySelector( '.sidebar-collapsible-open-button' ).classList.add( 'hidden' );
+		const collapsibleButton = modal.querySelector( '.sidebar-collapsible-open-button' );
+		if ( collapsibleButton ) {
+			collapsibleButton.classList.add( 'hidden' );
+		}
 	}
 }
 
