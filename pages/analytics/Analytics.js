@@ -171,12 +171,24 @@ const Analytics = ( { attachmentID } ) => {
 
 	useEffect( () => {
 		const originalVideoEl = document.getElementById( 'original-analytics-video' );
+
+		const videoOptions = {
+			fluid: true,
+			mute: true,
+			controls: false,
+			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
+			// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
+			html5: {
+				vhs: {
+					bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
+					bandwidthVariance: 1.0, // allow renditions close to estimate
+					limitRenditionByPlayerDimensions: false, // don't cap by video element size
+				},
+			},
+		};
+
 		if ( originalVideoEl && analyticsData ) {
-			const originalVideo = videojs( 'original-analytics-video', {
-				fluid: true,
-				mute: true,
-				controls: false,
-			} );
+			const originalVideo = videojs( 'original-analytics-video', videoOptions );
 
 			generateLineChart(
 				JSON.parse( analyticsData?.all_time_heatmap ),
@@ -191,11 +203,7 @@ const Analytics = ( { attachmentID } ) => {
 		const comparisonVideoEl = document.getElementById( 'comparison-analytics-video' );
 
 		if ( comparisonVideoEl && abTestComparisonAnalyticsData ) {
-			const comparisonVideo = videojs( 'comparison-analytics-video', {
-				fluid: true,
-				mute: true,
-				controls: false,
-			} );
+			const comparisonVideo = videojs( 'comparison-analytics-video', videoOptions );
 
 			generateLineChart(
 				JSON.parse( abTestComparisonAnalyticsData?.all_time_heatmap ),
@@ -222,6 +230,15 @@ const Analytics = ( { attachmentID } ) => {
 
 		videojs( 'analytics-video', {
 			aspectRatio: '16:9',
+			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
+			// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
+			html5: {
+				vhs: {
+					bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
+					bandwidthVariance: 1.0, // allow renditions close to estimate
+					limitRenditionByPlayerDimensions: false, // don't cap by video element size
+				},
+			},
 		} );
 	}, [ analyticsData ] );
 
@@ -293,15 +310,12 @@ const Analytics = ( { attachmentID } ) => {
 	useEffect( () => {
 		const handleResize = () => {
 			const smallSize = window.innerWidth <= 1024;
-			const responsiveOverlay = document.getElementById( 'screen-size-overlay' );
 			const analyticsContainer = document.getElementById( 'root-video-analytics' );
 
-			if ( responsiveOverlay && analyticsContainer ) {
+			if ( analyticsContainer ) {
 				if ( smallSize ) {
-					responsiveOverlay.classList.remove( 'hidden' );
 					analyticsContainer.style.overflow = 'hidden';
 				} else {
-					responsiveOverlay.classList.add( 'hidden' );
 					analyticsContainer.style.overflow = 'auto';
 				}
 			}
@@ -332,7 +346,7 @@ const Analytics = ( { attachmentID } ) => {
 			<div id="media-not-found-overlay" className={ `api-key-overlay ${ ! mediaNotFound ? 'hidden' : '' }` }>
 				<div className="api-key-message">
 					<p>
-						{ __( 'This media doesn\'t exist. ', 'godam' ) }
+						{ __( 'This media doesn\'t exist.', 'godam' ) }
 						<a href="admin.php?page=rtgodam">
 							{ __( 'Go to Dashboard', 'godam' ) }
 						</a>
@@ -362,16 +376,17 @@ const Analytics = ( { attachmentID } ) => {
 									'Upgrade to unlock the media performance report.',
 									'godam',
 								) }
-
-								<a href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=analytics` } className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
 							</p>
 
 							<p className="api-key-overlay-banner-footer">
-								{ __( 'If you already have a premium plan, connect your ' ) }
+								{ __( 'If you already have a premium plan, connect your', 'godam' ) }
+								{ ' ' }
 								<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
 									{ __( 'API in the settings', 'godam' ) }
 								</a>
 							</p>
+
+							<a href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=analytics` } className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
 						</div>
 						:	<div className="api-key-overlay-banner">
 							<p>
@@ -388,23 +403,17 @@ const Analytics = ( { attachmentID } ) => {
 				</div>
 			</div>
 
-			<div id="screen-size-overlay" className="screen-size-overlay hidden">
-				<div className="screen-size-message">
-					<p>{ __( 'You need to use desktop to access this feature. ', 'godam' ) }</p>
-				</div>
-			</div>
-
 			{ attachmentData && ! mediaNotFound && (
 				<div id="analytics-content" className="hidden">
 					<div>
-						<div className="subheading-container pt-6">
+						<div className="subheading-container flex flex-row max-md:flex-row-reverse pt-6">
 							{ attachmentData?.title?.rendered
-								? <div className="subheading">{ __( 'Analytics report of ', 'godam' ) }
+								? <div className="subheading">{ __( 'Analytics report of', 'godam' ) }{ ' ' }
 									<span dangerouslySetInnerHTML={ {
 										__html: DOMPurify.sanitize( attachmentData?.title?.rendered ),
 									} }></span></div> : <div className="subheading">{ __( 'Analytics report', 'godam' ) }</div>
 							}
-							<Button className="godam-analytics-back-btn" icon={ arrowLeft } onClick={ () => window.location.href = 'admin.php?page=rtgodam_video_editor' }>{ __( 'Back to Video Editor', 'godam' ) }</Button>
+							<Button className="godam-analytics-back-btn" icon={ arrowLeft } onClick={ () => window.location.href = 'admin.php?page=rtgodam_video_editor' }><span className="max-md:hidden">{ __( 'Back to Video Editor', 'godam' ) }</span></Button>
 
 						</div>
 					</div>
@@ -413,9 +422,9 @@ const Analytics = ( { attachmentID } ) => {
 						className="video-analytics-container hidden"
 					>
 						<div>
-							<div className="flex gap-10 items-center max-lg:flex-col">
+							<div className="flex gap-10 items-center flex-wrap flex-row">
 								<div className="flex-grow">
-									<div className="w-[350px] analytics-info-container max-lg:flex-row flex-col items-center">
+									<div className="w-full analytics-info-container flex flex-wrap flex-row items-center 2xl:flex-col">
 										<SingleMetrics
 											metricType={ 'engagement-rate' }
 											label={ __( 'Average Engagement', 'godam' ) }
@@ -461,7 +470,7 @@ const Analytics = ( { attachmentID } ) => {
 										/>
 									</div>
 								</div>
-								<div className="min-w-[750px]">
+								<div className="min-w-full lg:min-w-[750px]">
 									<div>
 										<div className="video-container">
 											<RenderVideo
@@ -541,7 +550,7 @@ const Analytics = ( { attachmentID } ) => {
 												onClick={ () => startABTesting() }
 												className="godam-button"
 											>
-												{ __( 'Start Test ', 'godam' ) }
+												{ __( 'Start Test', 'godam' ) }
 											</Button>
 										</div>
 									) }

@@ -49,12 +49,14 @@ class GoDAM_Player {
 		// Allow external stylesheets to be enqueued.
 		do_action( 'godam_player_enqueue_styles' );
 
+		$godam_player_frontend_assets = include RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.asset.php';
+
 		// Register your scripts and styles here.
 		wp_register_script(
 			'godam-player-frontend-script',
 			RTGODAM_URL . 'assets/build/js/godam-player-frontend.min.js',
-			array( 'wp-data', 'wp-url', 'wp-element', 'wp-i18n', 'wp-api-fetch' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.js' ),
+			$godam_player_frontend_assets['dependencies'],
+			$godam_player_frontend_assets['version'],
 			true
 		);
 
@@ -117,6 +119,7 @@ class GoDAM_Player {
 				'loginUrl'                => apply_filters( 'rtgodam_site_login_url', wp_login_url() . '?redirect_to=' . rawurlencode( get_permalink() ) ),
 				'registrationUrl'         => apply_filters( 'rtgodam_site_registration_url', wp_registration_url() . '&redirect_to=' . rawurlencode( get_permalink() ) ),
 				'defaultAvatar'           => get_avatar_url( 0 ),
+				'nonce'                   => wp_create_nonce( 'wp_rest' ),
 			)
 		);
 	}
@@ -175,15 +178,16 @@ class GoDAM_Player {
 		wp_enqueue_style( 'godam-player-style' );
 
 		$godam_settings = get_option( 'rtgodam-settings', array() );
-		$selected_skin  = $godam_settings['video_player']['player_skin'] ?? '';
-		if ( 'Minimal' === $selected_skin ) {
-			wp_enqueue_style( 'godam-player-minimal-skin' );
-		} elseif ( 'Pills' === $selected_skin ) {
-			wp_enqueue_style( 'godam-player-pills-skin' );
-		} elseif ( 'Bubble' === $selected_skin ) {
-			wp_enqueue_style( 'godam-player-bubble-skin' );
-		} elseif ( 'Classic' === $selected_skin ) {
-			wp_enqueue_style( 'godam-player-classic-skin' );
+		$selected_skin  = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : '';
+		$skins          = array(
+			'Minimal' => 'godam-player-minimal-skin',
+			'Pills'   => 'godam-player-pills-skin',
+			'Bubble'  => 'godam-player-bubble-skin',
+			'Classic' => 'godam-player-classic-skin',
+		);
+
+		if ( isset( $skins[ $selected_skin ] ) ) {
+			wp_enqueue_style( $skins[ $selected_skin ] );
 		}
 
 		ob_start();

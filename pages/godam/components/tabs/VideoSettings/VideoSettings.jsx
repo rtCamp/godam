@@ -26,6 +26,7 @@ import APISettings from './APISettings.jsx';
 import VideoCompressQuality from './VideoCompressQuality.jsx';
 import VideoThumbnails from './VideoThumbnails.jsx';
 import VideoWatermark from './VideoWatermark.jsx';
+import VideoEngagement from './VideoEngagement.jsx';
 
 /**
  * Styles
@@ -114,6 +115,10 @@ const VideoSettings = () => {
 								{ __( 'Choose GoDAM plan', 'godam' ) }
 							</Button>
 						</div>
+
+						<p className="text-sm text-gray-600 mt-3">
+							{ __( 'Start with GoDAM Free for 60 days, or plans starting from $9/mo.', 'godam' ) }
+						</p>
 					</PanelBody>
 				</Panel>
 			) }
@@ -125,6 +130,7 @@ const VideoSettings = () => {
 					<VideoCompressQuality handleSettingChange={ handleSettingChange } />
 					<VideoThumbnails handleSettingChange={ handleSettingChange } />
 					<VideoWatermark handleSettingChange={ handleSettingChange } />
+					<VideoEngagement handleSettingChange={ handleSettingChange } />
 				</>
 			) }
 

@@ -17,6 +17,7 @@ use RTGODAM\Inc\Deactivation;
 use RTGODAM\Inc\Media_Tracker;
 use RTGODAM\Inc\Rewrite;
 use RTGODAM\Inc\Video_Preview;
+use RTGODAM\Inc\Video_Embed;
 use RTGODAM\Inc\Video_Permalinks;
 use RTGODAM\Inc\Video_Engagement;
 use RTGODAM\Inc\Update;
@@ -42,6 +43,7 @@ use RTGODAM\Inc\REST_API\Polls;
 use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
 use RTGODAM\Inc\REST_API\Dynamic_Gallery;
 use RTGODAM\Inc\REST_API\Engagement;
+use RTGODAM\Inc\REST_API\Site;
 use RTGODAM\Inc\REST_API\Video_Migration;
 use RTGODAM\Inc\REST_API\Release_Post;
 use RTGODAM\Inc\Gravity_Forms;
@@ -86,6 +88,7 @@ class Plugin {
 		Seo::get_instance();
 		Rewrite::get_instance();
 		Video_Preview::get_instance();
+		Video_Embed::get_instance();
 		Video_Permalinks::get_instance();
 		Embed::get_instance();
 
@@ -170,6 +173,7 @@ class Plugin {
 		Dynamic_Shortcode::get_instance();
 		Dynamic_Gallery::get_instance();
 		Engagement::get_instance();
+		Site::get_instance();
 		Video_Migration::get_instance();
 		Release_Post::get_instance();
 	}
@@ -192,7 +196,9 @@ class Plugin {
 	 * @return void
 	 */
 	public function load_elementor_widgets() {
-		if ( ! did_action( 'elementor/loaded' ) ) {
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+
+		if ( ! is_plugin_active( 'elementor/elementor.php' ) ) {
 			return;
 		}
 

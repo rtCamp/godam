@@ -6,6 +6,7 @@ import Uppy from '@uppy/core';
 import Dashboard from '@uppy/dashboard';
 import Webcam from '@uppy/webcam';
 import ScreenCapture from '@uppy/screen-capture';
+import Audio from '@uppy/audio';
 import GoldenRetriever from '@uppy/golden-retriever';
 
 /**
@@ -85,12 +86,21 @@ class UppyVideoUploader {
 	 * @return {Uppy} Configured Uppy instance.
 	 */
 	initializeUppy() {
+		let allowedFileTypes = [ ];
+		if ( this.selectorArray.includes( 'audio' ) && ( this.selectorArray.includes( 'webcam' ) || this.selectorArray.includes( 'screen_capture' ) ) ) {
+			allowedFileTypes = [ 'video/*', 'audio/*' ];
+		} else if ( this.selectorArray.includes( 'audio' ) ) {
+			allowedFileTypes = [ 'audio/*' ];
+		} else {
+			allowedFileTypes = [ 'video/*' ];
+		}
+
 		return new Uppy( {
 			id: `uppy-${ this.inputId }-${ this.uploadButtonId }`,
 			autoProceed: false,
 			restrictions: {
 				maxNumberOfFiles: 1,
-				allowedFileTypes: [ 'video/*' ],
+				allowedFileTypes,
 				maxFileSize: this.maxFileSize,
 			},
 		} );
@@ -142,6 +152,13 @@ class UppyVideoUploader {
 			this.uppy.use( ScreenCapture, { audio: true } );
 		}
 
+		// Optional Audio recording support.
+		if ( this.selectorArray.includes( 'audio' ) ) {
+			this.uppy.use( Audio, {
+				showRecordingLength: true,
+			} );
+		}
+
 		// Restore previous upload on reload if persisted.
 		this.uppy.on( 'restored', () => {
 			const restoredFile = this.uppy.getFiles()?.[ 0 ];
@@ -153,9 +170,9 @@ class UppyVideoUploader {
 		} );
 
 		// Handle file addition: process video and close modal.
-		this.uppy.on( 'file-added', ( file ) => {
+		this.uppy.on( 'file-added', async ( file ) => {
 			this.processVideoUpload( file, 'added' );
-			this.uppy.getPlugin( 'Dashboard' ).closeModal();
+			await this.uppy.getPlugin( 'Dashboard' ).closeModal();
 		} );
 
 		// Handle modal close without upload: clear UI preview.
@@ -198,6 +215,16 @@ class UppyVideoUploader {
 			previewElement.appendChild( videoPreview );
 		}
 
+		// Create an audio preview.
+		if ( previewElement && file.type.startsWith( 'audio/' ) ) {
+			const audioPreview = document.createElement( 'audio' );
+			audioPreview.controls = true;
+			audioPreview.style.width = '100%';
+			audioPreview.src = URL.createObjectURL( file.data );
+			previewElement.innerHTML = '';
+			previewElement.appendChild( audioPreview );
+		}
+
 		// Prepare file for the Gravity Forms file input for submission.
 		const dataTransfer = new DataTransfer();
 
@@ -205,6 +232,17 @@ class UppyVideoUploader {
 			// Convert blob data to a File object with correct type.
 			const fileName = file.name || 'video.webm';
 			const fileType = file.type || 'video/webm';
+			const fileBlob = new Blob( [ file.data ], { type: fileType } );
+			const fileObject = new File( [ fileBlob ], fileName, {
+				...file,
+				type: fileType,
+				lastModified: Date.now(),
+			} );
+			dataTransfer.items.add( fileObject );
+		} else if ( file.source === 'Audio' ) {
+			// Convert blob data to a File object with correct type.
+			const fileName = file.name || 'audio.webm';
+			const fileType = file.type || 'audio/webm';
 			const fileBlob = new Blob( [ file.data ], { type: fileType } );
 			const fileObject = new File( [ fileBlob ], fileName, {
 				...file,

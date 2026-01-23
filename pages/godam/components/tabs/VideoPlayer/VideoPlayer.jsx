@@ -168,6 +168,15 @@ const VideoPlayer = () => {
 					backward: 10,
 				},
 			},
+			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
+			// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
+			html5: {
+				vhs: {
+					bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
+					bandwidthVariance: 1.0, // allow renditions close to estimate
+					limitRenditionByPlayerDimensions: false, // don't cap by video element size
+				},
+			},
 		}, () => {
 			// Register the unified settings button component
 			const controlBar = player.getChild( 'controlBar' );
@@ -186,7 +195,7 @@ const VideoPlayer = () => {
 			const ButtonBase = videojs.getComponent( 'Button' );
 
 			const ShareButtonImg = () => {
-				switch ( mediaSettings?.video_player?.player_skin ) {
+				switch ( playerSkin ) {
 					case 'Minimal':
 						return ShareVariationOne;
 					case 'Pills':

@@ -1,10 +1,10 @@
 === GoDAM - Organize WordPress Media Library & File Manager with Unlimited Folders for Images, Videos & more ===
-Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia
+Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia, kishu7270, opurockey, utsavladani, whiteshadow01, ahmarzaidi
 Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
-Tested up to: 6.8.1
+Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.4.0
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -246,30 +246,43 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
-= v1.4.0 (September 9, 2025) =
+= v1.5.0 (January 20, 2026) =
 
-- New: Added integration for LifterLMS
-- New: Added Ninja Forms and MetForm layer integration
-- New: Added GoDAM Recorder Field for Everest Forms and Ninja Forms
-- New: Added Engagements for GoDAM Video and Gallery with Views, Likes, and Comments
-- New: Implemented Migration Tools for existing videos and Vimeo videos to GoDAM
-- New: Added Speech-to-text functionality using AI transcriptions
-- New: Added Custom Thumbnail Upload option for videos
-- New: Enabled different Hover-Interactions for videos
-- Tweak: Improved compatibility with Elementor
-- Tweak: Updated Media Library UI
-- Fix: Fixed iOS compatibility
-- Fix: Resolved re-transcoding ID preservation to maintain video continuity and prevent data loss
+- Feat: Implemented GoDAM virtual attachment support for Image, Audio, and PDF media. This allows users to import a wide range of media directly from GoDAM Central.
+- Feat: Added support for the video quality menu on the Desktop Safari browser.
+- Tweak: Made the Dashboard and Analytics pages mobile-responsive.
+- Tweak: Improved the video player mobile view for different player skins, including Default, Classic, Minimal, Pills, and Bubble.
+- Tweak: Improved layer styles for mobile device sizes.
+- Tweak: Improved keyboard forward and backward shortcuts for the video player.
+- Fix: Resolved interactive form and poll layer submission issues in the GoDAM Gallery block.
+- Fix: Constrained hotspot layer points within the video canvas to ensure consistency across devices.
+- Fix: Skipped poll label updates on poll submission to improve user experience.
+- Fix: Displayed media item metadata (such as transcoded and embed URLs) in the GoDAM tab.
+- Fix: Improved real-time aspect ratio updates for the GoDAM Block.
+- Fix: Resolved an issue where input was not possible when a form was used in fullscreen mode on Safari with GoDAM Video.
+- Fix: Made the video preview page work correctly for all layers.
+- Fix: Fixed overlap issues between the GoDAM Video block UI and the engagement modal on mobile screens.
+- Fix: Resolved GoDAM block rendering issues when used as a child block of Row, Columns, or Grid blocks.
 
-= v1.3.5 (August 26, 2025) =
+= v1.4.9 (December 19, 2025) =
 
-- Tweak: Set transcoded videos as public by default and add Org support parameters
-- Tweak: Provide HLS URL support for GoDAM Virtual Media
+- Feat: Added Free Plan for GoDAM
+- Fix: Background scroll issues in full screen on iOS
+- Fix: SDK event errors
 
-= v1.3.4 (August 11, 2025) =
+= v1.4.8 (December 10, 2025) =
 
-- Fix: Video Editor UI issues
-
+- Feat: Added support for PDF files
+- Tweak: Implemented enhancements for Likes & Comments functionality
+- Tweak: Integrated further performance improvements, optimized asset loading
+- Tweak: Updated “Manage media” button to point directly to the specific folder
+- Tweak: Addressed various media library issues and general improvements
+- Fix: Full-screen inconsistencies on iOS (SDK)
+- Fix: Blank page issue when navigating unsaved video editor pages
+- Fix: Media Uploader UI issues
+- Fix: Form submission issues in preview
+- Fix: Player skin overlap issues
+- Fix: Media metadata display on Central
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
@@ -304,6 +317,12 @@ Data Sent:
 1. Site URL
 
 2. API Key
+
+3. Author Email (optional, can be filtered out)
+
+4. Author First Name (optional, can be filtered out)
+
+5. Author Last Name (optional, can be filtered out)
 
 When Data is Sent:
 

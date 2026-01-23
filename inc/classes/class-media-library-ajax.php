@@ -40,10 +40,29 @@ class Media_Library_Ajax {
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_media_transcoding_status_js' ), 10, 2 );
 
 		add_action( 'pre_delete_term', array( $this, 'delete_child_media_folder' ), 10, 2 );
-		add_action( 'delete_attachment', array( $this, 'handle_media_deletion' ), 10, 1 );
 
 		add_action( 'admin_notices', array( $this, 'media_library_offer_banner' ) );
 		add_action( 'wp_ajax_godam_dismiss_offer_banner', array( $this, 'dismiss_offer_banner' ) );
+
+		add_action( 'rtgodam_handle_callback_finished', array( $this, 'download_transcoded_mp4_source' ), 10, 4 );
+
+		add_filter( 'wp_get_attachment_url', array( $this, 'filter_attachment_url_for_virtual_media' ), 10, 2 );
+
+		// Add filters for virtual media srcset support.
+		add_filter( 'wp_calculate_image_srcset', array( $this, 'filter_virtual_media_srcset' ), 10, 5 );
+	}
+
+	/**
+	 * Validate if a URL is valid.
+	 * Ref: https://cmljnelson.blog/2018/08/31/url-validation-in-wordpress
+	 *
+	 * @since 1.5.0
+	 *
+	 * @param string $url The URL to validate.
+	 * @return bool True if valid, false otherwise.
+	 */
+	public function is_valid_url( $url ) {
+		return esc_url_raw( $url ) === $url;
 	}
 
 	/**
@@ -60,12 +79,17 @@ class Media_Library_Ajax {
 			return array();
 		}
 
+		$job_type      = $item['job_type'] ?? '';
+		$api_mime_type = $item['mime_type'] ?? '';
+		$computed_mime = $this->get_mime_type_for_job_type( $job_type, $api_mime_type );
+		$title         = isset( $item['title'] ) ? $item['title'] : ( isset( $item['orignal_file_name'] ) ? pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) : $item['name'] );
+
 		$result = array(
 			'id'                    => $item['name'],
-			'title'                 => isset( $item['orignal_file_name'] ) ? pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) : $item['name'],
+			'title'                 => $title,
 			'filename'              => $item['orignal_file_name'] ?? $item['name'],
-			'url'                   => ( $item['job_type'] ?? '' ) === 'image' ? ( $item['file_origin'] ?? '' ) : ( $item['transcoded_file_path'] ?? $item['file_origin'] ?? '' ),
-			'mime'                  => 'application/dash+xml',
+			'url'                   => isset( $item['transcoded_mp4_url'] ) ? $item['transcoded_mp4_url'] : ( isset( $item['transcoded_file_path'] ) ? $item['transcoded_file_path'] : '' ),
+			'mime'                  => isset( $item['transcoded_mp4_url'] ) ? 'video/mp4' : $computed_mime,
 			'type'                  => $item['job_type'] ?? '',
 			'subtype'               => ( isset( $item['mime_type'] ) && strpos( $item['mime_type'], '/' ) !== false ) ? explode( '/', $item['mime_type'] )[1] : 'jpg',
 			'status'                => $item['status'] ?? '',
@@ -79,10 +103,22 @@ class Media_Library_Ajax {
 			'thumbnail_url'         => $item['thumbnail_url'] ?? '',
 			'duration'              => $item['playtime'] ?? '',
 			'hls_url'               => $item['transcoded_hls_path'] ?? '',
+			'mpd_url'               => $item['transcoded_file_path'] ?? '',
 		);
 
+		// Set icon with fallback to default mime type icon for audio and PDF.
+		$result['icon'] = $item['thumbnail_url'] ?? '';
+
+		// If no thumbnail URL, use WordPress default icons for audio and PDF.
+		if ( empty( $result['icon'] ) ) {
+			if ( 'audio' === $item['job_type'] ) {
+				$result['icon'] = includes_url( 'images/media/audio.png' );
+			} elseif ( 'application/pdf' === $item['mime_type'] ) {
+				$result['icon'] = includes_url( 'images/media/document.png' );
+			}
+		}
+
 		if ( 'stream' === $item['job_type'] ) {
-			$result['icon'] = $item['thumbnail_url'] ?? '';
 			$result['type'] = 'video';
 		}
 
@@ -90,13 +126,73 @@ class Media_Library_Ajax {
 	}
 
 	/**
+	 * Get appropriate MIME type based on job type.
+	 *
+	 * @param string $job_type Job type from GoDAM API.
+	 * @param string $mime_type Original MIME type from API.
+	 * @return string Appropriate MIME type.
+	 */
+	private function get_mime_type_for_job_type( $job_type, $mime_type ) {
+		switch ( $job_type ) {
+			case 'stream':
+				return 'application/dash+xml';
+			case 'audio':
+				return ! empty( $mime_type ) ? $mime_type : 'audio/mpeg';
+			case 'image':
+				return ! empty( $mime_type ) ? $mime_type : 'image/jpeg';
+			default:
+				return ! empty( $mime_type ) ? $mime_type : 'application/dash+xml';
+		}
+	}
+
+	/**
 	 * Upload media to the Frappe backend.
 	 *
-	 * @param int $attachment_id Attachment ID.
+	 * @param int  $attachment_id Attachment ID.
+	 * @param bool $retranscode Whether this is a retranscode request.
 	 * @return void
 	 */
-	public function upload_media_to_frappe_backend( $attachment_id ) {
-		// Only if attachment type if image.
+	public function upload_media_to_frappe_backend( $attachment_id, $retranscode = false ) {
+		// Check if local development environment.
+		if ( rtgodam_is_local_environment() ) {
+			return;
+		}
+
+		/**
+		 * Filter to allow external developers to disable automatic transcoding on upload.
+		 * This allows users to have manual control over when media files get transcoded.
+		 *
+		 * Note: This filter only applies to automatic uploads. Manual retranscoding requests
+		 * (via bulk actions, tools page, etc.) will always proceed regardless of this setting.
+		 * Form integrations will also use this filter to disable transcoding for form uploads.
+		 *
+		 * Example usage:
+		 * add_filter( 'godam_auto_transcode_on_upload', '__return_false' ); // Disable globally
+		 *
+		 * @since 1.5.0
+		 *
+		 * @param bool $auto_transcode_on_upload Whether to automatically transcode on upload. Default true.
+		 */
+		if ( ! $retranscode ) {
+			$auto_transcode_on_upload = apply_filters( 'godam_auto_transcode_on_upload', true );
+
+			if ( ! $auto_transcode_on_upload ) {
+				return;
+			}
+		}
+
+		$transcoding_job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+
+		// Check virtual media status for transcoding requests.
+		$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+		$is_virtual_media  = ! empty( $godam_original_id );
+
+		// Skip transcoding for virtual media.
+		if ( $is_virtual_media ) {
+			return;
+		}
+
+		// Only if attachment type is image.
 		if ( 'image' !== substr( get_post_mime_type( $attachment_id ), 0, 5 ) ) {
 			return;
 		}
@@ -107,24 +203,67 @@ class Media_Library_Ajax {
 			return;
 		}
 
-		$api_url = RTGODAM_API_BASE . '/api/resource/Transcoder Job';
+		$api_url = RTGODAM_API_BASE . '/api/resource/Transcoder Job' . ( empty( $transcoding_job_id ) ? '' : '/' . $transcoding_job_id );
 
 		$attachment_url = wp_get_attachment_url( $attachment_id );
 
 		$file_title = get_the_title( $attachment_id );
 		$file_name  = pathinfo( $attachment_url, PATHINFO_FILENAME ) . '.' . pathinfo( $attachment_url, PATHINFO_EXTENSION );
 
+		// Get attachment author information.
+		$attachment_author_id = get_post_field( 'post_author', $attachment_id );
+		$attachment_author    = get_user_by( 'id', $attachment_author_id );
+		$site_url             = get_site_url();
+
+		// Get author name with fallback to username.
+		$author_first_name = '';
+		$author_last_name  = '';
+		$author_email      = '';
+
+		if ( $attachment_author ) {
+			$author_first_name = $attachment_author->first_name ?? '';
+			$author_last_name  = $attachment_author->last_name ?? '';
+			$author_email      = $attachment_author->user_email ?? '';
+
+			// If first and last names are empty, use username as fallback.
+			if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
+				$author_first_name = $attachment_author->user_login ?? '';
+			}
+		}
+
+		if ( ! defined( 'RTGODAM_TRANSCODER_CALLBACK_URL' ) ) {
+			include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-rest-routes.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+			define( 'RTGODAM_TRANSCODER_CALLBACK_URL', \RTGODAM_Transcoder_Rest_Routes::get_callback_url() );
+		}
+
+		$callback_url = RTGODAM_TRANSCODER_CALLBACK_URL;
+
+		/**
+		 * Manually setting the rest api endpoint, we can refactor that later to use similar functionality as callback_url.
+		 */
+		$status_callback_url = get_rest_url( get_current_blog_id(), '/godam/v1/transcoding/transcoding-status' );
+
 		// Request params.
 		$params = array(
-			'api_token'         => $api_key,
-			'job_type'          => 'image',
-			'file_origin'       => $attachment_url,
-			'orignal_file_name' => $file_name ?? $file_title,
+			'retranscode'          => empty( $transcoding_job_id ) ? 0 : 1,
+			'api_token'            => $api_key,
+			'job_type'             => 'image',
+			'job_for'              => 'wp-media',
+			'file_origin'          => $attachment_url,
+			'orignal_file_name'    => $file_name ?? $file_title,
+			'callback_url'         => rawurlencode( $callback_url ),
+			'status_callback'      => rawurlencode( $status_callback_url ),
+			'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $author_email, $attachment_id ),
+			'wp_site'              => $site_url,
+			'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, $attachment_id ),
+			'wp_author_last_name'  => apply_filters( 'godam_author_last_name_to_send', $author_last_name, $attachment_id ),
+			'public'               => 1,
 		);
 
-		$upload_media = wp_remote_post(
+		$upload_media = wp_remote_request(
 			$api_url,
 			array(
+				'method'  => empty( $transcoding_job_id ) ? 'POST' : 'PUT',
 				'body'    => wp_json_encode( $params ),
 				'headers' => array(
 					'Content-Type' => 'application/json',
@@ -218,8 +357,15 @@ class Media_Library_Ajax {
 	 * @return array $response Attachment response.
 	 */
 	public function add_media_transcoding_status_js( $response, $attachment ) {
-		// Check if attachment type is video.
-		if ( 'video' !== substr( $attachment->post_mime_type, 0, 5 ) ) {
+		// Check if attachment type is video, audio, PDF, or image.
+		$mime_type = $attachment->post_mime_type;
+		$is_video  = 'video' === substr( $mime_type, 0, 5 );
+		$is_audio  = 'audio' === substr( $mime_type, 0, 5 );
+		$is_pdf    = 'application/pdf' === $mime_type;
+		$is_image  = 'image' === substr( $mime_type, 0, 5 );
+
+		// Only process supported attachment types.
+		if ( ! ( $is_video || $is_audio || $is_pdf || $is_image ) ) {
 			return $response;
 		}
 
@@ -232,6 +378,25 @@ class Media_Library_Ajax {
 			$response['transcoded_url'] = false;
 		}
 
+		// Check if item is blocked but limits are no longer exceeded - change to not_started.
+		if ( 'blocked' === strtolower( $transcoding_status ) ) {
+			// Use cached usage data to avoid external API calls.
+			$user_data = rtgodam_get_user_data();
+			if ( ! empty( $user_data ) && isset( $user_data['bandwidth_used'], $user_data['total_bandwidth'], $user_data['storage_used'], $user_data['total_storage'] ) ) {
+				$storage_exceeded = $user_data['storage_used'] > $user_data['total_storage'];
+
+				// If storage limit is no longer exceeded, change status to not_started.
+				// (Bandwidth exceeded doesn't block transcoding, so don't reset based on bandwidth).
+				if ( ! $storage_exceeded ) {
+					$transcoding_status = 'not_started';
+					// Update the stored status so it persists.
+					update_post_meta( $attachment->ID, 'rtgodam_transcoding_status', 'not_started' );
+					// Clear the error message since it's no longer blocked.
+					delete_post_meta( $attachment->ID, 'rtgodam_transcoding_error_msg' );
+				}
+			}
+		}
+
 		// Add transcoding status to response.
 		$response['transcoding_status'] = $transcoding_status ? strtolower( $transcoding_status ) : 'not_started';
 
@@ -241,11 +406,26 @@ class Media_Library_Ajax {
 		if ( ! empty( $godam_original_id ) ) {
 			// Indicate that this is a virtual attachment.
 			$response['virtual'] = true;
+
 			// Set the icon to be used for the virtual media preview.
-			$response['icon'] = get_post_meta( $attachment->ID, 'icon', true );
 			// Populate the image field used by the media library to show previews.
-			$response['image']        = array();
-			$response['image']['src'] = $response['icon'];
+			$icon_url = wp_mime_type_icon( $attachment->ID );
+			
+			// For audio and PDF, ensure we use the default icons.
+			if ( empty( $icon_url ) || strpos( $icon_url, '.svg' ) !== false ) {
+				if ( $is_audio ) {
+					$icon_url = includes_url( 'images/media/audio.png' );
+				} elseif ( $is_pdf ) {
+					$icon_url = includes_url( 'images/media/document.png' );
+				}
+			}
+			
+			$response['image'] = array();
+
+			if ( ! empty( $icon_url ) ) {
+				$response['icon']         = $icon_url;
+				$response['image']['src'] = $icon_url;
+			}
 		}
 
 		return $response;
@@ -475,42 +655,6 @@ class Media_Library_Ajax {
 	}
 
 	/**
-	 * Handle media deletion and notify the external API.
-	 *
-	 * @param int $attachment_id Attachment ID.
-	 * @return void
-	 */
-	public function handle_media_deletion( $attachment_id ) {
-		$job_id        = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
-		$account_token = get_option( 'rtgodam-account-token', '' );
-		$api_key       = get_option( 'rtgodam-api-key', '' );
-
-		// Ensure all required data is available.
-		if ( empty( $job_id ) || empty( $account_token ) || empty( $api_key ) ) {
-			return;
-		}
-
-		// API URL using RTGODAM_API_BASE.
-		$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.mutate.delete_attachment';
-
-		// Request params.
-		$params = array(
-			'job_id'        => $job_id,
-			'api_key'       => $api_key,
-			'account_token' => $account_token,
-		);
-
-		// Send POST request.
-		wp_remote_post(
-			$api_url,
-			array(
-				'body'    => wp_json_encode( $params ),
-				'headers' => array( 'Content-Type' => 'application/json' ),
-			)
-		);
-	}
-
-	/**
 	 * Dismiss the offer banner by updating the option in the database.
 	 *
 	 * @return void
@@ -537,64 +681,262 @@ class Media_Library_Ajax {
 
 		$show_offer_banner = get_option( 'rtgodam-offer-banner', 1 );
 
+		$timezone     = wp_timezone();
+		$current_time = new \DateTime( 'now', $timezone );
+		$end_time     = new \DateTime( '2026-01-20 23:59:59', $timezone );
+
 		// Only show on the Media Library page.
-		if ( $screen && 'upload' === $screen->base && ! rtgodam_is_api_key_valid() && $show_offer_banner ) {
+		if ( $current_time <= $end_time && $screen && 'upload' === $screen->base && $show_offer_banner ) {
 			$host = wp_parse_url( home_url(), PHP_URL_HOST );
 
+			$banner_image = RTGODAM_URL . 'assets/src/images/new-year-sale-2026.webp';
+
 			$banner_html = sprintf(
-				'<div class="notice annual-plan-offer-banner px-10">
-					<canvas id="godam-particle-canvas"></canvas>
-					<div class="annual-plan-offer-banner__content">
-						<div class="annual-plan-offer-banner__message">
-							<h3 class="annual-plan-offer-banner__title">%1$s</h3>
-							<p class="annual-plan-offer-banner__description">%2$s</p>
-						</div>
-						<div class="annual-plan-offer-banner__cta-container">
-							<a
-								href="%3$s"
-								class="annual-plan-offer-banner__cta"
-								target="_blank"
-								rel="noopener noreferrer"
-								title="%4$s"
-							>
-								%4$s
-							</a>
-						</div>
-					</div>
+				'<div class="notice annual-plan-offer-banner">
+					<a
+						href="%1$s"
+						class="annual-plan-offer-banner__link"
+						target="_blank"
+						rel="noopener noreferrer"
+						aria-label="%2$s"
+					>
+						<img
+							src="%3$s"
+							class="annual-plan-offer-banner__image"
+							alt="%4$s"
+							loading="lazy"
+						/>
+					</a>
 					<button
 						type="button"
 						class="annual-plan-offer-banner__dismiss"
-						aria-label="Dismiss banner"
+						aria-label="%5$s"
 					>
 						&times;
 					</button>
 				</div>',
-				esc_html__( 'Pay for 10 months and get 2 months free with our annual plan.', 'godam' ),
-				esc_html__( 'Elevate your media management, transcoding, storage, delivery and more.', 'godam' ),
-				esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=annual-plan&utm_source=' . $host . '&utm_medium=plugin&utm_content=banner' ),
-				esc_html__( 'Buy Now', 'godam' )
+				esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=new-year-sale-2026&utm_source=' . $host . '&utm_medium=plugin&utm_content=media-library-banner' ),
+				esc_attr__( 'Claim the GoDAM New Year Sale 2026 offer', 'godam' ),
+				esc_url( $banner_image ),
+				esc_attr__( 'New Year Sale 2026 offer from GoDAM', 'godam' ),
+				esc_html__( 'Dismiss banner', 'godam' )
 			);
 
 			echo wp_kses(
 				$banner_html,
 				array(
 					'div'    => array( 'class' => array() ),
-					'canvas' => array( 'id' => array() ),
-					'h3'     => array( 'class' => array() ),
-					'p'      => array( 'class' => array() ),
 					'a'      => array(
-						'href'   => array(),
-						'class'  => array(),
-						'target' => array(),
-						'rel'    => array(),
-						'title'  => array(),
+						'href'       => array(),
+						'class'      => array(),
+						'target'     => array(),
+						'rel'        => array(),
+						'aria-label' => array(),
+					),
+					'img'    => array(
+						'src'     => array(),
+						'alt'     => array(),
+						'class'   => array(),
+						'loading' => array(),
 					),
 					'button' => array(
-						'type'  => array(),
-						'class' => array(),
+						'type'       => array(),
+						'class'      => array(),
+						'aria-label' => array(),
 					),
 				)
 			);
 		}
+	}
+
+	/**
+	 * Replace an existing WordPress media attachment with a file from an external URL,
+	 * using the WordPress Filesystem API.
+	 *
+	 * @since 1.4.2
+	 *
+	 * @param int    $attachment_id The ID of the existing media attachment.
+	 * @param string $file_url      The external file URL.
+	 *
+	 * @return int|WP_Error Attachment ID on success, WP_Error on failure.
+	 */
+	private function godam_replace_attachment_with_external_file( $attachment_id, $file_url = '' ) {
+		if ( ! $attachment_id || ! $this->is_valid_url( $file_url ) ) {
+			return new \WP_Error( 'invalid_input', __( 'Invalid attachment ID or URL.', 'godam' ) );
+		}
+
+		// Validate the attachment.
+		$attachment = get_post( $attachment_id );
+		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
+			return new \WP_Error( 'invalid_attachment', __( 'Invalid attachment ID.', 'godam' ) );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		require_once ABSPATH . 'wp-admin/includes/media.php';
+		require_once ABSPATH . 'wp-admin/includes/image.php';
+
+		global $wp_filesystem;
+
+		WP_Filesystem();
+
+		if ( ! $wp_filesystem ) {
+			return new \WP_Error( 'fs_unavailable', __( 'Could not initialize WordPress filesystem.', 'godam' ) );
+		}
+
+		// Download file to temporary location.
+		$temp_file = download_url( $file_url );
+
+		if ( is_wp_error( $temp_file ) ) {
+			return $temp_file;
+		}
+
+		// Prepare new file path in uploads.
+		$upload_dir   = wp_upload_dir();
+		$new_filename = wp_basename( wp_parse_url( $file_url, PHP_URL_PATH ) );
+		$new_filepath = trailingslashit( $upload_dir['path'] ) . $new_filename;
+
+		// Move temp file into uploads with WP_Filesystem.
+		$moved = $wp_filesystem->move( $temp_file, $new_filepath, true );
+
+		if ( ! $moved ) {
+			$wp_filesystem->delete( $temp_file );
+			return new \WP_Error( 'file_move_failed', __( 'Could not move file into uploads directory.', 'godam' ) );
+		}
+
+		// Update attachment file info.
+		update_attached_file( $attachment_id, $new_filepath );
+
+		// update mime type.
+		$filetype = wp_check_filetype( $new_filename, null );
+		if ( $filetype['type'] ) {
+			wp_update_post(
+				array(
+					'ID'             => $attachment_id,
+					'post_mime_type' => $filetype['type'],
+				)
+			);
+		}
+
+		// Regenerate metadata.
+		$metadata = wp_generate_attachment_metadata( $attachment_id, $new_filepath );
+		wp_update_attachment_metadata( $attachment_id, $metadata );
+
+		return $attachment_id;
+	}
+
+	/**
+	 * Download the transcoded MP4 source and replace the existing attachment file.
+	 *
+	 * @param int             $attachment_id Attachment ID.
+	 * @param string          $job_id        Job ID.
+	 * @param string          $job_for       Job for (e.g., 'wp-media').
+	 * @param WP_REST_Request $request    Request data containing transcoded file info.
+	 *
+	 * @return void
+	 */
+	public function download_transcoded_mp4_source( $attachment_id, $job_id, $job_for, $request ) {
+		if ( isset( $job_for ) && ( 'wp-media' !== $job_for ) ) {
+			return;
+		}
+
+		// Check if video attachment.
+		$attachment_mime_type = get_post_mime_type( $attachment_id );
+
+		if ( 'video' !== substr( $attachment_mime_type, 0, 5 ) ) {
+			return;
+		}
+
+		// Check if mp4_url is provided in the request.
+		$transcoded_mp4_url = esc_url( $request->get_param( 'mp4_url' ) );
+
+		if ( empty( $transcoded_mp4_url ) ) {
+			return;
+		}
+
+		// Replace the existing attachment file with the transcoded MP4.
+		$attachment_id = $this->godam_replace_attachment_with_external_file( $attachment_id, $transcoded_mp4_url );
+
+		if ( is_wp_error( $attachment_id ) ) {
+			// Log the error for debugging purposes.
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'MP4 video replacement failed: ' . $attachment_id->get_error_message() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Logging for debugging.
+			}
+		}
+	}
+
+	/**
+	 * Filter attachment URL for virtual media.
+	 *
+	 * @param string $url    The original attachment URL.
+	 * @param int    $post_id The attachment post ID.
+	 *
+	 * @since 1.4.7
+	 *
+	 * @return string The filtered attachment URL.
+	 */
+	public function filter_attachment_url_for_virtual_media( $url, $post_id ) {
+
+		$godam_original_id = get_post_meta( $post_id, '_godam_original_id', true );
+
+		if ( ! empty( $godam_original_id ) ) {
+			$attachment         = get_post( $post_id );
+			$transcoded_mp4_url = $attachment->guid; // For virtual media, we store the transcoded MP4 URL in the guid.
+
+			if ( ! empty( $transcoded_mp4_url ) ) {
+				return esc_url( $transcoded_mp4_url );
+			}
+		}
+
+		return $url;
+	}
+
+	/**
+	 * Filter srcset calculation for virtual media to use full URLs.
+	 *
+	 * @since 1.5.0
+	 *
+	 * @param array|false $sources       Array of image sources for srcset or false.
+	 * @param array       $size_array    Array of width and height values.
+	 * @param string      $image_src     The 'src' of the image.
+	 * @param array       $image_meta    The image meta data.
+	 * @param int         $attachment_id The image attachment ID.
+	 *
+	 * @return array|false Filtered sources array or false.
+	 */
+	public function filter_virtual_media_srcset( $sources, $size_array, $image_src, $image_meta, $attachment_id ) {
+		$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+
+		if ( empty( $godam_original_id ) ) {
+			return $sources;
+		}
+
+		// Check if image attachment.
+		$attachment_mime_type = get_post_mime_type( $attachment_id );
+		if ( 'image' !== substr( $attachment_mime_type, 0, 5 ) ) {
+			return $sources;
+		}
+
+		// Rebuild sources array for virtual media.
+		if ( empty( $sources ) || ! is_array( $sources ) ) {
+			return $sources;
+		}
+
+		// Use the current image URL as the base for all subsizes.
+		$base_url = trailingslashit( untrailingslashit( dirname( $image_src ) ) );
+
+		// Rebuild sources array for virtual media.
+		foreach ( $sources as &$source ) {
+
+			// Get last string after the last slash in the file url.
+			$file_basename = basename( $source['url'] );
+
+			// Rebuild the full URL using the base URL and the file basename.
+			$url = $base_url . ltrim( $file_basename, '/' );
+
+			$source['url'] = esc_url( $url );
+		}
+		unset( $source ); // Break the reference.
+
+		return $sources;
 	}
 }

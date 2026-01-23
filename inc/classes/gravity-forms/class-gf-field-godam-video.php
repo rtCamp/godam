@@ -172,7 +172,7 @@ if ( class_exists( 'GF_Field' ) ) {
 						<?php echo $disabled_text; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Already escaped in above scope. ?>
 					>
 						<span class="dashicons dashicons-video-alt"></span>
-						<?php esc_html_e( 'Record Video', 'godam' ); ?>
+						<?php esc_html_e( 'Start Recording', 'godam' ); ?>
 					</button>
 					<div id="<?php echo esc_attr( $uppy_preview_id ); ?>" class="uppy-video-upload-preview"></div>
 					<div id="<?php echo esc_attr( $uppy_file_name_id ); ?>" class="upp-video-upload-filename"></div>
@@ -266,6 +266,14 @@ if ( class_exists( 'GF_Field' ) ) {
 					// File type check.
 					$file_type = wp_check_filetype( $file_path );
 					$is_video  = strpos( $file_type['type'], 'video' ) !== false;
+					$is_audio  = strpos( $file_type['type'], 'audio' ) !== false;
+
+					// if webm file extension and mime type is not detected correctly then check by file name.
+					// The files created by uppy webcam, screen capture, and audio plugin are in same format so we are checking the filename to determine if it's an audio file.
+					if ( 'webm' === $file_type['ext'] && godam_is_audio_file_by_name( $file_path ) ) {
+						$is_video = false;
+						$is_audio = true;
+					}
 
 					if ( is_array( $file_path ) ) {
 						$basename  = rgar( $file_path, 'uploaded_name' );
@@ -289,6 +297,7 @@ if ( class_exists( 'GF_Field' ) ) {
 					 * @param string              $file_path The file path of the download file.
 					 * @param GF_Field_FileUpload $field     The field object for further context.
 					 */
+					// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Gravity Forms hook.
 					$field_ssl = apply_filters( 'gform_secure_file_download_is_https', true, $file_path, $this );
 
 					if ( \GFCommon::is_ssl() && strpos( $file_path, 'http:' ) && $field_ssl ) {
@@ -303,8 +312,9 @@ if ( class_exists( 'GF_Field' ) ) {
 					 * @param string              $file_path The file path of the download file.
 					 * @param GF_Field_FileUpload $field     The field object for further context.
 					 */
+					// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Gravity Forms hook.
 					$file_path    = str_replace( ' ', '%20', apply_filters( 'gform_fileupload_entry_value_file_path', $file_path, $this ) );
-					$output_arr[] = 'text' == $format ? $file_path : sprintf( "<li><strong>%s:</strong> <a href='%s' target='_blank' aria-label='%s'>%s</a></li>", _x( 'URL', 'GF entry detail page', 'godam' ), esc_attr( $file_path ), esc_attr__( 'Click to view', 'godam' ), $basename );
+					$output_arr[] = 'text' === $format ? $file_path : sprintf( "<li><strong>%s:</strong> <a href='%s' target='_blank' aria-label='%s'>%s</a></li>", _x( 'URL', 'GF entry detail page', 'godam' ), esc_attr( $file_path ), esc_attr__( 'Click to view', 'godam' ), $basename );
 
 					// Get the entry ID from GFAPI context.
 					$entry_id = 0;
@@ -324,7 +334,7 @@ if ( class_exists( 'GF_Field' ) ) {
 						if ( $transcoded_url ) {
 							$output_arr[] = sprintf(
 								"<li class='godam-transcoded-url-info'><span class='dashicons dashicons-yes-alt'></span><strong>%s</strong></li>",
-								esc_html__( 'Video saved and transcoded successfully on GoDAM', 'godam' )
+								esc_html__( 'File saved and transcoded successfully on GoDAM', 'godam' )
 							);
 						}
 					}
@@ -339,6 +349,23 @@ if ( class_exists( 'GF_Field' ) ) {
 					$video_output = do_shortcode( "[godam_video src='{$file_path}' transcoded_url='{$transcoded_url}' aspectRatio='']" );
 					$video_output = '<div class="gf-godam-video-preview">' . $video_output . '</div>';
 					$output_arr[] = $video_output;
+				}
+
+				if ( $is_audio ) {
+					ob_start();
+					?>
+						<audio controls>
+							<?php if ( $transcoded_url ) : ?>
+								<source src="<?php echo esc_url( $transcoded_url ); ?>" type="<?php echo esc_attr( $file_type['type'] ); ?>">
+							<?php endif; ?>
+							<source src="<?php echo esc_url( $file_path ); ?>" type="<?php echo esc_attr( $file_type['type'] ); ?>">
+							Your browser does not support the audio element.
+						</audio>
+					<?php
+					$audio_output = ob_get_clean();
+
+					$audio_output = '<div class="gf-godam-audio-preview">' . $audio_output . '</div>';
+					$output_arr[] = $audio_output;
 				}
 
 				$output = join( PHP_EOL, $output_arr );

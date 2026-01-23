@@ -16,6 +16,7 @@ import AdsManager from './managers/adsManager.js';
 import HoverManager from './managers/hoverManager.js';
 import ShareManager from './managers/shareManager.js';
 import MenuButtonHoverManager from './managers/menuButtonHover.js';
+import { loadFlvPlugin, requiresFlvPlugin, loadAdsPlugins } from './utils/pluginLoader.js';
 
 /**
  * Refactored Video Player Class
@@ -43,9 +44,64 @@ export default class GodamVideoPlayer {
 	/**
 	 * Initialize the video player
 	 */
-	initialize() {
-		this.setupVideoElement();
-		this.initializePlayer();
+	async initialize() {
+		// Mark as initializing to prevent double initialization
+		this.video.dataset.videojsInitializing = 'true';
+
+		try {
+			this.setupVideoElement();
+			await this.loadRequiredPlugins();
+			this.initializePlayer();
+		} finally {
+			// Remove initializing flag after initialization
+			delete this.video.dataset.videojsInitializing;
+			if ( this.video.parentElement ) {
+				delete this.video.parentElement.dataset.videojsInitializing;
+			}
+		}
+	}
+
+	/**
+	 * Load required plugins based on video sources and configuration
+	 * IMPORTANT: This must run BEFORE player initialization to avoid
+	 * videojs-contrib-ads missing the loadstart event
+	 */
+	async loadRequiredPlugins() {
+		const sources = this.configManager.videoSetupControls?.sources || [];
+
+		// Check if ads are configured
+		const needsAds = !! (
+			this.configManager.adTagUrl ||
+			( this.configManager.globalAdsSettings?.enable_global_video_ads &&
+				this.configManager.globalAdsSettings?.adTagUrl )
+		);
+
+		// Check if FLV plugin is needed
+		const needsFlv = sources.some( ( source ) => requiresFlvPlugin( source.src || source.type ) );
+
+		// Load plugins in parallel
+		const loadPromises = [];
+
+		if ( needsAds ) {
+			loadPromises.push(
+				loadAdsPlugins().catch( ( error ) => {
+					// eslint-disable-next-line no-console
+					console.error( 'Failed to load ads plugins:', error );
+				} ),
+			);
+		}
+
+		if ( needsFlv ) {
+			loadPromises.push(
+				loadFlvPlugin().catch( ( error ) => {
+					// eslint-disable-next-line no-console
+					console.error( 'Failed to load FLV plugin:', error );
+				} ),
+			);
+		}
+
+		// Wait for all required plugins to load
+		await Promise.all( loadPromises );
 	}
 
 	/**
@@ -64,11 +120,22 @@ export default class GodamVideoPlayer {
 	 * Initialize VideoJS player
 	 */
 	initializePlayer() {
-		this.player = videojs( this.video, this.configManager.videoSetupControls );
+		// Check if player already exists (safety check)
+		const existingPlayer = videojs.getPlayer( this.video );
+		if ( existingPlayer ) {
+			// Use existing player instance (should rarely happen with proper initialization guards)
+			this.player = existingPlayer;
+		} else {
+			// Normal initialization path
+			this.player = videojs( this.video, this.configManager.videoSetupControls );
+		}
 
-		// Initialize ads manager
+		// Initialize ads manager (async - loads plugins dynamically)
 		this.adsManager = new AdsManager( this.player, this.configManager );
-		this.adsManager?.setupAdsIntegration();
+		this.adsManager?.setupAdsIntegration().catch( ( error ) => {
+			// eslint-disable-next-line no-console
+			console.error( 'Ads integration failed:', error );
+		} );
 
 		this.setupAspectRatio();
 		this.setupPlayerReady();
@@ -82,7 +149,13 @@ export default class GodamVideoPlayer {
 
 		if ( isInModal ) {
 			const aspectRatio = window.innerWidth < 420 ? '9:16' : '16:9';
-			this.player.aspectRatio( aspectRatio );
+			// Check if aspect ratio is valid x:y format
+			if ( ! /^\d+:\d+$/.test( aspectRatio ) ) {
+				// eslint-disable-next-line no-console
+				console.warn( `Invalid aspect ratio format: "${ aspectRatio }". Falling back to "16:9".` );
+			} else {
+				this.player.aspectRatio( aspectRatio );
+			}
 		}
 	}
 
@@ -96,10 +169,21 @@ export default class GodamVideoPlayer {
 			this.setupCaptionsButton();
 			this.player.jobId = this.video.dataset.job_id;
 			this.initializeChapters();
+			this.setupQualitySelector();
 
 			// Now that managers are initialized, we can safely access them
 			this.setupEventListeners();
 			new MenuButtonHoverManager( this.player );
+
+			// Emit custom event for external developers
+			const playerReadyEvent = new CustomEvent( 'godamPlayerReady', {
+				detail: {
+					attachmentId: this.video.dataset.id,
+					videoElement: this.video,
+					player: this.player,
+				},
+			} );
+			document.dispatchEvent( playerReadyEvent );
 		} );
 	}
 
@@ -111,7 +195,13 @@ export default class GodamVideoPlayer {
 
 		if ( ! isInModal ) {
 			const aspectRatio = this.configManager.videoSetupOptions?.aspectRatio || '16:9';
-			this.player.aspectRatio( aspectRatio );
+			// Check if aspect ratio is valid x:y format
+			if ( ! /^\d+:\d+$/.test( aspectRatio ) ) {
+				// eslint-disable-next-line no-console
+				console.warn( `Invalid aspect ratio format: "${ aspectRatio }". Falling back to "16:9".` );
+			} else {
+				this.player.aspectRatio( aspectRatio );
+			}
 		}
 	}
 
@@ -161,6 +251,7 @@ export default class GodamVideoPlayer {
 			onPlayerConfigurationSetup: () => this.controlsManager.setupPlayerConfiguration(),
 			onTimeUpdate: ( currentTime ) => this.handleTimeUpdate( currentTime ),
 			onFullscreenChange: () => this.layersManager.handleFullscreenChange(),
+			onVideoResize: () => this.layersManager.handleVideoResize(),
 			onPlay: () => this.layersManager.handlePlay(),
 			onControlsMove: () => this.controlsManager.moveVideoControls(),
 		} );
@@ -189,10 +280,16 @@ export default class GodamVideoPlayer {
 
 	/**
 	 * Setup event listeners
+	 * Handles async layer setup for FontAwesome loading
 	 */
 	setupEventListeners() {
 		this.eventsManager?.setupEventListeners();
-		this.layersManager?.setupLayers();
+
+		// Setup layers asynchronously (loads FontAwesome if needed)
+		this.layersManager?.setupLayers().catch( ( error ) => {
+			// eslint-disable-next-line no-console
+			console.error( 'Failed to setup layers:', error );
+		} );
 	}
 
 	/**
@@ -206,5 +303,53 @@ export default class GodamVideoPlayer {
 
 		// Handle hotspot layers
 		this.layersManager.handleHotspotLayersTimeUpdate( currentTime );
+	}
+
+	/**
+	 * If quality selector button is not present, render it.
+	 */
+	renderQualitySelectorButton() {
+		if ( this.player.qualityLevels && this.player.qualityLevels().length > 0 ) {
+			// Avoid adding the button multiple times.
+			if ( typeof this.player.hlsQualitySelector === 'function' ) {
+				this.player.hlsQualitySelector();
+			} else if ( typeof this.player.qualityMenuButton === 'function' ) {
+				this.player.qualityMenuButton();
+			}
+
+			// Refresh control bar.
+			this.player.controlBar.show();
+			if ( this.player.qualityLevels ) {
+				this.player.qualityLevels().trigger( 'change' );
+			}
+		}
+	}
+
+	/**
+	 * Setup quality selector button in control bar.
+	 */
+	setupQualitySelector() {
+		// Force load. Required.
+		if ( this.player.readyState() === 0 ) {
+			this.player.load();
+		}
+
+		// Try to render immediately.
+		this.renderQualitySelectorButton();
+
+		/**
+		 * Check if quality button is already present.
+		 * If not, wait for quality levels to be available and then render it.
+		 */
+		if ( ! this.hasQualitySelectorButton() ) {
+			this.eventsManager.onQualityLevelsAvailable( () => this.renderQualitySelectorButton() );
+		}
+	}
+
+	/**
+	 * Check if quality button has been created
+	 */
+	hasQualitySelectorButton() {
+		return !! ( this.player.controlBar.getChild( 'QualityMenuButton' ) || this.player.controlBar.getChild( 'SettingsButton' ) );
 	}
 }

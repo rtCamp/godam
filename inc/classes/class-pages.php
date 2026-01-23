@@ -154,10 +154,18 @@ class Pages {
 	public function add_admin_pages() {
 		global $admin_page_hooks;
 
+		/**
+		 * If the user do not have capability to publish posts, bail out.
+		 * That means the users is contributor or below, we don't show the menu.
+		 */
+		if ( ! current_user_can( 'publish_posts' ) ) {
+			return;
+		}
+
 		add_menu_page(
 			__( 'GoDAM', 'godam' ),
 			__( 'GoDAM', 'godam' ),
-			'manage_options',
+			'edit_pages',
 			$this->menu_slug,
 			array( $this, 'render_dashboard_page' ),
 			'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI1LjU1NzggMjAuMDkxMUw4LjA1NTg3IDM3LjU5M0wzLjQ2Mzk3IDMzLjAwMTFDMC44MTg1MjEgMzAuMzU1NiAyLjA4MjEgMjUuODMzNiA1LjcyMjI4IDI0Ljk0NjRMMjUuNTYzMiAyMC4wOTY0TDI1LjU1NzggMjAuMDkxMVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00Ny4zNzczIDIxLjg4NjdMNDUuNTQzOCAyOS4zODc1TDIyLjY5NzIgNTIuMjM0MUwxMS4yNjA1IDQwLjc5NzRMMzQuMTY2MiAxNy44OTE2TDQxLjU3MDMgMTYuMDc5NkM0NS4wNzA2IDE1LjIyNDcgNDguMjMyMyAxOC4zODYzIDQ3LjM3MiAyMS44ODEzTDQ3LjM3NzMgMjEuODg2N1oiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00My41MDU5IDM4LjEwMzZMMzguNjY2NyA1Ny44OTA3QzM3Ljc3NDEgNjEuNTI1NSAzMy4yNTIxIDYyLjc4OTEgMzAuNjA2NiA2MC4xNDM2TDI2LjAzNjMgNTUuNTczMkw0My41MDU5IDM4LjEwMzZaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K',
@@ -172,7 +180,7 @@ class Pages {
 			$this->menu_slug,
 			__( 'Dashboard', 'godam' ),
 			__( 'Dashboard', 'godam' ),
-			'manage_options',
+			'edit_pages', // Dashboard is accessible to editors and above.
 			$this->menu_slug,
 			array( $this, 'render_dashboard_page' ),
 			1
@@ -182,7 +190,7 @@ class Pages {
 			$this->menu_slug,
 			__( 'Video Editor', 'godam' ),
 			__( 'Video Editor', 'godam' ),
-			'edit_posts',
+			'upload_files', // Video Editor is accessible to authors and above.
 			$this->video_editor_slug,
 			array( $this, 'render_video_editor_page' ),
 			3
@@ -192,7 +200,7 @@ class Pages {
 			$this->menu_slug,
 			__( 'Analytics', 'godam' ),
 			__( 'Analytics', 'godam' ),
-			'edit_posts',
+			'upload_files', // Analytics is accessible to authors and above.
 			$this->analytics_slug,
 			array( $this, 'render_analytics_page' ),
 			2
@@ -204,7 +212,7 @@ class Pages {
 				$this->menu_slug,
 				__( 'Tools', 'godam' ),
 				__( 'Tools', 'godam' ),
-				'manage_options',
+				'edit_pages', // Tools is accessible to editors and above.
 				$this->tools_slug,
 				array( $this, 'render_tools_page' ),
 				5
@@ -215,7 +223,7 @@ class Pages {
 			$this->menu_slug,
 			__( 'Settings', 'godam' ),
 			__( 'Settings', 'godam' ),
-			'edit_posts',
+			'manage_options', // Settings is accessible to admins and above.
 			$this->settings_slug,
 			array( $this, 'render_godam_page' ),
 			6
@@ -357,6 +365,16 @@ class Pages {
 	 * @return void
 	 */
 	public function render_video_editor_page() {
+		// Check if user can edit media with given id.
+		$attachment_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		if ( $attachment_id && ! current_user_can( 'edit_post', $attachment_id ) ) {
+			?>
+			<p class="godam-page-error"><?php echo esc_html( __( 'Sorry, you are not allowed to edit this item.', 'godam' ) ); ?></p>
+			<?php
+			return;
+		}
+
 		?>
 		<div class="godam-admin-root">
 			<div id="root-video-editor">
@@ -429,6 +447,16 @@ class Pages {
 
 			wp_enqueue_script( 'rtgodam-page-style' );
 			wp_enqueue_media();
+
+			wp_register_style(
+				'easydam-media-library',
+				RTGODAM_URL . 'assets/build/css/media-library.css',
+				array(),
+				filemtime( RTGODAM_PATH . 'assets/build/css/media-library.css' )
+			);
+
+			wp_enqueue_style( 'easydam-media-library' );
+
 		}
 		// Check if this is your custom admin page.
 		if ( $screen && $this->video_editor_page_id === $screen->id ) {
@@ -477,6 +505,12 @@ class Pages {
 					'ninjaFormsActive'   => $is_ninja_forms_active,
 					'metformActive'      => $is_met_form_active,
 				)
+			);
+
+			wp_localize_script(
+				'transcoder-page-script-video-editor',
+				'posthogConfig',
+				$this->get_posthog_config()
 			);
 
 			// Enqueue Gravity Forms styles if the plugin is active.
@@ -528,36 +562,15 @@ class Pages {
 
 			if ( is_plugin_active( 'wp-polls/wp-polls.php' ) && isset( $poll_ajax_style['loading'] ) && $poll_ajax_style['loading'] ) {
 
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- WP Polls plugin constant.
 				if ( ! defined( 'WP_POLLS_VERSION' ) ) {
+					// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- WP Polls plugin constant.
 					define( 'WP_POLLS_VERSION', '2.77.3' );
 				}
 
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- WP Polls plugin constant.
 				wp_enqueue_script( 'wp-polls', plugins_url( 'wp-polls/polls-js.js' ), array( 'jquery' ), WP_POLLS_VERSION, true );
-				wp_enqueue_style( 'wp-polls', plugins_url( 'wp-polls/polls-css.css' ), false, WP_POLLS_VERSION, 'all' );
-
-				wp_localize_script(
-					'wp-polls',
-					'pollsL10n',
-					array(
-						'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
-						'textWait'     => __( 'Your last request is still being processed. Please wait a while ...', 'godam' ),
-						'textValid'    => __( 'Please choose a valid poll answer.', 'godam' ),
-						'textMultiple' => __( 'Maximum number of choices allowed: ', 'godam' ),
-						'showLoading'  => (int) $poll_ajax_style['loading'],
-						'showFading'   => (int) $poll_ajax_style['fading'],
-					)
-				);
-			}
-
-			$poll_ajax_style = get_option( 'poll_ajax_style' );
-
-			if ( is_plugin_active( 'wp-polls/wp-polls.php' ) && isset( $poll_ajax_style['loading'] ) && $poll_ajax_style['loading'] ) {
-
-				if ( ! defined( 'WP_POLLS_VERSION' ) ) {
-					define( 'WP_POLLS_VERSION', '2.77.3' );
-				}
-
-				wp_enqueue_script( 'wp-polls', plugins_url( 'wp-polls/polls-js.js' ), array( 'jquery' ), WP_POLLS_VERSION, true );
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- WP Polls plugin constant.
 				wp_enqueue_style( 'wp-polls', plugins_url( 'wp-polls/polls-css.css' ), false, WP_POLLS_VERSION, 'all' );
 
 				wp_localize_script(
@@ -598,11 +611,23 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			$timezone     = wp_timezone();
+			$current_time = new \DateTime( 'now', $timezone );
+			$end_time     = new \DateTime( '2026-01-20 23:59:59', $timezone );
+
+			wp_localize_script(
+				'godam-page-script-dashboard',
+				'posthogConfig',
+				$this->get_posthog_config()
+			);
+
 			wp_localize_script(
 				'godam-page-script-dashboard',
 				'videoData',
 				array(
-					'adminUrl' => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
+					'adminUrl'              => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
+					'godamBaseUrl'          => RTGODAM_IO_API_BASE,
+					'showNewYearSaleBanner' => ( $current_time <= $end_time ),
 				)
 			);
 
@@ -651,7 +676,14 @@ class Pages {
 					'currentUserId'    => get_current_user_id(),            // Current user ID.
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
 					'adminUrl'         => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
+					'godamBaseUrl'     => RTGODAM_IO_API_BASE,
 				)
+			);
+
+			wp_localize_script(
+				'transcoder-page-script-analytics',
+				'posthogConfig',
+				$this->get_posthog_config()
 			);
 
 			$rtgodam_user_data = rtgodam_get_user_data( true );
@@ -689,6 +721,12 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			wp_localize_script(
+				'godam-page-script-help',
+				'posthogConfig',
+				$this->get_posthog_config()
+			);
+
 			// Footer URL data for internal redirection.
 			wp_localize_script(
 				'godam-page-script-help',
@@ -718,6 +756,12 @@ class Pages {
 					$rtgodam_user_data
 				);
 			}
+
+			wp_localize_script(
+				'transcoder-page-script-godam',
+				'posthogConfig',
+				$this->get_posthog_config()
+			);
 
 			// Footer URL data for internal redirection.
 			wp_localize_script(
@@ -750,6 +794,12 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			wp_localize_script(
+				'godam-page-script-tools',
+				'posthogConfig',
+				$this->get_posthog_config()
+			);
+
 			// Footer URL data for internal redirection.
 			wp_localize_script(
 				'godam-page-script-tools',
@@ -778,6 +828,12 @@ class Pages {
 				array(
 					'version' => RTGODAM_VERSION,
 				)
+			);
+
+			wp_localize_script(
+				'godam-page-script-whats-new',
+				'posthogConfig',
+				$this->get_posthog_config()
 			);
 
 			wp_enqueue_script( 'godam-page-script-whats-new' );
@@ -812,6 +868,53 @@ class Pages {
 				'roles'    => $roles,
 			)
 		);
+
+		wp_localize_script(
+			'media-library-react',
+			'posthogConfig',
+			$this->get_posthog_config()
+		);
+	}
+
+	/**
+	 * Get PostHog configuration for internal GoDAM analytics tracking.
+	 * These are hardcoded public keys - clients don't need to configure anything.
+	 *
+	 * @return array PostHog configuration array with 'key', 'host', and 'enabled' settings.
+	 */
+	private function get_posthog_config() {
+		$settings        = get_option( 'rtgodam-settings', array() );
+		$enable_tracking = isset( $settings['general']['enable_posthog_tracking'] ) ? $settings['general']['enable_posthog_tracking'] : false;
+
+		$config = array(
+			'key'     => 'phc_9P3X3py1SfwrF78SXXkIyL2cHjkRTpvWzqf8RZJDaSk',
+			'host'    => 'https://us.i.posthog.com',
+			'enabled' => (int) $enable_tracking, // Convert boolean to int (0/1) for proper JS encoding.
+		);
+
+		if ( $enable_tracking ) {
+			global $wpdb, $wp_version;
+
+			if ( ! function_exists( 'get_plugins' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
+
+			$all_plugins    = get_plugins();
+			$active_plugins = get_option( 'active_plugins', array() );
+
+			$config['properties'] = array(
+				'php_version'          => phpversion(),
+				'mysql_version'        => $wpdb->db_version(),
+				'server_software'      => isset( $_SERVER['SERVER_SOFTWARE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) ) : '',
+				'wp_version'           => $wp_version,
+				'site_language'        => get_locale(),
+				'active_plugins_count' => count( $active_plugins ),
+				'total_plugins_count'  => count( $all_plugins ),
+				'user_count'           => count_users()['total_users'] ?? 0,
+			);
+		}
+
+		return $config;
 	}
 
 	/**

@@ -34,8 +34,9 @@ const PasswordFieldWithToggle = ( { hasValidAPIKey, maskedAPIKey, apiKey, setAPI
 		if ( ! hasValidAPIKey ) {
 			return (
 				<>
-					{ __( 'Your API key is required to access the features. You can get your active API key from your ', 'godam' ) }
-					<a href={ ( window.godamRestRoute?.apiBase ?? 'https://app.godam.io' ) + '/web/my-account?accTab=API' } target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+					{ __( 'Your API key is required to access the features. You can get your active API key from your', 'godam' ) }
+					{ ' ' }
+					<a href={ ( window.godamRestRoute?.apiBase ?? 'https://app.godam.io' ) + '/web/billing?tab=API' } target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
 						{ __( 'Account', 'godam' ) }
 					</a>.
 				</>

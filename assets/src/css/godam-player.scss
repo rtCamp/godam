@@ -56,6 +56,8 @@
 	background: rgba(255, 255, 255, 0.7);
 	z-index: 10;
 	color: initial;
+	container-type: inline-size;
+	container-name: easydam-layer-container;
 }
 
 .hidden {
@@ -87,6 +89,11 @@
 	&.hidden {
 		display: none;
 	}
+
+	svg {
+		position: relative;
+		top: 2px;
+	}
 }
 
 .godam-player-overlay {
@@ -101,76 +108,15 @@
 	pointer-events: none; /* Prevent interaction with the overlay */
 }
 
-.easydam-video-container {
-	position: relative;
-	background-color: rgba(149, 149, 149, 0.2);
-	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+.godam-poster-image {
+	display: none;
+	position:absolute;
 	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
-	container-type: inline-size;
-	container-name: godam-player-default-skin;
-
-	&:has(.vjs-has-started) {
-
-		.godam-player-overlay {
-
-			display: none;
-		}
-	}
-
-	.vjs-text-track-display {
-		bottom: 4em !important;
-	}
-
-	&:hover {
-
-		.vjs-big-play-button {
-			transform: scale(1.1);
-		}
-
-		.godam-player-overlay {
-			background: radial-gradient(
-				ellipse at center,
-				rgba(0, 0, 0, 0.05) 0%,
-				rgba(0, 0, 0, 0.1) 50%,
-				rgba(0, 0, 0, 0.15) 100%
-			);
-			opacity: 0.7;
-		}
-	}
-
-	&.godam-video-fullscreen {
-		position: fixed;
-		inset: 0;
-		width: 100vw;
-		height: 100vh;
-		background: #000;
-		z-index: 99999999;
-		display: flex;
-		align-items: center;
-	}
-}
-
-.easydam-video-container .video-js .vjs-big-play-button {
-	background-color: var(--rtgodam-control-bar-color, #000) !important;
-	border: none;
-	cursor: pointer;
-	border-radius: 50%;
-	padding: 0;
-	z-index: 10;
-	width: 50px;
-	height: 50px;
-	left: 53%;
-	transition: transform 0.3s ease;
-	min-height: unset;
-
-	span::before {
-		font-size: 28px;
-		line-height: 1.8;
-	}
-
-	&:hover, &:focus {
-		transform: scale(1.1);
-	}
+	width: 100%;
+	height: auto;
+	max-height: 100%;
+	object-fit: contain;
+	background-color: #000;
 }
 
 .vjs-audio-button.vjs-menu-button {
@@ -205,8 +151,8 @@
 		}
 
 		@container godam-player-default-skin (max-width: 480px) {
-			width: 50px;
-			height: 30px;
+			width: 40px;
+			height: 40px;
 
 			svg {
 				width: 20px;
@@ -254,8 +200,27 @@
 .easydam-layer--cta-text {
 	max-height: 100%;
 	width: 100%;
-	padding: 2rem;
 	overflow: auto;
+	padding: 0 2rem;
+
+	/**
+	 * Quill Styles.
+	 */
+	.ql-align-center {
+		text-align: center;
+	}
+
+	.ql-align-right {
+		text-align: right;
+	}
+
+	.ql-align-justify {
+		text-align: justify;
+	}
+
+	strong {
+		font-weight: 700;
+	}
 }
 
 .easydam-layer--cta-html {
@@ -267,9 +232,19 @@
 	border-radius: 4px;
 }
 
-.easydam-layer--cta-html button,
-.video-js .easydam-layer--cta-html button {
-	all: unset;
+.poll-container button:hover {
+	background-color: #1a5d99;
+}
+
+.poll-container button:disabled {
+	background-color: #ccc;
+	cursor: not-allowed;
+}
+
+// Only apply default styles to plain buttons without any classes
+.easydam-layer--cta-html button:not([class]),
+.video-js .easydam-layer--cta-html button:not([class]) {
+	appearance: none;
 	display: inline-block;
 	padding: 10px 20px;
 	border-radius: 4px;
@@ -283,7 +258,8 @@
 	cursor: pointer;
 }
 
-.easydam-layer--cta-html button:hover {
+.easydam-layer--cta-html button:not([class]):hover,
+.video-js .easydam-layer--cta-html button:not([class]):hover {
 	background-color: #1a5d99;
 }
 
@@ -328,15 +304,6 @@
 	margin: auto;
 }
 
-.poll-container button:hover {
-	background-color: #1a5d99;
-}
-
-.poll-container button:disabled {
-	background-color: #ccc;
-	cursor: not-allowed;
-}
-
 .editor-video-customisation-cta,
 .editor-enable-preview {
 	margin-top: 20px;
@@ -363,25 +330,59 @@
 	}
 }
 
+.image-cta-no-image {
+	width: clamp(100px, 20vw, 250px);
+    height: clamp(100px, 20vw, 200px);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 1rem;
+	text-align: center;
+	background: linear-gradient(135deg, #f0f0f0 0%, #a7a7a7 100%);
+}
+
 .image-cta-container,
 .vertical-image-cta-container {
 	display: flex;
 	flex-direction: row;
-	gap: 30px;
+	gap: 20px;
 	max-width: 600px;
+	width: 100%;
 	background-color: #fff;
 	align-items: center;
 	padding: 20px;
+	border-radius: 12px;
+	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+	box-sizing: border-box;
+	margin: auto;
 
 	h2 {
-		font-size: 32px;
+		font-size: clamp(20px, 4vw, 32px);
 		font-weight: 700;
 		line-height: 1.125;
+		margin: 0 0 10px;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
 	}
 
 	p {
 		color: #8c8c8c;
 		font-size: 16px;
+		margin: 0 0 20px;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	img {
+		max-width: 100%;
+		width: 200px;
+		height: auto;
+		border-radius: 8px;
+		object-fit: cover;
 	}
 
 	.image-cta-btn {
@@ -391,12 +392,9 @@
 }
 
 .image-cta-description {
-	flex-basis: 50%;
-	border-radius: 0 20px 20px 0;
+	flex: 1;
 	display: flex;
 	flex-direction: column;
-	gap: 20px;
-	align-content: center;
 	justify-content: center;
 	padding-left: 0;
 
@@ -407,8 +405,9 @@
 
 .vertical-image-cta-container {
 	flex-direction: column;
-	width: 300px;
+	max-width: 250px;
 	border-radius: 36px;
+	text-align: center;
 
 	img {
 		border-radius: 25px;
@@ -416,13 +415,17 @@
 	}
 
 	.image-cta-description {
-		text-align: center;
 		padding: 0;
+		align-items: center;
 	}
 
 	.image-cta-btn {
-		text-decoration: none;
 		margin: 0 auto;
+	}
+
+	@container easydam-layer-container (max-width: 445px) {
+		width: 200px;
+		gap: 15px;
 	}
 }
 
@@ -430,42 +433,117 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	height: 100%;
+	min-height: 100%;
 	width: 100%;
+	padding: 20px;
+	box-sizing: border-box;
 }
 
 .image-cta-overlay-container {
 	position: absolute;
 	top: 0;
 	bottom: 0;
+	left: 0;
+	right: 0;
 	overflow: auto;
-	padding: 2rem 1rem;
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
 
 	h2 {
 		margin-block-start: 0;
-		margin-block-end: 0;
+		margin-block-end: 10px;
 	}
 
 	p {
-		font-size: 13px;
+		font-size: 16px;
+		margin-bottom: 15px;
 	}
 
 	img {
 		height: auto;
+		max-width: 100%;
 	}
 
 	a {
 		text-decoration: none;
 	}
+}
 
-	.image-cta-description {
+/* Responsive CTA Image Layer using Container Queries */
+@container (max-width: 580px) {
+
+	.image-cta-container {
+		gap: 15px;
+		padding: 15px;
+		width: 96%;
+		height: auto;
+		overflow-y: auto;
+
+		img {
+
+			/* Scale down image for mobile but keep aspect ratio */
+			width: 120px;
+			height: auto;
+			object-fit: contain;
+			flex-shrink: 0;
+		}
+
+		.image-cta-description {
+			gap: 0;
+			justify-content: flex-start;
+		}
+
+		h2 {
+			font-size: 20px;
+			margin-bottom: 5px;
+		}
+
+		p {
+			font-size: 13px;
+			margin-bottom: 10px;
+			line-height: 1.4;
+		}
+
+		.image-cta-btn {
+			font-size: 13px;
+			padding: 8px 12px;
+		}
+	}
+}
+
+@container (max-width: 400px) {
+
+	.image-cta-container {
+		padding: 10px;
 		gap: 10px;
+
+		img {
+			width: 100px;
+		}
+
+		h2 {
+			font-size: 16px;
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+		}
+
+		p {
+			font-size: 12px;
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+		}
 	}
 }
 
 .easydam-layer.hotspot-layer {
 	pointer-events: none;
 	background: transparent;
+	z-index: 5;
 
 	&.overlapped {
 		z-index: 0;
@@ -881,45 +959,6 @@ body.godam-share-modal-open {
 	}
 }
 
-.easydam-video-container .vjs-button.godam-share-button {
-	position: absolute;
-	opacity: 0;
-	visibility: hidden;
-	pointer-events: none;
-	top: 10px;
-	right: 10px;
-	z-index: 10;
-	padding: 10px;
-	background-color: rgba(0, 0, 0, 0.7);
-	color: #fff;
-	border: none;
-	cursor: pointer !important;
-	font-size: 15px !important;
-	border-radius: 50%;
-	display: flex;
-	transition: all 0.3s ease;
-	min-height: unset;
-	margin: 0;
-
-	@media screen and (max-width: 768px) {
-
-		&  {
-			opacity: 1;
-			visibility: visible;
-		}
-	}
-}
-
-.easydam-video-container:hover .vjs-button.godam-share-button {
-	opacity: 1;
-	visibility: visible;
-	pointer-events: auto;
-
-	&:hover{
-		background-color: #AB3A6C;
-	}
-}
-
 /* Tooltip style */
 .hotspot-tooltip {
 	position: absolute;
@@ -941,6 +980,24 @@ body.godam-share-modal-open {
 	opacity: 0;
 	transition: opacity 0.2s ease, visibility 0.2s ease;
 	word-wrap: break-word;
+
+	/* Create an invisible bridge between hotspot and tooltip for smooth hover */
+	&::before {
+		content: "";
+		position: absolute;
+		left: 0;
+		right: 0;
+		height: 10px;
+
+		/* Default: tooltip is above hotspot, so bridge is below tooltip */
+		top: 100%;
+	}
+
+	/* When tooltip is below hotspot, bridge should be above tooltip */
+	&.tooltip-bottom::before {
+		top: auto;
+		bottom: 100%;
+	}
 }
 
 .fullscreen-layer .hotspot-tooltip {
@@ -1069,6 +1126,24 @@ body.godam-share-modal-open {
 	background-color: rgba(43, 51, 63, 0.9);
 }
 
+.vjs-menu {
+  opacity: 0;
+  z-index: 19;
+
+  /* Use visibility in addition to opacity for better Safari compatibility */
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.vjs-menu.vjs-lock-showing {
+  opacity: 1;
+  visibility: visible;
+}
+
+.vjs-menu.vjs-closing {
+  opacity: 0.5; /* mid-state to hint closing */
+}
+
 .vjs-menu .vjs-menu-content li {
 	margin-left: 0;
 }
@@ -1077,6 +1152,7 @@ body.godam-share-modal-open {
 	display: block !important;
 	padding: 0 !important;
 	margin: 0 !important;
+	max-height: 300px;
 	overflow: auto;
 	font-size: 12px !important;
 }
@@ -1084,6 +1160,7 @@ body.godam-share-modal-open {
 .vjs-control-bar {
 	background-color: var(--rtgodam-control-bar-color, #2b333fb3) !important;
 	display: flex;
+	z-index: 8;
 }
 
 .vjs-control:hover {
@@ -1381,6 +1458,19 @@ body.godam-share-modal-open {
 /* Style for video player fullscreen buttons */
 .video-js {
 
+	/* Remove blue tap highlight on mobile devices */
+	-webkit-tap-highlight-color: transparent !important;
+
+	* {
+
+		/* Remove focus outlines and box shadows from all player controls */
+		&:focus,
+		&:active,
+		&:focus-visible {
+			outline: none;
+		}
+	}
+
 	.vjs-custom-fullscreen-exit-control {
 		position: fixed !important;
 		top: 0.75rem !important;
@@ -1394,7 +1484,7 @@ body.godam-share-modal-open {
 			background: url(../images/close.svg);
 			background-position: center;
 			background-repeat: no-repeat;
-			background-size: contain;
+			background-size: auto;
 			display: inline-block;
 		}
 
@@ -1405,12 +1495,36 @@ body.godam-share-modal-open {
 
 	&.vjs-fullscreen {
 
+		// Fix for Forms confirmation message font size issue for fullscreen videos
+		.form-container {
+			font-size: initial;
+		}
+
+		.easydam-layer {
+			font-size: initial;
+		}
+
 		.vjs-custom-fullscreen-exit-control {
 			display: block !important;
 		}
 	}
 
+	@media (hover: none) {
+
+		.vjs-volume-control {
+			display: none !important; // Disable slider for touch devices
+		}
+
+		.vjs-volume-panel {
+			width: 40px !important; //Prevent volume slider transition effect.
+		}
+	}
+
 	@container godam-player-default-skin (max-width: 480px) {
+
+		.vjs-big-play-button {
+			left: 55% !important;
+		}
 
 		.vjs-modal-dialog-content {
 			padding: 15px 15px 0 15px;
@@ -1434,12 +1548,17 @@ body.godam-share-modal-open {
 
 			.vjs-control {
 				height: 3em !important;
+				z-index: 10;
 			}
 
 			.vjs-play-control {
 				position: absolute;
 				bottom: 0;
 				left: 0;
+			}
+
+			.vjs-volume-control {
+				display: none; //Fallback for old browser versions not supporting interaction media features
 			}
 
 			.vjs-skip-backward-5,
@@ -1528,7 +1647,7 @@ body.godam-share-modal-open {
 
 			.vjs-menu {
 				background-color: #2b333f;
-				z-index: 10;
+				z-index: 19;
 			}
 
 			.vjs-time-control {
@@ -1574,6 +1693,7 @@ body.godam-share-modal-open {
 			bottom: 0;
 			right: calc(3 * 40px);
 			height: 3em !important;
+			z-index: 19;
 		}
 	}
 
@@ -1598,12 +1718,17 @@ body.godam-share-modal-open {
 				bottom: initial !important;
 			}
 		}
+
+		.vjs-menu-content {
+			max-height: 120px !important;
+		}
 	}
 }
 
 .easydam-player.video-js {
 	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9 );
 	cursor: pointer;
+	overflow: hidden;
 }
 
 .video-js .vjs-time-tooltip,
@@ -1613,19 +1738,205 @@ body.godam-share-modal-open {
 	white-space: nowrap;
 }
 
+/**
+ * GoDAM Video Block - Main wrapper styles
+ * These styles ensure the block works correctly in all layout contexts,
+ * including flex layouts (Row, Stack) and standard layouts (Group, Columns).
+ */
+.wp-block-godam-video {
+	width: 100%;
+	min-width: 0; // Allow shrinking in flex layouts (Row/Stack)
+	
+	// Ensure the figure takes full width
+	figure[id^="godam-player-container"] {
+		width: 100%;
+		margin: 0;
+	}
+}
+
 /* GoDAM Video Heading Overlay Styles */
 .godam-video-wrapper {
 	position: relative;
+	width: 100%;
+}
+
+/* Ensure Elementor widget wrapper maintains proper dimensions */
+.elementor-widget-godam-video {
+	width: 100%;
+	flex-shrink: 0;
+
+	figure[id^="godam-player-container"] {
+		aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
+		display: block;
+	}
+}
+
+.easydam-video-container {
+	position: relative;
+	background-color: rgba(149, 149, 149, 0.2);
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
+	container-type: inline-size;
+	container-name: godam-player-default-skin;
+
+	&:has(.vjs-has-started) {
+
+		.godam-player-overlay {
+
+			display: none;
+		}
+	}
+
+	&:has(.easydam-player.vjs-hidden) {
+
+		.godam-poster-image {
+			display: block;
+		}
+	}
+
+	.vjs-text-track-display {
+		bottom: 4em !important;
+	}
+
+	.vjs-button.godam-share-button {
+
+		position: absolute;
+		opacity: 0;
+		visibility: hidden;
+		top: 10px;
+		right: 10px;
+		z-index: 10;
+		padding: 10px;
+		background-color: rgba(0, 0, 0, 0.7);
+		color: #fff;
+		border: none;
+		cursor: pointer !important;
+		font-size: 15px !important;
+		border-radius: 50%;
+		display: flex;
+		transition: all 0.3s ease;
+		min-height: unset;
+		margin: 0;
+
+		@media screen and (max-width: 768px) {
+
+			&  {
+				opacity: 1;
+				visibility: visible;
+			}
+		}
+	}
+
+	// FULLSCREEN CONTAINER STYLES - Critical for iOS Safari compatibility
+	&.godam-video-fullscreen {
+		// Hide share button in custom fullscreen (consistency with other devices)
+		.vjs-button.godam-share-button {
+			display: none !important;
+		}
+
+		// Position the player to cover the entire viewport
+		position: fixed;
+		inset: 0;
+		width: 100vw;
+
+		// DYNAMIC HEIGHT HANDLING FOR iOS (Critical Fix)
+		// Problem: iOS Safari viewport height changes dynamically when address bar collapses/expands
+		// Solution: Use multiple height declarations for maximum compatibility
+
+		// Method 1: JavaScript-controlled CSS custom property (--vh)
+		// - Calculated by setupIOSViewportHeight() function in controlsManager.js
+		// - Uses visualViewport API when available (iOS 13+)
+		// - Accounts for address bar, keyboard, and pinch-zoom changes
+		// - Fallback to 1vh if --vh is not set (older browsers)
+		height: calc(var(--vh, 1vh) * 100);
+
+		// Method 2: Native CSS dvh unit (Dynamic Viewport Height)
+		// - Modern browsers (iOS 15.4+, Chrome 108+, etc.)
+		// - Automatically adjusts when address bar collapses/expands
+		// - Most performant solution when supported
+		@supports (height: 100dvh) {
+			height: 100dvh;
+		}
+		background: #000;
+		z-index: 99999999;
+		display: flex;
+		align-items: center;
+	}
+
+	&:hover {
+
+		.vjs-big-play-button {
+			transform: scale(1.1);
+		}
+
+		.godam-player-overlay {
+			background: radial-gradient(
+				ellipse at center,
+				rgba(0, 0, 0, 0.05) 0%,
+				rgba(0, 0, 0, 0.1) 50%,
+				rgba(0, 0, 0, 0.15) 100%
+			);
+			opacity: 0.7;
+		}
+
+		.vjs-button.godam-share-button {
+			opacity: 1;
+			visibility: visible;
+			pointer-events: auto;
+
+			&:hover{
+				background-color: #AB3A6C;
+			}
+		}
+	}
+
+	// Hide share button in standard fullscreen
+	.video-js.vjs-fullscreen .vjs-button.godam-share-button {
+		display: none !important;
+	}
+
+
+	.video-js {
+
+		.vjs-big-play-button {
+			background-color: var(--rtgodam-control-bar-color, #000) !important;
+			border: none;
+			cursor: pointer;
+			border-radius: 50%;
+			padding: 0;
+			z-index: 10;
+			width: 50px;
+			height: 50px;
+			left: 53%;
+			transition: transform 0.3s ease;
+			min-height: unset;
+
+			span::before {
+				font-size: 28px;
+				line-height: 1.8;
+			}
+
+			&:hover, &:focus {
+				transform: scale(1.1);
+			}
+		}
+	}
+}
+
+.godam-show-controls-on-hover {
+
+	&:hover {
+
+		.vjs-control-bar {
+			display: flex !important;
+		}
+	}
 }
 
 .gf-godam-video-preview {
 
 	.easydam-video-container {
 		height: 100%;
-
-		.easydam-player.video-js {
-			margin-top: -2.125rem;
-		}
 	}
 }
 

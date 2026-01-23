@@ -135,17 +135,17 @@ const godamGallery = {
 	},
 };
 
+const godamVideoEmbed = {
+	...sharedConfig,
+	entry: {
+		'godam-video-embed': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-video-embed.js' ),
+	},
+};
+
 const gfGodamRecorderEditorJS = {
 	...sharedConfig,
 	entry: {
 		'gf-godam-recorder-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gravity-form', 'gf-godam-recorder-editor.js' ),
-	},
-};
-
-const gfEntryDetailJS = {
-	...sharedConfig,
-	entry: {
-		'gf-entry-detail': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gravity-form', 'gf-entry-detail.js' ),
 	},
 };
 
@@ -230,6 +230,20 @@ const ninjaForms = {
 	},
 };
 
+const ninjaFormsSubmissionsList = {
+	...sharedConfig,
+	entry: {
+		'ninja-forms-submissions-list': path.resolve( process.cwd(), 'assets', 'src', 'js', 'ninja-forms', 'ninja-forms-submissions-list.js' ),
+	},
+};
+
+const blockExtensions = {
+	...sharedConfig,
+	entry: {
+		'block-extensions': path.resolve( process.cwd(), 'assets', 'src', 'block-extensions', 'index.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -304,8 +318,8 @@ module.exports = [
 	godamPlayerAnalytics,
 	deactivationJS,
 	godamGallery,
+	godamVideoEmbed,
 	gfGodamRecorderEditorJS,
-	gfEntryDetailJS,
 	wpFormsGodamRecorderEditorJS,
 	jetpackFormJS,
 	styles, // Do not remove this.
@@ -319,4 +333,6 @@ module.exports = [
 	lifterLMSBlock,
 	lifterLMSEmbed,
 	ninjaForms,
+	ninjaFormsSubmissionsList,
+	blockExtensions,
 ];

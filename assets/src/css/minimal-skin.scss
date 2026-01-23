@@ -37,6 +37,8 @@
 		background-color: #fff !important;
 		color: #000;
 		border-radius: 4px;
+		max-height: 300px;
+		overflow: auto;
 		
 		li {
 			padding: 8px;
@@ -59,10 +61,6 @@
 		.master-settings-back-icon, .godam-check-icon {
 			color: #000;
 		}
-	}
-
-	.video-js .vjs-fullscreen-control {
-		order: 3;
 	}
 
 	.video-js .vjs-settings-button {
@@ -90,8 +88,16 @@
 
 	@container godam-player-minimal-skin (max-width: 480px) {
 		
+		.video-js .vjs-big-play-button {
+			left: 55%;
+		}
+
 		.video-js .vjs-control-bar {
 			height: 6em !important;
+
+			.vjs-volume-control {
+				display: none; //Fallback for old browser versions not supporting interaction media features
+			}
 
 			.vjs-control {
 				height: 3em !important;
@@ -136,6 +142,17 @@
 				z-index: 99;
 			}
 
+			.vjs-volume-panel {
+				bottom: 0;
+				position: absolute;
+				right: 120px;
+			}
+
+			&:has(.vjs-subs-caps-button.vjs-hidden) .vjs-volume-panel {
+				right: 80px;
+			}
+
+
 			.vjs-subs-caps-button {
 				right: 80px !important;
 			}
@@ -168,7 +185,7 @@
 			height: 3em !important;
 		}
 
-	   .vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-volume-panel, .vjs-remaining-time, .vjs-custom-play-button {
+	   .vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-remaining-time, .vjs-custom-play-button {
 			display: none !important;
 		}
 
@@ -180,8 +197,11 @@
 
 		.video-js .vjs-menu {
 			width: 8em;
+			z-index: 19;
 
 			.vjs-menu-content {
+
+				max-height: 120px !important;
 
 				.godam-back-item-container::after {
 					top: 24.5px;

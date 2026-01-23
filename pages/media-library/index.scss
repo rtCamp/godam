@@ -17,14 +17,12 @@ $godam-gradient: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
 	$toggle-offset: 12px;
 
 	position: relative;
-	overflow: visible;
 
 	min-width: $sidebar-width;
 	padding: 0;
 	border: 1px solid $media-library-sidebar-border;
 	display: flex;
 	flex-direction: column;
-	min-height: 100vh;
 	height: 100%;
 
 	@media (max-width: 900px) {
@@ -74,7 +72,7 @@ $godam-gradient: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
 	}
 
 	.tree-container {
-		padding-bottom: 2.5rem;
+		padding-bottom: 5rem;
 	}
 
 	.folder-tabs {
@@ -168,6 +166,10 @@ $godam-gradient: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
 			input {
 				font-size: 13px;
 			}
+		}
+
+		.components-select-control__input {
+			padding: 0 26px 0 8px;
 		}
 	}
 
