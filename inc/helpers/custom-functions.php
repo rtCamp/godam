@@ -753,14 +753,16 @@ function rtgodam_is_local_environment() {
  *
  * This function uses a result from JavaScript-based detection.
  * The JS detection runs in the browser and can accurately detect HTTP auth
- * by making a request without credentials. As a fallback, it also attempts
- * a server-side check if no cached status exists.
+ * by making a request without credentials, then stores the result in an option.
+ * If no cached status exists, this function falls back to a default of "not enabled".
  *
  * @since n.e.x.t
  *
  * @return bool True if HTTP auth is enforced, false otherwise.
  */
-function rtgodam_has_http_auth() {
+function rtgodam_has_http_auth(): bool {
+	$has_http_auth = false;
+
 	// Get detection result from JavaScript detector.
 	$cached_status = get_option( 'rtgodam_http_auth_status', array() );
 

@@ -82,9 +82,28 @@
 
 			// Before files are uploaded, check for HTTP auth.
 			if ( this.uploader ) {
-				this.uploader.bind( 'BeforeUpload', async function() {
-					// Detect HTTP auth status.
-					await detectHttpAuth();
+				this.uploader.bind( 'BeforeUpload', function( up ) {
+					// If detection has already run for this uploader, allow upload to proceed.
+					if ( up.httpAuthDetectionDone ) {
+						return;
+					}
+
+					// If detection is already in progress, pause uploads and wait.
+					if ( up.httpAuthDetectionInProgress ) {
+						up.stop();
+						return;
+					}
+
+					// Mark detection as in progress and pause uploads.
+					up.httpAuthDetectionInProgress = true;
+					up.stop();
+
+					// Run detection and resume uploads when done.
+					$.when( detectHttpAuth() ).always( function() {
+						up.httpAuthDetectionDone = true;
+						up.httpAuthDetectionInProgress = false;
+						up.start();
+					} );
 				} );
 			}
 

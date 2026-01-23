@@ -281,7 +281,7 @@ class RTGODAM_Transcoder_Handler {
 				);
 				update_option( 'rtgodam-failed-transcoding-attachments', $failed_transcoding_attachments );
 			}
-			
+
 			// Update status to failed.
 			update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'failed' );
 			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', __( 'HTTP authentication is enabled on your site, preventing transcoding.', 'godam' ) );

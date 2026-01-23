@@ -967,11 +967,12 @@ class Media_Library_Ajax {
 	public function save_http_auth_status() {
 		check_ajax_referer( 'godam-http-auth-detector', 'nonce' );
 	
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( 'upload_files' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'godam' ) ) );
 		}
-	
-		$has_http_auth = isset( $_POST['has_http_auth'] ) && '1' === $_POST['has_http_auth'];
+
+		$has_http_auth_raw = isset( $_POST['has_http_auth'] ) ? sanitize_text_field( wp_unslash( $_POST['has_http_auth'] ) ) : '';
+		$has_http_auth     = ( '1' === $has_http_auth_raw );
 	
 		// Save status.
 		update_option(
