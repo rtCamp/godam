@@ -88,7 +88,7 @@ class GoDAM_Product_Gallery {
 
 		$gallery_asset_path                  = RTGODAM_PATH . 'assets/build/js/godam-product-gallery.min.asset.php';
 		$godam_product_gallery_script_assets = file_exists( $gallery_asset_path )
-			? include $gallery_asset_path
+			? include $gallery_asset_path // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- Safe: path is plugin-controlled, no user input.
 			: array(
 				'dependencies' => array(),
 				'version'      => RTGODAM_VERSION,
@@ -121,28 +121,46 @@ class GoDAM_Product_Gallery {
 	/**
 	 * Appends inline CSS styles for the product modal based on passed attributes.
 	 *
-	 * @param array $atts Associative array of CSS attribute values.
+	 * @param array  $atts Associative array of CSS attribute values.
+	 * @param string $instance_id Unique ID for each GoDAM Gallery Block.
 	 */
-	public function define_css_for_modal( $atts ) {
-		$bg_color      = $atts['cta_bg_color'];
-		$icon_bg_color = $atts['cta_button_bg_color'];
-		$icon_color    = $atts['cta_button_icon_color'];
-		$radius        = $atts['cta_button_border_radius'];
-		$price_color   = $atts['cta_product_price_color'];
+	public function define_css_for_modal( $atts, $instance_id ) {
+		$bg_color       = $atts['cta_bg_color'];
+		$close_bg_color = $atts['play_button_bg_color'];
+		$close_color    = $atts['play_button_icon_color'];
+		$close_radius   = $atts['play_button_radius'];
+		$icon_bg_color  = $atts['cta_button_bg_color'];
+		$icon_color     = $atts['cta_button_icon_color'];
+		$radius         = $atts['cta_button_border_radius'];
+		$title_color    = $atts['cta_product_name_color'];
+		$price_color    = $atts['cta_product_price_color'];
 
 		$css = "
-			.godam-product-sidebar {
+			#{$instance_id} .godam-product-sidebar,
+			[data-gallery-id=\"{$instance_id}\"] .godam-product-sidebar {
 				background-color: {$bg_color};
 			}
-			.godam-product-sidebar button,
-			.godam-product-sidebar a,
-			.godam-product-modal-close {
+			#{$instance_id} .godam-product-sidebar button,
+			#{$instance_id} .godam-product-sidebar a,
+			[data-gallery-id=\"{$instance_id}\"] .godam-product-sidebar button,
+			[data-gallery-id=\"{$instance_id}\"] .godam-product-sidebar a {
 				background-color: {$icon_bg_color};
 				color: {$icon_color};
 				border-radius: {$radius}%;
 			}
-			.godam-sidebar-product-price {
+			#{$instance_id} .godam-product-modal-close,
+			[data-gallery-id=\"{$instance_id}\"] .godam-product-modal-close {
+				background-color: {$close_bg_color};
+				color: {$close_color};
+				border-radius: {$close_radius}%;
+			}
+			#{$instance_id} .godam-sidebar-product-price,
+			[data-gallery-id=\"{$instance_id}\"] .godam-sidebar-product-price {
 				color: {$price_color};
+			}
+			#{$instance_id} .godam-sidebar-product-title,
+			[data-gallery-id=\"{$instance_id}\"] .godam-sidebar-product-title {
+				color: {$title_color};
 			}
 		";
 
@@ -151,7 +169,7 @@ class GoDAM_Product_Gallery {
 			return;
 		}
 
-		wp_add_inline_style( 'godam-product-gallery-style', $css );
+		return $css;
 	}
 
 	/**
@@ -253,15 +271,18 @@ class GoDAM_Product_Gallery {
 			$atts['card_width'] = 21.5;
 		}
 
-		if ( ! defined( 'GODAM_PRODUCT_GALLERY_CSS_PRINTED' ) ) {
-			define( 'GODAM_PRODUCT_GALLERY_CSS_PRINTED', true );
-			// Add CSS for Video Modal.
-			$this->define_css_for_modal( $atts );
-		}
+		$instance_id = 'godam-product-gallery-' . wp_unique_id( wp_rand( 1000, 9999999999 ) );
 
+		// Add CSS for Video Modal.
+		wp_register_style( 'godam-product-gallery-woo-inline-style', false, array(), RTGODAM_VERSION );
+		wp_enqueue_style( 'godam-product-gallery-woo-inline-style' );
+		wp_add_inline_style(
+			'godam-product-gallery-woo-inline-style',
+			$this->define_css_for_modal( $atts, $instance_id )
+		);
 
+		// Enqueue GoDAM Product Gallery Scripts and Styles.
 		wp_enqueue_style( 'godam-product-gallery-style' );
-
 		wp_enqueue_script( 'godam-product-gallery-script' );
 
 		// Enqueue Swiper library for carousel functionality.
@@ -293,7 +314,7 @@ class GoDAM_Product_Gallery {
 		if ( ! empty( $atts['product'] ) ) {
 			// Logic for "random" argument.
 			if ( strtolower( $atts['product'] ) === 'random' ) {
-				// Fetch all product IDs that have video meta and pick 5 random ones.
+				// Fetch all product IDs that have video meta and pick 8 random ones.
 				// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
 				$all_product_ids = get_posts(
 					array(
@@ -311,7 +332,7 @@ class GoDAM_Product_Gallery {
 				);
 
 				shuffle( $all_product_ids );
-				$product_ids = array_slice( $all_product_ids, 0, 5 );
+				$product_ids = array_slice( $all_product_ids, 0, 8 );
 			} else {
 				// Parse comma-separated IDs.
 				$product_ids = array_filter( array_map( 'absint', explode( ',', $atts['product'] ) ) );
@@ -368,8 +389,8 @@ class GoDAM_Product_Gallery {
 			 */
 			$alignment_class = ! empty( $atts['align'] ) ? ' align' . $atts['align'] : '';
 
-			echo '<div class="godam-product-gallery layout-' . esc_attr( $atts['layout'] ) .
-				esc_attr( $alignment_class ) . '"
+			echo '<div id="' . esc_attr( $instance_id ) . '" data-gallery-id="' . esc_attr( $instance_id ) . '" class="godam-product-gallery layout-' . esc_attr( $atts['layout'] ) . 
+				esc_attr( $alignment_class ) . '" 
 				data-product="' . esc_attr( $atts['product'] ) . '"
 			>';
 
@@ -408,7 +429,7 @@ class GoDAM_Product_Gallery {
 			 * Video Wrapper Begins here.
 			 */
 			$video_attrs = $atts['autoplay'] ? ' autoplay muted loop playsinline' : '';
-			$this->render_video_wrapper( $video_posts, $atts, $video_attrs, $trashed_product_ids );
+			$this->render_video_wrapper( $video_posts, $atts, $video_attrs, $trashed_product_ids, $instance_id );
 			/**
 			 * Video Wrapper Ends here.
 			 */
@@ -465,8 +486,9 @@ class GoDAM_Product_Gallery {
 	 * @param array  $atts        Shortcode attributes.
 	 * @param string $video_attrs Extra attributes for video tag (autoplay/muted/loop).
 	 * @param array  $trashed_product_ids  Array of trashed product IDs to exclude.
+	 * @param string $instance_id Unique ID for each GoDAM Gallery Block.
 	 */
-	private function render_video_wrapper( $video_posts, $atts, $video_attrs, $trashed_product_ids ) {
+	private function render_video_wrapper( $video_posts, $atts, $video_attrs, $trashed_product_ids, $instance_id ) {
 
 		foreach ( $video_posts as $video ) {
 			// Add action before each video item.
@@ -524,7 +546,10 @@ class GoDAM_Product_Gallery {
 					);
 				}
 
-				if ( $atts['play_button_enabled'] ) {
+				// Show play button if autoplay is off, or if autoplay is on and play button is enabled.
+				$show_play_button = ! $atts['autoplay'] || $atts['play_button_enabled'];
+
+				if ( $show_play_button ) {
 					// Play button overlay.
 					printf(
 						'<button class="godam-play-button" style="background:%1$s;width:%2$dpx;height:%2$dpx;border-radius:%3$dpx;" aria-label="%5$s">
@@ -541,7 +566,7 @@ class GoDAM_Product_Gallery {
 					);
 
 				} elseif ( $atts['autoplay'] ) {
-					// Unmute button overlay.
+					// Unmute button overlay. Only visible when autoplay is on.
 					printf(
 						'<button class="godam-unmute-button" style="background:%1$s;color:%2$s;width:30px;height:30px;font-size:16px;border-radius:50%%;" aria-label="%3$s">
 							<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
@@ -611,7 +636,7 @@ class GoDAM_Product_Gallery {
 
 							// Detached Dropdown for more products.
 							if ( $has_dropdown ) {
-								echo '<div class="cta-dropdown">';
+								echo '<div class="cta-dropdown" data-gallery-id="' . esc_attr( $instance_id ) . '">';
 								foreach ( $product_ids as $product_id ) {
 									$product = wc_get_product( $product_id );
 									if ( $product ) {
@@ -628,7 +653,7 @@ class GoDAM_Product_Gallery {
 												echo '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/></svg>';
 											echo '</button>';
 
-											$this->markup_instance->generate_product_gallery_video_modal_markup( $atts['cta_enabled'], $atts['cta_display_position'], $video_id, $product_id, true );
+											$this->markup_instance->generate_product_gallery_video_modal_markup( $atts['cta_enabled'], $atts['cta_display_position'], $video_id, $product_id, $instance_id, true );
 										}
 											echo '</div>'; // .cta-thumbnail-small ends.
 											echo '<div class="cta-product-info">';
@@ -664,7 +689,7 @@ class GoDAM_Product_Gallery {
 					}
 				}
 
-				$this->markup_instance->generate_product_gallery_video_modal_markup( $atts['cta_enabled'], $atts['cta_display_position'], $video_id, $data_product_ids );
+				$this->markup_instance->generate_product_gallery_video_modal_markup( $atts['cta_enabled'], $atts['cta_display_position'], $video_id, $data_product_ids, $instance_id );
 			}
 
 			echo '</div>'; // .godam-product-video-item ends.

@@ -88,8 +88,8 @@ export function initVideoModal() {
 				gallery = originalDropdown?.closest( '.godam-product-gallery' );
 			}
 		} else {
-			getModal = document.querySelector(
-				`.godam-product-modal-container[data-modal-video-id="${ videoId }"]:not([data-modal-timestamped]),
+			getModal = gallery.querySelector(
+				`.godam-product-modal-container[data-modal-video-id="${ videoId }"]:not([data-modal-timestamped]), 
 				 .godam-product-modal-container[data-modal-video-id="${ videoId }"][data-modal-timestamped="0"]`,
 			);
 		}
@@ -98,13 +98,7 @@ export function initVideoModal() {
 
 		const modal = getModal;
 
-		// If modal is not found, exit early
-		if ( ! modal ) {
-			console.warn( 'GoDAM Product Modal not found for video ID:', videoId );
-			return;
-		}
-
-		if ( isSafari() ) {
+		if ( isSafari() && timestampBtn ) {
 			document.body.appendChild( modal );
 		}
 
@@ -285,6 +279,10 @@ function close( modal, sidebarModal, ctaEnabled, ctaDisplayPosition ) {
 		if ( collapsibleButton ) {
 			collapsibleButton.classList.add( 'hidden' );
 		}
+	}
+
+	if ( isSafari() && modal.parentElement === document.body ) {
+		modal.remove();
 	}
 }
 
