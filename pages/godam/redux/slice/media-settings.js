@@ -18,7 +18,6 @@ const initialState = {
 		video_quality: [],
 		video_compress_quality: 100,
 		video_thumbnails: 5,
-		overwrite_thumbnails: false,
 		watermark: false,
 		use_watermark_image: false,
 		watermark_text: '',
