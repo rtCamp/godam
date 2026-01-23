@@ -723,3 +723,10 @@ input, textarea, select {
 		margin-left: 0;
 	}
 }
+
+@media screen and (min-width: 410px) {
+
+	.godam-version-label {
+		display: none;
+	}
+}
