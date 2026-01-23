@@ -63,7 +63,7 @@ const PasswordFieldWithToggle = ( { hasValidAPIKey, hasAPIKey, apiKey, setAPIKey
 			} else if ( apiKeyStatus === 'verification_failed' ) {
 				return (
 					<span className="invalid-api-key">
-						{ __( 'Unable to verify API key at this time. Please click "Refresh Status" to try again.', 'godam' ) }
+						{ __( 'Unable to verify API key. Please click "Refresh Status" to try again.', 'godam' ) }
 					</span>
 				);
 			}

@@ -604,7 +604,7 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 
 	// Handle other errors - Return 500 error to indicate temporary verification failure.
 	// The DB status (valid/expired) will be preserved by rtgodam_get_user_data().
-	return new \WP_Error( 'verification_error', __( 'Unable to verify API key at this time. Please try again later.', 'godam' ), array( 'status' => 500 ) );
+	return new \WP_Error( 'verification_error', __( 'Unable to verify API key. Please try again later.', 'godam' ), array( 'status' => 500 ) );
 }
 
 /**
