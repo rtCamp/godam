@@ -98,7 +98,7 @@ export function initVideoModal() {
 
 		const modal = getModal;
 
-		if ( isSafari() ) {
+		if ( isSafari() && timestampBtn ) {
 			document.body.appendChild( modal );
 		}
 
@@ -273,6 +273,10 @@ function close( modal, sidebarModal, ctaEnabled, ctaDisplayPosition ) {
 		modal.querySelector( '.godam-product-modal-content' ).classList.add( 'sidebar' );
 
 		modal.querySelector( '.sidebar-collapsible-open-button' ).classList.add( 'hidden' );
+	}
+
+	if ( isSafari() && modal.parentElement === document.body ) {
+		modal.remove();
 	}
 }
 

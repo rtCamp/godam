@@ -203,18 +203,10 @@ export default class GodamVideoPlayer {
 		if ( ! isInModal ) {
 			const currentAspectRatio = this.configManager.videoSetupOptions?.aspectRatio || '16:9';
 
-			// Check if aspect ratio is valid x:y format
-			if ( ! /^\d+:\d+$/.test( currentAspectRatio ) ) {
-				// eslint-disable-next-line no-console
-				console.warn( `Invalid aspect ratio format: "${ currentAspectRatio }". Falling back to "16:9".` );
-			} else {
-				this.player.aspectRatio( currentAspectRatio );
-			}
-
 			// For GoDAM WooCommerce Blocks.
 			if ( currentAspectRatio === 'responsive' ) {
 				// Add a flag to prevent multiple executions.
-				const aspectRatioHandled = false;
+				let aspectRatioHandled = false;
 
 				const handleResponsiveAspectRatio = () => {
 					if ( aspectRatioHandled ) {
@@ -223,6 +215,10 @@ export default class GodamVideoPlayer {
 
 					const width = this.video?.videoWidth;
 					const height = this.video?.videoHeight;
+
+					if ( width > 0 && height > 0 ) {
+						aspectRatioHandled = true;
+					}
 
 					function getSimplifiedAspectRatio( w, h ) {
 						const gcd = ( a, b ) => ( b === 0 ? a : gcd( b, a % b ) );
@@ -296,7 +292,7 @@ export default class GodamVideoPlayer {
 							let aspectRatioClass = aspectRatioOrientation[ aspectRatio ];
 
 							if ( ! aspectRatioClass ) {
-								aspectRatioClass = getClosestAspectRatioOrientation( width, height );
+								aspectRatioClass = getClosestAspectRatioOrientation( playerWidth, playerHeight );
 							}
 
 							const godamProductModalContainer = document.querySelector( '.godam-product-modal-container.open' ) || document.querySelector( '.godam-woocommerce-featured-video-modal-container.open' );
@@ -315,51 +311,49 @@ export default class GodamVideoPlayer {
 							}
 
 							this.player.aspectRatio( aspectRatio );
-							return;
 						}
 
 						// If still no valid dimensions, use a default aspect ratio.
 						this.player.aspectRatio( '16:9' );
-						return;
-					}
+					} else {
+						// Original logic for when dimensions are valid.
+						const aspectRatio = getSimplifiedAspectRatio( width, height );
 
-					// Original logic for when dimensions are valid.
-					const aspectRatio = getSimplifiedAspectRatio( width, height );
+						const aspectRatioOrientation = {
+							'1:1': 'landscape', // or "portrait" - square can go either way.
+							'4:3': 'landscape',
+							'3:2': 'landscape',
+							'5:4': 'landscape',
+							'16:9': 'landscape',
+							'21:9': 'landscape',
+							'9:16': 'portrait',
+							'2:3': 'portrait',
+							'3:4': 'portrait',
+						};
 
-					const aspectRatioOrientation = {
-						'1:1': 'landscape', // or "portrait" - square can go either way.
-						'4:3': 'landscape',
-						'3:2': 'landscape',
-						'5:4': 'landscape',
-						'16:9': 'landscape',
-						'21:9': 'landscape',
-						'9:16': 'portrait',
-						'2:3': 'portrait',
-						'3:4': 'portrait',
-					};
+						let aspectRatioClass = aspectRatioOrientation[ aspectRatio ];
 
-					let aspectRatioClass = aspectRatioOrientation[ aspectRatio ];
-
-					if ( ! aspectRatioClass ) {
-						aspectRatioClass = getClosestAspectRatioOrientation( width, height );
-					}
-
-					const godamProductModalContainer = document.querySelector( '.godam-product-modal-container.open' ) || document.querySelector( '.godam-woocommerce-featured-video-modal-container.open' );
-
-					if ( godamProductModalContainer ) {
-						const videoContainer = godamProductModalContainer.querySelector( '.video-container' );
-
-						if ( videoContainer ) {
-							videoContainer.classList.add( `is-${ aspectRatioClass ? aspectRatioClass : 'portrait' }` );
+						if ( ! aspectRatioClass ) {
+							aspectRatioClass = getClosestAspectRatioOrientation( width, height );
 						}
 
-						const sidebarContainer = godamProductModalContainer.querySelector( '.godam-product-sidebar' );
-						if ( sidebarContainer ) {
-							sidebarContainer.classList.add( `is-${ aspectRatioClass ? aspectRatioClass : 'portrait' }` );
-						}
-					}
+						const godamProductModalContainer = document.querySelector( '.godam-product-modal-container.open' ) || document.querySelector( '.godam-woocommerce-featured-video-modal-container.open' );
 
-					this.player.aspectRatio( aspectRatio );
+						if ( godamProductModalContainer ) {
+							const videoContainer = godamProductModalContainer.querySelector( '.video-container' );
+
+							if ( videoContainer ) {
+								videoContainer.classList.add( `is-${ aspectRatioClass ? aspectRatioClass : 'portrait' }` );
+							}
+
+							const sidebarContainer = godamProductModalContainer.querySelector( '.godam-product-sidebar' );
+							if ( sidebarContainer ) {
+								sidebarContainer.classList.add( `is-${ aspectRatioClass ? aspectRatioClass : 'portrait' }` );
+							}
+						}
+
+						this.player.aspectRatio( aspectRatio );
+					}
 				};
 
 				// Add the event listener to both the video element and the player.
@@ -387,6 +381,14 @@ export default class GodamVideoPlayer {
 				this.player.on( 'loadedmetadata', clearTimeoutOnMetadata );
 			} else {
 				this.player.aspectRatio( currentAspectRatio );
+
+				// Check if aspect ratio is valid x:y format
+				if ( ! /^\d+:\d+$/.test( currentAspectRatio ) ) {
+				// eslint-disable-next-line no-console
+					console.warn( `Invalid aspect ratio format: "${ currentAspectRatio }". Falling back to "16:9".` );
+				} else {
+					this.player.aspectRatio( currentAspectRatio );
+				}
 			}
 		}
 	}
