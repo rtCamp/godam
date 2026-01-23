@@ -20,6 +20,8 @@ jQuery( document ).ready( function( $ ) {
 
 	const tagIconSVG = `<img src="${ RTGodamVideoGallery.Ptag }" width="14" height="14" alt="Tag Icon" style="vertical-align:middle; margin-right:4px;" />`;
 
+	let mediaFrame = null; // Store frame instance to prevent duplicates
+
 	function updateAddProductButtonLabel( $btn, count ) {
 		if ( count > 0 ) {
 			const productText = sprintf(
@@ -50,15 +52,21 @@ jQuery( document ).ready( function( $ ) {
 	$( '.wc-godam-add-video-button' ).on( 'click', function( e ) {
 		e.preventDefault();
 
-		const frame = wp.media( {
+		// If frame is already open, just focus it instead of creating a new one
+		if ( mediaFrame ) {
+			mediaFrame.open();
+			return;
+		}
+
+		mediaFrame = wp.media( {
 			title: __( 'Select videos for gallery', 'godam' ),
 			button: { text: __( 'Add to Video Gallery', 'godam' ) },
 			multiple: true,
 			library: { type: 'video' },
 		} );
 
-		frame.on( 'select', function() {
-			frame
+		mediaFrame.on( 'select', function() {
+			mediaFrame
 				.state()
 				.get( 'selection' )
 				.each( function( attachment ) {
@@ -68,6 +76,7 @@ jQuery( document ).ready( function( $ ) {
 
 					// Skip duplicates.
 					if ( videoList.find( `input[data-vid-id="${ data.id }"]` ).length ) {
+						$( '.godam-product-admin-video-spinner-overlay' ).hide();
 						return;
 					}
 
@@ -162,7 +171,7 @@ jQuery( document ).ready( function( $ ) {
 				} );
 		} );
 
-		frame.open();
+		mediaFrame.open();
 	} );
 
 	videoList.on( 'click', '.godam-remove-video-button', function( e ) {

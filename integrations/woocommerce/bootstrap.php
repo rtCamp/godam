@@ -119,8 +119,6 @@ class Module {
 	private function init_hooks() {
 		add_action( 'init', array( $this, 'init_woocommerce_integration' ), 20 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ), 20 );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ), 20 );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_video_editor_assets' ), 15 );
 
 		// Register WooCommerce layer via PHP filters
 		add_filter( 'godam_video_editor_layer_options', array( $this, 'register_woocommerce_layer_option' ), 10 );
@@ -198,34 +196,6 @@ class Module {
 	}
 
 	/**
-	 * Enqueue admin assets for WooCommerce integration.
-	 */
-	public function enqueue_admin_assets() {
-		$screen = get_current_screen();
-
-		// Only load on product edit screen.
-		if ( ! $screen || 'product' !== $screen->id ) {
-			return;
-		}
-
-		// Enqueue admin assets if they exist.
-		$admin_js_path = RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'js/admin/';
-		if ( file_exists( $admin_js_path ) ) {
-			$js_files = glob( $admin_js_path . '*.min.js' );
-			foreach ( $js_files as $js_file ) {
-				$handle = 'godam-wc-admin-' . basename( $js_file, '.min.js' );
-				wp_enqueue_script(
-					$handle,
-					RTGODAM_URL . 'assets/build/integrations/woocommerce/js/admin/' . basename( $js_file ),
-					array( 'jquery' ),
-					RTGODAM_VERSION,
-					true
-				);
-			}
-		}
-	}
-
-	/**
 	 * Register WooCommerce layer option via PHP filter.
 	 *
 	 * @param array $layers Existing layer options.
@@ -262,15 +232,6 @@ class Module {
 		return $components;
 	}
 
-	/**
-	 * Enqueue WooCommerce layer registration for video editor.
-	 *
-	 * The WooCommerce layer is now lazy-loaded from the main video editor bundle,
-	 * so no separate registration script is needed here.
-	 */
-	public function enqueue_video_editor_assets() {
-		return; // No-op: handled by the main video editor bundle.
-	}
 }
 
 // Initialize the module.
