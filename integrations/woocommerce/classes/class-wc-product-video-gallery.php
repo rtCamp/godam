@@ -114,7 +114,7 @@ class WC_Product_Video_Gallery {
 		wp_register_script(
 			'rtgodam-wc-video-carousel',
 			RTGODAM_URL . 'assets/build/integrations/woocommerce/js/wc-video-carousel.min.js',
-			array( 'jquery', 'rtgodam-swiper-script', 'wp-data' ),
+			array( 'jquery', 'rtgodam-script', 'rtgodam-swiper-script', 'wp-data', 'wc-blocks-data-store' ),
 			filemtime( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'js/wc-video-carousel.min.js' ),
 			true
 		);

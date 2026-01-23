@@ -42,8 +42,10 @@ const wcVideoCarousel = {
 		}
 
 		const self = this;
+		const slides = document.querySelectorAll( '.rtgodam-product-video-gallery-slider .swiper-slide' );
+		const enableLoop = slides.length > 3;
 		this.swiper = new Swiper( '.rtgodam-product-video-gallery-slider', {
-			loop: true,
+			loop: enableLoop,
 			navigation: {
 				nextEl: '.swiper-button-next',
 				prevEl: '.swiper-button-prev',
@@ -92,8 +94,10 @@ const wcVideoCarousel = {
 					return;
 				}
 
+				const modalSlides = document.querySelectorAll( '.rtgodam-product-video-gallery-slider-modal-content-items .swiper-slide' );
+				const enableModalLoop = modalSlides.length > 1;
 				self.swiperModal = new Swiper( '.rtgodam-product-video-gallery-slider-modal-content-items', {
-					loop: true,
+					loop: enableModalLoop,
 					navigation: {
 						nextEl: '.swiper-button-next',
 						prevEl: '.swiper-button-prev',
@@ -132,10 +136,12 @@ const wcVideoCarousel = {
 
 				// Run the check immediately for the first slide.
 				const firstSlide = self.swiperModal.slides[ self.swiperModal.activeIndex ];
-				const isTranscoded = firstSlide.getAttribute( 'data-is-transcoded' ) === 'true';
-				const closeBtn = document.querySelector( '.rtgodam-product-video-gallery-slider-modal-close' );
-				if ( closeBtn ) {
-					closeBtn.classList.toggle( 'godam-transcoded', isTranscoded );
+				if ( firstSlide ) {
+					const isTranscoded = firstSlide.getAttribute( 'data-is-transcoded' ) === 'true';
+					const closeBtn = document.querySelector( '.rtgodam-product-video-gallery-slider-modal-close' );
+					if ( closeBtn ) {
+						closeBtn.classList.toggle( 'godam-transcoded', isTranscoded );
+					}
 				}
 
 				const videoElmModal = document.querySelector( '.rtgodam-product-video-gallery-slider-modal' );
@@ -210,10 +216,22 @@ const wcVideoCarousel = {
 				const productId = variationId || subMitButton?.value;
 				subMitButton.disabled = true;
 				subMitButton.classList.add( 'loading' );
-				dispatch( 'wc/store/cart' ).addItemToCart( productId, quantity ).then( ( response ) => {
+
+				const cartStore = dispatch( 'wc/store/cart' );
+				if ( ! cartStore || typeof cartStore.addItemToCart !== 'function' ) {
+					console.warn( 'WooCommerce cart store is not available' );
 					subMitButton.disabled = false;
 					subMitButton.classList.remove( 'loading' );
-				} ).catch( ( err ) => {} );
+					return;
+				}
+
+				cartStore.addItemToCart( productId, quantity ).then( ( response ) => {
+					subMitButton.disabled = false;
+					subMitButton.classList.remove( 'loading' );
+				} ).catch( ( err ) => {
+					subMitButton.disabled = false;
+					subMitButton.classList.remove( 'loading' );
+				} );
 			} );
 		} );
 	},
@@ -234,7 +252,15 @@ const wcVideoCarousel = {
 		}
 
 		const videoElmModalMiniSlider = document.querySelectorAll( '.rtgodam-product-video-gallery-slider-modal .flex-control-nav' );
+		if ( ! videoElmModalMiniSlider.length ) {
+			return; // nothing to enhance
+		}
+
 		videoElmModalMiniSlider.forEach( ( slider ) => {
+			if ( ! slider || ! slider.parentNode ) {
+				return;
+			}
+
 			slider.classList.add( 'swiper-wrapper' );
 			slider.querySelectorAll( 'li' ).forEach( ( slide ) => {
 				slide.classList.add( 'swiper-slide' );
@@ -253,8 +279,16 @@ const wcVideoCarousel = {
 			wrapper.appendChild( leftSlide );
 			wrapper.appendChild( rightSlide );
 		} );
+
+		// Ensure we only initialize if wrapper elements were added
+		if ( ! document.querySelector( '.video-modal-mini-slider-parent' ) ) {
+			return;
+		}
+
+		const miniSlides = document.querySelectorAll( '.video-modal-mini-slider-parent .swiper-slide' );
+		const enableMiniLoop = miniSlides.length > 4;
 		self.swiperModalMini = new Swiper( '.video-modal-mini-slider-parent', {
-			loop: true,
+			loop: enableMiniLoop,
 			navigation: {
 				nextEl: '.video-modal-mini-slider-right',
 				prevEl: '.video-modal-mini-slider-left',

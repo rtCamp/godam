@@ -118,7 +118,6 @@ class Module {
 	 */
 	private function init_hooks() {
 		add_action( 'init', array( $this, 'init_woocommerce_integration' ), 20 );
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ), 20 );
 
 		// Register WooCommerce layer via PHP filters
 		add_filter( 'godam_video_editor_layer_options', array( $this, 'register_woocommerce_layer_option' ), 10 );
@@ -145,54 +144,6 @@ class Module {
 		\RTGODAM\Inc\WooCommerce\WC_Product_Video_Gallery::get_instance();
 		\RTGODAM\Inc\WooCommerce\WC_Featured_Video_Gallery::get_instance();
 		\RTGODAM\Inc\WooCommerce\WC_Woocommerce_Layer::get_instance();
-	}
-
-	/**
-	 * Enqueue frontend assets for WooCommerce integration.
-	 */
-	public function enqueue_frontend_assets() {
-		// Only enqueue WooCommerce frontend integration assets on WooCommerce pages.
-		// Loading these globally causes unnecessary weight and can trigger JS that expects WC context.
-		if ( ! function_exists( 'is_woocommerce' ) ) {
-			return;
-		}
-
-		if ( ! ( is_woocommerce() || is_cart() || is_checkout() || is_account_page() ) ) {
-			return;
-		}
-
-		// Check if WooCommerce assets exist in the build folder.
-		$wc_js_path  = RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'js/';
-		$wc_css_path = RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'css/';
-
-		if ( file_exists( $wc_js_path ) ) {
-			// Enqueue WooCommerce specific JS.
-			$js_files = glob( $wc_js_path . '*.min.js' );
-			foreach ( $js_files as $js_file ) {
-				$handle = 'godam-wc-' . basename( $js_file, '.min.js' );
-				wp_enqueue_script(
-					$handle,
-					RTGODAM_URL . 'assets/build/integrations/woocommerce/js/' . basename( $js_file ),
-					array( 'jquery' ),
-					RTGODAM_VERSION,
-					true
-				);
-			}
-		}
-
-		if ( file_exists( $wc_css_path ) ) {
-			// Enqueue WooCommerce specific CSS.
-			$css_files = glob( $wc_css_path . '*.css' );
-			foreach ( $css_files as $css_file ) {
-				$handle = 'godam-wc-' . basename( $css_file, '.css' );
-				wp_enqueue_style(
-					$handle,
-					RTGODAM_URL . 'assets/build/integrations/woocommerce/css/' . basename( $css_file ),
-					array(),
-					RTGODAM_VERSION
-				);
-			}
-		}
 	}
 
 	/**
