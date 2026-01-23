@@ -52,12 +52,6 @@ jQuery( document ).ready( function( $ ) {
 	$( '.wc-godam-add-video-button' ).on( 'click', function( e ) {
 		e.preventDefault();
 
-		// If frame is already open, just focus it instead of creating a new one
-		if ( mediaFrame ) {
-			mediaFrame.open();
-			return;
-		}
-
 		mediaFrame = wp.media( {
 			title: __( 'Select videos for gallery', 'godam' ),
 			button: { text: __( 'Add to Video Gallery', 'godam' ) },
