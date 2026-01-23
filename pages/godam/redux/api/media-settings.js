@@ -50,12 +50,23 @@ export const generalAPI = createApi( {
 				},
 			} ),
 		} ),
+		refreshAPIKeyStatus: builder.mutation( {
+			query: () => ( {
+				url: 'refresh-api-key-status',
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': window.wpApiSettings.nonce,
+				},
+			} ),
+		} ),
 	} ),
 } );
 
 export const {
 	useVerifyAPIKeyMutation,
 	useDeactivateAPIKeyMutation,
+	useRefreshAPIKeyStatusMutation,
 	useGetMediaSettingsQuery,
 	useSaveMediaSettingsMutation,
 } = generalAPI;

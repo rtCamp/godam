@@ -6,8 +6,7 @@ import { useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { ToggleControl, Button, Panel, PanelBody } from '@wordpress/components';
-import { unlock } from '@wordpress/icons';
+import { ToggleControl, Panel, PanelBody } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -21,19 +20,6 @@ const VideoEngagement = ( { handleSettingChange } ) => {
 
 	return (
 		<div className="relative">
-			{ ! hasValidAPIKey && (
-				<div className="premium-feature-overlay">
-					<Button
-						className="godam-button"
-						icon={ unlock }
-						href="https://app.godam.io/web/billing?tab=Plans"
-						target="_blank"
-						variant="primary"
-					>
-						{ __( 'Upgrade to unlock', 'godam' ) }
-					</Button>
-				</div>
-			) }
 			<Panel
 				heading={ __( 'Video Engagements', 'godam' ) }
 				className="godam-panel godam-margin-bottom"
@@ -44,9 +30,7 @@ const VideoEngagement = ( { handleSettingChange } ) => {
 							__nextHasNoMarginBottom
 							className="godam-toggle"
 							label={ __( 'Enable video engagement globally', 'godam' ) }
-							checked={
-								! hasValidAPIKey ? false : enableGlobalEngagement
-							}
+							checked={ enableGlobalEngagement }
 							onChange={ ( value ) => {
 								handleSettingChange( 'enable_global_video_engagement', value );
 							} }
@@ -60,9 +44,7 @@ const VideoEngagement = ( { handleSettingChange } ) => {
 							__nextHasNoMarginBottom
 							className="godam-toggle"
 							label={ __( 'Enable video share globally', 'godam' ) }
-							checked={
-								! hasValidAPIKey ? false : enableGlobalShare
-							}
+							checked={ enableGlobalShare }
 							onChange={ ( value ) => {
 								handleSettingChange( 'enable_global_video_share', value );
 							} }

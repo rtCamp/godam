@@ -105,6 +105,17 @@ class Settings extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/refresh-api-key-status',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'refresh_api_key_status' ),
+					'permission_callback' => function () {
+						return current_user_can( 'manage_options' );
+					},
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/get-api-key',
 				'args'      => array(
 					'methods'             => \WP_REST_Server::READABLE,
@@ -164,9 +175,12 @@ class Settings extends Base {
 			$error_data  = $result->get_error_data();
 			$status_code = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : 500;
 
+			// For 500 errors, return as warning instead of error to indicate temporary issue.
+			$response_status = ( 500 === $status_code ) ? 'warning' : 'error';
+
 			return new \WP_REST_Response(
 				array(
-					'status'  => 'error',
+					'status'  => $response_status,
 					'message' => $result->get_error_message(),
 					'code'    => $result->get_error_code(),
 				),
@@ -202,6 +216,10 @@ class Settings extends Base {
 		// Delete the user data from the site_option.
 		delete_option( 'rtgodam_user_data' );
 
+		// Clear API key status and grace period timestamp.
+		delete_option( 'rtgodam-api-key-status' );
+		delete_option( 'rtgodam-api-key-error-since' );
+
 		if ( $deleted_key || $deleted_token ) {
 			return new \WP_REST_Response(
 				array(
@@ -218,6 +236,46 @@ class Settings extends Base {
 				'message' => __( 'Failed to deactivate the API key. It might not exist.', 'godam' ),
 			),
 			400
+		);
+	}
+
+	/**
+	 * Refresh API key status by forcing verification.
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public function refresh_api_key_status() {
+		// Force refresh user data which will verify the API key.
+		$user_data = rtgodam_get_user_data( false, HOUR_IN_SECONDS, true );
+
+		if ( empty( $user_data ) ) {
+			return new \WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => __( 'Failed to refresh API key status.', 'godam' ),
+				),
+				500
+			);
+		}
+
+		// Use the status from user_data which might include transient verification_failed.
+		$api_key_status = isset( $user_data['api_key_status'] ) ? $user_data['api_key_status'] : rtgodam_get_api_key_status();
+		$is_valid       = RTGODAM_API_KEY_STATUS_VALID === $api_key_status;
+
+		$status_messages = array(
+			RTGODAM_API_KEY_STATUS_VALID               => __( 'API key is valid and active.', 'godam' ),
+			RTGODAM_API_KEY_STATUS_EXPIRED             => __( 'API key has expired. Please renew your subscription.', 'godam' ),
+			RTGODAM_API_KEY_STATUS_VERIFICATION_FAILED => __( 'Unable to verify API key. Please try again later.', 'godam' ),
+		);
+
+		return new \WP_REST_Response(
+			array(
+				'status'         => $is_valid ? 'success' : 'error',
+				'message'        => $status_messages[ $api_key_status ] ?? __( 'API key status refreshed.', 'godam' ),
+				'api_key_status' => $api_key_status,
+				'valid_api_key'  => $is_valid,
+			),
+			200
 		);
 	}
 

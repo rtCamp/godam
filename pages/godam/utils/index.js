@@ -8,9 +8,19 @@ export const scrollToTop = () => {
 };
 
 /**
+ * Check if an API key exists (regardless of validity)
+ */
+export const hasAPIKey = !! ( window?.userData?.userApiData?.masked_api_key );
+
+/**
+ * API Key status
+ */
+export const apiKeyStatus = window?.userData?.apiKeyStatus;
+
+/**
  * Check if the API key is valid
  */
-export const hasValidAPIKey = window?.userData?.validApiKey || false;
+export const hasValidAPIKey = apiKeyStatus === 'valid';
 
 /**
  * Masked API key

@@ -16,13 +16,14 @@ import './style.scss';
  *
  * @param {Object}   param0                - Props passed to the PasswordFieldWithToggle component.
  * @param {boolean}  param0.hasValidAPIKey - Indicates if the API key is valid.
- * @param {string}   param0.maskedAPIKey   - The masked version of the API key.
+ * @param {boolean}  param0.hasAPIKey      - Indicates if any API key exists (valid or invalid).
  * @param {string}   param0.apiKey         - The current API key value.
  * @param {Function} param0.setAPIKey      - Function to update the API key value.
+ * @param {string}   param0.apiKeyStatus   - The current status of the API key (valid, expired, invalid, verification_failed).
  *
  * @return {JSX.Element} the rendered component.
  */
-const PasswordFieldWithToggle = ( { hasValidAPIKey, maskedAPIKey, apiKey, setAPIKey } ) => {
+const PasswordFieldWithToggle = ( { hasValidAPIKey, hasAPIKey, apiKey, setAPIKey, apiKeyStatus } ) => {
 	const [ showPassword, setShowPassword ] = useState( false );
 
 	/**
@@ -31,17 +32,43 @@ const PasswordFieldWithToggle = ( { hasValidAPIKey, maskedAPIKey, apiKey, setAPI
 	 * @return {JSX.Element|null} Returns help text if API key is not valid, otherwise null.
 	 */
 	const renderHelpText = () => {
-		if ( ! hasValidAPIKey ) {
+		const accountLink = () => {
 			return (
 				<>
-					{ __( 'Your API key is required to access the features. You can get your active API key from your', 'godam' ) }
 					{ ' ' }
 					<a href={ ( window.godamRestRoute?.apiBase ?? 'https://app.godam.io' ) + '/web/billing?tab=API' } target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
 						{ __( 'Account', 'godam' ) }
 					</a>.
 				</>
 			);
+		};
+
+		if ( ! hasAPIKey ) {
+			return (
+				<>
+					{ __( 'Your API key is required to access the features. You can get your active API key from your', 'godam' ) }
+					{ accountLink() }
+				</>
+			);
 		}
+
+		if ( hasAPIKey && ! hasValidAPIKey ) {
+			if ( apiKeyStatus === 'expired' ) {
+				return (
+					<span className="invalid-api-key">
+						{ __( 'Your API Key has expired. You can renew it from your', 'godam' ) }
+						{ accountLink() }
+					</span>
+				);
+			} else if ( apiKeyStatus === 'verification_failed' ) {
+				return (
+					<span className="invalid-api-key">
+						{ __( 'Unable to verify API key at this time. Please click "Refresh Status" to try again.', 'godam' ) }
+					</span>
+				);
+			}
+		}
+
 		return null;
 	};
 
@@ -58,14 +85,14 @@ const PasswordFieldWithToggle = ( { hasValidAPIKey, maskedAPIKey, apiKey, setAPI
 			onChange={ setAPIKey }
 			help={ renderHelpText() }
 			placeholder={ __( 'Enter your API key here', 'godam' ) }
-			className={ `godam-input godam-input__api-key ${ ! hasValidAPIKey && maskedAPIKey ? 'invalid-api-key' : '' }` }
-			disabled={ hasValidAPIKey }
+			className={ `godam-input godam-input__api-key ${ hasAPIKey && ! hasValidAPIKey ? 'invalid-api-key' : '' }` }
+			disabled={ hasAPIKey }
 			type={ inputType }
 		/>
 	);
 
 	// If API key is valid, render simple TextControl without toggle
-	if ( hasValidAPIKey ) {
+	if ( hasAPIKey ) {
 		return renderTextControl();
 	}
 

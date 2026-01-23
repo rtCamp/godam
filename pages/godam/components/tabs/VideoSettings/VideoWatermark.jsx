@@ -8,7 +8,6 @@ import { useSelector } from 'react-redux';
  */
 import { Notice, ToggleControl, TextControl, Button, Panel, PanelBody } from '@wordpress/components';
 import { useState } from '@wordpress/element';
-import { unlock } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -88,19 +87,6 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 
 	return (
 		<div className="relative">
-			{ ! hasValidAPIKey && (
-				<div className="premium-feature-overlay">
-					<Button
-						className="godam-button"
-						icon={ unlock }
-						href="https://app.godam.io/web/billing?tab=Plans"
-						target="_blank"
-						variant="primary"
-					>
-						{ __( 'Upgrade to unlock', 'godam' ) }
-					</Button>
-				</div>
-			) }
 			<Panel
 				heading={ __( 'Video Watermark', 'godam' ) }
 				className="godam-panel godam-margin-bottom"
@@ -111,9 +97,7 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 							__nextHasNoMarginBottom
 							className="godam-toggle"
 							label={ __( 'Enable video watermark', 'godam' ) }
-							checked={
-								! hasValidAPIKey ? false : enableWatermark
-							}
+							checked={ enableWatermark }
 							onChange={ ( value ) => {
 								handleSettingChange( 'watermark', value );
 								setNotice( { ...notice, isVisible: false } );
