@@ -20,9 +20,45 @@ const Attachments = wp?.media?.model?.Attachments.extend( {
 	_requery( props ) {
 		if ( props && props.get( 'query' ) ) {
 			// Invoke built-in mirror with our own query.
-			props = props.toJSON();
-			this.mirror( wp.media.godamQuery.get( props ) );
+			const queryProps = props.toJSON();
+			const query = wp.media.godamQuery.get( queryProps );
+			this.mirror( query );
 		}
+	},
+
+	/**
+	 * Whether more results are available.
+	 * Delegates to the mirrored GODAMAttachmentCollection.
+	 *
+	 * @return {boolean} Whether more results are available.
+	 */
+	hasMore() {
+		return this.mirroring ? this.mirroring.hasMore() : false;
+	},
+
+	/**
+	 * Fetch more attachments from the server.
+	 * Delegates to the mirrored GODAMAttachmentCollection.
+	 *
+	 * @param {Object} options
+	 * @return {Promise} A promise to the attachment api.
+	 */
+	more( options ) {
+		const deferred = jQuery.Deferred();
+		const mirroring = this.mirroring;
+		const attachments = this;
+
+		if ( ! mirroring || ! mirroring.more ) {
+			return deferred.resolveWith( this ).promise();
+		}
+
+		mirroring.more( options ).done( function() {
+			deferred.resolveWith( attachments );
+			// Used for the search results.
+			attachments.trigger( 'attachments:received', attachments );
+		} );
+
+		return deferred.promise();
 	},
 } );
 
@@ -36,14 +72,15 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 		 * Initialize the custom query with pagination variables.
 		 */
 		initialize() {
-			// Initialize instance-specific properties first.
-			this._hasMore = true;
-			this._page = 1;
-			this._perPage = 40;
-			this.totalAttachments = 0;
-
 			// Call parent initialize method.
 			wp.media.model.Query.prototype.initialize.apply( this, arguments );
+
+			// Initialize instance-specific properties.
+			this._hasMore = false;
+			this._page = 1;
+			this._perPage = 40;
+			this.total = 0;
+			this.totalAttachments = 0;
 		},
 
 		/**
@@ -52,7 +89,7 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 		 * @return {boolean} If more results available.
 		 */
 		hasMore() {
-			return this._hasMore;
+			return !! this._hasMore;
 		},
 
 		/**
@@ -107,26 +144,26 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 					if ( response.success && Array.isArray( response?.data ) ) {
 						const items = response.data;
 
-						// Update pagination state.
-						this._hasMore = !! response.has_more;
+						// Update pagination state - stop loading if no more results or empty response.
+						this._hasMore = !! response.has_more && items.length > 0;
 
-						// If no items found on first page, ensure loading stops.
-						if ( this._page === 1 && items.length === 0 ) {
-							this._hasMore = false;
+						// Increment page counter only on successful response with items.
+						if ( items.length > 0 ) {
+							this._page++;
 						}
 
-						// Increment page counter only on successful response.
-						this._page++;
+						// Update total counts.
+						this.total = parseInt( response.total_items, 10 ) || 0;
+						this.totalAttachments = this.length + items.length;
 
+						// Call success callback with items - this resolves the promise.
 						options.success?.( items );
-
-						// Update total count to match the number of items loaded so far.
-						this.totalAttachments = this.length;
 
 						return items;
 					}
 
 					this._hasMore = false;
+					this.total = 0;
 					options.error?.( response );
 				},
 				error: ( xhr ) => {
@@ -168,18 +205,18 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 						...options,
 					} );
 					queries.push( query );
-				} else {
-					// Reset internal pagination state when reusing a cached query,
-					// so each call to `get( props )` starts from a fresh pagination context.
-					if ( typeof query._page !== 'undefined' ) {
-						query._page = 1;
-					}
-					if ( typeof query._hasMore !== 'undefined' ) {
-						query._hasMore = true;
-					}
-					if ( typeof query.reset === 'function' ) {
-						query.reset();
-					}
+				}
+
+				// Reset internal pagination state when generating or reusing a query,
+				// so each call to `get( props )` starts from a fresh pagination context.
+				if ( typeof query._page !== 'undefined' ) {
+					query._page = 1;
+				}
+				if ( typeof query._hasMore !== 'undefined' ) {
+					query._hasMore = true;
+				}
+				if ( typeof query.reset === 'function' ) {
+					query.reset();
 				}
 
 				return query;
