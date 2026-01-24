@@ -76,7 +76,7 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 			wp.media.model.Query.prototype.initialize.apply( this, arguments );
 
 			// Initialize instance-specific properties.
-			this._hasMore = false;
+			this._hasMore = true;
 			this._page = 1;
 			this._perPage = 40;
 			this.total = 0;
@@ -205,18 +205,17 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 						...options,
 					} );
 					queries.push( query );
-				}
 
-				// Reset internal pagination state when generating or reusing a query,
-				// so each call to `get( props )` starts from a fresh pagination context.
-				if ( typeof query._page !== 'undefined' ) {
-					query._page = 1;
-				}
-				if ( typeof query._hasMore !== 'undefined' ) {
-					query._hasMore = true;
-				}
-				if ( typeof query.reset === 'function' ) {
-					query.reset();
+					// Initialize internal pagination state only for newly created queries.
+					if ( typeof query._page !== 'undefined' ) {
+						query._page = 1;
+					}
+					if ( typeof query._hasMore !== 'undefined' ) {
+						query._hasMore = true;
+					}
+					if ( typeof query.reset === 'function' ) {
+						query.reset();
+					}
 				}
 
 				return query;
