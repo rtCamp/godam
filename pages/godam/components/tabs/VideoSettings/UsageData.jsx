@@ -11,11 +11,15 @@ import { __, _x } from '@wordpress/i18n';
  * @return {number} - The percentage of used storage or bandwidth, rounded to two decimal places.
  */
 const calculatePercentage = ( used, total ) => {
-	if ( total === 0 ) {
+	// Handle undefined, null, or non-numeric values.
+	const usedValue = parseFloat( used ) || 0;
+	const totalValue = parseFloat( total ) || 0;
+
+	if ( totalValue === 0 ) {
 		return 0;
 	}
 	try {
-		const result = ( used / total ) * 100;
+		const result = ( usedValue / totalValue ) * 100;
 		return result.toFixed( 2 );
 	} catch ( error ) {
 		return 0;
