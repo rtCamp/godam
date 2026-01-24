@@ -14,8 +14,8 @@ defined( 'ABSPATH' ) || exit;
  * API Key Status Constants.
  *
  * VALID: API key is verified and working.
- * EXPIRED: API key was previously valid but has expired (persisted in DB).
- * VERIFICATION_FAILED: Temporary server error during verification (not stored in DB).
+ * EXPIRED: API key was previously valid but has expired.
+ * VERIFICATION_FAILED: Temporary server error during verification (stored in user data cache).
  */
 define( 'RTGODAM_API_KEY_STATUS_VALID', 'valid' );
 define( 'RTGODAM_API_KEY_STATUS_EXPIRED', 'expired' );
@@ -66,7 +66,7 @@ function rtgodam_set_api_key_status( $status ) {
 }
 
 /**
- * Check if API key is in grace period (automatic verification should be skipped).
+ * Check if API key is in grace period (automatic verification should NOT be skipped yet).
  *
  * Grace period only applies to EXPIRED keys to reduce unnecessary verification attempts.
  * When an API key expires, we allow a grace period before stopping automatic checks.
@@ -548,13 +548,10 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		$previous_status  = rtgodam_get_api_key_status();
 		$has_existing_key = ! empty( $existing_api_key ) && $existing_api_key === $api_key;
 
-		if ( $has_existing_key && ( RTGODAM_API_KEY_STATUS_VALID === $previous_status || RTGODAM_API_KEY_STATUS_VERIFICATION_FAILED === $previous_status ) ) {
-			// Previously valid key (or temporarily unverifiable key) is now expired - preserve it and mark as expired.
-			rtgodam_mark_api_key_expired( RTGODAM_API_KEY_STATUS_EXPIRED );
+		if ( $has_existing_key && ( RTGODAM_API_KEY_STATUS_VALID === $previous_status ) ) {
+			// Previously saved key is expired - preserve it and mark as expired. This function will also check if it is already expired.
+			rtgodam_mark_api_key_expired();
 			// Key is already in DB, no need to save again.
-			return new \WP_Error( 'expired_api_key', $error_message, array( 'status' => 400 ) );
-		} elseif ( $has_existing_key && RTGODAM_API_KEY_STATUS_EXPIRED === $previous_status ) {
-			// Already expired - key is preserved, just return error.
 			return new \WP_Error( 'expired_api_key', $error_message, array( 'status' => 400 ) );
 		}
 
