@@ -36,13 +36,14 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 		 * Initialize the custom query with pagination variables.
 		 */
 		initialize() {
-			// Call parent initialize method.
-			wp.media.model.Query.prototype.initialize.apply( this, arguments );
-
+			// Initialize instance-specific properties first.
 			this._hasMore = true;
 			this._page = 1;
 			this._perPage = 40;
 			this.totalAttachments = 0;
+
+			// Call parent initialize method.
+			wp.media.model.Query.prototype.initialize.apply( this, arguments );
 		},
 
 		/**
@@ -73,9 +74,7 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 			options.remove = false;
 
 			// Trigger fetch and update internal state
-			return ( this._more = this.fetch( options ).done( () => {
-				this._page++;
-			} ) );
+			return ( this._more = this.fetch( options ) );
 		},
 
 		/**
@@ -115,6 +114,9 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 						if ( this._page === 1 && items.length === 0 ) {
 							this._hasMore = false;
 						}
+
+						// Increment page counter only on successful response.
+						this._page++;
 
 						options.success?.( items );
 
@@ -166,6 +168,18 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 						...options,
 					} );
 					queries.push( query );
+				} else {
+					// Reset internal pagination state when reusing a cached query,
+					// so each call to `get( props )` starts from a fresh pagination context.
+					if ( typeof query._page !== 'undefined' ) {
+						query._page = 1;
+					}
+					if ( typeof query._hasMore !== 'undefined' ) {
+						query._hasMore = true;
+					}
+					if ( typeof query.reset === 'function' ) {
+						query.reset();
+					}
 				}
 
 				return query;
