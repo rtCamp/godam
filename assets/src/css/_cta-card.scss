@@ -58,7 +58,7 @@ $cta-card-max-width-vertical: 400px !default;
     // Layout: Text Left, Image Right (Full Height)
     &.card-layout--text-imagecover {
         display: grid;
-        grid-template-columns: calc(100% - 1rem -var(--image-width, 50%)) var(--image-width, 50%);
+        grid-template-columns: calc(100% - 1rem - var(--image-width, 50%)) var(--image-width, 50%);
         gap: $cta-spacing-md;
 
         .godam-cta-card-image {
@@ -184,9 +184,12 @@ $cta-card-max-width-vertical: 400px !default;
 
     padding: $cta-spacing-md;
 
-    .godam-cta-card.card-layout--image-bottom &,
     .godam-cta-card.card-layout--image-top & {
         padding-top: 0;
+    }
+
+    .godam-cta-card.card-layout--image-bottom & {
+        padding-bottom: 0;
     }
 
     .godam-cta-card.card-layout--image-background & {
