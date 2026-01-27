@@ -332,10 +332,12 @@ class WC_Product_Video_Gallery {
 	/**
 	 * Saves the video gallery when a product is saved.
 	 *
-	 * It checks nonce and capability, then saves video urls and ids as meta in product.
-	 * After that, it checks each video attachment and adds the current product ID to the
-	 * '_video_parent_product_id' meta if it is not present yet. Then it removes the product
-	 * ID from any attachment that is not present in the current gallery.
+	 * Saving approach:
+	 * 1. Retrieves and sanitizes video URLs and attachment IDs from POST data
+	 * 2. Saves them to product meta
+	 * 3. Compares old vs new attachment IDs to determine what changed
+	 * 4. Adds product ID meta only to newly added attachments
+	 * 5. Removes product ID meta only from removed attachments
 	 *
 	 * @param int $post_id The ID of the post being saved.
 	 */
@@ -356,53 +358,45 @@ class WC_Product_Video_Gallery {
 			return;
 		}
 
+		// Step 1: Get and sanitize POST data.
 		$urls = isset( $_POST['rtgodam_product_video_gallery_urls'] )
 			? array_filter( array_map( 'esc_url_raw', wp_unslash( $_POST['rtgodam_product_video_gallery_urls'] ) ) )
 			: array();
 
-		$ids = isset( $_POST['rtgodam_product_video_gallery_ids'] )
+		$new_ids = isset( $_POST['rtgodam_product_video_gallery_ids'] )
 			? array_filter( array_map( 'intval', $_POST['rtgodam_product_video_gallery_ids'] ) )
 			: array();
 
-		$urls = apply_filters( 'rtgodam_product_gallery_save_video_gallery_urls', $urls, $post_id );
-		$ids  = apply_filters( 'rtgodam_product_gallery_save_video_gallery_ids', $ids, $post_id );
+		$urls    = apply_filters( 'rtgodam_product_gallery_save_video_gallery_urls', $urls, $post_id );
+		$new_ids = apply_filters( 'rtgodam_product_gallery_save_video_gallery_ids', $new_ids, $post_id );
 
-		// Save video urls and id as meta in product.
+		// Step 2: Get OLD attachment IDs before updating (for comparison).
+		$old_ids = get_post_meta( $post_id, '_rtgodam_product_video_gallery_ids', true );
+		$old_ids = is_array( $old_ids ) ? array_map( 'intval', $old_ids ) : array();
+
+		// Save video URLs and IDs as meta in product.
 		update_post_meta( $post_id, '_rtgodam_product_video_gallery', $urls );
-		update_post_meta( $post_id, '_rtgodam_product_video_gallery_ids', $ids );
+		update_post_meta( $post_id, '_rtgodam_product_video_gallery_ids', $new_ids );
 
 		$parent_meta_key = '_video_parent_product_id';
 
-		// Attach product‑ID meta on each attachment.
-		foreach ( $ids as $attachment_id ) {
+		// Step 3: Determine which attachments are NEW (added) and which are REMOVED.
+		$added_ids   = array_diff( $new_ids, $old_ids );
+		$removed_ids = array_diff( $old_ids, $new_ids );
+
+		// Step 4: Add product ID meta to newly added attachments only.
+		foreach ( $added_ids as $attachment_id ) {
 			$existing = get_post_meta( $attachment_id, $parent_meta_key, false );
 
-			// If the value is not present, create a new meta‑row.
+			// Avoid duplicate meta entries.
 			if ( ! in_array( $post_id, array_map( 'intval', $existing ), true ) ) {
 				add_post_meta( $attachment_id, $parent_meta_key, $post_id, false );
 			}
 		}
 
-		// Remove this product‑ID from any attachment **no longer** in gallery.
-		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
-		$prev_ids = get_posts(
-			array(
-				'post_type'      => 'attachment',
-				'posts_per_page' => -1,
-				'fields'         => 'ids',
-				'meta_query'     => array( // phpcs:ignore
-					array(
-						'key'   => $parent_meta_key,
-						'value' => $post_id,
-					),
-				),
-			)
-		);
-
-		foreach ( $prev_ids as $prev_id ) {
-			if ( ! in_array( $prev_id, $ids, true ) ) {
-				delete_post_meta( $prev_id, $parent_meta_key, $post_id );
-			}
+		// Step 5: Remove product ID meta from removed attachments only.
+		foreach ( $removed_ids as $attachment_id ) {
+			delete_post_meta( $attachment_id, $parent_meta_key, $post_id );
 		}
 
 		/**
@@ -412,7 +406,7 @@ class WC_Product_Video_Gallery {
 		 * @param array $urls    Saved video URLs.
 		 * @param array $ids     Saved video attachment IDs.
 		 */
-		do_action( 'rtgodam_product_gallery_after_save_video_gallery', $post_id, $urls, $ids );
+		do_action( 'rtgodam_product_gallery_after_save_video_gallery', $post_id, $urls, $new_ids );
 	}
 
 	/**
