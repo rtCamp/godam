@@ -51,7 +51,22 @@ export default class PlayerManager {
 	 */
 	init() {
 		this.initializeDisplayLayers();
-		this.videos.forEach( ( video ) => this.initializeVideo( video ) );
+
+		const initPromises = [];
+		this.videos.forEach( ( video ) => {
+			initPromises.push( this.initializeVideo( video ) );
+		} );
+
+		// Dispatch event when all players are initialized
+		Promise.allSettled( initPromises ).then( () => {
+			const allPlayersReadyEvent = new CustomEvent( 'godamAllPlayersReady', {
+				detail: {
+					players: window.GoDAMAPI ? window.GoDAMAPI.getAllPlayers() : [],
+				},
+			} );
+			document.dispatchEvent( allPlayersReadyEvent );
+		} );
+
 		this.initializeGlobalKeyboardHandler();
 		this.initializeAutoplayOnView();
 		this.initEngagement = engagement();
@@ -70,17 +85,18 @@ export default class PlayerManager {
 	 * Initialize individual video
 	 *
 	 * @param {HTMLElement} video - Video element to initialize
+	 * @return {Promise} Promise that resolves when initialization is complete
 	 */
 	initializeVideo( video ) {
 		// Skip if already initialized (prevents re-init by external observers)
 		if ( video.dataset.godamInitialized === '1' ) {
-			return;
+			return Promise.resolve();
 		}
 		video.dataset.godamInitialized = '1';
 
 		const playerInstance = new VideoPlayer( video, this.isDisplayingLayers );
 		// Handle async initialization (plugins loaded dynamically)
-		playerInstance.initialize().catch( ( error ) => {
+		return playerInstance.initialize().catch( ( error ) => {
 			// eslint-disable-next-line no-console
 			console.error( 'Failed to initialize video player:', error );
 		} );
@@ -369,10 +385,10 @@ export default class PlayerManager {
 	togglePlayPause( player ) {
 		if ( player.paused() ) {
 			player.play();
-			this.showIndicator( player.el(), 'play-indicator', '<i class="fa-solid fa-play"></i>' );
+			this.showIndicator( player.el(), 'play-indicator', '<span class="vjs-icon-placeholder vjs-icon-play" aria-hidden="true"></span>' );
 		} else {
 			player.pause();
-			this.showIndicator( player.el(), 'pause-indicator', '<i class="fa-solid fa-pause"></i>' );
+			this.showIndicator( player.el(), 'pause-indicator', '<span class="vjs-icon-placeholder vjs-icon-pause" aria-hidden="true"></span>' );
 		}
 	}
 

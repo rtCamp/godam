@@ -7,6 +7,10 @@
 
 namespace RTGODAM\Inc\Assets;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use RTGODAM\Inc\Traits\Singleton;
 
 /**
@@ -19,7 +23,7 @@ class Jetpack_Form_Assets {
 	 * Constructor register hooks if not already registered.
 	 *
 	 * @return void
-	 * @since n.e.x.t
+	 * @since 1.4.8
 	 */
 	protected function __construct() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
@@ -29,7 +33,7 @@ class Jetpack_Form_Assets {
 	 * Enqueue GoDAM specific jetpack script.
 	 *
 	 * @return void
-	 * @since n.e.x.t
+	 * @since 1.4.8
 	 */
 	public function enqueue_scripts() {
 		$rtgodam_jetpack_form_script_assets = include RTGODAM_PATH . 'assets/build/js/jetpack-form.min.asset.php';

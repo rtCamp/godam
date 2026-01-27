@@ -115,6 +115,10 @@ const VideoSettings = () => {
 								{ __( 'Choose GoDAM plan', 'godam' ) }
 							</Button>
 						</div>
+
+						<p className="text-sm text-gray-600 mt-3">
+							{ __( 'Start with GoDAM Free for 60 days, or plans starting from $9/mo.', 'godam' ) }
+						</p>
 					</PanelBody>
 				</Panel>
 			) }

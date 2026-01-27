@@ -362,24 +362,6 @@ function rtgodam_get_server_var( $server_key, $filter_type = FILTER_SANITIZE_FUL
 }
 
 /**
- * Check if API request should be blocked due to HTTP or localhost environment.
- *
- * @since n.e.x.t
- *
- * @return bool True if request should be blocked, false otherwise.
- */
-function rtgodam_should_block_api_request() {
-	// Check if current request is over HTTP (not HTTPS).
-	$is_http = ! is_ssl();
-
-	// Check if request is from localhost using existing helper function.
-	$is_localhost = rtgodam_is_local_environment();
-
-	// Block if either condition is met (HTTP OR localhost).
-	return $is_http || $is_localhost;
-}
-
-/**
  * Helper function to verify the api key.
  *
  * @param string $api_key The api key to verify.
@@ -393,12 +375,12 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 	}
 
 	// Check if request should be blocked due to HTTP or localhost environment.
-	if ( rtgodam_should_block_api_request() ) {
+	if ( rtgodam_is_local_environment() ) {
 		// Check if RTGODAM_API_KEY constant is defined in wp-config.php.
 		if ( ! defined( 'RTGODAM_API_KEY' ) ) {
 			return new \WP_Error(
 				'localhost_blocked',
-				__( 'API key verification is blocked for HTTP connections or localhost environments. To use production API keys on localhost, please add the following constant to your wp-config.php file: define(\'RTGODAM_API_KEY\', \'your-api-key-here\');', 'godam' ),
+				__( 'API key verification is blocked for localhost environments. To use production API keys on localhost, please add the following constant to your wp-config.php file: define(\'RTGODAM_API_KEY\', \'your-api-key-here\');', 'godam' ),
 				array( 'status' => 403 )
 			);
 		}
@@ -457,6 +439,19 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 	if ( 200 === $status_code && isset( $body['message']['account_token'] ) ) {
 
 		$account_token = $body['message']['account_token'];
+
+		// Enable PostHog tracking once API key is activated or plugin is updated with active API key.
+		$settings = get_option( 'rtgodam-settings', array() );
+		if ( $save || empty( $settings['general']['posthog_initialized'] ) ) {
+			$settings['general']['enable_posthog_tracking'] = true;
+			$settings['general']['posthog_initialized']     = true;
+			update_option( 'rtgodam-settings', $settings );
+		} elseif ( ! empty( $settings['general']['posthog_initialized'] ) && ! $settings['general']['enable_posthog_tracking'] && $save ) {
+			// If user previously opted out but is now activating an API key, re-enable tracking.
+			$settings['general']['enable_posthog_tracking'] = true;
+			update_option( 'rtgodam-settings', $settings );
+		}
+
 		if ( $save ) {
 			// Save the API key in the site options only if it is verified.
 			update_option( 'rtgodam-api-key', $api_key );

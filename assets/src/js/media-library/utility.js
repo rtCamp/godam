@@ -91,7 +91,7 @@ async function addManageMediaButton() {
 					},
 				} );
 			const result = await response.json();
-			if ( 'success' === result?.status && null !== result?.data?.message?.folder_id ) {
+			if ( 'success' === result?.status && false !== result?.data && null !== result?.data?.message?.folder_id ) {
 				const mediaUrl = `${ godamMediaLink }?page=1&viewMode=grid&tab=Folder&folder=${ result?.data?.message?.folder_id }`;
 				button.href = mediaUrl;
 			}

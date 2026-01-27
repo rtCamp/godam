@@ -29,3 +29,5 @@ README.md
 wp-assets/
 bin/
 .husky/
+.packagejsonignore
+.distignore

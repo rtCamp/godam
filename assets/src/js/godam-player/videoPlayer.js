@@ -48,12 +48,17 @@ export default class GodamVideoPlayer {
 		// Mark as initializing to prevent double initialization
 		this.video.dataset.videojsInitializing = 'true';
 
-		this.setupVideoElement();
-		await this.loadRequiredPlugins();
-		this.initializePlayer();
-
-		// Remove initializing flag after initialization
-		delete this.video.dataset.videojsInitializing;
+		try {
+			this.setupVideoElement();
+			await this.loadRequiredPlugins();
+			this.initializePlayer();
+		} finally {
+			// Remove initializing flag after initialization
+			delete this.video.dataset.videojsInitializing;
+			if ( this.video.parentElement ) {
+				delete this.video.parentElement.dataset.videojsInitializing;
+			}
+		}
 	}
 
 	/**
@@ -144,7 +149,13 @@ export default class GodamVideoPlayer {
 
 		if ( isInModal ) {
 			const aspectRatio = window.innerWidth < 420 ? '9:16' : '16:9';
-			this.player.aspectRatio( aspectRatio );
+			// Check if aspect ratio is valid x:y format
+			if ( ! /^\d+:\d+$/.test( aspectRatio ) ) {
+				// eslint-disable-next-line no-console
+				console.warn( `Invalid aspect ratio format: "${ aspectRatio }". Falling back to "16:9".` );
+			} else {
+				this.player.aspectRatio( aspectRatio );
+			}
 		}
 	}
 
@@ -184,7 +195,13 @@ export default class GodamVideoPlayer {
 
 		if ( ! isInModal ) {
 			const aspectRatio = this.configManager.videoSetupOptions?.aspectRatio || '16:9';
-			this.player.aspectRatio( aspectRatio );
+			// Check if aspect ratio is valid x:y format
+			if ( ! /^\d+:\d+$/.test( aspectRatio ) ) {
+				// eslint-disable-next-line no-console
+				console.warn( `Invalid aspect ratio format: "${ aspectRatio }". Falling back to "16:9".` );
+			} else {
+				this.player.aspectRatio( aspectRatio );
+			}
 		}
 	}
 
@@ -234,6 +251,7 @@ export default class GodamVideoPlayer {
 			onPlayerConfigurationSetup: () => this.controlsManager.setupPlayerConfiguration(),
 			onTimeUpdate: ( currentTime ) => this.handleTimeUpdate( currentTime ),
 			onFullscreenChange: () => this.layersManager.handleFullscreenChange(),
+			onVideoResize: () => this.layersManager.handleVideoResize(),
 			onPlay: () => this.layersManager.handlePlay(),
 			onControlsMove: () => this.controlsManager.moveVideoControls(),
 		} );

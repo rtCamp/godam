@@ -4,13 +4,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
+import { PostHogProvider } from '@posthog/react';
 
 /**
  * Internal dependencies
  */
 import store from './redux/store';
 import { resetUIState } from './redux/slice/folders';
+import { triggerFilterChange } from './data/media-grid.js';
 import App from './App';
+import posthog from '../utils/posthog';
 import './index.scss';
 
 /**
@@ -35,9 +38,11 @@ import './index.scss';
 
 const Index = () => {
 	return (
-		<Provider store={ store }>
-			<App />
-		</Provider>
+		<PostHogProvider client={ posthog }>
+			<Provider store={ store }>
+				<App />
+			</Provider>
+		</PostHogProvider>
 	);
 };
 
@@ -79,6 +84,9 @@ function setupMediaModalCloseDetection() {
 
 							// Media modal was closed, reset React state
 							store.dispatch( resetUIState() );
+
+							// Also trigger WordPress media filter change to sync
+							triggerFilterChange( 'all' );
 						// Also check if it contains media modal children
 						} else if ( node.querySelector && node.querySelector( '.media-modal' ) ) {
 							// Clean up any React roots in child modals
@@ -95,6 +103,9 @@ function setupMediaModalCloseDetection() {
 							} );
 
 							store.dispatch( resetUIState() );
+
+							// Also trigger WordPress media filter change to sync
+							triggerFilterChange( 'all' );
 						}
 					}
 				} );
@@ -116,6 +127,9 @@ function setupMediaModalCloseDetection() {
 		// If modal count decreased, a modal was closed
 		if ( currentModalCount < lastModalCount ) {
 			store.dispatch( resetUIState() );
+
+			// Also trigger WordPress media filter change to sync
+			triggerFilterChange( 'all' );
 		}
 
 		lastModalCount = currentModalCount;
@@ -146,6 +160,9 @@ function setupMediaModalCloseDetection() {
 
 				// Reset React state after modal closes
 				store.dispatch( resetUIState() );
+
+				// Also trigger WordPress media filter change to sync
+				triggerFilterChange( 'all' );
 			}, 100 ); // Small delay to ensure modal is fully closed
 
 			return result;

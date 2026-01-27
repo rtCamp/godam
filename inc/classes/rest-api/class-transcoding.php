@@ -7,6 +7,8 @@
 
 namespace RTGODAM\Inc\REST_API;
 
+use RTGODAM\Inc\Media_Library_Ajax;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -113,6 +115,25 @@ class Transcoding extends Base {
 					'permission_callback' => function () {
 						return current_user_can( 'edit_others_posts' );
 					},
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/check-transcoded-status/',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'check_transcoded_status' ),
+					'permission_callback' => function () {
+						return current_user_can( 'edit_others_posts' );
+					},
+					'args'                => array(
+						'ids' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'description'       => __( 'The comma-separated string of attachment IDs to check.', 'godam' ),
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+					),
 				),
 			),
 		);
@@ -240,7 +261,7 @@ class Transcoding extends Base {
 		$thumbnail_id = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 
 		// Handle retry logic for missing thumbnails when transcoding is complete.
-		if ( 'Transcoded' === $status && empty( $thumbnail_id ) ) {
+		if ( 'transcoded' === strtolower( $status ) && empty( $thumbnail_id ) ) {
 			$retry_count = intval( get_post_meta( $attachment_id, 'rtgodam_thumbnail_retry_count', true ) );
 			$max_retries = 3;
 
@@ -332,6 +353,28 @@ class Transcoding extends Base {
 	 * @return WP_REST_Response
 	 */
 	public function get_media_require_retranscoding( $request ) {
+		// Check if storage limits are exceeded (only storage blocks transcoding).
+		$user_data = rtgodam_get_user_data();
+		if ( ! empty( $user_data ) && isset( $user_data['storage_used'], $user_data['total_storage'] ) ) {
+			$storage_exceeded = $user_data['storage_used'] > $user_data['total_storage'];
+
+			if ( $storage_exceeded ) {
+				return new \WP_REST_Response(
+					array(
+						'data'              => array(),
+						'total_media_count' => array_sum( (array) wp_count_attachments( 'video' ) ),
+						'storage_exceeded'  => true,
+						'message'           => sprintf(
+							// translators: %s is the storage usage percentage.
+							__( 'Storage limit exceeded (%s%%). Retranscoding is currently blocked. Please upgrade your plan to continue.', 'godam' ),
+							number_format( ( $user_data['storage_used'] / max( 1, $user_data['total_storage'] ) ) * 100, 1 )
+						),
+					),
+					200
+				);
+			}
+		}
+
 		$all_posts = array();
 		$paged     = 1;
 		$per_page  = 200;
@@ -370,10 +413,75 @@ class Transcoding extends Base {
 			}
 		} while ( true );
 
+		// Get counts for transcoded and untranscoded media.
+		$total_video_count = array_sum( (array) wp_count_attachments( 'video' ) );
+
+		// Count transcoded media (have rtgodam_transcoded_url meta).
+		$transcoded_args  = array(
+			'post_type'      => 'attachment',
+			'post_mime_type' => 'video',
+			'post_status'    => 'any',
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- This is a necessary query to find posts that have the rtgodam_transcoded_url meta.
+			'meta_query'     => array(
+				array(
+					'key'     => 'rtgodam_transcoded_url',
+					'compare' => 'EXISTS',
+				),
+			),
+		);
+		$transcoded_query = new \WP_Query( $transcoded_args );
+		$transcoded_count = $transcoded_query->found_posts; // This will return the number of posts that have the rtgodam_transcoded_url meta.
+
+		// Count untranscoded media (don't have rtgodam_transcoded_url meta).
+		$untranscoded_count = $total_video_count - $transcoded_count;
+
 		return new \WP_REST_Response(
 			array(
 				'data'              => $all_posts,
-				'total_media_count' => array_sum( (array) wp_count_attachments( 'video' ) ),
+				'total_media_count' => $total_video_count,
+				'transcode_count'   => $untranscoded_count,
+				'retranscode_count' => $transcoded_count,
+			),
+			200
+		);
+	}
+
+	/**
+	 * Check if specific media IDs are transcoded.
+	 *
+	 * @param \WP_REST_Request $request REST request object.
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public function check_transcoded_status( $request ) {
+		$ids_param = $request->get_param( 'ids' );
+
+		// If it's a string (comma-separated), split it into array.
+		if ( is_string( $ids_param ) ) {
+			$attachment_ids = array_map( 'intval', explode( ',', $ids_param ) );
+		} else {
+			$attachment_ids = array_map( 'intval', (array) $ids_param );
+		}
+
+		$transcode_count   = 0;
+		$retranscode_count = 0;
+
+		foreach ( $attachment_ids as $attachment_id ) {
+			$transcoded_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+			// If transcoded, it should have URL.
+			if ( ! empty( $transcoded_url ) ) {
+				++$retranscode_count;
+			} else {
+				++$transcode_count;
+			}
+		}
+
+		return new \WP_REST_Response(
+			array(
+				'transcode_count'   => $transcode_count,
+				'retranscode_count' => $retranscode_count,
 			),
 			200
 		);
@@ -427,7 +535,7 @@ class Transcoding extends Base {
 		if ( ! empty( $godam_original_id ) ) {
 			$message = sprintf(
 				// translators: 1: Attachment title, 2: Attachment ID.
-				__( '%1$s (ID %2$d) is virtual media from GoDAM Central. Please retranscode this video on GoDAM Central.', 'godam' ),
+				__( '%1$s (ID %2$d) is virtual media from GoDAM Central. Please retranscode this media on GoDAM Central.', 'godam' ),
 				esc_html( $title ),
 				absint( $attachment_id )
 			);
@@ -462,6 +570,31 @@ class Transcoding extends Base {
 			);
 		}
 
+		// Check if storage limits are exceeded (only storage blocks transcoding).
+		$user_data = rtgodam_get_user_data();
+		if ( ! empty( $user_data ) && isset( $user_data['storage_used'], $user_data['total_storage'] ) ) {
+			$storage_exceeded = $user_data['storage_used'] > $user_data['total_storage'];
+
+			if ( $storage_exceeded ) {
+				$message = sprintf(
+					// translators: 1: Attachment title, 2: Attachment ID, 3: storage usage percent.
+					__( '%1$s (ID %2$d) cannot be retranscoded. Storage limit exceeded (%3$s%%). Please upgrade your plan to continue transcoding.', 'godam' ),
+					esc_html( $title ),
+					absint( $attachment_id ),
+					number_format( ( $user_data['storage_used'] / max( 1, $user_data['total_storage'] ) ) * 100, 1 )
+				);
+
+				return new \WP_REST_Response(
+					array(
+						'message' => $message,
+						'skipped' => true,
+						'reason'  => 'storage_exceeded',
+					),
+					200
+				);
+			}
+		}
+
 		// Proceed with normal retranscoding for original media.
 		delete_post_meta( $attachment_id, 'rtgodam_transcoding_status' );
 		delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg' );
@@ -472,8 +605,13 @@ class Transcoding extends Base {
 		$wp_metadata['mime_type'] = $mime_type;
 
 		// Retranscode the media.
-		$transcoder = new \RTGODAM_Transcoder_Handler( true );
-		$transcoder->wp_media_transcoding( $wp_metadata, $attachment_id );
+		if ( preg_match( '/image/i', $mime_type ) ) {
+			$transcoder = Media_Library_Ajax::get_instance();
+			$transcoder->upload_media_to_frappe_backend( $attachment_id, true );
+		} else {
+			$transcoder = new \RTGODAM_Transcoder_Handler( true );
+			$transcoder->wp_media_transcoding( $wp_metadata, $attachment_id, true, true );
+		}
 
 		// Check if the transcoding job ID is set.
 		$is_sent = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );

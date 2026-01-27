@@ -15,12 +15,17 @@ import godamLogo from '../../../assets/src/images/godam-logo.png';
 
 const GodamHeader = () => {
 	const helpLink = window.godamRestRoute?.apiBase + '/helpdesk';
-	const upgradePlanLink = window.godamRestRoute?.apiBase + '/subscription/plans';
+	const upgradePlanLink = window.godamRestRoute?.apiBase + '/web/billing?tab=Plans';
 	const pricingLink = `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=header`;
 	const godamMediaLink = window.godamRestRoute?.apiBase + '/web/media-library';
 	const [ mediaLink, setMediaLink ] = useState( godamMediaLink );
 
 	useEffect( () => {
+		// Only fetch site data if there's a valid API key
+		if ( ! window?.userData?.validApiKey ) {
+			return;
+		}
+
 		const fetchMediaLink = async () => {
 			try {
 				const response = await apiFetch(
@@ -47,10 +52,10 @@ const GodamHeader = () => {
 		<header>
 			<div className="godam-settings-header border-b -ml-[32px] pl-[32px] bg-white">
 				<div className="godam-settings-header-content max-w-[1440px] mx-auto pl-4 pr-6 flex items-center justify-between">
-					<div className="py-6 m-0 text-4xl leading-4 font-semibold text-slate-900 flex items-end">
+					<div className="py-6 m-0 text-4xl leading-4 font-semibold text-slate-900 flex items-end max-[410px]:flex-col max-[410px]:items-center max-[410px]:gap-1">
 						<img className="h-8 sm:h-9 md:h-12" src={ godamLogo } alt={ __( 'GoDAM Logo', 'godam' ) } />
 						<div className="ml-3">
-							<div className="text-xs font-normal leading-4">{ `v${ window?.pluginInfo?.version }` }</div>
+							<div className="text-xs font-normal leading-4 max-[410px]:text-center">{ `v${ window?.pluginInfo?.version }` }</div>
 							{
 								window?.userData?.userApiData?.active_plan &&
 								<div className="text-xs font-bold py-[2px] px-2 rounded bg-indigo-100 mt-1">{ window?.userData?.userApiData?.active_plan }</div>
