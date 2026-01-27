@@ -13,7 +13,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { hasValidAPIKey } from '../../../utils';
+import { hasAPIKey } from '../../../utils';
 
 const VideoWatermark = ( { handleSettingChange } ) => {
 	const useImage = useSelector( ( state ) => state.mediaSettings.video.use_watermark_image );
@@ -102,7 +102,7 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 								handleSettingChange( 'watermark', value );
 								setNotice( { ...notice, isVisible: false } );
 							} }
-							disabled={ ! hasValidAPIKey }
+							disabled={ ! hasAPIKey }
 							help={ __(
 								'If enabled, GoDAM will add a watermark to the transcoded video',
 								'godam',
