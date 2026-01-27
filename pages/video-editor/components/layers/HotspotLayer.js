@@ -569,10 +569,11 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 								onClick={ () => setExpandedHotspotIndex( index ) }
 								className="hotspot circle"
 								style={ {
-									backgroundColor: hotspot.icon ? 'white' : hotspot.backgroundColor || '#0c80dfa6',
+									backgroundColor: ( hotspot.icon || hotspot.customIconUrl ) ? 'white' : hotspot.backgroundColor || '#0c80dfa6',
 								} }
 							>
-								<div className={ `hotspot-content flex items-center justify-center ${ ! hotspot.icon ? 'no-icon' : '' }` }>
+								<div className={ `hotspot-content flex items-center justify-center ${ ! ( hotspot.icon || hotspot.customIconUrl ) ? 'no-icon' : '' }` }>
+									{ /* eslint-disable-next-line no-nested-ternary -- as we are using ternary operator */ }
 									{ hotspot.icon ? (
 										<FontAwesomeIcon
 											icon={ [ 'fas', hotspot.icon ] }
@@ -581,6 +582,20 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 												width: '50%',
 												height: '50%',
 												color: '#000',
+											} }
+										/>
+									) : hotspot.customIconUrl ? (
+										<img
+											src={ hotspot.customIconUrl }
+											alt={ __( 'Custom Icon', 'godam' ) }
+											className="pointer-events-none"
+											style={ {
+												width: '50%',
+												height: '50%',
+												objectFit: 'contain',
+											} }
+											onError={ ( event ) => {
+												event.currentTarget.style.display = 'none';
 											} }
 										/>
 									) : null }
