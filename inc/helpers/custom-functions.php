@@ -441,7 +441,7 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	 * Example usage:
 	 * add_filter( 'godam_auto_transcode_on_upload', '__return_false' ); // Disable globally
 	 *
-	 * @since n.e.x.t
+	 * @since 1.5.0
 	 *
 	 * @param bool $auto_transcode_on_upload Whether to automatically transcode form uploads. Default true.
 	 */
@@ -524,12 +524,13 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	$site_url     = get_site_url();
 
 	// Get author name with fallback to username.
-	$author_first_name = $current_user->first_name;
-	$author_last_name  = $current_user->last_name;
+	$author_first_name = $current_user->first_name ?? '';
+	$author_last_name  = $current_user->last_name ?? '';
+	$author_email      = $current_user->user_email ?? '';
 
 	// If first and last names are empty, use username as fallback.
 	if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
-		$author_first_name = $current_user->user_login;
+		$author_first_name = $current_user->user_login ?? '';
 	}
 
 	$body = array_merge(
@@ -547,7 +548,7 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 			'watermark'            => boolval( $rtgodam_watermark ),
 			'resolutions'          => array( 'auto' ),
 			'folder_name'          => ! empty( $form_title ) ? $form_title : __( 'Gravity forms', 'godam' ),
-			'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $current_user->user_email, 0 ),
+			'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $author_email, 0 ),
 			'wp_site'              => $site_url,
 			'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, 0 ),
 			'wp_author_last_name'  => apply_filters( 'godam_author_last_name_to_send', $author_last_name, 0 ),
@@ -889,7 +890,7 @@ function godam_preview_page_content( $video_id ) {
 /**
  * Get post id from meta key and value.
  * 
- * @since n.e.x.t
+ * @since 1.5.0
  *
  * @param string $key   Meta key.
  * @param mixed  $value Meta value.
@@ -925,7 +926,7 @@ function rtgodam_get_post_id_by_meta_key_and_value( $key, $value ) {
  * @param int  $video_id The ID of the video attachment to embed.
  * @param bool $show_engagements Whether to show engagements.
  *
- * @since n.e.x.t
+ * @since 1.5.0
  *
  * @return string The generated HTML content for the video embed page.
  */

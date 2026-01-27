@@ -7,6 +7,10 @@
  * @since 1.3.0
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 // Check if the field is not a video field.
 if ( ! isset( $field['type'] ) || 'godam_record' !== $field['type'] ) {
 	return;

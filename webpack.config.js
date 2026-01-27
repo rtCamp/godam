@@ -279,6 +279,13 @@ const ninjaForms = {
 	},
 };
 
+const ninjaFormsSubmissionsList = {
+	...sharedConfig,
+	entry: {
+		'ninja-forms-submissions-list': path.resolve( process.cwd(), 'assets', 'src', 'js', 'ninja-forms', 'ninja-forms-submissions-list.js' ),
+	},
+};
+
 const blockExtensions = {
 	...sharedConfig,
 	entry: {
@@ -382,5 +389,6 @@ module.exports = [
 	lifterLMSBlock,
 	lifterLMSEmbed,
 	ninjaForms,
+	ninjaFormsSubmissionsList,
 	blockExtensions,
 ];
