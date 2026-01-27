@@ -182,7 +182,6 @@ class Module {
 		$components['woo'] = 'WoocommerceLayer';
 		return $components;
 	}
-
 }
 
 // Initialize the module.

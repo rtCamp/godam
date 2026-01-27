@@ -21,6 +21,13 @@ class WC_Product_Video_Gallery {
 	use Singleton;
 
 	/**
+	 * Holds the utility instance.
+	 *
+	 * @var WC_Utility
+	 */
+	private $utility_instance;
+
+	/**
 	 * Constructor method.
 	 *
 	 * Registers hooks for adding a meta box, saving video gallery data, enqueuing
@@ -36,6 +43,11 @@ class WC_Product_Video_Gallery {
 		add_action( 'delete_attachment', array( $this, 'on_attachment_deleted' ) );
 		add_action( 'before_delete_post', array( $this, 'on_product_deleted' ) );
 		add_filter( 'get_user_option_meta-box-order_product', array( $this, 'place_below_wc_gallery' ) );
+
+		// Initialize the Utility Helper class.
+		$this->utility_instance = WC_Utility::get_instance();
+
+		add_filter( 'wp_kses_allowed_html', array( $this, 'allow_svg_on_wp_kses' ), 10, 2 );
 	}
 
 	/**
@@ -753,5 +765,28 @@ class WC_Product_Video_Gallery {
 				<?php
 			}
 		}
+	}
+
+	/**
+	 * Allows SVG tags and attributes in WordPress KSES sanitization for post content.
+	 *
+	 * This function extends the default set of allowed HTML elements when WordPress
+	 * sanitizes content using `wp_kses()` in the `post` context. It merges additional
+	 * SVG-specific tags and attributes (provided by `svg_args_on_wp_kses()`) into the
+	 * existing allowed elements array, enabling safe usage of inline SVGs in posts.
+	 *
+	 * @param array  $allowed The current array of allowed HTML tags and attributes.
+	 * @param string $context The context in which KSES is applied (e.g., 'post', 'data', 'user').
+	 *
+	 * @return array The modified array of allowed tags and attributes including SVG support.
+	 */
+	public function allow_svg_on_wp_kses( $allowed, $context ) {
+
+		if ( 'post' === $context ) {
+			$svg_args = $this->utility_instance->svg_args_on_wp_kses();
+			$allowed  = array_merge( $allowed, $svg_args );
+		}
+
+		return $allowed;
 	}
 }

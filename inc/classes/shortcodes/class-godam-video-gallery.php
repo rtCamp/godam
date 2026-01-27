@@ -38,7 +38,7 @@ class GoDAM_Video_Gallery {
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-gallery.css' )
 		);
 
-		$asset_file = RTGODAM_PATH . 'assets/build/js/godam-gallery.min.asset.php';
+		$asset_file                  = RTGODAM_PATH . 'assets/build/js/godam-gallery.min.asset.php';
 		$godam_gallery_script_assets = array(
 			'dependencies' => array(),
 			'version'      => RTGODAM_VERSION,
@@ -49,7 +49,10 @@ class GoDAM_Video_Gallery {
 			if ( is_array( $maybe_asset ) ) {
 				$godam_gallery_script_assets = wp_parse_args(
 					$maybe_asset,
-					array( 'dependencies' => array(), 'version' => RTGODAM_VERSION )
+					array(
+						'dependencies' => array(),
+						'version'      => RTGODAM_VERSION,
+					)
 				);
 			}
 		}

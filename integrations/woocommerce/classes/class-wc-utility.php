@@ -85,4 +85,178 @@ class WC_Utility {
 			<path fill="url(#partialGradient)" d="M12 .587l3.668 7.568L24 9.423l-6 5.858L19.335 24 12 20.01 4.665 24l1.335-8.719-6-5.858 8.332-1.268z"/>
 		</svg>';
 	}
+
+	/**
+	 * Returns the list of allowed SVG tags and attributes for use with wp_kses().
+	 *
+	 * This method defines a whitelist of commonly used and safe SVG elements and
+	 * their permitted attributes so that inline SVG markup can pass through
+	 * WordPress KSES sanitization (e.g., when used in post content or block output).
+	 *
+	 * The returned array is intended to be merged with the existing allowed HTML
+	 * tags via the `wp_kses_allowed_html` filter.
+	 *
+	 * @return array An associative array of SVG elements and their allowed attributes.
+	 */
+	public function svg_args_on_wp_kses() {
+		$svg_args = array(
+			'svg'            => array(
+				'class'           => true,
+				'aria-hidden'     => true,
+				'aria-labelledby' => true,
+				'role'            => true,
+				'xmlns'           => true,
+				'width'           => true,
+				'height'          => true,
+				'viewbox'         => true, // <= Must be lower case!
+				'fill'            => true,
+				'stroke'          => true,
+				'stroke-width'    => true,
+				'stroke-linecap'  => true,
+				'stroke-linejoin' => true,
+			),
+			'g'              => array(
+				'fill'            => true,
+				'stroke'          => true,
+				'stroke-width'    => true,
+				'stroke-linecap'  => true,
+				'stroke-linejoin' => true,
+			),
+			'title'          => array( 'title' => true ),
+			'path'           => array(
+				'd'               => true,
+				'fill'            => true,
+				'stroke'          => true,
+				'stroke-width'    => true,
+				'stroke-linecap'  => true,
+				'stroke-linejoin' => true,
+				'transform'       => true,
+			),
+			'rect'           => array(
+				'x'            => true,
+				'y'            => true,
+				'width'        => true,
+				'height'       => true,
+				'rx'           => true,
+				'ry'           => true,
+				'fill'         => true,
+				'stroke'       => true,
+				'stroke-width' => true,
+			),
+			'circle'         => array(
+				'cx'           => true,
+				'cy'           => true,
+				'r'            => true,
+				'fill'         => true,
+				'stroke'       => true,
+				'stroke-width' => true,
+			),
+			'ellipse'        => array(
+				'cx'           => true,
+				'cy'           => true,
+				'rx'           => true,
+				'ry'           => true,
+				'fill'         => true,
+				'stroke'       => true,
+				'stroke-width' => true,
+			),
+			'line'           => array(
+				'x1'           => true,
+				'y1'           => true,
+				'x2'           => true,
+				'y2'           => true,
+				'stroke'       => true,
+				'stroke-width' => true,
+			),
+			'polyline'       => array(
+				'points'       => true,
+				'fill'         => true,
+				'stroke'       => true,
+				'stroke-width' => true,
+			),
+			'polygon'        => array(
+				'points'       => true,
+				'fill'         => true,
+				'stroke'       => true,
+				'stroke-width' => true,
+			),
+			'text'           => array(
+				'x'           => true,
+				'y'           => true,
+				'dx'          => true,
+				'dy'          => true,
+				'text-anchor' => true,
+				'fill'        => true,
+				'stroke'      => true,
+				'font-size'   => true,
+				'font-family' => true,
+				'font-weight' => true,
+			),
+			'tspan'          => array(
+				'x'  => true,
+				'y'  => true,
+				'dx' => true,
+				'dy' => true,
+			),
+			'defs'           => array(),
+			'linearGradient' => array(
+				'id'            => true,
+				'x1'            => true,
+				'y1'            => true,
+				'x2'            => true,
+				'y2'            => true,
+				'gradientUnits' => true,
+			),
+			'radialGradient' => array(
+				'id'            => true,
+				'cx'            => true,
+				'cy'            => true,
+				'r'             => true,
+				'fx'            => true,
+				'fy'            => true,
+				'gradientUnits' => true,
+			),
+			'stop'           => array(
+				'offset'       => true,
+				'stop-color'   => true,
+				'stop-opacity' => true,
+			),
+			'use'            => array(
+				'href'       => true,
+				'xlink:href' => true,
+				'x'          => true,
+				'y'          => true,
+				'width'      => true,
+				'height'     => true,
+			),
+			'symbol'         => array(
+				'id'      => true,
+				'viewBox' => true,
+			),
+			'clipPath'       => array(
+				'id' => true,
+			),
+			'mask'           => array(
+				'id' => true,
+			),
+			'pattern'        => array(
+				'id'           => true,
+				'x'            => true,
+				'y'            => true,
+				'width'        => true,
+				'height'       => true,
+				'patternUnits' => true,
+			),
+			'image'          => array(
+				'href'       => true,
+				'xlink:href' => true,
+				'x'          => true,
+				'y'          => true,
+				'width'      => true,
+				'height'     => true,
+			),
+		);
+
+		return $svg_args;
+	}
 }
