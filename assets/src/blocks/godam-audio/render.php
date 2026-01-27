@@ -15,7 +15,7 @@ $godam_caption       = ! empty( $attributes['caption'] ) ? $attributes['caption'
 $godam_autoplay      = ! empty( $attributes['autoplay'] ) ? 'autoplay' : '';
 $godam_loop          = ! empty( $attributes['loop'] ) ? 'loop' : '';
 $godam_preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'metadata';
-
+$godam_css_class     = ! empty( $attributes['css_class'] ) ? esc_attr( $attributes['css_class'] ) : '';
 
 if ( ! $godam_attachment_id && empty( $godam_src ) ) {
 	return;
@@ -34,10 +34,12 @@ if ( ! $godam_attachment_id && ! empty( $godam_src ) ) {
 	}
 }
 
+$godam_block_wrapper_attributes = get_block_wrapper_attributes();
+$godam_css_classes              = trim( $godam_block_wrapper_attributes . ' ' . $godam_css_class );
 ?>
 
-<figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>>
-	<audio controls <?php echo esc_attr( $godam_autoplay ); ?> <?php echo esc_attr( $godam_loop ); ?> preload="<?php echo esc_attr( $godam_preload ); ?>">
+<figure <?php echo wp_kses_data( get_block_wrapper_attributes( array( 'class' => $godam_css_classes ) ) ); ?>>
+	<audio style="display: block; width: 100%;" controls <?php echo esc_attr( $godam_autoplay ); ?> <?php echo esc_attr( $godam_loop ); ?> preload="<?php echo esc_attr( $godam_preload ); ?>">
 		<?php if ( ! empty( $godam_primary_audio ) ) : ?>
 			<source src="<?php echo esc_url( $godam_primary_audio ); ?>" type="audio/mpeg" />
 		<?php endif; ?>
