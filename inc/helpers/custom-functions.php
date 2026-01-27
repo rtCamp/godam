@@ -200,13 +200,13 @@ function rtgodam_image_cta_html( $layer ) {
 	// Generate content element.
 	$content_element = '
 		<div class="godam-cta-card-content">
-			' . ( ! empty( $image_text ) ? "<h1 class=\"card-title\">{$image_text}</h1>" : '' ) . '
+			' . ( ! empty( $image_text ) ? "<h2 class=\"card-title\">{$image_text}</h2>" : '' ) . '
 			' . ( ! empty( $image_description ) ? "<p class=\"card-description\">{$image_description}</p>" : '' );
 
 	if ( ! empty( $cta_button_text ) || ! empty( $image_link ) ) {
 		$content_element .= "
 			<div class=\"btns\">
-				<a class=\"godam-cta-btn\" href=\"{$image_link}\" target=\"_blank\" style=\"background-color: {$cta_background_color}; text-decoration: none;\">
+				<a class=\"godam-cta-btn\" href=\"{$image_link}\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"background-color: {$cta_background_color}; text-decoration: none;\">
 					{$cta_button_text}
 				</a>
 			</div>";

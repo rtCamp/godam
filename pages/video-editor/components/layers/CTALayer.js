@@ -141,7 +141,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 		// Content element component
 		const contentElement = (
 			<div className="godam-cta-card-content">
-				{ layer?.imageText && <h1 className="card-title">{ layer.imageText }</h1> }
+				{ layer?.imageText && <h2 className="card-title">{ layer.imageText }</h2> }
 				{ layer?.imageDescription && <p className="card-description">{ layer.imageDescription }</p> }
 				{ ( layer?.imageCtaButtonText || layer?.imageLink ) && (
 					<div className="btns">
@@ -150,7 +150,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 							href={ layer?.imageLink || '#' }
 							target="_blank"
 							rel="noreferrer"
-							style={ { backgroundColor: layer?.imageCtaButtonColor ?? '#000', textDecoration: 'none' } }
+							style={ { backgroundColor: layer?.imageCtaButtonColor ?? '#000000', textDecoration: 'none' } }
 						>
 							{ layer?.imageCtaButtonText || __( 'Check now', 'godam' ) }
 						</a>
