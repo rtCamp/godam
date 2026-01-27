@@ -205,6 +205,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					displayTime: currentTime,
 					type,
 					cta_type: 'image',
+					cardLayout: 'card-layout--imagecover-text',
 					text: '',
 					html: '',
 					link: '',

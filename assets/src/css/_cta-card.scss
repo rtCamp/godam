@@ -58,7 +58,7 @@ $cta-card-max-width-vertical: 400px !default;
     // Layout: Text Left, Image Right (Full Height)
     &.card-layout--text-imagecover {
         display: grid;
-        grid-template-columns: calc(100% - var(--image-width, 50%)) var(--image-width, 50%);
+        grid-template-columns: calc(100% - 1rem -var(--image-width, 50%)) var(--image-width, 50%);
         gap: $cta-spacing-md;
 
         .godam-cta-card-image {
@@ -69,7 +69,7 @@ $cta-card-max-width-vertical: 400px !default;
     // Layout: Image Left, Text Right (Full Height)
     &.card-layout--imagecover-text {
         display: grid;
-        grid-template-columns: var(--image-width, 50%) calc(100% - var(--image-width, 50%));
+        grid-template-columns: var(--image-width, 50%) calc(100% - 1rem - var(--image-width, 50%));
         gap: $cta-spacing-md;
 
         .godam-cta-card-image {
@@ -81,7 +81,7 @@ $cta-card-max-width-vertical: 400px !default;
     // Layout: Text Left, Image Right (Half Height)
     &.card-layout--text-image {
         display: grid;
-        grid-template-columns: calc(100% - var(--image-width, 50%)) var(--image-width, 50%);
+        grid-template-columns: calc(100% - 1rem - var(--image-width, 50%)) var(--image-width, 50%);
         gap: $cta-spacing-md;
         align-items: center;
 
@@ -93,7 +93,7 @@ $cta-card-max-width-vertical: 400px !default;
     // Layout: Image Left, Text Right (Half Height)
     &.card-layout--image-text {
         display: grid;
-        grid-template-columns: var(--image-width, 50%) calc(100% - var(--image-width, 50%));
+        grid-template-columns: var(--image-width, 50%) calc(100% - 1rem - var(--image-width, 50%));
         gap: $cta-spacing-md;
         align-items: center;
 
@@ -178,6 +178,9 @@ $cta-card-max-width-vertical: 400px !default;
 // Card Content
 // ============================================
 .godam-cta-card-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 
     padding: $cta-spacing-md;
 
@@ -277,6 +280,7 @@ $cta-card-max-width-vertical: 400px !default;
     }
 
     .godam-cta-card-content {
+        padding-top: 0;
 
         .card-title {
             font-size: $cta-font-size-md;

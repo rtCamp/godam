@@ -56,7 +56,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 
 	const ctaLayerOptions = [
 		{
-			label: __( 'Image', 'godam' ),
+			label: __( 'Card', 'godam' ),
 			value: 'image',
 		},
 		{

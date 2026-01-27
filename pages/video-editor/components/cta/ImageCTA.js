@@ -251,10 +251,10 @@ const ImageCTA = ( { layerID } ) => {
 
 	// Layout options
 	const layoutOptions = [
-		{ label: __( 'Text Left, Image Right (Full Height)', 'godam' ), value: 'card-layout--text-imagecover', icon: 'TextMediaCover' },
 		{ label: __( 'Image Left, Text Right (Full Height)', 'godam' ), value: 'card-layout--imagecover-text', icon: 'MediaTextCover' },
-		{ label: __( 'Text Left, Image Right', 'godam' ), value: 'card-layout--text-image', icon: 'TextMedia' },
+		{ label: __( 'Text Left, Image Right (Full Height)', 'godam' ), value: 'card-layout--text-imagecover', icon: 'TextMediaCover' },
 		{ label: __( 'Image Left, Text Right', 'godam' ), value: 'card-layout--image-text', icon: 'MediaText' },
+		{ label: __( 'Text Left, Image Right', 'godam' ), value: 'card-layout--text-image', icon: 'TextMedia' },
 		{ label: __( 'Image Top, Text Bottom', 'godam' ), value: 'card-layout--image-top', icon: 'MediaTop' },
 		{ label: __( 'Text Top, Image Bottom', 'godam' ), value: 'card-layout--image-bottom', icon: 'MediaBottom' },
 		{ label: __( 'Image Background', 'godam' ), value: 'card-layout--image-background', icon: 'TextCoverMedia' },
@@ -343,7 +343,7 @@ const ImageCTA = ( { layerID } ) => {
 				) }
 			</div>
 
-			{ selectedImageUrl && (
+			{ ( selectedImageUrl && [ 'card-layout--text-imagecover', 'card-layout--imagecover-text', 'card-layout--text-image', 'card-layout--image-text' ].includes( layer?.cardLayout ) ) && (
 				<RangeControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
