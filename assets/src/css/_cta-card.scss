@@ -273,6 +273,7 @@ $cta-card-max-width-vertical: 400px !default;
 
             .godam-cta-card-image {
                 padding: 1rem;
+                padding-bottom: 0;
             }
         }
 
@@ -280,7 +281,6 @@ $cta-card-max-width-vertical: 400px !default;
     }
 
     .godam-cta-card-content {
-        padding-top: 0;
 
         .card-title {
             font-size: $cta-font-size-md;
