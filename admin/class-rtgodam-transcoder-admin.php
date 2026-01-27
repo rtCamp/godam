@@ -738,10 +738,10 @@ class RTGODAM_Transcoder_Admin {
 
 		// Get user data which includes the current status including temporary verification_failed.
 		$user_data = rtgodam_get_user_data( true );
-		
+
 		// Check API key status from user data (includes transient verification_failed).
 		$api_key_status = isset( $user_data['apiKeyStatus'] ) ? $user_data['apiKeyStatus'] : RTGODAM_API_KEY_STATUS_VALID;
-		
+
 		// Only show notice for expired or verification_failed status.
 		if ( RTGODAM_API_KEY_STATUS_VALID === $api_key_status ) {
 			return;
@@ -763,7 +763,7 @@ class RTGODAM_Transcoder_Admin {
 		);
 
 		$message = isset( $status_messages[ $api_key_status ] )
-			? $status_messages[ $api_key_status ] 
+			? $status_messages[ $api_key_status ]
 			: sprintf(
 				/* translators: %s: URL to settings page */
 				__( 'There is an issue with your GoDAM API key. Transcoding may not work. Please <a href="%s">check your settings</a>.', 'godam' ),

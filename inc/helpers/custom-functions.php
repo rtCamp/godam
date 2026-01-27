@@ -240,7 +240,6 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 
 	$should_verify = (
 		empty( $rtgodam_user_data ) ||
-		( empty( $rtgodam_user_data ) && ! empty( $api_key ) ) ||
 		( isset( $rtgodam_user_data['timestamp'] ) && ( time() - $rtgodam_user_data['timestamp'] ) > $timeout )
 	) && ! $skip_verification;
 
@@ -261,7 +260,7 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 			// API Key shouldn't be invalid if there is a server error.
 			$error_data  = $result->get_error_data();
 			$status_code = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : 500;
-			
+
 			if ( 500 === $status_code && ! empty( $api_key ) ) {
 				// Server error with existing API key - DON'T change DB status, just show verification_failed to user.
 				// DON'T set error timestamp - this is temporary and we should keep checking.
@@ -269,6 +268,11 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 				$valid_api_key    = false;
 			} elseif ( 500 !== $status_code ) {
 				$valid_api_key = false;
+				// Preserve existing user data for expired/invalid keys.
+				$existing_usage = get_option( 'rtgodam-usage', array() );
+				if ( ! empty( $existing_usage ) && isset( $existing_usage[ $api_key ] ) ) {
+					$user_data = is_object( $existing_usage[ $api_key ] ) ? (array) $existing_usage[ $api_key ] : $existing_usage[ $api_key ];
+				}
 			}
 		} else {
 			$valid_api_key = true;
@@ -279,7 +283,7 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 
 		// Get updated status after verification.
 		$api_key_status = rtgodam_get_api_key_status();
-		
+
 		// If there's a transient status (verification_failed), use it instead of DB status.
 		if ( ! is_null( $transient_status ) ) {
 			$api_key_status = $transient_status;

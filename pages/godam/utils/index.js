@@ -1,4 +1,9 @@
 /**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Scroll to the top of the page
  *
  * @return {void}
@@ -61,8 +66,8 @@ export const getAPIKeyErrorInfo = () => {
 	if ( apiKeyStatus === 'expired' ) {
 		return {
 			type: 'expired',
-			title: 'Your API key has expired.',
-			message: 'Please renew your subscription from your Account to continue.',
+			title: __( 'Your API key has expired.', 'godam' ),
+			message: __( 'Please renew your subscription from your Account to continue.', 'godam' ),
 			showRefresh: true,
 		};
 	}
@@ -70,8 +75,8 @@ export const getAPIKeyErrorInfo = () => {
 	if ( apiKeyStatus === 'verification_failed' ) {
 		return {
 			type: 'verification_failed',
-			title: 'Unable to verify API key.',
-			message: 'This may be a temporary issue. Please try again later.',
+			title: __( 'Unable to verify API key.', 'godam' ),
+			message: __( 'This may be a temporary issue. Please try again later.', 'godam' ),
 			showRefresh: true,
 		};
 	}
@@ -79,8 +84,8 @@ export const getAPIKeyErrorInfo = () => {
 	// Default for unknown invalid states
 	return {
 		type: 'invalid',
-		title: 'API key issue detected.',
-		message: 'Please check your API key settings.',
+		title: __( 'API key issue detected.', 'godam' ),
+		message: __( 'Please check your API key settings.', 'godam' ),
 		showRefresh: true,
 	};
 };

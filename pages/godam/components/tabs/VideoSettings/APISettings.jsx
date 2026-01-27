@@ -119,7 +119,7 @@ const APISettings = ( { setNotice } ) => {
 							className="godam-button godam-margin-right"
 							onClick={ handleSaveAPIKey }
 							icon={ isAPIKeyLoading && <Spinner /> }
-							disabled={ isAPIKeyLoading || ( hasAPIKey ) || ! apiKey.trim() }
+							disabled={ isAPIKeyLoading || hasAPIKey || ! apiKey.trim() }
 							variant="primary"
 							isBusy={ isAPIKeyLoading }
 						>
