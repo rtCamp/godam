@@ -277,10 +277,6 @@ async function main() {
 		video_length: videoLength,
 		all_time_heatmap: allTimeHeatmap,
 		country_views: countryViews,
-		views_change: viewsChange,
-		watch_time_change: watchTimeChange,
-		play_rate_change: playRateChange,
-		avg_engagement_change: avgEngagementChange,
 	} = analyticsData;
 
 	// Calculate analytics metrics
@@ -330,12 +326,6 @@ async function main() {
 	// generateMetricsOverTime( timeMetricsChartData, '#metrics-chart', videoPlayer );
 	generatePostViewsChart( postsData, '#post-views-count-chart' );
 
-	const renderChange = ( changeValue ) => {
-		const rounded = Math.abs( changeValue ).toFixed( 2 );
-		const prefix = changeValue >= 0 ? '+' : '-';
-		return `${ prefix }${ rounded }%`;
-	};
-
 	function formatWatchTime( seconds ) {
 		const hrs = Math.floor( seconds / 3600 );
 		const mins = Math.floor( ( seconds % 3600 ) / 60 );
@@ -355,30 +345,7 @@ async function main() {
 		return parts.join( ' ' );
 	}
 
-	if ( document.getElementById( 'plays-change' ) ) {
-		document.getElementById( 'plays-change' ).innerHTML = renderChange( viewsChange );
-		document
-			.getElementById( 'plays-change' )
-			.classList.add( viewsChange >= 0 ? 'change-rise' : 'change-drop' );
-	}
-	if ( document.getElementById( 'watch-time-change' ) ) {
-		document.getElementById( 'watch-time-change' ).innerHTML = renderChange( watchTimeChange );
-		document
-			.getElementById( 'watch-time-change' )
-			.classList.add( watchTimeChange >= 0 ? 'change-rise' : 'change-drop' );
-	}
-	if ( document.getElementById( 'play-rate-change' ) ) {
-		document.getElementById( 'play-rate-change' ).innerHTML = renderChange( playRateChange );
-		document
-			.getElementById( 'play-rate-change' )
-			.classList.add( playRateChange >= 0 ? 'change-rise' : 'change-drop' );
-	}
-	if ( document.getElementById( 'engagement-rate-change' ) ) {
-		document.getElementById( 'engagement-rate-change' ).innerHTML = renderChange( avgEngagementChange );
-		document
-			.getElementById( 'engagement-rate-change' )
-			.classList.add( avgEngagementChange >= 0 ? 'change-rise' : 'change-drop' );
-	}
+	// Note: Change percentages are calculated and updated by SingleMetrics.js component
 
 	if ( countryViews ) {
 		generateCountryHeatmap( countryViews, '#map-container', '#table-container' );
