@@ -478,22 +478,11 @@ class WC_Product_Video_Gallery {
 
 		$parent_meta_key = '_video_parent_product_id';
 
-		// Get all attachments linked to this product.
-		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
-		$attachment_ids = get_posts(
-			array(
-				'post_type'      => 'attachment',
-				'posts_per_page' => -1,
-				'fields'         => 'ids',
-				'meta_query'     => array( // phpcs:ignore
-					array(
-						'key'   => $parent_meta_key,
-						'value' => $post_id,
-					),
-				),
-			)
-		);
+		// Get attachment IDs directly from product meta (much faster than querying all attachments).
+		$attachment_ids = get_post_meta( $post_id, '_rtgodam_product_video_gallery_ids', true );
+		$attachment_ids = is_array( $attachment_ids ) ? array_map( 'intval', $attachment_ids ) : array();
 
+		// Remove the product ID from each attachment's parent list.
 		foreach ( $attachment_ids as $attachment_id ) {
 			// Remove the product ID from the attachment's parent list.
 			delete_post_meta( $attachment_id, $parent_meta_key, $post_id );
