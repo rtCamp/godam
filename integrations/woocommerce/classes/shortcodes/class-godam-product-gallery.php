@@ -299,29 +299,20 @@ class GoDAM_Product_Gallery {
 
 		$product_ids = array();
 
-		// Get trashed product IDs to exclude.
-		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
-		$trashed_product_ids = get_posts(
-			array(
-				'post_type'      => 'product',
-				'post_status'    => 'trash',
-				'fields'         => 'ids',
-				'posts_per_page' => -1,
-			)
-		);
-
 		// 4. Sanitize product IDs.
 		if ( ! empty( $atts['product'] ) ) {
 			// Logic for "random" argument.
 			if ( strtolower( $atts['product'] ) === 'random' ) {
-				// Fetch all product IDs that have video meta and pick 8 random ones.
+				// Optimized: Use ORDER BY RAND() LIMIT 8 instead of fetching all products.
+				$random_limit = apply_filters( 'rtgodam_product_gallery_random_limit', 8 );
 				// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
-				$all_product_ids = get_posts(
+				$product_ids = get_posts(
 					array(
 						'post_type'      => 'product',
 						'post_status'    => 'publish',
 						'fields'         => 'ids',
-						'posts_per_page' => -1,
+						'posts_per_page' => $random_limit,
+						'orderby'        => 'rand',
 						'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 							array(
 								'key'     => '_rtgodam_product_video_gallery_ids',
@@ -330,43 +321,55 @@ class GoDAM_Product_Gallery {
 						),
 					)
 				);
-
-				shuffle( $all_product_ids );
-				$product_ids = array_slice( $all_product_ids, 0, 8 );
 			} else {
-				// Parse comma-separated IDs.
-				$product_ids = array_filter( array_map( 'absint', explode( ',', $atts['product'] ) ) );
-			}
+				// Parse comma-separated IDs and ensure they're published products.
+				$parsed_ids = array_filter( array_map( 'absint', explode( ',', $atts['product'] ) ) );
 
-			// Exclude trashed product IDs.
-			if ( ! empty( $product_ids ) ) {
-				$product_ids = array_diff( $product_ids, $trashed_product_ids );
-				$product_ids = array_values( $product_ids );
+				if ( ! empty( $parsed_ids ) ) {
+					// Verify products exist and are published.
+					// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
+					$product_ids = get_posts(
+						array(
+							'post_type'      => 'product',
+							'post_status'    => 'publish',
+							'fields'         => 'ids',
+							'posts_per_page' => count( $parsed_ids ),
+							'post__in'       => $parsed_ids,
+							'orderby'        => 'post__in',
+						)
+					);
+				}
 			}
 		}
 
 		// 5. Build WP_Query args for fetching videos.
+		// Optimized: Add reasonable limit with filter override instead of -1.
+		$video_limit = apply_filters( 'rtgodam_product_gallery_video_limit', 100 );
+
 		$args = array(
 			'post_type'      => 'attachment',
 			'post_mime_type' => 'video',
 			'post_status'    => 'inherit',
-			'posts_per_page' => -1,
+			'posts_per_page' => $video_limit,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
 		);
 
 		// Add filter for query arguments.
 		$args = apply_filters( 'rtgodam_product_gallery_query_args', $args, $atts );
 
 		if ( ! empty( $product_ids ) ) {
+			// Only fetch videos for specific published products.
 			$args['meta_query'][] = array(
 				'key'     => '_video_parent_product_id',
 				'value'   => $product_ids,
 				'compare' => 'IN',
 			);
 		} else {
+			// Fetch all videos - the parent product validation happens at render time.
 			$args['meta_query'][] = array(
 				'key'     => '_video_parent_product_id',
-				'value'   => $trashed_product_ids,
-				'compare' => 'NOT IN',
+				'compare' => 'EXISTS',
 			);
 		}
 
@@ -389,8 +392,8 @@ class GoDAM_Product_Gallery {
 			 */
 			$alignment_class = ! empty( $atts['align'] ) ? ' align' . $atts['align'] : '';
 
-			echo '<div id="' . esc_attr( $instance_id ) . '" data-gallery-id="' . esc_attr( $instance_id ) . '" class="godam-product-gallery layout-' . esc_attr( $atts['layout'] ) . 
-				esc_attr( $alignment_class ) . '" 
+			echo '<div id="' . esc_attr( $instance_id ) . '" data-gallery-id="' . esc_attr( $instance_id ) . '" class="godam-product-gallery layout-' . esc_attr( $atts['layout'] ) .
+				esc_attr( $alignment_class ) . '"
 				data-product="' . esc_attr( $atts['product'] ) . '"
 			>';
 
@@ -429,7 +432,7 @@ class GoDAM_Product_Gallery {
 			 * Video Wrapper Begins here.
 			 */
 			$video_attrs = $atts['autoplay'] ? ' autoplay muted loop playsinline' : '';
-			$this->render_video_wrapper( $video_posts, $atts, $video_attrs, $trashed_product_ids, $instance_id );
+			$this->render_video_wrapper( $video_posts, $atts, $video_attrs, $instance_id );
 			/**
 			 * Video Wrapper Ends here.
 			 */
@@ -485,10 +488,9 @@ class GoDAM_Product_Gallery {
 	 * @param array  $video_posts Array of WP_Post video attachments.
 	 * @param array  $atts        Shortcode attributes.
 	 * @param string $video_attrs Extra attributes for video tag (autoplay/muted/loop).
-	 * @param array  $trashed_product_ids  Array of trashed product IDs to exclude.
 	 * @param string $instance_id Unique ID for each GoDAM Gallery Block.
 	 */
-	private function render_video_wrapper( $video_posts, $atts, $video_attrs, $trashed_product_ids, $instance_id ) {
+	private function render_video_wrapper( $video_posts, $atts, $video_attrs, $instance_id ) {
 
 		foreach ( $video_posts as $video ) {
 			// Add action before each video item.
@@ -506,10 +508,20 @@ class GoDAM_Product_Gallery {
 
 			$video_attached_products = get_post_meta( $video_id, '_video_parent_product_id', false );
 
-			// Remove trashed product IDs from the list.
-			if ( ! empty( $trashed_product_ids ) ) {
-				$video_attached_products = array_diff( $video_attached_products, $trashed_product_ids );
+			// Filter out any products that aren't published (validation at render time).
+			if ( ! empty( $video_attached_products ) ) {
+				$video_attached_products = array_filter(
+					$video_attached_products,
+					function( $product_id ) {
+						return 'publish' === get_post_status( $product_id ) && 'product' === get_post_type( $product_id );
+					}
+				);
 				$video_attached_products = array_values( $video_attached_products );
+			}
+
+			// Skip this video if it has no valid published products.
+			if ( empty( $video_attached_products ) ) {
+				continue;
 			}
 
 			$data_product_ids = implode( ',', array_map( 'absint', (array) $video_attached_products ) );

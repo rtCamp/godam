@@ -56,19 +56,19 @@ import { fetchProductData } from '../utils/productDataCache';
 /**
  * ProductHotspotPanel - Sub-component for rendering a single product hotspot with on-demand data fetching.
  *
- * @param {Object}   root0 - Props object
- * @param {Object}   root0.productHotspot - Product hotspot data
- * @param {number}   root0.index - Index of the hotspot
- * @param {boolean}  root0.isExpanded - Whether panel is expanded
- * @param {Function} root0.onToggleExpand - Callback to toggle expand state
- * @param {Function} root0.onDelete - Callback to delete hotspot
- * @param {Array}    root0.productHotspots - All product hotspots
- * @param {Function} root0.updateField - Callback to update field
- * @param {boolean}  root0.isValidAPIKey - Whether API key is valid
+ * @param {Object}   root0                              - Props object
+ * @param {Object}   root0.productHotspot               - Product hotspot data
+ * @param {number}   root0.index                        - Index of the hotspot
+ * @param {boolean}  root0.isExpanded                   - Whether panel is expanded
+ * @param {Function} root0.onToggleExpand               - Callback to toggle expand state
+ * @param {Function} root0.onDelete                     - Callback to delete hotspot
+ * @param {Array}    root0.productHotspots              - All product hotspots
+ * @param {Function} root0.updateField                  - Callback to update field
+ * @param {boolean}  root0.isValidAPIKey                - Whether API key is valid
  * @param {Function} root0.getProductHotspotDisplayName - Function to get display name
- * @param {Object}   root0.productCache - Cache of product data
- * @param {Function} root0.onCacheProduct - Callback to cache product
- * @param {Object}   root0.fetchingProductsRef - Ref to track fetching products
+ * @param {Object}   root0.productCache                 - Cache of product data
+ * @param {Function} root0.onCacheProduct               - Callback to cache product
+ * @param {Object}   root0.fetchingProductsRef          - Ref to track fetching products
  * @return {JSX.Element} Rendered component
  */
 const ProductHotspotPanel = ( {
@@ -129,12 +129,12 @@ const ProductHotspotPanel = ( {
 				>
 					{ getProductHotspotDisplayName( productHotspot, index, productData ) }
 				</Button>
-			{
+				{
 				/* translators: %s is the product hotspot name */
-			}
-			<DropdownMenu
-				icon={ moreVertical }
-				label={ `${ getProductHotspotDisplayName( productHotspot, index, productData ) } ${ __( 'options', 'godam' ) }` }
+				}
+				<DropdownMenu
+					icon={ moreVertical }
+					label={ `${ getProductHotspotDisplayName( productHotspot, index, productData ) } ${ __( 'options', 'godam' ) }` }
 					toggleProps={ { 'aria-label': sprintf( __( 'Options for %s', 'godam' ), getProductHotspotDisplayName( productHotspot, index, productData ) ) } }
 				>
 					{ () => (
@@ -188,7 +188,7 @@ const ProductHotspotPanel = ( {
 						</>
 					) }
 				</DropdownMenu>
-		</div>
+			</div>
 
 			{ isExpanded && (
 				<div className="mt-3">
@@ -346,10 +346,10 @@ const ProductHotspotPanel = ( {
 /**
  * ProductHotspotPreview - Preview rendering of product hotspot in editor
  *
- * @param {Object} root0 - Props object
+ * @param {Object} root0                - Props object
  * @param {Object} root0.productHotspot - Product hotspot data
- * @param {number} root0.index - Index of the hotspot
- * @param {Object} root0.productCache - Cache of product data
+ * @param {number} root0.index          - Index of the hotspot
+ * @param {Object} root0.productCache   - Cache of product data
  * @return {JSX.Element} Rendered component
  */
 const ProductHotspotPreview = ( { productHotspot, index, productCache } ) => {
