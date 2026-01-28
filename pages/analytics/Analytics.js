@@ -506,7 +506,7 @@ const Analytics = ( { attachmentID } ) => {
 						</div>
 						<div className="posts-count-container lg:col-span-1 bg-white border border-zinc-200 rounded p-4">
 							<h2 className="text-base font-medium text-zinc-700 mb-2">
-								{ __( 'Views by Post Source', 'godam' ) }
+								{ __( 'Views by Source', 'godam' ) }
 							</h2>
 							<div id="post-views-count-chart" className="text-center"></div>
 							<div className="legend" id="legend"></div>

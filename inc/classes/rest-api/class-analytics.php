@@ -243,7 +243,7 @@ class Analytics extends Base {
 				$posts = get_posts(
 					array(
 						'post__in'         => $post_ids,
-						'post_type'        => 'post',
+						'post_type'        => 'any',
 						'posts_per_page'   => -1,
 						'orderby'          => 'post__in',
 						'suppress_filters' => false,
