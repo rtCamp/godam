@@ -408,6 +408,12 @@ export const VideoJS = ( props ) => {
 					<Slider
 						className="mt-12 mb-6"
 						value={ sliderValue }
+						onInteract={ () => {
+							// Allow scrubbing even when a layer is selected by clearing it first.
+							if ( currentLayer ) {
+								dispatch( setCurrentLayer( null ) );
+							}
+						} }
 						onChange={ ( value ) => {
 							setSliderValue( value );
 							if ( playerRef.current ) {
@@ -420,7 +426,7 @@ export const VideoJS = ( props ) => {
 							dispatch( setCurrentLayer( layer ) );
 							playerRef.current.currentTime( layer.displayTime );
 						} }
-						disabled={ currentLayer }
+						disabled={ false }
 						currentLayerID={ currentLayer?.id }
 						chapters={ [] }
 						formatTimeForInput={ formatTimeForInput }
@@ -433,6 +439,12 @@ export const VideoJS = ( props ) => {
 					<Slider
 						className="mt-12 mb-6"
 						value={ sliderValue }
+						onInteract={ () => {
+							// Keep behavior consistent across tabs.
+							if ( currentLayer ) {
+								dispatch( setCurrentLayer( null ) );
+							}
+						} }
 						onChange={ ( value ) => {
 							setSliderValue( value );
 							if ( playerRef.current ) {
@@ -454,7 +466,7 @@ export const VideoJS = ( props ) => {
 };
 
 const Slider = ( props ) => {
-	const { max, value, onChange, className, layers, onLayerSelect, disabled, currentLayerID, chapters, formatTimeForInput } = props;
+	const { max, value, onChange, className, layers, onLayerSelect, disabled, currentLayerID, chapters, formatTimeForInput, onInteract } = props;
 
 	const [ sliderValue, setSliderValue ] = useState( value );
 	const [ hoverValue, setHoverValue ] = useState( null ); // Hover value
@@ -513,6 +525,10 @@ const Slider = ( props ) => {
 				max={ max }
 				className="slider-input"
 				value={ sliderValue }
+				onPointerDown={ () => onInteract?.() }
+				onMouseDown={ () => onInteract?.() }
+				onTouchStart={ () => onInteract?.() }
+				onFocus={ () => onInteract?.() }
 				onChange={ ( e ) => {
 					if ( onChange ) {
 						onChange( e.target.value );
