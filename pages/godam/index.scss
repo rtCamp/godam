@@ -238,8 +238,12 @@ $settings-page-breakpoint: 782px;
 	.invalid-api-key {
 
 		input {
-			border-color: #fb2c36;
+			border-color: #fb2c36 !important;
 		}
+	}
+
+	span.invalid-api-key {
+		color: #fb2c36;
 	}
 
 	input[type="number"] {

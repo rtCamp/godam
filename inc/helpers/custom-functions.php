@@ -223,35 +223,77 @@ function rtgodam_image_cta_html( $layer ) {
  *
  * @param bool $use_for_localize_array Whether to use the data for localizing scripts. Defaults to false.
  * @param int  $timeout                The time in seconds after which the user data should be refreshed.
+ * @param bool $force_refresh          Whether to force refresh the API key verification bypassing grace period checks.
  */
-function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR_IN_SECONDS ) {
+function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR_IN_SECONDS, $force_refresh = false ) {
 	$rtgodam_user_data = get_option( 'rtgodam_user_data', false );
 	$api_key           = get_option( 'rtgodam-api-key', '' );
+	$api_key_status    = rtgodam_get_api_key_status();
 
-	if (
+	// Check if we should skip verification.
+	// Skip only for expired keys that are past their grace period.
+	$skip_verification = false;
+	if ( ! $force_refresh && RTGODAM_API_KEY_STATUS_EXPIRED === $api_key_status && ! rtgodam_is_api_key_in_grace_period() ) {
+		// Grace period expired for expired key, pause automatic checks until manual refresh.
+		$skip_verification = true;
+	}
+
+	$should_verify = (
 		empty( $rtgodam_user_data ) ||
-		( empty( $rtgodam_user_data ) && ! empty( $api_key ) ) ||
 		( isset( $rtgodam_user_data['timestamp'] ) && ( time() - $rtgodam_user_data['timestamp'] ) > $timeout )
-	) {
+	) && ! $skip_verification;
+
+	// Allow force refresh to bypass timeout and skip checks.
+	if ( $force_refresh ) {
+		$should_verify = true;
+	}
+
+	if ( $should_verify ) {
 		// Verify the user's API Key.
 		$result = rtgodam_verify_api_key( $api_key );
 
-		$valid_api_key = false;
-		$user_data     = array();
+		$valid_api_key    = false;
+		$user_data        = array();
+		$transient_status = null; // For temporary verification_failed state.
 
 		if ( is_wp_error( $result ) ) {
-			$valid_api_key               = false;
-			$user_data['masked_api_key'] = rtgodam_mask_string( $api_key );
+			// API Key shouldn't be invalid if there is a server error.
+			$error_data  = $result->get_error_data();
+			$status_code = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : 500;
+
+			if ( 500 === $status_code && ! empty( $api_key ) ) {
+				// Server error with existing API key - DON'T change DB status, just show verification_failed to user.
+				// DON'T set error timestamp - this is temporary and we should keep checking.
+				$transient_status = RTGODAM_API_KEY_STATUS_VERIFICATION_FAILED;
+				$valid_api_key    = false;
+			} elseif ( 500 !== $status_code ) {
+				$valid_api_key = false;
+				// Preserve existing user data for expired/invalid keys.
+				$existing_usage = get_option( 'rtgodam-usage', array() );
+				if ( ! empty( $existing_usage ) && isset( $existing_usage[ $api_key ] ) ) {
+					$user_data = is_object( $existing_usage[ $api_key ] ) ? (array) $existing_usage[ $api_key ] : $existing_usage[ $api_key ];
+				}
+			}
 		} else {
-			$valid_api_key               = true;
-			$user_data                   = $result['data'] ?? array();
-			$user_data['masked_api_key'] = rtgodam_mask_string( $api_key );
+			$valid_api_key = true;
+			$user_data     = $result['data'] ?? array();
+		}
+
+		$user_data['masked_api_key'] = rtgodam_mask_string( $api_key );
+
+		// Get updated status after verification.
+		$api_key_status = rtgodam_get_api_key_status();
+
+		// If there's a transient status (verification_failed), use it instead of DB status.
+		if ( ! is_null( $transient_status ) ) {
+			$api_key_status = $transient_status;
 		}
 
 		$rtgodam_user_data = array(
-			'currentUserId' => get_current_user_id(),
-			'valid_api_key' => $valid_api_key,
-			'user_data'     => $user_data,
+			'currentUserId'  => get_current_user_id(),
+			'valid_api_key'  => $valid_api_key,
+			'api_key_status' => $api_key_status,
+			'user_data'      => $user_data,
 		);
 
 		$usage_data = rtgodam_get_usage_data();
@@ -284,9 +326,9 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 					$bandwidth_percentage
 				);
 			}
-		} elseif ( ! $valid_api_key ) {
-			$rtgodam_user_data['storageBandwidthError'] = __( 'Oops! It looks like your API key is incorrect or has expired. Please update it and try again.', 'godam' );
-		} else {
+		} elseif ( is_wp_error( $usage_data ) && $valid_api_key ) {
+			// Only show usage data fetch error if API key is valid.
+			// API key errors are handled separately via apiKeyStatus.
 			$rtgodam_user_data['storageBandwidthError'] = $usage_data->get_error_message();
 		}
 
@@ -296,11 +338,17 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 		update_option( 'rtgodam_user_data', $rtgodam_user_data );
 	}
 
+	// Ensure api_key_status is always present in the data.
+	if ( ! isset( $rtgodam_user_data['api_key_status'] ) ) {
+		$rtgodam_user_data['api_key_status'] = rtgodam_get_api_key_status();
+	}
+
 	if ( $use_for_localize_array ) {
 		// Prepare the data for localizing scripts.
 		$localized_array_data = array(
 			'currentUserId' => $rtgodam_user_data['currentUserId'],
 			'validApiKey'   => $rtgodam_user_data['valid_api_key'],
+			'apiKeyStatus'  => $rtgodam_user_data['api_key_status'],
 			'userApiData'   => $rtgodam_user_data['user_data'],
 			'timestamp'     => $rtgodam_user_data['timestamp'],
 		);

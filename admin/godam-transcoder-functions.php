@@ -11,6 +11,116 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
+ * API Key Status Constants.
+ *
+ * VALID: API key is verified and working.
+ * EXPIRED: API key was previously valid but has expired.
+ * VERIFICATION_FAILED: Temporary server error during verification (stored in user data cache).
+ */
+define( 'RTGODAM_API_KEY_STATUS_VALID', 'valid' );
+define( 'RTGODAM_API_KEY_STATUS_EXPIRED', 'expired' );
+define( 'RTGODAM_API_KEY_STATUS_VERIFICATION_FAILED', 'verification_failed' );
+
+/**
+ * Grace period for invalid API keys (4 hours).
+ */
+define( 'RTGODAM_API_KEY_GRACE_PERIOD', 4 * HOUR_IN_SECONDS );
+
+/**
+ * Get the API key status from database.
+ *
+ * Only 'valid' and 'expired' are persisted in the database.
+ * 'verification_failed' is a runtime state.
+ *
+ * @since n.e.x.t
+ *
+ * @return string One of: 'valid', 'expired'.
+ */
+function rtgodam_get_api_key_status() {
+	return get_option( 'rtgodam-api-key-status', RTGODAM_API_KEY_STATUS_VALID );
+}
+
+/**
+ * Set the API key status in the database.
+ *
+ * Only permanent states (valid, expired) can be persisted.
+ * States like verification_failed are handled at runtime.
+ *
+ * @since n.e.x.t
+ *
+ * @param string $status Status to set: 'valid' or 'expired'.
+ *
+ * @return bool Whether the option was updated.
+ */
+function rtgodam_set_api_key_status( $status ) {
+	$valid_statuses = array(
+		RTGODAM_API_KEY_STATUS_VALID,
+		RTGODAM_API_KEY_STATUS_EXPIRED,
+	);
+
+	if ( ! in_array( $status, $valid_statuses, true ) ) {
+		return false;
+	}
+
+	return update_option( 'rtgodam-api-key-status', $status );
+}
+
+/**
+ * Check if API key is in grace period (automatic verification should NOT be skipped yet).
+ *
+ * Grace period only applies to EXPIRED keys to reduce unnecessary verification attempts.
+ * When an API key expires, we allow a grace period before stopping automatic checks.
+ * After the grace period, automatic verification is paused until manual refresh.
+ *
+ * @since n.e.x.t
+ *
+ * @return bool True if in grace period (should not skip verification), false otherwise.
+ */
+function rtgodam_is_api_key_in_grace_period() {
+	$status = rtgodam_get_api_key_status();
+
+	if ( RTGODAM_API_KEY_STATUS_EXPIRED !== $status ) {
+		return false;
+	}
+
+	// Check timestamp since key expired.
+	$error_since = get_option( 'rtgodam-api-key-error-since', 0 );
+
+	// No timestamp means it just expired, still within grace period.
+	if ( empty( $error_since ) ) {
+		return true;
+	}
+
+	$elapsed = time() - $error_since;
+
+	return $elapsed < RTGODAM_API_KEY_GRACE_PERIOD;
+}
+
+/**
+ * Mark API key as invalid/expired and set timestamp.
+ *
+ * @since n.e.x.t
+ */
+function rtgodam_mark_api_key_expired() {
+	rtgodam_set_api_key_status( RTGODAM_API_KEY_STATUS_EXPIRED );
+
+	// Set timestamp only if not already set.
+	$error_since = get_option( 'rtgodam-api-key-error-since', 0 );
+	if ( empty( $error_since ) ) {
+		update_option( 'rtgodam-api-key-error-since', time() );
+	}
+}
+
+/**
+ * Clear API key invalid timestamp.
+ *
+ * @since n.e.x.t
+ */
+function rtgodam_clear_api_key_invalid_timestamp() {
+	delete_option( 'rtgodam-api-key-error-since' );
+}
+
+/**
  * Check whether the file is sent to the transcoder or not.
  *
  * @since   1.0.0
@@ -447,13 +557,31 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 
 	// Central sends 200 status code with error if API Key is invalid.
 	if ( isset( $body['message']['error'] ) ) {
-		return new \WP_Error( 'invalid_api_key', $body['message']['error'], array( 'status' => 400 ) );
+		$error_message = $body['message']['error'];
+
+		// Check if there was a previously valid key (existing key in DB).
+		$previous_status  = rtgodam_get_api_key_status();
+		$has_existing_key = ! empty( $existing_api_key ) && $existing_api_key === $api_key;
+
+		if ( $has_existing_key && ( RTGODAM_API_KEY_STATUS_VALID === $previous_status ) ) {
+			// Previously saved key is expired - preserve it and mark as expired. This function will also check if it is already expired.
+			rtgodam_mark_api_key_expired();
+			// Key is already in DB, no need to save again.
+			return new \WP_Error( 'expired_api_key', $error_message, array( 'status' => 400 ) );
+		}
+
+		// New invalid key - don't save it, just return error.
+		return new \WP_Error( 'invalid_api_key', $error_message, array( 'status' => 400 ) );
 	}
 
 	// Handle 200 Success - Save the API key.
 	if ( 200 === $status_code && isset( $body['message']['account_token'] ) ) {
 
 		$account_token = $body['message']['account_token'];
+
+		// Mark API key as valid and clear any invalid timestamp.
+		rtgodam_set_api_key_status( RTGODAM_API_KEY_STATUS_VALID );
+		rtgodam_clear_api_key_invalid_timestamp();
 
 		// Enable PostHog tracking once API key is activated or plugin is updated with active API key.
 		$settings = get_option( 'rtgodam-settings', array() );
@@ -486,17 +614,9 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		);
 	}
 
-	// Handle other errors - Preserve existing API key and user data.
-	// If existing API key exists, preserve it. If not, don't save new key.
-	if ( ! empty( $existing_api_key ) ) {
-		return array(
-			'status'  => 'success',
-			'message' => __( 'API key verification temporarily unavailable.', 'godam' ),
-			'data'    => $preserved_data,
-		);
-	}
-
-	return new \WP_Error( 'unexpected_error', __( 'An unexpected error occurred. Please try again later.', 'godam' ), array( 'status' => 500 ) );
+	// Handle other errors - Return 500 error to indicate temporary verification failure.
+	// The DB status (valid/expired) will be preserved by rtgodam_get_user_data().
+	return new \WP_Error( 'verification_error', __( 'Unable to verify API key. Please try again later.', 'godam' ), array( 'status' => 500 ) );
 }
 
 /**

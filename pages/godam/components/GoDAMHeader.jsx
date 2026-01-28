@@ -12,6 +12,7 @@ import apiFetch from '@wordpress/api-fetch';
  */
 import { ChromeExtensionSvg } from '../assets/svgs';
 import godamLogo from '../../../assets/src/images/godam-logo.png';
+import { hasAPIKey } from '../utils/index.js';
 
 const GodamHeader = () => {
 	const helpLink = window.godamRestRoute?.apiBase + '/helpdesk';
@@ -120,7 +121,7 @@ const GodamHeader = () => {
 									/>
 								) }
 							{
-								( ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan ) && (
+								( ! hasAPIKey ) && (
 									<Button
 										className="godam-button text-xs md:text-sm"
 										variant="primary"
