@@ -474,6 +474,7 @@ const Slider = ( props ) => {
 	const [ sliderValue, setSliderValue ] = useState( value );
 	const [ hoverValue, setHoverValue ] = useState( null ); // Hover value
 	const [ isDragging, setIsDragging ] = useState( false ); // Track if user is dragging the slider
+	const [ isHovering, setIsHovering ] = useState( false ); // Track if mouse is over slider area
 
 	useEffect( () => {
 		setSliderValue( value );
@@ -517,158 +518,164 @@ const Slider = ( props ) => {
 	};
 
 	return (
-		<div className={ `slider ${ className }` }>
-			<input
-				style={ {
-					'--progress-value': `${ sliderValue / max * 100 }%`,
-				} }
-				disabled={ disabled }
-				type="range"
-				min="0"
-				step={ 0.01 }
-				max={ max }
-				className="slider-input"
-				value={ sliderValue }
-				onPointerDown={ () => {
-					setIsDragging( true );
-					onInteract?.();
-				} }
-				onPointerUp={ () => setIsDragging( false ) }
-				onMouseDown={ () => {
-					setIsDragging( true );
-					onInteract?.();
-				} }
-				onMouseUp={ () => setIsDragging( false ) }
-				onTouchStart={ () => {
-					setIsDragging( true );
-					onInteract?.();
-				} }
-				onTouchEnd={ () => setIsDragging( false ) }
-				onFocus={ () => onInteract?.() }
-				onChange={ ( e ) => {
-					if ( onChange ) {
-						onChange( e.target.value );
-					}
-					setSliderValue( e.target.value );
-				} }
-				onMouseMove={ handleHover }
-				onMouseLeave={ handleLeave }
-			/>
-			<span
-				className="slider-progress"
-				style={ {
-					width: `${ sliderValue / max * 100 }%`,
-				} }
-			>
-			</span>
-			{
-				hoverValue && hoverValue >= 0 && hoverValue <= max && (
-					<div className="tooltip" style={ { left: `${ hoverValue / max * 100 }%` } }>
-						{ formatTime( hoverValue ) }
-					</div>
-				)
-			}
-			{
-				sortedLayers?.map( ( layer ) => {
-					const layerLeft = layer.displayTime / max * 100;
+		<div
+			className={ `slider-hover-area ${ className }` }
+			style={ { padding: '48px 20px', margin: '0 -20px' } }
+			onMouseEnter={ () => setIsHovering( true ) }
+			onMouseLeave={ () => setIsHovering( false ) }
+		>
+			<div className="slider">
+				<input
+					style={ {
+						'--progress-value': `${ sliderValue / max * 100 }%`,
+					} }
+					disabled={ disabled }
+					type="range"
+					min="0"
+					step={ 0.01 }
+					max={ max }
+					className="slider-input"
+					value={ sliderValue }
+					onPointerDown={ () => {
+						setIsDragging( true );
+						onInteract?.();
+					} }
+					onPointerUp={ () => setIsDragging( false ) }
+					onMouseDown={ () => {
+						setIsDragging( true );
+						onInteract?.();
+					} }
+					onMouseUp={ () => setIsDragging( false ) }
+					onTouchStart={ () => {
+						setIsDragging( true );
+						onInteract?.();
+					} }
+					onTouchEnd={ () => setIsDragging( false ) }
+					onFocus={ () => onInteract?.() }
+					onChange={ ( e ) => {
+						if ( onChange ) {
+							onChange( e.target.value );
+						}
+						setSliderValue( e.target.value );
+					} }
+					onMouseMove={ handleHover }
+					onMouseLeave={ handleLeave }
+				/>
+				<span
+					className="slider-progress"
+					style={ {
+						width: `${ sliderValue / max * 100 }%`,
+					} }
+				>
+				</span>
+				{
+					hoverValue && hoverValue >= 0 && hoverValue <= max && (
+						<div className="tooltip" style={ { left: `${ hoverValue / max * 100 }%` } }>
+							{ formatTime( hoverValue ) }
+						</div>
+					)
+				}
+				{
+					sortedLayers?.map( ( layer ) => {
+						const layerLeft = layer.displayTime / max * 100;
 
-					return (
-						// eslint-disable-next-line jsx-a11y/click-events-have-key-events
+						return (
+							// eslint-disable-next-line jsx-a11y/click-events-have-key-events
+							<div
+								key={ layer.id }
+								className={ `layer-indicator ${ layer.type === 'hotspot' ? 'hotspot-indicator' : '' }` }
+								style={ {
+									left: `${ layerLeft }%`,
+									'--hover-width': layer?.duration ? `${ Math.min( ( layer.duration / max ) * 100, 100 - layerLeft ) }%` : '8px',
+								} }
+								onClick={ () => onLayerSelect( layer ) }
+								role="button"
+								tabIndex={ 0 }
+							>
+								<div className="layer-indicator--container">
+									<div className={ `icon ${ layer.id === currentLayerID ? 'active' : '' }` }>
+										<Icon icon={ layerTypes.find( ( type ) => type.type === layer.type )?.icon } />
+										<div>
+											{ layer?.type?.toUpperCase() }
+											{
+												layer?.duration && (
+													<div className="duration">
+														for { layer.duration }s
+													</div>
+												)
+											}
+										</div>
+									</div>
+									<div className="info">{ formatTime( layer.displayTime ) }</div>
+								</div>
+							</div>
+						);
+					} )
+				}
+				{
+					/* Add New Layer Indicator at current time */
+					onAddLayer && sliderValue > 0 && ! currentLayerID && ! isDragging && isHovering && (
 						<div
-							key={ layer.id }
-							className={ `layer-indicator ${ layer.type === 'hotspot' ? 'hotspot-indicator' : '' }` }
+							className="layer-indicator add-layer-indicator"
 							style={ {
-								left: `${ layerLeft }%`,
-								'--hover-width': layer?.duration ? `${ Math.min( ( layer.duration / max ) * 100, 100 - layerLeft ) }%` : '8px',
+								left: `${ ( sliderValue / max ) * 100 }%`,
 							} }
-							onClick={ () => onLayerSelect( layer ) }
+							onClick={ () => onAddLayer( sliderValue ) }
+							onKeyDown={ ( e ) => {
+								if ( e.key === 'Enter' || e.key === ' ' ) {
+									onAddLayer( sliderValue );
+								}
+							} }
 							role="button"
 							tabIndex={ 0 }
+							title={ __( 'Add layer at this time', 'godam' ) }
 						>
-							<div className="layer-indicator--container">
-								<div className={ `icon ${ layer.id === currentLayerID ? 'active' : '' }` }>
-									<Icon icon={ layerTypes.find( ( type ) => type.type === layer.type )?.icon } />
-									<div>
-										{ layer?.type?.toUpperCase() }
-										{
-											layer?.duration && (
-												<div className="duration">
-													for { layer.duration }s
-												</div>
-											)
-										}
-									</div>
+							<div className="layer-indicator--container add-layer-container">
+								<div className="icon add-icon">
+									<Icon icon={ plus } />
+									<div>{ __( 'ADD LAYER', 'godam' ) }</div>
 								</div>
-								<div className="info">{ formatTime( layer.displayTime ) }</div>
+								<div className="info">{ formatTime( sliderValue ) }</div>
 							</div>
 						</div>
-					);
-				} )
-			}
-			{
-				/* Add New Layer Indicator at current time */
-				onAddLayer && sliderValue > 0 && ! currentLayerID && ! isDragging && (
-					<div
-						className="layer-indicator add-layer-indicator"
-						style={ {
-							left: `${ ( sliderValue / max ) * 100 }%`,
-						} }
-						onClick={ () => onAddLayer( sliderValue ) }
-						onKeyDown={ ( e ) => {
-							if ( e.key === 'Enter' || e.key === ' ' ) {
-								onAddLayer( sliderValue );
-							}
-						} }
-						role="button"
-						tabIndex={ 0 }
-						title={ __( 'Add layer at this time', 'godam' ) }
-					>
-						<div className="layer-indicator--container add-layer-container">
-							<div className="icon add-icon">
-								<Icon icon={ plus } />
-								<div>{ __( 'ADD LAYER', 'godam' ) }</div>
-							</div>
-							<div className="info">{ formatTime( sliderValue ) }</div>
-						</div>
-					</div>
-				)
-			}
-			{
-				sortedChapters?.map( ( chapter, index ) => {
-					const chapterLeft = ( chapter.startTime / max ) * 100;
+					)
+				}
+				{
+					sortedChapters?.map( ( chapter, index ) => {
+						const chapterLeft = ( chapter.startTime / max ) * 100;
 
-					// Calculate difference to next chapter
-					const nextChapter = sortedChapters[ index + 1 ];
-					const nextStart = nextChapter ? nextChapter.startTime : max; // fallback to end
-					const hoverWidth = ( ( nextStart - chapter.startTime ) / max ) * 100;
+						// Calculate difference to next chapter
+						const nextChapter = sortedChapters[ index + 1 ];
+						const nextStart = nextChapter ? nextChapter.startTime : max; // fallback to end
+						const hoverWidth = ( ( nextStart - chapter.startTime ) / max ) * 100;
 
-					return (
-						<div
-							key={ chapter.id }
-							className="layer-indicator hotspot-indicator chapter-indicator"
-							style={ {
-								left: `${ chapterLeft }%`,
-								'--hover-width': `${ hoverWidth }%`,
-							} }
-						>
-							<div className="chapter-indicator--duration">
-								{ `${ chapter?.originalTime } - ${ nextChapter ? nextChapter?.originalTime : formatTimeForInput( max ) }` }
-							</div>
+						return (
 							<div
-								className="chapter-indicator--text"
+								key={ chapter.id }
+								className="layer-indicator hotspot-indicator chapter-indicator"
 								style={ {
+									left: `${ chapterLeft }%`,
 									'--hover-width': `${ hoverWidth }%`,
 								} }
 							>
-								{ chapter?.text?.length > 13
-									? `${ chapter.text.slice( 0, 13 ) }...`
-									: chapter?.text }
+								<div className="chapter-indicator--duration">
+									{ `${ chapter?.originalTime } - ${ nextChapter ? nextChapter?.originalTime : formatTimeForInput( max ) }` }
+								</div>
+								<div
+									className="chapter-indicator--text"
+									style={ {
+										'--hover-width': `${ hoverWidth }%`,
+									} }
+								>
+									{ chapter?.text?.length > 13
+										? `${ chapter.text.slice( 0, 13 ) }...`
+										: chapter?.text }
+								</div>
 							</div>
-						</div>
-					);
-				} )
-			}
-
+						);
+					} )
+				}
+			</div>
 		</div>
 	);
 };
