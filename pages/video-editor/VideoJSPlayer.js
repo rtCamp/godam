@@ -17,12 +17,12 @@ import 'videojs-flvjs-es6';
  * Internal dependencies
  */
 import GoDAM from '../../assets/src/images/GoDAM.png';
-import { setCurrentLayer } from './redux/slice/videoSlice';
+import { setCurrentLayer, setAddLayerModalTime } from './redux/slice/videoSlice';
 
 /**
  * WordPress dependencies
  */
-import { customLink, customPostType, preformatted, video, thumbsUp } from '@wordpress/icons';
+import { customLink, customPostType, preformatted, video, thumbsUp, plus } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { Icon } from '@wordpress/components';
 
@@ -430,6 +430,9 @@ export const VideoJS = ( props ) => {
 						currentLayerID={ currentLayer?.id }
 						chapters={ [] }
 						formatTimeForInput={ formatTimeForInput }
+						onAddLayer={ ( time ) => {
+							dispatch( setAddLayerModalTime( time ) );
+						} }
 					/>
 				)
 			}
@@ -466,10 +469,11 @@ export const VideoJS = ( props ) => {
 };
 
 const Slider = ( props ) => {
-	const { max, value, onChange, className, layers, onLayerSelect, disabled, currentLayerID, chapters, formatTimeForInput, onInteract } = props;
+	const { max, value, onChange, className, layers, onLayerSelect, disabled, currentLayerID, chapters, formatTimeForInput, onInteract, onAddLayer } = props;
 
 	const [ sliderValue, setSliderValue ] = useState( value );
 	const [ hoverValue, setHoverValue ] = useState( null ); // Hover value
+	const [ isDragging, setIsDragging ] = useState( false ); // Track if user is dragging the slider
 
 	useEffect( () => {
 		setSliderValue( value );
@@ -525,9 +529,21 @@ const Slider = ( props ) => {
 				max={ max }
 				className="slider-input"
 				value={ sliderValue }
-				onPointerDown={ () => onInteract?.() }
-				onMouseDown={ () => onInteract?.() }
-				onTouchStart={ () => onInteract?.() }
+				onPointerDown={ () => {
+					setIsDragging( true );
+					onInteract?.();
+				} }
+				onPointerUp={ () => setIsDragging( false ) }
+				onMouseDown={ () => {
+					setIsDragging( true );
+					onInteract?.();
+				} }
+				onMouseUp={ () => setIsDragging( false ) }
+				onTouchStart={ () => {
+					setIsDragging( true );
+					onInteract?.();
+				} }
+				onTouchEnd={ () => setIsDragging( false ) }
 				onFocus={ () => onInteract?.() }
 				onChange={ ( e ) => {
 					if ( onChange ) {
@@ -588,6 +604,34 @@ const Slider = ( props ) => {
 						</div>
 					);
 				} )
+			}
+			{
+				/* Add New Layer Indicator at current time */
+				onAddLayer && sliderValue > 0 && ! currentLayerID && ! isDragging && (
+					<div
+						className="layer-indicator add-layer-indicator"
+						style={ {
+							left: `${ ( sliderValue / max ) * 100 }%`,
+						} }
+						onClick={ () => onAddLayer( sliderValue ) }
+						onKeyDown={ ( e ) => {
+							if ( e.key === 'Enter' || e.key === ' ' ) {
+								onAddLayer( sliderValue );
+							}
+						} }
+						role="button"
+						tabIndex={ 0 }
+						title={ __( 'Add layer at this time', 'godam' ) }
+					>
+						<div className="layer-indicator--container add-layer-container">
+							<div className="icon add-icon">
+								<Icon icon={ plus } />
+								<div>{ __( 'ADD LAYER', 'godam' ) }</div>
+							</div>
+							<div className="info">{ formatTime( sliderValue ) }</div>
+						</div>
+					</div>
+				)
 			}
 			{
 				sortedChapters?.map( ( chapter, index ) => {
