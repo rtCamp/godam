@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
@@ -130,22 +131,125 @@ export default class WooCommerceLayerManager {
 
 		const miniCart = layerObj.miniCart;
 
-		layerObj.productHotspots.forEach( ( hotspot ) => {
-			const hotspotDiv = this.createProductHotspotElement( hotspot, miniCart, containerWidth, containerHeight, baseWidth, baseHeight );
+		// Get all unique product IDs
+		const productIds = [ ...new Set(
+			layerObj.productHotspots
+				.filter( ( hotspot ) => hotspot.productId )
+				.map( ( hotspot ) => hotspot.productId ),
+		) ];
 
-			if ( layerObj.pauseOnHover ) {
-				this.setupProductHotspotHoverEvents( hotspotDiv );
-			}
+		// If no products, return early
+		if ( productIds.length === 0 ) {
+			return;
+		}
 
-			layerObj.layerElement.appendChild( hotspotDiv );
+		// Track hotspot elements by index for later updates
+		const hotspotElements = [];
 
-			const productBoxDiv = hotspotDiv.querySelector( '.product-hotspot-box' );
-			if ( productBoxDiv ) {
-				requestAnimationFrame( () => {
-					this.positionProductBox( hotspotDiv, productBoxDiv );
-				} );
+		// First, create placeholder hotspots (without using old productDetails)
+		layerObj.productHotspots.forEach( ( hotspot, index ) => {
+			if ( hotspot.productId ) {
+				// Create a clean hotspot object without old productDetails
+				const cleanHotspot = { ...hotspot, productDetails: null };
+
+				const hotspotDiv = this.createProductHotspotElement( cleanHotspot, miniCart, containerWidth, containerHeight, baseWidth, baseHeight );
+
+				// Store element reference by index
+				hotspotElements[ index ] = hotspotDiv;
+
+				if ( layerObj.pauseOnHover ) {
+					this.setupProductHotspotHoverEvents( hotspotDiv );
+				}
+
+				layerObj.layerElement.appendChild( hotspotDiv );
+
+				const productBoxDiv = hotspotDiv.querySelector( '.product-hotspot-box' );
+				if ( productBoxDiv ) {
+					requestAnimationFrame( () => {
+						this.positionProductBox( hotspotDiv, productBoxDiv );
+					} );
+				}
 			}
 		} );
+
+		// Then fetch all products in parallel and update hotspots
+		const productPromises = productIds.map( ( productId ) =>
+			apiFetch( {
+				url: `${ window.godamRestRoute?.url || '' }godam/v1/wcproduct?id=${ productId }`,
+			} ).catch( ( error ) => {
+				// eslint-disable-next-line no-console
+				console.error( `Error loading product ${ productId }:`, error );
+				return null;
+			} ),
+		);
+
+		// Update hotspots once products are loaded
+		Promise.all( productPromises ).then( ( products ) => {
+			const productMap = {};
+
+			// Create a map of productId -> product data
+			products.forEach( ( product ) => {
+				if ( product ) {
+					productMap[ product.id ] = product;
+				}
+			} );
+
+			// Update hotspots with loaded product data
+			layerObj.productHotspots.forEach( ( hotspot, index ) => {
+				if ( hotspot.productId && productMap[ hotspot.productId ] ) {
+					// Attach fetched product details to hotspot object
+					hotspot.productDetails = productMap[ hotspot.productId ];
+
+					// Get the hotspot element we created earlier
+					const hotspotEl = hotspotElements[ index ];
+					if ( hotspotEl ) {
+						// Replace placeholder box with a newly built one (ensures correct markup + handlers)
+						const oldProductBoxDiv = hotspotEl.querySelector( '.product-hotspot-box' );
+						if ( oldProductBoxDiv ) {
+							const newProductBoxDiv = this.createProductHotspotProductBox( hotspot, miniCart );
+							oldProductBoxDiv.replaceWith( newProductBoxDiv );
+
+							// Reposition the product box
+							requestAnimationFrame( () => {
+								this.positionProductBox( hotspotEl, newProductBoxDiv );
+							} );
+						}
+					}
+				}
+			} );
+		} );
+	}
+
+	/**
+	 * Render product box content HTML
+	 *
+	 * @param {Object} hotspot - Hotspot with product details
+	 * @return {string} HTML content for product box
+	 */
+	renderProductBoxContent( hotspot ) {
+		const productData = hotspot.productDetails;
+
+		if ( ! productData ) {
+			return '<div>No product selected</div>';
+		}
+
+		const cartUrl = `${ window.easydamMediaLibrary.wooCartURL }?add-to-cart=${ hotspot.productId }&source=productHotspot`;
+		const productLink = hotspot.addToCart ? productData.link : cartUrl;
+
+		return `
+			<div class="product-hotspot-woo-display">
+				<div class="product-hotspot-woo-image-wrapper">
+					<img class="product-hotspot-woo-image" src="${ productData.image }" alt="${ productData.name }" />
+				</div>
+				<div class="product-hotspot-woo-details">
+					<div class="product-hotspot-woo-name">${ productData.name }</div>
+					<div class="product-hotspot-woo-price">${ productData.price }</div>
+					<a class="product-hotspot-woo-link" href="${ productLink }" target="_blank" rel="noopener noreferrer" style="background: ${ hotspot.backgroundColor || '#0c80dfa6' }">
+						${ hotspot.shopText || ( hotspot.addToCart ? 'View Product' : 'Buy Now' ) }
+					</a>
+				</div>
+			</div>
+		`;
 	}
 
 	/**
@@ -330,17 +434,18 @@ export default class WooCommerceLayerManager {
 
 		// No product
 		const noProductDiv = document.createElement( 'div' );
-		noProductDiv.textContent = __( 'No product here', 'godam' );
+		noProductDiv.textContent = __( 'No product found', 'godam' );
 
 		// Product display
 		const productDisplayDiv = document.createElement( 'div' );
 		productDisplayDiv.classList.add( 'product-hotspot-woo-display' );
 
-		if ( hotspot?.productDetails ) {
-			productBoxDiv.appendChild( productDisplayDiv );
-		} else {
+		if ( ! hotspot?.productDetails ) {
 			productBoxDiv.appendChild( noProductDiv );
+			return productBoxDiv;
 		}
+
+		productBoxDiv.appendChild( productDisplayDiv );
 
 		// Image wrapper
 		const imageWrapperDiv = document.createElement( 'div' );

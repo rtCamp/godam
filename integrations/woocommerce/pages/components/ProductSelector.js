@@ -147,6 +147,8 @@ const ProductSelector = ( { index, value, productHotspot, productHotspots, updat
 								o.value === val ? { ...o, label: fullProduct.name } : o,
 							),
 						);
+						// Only store product ID, not productDetails
+						// This ensures fresh data is always fetched from WooCommerce
 						updateField(
 							'productHotspots',
 							productHotspots.map( ( h2, j ) =>
@@ -154,7 +156,6 @@ const ProductSelector = ( { index, value, productHotspot, productHotspots, updat
 									? {
 										...h2,
 										productId: val,
-										productDetails: fullProduct,
 									}
 									: h2,
 							),

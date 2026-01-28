@@ -26,7 +26,7 @@ import {
 	check,
 } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
-import { useState, useRef, useEffect, useCallback } from '@wordpress/element';
+import { useState, useRef, useEffect, useCallback, useMemo } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -40,6 +40,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import LayersHeader from '../../../../pages/video-editor/components/layers/LayersHeader';
 import { PRODUCT_HOTSPOT_CONSTANTS } from '../../../../assets/src/js/godam-player/utils/constants';
+import { fetchProductData } from '../utils/productDataCache';
 
 /**
  * WoocommerceLayer component for managing and rendering interactive product hotspots on a video layer.
@@ -51,6 +52,378 @@ import { PRODUCT_HOTSPOT_CONSTANTS } from '../../../../assets/src/js/godam-playe
  *
  * @return {JSX.Element} The rendered WoocommerceLayer component.
  */
+
+/**
+ * ProductHotspotPanel - Sub-component for rendering a single product hotspot with on-demand data fetching.
+ *
+ * @param {Object}   root0 - Props object
+ * @param {Object}   root0.productHotspot - Product hotspot data
+ * @param {number}   root0.index - Index of the hotspot
+ * @param {boolean}  root0.isExpanded - Whether panel is expanded
+ * @param {Function} root0.onToggleExpand - Callback to toggle expand state
+ * @param {Function} root0.onDelete - Callback to delete hotspot
+ * @param {Array}    root0.productHotspots - All product hotspots
+ * @param {Function} root0.updateField - Callback to update field
+ * @param {boolean}  root0.isValidAPIKey - Whether API key is valid
+ * @param {Function} root0.getProductHotspotDisplayName - Function to get display name
+ * @param {Object}   root0.productCache - Cache of product data
+ * @param {Function} root0.onCacheProduct - Callback to cache product
+ * @param {Object}   root0.fetchingProductsRef - Ref to track fetching products
+ * @return {JSX.Element} Rendered component
+ */
+const ProductHotspotPanel = ( {
+	productHotspot,
+	index,
+	isExpanded,
+	onToggleExpand,
+	onDelete,
+	productHotspots,
+	updateField,
+	isValidAPIKey,
+	getProductHotspotDisplayName,
+	productCache,
+	onCacheProduct,
+	fetchingProductsRef,
+} ) => {
+	// Get product data from productCache only (no more productDetails from DB)
+	const productData = productCache[ productHotspot.productId ] || null;
+
+	useEffect( () => {
+		// Only fetch if we have a productId
+		if ( ! productHotspot.productId ) {
+			return;
+		}
+
+		// If already in cache, don't fetch again
+		if ( productCache[ productHotspot.productId ] ) {
+			return;
+		}
+
+		// If already fetching this product, don't fetch again
+		if ( fetchingProductsRef.current.has( productHotspot.productId ) ) {
+			return;
+		}
+
+		// Mark as fetching to prevent duplicate requests
+		fetchingProductsRef.current.add( productHotspot.productId );
+
+		fetchProductData( productHotspot.productId )
+			.then( ( data ) => {
+				onCacheProduct( productHotspot.productId, data );
+			} )
+			.catch( ( error ) => {
+				// eslint-disable-next-line no-console
+				console.error( `Error loading product data for ID ${ productHotspot.productId }:`, error );
+				onCacheProduct( productHotspot.productId, null );
+			} );
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ productHotspot.productId ] );
+
+	return (
+		<div className="p-2 w-full border rounded">
+			<div className="flex justify-between items-center">
+				<Button
+					icon={ isExpanded ? chevronUp : chevronDown }
+					className="flex-1 text-left text-flex-left"
+					onClick={ onToggleExpand }
+				>
+					{ getProductHotspotDisplayName( productHotspot, index, productData ) }
+				</Button>
+			{
+				/* translators: %s is the product hotspot name */
+			}
+			<DropdownMenu
+				icon={ moreVertical }
+				label={ `${ getProductHotspotDisplayName( productHotspot, index, productData ) } ${ __( 'options', 'godam' ) }` }
+					toggleProps={ { 'aria-label': sprintf( __( 'Options for %s', 'godam' ), getProductHotspotDisplayName( productHotspot, index, productData ) ) } }
+				>
+					{ () => (
+						<>
+							<MenuItem
+								icon={ productHotspot.showStyle ? check : '' }
+								onClick={ () => {
+									updateField(
+										'productHotspots',
+										productHotspots.map( ( h2, j ) =>
+											j === index
+												? {
+													...h2,
+													showStyle: ! h2.showStyle,
+													showIcon: ! h2.showStyle ? false : h2.showIcon,
+													icon: ! h2.showStyle ? '' : h2.icon,
+												}
+												: h2,
+										),
+									);
+								} }
+							>
+								{ __( 'Show Style', 'godam' ) }
+							</MenuItem>
+							<MenuItem
+								icon={ productHotspot.showIcon ? check : '' }
+								onClick={ () => {
+									updateField(
+										'productHotspots',
+										productHotspots.map( ( h2, j ) =>
+											j === index
+												? {
+													...h2,
+													showIcon: ! h2.showIcon,
+													showStyle: ! h2.showIcon ? false : h2.showStyle,
+												}
+												: h2,
+										),
+									);
+								} }
+							>
+								{ __( 'Show Icon', 'godam' ) }
+							</MenuItem>
+							<MenuItem
+								icon={ trash }
+								onClick={ onDelete }
+								className="text-red-500"
+							>
+								{ __( 'Delete Product Hotspot', 'godam' ) }
+							</MenuItem>
+						</>
+					) }
+				</DropdownMenu>
+		</div>
+
+			{ isExpanded && (
+				<div className="mt-3">
+					{ /* Product Hotspot Name */ }
+					<TextControl
+						className="godam-input"
+						label={ __( 'Product Hotspot Name', 'godam' ) }
+						value={ productHotspot.name ?? '' }
+						/* translators: %d is the hotspot index */
+						placeholder={ productData?.name
+							? `${ index + 1 }. ${ productData.name }`
+							: `Product Hotspot ${ index + 1 }` }
+						maxLength={ 40 }
+						onChange={ ( val ) => {
+							const v = ( val || '' ).slice( 0, 40 );
+							updateField(
+								'productHotspots',
+								productHotspots.map( ( h2, j ) =>
+									j === index ? { ...h2, name: v } : h2,
+								),
+							);
+						} }
+						help={ __( 'Give this Product hotspot a descriptive title', 'godam' ) }
+						disabled={ ! isValidAPIKey }
+					/>
+					<TextControl
+						className="godam-input"
+						label={ __( 'Shop Button', 'godam' ) }
+						placeholder={ productHotspot.addToCart
+							? __( 'View Product', 'godam' )
+							: __( 'Buy Now', 'godam' ) }
+						value={ productHotspot.shopText }
+						onChange={ ( val ) =>
+							updateField(
+								'productHotspots',
+								productHotspots.map( ( h2, j ) =>
+									j === index ? { ...h2, shopText: val } : h2,
+								),
+							)
+						}
+						disabled={ ! isValidAPIKey }
+						help={ __( 'Shop button color follows Product hotspot color.', 'godam' ) }
+					/>
+					<div className="mt-3">
+						{ ( () => {
+							if ( ! productData ) {
+								return null;
+							}
+
+							const isGrouped = productData.type === 'grouped';
+							const isExternal = productData.type === 'external';
+							const isVariable = productData.type === 'variable';
+							const isOutOfStock = productData.in_stock === false;
+							const forceProductPage = isGrouped || isExternal || isVariable || isOutOfStock;
+							const isDisabled = ! isValidAPIKey || isGrouped || isExternal || isVariable || isOutOfStock;
+
+							if ( forceProductPage && ! productHotspot.addToCart ) {
+								updateField(
+									'productHotspots',
+									productHotspots.map( ( h2, j ) =>
+										j === index ? { ...h2, addToCart: true } : h2,
+									),
+								);
+							}
+
+							let help = '';
+
+							if ( isGrouped ) {
+								help = __( 'Grouped products cannot be added to the cart directly.', 'godam' );
+							} else if ( isExternal ) {
+								help = __( 'External/Affiliate products cannot be added to the cart directly.', 'godam' );
+							} else if ( isVariable ) {
+								help = __( 'Variable products cannot be added to the cart directly.', 'godam' );
+							} else if ( isOutOfStock ) {
+								help = __( 'Products Out of Stock cannot be added to the cart directly.', 'godam' );
+							} else if ( productHotspot.addToCart ) {
+								help = __( 'Users will be redirected to the product page.', 'godam' );
+							} else {
+								help = __( 'By default, this adds the product to the cart. Turn ON to go to the product page instead.', 'godam' );
+							}
+
+							return (
+								<ToggleControl
+									className="godam-toggle"
+									label={ __( 'Link to Product Page', 'godam' ) }
+									checked={ productHotspot.addToCart }
+									help={ help }
+									onChange={ ( isChecked ) => {
+										updateField(
+											'productHotspots',
+											productHotspots.map( ( h2, j ) =>
+												j === index ? { ...h2, addToCart: isChecked } : h2,
+											),
+										);
+									} }
+									disabled={ isDisabled }
+								/>
+							);
+						} )() }
+					</div>
+					<ProductSelector
+						index={ index }
+						value={ productHotspot.productId }
+						productHotspot={ productHotspot }
+						productHotspots={ productHotspots }
+						updateField={ updateField }
+						isValidAPIKey={ isValidAPIKey }
+					/>
+					{ productHotspot.showIcon && (
+						<div className="flex flex-col gap-2 mt-2">
+							<FontAwesomeIconPicker
+								productHotspot={ productHotspot }
+								index={ index }
+								updateField={ updateField }
+								productHotspots={ productHotspots }
+								disabled={ ! isValidAPIKey }
+							/>
+						</div>
+					) }
+					{ productHotspot.showStyle && (
+						<div className="flex flex-col gap-2 mt-2">
+							<label
+								htmlFor={ `hotspot-color-${ index }` }
+								className="text-xs text-gray-700"
+							>
+								{ __( 'BACKGROUND COLOR', 'godam' ) }
+							</label>
+							<ColorPalette
+								id={ `hotspot-color-${ index }` }
+								value={ productHotspot.backgroundColor || '#0c80dfa6' }
+								className={ ! isValidAPIKey ? 'pointer-events-none opacity-50' : '' }
+								onChange={ ( newColor ) => {
+									updateField(
+										'productHotspots',
+										productHotspots.map( ( h2, j ) =>
+											j === index
+												? {
+													...h2,
+													backgroundColor: newColor,
+												}
+												: h2,
+										),
+									);
+								} }
+								enableAlpha
+							/>
+						</div>
+					) }
+				</div>
+			) }
+		</div>
+	);
+};
+
+/**
+ * ProductHotspotPreview - Preview rendering of product hotspot in editor
+ *
+ * @param {Object} root0 - Props object
+ * @param {Object} root0.productHotspot - Product hotspot data
+ * @param {number} root0.index - Index of the hotspot
+ * @param {Object} root0.productCache - Cache of product data
+ * @return {JSX.Element} Rendered component
+ */
+const ProductHotspotPreview = ( { productHotspot, index, productCache } ) => {
+	// Get product data from productCache only (fresh data from API)
+	const productData = productCache[ productHotspot.productId ] || null;
+
+	return (
+		<div className={ `hotspot-content flex items-center justify-center ${ ! productHotspot.icon ? 'no-icon' : '' }` }>
+			{ productHotspot.icon ? (
+				<FontAwesomeIcon
+					icon={ [ 'fas', productHotspot.icon ] }
+					className="pointer-events-none"
+					style={ {
+						width: '50%',
+						height: '50%',
+						color: '#000',
+					} }
+				/>
+			) : null }
+
+			<span className="index">{ index + 1 }</span>
+
+			<div className="product-hotspot-box">
+				{ productData ? (
+					<div className="product-hotspot-woo-display">
+						<div className="product-hotspot-woo-image-wrapper">
+							<img
+								className="product-hotspot-woo-image"
+								src={ productData.image }
+								alt={ productData.name }
+							/>
+						</div>
+						<div className="product-hotspot-woo-details">
+							<div className="product-hotspot-woo-name">
+								{ productData.name }
+							</div>
+							<div
+								className="product-hotspot-woo-price"
+								dangerouslySetInnerHTML={ {
+									__html: `${ productData.price }`,
+								} }
+							/>
+							<a
+								className="product-hotspot-woo-link"
+								href={
+									productHotspot.addToCart
+										? productData.link
+										: `${ window.easydamMediaLibrary.wooCartURL }?add-to-cart=${ productHotspot.productId }&source=productHotspot`
+								}
+								target="_blank"
+								rel="noopener noreferrer"
+								style={ { background: productHotspot.backgroundColor } }
+							>
+								{ ( () => {
+									const defaultLabel = productHotspot.addToCart
+										? __( 'View Product', 'godam' )
+										: __( 'Buy Now', 'godam' );
+
+									const shopText = productHotspot.shopText?.trim();
+
+									return shopText ? shopText : defaultLabel;
+								} )() }
+							</a>
+						</div>
+					</div>
+				) : (
+					<div>{ __( 'No product selected', 'godam' ) }</div>
+				) }
+			</div>
+
+		</div>
+	);
+};
+
 const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) =>
@@ -65,7 +438,10 @@ const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layer.firstWooLayerId ),
 	);
 
-	const productHotspots = layer?.productHotspots || [];
+	const productHotspots = useMemo(
+		() => layer?.productHotspots || [],
+		[ layer?.productHotspots ],
+	);
 
 	// Track expanded Product hotspot
 	const [ expandedProductHotspotIndex, setExpandedProductHotspotIndex ] = useState( null );
@@ -74,6 +450,22 @@ const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 	const videoRef = useRef( null );
 
 	const [ contentRect, setContentRect ] = useState( null );
+
+	// Product cache: key is productId, value is product data
+	const [ productCache, setProductCache ] = useState( {} );
+
+	// Track which products are currently being fetched to prevent duplicates
+	const fetchingProductsRef = useRef( new Set() );
+
+	// Helper to update product cache
+	const handleCacheProduct = useCallback( ( productId, data ) => {
+		setProductCache( ( prev ) => ( {
+			...prev,
+			[ productId ]: data,
+		} ) );
+		// Remove from fetching set when done
+		fetchingProductsRef.current.delete( productId );
+	}, [] );
 
 	// Helper to dispatch updates
 	const updateField = useCallback( ( field, value ) => {
@@ -114,7 +506,7 @@ const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 		const newProductHotspot = {
 			id: uuidv4(),
 			productId: '',
-			productDetails: '',
+			// REMOVED: productDetails - will be fetched on-demand
 			addToCart: false,
 			shopText: __( 'Shop Me', 'godam' ),
 			position: { x: 50, y: 50 },
@@ -249,13 +641,14 @@ const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 	 * @param {Object} productHotspot        - The hotspot object containing its properties.
 	 * @param {string} [productHotspot.name] - The custom name of the product hotspot (optional).
 	 * @param {number} index                 - The index of the product hotspot in the list.
-	 * @return {string} The display name for the ptoduct hotspot.
+	 * @param {Object} productData           - The fetched product data (optional).
+	 * @return {string} The display name for the product hotspot.
 	 */
-	const getProductHotspotDisplayName = ( productHotspot, index ) => {
+	const getProductHotspotDisplayName = ( productHotspot, index, productData = null ) => {
 		const custom = productHotspot?.name && String( productHotspot.name ).trim();
 		return custom ||
-		( productHotspot?.productDetails?.name
-			? `${ index + 1 }. ${ productHotspot.productDetails.name }`
+		( productData?.name
+			? `${ index + 1 }. ${ productData.name }`
 			: `Product Hotspot ${ index + 1 }` );
 	};
 
@@ -341,220 +734,21 @@ const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 			{ /* Product Hotspots list */ }
 			<div className="flex items-center flex-col gap-4 pb-4">
 				{ productHotspots.map( ( productHotspot, index ) => (
-					<div key={ productHotspot.id } className="p-2 w-full border rounded">
-						<div className="flex justify-between items-center">
-							<Button
-								icon={ expandedProductHotspotIndex === index ? chevronUp : chevronDown }
-								className="flex-1 text-left text-flex-left"
-								onClick={ () => toggleProductHotspotExpansion( index ) }
-							>
-								{ getProductHotspotDisplayName( productHotspot, index ) }
-							</Button>
-							<DropdownMenu
-								icon={ moreVertical }
-								label={ `${ getProductHotspotDisplayName( productHotspot, index ) } ${ __( 'options', 'godam' ) }` }
-								/* translators: %d is the hotspot index */
-								toggleProps={ { 'aria-label': sprintf( __( 'Options for %s', 'godam' ), getProductHotspotDisplayName( productHotspot, index ) ) } }
-							>
-								{ () => (
-									<>
-										<MenuItem
-											icon={ productHotspot.showStyle ? check : '' }
-											onClick={ () => {
-												updateField(
-													'productHotspots',
-													productHotspots.map( ( h2, j ) =>
-														j === index
-															? {
-																...h2,
-																showStyle: ! h2.showStyle,
-																showIcon: ! h2.showStyle ? false : h2.showIcon,
-																icon: ! h2.showStyle ? '' : h2.icon,
-															}
-															: h2,
-													),
-												);
-											} }
-										>
-											{ __( 'Show Style', 'godam' ) }
-										</MenuItem>
-										<MenuItem
-											icon={ productHotspot.showIcon ? check : '' }
-											onClick={ () => {
-												updateField(
-													'productHotspots',
-													productHotspots.map( ( h2, j ) =>
-														j === index
-															? {
-																...h2,
-																showIcon: ! h2.showIcon, // Enable icon
-																showStyle: ! h2.showIcon ? false : h2.showStyle, // Disable style
-															}
-															: h2,
-													),
-												);
-											} }
-										>
-											{ __( 'Show Icon', 'godam' ) }
-										</MenuItem>
-										<MenuItem
-											icon={ trash }
-											onClick={ () => handleDeleteProductHotspot( index ) }
-											className="text-red-500"
-										>
-											{ __( 'Delete Product Hotspot', 'godam' ) }
-										</MenuItem>
-									</>
-								) }
-							</DropdownMenu>
-						</div>
-
-						{ expandedProductHotspotIndex === index && (
-							<div className="mt-3">
-								{ /* Product Hotspot Name */ }
-								<TextControl
-									className="godam-input"
-									label={ __( 'Product Hotspot Name', 'godam' ) }
-									value={ productHotspot.name ?? '' }
-									/* translators: %d is the hotspot index */
-									placeholder={ productHotspot?.productDetails?.name
-										? `${ index + 1 }. ${ productHotspot.productDetails.name }`
-										: `Product Hotspot ${ index + 1 }` }
-									maxLength={ 40 }
-									onChange={ ( val ) => {
-										const v = ( val || '' ).slice( 0, 40 );
-										updateField(
-											'productHotspots',
-											productHotspots.map( ( h2, j ) =>
-												j === index ? { ...h2, name: v } : h2,
-											),
-										);
-									} }
-									help={ __( 'Give this Product hotspot a descriptive title', 'godam' ) }
-									disabled={ ! isValidAPIKey }
-								/>
-								<TextControl
-									className="godam-input"
-									label={ __( 'Shop Button', 'godam' ) }
-									placeholder={ productHotspot.addToCart
-										? __( 'View Product', 'godam' )
-										: __( 'Buy Now', 'godam' ) }
-									value={ productHotspot.shopText }
-									onChange={ ( val ) =>
-										updateField(
-											'productHotspots',
-											productHotspots.map( ( h2, j ) =>
-												j === index ? { ...h2, shopText: val } : h2,
-											),
-										)
-									}
-									disabled={ ! isValidAPIKey }
-									help={ __( 'Shop button color follows Product hotspot color.', 'godam' ) }
-								/>
-								<div className="mt-3">
-									{ ( () => {
-										const isGrouped = productHotspot.productDetails.type === 'grouped';
-										const isExternal = productHotspot.productDetails.type === 'external';
-										const isVariable = productHotspot.productDetails.type === 'variable';
-										const isOutOfStock = productHotspot.productDetails.in_stock === false;
-										const forceProductPage = isGrouped || isExternal || isVariable || isOutOfStock;
-										const isDisabled = ! isValidAPIKey || isGrouped || isExternal || isVariable || isOutOfStock;
-
-										if ( forceProductPage && ! productHotspot.addToCart ) {
-											updateField(
-												'productHotspots',
-												productHotspots.map( ( h2, j ) =>
-													j === index ? { ...h2, addToCart: true } : h2,
-												),
-											);
-										}
-
-										let help = '';
-
-										if ( isGrouped ) {
-											help = __( 'Grouped products cannot be added to the cart directly.', 'godam' );
-										} else if ( isExternal ) {
-											help = __( 'External/Affiliate products cannot be added to the cart directly.', 'godam' );
-										} else if ( isVariable ) {
-											help = __( 'Variable products cannot be added to the cart directly.', 'godam' );
-										} else if ( isOutOfStock ) {
-											help = __( 'Products Out of Stock cannot be added to the cart directly.', 'godam' );
-										} else if ( productHotspot.addToCart ) {
-											help = __( 'Users will be redirected to the product page.', 'godam' );
-										} else {
-											help = __( 'By default, this adds the product to the cart. Turn ON to go to the product page instead.', 'godam' );
-										}
-
-										return (
-											<ToggleControl
-												className="godam-toggle"
-												label={ __( 'Link to Product Page', 'godam' ) }
-												checked={ productHotspot.addToCart }
-												help={ help }
-												onChange={ ( isChecked ) => {
-													updateField(
-														'productHotspots',
-														productHotspots.map( ( h2, j ) =>
-															j === index ? { ...h2, addToCart: isChecked } : h2,
-														),
-													);
-												} }
-												disabled={ isDisabled }
-											/>
-										);
-									} )() }
-								</div>
-								<ProductSelector
-									index={ index }
-									value={ productHotspot.productId }
-									productHotspot={ productHotspot }
-									productHotspots={ productHotspots }
-									updateField={ updateField }
-									isValidAPIKey={ isValidAPIKey }
-								/>
-								{ productHotspot.showIcon && (
-									<div className="flex flex-col gap-2 mt-2">
-										<FontAwesomeIconPicker
-											productHotspot={ productHotspot }
-											index={ index }
-											updateField={ updateField }
-											productHotspots={ productHotspots }
-											disabled={ ! isValidAPIKey }
-										/>
-									</div>
-								) }
-								{ productHotspot.showStyle && (
-									<div className="flex flex-col gap-2 mt-2">
-										<label
-											htmlFor={ `hotspot-color-${ index }` }
-											className="text-xs text-gray-700"
-										>
-											{ __( 'BACKGROUND COLOR', 'godam' ) }
-										</label>
-										<ColorPalette
-											id={ `hotspot-color-${ index }` }
-											value={ productHotspot.backgroundColor || '#0c80dfa6' }
-											className={ ! isValidAPIKey ? 'pointer-events-none opacity-50' : '' }
-											onChange={ ( newColor ) => {
-												updateField(
-													'productHotspots',
-													productHotspots.map( ( h2, j ) =>
-														j === index
-															? {
-																...h2,
-																backgroundColor: newColor,
-															}
-															: h2,
-													),
-												);
-											} }
-											enableAlpha
-										/>
-									</div>
-								) }
-							</div>
-						) }
-					</div>
+					<ProductHotspotPanel
+						key={ productHotspot.id }
+						productHotspot={ productHotspot }
+						index={ index }
+						isExpanded={ expandedProductHotspotIndex === index }
+						onToggleExpand={ () => toggleProductHotspotExpansion( index ) }
+						onDelete={ () => handleDeleteProductHotspot( index ) }
+						productHotspots={ productHotspots }
+						updateField={ updateField }
+						isValidAPIKey={ isValidAPIKey }
+						getProductHotspotDisplayName={ getProductHotspotDisplayName }
+						productCache={ productCache }
+						onCacheProduct={ handleCacheProduct }
+						fetchingProductsRef={ fetchingProductsRef }
+					/>
 				) ) }
 
 				<Button
@@ -755,70 +949,11 @@ const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 									zIndex: 20,
 								} }
 							>
-								<div className={ `hotspot-content flex items-center justify-center ${ ! productHotspot.icon ? 'no-icon' : '' }` }>
-									{ productHotspot.icon ? (
-										<FontAwesomeIcon
-											icon={ [ 'fas', productHotspot.icon ] }
-											className="pointer-events-none"
-											style={ {
-												width: '50%',
-												height: '50%',
-												color: '#000',
-											} }
-										/>
-									) : null }
-
-									<span className="index">{ index + 1 }</span>
-
-									<div className="product-hotspot-box">
-										{ productHotspot?.productDetails ? (
-											<div className="product-hotspot-woo-display">
-												<div className="product-hotspot-woo-image-wrapper">
-													<img
-														className="product-hotspot-woo-image"
-														src={ productHotspot.productDetails.image }
-														alt={ productHotspot.productDetails.name }
-													/>
-												</div>
-												<div className="product-hotspot-woo-details">
-													<div className="product-hotspot-woo-name">
-														{ productHotspot.productDetails.name }
-													</div>
-													<div
-														className="product-hotspot-woo-price"
-														dangerouslySetInnerHTML={ {
-															__html: `${ productHotspot.productDetails.price }`,
-														} }
-													/>
-													<a
-														className="product-hotspot-woo-link"
-														href={
-															productHotspot.addToCart
-																? productHotspot.productDetails.link
-																: `${ window.easydamMediaLibrary.wooCartURL }?add-to-cart=${ productHotspot.productId }&source=productHotspot`
-														}
-														target="_blank"
-														rel="noopener noreferrer"
-														style={ { background: productHotspot.backgroundColor } }
-													>
-														{ ( () => {
-															const defaultLabel = productHotspot.addToCart
-																? __( 'View Product', 'godam' )
-																: __( 'Buy Now', 'godam' );
-
-															const shopText = productHotspot.shopText?.trim();
-
-															return shopText ? shopText : defaultLabel;
-														} )() }
-													</a>
-												</div>
-											</div>
-										) : (
-											<div>{ __( 'No product selected', 'godam' ) }</div>
-										) }
-									</div>
-
-								</div>
+								<ProductHotspotPreview
+									productHotspot={ productHotspot }
+									index={ index }
+									productCache={ productCache }
+								/>
 							</Rnd>
 						);
 					} ) }

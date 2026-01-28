@@ -26,99 +26,10 @@ class WC_Woocommerce_Layer {
 	use Singleton;
 
 	/**
-	 * Constructor - hook into product update.
+	 * Constructor - hook into enqueue scripts.
 	 */
 	public function __construct() {
-		add_action( 'woocommerce_update_product', array( $this, 'update_hotspot_product_details' ), 10, 1 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
-	}
-
-	/**
-	 * Update all hotspots whenever a WooCommerce product is updated.
-	 *
-	 * @param int $post_id The product ID.
-	 */
-	public function update_hotspot_product_details( $post_id ) {
-		if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
-			return;
-		}
-
-		$request = new \WP_REST_Request( 'GET', '/godam/v1/wcproduct' );
-		$request->set_param( 'id', $post_id );
-
-		$response = rest_do_request( $request );
-
-		if ( $response->is_error() ) {
-			$error = $response->as_error();
-
-			// phpcs:ignore
-			error_log(
-				sprintf(
-					'Updating hotspot_product_details failed (code: %s) - %s',
-					$error->get_error_code(),
-					$error->get_error_message()
-				)
-			);
-
-			return;
-		}
-
-		$data = $response->get_data();
-
-		if ( empty( $data ) || ! is_array( $data ) ) {
-			return;
-		}
-
-		$product_data = $data;
-
-		// Find all attachments that may contain hotspots.
-		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
-		$attachments = get_posts(
-			array(
-				'post_type'      => 'attachment',
-				'posts_per_page' => -1,
-				'meta_key'       => 'rtgodam_meta', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-				'post_mime_type' => 'video/mp4',
-			)
-		);
-
-		foreach ( $attachments as $attachment ) {
-			$meta = get_post_meta( $attachment->ID, 'rtgodam_meta', true );
-
-			if ( empty( $meta ) || ! is_array( $meta ) ) {
-				continue;
-			}
-
-			// Only proceed if 'layers' exists and is not empty.
-			if ( empty( $meta['layers'] ) || ! is_array( $meta['layers'] ) ) {
-				continue;
-			}
-
-			$updated = false;
-
-			foreach ( $meta['layers'] as &$layer ) {
-				// Only for type = woo.
-				if ( isset( $layer['type'] ) && 'woo' === $layer['type'] ) {
-
-					if ( ! empty( $layer['productHotspots'] ) && is_array( $layer['productHotspots'] ) ) {
-						foreach ( $layer['productHotspots'] as &$hotspot ) {
-							if (
-								isset( $hotspot['productDetails']['id'] )
-								&& intval( $hotspot['productDetails']['id'] ) === $post_id
-							) {
-								$hotspot['productDetails'] = $product_data;
-								$updated                   = true;
-							}
-						}
-					}
-				}
-			}
-
-			// Save back if anything changed.
-			if ( $updated ) {
-				update_post_meta( $attachment->ID, 'rtgodam_meta', $meta );
-			}
-		}
 	}
 
 	/**
