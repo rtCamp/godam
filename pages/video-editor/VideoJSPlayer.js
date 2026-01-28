@@ -17,7 +17,7 @@ import 'videojs-flvjs-es6';
  * Internal dependencies
  */
 import GoDAM from '../../assets/src/images/GoDAM.png';
-import { setCurrentLayer, setAddLayerModalTime } from './redux/slice/videoSlice';
+import { setCurrentLayer, setAddLayerModalTime, updateLayerField } from './redux/slice/videoSlice';
 
 /**
  * WordPress dependencies
@@ -433,6 +433,9 @@ export const VideoJS = ( props ) => {
 						onAddLayer={ ( time ) => {
 							dispatch( setAddLayerModalTime( time ) );
 						} }
+						onLayerDrag={ ( layerId, newDisplayTime ) => {
+							dispatch( updateLayerField( { id: layerId, field: 'displayTime', value: newDisplayTime } ) );
+						} }
 					/>
 				)
 			}
@@ -469,12 +472,16 @@ export const VideoJS = ( props ) => {
 };
 
 const Slider = ( props ) => {
-	const { max, value, onChange, className, layers, onLayerSelect, disabled, currentLayerID, chapters, formatTimeForInput, onInteract, onAddLayer } = props;
+	const { max, value, onChange, className, layers, onLayerSelect, disabled, currentLayerID, chapters, formatTimeForInput, onInteract, onAddLayer, onLayerDrag } = props;
 
+	const sliderRef = useRef( null );
 	const [ sliderValue, setSliderValue ] = useState( value );
 	const [ hoverValue, setHoverValue ] = useState( null ); // Hover value
 	const [ isDragging, setIsDragging ] = useState( false ); // Track if user is dragging the slider
 	const [ isHovering, setIsHovering ] = useState( false ); // Track if mouse is over slider area
+	const [ draggingLayer, setDraggingLayer ] = useState( null ); // Track which layer is being dragged
+	const [ dragPosition, setDragPosition ] = useState( null ); // Track drag position as percentage
+	const pressTimerRef = useRef( null ); // Timer for press-and-hold detection
 
 	useEffect( () => {
 		setSliderValue( value );
@@ -517,14 +524,120 @@ const Slider = ( props ) => {
 		return `${ minutes }:${ remainingSeconds < 10 ? '0' : '' }${ remainingSeconds }`;
 	};
 
+	// Handle layer drag start (after press-and-hold delay)
+	const handleLayerPointerDown = ( e, layer ) => {
+		e.stopPropagation();
+		const PRESS_HOLD_DELAY = 200; // milliseconds
+
+		pressTimerRef.current = setTimeout( () => {
+			setDraggingLayer( layer );
+			setDragPosition( ( layer.displayTime / max ) * 100 );
+			document.body.style.cursor = 'grabbing';
+		}, PRESS_HOLD_DELAY );
+	};
+
+	// Handle pointer up - either select layer or finish drag
+	const handleLayerPointerUp = ( layer ) => {
+		if ( pressTimerRef.current ) {
+			clearTimeout( pressTimerRef.current );
+			pressTimerRef.current = null;
+		}
+
+		if ( draggingLayer ) {
+			// Finish drag - update the layer's displayTime and select the layer
+			const newDisplayTime = Math.round( ( dragPosition / 100 ) * max * 100 ) / 100;
+			if ( onLayerDrag ) {
+				onLayerDrag( draggingLayer.id, Math.max( 0, Math.min( newDisplayTime, max ) ) );
+			}
+			// Select the dragged layer
+			onLayerSelect( { ...draggingLayer, displayTime: Math.max( 0, Math.min( newDisplayTime, max ) ) } );
+			setDraggingLayer( null );
+			setDragPosition( null );
+			document.body.style.cursor = '';
+		} else {
+			// Normal click - select layer
+			onLayerSelect( layer );
+		}
+	};
+
+	// Handle pointer move during drag
+	const handlePointerMove = ( e ) => {
+		if ( ! draggingLayer || ! sliderRef.current ) {
+			return;
+		}
+
+		const rect = sliderRef.current.getBoundingClientRect();
+		const offsetX = e.clientX - rect.left;
+		const percentage = Math.max( 0, Math.min( ( offsetX / rect.width ) * 100, 100 ) );
+		setDragPosition( percentage );
+	};
+
+	// Handle pointer leave during drag
+	const handlePointerLeaveWhileDragging = () => {
+		if ( pressTimerRef.current ) {
+			clearTimeout( pressTimerRef.current );
+			pressTimerRef.current = null;
+		}
+	};
+
+	// Cleanup on unmount
+	useEffect( () => {
+		return () => {
+			if ( pressTimerRef.current ) {
+				clearTimeout( pressTimerRef.current );
+			}
+		};
+	}, [] );
+
+	// Add global pointer up listener when dragging
+	useEffect( () => {
+		if ( ! draggingLayer ) {
+			return;
+		}
+
+		const handleGlobalPointerUp = () => {
+			if ( draggingLayer ) {
+				const newDisplayTime = Math.round( ( dragPosition / 100 ) * max * 100 ) / 100;
+				if ( onLayerDrag ) {
+					onLayerDrag( draggingLayer.id, Math.max( 0, Math.min( newDisplayTime, max ) ) );
+				}
+				// Select the dragged layer
+				onLayerSelect( { ...draggingLayer, displayTime: Math.max( 0, Math.min( newDisplayTime, max ) ) } );
+				setDraggingLayer( null );
+				setDragPosition( null );
+				document.body.style.cursor = '';
+			}
+		};
+
+		const handleGlobalPointerMove = ( e ) => {
+			if ( draggingLayer && sliderRef.current ) {
+				const rect = sliderRef.current.getBoundingClientRect();
+				const offsetX = e.clientX - rect.left;
+				const percentage = Math.max( 0, Math.min( ( offsetX / rect.width ) * 100, 100 ) );
+				setDragPosition( percentage );
+			}
+		};
+
+		document.addEventListener( 'pointerup', handleGlobalPointerUp );
+		document.addEventListener( 'pointermove', handleGlobalPointerMove );
+
+		return () => {
+			document.removeEventListener( 'pointerup', handleGlobalPointerUp );
+			document.removeEventListener( 'pointermove', handleGlobalPointerMove );
+		};
+	}, [ draggingLayer, dragPosition, max, onLayerDrag ] );
+
 	return (
 		<div
 			className={ `slider-hover-area ${ className }` }
 			style={ { padding: '48px 20px', margin: '0 -20px' } }
 			onMouseEnter={ () => setIsHovering( true ) }
-			onMouseLeave={ () => setIsHovering( false ) }
+			onMouseLeave={ () => {
+				setIsHovering( false );
+				handlePointerLeaveWhileDragging();
+			} }
 		>
-			<div className="slider">
+			<div className="slider" ref={ sliderRef } onPointerMove={ handlePointerMove }>
 				<input
 					style={ {
 						'--progress-value': `${ sliderValue / max * 100 }%`,
@@ -577,18 +690,22 @@ const Slider = ( props ) => {
 				}
 				{
 					sortedLayers?.map( ( layer ) => {
-						const layerLeft = layer.displayTime / max * 100;
+						const isBeingDragged = draggingLayer?.id === layer.id;
+						const layerLeft = isBeingDragged ? dragPosition : ( layer.displayTime / max * 100 );
 
 						return (
 							// eslint-disable-next-line jsx-a11y/click-events-have-key-events
 							<div
 								key={ layer.id }
-								className={ `layer-indicator ${ layer.type === 'hotspot' ? 'hotspot-indicator' : '' }` }
+								className={ `layer-indicator ${ layer.type === 'hotspot' ? 'hotspot-indicator' : '' } ${ isBeingDragged ? 'dragging' : '' }` }
 								style={ {
 									left: `${ layerLeft }%`,
 									'--hover-width': layer?.duration ? `${ Math.min( ( layer.duration / max ) * 100, 100 - layerLeft ) }%` : '8px',
+									cursor: isBeingDragged ? 'grabbing' : 'grab',
 								} }
-								onClick={ () => onLayerSelect( layer ) }
+								onPointerDown={ ( e ) => handleLayerPointerDown( e, layer ) }
+								onPointerUp={ () => handleLayerPointerUp( layer ) }
+								onPointerCancel={ handlePointerLeaveWhileDragging }
 								role="button"
 								tabIndex={ 0 }
 							>
@@ -606,7 +723,7 @@ const Slider = ( props ) => {
 											}
 										</div>
 									</div>
-									<div className="info">{ formatTime( layer.displayTime ) }</div>
+									<div className="info">{ formatTime( isBeingDragged ? ( dragPosition / 100 ) * max : layer.displayTime ) }</div>
 								</div>
 							</div>
 						);
