@@ -59,62 +59,69 @@ const videoAnalyticsPlugin = () => {
 
 			try {
 				// Destructure the ranges array from properties
-				const { ranges = [], videoId, type, videoLength, videoIds } = properties;
+				const { ranges = [], videoId, type, videoLength, videoIds, jobId } = properties;
 
 				if ( ! type || ( type === 1 && ( ! videoIds || videoIds.length === 0 ) ) || token === 'unverified' ) {
 					return;
 				}
 
 				const userAgentData = getUserAgent( window.navigator.userAgent );
+
+				const requestBody = {
+					site_url: window.location.origin,
+					user_token: anonymousId,
+					wp_user_id: parseInt( userId, 10 ) || 0,
+					account_token: token || '',
+					email: emailId || '',
+					visitor_timestamp: meta?.ts || Date.now(),
+					visit_entry_action_url: window.location.href,
+					visit_entry_action_name: document.title,
+					referer_type: '',
+					referer_name: properties.referrer,
+					referer_url: properties.referrer,
+					referer_keyword: '',
+					campaign_keyword: ( undefined !== window.campaign_data && undefined !== window.campaign_data.keyword ) ? window.campaign_data.keyword : '',
+					campaign_medium: ( undefined !== window.campaign_data && undefined !== window.campaign_data.medium ) ? window.campaign_data.medium : '',
+					campaign_name: ( undefined !== window.campaign_data && undefined !== window.campaign_data.name ) ? window.campaign_data.name : '',
+					campaign_source: ( undefined !== window.campaign_data && undefined !== window.campaign_data.source ) ? window.campaign_data.source : '',
+					campaign_content: ( undefined !== window.campaign_data && undefined !== window.campaign_data.content ) ? window.campaign_data.content : '',
+					campaign_token: ( undefined !== window.campaign_data && undefined !== window.campaign_data.id ) ? window.campaign_data.id : '',
+					config_token: userAgentData.userAgent,
+					config_os: userAgentData.platform,
+					config_browser_name: userAgentData.name,
+					config_browser_version: userAgentData.version,
+					config_resolution: properties.width + 'x' + properties.height,
+					location_browser_lang: navigator.language,
+					location_ip: locationIP || '',
+					config_cookie: navigator.cookieEnabled,
+					param_vars: '',
+					is_post: isPost === '1',
+					is_page: isPage === '1',
+					is_archive: isArchive === '1',
+					post_type: postType,
+					post_id: parseInt( postId, 0 ),
+					post_title: postTitle,
+					categories,
+					tags,
+					author,
+					type: type || 0,
+					video_id: videoId ? parseInt( videoId, 0 ) : 0,
+					video_ids: type === 1 ? videoIds : [],
+					ranges,
+					video_length: videoLength || 0,
+				};
+
+				if ( type === 2 && jobId ) {
+					requestBody.job_id = jobId;
+				}
+
 				// Iterate over each range and send a POST request for it
 				const response = await fetch( endpoint + '/analytics/', {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
 					},
-					body: JSON.stringify( {
-						site_url: window.location.origin,
-						user_token: anonymousId,
-						wp_user_id: parseInt( userId, 10 ) || 0,
-						account_token: token || '',
-						email: emailId || '',
-						visitor_timestamp: meta?.ts || Date.now(),
-						visit_entry_action_url: window.location.href,
-						visit_entry_action_name: document.title,
-						referer_type: '',
-						referer_name: properties.referrer,
-						referer_url: properties.referrer,
-						referer_keyword: '',
-						campaign_keyword: ( undefined !== window.campaign_data && undefined !== window.campaign_data.keyword ) ? window.campaign_data.keyword : '',
-						campaign_medium: ( undefined !== window.campaign_data && undefined !== window.campaign_data.medium ) ? window.campaign_data.medium : '',
-						campaign_name: ( undefined !== window.campaign_data && undefined !== window.campaign_data.name ) ? window.campaign_data.name : '',
-						campaign_source: ( undefined !== window.campaign_data && undefined !== window.campaign_data.source ) ? window.campaign_data.source : '',
-						campaign_content: ( undefined !== window.campaign_data && undefined !== window.campaign_data.content ) ? window.campaign_data.content : '',
-						campaign_token: ( undefined !== window.campaign_data && undefined !== window.campaign_data.id ) ? window.campaign_data.id : '',
-						config_token: userAgentData.userAgent,
-						config_os: userAgentData.platform,
-						config_browser_name: userAgentData.name,
-						config_browser_version: userAgentData.version,
-						config_resolution: properties.width + 'x' + properties.height,
-						location_browser_lang: navigator.language,
-						location_ip: locationIP || '',
-						config_cookie: navigator.cookieEnabled,
-						param_vars: '',
-						is_post: isPost === '1',
-						is_page: isPage === '1',
-						is_archive: isArchive === '1',
-						post_type: postType,
-						post_id: parseInt( postId, 0 ),
-						post_title: postTitle,
-						categories,
-						tags,
-						author,
-						type: type || 0,
-						video_id: videoId ? parseInt( videoId, 0 ) : 0,
-						video_ids: type === 1 ? videoIds : [],
-						ranges,
-						video_length: videoLength || 0,
-					} ),
+					body: JSON.stringify( requestBody ),
 					keepalive: true,
 				} );
 

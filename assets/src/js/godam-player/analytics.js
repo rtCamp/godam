@@ -24,6 +24,7 @@ window.analytics = analytics;
 			`.easydam-player.video-js[data-id="${ videoId }"], .video-js[data-id="${ videoId }"]`,
 		);
 	}
+	window.findVideoElementById = findVideoElementById; // Exposed for other plugins as a global helper.
 
 	function getPlayer( el ) {
 		if ( ! el ) {
@@ -87,11 +88,17 @@ window.analytics = analytics;
 		if ( type === 2 ) {
 			const ctx = root && root.querySelector ? root : document;
 			let vid = videoId;
+			let jobId = '';
+
+			const videoEl = findVideoElementById( vid, root ) || ctx.querySelector( '.easydam-player.video-js, .video-js' );
 
 			// If no videoId provided, automatically find the current video
-			if ( ! vid ) {
-				const videoEl = ctx.querySelector( '.easydam-player.video-js, .video-js' );
-				vid = videoEl ? parseInt( videoEl.getAttribute( 'data-id' ), 10 ) : 0;
+			if ( ! vid && videoEl ) {
+				vid = parseInt( videoEl.getAttribute( 'data-id' ), 10 ) || 0;
+			}
+
+			if ( videoEl ) {
+				jobId = videoEl.getAttribute( 'data-job_id' ) || '';
 			}
 
 			vid = parseInt( vid, 10 ) || 0;
@@ -103,11 +110,10 @@ window.analytics = analytics;
 			// NOTE: This automatically sends a 'page_load' event before the heatmap event, for ease of use.
 			// This is intentional behavior but may cause duplicate type 1 events in some scenarios
 			if ( sendPageLoad ) {
-				window.analytics.track( 'page_load', { type: 1, videoIds: [ vid ] } );
+				window.analytics.track( 'page_load', { type: 1, videoIds: [ [ vid, jobId ] ] } );
 			}
 
-			const el = findVideoElementById( vid, root );
-			const player = getPlayer( el );
+			const player = getPlayer( videoEl );
 			if ( ! player ) {
 				return false;
 			}
@@ -122,6 +128,7 @@ window.analytics = analytics;
 			window.analytics.track( 'video_heatmap', {
 				type: 2,
 				videoId: vid,
+				jobId,
 				ranges,
 				videoLength,
 			} );
@@ -138,17 +145,20 @@ if ( ! window.pageLoadEventTracked ) {
 	document.addEventListener( 'DOMContentLoaded', () => {
 		const videos = document.querySelectorAll( '.easydam-player.video-js' );
 
-		// Collect all video IDs
-		const videoIds = Array.from( videos )
-			.map( ( video ) => video.getAttribute( 'data-id' ) )
-			.filter( ( id ) => id !== null && id !== '' && ! isNaN( id ) ) // Null and empty string check
-			.map( ( id ) => parseInt( id, 10 ) ); // Convert to integer
+		// Collect all video IDs and Job IDs
+		const videoInfo = Array.from( videos )
+			.map( ( video ) => ( {
+				id: video.getAttribute( 'data-id' ),
+				jobId: video.getAttribute( 'data-job_id' ) || '',
+			} ) )
+			.filter( ( info ) => info.id !== null && info.id !== '' && ! isNaN( info.id ) )
+			.map( ( info ) => [ parseInt( info.id, 10 ), info.jobId ] );
 
-		// Send a single page_load request with all video IDs
-		if ( window.analytics && videoIds.length > 0 ) {
+		// Send a single page_load request with all video ID and Job ID pairs
+		if ( window.analytics && videoInfo.length > 0 ) {
 			window.analytics.track( 'page_load', {
 				type: 1, // Enum: 1 = Page Load
-				videoIds, // Array of all video IDs
+				videoIds: videoInfo, // Array of [video_id, job_id] pairs
 			} );
 		}
 
@@ -201,6 +211,7 @@ function setupPlayerAnalytics( player, video ) {
 
 	async function updateHeatmap( ranges, videoLength ) {
 		const videoId = video.getAttribute( 'data-id' );
+		const jobId = video.getAttribute( 'data-job_id' ) || '';
 		if ( ! videoId || ranges.length === 0 ) {
 			return; // Skip sending if no valid data
 		}
@@ -209,6 +220,7 @@ function setupPlayerAnalytics( player, video ) {
 			window.analytics.track( 'video_heatmap', {
 				type: 2, // Enum: 2 = Heatmap
 				videoId: parseInt( videoId, 10 ),
+				jobId,
 				ranges,
 				videoLength,
 			} );

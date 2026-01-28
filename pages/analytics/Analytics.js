@@ -712,7 +712,12 @@ const Analytics = ( { attachmentID } ) => {
 													s
 												</td>
 											</tr>
-											<tr>
+											<tr
+												className={ highlightClass(
+													analyticsData?.video_length,
+													abTestComparisonAnalyticsData?.video_length,
+												) }
+											>
 												<td>{ analyticsData?.video_length }s</td>
 												<td>{ __( 'Video Length', 'godam' ) }</td>
 												<td>{ abTestComparisonAnalyticsData?.video_length }s</td>
