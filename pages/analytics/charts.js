@@ -323,7 +323,6 @@ async function main() {
 		300,
 	);
 	generateHeatmap( heatmapData, '#heatmap', videoPlayer );
-	// generateMetricsOverTime( timeMetricsChartData, '#metrics-chart', videoPlayer );
 	generatePostViewsChart( postsData, '#post-views-count-chart' );
 
 	function formatWatchTime( seconds ) {
