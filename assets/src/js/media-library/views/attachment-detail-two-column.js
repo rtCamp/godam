@@ -36,7 +36,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 *
 	 * @param {Function} renderMethod - The method to render the fetched data.
 	 *
-	 * @param {string}   type         - The type of data being fetched.
+	 * @param {string}   type         - The type of data being fetched. Defaults to empty string.
 	 */
 	async fetchAndRender( fetchPromise, renderMethod, type = '' ) {
 		const data = await fetchPromise;
