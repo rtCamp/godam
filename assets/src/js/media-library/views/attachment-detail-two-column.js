@@ -13,7 +13,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { addIcon, trashIcon } from '../media-library-icons';
+import { addIcon, trashIcon, editIcon, barChartIcon } from '../media-library-icons';
 import { canManageAttachment } from '../utility';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
@@ -558,16 +558,16 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		if ( ! activeUser ) {
 			return `
-			<a href="${ editVideoURL }" class="button button-primary" target="_blank">Edit Video</a>
+			<a href="${ editVideoURL }" class="button button-primary" target="_blank">${ editIcon } Edit Video</a>
 			<div class="paid-feature" title="This feature is only available for paid users.">
-				<a href="${ analyticsURL }" class="button button-secondary" target="_blank">Analytics</a>
+				<a href="${ analyticsURL }" class="button button-secondary" target="_blank">${ barChartIcon } Analytics</a>
 				<span>$</span>
 			</div>
 			`;
 		}
 
-		const editVideoButtonHTML = `<a href="${ editVideoURL }" class="button button-primary" target="_blank">Edit Video</a>`;
-		const analyticsButtonHTML = `<a href="${ analyticsURL }" class="button button-secondary" target="_blank">Analytics</a>`;
+		const editVideoButtonHTML = `<a href="${ editVideoURL }" class="button button-primary" target="_blank">${ editIcon } Edit Video</a>`;
+		const analyticsButtonHTML = `<a href="${ analyticsURL }" class="button button-secondary" target="_blank">${ barChartIcon } Analytics</a>`;
 
 		const buttons = [];
 
