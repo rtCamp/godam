@@ -24,6 +24,168 @@ export default class WooCommerceLayerManager {
 		this.wasPlayingBeforeHover = false;
 		this.isDisplayingLayers = isDisplayingLayers;
 		this.currentPlayerVideoInstanceId = currentPlayerVideoInstanceId;
+
+		// Product data cache (per player instance) to keep hotspots instant.
+		this.productCache = new Map();
+		this.productFetchPromises = new Map();
+		this.didBindPrefetchHandlers = false;
+		this.didPrefetchProducts = false;
+	}
+
+	bindProductPrefetchHandlers() {
+		if ( this.didBindPrefetchHandlers ) {
+			return;
+		}
+		this.didBindPrefetchHandlers = true;
+
+		const prefetch = () => {
+			this.prefetchAllProducts();
+		};
+
+		// Prefetch as soon as metadata is available (video loaded, not necessarily played).
+		if ( typeof this.player?.one === 'function' ) {
+			this.player.one( 'loadedmetadata', prefetch );
+			this.player.one( 'loadeddata', prefetch );
+			this.player.one( 'canplay', prefetch );
+		}
+
+		// Also prefetch on first user intent (hover/click), in case events above don't fire.
+		const el = this.player?.el?.();
+		if ( el ) {
+			el.addEventListener( 'pointerenter', prefetch, { once: true, passive: true } );
+			el.addEventListener( 'touchstart', prefetch, { once: true, passive: true } );
+			el.addEventListener( 'mousedown', prefetch, { once: true, passive: true } );
+		}
+	}
+
+	getAllUniqueProductIds() {
+		const ids = new Set();
+		this.wooLayers.forEach( ( layerObj ) => {
+			( layerObj.productHotspots || [] ).forEach( ( hotspot ) => {
+				if ( hotspot?.productId ) {
+					ids.add( hotspot.productId );
+				}
+			} );
+		} );
+		return [ ...ids ];
+	}
+
+	fetchProductById( productId ) {
+		if ( ! productId ) {
+			return Promise.resolve( null );
+		}
+
+		if ( this.productCache.has( productId ) ) {
+			return Promise.resolve( this.productCache.get( productId ) );
+		}
+
+		if ( this.productFetchPromises.has( productId ) ) {
+			return this.productFetchPromises.get( productId );
+		}
+
+		const promise = apiFetch( {
+			url: `${ window.godamRestRoute?.url || '' }godam/v1/wcproduct?id=${ productId }`,
+		} )
+			.then( ( product ) => {
+				if ( product ) {
+					this.productCache.set( productId, product );
+				}
+				return product || null;
+			} )
+			.catch( () => null )
+			.finally( () => {
+				this.productFetchPromises.delete( productId );
+			} );
+
+		this.productFetchPromises.set( productId, promise );
+		return promise;
+	}
+
+	fetchProductsByIds( productIds ) {
+		const ids = ( productIds || [] )
+			.map( ( id ) => parseInt( id, 10 ) )
+			.filter( ( id ) => Number.isFinite( id ) && id > 0 );
+
+		if ( ids.length === 0 ) {
+			return Promise.resolve( [] );
+		}
+
+		// If everything is already cached, avoid a request.
+		const uncached = ids.filter( ( id ) => ! this.productCache.has( id ) && ! this.productFetchPromises.has( id ) );
+		if ( uncached.length === 0 ) {
+			// Return cached data or wait for in-flight requests
+			return Promise.all(
+				ids.map( ( id ) => {
+					if ( this.productCache.has( id ) ) {
+						return Promise.resolve( this.productCache.get( id ) );
+					}
+					if ( this.productFetchPromises.has( id ) ) {
+						return this.productFetchPromises.get( id );
+					}
+					return Promise.resolve( null );
+				} ),
+			);
+		}
+
+		// Mark per-id promises so fetchProductById can piggy-back.
+		const batchPromise = apiFetch( {
+			url: `${ window.godamRestRoute?.url || '' }godam/v1/wcproducts-by-ids`,
+			method: 'POST',
+			data: { ids: uncached },
+		} ).catch( ( error ) => {
+			// eslint-disable-next-line no-console
+			console.warn( 'Batch product fetch failed, individual requests will be used:', error );
+			return [];
+		} );
+
+		uncached.forEach( ( id ) => {
+			if ( ! this.productFetchPromises.has( id ) ) {
+				this.productFetchPromises.set(
+					id,
+					batchPromise.then( ( list ) => ( list || [] ).find( ( p ) => p?.id === id ) || null ),
+				);
+			}
+		} );
+
+		return batchPromise
+			.then( ( products ) => {
+				( products || [] ).forEach( ( product ) => {
+					if ( product?.id ) {
+						this.productCache.set( product.id, product );
+					}
+				} );
+				return products || [];
+			} )
+			.finally( () => {
+				uncached.forEach( ( id ) => this.productFetchPromises.delete( id ) );
+			} );
+	}
+
+	prefetchAllProducts() {
+		if ( this.didPrefetchProducts ) {
+			return;
+		}
+
+		// Respect data-saver mode if present.
+		if ( window?.navigator?.connection?.saveData ) {
+			return;
+		}
+
+		this.didPrefetchProducts = true;
+		const productIds = this.getAllUniqueProductIds();
+		if ( productIds.length === 0 ) {
+			return;
+		}
+
+		const run = () => {
+			this.fetchProductsByIds( productIds );
+		};
+
+		if ( typeof window.requestIdleCallback === 'function' ) {
+			window.requestIdleCallback( run, { timeout: 1500 } );
+		} else {
+			window.setTimeout( run, 0 );
+		}
 	}
 
 	/**
@@ -44,6 +206,7 @@ export default class WooCommerceLayerManager {
 		};
 
 		this.wooLayers.push( layerObj );
+		this.bindProductPrefetchHandlers();
 	}
 
 	/**
@@ -172,19 +335,8 @@ export default class WooCommerceLayerManager {
 			}
 		} );
 
-		// Then fetch all products in parallel and update hotspots
-		const productPromises = productIds.map( ( productId ) =>
-			apiFetch( {
-				url: `${ window.godamRestRoute?.url || '' }godam/v1/wcproduct?id=${ productId }`,
-			} ).catch( ( error ) => {
-				// eslint-disable-next-line no-console
-				console.error( `Error loading product ${ productId }:`, error );
-				return null;
-			} ),
-		);
-
-		// Update hotspots once products are loaded
-		Promise.all( productPromises ).then( ( products ) => {
+		// Then fetch all products in a single request and update hotspots
+		this.fetchProductsByIds( productIds ).then( ( products ) => {
 			const productMap = {};
 
 			// Create a map of productId -> product data
@@ -432,16 +584,18 @@ export default class WooCommerceLayerManager {
 		const productBoxDiv = document.createElement( 'div' );
 		productBoxDiv.classList.add( 'product-hotspot-box' );
 
-		// No product
-		const noProductDiv = document.createElement( 'div' );
-		noProductDiv.textContent = __( 'No product found', 'godam' );
+		// Placeholder
+		const placeholderDiv = document.createElement( 'div' );
+		placeholderDiv.textContent = hotspot?.productId
+			? __( 'Loading…', 'godam' )
+			: __( 'No product found', 'godam' );
 
 		// Product display
 		const productDisplayDiv = document.createElement( 'div' );
 		productDisplayDiv.classList.add( 'product-hotspot-woo-display' );
 
 		if ( ! hotspot?.productDetails ) {
-			productBoxDiv.appendChild( noProductDiv );
+			productBoxDiv.appendChild( placeholderDiv );
 			return productBoxDiv;
 		}
 

@@ -203,7 +203,7 @@ class WC extends Base {
 						),
 					),
 				),
-			),   
+			),
 		);
 	}
 
@@ -217,14 +217,14 @@ class WC extends Base {
 	 */
 	public function godam_find_term( $search_term, array $taxonomies ) {
 		$matches = array();
-	
+
 		foreach ( $taxonomies as $tax ) {
 			$found = term_exists( $search_term, $tax );
-	
+
 			if ( ! $found ) {
 				continue;
 			}
-	
+
 			if ( is_int( $found ) ) {
 				$matches[] = array(
 					'term_id'  => $found,
@@ -242,9 +242,9 @@ class WC extends Base {
 				);
 			}
 		}
-	
+
 		return ! empty( $matches ) ? $matches : false;
-	}   
+	}
 
 	/**
 	 * Get all WooCommerce products.
@@ -256,7 +256,7 @@ class WC extends Base {
 		$search     = sanitize_text_field( $request->get_param( 'search' ) );
 		$is_numeric = is_numeric( $search );
 		$term_info  = $is_numeric ? false : $this->godam_find_term( $search, array( 'product_cat', 'product_tag', 'product_brand' ) );
-	
+
 		$args = array(
 			'post_type'      => 'product',
 			'post_status'    => 'publish',
@@ -264,25 +264,25 @@ class WC extends Base {
 		);
 
 		$taxonomy_query = array();
-	
+
 		// Allow numeric search by ID.
 		if ( $is_numeric ) {
 			$args['post__in'] = array( (int) $search );
 		} elseif ( is_array( $term_info ) && ! empty( $term_info ) ) {
 			$tax_query = array( 'relation' => 'OR' );
-		
+
 			foreach ( $term_info as $term ) {
 				if ( ! isset( $term['taxonomy'] ) ) {
 					continue;
 				}
-		
+
 				$tax_query[] = array(
 					'taxonomy' => $term['taxonomy'],
 					'field'    => 'slug',
 					'terms'    => array( $search ),
 					'operator' => 'IN',
 				);
-		
+
 				$tax_query[] = array(
 					'taxonomy' => $term['taxonomy'],
 					'field'    => 'name',
@@ -300,7 +300,7 @@ class WC extends Base {
 		} else {
 			$args['s'] = $search;
 		}
-	
+
 		$query = new \WP_Query( $args );
 
 		$all_posts = $query->posts;
@@ -314,7 +314,7 @@ class WC extends Base {
 				}
 			}
 		}
-	
+
 		$products = array_map(
 			function ( $post ) {
 				$product = wc_get_product( $post );
@@ -329,37 +329,42 @@ class WC extends Base {
 				if ( 'variable' === $type ) {
 
 					// Get variation prices.
-					$min_price = $product->get_variation_price( 'min', true );
-					$max_price = $product->get_variation_price( 'max', true );
-	
+					if ( $product instanceof \WC_Product_Variable ) {
+						$min_price = $product->get_variation_price( 'min', true );
+						$max_price = $product->get_variation_price( 'max', true );
+					} else {
+						$min_price = 0;
+						$max_price = 0;
+					}
+
 					if ( $min_price === $max_price ) {
 						$price_display = wc_price( $min_price );
 					} else {
 						$price_display = wc_price( $min_price ) . ' - ' . wc_price( $max_price );
-					}           
+					}
 				} elseif ( 'grouped' === $type ) {
-	
+
 					$child_ids   = $product->get_children();
 					$child_count = count( $child_ids );
-	
+
 					// Get all child prices.
 					$child_prices = array_map(
 						function ( $child_id ) {
 							$child_product = wc_get_product( $child_id );
 							return $child_product ? $child_product->get_price() : null;
 						},
-						$child_ids 
+						$child_ids
 					);
-	
+
 					$child_prices = array_filter( $child_prices );
 					$min_price    = count( $child_prices ) ? min( $child_prices ) : 0;
-	
+
 					// Format name and price.
 					$name_display  = $product->get_name() . " ({$child_count} items)";
 					$price_display = $min_price > 0 ? 'From: ' . wc_price( $min_price ) . ' + more' : 'N/A';
-	
+
 				} elseif ( 'external' === $type || 'simple' === $type ) {
-	
+
 					// Simple and External product.
 					if ( $sale_price && $sale_price < $regular_price ) {
 						$price_display = wc_format_sale_price( $regular_price, $sale_price );
@@ -381,7 +386,7 @@ class WC extends Base {
 						array( 'fields' => 'all' )
 					)
 				);
-				
+
 				$tags = array_map(
 					function ( $term ) {
 						return array(
@@ -395,7 +400,7 @@ class WC extends Base {
 						array( 'fields' => 'all' )
 					)
 				);
-				
+
 				$brands = array_map(
 					function ( $term ) {
 						return array(
@@ -431,9 +436,9 @@ class WC extends Base {
 				 */
 				return apply_filters( 'godam_rest_product_response_data', $data, $product );
 			},
-			$all_posts 
+			$all_posts
 		);
-	
+
 		return rest_ensure_response( $products );
 	}
 
@@ -470,31 +475,36 @@ class WC extends Base {
 		if ( 'variable' === $type ) {
 
 			// Get variation prices.
-			$min_price = $product->get_variation_price( 'min', true );
-			$max_price = $product->get_variation_price( 'max', true );
+			if ( $product instanceof \WC_Product_Variable ) {
+				$min_price = $product->get_variation_price( 'min', true );
+				$max_price = $product->get_variation_price( 'max', true );
+			} else {
+				$min_price = 0;
+				$max_price = 0;
+			}
 
 			if ( $min_price === $max_price ) {
 				$price_display = wc_price( $min_price );
 			} else {
 				$price_display = wc_price( $min_price ) . ' - ' . wc_price( $max_price );
-			}       
+			}
 		} elseif ( 'grouped' === $type ) {
 
 			$child_ids   = $product->get_children();
 			$child_count = count( $child_ids );
-		
+
 			// Get all child prices.
 			$child_prices = array_map(
 				function ( $child_id ) {
 					$child_product = wc_get_product( $child_id );
 					return $child_product ? $child_product->get_price() : null;
 				},
-				$child_ids 
+				$child_ids
 			);
-		
+
 			$child_prices = array_filter( $child_prices );
 			$min_price    = count( $child_prices ) ? min( $child_prices ) : 0;
-		
+
 			/* translators: %s: formatted number of items */
 			$items_label  = sprintf( _n( '%s item', '%s items', $child_count, 'godam' ), number_format_i18n( $child_count ) );
 			$name_display = $product->get_name() . ' (' . $items_label . ')';
@@ -523,7 +533,7 @@ class WC extends Base {
 				array( 'fields' => 'all' )
 			)
 		);
-		
+
 		$tags = array_map(
 			function ( $term ) {
 				return array(
@@ -537,7 +547,7 @@ class WC extends Base {
 				array( 'fields' => 'all' )
 			)
 		);
-		
+
 		$brands = array_map(
 			function ( $term ) {
 				return array(
@@ -617,7 +627,7 @@ class WC extends Base {
 
 			/**
 			 * Action after video is successfully linked to product.
-			 * 
+			 *
 			 * @param int    $product_id    Product ID.
 			 * @param int    $attachment_id Attachment (video) ID.
 			 * @param string $url           Video URL.
@@ -627,7 +637,7 @@ class WC extends Base {
 
 		/* ---- 2. update attachment's product parent meta ---- */
 		$parent_meta_key = '_video_parent_product_id';
-		
+
 		foreach ( $ids as $attachment_id ) {
 			$existing = get_post_meta( $attachment_id, $parent_meta_key, false );
 
@@ -682,7 +692,7 @@ class WC extends Base {
 					$thumb_url = $thumb_id
 						? wp_get_attachment_image_url( $thumb_id, 'woocommerce_thumbnail' )
 						: wc_placeholder_img_src();
-					
+
 					$product_data = array(
 						'id'    => (int) $pid,
 						'name'  => get_the_title( $pid ),
@@ -805,7 +815,7 @@ class WC extends Base {
 		/**
 		 * Allow short-circuiting the meta update logic.
 		 * Returning a non-null value here will skip update_post_meta().
-		 * 
+		 *
 		 * @hook godam_rest_pre_save_product_meta
 		 *
 		 * @param mixed           $pre         Default null. If not null, short-circuits the meta save.
@@ -839,7 +849,7 @@ class WC extends Base {
 			array(
 				'success' => true,
 				'message' => 'Meta saved successfully.',
-			) 
+			)
 		);
 	}
 
@@ -861,13 +871,13 @@ class WC extends Base {
 		 * @param int $attachment_id
 		 */
 		do_action( 'godam_before_get_product_meta', $product_id, $attachment_id );
-	
+
 		if ( empty( $product_id ) || empty( $attachment_id ) ) {
 			return new \WP_Error( 'missing_params', __( 'Product ID and meta key are required.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		$meta_key = 'godam_product_timestamp_meta_' . $attachment_id;
-	
+
 		$meta_value = get_post_meta( $product_id, $meta_key, true );
 
 		/**
@@ -880,11 +890,11 @@ class WC extends Base {
 		 * @param mixed  $meta_value
 		 */
 		do_action( 'godam_after_get_product_meta', $product_id, $attachment_id, $meta_key, $meta_value );
-	
+
 		return rest_ensure_response(
 			array(
 				'product_meta_value' => $meta_value,
-			) 
+			)
 		);
 	}
 
@@ -896,56 +906,121 @@ class WC extends Base {
 	 */
 	public function get_products_by_ids( \WP_REST_Request $request ) {
 		$ids = $request->get_param( 'ids' );
-	
+
 		if ( ! is_array( $ids ) || empty( $ids ) ) {
 			return new \WP_Error( 'invalid_ids', 'Invalid or missing IDs.', array( 'status' => 400 ) );
 		}
-	
-		$products = array(); 
+
+		$products = array();
 		foreach ( $ids as $id ) {
 			$product = wc_get_product( $id );
-
 			if ( ! $product ) {
 				continue;
 			}
 
 			$type         = $product->get_type();
 			$name_display = $product->get_name();
+			$price_display = '';
 
-			if ( 'grouped' === $type ) {
-	
+			$regular_price = $product->get_regular_price();
+			$sale_price    = $product->get_sale_price();
+
+			if ( 'variable' === $type ) {
+				if ( $product instanceof \WC_Product_Variable ) {
+					$min_price = $product->get_variation_price( 'min', true );
+					$max_price = $product->get_variation_price( 'max', true );
+				} else {
+					$min_price = 0;
+					$max_price = 0;
+				}
+
+				if ( $min_price === $max_price ) {
+					$price_display = wc_price( $min_price );
+				} else {
+					$price_display = wc_price( $min_price ) . ' - ' . wc_price( $max_price );
+				}
+			} elseif ( 'grouped' === $type ) {
 				$child_ids   = $product->get_children();
 				$child_count = count( $child_ids );
-			
-				// Format name.
-				$name_display = $product->get_name() . ' (' . $child_count . ' ' . _n( 'item', 'items', $child_count, 'godam' ) . ')';
-			}
 
-			if ( $product ) {
-				$product_data = array(
-					'id'                    => $product->get_id(),
-					'name'                  => $name_display,
-					'type'                  => $type,
-					'price'                 => $product->get_price_html(),
-					'image'                 => $product->get_image(),
-					'link'                  => get_permalink( $product->get_id() ),
-					'rating_customer_count' => $product->get_rating_count(),
-					'rating_average'        => $product->get_average_rating(),
-					'in_stock'              => $product->is_in_stock(),
+				$child_prices = array_map(
+					function ( $child_id ) {
+						$child_product = wc_get_product( $child_id );
+						return $child_product ? $child_product->get_price() : null;
+					},
+					$child_ids
 				);
 
-				/**
-				 * Filter the final product response data.
-				 *
-				 * @param array $product_data Product data to be returned.
-				 * @param \WC_Product $product Product object.
-				 */
-				$product_data = apply_filters( 'godam_rest_product_by_id_response_data', $product_data, $product );
+				$child_prices = array_filter( $child_prices );
+				$min_price    = count( $child_prices ) ? min( $child_prices ) : 0;
 
-				$products[] = $product_data;
+				/* translators: %s: formatted number of items */
+				$items_label  = sprintf( _n( '%s item', '%s items', $child_count, 'godam' ), number_format_i18n( $child_count ) );
+				$name_display = $product->get_name() . ' (' . $items_label . ')';
+				/* translators: %s: formatted minimum price */
+				$price_display = $min_price > 0 ? sprintf( __( 'From: %s + more', 'godam' ), wc_price( $min_price ) ) : __( 'N/A', 'godam' );
+			} elseif ( 'external' === $type || 'simple' === $type ) {
+				if ( $sale_price && $sale_price < $regular_price ) {
+					$price_display = wc_format_sale_price( $regular_price, $sale_price );
+				} else {
+					$price_display = wc_price( $regular_price );
+				}
 			}
+
+			$categories = array_map(
+				function ( $term ) {
+					return array(
+						'name' => $term->name,
+						'slug' => $term->slug,
+					);
+				},
+				wp_get_post_terms( $product->get_id(), 'product_cat', array( 'fields' => 'all' ) )
+			);
+
+			$tags = array_map(
+				function ( $term ) {
+					return array(
+						'name' => $term->name,
+						'slug' => $term->slug,
+					);
+				},
+				wp_get_post_terms( $product->get_id(), 'product_tag', array( 'fields' => 'all' ) )
+			);
+
+			$brands = array_map(
+				function ( $term ) {
+					return array(
+						'name' => $term->name,
+						'slug' => $term->slug,
+					);
+				},
+				wp_get_post_terms( $product->get_id(), 'product_brand', array( 'fields' => 'all' ) )
+			);
+
+			$product_data = array(
+				'id'         => $product->get_id(),
+				'name'       => $name_display,
+				'price'      => $price_display,
+				'type'       => $product->get_type(),
+				'link'       => get_permalink( $product->get_id() ),
+				'image'      => wp_get_attachment_url( $product->get_image_id() ) ?: wc_placeholder_img_src(),
+				'categories' => $categories,
+				'tags'       => $tags,
+				'brands'     => $brands,
+				'in_stock'   => $product->is_in_stock(),
+			);
+
+			/**
+			 * Filter the final product response data.
+			 *
+			 * @param array $product_data Product data to be returned.
+			 * @param \WC_Product $product Product object.
+			 */
+			$product_data = apply_filters( 'godam_rest_product_by_id_response_data', $product_data, $product );
+
+			$products[] = $product_data;
 		}
-	
+
 		return rest_ensure_response( $products );
 	}
 }
