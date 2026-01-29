@@ -199,7 +199,8 @@ function generatePostViewsChart( postsData, selector ) {
 				.attr( 'd', arcHover )
 				.style( 'opacity', 1 );
 
-			const percent = ( ( d.data.views / totalViews ) * 100 ).toFixed( 1 );
+			const rawPercent = totalViews ? ( d.data.views / totalViews ) * 100 : 0;
+			const percent = Number.isFinite( rawPercent ) ? rawPercent.toFixed( 1 ) : '0.0';
 
 			tooltip.transition().duration( 200 ).style( 'opacity', 0.9 );
 			tooltip
@@ -327,7 +328,7 @@ async function main() {
 	}
 
 	// Convert heatmap string into an array
-	const heatmapData = JSON.parse( allTimeHeatmap );
+	const heatmapData = allTimeHeatmap ? JSON.parse( allTimeHeatmap ) : [];
 
 	const videoPlayer = videojs( 'analytics-video', {
 		fluid: true,
