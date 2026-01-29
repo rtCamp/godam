@@ -859,27 +859,19 @@ function godam_preview_page_content( $video_id ) {
 		// Display error message for missing or invalid video.
 		?>
 		<div class="godam-video-preview--container">
-			<h1 class="godam-video-preview--title"><?php esc_html_e( 'Video Preview', 'godam' ); ?></h1>
 			<p class="video-not-found"><?php esc_html_e( 'Oops! We could not locate your video', 'godam' ); ?></p>
 		</div>
 		<?php
 	} else {
 		// Display video content.
 		?>
-		<header class="godam-video-preview--container">
+		<div class="godam-video-preview--notice">
+			<?php esc_html_e( 'Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles.', 'godam' ); ?>
+		</div>
+		<div class="godam-video-preview">
 			<h1 class="godam-video-preview--title">
-				<strong><?php esc_html_e( 'Video Preview: ', 'godam' ); ?></strong>
 				<?php echo esc_html( get_the_title( $video_id ) ); ?>
 			</h1>
-		</header>
-
-		<div class="godam-video-preview--container">
-			<div class="godam-video-preview--notice">
-				<?php esc_html_e( 'Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles.', 'godam' ); ?>
-			</div>
-		</div>
-
-		<div class="godam-video-preview">
 			<?php echo do_shortcode( '[godam_video id="' . $video_id . '"]' ); ?>
 		</div>
 		<?php

@@ -7,8 +7,8 @@
 }
 
 .godam-video-preview {
-    padding-top: 2rem;
-    max-width: 768px;
+    padding-top: 1rem;
+    max-width: 800px;
     margin: 0 auto;
 
     &--container {
@@ -17,16 +17,16 @@
     }
 
     &--title {
-        font-size: 20px !important;
+        margin: 1rem 0 0.5rem 0;
+        font-size: 18px !important;
         font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-        padding: 1rem !important;
         color: #111;
     }
 
     &--notice {
         font-size: 14px !important;
         font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-        padding: 1rem !important;
+        padding: 0.5rem 1rem !important;
         background: #f0f0f0;
     }
 
@@ -41,4 +41,156 @@
 			}
 		}
 	}
+}
+
+.godam-video-preview-header-wrapper {
+    border-bottom: 1px solid #e1e1e1;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    background-color: #fff;
+    color: #1e1e1e;
+}
+
+.godam-video-preview-main {
+    min-height: calc(100vh - 60px);
+    display: flex;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+
+    &--content {
+        flex-grow: 1;
+    }
+
+    &--sidebar {
+        width: 300px;
+        border-left: 1px solid #e1e1e1;
+
+        @media screen and (max-width: 1000px) {
+            width: 0;
+            display: none;
+        }
+    }
+}
+
+.admin-bar .godam-video-preview-main {
+    min-height: calc(100vh - 92px);
+}
+
+.godam-video-preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    height: 60px;
+
+    &--left {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+
+            .logo-image {
+                height: 32px;
+                width: auto;
+            }
+            
+            .logo-text {
+                font-family: inherit;
+                font-size: 1rem;
+                font-weight: 600;
+                color: #1e1e1e;
+            }
+        }
+    
+    }
+
+    &--right {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+}
+
+.godam-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: inherit;
+    transition: transform .2s ease-in-out;
+    border: none;
+    outline: none;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+
+    svg {
+        fill: currentcolor;
+        flex-shrink: 0;
+    }
+
+    &:hover {
+        transform: scale(1.05);
+    }
+
+    &.button-primary {
+        background: linear-gradient(83.85deg, #ab3a6c -9.3%, #e6533a 120.31%) !important;
+        color: #fff;
+    }
+
+    &.button-secondary {
+        background-color: #fff;
+        color: #ab3a6c;
+        border: 2px solid #ab3a6c;
+    }
+}
+
+.godam-pro-features {
+    font-size: 1rem;
+    padding: 1rem;
+
+    &__title {
+        font-size: 1.125rem;
+        font-weight: 500;
+        font-family: inherit;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e1e1e1;
+        margin: 0;
+    }
+
+    &__list {
+        list-style: none;
+        padding: 0;
+        margin: 1rem 0 0 0;
+        font-size: 14px;
+        margin-bottom: 1rem;
+
+        &__item {
+            padding: 0.5rem 0;
+            font-size: inherit;
+            
+            .godam-pro-features__icon {
+                color: #ab3a6c;
+                margin-right: 0.5rem;
+            }
+        }
+    }
+
+    &__cta {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        a {
+            text-decoration: none;
+        }
+    }
 }
