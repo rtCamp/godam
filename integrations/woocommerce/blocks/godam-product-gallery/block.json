@@ -56,7 +56,15 @@
       "type": "string",
       "default": "#ffffff"
     },
-    "cardWidth": {
+    "desktopCardWidth": {
+      "type": "number",
+      "default": null
+    },
+    "tabletCardWidth": {
+      "type": "number",
+      "default": null
+    },
+    "mobileCardWidth": {
       "type": "number",
       "default": null
     },
@@ -80,9 +88,17 @@
       "type": "string",
       "default": "always"
     },
-    "gridColumns": {
+    "gridColumnsDesktop": {
       "type": "number",
       "default": 4
+    },
+    "gridColumnsTablet": {
+      "type": "number",
+      "default": 3
+    },
+    "gridColumnsMobile": {
+      "type": "number",
+      "default": 2
     },
     "gridRowGap": {
       "type": "number",
@@ -91,10 +107,6 @@
     "gridColumnGap": {
       "type": "number",
       "default": 16
-    },
-    "gridCardAlignment": {
-      "type": "string",
-      "default": "start"
     },
     "ctaEnabled": {
       "type": "boolean",
