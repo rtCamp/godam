@@ -78,6 +78,7 @@ class GoDAM_Video_Gallery {
 				'show_title'        => true,
 				'align'             => '',
 				'engagements'       => true,
+				'css'               => '',
 				'open_to_new_page'  => false,
 			)
 		);
@@ -92,6 +93,18 @@ class GoDAM_Video_Gallery {
 
 		// Add filter for processed attributes.
 		$atts = apply_filters( 'rtgodam_gallery_attributes', $atts );
+
+		// Handle boolean attributes passed as strings.
+		$boolean_attributes = array( 'infinite_scroll', 'show_title', 'engagements' );
+		foreach ( $boolean_attributes as $bool_attr ) {
+			$atts[ $bool_attr ] = filter_var( $atts[ $bool_attr ], FILTER_VALIDATE_BOOLEAN );
+		}
+
+		// Get WPBakery Design Options CSS class if available.
+		$atts['css_class'] = '';
+		if ( ! empty( $atts['css'] ) && function_exists( 'vc_shortcode_custom_css_class' ) ) {
+			$atts['css_class'] = vc_shortcode_custom_css_class( $atts['css'], ' ' );
+		}
 
 		wp_enqueue_style( 'godam-gallery-style' );
 
@@ -240,9 +253,13 @@ class GoDAM_Video_Gallery {
 			$total_videos = $query->found_posts;
 			$shown_videos = count( $query->posts );
 
+			$alignment_class = ! empty( $atts['align'] ) ? ' align' . $atts['align'] : '';
+			$css_class       = ! empty( $atts['css_class'] ) ? ' ' . trim( $atts['css_class'] ) : '';
+
 			echo '<div ' . wp_kses_data( $godam_figure_attributes ) . '>';
-			echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) .
-				( 'grid' === $atts['layout'] ? ' columns-' . intval( $atts['columns'] ) : '' ) . '" 
+			echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) . 
+				( 'grid' === $atts['layout'] ? ' columns-' . intval( $atts['columns'] ) : '' ) . 
+				esc_attr( $alignment_class ) . esc_attr( $css_class ) . '"
 				data-infinite-scroll="' . esc_attr( $atts['infinite_scroll'] ) . '"
 				data-offset="' . esc_attr( $shown_videos ) . '"
 				data-columns="' . esc_attr( $atts['columns'] ) . '"

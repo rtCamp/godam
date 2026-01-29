@@ -198,7 +198,8 @@ function generatePostViewsChart( postsData, selector ) {
 				.attr( 'd', arcHover )
 				.style( 'opacity', 1 );
 
-			const percent = ( ( d.data.views / totalViews ) * 100 ).toFixed( 1 );
+			const rawPercent = totalViews ? ( d.data.views / totalViews ) * 100 : 0;
+			const percent = Number.isFinite( rawPercent ) ? rawPercent.toFixed( 1 ) : '0.0';
 
 			tooltip.transition().duration( 200 ).style( 'opacity', 0.9 );
 			tooltip
@@ -289,13 +290,20 @@ async function main() {
 	const engagementRate = plays && videoLength ? ( playTime / ( plays * videoLength ) ) * 100 : 0;
 
 	// Update the UI with computed analytics
-	document.getElementById( 'play-rate' ).innerText = `${ playRate.toFixed( 2 ) }%`;
-	document.getElementById( 'plays' ).innerText = totalPlays;
-	document.getElementById( 'engagement-rate' ).innerText = `${ engagementRate.toFixed( 2 ) }%`;
-	document.getElementById( 'watch-time' ).innerText = `${ formatWatchTime( playTime.toFixed( 2 ) ) }`;
+	document.getElementById( 'play-rate' ).innerText =
+    Number.isFinite( playRate ) ? `${ playRate.toFixed( 2 ) }%` : '0%';
+
+	document.getElementById( 'plays' ).innerText =
+    typeof totalPlays === 'number' ? totalPlays : '0';
+
+	document.getElementById( 'engagement-rate' ).innerText =
+    Number.isFinite( engagementRate ) ? `${ engagementRate.toFixed( 2 ) }%` : '0%';
+
+	document.getElementById( 'watch-time' ).innerText =
+    Number.isFinite( playTime ) ? formatWatchTime( playTime.toFixed( 2 ) ) : formatWatchTime( 0 );
 
 	// Convert heatmap string into an array
-	const heatmapData = JSON.parse( allTimeHeatmap );
+	const heatmapData = allTimeHeatmap ? JSON.parse( allTimeHeatmap ) : [];
 
 	const videoPlayer = videojs( 'analytics-video', {
 		fluid: true,
@@ -331,6 +339,9 @@ async function main() {
 	generatePostViewsChart( postsData, '#post-views-count-chart' );
 
 	const renderChange = ( changeValue ) => {
+		if ( ! Number.isFinite( changeValue ) ) {
+			return '';
+		}
 		const rounded = Math.abs( changeValue ).toFixed( 2 );
 		const prefix = changeValue >= 0 ? '+' : '-';
 		return `${ prefix }${ rounded }%`;

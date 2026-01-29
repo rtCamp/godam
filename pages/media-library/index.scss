@@ -151,6 +151,23 @@ $godam-gradient: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
 		min-width: 8rem;
 		width: 100%;
 
+		@media (max-width: 782px) {
+
+			select {
+				font-size: 13px;
+			}
+		}
+	}
+
+	.search-input {
+
+		@media (max-width: 782px) {
+
+			input {
+				font-size: 13px;
+			}
+		}
+
 		.components-select-control__input {
 			padding: 0 26px 0 8px;
 		}

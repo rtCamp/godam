@@ -273,6 +273,21 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 
 	$transcoded_files = get_post_meta( $post_id, 'rtgodam_transcoded_url', true );
 
+	// Detect virtual media created from GoDAM tab.
+	$is_virtual = ! empty( get_post_meta( $post_id, '_godam_original_id', true ) );
+
+	if ( $is_virtual ) {
+		?>
+		<div id="list-transcoder-status-<?php echo esc_attr( $post_id ); ?>" class="transcoding-status transcoding-status--completed transcoding-status-list" data-id="<?php echo esc_attr( $post_id ); ?>">
+			<div class="transcoding-status__loader" data-percent="100">
+				<img src="<?php echo esc_url( RTGODAM_URL . '/assets/src/images/godam-logo-gradient.svg' ); ?>" alt="<?php esc_attr_e( 'GoDAM Logo', 'godam' ); ?>" width="22" height="22" />
+				</div>
+			<span class="status-text"><?php echo esc_html__( 'File is transcoded.', 'godam' ); ?></span>
+		</div>
+		<?php
+		return;
+	}
+
 	// only display the check status button for media that are transcoding.
 	$transcoding_status = get_post_meta( $post_id, 'rtgodam_transcoding_status', true );
 
@@ -400,7 +415,7 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 	// Prepare request body with site title.
 	$site_url   = get_site_url();
 	$site_title = get_bloginfo( 'name' ); // Get site title from WordPress options.
-	
+
 	$request_body = array(
 		'api_key'    => $api_key,
 		'site_url'   => $site_url,
