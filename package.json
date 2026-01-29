@@ -71,7 +71,7 @@
 		"@wordpress/env": "10.28.0",
 		"@wordpress/eslint-plugin": "24.0.0",
 		"@wordpress/i18n": "6.7.0",
-		"@wordpress/icons": "11.1.0",
+		"@wordpress/icons": "10.28.0",
 		"@wordpress/jest-preset-default": "12.28.0",
 		"@wordpress/scripts": "30.21.0",
 		"@wordpress/server-side-render": "6.10.0",
