@@ -87,6 +87,8 @@ $cta-card-max-width-vertical: 400px !default;
 
         .godam-cta-card-image {
             padding-right: $cta-spacing-md;
+            padding-top: $cta-spacing-md;
+            padding-bottom: $cta-spacing-md;
         }
     }
 
@@ -100,6 +102,8 @@ $cta-card-max-width-vertical: 400px !default;
         .godam-cta-card-image {
             order: -1;
             padding-left: $cta-spacing-md;
+            padding-top: $cta-spacing-md;
+            padding-bottom: $cta-spacing-md;
         }
     }
 
@@ -263,7 +267,14 @@ $cta-card-max-width-vertical: 400px !default;
             grid-template-columns: 1fr;
         }
 
-        &.card-layout--text-image,
+        &.card-layout--text-image {
+
+            .godam-cta-card-image {
+                padding: 1rem;
+                padding-top: 0;
+            }
+        }
+
         &.card-layout--image-text {
 
             .godam-cta-card-image {

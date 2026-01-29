@@ -261,6 +261,8 @@ const ImageCTA = ( { layerID } ) => {
 		{ label: __( 'Text Only (No Image)', 'godam' ), value: 'desktop-text-only', icon: 'TextOnly' },
 	];
 
+	const layoutsWithWidth = [ 'card-layout--text-imagecover', 'card-layout--imagecover-text', 'card-layout--text-image', 'card-layout--image-text' ];
+
 	return (
 		<div className="mt-2 flex flex-col gap-6">
 			<div className="flex flex-col gap-2">
@@ -343,7 +345,7 @@ const ImageCTA = ( { layerID } ) => {
 				) }
 			</div>
 
-			{ ( selectedImageUrl && [ 'card-layout--text-imagecover', 'card-layout--imagecover-text', 'card-layout--text-image', 'card-layout--image-text' ].includes( layer?.cardLayout ) ) && (
+			{ ( selectedImageUrl && layoutsWithWidth?.includes( layer?.cardLayout ) ) && (
 				<RangeControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize

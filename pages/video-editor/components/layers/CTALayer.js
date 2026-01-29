@@ -178,9 +178,10 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 
 		// All other layouts with image element
 		const imageContent = <div className="godam-cta-card-image">{ imageElement }</div>;
+		const textMediaLayerouts = [ 'card-layout--text-imagecover', 'card-layout--text-image', 'card-layout--image-bottom' ];
 
 		// Return based on layout order
-		if ( layout === 'card-layout--text-imagecover' || layout === 'card-layout--text-image' || layout === 'card-layout--image-bottom' ) {
+		if ( textMediaLayerouts.includes( layout ) ) {
 			return (
 				<>
 					{ contentElement }

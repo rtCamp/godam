@@ -172,9 +172,9 @@ function rtgodam_image_cta_html( $layer ) {
 	$is_godam_media = isset( $layer['image'] ) && is_string( $layer['image'] ) && str_starts_with( $layer['image'], 'godam_' );
 
 	if ( $is_godam_media && ! empty( $layer['imageUrlExt'] ) ) {
-		$image_url = esc_url( $layer['imageUrlExt'] );
+		$image_url = $layer['imageUrlExt'];
 	} else {
-		$image_url = esc_url( rtgodam_fetch_overlay_media_url( isset( $layer['image'] ) ? $layer['image'] : 0 ) );
+		$image_url = rtgodam_fetch_overlay_media_url( isset( $layer['image'] ) ? $layer['image'] : 0 );
 	}
 
 	// Define allowed layouts for validation.
@@ -197,7 +197,7 @@ function rtgodam_image_cta_html( $layer ) {
 	$image_width          = isset( $layer['imageWidth'] ) ? absint( $layer['imageWidth'] ) : 50;
 	$image_text           = isset( $layer['imageText'] ) ? sanitize_text_field( $layer['imageText'] ) : '';
 	$image_description    = isset( $layer['imageDescription'] ) ? sanitize_text_field( $layer['imageDescription'] ) : '';
-	$image_link           = isset( $layer['imageLink'] ) ? esc_url( $layer['imageLink'] ) : '#';
+	$image_link           = isset( $layer['imageLink'] ) ? $layer['imageLink'] : '#';
 	$cta_background_color = isset( $layer['imageCtaButtonColor'] ) ? sanitize_hex_color( $layer['imageCtaButtonColor'] ) : '#000000';
 	$cta_button_text      = ! empty( $layer['imageCtaButtonText'] ) ? sanitize_text_field( $layer['imageCtaButtonText'] ) : __( 'Check now', 'godam' );
 
