@@ -12,6 +12,56 @@
 // Video engagement styles.
 @use "./video-engagement";
 
+@mixin godam-mobile-brand-logo($logoWidth, $btnWidth) {
+
+    .vjs-control-bar {
+        --godam-logo-width: #{$logoWidth};
+        --godam-btn-width: #{$btnWidth};
+    }
+
+    .vjs-control.vjs-custom-play-button {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: var(--godam-logo-width);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 25;
+    }
+
+    .vjs-control.vjs-custom-play-button img {
+        max-height: 2.2em;
+        max-width: 100%;
+        object-fit: contain;
+        display: block;
+        // For Proper Alignment
+        margin: auto;
+    }
+
+    .vjs-fullscreen-control {
+        right: var(--godam-logo-width) !important;
+    }
+
+    .vjs-picture-in-picture-control {
+        right: calc(
+            var(--godam-logo-width) + var(--godam-btn-width)
+        ) !important;
+    }
+
+    .vjs-settings-button {
+        right: calc(
+            var(--godam-logo-width) + (2 * var(--godam-btn-width))
+        ) !important;
+    }
+
+    .vjs-quality-menu-wrapper {
+        right: calc(
+            var(--godam-logo-width) + (3 * var(--godam-btn-width))
+        ) !important;
+    }
+}
+
 .rtgodam-video-caption {
 
 	margin-bottom: 1em;
@@ -1522,6 +1572,8 @@ body.godam-share-modal-open {
 
 	@container godam-player-default-skin (max-width: 480px) {
 
+		@include godam-mobile-brand-logo(66px, 30px);
+		
 		.vjs-big-play-button {
 			left: 55% !important;
 		}
