@@ -95,13 +95,13 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 						className: 'godam-video-list__video__thumbnail__overlay__menu',
 					} }
 					controls={ [
-						{
+						...( window?.godamSettings?.videoPostSettings?.allow_single ? [ {
 							icon: <Icon icon={ seen } />,
 							onClick: () => {
 								window.open( getPreviewTemplateUrl( item ), '_blank' );
 							},
 							title: __( 'Preview template', 'godam' ),
-						},
+						} ] : [] ),
 						{
 							icon: <Icon icon={ video } />,
 							onClick: () => {
