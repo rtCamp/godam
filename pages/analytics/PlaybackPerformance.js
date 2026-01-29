@@ -609,7 +609,7 @@ export default function PlaybackPerformanceDashboard( {
 				</div>
 			</div>
 
-			<div className="w-full" style={ { height: '300px', overflow: 'none',
+			<div className="w-full" style={ { height: '300px', overflow: 'hidden',
 				width: '100%' } } ref={ chartRef }></div>
 		</div>
 	);

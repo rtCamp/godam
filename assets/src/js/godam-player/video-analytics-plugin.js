@@ -104,7 +104,7 @@ const videoAnalyticsPlugin = () => {
 					categories,
 					tags,
 					author,
-					type: type || 0,
+					type,
 					video_id: videoId ? parseInt( videoId, 0 ) : 0,
 					video_ids: type === 1 ? videoIds : [],
 					ranges,
