@@ -707,3 +707,10 @@ input, textarea, select {
 		margin-left: -10px;
 	}
 }
+
+@media screen and (min-width: 410px) {
+
+	.godam-version-label {
+		display: none;
+	}
+}
