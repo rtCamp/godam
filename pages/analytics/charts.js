@@ -198,7 +198,8 @@ function generatePostViewsChart( postsData, selector ) {
 				.attr( 'd', arcHover )
 				.style( 'opacity', 1 );
 
-			const percent = ( ( d.data.views / totalViews ) * 100 )?.toFixed( 1 );
+			const rawPercent = totalViews ? ( d.data.views / totalViews ) * 100 : 0;
+			const percent = Number.isFinite( rawPercent ) ? rawPercent.toFixed( 1 ) : '0.0';
 
 			tooltip.transition().duration( 200 ).style( 'opacity', 0.9 );
 			tooltip
@@ -290,16 +291,16 @@ async function main() {
 
 	// Update the UI with computed analytics
 	document.getElementById( 'play-rate' ).innerText =
-    typeof playRate === 'number' ? `${ playRate.toFixed( 2 ) }%` : '0%';
+    Number.isFinite( playRate ) ? `${ playRate.toFixed( 2 ) }%` : '0%';
 
 	document.getElementById( 'plays' ).innerText =
     typeof totalPlays === 'number' ? totalPlays : '0';
 
 	document.getElementById( 'engagement-rate' ).innerText =
-    typeof engagementRate === 'number' ? `${ engagementRate.toFixed( 2 ) }%` : '0%';
+    Number.isFinite( engagementRate ) ? `${ engagementRate.toFixed( 2 ) }%` : '0%';
 
 	document.getElementById( 'watch-time' ).innerText =
-    typeof playTime === 'number' ? formatWatchTime( playTime.toFixed( 2 ) ) : formatWatchTime( 0 );
+    Number.isFinite( playTime ) ? formatWatchTime( playTime.toFixed( 2 ) ) : formatWatchTime( 0 );
 
 	// Convert heatmap string into an array
 	const heatmapData = allTimeHeatmap ? JSON.parse( allTimeHeatmap ) : [];
@@ -338,7 +339,10 @@ async function main() {
 	generatePostViewsChart( postsData, '#post-views-count-chart' );
 
 	const renderChange = ( changeValue ) => {
-		const rounded = Math.abs( changeValue )?.toFixed( 2 );
+		if ( ! Number.isFinite( changeValue ) ) {
+			return '';
+		}
+		const rounded = Math.abs( changeValue ).toFixed( 2 );
 		const prefix = changeValue >= 0 ? '+' : '-';
 		return `${ prefix }${ rounded }%`;
 	};
