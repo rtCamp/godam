@@ -17,6 +17,8 @@ import {
 	ToggleControl,
 	RangeControl,
 	SelectControl,
+	ToolbarButton,
+	ToolbarGroup,
 } from '@wordpress/components';
 import {
 	BlockControls,
@@ -32,7 +34,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { __, _x, sprintf } from '@wordpress/i18n';
 import { useInstanceId } from '@wordpress/compose';
 import { useDispatch } from '@wordpress/data';
-import { search } from '@wordpress/icons';
+import { edit, trendingUp } from '@wordpress/icons';
 import { store as noticesStore } from '@wordpress/notices';
 
 /**
@@ -738,40 +740,6 @@ function VideoEdit( {
 									checked={ attributes?.preloadPoster }
 								/>
 
-								{ canManageAttachment( attachmentAuthorId ) && (
-									<BaseControl
-										id={ `video-block__video-editor-${ instanceId }` }
-										label={ __( 'Customise Video', 'godam' ) }
-										__nextHasNoMarginBottom
-									>
-										<Button
-											__next40pxDefaultSize
-											href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
-											target="_blank"
-											variant="primary"
-										>
-											{ __( 'Customise', 'godam' ) }
-										</Button>
-									</BaseControl>
-								) }
-
-								<BaseControl
-									id={ `video-block__video-seo-${ instanceId }` }
-									label={ __( 'SEO Settings', 'godam' ) }
-									help={ __( 'Configure SEO metadata for this video. Note: SEO data will be cleared when replacing the video.', 'godam' ) }
-									__nextHasNoMarginBottom
-								>
-									<Button
-										__next40pxDefaultSize
-										onClick={ () => setIsSEOModelOpen( true ) }
-										variant="primary"
-										icon={ search }
-										iconPosition="right"
-									>
-										{ __( 'SEO Settings', 'godam' ) }
-									</Button>
-								</BaseControl>
-
 								<BaseControl
 									id={ `video-block__video--selected-aspect-ratio-${ instanceId }` }
 									label={ __( 'Aspect Ratio', 'godam' ) }
@@ -904,6 +872,25 @@ function VideoEdit( {
 								label={ __( 'Video caption text', 'godam' ) }
 								showToolbarButton={ isSingleSelected }
 							/>
+							{ isSingleSelected && (
+								<BlockControls>
+									<ToolbarGroup>
+										{ canManageAttachment( attachmentAuthorId ) && (
+											<ToolbarButton
+												icon={ edit }
+												label={ __( 'Edit Video', 'godam' ) }
+												href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
+												target="_blank"
+											/>
+										) }
+										<ToolbarButton
+											icon={ trendingUp }
+											label={ __( 'Video SEO', 'godam' ) }
+											onClick={ () => setIsSEOModelOpen( true ) }
+										/>
+									</ToolbarGroup>
+								</BlockControls>
+							) }
 						</figure>
 					</>
 				)
