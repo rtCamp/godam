@@ -28,7 +28,7 @@ const Dashboard = () => {
 	const siteUrl = window.location.origin;
 	const adminUrl = window.videoData?.adminUrl;
 
-	const { data: dashboardMetrics, isLoading: isDashboardMetricsLoading } = useFetchDashboardMetricsQuery( { siteUrl } );
+	const { data: dashboardMetrics, isLoading: isDashboardMetricsLoading, isError: isDashboardMetricsError } = useFetchDashboardMetricsQuery( { siteUrl } );
 	window.dashboardMetrics = dashboardMetrics;
 
 	const { data: dashboardMetricsHistory } = useFetchDashboardMetricsHistoryQuery( { days: 60, siteUrl } );
@@ -63,8 +63,15 @@ const Dashboard = () => {
 			if ( overlay ) {
 				overlay.classList.remove( 'hidden' );
 			}
+		} else if ( ( ! isDashboardMetricsLoading && dashboardMetrics ) || isDashboardMetricsError ) {
+			if ( loadingEl ) {
+				loadingEl.style.display = 'none';
+			}
+			if ( container ) {
+				container.classList.remove( 'hidden' );
+			}
 		}
-	}, [ dashboardMetrics ] );
+	}, [ dashboardMetrics, isDashboardMetricsLoading, isDashboardMetricsError ] );
 
 	useEffect( () => {
 		if (
@@ -249,7 +256,7 @@ const Dashboard = () => {
 				</div>
 			</div>
 
-			<div id="dashboard-container" className="dashboard-container">
+			<div id="dashboard-container" className="dashboard-container hidden">
 				<div className="flex-grow">
 					<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-nowrap">
 
