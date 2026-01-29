@@ -105,7 +105,7 @@ class Ads extends Base {
 		
 		// Ad skip feature will not work for ads with duration 0.
 		// Add fallback to set ad duration if skippable is true.
-		// With $ad_duration is 0, and the ad is skippable, set ad duration to skip_offset + 5 seconds.
+		// When $ad_duration is 0, and the ad is skippable, set ad duration to skip_offset + 5 seconds.
 		if ( $skippable && $skip_offset > 0 && $ad_duration <= 0 ) {
 			$ad_duration = max( $skip_offset + 5, 10 ); // Ensure ad duration is at least skip_offset + 5 seconds, minimum 10 seconds.
 		}

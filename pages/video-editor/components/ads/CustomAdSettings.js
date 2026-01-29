@@ -62,7 +62,6 @@ const CustomAdSettings = ( { layerID } ) => {
 			video.preload = 'metadata';
 
 			video.onloadedmetadata = function() {
-				window.URL.revokeObjectURL( video.src );
 				const duration = Math.floor( video.duration );
 				resolve( duration );
 			};
@@ -90,7 +89,9 @@ const CustomAdSettings = ( { layerID } ) => {
 		fileFrame.on( 'select', async function() {
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
 
-			// Extract video duration from attachment metadata
+			// Extract video duration from attachment metadata.
+			// - attachment.fileLength: numeric duration in seconds provided directly on some media attachments.
+			// - attachment.meta.length_formatted: human-readable duration string (e.g., "1:23") stored in attachment meta.
 			const videoDuration = attachment?.fileLength || attachment?.meta?.length_formatted || 0;
 
 			// Convert duration to seconds if it's in minute:seconds format
