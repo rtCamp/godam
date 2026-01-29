@@ -115,5 +115,8 @@
 		"remove:husky": "./bin/husky.sh --remove",
 		"wp-env": "wp-env",
 		"prepare": "husky"
+	},
+	"overrides": {
+		"webpack-dev-server": ">=5.2.1"
 	}
 }
