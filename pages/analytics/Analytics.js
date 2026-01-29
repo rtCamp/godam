@@ -253,6 +253,7 @@ const Analytics = ( { attachmentID } ) => {
 			},
 			frame: 'select',
 			multiple: false,
+			godamAnalyticsContext: true, // Flag to indicate this is from Analytics page
 		} );
 
 		fileFrame.on( 'select', function() {
