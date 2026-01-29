@@ -242,7 +242,15 @@ function playerAnalytics() {
 		}
 
 		// Get existing player, don't initialize new ones here
-		const player = videojs.getPlayer( video ); // eslint-disable-line no-undef -- variable is defined globally
+		// Wrap in try-catch to prevent errors on pages without actual video players
+		let player = null;
+		try {
+			player = videojs.getPlayer( video ); // eslint-disable-line no-undef -- variable is defined globally
+		} catch ( e ) {
+			// Player not initialized or element is not a valid video element
+			return;
+		}
+
 		if ( ! player ) {
 			// Player not ready yet, skip analytics setup for now
 			// It will be set up via godamPlayerReady event
