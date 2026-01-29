@@ -228,10 +228,11 @@ function generatePostViewsChart( postsData, selector ) {
 		.attr( 'class', 'slice-label-group' )
 		.attr( 'transform', ( d ) => `translate(${ arc.centroid( d ) })` );
 
+	// Add background for labels: small for < 1K, increased for >= 1K
 	labelGroups.append( 'rect' )
-		.attr( 'x', -20 )
+		.attr( 'x', ( d ) => ( d.data.views >= 1000 ? -20 : -11.5 ) )
 		.attr( 'y', -9 )
-		.attr( 'width', 40 )
+		.attr( 'width', ( d ) => ( d.data.views >= 1000 ? 40 : 23 ) )
 		.attr( 'height', 18 )
 		.attr( 'rx', 4 )
 		.style( 'fill', 'rgba(0, 0, 0, 0.4)' )
