@@ -559,17 +559,30 @@ class Analytics extends Base {
 				$attachment    = get_post( $attachment_id );
 				
 				if ( $attachment && 'attachment' === $attachment->post_type ) {
-					$file_path = get_attached_file( $attachment_id );
+					// Check if this is virtual media (from GoDAM Tab).
+					$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+					$is_virtual_media  = ! empty( $godam_original_id );
 					
-					if ( file_exists( $file_path ) ) {
-						$file_size           = filesize( $file_path );
-						$video['video_size'] = round( $file_size / ( 1024 * 1024 ), 2 );
+					// Get file size - different approach for virtual vs local media.
+					if ( $is_virtual_media ) {
+						// For virtual media, get size from metadata.
+						$metadata  = get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
+						$file_size = isset( $metadata['filesize'] ) ? (int) $metadata['filesize'] : 0;
 					} else {
-						$video['video_size'] = 0;
+						// For local media, get actual file size.
+						$file_path = get_attached_file( $attachment_id );
+						
+						if ( $file_path && file_exists( $file_path ) ) {
+							$file_size = filesize( $file_path );
+						} else {
+							$file_size = 0;
+						}
 					}
 					
+					$video['video_size']    = round( $file_size / ( 1024 * 1024 ), 2 );
 					$video['title']         = get_the_title( $attachment_id );
 					$video['exists']        = true;
+					$video['is_virtual']    = $is_virtual_media;
 					$custom_thumbnail       = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 					$default_thumb          = wp_get_attachment_image_url( $attachment_id, 'medium' );
 					$video['thumbnail_url'] = $custom_thumbnail ?: $default_thumb ?: null;
@@ -579,6 +592,7 @@ class Analytics extends Base {
 					$video['video_size']    = 0;
 					$video['thumbnail_url'] = null;
 					$video['exists']        = false;
+					$video['is_virtual']    = false;
 				}
 			}
 		}
