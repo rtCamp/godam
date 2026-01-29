@@ -12,6 +12,7 @@ import {
 	generateCountryHeatmap,
 	generateLineChart,
 } from '../../pages/analytics/helper';
+import { formatNumber, formatWatchTime } from '../utils/formatters';
 
 /**
  * WordPress dependencies
@@ -128,7 +129,7 @@ function generatePostViewsChart( postsData, selector ) {
 	const totalViews = postsData.reduce( ( sum, entry ) => sum + entry.views, 0 );
 
 	// Format numbers with commas
-	const formatNumber = ( num ) => {
+	const formatWithCommas = ( num ) => {
 		return num.toString().replace( /\B(?=(\d{3})+(?!\d))/g, ',' );
 	};
 
@@ -204,7 +205,7 @@ function generatePostViewsChart( postsData, selector ) {
 			tooltip
 				.html(
 					`<strong>${ d.data.post === '' ? __( 'Untitled', ' godam' ) : d.data.post }</strong><br>
-					Views: ${ formatNumber( d.data.views ) }<br>
+					Views: ${ formatWithCommas( d.data.views ) }<br>
 					Percentage: ${ percent }%`,
 				)
 				.style( 'left', event.pageX + 10 + 'px' )
@@ -220,17 +221,30 @@ function generatePostViewsChart( postsData, selector ) {
 		} );
 
 	// Add view count text labels to each arc
-	svg.selectAll( 'text.slice-label' )
+	const labelGroups = svg.selectAll( 'g.slice-label-group' )
 		.data( pie( postsData ) )
 		.enter()
-		.append( 'text' )
+		.append( 'g' )
+		.attr( 'class', 'slice-label-group' )
+		.attr( 'transform', ( d ) => `translate(${ arc.centroid( d ) })` );
+
+	labelGroups.append( 'rect' )
+		.attr( 'x', -20 )
+		.attr( 'y', -9 )
+		.attr( 'width', 40 )
+		.attr( 'height', 18 )
+		.attr( 'rx', 4 )
+		.style( 'fill', 'rgba(0, 0, 0, 0.4)' )
+		.style( 'pointer-events', 'none' );
+
+	labelGroups.append( 'text' )
 		.attr( 'class', 'slice-label' )
-		.attr( 'transform', ( d ) => `translate(${ arc.centroid( d ) })` )
 		.attr( 'text-anchor', 'middle' )
 		.attr( 'dy', '0.35em' )
 		.style( 'fill', '#fff' )
 		.style( 'font-size', '11px' )
 		.style( 'font-weight', 'bold' )
+		.style( 'pointer-events', 'none' )
 		.text( ( d ) => formatNumber( d.data.views ) );
 
 	// Add center text
@@ -285,10 +299,31 @@ async function main() {
 	const engagementRate = plays && videoLength ? ( playTime / ( plays * videoLength ) ) * 100 : 0;
 
 	// Update the UI with computed analytics
-	document.getElementById( 'play-rate' ).innerText = `${ playRate.toFixed( 2 ) }%`;
-	document.getElementById( 'plays' ).innerText = totalPlays;
-	document.getElementById( 'engagement-rate' ).innerText = `${ engagementRate.toFixed( 2 ) }%`;
-	document.getElementById( 'watch-time' ).innerText = `${ formatWatchTime( playTime.toFixed( 2 ) ) }`;
+	const playRateEl = document.getElementById( 'play-rate' );
+	if ( playRateEl ) {
+		playRateEl.innerText = `${ playRate.toFixed( 2 ) }%`;
+		playRateEl.setAttribute( 'title', `${ playRate.toFixed( 2 ) }%` );
+	}
+
+	const playsEl = document.getElementById( 'plays' );
+	if ( playsEl ) {
+		const formattedPlays = formatNumber( totalPlays );
+		playsEl.innerText = formattedPlays;
+		playsEl.setAttribute( 'title', totalPlays.toLocaleString() );
+	}
+
+	const engagementEl = document.getElementById( 'engagement-rate' );
+	if ( engagementEl ) {
+		engagementEl.innerText = `${ engagementRate.toFixed( 2 ) }%`;
+		engagementEl.setAttribute( 'title', `${ engagementRate.toFixed( 2 ) }%` );
+	}
+
+	const watchTimeEl = document.getElementById( 'watch-time' );
+	if ( watchTimeEl ) {
+		const formattedTime = formatWatchTime( playTime );
+		watchTimeEl.innerText = formattedTime;
+		watchTimeEl.setAttribute( 'title', `${ playTime.toFixed( 2 ) }s` );
+	}
 
 	// Convert heatmap string into an array
 	const heatmapData = JSON.parse( allTimeHeatmap );
@@ -324,25 +359,6 @@ async function main() {
 	);
 	generateHeatmap( heatmapData, '#heatmap', videoPlayer );
 	generatePostViewsChart( postsData, '#post-views-count-chart' );
-
-	function formatWatchTime( seconds ) {
-		const hrs = Math.floor( seconds / 3600 );
-		const mins = Math.floor( ( seconds % 3600 ) / 60 );
-		const secs = Math.floor( seconds % 60 );
-
-		const parts = [];
-		if ( hrs > 0 ) {
-			parts.push( `${ hrs }h` );
-		}
-		if ( mins > 0 ) {
-			parts.push( `${ mins }m` );
-		}
-		if ( secs > 0 || parts.length === 0 ) {
-			parts.push( `${ secs }s` );
-		}
-
-		return parts.join( ' ' );
-	}
 
 	// Note: Change percentages are calculated and updated by SingleMetrics.js component
 
