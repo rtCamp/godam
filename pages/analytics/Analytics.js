@@ -229,7 +229,7 @@ const Analytics = ( { attachmentID } ) => {
 			existingPlayer.dispose();
 		}
 
-		videojs( 'analytics-video', {
+		const player = videojs( 'analytics-video', {
 			aspectRatio: '16:9',
 			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
 			// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
@@ -241,6 +241,13 @@ const Analytics = ( { attachmentID } ) => {
 				},
 			},
 		} );
+
+		// Add cleanup for when this specific effect unmounts
+		return () => {
+			if ( player ) {
+				player.dispose();
+			}
+		};
 	}, [ analyticsData ] );
 
 	const openVideoUploader = () => {
