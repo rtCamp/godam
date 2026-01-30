@@ -155,16 +155,9 @@ export function singleMetricsChart(
 	// Ensure `parsedData` is properly formatted
 	const parseDate = d3.timeParse( '%Y-%m-%d' );
 
-	// Function to filter data based on selected date range
-	function filterData( days ) {
-		const today = new Date();
-		const cutoffDate = new Date( today );
-		cutoffDate.setDate( today.getDate() - days );
-
-		return parsedData.filter( ( d ) => new Date( d.date ) >= cutoffDate );
-	}
-
-	const filteredData = filterData( selectedDays ).map( ( d ) => ( {
+	// parsedData already contains all 7 days with zeros filled in from SingleMetrics.js
+	// Just parse the dates and convert to proper format
+	const filteredData = parsedData.map( ( d ) => ( {
 		date: parseDate( d.date ),
 		engagement_rate: +d.engagement_rate,
 		play_rate: +d.play_rate || 0,
