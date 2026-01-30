@@ -146,7 +146,7 @@ class Init {
 
 				<!-- Checkbox-->
 				<div class="field_godam_video_sync <?php echo $valid_godam_license ? '' : 'godam_no_license'; ?>">
-					<input type="checkbox" id="field_godam_video_sync" class="field_godam_video_sync" name="field_godam_video_sync" checked" />
+					<input type="checkbox" id="field_godam_video_sync" class="field_godam_video_sync" name="field_godam_video_sync" checked />
 					<label for="field_godam_video_sync">
 						<?php esc_html_e( 'Sync video', 'godam' ); ?>
 					</label>
@@ -191,6 +191,15 @@ class Init {
 						</label>
 					</div>
 				</div>
+			</li>
+			<li class="godam-video-field-setting field_setting" style="display: none;">
+				<label class="section_label" for="field_godam_max_duration">
+					<?php esc_html_e( 'Max duration (seconds)', 'godam' ); ?>
+				</label>
+				<input type="number" min="1" step="1" id="field_godam_max_duration" name="field_godam_max_duration" value="" />
+				<p class="description">
+					<?php esc_html_e( 'Leave empty to allow any duration. Example: 180 = 3 minutes.', 'godam' ); ?>
+				</p>
 			</li>
 			<?php
 		}

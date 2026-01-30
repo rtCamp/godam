@@ -28,6 +28,7 @@ class UppyVideoUploader {
 			'data-video-upload-button-id',
 		);
 		this.maxFileSize = Number( container.getAttribute( 'data-max-size' ) );
+		this.maxDurationSeconds = Number( container.getAttribute( 'data-max-duration' ) ) || 0;
 		this.enabledSelectors =
 			container.getAttribute( 'data-file-selectors' ) ||
 			'webcam,screen_capture';
@@ -51,6 +52,84 @@ class UppyVideoUploader {
 
 		// Attach Gravity Forms AJAX rehydration handler.
 		this.setupGravityFormsAjaxHandler();
+	}
+
+	async getMediaDurationSeconds( file ) {
+		// Only for audio/video
+		const isAudio = file?.type?.startsWith( 'audio/' );
+		const isVideo = file?.type?.startsWith( 'video/' );
+		if ( ! isAudio && ! isVideo ) {
+			return 0;
+		}
+
+		const el = document.createElement( isAudio ? 'audio' : 'video' );
+		el.preload = 'metadata';
+
+		return await new Promise( ( resolve ) => {
+			const cleanup = () => {
+				try {
+					URL.revokeObjectURL( el.src );
+				} catch ( e ) {
+					// ignore
+				}
+				el.remove();
+			};
+
+			el.onloadedmetadata = () => {
+				let d = Number( el.duration );
+
+				if ( d === Infinity ) {
+					el.currentTime = 1e101; // force duration to resolve in some browsers
+					el.ontimeupdate = () => {
+						el.ontimeupdate = null;
+						d = Number( el.duration );
+
+						cleanup();
+						resolve( Number.isFinite( d ) ? d : 0 );
+					};
+					return;
+				}
+
+				cleanup();
+				resolve( Number.isFinite( d ) ? d : 0 );
+			};
+
+			el.onerror = () => {
+				cleanup();
+				resolve( 0 );
+			};
+
+			try {
+				el.src = URL.createObjectURL( file.data );
+			} catch ( e ) {
+				cleanup();
+				resolve( 0 );
+			}
+		} );
+	}
+
+	// Show warning message near field
+	showDurationError( maxSeconds ) {
+		const msg =
+			`Maximum allowed duration is ${ maxSeconds } seconds. Please upload or record a shorter file.`;
+
+		let errorEl = this.container.querySelector( '.godam-recorder-duration-error' );
+		if ( ! errorEl ) {
+			errorEl = document.createElement( 'div' );
+			errorEl.className = 'godam-recorder-duration-error';
+			errorEl.style.color = '#b32d2e';
+			errorEl.style.marginTop = '8px';
+			this.container.appendChild( errorEl );
+		}
+		errorEl.textContent = msg;
+	}
+
+	// Clear warning message
+	clearDurationError() {
+		const errorEl = this.container.querySelector( '.godam-recorder-duration-error' );
+		if ( errorEl ) {
+			errorEl.remove();
+		}
 	}
 
 	/**
@@ -171,6 +250,23 @@ class UppyVideoUploader {
 
 		// Handle file addition: process video and close modal.
 		this.uppy.on( 'file-added', async ( file ) => {
+			this.clearDurationError();
+
+			if ( this.maxDurationSeconds > 0 ) {
+				const duration = await this.getMediaDurationSeconds( file );
+
+				// If we could read duration and it exceeds limit -> reject
+				if ( duration > 0 && duration > this.maxDurationSeconds ) {
+					this.showDurationError( this.maxDurationSeconds );
+
+					// Remove from uppy and clear UI
+					this.uppy.removeFile( file.id );
+					this.clearVideoUploadUI();
+
+					return;
+				}
+			}
+
 			this.processVideoUpload( file, 'added' );
 			await this.uppy.getPlugin( 'Dashboard' ).closeModal();
 		} );

@@ -22,6 +22,10 @@ jQuery( document ).on( 'gform_load_field_settings', function( event, field ) {
 
 		// Explicitly set checkbox state based on value
 		jQuery( 'input[name="field_godam_video_sync"]' ).prop( 'checked', syncVideo === 'on' );
+
+		// Load max duration
+		const maxDuration = field.godamMaxDuration === undefined ? '' : field.godamMaxDuration;
+		jQuery( '#field_godam_max_duration' ).val( maxDuration );
 	}
 } );
 
@@ -56,6 +60,17 @@ jQuery( document ).ready( function() {
 		if ( typeof SetFieldProperty === 'function' ) {
 			// eslint-disable-next-line no-undef
 			SetFieldProperty( 'godamVideoSync', isChecked ? 'on' : 'off' );
+		}
+	} );
+
+	// Save max duration
+	jQuery( '#field_godam_max_duration' ).on( 'input change', function() {
+		const raw = jQuery( this ).val();
+		const seconds = raw === '' ? '' : Math.max( 1, parseInt( raw, 10 ) || 0 );
+
+		if ( typeof SetFieldProperty === 'function' ) {
+			// eslint-disable-next-line no-undef
+			SetFieldProperty( 'godamMaxDuration', seconds === 0 ? '' : seconds );
 		}
 	} );
 } );
