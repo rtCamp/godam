@@ -52,13 +52,16 @@ const GodamHeader = () => {
 		<header>
 			<div className="godam-settings-header border-b -ml-[32px] pl-[32px] bg-white">
 				<div className="godam-settings-header-content max-w-[1440px] mx-auto pl-4 pr-6 flex items-center justify-between">
-					<div className="py-6 m-0 text-4xl leading-4 font-semibold text-slate-900 flex items-end">
-						<img className="h-8 sm:h-9 md:h-12" src={ godamLogo } alt={ __( 'GoDAM Logo', 'godam' ) } />
-						<div className="ml-3">
-							<div className="text-xs font-normal leading-4">{ `v${ window?.pluginInfo?.version }` }</div>
+					<div className="py-6 m-0 text-4xl leading-4 font-semibold text-slate-900 flex items-center max-[410px]:flex-col max-[410px]:items-start max-[410px]:gap-1 gap-2">
+						<div className="flex items-end gap-1">
+							<img className="h-8 sm:h-9 md:h-12" src={ godamLogo } alt={ __( 'GoDAM Logo', 'godam' ) } />
+							<div className="text-xs font-normal leading-4 pb-1 godam-version-label">{ `v${ window?.pluginInfo?.version }` }</div>
+						</div>
+						<div>
+							<div className="text-xs font-normal leading-4 max-[410px]:hidden">{ `v${ window?.pluginInfo?.version }` }</div>
 							{
 								window?.userData?.userApiData?.active_plan &&
-								<div className="text-xs font-bold py-[2px] px-2 rounded bg-indigo-100 mt-1">{ window?.userData?.userApiData?.active_plan }</div>
+								<div className="text-center md:text-left text-xs font-bold py-[2px] px-2 rounded bg-indigo-100 mt-1">{ window?.userData?.userApiData?.active_plan }</div>
 							}
 						</div>
 					</div>
