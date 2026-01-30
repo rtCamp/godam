@@ -419,7 +419,7 @@ const ImageCTA = ( { layerID } ) => {
 
 			<div className="flex items-center gap-2">
 				<ColorPickerButton
-					value={ layer?.imageCtaButtonColor ?? '#000000' }
+					value={ layer?.imageCtaButtonColor ?? '#EEAB95' }
 					label={ __( 'CTA Button Background Color', 'godam' ) }
 					className="mb-0"
 					enableAlpha={ true }
@@ -429,7 +429,7 @@ const ImageCTA = ( { layerID } ) => {
 					<button
 						type="button"
 						className="text-xs text-red-500 underline hover:text-red-600 bg-transparent cursor-pointer"
-						onClick={ () => updateField( 'imageCtaButtonColor', '#000000' )
+						onClick={ () => updateField( 'imageCtaButtonColor', '#EEAB95' )
 						}
 						aria-haspopup="true"
 						aria-label={ __( 'Remove', 'godam' ) }

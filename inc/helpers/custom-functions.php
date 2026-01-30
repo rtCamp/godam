@@ -205,7 +205,7 @@ function rtgodam_image_cta_html( $layer ) {
 	$image_text           = isset( $layer['imageText'] ) ? sanitize_text_field( $layer['imageText'] ) : '';
 	$image_description    = isset( $layer['imageDescription'] ) ? sanitize_text_field( $layer['imageDescription'] ) : '';
 	$image_link           = isset( $layer['imageLink'] ) ? $layer['imageLink'] : '#';
-	$cta_background_color = isset( $layer['imageCtaButtonColor'] ) ? sanitize_hex_color( $layer['imageCtaButtonColor'] ) : '#000000';
+	$cta_background_color = isset( $layer['imageCtaButtonColor'] ) ? sanitize_hex_color( $layer['imageCtaButtonColor'] ) : '#EEAB95';
 	$cta_button_text      = ! empty( $layer['imageCtaButtonText'] ) ? sanitize_text_field( $layer['imageCtaButtonText'] ) : __( 'Check now', 'godam' );
 
 	// Ensure opacity is within valid range.

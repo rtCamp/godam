@@ -111,7 +111,6 @@ $cta-card-max-width-vertical: 400px !default;
     &.card-layout--image-top {
         display: flex;
         flex-direction: column;
-        gap: $cta-spacing-md;
         max-width: $cta-card-max-width-vertical;
 
         .godam-cta-card-image {
@@ -123,7 +122,6 @@ $cta-card-max-width-vertical: 400px !default;
     &.card-layout--image-bottom {
         display: flex;
         flex-direction: column;
-        gap: $cta-spacing-md;
         max-width: $cta-card-max-width-vertical;
     }
 

@@ -150,7 +150,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 							href={ layer?.imageLink || '#' }
 							target="_blank"
 							rel="noreferrer"
-							style={ { backgroundColor: layer?.imageCtaButtonColor ?? '#000000', textDecoration: 'none' } }
+							style={ { backgroundColor: layer?.imageCtaButtonColor ?? '#EEAB95', textDecoration: 'none' } }
 						>
 							{ layer?.imageCtaButtonText || __( 'Check now', 'godam' ) }
 						</a>
