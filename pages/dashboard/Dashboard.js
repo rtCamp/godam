@@ -16,6 +16,7 @@ import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.pn
 import ExportBtn from '../../assets/src/images/export.svg';
 import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, useFetchTopVideosQuery } from './redux/api/dashboardAnalyticsApi';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
+import { getAPIKeyErrorInfo } from '../godam/utils';
 import SingleMetrics from '../analytics/SingleMetrics';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
 import chevronLeft from '../../assets/src/images/chevron-left.svg';
@@ -48,10 +49,13 @@ const Dashboard = () => {
 		const container = document.getElementById( 'dashboard-container' );
 		const overlay = document.getElementById( 'api-key-overlay' );
 
+		// Check for server-side errors OR local API key status issues
+		const apiKeyError = getAPIKeyErrorInfo();
 		const shouldShowOverlay =
 			dashboardMetrics?.errorType === 'invalid_key' ||
 			dashboardMetrics?.errorType === 'missing_key' ||
-			dashboardMetrics?.errorType === 'microservice_error';
+			dashboardMetrics?.errorType === 'microservice_error' ||
+			apiKeyError !== null;
 
 		if ( shouldShowOverlay ) {
 			if ( loadingEl ) {
@@ -175,6 +179,86 @@ const Dashboard = () => {
 		return () => clearInterval( checkExist );
 	}, [] );
 
+	/**
+	 * Renders the appropriate overlay content based on API key status.
+	 *
+	 * @return {JSX.Element} The overlay content to display.
+	 */
+	const renderOverlayContent = () => {
+		const apiKeyError = getAPIKeyErrorInfo();
+
+		// Check for local API key status first (expired, verification_failed)
+		if ( apiKeyError?.type === 'expired' || apiKeyError?.type === 'verification_failed' ) {
+			return (
+				<div className="api-key-overlay-banner">
+					<p className="api-key-overlay-banner-header">
+						{ apiKeyError.title }
+					</p>
+					<p className="api-key-overlay-banner-footer">
+						{ apiKeyError.message }
+						{ ' ' }
+						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+							{ __( 'Go to plugin settings', 'godam' ) }
+						</a>
+					</p>
+				</div>
+			);
+		}
+
+		// Show upgrade message for missing/invalid keys
+		if ( dashboardMetrics?.errorType === 'invalid_key' || dashboardMetrics?.errorType === 'missing_key' ) {
+			return (
+				<>
+					{ showNewYearSaleBanner && (
+						<div className="annual-plan-offer-banner dashboard-modal-banner">
+							<a
+								href={ `${ window?.videoData?.godamBaseUrl }/pricing?utm_campaign=new-year-sale-2026&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=dashboard-modal-banner` }
+								className="annual-plan-offer-banner__link"
+								target="_blank"
+								rel="noopener noreferrer"
+								aria-label={ __( 'Claim the GoDAM New Year Sale 2026 offer', 'godam' ) }
+							>
+								<img
+									src={ NewYearSaleBanner }
+									alt={ __( 'New Year Sale 2026 offer from GoDAM', 'godam' ) }
+									className="annual-plan-offer-banner__image"
+									loading="lazy"
+								/>
+							</a>
+						</div>
+					) }
+					<div className="api-key-overlay-banner">
+						<p className="api-key-overlay-banner-header">
+							{ __( 'Upgrade to unlock the media performance report.', 'godam' ) }
+						</p>
+
+						<p className="api-key-overlay-banner-footer">
+							{ __( 'If you already have a premium plan, connect your', 'godam' ) }
+							{ ' ' }
+							<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+								{ __( 'API in the settings', 'godam' ) }
+							</a>
+						</p>
+
+						<a href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=analytics` } className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
+					</div>
+				</>
+			);
+		}
+
+		// Default error message for microservice errors or other issues
+		return (
+			<div className="api-key-overlay-banner">
+				<p>
+					{ dashboardMetrics?.message + ' ' || __( 'An unknown error occurred. Please check your plugin settings.', 'godam' ) }
+				</p>
+				<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+					{ __( 'Go to plugin settings', 'godam' ) }
+				</a>
+			</div>
+		);
+	};
+
 	return (
 		<div className="godam-dashboard-container">
 			<GodamHeader />
@@ -191,7 +275,7 @@ const Dashboard = () => {
 				id="api-key-overlay"
 				className="api-key-overlay hidden"
 				style={
-					dashboardMetrics?.errorType === 'invalid_key' || dashboardMetrics?.errorType === 'missing_key'
+					( dashboardMetrics?.errorType === 'invalid_key' || dashboardMetrics?.errorType === 'missing_key' ) && ! getAPIKeyErrorInfo()?.type
 						? {
 							backgroundImage: `url(${ upgradePlanBackground })`,
 							backgroundSize: '100% calc(100% - 32px)',
@@ -202,58 +286,7 @@ const Dashboard = () => {
 				}
 			>
 				<div className="api-key-message">
-
-					{ dashboardMetrics?.errorType === 'invalid_key' || dashboardMetrics?.errorType === 'missing_key'
-						? <>
-							{ showNewYearSaleBanner && (
-								<div className="annual-plan-offer-banner dashboard-modal-banner">
-									<a
-										href={ `${ window?.videoData?.godamBaseUrl }/pricing?utm_campaign=new-year-sale-2026&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=dashboard-modal-banner` }
-										className="annual-plan-offer-banner__link"
-										target="_blank"
-										rel="noopener noreferrer"
-										aria-label={ __( 'Claim the GoDAM New Year Sale 2026 offer', 'godam' ) }
-									>
-										<img
-											src={ NewYearSaleBanner }
-											alt={ __( 'New Year Sale 2026 offer from GoDAM', 'godam' ) }
-											className="annual-plan-offer-banner__image"
-											loading="lazy"
-										/>
-									</a>
-								</div>
-							) }
-							<div className="api-key-overlay-banner">
-								<p className="api-key-overlay-banner-header">
-									{ __(
-										'Upgrade to unlock the media performance report.',
-										'godam',
-									) }
-								</p>
-
-								<p className="api-key-overlay-banner-footer">
-									{ __( 'If you already have a premium plan, connect your', 'godam' ) }
-									{ ' ' }
-									<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-										{ __( 'API in the settings', 'godam' ) }
-									</a>
-								</p>
-
-								<a href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=analytics` } className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
-							</div>
-						</>
-						:	<div className="api-key-overlay-banner">
-							<p>
-								{ dashboardMetrics?.message + ' ' || __(
-									'An unknown error occurred. Please check your plugin settings.',
-									'godam',
-								) }
-							</p>
-							<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-								{ __( 'Go to plugin settings', 'godam' ) }
-							</a>
-						</div>
-					}
+					{ renderOverlayContent() }
 				</div>
 			</div>
 
