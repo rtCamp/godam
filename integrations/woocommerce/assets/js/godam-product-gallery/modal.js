@@ -89,7 +89,7 @@ export function initVideoModal() {
 			}
 		} else {
 			getModal = gallery.querySelector(
-				`.godam-product-modal-container[data-modal-video-id="${ videoId }"]:not([data-modal-timestamped]), 
+				`.godam-product-modal-container[data-modal-video-id="${ videoId }"]:not([data-modal-timestamped]),
 				 .godam-product-modal-container[data-modal-video-id="${ videoId }"][data-modal-timestamped="0"]`,
 			);
 		}
@@ -628,7 +628,7 @@ async function loadSidebarProducts( productIds, sidebarModal, ctaEnabled, ctaDis
 			sidebarElement.innerHTML = `
 				${ products.map( ( product ) => `
 				<div class="godam-sidebar-product-item">
-					<div class="godam-sidebar-product-image">${ product.image }</div>
+					<div class="godam-sidebar-product-image">${ product.image_html }</div>
 					<div class="godam-sidebar-product-content">
 						<div class="godam-sidebar-product-title">${ product.name }</div>
 						<div class="godam-sidebar-product-price">${ product.price }</div>

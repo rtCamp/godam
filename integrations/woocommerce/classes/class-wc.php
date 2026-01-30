@@ -1004,6 +1004,7 @@ class WC extends Base {
 				'type'       => $product->get_type(),
 				'link'       => get_permalink( $product->get_id() ),
 				'image'      => wp_get_attachment_url( $product->get_image_id() ) ?: wc_placeholder_img_src(),
+				'image_html' => $product->get_image(),
 				'categories' => $categories,
 				'tags'       => $tags,
 				'brands'     => $brands,
