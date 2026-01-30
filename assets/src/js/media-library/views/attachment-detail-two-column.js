@@ -35,23 +35,25 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * @param {Promise}  fetchPromise - The promise that resolves to the fetched data.
 	 *
 	 * @param {Function} renderMethod - The method to render the fetched data.
+	 *
+	 * @param {string}   type         - The type of data being fetched. Defaults to empty string.
 	 */
-	async fetchAndRender( fetchPromise, renderMethod ) {
+	async fetchAndRender( fetchPromise, renderMethod, type = '' ) {
 		const data = await fetchPromise;
-
-		const actionsEl = this.$el.find( '.attachment-actions' );
 
 		// If there's no data remove the spinner and show message.
 		if ( ! data ) {
-			const thumbnailContainer = actionsEl?.find( '.attachment-video-thumbnails' );
+			if ( 'thumbnails' === type ) {
+				const actionsEl = this.$el.find( '.attachment-actions' );
+				const thumbnailContainer = actionsEl?.find( '.attachment-video-thumbnails' );
 
-			thumbnailContainer?.find( '.thumbnail-spinner' )?.remove();
-			const container = thumbnailContainer?.find( '.thumbnail-spinner-container' )?.get( 0 );
-			if ( container ) {
-				container.className = '';
-				container.innerText = __( 'No thumbnails found', 'godam' );
+				thumbnailContainer?.find( '.thumbnail-spinner' )?.remove();
+				const container = thumbnailContainer?.find( '.thumbnail-spinner-container' )?.get( 0 );
+				if ( container ) {
+					container.className = '';
+					container.innerText = __( 'No thumbnails found', 'godam' );
+				}
 			}
-
 			return;
 		}
 
@@ -666,10 +668,12 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			this.fetchAndRender(
 				this.getVideoThumbnails( attachmentId ),
 				this.renderThumbnail,
+				'thumbnails',
 			);
 			this.fetchAndRender(
 				this.getExifDetails( attachmentId ),
 				this.renderExifDetails,
+				'exif',
 			);
 		}
 
