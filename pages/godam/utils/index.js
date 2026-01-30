@@ -41,11 +41,7 @@ export const isSafari = () => {
 
 	// Check for Safari but exclude Chrome and other Chromium-based browsers
 	// Safari's user agent contains "Safari" but not "Chrome"
-	const isSafariBrowser =
-		/Safari/.test( userAgent ) &&
-		! /Chrome/.test( userAgent ) &&
-		! /Chromium/.test( userAgent ) &&
-		! /Edg/.test( userAgent );
+	const isSafariBrowser = /Safari/.test( userAgent ) && ! /(Chrome|Chromium|Edg|CriOS|FxiOS|OPR)/.test( userAgent );
 
 	return isSafariBrowser;
 };
