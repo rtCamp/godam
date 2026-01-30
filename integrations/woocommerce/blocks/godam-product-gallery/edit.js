@@ -19,6 +19,7 @@ import {
 	RangeControl,
 } from '@wordpress/components';
 import { useMemo, useRef, useEffect, useCallback, Platform } from '@wordpress/element';
+import { useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -32,9 +33,10 @@ import './editor.scss';
  * @param {Object}   props               Block props.
  * @param {Object}   props.attributes    Block attributes.
  * @param {Function} props.setAttributes Function to set block attributes.
- * @return {WPElement} Element to render.
+ * @param            props.clientId
+ * @return {JSX.Element} Element to render.
  */
-export default function Edit( { attributes, setAttributes } ) {
+export default function Edit( { attributes, setAttributes, clientId } ) {
 	const {
 		autoplay,
 		product,
@@ -47,16 +49,15 @@ export default function Edit( { attributes, setAttributes } ) {
 		playButtonBorderRadius,
 		unmuteButtonBgColor,
 		unmuteButtonIconColor,
-		cardWidth,
+		cardWidth = {},
 		arrowBgColor,
 		arrowIconColor,
 		arrowSize,
 		arrowBorderRadius,
 		arrowVisibility,
-		gridColumns,
+		gridColumns = {},
 		gridRowGap,
 		gridColumnGap,
-		gridCardAlignment,
 		ctaEnabled,
 		ctaDisplayPosition,
 		ctaBgColor,
@@ -71,6 +72,17 @@ export default function Edit( { attributes, setAttributes } ) {
 	} = attributes;
 
 	const blockProps = useBlockProps();
+
+	// Set the Block id of the Block as ClientId.
+	useEffect( () => {
+		if ( ! attributes.blockId ) {
+			setAttributes( { blockId: clientId } );
+		}
+	}, [ clientId ] );
+
+	const deviceType = useSelect( ( select ) => {
+		return select( 'core/editor' ).getDeviceType();
+	}, [] );
 
 	// Refrence to preview view value.
 	const previousViewRef = useRef( view );
@@ -106,11 +118,15 @@ export default function Edit( { attributes, setAttributes } ) {
 
 	// Update card width on view change.
 	useEffect( () => {
-		const defaultWidth = parseFloat( getCardWidthForView( view, layout ) );
-
 		// If view has changed, reset to default width, else do nothing.
 		if ( previousViewRef.current !== view ) {
-			setAttributes( { cardWidth: defaultWidth } );
+			setAttributes( {
+				cardWidth: {
+					desktop: parseFloat( getCardWidthForView( view, layout, 'desktop' ) ),
+					tablet: parseFloat( getCardWidthForView( view, layout, 'tablet' ) ),
+					mobile: parseFloat( getCardWidthForView( view, layout, 'mobile' ) ),
+				},
+			} );
 			previousViewRef.current = view;
 		}
 	}, [ view ] );
@@ -134,13 +150,20 @@ export default function Edit( { attributes, setAttributes } ) {
 	/**
 	 * Returns default CTA width (in rem) based on selected view ratio and layout.
 	 *
-	 * @param {string} v - View ratio (e.g., '16-9', '4-3', etc.).
-	 * @param {string} l - Layout (e.g., 'carousel', 'grid', etc.).
+	 * @param {string} viewRatio  - View ratio (e.g., '16-9', '4-3', etc.).
+	 * @param {string} layoutType - Layout (e.g., 'carousel', 'grid', etc.).
+	 * @param {string} device     - Device (e.g., 'desktop', 'tablet', 'mobile', 'all').
 	 * @return {string} CTA width in rem units as a string.
 	 */
-	const getCardWidthForView = ( v, l ) => {
-		if ( l === 'carousel' ) {
-			switch ( v ) {
+	const getCardWidthForView = ( viewRatio, layoutType, device ) => {
+		if ( layoutType === 'carousel' ) {
+			if ( device === 'tablet' ) {
+				return '41.5';
+			} else if ( device === 'mobile' ) {
+				return '66.5';
+			}
+
+			switch ( viewRatio ) {
 				case '16-9':
 					return '42';
 				case '4-3':
@@ -151,12 +174,28 @@ export default function Edit( { attributes, setAttributes } ) {
 				case '1-1':
 					return '19';
 			}
-		} else if ( l === 'grid' ) {
+		} else if ( layoutType === 'grid' ) {
 			return '17';
 		}
 
 		return '0';
 	};
+
+	/* Get card width to show in Carousel */
+	const currentCardWidth =
+	deviceType === 'Mobile'
+		? cardWidth?.mobile ?? parseFloat( getCardWidthForView( view, layout, 'mobile' ) )
+		: deviceType === 'Tablet'
+			? cardWidth?.tablet ?? parseFloat( getCardWidthForView( view, layout, 'tablet' ) )
+			: cardWidth?.desktop ?? parseFloat( getCardWidthForView( view, layout, 'desktop' ) );
+
+	/* Get number of columns to show in Grid */
+	const currentGridColumns =
+	deviceType === 'Mobile'
+		? gridColumns?.mobile ?? 2
+		: deviceType === 'Tablet'
+			? gridColumns?.tablet ?? 3
+			: gridColumns?.desktop ?? 4;
 
 	/**
 	 * Generate sample videos for preview in editor.
@@ -166,10 +205,14 @@ export default function Edit( { attributes, setAttributes } ) {
 			<div
 				className={ `godam-editor-product-video-item view-${ view }` }
 				key={ i }
-				style={ {
-					minWidth: '12.5rem',
-					width: `${ cardWidth }rem`,
-				} }
+				style={
+					layout === 'carousel'
+						? {
+							minWidth: '10vw',
+							width: `${ currentCardWidth }vw`,
+						}
+						: {}
+				}
 			>
 				<div className="godam-editor-product-video-thumbnail">
 					<span className="godam-editor-product-video-label">
@@ -241,7 +284,7 @@ export default function Edit( { attributes, setAttributes } ) {
 					<div
 						className="godam-product-cta"
 						style={ {
-							width: `${ cardWidth }rem`,
+							width: layout === 'carousel' ? `${ currentCardWidth }vw` : '100%',
 							backgroundColor: ctaBgColor,
 						} }
 					>
@@ -254,7 +297,7 @@ export default function Edit( { attributes, setAttributes } ) {
 									color: ctaProductNameColor,
 								} }
 							>
-								{ __( 'Sample Product Name That Is Too Long', 'godam' ) }
+								{ __( 'Sample Product Name', 'godam' ) }
 							</div>
 							<p
 								className="product-price"
@@ -357,11 +400,50 @@ export default function Edit( { attributes, setAttributes } ) {
 					<PanelBody title={ __( 'Carousel Settings', 'godam' ) } initialOpen={ false }>
 
 						<RangeControl
-							label={ __( 'Card Size (rem)', 'godam' ) }
-							value={ cardWidth ?? parseFloat( getCardWidthForView( view, layout ) ) }
-							onChange={ ( value ) => setAttributes( { cardWidth: value } ) }
-							min={ 12.5 }
-							max={ 70.5 }
+							label={ __( 'Desktop Card Size (vw)', 'godam' ) }
+							value={ cardWidth?.desktop ?? parseFloat( getCardWidthForView( view, layout, 'desktop' ) ) }
+							onChange={ ( value ) =>
+								setAttributes( {
+									cardWidth: {
+										...cardWidth,
+										desktop: value,
+									},
+								} )
+							}
+							min={ 10 }
+							max={ 100 }
+							step={ 0.5 }
+						/>
+
+						<RangeControl
+							label={ __( 'Tablet Card Size (vw)', 'godam' ) }
+							value={ cardWidth?.tablet ?? parseFloat( getCardWidthForView( view, layout, 'tablet' ) ) }
+							onChange={ ( value ) =>
+								setAttributes( {
+									cardWidth: {
+										...cardWidth,
+										tablet: value,
+									},
+								} )
+							}
+							min={ 10 }
+							max={ 100 }
+							step={ 0.5 }
+						/>
+
+						<RangeControl
+							label={ __( 'Mobile Card Size (vw)', 'godam' ) }
+							value={ cardWidth?.mobile ?? parseFloat( getCardWidthForView( view, layout, 'mobile' ) ) }
+							onChange={ ( value ) =>
+								setAttributes( {
+									cardWidth: {
+										...cardWidth,
+										mobile: value,
+									},
+								} )
+							}
+							min={ 10 }
+							max={ 100 }
 							step={ 0.5 }
 						/>
 
@@ -409,11 +491,48 @@ export default function Edit( { attributes, setAttributes } ) {
 				{ layout === 'grid' && (
 					<PanelBody title={ __( 'Grid Settings', 'godam' ) } initialOpen={ false }>
 						<RangeControl
-							label={ __( 'Columns', 'godam' ) }
-							value={ gridColumns }
-							onChange={ ( value ) => setAttributes( { gridColumns: value } ) }
+							label={ __( 'Columns in Desktop', 'godam' ) }
+							value={ gridColumns?.desktop ?? 4 }
+							onChange={ ( value ) =>
+								setAttributes( {
+									gridColumns: {
+										...gridColumns,
+										desktop: value,
+									},
+								} )
+							}
 							min={ 1 }
 							max={ 6 }
+						/>
+
+						<RangeControl
+							label={ __( 'Columns in Tablet', 'godam' ) }
+							value={ gridColumns?.tablet ?? 3 }
+							onChange={ ( value ) =>
+								setAttributes( {
+									gridColumns: {
+										...gridColumns,
+										tablet: value,
+									},
+								} )
+							}
+							min={ 1 }
+							max={ 4 }
+						/>
+
+						<RangeControl
+							label={ __( 'Columns in Mobile', 'godam' ) }
+							value={ gridColumns?.mobile ?? 2 }
+							onChange={ ( value ) =>
+								setAttributes( {
+									gridColumns: {
+										...gridColumns,
+										mobile: value,
+									},
+								} )
+							}
+							min={ 1 }
+							max={ 2 }
 						/>
 
 						<RangeControl
@@ -430,26 +549,6 @@ export default function Edit( { attributes, setAttributes } ) {
 							onChange={ ( value ) => setAttributes( { gridColumnGap: value } ) }
 							min={ 0 }
 							max={ 64 }
-						/>
-
-						<RangeControl
-							label={ __( 'Card Size (rem)', 'godam' ) }
-							value={ cardWidth ?? parseFloat( getCardWidthForView( view, layout ) ) }
-							onChange={ ( value ) => setAttributes( { cardWidth: value } ) }
-							min={ 12.5 }
-							max={ 70.5 }
-							step={ 0.5 }
-						/>
-
-						<SelectControl
-							label={ __( 'Card Alignment', 'godam' ) }
-							value={ gridCardAlignment }
-							options={ [
-								{ label: __( 'Left', 'godam' ), value: 'start' },
-								{ label: __( 'Center', 'godam' ), value: 'center' },
-								{ label: __( 'Right', 'godam' ), value: 'end' },
-							] }
-							onChange={ ( value ) => setAttributes( { gridCardAlignment: value } ) }
 						/>
 					</PanelBody>
 				) }
@@ -642,10 +741,9 @@ export default function Edit( { attributes, setAttributes } ) {
 								className="grid-container"
 								style={ {
 									display: 'grid',
-									gridTemplateColumns: `repeat(${ gridColumns }, 1fr)`,
+									gridTemplateColumns: `repeat(${ currentGridColumns }, 1fr)`,
 									rowGap: `${ gridRowGap }px`,
 									columnGap: `${ gridColumnGap }px`,
-									justifyItems: gridCardAlignment,
 								} }
 							>
 								{ GoDAMVideos }

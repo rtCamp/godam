@@ -186,6 +186,7 @@ class GoDAM_Product_Gallery {
 		$default_atts = apply_filters(
 			'rtgodam_product_gallery_default_attributes',
 			array(
+				'block_id'                    => '',
 				'layout'                      => 'carousel',
 				'view'                        => '4-3',
 				'product'                     => '',
@@ -199,16 +200,19 @@ class GoDAM_Product_Gallery {
 				'unmute_button_enabled'       => '',
 				'unmute_button_bg_color'      => 'rgba(0,0,0,0.4)',
 				'unmute_button_icon_color'    => '#ffffff',
-				'card_width'                  => 21.5,
+				'desktop_card_width'          => 21.5,
+				'tablet_card_width'           => 41.5,
+				'mobile_card_width'           => 66.5,
 				'arrow_bg_color'              => 'rgba(0,0,0,0.5)',
 				'arrow_icon_color'            => '#ffffff',
 				'arrow_size'                  => 32,
 				'arrow_border_radius'         => 4,
 				'arrow_visibility'            => 'always',
-				'grid_columns'                => 4,
+				'grid_columns_desktop'        => 4,
+				'grid_columns_tablet'         => 3,
+				'grid_columns_mobile'         => 2,
 				'grid_row_gap'                => 16,
 				'grid_column_gap'             => 16,
-				'grid_card_alignment'         => 'start',
 				'cta_enabled'                 => false,
 				'cta_display_position'        => 'below-inside',
 				'cta_bg_color'                => '#ffffff',
@@ -253,13 +257,17 @@ class GoDAM_Product_Gallery {
 		$atts['play_button_radius']          = absint( $atts['play_button_radius'] );
 		$atts['arrow_size']                  = absint( $atts['arrow_size'] );
 		$atts['arrow_border_radius']         = absint( $atts['arrow_border_radius'] );
-		$atts['grid_columns']                = max( 1, absint( $atts['grid_columns'] ) );
+		$atts['grid_columns_desktop']        = max( 1, absint( $atts['grid_columns_desktop'] ) );
+		$atts['grid_columns_tablet']         = max( 1, absint( $atts['grid_columns_tablet'] ) );
+		$atts['grid_columns_mobile']         = max( 1, absint( $atts['grid_columns_mobile'] ) );
 		$atts['grid_row_gap']                = absint( $atts['grid_row_gap'] );
 		$atts['grid_column_gap']             = absint( $atts['grid_column_gap'] );
 		$atts['cta_button_border_radius']    = absint( $atts['cta_button_border_radius'] );
 		$atts['cta_product_name_font_size']  = absint( $atts['cta_product_name_font_size'] );
 		$atts['cta_product_price_font_size'] = absint( $atts['cta_product_price_font_size'] );
-		$atts['card_width']                  = (float) $atts['card_width'];
+		$atts['desktop_card_width']          = (float) $atts['desktop_card_width'];
+		$atts['tablet_card_width']           = (float) $atts['tablet_card_width'];
+		$atts['mobile_card_width']           = (float) $atts['mobile_card_width'];
 
 		if ( $atts['play_button_size'] <= 0 ) {
 			$atts['play_button_size'] = 40;
@@ -267,11 +275,20 @@ class GoDAM_Product_Gallery {
 		if ( $atts['arrow_size'] <= 0 ) {
 			$atts['arrow_size'] = 32;
 		}
-		if ( $atts['card_width'] <= 0 ) {
-			$atts['card_width'] = 21.5;
+		if ( $atts['desktop_card_width'] <= 0 ) {
+			$atts['desktop_card_width'] = 21.5;
+		}
+		if ( $atts['tablet_card_width'] <= 0 ) {
+			$atts['tablet_card_width'] = 41.5;
+		}
+		if ( $atts['mobile_card_width'] <= 0 ) {
+			$atts['mobile_card_width'] = 66.5;
 		}
 
-		$instance_id = 'godam-product-gallery-' . wp_unique_id( wp_rand( 1000, 9999999999 ) );
+		$instance_id = ! empty( $atts['block_id'] )
+			? 'godam-product-gallery-' . $atts['block_id']
+			: 'godam-product-gallery-shortcode-' . wp_unique_id( wp_rand( 1000, 9999999999 ) );
+
 
 		// Add CSS for Video Modal.
 		wp_register_style( 'godam-product-gallery-woo-inline-style', false, array(), RTGODAM_VERSION );
@@ -395,6 +412,11 @@ class GoDAM_Product_Gallery {
 			echo '<div id="' . esc_attr( $instance_id ) . '" data-gallery-id="' . esc_attr( $instance_id ) . '" class="godam-product-gallery layout-' . esc_attr( $atts['layout'] ) .
 				esc_attr( $alignment_class ) . '"
 				data-product="' . esc_attr( $atts['product'] ) . '"
+				style="
+					--godam-product-gallery-card-width-desktop: ' . esc_attr( $atts['desktop_card_width'] ) . 'vw;
+					--godam-product-gallery-card-width-tablet: ' . esc_attr( $atts['tablet_card_width'] ) . 'vw;
+					--godam-product-gallery-card-width-mobile: ' . esc_attr( $atts['mobile_card_width'] ) . 'vw;
+				"
 			>';
 
 			/**
@@ -405,7 +427,7 @@ class GoDAM_Product_Gallery {
 
 				printf(
 					'<button class="carousel-arrow left %s" style="background:%s;color:%s;border-radius:%dpx;width:%dpx;height:%dpx;font-size:%dpx;" aria-label="%s">&#10094;</button>',
-					esc_attr( 'hover' ? 'hide-until-hover' : '' === $atts['arrow_visibility'] ),
+					esc_attr( 'hover' === $atts['arrow_visibility'] ? 'hide-until-hover' : '' ),
 					esc_attr( $this->utility_instance->hex_to_rgba( $atts['arrow_bg_color'] ) ),
 					esc_attr( $atts['arrow_icon_color'] ),
 					intval( $atts['arrow_border_radius'] ),
@@ -420,11 +442,18 @@ class GoDAM_Product_Gallery {
 				echo '<div class="godam-grid-wrapper">';
 
 				printf(
-					'<div class="grid-container" style="display: grid;grid-template-columns: repeat(%1$d, 1fr); row-gap: %2$dpx; column-gap: %3$dpx; justify-items: %4$s;">',
-					intval( $atts['grid_columns'] ),
+					'<div class="grid-container" style="
+						--godam-product-gallery-grid-columns-desktop: %1$d;
+						--godam-product-gallery-grid-columns-tablet: %2$d;
+						--godam-product-gallery-grid-columns-mobile: %3$d;
+						--godam-product-gallery-grid-row-gap: %4$dpx;
+						--godam-product-gallery-grid-column-gap: %5$dpx;
+					">',
+					intval( $atts['grid_columns_desktop'] ),
+					intval( $atts['grid_columns_tablet'] ),
+					intval( $atts['grid_columns_mobile'] ),
 					intval( $atts['grid_row_gap'] ),
 					intval( $atts['grid_column_gap'] ),
-					esc_attr( $atts['grid_card_alignment'] ),
 				);
 			}
 
@@ -446,7 +475,7 @@ class GoDAM_Product_Gallery {
 				// Right Scroll Arrow.
 				printf(
 					'<button class="carousel-arrow right %s" style="background:%s;color:%s;border-radius:%dpx;width:%dpx;height:%dpx;font-size:%dpx;" aria-label="%s">&#10095;</button>',
-					esc_attr( 'hover' ? 'hide-until-hover' : '' === $atts['arrow_visibility'] ),
+					esc_attr( 'hover' === $atts['arrow_visibility'] ? 'hide-until-hover' : '' ),
 					esc_attr( $this->utility_instance->hex_to_rgba( $atts['arrow_bg_color'] ) ),
 					esc_attr( $atts['arrow_icon_color'] ),
 					intval( $atts['arrow_border_radius'] ),
@@ -535,26 +564,24 @@ class GoDAM_Product_Gallery {
 				if ( ! $atts['autoplay'] ) {
 					// Thumbnail video.
 					printf(
-						'<div class="godam-product-video-thumbnail" data-video-id="%s" data-video-attached-product-ids="%s" data-cta-enabled="%s" data-cta-display-position="%s" style="width:%srem;">',
+						'<div class="godam-product-video-thumbnail" data-video-id="%s" data-video-attached-product-ids="%s" data-cta-enabled="%s" data-cta-display-position="%s">',
 						esc_attr( $video_id ),
 						esc_attr( $data_product_ids ),
 						esc_attr( $atts['cta_enabled'] ),
 						esc_attr( $atts['cta_display_position'] ),
-						esc_attr( $atts['card_width'] )
 					);
 					echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
 					echo '</div>'; // .godam-product-video-thumbnail ends.
 				} else {
 					// Autoplay video.
 					printf(
-						'<video class="godam-product-video" data-video-id="%s" data-video-attached-product-ids="%s" data-cta-enabled="%s" data-cta-display-position="%s" src="%s" %s playsinline style="width:%srem;"></video>',
+						'<video class="godam-product-video" data-video-id="%s" data-video-attached-product-ids="%s" data-cta-enabled="%s" data-cta-display-position="%s" src="%s" %s playsinline></video>',
 						esc_attr( $video_id ),
 						esc_attr( $data_product_ids ),
 						esc_attr( $atts['cta_enabled'] ),
 						esc_attr( $atts['cta_display_position'] ),
 						esc_url( $video_url ),
 						esc_attr( $video_attrs ),
-						esc_attr( $atts['card_width'] )
 					);
 				}
 
@@ -612,8 +639,7 @@ class GoDAM_Product_Gallery {
 
 						if ( $main_product ) {
 							printf(
-								'<div class="godam-product-cta" style="width:%srem;background-color:%s">',
-								esc_attr( $atts['card_width'] ),
+								'<div class="godam-product-cta" style="background-color:%s">',
 								esc_attr( $this->utility_instance->hex_to_rgba( $atts['cta_bg_color'] ) ),
 							);
 

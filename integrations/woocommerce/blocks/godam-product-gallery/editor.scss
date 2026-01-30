@@ -90,8 +90,16 @@
 }
 
 /* Grid Wrapper */
-.godam-grid-wrapper .grid-container {
-	width: 100%;
+.godam-grid-wrapper {
+	.godam-editor-product-video-item {
+		container-type: inline-size;
+		container-name: card;
+	}
+
+	.grid-container,
+	.godam-editor-product-video-item {
+		width: 100%;
+	}
 }
 
 /* Carousel wrapper */
@@ -198,8 +206,8 @@
 		position: absolute;
 		bottom: 10px;
 		right: 10px;
-		width: 30px;
-		height: 30px;
+		width: 1.875rem;
+		height: 1.875rem;
 		border: none;
 		font-size: 20px;
 		cursor: pointer;
