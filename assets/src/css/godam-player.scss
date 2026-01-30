@@ -12,6 +12,9 @@
 // Video engagement styles.
 @use "./video-engagement";
 
+// CTA Card styles - Shared component (also used in video editor)
+@use './cta-card';
+
 .rtgodam-video-caption {
 
 	margin-bottom: 1em;
