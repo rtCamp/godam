@@ -918,8 +918,8 @@ class WC extends Base {
 				continue;
 			}
 
-			$type         = $product->get_type();
-			$name_display = $product->get_name();
+			$type          = $product->get_type();
+			$name_display  = $product->get_name();
 			$price_display = '';
 
 			$regular_price = $product->get_regular_price();
