@@ -458,6 +458,12 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	$file_extension = pathinfo( $file_url, PATHINFO_EXTENSION );
 
 	/**
+	 * Get MIME type from file URL.
+	 */
+	$file_type_info = wp_check_filetype( $file_url );
+	$content_type   = $file_type_info['type'] ?? '';
+
+	/**
 	 * Set the default settings.
 	 */
 	$default_settings = array(
@@ -547,6 +553,7 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 			'stream'               => true,
 			'watermark'            => boolval( $rtgodam_watermark ),
 			'resolutions'          => array( 'auto' ),
+			'mime_type'            => $content_type,
 			'folder_name'          => ! empty( $form_title ) ? $form_title : __( 'Gravity forms', 'godam' ),
 			'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $author_email, 0 ),
 			'wp_site'              => $site_url,
