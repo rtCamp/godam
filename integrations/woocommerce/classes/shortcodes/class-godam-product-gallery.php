@@ -186,6 +186,7 @@ class GoDAM_Product_Gallery {
 		$default_atts = apply_filters(
 			'rtgodam_product_gallery_default_attributes',
 			array(
+				'block_id'                    => '',
 				'layout'                      => 'carousel',
 				'view'                        => '4-3',
 				'product'                     => '',
@@ -274,13 +275,20 @@ class GoDAM_Product_Gallery {
 		if ( $atts['arrow_size'] <= 0 ) {
 			$atts['arrow_size'] = 32;
 		}
-		if ( $atts['desktop_card_width'] <= 0 || $atts['tablet_card_width'] <= 0 || $atts['mobile_card_width'] <= 0 ) {
+		if ( $atts['desktop_card_width'] <= 0 ) {
 			$atts['desktop_card_width'] = 21.5;
-			$atts['tablet_card_width']  = 41.5;
-			$atts['mobile_card_width']  = 66.5;
+		}
+		if ( $atts['tablet_card_width'] <= 0 ) {
+			$atts['tablet_card_width'] = 41.5;
+		}
+		if ( $atts['mobile_card_width'] <= 0 ) {
+			$atts['mobile_card_width'] = 66.5;
 		}
 
-		$instance_id = 'godam-product-gallery-' . wp_unique_id( wp_rand( 1000, 9999999999 ) );
+		$instance_id = ! empty( $atts['block_id'] )
+			? 'godam-product-gallery-' . $atts['block_id']
+			: 'godam-product-gallery-shortcode-' . wp_unique_id( wp_rand( 1000, 9999999999 ) );
+
 
 		// Add CSS for Video Modal.
 		wp_register_style( 'godam-product-gallery-woo-inline-style', false, array(), RTGODAM_VERSION );
@@ -416,7 +424,7 @@ class GoDAM_Product_Gallery {
 
 				printf(
 					'<button class="carousel-arrow left %s" style="background:%s;color:%s;border-radius:%dpx;width:%dpx;height:%dpx;font-size:%dpx;" aria-label="%s">&#10094;</button>',
-					esc_attr( 'hover' ? 'hide-until-hover' : '' === $atts['arrow_visibility'] ),
+					esc_attr( 'hover' === $atts['arrow_visibility'] ? 'hide-until-hover' : '' ),
 					esc_attr( $this->utility_instance->hex_to_rgba( $atts['arrow_bg_color'] ) ),
 					esc_attr( $atts['arrow_icon_color'] ),
 					intval( $atts['arrow_border_radius'] ),
@@ -464,7 +472,7 @@ class GoDAM_Product_Gallery {
 				// Right Scroll Arrow.
 				printf(
 					'<button class="carousel-arrow right %s" style="background:%s;color:%s;border-radius:%dpx;width:%dpx;height:%dpx;font-size:%dpx;" aria-label="%s">&#10095;</button>',
-					esc_attr( 'hover' ? 'hide-until-hover' : '' === $atts['arrow_visibility'] ),
+					esc_attr( 'hover' === $atts['arrow_visibility'] ? 'hide-until-hover' : '' ),
 					esc_attr( $this->utility_instance->hex_to_rgba( $atts['arrow_bg_color'] ) ),
 					esc_attr( $atts['arrow_icon_color'] ),
 					intval( $atts['arrow_border_radius'] ),

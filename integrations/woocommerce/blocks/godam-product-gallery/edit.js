@@ -33,9 +33,10 @@ import './editor.scss';
  * @param {Object}   props               Block props.
  * @param {Object}   props.attributes    Block attributes.
  * @param {Function} props.setAttributes Function to set block attributes.
+ * @param            props.clientId
  * @return {JSX.Element} Element to render.
  */
-export default function Edit( { attributes, setAttributes } ) {
+export default function Edit( { attributes, setAttributes, clientId } ) {
 	const {
 		autoplay,
 		product,
@@ -48,17 +49,13 @@ export default function Edit( { attributes, setAttributes } ) {
 		playButtonBorderRadius,
 		unmuteButtonBgColor,
 		unmuteButtonIconColor,
-		desktopCardWidth,
-		tabletCardWidth,
-		mobileCardWidth,
+		cardWidth = {},
 		arrowBgColor,
 		arrowIconColor,
 		arrowSize,
 		arrowBorderRadius,
 		arrowVisibility,
-		gridColumnsDesktop,
-		gridColumnsTablet,
-		gridColumnsMobile,
+		gridColumns = {},
 		gridRowGap,
 		gridColumnGap,
 		ctaEnabled,
@@ -76,8 +73,15 @@ export default function Edit( { attributes, setAttributes } ) {
 
 	const blockProps = useBlockProps();
 
+	// Set the Block id of the Block as ClientId.
+	useEffect( () => {
+		if ( ! attributes.blockId ) {
+			setAttributes( { blockId: clientId } );
+		}
+	}, [ clientId ] );
+
 	const deviceType = useSelect( ( select ) => {
-		return select( 'core/edit-post' )?.__experimentalGetPreviewDeviceType?.();
+		return select( 'core/editor' ).getDeviceType();
 	}, [] );
 
 	// Refrence to preview view value.
@@ -114,13 +118,15 @@ export default function Edit( { attributes, setAttributes } ) {
 
 	// Update card width on view change.
 	useEffect( () => {
-		const defaultWidth = parseFloat( getCardWidthForView( view, layout, 'desktop' ) );
-
 		// If view has changed, reset to default width, else do nothing.
 		if ( previousViewRef.current !== view ) {
-			setAttributes( { desktopCardWidth: defaultWidth } );
-			setAttributes( { tabletCardWidth: '41.5' } );
-			setAttributes( { mobileCardWidth: '66.5' } );
+			setAttributes( {
+				cardWidth: {
+					desktop: parseFloat( getCardWidthForView( view, layout, 'desktop' ) ),
+					tablet: parseFloat( getCardWidthForView( view, layout, 'tablet' ) ),
+					mobile: parseFloat( getCardWidthForView( view, layout, 'mobile' ) ),
+				},
+			} );
 			previousViewRef.current = view;
 		}
 	}, [ view ] );
@@ -144,20 +150,20 @@ export default function Edit( { attributes, setAttributes } ) {
 	/**
 	 * Returns default CTA width (in rem) based on selected view ratio and layout.
 	 *
-	 * @param {string} v - View ratio (e.g., '16-9', '4-3', etc.).
-	 * @param {string} l - Layout (e.g., 'carousel', 'grid', etc.).
-	 * @param {string} d - Device (e.g., 'desktop', 'tablet', 'mobile', 'all').
+	 * @param {string} viewRatio  - View ratio (e.g., '16-9', '4-3', etc.).
+	 * @param {string} layoutType - Layout (e.g., 'carousel', 'grid', etc.).
+	 * @param {string} device     - Device (e.g., 'desktop', 'tablet', 'mobile', 'all').
 	 * @return {string} CTA width in rem units as a string.
 	 */
-	const getCardWidthForView = ( v, l, d ) => {
-		if ( l === 'carousel' ) {
-			if ( d === 'tablet' ) {
+	const getCardWidthForView = ( viewRatio, layoutType, device ) => {
+		if ( layoutType === 'carousel' ) {
+			if ( device === 'tablet' ) {
 				return '41.5';
-			} else if ( d === 'mobile' ) {
+			} else if ( device === 'mobile' ) {
 				return '66.5';
 			}
 
-			switch ( v ) {
+			switch ( viewRatio ) {
 				case '16-9':
 					return '42';
 				case '4-3':
@@ -168,7 +174,7 @@ export default function Edit( { attributes, setAttributes } ) {
 				case '1-1':
 					return '19';
 			}
-		} else if ( l === 'grid' ) {
+		} else if ( layoutType === 'grid' ) {
 			return '17';
 		}
 
@@ -178,18 +184,18 @@ export default function Edit( { attributes, setAttributes } ) {
 	/* Get card width to show in Carousel */
 	const currentCardWidth =
 	deviceType === 'Mobile'
-		? mobileCardWidth ?? parseFloat( getCardWidthForView( view, layout, 'mobile' ) )
+		? cardWidth?.mobile ?? parseFloat( getCardWidthForView( view, layout, 'mobile' ) )
 		: deviceType === 'Tablet'
-			? tabletCardWidth ?? parseFloat( getCardWidthForView( view, layout, 'tablet' ) )
-			: desktopCardWidth ?? parseFloat( getCardWidthForView( view, layout, 'desktop' ) );
+			? cardWidth?.tablet ?? parseFloat( getCardWidthForView( view, layout, 'tablet' ) )
+			: cardWidth?.desktop ?? parseFloat( getCardWidthForView( view, layout, 'desktop' ) );
 
 	/* Get number of columns to show in Grid */
 	const currentGridColumns =
 	deviceType === 'Mobile'
-		? gridColumnsMobile
+		? gridColumns?.mobile ?? 2
 		: deviceType === 'Tablet'
-			? gridColumnsTablet
-			: gridColumnsDesktop;
+			? gridColumns?.tablet ?? 3
+			: gridColumns?.desktop ?? 4;
 
 	/**
 	 * Generate sample videos for preview in editor.
@@ -395,8 +401,15 @@ export default function Edit( { attributes, setAttributes } ) {
 
 						<RangeControl
 							label={ __( 'Desktop Card Size (vw)', 'godam' ) }
-							value={ desktopCardWidth ?? parseFloat( getCardWidthForView( view, layout, 'desktop' ) ) }
-							onChange={ ( value ) => setAttributes( { desktopCardWidth: value } ) }
+							value={ cardWidth?.desktop ?? parseFloat( getCardWidthForView( view, layout, 'desktop' ) ) }
+							onChange={ ( value ) =>
+								setAttributes( {
+									cardWidth: {
+										...cardWidth,
+										desktop: value,
+									},
+								} )
+							}
 							min={ 10 }
 							max={ 100 }
 							step={ 0.5 }
@@ -404,8 +417,15 @@ export default function Edit( { attributes, setAttributes } ) {
 
 						<RangeControl
 							label={ __( 'Tablet Card Size (vw)', 'godam' ) }
-							value={ tabletCardWidth ?? parseFloat( getCardWidthForView( view, layout, 'tablet' ) ) }
-							onChange={ ( value ) => setAttributes( { tabletCardWidth: value } ) }
+							value={ cardWidth?.tablet ?? parseFloat( getCardWidthForView( view, layout, 'tablet' ) ) }
+							onChange={ ( value ) =>
+								setAttributes( {
+									cardWidth: {
+										...cardWidth,
+										tablet: value,
+									},
+								} )
+							}
 							min={ 10 }
 							max={ 100 }
 							step={ 0.5 }
@@ -413,8 +433,15 @@ export default function Edit( { attributes, setAttributes } ) {
 
 						<RangeControl
 							label={ __( 'Mobile Card Size (vw)', 'godam' ) }
-							value={ mobileCardWidth ?? parseFloat( getCardWidthForView( view, layout, 'mobile' ) ) }
-							onChange={ ( value ) => setAttributes( { mobileCardWidth: value } ) }
+							value={ cardWidth?.mobile ?? parseFloat( getCardWidthForView( view, layout, 'mobile' ) ) }
+							onChange={ ( value ) =>
+								setAttributes( {
+									cardWidth: {
+										...cardWidth,
+										mobile: value,
+									},
+								} )
+							}
 							min={ 10 }
 							max={ 100 }
 							step={ 0.5 }
@@ -465,24 +492,45 @@ export default function Edit( { attributes, setAttributes } ) {
 					<PanelBody title={ __( 'Grid Settings', 'godam' ) } initialOpen={ false }>
 						<RangeControl
 							label={ __( 'Columns in Desktop', 'godam' ) }
-							value={ gridColumnsDesktop }
-							onChange={ ( value ) => setAttributes( { gridColumnsDesktop: value } ) }
+							value={ gridColumns?.desktop ?? 4 }
+							onChange={ ( value ) =>
+								setAttributes( {
+									gridColumns: {
+										...gridColumns,
+										desktop: value,
+									},
+								} )
+							}
 							min={ 1 }
 							max={ 6 }
 						/>
 
 						<RangeControl
 							label={ __( 'Columns in Tablet', 'godam' ) }
-							value={ gridColumnsTablet }
-							onChange={ ( value ) => setAttributes( { gridColumnsTablet: value } ) }
+							value={ gridColumns?.tablet ?? 3 }
+							onChange={ ( value ) =>
+								setAttributes( {
+									gridColumns: {
+										...gridColumns,
+										tablet: value,
+									},
+								} )
+							}
 							min={ 1 }
 							max={ 4 }
 						/>
 
 						<RangeControl
 							label={ __( 'Columns in Mobile', 'godam' ) }
-							value={ gridColumnsMobile }
-							onChange={ ( value ) => setAttributes( { gridColumnsMobile: value } ) }
+							value={ gridColumns?.mobile ?? 2 }
+							onChange={ ( value ) =>
+								setAttributes( {
+									gridColumns: {
+										...gridColumns,
+										mobile: value,
+									},
+								} )
+							}
 							min={ 1 }
 							max={ 2 }
 						/>

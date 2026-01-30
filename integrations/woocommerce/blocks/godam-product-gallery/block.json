@@ -8,6 +8,9 @@
   "keywords": ["product", "gallery", "video", "godam", "carousel", "grid"],
   "textdomain": "godam",
   "attributes": {
+    "blockId": {
+      "type": "string"
+    },
     "autoplay": {
       "type": "boolean",
       "attribute": "autoplay"
@@ -56,17 +59,13 @@
       "type": "string",
       "default": "#ffffff"
     },
-    "desktopCardWidth": {
-      "type": "number",
-      "default": null
-    },
-    "tabletCardWidth": {
-      "type": "number",
-      "default": null
-    },
-    "mobileCardWidth": {
-      "type": "number",
-      "default": null
+    "cardWidth": {
+      "type": "object",
+      "default": {
+        "desktop": null,
+        "tablet": null,
+        "mobile": null
+      }
     },
     "arrowBgColor": {
       "type": "string",
@@ -88,17 +87,13 @@
       "type": "string",
       "default": "always"
     },
-    "gridColumnsDesktop": {
-      "type": "number",
-      "default": 4
-    },
-    "gridColumnsTablet": {
-      "type": "number",
-      "default": 3
-    },
-    "gridColumnsMobile": {
-      "type": "number",
-      "default": 2
+    "gridColumns": {
+      "type": "object",
+      "default": {
+        "desktop": 4,
+        "tablet": 3,
+        "mobile": 2
+      }
     },
     "gridRowGap": {
       "type": "number",
