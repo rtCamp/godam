@@ -572,11 +572,8 @@ class Analytics extends Base {
 						// For local media, get actual file size.
 						$file_path = get_attached_file( $attachment_id );
 						
-						if ( $file_path && file_exists( $file_path ) ) {
-							$file_size = filesize( $file_path );
-						} else {
-							$file_size = 0;
-						}
+						$file_size = ( $file_path && file_exists( $file_path ) ) ? filesize( $file_path ) : 0;
+						
 					}
 					
 					$video['video_size']    = round( $file_size / ( 1024 * 1024 ), 2 );

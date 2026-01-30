@@ -151,6 +151,7 @@ const SingleMetrics = ( {
 				const last = parseFloat( sortedData[ sortedData.length - 1 ][ config.key ] );
 				if ( ! isNaN( first ) && ! isNaN( last ) ) {
 					trendChange = last - first;
+					trendPercentage = ( trendChange / first ) * 100;
 
 					// Handle the case when first value is 0
 					if ( first === 0 ) {
@@ -164,8 +165,6 @@ const SingleMetrics = ( {
 						} else {
 							trendPercentage = 0;
 						}
-					} else {
-						trendPercentage = ( trendChange / first ) * 100;
 					}
 				}
 			}

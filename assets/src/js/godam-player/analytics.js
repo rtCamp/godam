@@ -24,7 +24,7 @@ window.analytics = analytics;
 			`.easydam-player.video-js[data-id="${ videoId }"], .video-js[data-id="${ videoId }"]`,
 		);
 	}
-	window.findVideoElementById = findVideoElementById; // Exposed for other plugins as a global helper.
+	window.GoDAM.findVideoElementById = findVideoElementById; // Exposed for other plugins as a global helper.
 
 	function getPlayer( el ) {
 		if ( ! el ) {
