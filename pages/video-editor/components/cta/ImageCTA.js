@@ -263,6 +263,16 @@ const ImageCTA = ( { layerID } ) => {
 
 	const layoutsWithWidth = [ 'card-layout--text-imagecover', 'card-layout--imagecover-text', 'card-layout--text-image', 'card-layout--image-text' ];
 
+	// Backward compatibility: determine default layout based on imageCtaOrientation
+	const getDefaultLayout = () => {
+		if ( ! layer?.imageCtaOrientation || layer?.imageCtaOrientation === 'landscape' ) {
+			return 'card-layout--image-text';
+		}
+		return 'card-layout--image-top';
+	};
+
+	const currentLayout = layer?.cardLayout || getDefaultLayout();
+
 	return (
 		<div className="mt-2 flex flex-col gap-6">
 			<div className="flex flex-col gap-2">
@@ -271,7 +281,7 @@ const ImageCTA = ( { layerID } ) => {
 				</div>
 				<div className="grid grid-cols-4 gap-3">
 					{ layoutOptions.map( ( layout ) => {
-						const isSelected = ( layer?.cardLayout || 'card-layout--text-imagecover' ) === layout.value;
+						const isSelected = currentLayout === layout.value;
 						const IconComponent = LayoutIcons[ layout.icon ];
 						return (
 							<Tooltip key={ layout.value } text={ layout.label } placement="top">

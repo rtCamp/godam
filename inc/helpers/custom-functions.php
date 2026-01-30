@@ -185,12 +185,19 @@ function rtgodam_image_cta_html( $layer ) {
 		'card-layout--image-background',
 		'card-layout--imagecover-text',
 		'card-layout--image-text',
+		'card-layout--image-top',
 		'desktop-text-only',
 	);
 
+	// Backward compatibility: determine default layout based on imageCtaOrientation.
+	$default_layout = 'card-layout--image-text';
+	if ( isset( $layer['imageCtaOrientation'] ) && 'landscape' !== $layer['imageCtaOrientation'] ) {
+		$default_layout = 'card-layout--image-top';
+	}
+
 	$layout = isset( $layer['cardLayout'] ) && in_array( $layer['cardLayout'], $allowed_layouts, true )
 		? $layer['cardLayout']
-		: 'card-layout--text-imagecover';
+		: $default_layout;
 
 	$has_image            = ! empty( $image_url );
 	$image_opacity        = isset( $layer['imageOpacity'] ) ? floatval( $layer['imageOpacity'] ) : 1;
