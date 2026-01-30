@@ -193,7 +193,8 @@ class Media_Library_Ajax {
 		}
 
 		// Only if attachment type is image.
-		if ( 'image' !== substr( get_post_mime_type( $attachment_id ), 0, 5 ) ) {
+		$mime_type = get_post_mime_type( $attachment_id );
+		if ( 'image' !== substr( $mime_type, 0, 5 ) ) {
 			return;
 		}
 
@@ -251,7 +252,7 @@ class Media_Library_Ajax {
 			'job_for'              => 'wp-media',
 			'file_origin'          => $attachment_url,
 			'orignal_file_name'    => $file_name ?? $file_title,
-			'content_type'         => $mime_type,
+			'mime_type'            => $mime_type,
 			'callback_url'         => rawurlencode( $callback_url ),
 			'status_callback'      => rawurlencode( $status_callback_url ),
 			'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $author_email, $attachment_id ),

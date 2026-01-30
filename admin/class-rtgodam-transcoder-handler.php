@@ -381,7 +381,7 @@ class RTGODAM_Transcoder_Handler {
 						'watermark'            => boolval( $rtgodam_watermark ),
 						'resolutions'          => array( 'auto' ),
 						'video_quality'        => $rtgodam_video_compress_quality,
-						'content_type'         => $metadata['mime_type'],
+						'mime_type'            => $metadata['mime_type'],
 						'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $author_email, $attachment_id ),
 						'wp_site'              => $site_url,
 						'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, $attachment_id ),
