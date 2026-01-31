@@ -207,11 +207,15 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 					if ( video.videoWidth && video.videoHeight ) {
 						const targetHeight = 600;
 						const calculatedWidth = Math.round( targetHeight * ( video.videoWidth / video.videoHeight ) );
+						const canvasWrapper = document.querySelector( '.video-canvas-wrapper' );
+						const containerWidth = canvasWrapper?.getBoundingClientRect().width;
+						const maxWidth = containerWidth ? Math.floor( containerWidth ) : window.innerWidth;
+						const constrainedWidth = Math.min( calculatedWidth, maxWidth );
 
 						// Find the easydam-video-player wrapper and set its width
 						const videoPlayerElement = document.querySelector( '#easydam-video-player' );
 						if ( videoPlayerElement ) {
-							videoPlayerElement.style.width = `${ calculatedWidth }px`;
+							videoPlayerElement.style.width = `${ constrainedWidth }px`;
 						}
 					}
 				} );
