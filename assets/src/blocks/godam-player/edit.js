@@ -778,10 +778,10 @@ function VideoEdit( {
 									__nextHasNoMarginBottom
 								>
 									<SelectControl
-										value={ attributes.aspectRatio || '16:9' }
+										value={ attributes.aspectRatio || 'responsive' }
 										options={ [
+											{ label: __( 'Preserve Aspect Ratio', 'godam' ), value: 'responsive' },
 											{ label: __( '16:9 (Standard)', 'godam' ), value: '16:9' },
-											{ label: __( 'Responsive', 'godam' ), value: 'responsive' },
 										] }
 										onChange={ ( value ) => setAttributes( { aspectRatio: value } ) }
 										help={ __( 'Choose the aspect ratio for the video player.', 'godam' ) }
