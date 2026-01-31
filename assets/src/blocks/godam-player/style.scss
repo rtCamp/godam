@@ -259,8 +259,8 @@
 .easydam-layer--cta-text {
 	max-height: 100%;
 	width: 100%;
-	padding: 2rem;
 	overflow: auto;
+	padding: 0 2rem;
 }
 
 .easydam-layer--cta-html {
@@ -932,6 +932,7 @@
     display: block !important;
     padding: 0 !important;
     margin: 0 !important;
+    max-height: 300px;
     overflow: auto;
     font-size: 12px !important;
 }

@@ -28,6 +28,7 @@ import SingleMetrics from './SingleMetrics.js';
 import PlaybackPerformanceDashboard from './PlaybackPerformance.js';
 import videojs from 'video.js';
 import { arrowLeft } from '@wordpress/icons';
+import { formatNumber, formatWatchTime } from '../utils/formatters';
 
 const adminUrl =
   window.videoData?.adminUrl;
@@ -228,7 +229,7 @@ const Analytics = ( { attachmentID } ) => {
 			existingPlayer.dispose();
 		}
 
-		videojs( 'analytics-video', {
+		const player = videojs( 'analytics-video', {
 			aspectRatio: '16:9',
 			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
 			// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
@@ -240,6 +241,13 @@ const Analytics = ( { attachmentID } ) => {
 				},
 			},
 		} );
+
+		// Add cleanup for when this specific effect unmounts
+		return () => {
+			if ( player ) {
+				player.dispose();
+			}
+		};
 	}, [ analyticsData ] );
 
 	const openVideoUploader = () => {
@@ -253,6 +261,7 @@ const Analytics = ( { attachmentID } ) => {
 			},
 			frame: 'select',
 			multiple: false,
+			godamAnalyticsContext: true, // Flag to indicate this is from Analytics page
 		} );
 
 		fileFrame.on( 'select', function() {
@@ -408,7 +417,7 @@ const Analytics = ( { attachmentID } ) => {
 					<div>
 						<div className="subheading-container flex flex-row max-md:flex-row-reverse pt-6">
 							{ attachmentData?.title?.rendered
-								? <div className="subheading">{ __( 'Analytics report of', 'godam' ) }
+								? <div className="subheading">{ __( 'Analytics report of', 'godam' ) }{ ' ' }
 									<span dangerouslySetInnerHTML={ {
 										__html: DOMPurify.sanitize( attachmentData?.title?.rendered ),
 									} }></span></div> : <div className="subheading">{ __( 'Analytics report', 'godam' ) }</div>
@@ -506,7 +515,7 @@ const Analytics = ( { attachmentID } ) => {
 						</div>
 						<div className="posts-count-container lg:col-span-1 bg-white border border-zinc-200 rounded p-4">
 							<h2 className="text-base font-medium text-zinc-700 mb-2">
-								{ __( 'Views by Post Source', 'godam' ) }
+								{ __( 'Views by Source', 'godam' ) }
 							</h2>
 							<div id="post-views-count-chart" className="text-center"></div>
 							<div className="legend" id="legend"></div>
@@ -663,9 +672,13 @@ const Analytics = ( { attachmentID } ) => {
 													abTestComparisonAnalyticsData?.plays ?? 0,
 												) }
 											>
-												<td>{ analyticsData?.plays }</td>
+												<td title={ analyticsData?.plays?.toLocaleString() }>
+													{ formatNumber( analyticsData?.plays ) }
+												</td>
 												<td>{ __( 'Views', 'godam' ) }</td>
-												<td>{ abTestComparisonAnalyticsData?.plays ?? 0 }</td>
+												<td title={ abTestComparisonAnalyticsData?.plays?.toLocaleString() }>
+													{ formatNumber( abTestComparisonAnalyticsData?.plays ?? 0 ) }
+												</td>
 											</tr>
 											<tr
 												className={ highlightClass(
@@ -673,21 +686,33 @@ const Analytics = ( { attachmentID } ) => {
 													comparisonEngagementRate,
 												) }
 											>
-												<td>{ engagementRate }</td>
+												<td title={ `${ engagementRate }%` }>
+													{ engagementRate }%
+												</td>
 												<td>{ __( 'Average Engagement', 'godam' ) }</td>
-												<td>{ comparisonEngagementRate }</td>
+												<td title={ `${ comparisonEngagementRate }%` }>
+													{ comparisonEngagementRate }%
+												</td>
 											</tr>
 											<tr className={ highlightClass( plays, comparisonPlays ) }>
-												<td>{ plays }</td>
+												<td title={ plays?.toLocaleString() }>
+													{ formatNumber( plays ) }
+												</td>
 												<td>{ __( 'Total Plays', 'godam' ) }</td>
-												<td>{ comparisonPlays }</td>
+												<td title={ comparisonPlays?.toLocaleString() }>
+													{ formatNumber( comparisonPlays ?? 0 ) }
+												</td>
 											</tr>
 											<tr
 												className={ highlightClass( playRate, comparisonPlayRate ) }
 											>
-												<td>{ playRate }</td>
+												<td title={ `${ playRate }%` }>
+													{ playRate }%
+												</td>
 												<td>{ __( 'Play Rate', 'godam' ) }</td>
-												<td>{ comparisonPlayRate }</td>
+												<td title={ `${ comparisonPlayRate }%` }>
+													{ comparisonPlayRate }%
+												</td>
 											</tr>
 											<tr
 												className={ highlightClass(
@@ -695,9 +720,13 @@ const Analytics = ( { attachmentID } ) => {
 													abTestComparisonAnalyticsData?.page_load,
 												) }
 											>
-												<td>{ analyticsData?.page_load }</td>
+												<td title={ analyticsData?.page_load?.toLocaleString() }>
+													{ formatNumber( analyticsData?.page_load ) }
+												</td>
 												<td>{ __( 'Page Loads', 'godam' ) }</td>
-												<td>{ abTestComparisonAnalyticsData?.page_load }</td>
+												<td title={ abTestComparisonAnalyticsData?.page_load?.toLocaleString() }>
+													{ formatNumber( abTestComparisonAnalyticsData?.page_load ) }
+												</td>
 											</tr>
 											<tr
 												className={ highlightClass(
@@ -705,17 +734,27 @@ const Analytics = ( { attachmentID } ) => {
 													abTestComparisonAnalyticsData?.play_time,
 												) }
 											>
-												<td>{ analyticsData?.play_time?.toFixed( 2 ) }s</td>
+												<td title={ `${ analyticsData?.play_time?.toFixed( 2 ) }s` }>
+													{ formatWatchTime( analyticsData?.play_time ) }
+												</td>
 												<td>{ __( 'Play Time', 'godam' ) }</td>
-												<td>
-													{ abTestComparisonAnalyticsData?.play_time?.toFixed( 2 ) }
-													s
+												<td title={ `${ abTestComparisonAnalyticsData?.play_time?.toFixed( 2 ) }s` }>
+													{ formatWatchTime( abTestComparisonAnalyticsData?.play_time ) }
 												</td>
 											</tr>
-											<tr>
-												<td>{ analyticsData?.video_length }s</td>
+											<tr
+												className={ highlightClass(
+													analyticsData?.video_length,
+													abTestComparisonAnalyticsData?.video_length,
+												) }
+											>
+												<td title={ `${ analyticsData?.video_length }s` }>
+													{ formatWatchTime( analyticsData?.video_length ) }
+												</td>
 												<td>{ __( 'Video Length', 'godam' ) }</td>
-												<td>{ abTestComparisonAnalyticsData?.video_length }s</td>
+												<td title={ `${ abTestComparisonAnalyticsData?.video_length }s` }>
+													{ formatWatchTime( abTestComparisonAnalyticsData?.video_length ) }
+												</td>
 											</tr>
 										</tbody>
 									</table>

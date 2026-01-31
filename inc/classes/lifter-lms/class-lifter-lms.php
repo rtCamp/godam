@@ -10,6 +10,10 @@
 
 namespace RTGODAM\Inc\Lifter_LMS;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use RTGODAM\Inc\Traits\Singleton;
 
 /**

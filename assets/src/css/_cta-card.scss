@@ -1,0 +1,330 @@
+// ============================================
+// GoDAM CTA Card Styles - Shared Component
+// Used in both video editor and frontend
+// ============================================
+
+// Variables
+$cta-color-white: #fff !default;
+$cta-color-black: #000 !default;
+$cta-color-gray: #666 !default;
+$cta-color-gray-light: #f0f0f0 !default;
+$cta-color-gray-lighter: #f2f2f2 !default;
+
+$cta-border-radius-sm: 0.25rem !default;
+
+$cta-spacing-xs: 0.5rem !default;
+$cta-spacing-sm: 0.75rem !default;
+$cta-spacing-md: 1rem !default;
+
+$cta-font-size-sm: 0.875rem !default;
+$cta-font-size-base: 1rem !default;
+$cta-font-size-md: 1.125rem !default;
+$cta-font-size-lg: 1.25rem !default;
+
+$cta-card-max-width: 700px !default;
+$cta-card-max-width-vertical: 400px !default;
+
+// ============================================
+// Overlay Container
+// ============================================
+.godam-cta-overlay-container {
+    display: flex;
+    justify-content: center;
+    align-items: safe center; // Automatically switches to 'start' when content overflows
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    container-type: inline-size;
+    container-name: cta-container;
+}
+
+// ============================================
+// Base Card Styles
+// ============================================
+.godam-cta-card {
+    max-width: $cta-card-max-width;
+    width: 95%;
+    height: fit-content;
+    margin: $cta-spacing-md;
+    background-color: $cta-color-white;
+    border-radius: $cta-border-radius-sm;
+    position: relative;
+    overflow: hidden;
+
+    // ============================================
+    // Layout Variants
+    // ============================================
+
+    // Layout: Text Left, Image Right (Full Height)
+    &.card-layout--text-imagecover {
+        display: grid;
+        grid-template-columns: calc(100% - 1rem - var(--image-width, 50%)) var(--image-width, 50%);
+        gap: $cta-spacing-md;
+
+        .godam-cta-card-image {
+            height: 100%;
+        }
+    }
+
+    // Layout: Image Left, Text Right (Full Height)
+    &.card-layout--imagecover-text {
+        display: grid;
+        grid-template-columns: var(--image-width, 50%) calc(100% - 1rem - var(--image-width, 50%));
+        gap: $cta-spacing-md;
+
+        .godam-cta-card-image {
+            height: 100%;
+            order: -1;
+        }
+    }
+
+    // Layout: Text Left, Image Right (Half Height)
+    &.card-layout--text-image {
+        display: grid;
+        grid-template-columns: calc(100% - 1rem - var(--image-width, 50%)) var(--image-width, 50%);
+        gap: $cta-spacing-md;
+        align-items: center;
+
+        .godam-cta-card-image {
+            padding-right: $cta-spacing-md;
+            padding-top: $cta-spacing-md;
+            padding-bottom: $cta-spacing-md;
+        }
+    }
+
+    // Layout: Image Left, Text Right (Half Height)
+    &.card-layout--image-text {
+        display: grid;
+        grid-template-columns: var(--image-width, 50%) calc(100% - 1rem - var(--image-width, 50%));
+        gap: $cta-spacing-md;
+        align-items: center;
+
+        .godam-cta-card-image {
+            order: -1;
+            padding-left: $cta-spacing-md;
+            padding-top: $cta-spacing-md;
+            padding-bottom: $cta-spacing-md;
+        }
+    }
+
+    // Layout: Image Top, Text Bottom
+    &.card-layout--image-top {
+        display: flex;
+        flex-direction: column;
+        max-width: $cta-card-max-width-vertical;
+
+        .godam-cta-card-image {
+            order: -1;
+        }
+    }
+
+    // Layout: Text Top, Image Bottom
+    &.card-layout--image-bottom {
+        display: flex;
+        flex-direction: column;
+        max-width: $cta-card-max-width-vertical;
+    }
+
+    // Layout: Image Background
+    &.card-layout--image-background {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+
+        .godam-cta-card-image-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            z-index: 0;
+        }
+    }
+
+    // Layout: Text Only
+    &.desktop-text-only {
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+// ============================================
+// Card Image Components
+// ============================================
+.godam-cta-card-image {
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: $cta-border-radius-sm;
+    }
+}
+
+.godam-cta-card-image-placeholder {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: $cta-border-radius-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: $cta-color-gray-light;
+    color: $cta-color-gray;
+    min-height: 200px;
+}
+
+// ============================================
+// Card Content
+// ============================================
+.godam-cta-card-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    padding: $cta-spacing-md;
+
+    .godam-cta-card.card-layout--image-background & {
+        position: relative;
+        z-index: 1;
+        background: rgba($cta-color-white, 0.85);
+    }
+
+    .card-title {
+        margin-top: 0;
+        margin-bottom: $cta-spacing-sm;
+        font-size: $cta-font-size-lg;
+        font-weight: 600;
+        line-height: 1.4;
+    }
+
+    .card-description {
+        margin-top: 0;
+        margin-bottom: $cta-spacing-sm;
+        font-size: 0.9375rem;
+        color: $cta-color-gray;
+        line-height: 1.5;
+    }
+
+    .btns {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+}
+
+// ============================================
+// CTA Buttons
+// ============================================
+.godam-cta-btn {
+    padding: 12px 16px;
+    border: none;
+    border-radius: $cta-border-radius-sm;
+    background-color: $cta-color-black;
+    color: $cta-color-white;
+    cursor: pointer;
+    font-size: $cta-font-size-base;
+    text-decoration: none;
+    display: inline-block;
+    transition: opacity 0.2s;
+
+    &:hover {
+        opacity: 0.9;
+        color: $cta-color-white;
+    }
+}
+
+.godam-cta-btn-secondary {
+    padding: 12px 16px;
+    border: none;
+    border-radius: $cta-border-radius-sm;
+    background-color: $cta-color-gray-lighter;
+    color: $cta-color-black;
+    cursor: pointer;
+    font-size: $cta-font-size-base;
+    text-decoration: none;
+    display: inline-block;
+}
+
+// ============================================
+// Container Query Responsive
+// ============================================
+
+// Medium containers (≤600px)
+@container cta-container (max-width: 600px) {
+
+    .godam-cta-card {
+        gap: 0 !important;
+
+        &.card-layout--text-imagecover,
+        &.card-layout--imagecover-text,
+        &.card-layout--text-image,
+        &.card-layout--image-text {
+            grid-template-columns: 1fr;
+        }
+
+        &.card-layout--text-image {
+
+            .godam-cta-card-image {
+                padding: 1rem;
+                padding-top: 0;
+            }
+        }
+
+        &.card-layout--image-text {
+
+            .godam-cta-card-image {
+                padding: 1rem;
+                padding-bottom: 0;
+            }
+        }
+
+        width: 95%;
+    }
+
+    .godam-cta-card-content {
+
+        .card-title {
+            font-size: $cta-font-size-md;
+            line-height: 1.4;
+        }
+
+        .card-description {
+            font-size: $cta-font-size-sm;
+            line-height: 1.5;
+        }
+    }
+}
+
+// Extra small containers (≤400px)
+@container cta-container (max-width: 400px) {
+
+    .godam-cta-card {
+        width: 98%;
+        margin: $cta-spacing-xs;
+    }
+
+    .godam-cta-card-content {
+        padding: $cta-spacing-sm;
+
+        .card-title {
+            font-size: $cta-font-size-base;
+            line-height: 1.4;
+            margin-bottom: $cta-spacing-xs;
+        }
+
+        .card-description {
+            font-size: 0.8125rem;
+            line-height: 1.5;
+            margin-bottom: $cta-spacing-xs;
+        }
+    }
+
+    .godam-cta-btn {
+        padding: 10px 14px;
+        font-size: $cta-font-size-sm;
+    }
+}
+

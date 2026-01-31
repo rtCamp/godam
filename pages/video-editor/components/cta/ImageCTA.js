@@ -7,11 +7,11 @@
 import {
 	Button,
 	Notice,
-	RangeControl, SelectControl,
 	TextareaControl,
 	TextControl,
 	Icon,
 	Tooltip,
+	RangeControl,
 } from '@wordpress/components';
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -27,6 +27,76 @@ import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
+
+/**
+ * Layout SVG Icon Components
+ */
+const LayoutIcons = {
+	MediaTextCover: () => (
+		<svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 28 20" fill="none">
+			<rect x="0" y="0" width="13" height="20" rx="2" fill="currentColor" />
+			<rect x="17" y="7" width="6" height="1.5" rx="0.75" fill="currentColor" />
+			<rect x="17" y="10" width="9" height="1.5" rx="0.75" fill="currentColor" />
+			<rect x="17" y="13" width="7" height="1.5" rx="0.75" fill="currentColor" />
+		</svg>
+	),
+	TextMediaCover: () => (
+		<svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 28 20" fill="none">
+			<rect x="15" y="0" width="13" height="20" rx="2" fill="currentColor" />
+			<rect x="2" y="7" width="6" height="1.5" rx="0.75" fill="currentColor" />
+			<rect x="2" y="10" width="9" height="1.5" rx="0.75" fill="currentColor" />
+			<rect x="2" y="13" width="7" height="1.5" rx="0.75" fill="currentColor" />
+		</svg>
+	),
+	MediaText: () => (
+		<svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 28 20" fill="none">
+			<rect x="0" y="5" width="13" height="10" rx="2" fill="currentColor" />
+			<rect x="17" y="7" width="6" height="1.5" rx="0.75" fill="currentColor" />
+			<rect x="17" y="10" width="9" height="1.5" rx="0.75" fill="currentColor" />
+			<rect x="17" y="13" width="7" height="1.5" rx="0.75" fill="currentColor" />
+		</svg>
+	),
+	TextMedia: () => (
+		<svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 28 20" fill="none">
+			<rect x="15" y="5" width="13" height="10" rx="2" fill="currentColor" />
+			<rect x="2" y="7" width="6" height="1.5" rx="0.75" fill="currentColor" />
+			<rect x="2" y="10" width="9" height="1.5" rx="0.75" fill="currentColor" />
+			<rect x="2" y="13" width="7" height="1.5" rx="0.75" fill="currentColor" />
+		</svg>
+	),
+	MediaTop: () => (
+		<svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 28 20" fill="none">
+			<rect x="0" y="0" width="28" height="8" rx="2" fill="currentColor" />
+			<rect x="0" y="11" width="12" height="1.5" rx="0.75" fill="currentColor" />
+			<rect x="0" y="14" width="20" height="1.5" rx="0.75" fill="currentColor" />
+			<rect x="0" y="17" width="16" height="1.5" rx="0.75" fill="currentColor" />
+		</svg>
+	),
+	MediaBottom: () => (
+		<svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 28 20" fill="none">
+			<rect x="0" y="0" width="12" height="1.5" rx="0.75" fill="currentColor" />
+			<rect x="0" y="3" width="20" height="1.5" rx="0.75" fill="currentColor" />
+			<rect x="0" y="6" width="16" height="1.5" rx="0.75" fill="currentColor" />
+			<rect x="0" y="10" width="28" height="10" rx="2" fill="currentColor" />
+		</svg>
+	),
+	TextCoverMedia: () => (
+		<svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 28 20" fill="none">
+			<rect width="28" height="20" rx="2" fill="currentColor" fillOpacity="0.3" />
+			<rect x="8" y="7" width="12" height="1.5" rx="0.75" fill="currentColor" />
+			<rect x="6" y="10" width="16" height="1.5" rx="0.75" fill="currentColor" />
+			<rect x="10" y="13" width="8" height="1.5" rx="0.75" fill="currentColor" />
+		</svg>
+	),
+	TextOnly: () => (
+		<svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 28 20" fill="none">
+			<rect x="2" y="3" width="24" height="2" rx="1" fill="currentColor" />
+			<rect x="2" y="7" width="20" height="2" rx="1" fill="currentColor" />
+			<rect x="2" y="11" width="22" height="2" rx="1" fill="currentColor" />
+			<rect x="2" y="15" width="18" height="2" rx="1" fill="currentColor" />
+		</svg>
+	),
+};
 
 const ImageCTA = ( { layerID } ) => {
 	/**
@@ -51,17 +121,6 @@ const ImageCTA = ( { layerID } ) => {
 	const dispatch = useDispatch();
 
 	const restURL = window.godamRestRoute.url || '';
-
-	const imageOrientationOptions = [
-		{
-			label: __( 'Landscape', 'godam' ),
-			value: 'landscape',
-		},
-		{
-			label: __( 'Portrait', 'godam' ),
-			value: 'portrait',
-		},
-	];
 
 	const openImageCTAUploader = () => {
 		const fileFrame = wp.media( {
@@ -190,8 +249,63 @@ const ImageCTA = ( { layerID } ) => {
 		[],
 	);
 
+	// Layout options
+	const layoutOptions = [
+		{ label: __( 'Image Left, Text Right (Full Height)', 'godam' ), value: 'card-layout--imagecover-text', icon: 'MediaTextCover' },
+		{ label: __( 'Text Left, Image Right (Full Height)', 'godam' ), value: 'card-layout--text-imagecover', icon: 'TextMediaCover' },
+		{ label: __( 'Image Left, Text Right', 'godam' ), value: 'card-layout--image-text', icon: 'MediaText' },
+		{ label: __( 'Text Left, Image Right', 'godam' ), value: 'card-layout--text-image', icon: 'TextMedia' },
+		{ label: __( 'Image Top, Text Bottom', 'godam' ), value: 'card-layout--image-top', icon: 'MediaTop' },
+		{ label: __( 'Text Top, Image Bottom', 'godam' ), value: 'card-layout--image-bottom', icon: 'MediaBottom' },
+		{ label: __( 'Image Background', 'godam' ), value: 'card-layout--image-background', icon: 'TextCoverMedia' },
+		{ label: __( 'Text Only (No Image)', 'godam' ), value: 'desktop-text-only', icon: 'TextOnly' },
+	];
+
+	const layoutsWithWidth = [ 'card-layout--text-imagecover', 'card-layout--imagecover-text', 'card-layout--text-image', 'card-layout--image-text' ];
+
+	// Backward compatibility: determine default layout based on imageCtaOrientation
+	const getDefaultLayout = () => {
+		if ( ! layer?.imageCtaOrientation || layer?.imageCtaOrientation === 'landscape' ) {
+			return 'card-layout--image-text';
+		}
+		return 'card-layout--image-top';
+	};
+
+	const currentLayout = layer?.cardLayout || getDefaultLayout();
+
 	return (
 		<div className="mt-2 flex flex-col gap-6">
+			<div className="flex flex-col gap-2">
+				<div className="godam-input-label">
+					{ __( 'Layout', 'godam' ) }
+				</div>
+				<div className="grid grid-cols-4 gap-3">
+					{ layoutOptions.map( ( layout ) => {
+						const isSelected = currentLayout === layout.value;
+						const IconComponent = LayoutIcons[ layout.icon ];
+						return (
+							<Tooltip key={ layout.value } text={ layout.label } placement="top">
+								<button
+									type="button"
+									onClick={ () => updateField( 'cardLayout', layout.value ) }
+									className={ `flex items-center justify-center p-4 rounded-lg border-2 transition-all hover:border-brand-primary-500 hover:bg-brand-primary-50 ${
+										isSelected
+											? 'border-brand-primary-600 bg-brand-primary-50'
+											: 'border-gray-300 bg-white'
+									}` }
+									aria-label={ layout.label }
+									style={ {
+										color: isSelected ? 'var(--wp-components-color-accent, #3858e9)' : '#6b7280',
+									} }
+								>
+									<IconComponent />
+								</button>
+							</Tooltip>
+						);
+					} ) }
+				</div>
+			</div>
+
 			<div>
 				<label
 					htmlFor="custom-play-button"
@@ -241,16 +355,30 @@ const ImageCTA = ( { layerID } ) => {
 				) }
 			</div>
 
+			{ ( selectedImageUrl && layoutsWithWidth?.includes( layer?.cardLayout ) ) && (
+				<RangeControl
+					__nextHasNoMarginBottom
+					__next40pxDefaultSize
+					label={ __( 'Image Width (%)', 'godam' ) }
+					value={ layer?.imageWidth ?? 50 }
+					onChange={ ( value ) => updateField( 'imageWidth', value ) }
+					min={ 15 }
+					max={ 85 }
+					step={ 1 }
+					help={ __( 'Applies to horizontal layouts only', 'godam' ) }
+				/>
+			) }
+
 			<TextControl
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
 				className="godam-input"
-				label={ __( 'Text', 'godam' ) }
+				label={ __( 'Title', 'godam' ) }
 				value={ layer.imageText }
 				onChange={ ( value ) => {
 					updateField( 'imageText', value );
 				} }
-				placeholder={ __( 'Your text', 'godam' ) }
+				placeholder={ __( 'Add title here', 'godam' ) }
 			/>
 
 			<TextControl
@@ -286,12 +414,12 @@ const ImageCTA = ( { layerID } ) => {
 				onChange={ ( value ) => {
 					updateField( 'imageCtaButtonText', value );
 				} }
-				placeholder={ __( 'Buy Now', 'godam' ) }
+				placeholder={ __( 'Check now', 'godam' ) }
 			/>
 
 			<div className="flex items-center gap-2">
 				<ColorPickerButton
-					value={ layer?.imageCtaButtonColor ?? '#eeab95' }
+					value={ layer?.imageCtaButtonColor ?? '#EEAB95' }
 					label={ __( 'CTA Button Background Color', 'godam' ) }
 					className="mb-0"
 					enableAlpha={ true }
@@ -301,7 +429,7 @@ const ImageCTA = ( { layerID } ) => {
 					<button
 						type="button"
 						className="text-xs text-red-500 underline hover:text-red-600 bg-transparent cursor-pointer"
-						onClick={ () => updateField( 'imageCtaButtonColor', '#eeab95' )
+						onClick={ () => updateField( 'imageCtaButtonColor', '#EEAB95' )
 						}
 						aria-haspopup="true"
 						aria-label={ __( 'Remove', 'godam' ) }
@@ -309,35 +437,6 @@ const ImageCTA = ( { layerID } ) => {
 						<Icon icon={ closeSmall } />
 					</button>
 				) }
-			</div>
-
-			<SelectControl
-				__next40pxDefaultSize
-				className="mb-4"
-				label={ __( 'Select orientation', 'godam' ) }
-				onChange={ ( value ) => {
-					updateField( 'imageCtaOrientation', value );
-				} }
-				options={ imageOrientationOptions }
-				value={ layer.imageCtaOrientation }
-			/>
-
-			<div className="mb-4">
-				<div className="hover-control-input-container">
-					<RangeControl
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						className="godam-input w-full"
-						help={ __( 'Please select how transparent you would like this.', 'godam' ) }
-						initialPosition={ 1 }
-						max={ 1 }
-						min={ 0 }
-						onChange={ ( value ) => updateField( 'imageOpacity', value ) }
-						step={ 0.1 }
-						value={ layer.imageOpacity ?? 1 }
-						label={ __( 'Opacity of background image', 'godam' ) }
-					/>
-				</div>
 			</div>
 		</div>
 	);
