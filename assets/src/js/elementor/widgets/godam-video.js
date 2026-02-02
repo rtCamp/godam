@@ -131,12 +131,16 @@ window.addEventListener( 'elementor/frontend/init', () => {
 					}
 				};
 
+				// Delay to ensure the Elementor panel DOM has finished rendering
+				// before querying and updating the SEO description help element.
+				const DESCRIPTION_HELP_UPDATE_DELAY_MS = 100;
+
 				// Update help text when description changes
 				model.get( 'settings' ).on( 'change:seo_content_description', updateDescriptionHelp );
 
 				// Update help text when panel renders
 				panel.currentPageView.on( 'render', () => {
-					setTimeout( updateDescriptionHelp, 100 );
+					setTimeout( updateDescriptionHelp, DESCRIPTION_HELP_UPDATE_DELAY_MS );
 				} );
 			},
 		);

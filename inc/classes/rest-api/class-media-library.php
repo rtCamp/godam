@@ -1516,10 +1516,12 @@ class Media_Library extends Base {
 		update_post_meta( $attach_id, 'rtgodam_transcoding_job_id', $godam_id );
 		update_post_meta( $attach_id, '_wp_attached_file', sanitize_text_field( $data['filename'] ) ); // Virtual media path.
 
+		$video_duration_in_seconds = 0;
+		$video_duration_formatted  = '';
 		if ( isset( $data['video_duration'] ) && ! empty( $data['video_duration'] ) ) {
 			// Convert into number of seconds.
 			$video_duration_in_seconds = is_numeric( $data['video_duration'] ) ? (int) $data['video_duration'] : 0;
-			// convert into formatted i:s.
+			// Convert into formatted i:s.
 			$video_duration_formatted = gmdate( 'i:s', $video_duration_in_seconds );
 		}
 
