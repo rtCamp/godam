@@ -14,7 +14,7 @@
  * Internal dependencies
  */
 
-import { initAutoplayGalleries } from './autoplay.js';
+import { initAutoplayGalleries, cleanupAutoplayGalleries } from './autoplay.js';
 import { initVideoModal } from './modal.js';
 import { initCarouselSlider } from './slider.js';
 import { initMinicartAndCtaDropdown } from './cart.js';
@@ -26,4 +26,11 @@ document.addEventListener( 'DOMContentLoaded', function() {
 	initVideoModal();
 	initCarouselSlider();
 	initMinicartAndCtaDropdown();
+} );
+
+/**
+ * Cleanup on page unload to prevent memory leaks.
+ */
+window.addEventListener( 'beforeunload', function() {
+	cleanupAutoplayGalleries();
 } );
