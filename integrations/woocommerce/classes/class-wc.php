@@ -17,6 +17,24 @@ defined( 'ABSPATH' ) || exit;
 class WC extends Base {
 
 	/**
+	 * Constructor.
+	 *
+	 * Register cache invalidation hooks.
+	 */
+	protected function __construct() {
+		parent::__construct();
+
+		// Clear cache when products are saved or deleted.
+		add_action( 'save_post_product', array( $this, 'clear_product_cache' ), 10, 1 );
+		add_action( 'delete_post', array( $this, 'clear_product_cache' ), 10, 1 );
+
+		// Clear search cache when taxonomy terms are edited.
+		add_action( 'edited_product_cat', array( $this, 'clear_search_cache' ) );
+		add_action( 'edited_product_tag', array( $this, 'clear_search_cache' ) );
+		add_action( 'edited_product_brand', array( $this, 'clear_search_cache' ) );
+	}
+
+	/**
 	 * Get REST routes.
 	 */
 	public function get_rest_routes() {
@@ -254,6 +272,15 @@ class WC extends Base {
 	 */
 	public function get_products( $request ) {
 		$search     = sanitize_text_field( $request->get_param( 'search' ) );
+
+		// Try cache first (5-minute TTL for search results).
+		$cache_key = 'godam_wc_search_' . md5( $search );
+		$cached    = get_transient( $cache_key );
+
+		if ( false !== $cached ) {
+			return rest_ensure_response( $cached );
+		}
+
 		$is_numeric = is_numeric( $search );
 		$term_info  = $is_numeric ? false : $this->godam_find_term( $search, array( 'product_cat', 'product_tag', 'product_brand' ) );
 
@@ -439,6 +466,16 @@ class WC extends Base {
 			$all_posts
 		);
 
+		// Cache for 5 minutes.
+		set_transient( $cache_key, $products, 5 * MINUTE_IN_SECONDS );
+
+		// Track this cache key for efficient clearing.
+		$search_keys = get_option( 'godam_wc_search_cache_keys', array() );
+		if ( ! in_array( $cache_key, $search_keys, true ) ) {
+			$search_keys[] = $cache_key;
+			update_option( 'godam_wc_search_cache_keys', $search_keys, false );
+		}
+
 		return rest_ensure_response( $products );
 	}
 
@@ -457,6 +494,14 @@ class WC extends Base {
 
 		if ( empty( $product_id ) ) {
 			return new \WP_Error( 'invalid_product_id', 'Invalid product ID.', array( 'status' => 404 ) );
+		}
+
+		// Try cache first (15-minute TTL for single product).
+		$cache_key = 'godam_wc_product_' . $product_id;
+		$cached    = get_transient( $cache_key );
+
+		if ( false !== $cached ) {
+			return rest_ensure_response( $cached );
 		}
 
 		$product = wc_get_product( $product_id );
@@ -583,6 +628,9 @@ class WC extends Base {
 		 * @param \WP_REST_Request $request The request object.
 		 */
 		$data = apply_filters( 'godam_rest_single_product_response_data', $data, $product, $request );
+
+		// Cache for 15 minutes.
+		set_transient( $cache_key, $data, 15 * MINUTE_IN_SECONDS );
 
 		return rest_ensure_response( $data );
 	}
@@ -911,6 +959,14 @@ class WC extends Base {
 			return new \WP_Error( 'invalid_ids', 'Invalid or missing IDs.', array( 'status' => 400 ) );
 		}
 
+		// Try cache first (15-minute TTL for batch products).
+		$cache_key = 'godam_wc_products_batch_' . md5( implode( ',', $ids ) );
+		$cached    = get_transient( $cache_key );
+
+		if ( false !== $cached ) {
+			return rest_ensure_response( $cached );
+		}
+
 		$products = array();
 		foreach ( $ids as $id ) {
 			$product = wc_get_product( $id );
@@ -1022,6 +1078,86 @@ class WC extends Base {
 			$products[] = $product_data;
 		}
 
+		// Cache for 15 minutes.
+		set_transient( $cache_key, $products, 15 * MINUTE_IN_SECONDS );
+
+		// Track this cache key for efficient clearing.
+		$batch_keys = get_option( 'godam_wc_batch_cache_keys', array() );
+		if ( ! in_array( $cache_key, $batch_keys, true ) ) {
+			$batch_keys[] = $cache_key;
+			update_option( 'godam_wc_batch_cache_keys', $batch_keys, false );
+		}
+
 		return rest_ensure_response( $products );
+	}
+
+	/**
+	 * Clear product cache when product is saved or deleted.
+	 *
+	 * @param int $post_id Post ID.
+	 */
+	public function clear_product_cache( $post_id ) {
+		if ( 'product' !== get_post_type( $post_id ) ) {
+			return;
+		}
+
+		// Clear single product cache.
+		delete_transient( 'godam_wc_product_' . $post_id );
+
+		// Clear all search caches (since product data changed).
+		$this->clear_search_cache();
+
+		// Clear all batch caches.
+		$this->clear_batch_caches();
+	}
+
+	/**
+	 * Clear all search caches.
+	 *
+	 * Uses tracked cache keys for efficient individual deletions
+	 * instead of expensive SQL LIKE queries.
+	 *
+	 * Called when taxonomy terms are edited or products are modified.
+	 */
+	public function clear_search_cache() {
+		// Get tracked cache keys.
+		$search_keys = get_option( 'godam_wc_search_cache_keys', array() );
+
+		if ( empty( $search_keys ) ) {
+			return;
+		}
+
+		// Delete each cached search result.
+		foreach ( $search_keys as $cache_key ) {
+			delete_transient( $cache_key );
+		}
+
+		// Clear the tracking option.
+		delete_option( 'godam_wc_search_cache_keys' );
+	}
+
+	/**
+	 * Clear all batch product caches.
+	 *
+	 * Uses tracked cache keys for efficient individual deletions
+	 * instead of expensive SQL LIKE queries.
+	 *
+	 * Called when products are modified or deleted.
+	 */
+	private function clear_batch_caches() {
+		// Get tracked cache keys.
+		$batch_keys = get_option( 'godam_wc_batch_cache_keys', array() );
+
+		if ( empty( $batch_keys ) ) {
+			return;
+		}
+
+		// Delete each cached batch result.
+		foreach ( $batch_keys as $cache_key ) {
+			delete_transient( $cache_key );
+		}
+
+		// Clear the tracking option.
+		delete_option( 'godam_wc_batch_cache_keys' );
 	}
 }
