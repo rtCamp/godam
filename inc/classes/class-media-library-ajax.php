@@ -83,7 +83,8 @@ class Media_Library_Ajax {
 		$api_mime_type = $item['mime_type'] ?? '';
 		$computed_mime = $this->get_mime_type_for_job_type( $job_type, $api_mime_type );
 		$title         = isset( $item['title'] ) ? $item['title'] : ( isset( $item['orignal_file_name'] ) ? pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) : $item['name'] );
-
+		// trim the extension from title if present.
+		$title = preg_replace( '/\.[^.]+$/', '', $title );
 
 		// Get video duration in seconds.
 		$video_duration = isset( $item['playtime'] ) ? $item['playtime'] : 0;
