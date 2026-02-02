@@ -65,7 +65,7 @@ class GoDAM_Product_Gallery {
 				'rtgodam-swiper-script',
 				RTGODAM_URL . 'assets/src/libs/swiper/swiper-bundle.min.js',
 				array( 'jquery' ),
-				filemtime( RTGODAM_PATH . 'assets/src/libs/swiper/swiper-bundle.min.js' ),
+				rtgodam_wc_get_asset_version( RTGODAM_PATH . 'assets/src/libs/swiper/swiper-bundle.min.js' ),
 				true
 			);
 		}
@@ -75,7 +75,7 @@ class GoDAM_Product_Gallery {
 				'rtgodam-swiper-style',
 				RTGODAM_URL . 'assets/src/libs/swiper/swiper-bundle.min.css',
 				array(),
-				filemtime( RTGODAM_PATH . 'assets/src/libs/swiper/swiper-bundle.min.css' )
+				rtgodam_wc_get_asset_version( RTGODAM_PATH . 'assets/src/libs/swiper/swiper-bundle.min.css' )
 			);
 		}
 
@@ -83,7 +83,7 @@ class GoDAM_Product_Gallery {
 			'godam-product-gallery-style',
 			RTGODAM_URL . 'assets/build/integrations/woocommerce/css/godam-product-gallery.css',
 			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/integrations/woocommerce/css/godam-product-gallery.css' )
+			rtgodam_wc_get_asset_version( RTGODAM_PATH . 'assets/build/integrations/woocommerce/css/godam-product-gallery.css' )
 		);
 
 		$gallery_asset_path                  = RTGODAM_PATH . 'assets/build/js/godam-product-gallery.min.asset.php';

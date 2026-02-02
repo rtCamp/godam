@@ -31,6 +31,9 @@ if ( ! defined( 'RTGODAM_WC_MODULE_ASSETS_BUILD_PATH' ) ) {
 	define( 'RTGODAM_WC_MODULE_ASSETS_BUILD_PATH', RTGODAM_PATH . 'assets/build/integrations/woocommerce/' );
 }
 
+// Load helper functions.
+require_once RTGODAM_WC_MODULE_PATH . 'helpers/functions.php';
+
 /**
  * Autoload WooCommerce integration classes.
  *

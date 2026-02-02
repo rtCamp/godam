@@ -73,7 +73,7 @@ class WC_Featured_Video_Gallery {
 			'rtgodam-wc-admin-featured-video-gallery',
 			RTGODAM_URL . 'assets/build/integrations/woocommerce/js/admin/wc-admin-featured-video-gallery.min.js',
 			array( 'jquery', 'media-editor', 'media-views', 'wp-i18n' ),
-			filemtime( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'js/admin/wc-admin-featured-video-gallery.min.js' ),
+			rtgodam_wc_get_asset_version( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'js/admin/wc-admin-featured-video-gallery.min.js' ),
 			true
 		);
 
@@ -103,14 +103,14 @@ class WC_Featured_Video_Gallery {
 			'godam-featured-video-style',
 			RTGODAM_URL . 'assets/build/integrations/woocommerce/css/godam-featured-video.css',
 			array(),
-			filemtime( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'css/godam-featured-video.css' )
+			rtgodam_wc_get_asset_version( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'css/godam-featured-video.css' )
 		);
 
 		wp_register_script(
 			'rtgodam-wc-featured-video-gallery',
 			RTGODAM_URL . 'assets/build/integrations/woocommerce/js/wc-featured-video-gallery.min.js',
 			array( 'jquery' ),
-			filemtime( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'js/wc-featured-video-gallery.min.js' ),
+			rtgodam_wc_get_asset_version( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'js/wc-featured-video-gallery.min.js' ),
 			true
 		);
 

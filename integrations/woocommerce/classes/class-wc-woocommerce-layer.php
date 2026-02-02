@@ -56,7 +56,7 @@ class WC_Woocommerce_Layer {
 			'rtgodam-wc-woo-layer-cart-url-editor',
 			RTGODAM_URL . 'assets/build/integrations/woocommerce/js/wc-woo-layer-cart-url-editor.min.js',
 			array( 'jquery' ),
-			filemtime( $script_path ),
+			rtgodam_wc_get_asset_version( $script_path ),
 			true
 		);
 	}

@@ -66,7 +66,7 @@ class WC_Product_Video_Gallery {
 				'rtgodam-wc-product-video-gallery',
 				RTGODAM_URL . 'assets/build/integrations/woocommerce/js/admin/wc-product-video-gallery.min.js',
 				array( 'jquery' ),
-				filemtime( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'js/admin/wc-product-video-gallery.min.js' ),
+				rtgodam_wc_get_asset_version( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'js/admin/wc-product-video-gallery.min.js' ),
 				true
 			);
 
@@ -74,7 +74,7 @@ class WC_Product_Video_Gallery {
 				'rtgodam-wc-add-to-product',
 				RTGODAM_URL . 'assets/build/integrations/woocommerce/js/admin/wc-add-to-product.min.js',
 				array( 'jquery', 'wp-api-fetch', 'wp-components', 'wp-element', 'godam-player-frontend-script' ),
-				filemtime( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'js/admin/wc-add-to-product.min.js' ),
+				rtgodam_wc_get_asset_version( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'js/admin/wc-add-to-product.min.js' ),
 				true
 			);
 
