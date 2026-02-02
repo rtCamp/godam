@@ -1516,6 +1516,12 @@ class Media_Library extends Base {
 		update_post_meta( $attach_id, 'rtgodam_transcoding_job_id', $godam_id );
 		update_post_meta( $attach_id, '_wp_attached_file', sanitize_text_field( $data['filename'] ) ); // Virtual media path.
 
+		if ( isset( $data['video_duration'] ) && ! empty( $data['video_duration'] ) ) {
+			// Convert into number of seconds.
+			$video_duration_in_seconds = is_numeric( $data['video_duration'] ) ? (int) $data['video_duration'] : 0;
+			// convert into formatted i:s.
+			$video_duration_formatted = gmdate( 'i:s', $video_duration_in_seconds );
+		}
 
 		if ( 'video' === $data['type'] ) {
 			update_post_meta( $attach_id, 'rtgodam_hls_transcoded_url', esc_url_raw( $data['hls_url'] ?? '' ) );
@@ -1523,6 +1529,12 @@ class Media_Library extends Base {
 			$wp_attachment_metadata = array(
 				'filesize' => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,
 			);
+			
+			if ( ! empty( $video_duration_in_seconds ) ) {
+				update_post_meta( $attach_id, '_video_duration', $video_duration_in_seconds );
+				$wp_attachment_metadata['length']           = $video_duration_in_seconds;
+				$wp_attachment_metadata['length_formatted'] = $video_duration_formatted;
+			}
 
 			// Set Video thumbnail from icon URL if provided.
 			if ( ! empty( $data['icon'] ) ) {

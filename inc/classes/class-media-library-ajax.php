@@ -84,6 +84,12 @@ class Media_Library_Ajax {
 		$computed_mime = $this->get_mime_type_for_job_type( $job_type, $api_mime_type );
 		$title         = isset( $item['title'] ) ? $item['title'] : ( isset( $item['orignal_file_name'] ) ? pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) : $item['name'] );
 
+
+		// Get video duration in seconds.
+		$video_duration = isset( $item['playtime'] ) ? $item['playtime'] : 0;
+		// Round video duration to integer seconds.
+		$video_duration = is_numeric( $video_duration ) ? (int) round( $video_duration ) : 0;
+
 		$result = array(
 			'id'                    => $item['name'],
 			'title'                 => $title,
@@ -104,6 +110,7 @@ class Media_Library_Ajax {
 			'duration'              => $item['playtime'] ?? '',
 			'hls_url'               => $item['transcoded_hls_path'] ?? '',
 			'mpd_url'               => $item['transcoded_file_path'] ?? '',
+			'video_duration'        => $video_duration ?? 0,
 		);
 
 		// Set icon with fallback to default mime type icon for audio and PDF.
