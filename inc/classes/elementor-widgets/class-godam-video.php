@@ -161,7 +161,8 @@ class GoDAM_Video extends Base {
 				'label'       => esc_html__( 'Description', 'godam' ),
 				'type'        => Controls_Manager::TEXTAREA,
 				'label_block' => true,
-				'description' => esc_html__( 'Description of the video', 'godam' ),
+				'description' => '<span class="godam-seo-description-help"></span>',
+				'classes'     => 'godam-seo-description-field',
 			)
 		);
 
