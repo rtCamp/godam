@@ -10,6 +10,11 @@ import Audio from '@uppy/audio';
 import GoldenRetriever from '@uppy/golden-retriever';
 
 /**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Class to handle Uppy video uploads within Gravity Forms.
  * Supports webcam, screen capture, and local file uploads with preview,
  * localStorage restoration, and integration with existing file input fields.
@@ -110,15 +115,25 @@ class UppyVideoUploader {
 
 	// Show warning message near field
 	showDurationError( maxSeconds ) {
-		const msg =
-			`Maximum allowed duration is ${ maxSeconds } seconds. Please upload or record a shorter file.`;
+		/* translators: %d: Maximum allowed duration in seconds */
+		const msg = __( 'Maximum allowed duration is %d seconds. Please upload or record a shorter file.', 'godam' ).replace( '%d', maxSeconds );
 
 		let errorEl = this.container.querySelector( '.godam-recorder-duration-error' );
 		if ( ! errorEl ) {
 			errorEl = document.createElement( 'div' );
 			errorEl.className = 'godam-recorder-duration-error';
-			errorEl.style.color = '#b32d2e';
-			errorEl.style.marginTop = '8px';
+			errorEl.style =
+				`font-size: 13px;
+				 color: #b32d2e;
+				 margin-top: 8px;
+				 position: fixed;
+				 z-index: 1000;
+				 bottom: 0;
+				 right: 0;
+				 background: #fff0f0;
+				 padding: 10px;
+				 border: 1px solid #b32d2e;
+				 border-radius: 4px;`;
 			this.container.appendChild( errorEl );
 		}
 		errorEl.textContent = msg;
@@ -262,6 +277,11 @@ class UppyVideoUploader {
 					// Remove from uppy and clear UI
 					this.uppy.removeFile( file.id );
 					this.clearVideoUploadUI();
+					jQuery( '.uppy-Dashboard-close' ).trigger( 'click' );
+
+					setTimeout( () => {
+						this.clearDurationError();
+					}, 5000 );
 
 					return;
 				}
