@@ -697,14 +697,43 @@ input, textarea, select {
 	margin-left: -20px;
 }
 
+/* Chrome-specific styles (not Safari) */
+.godam-admin-root.not-safari {
+	color: #000;
+	min-height: calc( 100vh - var(--wp-admin--admin-bar--height, 0) );
+	padding-top: var(--wp-admin--admin-bar--height, 0);
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin-left: 160px;
+	overflow: auto;
+}
+
+.folded .godam-admin-root.not-safari {
+	margin-left: 36px;
+}
+
 .godam-admin-root #root-video-help {
 	margin-left: 20px;
+}
+
+@media screen and (max-width: 960px) {
+
+	.auto-fold .godam-admin-root.not-safari {
+		margin-left: 36px;
+	}
 }
 
 @media screen and (max-width: 782px) {
 
 	.godam-admin-root {
 		margin-left: -10px;
+	}
+
+	.auto-fold .godam-admin-root.not-safari {
+		margin-left: 0;
 	}
 }
 
