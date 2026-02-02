@@ -61,6 +61,8 @@
         ) !important;
     }
 }
+// CTA Card styles - Shared component (also used in video editor)
+@use './cta-card';
 
 .rtgodam-video-caption {
 

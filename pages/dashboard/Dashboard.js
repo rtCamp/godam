@@ -22,13 +22,14 @@ import chevronLeft from '../../assets/src/images/chevron-left.svg';
 import chevronRight from '../../assets/src/images/chevron-right.svg';
 import upgradePlanBackground from '../../assets/src/images/upgrade-plan-dashboard-bg.png';
 import NewYearSaleBanner from '../../assets/src/images/new-year-sale-2026.webp';
+import { formatNumber, formatWatchTime } from '../utils/formatters';
 
 const Dashboard = () => {
 	const [ topVideosPage, setTopVideosPage ] = useState( 1 );
 	const siteUrl = window.location.origin;
 	const adminUrl = window.videoData?.adminUrl;
 
-	const { data: dashboardMetrics, isLoading: isDashboardMetricsLoading } = useFetchDashboardMetricsQuery( { siteUrl } );
+	const { data: dashboardMetrics, isLoading: isDashboardMetricsLoading, isError: isDashboardMetricsError } = useFetchDashboardMetricsQuery( { siteUrl } );
 	window.dashboardMetrics = dashboardMetrics;
 
 	const { data: dashboardMetricsHistory } = useFetchDashboardMetricsHistoryQuery( { days: 60, siteUrl } );
@@ -63,8 +64,15 @@ const Dashboard = () => {
 			if ( overlay ) {
 				overlay.classList.remove( 'hidden' );
 			}
+		} else if ( ( ! isDashboardMetricsLoading && dashboardMetrics ) || isDashboardMetricsError ) {
+			if ( loadingEl ) {
+				loadingEl.style.display = 'none';
+			}
+			if ( container ) {
+				container.classList.remove( 'hidden' );
+			}
 		}
-	}, [ dashboardMetrics ] );
+	}, [ dashboardMetrics, isDashboardMetricsLoading, isDashboardMetricsError ] );
 
 	useEffect( () => {
 		if (
@@ -249,7 +257,7 @@ const Dashboard = () => {
 				</div>
 			</div>
 
-			<div id="dashboard-container" className="dashboard-container">
+			<div id="dashboard-container" className="dashboard-container hidden">
 				<div className="flex-grow">
 					<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-nowrap">
 
@@ -393,8 +401,12 @@ const Dashboard = () => {
 													? ( ( item.plays / item.page_load ) * 100 ).toFixed( 2 ) + '%'
 													: '0%' }
 											</td>
-											<td>{ item.plays ?? '-' }</td>
-											<td>{ item.play_time?.toFixed( 2 ) ?? '-' }s</td>
+											<td title={ item.plays?.toLocaleString() ?? '-' }>
+												{ item.plays ? formatNumber( item.plays ) : '-' }
+											</td>
+											<td title={ item.play_time ? `${ item.play_time.toFixed( 2 ) }s` : '-' }>
+												{ item.play_time ? formatWatchTime( item.play_time ) : '-' }
+											</td>
 											<td>
 												{ item.plays > 0 && item.video_length > 0
 													? ( ( item.play_time / ( item.plays * item.video_length ) ) * 100 ).toFixed( 2 ) + '%'

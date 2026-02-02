@@ -204,12 +204,12 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					id: uuidv4(),
 					displayTime: currentTime,
 					type,
-					cta_type: 'text',
+					cta_type: 'image',
+					cardLayout: 'card-layout--imagecover-text',
 					text: '',
 					html: '',
 					link: '',
 					allow_skip: true,
-					imageOpacity: 1,
 				} ) );
 				break;
 			case 'hotspot':

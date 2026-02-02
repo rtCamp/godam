@@ -1,4 +1,10 @@
 /* global d3 */
+
+/**
+ * Internal dependencies
+ */
+import { formatNumber, formatWatchTime } from '../../utils/formatters';
+
 export function generateUsageDonutChart( selector, usedRaw, totalRaw, type = 'bandwidth', label = 'Used' ) {
 	const used = parseFloat( usedRaw ) || 0;
 	const total = parseFloat( totalRaw ) || 0;
@@ -128,25 +134,6 @@ export function generateUsageDonutChart( selector, usedRaw, totalRaw, type = 'ba
 	}
 }
 
-function formatWatchTime( seconds ) {
-	const hrs = Math.floor( seconds / 3600 );
-	const mins = Math.floor( ( seconds % 3600 ) / 60 );
-	const secs = Math.floor( seconds % 60 );
-
-	const parts = [];
-	if ( hrs > 0 ) {
-		parts.push( `${ hrs }h` );
-	}
-	if ( mins > 0 ) {
-		parts.push( `${ mins }m` );
-	}
-	if ( secs > 0 || parts.length === 0 ) {
-		parts.push( `${ secs }s` );
-	}
-
-	return parts.join( ' ' );
-}
-
 function formatGBToTB( gb, unit = true ) {
 	if ( gb >= 1000 ) {
 		return ( gb / 1000 ).toFixed( 1 ) + ( unit ? ' TB' : '' );
@@ -170,7 +157,9 @@ function main() {
 
 	const totalVideosEl = document.getElementById( 'total-videos' );
 	if ( totalVideosEl ) {
-		totalVideosEl.innerText = totalVideos ?? 0;
+		const formattedVideos = formatNumber( totalVideos ?? 0 );
+		totalVideosEl.innerText = formattedVideos;
+		totalVideosEl.setAttribute( 'title', ( totalVideos ?? 0 ).toLocaleString() );
 	}
 
 	const playRate = pageLoad ? ( plays / pageLoad ) * 100 : 0;
@@ -182,12 +171,16 @@ function main() {
 
 	const playsEl = document.getElementById( 'plays' );
 	if ( playsEl ) {
-		playsEl.innerText = plays;
+		const formattedPlays = formatNumber( plays );
+		playsEl.innerText = formattedPlays;
+		playsEl.setAttribute( 'title', plays.toLocaleString() );
 	}
 
 	const watchTimeEl = document.getElementById( 'watch-time' );
 	if ( watchTimeEl ) {
-		watchTimeEl.innerText = `${ formatWatchTime( playTime?.toFixed( 2 ) ) }`;
+		const formattedTime = formatWatchTime( playTime );
+		watchTimeEl.innerText = formattedTime;
+		watchTimeEl.setAttribute( 'title', `${ playTime?.toFixed( 2 ) }s` );
 	}
 
 	const analyticsContainer = document.getElementById( 'video-analytics-container' );
