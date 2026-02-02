@@ -460,7 +460,7 @@ class GoDAM_Product_Gallery {
 			/**
 			 * Video Wrapper Begins here.
 			 */
-			$video_attrs = $atts['autoplay'] ? ' autoplay muted loop playsinline' : '';
+			$video_attrs = $atts['autoplay'] ? ' autoplay muted loop preload="none" playsinline' : ' preload="none"';
 			$this->render_video_wrapper( $video_posts, $atts, $video_attrs, $instance_id );
 			/**
 			 * Video Wrapper Ends here.

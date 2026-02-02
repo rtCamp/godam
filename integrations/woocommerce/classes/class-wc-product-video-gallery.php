@@ -542,7 +542,7 @@ class WC_Product_Video_Gallery {
 			function ( $item ) use ( $srcsets ) {
 				return sprintf(
 					'<div class="swiper-slide">
-						<video autoplay loop muted width="%1$s" class="video-js" data-index-id="%2$s"><source src="%3$s"/></video>
+						<video autoplay loop muted preload="none" playsinline width="%1$s" class="video-js" data-index-id="%2$s"><source src="%3$s" type="video/mp4"/></video>
 					</div>',
 					esc_attr( '100%' ),
 					esc_attr( $item ),
