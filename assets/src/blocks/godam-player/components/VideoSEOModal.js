@@ -120,11 +120,14 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 				help={ __( 'Title of the video', 'godam' ) }
 			/>
 			<TextareaControl
-				className="godam-seo-modal__property"
+				className={ `godam-seo-modal__property${ ! videoData?.description?.trim() ? ' godam-seo-modal__property--warning' : '' }` }
 				label="Description"
 				value={ videoData?.description || '' }
 				onChange={ ( value ) => updateField( 'description', value ) }
-				help={ __( 'Description of the video', 'godam' ) }
+				help={ ! videoData?.description?.trim()
+					? __( 'It is recommended to add a description for better video SEO.', 'godam' )
+					: __( 'Description of the video', 'godam' )
+				}
 			/>
 			<TextControl
 				className="godam-seo-modal__property"

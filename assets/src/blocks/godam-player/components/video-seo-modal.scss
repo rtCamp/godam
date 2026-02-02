@@ -27,5 +27,12 @@
 			font-size: 0.875rem;
 			margin-bottom: 0;
 		}
+
+		&--warning {
+
+			.components-base-control__help {
+				color: #c88900;
+			}
+		}
 	}
 }
