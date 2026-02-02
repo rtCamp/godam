@@ -125,6 +125,7 @@
 				bottom: 25px;
 				right: 90px;
 				z-index: 19;
+				pointer-events: none;
 			}
 		}
 
@@ -138,6 +139,7 @@
 				left: 40px;
 				bottom: 25px;
 				z-index: 19;
+				pointer-events: none;
 			}
 		}
 
@@ -164,6 +166,8 @@
 			gap: 8px;
 			padding: 4px 0 !important;
 			flex-direction: column;
+			max-height: 300px;
+			overflow: auto;
 			
 			li {
 				padding: 0;
@@ -179,10 +183,13 @@
 				padding-top: 8px;
 			}
 
-			.vjs-menu-item:hover {
-				font-weight: 900;
-				background-color: unset !important;
-				color: #cdc5c5 !important;
+			.vjs-menu-item:not(.vjs-selected):hover {
+				font-weight: 400;
+				background-color: rgba(255, 255, 255, 0.1);
+			}
+
+			.vjs-menu-item.vjs-selected:hover {
+				background-color: #fff !important;
 			}
 	
 			span::before {
@@ -252,6 +259,10 @@
 
 	@container godam-player-bubble-skin (max-width: 480px) {
 
+		.video-js .vjs-big-play-button {
+			left: 55%;
+		}
+
 		.video-js .vjs-control-bar {
 			margin: -55px auto 0;
 			height: 5em !important;
@@ -260,12 +271,16 @@
 				height: 3em !important;
 			}
 
+			.vjs-custom-fullscreen-exit-control {
+				width: 3em !important;
+			}
+
 			.vjs-fullscreen-control {
-				right: 10px
+				right: 10px;
 			}
 
 			.vjs-volume-control {
-				display: none; //Fallback for old browser versions not supporting interaction media features
+				display: none !important; // Fallback for old browser versions not supporting interaction media features
 			}
 			
 			.vjs-settings-button{
@@ -342,6 +357,7 @@
 
 			&:has(.vjs-subs-caps-button.vjs-hidden) .vjs-volume-panel {
 				right: 108px;
+				width: 4em;
 			}
 
 			.vjs-time-control.vjs-current-time {
@@ -379,6 +395,9 @@
 			}
 		}
 
+		.vjs-menu-content {
+			max-height: 120px !important;
+		}
 
 		.vjs-button.godam-share-button {
 			bottom: 136px !important;
@@ -396,6 +415,7 @@
 			width: 8em;
 			bottom: 0 !important;
 			left: 0 !important;
+			z-index: 19;
 
 			.vjs-menu-content {
 
@@ -451,14 +471,98 @@
 	}
 
 	@container godam-player-bubble-skin (min-width: 768px) {
-	
-		.vjs-current-time {
-			left: 65px !important;
+
+		.video-js .vjs-control-bar {
+
+			justify-content: center;
+
+			.vjs-duration {
+				position: relative !important;
+				display: flex !important;
+				align-items: center;
+				order: 1 !important;
+				z-index: 19;
+				margin-left: -65px;
+				transform: translateY(-50%);
+
+				.vjs-duration-display {
+					position: static !important;
+					padding-left: 0;
+					right: unset !important;
+					bottom: unset !important;
+				}
+			}
+
+			.vjs-current-time {
+				position: relative !important;
+				display: flex !important;
+				align-items: center;
+				order: 3 !important;
+				z-index: 19;
+				margin-right: -65px;
+				transform: translateY(-50%);
+				left: unset !important;
+
+				.vjs-current-time-display {
+					position: static !important;
+					padding-right: 0;
+					left: unset !important;
+					bottom: unset !important;
+				}
+			}
+
+			.vjs-progress-control {
+				order: 2 !important;
+				margin: 0;
+			}
 		}
-	  
-		.vjs-duration-display {
-			right: 100px !important;
+	}
+
+	@media screen and (min-width: 768px) {
+
+		.video-js.vjs-fullscreen .vjs-control-bar {
+
+			justify-content: center;
+
+			.vjs-duration {
+				position: relative !important;
+				display: flex !important;
+				align-items: center;
+				order: 1 !important;
+				z-index: 19;
+				margin-left: -65px;
+				transform: translateY(-50%);
+
+				.vjs-duration-display {
+					position: static !important;
+					padding-left: 0;
+					right: unset !important;
+					bottom: unset !important;
+				}
+			}
+
+			.vjs-current-time {
+				position: relative !important;
+				display: flex !important;
+				align-items: center;
+				order: 3 !important;
+				z-index: 19;
+				margin-right: -65px;
+				transform: translateY(-50%);
+				left: unset !important;
+
+				.vjs-current-time-display {
+					position: static !important;
+					padding-right: 0;
+					left: unset !important;
+					bottom: unset !important;
+				}
+			}
+
+			.vjs-progress-control {
+				order: 2 !important;
+				margin: 0;
+			}
 		}
-	  
 	}
 }

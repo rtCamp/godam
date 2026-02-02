@@ -112,12 +112,23 @@ export default AttachmentDetails?.extend( {
 
 	render() {
 		AttachmentDetails.prototype.render.apply( this, arguments );
+		const mime = this.model.get( 'mime' );
+
+		if ( mime && ! mime.startsWith( 'video/' ) ) {
+			return this;
+		}
 
 		const hlsUrl = this.model.get( 'hls_url' );
-		const attachmentUrl = this.model.get( 'url' );
+		const mpdUrl = this.model.get( 'mpd_url' );
+		const id = this.model.get( 'id' );
+		const godamAPIBase = window?.godamRestRoute?.apiBase;
+		let oEmbeddedVideoUrl = null;
+		if ( godamAPIBase && id ) {
+			oEmbeddedVideoUrl = godamAPIBase + '/web/video/' + id;
+		}
 
 		// Skip the local Media Library attachments.
-		if ( ( ! attachmentUrl || ! isMpd( attachmentUrl ) ) && ( ! hlsUrl || ! isM3U8( hlsUrl ) ) ) {
+		if ( ( ! mpdUrl || ! isMpd( mpdUrl ) ) && ( ! hlsUrl || ! isM3U8( hlsUrl ) ) ) {
 			return this;
 		}
 
@@ -126,13 +137,25 @@ export default AttachmentDetails?.extend( {
 		// No need to check if table exists, as if it did we would have returned early on link checks.
 		const tableBody = createTable( this.el );
 
-		if ( attachmentUrl && isMpd( attachmentUrl ) ) {
+		if ( oEmbeddedVideoUrl ) {
+			tableBody.appendChild(
+				createAttachmentField( {
+					id: attachmentId,
+					fieldName: 'oembed_video_url',
+					fieldLabel: __( 'oEmbed Video URL', 'godam' ),
+					url: oEmbeddedVideoUrl,
+					helpText: __( 'The oEmbed URL can be used to embed the video in other platforms that support oEmbed.', 'godam' ),
+				} ),
+			);
+		}
+
+		if ( mpdUrl && isMpd( mpdUrl ) ) {
 			tableBody.appendChild(
 				createAttachmentField( {
 					id: attachmentId,
 					fieldName: 'transcoded_url',
 					fieldLabel: __( 'Transcoded CDN URL (MPD)', 'godam' ),
-					url: attachmentUrl,
+					url: mpdUrl,
 					helpText: __( 'The URL of the transcoded file is generated automatically and cannot be edited.', 'godam' ),
 				} ),
 			);

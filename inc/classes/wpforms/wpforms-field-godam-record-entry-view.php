@@ -7,6 +7,10 @@
  * @since 1.3.0
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use RTGODAM\Inc\WPForms\WPForms_Integration_Helper;
 
 $godam_form_id  = absint( $form_data['id'] );
@@ -39,14 +43,14 @@ $godam_content_type = $godam_is_audio ? __( 'Audio', 'godam' ) : __( 'Video', 'g
 	</div>
 
 	<div class="godam-transcoded-url-info">
-		<?php if ( 'not_started' === $godam_transcoded_status ) : ?>
+		<?php if ( 'not_started' === strtolower( $godam_transcoded_status ) ) : ?>
 			<span class='dashicons dashicons-controls-play'></span><strong>
 				<?php
 				/* translators: %s: Content type (Audio or Video) */
 				echo esc_html( sprintf( __( '%s transcoding process has not started.', 'godam' ), $godam_content_type ) );
 				?>
 			</strong>
-		<?php elseif ( 'transcoded' === $godam_transcoded_status ) : ?>
+		<?php elseif ( 'transcoded' === strtolower( $godam_transcoded_status ) ) : ?>
 			<span class='dashicons dashicons-yes-alt'></span><strong>
 				<?php
 				/* translators: %s: Content type (Audio or Video) */

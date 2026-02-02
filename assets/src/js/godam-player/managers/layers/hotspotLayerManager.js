@@ -4,12 +4,17 @@
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
+ * Internal dependencies
+ */
+import { HOTSPOT_CONSTANTS } from '../../utils/constants';
+
+/**
  * Hotspot Layer Manager
  * Handles hotspot layer functionality including creation, positioning, and interaction
  */
 export default class HotspotLayerManager {
-	static BASE_WIDTH = 800;
-	static BASE_HEIGHT = 600;
+	static BASE_WIDTH = HOTSPOT_CONSTANTS.BASE_WIDTH;
+	static BASE_HEIGHT = HOTSPOT_CONSTANTS.BASE_HEIGHT;
 
 	constructor( player, isDisplayingLayers, currentPlayerVideoInstanceId ) {
 		this.player = player;
@@ -89,7 +94,17 @@ export default class HotspotLayerManager {
 			}
 		} );
 
-		this.updateHotspotPositions();
+		// Use requestAnimationFrame to wait for layout to stabilize after fullscreen resize
+		let framesToWait = 2;
+		const waitForResize = () => {
+			if ( framesToWait > 0 ) {
+				framesToWait--;
+				window.requestAnimationFrame( waitForResize );
+			} else {
+				this.updateHotspotPositions();
+			}
+		};
+		window.requestAnimationFrame( waitForResize );
 	}
 
 	/**
@@ -124,6 +139,64 @@ export default class HotspotLayerManager {
 	}
 
 	/**
+	 * Compute content rectangle
+	 *
+	 * @return {Object|null} Content rectangle {left, top, width, height} or null
+	 */
+	computeContentRect() {
+		const videoEl = this.player.tech( true )?.el() || this.player.el().querySelector( 'video' );
+		const containerEl = this.player.el();
+
+		if ( ! videoEl || ! containerEl ) {
+			return null;
+		}
+
+		const nativeW = videoEl.videoWidth || this.player.videoWidth() || 0;
+		const nativeH = videoEl.videoHeight || this.player.videoHeight() || 0;
+
+		const elW = containerEl.offsetWidth;
+		const elH = containerEl.offsetHeight;
+
+		// If video dimensions aren't loaded yet, use full container
+		if ( ! nativeW || ! nativeH ) {
+			return {
+				left: 0,
+				top: 0,
+				width: elW,
+				height: elH,
+			};
+		}
+
+		const videoAspectRatio = nativeW / nativeH;
+		const containerAspectRatio = elW / elH;
+
+		let contentW, contentH, offsetX, offsetY;
+
+		if ( containerAspectRatio > videoAspectRatio ) {
+			// Pillarboxed (black bars on left/right)
+			contentH = elH;
+			contentW = elH * videoAspectRatio;
+			offsetX = ( elW - contentW ) / 2;
+			offsetY = 0;
+		} else {
+			// Letterboxed (black bars on top/bottom)
+			contentW = elW;
+			contentH = elW / videoAspectRatio;
+			offsetX = 0;
+			offsetY = ( elH - contentH ) / 2;
+		}
+
+		const result = {
+			left: Math.round( offsetX ),
+			top: Math.round( offsetY ),
+			width: Math.round( contentW ),
+			height: Math.round( contentH ),
+		};
+
+		return result;
+	}
+
+	/**
 	 * Create hotspot element
 	 *
 	 * @param {Object} hotspot         - Hotspot configuration object
@@ -139,18 +212,39 @@ export default class HotspotLayerManager {
 		hotspotDiv.classList.add( 'hotspot', 'circle' );
 		hotspotDiv.style.position = 'absolute';
 
+		const contentRect = this.computeContentRect();
+
 		// Positioning
 		const fallbackPosX = hotspot.oPosition?.x ?? hotspot.position.x;
 		const fallbackPosY = hotspot.oPosition?.y ?? hotspot.position.y;
-		const pixelX = ( fallbackPosX / baseWidth ) * containerWidth;
-		const pixelY = ( fallbackPosY / baseHeight ) * containerHeight;
+
+		let fallbackDiameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter;
+		if ( ! fallbackDiameter ) {
+			if ( hotspot.unit === 'percent' && contentRect ) {
+				fallbackDiameter = ( HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PX / contentRect.width ) * 100;
+			} else {
+				fallbackDiameter = hotspot.unit === 'percent' ? HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PERCENT : HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PX;
+			}
+		}
+
+		let pixelX, pixelY, pixelDiameter;
+
+		if ( hotspot.unit === 'percent' && contentRect ) {
+			// New percentage-based positioning
+			pixelX = contentRect.left + ( ( fallbackPosX / 100 ) * contentRect.width );
+			pixelY = contentRect.top + ( ( fallbackPosY / 100 ) * contentRect.height );
+			pixelDiameter = ( fallbackDiameter / 100 ) * contentRect.width;
+		} else {
+			// Legacy pixel-based positioning (relative to 800x600)
+			// We now map these to the contentRect instead of the full container to avoid black bars
+			const effectiveRect = contentRect || { left: 0, top: 0, width: containerWidth, height: containerHeight };
+			pixelX = effectiveRect.left + ( ( fallbackPosX / baseWidth ) * effectiveRect.width );
+			pixelY = effectiveRect.top + ( ( fallbackPosY / baseHeight ) * effectiveRect.height );
+			pixelDiameter = ( fallbackDiameter / baseWidth ) * effectiveRect.width;
+		}
 
 		hotspotDiv.style.left = `${ pixelX }px`;
 		hotspotDiv.style.top = `${ pixelY }px`;
-
-		// Sizing
-		const fallbackDiameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
-		const pixelDiameter = ( fallbackDiameter / baseWidth ) * containerWidth;
 		hotspotDiv.style.width = `${ pixelDiameter }px`;
 		hotspotDiv.style.height = `${ pixelDiameter }px`;
 
@@ -257,57 +351,100 @@ export default class HotspotLayerManager {
 	}
 
 	/**
-	 * Position tooltip relative to hotspot
+	 * Position tooltip relative to hotspot, constrained within the video container
 	 *
 	 * @param {HTMLElement} hotspotDiv - The hotspot element for positioning reference
 	 * @param {HTMLElement} tooltipDiv - The tooltip element to position
 	 */
 	positionTooltip( hotspotDiv, tooltipDiv ) {
+		const videoContainer = this.player.el();
+		const containerRect = videoContainer.getBoundingClientRect();
 		const hotspotRect = hotspotDiv.getBoundingClientRect();
-		const tooltipRect = tooltipDiv.getBoundingClientRect();
-		const viewportWidth = window.innerWidth;
 
-		// Vertical positioning
-		const spaceAbove = hotspotRect.top;
-		if ( spaceAbove < tooltipRect.height + 10 ) {
-			// Place below
-			tooltipDiv.style.bottom = 'auto';
-			tooltipDiv.style.top = '100%';
-			tooltipDiv.classList.add( 'tooltip-bottom' );
-			tooltipDiv.classList.remove( 'tooltip-top' );
-		} else {
+		// Temporarily make tooltip visible to measure it accurately
+		const originalVisibility = tooltipDiv.style.visibility;
+		const originalOpacity = tooltipDiv.style.opacity;
+		tooltipDiv.style.visibility = 'hidden';
+		tooltipDiv.style.opacity = '0';
+		tooltipDiv.style.display = 'block';
+
+		const tooltipRect = tooltipDiv.getBoundingClientRect();
+
+		// Restore original styles
+		tooltipDiv.style.visibility = originalVisibility;
+		tooltipDiv.style.opacity = originalOpacity;
+
+		// Calculate space relative to video container (not viewport)
+		const spaceAbove = hotspotRect.top - containerRect.top;
+		const spaceBelow = containerRect.bottom - hotspotRect.bottom;
+
+		const tooltipHeight = tooltipRect.height;
+		const tooltipWidth = tooltipRect.width;
+
+		// Minimum padding from container edges
+		const edgePadding = 8;
+
+		// Reset all positioning classes and styles first
+		tooltipDiv.classList.remove( 'tooltip-top', 'tooltip-bottom', 'tooltip-left', 'tooltip-right', 'no-arrow' );
+		tooltipDiv.style.top = '';
+		tooltipDiv.style.bottom = '';
+		tooltipDiv.style.left = '';
+		tooltipDiv.style.right = '';
+		tooltipDiv.style.transform = '';
+
+		// Vertical positioning - prefer above, fallback to below
+		if ( spaceAbove >= tooltipHeight + edgePadding ) {
 			// Place above
 			tooltipDiv.style.bottom = '100%';
 			tooltipDiv.style.top = 'auto';
 			tooltipDiv.classList.add( 'tooltip-top' );
-			tooltipDiv.classList.remove( 'tooltip-bottom' );
+		} else if ( spaceBelow >= tooltipHeight + edgePadding ) {
+			// Place below
+			tooltipDiv.style.bottom = 'auto';
+			tooltipDiv.style.top = '100%';
+			tooltipDiv.classList.add( 'tooltip-bottom' );
+		} else if ( spaceAbove >= spaceBelow ) {
+			tooltipDiv.style.bottom = '100%';
+			tooltipDiv.style.top = 'auto';
+			tooltipDiv.classList.add( 'tooltip-top' );
+		} else {
+			tooltipDiv.style.bottom = 'auto';
+			tooltipDiv.style.top = '100%';
+			tooltipDiv.classList.add( 'tooltip-bottom' );
 		}
 
-		// Horizontal positioning
-		const spaceLeft = hotspotRect.left;
-		const spaceRight = viewportWidth - hotspotRect.right;
+		// Horizontal positioning - calculate where tooltip would overflow
+		const hotspotCenterInContainer = ( hotspotRect.left + ( hotspotRect.width / 2 ) ) - containerRect.left;
+		const tooltipHalfWidth = tooltipWidth / 2;
 
-		if ( spaceLeft < 10 ) {
-			// Adjust to the right
-			tooltipDiv.style.left = '0';
-			tooltipDiv.style.transform = 'translateX(0)';
-			tooltipDiv.classList.add( 'tooltip-left' );
-			tooltipDiv.classList.remove( 'tooltip-right' );
+		// Check if centered tooltip would overflow left or right of container
+		const wouldOverflowLeft = ( hotspotCenterInContainer - tooltipHalfWidth ) < edgePadding;
+		const wouldOverflowRight = ( hotspotCenterInContainer + tooltipHalfWidth ) > ( containerRect.width - edgePadding );
+
+		if ( wouldOverflowLeft && wouldOverflowRight ) {
+			// Tooltip is wider than available space, center it as best as possible
+			tooltipDiv.style.left = '50%';
+			tooltipDiv.style.transform = 'translateX(-50%)';
 			tooltipDiv.classList.add( 'no-arrow' );
-		} else if ( spaceRight < 10 ) {
-			// Adjust to the left
+		} else if ( wouldOverflowLeft ) {
+			// Align tooltip to the left edge of hotspot, but ensure it stays within container
+			const leftOffset = Math.max( edgePadding - ( hotspotRect.left - containerRect.left ), 0 );
+			tooltipDiv.style.left = `${ leftOffset }px`;
+			tooltipDiv.style.right = 'auto';
+			tooltipDiv.style.transform = 'translateX(0)';
+			tooltipDiv.classList.add( 'tooltip-left', 'no-arrow' );
+		} else if ( wouldOverflowRight ) {
+			// Align tooltip to the right edge of hotspot, but ensure it stays within container
+			const rightOffset = Math.max( edgePadding - ( containerRect.right - hotspotRect.right ), 0 );
 			tooltipDiv.style.left = 'auto';
-			tooltipDiv.style.right = '0';
+			tooltipDiv.style.right = `${ rightOffset }px`;
 			tooltipDiv.style.transform = 'translateX(0)';
-			tooltipDiv.classList.add( 'tooltip-right' );
-			tooltipDiv.classList.remove( 'tooltip-left' );
-			tooltipDiv.classList.add( 'no-arrow' );
+			tooltipDiv.classList.add( 'tooltip-right', 'no-arrow' );
 		} else {
-			// Centered horizontally
+			// Centered horizontally - tooltip fits within container
 			tooltipDiv.style.left = '50%';
 			tooltipDiv.style.right = 'auto';
 			tooltipDiv.style.transform = 'translateX(-50%)';
-			tooltipDiv.classList.remove( 'tooltip-left', 'tooltip-right', 'no-arrow' );
 		}
 	}
 
@@ -322,6 +459,8 @@ export default class HotspotLayerManager {
 		const baseWidth = HotspotLayerManager.BASE_WIDTH;
 		const baseHeight = HotspotLayerManager.BASE_HEIGHT;
 
+		const contentRect = this.computeContentRect();
+
 		this.hotspotLayers.forEach( ( layerObj ) => {
 			const hotspotDivs = layerObj.layerElement.querySelectorAll( '.hotspot' );
 			hotspotDivs.forEach( ( hotspotDiv, index ) => {
@@ -330,14 +469,26 @@ export default class HotspotLayerManager {
 				// Recalc position
 				const fallbackPosX = hotspot.oPosition?.x ?? hotspot.position.x;
 				const fallbackPosY = hotspot.oPosition?.y ?? hotspot.position.y;
-				const pixelX = ( fallbackPosX / baseWidth ) * containerWidth;
-				const pixelY = ( fallbackPosY / baseHeight ) * containerHeight;
+				const fallbackDiameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
+
+				let pixelX, pixelY, pixelDiameter;
+
+				if ( hotspot.unit === 'percent' && contentRect ) {
+					// New percentage-based positioning
+					pixelX = contentRect.left + ( ( fallbackPosX / 100 ) * contentRect.width );
+					pixelY = contentRect.top + ( ( fallbackPosY / 100 ) * contentRect.height );
+					pixelDiameter = ( fallbackDiameter / 100 ) * contentRect.width;
+				} else {
+					// Legacy pixel-based positioning
+					// We now map these to the contentRect instead of the full container to avoid black bars
+					const effectiveRect = contentRect || { left: 0, top: 0, width: containerWidth, height: containerHeight };
+					pixelX = effectiveRect.left + ( ( fallbackPosX / baseWidth ) * effectiveRect.width );
+					pixelY = effectiveRect.top + ( ( fallbackPosY / baseHeight ) * effectiveRect.height );
+					pixelDiameter = ( fallbackDiameter / baseWidth ) * effectiveRect.width;
+				}
+
 				hotspotDiv.style.left = `${ pixelX }px`;
 				hotspotDiv.style.top = `${ pixelY }px`;
-
-				// Recalc size
-				const fallbackDiameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
-				const pixelDiameter = ( fallbackDiameter / baseWidth ) * containerWidth;
 				hotspotDiv.style.width = `${ pixelDiameter }px`;
 				hotspotDiv.style.height = `${ pixelDiameter }px`;
 
