@@ -19,6 +19,17 @@
 
 #root-video-analytics, #root-video-dashboard {
 
+	&.free-user {
+		height: calc(100vh - var(--wp-admin--admin-bar--height, 0));
+
+		.api-key-overlay {
+			background-size: 100% 100% !important;
+			background-position: 0 0 !important;
+			margin-left: -20px;
+			width: -webkit-fill-available;
+		}
+	}
+
 	background-color: #fff;
 
 	#analytics-content {
@@ -33,6 +44,7 @@
 		@apply flex bg-white justify-between py-6 md:px-10 pt-8;
 
 		.analytics-info-container {
+
 			.analytics-info {
 
 				width: calc(50% - 8px);
@@ -66,7 +78,6 @@
 		.analytics-info {
 			display: flex;
 			align-items: center;
-			// background-color: #fff;
 			padding: 9px 12px;
 			border-radius: 12px;
 
@@ -283,6 +294,20 @@
 		stroke-dasharray: 4;
 		stroke-width: 2px;
 	}
+	}
+}
+
+.not-safari {
+
+	#root-video-analytics, #root-video-dashboard {
+
+		&.free-user {
+
+			.api-key-overlay {
+				background-size: 100% calc(100% - 32px) !important;
+				background-position: center 32px !important;
+			}
+		}
 	}
 }
 
