@@ -382,20 +382,20 @@ const Analytics = ( { attachmentID } ) => {
 						? <div className="api-key-overlay-banner">
 							<p className="api-key-overlay-banner-header">
 								{ __(
-									'Upgrade to unlock the media performance report.',
+									'Upgrade to unlock the media performance report or sign up for a free plan.',
 									'godam',
 								) }
 							</p>
 
 							<p className="api-key-overlay-banner-footer">
-								{ __( 'If you already have a premium plan, connect your', 'godam' ) }
+								{ __( 'If you already have a plan, connect your', 'godam' ) }
 								{ ' ' }
 								<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
 									{ __( 'API in the settings', 'godam' ) }
 								</a>
 							</p>
 
-							<a href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=analytics` } className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
+							<a href={ `https://godam.io/pricing?utm_campaign=start-free&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=analytics` } className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Start Free', 'godam' ) }</a>
 						</div>
 						:	<div className="api-key-overlay-banner">
 							<p>
