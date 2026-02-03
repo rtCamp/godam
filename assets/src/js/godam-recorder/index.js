@@ -282,7 +282,7 @@ class UppyVideoUploader {
 					// Remove from uppy and clear UI
 					this.uppy.removeFile( file.id );
 					this.clearVideoUploadUI();
-					jQuery( '.uppy-Dashboard-close' ).trigger( 'click' );
+					await this.uppy.getPlugin( 'Dashboard' ).closeModal();
 
 					return;
 				}
