@@ -9,6 +9,8 @@ namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 
+use RTGODAM\Inc\Taxonomies\Media_Category;
+use RTGODAM\Inc\Taxonomies\Media_Tag;
 use RTGODAM\Inc\Traits\Singleton;
 use RTGODAM\Inc\Pages;
 use RTGODAM\Inc\Blocks;
@@ -149,6 +151,8 @@ class Plugin {
 	 */
 	public function load_taxonomies() {
 		Media_Folders::get_instance();
+		Media_Category::get_instance();
+		Media_Tag::get_instance();
 	}
 
 	/**

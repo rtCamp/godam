@@ -240,6 +240,32 @@ class Assets {
 
 		wp_localize_script(
 			'easydam-media-library',
+			'MediaLibraryCategoryFilterData',
+			array(
+				'terms' => get_terms(
+					array(
+						'taxonomy'   => 'rtgodam_media_category',
+						'hide_empty' => false,
+					)
+				),
+			)
+		);
+
+		wp_localize_script(
+			'easydam-media-library',
+			'MediaLibraryTagFilterData',
+			array(
+				'terms' => get_terms(
+					array(
+						'taxonomy'   => 'rtgodam_media_tag',
+						'hide_empty' => false,
+					)
+				),
+			)
+		);
+
+		wp_localize_script(
+			'easydam-media-library',
 			'transcoderSettings',
 			array(
 				'restUrl' => esc_url_raw( rest_url( 'godam/v1/transcoding/transcoding-status' ) ),
