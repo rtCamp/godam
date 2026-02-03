@@ -85,11 +85,29 @@ if ( class_exists( 'GF_Field' ) ) {
 		private function format_seconds_hhmmss( $seconds ) {
 			$seconds = absint( $seconds );
 
-			$hours   = floor( $seconds / 3600 );
-			$minutes = floor( ( $seconds % 3600 ) / 60 );
+			$hours   = intdiv( $seconds, 3600 );
+			$seconds = $seconds % 3600;
+
+			$minutes = intdiv( $seconds, 60 );
 			$secs    = $seconds % 60;
 
-			return sprintf( '%02d:%02d:%02d', $hours, $minutes, $secs );
+			$parts = array();
+
+			if ( $hours > 0 ) {
+				$parts[] = sprintf( '%d %s', $hours, ( 1 === $hours ) ? esc_html__( 'hour', 'godam' ) : esc_html__( 'hours', 'godam' ) );
+			}
+
+			if ( $minutes > 0 ) {
+				$parts[] = sprintf( '%d %s', $minutes, ( 1 === $minutes ) ? esc_html__( 'minute', 'godam' ) : esc_html__( 'minutes', 'godam' ) );
+			}
+
+			// Always show seconds if nothing else was added (so 0 -> "0 seconds")
+			// or if seconds are non-zero.
+			if ( $secs > 0 || empty( $parts ) ) {
+				$parts[] = sprintf( '%d %s', $secs, ( 1 === $secs ) ? esc_html__( 'second', 'godam' ) : esc_html__( 'seconds', 'godam' ) );
+			}
+
+			return implode( ' ', $parts );
 		}
 
 		/**
