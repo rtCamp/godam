@@ -44,11 +44,12 @@ class ListViewTranscodingStatus {
 	/**
 	 * Initialize the transcoding status manager
 	 *
-	 * Finds all incomplete transcoding status elements in the DOM, extracts their
+	 * Finds all transcoding status elements in the DOM, extracts their
 	 * post IDs, and starts polling for status updates if any are found.
 	 */
 	constructor() {
-		const transcodingStatusElements = document.querySelectorAll( '.transcoding-status:not(.transcoding-status--completed)' );
+		// Include all transcoding-status elements (including completed) to handle retranscoding scenarios
+		const transcodingStatusElements = document.querySelectorAll( '.transcoding-status' );
 		const postIds = Array.from( transcodingStatusElements ).map( ( status ) => parseInt( status.dataset.id ) );
 
 		if ( postIds.length > 0 ) {
@@ -94,12 +95,19 @@ class ListViewTranscodingStatus {
 		}
 
 		const loader = element.querySelector( '.transcoding-status__loader' );
-		const statusText = element.querySelector( '.status-text' );
+
+		// Skip virtual media - they have GoDAM logo and should always show as completed
+		const isVirtual = loader.querySelector( 'img[alt*="GoDAM Logo"]' );
+		if ( isVirtual ) {
+			return;
+		}
+
 		const existingIcon = loader.querySelector( 'svg' );
 
 		// Reset all status classes before applying new ones
 		this._resetStatusClasses( element );
 
+		const statusText = element.querySelector( '.status-text' );
 		// Handle failed transcoding state
 		if ( data.status === 'failed' ) {
 			this._updateFailedStatus( element, loader, statusText, existingIcon );
@@ -232,6 +240,25 @@ class ListViewTranscodingStatus {
 	 */
 	_updateInProgressStatus( element, loader, statusText, data ) {
 		element.classList.add( STATUS_CLASSES.IN_PROGRESS );
+
+		// Check if progress SVG exists, if not recreate it (for retranscoded items)
+		const existingSVG = loader.querySelector( '.transcoding-status__loader__progress' );
+		if ( ! existingSVG ) {
+			// Remove any existing icons (checkmark, exclamation, etc.)
+			const existingIcon = loader.querySelector( 'svg' );
+			if ( existingIcon ) {
+				existingIcon.remove();
+			}
+
+			// Recreate the progress bar SVG structure
+			const progressSVG = `
+				<svg class="transcoding-status__loader__progress" viewBox="0 0 36 36">
+					<circle class="background" cx="18" cy="18" r="16" />
+					<circle class="progress" cx="18" cy="18" r="16" />
+				</svg>
+			`;
+			loader.insertAdjacentHTML( 'beforeend', progressSVG );
+		}
 
 		this.updateProgress( loader, data.progress );
 
