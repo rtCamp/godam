@@ -306,68 +306,72 @@ const ImageCTA = ( { layerID } ) => {
 				</div>
 			</div>
 
-			<div>
-				<label
-					htmlFor="custom-play-button"
-					name="hover-slider"
-					className="godam-input-label"
-				>
-					{ __( 'Add Image', 'godam' ) }
-				</label>
-				{ ( layer?.image === 0 || ! layer?.image ) && (
-					<Button
-						onClick={ openImageCTAUploader }
-						variant="primary"
-						className="ml-2 godam-button"
-						aria-label={ __( 'Upload or Replace CTA Image', 'godam' ) }
-					>
-						{ __( 'Upload', 'godam' ) }
-					</Button>
-				) }
-				{ ( layer?.image && layer?.image !== 0 && ! selectedImageUrl ) ? (
-					<div className="mt-6 rounded-xl w-[160px] h-[160px] animate-pulse bg-gray-200"></div>
-				) : null }
-				{ selectedImageUrl && (
-					<div className="flex mt-4">
-						<img
-							src={ selectedImageUrl }
-							alt={ __( 'Selected custom brand', 'godam' ) }
-							className="w-[160px] h-[160px] rounded-xl object-cover"
-						/>
-						<div className="ml-[6px] flex flex-col">
-							<Tooltip text={ __( 'Replace Image', 'godam' ) } placement="right">
-								<Button className="!text-brand-neutral-900" icon={ replace } isDestructive onClick={ openImageCTAUploader } />
-							</Tooltip>
-							<Tooltip text={ __( 'Remove Image', 'godam' ) } placement="right">
-								<Button className="mt-1" icon={ trash } isDestructive onClick={ removeCTAImage } />
-							</Tooltip>
-						</div>
+			{
+				( currentLayout !== 'desktop-text-only' ) &&
+				<>
+					<div>
+						<label
+							htmlFor="custom-play-button"
+							name="hover-slider"
+							className="godam-input-label"
+						>
+							{ __( 'Add Image', 'godam' ) }
+						</label>
+						{ ( layer?.image === 0 || ! layer?.image ) && (
+							<Button
+								onClick={ openImageCTAUploader }
+								variant="primary"
+								className="ml-2 godam-button"
+								aria-label={ __( 'Upload or Replace CTA Image', 'godam' ) }
+							>
+								{ __( 'Upload', 'godam' ) }
+							</Button>
+						) }
+						{ ( layer?.image && layer?.image !== 0 && ! selectedImageUrl ) ? (
+							<div className="mt-6 rounded-xl w-[160px] h-[160px] animate-pulse bg-gray-200"></div>
+						) : null }
+						{ selectedImageUrl && (
+							<div className="flex mt-4">
+								<img
+									src={ selectedImageUrl }
+									alt={ __( 'Selected custom brand', 'godam' ) }
+									className="w-[160px] h-[160px] rounded-xl object-cover"
+								/>
+								<div className="ml-[6px] flex flex-col">
+									<Tooltip text={ __( 'Replace Image', 'godam' ) } placement="right">
+										<Button className="!text-brand-neutral-900" icon={ replace } isDestructive onClick={ openImageCTAUploader } />
+									</Tooltip>
+									<Tooltip text={ __( 'Remove Image', 'godam' ) } placement="right">
+										<Button className="mt-1" icon={ trash } isDestructive onClick={ removeCTAImage } />
+									</Tooltip>
+								</div>
+							</div>
+						) }
+						{ notice.isVisible && (
+							<Notice
+								className="my-4"
+								status={ notice.status }
+								onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
+							>
+								{ notice.message }
+							</Notice>
+						) }
 					</div>
-				) }
-				{ notice.isVisible && (
-					<Notice
-						className="my-4"
-						status={ notice.status }
-						onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
-					>
-						{ notice.message }
-					</Notice>
-				) }
-			</div>
-
-			{ ( selectedImageUrl && layoutsWithWidth?.includes( layer?.cardLayout ) ) && (
-				<RangeControl
-					__nextHasNoMarginBottom
-					__next40pxDefaultSize
-					label={ __( 'Image Width (%)', 'godam' ) }
-					value={ layer?.imageWidth ?? 50 }
-					onChange={ ( value ) => updateField( 'imageWidth', value ) }
-					min={ 15 }
-					max={ 85 }
-					step={ 1 }
-					help={ __( 'Applies to horizontal layouts only', 'godam' ) }
-				/>
-			) }
+					{ ( selectedImageUrl && layoutsWithWidth?.includes( layer?.cardLayout ) ) && (
+						<RangeControl
+							__nextHasNoMarginBottom
+							__next40pxDefaultSize
+							label={ __( 'Image Width (%)', 'godam' ) }
+							value={ layer?.imageWidth ?? 50 }
+							onChange={ ( value ) => updateField( 'imageWidth', value ) }
+							min={ 15 }
+							max={ 85 }
+							step={ 1 }
+							help={ __( 'Applies to horizontal layouts only', 'godam' ) }
+						/>
+					) }
+				</>
+			}
 
 			<TextControl
 				__nextHasNoMarginBottom
