@@ -770,3 +770,35 @@ function rtgodam_get_transcoded_error_message_from_attachment( $attachment ) {
 
 	return strval( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ) );
 }
+
+/**
+ * Return MP4 CDN URL for transcoded media at runtime when available.
+ *
+ * @since 1.4.5
+ */
+add_filter(
+	'wp_get_attachment_url',
+	function ( $url, $post_id ) {
+		// Validate attachment.
+		$attachment = get_post( $post_id );
+		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
+			return $url;
+		}
+
+		// Only apply for video/audio attachments.
+		$mime = get_post_mime_type( $post_id );
+		if ( empty( $mime ) || ( 0 !== strpos( $mime, 'video/' ) && 0 !== strpos( $mime, 'audio/' ) ) ) {
+			return $url;
+		}
+
+		// Use persisted MP4 CDN URL when present.
+		$mp4_cdn_url = get_post_meta( $post_id, 'rtgodam_transcoded_mp4_url', true );
+		if ( ! empty( $mp4_cdn_url ) ) {
+			return esc_url( $mp4_cdn_url );
+		}
+
+		return $url;
+	},
+	10,
+	2 
+);

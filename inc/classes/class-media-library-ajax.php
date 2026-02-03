@@ -853,6 +853,9 @@ class Media_Library_Ajax {
 			return;
 		}
 
+		// Persist MP4 CDN URL for runtime URL replacement.
+		update_post_meta( $attachment_id, 'rtgodam_transcoded_mp4_url', $transcoded_mp4_url );
+
 		// Replace the existing attachment file with the transcoded MP4.
 		$attachment_id = $this->godam_replace_attachment_with_external_file( $attachment_id, $transcoded_mp4_url );
 
