@@ -1,225 +1,78 @@
-# WooCommerce Integration Module
+# WooCommerce Integration
 
 ## Overview
 
-The WooCommerce integration module is a modular add-on for GoDAM that extends WordPress video functionality with WooCommerce-specific features. This module is **only loaded when WooCommerce is active**, ensuring optimal performance on non-WooCommerce sites.
+This integration extends GoDAM with WooCommerce-specific features (product video galleries, featured video support, product layers/hotspots, and REST endpoints).
 
-**Module Location**: `/wp-content/plugins/godam/integrations/woocommerce/`
+The integration lives in `integrations/woocommerce/` and is auto-loaded by the main plugin’s integrations loader. The bootstrap itself is responsible for **conditionally booting only when WooCommerce is available**.
 
----
+## Loading
 
-## Directory Structure
+- Auto-discovery is handled by `RTGODAM\Inc\Integrations` (see `inc/classes/class-integrations.php`).
+- The loader `require_once`s `integrations/*/class-bootstrap.php` on `plugins_loaded`.
+- This integration’s entry point is `integrations/woocommerce/class-bootstrap.php`.
+
+Important: bootstrap files must never output anything (no `echo`, `var_dump`, etc.) because they run during requests that may expect JSON (REST/AJAX).
+
+## Current directory structure
 
 ```
 integrations/woocommerce/
-├── bootstrap.php                          # Module initialization (conditional loader)
+├── class-bootstrap.php                    # Integration entry point (conditional bootstrap)
 ├── README.md                              # This file
-│
-├── classes/                               # PHP business logic
-│   ├── class-wc.php                       # REST API endpoints for WC products
+├── helpers/                               # Helper functions
+├── classes/                               # PHP business logic (WooCommerce dependent)
+│   ├── class-wc.php                       # REST API endpoints for WooCommerce products
 │   ├── class-wc-product-video-gallery.php # Product video gallery display
 │   ├── class-wc-featured-video-gallery.php# Featured video support
 │   ├── class-wc-woocommerce-layer.php     # WC hotspots/layers management
 │   ├── class-wc-product-gallery-video-markup.php # Video markup rendering
-│   └── class-wc-utility.php               # Helper utilities
-│
-├── blocks/                                # Gutenberg blocks
-│   └── godam-product-gallery/             # Product gallery block
-│       ├── block.json                     # Block configuration
-│       ├── index.js                       # Block registration
-│       ├── edit.js                        # Block editor
-│       ├── editor.scss                    # Editor styles
-│       └── render.php                     # Server-side rendering
-│
-└── assets/                                # Frontend & admin assets
-    ├── js/                                # JavaScript (source)
-    │   ├── admin/                         # Admin panel scripts
-    │   │   ├── wc-product-video-gallery.js
-    │   │   ├── wc-add-to-product.js
-    │   │   └── wc-admin-featured-video-gallery.js
-    │   ├── featured-video/                # Featured video scripts
-    │   │   └── wc-featured-video-gallery.js
-    │   ├── single-product-story/          # Product page scripts
-    │   │   └── wc-video-carousel.js
-    │   ├── woocommerce-layer/             # Layer/hotspot scripts
-    │   │   └── wc-woo-layer-cart-url-editor.js
-    │   └── godam-product-gallery/         # Gallery feature scripts
-    │       ├── godam-product-gallery.js
-    │       ├── slider.js
-    │       ├── modal.js
-    │       ├── cart.js
-    │       ├── sidebar.js
-    │       └── autoplay.js
-    │
-    └── images/                            # SVG & image assets
-        └── product-tag.svg
+│   ├── class-wc-utility.php               # Helper utilities
+│   └── shortcodes/
+│       └── class-godam-product-gallery.php
+├── blocks/
+│   └── godam-product-gallery/             # Block source (block.json, editor assets)
+├── assets/
+│   ├── css/                               # SCSS sources
+│   ├── js/                                # JS sources
+│   └── images/
+└── pages/                                 # Admin/editor UI components used by layers
 ```
-
----
 
 ## Features
 
-### 1. **Product Video Gallery** (`class-wc-product-video-gallery.php`)
-- Attach GoDAM videos to WooCommerce products
-- Display video gallery on single product pages
-- Video slider with thumbnail navigation
-- Video preview before purchase
+- Product video gallery for single product pages.
+- Featured video support for WooCommerce product galleries.
+- WooCommerce layer/hotspot support in the GoDAM video editor.
+- REST endpoints under `/wp-json/godam/v1/...` for WooCommerce product data.
+- `godam-product-gallery` block and shortcode for embedding product galleries.
 
-### 2. **Featured Video Support** (`class-wc-featured-video-gallery.php`)
-- Set a featured video for product galleries
-- Custom metabox for product edit screen
-- Auto-replace WooCommerce image gallery with video gallery
+## Build output
 
-### 3. **WooCommerce Hotspots/Layers** (`class-wc-woocommerce-layer.php`)
-- Interactive hotspots on product videos
-- Product information overlays
-- Click-to-buy functionality from video
-- Real-time product data synchronization
+Compiled assets are emitted under `assets/build/`.
 
-### 4. **REST API Endpoints** (`class-wc.php`)
-```
-GET    /wp-json/godam/v1/wcproducts        # List all products
-GET    /wp-json/godam/v1/wcproduct?id=123  # Get single product
-POST   /wp-json/godam/v1/wcproduct         # Attach video to product
-DELETE /wp-json/godam/v1/wcproduct         # Remove video from product
-```
+- WooCommerce integration bundle output:
+  - `assets/build/integrations/woocommerce/js/*.min.js`
+  - `assets/build/integrations/woocommerce/css/*.css`
+- Product gallery bundle (entry: `godam-product-gallery`) output:
+  - `assets/build/js/godam-product-gallery.min.js`
+  - `assets/build/js/godam-product-gallery.min.asset.php`
+- Block build output:
+  - `assets/build/integrations/woocommerce/blocks/godam-product-gallery/`
 
-### 5. **Product Gallery Block**
-- Gutenberg block for displaying video galleries
-- Configurable layout and styling
-- Mobile-responsive design
+The entry points and output folders are defined in `webpack.config.js`.
 
----
+## Development workflow
 
-## Build Process
+### Adding a new WooCommerce feature
 
-### Source Files → Compiled Assets
-
-All WooCommerce JavaScript and CSS is built via webpack into a dedicated output folder:
-
-```
-Source:                          →    Compiled Output:
-integrations/woocommerce/       →    assets/build/integrations/woocommerce/
-├── assets/js/                  →    ├── js/
-│   ├── admin/                  →    │   ├── admin/
-│   │   └── *.js                →    │   │   └── *.min.js
-│   ├── featured-video/         →    │   ├── featured-video/
-│   │   └── *.js                →    │   │   └── *.min.js
-│   └── woocommerce-layer/      →    │   └── woocommerce-layer/
-│       └── *.js                →    │       └── *.min.js
-└── assets/css/                 →    └── css/
-    └── *.scss                  →        └── *.css
-```
-
-### Webpack Configuration
-
-The main `webpack.config.js` includes a dedicated WooCommerce build configuration:
-
-```javascript
-const woocommerceIntegration = {
-    entry: {
-        // Admin scripts
-        'admin/wc-product-video-gallery': '...',
-        'admin/wc-add-to-product': '...',
-
-        // Frontend scripts
-        'wc-video-carousel': '...',
-        'wc-featured-video-gallery': '...',
-        // ... more entries
-    },
-    output: {
-        path: 'assets/build/integrations/woocommerce/js'
-    }
-};
-```
-
-### Build Commands
+1. Create a new class in `integrations/woocommerce/classes/` using the existing namespace pattern (`RTGODAM\Inc\WooCommerce`).
+2. Include the class from `integrations/woocommerce/class-bootstrap.php` (dependency loading) and initialize it on the integration init hook.
+3. If you add new JS/CSS, add it as an entry in `webpack.config.js` (prefer the existing `woocommerceIntegration` config for Woo-specific bundles).
+4. Build:
 
 ```bash
-# Development build (unminified, source maps)
 npm run build:dev
-
-# Production build (minified, optimized)
+# or
 npm run build:prod
-
-# Watch mode during development
-npm start
 ```
-
----
-
-## Integration Points
-
-### With Main Plugin
-- **REST API Base**: Extends `RTGODAM\Inc\REST_API\Base`
-- **Asset Enqueueing**: Uses `RTGODAM_PATH` and `RTGODAM_VERSION` constants
-- **Namespace**: Uses `RTGODAM\Inc\WooCommerce\` namespace
-
-### With WooCommerce
-- **Hooks**: `woocommerce_single_product_summary`, `woocommerce_update_product`
-- **Meta Boxes**: Custom metabox for featured video selector
-- **Classes**: Uses `WooCommerce` class and WC functions
-- **REST API**: Extends WC REST endpoints with custom fields
-
-### With Frontend Assets
-- **Blocks**: `godam-product-gallery` Gutenberg block
-- **JavaScript**: Multiple feature modules for different functionality
-- **Styles**: SCSS/CSS compiled with main plugin assets
-
----
-
-## Development Workflow
-
-### Adding a New WooCommerce Feature
-
-1. **Create PHP class** in `classes/`
-   ```php
-   namespace RTGODAM\Inc\WooCommerce;
-
-   class My_Feature {
-       use Singleton;
-
-       public function __construct() {
-           // Hook setup
-       }
-   }
-   ```
-
-2. **Load in bootstrap.php**
-   ```php
-   private function load_dependencies() {
-       require_once RTGODAM_WC_MODULE_PATH . 'classes/class-my-feature.php';
-   }
-
-   public function init_woocommerce_integration() {
-       \RTGODAM\Inc\WooCommerce\My_Feature::get_instance();
-   }
-   ```
-
-3. **Add JavaScript** in `assets/js/`
-   ```javascript
-   // myfeature/my-feature.js
-   export default class MyFeature { ... }
-   ```
-
-4. **Add to webpack.config.js**
-   ```javascript
-   const woocommerceIntegration = {
-       entry: {
-           'my-feature': 'integrations/woocommerce/assets/js/myfeature/my-feature.js',
-       }
-   };
-   ```
-
-5. **Build and test**
-   ```bash
-   npm run build:prod
-   ```
-
-## License
-
-GPLv2 or later - Part of GoDAM WordPress Plugin
-
----
-
-**For support, bugs, or feature requests**: https://github.com/rtcamp/godam/issues
