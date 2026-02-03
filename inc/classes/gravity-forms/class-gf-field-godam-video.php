@@ -77,7 +77,7 @@ if ( class_exists( 'GF_Field' ) ) {
 		}
 
 		/**
-		 * Format seconds as HH:MM:SS.
+		 * Format seconds as readable time.
 		 *
 		 * @param int $seconds Seconds.
 		 * @return string

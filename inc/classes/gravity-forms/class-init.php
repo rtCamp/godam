@@ -192,7 +192,7 @@ class Init {
 					</div>
 				</div>
 			</li>
-			<li class="godam-video-field-setting field_setting">
+			<li class="godam-video-field-setting field_setting" style="display: none;">
 				<label class="section_label" for="field_godam_max_duration">
 					<?php esc_html_e( 'Max duration (seconds)', 'godam' ); ?>
 				</label>
