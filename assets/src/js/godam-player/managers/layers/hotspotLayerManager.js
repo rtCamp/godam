@@ -252,7 +252,7 @@ export default class HotspotLayerManager {
 		hotspotDiv.style.backgroundColor = ( hotspot.icon || hotspot.customIconUrl ) ? 'white' : ( hotspot.backgroundColor || '#0c80dfa6' );
 
 		// Create content
-		const hotspotContent = this.createHotspotContent( hotspot, index );
+		const hotspotContent = this.createHotspotContent( hotspot, index, hotspotDiv );
 		hotspotDiv.appendChild( hotspotContent );
 
 		return hotspotDiv;
@@ -261,11 +261,12 @@ export default class HotspotLayerManager {
 	/**
 	 * Create hotspot content
 	 *
-	 * @param {Object} hotspot - Hotspot configuration object
-	 * @param {number} index   - Index of the hotspot
+	 * @param {Object}      hotspot    - Hotspot configuration object
+	 * @param {number}      index      - Index of the hotspot
+	 * @param {HTMLElement} hotspotDiv - Parent hotspot div element
 	 * @return {HTMLElement} Created content element
 	 */
-	createHotspotContent( hotspot, index ) {
+	createHotspotContent( hotspot, index, hotspotDiv ) {
 		const hotspotContent = document.createElement( 'div' );
 		hotspotContent.classList.add( 'hotspot-content' );
 		hotspotContent.style.position = 'relative';
@@ -276,7 +277,7 @@ export default class HotspotLayerManager {
 			const iconEl = this.createHotspotIcon( hotspot.icon );
 			hotspotContent.appendChild( iconEl );
 		} else if ( hotspot.customIconUrl ) {
-			const customIconEl = this.createCustomIcon( hotspot.customIconUrl );
+			const customIconEl = this.createCustomIcon( hotspot.customIconUrl, hotspot.backgroundColor, hotspotDiv );
 			hotspotContent.appendChild( customIconEl );
 		} else {
 			hotspotContent.classList.add( 'no-icon' );
@@ -312,10 +313,12 @@ export default class HotspotLayerManager {
 	/**
 	 * Create custom icon element
 	 *
-	 * @param {string} customIconUrl - URL of the custom icon
+	 * @param {string}      customIconUrl   - URL of the custom icon
+	 * @param {string}      backgroundColor - Background color for fallback
+	 * @param {HTMLElement} hotspotDiv      - Parent hotspot div element
 	 * @return {HTMLElement} Created custom icon element
 	 */
-	createCustomIcon( customIconUrl ) {
+	createCustomIcon( customIconUrl, backgroundColor, hotspotDiv ) {
 		const customIconEl = document.createElement( 'img' );
 		customIconEl.src = customIconUrl;
 		customIconEl.alt = __( 'Custom Icon', 'godam' );
@@ -328,10 +331,22 @@ export default class HotspotLayerManager {
 		customIconEl.style.margin = 'auto';
 		customIconEl.style.pointerEvents = 'none';
 
-		// Add error handling for failed image loads
+		// Add error handling for failed image loads - convert to normal hotspot point
 		customIconEl.onerror = function() {
-			// Hide the element if image fails to load
-			customIconEl.style.display = 'none';
+			// Remove the failed image element
+			customIconEl.remove();
+
+			// Get the hotspot content container
+			const hotspotContent = hotspotDiv?.querySelector( '.hotspot-content' );
+			if ( hotspotContent ) {
+				// Add no-icon class to show as normal hotspot
+				hotspotContent.classList.add( 'no-icon' );
+			}
+
+			// Reset hotspot background to default (non-icon) color
+			if ( hotspotDiv ) {
+				hotspotDiv.style.backgroundColor = backgroundColor || '#0c80dfa6';
+			}
 		};
 
 		return customIconEl;
