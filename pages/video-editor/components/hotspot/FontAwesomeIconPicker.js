@@ -8,7 +8,7 @@ import { library } from '@fortawesome/fontawesome-svg-core';
 /**
  * WordPress dependencies
  */
-import { Dropdown, TextControl, Button } from '@wordpress/components';
+import { Dropdown, TextControl, Button, Notice } from '@wordpress/components';
 import { trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
@@ -18,6 +18,21 @@ library.add( fas );
 const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, updateField } ) => {
 	const [ searchQuery, setSearchQuery ] = useState( '' );
 	const [ isOpen, setIsOpen ] = useState( false ); // eslint-disable-line no-unused-vars
+
+	/**
+	 * State to manage the notice message and visibility.
+	 */
+	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
+
+	/**
+	 * To show a notice message.
+	 *
+	 * @param {string} message Text to display in the notice.
+	 * @param {string} status  Status of the notice, can be 'success', 'error', etc.
+	 */
+	const showNotice = ( message, status = 'success' ) => {
+		setNotice( { message, status, isVisible: true } );
+	};
 
 	const iconList = Object.values( fas )
 		.map( ( icon ) => ( {
@@ -63,6 +78,7 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 
 			// Check if the selected file is an image
 			if ( attachment.type !== 'image' ) {
+				showNotice( __( 'Only Image file is allowed', 'godam' ), 'error' );
 				return;
 			}
 
@@ -234,6 +250,15 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 					</Button>
 				) }
 			</div>
+			{ notice.isVisible && (
+				<Notice
+					className="my-4"
+					status={ notice.status }
+					onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
+				>
+					{ notice.message }
+				</Notice>
+			) }
 		</div>
 	);
 };

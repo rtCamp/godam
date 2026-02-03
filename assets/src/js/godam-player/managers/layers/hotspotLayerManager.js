@@ -318,7 +318,7 @@ export default class HotspotLayerManager {
 	createCustomIcon( customIconUrl ) {
 		const customIconEl = document.createElement( 'img' );
 		customIconEl.src = customIconUrl;
-		customIconEl.alt = 'Custom Icon';
+		customIconEl.alt = __( 'Custom Icon', 'godam' );
 		customIconEl.style.width = '50%';
 		customIconEl.style.height = '50%';
 		customIconEl.style.maxWidth = '100%';
