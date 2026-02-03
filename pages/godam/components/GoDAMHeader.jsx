@@ -14,11 +14,21 @@ import { ChromeExtensionSvg } from '../assets/svgs';
 import godamLogo from '../../../assets/src/images/godam-logo.png';
 
 const GodamHeader = () => {
+	const isVideoEditorPage = window.location.href.includes( 'page=rtgodam_video_editor' );
+	const isAnalyticsPage = window.location.href.includes( 'page=rtgodam_analytics' );
 	const helpLink = window.godamRestRoute?.apiBase + '/helpdesk';
 	const upgradePlanLink = window.godamRestRoute?.apiBase + '/web/billing?tab=Plans';
 	const pricingLink = `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=header`;
 	const godamMediaLink = window.godamRestRoute?.apiBase + '/web/media-library';
 	const [ mediaLink, setMediaLink ] = useState( godamMediaLink );
+
+	let paddingClass = 'px-4';
+
+	if ( isAnalyticsPage ) {
+		paddingClass = 'px-10';
+	} else if ( isVideoEditorPage ) {
+		paddingClass = 'px-6';
+	}
 
 	useEffect( () => {
 		// Only fetch site data if there's a valid API key
@@ -51,7 +61,7 @@ const GodamHeader = () => {
 	return (
 		<header>
 			<div className="godam-settings-header border-b -ml-[32px] pl-[32px] bg-white">
-				<div className="godam-settings-header-content max-w-[1440px] mx-auto pl-4 pr-6 flex items-center justify-between">
+				<div className={ `godam-settings-header-content max-w-[1440px] mx-auto ${ paddingClass } flex items-center justify-between` }>
 					<div className="py-6 m-0 text-4xl leading-4 font-semibold text-slate-900 flex items-center max-[410px]:flex-col max-[410px]:items-start max-[410px]:gap-1 gap-2">
 						<div className="flex items-end gap-1">
 							<img className="h-8 sm:h-9 md:h-12" src={ godamLogo } alt={ __( 'GoDAM Logo', 'godam' ) } />
