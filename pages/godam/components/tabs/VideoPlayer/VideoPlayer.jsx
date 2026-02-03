@@ -248,16 +248,24 @@ const VideoPlayer = () => {
 		} );
 
 		player.ready( () => {
-			player.addRemoteTextTrack(
-				{
-					kind: 'subtitles',
-					label: 'Preview',
-					language: 'en',
-					src: '', // Empty src – it's just for UI purposes
-					default: false,
-				},
-				false,
+			// Only add preview track if no real tracks exist
+			const existingTracks = player.remoteTextTracks();
+			const hasRealTracks = existingTracks && Array.from( existingTracks ).some( ( track ) =>
+				track.src && track.src.trim() !== '',
 			);
+
+			if ( ! hasRealTracks ) {
+				player.addRemoteTextTrack(
+					{
+						kind: 'subtitles',
+						label: 'Preview',
+						language: 'en',
+						src: '',
+						default: false,
+					},
+					false,
+				);
+			}
 		} );
 
 		// Fallback handling

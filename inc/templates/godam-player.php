@@ -255,7 +255,7 @@ $godam_video_setup = array(
 			'forward'  => 10,
 			'backward' => 10,
 		),
-		'brandingIcon' => true, // provide default value for brand logo. 
+		'brandingIcon' => true, // provide default value for brand logo.
 	),
 );
 if ( ! empty( $godam_control_bar_settings ) ) {
@@ -367,37 +367,11 @@ if ( $godam_is_shortcode || $godam_is_elementor_widget ) {
 }
 
 /**
- * Fetch AI Generated video tracks from post meta
+ * Fetch AI Generated video tracks from stored transcript path
+ * Construct transcript path for backward compatibility if not already stored
  */
-$godam_transcript_path = '';
-
-// Determine which attachment ID to use for transcript check.
-// If attachment_id is a string, it's a job ID - resolve it to attachment ID.
-$godam_transcript_attachment_id = $godam_attachment_id;
-
-if ( ! empty( $godam_attachment_id ) && ! is_numeric( $godam_attachment_id ) ) {
-	// It's a job ID string, find the actual attachment ID.
-	if ( ! class_exists( 'RTGODAM_Transcoder_Handler' ) ) {
-		include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-handler.php';
-	}
-
-	$godam_transcoder_handler       = new RTGODAM_Transcoder_Handler();
-	$godam_transcript_attachment_id = $godam_transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $godam_attachment_id );
-}
-
-// Check for transcription if we have a valid numeric attachment ID.
-// The function will check post meta first before making API calls.
-if ( ! empty( $godam_transcript_attachment_id ) && is_numeric( $godam_transcript_attachment_id ) ) {
-	$godam_transcript_path = godam_get_transcript_path( $godam_transcript_attachment_id, $godam_job_id );
-}
-
-if ( ! empty( $godam_transcript_path ) ) {
-	$godam_tracks[] = array(
-		'src'     => esc_url( $godam_transcript_path ),
-		'kind'    => 'subtitles',
-		'label'   => 'English',
-		'srclang' => 'en',
-	);
+if ( ! empty( $godam_attachment_id ) ) {
+	$godam_tracks = rtgodam_get_video_transcript_tracks( $godam_attachment_id, $godam_tracks );
 }
 
 $godam_attachment_title = '';
