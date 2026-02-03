@@ -66,7 +66,6 @@ function autoloader( $file_resource = '' ) {
 			case 'fluentforms':
 			case 'shortcodes': // phpcs:ignore
 			case 'cron-jobs': // phpcs:ignore
-				// 'woocommerce' case removed - now loaded via integrations/woocommerce/bootstrap.php
 			case 'elementor-widgets': // phpcs:ignore
 			case 'elementor-controls': // phpcs:ignore
 			case 'wpforms': // phpcs:ignore

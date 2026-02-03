@@ -1,9 +1,6 @@
 <?php
 /**
- * WooCommerce Integration Bootstrap
- *
- * This file bootstraps the WooCommerce integration module.
- * Only loads if WooCommerce is active.
+ * WooCommerce Integration Bootstrap.
  *
  * @package GoDAM
  * @since 1.5.0
@@ -13,68 +10,27 @@ namespace RTGODAM\Integrations\WooCommerce;
 
 defined( 'ABSPATH' ) || exit;
 
-// Check if WooCommerce is active.
-if ( ! class_exists( 'WooCommerce' ) ) {
-	return;
-}
-
-// Define module constants.
-if ( ! defined( 'RTGODAM_WC_MODULE_PATH' ) ) {
-	define( 'RTGODAM_WC_MODULE_PATH', plugin_dir_path( __FILE__ ) );
-}
-
-if ( ! defined( 'RTGODAM_WC_MODULE_URL' ) ) {
-	define( 'RTGODAM_WC_MODULE_URL', plugin_dir_url( __FILE__ ) );
-}
-
-if ( ! defined( 'RTGODAM_WC_MODULE_ASSETS_BUILD_PATH' ) ) {
-	define( 'RTGODAM_WC_MODULE_ASSETS_BUILD_PATH', RTGODAM_PATH . 'assets/build/integrations/woocommerce/' );
-}
-
-// Load helper functions.
-require_once RTGODAM_WC_MODULE_PATH . 'helpers/functions.php';
-
 /**
- * Autoload WooCommerce integration classes.
+ * Bootstraps the WooCommerce integration.
  *
- * @param string $class_name The class name.
- */
-function autoload_woocommerce_classes( $class_name ) {
-	// Only autoload classes from the WooCommerce namespace.
-	if ( strpos( $class_name, 'RTGODAM\Inc\WooCommerce\\' ) !== 0 ) {
-		return;
-	}
-
-	// Convert class name to file name.
-	$class_name = str_replace( 'RTGODAM\Inc\WooCommerce\\', '', $class_name );
-	$class_name = str_replace( '_', '-', strtolower( $class_name ) );
-	$file_path  = RTGODAM_WC_MODULE_PATH . 'classes/class-' . $class_name . '.php';
-
-	if ( file_exists( $file_path ) ) {
-		require_once $file_path;
-	}
-}
-
-spl_autoload_register( __NAMESPACE__ . '\autoload_woocommerce_classes' );
-
-/**
- * Initialize WooCommerce Integration Module
+ * Kept as a single class file to satisfy PHPCS rules around class/file naming
+ * and to avoid mixing standalone function declarations with OO structures.
  *
  * @since 1.5.0
  */
-class Module {
+class Bootstrap {
 
 	/**
 	 * Instance of this class.
 	 *
-	 * @var Module
+	 * @var Bootstrap|null
 	 */
 	private static $instance = null;
 
 	/**
 	 * Get instance of this class.
 	 *
-	 * @return Module
+	 * @return Bootstrap
 	 */
 	public static function get_instance() {
 		if ( null === self::$instance ) {
@@ -87,8 +43,68 @@ class Module {
 	 * Constructor.
 	 */
 	private function __construct() {
+		// Only load if WooCommerce is active.
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			return;
+		}
+
+		$this->define_constants();
+		$this->load_helpers();
+		$this->register_autoloader();
 		$this->load_dependencies();
 		$this->init_hooks();
+	}
+
+	/**
+	 * Define module constants.
+	 */
+	private function define_constants() {
+		if ( ! defined( 'RTGODAM_WC_MODULE_PATH' ) ) {
+			define( 'RTGODAM_WC_MODULE_PATH', plugin_dir_path( __FILE__ ) );
+		}
+
+		if ( ! defined( 'RTGODAM_WC_MODULE_URL' ) ) {
+			define( 'RTGODAM_WC_MODULE_URL', plugin_dir_url( __FILE__ ) );
+		}
+
+		if ( ! defined( 'RTGODAM_WC_MODULE_ASSETS_BUILD_PATH' ) ) {
+			define( 'RTGODAM_WC_MODULE_ASSETS_BUILD_PATH', RTGODAM_PATH . 'assets/build/integrations/woocommerce/' );
+		}
+	}
+
+	/**
+	 * Load helper functions.
+	 */
+	private function load_helpers() {
+		require_once RTGODAM_WC_MODULE_PATH . 'helpers/functions.php';
+	}
+
+	/**
+	 * Register WooCommerce integration class autoloader.
+	 */
+	private function register_autoloader() {
+		spl_autoload_register( array( $this, 'autoload_woocommerce_classes' ) );
+	}
+
+	/**
+	 * Autoload WooCommerce integration classes.
+	 *
+	 * @param string $class_name The class name.
+	 */
+	private function autoload_woocommerce_classes( $class_name ) {
+		// Only autoload classes from the WooCommerce namespace.
+		if ( strpos( $class_name, 'RTGODAM\\Inc\\WooCommerce\\' ) !== 0 ) {
+			return;
+		}
+
+		// Convert class name to file name.
+		$class_name = str_replace( 'RTGODAM\\Inc\\WooCommerce\\', '', $class_name );
+		$class_name = str_replace( '_', '-', strtolower( $class_name ) );
+		$file_path  = RTGODAM_WC_MODULE_PATH . 'classes/class-' . $class_name . '.php';
+
+		if ( file_exists( $file_path ) ) {
+			require_once $file_path;
+		}
 	}
 
 	/**
@@ -96,12 +112,12 @@ class Module {
 	 */
 	private function load_dependencies() {
 		// Ensure REST API Base class is loaded (from main plugin).
-		if ( ! class_exists( 'RTGODAM\Inc\REST_API\Base' ) ) {
+		if ( ! class_exists( 'RTGODAM\\Inc\\REST_API\\Base' ) ) {
 			require_once RTGODAM_PATH . 'inc/classes/rest-api/class-base.php';
 		}
 
 		// Load GoDAM Product Gallery shortcode (WooCommerce-dependent).
-		if ( ! class_exists( 'RTGODAM\Inc\Shortcodes\GoDAM_Product_Gallery' ) ) {
+		if ( ! class_exists( 'RTGODAM\\Inc\\Shortcodes\\GoDAM_Product_Gallery' ) ) {
 			require_once RTGODAM_WC_MODULE_PATH . 'classes/shortcodes/class-godam-product-gallery.php';
 		}
 
@@ -122,7 +138,7 @@ class Module {
 	private function init_hooks() {
 		add_action( 'init', array( $this, 'init_woocommerce_integration' ), 20 );
 
-		// Register WooCommerce layer via PHP filters
+		// Register WooCommerce layer via PHP filters.
 		add_filter( 'godam_video_editor_layer_options', array( $this, 'register_woocommerce_layer_option' ), 10 );
 		add_filter( 'godam_video_editor_layer_components', array( $this, 'register_woocommerce_layer_component' ), 10 );
 	}
@@ -165,7 +181,7 @@ class Module {
 			'type'           => 'woo',
 			'requiresWoo'    => true,
 			'isRequired'     => true,
-			'isActive'       => is_plugin_active( 'woocommerce/woocommerce.php' ),
+			'isActive'       => $this->is_woocommerce_plugin_active(),
 			'requireMessage' => sprintf(
 				'<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/woocommerce/">%s</a> %s',
 				__( 'WooCommerce', 'godam' ),
@@ -185,7 +201,21 @@ class Module {
 		$components['woo'] = 'WoocommerceLayer';
 		return $components;
 	}
+
+	/**
+	 * Check whether the WooCommerce plugin is active.
+	 *
+	 * @return bool
+	 */
+	private function is_woocommerce_plugin_active() {
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
+		return function_exists( 'is_plugin_active' )
+			? is_plugin_active( 'woocommerce/woocommerce.php' )
+			: class_exists( 'WooCommerce' );
+	}
 }
 
-// Initialize the module.
-Module::get_instance();
+Bootstrap::get_instance();
