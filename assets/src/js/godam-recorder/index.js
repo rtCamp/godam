@@ -12,7 +12,7 @@ import GoldenRetriever from '@uppy/golden-retriever';
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Class to handle Uppy video uploads within Gravity Forms.
@@ -275,8 +275,11 @@ class UppyVideoUploader {
 
 				// If we could read duration and it exceeds limit -> reject
 				if ( duration > 0 && duration > this.maxDurationSeconds ) {
-					/* translators: %d: Maximum allowed duration in seconds */
-					const msg = __( 'Maximum allowed duration is %d seconds. Please upload or record a shorter file.', 'godam' ).replace( '%d', this.maxDurationSeconds );
+					const msg = sprintf(
+						/* translators: %d: Maximum allowed duration in seconds */
+						__( 'Maximum allowed duration is %d seconds. Please upload or record a shorter file.', 'godam' ),
+						this.maxDurationSeconds,
+					);
 					this.showGodamSnackbar( msg );
 
 					// Remove from uppy and clear UI
