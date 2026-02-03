@@ -187,7 +187,7 @@ if ( class_exists( 'GF_Field' ) ) {
 			// Build the uppy UI.
 			ob_start();
 
-			$file_selectors = ! empty( $this->godamVideoFileSelectors ) ? implode( ',', $this->godamVideoFileSelectors ) : 'webcam,screen_capture';
+			$file_selectors       = ! empty( $this->godamVideoFileSelectors ) ? implode( ',', $this->godamVideoFileSelectors ) : 'webcam,screen_capture';
 			$max_duration_seconds = ! empty( $this->godamMaxDuration ) ? absint( $this->godamMaxDuration ) : 0;
 			?>
 			<div class="ginput_container" data-allowed-extensions="<?php echo esc_attr( $allowed_extensions ); ?>" data-max-files="<?php echo esc_attr( $max_files ); ?>">
