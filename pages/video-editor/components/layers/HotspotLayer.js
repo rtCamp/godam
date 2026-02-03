@@ -207,21 +207,43 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
-	const isValidOrigin = ( url = '' ) =>
-		/^https?:\/\//i.test( url.trim() );
+	/**
+	 * Validates if the given string is a valid URL.
+	 *
+	 * @param {string} url The URL string to validate.
+	 * @return {boolean} True if valid, false otherwise.
+	 */
+	const isValidURL = ( url = '' ) => {
+		if ( ! url || url.trim() === '' ) {
+			return true; // Empty is valid (optional field)
+		}
+		try {
+			const parsedUrl = new URL( url );
+			return [ 'http:', 'https:' ].includes( parsedUrl.protocol );
+		} catch {
+			return false;
+		}
+	};
 
 	// Validate existing hotspot links on component load
 	useEffect( () => {
 		if ( hotspots.length > 0 ) {
 			const updatedHotspots = hotspots.map( ( hotspot ) => {
-				if ( hotspot.link && ! isValidOrigin( hotspot.link ) && ! hotspot.linkInvalid ) {
-					return { ...hotspot, linkInvalid: true };
+				if ( hotspot.link ) {
+					const isInvalid = ! isValidURL( hotspot.link );
+					if ( hotspot.linkInvalid !== isInvalid ) {
+						return { ...hotspot, linkInvalid: isInvalid };
+					}
+				} else if ( hotspot.linkInvalid ) {
+					// No link present; ensure linkInvalid is reset
+					return { ...hotspot, linkInvalid: false };
 				}
 				return hotspot;
 			} );
-
 			// Only update if there are changes
-			const hasChanges = updatedHotspots.some( ( h, i ) => h.linkInvalid !== hotspots[ i ].linkInvalid );
+			const hasChanges = updatedHotspots.some(
+				( h, i ) => h.linkInvalid !== hotspots[ i ].linkInvalid,
+			);
 			if ( hasChanges ) {
 				updateField( 'hotspots', updatedHotspots );
 			}
@@ -376,7 +398,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 									onChange={ ( val ) => {
 										const updated = hotspots.map( ( h2, j ) =>
 											j === index
-												? { ...h2, link: val, linkInvalid: val && ! isValidOrigin( val ) }
+												? { ...h2, link: val, linkInvalid: val && ! isValidURL( val ) }
 												: h2,
 										);
 										updateField( 'hotspots', updated );
