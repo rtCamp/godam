@@ -124,26 +124,14 @@ class UppyVideoUploader {
 	 * @param {Function | boolean} [callback=false] - A callback function to be called when the snackbar is removed, or false to disable the callback.
 	 */
 	showGodamSnackbar( message, callback = false ) {
-		let snackbar = document.getElementById( 'godam-snackbar' );
+		let snackbar = document.getElementById( 'godam-snackbar-error' );
 		if ( ! snackbar ) {
 			snackbar = document.createElement( 'div' );
-			snackbar.id = 'godam-snackbar';
-			snackbar.style.cssText = `
-                min-width: 250px;
-                background: #cc1818;
-                color: #fff;
-                text-align: center;
-                border-radius: 4px;
-                padding: 16px;
-                position: fixed;
-                right: 40px;
-                bottom: 35px;
-                z-index: 999999;
-                font-size: 14px;`;
+			snackbar.id = 'godam-snackbar-error';
 			document.body.appendChild( snackbar );
 		}
 		snackbar.textContent = message;
-		snackbar.className = 'show';
+		snackbar.className = 'godam-snackbar godam-snackbar-error';
 		setTimeout( () => {
 			snackbar.remove();
 			if ( callback && typeof callback === 'function' ) {
