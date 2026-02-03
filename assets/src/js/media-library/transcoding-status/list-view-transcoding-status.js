@@ -97,7 +97,7 @@ class ListViewTranscodingStatus {
 		const loader = element.querySelector( '.transcoding-status__loader' );
 
 		// Skip virtual media - they have GoDAM logo and should always show as completed
-		const isVirtual = loader.querySelector( 'img[alt*="GoDAM Logo"]' );
+		const isVirtual = !! loader.querySelector( 'img[alt*="GoDAM Logo"]' );
 		if ( isVirtual ) {
 			return;
 		}

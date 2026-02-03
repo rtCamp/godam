@@ -304,8 +304,8 @@
 		&.free-user {
 
 			.api-key-overlay {
-				background-size: 100% calc(100% - 32px) !important;
-				background-position: center 32px !important;
+				background-size: 100% calc(100% - 32px);
+				background-position: center 32px;
 			}
 		}
 	}
