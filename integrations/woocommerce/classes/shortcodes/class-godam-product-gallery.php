@@ -94,10 +94,25 @@ class GoDAM_Product_Gallery {
 				'version'      => RTGODAM_VERSION,
 			);
 
+		$gallery_deps = isset( $godam_product_gallery_script_assets['dependencies'] )
+			? (array) $godam_product_gallery_script_assets['dependencies']
+			: array();
+
+		// The add-to-cart UX in the gallery relies on the WooCommerce Blocks cart store
+		// (`wp.data.dispatch( 'wc/store/cart' )`). Ensure the store scripts are available.
+		$gallery_deps = array_values(
+			array_unique(
+				array_merge(
+					$gallery_deps,
+					array( 'wp-data', 'wc-settings', 'wc-blocks-data-store' )
+				)
+			)
+		);
+
 		wp_register_script(
 			'godam-product-gallery-script',
 			RTGODAM_URL . 'assets/build/js/godam-product-gallery.min.js',
-			$godam_product_gallery_script_assets['dependencies'],
+			$gallery_deps,
 			$godam_product_gallery_script_assets['version'],
 			true
 		);

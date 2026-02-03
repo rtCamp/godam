@@ -38,7 +38,9 @@ class WC_Product_Video_Gallery {
 		add_action( 'add_meta_boxes', array( $this, 'add_video_gallery_metabox' ) );
 		add_action( 'save_post_product', array( $this, 'save_video_gallery' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
+		// Enqueue early so WooCommerce can localize its scripts (wc-settings / Blocks data stores)
+		// before scripts are printed.
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ), 5 );
 		add_action( 'woocommerce_single_product_summary', array( $this, 'add_video_slider_to_single_product' ), 70 );
 		add_action( 'delete_attachment', array( $this, 'on_attachment_deleted' ) );
 		add_action( 'before_delete_post', array( $this, 'on_product_deleted' ) );
@@ -126,7 +128,7 @@ class WC_Product_Video_Gallery {
 		wp_register_script(
 			'rtgodam-wc-video-carousel',
 			RTGODAM_URL . 'assets/build/integrations/woocommerce/js/wc-video-carousel.min.js',
-			array( 'jquery', 'rtgodam-script', 'rtgodam-swiper-script', 'wp-data', 'wc-blocks-data-store' ),
+			array( 'jquery', 'rtgodam-script', 'rtgodam-swiper-script', 'wp-data', 'wc-settings', 'wc-blocks-data-store' ),
 			filemtime( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'js/wc-video-carousel.min.js' ),
 			true
 		);
