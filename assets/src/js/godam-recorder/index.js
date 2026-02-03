@@ -59,6 +59,11 @@ class UppyVideoUploader {
 		this.setupGravityFormsAjaxHandler();
 	}
 
+	/**
+	 * Gets the duration of a media file in seconds.
+	 * @param {File} file - The media file.
+	 * @return {Promise<number>} A promise that resolves with the duration in seconds.
+	 */
 	async getMediaDurationSeconds( file ) {
 		// Only for audio/video
 		const isAudio = file?.type?.startsWith( 'audio/' );
@@ -113,38 +118,38 @@ class UppyVideoUploader {
 		} );
 	}
 
-	// Show warning message near field
-	showDurationError( maxSeconds ) {
-		/* translators: %d: Maximum allowed duration in seconds */
-		const msg = __( 'Maximum allowed duration is %d seconds. Please upload or record a shorter file.', 'godam' ).replace( '%d', maxSeconds );
-
-		let errorEl = this.container.querySelector( '.godam-recorder-duration-error' );
-		if ( ! errorEl ) {
-			errorEl = document.createElement( 'div' );
-			errorEl.className = 'godam-recorder-duration-error';
-			errorEl.style =
-				`font-size: 13px;
-				 color: #b32d2e;
-				 margin-top: 8px;
-				 position: fixed;
-				 z-index: 1000;
-				 bottom: 0;
-				 right: 0;
-				 background: #fff0f0;
-				 padding: 10px;
-				 border: 1px solid #b32d2e;
-				 border-radius: 4px;`;
-			this.container.appendChild( errorEl );
+	/**
+	 * Shows a snackbar with a message and optional callback when the snackbar is removed.
+	 * @param {string}             message          - The message to be displayed in the snackbar.
+	 * @param {Function | boolean} [callback=false] - A callback function to be called when the snackbar is removed, or false to disable the callback.
+	 */
+	showGodamSnackbar( message, callback = false ) {
+		let snackbar = document.getElementById( 'godam-snackbar' );
+		if ( ! snackbar ) {
+			snackbar = document.createElement( 'div' );
+			snackbar.id = 'godam-snackbar';
+			snackbar.style.cssText = `
+                min-width: 250px;
+                background: #cc1818;
+                color: #fff;
+                text-align: center;
+                border-radius: 4px;
+                padding: 16px;
+                position: fixed;
+                right: 40px;
+                bottom: 35px;
+                z-index: 999999;
+                font-size: 14px;`;
+			document.body.appendChild( snackbar );
 		}
-		errorEl.textContent = msg;
-	}
-
-	// Clear warning message
-	clearDurationError() {
-		const errorEl = this.container.querySelector( '.godam-recorder-duration-error' );
-		if ( errorEl ) {
-			errorEl.remove();
-		}
+		snackbar.textContent = message;
+		snackbar.className = 'show';
+		setTimeout( () => {
+			snackbar.remove();
+			if ( callback && typeof callback === 'function' ) {
+				callback();
+			}
+		}, 10000 );
 	}
 
 	/**
@@ -265,23 +270,19 @@ class UppyVideoUploader {
 
 		// Handle file addition: process video and close modal.
 		this.uppy.on( 'file-added', async ( file ) => {
-			this.clearDurationError();
-
 			if ( this.maxDurationSeconds > 0 ) {
 				const duration = await this.getMediaDurationSeconds( file );
 
 				// If we could read duration and it exceeds limit -> reject
 				if ( duration > 0 && duration > this.maxDurationSeconds ) {
-					this.showDurationError( this.maxDurationSeconds );
+					/* translators: %d: Maximum allowed duration in seconds */
+					const msg = __( 'Maximum allowed duration is %d seconds. Please upload or record a shorter file.', 'godam' ).replace( '%d', this.maxDurationSeconds );
+					this.showGodamSnackbar( msg );
 
 					// Remove from uppy and clear UI
 					this.uppy.removeFile( file.id );
 					this.clearVideoUploadUI();
 					jQuery( '.uppy-Dashboard-close' ).trigger( 'click' );
-
-					setTimeout( () => {
-						this.clearDurationError();
-					}, 5000 );
 
 					return;
 				}
