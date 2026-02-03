@@ -161,7 +161,7 @@ if ( class_exists( 'GF_Field' ) ) {
 			if ( $max_duration_seconds > 0 ) {
 				$upload_rules_messages[] = esc_attr(
 					sprintf(
-						// translators: %s is the allowed file types.
+						// translators: %s is the maximum duration.
 						__( 'Max. duration: %s', 'godam' ),
 						$this->format_seconds_hhmmss( $max_duration_seconds )
 					)
