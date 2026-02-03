@@ -78,9 +78,6 @@ class Blocks {
 			RTGODAM_PATH . '/assets/build/blocks/godam-gallery/'
 		);
 
-		// WooCommerce product gallery block is loaded from the WooCommerce module
-		// if WooCommerce is active. See: integrations/woocommerce/bootstrap.php
-
 		register_block_type(
 			RTGODAM_PATH . '/assets/build/blocks/godam-video-thumbnail/'
 		);

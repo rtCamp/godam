@@ -40,7 +40,6 @@ use RTGODAM\Inc\REST_API\Ads;
 use RTGODAM\Inc\REST_API\Transcoding;
 use RTGODAM\Inc\REST_API\Analytics;
 use RTGODAM\Inc\REST_API\Polls;
-// WC REST API is now loaded in integrations/woocommerce/bootstrap.php
 use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
 use RTGODAM\Inc\REST_API\Dynamic_Gallery;
 use RTGODAM\Inc\REST_API\Engagement;
@@ -53,7 +52,6 @@ use RTGODAM\Inc\REST_API\MetForm;
 
 use RTGODAM\Inc\Shortcodes\GoDAM_Player;
 use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
-// GoDAM_Product_Gallery is now loaded in integrations/woocommerce/bootstrap.php
 
 use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
 use RTGODAM\Inc\Everest_Forms\Everest_Forms_Integration;
@@ -97,7 +95,6 @@ class Plugin {
 		// Load shortcodes.
 		GoDAM_Player::get_instance();
 		GoDAM_Video_Gallery::get_instance();
-		// GoDAM_Product_Gallery is now loaded in integrations/woocommerce/bootstrap.php
 		Video_Engagement::get_instance();
 
 		Video_Editor_Form_Layer_Handler::get_instance()->init();
@@ -107,7 +104,6 @@ class Plugin {
 		$this->load_taxonomies();
 		$this->load_plugin_configs();
 
-		// Defer WooCommerce module load until all plugins are loaded so WooCommerce is available.
 		add_action( 'plugins_loaded', array( $this, 'load_woocommerce_configs' ), 20 );
 		$this->load_rest_api();
 		$this->init_gravity_forms();
@@ -189,7 +185,6 @@ class Plugin {
 		Analytics::get_instance();
 		Deactivation::get_instance();
 		Polls::get_instance();
-		// WC REST API is now loaded in integrations/woocommerce/bootstrap.php
 		Dynamic_Shortcode::get_instance();
 		Dynamic_Gallery::get_instance();
 		Engagement::get_instance();

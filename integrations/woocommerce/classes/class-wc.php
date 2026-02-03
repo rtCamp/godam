@@ -271,7 +271,7 @@ class WC extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function get_products( $request ) {
-		$search     = sanitize_text_field( $request->get_param( 'search' ) );
+		$search = sanitize_text_field( $request->get_param( 'search' ) );
 
 		// Try cache first (5-minute TTL for search results).
 		$cache_key = 'godam_wc_search_' . md5( $search );
@@ -974,8 +974,8 @@ class WC extends Base {
 				continue;
 			}
 
-			$type         = $product->get_type();
-			$name_display = $product->get_name();
+			$type          = $product->get_type();
+			$name_display  = $product->get_name();
 			$price_display = '';
 
 			$regular_price = $product->get_regular_price();

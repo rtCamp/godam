@@ -344,7 +344,7 @@ class GoDAM_Product_Gallery {
 						'post_status'    => 'publish',
 						'fields'         => 'ids',
 						'posts_per_page' => $random_limit,
-						'orderby'        => 'rand',
+						'orderby'        => 'rand', // phpcs:ignore WordPressVIPMinimum.Performance.OrderByRand.orderby_orderby
 						'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 							array(
 								'key'     => '_rtgodam_product_video_gallery_ids',
@@ -556,7 +556,7 @@ class GoDAM_Product_Gallery {
 			if ( ! empty( $video_attached_products ) ) {
 				$video_attached_products = array_filter(
 					$video_attached_products,
-					function( $product_id ) {
+					function ( $product_id ) {
 						return 'publish' === get_post_status( $product_id ) && 'product' === get_post_type( $product_id );
 					}
 				);

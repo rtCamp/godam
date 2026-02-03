@@ -574,7 +574,7 @@ class Pages {
 				)
 			);
 
-			// Localize video editor layer options and components via PHP filters
+			// Localize video editor layer options and components via PHP filters.
 			$layer_options    = apply_filters( 'godam_video_editor_layer_options', array() );
 			$layer_components = apply_filters( 'godam_video_editor_layer_components', array() );
 
