@@ -47,6 +47,13 @@ const CustomAdSettings = ( { layerID } ) => {
 					value: attachment.url,
 				} ),
 			);
+			dispatch(
+				updateLayerField( {
+					id: layerID,
+					field: 'attachment_id',
+					value: attachment.id,
+				} ),
+			);
 		} );
 
 		fileFrame.open();
