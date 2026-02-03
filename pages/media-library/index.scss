@@ -120,7 +120,7 @@ $godam-gradient: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
 	}
 
 	.new-folder-button {
-		background: $godam-gradient !important;
+		background: $godam-gradient;
 		border-radius: 0.25rem;
 		box-shadow: none;
 	}
@@ -283,7 +283,7 @@ $godam-gradient: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
 	}
 
 	.folder-context-menu__item {
-		justify-content: flex-start !important;
+		justify-content: flex-start;
 	}
 
 	.close-folder-menu-mobile {
@@ -312,11 +312,11 @@ $godam-gradient: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
 
 
 .components-button.has-icon.has-text {
-	justify-content: center !important;
+	justify-content: center;
 }
 
 .components-button.has-icon.has-text.text-flex-left {
-	justify-content: left !important;
+	justify-content: left;
 }
 
 .media-frame-menu:has( #rt-transcoder-media-library-root ) {
