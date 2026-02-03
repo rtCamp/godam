@@ -109,8 +109,8 @@ $cta-card-max-width-vertical: 400px !default;
 
     // Layout: Image Top, Text Bottom
     &.card-layout--image-top {
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: 1fr;
         max-width: $cta-card-max-width-vertical;
 
         .godam-cta-card-image {
@@ -120,8 +120,8 @@ $cta-card-max-width-vertical: 400px !default;
 
     // Layout: Text Top, Image Bottom
     &.card-layout--image-bottom {
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: 1fr;
         max-width: $cta-card-max-width-vertical;
     }
 
@@ -198,6 +198,8 @@ $cta-card-max-width-vertical: 400px !default;
         font-size: $cta-font-size-lg;
         font-weight: 600;
         line-height: 1.4;
+        overflow-wrap: break-word;
+        word-break: break-word;
     }
 
     .card-description {
@@ -206,6 +208,8 @@ $cta-card-max-width-vertical: 400px !default;
         font-size: 0.9375rem;
         color: $cta-color-gray;
         line-height: 1.5;
+        overflow-wrap: break-word;
+        word-break: break-word;
     }
 
     .btns {
