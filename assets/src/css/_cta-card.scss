@@ -109,8 +109,8 @@ $cta-card-max-width-vertical: 400px !default;
 
     // Layout: Image Top, Text Bottom
     &.card-layout--image-top {
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: 1fr;
         max-width: $cta-card-max-width-vertical;
 
         .godam-cta-card-image {
@@ -120,8 +120,8 @@ $cta-card-max-width-vertical: 400px !default;
 
     // Layout: Text Top, Image Bottom
     &.card-layout--image-bottom {
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: 1fr;
         max-width: $cta-card-max-width-vertical;
     }
 
