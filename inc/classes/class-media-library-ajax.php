@@ -94,6 +94,7 @@ class Media_Library_Ajax {
 		$result = array(
 			'id'                    => $item['name'],
 			'title'                 => $title,
+			'description'           => $item['description'] ?? '',
 			'filename'              => $item['orignal_file_name'] ?? $item['name'],
 			'url'                   => isset( $item['transcoded_mp4_url'] ) ? $item['transcoded_mp4_url'] : ( isset( $item['transcoded_file_path'] ) ? $item['transcoded_file_path'] : '' ),
 			'mime'                  => isset( $item['transcoded_mp4_url'] ) ? 'video/mp4' : $computed_mime,
