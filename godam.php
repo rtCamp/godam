@@ -114,6 +114,35 @@ function rtgodam_action_links( $links, $file ) {
 add_filter( 'plugin_action_links', 'rtgodam_action_links', 11, 2 );
 add_filter( 'network_admin_plugin_action_links', 'rtgodam_action_links', 11, 2 );
 
+// Enable custom menu order to make sure rtgodam appears right after upload.php.
+add_filter( 'custom_menu_order', '__return_true' );
+add_filter( 'menu_order', 'custom_menu_order', PHP_INT_MAX );
+
+/**
+ * Custom menu order function to position rtgodam right after upload.php.
+ *
+ * @param array $menu_order Array of menu order items.
+ * @return array Modified menu order array.
+ */
+function custom_menu_order( $menu_order ) {
+	// Find the position of upload.php & rtgodam.
+	$media_position = array_search( 'upload.php', $menu_order );
+
+	$rtgodam_position = array_search( 'rtgodam', $menu_order );
+
+	// If both upload.php and rtgodam are found in the menu order.
+	if ( false !== $media_position && false !== $rtgodam_position ) {
+		// Remove rtgodam from its current position.
+		unset( $menu_order[ $rtgodam_position ] );
+		// Reinsert rtgodam right after upload.php.
+		array_splice( $menu_order, $media_position + 1, 0, 'rtgodam' );
+		// Reindex the array to maintain proper order.
+		$menu_order = array_values( $menu_order );
+	}
+
+	return $menu_order;
+}
+
 /**
  * Runs when the plugin is activated.
  */
