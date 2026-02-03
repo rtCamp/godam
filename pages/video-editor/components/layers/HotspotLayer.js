@@ -31,6 +31,7 @@ import { useState, useRef, useEffect, useCallback } from '@wordpress/element';
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
+import { isValidURL } from '../../utils';
 import { v4 as uuidv4 } from 'uuid';
 import LayerControls from '../LayerControls';
 import FontAwesomeIconPicker from '../hotspot/FontAwesomeIconPicker';
@@ -206,24 +207,6 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
-
-	/**
-	 * Validates if the given string is a valid URL.
-	 *
-	 * @param {string} url The URL string to validate.
-	 * @return {boolean} True if valid, false otherwise.
-	 */
-	const isValidURL = ( url = '' ) => {
-		if ( ! url || url.trim() === '' ) {
-			return true; // Empty is valid (optional field)
-		}
-		try {
-			const parsedUrl = new URL( url );
-			return [ 'http:', 'https:' ].includes( parsedUrl.protocol );
-		} catch {
-			return false;
-		}
-	};
 
 	// Validate existing hotspot links on component load
 	useEffect( () => {

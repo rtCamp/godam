@@ -14,6 +14,7 @@ import React, { useState, useEffect } from 'react';
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
+import { isValidURL } from '../../utils';
 import { replace, trash } from '@wordpress/icons';
 
 const CustomAdSettings = ( { layerID } ) => {
@@ -49,19 +50,6 @@ const CustomAdSettings = ( { layerID } ) => {
 		} );
 
 		fileFrame.open();
-	};
-
-	// URL validation function
-	const isValidURL = ( url ) => {
-		if ( ! url || url.trim() === '' ) {
-			return true; // Empty is valid (optional field)
-		}
-		try {
-			const parsedUrl = new URL( url );
-			return [ 'http:', 'https:' ].includes( parsedUrl.protocol );
-		} catch {
-			return false;
-		}
 	};
 
 	// Validate URL on component load

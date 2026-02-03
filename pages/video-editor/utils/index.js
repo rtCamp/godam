@@ -5,6 +5,24 @@ import apiFetch from '@wordpress/api-fetch';
 
 const MEDIA_ENDPOINT = '/wp-json/wp/v2/media';
 
+/**
+ * Validates if the given string is a valid URL.
+ *
+ * @param {string} url The URL string to validate.
+ * @return {boolean} True if valid, false otherwise.
+ */
+export const isValidURL = ( url ) => {
+	if ( ! url || url.trim() === '' ) {
+		return true; // Empty is valid (optional field)
+	}
+	try {
+		const parsedUrl = new URL( url );
+		return [ 'http:', 'https:' ].includes( parsedUrl.protocol );
+	} catch {
+		return false;
+	}
+};
+
 function createBlockDelimiter( { blockName, attrs = {}, innerHTML = '' } ) {
 	const name = blockName.replace( /^core\//, '' );
 	const hasAttributes = Object.keys( attrs ).length > 0;
