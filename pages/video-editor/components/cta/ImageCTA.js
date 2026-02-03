@@ -27,6 +27,7 @@ import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
+import { isValidURL } from '../../utils';
 
 /**
  * Layout SVG Icon Components
@@ -231,7 +232,7 @@ const ImageCTA = ( { layerID } ) => {
 
 	// Validate URL on component load
 	useEffect( () => {
-		if ( layer?.imageLink && ! isValidUrl( layer.imageLink ) ) {
+		if ( layer?.imageLink && ! isValidURL( layer.imageLink ) ) {
 			setUrlError( __( 'Please enter a valid URL (e.g., https://example.com)', 'godam' ) );
 		}
 	}, [] );
@@ -243,31 +244,13 @@ const ImageCTA = ( { layerID } ) => {
 	};
 
 	/**
-	 * Validates if the given string is a valid URL.
-	 *
-	 * @param {string} url The URL string to validate.
-	 * @return {boolean} True if valid, false otherwise.
-	 */
-	const isValidUrl = ( url ) => {
-		if ( ! url || url.trim() === '' ) {
-			return true; // Empty is valid (optional field)
-		}
-		try {
-			const parsedUrl = new URL( url );
-			return [ 'http:', 'https:' ].includes( parsedUrl.protocol );
-		} catch ( e ) {
-			return false;
-		}
-	};
-
-	/**
 	 * Handles URL field change with validation.
 	 *
 	 * @param {string} value The new URL value.
 	 */
 	const handleUrlChange = ( value ) => {
 		updateField( 'imageLink', value );
-		if ( value && ! isValidUrl( value ) ) {
+		if ( value && ! isValidURL( value ) ) {
 			setUrlError( __( 'Please enter a valid URL (e.g., https://example.com)', 'godam' ) );
 		} else {
 			setUrlError( '' );

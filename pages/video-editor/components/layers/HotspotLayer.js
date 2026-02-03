@@ -31,6 +31,7 @@ import { useState, useRef, useEffect, useCallback } from '@wordpress/element';
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
+import { isValidURL } from '../../utils';
 import { v4 as uuidv4 } from 'uuid';
 import LayerControls from '../LayerControls';
 import FontAwesomeIconPicker from '../hotspot/FontAwesomeIconPicker';
@@ -207,8 +208,30 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
-	const isValidOrigin = ( url = '' ) =>
-		/^https?:\/\//i.test( url.trim() );
+	// Validate existing hotspot links on component load
+	useEffect( () => {
+		if ( hotspots.length > 0 ) {
+			const updatedHotspots = hotspots.map( ( hotspot ) => {
+				if ( hotspot.link ) {
+					const isInvalid = ! isValidURL( hotspot.link );
+					if ( hotspot.linkInvalid !== isInvalid ) {
+						return { ...hotspot, linkInvalid: isInvalid };
+					}
+				} else if ( hotspot.linkInvalid ) {
+					// No link present; ensure linkInvalid is reset
+					return { ...hotspot, linkInvalid: false };
+				}
+				return hotspot;
+			} );
+			// Only update if there are changes
+			const hasChanges = updatedHotspots.some(
+				( h, i ) => h.linkInvalid !== hotspots[ i ].linkInvalid,
+			);
+			if ( hasChanges ) {
+				updateField( 'hotspots', updatedHotspots );
+			}
+		}
+	}, [] );
 
 	return (
 		<>
@@ -358,16 +381,18 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 									onChange={ ( val ) => {
 										const updated = hotspots.map( ( h2, j ) =>
 											j === index
-												? { ...h2, link: val, linkInvalid: val && ! isValidOrigin( val ) }
+												? { ...h2, link: val, linkInvalid: val && ! isValidURL( val ) }
 												: h2,
 										);
 										updateField( 'hotspots', updated );
 									} }
-									className={ `${ hotspot.linkInvalid ? 'hotspot-link-error' : undefined } godam-input` }
+									className="godam-input"
 									disabled={ ! isValidAPIKey }
 								/>
 								{ hotspot.linkInvalid && (
-									<p className="text-red-600 text-xs mt-1">{ __( 'Invalid origin: must use either http or https as the scheme.', 'godam' ) }</p>
+									<div className="text-yellow-600 text-sm mt-1 flex items-center gap-1">
+										{ __( 'Please enter a valid URL (e.g., https://example.com)', 'godam' ) }
+									</div>
 								) }
 								{ hotspot.showIcon && (
 									<div className="flex flex-col gap-2 mt-2">
