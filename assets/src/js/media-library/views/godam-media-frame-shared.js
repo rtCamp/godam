@@ -161,6 +161,7 @@ const GoDAMMediaFrameShared = {
 				thumbnail_url: data.thumbnail_url,
 				caption: data.caption,
 				description: data.description,
+				video_duration: data.video_duration || 0,
 			} ),
 		} )
 			.then( ( res ) => res.json() )
