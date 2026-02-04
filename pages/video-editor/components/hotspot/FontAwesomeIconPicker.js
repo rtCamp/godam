@@ -82,6 +82,9 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 				return;
 			}
 
+			// Clear any existing notice on successful upload
+			setNotice( { message: '', status: 'success', isVisible: false } );
+
 			// Update hotspot with custom icon and clear FontAwesome icon
 			updateField(
 				'hotspots',

@@ -598,7 +598,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 								} }
 							>
 								<div className={ `hotspot-content flex items-center justify-center ${ ! ( hotspot.icon || hotspot.customIconUrl ) ? 'no-icon' : '' }` }>
-									{ /* eslint-disable-next-line no-nested-ternary -- as we are using ternary operator */ }
+									{ /* eslint-disable-next-line no-nested-ternary */ }
 									{ hotspot.icon ? (
 										<FontAwesomeIcon
 											icon={ [ 'fas', hotspot.icon ] }
