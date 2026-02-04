@@ -711,6 +711,10 @@ input, textarea, select {
 	overflow: auto;
 }
 
+.godam-admin-root.not-safari.godam-video-editor-page {
+	background-color: #fff;
+}
+
 .folded .godam-admin-root.not-safari {
 	margin-left: 36px;
 }

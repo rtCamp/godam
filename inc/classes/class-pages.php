@@ -376,7 +376,7 @@ class Pages {
 		}
 
 		?>
-		<div class="godam-admin-root">
+		<div class="godam-admin-root godam-video-editor-page">
 			<div id="root-video-editor">
 				<div class="progress-bar-wrapper">
 					<div class="progress-bar-container">
