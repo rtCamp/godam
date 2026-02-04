@@ -65,7 +65,7 @@ class WPB_GoDAM_Video {
 				'base'        => 'godam_video',
 				'category'    => esc_html__( 'GoDAM', 'godam' ),
 				'description' => esc_html__( 'Embed video from GoDAM Media Library', 'godam' ),
-				'icon'        => RTGODAM_URL . 'assets/src/images/godam-video-filled.svg',
+				'icon'        => RTGODAM_URL . 'assets/images/godam-video-filled.svg',
 				'params'      => array(
 					// Video Selection.
 					array(
