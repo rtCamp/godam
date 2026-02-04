@@ -13,11 +13,33 @@ const MEDIA_ENDPOINT = '/wp-json/wp/v2/media';
  */
 export const isValidURL = ( url ) => {
 	if ( ! url || url.trim() === '' ) {
-		return true; // Empty is valid (optional field)
+		return true; // optional field
 	}
+
+	const value = url.trim();
+
 	try {
-		const parsedUrl = new URL( url );
-		return [ 'http:', 'https:' ].includes( parsedUrl.protocol );
+		const parsed = new URL( value );
+
+		// Must be proper http/https
+		if ( ! [ 'http:', 'https:' ].includes( parsed.protocol ) ) {
+			return false;
+		}
+
+		// Must include a hostname
+		if ( ! parsed.hostname ) {
+			return false;
+		}
+
+		// Prevent cases like "https:google.com"
+		// These are parsed with empty hostname
+		// Use case-insensitive check to allow mixed-case protocols like HTTP:// or Https://
+		const lowerValue = value.toLowerCase();
+		if ( ! lowerValue.startsWith( 'http://' ) && ! lowerValue.startsWith( 'https://' ) ) {
+			return false;
+		}
+
+		return true;
 	} catch {
 		return false;
 	}
