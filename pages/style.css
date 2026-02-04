@@ -709,6 +709,7 @@ input, textarea, select {
 	right: 0;
 	margin-left: 160px;
 	overflow: auto;
+	background-color: #fff;
 }
 
 .folded .godam-admin-root.not-safari {

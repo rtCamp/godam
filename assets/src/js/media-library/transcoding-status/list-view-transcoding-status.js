@@ -226,7 +226,7 @@ class ListViewTranscodingStatus {
 		this._replaceIcon( loader, existingIcon, ICONS.check );
 
 		loader.style.removeProperty( '--status-text' );
-		statusText.textContent = __( 'Transcoding completed', 'godam' );
+		statusText.textContent = __( 'Media is transcoded', 'godam' );
 	}
 
 	/**
