@@ -353,7 +353,7 @@ async function loadNewVideo( newVideoId, modal ) {
 	}
 
 	try {
-		const data = await apiFetch( { path: `${ godamVars.namespaceRoot }${ godamVars.videoShortcodeEP }?id=${ newVideoId }` } );
+		const data = await apiFetch( { path: `${ godamVars.namespaceRoot }${ godamVars.videoShortcodeEP }?id=${ newVideoId }&godam_context=godam-product-gallery` } );
 
 		if ( data.status === 'success' && data.html ) {
 			let html = data.html;

@@ -1,0 +1,202 @@
+.godam-reels-skin {
+  container-type: inline-size;
+  container-name: godam-player-reels-skin;
+
+  .video-js {
+
+    /* BIG PLAY BUTTON */
+    .vjs-big-play-button {
+      height: 60px !important;
+      width: 60px !important;
+      border-radius: 50% !important;
+      background: rgba(0, 0, 0, 0.76) !important;
+      backdrop-filter: blur(10px);
+      border: 0.35px solid rgba(255, 255, 255, 0.2) !important;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+
+      span::before {
+        font-size: 30px !important;
+        color: #fff !important;
+      }
+    }
+
+    /* HIDDEN CONTROLS */
+    .vjs-picture-in-picture-control,
+    .vjs-remaining-time,
+    .vjs-current-time,
+    .vjs-time-divider,
+    .vjs-duration,
+    .vjs-fullscreen-control,
+    .vjs-volume-control,
+    .vjs-settings-button,
+    .vjs-custom-play-button {
+      display: none !important;
+    }
+
+    /* CENTER CONTROLS BAR */
+    .vjs-play-control,
+    .vjs-skip-backward-10,
+    .vjs-skip-forward-10 {
+      top: 50%;
+      z-index: 50;
+
+      background: rgba(0, 0, 0, 0.5) !important;
+      border-radius: 10.67px;
+      backdrop-filter: blur(8px);
+      height: 48px;
+      width: 48px;
+
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+
+      border: 0.35px solid rgba(255, 255, 255, 0.2);
+
+      span::before {
+        font-size: 20px !important;
+        color: #fff;
+      }
+    }
+
+    .vjs-icon-placeholder::before {
+      position: unset;
+    }
+
+    /* PROGRESS BAR */
+    .vjs-load-progress {
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    .vjs-play-progress::before {
+      display: none !important;
+    }
+
+    .vjs-progress-holder {
+      margin: 0 !important;
+    }
+
+    /* VOLUME PANEL BAR */
+    .vjs-volume-panel {
+      top: 13px;
+      left: 10px;
+      z-index: 30;
+
+      width: 48px !important;
+      height: 48px !important;
+      min-width: 48px !important;
+      min-height: 48px !important;
+
+      display: flex !important;
+      align-items: center;
+
+      background: rgba(0, 0, 0, 0.5) !important;
+      backdrop-filter: blur(8px);
+      border-radius: 10.67px;
+      padding: 0 2px;
+      border: 0.35px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* MOBILE */
+    @media (max-width: 1023px) {
+
+      .vjs-control-bar {
+        position: fixed !important;
+        background: transparent !important;
+        height: 6px !important;
+
+        .vjs-progress-control {
+          position: absolute;
+          inset: 0;
+          width: 100% !important;
+        }
+      }
+
+      .vjs-progress-holder {
+        height: 100% !important;
+      }
+
+      /* Overlay controls */
+      .vjs-play-control,
+      .vjs-skip-backward-10,
+      .vjs-skip-forward-10 {
+        position: fixed !important;
+        transform: translateY(-50%);
+      }
+
+      .vjs-play-control {
+        left: 49% !important;
+        transform: translate(-50%, -50%);
+      }
+
+      .vjs-skip-backward-10 {
+        left: calc(50% - 110px);
+      }
+
+      .vjs-skip-forward-10 {
+        left: calc(50% + 50px);
+      }
+
+      .vjs-volume-panel {
+        position: fixed !important;
+      }
+
+      &.vjs-fullscreen {
+        .vjs-control-bar {
+          height: 5em !important;
+        }
+      }
+    }
+
+    /* DESKTOP */
+    @media (min-width: 1024px) {
+
+      .vjs-control-bar {
+        position: unset !important;
+        background: transparent !important;
+        height: 6px !important;
+      }
+
+      .vjs-progress-control {
+        position: absolute;
+        height: 0;
+        bottom: 0;
+        width: 100% !important;
+      }
+
+      .vjs-progress-holder {
+        height: 10px !important;
+      }
+
+      /* Overlay controls */
+      .vjs-play-control,
+      .vjs-skip-backward-10,
+      .vjs-skip-forward-10 {
+        position: absolute !important;
+        transform: translateY(-50%);
+      }
+
+      .vjs-play-control {
+        left: 49% !important;
+        transform: translate(-50%, -50%);
+      }
+
+      .vjs-skip-backward-10 {
+        left: calc(50% - 100px);
+      }
+
+      .vjs-skip-forward-10 {
+        left: calc(50% + 40px);
+      }
+
+      .vjs-volume-panel {
+        position: absolute;
+      }
+    }
+  }
+}
+
+@media (max-width: 1023px) {
+    .is-landscape .godam-reels-skin .vjs-control-bar .vjs-volume-panel {
+        background: rgba(255, 255, 255, 0.1) !important;
+    }
+}

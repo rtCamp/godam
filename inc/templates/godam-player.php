@@ -222,10 +222,18 @@ $godam_brand_color            = isset( $godam_settings['video_player']['brand_co
 $godam_appearance_color       = isset( $godam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $godam_meta_data['videoConfig']['controlBar']['appearanceColor'] : null;
 $godam_brand_image            = isset( $godam_settings['video_player']['brand_image'] ) ? $godam_settings['video_player']['brand_image'] : null;
 $godam_individual_brand_image = isset( $godam_meta_data['videoConfig']['controlBar']['brand_image'] ) ? $godam_meta_data['videoConfig']['controlBar']['brand_image'] : null;
-$godam_player_skin            = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : 'Default';
-$godam_ads_settings           = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : array();
-$godam_ads_settings           = wp_json_encode( $godam_ads_settings );
-$godam_global_video_share     = isset( $godam_settings['video']['enable_global_video_share'] ) ? $godam_settings['video']['enable_global_video_share'] : true;
+
+if ( isset( $attributes['godam_context'] ) && 'godam-product-gallery' === $attributes['godam_context'] ) {
+	$godam_player_skin = 'reels';
+} else {
+	$godam_player_skin = isset( $godam_settings['video_player']['player_skin'] )
+		? $godam_settings['video_player']['player_skin']
+		: 'Default';
+}
+
+$godam_ads_settings       = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : array();
+$godam_ads_settings       = wp_json_encode( $godam_ads_settings );
+$godam_global_video_share = isset( $godam_settings['video']['enable_global_video_share'] ) ? $godam_settings['video']['enable_global_video_share'] : true;
 
 $godam_video_poster = empty( $godam_poster ) ? $godam_poster_image : $godam_poster;
 
