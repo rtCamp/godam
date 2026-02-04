@@ -33,7 +33,9 @@ export const isValidURL = ( url ) => {
 
 		// Prevent cases like "https:google.com"
 		// These are parsed with empty hostname
-		if ( ! value.startsWith( 'http://' ) && ! value.startsWith( 'https://' ) ) {
+		// Use case-insensitive check to allow mixed-case protocols like HTTP:// or Https://
+		const lowerValue = value.toLowerCase();
+		if ( ! lowerValue.startsWith( 'http://' ) && ! lowerValue.startsWith( 'https://' ) ) {
 			return false;
 		}
 
