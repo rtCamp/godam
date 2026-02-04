@@ -63,6 +63,7 @@
 	"devDependencies": {
 		"@babel/core": "7.28.0",
 		"@tailwindcss/typography": "^0.5.16",
+		"@wordpress/api-fetch": "7.39.0",
 		"@wordpress/babel-preset-default": "8.34.0",
 		"@wordpress/block-editor": "15.7.0",
 		"@wordpress/blocks": "15.7.0",
