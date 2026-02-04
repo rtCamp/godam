@@ -709,6 +709,9 @@ input, textarea, select {
 	right: 0;
 	margin-left: 160px;
 	overflow: auto;
+}
+
+.godam-admin-root.not-safari.godam-video-editor-page {
 	background-color: #fff;
 }
 
