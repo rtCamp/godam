@@ -59,6 +59,45 @@ class UppyVideoUploader {
 		this.setupGravityFormsAjaxHandler();
 	}
 
+	getPreferredVideoConstraints() {
+		const landscape =
+			( window.matchMedia && window.matchMedia( '(orientation: landscape)' ).matches ) ||
+			( window.innerWidth > window.innerHeight );
+
+		// Prefer 1920x1080, swap in portrait so we request correct geometry.
+		const idealWidth = landscape ? 1920 : 1080;
+		const idealHeight = landscape ? 1080 : 1920;
+
+		return {
+			width: { ideal: idealWidth },
+			height: { ideal: idealHeight },
+			frameRate: { ideal: 30, max: 60 },
+			facingMode: { ideal: 'user' }, // or 'environment' depending on your default
+		};
+	}
+
+	restartWebcamStream() {
+		const webcam = this.uppy.getPlugin( 'Webcam' );
+		if ( ! webcam ) {
+			return;
+		}
+
+		try {
+			// Update constraints for the next (re)start.
+			if ( webcam.opts ) {
+				webcam.opts.videoConstraints = this.getPreferredVideoConstraints();
+			}
+
+			// Some versions expose start/stop.
+			if ( typeof webcam.stop === 'function' && typeof webcam.start === 'function' ) {
+				webcam.stop();
+				webcam.start();
+			}
+		} catch ( e ) {
+			// Don't break recorder flow if restart fails.
+		}
+	}
+
 	/**
 	 * Gets the duration of a media file in seconds.
 	 * @param {File} file - The media file.
@@ -231,6 +270,7 @@ class UppyVideoUploader {
 				mirror: false,
 				showRecordingLength: true,
 				showVideoSourceDropdown: true,
+				videoConstraints: this.getPreferredVideoConstraints(),
 			} );
 		}
 
@@ -290,6 +330,10 @@ class UppyVideoUploader {
 				this.clearVideoUploadUI();
 			}
 		} );
+
+		const onRotate = () => this.restartWebcamStream();
+		window.addEventListener( 'orientationchange', onRotate, { passive: true } );
+		window.addEventListener( 'resize', onRotate, { passive: true } );
 	}
 
 	/**
