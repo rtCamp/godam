@@ -1,4 +1,4 @@
-.godam-reels-skin {
+.easydam-video-container.godam-reels-skin {
   container-type: inline-size;
   container-name: godam-player-reels-skin;
 
@@ -6,17 +6,17 @@
 
     /* BIG PLAY BUTTON */
     .vjs-big-play-button {
-      height: 60px !important;
-      width: 60px !important;
-      border-radius: 50% !important;
+      height: 60px;
+      width: 60px;
+      border-radius: 50%;
       background: rgba(0, 0, 0, 0.76) !important;
       backdrop-filter: blur(10px);
-      border: 0.35px solid rgba(255, 255, 255, 0.2) !important;
+      border: 0.35px solid rgba(255, 255, 255, 0.2);
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
 
       span::before {
-        font-size: 30px !important;
-        color: #fff !important;
+        font-size: 30px;
+        color: #ffffff;
       }
     }
 
@@ -30,7 +30,7 @@
     .vjs-volume-control,
     .vjs-settings-button,
     .vjs-custom-play-button {
-      display: none !important;
+      display: none;
     }
 
     /* CENTER CONTROLS BAR */
@@ -46,14 +46,14 @@
       height: 48px;
       width: 48px;
 
-      display: flex !important;
+      display: flex;
       align-items: center;
       justify-content: center;
 
       border: 0.35px solid rgba(255, 255, 255, 0.2);
 
       span::before {
-        font-size: 20px !important;
+        font-size: 20px;
         color: #fff;
       }
     }
@@ -68,11 +68,11 @@
     }
 
     .vjs-play-progress::before {
-      display: none !important;
+      display: none;
     }
 
     .vjs-progress-holder {
-      margin: 0 !important;
+      margin: 0;
     }
 
     /* VOLUME PANEL BAR */
@@ -81,18 +81,18 @@
       left: 10px;
       z-index: 30;
 
-      width: 48px !important;
-      height: 48px !important;
-      min-width: 48px !important;
-      min-height: 48px !important;
+      width: 48px;
+      height: 48px;
+      min-width: 48px;
+      min-height: 48px;
 
-      display: flex !important;
+      display: flex;
       align-items: center;
 
       background: rgba(0, 0, 0, 0.5) !important;
       backdrop-filter: blur(8px);
       border-radius: 10.67px;
-      padding: 0 2px;
+      padding: 0 4px;
       border: 0.35px solid rgba(255, 255, 255, 0.2);
     }
 
@@ -100,26 +100,26 @@
     @media (max-width: 1023px) {
 
       .vjs-control-bar {
-        position: fixed !important;
-        background: transparent !important;
-        height: 6px !important;
+        position: fixed;
+        background: transparent;
+        height: 6px;
 
         .vjs-progress-control {
           position: absolute;
           inset: 0;
-          width: 100% !important;
-        }
-      }
+          width: 100%;
 
-      .vjs-progress-holder {
-        height: 100% !important;
+          .vjs-progress-holder {
+            height: 100%;
+          }
+        }
       }
 
       /* Overlay controls */
       .vjs-play-control,
       .vjs-skip-backward-10,
       .vjs-skip-forward-10 {
-        position: fixed !important;
+        position: fixed;
         transform: translateY(-50%);
       }
 
@@ -137,13 +137,7 @@
       }
 
       .vjs-volume-panel {
-        position: fixed !important;
-      }
-
-      &.vjs-fullscreen {
-        .vjs-control-bar {
-          height: 5em !important;
-        }
+        position: fixed;
       }
     }
 
@@ -151,27 +145,26 @@
     @media (min-width: 1024px) {
 
       .vjs-control-bar {
-        position: unset !important;
-        background: transparent !important;
-        height: 6px !important;
+        position: unset;
+        background: transparent;
       }
 
       .vjs-progress-control {
         position: absolute;
         height: 0;
         bottom: 0;
-        width: 100% !important;
+        width: 100%;
       }
 
       .vjs-progress-holder {
-        height: 10px !important;
+        height: 10px;
       }
 
       /* Overlay controls */
       .vjs-play-control,
       .vjs-skip-backward-10,
       .vjs-skip-forward-10 {
-        position: absolute !important;
+        position: absolute;
         transform: translateY(-50%);
       }
 
