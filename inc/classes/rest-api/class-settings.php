@@ -166,8 +166,13 @@ class Settings extends Base {
 	 */
 	public function verify_api_key_permission( $request ) {
 		$authorization_header = $request->get_header( 'authorization' );
-		$provided_api_key     = trim( str_replace( 'Bearer ', '', $authorization_header ) );
-		$stored_api_key       = get_option( 'rtgodam-api-key' );
+
+		if ( null === $authorization_header ) {
+			return new \WP_Error( 'api_key_required', __( 'GoDAM API key is required.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		$provided_api_key = trim( str_replace( 'Bearer ', '', $authorization_header ) );
+		$stored_api_key   = get_option( 'rtgodam-api-key' );
 
 		if ( empty( $provided_api_key ) ) {
 			return new \WP_Error( 'api_key_required', __( 'GoDAM API key is required.', 'godam' ), array( 'status' => 403 ) );
