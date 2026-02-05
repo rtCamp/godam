@@ -1166,18 +1166,35 @@ function CommentBox( props ) {
 
 	useEffect( () => {
 		const currentVideoParent = document.getElementById( videoFigureId );
+
+		if ( ! currentVideoParent ) {
+			return;
+		}
+
 		const currentVideo = currentVideoParent.querySelector( '.godam-video-wrapper' );
+
+		if ( ! currentVideo ) {
+			return;
+		}
+
+		const videoContainer = videoContainerRef.current;
+
+		if ( ! videoContainer ) {
+			return;
+		}
+
 		const currentVideoClass = currentVideoParent.className;
 		const currentVideoStyles = currentVideoParent.getAttribute( 'style' );
 
-		const videoContainer = videoContainerRef.current;
 		videoContainer.className = currentVideoClass;
 		videoContainer.style = currentVideoStyles;
 		videoContainer.appendChild( currentVideo );
 		document.body.classList.add( 'no-scroll' );
 
 		return () => {
-			currentVideoParent.insertBefore( currentVideo, currentVideoParent.firstChild );
+			if ( currentVideoParent && currentVideo ) {
+				currentVideoParent.insertBefore( currentVideo, currentVideoParent.firstChild );
+			}
 			document.body.classList.remove( 'no-scroll' );
 
 			// Godam gallery cleanup if needed

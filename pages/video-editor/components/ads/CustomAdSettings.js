@@ -8,12 +8,13 @@ import { useDispatch, useSelector } from 'react-redux';
  */
 import { Button, TextControl, ToggleControl, Notice, Tooltip } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 /**
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
+import { isValidURL } from '../../utils';
 import { replace, trash } from '@wordpress/icons';
 
 const CustomAdSettings = ( { layerID } ) => {
@@ -51,15 +52,12 @@ const CustomAdSettings = ( { layerID } ) => {
 		fileFrame.open();
 	};
 
-	// URL validation function
-	const isValidURL = ( url ) => {
-		try {
-			new URL( url );
-			return true;
-		} catch {
-			return false;
+	// Validate URL on component load
+	useEffect( () => {
+		if ( layer?.click_link && ! isValidURL( layer.click_link ) ) {
+			setIsValid( false );
 		}
-	};
+	}, [] );
 
 	const handleChange = ( value ) => {
 		dispatch(
@@ -160,21 +158,23 @@ const CustomAdSettings = ( { layerID } ) => {
 				/>
 			}
 
-			<TextControl
-				label={ __( 'Click link', 'godam' ) }
-				placeholder="https://example"
-				help={ __( 'Enter the URL to redirect when the ad is clicked', 'godam' ) }
-				value={ layer?.click_link }
-				className="mb-4 godam-input"
-				onChange={ handleChange }
-				disabled={ adServer === 'ad-server' || ! isValidAPIKey }
-				type="url"
-			/>
-			{ ! isValid && (
-				<p className="text-red-500 -mt-3 mx-0 mb-0">
-					{ __( 'Please enter a valid URL (https://…)', 'godam' ) }
-				</p>
-			) }
+			<div className="mb-4">
+				<TextControl
+					label={ __( 'Click link', 'godam' ) }
+					placeholder="https://example"
+					help={ __( 'Enter the URL to redirect when the ad is clicked', 'godam' ) }
+					value={ layer?.click_link }
+					className="godam-input"
+					onChange={ handleChange }
+					disabled={ adServer === 'ad-server' || ! isValidAPIKey }
+					type="url"
+				/>
+				{ ! isValid && (
+					<div className="text-yellow-600 text-sm -mt-2 flex items-center gap-1">
+						{ __( 'Please enter a valid URL (e.g., https://example.com)', 'godam' ) }
+					</div>
+				) }
+			</div>
 		</div>
 	);
 };

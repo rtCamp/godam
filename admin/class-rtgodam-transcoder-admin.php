@@ -42,6 +42,7 @@ class RTGODAM_Transcoder_Admin {
 			add_action( 'admin_notices', array( $this, 'usage_limit_notices' ) );
 			add_action( 'admin_notices', array( $this, 'posthog_tracking_notice' ) );
 			add_action( 'admin_init', array( $this, 'handle_posthog_tracking_action' ) );
+			add_action( 'admin_init', array( $this, 'handle_clear_godam_cache' ) );
 			add_action( 'wp_ajax_rtgodam_dismiss_free_plan_notice', array( $this, 'dismiss_free_plan_notice' ) );
 		}
 	}
@@ -391,6 +392,41 @@ class RTGODAM_Transcoder_Admin {
 	}
 
 	/**
+	 * Handle the cache clearing request for GoDAM usage data.
+	 * This runs on admin_init to ensure headers haven't been sent yet.
+	 *
+	 * @since 1.5.0
+	 */
+	public function handle_clear_godam_cache() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce is verified below.
+		if ( ! isset( $_GET['clear_godam_cache'] ) ) {
+			return;
+		}
+
+		// Verify user capabilities.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		// Verify nonce.
+		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'clear_godam_cache' ) ) {
+			return;
+		}
+
+		// Clear the cache.
+		delete_option( 'rtgodam_user_data' );
+
+		// Build redirect URL safely.
+		$current_url = remove_query_arg( array( 'clear_godam_cache', '_wpnonce' ) );
+
+		// Perform the redirect with error handling.
+		if ( ! headers_sent() ) {
+			wp_safe_redirect( $current_url );
+			exit;
+		}
+	}
+
+	/**
 	 * Display usage limit notices when bandwidth/storage usage is high.
 	 */
 	public function usage_limit_notices() {
@@ -408,15 +444,6 @@ class RTGODAM_Transcoder_Admin {
 		$api_key = get_option( 'rtgodam-api-key', '' );
 		if ( empty( $api_key ) ) {
 			return;
-		}
-
-		// Handle cache clearing request.
-		if ( isset( $_GET['clear_godam_cache'] ) && current_user_can( 'manage_options' ) && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'clear_godam_cache' ) ) {
-			delete_option( 'rtgodam_user_data' );
-			// Redirect back to the same page without the query parameter.
-			$current_url = remove_query_arg( array( 'clear_godam_cache', '_wpnonce' ) );
-			wp_safe_redirect( $current_url );
-			exit;
 		}
 
 		// Get user data with usage information.
@@ -629,7 +656,7 @@ class RTGODAM_Transcoder_Admin {
 	/**
 	 * Display PostHog tracking notice.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.5.0
 	 */
 	public function posthog_tracking_notice() {
 		if ( ! current_user_can( 'manage_options' ) ) {

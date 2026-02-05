@@ -166,6 +166,8 @@
 			gap: 8px;
 			padding: 4px 0 !important;
 			flex-direction: column;
+			max-height: 300px;
+			overflow: auto;
 			
 			li {
 				padding: 0;
@@ -269,12 +271,16 @@
 				height: 3em !important;
 			}
 
+			.vjs-custom-fullscreen-exit-control {
+				width: 3em !important;
+			}
+
 			.vjs-fullscreen-control {
-				right: 10px
+				right: 10px;
 			}
 
 			.vjs-volume-control {
-				display: none; //Fallback for old browser versions not supporting interaction media features
+				display: none !important; // Fallback for old browser versions not supporting interaction media features
 			}
 			
 			.vjs-settings-button{
@@ -351,6 +357,7 @@
 
 			&:has(.vjs-subs-caps-button.vjs-hidden) .vjs-volume-panel {
 				right: 108px;
+				width: 4em;
 			}
 
 			.vjs-time-control.vjs-current-time {
@@ -388,6 +395,9 @@
 			}
 		}
 
+		.vjs-menu-content {
+			max-height: 120px !important;
+		}
 
 		.vjs-button.godam-share-button {
 			bottom: 136px !important;
@@ -456,6 +466,54 @@
 				.godam-back-item-container::after {
 					top: 28.5px;
 				}
+			}
+		}
+	}
+
+	@container godam-player-bubble-skin (min-width: 768px) {
+
+		.video-js .vjs-control-bar {
+
+			justify-content: center;
+
+			.vjs-duration {
+				position: relative !important;
+				display: flex !important;
+				align-items: center;
+				order: 1 !important;
+				z-index: 19;
+				margin-left: -65px;
+				transform: translateY(-50%);
+
+				.vjs-duration-display {
+					position: static !important;
+					padding-left: 0;
+					right: unset !important;
+					bottom: unset !important;
+				}
+			}
+
+			.vjs-current-time {
+				position: relative !important;
+				display: flex !important;
+				align-items: center;
+				order: 3 !important;
+				z-index: 19;
+				margin-right: -65px;
+				transform: translateY(-50%);
+				left: unset !important;
+
+				.vjs-current-time-display {
+					position: static !important;
+					padding-right: 0;
+					left: unset !important;
+					bottom: unset !important;
+				}
+			}
+
+			.vjs-progress-control {
+				order: 2 !important;
+				margin: 0;
 			}
 		}
 	}

@@ -7,6 +7,10 @@
  * @since 1.3.0
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use RTGODAM\Inc\WPForms\WPForms_Integration_Helper;
 
 $godam_form_id  = absint( $form_data['id'] );
@@ -18,6 +22,12 @@ $godam_attachment_name    = basename( $value );
 $godam_transcoded_url     = WPForms_Integration_Helper::get_transcoded_url( $godam_form_id, $godam_entry_id, $godam_field_id );
 $godam_hls_transcoded_url = WPForms_Integration_Helper::get_hls_transcoded_url( $godam_form_id, $godam_entry_id, $godam_field_id );
 $godam_transcoded_status  = WPForms_Integration_Helper::get_transcoded_status( $godam_form_id, $godam_entry_id, $godam_field_id );
+
+// Detect if this is an audio file.
+$godam_is_audio = godam_is_audio_file( $godam_attachment_url );
+
+// Set content type for messages.
+$godam_content_type = $godam_is_audio ? __( 'Audio', 'godam' ) : __( 'Video', 'godam' );
 ?>
 
 <div class="godam-video-preview">
@@ -33,20 +43,48 @@ $godam_transcoded_status  = WPForms_Integration_Helper::get_transcoded_status( $
 	</div>
 
 	<div class="godam-transcoded-url-info">
-		<?php if ( 'not_started' === $godam_transcoded_status ) : ?>
-			<span class='dashicons dashicons-controls-play'></span><strong><?php esc_html_e( 'Video transcoding process has not started.', 'godam' ); ?></strong>
+		<?php if ( 'not_started' === strtolower( $godam_transcoded_status ) ) : ?>
+			<span class='dashicons dashicons-controls-play'></span><strong>
+				<?php
+				/* translators: %s: Content type (Audio or Video) */
+				echo esc_html( sprintf( __( '%s transcoding process has not started.', 'godam' ), $godam_content_type ) );
+				?>
+			</strong>
 		<?php elseif ( 'transcoded' === strtolower( $godam_transcoded_status ) ) : ?>
-			<span class='dashicons dashicons-yes-alt'></span><strong><?php esc_html_e( 'Video saved and transcoded successfully on GoDAM', 'godam' ); ?></strong>
+			<span class='dashicons dashicons-yes-alt'></span><strong>
+				<?php
+				/* translators: %s: Content type (Audio or Video) */
+				echo esc_html( sprintf( __( '%s saved and transcoded successfully on GoDAM', 'godam' ), $godam_content_type ) );
+				?>
+			</strong>
 		<?php else : ?>
-			<span class='dashicons dashicons-hourglass'></span><strong><?php esc_html_e( 'Video transcoding process is in-progress.', 'godam' ); ?></strong>
+			<?php if ( $godam_is_audio ) : ?>
+				<span class='dashicons dashicons-yes-alt'></span><strong>
+					<?php echo esc_html__( 'Audio saved successfully on GoDAM', 'godam' ); ?>
+				</strong>
+			<?php else : ?>
+				<span class='dashicons dashicons-hourglass'></span><strong>
+					<?php echo esc_html__( 'Video transcoding process is in-progress.', 'godam' ); ?>
+				</strong>
+			<?php endif; ?>
 		<?php endif; ?>
 	</div>
 
-	<?php
-		$godam_thumbnail_url = ''; // Default empty thumbnail.
-		// No need to escape here, the entire template will be returned as strings,
-		// which will be later on escaped using wp_kses_post() by WPForms before rendering the field.
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo force_balance_tags( do_shortcode( "[godam_video poster='{$godam_thumbnail_url}' src='{$godam_attachment_url}' transcoded_url='{$godam_transcoded_url}']" ) );
-	?>
+	<?php if ( $godam_is_audio ) : ?>
+		<audio controls>
+			<?php if ( $godam_transcoded_url ) : ?>
+				<source src="<?php echo esc_url( $godam_transcoded_url ); ?>" type="audio/mpeg">
+			<?php endif; ?>
+			<source src="<?php echo esc_url( $godam_attachment_url ); ?>" type="<?php echo esc_attr( $mime_type ); ?>">
+			<?php esc_html_e( 'Your browser does not support the audio element.', 'godam' ); ?>
+		</audio>
+	<?php else : ?>
+		<?php
+			$godam_thumbnail_url = ''; // Default empty thumbnail.
+			// No need to escape here, the entire template will be returned as strings,
+			// which will be later on escaped using wp_kses_post() by WPForms before rendering the field.
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo force_balance_tags( do_shortcode( "[godam_video poster='{$godam_thumbnail_url}' src='{$godam_attachment_url}' transcoded_url='{$godam_transcoded_url}']" ) );
+		?>
+	<?php endif; ?>
 </div>

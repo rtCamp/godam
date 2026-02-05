@@ -37,6 +37,8 @@
 		background-color: #fff !important;
 		color: #000;
 		border-radius: 4px;
+		max-height: 300px;
+		overflow: auto;
 		
 		li {
 			padding: 8px;
@@ -198,6 +200,8 @@
 			z-index: 19;
 
 			.vjs-menu-content {
+
+				max-height: 120px !important;
 
 				.godam-back-item-container::after {
 					top: 24.5px;

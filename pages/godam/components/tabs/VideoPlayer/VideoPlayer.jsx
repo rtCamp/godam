@@ -195,7 +195,7 @@ const VideoPlayer = () => {
 			const ButtonBase = videojs.getComponent( 'Button' );
 
 			const ShareButtonImg = () => {
-				switch ( mediaSettings?.video_player?.player_skin ) {
+				switch ( playerSkin ) {
 					case 'Minimal':
 						return ShareVariationOne;
 					case 'Pills':

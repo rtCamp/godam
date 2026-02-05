@@ -56,7 +56,7 @@ class Media_Library_Ajax {
 	 * Validate if a URL is valid.
 	 * Ref: https://cmljnelson.blog/2018/08/31/url-validation-in-wordpress
 	 *
-	 * @since n.e.x.t
+	 * @since 1.5.0
 	 *
 	 * @param string $url The URL to validate.
 	 * @return bool True if valid, false otherwise.
@@ -83,10 +83,18 @@ class Media_Library_Ajax {
 		$api_mime_type = $item['mime_type'] ?? '';
 		$computed_mime = $this->get_mime_type_for_job_type( $job_type, $api_mime_type );
 		$title         = isset( $item['title'] ) ? $item['title'] : ( isset( $item['orignal_file_name'] ) ? pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) : $item['name'] );
+		// trim the extension from title if present.
+		$title = preg_replace( '/\.[^.]+$/', '', $title );
+
+		// Get video duration in seconds.
+		$video_duration = isset( $item['playtime'] ) ? $item['playtime'] : 0;
+		// Round video duration to integer seconds.
+		$video_duration = is_numeric( $video_duration ) ? (int) round( $video_duration ) : 0;
 
 		$result = array(
 			'id'                    => $item['name'],
 			'title'                 => $title,
+			'description'           => $item['description'] ?? '',
 			'filename'              => $item['orignal_file_name'] ?? $item['name'],
 			'url'                   => isset( $item['transcoded_mp4_url'] ) ? $item['transcoded_mp4_url'] : ( isset( $item['transcoded_file_path'] ) ? $item['transcoded_file_path'] : '' ),
 			'mime'                  => isset( $item['transcoded_mp4_url'] ) ? 'video/mp4' : $computed_mime,
@@ -104,9 +112,20 @@ class Media_Library_Ajax {
 			'duration'              => $item['playtime'] ?? '',
 			'hls_url'               => $item['transcoded_hls_path'] ?? '',
 			'mpd_url'               => $item['transcoded_file_path'] ?? '',
+			'video_duration'        => $video_duration ?? 0,
 		);
 
+		// Set icon with fallback to default mime type icon for audio and PDF.
 		$result['icon'] = $item['thumbnail_url'] ?? '';
+
+		// If no thumbnail URL, use WordPress default icons for audio and PDF.
+		if ( empty( $result['icon'] ) ) {
+			if ( 'audio' === $item['job_type'] ) {
+				$result['icon'] = includes_url( 'images/media/audio.png' );
+			} elseif ( 'application/pdf' === $item['mime_type'] ) {
+				$result['icon'] = includes_url( 'images/media/document.png' );
+			}
+		}
 
 		if ( 'stream' === $item['job_type'] ) {
 			$result['type'] = 'video';
@@ -138,17 +157,53 @@ class Media_Library_Ajax {
 	/**
 	 * Upload media to the Frappe backend.
 	 *
-	 * @param int $attachment_id Attachment ID.
+	 * @param int  $attachment_id Attachment ID.
+	 * @param bool $retranscode Whether this is a retranscode request.
 	 * @return void
 	 */
-	public function upload_media_to_frappe_backend( $attachment_id ) {
+	public function upload_media_to_frappe_backend( $attachment_id, $retranscode = false ) {
 		// Check if local development environment.
 		if ( rtgodam_is_local_environment() ) {
 			return;
 		}
 
-		// Only if attachment type if image.
-		if ( 'image' !== substr( get_post_mime_type( $attachment_id ), 0, 5 ) ) {
+		/**
+		 * Filter to allow external developers to disable automatic transcoding on upload.
+		 * This allows users to have manual control over when media files get transcoded.
+		 *
+		 * Note: This filter only applies to automatic uploads. Manual retranscoding requests
+		 * (via bulk actions, tools page, etc.) will always proceed regardless of this setting.
+		 * Form integrations will also use this filter to disable transcoding for form uploads.
+		 *
+		 * Example usage:
+		 * add_filter( 'godam_auto_transcode_on_upload', '__return_false' ); // Disable globally
+		 *
+		 * @since 1.5.0
+		 *
+		 * @param bool $auto_transcode_on_upload Whether to automatically transcode on upload. Default true.
+		 */
+		if ( ! $retranscode ) {
+			$auto_transcode_on_upload = apply_filters( 'godam_auto_transcode_on_upload', true );
+
+			if ( ! $auto_transcode_on_upload ) {
+				return;
+			}
+		}
+
+		$transcoding_job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+
+		// Check virtual media status for transcoding requests.
+		$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+		$is_virtual_media  = ! empty( $godam_original_id );
+
+		// Skip transcoding for virtual media.
+		if ( $is_virtual_media ) {
+			return;
+		}
+
+		// Only if attachment type is image.
+		$mime_type = get_post_mime_type( $attachment_id );
+		if ( 'image' !== substr( $mime_type, 0, 5 ) ) {
 			return;
 		}
 
@@ -158,7 +213,7 @@ class Media_Library_Ajax {
 			return;
 		}
 
-		$api_url = RTGODAM_API_BASE . '/api/resource/Transcoder Job';
+		$api_url = RTGODAM_API_BASE . '/api/resource/Transcoder Job' . ( empty( $transcoding_job_id ) ? '' : '/' . $transcoding_job_id );
 
 		$attachment_url = wp_get_attachment_url( $attachment_id );
 
@@ -173,14 +228,16 @@ class Media_Library_Ajax {
 		// Get author name with fallback to username.
 		$author_first_name = '';
 		$author_last_name  = '';
+		$author_email      = '';
 
 		if ( $attachment_author ) {
-			$author_first_name = $attachment_author->first_name;
-			$author_last_name  = $attachment_author->last_name;
+			$author_first_name = $attachment_author->first_name ?? '';
+			$author_last_name  = $attachment_author->last_name ?? '';
+			$author_email      = $attachment_author->user_email ?? '';
 
 			// If first and last names are empty, use username as fallback.
 			if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
-				$author_first_name = $attachment_author->user_login;
+				$author_first_name = $attachment_author->user_login ?? '';
 			}
 		}
 
@@ -198,23 +255,26 @@ class Media_Library_Ajax {
 
 		// Request params.
 		$params = array(
+			'retranscode'          => empty( $transcoding_job_id ) ? 0 : 1,
 			'api_token'            => $api_key,
 			'job_type'             => 'image',
 			'job_for'              => 'wp-media',
 			'file_origin'          => $attachment_url,
 			'orignal_file_name'    => $file_name ?? $file_title,
+			'mime_type'            => $mime_type,
 			'callback_url'         => rawurlencode( $callback_url ),
 			'status_callback'      => rawurlencode( $status_callback_url ),
-			'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $attachment_author ? $attachment_author->user_email : '', $attachment_id ),
+			'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $author_email, $attachment_id ),
 			'wp_site'              => $site_url,
 			'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, $attachment_id ),
 			'wp_author_last_name'  => apply_filters( 'godam_author_last_name_to_send', $author_last_name, $attachment_id ),
 			'public'               => 1,
 		);
 
-		$upload_media = wp_remote_post(
+		$upload_media = wp_remote_request(
 			$api_url,
 			array(
+				'method'  => empty( $transcoding_job_id ) ? 'POST' : 'PUT',
 				'body'    => wp_json_encode( $params ),
 				'headers' => array(
 					'Content-Type' => 'application/json',
@@ -360,7 +420,17 @@ class Media_Library_Ajax {
 
 			// Set the icon to be used for the virtual media preview.
 			// Populate the image field used by the media library to show previews.
-			$icon_url          = wp_mime_type_icon( $attachment->ID, '.svg' );
+			$icon_url = wp_mime_type_icon( $attachment->ID );
+			
+			// For audio and PDF, ensure we use the default icons.
+			if ( empty( $icon_url ) || strpos( $icon_url, '.svg' ) !== false ) {
+				if ( $is_audio ) {
+					$icon_url = includes_url( 'images/media/audio.png' );
+				} elseif ( $is_pdf ) {
+					$icon_url = includes_url( 'images/media/document.png' );
+				}
+			}
+			
 			$response['image'] = array();
 
 			if ( ! empty( $icon_url ) ) {
@@ -834,7 +904,7 @@ class Media_Library_Ajax {
 	/**
 	 * Filter srcset calculation for virtual media to use full URLs.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.5.0
 	 *
 	 * @param array|false $sources       Array of image sources for srcset or false.
 	 * @param array       $size_array    Array of width and height values.
@@ -857,63 +927,26 @@ class Media_Library_Ajax {
 			return $sources;
 		}
 
-		if ( empty( $image_meta['sizes'] ) || ! is_array( $image_meta['sizes'] ) ) {
+		// Rebuild sources array for virtual media.
+		if ( empty( $sources ) || ! is_array( $sources ) ) {
 			return $sources;
 		}
 
 		// Use the current image URL as the base for all subsizes.
 		$base_url = trailingslashit( untrailingslashit( dirname( $image_src ) ) );
 
-		// Skip srcset entirely when the requested size is the thumbnail variant.
-		if ( ! empty( $image_meta['sizes']['thumbnail'] ) ) {
-			$thumb_meta = $image_meta['sizes']['thumbnail'];
-			$is_thumb   = false;
+		// Rebuild sources array for virtual media.
+		foreach ( $sources as &$source ) {
 
-			if ( isset( $size_array[0], $size_array[1], $thumb_meta['width'], $thumb_meta['height'] )
-				&& (int) $size_array[0] === (int) $thumb_meta['width']
-				&& (int) $size_array[1] === (int) $thumb_meta['height']
-			) {
-				$is_thumb = true;
-			} elseif ( isset( $thumb_meta['file'] ) ) {
-				$thumb_file = $thumb_meta['file'];
-				$thumb_url  = $this->is_valid_url( $thumb_file ) ? $thumb_file : $base_url . ltrim( $thumb_file, '/' );
-				$is_thumb   = ! empty( $image_src ) && $thumb_url === $image_src;
-			}
+			// Get last string after the last slash in the file url.
+			$file_basename = basename( $source['url'] );
 
-			if ( $is_thumb ) {
-				return false;
-			}
+			// Rebuild the full URL using the base URL and the file basename.
+			$url = $base_url . ltrim( $file_basename, '/' );
+
+			$source['url'] = esc_url( $url );
 		}
-
-		// Rebuild the sources array using full URLs.
-		foreach ( $image_meta['sizes'] as $size_data ) {
-			if ( empty( $size_data['file'] ) || empty( $size_data['width'] ) ) {
-				continue;
-			}
-
-			$width = (int) $size_data['width'];
-
-			$file = $size_data['file'];
-
-			// If the file already is a URL, use it. Otherwise append it to the base URL.
-			if ( $this->is_valid_url( $file ) ) {
-				// Get last string after the last slash in the file url.
-				$file_basename = basename( $file );
-				// Rebuild the full URL using the base URL and the file basename.
-				$url = $base_url . ltrim( $file_basename, '/' );
-			} else {
-				$url = $base_url . ltrim( $file, '/' );
-			}
-
-			// Override or set the source keyed by width.
-			$sources[ $width ] = array(
-				'url'        => esc_url_raw( $url ),
-				'descriptor' => 'w',
-				'value'      => $width,
-			);
-		}
-
-		ksort( $sources );
+		unset( $source ); // Break the reference.
 
 		return $sources;
 	}

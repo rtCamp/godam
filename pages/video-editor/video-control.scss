@@ -1,0 +1,89 @@
+// Video Control Styles - SCSS Version
+
+// ============================================
+// Variables
+// ============================================
+$color-white: #fff;
+$color-black: #000;
+$color-gray: #666;
+$color-gray-light: #f0f0f0;
+$color-gray-lighter: #f2f2f2;
+
+$border-radius-sm: 0.25rem;
+$border-radius-md: 12px;
+
+$spacing-xs: 0.5rem;
+$spacing-sm: 0.75rem;
+$spacing-md: 1rem;
+
+$font-size-sm: 0.875rem;
+$font-size-base: 1rem;
+$font-size-md: 1.125rem;
+$font-size-lg: 1.25rem;
+
+// ============================================
+// Video.js Controls
+// ============================================
+.hover-control-input-container {
+    display: flex;
+    align-content: center;
+}
+
+.toggle-color {
+    height: 50px;
+}
+
+.left-align {
+    left: 3em !important;
+}
+
+.right-align {
+    left: auto !important;
+    right: 1.5em;
+}
+
+.top-align {
+    top: 1.5em !important;
+}
+
+.bottom-align {
+    top: auto !important;
+    bottom: 1.5em;
+}
+
+.vjs-big-play-button {
+    background-size: 100% 100% !important;
+}
+
+.vjs-control-bar-vertical {
+    width: 10% !important;
+    height: 100% !important;
+    flex-direction: column;
+    overflow: scroll;
+}
+
+.vjs-control-vertical,
+.vjs-volume-control-vertical {
+    height: 6em !important;
+    width: 6em !important;
+}
+
+.vjs-volume-panel-vertical {
+    flex-direction: column;
+}
+
+.vjs-volume-vertical {
+    left: 0 !important;
+}
+
+.components-custom-select-control__item-icon {
+    display: none;
+}
+
+.image-overlay-text {
+    font-size: 15px;
+    background: $color-white;
+    padding: 10px;
+    border-radius: $border-radius-md;
+}
+

@@ -219,6 +219,7 @@ const woocommerceIntegration = {
 		'godam-featured-video': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-featured-video.scss' ),
 		'godam-product-editor-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-product-editor-gallery.scss' ),
 		'godam-product-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-product-gallery.scss' ),
+		'godam-reels-skin': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-reels-skin.scss' ),
 	},
 	output: {
 		path: path.resolve( process.cwd(), 'assets', 'build', 'integrations', 'woocommerce', 'js' ),
@@ -276,6 +277,33 @@ const ninjaForms = {
 	...sharedConfig,
 	entry: {
 		'ninja-forms': path.resolve( process.cwd(), 'assets', 'src', 'js', 'ninja-forms', 'index.js' ),
+	},
+};
+
+const wpBakeryVideoSelectorParam = {
+	...sharedConfig,
+	entry: {
+		'wpbakery-video-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-video-selector-param.js' ),
+	},
+};
+
+const wpBakeryAudioSelectorParam = {
+	...sharedConfig,
+	entry: {
+		'wpbakery-audio-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-audio-selector-param.js' ),
+	},
+};
+
+const wpBakeryImageSrcSelectorParam = {
+	...sharedConfig,
+	entry: {
+		'wpbakery-image-src-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-image-src-selector-param.js' ),
+	},
+};
+const ninjaFormsSubmissionsList = {
+	...sharedConfig,
+	entry: {
+		'ninja-forms-submissions-list': path.resolve( process.cwd(), 'assets', 'src', 'js', 'ninja-forms', 'ninja-forms-submissions-list.js' ),
 	},
 };
 
@@ -377,5 +405,9 @@ module.exports = [
 	lifterLMSBlock,
 	lifterLMSEmbed,
 	ninjaForms,
+	wpBakeryVideoSelectorParam,
+	wpBakeryAudioSelectorParam,
+	wpBakeryImageSrcSelectorParam,
+	ninjaFormsSubmissionsList,
 	blockExtensions,
 ];
