@@ -1,10 +1,10 @@
 === GoDAM - Organize WordPress Media Library & File Manager with Unlimited Folders for Images, Videos & more ===
-Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia, kishu7270, opurockey, utsavladani, whiteshadow01, ahmarzaidi
+Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, mi5t4n, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia, kishu7270, opurockey, utsavladani, whiteshadow01, ahmarzaidi
 Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.5.0
+Stable tag: 1.6.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -246,6 +246,19 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v1.6.0 (February 05, 2026) =
+
+- Feat: Added WPBakery Page Builder integration for GoDAM Video, Audio, and Gallery blocks.
+- Feat: Added new Card CTA featuring multiple layout options, responsive design, and image width customization.
+- Feat: Added support for custom SVG and image icons for hotspot layers.
+- Feat: Extended audio recording capabilities for WPForms, SureForms, and Everest Forms GoDAM Recorder.
+- Feat: Added Video Duration Limit option to Gravity Forms Recorder.
+- Tweak: Unified URL validation guide messages across CTA, Ads, and Hotspot layers.
+- Fix: Improved video SEO with proper HTML content stripping, warning messages for empty descriptions, and video duration metadata storage.
+- Fix: Addressed admin pages styling and media library UI issues.
+- Fix: Fixed issues with Analytics.
+- Fix: Addressed security vulnerabilities.
+
 = v1.5.0 (January 20, 2026) =
 
 - Feat: Implemented GoDAM virtual attachment support for Image, Audio, and PDF media. This allows users to import a wide range of media directly from GoDAM Central.
@@ -270,19 +283,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: Background scroll issues in full screen on iOS
 - Fix: SDK event errors
 
-= v1.4.8 (December 10, 2025) =
-
-- Feat: Added support for PDF files
-- Tweak: Implemented enhancements for Likes & Comments functionality
-- Tweak: Integrated further performance improvements, optimized asset loading
-- Tweak: Updated “Manage media” button to point directly to the specific folder
-- Tweak: Addressed various media library issues and general improvements
-- Fix: Full-screen inconsistencies on iOS (SDK)
-- Fix: Blank page issue when navigating unsaved video editor pages
-- Fix: Media Uploader UI issues
-- Fix: Form submission issues in preview
-- Fix: Player skin overlap issues
-- Fix: Media metadata display on Central
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 

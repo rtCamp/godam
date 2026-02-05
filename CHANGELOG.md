@@ -1,5 +1,18 @@
 # Changelog #
 
+## v1.6.0 (February 05, 2026) ##
+
+- Feat: Added WPBakery Page Builder integration for GoDAM Video, Audio, and Gallery blocks.
+- Feat: Added new Card CTA featuring multiple layout options, responsive design, and image width customization.
+- Feat: Added support for custom SVG and image icons for hotspot layers.
+- Feat: Extended audio recording capabilities for WPForms, SureForms, and Everest Forms GoDAM Recorder.
+- Feat: Added Video Duration Limit option to Gravity Forms Recorder.
+- Tweak: Unified URL validation guide messages across CTA, Ads, and Hotspot layers.
+- Fix: Improved video SEO with proper HTML content stripping, warning messages for empty descriptions, and video duration metadata storage.
+- Fix: Addressed admin pages styling and media library UI issues.
+- Fix: Fixed issues with Analytics.
+- Fix: Addressed security vulnerabilities.
+
 ## v1.5.0 (January 20, 2026) ##
 
 - Feat: Implemented GoDAM virtual attachment support for Image, Audio, and PDF media. This allows users to import a wide range of media directly from GoDAM Central.

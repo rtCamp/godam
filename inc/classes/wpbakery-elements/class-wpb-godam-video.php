@@ -22,7 +22,7 @@ class WPB_GoDAM_Video {
 	/**
 	 * WPB_GoDAM_Video constructor.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.6.0
 	 */
 	protected function __construct() {
 		if ( ! function_exists( 'is_plugin_active' ) ) {
@@ -39,7 +39,7 @@ class WPB_GoDAM_Video {
 	/**
 	 * Setup hooks.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.6.0
 	 *
 	 * @return void
 	 */
@@ -50,7 +50,7 @@ class WPB_GoDAM_Video {
 	/**
 	 * Map video element to WPBakery.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.6.0
 	 *
 	 * @return void
 	 */
