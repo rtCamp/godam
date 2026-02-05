@@ -369,9 +369,6 @@ async function loadNewVideo( newVideoId, modal ) {
 				try {
 					const json = JSON.parse( decoded );
 					json.aspectRatio = 'responsive';
-					// json.playerSkin = 'Pills';
-
-					console.log(json);
 
 					// re-encode to match format.
 					const updatedJson = JSON.stringify( json ).replace( /"/g, '&quot;' );

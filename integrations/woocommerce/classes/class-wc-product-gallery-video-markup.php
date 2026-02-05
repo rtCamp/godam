@@ -117,7 +117,7 @@ class WC_Product_Gallery_Video_Markup {
 								<div class="godam-product-video-gallery-sidebar--cart-basket">
 									<?php
 										$mini_cart_block = do_blocks( '<!-- wp:woocommerce/mini-cart /-->' );
-										echo ! empty( $mini_cart_block ) ? $mini_cart_block : ''; // phpcs:ignore
+										echo ! empty( $mini_cart_block ) ? wp_kses_post( $mini_cart_block ) : '';
 									?>
 								</div>
 								<button class="godam-sidebar-close" aria-label="<?php __( 'Close sidebar', 'godam' ); ?>">
@@ -207,7 +207,7 @@ class WC_Product_Gallery_Video_Markup {
 								<div class="godam-product-video-gallery-sidebar--cart-basket">
 									<?php
 										$mini_cart_block = do_blocks( '<!-- wp:woocommerce/mini-cart /-->' );
-										echo ! empty( $mini_cart_block ) ? $mini_cart_block : ''; // phpcs:ignore
+										echo ! empty( $mini_cart_block ) ? wp_kses_post( $mini_cart_block ) : '';
 									?>
 								</div>
 								<button class="godam-sidebar-close" aria-label="<?php __( 'Toggle sidebar', 'godam' ); ?>">
