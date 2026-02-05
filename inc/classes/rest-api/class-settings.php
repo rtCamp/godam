@@ -159,7 +159,7 @@ class Settings extends Base {
 	/**
 	 * Verify GoDAM Central permission using stored API key.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.6.0
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return true|\WP_Error
