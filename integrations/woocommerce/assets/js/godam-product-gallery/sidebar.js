@@ -8,6 +8,74 @@
  */
 
 /**
+ * Initializes the sidebar functionality by attaching
+ * the close button event listener.
+ */
+export function initSidebar() {
+	addCloseSidebarListener();
+	addOpenSidebarListener();
+}
+
+/**
+ * Adds an event listener to the sidebar close button to close
+ * the product sidebar and adjust modal content layout accordingly.
+ */
+function addCloseSidebarListener() {
+	const modalContainer = document.querySelector( '.godam-product-modal-container.open' );
+
+	// If modal is not present return immediately FAAAAAAAH.
+	if ( ! modalContainer ) {
+		return;
+	}
+
+	// Get sidebar close and open button.
+	const sidebarClose = modalContainer.querySelector( '.godam-sidebar-close' );
+	const sidebarOpenButton = modalContainer.querySelector( '.sidebar-collapsible-open-button.hidden' );
+
+	sidebarClose?.addEventListener( 'click', () => {
+		// Close the sidebar.
+		const sidebarElement = modalContainer.querySelector( '.godam-product-sidebar' );
+		sidebarElement?.classList.add( 'close' );
+
+		// Update Modal.
+		modalContainer?.querySelector( '.godam-product-modal-content' )?.classList?.add( 'no-sidebar' );
+		modalContainer?.querySelector( '.godam-product-modal-content' )?.classList?.remove( 'sidebar' );
+
+		// Display the sidebar open button.
+		sidebarOpenButton?.classList.remove( 'hidden' );
+	} );
+}
+
+/**
+ * Adds an event listener to the sidebar open button to open
+ * the product sidebar and adjust modal content layout accordingly.
+ */
+function addOpenSidebarListener() {
+	const modalContainer = document.querySelector( '.godam-product-modal-container.open' );
+
+	// If modal is not present return immediately.
+	if ( ! modalContainer ) {
+		return;
+	}
+
+	// Get the sidebar open button.
+	const sidebarOpen = modalContainer.querySelector( '.sidebar-collapsible-open-button' );
+
+	sidebarOpen?.addEventListener( 'click', () => {
+		// Get the sidebar.
+		const sidebarElement = modalContainer.querySelector( '.godam-product-sidebar' );
+		sidebarElement?.classList.remove( 'close' );
+
+		// Update the modal.
+		modalContainer?.querySelector( '.godam-product-modal-content' )?.classList?.remove( 'no-sidebar' );
+		modalContainer?.querySelector( '.godam-product-modal-content' )?.classList?.add( 'sidebar' );
+
+		// Hide the sidebar open button.
+		sidebarOpen?.classList.add( 'hidden' );
+	} );
+}
+
+/**
  * Initializes the image gallery functionality within the open product modal.
  *
  * Features:

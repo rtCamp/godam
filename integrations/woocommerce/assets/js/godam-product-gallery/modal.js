@@ -19,7 +19,7 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import { initImageGallery } from './sidebar.js';
+import { initSidebar, initImageGallery } from './sidebar.js';
 
 /* global GODAMPlayer, godamVars */
 /* eslint-disable eslint-comments/disable-enable-pair */
@@ -105,6 +105,10 @@ export function initVideoModal() {
 		modal.querySelector( '.godam-sidebar-header-actions' )?.classList.add( 'hide' );
 
 		modal.classList.add( 'open' );
+
+		if ( ctaEnabled && ( ctaDisplayPosition === 'below-inside' || ctaDisplayPosition === 'inside' ) ) {
+			initSidebar();
+		}
 
 		modal.dataset.currentVideoId = videoId;
 		modal.dataset.isLoading = 'false';
