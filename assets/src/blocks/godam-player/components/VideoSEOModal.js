@@ -21,7 +21,7 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import './video-seo-modal.scss';
-import { isSEODataEmpty, appendTimezoneOffsetToUTC, stripHtmlTags } from '../utils';
+import { appendTimezoneOffsetToUTC, stripHtmlTags } from '../utils';
 
 /**
  * Video SEO Modal component
@@ -79,12 +79,21 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 		}
 
 		// Sync local override state with attributes
-		setSeoOverride( attributes?.seoOverride || false );
+		const currentSeoOverride = attributes?.seoOverride || false;
+		setSeoOverride( currentSeoOverride );
 
-		// Fetch media library SEO data when modal opens
-		fetchMediaSEOData();
+		// If seoOverride is false, fetch and display fresh data from media library
+		if ( ! currentSeoOverride ) {
+			( async () => {
+				const freshMediaSEO = await fetchMediaSEOData();
+				if ( freshMediaSEO ) {
+					setVideoData( freshMediaSEO );
+				}
+			} )();
+			return;
+		}
 
-		// Always initialize videoData when modal opens or attributes change
+		// If seoOverride is true, use the data from block attributes
 		const defaultVideoData = {
 			contentUrl: '',
 			headline: '',
@@ -95,7 +104,7 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 			isFamilyFriendly: true,
 		};
 
-		// If SEO data exists in attributes, use it; otherwise use defaults
+		// Use SEO data from attributes for overridden blocks
 		const initialVideoData = {
 			contentUrl: attributes?.seo?.contentUrl || defaultVideoData.contentUrl,
 			headline: attributes?.seo?.headline || defaultVideoData.headline,
@@ -106,16 +115,11 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 			isFamilyFriendly: attributes?.seo?.isFamilyFriendly !== undefined ? attributes.seo.isFamilyFriendly : defaultVideoData.isFamilyFriendly,
 		};
 
-		// Always update the local state with the latest data from attributes
 		setVideoData( initialVideoData );
 
-		// Only initialize attributes.seo if it's empty (for backward compatibility)
-		if ( isSEODataEmpty( attributes.seo ) ) {
-			setAttributes( {
-				seo: initialVideoData,
-			} );
-		}
-	}, [ attributes.seo, attributes?.seoOverride, isOpen, setAttributes, fetchMediaSEOData ] ); // Depend on seo attribute and modal state
+		// Also fetch media SEO for comparison/reset purposes
+		fetchMediaSEOData();
+	}, [ attributes.seo, attributes?.seoOverride, isOpen, fetchMediaSEOData ] ); // Depend on seo attribute and modal state
 
 	const updateField = ( field, value ) => {
 		setVideoData( { ...videoData, [ field ]: value } );
@@ -148,17 +152,22 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 
 	const closeModal = () => {
 		setIsOpen( false );
-		// Reset videoData to current attributes when modal closes without saving
-		const currentSEOData = {
-			contentUrl: attributes?.seo?.contentUrl || '',
-			headline: attributes?.seo?.headline || '',
-			description: attributes?.seo?.description || '',
-			uploadDate: attributes?.seo?.uploadDate || '',
-			duration: attributes?.seo?.duration || '',
-			thumbnailUrl: attributes?.seo?.thumbnailUrl || '',
-			isFamilyFriendly: attributes?.seo?.isFamilyFriendly !== undefined ? attributes.seo.isFamilyFriendly : true,
-		};
-		setVideoData( currentSEOData );
+		// Reset state - if seoOverride is false, mediaSEOData will be used on next open
+		// If seoOverride is true, reset to attributes
+		if ( attributes?.seoOverride ) {
+			const currentSEOData = {
+				contentUrl: attributes?.seo?.contentUrl || '',
+				headline: attributes?.seo?.headline || '',
+				description: attributes?.seo?.description || '',
+				uploadDate: attributes?.seo?.uploadDate || '',
+				duration: attributes?.seo?.duration || '',
+				thumbnailUrl: attributes?.seo?.thumbnailUrl || '',
+				isFamilyFriendly: attributes?.seo?.isFamilyFriendly !== undefined ? attributes.seo.isFamilyFriendly : true,
+			};
+			setVideoData( currentSEOData );
+		} else if ( mediaSEOData ) {
+			setVideoData( mediaSEOData );
+		}
 		setSeoOverride( attributes?.seoOverride || false );
 	};
 
