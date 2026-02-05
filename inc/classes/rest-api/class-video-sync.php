@@ -37,8 +37,10 @@ class Video_Sync extends Base {
 						'permission_callback' => array( $this, 'verify_permission' ),
 						'args'                => array(
 							'api_key' => array(
-								'required' => true,
-								'type'     => 'string',
+								'required'          => true,
+								'type'              => 'string',
+								'description'       => __( 'API key used to authenticate the request from the GoDAM app.', 'godam' ),
+								'sanitize_callback' => 'sanitize_text_field',
 							),
 						),
 					),
