@@ -240,13 +240,14 @@ class Analytics extends Base {
 			$post_details = array();
 
 			if ( ! empty( $post_ids ) ) {
+				// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
 				$posts = get_posts(
 					array(
 						'post__in'         => $post_ids,
 						'post_type'        => 'any',
 						'posts_per_page'   => -1,
 						'orderby'          => 'post__in',
-						'suppress_filters' => false, // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
+						'suppress_filters' => false,
 					)
 				);
 
