@@ -9,7 +9,7 @@ import { useSelector, useDispatch } from 'react-redux';
  */
 import { Button, TabPanel, Snackbar, Tooltip, Spinner } from '@wordpress/components';
 import { __, _n } from '@wordpress/i18n';
-import { copy, seen } from '@wordpress/icons';
+import { chartBar, copy, seen } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -217,7 +217,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		// Validate form layers before saving.
 		if ( invalidLayers.length > 0 ) {
 			const layerTimes = invalidLayers.join( ', ' );
-			setSnackbarMessage( _n( 'Please select a form for the layer at timestamp: ', 'Please select a form for the layers at timestamps: ', invalidLayers.length, 'godam' ) + layerTimes );
+			setSnackbarMessage( _n( 'Please select a form for the layer at timestamp:', 'Please select a form for the layers at timestamps:', invalidLayers.length, 'godam' ) + layerTimes );
 			setShowSnackbar( true );
 			setTimeout( () => {
 				setShowSnackbar( false );
@@ -394,6 +394,18 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 					) }
 
 					<div className="flex space-x-2 justify-end items-center w-full mb-4">
+						{
+							window?.userData?.validApiKey &&
+							<Button
+								variant="secondary"
+								href={ `${ window?.godamRestRoute?.homeUrl }/wp-admin/admin.php?page=rtgodam_analytics&id=${ attachmentID }` }
+								target="_blank"
+								className="godam-button"
+								icon={ chartBar }
+							>
+								{ __( 'Analytics', 'godam' ) }
+							</Button>
+						}
 						<Tooltip
 							text={
 								<p>
