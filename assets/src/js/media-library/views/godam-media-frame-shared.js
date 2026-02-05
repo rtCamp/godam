@@ -41,7 +41,7 @@ const checkIfFeatureImage = ( frame ) => {
 /**
  * Check if the current frame is an analytics context.
  *
- * @since n.e.x.t
+ * @since 1.6.0
  *
  * @param {wp.media.view.MediaFrame} frame
  * @return {boolean} True if analytics context, false otherwise.

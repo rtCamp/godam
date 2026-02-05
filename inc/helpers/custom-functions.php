@@ -493,7 +493,7 @@ function godam_is_audio_file_by_name( $filename ) {
 /**
  * Check if the given file is an audio file.
  *
- * @since n.e.x.t
+ * @since 1.6.0
  *
  * @param string $file_path_or_url The file path or URL to check.
  *

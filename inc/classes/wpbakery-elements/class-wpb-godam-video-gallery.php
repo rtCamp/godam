@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class WPB_GoDAM_Video_Gallery
  * 
- * @since n.e.x.t
+ * @since 1.6.0
  *
  * @package GoDAM
  */
@@ -24,7 +24,7 @@ class WPB_GoDAM_Video_Gallery {
 	/**
 	 * WPB_GoDAM_Video_Gallery constructor.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.6.0
 	 */
 	protected function __construct() {
 		if ( ! function_exists( 'is_plugin_active' ) ) {
@@ -41,7 +41,7 @@ class WPB_GoDAM_Video_Gallery {
 	/**
 	 * Setup hooks.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.6.0
 	 *
 	 * @return void
 	 */
@@ -52,7 +52,7 @@ class WPB_GoDAM_Video_Gallery {
 	/**
 	 * Map video gallery element to WPBakery.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.6.0
 	 *
 	 * @return void
 	 */
@@ -261,7 +261,7 @@ class WPB_GoDAM_Video_Gallery {
 	/**
 	 * Get categories for dropdown.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.6.0
 	 *
 	 * @return array
 	 */
@@ -288,7 +288,7 @@ class WPB_GoDAM_Video_Gallery {
 	/**
 	 * Get tags for dropdown.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.6.0
 	 *
 	 * @return array
 	 */
@@ -315,7 +315,7 @@ class WPB_GoDAM_Video_Gallery {
 	/**
 	 * Get authors for dropdown.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.6.0
 	 *
 	 * @return array
 	 */
