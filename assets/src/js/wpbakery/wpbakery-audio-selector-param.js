@@ -77,11 +77,11 @@
 			e.preventDefault();
 
 			const $button = $( this );
-			const $attributeConatienr = $button.closest( '.wpb_el_type_audio_selector' ).parent();
+			const $attributeContainer = $button.closest( '.wpb_el_type_audio_selector' ).parent();
 			const $container = $button.closest( '.audio_selector_block' );
 			const $input = $container.find( '.audio_selector_field' );
 			const $selectButton = $container.find( '.audio-selector-button' );
-			const $srcInput = $attributeConatienr.find( '.textfield_hidden_field' );
+			const $srcInput = $attributeContainer.find( '.textfield_hidden_field' );
 
 			// Clear the input value
 			$input.val( '' ).trigger( 'change' );

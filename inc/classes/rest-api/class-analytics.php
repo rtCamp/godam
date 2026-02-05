@@ -246,7 +246,7 @@ class Analytics extends Base {
 						'post_type'        => 'any',
 						'posts_per_page'   => -1,
 						'orderby'          => 'post__in',
-						'suppress_filters' => false,
+						'suppress_filters' => false, // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
 					)
 				);
 
