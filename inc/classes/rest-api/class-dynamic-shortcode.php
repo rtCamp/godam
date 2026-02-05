@@ -128,7 +128,7 @@ class Dynamic_Shortcode extends Base {
 			$shortcode .= " godam_context='{$godam_context}'";
 		}
 
-		$shortcode .= "]";
+		$shortcode .= ']';
 
 		// Add filter for shortcode.
 		$shortcode = apply_filters( 'rtgodam_shortcode_output', $shortcode, $id );
