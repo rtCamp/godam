@@ -187,7 +187,7 @@
 	grid-template-columns: 6fr 6fr;
 	background-color: #fff;
 
-	@media (max-width: 768px) {
+	@media (max-width: 1024px) {
 		max-width: 95vw;
 		width: 95vw;
 		min-height: 80dvh;
@@ -200,7 +200,7 @@
 	margin: 0 auto !important;
 	height: 100% !important;
 
-	@media (max-width: 992px) {
+	@media (max-width: 1024px) {
 		width: 100% !important;
 		height: 100% !important;
 		max-height: 100% !important;
@@ -219,7 +219,7 @@
 	align-content: center;
 	align-items: center;
 
-	@media (max-width: 768px) {
+	@media (max-width: 1024px) {
 		width: 100vw !important;
 		height: 100dvh !important;
 		max-height: 100dvh !important;
@@ -266,7 +266,7 @@
 			max-height: 90dvh !important;
 			object-fit: cover !important;
 			padding-top: 0 !important ;
-			@media (max-width: 768px) {
+			@media (max-width: 1024px) {
 				height: 100dvh !important;
 				max-height: 100dvh !important;
 				min-height: 100dvh !important;
@@ -277,14 +277,14 @@
 			object-fit: cover !important;
 			min-height: 90dvh !important;
 			max-height: 90dvh !important;
-			@media (max-width: 768px) {
+			@media (max-width: 1024px) {
 				height: 100dvh !important;
 				max-height: 100dvh !important;
 				min-height: 100dvh !important;
 			}
 		}
 
-		@media (max-width: 768px) {
+		@media (max-width: 1024px) {
 
 			.godam-video-wrapper, .easydam-video-container, .video-js  {
 				max-width: 100vw !important;
@@ -310,7 +310,7 @@
 		max-height: 90dvh !important;
 		min-height: 90dvh !important;
 		
-		@media (max-width: 768px) {
+		@media (max-width: 1024px) {
 			width: 95vw !important;
 			height: 40dvh !important;
 			max-height: 40dvh !important;
@@ -326,7 +326,7 @@
 			max-height: 90dvh !important;
 			overflow: hidden !important;
 			
-			@media (max-width: 768px) {
+			@media (max-width: 1024px) {
 				max-width: 95vw !important;
 				width: 95vw !important;
 				min-height: 40dvh !important;
@@ -372,7 +372,7 @@
 		border-radius: 0 !important;
 		overflow: hidden !important;
 
-		@media (max-width: 768px) {
+		@media (max-width: 1024px) {
 			max-width: 95vw !important;
 			width: 95vw !important;
 			min-height: 40dvh !important;
@@ -391,7 +391,7 @@
 		min-height: 100vh !important;
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 1024px) {
 
 		.vjs-tech{
 			height: 40dvh !important;
@@ -410,7 +410,7 @@
 	width: 100% !important;
 	box-sizing: border-box;
 
-	@media (max-width: 768px) {
+	@media (max-width: 1024px) {
 		width: 100vw !important;
 		height: 100dvh !important;
 		max-height: 100dvh !important;
@@ -427,7 +427,7 @@
 		max-height: 90dvh !important;
 		overflow: hidden !important;
 
-		@media (max-width: 768px) {
+		@media (max-width: 1024px) {
 			max-width: 100vw !important;
 			width: 100vw !important;
 			height: 100dvh !important;
@@ -443,7 +443,7 @@
 		padding-top: 0 !important ;
 		object-fit: cover !important;
 
-		@media (max-width: 768px) {
+		@media (max-width: 1024px) {
 			height: 100dvh !important;
 			max-height: 100dvh !important;
 			min-height: 100dvh !important;
@@ -456,7 +456,7 @@
 		max-height: 90dvh !important;
 		object-fit: cover !important;
 
-		@media (max-width: 768px) {
+		@media (max-width: 1024px) {
 			height: 100dvh !important;
 			max-height: 100dvh !important;
 			min-height: 100dvh !important;
@@ -529,7 +529,7 @@
 		grid-template-columns: repeat(2, 1fr);
 		gap: 12px;
 		
-		@media (max-width: 768px) {
+		@media (max-width: 1024px) {
 			grid-template-columns: 1fr;
 		}
 	}
@@ -578,7 +578,7 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 
-		@media (max-width: 768px) {
+		@media (max-width: 1024px) {
 			font-size: 1rem !important;
 			line-height: 1.1rem !important;
 		}
@@ -633,7 +633,7 @@
 		text-decoration: none !important;
 		color: #fff !important;
 
-		@media (max-width: 768px) {
+		@media (max-width: 1024px) {
 			height: 35px !important;
 			max-height: 35px !important;
 			min-height: 35px !important;
@@ -911,7 +911,7 @@
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
 
 	.godam-image-gallery {
 		max-width: 100%;
@@ -1018,7 +1018,7 @@
 	justify-content: flex-start;
 	align-items: flex-start;
 	gap: 6px !important;
-	@media (max-width: 768px) {
+	@media (max-width: 1024px) {
 		gap: 12px !important;
 	}
 }
@@ -1027,7 +1027,7 @@
 
 // responsive code for sidebar adjustment
 
-@media (max-width: 992px) {
+@media (max-width: 1024px) {
 
 	
 	#godam-add-to-cart-toast{

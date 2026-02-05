@@ -47,6 +47,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		playButtonIconColor,
 		playButtonSize,
 		playButtonBorderRadius,
+		unmuteButtonEnabled,
 		unmuteButtonBgColor,
 		unmuteButtonIconColor,
 		cardWidth = {},
@@ -95,6 +96,9 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		}, [] ),
 		native: autoPlayHelpText,
 	} );
+
+	// Constants.
+	const isPlayButtonLocked = ! autoplay;
 
 	// Factory to generate toggle attribute function for autoplay.
 	const toggleFactory = useMemo( () => {
@@ -346,16 +350,24 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		<>
 			<InspectorControls>
 
-				<PanelBody title={ __( 'Gallery Settings', 'rtgodam' ) }>
+				<PanelBody title={ __( 'Product Gallery Configuration', 'rtgodam' ) }>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={ __( 'Autoplay videos', 'godam' ) }
+						label={
+							autoplay
+								? __( 'Motion Preview Enabled', 'godam' )
+								: __( 'Thumbnail Preview Enabled', 'godam' )
+						}
 						onChange={ toggleFactory.autoplay }
 						checked={ !! autoplay }
-						help={ getAutoplayHelp }
+						help={
+							autoplay
+								? __( 'Videos will auto-play a short preview in the gallery.', 'godam' )
+								: __( 'Videos will display a static thumbnail image.', 'godam' )
+						}
 					/>
 					<ToggleControl
-						label={ __( 'Enable CTA', 'godam' ) }
+						label={ __( 'Show Shoppable Products', 'godam' ) }
 						checked={ !! ctaEnabled }
 						onChange={ ( value ) => setAttributes( { ctaEnabled: value } ) }
 					/>
@@ -397,176 +409,185 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 				</PanelBody>
 
 				{ layout === 'carousel' && (
-					<PanelBody title={ __( 'Carousel Settings', 'godam' ) } initialOpen={ false }>
+					<PanelBody title={ __( 'Carousel Layout & Navigation', 'godam' ) } initialOpen={ false }>
 
-						<RangeControl
-							label={ __( 'Desktop Card Size (vw)', 'godam' ) }
-							value={ cardWidth?.desktop ?? parseFloat( getCardWidthForView( view, layout, 'desktop' ) ) }
-							onChange={ ( value ) =>
-								setAttributes( {
-									cardWidth: {
-										...cardWidth,
-										desktop: value,
-									},
-								} )
-							}
-							min={ 10 }
-							max={ 100 }
-							step={ 0.5 }
-						/>
+						<PanelBody title={ __( 'Card Layout', 'godam' ) } initialOpen={ false }>
+							<RangeControl
+								label={ __( 'Desktop Card Width', 'godam' ) }
+								value={ cardWidth?.desktop ?? parseFloat( getCardWidthForView( view, layout, 'desktop' ) ) }
+								onChange={ ( value ) =>
+									setAttributes( {
+										cardWidth: {
+											...cardWidth,
+											desktop: value,
+										},
+									} )
+								}
+								min={ 10 }
+								max={ 100 }
+								step={ 0.5 }
+							/>
 
-						<RangeControl
-							label={ __( 'Tablet Card Size (vw)', 'godam' ) }
-							value={ cardWidth?.tablet ?? parseFloat( getCardWidthForView( view, layout, 'tablet' ) ) }
-							onChange={ ( value ) =>
-								setAttributes( {
-									cardWidth: {
-										...cardWidth,
-										tablet: value,
-									},
-								} )
-							}
-							min={ 10 }
-							max={ 100 }
-							step={ 0.5 }
-						/>
+							<RangeControl
+								label={ __( 'Tablet Card Width', 'godam' ) }
+								value={ cardWidth?.tablet ?? parseFloat( getCardWidthForView( view, layout, 'tablet' ) ) }
+								onChange={ ( value ) =>
+									setAttributes( {
+										cardWidth: {
+											...cardWidth,
+											tablet: value,
+										},
+									} )
+								}
+								min={ 10 }
+								max={ 100 }
+								step={ 0.5 }
+							/>
 
-						<RangeControl
-							label={ __( 'Mobile Card Size (vw)', 'godam' ) }
-							value={ cardWidth?.mobile ?? parseFloat( getCardWidthForView( view, layout, 'mobile' ) ) }
-							onChange={ ( value ) =>
-								setAttributes( {
-									cardWidth: {
-										...cardWidth,
-										mobile: value,
-									},
-								} )
-							}
-							min={ 10 }
-							max={ 100 }
-							step={ 0.5 }
-						/>
+							<RangeControl
+								label={ __( 'Mobile Card Width', 'godam' ) }
+								value={ cardWidth?.mobile ?? parseFloat( getCardWidthForView( view, layout, 'mobile' ) ) }
+								onChange={ ( value ) =>
+									setAttributes( {
+										cardWidth: {
+											...cardWidth,
+											mobile: value,
+										},
+									} )
+								}
+								min={ 10 }
+								max={ 100 }
+								step={ 0.5 }
+							/>
+						</PanelBody>
 
-						<p><strong>{ __( 'Arrow Background Color', 'godam' ) }</strong></p>
-						<ColorPalette
-							enableAlpha
-							value={ arrowBgColor }
-							onChange={ ( color ) => setAttributes( { arrowBgColor: color } ) }
-						/>
+						<PanelBody title={ __( 'Navigation Arrows', 'godam' ) } initialOpen={ false }>
+							<p><strong>{ __( 'Arrow Background Color', 'godam' ) }</strong></p>
+							<ColorPalette
+								enableAlpha
+								value={ arrowBgColor }
+								onChange={ ( color ) => setAttributes( { arrowBgColor: color } ) }
+							/>
 
-						<p><strong>{ __( 'Arrow Icon Color', 'godam' ) }</strong></p>
-						<ColorPalette
-							value={ arrowIconColor }
-							onChange={ ( color ) => setAttributes( { arrowIconColor: color } ) }
-						/>
+							<p><strong>{ __( 'Arrow Icon Color', 'godam' ) }</strong></p>
+							<ColorPalette
+								value={ arrowIconColor }
+								onChange={ ( color ) => setAttributes( { arrowIconColor: color } ) }
+							/>
 
-						<RangeControl
-							label={ __( 'Arrow Size (px)', 'godam' ) }
-							value={ arrowSize }
-							onChange={ ( value ) => setAttributes( { arrowSize: value } ) }
-							min={ 16 }
-							max={ 64 }
-						/>
+							<RangeControl
+								label={ __( 'Arrow Size (px)', 'godam' ) }
+								value={ arrowSize }
+								onChange={ ( value ) => setAttributes( { arrowSize: value } ) }
+								min={ 16 }
+								max={ 64 }
+							/>
 
-						<RangeControl
-							label={ __( 'Border Radius (px)', 'godam' ) }
-							value={ arrowBorderRadius }
-							onChange={ ( value ) => setAttributes( { arrowBorderRadius: value } ) }
-							min={ 0 }
-							max={ 30 }
-						/>
+							<RangeControl
+								label={ __( 'Border Radius (px)', 'godam' ) }
+								value={ arrowBorderRadius }
+								onChange={ ( value ) => setAttributes( { arrowBorderRadius: value } ) }
+								min={ 0 }
+								max={ 30 }
+							/>
 
-						<SelectControl
-							label={ __( 'Arrow Visibility', 'godam' ) }
-							value={ arrowVisibility }
-							options={ [
-								{ label: __( 'Always visible', 'godam' ), value: 'always' },
-								{ label: __( 'Show on hover', 'godam' ), value: 'hover' },
-							] }
-							onChange={ ( value ) => setAttributes( { arrowVisibility: value } ) }
-						/>
+							<SelectControl
+								label={ __( 'Arrow Visibility', 'godam' ) }
+								value={ arrowVisibility }
+								options={ [
+									{ label: __( 'Always visible', 'godam' ), value: 'always' },
+									{ label: __( 'Show on hover', 'godam' ), value: 'hover' },
+								] }
+								onChange={ ( value ) => setAttributes( { arrowVisibility: value } ) }
+							/>
+						</PanelBody>
 					</PanelBody>
 				) }
 
 				{ layout === 'grid' && (
-					<PanelBody title={ __( 'Grid Settings', 'godam' ) } initialOpen={ false }>
-						<RangeControl
-							label={ __( 'Columns in Desktop', 'godam' ) }
-							value={ gridColumns?.desktop ?? 4 }
-							onChange={ ( value ) =>
-								setAttributes( {
-									gridColumns: {
-										...gridColumns,
-										desktop: value,
-									},
-								} )
-							}
-							min={ 1 }
-							max={ 6 }
-						/>
+					<PanelBody title={ __( 'Grid Layout & Spacing', 'godam' ) } initialOpen={ false }>
 
-						<RangeControl
-							label={ __( 'Columns in Tablet', 'godam' ) }
-							value={ gridColumns?.tablet ?? 3 }
-							onChange={ ( value ) =>
-								setAttributes( {
-									gridColumns: {
-										...gridColumns,
-										tablet: value,
-									},
-								} )
-							}
-							min={ 1 }
-							max={ 4 }
-						/>
+						<PanelBody title={ __( 'Column Layout', 'godam' ) } initialOpen={ false }>
+							<RangeControl
+								label={ __( 'Desktop Columns', 'godam' ) }
+								value={ gridColumns?.desktop ?? 4 }
+								onChange={ ( value ) =>
+									setAttributes( {
+										gridColumns: {
+											...gridColumns,
+											desktop: value,
+										},
+									} )
+								}
+								min={ 1 }
+								max={ 6 }
+							/>
 
-						<RangeControl
-							label={ __( 'Columns in Mobile', 'godam' ) }
-							value={ gridColumns?.mobile ?? 2 }
-							onChange={ ( value ) =>
-								setAttributes( {
-									gridColumns: {
-										...gridColumns,
-										mobile: value,
-									},
-								} )
-							}
-							min={ 1 }
-							max={ 2 }
-						/>
+							<RangeControl
+								label={ __( 'Tablet Columns', 'godam' ) }
+								value={ gridColumns?.tablet ?? 3 }
+								onChange={ ( value ) =>
+									setAttributes( {
+										gridColumns: {
+											...gridColumns,
+											tablet: value,
+										},
+									} )
+								}
+								min={ 1 }
+								max={ 4 }
+							/>
 
-						<RangeControl
-							label={ __( 'Row Gap (px)', 'godam' ) }
-							value={ gridRowGap }
-							onChange={ ( value ) => setAttributes( { gridRowGap: value } ) }
-							min={ 0 }
-							max={ 64 }
-						/>
+							<RangeControl
+								label={ __( 'Mobile Columns', 'godam' ) }
+								value={ gridColumns?.mobile ?? 2 }
+								onChange={ ( value ) =>
+									setAttributes( {
+										gridColumns: {
+											...gridColumns,
+											mobile: value,
+										},
+									} )
+								}
+								min={ 1 }
+								max={ 2 }
+							/>
+						</PanelBody>
 
-						<RangeControl
-							label={ __( 'Column Gap (px)', 'godam' ) }
-							value={ gridColumnGap }
-							onChange={ ( value ) => setAttributes( { gridColumnGap: value } ) }
-							min={ 0 }
-							max={ 64 }
-						/>
+						<PanelBody title={ __( 'Spacing', 'godam' ) } initialOpen={ false }>
+							<RangeControl
+								label={ __( 'Row Gap (px)', 'godam' ) }
+								value={ gridRowGap }
+								onChange={ ( value ) => setAttributes( { gridRowGap: value } ) }
+								min={ 0 }
+								max={ 64 }
+							/>
+
+							<RangeControl
+								label={ __( 'Column Gap (px)', 'godam' ) }
+								value={ gridColumnGap }
+								onChange={ ( value ) => setAttributes( { gridColumnGap: value } ) }
+								min={ 0 }
+								max={ 64 }
+							/>
+						</PanelBody>
 					</PanelBody>
 				) }
 
-				<PanelBody title={ __( 'Play Button Settings', 'godam' ) } initialOpen={ false }>
+				<PanelBody title={ __( 'Play Button Overlay', 'godam' ) } initialOpen={ false }>
 					<ToggleControl
-						label={ __( 'Enable Play Button', 'godam' ) }
+						label={ __( 'Show Play Button', 'godam' ) }
 						checked={ !! playButtonEnabled }
 						onChange={ ( value ) => setAttributes( { playButtonEnabled: value } ) }
-						disabled={ ! autoplay }
+						disabled={ isPlayButtonLocked }
 						help={
-							! autoplay
-								? __( 'Play button is required when autoplay is off.', 'godam' )
-								: null
+							isPlayButtonLocked
+								? __( 'Required when motion preview is disabled.', 'godam' )
+								: __( 'Displays a play icon overlay on videos.', 'godam' )
 						}
 					/>
 					{ playButtonEnabled && (
-						<>
+						<PanelBody title={ __( 'Appearance', 'godam' ) } initialOpen={ false }>
 							<p><strong>{ __( 'Icon Background Color', 'godam' ) }</strong></p>
 							<ColorPalette
 								enableAlpha
@@ -595,12 +616,12 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 								min={ 0 }
 								max={ 50 }
 							/>
-						</>
+						</PanelBody>
 					) }
 				</PanelBody>
 
 				{ ! playButtonEnabled && (
-					<PanelBody title={ __( 'Unmute Button Settings', 'godam' ) } initialOpen={ false }>
+					<PanelBody title={ __( 'Sound Button Overlay', 'godam' ) } initialOpen={ false }>
 						<p><strong>{ __( 'Icon Background Color', 'godam' ) }</strong></p>
 						<ColorPalette
 							enableAlpha
@@ -617,82 +638,97 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 				) }
 
 				{ ctaEnabled && (
-					<PanelBody title={ __( 'CTA Settings', 'godam' ) } initialOpen={ false }>
-						<SelectControl
-							label={ __( 'CTA Display Position', 'godam' ) }
-							value={ ctaDisplayPosition }
-							options={ [
-								{ label: __( 'Below & Inside the Video', 'godam' ), value: 'below-inside' },
-								{ label: __( 'Only Below the Video', 'godam' ), value: 'below' },
-								{ label: __( 'Only Inside the Video', 'godam' ), value: 'inside' },
-							] }
-							onChange={ ( value ) => setAttributes( { ctaDisplayPosition: value } ) }
-						/>
+					<PanelBody title={ __( 'Shoppable Products Settings', 'godam' ) } initialOpen={ false }>
+						<PanelBody
+							title={ __( 'Display', 'godam' ) }
+							initialOpen={ false }
+						>
+							<SelectControl
+								label={ __( 'Product Display Position', 'godam' ) }
+								value={ ctaDisplayPosition }
+								options={ [
+									{ label: __( 'Below & Inside the Video', 'godam' ), value: 'below-inside' },
+									{ label: __( 'Only Below the Video', 'godam' ), value: 'below' },
+									{ label: __( 'Only Inside the Video', 'godam' ), value: 'inside' },
+								] }
+								onChange={ ( value ) => setAttributes( { ctaDisplayPosition: value } ) }
+							/>
 
-						<p><strong>{ __( 'CTA Background Color', 'godam' ) }</strong></p>
-						<ColorPalette
-							value={ ctaBgColor }
-							onChange={ ( color ) => setAttributes( { ctaBgColor: color } ) }
-						/>
+							<p><strong>{ __( 'Product Section Background', 'godam' ) }</strong></p>
+							<ColorPalette
+								value={ ctaBgColor }
+								onChange={ ( color ) => setAttributes( { ctaBgColor: color } ) }
+							/>
+						</PanelBody>
 
-						<RangeControl
-							label={ __( 'Product Name Font Size (px)', 'godam' ) }
-							value={ ctaProductNameFontSize }
-							onChange={ ( value ) => setAttributes( { ctaProductNameFontSize: value } ) }
-							min={ 10 }
-							max={ 30 }
-						/>
+						<PanelBody
+							title={ __( 'Product Info', 'godam' ) }
+							initialOpen={ false }
+						>
+							<RangeControl
+								label={ __( 'Name Font Size (px)', 'godam' ) }
+								value={ ctaProductNameFontSize }
+								onChange={ ( value ) => setAttributes( { ctaProductNameFontSize: value } ) }
+								min={ 10 }
+								max={ 30 }
+							/>
 
-						<p><strong>{ __( 'Product Name Color', 'godam' ) }</strong></p>
-						<ColorPalette
-							value={ ctaProductNameColor }
-							onChange={ ( color ) => setAttributes( { ctaProductNameColor: color } ) }
-						/>
+							<p><strong>{ __( 'Name Color', 'godam' ) }</strong></p>
+							<ColorPalette
+								value={ ctaProductNameColor }
+								onChange={ ( color ) => setAttributes( { ctaProductNameColor: color } ) }
+							/>
 
-						<RangeControl
-							label={ __( 'Product Price Font Size (px)', 'godam' ) }
-							value={ ctaProductPriceFontSize }
-							onChange={ ( value ) => setAttributes( { ctaProductPriceFontSize: value } ) }
-							min={ 10 }
-							max={ 30 }
-						/>
+							<RangeControl
+								label={ __( 'Price Font Size (px)', 'godam' ) }
+								value={ ctaProductPriceFontSize }
+								onChange={ ( value ) => setAttributes( { ctaProductPriceFontSize: value } ) }
+								min={ 10 }
+								max={ 30 }
+							/>
 
-						<p><strong>{ __( 'Product Price Color', 'godam' ) }</strong></p>
-						<ColorPalette
-							value={ ctaProductPriceColor }
-							onChange={ ( color ) => setAttributes( { ctaProductPriceColor: color } ) }
-						/>
+							<p><strong>{ __( 'Price Color', 'godam' ) }</strong></p>
+							<ColorPalette
+								value={ ctaProductPriceColor }
+								onChange={ ( color ) => setAttributes( { ctaProductPriceColor: color } ) }
+							/>
+						</PanelBody>
 
-						<p><strong>{ __( 'CTA Cart Button Background', 'godam' ) }</strong></p>
-						<ColorPalette
-							enableAlpha
-							value={ ctaButtonBgColor }
-							onChange={ ( color ) => setAttributes( { ctaButtonBgColor: color } ) }
-						/>
+						<PanelBody
+							title={ __( 'Add to Cart Button', 'godam' ) }
+							initialOpen={ false }
+						>
+							<p><strong>{ __( 'Background', 'godam' ) }</strong></p>
+							<ColorPalette
+								enableAlpha
+								value={ ctaButtonBgColor }
+								onChange={ ( color ) => setAttributes( { ctaButtonBgColor: color } ) }
+							/>
 
-						<p><strong>{ __( 'CTA Cart Button Icon Color', 'godam' ) }</strong></p>
-						<ColorPalette
-							value={ ctaButtonIconColor }
-							onChange={ ( color ) => setAttributes( { ctaButtonIconColor: color } ) }
-						/>
+							<p><strong>{ __( 'Icon Color', 'godam' ) }</strong></p>
+							<ColorPalette
+								value={ ctaButtonIconColor }
+								onChange={ ( color ) => setAttributes( { ctaButtonIconColor: color } ) }
+							/>
 
-						<RangeControl
-							label={ __( 'CTA Cart Button Border Radius (%)', 'godam' ) }
-							value={ ctaButtonBorderRadius }
-							onChange={ ( value ) => setAttributes( { ctaButtonBorderRadius: value } ) }
-							min={ 0 }
-							max={ 50 }
-						/>
+							<RangeControl
+								label={ __( 'Border Radius (%)', 'godam' ) }
+								value={ ctaButtonBorderRadius }
+								onChange={ ( value ) => setAttributes( { ctaButtonBorderRadius: value } ) }
+								min={ 0 }
+								max={ 50 }
+							/>
 
-						<SelectControl
-							label={ __( 'After Add to Cart Action', 'godam' ) }
-							value={ ctaCartAction }
-							options={ [
-								{ label: __( 'Open Mini Cart', 'godam' ), value: 'mini-cart' },
-								{ label: __( 'Redirect to Cart Page', 'godam' ), value: 'redirect' },
-							] }
-							onChange={ ( value ) => setAttributes( { ctaCartAction: value } ) }
-						/>
+							<SelectControl
+								label={ __( 'Post Add-to-Cart Behavior', 'godam' ) }
+								value={ ctaCartAction }
+								options={ [
+									{ label: __( 'Open Mini Cart Drawer', 'godam' ), value: 'mini-cart' },
+									{ label: __( 'Go to Cart Page', 'godam' ), value: 'redirect' },
+								] }
+								onChange={ ( value ) => setAttributes( { ctaCartAction: value } ) }
+							/>
+						</PanelBody>
 					</PanelBody>
 				) }
 
