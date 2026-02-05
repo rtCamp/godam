@@ -283,19 +283,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: Background scroll issues in full screen on iOS
 - Fix: SDK event errors
 
-= v1.4.8 (December 10, 2025) =
-
-- Feat: Added support for PDF files
-- Tweak: Implemented enhancements for Likes & Comments functionality
-- Tweak: Integrated further performance improvements, optimized asset loading
-- Tweak: Updated “Manage media” button to point directly to the specific folder
-- Tweak: Addressed various media library issues and general improvements
-- Fix: Full-screen inconsistencies on iOS (SDK)
-- Fix: Blank page issue when navigating unsaved video editor pages
-- Fix: Media Uploader UI issues
-- Fix: Form submission issues in preview
-- Fix: Player skin overlap issues
-- Fix: Media metadata display on Central
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
