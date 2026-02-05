@@ -1,15 +1,19 @@
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import { getFirstNonEmpty, appendTimezoneOffsetToUTC } from '../../../blocks/godam-player/utils';
+import { getFirstNonEmpty, appendTimezoneOffsetToUTC, stripHtmlTags } from '../../../blocks/godam-player/utils';
 
 window.addEventListener( 'elementor/frontend/init', () => {
 	function prepareVideoMeta( attachmentData ) {
 		const initialVideoData = {
 			contentUrl: getFirstNonEmpty( attachmentData?.meta?.rtgodam_transcoded_url, attachmentData?.source_url ),
 			headline: getFirstNonEmpty( attachmentData?.title?.rendered ),
-			description: getFirstNonEmpty( attachmentData?.description?.rendered ),
+			description: stripHtmlTags( getFirstNonEmpty( attachmentData?.description?.rendered ) || '' ),
 			uploadDate: getFirstNonEmpty( appendTimezoneOffsetToUTC( attachmentData?.date_gmt ) ),
 			duration: getFirstNonEmpty( attachmentData?.video_duration_iso8601 ),
 			thumbnailUrl: getFirstNonEmpty( attachmentData?.meta?.rtgodam_media_video_thumbnail ),
@@ -24,7 +28,7 @@ window.addEventListener( 'elementor/frontend/init', () => {
 		// eslint-disable-next-line no-undef
 		elementorFrontend.hooks.addAction(
 			'frontend/element_ready/godam-video.default',
-			( ) => {
+			() => {
 				window.GODAMPlayer();
 			},
 		);
@@ -84,9 +88,11 @@ window.addEventListener( 'elementor/frontend/init', () => {
 								return;
 							}
 							const seoData = prepareVideoMeta( data );
+
 							model.get( 'settings' ).set( {
 								seo_content_url: seoData.contentUrl,
 								seo_content_headline: seoData.headline,
+								seo_content_description: seoData.description,
 								seo_content_upload_date: seoData.uploadDate,
 								seo_content_video_thumbnail_url: seoData.thumbnailUrl,
 								seo_content_duration: seoData.duration,
@@ -105,6 +111,36 @@ window.addEventListener( 'elementor/frontend/init', () => {
 					}
 					model.get( 'settings' ).set( { seo_content_video_thumbnail_url: posterFile.url } );
 					panel.currentPageView.render();
+				} );
+
+				/**
+				 * Updates the SEO description help text based on field value.
+				 */
+				const updateDescriptionHelp = () => {
+					const description = model.get( 'settings' ).get( 'seo_content_description' ) || '';
+					const helpElement = panel.$el.find( '.godam-seo-description-help' );
+
+					if ( helpElement.length ) {
+						if ( ! description.trim() ) {
+							helpElement.text( __( 'It is recommended to add a description for better video SEO.', 'godam' ) );
+							helpElement.css( 'color', '#996800' );
+						} else {
+							helpElement.text( __( 'Description of the video', 'godam' ) );
+							helpElement.css( 'color', '' );
+						}
+					}
+				};
+
+				// Delay to ensure the Elementor panel DOM has finished rendering
+				// before querying and updating the SEO description help element.
+				const DESCRIPTION_HELP_UPDATE_DELAY_MS = 100;
+
+				// Update help text when description changes
+				model.get( 'settings' ).on( 'change:seo_content_description', updateDescriptionHelp );
+
+				// Update help text when panel renders
+				panel.currentPageView.on( 'render', () => {
+					setTimeout( updateDescriptionHelp, DESCRIPTION_HELP_UPDATE_DELAY_MS );
 				} );
 			},
 		);

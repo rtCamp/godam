@@ -110,6 +110,7 @@ const FolderCreationModal = () => {
 				title={ __( 'Create a new folder', 'godam' ) }
 				onRequestClose={ () => dispatch( closeModal( 'folderCreation' ) ) }
 				className="modal__container"
+				bodyOpenClassName="folder-creation-modal-open"
 			>
 				<TextControl
 					ref={ inputRef }

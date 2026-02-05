@@ -1,3 +1,19 @@
 /*
 Write your Sass code here for front-end.
 */
+.godam-snackbar {
+	min-width: 250px;
+	color: #fff;
+	text-align: center;
+	border-radius: 4px;
+	padding: 16px;
+	position: fixed;
+	right: 40px;
+	bottom: 35px;
+	z-index: 999999;
+	font-size: 14px;
+
+	&-error {
+		background: #cc1818;
+	}
+}
