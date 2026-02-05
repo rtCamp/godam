@@ -67,6 +67,8 @@ class Dynamic_Shortcode extends Base {
 
 		$engagements = $request->get_param( 'engagements' );
 
+		$godam_context = $request->get_param( 'godam_context' );
+
 		$attachment = get_post( $id );
 
 		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
@@ -120,7 +122,13 @@ class Dynamic_Shortcode extends Base {
 		$video_date  = apply_filters( 'rtgodam_shortcode_video_date', $video_date, $id );
 
 		ob_start();
-		$shortcode = "[godam_video id='{$id}' engagements='{$engagements}' sources='{$sources_with_placeholders}']";
+		$shortcode = "[godam_video id='{$id}' engagements='{$engagements}' sources='{$sources_with_placeholders}'";
+
+		if ( ! empty( $godam_context ) ) {
+			$shortcode .= " godam_context='{$godam_context}'";
+		}
+
+		$shortcode .= ']';
 
 		// Add filter for shortcode.
 		$shortcode = apply_filters( 'rtgodam_shortcode_output', $shortcode, $id );

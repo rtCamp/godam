@@ -169,6 +169,7 @@ class GoDAM_Player {
 				'poster'         => '',
 				'aspectRatio'    => '',
 				'engagements'    => '',
+				'godam_context'  => '',
 			),
 			$atts,
 			'godam_video'
