@@ -1,5 +1,5 @@
 === GoDAM - Organize WordPress Media Library & File Manager with Unlimited Folders for Images, Videos & more ===
-Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia, kishu7270, opurockey, utsavladani, whiteshadow01, ahmarzaidi
+Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia, kishu7270, opurockey, utsavladani, whiteshadow01, ahmarzaidi, shaanyworkspace
 Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 6.9
