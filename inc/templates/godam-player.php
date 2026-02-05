@@ -350,15 +350,26 @@ foreach ( $godam_custom_css_properties as $godam_property => $godam_value ) {
 	}
 }
 
+// Get WPBakery Design Options CSS class if available.
+$godam_css_class = ! empty( $attributes['css_class'] ) ? trim( $attributes['css_class'] ) : '';
+
 // Build the figure attributes for the <figure> element.
 if ( $godam_is_shortcode || $godam_is_elementor_widget ) {
-	$godam_figure_attributes = ! empty( $godam_custom_inline_styles )
+	$godam_style_attr = ! empty( $godam_custom_inline_styles )
 		? 'style="' . esc_attr( $godam_custom_inline_styles ) . '"'
 		: '';
+	$godam_class_attr = '';
+	if ( ! empty( $godam_css_class ) ) {
+		$godam_class_attr = 'class="' . esc_attr( $godam_css_class ) . '"';
+	}
+	$godam_figure_attributes = trim( $godam_class_attr . ' ' . $godam_style_attr );
 } else {
 	$godam_additional_attributes = array();
 	if ( ! empty( $godam_custom_inline_styles ) ) {
 		$godam_additional_attributes['style'] = esc_attr( $godam_custom_inline_styles );
+	}
+	if ( ! empty( $godam_css_class ) ) {
+		$godam_additional_attributes['class'] = esc_attr( $godam_css_class );
 	}
 	$godam_figure_attributes = get_block_wrapper_attributes( $godam_additional_attributes );
 }

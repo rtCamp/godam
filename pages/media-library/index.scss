@@ -120,7 +120,7 @@ $godam-gradient: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
 	}
 
 	.new-folder-button {
-		background: $godam-gradient !important;
+		background: $godam-gradient;
 		border-radius: 0.25rem;
 		box-shadow: none;
 	}
@@ -151,8 +151,30 @@ $godam-gradient: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
 		min-width: 8rem;
 		width: 100%;
 
+		@media (max-width: 782px) {
+
+			select {
+				font-size: 13px;
+			}
+		}
+	}
+
+	.search-input {
+
+		@media (max-width: 782px) {
+
+			input {
+				font-size: 13px;
+			}
+		}
+
 		.components-select-control__input {
 			padding: 0 26px 0 8px;
+		}
+		
+		.components-input-control__prefix div {
+			-webkit-padding-start: 6px;
+			padding-inline-start: 6px;
 		}
 	}
 
@@ -266,7 +288,7 @@ $godam-gradient: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
 	}
 
 	.folder-context-menu__item {
-		justify-content: flex-start !important;
+		justify-content: flex-start;
 	}
 
 	.close-folder-menu-mobile {
@@ -295,11 +317,11 @@ $godam-gradient: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
 
 
 .components-button.has-icon.has-text {
-	justify-content: center !important;
+	justify-content: center;
 }
 
 .components-button.has-icon.has-text.text-flex-left {
-	justify-content: left !important;
+	justify-content: left;
 }
 
 .media-frame-menu:has( #rt-transcoder-media-library-root ) {

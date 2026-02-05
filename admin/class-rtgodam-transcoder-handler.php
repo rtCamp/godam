@@ -213,7 +213,7 @@ class RTGODAM_Transcoder_Handler {
 		 * Example usage:
 		 * add_filter( 'godam_auto_transcode_on_upload', '__return_false' ); // Disable globally
 		 *
-		 * @since n.e.x.t
+		 * @since 1.5.0
 		 *
 		 * @param bool $auto_transcode_on_upload Whether to automatically transcode on upload. Default true.
 		 */
@@ -223,6 +223,11 @@ class RTGODAM_Transcoder_Handler {
 			if ( ! $auto_transcode_on_upload ) {
 				return $wp_metadata;
 			}
+		}
+
+		// Skip transcoding and re-transcoding for images.
+		if ( preg_match( '/image/i', $wp_metadata['mime_type'], $type_array ) ) {
+			return $wp_metadata;
 		}
 
 		if ( empty( $wp_metadata['mime_type'] ) ) {
@@ -278,7 +283,6 @@ class RTGODAM_Transcoder_Handler {
 		$type             = strtolower( $type_arry[ count( $type_arry ) - 1 ] );
 		$extension        = pathinfo( $path, PATHINFO_EXTENSION );
 		$not_allowed_type = array();
-		preg_match( '/video|audio/i', $metadata['mime_type'], $type_array );
 
 		if ( (
 				preg_match( '/video|audio/i', $metadata['mime_type'], $type_array ) ||
@@ -344,14 +348,16 @@ class RTGODAM_Transcoder_Handler {
 			// Get author name with fallback to username.
 			$author_first_name = '';
 			$author_last_name  = '';
+			$author_email      = '';
 
 			if ( $attachment_author ) {
-				$author_first_name = $attachment_author->first_name;
-				$author_last_name  = $attachment_author->last_name;
+				$author_first_name = $attachment_author->first_name ?? '';
+				$author_last_name  = $attachment_author->last_name ?? '';
+				$author_email      = $attachment_author->user_email ?? '';
 
 				// If first and last names are empty, use username as fallback.
 				if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
-					$author_first_name = $attachment_author->user_login;
+					$author_first_name = $attachment_author->user_login ?? '';
 				}
 			}
 
@@ -375,7 +381,8 @@ class RTGODAM_Transcoder_Handler {
 						'watermark'            => boolval( $rtgodam_watermark ),
 						'resolutions'          => array( 'auto' ),
 						'video_quality'        => $rtgodam_video_compress_quality,
-						'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $attachment_author ? $attachment_author->user_email : '', $attachment_id ),
+						'mime_type'            => $metadata['mime_type'],
+						'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $author_email, $attachment_id ),
 						'wp_site'              => $site_url,
 						'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, $attachment_id ),
 						'wp_author_last_name'  => apply_filters( 'godam_author_last_name_to_send', $author_last_name, $attachment_id ),

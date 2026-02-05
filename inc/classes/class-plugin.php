@@ -47,12 +47,14 @@ use RTGODAM\Inc\REST_API\Engagement;
 use RTGODAM\Inc\REST_API\Site;
 use RTGODAM\Inc\REST_API\Video_Migration;
 use RTGODAM\Inc\REST_API\Release_Post;
+use RTGODAM\Inc\REST_API\Video_Sync;
 use RTGODAM\Inc\Gravity_Forms;
 use RTGODAM\Inc\REST_API\MetForm;
 
 
 use RTGODAM\Inc\Shortcodes\GoDAM_Player;
 use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
+use RTGODAM\Inc\Shortcodes\GoDAM_Audio;
 
 use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
 use RTGODAM\Inc\Everest_Forms\Everest_Forms_Integration;
@@ -66,6 +68,11 @@ use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Integration;
 use RTGODAM\Inc\Metform\Metform_Integration;
 use RTGODAM\Inc\Metform\Metform_Rest_Api;
 use RTGODAM\Inc\Lifter_LMS\Lifter_LMS;
+
+use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Params;
+use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Video;
+use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Video_Gallery;
+use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Audio;
 
 /**
  * Class Plugin.
@@ -97,6 +104,7 @@ class Plugin {
 		// Load shortcodes.
 		GoDAM_Player::get_instance();
 		GoDAM_Video_Gallery::get_instance();
+		GoDAM_Audio::get_instance();
 		Video_Engagement::get_instance();
 
 		Video_Editor_Form_Layer_Handler::get_instance()->init();
@@ -126,6 +134,9 @@ class Plugin {
 
 		// Load Elementor widgets.
 		$this->load_elementor_widgets();
+
+		// Load WPBakery elements.
+		$this->load_wpbakery_elements();
 
 		$this->load_media_library();
 	}
@@ -179,6 +190,7 @@ class Plugin {
 		Site::get_instance();
 		Video_Migration::get_instance();
 		Release_Post::get_instance();
+		Video_Sync::get_instance();
 	}
 
 	/**
@@ -199,13 +211,36 @@ class Plugin {
 	 * @return void
 	 */
 	public function load_elementor_widgets() {
-		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
 
 		if ( ! is_plugin_active( 'elementor/elementor.php' ) ) {
 			return;
 		}
 
 		Elementor_Widgets::get_instance();
+	}
+
+	/**
+	 * Registers the WPBakery elements if required.
+	 *
+	 * @return void
+	 */
+	public function load_wpbakery_elements() {
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
+		if ( ! is_plugin_active( 'js_composer/js_composer.php' ) ) {
+			return;
+		}
+
+		WPB_GoDAM_Params::get_instance();
+
+		WPB_GoDAM_Video::get_instance();
+		WPB_GoDAM_Video_Gallery::get_instance();
+		WPB_GoDAM_Audio::get_instance();
 	}
 
 	/**

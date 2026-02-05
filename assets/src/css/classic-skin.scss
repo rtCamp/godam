@@ -272,6 +272,8 @@
 			gap: 8px;
 			align-items: center;
 			padding: 2px 4px !important;
+			max-height: 300px;
+			overflow: auto;
 		}
 
 		.vjs-settings-button {
@@ -620,6 +622,10 @@
 
 		.video-js .godam-chevron-icon {
 			display: block;
+		}
+
+		.vjs-menu-content {
+			max-height: 150px !important;
 		}
 	}
 }

@@ -216,6 +216,11 @@ $media-frame-width: calc(300px + 2 * 24px);
 	width: 8rem;
 	border: 1px solid $media-library-sidebar-bg-dark;
 	vertical-align: middle;
+
+	@media (max-width: 782px) {
+		min-height: 40px;
+		border-radius: 3px;
+	}
 }
 
 .media-modal-content #media-date-range-filter {
@@ -804,9 +809,19 @@ to ensure proper responsiveness and avoid layout issues.
 
 .compat-attachment-fields {
 
+	th.label {
+		text-align: left;
+		min-width: unset;
+	}
+
 	td.field {
 		$wp-td-field-margin: 1px;
 		width: calc(100% - 2 * $wp-td-field-margin);
+
+		/* stylelint-disable-next-line no-descending-specificity */
+		input {
+			max-width: 600px;
+		}
 	}
 }
 

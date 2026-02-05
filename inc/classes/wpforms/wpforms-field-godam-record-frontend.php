@@ -7,6 +7,10 @@
  * @since 1.3.0
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 $godam_video_upload_button_id = wp_unique_id( 'uppy-video-upload-' );
 
 // Define data.
@@ -54,7 +58,7 @@ $godam_uppy_preview_id   = "uppy_preview_{$godam_form_id}_{$godam_field_id}";
 		class="uppy-video-upload-button"
 	>
 		<span class="dashicons dashicons-video-alt"></span>
-		<?php esc_html_e( 'Record Video', 'godam' ); ?>
+		<?php esc_html_e( 'Start Recording', 'godam' ); ?>
 	</button>
 	<div id="<?php echo esc_attr( $godam_uppy_preview_id ); ?>" class="uppy-video-upload-preview"></div>
 	<div id="<?php echo esc_attr( $godam_uppy_file_name_id ); ?>" class="upp-video-upload-filename"></div>
