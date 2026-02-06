@@ -67,12 +67,14 @@ class UppyVideoUploader {
 		// Prefer 1920x1080, swap in portrait so we request correct geometry.
 		const idealWidth = landscape ? 1920 : 1080;
 		const idealHeight = landscape ? 1080 : 1920;
+		const aspectRatio = landscape ? 16 / 9 : 9 / 16;
 
 		return {
 			width: { ideal: idealWidth },
 			height: { ideal: idealHeight },
 			frameRate: { ideal: 30, max: 60 },
 			facingMode: { ideal: 'user' }, // or 'environment' depending on your default
+			aspectRatio: { ideal: aspectRatio },
 		};
 	}
 
@@ -96,6 +98,17 @@ class UppyVideoUploader {
 		} catch ( e ) {
 			// Don't break recorder flow if restart fails.
 		}
+	}
+
+	updateUppyOrientationClass() {
+		const landscape =
+		( window.matchMedia && window.matchMedia( '(orientation: landscape)' ).matches ) ||
+		( window.innerWidth > window.innerHeight );
+
+		const target = this.uppyModalTarget || document.body;
+
+		target.classList.toggle( 'godam-uppy--landscape', landscape );
+		target.classList.toggle( 'godam-uppy--portrait', ! landscape );
 	}
 
 	/**
@@ -272,6 +285,9 @@ class UppyVideoUploader {
 				showVideoSourceDropdown: true,
 				videoConstraints: this.getPreferredVideoConstraints(),
 			} );
+
+			window.webcam = this.uppy.getPlugin( 'Webcam' );
+			console.log( webcam );
 		}
 
 		// Optional ScreenCapture support.
@@ -331,7 +347,11 @@ class UppyVideoUploader {
 			}
 		} );
 
-		const onRotate = () => this.restartWebcamStream();
+		this.updateUppyOrientationClass();
+		const onRotate = () => {
+			this.updateUppyOrientationClass();
+			this.restartWebcamStream();
+		};
 		window.addEventListener( 'orientationchange', onRotate, { passive: true } );
 		window.addEventListener( 'resize', onRotate, { passive: true } );
 	}
