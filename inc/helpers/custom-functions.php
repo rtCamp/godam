@@ -868,6 +868,39 @@ function rtgodam_is_local_environment() {
 }
 
 /**
+ * Check if the site has HTTP authentication enabled.
+ *
+ * This function uses a result from JavaScript-based detection.
+ * The JS detection runs in the browser and can accurately detect HTTP auth
+ * by making a request without credentials, then stores the result in an option.
+ * If no cached status exists, this function falls back to a default of "not enabled".
+ *
+ * @since n.e.x.t
+ *
+ * @return bool True if HTTP auth is enforced, false otherwise.
+ */
+function rtgodam_has_http_auth(): bool {
+	$has_http_auth = false;
+
+	// Get detection result from JavaScript detector.
+	$cached_status = get_option( 'rtgodam_http_auth_status', array() );
+
+	// If we have a recent detection result, use it.
+	if ( ! empty( $cached_status ) && isset( $cached_status['enabled'] ) ) {
+		$has_http_auth = (bool) $cached_status['enabled'];
+	}
+
+	/**
+	 * Filter to override HTTP auth detection.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param bool $has_http_auth Whether HTTP auth is enforced.
+	 */
+	return apply_filters( 'godam_has_http_auth', $has_http_auth );
+}
+
+/**
  * Fetch AI-generated video transcript path.
  *
  * @param int         $attachment_id The attachment ID (must be numeric).
