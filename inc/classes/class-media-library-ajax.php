@@ -158,10 +158,10 @@ class Media_Library_Ajax {
 	 * Upload media to the Frappe backend.
 	 *
 	 * @param int  $attachment_id Attachment ID.
-	 * @param bool $retranscode Whether this is a retranscode request.
+	 * @param bool $manual_retranscode Whether this is a retranscode request.
 	 * @return void
 	 */
-	public function upload_media_to_frappe_backend( $attachment_id, $retranscode = false ) {
+	public function upload_media_to_frappe_backend( $attachment_id, $manual_retranscode = false ) {
 		// Check if local development environment.
 		if ( rtgodam_is_local_environment() ) {
 			return;
@@ -182,7 +182,7 @@ class Media_Library_Ajax {
 		 *
 		 * @param bool $auto_transcode_on_upload Whether to automatically transcode on upload. Default true.
 		 */
-		if ( ! $retranscode ) {
+		if ( ! $manual_retranscode ) {
 			$auto_transcode_on_upload = apply_filters( 'godam_auto_transcode_on_upload', true );
 
 			if ( ! $auto_transcode_on_upload ) {
