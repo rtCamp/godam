@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
  */
 import { Button, TextControl, ToggleControl, Notice, Tooltip } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 /**
  * Internal dependencies
@@ -26,54 +26,6 @@ const CustomAdSettings = ( { layerID } ) => {
 	const [ isValid, setIsValid ] = useState( true );
 	const dispatch = useDispatch();
 
-	/**
-	 * Convert duration from minute:seconds format to total seconds
-	 * @param {string} duration - Duration in format "MM:SS" or "H:MM:SS"
-	 * @return {number} Total seconds
-	 */
-	const convertDurationToSeconds = ( duration ) => {
-		if ( ! duration || typeof duration !== 'string' ) {
-			return 0;
-		}
-
-		const parts = duration.split( ':' ).map( ( part ) => parseInt( part, 10 ) );
-
-		if ( parts.length === 2 ) {
-			// Format is MM:SS
-			const [ minutes, seconds ] = parts;
-			return ( minutes * 60 ) + seconds;
-		} else if ( parts.length === 3 ) {
-			// Format is H:MM:SS
-			const [ hours, minutes, seconds ] = parts;
-			return ( hours * 3600 ) + ( minutes * 60 ) + seconds;
-		}
-
-		return 0;
-	};
-
-	/**
-	 * Get video duration by loading the video element
-	 * @param {string} videoUrl - URL of the video
-	 * @return {Promise<number>} Video duration in seconds
-	 */
-	const getVideoDuration = ( videoUrl ) => {
-		return new Promise( ( resolve ) => {
-			const video = document.createElement( 'video' );
-			video.preload = 'metadata';
-
-			video.onloadedmetadata = function() {
-				const duration = Math.floor( video.duration );
-				resolve( duration );
-			};
-
-			video.onerror = function() {
-				resolve( 0 );
-			};
-
-			video.src = videoUrl;
-		} );
-	};
-
 	const OpenVideoSelector = () => {
 		const fileFrame = wp.media( {
 			title: __( 'Select / Upload Ad video', 'godam' ),
@@ -86,20 +38,8 @@ const CustomAdSettings = ( { layerID } ) => {
 			multiple: false, // Disable multiple selection
 		} );
 
-		fileFrame.on( 'select', async function() {
+		fileFrame.on( 'select', function() {
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
-
-			// Extract video duration from attachment metadata.
-			// - attachment.fileLength: numeric duration in seconds provided directly on some media attachments.
-			// - attachment.meta.length_formatted: human-readable duration string (e.g., "1:23") stored in attachment meta.
-			const videoDuration = attachment?.fileLength || attachment?.meta?.length_formatted || 0;
-
-			// Convert duration to seconds if it's in minute:seconds format
-			let durationInSeconds = typeof videoDuration === 'string'
-				? convertDurationToSeconds( videoDuration )
-				: videoDuration;
-
-			// Update ad URL
 			dispatch(
 				updateLayerField( {
 					id: layerID,
@@ -107,22 +47,6 @@ const CustomAdSettings = ( { layerID } ) => {
 					value: attachment.url,
 				} ),
 			);
-
-			// If duration is not available from metadata, calculate it from video element
-			if ( ! durationInSeconds || durationInSeconds === 0 ) {
-				durationInSeconds = await getVideoDuration( attachment.url );
-			}
-
-			// Update ad duration if available
-			if ( durationInSeconds ) {
-				dispatch(
-					updateLayerField( {
-						id: layerID,
-						field: 'ad_duration',
-						value: durationInSeconds,
-					} ),
-				);
-			}
 		} );
 
 		fileFrame.open();
