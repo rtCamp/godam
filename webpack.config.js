@@ -135,6 +135,13 @@ const godamGallery = {
 	},
 };
 
+const godamVideoEmbed = {
+	...sharedConfig,
+	entry: {
+		'godam-video-embed': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-video-embed.js' ),
+	},
+};
+
 const gfGodamRecorderEditorJS = {
 	...sharedConfig,
 	entry: {
@@ -223,6 +230,40 @@ const ninjaForms = {
 	},
 };
 
+const wpBakeryVideoSelectorParam = {
+	...sharedConfig,
+	entry: {
+		'wpbakery-video-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-video-selector-param.js' ),
+	},
+};
+
+const wpBakeryAudioSelectorParam = {
+	...sharedConfig,
+	entry: {
+		'wpbakery-audio-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-audio-selector-param.js' ),
+	},
+};
+
+const wpBakeryImageSrcSelectorParam = {
+	...sharedConfig,
+	entry: {
+		'wpbakery-image-src-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-image-src-selector-param.js' ),
+	},
+};
+const ninjaFormsSubmissionsList = {
+	...sharedConfig,
+	entry: {
+		'ninja-forms-submissions-list': path.resolve( process.cwd(), 'assets', 'src', 'js', 'ninja-forms', 'ninja-forms-submissions-list.js' ),
+	},
+};
+
+const blockExtensions = {
+	...sharedConfig,
+	entry: {
+		'block-extensions': path.resolve( process.cwd(), 'assets', 'src', 'block-extensions', 'index.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -297,6 +338,7 @@ module.exports = [
 	godamPlayerAnalytics,
 	deactivationJS,
 	godamGallery,
+	godamVideoEmbed,
 	gfGodamRecorderEditorJS,
 	wpFormsGodamRecorderEditorJS,
 	jetpackFormJS,
@@ -311,4 +353,9 @@ module.exports = [
 	lifterLMSBlock,
 	lifterLMSEmbed,
 	ninjaForms,
+	wpBakeryVideoSelectorParam,
+	wpBakeryAudioSelectorParam,
+	wpBakeryImageSrcSelectorParam,
+	ninjaFormsSubmissionsList,
+	blockExtensions,
 ];

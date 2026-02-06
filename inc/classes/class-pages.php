@@ -165,7 +165,7 @@ class Pages {
 		add_menu_page(
 			__( 'GoDAM', 'godam' ),
 			__( 'GoDAM', 'godam' ),
-			'edit_pages',
+			'publish_posts',
 			$this->menu_slug,
 			array( $this, 'render_dashboard_page' ),
 			'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI1LjU1NzggMjAuMDkxMUw4LjA1NTg3IDM3LjU5M0wzLjQ2Mzk3IDMzLjAwMTFDMC44MTg1MjEgMzAuMzU1NiAyLjA4MjEgMjUuODMzNiA1LjcyMjI4IDI0Ljk0NjRMMjUuNTYzMiAyMC4wOTY0TDI1LjU1NzggMjAuMDkxMVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00Ny4zNzczIDIxLjg4NjdMNDUuNTQzOCAyOS4zODc1TDIyLjY5NzIgNTIuMjM0MUwxMS4yNjA1IDQwLjc5NzRMMzQuMTY2MiAxNy44OTE2TDQxLjU3MDMgMTYuMDc5NkM0NS4wNzA2IDE1LjIyNDcgNDguMjMyMyAxOC4zODYzIDQ3LjM3MiAyMS44ODEzTDQ3LjM3NzMgMjEuODg2N1oiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00My41MDU5IDM4LjEwMzZMMzguNjY2NyA1Ny44OTA3QzM3Ljc3NDEgNjEuNTI1NSAzMy4yNTIxIDYyLjc4OTEgMzAuNjA2NiA2MC4xNDM2TDI2LjAzNjMgNTUuNTczMkw0My41MDU5IDM4LjEwMzZaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K',
@@ -180,7 +180,7 @@ class Pages {
 			$this->menu_slug,
 			__( 'Dashboard', 'godam' ),
 			__( 'Dashboard', 'godam' ),
-			'edit_pages', // Dashboard is accessible to editors and above.
+			'publish_posts', // Dashboard is accessible to authors and above.
 			$this->menu_slug,
 			array( $this, 'render_dashboard_page' ),
 			1
@@ -376,7 +376,7 @@ class Pages {
 		}
 
 		?>
-		<div class="godam-admin-root">
+		<div class="godam-admin-root godam-video-editor-page">
 			<div id="root-video-editor">
 				<div class="progress-bar-wrapper">
 					<div class="progress-bar-container">
@@ -396,9 +396,10 @@ class Pages {
 	 * @return void
 	 */
 	public function render_dashboard_page() {
+		$is_premium_user = rtgodam_is_api_key_valid();
 		?>
 		<div class="godam-admin-root">
-			<div id="root-video-dashboard"></div>
+			<div id="root-video-dashboard" class="<?php echo $is_premium_user ? '' : 'free-user'; ?>"></div>
 		</div>
 		<?php
 	}
@@ -409,9 +410,10 @@ class Pages {
 	 * @return void
 	 */
 	public function render_analytics_page() {
+		$is_premium_user = rtgodam_is_api_key_valid();
 		?>
 		<div class="godam-admin-root">
-			<div id="root-video-analytics"></div>
+			<div id="root-video-analytics" class="<?php echo $is_premium_user ? '' : 'free-user'; ?>"></div>
 		</div>
 		<?php
 	}
@@ -505,6 +507,12 @@ class Pages {
 					'ninjaFormsActive'   => $is_ninja_forms_active,
 					'metformActive'      => $is_met_form_active,
 				)
+			);
+
+			wp_localize_script(
+				'transcoder-page-script-video-editor',
+				'posthogConfig',
+				$this->get_posthog_config()
 			);
 
 			// Enqueue Gravity Forms styles if the plugin is active.
@@ -611,6 +619,12 @@ class Pages {
 
 			wp_localize_script(
 				'godam-page-script-dashboard',
+				'posthogConfig',
+				$this->get_posthog_config()
+			);
+
+			wp_localize_script(
+				'godam-page-script-dashboard',
 				'videoData',
 				array(
 					'adminUrl'              => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
@@ -668,6 +682,12 @@ class Pages {
 				)
 			);
 
+			wp_localize_script(
+				'transcoder-page-script-analytics',
+				'posthogConfig',
+				$this->get_posthog_config()
+			);
+
 			$rtgodam_user_data = rtgodam_get_user_data( true );
 
 			wp_localize_script(
@@ -703,6 +723,12 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			wp_localize_script(
+				'godam-page-script-help',
+				'posthogConfig',
+				$this->get_posthog_config()
+			);
+
 			// Footer URL data for internal redirection.
 			wp_localize_script(
 				'godam-page-script-help',
@@ -732,6 +758,12 @@ class Pages {
 					$rtgodam_user_data
 				);
 			}
+
+			wp_localize_script(
+				'transcoder-page-script-godam',
+				'posthogConfig',
+				$this->get_posthog_config()
+			);
 
 			// Footer URL data for internal redirection.
 			wp_localize_script(
@@ -764,6 +796,12 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			wp_localize_script(
+				'godam-page-script-tools',
+				'posthogConfig',
+				$this->get_posthog_config()
+			);
+
 			// Footer URL data for internal redirection.
 			wp_localize_script(
 				'godam-page-script-tools',
@@ -792,6 +830,12 @@ class Pages {
 				array(
 					'version' => RTGODAM_VERSION,
 				)
+			);
+
+			wp_localize_script(
+				'godam-page-script-whats-new',
+				'posthogConfig',
+				$this->get_posthog_config()
 			);
 
 			wp_enqueue_script( 'godam-page-script-whats-new' );
@@ -826,6 +870,53 @@ class Pages {
 				'roles'    => $roles,
 			)
 		);
+
+		wp_localize_script(
+			'media-library-react',
+			'posthogConfig',
+			$this->get_posthog_config()
+		);
+	}
+
+	/**
+	 * Get PostHog configuration for internal GoDAM analytics tracking.
+	 * These are hardcoded public keys - clients don't need to configure anything.
+	 *
+	 * @return array PostHog configuration array with 'key', 'host', and 'enabled' settings.
+	 */
+	private function get_posthog_config() {
+		$settings        = get_option( 'rtgodam-settings', array() );
+		$enable_tracking = isset( $settings['general']['enable_posthog_tracking'] ) ? $settings['general']['enable_posthog_tracking'] : false;
+
+		$config = array(
+			'key'     => 'phc_9P3X3py1SfwrF78SXXkIyL2cHjkRTpvWzqf8RZJDaSk',
+			'host'    => 'https://us.i.posthog.com',
+			'enabled' => (int) $enable_tracking, // Convert boolean to int (0/1) for proper JS encoding.
+		);
+
+		if ( $enable_tracking ) {
+			global $wpdb, $wp_version;
+
+			if ( ! function_exists( 'get_plugins' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
+
+			$all_plugins    = get_plugins();
+			$active_plugins = get_option( 'active_plugins', array() );
+
+			$config['properties'] = array(
+				'php_version'          => phpversion(),
+				'mysql_version'        => $wpdb->db_version(),
+				'server_software'      => isset( $_SERVER['SERVER_SOFTWARE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) ) : '',
+				'wp_version'           => $wp_version,
+				'site_language'        => get_locale(),
+				'active_plugins_count' => count( $active_plugins ),
+				'total_plugins_count'  => count( $all_plugins ),
+				'user_count'           => count_users()['total_users'] ?? 0,
+			);
+		}
+
+		return $config;
 	}
 
 	/**

@@ -10,6 +10,11 @@ import Audio from '@uppy/audio';
 import GoldenRetriever from '@uppy/golden-retriever';
 
 /**
+ * WordPress dependencies
+ */
+import { __, sprintf } from '@wordpress/i18n';
+
+/**
  * Class to handle Uppy video uploads within Gravity Forms.
  * Supports webcam, screen capture, and local file uploads with preview,
  * localStorage restoration, and integration with existing file input fields.
@@ -28,6 +33,7 @@ class UppyVideoUploader {
 			'data-video-upload-button-id',
 		);
 		this.maxFileSize = Number( container.getAttribute( 'data-max-size' ) );
+		this.maxDurationSeconds = Number( container.getAttribute( 'data-max-duration' ) ) || 0;
 		this.enabledSelectors =
 			container.getAttribute( 'data-file-selectors' ) ||
 			'webcam,screen_capture';
@@ -51,6 +57,87 @@ class UppyVideoUploader {
 
 		// Attach Gravity Forms AJAX rehydration handler.
 		this.setupGravityFormsAjaxHandler();
+	}
+
+	/**
+	 * Gets the duration of a media file in seconds.
+	 * @param {File} file - The media file.
+	 * @return {Promise<number>} A promise that resolves with the duration in seconds.
+	 */
+	async getMediaDurationSeconds( file ) {
+		// Only for audio/video
+		const isAudio = file?.type?.startsWith( 'audio/' );
+		const isVideo = file?.type?.startsWith( 'video/' );
+		if ( ! isAudio && ! isVideo ) {
+			return 0;
+		}
+
+		const el = document.createElement( isAudio ? 'audio' : 'video' );
+		el.preload = 'metadata';
+
+		return await new Promise( ( resolve ) => {
+			const cleanup = () => {
+				try {
+					URL.revokeObjectURL( el.src );
+				} catch ( e ) {
+					// ignore
+				}
+				el.remove();
+			};
+
+			el.onloadedmetadata = () => {
+				let d = Number( el.duration );
+
+				if ( d === Infinity ) {
+					el.currentTime = 1e101; // force duration to resolve in some browsers
+					el.ontimeupdate = () => {
+						el.ontimeupdate = null;
+						d = Number( el.duration );
+
+						cleanup();
+						resolve( Number.isFinite( d ) ? d : 0 );
+					};
+					return;
+				}
+
+				cleanup();
+				resolve( Number.isFinite( d ) ? d : 0 );
+			};
+
+			el.onerror = () => {
+				cleanup();
+				resolve( 0 );
+			};
+
+			try {
+				el.src = URL.createObjectURL( file.data );
+			} catch ( e ) {
+				cleanup();
+				resolve( 0 );
+			}
+		} );
+	}
+
+	/**
+	 * Shows a snackbar with a message and optional callback when the snackbar is removed.
+	 * @param {string}             message          - The message to be displayed in the snackbar.
+	 * @param {Function | boolean} [callback=false] - A callback function to be called when the snackbar is removed, or false to disable the callback.
+	 */
+	showGodamSnackbar( message, callback = false ) {
+		let snackbar = document.getElementById( 'godam-snackbar-error' );
+		if ( ! snackbar ) {
+			snackbar = document.createElement( 'div' );
+			snackbar.id = 'godam-snackbar-error';
+			document.body.appendChild( snackbar );
+		}
+		snackbar.textContent = message;
+		snackbar.className = 'godam-snackbar godam-snackbar-error';
+		setTimeout( () => {
+			snackbar.remove();
+			if ( callback && typeof callback === 'function' ) {
+				callback();
+			}
+		}, 10000 );
 	}
 
 	/**
@@ -171,6 +258,27 @@ class UppyVideoUploader {
 
 		// Handle file addition: process video and close modal.
 		this.uppy.on( 'file-added', async ( file ) => {
+			if ( this.maxDurationSeconds > 0 ) {
+				const duration = await this.getMediaDurationSeconds( file );
+
+				// If we could read duration and it exceeds limit -> reject
+				if ( duration > 0 && duration > this.maxDurationSeconds ) {
+					const msg = sprintf(
+						/* translators: %d: Maximum allowed duration in seconds */
+						__( 'Maximum allowed duration is %d seconds. Please upload or record a shorter file.', 'godam' ),
+						this.maxDurationSeconds,
+					);
+					this.showGodamSnackbar( msg );
+
+					// Remove from uppy and clear UI
+					this.uppy.removeFile( file.id );
+					this.clearVideoUploadUI();
+					await this.uppy.getPlugin( 'Dashboard' ).closeModal();
+
+					return;
+				}
+			}
+
 			this.processVideoUpload( file, 'added' );
 			await this.uppy.getPlugin( 'Dashboard' ).closeModal();
 		} );

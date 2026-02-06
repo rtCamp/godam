@@ -68,41 +68,62 @@ class Media_Folder_Utils {
 
 		global $wpdb;
 
-		// Build the base query.
-		$where_clause = "p.post_type = 'attachment' AND p.post_status = 'inherit' AND tt.taxonomy = 'media-folder' AND tt.term_id = %d";
-		$query_params = array( $folder_id );
+		// Build query based on mime type filtering.
+		if ( empty( $mime_type ) ) {
+			// No mime type filter.
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$count = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(DISTINCT p.ID)
+					FROM {$wpdb->posts} p
+					INNER JOIN {$wpdb->term_relationships} tr ON p.ID = tr.object_id
+					INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+					WHERE p.post_type = 'attachment' 
+					AND p.post_status = 'inherit' 
+					AND tt.taxonomy = 'media-folder' 
+					AND tt.term_id = %d",
+					$folder_id
+				)
+			);
+		} elseif ( is_array( $mime_type ) ) {
+			// Array of mime types - use IN clause.
+			$placeholders = implode( ', ', array_fill( 0, count( $mime_type ), '%s' ) );
+			$query_params = array_merge( array( $folder_id ), $mime_type );
 
-		// Add mime type filtering if specified.
-		if ( $mime_type ) {
-			if ( is_array( $mime_type ) ) {
-				$placeholders  = implode( ', ', array_fill( 0, count( $mime_type ), '%s' ) );
-				$where_clause .= " AND p.post_mime_type IN ($placeholders)";
-				$query_params  = array_merge( $query_params, $mime_type );
-			} else {
-				$where_clause  .= ' AND p.post_mime_type LIKE %s';
-				$query_params[] = $mime_type . '%';
-			}
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$count = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(DISTINCT p.ID)
+					FROM {$wpdb->posts} p
+					INNER JOIN {$wpdb->term_relationships} tr ON p.ID = tr.object_id
+					INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+					WHERE p.post_type = 'attachment' 
+					AND p.post_status = 'inherit' 
+					AND tt.taxonomy = 'media-folder' 
+					AND tt.term_id = %d 
+					AND p.post_mime_type IN ($placeholders)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					$query_params
+				)
+			);
+		} else {
+			// Single mime type - use LIKE.
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$count = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(DISTINCT p.ID)
+					FROM {$wpdb->posts} p
+					INNER JOIN {$wpdb->term_relationships} tr ON p.ID = tr.object_id
+					INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+					WHERE p.post_type = 'attachment' 
+					AND p.post_status = 'inherit' 
+					AND tt.taxonomy = 'media-folder' 
+					AND tt.term_id = %d 
+					AND p.post_mime_type LIKE %s",
+					$folder_id,
+					$wpdb->esc_like( $mime_type ) . '%'
+				)
+			);
 		}
-
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Prepared statement used below.
-		// phpcs:disable WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- Placeholders are correctly handled.
-
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Use direct SQL query for better performance.
-		$count = $wpdb->get_var(
-			$wpdb->prepare(
-				"
-			SELECT COUNT(DISTINCT p.ID)
-			FROM {$wpdb->posts} p
-			INNER JOIN {$wpdb->term_relationships} tr ON p.ID = tr.object_id
-			INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
-			WHERE {$where_clause}
-		",
-				$query_params
-			)
-		);
-
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		// phpcs:enable WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 
 		$count = absint( $count );
 

@@ -103,6 +103,13 @@ class Ads extends Base {
 		$click_link   = esc_url( $request->get_param( 'click_link' ) ?? '' );
 		$use_vmap     = rest_sanitize_boolean( $request->get_param( 'use_vmap' ) ?? false );
 		
+		// Ad skip feature will not work for ads with duration 0.
+		// Add fallback to set ad duration if skippable is true.
+		// When $ad_duration is 0, and the ad is skippable, set ad duration to skip_offset + 5 seconds.
+		if ( $skippable && $skip_offset > 0 && $ad_duration <= 0 ) {
+			$ad_duration = max( $skip_offset + 5, 10 ); // Ensure ad duration is at least skip_offset + 5 seconds, minimum 10 seconds.
+		}
+
 		// convert ad duration to HH:MM:SS format.  e.g. 16 seconds = 00:00:16.
 		$display_time = gmdate( 'H:i:s', $display_time );
 		$ad_duration  = gmdate( 'H:i:s', $ad_duration );
@@ -231,7 +238,7 @@ class Ads extends Base {
 				foreach ( $ads_layers as $layer ) :
 					// Current endpoint URL.
 					$display_time = intval( $layer['displayTime'] ?? 0 );
-					$ad_duration  = intval( $layer['duration'] ?? 0 );
+					$ad_duration  = intval( $layer['ad_duration'] ?? $layer['duration'] ?? 0 );
 					$ad_title     = $layer['title'] ?? '';
 					$skippable    = $layer['skippable'] ?? false;
 					$skip_offset  = intval( $layer['skip_offset'] ?? 0 );

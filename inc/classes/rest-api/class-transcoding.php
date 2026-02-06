@@ -7,6 +7,8 @@
 
 namespace RTGODAM\Inc\REST_API;
 
+use RTGODAM\Inc\Media_Library_Ajax;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -259,7 +261,7 @@ class Transcoding extends Base {
 		$thumbnail_id = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 
 		// Handle retry logic for missing thumbnails when transcoding is complete.
-		if ( 'Transcoded' === $status && empty( $thumbnail_id ) ) {
+		if ( 'transcoded' === strtolower( $status ) && empty( $thumbnail_id ) ) {
 			$retry_count = intval( get_post_meta( $attachment_id, 'rtgodam_thumbnail_retry_count', true ) );
 			$max_retries = 3;
 
@@ -533,7 +535,7 @@ class Transcoding extends Base {
 		if ( ! empty( $godam_original_id ) ) {
 			$message = sprintf(
 				// translators: 1: Attachment title, 2: Attachment ID.
-				__( '%1$s (ID %2$d) is virtual media from GoDAM Central. Please retranscode this video on GoDAM Central.', 'godam' ),
+				__( '%1$s (ID %2$d) is virtual media from GoDAM Central. Please retranscode this media on GoDAM Central.', 'godam' ),
 				esc_html( $title ),
 				absint( $attachment_id )
 			);
@@ -602,9 +604,19 @@ class Transcoding extends Base {
 		$wp_metadata              = array();
 		$wp_metadata['mime_type'] = $mime_type;
 
+		// Check if media has been transcoded before and has a job ID.
+		$transcoded_url   = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+		$existing_job_id  = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+		$is_retranscoding = ! empty( $transcoded_url ) || ! empty( $existing_job_id );
+
 		// Retranscode the media.
-		$transcoder = new \RTGODAM_Transcoder_Handler( true );
-		$transcoder->wp_media_transcoding( $wp_metadata, $attachment_id, true, true );
+		if ( preg_match( '/image/i', $mime_type ) ) {
+			$transcoder = Media_Library_Ajax::get_instance();
+			$transcoder->upload_media_to_frappe_backend( $attachment_id, $is_retranscoding );
+		} else {
+			$transcoder = new \RTGODAM_Transcoder_Handler( true );
+			$transcoder->wp_media_transcoding( $wp_metadata, $attachment_id, true, $is_retranscoding );
+		}
 
 		// Check if the transcoding job ID is set.
 		$is_sent = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );

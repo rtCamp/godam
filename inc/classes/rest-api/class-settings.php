@@ -49,6 +49,8 @@ class Settings extends Base {
 			'general'      => array(
 				'enable_folder_organization' => true,
 				'enable_gtm_tracking'        => false,
+				'enable_posthog_tracking'    => false,
+				'posthog_initialized'        => false,
 			),
 			'video_player' => array(
 				'brand_image'    => '',
@@ -142,7 +144,49 @@ class Settings extends Base {
 					),
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/get-godam-settings', // Route to share the WordPress site GoDAM settings with external service (Here GoDAM Central).
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_easydam_settings' ),
+					'permission_callback' => array( $this, 'verify_api_key_permission' ),
+				),
+			),
 		);
+	}
+
+	/**
+	 * Verify GoDAM Central permission using stored API key.
+	 *
+	 * @since 1.6.0
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return true|\WP_Error
+	 */
+	public function verify_api_key_permission( $request ) {
+		$authorization_header = $request->get_header( 'authorization' );
+
+		if ( null === $authorization_header ) {
+			return new \WP_Error( 'api_key_required', __( 'GoDAM API key is required.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		$provided_api_key = trim( str_replace( 'Bearer ', '', $authorization_header ) );
+		$stored_api_key   = get_option( 'rtgodam-api-key' );
+
+		if ( empty( $provided_api_key ) ) {
+			return new \WP_Error( 'api_key_required', __( 'GoDAM API key is required.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		if ( empty( $stored_api_key ) ) {
+			return new \WP_Error( 'api_key_not_set', __( 'GoDAM API key is not set on this site.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		if ( ! hash_equals( $stored_api_key, $provided_api_key ) ) {
+			return new \WP_Error( 'forbidden', __( 'Invalid API key.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		return true;
 	}
 
 	/**
@@ -175,6 +219,7 @@ class Settings extends Base {
 		if ( ! empty( $result['data']['api_key'] ) ) {
 			$result['data']['api_key'] = rtgodam_mask_string( $result['data']['api_key'] );
 		}
+
 
 		return new \WP_REST_Response(
 			array(
@@ -241,9 +286,13 @@ class Settings extends Base {
 	 */
 	public function get_easydam_settings() {
 		// Retrieve settings from the database.
-		$easydam_settings = get_option( 'rtgodam-settings', $this->get_default_settings() );
+		$easydam_settings = get_option( 'rtgodam-settings', array() );
+		$default_settings = $this->get_default_settings();
 
-		return new \WP_REST_Response( $easydam_settings, 200 );
+		// Merge defaults with saved settings.
+		$merged_settings = array_replace_recursive( $default_settings, $easydam_settings );
+
+		return new \WP_REST_Response( $merged_settings, 200 );
 	}
 
 	/**
@@ -308,6 +357,8 @@ class Settings extends Base {
 			'general'      => array(
 				'enable_folder_organization' => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ?? $default['general']['enable_folder_organization'] ),
 				'enable_gtm_tracking'        => rest_sanitize_boolean( $settings['general']['enable_gtm_tracking'] ?? $default['general']['enable_gtm_tracking'] ),
+				'enable_posthog_tracking'    => rest_sanitize_boolean( $settings['general']['enable_posthog_tracking'] ?? $default['general']['enable_posthog_tracking'] ),
+				'posthog_initialized'        => rest_sanitize_boolean( $settings['general']['posthog_initialized'] ?? $default['general']['posthog_initialized'] ),
 			),
 			'video_player' => array(
 				'brand_image'    => sanitize_text_field( $settings['video_player']['brand_image'] ?? $default['video_player']['brand_image'] ),

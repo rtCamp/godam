@@ -142,6 +142,10 @@ class GoDAM_Video extends Base {
 				'type'        => Controls_Manager::TEXT,
 				'label_block' => true,
 				'description' => esc_html__( 'URL of the video content can be MOV, MP4, MPD. Example: https://www.example.com/video.mp4', 'godam' ),
+				'classes'     => 'godam-readonly-field',
+				'attributes'  => array(
+					'readonly' => 'readonly',
+				),
 			)
 		);
 
@@ -161,7 +165,8 @@ class GoDAM_Video extends Base {
 				'label'       => esc_html__( 'Description', 'godam' ),
 				'type'        => Controls_Manager::TEXTAREA,
 				'label_block' => true,
-				'description' => esc_html__( 'Description of the video', 'godam' ),
+				'description' => '<span class="godam-seo-description-help"></span>',
+				'classes'     => 'godam-seo-description-field',
 			)
 		);
 
@@ -172,6 +177,11 @@ class GoDAM_Video extends Base {
 				'type'           => Controls_Manager::DATE_TIME,
 				'picker_options' => array(
 					'enableTime' => false,
+					'clickOpens' => false,
+				),
+				'classes'        => 'godam-readonly-field',
+				'attributes'     => array(
+					'readonly' => 'readonly',
 				),
 			)
 		);
@@ -183,6 +193,10 @@ class GoDAM_Video extends Base {
 				'type'        => Controls_Manager::TEXT,
 				'description' => esc_html__( 'ISO 8601 format. Example: PT1H30M', 'godam' ),
 				'label_block' => true,
+				'classes'     => 'godam-readonly-field',
+				'attributes'  => array(
+					'readonly' => 'readonly',
+				),
 			)
 		);
 
@@ -192,6 +206,10 @@ class GoDAM_Video extends Base {
 				'label'       => esc_html__( 'Video Thumbnail URL', 'godam' ),
 				'type'        => Controls_Manager::TEXT,
 				'label_block' => true,
+				'classes'     => 'godam-readonly-field',
+				'attributes'  => array(
+					'readonly' => 'readonly',
+				),
 			)
 		);
 
