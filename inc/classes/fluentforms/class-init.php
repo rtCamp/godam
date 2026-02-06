@@ -67,9 +67,15 @@ class Init {
 	public function load_fluentforms_classes() {
 
 		/**
-		 * Load the new field on `fluentform/loaded`.
+		 * Load the new field on `init`.
+		 *
+		 * @see https://github.com/rtCamp/godam/issues/465
+		 *
+		 * Previously, the field was loaded on `fluentform/loaded`, which triggered the `_load_textdomain_just_in_time was called incorrectly` warning.
+		 * The `fluentform/loaded` hook is executed after `plugins_loaded`, meaning the field was effectively initialized during `plugins_loaded`.
+		 * Since the translation function is invoked within the field constructor, it caused the warning because translations had not yet been loaded.
 		 */
-		add_action( 'fluentform/loaded', array( $this, 'on_fluentforms_loaded' ) );
+		add_action( 'init', array( $this, 'on_fluentforms_loaded' ) );
 
 		/**
 		 * Filter to exclude godam scripts on fluent forms pages.
