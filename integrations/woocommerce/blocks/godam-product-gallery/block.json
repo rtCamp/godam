@@ -1,0 +1,162 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "godam/product-gallery",
+  "title": "GoDAM Product Gallery",
+  "category": "media",
+  "description": "Display a video gallery for selected WooCommerce products.",
+  "keywords": ["product", "gallery", "video", "godam", "carousel", "grid"],
+  "textdomain": "godam",
+  "attributes": {
+    "blockId": {
+      "type": "string"
+    },
+    "autoplay": {
+      "type": "boolean",
+      "attribute": "autoplay"
+    },
+    "layout": {
+      "type": "string",
+      "default": "carousel"
+    },
+    "view": {
+      "type": "string",
+      "default": "4-3"
+    },
+    "product": {
+      "type": "string",
+      "default": ""
+    },
+    "playButtonEnabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "playButtonBgColor": {
+      "type": "string",
+      "default": "#AB3A6C"
+    },
+    "playButtonIconColor": {
+      "type": "string",
+      "default": "#ffffff"
+    },
+    "playButtonSize": {
+      "type": "number",
+      "default": 40
+    },
+    "playButtonBorderRadius": {
+      "type": "number",
+      "default": 50
+    },
+    "unmuteButtonEnabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "unmuteButtonBgColor": {
+      "type": "string",
+      "default": "rgba(0,0,0,0.4)"
+    },
+    "unmuteButtonIconColor": {
+      "type": "string",
+      "default": "#ffffff"
+    },
+    "cardWidth": {
+      "type": "object",
+      "default": {
+        "desktop": null,
+        "tablet": null,
+        "mobile": null
+      }
+    },
+    "arrowBgColor": {
+      "type": "string",
+      "default": "rgba(171, 58, 108, 0.5)" 
+    },
+	  "arrowIconColor": {
+      "type": "string",
+      "default": "#ffffff"
+    },
+    "arrowSize": {
+      "type": "number",
+      "default": 32
+    },
+    "arrowBorderRadius": {
+      "type": "number",
+      "default": 4
+    },
+    "arrowVisibility": {
+      "type": "string",
+      "default": "always"
+    },
+    "gridColumns": {
+      "type": "object",
+      "default": {
+        "desktop": 4,
+        "tablet": 3,
+        "mobile": 2
+      }
+    },
+    "gridRowGap": {
+      "type": "number",
+      "default": 16
+    },
+    "gridColumnGap": {
+      "type": "number",
+      "default": 16
+    },
+    "ctaEnabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "ctaDisplayPosition": {
+      "type": "string",
+      "default": "below-inside"
+    },
+    "ctaBgColor": {
+      "type": "string",
+      "default": "#ffffff"
+    },
+    "ctaButtonBgColor": {
+      "type": "string",
+      "default": "#AB3A6C"
+    },
+    "ctaButtonIconColor": {
+      "type": "string",
+      "default": "#ffffff"
+    },
+    "ctaProductNameFontSize": {
+      "type": "number",
+      "default": 16
+    },
+    "ctaProductPriceFontSize": {
+      "type": "number",
+      "default": 14
+    },
+    "ctaProductNameColor": {
+      "type": "string",
+      "default": "#000000"
+    },
+    "ctaProductPriceColor": {
+      "type": "string",
+      "default": "#333333"
+    },
+    "ctaButtonBorderRadius": {
+      "type": "number",
+      "default": 30
+    },
+    "ctaCartAction": {
+      "type": "string",
+      "default": "mini-cart"
+    }
+  },
+  "supports": {
+    "anchor": true,
+    "align": ["left", "center", "right", "wide", "full"],
+    "spacing": {
+      "margin": true,
+      "padding": true
+    }
+  },
+  "editorScript": ["file:./index.js"],
+  "render": "file:./render.php",
+  "editorStyle": ["file:./index.css"]
+}

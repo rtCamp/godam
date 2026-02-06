@@ -49,7 +49,13 @@ class GoDAM_Player {
 		// Allow external stylesheets to be enqueued.
 		do_action( 'godam_player_enqueue_styles' );
 
-		$godam_player_frontend_assets = include RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.asset.php';
+		$player_frontend_asset_path   = RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.asset.php';
+		$godam_player_frontend_assets = file_exists( $player_frontend_asset_path )
+			? include $player_frontend_asset_path
+			: array(
+				'dependencies' => array(),
+				'version'      => RTGODAM_VERSION,
+			);
 
 		// Register your scripts and styles here.
 		wp_register_script(
@@ -60,13 +66,17 @@ class GoDAM_Player {
 			true
 		);
 
-		wp_register_script(
-			'godam-player-analytics-script',
-			RTGODAM_URL . 'assets/build/js/godam-player-analytics.min.js',
-			array( 'godam-player-frontend-script', 'wp-i18n' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-analytics.min.js' ),
-			true
-		);
+		$player_analytics_path = RTGODAM_PATH . 'assets/build/js/godam-player-analytics.min.js';
+
+		if ( file_exists( $player_analytics_path ) ) {
+			wp_register_script(
+				'godam-player-analytics-script',
+				RTGODAM_URL . 'assets/build/js/godam-player-analytics.min.js',
+				array( 'godam-player-frontend-script', 'wp-i18n' ),
+				filemtime( $player_analytics_path ),
+				true
+			);
+		}
 
 		wp_register_style(
 			'godam-player-frontend-style',
@@ -173,6 +183,7 @@ class GoDAM_Player {
 				'showShareButton'   => false,
 				'show_share_button' => false, // WPBakery format (lowercase with underscore).
 				'css'               => '',
+				'godam_context'     => '',
 			),
 			$atts,
 			'godam_video'

@@ -109,6 +109,8 @@ class Assets {
 		$is_ninja_forms_active     = is_plugin_active( 'ninja-forms/ninja-forms.php' );
 		$is_met_form_active        = is_plugin_active( 'metform/metform.php' );
 
+		$is_woocommerce_active = is_plugin_active( 'woocommerce/woocommerce.php' );
+
 		wp_localize_script(
 			'rtgodam-script',
 			'godamPluginDependencies',
@@ -124,6 +126,7 @@ class Assets {
 				'everestForms' => $is_everest_forms_active,
 				'ninjaForms'   => $is_ninja_forms_active,
 				'metform'      => $is_met_form_active,
+				'woocommerce'  => $is_woocommerce_active,
 			)
 		);
 
@@ -132,6 +135,14 @@ class Assets {
 			'godamRestRoute',
 			array(
 				'url' => get_rest_url( get_current_blog_id() ),
+			)
+		);
+
+		wp_localize_script(
+			'rtgodam-script',
+			'godamWooSettings',
+			array(
+				'url' => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '',
 			)
 		);
 
@@ -198,7 +209,13 @@ class Assets {
 		wp_enqueue_script( 'rtgodam-script' );
 		wp_enqueue_style( 'rtgodam-style' );
 
-		$easydam_media_library_script_assets = include RTGODAM_PATH . 'assets/build/js/media-library.min.asset.php';
+		$media_library_asset_path            = RTGODAM_PATH . 'assets/build/js/media-library.min.asset.php';
+		$easydam_media_library_script_assets = file_exists( $media_library_asset_path )
+			? include $media_library_asset_path
+			: array(
+				'dependencies' => array(),
+				'version'      => RTGODAM_VERSION,
+			);
 
 		wp_register_script(
 			'easydam-media-library',
@@ -259,6 +276,8 @@ class Assets {
 				'godamToolsNonce'          => wp_create_nonce( 'rtgodam_tools' ),
 				'enableFolderOrganization' => $enable_folder_organization,
 				'isPollPluginActive'       => is_plugin_active( 'wp-polls/wp-polls.php' ),
+				'isWooActive'              => is_plugin_active( 'woocommerce/woocommerce.php' ),
+				'wooCartURL'               => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '',
 				'page'                     => $screen ? $screen->id : '',
 				'userId'                   => $current_user_id,
 				'canEditOthersMedia'       => current_user_can( 'edit_others_posts' ),

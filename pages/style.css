@@ -201,7 +201,6 @@ input, textarea, select {
 /* Hotspot layer */
 .hotspot {
 	position: absolute;
-	z-index: 100;
 	background-color: rgba(12, 128, 223, 0.65);
 	box-sizing: border-box;
 	cursor: pointer;

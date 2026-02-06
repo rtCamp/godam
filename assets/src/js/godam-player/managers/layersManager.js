@@ -5,6 +5,7 @@ import { LAYER_TYPES } from '../utils/constants.js';
 import LayerValidator from './layers/layerValidator.js';
 import FormLayerManager from './layers/formLayerManager.js';
 import HotspotLayerManager from './layers/hotspotLayerManager.js';
+import WooCommerceLayerManager from './layers/wooCommerceLayerManager.js';
 import { loadFontAwesome, hasHotspotsWithIcons } from '../utils/pluginLoader.js';
 
 /**
@@ -22,6 +23,7 @@ export default class LayersManager {
 		// Initialize sub-managers
 		this.formLayerManager = new FormLayerManager( player, isDisplayingLayers, currentPlayerVideoInstanceId );
 		this.hotspotLayerManager = new HotspotLayerManager( player, isDisplayingLayers, currentPlayerVideoInstanceId );
+		this.wooCommerceLayerManager = new WooCommerceLayerManager( player, isDisplayingLayers, currentPlayerVideoInstanceId );
 
 		/**
 		 * Naming convention is bit unusual here to avoid confusion with the main player instance.
@@ -91,6 +93,8 @@ export default class LayersManager {
 			this.formLayerManager.setupFormLayer( layer, layerElement );
 		} else if ( layer.type === LAYER_TYPES.HOTSPOT ) {
 			this.hotspotLayerManager.setupHotspotLayer( layer, layerElement );
+		} else if ( layer.type === LAYER_TYPES.WOOCOMMERCE ) {
+			this.wooCommerceLayerManager.setupWooCommerceLayer( layer, layerElement );
 		}
 	}
 
@@ -123,10 +127,20 @@ export default class LayersManager {
 	}
 
 	/**
+	 * Handle WooCommerce layers time update
+	 *
+	 * @param {number} currentTime - Current video time in seconds
+	 */
+	handleWooCommerceLayersTimeUpdate( currentTime ) {
+		this.wooCommerceLayerManager.handleWooCommerceLayersTimeUpdate( currentTime );
+	}
+
+	/**
 	 * Handle video resize events
 	 */
 	handleVideoResize() {
 		this.hotspotLayerManager.updateHotspotPositions();
+		this.wooCommerceLayerManager.updateProductHotspotPositions();
 	}
 
 	/**
@@ -138,6 +152,7 @@ export default class LayersManager {
 
 		this.formLayerManager.handleFullscreenChange( isFullscreen, videoContainer );
 		this.hotspotLayerManager.handleFullscreenChange( isFullscreen, videoContainer );
+		this.wooCommerceLayerManager.handleFullscreenChange( isFullscreen, videoContainer );
 	}
 
 	/**

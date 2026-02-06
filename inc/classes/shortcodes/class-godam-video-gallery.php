@@ -38,7 +38,24 @@ class GoDAM_Video_Gallery {
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-gallery.css' )
 		);
 
-		$godam_gallery_script_assets = include RTGODAM_PATH . 'assets/build/js/godam-gallery.min.asset.php';
+		$asset_file                  = RTGODAM_PATH . 'assets/build/js/godam-gallery.min.asset.php';
+		$godam_gallery_script_assets = array(
+			'dependencies' => array(),
+			'version'      => RTGODAM_VERSION,
+		);
+
+		if ( file_exists( $asset_file ) ) {
+			$maybe_asset = include $asset_file;
+			if ( is_array( $maybe_asset ) ) {
+				$godam_gallery_script_assets = wp_parse_args(
+					$maybe_asset,
+					array(
+						'dependencies' => array(),
+						'version'      => RTGODAM_VERSION,
+					)
+				);
+			}
+		}
 
 		wp_register_script(
 			'godam-gallery-script',
@@ -341,7 +358,7 @@ class GoDAM_Video_Gallery {
 					$video_slug     = get_post_field( 'post_name', $video_id );
 					$video_settings = get_option( 'rtgodam_video_post_settings', array() );
 					$cpt_url_slug   = ! empty( $video_settings['video_slug'] ) ? sanitize_title( $video_settings['video_slug'] ) : 'videos';
-					$cpt_base_url   = home_url( '/' . $cpt_url_slug ); 
+					$cpt_base_url   = home_url( '/' . $cpt_url_slug );
 					$video_url      = $cpt_base_url . '/' . $video_slug;
 
 					if ( $item_engagements_enabled ) {
@@ -349,7 +366,7 @@ class GoDAM_Video_Gallery {
 							array(
 								'engagements' => 'show',
 							),
-							$video_url 
+							$video_url
 						);
 					}
 				}
@@ -376,12 +393,12 @@ class GoDAM_Video_Gallery {
 
 			if ( $shown_videos < $total_videos ) {
 				if ( ! $atts['infinite_scroll'] ) {
-					echo '<button 
-						class="godam-load-more wp-element-button" 
-						data-offset="' . esc_attr( $shown_videos ) . '" 
-						data-columns="' . esc_attr( $atts['columns'] ) . '" 
-						data-count="' . esc_attr( $atts['count'] ) . '" 
-						data-orderby="' . esc_attr( $atts['orderby'] ) . '" 
+					echo '<button
+						class="godam-load-more wp-element-button"
+						data-offset="' . esc_attr( $shown_videos ) . '"
+						data-columns="' . esc_attr( $atts['columns'] ) . '"
+						data-count="' . esc_attr( $atts['count'] ) . '"
+						data-orderby="' . esc_attr( $atts['orderby'] ) . '"
 						data-order="' . esc_attr( $atts['order'] ) . '"
 						data-total="' . esc_attr( $total_videos ) . '"
 						data-engagements="' . esc_attr( $atts['engagements'] ) . '"

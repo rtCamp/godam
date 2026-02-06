@@ -1,0 +1,22 @@
+@import '../../../../assets/src/css/godam-video-popup';
+
+.godam-woocommerce-featured-video-modal-container{
+	.video-js,.vjs-tech{
+		object-fit: cover !important;
+	}
+}
+
+.woocommerce-product-gallery .godam-video-thumbnail{
+	aspect-ratio: 1 / 1 !important;
+    object-fit: cover;
+    object-position: center;
+}
+
+.godam-woocommerce-featured-video-modal-content .godam-pills-skin .video-js .vjs-control-bar {
+	padding-left: 10px;
+    padding-right: 0;
+}
+
+.godam-woocommerce-featured-video-modal-content .is-landscape .godam-bubble-skin .video-js .vjs-control-bar .vjs-progress-control {
+	max-width: 81%;
+}

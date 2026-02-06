@@ -1,0 +1,215 @@
+.godam-editor-product-gallery {
+	width: 100%;
+}
+
+/* Product Video Item */
+.godam-editor-product-video-item {
+	flex-shrink: 0;
+	scroll-snap-align: start;
+
+	// 16:9 Widescreen
+	&.view-16-9 .godam-editor-product-video-thumbnail {
+		aspect-ratio: 16 / 9;
+	}
+
+	// 4:3 Standard
+	&.view-4-3 .godam-editor-product-video-thumbnail {
+		aspect-ratio: 4 / 3;
+	}
+
+    // 9:16 Reels/Tiktok
+    &.view-9-16 .godam-editor-product-video-thumbnail {
+        aspect-ratio: 9 / 16;
+    }
+
+	// 3:4 Portrait
+	&.view-3-4 .godam-editor-product-video-thumbnail {
+		aspect-ratio: 3 / 4;
+	}
+
+	// 1:1 Square
+	&.view-1-1 .godam-editor-product-video-thumbnail {
+		aspect-ratio: 1 / 1;
+	}
+
+	// Video Thumbnail
+	.godam-editor-product-video-thumbnail {
+		width: 100%;
+		background-color: #ccc;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		overflow: hidden;
+		position: relative;
+		max-width: 100%;
+	
+		// Play Button
+		.godam-play-button {
+			position: absolute;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border: none;
+			cursor: pointer;
+			transition: transform 0.2s ease;
+			padding: 0;
+			z-index: 10;
+	
+			svg {
+				display: block;
+			}
+	
+			&:hover {
+				transform: scale(1.1);
+			}
+		}
+	}
+
+	// Video Label
+	.godam-editor-product-video-label {
+		font-size: 0.875rem;
+		color: #333;
+	}
+}
+
+/* Unmute Button */
+.godam-unmute-button {
+	position: absolute;
+	bottom: 10px;
+	right: 10px;
+	border: none;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	cursor: pointer;
+	z-index: 9;
+
+	&:hover {
+		transform: scale(1.1);
+	}
+}
+
+/* Grid Wrapper */
+.godam-grid-wrapper {
+	.godam-editor-product-video-item {
+		container-type: inline-size;
+		container-name: card;
+	}
+
+	.grid-container,
+	.godam-editor-product-video-item {
+		width: 100%;
+	}
+}
+
+/* Carousel wrapper */
+.godam-carousel-wrapper {
+	position: relative;
+	display: flex;
+	align-items: center;
+	overflow: hidden;
+	width: 100%;
+
+	.carousel-track {
+		display: flex;
+		overflow-x: auto;
+		scroll-behavior: smooth;
+		scroll-snap-type: x mandatory;
+		gap: 1rem;
+		padding: 0.75rem;
+		flex: 1;
+	
+		&::-webkit-scrollbar {
+			display: none;
+		}
+	}
+
+	// Carousel Arrows
+	.carousel-arrow {
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		border: none;
+		cursor: pointer;
+		z-index: 10;
+		padding: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	
+		&.left {
+			left: 0;
+		}
+		
+		&.right {
+			right: 0;
+		}
+	
+		&:hover {
+			filter: brightness(1.2);
+		}
+
+		&.hide-until-hover {
+			opacity: 0;
+			pointer-events: none;
+			transition: opacity 0.3s ease;
+		}
+	}
+
+	&:hover {
+		.carousel-arrow.hide-until-hover {
+			opacity: 1;
+			pointer-events: auto;
+		}
+	}
+}
+
+/* CTA */
+.godam-product-cta {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-top: 10px;
+	padding: 10px;
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	position: relative;
+	box-sizing: border-box;
+
+	.cta-thumbnail {
+		width: 80px;
+		height: 80px;
+		background: #eee;
+	}
+
+	.cta-details {
+		flex: 1;
+		margin-left: 10px;
+
+		.product-title {
+			font-weight: bold;
+			margin-bottom: 19px;
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			line-height: 1.2em;
+			max-height: 2.4em;
+		}
+		.product-price {
+			margin: 0;
+		}
+	}
+
+	.cta-add-to-cart {
+		position: absolute;
+		bottom: 10px;
+		right: 10px;
+		width: 1.875rem;
+		height: 1.875rem;
+		border: none;
+		font-size: 20px;
+		cursor: pointer;
+	}
+}

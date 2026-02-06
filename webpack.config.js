@@ -135,6 +135,13 @@ const godamGallery = {
 	},
 };
 
+const godamProductGallery = {
+	...sharedConfig,
+	entry: {
+		'godam-product-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'godam-product-gallery', 'godam-product-gallery.js' ),
+	},
+};
+
 const godamVideoEmbed = {
 	...sharedConfig,
 	entry: {
@@ -190,6 +197,49 @@ const fluentForms = {
 		fluentforms: path.resolve( process.cwd(), 'assets', 'src', 'js', 'fluentforms', 'index.js' ),
 		'godam-fluentforms-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'fluentforms', 'editor.js' ),
 	},
+};
+
+// WooCommerce Integration Module - Consolidated build configuration
+const woocommerceIntegration = {
+	mode,
+	...sharedConfig,
+	entry: {
+		// Admin scripts
+		'admin/wc-product-video-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'admin', 'wc-product-video-gallery.js' ),
+		'admin/wc-add-to-product': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'admin', 'wc-add-to-product.js' ),
+		'admin/wc-admin-featured-video-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'admin', 'wc-admin-featured-video-gallery.js' ),
+
+		// Frontend scripts
+		'wc-video-carousel': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'single-product-story', 'wc-video-carousel.js' ),
+		'wc-featured-video-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'featured-video', 'wc-featured-video-gallery.js' ),
+		'wc-woo-layer-cart-url-editor': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'woocommerce-layer', 'wc-woo-layer-cart-url-editor.js' ),
+
+		// CSS files
+		'godam-video-carousel': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-video-carousel.scss' ),
+		'godam-featured-video': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-featured-video.scss' ),
+		'godam-product-editor-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-product-editor-gallery.scss' ),
+		'godam-product-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-product-gallery.scss' ),
+		'godam-reels-skin': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-reels-skin.scss' ),
+	},
+	output: {
+		path: path.resolve( process.cwd(), 'assets', 'build', 'integrations', 'woocommerce', 'js' ),
+		filename: '[name].min.js',
+		chunkFilename: '[name].min.js',
+	},
+	plugins: [
+		...sharedConfig.plugins
+			.filter( ( plugin ) => plugin.constructor.name !== 'RtlCssPlugin' )
+			.map(
+				( plugin ) => {
+					if ( plugin.constructor.name === 'MiniCssExtractPlugin' ) {
+						plugin.options.filename = '../css/[name].css';
+					}
+					return plugin;
+				},
+			),
+		new RemoveEmptyScriptsPlugin(),
+	],
+	devtool: isProduction ? false : 'source-map',
 };
 
 const everestForms = {
@@ -338,9 +388,11 @@ module.exports = [
 	godamPlayerAnalytics,
 	deactivationJS,
 	godamGallery,
+	godamProductGallery,
 	godamVideoEmbed,
 	gfGodamRecorderEditorJS,
 	wpFormsGodamRecorderEditorJS,
+	woocommerceIntegration, // WooCommerce module (consolidated)
 	jetpackFormJS,
 	styles, // Do not remove this.
 	pages,

@@ -6,6 +6,12 @@ $GREEN: #4CAF50;
 $RED: #F44336;
 $LIGHT_BLUE: #2196F3;
 
+#root-easydam,
+#root-video-editor,
+.wc-godam-product-admin {
+	--wp-components-color-accent: #ab3a6c;
+}
+
 $media-library-sidebar-bg: #fff;
 $media-library-sidebar-bg-dark: #a3a3a3;
 $media-library-sidebar-border: #E0E0E0;
@@ -816,6 +822,58 @@ to ensure proper responsiveness and avoid layout issues.
 		input {
 			max-width: 600px;
 		}
+	}
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.godam-product-timestamp-input input:focus {
+	box-shadow: 0 0 0 0.7px #ab3a6c;
+	border-color: #ab3a6c;
+}
+
+.godam-admin-video-add-to-product-container {
+
+	.vjs-control.vjs-custom-play-button {
+		width: auto !important;
+
+		@media screen and (max-width: 768px) {
+			display: none;
+		}
+
+		#branding-icon {
+			height: 100%;
+			width: auto;
+			object-fit: fill;
+		}
+	}
+}
+
+.godam-product-admin-video-spinner-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.4);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 9999;
+
+	.godam-product-admin-video-spinner {
+		width: 50px;
+		height: 50px;
+		border: 5px solid rgba(255, 255, 255, 0.3);
+		border-top: 5px solid #ab3a6c;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+	}
+
+	@keyframes spin {
+
+		from { transform: rotate(0deg); }
+
+		to { transform: rotate(360deg); }
 	}
 }
 
