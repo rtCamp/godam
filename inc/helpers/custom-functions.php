@@ -1008,7 +1008,7 @@ function godam_preview_page_content( $video_id ) {
 
 /**
  * Get post id from meta key and value.
- * 
+ *
  * @since 1.5.0
  *
  * @param string $key   Meta key.
@@ -1078,4 +1078,31 @@ function godam_embed_page_content( $video_id, $show_engagements = false ) {
 		<?php
 	}
 	return ob_get_clean();
+}
+
+/**
+ * Return an array of URLs with the scheme changed to HTTPS if the current page is using SSL.
+ *
+ * This function checks if the current page is using SSL and if so, it will return an array of URLs with the scheme changed to HTTPS.
+ *
+ * @param array|string $urls The URLs to change the scheme of.
+ *
+ * @return array|string The URLs with the scheme changed to HTTPS.
+ */
+function rtgodam_convert_to_https_url( $urls ) {
+
+	if ( ! is_ssl() ) {
+		return $urls;
+	}
+
+	if ( is_array( $urls ) ) {
+		return array_map(
+			function ( $url ) {
+				return set_url_scheme( $url, 'https' );
+			},
+			$urls
+		);
+	}
+
+	return set_url_scheme( $urls, 'https' );
 }

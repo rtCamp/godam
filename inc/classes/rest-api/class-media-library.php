@@ -743,6 +743,7 @@ class Media_Library extends Base {
 		}
 
 		$custom_thumbnails = get_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', true );
+		$custom_thumbnails = rtgodam_convert_to_https_url( $custom_thumbnails );
 
 		if ( ! is_array( $thumbnail_array ) ) {
 			return new \WP_Error( 'thumbnails_not_found', __( 'No thumbnails found.', 'godam' ), array( 'status' => 204 ) );
@@ -778,6 +779,7 @@ class Media_Library extends Base {
 
 
 		$selected_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
+		$selected_thumbnail = rtgodam_convert_to_https_url( $selected_thumbnail );
 
 		// Ensure selected thumbnail is valid. Fallback if not in either array.
 		if (
@@ -904,6 +906,7 @@ class Media_Library extends Base {
 
 		// Get current custom thumbnails.
 		$custom_thumbnails = get_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', true );
+		$custom_thumbnails = rtgodam_convert_to_https_url( $custom_thumbnails );
 
 		if ( ! is_array( $custom_thumbnails ) || ! in_array( $thumbnail_url, $custom_thumbnails, true ) ) {
 			return new \WP_Error( 'thumbnail_not_found', __( 'Custom thumbnail not found.', 'godam' ), array( 'status' => 404 ) );
