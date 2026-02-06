@@ -89,6 +89,10 @@
 			"type": "object",
 			"default": {}
 		},
+		"seoOverride": {
+			"type": "boolean",
+			"default": false
+		},
 		"verticalAlignment": {
 			"type": "string",
 			"default": "center"

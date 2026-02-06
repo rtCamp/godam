@@ -94,6 +94,9 @@ class Seo {
 	/**
 	 * Extract SEO schema from a block.
 	 *
+	 * If the block has seoOverride set to false or not set, it will fetch SEO from the media library.
+	 * Otherwise, it will use the SEO data from the block attributes.
+	 *
 	 * @param array $block Block data.
 	 * @return array Extracted SEO schema.
 	 */
@@ -101,7 +104,20 @@ class Seo {
 		$schemas = array();
 
 		if ( isset( $block['blockName'] ) && 'godam/video' === $block['blockName'] ) {
-			if ( isset( $block['attrs']['seo'] ) && ! empty( $block['attrs']['seo'] ) ) {
+			$seo_override  = isset( $block['attrs']['seoOverride'] ) ? $block['attrs']['seoOverride'] : false;
+			$attachment_id = isset( $block['attrs']['id'] ) ? (int) $block['attrs']['id'] : 0;
+
+			if ( $seo_override && isset( $block['attrs']['seo'] ) && ! empty( $block['attrs']['seo'] ) ) {
+				// Use overridden SEO from block attributes.
+				$schemas[] = $block['attrs']['seo'];
+			} elseif ( $attachment_id > 0 ) {
+				// Fetch SEO from media library attachment.
+				$media_seo = $this->get_seo_from_attachment( $attachment_id );
+				if ( ! empty( $media_seo ) ) {
+					$schemas[] = $media_seo;
+				}
+			} elseif ( isset( $block['attrs']['seo'] ) && ! empty( $block['attrs']['seo'] ) ) {
+				// Fallback to block SEO if no attachment ID.
 				$schemas[] = $block['attrs']['seo'];
 			}
 		}
@@ -116,6 +132,89 @@ class Seo {
 		}
 
 		return $schemas;
+	}
+
+	/**
+	 * Get SEO data from a media library attachment.
+	 * 
+	 * @since n.e.x.t
+	 *
+	 * @param int $attachment_id The attachment ID.
+	 * @return array The SEO data from the attachment.
+	 */
+	public function get_seo_from_attachment( $attachment_id ) {
+		$attachment = get_post( $attachment_id );
+
+		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
+			return array();
+		}
+
+		$meta = get_post_meta( $attachment_id );
+
+		// Get transcoded URL or fallback to attachment URL.
+		$content_url = '';
+		if ( ! empty( $meta['rtgodam_transcoded_url'][0] ) ) {
+			$content_url = $meta['rtgodam_transcoded_url'][0];
+		} else {
+			$content_url = wp_get_attachment_url( $attachment_id );
+		}
+
+		// Get video duration in ISO 8601 format.
+		$duration        = '';
+		$attachment_meta = wp_get_attachment_metadata( $attachment_id );
+		if ( ! empty( $attachment_meta['length'] ) && is_numeric( $attachment_meta['length'] ) ) {
+			$duration = $this->seconds_to_iso8601( (int) $attachment_meta['length'] );
+		}
+
+		// Get thumbnail URL.
+		$thumbnail_url = '';
+		if ( ! empty( $meta['rtgodam_media_video_thumbnail'][0] ) ) {
+			$thumbnail_url = $meta['rtgodam_media_video_thumbnail'][0];
+		}
+
+		// Get upload date in ISO 8601 format.
+		$upload_date = '';
+		if ( ! empty( $attachment->post_date_gmt ) && '0000-00-00 00:00:00' !== $attachment->post_date_gmt ) {
+			$upload_date = gmdate( 'c', strtotime( $attachment->post_date_gmt ) );
+		}
+
+		// Strip HTML from description.
+		$description = wp_strip_all_tags( $attachment->post_content );
+
+		return array(
+			'contentUrl'       => $content_url,
+			'headline'         => $attachment->post_title,
+			'description'      => $description,
+			'uploadDate'       => $upload_date,
+			'duration'         => $duration,
+			'thumbnailUrl'     => $thumbnail_url,
+			'isFamilyFriendly' => true,
+		);
+	}
+
+	/**
+	 * Convert seconds to ISO 8601 duration format.
+	 *
+	 * @param int $seconds Duration in seconds.
+	 * @return string ISO 8601 duration string.
+	 */
+	private function seconds_to_iso8601( $seconds ) {
+		$hours   = floor( $seconds / 3600 );
+		$minutes = floor( ( $seconds % 3600 ) / 60 );
+		$secs    = $seconds % 60;
+
+		$iso_duration = 'PT';
+		if ( $hours > 0 ) {
+			$iso_duration .= $hours . 'H';
+		}
+		if ( $minutes > 0 ) {
+			$iso_duration .= $minutes . 'M';
+		}
+		if ( $secs > 0 || 'PT' === $iso_duration ) {
+			$iso_duration .= $secs . 'S';
+		}
+
+		return $iso_duration;
 	}
 
 	/**
@@ -157,14 +256,15 @@ class Seo {
 	/**
 	 * Outputs structured data for VideoObject schema on singular pages.
 	 *
-	 * This function retrieves custom video SEO metadata from the current post
-	 * and generates a single JSON-LD script tag containing one or more
-	 * VideoObject schemas. This improves SEO and video visibility in search engines.
+	 * This function parses the post content to extract video SEO data dynamically.
+	 * For blocks with seoOverride=false, it fetches the latest SEO data from the
+	 * media library attachment, ensuring it's always up-to-date.
+	 * For blocks with seoOverride=true, it uses the overridden SEO data from the block.
 	 *
-	 * The schema includes properties like name, description, embed URL, content URL,
+	 * The schema includes properties like name, description, content URL,
 	 * thumbnail, upload date, duration, and family-friendly status.
 	 *
-	 * Only executes on singular pages and if valid video metadata exists.
+	 * Only executes on singular pages and if valid video blocks exist.
 	 *
 	 * @return void
 	 */
@@ -175,47 +275,47 @@ class Seo {
 
 		global $post;
 
-		$raw = get_post_meta( $post->ID, self::VIDEO_SEO_SCHEMA_META_KEY, true );
-
-		// Normalize and validate raw data.
-		if ( empty( $raw ) ) {
+		if ( ! $post || empty( $post->post_content ) ) {
 			return;
 		}
 
-		if ( ! is_array( $raw ) ) {
-			$raw = maybe_unserialize( $raw );
-		}
-
-		if ( ! is_array( $raw ) || empty( $raw ) ) {
+		// Check if content contains godam/video blocks.
+		if ( strpos( $post->post_content, '<!-- wp:godam/video' ) === false ) {
 			return;
 		}
 
+		// Parse blocks and extract SEO data dynamically.
+		// This ensures we always get the latest data from media library for non-overridden blocks.
+		$blocks  = parse_blocks( $post->post_content );
 		$schemas = array();
 
-		foreach ( $raw as $video ) {
-			if ( ! is_array( $video ) ) {
-				continue;
+		foreach ( $blocks as $block ) {
+			$block_schemas = $this->extract_video_seo_schema_from_block( $block );
+			foreach ( $block_schemas as $video ) {
+				if ( ! is_array( $video ) ) {
+					continue;
+				}
+
+				$schema = array(
+					'@context'         => 'https://schema.org',
+					'@type'            => 'VideoObject',
+					'name'             => sanitize_text_field( $video['headline'] ?? '' ),
+					'description'      => wp_strip_all_tags( $video['description'] ?? '' ),
+					'contentUrl'       => esc_url_raw( $video['contentUrl'] ?? '' ),
+					'uploadDate'       => sanitize_text_field( $video['uploadDate'] ?? '' ),
+					'isFamilyFriendly' => isset( $video['isFamilyFriendly'] ) ? (bool) $video['isFamilyFriendly'] : true,
+				);
+
+				if ( ! empty( $video['thumbnailUrl'] ) ) {
+					$schema['thumbnailUrl'] = esc_url_raw( $video['thumbnailUrl'] );
+				}
+
+				if ( ! empty( $video['duration'] ) ) {
+					$schema['duration'] = sanitize_text_field( $video['duration'] );
+				}
+
+				$schemas[] = $schema;
 			}
-
-			$schema = array(
-				'@context'         => 'https://schema.org',
-				'@type'            => 'VideoObject',
-				'name'             => sanitize_text_field( $video['headline'] ?? '' ),
-				'description'      => wp_strip_all_tags( $video['description'] ?? '' ),
-				'contentUrl'       => esc_url_raw( $video['contentUrl'] ?? '' ),
-				'uploadDate'       => sanitize_text_field( $video['uploadDate'] ?? '' ),
-				'isFamilyFriendly' => isset( $video['isFamilyFriendly'] ) ? (bool) $video['isFamilyFriendly'] : true,
-			);
-
-			if ( ! empty( $video['thumbnailUrl'] ) ) {
-				$schema['thumbnailUrl'] = esc_url_raw( $video['thumbnailUrl'] );
-			}
-
-			if ( ! empty( $video['duration'] ) ) {
-				$schema['duration'] = sanitize_text_field( $video['duration'] );
-			}
-
-			$schemas[] = $schema;
 		}
 
 		if ( empty( $schemas ) ) {
