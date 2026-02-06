@@ -439,6 +439,20 @@ class Media_Library_Ajax {
 			}
 		}
 
+		// Get and show the media folder term.
+		$terms = get_the_terms( $attachment->ID, 'media-folder' );
+
+		if ( ! is_wp_error( $terms ) && ! empty( $terms ) && is_array( $terms ) ) {
+			$term                     = array_shift( $terms );
+			$response['media_folder'] = array(
+				'id'   => $term->term_id,
+				'name' => $term->name,
+				'slug' => $term->slug,
+			);
+		} else {
+			$response['media_folder'] = null;
+		}
+
 		return $response;
 	}
 
