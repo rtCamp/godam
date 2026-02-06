@@ -604,18 +604,17 @@ class Transcoding extends Base {
 		$wp_metadata              = array();
 		$wp_metadata['mime_type'] = $mime_type;
 
-		// Check if media has been transcoded before and has a job ID.
-		$transcoded_url   = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
-		$existing_job_id  = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
-		$is_retranscoding = ! empty( $transcoded_url ) || ! empty( $existing_job_id );
+		// This is a manual retranscode request from the tools page.
+		// Always bypass the godam_auto_transcode_on_upload filter to allow transcoding even if the filter returns false.
+		$bypass_auto_transcode_filter = true;
 
 		// Retranscode the media.
 		if ( preg_match( '/image/i', $mime_type ) ) {
 			$transcoder = Media_Library_Ajax::get_instance();
-			$transcoder->upload_media_to_frappe_backend( $attachment_id, $is_retranscoding );
+			$transcoder->upload_media_to_frappe_backend( $attachment_id, $bypass_auto_transcode_filter );
 		} else {
 			$transcoder = new \RTGODAM_Transcoder_Handler( true );
-			$transcoder->wp_media_transcoding( $wp_metadata, $attachment_id, true, $is_retranscoding );
+			$transcoder->wp_media_transcoding( $wp_metadata, $attachment_id, true, $bypass_auto_transcode_filter );
 		}
 
 		// Check if the transcoding job ID is set.
