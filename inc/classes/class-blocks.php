@@ -42,10 +42,6 @@ class Blocks {
 	 */
 	public function register_blocks() {
 
-		if ( ! current_user_can( 'publish_posts' ) ) {
-			return; // TODO: We can remove this check after providing the URL option.
-		}
-
 		// Register blocks.
 		register_block_type(
 			RTGODAM_PATH . '/assets/build/blocks/godam-player/'
