@@ -23,6 +23,31 @@ window.addEventListener( 'elementor/frontend/init', () => {
 		return initialVideoData;
 	}
 
+	/**
+	 * Update SEO fields disabled state based on seo_override toggle.
+	 *
+	 * @param {Object}  panel    - Elementor panel object.
+	 * @param {boolean} disabled - Whether fields should be disabled.
+	 */
+	function updateSEOFieldsDisabledState( panel, disabled ) {
+		const seoFields = panel.$el.find( '.godam-seo-field' );
+		seoFields.each( function() {
+			const $field = window.jQuery( this );
+			const $inputs = $field.find( 'input, textarea' );
+			const $switcher = $field.find( '.elementor-switch' );
+
+			if ( disabled ) {
+				$inputs.attr( 'readonly', 'readonly' );
+				$switcher.css( 'pointer-events', 'none' );
+				$field.css( 'opacity', '0.6' );
+			} else {
+				$inputs.removeAttr( 'readonly' );
+				$switcher.css( 'pointer-events', '' );
+				$field.css( 'opacity', '' );
+			}
+		} );
+	}
+
 	// eslint-disable-next-line no-undef
 	if ( window.elementorFrontend && window.GODAMPlayer ) {
 		// eslint-disable-next-line no-undef
@@ -42,6 +67,25 @@ window.addEventListener( 'elementor/frontend/init', () => {
 				if ( model.get( 'widgetType' ) !== 'godam-video' ) {
 					return;
 				}
+
+				/**
+				 * Handle seo_override toggle changes.
+				 */
+				const handleSeoOverrideChange = () => {
+					const seoOverride = model.get( 'settings' ).get( 'seo_override' ) === 'yes';
+					// Delay to ensure DOM is updated
+					setTimeout( () => {
+						updateSEOFieldsDisabledState( panel, ! seoOverride );
+					}, 100 );
+				};
+
+				// Listen for seo_override changes
+				model.get( 'settings' ).on( 'change:seo_override', handleSeoOverrideChange );
+
+				// Initial state update when panel opens
+				panel.currentPageView.on( 'render', () => {
+					setTimeout( handleSeoOverrideChange, 100 );
+				} );
 
 				/**
 				 * Automatically populates the SEO fields.

@@ -275,46 +275,78 @@ class Seo {
 
 		global $post;
 
-		if ( ! $post || empty( $post->post_content ) ) {
+		if ( ! $post ) {
 			return;
 		}
 
-		// Check if content contains godam/video blocks.
-		if ( strpos( $post->post_content, '<!-- wp:godam/video' ) === false ) {
-			return;
-		}
-
-		// Parse blocks and extract SEO data dynamically.
-		// This ensures we always get the latest data from media library for non-overridden blocks.
-		$blocks  = parse_blocks( $post->post_content );
 		$schemas = array();
 
-		foreach ( $blocks as $block ) {
-			$block_schemas = $this->extract_video_seo_schema_from_block( $block );
-			foreach ( $block_schemas as $video ) {
-				if ( ! is_array( $video ) ) {
-					continue;
+		// Check if post is built with Elementor.
+		$is_elementor = 'builder' === get_post_meta( $post->ID, '_elementor_edit_mode', true );
+
+		if ( $is_elementor ) {
+			// Elementor page - only check for Elementor godam-video widgets.
+			$elementor_seo_data = $this->godam_get_video_seo_data_from_elementor( $post->ID );
+			if ( ! empty( $elementor_seo_data ) ) {
+				foreach ( $elementor_seo_data as $video ) {
+					if ( ! is_array( $video ) ) {
+						continue;
+					}
+
+					$schema = array(
+						'@context'         => 'https://schema.org',
+						'@type'            => 'VideoObject',
+						'name'             => sanitize_text_field( $video['headline'] ?? '' ),
+						'description'      => wp_strip_all_tags( $video['description'] ?? '' ),
+						'contentUrl'       => esc_url_raw( $video['contentUrl'] ?? '' ),
+						'uploadDate'       => sanitize_text_field( $video['uploadDate'] ?? '' ),
+						'isFamilyFriendly' => isset( $video['isFamilyFriendly'] ) ? (bool) $video['isFamilyFriendly'] : true,
+					);
+
+					if ( ! empty( $video['thumbnailUrl'] ) ) {
+						$schema['thumbnailUrl'] = esc_url_raw( $video['thumbnailUrl'] );
+					}
+
+					if ( ! empty( $video['duration'] ) ) {
+						$schema['duration'] = sanitize_text_field( $video['duration'] );
+					}
+
+					$schemas[] = $schema;
 				}
+			}
+		} elseif ( ! empty( $post->post_content ) && strpos( $post->post_content, '<!-- wp:godam/video' ) !== false ) {
+			// Gutenberg page with godam/video blocks - parse blocks to extract SEO data.
+			// Parse blocks and extract SEO data dynamically.
+			// This ensures we always get the latest data from media library for non-overridden blocks.
+			$blocks = parse_blocks( $post->post_content );
 
-				$schema = array(
-					'@context'         => 'https://schema.org',
-					'@type'            => 'VideoObject',
-					'name'             => sanitize_text_field( $video['headline'] ?? '' ),
-					'description'      => wp_strip_all_tags( $video['description'] ?? '' ),
-					'contentUrl'       => esc_url_raw( $video['contentUrl'] ?? '' ),
-					'uploadDate'       => sanitize_text_field( $video['uploadDate'] ?? '' ),
-					'isFamilyFriendly' => isset( $video['isFamilyFriendly'] ) ? (bool) $video['isFamilyFriendly'] : true,
-				);
+			foreach ( $blocks as $block ) {
+				$block_schemas = $this->extract_video_seo_schema_from_block( $block );
+				foreach ( $block_schemas as $video ) {
+					if ( ! is_array( $video ) ) {
+						continue;
+					}
 
-				if ( ! empty( $video['thumbnailUrl'] ) ) {
-					$schema['thumbnailUrl'] = esc_url_raw( $video['thumbnailUrl'] );
+					$schema = array(
+						'@context'         => 'https://schema.org',
+						'@type'            => 'VideoObject',
+						'name'             => sanitize_text_field( $video['headline'] ?? '' ),
+						'description'      => wp_strip_all_tags( $video['description'] ?? '' ),
+						'contentUrl'       => esc_url_raw( $video['contentUrl'] ?? '' ),
+						'uploadDate'       => sanitize_text_field( $video['uploadDate'] ?? '' ),
+						'isFamilyFriendly' => isset( $video['isFamilyFriendly'] ) ? (bool) $video['isFamilyFriendly'] : true,
+					);
+
+					if ( ! empty( $video['thumbnailUrl'] ) ) {
+						$schema['thumbnailUrl'] = esc_url_raw( $video['thumbnailUrl'] );
+					}
+
+					if ( ! empty( $video['duration'] ) ) {
+						$schema['duration'] = sanitize_text_field( $video['duration'] );
+					}
+
+					$schemas[] = $schema;
 				}
-
-				if ( ! empty( $video['duration'] ) ) {
-					$schema['duration'] = sanitize_text_field( $video['duration'] );
-				}
-
-				$schemas[] = $schema;
 			}
 		}
 
@@ -357,25 +389,47 @@ class Seo {
 		}
 
 		$seo_data = array();
+		$seo_obj  = $this;
 
-		$extractor = function ( $elements ) use ( &$seo_data, &$extractor ) {
+		$extractor = function ( $elements ) use ( &$seo_data, &$extractor, $seo_obj ) {
 			foreach ( $elements as $element ) {
 				$_seo_data = array();
 				if (
 					isset( $element['widgetType'] ) &&
 					'godam-video' === $element['widgetType']
 				) {
+					$settings     = $element['settings'];
+					$seo_override = isset( $settings['seo_override'] ) && 'yes' === $settings['seo_override'];
+
+					// If seo_override is false, try to fetch SEO from the media attachment.
+					if ( ! $seo_override ) {
+						// Get attachment ID from video-file setting.
+						$attachment_id = 0;
+						if ( isset( $settings['video-file']['id'] ) && is_numeric( $settings['video-file']['id'] ) ) {
+							$attachment_id = absint( $settings['video-file']['id'] );
+						}
+
+						if ( $attachment_id > 0 ) {
+							$media_seo = $seo_obj->get_seo_from_attachment( $attachment_id );
+							if ( ! empty( $media_seo ) && ! empty( $media_seo['headline'] ) ) {
+								array_push( $seo_data, $media_seo );
+								continue;
+							}
+						}
+					}
+
+					// Use widget settings if seo_override is true or no attachment data available.
 					if (
-						isset( $element['settings']['seo_content_headline'] ) &&
-						! empty( $element['settings']['seo_content_headline'] )
+						isset( $settings['seo_content_headline'] ) &&
+						! empty( $settings['seo_content_headline'] )
 					) {
-						$_seo_data['contentUrl']       = isset( $element['settings']['seo_content_url'] ) ? $element['settings']['seo_content_url'] : '';
-						$_seo_data['headline']         = isset( $element['settings']['seo_content_headline'] ) ? $element['settings']['seo_content_headline'] : '';
-						$_seo_data['description']      = isset( $element['settings']['seo_content_description'] ) ? $element['settings']['seo_content_description'] : '';
-						$_seo_data['uploadDate']       = isset( $element['settings']['seo_content_upload_date'] ) ? $element['settings']['seo_content_upload_date'] : '';
-						$_seo_data['thumbnailUrl']     = isset( $element['settings']['seo_content_video_thumbnail_url'] ) ? $element['settings']['seo_content_video_thumbnail_url'] : '';
-						$_seo_data['isFamilyFriendly'] = isset( $element['settings']['seo_content_family_friendly'] ) ? 'yes' === $element['settings']['seo_content_family_friendly'] : true;
-						$_seo_data['duration']         = isset( $element['settings']['seo_content_duration'] ) ? $element['settings']['seo_content_duration'] : '';
+						$_seo_data['contentUrl']       = isset( $settings['seo_content_url'] ) ? $settings['seo_content_url'] : '';
+						$_seo_data['headline']         = isset( $settings['seo_content_headline'] ) ? $settings['seo_content_headline'] : '';
+						$_seo_data['description']      = isset( $settings['seo_content_description'] ) ? $settings['seo_content_description'] : '';
+						$_seo_data['uploadDate']       = isset( $settings['seo_content_upload_date'] ) ? $settings['seo_content_upload_date'] : '';
+						$_seo_data['thumbnailUrl']     = isset( $settings['seo_content_video_thumbnail_url'] ) ? $settings['seo_content_video_thumbnail_url'] : '';
+						$_seo_data['isFamilyFriendly'] = isset( $settings['seo_content_family_friendly'] ) ? 'yes' === $settings['seo_content_family_friendly'] : true;
+						$_seo_data['duration']         = isset( $settings['seo_content_duration'] ) ? $settings['seo_content_duration'] : '';
 
 						array_push( $seo_data, $_seo_data );
 					}
