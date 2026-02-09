@@ -203,9 +203,12 @@ const Analytics = ( { attachmentID } ) => {
 					const container = originalVideoEl.closest( '.block' );
 					if ( container ) {
 						const updateContainerWidth = () => {
+							const parentWidth = container.parentElement?.offsetWidth || window.innerWidth;
+							const maxWidth = Math.min( parentWidth - 40, 525 );
 							const calculatedWidth = 320 * ( videoWidth / videoHeight );
-							container.style.width = `${ calculatedWidth }px`;
-							container.style.maxWidth = '525px';
+							const finalWidth = Math.min( calculatedWidth, maxWidth );
+							container.style.width = `${ finalWidth }px`;
+							container.style.maxWidth = '100%';
 						};
 
 						updateContainerWidth();
@@ -243,9 +246,12 @@ const Analytics = ( { attachmentID } ) => {
 					const container = comparisonVideoEl.closest( '.block' );
 					if ( container ) {
 						const updateContainerWidth = () => {
+							const parentWidth = container.parentElement?.offsetWidth || window.innerWidth;
+							const maxWidth = Math.min( parentWidth - 40, 525 );
 							const calculatedWidth = 320 * ( videoWidth / videoHeight );
-							container.style.width = `${ calculatedWidth }px`;
-							container.style.maxWidth = '525px';
+							const finalWidth = Math.min( calculatedWidth, maxWidth );
+							container.style.width = `${ finalWidth }px`;
+							container.style.maxWidth = '100%';
 						};
 
 						updateContainerWidth();
@@ -306,12 +312,16 @@ const Analytics = ( { attachmentID } ) => {
 				if ( container ) {
 					// Function to update container width based on aspect ratio
 					const updateContainerWidth = () => {
+						// Get available width (parent width or viewport width - padding)
+						const parentWidth = container.parentElement?.offsetWidth || window.innerWidth;
+						const maxWidth = Math.min( parentWidth - 40, 640 ); // 40px for padding
 						const calculatedWidth = 360 * ( videoWidth / videoHeight );
-						container.style.width = `${ calculatedWidth }px`;
-						container.style.maxWidth = '100%';
+
+						// Use the smaller of calculated width or available space
+						const finalWidth = Math.min( calculatedWidth, maxWidth );
+						container.style.width = `${ finalWidth }px`;
 					};
 
-					// Initial setup
 					updateContainerWidth();
 
 					// Update on window resize
@@ -707,8 +717,8 @@ const Analytics = ( { attachmentID } ) => {
 											</div>
 										) }
 										{ mediaLibraryAttachment && (
-											<div className="flex gap-12 w-full h-full pt-6 justify-center">
-												<div className="block w-[525px] h-[350px]">
+											<div className="flex gap-4 md:gap-12 w-full h-full pt-6 justify-center flex-col md:flex-row">
+												<div className="block w-full md:w-[525px] max-w-full">
 													<div className="relative">
 														<RenderVideo
 															attachmentData={ attachmentData }
@@ -727,13 +737,13 @@ const Analytics = ( { attachmentID } ) => {
 														<h4 className="text-center m-0 mt-6">{ attachmentData?.title?.rendered }</h4>
 													</div>
 												</div>
-												<div className="w-px bg-gray-200 mx-4 divide-dashed"></div>
-												<div className="block w-[525px] h-[350px]">
+												<div className="w-px bg-gray-200 mx-4 divide-dashed hidden md:block"></div>
+												<div className="block w-full md:w-[525px] max-w-full">
 													<div className="relative">
 														<RenderVideo
 															attachmentData={ mediaLibraryAttachment }
 															attachmentID={ mediaLibraryAttachment?.id }
-															className="w-full h-[320px] object-fill comparison-video-container"
+															className="w-full object-fill comparison-video-container"
 															videoId={ 'comparison-analytics-video' }
 														/>
 														<div className="original-video-chart-container relative">
