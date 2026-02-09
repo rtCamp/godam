@@ -86,10 +86,18 @@ class Media_Library_Ajax {
 		$api_mime_type = $item['mime_type'] ?? '';
 		$computed_mime = $this->get_mime_type_for_job_type( $job_type, $api_mime_type );
 		$title         = isset( $item['title'] ) ? $item['title'] : ( isset( $item['orignal_file_name'] ) ? pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) : $item['name'] );
+		// trim the extension from title if present.
+		$title = preg_replace( '/\.[^.]+$/', '', $title );
+
+		// Get video duration in seconds.
+		$video_duration = isset( $item['playtime'] ) ? $item['playtime'] : 0;
+		// Round video duration to integer seconds.
+		$video_duration = is_numeric( $video_duration ) ? (int) round( $video_duration ) : 0;
 
 		$result = array(
 			'id'                    => $item['name'],
 			'title'                 => $title,
+			'description'           => $item['description'] ?? '',
 			'filename'              => $item['orignal_file_name'] ?? $item['name'],
 			'url'                   => isset( $item['transcoded_mp4_url'] ) ? $item['transcoded_mp4_url'] : ( isset( $item['transcoded_file_path'] ) ? $item['transcoded_file_path'] : '' ),
 			'mime'                  => isset( $item['transcoded_mp4_url'] ) ? 'video/mp4' : $computed_mime,
@@ -107,6 +115,7 @@ class Media_Library_Ajax {
 			'duration'              => $item['playtime'] ?? '',
 			'hls_url'               => $item['transcoded_hls_path'] ?? '',
 			'mpd_url'               => $item['transcoded_file_path'] ?? '',
+			'video_duration'        => $video_duration ?? 0,
 		);
 
 		// Set icon with fallback to default mime type icon for audio and PDF.
@@ -152,10 +161,10 @@ class Media_Library_Ajax {
 	 * Upload media to the Frappe backend.
 	 *
 	 * @param int  $attachment_id Attachment ID.
-	 * @param bool $retranscode Whether this is a retranscode request.
+	 * @param bool $manual_retranscode Whether this is a retranscode request.
 	 * @return void
 	 */
-	public function upload_media_to_frappe_backend( $attachment_id, $retranscode = false ) {
+	public function upload_media_to_frappe_backend( $attachment_id, $manual_retranscode = false ) {
 		// Check if local development environment.
 		if ( rtgodam_is_local_environment() ) {
 			return;
@@ -176,7 +185,7 @@ class Media_Library_Ajax {
 		 *
 		 * @param bool $auto_transcode_on_upload Whether to automatically transcode on upload. Default true.
 		 */
-		if ( ! $retranscode ) {
+		if ( ! $manual_retranscode ) {
 			$auto_transcode_on_upload = apply_filters( 'godam_auto_transcode_on_upload', true );
 
 			if ( ! $auto_transcode_on_upload ) {
@@ -196,7 +205,8 @@ class Media_Library_Ajax {
 		}
 
 		// Only if attachment type is image.
-		if ( 'image' !== substr( get_post_mime_type( $attachment_id ), 0, 5 ) ) {
+		$mime_type = get_post_mime_type( $attachment_id );
+		if ( 'image' !== substr( $mime_type, 0, 5 ) ) {
 			return;
 		}
 
@@ -254,6 +264,7 @@ class Media_Library_Ajax {
 			'job_for'              => 'wp-media',
 			'file_origin'          => $attachment_url,
 			'orignal_file_name'    => $file_name ?? $file_title,
+			'mime_type'            => $mime_type,
 			'callback_url'         => rawurlencode( $callback_url ),
 			'status_callback'      => rawurlencode( $status_callback_url ),
 			'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $author_email, $attachment_id ),

@@ -56,16 +56,16 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 
 	const ctaLayerOptions = [
 		{
+			label: __( 'Card', 'godam' ),
+			value: 'image',
+		},
+		{
 			label: __( 'Text', 'godam' ),
 			value: 'text',
 		},
 		{
 			label: __( 'HTML', 'godam' ),
 			value: 'html',
-		},
-		{
-			label: __( 'Image', 'godam' ),
-			value: 'image',
 		},
 	];
 
@@ -120,31 +120,82 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 			case 'html':
 				return <HtmlCTA layerID={ layer.id } />;
 			default:
-				return <TextCTA layerID={ layer.id } />;
+				return <ImageCTA layerID={ layer.id } />;
 		}
 	};
 
-	const imageCtaHtml = () => {
-		let imageBox = `<div class="image-cta-no-image" style="opacity: ${ layer?.imageOpacity ?? 1 }">${ __( 'No Image', 'godam' ) }</div>`;
+	const renderImageCTA = () => {
+		const layout = layer?.cardLayout || 'card-layout--text-imagecover';
+		const hasImage = imageCtaUrl && imageCtaUrl !== '';
+		const opacity = layer?.imageOpacity ?? 1;
 
-		if ( imageCtaUrl ) {
-			imageBox = `<img
-							src="${ imageCtaUrl }"
-							alt="CTA ad"
-							height="300"
-							width="250"
-							style="opacity: ${ layer?.imageOpacity ?? 1 }"
-						/>`;
+		// Image element component
+		const imageElement = hasImage ? (
+			<img src={ imageCtaUrl } alt="CTA Card" style={ { opacity } } />
+		) : (
+			<div className="godam-cta-card-image-placeholder" style={ { opacity } }>
+				{ __( 'No Image', 'godam' ) }
+			</div>
+		);
+
+		// Content element component
+		const contentElement = (
+			<div className="godam-cta-card-content">
+				{ layer?.imageText && <h2 className="card-title">{ layer.imageText }</h2> }
+				{ layer?.imageDescription && <p className="card-description">{ layer.imageDescription }</p> }
+				{ ( layer?.imageCtaButtonText || layer?.imageLink ) && (
+					<div className="btns">
+						<a
+							className="godam-cta-btn"
+							href={ layer?.imageLink || '#' }
+							target="_blank"
+							rel="noreferrer"
+							style={ { backgroundColor: layer?.imageCtaButtonColor ?? '#EEAB95', textDecoration: 'none' } }
+						>
+							{ layer?.imageCtaButtonText || __( 'Check now', 'godam' ) }
+						</a>
+					</div>
+				) }
+			</div>
+		);
+
+		// Handle different layouts
+		if ( layout === 'desktop-text-only' ) {
+			return contentElement;
 		}
 
-		return `${ imageBox }
-					<div class="image-cta-description">
-						${ layer?.imageText ? `<h2>${ layer.imageText }</h2>` : '' }
-						${ layer?.imageDescription ? `<p>${ layer.imageDescription }</p>` : '' }
-						<a class="image-cta-btn" href="${ layer?.imageLink || '/' }" target="_blank" style="background-color: ${ layer?.imageCtaButtonColor ?? '#eeab95' }">
-							${ layer?.imageCtaButtonText || __( 'Buy Now', 'godam' ) }
-						</a>
-					</div>`;
+		if ( layout === 'card-layout--image-background' ) {
+			return (
+				<>
+					<div
+						className="godam-cta-card-image-bg"
+						style={ { backgroundImage: `url('${ imageCtaUrl }')`, opacity } }
+					/>
+					{ contentElement }
+				</>
+			);
+		}
+
+		// All other layouts with image element
+		const imageContent = <div className="godam-cta-card-image">{ imageElement }</div>;
+		const textMediaLayerouts = [ 'card-layout--text-imagecover', 'card-layout--text-image', 'card-layout--image-bottom' ];
+
+		// Return based on layout order
+		if ( textMediaLayerouts.includes( layout ) ) {
+			return (
+				<>
+					{ contentElement }
+					{ imageContent }
+				</>
+			);
+		}
+
+		return (
+			<>
+				{ imageContent }
+				{ contentElement }
+			</>
+		);
 	};
 
 	useEffect( () => {
@@ -168,33 +219,26 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 		}
 	}, [ layer?.cta_type, layer?.image ] );
 
-	// Update the HTML only after imageCtaUrl is updated
-	useEffect( () => {
-		if ( 'image' === layer?.cta_type ) {
-			setFormHTML( imageCtaHtml() );
-		}
-	}, [ imageCtaUrl, layer ] );
-
 	return (
 		<>
 			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
 
 			<div className="flex flex-col godam-form-group">
-				<p className="mb-4 label-text">{ __( 'Call to Action', 'godam' ) }</p>
+				<label htmlFor="cta-type-select" className="mb-4 label-text">{ __( 'Call to Action', 'godam' ) }</label>
 				<SelectControl
 					__next40pxDefaultSize
 					className="mb-4"
-					label={ __( 'Select type', 'godam' ) }
 					onChange={ handleCTATypeSelect }
 					options={ ctaLayerOptions }
 					value={ layer.cta_type }
+					help={ __( 'Select the type of Call to Action layer.', 'godam' ) }
 				/>
 
 				{ renderSelectedCTAInputs() }
 
 				{ /* Common settings */ }
 
-				<Panel className="-mx-4 border-x-0">
+				<Panel className="-mx-4 border-x-0 mb-4">
 					<PanelBody
 						title={ __( 'Advanced', 'godam' ) }
 						initialOpen={ false }
@@ -226,14 +270,12 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 					) }
 					{ layer?.cta_type === 'image' && (
 						<div className="easydam-layer" style={ { backgroundColor: layer.bg_color } }>
-							<div className="image-cta-overlay-container">
-								<div className="image-cta-parent-container">
-									<div
-										className={ layer?.imageCtaOrientation === 'portrait'
-											? 'vertical-image-cta-container'
-											: 'image-cta-container' }
-										dangerouslySetInnerHTML={ { __html: formHTML } }
-									/>
+							<div className="godam-cta-overlay-container">
+								<div
+									className={ `godam-cta-card ${ layer?.cardLayout || ( ( ! layer?.imageCtaOrientation || layer?.imageCtaOrientation === 'landscape' ) ? 'card-layout--image-text' : 'card-layout--image-top' ) }` }
+									style={ { '--image-width': `${ layer?.imageWidth ?? 50 }%` } }
+								>
+									{ renderImageCTA() }
 								</div>
 							</div>
 						</div>

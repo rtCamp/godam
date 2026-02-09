@@ -241,8 +241,21 @@ class Everest_Forms_Integration {
 			return;
 		}
 
-		$form_title                = ! empty( $form_title ) ? $form_title : __( 'Everest Forms', 'godam' );
-		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding( 'everestforms', $form_title, $file_url, $entry_id );
+		$form_title = ! empty( $form_title ) ? $form_title : __( 'Everest Forms', 'godam' );
+
+		// Detect file type to determine job_type.
+		$is_audio = godam_is_audio_file( $file_url );
+
+		// Set job_type based on file type.
+		$job_type = $is_audio ? 'audio' : 'stream';
+
+		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding(
+			'everestforms',
+			$form_title,
+			$file_url,
+			$entry_id,
+			$job_type
+		);
 
 		if ( is_wp_error( $response_from_transcoding ) ) {
 			return wp_send_json_error(
