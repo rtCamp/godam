@@ -371,6 +371,34 @@ class Settings extends Base {
 				'enable_global_video_ads' => rest_sanitize_boolean( $settings['ads_settings']['enable_global_video_ads'] ?? $default['ads_settings']['enable_global_video_ads'] ),
 				'adTagUrl'                => esc_url_raw( $settings['ads_settings']['adTagUrl'] ?? $default['ads_settings']['adTagUrl'] ),
 			),
+			'integrations' => array(
+				'woocommerce' => array(
+					'videoCloseBg'              => $this->sanitize_color_value( $settings['integrations']['woocommerce']['videoCloseBg'] ?? $default['integrations']['woocommerce']['videoCloseBg'] ),
+					'videoCloseIcon'            => $this->sanitize_color_value( $settings['integrations']['woocommerce']['videoCloseIcon'] ?? $default['integrations']['woocommerce']['videoCloseIcon'] ),
+					'videoCloseBorder'          => sanitize_text_field( $settings['integrations']['woocommerce']['videoCloseBorder'] ?? $default['integrations']['woocommerce']['videoCloseBorder'] ),
+					'videoCloseRadius'          => absint( $settings['integrations']['woocommerce']['videoCloseRadius'] ?? $default['integrations']['woocommerce']['videoCloseRadius'] ),
+
+					'miniCartBg'                => $this->sanitize_color_value( $settings['integrations']['woocommerce']['miniCartBg'] ?? $default['integrations']['woocommerce']['miniCartBg'] ),
+					'miniCartIcon'              => $this->sanitize_color_value( $settings['integrations']['woocommerce']['miniCartIcon'] ?? $default['integrations']['woocommerce']['miniCartIcon'] ),
+					'miniCartBorder'            => sanitize_text_field( $settings['integrations']['woocommerce']['miniCartBorder'] ?? $default['integrations']['woocommerce']['miniCartBorder'] ),
+					'miniCartRadius'            => absint( $settings['integrations']['woocommerce']['miniCartRadius'] ?? $default['integrations']['woocommerce']['miniCartRadius'] ),
+
+					'addToCartFontSize'         => absint( $settings['integrations']['woocommerce']['addToCartFontSize'] ?? $default['integrations']['woocommerce']['addToCartFontSize'] ),
+					'addToCartBgColor'          => $this->sanitize_color_value( $settings['integrations']['woocommerce']['addToCartBgColor'] ?? $default['integrations']['woocommerce']['addToCartBgColor'] ),
+					'addToCartFontColor'        => $this->sanitize_color_value( $settings['integrations']['woocommerce']['addToCartFontColor'] ?? $default['integrations']['woocommerce']['addToCartFontColor'] ),
+					'addToCartBorder'           => sanitize_text_field( $settings['integrations']['woocommerce']['addToCartBorder'] ?? $default['integrations']['woocommerce']['addToCartBorder'] ),
+					'addToCartRadius'           => absint( $settings['integrations']['woocommerce']['addToCartRadius'] ?? $default['integrations']['woocommerce']['addToCartRadius'] ),
+
+					'toggleFontSize'            => absint( $settings['integrations']['woocommerce']['toggleFontSize'] ?? $default['integrations']['woocommerce']['toggleFontSize'] ),
+					'toggleBgColor'             => $this->sanitize_color_value( $settings['integrations']['woocommerce']['toggleBgColor'] ?? $default['integrations']['woocommerce']['toggleBgColor'] ),
+					'toggleFontColor'           => $this->sanitize_color_value( $settings['integrations']['woocommerce']['toggleFontColor'] ?? $default['integrations']['woocommerce']['toggleFontColor'] ),
+					'toggleBorder'              => sanitize_text_field( $settings['integrations']['woocommerce']['toggleBorder'] ?? $default['integrations']['woocommerce']['toggleBorder'] ),
+					'toggleRadius'              => absint( $settings['integrations']['woocommerce']['toggleRadius'] ?? $default['integrations']['woocommerce']['toggleRadius'] ),
+
+					'popupBackgroundColor'      => $this->sanitize_color_value( $settings['integrations']['woocommerce']['popupBackgroundColor'] ?? $default['integrations']['woocommerce']['popupBackgroundColor'] ),
+					'additionalComponentsColor' => $this->sanitize_color_value( $settings['integrations']['woocommerce']['additionalComponentsColor'] ?? $default['integrations']['woocommerce']['additionalComponentsColor'] ),
+				),
+			),
 		);
 	}
 

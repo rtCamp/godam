@@ -44,6 +44,34 @@ const initialState = {
 		enable_global_video_ads: false,
 		adTagUrl: '',
 	},
+	integrations: {
+		woocommerce: {
+			videoCloseBg: '',
+			videoCloseIcon: '',
+			videoCloseBorder: '',
+			videoCloseRadius: 0,
+
+			miniCartBg: '',
+			miniCartIcon: '',
+			miniCartBorder: '',
+			miniCartRadius: 0,
+
+			addToCartFontSize: 16,
+			addToCartBgColor: '',
+			addToCartFontColor: '',
+			addToCartBorder: '',
+			addToCartRadius: 0,
+
+			toggleFontSize: 16,
+			toggleBgColor: '',
+			toggleFontColor: '',
+			toggleBorder: '',
+			toggleRadius: 0,
+
+			popupBackgroundColor: '',
+			additionalComponentsColor: '',
+		},
+	},
 	isChanged: false,
 };
 
@@ -70,13 +98,20 @@ const mediaSettingsSlice = createSlice( {
 
 		// Updates a specific setting dynamically
 		updateMediaSetting: ( state, action ) => {
-			const { category, key, value } = action.payload; // e.g., { category: 'video', key: 'video_format', value: 'mp4' }
+			const { category, subCategory, key, value } = action.payload; // e.g., { category: 'video', subCategory: 'woocommerce' key: 'video_format', value: 'mp4' }
 
 			if ( state[ category ] && key in state[ category ] ) {
 				// Only update isChanged if the value is different
 				if ( state[ category ][ key ] !== value ) {
 					state[ category ][ key ] = value;
 					state.isChanged = true; // Mark as changed
+				}
+			}
+
+			if ( state[ category ] && subCategory ) {
+				if ( state[ category ][ subCategory ] && state[ category ][ subCategory ][ key ] !== value ) {
+					state[ category ][ subCategory ][ key ] = value;
+					state.isChanged = true;
 				}
 			}
 		},
