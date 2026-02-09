@@ -261,10 +261,11 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * Creates a tile for uploading custom thumbnails.
 	 *
 	 * @param {boolean} uploadDisabled - Whether the upload button should be disabled.
+	 * @param {number}  aspectRatio    - The aspect ratio of the video (width/height).
 	 *
 	 * @return {HTMLElement} - The created upload tile element.
 	 */
-	createUploadTile( uploadDisabled ) {
+	createUploadTile( uploadDisabled, aspectRatio = 16 / 9 ) {
 		const sanitizedIcon = DOMPurify.sanitize( addIcon );
 
 		const li = document.createElement( 'li' );
@@ -272,6 +273,11 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		li.title = uploadDisabled
 			? __( 'Only 3 custom thumbnails allowed', 'godam' )
 			: __( 'Upload Custom Thumbnail', 'godam' );
+
+		// Apply aspect ratio: height is fixed, calculate width
+		const { width, height } = this.getThumbnailDimensions( aspectRatio );
+		li.style.width = width + 'px';
+		li.style.height = height + 'px';
 
 		const button = document.createElement( 'button' );
 		button.type = 'button';
@@ -306,15 +312,21 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * @param {string} selectedURL   - The URL of the currently selected thumbnail.
 	 *
 	 * @param {string} trashIconHTML - The HTML for the trash icon.
+	 * @param {number} aspectRatio   - The aspect ratio of the video (width/height).
 	 *
 	 * @return {HTMLElement} - The created custom thumbnail tile element.
 	 */
-	createCustomThumbnailTile( thumbnailURL, selectedURL, trashIconHTML ) {
+	createCustomThumbnailTile( thumbnailURL, selectedURL, trashIconHTML, aspectRatio = 16 / 9 ) {
 		const li = document.createElement( 'li' );
 		li.className = 'custom-thumbnail-container';
 		if ( thumbnailURL === selectedURL ) {
 			li.classList.add( 'selected' );
 		}
+
+		// Apply aspect ratio: height is fixed, calculate width
+		const { width, height } = this.getThumbnailDimensions( aspectRatio );
+		li.style.width = width + 'px';
+		li.style.height = height + 'px';
 
 		const img = document.createElement( 'img' );
 		img.src = DOMPurify.sanitize( thumbnailURL );
@@ -350,19 +362,43 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * @param {string} thumbnailURL - The URL of the thumbnail image.
 	 *
 	 * @param {string} selectedURL  - The URL of the currently selected thumbnail.
+	 * @param {number} aspectRatio  - The aspect ratio of the video (width/height).
 	 *
 	 * @return {HTMLElement} - The created default thumbnail tile element.
 	 */
-	createDefaultThumbnailTile( thumbnailURL, selectedURL ) {
+	createDefaultThumbnailTile( thumbnailURL, selectedURL, aspectRatio = 16 / 9 ) {
 		const li = document.createElement( 'li' );
 		if ( thumbnailURL === selectedURL ) {
 			li.classList.add( 'selected' );
 		}
+
+		// Apply aspect ratio: height is fixed, calculate width
+		const { width, height } = this.getThumbnailDimensions( aspectRatio );
+		li.style.width = width + 'px';
+		li.style.height = height + 'px';
+
 		const img = document.createElement( 'img' );
 		img.src = DOMPurify.sanitize( thumbnailURL );
 		img.alt = __( 'Video Thumbnail', 'godam' );
 		li.appendChild( img );
 		return li;
+	},
+
+	/**
+	 * Returns the pixel dimensions for a thumbnail tile based on aspect ratio.
+	 *
+	 * @param {number} aspectRatio - Width divided by height for the video.
+	 * @return {{width: number, height: number}} - The calculated width and height for the thumbnail tile.
+	 */
+	getThumbnailDimensions( aspectRatio = 16 / 9 ) {
+		const baseHeight = 72;
+		let height = baseHeight;
+		if ( aspectRatio < 1 ) {
+			const portraitHeight = Math.floor( baseHeight / aspectRatio );
+			height = Math.min( 140, Math.max( baseHeight, portraitHeight ) );
+		}
+		const width = Math.max( Math.floor( height * aspectRatio ), 48 );
+		return { width, height };
 	},
 
 	/**
@@ -377,6 +413,12 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		const { thumbnails, selected, customThumbnails } = data;
 		const attachmentID = this.model.get( 'id' );
+
+		// Calculate aspect ratio from video dimensions
+		const meta = this.model.get( 'media_details' );
+		const videoWidth = this.model.get( 'width' ) || meta?.width;
+		const videoHeight = this.model.get( 'height' ) || meta?.height;
+		const aspectRatio = ( videoWidth && videoHeight ) ? videoWidth / videoHeight : 16 / 9;
 
 		const selector = `.transcoding-status--completed[data-id="${ attachmentID }"]`;
 		const status = document.querySelector( selector );
@@ -420,17 +462,17 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		const uploadDisabled = customThumbnailsArray.length >= 3;
 
 		const ul = document.createElement( 'ul' );
-		ul.appendChild( this.createUploadTile( uploadDisabled ) );
+		ul.appendChild( this.createUploadTile( uploadDisabled, aspectRatio ) );
 
 		customThumbnailsArray.forEach( ( thumbnail ) =>
 			ul.appendChild(
-				this.createCustomThumbnailTile( thumbnail, selected, trashIcon ),
+				this.createCustomThumbnailTile( thumbnail, selected, trashIcon, aspectRatio ),
 			),
 		);
 
 		const thumbnailArray = Array.isArray( thumbnails ) ? thumbnails : Object.values( thumbnails || {} );
 		thumbnailArray.forEach( ( thumbnail ) =>
-			ul.appendChild( this.createDefaultThumbnailTile( thumbnail, selected ) ),
+			ul.appendChild( this.createDefaultThumbnailTile( thumbnail, selected, aspectRatio ) ),
 		);
 
 		// Compose full container
