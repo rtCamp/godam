@@ -758,13 +758,13 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		// Store observer reference for cleanup
 		this._nativePlayerObserver = observer;
 
-		// Stop observing after 3 seconds (by then MediaElement.js should be done)
+		// Stop observing after 15 seconds (by then MediaElement.js should be done)
 		setTimeout( () => {
 			if ( this._nativePlayerObserver ) {
 				this._nativePlayerObserver.disconnect();
 				this._nativePlayerObserver = null;
 			}
-		}, 3000 );
+		}, 15000 );
 	},
 
 	/**
