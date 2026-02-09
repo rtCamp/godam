@@ -174,7 +174,7 @@ const Analytics = ( { attachmentID } ) => {
 		const originalVideoEl = document.getElementById( 'original-analytics-video' );
 
 		const videoOptions = {
-			fluid: true,
+			fluid: false,
 			mute: true,
 			controls: false,
 			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
@@ -191,6 +191,29 @@ const Analytics = ( { attachmentID } ) => {
 		if ( originalVideoEl && analyticsData ) {
 			const originalVideo = videojs( 'original-analytics-video', videoOptions );
 
+			// Set aspect ratio when metadata loads
+			originalVideo.on( 'loadedmetadata', () => {
+				const videoWidth = originalVideo.videoWidth();
+				const videoHeight = originalVideo.videoHeight();
+
+				if ( videoWidth && videoHeight ) {
+					const aspectRatio = `${ videoWidth }:${ videoHeight }`;
+					originalVideo.aspectRatio( aspectRatio );
+
+					const container = originalVideoEl.closest( '.block' );
+					if ( container ) {
+						const updateContainerWidth = () => {
+							const calculatedWidth = 320 * ( videoWidth / videoHeight );
+							container.style.width = `${ calculatedWidth }px`;
+							container.style.maxWidth = '525px';
+						};
+
+						updateContainerWidth();
+						window.addEventListener( 'resize', updateContainerWidth );
+					}
+				}
+			} );
+
 			generateLineChart(
 				JSON.parse( analyticsData?.all_time_heatmap ),
 				'#performance-line-chart',
@@ -205,6 +228,29 @@ const Analytics = ( { attachmentID } ) => {
 
 		if ( comparisonVideoEl && abTestComparisonAnalyticsData ) {
 			const comparisonVideo = videojs( 'comparison-analytics-video', videoOptions );
+
+			// Set aspect ratio when metadata loads
+			comparisonVideo.on( 'loadedmetadata', () => {
+				const videoWidth = comparisonVideo.videoWidth();
+				const videoHeight = comparisonVideo.videoHeight();
+
+				if ( videoWidth && videoHeight ) {
+					const aspectRatio = `${ videoWidth }:${ videoHeight }`;
+					comparisonVideo.aspectRatio( aspectRatio );
+
+					const container = comparisonVideoEl.closest( '.block' );
+					if ( container ) {
+						const updateContainerWidth = () => {
+							const calculatedWidth = 320 * ( videoWidth / videoHeight );
+							container.style.width = `${ calculatedWidth }px`;
+							container.style.maxWidth = '525px';
+						};
+
+						updateContainerWidth();
+						window.addEventListener( 'resize', updateContainerWidth );
+					}
+				}
+			} );
 
 			generateLineChart(
 				JSON.parse( abTestComparisonAnalyticsData?.all_time_heatmap ),
@@ -230,7 +276,7 @@ const Analytics = ( { attachmentID } ) => {
 		}
 
 		const player = videojs( 'analytics-video', {
-			aspectRatio: '16:9',
+			fluid: false,
 			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
 			// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
 			html5: {
@@ -240,6 +286,34 @@ const Analytics = ( { attachmentID } ) => {
 					limitRenditionByPlayerDimensions: false, // don't cap by video element size
 				},
 			},
+		} );
+
+		// When video metadata loads, get actual dimensions and set aspect ratio
+		player.on( 'loadedmetadata', () => {
+			const videoWidth = player.videoWidth();
+			const videoHeight = player.videoHeight();
+
+			if ( videoWidth && videoHeight ) {
+				// Calculate aspect ratio
+				const aspectRatio = `${ videoWidth }:${ videoHeight }`;
+				player.aspectRatio( aspectRatio );
+
+				const container = document.querySelector( '.video-container' );
+				if ( container ) {
+					// Function to update container width based on aspect ratio
+					const updateContainerWidth = () => {
+						const calculatedWidth = 360 * ( videoWidth / videoHeight );
+						container.style.width = `${ calculatedWidth }px`;
+						container.style.maxWidth = '100%';
+					};
+
+					// Initial setup
+					updateContainerWidth();
+
+					// Update on window resize
+					window.addEventListener( 'resize', updateContainerWidth );
+				}
+			}
 		} );
 
 		// Add cleanup for when this specific effect unmounts
