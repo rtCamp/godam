@@ -245,7 +245,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		button.className = 'custom-thumbnail-media-upload';
 
 		if ( uploadDisabled ) {
-			button.disabled = true;
+			button.setAttribute( 'aria-disabled', 'true' );
 			button.style.opacity = '0.5';
 			button.style.cursor = 'not-allowed';
 			button.tabIndex = 0; // Make disabled button keyboard-focusable for tooltip
@@ -517,7 +517,14 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		setTimeout( () => {
 			const $btn = this.$el.find( '.custom-thumbnail-media-upload' );
 			if ( $btn.length ) {
-				$btn.off( 'click' ).on( 'click', () => {
+				$btn.off( 'click' ).on( 'click', ( e ) => {
+					// Prevent action if button is disabled
+					if ( $btn.attr( 'aria-disabled' ) === 'true' ) {
+						e.preventDefault();
+						e.stopPropagation();
+						return;
+					}
+
 					this.openMediaUploader( ( attachment ) => {
 						this.handleThumbnailUploadFromUrl( attachment.url );
 					} );
