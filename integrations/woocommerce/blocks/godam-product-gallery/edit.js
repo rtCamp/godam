@@ -97,7 +97,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		native: autoPlayHelpText,
 	} );
 
-	// Constants.
+	// Constant for locing play button.
 	const isPlayButtonLocked = ! autoplay;
 
 	// Factory to generate toggle attribute function for autoplay.
@@ -200,6 +200,32 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		: deviceType === 'Tablet'
 			? gridColumns?.tablet ?? 3
 			: gridColumns?.desktop ?? 4;
+
+	/* Determine Product Position help text */
+	const getProductLayoutHelp = () => {
+		if ( ctaDisplayPosition === 'inside' ) {
+			return __(
+				'Products only appear as an overlay on the video. (sidebar on desktop & floating tile on mobile)',
+				'godam',
+			);
+		}
+
+		if ( ctaDisplayPosition === 'below' ) {
+			return __(
+				'Products are only displayed below each video in the layout.',
+				'godam',
+			);
+		}
+
+		if ( ctaDisplayPosition === 'below-inside' ) {
+			return __(
+				'Products appear both as an overlay (sidebar on desktop, floating tile on mobile) and below each video in the layout.',
+				'godam',
+			);
+		}
+
+		return '';
+	};
 
 	/**
 	 * Generate sample videos for preview in editor.
@@ -476,7 +502,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 							/>
 
 							<RangeControl
-								label={ __( 'Arrow Size (px)', 'godam' ) }
+								label={ __( 'Arrow Size', 'godam' ) }
 								value={ arrowSize }
 								onChange={ ( value ) => setAttributes( { arrowSize: value } ) }
 								min={ 16 }
@@ -484,7 +510,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 							/>
 
 							<RangeControl
-								label={ __( 'Border Radius (px)', 'godam' ) }
+								label={ __( 'Border Radius', 'godam' ) }
 								value={ arrowBorderRadius }
 								onChange={ ( value ) => setAttributes( { arrowBorderRadius: value } ) }
 								min={ 0 }
@@ -556,7 +582,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 
 						<PanelBody title={ __( 'Spacing', 'godam' ) } initialOpen={ false }>
 							<RangeControl
-								label={ __( 'Row Gap (px)', 'godam' ) }
+								label={ __( 'Row Gap', 'godam' ) }
 								value={ gridRowGap }
 								onChange={ ( value ) => setAttributes( { gridRowGap: value } ) }
 								min={ 0 }
@@ -564,7 +590,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 							/>
 
 							<RangeControl
-								label={ __( 'Column Gap (px)', 'godam' ) }
+								label={ __( 'Column Gap', 'godam' ) }
 								value={ gridColumnGap }
 								onChange={ ( value ) => setAttributes( { gridColumnGap: value } ) }
 								min={ 0 }
@@ -574,86 +600,100 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					</PanelBody>
 				) }
 
-				<PanelBody title={ __( 'Play Button Overlay', 'godam' ) } initialOpen={ false }>
+				<PanelBody
+					title={
+						playButtonEnabled
+							? __( 'Play Button Overlay', 'godam' )
+							: __( 'Sound Button Overlay', 'godam' )
+					}
+					initialOpen={ false }
+				>
 					<ToggleControl
-						label={ __( 'Show Play Button', 'godam' ) }
+						label={
+							playButtonEnabled
+								? __( 'Show Play Button', 'godam' )
+								: __( 'Show Sound Button', 'godam' )
+						}
 						checked={ !! playButtonEnabled }
 						onChange={ ( value ) => setAttributes( { playButtonEnabled: value } ) }
 						disabled={ isPlayButtonLocked }
 						help={
 							isPlayButtonLocked
 								? __( 'Required when motion preview is disabled.', 'godam' )
-								: __( 'Displays a play icon overlay on videos.', 'godam' )
+								: playButtonEnabled
+									? __( 'Displays a play icon overlay on videos.', 'godam' )
+									: __( 'Displays a sound/mute icon overlay on videos.', 'godam' )
 						}
 					/>
-					{ playButtonEnabled && (
-						<PanelBody title={ __( 'Appearance', 'godam' ) } initialOpen={ false }>
-							<p><strong>{ __( 'Icon Background Color', 'godam' ) }</strong></p>
-							<ColorPalette
-								enableAlpha
-								value={ playButtonBgColor }
-								onChange={ ( color ) => setAttributes( { playButtonBgColor: color } ) }
-							/>
+					<PanelBody title={ __( 'Appearance', 'godam' ) } initialOpen={ false }>
+						{ playButtonEnabled ? (
+							<>
+								<p><strong>{ __( 'Background Color', 'godam' ) }</strong></p>
+								<ColorPalette
+									enableAlpha
+									value={ playButtonBgColor }
+									onChange={ ( color ) => setAttributes( { playButtonBgColor: color } ) }
+								/>
 
-							<p><strong>{ __( 'Icon Color', 'godam' ) }</strong></p>
-							<ColorPalette
-								value={ playButtonIconColor }
-								onChange={ ( color ) => setAttributes( { playButtonIconColor: color } ) }
-							/>
+								<p><strong>{ __( 'Icon Color', 'godam' ) }</strong></p>
+								<ColorPalette
+									value={ playButtonIconColor }
+									onChange={ ( color ) => setAttributes( { playButtonIconColor: color } ) }
+								/>
 
-							<RangeControl
-								label={ __( 'Button Size (px)', 'godam' ) }
-								value={ playButtonSize }
-								onChange={ ( value ) => setAttributes( { playButtonSize: value } ) }
-								min={ 20 }
-								max={ 100 }
-							/>
+								<RangeControl
+									label={ __( 'Button Size', 'godam' ) }
+									value={ playButtonSize }
+									onChange={ ( value ) => setAttributes( { playButtonSize: value } ) }
+									min={ 20 }
+									max={ 100 }
+								/>
 
-							<RangeControl
-								label={ __( 'Border Radius (%)', 'godam' ) }
-								value={ playButtonBorderRadius }
-								onChange={ ( value ) => setAttributes( { playButtonBorderRadius: value } ) }
-								min={ 0 }
-								max={ 50 }
-							/>
-						</PanelBody>
-					) }
-				</PanelBody>
+								<RangeControl
+									label={ __( 'Border Radius', 'godam' ) }
+									value={ playButtonBorderRadius }
+									onChange={ ( value ) => setAttributes( { playButtonBorderRadius: value } ) }
+									min={ 0 }
+									max={ 50 }
+								/>
+							</>
+						) : (
+							<>
+								<p><strong>{ __( 'Background Color', 'godam' ) }</strong></p>
+								<ColorPalette
+									enableAlpha
+									value={ unmuteButtonBgColor }
+									onChange={ ( color ) => setAttributes( { unmuteButtonBgColor: color } ) }
+								/>
 
-				{ ! playButtonEnabled && (
-					<PanelBody title={ __( 'Sound Button Overlay', 'godam' ) } initialOpen={ false }>
-						<p><strong>{ __( 'Icon Background Color', 'godam' ) }</strong></p>
-						<ColorPalette
-							enableAlpha
-							value={ unmuteButtonBgColor }
-							onChange={ ( color ) => setAttributes( { unmuteButtonBgColor: color } ) }
-						/>
-
-						<p><strong>{ __( 'Icon Color', 'godam' ) }</strong></p>
-						<ColorPalette
-							value={ unmuteButtonIconColor }
-							onChange={ ( color ) => setAttributes( { unmuteButtonIconColor: color } ) }
-						/>
+								<p><strong>{ __( 'Icon Color', 'godam' ) }</strong></p>
+								<ColorPalette
+									value={ unmuteButtonIconColor }
+									onChange={ ( color ) => setAttributes( { unmuteButtonIconColor: color } ) }
+								/>
+							</>
+						) }
 					</PanelBody>
-				) }
+				</PanelBody>
 
 				{ ctaEnabled && (
 					<PanelBody title={ __( 'Shoppable Products Settings', 'godam' ) } initialOpen={ false }>
+						<SelectControl
+							label={ __( 'Where should products appear?', 'godam' ) }
+							value={ ctaDisplayPosition }
+							options={ [
+								{ label: __( 'Overlay + Below', 'godam' ), value: 'below-inside' },
+								{ label: __( 'Only Overlay', 'godam' ), value: 'inside' },
+								{ label: __( 'Only Below', 'godam' ), value: 'below' },
+							] }
+							help={ getProductLayoutHelp() }
+							onChange={ ( value ) => setAttributes( { ctaDisplayPosition: value } ) }
+						/>
+
 						<PanelBody
 							title={ __( 'Display', 'godam' ) }
 							initialOpen={ false }
 						>
-							<SelectControl
-								label={ __( 'Product Display Position', 'godam' ) }
-								value={ ctaDisplayPosition }
-								options={ [
-									{ label: __( 'Below & Inside the Video', 'godam' ), value: 'below-inside' },
-									{ label: __( 'Only Below the Video', 'godam' ), value: 'below' },
-									{ label: __( 'Only Inside the Video', 'godam' ), value: 'inside' },
-								] }
-								onChange={ ( value ) => setAttributes( { ctaDisplayPosition: value } ) }
-							/>
-
 							<p><strong>{ __( 'Product Section Background', 'godam' ) }</strong></p>
 							<ColorPalette
 								value={ ctaBgColor }
@@ -666,7 +706,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 							initialOpen={ false }
 						>
 							<RangeControl
-								label={ __( 'Name Font Size (px)', 'godam' ) }
+								label={ __( 'Name Font Size', 'godam' ) }
 								value={ ctaProductNameFontSize }
 								onChange={ ( value ) => setAttributes( { ctaProductNameFontSize: value } ) }
 								min={ 10 }
@@ -680,7 +720,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 							/>
 
 							<RangeControl
-								label={ __( 'Price Font Size (px)', 'godam' ) }
+								label={ __( 'Price Font Size', 'godam' ) }
 								value={ ctaProductPriceFontSize }
 								onChange={ ( value ) => setAttributes( { ctaProductPriceFontSize: value } ) }
 								min={ 10 }
@@ -712,7 +752,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 							/>
 
 							<RangeControl
-								label={ __( 'Border Radius (%)', 'godam' ) }
+								label={ __( 'Border Radius', 'godam' ) }
 								value={ ctaButtonBorderRadius }
 								onChange={ ( value ) => setAttributes( { ctaButtonBorderRadius: value } ) }
 								min={ 0 }

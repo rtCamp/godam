@@ -97,7 +97,7 @@
     }
 
     /* MOBILE */
-    @media (max-width: 1023px) {
+    @media (max-width: 1024px) {
 
       .vjs-control-bar {
         position: fixed;
@@ -142,7 +142,7 @@
     }
 
     /* DESKTOP */
-    @media (min-width: 1024px) {
+    @media (min-width: 1025px) {
 
       .vjs-control-bar {
         position: unset;
@@ -188,7 +188,7 @@
   }
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1024px) {
     .is-landscape .godam-reels-skin .vjs-control-bar .vjs-volume-panel {
         background: rgba(255, 255, 255, 0.1) !important;
     }
