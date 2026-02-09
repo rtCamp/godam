@@ -188,7 +188,7 @@ const Analytics = ( { attachmentID } ) => {
 			},
 		};
 
-		if ( originalVideoEl && analyticsData ) {
+		if ( originalVideoEl ) {
 			const originalVideo = videojs( 'original-analytics-video', videoOptions );
 
 			// Set aspect ratio when metadata loads
@@ -214,19 +214,21 @@ const Analytics = ( { attachmentID } ) => {
 				}
 			} );
 
-			generateLineChart(
-				JSON.parse( analyticsData?.all_time_heatmap ),
-				'#performance-line-chart',
-				originalVideo,
-				'.performance-line-chart-tooltip',
-				525,
-				300,
-			);
+			if ( isABTestCompleted && analyticsData ) {
+				generateLineChart(
+					JSON.parse( analyticsData?.all_time_heatmap ),
+					'#performance-line-chart',
+					originalVideo,
+					'.performance-line-chart-tooltip',
+					525,
+					300,
+				);
+			}
 		}
 
 		const comparisonVideoEl = document.getElementById( 'comparison-analytics-video' );
 
-		if ( comparisonVideoEl && abTestComparisonAnalyticsData ) {
+		if ( comparisonVideoEl ) {
 			const comparisonVideo = videojs( 'comparison-analytics-video', videoOptions );
 
 			// Set aspect ratio when metadata loads
@@ -252,16 +254,18 @@ const Analytics = ( { attachmentID } ) => {
 				}
 			} );
 
-			generateLineChart(
-				JSON.parse( abTestComparisonAnalyticsData?.all_time_heatmap ),
-				'#comparison-line-chart',
-				comparisonVideo,
-				'.comparison-line-chart-tooltip',
-				525,
-				300,
-			);
+			if ( isABTestCompleted && abTestComparisonAnalyticsData ) {
+				generateLineChart(
+					JSON.parse( abTestComparisonAnalyticsData?.all_time_heatmap ),
+					'#comparison-line-chart',
+					comparisonVideo,
+					'.comparison-line-chart-tooltip',
+					525,
+					300,
+				);
+			}
 		}
-	}, [ analyticsData, abTestComparisonAnalyticsData ] );
+	}, [ analyticsData, abTestComparisonAnalyticsData, attachmentData, abTestComparisonAttachmentData, isABTestCompleted, mediaLibraryAttachment ] );
 
 	useEffect( () => {
 		const analyticsVideoEl = document.getElementById( 'analytics-video' );
