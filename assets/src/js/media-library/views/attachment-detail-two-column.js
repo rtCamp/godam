@@ -30,6 +30,34 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	},
 
 	/**
+	 * Cleans up event listeners and player instances.
+	 */
+	dispose() {
+		// Clean up native player observer
+		if ( this._nativePlayerObserver ) {
+			this._nativePlayerObserver.disconnect();
+			this._nativePlayerObserver = null;
+		}
+
+		// Clean up virtual player
+		if ( this._virtualPlayer ) {
+			this._virtualPlayer.dispose();
+			this._virtualPlayer = null;
+		}
+
+		// Clean up resize handler
+		if ( this._virtualResizeHandler ) {
+			window.removeEventListener( 'resize', this._virtualResizeHandler );
+			this._virtualResizeHandler = null;
+		}
+
+		// Call parent dispose if available
+		if ( AttachmentDetailsTwoColumn.prototype.dispose ) {
+			AttachmentDetailsTwoColumn.prototype.dispose.apply( this, arguments );
+		}
+	},
+
+	/**
 	 * Fetches data from an API and renders it using the provided render method.
 	 *
 	 * @param {Promise}  fetchPromise - The promise that resolves to the fetched data.
@@ -584,6 +612,162 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	},
 
 	/**
+	 * Calculates the optimal dimensions for the video player.
+	 *
+	 * @param {number} videoWidth  - The original width of the video.
+	 * @param {number} videoHeight - The original height of the video.
+	 * @return {Object}            - The calculated width and height.
+	 */
+	calculatePlayerDimensions( videoWidth, videoHeight ) {
+		// Validate input dimensions
+		if ( ! videoWidth || ! videoHeight || videoWidth <= 0 || videoHeight <= 0 ) {
+			// Return null to signal dimensions are not available yet
+			return null;
+		}
+
+		// Detect available space in the attachment detail view
+		const viewContainer = this.$el.closest( '.media-modal-content' ).find( '.attachment-media-view' );
+		const availableWidth = viewContainer.length ? viewContainer.width() : window.innerWidth * 0.65;
+		const availableHeight = window.innerHeight * 0.55; // Reduced from 0.6 to prevent overflow
+
+		// Determine the scale needed to fit both width and height constraints
+		const scale = Math.min(
+			availableWidth / videoWidth,
+			availableHeight / videoHeight,
+			1, // Never scale up
+		);
+
+		return {
+			width: Math.floor( videoWidth * scale ),
+			height: Math.floor( videoHeight * scale ),
+		};
+	},
+
+	/**
+	 * Applies dimensions to a VideoJS player.
+	 *
+	 * @param {string} videoId - The ID of the video element.
+	 * @param {number} width   - The width to apply.
+	 * @param {number} height  - The height to apply.
+	 */
+	applyVideoJSDimensions( videoId, width, height ) {
+		const $vjsPlayer = this.$el.find( `#${ videoId }` );
+		$vjsPlayer.css( {
+			width: width + 'px',
+			height: height + 'px',
+		} );
+
+		// Center the wrapper
+		const $wrapper = this.$el.find( '.wp-video' );
+		$wrapper.css( {
+			display: 'flex',
+			'justify-content': 'center',
+			'align-items': 'center',
+			width: '100%',
+			height: height + 'px',
+		} );
+	},
+
+	/**
+	 * Resizes the native video player element to fit within specific dimensions while maintaining aspect ratio.
+	 * This is particularly for vertical videos to prevent them from taking up too much vertical space.
+	 *
+	 * @return {boolean} - Returns true if resizing was successful or dimensions are not available, false if player container is not ready yet.
+	 */
+	resizeNativePlayer() {
+		// Find the native player container (MediaElement.js)
+		// We target both the container and the video shortcode shim if present
+		const container = this.$el.find( '.mejs-container, .wp-video-shortcode' ).first();
+		if ( ! container.length ) {
+			return false; // Not ready yet
+		}
+
+		// Try to get dimensions from model or metadata
+		const meta = this.model.get( 'media_details' );
+		const width = this.model.get( 'width' ) || meta?.width;
+		const height = this.model.get( 'height' ) || meta?.height;
+
+		if ( ! width || ! height ) {
+			return true; // Stop polling if no dimensions
+		}
+
+		const { width: targetWidth, height: targetHeight } = this.calculatePlayerDimensions( width, height );
+
+		// Apply dimensions directly to container to enforce aspect ratio and remove pillarboxing/letterboxing
+		container.css( {
+			width: targetWidth + 'px',
+			height: targetHeight + 'px',
+		} );
+
+		// Also ensure the parent wrapper centers it
+		this.$el.find( '.wp-video' ).css( {
+			display: 'flex',
+			'justify-content': 'center',
+			width: '100%',
+		} );
+
+		return true; // Successfully resized
+	},
+
+	/**
+	 * Sets up a MutationObserver to watch for dimension changes and reapply our sizing.
+	 * This ensures our dimensions persist even if WordPress/MediaElement.js tries to reset them.
+	 */
+	setupNativePlayerObserver() {
+		const container = this.$el.find( '.mejs-container, .wp-video-shortcode' ).first();
+		if ( ! container.length ) {
+			return;
+		}
+
+		// Get the target dimensions once
+		const meta = this.model.get( 'media_details' );
+		const width = this.model.get( 'width' ) || meta?.width;
+		const height = this.model.get( 'height' ) || meta?.height;
+
+		if ( ! width || ! height ) {
+			return;
+		}
+
+		const { width: targetWidth, height: targetHeight } = this.calculatePlayerDimensions( width, height );
+
+		// Create a MutationObserver to watch for style changes
+		const observer = new MutationObserver( ( mutations ) => {
+			for ( const mutation of mutations ) {
+				if ( mutation.type === 'attributes' && mutation.attributeName === 'style' ) {
+					const currentWidth = container.width();
+					const currentHeight = container.height();
+
+					// Check if dimensions have been changed away from our target
+					if ( Math.abs( currentWidth - targetWidth ) > 2 || Math.abs( currentHeight - targetHeight ) > 2 ) {
+						// Reapply our dimensions
+						container.css( {
+							width: targetWidth + 'px',
+							height: targetHeight + 'px',
+						} );
+					}
+				}
+			}
+		} );
+
+		// Start observing the container for attribute changes
+		observer.observe( container[ 0 ], {
+			attributes: true,
+			attributeFilter: [ 'style' ],
+		} );
+
+		// Store observer reference for cleanup
+		this._nativePlayerObserver = observer;
+
+		// Stop observing after 3 seconds (by then MediaElement.js should be done)
+		setTimeout( () => {
+			if ( this._nativePlayerObserver ) {
+				this._nativePlayerObserver.disconnect();
+				this._nativePlayerObserver = null;
+			}
+		}, 3000 );
+	},
+
+	/**
 	 * Renders the custom attachment details view.
 	 *
 	 * - Calls the parent `AttachmentDetailsTwoColumn.render()` method to ensure core UI is in place.
@@ -627,12 +811,26 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				setTimeout( () => {
 					const videoElement = document.getElementById( videoId );
 					if ( videoElement && typeof videojs !== 'undefined' ) {
-						// Initialize the player with minimal controls.
-						videojs( videoElement, {
-							fluid: true,
-							width: '100%',
-							aspectRatio: '16:9',
+						// Calculate initial dimensions using 16:9 aspect ratio as default
+						const viewContainer = this.$el.closest( '.media-modal-content' ).find( '.attachment-media-view' );
+						const availableWidth = viewContainer.length ? viewContainer.width() : window.innerWidth * 0.65;
+						const availableHeight = window.innerHeight * 0.55;
+
+						// Assume 16:9 aspect ratio for initial loading state
+						const defaultAspectRatio = 16 / 9;
+						const initialScale = Math.min(
+							availableWidth / ( availableHeight * defaultAspectRatio ),
+							availableHeight / availableHeight,
+							1,
+						);
+						const initialWidth = Math.floor( availableHeight * defaultAspectRatio * initialScale );
+						const initialHeight = Math.floor( availableHeight * initialScale );
+
+						const playerOptions = {
 							poster: this.model.get( 'image' )?.src || '',
+							fluid: false, // Disable fluid to enforce exact dimensions
+							width: initialWidth,
+							height: initialHeight,
 							controlBar: {
 								volumePanel: false,
 								fullscreenToggle: true,
@@ -655,9 +853,69 @@ export default AttachmentDetailsTwoColumn?.extend( {
 									limitRenditionByPlayerDimensions: false, // don't cap by video element size
 								},
 							},
+						};
+
+						// Initialize the player with minimal controls.
+						const player = videojs( videoElement, playerOptions );
+
+						// Store player reference for cleanup
+						this._virtualPlayer = player;
+						this._virtualVideoId = videoId;
+
+						// Apply initial dimensions immediately to show loading spinner properly
+						player.ready( () => {
+							this.applyVideoJSDimensions( videoId, initialWidth, initialHeight );
 						} );
+
+						// Apply dimensions after video metadata loads
+						const applyDimensions = () => {
+							// Get actual video dimensions from the loaded video element
+							const videoWidth = videoElement.videoWidth;
+							const videoHeight = videoElement.videoHeight;
+
+							const dimensions = this.calculatePlayerDimensions( videoWidth, videoHeight );
+							if ( dimensions ) {
+								this.applyVideoJSDimensions( videoId, dimensions.width, dimensions.height );
+							}
+						};
+
+						// Listen for metadata load event
+						player.on( 'loadedmetadata', applyDimensions );
+
+						// Also listen for window resize to recalculate dimensions
+						const handleResize = () => {
+							if ( videoElement.videoWidth && videoElement.videoHeight ) {
+								const dimensions = this.calculatePlayerDimensions( videoElement.videoWidth, videoElement.videoHeight );
+								if ( dimensions ) {
+									this.applyVideoJSDimensions( videoId, dimensions.width, dimensions.height );
+								}
+							}
+						};
+						this._virtualResizeHandler = handleResize;
+						window.addEventListener( 'resize', handleResize );
+
+						// If metadata is already loaded (cached), apply immediately
+						if ( videoElement.videoWidth && videoElement.videoHeight ) {
+							applyDimensions();
+						}
 					}
 				}, 100 ); // Slight delay to ensure DOM update.
+			} else {
+				// Handle Native Player sizing with early resize and persistent observer
+				// Try to resize as soon as possible
+				let attempts = 0;
+				const maxAttempts = 10; // Try for 1 second
+				const pollInterval = setInterval( () => {
+					attempts++;
+					const done = this.resizeNativePlayer();
+					if ( done || attempts >= maxAttempts ) {
+						clearInterval( pollInterval );
+						// Once initial resize is done, set up observer to keep it persistent
+						if ( done ) {
+							this.setupNativePlayerObserver();
+						}
+					}
+				}, 100 );
 			}
 
 			this.renderVideoActions();
