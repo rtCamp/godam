@@ -316,6 +316,19 @@ const Analytics = ( { attachmentID } ) => {
 
 					// Update on window resize
 					window.addEventListener( 'resize', updateContainerWidth );
+
+					// Generate line chart after container is set
+					if ( analyticsData?.all_time_heatmap ) {
+						const heatmapData = JSON.parse( analyticsData.all_time_heatmap );
+						generateLineChart(
+							heatmapData,
+							'#line-chart',
+							player,
+							'.line-chart-tooltip',
+							640,
+							300,
+						);
+					}
 				}
 			}
 		} );
