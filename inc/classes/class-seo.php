@@ -1,6 +1,6 @@
 <?php
 /**
- * Class to handle teh SEO functionality for the GoDAM block.
+ * Class to handle the SEO functionality for the GoDAM block.
  *
  * @package GoDAM
  */
@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 use RTGODAM\Inc\Traits\Singleton;
 
 /**
- * Class Blocks
+ * Class Seo
  */
 class Seo {
 
@@ -20,6 +20,8 @@ class Seo {
 
 	const VIDEO_SEO_SCHEMA_META_KEY         = 'godam_video_seo_schema';
 	const VIDEO_SEO_SCHEMA_UPDATED_META_KEY = 'godam_video_seo_schema_updated';
+	const ATTACHMENT_POSTS_MAP_META_KEY     = 'godam_posts_using_attachment';
+	const POST_ATTACHMENTS_META_KEY         = '_godam_seo_attachments';
 
 	/**
 	 * Construct method.
@@ -38,6 +40,10 @@ class Seo {
 		add_action( 'save_post', array( $this, 'elementor_save_seo_data_as_postmeta' ), 10, 1 );
 		add_filter( 'rest_prepare_attachment', array( $this, 'add_video_duration_for_video_seo' ), 10, 2 );
 		add_action( 'wp_head', array( $this, 'add_video_seo_schema' ) );
+
+		// Hook to update SEO when attachment is edited.
+		add_action( 'edit_attachment', array( $this, 'schedule_seo_sync_for_attachment' ) );
+		add_action( 'godam_sync_attachment_seo', array( $this, 'sync_seo_for_attachment_posts' ) );
 	}
 
 	/**
@@ -47,6 +53,8 @@ class Seo {
 	 * any `seo` attribute from blocks of type `godam/video`. The extracted data is
 	 * then saved in the post meta under the key `godam_video_seo_schema`, along with
 	 * a timestamp in `godam_video_seo_schema_updated`.
+	 *
+	 * Also handles WPBakery shortcodes in the same post.
 	 *
 	 * @param int     $post_ID Post ID.
 	 * @param WP_Post $post    Post object.
@@ -62,32 +70,43 @@ class Seo {
 			return;
 		}
 
-		$content = $post->post_content;
-
-		// Parse blocks only if content exists and contains blocks.
-		if ( empty( $content ) || strpos( $content, '<!-- wp:' ) === false ) {
-			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY );
-			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY );
+		// Skip if this is an Elementor post (handled separately).
+		$is_elementor = 'builder' === get_post_meta( $post_ID, '_elementor_edit_mode', true );
+		if ( $is_elementor ) {
 			return;
 		}
 
-		$blocks           = parse_blocks( $content );
-		$video_seo_schema = array();
+		$content = $post->post_content;
 
-		foreach ( $blocks as $block ) {
-			// Flatten nested blocks (if any).
-			$video_seo_schema = array_merge(
-				$video_seo_schema,
-				$this->extract_video_seo_schema_from_block( $block )
-			);
+		$video_seo_schema = array();
+		$attachments_used = array();
+
+		// Parse Gutenberg blocks if content contains them.
+		if ( ! empty( $content ) && strpos( $content, '<!-- wp:godam/video' ) !== false ) {
+			$blocks = parse_blocks( $content );
+
+			foreach ( $blocks as $block ) {
+				$result           = $this->extract_video_seo_schema_from_block( $block, true );
+				$video_seo_schema = array_merge( $video_seo_schema, $result['schemas'] );
+				$attachments_used = array_merge( $attachments_used, $result['attachments'] );
+			}
+		}
+
+		// Parse WPBakery shortcodes if they exist.
+		if ( ! empty( $content ) && has_shortcode( $content, 'godam_video' ) ) {
+			$result           = $this->godam_get_video_seo_data_from_wpbakery( $content, true );
+			$video_seo_schema = array_merge( $video_seo_schema, $result['schemas'] );
+			$attachments_used = array_merge( $attachments_used, $result['attachments'] );
 		}
 
 		if ( ! empty( $video_seo_schema ) ) {
 			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY, $video_seo_schema );
 			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY, time() );
+			$this->update_attachment_post_mapping( $post_ID, array_unique( $attachments_used ) );
 		} else {
 			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY );
 			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY );
+			$this->update_attachment_post_mapping( $post_ID, array() );
 		}
 	}
 
@@ -97,11 +116,13 @@ class Seo {
 	 * If the block has seoOverride set to false or not set, it will fetch SEO from the media library.
 	 * Otherwise, it will use the SEO data from the block attributes.
 	 *
-	 * @param array $block Block data.
-	 * @return array Extracted SEO schema.
+	 * @param array $block             Block data.
+	 * @param bool  $track_attachments Whether to track attachments used.
+	 * @return array Contains 'schemas' and 'attachments' arrays when tracking, otherwise just schemas.
 	 */
-	private function extract_video_seo_schema_from_block( $block ) {
-		$schemas = array();
+	private function extract_video_seo_schema_from_block( $block, $track_attachments = false ) {
+		$schemas     = array();
+		$attachments = array();
 
 		if ( isset( $block['blockName'] ) && 'godam/video' === $block['blockName'] ) {
 			$seo_override  = isset( $block['attrs']['seoOverride'] ) ? $block['attrs']['seoOverride'] : false;
@@ -115,6 +136,9 @@ class Seo {
 				$media_seo = $this->get_seo_from_attachment( $attachment_id );
 				if ( ! empty( $media_seo ) ) {
 					$schemas[] = $media_seo;
+					if ( $track_attachments ) {
+						$attachments[] = $attachment_id;
+					}
 				}
 			} elseif ( isset( $block['attrs']['seo'] ) && ! empty( $block['attrs']['seo'] ) ) {
 				// Fallback to block SEO if no attachment ID.
@@ -124,11 +148,21 @@ class Seo {
 
 		if ( ! empty( $block['innerBlocks'] ) ) {
 			foreach ( $block['innerBlocks'] as $inner_block ) {
-				$schemas = array_merge(
-					$schemas,
-					$this->extract_video_seo_schema_from_block( $inner_block )
-				);
+				$result = $this->extract_video_seo_schema_from_block( $inner_block, $track_attachments );
+				if ( $track_attachments ) {
+					$schemas     = array_merge( $schemas, $result['schemas'] );
+					$attachments = array_merge( $attachments, $result['attachments'] );
+				} else {
+					$schemas = array_merge( $schemas, $result );
+				}
 			}
+		}
+
+		if ( $track_attachments ) {
+			return array(
+				'schemas'     => $schemas,
+				'attachments' => $attachments,
+			);
 		}
 
 		return $schemas;
@@ -256,15 +290,13 @@ class Seo {
 	/**
 	 * Outputs structured data for VideoObject schema on singular pages.
 	 *
-	 * This function parses the post content to extract video SEO data dynamically.
-	 * For blocks with seoOverride=false, it fetches the latest SEO data from the
-	 * media library attachment, ensuring it's always up-to-date.
-	 * For blocks with seoOverride=true, it uses the overridden SEO data from the block.
+	 * This function reads cached SEO data from post meta for optimal performance.
+	 * The SEO data is cached when the post is saved (in save_seo_data_as_postmeta).
 	 *
 	 * The schema includes properties like name, description, content URL,
 	 * thumbnail, upload date, duration, and family-friendly status.
 	 *
-	 * Only executes on singular pages and if valid video blocks exist.
+	 * Only executes on singular pages and if valid cached SEO data exists.
 	 *
 	 * @return void
 	 */
@@ -273,113 +305,44 @@ class Seo {
 			return;
 		}
 
-		global $post;
+		$post_id = get_queried_object_id();
+		if ( ! $post_id ) {
+			return;
+		}
 
-		if ( ! $post ) {
+		// Read cached SEO schema from post meta (fast!).
+		$cached_schemas = get_post_meta( $post_id, self::VIDEO_SEO_SCHEMA_META_KEY, true );
+
+		if ( empty( $cached_schemas ) || ! is_array( $cached_schemas ) ) {
 			return;
 		}
 
 		$schemas = array();
 
-		// Check if post is built with Elementor.
-		$is_elementor = 'builder' === get_post_meta( $post->ID, '_elementor_edit_mode', true );
-
-		if ( $is_elementor ) {
-			// Elementor page - only check for Elementor godam-video widgets.
-			$elementor_seo_data = $this->godam_get_video_seo_data_from_elementor( $post->ID );
-			if ( ! empty( $elementor_seo_data ) ) {
-				foreach ( $elementor_seo_data as $video ) {
-					if ( ! is_array( $video ) ) {
-						continue;
-					}
-
-					$schema = array(
-						'@context'         => 'https://schema.org',
-						'@type'            => 'VideoObject',
-						'name'             => sanitize_text_field( $video['headline'] ?? '' ),
-						'description'      => wp_strip_all_tags( $video['description'] ?? '' ),
-						'contentUrl'       => esc_url_raw( $video['contentUrl'] ?? '' ),
-						'uploadDate'       => sanitize_text_field( $video['uploadDate'] ?? '' ),
-						'isFamilyFriendly' => isset( $video['isFamilyFriendly'] ) ? (bool) $video['isFamilyFriendly'] : true,
-					);
-
-					if ( ! empty( $video['thumbnailUrl'] ) ) {
-						$schema['thumbnailUrl'] = esc_url_raw( $video['thumbnailUrl'] );
-					}
-
-					if ( ! empty( $video['duration'] ) ) {
-						$schema['duration'] = sanitize_text_field( $video['duration'] );
-					}
-
-					$schemas[] = $schema;
-				}
-			}
-		} else {
-			// Check for Gutenberg godam/video blocks.
-			if ( ! empty( $post->post_content ) && strpos( $post->post_content, '<!-- wp:godam/video' ) !== false ) {
-				// Parse blocks and extract SEO data dynamically.
-				// This ensures we always get the latest data from media library for non-overridden blocks.
-				$blocks = parse_blocks( $post->post_content );
-
-				foreach ( $blocks as $block ) {
-					$block_schemas = $this->extract_video_seo_schema_from_block( $block );
-					foreach ( $block_schemas as $video ) {
-						if ( ! is_array( $video ) ) {
-							continue;
-						}
-
-						$schema = array(
-							'@context'         => 'https://schema.org',
-							'@type'            => 'VideoObject',
-							'name'             => sanitize_text_field( $video['headline'] ?? '' ),
-							'description'      => wp_strip_all_tags( $video['description'] ?? '' ),
-							'contentUrl'       => esc_url_raw( $video['contentUrl'] ?? '' ),
-							'uploadDate'       => sanitize_text_field( $video['uploadDate'] ?? '' ),
-							'isFamilyFriendly' => isset( $video['isFamilyFriendly'] ) ? (bool) $video['isFamilyFriendly'] : true,
-						);
-
-						if ( ! empty( $video['thumbnailUrl'] ) ) {
-							$schema['thumbnailUrl'] = esc_url_raw( $video['thumbnailUrl'] );
-						}
-
-						if ( ! empty( $video['duration'] ) ) {
-							$schema['duration'] = sanitize_text_field( $video['duration'] );
-						}
-
-						$schemas[] = $schema;
-					}
-				}
+		foreach ( $cached_schemas as $video ) {
+			if ( ! is_array( $video ) || empty( $video['headline'] ) ) {
+				continue;
 			}
 
-			// Check for WPBakery godam_video shortcodes.
-			if ( ! empty( $post->post_content ) && has_shortcode( $post->post_content, 'godam_video' ) ) {
-				$wpbakery_seo_data = $this->godam_get_video_seo_data_from_wpbakery( $post->post_content );
-				foreach ( $wpbakery_seo_data as $video ) {
-					if ( ! is_array( $video ) ) {
-						continue;
-					}
+			$schema = array(
+				'@context'         => 'https://schema.org',
+				'@type'            => 'VideoObject',
+				'name'             => sanitize_text_field( $video['headline'] ?? '' ),
+				'description'      => wp_strip_all_tags( $video['description'] ?? '' ),
+				'contentUrl'       => esc_url_raw( $video['contentUrl'] ?? '' ),
+				'uploadDate'       => sanitize_text_field( $video['uploadDate'] ?? '' ),
+				'isFamilyFriendly' => isset( $video['isFamilyFriendly'] ) ? (bool) $video['isFamilyFriendly'] : true,
+			);
 
-					$schema = array(
-						'@context'         => 'https://schema.org',
-						'@type'            => 'VideoObject',
-						'name'             => sanitize_text_field( $video['headline'] ?? '' ),
-						'description'      => wp_strip_all_tags( $video['description'] ?? '' ),
-						'contentUrl'       => esc_url_raw( $video['contentUrl'] ?? '' ),
-						'uploadDate'       => sanitize_text_field( $video['uploadDate'] ?? '' ),
-						'isFamilyFriendly' => isset( $video['isFamilyFriendly'] ) ? (bool) $video['isFamilyFriendly'] : true,
-					);
-
-					if ( ! empty( $video['thumbnailUrl'] ) ) {
-						$schema['thumbnailUrl'] = esc_url_raw( $video['thumbnailUrl'] );
-					}
-
-					if ( ! empty( $video['duration'] ) ) {
-						$schema['duration'] = sanitize_text_field( $video['duration'] );
-					}
-
-					$schemas[] = $schema;
-				}
+			if ( ! empty( $video['thumbnailUrl'] ) ) {
+				$schema['thumbnailUrl'] = esc_url_raw( $video['thumbnailUrl'] );
 			}
+
+			if ( ! empty( $video['duration'] ) ) {
+				$schema['duration'] = sanitize_text_field( $video['duration'] );
+			}
+
+			$schemas[] = $schema;
 		}
 
 		if ( empty( $schemas ) ) {
@@ -396,34 +359,41 @@ class Seo {
 	/**
 	 * Extract SEO data from Elementor godam_video widget for a given post.
 	 *
-	 * @param int $post_id The ID of the post.
-	 * @return array Extracted SEO data array.
+	 * @param int  $post_id           The ID of the post.
+	 * @param bool $track_attachments Whether to track attachments used.
+	 * @return array Contains 'schemas' and 'attachments' arrays when tracking, otherwise just schemas.
 	 */
-	public function godam_get_video_seo_data_from_elementor( $post_id ) {
+	public function godam_get_video_seo_data_from_elementor( $post_id, $track_attachments = false ) {
+		$empty_result = $track_attachments ? array(
+			'schemas'     => array(),
+			'attachments' => array(),
+		) : array();
+
 		// Bail if not built with Elementor.
 		if ( ! did_action( 'elementor/loaded' ) ) {
-			return array();
+			return $empty_result;
 		}
 
 		if ( null !== \Elementor\Plugin::$instance->documents && ! \Elementor\Plugin::$instance->documents->get( $post_id )->is_built_with_elementor() ) {
-			return array();
+			return $empty_result;
 		}
 
 		// Get the raw Elementor data.
 		$data = get_post_meta( $post_id, '_elementor_data', true );
 		if ( empty( $data ) ) {
-			return array();
+			return $empty_result;
 		}
 
 		$widgets = json_decode( $data, true );
 		if ( ! is_array( $widgets ) ) {
-			return array();
+			return $empty_result;
 		}
 
-		$seo_data = array();
-		$seo_obj  = $this;
+		$seo_data    = array();
+		$attachments = array();
+		$seo_obj     = $this;
 
-		$extractor = function ( $elements ) use ( &$seo_data, &$extractor, $seo_obj ) {
+		$extractor = function ( $elements ) use ( &$seo_data, &$attachments, &$extractor, $seo_obj, $track_attachments ) {
 			foreach ( $elements as $element ) {
 				$_seo_data = array();
 				if (
@@ -444,7 +414,10 @@ class Seo {
 						if ( $attachment_id > 0 ) {
 							$media_seo = $seo_obj->get_seo_from_attachment( $attachment_id );
 							if ( ! empty( $media_seo ) && ! empty( $media_seo['headline'] ) ) {
-								array_push( $seo_data, $media_seo );
+								$seo_data[] = $media_seo;
+								if ( $track_attachments ) {
+									$attachments[] = $attachment_id;
+								}
 								continue;
 							}
 						}
@@ -463,7 +436,7 @@ class Seo {
 						$_seo_data['isFamilyFriendly'] = isset( $settings['seo_content_family_friendly'] ) ? 'yes' === $settings['seo_content_family_friendly'] : true;
 						$_seo_data['duration']         = isset( $settings['seo_content_duration'] ) ? $settings['seo_content_duration'] : '';
 
-						array_push( $seo_data, $_seo_data );
+						$seo_data[] = $_seo_data;
 					}
 				}
 
@@ -475,6 +448,13 @@ class Seo {
 
 		$extractor( $widgets );
 
+		if ( $track_attachments ) {
+			return array(
+				'schemas'     => $seo_data,
+				'attachments' => $attachments,
+			);
+		}
+
 		return $seo_data;
 	}
 
@@ -485,25 +465,47 @@ class Seo {
 	 * @return void
 	 */
 	public function elementor_save_seo_data_as_postmeta( $post_ID ) {
-		$video_seo_schema = $this->godam_get_video_seo_data_from_elementor( $post_ID );
+		// Check if Elementor is active and this post uses Elementor.
+		if ( ! did_action( 'elementor/loaded' ) ) {
+			return;
+		}
+
+		$edit_mode = get_post_meta( $post_ID, '_elementor_edit_mode', true );
+		if ( 'builder' !== $edit_mode ) {
+			return;
+		}
+
+		$result           = $this->godam_get_video_seo_data_from_elementor( $post_ID, true );
+		$video_seo_schema = $result['schemas'];
+		$attachments_used = $result['attachments'];
 
 		if ( ! empty( $video_seo_schema ) ) {
 			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY, $video_seo_schema );
 			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY, time() );
+			$this->update_attachment_post_mapping( $post_ID, array_unique( $attachments_used ) );
+		} else {
+			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY );
+			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY );
+			$this->update_attachment_post_mapping( $post_ID, array() );
 		}
 	}
 
 	/**
 	 * Extract SEO data from WPBakery godam_video shortcodes.
 	 *
-	 * @param string $content The post content containing shortcodes.
-	 * @return array Extracted SEO data array.
+	 * @param string $content           The post content containing shortcodes.
+	 * @param bool   $track_attachments Whether to track attachments used.
+	 * @return array Contains 'schemas' and 'attachments' arrays when tracking, otherwise just schemas.
 	 */
-	public function godam_get_video_seo_data_from_wpbakery( $content ) {
-		$seo_data = array();
+	public function godam_get_video_seo_data_from_wpbakery( $content, $track_attachments = false ) {
+		$seo_data    = array();
+		$attachments = array();
 
 		if ( empty( $content ) ) {
-			return $seo_data;
+			return $track_attachments ? array(
+				'schemas'     => $seo_data,
+				'attachments' => $attachments,
+			) : $seo_data;
 		}
 
 		// Match all godam_video shortcodes.
@@ -527,6 +529,9 @@ class Seo {
 						$media_seo = $this->get_seo_from_attachment( $attachment_id );
 						if ( ! empty( $media_seo ) && ! empty( $media_seo['headline'] ) ) {
 							$seo_data[] = $media_seo;
+							if ( $track_attachments ) {
+								$attachments[] = $attachment_id;
+							}
 							continue;
 						}
 					}
@@ -549,6 +554,111 @@ class Seo {
 			}
 		}
 
+		if ( $track_attachments ) {
+			return array(
+				'schemas'     => $seo_data,
+				'attachments' => $attachments,
+			);
+		}
+
 		return $seo_data;
+	}
+
+	/**
+	 * Update the mapping of which posts use a specific attachment (non-override only).
+	 *
+	 * @param int   $post_id     The post ID.
+	 * @param array $attachments Array of attachment IDs used in the post.
+	 */
+	private function update_attachment_post_mapping( $post_id, $attachments ) {
+		// Get current attachments this post was using.
+		$previous_attachments = get_post_meta( $post_id, self::POST_ATTACHMENTS_META_KEY, true );
+		$previous_attachments = is_array( $previous_attachments ) ? $previous_attachments : array();
+
+		// Remove post from old attachments' mapping.
+		$removed_attachments = array_diff( $previous_attachments, $attachments );
+		foreach ( $removed_attachments as $attachment_id ) {
+			$posts_using = get_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, true );
+			$posts_using = is_array( $posts_using ) ? $posts_using : array();
+			$posts_using = array_diff( $posts_using, array( $post_id ) );
+			if ( ! empty( $posts_using ) ) {
+				update_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, array_values( $posts_using ) );
+			} else {
+				delete_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY );
+			}
+		}
+
+		// Add post to new attachments' mapping.
+		$new_attachments = array_diff( $attachments, $previous_attachments );
+		foreach ( $new_attachments as $attachment_id ) {
+			$posts_using = get_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, true );
+			$posts_using = is_array( $posts_using ) ? $posts_using : array();
+			if ( ! in_array( $post_id, $posts_using, true ) ) {
+				$posts_using[] = $post_id;
+				update_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, $posts_using );
+			}
+		}
+
+		// Update post's attachment list.
+		if ( ! empty( $attachments ) ) {
+			update_post_meta( $post_id, self::POST_ATTACHMENTS_META_KEY, $attachments );
+		} else {
+			delete_post_meta( $post_id, self::POST_ATTACHMENTS_META_KEY );
+		}
+	}
+
+	/**
+	 * Schedule a background job to sync SEO for all posts using an attachment.
+	 *
+	 * @param int $attachment_id The attachment ID.
+	 */
+	public function schedule_seo_sync_for_attachment( $attachment_id ) {
+		$attachment = get_post( $attachment_id );
+
+		// Only process video attachments.
+		if ( ! $attachment || strpos( $attachment->post_mime_type, 'video/' ) !== 0 ) {
+			return;
+		}
+
+		// Check if any posts are using this attachment.
+		$posts_using = get_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, true );
+		if ( empty( $posts_using ) || ! is_array( $posts_using ) ) {
+			return;
+		}
+
+		// Schedule the sync to run in the background.
+		if ( ! wp_next_scheduled( 'godam_sync_attachment_seo', array( $attachment_id ) ) ) {
+			wp_schedule_single_event( time(), 'godam_sync_attachment_seo', array( $attachment_id ) );
+		}
+	}
+
+	/**
+	 * Sync SEO for all posts using a specific attachment.
+	 * This runs as a background task when an attachment is updated.
+	 *
+	 * @param int $attachment_id The attachment ID.
+	 */
+	public function sync_seo_for_attachment_posts( $attachment_id ) {
+		$posts_using = get_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, true );
+
+		if ( empty( $posts_using ) || ! is_array( $posts_using ) ) {
+			return;
+		}
+
+		foreach ( $posts_using as $post_id ) {
+			$post = get_post( $post_id );
+			if ( ! $post ) {
+				continue;
+			}
+
+			// Check if it's an Elementor post.
+			$is_elementor = 'builder' === get_post_meta( $post_id, '_elementor_edit_mode', true );
+
+			if ( $is_elementor ) {
+				$this->elementor_save_seo_data_as_postmeta( $post_id );
+			} else {
+				$this->save_seo_data_as_postmeta( $post_id, $post );
+			}
+		}
 	}
 }
