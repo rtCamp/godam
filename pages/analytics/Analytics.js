@@ -188,6 +188,8 @@ const Analytics = ( { attachmentID } ) => {
 			},
 		};
 
+		let originalResizeHandler = null;
+
 		if ( originalVideoEl ) {
 			const originalVideo = videojs( 'original-analytics-video', videoOptions );
 
@@ -202,7 +204,7 @@ const Analytics = ( { attachmentID } ) => {
 
 					const container = originalVideoEl.closest( '.block' );
 					if ( container ) {
-						const updateContainerWidth = () => {
+						originalResizeHandler = () => {
 							const parentWidth = container.parentElement?.offsetWidth || window.innerWidth;
 							const maxWidth = Math.min( parentWidth - 40, 525 );
 							const calculatedWidth = 320 * ( videoWidth / videoHeight );
@@ -211,8 +213,8 @@ const Analytics = ( { attachmentID } ) => {
 							container.style.maxWidth = '100%';
 						};
 
-						updateContainerWidth();
-						window.addEventListener( 'resize', updateContainerWidth );
+						originalResizeHandler();
+						window.addEventListener( 'resize', originalResizeHandler );
 					}
 				}
 			} );
@@ -230,6 +232,7 @@ const Analytics = ( { attachmentID } ) => {
 		}
 
 		const comparisonVideoEl = document.getElementById( 'comparison-analytics-video' );
+		let comparisonResizeHandler = null;
 
 		if ( comparisonVideoEl ) {
 			const comparisonVideo = videojs( 'comparison-analytics-video', videoOptions );
@@ -245,7 +248,7 @@ const Analytics = ( { attachmentID } ) => {
 
 					const container = comparisonVideoEl.closest( '.block' );
 					if ( container ) {
-						const updateContainerWidth = () => {
+						comparisonResizeHandler = () => {
 							const parentWidth = container.parentElement?.offsetWidth || window.innerWidth;
 							const maxWidth = Math.min( parentWidth - 40, 525 );
 							const calculatedWidth = 320 * ( videoWidth / videoHeight );
@@ -254,8 +257,8 @@ const Analytics = ( { attachmentID } ) => {
 							container.style.maxWidth = '100%';
 						};
 
-						updateContainerWidth();
-						window.addEventListener( 'resize', updateContainerWidth );
+						comparisonResizeHandler();
+						window.addEventListener( 'resize', comparisonResizeHandler );
 					}
 				}
 			} );
@@ -271,6 +274,16 @@ const Analytics = ( { attachmentID } ) => {
 				);
 			}
 		}
+
+		// Cleanup function to remove resize listeners
+		return () => {
+			if ( originalResizeHandler ) {
+				window.removeEventListener( 'resize', originalResizeHandler );
+			}
+			if ( comparisonResizeHandler ) {
+				window.removeEventListener( 'resize', comparisonResizeHandler );
+			}
+		};
 	}, [ analyticsData, abTestComparisonAnalyticsData, attachmentData, abTestComparisonAttachmentData, isABTestCompleted, mediaLibraryAttachment ] );
 
 	useEffect( () => {
@@ -298,6 +311,8 @@ const Analytics = ( { attachmentID } ) => {
 			},
 		} );
 
+		let resizeHandler = null;
+
 		// When video metadata loads, get actual dimensions and set aspect ratio
 		player.on( 'loadedmetadata', () => {
 			const videoWidth = player.videoWidth();
@@ -311,7 +326,7 @@ const Analytics = ( { attachmentID } ) => {
 				const container = document.querySelector( '.video-container' );
 				if ( container ) {
 					// Function to update container width based on aspect ratio
-					const updateContainerWidth = () => {
+					resizeHandler = () => {
 						// Get available width (parent width or viewport width - padding)
 						const parentWidth = container.parentElement?.offsetWidth || window.innerWidth;
 						const maxWidth = Math.min( parentWidth - 40, 640 ); // 40px for padding
@@ -322,10 +337,10 @@ const Analytics = ( { attachmentID } ) => {
 						container.style.width = `${ finalWidth }px`;
 					};
 
-					updateContainerWidth();
+					resizeHandler();
 
 					// Update on window resize
-					window.addEventListener( 'resize', updateContainerWidth );
+					window.addEventListener( 'resize', resizeHandler );
 
 					// Generate line chart after container is set
 					if ( analyticsData?.all_time_heatmap ) {
@@ -345,6 +360,9 @@ const Analytics = ( { attachmentID } ) => {
 
 		// Add cleanup for when this specific effect unmounts
 		return () => {
+			if ( resizeHandler ) {
+				window.removeEventListener( 'resize', resizeHandler );
+			}
 			if ( player ) {
 				player.dispose();
 			}

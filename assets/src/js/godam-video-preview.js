@@ -16,6 +16,9 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		return;
 	}
 
+	// Store resize handlers for cleanup
+	const resizeHandlers = [];
+
 	videoContainers.forEach( ( container ) => {
 		const videoElement = container.querySelector( 'video' );
 
@@ -23,13 +26,14 @@ document.addEventListener( 'DOMContentLoaded', () => {
 			return;
 		}
 
-		// Get the Video.js player instance
+		// Get the Video.js player instance using getPlayer()
 		const playerId = videoElement.id;
 		let player = null;
 
 		if ( playerId && window.videojs ) {
 			try {
-				player = window.videojs( playerId );
+				// Use getPlayer() to avoid creating duplicate player instances
+				player = window.videojs.getPlayer( playerId );
 			} catch ( error ) {
 				// Player instance not found, continue without it
 			}
@@ -81,6 +85,16 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		} else {
 			videoElement.addEventListener( 'loadedmetadata', setAspectRatio );
 		}
+
+		// Store resize handler for cleanup
+		resizeHandlers.push( setAspectRatio );
 		window.addEventListener( 'resize', setAspectRatio );
+	} );
+
+	// Cleanup function to remove all resize listeners
+	window.addEventListener( 'beforeunload', () => {
+		resizeHandlers.forEach( ( handler ) => {
+			window.removeEventListener( 'resize', handler );
+		} );
 	} );
 } );

@@ -75,7 +75,7 @@ class Video_Preview {
 		wp_register_script(
 			'godam-video-preview-script',
 			RTGODAM_URL . 'assets/build/js/godam-video-preview.min.js',
-			array(),
+			array( 'godam-player-frontend-script' ),
 			filemtime( RTGODAM_PATH . 'assets/build/js/godam-video-preview.min.js' ),
 			true
 		);

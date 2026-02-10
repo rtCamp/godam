@@ -33,10 +33,22 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * Cleans up event listeners and player instances.
 	 */
 	dispose() {
+		// Clean up native player observer timeout
+		if ( this._nativeObserverTimeout ) {
+			clearTimeout( this._nativeObserverTimeout );
+			this._nativeObserverTimeout = null;
+		}
+
 		// Clean up native player observer
 		if ( this._nativePlayerObserver ) {
 			this._nativePlayerObserver.disconnect();
 			this._nativePlayerObserver = null;
+		}
+
+		// Clean up native player polling interval
+		if ( this._nativeResizePollInterval ) {
+			clearInterval( this._nativeResizePollInterval );
+			this._nativeResizePollInterval = null;
 		}
 
 		// Clean up virtual player
@@ -801,11 +813,12 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		this._nativePlayerObserver = observer;
 
 		// Stop observing after 15 seconds (by then MediaElement.js should be done)
-		setTimeout( () => {
+		this._nativeObserverTimeout = setTimeout( () => {
 			if ( this._nativePlayerObserver ) {
 				this._nativePlayerObserver.disconnect();
 				this._nativePlayerObserver = null;
 			}
+			this._nativeObserverTimeout = null;
 		}, 15000 );
 	},
 
@@ -862,7 +875,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 						const defaultAspectRatio = 16 / 9;
 						const initialScale = Math.min(
 							availableWidth / ( availableHeight * defaultAspectRatio ),
-							availableHeight / availableHeight,
 							1,
 						);
 						const initialWidth = Math.floor( availableHeight * defaultAspectRatio * initialScale );
@@ -947,11 +959,12 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				// Try to resize as soon as possible
 				let attempts = 0;
 				const maxAttempts = 10; // Try for 1 second
-				const pollInterval = setInterval( () => {
+				this._nativeResizePollInterval = setInterval( () => {
 					attempts++;
 					const done = this.resizeNativePlayer();
 					if ( done || attempts >= maxAttempts ) {
-						clearInterval( pollInterval );
+						clearInterval( this._nativeResizePollInterval );
+						this._nativeResizePollInterval = null;
 						// Once initial resize is done, set up observer to keep it persistent
 						if ( done ) {
 							this.setupNativePlayerObserver();
