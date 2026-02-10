@@ -45,6 +45,7 @@
 #easydam-video-player {
 
 	margin: auto;
+	max-height: 600px;
 
 	.vjs-control-bar {
 		display: var(--is-controls-visible, flex);
