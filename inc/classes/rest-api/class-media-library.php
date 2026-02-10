@@ -906,6 +906,7 @@ class Media_Library extends Base {
 		// Get current custom thumbnails.
 		$custom_thumbnails = get_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', true );
 		$custom_thumbnails = rtgodam_convert_to_https_url( $custom_thumbnails );
+		$thumbnail_url     = rtgodam_convert_to_https_url( $thumbnail_url );
 
 		if ( ! is_array( $custom_thumbnails ) || ! in_array( $thumbnail_url, $custom_thumbnails, true ) ) {
 			return new \WP_Error( 'thumbnail_not_found', __( 'Custom thumbnail not found.', 'godam' ), array( 'status' => 404 ) );

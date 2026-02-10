@@ -263,7 +263,7 @@ class Video_Metadata {
 			if ( ! empty( $thumbnail_url ) ) {
 				$width  = $attachment_meta['width'] ?? self::DEFAULT_THUMBNAIL_WIDTH;
 				$height = $attachment_meta['height'] ?? self::DEFAULT_THUMBNAIL_HEIGHT;
-				$html   = sprintf( '<img width="%s" height="%s" src="%s" style="object-fit: cover; height: 60px;" decoding="async" loading="lazy" />', esc_attr( $width ), esc_attr( $height ), esc_url( $thumbnail_url ) );
+				$html   = sprintf( '<img width="%s" height="%s" src="%s" style="object-fit: cover; height: 60px;" decoding="async" loading="lazy" />', esc_attr( $width ), esc_attr( $height ), esc_url( rtgodam_convert_to_https_url( $thumbnail_url ) ) );
 			}
 		}
 
