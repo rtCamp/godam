@@ -1096,12 +1096,31 @@ function rtgodam_convert_to_https_url( $urls ) {
 	}
 
 	if ( is_array( $urls ) ) {
-		return array_map(
+
+		$filtered_urls = array_filter(
+			$urls,
+			function ( $url ) {
+				return null !== $url && '' !== $url;
+			}
+		);
+
+		$converted_urls = array_map(
 			function ( $url ) {
 				return set_url_scheme( $url, 'https' );
 			},
-			$urls
+			$filtered_urls
 		);
+
+		return array_filter(
+			$converted_urls,
+			function ( $url ) {
+				return null !== $url && '' !== $url;
+			}
+		);
+	}
+
+	if ( null === $urls || '' === $urls ) {
+		return $urls;
 	}
 
 	return set_url_scheme( $urls, 'https' );

@@ -744,6 +744,7 @@ class Media_Library extends Base {
 
 		$custom_thumbnails = get_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', true );
 		$custom_thumbnails = rtgodam_convert_to_https_url( $custom_thumbnails );
+		$thumbnail_array   = rtgodam_convert_to_https_url( $thumbnail_array );
 
 		if ( ! is_array( $thumbnail_array ) ) {
 			return new \WP_Error( 'thumbnails_not_found', __( 'No thumbnails found.', 'godam' ), array( 'status' => 204 ) );
@@ -776,7 +777,6 @@ class Media_Library extends Base {
 		} else {
 			$custom_thumbnails = array();
 		}
-
 
 		$selected_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 		$selected_thumbnail = rtgodam_convert_to_https_url( $selected_thumbnail );
@@ -861,7 +861,6 @@ class Media_Library extends Base {
 				array( 'status' => 400 )
 			);
 		}
-
 
 		// Add new custom thumbnail at beginning and remove duplicates.
 		if ( ! in_array( $thumbnail_url, $existing_thumbnails, true ) ) {
@@ -1534,7 +1533,7 @@ class Media_Library extends Base {
 			$wp_attachment_metadata = array(
 				'filesize' => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,
 			);
-			
+
 			if ( ! empty( $video_duration_in_seconds ) ) {
 				update_post_meta( $attach_id, '_video_duration', $video_duration_in_seconds );
 				$wp_attachment_metadata['length']           = $video_duration_in_seconds;
@@ -1583,7 +1582,6 @@ class Media_Library extends Base {
 				update_post_meta( $attach_id, 'rtgodam_media_pdf_thumbnail', esc_url_raw( $data['icon'] ) );
 			}
 		}
-
 
 		// Return the newly created media object.
 		return new \WP_REST_Response(
@@ -1911,7 +1909,7 @@ class Media_Library extends Base {
 	 * - api_key: The GoDAM API key
 	 * - sizes_data: Array of size requests with width, height, crop
 	 * - events_callback_url: The URL to send events to.
-	 * 
+	 *
 	 * @since 1.5.0
 	 *
 	 * @param string $job_id        The GoDAM job ID.
@@ -1939,7 +1937,6 @@ class Media_Library extends Base {
 		if ( empty( $registered_sizes ) ) {
 			return false;
 		}
-
 
 		// Prepare size requests for GoDAM Central.
 		$size_requests = array();
