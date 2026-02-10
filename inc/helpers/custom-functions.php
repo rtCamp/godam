@@ -1112,3 +1112,46 @@ function godam_embed_page_content( $video_id, $show_engagements = false ) {
 	}
 	return ob_get_clean();
 }
+
+/**
+ * Check if auth detector scripts should be loaded on current screen.
+ *
+ * @param WP_Screen|null $screen Current screen object.
+ *
+ * @return bool True if auth detector scripts should load.
+ */
+function godam_should_load_auth_detector_script( $screen ) {
+	if ( ! $screen ) {
+		return false;
+	}
+
+	// Pages where media library/modal is directly accessible.
+	$media_screens = array(
+		'upload',     // Media Library page (grid & list views).
+		'post',       // Add/Edit Post.
+		'page',       // Add/Edit Page.
+		'attachment', // Edit Media page.
+	);
+
+	// Check if current screen is in the list.
+	if ( in_array( $screen->base, $media_screens, true ) || in_array( $screen->id, $media_screens, true ) ) {
+		return true;
+	}
+
+	// Check if post type supports editor (where media modal can be opened).
+	if ( 'post' === $screen->base && post_type_supports( $screen->post_type, 'editor' ) ) {
+		return true;
+	}
+
+	// Check if on GoDAM admin pages (where media library/modal can be opened).
+	$godam_pages = array(
+		'toplevel_page_godam',             // Dashboard page.
+		'godam_page_rtgodam_video_editor', // Video Editor page.
+	);
+
+	if ( in_array( $screen->id, $godam_pages, true ) ) {
+		return true;
+	}
+
+	return false;
+}
