@@ -130,12 +130,19 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 	 *
 	 * @param {boolean} value - New override value.
 	 */
-	const handleOverrideToggle = ( value ) => {
+	const handleOverrideToggle = async ( value ) => {
 		setSeoOverride( value );
-
-		if ( ! value && mediaSEOData ) {
-			// Switching back to media library defaults - restore from media
-			setVideoData( mediaSEOData );
+		if ( ! value ) {
+			if ( mediaSEOData ) {
+				// Switching back to media library defaults - restore from media
+				setVideoData( mediaSEOData );
+			} else {
+				// Media SEO data not yet loaded; fetch it now and sync UI
+				const freshMediaSEO = await fetchMediaSEOData();
+				if ( freshMediaSEO ) {
+					setVideoData( freshMediaSEO );
+				}
+			}
 		}
 	};
 
@@ -256,7 +263,7 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 			<TextControl
 				className="godam-seo-modal__property"
 				label={ __( 'Upload Date', 'godam' ) }
-				help={ __( 'Format: YYYY-MM-DD', 'godam' ) }
+				help={ __( 'ISO 8601 datetime format. Example: 2024–01–15T10:30:00+00:00', 'godam' ) }
 				value={ videoData?.uploadDate || '' }
 				onChange={ ( value ) => updateField( 'uploadDate', value ) }
 				disabled={ true }
