@@ -780,7 +780,7 @@ function VideoEdit( {
 									<SelectControl
 										value={ attributes.aspectRatio || 'responsive' }
 										options={ [
-											{ label: __( 'Preserve Aspect Ratio', 'godam' ), value: 'responsive' },
+											{ label: __( 'Original', 'godam' ), value: 'responsive' },
 											{ label: __( '16:9 (Standard)', 'godam' ), value: '16:9' },
 										] }
 										onChange={ ( value ) => setAttributes( { aspectRatio: value } ) }
