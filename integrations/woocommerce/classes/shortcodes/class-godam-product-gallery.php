@@ -210,7 +210,7 @@ class GoDAM_Product_Gallery {
 			array(
 				'block_id'                    => '',
 				'layout'                      => 'carousel',
-				'view'                        => '4-3',
+				'view'                        => '9-16',
 				'product'                     => '',
 				'align'                       => '',
 				'autoplay'                    => '',
@@ -222,8 +222,8 @@ class GoDAM_Product_Gallery {
 				'unmute_button_enabled'       => '',
 				'unmute_button_bg_color'      => 'rgba(0,0,0,0.4)',
 				'unmute_button_icon_color'    => '#ffffff',
-				'desktop_card_width'          => 21.5,
-				'tablet_card_width'           => 41.5,
+				'desktop_card_width'          => 16.5,
+				'tablet_card_width'           => 35.5,
 				'mobile_card_width'           => 66.5,
 				'arrow_bg_color'              => 'rgba(0,0,0,0.5)',
 				'arrow_icon_color'            => '#ffffff',
@@ -298,10 +298,10 @@ class GoDAM_Product_Gallery {
 			$atts['arrow_size'] = 32;
 		}
 		if ( $atts['desktop_card_width'] <= 0 ) {
-			$atts['desktop_card_width'] = 21.5;
+			$atts['desktop_card_width'] = 16.5;
 		}
 		if ( $atts['tablet_card_width'] <= 0 ) {
-			$atts['tablet_card_width'] = 41.5;
+			$atts['tablet_card_width'] = 35.5;
 		}
 		if ( $atts['mobile_card_width'] <= 0 ) {
 			$atts['mobile_card_width'] = 66.5;

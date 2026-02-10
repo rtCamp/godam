@@ -18,7 +18,7 @@ import {
 	ColorPalette,
 	RangeControl,
 } from '@wordpress/components';
-import { useMemo, useRef, useEffect, useCallback, Platform } from '@wordpress/element';
+import { useMemo, useRef, useEffect } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
 
 /**
@@ -33,7 +33,7 @@ import './editor.scss';
  * @param {Object}   props               Block props.
  * @param {Object}   props.attributes    Block attributes.
  * @param {Function} props.setAttributes Function to set block attributes.
- * @param            props.clientId
+ * @param {string}   props.clientId      Unique block client ID.
  * @return {JSX.Element} Element to render.
  */
 export default function Edit( { attributes, setAttributes, clientId } ) {
@@ -47,7 +47,6 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		playButtonIconColor,
 		playButtonSize,
 		playButtonBorderRadius,
-		unmuteButtonEnabled,
 		unmuteButtonBgColor,
 		unmuteButtonIconColor,
 		cardWidth = {},
@@ -87,15 +86,6 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 
 	// Refrence to preview view value.
 	const previousViewRef = useRef( view );
-
-	// Help text warning for autoplay usage and callback for Autoplay settings.
-	const autoPlayHelpText = __( 'Autoplay may cause usability issues for some users.', 'godam' );
-	const getAutoplayHelp = Platform.select( {
-		web: useCallback( ( checked ) => {
-			return checked ? autoPlayHelpText : null;
-		}, [] ),
-		native: autoPlayHelpText,
-	} );
 
 	// Constant for locing play button.
 	const isPlayButtonLocked = ! autoplay;
@@ -162,7 +152,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	const getCardWidthForView = ( viewRatio, layoutType, device ) => {
 		if ( layoutType === 'carousel' ) {
 			if ( device === 'tablet' ) {
-				return '41.5';
+				return '35.5';
 			} else if ( device === 'mobile' ) {
 				return '66.5';
 			}
@@ -173,6 +163,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 				case '4-3':
 					return '21.5';
 				case '9-16':
+					return '16.5';
 				case '3-4':
 					return '18.5';
 				case '1-1':
