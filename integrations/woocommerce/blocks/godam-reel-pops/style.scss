@@ -1,0 +1,403 @@
+/**
+ * GoDAM Reel Pops - Frontend Styles
+ *
+ * Uses CSS custom properties (variables) for dynamic positioning, spacing, animation.
+ * Built by WordPress Scripts (SCSS) - loads from assets/build folder
+ */
+
+// CSS Variables defaults (can be overridden via data attributes)
+:root {
+	--reel-pops-position: 20px; // side-spacing (left or right)
+	--reel-pops-bottom: 20px;
+	--reel-pops-width: 120px;
+	--reel-pops-animation-duration: 500ms;
+	--reel-pops-aspect-ratio: 9 / 16;
+}
+
+/* Wrapper - hidden by default, shown by JS */
+.godam-reel-pops-wrapper {
+	position: relative;
+	z-index: 999999;
+	display: none;
+
+	// Show when JS initializes
+	&.godam-reel-pops-active {
+		display: block;
+	}
+}
+
+/* Container - floating fixed position with CSS variables */
+.godam-reel-pops-container {
+	position: fixed;
+	z-index: 99999;
+	width: var(--reel-pops-width);
+	border-radius: 12px;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+	background: #000;
+	cursor: pointer;
+	transition: transform 0.2s ease;
+
+	// Position from CSS variables
+	&.position-bottom-left {
+		left: var(--reel-pops-position);
+		bottom: var(--reel-pops-bottom);
+	}
+
+	&.position-bottom-right {
+		right: var(--reel-pops-position);
+		bottom: var(--reel-pops-bottom);
+	}
+
+	&:hover {
+		transform: scale(1.02);
+	}
+
+	// Aspect ratios
+	&.aspect-9-16 {
+		aspect-ratio: 9 / 16;
+	}
+
+	&.aspect-16-9 {
+		aspect-ratio: 16 / 9;
+	}
+
+	&.aspect-4-3 {
+		aspect-ratio: 4 / 3;
+	}
+}
+
+/* Video slots container */
+.godam-reel-pops-video-slots {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	border-radius: 12px;
+}
+
+/* Video slot - stacked absolutely with opacity-based transitions */
+.godam-reel-pops-video-slot {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	opacity: 0;
+	transition: opacity 0.4s ease-in-out;
+	will-change: opacity;
+	backface-visibility: hidden;
+	transform: translateZ(0);
+	pointer-events: none;
+	z-index: 0;
+
+	// Show when active
+	&.active {
+		opacity: 1;
+		pointer-events: auto;
+		z-index: 1;
+	}
+}
+
+/* Video wrapper - fills slot */
+.godam-reel-pops-video-wrapper {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: #000;
+
+	// Ensure video container fills
+	.easydam-video-container {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	// Video.js player fills container
+	.video-js {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		padding: 0;
+		margin: 0;
+
+		// Remove responsive padding behavior
+		&.vjs-fluid,
+		&.vjs-16-9,
+		&.vjs-4-3,
+		&.vjs-9-16 {
+			padding-top: 0;
+		}
+	}
+
+	// Video element with contain fit
+	video {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		padding: 0;
+		margin: 0;
+	}
+
+	// Video.js tech layer
+	.vjs-tech {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	// Poster image
+	.vjs-poster {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-size: contain;
+		background-position: center;
+		background-repeat: no-repeat;
+	}
+
+	// Hide UI elements
+	.vjs-control-bar,
+	.vjs-big-play-button,
+	.vjs-loading-spinner {
+		display: none;
+	}
+}
+
+
+/* Loading state */
+.godam-reel-pops-loading {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0.8);
+
+	.spinner {
+		width: 40px;
+		height: 40px;
+		border: 3px solid rgba(255, 255, 255, 0.3);
+		border-top-color: #fff;
+		border-radius: 50%;
+		animation: reel-pops-spin 0.8s linear infinite;
+	}
+}
+
+@keyframes reel-pops-spin {
+	to { transform: rotate(360deg); }
+}
+
+/* Error state */
+.godam-reel-pops-error {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0.8);
+	color: #fff;
+	font-size: 12px;
+	text-align: center;
+	padding: 12px;
+}
+
+/* Close button */
+.godam-reel-pops-close {
+	position: absolute;
+	top: -12px;
+	right: -12px;
+	z-index: 10;
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0.6);
+	border: none;
+	border-radius: 50%;
+	color: #fff;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	backdrop-filter: blur(4px);
+	pointer-events: auto;
+
+	&:hover {
+		background: rgba(0, 0, 0, 0.8);
+		transform: scale(1.1);
+	}
+
+	svg {
+		width: 16px;
+		height: 16px;
+		pointer-events: none;
+	}
+}
+
+/* Click overlay for modal integration */
+.godam-reel-pops-click-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 8;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0;
+	transition: opacity 0.2s ease;
+	background: rgba(0, 0, 0, 0.1);
+	cursor: pointer;
+	pointer-events: none;
+
+	.godam-reel-pops-container:hover & {
+		opacity: 1;
+		pointer-events: auto;
+	}
+}
+
+/* ENTRANCE ANIMATIONS */
+
+/* Base state - hidden before animation */
+.godam-reel-pops-container:not(.reel-pops-visible) {
+	opacity: 0;
+	pointer-events: none;
+}
+
+/* Visible state - ensure interactivity */
+.godam-reel-pops-container.reel-pops-visible {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+/* Slide up */
+.godam-reel-pops-container.reel-pops-enter-slide-up:not(.reel-pops-visible) {
+	transform: translateY(100%);
+}
+
+.godam-reel-pops-container.animation-slide-up.reel-pops-visible {
+	opacity: 1;
+	transform: translateY(0);
+	transition: opacity var(--reel-pops-animation-duration, 500ms) ease,
+	            transform var(--reel-pops-animation-duration, 500ms) cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Slide left */
+.godam-reel-pops-container.reel-pops-enter-slide-left:not(.reel-pops-visible) {
+	transform: translateX(-100%);
+}
+
+.godam-reel-pops-container.animation-slide-left.reel-pops-visible {
+	opacity: 1;
+	transform: translateX(0);
+	transition: opacity var(--reel-pops-animation-duration, 500ms) ease,
+	            transform var(--reel-pops-animation-duration, 500ms) cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Slide right */
+.godam-reel-pops-container.reel-pops-enter-slide-right:not(.reel-pops-visible) {
+	transform: translateX(100%);
+}
+
+.godam-reel-pops-container.animation-slide-right.reel-pops-visible {
+	opacity: 1;
+	transform: translateX(0);
+	transition: opacity var(--reel-pops-animation-duration, 500ms) ease,
+	            transform var(--reel-pops-animation-duration, 500ms) cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Fade */
+.godam-reel-pops-container.reel-pops-enter-fade:not(.reel-pops-visible) {
+	opacity: 0;
+}
+
+.godam-reel-pops-container.animation-fade.reel-pops-visible {
+	opacity: 1;
+	transition: opacity var(--reel-pops-animation-duration, 500ms) ease;
+}
+
+/* Bounce */
+.godam-reel-pops-container.reel-pops-enter-bounce:not(.reel-pops-visible) {
+	transform: scale(0);
+}
+
+.godam-reel-pops-container.animation-bounce.reel-pops-visible {
+	opacity: 1;
+	transform: scale(1);
+	transition: opacity var(--reel-pops-animation-duration, 500ms) ease,
+	            transform var(--reel-pops-animation-duration, 500ms) cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Scale */
+.godam-reel-pops-container.reel-pops-enter-scale:not(.reel-pops-visible) {
+	transform: scale(0.5);
+}
+
+.godam-reel-pops-container.animation-scale.reel-pops-visible {
+	opacity: 1;
+	transform: scale(1);
+	transition: opacity var(--reel-pops-animation-duration, 500ms) ease,
+	            transform var(--reel-pops-animation-duration, 500ms) ease-out;
+}
+
+/* EXIT ANIMATION */
+.godam-reel-pops-container.reel-pops-closing {
+	opacity: 0;
+	transform: scale(0.8);
+	transition: opacity var(--reel-pops-animation-duration, 500ms) ease,
+	            transform var(--reel-pops-animation-duration, 500ms) ease-in;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+	.godam-reel-pops-container,
+	.godam-reel-pops-video-slot,
+	.godam-reel-pops-close {
+		transition: none;
+		animation: none;
+
+		&.reel-pops-visible {
+			opacity: 1;
+			transform: none;
+		}
+	}
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+	.godam-reel-pops-container {
+		max-width: 100px;
+	}
+
+	.godam-reel-pops-close {
+		width: 28px;
+		height: 28px;
+		top: -10px;
+		right: -10px;
+
+		svg {
+			width: 14px;
+			height: 14px;
+		}
+	}
+}

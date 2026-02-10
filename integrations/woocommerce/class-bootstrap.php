@@ -147,6 +147,8 @@ class Bootstrap {
 
 		// Initialize the Utility Helper class.
 		$this->utility_instance = WC_Utility::get_instance();
+		require_once RTGODAM_WC_MODULE_PATH . 'classes/class-wc-reel-pops-metabox.php';
+		require_once RTGODAM_WC_MODULE_PATH . 'classes/shortcodes/class-godam-reel-pops.php';
 	}
 
 	/**
@@ -182,17 +184,46 @@ class Bootstrap {
 			register_block_type( $wc_block_path );
 		}
 
+		// Register GoDAM Reel Pops block from built assets if available.
+		$reel_pops_block_path = RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'blocks/godam-reel-pops/';
+		if ( file_exists( $reel_pops_block_path . 'block.json' ) ) {
+			register_block_type(
+				$reel_pops_block_path,
+				array(
+					'render_callback' => function( $attributes ) use ( $reel_pops_block_path ) {
+						// Block context - ensure view.js has proper dependencies.
+						if ( wp_script_is( 'godam-reel-pops-view-script', 'registered' ) ) {
+							global $wp_scripts;
+							if ( isset( $wp_scripts->registered['godam-reel-pops-view-script'] ) ) {
+								$script = &$wp_scripts->registered['godam-reel-pops-view-script'];
+								if ( ! in_array( 'godam-product-gallery-script', $script->deps, true ) ) {
+									$script->deps[] = 'godam-product-gallery-script';
+								}
+							}
+						}
+
+						// Render using template (block context - not metabox).
+						ob_start();
+						include $reel_pops_block_path . 'render.php';
+						return ob_get_clean();
+					},
+				)
+			);
+		}
+
 		// Initialize REST API.
 		\RTGODAM\Inc\REST_API\WC::get_instance();
 		\RTGODAM\Inc\REST_API\Product_Gallery::get_instance();
 
-		// Initialize WooCommerce-dependent shortcode.
+		// Initialize WooCommerce-dependent shortcodes.
 		\RTGODAM\Inc\Shortcodes\GoDAM_Product_Gallery::get_instance();
+		\RTGODAM\Inc\WooCommerce\GoDAM_Reel_Pops::get_instance();
 
 		// Initialize WooCommerce classes.
 		\RTGODAM\Inc\WooCommerce\WC_Product_Video_Gallery::get_instance();
 		\RTGODAM\Inc\WooCommerce\WC_Featured_Video_Gallery::get_instance();
 		\RTGODAM\Inc\WooCommerce\WC_Woocommerce_Layer::get_instance();
+		\RTGODAM\Inc\WooCommerce\WC_Reel_Pops_Metabox::get_instance();
 	}
 
 	/**
@@ -284,7 +315,7 @@ class Bootstrap {
 			RTGODAM_URL . 'assets/build/integrations/woocommerce/js/wc-woo-global-script.min.js',
 			array(),
 			rtgodam_wc_get_asset_version( RTGODAM_PATH . 'assets/build/integrations/woocommerce/wc-woo-global-script.min.js' ),
-			true 
+			true
 		);
 
 		wp_localize_script(

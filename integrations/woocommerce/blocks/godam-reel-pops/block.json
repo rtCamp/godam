@@ -1,0 +1,93 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "godam/reel-pops",
+  "title": "GoDAM Reel Pops",
+  "category": "media",
+  "description": "Display floating reels-style video popup with auto-rotation and product integration.",
+  "keywords": ["reel", "video", "popup", "godam", "floating", "stories"],
+  "textdomain": "godam",
+  "attributes": {
+    "blockId": {
+      "type": "string"
+    },
+    "videos": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "properties": {
+          "videoId": {
+            "type": "number"
+          },
+          "productIds": {
+            "type": "string",
+            "default": ""
+          }
+        }
+      }
+    },
+    "aspectRatio": {
+      "type": "string",
+      "default": "9-16",
+      "enum": ["4-3", "16-9", "9-16"]
+    },
+    "position": {
+      "type": "string",
+      "default": "bottom-right",
+      "enum": ["bottom-left", "bottom-right"]
+    },
+    "animation": {
+      "type": "string",
+      "default": "slide-up",
+      "enum": ["slide-up", "slide-left", "slide-right", "fade", "bounce", "scale"]
+    },
+    "animationDuration": {
+      "type": "number",
+      "default": 500
+    },
+    "durationSeconds": {
+      "type": "number",
+      "default": 5,
+      "minimum": 1
+    },
+    "initialDelay": {
+      "type": "number",
+      "default": 3,
+      "minimum": 0
+    },
+    "closePersistence": {
+      "type": "string",
+      "default": "show_again",
+      "enum": ["show_again", "hide_after_close"]
+    },
+    "enableAutoplay": {
+      "type": "boolean",
+      "default": true
+    },
+    "popupWidth": {
+      "type": "number",
+      "default": 120
+    },
+    "bottomSpacing": {
+      "type": "number",
+      "default": 20
+    },
+    "sideSpacing": {
+      "type": "number",
+      "default": 20
+    }
+  },
+  "supports": {
+    "anchor": true,
+    "align": false,
+    "spacing": {
+      "margin": false,
+      "padding": false
+    }
+  },
+  "editorScript": ["file:./index.js"],
+  "render": "file:./render.php",
+  "editorStyle": ["file:./index.css"],
+  "viewScript": ["file:./view.js"]
+}
