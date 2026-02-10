@@ -271,7 +271,7 @@ class RTGODAM_Transcoder_Handler {
 
 		// Check if HTTP auth is enabled.
 		if ( rtgodam_has_http_auth() ) {
-			if ( $retranscode ) {
+			if ( $manual_retranscode ) {
 				// Store in failed transcoding list for retry later.
 				$failed_transcoding_attachments                   = get_option( 'rtgodam-failed-transcoding-attachments', array() );
 				$failed_transcoding_attachments[ $attachment_id ] = array(
