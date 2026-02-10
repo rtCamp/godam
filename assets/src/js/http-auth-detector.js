@@ -14,6 +14,9 @@
 
 	const godamHttpAuthDetector = window?.godamHttpAuthDetector || {};
 
+	// Try to initialize immediately (before DOM ready).
+	const earlyInitSuccess = initializeEarly();
+
 	/**
 	 * Check if HTTP authentication is enabled.
 	 *
@@ -22,17 +25,26 @@
 	 * @return {Promise<boolean>} Promise resolving to true if HTTP auth is enabled, false otherwise.
 	 */
 	async function detectHttpAuth() {
+		const controller = new AbortController();
+		const timeout = setTimeout( function() {
+			controller.abort();
+		}, 5000 );
+
 		// Make a fresh GET request to home URL without credentials.
 		return fetch( godamHttpAuthDetector.testUrl, {
 			method: 'GET',
 			credentials: 'omit',
 			cache: 'no-store',
+			signal: controller.signal,
 		} )
 			.then( async function( response ) {
+				clearTimeout( timeout );
 				const hasHttpAuth = 401 === response.status;
 				return saveHttpAuthStatus( hasHttpAuth );
 			} )
 			.catch( async function() {
+				clearTimeout( timeout );
+
 				// On error, assume no HTTP auth (fail-safe).
 				return saveHttpAuthStatus( false );
 			} );
@@ -64,12 +76,12 @@
 	 *
 	 * @since n.e.x.t
 	 *
-	 * @return {void}
+	 * @return {boolean} True if interception is set up, false otherwise.
 	 */
 	function interceptMediaUploads() {
 		// Hook into WordPress media uploader (Plupload).
 		if ( typeof wp === 'undefined' || ! wp.Uploader ) {
-			return;
+			return false;
 		}
 
 		// Store original init method.
@@ -82,25 +94,19 @@
 
 			// Before files are uploaded, check for HTTP auth.
 			if ( this.uploader ) {
-				this.uploader.bind( 'BeforeUpload', function( up ) {
-					// If detection has already run for this uploader, allow upload to proceed.
-					if ( up.httpAuthDetectionDone ) {
-						return;
-					}
-
+				this.uploader.bind( 'BeforeUpload', function( up, file ) {
 					// If detection is already in progress, pause uploads and wait.
 					if ( up.httpAuthDetectionInProgress ) {
-						up.stop();
+						file.status = window?.plupload?.STOPPED;
 						return;
 					}
 
 					// Mark detection as in progress and pause uploads.
 					up.httpAuthDetectionInProgress = true;
-					up.stop();
+					file.status = window?.plupload?.STOPPED;
 
 					// Run detection and resume uploads when done.
 					$.when( detectHttpAuth() ).always( function() {
-						up.httpAuthDetectionDone = true;
 						up.httpAuthDetectionInProgress = false;
 						up.start();
 					} );
@@ -109,6 +115,8 @@
 
 			return result;
 		};
+
+		return true;
 	}
 
 	/**
@@ -116,22 +124,17 @@
 	 *
 	 * @since n.e.x.t
 	 *
-	 * @return {void}
+	 * @return {boolean} True if interception is set up, false otherwise.
 	 */
 	function initializeEarly() {
 		// Check if godamHttpAuthDetector is available.
-		if ( typeof godamHttpAuthDetector === 'undefined' ) {
+		if ( ! window?.godamHttpAuthDetector ) {
 			return false;
 		}
 
 		// Intercept media uploads immediately.
-		interceptMediaUploads();
-
-		return true;
+		return interceptMediaUploads();
 	}
-
-	// Try to initialize immediately (before DOM ready).
-	const earlyInitSuccess = initializeEarly();
 
 	/**
 	 * Initialize on document ready.
@@ -142,7 +145,7 @@
 	 */
 	$( document ).ready( function() {
 		// Only run on upload page.
-		if ( typeof godamHttpAuthDetector === 'undefined' ) {
+		if ( ! window?.godamHttpAuthDetector ) {
 			return;
 		}
 
