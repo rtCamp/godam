@@ -443,15 +443,27 @@ if ( $godam_should_preload_poster ) {
 					</div>
 				<?php endif; ?>
 
-				<div class="easydam-video-container animate-video-loading godam-<?php echo esc_attr( strtolower( $godam_player_skin ) ); ?>-skin" >
-					<?php if ( isset( $godam_hover_select ) && 'shadow-overlay' === $godam_hover_select ) : ?>
-						<div class="godam-player-overlay"></div>
-					<?php endif; ?>
+				<div class="godam-video-placeholder godam-animate-video-loading">
 					<div class="animate-play-btn">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
 							<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
 						</svg>
 					</div>
+					<?php if ( ! empty( $godam_video_poster ) ) : ?>
+					<img
+						class="godam-player-poster-image"
+						src="<?php echo esc_url( $godam_video_poster ); ?>"
+						fetchpriority="high"
+						aria-hidden="true"
+					/>
+					<?php endif; ?>
+				</div>
+
+				<div class="easydam-video-container loading godam-<?php echo esc_attr( strtolower( $godam_player_skin ) ); ?>-skin" >
+					<?php if ( isset( $godam_hover_select ) && 'shadow-overlay' === $godam_hover_select ) : ?>
+						<div class="godam-player-overlay"></div>
+					<?php endif; ?>
+					
 					<?php if ( $godam_should_preload_poster ) : ?>
 						<img
 							class="godam-poster-image"

@@ -110,9 +110,21 @@ export default class GodamVideoPlayer {
 	setupVideoElement() {
 		this.video.classList.remove( 'vjs-hidden' );
 
-		const loadingElement = this.video.closest( '.animate-video-loading' );
-		if ( loadingElement ) {
-			loadingElement.classList.remove( 'animate-video-loading' );
+		const parentContainer = this.video.closest( '.godam-video-wrapper' );
+
+		let placeholder, originalVideoContainer;
+
+		if ( parentContainer ) {
+			placeholder = parentContainer.querySelector( '.godam-video-placeholder' );
+			originalVideoContainer = parentContainer.querySelector( '.easydam-video-container' );
+		}
+
+		if ( placeholder ) {
+			placeholder.style.display = 'none';
+		}
+
+		if ( originalVideoContainer ) {
+			originalVideoContainer.classList.remove( 'loading' );
 		}
 	}
 
