@@ -1081,9 +1081,11 @@ function godam_embed_page_content( $video_id, $show_engagements = false ) {
 }
 
 /**
- * Return an array of URLs with the scheme changed to HTTPS if the current page is using SSL.
+ * Convert one or more URLs to HTTPS if the current page is using SSL.
  *
- * This function checks if the current page is using SSL and if so, it will return an array of URLs with the scheme changed to HTTPS.
+ * This function checks whether the current page is using SSL and, if so, returns the given URL string or array of URLs with their scheme changed to HTTPS. If SSL is not active, the original value is returned unchanged.
+ *
+ * @since 1.5.0
  *
  * @param array|string $urls The URLs to change the scheme of.
  *
