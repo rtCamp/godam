@@ -14,6 +14,38 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// Enqueue player wrapper styles inline for high priority rendering.
+// Uses a global flag to ensure it's only output once per page.
+global $godam_player_wrapper_inline_css_added, $wp_filesystem;
+if ( empty( $godam_player_wrapper_inline_css_added ) ) {
+	$godam_player_wrapper_inline_css_added = true;
+	$godam_player_wrapper_css_path         = RTGODAM_PATH . 'assets/build/css/godam-player-wrapper.css';
+
+	if ( file_exists( $godam_player_wrapper_css_path ) ) {
+		// Initialize WP_Filesystem if not already done.
+		if ( empty( $wp_filesystem ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+			WP_Filesystem();
+		}
+
+		$godam_player_wrapper_css = $wp_filesystem->get_contents( $godam_player_wrapper_css_path );
+
+		// If wp_head already fired, output inline immediately.
+		if ( did_action( 'wp_head' ) ) {
+			echo '<style id="godam-player-wrapper-inline-css">' . wp_strip_all_tags( $godam_player_wrapper_css ) . '</style>';
+		} else {
+			// Output inline style in wp_head for high priority rendering.
+			add_action(
+				'wp_head',
+				function () use ( $godam_player_wrapper_css ) {
+					echo '<style id="godam-player-wrapper-inline-css">' . wp_strip_all_tags( $godam_player_wrapper_css ) . '</style>';
+				},
+				1 // High priority - runs early in wp_head.
+			);
+		}
+	}
+}
+
 $godam_is_shortcode = false;
 if ( isset( $is_shortcode ) && $is_shortcode ) {
 	$godam_is_shortcode = true;
