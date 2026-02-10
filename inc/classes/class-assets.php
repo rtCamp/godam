@@ -284,9 +284,9 @@ class Assets {
 		// Enqueue HTTP auth detector.
 		wp_register_script(
 			'godam-http-auth-detector',
-			RTGODAM_URL . 'assets/src/js/http-auth-detector.js',
+			RTGODAM_URL . 'assets/build/js/http-auth-detector.min.js',
 			array( 'jquery' ),
-			filemtime( RTGODAM_PATH . 'assets/src/js/http-auth-detector.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/http-auth-detector.min.js' ),
 			true
 		);
 
