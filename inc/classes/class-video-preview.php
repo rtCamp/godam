@@ -70,5 +70,14 @@ class Video_Preview {
 			array(),
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-video-preview.css' )
 		);
+
+		// Register and enqueue the video preview JavaScript.
+		wp_register_script(
+			'godam-video-preview-script',
+			RTGODAM_URL . 'assets/build/js/godam-video-preview.min.js',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/js/godam-video-preview.min.js' ),
+			true
+		);
 	}
 }
