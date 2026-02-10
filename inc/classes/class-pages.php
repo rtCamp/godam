@@ -376,7 +376,7 @@ class Pages {
 		}
 
 		?>
-		<div class="godam-admin-root">
+		<div class="godam-admin-root godam-video-editor-page">
 			<div id="root-video-editor">
 				<div class="progress-bar-wrapper">
 					<div class="progress-bar-container">
@@ -396,9 +396,10 @@ class Pages {
 	 * @return void
 	 */
 	public function render_dashboard_page() {
+		$is_premium_user = rtgodam_is_api_key_valid();
 		?>
 		<div class="godam-admin-root">
-			<div id="root-video-dashboard"></div>
+			<div id="root-video-dashboard" class="<?php echo $is_premium_user ? '' : 'free-user'; ?>"></div>
 		</div>
 		<?php
 	}
@@ -409,9 +410,10 @@ class Pages {
 	 * @return void
 	 */
 	public function render_analytics_page() {
+		$is_premium_user = rtgodam_is_api_key_valid();
 		?>
 		<div class="godam-admin-root">
-			<div id="root-video-analytics"></div>
+			<div id="root-video-analytics" class="<?php echo $is_premium_user ? '' : 'free-user'; ?>"></div>
 		</div>
 		<?php
 	}

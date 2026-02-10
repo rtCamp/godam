@@ -34,9 +34,22 @@ printf(
 	wpforms_html_attributes( $godam_primary['id'], $godam_primary['class'], $godam_primary['data'], $godam_primary['attr'] ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	$godam_primary['required'] // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 );
+
+// Detect if this is an audio file.
+$godam_is_audio = godam_is_audio_file( $godam_value );
 ?>
 <div class="godam-video-preview">
-	<?php echo do_shortcode( "[godam_video poster='{$godam_thumbnail_url}' src='{$godam_value}' transcoded_url='{$godam_transcoded_url}']" ); ?>
+	<?php if ( $godam_is_audio ) : ?>
+		<audio controls>
+			<?php if ( $godam_transcoded_url ) : ?>
+				<source src="<?php echo esc_url( $godam_transcoded_url ); ?>" type="audio/mpeg">
+			<?php endif; ?>
+			<source src="<?php echo esc_url( $godam_value ); ?>" type="<?php echo esc_attr( $mime_type ); ?>">
+			<?php esc_html_e( 'Your browser does not support the audio element.', 'godam' ); ?>
+		</audio>
+	<?php else : ?>
+		<?php echo do_shortcode( "[godam_video poster='{$godam_thumbnail_url}' src='{$godam_value}' transcoded_url='{$godam_transcoded_url}']" ); ?>
+	<?php endif; ?>
 </div>
 <a
 	href="<?php echo esc_url( $godam_value ); ?>"

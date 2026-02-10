@@ -42,8 +42,12 @@ export const VideoJS = ( props ) => {
 
 			const videojsOptions = { ...options };
 
+			if ( ! options.aspectRatio ) {
+				videojsOptions.aspectRatio = '16:9';
+			}
+
 			if ( options.aspectRatio && ! /^\d+:\d+$/.test( options.aspectRatio ) ) {
-				// Remove aspectRatio from options as we will set it later
+				// Unset the aspectRatio from videojsOptions as we will set it later
 				delete videojsOptions.aspectRatio;
 			}
 

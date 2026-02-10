@@ -395,7 +395,7 @@ class RTGODAM_Transcoder_Admin {
 	 * Handle the cache clearing request for GoDAM usage data.
 	 * This runs on admin_init to ensure headers haven't been sent yet.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.5.0
 	 */
 	public function handle_clear_godam_cache() {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce is verified below.
@@ -656,7 +656,7 @@ class RTGODAM_Transcoder_Admin {
 	/**
 	 * Display PostHog tracking notice.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.5.0
 	 */
 	public function posthog_tracking_notice() {
 		if ( ! current_user_can( 'manage_options' ) ) {

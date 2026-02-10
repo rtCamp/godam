@@ -77,6 +77,40 @@ if ( class_exists( 'GF_Field' ) ) {
 		}
 
 		/**
+		 * Format seconds as readable time.
+		 *
+		 * @param int $seconds Seconds.
+		 * @return string
+		 */
+		private function format_seconds_hhmmss( $seconds ) {
+			$seconds = absint( $seconds );
+
+			$hours   = intdiv( $seconds, 3600 );
+			$seconds = $seconds % 3600;
+
+			$minutes = intdiv( $seconds, 60 );
+			$secs    = $seconds % 60;
+
+			$parts = array();
+
+			if ( $hours > 0 ) {
+				$parts[] = sprintf( '%d %s', $hours, ( 1 === $hours ) ? esc_html__( 'hour', 'godam' ) : esc_html__( 'hours', 'godam' ) );
+			}
+
+			if ( $minutes > 0 ) {
+				$parts[] = sprintf( '%d %s', $minutes, ( 1 === $minutes ) ? esc_html__( 'minute', 'godam' ) : esc_html__( 'minutes', 'godam' ) );
+			}
+
+			// Always show seconds if nothing else was added (so 0 -> "0 seconds")
+			// or if seconds are non-zero.
+			if ( $secs > 0 || empty( $parts ) ) {
+				$parts[] = sprintf( '%d %s', $secs, ( 1 === $secs ) ? esc_html__( 'second', 'godam' ) : esc_html__( 'seconds', 'godam' ) );
+			}
+
+			return implode( ' ', $parts );
+		}
+
+		/**
 		 * Generates the HTML markup for the field input in the form.
 		 *
 		 * @param array  $form  The form object.
@@ -123,6 +157,17 @@ if ( class_exists( 'GF_Field' ) ) {
 			// translators: %s is the maximum file size allowed.
 			$upload_rules_messages[] = esc_attr( sprintf( __( 'Max. file size: %s', 'godam' ), \GFCommon::format_file_size( $max_upload_size ) ) );
 
+			$max_duration_seconds = ! empty( $this->godamMaxDuration ) ? absint( $this->godamMaxDuration ) : 0;
+			if ( $max_duration_seconds > 0 ) {
+				$upload_rules_messages[] = esc_attr(
+					sprintf(
+						// translators: %s is the maximum duration.
+						__( 'Max. duration: %s', 'godam' ),
+						$this->format_seconds_hhmmss( $max_duration_seconds )
+					)
+				);
+			}
+
 			// No. of files.
 			$max_files = ( $multiple_files && $this->maxFiles > 0 ) ? $this->maxFiles : 0;
 			if ( $max_files ) {
@@ -142,7 +187,8 @@ if ( class_exists( 'GF_Field' ) ) {
 			// Build the uppy UI.
 			ob_start();
 
-			$file_selectors = ! empty( $this->godamVideoFileSelectors ) ? implode( ',', $this->godamVideoFileSelectors ) : 'webcam,screen_capture';
+			$file_selectors       = ! empty( $this->godamVideoFileSelectors ) ? implode( ',', $this->godamVideoFileSelectors ) : 'webcam,screen_capture';
+			$max_duration_seconds = ! empty( $this->godamMaxDuration ) ? absint( $this->godamMaxDuration ) : 0;
 			?>
 			<div class="ginput_container" data-allowed-extensions="<?php echo esc_attr( $allowed_extensions ); ?>" data-max-files="<?php echo esc_attr( $max_files ); ?>">
 				<?php if ( $max_upload_size <= 2047 * 1048576 ) : // Hidden file input that will be populated by Uppy. ?>
@@ -164,6 +210,7 @@ if ( class_exists( 'GF_Field' ) ) {
 					data-input-id="<?php echo esc_attr( $field_id ); ?>"
 					data-video-upload-button-id="<?php echo esc_attr( $video_upload_button_id ); ?>"
 					data-file-selectors="<?php echo esc_attr( $file_selectors ); ?>"
+					data-max-duration="<?php echo esc_attr( $max_duration_seconds ); ?>"
 				>
 					<button 
 						type="button"
