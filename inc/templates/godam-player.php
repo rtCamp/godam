@@ -32,15 +32,15 @@ if ( empty( $godam_player_wrapper_inline_css_added ) ) {
 
 		// If wp_head already fired, output inline immediately.
 		if ( did_action( 'wp_head' ) ) {
-			echo '<style id="godam-player-wrapper-inline-css">' . wp_strip_all_tags( $godam_player_wrapper_css ) . '</style>';
+			echo '<style id="godam-player-wrapper-inline-css">' . esc_html( wp_strip_all_tags( $godam_player_wrapper_css ) ) . '</style>';
 		} else {
 			// Output inline style in wp_head for high priority rendering.
 			add_action(
 				'wp_head',
 				function () use ( $godam_player_wrapper_css ) {
-					echo '<style id="godam-player-wrapper-inline-css">' . wp_strip_all_tags( $godam_player_wrapper_css ) . '</style>';
+					echo '<style id="godam-player-wrapper-inline-css">' . esc_html( wp_strip_all_tags( $godam_player_wrapper_css ) ) . '</style>';
 				},
-				1 // High priority - runs early in wp_head.
+				1 // High priority.
 			);
 		}
 	}
@@ -495,7 +495,7 @@ if ( $godam_should_preload_poster ) {
 					<?php if ( isset( $godam_hover_select ) && 'shadow-overlay' === $godam_hover_select ) : ?>
 						<div class="godam-player-overlay"></div>
 					<?php endif; ?>
-					
+
 					<?php if ( $godam_should_preload_poster ) : ?>
 						<img
 							class="godam-poster-image"
