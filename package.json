@@ -39,7 +39,7 @@
 		"@uppy/screen-capture": "5.0.0",
 		"@uppy/webcam": "5.0.0",
 		"analytics": "^0.8.18",
-		"axios": "^1.11.0",
+		"axios": "^1.13.5",
 		"clsx": "^2.1.1",
 		"flv.js": "^1.6.2",
 		"isomorphic-dompurify": "^2.26.0",
