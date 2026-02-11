@@ -216,7 +216,7 @@ class Plugin {
 			return;
 		}
 
-		if ( is_admin() && ! current_user_can( 'publish_posts' ) ) {
+		if ( is_admin() && ! rtgodam_check_user_permission( 'publish_posts' ) ) {
 			return;
 		}
 
@@ -237,7 +237,7 @@ class Plugin {
 			return;
 		}
 
-		if ( is_admin() && ! current_user_can( 'publish_posts' ) ) {
+		if ( is_admin() && ! rtgodam_check_user_permission( 'publish_posts' ) ) {
 			return;
 		}
 

@@ -1129,3 +1129,28 @@ function rtgodam_convert_to_https_url( $urls ) {
 
 	return set_url_scheme( $urls, 'https' );
 }
+
+/**
+ * Checks if the current user has a specific permission.
+ *
+ * This function checks if the current user has a specific permission.
+ * If the permission is not set, the function will return false.
+ * If the permission is set, the function will return true.
+ *
+ * @param string $permission_type The permission type to check.
+ *
+ * @return bool True if the user has the permission, false otherwise.
+ */
+function rtgodam_check_user_permission( $permission_type ) {
+
+	// Ensure pluggable functions are loaded before capability checks.
+	if ( ! function_exists( 'wp_get_current_user' ) ) {
+		require_once ABSPATH . WPINC . '/pluggable.php';
+	}
+
+	if ( ! function_exists( 'current_user_can' ) ) {
+		return false;
+	}
+
+	return current_user_can( $permission_type );
+}
