@@ -30,7 +30,9 @@ const VideoThumbnails = ( { handleSettingChange } ) => {
 		const validatedValue = Number.isNaN( value ) || value < 1 || value > 10 ? 1 : value;
 
 		setVideoThumbnailsInput( String( validatedValue ) );
-		handleSettingChange( 'video_thumbnails', validatedValue );
+		if ( validatedValue !== videoThumbnails ) {
+			handleSettingChange( 'video_thumbnails', validatedValue );
+		}
 	};
 
 	return (
