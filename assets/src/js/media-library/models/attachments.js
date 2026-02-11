@@ -147,7 +147,9 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 						const items = response.data;
 						const totalCount = parseInt( response.total_count ?? response.total_items, 10 ) || 0;
 						const totalPages = parseInt( response.total_pages, 10 ) || 0;
-						const currentPage = parseInt( response.current_page ?? page, 10 ) || page;
+						const currentPage = Math.max( 1, parseInt( response.current_page ?? page, 10 ) || page );
+						const loadedCount = this.length + items.length;
+						const effectiveTotal = totalCount > 0 ? totalCount : loadedCount;
 						let hasMore = items.length === perPage;
 
 						if ( totalPages > 0 ) {
@@ -167,9 +169,9 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 						}
 
 						// Update total counts.
-						this.total = totalCount;
+						this.total = effectiveTotal;
 						// WordPress uses this field for the "Showing x of y media items" footer text.
-						this.totalAttachments = totalCount;
+						this.totalAttachments = effectiveTotal;
 						this.totalPages = totalPages;
 						this.currentPage = currentPage;
 

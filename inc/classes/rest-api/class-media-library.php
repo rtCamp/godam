@@ -1383,7 +1383,7 @@ class Media_Library extends Base {
 			$response     = $body->message->files;
 			$total        = isset( $body->message->total_count ) ? absint( $body->message->total_count ) : 0;
 			$total_pages  = isset( $body->message->total_pages ) ? absint( $body->message->total_pages ) : 0;
-			$current_page = isset( $body->message->current_page ) ? absint( $body->message->current_page ) : $page;
+			$current_page = isset( $body->message->current_page ) ? max( 1, absint( $body->message->current_page ) ) : $page;
 			$has_more     = isset( $body->message->has_more ) ? (bool) $body->message->has_more : ( $total_pages > 0 ? $current_page < $total_pages : false );
 
 			$all_items = array();
