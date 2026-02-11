@@ -27,7 +27,15 @@ const VideoThumbnails = ( { handleSettingChange } ) => {
 
 	const validateVideoThumbnails = () => {
 		const value = parseInt( videoThumbnailsInput, 10 );
-		const validatedValue = Number.isNaN( value ) || value < 1 || value > 10 ? 1 : value;
+		let validatedValue;
+
+		if ( Number.isNaN( value ) || value < 1 ) {
+			validatedValue = 1;
+		} else if ( value > 10 ) {
+			validatedValue = 10;
+		} else {
+			validatedValue = value;
+		}
 
 		setVideoThumbnailsInput( String( validatedValue ) );
 		if ( validatedValue !== videoThumbnails ) {
