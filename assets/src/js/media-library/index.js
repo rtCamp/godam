@@ -62,7 +62,7 @@ function destroyVideoJSPlayersInContainer( container ) {
 	container.querySelectorAll( 'video' ).forEach( ( videoElement ) => {
 		try {
 			videoElement.pause();
-			videoElement.currentTime = videoElement.currentTime;
+			videoElement.currentTime = 0;
 		} catch ( error ) {
 			// Silent fail.
 		}
