@@ -487,6 +487,7 @@ if ( $godam_should_preload_poster ) {
 						src="<?php echo esc_url( $godam_video_poster ); ?>"
 						fetchpriority="high"
 						aria-hidden="true"
+						alt="<?php echo esc_attr( $godam_attachment_title ); ?>"
 					/>
 					<?php endif; ?>
 				</div>
@@ -502,6 +503,7 @@ if ( $godam_should_preload_poster ) {
 							src="<?php echo esc_url( $godam_video_poster ); ?>"
 							fetchpriority="high"
 							aria-hidden="true"
+							alt="<?php echo esc_attr( $godam_attachment_title ); ?>"
 						/>
 					<?php endif; ?>
 					<video
