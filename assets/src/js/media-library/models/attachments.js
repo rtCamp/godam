@@ -81,6 +81,8 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 			this._perPage = 40;
 			this.total = 0;
 			this.totalAttachments = 0;
+			this.totalPages = 0;
+			this.currentPage = 1;
 		},
 
 		/**
@@ -143,9 +145,21 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 				success: ( response ) => {
 					if ( response.success && Array.isArray( response?.data ) ) {
 						const items = response.data;
+						const totalCount = parseInt( response.total_count ?? response.total_items, 10 ) || 0;
+						const totalPages = parseInt( response.total_pages, 10 ) || 0;
+						const currentPage = parseInt( response.current_page ?? page, 10 ) || page;
+						let hasMore = items.length === perPage;
+
+						if ( totalPages > 0 ) {
+							hasMore = currentPage < totalPages;
+						}
+
+						if ( 'boolean' === typeof response.has_more ) {
+							hasMore = response.has_more;
+						}
 
 						// Update pagination state - stop loading if no more results or empty response.
-						this._hasMore = !! response.has_more && items.length > 0;
+						this._hasMore = hasMore && items.length > 0;
 
 						// Increment page counter only on successful response with items.
 						if ( items.length > 0 ) {
@@ -153,8 +167,11 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 						}
 
 						// Update total counts.
-						this.total = parseInt( response.total_items, 10 ) || 0;
-						this.totalAttachments = this.length + items.length;
+						this.total = totalCount;
+						// WordPress uses this field for the "Showing x of y media items" footer text.
+						this.totalAttachments = totalCount;
+						this.totalPages = totalPages;
+						this.currentPage = currentPage;
 
 						// Call success callback with items - this resolves the promise.
 						options.success?.( items );
