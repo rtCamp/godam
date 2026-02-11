@@ -417,9 +417,10 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 	$site_title = get_bloginfo( 'name' ); // Get site title from WordPress options.
 
 	$request_body = array(
-		'api_key'    => $api_key,
-		'site_url'   => $site_url,
-		'site_title' => $site_title, // Add site title to request.
+		'api_key'        => $api_key,
+		'site_url'       => $site_url,
+		'site_title'     => $site_title,
+		'plugin_version' => RTGODAM_VERSION,
 	);
 
 	$args = array(
