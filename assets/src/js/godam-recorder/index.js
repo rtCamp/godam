@@ -46,6 +46,9 @@ class UppyVideoUploader {
 		this.uppyModalTarget = document.getElementById( 'uppy-godam-video-modal-container' );
 		this.uppyModalTargetId = null !== this.uppyModalTarget ? this.uppyModalTarget.id ?? '' : '';
 
+		// Track the current preview blob URL to revoke it when replaced/cleared.
+		this.previewBlobUrl = null;
+
 		// If necessary DOM elements are missing, abort initialization.
 		if ( ! this.fileInput || ! this.uploadButton ) {
 			return;
@@ -313,22 +316,30 @@ class UppyVideoUploader {
 
 		// Create a video preview.
 		if ( previewElement && file.type.startsWith( 'video/' ) ) {
+			// Revoke previous blob URL to prevent memory leaks.
+			this.revokePreviewBlobUrl();
+
 			const videoPreview = document.createElement( 'video' );
 			videoPreview.controls = true;
 			videoPreview.style.maxWidth = '400px';
 			videoPreview.style.width = '100%';
 			videoPreview.style.marginTop = '10px';
-			videoPreview.src = URL.createObjectURL( file.data );
+			this.previewBlobUrl = URL.createObjectURL( file.data );
+			videoPreview.src = this.previewBlobUrl;
 			previewElement.innerHTML = '';
 			previewElement.appendChild( videoPreview );
 		}
 
 		// Create an audio preview.
 		if ( previewElement && file.type.startsWith( 'audio/' ) ) {
+			// Revoke previous blob URL to prevent memory leaks.
+			this.revokePreviewBlobUrl();
+
 			const audioPreview = document.createElement( 'audio' );
 			audioPreview.controls = true;
 			audioPreview.style.width = '100%';
-			audioPreview.src = URL.createObjectURL( file.data );
+			this.previewBlobUrl = URL.createObjectURL( file.data );
+			audioPreview.src = this.previewBlobUrl;
 			previewElement.innerHTML = '';
 			previewElement.appendChild( audioPreview );
 
@@ -356,12 +367,23 @@ class UppyVideoUploader {
 			const removeRecordingButton = document.createElement( 'div' );
 			removeRecordingButton.className = 'uppy-remove-recording-button';
 			removeRecordingButton.textContent = '✕'; // Cross mark (X) symbol.
-			removeRecordingButton.title = 'Remove recording';
+			removeRecordingButton.title = __( 'Remove recording', 'godam' );
+			removeRecordingButton.setAttribute( 'role', 'button' );
+			removeRecordingButton.setAttribute( 'tabindex', '0' );
+			removeRecordingButton.setAttribute( 'aria-label', __( 'Remove recording', 'godam' ) );
 			previewElement.appendChild( removeRecordingButton );
 
-			removeRecordingButton.addEventListener( 'click', () => {
+			const handleRemove = () => {
 				this.clearVideoUploadUI();
 				this.uppy.removeFile( file.id );
+			};
+
+			removeRecordingButton.addEventListener( 'click', handleRemove );
+			removeRecordingButton.addEventListener( 'keydown', ( event ) => {
+				if ( event.key === 'Enter' || event.key === ' ' ) {
+					event.preventDefault();
+					handleRemove();
+				}
 			} );
 		}
 
@@ -410,10 +432,27 @@ class UppyVideoUploader {
 	}
 
 	/**
+	 * Revokes the current preview blob URL to free memory.
+	 */
+	revokePreviewBlobUrl() {
+		if ( this.previewBlobUrl ) {
+			try {
+				URL.revokeObjectURL( this.previewBlobUrl );
+			} catch ( e ) {
+				// Ignore errors when revoking.
+			}
+			this.previewBlobUrl = null;
+		}
+	}
+
+	/**
 	 * Clears the UI state if the user closes the Uppy modal without selecting a file.
 	 * Resets the file input, filename, and preview display.
 	 */
 	clearVideoUploadUI() {
+		// Revoke blob URL to prevent memory leaks.
+		this.revokePreviewBlobUrl();
+
 		const filenameElement = this.container.querySelector(
 			'.upp-video-upload-filename',
 		);

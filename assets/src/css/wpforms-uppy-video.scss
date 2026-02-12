@@ -24,12 +24,6 @@
 
         .uppy-video-upload-preview {
 
-            position: relative !important;
-            max-width: 400px !important;
-            width: 100% !important;
-            margin-top: 20px;
-            max-width: 100%;
-
             audio {
 
                 max-width: 400px;
@@ -41,10 +35,11 @@
             .uppy-remove-recording-button {
 
                 position: absolute;
-                top: 0px;
+                top: 0;
                 right: -10px;
                 background: #ff4c4c;
                 border: none;
+                outline: none;
                 color: #fff;
                 border-radius: 50%;
                 width: 25px;
