@@ -216,10 +216,6 @@ class Plugin {
 			return;
 		}
 
-		if ( is_admin() && ! rtgodam_check_user_permission( 'publish_posts' ) ) {
-			return;
-		}
-
 		Elementor_Widgets::get_instance();
 	}
 
@@ -234,10 +230,6 @@ class Plugin {
 		}
 
 		if ( ! is_plugin_active( 'js_composer/js_composer.php' ) ) {
-			return;
-		}
-
-		if ( is_admin() && ! rtgodam_check_user_permission( 'publish_posts' ) ) {
 			return;
 		}
 
