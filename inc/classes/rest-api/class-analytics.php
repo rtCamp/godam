@@ -67,7 +67,7 @@ class Analytics extends Base {
 					'permission_callback' => '__return_true',
 					'args'                => array(
 						'days'     => array(
-							'required'          => true,
+							'required'          => false,
 							'type'              => 'integer',
 							'sanitize_callback' => 'absint',
 						),
@@ -109,7 +109,7 @@ class Analytics extends Base {
 					'permission_callback' => '__return_true',
 					'args'                => array(
 						'days'     => array(
-							'required'          => true,
+							'required'          => false,
 							'type'              => 'integer',
 							'sanitize_callback' => 'absint',
 						),
@@ -240,6 +240,7 @@ class Analytics extends Base {
 			$post_details = array();
 
 			if ( ! empty( $post_ids ) ) {
+				// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
 				$posts = get_posts(
 					array(
 						'post__in'         => $post_ids,
@@ -327,12 +328,16 @@ class Analytics extends Base {
 
 		$microservice_url = RTGODAM_ANALYTICS_BASE . '/processed-analytics/history/';
 		$params           = array(
-			'days'          => $days,
 			'video_id'      => $video_id,
 			'site_url'      => $site_url,
 			'account_token' => $account_token,
 			'api_key'       => $api_key,
 		);
+
+		// Only add days parameter if it's provided.
+		if ( ! empty( $days ) ) {
+			$params['days'] = $days;
+		}
 
 		$history_url = add_query_arg( $params, $microservice_url );
 		$response    = wp_remote_get( $history_url );
@@ -472,13 +477,19 @@ class Analytics extends Base {
 			);
 		}
 
+		$params = array(
+			'site_url'      => $site_url,
+			'account_token' => $account_token,
+			'api_key'       => $api_key,
+		);
+
+		// Only add days parameter if it's provided.
+		if ( ! empty( $days ) ) {
+			$params['days'] = $days;
+		}
+
 		$endpoint = add_query_arg(
-			array(
-				'days'          => $days,
-				'site_url'      => $site_url,
-				'account_token' => $account_token,
-				'api_key'       => $api_key,
-			),
+			$params,
 			RTGODAM_ANALYTICS_BASE . '/dashboard/metrics/history/'
 		);
 

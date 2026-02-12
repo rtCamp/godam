@@ -491,6 +491,45 @@ function godam_is_audio_file_by_name( $filename ) {
 }
 
 /**
+ * Check if the given file is an audio file.
+ *
+ * @since 1.6.0
+ *
+ * @param string $file_path_or_url The file path or URL to check.
+ *
+ * @return bool True if the file is an audio file, false otherwise.
+ */
+function godam_is_audio_file( $file_path_or_url ) {
+	if ( empty( $file_path_or_url ) || ! is_string( $file_path_or_url ) ) {
+		return false;
+	}
+
+	$file_type = wp_check_filetype( $file_path_or_url );
+	$mime_type = ! empty( $file_type['type'] ) ? $file_type['type'] : '';
+
+	// Check if the MIME type indicates an audio file.
+	if ( ! empty( $mime_type ) && str_starts_with( $mime_type, 'audio/' ) ) {
+		return true;
+	}
+
+	// Container formats that can hold both audio and video.
+	// These require filename-based detection to distinguish audio from video.
+	$container_formats = array( 'webm', 'mp4' );
+
+	// Handle ambiguous container formats that might be audio.
+	// Browser-specific behavior:
+	// - Chromium (Chrome, Edge): Saves both video and audio as .webm
+	// - Firefox: Saves audio as .ogg, video as .webm
+	// - Safari: Saves both audio and video as .mp4
+	// We check the filename for 'audio' keyword to determine if it's an audio file.
+	if ( in_array( $file_type['ext'], $container_formats, true ) && godam_is_audio_file_by_name( $file_path_or_url ) ) {
+		return true;
+	}
+
+	return false;
+}
+
+/**
  * Send Video file to GoDAM for transcoding.
  *
  * @param string  $form_type  Form Type.
@@ -969,7 +1008,7 @@ function godam_preview_page_content( $video_id ) {
 
 /**
  * Get post id from meta key and value.
- * 
+ *
  * @since 1.5.0
  *
  * @param string $key   Meta key.
@@ -1039,4 +1078,54 @@ function godam_embed_page_content( $video_id, $show_engagements = false ) {
 		<?php
 	}
 	return ob_get_clean();
+}
+
+/**
+ * Convert one or more URLs to HTTPS if the current page is using SSL.
+ *
+ * This function checks whether the current page is using SSL and,
+ * if so, returns the given URL string or array of URLs with their scheme changed to HTTPS.
+ * If SSL is not active, the original value is returned unchanged.
+ *
+ * @since n.e.x.t
+ *
+ * @param array|string $urls The URLs to change the scheme of.
+ *
+ * @return array|string The URLs with the scheme changed to HTTPS.
+ */
+function rtgodam_convert_to_https_url( $urls ) {
+
+	if ( ! is_ssl() ) {
+		return $urls;
+	}
+
+	if ( is_array( $urls ) ) {
+
+		$filtered_urls = array_filter(
+			$urls,
+			function ( $url ) {
+				return null !== $url && '' !== $url;
+			}
+		);
+
+		$converted_urls = array_map(
+			function ( $url ) {
+				return set_url_scheme( $url, 'https' );
+			},
+			$filtered_urls
+		);
+
+		return array_filter(
+			$converted_urls,
+			function ( $url ) {
+				return null !== $url && '' !== $url;
+			}
+		);
+	}
+
+	if ( null === $urls || '' === $urls ) {
+		return $urls;
+	}
+
+	return set_url_scheme( $urls, 'https' );
 }

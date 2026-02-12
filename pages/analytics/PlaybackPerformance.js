@@ -39,16 +39,17 @@ export default function PlaybackPerformanceDashboard( {
 			case '1Y':
 				return 365;
 			case 'All':
-				return 730; // Set a large value for "All"
+				return null; // Return null to fetch all available days
 			default:
 				return 7;
 		}
 	};
 
 	// Fetch analytics data based on selected period
+	const days = getDaysFromPeriod( selectedPeriod );
 	const dashboardHistoryResult = useFetchDashboardMetricsHistoryQuery(
 		{
-			days: getDaysFromPeriod( selectedPeriod ),
+			...( days !== null && { days } ),
 			siteUrl: window.location.origin,
 		},
 		{ skip: mode !== 'dashboard' },
@@ -58,7 +59,7 @@ export default function PlaybackPerformanceDashboard( {
 		{
 			videoId: attachmentID,
 			siteUrl: window.location.origin,
-			days: getDaysFromPeriod( selectedPeriod ),
+			...( days !== null && { days } ),
 		},
 		{ skip: mode === 'dashboard' || ! attachmentID },
 	);
@@ -473,7 +474,7 @@ export default function PlaybackPerformanceDashboard( {
 
 	useEffect( () => {
 		const interval = setInterval( () => {
-			if ( parsedData && parsedData.length > 0 && chartRef.current ) {
+			if ( parsedData && chartRef.current ) {
 				clearInterval( interval );
 				renderChart();
 			}
@@ -490,7 +491,7 @@ export default function PlaybackPerformanceDashboard( {
 		}
 
 		const resizeObserver = new ResizeObserver( () => {
-			if ( parsedData && parsedData.length > 0 ) {
+			if ( parsedData ) {
 				// Small delay to ensure the DOM has updated.
 				setTimeout( () => renderChart(), 20 );
 			}

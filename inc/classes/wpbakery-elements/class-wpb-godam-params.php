@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class WPB_GoDAM_Params
  *
- * @since n.e.x.t
+ * @since 1.6.0
  * 
  * @package GoDAM
  */
@@ -24,7 +24,7 @@ class WPB_GoDAM_Params {
 	/**
 	 * WPB_GoDAM_Params constructor.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.6.0
 	 */
 	protected function __construct() {
 		if ( ! function_exists( 'is_plugin_active' ) ) {
@@ -41,7 +41,7 @@ class WPB_GoDAM_Params {
 	/**
 	 * Setup custom params.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.6.0
 	 *
 	 * @return void
 	 */
@@ -74,7 +74,7 @@ class WPB_GoDAM_Params {
 	/**
 	 * Video selector settings field.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.6.0
 	 *
 	 * @param array  $settings Field settings.
 	 * @param string $value    Field value.
@@ -113,7 +113,7 @@ class WPB_GoDAM_Params {
 	/**
 	 * Audio selector settings field.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.6.0
 	 *
 	 * @param array  $settings Field settings.
 	 * @param string $value    Field value.
@@ -152,7 +152,7 @@ class WPB_GoDAM_Params {
 	/**
 	 * Image Src selector settings field.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.6.0
 	 *
 	 * @param array  $settings Field settings.
 	 * @param string $value    Field value.
@@ -186,7 +186,7 @@ class WPB_GoDAM_Params {
 	/**
 	 * Textfield hidden settings field.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.6.0
 	 *
 	 * @param array  $settings Field settings.
 	 * @param string $value    Field value.

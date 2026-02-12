@@ -46,6 +46,7 @@ use RTGODAM\Inc\REST_API\Engagement;
 use RTGODAM\Inc\REST_API\Site;
 use RTGODAM\Inc\REST_API\Video_Migration;
 use RTGODAM\Inc\REST_API\Release_Post;
+use RTGODAM\Inc\REST_API\Video_Sync;
 use RTGODAM\Inc\Gravity_Forms;
 use RTGODAM\Inc\REST_API\MetForm;
 
@@ -186,6 +187,7 @@ class Plugin {
 		Site::get_instance();
 		Video_Migration::get_instance();
 		Release_Post::get_instance();
+		Video_Sync::get_instance();
 	}
 
 	/**
