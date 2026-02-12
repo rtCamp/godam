@@ -89,7 +89,7 @@ class UppyVideoUploader {
 				let d = Number( el.duration );
 
 				if ( d === Infinity ) {
-					el.currentTime = 1e101; // force duration to resolve in some browsers
+					el.currentTime = Number.MAX_SAFE_INTEGER || 1e101; // force duration to resolve in some browsers
 					el.ontimeupdate = () => {
 						el.ontimeupdate = null;
 						d = Number( el.duration );
@@ -334,12 +334,20 @@ class UppyVideoUploader {
 
 			// Calculate and set duration for audio files.
 			audioPreview.addEventListener( 'loadedmetadata', () => {
-				// Setting currentTime to a large value (1e101) forces the browser to calculate the actual duration.
-				audioPreview.currentTime = 1e101;
-				audioPreview.ontimeupdate = () => {
-					audioPreview.ontimeupdate = null;
-					audioPreview.currentTime = 0; // reset
-				};
+				try {
+					// Setting currentTime to a large value forces the browser to calculate the actual duration.
+					audioPreview.currentTime = Number.MAX_SAFE_INTEGER || 1e101;
+					audioPreview.ontimeupdate = () => {
+						audioPreview.ontimeupdate = null;
+						try {
+							audioPreview.currentTime = 0; // reset
+						} catch ( e ) {
+							// Ignore errors when resetting currentTime.
+						}
+					};
+				} catch ( e ) {
+					// Ignore errors - some browsers or audio formats may not support seeking.
+				}
 			} );
 		}
 
