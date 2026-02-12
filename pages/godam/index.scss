@@ -319,4 +319,135 @@ $settings-page-breakpoint: 782px;
 			box-shadow: 0 0 10px var(--wp-components-color-accent, #ab3a6d49);
 		}
 	}
+
+	/* Integration settings tabs */
+	.godam-settings-tabs {
+		display: inline-flex;
+		gap: 4px;
+		padding: 4px;
+		background: #f0f0f1;
+		border-radius: 10px;
+		margin-bottom: 9px;
+		flex-wrap: wrap;
+
+		.godam-settings-tab {
+			border: none;
+			background: transparent;
+			padding: 8px 14px;
+			font-size: 13px;
+			font-weight: 500;
+			border-radius: 8px;
+			cursor: pointer;
+			color: #1d2327;
+			transition: all 0.2s ease;
+			position: relative;
+			z-index: 1;
+
+			&:hover {
+				background: rgba(0, 0, 0, 0.05);
+			}
+
+			&.is-active {
+				background-color: var(
+					--wp-components-color-accent,
+					var(--wp-admin-theme-color, #3858e9)
+				);
+				color: #ffffff;
+				font-weight: 600;
+				box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+				transform: translateY(-1px);
+			}
+		}
+	}
+
+	/* Tab content wrapper */
+	.godam-tab-content {
+		position: relative;
+		margin-top: 16px;
+
+		.godam-tab-panel {
+			animation: godamFadeSlide 0.25s ease;
+		}
+	}
+
+	/* Button settings group */
+	.godam-button-settings-group {
+		background: #ffffff;
+		padding: 16px;
+		border-radius: 8px;
+		border: 1px solid #e5e7eb;
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+	}
+
+	.godam-settings-section-title {
+		font-size: 14px;
+		font-weight: 600;
+		margin: 10px 0 16px 0;
+		color: #1d2327;
+	}
+
+	/* Device tabs */
+	.godam-device-tabs {
+		display: inline-flex;
+		gap: 0;
+		padding: 6px;
+		background: #e5e7eb;
+		border-radius: 14px;
+		margin-bottom: 16px;
+
+		.godam-settings-tab {
+			min-width: 72px;
+			height: 40px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-radius: 10px;
+			background: transparent;
+			transition: all 0.25s ease;
+			padding: 0;
+
+			svg {
+				width: 18px;
+				height: 18px;
+				opacity: 0.7;
+				transition: all 0.25s ease;
+			}
+
+			&:hover {
+				background: rgba(0, 0, 0, 0.06);
+			}
+
+			&.is-active {
+				background-color: var(
+					--wp-components-color-accent,
+					var(--wp-admin-theme-color, #3858e9)
+				);
+				box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+				transform: translateY(-1px);
+
+				svg {
+					opacity: 1;
+					fill: #fff;
+					color: #fff;
+				}
+			}
+
+			&:focus {
+				box-shadow: none;
+				outline: none;
+			}
+		}
+	}
+
+	/* Animation */
+	@keyframes godamFadeSlide {
+		from {
+			opacity: 0;
+			transform: translateY(6px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
 }

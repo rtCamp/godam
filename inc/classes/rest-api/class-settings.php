@@ -63,6 +63,54 @@ class Settings extends Base {
 				'enable_global_video_ads' => false,
 				'adTagUrl'                => '',
 			),
+			'integrations' => array(
+				'woocommerce' => array(
+					'videoCloseBg'              => 'rgba(28, 28, 28, 0.4)',
+					'videoCloseIcon'            => 'rgba(255, 255, 255, 1)',
+					'videoCloseBorder'          => array(
+						'width' => '0.59px',
+						'style' => 'solid',
+						'color' => 'rgba(224, 224, 224, 1)',
+					),
+					'videoCloseRadius'          => 45.13,
+
+					'miniCartBg'                => 'rgba(255, 255, 255, 1)',
+					'miniCartIcon'              => 'rgba(28, 28, 28, 1)',
+					'miniCartBorder'            => array(
+						'width' => '1.38px',
+						'style' => 'solid',
+						'color' => 'rgba(224, 224, 224, 1)',
+					),
+					'miniCartRadius'            => 11,
+
+					'addToCartFontSize'         => 14,
+					'addToCartBgColor'          => 'rgba(28, 28, 28, 1)',
+					'addToCartFontColor'        => 'rgba(255, 255, 255, 1)',
+					'addToCartBorder'           => array(
+						'width' => '1px',
+						'style' => 'solid',
+						'color' => 'rgba(28, 28, 28, 1)',
+					),
+					'addToCartRadius'           => 8,
+
+					'toggleFontSize'            => 16,
+					'toggleBgColor'             => 'rgba(0, 0, 0, 0.7)',
+					'toggleFontColor'           => 'rgba(255, 255, 255, 1)',
+					'toggleBorder'              => array(
+						'width' => '0.59px',
+						'style' => 'solid',
+						'color' => 'rgba(224, 224, 224, 1)',
+					),
+					'toggleRadius'              => 8,
+
+					'desktopModalBgColor'       => 'rgba(255, 255, 255, 1)',
+					'desktopModalTextColor'     => 'rgba(28, 28, 28, 1)',
+					'mobileModalBgColor'        => 'rgba(0, 0, 0, 0.7)',
+					'mobileModalTextColor'      => 'rgba(255, 255, 255, 1)',
+
+					'additionalComponentsColor' => 'rgba(95, 95, 95, 1)',
+				),
+			),
 		);
 	}
 
@@ -375,27 +423,31 @@ class Settings extends Base {
 				'woocommerce' => array(
 					'videoCloseBg'              => $this->sanitize_color_value( $settings['integrations']['woocommerce']['videoCloseBg'] ?? $default['integrations']['woocommerce']['videoCloseBg'] ),
 					'videoCloseIcon'            => $this->sanitize_color_value( $settings['integrations']['woocommerce']['videoCloseIcon'] ?? $default['integrations']['woocommerce']['videoCloseIcon'] ),
-					'videoCloseBorder'          => sanitize_text_field( $settings['integrations']['woocommerce']['videoCloseBorder'] ?? $default['integrations']['woocommerce']['videoCloseBorder'] ),
-					'videoCloseRadius'          => absint( $settings['integrations']['woocommerce']['videoCloseRadius'] ?? $default['integrations']['woocommerce']['videoCloseRadius'] ),
+					'videoCloseBorder'          => $this->sanitize_border( $settings['integrations']['woocommerce']['videoCloseBorder'] ?? $default['integrations']['woocommerce']['videoCloseBorder'], $default['integrations']['woocommerce']['videoCloseBorder'] ),
+					'videoCloseRadius'          => floatval( $settings['integrations']['woocommerce']['videoCloseRadius'] ?? $default['integrations']['woocommerce']['videoCloseRadius'] ),
 
 					'miniCartBg'                => $this->sanitize_color_value( $settings['integrations']['woocommerce']['miniCartBg'] ?? $default['integrations']['woocommerce']['miniCartBg'] ),
 					'miniCartIcon'              => $this->sanitize_color_value( $settings['integrations']['woocommerce']['miniCartIcon'] ?? $default['integrations']['woocommerce']['miniCartIcon'] ),
-					'miniCartBorder'            => sanitize_text_field( $settings['integrations']['woocommerce']['miniCartBorder'] ?? $default['integrations']['woocommerce']['miniCartBorder'] ),
-					'miniCartRadius'            => absint( $settings['integrations']['woocommerce']['miniCartRadius'] ?? $default['integrations']['woocommerce']['miniCartRadius'] ),
+					'miniCartBorder'            => $this->sanitize_border( $settings['integrations']['woocommerce']['miniCartBorder'] ?? $default['integrations']['woocommerce']['miniCartBorder'], $default['integrations']['woocommerce']['miniCartBorder'] ),
+					'miniCartRadius'            => floatval( $settings['integrations']['woocommerce']['miniCartRadius'] ?? $default['integrations']['woocommerce']['miniCartRadius'] ),
 
 					'addToCartFontSize'         => absint( $settings['integrations']['woocommerce']['addToCartFontSize'] ?? $default['integrations']['woocommerce']['addToCartFontSize'] ),
 					'addToCartBgColor'          => $this->sanitize_color_value( $settings['integrations']['woocommerce']['addToCartBgColor'] ?? $default['integrations']['woocommerce']['addToCartBgColor'] ),
 					'addToCartFontColor'        => $this->sanitize_color_value( $settings['integrations']['woocommerce']['addToCartFontColor'] ?? $default['integrations']['woocommerce']['addToCartFontColor'] ),
-					'addToCartBorder'           => sanitize_text_field( $settings['integrations']['woocommerce']['addToCartBorder'] ?? $default['integrations']['woocommerce']['addToCartBorder'] ),
-					'addToCartRadius'           => absint( $settings['integrations']['woocommerce']['addToCartRadius'] ?? $default['integrations']['woocommerce']['addToCartRadius'] ),
+					'addToCartBorder'           => $this->sanitize_border( $settings['integrations']['woocommerce']['addToCartBorder'] ?? $default['integrations']['woocommerce']['addToCartBorder'], $default['integrations']['woocommerce']['addToCartBorder'] ),
+					'addToCartRadius'           => floatval( $settings['integrations']['woocommerce']['addToCartRadius'] ?? $default['integrations']['woocommerce']['addToCartRadius'] ),
 
 					'toggleFontSize'            => absint( $settings['integrations']['woocommerce']['toggleFontSize'] ?? $default['integrations']['woocommerce']['toggleFontSize'] ),
 					'toggleBgColor'             => $this->sanitize_color_value( $settings['integrations']['woocommerce']['toggleBgColor'] ?? $default['integrations']['woocommerce']['toggleBgColor'] ),
 					'toggleFontColor'           => $this->sanitize_color_value( $settings['integrations']['woocommerce']['toggleFontColor'] ?? $default['integrations']['woocommerce']['toggleFontColor'] ),
-					'toggleBorder'              => sanitize_text_field( $settings['integrations']['woocommerce']['toggleBorder'] ?? $default['integrations']['woocommerce']['toggleBorder'] ),
-					'toggleRadius'              => absint( $settings['integrations']['woocommerce']['toggleRadius'] ?? $default['integrations']['woocommerce']['toggleRadius'] ),
+					'toggleBorder'              => $this->sanitize_border( $settings['integrations']['woocommerce']['toggleBorder'] ?? $default['integrations']['woocommerce']['toggleBorder'], $default['integrations']['woocommerce']['toggleBorder'] ),
+					'toggleRadius'              => floatval( $settings['integrations']['woocommerce']['toggleRadius'] ?? $default['integrations']['woocommerce']['toggleRadius'] ),
 
-					'popupBackgroundColor'      => $this->sanitize_color_value( $settings['integrations']['woocommerce']['popupBackgroundColor'] ?? $default['integrations']['woocommerce']['popupBackgroundColor'] ),
+					'desktopModalBgColor'       => $this->sanitize_color_value( $settings['integrations']['woocommerce']['desktopModalBgColor'] ?? $default['integrations']['woocommerce']['desktopModalBgColor'] ),
+					'desktopModalTextColor'     => $this->sanitize_color_value( $settings['integrations']['woocommerce']['desktopModalTextColor'] ?? $default['integrations']['woocommerce']['desktopModalTextColor'] ),
+					'mobileModalBgColor'        => $this->sanitize_color_value( $settings['integrations']['woocommerce']['mobileModalBgColor'] ?? $default['integrations']['woocommerce']['mobileModalBgColor'] ),
+					'mobileModalTextColor'      => $this->sanitize_color_value( $settings['integrations']['woocommerce']['mobileModalTextColor'] ?? $default['integrations']['woocommerce']['mobileModalTextColor'] ),
+
 					'additionalComponentsColor' => $this->sanitize_color_value( $settings['integrations']['woocommerce']['additionalComponentsColor'] ?? $default['integrations']['woocommerce']['additionalComponentsColor'] ),
 				),
 			),
@@ -430,5 +482,32 @@ class Settings extends Base {
 
 		// If none of the above, return empty string.
 		return '';
+	}
+
+	/**
+	 * Sanitizes a border configuration array.
+	 *
+	 * Ensures that the provided border values (color, style, width) are safe
+	 * and properly formatted before being used or stored. If any value is
+	 * missing, the corresponding default value is applied.
+	 *
+	 * @param array $border  Border settings array. Expected keys:
+	 *                       - 'color' (string) Border color value.
+	 *                       - 'style' (string) Border style (e.g., solid, dashed).
+	 *                       - 'width' (string) Border width (e.g., 1px, 0.1rem).
+	 * @param array $default_data Default border settings array used as fallback
+	 *                            when a value is not provided.
+	 *
+	 * @return array Sanitized border array containing:
+	 *               - 'color' (string) Sanitized color value.
+	 *               - 'style' (string) Sanitized border style key.
+	 *               - 'width' (string) Sanitized border width value.
+	 */
+	private function sanitize_border( $border, $default_data ) {
+		return array(
+			'color' => $this->sanitize_color_value( $border['color'] ?? $default_data['color'] ),
+			'style' => sanitize_key( $border['style'] ?? $default_data['style'] ),
+			'width' => sanitize_text_field( $border['width'] ?? $default_data['width'] ),
+		);
 	}
 }
