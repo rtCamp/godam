@@ -17,8 +17,9 @@ import {
 	TextControl,
 	ColorPalette,
 	RangeControl,
+	BorderControl,
 } from '@wordpress/components';
-import { useMemo, useRef, useEffect } from '@wordpress/element';
+import { useMemo, useRef, useEffect, useState } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
 
 /**
@@ -61,17 +62,18 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		ctaEnabled,
 		ctaDisplayPosition,
 		ctaBgColor,
-		ctaButtonBgColor,
-		ctaButtonIconColor,
-		ctaButtonBorderRadius,
 		ctaProductNameFontSize,
 		ctaProductPriceFontSize,
 		ctaProductNameColor,
-		ctaProductPriceColor,
-		ctaCartAction,
+		ctaProductPriceColor = {},
+		ctaCart = {},
+		ctaDropdown = {},
 	} = attributes;
 
 	const blockProps = useBlockProps();
+
+	const [ activePriceTab, setActivePriceTab ] = useState( 'primary' );
+	const [ activeCartTab, setActiveCartTab ] = useState( 'cart' );
 
 	// Set the Block id of the Block as ClientId.
 	useEffect( () => {
@@ -154,7 +156,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 			if ( device === 'tablet' ) {
 				return '35.5';
 			} else if ( device === 'mobile' ) {
-				return '66.5';
+				return '59.5';
 			}
 
 			switch ( viewRatio ) {
@@ -250,7 +252,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 								width: playButtonSize,
 								height: playButtonSize,
 								fontSize: playButtonSize / 2,
-								borderRadius: `${ playButtonBorderRadius }%`,
+								borderRadius: `${ playButtonBorderRadius }px`,
 							} }
 							aria-label={ __( 'Play video', 'godam' ) }
 						>
@@ -314,7 +316,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 							<div
 								className="product-title"
 								style={ {
-									fontSize: `${ ctaProductNameFontSize }px`,
+									fontSize: `${ ctaProductNameFontSize }rem`,
 									color: ctaProductNameColor,
 								} }
 							>
@@ -323,7 +325,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 							<p
 								className="product-price"
 								style={ {
-									fontSize: `${ ctaProductPriceFontSize }px`,
+									fontSize: `${ ctaProductPriceFontSize }rem`,
 									color: ctaProductPriceColor,
 								} }
 							>
@@ -333,9 +335,9 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						<button
 							className="cta-add-to-cart"
 							style={ {
-								backgroundColor: ctaButtonBgColor,
-								color: ctaButtonIconColor,
-								borderRadius: `${ ctaButtonBorderRadius }%`,
+								backgroundColor: ctaCart?.bgColor,
+								color: ctaCart?.iconColor,
+								borderRadius: `${ ctaCart?.borderRadius }px`,
 							} }
 							aria-label={ __( 'Add to cart', 'godam' ) }
 						>
@@ -488,6 +490,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 
 							<p><strong>{ __( 'Arrow Icon Color', 'godam' ) }</strong></p>
 							<ColorPalette
+								enableAlpha
 								value={ arrowIconColor }
 								onChange={ ( color ) => setAttributes( { arrowIconColor: color } ) }
 							/>
@@ -577,7 +580,8 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 								value={ gridRowGap }
 								onChange={ ( value ) => setAttributes( { gridRowGap: value } ) }
 								min={ 0 }
-								max={ 64 }
+								max={ 5 }
+								step={ 0.1 }
 							/>
 
 							<RangeControl
@@ -585,7 +589,8 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 								value={ gridColumnGap }
 								onChange={ ( value ) => setAttributes( { gridColumnGap: value } ) }
 								min={ 0 }
-								max={ 64 }
+								max={ 5 }
+								step={ 0.1 }
 							/>
 						</PanelBody>
 					</PanelBody>
@@ -628,6 +633,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 
 								<p><strong>{ __( 'Icon Color', 'godam' ) }</strong></p>
 								<ColorPalette
+									enableAlpha
 									value={ playButtonIconColor }
 									onChange={ ( color ) => setAttributes( { playButtonIconColor: color } ) }
 								/>
@@ -659,6 +665,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 
 								<p><strong>{ __( 'Icon Color', 'godam' ) }</strong></p>
 								<ColorPalette
+									enableAlpha
 									value={ unmuteButtonIconColor }
 									onChange={ ( color ) => setAttributes( { unmuteButtonIconColor: color } ) }
 								/>
@@ -687,6 +694,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						>
 							<p><strong>{ __( 'Product Section Background', 'godam' ) }</strong></p>
 							<ColorPalette
+								enableAlpha
 								value={ ctaBgColor }
 								onChange={ ( color ) => setAttributes( { ctaBgColor: color } ) }
 							/>
@@ -700,12 +708,14 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 								label={ __( 'Name Font Size', 'godam' ) }
 								value={ ctaProductNameFontSize }
 								onChange={ ( value ) => setAttributes( { ctaProductNameFontSize: value } ) }
-								min={ 10 }
-								max={ 30 }
+								min={ 0 }
+								max={ 4 }
+								step={ 0.01 }
 							/>
 
 							<p><strong>{ __( 'Name Color', 'godam' ) }</strong></p>
 							<ColorPalette
+								enableAlpha
 								value={ ctaProductNameColor }
 								onChange={ ( color ) => setAttributes( { ctaProductNameColor: color } ) }
 							/>
@@ -714,51 +724,184 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 								label={ __( 'Price Font Size', 'godam' ) }
 								value={ ctaProductPriceFontSize }
 								onChange={ ( value ) => setAttributes( { ctaProductPriceFontSize: value } ) }
-								min={ 10 }
-								max={ 30 }
+								min={ 0 }
+								max={ 4 }
+								step={ 0.01 }
 							/>
 
-							<p><strong>{ __( 'Price Color', 'godam' ) }</strong></p>
+							<p><strong>{ __( 'Price Colors', 'godam' ) }</strong></p>
+							<div className="godam-product-gallery-editor-tabs">
+
+								{ [ 'primary', 'secondary', 'tertiary' ].map( ( key ) => (
+									<button
+										key={ key }
+										className={ `godam-product-gallery-editor-tab ${ activePriceTab === key ? 'is-active' : '' }` }
+										onClick={ () => setActivePriceTab( key ) }
+										type="button"
+									>
+										<span
+											className="godam-color-indicator"
+											style={ {
+												backgroundColor: ctaProductPriceColor?.[ key ],
+											} }
+										/>
+										{ key.charAt( 0 ).toUpperCase() + key.slice( 1 ) }
+									</button>
+								) ) }
+
+							</div>
+
 							<ColorPalette
-								value={ ctaProductPriceColor }
-								onChange={ ( color ) => setAttributes( { ctaProductPriceColor: color } ) }
+								enableAlpha
+								value={ ctaProductPriceColor?.[ activePriceTab ] }
+								onChange={ ( color ) =>
+									setAttributes( {
+										ctaProductPriceColor: {
+											...ctaProductPriceColor,
+											[ activePriceTab ]: color,
+										},
+									} )
+								}
 							/>
 						</PanelBody>
 
 						<PanelBody
-							title={ __( 'Add to Cart Button', 'godam' ) }
+							title={ __( 'Cart & Dropdown', 'godam' ) }
 							initialOpen={ false }
 						>
-							<p><strong>{ __( 'Background', 'godam' ) }</strong></p>
-							<ColorPalette
-								enableAlpha
-								value={ ctaButtonBgColor }
-								onChange={ ( color ) => setAttributes( { ctaButtonBgColor: color } ) }
-							/>
 
-							<p><strong>{ __( 'Icon Color', 'godam' ) }</strong></p>
-							<ColorPalette
-								value={ ctaButtonIconColor }
-								onChange={ ( color ) => setAttributes( { ctaButtonIconColor: color } ) }
-							/>
+							{ /* Tabs */ }
+							<div className="godam-product-gallery-editor-tabs">
+								{ [ 'cart', 'dropdown' ].map( ( key ) => (
+									<button
+										key={ key }
+										type="button"
+										className={ `godam-product-gallery-editor-tab ${ activeCartTab === key ? 'is-active' : '' }` }
+										onClick={ () => setActiveCartTab( key ) }
+									>
+										{ key.charAt( 0 ).toUpperCase() + key.slice( 1 ) }
+									</button>
+								) ) }
+							</div>
 
-							<RangeControl
-								label={ __( 'Border Radius', 'godam' ) }
-								value={ ctaButtonBorderRadius }
-								onChange={ ( value ) => setAttributes( { ctaButtonBorderRadius: value } ) }
-								min={ 0 }
-								max={ 50 }
-							/>
+							{ /* CART SETTINGS */ }
+							{ activeCartTab === 'cart' && (
+								<>
+									<p><strong>{ __( 'Background Color', 'godam' ) }</strong></p>
+									<ColorPalette
+										enableAlpha
+										value={ ctaCart?.bgColor }
+										onChange={ ( color ) =>
+											setAttributes( {
+												ctaCart: { ...ctaCart, bgColor: color },
+											} )
+										}
+									/>
 
-							<SelectControl
-								label={ __( 'Post Add-to-Cart Behavior', 'godam' ) }
-								value={ ctaCartAction }
-								options={ [
-									{ label: __( 'Open Mini Cart Drawer', 'godam' ), value: 'mini-cart' },
-									{ label: __( 'Go to Cart Page', 'godam' ), value: 'redirect' },
-								] }
-								onChange={ ( value ) => setAttributes( { ctaCartAction: value } ) }
-							/>
+									<p><strong>{ __( 'Icon Color', 'godam' ) }</strong></p>
+									<ColorPalette
+										enableAlpha
+										value={ ctaCart?.iconColor }
+										onChange={ ( color ) =>
+											setAttributes( {
+												ctaCart: { ...ctaCart, iconColor: color },
+											} )
+										}
+									/>
+
+									<BorderControl
+										label={ __( 'Border', 'godam' ) }
+										value={ ctaCart?.border }
+										style={ {
+											marginBottom: '3rem',
+										} }
+										onChange={ ( border ) =>
+											setAttributes( {
+												ctaCart: { ...ctaCart, border },
+											} )
+										}
+									/>
+
+									<RangeControl
+										label={ __( 'Border Radius', 'godam' ) }
+										value={ ctaCart?.borderRadius }
+										onChange={ ( value ) =>
+											setAttributes( {
+												ctaCart: { ...ctaCart, borderRadius: value },
+											} )
+										}
+										min={ 0 }
+										max={ 50 }
+									/>
+
+									<SelectControl
+										label={ __( 'Post Add-to-Cart Behavior', 'godam' ) }
+										value={ ctaCart?.action }
+										options={ [
+											{ label: __( 'Open Mini Cart Drawer', 'godam' ), value: 'mini-cart' },
+											{ label: __( 'Go to Cart Page', 'godam' ), value: 'redirect' },
+										] }
+										onChange={ ( value ) =>
+											setAttributes( {
+												ctaCart: { ...ctaCart, action: value },
+											} )
+										}
+									/>
+								</>
+							) }
+
+							{ /* DROPDOWN SETTINGS */ }
+							{ activeCartTab === 'dropdown' && (
+								<>
+									<p><strong>{ __( 'Background Color', 'godam' ) }</strong></p>
+									<ColorPalette
+										enableAlpha
+										value={ ctaDropdown?.bgColor }
+										onChange={ ( color ) =>
+											setAttributes( {
+												ctaDropdown: { ...ctaDropdown, bgColor: color },
+											} )
+										}
+									/>
+
+									<p><strong>{ __( 'Icon Color', 'godam' ) }</strong></p>
+									<ColorPalette
+										enableAlpha
+										value={ ctaDropdown?.iconColor }
+										onChange={ ( color ) =>
+											setAttributes( {
+												ctaDropdown: { ...ctaDropdown, iconColor: color },
+											} )
+										}
+									/>
+
+									<BorderControl
+										label={ __( 'Border', 'godam' ) }
+										value={ ctaDropdown?.border }
+										style={ {
+											marginBottom: '3rem',
+										} }
+										onChange={ ( border ) =>
+											setAttributes( {
+												ctaDropdown: { ...ctaDropdown, border },
+											} )
+										}
+									/>
+
+									<RangeControl
+										label={ __( 'Border Radius', 'godam' ) }
+										value={ ctaDropdown?.borderRadius }
+										onChange={ ( value ) =>
+											setAttributes( {
+												ctaDropdown: { ...ctaDropdown, borderRadius: value },
+											} )
+										}
+										min={ 0 }
+										max={ 50 }
+									/>
+								</>
+							) }
+
 						</PanelBody>
 					</PanelBody>
 				) }
@@ -809,8 +952,8 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 								style={ {
 									display: 'grid',
 									gridTemplateColumns: `repeat(${ currentGridColumns }, 1fr)`,
-									rowGap: `${ gridRowGap }px`,
-									columnGap: `${ gridColumnGap }px`,
+									rowGap: `${ gridRowGap }rem`,
+									columnGap: `${ gridColumnGap }rem`,
 								} }
 							>
 								{ GoDAMVideos }

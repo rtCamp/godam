@@ -33,15 +33,15 @@
     },
     "playButtonBgColor": {
       "type": "string",
-      "default": "#AB3A6C"
+      "default": "rgba(0, 0, 0, 0.76)"
     },
     "playButtonIconColor": {
       "type": "string",
-      "default": "#ffffff"
+      "default": "rgba(255, 255, 255, 1)"
     },
     "playButtonSize": {
       "type": "number",
-      "default": 40
+      "default": 50
     },
     "playButtonBorderRadius": {
       "type": "number",
@@ -57,7 +57,7 @@
     },
     "unmuteButtonIconColor": {
       "type": "string",
-      "default": "#ffffff"
+      "default": "rgba(255, 255, 255, 1)"
     },
     "cardWidth": {
       "type": "object",
@@ -69,19 +69,19 @@
     },
     "arrowBgColor": {
       "type": "string",
-      "default": "rgba(171, 58, 108, 0.5)" 
+      "default": "rgba(250, 146, 0, 1)" 
     },
 	  "arrowIconColor": {
       "type": "string",
-      "default": "#ffffff"
+      "default": "rgba(255, 255, 255, 1)"
     },
     "arrowSize": {
       "type": "number",
-      "default": 32
+      "default": 35
     },
     "arrowBorderRadius": {
       "type": "number",
-      "default": 4
+      "default": 30
     },
     "arrowVisibility": {
       "type": "string",
@@ -97,11 +97,11 @@
     },
     "gridRowGap": {
       "type": "number",
-      "default": 16
+      "default": 1
     },
     "gridColumnGap": {
       "type": "number",
-      "default": 16
+      "default": 1
     },
     "ctaEnabled": {
       "type": "boolean",
@@ -113,44 +113,55 @@
     },
     "ctaBgColor": {
       "type": "string",
-      "default": "#ffffff"
-    },
-    "ctaButtonBgColor": {
-      "type": "string",
-      "default": "#AB3A6C"
-    },
-    "ctaButtonIconColor": {
-      "type": "string",
-      "default": "#ffffff"
+      "default": "rgba(255, 255, 255, 1)"
     },
     "ctaProductNameFontSize": {
       "type": "number",
-      "default": 16
+      "default": 0.9
     },
     "ctaProductPriceFontSize": {
       "type": "number",
-      "default": 14
+      "default": 0.8
     },
     "ctaProductNameColor": {
       "type": "string",
-      "default": "#000000"
+      "default": "rgba(0, 0, 0, 1)"
     },
     "ctaProductPriceColor": {
-      "type": "string",
-      "default": "#333333"
+      "type": "object",
+      "default": { 
+        "primary": "rgba(66, 66, 66, 1)",
+        "secondary": "rgba(230, 134, 0, 1)",
+        "tertiary": "rgba(143, 143, 143, 1)"
+      }
     },
-    "ctaButtonBorderRadius": {
-      "type": "number",
-      "default": 30
+    "ctaCart": {
+      "type": "object",
+      "default": {
+        "bgColor": "rgba(28, 28, 28, 1)",
+        "iconColor": "rgba(255, 255, 255, 1)",
+        "border": {},
+        "borderRadius": 8,
+        "action": "mini-cart"
+      }
     },
-    "ctaCartAction": {
-      "type": "string",
-      "default": "mini-cart"
+    "ctaDropdown": {
+      "type": "object",
+      "default": {
+        "bgColor": "rgba(255, 255, 255, 1)",
+        "iconColor": "rgba(28, 28, 28, 1)",
+        "border": {
+          "color": "rgba(224, 224, 224, 1)",
+          "style": "solid",
+          "width": "1px"
+        },
+        "borderRadius": 8
+      }
     }
   },
   "supports": {
     "anchor": true,
-    "align": ["left", "center", "right", "wide", "full"],
+    "align": ["center", "wide", "full"],
     "spacing": {
       "margin": true,
       "padding": true
