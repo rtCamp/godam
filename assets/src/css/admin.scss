@@ -854,7 +854,7 @@ to ensure proper responsiveness and avoid layout issues.
 
 	&::before {
 		content: 'Start Recording';
-		color: '#fff';
+		color: #fff;
 		display: inline-block;
 		position: absolute;
 		inset-inline-start: 15px;
