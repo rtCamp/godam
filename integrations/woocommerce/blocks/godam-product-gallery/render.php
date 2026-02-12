@@ -122,11 +122,11 @@ if ( ! function_exists( 'godam_sanitize_rgba_color' ) ) {
 	}
 }
 
-$cta_cart     = $attributes['ctaCart'] ?? array();
-$cta_dropdown = $attributes['ctaDropdown'] ?? array();
+$godam_product_gallery_cta_cart     = $attributes['ctaCart'] ?? array();
+$godam_product_gallery_cta_dropdown = $attributes['ctaDropdown'] ?? array();
 
-$cta_cart_border     = $cta_cart['border'] ?? array();
-$cta_dropdown_border = $cta_dropdown['border'] ?? array();
+$godam_product_gallery_cta_cart_border     = $godam_product_gallery_cta_cart['border'] ?? array();
+$godam_product_gallery_cta_dropdown_border = $godam_product_gallery_cta_dropdown['border'] ?? array();
 
 // Build the shortcode attributes.
 $godam_product_gallery_shortcode_atts = array(
@@ -166,20 +166,20 @@ $godam_product_gallery_shortcode_atts = array(
 	'cta_product_price_color_secondary' => godam_sanitize_rgba_color( $attributes['ctaProductPriceColor']['secondary'] ?? 'rgba(230, 134, 0, 1)' ),
 	'cta_product_price_color_tertiary'  => godam_sanitize_rgba_color( $attributes['ctaProductPriceColor']['tertiary'] ?? 'rgba(143, 143, 143, 1)' ),
 	// Cart.
-	'cta_cart_bg_color'                 => godam_sanitize_rgba_color( $cta_cart['bgColor'] ?? '' ),
-	'cta_cart_icon_color'               => godam_sanitize_rgba_color( $cta_cart['iconColor'] ?? '' ),
-	'cta_cart_border_color'             => godam_sanitize_rgba_color( $cta_cart_border['color'] ?? '' ),
-	'cta_cart_border_style'             => sanitize_text_field( $cta_cart_border['style'] ?? '' ),
-	'cta_cart_border_width'             => sanitize_text_field( $cta_cart_border['width'] ?? '' ),
-	'cta_cart_border_radius'            => intval( $cta_cart['borderRadius'] ?? 0 ),
-	'cta_cart_action'                   => sanitize_text_field( $cta_cart['action'] ?? 'mini-cart' ),
+	'cta_cart_bg_color'                 => godam_sanitize_rgba_color( $godam_product_gallery_cta_cart['bgColor'] ?? '' ),
+	'cta_cart_icon_color'               => godam_sanitize_rgba_color( $godam_product_gallery_cta_cart['iconColor'] ?? '' ),
+	'cta_cart_border_color'             => godam_sanitize_rgba_color( $godam_product_gallery_cta_cart_border['color'] ?? '' ),
+	'cta_cart_border_style'             => sanitize_text_field( $godam_product_gallery_cta_cart_border['style'] ?? '' ),
+	'cta_cart_border_width'             => sanitize_text_field( $godam_product_gallery_cta_cart_border['width'] ?? '' ),
+	'cta_cart_border_radius'            => intval( $godam_product_gallery_cta_cart['borderRadius'] ?? 0 ),
+	'cta_cart_action'                   => sanitize_text_field( $godam_product_gallery_cta_cart['action'] ?? 'mini-cart' ),
 	// Dropdown.
-	'cta_dropdown_bg_color'             => godam_sanitize_rgba_color( $cta_dropdown['bgColor'] ?? '' ),
-	'cta_dropdown_icon_color'           => godam_sanitize_rgba_color( $cta_dropdown['iconColor'] ?? '' ),
-	'cta_dropdown_border_color'         => godam_sanitize_rgba_color( $cta_dropdown_border['color'] ?? '' ),
-	'cta_dropdown_border_style'         => sanitize_text_field( $cta_dropdown_border['style'] ?? '' ),
-	'cta_dropdown_border_width'         => sanitize_text_field( $cta_dropdown_border['width'] ?? '' ),
-	'cta_dropdown_border_radius'        => intval( $cta_dropdown['borderRadius'] ?? 0 ),
+	'cta_dropdown_bg_color'             => godam_sanitize_rgba_color( $godam_product_gallery_cta_dropdown['bgColor'] ?? '' ),
+	'cta_dropdown_icon_color'           => godam_sanitize_rgba_color( $godam_product_gallery_cta_dropdown['iconColor'] ?? '' ),
+	'cta_dropdown_border_color'         => godam_sanitize_rgba_color( $godam_product_gallery_cta_dropdown_border['color'] ?? '' ),
+	'cta_dropdown_border_style'         => sanitize_text_field( $godam_product_gallery_cta_dropdown_border['style'] ?? '' ),
+	'cta_dropdown_border_width'         => sanitize_text_field( $godam_product_gallery_cta_dropdown_border['width'] ?? '' ),
+	'cta_dropdown_border_radius'        => intval( $godam_product_gallery_cta_dropdown['borderRadius'] ?? 0 ),
 );
 
 // Convert attributes to shortcode string.
