@@ -13,7 +13,7 @@ import {
 	Notice,
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import { useState, useRef, useEffect } from '@wordpress/element';
+import { useState, useRef, useEffect, useMemo } from '@wordpress/element';
 /**
  * Internal dependencies
  */
@@ -34,9 +34,19 @@ const RetranscodeTab = () => {
 	const [ failureCount, setFailureCount ] = useState( 0 );
 	const [ virtualMediaCount, setVirtualMediaCount ] = useState( 0 );
 	const [ totalMediaCount, setTotalMediaCount ] = useState( 0 );
+	const [ selectedTranscodeCount, setSelectedTranscodeCount ] = useState( 0 );
+	const [ selectedRetranscodeCount, setSelectedRetranscodeCount ] = useState( 0 );
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
-	// On mount, check for 'media_ids' in the URL
+	// Calculate storage exceeded status reactively
+	const storageExceeded = useMemo( () => {
+		const userData = window?.userData || {};
+		const storageUsed = Number( userData.storageUsed || 0 );
+		const totalStorage = Number( userData.totalStorage || 0 );
+		return storageUsed > totalStorage;
+	}, [] );
+
+	// On mount, check for 'media_ids' in the URL and storage limits
 	useEffect( () => {
 		const params = new URLSearchParams( window.location.search );
 		const idsParam = params.get( 'media_ids' );
@@ -57,18 +67,62 @@ const RetranscodeTab = () => {
 		}
 	}, [] );
 
-	// Whenever selectedIds are provided, set forceRetranscode to false
+	// Whenever selectedIds are provided, set forceRetranscode to false and check transcoding status
 	useEffect( () => {
 		if ( selectedIds && selectedIds.length > 0 ) {
 			setForceRetranscode( false );
-			showNotice(
-				sprintf(
-					// translators: %d is the number of selected media files.
-					__( 'You are retranscoding %d selected media file(s) from the Media Library.', 'godam' ),
-					selectedIds.length,
-				),
-				'warning',
-			);
+
+			// Check status of selected IDs
+			axios.get(
+				`${ window.godamRestRoute?.url }godam/v1/transcoding/check-transcoded-status?ids=${ selectedIds.join( ',' ) }`,
+				{
+					headers: {
+						'Content-Type': 'application/json',
+						'X-WP-Nonce': window.godamRestRoute?.nonce,
+					},
+				} )
+				.then( ( response ) => {
+					const transcodeCount = response.data?.transcode_count || 0;
+					const retranscodeCount = response.data?.retranscode_count || 0;
+					setSelectedTranscodeCount( transcodeCount );
+					setSelectedRetranscodeCount( retranscodeCount );
+
+					// Create detailed message
+					let message = '';
+					if ( transcodeCount > 0 ) {
+						message += sprintf(
+							// translators: %d is the number of selected media files to be transcoded.
+							__( '%d selected media file(s) will be transcoded.', 'godam' ),
+							transcodeCount,
+						);
+					}
+					if ( retranscodeCount > 0 ) {
+						if ( message ) {
+							message += ' ';
+						}
+						message += sprintf(
+							// translators: %d is the number of selected media files to be retranscoded.
+							__( '%d selected media file(s) will be retranscoded.', 'godam' ),
+							retranscodeCount,
+						);
+					}
+
+					showNotice( message, 'warning' );
+				} )
+				.catch( () => {
+					// Fallback if check fails - assume all need transcoding
+					setSelectedTranscodeCount( selectedIds.length );
+					setSelectedRetranscodeCount( 0 );
+
+					showNotice(
+						sprintf(
+							// translators: %d is the number of selected media files to be transcoded.
+							__( '%d selected media file(s) will be transcoded.', 'godam' ),
+							selectedIds.length,
+						),
+						'warning',
+					);
+				} );
 		}
 	}, [ selectedIds ] );
 
@@ -88,7 +142,9 @@ const RetranscodeTab = () => {
 			},
 		} )
 			.then( ( response ) => {
-				if ( response.data?.data && Array.isArray( response.data.data ) && response.data.data.length > 0 ) {
+				if ( response.data?.storage_exceeded ) {
+					showNotice( response.data.message, 'error' );
+				} else if ( response.data?.data && Array.isArray( response.data.data ) && response.data.data.length > 0 ) {
 					setAttachments( response.data.data );
 					if ( response.data?.total_media_count ) {
 						setTotalMediaCount( response.data.total_media_count );
@@ -298,7 +354,7 @@ const RetranscodeTab = () => {
 				<PanelBody opened>
 					<p>
 						{ __(
-							'This tool allows you to retranscode your media files. You can either retranscode specific files selected from the Media Library, or only those that are not yet transcoded.',
+							'This tool allows you to retranscode your media files. You can either retranscode specific files selected from the Media Library, or those that are not yet transcoded.',
 							'godam',
 						) }
 					</p>
@@ -310,11 +366,26 @@ const RetranscodeTab = () => {
 					<p>
 						<i>
 							{ __(
-								'Note: Retranscoding will use your bandwidth allowance. Use the force retranscode option carefully.',
+								'Note: Transcoding and retranscoding will use your bandwidth allowance. Use the force retranscode option carefully.',
 								'godam',
 							) }
 						</i>
 					</p>
+
+					{
+						storageExceeded && (
+							<div className="notice notice-error godam-storage-exceeded-notice">
+								<p>
+									<strong>{ __( 'Storage Limit Exceeded:', 'godam' ) }</strong>{ ' ' }
+									{ sprintf(
+										// translators: %s is the storage usage percentage.
+										__( 'Your storage usage has exceeded your plan limit (%s%%). Retranscoding is currently blocked. Please upgrade your plan to continue.', 'godam' ),
+										( ( Number( window?.userData?.storageUsed || 0 ) / Math.max( 1, Number( window?.userData?.totalStorage || 0 ) ) ) * 100 ).toFixed( 1 ),
+									) }
+								</p>
+							</div>
+						)
+					}
 
 					{
 						/* Force retranscode checkbox */
@@ -355,18 +426,44 @@ const RetranscodeTab = () => {
 						! aborted &&
 						<div className="my-5 text-lg text-gray-600">
 							{ selectedIds && selectedIds.length > 0 && (
-								// translators: %d is the number of selected media files.
-								sprintf( __( '%d selected media file(s) will be retranscoded.', 'godam' ), selectedIds.length )
+								<div className="space-y-1">
+									{ ( selectedTranscodeCount > 0 || selectedRetranscodeCount > 0 ) && (
+										<p>
+											{ ( () => {
+												const parts = [];
+												if ( selectedTranscodeCount > 0 ) {
+													parts.push(
+														sprintf(
+															// translators: %d is the number of untranscoded media files.
+															__( '%d untranscoded media file(s) selected', 'godam' ),
+															selectedTranscodeCount,
+														),
+													);
+												}
+												if ( selectedRetranscodeCount > 0 ) {
+													parts.push(
+														sprintf(
+															// translators: %d is the number of transcoded media files.
+															__( '%d transcoded media file(s) selected', 'godam' ),
+															selectedRetranscodeCount,
+														),
+													);
+												}
+												return parts.join( ', ' );
+											} )() }
+										</p>
+									) }
+								</div>
 							) }
 							{ ! selectedIds && ! forceRetranscode && sprintf(
-								// translators: %d is the number of media files that require retranscoding.
+								// translators: 1: number of media files that require retranscoding, 2: total number of media files.
 								__( '%1$d/%2$d media file(s) require retranscoding.', 'godam' ),
 								attachments.length,
 								totalMediaCount,
 							) }
 							{ forceRetranscode && sprintf(
-								// translators: %d is the number of media files that will be retranscoded.
-								__( '%1$d/%1$d media file(s) will be retranscoded regardless of their current state.', 'godam' ),
+								// translators: 1: number of media files that will be retranscoded regardless of their current state, 2: total number of media files.
+								__( '%1$d/%2$d media file(s) will be retranscoded regardless of their current state.', 'godam' ),
 								attachments.length,
 								totalMediaCount,
 							) }
@@ -378,7 +475,7 @@ const RetranscodeTab = () => {
 						// Show x/y media retranscoded.
 						<span className="text-gray-600">
 							{ sprintf(
-								// translators: %d is the number of media files sent for retranscoding.
+								// translators: 1: number of media files sent for retranscoding, 2: total number of media files selected.
 								__( '%1$d/%2$d media files sent for retranscoding…', 'godam' ),
 								mediaCount,
 								attachments.length,
@@ -390,7 +487,7 @@ const RetranscodeTab = () => {
 						( retranscoding || aborted || done ) &&
 						<div className="mb-4">
 							<ProgressBar total={ attachments?.length } done={ mediaCount } />
-							<pre className="w-full h-[120px] max-h-[120px] overflow-y-auto bg-gray-100 p-3 rounded">
+							<pre className="w-full h-[120px] max-h-[120px] overflow-y-auto bg-gray-100 p-3 rounded whitespace-break-spaces">
 								{ logs.map( ( log, index ) => (
 									<div key={ index } className="text-sm text-gray-700">
 										• { log }
@@ -414,13 +511,21 @@ const RetranscodeTab = () => {
 										fetchRetranscodeMedia();
 									}
 								} }
-								disabled={ fetchingMedia }
+								disabled={ fetchingMedia || storageExceeded }
 							>
 								{ ( () => {
 									if ( attachments.length === 0 ) {
 										return __( 'Fetch Media', 'godam' );
 									} else if ( ! done && ! aborted ) {
+										// If we have selected media and all are untranscoded, show "Start Transcoding"
+										if ( selectedIds && selectedRetranscodeCount === 0 && selectedTranscodeCount > 0 ) {
+											return __( 'Start Transcoding', 'godam' );
+										}
 										return __( 'Start Retranscoding', 'godam' );
+									}
+									// If we have selected media and all are untranscoded, show "Restart Transcoding"
+									if ( selectedIds && selectedRetranscodeCount === 0 && selectedTranscodeCount > 0 ) {
+										return __( 'Restart Transcoding', 'godam' );
 									}
 									return __( 'Restart Retranscoding', 'godam' );
 								} )() }

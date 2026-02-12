@@ -14,13 +14,13 @@
 defined( 'ABSPATH' ) || exit;
 
 // Suppress Query Monitor's output for this template.
-do_action( 'qm/cease' );
+do_action( 'qm/cease' ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores,WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Third-party plugin hook (Query Monitor).
 
 // We need to remove the admin bar for this template to avoid to display it on the video editor page.
 add_filter( 'show_admin_bar', '__return_false' ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
 
-$layer    = get_query_var( 'rtgodam-render-layer' );
-$layer_id = get_query_var( 'rtgodam-layer-id' );
+$godam_layer    = get_query_var( 'rtgodam-render-layer' );
+$godam_layer_id = get_query_var( 'rtgodam-layer-id' );
 ?>
 
 <!DOCTYPE html>
@@ -37,10 +37,10 @@ $layer_id = get_query_var( 'rtgodam-layer-id' );
 	 *
 	 * @since 1.4.0
 	 *
-	 * @param string $layer The type of layer being rendered.
-	 * @param string $layer_id The ID of the layer being rendered.
+	 * @param string $godam_layer The type of layer being rendered.
+	 * @param string $godam_layer_id The ID of the layer being rendered.
 	 */
-	do_action( 'rtgodam_render_layer_for_video_editor_before', $layer, $layer_id );
+	do_action( 'rtgodam_render_layer_for_video_editor_before', $godam_layer, $godam_layer_id );
 	?>
 
 	</head>
@@ -54,10 +54,10 @@ $layer_id = get_query_var( 'rtgodam-layer-id' );
 				 *
 				 * @since 1.4.0
 				 *
-				 * @param string $layer The type of layer being rendered.
-				 * @param string $layer_id The ID of the layer being rendered.
+				 * @param string $godam_layer The type of layer being rendered.
+				 * @param string $godam_layer_id The ID of the layer being rendered.
 				 */
-				do_action( 'rtgodam_render_layer_for_video_editor', $layer, $layer_id );
+				do_action( 'rtgodam_render_layer_for_video_editor', $godam_layer, $godam_layer_id );
 			?>
 		</main>
 	<?php
@@ -66,10 +66,10 @@ $layer_id = get_query_var( 'rtgodam-layer-id' );
 		 *
 		 * @since 1.4.0
 		 *
-		 * @param string $layer The type of layer being rendered.
-		 * @param string $layer_id The ID of the layer being rendered.
+		 * @param string $godam_layer The type of layer being rendered.
+		 * @param string $godam_layer_id The ID of the layer being rendered.
 		 */
-		do_action( 'rtgodam_render_layer_for_video_editor_after', $layer, $layer_id );
+		do_action( 'rtgodam_render_layer_for_video_editor_after', $godam_layer, $godam_layer_id );
 	?>
 	<?php wp_footer(); ?>
 	</body>

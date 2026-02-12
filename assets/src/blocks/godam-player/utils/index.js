@@ -85,4 +85,28 @@ function secondsToISO8601( seconds ) {
 	return isoString;
 }
 
-export { getFirstNonEmpty, appendTimezoneOffsetToUTC, isObjectEmpty, secondsToISO8601 };
+function isSEODataEmpty( seoData ) {
+	return ! seoData ||
+		typeof seoData !== 'object' ||
+		Object.keys( seoData ).length === 0 ||
+		( Object.keys( seoData ).length === 1 && seoData.hasOwnProperty( 'isFamilyFriendly' ) );
+}
+
+/**
+ * Strip HTML tags from a string.
+ *
+ * Uses DOMParser to safely parse HTML and extract text content.
+ * This is secure as DOMParser creates an inert document that doesn't execute scripts.
+ *
+ * @param {string} html - The HTML string to strip tags from.
+ * @return {string} The plain text without HTML tags.
+ */
+function stripHtmlTags( html ) {
+	if ( ! html ) {
+		return '';
+	}
+	const doc = new DOMParser().parseFromString( html, 'text/html' );
+	return doc.body.textContent || '';
+}
+
+export { getFirstNonEmpty, appendTimezoneOffsetToUTC, isObjectEmpty, secondsToISO8601, isSEODataEmpty, stripHtmlTags };

@@ -49,12 +49,14 @@ class GoDAM_Player {
 		// Allow external stylesheets to be enqueued.
 		do_action( 'godam_player_enqueue_styles' );
 
+		$godam_player_frontend_assets = include RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.asset.php';
+
 		// Register your scripts and styles here.
 		wp_register_script(
 			'godam-player-frontend-script',
 			RTGODAM_URL . 'assets/build/js/godam-player-frontend.min.js',
-			array( 'wp-data', 'wp-url', 'wp-element', 'wp-i18n', 'wp-api-fetch' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.js' ),
+			$godam_player_frontend_assets['dependencies'],
+			$godam_player_frontend_assets['version'],
 			true
 		);
 
@@ -117,6 +119,7 @@ class GoDAM_Player {
 				'loginUrl'                => apply_filters( 'rtgodam_site_login_url', wp_login_url() . '?redirect_to=' . rawurlencode( get_permalink() ) ),
 				'registrationUrl'         => apply_filters( 'rtgodam_site_registration_url', wp_registration_url() . '&redirect_to=' . rawurlencode( get_permalink() ) ),
 				'defaultAvatar'           => get_avatar_url( 0 ),
+				'nonce'                   => wp_create_nonce( 'wp_rest' ),
 			)
 		);
 	}
@@ -149,17 +152,62 @@ class GoDAM_Player {
 	public function render( $atts ) {
 		$attributes = shortcode_atts(
 			array(
-				'id'             => '',
-				'sources'        => '',
-				'src'            => '',
-				'transcoded_url' => '',
-				'poster'         => '',
-				'aspectRatio'    => '',
-				'engagements'    => '',
+				'id'                => '',
+				'autoplay'          => false,
+				'controls'          => true,
+				'loop'              => false,
+				'muted'             => false,
+				'hoverSelect'       => 'none',
+				'hover_select'      => 'none', // WPBakery format (lowercase with underscore).
+				'poster'            => '',
+				'preload'           => 'metadata',
+				'src'               => '',
+				'sources'           => '',
+				'transcoded_url'    => '',
+				'aspectRatio'       => '', // Note: "responsive" aspect ratio is not working for shortcode. To be fixed later.
+				'aspect_ratio'      => '', // WPBakery format (lowercase with underscore).
+				'tracks'            => '',
+				'caption'           => '',
+				'engagements'       => false,
+				'preview'           => false,
+				'showShareButton'   => false,
+				'show_share_button' => false, // WPBakery format (lowercase with underscore).
+				'css'               => '',
 			),
 			$atts,
 			'godam_video'
 		);
+
+		// Handle boolean attributes passed as strings (do this before mapping).
+		$boolean_attributes = array( 'autoplay', 'controls', 'loop', 'muted', 'engagements', 'preview', 'showShareButton', 'show_share_button' );
+		foreach ( $boolean_attributes as $bool_attr ) {
+			if ( isset( $attributes[ $bool_attr ] ) ) {
+				$attributes[ $bool_attr ] = filter_var( $attributes[ $bool_attr ], FILTER_VALIDATE_BOOLEAN );
+			}
+		}
+
+		// Map WPBakery format (lowercase_underscore) to camelCase for backward compatibility.
+		// Check if WPBakery format exists and camelCase doesn't, then use WPBakery format.
+		if ( isset( $attributes['aspect_ratio'] ) && '' !== $attributes['aspect_ratio'] && ( ! isset( $attributes['aspectRatio'] ) || '' === $attributes['aspectRatio'] ) ) {
+			$attributes['aspectRatio'] = $attributes['aspect_ratio'];
+		}
+		if ( isset( $attributes['hover_select'] ) && '' !== $attributes['hover_select'] && ( ! isset( $attributes['hoverSelect'] ) || 'none' === $attributes['hoverSelect'] ) ) {
+			$attributes['hoverSelect'] = $attributes['hover_select'];
+		}
+		if ( isset( $attributes['show_share_button'] ) && '' !== $attributes['show_share_button'] && ( ! isset( $attributes['showShareButton'] ) || false === $attributes['showShareButton'] ) ) {
+			$attributes['showShareButton'] = $attributes['show_share_button'];
+		}
+
+		// Get WPBakery Design Options CSS class if available.
+		$attributes['css_class'] = '';
+		if ( ! empty( $attributes['css'] ) && function_exists( 'vc_shortcode_custom_css_class' ) ) {
+			$attributes['css_class'] = vc_shortcode_custom_css_class( $attributes['css'], ' ' );
+		}
+
+		// If autoplay is true, muted must be true for most browsers to allow autoplay.
+		if ( $attributes['autoplay'] ) {
+			$attributes['muted'] = true;
+		}
 
 		// Decode custom placeholders back to square brackets if sources contain them.
 		if ( ! empty( $attributes['sources'] ) && is_string( $attributes['sources'] ) ) {
@@ -167,7 +215,12 @@ class GoDAM_Player {
 			$attributes['sources'] = str_replace( array( '__rtgob__', '__rtgcb__' ), array( '[', ']' ), $attributes['sources'] );
 		}
 
-		$is_shortcode = true;
+		// Decode tracks if it's a JSON string.
+		if ( ! empty( $attributes['tracks'] ) && is_string( $attributes['tracks'] ) ) {
+			$attributes['tracks'] = str_replace( array( '__rtgob__', '__rtgcb__' ), array( '[', ']' ), $attributes['tracks'] );
+		}
+
+		$is_shortcode = true; // Do not remove this line, this variable is being used in godam-player template.
 
 		wp_enqueue_script( 'godam-player-frontend-script' );
 		wp_enqueue_script( 'godam-player-analytics-script' );
@@ -175,15 +228,16 @@ class GoDAM_Player {
 		wp_enqueue_style( 'godam-player-style' );
 
 		$godam_settings = get_option( 'rtgodam-settings', array() );
-		$selected_skin  = $godam_settings['video_player']['player_skin'] ?? '';
-		if ( 'Minimal' === $selected_skin ) {
-			wp_enqueue_style( 'godam-player-minimal-skin' );
-		} elseif ( 'Pills' === $selected_skin ) {
-			wp_enqueue_style( 'godam-player-pills-skin' );
-		} elseif ( 'Bubble' === $selected_skin ) {
-			wp_enqueue_style( 'godam-player-bubble-skin' );
-		} elseif ( 'Classic' === $selected_skin ) {
-			wp_enqueue_style( 'godam-player-classic-skin' );
+		$selected_skin  = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : '';
+		$skins          = array(
+			'Minimal' => 'godam-player-minimal-skin',
+			'Pills'   => 'godam-player-pills-skin',
+			'Bubble'  => 'godam-player-bubble-skin',
+			'Classic' => 'godam-player-classic-skin',
+		);
+
+		if ( isset( $skins[ $selected_skin ] ) ) {
+			wp_enqueue_style( $skins[ $selected_skin ] );
 		}
 
 		ob_start();

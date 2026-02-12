@@ -24,9 +24,14 @@ const initialState = {
 		watermark_text: '',
 		watermark_url: '',
 		watermark_image_id: null,
+		enable_global_video_engagement: true,
+		enable_global_video_share: true,
 	},
 	general: {
 		enable_folder_organization: true,
+		enable_gtm_tracking: false,
+		enable_posthog_tracking: false,
+		posthog_initialized: false,
 	},
 	video_player: {
 		brand_image: '',

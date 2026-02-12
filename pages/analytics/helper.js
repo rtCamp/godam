@@ -155,16 +155,9 @@ export function singleMetricsChart(
 	// Ensure `parsedData` is properly formatted
 	const parseDate = d3.timeParse( '%Y-%m-%d' );
 
-	// Function to filter data based on selected date range
-	function filterData( days ) {
-		const today = new Date();
-		const cutoffDate = new Date( today );
-		cutoffDate.setDate( today.getDate() - days );
-
-		return parsedData.filter( ( d ) => new Date( d.date ) >= cutoffDate );
-	}
-
-	const filteredData = filterData( selectedDays ).map( ( d ) => ( {
+	// parsedData already contains all 7 days with zeros filled in from SingleMetrics.js
+	// Just parse the dates and convert to proper format
+	const filteredData = parsedData.map( ( d ) => ( {
 		date: parseDate( d.date ),
 		engagement_rate: +d.engagement_rate,
 		play_rate: +d.play_rate || 0,
@@ -617,8 +610,9 @@ export function generateLineChart( data, selector, videoPlayer, tooltipSelector,
 
 	const svg = d3
 		.select( selector )
-		.attr( 'width', width + margin.left + margin.right )
-		.attr( 'height', height + margin.top + margin.bottom )
+		.attr( 'viewBox', `0 0 ${ width + margin.left + margin.right } ${ height + margin.top + margin.bottom }` )
+		// Allow SVG to stretch to fill container without maintaining aspect ratio - required for bottom-anchored responsive video overlay
+		.attr( 'preserveAspectRatio', 'none' )
 		.append( 'g' )
 		.attr( 'transform', `translate(${ margin.left },${ margin.top })` );
 
@@ -695,9 +689,14 @@ export function generateLineChart( data, selector, videoPlayer, tooltipSelector,
 					.attr( 'x1', xScale( index ) )
 					.attr( 'x2', xScale( index ) );
 
+				const svgElement = d3.select( selector ).node();
+				const containerRect = svgElement.parentElement.getBoundingClientRect();
+				const scaleX = containerRect.width / width;
+				const scaledX = xScale( index ) * scaleX;
+
 				tooltip
 					.style( 'opacity', 1 )
-					.style( 'left', `${ xScale( index ) - 30 }px` )
+					.style( 'left', `${ scaledX }px` )
 					.style( 'top', 0 )
 					.html(
 						`<div class="heatmap-tooltip-html">

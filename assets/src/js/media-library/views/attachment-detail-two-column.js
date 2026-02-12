@@ -35,23 +35,25 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * @param {Promise}  fetchPromise - The promise that resolves to the fetched data.
 	 *
 	 * @param {Function} renderMethod - The method to render the fetched data.
+	 *
+	 * @param {string}   type         - The type of data being fetched. Defaults to empty string.
 	 */
-	async fetchAndRender( fetchPromise, renderMethod ) {
+	async fetchAndRender( fetchPromise, renderMethod, type = '' ) {
 		const data = await fetchPromise;
-
-		const actionsEl = this.$el.find( '.attachment-actions' );
 
 		// If there's no data remove the spinner and show message.
 		if ( ! data ) {
-			const thumbnailContainer = actionsEl?.find( '.attachment-video-thumbnails' );
+			if ( 'thumbnails' === type ) {
+				const actionsEl = this.$el.find( '.attachment-actions' );
+				const thumbnailContainer = actionsEl?.find( '.attachment-video-thumbnails' );
 
-			thumbnailContainer?.find( '.thumbnail-spinner' )?.remove();
-			const container = thumbnailContainer?.find( '.thumbnail-spinner-container' )?.get( 0 );
-			if ( container ) {
-				container.className = '';
-				container.innerText = __( 'No thumbnails found', 'godam' );
+				thumbnailContainer?.find( '.thumbnail-spinner' )?.remove();
+				const container = thumbnailContainer?.find( '.thumbnail-spinner-container' )?.get( 0 );
+				if ( container ) {
+					container.className = '';
+					container.innerText = __( 'No thumbnails found', 'godam' );
+				}
 			}
-
 			return;
 		}
 
@@ -541,10 +543,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * Renders the Edit Video and Analytics buttons in the attachment details view.
 	 */
 	renderVideoActions() {
-		if ( ! canManageAttachment( this.model.get( 'author' ) ) ) {
-			return;
-		}
-
 		const buttonsHTML = this.getButtonsHTML();
 		this.$el.find( '.attachment-actions' ).append( DOMPurify.sanitize( `<div class="attachment-video-actions">${ buttonsHTML }</div>` ) );
 	},
@@ -570,10 +568,19 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			`;
 		}
 
-		return `
-		<a href="${ editVideoURL }" class="button button-primary" target="_blank">Edit Video</a>
-		<a href="${ analyticsURL }" class="button button-secondary" target="_blank">Analytics</a>
-		`;
+		const editVideoButtonHTML = `<a href="${ editVideoURL }" class="button button-primary" target="_blank">Edit Video</a>`;
+		const analyticsButtonHTML = `<a href="${ analyticsURL }" class="button button-secondary" target="_blank">Analytics</a>`;
+
+		const buttons = [];
+
+		// If the user can manage the attachment, show the Edit Video button, else show only Analytics.
+		if ( canManageAttachment( this.model.get( 'author' ) ) ) {
+			buttons.push( editVideoButtonHTML );
+		}
+
+		buttons.push( analyticsButtonHTML );
+
+		return buttons.join( '' );
 	},
 
 	/**
@@ -661,11 +668,32 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			this.fetchAndRender(
 				this.getVideoThumbnails( attachmentId ),
 				this.renderThumbnail,
+				'thumbnails',
 			);
 			this.fetchAndRender(
 				this.getExifDetails( attachmentId ),
 				this.renderExifDetails,
+				'exif',
 			);
+		}
+
+		if ( this.model.get( 'type' ) === 'application' && this.model.get( 'subtype' ) === 'pdf' ) {
+			const imagePreview = this.model.get( 'image' );
+
+			if ( imagePreview && imagePreview.src ) {
+				// Find the thumbnail container and replace it with the full image preview
+				const $thumbnail = this.$el.find( '.thumbnail' );
+
+				if ( $thumbnail.length ) {
+					$thumbnail.empty().append( `
+						<img
+							class="details-image"
+							src="${ DOMPurify.sanitize( imagePreview.src ) }"
+							alt="PDF Preview"
+						/>
+					` );
+				}
+			}
 		}
 
 		// Return this view.

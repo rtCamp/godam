@@ -6,7 +6,7 @@ import React, { useEffect } from 'react';
 /**
  * Internal dependencies
  */
-import '../../video-control.css';
+import '../../video-control.scss';
 /**
  * WordPress dependencies
  */

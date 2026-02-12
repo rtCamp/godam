@@ -131,7 +131,6 @@ function rtgodam_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT, 
  * @param int $media_id The ID of the media attachment.
  *
  * @return string The URL of the media file, or an empty string if invalid or not found.
- * @throws Exception If the media is not found or is not an attachment.
  */
 function rtgodam_fetch_overlay_media_url( $media_id ) {
 	if ( empty( $media_id ) || 0 === intval( $media_id ) ) {
@@ -141,7 +140,7 @@ function rtgodam_fetch_overlay_media_url( $media_id ) {
 	$media = get_post( $media_id );
 
 	if ( ! $media || 'attachment' !== $media->post_type ) {
-		throw new Exception( 'Media not found' );
+		return '';
 	}
 
 	$media_url = wp_get_attachment_url( $media_id );
@@ -157,7 +156,8 @@ function rtgodam_fetch_overlay_media_url( $media_id ) {
  *
  * @param array $layer Associative array containing CTA details:
  *     - 'image' (int): Media ID for the image.
- *     - 'imageCtaOrientation' (string): Orientation of the CTA ('portrait' or other).
+ *     - 'imageUrlExt' (string): External URL for the image (GoDAM hosted).
+ *     - 'cardLayout' (string): Layout type for the CTA card.
  *     - 'imageOpacity' (float): Opacity of the image (default is 1).
  *     - 'imageText' (string): Heading text for the CTA.
  *     - 'imageDescription' (string): Description text for the CTA.
@@ -168,41 +168,127 @@ function rtgodam_fetch_overlay_media_url( $media_id ) {
  * @return string The generated HTML string for the image CTA overlay.
  */
 function rtgodam_image_cta_html( $layer ) {
-	$image_url = rtgodam_fetch_overlay_media_url( $layer['image'] );
-	// Ensure $layer is an associative array and has required fields.
-	$orientation_class = isset( $layer['imageCtaOrientation'] ) && 'portrait' === $layer['imageCtaOrientation']
-		? 'vertical-image-cta-container'
-		: 'image-cta-container';
+	// Determine if the image is a GoDAM hosted media.
+	$is_godam_media = isset( $layer['image'] ) && is_string( $layer['image'] ) && str_starts_with( $layer['image'], 'godam_' );
 
-	$image_opacity        = isset( $layer['imageOpacity'] ) ? $layer['imageOpacity'] : 1;
-	$image_text           = isset( $layer['imageText'] ) ? $layer['imageText'] : '';
-	$image_description    = isset( $layer['imageDescription'] ) ? $layer['imageDescription'] : '';
-	$image_link           = isset( $layer['imageLink'] ) ? $layer['imageLink'] : '/';
-	$cta_background_color = isset( $layer['imageCtaButtonColor'] ) ? $layer['imageCtaButtonColor'] : '#eeab95';
-	$cta_button_text      = ! empty( $layer['imageCtaButtonText'] ) ? $layer['imageCtaButtonText'] : 'Buy Now'; // Null coalescing with empty check.
+	if ( $is_godam_media && ! empty( $layer['imageUrlExt'] ) ) {
+		$image_url = $layer['imageUrlExt'];
+	} else {
+		$image_url = rtgodam_fetch_overlay_media_url( isset( $layer['image'] ) ? $layer['image'] : 0 );
+	}
 
-	return "
-	<div class= \"image-cta-overlay-container\">
-		<div class=\"image-cta-parent-container\">
-			<div class=\"{$orientation_class}\">
-				<img 
-					src=\"{$image_url}\" 
-					alt=\"CTA ad\" 
-					height=\"300\" 
-					width=\"250\" 
-					style=\"opacity: {$image_opacity};\" 
-				/>
-				<div class=\"image-cta-description\">
-					" . ( ! empty( $image_text ) ? "<h2>{$image_text}</h2>" : '' ) . '
-					' . ( ! empty( $image_description ) ? "<p>{$image_description}</p>" : '' ) . "
-					<a class=\"image-cta-btn\" href=\"{$image_link}\" target=\"_blank\" style=\"background-color: {$cta_background_color};\">
-						{$cta_button_text}
-					</a>
-				</div>
-			</div>
-		</div>
-	</div>
-    ";
+	// Define allowed layouts for validation.
+	$allowed_layouts = array(
+		'card-layout--text-imagecover',
+		'card-layout--text-image',
+		'card-layout--image-bottom',
+		'card-layout--image-background',
+		'card-layout--imagecover-text',
+		'card-layout--image-text',
+		'card-layout--image-top',
+		'desktop-text-only',
+	);
+
+	// Backward compatibility: determine default layout based on imageCtaOrientation.
+	$default_layout = 'card-layout--image-text';
+	if ( isset( $layer['imageCtaOrientation'] ) && 'landscape' !== $layer['imageCtaOrientation'] ) {
+		$default_layout = 'card-layout--image-top';
+	}
+
+	$layout = isset( $layer['cardLayout'] ) && in_array( $layer['cardLayout'], $allowed_layouts, true )
+		? $layer['cardLayout']
+		: $default_layout;
+
+	$has_image            = ! empty( $image_url );
+	$image_opacity        = isset( $layer['imageOpacity'] ) ? floatval( $layer['imageOpacity'] ) : 1;
+	$image_width          = isset( $layer['imageWidth'] ) ? absint( $layer['imageWidth'] ) : 50;
+	$image_text           = isset( $layer['imageText'] ) ? sanitize_text_field( $layer['imageText'] ) : '';
+	$image_description    = isset( $layer['imageDescription'] ) ? sanitize_text_field( $layer['imageDescription'] ) : '';
+	$image_link           = isset( $layer['imageLink'] ) ? $layer['imageLink'] : '#';
+	$cta_background_color = isset( $layer['imageCtaButtonColor'] ) ? sanitize_hex_color( $layer['imageCtaButtonColor'] ) : '#EEAB95';
+	$cta_button_text      = ! empty( $layer['imageCtaButtonText'] ) ? sanitize_text_field( $layer['imageCtaButtonText'] ) : __( 'Check now', 'godam' );
+
+	// Ensure opacity is within valid range.
+	$image_opacity = max( 0, min( 1, $image_opacity ) );
+
+	// Ensure width is within valid range.
+	$image_width = max( 0, min( 100, $image_width ) );
+
+	// If no image is provided, force text-only layout on frontend.
+	if ( ! $has_image ) {
+		$layout = 'desktop-text-only';
+	}
+
+	// Generate image element.
+	if ( $has_image ) {
+		$image_element = sprintf(
+			'<img src="%s" alt="%s" style="opacity: %s;" />',
+			esc_url( $image_url ),
+			esc_attr__( 'CTA Card Image', 'godam' ),
+			esc_attr( $image_opacity )
+		);
+	} else {
+		$image_element = sprintf(
+			'<div class="godam-cta-card-image-placeholder" style="opacity: %s;">%s</div>',
+			esc_attr( $image_opacity ),
+			esc_html__( 'No Image', 'godam' )
+		);
+	}
+
+	// Generate content element.
+	$content_element = '<div class="godam-cta-card-content">';
+
+	if ( ! empty( $image_text ) ) {
+		$content_element .= sprintf( '<h2 class="card-title">%s</h2>', esc_html( $image_text ) );
+	}
+
+	if ( ! empty( $image_description ) ) {
+		$content_element .= sprintf( '<p class="card-description">%s</p>', esc_html( $image_description ) );
+	}
+
+	if ( ! empty( $cta_button_text ) || ! empty( $image_link ) ) {
+		$content_element .= sprintf(
+			'<div class="btns"><a class="godam-cta-btn" href="%s" target="_blank" rel="noopener noreferrer" style="background-color: %s; text-decoration: none;">%s</a></div>',
+			esc_url( $image_link ),
+			esc_attr( $cta_background_color ),
+			esc_html( $cta_button_text )
+		);
+	}
+
+	$content_element .= '</div>';
+
+	// Handle different layouts.
+	$card_content = '';
+
+	if ( 'desktop-text-only' === $layout ) {
+		// Text only - no image.
+		$card_content = $content_element;
+	} elseif ( 'card-layout--image-background' === $layout ) {
+		// Image background layout.
+		$card_content = sprintf(
+			'<div class="godam-cta-card-image-bg" style="background-image: url(\'%s\'); opacity: %s;"></div>%s',
+			esc_url( $image_url ),
+			esc_attr( $image_opacity ),
+			$content_element
+		);
+	} else {
+		// All other layouts with image element.
+		$image_content = sprintf( '<div class="godam-cta-card-image">%s</div>', $image_element );
+
+		// Return based on layout order.
+		if ( in_array( $layout, array( 'card-layout--text-imagecover', 'card-layout--text-image', 'card-layout--image-bottom' ), true ) ) {
+			$card_content = $content_element . $image_content;
+		} else {
+			$card_content = $image_content . $content_element;
+		}
+	}
+
+	return sprintf(
+		'<div class="godam-cta-overlay-container"><div class="godam-cta-card %s" style="--image-width: %s%%;">%s</div></div>',
+		esc_attr( $layout ),
+		esc_attr( $image_width ),
+		$card_content
+	);
 }
 
 /**
@@ -211,7 +297,7 @@ function rtgodam_image_cta_html( $layer ) {
  * @param bool $use_for_localize_array Whether to use the data for localizing scripts. Defaults to false.
  * @param int  $timeout                The time in seconds after which the user data should be refreshed.
  */
-function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = 300 ) {
+function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR_IN_SECONDS ) {
 	$rtgodam_user_data = get_option( 'rtgodam_user_data', false );
 	$api_key           = get_option( 'rtgodam-api-key', '' );
 
@@ -245,6 +331,32 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = 300 
 
 		if ( ! is_wp_error( $usage_data ) ) {
 			$rtgodam_user_data = array_merge( $rtgodam_user_data, $usage_data );
+
+			// Check for exceeded limits and set error messages.
+			$bandwidth_exceeded = isset( $usage_data['bandwidth_used'], $usage_data['total_bandwidth'] )
+				&& $usage_data['bandwidth_used'] > $usage_data['total_bandwidth'];
+			$storage_exceeded   = isset( $usage_data['storage_used'], $usage_data['total_storage'] )
+				&& $usage_data['storage_used'] > $usage_data['total_storage'];
+
+			if ( $storage_exceeded ) {
+				$storage_percentage                         = $usage_data['total_storage'] > 0
+					? number_format( ( $usage_data['storage_used'] / $usage_data['total_storage'] ) * 100, 1 )
+					: '0';
+				$rtgodam_user_data['storageBandwidthError'] = sprintf(
+					/* translators: %s: storage usage percentage */
+					__( 'Storage limit exceeded (%s%%). Please upgrade your plan to continue.', 'godam' ),
+					$storage_percentage
+				);
+			} elseif ( $bandwidth_exceeded ) {
+				$bandwidth_percentage                       = $usage_data['total_bandwidth'] > 0
+					? number_format( ( $usage_data['bandwidth_used'] / $usage_data['total_bandwidth'] ) * 100, 1 )
+					: '0';
+				$rtgodam_user_data['storageBandwidthError'] = sprintf(
+					/* translators: %s: bandwidth usage percentage */
+					__( 'Bandwidth limit exceeded (%s%%). Please upgrade your plan to continue.', 'godam' ),
+					$bandwidth_percentage
+				);
+			}
 		} elseif ( ! $valid_api_key ) {
 			$rtgodam_user_data['storageBandwidthError'] = __( 'Oops! It looks like your API key is incorrect or has expired. Please update it and try again.', 'godam' );
 		} else {
@@ -308,14 +420,24 @@ function rtgodam_get_usage_data() {
 
 	$endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.stats.get_bandwidth_and_storage';
 
-	$url = add_query_arg(
-		array(
-			'api_key' => $api_key,
-		),
-		$endpoint
+	// Prepare request body with API key.
+	$request_body = array(
+		'api_key' => $api_key,
 	);
 
-	$response = wp_safe_remote_get( $url );
+	$args = array(
+		'body'    => wp_json_encode( $request_body ),
+		'headers' => array(
+			'Content-Type' => 'application/json',
+		),
+	);
+
+	// Use vip_safe_wp_remote_post as primary and wp_safe_remote_post as fallback.
+	if ( function_exists( 'vip_safe_wp_remote_post' ) ) {
+		$response = vip_safe_wp_remote_post( $endpoint, $args, 3, 3 );
+	} else {
+		$response = wp_safe_remote_post( $endpoint, $args );
+	}
 
 	if ( is_wp_error( $response ) ) {
 		return $response;
@@ -351,7 +473,7 @@ function rtgodam_is_api_key_valid() {
 
 /**
  * Checks if the given filename is an audio file based on its name.
- * 
+ *
  * Note: The files created by uppy webcam, screen capture, and audio plugin are in the same format. So we are checking the filename to determine if it's an audio file.
  *
  * @since 1.4.1
@@ -369,6 +491,45 @@ function godam_is_audio_file_by_name( $filename ) {
 }
 
 /**
+ * Check if the given file is an audio file.
+ *
+ * @since 1.6.0
+ *
+ * @param string $file_path_or_url The file path or URL to check.
+ *
+ * @return bool True if the file is an audio file, false otherwise.
+ */
+function godam_is_audio_file( $file_path_or_url ) {
+	if ( empty( $file_path_or_url ) || ! is_string( $file_path_or_url ) ) {
+		return false;
+	}
+
+	$file_type = wp_check_filetype( $file_path_or_url );
+	$mime_type = ! empty( $file_type['type'] ) ? $file_type['type'] : '';
+
+	// Check if the MIME type indicates an audio file.
+	if ( ! empty( $mime_type ) && str_starts_with( $mime_type, 'audio/' ) ) {
+		return true;
+	}
+
+	// Container formats that can hold both audio and video.
+	// These require filename-based detection to distinguish audio from video.
+	$container_formats = array( 'webm', 'mp4' );
+
+	// Handle ambiguous container formats that might be audio.
+	// Browser-specific behavior:
+	// - Chromium (Chrome, Edge): Saves both video and audio as .webm
+	// - Firefox: Saves audio as .ogg, video as .webm
+	// - Safari: Saves both audio and video as .mp4
+	// We check the filename for 'audio' keyword to determine if it's an audio file.
+	if ( in_array( $file_type['ext'], $container_formats, true ) && godam_is_audio_file_by_name( $file_path_or_url ) ) {
+		return true;
+	}
+
+	return false;
+}
+
+/**
  * Send Video file to GoDAM for transcoding.
  *
  * @param string  $form_type  Form Type.
@@ -382,9 +543,37 @@ function godam_is_audio_file_by_name( $filename ) {
 function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_title = '', $file_url = '', $entry_id = 0, $job_type = 'stream' ) {
 
 	/**
+	 * Filter to allow external developers to disable automatic transcoding for form uploads.
+	 * This allows clients to have manual control over when form-recorded videos get transcoded.
+	 *
+	 * This is the same filter used for media library uploads, providing unified control.
+	 * When disabled, form submissions will fail with an error message indicating transcoding is disabled.
+	 * Manual retranscoding via the admin interface will still work regardless of this setting.
+	 *
+	 * Example usage:
+	 * add_filter( 'godam_auto_transcode_on_upload', '__return_false' ); // Disable globally
+	 *
+	 * @since 1.5.0
+	 *
+	 * @param bool $auto_transcode_on_upload Whether to automatically transcode form uploads. Default true.
+	 */
+	if ( ! apply_filters( 'godam_auto_transcode_on_upload', true ) ) {
+		return new WP_Error(
+			'transcoding_disabled',
+			__( 'Form transcoding has been disabled by the site administrator.', 'godam' )
+		);
+	}
+
+	/**
 	 * Extract file extension.
 	 */
 	$file_extension = pathinfo( $file_url, PATHINFO_EXTENSION );
+
+	/**
+	 * Get MIME type from file URL.
+	 */
+	$file_type_info = wp_check_filetype( $file_url );
+	$content_type   = $file_type_info['type'] ?? '';
 
 	/**
 	 * Set the default settings.
@@ -453,12 +642,13 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	$site_url     = get_site_url();
 
 	// Get author name with fallback to username.
-	$author_first_name = $current_user->first_name;
-	$author_last_name  = $current_user->last_name;
-	
+	$author_first_name = $current_user->first_name ?? '';
+	$author_last_name  = $current_user->last_name ?? '';
+	$author_email      = $current_user->user_email ?? '';
+
 	// If first and last names are empty, use username as fallback.
 	if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
-		$author_first_name = $current_user->user_login;
+		$author_first_name = $current_user->user_login ?? '';
 	}
 
 	$body = array_merge(
@@ -475,11 +665,12 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 			'stream'               => true,
 			'watermark'            => boolval( $rtgodam_watermark ),
 			'resolutions'          => array( 'auto' ),
+			'mime_type'            => $content_type,
 			'folder_name'          => ! empty( $form_title ) ? $form_title : __( 'Gravity forms', 'godam' ),
-			'wp_author_email'      => $current_user->user_email,
+			'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $author_email, 0 ),
 			'wp_site'              => $site_url,
-			'wp_author_first_name' => $author_first_name,
-			'wp_author_last_name'  => $author_last_name,
+			'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, 0 ),
+			'wp_author_last_name'  => apply_filters( 'godam_author_last_name_to_send', $author_last_name, 0 ),
 			'public'               => 1,
 		),
 		$watermark_to_use
@@ -647,55 +838,294 @@ function rtgodam_cache_delete( $key ) {
 }
 
 /**
+ * Check if the current environment is localhost.
+ *
+ * This function checks the server's remote address and host to determine if the site is running in a local development environment.
+ * It checks against a whitelist of common localhost IPs and also looks for '.local' or '.test' in the host name.
+ * Additionally, it respects the RTGODAM_IS_LOCAL constant if defined.
+ *
+ * @since 1.4.3
+ *
+ * @return bool True if the environment is localhost, false otherwise.
+ */
+function rtgodam_is_local_environment() {
+
+	$whitelist = array( '127.0.0.1', '::1', 'localhost' );
+
+	// phpcs:disable -- Disabling phpcs as its not manipulating any data, just reading server variables, and function is used for local environment check only.
+	// We do NOT use REMOTE_ADDR because it can be 127.0.0.1 for loopback requests (Server processes) on hosted sites.
+	// Instead, we rely on HTTP_HOST to detect if the site is actually hosted on localhost/local domains.
+	$host = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
+	// phpcs:enable
+
+	$is_localhost = (
+		in_array( $host, $whitelist, true ) ||
+		strpos( $host, '.local' ) !== false ||
+		strpos( $host, '.test' ) !== false
+	);
+
+	return ( $is_localhost || ( defined( 'RTGODAM_IS_LOCAL' ) && RTGODAM_IS_LOCAL ) );
+}
+
+/**
  * Fetch AI-generated video transcript path.
  *
- * @param string $job_id  The transcription job ID.
- * @return string|false   Transcript path if available, false otherwise.
+ * @param int         $attachment_id The attachment ID (must be numeric).
+ * @param string|null $job_id        Optional. The transcription job ID. If not provided, will be retrieved from post meta.
+ * @return string|false Transcript path if available, false otherwise.
  */
-function godam_get_transcript_path( $job_id ) {
+function godam_get_transcript_path( $attachment_id, $job_id = null ) {
+	if ( empty( $attachment_id ) || ! is_numeric( $attachment_id ) ) {
+		return false;
+	}
+
+	// Check post meta first.
+	$transcript_path = get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
+	if ( ! empty( $transcript_path ) ) {
+		return $transcript_path;
+	}
+
+	// Get job_id from parameter or post meta.
+	if ( empty( $job_id ) ) {
+		$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+		if ( empty( $job_id ) ) {
+			$job_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+		}
+	}
+
 	if ( empty( $job_id ) ) {
 		return false;
 	}
 
-	$cache_key       = 'transcript_path_' . md5( $job_id );
-	$transcript_path = get_transient( $cache_key );
-
-	if ( false === $transcript_path ) {
-		$api_key  = get_option( 'rtgodam-api-key', '' );
-		$rest_url = add_query_arg(
-			array(
-				'job_name' => rawurlencode( $job_id ),
-				'api_key'  => rawurlencode( $api_key ),
-			),
-			RTGODAM_API_BASE . '/api/method/godam_core.api.process.get_transcription'
-		);
-
-		// Add headers to prevent 417 Expectation Failed error.
-		$args = array(
-			'timeout' => 3,
-			'headers' => array(
-				'User-Agent' => 'WordPress/' . get_bloginfo( 'version' ) . '; ' . home_url(),
-				'Accept'     => 'application/json',
-			),
-		);
-
-		$response = wp_remote_get( $rest_url, $args );
-
-		if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
-			$body = wp_remote_retrieve_body( $response );
-			$data = json_decode( $body, true );
-
-			if (
-				is_array( $data ) &&
-				isset( $data['message']['transcript_path'], $data['message']['transcription_status'] ) &&
-				'Transcribed' === $data['message']['transcription_status']
-			) {
-				$transcript_path = $data['message']['transcript_path'];
-				// Cache for 12 hours.
-				set_transient( $cache_key, $transcript_path, 12 * HOUR_IN_SECONDS );
-			}
-		} 
+	// Get API key.
+	$api_key = get_option( 'rtgodam-api-key', '' );
+	if ( empty( $api_key ) ) {
+		return false;
 	}
 
-	return ! empty( $transcript_path ) ? $transcript_path : false;
+	// Make POST request to Frappe API.
+	$rest_url = RTGODAM_API_BASE . '/api/method/godam_core.api.process.get_transcription';
+
+	$request_body = array(
+		'job_name' => sanitize_text_field( $job_id ),
+		'api_key'  => sanitize_text_field( $api_key ),
+	);
+
+	$args = array(
+		'method'  => 'POST',
+		'timeout' => 3,
+		'headers' => array(
+			'Content-Type' => 'application/json',
+		),
+		'body'    => wp_json_encode( $request_body ),
+	);
+
+	$response = wp_remote_post( $rest_url, $args );
+
+	if ( is_wp_error( $response ) ) {
+		return false;
+	}
+
+	$response_code = wp_remote_retrieve_response_code( $response );
+
+	if ( 200 !== $response_code ) {
+		return false;
+	}
+
+	$body = wp_remote_retrieve_body( $response );
+	$data = json_decode( $body, true );
+
+	if (
+		is_array( $data ) &&
+		isset( $data['message']['transcript_path'], $data['message']['transcription_status'] ) &&
+		'Transcribed' === $data['message']['transcription_status']
+	) {
+		$transcript_path = esc_url_raw( $data['message']['transcript_path'] );
+
+		// Save to post meta using the attachment ID.
+		if ( ! empty( $transcript_path ) ) {
+			update_post_meta( $attachment_id, 'rtgodam_transcript_path', $transcript_path );
+		}
+
+		return $transcript_path;
+	}
+
+	return false;
+}
+
+/**
+ * Generate the HTML content for the video preview page.
+ *
+ * This function constructs the HTML structure for a video preview page based on the provided video ID.
+ * It checks if the video exists and displays either the video player or an error message accordingly.
+ *
+ * @param int $video_id The ID of the video attachment to preview.
+ * @return string The generated HTML content for the video preview page.
+ */
+function godam_preview_page_content( $video_id ) {
+	ob_start();
+	// Check if video ID is provided and if video attachment exists.
+	$video_attachment = null;
+	$show_video       = false;
+	$video_id         = intval( $video_id );
+
+	if ( ! empty( $video_id ) ) {
+		$video_attachment = get_post( $video_id );
+		$show_video       = $video_attachment && 'attachment' === $video_attachment->post_type;
+	}
+
+	if ( ! $show_video ) {
+		// Display error message for missing or invalid video.
+		?>
+		<div class="godam-video-preview--container">
+			<h1 class="godam-video-preview--title"><?php esc_html_e( 'Video Preview', 'godam' ); ?></h1>
+			<p class="video-not-found"><?php esc_html_e( 'Oops! We could not locate your video', 'godam' ); ?></p>
+		</div>
+		<?php
+	} else {
+		// Display video content.
+		?>
+		<header class="godam-video-preview--container">
+			<h1 class="godam-video-preview--title">
+				<strong><?php esc_html_e( 'Video Preview: ', 'godam' ); ?></strong>
+				<?php echo esc_html( get_the_title( $video_id ) ); ?>
+			</h1>
+		</header>
+
+		<div class="godam-video-preview--container">
+			<div class="godam-video-preview--notice">
+				<?php esc_html_e( 'Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles.', 'godam' ); ?>
+			</div>
+		</div>
+
+		<div class="godam-video-preview">
+			<?php echo do_shortcode( '[godam_video id="' . $video_id . '"]' ); ?>
+		</div>
+		<?php
+	}
+	return ob_get_clean();
+}
+
+/**
+ * Get post id from meta key and value.
+ *
+ * @since 1.5.0
+ *
+ * @param string $key   Meta key.
+ * @param mixed  $value Meta value.
+ *
+ * @return int|bool     Return post id if found else false.
+ */
+function rtgodam_get_post_id_by_meta_key_and_value( $key, $value ) {
+	global $wpdb;
+	$cache_key = md5( 'meta_key_' . $key . '_meta_value_' . $value );
+
+	$meta = rtgodam_cache_get( $cache_key );
+	if ( empty( $meta ) ) {
+		$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s", $key, $value ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		rtgodam_cache_set( $cache_key, $meta, HOUR_IN_SECONDS );
+	}
+
+	if ( is_array( $meta ) && ! empty( $meta ) && isset( $meta[0] ) ) {
+		$meta = $meta[0];
+	}
+	if ( is_object( $meta ) ) {
+		return $meta->post_id;
+	}
+	return false;
+}
+
+/**
+ * Generate HTML content for the video embed page.
+ *
+ * This function produces the HTML markup for embedding a single video.
+ * It displays the video player only, without any headers or notices,
+ * making it suitable for embedding in iframes or modals.
+ *
+ * @param int  $video_id The ID of the video attachment to embed.
+ * @param bool $show_engagements Whether to show engagements.
+ *
+ * @since 1.5.0
+ *
+ * @return string The generated HTML content for the video embed page.
+ */
+function godam_embed_page_content( $video_id, $show_engagements = false ) {
+	ob_start();
+	// Check if video ID is provided and if video attachment exists.
+	$video_attachment = null;
+	$show_video       = false;
+	$video_id         = intval( $video_id );
+	$show_engagements = $show_engagements ? 'show' : '';
+
+	if ( ! empty( $video_id ) ) {
+		$video_attachment = get_post( $video_id );
+		$show_video       = $video_attachment && 'attachment' === $video_attachment->post_type && 'video/' === substr( $video_attachment->post_mime_type, 0, 6 );
+	}
+
+	if ( ! $show_video ) {
+		// Display error message for missing or invalid video.
+		?>
+		<div class="godam-video-embed--container">
+			<p class="video-not-found"><?php esc_html_e( 'Video not found', 'godam' ); ?></p>
+		</div>
+		<?php
+	} else {
+		// Display video content.
+		?>
+		<div class="godam-video-embed" data-show-engagements="<?php echo esc_attr( $show_engagements ? 'true' : 'false' ); ?>">
+			<?php echo do_shortcode( '[godam_video id="' . $video_id . '" engagements="' . $show_engagements . '"]' ); ?>
+		</div>
+		<?php
+	}
+	return ob_get_clean();
+}
+
+/**
+ * Convert one or more URLs to HTTPS if the current page is using SSL.
+ *
+ * This function checks whether the current page is using SSL and,
+ * if so, returns the given URL string or array of URLs with their scheme changed to HTTPS.
+ * If SSL is not active, the original value is returned unchanged.
+ *
+ * @since n.e.x.t
+ *
+ * @param array|string $urls The URLs to change the scheme of.
+ *
+ * @return array|string The URLs with the scheme changed to HTTPS.
+ */
+function rtgodam_convert_to_https_url( $urls ) {
+
+	if ( ! is_ssl() ) {
+		return $urls;
+	}
+
+	if ( is_array( $urls ) ) {
+
+		$filtered_urls = array_filter(
+			$urls,
+			function ( $url ) {
+				return null !== $url && '' !== $url;
+			}
+		);
+
+		$converted_urls = array_map(
+			function ( $url ) {
+				return set_url_scheme( $url, 'https' );
+			},
+			$filtered_urls
+		);
+
+		return array_filter(
+			$converted_urls,
+			function ( $url ) {
+				return null !== $url && '' !== $url;
+			}
+		);
+	}
+
+	if ( null === $urls || '' === $urls ) {
+		return $urls;
+	}
+
+	return set_url_scheme( $urls, 'https' );
 }

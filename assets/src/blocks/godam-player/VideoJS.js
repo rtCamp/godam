@@ -4,18 +4,31 @@
 import React from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
-import 'videojs-contrib-quality-menu';
+
+// Only import qualityMenu if not already registered (this will also load qualityLevels as dependency)
+if ( ! videojs.getPlugin( 'qualityMenu' ) ) {
+	import( 'videojs-contrib-quality-menu' );
+}
+
 import 'videojs-flvjs-es6';
 
 /**
  * WordPress dependencies
  */
-import { useRef, useEffect } from '@wordpress/element';
+import { useRef, useEffect, useMemo } from '@wordpress/element';
 
 export const VideoJS = ( props ) => {
 	const videoRef = useRef( null );
 	const playerRef = useRef( null );
 	const { options, onReady, onPlayerReady } = props;
+
+	const paddingTopValue = useMemo( () => {
+		if ( options.aspectRatio ) {
+			const [ x, y ] = options.aspectRatio.split( ':' );
+			return `${ ( y / x ) * 100 }%`;
+		}
+		return '56.25%';
+	}, [ options.aspectRatio ] );
 
 	useEffect( () => {
 		// Make sure Video.js player is only initialized once
@@ -27,10 +40,39 @@ export const VideoJS = ( props ) => {
 			videoElement.classList.add( 'vjs-styles-dimensions' );
 			videoRef.current.appendChild( videoElement );
 
-			playerRef.current = videojs( videoElement, options, () => {
+			const videojsOptions = { ...options };
+
+			if ( ! options.aspectRatio ) {
+				videojsOptions.aspectRatio = '16:9';
+			}
+
+			if ( options.aspectRatio && ! /^\d+:\d+$/.test( options.aspectRatio ) ) {
+				// Unset the aspectRatio from videojsOptions as we will set it later
+				delete videojsOptions.aspectRatio;
+			}
+
+			playerRef.current = videojs( videoElement, videojsOptions, () => {
 				if ( onReady ) {
 					onReady( playerRef.current );
 				}
+
+				// Video.js player initialize instantly and hides the video loading spinner, so add a slight delay to hide it smoothly
+				setTimeout( () => {
+					if ( videoRef.current ) {
+						// Hide the video player loading animation
+						const parentElement = videoRef.current.parentElement;
+
+						if ( parentElement ) {
+							// Remove the child element with class name 'godam-video-loading'
+							const childElement = parentElement.querySelector( '.godam-video-loading' );
+							if ( childElement ) {
+								childElement.classList.add( 'hide' );
+							}
+						}
+
+						videoRef.current.style.display = 'block';
+					}
+				}, 500 );
 			} );
 
 			// Add quality menu
@@ -49,6 +91,17 @@ export const VideoJS = ( props ) => {
 			player.preload( options.preload || '' );
 			player.playsinline( options.playsinline );
 			player.src( options.sources );
+			// Verify if aspectRatio is in valid format x:y
+			if ( /^\d+:\d+$/.test( options.aspectRatio ) ) {
+				player.aspectRatio( options.aspectRatio );
+
+				// Get x and y from aspectRatio
+				const [ x, y ] = options.aspectRatio.split( ':' );
+				if ( playerRef.current && x && y ) {
+					const playerEl = playerRef.current.el_;
+					playerEl.style.paddingTop = `${ ( y / x ) * 100 }%`;
+				}
+			}
 		}
 	}, [ options, videoRef ] );
 
@@ -57,15 +110,6 @@ export const VideoJS = ( props ) => {
 		const player = playerRef.current;
 
 		onPlayerReady( player );
-
-		if ( playerRef.current ) {
-			const playerEl = playerRef.current.el_;
-			const video = playerEl.querySelector( 'video' );
-
-			video.addEventListener( 'loadedmetadata', () => {
-				playerEl.style.paddingTop = `${ ( video.videoHeight / video.videoWidth ) * 100 }%`;
-			} );
-		}
 
 		return () => {
 			if ( player && ! player.isDisposed() ) {
@@ -77,7 +121,10 @@ export const VideoJS = ( props ) => {
 
 	return (
 		<div data-vjs-player>
-			<div ref={ videoRef } />
+			<div style={ { paddingTop: paddingTopValue } } className="godam-video-loading">
+				<div className="godam-video-loading-spinner"></div>
+			</div>
+			<div style={ { display: 'none' } } ref={ videoRef } />
 		</div>
 	);
 };

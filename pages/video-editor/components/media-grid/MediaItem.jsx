@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { forwardRef, useState } from 'react';
+import React, { forwardRef, useState, useEffect } from 'react';
 
 /**
  * WordPress dependencies
@@ -15,7 +15,7 @@ import { createPortal } from '@wordpress/element';
  * Internal dependencies
  */
 import NoThumbnailImage from '../../assets/no-thumbnail.jpg';
-import { copyGoDAMVideoBlock } from '../../utils';
+import { copyGoDAMVideoBlock, prefetchMediaDataForCopy } from '../../utils';
 import { canManageAttachment } from '../../../../assets/src/js/media-library/utility.js';
 
 const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
@@ -49,6 +49,20 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 	const handleOnSnackbarRemove = () => {
 		setShowSnackbar( false );
 	};
+
+	const getPreviewTemplateUrl = ( videoItem ) => {
+		const homeUrl = window?.godamRestRoute?.homeUrl;
+		const videoSlug = window?.godamSettings?.videoPostSettings?.video_slug;
+		const videoName = videoItem?.name;
+		return ( homeUrl && videoSlug && videoName )
+			? `${ homeUrl }/${ videoSlug }/${ videoName }`
+			: videoItem?.link;
+	};
+
+	// Pre-fetch data on mount to ensure copy always works
+	useEffect( () => {
+		prefetchMediaDataForCopy( item.id );
+	}, [ item.id ] );
 
 	return (
 		<div
@@ -84,7 +98,7 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 						{
 							icon: <Icon icon={ seen } />,
 							onClick: () => {
-								window.open( item.link, '_blank' );
+								window.open( getPreviewTemplateUrl( item ), '_blank' );
 							},
 							title: __( 'Preview template', 'godam' ),
 						},

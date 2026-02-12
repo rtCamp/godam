@@ -9,22 +9,82 @@
 
 	&.columns-2 {
 		grid-template-columns: repeat(2, 1fr);
+
+		@media screen and (max-width: 320px) {
+			grid-template-columns: 1fr;
+		}
 	}
 
 	&.columns-3 {
 		grid-template-columns: repeat(3, 1fr);
+
+		@media screen and (max-width: 500px) {
+			grid-template-columns: repeat(2, 1fr);
+		}
+
+		@media screen and (max-width: 320px) {
+			grid-template-columns: 1fr;
+		}
 	}
 
 	&.columns-4 {
 		grid-template-columns: repeat(4, 1fr);
+
+		@media screen and (max-width: 768px) {
+			grid-template-columns: repeat(3, 1fr);
+		}
+
+		@media screen and (max-width: 500px) {
+			grid-template-columns: repeat(2, 1fr);
+		}
+
+		@media screen and (max-width: 320px) {
+			grid-template-columns: 1fr;
+		}
 	}
 
 	&.columns-5 {
 		grid-template-columns: repeat(5, 1fr);
+
+		@media screen and (max-width: 900px) {
+			grid-template-columns: repeat(4, 1fr);
+		}
+
+		@media screen and (max-width: 768px) {
+			grid-template-columns: repeat(3, 1fr);
+		}
+
+		@media screen and (max-width: 500px) {
+			grid-template-columns: repeat(2, 1fr);
+		}
+
+		@media screen and (max-width: 320px) {
+			grid-template-columns: 1fr;
+		}
 	}
 
 	&.columns-6 {
 		grid-template-columns: repeat(6, 1fr);
+
+		@media screen and (max-width: 1024px) {
+			grid-template-columns: repeat(5, 1fr);
+		}
+		
+		@media screen and (max-width: 900px) {
+			grid-template-columns: repeat(4, 1fr);
+		}
+
+		@media screen and (max-width: 768px) {
+			grid-template-columns: repeat(3, 1fr);
+		}
+
+		@media screen and (max-width: 500px) {
+			grid-template-columns: repeat(2, 1fr);
+		}
+
+		@media screen and (max-width: 320px) {
+			grid-template-columns: 1fr;
+		}
 	}
 
 	// Move general selectors FIRST (lowest specificity)
@@ -162,6 +222,7 @@
 					white-space: normal;
 					overflow: visible;
 					text-overflow: initial;
+					word-break: break-word;
 
 					@media (max-width: 765px) {
 						font-size: 14px;
@@ -259,7 +320,7 @@
 		max-width: none;
 		max-height: 95vh;
 		box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-		z-index: 10;
+		z-index: 200;
 
 		@media (min-width: 1728px) {
 			width: 65vw;
@@ -338,7 +399,7 @@
 		justify-content: center;
 		cursor: pointer;
 		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-		z-index: 11;
+		z-index: 201;
 
 		@media (max-width: 1099px) {
 			top: -40px;
@@ -346,7 +407,7 @@
 			color: #fff;
 			background-color: rgba(0, 0, 0, 0.7);
 			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-			z-index: 12;
+			z-index: 201;
 			border: 1px solid rgba(255, 255, 255, 0.2);
 			transition: background-color 0.2s ease;
 
@@ -402,11 +463,18 @@
 
 @keyframes godam-spin {
 
-	to { transform: rotate(360deg); }
+	from {
+		transform: rotate(0deg);
+	}
+
+	to {
+		transform: rotate(360deg);
+	}
 }
 
 // Compitibility with Like, comments and Views
 .is-gallery {
+
 	&.godam-modal,
 	.godam-modal-overlay,
 	.godam-modal-content {
@@ -434,5 +502,141 @@
 		border-radius: 50%;
 		border-top-color: #fff;
 		animation: godam-spin 1s ease-in-out infinite;
+	}
+}
+
+// Video ID Modal Styles
+.godam-video-id-modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 999999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	.godam-modal-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.8);
+		backdrop-filter: blur(10px);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		.godam-overlay-loading-spinner {
+			display: inline-block;
+			width: 50px;
+			height: 50px;
+			border: 5px solid rgba(255, 255, 255, 0.3);
+			border-radius: 50%;
+			border-top-color: #fff;
+			animation: godam-spin 1s ease-in-out infinite;
+			z-index: 10;
+		}
+	}
+
+	.godam-modal-content {
+		position: relative;
+		background: #fff;
+		border-radius: 12px;
+		max-width: min(95vw, 1200px);
+    	max-height: min(95vh, 800px);
+		width: 100%;
+		height: 100%;
+		text-align: center;
+		z-index: 1;
+		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+		transition: opacity 0.3s ease;
+
+		&.godam-modal-content-hidden {
+			opacity: 0;
+			pointer-events: none;
+		}
+
+		&.godam-modal-content-visible {
+			opacity: 1;
+			pointer-events: auto;
+			animation: modalFadeIn 0.3s ease;
+		}
+	}
+
+	.godam-modal-close {
+		position: absolute;
+		top: 32px;
+		right: 32px;
+		font-size: 28px;
+		cursor: pointer;
+		color: #333;
+		line-height: 1;
+		transition: color 0.2s ease, transform 0.2s ease;
+		z-index: 1;
+		background-color: #fff;
+		border-radius: 100px;
+		border: 1px solid #333;
+		outline: none;
+
+		&:hover {
+			color: #000;
+			border-color: #000;
+			transform: scale(1.1);
+		}
+
+		@media screen and (max-width: 768px) {
+			color: rgba(255, 255, 255, 0.8);
+			background-color: rgba(0, 0, 0, 0.7);
+			border: 1px solid rgba(255, 255, 255, 0.8);
+			top: 14px;
+			right: 14px;
+	
+			&:hover {
+				background-color: rgba(0, 0, 0, 0.9);
+				color: #fff;
+				border-color: #fff;
+			}
+		}
+	}
+
+	.godam-modal-body {
+		height: 100%;
+		position: relative;
+		transition: transform 0.3s ease, opacity 0.3s ease;
+
+		iframe {
+			width: 100%;
+			height: 100%;
+			border: none;
+			border-radius: 8px;
+		}
+	}
+
+	&.godam-modal-fullscreen {
+
+		.godam-modal-body {
+			position: fixed;
+			inset: 0;
+		}
+
+		.godam-modal-close {
+			z-index: 0;
+		}
+	}
+}
+
+@keyframes modalFadeIn {
+
+	from {
+		opacity: 0;
+		transform: scale(0.9);
+	}
+
+	to {
+		opacity: 1;
+		transform: scale(1);
 	}
 }

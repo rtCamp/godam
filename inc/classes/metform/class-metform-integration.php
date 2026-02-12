@@ -60,19 +60,16 @@ class Metform_Integration {
 	 * @return void
 	 */
 	public function add_additional_css_for_video_editor() {
-		$custom_css = <<<'CSS'
-			.form-container.metform {
-				margin: unset;
-				height: 100%;
-				overflow: unset !important;
-				align-content: center;
-				text-align: center;
-			}
-			.form-container.metform iframe {
-				height: 100%;
-			}
-		CSS;
-
+		$custom_css = '.form-container.metform {' .
+			'margin: unset;' .
+			'height: 100%;' .
+			'overflow: unset !important;' .
+			'align-content: center;' .
+			'text-align: center;' .
+			'}' .
+			'.form-container.metform iframe {' .
+			'height: 100%;' .
+			'}';
 
 		wp_add_inline_style( 'rtgodam-style', $custom_css );
 	}
@@ -85,11 +82,9 @@ class Metform_Integration {
 	 * @return void
 	 */
 	public function add_additional_css_for_godam_player() {
-		$custom_css = <<<'CSS'
-			.easydam-layer.metform .form-container {
-				position: static;
-			}
-		CSS;
+		$custom_css = '.easydam-layer.metform .form-container {' .
+			'position: static;' .
+			'}';
 
 		wp_add_inline_style( 'godam-player-style', $custom_css );
 	}
@@ -106,17 +101,15 @@ class Metform_Integration {
 	 */
 	public function add_css_for_the_layer_inside_iframe( $layer, $layer_id ) {
 		if ( 'metform' === $layer && ! empty( $layer_id ) ) {
-			$custom_css = <<<'CSS'
-				html {
-					margin: 0 !important;
-					padding: 0 !important;
-				}
-				body {
-					background: unset;
-					height: 100vh;
-					align-content: center;
-				}
-			CSS;
+			$custom_css = 'html {' .
+				'margin: 0 !important;' .
+				'padding: 0 !important;' .
+				'}' .
+				'body {' .
+				'background: unset;' .
+				'height: 100vh;' .
+				'align-content: center;' .
+				'}';
 
 			echo '<style>' . $custom_css . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}

@@ -11,11 +11,11 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import addLayersImage from '../../../assets/src/images/Add Layers.png';
-import centralMediaManagerImage from '../../../assets/src/images/Central Media Manager.png';
-import videoAnalyticsImage from '../../../assets/src/images/Video Analytics.png';
-import comparisonAnalyticsImage from '../../../assets/src/images/Video Analytics (Comparison).png';
-import singleVideoImage from '../../../assets/src/images/Single Video.png';
+import addLayersImage from '../../../assets/src/images/add-layers.png';
+import centralMediaManagerImage from '../../../assets/src/images/central-media-manager.png';
+import videoAnalyticsImage from '../../../assets/src/images/video-analytics.png';
+import comparisonAnalyticsImage from '../../../assets/src/images/video-analytics-comparison.png';
+import singleVideoImage from '../../../assets/src/images/single-video.png';
 
 const carouselSlides = [
 	{}, // "What's New" slide

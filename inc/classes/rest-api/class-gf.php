@@ -54,7 +54,7 @@ class GF extends Base {
 									'description'       => __( 'The theme to be applied to the Gravity Form.', 'godam' ),
 									'type'              => 'string',
 									'required'          => false,
-									'sanitize_callback' => 'sanitize_text_field',
+									'sanitize_callback' => 'sanitize_key',
 								),
 							)
 						),

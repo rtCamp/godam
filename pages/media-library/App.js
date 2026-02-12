@@ -36,8 +36,8 @@ const App = () => {
 	const contextSelectedFolder = useSelector( ( state ) => state.FolderReducer.currentContextMenuFolder );
 	const isMultiSelecting = useSelector( ( state ) => state.FolderReducer.isMultiSelecting );
 	const currentSortOrder = useSelector( ( state ) => state.FolderReducer.sortOrder );
-	const { data: allMediaCount } = useGetAllMediaCountQuery();
-	const { data: uncategorizedCount } = useGetCategoryMediaCountQuery( { folderId: 0 } );
+	const { data: allMediaCount, refetch: refetchAllMediaCount } = useGetAllMediaCountQuery();
+	const { data: uncategorizedCount, refetch: refetchUncategorizedCount } = useGetCategoryMediaCountQuery( { folderId: 0 } );
 
 	const allFolders = useSelector( ( state ) => state.FolderReducer.folders );
 	const currentFolder = useMemo( () => {
@@ -90,14 +90,32 @@ const App = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );
 
-	const toggleSidebar = () => {
-		const sidebar = document.getElementById( 'rt-transcoder-media-library-root' );
-		const mediaModal = document.querySelector( '.media-modal-content' );
+	// Listen for media type filter changes and refetch media count queries
+	useEffect( () => {
+		const handleMediaTypeChange = () => {
+			refetchAllMediaCount();
+			refetchUncategorizedCount();
+		};
+
+		document.addEventListener( 'godam-attachment-browser:changed', handleMediaTypeChange );
+
+		return () => {
+			document.removeEventListener( 'godam-attachment-browser:changed', handleMediaTypeChange );
+		};
+	}, [ refetchAllMediaCount, refetchUncategorizedCount ] );
+
+	const toggleSidebar = ( e ) => {
+		const target = e.target;
+
+		const sidebar = target.closest( '#rt-transcoder-media-library-root' );
+
+		const mediaModal = target.closest( '.media-modal-content' );
 		const newHidden = ! isSidebarHidden;
 
 		if ( sidebar ) {
 			sidebar.classList.toggle( 'hide-sidebar', newHidden );
 		}
+
 		if ( mediaModal ) {
 			mediaModal.classList.toggle( 'hide-sidebar', newHidden );
 		}
@@ -136,7 +154,7 @@ const App = () => {
 				__next40pxDefaultSize
 				variant="secondary"
 				className="button--full toggle-folder-button"
-				onClick={ () => toggleSidebar() }
+				onClick={ toggleSidebar }
 				icon={ isSidebarHidden ? 'arrow-right-alt2' : 'arrow-left-alt2' }
 			/>
 			<div className="control-buttons">
@@ -163,6 +181,7 @@ const App = () => {
 					<SelectControl
 						value={ currentSortOrder }
 						className="folder-sort-select"
+						__next40pxDefaultSize
 						options={ [
 							{ label: __( 'By Name (A-Z)', 'godam' ), value: 'name-asc' },
 							{ label: __( 'By Name (Z-A)', 'godam' ), value: 'name-desc' },

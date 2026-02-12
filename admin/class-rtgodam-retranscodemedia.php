@@ -57,8 +57,7 @@ class RTGODAM_RetranscodeMedia {
 		$this->api_key        = get_option( 'rtgodam-api-key' );
 		$this->stored_api_key = get_option( 'rtgodam-api-key-stored' );
 
-		$api_check = rtgodam_verify_api_key( $this->api_key );
-		if ( is_wp_error( $api_check ) ) {
+		if ( ! rtgodam_is_api_key_valid() ) {
 			return; // Abort initializing retranscoding if api is invalid.
 		}
 
@@ -112,7 +111,7 @@ class RTGODAM_RetranscodeMedia {
 	 * Add the Retranscode Media meta box to the EasyDam Tools page.
 	 */
 	public function render_tools_page() {
-		$this->add_easydam_meta_boxes()
+		$this->add_easydam_meta_boxes();
 		?>
 		<div>
 			<h1><?php esc_html_e( 'GoDAM Tools', 'godam' ); ?></h1>
@@ -255,7 +254,7 @@ class RTGODAM_RetranscodeMedia {
 
 		$actions = ( ! empty( $actions ) && is_array( $actions ) ) ? $actions : array();
 
-		$url = wp_nonce_url( admin_url( 'admin.php?page=rtgodam_tools&goback=1&ids=' . $post->ID ), 'rtgodam_tools' );
+		$url = admin_url( 'admin.php?page=rtgodam_tools&goback=1&media_ids=' . $post->ID . '&_wpnonce=' . wp_create_nonce( 'rtgodam_tools' ) );
 
 		$actions['retranscode_media'] = sprintf(
 			'<a href="%s" title="%s">%s</a>',
