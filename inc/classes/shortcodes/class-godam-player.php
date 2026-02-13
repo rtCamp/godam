@@ -104,6 +104,20 @@ class GoDAM_Player {
 		);
 
 		wp_register_style(
+			'godam-player-pulse-skin',
+			RTGODAM_URL . 'assets/build/css/pulse-skin.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/pulse-skin.css' )
+		);
+
+		wp_register_style(
+			'godam-player-luma-skin',
+			RTGODAM_URL . 'assets/build/css/luma-skin.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/luma-skin.css' )
+		);
+
+		wp_register_style(
 			'godam-player-classic-skin',
 			RTGODAM_URL . 'assets/build/css/classic-skin.css',
 			array(),
@@ -140,6 +154,8 @@ class GoDAM_Player {
 		wp_enqueue_style( 'godam-player-minimal-skin' );
 		wp_enqueue_style( 'godam-player-pills-skin' );
 		wp_enqueue_style( 'godam-player-bubble-skin' );
+		wp_enqueue_style( 'godam-player-pulse-skin' );
+		wp_enqueue_style( 'godam-player-luma-skin' );
 		wp_enqueue_style( 'godam-player-classic-skin' );
 	}
 
@@ -233,6 +249,8 @@ class GoDAM_Player {
 			'Minimal' => 'godam-player-minimal-skin',
 			'Pills'   => 'godam-player-pills-skin',
 			'Bubble'  => 'godam-player-bubble-skin',
+			'Pulse'   => 'godam-player-pulse-skin',
+			'Luma'    => 'godam-player-luma-skin',
 			'Classic' => 'godam-player-classic-skin',
 		);
 

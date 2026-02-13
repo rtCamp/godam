@@ -135,6 +135,8 @@ class Recorder_Field extends BaseFieldManager {
 			'Minimal' => 'godam-player-minimal-skin',
 			'Pills'   => 'godam-player-pills-skin',
 			'Bubble'  => 'godam-player-bubble-skin',
+			'Pulse'   => 'godam-player-pulse-skin',
+			'Luma'    => 'godam-player-luma-skin',
 			'Classic' => 'godam-player-classic-skin',
 		);
 

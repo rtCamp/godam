@@ -12,7 +12,7 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 	 */
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
-	const isBubbleOrClassic = 'Bubble' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin;
+	const excludeBrandLogo = 'Bubble' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin || 'Pulse' === mediaSettings?.video_player?.player_skin || 'Luma' === mediaSettings?.video_player?.player_skin;
 
 	/**
 	 * To show a notice message.
@@ -93,7 +93,7 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 				<Button
 					onClick={ openBrandMediaPicker }
 					variant="primary"
-					disabled={ isBubbleOrClassic }
+					disabled={ excludeBrandLogo }
 					className="godam-button"
 				>
 					{ mediaSettings?.video_player?.brand_image ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
@@ -104,7 +104,7 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 						variant="secondary"
 						isDestructive
 						className="godam-button"
-						disabled={ isBubbleOrClassic }
+						disabled={ excludeBrandLogo }
 					>
 						{ __( 'Remove', 'godam' ) }
 					</Button>
@@ -132,7 +132,7 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 
 			<p className="text-[0.75rem] leading-[1.2] text-[#777]">
 				{
-					isBubbleOrClassic
+					excludeBrandLogo
 						? ( <div className="flex items-center gap-2">
 							<Icon icon={ error } style={ { fill: '#EAB308' } } size={ 28 } />
 							<p className="text-[#AB3A6C] text-[0.75rem] leading-[1.2]">{ __(
