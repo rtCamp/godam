@@ -151,11 +151,14 @@ class GoDAM_Product_Gallery {
 		$close_bg_color = $atts['play_button_bg_color'];
 		$close_color    = $atts['play_button_icon_color'];
 		$close_radius   = $atts['play_button_radius'];
-		$icon_bg_color  = $atts['cta_button_bg_color'];
-		$icon_color     = $atts['cta_button_icon_color'];
-		$radius         = $atts['cta_button_border_radius'];
+		$icon_bg_color  = $atts['cta_cart_bg_color'];
+		$icon_color     = $atts['cta_cart_icon_color'];
+		$radius         = $atts['cta_cart_border_radius'];
+		$border_color   = $atts['cta_cart_border_color'];
+		$border_style   = $atts['cta_cart_border_style'];
+		$border_width   = $atts['cta_cart_border_width'];
 		$title_color    = $atts['cta_product_name_color'];
-		$price_color    = $atts['cta_product_price_color'];
+		$price_color    = $atts['cta_product_price_color_primary'];
 
 		$css = "
 			#{$instance_id} .godam-product-sidebar,
@@ -169,6 +172,7 @@ class GoDAM_Product_Gallery {
 				background-color: {$icon_bg_color};
 				color: {$icon_color};
 				border-radius: {$radius}%;
+				border: {$border_width} {$border_style} {$border_color};
 			}
 			#{$instance_id} .godam-product-modal-close,
 			[data-gallery-id=\"{$instance_id}\"] .godam-product-modal-close {
@@ -208,44 +212,56 @@ class GoDAM_Product_Gallery {
 		$default_atts = apply_filters(
 			'rtgodam_product_gallery_default_attributes',
 			array(
-				'block_id'                    => '',
-				'layout'                      => 'carousel',
-				'view'                        => '4-3',
-				'product'                     => '',
-				'align'                       => '',
-				'autoplay'                    => '',
-				'play_button_enabled'         => '',
-				'play_button_bg_color'        => '#000000',
-				'play_button_icon_color'      => '#ffffff',
-				'play_button_size'            => 40,
-				'play_button_radius'          => 50,
-				'unmute_button_enabled'       => '',
-				'unmute_button_bg_color'      => 'rgba(0,0,0,0.4)',
-				'unmute_button_icon_color'    => '#ffffff',
-				'desktop_card_width'          => 21.5,
-				'tablet_card_width'           => 41.5,
-				'mobile_card_width'           => 66.5,
-				'arrow_bg_color'              => 'rgba(0,0,0,0.5)',
-				'arrow_icon_color'            => '#ffffff',
-				'arrow_size'                  => 32,
-				'arrow_border_radius'         => 4,
-				'arrow_visibility'            => 'always',
-				'grid_columns_desktop'        => 4,
-				'grid_columns_tablet'         => 3,
-				'grid_columns_mobile'         => 2,
-				'grid_row_gap'                => 16,
-				'grid_column_gap'             => 16,
-				'cta_enabled'                 => false,
-				'cta_display_position'        => 'below-inside',
-				'cta_bg_color'                => '#ffffff',
-				'cta_button_bg_color'         => '#000000',
-				'cta_button_icon_color'       => '#ffffff',
-				'cta_button_border_radius'    => 30,
-				'cta_product_name_font_size'  => 16,
-				'cta_product_price_font_size' => 14,
-				'cta_product_name_color'      => '#000000',
-				'cta_product_price_color'     => '#333333',
-				'cta_cart_action'             => 'mini-cart',
+				'block_id'                          => '',
+				'layout'                            => 'carousel',
+				'view'                              => '9-16',
+				'product'                           => '',
+				'autoplay'                          => '',
+				'play_button_enabled'               => '',
+				'play_button_bg_color'              => 'rgba(0, 0, 0, 0.76)',
+				'play_button_icon_color'            => 'rgba(255, 255, 255, 1)',
+				'play_button_size'                  => 50,
+				'play_button_radius'                => 50,
+				'unmute_button_enabled'             => '',
+				'unmute_button_bg_color'            => 'rgba(0,0,0,0.4)',
+				'unmute_button_icon_color'          => 'rgba(255, 255, 255, 1)',
+				'desktop_card_width'                => 16.5,
+				'tablet_card_width'                 => 35.5,
+				'mobile_card_width'                 => 59.5,
+				'arrow_bg_color'                    => 'rgba(250, 146, 0, 1)',
+				'arrow_icon_color'                  => 'rgba(255, 255, 255, 1)',
+				'arrow_size'                        => 35,
+				'arrow_border_radius'               => 30,
+				'arrow_visibility'                  => 'always',
+				'grid_columns_desktop'              => 4,
+				'grid_columns_tablet'               => 3,
+				'grid_columns_mobile'               => 2,
+				'grid_row_gap'                      => 1,
+				'grid_column_gap'                   => 1,
+				'cta_enabled'                       => false,
+				'cta_display_position'              => 'below-inside',
+				'cta_bg_color'                      => 'rgba(255, 255, 255, 1)',
+				'cta_product_name_font_size'        => 0.9,
+				'cta_product_price_font_size'       => 0.8,
+				'cta_product_name_color'            => 'rgba(0, 0, 0, 1)',
+				'cta_product_price_color_primary'   => 'rgba(66, 66, 66, 1)',
+				'cta_product_price_color_secondary' => 'rgba(230, 134, 0, 1)',
+				'cta_product_price_color_tertiary'  => 'rgba(143, 143, 143, 1)',
+				// Cart.
+				'cta_cart_bg_color'                 => 'rgba(28, 28, 28, 1)',
+				'cta_cart_icon_color'               => 'rgba(255, 255, 255, 1)',
+				'cta_cart_border_color'             => 'rgba(224, 224, 224, 1)',
+				'cta_cart_border_style'             => 'solid',
+				'cta_cart_border_width'             => '1px',
+				'cta_cart_border_radius'            => 8,
+				'cta_cart_action'                   => 'mini-cart',
+				// Dropdown.
+				'cta_dropdown_bg_color'             => 'rgba(255, 255, 255, 1)',
+				'cta_dropdown_icon_color'           => 'rgba(28, 28, 28, 1)',
+				'cta_dropdown_border_color'         => 'rgba(224, 224, 224, 1)',
+				'cta_dropdown_border_style'         => 'solid',
+				'cta_dropdown_border_width'         => '1px',
+				'cta_dropdown_border_radius'        => 8,
 			)
 		);
 
@@ -270,41 +286,78 @@ class GoDAM_Product_Gallery {
 			$atts['product'] = trim( $atts['product'], " \t\n\r\0\x0B\"'" );
 		}
 
-		$atts['autoplay']              = filter_var( $atts['autoplay'], FILTER_VALIDATE_BOOLEAN );
-		$atts['play_button_enabled']   = filter_var( $atts['play_button_enabled'], FILTER_VALIDATE_BOOLEAN );
-		$atts['unmute_button_enabled'] = filter_var( $atts['unmute_button_enabled'], FILTER_VALIDATE_BOOLEAN );
-		$atts['cta_enabled']           = filter_var( $atts['cta_enabled'], FILTER_VALIDATE_BOOLEAN );
+		// Perform sanitization for Shortcode atts only as block attributes are already sanitized.
+		if ( empty( $atts['block_id'] ) ) {
+			$atts['layout']                = sanitize_text_field( $atts['layout'] );
+			$atts['view']                  = sanitize_text_field( $atts['view'] );
+			$atts['autoplay']              = filter_var( $atts['autoplay'], FILTER_VALIDATE_BOOLEAN );
+			$atts['play_button_enabled']   = filter_var( $atts['play_button_enabled'], FILTER_VALIDATE_BOOLEAN );
+			$atts['unmute_button_enabled'] = filter_var( $atts['unmute_button_enabled'], FILTER_VALIDATE_BOOLEAN );
+			$atts['cta_enabled']           = filter_var( $atts['cta_enabled'], FILTER_VALIDATE_BOOLEAN );
 
-		$atts['play_button_size']            = absint( $atts['play_button_size'] );
-		$atts['play_button_radius']          = absint( $atts['play_button_radius'] );
-		$atts['arrow_size']                  = absint( $atts['arrow_size'] );
-		$atts['arrow_border_radius']         = absint( $atts['arrow_border_radius'] );
-		$atts['grid_columns_desktop']        = max( 1, absint( $atts['grid_columns_desktop'] ) );
-		$atts['grid_columns_tablet']         = max( 1, absint( $atts['grid_columns_tablet'] ) );
-		$atts['grid_columns_mobile']         = max( 1, absint( $atts['grid_columns_mobile'] ) );
-		$atts['grid_row_gap']                = absint( $atts['grid_row_gap'] );
-		$atts['grid_column_gap']             = absint( $atts['grid_column_gap'] );
-		$atts['cta_button_border_radius']    = absint( $atts['cta_button_border_radius'] );
-		$atts['cta_product_name_font_size']  = absint( $atts['cta_product_name_font_size'] );
-		$atts['cta_product_price_font_size'] = absint( $atts['cta_product_price_font_size'] );
-		$atts['desktop_card_width']          = (float) $atts['desktop_card_width'];
-		$atts['tablet_card_width']           = (float) $atts['tablet_card_width'];
-		$atts['mobile_card_width']           = (float) $atts['mobile_card_width'];
+			$atts['play_button_size']            = absint( $atts['play_button_size'] );
+			$atts['play_button_radius']          = absint( $atts['play_button_radius'] );
+			$atts['arrow_size']                  = absint( $atts['arrow_size'] );
+			$atts['arrow_border_radius']         = absint( $atts['arrow_border_radius'] );
+			$atts['grid_columns_desktop']        = max( 1, absint( $atts['grid_columns_desktop'] ) );
+			$atts['grid_columns_tablet']         = max( 1, absint( $atts['grid_columns_tablet'] ) );
+			$atts['grid_columns_mobile']         = max( 1, absint( $atts['grid_columns_mobile'] ) );
+			$atts['grid_row_gap']                = absint( $atts['grid_row_gap'] );
+			$atts['grid_column_gap']             = absint( $atts['grid_column_gap'] );
+			$atts['cta_product_name_font_size']  = floatval( $atts['cta_product_name_font_size'] );
+			$atts['cta_product_price_font_size'] = floatval( $atts['cta_product_price_font_size'] );
+			$atts['desktop_card_width']          = (float) $atts['desktop_card_width'];
+			$atts['tablet_card_width']           = (float) $atts['tablet_card_width'];
+			$atts['mobile_card_width']           = (float) $atts['mobile_card_width'];
+			$atts['arrow_visibility']            = sanitize_text_field( $atts['arrow_visibility'] );
+			$atts['cta_display_position']        = sanitize_text_field( $atts['cta_display_position'] );
+			$atts['cta_cart_action']             = sanitize_text_field( $atts['cta_cart_action'] );
+			$atts['cta_cart_border_radius']      = absint( $atts['cta_cart_border_radius'] );
+			$atts['cta_dropdown_border_radius']  = absint( $atts['cta_dropdown_border_radius'] );
+			$atts['cta_cart_border_width']       = $this->utility_instance->sanitize_css_unit( $atts['cta_cart_border_width'], '1px' );
+			$atts['cta_dropdown_border_width']   = $this->utility_instance->sanitize_css_unit( $atts['cta_dropdown_border_width'], '1px' );
 
-		if ( $atts['play_button_size'] <= 0 ) {
-			$atts['play_button_size'] = 40;
-		}
-		if ( $atts['arrow_size'] <= 0 ) {
-			$atts['arrow_size'] = 32;
-		}
-		if ( $atts['desktop_card_width'] <= 0 ) {
-			$atts['desktop_card_width'] = 21.5;
-		}
-		if ( $atts['tablet_card_width'] <= 0 ) {
-			$atts['tablet_card_width'] = 41.5;
-		}
-		if ( $atts['mobile_card_width'] <= 0 ) {
-			$atts['mobile_card_width'] = 66.5;
+			$color_fields = array(
+				'play_button_bg_color',
+				'play_button_icon_color',
+				'unmute_button_bg_color',
+				'unmute_button_icon_color',
+				'arrow_bg_color',
+				'arrow_icon_color',
+				'cta_bg_color',
+				'cta_product_name_color',
+				'cta_product_price_color_primary',
+				'cta_product_price_color_secondary',
+				'cta_product_price_color_tertiary',
+				'cta_cart_bg_color',
+				'cta_cart_icon_color',
+				'cta_cart_border_color',
+				'cta_dropdown_bg_color',
+				'cta_dropdown_icon_color',
+				'cta_dropdown_border_color',
+			);
+
+			foreach ( $color_fields as $field ) {
+				if ( isset( $atts[ $field ] ) ) {
+					$atts[ $field ] = $this->utility_instance->sanitize_color( $atts[ $field ] );
+				}
+			}
+
+			if ( $atts['play_button_size'] <= 0 ) {
+				$atts['play_button_size'] = 40;
+			}
+			if ( $atts['arrow_size'] <= 0 ) {
+				$atts['arrow_size'] = 35;
+			}
+			if ( $atts['desktop_card_width'] <= 0 ) {
+				$atts['desktop_card_width'] = 16.5;
+			}
+			if ( $atts['tablet_card_width'] <= 0 ) {
+				$atts['tablet_card_width'] = 35.5;
+			}
+			if ( $atts['mobile_card_width'] <= 0 ) {
+				$atts['mobile_card_width'] = 59.5;
+			}
 		}
 
 		$instance_id = ! empty( $atts['block_id'] )
@@ -429,18 +482,25 @@ class GoDAM_Product_Gallery {
 			// Add action before gallery output.
 			do_action( 'rtgodam_product_gallery_before_output', $video_posts, $atts );
 
+			$godam_figure_attributes = get_block_wrapper_attributes(
+				array(
+					'class' => 'godam-product-gallery-wrapper',
+				)
+			);
+
 			/**
 			 * Start of godam-product-gallery rendering.
 			 */
-			$alignment_class = ! empty( $atts['align'] ) ? ' align' . $atts['align'] : '';
-
-			echo '<div id="' . esc_attr( $instance_id ) . '" data-gallery-id="' . esc_attr( $instance_id ) . '" class="godam-product-gallery layout-' . esc_attr( $atts['layout'] ) .
-				esc_attr( $alignment_class ) . '"
+			echo '<div ' . wp_kses_data( $godam_figure_attributes ) . '>';
+			echo '<div id="' . esc_attr( $instance_id ) . '" data-gallery-id="' . esc_attr( $instance_id ) . '" class="godam-product-gallery layout-' . esc_attr( $atts['layout'] ) . '"
 				data-product="' . esc_attr( $atts['product'] ) . '"
 				style="
 					--godam-product-gallery-card-width-desktop: ' . esc_attr( $atts['desktop_card_width'] ) . 'vw;
 					--godam-product-gallery-card-width-tablet: ' . esc_attr( $atts['tablet_card_width'] ) . 'vw;
 					--godam-product-gallery-card-width-mobile: ' . esc_attr( $atts['mobile_card_width'] ) . 'vw;
+					--godam-product-gallery-price-color-primary: ' . esc_attr( $atts['cta_product_price_color_primary'] ) . ';
+					--godam-product-gallery-price-color-secondary: ' . esc_attr( $atts['cta_product_price_color_secondary'] ) . ';
+					--godam-product-gallery-price-color-tertiary: ' . esc_attr( $atts['cta_product_price_color_tertiary'] ) . ';
 				"
 			>';
 
@@ -454,7 +514,7 @@ class GoDAM_Product_Gallery {
 					'<button class="carousel-arrow left %s" style="background:%s;color:%s;border-radius:%dpx;width:%dpx;height:%dpx;font-size:%dpx;" aria-label="%s">&#10094;</button>',
 					esc_attr( 'hover' === $atts['arrow_visibility'] ? 'hide-until-hover' : '' ),
 					esc_attr( $this->utility_instance->hex_to_rgba( $atts['arrow_bg_color'] ) ),
-					esc_attr( $atts['arrow_icon_color'] ),
+					esc_attr( $this->utility_instance->hex_to_rgba( $atts['arrow_icon_color'] ) ),
 					intval( $atts['arrow_border_radius'] ),
 					intval( $atts['arrow_size'] ),
 					intval( $atts['arrow_size'] ),
@@ -471,14 +531,14 @@ class GoDAM_Product_Gallery {
 						--godam-product-gallery-grid-columns-desktop: %1$d;
 						--godam-product-gallery-grid-columns-tablet: %2$d;
 						--godam-product-gallery-grid-columns-mobile: %3$d;
-						--godam-product-gallery-grid-row-gap: %4$dpx;
-						--godam-product-gallery-grid-column-gap: %5$dpx;
+						--godam-product-gallery-grid-row-gap: %4$drem;
+						--godam-product-gallery-grid-column-gap: %5$drem;
 					">',
 					intval( $atts['grid_columns_desktop'] ),
 					intval( $atts['grid_columns_tablet'] ),
 					intval( $atts['grid_columns_mobile'] ),
-					intval( $atts['grid_row_gap'] ),
-					intval( $atts['grid_column_gap'] ),
+					floatval( $atts['grid_row_gap'] ),
+					floatval( $atts['grid_column_gap'] ),
 				);
 			}
 
@@ -502,7 +562,7 @@ class GoDAM_Product_Gallery {
 					'<button class="carousel-arrow right %s" style="background:%s;color:%s;border-radius:%dpx;width:%dpx;height:%dpx;font-size:%dpx;" aria-label="%s">&#10095;</button>',
 					esc_attr( 'hover' === $atts['arrow_visibility'] ? 'hide-until-hover' : '' ),
 					esc_attr( $this->utility_instance->hex_to_rgba( $atts['arrow_bg_color'] ) ),
-					esc_attr( $atts['arrow_icon_color'] ),
+					esc_attr( $this->utility_instance->hex_to_rgba( $atts['arrow_icon_color'] ) ),
 					intval( $atts['arrow_border_radius'] ),
 					intval( $atts['arrow_size'] ),
 					intval( $atts['arrow_size'] ),
@@ -522,6 +582,7 @@ class GoDAM_Product_Gallery {
 			echo '</div>';
 
 			echo '</div>'; // .godam-product-gallery ends.
+			echo '</div>'; // .godam-product-gallery-wrapper ends.
 
 			// Add action after gallery output.
 			do_action( 'rtgodam_product_gallery_after_output', $video_posts, $atts );
@@ -618,13 +679,22 @@ class GoDAM_Product_Gallery {
 					printf(
 						'<button class="godam-play-button" style="background:%1$s;width:%2$dpx;height:%2$dpx;border-radius:%3$dpx;" aria-label="%5$s">
 							<svg width="%6$d" height="%6$d" viewBox="0 0 24 24" fill="%4$s" xmlns="http://www.w3.org/2000/svg">
-								<path d="M8 5v14l11-7z"/>
+								<path 
+									fill="%4$s"
+									d="M8 6
+									C8 4.8 9.3 4.1 10.4 4.9
+									L19 10.9
+									C20 11.6 20 12.4 19 13.1
+									L10.4 19.1
+									C9.3 19.9 8 19.2 8 18
+									Z"
+								/>
 							</svg>
 						</button>',
 						esc_attr( $this->utility_instance->hex_to_rgba( $atts['play_button_bg_color'] ) ),
 						esc_attr( $atts['play_button_size'] ),
 						esc_attr( $atts['play_button_radius'] ),
-						esc_attr( $atts['play_button_icon_color'] ),
+						esc_attr( $this->utility_instance->hex_to_rgba( $atts['play_button_icon_color'] ) ),
 						esc_attr__( 'Play video', 'godam' ),
 						intval( $atts['play_button_size'] / 2 )
 					);
@@ -642,7 +712,7 @@ class GoDAM_Product_Gallery {
 							</svg>
 						</button>',
 						esc_attr( $this->utility_instance->hex_to_rgba( $atts['unmute_button_bg_color'] ) ),
-						esc_attr( $atts['unmute_button_icon_color'] ),
+						esc_attr( $this->utility_instance->hex_to_rgba( $atts['unmute_button_icon_color'] ) ),
 						esc_attr__( 'Unmute video', 'godam' )
 					);
 				}
@@ -653,7 +723,8 @@ class GoDAM_Product_Gallery {
 
 					$product_ids = array_map( 'absint', (array) $video_attached_products );
 
-					$main_product = wc_get_product( $product_ids[0] );
+					$main_product            = wc_get_product( $product_ids[0] );
+					$main_product_is_on_sale = $main_product->is_on_sale();
 
 					$has_dropdown = count( $video_attached_products ) > 1;
 
@@ -674,8 +745,8 @@ class GoDAM_Product_Gallery {
 
 								echo '<div class="cta-details">';
 									echo '<p class="product-title" style="';
-										echo 'font-size:' . intval( $atts['cta_product_name_font_size'] ) . 'px;';
-										echo 'color:' . esc_attr( $atts['cta_product_name_color'] ) . ';';
+										echo 'font-size:' . floatval( $atts['cta_product_name_font_size'] ) . 'rem;';
+										echo 'color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['cta_product_name_color'] ) ) . ';';
 										echo 'margin-top:0;';
 									echo '">';
 										echo '<a href="' . esc_url( get_permalink( $main_product->get_id() ) ) . '" class="product-title-link">';
@@ -683,15 +754,44 @@ class GoDAM_Product_Gallery {
 										echo '</a>';
 									echo '</p>';
 
-									echo '<p class="product-price" style="';
-										echo 'font-size:' . intval( $atts['cta_product_price_font_size'] ) . 'px;';
-										echo 'color:' . esc_attr( $atts['cta_product_price_color'] ) . ';';
+									echo '<p class="product-price ' . ( $main_product_is_on_sale ? 'on-sale' : '' ) . '" style="';
+										echo 'font-size:' . floatval( $atts['cta_product_price_font_size'] ) . 'rem;';
+										echo ! $main_product_is_on_sale ? 'color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['cta_product_price_color_primary'] ) ) . ';' : '';
 										echo 'margin:4px 0 0;';
 									echo '">' . wp_kses_post( $main_product->get_price_html() ) . '</p>';
 								echo '</div>'; // .cta-details ends
 
-								echo '<button class="cta-add-to-cart main-cta" data-product-cart="' . esc_attr( $atts['cta_cart_action'] ) . '" data-product-dropdown="' . esc_attr( $has_dropdown ) . '" data-product-id="' . esc_attr( $main_product->get_id() ) . '" data-product-page-url="' . esc_url( get_permalink( $main_product->get_id() ) ) . '"  style="background-color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['cta_button_bg_color'] ) ) . ';color:' . esc_attr( $atts['cta_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['cta_button_border_radius'] ) . '%;" aria-label="Add to cart">';
-									echo $has_dropdown ? '&#9662;' : '+';
+							if ( $has_dropdown ) {
+								$bg_color      = $atts['cta_dropdown_bg_color'];
+								$icon_color    = $atts['cta_dropdown_icon_color'];
+								$border_width  = $atts['cta_dropdown_border_width'];
+								$border_style  = $atts['cta_dropdown_border_style'];
+								$border_color  = $atts['cta_dropdown_border_color'];
+								$border_radius = $atts['cta_dropdown_border_radius'];
+							} else {
+								$bg_color      = $atts['cta_cart_bg_color'];
+								$icon_color    = $atts['cta_cart_icon_color'];
+								$border_width  = $atts['cta_cart_border_width'];
+								$border_style  = $atts['cta_cart_border_style'];
+								$border_color  = $atts['cta_cart_border_color'];
+								$border_radius = $atts['cta_cart_border_radius'];
+							}
+
+								echo '<button 
+									class="cta-add-to-cart main-cta"
+									data-product-cart="' . esc_attr( $atts['cta_cart_action'] ) . '"
+									data-product-dropdown="' . esc_attr( $has_dropdown ) . '"
+									data-product-id="' . esc_attr( $main_product->get_id() ) . '"
+									data-product-page-url="' . esc_url( get_permalink( $main_product->get_id() ) ) . '"
+									style="
+										background-color:' . esc_attr( $this->utility_instance->hex_to_rgba( $bg_color ) ) . ';
+										color:' . esc_attr( $this->utility_instance->hex_to_rgba( $icon_color ) ) . ';
+										border:' . esc_attr( $border_width ) . ' ' . esc_attr( $border_style ) . ' ' . esc_attr( $border_color ) . ';
+										border-radius:' . esc_attr( $border_radius ) . 'px;
+									"
+									aria-label="' . esc_attr__( 'Add to cart/Product Dropdown', 'godam' ) . '"
+								>';
+									echo $has_dropdown ? '&#8963;' : '+';
 								echo '</button>';
 
 							// Add action before the dropdown.
@@ -699,9 +799,17 @@ class GoDAM_Product_Gallery {
 
 							// Detached Dropdown for more products.
 							if ( $has_dropdown ) {
-								echo '<div class="cta-dropdown" data-gallery-id="' . esc_attr( $instance_id ) . '">';
+								echo '<div class="cta-dropdown" 
+									data-gallery-id="' . esc_attr( $instance_id ) . '" 
+									style="
+										--godam-product-gallery-dropdown-bg-color: ' . esc_attr( $atts['cta_dropdown_bg_color'] ) . ';
+										--godam-product-gallery-dropdown-icon-color: ' . esc_attr( $atts['cta_dropdown_icon_color'] ) . ';
+									"
+								>';
 								foreach ( $product_ids as $product_id ) {
-									$product = wc_get_product( $product_id );
+									$product                     = wc_get_product( $product_id );
+									$dropdown_product_is_on_sale = $product->is_on_sale();
+
 									if ( $product ) {
 										$timestamp_meta_key = 'godam_product_timestamp_meta_' . $video_id;
 										$timestamp          = get_post_meta( $product_id, $timestamp_meta_key, true );
@@ -712,7 +820,7 @@ class GoDAM_Product_Gallery {
 
 												// Add play icon if timestamp is available.
 										if ( ! empty( $timestamp ) ) {
-											echo '<button class="product-play-timestamp-button" data-video-id="' . esc_attr( $video_id ) . '" data-timestamp="' . esc_attr( $timestamp ) . '" data-video-attached-product-id="' . esc_attr( $product_id ) . '" data-cta-enabled="' . esc_attr( $atts['cta_enabled'] ) . '" data-cta-display-position="' . esc_attr( $atts['cta_display_position'] ) . '"aria-label="Play at timestamp" style="background-color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['play_button_bg_color'] ) ) . ';color:' . esc_attr( $atts['play_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['play_button_radius'] ) . '%;">';
+											echo '<button class="product-play-timestamp-button" data-video-id="' . esc_attr( $video_id ) . '" data-timestamp="' . esc_attr( $timestamp ) . '" data-video-attached-product-id="' . esc_attr( $product_id ) . '" data-cta-enabled="' . esc_attr( $atts['cta_enabled'] ) . '" data-cta-display-position="' . esc_attr( $atts['cta_display_position'] ) . '"aria-label="Play at timestamp" style="background-color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['play_button_bg_color'] ) ) . ';color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['play_button_icon_color'] ) ) . ';border-radius:' . esc_attr( $atts['play_button_radius'] ) . '%;">';
 												echo '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/></svg>';
 											echo '</button>';
 
@@ -721,20 +829,32 @@ class GoDAM_Product_Gallery {
 											echo '</div>'; // .cta-thumbnail-small ends.
 											echo '<div class="cta-product-info">';
 												echo '<p class="product-title" style="';
-													echo 'font-size:' . intval( $atts['cta_product_name_font_size'] ) . 'px;';
-													echo 'color:' . esc_attr( $atts['cta_product_name_color'] ) . ';';
+													echo 'font-size:' . floatval( $atts['cta_product_name_font_size'] ) . 'rem;';
+													echo 'color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['cta_product_name_color'] ) ) . ';';
 													echo 'margin-top:0;">';
 														echo '<a href="' . esc_url( get_permalink( $product->get_id() ) ) . '" class="product-title-link">';
 															echo esc_html( $product->get_name() );
 														echo '</a>';
 												echo '</p>';
 
-												echo '<p class="product-price" style="';
-												echo 'font-size:' . intval( $atts['cta_product_price_font_size'] ) . 'px;';
-												echo 'color:' . esc_attr( $atts['cta_product_price_color'] ) . ';';
+												echo '<p class="product-price ' . ( $dropdown_product_is_on_sale ? 'on-sale' : '' ) . '" style="';
+												echo 'font-size:' . floatval( $atts['cta_product_price_font_size'] ) . 'rem;';
+												echo ! $dropdown_product_is_on_sale ? 'color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['cta_product_price_color_primary'] ) ) . ';' : '';
 												echo 'margin:4px 0 0;" >' . wp_kses_post( $product->get_price_html() ) . '</p>';
 											echo '</div>'; // .cta-product-info ends.
-											echo '<button class="cta-add-to-cart" data-product-cart="' . esc_attr( $atts['cta_cart_action'] ) . '" data-product-id="' . esc_attr( $product_id ) . '" data-product-page-url="' . esc_url( get_permalink( $product->get_id() ) ) . '" style="background-color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['cta_button_bg_color'] ) ) . ';color:' . esc_attr( $atts['cta_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['cta_button_border_radius'] ) . '%;" aria-label="Add to cart">+</button>';
+											echo '<button 
+												class="cta-add-to-cart"
+												data-product-cart="' . esc_attr( $atts['cta_cart_action'] ) . '"
+												data-product-id="' . esc_attr( $product_id ) . '"
+												data-product-page-url="' . esc_url( get_permalink( $product->get_id() ) ) . '"
+												style="
+													background-color:' . esc_attr( $this->utility_instance->hex_to_rgba( $this->utility_instance->hex_to_rgba( $atts['cta_cart_bg_color'] ) ) ) . ';
+													color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['cta_cart_icon_color'] ) ) . ';
+													border:' . esc_attr( $atts['cta_cart_border_width'] ) . ' ' . esc_attr( $atts['cta_cart_border_style'] ) . ' ' . esc_attr( $atts['cta_cart_border_color'] ) . ';
+													border-radius:' . esc_attr( $atts['cta_cart_border_radius'] ) . 'px;
+												"
+												aria-label="' . esc_attr__( 'Add to cart', 'godam' ) . '"
+											>+</button>';
 										echo '</div>'; // .cta-dropdown-item ends.
 									}
 								}

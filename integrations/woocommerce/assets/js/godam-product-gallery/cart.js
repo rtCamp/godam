@@ -79,14 +79,20 @@ export function initMinicartAndCtaDropdown() {
 				if ( items.length > 3 ) {
 					let totalHeight = 0;
 
+					// Height of first 3 full items + 25% of 4th item.
 					for ( let i = 0; i < 3; i++ ) {
 						if ( items[ i ] ) {
 							totalHeight += items[ i ].getBoundingClientRect().height;
 						}
 					}
 
-					const computedStyles = window.getComputedStyle( originalDropdown );
+					// Add 25% of 4th item height.
+					if ( items[ 3 ] ) {
+						const fourthHeight = items[ 3 ].getBoundingClientRect().height;
+						totalHeight += fourthHeight * 0.25;
+					}
 
+					const computedStyles = window.getComputedStyle( originalDropdown );
 					const paddingTop = parseFloat( computedStyles.paddingTop ) || 0;
 					const paddingBottom = parseFloat( computedStyles.paddingBottom ) || 0;
 
@@ -94,12 +100,32 @@ export function initMinicartAndCtaDropdown() {
 
 					cloned.style.maxHeight = `${ totalHeight + extraHeight }px`;
 					cloned.style.overflowY = 'auto';
+					cloned.classList.add( 'has-scroll' );
 				}
 
 				const rect = wrapper.getBoundingClientRect();
-				cloned.style.top = `${ rect.bottom + window.scrollY }px`;
-				cloned.style.left = `${ rect.left + window.scrollX }px`;
-				cloned.style.width = `${ rect.width }px`;
+				const dropdownHeight = cloned.offsetHeight;
+
+				const horizontalInset = 16;
+				const verticalGap = 8;
+
+				// Set width smaller.
+				cloned.style.width = `${ rect.width - horizontalInset }px`;
+
+				// Position from center.
+				cloned.style.left = `${ rect.left + window.scrollX + ( rect.width / 2 ) }px`;
+				cloned.style.transform = `translateX(-50%)`;
+
+				// Position above with spacing.
+				cloned.style.top = `${
+					rect.top + window.scrollY - dropdownHeight - verticalGap
+				}px`;
+
+				cloned.addEventListener( 'scroll', () => {
+					if ( cloned.scrollTop > 5 ) {
+						cloned.classList.add( 'scrolled' );
+					}
+				} );
 
 				cloned.querySelectorAll( '.cta-add-to-cart' ).forEach( ( btn ) => {
 					btn.addEventListener( 'click', ( event ) => {
