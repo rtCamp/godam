@@ -94,3 +94,22 @@ export const getAPIKeyErrorInfo = () => {
 		showRefresh: true,
 	};
 };
+
+/**
+ * Detect if the browser is Safari
+ *
+ * @return {boolean} True if the browser is Safari, false otherwise
+ */
+export const isSafari = () => {
+	if ( typeof window === 'undefined' ) {
+		return false;
+	}
+
+	const userAgent = window.navigator.userAgent;
+
+	// Check for Safari but exclude Chrome and other Chromium-based browsers
+	// Safari's user agent contains "Safari" but not "Chrome"
+	const isSafariBrowser = /Safari/.test( userAgent ) && ! /(Chrome|Chromium|Edg|CriOS|FxiOS|OPR)/.test( userAgent );
+
+	return isSafariBrowser;
+};

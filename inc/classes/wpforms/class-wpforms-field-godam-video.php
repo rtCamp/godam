@@ -139,7 +139,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			// Render upload button.
 			printf( '<button type="button" class="wpforms-btn uppy-video-upload-button">' );
 			printf( '<span class="dashicons dashicons-video-alt"></span>' );
-			printf( esc_html__( 'Record Video', 'godam' ) );
+			printf( esc_html__( 'Start Recording', 'godam' ) );
 			printf( '</button>' );
 
 			// Description.
@@ -193,6 +193,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				'file_input'     => esc_html__( 'Local Files', 'godam' ),
 				'webcam'         => esc_html__( 'Webcam', 'godam' ),
 				'screen_capture' => esc_html__( 'Screencast', 'godam' ),
+				'audio'          => esc_html__( 'Audio', 'godam' ),
 			);
 
 			$checkboxes = '';
@@ -388,8 +389,12 @@ if ( class_exists( 'WPForms_Field' ) ) {
 					continue;
 				}
 
-				// Check if the file is a video.
-				if ( ! isset( $file['type'] ) || ! str_starts_with( $file['type'], 'video/' ) ) {
+				// Check if the file is a video or audio.
+				$mime_type = ! empty( $file['type'] ) ? $file['type'] : '';
+				$is_video  = ! empty( $mime_type ) && str_starts_with( $mime_type, 'video/' );
+				$is_audio  = godam_is_audio_file( $file['name'] );
+				
+				if ( ! $is_video && ! $is_audio ) {
 					continue;
 				}
 
@@ -460,10 +465,13 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				return $value;
 			}
 
+			
+			
+			// Get the full file path/URL.
 			$original_field_value = isset( $field['value'] ) ? trim( $field['value'] ) : $value;
-
+			
 			// Default formatting style.
-			$formatted_value = sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $original_field_value ), esc_html( basename( $value ) ) );
+			$formatted_value = sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $original_field_value ), esc_html( basename( $original_field_value ) ) );
 
 			// Format for entry view page.
 			if ( 'entry-single' === $context && \wpforms_is_admin_page( 'entries', 'details' ) ) {

@@ -39,13 +39,31 @@ const checkIfFeatureImage = ( frame ) => {
 };
 
 /**
+ * Check if the current frame is an analytics context.
+ *
+ * @since 1.6.0
+ *
+ * @param {wp.media.view.MediaFrame} frame
+ * @return {boolean} True if analytics context, false otherwise.
+ */
+const checkIfAnalyticsContext = ( frame ) => {
+	// Check if this frame was opened from the Analytics page
+	if ( frame && frame.options && frame.options.godamAnalyticsContext === true ) {
+		return true;
+	}
+
+	return false;
+};
+
+/**
  * Shared object containing GoDAM-specific media frame functionality
  */
 const GoDAMMediaFrameShared = {
 	browseRouter( routerView ) {
 		const isFeatureImage = checkIfFeatureImage( this );
+		const isAnalyticsContext = checkIfAnalyticsContext( this );
 
-		if ( window.godamTabCallback && window.godamTabCallback.validAPIKey && ! isFeatureImage ) {
+		if ( window.godamTabCallback && window.godamTabCallback.validAPIKey && ! isFeatureImage && ! isAnalyticsContext ) {
 			routerView.set( {
 				upload: {
 					text: l10n.uploadFilesTitle,
@@ -143,6 +161,7 @@ const GoDAMMediaFrameShared = {
 				thumbnail_url: data.thumbnail_url,
 				caption: data.caption,
 				description: data.description,
+				video_duration: data.video_duration || 0,
 			} ),
 		} )
 			.then( ( res ) => res.json() )

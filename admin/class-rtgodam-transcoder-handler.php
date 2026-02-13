@@ -194,9 +194,9 @@ class RTGODAM_Transcoder_Handler {
 	 * @param array  $wp_metadata          Metadata of the attachment.
 	 * @param int    $attachment_id     ID of attachment.
 	 * @param string $autoformat        If true then generating thumbs only else trancode video.
-	 * @param bool   $retranscode       If its retranscoding request or not.
+	 * @param bool   $manual_retranscode       If its retranscoding request or not.
 	 */
-	public function wp_media_transcoding( $wp_metadata, $attachment_id, $autoformat = true, $retranscode = false ) {
+	public function wp_media_transcoding( $wp_metadata, $attachment_id, $autoformat = true, $manual_retranscode = false ) {
 		// Check if local development environment.
 		if ( rtgodam_is_local_environment() ) {
 			return;
@@ -217,7 +217,7 @@ class RTGODAM_Transcoder_Handler {
 		 *
 		 * @param bool $auto_transcode_on_upload Whether to automatically transcode on upload. Default true.
 		 */
-		if ( ! $retranscode ) {
+		if ( ! $manual_retranscode ) {
 			$auto_transcode_on_upload = apply_filters( 'godam_auto_transcode_on_upload', true );
 
 			if ( ! $auto_transcode_on_upload ) {
@@ -381,6 +381,7 @@ class RTGODAM_Transcoder_Handler {
 						'watermark'            => boolval( $rtgodam_watermark ),
 						'resolutions'          => array( 'auto' ),
 						'video_quality'        => $rtgodam_video_compress_quality,
+						'mime_type'            => $metadata['mime_type'],
 						'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $author_email, $attachment_id ),
 						'wp_site'              => $site_url,
 						'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, $attachment_id ),
@@ -407,7 +408,7 @@ class RTGODAM_Transcoder_Handler {
 					$job_id = $upload_info->data->name;
 					update_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', $job_id );
 
-					if ( $retranscode ) {
+					if ( $manual_retranscode ) {
 						$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
 
 						if ( isset( $failed_transcoding_attachments[ $attachment_id ] ) ) {

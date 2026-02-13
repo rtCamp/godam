@@ -35,23 +35,25 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * @param {Promise}  fetchPromise - The promise that resolves to the fetched data.
 	 *
 	 * @param {Function} renderMethod - The method to render the fetched data.
+	 *
+	 * @param {string}   type         - The type of data being fetched. Defaults to empty string.
 	 */
-	async fetchAndRender( fetchPromise, renderMethod ) {
+	async fetchAndRender( fetchPromise, renderMethod, type = '' ) {
 		const data = await fetchPromise;
-
-		const actionsEl = this.$el.find( '.attachment-actions' );
 
 		// If there's no data remove the spinner and show message.
 		if ( ! data ) {
-			const thumbnailContainer = actionsEl?.find( '.attachment-video-thumbnails' );
+			if ( 'thumbnails' === type ) {
+				const actionsEl = this.$el.find( '.attachment-actions' );
+				const thumbnailContainer = actionsEl?.find( '.attachment-video-thumbnails' );
 
-			thumbnailContainer?.find( '.thumbnail-spinner' )?.remove();
-			const container = thumbnailContainer?.find( '.thumbnail-spinner-container' )?.get( 0 );
-			if ( container ) {
-				container.className = '';
-				container.innerText = __( 'No thumbnails found', 'godam' );
+				thumbnailContainer?.find( '.thumbnail-spinner' )?.remove();
+				const container = thumbnailContainer?.find( '.thumbnail-spinner-container' )?.get( 0 );
+				if ( container ) {
+					container.className = '';
+					container.innerText = __( 'No thumbnails found', 'godam' );
+				}
 			}
-
 			return;
 		}
 
@@ -239,18 +241,21 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		const li = document.createElement( 'li' );
 		li.className = 'upload-thumbnail-tile';
-		li.title = uploadDisabled
-			? __( 'Only 3 custom thumbnails allowed', 'godam' )
-			: __( 'Upload Custom Thumbnail', 'godam' );
 
 		const button = document.createElement( 'button' );
 		button.type = 'button';
 		button.className = 'custom-thumbnail-media-upload';
 
 		if ( uploadDisabled ) {
-			button.disabled = true;
+			button.setAttribute( 'aria-disabled', 'true' );
 			button.style.opacity = '0.5';
 			button.style.cursor = 'not-allowed';
+			button.tabIndex = 0; // Make disabled button keyboard-focusable for tooltip
+			button.setAttribute( 'data-tooltip', __( 'Only 3 custom thumbnails allowed', 'godam' ) );
+			button.setAttribute( 'aria-label', __( 'Only 3 custom thumbnails allowed', 'godam' ) );
+		} else {
+			button.setAttribute( 'data-tooltip', __( 'Upload Custom Thumbnail', 'godam' ) );
+			button.setAttribute( 'aria-label', __( 'Upload Custom Thumbnail', 'godam' ) );
 		}
 
 		const span = document.createElement( 'span' );
@@ -333,6 +338,79 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		img.alt = __( 'Video Thumbnail', 'godam' );
 		li.appendChild( img );
 		return li;
+	},
+
+	/**
+	 * Sets up custom tooltips for elements with data-tooltip attribute.
+	 */
+	setupCustomTooltips() {
+		// Clean up any existing tooltips to prevent memory leaks
+		document.querySelectorAll( '.godam-custom-tooltip' ).forEach( ( el ) => el.remove() );
+
+		const elementsWithTooltip = this.$el.find( '[data-tooltip]' );
+
+		elementsWithTooltip.each( ( index, element ) => {
+			const $element = this.$( element );
+			const tooltipText = $element.attr( 'data-tooltip' );
+
+			if ( ! tooltipText ) {
+				return;
+			}
+
+			// Create tooltip element
+			const tooltip = document.createElement( 'div' );
+			tooltip.className = 'godam-custom-tooltip';
+			tooltip.textContent = tooltipText;
+
+			// Append tooltip to body
+			document.body.appendChild( tooltip );
+
+			// Show handler (for both mouse and keyboard)
+			const handleShow = () => {
+				const rect = element.getBoundingClientRect();
+
+				// Make tooltip visible but transparent to measure dimensions
+				tooltip.style.visibility = 'visible';
+				const tooltipRect = tooltip.getBoundingClientRect();
+
+				// Calculate centered position below the element
+				let left = rect.left + ( rect.width / 2 ) - ( tooltipRect.width / 2 ) + 32;
+				const top = rect.bottom + 26;
+
+				// Ensure tooltip stays within viewport horizontally
+				const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+				const padding = 10; // Minimum padding from viewport edges
+
+				if ( left < padding ) {
+					left = padding; // Too far left, align to left edge with padding
+				} else if ( left + tooltipRect.width > viewportWidth - padding ) {
+					left = viewportWidth - tooltipRect.width - padding; // Too far right, align to right edge with padding
+				}
+
+				// Position tooltip
+				tooltip.style.left = `${ left }px`;
+				tooltip.style.top = `${ top }px`;
+
+				// Show tooltip with transition
+				tooltip.classList.add( 'show' );
+			};
+
+			// Hide handler
+			const handleHide = () => {
+				tooltip.classList.remove( 'show' );
+			};
+
+			// Add event listeners for both mouse and keyboard
+			$element.on( 'mouseenter focus', handleShow );
+			$element.on( 'mouseleave blur', handleHide );
+
+			// Store cleanup function on the element
+			$element.data( 'tooltip-cleanup', () => {
+				tooltip.remove();
+				$element.off( 'mouseenter focus', handleShow );
+				$element.off( 'mouseleave blur', handleHide );
+			} );
+		} );
 	},
 
 	/**
@@ -426,11 +504,29 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		this.setupThumbnailClickHandler( attachmentID );
 		this.setupThumbnailActions();
 
+		// Clean up existing tooltips before re-rendering
+		const existingTooltips = this.$el.find( '[data-tooltip]' );
+		existingTooltips.each( ( index, element ) => {
+			const cleanup = this.$( element ).data( 'tooltip-cleanup' );
+			if ( cleanup ) {
+				cleanup();
+			}
+		} );
+
+		this.setupCustomTooltips();
+
 		// Set upload click after DOM added
 		setTimeout( () => {
 			const $btn = this.$el.find( '.custom-thumbnail-media-upload' );
 			if ( $btn.length ) {
-				$btn.off( 'click' ).on( 'click', () => {
+				$btn.off( 'click' ).on( 'click', ( e ) => {
+					// Prevent action if button is disabled
+					if ( $btn.attr( 'aria-disabled' ) === 'true' ) {
+						e.preventDefault();
+						e.stopPropagation();
+						return;
+					}
+
 					this.openMediaUploader( ( attachment ) => {
 						this.handleThumbnailUploadFromUrl( attachment.url );
 					} );
@@ -666,10 +762,12 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			this.fetchAndRender(
 				this.getVideoThumbnails( attachmentId ),
 				this.renderThumbnail,
+				'thumbnails',
 			);
 			this.fetchAndRender(
 				this.getExifDetails( attachmentId ),
 				this.renderExifDetails,
+				'exif',
 			);
 		}
 
