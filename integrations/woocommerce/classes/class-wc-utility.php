@@ -63,6 +63,71 @@ class WC_Utility {
 	}
 
 	/**
+	 * Sanitize a CSS unit value.
+	 *
+	 * Allows only numeric values with valid CSS units:
+	 * px, em, rem, %
+	 *
+	 * Prevents CSS injection by rejecting arbitrary strings.
+	 *
+	 * Examples of allowed values:
+	 * - 1px
+	 * - 0.5rem
+	 * - 100%
+	 * - 2em
+	 *
+	 * @param string $value   The CSS value to sanitize.
+	 *
+	 * @return string Sanitized CSS unit value or default fallback.
+	 */
+	public function sanitize_css_unit( $value ) {
+		return preg_match( '/^\d+(\.\d+)?(px|em|rem|%)$/', $value )
+			? $value
+			: '1px';
+	}
+
+	/**
+	 * Sanitize a CSS color value.
+	 *
+	 * Supports the following formats:
+	 * - 3-digit hex  (#fff)
+	 * - 4-digit hex  (#ffff)
+	 * - 6-digit hex  (#ffffff)
+	 * - 8-digit hex  (#ffffffff)
+	 * - rgb()        (rgb(255,255,255))
+	 * - rgba()       (rgba(255,255,255,0.5))
+	 *
+	 * Prevents invalid CSS injection by validating allowed color formats only.
+	 *
+	 * @param string $color   The color value to sanitize.
+	 *
+	 * @return string Sanitized color value or default fallback.
+	 */
+	public function sanitize_color( $color ) {
+		$color = trim( $color );
+
+		// Hex.
+		if ( preg_match( '/^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/', $color ) ) {
+			return $color;
+		}
+
+		// rgb / rgba.
+		if ( preg_match(
+			'/^rgba?\(\s*' .
+			'(\d{1,3})\s*,\s*' .
+			'(\d{1,3})\s*,\s*' .
+			'(\d{1,3})' .
+			'(\s*,\s*(0|1|0?\.\d+))?' .
+			'\s*\)$/',
+			$color
+		) ) {
+			return $color;
+		}
+
+		return 'rgba(0,0,0,1)';
+	}
+
+	/**
 	 * Generates an SVG markup string for a partially filled star.
 	 *
 	 * This method creates a star icon where the fill is determined by the

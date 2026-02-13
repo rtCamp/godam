@@ -6,6 +6,18 @@
 .godam-editor-product-video-item {
 	flex-shrink: 0;
 	scroll-snap-align: start;
+	box-shadow: 0px 10px 10px -6.47px rgba(0, 0, 0, 0.05), 0px 10px 25px -5.39px rgba(0, 0, 0, 0.1);
+	border-radius: 16px;
+
+	/* Default */
+	.godam-editor-product-video-thumbnail {
+		border-radius: 16px;
+	}
+
+	/* If it has a CTA sibling right after it */
+	.godam-editor-product-video-thumbnail:has(+ .godam-product-cta) {
+		border-radius: 16px 16px 0px 0px;
+	}
 
 	// 16:9 Widescreen
 	&.view-16-9 .godam-editor-product-video-thumbnail {
@@ -118,6 +130,9 @@
 		gap: 1rem;
 		padding: 0.75rem;
 		flex: 1;
+
+		scroll-padding-left: 24px;
+    	scroll-padding-right: 24px;
 	
 		&::-webkit-scrollbar {
 			display: none;
@@ -169,17 +184,16 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	margin-top: 10px;
-	padding: 10px;
-	border: 1px solid #ddd;
-	border-radius: 8px;
+	padding: 16px;
+	border-radius: 16px;
 	position: relative;
 	box-sizing: border-box;
 
 	.cta-thumbnail {
-		width: 80px;
-		height: 80px;
+		width: 60px;
+		height: 60px;
 		background: #eee;
+		border-radius: 6px;
 	}
 
 	.cta-details {
@@ -203,7 +217,6 @@
 	}
 
 	.cta-add-to-cart {
-		position: absolute;
 		bottom: 10px;
 		right: 10px;
 		width: 1.875rem;
@@ -213,3 +226,35 @@
 		cursor: pointer;
 	}
 }
+
+/* Price Colour tabs in Gutenberg */
+.godam-product-gallery-editor-tabs {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 12px;
+	flex-wrap: wrap;
+
+	.godam-product-gallery-editor-tab {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		padding: 6px 10px;
+		border: 1px solid #ddd;
+		background: #fff;
+		cursor: pointer;
+		border-radius: 4px;
+		font-size: 12px;
+
+		&.is-active {
+			border-color: #000;
+		}
+
+		.godam-color-indicator {
+			width: 12px;
+			height: 12px;
+			border-radius: 2px;
+			border: 1px solid #ccc;
+		}
+	}
+}
+
