@@ -233,7 +233,7 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 	// Check if we should skip verification.
 	// Skip only for expired keys that are past their grace period.
 	$skip_verification = false;
-	if ( ! $force_refresh && RTGODAM_API_KEY_STATUS_EXPIRED === $api_key_status && ! rtgodam_is_api_key_in_grace_period() ) {
+	if ( ! $force_refresh && \RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED === $api_key_status && ! rtgodam_is_api_key_in_grace_period() ) {
 		// Grace period expired for expired key, pause automatic checks until manual refresh.
 		$skip_verification = true;
 	}
@@ -259,14 +259,14 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 		if ( is_wp_error( $result ) ) {
 			// API Key shouldn't be invalid if there is a server error.
 			$error_data  = $result->get_error_data();
-			$status_code = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : 500;
+			$status_code = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : \RTGODAM\Inc\Enums\HTTP_Status_Code::INTERNAL_SERVER_ERROR;
 
-			if ( 500 === $status_code && ! empty( $api_key ) ) {
+			if ( \RTGODAM\Inc\Enums\HTTP_Status_Code::INTERNAL_SERVER_ERROR === $status_code && ! empty( $api_key ) ) {
 				// Server error with existing API key - DON'T change DB status, just show verification_failed to user.
 				// DON'T set error timestamp - this is temporary and we should keep checking.
-				$transient_status = RTGODAM_API_KEY_STATUS_VERIFICATION_FAILED;
+				$transient_status = \RTGODAM\Inc\Enums\Api_Key_Status::VERIFICATION_FAILED;
 				$valid_api_key    = false;
-			} elseif ( 500 !== $status_code ) {
+			} elseif ( \RTGODAM\Inc\Enums\HTTP_Status_Code::INTERNAL_SERVER_ERROR !== $status_code ) {
 				$valid_api_key = false;
 				// Preserve existing user data for expired/invalid keys.
 				$existing_usage = get_option( 'rtgodam-usage', array() );

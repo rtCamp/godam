@@ -10,6 +10,7 @@ import { seen, unseen } from '@wordpress/icons';
  * Internal dependencies
  */
 import './style.scss';
+import { API_KEY_STATUS } from '../../../../../../shared/enums';
 
 /**
  * PasswordFieldWithToggle component
@@ -53,14 +54,14 @@ const PasswordFieldWithToggle = ( { hasValidAPIKey, hasAPIKey, apiKey, setAPIKey
 		}
 
 		if ( hasAPIKey && ! hasValidAPIKey ) {
-			if ( apiKeyStatus === 'expired' ) {
+			if ( apiKeyStatus === API_KEY_STATUS.EXPIRED ) {
 				return (
 					<span className="invalid-api-key">
 						{ __( 'Your API Key has expired. You can renew it from your', 'godam' ) }
 						{ accountLink() }
 					</span>
 				);
-			} else if ( apiKeyStatus === 'verification_failed' ) {
+			} else if ( apiKeyStatus === API_KEY_STATUS.VERIFICATION_FAILED ) {
 				return (
 					<span className="invalid-api-key">
 						{ __( 'Unable to verify API key. Please click "Refresh Status" to try again.', 'godam' ) }

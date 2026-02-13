@@ -18,17 +18,18 @@ import {
 import { calculateEngagementRate, calculatePlayRate, generateLineChart } from './helper';
 import DOMPurify from 'isomorphic-dompurify';
 import './charts.js';
-import upgradePlanBackground from '../../assets/src/images/upgrade-plan-analytics-bg.png';
 
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __ , sprintf } from '@wordpress/i18n';
 import { Button, Spinner } from '@wordpress/components';
+import { addQueryArgs } from '@wordpress/url';
 import SingleMetrics from './SingleMetrics.js';
 import PlaybackPerformanceDashboard from './PlaybackPerformance.js';
 import videojs from 'video.js';
 import { arrowLeft } from '@wordpress/icons';
+import { API_KEY_STATUS, ERROR_TYPE } from '../shared/enums';
 
 const adminUrl =
   window.videoData?.adminUrl;
@@ -115,9 +116,9 @@ const Analytics = ( { attachmentID } ) => {
 		// Check for server-side errors OR local API key status issues
 		const apiKeyError = getAPIKeyErrorInfo();
 		const shouldShowOverlay =
-			analyticsDataFetched?.errorType === 'invalid_key' ||
-			analyticsDataFetched?.errorType === 'missing_key' ||
-			analyticsDataFetched?.errorType === 'microservice_error' ||
+			analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY ||
+			analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ||
+			analyticsDataFetched?.errorType === ERROR_TYPE.MICROSERVICE_ERROR ||
 			apiKeyError !== null;
 
 		if ( shouldShowOverlay ) {
@@ -344,7 +345,7 @@ const Analytics = ( { attachmentID } ) => {
 		const apiKeyError = getAPIKeyErrorInfo();
 
 		// Check for local API key status first (expired, verification_failed)
-		if ( apiKeyError?.type === 'expired' || apiKeyError?.type === 'verification_failed' ) {
+		if ( apiKeyError?.type === API_KEY_STATUS.EXPIRED || apiKeyError?.type === API_KEY_STATUS.VERIFICATION_FAILED ) {
 			return (
 				<div className="api-key-overlay-banner">
 					<p className="api-key-overlay-banner-header">
@@ -362,7 +363,7 @@ const Analytics = ( { attachmentID } ) => {
 		}
 
 		// Show upgrade message for missing/invalid keys
-		if ( analyticsDataFetched?.errorType === 'invalid_key' || analyticsDataFetched?.errorType === 'missing_key' ) {
+		if ( analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY || analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ) {
 			return (
 				<div className="api-key-overlay-banner">
 					<p className="api-key-overlay-banner-header">
@@ -377,7 +378,17 @@ const Analytics = ( { attachmentID } ) => {
 						</a>
 					</p>
 
-					<a href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=analytics` } className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
+					<a
+						href={ addQueryArgs( 'https://godam.io/pricing', {
+							utm_campaign: 'buy-plan',
+							utm_source: window?.location?.host || '',
+							utm_medium: 'plugin',
+							utm_content: 'analytics',
+						} ) }
+						className="components-button godam-button is-primary"
+						target="_blank"
+						rel="noopener noreferrer"
+					>{ __( 'Buy Plan', 'godam' ) }</a>
 				</div>
 			);
 		}
@@ -386,7 +397,11 @@ const Analytics = ( { attachmentID } ) => {
 		return (
 			<div className="api-key-overlay-banner">
 				<p>
-					{ analyticsDataFetched?.message + ' ' || __( 'An unknown error occurred. Please check your plugin settings.', 'godam' ) }
+					{ sprintf(
+						/* translators: %s: error message from the server */
+						__( '%s', 'godam' ),
+						analyticsDataFetched?.message || __( 'An unknown error occurred. Please check your plugin settings.', 'godam' ),
+					) }
 				</p>
 				<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
 					{ __( 'Go to plugin settings', 'godam' ) }
@@ -420,17 +435,11 @@ const Analytics = ( { attachmentID } ) => {
 
 			<div
 				id="api-key-overlay"
-				className="api-key-overlay hidden"
-				style={
-					( analyticsDataFetched?.errorType === 'invalid_key' || analyticsDataFetched?.errorType === 'missing_key' ) && ! getAPIKeyErrorInfo()?.type
-						? {
-							backgroundImage: `url(${ upgradePlanBackground })`,
-							backgroundSize: '100% calc(100% - 32px)',
-							backgroundRepeat: 'no-repeat',
-							backgroundPosition: 'center 32px',
-						}
-						: {}
-				}
+				className={ `api-key-overlay hidden${
+					( analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY || analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ) && ! getAPIKeyErrorInfo()?.type
+						? ' api-key-overlay--upgrade'
+						: ''
+				}` }
 			>
 				<div className="api-key-message">
 					{ renderOverlayContent() }

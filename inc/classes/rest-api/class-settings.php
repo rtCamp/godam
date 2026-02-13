@@ -10,6 +10,9 @@ namespace RTGODAM\Inc\REST_API;
 defined( 'ABSPATH' ) || exit;
 
 use RTGODAM\Inc\Post_Types\GoDAM_Video;
+use RTGODAM\Inc\Enums\Api_Key_Status;
+use RTGODAM\Inc\Enums\HTTP_Status_Code;
+use RTGODAM\Inc\Helpers\Api_Key;
 
 /**
  * Class Settings
@@ -173,10 +176,10 @@ class Settings extends Base {
 		if ( is_wp_error( $result ) ) {
 
 			$error_data  = $result->get_error_data();
-			$status_code = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : 500;
+			$status_code = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : HTTP_Status_Code::INTERNAL_SERVER_ERROR;
 
 			// For 500 errors, return as warning instead of error to indicate temporary issue.
-			$response_status = ( 500 === $status_code ) ? 'warning' : 'error';
+			$response_status = ( HTTP_Status_Code::INTERNAL_SERVER_ERROR === $status_code ) ? 'warning' : 'error';
 
 			return new \WP_REST_Response(
 				array(
@@ -260,13 +263,9 @@ class Settings extends Base {
 
 		// Use the status from user_data which might include transient verification_failed.
 		$api_key_status = isset( $user_data['api_key_status'] ) ? $user_data['api_key_status'] : rtgodam_get_api_key_status();
-		$is_valid       = RTGODAM_API_KEY_STATUS_VALID === $api_key_status;
+		$is_valid       = Api_Key_Status::VALID === $api_key_status;
 
-		$status_messages = array(
-			RTGODAM_API_KEY_STATUS_VALID               => __( 'API key is valid and active.', 'godam' ),
-			RTGODAM_API_KEY_STATUS_EXPIRED             => __( 'API key has expired. Please renew your subscription.', 'godam' ),
-			RTGODAM_API_KEY_STATUS_VERIFICATION_FAILED => __( 'Unable to verify API key. Please try again later.', 'godam' ),
-		);
+		$status_messages = Api_Key_Status::get_all_messages();
 
 		return new \WP_REST_Response(
 			array(
@@ -285,7 +284,7 @@ class Settings extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function get_api_key() {
-		$api_key = get_option( 'rtgodam-api-key', '' );
+		$api_key = Api_Key::get_key();
 
 		return new \WP_REST_Response(
 			array(

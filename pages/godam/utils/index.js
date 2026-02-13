@@ -4,6 +4,11 @@
 import { __ } from '@wordpress/i18n';
 
 /**
+ * Internal dependencies
+ */
+import { API_KEY_STATUS } from '../../shared/enums';
+
+/**
  * Scroll to the top of the page
  *
  * @return {void}
@@ -25,7 +30,7 @@ export const apiKeyStatus = window?.userData?.apiKeyStatus;
 /**
  * Check if the API key is valid
  */
-export const hasValidAPIKey = apiKeyStatus === 'valid';
+export const hasValidAPIKey = apiKeyStatus === API_KEY_STATUS.VALID;
 
 /**
  * Masked API key
@@ -63,18 +68,18 @@ export const getAPIKeyErrorInfo = () => {
 	}
 
 	// Has key but it's not valid
-	if ( apiKeyStatus === 'expired' ) {
+	if ( apiKeyStatus === API_KEY_STATUS.EXPIRED ) {
 		return {
-			type: 'expired',
+			type: API_KEY_STATUS.EXPIRED,
 			title: __( 'Your API key has expired.', 'godam' ),
 			message: __( 'Please renew your subscription from your Account to continue.', 'godam' ),
 			showRefresh: true,
 		};
 	}
 
-	if ( apiKeyStatus === 'verification_failed' ) {
+	if ( apiKeyStatus === API_KEY_STATUS.VERIFICATION_FAILED ) {
 		return {
-			type: 'verification_failed',
+			type: API_KEY_STATUS.VERIFICATION_FAILED,
 			title: __( 'Unable to verify API key.', 'godam' ),
 			message: __( 'This may be a temporary issue. Please try again later.', 'godam' ),
 			showRefresh: true,

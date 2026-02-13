@@ -59,7 +59,7 @@ class RTGODAM_Transcoder_Admin {
 		}
 
 		// Get the api key key from the site options.
-		$api_key = get_option( 'rtgodam-api-key', '' );
+		$api_key = \RTGODAM\Inc\Helpers\Api_Key::get_key();
 
 		// Admin URL to the video editor settings page.
 		$video_editor_settings_url = admin_url( 'admin.php?page=rtgodam_settings#video-settings' );
@@ -442,7 +442,7 @@ class RTGODAM_Transcoder_Admin {
 		}
 
 		// Don't show usage notices if no API key is configured.
-		$api_key = get_option( 'rtgodam-api-key', '' );
+		$api_key = \RTGODAM\Inc\Helpers\Api_Key::get_key();
 		if ( empty( $api_key ) ) {
 			return;
 		}
@@ -665,7 +665,7 @@ class RTGODAM_Transcoder_Admin {
 		}
 
 		$settings = get_option( 'rtgodam-settings', array() );
-		$api_key  = get_option( 'rtgodam-api-key', '' );
+		$api_key  = \RTGODAM\Inc\Helpers\Api_Key::get_key();
 
 		// If API key is present, we don't show the notice (it's auto-enabled or already handled).
 		if ( ! empty( $api_key ) ) {
@@ -731,7 +731,7 @@ class RTGODAM_Transcoder_Admin {
 		}
 
 		// Get API key.
-		$api_key = get_option( 'rtgodam-api-key', '' );
+		$api_key = \RTGODAM\Inc\Helpers\Api_Key::get_key();
 		if ( empty( $api_key ) ) {
 			return; // No API key, no need to show status notice.
 		}
@@ -740,22 +740,22 @@ class RTGODAM_Transcoder_Admin {
 		$user_data = rtgodam_get_user_data( true );
 
 		// Check API key status from user data (includes transient verification_failed).
-		$api_key_status = isset( $user_data['apiKeyStatus'] ) ? $user_data['apiKeyStatus'] : RTGODAM_API_KEY_STATUS_VALID;
+		$api_key_status = isset( $user_data['apiKeyStatus'] ) ? $user_data['apiKeyStatus'] : \RTGODAM\Inc\Enums\Api_Key_Status::VALID;
 
 		// Only show notice for expired or verification_failed status.
-		if ( RTGODAM_API_KEY_STATUS_VALID === $api_key_status ) {
+		if ( \RTGODAM\Inc\Enums\Api_Key_Status::VALID === $api_key_status ) {
 			return;
 		}
 
 		$settings_url = admin_url( 'admin.php?page=rtgodam_settings#video-settings' );
 
 		$status_messages = array(
-			RTGODAM_API_KEY_STATUS_EXPIRED             => sprintf(
+			\RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED => sprintf(
 				/* translators: %s: URL to settings page */
 				__( 'Your GoDAM API key has expired. Transcoding is currently disabled. Please <a href="%s">renew your subscription</a> to continue transcoding videos.', 'godam' ),
 				esc_url( $settings_url )
 			),
-			RTGODAM_API_KEY_STATUS_VERIFICATION_FAILED => sprintf(
+			\RTGODAM\Inc\Enums\Api_Key_Status::VERIFICATION_FAILED => sprintf(
 				/* translators: %s: URL to settings page */
 				__( 'Temporarily unable to verify your GoDAM API key. Transcoding may not work. Please <a href="%s">check your settings</a> or try refreshing the status.', 'godam' ),
 				esc_url( $settings_url )
@@ -770,7 +770,7 @@ class RTGODAM_Transcoder_Admin {
 				esc_url( $settings_url )
 			);
 
-		$notice_type = ( RTGODAM_API_KEY_STATUS_EXPIRED === $api_key_status ) ? 'error' : 'warning';
+		$notice_type = ( \RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED === $api_key_status ) ? 'error' : 'warning';
 
 		echo '<div class="notice notice-' . esc_attr( $notice_type ) . ' is-dismissible">';
 		echo '<p>' . wp_kses_post( $message ) . '</p>';

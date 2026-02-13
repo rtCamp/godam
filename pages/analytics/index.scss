@@ -33,6 +33,7 @@
 		@apply flex bg-white justify-between py-6 md:px-10 pt-8;
 
 		.analytics-info-container {
+
 			.analytics-info {
 
 				width: calc(50% - 8px);
@@ -314,6 +315,13 @@
 	background: rgba(0, 0, 0, 0.4);
 	backdrop-filter: blur(5px);
 	z-index: 99;
+}
+
+.api-key-overlay--upgrade {
+	background-image: url(../../assets/src/images/upgrade-plan-analytics-bg.png);
+	background-size: 100% calc(100% - 32px);
+	background-repeat: no-repeat;
+	background-position: center 32px;
 }
 
 .api-key-message, .screen-size-message {
