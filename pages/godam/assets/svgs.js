@@ -4,7 +4,7 @@
 import { Path, SVG } from '@wordpress/components';
 
 const ChromeExtensionSvg = (
-	<SVG xmlns="http://www.w3.org/2000/svg" dataName="Layer 1" viewBox="0 0 1000 1000">
+	<SVG xmlns="http://www.w3.org/2000/svg" dataname="Layer 1" viewBox="0 0 1000 1000">
 		<Path
 			d="M952.41 500c0-28.79-9.94-53.12-29.82-73s-44.21-29.82-73-29.82V232.67c0-22.62-8.05-41.98-24.16-58.09-16.11-16.11-35.47-24.16-58.09-24.16H602.83V285.1h112.09v317.73H849.6c28.79 0 53.12-9.93 73-29.81 19.88-19.88 29.82-44.21 29.82-73Z"
 			style={ { fill: '#ea4335', strokeWidth: 0 } }

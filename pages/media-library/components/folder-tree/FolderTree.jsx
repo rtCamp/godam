@@ -53,7 +53,7 @@ const FolderTree = ( { handleContextMenu } ) => {
 	const page = useSelector( ( state ) => state.FolderReducer.page );
 	const currentPage = page.current;
 
-	const { data: folders, error, isLoading, isFetching } = useGetFoldersQuery(
+	const { data: folders, error, isLoading, isFetching, refetch } = useGetFoldersQuery(
 		{
 			page: currentPage,
 		},
@@ -76,6 +76,19 @@ const FolderTree = ( { handleContextMenu } ) => {
 			}
 		}
 	}, [ dispatch, folders, currentPage, isFetching, page.perPage ] );
+
+	// Listen for media type filter changes and refetch folder data
+	useEffect( () => {
+		const handleMediaTypeChange = () => {
+			refetch();
+		};
+
+		document.addEventListener( 'godam-attachment-browser:changed', handleMediaTypeChange );
+
+		return () => {
+			document.removeEventListener( 'godam-attachment-browser:changed', handleMediaTypeChange );
+		};
+	}, [ refetch ] );
 
 	const [ activeId, setActiveId ] = useState( null );
 	const [ overId, setOverId ] = useState( null );

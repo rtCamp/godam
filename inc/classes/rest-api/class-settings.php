@@ -31,21 +31,26 @@ class Settings extends Base {
 	private function get_default_settings() {
 		return array(
 			'video'        => array(
-				'sync_from_godam'        => false,
-				'adaptive_bitrate'       => false,
-				'optimize_videos'        => false,
-				'video_format'           => 'auto',
-				'video_compress_quality' => 100,
-				'video_thumbnails'       => 5,
-				'overwrite_thumbnails'   => false,
-				'watermark'              => false,
-				'watermark_text'         => '',
-				'watermark_url'          => '',
-				'watermark_image_id'     => null,
-				'use_watermark_image'    => false,
+				'sync_from_godam'                => false,
+				'adaptive_bitrate'               => false,
+				'optimize_videos'                => false,
+				'video_format'                   => 'auto',
+				'video_compress_quality'         => 100,
+				'video_thumbnails'               => 5,
+				'overwrite_thumbnails'           => false,
+				'watermark'                      => false,
+				'watermark_text'                 => '',
+				'watermark_url'                  => '',
+				'watermark_image_id'             => null,
+				'use_watermark_image'            => false,
+				'enable_global_video_engagement' => true,
+				'enable_global_video_share'      => true,
 			),
 			'general'      => array(
 				'enable_folder_organization' => true,
+				'enable_gtm_tracking'        => false,
+				'enable_posthog_tracking'    => false,
+				'posthog_initialized'        => false,
 			),
 			'video_player' => array(
 				'brand_image'    => '',
@@ -139,7 +144,49 @@ class Settings extends Base {
 					),
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/get-godam-settings', // Route to share the WordPress site GoDAM settings with external service (Here GoDAM Central).
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_easydam_settings' ),
+					'permission_callback' => array( $this, 'verify_api_key_permission' ),
+				),
+			),
 		);
+	}
+
+	/**
+	 * Verify GoDAM Central permission using stored API key.
+	 *
+	 * @since 1.6.0
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return true|\WP_Error
+	 */
+	public function verify_api_key_permission( $request ) {
+		$authorization_header = $request->get_header( 'authorization' );
+
+		if ( null === $authorization_header ) {
+			return new \WP_Error( 'api_key_required', __( 'GoDAM API key is required.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		$provided_api_key = trim( str_replace( 'Bearer ', '', $authorization_header ) );
+		$stored_api_key   = get_option( 'rtgodam-api-key' );
+
+		if ( empty( $provided_api_key ) ) {
+			return new \WP_Error( 'api_key_required', __( 'GoDAM API key is required.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		if ( empty( $stored_api_key ) ) {
+			return new \WP_Error( 'api_key_not_set', __( 'GoDAM API key is not set on this site.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		if ( ! hash_equals( $stored_api_key, $provided_api_key ) ) {
+			return new \WP_Error( 'forbidden', __( 'Invalid API key.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		return true;
 	}
 
 	/**
@@ -172,6 +219,7 @@ class Settings extends Base {
 		if ( ! empty( $result['data']['api_key'] ) ) {
 			$result['data']['api_key'] = rtgodam_mask_string( $result['data']['api_key'] );
 		}
+
 
 		return new \WP_REST_Response(
 			array(
@@ -238,9 +286,13 @@ class Settings extends Base {
 	 */
 	public function get_easydam_settings() {
 		// Retrieve settings from the database.
-		$easydam_settings = get_option( 'rtgodam-settings', $this->get_default_settings() );
-		
-		return new \WP_REST_Response( $easydam_settings, 200 );
+		$easydam_settings = get_option( 'rtgodam-settings', array() );
+		$default_settings = $this->get_default_settings();
+
+		// Merge defaults with saved settings.
+		$merged_settings = array_replace_recursive( $default_settings, $easydam_settings );
+
+		return new \WP_REST_Response( $merged_settings, 200 );
 	}
 
 	/**
@@ -286,22 +338,27 @@ class Settings extends Base {
 
 		return array(
 			'video'        => array(
-				'sync_from_godam'        => rest_sanitize_boolean( $settings['video']['sync_from_godam'] ?? $default['video']['sync_from_godam'] ),
-				'adaptive_bitrate'       => rest_sanitize_boolean( $settings['video']['adaptive_bitrate'] ?? $default['video']['adaptive_bitrate'] ),
-				'optimize_videos'        => rest_sanitize_boolean( $settings['video']['optimize_videos'] ?? $default['video']['optimize_videos'] ),
-				'video_format'           => sanitize_text_field( $settings['video']['video_format'] ?? $default['video']['video_format'] ),
-				'video_compress_quality' => intval( $settings['video']['video_compress_quality'] ?? $default['video']['video_compress_quality'] ),
-				'video_thumbnails'       => intval( $settings['video']['video_thumbnails'] ?? $default['video']['video_thumbnails'] ),
-				'overwrite_thumbnails'   => rest_sanitize_boolean( $settings['video']['overwrite_thumbnails'] ?? $default['video']['overwrite_thumbnails'] ),
-				'watermark'              => rest_sanitize_boolean( $settings['video']['watermark'] ?? $default['video']['watermark'] ),
-				'watermark_text'         => sanitize_text_field( $settings['video']['watermark_text'] ?? $default['video']['watermark_text'] ),
-				'watermark_url'          => esc_url_raw( $settings['video']['watermark_url'] ?? $default['video']['watermark_url'] ),
-				'watermark_image_id'     => absint( $settings['video']['watermark_image_id'] ?? $default['video']['watermark_image_id'] ),
-				'use_watermark_image'    => rest_sanitize_boolean( $settings['video']['use_watermark_image'] ?? $default['video']['use_watermark_image'] ),
-				'video_slug'             => sanitize_title( $settings['video']['video_slug'] ?? $default['video']['video_slug'] ),
+				'sync_from_godam'                => rest_sanitize_boolean( $settings['video']['sync_from_godam'] ?? $default['video']['sync_from_godam'] ),
+				'adaptive_bitrate'               => rest_sanitize_boolean( $settings['video']['adaptive_bitrate'] ?? $default['video']['adaptive_bitrate'] ),
+				'optimize_videos'                => rest_sanitize_boolean( $settings['video']['optimize_videos'] ?? $default['video']['optimize_videos'] ),
+				'video_format'                   => sanitize_text_field( $settings['video']['video_format'] ?? $default['video']['video_format'] ),
+				'video_compress_quality'         => intval( $settings['video']['video_compress_quality'] ?? $default['video']['video_compress_quality'] ),
+				'video_thumbnails'               => intval( $settings['video']['video_thumbnails'] ?? $default['video']['video_thumbnails'] ),
+				'overwrite_thumbnails'           => rest_sanitize_boolean( $settings['video']['overwrite_thumbnails'] ?? $default['video']['overwrite_thumbnails'] ),
+				'watermark'                      => rest_sanitize_boolean( $settings['video']['watermark'] ?? $default['video']['watermark'] ),
+				'watermark_text'                 => sanitize_text_field( $settings['video']['watermark_text'] ?? $default['video']['watermark_text'] ),
+				'watermark_url'                  => esc_url_raw( $settings['video']['watermark_url'] ?? $default['video']['watermark_url'] ),
+				'watermark_image_id'             => absint( $settings['video']['watermark_image_id'] ?? $default['video']['watermark_image_id'] ),
+				'use_watermark_image'            => rest_sanitize_boolean( $settings['video']['use_watermark_image'] ?? $default['video']['use_watermark_image'] ),
+				'enable_global_video_engagement' => rest_sanitize_boolean( $settings['video']['enable_global_video_engagement'] ?? $default['video']['enable_global_video_engagement'] ),
+				'enable_global_video_share'      => rest_sanitize_boolean( $settings['video']['enable_global_video_share'] ?? $default['video']['enable_global_video_share'] ),
+				'video_slug'                     => sanitize_title( $settings['video']['video_slug'] ?? $default['video']['video_slug'] ),
 			),
 			'general'      => array(
 				'enable_folder_organization' => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ?? $default['general']['enable_folder_organization'] ),
+				'enable_gtm_tracking'        => rest_sanitize_boolean( $settings['general']['enable_gtm_tracking'] ?? $default['general']['enable_gtm_tracking'] ),
+				'enable_posthog_tracking'    => rest_sanitize_boolean( $settings['general']['enable_posthog_tracking'] ?? $default['general']['enable_posthog_tracking'] ),
+				'posthog_initialized'        => rest_sanitize_boolean( $settings['general']['posthog_initialized'] ?? $default['general']['posthog_initialized'] ),
 			),
 			'video_player' => array(
 				'brand_image'    => sanitize_text_field( $settings['video_player']['brand_image'] ?? $default['video_player']['brand_image'] ),
@@ -327,7 +384,7 @@ class Settings extends Base {
 		if ( empty( $color ) ) {
 			return '';
 		}
-		
+
 		// Handle hex colors (3, 6, or 8 characters with alpha).
 		if ( preg_match( '/^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/', $color ) ) {
 			return $color;

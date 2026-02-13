@@ -65,13 +65,25 @@ export default class ConfigurationManager {
 		this.videoSetupOptions = parseDataAttribute( this.video, 'options', {} );
 		const videoSetupControls = parseDataAttribute( this.video, 'controls', this.getDefaultControls() );
 
+		// Disable default autoplay if autoplay-on-view is enabled
+		// This allows intersection observer to handle autoplay when video enters viewport
+		if ( this.video.dataset.autoplayOnView === 'true' ) {
+			videoSetupControls.autoplay = false;
+		}
+
 		// Get mpd, m3
 		const sources = this.rearrangeVideoSources( videoSetupControls.sources || [] );
 
 		this.videoSetupControls = {
 			...videoSetupControls,
 			sources,
+			// Disable native text tracks to use Video.js custom UI (crucial for Safari/iOS hover menus)
+			nativeTextTracks: false,
+			// Ensure video plays inline on mobile devices instead of forcing native fullscreen
+			playsinline: true,
 			html5: {
+				// Redundant but safe: ensure HTML5 tech also respects custom text tracks
+				nativeTextTracks: false,
 				vhs: {
 					bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
 					bandwidthVariance: 1.0, // allow renditions close to estimate
@@ -79,6 +91,19 @@ export default class ConfigurationManager {
 				},
 			},
 		};
+
+		const isIOS = /iPad|iPhone|iPod/.test( navigator.userAgent ) && ! window.MSStream;
+		const isSafari = /^((?!chrome|android).)*safari/i.test( navigator.userAgent );
+
+		if ( isIOS || isSafari ) {
+			// forces VHS even on Safari and iOS devices
+			// This will override native HLS playback with VHS to support features like quality selection.
+			this.videoSetupControls.html5.vhs.overrideNative = true;
+			this.videoSetupControls.html5.nativeAudioTracks = false;
+			this.videoSetupControls.html5.nativeVideoTracks = false;
+			this.videoSetupControls.html5.nativeTextTracks = false;
+		}
+
 		this.isPreviewEnabled = this.videoSetupOptions?.preview;
 
 		this.ensureControlBarDefaults();

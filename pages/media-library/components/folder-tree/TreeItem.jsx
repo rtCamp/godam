@@ -73,7 +73,7 @@ const TreeItem = ( { item, index, depth, onContextMenu, isMultiSelecting } ) => 
 			<div
 				className={ `tree-item ${
 					item.id === selectedFolderID ? 'tree-item--active' : ''
-				} ${ isDragging ? 'tree-item--dragging' : '' }` }
+				} ${ isDragging ? 'tree-item--dragging' : '' } ${ item.meta?.locked ? 'no-drop' : '' }` }
 				data-id={ item.id }
 				ref={ setNodeRef }
 				style={ style }

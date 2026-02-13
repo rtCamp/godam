@@ -80,7 +80,7 @@ trait Singleton {
 			/**
 			 * Dependent items can use the rtgodam_singleton_init_{$called_class} hook to execute code
 			 */
-			do_action( sprintf( 'rtgodam_singleton_init_%s', $called_class ) ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+			do_action( sprintf( 'rtgodam_singleton_init_%s', $called_class ) ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores,WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Legacy hook name kept for backward compatibility.
 
 		}
 

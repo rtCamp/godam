@@ -162,7 +162,7 @@ export default function Edit( props ) {
 			id: 'label',
 			component: (
 				<TextControl
-					placeholder={ __( 'Enter label', 'godam' ) }
+					placeholder={ __( 'GoDAM Recorder', 'godam' ) }
 					__next40pxDefaultSize
 					label={ __( 'Label', 'godam' ) }
 					help={ __( 'Enter label for the field', 'godam' ) }
@@ -224,6 +224,12 @@ export default function Edit( props ) {
 						label={ __( 'Screencast', 'godam' ) }
 						checked={ checkFileSelector( 'screen_capture' ) }
 						onChange={ () => updateFileSelector( 'screen_capture' ) }
+					/>
+					<CheckboxControl
+						__nextHasNoMarginBottom
+						label={ __( 'Audio', 'godam' ) }
+						checked={ checkFileSelector( 'audio' ) }
+						onChange={ () => updateFileSelector( 'audio' ) }
 					/>
 				</>
 			),
@@ -321,7 +327,7 @@ export default function Edit( props ) {
 					>
 						<RichText
 							type="label"
-							value={ recordButton ?? 'Record Video' }
+							value={ recordButton ?? __( 'Start Recording', 'godam' ) }
 							onChange={ ( value ) => {
 								setAttributes( { recordButton: value } );
 							} }

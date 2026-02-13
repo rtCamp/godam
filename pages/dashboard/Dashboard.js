@@ -21,13 +21,15 @@ import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
 import chevronLeft from '../../assets/src/images/chevron-left.svg';
 import chevronRight from '../../assets/src/images/chevron-right.svg';
 import upgradePlanBackground from '../../assets/src/images/upgrade-plan-dashboard-bg.png';
+import NewYearSaleBanner from '../../assets/src/images/new-year-sale-2026.webp';
+import { formatNumber, formatWatchTime } from '../utils/formatters';
 
 const Dashboard = () => {
 	const [ topVideosPage, setTopVideosPage ] = useState( 1 );
 	const siteUrl = window.location.origin;
 	const adminUrl = window.videoData?.adminUrl;
 
-	const { data: dashboardMetrics, isLoading: isDashboardMetricsLoading } = useFetchDashboardMetricsQuery( { siteUrl } );
+	const { data: dashboardMetrics, isLoading: isDashboardMetricsLoading, isError: isDashboardMetricsError } = useFetchDashboardMetricsQuery( { siteUrl } );
 	window.dashboardMetrics = dashboardMetrics;
 
 	const { data: dashboardMetricsHistory } = useFetchDashboardMetricsHistoryQuery( { days: 60, siteUrl } );
@@ -38,6 +40,8 @@ const Dashboard = () => {
 
 	const topVideosData = topVideosResponse?.videos || [];
 	const totalTopVideosPages = topVideosResponse?.totalPages || 1;
+
+	const showNewYearSaleBanner = window.videoData?.showNewYearSaleBanner;
 
 	useEffect( () => {
 		const loadingEl = document.getElementById( 'loading-analytics-animation' );
@@ -60,8 +64,15 @@ const Dashboard = () => {
 			if ( overlay ) {
 				overlay.classList.remove( 'hidden' );
 			}
+		} else if ( ( ! isDashboardMetricsLoading && dashboardMetrics ) || isDashboardMetricsError ) {
+			if ( loadingEl ) {
+				loadingEl.style.display = 'none';
+			}
+			if ( container ) {
+				container.classList.remove( 'hidden' );
+			}
 		}
-	}, [ dashboardMetrics ] );
+	}, [ dashboardMetrics, isDashboardMetricsLoading, isDashboardMetricsError ] );
 
 	useEffect( () => {
 		if (
@@ -191,24 +202,46 @@ const Dashboard = () => {
 				}
 			>
 				<div className="api-key-message">
+
 					{ dashboardMetrics?.errorType === 'invalid_key' || dashboardMetrics?.errorType === 'missing_key'
-						? <div className="api-key-overlay-banner">
-							<p className="api-key-overlay-banner-header">
-								{ __(
-									'Upgrade to unlock the media performance report.',
-									'godam',
-								) }
+						? <>
+							{ showNewYearSaleBanner && (
+								<div className="annual-plan-offer-banner dashboard-modal-banner">
+									<a
+										href={ `${ window?.videoData?.godamBaseUrl }/pricing?utm_campaign=new-year-sale-2026&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=dashboard-modal-banner` }
+										className="annual-plan-offer-banner__link"
+										target="_blank"
+										rel="noopener noreferrer"
+										aria-label={ __( 'Claim the GoDAM New Year Sale 2026 offer', 'godam' ) }
+									>
+										<img
+											src={ NewYearSaleBanner }
+											alt={ __( 'New Year Sale 2026 offer from GoDAM', 'godam' ) }
+											className="annual-plan-offer-banner__image"
+											loading="lazy"
+										/>
+									</a>
+								</div>
+							) }
+							<div className="api-key-overlay-banner">
+								<p className="api-key-overlay-banner-header">
+									{ __(
+										'Upgrade to unlock the media performance report.',
+										'godam',
+									) }
+								</p>
+
+								<p className="api-key-overlay-banner-footer">
+									{ __( 'If you already have a premium plan, connect your', 'godam' ) }
+									{ ' ' }
+									<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+										{ __( 'API in the settings', 'godam' ) }
+									</a>
+								</p>
 
 								<a href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=analytics` } className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
-							</p>
-
-							<p className="api-key-overlay-banner-footer">
-								{ __( 'If you already have a premium plan, connect your ' ) }
-								<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-									{ __( 'API in the settings', 'godam' ) }
-								</a>
-							</p>
-						</div>
+							</div>
+						</>
 						:	<div className="api-key-overlay-banner">
 							<p>
 								{ dashboardMetrics?.message + ' ' || __(
@@ -224,7 +257,7 @@ const Dashboard = () => {
 				</div>
 			</div>
 
-			<div id="dashboard-container" className="dashboard-container">
+			<div id="dashboard-container" className="dashboard-container hidden">
 				<div className="flex-grow">
 					<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-nowrap">
 
@@ -368,8 +401,12 @@ const Dashboard = () => {
 													? ( ( item.plays / item.page_load ) * 100 ).toFixed( 2 ) + '%'
 													: '0%' }
 											</td>
-											<td>{ item.plays ?? '-' }</td>
-											<td>{ item.play_time?.toFixed( 2 ) ?? '-' }s</td>
+											<td title={ item.plays?.toLocaleString() ?? '-' }>
+												{ item.plays ? formatNumber( item.plays ) : '-' }
+											</td>
+											<td title={ item.play_time ? `${ item.play_time.toFixed( 2 ) }s` : '-' }>
+												{ item.play_time ? formatWatchTime( item.play_time ) : '-' }
+											</td>
 											<td>
 												{ item.plays > 0 && item.video_length > 0
 													? ( ( item.play_time / ( item.plays * item.video_length ) ) * 100 ).toFixed( 2 ) + '%'

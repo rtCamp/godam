@@ -1,3 +1,8 @@
+/* stylelint-disable scss/at-rule-no-unknown */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 // Initialize the variables for the settings page
 $settings-page-color-white: #fff;
 $settings-page-border: 1px solid #e0e0e0;
@@ -126,6 +131,7 @@ $settings-page-breakpoint: 782px;
 		&__container {
 			padding: 2rem 20px;
 			max-width: 1440px;
+			margin: 0 auto;
 			display: flex;
 			justify-content: space-between;
 			gap: 2em;
@@ -152,13 +158,17 @@ $settings-page-breakpoint: 782px;
 					background: $settings-page-color-white;
 					padding: 1rem;
 					box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-					transform: translateX(-100%);
+					transform: translateX(-120%);
 					overflow: auto;
 					transition: transform 0.3s ease-in-out;
 					z-index: 99999;
 
 					&.open {
 						transform: translateX(0);
+
+						&.is-safari {
+							transform: translateX(-10px);
+						}
 					}
 				}
 
@@ -242,7 +252,7 @@ $settings-page-breakpoint: 782px;
 	}
 
 	.sidebar-nav-item {
-
+		
 		@apply flex items-center gap-2 p-2 mb-0.5 font-medium rounded-md focus:ring-2 ring-indigo-200 text-gray-600 hover:text-gray-900 border border-transparent transition-all;
 
 		&.active {

@@ -161,7 +161,19 @@ class WPForms_Integration {
 				continue;
 			}
 
-			$response = rtgodam_send_video_to_godam_for_transcoding( 'wpforms', $form_title, $field['value'], $entry_id );
+			// Detect file type to determine job_type.
+			$is_audio = godam_is_audio_file( $field['value'] );
+			
+			// Set job_type based on file type.
+			$job_type = $is_audio ? 'audio' : 'stream';
+			
+			$response = rtgodam_send_video_to_godam_for_transcoding( 
+				'wpforms', 
+				$form_title, 
+				$field['value'], 
+				$entry_id,
+				$job_type
+			);
 
 			if ( is_wp_error( $response ) ) {
 				return wp_send_json_error(

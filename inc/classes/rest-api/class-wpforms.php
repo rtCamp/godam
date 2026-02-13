@@ -47,15 +47,16 @@ class WPForms extends Base {
 							$this->get_collection_params(), // Default collection params.
 							array(
 								'id'    => array(
-									'description' => __( 'The ID of the WPForms Form.', 'godam' ),
-									'type'        => 'string',
-									'required'    => true,
+									'description'       => __( 'The ID of the WPForms Form.', 'godam' ),
+									'type'              => 'integer',
+									'required'          => true,
+									'sanitize_callback' => 'absint',
 								),
 								'theme' => array(
 									'description'       => __( 'The theme to be applied to the WPForms Form.', 'godam' ),
 									'type'              => 'string',
 									'required'          => false,
-									'sanitize_callback' => 'sanitize_text_field',
+									'sanitize_callback' => 'sanitize_key',
 								),
 							)
 						),
@@ -118,13 +119,13 @@ class WPForms extends Base {
 	}
 
 	/**
-	 * Get a single Gravity Form.
+	 * Get a single WPForms Form.
 	 *
 	 * @param \WP_REST_Request $request Request Object.
 	 * @return \WP_REST_Response
 	 */
 	public function get_wpforms_form( $request ) {
-		// Check if Gravity Forms plugin is active.
+		// Check if WPForms plugin is active.
 		if ( ! is_plugin_active( 'wpforms-lite/wpforms.php' ) && ! is_plugin_active( 'wpforms/wpforms.php' ) ) {
 			return new \WP_Error( 'wpforms_not_active', __( 'WPForms plugin is not active.', 'godam' ), array( 'status' => 404 ) );
 		}

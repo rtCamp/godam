@@ -713,8 +713,15 @@ class Engagement extends Base {
 		}
 
 		$comments_endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.get_wp_comments';
-		$comments_url      = add_query_arg( $query_params, $comments_endpoint );
-		$comments_response = wp_remote_get( $comments_url );
+		$comments_response = wp_remote_post(
+			$comments_endpoint,
+			array(
+				'body'    => wp_json_encode( $query_params ),
+				'headers' => array(
+					'Content-Type' => 'application/json',
+				),
+			)
+		);
 		$process_response  = $this->process_response( $comments_response );
 
 		if ( $process_response instanceof WP_REST_Response || empty( $process_response['message']['comments'] ) || ! is_array( $process_response['message']['comments'] ) ) {
@@ -798,8 +805,15 @@ class Engagement extends Base {
 		}
 
 		$likes_endpoint   = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.get_wp_likes';
-		$likes_url        = add_query_arg( $query_params, $likes_endpoint );
-		$likes_response   = wp_remote_get( $likes_url );
+		$likes_response   = wp_remote_post(
+			$likes_endpoint,
+			array(
+				'body'    => wp_json_encode( $query_params ),
+				'headers' => array(
+					'Content-Type' => 'application/json',
+				),
+			)
+		);
 		$process_response = $this->process_response( $likes_response );
 
 		if ( $process_response instanceof WP_REST_Response || empty( $process_response['message']['status'] ) || 'success' !== $process_response['message']['status'] ) {

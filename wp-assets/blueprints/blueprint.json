@@ -1,0 +1,11 @@
+{
+	"$schema": "https://playground.wordpress.net/blueprint-schema.json",
+	"login": true,
+	"siteOptions": {
+		"blogname": "GoDAM Demo"
+	},
+	"plugins": [
+		"godam"
+	],
+	"landingPage": "/wp-admin/admin.php?page=rtgodam"
+}
