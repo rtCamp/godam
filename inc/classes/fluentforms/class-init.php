@@ -83,7 +83,19 @@ class Init {
 	 * @return void
 	 */
 	public function on_fluentforms_loaded() {
+		if ( did_action( 'init' ) ) {
+			$this->initialize_fluentforms();
+		} else {
+			add_action( 'init', array( $this, 'initialize_fluentforms' ), 20 );
+		}
+	}
 
+	/**
+	 * Initialize FluentForms integration.
+	 *
+	 * @return void
+	 */
+	public function initialize_fluentforms() {
 		/**
 		 * Add recorder field.
 		 */

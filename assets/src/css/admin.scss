@@ -824,22 +824,22 @@ to ensure proper responsiveness and avoid layout issues.
 }
 
 /**
- * Center custom icon images in media library thumbnails.	 * Center custom icon images in media library thumbnails.
- *	 *
- * When WordPress dynamically creates thumbnails for attachments without proper image sizes,	 * When WordPress dynamically creates thumbnails for attachments without proper image sizes,
- * it falls back to displaying an icon with class="icon". WordPress core applies	 * it falls back to displaying an icon with class="icon". WordPress core applies
- * transform: translate(-50%, -70%) to these icon images by default.	 * transform: translate(-50%, -70%) to these icon images by default.
- *	 *
- * However, our custom styling changes for thumbnail items interfere with this positioning,	 * However, our custom styling changes for thumbnail items interfere with this positioning,
- * causing the icons to be misaligned. This override ensures proper centering by resetting	 * causing the icons to be misaligned. This override ensures proper centering by resetting
- * the transform to the standard (-50%, -50%) which works correctly with our layout.	 * the transform to the standard (-50%, -50%) which works correctly with our layout.
- *	 *
- * This particularly affects GoDAM virtual attachments and other media that may not have	 * This particularly affects GoDAM virtual attachments and other media that may not have
- * generated thumbnail sizes available.	 * generated thumbnail sizes available.
- */	 */
-.wp-core-ui .attachments-browser .attachment .thumbnail .centered img.icon {	.wp-core-ui .attachments-browser .attachment .thumbnail .centered img.icon {
-		transform: translate(-50%, -50%);			transform: translate(-50%, -50%);
-}	}
+ * Center custom icon images in media library thumbnails.
+ *
+ * When WordPress dynamically creates thumbnails for attachments without proper image sizes,
+ * it falls back to displaying an icon with class="icon". WordPress core applies
+ * transform: translate(-50%, -70%) to these icon images by default.
+ *
+ * However, our custom styling changes for thumbnail items interfere with this positioning,
+ * causing the icons to be misaligned. This override ensures proper centering by resetting
+ * the transform to the standard (-50%, -50%) which works correctly with our layout.
+ *
+ * This particularly affects GoDAM virtual attachments and other media that may not have
+ * generated thumbnail sizes available.
+ */
+.wp-core-ui .attachments-browser .attachment .thumbnail .centered img.icon {
+		transform: translate(-50%, -50%);
+}
 
 #ff_form_editor_app .el-input__inner[type="file"] {
 	padding: 0;
@@ -854,7 +854,7 @@ to ensure proper responsiveness and avoid layout issues.
 
 	&::before {
 		content: 'Start Recording';
-		color: white;
+		color: #fff;
 		display: inline-block;
 		position: absolute;
 		inset-inline-start: 15px;
@@ -864,4 +864,3 @@ to ensure proper responsiveness and avoid layout issues.
 		display: none;
 	}
 }
-
