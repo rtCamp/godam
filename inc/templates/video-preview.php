@@ -68,7 +68,7 @@ $godam_page_title = empty( $godam_video_id ) ? __( 'Video Preview', 'godam' ) : 
 		</div>
 		<div class="godam-video-preview-main--sidebar">
 			<div class="godam-pro-features">
-				<h3 class="godam-pro-features__title"><?php esc_html_e( 'Our Pro Feature', 'godam' ); ?></h3>
+				<h3 class="godam-pro-features__title"><?php esc_html_e( 'Our Pro Features', 'godam' ); ?></h3>
 				
 				<ul class="godam-pro-features__list">
 					<li class="godam-pro-features__list__item">

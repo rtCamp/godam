@@ -34,7 +34,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { __, _x, sprintf } from '@wordpress/i18n';
 import { useInstanceId } from '@wordpress/compose';
 import { useDispatch } from '@wordpress/data';
-import { edit, trendingUp } from '@wordpress/icons';
+import { edit, search } from '@wordpress/icons';
 import { store as noticesStore } from '@wordpress/notices';
 
 /**
@@ -642,6 +642,25 @@ function VideoEdit( {
 
 	return (
 		<>
+			{ isSingleSelected && (
+				<BlockControls>
+					<ToolbarGroup>
+						{ canManageAttachment( attachmentAuthorId ) && (
+							<ToolbarButton
+								icon={ edit }
+								label={ __( 'Edit Video', 'godam' ) }
+								href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
+								target="_blank"
+							/>
+						) }
+						<ToolbarButton
+							icon={ search }
+							label={ __( 'Video SEO', 'godam' ) }
+							onClick={ () => setIsSEOModelOpen( true ) }
+						/>
+					</ToolbarGroup>
+				</BlockControls>
+			) }
 			{ ( isSingleSelected && ! isInsideQueryLoop ) && (
 				<BlockControls group="other">
 					<MediaReplaceFlow
@@ -872,25 +891,6 @@ function VideoEdit( {
 								label={ __( 'Video caption text', 'godam' ) }
 								showToolbarButton={ isSingleSelected }
 							/>
-							{ isSingleSelected && (
-								<BlockControls>
-									<ToolbarGroup>
-										{ canManageAttachment( attachmentAuthorId ) && (
-											<ToolbarButton
-												icon={ edit }
-												label={ __( 'Edit Video', 'godam' ) }
-												href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
-												target="_blank"
-											/>
-										) }
-										<ToolbarButton
-											icon={ trendingUp }
-											label={ __( 'Video SEO', 'godam' ) }
-											onClick={ () => setIsSEOModelOpen( true ) }
-										/>
-									</ToolbarGroup>
-								</BlockControls>
-							) }
 						</figure>
 					</>
 				)
