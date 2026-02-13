@@ -40,10 +40,10 @@ const GodamHeader = () => {
 			try {
 				// Use apiFetch with full URL to handle multisite properly
 				const restUrl = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
-				const fullUrl = `${ restUrl }godam/v1/site/site-data`;
+				const siteDataUrl = `${ restUrl }godam/v1/site/site-data`;
 
 				const response = await apiFetch( {
-					url: fullUrl,
+					url: siteDataUrl,
 					method: 'GET',
 					headers: {
 						'X-WP-Nonce': window.wpApiSettings.nonce,

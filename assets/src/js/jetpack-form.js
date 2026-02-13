@@ -2,9 +2,7 @@
 
 document.addEventListener( 'DOMContentLoaded', function() {
 	// Set your REST endpoint - use localized REST URL for multisite compatibility.
-	const godamRestBase = window.godamJetpackFormData?.restUrl || '/wp-json/godam/v1/jetpack-form-submit';
-
-	const restUrl = godamRestBase;
+	const restUrl = window.godamJetpackFormData?.restUrl || '/wp-json/godam/v1/jetpack-form-submit';
 
 	// Define AJAX submission handler function
 	function handleRestSubmission( form ) {
