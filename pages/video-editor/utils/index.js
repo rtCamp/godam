@@ -3,7 +3,7 @@
  */
 import apiFetch from '@wordpress/api-fetch';
 
-const MEDIA_ENDPOINT = '/wp-json/wp/v2/media';
+const MEDIA_ENDPOINT = 'wp/v2/media';
 
 /**
  * Validates if the given string is a valid URL.

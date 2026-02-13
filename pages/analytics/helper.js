@@ -24,9 +24,9 @@ export async function fetchAnalyticsData( videoId, siteUrl ) {
 			site_url: siteUrl,
 		} );
 
+		const restUrl = window.godamRestRoute?.url || '/wp-json/';
 		const response = await fetch(
-			// url,
-			`/wp-json/godam/v1/analytics/fetch?${ params.toString() }`,
+			`${ restUrl }godam/v1/analytics/fetch?${ params.toString() }`,
 			{
 				method: 'GET',
 				headers: {

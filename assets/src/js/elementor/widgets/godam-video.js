@@ -75,7 +75,8 @@ window.addEventListener( 'elementor/frontend/init', () => {
 					}
 
 					// Numeric ID: fetch from API
-					const apiURL = `/wp-json/wp/v2/media/${ videoFile.id }`;
+					const elementorRestUrl = window.godamRestRoute?.url || '/wp-json/';
+					const apiURL = `${ elementorRestUrl }wp/v2/media/${ videoFile.id }`;
 					fetch( apiURL )
 						.then( ( response ) => {
 							if ( response.ok ) {

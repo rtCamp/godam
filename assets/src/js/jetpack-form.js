@@ -1,8 +1,10 @@
 /* global godamJetpackFormData */
 
 document.addEventListener( 'DOMContentLoaded', function() {
-	// Set your REST endpoint
-	const restUrl = '/wp-json/godam/v1/jetpack-form-submit';
+	// Set your REST endpoint - use localized REST URL for multisite compatibility.
+	const godamRestBase = window.godamJetpackFormData?.restUrl || '/wp-json/godam/v1/jetpack-form-submit';
+
+	const restUrl = godamRestBase;
 
 	// Define AJAX submission handler function
 	function handleRestSubmission( form ) {
@@ -89,7 +91,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 					form.appendChild( errorElement );
 				}
 			} )
-			.catch( ( ) => {
+			.catch( () => {
 				// Reset button
 				if ( submitBtn ) {
 					submitBtn.innerHTML = originalContent;

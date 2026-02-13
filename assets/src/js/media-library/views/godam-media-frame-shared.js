@@ -133,7 +133,10 @@ const GoDAMMediaFrameShared = {
 		const data = selected.attributes;
 
 		// API call to website to create the attachment.
-		fetch( '/wp-json/godam/v1/media-library/create-media-entry', {
+		const mediaEntryUrl = window.godamRestRoute?.url
+			? `${ window.godamRestRoute.url }godam/v1/media-library/create-media-entry`
+			: '/wp-json/godam/v1/media-library/create-media-entry';
+		fetch( mediaEntryUrl, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
