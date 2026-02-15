@@ -111,7 +111,6 @@ class WC_Product_Gallery_Video_Markup {
 					</div>
 					<div class="godam-product-sidebar" data-product-ids="<?php echo esc_attr( $data_product_ids ); ?>">
 						<div class="godam-sidebar-header">
-							<h3 class="godam-header-text"><?php esc_html_e( 'Products seen in the video', 'godam' ); ?></h3>
 
 							<div class="godam-sidebar-header-actions">
 								<div class="godam-product-video-gallery-sidebar--cart-basket">
@@ -201,7 +200,6 @@ class WC_Product_Gallery_Video_Markup {
 					</div>
 					<div class="godam-product-sidebar single-product-sidebar" data-product-ids="<?php echo esc_attr( $product_id ); ?>">
 						<div class="godam-sidebar-header">
-							<h3 class="godam-header-text hidden"><?php esc_html_e( 'Products seen in the video', 'godam' ); ?></h3>
 
 							<div class="godam-sidebar-header-actions">
 								<div class="godam-product-video-gallery-sidebar--cart-basket">

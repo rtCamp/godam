@@ -515,8 +515,17 @@
 }
 
 /* Godam Product Gallery Mini Cart */
-.godam-product-video-gallery-sidebar--cart-basket .wc-block-mini-cart__badge {
-	font-size: 0.6em !important;
+.godam-product-video-gallery-sidebar--cart-basket {
+	background-color: var(--rtgodam-woo-video-modal-minicartbg, rgba(255, 255, 255, 1));
+	color: var(--rtgodam-woo-video-modal-minicarticon, rgba(28, 28, 28, 1));
+	border: var(--rtgodam-woo-video-modal-minicartborder, 1.38px solid rgba(224, 224, 224, 1));
+	border-radius: var(--rtgodam-woo-video-modal-minicartradius, 11px);
+
+	.wc-block-mini-cart__badge {
+		font-size: 0.6em !important;
+		background-color: var(--rtgodam-woo-video-modal-minicarticon, rgba(28, 28, 28, 1));
+		color: var(--rtgodam-woo-video-modal-minicartbg, rgba(255, 255, 255, 1));
+	}
 }
 
 /* Only apply flex-wrap: nowrap to Stack blocks that contain the gallery */

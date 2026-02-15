@@ -290,3 +290,22 @@ export function initImageGallery() {
 	// Initialize the gallery.
 	initGallery();
 }
+
+export function initSidebarToggle( modal ) {
+	const toggle = modal.querySelector( '.godam-sidebar-product-toggle' );
+	const targets = modal.querySelectorAll( '.is-collapsed' );
+
+	if ( ! toggle || ! targets ) {
+		return;
+	}
+
+	toggle.addEventListener( 'click', () => {
+		const expanded = toggle.getAttribute( 'data-expanded' ) === 'true';
+		toggle.setAttribute( 'data-expanded', ! expanded );
+
+		targets.forEach( ( target ) => {
+			target.classList.toggle( 'is-collapsed' );
+		} );
+	} );
+}
+

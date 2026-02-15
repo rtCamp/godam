@@ -82,12 +82,20 @@ const initialState = {
 				style: 'solid',
 				color: 'rgba(224, 224, 224, 1)',
 			},
-			toggleRadius: 8,
+			toggleRadius: 40,
 
 			desktopModalBgColor: 'rgba( 255, 255, 255, 1 )',
 			desktopModalTextColor: 'rgba( 28, 28, 28, 1 )',
 			mobileModalBgColor: 'rgba( 0, 0, 0, 0.7 )',
 			mobileModalTextColor: 'rgba( 255, 255, 255, 1 )',
+
+			desktopPricePrimaryColor: 'rgba( 28, 28, 28, 1 )',
+			desktopPriceSecondaryColor: 'rgba(230, 134, 0, 1)',
+			desktopPriceTertiaryColor: 'rgba(143, 143, 143, 1)',
+
+			mobilePricePrimaryColor: 'rgba( 255, 255, 255, 1 )',
+			mobilePriceSecondaryColor: 'rgba(230, 134, 0, 1)',
+			mobilePriceTertiaryColor: 'rgba(143, 143, 143, 1)',
 
 			additionalComponentsColor: 'rgba(95, 95, 95, 1)',
 		},

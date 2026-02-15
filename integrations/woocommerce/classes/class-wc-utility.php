@@ -324,4 +324,159 @@ class WC_Utility {
 
 		return $svg_args;
 	}
+
+	/**
+	 * Generate WooCommerce CSS variables.
+	 *
+	 * @return string
+	 */
+	public static function get_woocommerce_video_modal_css_variables() {
+
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			return '';
+		}
+
+		$settings = get_option( 'rtgodam-settings', array() );
+		$woo      = $settings['integrations']['woocommerce'] ?? array();
+
+		$css = ':root {';
+
+		foreach ( $woo as $key => $value ) {
+
+			if ( empty( $value ) ) {
+				continue;
+			}
+
+			$css_key = '--rtgodam-woo-video-modal-' . sanitize_key( $key );
+
+			// Handle border array.
+			if ( is_array( $value ) ) {
+
+				$width = isset( $value['width'] ) ? $value['width'] : '1px';
+				$style = isset( $value['style'] ) ? $value['style'] : 'solid';
+				$color = isset( $value['color'] ) ? $value['color'] : '#000';
+
+				$value = "{$width} {$style} {$color}";
+			} elseif ( is_numeric( $value ) ) {
+				// Handle numeric values (like radius).
+				$value = $value . 'px';
+			}
+
+			$css .= $css_key . ':' . esc_attr( $value ) . ';';
+		}
+
+		$css .= '}';
+
+		return $css;
+	}
+
+	/**
+	 * AJAX callback to fetch and return a sidebar single product's HTML content.
+	 *
+	 * This function is triggered via an AJAX request and returns rendered HTML for a single product,
+	 * typically used in quick views, sidebars, or modal popups.
+	 *
+	 * @return void
+	 */
+	public function godam_get_single_sidebar_product_html_callback() {
+
+		$nonce = isset( $_GET['_wpnonce'] )
+		? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) )
+		: '';
+
+		if ( ! wp_verify_nonce( $nonce, 'godam_get_single_sidebar_product_html' ) ) {
+			wp_send_json_error( 'Invalid request.', 400 );
+		}
+
+		if ( empty( $_GET['product_id'] ) ) {
+			wp_send_json_error( 'Missing product ID', 400 );
+		}
+
+		$product_id = absint( $_GET['product_id'] );
+		$product    = wc_get_product( $product_id );
+
+		if ( ! $product ) {
+			wp_send_json_error( 'Invalid product.', 400 );
+		}
+
+		ob_start();
+
+		$toggle_label = __( 'Product Details', 'godam' );
+		$utility      = $this;
+
+		include RTGODAM_PATH . 'integrations/woocommerce/templates/sidebar/hero-product.php';
+		include RTGODAM_PATH . 'integrations/woocommerce/templates/sidebar/single-product-details.php';
+
+		$html = ob_get_clean();
+
+		wp_send_json_success( $html );
+	}
+
+	/**
+	 * AJAX callback to fetch and return a sidebar multiple product's HTML content.
+	 *
+	 * This function is triggered via an AJAX request and returns rendered HTML for a multiple products,
+	 * typically used in quick views, sidebars, or modal popups.
+	 *
+	 * @return void
+	 */
+	public function godam_get_multiple_sidebar_product_html_callback() {
+
+		$nonce = isset( $_GET['_wpnonce'] )
+		? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) )
+		: '';
+
+		if ( ! wp_verify_nonce( $nonce, 'godam_get_multiple_sidebar_product_html' ) ) {
+			wp_send_json_error( 'Invalid request.', 400 );
+		}
+
+		if ( empty( $_GET['products'] ) ) {
+			wp_send_json_error( 'Missing products array.', 400 );
+		}
+
+		// Expect comma separated IDs.
+		$raw_ids = sanitize_text_field( wp_unslash( $_GET['products'] ) );
+
+		$ids = array_filter(
+			array_map(
+				'absint',
+				explode( ',', $raw_ids )
+			)
+		);
+
+		if ( empty( $ids ) ) {
+			wp_send_json_error( 'Invalid product IDs.', 400 );
+		}
+
+		$hero_product = wc_get_product( $ids[0] );
+
+		if ( ! $hero_product ) {
+			wp_send_json_error( 'Hero product not found.', 400 );
+		}
+
+		$additional_products = array();
+
+		if ( count( $ids ) > 1 ) {
+			foreach ( $ids as $id ) {
+				$per_product = wc_get_product( $id );
+				if ( $per_product ) {
+					$additional_products[] = $per_product;
+				}
+			}
+		}
+
+		ob_start();
+
+		$toggle_label = __( 'All Attached Products', 'godam' );
+		$utility      = $this;
+		$products     = $additional_products;
+		$product      = $hero_product;
+
+		include RTGODAM_PATH . 'integrations/woocommerce/templates/sidebar/hero-product.php';
+		include RTGODAM_PATH . 'integrations/woocommerce/templates/sidebar/multiple-products-list.php';
+
+		$html = ob_get_clean();
+
+		wp_send_json_success( $html );
+	}
 }

@@ -128,74 +128,18 @@ class GoDAM_Product_Gallery {
 			'godam-product-gallery-script',
 			'godamVars',
 			array(
-				'namespaceRoot'        => '/godam/v1',
-				'videoShortcodeEP'     => '/video-shortcode',
-				'productByIdsEP'       => '/wcproducts-by-ids',
-				'addToCartAjax'        => 'wc/store/cart',
-				'ajaxUrl'              => admin_url( 'admin-ajax.php' ),
-				'getProductHtmlAction' => 'godam_get_product_html',
-				'productGalleryNonce'  => wp_create_nonce( 'godam_get_product_html' ),
-				'api_nonce'            => wp_create_nonce( 'wc_store_api' ),
+				'namespaceRoot'                => '/godam/v1',
+				'videoShortcodeEP'             => '/video-shortcode',
+				'productByIdsEP'               => '/wcproducts-by-ids',
+				'addToCartAjax'                => 'wc/store/cart',
+				'ajaxUrl'                      => admin_url( 'admin-ajax.php' ),
+				'getSingleProductHtmlAction'   => 'godam_get_single_sidebar_product_html',
+				'getSingleProductHtmlNonce'    => wp_create_nonce( 'godam_get_single_sidebar_product_html' ),
+				'getMultipleProductHtmlAction' => 'godam_get_multiple_sidebar_product_html',
+				'getMultipleProductHtmlNonce'  => wp_create_nonce( 'godam_get_multiple_sidebar_product_html' ),
+				'api_nonce'                    => wp_create_nonce( 'wc_store_api' ),
 			)
 		);
-	}
-
-	/**
-	 * Appends inline CSS styles for the product modal based on passed attributes.
-	 *
-	 * @param array  $atts Associative array of CSS attribute values.
-	 * @param string $instance_id Unique ID for each GoDAM Gallery Block.
-	 */
-	public function define_css_for_modal( $atts, $instance_id ) {
-		$bg_color       = $atts['cta_bg_color'];
-		$close_bg_color = $atts['play_button_bg_color'];
-		$close_color    = $atts['play_button_icon_color'];
-		$close_radius   = $atts['play_button_radius'];
-		$icon_bg_color  = $atts['cta_cart_bg_color'];
-		$icon_color     = $atts['cta_cart_icon_color'];
-		$radius         = $atts['cta_cart_border_radius'];
-		$border_color   = $atts['cta_cart_border_color'];
-		$border_style   = $atts['cta_cart_border_style'];
-		$border_width   = $atts['cta_cart_border_width'];
-		$title_color    = $atts['cta_product_name_color'];
-		$price_color    = $atts['cta_product_price_color_primary'];
-
-		$css = "
-			#{$instance_id} .godam-product-sidebar,
-			[data-gallery-id=\"{$instance_id}\"] .godam-product-sidebar {
-				background-color: {$bg_color};
-			}
-			#{$instance_id} .godam-product-sidebar button,
-			#{$instance_id} .godam-product-sidebar a,
-			[data-gallery-id=\"{$instance_id}\"] .godam-product-sidebar button,
-			[data-gallery-id=\"{$instance_id}\"] .godam-product-sidebar a {
-				background-color: {$icon_bg_color};
-				color: {$icon_color};
-				border-radius: {$radius}%;
-				border: {$border_width} {$border_style} {$border_color};
-			}
-			#{$instance_id} .godam-product-modal-close,
-			[data-gallery-id=\"{$instance_id}\"] .godam-product-modal-close {
-				background-color: {$close_bg_color};
-				color: {$close_color};
-				border-radius: {$close_radius}%;
-			}
-			#{$instance_id} .godam-sidebar-product-price,
-			[data-gallery-id=\"{$instance_id}\"] .godam-sidebar-product-price {
-				color: {$price_color};
-			}
-			#{$instance_id} .godam-sidebar-product-title,
-			[data-gallery-id=\"{$instance_id}\"] .godam-sidebar-product-title {
-				color: {$title_color};
-			}
-		";
-
-		// Skip inline styles during REST API requests to prevent JSON contamination.
-		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
-			return;
-		}
-
-		return $css;
 	}
 
 	/**
@@ -364,14 +308,6 @@ class GoDAM_Product_Gallery {
 			? 'godam-product-gallery-' . $atts['block_id']
 			: 'godam-product-gallery-shortcode-' . wp_unique_id( wp_rand( 1000, 9999999999 ) );
 
-
-		// Add CSS for Video Modal.
-		wp_register_style( 'godam-product-gallery-woo-inline-style', false, array(), RTGODAM_VERSION );
-		wp_enqueue_style( 'godam-product-gallery-woo-inline-style' );
-		wp_add_inline_style(
-			'godam-product-gallery-woo-inline-style',
-			$this->define_css_for_modal( $atts, $instance_id )
-		);
 
 		// Enqueue GoDAM Product Gallery Scripts and Styles.
 		wp_enqueue_style( 'godam-product-gallery-style' );
@@ -949,7 +885,92 @@ class GoDAM_Product_Gallery {
 
 		ob_start();
 		?>
-		<div class="godam-image-gallery">
+		<!-- Hero section -->
+		<div class="godma-single-sidebar-hero-section">
+			<!-- Image -->
+			<div class="godam-single-sidebar-hero-main-image">
+				<img src="<?php echo esc_url( $product_images[0] ); ?>" alt="<?php echo esc_attr( $product->get_name() ); ?>" />
+			</div>
+
+			<!-- Hero Content -->
+			<div class="godam-single-sidebar-hero-content">
+				<div class="godam-single-sidebar-hero-product-title">
+					<h3><?php echo esc_html( $product->get_name() ); ?></h3>
+				</div>
+				<p class="godam-single-sidebar-hero-product-price"><?php echo wp_kses_post( $product->get_price_html() ); ?></p>
+			</div>
+		</div>
+
+		<!-- Add to Cart button -->
+		<?php
+		// Replace Woo's form/button with Product Sidebar Add to Cart button or Product Sidebar View Product button.
+		$product_url = get_permalink( $product_id );
+		?>
+		<div class="single-product-sidebar-actions">
+			<?php if ( $product->is_type( 'variable' ) || $product->is_type( 'grouped' ) || $product->is_type( 'external' ) || ! $product->is_in_stock() ) : ?>
+				<a class="godam-product-sidebar-view-product-button" href="<?php echo esc_url( $product_url ); ?>" target="_blank" rel="noopener noreferrer">
+					<?php echo esc_html__( 'View Product', 'godam' ); ?>
+				</a>
+			<?php else : ?>
+				<button class="godam-product-sidebar-add-to-cart-button" data-product-id="<?php echo esc_attr( $product_id ); ?>">
+					<span class="godam-add-to-cart-icon" aria-hidden="true">
+						<svg
+							width="18"
+							height="18"
+							viewBox="0 0 24 24"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								d="M12 5V19M5 12H19"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+							/>
+						</svg>
+					</span>
+					<span class="godam-add-to-cart-text">
+						<?php echo esc_html__( 'Add to Cart', 'godam' ); ?>
+					</span>
+				</button>
+			<?php endif; ?>
+
+			<div class="rtgodam-product-video-gallery-slider-modal-content--cart-basket">
+				<?php
+				$mini_cart_block = do_blocks( '<!-- wp:woocommerce/mini-cart /-->' );
+				echo ! empty( $mini_cart_block ) ? $mini_cart_block : ''; // phpcs:ignore
+				?>
+			</div>
+		</div>
+
+		<hr class="godam-sidebar-divider" />
+
+		<!-- Toggle dwopdown -->
+		<div class="godam-product-info-toggle" data-expanded="false">
+			<div class="godam-product-info-toggle-header">
+				<span><?php esc_html_e( 'Product Details', 'godam' ); ?></span>
+
+				<span class="godam-toggle-icon" aria-hidden="true">
+					<svg
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<path
+							d="M6 9L12 15L18 9"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+					</svg>
+				</span>
+			</div>
+		</div>
+
+		<div class="godam-image-gallery is-collapsed">
 			<!-- main image display -->
 			<div class="godam-main-image">
 				<img src="<?php echo esc_url( $product_images[0] ); ?>" alt="<?php echo esc_attr( $product->get_name() ); ?>" />
@@ -977,7 +998,7 @@ class GoDAM_Product_Gallery {
 				</button>
 			</div>
 		</div>
-		<div class="godam-single-product-sidebar-content">
+		<div class="godam-single-product-sidebar-content is-collapsed">
 			<div class="godam-sidebar-product-title">
 				<h3><?php echo esc_html( $product->get_name() ); ?></h3>
 			</div>
@@ -1045,29 +1066,6 @@ class GoDAM_Product_Gallery {
 			</div>
 
 			<p class="godam-sidebar-product-description"><?php echo wp_kses_post( $product->get_description() ); ?></p>
-
-			<?php
-			// Replace Woo's form/button with Product Sidebar Add to Cart button or Product Sidebar View Product button.
-			$product_url = get_permalink( $product_id );
-			?>
-		<div class="single-product-sidebar-actions">
-			<?php if ( $product->is_type( 'variable' ) || $product->is_type( 'grouped' ) || $product->is_type( 'external' ) || ! $product->is_in_stock() ) : ?>
-				<a class="godam-product-sidebar-view-product-button" href="<?php echo esc_url( $product_url ); ?>" target="_blank" rel="noopener noreferrer">
-					<?php echo esc_html__( 'View Product', 'godam' ); ?>
-				</a>
-			<?php else : ?>
-				<button class="godam-product-sidebar-add-to-cart-button" data-product-id="<?php echo esc_attr( $product_id ); ?>">
-					<?php echo esc_html__( 'Add to Cart', 'godam' ); ?>
-				</button>
-			<?php endif; ?>
-
-			<div class="rtgodam-product-video-gallery-slider-modal-content--cart-basket">
-				<?php
-				$mini_cart_block = do_blocks( '<!-- wp:woocommerce/mini-cart /-->' );
-				echo ! empty( $mini_cart_block ) ? $mini_cart_block : ''; // phpcs:ignore
-				?>
-			</div>
-		</div>
 		<?php
 
 		echo '</div>';

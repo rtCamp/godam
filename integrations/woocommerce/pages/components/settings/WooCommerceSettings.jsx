@@ -105,7 +105,10 @@ const WooCommerceSettings = ( { settings = {}, onSettingChange } ) => {
 		title,
 		bgKey,
 		textKey,
+		priceKeys,
 	} ) => {
+		const [ activePriceTab, setActivePriceTab ] = useState( 'primary' );
+
 		return (
 			<>
 				<p className="godam-settings-section-title">
@@ -139,6 +142,66 @@ const WooCommerceSettings = ( { settings = {}, onSettingChange } ) => {
 									updateSetting( textKey, value )
 								}
 							/>
+						</div>
+
+						{ /* Price Settings */ }
+						<div>
+							<p className="godam-settings-section-title">
+								<strong>{ __( 'Price Colors', 'godam' ) }</strong>
+							</p>
+
+							{ /* Tabs */ }
+							<div className="godam-settings-tabs">
+								{ [
+									{ key: 'primary', label: 'Primary' },
+									{ key: 'secondary', label: 'Secondary' },
+									{ key: 'tertiary', label: 'Tertiary' },
+								].map( ( tab ) => (
+									<button
+										key={ tab.key }
+										type="button"
+										className={ `godam-settings-tab ${
+											activePriceTab === tab.key ? 'is-active' : ''
+										}` }
+										onClick={ () => setActivePriceTab( tab.key ) }
+									>
+										{ __( tab.label, 'godam' ) }
+									</button>
+								) ) }
+							</div>
+
+							{ /* Tab Content */ }
+							<div className="godam-tab-content">
+								{ activePriceTab === 'primary' && (
+									<ColorPalette
+										enableAlpha
+										value={ settings[ priceKeys.primary ] }
+										onChange={ ( value ) =>
+											updateSetting( priceKeys.primary, value )
+										}
+									/>
+								) }
+
+								{ activePriceTab === 'secondary' && (
+									<ColorPalette
+										enableAlpha
+										value={ settings[ priceKeys.secondary ] }
+										onChange={ ( value ) =>
+											updateSetting( priceKeys.secondary, value )
+										}
+									/>
+								) }
+
+								{ activePriceTab === 'tertiary' && (
+									<ColorPalette
+										enableAlpha
+										value={ settings[ priceKeys.tertiary ] }
+										onChange={ ( value ) =>
+											updateSetting( priceKeys.tertiary, value )
+										}
+									/>
+								) }
+							</div>
 						</div>
 
 					</div>
@@ -260,6 +323,11 @@ const WooCommerceSettings = ( { settings = {}, onSettingChange } ) => {
 									title="Desktop Sidebar Settings"
 									bgKey="desktopModalBgColor"
 									textKey="desktopModalTextColor"
+									priceKeys={ {
+										primary: 'desktopPricePrimaryColor',
+										secondary: 'desktopPriceSecondaryColor',
+										tertiary: 'desktopPriceTertiaryColor',
+									} }
 								/>
 							) }
 
@@ -268,6 +336,11 @@ const WooCommerceSettings = ( { settings = {}, onSettingChange } ) => {
 									title="Mobile Floating Tile Settings"
 									bgKey="mobileModalBgColor"
 									textKey="mobileModalTextColor"
+									priceKeys={ {
+										primary: 'mobilePricePrimaryColor',
+										secondary: 'mobilePriceSecondaryColor',
+										tertiary: 'mobilePriceTertiaryColor',
+									} }
 								/>
 							) }
 
@@ -277,20 +350,22 @@ const WooCommerceSettings = ( { settings = {}, onSettingChange } ) => {
 				</PanelBody>
 
 				<PanelBody
-					title={ __( 'Additional Components', 'godam' ) }
+					title={ __( 'Other Visual Enhancements', 'godam' ) }
 					initialOpen={ false }
 				>
-					<div className="godam-control-group" style={ {
-						display: 'flex',
-						gap: '16px',
-					} }>
-						<div style={ { display: 'flex', flexDirection: 'column' } }>
-							<p><strong>{ __( 'Additional Products Font Color', 'godam' ) }</strong></p>
-							<ColorPalette
-								enableAlpha
-								value={ settings.additionalComponentsColor }
-								onChange={ ( value ) => updateSetting( 'additionalComponentsColor', value ) }
-							/>
+					<div className="godam-button-settings-group">
+						<div className="godam-control-group" style={ {
+							display: 'flex',
+							gap: '16px',
+						} }>
+							<div style={ { display: 'flex', flexDirection: 'column' } }>
+								<p><strong>{ __( 'Modal Tertiary Font Color', 'godam' ) }</strong></p>
+								<ColorPalette
+									enableAlpha
+									value={ settings.additionalComponentsColor }
+									onChange={ ( value ) => updateSetting( 'additionalComponentsColor', value ) }
+								/>
+							</div>
 						</div>
 					</div>
 				</PanelBody>
