@@ -254,7 +254,7 @@ class RTGODAM_RetranscodeMedia {
 
 		$actions = ( ! empty( $actions ) && is_array( $actions ) ) ? $actions : array();
 
-		$url = wp_nonce_url( admin_url( 'admin.php?page=rtgodam_tools&goback=1&ids=' . $post->ID ), 'rtgodam_tools' );
+		$url = admin_url( 'admin.php?page=rtgodam_tools&goback=1&media_ids=' . $post->ID . '&_wpnonce=' . wp_create_nonce( 'rtgodam_tools' ) );
 
 		$actions['retranscode_media'] = sprintf(
 			'<a href="%s" title="%s">%s</a>',

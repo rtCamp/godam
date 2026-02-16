@@ -1,16 +1,7 @@
-/* global GODAMPlayer */
-
-/**
- * WordPress dependencies
- */
-import { select, dispatch } from '@wordpress/data';
-
 /**
  * External dependencies
  */
 import DOMPurify from 'isomorphic-dompurify';
-
-const engagementStore = 'godam-video-engagement';
 
 // Common function to load more videos
 async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVideos ) {
@@ -40,6 +31,8 @@ async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVi
 			date_range: gallery.dataset.dateRange || '',
 			custom_date_start: gallery.dataset.customDateStart || '',
 			custom_date_end: gallery.dataset.customDateEnd || '',
+			engagements: gallery.dataset.engagements === '1',
+			open_to_new_page: gallery.dataset.openToNewPage === '1',
 		} );
 		const response = await fetch( `/wp-json/godam/v1/gallery-shortcode?${ params.toString() }` );
 		const data = await response.json();
@@ -131,11 +124,13 @@ document.addEventListener( 'click', async function( e ) {
 		const orderby = btn.getAttribute( 'data-orderby' );
 		const order = btn.getAttribute( 'data-order' );
 		const totalVideos = parseInt( btn.getAttribute( 'data-total' ), 10 );
+		const engagements = btn.getAttribute( 'data-engagements' ) === '1';
+		const openToNewPage = btn.getAttribute( 'data-open-to-new-page' ) === '1';
 
 		// Hide button
 		btn.style.display = 'none';
 
-		const newOffset = await loadMoreVideos( gallery, offset, columns, orderby, order, totalVideos );
+		const newOffset = await loadMoreVideos( gallery, offset, columns, orderby, order, totalVideos, engagements, openToNewPage );
 
 		if ( newOffset ) {
 			btn.setAttribute( 'data-offset', newOffset );
@@ -146,13 +141,13 @@ document.addEventListener( 'click', async function( e ) {
 	}
 } );
 
-// Use event delegation - attach listener to document, check if clicked element matches
-document.addEventListener( 'click', async function( e ) {
-	// Check if the clicked element is a video thumbnail
+// Handle gallery item clicks - show video ID modal
+document.addEventListener( 'click', function( e ) {
 	if ( e.target.closest( '.godam-video-thumbnail' ) ) {
 		const thumbnail = e.target.closest( '.godam-video-thumbnail' );
 		const videoId = thumbnail.getAttribute( 'data-video-id' );
-		const videoCptUrl = thumbnail.getAttribute( 'data-video-url' );
+		const videoUrl = thumbnail.getAttribute( 'data-video-url' );
+
 		if ( ! videoId ) {
 			return;
 		}
@@ -163,306 +158,95 @@ document.addEventListener( 'click', async function( e ) {
 			return;
 		}
 
-		// Check if modal exists or create it
-		let modal = document.getElementById( 'godam-video-modal' );
-		if ( ! modal ) {
-			modal = document.createElement( 'div' );
-			modal.id = 'godam-video-modal';
-			modal.className = 'godam-modal';
-			document.body.appendChild( modal );
+		// If the gallery is configured to open videos in a new page, do so and skip the modal
+		const openToNewPage = currentGallery.getAttribute( 'data-open-to-new-page' ) === '1';
+		if ( openToNewPage && videoUrl ) {
+			window.open( DOMPurify.sanitize( videoUrl ), '_blank' );
+			return;
 		}
-		modal.classList.add( 'is-gallery' );
-
-		// Store current video ID and loading state
-		modal.dataset.currentVideoId = videoId;
-		modal.dataset.isLoading = 'false';
 
 		// Get gallery pagination info
-		const galleryOffset = parseInt( currentGallery.getAttribute( 'data-offset' ) || 0, 10 );
 		const galleryColumns = parseInt( currentGallery.getAttribute( 'data-columns' ) || 3, 10 );
 		const galleryOrderby = currentGallery.getAttribute( 'data-orderby' ) || 'date';
 		const galleryOrder = currentGallery.getAttribute( 'data-order' ) || 'DESC';
 		const galleryTotal = parseInt( currentGallery.getAttribute( 'data-total' ) || 0, 10 );
 
-		// Check if engagements are enabled for the gallery
-		const galleryEngagements = currentGallery.getAttribute( 'data-engagements' ) === '1';
-
-		// If open to new page is enabled, open the video in a new tab instead of modal
-		const openToNewPage = currentGallery.getAttribute( 'data-open-to-new-page' ) === '1';
-
-		if ( openToNewPage ) {
-			window.open( videoCptUrl, '_blank' );
-			return;
-		}
-
-		// Show modal immediately with the player
+		// Create brand new modal with inline styles
+		const modal = document.createElement( 'div' );
+		modal.className = 'godam-video-id-modal';
+		modal.dataset.currentVideoId = videoId;
+		modal.dataset.isLoading = 'true';
 		modal.innerHTML = `
-			<div class="godam-modal-overlay"></div>
-			<div class="godam-modal-content">
-				<span class="godam-modal-close">&times;</span>
-				<div class="easydam-video-container animate-video-loading">
-					<div class="animate-play-btn">
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
-							<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
-						</svg>
-					</div>
-				</div>
-				<div class="godam-modal-footer">
-					<div class="godam-video-info">
-						<h3 class="godam-video-title"></h3>
-						<span class="godam-video-date"></span>
-					</div>
+			<div class="godam-modal-overlay">
+				<div class="godam-overlay-loading-spinner"></div>
+			</div>
+			<div class="godam-modal-content godam-modal-content-hidden">
+				<button class="godam-modal-close">&times;</button>
+				<div class="godam-modal-body">
+					<iframe
+						src="${ DOMPurify.sanitize( videoUrl ) }"
+						title="Godam Video Player"
+						frameborder="0"
+						allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+						allowfullscreen
+					></iframe>
 				</div>
 			</div>
 		`;
 
-		modal.classList.remove( 'hidden' );
-
-		// Prevent background scrolling when modal is open
+		document.body.appendChild( modal );
 		document.body.style.overflow = 'hidden';
 
-		// Function to load a new video
-		const loadNewVideo = async ( newVideoId ) => {
-			// Check if already loading
-			if ( modal.dataset.isLoading === 'true' ) {
-				return;
-			}
+		// Get iframe and elements
+		const iframe = modal.querySelector( 'iframe' );
+		const overlaySpinner = modal.querySelector( '.godam-overlay-loading-spinner' );
+		const modalContent = modal.querySelector( '.godam-modal-content' );
 
-			window.galleryScroll = false;
+		// Show modal content when iframe loads
+		const showModalContent = () => {
+			overlaySpinner.style.display = 'none';
+			modalContent.classList.remove( 'godam-modal-content-hidden' );
+			modalContent.classList.add( 'godam-modal-content-visible' );
+			modal.dataset.isLoading = 'false';
+		};
 
-			// Set loading state
-			modal.dataset.isLoading = 'true';
+		iframe.addEventListener( 'load', showModalContent );
+
+		// Function to update modal with new video
+		const updateModalVideo = ( newVideoId, newVideoUrl, direction = 'next' ) => {
 			modal.dataset.currentVideoId = newVideoId;
+			modal.dataset.isLoading = 'true';
 
-			// Show loading state
-			const videoContainer = modal.querySelector( '.easydam-video-container' );
-			if ( videoContainer ) {
-				videoContainer.innerHTML = `
-					<div class="animate-video-loading">
-						<div class="animate-play-btn">
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
-								<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
-							</svg>
-						</div>
-					</div>
-				`;
-				videoContainer.classList.add( 'animate-video-loading' );
-			}
+			const _iframe = modal.querySelector( 'iframe' );
+			const _overlaySpinner = modal.querySelector( '.godam-overlay-loading-spinner' );
+			const _modalContent = modal.querySelector( '.godam-modal-content' );
+			const modalBody = modal.querySelector( '.godam-modal-body' );
 
-			try {
-				let data;
-				const videoMarkUp = select( engagementStore ).getVideoMarkUp()[ newVideoId ];
-				if ( videoMarkUp ) {
-					data = {
-						html: videoMarkUp,
-						status: 'success',
-					};
-				} else {
-					const response = await fetch( `/wp-json/godam/v1/video-shortcode?id=${ newVideoId }` );
-					data = await response.json();
+			if ( _iframe && _overlaySpinner && _modalContent && modalBody ) {
+				// Show loading on overlay and hide content
+				_overlaySpinner.style.display = 'block';
+				_modalContent.classList.remove( 'godam-modal-content-visible' );
+				_modalContent.classList.add( 'godam-modal-content-hidden' );
 
-					if ( data.status === 'success' && data.html ) {
-						dispatch( engagementStore ).addVideoMarkUp( newVideoId, data.html );
-					}
-				}
+				// Add animation class based on direction
+				const animationClass = direction === 'next' ? 'slide-out-up' : 'slide-out-down';
+				modalBody.classList.add( animationClass );
 
-				if ( data.status === 'success' && data.html ) {
-					// Update the video element with the fetched data
-					if ( videoContainer ) {
-						videoContainer.innerHTML = data.html;
-						videoContainer.classList.remove( 'animate-video-loading' );
+				// After animation, update iframe
+				setTimeout( () => {
+					_iframe.src = DOMPurify.sanitize( newVideoUrl );
 
-						// Update video title in the modal header
-						const videoTitle = modal.querySelector( '.godam-video-title' );
-						if ( videoTitle ) {
-							videoTitle.innerHTML = DOMPurify.sanitize( data.title || '' );
-						}
+					modalBody.classList.remove( animationClass );
+					const slideInClass = direction === 'next' ? 'slide-in-down' : 'slide-in-up';
+					modalBody.classList.add( slideInClass );
 
-						// Update the date
-						const videoDate = modal.querySelector( '.godam-video-date' );
-						if ( videoDate ) {
-							videoDate.textContent = data.date || '';
-						}
-
-						const engagementContainer = videoContainer.querySelector( '.rtgodam-video-engagement' );
-						let engagementId = engagementContainer?.getAttribute( 'data-engagement-id' ) || 0;
-						const siteUrl = engagementContainer?.getAttribute( 'data-engagement-site-url' ) || '';
-
-						if ( ! galleryEngagements ) {
-							engagementContainer.remove();
-						}
-
-						// Reinitialize the player with the new content
-						if ( typeof GODAMPlayer === 'function' ) {
-							const godamPlayer = GODAMPlayer( modal );
-							const initEngagement = godamPlayer.initEngagement;
-
-							// Helper function to setup player once it's ready
-							const setupGalleryPlayer = ( playerInstance ) => {
-								if ( galleryEngagements ) {
-									// If engagements are enabled, initiate the comment modal with Data
-									let skipEngagements = false;
-									if ( 0 === engagementId ) {
-										const vidFigure = videoContainer.querySelector( 'figure' );
-										engagementId = vidFigure?.id.replace( 'godam-player-container', 'engagement' );
-										skipEngagements = true;
-									}
-									const newVideoEngagementsData = select( engagementStore ).getTitles()[ newVideoId ];
-
-									const startPlayback = () => {
-										dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId, skipEngagements ).then( () => {
-											window.galleryScroll = true;
-										} );
-										playerInstance.play().catch( ( error ) => {
-											// eslint-disable-next-line no-console
-											console.warn( 'Failed to start gallery playback:', error );
-										} );
-									};
-
-									if ( newVideoEngagementsData ) {
-										startPlayback();
-									} else {
-										initEngagement.then( startPlayback );
-									}
-									engagementContainer?.remove();
-								} else {
-									dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId, true ).then( () => {
-										window.galleryScroll = true;
-									} );
-									playerInstance.play().catch( ( error ) => {
-										// eslint-disable-next-line no-console
-										console.warn( 'Failed to start gallery playback:', error );
-									} );
-								}
-							};
-
-							// Get the video element for this modal
-							const videoPlayerElement = modal.querySelector( '.video-js' );
-							const videojs = window.videojs;
-
-							// Clean up any previous event listener for this modal
-							if ( modal._galleryPlayerReadyHandler ) {
-								document.removeEventListener( 'godamPlayerReady', modal._galleryPlayerReadyHandler );
-								modal._galleryPlayerReadyHandler = null;
-							}
-
-							if ( videojs ) {
-								// Check if player is already ready (fallback for synchronous initialization)
-								const existingPlayer = videoPlayerElement ? videojs.getPlayer( videoPlayerElement ) : null;
-								if ( existingPlayer ) {
-									setupGalleryPlayer( existingPlayer );
-								} else {
-									// Listen for the godamPlayerReady event (async initialization)
-									const onPlayerReady = ( event ) => {
-										// Ensure this event is for our video element
-										if ( event.detail.videoElement === videoPlayerElement ) {
-											setupGalleryPlayer( event.detail.player );
-											document.removeEventListener( 'godamPlayerReady', onPlayerReady );
-											modal._galleryPlayerReadyHandler = null;
-										}
-									};
-									modal._galleryPlayerReadyHandler = onPlayerReady;
-									document.addEventListener( 'godamPlayerReady', onPlayerReady );
-								}
-							} else {
-								// eslint-disable-next-line no-console
-								console.error( 'Video.js is not loaded. Cannot initialize player.' );
-							}
-						}
-					}
-				} else if ( videoContainer ) {
-					videoContainer.innerHTML = '<div class="godam-error-message">Video could not be loaded.</div>';
-					videoContainer.classList.remove( 'animate-video-loading' );
-				}
-			} catch ( error ) {
-				// Handle error case
-				if ( videoContainer ) {
-					videoContainer.innerHTML = '<div class="godam-error-message">Video could not be loaded.</div>';
-					videoContainer.classList.remove( 'animate-video-loading' );
-				}
-			} finally {
-				// Reset loading state
-				modal.dataset.isLoading = 'false';
+					// Remove animation class after transition
+					setTimeout( () => {
+						modalBody.classList.remove( slideInClass );
+					}, 300 );
+				}, 300 );
 			}
 		};
-
-		// Initialize the video player
-		if ( typeof GODAMPlayer === 'function' ) {
-			GODAMPlayer( modal );
-			// Wait for player to be ready before trying to play
-			const videoPlayerElement = modal.querySelector( '.video-js' );
-			const videojs = window.videojs;
-
-			// Clean up any previous event listener for this modal
-			if ( modal._initialPlayerReadyHandler ) {
-				document.removeEventListener( 'godamPlayerReady', modal._initialPlayerReadyHandler );
-				modal._initialPlayerReadyHandler = null;
-			}
-
-			if ( videojs && videoPlayerElement ) {
-				// Check if player is already ready
-				const existingPlayer = videojs.getPlayer( videoPlayerElement );
-				if ( existingPlayer ) {
-					existingPlayer.play().catch( ( error ) => {
-						// eslint-disable-next-line no-console
-						console.warn( 'Failed to start initial playback:', error );
-					} );
-				} else {
-					// Listen for the godamPlayerReady event
-					const onInitialPlayerReady = ( event ) => {
-						if ( event.detail.videoElement === videoPlayerElement ) {
-							event.detail.player.play();
-							document.removeEventListener( 'godamPlayerReady', onInitialPlayerReady );
-							modal._initialPlayerReadyHandler = null;
-						}
-					};
-					modal._initialPlayerReadyHandler = onInitialPlayerReady;
-					document.addEventListener( 'godamPlayerReady', onInitialPlayerReady );
-				}
-			}
-		}
-
-		// Close handlers
-		const close = () => {
-			// Clean up event listeners to prevent memory leaks
-			if ( modal._initialPlayerReadyHandler ) {
-				document.removeEventListener( 'godamPlayerReady', modal._initialPlayerReadyHandler );
-				modal._initialPlayerReadyHandler = null;
-			}
-			if ( modal._galleryPlayerReadyHandler ) {
-				document.removeEventListener( 'godamPlayerReady', modal._galleryPlayerReadyHandler );
-				modal._galleryPlayerReadyHandler = null;
-			}
-
-			// Send heatmap (type 2) for the current video on close BEFORE disposing/removing
-			const currentId = parseInt( modal.dataset.currentVideoId || 0, 10 );
-			if ( currentId ) {
-				window.analytics?.trackVideoEvent( { type: 2, videoId: currentId, root: modal } );
-			}
-
-			// Find and dispose any video players in the modal
-			const players = modal.querySelectorAll( '.video-js' );
-			players.forEach( ( player ) => {
-				if ( player.player ) {
-					player.player.dispose();
-				}
-			} );
-			modal.remove();
-			// Re-enable background scrolling
-			document.body.style.overflow = '';
-			document.body.removeEventListener( 'wheel', handleScroll );
-			document.body.removeEventListener( 'touchend', handleTouchend );
-		};
-
-		modal.querySelector( '.godam-modal-close' )?.addEventListener( 'click', close );
-		modal.addEventListener( 'click', ( err ) => {
-			if ( ! err.target.closest( '.godam-modal-content' ) ) {
-				close();
-			}
-		} );
-
-		// Load initial video
-		await loadNewVideo( videoId );
 
 		// Function to get current video items (updates after loading more)
 		const getCurrentVideoItems = () => {
@@ -477,13 +261,10 @@ document.addEventListener( 'click', async function( e ) {
 
 				// Check if there are more videos to load
 				if ( currentVideoCount < galleryTotal ) {
-					// Calculate current offset
-					const currentOffset = galleryOffset + currentVideoCount;
-
 					// Try to load more videos
 					const newOffset = await loadMoreVideos(
 						currentGallery,
-						currentOffset,
+						currentVideoCount,
 						galleryColumns,
 						galleryOrderby,
 						galleryOrder,
@@ -491,49 +272,106 @@ document.addEventListener( 'click', async function( e ) {
 					);
 
 					// If successfully loaded more videos, return true
-					if ( newOffset ) {
-						// Update the load more button if it exists
-						const loadMoreBtn = currentGallery.nextElementSibling;
-						if ( loadMoreBtn && loadMoreBtn.classList.contains( 'godam-load-more' ) ) {
-							loadMoreBtn.setAttribute( 'data-offset', newOffset );
-
-							// Hide button if all videos are loaded
-							if ( newOffset >= galleryTotal ) {
-								loadMoreBtn.remove();
-							}
-						}
-						return true;
-					}
+					return !! newOffset;
 				}
 			}
 			return false;
 		};
 
-		// Scroll functionality for desktop (wheel events)
+		// Function to navigate to next/previous video (used by postMessage handler)
+		const navigateVideo = async ( direction ) => {
+			// Check if modal is ready for navigation
+			if ( modal.dataset.isLoading === 'true' ) {
+				return;
+			}
+
+			// Get current video items (refreshed)
+			let videoItems = getCurrentVideoItems();
+
+			// Get current video index
+			const currentId = modal.dataset.currentVideoId;
+			const currentIndex = Array.from( videoItems ).findIndex( ( item ) =>
+				item.querySelector( '.godam-video-thumbnail' ).getAttribute( 'data-video-id' ) === currentId,
+			);
+
+			if ( currentIndex === -1 ) {
+				return;
+			}
+
+			let newIndex;
+
+			if ( direction === 'next' ) {
+				// Navigate to next video
+				if ( currentIndex === videoItems.length - 1 ) {
+					// At last video, try to load more
+					modal.dataset.isLoading = 'true';
+					const moreLoaded = await loadMoreIfNeeded( currentIndex, videoItems );
+					modal.dataset.isLoading = 'false';
+
+					if ( moreLoaded ) {
+						// Refresh video items after loading more
+						videoItems = getCurrentVideoItems();
+						newIndex = currentIndex + 1;
+					} else {
+						// No more videos available, do nothing
+						return;
+					}
+				} else {
+					newIndex = currentIndex + 1;
+				}
+			} else {
+				// Navigate to previous video
+				if ( currentIndex === 0 ) {
+					// At first video, do nothing
+					return;
+				}
+				newIndex = currentIndex - 1;
+			}
+
+			// Get the new video ID
+			const newThumbnail = videoItems[ newIndex ]?.querySelector( '.godam-video-thumbnail' );
+			if ( newThumbnail ) {
+				const newVideoId = newThumbnail.getAttribute( 'data-video-id' );
+				const newVideoUrl = newThumbnail.getAttribute( 'data-video-url' );
+				if ( newVideoId && newVideoId !== currentId && newVideoUrl ) {
+					updateModalVideo( newVideoId, newVideoUrl, direction );
+				}
+			}
+		};
+
+		// Scroll functionality with cooldown and threshold
 		const SCROLL_COOLDOWN = 1000; // milliseconds
+		const SCROLL_THRESHOLD = 200; // Minimum scroll distance to trigger
 		let lastScrollTime = 0;
 		let scrollTimeout;
+		let accumulatedDelta = 0;
 
 		const handleScroll = async ( event ) => {
 			event.preventDefault(); // Prevent background scroll
 			event.stopPropagation(); // Prevent event bubbling
 
-			if ( ! window.galleryScroll ) {
+			// Check if modal is ready for scrolling
+			if ( modal.dataset.isLoading === 'true' ) {
 				return;
 			}
 
-			const currentPopUp = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
-			if ( ! currentPopUp ) {
-				return;
-			}
+			// Accumulate scroll delta
+			accumulatedDelta += event.deltaY;
 
 			// Clear any existing timeout
 			clearTimeout( scrollTimeout );
 
 			// Set a new timeout for debouncing
 			scrollTimeout = setTimeout( async () => {
+				// Check if accumulated scroll meets threshold
+				if ( Math.abs( accumulatedDelta ) < SCROLL_THRESHOLD ) {
+					accumulatedDelta = 0;
+					return;
+				}
+
 				const currentTime = Date.now();
 				if ( currentTime - lastScrollTime < SCROLL_COOLDOWN ) {
+					accumulatedDelta = 0;
 					return;
 				}
 
@@ -547,22 +385,27 @@ document.addEventListener( 'click', async function( e ) {
 				);
 
 				if ( currentIndex === -1 ) {
+					accumulatedDelta = 0;
 					return;
 				}
 
 				let newIndex;
 
-				if ( event.deltaY > 0 ) {
+				if ( accumulatedDelta > 0 ) {
 					// Scrolling down (next video)
 					if ( currentIndex === videoItems.length - 1 ) {
 						// At last video, try to load more
+						modal.dataset.isLoading = 'true';
 						const moreLoaded = await loadMoreIfNeeded( currentIndex, videoItems );
+						modal.dataset.isLoading = 'false';
+
 						if ( moreLoaded ) {
 							// Refresh video items after loading more
 							videoItems = getCurrentVideoItems();
 							newIndex = currentIndex + 1;
 						} else {
 							// No more videos available, do nothing
+							accumulatedDelta = 0;
 							return;
 						}
 					} else {
@@ -572,6 +415,7 @@ document.addEventListener( 'click', async function( e ) {
 					// Scrolling up (previous video)
 					if ( currentIndex === 0 ) {
 						// At first video, do nothing
+						accumulatedDelta = 0;
 						return;
 					}
 					newIndex = currentIndex - 1;
@@ -581,36 +425,43 @@ document.addEventListener( 'click', async function( e ) {
 				const newThumbnail = videoItems[ newIndex ]?.querySelector( '.godam-video-thumbnail' );
 				if ( newThumbnail ) {
 					const newVideoId = newThumbnail.getAttribute( 'data-video-id' );
-					if ( newVideoId && newVideoId !== currentId ) {
+					const newVideoUrl = newThumbnail.getAttribute( 'data-video-url' );
+					if ( newVideoId && newVideoId !== currentId && newVideoUrl ) {
 						lastScrollTime = currentTime;
-						const popUpElement = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
-						if ( popUpElement ) {
-							popUpElement.style.display = 'none';
-						}
-						// Send type 2 for the old video
-						window.analytics?.trackVideoEvent( { type: 2, root: document.querySelector( '#rtgodam-video-engagement--comment-modal' ) } );
 
-						loadNewVideo( newVideoId );
+						const direction = accumulatedDelta > 0 ? 'next' : 'prev';
+						updateModalVideo( newVideoId, newVideoUrl, direction );
 					}
 				}
+
+				accumulatedDelta = 0;
 			}, 150 ); // Debounce delay
 		};
 
-		const handleTouchend = async ( err ) => {
+		// Touch functionality for mobile
+		let touchStartY = 0;
+		let touchEndY = 0;
+
+		const handleTouchStart = ( err ) => {
+			touchStartY = err.touches[ 0 ].clientY;
+		};
+
+		const handleTouchMove = ( err ) => {
+			err.preventDefault(); // Prevent background scroll
+			err.stopPropagation(); // Prevent event bubbling
+		};
+
+		const handleTouchEnd = async ( err ) => {
 			touchEndY = err.changedTouches[ 0 ].clientY;
 			const touchDiff = touchStartY - touchEndY;
 
-			if ( ! window.galleryScroll ) {
-				return;
-			}
-
-			const currentPopUp = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
-			if ( ! currentPopUp ) {
+			// Check if modal is ready
+			if ( modal.dataset.isLoading === 'true' ) {
 				return;
 			}
 
 			// Minimum swipe distance
-			if ( Math.abs( touchDiff ) < 50 ) {
+			if ( Math.abs( touchDiff ) < SCROLL_THRESHOLD ) {
 				return;
 			}
 
@@ -643,7 +494,10 @@ document.addEventListener( 'click', async function( e ) {
 					// Swiping up (next video)
 					if ( currentIndex === videoItems.length - 1 ) {
 						// At last video, try to load more
+						modal.dataset.isLoading = 'true';
 						const moreLoaded = await loadMoreIfNeeded( currentIndex, videoItems );
+						modal.dataset.isLoading = 'false';
+
 						if ( moreLoaded ) {
 							// Refresh video items after loading more
 							videoItems = getCurrentVideoItems();
@@ -668,37 +522,85 @@ document.addEventListener( 'click', async function( e ) {
 				const newThumbnail = videoItems[ newIndex ]?.querySelector( '.godam-video-thumbnail' );
 				if ( newThumbnail ) {
 					const newVideoId = newThumbnail.getAttribute( 'data-video-id' );
-					if ( newVideoId && newVideoId !== currentId ) {
+					const newVideoUrl = newThumbnail.getAttribute( 'data-video-url' );
+					if ( newVideoId && newVideoId !== currentId && newVideoUrl ) {
 						lastScrollTime = currentTime;
-						const popUpElement = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
-						if ( popUpElement ) {
-							popUpElement.style.display = 'none';
-						}
 
-						// Send type 2 for the old video
-						window.analytics?.trackVideoEvent( { type: 2, root: document.querySelector( '#rtgodam-video-engagement--comment-modal' ) } );
-
-						loadNewVideo( newVideoId );
+						const direction = touchDiff > 0 ? 'next' : 'prev';
+						updateModalVideo( newVideoId, newVideoUrl, direction );
 					}
 				}
 			}, 150 ); // Debounce delay
 		};
 
-		document.body.addEventListener( 'wheel', handleScroll, { passive: false } );
+		// Add scroll listener
+		document.addEventListener( 'wheel', handleScroll, { passive: false } );
 
-		// Touch functionality for mobile
-		let touchStartY = 0;
-		let touchEndY = 0;
+		// Add touch listeners
+		document.body.addEventListener( 'touchstart', handleTouchStart, { passive: true } );
+		document.body.addEventListener( 'touchmove', handleTouchMove, { passive: false } );
+		document.body.addEventListener( 'touchend', handleTouchEnd, { passive: false } );
 
-		document.body.addEventListener( 'touchstart', ( err ) => {
-			touchStartY = err.touches[ 0 ].clientY;
-		}, { passive: false } );
+		// Handle postMessage from iframe
+		const handlePostMessage = async ( event ) => {
+			// Only handle messages when modal exists and is open
+			if ( ! modal || ! document.body.contains( modal ) ) {
+				return;
+			}
 
-		document.body.addEventListener( 'touchmove', ( err ) => {
-			err.preventDefault(); // Prevent background scroll
-			err.stopPropagation(); // Prevent event bubbling
-		}, { passive: false } );
+			// Verify message is from the iframe (check origin if needed)
+			// For security, you might want to check event.origin is same as your site origin.
+			if ( event.origin !== window.location.origin ) {
+				return;
+			}
 
-		document.body.addEventListener( 'touchend', handleTouchend, { passive: false } );
+			if ( event.data && event.data.type ) {
+				if ( event.data.type === 'godamScrollNext' ) {
+					await navigateVideo( 'next' );
+				} else if ( event.data.type === 'godamScrollPrevious' ) {
+					await navigateVideo( 'prev' );
+				} else if ( event.data.type === 'godamFullscreenChange' ) {
+					// Custom logic for fullscreen change event
+					const { isFullscreen } = event.data;
+
+					// Add or remove fullscreen class to modal
+					if ( isFullscreen ) {
+						modal.classList.add( 'godam-modal-fullscreen' );
+					} else {
+						modal.classList.remove( 'godam-modal-fullscreen' );
+					}
+				}
+			}
+		};
+
+		// Add message listener
+		window.addEventListener( 'message', handlePostMessage );
+
+		// Close on ESC key
+		const handleEscape = ( event ) => {
+			if ( event.key === 'Escape' ) {
+				closeModal();
+			}
+		};
+		document.addEventListener( 'keydown', handleEscape );
+
+		// Close modal function
+		const closeModal = () => {
+			document.removeEventListener( 'wheel', handleScroll );
+			document.body.removeEventListener( 'touchstart', handleTouchStart );
+			document.body.removeEventListener( 'touchmove', handleTouchMove );
+			document.body.removeEventListener( 'touchend', handleTouchEnd );
+			window.removeEventListener( 'message', handlePostMessage );
+			document.removeEventListener( 'keydown', handleEscape );
+			iframe.removeEventListener( 'load', showModalContent );
+			modal.remove();
+			document.body.style.overflow = '';
+		};
+
+		// Close on X button click
+		modal.querySelector( '.godam-modal-close' ).addEventListener( 'click', closeModal );
+
+		// Close on overlay click
+		modal.querySelector( '.godam-modal-overlay' ).addEventListener( 'click', closeModal );
 	}
 } );
