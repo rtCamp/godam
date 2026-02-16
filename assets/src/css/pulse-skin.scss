@@ -6,31 +6,13 @@
 		box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
 		background-color: rgba(255, 255, 255, 0.95) !important;
 		color: #1c1b1b !important;
-		height: 60px !important;
-		width: 60px !important;
+		height: 60px;
+		width: 60px;
 		left: 53% !important;
 
 		span::before {
-			font-size: 38px !important;
-			line-height: 1.6 !important;
-		}
-	}
-
-	.video-js {
-
-		&.vjs-fullscreen {
-
-			.vjs-fullscreen-control {
-
-				span::before {
-					background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z'/%3E%3C/svg%3E");
-					background-repeat: no-repeat;
-					background-size: contain !important;
-					display: inline-block;
-					height: 20px;
-					width: 20px;
-				}
-			}
+			font-size: 38px;
+			line-height: 1.6;
 		}
 	}
 
@@ -241,7 +223,7 @@
 
 		.vjs-picture-in-picture-control {
 			position: absolute;
-			bottom: 0;
+			bottom: 2px;
 			right: 40px;
 			height: 3em !important;
 			
@@ -258,7 +240,7 @@
 
 		.vjs-fullscreen-control {
 			position: absolute;
-			bottom: 0;
+			bottom: 2px;
 			right: 0;
 			height: 3em !important;
 		
@@ -339,7 +321,7 @@
 
 		.vjs-settings-button {
 			position: absolute;
-			bottom: 0;
+			bottom: 2px;
 			right: 80px;
 			height: 3em !important;
 			z-index: 19;
@@ -455,7 +437,7 @@
 
 		.vjs-volume-panel {
 			position: absolute;
-			bottom: 0;
+			bottom: 2px;
 			left: 15px;
 			height: 3em !important;
 			z-index: 19;
@@ -515,9 +497,19 @@
 		}
 	}
 
+	.video-js.vjs-fullscreen .vjs-control-bar .vjs-fullscreen-control span::before {
+		content: ''; /* Hide default icon */
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z'/%3E%3C/svg%3E");
+		background-repeat: no-repeat;
+		background-size: contain !important;
+		display: inline-block;
+		height: 20px;
+		width: 20px;
+	}
+
 	.video-js .vjs-control-bar > .vjs-subs-caps-button.vjs-control {
 		position: absolute;
-		bottom: 0;
+		bottom: 2px;
 		right: calc(3 * 40px);
 		height: 3em !important;
 		z-index: 19;
@@ -536,14 +528,22 @@
 
 	@container godam-player-classic-skin (max-width: 480px) {
 
+		.video-js .vjs-control-bar .vjs-fullscreen-control {
+			right: 18px;
+		}
+
+		.video-js .vjs-control {
+			width: 2em;
+		}
+
 		.video-js .vjs-big-play-button {
-			height: 50px;
-			width: 50px;
+			height: 48px;
+			width: 48px;
 			left: 55% !important;
 
 			span::before {
-				font-size: 1.7rem;
-				line-height: 1.9;
+				font-size: 1.5rem;
+				line-height: 2;
 			}
 		}
 
@@ -558,15 +558,16 @@
 			}
 
 			.vjs-settings-button {
-				right: 40px;
+				right: 46px;
 			}
 
-			.vjs-settings-button, div.vjs-subs-caps-button {
+			.vjs-settings-button,
+			div.vjs-subs-caps-button {
 				z-index: 19;
 			}
 
 			.vjs-subs-caps-button {
-				right: 80px !important;
+				right: 78px !important;
 			}
 		}
 
