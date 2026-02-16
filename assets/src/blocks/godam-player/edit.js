@@ -350,6 +350,24 @@ function VideoEdit( {
 		}
 	}, [ id, src, attributes.seo, isVideoSelecting, setAttributes ] );
 
+	// Keep overridden SEO thumbnail synced with block poster.
+	useEffect( () => {
+		if ( ! attributes?.seoOverride || ! poster ) {
+			return;
+		}
+
+		if ( attributes?.seo?.thumbnailUrl === poster ) {
+			return;
+		}
+
+		setAttributes( {
+			seo: {
+				...( attributes?.seo || {} ),
+				thumbnailUrl: poster,
+			},
+		} );
+	}, [ attributes?.seoOverride, attributes?.seo, poster, setAttributes ] );
+
 	function onSelectVideo( media ) {
 		// Set flag to prevent backward compatibility logic during video selection
 		setIsVideoSelecting( true );
@@ -592,11 +610,33 @@ function VideoEdit( {
 	}
 
 	function onSelectPoster( image ) {
-		setAttributes( { poster: image.url } );
+		const nextAttributes = {
+			poster: image.url,
+		};
+
+		if ( attributes?.seoOverride ) {
+			nextAttributes.seo = {
+				...( attributes?.seo || {} ),
+				thumbnailUrl: image.url,
+			};
+		}
+
+		setAttributes( nextAttributes );
 	}
 
 	function onRemovePoster() {
-		setAttributes( { poster: undefined } );
+		const nextAttributes = {
+			poster: undefined,
+		};
+
+		if ( attributes?.seoOverride && defaultPoster ) {
+			nextAttributes.seo = {
+				...( attributes?.seo || {} ),
+				thumbnailUrl: defaultPoster,
+			};
+		}
+
+		setAttributes( nextAttributes );
 
 		// Move focus back to the Media Upload button.
 		posterImageButton.current.focus();

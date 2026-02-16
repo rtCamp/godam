@@ -9,6 +9,28 @@ import { __ } from '@wordpress/i18n';
 import { getFirstNonEmpty, appendTimezoneOffsetToUTC, stripHtmlTags } from '../../../blocks/godam-player/utils';
 
 window.addEventListener( 'elementor/frontend/init', () => {
+	function getPosterUrl( settings ) {
+		const poster = settings.get( 'poster' );
+		return getFirstNonEmpty( poster?.url, '' );
+	}
+
+	function isSeoOverrideEnabled( settings ) {
+		return settings.get( 'seo_override' ) === 'yes';
+	}
+
+	function applyPosterThumbnailOverride( settings ) {
+		if ( ! isSeoOverrideEnabled( settings ) ) {
+			return;
+		}
+
+		const posterUrl = getPosterUrl( settings );
+		if ( ! posterUrl ) {
+			return;
+		}
+
+		settings.set( { seo_content_video_thumbnail_url: posterUrl } );
+	}
+
 	function prepareVideoMeta( attachmentData ) {
 		const initialVideoData = {
 			contentUrl: getFirstNonEmpty( attachmentData?.meta?.rtgodam_transcoded_url, attachmentData?.source_url ),
@@ -72,10 +94,12 @@ window.addEventListener( 'elementor/frontend/init', () => {
 				 * Handle seo_override toggle changes.
 				 */
 				const handleSeoOverrideChange = () => {
-					const seoOverride = model.get( 'settings' ).get( 'seo_override' ) === 'yes';
+					const settings = model.get( 'settings' );
+					const seoOverride = isSeoOverrideEnabled( settings );
 					// Delay to ensure DOM is updated
 					setTimeout( () => {
 						updateSEOFieldsDisabledState( panel, ! seoOverride );
+						applyPosterThumbnailOverride( settings );
 					}, 100 );
 				};
 
@@ -91,6 +115,7 @@ window.addEventListener( 'elementor/frontend/init', () => {
 				 * Automatically populates the SEO fields.
 				 */
 				model.get( 'settings' ).on( 'change:video-file', async () => {
+					const settings = model.get( 'settings' );
 					const videoFile = model.get( 'settings' ).get( 'video-file' );
 
 					if ( ! videoFile.url ) {
@@ -112,6 +137,7 @@ window.addEventListener( 'elementor/frontend/init', () => {
 							};
 
 							model.get( 'settings' ).set( defaultSeoData );
+							applyPosterThumbnailOverride( settings );
 							panel.currentPageView.render();
 						} );
 
@@ -133,7 +159,7 @@ window.addEventListener( 'elementor/frontend/init', () => {
 							}
 							const seoData = prepareVideoMeta( data );
 
-							model.get( 'settings' ).set( {
+							settings.set( {
 								seo_content_url: seoData.contentUrl,
 								seo_content_headline: seoData.headline,
 								seo_content_description: seoData.description,
@@ -141,6 +167,7 @@ window.addEventListener( 'elementor/frontend/init', () => {
 								seo_content_video_thumbnail_url: seoData.thumbnailUrl,
 								seo_content_duration: seoData.duration,
 							} );
+							applyPosterThumbnailOverride( settings );
 							panel.currentPageView.render();
 						} );
 				} );
@@ -149,11 +176,14 @@ window.addEventListener( 'elementor/frontend/init', () => {
 				 * Updates the poster url field when the poster image is updated.
 				 */
 				model.get( 'settings' ).on( 'change:poster', async () => {
-					const posterFile = model.get( 'settings' ).get( 'video-file' );
-					if ( ! posterFile.url ) {
+					const settings = model.get( 'settings' );
+					const posterUrl = getPosterUrl( settings );
+
+					if ( ! posterUrl || ! isSeoOverrideEnabled( settings ) ) {
 						return;
 					}
-					model.get( 'settings' ).set( { seo_content_video_thumbnail_url: posterFile.url } );
+
+					settings.set( { seo_content_video_thumbnail_url: posterUrl } );
 					panel.currentPageView.render();
 				} );
 

@@ -39,6 +39,7 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 	const [ mediaSEOData, setMediaSEOData ] = useState( null );
 	const [ isLoadingMediaSEO, setIsLoadingMediaSEO ] = useState( false );
 	const [ seoOverride, setSeoOverride ] = useState( attributes?.seoOverride || false );
+	const posterThumbnail = attributes?.poster || '';
 
 	/**
 	 * Fetch SEO data from the media library attachment.
@@ -111,7 +112,7 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 			description: attributes?.seo?.description || defaultVideoData.description,
 			uploadDate: attributes?.seo?.uploadDate || defaultVideoData.uploadDate,
 			duration: attributes?.seo?.duration || defaultVideoData.duration,
-			thumbnailUrl: attributes?.seo?.thumbnailUrl || defaultVideoData.thumbnailUrl,
+			thumbnailUrl: posterThumbnail || attributes?.seo?.thumbnailUrl || defaultVideoData.thumbnailUrl,
 			isFamilyFriendly: attributes?.seo?.isFamilyFriendly !== undefined ? attributes.seo.isFamilyFriendly : defaultVideoData.isFamilyFriendly,
 		};
 
@@ -119,7 +120,7 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 
 		// Also fetch media SEO for comparison/reset purposes
 		fetchMediaSEOData();
-	}, [ attributes.seo, attributes?.seoOverride, isOpen, fetchMediaSEOData ] ); // Depend on seo attribute and modal state
+	}, [ attributes.seo, attributes?.seoOverride, attributes?.poster, isOpen, fetchMediaSEOData ] ); // Depend on seo attribute and modal state
 
 	const updateField = ( field, value ) => {
 		setVideoData( { ...videoData, [ field ]: value } );
@@ -132,6 +133,10 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 	 */
 	const handleOverrideToggle = async ( value ) => {
 		setSeoOverride( value );
+		if ( value && posterThumbnail ) {
+			setVideoData( ( prevData ) => ( { ...prevData, thumbnailUrl: posterThumbnail } ) );
+			return;
+		}
 		if ( ! value ) {
 			if ( mediaSEOData ) {
 				// Switching back to media library defaults - restore from media
@@ -168,7 +173,7 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 				description: attributes?.seo?.description || '',
 				uploadDate: attributes?.seo?.uploadDate || '',
 				duration: attributes?.seo?.duration || '',
-				thumbnailUrl: attributes?.seo?.thumbnailUrl || '',
+				thumbnailUrl: posterThumbnail || attributes?.seo?.thumbnailUrl || '',
 				isFamilyFriendly: attributes?.seo?.isFamilyFriendly !== undefined ? attributes.seo.isFamilyFriendly : true,
 			};
 			setVideoData( currentSEOData );
@@ -179,8 +184,13 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 	};
 
 	const saveData = () => {
+		const finalVideoData = {
+			...videoData,
+			thumbnailUrl: ( seoOverride && posterThumbnail ) ? posterThumbnail : ( videoData?.thumbnailUrl || '' ),
+		};
+
 		setAttributes( {
-			seo: videoData,
+			seo: finalVideoData,
 			seoOverride,
 		} );
 		closeModal();
