@@ -838,7 +838,7 @@ to ensure proper responsiveness and avoid layout issues.
  * generated thumbnail sizes available.
  */
 .wp-core-ui .attachments-browser .attachment .thumbnail .centered img.icon {
-		transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%);
 }
 
 #ff_form_editor_app .el-input__inner[type="file"] {
