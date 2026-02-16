@@ -451,8 +451,9 @@ class GoDAM_Product_Gallery {
 		$product_ids = get_posts( $product_query_args );
 
 		// 5. Build WP_Query args for fetching videos.
-		// Maximum 30 videos as per requirement.
-		$video_limit = 30;
+		// Default maximum 30 videos (filterable).
+		$video_limit = apply_filters( 'rtgodam_product_gallery_video_limit', 30, $atts );
+		$video_limit = max( 1, absint( $video_limit ) );
 
 		// Determine orderby and order based on order_by attribute.
 		$orderby = 'date';
@@ -544,17 +545,20 @@ class GoDAM_Product_Gallery {
 			/**
 			 * Start of godam-product-gallery rendering.
 			 */
-		echo '<div ' . wp_kses_data( $godam_figure_attributes ) . '>';
-		echo '<div id="' . esc_attr( $instance_id ) . '" data-gallery-id="' . esc_attr( $instance_id ) . '" class="godam-product-gallery layout-' . esc_attr( $atts['layout'] ) . '"
+			echo '<div ' . wp_kses_data( $godam_figure_attributes ) . '>';
+			echo '<div id="' . esc_attr( $instance_id ) . '" data-gallery-id="' . esc_attr( $instance_id ) . '" class="godam-product-gallery layout-' . esc_attr( $atts['layout'] ) . '"
 			data-products="' . esc_attr( $atts['products'] ) . '"
 			data-categories="' . esc_attr( $atts['categories'] ) . '"
 			data-selected-videos="' . esc_attr( $atts['selected_videos'] ) . '"
 			data-order-by="' . esc_attr( $atts['order_by'] ) . '"
-					--godam-product-gallery-card-width-mobile: ' . esc_attr( $atts['mobile_card_width'] ) . 'vw;
-					--godam-product-gallery-price-color-primary: ' . esc_attr( $atts['cta_product_price_color_primary'] ) . ';
-					--godam-product-gallery-price-color-secondary: ' . esc_attr( $atts['cta_product_price_color_secondary'] ) . ';
-					--godam-product-gallery-price-color-tertiary: ' . esc_attr( $atts['cta_product_price_color_tertiary'] ) . ';
-				"
+			style="
+				--godam-product-gallery-card-width-desktop: ' . esc_attr( $atts['desktop_card_width'] ) . 'vw;
+				--godam-product-gallery-card-width-tablet: ' . esc_attr( $atts['tablet_card_width'] ) . 'vw;
+				--godam-product-gallery-card-width-mobile: ' . esc_attr( $atts['mobile_card_width'] ) . 'vw;
+				--godam-product-gallery-price-color-primary: ' . esc_attr( $atts['cta_product_price_color_primary'] ) . ';
+				--godam-product-gallery-price-color-secondary: ' . esc_attr( $atts['cta_product_price_color_secondary'] ) . ';
+				--godam-product-gallery-price-color-tertiary: ' . esc_attr( $atts['cta_product_price_color_tertiary'] ) . ';
+			"
 			>';
 
 			/**
