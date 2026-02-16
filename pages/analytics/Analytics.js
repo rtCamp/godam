@@ -550,9 +550,9 @@ const Analytics = ( { attachmentID } ) => {
 						className="video-analytics-container hidden"
 					>
 						<div>
-							<div className="flex gap-10 items-center flex-wrap flex-row">
-								<div className="flex-grow">
-									<div className="w-full analytics-info-container flex flex-wrap flex-row items-center 2xl:flex-col">
+							<div className="flex gap-6 items-center flex-wrap lg:flex-nowrap flex-row">
+								<div className="flex-grow w-full lg:w-auto">
+									<div className="w-full analytics-info-container flex flex-wrap flex-row items-center lg:flex-col lg:items-start lg:gap-4">
 										<SingleMetrics
 											metricType={ 'engagement-rate' }
 											label={ __( 'Average Engagement', 'godam' ) }
@@ -598,7 +598,7 @@ const Analytics = ( { attachmentID } ) => {
 										/>
 									</div>
 								</div>
-								<div className="min-w-full lg:min-w-[750px]">
+								<div className="w-full lg:w-auto lg:flex-grow lg:min-w-[650px] 2xl:min-w-[750px]">
 									<div>
 										<div className="video-container">
 											<RenderVideo
