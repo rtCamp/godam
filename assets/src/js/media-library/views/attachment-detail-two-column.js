@@ -980,7 +980,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 							width: initialWidth,
 							height: initialHeight,
 							controlBar: {
-								volumePanel: false,
+								volumePanel: true,
 								fullscreenToggle: true,
 								currentTimeDisplay: true,
 								timeDivider: true,
