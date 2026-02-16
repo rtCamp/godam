@@ -59,5 +59,39 @@
 		&--disabled {
 			opacity: 0.7;
 		}
+
+		.components-text-control__input:disabled,
+		.components-textarea-control__input:disabled {
+			background-color: rgb(233, 236, 239);
+			border-color: rgb(206, 212, 218);
+			color: rgb(108, 117, 125);
+			cursor: not-allowed;
+			box-shadow: none;
+		}
+
+		.components-base-control__label,
+		.components-base-control__help {
+			transition: color 120ms ease;
+		}
+
+		.components-text-control__input:disabled ~ .components-base-control__help,
+		.components-textarea-control__input:disabled ~ .components-base-control__help {
+			color: rgb(130, 134, 139);
+		}
+	}
+
+	.components-base-control.is-disabled {
+
+		.components-base-control__label {
+			color: rgb(130, 134, 139);
+		}
+
+		.components-base-control__help {
+			color: rgb(130, 134, 139);
+		}
+
+		.components-toggle-control__label {
+			color: rgb(130, 134, 139);
+		}
 	}
 }
