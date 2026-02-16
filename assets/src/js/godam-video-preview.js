@@ -62,8 +62,8 @@ document.addEventListener( 'DOMContentLoaded', () => {
 				return;
 			}
 
-			// Desired height for the video (600px like in video editor)
-			const targetHeight = 600;
+			// Desired max height for the video (matches video editor)
+			const targetHeight = 450;
 
 			// Calculate width based on aspect ratio
 			const calculatedWidth = Math.round( targetHeight * ( videoWidth / videoHeight ) );
@@ -77,6 +77,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
 
 			// Set the container width
 			container.style.width = `${ constrainedWidth }px`;
+			container.style.maxHeight = `${ targetHeight }px`;
 		};
 
 		// Fallback if Video.js player is not available
