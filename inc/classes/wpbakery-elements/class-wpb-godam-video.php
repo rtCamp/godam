@@ -22,7 +22,7 @@ class WPB_GoDAM_Video {
 	/**
 	 * WPB_GoDAM_Video constructor.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.6.0
 	 */
 	protected function __construct() {
 		if ( ! function_exists( 'is_plugin_active' ) ) {
@@ -39,7 +39,7 @@ class WPB_GoDAM_Video {
 	/**
 	 * Setup hooks.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.6.0
 	 *
 	 * @return void
 	 */
@@ -50,7 +50,7 @@ class WPB_GoDAM_Video {
 	/**
 	 * Map video element to WPBakery.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.6.0
 	 *
 	 * @return void
 	 */
@@ -65,7 +65,7 @@ class WPB_GoDAM_Video {
 				'base'        => 'godam_video',
 				'category'    => esc_html__( 'GoDAM', 'godam' ),
 				'description' => esc_html__( 'Embed video from GoDAM Media Library', 'godam' ),
-				'icon'        => RTGODAM_URL . 'assets/src/images/godam-video-filled.svg',
+				'icon'        => RTGODAM_URL . 'assets/images/godam-video-filled.svg',
 				'params'      => array(
 					// Video Selection.
 					array(

@@ -45,7 +45,7 @@ import Video from './VideoJS';
 import TracksEditor from './track-uploader';
 import { Caption } from './caption';
 import VideoSEOModal from './components/VideoSEOModal.js';
-import { appendTimezoneOffsetToUTC, isSEODataEmpty, secondsToISO8601 } from './utils/index.js';
+import { appendTimezoneOffsetToUTC, isSEODataEmpty, secondsToISO8601, stripHtmlTags } from './utils/index.js';
 import './editor.scss';
 import { ReactComponent as icon } from '../../images/godam-video-filled.svg';
 import { canManageAttachment } from '../../js/media-library/utility';
@@ -326,7 +326,7 @@ function VideoEdit( {
 						const enhancedSEOData = {
 							contentUrl: response.meta?.rtgodam_transcoded_url || response.source_url || src || '',
 							headline: response.title?.rendered || '',
-							description: response.description?.rendered || '',
+							description: stripHtmlTags( response.description?.rendered || '' ),
 							uploadDate: appendTimezoneOffsetToUTC( response.date_gmt || '' ),
 							duration: response.video_duration_iso8601 || '',
 							thumbnailUrl: response.meta?.rtgodam_media_video_thumbnail || '',
@@ -388,7 +388,7 @@ function VideoEdit( {
 			const newSEOData = {
 				contentUrl: media?.url,
 				headline: media?.title || '',
-				description: media?.description || '',
+				description: stripHtmlTags( media?.description || '' ),
 				uploadDate: appendTimezoneOffsetToUTC( media?.date || '' ),
 				duration: secondsToISO8601( media?.duration || '' ),
 				thumbnailUrl: media?.thumbnail_url || '',
@@ -446,7 +446,7 @@ function VideoEdit( {
 					const newSEOData = {
 						contentUrl: response.meta?.rtgodam_transcoded_url || response.source_url,
 						headline: response.title?.rendered || '',
-						description: response.description?.rendered || '',
+						description: stripHtmlTags( response.description?.rendered || '' ),
 						uploadDate: appendTimezoneOffsetToUTC( response.date_gmt ),
 						duration: response.video_duration_iso8601 || '',
 						thumbnailUrl: response.meta?.rtgodam_media_video_thumbnail || '',

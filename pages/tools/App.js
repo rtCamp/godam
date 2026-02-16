@@ -13,6 +13,7 @@ import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import GoDAMFooter from '../godam/components/GoDAMFooter.jsx';
 import MigrationTab from './components/tabs/Migration/MigrationTab.jsx';
 import RetranscodeTab from './components/tabs/RetranscodeTab.jsx';
+import { isSafari } from '../godam/utils/index.js';
 
 const TABS = [
 	{
@@ -72,7 +73,7 @@ const App = () => {
 			) }
 
 			<div className="godam-tools__container">
-				<nav className={ `godam-tools__container__tabs ${ isSidebarOpen ? 'open' : '' }` }>
+				<nav className={ `godam-tools__container__tabs ${ isSidebarOpen ? 'open' : '' } ${ isSafari() ? 'is-safari' : '' }` }>
 					<button
 						className={ `godam-tools__close-btn ${ isSidebarOpen ? 'open' : '' }` }
 						onClick={ () => setIsSidebarOpen( false ) }
