@@ -203,9 +203,9 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 				video.addEventListener( 'loadedmetadata', () => {
 					setDuration( player.duration() );
 
-					// Set width based on aspect ratio for 600px height
+					// Set width based on aspect ratio for 500px height
 					if ( video.videoWidth && video.videoHeight ) {
-						const targetHeight = 600;
+						const targetHeight = 500;
 						const calculatedWidth = Math.round( targetHeight * ( video.videoWidth / video.videoHeight ) );
 						const canvasWrapper = document.querySelector( '.video-canvas-wrapper' );
 						const containerWidth = canvasWrapper?.getBoundingClientRect().width;
