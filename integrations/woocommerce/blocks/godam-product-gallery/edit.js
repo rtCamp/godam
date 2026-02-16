@@ -14,13 +14,16 @@ import {
 	PanelBody,
 	SelectControl,
 	ToggleControl,
-	TextControl,
 	ColorPalette,
 	RangeControl,
 	BorderControl,
+	FormTokenField,
+	Button,
+	CheckboxControl,
 } from '@wordpress/components';
 import { useMemo, useRef, useEffect, useState } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
@@ -34,13 +37,16 @@ import './editor.scss';
  * @param {Object}   props               Block props.
  * @param {Object}   props.attributes    Block attributes.
  * @param {Function} props.setAttributes Function to set block attributes.
- * @param {string}   props.clientId      Unique block client ID.
+ * @param {string}   props.clientId      Block client ID.
  * @return {JSX.Element} Element to render.
  */
 export default function Edit( { attributes, setAttributes, clientId } ) {
 	const {
 		autoplay,
-		product,
+		products = [],
+		categories = [],
+		selectedVideos = [],
+		orderBy,
 		layout,
 		view,
 		playButtonEnabled,
@@ -70,6 +76,69 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		ctaDropdown = {},
 	} = attributes;
 
+	// State for fetched data from REST API.
+	const [ allCategories, setAllCategories ] = useState( [] );
+	const [ availableVideos, setAvailableVideos ] = useState( [] );
+	const [ isLoadingCategories, setIsLoadingCategories ] = useState( false );
+	const [ isLoadingVideos, setIsLoadingVideos ] = useState( false );
+	const [ productSearchInput, setProductSearchInput ] = useState( '' );
+	const [ searchedProducts, setSearchedProducts ] = useState( [] );
+	const [ isSearchingProducts, setIsSearchingProducts ] = useState( false );
+	const [ productOptionsById, setProductOptionsById ] = useState( {} );
+
+	// Fetch product categories using getEntityRecords.
+	const allWooCategories = useSelect( ( select ) => {
+		return select( 'core' ).getEntityRecords( 'taxonomy', 'product_cat', {
+			per_page: -1,
+			hide_empty: false,
+		} );
+	}, [] );
+
+	// Build hierarchical category labels based on parent_id.
+	useEffect( () => {
+		if ( ! allWooCategories ) {
+			setIsLoadingCategories( true );
+			return;
+		}
+
+		setIsLoadingCategories( false );
+
+		// Build a map of categories by id for quick lookup.
+		const categoryMap = {};
+		allWooCategories.forEach( ( cat ) => {
+			categoryMap[ cat.id ] = cat;
+		} );
+
+		// Function to get parent chain and build label with dashes.
+		const buildCategoryLabel = ( category ) => {
+			const parents = [];
+			let current = category;
+
+			while ( current && current.parent ) {
+				const parentCat = categoryMap[ current.parent ];
+				if ( ! parentCat ) {
+					break;
+				}
+				parents.unshift( parentCat );
+				current = parentCat;
+			}
+
+			const dashPrefix = parents.length > 0 ? '— '.repeat( parents.length ) : '';
+			return dashPrefix + category.name;
+		};
+
+		// Format categories with hierarchical labels.
+		const hierarchicalCategories = allWooCategories.map( ( cat ) => ( {
+			id: cat.id,
+			name: cat.name,
+			value: cat.id,
+			label: buildCategoryLabel( cat ),
+			parent: cat.parent,
+		} ) );
+
+		setAllCategories( hierarchicalCategories );
+	}, [ allWooCategories ] );
+
 	const blockProps = useBlockProps();
 
 	const [ activePriceTab, setActivePriceTab ] = useState( 'primary' );
@@ -81,6 +150,93 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 			setAttributes( { blockId: clientId } );
 		}
 	}, [ clientId ] );
+
+	useEffect( () => {
+		const normalizedInput = productSearchInput.trim();
+
+		if ( normalizedInput.length === 0 ) {
+			setSearchedProducts( [] );
+			return;
+		}
+
+		setIsSearchingProducts( true );
+		const categoryQuery = categories.length > 0 ? `&categories=${ categories.join( ',' ) }` : '';
+		apiFetch( {
+			path: `/godam/v1/product-gallery/products?search=${ encodeURIComponent(
+				normalizedInput,
+			) }${ categoryQuery }`,
+		} )
+			.then( ( results ) => {
+				setSearchedProducts( Array.isArray( results ) ? results : [] );
+				setIsSearchingProducts( false );
+			} )
+			.catch( () => {
+				setSearchedProducts( [] );
+				setIsSearchingProducts( false );
+			} );
+	}, [ productSearchInput, categories ] );
+
+	useEffect( () => {
+		if ( searchedProducts.length === 0 ) {
+			return;
+		}
+
+		setProductOptionsById( ( previous ) => {
+			const next = { ...previous };
+
+			searchedProducts.forEach( ( product ) => {
+				next[ product.id ] = product;
+			} );
+
+			return next;
+		} );
+	}, [ searchedProducts ] );
+
+	useEffect( () => {
+		const missingProductIds = products.filter( ( productId ) => ! productOptionsById[ productId ] );
+
+		if ( missingProductIds.length === 0 ) {
+			return;
+		}
+
+		apiFetch( {
+			path: `/godam/v1/product-gallery/products?include=${ missingProductIds.join( ',' ) }`,
+		} ).then( ( fetchedProducts ) => {
+			if ( ! Array.isArray( fetchedProducts ) || fetchedProducts.length === 0 ) {
+				return;
+			}
+
+			setProductOptionsById( ( previous ) => {
+				const next = { ...previous };
+
+				fetchedProducts.forEach( ( product ) => {
+					next[ product.id ] = product;
+				} );
+
+				return next;
+			} );
+		} );
+	}, [ products, productOptionsById ] );
+
+	// Fetch videos when products selection changes.
+	useEffect( () => {
+		if ( products.length === 0 ) {
+			setAvailableVideos( [] );
+			return;
+		}
+
+		setIsLoadingVideos( true );
+		apiFetch( {
+			path: `/godam/v1/product-gallery/videos?product_ids=${ products.join( ',' ) }`,
+		} )
+			.then( ( fetchedVideos ) => {
+				setAvailableVideos( fetchedVideos || [] );
+				setIsLoadingVideos( false );
+			} )
+			.catch( () => {
+				setIsLoadingVideos( false );
+			} );
+	}, [ products ] );
 
 	const deviceType = useSelect( ( select ) => {
 		return select( 'core/editor' ).getDeviceType();
@@ -419,12 +575,183 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 							} );
 						} }
 					/>
-					<TextControl
-						label={ __( 'Products', 'rtgodam' ) }
-						help={ __( 'Enter comma-separated product IDs or "random" as an argument which displays videos from random products.', 'rtgodam' ) }
-						value={ product }
-						onChange={ ( value ) => setAttributes( { product: value } ) }
+					<SelectControl
+						label={ __( 'Order By', 'godam' ) }
+						value={ orderBy }
+						options={ [
+							{ label: __( 'Date (Newest First)', 'godam' ), value: 'date_desc' },
+							{ label: __( 'Date (Oldest First)', 'godam' ), value: 'date_asc' },
+							{ label: __( 'Title (A-Z)', 'godam' ), value: 'title_asc' },
+							{ label: __( 'Title (Z-A)', 'godam' ), value: 'title_desc' },
+							{ label: __( 'Random', 'godam' ), value: 'random' },
+						] }
+						onChange={ ( value ) => setAttributes( { orderBy: value } ) }
 					/>
+
+					<hr />
+
+					<h3>{ __( 'Category Selection', 'godam' ) }</h3>
+					<p className="components-base-control__help">
+						{ __( 'Select product categories. Leave empty to show all categories.', 'godam' ) }
+					</p>
+					{ isLoadingCategories ? (
+						<p>{ __( 'Loading categories…', 'godam' ) }</p>
+					) : (
+						<FormTokenField
+							label={ __( 'Select Categories', 'godam' ) }
+							value={
+								categories
+									.map( ( categoryId ) => {
+										const category = allCategories.find( ( c ) => c.id === categoryId );
+										return category ? category.name : null;
+									} )
+									.filter( Boolean )
+							}
+							suggestions={ allCategories.map( ( c ) => c.label ) }
+							onChange={ ( tokens ) => {
+								const selectedIds = tokens
+									.map( ( token ) => {
+										const category = allCategories.find( ( c ) => c.label === token );
+										return category ? category.id : null;
+									} )
+									.filter( Boolean );
+								setAttributes( { categories: selectedIds } );
+							} }
+							__experimentalShowHowTo={ false }
+							__next40pxDefaultSize={ true }
+						/>
+					) }
+
+					<hr />
+
+					<h3>{ __( 'Product Selection', 'godam' ) }</h3>
+					<p className="components-base-control__help">
+						{ __( 'Type to search products with GoDAM videos. Results filter by selected categories.', 'godam' ) }
+					</p>
+					<FormTokenField
+						label={ __( 'Select Products', 'godam' ) }
+						value={
+							products
+								.map( ( productId ) => {
+									const product = productOptionsById[ productId ];
+									return product ? product.title : null;
+								} )
+								.filter( Boolean )
+						}
+						suggestions={ searchedProducts.map( ( product ) => product.title ) }
+						onInputChange={ ( inputValue ) => setProductSearchInput( inputValue ) }
+						onChange={ ( tokens ) => {
+							const labelToId = {};
+
+							Object.values( productOptionsById ).forEach( ( product ) => {
+								labelToId[ product.title ] = product.id;
+							} );
+
+							searchedProducts.forEach( ( product ) => {
+								labelToId[ product.title ] = product.id;
+							} );
+
+							const selectedIds = tokens
+								.map( ( token ) => labelToId[ token ] )
+								.filter( Boolean );
+
+							setAttributes( { products: selectedIds } );
+						} }
+						__experimentalShowHowTo={ false }
+						__next40pxDefaultSize={ true }
+					/>
+					{ productSearchInput.trim().length === 0 ? (
+						<p style={ { color: '#999', fontSize: '13px' } }>
+							{ __( 'Start typing to search for products…', 'godam' ) }
+						</p>
+					) : isSearchingProducts ? (
+						<p>{ __( 'Searching products…', 'godam' ) }</p>
+					) : searchedProducts.length === 0 ? (
+						<p style={ { color: '#999', fontSize: '13px' } }>
+							{ __( 'No products found', 'godam' ) }
+						</p>
+					) : null }
+					{ products.length > 0 && (
+						<p style={ { marginTop: '8px', fontSize: '12px', color: '#666' } }>
+							{ `${ products.length } product(s) selected` }
+						</p>
+					) }
+
+					{ products.length > 0 && (
+						<>
+							<hr />
+							<h3>{ __( 'Video Selection', 'godam' ) }</h3>
+							<p className="components-base-control__help">
+								{ __( 'Select specific videos to display. Leave empty to show all videos from selected products.', 'godam' ) }
+							</p>
+
+							{ isLoadingVideos ? (
+								<p>{ __( 'Loading videos…', 'godam' ) }</p>
+							) : availableVideos.length > 0 ? (
+								<>
+									<div style={ { marginBottom: '12px' } }>
+										<Button
+											isSecondary
+											isSmall
+											onClick={ () => {
+												const allVideoIds = availableVideos.map( ( v ) => v.id );
+												setAttributes( { selectedVideos: allVideoIds } );
+											} }
+										>
+											{ __( 'Select All', 'godam' ) }
+										</Button>
+										{ ' ' }
+										<Button
+											isSecondary
+											isSmall
+											onClick={ () => setAttributes( { selectedVideos: [] } ) }
+										>
+											{ __( 'Deselect All', 'godam' ) }
+										</Button>
+									</div>
+									<div style={ { maxHeight: '300px', overflowY: 'auto', border: '1px solid #ddd', padding: '8px' } }>
+										{ availableVideos.map( ( video ) => (
+											<div
+												key={ video.id }
+												style={ {
+													display: 'flex',
+													alignItems: 'center',
+													marginBottom: '8px',
+													padding: '4px',
+													border: '1px solid #e0e0e0',
+													borderRadius: '4px',
+												} }
+											>
+												<CheckboxControl
+													checked={ selectedVideos.includes( video.id ) }
+													onChange={ ( isChecked ) => {
+														const newVideos = isChecked
+															? [ ...selectedVideos, video.id ]
+															: selectedVideos.filter( ( id ) => id !== video.id );
+														setAttributes( { selectedVideos: newVideos } );
+													} }
+												/>
+												<img
+													src={ video.thumbnail }
+													alt={ video.title }
+													style={ {
+														width: '50px',
+														height: '50px',
+														objectFit: 'cover',
+														marginRight: '8px',
+														borderRadius: '4px',
+													} }
+												/>
+												<span>{ video.titleWithDuration }</span>
+											</div>
+										) ) }
+									</div>
+								</>
+							) : (
+								<p>{ __( 'No videos found for selected products.', 'godam' ) }</p>
+							) }
+						</>
+					) }
 				</PanelBody>
 
 				{ layout === 'carousel' && (
