@@ -164,7 +164,7 @@ class GoDAM_Player {
 				'src'               => '',
 				'sources'           => '',
 				'transcoded_url'    => '',
-				'aspectRatio'       => '', // Note: "responsive" aspect ratio is not working for shortcode. To be fixed later.
+				'aspectRatio'       => 'responsive',
 				'aspect_ratio'      => '', // WPBakery format (lowercase with underscore).
 				'tracks'            => '',
 				'caption'           => '',

@@ -251,6 +251,14 @@ function VideoEdit( {
 					}
 
 					if ( response ) {
+						// Set dimensions if available.
+						if ( response.media_details?.width && response.media_details?.height ) {
+							setAttributes( {
+								videoWidth: `${ response.media_details.width }`,
+								videoHeight: `${ response.media_details.height }`,
+							} );
+						}
+
 						// Build sources list safely, declare newSources first.
 						const newSources = [];
 
@@ -419,6 +427,8 @@ function VideoEdit( {
 				caption: media.caption,
 				seo: newSEOData,
 				sources: mediaSources,
+				videoWidth: media.width ? `${ media.width }` : undefined,
+				videoHeight: media.height ? `${ media.height }` : undefined,
 			} );
 
 			setTemporaryURL();
@@ -484,6 +494,8 @@ function VideoEdit( {
 							...baseAttributes,
 							seo: newSEOData,
 							sources: mediaSources,
+							videoWidth: response.media_details?.width ? `${ response.media_details.width }` : undefined,
+							videoHeight: response.media_details?.height ? `${ response.media_details.height }` : undefined,
 						} );
 					} else {
 						// If meta not present, use media url.
