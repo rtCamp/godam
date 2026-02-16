@@ -797,11 +797,12 @@ class Recorder_Field extends BaseFieldManager {
 			return $response;
 		}
 
+		$file_path = is_array( $response ) ? $response[0] : $response;
+
 		if ( ! $is_html ) {
-			return $response;
+			return $file_path;
 		}
 		
-		$file_path = $response[0];
 		$file_type = wp_check_filetype( $file_path );
 		$mime_type = ! empty( $file_type['type'] ) ? $file_type['type'] : '';
 
