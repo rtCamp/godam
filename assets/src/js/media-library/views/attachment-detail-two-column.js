@@ -695,6 +695,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		// Check if the attachment is a video and render the edit buttons.
 		if ( this.model.get( 'type' ) === 'video' ) {
+			this.$el.find( '.attachment-video-actions, .attachment-video-thumbnails' ).remove();
 			const virtual = this.model.get( 'virtual' );
 
 			// If the attachment is virtual (e.g. a GoDAM proxy video), override default preview.
@@ -796,6 +797,11 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 	showLoading() {
 		const actionsEl = this.$el.find( '.attachment-actions' );
+
+		if ( actionsEl.find( '.attachment-video-thumbnails' ).length > 0 ) {
+			return; // Stop loading if thumbnails are already present.
+		}
+
 		const ul = document.createElement( 'ul' );
 
 		const li = document.createElement( 'li' );
