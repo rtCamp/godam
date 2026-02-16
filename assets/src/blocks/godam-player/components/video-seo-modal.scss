@@ -56,10 +56,6 @@
 			}
 		}
 
-		&--disabled {
-			opacity: 0.7;
-		}
-
 		.components-text-control__input:disabled,
 		.components-textarea-control__input:disabled {
 			background-color: rgb(233, 236, 239);

@@ -263,24 +263,7 @@ class Seo {
 			$meta = wp_get_attachment_metadata( $post->ID );
 
 			if ( ! empty( $meta['length'] ) && is_numeric( $meta['length'] ) ) {
-				$duration_seconds = (int) $meta['length'];
-
-				$hours   = floor( $duration_seconds / 3600 );
-				$minutes = floor( ( $duration_seconds % 3600 ) / 60 );
-				$seconds = $duration_seconds % 60;
-
-				$iso_duration = 'PT';
-				if ( $hours > 0 ) {
-					$iso_duration .= $hours . 'H';
-				}
-				if ( $minutes > 0 ) {
-					$iso_duration .= $minutes . 'M';
-				}
-				if ( $seconds > 0 || 'PT' === $iso_duration ) {
-					$iso_duration .= $seconds . 'S';
-				}
-
-				$response->data['video_duration_iso8601'] = $iso_duration;
+				$response->data['video_duration_iso8601'] = $this->seconds_to_iso8601( (int) $meta['length'] );
 			}
 		}
 
