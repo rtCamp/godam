@@ -66,36 +66,31 @@ $godam_page_title = empty( $godam_video_id ) ? __( 'Video Preview', 'godam' ) : 
 				echo $godam_preview_content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is escaped in the function.
 			?>
 		</div>
+		<?php if ( ! rtgodam_is_api_key_valid() ) : ?>
 		<div class="godam-video-preview-main--sidebar">
 			<div class="godam-pro-features">
 				<h3 class="godam-pro-features__title"><?php esc_html_e( 'Our Pro Features', 'godam' ); ?></h3>
 				
-				<ul class="godam-pro-features__list">
-					<li class="godam-pro-features__list__item">
-						<span class="godam-pro-features__icon dashicons dashicons-yes-alt"></span>
-						<span><?php esc_html_e( 'Advanced Video Analytics', 'godam' ); ?></span>
-					</li>
-					<li class="godam-pro-features__list__item">
-						<span class="godam-pro-features__icon dashicons dashicons-yes-alt"></span>
-						<span><?php esc_html_e( 'Video Chapters & Markers', 'godam' ); ?></span>
-					</li>
-					<li class="godam-pro-features__list__item">
-						<span class="godam-pro-features__icon dashicons dashicons-yes-alt"></span>
-						<span><?php esc_html_e( 'Custom Video Player Branding', 'godam' ); ?></span>
-					</li>
-					<li class="godam-pro-features__list__item">
-						<span class="godam-pro-features__icon dashicons dashicons-yes-alt"></span>
-						<span><?php esc_html_e( 'Video Password Protection', 'godam' ); ?></span>
-					</li>
-					<li class="godam-pro-features__list__item">
-						<span class="godam-pro-features__icon dashicons dashicons-yes-alt"></span>
-						<span><?php esc_html_e( 'Bulk Video Processing', 'godam' ); ?></span>
-					</li>
-					<li class="godam-pro-features__list__item">
-						<span class="godam-pro-features__icon dashicons dashicons-yes-alt"></span>
-						<span><?php esc_html_e( 'Priority Support', 'godam' ); ?></span>
-					</li>
-				</ul>
+					<?php
+					$godam_pro_features = array(
+						__( 'Global CDN-powered delivery', 'godam' ),
+						__( 'Adaptive bitrate video streaming', 'godam' ),
+						__( 'Advanced video performance analytics', 'godam' ),
+						__( 'Automatic video transcoding', 'godam' ),
+						__( 'AI-powered video transcription', 'godam' ),
+						__( 'Video watermarking', 'godam' ),
+						__( 'Multi-thumbnail generation', 'godam' ),
+						__( 'Unified GoDAM Central media library', 'godam' ),
+					);
+					?>
+					<ul class="godam-pro-features__list">
+						<?php foreach ( $godam_pro_features as $feature ) : ?>
+							<li class="godam-pro-features__list__item">
+								<span class="godam-pro-features__icon dashicons dashicons-yes-alt"></span>
+								<span><?php echo esc_html( $feature ); ?></span>
+							</li>
+						<?php endforeach; ?>
+					</ul>
 				<div class="godam-pro-features__cta">
 					<a 
 						href="<?php echo esc_url( 'https://godam.io/pricing/?utm_campaign=buy-plan&utm_source=' . rawurlencode( wp_parse_url( home_url(), PHP_URL_HOST ) ) . '&utm_medium=plugin&utm_content=video-preview-sidebar' ); ?>" 
@@ -113,6 +108,7 @@ $godam_page_title = empty( $godam_video_id ) ? __( 'Video Preview', 'godam' ) : 
 				</div>
 			</div>
 		</div>
+		<?php endif; ?>
 	</main>
 	<?php
 

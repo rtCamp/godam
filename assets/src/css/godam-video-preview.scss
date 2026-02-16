@@ -174,12 +174,16 @@
         margin-bottom: 1rem;
 
         &__item {
-            padding: 0.5rem 0;
+            padding: 0.25rem 0;
             font-size: inherit;
+            display: flex;
+            align-items: start;
+            margin-bottom: 0.5rem;
             
             .godam-pro-features__icon {
                 color: #ab3a6c;
                 margin-right: 0.5rem;
+                margin-top: 2px;
             }
         }
     }
