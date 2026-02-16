@@ -519,37 +519,41 @@ class Seo {
 					continue;
 				}
 
-				$seo_override = isset( $atts['seo_override'] ) && '1' === $atts['seo_override'];
+				$seo_override  = isset( $atts['seo_override'] ) && '1' === $atts['seo_override'];
+				$attachment_id = isset( $atts['id'] ) ? absint( $atts['id'] ) : 0;
+				$media_seo     = array();
+
+				if ( $attachment_id > 0 ) {
+					$media_seo = $this->get_seo_from_attachment( $attachment_id );
+				}
 
 				// If seo_override is false, try to fetch SEO from the media attachment.
 				if ( ! $seo_override ) {
-					$attachment_id = isset( $atts['id'] ) ? absint( $atts['id'] ) : 0;
-
-					if ( $attachment_id > 0 ) {
-						$media_seo = $this->get_seo_from_attachment( $attachment_id );
-						if ( ! empty( $media_seo ) && ! empty( $media_seo['headline'] ) ) {
-							$seo_data[] = $media_seo;
-							if ( $track_attachments ) {
-								$attachments[] = $attachment_id;
-							}
-							continue;
+					if ( ! empty( $media_seo ) && ! empty( $media_seo['headline'] ) ) {
+						$seo_data[] = $media_seo;
+						if ( $track_attachments ) {
+							$attachments[] = $attachment_id;
 						}
+						continue;
 					}
 				}
 
 				// Use shortcode attributes if seo_override is true or no attachment data available.
 				if ( ! empty( $atts['seo_headline'] ) ) {
 					$video_seo = array(
-						'contentUrl'       => isset( $atts['seo_content_url'] ) ? $atts['seo_content_url'] : '',
+						'contentUrl'       => ! empty( $media_seo['contentUrl'] ) ? $media_seo['contentUrl'] : ( isset( $atts['seo_content_url'] ) ? $atts['seo_content_url'] : '' ),
 						'headline'         => isset( $atts['seo_headline'] ) ? $atts['seo_headline'] : '',
 						'description'      => isset( $atts['seo_description'] ) ? $atts['seo_description'] : '',
-						'uploadDate'       => isset( $atts['seo_upload_date'] ) ? $atts['seo_upload_date'] : '',
-						'thumbnailUrl'     => isset( $atts['seo_thumbnail_url'] ) ? $atts['seo_thumbnail_url'] : '',
+						'uploadDate'       => ! empty( $media_seo['uploadDate'] ) ? $media_seo['uploadDate'] : ( isset( $atts['seo_upload_date'] ) ? $atts['seo_upload_date'] : '' ),
+						'thumbnailUrl'     => ! empty( $media_seo['thumbnailUrl'] ) ? $media_seo['thumbnailUrl'] : ( isset( $atts['seo_thumbnail_url'] ) ? $atts['seo_thumbnail_url'] : '' ),
 						'isFamilyFriendly' => isset( $atts['seo_family_friendly'] ) ? '1' === $atts['seo_family_friendly'] : true,
-						'duration'         => isset( $atts['seo_duration'] ) ? $atts['seo_duration'] : '',
+						'duration'         => ! empty( $media_seo['duration'] ) ? $media_seo['duration'] : ( isset( $atts['seo_duration'] ) ? $atts['seo_duration'] : '' ),
 					);
 
 					$seo_data[] = $video_seo;
+					if ( $track_attachments && $attachment_id > 0 && ! empty( $media_seo ) ) {
+						$attachments[] = $attachment_id;
+					}
 				}
 			}
 		}
@@ -565,7 +569,7 @@ class Seo {
 	}
 
 	/**
-	 * Update the mapping of which posts use a specific attachment (non-override only).
+	 * Update the mapping of which posts use a specific attachment for SEO schema generation.
 	 *
 	 * @param int   $post_id     The post ID.
 	 * @param array $attachments Array of attachment IDs used in the post.
