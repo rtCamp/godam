@@ -25,10 +25,7 @@ const slice = createSlice( {
 				durationDisplay: true, // Total duration
 				fullscreenToggle: true, // Full-screen button
 				subsCapsButton: true,
-				skipButtons: {
-					forward: 10,
-					backward: 10,
-				},
+				pictureInPictureToggle: false,
 				//custom controls
 				brandingIcon: true,
 				appearanceColor: godamSettings?.brandColor ? godamSettings?.brandColor : '#2b333fb3',
@@ -62,7 +59,7 @@ const slice = createSlice( {
 	},
 	reducers: {
 		initializeStore: ( state, action ) => {
-			const { videoConfig, layers, skipTime, chapters } = action.payload;
+			const { videoConfig, layers, chapters } = action.payload;
 			state.videoConfig = {
 				...state.videoConfig,
 				...videoConfig,
@@ -73,7 +70,6 @@ const slice = createSlice( {
 			};
 			state.layers = layers;
 			state.isChanged = false;
-			state.skipTime = skipTime;
 			state.chapters = chapters || [];
 		},
 		saveVideoMeta: ( state ) => {
@@ -115,10 +111,6 @@ const slice = createSlice( {
 		},
 		updateVideoConfig: ( state, action ) => {
 			state.videoConfig = { ...state.videoConfig, ...action.payload };
-			state.isChanged = true;
-		},
-		updateSkipTime: ( state, action ) => {
-			state.skipTime = action.payload.selectedSkipVal;
 			state.isChanged = true;
 		},
 		setCurrentLayer: ( state, action ) => {
@@ -199,7 +191,6 @@ export const {
 	removeChapter,
 	updateChapterField,
 	updateVideoConfig,
-	updateSkipTime,
 	setCurrentLayer,
 	setCurrentTab,
 	setLoading,

@@ -503,12 +503,10 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 											currentTimeDisplay: true,
 											timeDivider: true,
 											durationDisplay: true,
-											fullscreenToggle: true,
+											fullscreenToggle: false,
 											subsCapsButton: true,
-											skipButtons: {
-												forward: 10,
-												backward: 10,
-											},
+											skipButtons: false,
+											pictureInPictureToggle: false,
 										},
 									} }
 									onTimeupdate={ handleTimeUpdate }

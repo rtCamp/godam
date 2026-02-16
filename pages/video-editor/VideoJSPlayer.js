@@ -106,31 +106,6 @@ export const VideoJS = ( props ) => {
 			player.on( 'loadedmetadata', () => {
 				setDuration( player.duration() );
 			} );
-		} else {
-			//handle skip timer control
-			const skipTime = videoConfig.controlBar.skipButtons.forward;
-			const player = playerRef.current;
-			const skipBackwardButton = player.controlBar.getChild( 'skipBackward' );
-			const skipForwardButton = player.controlBar.getChild( 'skipForward' );
-			if ( skipForwardButton ) {
-				skipForwardButton.off( 'click' ); // Remove default click behavior
-				skipForwardButton.on( 'click', () => {
-					const newTime = Math.min(
-						player.currentTime() + skipTime,
-						player.duration(),
-					);
-					player.currentTime( newTime );
-				} );
-			}
-
-			// Override default skip backward button
-			if ( skipBackwardButton ) {
-				skipBackwardButton.off( 'click' ); // Remove default click behavior
-				skipBackwardButton.on( 'click', () => {
-					const newTime = Math.max( player.currentTime() - skipTime, 0 );
-					player.currentTime( newTime );
-				} );
-			}
 		}
 	}, [ videoRef, videoConfig ] );
 
@@ -225,38 +200,6 @@ export const VideoJS = ( props ) => {
 		playButton.classList.add(
 			`${ videoConfig.controlBar.playButtonPosition }-align`,
 		);
-
-		//skip buttons
-		const skipBackwardButton = document.querySelector(
-			'[class^="vjs-skip-backward-"]',
-		);
-		const skipForwardButton = document.querySelector(
-			'[class^="vjs-skip-forward-"]',
-		);
-
-		const backwardClasses = Array.from( skipBackwardButton.classList );
-		const existingBackwardClass = backwardClasses.find( ( cls ) =>
-			cls.startsWith( 'vjs-skip-backward-' ),
-		);
-
-		if ( existingBackwardClass ) {
-			skipBackwardButton.classList.replace(
-				existingBackwardClass,
-				`vjs-skip-backward-${ videoConfig.controlBar.skipButtons.forward }`,
-			);
-		}
-
-		const forwardClasses = Array.from( skipForwardButton.classList );
-		const existingForwardClass = forwardClasses.find( ( cls ) =>
-			cls.startsWith( 'vjs-skip-forward-' ),
-		);
-
-		if ( existingForwardClass ) {
-			skipForwardButton.classList.replace(
-				existingForwardClass,
-				`vjs-skip-forward-${ videoConfig.controlBar.skipButtons.forward }`,
-			);
-		}
 
 		//control bar position
 		if ( 'vertical' === videoConfig.controlBar.controlBarPosition ) {
