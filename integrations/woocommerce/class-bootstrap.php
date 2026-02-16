@@ -118,7 +118,7 @@ class Bootstrap {
 
 		// Load Product Gallery REST API class.
 		if ( ! class_exists( 'RTGODAM\\Inc\\REST_API\\Product_Gallery' ) ) {
-			require_once RTGODAM_PATH . 'inc/classes/rest-api/class-product-gallery.php';
+			require_once RTGODAM_WC_MODULE_PATH . 'classes/class-product-gallery-rest.php';
 		}
 
 		// Load GoDAM Product Gallery shortcode (WooCommerce-dependent).
