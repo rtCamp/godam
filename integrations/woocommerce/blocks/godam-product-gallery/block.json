@@ -152,7 +152,11 @@
       "default": {
         "bgColor": "rgba(28, 28, 28, 1)",
         "iconColor": "rgba(255, 255, 255, 1)",
-        "border": {},
+        "border": {
+          "color": "rgba(224, 224, 224, 1)",
+          "style": "solid",
+          "width": "1px"
+        },
         "borderRadius": 8,
         "action": "mini-cart"
       }

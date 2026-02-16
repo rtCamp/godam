@@ -615,7 +615,8 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 										return category ? category.id : null;
 									} )
 									.filter( Boolean );
-								setAttributes( { categories: selectedIds } );
+								// Reset selectedVideos when switching to category filtering
+								setAttributes( { categories: selectedIds, selectedVideos: [] } );
 							} }
 							__experimentalShowHowTo={ false }
 							__next40pxDefaultSize={ true }
@@ -655,7 +656,8 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 								.map( ( token ) => labelToId[ token ] )
 								.filter( Boolean );
 
-							setAttributes( { products: selectedIds } );
+							// Reset selectedVideos when switching to product filtering
+							setAttributes( { products: selectedIds, selectedVideos: [] } );
 						} }
 						__experimentalShowHowTo={ false }
 						__next40pxDefaultSize={ true }

@@ -354,7 +354,7 @@ class GoDAM_Product_Gallery {
 			}
 
 			if ( $atts['play_button_size'] <= 0 ) {
-				$atts['play_button_size'] = 40;
+				$atts['play_button_size'] = 50;
 			}
 			if ( $atts['arrow_size'] <= 0 ) {
 				$atts['arrow_size'] = 35;
@@ -420,14 +420,18 @@ class GoDAM_Product_Gallery {
 			'post_type'      => 'product',
 			'post_status'    => 'publish',
 			'fields'         => 'ids',
-			'posts_per_page' => -1,
-			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			'posts_per_page' => apply_filters( 'rtgodam_product_gallery_product_limit', 300, $atts ),
+		);
+
+		// Only require `_rtgodam_product_video_gallery_ids` when no category/product filter is set.
+		if ( empty( $category_ids ) && empty( $selected_product_ids ) ) {
+			$product_query_args['meta_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 				array(
 					'key'     => '_rtgodam_product_video_gallery_ids',
 					'compare' => 'EXISTS',
 				),
-			),
-		);
+			);
+		}
 
 		// If categories are selected, filter by categories.
 		if ( ! empty( $category_ids ) ) {
@@ -450,9 +454,8 @@ class GoDAM_Product_Gallery {
 		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
 		$product_ids = get_posts( $product_query_args );
 
-		// 5. Build WP_Query args for fetching videos.
-		// Default maximum 30 videos (filterable).
-		$video_limit = apply_filters( 'rtgodam_product_gallery_video_limit', 30, $atts );
+		// Default maximum 100 videos (filterable).
+		$video_limit = apply_filters( 'rtgodam_product_gallery_video_limit', 100, $atts );
 		$video_limit = max( 1, absint( $video_limit ) );
 
 		// Determine orderby and order based on order_by attribute.
@@ -497,9 +500,12 @@ class GoDAM_Product_Gallery {
 		// Add filter for query arguments.
 		$args = apply_filters( 'rtgodam_product_gallery_query_args', $args, $atts );
 
-		// Handle selected videos.
+		// Priority: selectedVideos (within products) > products > categories > all.
 		$selected_video_ids = array();
-		if ( ! empty( $atts['selected_videos'] ) ) {
+
+		if ( ! empty( $atts['selected_videos'] ) && ! empty( $selected_product_ids ) ) {
+			// Only honor selected_videos when specific products are also selected.
+			// This prevents stale video selections from overriding category/product filters.
 			$selected_video_ids = array_filter( array_map( 'absint', explode( ',', $atts['selected_videos'] ) ) );
 		}
 
@@ -513,6 +519,7 @@ class GoDAM_Product_Gallery {
 				'key'     => '_video_parent_product_id',
 				'value'   => $product_ids,
 				'compare' => 'IN',
+				'type'    => 'NUMERIC',
 			);
 		} else {
 			// Fetch all videos - the parent product validation happens at render time.
@@ -664,6 +671,10 @@ class GoDAM_Product_Gallery {
 	 */
 	private function render_video_wrapper( $video_posts, $atts, $video_attrs, $instance_id ) {
 
+		// Prime the post meta cache for all videos to avoid N+1 queries.
+		$video_ids = wp_list_pluck( $video_posts, 'ID' );
+		update_postmeta_cache( $video_ids );
+
 		foreach ( $video_posts as $video ) {
 			// Add action before each video item.
 			do_action( 'rtgodam_product_gallery_before_video_item', $video, $atts );
@@ -676,7 +687,7 @@ class GoDAM_Product_Gallery {
 
 			$thumbnail = $custom_thumbnail ?: $fallback_thumb;
 
-			$video_url = $video->guid;
+			$video_url = wp_get_attachment_url( $video_id );
 
 			$video_attached_products = get_post_meta( $video_id, '_video_parent_product_id', false );
 
@@ -905,7 +916,7 @@ class GoDAM_Product_Gallery {
 												data-product-id="' . esc_attr( $product_id ) . '"
 												data-product-page-url="' . esc_url( get_permalink( $product->get_id() ) ) . '"
 												style="
-													background-color:' . esc_attr( $this->utility_instance->hex_to_rgba( $this->utility_instance->hex_to_rgba( $atts['cta_cart_bg_color'] ) ) ) . ';
+													background-color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['cta_cart_bg_color'] ) ) . ';
 													color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['cta_cart_icon_color'] ) ) . ';
 													border:' . esc_attr( $atts['cta_cart_border_width'] ) . ' ' . esc_attr( $atts['cta_cart_border_style'] ) . ' ' . esc_attr( $atts['cta_cart_border_color'] ) . ';
 													border-radius:' . esc_attr( $atts['cta_cart_border_radius'] ) . 'px;
