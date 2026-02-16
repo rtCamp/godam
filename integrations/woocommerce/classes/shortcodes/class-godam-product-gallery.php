@@ -415,23 +415,19 @@ class GoDAM_Product_Gallery {
 			$category_ids = array_filter( array_map( 'absint', explode( ',', $atts['categories'] ) ) );
 		}
 
-		// Build product query args.
+		// Build product query args — always require video gallery meta so we only fetch products with videos.
 		$product_query_args = array(
 			'post_type'      => 'product',
 			'post_status'    => 'publish',
 			'fields'         => 'ids',
 			'posts_per_page' => apply_filters( 'rtgodam_product_gallery_product_limit', 300, $atts ),
-		);
-
-		// Only require `_rtgodam_product_video_gallery_ids` when no category/product filter is set.
-		if ( empty( $category_ids ) && empty( $selected_product_ids ) ) {
-			$product_query_args['meta_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 				array(
 					'key'     => '_rtgodam_product_video_gallery_ids',
 					'compare' => 'EXISTS',
 				),
-			);
-		}
+			),
+		);
 
 		// If categories are selected, filter by categories.
 		if ( ! empty( $category_ids ) ) {
@@ -530,8 +526,7 @@ class GoDAM_Product_Gallery {
 		}
 
 		// 6. Fetch videos.
-		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
-		$video_posts = get_posts( $args );
+		$video_posts = get_posts( $args ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
 
 		// Allow developers to modify fetched video posts before rendering.
 		$video_posts = apply_filters( 'rtgodam_product_gallery_video_posts', $video_posts, $atts );
