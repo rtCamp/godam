@@ -200,25 +200,43 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 			const video = playerEl.querySelector( 'video' );
 
 			if ( video ) {
-				video.addEventListener( 'loadedmetadata', () => {
+				video.onloadedmetadata = () => {
 					setDuration( player.duration() );
 
-					// Set width based on aspect ratio for 500px height
-					if ( video.videoWidth && video.videoHeight ) {
-						const targetHeight = 500;
-						const calculatedWidth = Math.round( targetHeight * ( video.videoWidth / video.videoHeight ) );
-						const canvasWrapper = document.querySelector( '.video-canvas-wrapper' );
-						const containerWidth = canvasWrapper?.getBoundingClientRect().width;
-						const maxWidth = containerWidth ? Math.floor( containerWidth ) : window.innerWidth;
-						const constrainedWidth = Math.min( calculatedWidth, maxWidth );
+					// Prefer metadata dimensions; virtual media can be missing attachment dimensions.
+					const videoWidth = video.videoWidth;
+					const videoHeight = video.videoHeight;
 
-						// Find the easydam-video-player wrapper and set its width
-						const videoPlayerElement = document.querySelector( '#easydam-video-player' );
-						if ( videoPlayerElement ) {
-							videoPlayerElement.style.width = `${ constrainedWidth }px`;
-						}
+					if ( videoWidth && videoHeight ) {
+						const metadataAspectRatio = `${ videoWidth }:${ videoHeight }`;
+						setAspectRatio( metadataAspectRatio );
+						player.aspectRatio( metadataAspectRatio );
 					}
-				} );
+
+					const [ fallbackW, fallbackH ] = String( aspectRatio || '16:9' )
+						.split( ':' )
+						.map( ( value ) => Number( value ) );
+					const widthForCalc = videoWidth || ( Number.isFinite( fallbackW ) && fallbackW > 0 ? fallbackW : 16 );
+					const heightForCalc = videoHeight || ( Number.isFinite( fallbackH ) && fallbackH > 0 ? fallbackH : 9 );
+
+					// Set width based on aspect ratio for 500px height
+					const targetHeight = 500;
+					const calculatedWidth = Math.round( targetHeight * ( widthForCalc / heightForCalc ) );
+					const canvasWrapper = document.querySelector( '.video-canvas-wrapper' );
+					const containerWidth = canvasWrapper?.getBoundingClientRect().width;
+					const maxWidth = containerWidth ? Math.floor( containerWidth ) : window.innerWidth;
+					const constrainedWidth = Math.min( calculatedWidth, maxWidth );
+
+					// Find the easydam-video-player wrapper and set its width
+					const videoPlayerElement = document.querySelector( '#easydam-video-player' );
+					if ( videoPlayerElement ) {
+						videoPlayerElement.style.width = `${ constrainedWidth }px`;
+					}
+				};
+
+				if ( video.readyState >= 1 ) {
+					video.onloadedmetadata();
+				}
 			}
 		}
 	};

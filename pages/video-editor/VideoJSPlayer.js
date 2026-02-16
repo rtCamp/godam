@@ -334,6 +334,9 @@ export const VideoJS = ( props ) => {
 		try {
 			const player = playerRef.current;
 			// player.sources( options.sources );
+			if ( options.aspectRatio ) {
+				player.aspectRatio( options.aspectRatio );
+			}
 			player.poster( options.poster );
 			player.autoplay( options.autoplay );
 			player.muted( options.muted );
