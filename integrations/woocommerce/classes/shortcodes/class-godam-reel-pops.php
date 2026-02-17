@@ -35,7 +35,7 @@ class GoDAM_Reel_Pops {
 		if ( ! wp_style_is( 'godam-reel-pops-frontend-style', 'registered' ) ) {
 			wp_register_style(
 				'godam-reel-pops-frontend-style',
-				RTGODAM_URL . 'integrations/woocommerce/blocks/godam-reel-pops/style.css',
+				RTGODAM_URL . 'assets/build/integrations/woocommerce/blocks/godam-reel-pops/style-index.css',
 				array(),
 				RTGODAM_VERSION
 			);

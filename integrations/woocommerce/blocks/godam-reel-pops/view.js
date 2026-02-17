@@ -192,7 +192,7 @@
 		}
 
 		/**
-		 * Apply entrance animation to the container.
+		 * Apply entrance animation to the container using CSS keyframes.
 		 */
 		applyEntranceAnimation() {
 			// Check for reduced motion preference.
@@ -203,16 +203,20 @@
 				return;
 			}
 
-			// Add initial hidden state class based on animation type.
-			const animType = this.config.animation;
-			this.container.classList.add( `reel-pops-enter-${ animType }` );
+			// Set visible resting state and trigger entrance keyframe animation.
+			this.container.classList.add( 'reel-pops-visible', 'reel-pops-animate-enter' );
 
-			// Trigger animation on next frame.
-			requestAnimationFrame( () => {
-				requestAnimationFrame( () => {
-					this.container.classList.add( 'reel-pops-visible' );
-				} );
-			} );
+			// Clean up animation class when it finishes.
+			const onEnd = ( event ) => {
+				// Ignore bubbled events from children.
+				if ( event.target !== this.container ) {
+					return;
+				}
+
+				this.container.removeEventListener( 'animationend', onEnd );
+				this.container.classList.remove( 'reel-pops-animate-enter' );
+			};
+			this.container.addEventListener( 'animationend', onEnd );
 		}
 
 		/**
@@ -228,10 +232,11 @@
 			}
 
 			if ( this.isAnimating && withAnimation ) {
+				console.log( 'GoDAM Reel Pops: Skipping showVideo - already animating' );
 				return;
 			}
 
-			console.log( `GoDAM Reel Pops: Showing video ${ index }` );
+			console.log( `GoDAM Reel Pops: Showing video ${ index } (animate: ${ withAnimation })` );
 
 			const previousIndex = this.currentIndex;
 			const previousSlot = this.videoSlots[ previousIndex ];
@@ -240,52 +245,77 @@
 			const nextVideoElement = nextSlot ? nextSlot.querySelector( 'video' ) : null;
 
 			if ( withAnimation && previousIndex !== index ) {
-				// Sequential animation:
-				// 1) bounce-out the current slot
-				// 2) after it finishes, switch active slot + bounce-in the next
-				const enterMs = 460;
-				const exitMs = 360;
+				// Keyframe-based container animation:
+				// 1. Play exit animation → container animates out.
+				// 2. On animationend → swap video slots while hidden.
+				// 3. Play enter animation → container animates back in.
 				this.isAnimating = true;
 
-				previousSlot?.classList.remove( 'reel-pops-slot-enter', 'reel-pops-slot-exit' );
-				nextSlot?.classList.remove( 'reel-pops-slot-enter', 'reel-pops-slot-exit' );
+				console.log( 'GoDAM Reel Pops: Starting Exit animation' );
 
-				// Ensure next is hidden until we start the enter animation.
-				nextSlot?.classList.remove( 'active' );
-
-				if ( previousSlot ) {
-					previousSlot.classList.add( 'reel-pops-slot-exit' );
-				}
-
-				setTimeout( () => {
-					// Finish exit: hide old slot + pause old video.
-					if ( previousSlot ) {
-						previousSlot.classList.remove( 'active' );
-						previousSlot.classList.remove( 'reel-pops-slot-exit' );
+				// Fallback safety timeout for isAnimating.
+				const fallbackTimeout = setTimeout( () => {
+					if ( this.isAnimating ) {
+						console.error( 'GoDAM Reel Pops: Animation safety timeout reached - forcing end' );
+						this.isAnimating = false;
+						this.container.classList.remove( 'reel-pops-animate-exit', 'reel-pops-animate-enter' );
 					}
+				}, 2000 ); // Max 2 seconds for any animation sequence.
+
+				// Step 1: Start exit animation.
+				this.container.classList.add( 'reel-pops-animate-exit' );
+
+				const onExitEnd = ( event ) => {
+					// Ignore bubbled events from children - only respond to container's own animation.
+					if ( event.target !== this.container ) {
+						return;
+					}
+
+					this.container.removeEventListener( 'animationend', onExitEnd );
+					console.log( 'GoDAM Reel Pops: Exit animation complete, swapping slots' );
+
+					// Pause old video.
 					if ( previousVideoElement && typeof previousVideoElement.pause === 'function' ) {
 						previousVideoElement.pause();
 					}
 
-					// Start enter: show next slot and animate in.
-					if ( nextSlot ) {
-						nextSlot.classList.add( 'active', 'reel-pops-slot-enter' );
-					}
+					// Step 2: Swap active slot (container is fully hidden via animation fill).
+					previousSlot?.classList.remove( 'active' );
+					nextSlot?.classList.add( 'active' );
 					this.currentIndex = index;
 
+					// Remove exit class.
+					this.container.classList.remove( 'reel-pops-animate-exit' );
+
+					// Force reflow to ensure the browser sees the class removal before re-adding.
+					void this.container.offsetWidth;
+
+					console.log( 'GoDAM Reel Pops: Starting Entrance animation' );
+
+					// Step 3: Start entrance animation.
+					this.container.classList.add( 'reel-pops-animate-enter' );
+
+					// Play next video.
 					if ( this.config.enableAutoplay && nextVideoElement && typeof nextVideoElement.play === 'function' ) {
-						setTimeout( () => {
-							nextVideoElement.play().catch( ( err ) => {
-								console.warn( 'GoDAM Reel Pops: Video play failed', err );
-							} );
-						}, 50 );
+						nextVideoElement.muted = true;
+						nextVideoElement.play().catch( () => {} );
 					}
 
-					setTimeout( () => {
-						nextSlot?.classList.remove( 'reel-pops-slot-enter' );
+					const onEnterEnd = ( event ) => {
+						// Ignore bubbled events from children.
+						if ( event.target !== this.container ) {
+							return;
+						}
+
+						this.container.removeEventListener( 'animationend', onEnterEnd );
+						this.container.classList.remove( 'reel-pops-animate-enter' );
 						this.isAnimating = false;
-					}, enterMs );
-				}, exitMs );
+						clearTimeout( fallbackTimeout );
+						console.log( 'GoDAM Reel Pops: Entrance animation complete' );
+					};
+					this.container.addEventListener( 'animationend', onEnterEnd );
+				};
+				this.container.addEventListener( 'animationend', onExitEnd );
 			} else {
 				// No animation - instant switch (for first load)
 				if ( previousVideoElement && typeof previousVideoElement.pause === 'function' ) {
@@ -388,11 +418,17 @@
 		 * Close the reel popup.
 		 */
 		close() {
-			// Add closing animation class.
+			// Add closing animation class (keyframe-based).
 			this.container.classList.add( 'reel-pops-closing' );
 
 			// Wait for animation to complete.
-			setTimeout( () => {
+			const onCloseEnd = ( event ) => {
+				// Ignore bubbled events from children.
+				if ( event.target !== this.container ) {
+					return;
+				}
+
+				this.container.removeEventListener( 'animationend', onCloseEnd );
 				this.wrapper.style.display = 'none';
 				this.stopRotation();
 
@@ -401,7 +437,8 @@
 					const storageKey = `godam_reel_pops_closed_${ this.config.blockId }`;
 					localStorage.setItem( storageKey, 'true' );
 				}
-			}, this.config.animationDuration || 500 );
+			};
+			this.container.addEventListener( 'animationend', onCloseEnd );
 		}
 	}
 

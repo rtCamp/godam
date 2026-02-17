@@ -35,7 +35,6 @@
 	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 	background: #000;
 	cursor: pointer;
-	transition: transform 0.2s ease;
 
 	// Position from CSS variables
 	&.position-bottom-left {
@@ -75,7 +74,7 @@
 	border-radius: 12px;
 }
 
-/* Video slot - stacked absolutely with opacity-based transitions */
+/* Video slot - stacked absolutely, instant switch (container handles animation) */
 .godam-reel-pops-video-slot {
 	position: absolute;
 	top: 0;
@@ -84,16 +83,16 @@
 	height: 100%;
 	overflow: hidden;
 	opacity: 0;
-	transition: opacity 0.4s ease-in-out;
-	will-change: opacity;
 	backface-visibility: hidden;
 	transform: translateZ(0);
 	pointer-events: none;
 	z-index: 0;
+	visibility: hidden;
 
-	// Show when active
+	// Show when active - instant switch, no transition
 	&.active {
 		opacity: 1;
+		visibility: visible;
 		pointer-events: auto;
 		z-index: 1;
 	}
@@ -123,7 +122,7 @@
 		top: 0;
 		left: 0;
 		width: 100%;
-		height: 100%;
+		height: 100% !important;
 		padding: 0;
 		margin: 0;
 
@@ -143,7 +142,7 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-		object-fit: contain;
+		object-fit: cover;
 		padding: 0;
 		margin: 0;
 	}
@@ -276,96 +275,147 @@
 	}
 }
 
-/* ENTRANCE ANIMATIONS */
+/* ANIMATION SYSTEM — uses CSS @keyframes (not transitions) to avoid specificity conflicts */
 
-/* Base state - hidden before animation */
+/* Base state - hidden by default */
 .godam-reel-pops-container:not(.reel-pops-visible) {
 	opacity: 0;
 	pointer-events: none;
 }
 
-/* Visible state - ensure interactivity */
+/* Visible resting state */
 .godam-reel-pops-container.reel-pops-visible {
 	opacity: 1;
 	pointer-events: auto;
 }
 
-/* Slide up */
-.godam-reel-pops-container.reel-pops-enter-slide-up:not(.reel-pops-visible) {
-	transform: translateY(100%);
+/* === KEYFRAME DEFINITIONS === */
+
+/* Slide Up */
+@keyframes reel-pops-slide-up-enter {
+	from { opacity: 0; transform: translateY(100%); }
+	to { opacity: 1; transform: translateY(0); }
 }
 
-.godam-reel-pops-container.animation-slide-up.reel-pops-visible {
-	opacity: 1;
-	transform: translateY(0);
-	transition: opacity var(--reel-pops-animation-duration, 500ms) ease,
-	            transform var(--reel-pops-animation-duration, 500ms) cubic-bezier(0.34, 1.56, 0.64, 1);
+@keyframes reel-pops-slide-up-exit {
+	from { opacity: 1; transform: translateY(0); }
+	to { opacity: 0; transform: translateY(100%); }
 }
 
-/* Slide left */
-.godam-reel-pops-container.reel-pops-enter-slide-left:not(.reel-pops-visible) {
-	transform: translateX(-100%);
+/* Slide Left */
+@keyframes reel-pops-slide-left-enter {
+	from { opacity: 0; transform: translateX(-100%); }
+	to { opacity: 1; transform: translateX(0); }
 }
 
-.godam-reel-pops-container.animation-slide-left.reel-pops-visible {
-	opacity: 1;
-	transform: translateX(0);
-	transition: opacity var(--reel-pops-animation-duration, 500ms) ease,
-	            transform var(--reel-pops-animation-duration, 500ms) cubic-bezier(0.34, 1.56, 0.64, 1);
+@keyframes reel-pops-slide-left-exit {
+	from { opacity: 1; transform: translateX(0); }
+	to { opacity: 0; transform: translateX(-100%); }
 }
 
-/* Slide right */
-.godam-reel-pops-container.reel-pops-enter-slide-right:not(.reel-pops-visible) {
-	transform: translateX(100%);
+/* Slide Right */
+@keyframes reel-pops-slide-right-enter {
+	from { opacity: 0; transform: translateX(100%); }
+	to { opacity: 1; transform: translateX(0); }
 }
 
-.godam-reel-pops-container.animation-slide-right.reel-pops-visible {
-	opacity: 1;
-	transform: translateX(0);
-	transition: opacity var(--reel-pops-animation-duration, 500ms) ease,
-	            transform var(--reel-pops-animation-duration, 500ms) cubic-bezier(0.34, 1.56, 0.64, 1);
+@keyframes reel-pops-slide-right-exit {
+	from { opacity: 1; transform: translateX(0); }
+	to { opacity: 0; transform: translateX(100%); }
 }
 
 /* Fade */
-.godam-reel-pops-container.reel-pops-enter-fade:not(.reel-pops-visible) {
-	opacity: 0;
+@keyframes reel-pops-fade-enter {
+	from { opacity: 0; }
+	to { opacity: 1; }
 }
 
-.godam-reel-pops-container.animation-fade.reel-pops-visible {
-	opacity: 1;
-	transition: opacity var(--reel-pops-animation-duration, 500ms) ease;
+@keyframes reel-pops-fade-exit {
+	from { opacity: 1; }
+	to { opacity: 0; }
 }
 
 /* Bounce */
-.godam-reel-pops-container.reel-pops-enter-bounce:not(.reel-pops-visible) {
-	transform: scale(0);
+@keyframes reel-pops-bounce-enter {
+	from { opacity: 0; transform: scale(0); }
+	to { opacity: 1; transform: scale(1); }
 }
 
-.godam-reel-pops-container.animation-bounce.reel-pops-visible {
-	opacity: 1;
-	transform: scale(1);
-	transition: opacity var(--reel-pops-animation-duration, 500ms) ease,
-	            transform var(--reel-pops-animation-duration, 500ms) cubic-bezier(0.68, -0.55, 0.265, 1.55);
+@keyframes reel-pops-bounce-exit {
+	from { opacity: 1; transform: scale(1); }
+	to { opacity: 0; transform: scale(0); }
 }
 
 /* Scale */
-.godam-reel-pops-container.reel-pops-enter-scale:not(.reel-pops-visible) {
-	transform: scale(0.5);
+@keyframes reel-pops-scale-enter {
+	from { opacity: 0; transform: scale(0.5); }
+	to { opacity: 1; transform: scale(1); }
 }
 
-.godam-reel-pops-container.animation-scale.reel-pops-visible {
-	opacity: 1;
-	transform: scale(1);
-	transition: opacity var(--reel-pops-animation-duration, 500ms) ease,
-	            transform var(--reel-pops-animation-duration, 500ms) ease-out;
+@keyframes reel-pops-scale-exit {
+	from { opacity: 1; transform: scale(1); }
+	to { opacity: 0; transform: scale(0.5); }
 }
 
-/* EXIT ANIMATION */
+/* Close */
+@keyframes reel-pops-close {
+	from { opacity: 1; transform: scale(1); }
+	to { opacity: 0; transform: scale(0.8); }
+}
+
+/* === ENTER ANIMATION CLASSES === */
+.godam-reel-pops-container.animation-slide-up.reel-pops-animate-enter {
+	animation: reel-pops-slide-up-enter var(--reel-pops-animation-duration, 500ms) cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.godam-reel-pops-container.animation-slide-left.reel-pops-animate-enter {
+	animation: reel-pops-slide-left-enter var(--reel-pops-animation-duration, 500ms) cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.godam-reel-pops-container.animation-slide-right.reel-pops-animate-enter {
+	animation: reel-pops-slide-right-enter var(--reel-pops-animation-duration, 500ms) cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.godam-reel-pops-container.animation-fade.reel-pops-animate-enter {
+	animation: reel-pops-fade-enter var(--reel-pops-animation-duration, 500ms) ease forwards;
+}
+
+.godam-reel-pops-container.animation-bounce.reel-pops-animate-enter {
+	animation: reel-pops-bounce-enter var(--reel-pops-animation-duration, 500ms) cubic-bezier(0.34, 1.3, 0.64, 1) forwards;
+}
+
+.godam-reel-pops-container.animation-scale.reel-pops-animate-enter {
+	animation: reel-pops-scale-enter var(--reel-pops-animation-duration, 500ms) ease-out forwards;
+}
+
+/* === EXIT ANIMATION CLASSES === */
+.godam-reel-pops-container.animation-slide-up.reel-pops-animate-exit {
+	animation: reel-pops-slide-up-exit var(--reel-pops-animation-duration, 500ms) ease-in forwards;
+}
+
+.godam-reel-pops-container.animation-slide-left.reel-pops-animate-exit {
+	animation: reel-pops-slide-left-exit var(--reel-pops-animation-duration, 500ms) ease-in forwards;
+}
+
+.godam-reel-pops-container.animation-slide-right.reel-pops-animate-exit {
+	animation: reel-pops-slide-right-exit var(--reel-pops-animation-duration, 500ms) ease-in forwards;
+}
+
+.godam-reel-pops-container.animation-fade.reel-pops-animate-exit {
+	animation: reel-pops-fade-exit var(--reel-pops-animation-duration, 500ms) ease forwards;
+}
+
+.godam-reel-pops-container.animation-bounce.reel-pops-animate-exit {
+	animation: reel-pops-bounce-exit var(--reel-pops-animation-duration, 500ms) cubic-bezier(0.36, 0, 0.66, -0.3) forwards;
+}
+
+.godam-reel-pops-container.animation-scale.reel-pops-animate-exit {
+	animation: reel-pops-scale-exit var(--reel-pops-animation-duration, 500ms) ease-in forwards;
+}
+
+/* CLOSE ANIMATION (user clicks X) */
 .godam-reel-pops-container.reel-pops-closing {
-	opacity: 0;
-	transform: scale(0.8);
-	transition: opacity var(--reel-pops-animation-duration, 500ms) ease,
-	            transform var(--reel-pops-animation-duration, 500ms) ease-in;
+	animation: reel-pops-close var(--reel-pops-animation-duration, 500ms) ease-in forwards;
 }
 
 /* Reduced motion support */
