@@ -47,10 +47,6 @@
 		bottom: var(--reel-pops-bottom);
 	}
 
-	&:hover {
-		transform: scale(1.02);
-	}
-
 	// Aspect ratios
 	&.aspect-9-16 {
 		aspect-ratio: 9 / 16;
@@ -264,15 +260,52 @@
 	align-items: center;
 	justify-content: center;
 	opacity: 0;
-	transition: opacity 0.2s ease;
 	background: rgba(0, 0, 0, 0.1);
 	cursor: pointer;
-	pointer-events: none;
+	pointer-events: auto;
+}
 
-	.godam-reel-pops-container:hover & {
-		opacity: 1;
-		pointer-events: auto;
-	}
+/* Mute toggle button */
+.godam-reel-pops-mute-toggle {
+	position: absolute;
+	top: 8px;
+	left: 8px;
+	z-index: 11;
+	width: 28px;
+	height: 28px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	border-radius: 50%;
+	background: rgba(0, 0, 0, 0.65);
+	color: #fff;
+	font-size: 14px;
+	line-height: 1;
+	cursor: pointer;
+	padding: 0;
+}
+
+/* Play toggle button */
+.godam-reel-pops-play-toggle {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 11;
+	width: 44px;
+	height: 44px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	border-radius: 50%;
+	background: rgba(0, 0, 0, 0.6);
+	color: #fff;
+	font-size: 18px;
+	line-height: 1;
+	cursor: pointer;
+	padding: 0;
 }
 
 /* ANIMATION SYSTEM — uses CSS @keyframes (not transitions) to avoid specificity conflicts */

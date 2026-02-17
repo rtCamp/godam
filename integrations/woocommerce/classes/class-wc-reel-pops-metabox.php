@@ -67,6 +67,7 @@ class WC_Reel_Pops_Metabox {
 		}
 
 		$screen = get_current_screen();
+
 		if ( ! $screen || 'product' !== $screen->post_type ) {
 			return;
 		}
@@ -76,22 +77,68 @@ class WC_Reel_Pops_Metabox {
 
 		wp_add_inline_style( 'wp-admin', '
 			.godam-reel-pops-metabox { padding: 15px; }
-			.godam-reel-pops-video-list { margin-top: 15px; }
+			.godam-reel-pops-video-list {
+				margin-top: 15px;
+				display: flex;
+				flex-wrap: wrap;
+				gap: 10px;
+				margin-bottom: 1.5rem;
+			}
 			.godam-reel-pops-video-item {
+				width: calc(33.333% - 10px);
+				min-width: 240px;
+				position: relative;
 				background: #f9f9f9;
 				border: 1px solid #ddd;
 				padding: 12px;
-				margin-bottom: 10px;
 				border-radius: 4px;
 				cursor: move;
+				box-sizing: border-box;
+			}
+			.godam-reel-pops-video-placeholder {
+				border: 2px dashed #b9b9b9;
+				background: #f3f3f3;
+				border-radius: 4px;
+				min-height: 96px;
+			}
+			.godam-reel-pops-video-thumb {
+				width: 70px;
+				height: 70px;
+				border-radius: 4px;
+				background: #111;
+				overflow: hidden;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				color: #fff;
+				font-size: 11px;
+			}
+			.godam-reel-pops-video-thumb img {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
 			}
 			.godam-reel-pops-video-item-header {
 				display: flex;
-				justify-content: space-between;
+				justify-content: flex-start;
 				align-items: center;
-				margin-bottom: 10px;
+				gap: 10px;
 			}
-			.godam-reel-pops-video-item-header strong { font-size: 14px; }
+			.godam-reel-pops-video-item-header strong { font-size: 14px; display: block; }
+			.godam-reel-pops-video-meta { line-height: 1.4; }
+			.godam-reel-pops-video-remove {
+				position: absolute;
+				top: 8px;
+				right: 8px;
+				width: 24px;
+				height: 24px;
+				border-radius: 50%;
+				border: 1px solid #ccc;
+				background: #fff;
+				color: #a00;
+				cursor: pointer;
+				line-height: 1;
+			}
 			.godam-reel-pops-video-item-controls { display: flex; gap: 8px; }
 			.godam-reel-pops-video-item input[type="text"] { width: 100%; }
 			.godam-reel-pops-settings-grid {
@@ -111,6 +158,10 @@ class WC_Reel_Pops_Metabox {
 			}
 			@media (max-width: 782px) {
 				.godam-reel-pops-settings-grid { grid-template-columns: 1fr; }
+				.godam-reel-pops-video-item { width: calc(50% - 10px); min-width: 0; }
+			}
+			@media (max-width: 580px) {
+				.godam-reel-pops-video-item { width: 100%; }
 			}
 		' );
 	}
@@ -138,8 +189,11 @@ class WC_Reel_Pops_Metabox {
 				'animation'         => 'slide-up',
 				'animationDuration' => 500,
 				'durationSeconds'   => 5,
+				'initialDelay'      => 3,
 				'closePersistence'  => 'show_again',
 				'enableAutoplay'    => true,
+				'showMuteButton'    => true,
+				'showPlayButton'    => false,
 				'popupWidth'        => 120,
 				'bottomSpacing'     => 20,
 				'sideSpacing'       => 20,
@@ -170,7 +224,7 @@ class WC_Reel_Pops_Metabox {
 					?>
 				</div>
 				<button type="button" class="button" id="godam-reel-pops-add-video">
-					<?php esc_html_e( 'Add Video', 'godam' ); ?>
+					<?php esc_html_e( 'Select Videos', 'godam' ); ?>
 				</button>
 			</div>
 
@@ -215,10 +269,15 @@ class WC_Reel_Pops_Metabox {
 				</div>
 
 				<div class="godam-reel-pops-setting-item">
+					<label for="godam_reel_pops_initial_delay"><?php esc_html_e( 'Show After Page Load (seconds)', 'godam' ); ?></label>
+					<input type="number" name="godam_reel_pops[initialDelay]" id="godam_reel_pops_initial_delay" value="<?php echo esc_attr( $config['initialDelay'] ); ?>" min="0" max="30" step="1" />
+				</div>
+
+				<div class="godam-reel-pops-setting-item">
 					<label for="godam_reel_pops_close_persistence"><?php esc_html_e( 'After Close', 'godam' ); ?></label>
 					<select name="godam_reel_pops[closePersistence]" id="godam_reel_pops_close_persistence">
 						<option value="show_again" <?php selected( $config['closePersistence'], 'show_again' ); ?>><?php esc_html_e( 'Show again on page reload', 'godam' ); ?></option>
-						<option value="hide_after_close" <?php selected( $config['closePersistence'], 'hide_after_close' ); ?>><?php esc_html_e( 'Stay hidden until page reload', 'godam' ); ?></option>
+						<option value="hide_after_close" <?php selected( $config['closePersistence'], 'hide_after_close' ); ?>><?php esc_html_e( 'Stay hidden after close (this browser)', 'godam' ); ?></option>
 					</select>
 				</div>
 
@@ -244,70 +303,125 @@ class WC_Reel_Pops_Metabox {
 					</label>
 					<p class="description"><?php esc_html_e( 'Videos will autoplay muted. Disable to show play button overlay.', 'godam' ); ?></p>
 				</div>
+
+				<div class="godam-reel-pops-setting-item">
+					<label>
+						<input type="checkbox" name="godam_reel_pops[showMuteButton]" value="1" <?php checked( $config['showMuteButton'], true ); ?> />
+						<?php esc_html_e( 'Show Mute/Unmute Button', 'godam' ); ?>
+					</label>
+				</div>
+
+				<div class="godam-reel-pops-setting-item">
+					<label>
+						<input type="checkbox" name="godam_reel_pops[showPlayButton]" value="1" <?php checked( $config['showPlayButton'], true ); ?> />
+						<?php esc_html_e( 'Show Play/Pause Button Overlay', 'godam' ); ?>
+					</label>
+				</div>
 			</div>
 		</div>
 
 		<script type="text/javascript">
 		jQuery(document).ready(function($) {
 			let videoIndex = <?php echo count( $config['videos'] ); ?>;
+			const existingVideoIds = [];
+
+			$('#godam-reel-pops-video-list .godam-video-id').each(function() {
+				const id = parseInt($(this).val(), 10);
+				if (id > 0 && existingVideoIds.indexOf(id) === -1) {
+					existingVideoIds.push(id);
+				}
+			});
 
 			// Make video list sortable
 			$('#godam-reel-pops-video-list').sortable({
 				handle: '.godam-reel-pops-video-item',
-				placeholder: 'ui-state-highlight'
+				items: '> .godam-reel-pops-video-item',
+				placeholder: 'godam-reel-pops-video-placeholder',
+				forcePlaceholderSize: true,
+				tolerance: 'pointer',
+				cancel: 'button, input, textarea, select, option, a',
+				start: function(event, ui) {
+					ui.placeholder.height(ui.item.outerHeight());
+					ui.placeholder.width(ui.item.outerWidth());
+				},
+				update: function() {
+					reindexVideoItems();
+				}
 			});
 
-			// Add video button
-			$('#godam-reel-pops-add-video').on('click', function() {
-				const template = `
-					<div class="godam-reel-pops-video-item" data-index="${videoIndex}">
+			const createVideoItem = (index, attachment) => {
+				const thumb = (attachment.image && attachment.image.src) || (attachment.sizes && attachment.sizes.thumbnail && attachment.sizes.thumbnail.url) || attachment.icon || '';
+				const title = attachment.title || '<?php echo esc_js( __( 'Untitled video', 'godam' ) ); ?>';
+				const thumbHtml = thumb
+					? `<img src="${thumb}" alt="" />`
+					: '<span><?php esc_html_e( 'Video', 'godam' ); ?></span>';
+
+				return `
+					<div class="godam-reel-pops-video-item" data-index="${index}" data-video-id="${attachment.id}">
+						<button type="button" class="godam-reel-pops-video-remove" aria-label="<?php esc_attr_e( 'Remove video', 'godam' ); ?>">✕</button>
 						<div class="godam-reel-pops-video-item-header">
-							<strong><?php esc_html_e( 'Video', 'godam' ); ?> #${videoIndex + 1}</strong>
-							<div class="godam-reel-pops-video-item-controls">
-								<button type="button" class="button button-small godam-reel-pops-remove-video"><?php esc_html_e( 'Remove', 'godam' ); ?></button>
+							<div class="godam-reel-pops-video-thumb">${thumbHtml}</div>
+							<div class="godam-reel-pops-video-meta">
+								<strong class="godam-reel-pops-video-title">${title}</strong>
+								<span class="godam-video-id-display"><?php esc_html_e( 'ID:', 'godam' ); ?> ${attachment.id}</span>
 							</div>
 						</div>
-						<p>
-							<button type="button" class="button godam-reel-pops-select-video" data-index="${videoIndex}">
-								<?php esc_html_e( 'Select Video', 'godam' ); ?>
-							</button>
-							<input type="hidden" name="godam_reel_pops[videos][${videoIndex}][videoId]" class="godam-video-id" value="0" />
-							<span class="godam-video-id-display"></span>
-						</p>
-
+						<input type="hidden" name="godam_reel_pops[videos][${index}][videoId]" class="godam-video-id" value="${attachment.id}" />
 					</div>
 				`;
-				$('#godam-reel-pops-video-list').append(template);
-				videoIndex++;
-			});
+			};
 
-			// Remove video
-			$(document).on('click', '.godam-reel-pops-remove-video', function() {
-				$(this).closest('.godam-reel-pops-video-item').remove();
-			});
+			const reindexVideoItems = () => {
+				$('#godam-reel-pops-video-list .godam-reel-pops-video-item').each(function(index) {
+					const item = $(this);
+					item.attr('data-index', index);
+					item.find('.godam-video-id').attr('name', `godam_reel_pops[videos][${index}][videoId]`);
+				});
+				videoIndex = $('#godam-reel-pops-video-list .godam-reel-pops-video-item').length;
+			};
 
-			// Select video
-			$(document).on('click', '.godam-reel-pops-select-video', function() {
-				const button = $(this);
-				const item = button.closest('.godam-reel-pops-video-item');
-				const videoIdInput = item.find('.godam-video-id');
-				const videoIdDisplay = item.find('.godam-video-id-display');
-
+			// Add videos button
+			$('#godam-reel-pops-add-video').on('click', function() {
 				const mediaFrame = wp.media({
-					title: '<?php esc_html_e( 'Select Video', 'godam' ); ?>',
+					title: '<?php esc_html_e( 'Select Videos', 'godam' ); ?>',
 					library: { type: 'video' },
-					multiple: false
+					multiple: true,
+					button: { text: '<?php esc_html_e( 'Use Selected Videos', 'godam' ); ?>' }
 				});
 
 				mediaFrame.on('select', function() {
-					const attachment = mediaFrame.state().get('selection').first().toJSON();
-					videoIdInput.val(attachment.id);
-					videoIdDisplay.text('<?php esc_html_e( 'Video ID:', 'godam' ); ?> ' + attachment.id);
-					button.text('<?php esc_html_e( 'Change Video', 'godam' ); ?>');
+					const selection = mediaFrame.state().get('selection').toJSON();
+					selection.forEach(function(attachment) {
+						if (!attachment.id || existingVideoIds.indexOf(attachment.id) !== -1) {
+							return;
+						}
+
+						existingVideoIds.push(attachment.id);
+						$('#godam-reel-pops-video-list').append(createVideoItem(videoIndex, attachment));
+						videoIndex++;
+					});
+
+					reindexVideoItems();
 				});
 
 				mediaFrame.open();
 			});
+
+			// Remove video
+			$(document).on('click', '.godam-reel-pops-video-remove', function() {
+				const item = $(this).closest('.godam-reel-pops-video-item');
+				const id = parseInt(item.attr('data-video-id'), 10);
+				if (id > 0) {
+					const idIndex = existingVideoIds.indexOf(id);
+					if (idIndex !== -1) {
+						existingVideoIds.splice(idIndex, 1);
+					}
+				}
+				item.remove();
+				reindexVideoItems();
+			});
+
+			reindexVideoItems();
 		});
 		</script>
 		<?php
@@ -327,25 +441,41 @@ class WC_Reel_Pops_Metabox {
 				'productIds' => '',
 			)
 		);
+		$video_id    = absint( $video['videoId'] );
+		$video_title = $video_id ? get_the_title( $video_id ) : '';
+		$thumb_url   = '';
+
+		if ( $video_id ) {
+			$thumb_url = wp_get_attachment_image_url( $video_id, 'thumbnail' );
+
+			if ( empty( $thumb_url ) ) {
+				$thumb_url = get_the_post_thumbnail_url( $video_id, 'thumbnail' );
+			}
+
+			if ( empty( $thumb_url ) ) {
+				$thumbnail_id = get_post_thumbnail_id( $video_id );
+				if ( $thumbnail_id ) {
+					$thumb_url = wp_get_attachment_image_url( $thumbnail_id, 'thumbnail' );
+				}
+			}
+		}
 		?>
-		<div class="godam-reel-pops-video-item" data-index="<?php echo esc_attr( $index ); ?>">
+		<div class="godam-reel-pops-video-item" data-index="<?php echo esc_attr( $index ); ?>" data-video-id="<?php echo esc_attr( $video['videoId'] ); ?>">
+			<button type="button" class="godam-reel-pops-video-remove" aria-label="<?php esc_attr_e( 'Remove video', 'godam' ); ?>">✕</button>
 			<div class="godam-reel-pops-video-item-header">
-				<strong><?php esc_html_e( 'Video', 'godam' ); ?> #<?php echo esc_html( $index + 1 ); ?></strong>
-				<div class="godam-reel-pops-video-item-controls">
-					<button type="button" class="button button-small godam-reel-pops-remove-video"><?php esc_html_e( 'Remove', 'godam' ); ?></button>
+				<div class="godam-reel-pops-video-thumb">
+					<?php if ( ! empty( $thumb_url ) ) : ?>
+						<img src="<?php echo esc_url( $thumb_url ); ?>" alt="" />
+					<?php else : ?>
+						<span><?php esc_html_e( 'No Thumb', 'godam' ); ?></span>
+					<?php endif; ?>
+				</div>
+				<div class="godam-reel-pops-video-meta">
+					<strong class="godam-reel-pops-video-title"><?php echo esc_html( ! empty( $video_title ) ? $video_title : __( 'Untitled video', 'godam' ) ); ?></strong>
+					<span class="godam-video-id-display"><?php esc_html_e( 'ID:', 'godam' ); ?> <?php echo esc_html( $video['videoId'] ); ?></span>
 				</div>
 			</div>
-			<p>
-				<button type="button" class="button godam-reel-pops-select-video" data-index="<?php echo esc_attr( $index ); ?>">
-					<?php echo $video['videoId'] > 0 ? esc_html__( 'Change Video', 'godam' ) : esc_html__( 'Select Video', 'godam' ); ?>
-				</button>
-				<input type="hidden" name="godam_reel_pops[videos][<?php echo esc_attr( $index ); ?>][videoId]" class="godam-video-id" value="<?php echo esc_attr( $video['videoId'] ); ?>" />
-				<?php if ( $video['videoId'] > 0 ) : ?>
-					<span class="godam-video-id-display"><?php esc_html_e( 'Video ID:', 'godam' ); ?> <?php echo esc_html( $video['videoId'] ); ?></span>
-				<?php else : ?>
-					<span class="godam-video-id-display"></span>
-				<?php endif; ?>
-			</p>
+			<input type="hidden" name="godam_reel_pops[videos][<?php echo esc_attr( $index ); ?>][videoId]" class="godam-video-id" value="<?php echo esc_attr( $video['videoId'] ); ?>" />
 		</div>
 		<?php
 	}
@@ -383,8 +513,11 @@ class WC_Reel_Pops_Metabox {
 			'animation'         => isset( $data['animation'] ) ? sanitize_text_field( $data['animation'] ) : 'slide-up',
 			'animationDuration' => isset( $data['animationDuration'] ) ? absint( $data['animationDuration'] ) : 500,
 			'durationSeconds'   => isset( $data['durationSeconds'] ) ? absint( $data['durationSeconds'] ) : 5,
+			'initialDelay'      => isset( $data['initialDelay'] ) ? absint( $data['initialDelay'] ) : 3,
 			'closePersistence'  => isset( $data['closePersistence'] ) ? sanitize_text_field( $data['closePersistence'] ) : 'show_again',
 			'enableAutoplay'    => isset( $data['enableAutoplay'] ) && '1' === $data['enableAutoplay'],
+			'showMuteButton'    => isset( $data['showMuteButton'] ) && '1' === $data['showMuteButton'],
+			'showPlayButton'    => isset( $data['showPlayButton'] ) && '1' === $data['showPlayButton'],
 			'popupWidth'        => isset( $data['popupWidth'] ) ? absint( $data['popupWidth'] ) : 120,
 			'bottomSpacing'     => isset( $data['bottomSpacing'] ) ? absint( $data['bottomSpacing'] ) : 20,
 			'sideSpacing'       => isset( $data['sideSpacing'] ) ? absint( $data['sideSpacing'] ) : 20,
@@ -452,8 +585,11 @@ class WC_Reel_Pops_Metabox {
 			'animation'          => sanitize_text_field( $config['animation'] ),
 			'animation_duration' => absint( $config['animationDuration'] ),
 			'duration_seconds'   => absint( $config['durationSeconds'] ),
+			'initial_delay'      => isset( $config['initialDelay'] ) ? absint( $config['initialDelay'] ) : 3,
 			'close_persistence'  => sanitize_text_field( $config['closePersistence'] ),
 			'enable_autoplay'    => $config['enableAutoplay'] ? 'true' : 'false',
+			'show_mute_button'   => ! empty( $config['showMuteButton'] ) ? 'true' : 'false',
+			'show_play_button'   => ! empty( $config['showPlayButton'] ) ? 'true' : 'false',
 			'popup_width'        => absint( $config['popupWidth'] ),
 			'bottom_spacing'     => absint( $config['bottomSpacing'] ),
 			'side_spacing'       => absint( $config['sideSpacing'] ),

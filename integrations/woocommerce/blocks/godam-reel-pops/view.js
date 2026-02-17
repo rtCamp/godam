@@ -74,9 +74,12 @@
 			this.container = wrapper.querySelector( '.godam-reel-pops-container' );
 			this.videoSlotsContainer = wrapper.querySelector( '.godam-reel-pops-video-slots' );
 			this.closeButton = wrapper.querySelector( '.godam-reel-pops-close' );
+			this.muteButton = wrapper.querySelector( '.godam-reel-pops-mute-toggle' );
+			this.playButton = wrapper.querySelector( '.godam-reel-pops-play-toggle' );
 			this.currentIndex = 0;
 			this.rotationInterval = null;
 			this.isAnimating = false;
+			this.isMuted = true;
 
 			// Get all pre-rendered video slots.
 			this.videoSlots = this.videoSlotsContainer ?
@@ -105,6 +108,8 @@
 
 			// Bind close button.
 			this.closeButton?.addEventListener( 'click', () => this.close() );
+			this.bindMuteButton();
+			this.bindPlayButton();
 
 			// Playback fallback: some browsers block autoplay until a user gesture.
 			this.container?.addEventListener( 'click', () => {
@@ -112,7 +117,8 @@
 			} );
 
 			// Delay showing the popup based on initialDelay setting
-			const delayMs = ( this.config.initialDelay || 3 ) * 1000;
+			const initialDelaySeconds = Number.isFinite( this.config.initialDelay ) ? this.config.initialDelay : 3;
+			const delayMs = Math.max( 0, initialDelaySeconds ) * 1000;
 
 			setTimeout( () => {
 				// Show the wrapper (hidden by default).
@@ -159,11 +165,134 @@
 			}
 
 			// Ensure autoplay-eligible flags are set.
-			videoElement.muted = true;
+			videoElement.muted = this.isMuted;
 			videoElement.playsInline = true;
 
 			videoElement.play().catch( () => {
 				// Swallow: user can click again to retry.
+			} );
+
+			this.syncAudioState();
+			this.updatePlayButtonState( videoElement );
+		}
+
+		/**
+		 * Keep audio state consistent: only active video follows mute state,
+		 * all non-active videos are forced muted and paused.
+		 */
+		syncAudioState() {
+			this.videoSlots.forEach( ( slot, i ) => {
+				const videoElement = slot.querySelector( 'video' );
+				if ( ! videoElement ) {
+					return;
+				}
+
+				if ( i === this.currentIndex ) {
+					videoElement.muted = this.isMuted;
+					return;
+				}
+
+				videoElement.muted = true;
+				if ( typeof videoElement.pause === 'function' ) {
+					videoElement.pause();
+				}
+			} );
+		}
+
+		/**
+		 * Get currently active video element.
+		 *
+		 * @return {HTMLVideoElement|null} Active video element.
+		 */
+		getCurrentVideoElement() {
+			const activeSlot = this.videoSlots[ this.currentIndex ];
+			return activeSlot ? activeSlot.querySelector( 'video' ) : null;
+		}
+
+		/**
+		 * Update mute button UI.
+		 */
+		updateMuteButtonState() {
+			if ( ! this.muteButton ) {
+				return;
+			}
+
+			this.muteButton.textContent = this.isMuted ? '🔇' : '🔊';
+			this.muteButton.classList.toggle( 'is-muted', this.isMuted );
+			this.muteButton.setAttribute( 'aria-label', this.isMuted ? 'Unmute video' : 'Mute video' );
+		}
+
+		/**
+		 * Update play button UI.
+		 *
+		 * @param {HTMLVideoElement|null} videoElement Video element to inspect.
+		 */
+		updatePlayButtonState( videoElement = null ) {
+			if ( ! this.playButton ) {
+				return;
+			}
+
+			const targetVideo = videoElement || this.getCurrentVideoElement();
+			const isPlaying = !! targetVideo && ! targetVideo.paused;
+
+			this.playButton.textContent = isPlaying ? '❚❚' : '▶';
+			this.playButton.classList.toggle( 'is-playing', isPlaying );
+			this.playButton.classList.toggle( 'is-paused', ! isPlaying );
+			this.playButton.setAttribute( 'aria-label', isPlaying ? 'Pause video' : 'Play video' );
+		}
+
+		/**
+		 * Bind mute button behavior.
+		 */
+		bindMuteButton() {
+			if ( ! this.muteButton || ! this.config.showMuteButton ) {
+				return;
+			}
+
+			this.updateMuteButtonState();
+
+			this.muteButton.addEventListener( 'click', ( event ) => {
+				event.preventDefault();
+				event.stopPropagation();
+
+				this.isMuted = ! this.isMuted;
+				const activeVideoElement = this.getCurrentVideoElement();
+				if ( activeVideoElement ) {
+					activeVideoElement.muted = this.isMuted;
+				}
+				this.syncAudioState();
+
+				this.updateMuteButtonState();
+			} );
+		}
+
+		/**
+		 * Bind play button behavior.
+		 */
+		bindPlayButton() {
+			if ( ! this.playButton || ! this.config.showPlayButton ) {
+				return;
+			}
+
+			this.updatePlayButtonState();
+
+			this.playButton.addEventListener( 'click', ( event ) => {
+				event.preventDefault();
+				event.stopPropagation();
+
+				const videoElement = this.getCurrentVideoElement();
+				if ( ! videoElement ) {
+					return;
+				}
+
+				if ( videoElement.paused ) {
+					videoElement.muted = this.isMuted;
+					videoElement.play().catch( () => {} );
+				} else {
+					videoElement.pause();
+				}
+
+				this.updatePlayButtonState( videoElement );
 			} );
 		}
 
@@ -183,9 +312,12 @@
 				const firstVideo = this.videoSlots[ 0 ].querySelector( 'video' );
 				if ( firstVideo ) {
 					setTimeout( () => {
+						firstVideo.muted = this.isMuted;
 						firstVideo.play().catch( ( err ) => {
 							console.warn( 'GoDAM Reel Pops: Autoplay failed', err );
 						} );
+						this.syncAudioState();
+						this.updatePlayButtonState( firstVideo );
 					}, 200 );
 				}
 			}
@@ -297,9 +429,12 @@
 
 					// Play next video.
 					if ( this.config.enableAutoplay && nextVideoElement && typeof nextVideoElement.play === 'function' ) {
-						nextVideoElement.muted = true;
+						nextVideoElement.muted = this.isMuted;
 						nextVideoElement.play().catch( () => {} );
 					}
+					this.syncAudioState();
+					this.updateMuteButtonState();
+					this.updatePlayButtonState( nextVideoElement );
 
 					const onEnterEnd = ( event ) => {
 						// Ignore bubbled events from children.
@@ -335,12 +470,20 @@
 				if ( this.config.enableAutoplay ) {
 					if ( nextVideoElement && typeof nextVideoElement.play === 'function' ) {
 						setTimeout( () => {
+							nextVideoElement.muted = this.isMuted;
 							nextVideoElement.play().catch( ( err ) => {
 								console.warn( 'GoDAM Reel Pops: Video play failed', err );
 							} );
+							this.syncAudioState();
+							this.updatePlayButtonState( nextVideoElement );
 						}, 100 );
 					}
+				} else {
+					this.syncAudioState();
+					this.updatePlayButtonState( nextVideoElement );
 				}
+
+				this.updateMuteButtonState();
 			}
 		}
 
@@ -418,6 +561,13 @@
 		 * Close the reel popup.
 		 */
 		close() {
+			this.videoSlots.forEach( ( slot ) => {
+				const videoElement = slot.querySelector( 'video' );
+				if ( videoElement && typeof videoElement.pause === 'function' ) {
+					videoElement.pause();
+				}
+			} );
+
 			// Add closing animation class (keyframe-based).
 			this.container.classList.add( 'reel-pops-closing' );
 

@@ -17,14 +17,10 @@ import {
 	Notice,
 } from '@wordpress/components';
 import { useEffect } from '@wordpress/element';
+import { useSelect } from '@wordpress/data';
 import { video as videoIcon } from '@wordpress/icons';
 
-/**
- * Edit component for GoDAM Reel Pops block.
- *
- * @param {Object} props Block props.
- * @return {Element} Edit UI.
- */
+// Edit component for GoDAM Reel Pops block.
 export default function Edit( { attributes, setAttributes, clientId } ) {
 	const {
 		blockId,
@@ -37,6 +33,8 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		initialDelay,
 		closePersistence,
 		enableAutoplay,
+		showMuteButton,
+		showPlayButton,
 		popupWidth,
 		bottomSpacing,
 		sideSpacing,
@@ -49,21 +47,45 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		}
 	}, [] );
 
+	const mediaById = useSelect(
+		( select ) => {
+			const core = select( 'core' );
+			const result = {};
+			videos.forEach( ( video ) => {
+				if ( video.videoId > 0 ) {
+					result[ video.videoId ] = core.getMedia( video.videoId );
+				}
+			} );
+			return result;
+		},
+		[ videos ],
+	);
+
 	/**
-	 * Add a new video item to the list.
+	 * Append selected videos from media library.
+	 *
+	 * @param {Object|Object[]} media Selected media or list.
 	 */
-	const addVideo = () => {
+	const appendSelectedVideos = ( media ) => {
+		const selectedMedia = Array.isArray( media ) ? media : [ media ];
+		const existingIds = new Set( videos.map( ( item ) => item.videoId ) );
+		const appendedVideos = selectedMedia
+			.filter( ( item ) => item && item.id && ! existingIds.has( item.id ) )
+			.map( ( item ) => ( {
+				videoId: item.id,
+				productIds: '',
+			} ) );
+
+		if ( appendedVideos.length === 0 ) {
+			return;
+		}
+
 		setAttributes( {
-			videos: [ ...videos, { videoId: 0, productIds: '' } ],
+			videos: [ ...videos, ...appendedVideos ],
 		} );
 	};
 
-	/**
-	 * Update a specific video item.
-	 *
-	 * @param {number} index Index of video to update.
-	 * @param {Object} changes Changes to apply.
-	 */
+	// Update a specific video item.
 	const updateVideo = ( index, changes ) => {
 		const updatedVideos = [ ...videos ];
 		updatedVideos[ index ] = { ...updatedVideos[ index ], ...changes };
@@ -87,7 +109,9 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	 * @param {number} index Index of video to move.
 	 */
 	const moveVideoUp = ( index ) => {
-		if ( index === 0 ) return;
+		if ( index === 0 ) {
+			return;
+		}
 		const updatedVideos = [ ...videos ];
 		const temp = updatedVideos[ index - 1 ];
 		updatedVideos[ index - 1 ] = updatedVideos[ index ];
@@ -101,7 +125,9 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	 * @param {number} index Index of video to move.
 	 */
 	const moveVideoDown = ( index ) => {
-		if ( index === videos.length - 1 ) return;
+		if ( index === videos.length - 1 ) {
+			return;
+		}
 		const updatedVideos = [ ...videos ];
 		const temp = updatedVideos[ index + 1 ];
 		updatedVideos[ index + 1 ] = updatedVideos[ index ];
@@ -119,85 +145,91 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						</Notice>
 					) }
 
-					{ videos.map( ( video, index ) => (
-						<div
-							key={ index }
-							style={ {
-								marginBottom: '16px',
-								padding: '12px',
-								border: '1px solid #ddd',
-								borderRadius: '4px',
-								backgroundColor: '#f9f9f9',
-							} }
-						>
-							<div style={ { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } }>
-								<strong>{ __( 'Video', 'godam' ) } #{ index + 1 }</strong>
-								<div style={ { display: 'flex', gap: '4px' } }>
-									{ index > 0 && (
-										<Button
-											isSmall
-											onClick={ () => moveVideoUp( index ) }
-											icon="arrow-up-alt2"
-											label={ __( 'Move up', 'godam' ) }
-										/>
-									) }
-									{ index < videos.length - 1 && (
-										<Button
-											isSmall
-											onClick={ () => moveVideoDown( index ) }
-											icon="arrow-down-alt2"
-											label={ __( 'Move down', 'godam' ) }
-										/>
-									) }
-									<Button
-										isSmall
-										isDestructive
-										onClick={ () => removeVideo( index ) }
-										icon="trash"
-										label={ __( 'Remove', 'godam' ) }
-									/>
-								</div>
-							</div>
-
-							<MediaUploadCheck>
-								<MediaUpload
-									onSelect={ ( media ) => updateVideo( index, { videoId: media.id } ) }
-									allowedTypes={ [ 'video' ] }
-									value={ video.videoId }
-									render={ ( { open } ) => (
-										<Button
-											onClick={ open }
-											variant={ video.videoId ? 'secondary' : 'primary' }
-											icon={ videoIcon }
-											style={ { marginBottom: '8px', width: '100%' } }
-										>
-											{ video.videoId
-												? __( 'Change Video', 'godam' )
-												: __( 'Select Video', 'godam' ) }
-										</Button>
-									) }
-								/>
-							</MediaUploadCheck>
-
-							{ video.videoId > 0 && (
-								<div style={ { fontSize: '12px', color: '#666', marginBottom: '8px' } }>
-									{ __( 'Video ID:', 'godam' ) } { video.videoId }
-								</div>
+					<MediaUploadCheck>
+						<MediaUpload
+							onSelect={ appendSelectedVideos }
+							allowedTypes={ [ 'video' ] }
+							multiple
+							render={ ( { open } ) => (
+								<Button onClick={ open } variant="primary" icon={ videoIcon } style={ { marginBottom: '12px' } }>
+									{ __( 'Select Videos', 'godam' ) }
+								</Button>
 							) }
+						/>
+					</MediaUploadCheck>
 
-							<TextControl
-								label={ __( 'Product IDs (comma-separated)', 'godam' ) }
-								help={ __( 'Enter WooCommerce product IDs to show in the modal sidebar when this video is clicked.', 'godam' ) }
-								value={ video.productIds }
-								onChange={ ( value ) => updateVideo( index, { productIds: value } ) }
-								placeholder={ __( 'e.g., 123, 456, 789', 'godam' ) }
-							/>
-						</div>
-					) ) }
+					<div
+						style={ {
+							display: 'grid',
+							gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+							gap: '12px',
+						} }
+					>
+						{ videos.map( ( video, index ) => (
+							<div
+								key={ index }
+								style={ {
+									padding: '12px',
+									border: '1px solid #ddd',
+									borderRadius: '4px',
+									backgroundColor: '#f9f9f9',
+								} }
+							>
+								<div style={ { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' } }>
+									<div style={ { display: 'flex', gap: '10px', alignItems: 'center' } }>
+										<div style={ { width: '64px', height: '64px', borderRadius: '4px', overflow: 'hidden', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center' } }>
+											{ mediaById[ video.videoId ]?.source_url ? (
+												<img
+													src={ mediaById[ video.videoId ]?.media_details?.sizes?.thumbnail?.source_url || mediaById[ video.videoId ]?.source_url }
+													alt=""
+													style={ { width: '100%', height: '100%', objectFit: 'cover' } }
+												/>
+											) : (
+												<span style={ { color: '#fff', fontSize: '11px' } }>{ __( 'Video', 'godam' ) }</span>
+											) }
+										</div>
+										<div>
+											<strong>{ mediaById[ video.videoId ]?.title?.rendered || __( 'Untitled video', 'godam' ) }</strong>
+											<div style={ { fontSize: '12px', color: '#666' } }>{ __( 'ID:', 'godam' ) } { video.videoId }</div>
+										</div>
+									</div>
+									<div style={ { display: 'flex', gap: '4px' } }>
+										{ index > 0 && (
+											<Button
+												isSmall
+												onClick={ () => moveVideoUp( index ) }
+												icon="arrow-up-alt2"
+												label={ __( 'Move up', 'godam' ) }
+											/>
+										) }
+										{ index < videos.length - 1 && (
+											<Button
+												isSmall
+												onClick={ () => moveVideoDown( index ) }
+												icon="arrow-down-alt2"
+												label={ __( 'Move down', 'godam' ) }
+											/>
+										) }
+										<Button
+											isSmall
+											isDestructive
+											onClick={ () => removeVideo( index ) }
+											icon="trash"
+											label={ __( 'Remove', 'godam' ) }
+										/>
+									</div>
+								</div>
 
-					<Button variant="primary" onClick={ addVideo } icon="plus">
-						{ __( 'Add Video', 'godam' ) }
-					</Button>
+								<TextControl
+									label={ __( 'Product IDs (comma-separated)', 'godam' ) }
+									help={ __( 'Enter WooCommerce product IDs to show in the modal sidebar when this video is clicked.', 'godam' ) }
+									value={ video.productIds }
+									onChange={ ( value ) => updateVideo( index, { productIds: value } ) }
+									placeholder={ __( 'e.g., 123, 456, 789', 'godam' ) }
+								/>
+							</div>
+						) ) }
+					</div>
 				</PanelBody>
 
 				<PanelBody title={ __( 'Popup Settings', 'godam' ) } initialOpen={ false }>
@@ -302,6 +334,20 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						checked={ enableAutoplay }
 						onChange={ ( value ) => setAttributes( { enableAutoplay: value } ) }
 					/>
+
+					<ToggleControl
+						label={ __( 'Show Mute Button', 'godam' ) }
+						help={ __( 'Displays a mute/unmute toggle on the reel popup.', 'godam' ) }
+						checked={ showMuteButton }
+						onChange={ ( value ) => setAttributes( { showMuteButton: value } ) }
+					/>
+
+					<ToggleControl
+						label={ __( 'Show Play Button Overlay', 'godam' ) }
+						help={ __( 'Displays a play/pause button over the active video.', 'godam' ) }
+						checked={ showPlayButton }
+						onChange={ ( value ) => setAttributes( { showPlayButton: value } ) }
+					/>
 				</PanelBody>
 
 				<PanelBody title={ __( 'Close Behavior', 'godam' ) } initialOpen={ false }>
@@ -310,7 +356,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						value={ closePersistence }
 						options={ [
 							{ label: __( 'Show again on page reload', 'godam' ), value: 'show_again' },
-							{ label: __( 'Stay hidden until page reload', 'godam' ), value: 'hide_after_close' },
+							{ label: __( 'Stay hidden after close (this browser)', 'godam' ), value: 'hide_after_close' },
 						] }
 						onChange={ ( value ) => setAttributes( { closePersistence: value } ) }
 					/>
@@ -328,8 +374,8 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 							{ videos.length === 0
 								? __( 'No videos selected. Configure in the sidebar →', 'godam' )
 								: videos.length === 1
-								? __( '1 video configured', 'godam' )
-								: `${ videos.length } ${ __( 'videos configured', 'godam' ) }` }
+									? __( '1 video configured', 'godam' )
+									: `${ videos.length } ${ __( 'videos configured', 'godam' ) }` }
 						</p>
 						<p style={ { fontSize: '12px', color: '#666', marginTop: '4px' } }>
 							{ __( 'Position:', 'godam' ) } { position } | { __( 'Aspect:', 'godam' ) } { aspectRatio } | { __( 'Animation:', 'godam' ) } { animation }

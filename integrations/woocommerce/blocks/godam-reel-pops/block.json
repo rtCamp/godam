@@ -65,6 +65,14 @@
       "type": "boolean",
       "default": true
     },
+    "showMuteButton": {
+      "type": "boolean",
+      "default": true
+    },
+    "showPlayButton": {
+      "type": "boolean",
+      "default": false
+    },
     "popupWidth": {
       "type": "number",
       "default": 120

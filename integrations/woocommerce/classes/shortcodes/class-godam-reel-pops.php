@@ -85,6 +85,8 @@ class GoDAM_Reel_Pops {
 				'initial_delay'     => 3,
 				'close_persistence' => 'show_again',
 				'enable_autoplay'   => true,
+				'show_mute_button'  => true,
+				'show_play_button'  => false,
 				'popup_width'       => 120,
 				'bottom_spacing'    => 20,
 				'side_spacing'      => 20,
@@ -96,6 +98,8 @@ class GoDAM_Reel_Pops {
 
 		// Handle boolean attributes.
 		$attributes['enable_autoplay'] = filter_var( $attributes['enable_autoplay'], FILTER_VALIDATE_BOOLEAN );
+		$attributes['show_mute_button'] = filter_var( $attributes['show_mute_button'], FILTER_VALIDATE_BOOLEAN );
+		$attributes['show_play_button'] = filter_var( $attributes['show_play_button'], FILTER_VALIDATE_BOOLEAN );
 
 		// Parse video IDs.
 		if ( empty( $attributes['video_ids'] ) ) {
@@ -183,6 +187,8 @@ class GoDAM_Reel_Pops {
 			'initialDelay'      => max( 0, absint( $attributes['initial_delay'] ) ),
 			'closePersistence'  => sanitize_text_field( $attributes['close_persistence'] ),
 			'enableAutoplay'    => (bool) $attributes['enable_autoplay'],
+			'showMuteButton'    => (bool) $attributes['show_mute_button'],
+			'showPlayButton'    => (bool) $attributes['show_play_button'],
 			'popupWidth'        => absint( $attributes['popup_width'] ),
 			'bottomSpacing'     => absint( $attributes['bottom_spacing'] ),
 			'sideSpacing'       => absint( $attributes['side_spacing'] ),
@@ -219,6 +225,14 @@ class GoDAM_Reel_Pops {
 						<line x1="6" y1="6" x2="18" y2="18"></line>
 					</svg>
 				</button>
+
+				<?php if ( $attributes['show_mute_button'] ) : ?>
+					<button class="godam-reel-pops-mute-toggle is-muted" aria-label="<?php esc_attr_e( 'Unmute video', 'godam' ); ?>" type="button">🔇</button>
+				<?php endif; ?>
+
+				<?php if ( $attributes['show_play_button'] ) : ?>
+					<button class="godam-reel-pops-play-toggle is-paused" aria-label="<?php esc_attr_e( 'Play video', 'godam' ); ?>" type="button">▶</button>
+				<?php endif; ?>
 
 				<!-- Video Slots (pre-rendered) -->
 				<div class="godam-reel-pops-video-slots">
