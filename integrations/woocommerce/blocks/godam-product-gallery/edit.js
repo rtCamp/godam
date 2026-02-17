@@ -684,7 +684,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 							<hr />
 							<h3>{ __( 'Video Selection', 'godam' ) }</h3>
 							<p className="components-base-control__help">
-								{ __( 'Select specific videos to display. Leave empty to show all videos from selected products.', 'godam' ) }
+								{ __( 'Select specific videos to display. Leave empty to show all videos from selected products. When videos are selected, they will be displayed in the order you select them, overriding the "Order By" setting.', 'godam' ) }
 							</p>
 
 							{ isLoadingVideos ? (
