@@ -25,7 +25,7 @@ import {
 	check,
 } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
-import { useState, useRef, useEffect } from '@wordpress/element';
+import { useState, useRef, useEffect, useCallback } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -47,43 +47,73 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	// Track expanded hotspot
 	const [ expandedHotspotIndex, setExpandedHotspotIndex ] = useState( null );
 
+	// Error message for duration validation
+	const [ durationNotice, setDurationNotice ] = useState( '' );
+
+	// Track duration input separately for validation on blur
+	const [ durationInput, setDurationInput ] = useState( String( layer?.duration || '' ) );
+
 	const containerRef = useRef( null );
 
+	// Sync duration input with layer duration
+	useEffect( () => {
+		setDurationInput( String( layer?.duration || '' ) );
+	}, [ layer?.duration ] );
+
+	// Helper to dispatch updates
+	const updateField = useCallback( ( field, value ) => {
+		dispatch( updateLayerField( { id: layer.id, field, value } ) );
+	}, [ dispatch, layer?.id ] );
+
 	/**
-	 * Safely parse and validate duration value.
+	 * Handle duration input change - allows typing but filters non-numeric input.
 	 *
-	 * @param {string|number} val - The input value to parse.
-	 * @return {number} Validated duration value between 1 and 3600 seconds.
+	 * @param {string} value - The input value.
 	 */
-	const parseSafeDuration = ( val ) => {
-		// Convert to string and remove any non-numeric characters except decimal point
-		const cleanedVal = String( val ).replace( /[^0-9.]/g, '' );
-
-		// Parse as float first, then convert to integer
-		const parsed = parseFloat( cleanedVal );
-
-		// Check if parsing resulted in a valid number
-		if ( isNaN( parsed ) || ! isFinite( parsed ) ) {
-			return 1;
+	const handleDurationInputChange = ( value ) => {
+		// Allow only digits up to 5 characters (max 36000 = 10 hours)
+		if ( /^\d{0,5}$/.test( value ) ) {
+			setDurationInput( value );
 		}
+	};
 
-		// Convert to integer and apply bounds (1 to 36000 seconds = 10 hours max)
-		const intVal = Math.floor( parsed );
+	/**
+	 * Validate duration value when input loses focus.
+	 * Ensures value is within valid range (1 to 36000 seconds = 10 hours).
+	 */
+	const validateDuration = () => {
+		const value = parseInt( durationInput, 10 );
+		let validatedValue;
 
-		// Ensure safe integer range and reasonable maximum duration
-		const MAX_DURATION = 36000; // 10 hours in seconds
+		// Maximum: 10 hours (36000 seconds)
+		const MAX_DURATION = 36000;
 		const MIN_DURATION = 1;
 
-		return Math.max( MIN_DURATION, Math.min( MAX_DURATION, intVal ) );
+		if ( Number.isNaN( value ) || value < MIN_DURATION ) {
+			validatedValue = MIN_DURATION;
+		} else if ( value > MAX_DURATION ) {
+			validatedValue = MAX_DURATION;
+		} else {
+			validatedValue = value;
+		}
+
+		// Check if duration exceeds remaining video length
+		const displayTime = parseFloat( layer?.displayTime || 0 );
+		if ( duration > 0 && validatedValue + displayTime > duration ) {
+			setDurationNotice( __( 'Layer duration exceeds the remaining video length. Please reduce the duration.', 'godam' ) );
+			validatedValue = Math.max( MIN_DURATION, Math.floor( duration - displayTime ) );
+		} else {
+			setDurationNotice( '' );
+		}
+
+		setDurationInput( String( validatedValue ) );
+		if ( validatedValue !== layer?.duration ) {
+			updateField( 'duration', validatedValue );
+		}
 	};
 
 	// ratio { x, y } for px <-> ratio
 	const [ ratio, setRatio ] = useState( { x: 1, y: 1 } );
-
-	// Helper to dispatch updates
-	const updateField = ( field, value ) => {
-		dispatch( updateLayerField( { id: layer.id, field, value } ) );
-	};
 
 	const pxToRatio = ( px, dimension ) => px * ratio[ dimension ];
 	const ratioToPx = ( val, dimension ) => val / ratio[ dimension ];
@@ -159,19 +189,28 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 				</Notice>
 			}
 
+			{
+				durationNotice &&
+				<Notice
+					className="mb-4"
+					status="error"
+					onRemove={ () => setDurationNotice( '' ) }
+				>
+					{ durationNotice }
+				</Notice>
+			}
+
 			{ /* Duration */ }
 			<div className="mb-6">
 				<TextControl
 					label={ __( 'Layer Duration (seconds)', 'godam' ) }
 					className="godam-input"
 					type="number"
-					max="36000" // set the Maximum duration to 10 hours
-					value={ layer?.duration || '' }
-					onChange={ ( val ) => {
-						const newVal = parseSafeDuration( val );
-						updateField( 'duration', newVal );
-					} }
-					/* translators: Maximum duration limit for hotspot layers */
+					min="1"
+					max="36000"
+					value={ durationInput }
+					onChange={ ( value ) => handleDurationInputChange( value ) }
+					onBlur={ validateDuration }
 					help={ __( 'Duration (in seconds) this layer will stay visible. Maximum: 10 hours (36000 seconds)', 'godam' ) }
 					disabled={ ! isValidAPIKey }
 				/>
