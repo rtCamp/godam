@@ -857,10 +857,13 @@ function rtgodam_is_local_environment() {
 	$host = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
 	// phpcs:enable
 
+	// Strip port number if present (e.g., "localhost:8080" → "localhost").
+	$host_without_port = preg_replace( '/:\d+$/', '', $host );
+
 	$is_localhost = (
-		in_array( $host, $whitelist, true ) ||
-		strpos( $host, '.local' ) !== false ||
-		strpos( $host, '.test' ) !== false
+		in_array( $host_without_port, $whitelist, true ) ||
+		preg_match( '/\.local$/', $host_without_port ) ||
+		preg_match( '/\.test$/', $host_without_port )
 	);
 
 	return ( $is_localhost || ( defined( 'RTGODAM_IS_LOCAL' ) && RTGODAM_IS_LOCAL ) );
