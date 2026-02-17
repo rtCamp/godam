@@ -18,7 +18,7 @@ import { canManageAttachment } from '../utility';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
 
-const restURL = window.godamRestRoute.url || '';
+const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
 export default AttachmentDetailsTwoColumn?.extend( {
 
