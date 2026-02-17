@@ -80,6 +80,10 @@
 			this.rotationInterval = null;
 			this.isAnimating = false;
 			this.isMuted = true;
+			this.isClosedByUser = false;
+			this.isHiddenForModal = false;
+			this.wasRotationActiveBeforeModal = false;
+			this.modalObserver = null;
 
 			// Get all pre-rendered video slots.
 			this.videoSlots = this.videoSlotsContainer ?
@@ -217,7 +221,9 @@
 				return;
 			}
 
-			this.muteButton.textContent = this.isMuted ? '🔇' : '🔊';
+			const mutedIcon = '<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" width="16" height="16" aria-hidden="true"><path d="M5 9v6h4l5 5V4l-5 5H5z" /><g transform="translate(17, 9)"><line x1="0" y1="0" x2="6" y2="6" stroke="currentColor" stroke-width="2" /><line x1="0" y1="6" x2="6" y2="0" stroke="currentColor" stroke-width="2" /></g></svg>';
+			const unmutedIcon = '<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" width="16" height="16" aria-hidden="true"><path d="M5 9v6h4l5 5V4l-5 5H5z" /><path d="M16 8.5a4.5 4.5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18.8 6a8 8 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+			this.muteButton.innerHTML = this.isMuted ? mutedIcon : unmutedIcon;
 			this.muteButton.classList.toggle( 'is-muted', this.isMuted );
 			this.muteButton.setAttribute( 'aria-label', this.isMuted ? 'Unmute video' : 'Mute video' );
 		}
@@ -234,8 +240,10 @@
 
 			const targetVideo = videoElement || this.getCurrentVideoElement();
 			const isPlaying = !! targetVideo && ! targetVideo.paused;
+			const playIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M8 6C8 4.8 9.3 4.1 10.4 4.9L19 10.9C20 11.6 20 12.4 19 13.1L10.4 19.1C9.3 19.9 8 19.2 8 18Z" /></svg>';
+			const pauseIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="7" y="6" width="3.5" height="12" rx="1" /><rect x="13.5" y="6" width="3.5" height="12" rx="1" /></svg>';
 
-			this.playButton.textContent = isPlaying ? '❚❚' : '▶';
+			this.playButton.innerHTML = isPlaying ? pauseIcon : playIcon;
 			this.playButton.classList.toggle( 'is-playing', isPlaying );
 			this.playButton.classList.toggle( 'is-paused', ! isPlaying );
 			this.playButton.setAttribute( 'aria-label', isPlaying ? 'Pause video' : 'Play video' );
@@ -499,8 +507,10 @@
 						event.stopPropagation();
 
 						const modalId = overlay.getAttribute( 'data-modal-id' );
+						const videoId = overlay.getAttribute( 'data-video-id' );
+						const productIds = overlay.getAttribute( 'data-product-ids' ) || '';
 						if ( modalId ) {
-							this.openModal( modalId );
+							this.openModal( modalId, videoId, productIds );
 						}
 					} );
 				}
@@ -511,13 +521,63 @@
 		 * Open modal by ID.
 		 *
 		 * @param {string} modalId Modal ID.
+		 * @param {string} videoId Video ID.
+		 * @param {string} productIds Product IDs string.
 		 */
-		openModal( modalId ) {
-			const modal = document.getElementById( modalId );
+		openModal( modalId, videoId = '', productIds = '' ) {
+			const modal = modalId ? document.getElementById( modalId ) : null;
+			const normalizedVideoId = String( videoId || '' ).trim();
+
+			// Reuse existing product gallery delegated modal flow so behavior
+			// (video loading, sidebar, escape, close) stays consistent.
+			if ( normalizedVideoId ) {
+				const normalizedProductIds = String( productIds || '' ).trim();
+				const resolvedModal = modal || this.findModalByVideoId( normalizedVideoId );
+				if ( ! resolvedModal ) {
+					return;
+				}
+
+				const triggerVideo = document.createElement( 'div' );
+				triggerVideo.className = 'godam-product-video-thumbnail';
+				triggerVideo.setAttribute( 'data-video-id', normalizedVideoId );
+				triggerVideo.setAttribute( 'data-video-attached-product-ids', normalizedProductIds );
+				triggerVideo.setAttribute( 'data-cta-enabled', 'true' );
+				triggerVideo.setAttribute( 'data-cta-display-position', 'inside' );
+
+				const triggerButton = document.createElement( 'button' );
+				triggerButton.type = 'button';
+				triggerButton.className = 'godam-play-button';
+
+				this.wrapper.appendChild( triggerVideo );
+				this.wrapper.appendChild( triggerButton );
+
+				triggerButton.dispatchEvent( new MouseEvent( 'click', {
+					bubbles: true,
+					cancelable: true,
+					view: window,
+				} ) );
+
+				setTimeout( () => {
+					const isOpened = resolvedModal.classList.contains( 'open' ) || resolvedModal.classList.contains( 'active' );
+
+					if ( isOpened ) {
+						this.attachModalStateObserver( resolvedModal );
+						this.hideForModal();
+					}
+
+					triggerVideo.remove();
+					triggerButton.remove();
+				}, 50 );
+				return;
+			}
+
 			if ( ! modal ) {
 				return;
 			}
 
+			this.attachModalStateObserver( modal );
+
+			// Fallback open if delegated modal flow is unavailable.
 			// Use existing modal functionality (initVideoModal from modal.js).
 			if ( typeof window.initVideoModal === 'function' ) {
 				window.initVideoModal( modal );
@@ -526,6 +586,98 @@
 			// Show modal.
 			modal.classList.remove( 'hidden' );
 			modal.classList.add( 'active' );
+			this.hideForModal();
+		}
+
+		/**
+		 * Find a modal element by video ID inside this gallery wrapper.
+		 *
+		 * @param {string} videoId Video ID.
+		 * @return {HTMLElement|null} Resolved modal element.
+		 */
+		findModalByVideoId( videoId ) {
+			if ( ! videoId ) {
+				return null;
+			}
+
+			return this.wrapper.querySelector(
+				`.godam-product-modal-container[data-modal-video-id="${ videoId }"]:not([data-modal-timestamped]), .godam-product-modal-container[data-modal-video-id="${ videoId }"][data-modal-timestamped="0"]`,
+			);
+		}
+
+		/**
+		 * Hide Reel Pops while modal is open.
+		 */
+		hideForModal() {
+			if ( this.isHiddenForModal || this.isClosedByUser ) {
+				return;
+			}
+
+			this.wasRotationActiveBeforeModal = !! this.rotationInterval;
+			this.stopRotation();
+
+			this.videoSlots.forEach( ( slot ) => {
+				const videoElement = slot.querySelector( 'video' );
+				if ( videoElement && typeof videoElement.pause === 'function' ) {
+					videoElement.pause();
+				}
+			} );
+
+			if ( this.container ) {
+				this.container.style.display = 'none';
+			}
+			this.isHiddenForModal = true;
+		}
+
+		/**
+		 * Restore Reel Pops after modal closes.
+		 */
+		restoreAfterModal() {
+			if ( ! this.isHiddenForModal || this.isClosedByUser ) {
+				return;
+			}
+
+			if ( this.container ) {
+				this.container.style.display = '';
+			}
+
+			if ( this.wasRotationActiveBeforeModal && this.videoSlots.length > 1 ) {
+				this.startRotation();
+			}
+
+			this.playCurrentVideo();
+			this.wasRotationActiveBeforeModal = false;
+			this.isHiddenForModal = false;
+		}
+
+		/**
+		 * Observe modal class changes to detect close and restore Reel Pops.
+		 *
+		 * @param {HTMLElement} modal Modal element.
+		 */
+		attachModalStateObserver( modal ) {
+			if ( this.modalObserver ) {
+				this.modalObserver.disconnect();
+				this.modalObserver = null;
+			}
+
+			this.modalObserver = new MutationObserver( () => {
+				const isOpen = modal.classList.contains( 'open' ) || modal.classList.contains( 'active' );
+
+				if ( ! isOpen ) {
+					this.restoreAfterModal();
+
+					if ( this.modalObserver ) {
+						this.modalObserver.disconnect();
+						this.modalObserver = null;
+					}
+				}
+			} );
+
+			this.modalObserver.observe( modal, {
+				attributes: true,
+				attributeFilter: [ 'class' ],
+			} );
 		}
 
 		/**
@@ -561,6 +713,8 @@
 		 * Close the reel popup.
 		 */
 		close() {
+			this.isClosedByUser = true;
+
 			this.videoSlots.forEach( ( slot ) => {
 				const videoElement = slot.querySelector( 'video' );
 				if ( videoElement && typeof videoElement.pause === 'function' ) {

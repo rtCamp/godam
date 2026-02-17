@@ -227,11 +227,23 @@ class GoDAM_Reel_Pops {
 				</button>
 
 				<?php if ( $attributes['show_mute_button'] ) : ?>
-					<button class="godam-reel-pops-mute-toggle is-muted" aria-label="<?php esc_attr_e( 'Unmute video', 'godam' ); ?>" type="button">🔇</button>
+					<button class="godam-reel-pops-mute-toggle is-muted" aria-label="<?php esc_attr_e( 'Unmute video', 'godam' ); ?>" type="button">
+						<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" width="16" height="16" aria-hidden="true">
+							<path d="M5 9v6h4l5 5V4l-5 5H5z" />
+							<g transform="translate(17, 9)">
+								<line x1="0" y1="0" x2="6" y2="6" stroke="currentColor" stroke-width="2" />
+								<line x1="0" y1="6" x2="6" y2="0" stroke="currentColor" stroke-width="2" />
+							</g>
+						</svg>
+					</button>
 				<?php endif; ?>
 
 				<?php if ( $attributes['show_play_button'] ) : ?>
-					<button class="godam-reel-pops-play-toggle is-paused" aria-label="<?php esc_attr_e( 'Play video', 'godam' ); ?>" type="button">▶</button>
+					<button class="godam-reel-pops-play-toggle is-paused" aria-label="<?php esc_attr_e( 'Play video', 'godam' ); ?>" type="button">
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+							<path d="M8 6C8 4.8 9.3 4.1 10.4 4.9L19 10.9C20 11.6 20 12.4 19 13.1L10.4 19.1C9.3 19.9 8 19.2 8 18Z" />
+						</svg>
+					</button>
 				<?php endif; ?>
 
 				<!-- Video Slots (pre-rendered) -->
@@ -245,7 +257,12 @@ class GoDAM_Reel_Pops {
 								if ( ! empty( $video['productIds'] ) ) :
 									$modal_id = 'godam-video-modal-' . $instance_id . '-' . $video['videoId'];
 									?>
-									<div class="godam-reel-pops-click-overlay" data-modal-id="<?php echo esc_attr( $modal_id ); ?>"></div>
+									<div
+										class="godam-reel-pops-click-overlay"
+										data-modal-id="<?php echo esc_attr( $modal_id ); ?>"
+										data-video-id="<?php echo esc_attr( $video['videoId'] ); ?>"
+										data-product-ids="<?php echo esc_attr( $video['productIds'] ); ?>"
+									></div>
 								<?php endif; ?>
 							</div>
 						</div>

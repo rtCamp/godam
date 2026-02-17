@@ -277,13 +277,16 @@
 	align-items: center;
 	justify-content: center;
 	border: none;
-	border-radius: 50%;
-	background: rgba(0, 0, 0, 0.65);
+	border-radius: 8px;
+	background: rgba(0, 0, 0, 0.45);
 	color: #fff;
-	font-size: 14px;
-	line-height: 1;
 	cursor: pointer;
 	padding: 0;
+
+	svg {
+		width: 14px;
+		height: 14px;
+	}
 }
 
 /* Play toggle button */
@@ -299,13 +302,16 @@
 	align-items: center;
 	justify-content: center;
 	border: none;
-	border-radius: 50%;
-	background: rgba(0, 0, 0, 0.6);
+	border-radius: 10px;
+	background: rgba(0, 0, 0, 0.45);
 	color: #fff;
-	font-size: 18px;
-	line-height: 1;
 	cursor: pointer;
 	padding: 0;
+
+	svg {
+		width: 20px;
+		height: 20px;
+	}
 }
 
 /* ANIMATION SYSTEM — uses CSS @keyframes (not transitions) to avoid specificity conflicts */
