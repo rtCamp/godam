@@ -10,11 +10,11 @@ import { Panel, PanelBody, SelectControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 const QUALITY_OPTIONS = [
-	{ label: __( 'No compression', 'godam' ), value: 100 },
-	{ label: __( 'Highest quality', 'godam' ), value: 80 },
+	{ label: __( 'Highest quality', 'godam' ), value: 100 },
+	{ label: __( 'Higher quality', 'godam' ), value: 80 },
 	{ label: __( 'Medium quality', 'godam' ), value: 60 },
-	{ label: __( 'Lower Compression', 'godam' ), value: 40 },
-	{ label: __( 'Lowest compression', 'godam' ), value: 20 },
+	{ label: __( 'Lower quality', 'godam' ), value: 40 },
+	{ label: __( 'Lowest quality', 'godam' ), value: 20 },
 ];
 
 const VideoCompressQuality = ( { handleSettingChange } ) => {
@@ -22,7 +22,7 @@ const VideoCompressQuality = ( { handleSettingChange } ) => {
 
 	return (
 		<Panel
-			heading={ __( 'Video Thumbnails', 'godam' ) }
+			heading={ __( 'Video Quality', 'godam' ) }
 			className="godam-panel"
 		>
 			<PanelBody>
@@ -33,11 +33,11 @@ const VideoCompressQuality = ( { handleSettingChange } ) => {
 						onChange={ ( value ) => {
 							handleSettingChange( 'video_compress_quality', value );
 						} }
-						label={ __( 'Video compression quality', 'godam' ) }
+						label={ __( 'Video quality', 'godam' ) }
 						options={ QUALITY_OPTIONS }
 					/>
 					<div className="help-text">
-						{ __( 'Select the video compression quality.', 'godam' ) }
+						{ __( 'Select the video quality.', 'godam' ) }
 					</div>
 				</div>
 			</PanelBody>
