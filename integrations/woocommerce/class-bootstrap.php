@@ -283,7 +283,7 @@ class Bootstrap {
 
 		wp_localize_script(
 			'rtgodam-wc-woo-global-script',
-			'godamVars',
+			'godamWooVars',
 			array(
 				'namespaceRoot'                => '/godam/v1',
 				'videoShortcodeEP'             => '/video-shortcode',

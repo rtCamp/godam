@@ -55,7 +55,7 @@
  * and should not be initialized globally outside the modal lifecycle.
  */
 
-/* global godamVars */
+/* global godamWooVars */
 
 /**
  * WordPress dependencies
@@ -444,7 +444,7 @@ function attachAddToCartListeners( containerElement ) {
 			}
 
 			try {
-				dispatch( godamVars.addToCartAjax ).addItemToCart( productId, 1 ).then( () => {
+				dispatch( godamWooVars.addToCartAjax ).addItemToCart( productId, 1 ).then( () => {
 					button.classList.remove( 'loading' );
 					showAddToCartNotification( __( 'Product added successfully!', 'godam' ) );
 				} ).catch( () => {
@@ -483,7 +483,7 @@ function attachAddToCartListeners( containerElement ) {
 async function loadSingleProductSidebar( productId, sidebarModal, sidebarElement, modal ) {
 	try {
 		const response = await fetch(
-			`${ godamVars.ajaxUrl }?action=${ godamVars.getSingleProductHtmlAction }&product_id=${ productId }&_wpnonce=${ godamVars.getSingleProductHtmlNonce }`,
+			`${ godamWooVars.ajaxUrl }?action=${ godamWooVars.getSingleProductHtmlAction }&product_id=${ productId }&_wpnonce=${ godamWooVars.getSingleProductHtmlNonce }`,
 		);
 
 		const result = await response.json();
@@ -532,7 +532,7 @@ async function loadSingleProductSidebar( productId, sidebarModal, sidebarElement
 async function loadMultipleProductsSidebar( idsArray, sidebarModal, sidebarElement, modal ) {
 	try {
 		const products = await apiFetch( {
-			path: `${ godamVars.namespaceRoot }${ godamVars.productByIdsEP }`,
+			path: `${ godamWooVars.namespaceRoot }${ godamWooVars.productByIdsEP }`,
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify( { ids: idsArray } ),
@@ -551,9 +551,9 @@ async function loadMultipleProductsSidebar( idsArray, sidebarModal, sidebarEleme
 			.filter( Boolean );
 
 		const response = await fetch(
-			`${ godamVars.ajaxUrl }?action=${ godamVars.getMultipleProductHtmlAction }&products=${ encodeURIComponent(
+			`${ godamWooVars.ajaxUrl }?action=${ godamWooVars.getMultipleProductHtmlAction }&products=${ encodeURIComponent(
 				ids.join( ',' ),
-			) }&_wpnonce=${ godamVars.getMultipleProductHtmlNonce }`,
+			) }&_wpnonce=${ godamWooVars.getMultipleProductHtmlNonce }`,
 		);
 
 		const result = await response.json();

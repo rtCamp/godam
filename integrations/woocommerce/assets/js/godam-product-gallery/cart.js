@@ -8,13 +8,13 @@
  * Core Features:
  * - Binds click events to `.main-cta` buttons.
  * - Displays and positions dynamic dropdown menus for products with additional options.
- * - Sends AJAX request to add products to WooCommerce cart via `godamVars.addToCartAjax`.
+ * - Sends AJAX request to add products to WooCommerce cart via `godamWooVars.addToCartAjax`.
  * - Displays a mini-cart sidebar with WooCommerce Mini Cart.
  * - Falls back to redirection if the mini-cart fails or is not applicable.
  *
  * Requires:
  * - WordPress WooCommerce AJAX API for adding product to cart.
- * - Global `godamVars` object containing the `addToCartAjax` endpoint.
+ * - Global `godamWooVars` object containing the `addToCartAjax` endpoint.
  */
 
 /**
@@ -22,7 +22,7 @@
  */
 import { dispatch } from '@wordpress/data';
 
-/* global godamVars */
+/* global godamWooVars */
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable @wordpress/no-unused-vars-before-return */
 
@@ -181,7 +181,7 @@ export function initMinicartAndCtaDropdown() {
 	function addToCart( button, productId, cartAction = 'mini-cart', productURL ) {
 		button.classList.add( 'loading' );
 
-		dispatch( godamVars.addToCartAjax ).addItemToCart( productId, 1 )
+		dispatch( godamWooVars.addToCartAjax ).addItemToCart( productId, 1 )
 			.then( () => {
 				// Skip mini cart if cartAction is redirect.
 				if ( cartAction === 'redirect' ) {

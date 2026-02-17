@@ -1,7 +1,7 @@
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable no-console */
 
-/* global GODAMPlayer, godamVars */
+/* global GODAMPlayer, godamWooVars */
 
 /**
  * GoDAM Video Modal Core Module
@@ -170,7 +170,7 @@ export async function loadNewVideo( newVideoId, modal, hasSidebar, context, hasS
 	}
 
 	try {
-		const data = await apiFetch( { path: `${ godamVars.namespaceRoot }${ godamVars.videoShortcodeEP }?id=${ newVideoId }&godam_context=${ context }` } );
+		const data = await apiFetch( { path: `${ godamWooVars.namespaceRoot }${ godamWooVars.videoShortcodeEP }?id=${ newVideoId }&godam_context=${ context }` } );
 
 		if ( data.status === 'success' && data.html ) {
 			let html = data.html;
