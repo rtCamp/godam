@@ -196,36 +196,6 @@ function rtgodam_get_upload_dir() {
 }
 
 /**
- * Check if override media thumbnail setting is ON or OFF.
- *
- * @since 1.1.0
- *
- * @param int|string $attachment_id ID of attachment.
- *
- * @return boolean TRUE if override is ON, FALSE is OFF
- */
-function rtgodam_is_override_thumbnail( $attachment_id = '' ) {
-
-	// Fetch EasyDAM settings directly.
-	$easydam_settings = get_option( 'rtgodam-settings', array() );
-
-	// Return the 'overwrite_thumbnails' value, defaulting to false if not set.
-	$rtgodam_override_thumbnail = ! empty( $easydam_settings['video']['overwrite_thumbnails'] );
-
-	/**
-	 * Allow user to override the setting.
-	 *
-	 * @since 1.1.0
-	 *
-	 * @param boolean   $rtgodam_override_thumbnail     Number of thumbnails set in setting.
-	 * @param int       $attachment_id              ID of attachment.
-	 */
-	$rtgodam_override_thumbnail = apply_filters( 'rtgodam_is_override_thumbnail', $rtgodam_override_thumbnail, $attachment_id );
-
-	return $rtgodam_override_thumbnail;
-}
-
-/**
  * Get remote IP address
  *
  * @return string Remote IP address
@@ -273,6 +243,21 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 
 	$transcoded_files = get_post_meta( $post_id, 'rtgodam_transcoded_url', true );
 
+	// Detect virtual media created from GoDAM tab.
+	$is_virtual = ! empty( get_post_meta( $post_id, '_godam_original_id', true ) );
+
+	if ( $is_virtual ) {
+		?>
+		<div id="list-transcoder-status-<?php echo esc_attr( $post_id ); ?>" class="transcoding-status transcoding-status--completed transcoding-status-list" data-id="<?php echo esc_attr( $post_id ); ?>">
+			<div class="transcoding-status__loader" data-percent="100">
+				<img src="<?php echo esc_url( RTGODAM_URL . '/assets/src/images/godam-logo-gradient.svg' ); ?>" alt="<?php esc_attr_e( 'GoDAM Logo', 'godam' ); ?>" width="22" height="22" />
+				</div>
+			<span class="status-text"><?php echo esc_html__( 'Media is transcoded.', 'godam' ); ?></span>
+		</div>
+		<?php
+		return;
+	}
+
 	// only display the check status button for media that are transcoding.
 	$transcoding_status = get_post_meta( $post_id, 'rtgodam_transcoding_status', true );
 
@@ -312,7 +297,7 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 					<path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clip-rule="evenodd" />
 				</svg>
 			</div>
-			<span class="status-text"><?php echo esc_html__( 'File is transcoded.', 'godam' ); ?></span>
+			<span class="status-text"><?php echo esc_html__( 'Media is transcoded.', 'godam' ); ?></span>
 		</div>
 		<?php
 	}
@@ -400,11 +385,12 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 	// Prepare request body with site title.
 	$site_url   = get_site_url();
 	$site_title = get_bloginfo( 'name' ); // Get site title from WordPress options.
-	
+
 	$request_body = array(
-		'api_key'    => $api_key,
-		'site_url'   => $site_url,
-		'site_title' => $site_title, // Add site title to request.
+		'api_key'        => $api_key,
+		'site_url'       => $site_url,
+		'site_title'     => $site_title,
+		'plugin_version' => RTGODAM_VERSION,
 	);
 
 	$args = array(
@@ -439,6 +425,19 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 	if ( 200 === $status_code && isset( $body['message']['account_token'] ) ) {
 
 		$account_token = $body['message']['account_token'];
+
+		// Enable PostHog tracking once API key is activated or plugin is updated with active API key.
+		$settings = get_option( 'rtgodam-settings', array() );
+		if ( $save || empty( $settings['general']['posthog_initialized'] ) ) {
+			$settings['general']['enable_posthog_tracking'] = true;
+			$settings['general']['posthog_initialized']     = true;
+			update_option( 'rtgodam-settings', $settings );
+		} elseif ( ! empty( $settings['general']['posthog_initialized'] ) && ! $settings['general']['enable_posthog_tracking'] && $save ) {
+			// If user previously opted out but is now activating an API key, re-enable tracking.
+			$settings['general']['enable_posthog_tracking'] = true;
+			update_option( 'rtgodam-settings', $settings );
+		}
+
 		if ( $save ) {
 			// Save the API key in the site options only if it is verified.
 			update_option( 'rtgodam-api-key', $api_key );

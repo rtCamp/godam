@@ -101,6 +101,14 @@ class Dynamic_Gallery extends Base {
 							'type'    => 'string',
 							'default' => '',
 						),
+						'engagements'       => array(
+							'type'    => 'boolean',
+							'default' => true,
+						),
+						'open_to_new_page'  => array(
+							'type'    => 'boolean',
+							'default' => false,
+						),
 					),
 				),
 			),
@@ -131,6 +139,8 @@ class Dynamic_Gallery extends Base {
 			'date_range'        => $request->get_param( 'date_range' ),
 			'custom_date_start' => $request->get_param( 'custom_date_start' ),
 			'custom_date_end'   => $request->get_param( 'custom_date_end' ),
+			'engagements'       => $request->get_param( 'engagements' ),
+			'open_to_new_page'  => $request->get_param( 'open_to_new_page' ),
 		);
 
 		// Add filter for dynamic gallery attributes.
@@ -238,7 +248,7 @@ class Dynamic_Gallery extends Base {
 
 		$video_settings = get_option( 'rtgodam_video_post_settings', array() );
 		$cpt_url_slug   = ! empty( $video_settings['video_slug'] ) ? sanitize_title( $video_settings['video_slug'] ) : 'videos';
-		$cpt_base_url   = home_url( '/' . $cpt_url_slug );
+		$cpt_base_url   = home_url( '/' );
 
 		$query = new \WP_Query( $args );
 		ob_start();
@@ -266,7 +276,9 @@ class Dynamic_Gallery extends Base {
 					data-search="' . esc_attr( $atts['search'] ?? '' ) . '"
 					data-date-range="' . esc_attr( $atts['date_range'] ?? '' ) . '"
 					data-custom-date-start="' . esc_attr( $atts['custom_date_start'] ?? '' ) . '"
-					data-custom-date-end="' . esc_attr( $atts['custom_date_end'] ?? '' ) . '">';
+					data-custom-date-end="' . esc_attr( $atts['custom_date_end'] ?? '' ) . '"
+					data-engagements="' . ( $atts['engagements'] ? '1' : '0' ) . '"
+					data-open-to-new-page="' . ( $atts['open_to_new_page'] ? '1' : '0' ) . '">';
 			}
 	
 			do_action( 'rtgodam_dynamic_gallery_before_output', $query, $atts );
@@ -295,9 +307,49 @@ class Dynamic_Gallery extends Base {
 						$duration = $metadata['length_formatted'];
 					}
 				}
-	
+
+				// Check if engagements are enabled for the video.
+				$engagements_enabled      = $atts['engagements'];
+				$item_engagements_enabled = false;
+				if ( $engagements_enabled ) {
+					// Check if engagements are enabled for the video is transcoded.
+					$transcoded_job_id        = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
+					$tanscoded_status         = get_post_meta( $video_id, 'rtgodam_transcoding_status', true );
+					$item_engagements_enabled = ! empty( $transcoded_job_id ) && 'transcoded' === strtolower( $tanscoded_status );
+				}
+
+				// Build the query arguments for the video embed page.
+				$query_args = array(
+					'godam_page' => 'video-embed',
+					'id'         => $video_id,
+				);
+
+				// Add the engagements query argument if it is enabled.
+				if ( $item_engagements_enabled ) {
+					$query_args['engagements'] = 'show';
+				}
+
+				$video_url = add_query_arg( $query_args, $cpt_base_url );
+
+				if ( isset( $atts['open_to_new_page'] ) && $atts['open_to_new_page'] ) {
+					$video_slug     = get_post_field( 'post_name', $video_id );
+					$video_settings = get_option( 'rtgodam_video_post_settings', array() );
+					$cpt_url_slug   = ! empty( $video_settings['video_slug'] ) ? sanitize_title( $video_settings['video_slug'] ) : 'videos';
+					$cpt_base_url   = home_url( '/' . $cpt_url_slug ); 
+					$video_url      = $cpt_base_url . '/' . $video_slug;
+
+					if ( $item_engagements_enabled ) {
+						$video_url = add_query_arg(
+							array(
+								'engagements' => 'show',
+							),
+							$video_url 
+						);
+					}
+				}
+
 				echo '<div class="godam-video-item">';
-				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $cpt_base_url . '/' . $video_slug ) . '">';
+				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $video_url ) . '">';
 				echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
 				if ( $duration ) {
 					echo '<span class="godam-video-duration">' . esc_html( $duration ) . '</span>';

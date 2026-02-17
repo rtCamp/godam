@@ -80,7 +80,7 @@ class Recorder_Field extends BaseFieldManager {
 		/**
 		 * Initialize all values.
 		 */
-		$this->editor_label = __( 'Godam Recorder', 'godam' );
+		$this->editor_label = __( 'GoDAM Recorder', 'godam' );
 		$this->button_text  = __( 'Record Video', 'godam' );
 	}
 

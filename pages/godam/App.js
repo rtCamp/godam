@@ -22,6 +22,7 @@ import GeneralSettings from './components/tabs/GeneralSettings/GeneralSettings.j
 import VideoSettings from './components/tabs/VideoSettings/VideoSettings.jsx';
 import VideoPlayer from './components/tabs/VideoPlayer/VideoPlayer.jsx';
 import AdsSettings from './components/tabs/AdsSettings/AdsSettings.jsx';
+import { isSafari } from './utils/index.js';
 
 import { useGetMediaSettingsQuery } from './redux/api/media-settings.js';
 import { setMediaSettings } from './redux/slice/media-settings.js';
@@ -114,7 +115,7 @@ const App = () => {
 			) }
 
 			<div className="godam-settings__container">
-				<nav className={ `godam-settings__container__tabs ${ isSidebarOpen ? 'open' : '' }` }>
+				<nav className={ `godam-settings__container__tabs ${ isSidebarOpen ? 'open' : '' } ${ isSafari() ? 'is-safari' : '' }` }>
 					<button
 						className={ `godam-settings__close-btn ${ isSidebarOpen ? 'open' : '' }` }
 						onClick={ () => setIsSidebarOpen( false ) }

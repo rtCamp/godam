@@ -191,11 +191,17 @@ class Video_Metadata {
 	public function set_media_library_thumbnail( $response, $attachment, $meta ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $attachment and $meta are not modified.
 		if ( 0 === strpos( $response['mime'], 'video/' ) || 'application/pdf' === $response['mime'] ) {
 
-			$thumbnail_url   = get_post_meta( $response['id'], 'rtgodam_media_video_thumbnail', true );
+			$thumbnail_url = get_post_meta( $response['id'], 'rtgodam_media_video_thumbnail', true );
+
+			// Check for icon if it is a virtual media (for PDFs imported from GoDAM).
+			if ( empty( $thumbnail_url ) ) {
+				$thumbnail_url = get_post_meta( $response['id'], 'rtgodam_media_pdf_thumbnail', true );
+			}
+
 			$attachment_meta = get_post_meta( $response['id'], '_wp_attachment_metadata', true );
 
 			if ( ! empty( $thumbnail_url ) ) {
-				$response['image']['src']    = esc_url( $thumbnail_url );
+				$response['image']['src']    = esc_url( rtgodam_convert_to_https_url( $thumbnail_url ) );
 				$response['image']['width']  = $attachment_meta['width'] ?? self::DEFAULT_THUMBNAIL_WIDTH;
 				$response['image']['height'] = $attachment_meta['height'] ?? self::DEFAULT_THUMBNAIL_HEIGHT;
 			}
@@ -257,7 +263,7 @@ class Video_Metadata {
 			if ( ! empty( $thumbnail_url ) ) {
 				$width  = $attachment_meta['width'] ?? self::DEFAULT_THUMBNAIL_WIDTH;
 				$height = $attachment_meta['height'] ?? self::DEFAULT_THUMBNAIL_HEIGHT;
-				$html   = sprintf( '<img width="%s" height="%s" src="%s" style="object-fit: cover; height: 60px;" decoding="async" loading="lazy" />', esc_attr( $width ), esc_attr( $height ), esc_url( $thumbnail_url ) );
+				$html   = sprintf( '<img width="%s" height="%s" src="%s" style="object-fit: cover; height: 60px;" decoding="async" loading="lazy" />', esc_attr( $width ), esc_attr( $height ), esc_url( rtgodam_convert_to_https_url( $thumbnail_url ) ) );
 			}
 		}
 

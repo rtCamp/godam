@@ -6,7 +6,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 /**
  * REST URL for the WP site.
  */
-const restURL = window.godamRestRoute.url || '';
+const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
 /**
  * Create API for the sure forms.

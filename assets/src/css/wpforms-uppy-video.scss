@@ -2,12 +2,13 @@
 @import "@uppy/dashboard/css/style.min.css";
 @import "@uppy/webcam/css/style.min.css";
 @import "@uppy/screen-capture/css/style.min.css";
+@import "@uppy/audio/css/style.min.css";
 
 /** Style the field in the field preview **/
 .wpforms_page_wpforms-builder {
-	
+
     .wpforms-field-godam_record {
-		
+
         .uppy-video-upload-button {
             display: flex;
             align-items: center;
@@ -22,8 +23,38 @@
     .wpforms-field.wpforms-field-godam_record {
 
         .uppy-video-upload-preview {
-            margin-top: 20px;
-            max-width: 100%;
+
+            audio {
+
+                max-width: 400px;
+                width: 100%;
+                height: 40px;
+                margin: 10px 0;
+            }
+
+            .uppy-remove-recording-button {
+
+                position: absolute;
+                top: 0;
+                right: -10px;
+                background: #ff4c4c;
+                border: none;
+                outline: none;
+                color: #fff;
+                border-radius: 50%;
+                width: 25px;
+                height: 25px;
+                font-size: 16px;
+                line-height: 1.5;
+                text-align: center;
+                cursor: pointer;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+                transition: background 0.3s ease;
+
+                &:hover {
+                    background: #dc3434;
+                }
+            }
         }
 
         .upp-video-upload-filename {
@@ -66,6 +97,12 @@
                 figure {
                     margin: 0;
                 }
+
+                audio {
+                    width: 100%;
+                    max-width: 400px;
+                    margin-top: 10px;
+                }
             }
 
             .godam-video-name {
@@ -87,16 +124,22 @@
         }
     }
 
-	.wpforms-edit-entry-container.wpforms-container {
-		
+    .wpforms-edit-entry-container.wpforms-container {
+
         .wpforms-field-godam_record {
             display: flex;
             flex-direction: column;
 
             .godam-video-preview {
-				
+
                 figure {
                     margin: 0;
+                }
+
+                audio {
+                    width: 100%;
+                    max-width: 400px;
+                    margin-top: 10px;
                 }
             }
 
@@ -120,4 +163,3 @@
         }
     }
 }
-

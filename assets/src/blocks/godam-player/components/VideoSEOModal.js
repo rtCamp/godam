@@ -111,6 +111,7 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 				value={ videoData?.contentUrl || '' }
 				onChange={ ( value ) => updateField( 'contentUrl', value ) }
 				help={ __( 'URL of the video content can be MOV, MP4, MPD. Example: https://www.example.com/video.mp4', 'godam' ) }
+				disabled={ true }
 			/>
 			<TextControl
 				className="godam-seo-modal__property"
@@ -120,11 +121,14 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 				help={ __( 'Title of the video', 'godam' ) }
 			/>
 			<TextareaControl
-				className="godam-seo-modal__property"
+				className={ `godam-seo-modal__property${ ! videoData?.description?.trim() ? ' godam-seo-modal__property--warning' : '' }` }
 				label="Description"
 				value={ videoData?.description || '' }
 				onChange={ ( value ) => updateField( 'description', value ) }
-				help={ __( 'Description of the video', 'godam' ) }
+				help={ ! videoData?.description?.trim()
+					? __( 'It is recommended to add a description for better video SEO.', 'godam' )
+					: __( 'Description of the video', 'godam' )
+				}
 			/>
 			<TextControl
 				className="godam-seo-modal__property"
@@ -132,6 +136,7 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 				help="Format: YYYY-MM-DD"
 				value={ videoData?.uploadDate || '' }
 				onChange={ ( value ) => updateField( 'uploadDate', value ) }
+				disabled={ true }
 			/>
 			<TextControl
 				className="godam-seo-modal__property"
@@ -147,6 +152,7 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 				value={ videoData?.thumbnailUrl || '' }
 				onChange={ ( value ) => updateField( 'thumbnailUrl', value ) }
 				help={ __( 'URL of the video thumbnail. Example: https://www.example.com/thumbnail.jpg', 'godam' ) }
+				disabled={ true }
 			/>
 			<ToggleControl
 				className="godam-seo-modal__property"
