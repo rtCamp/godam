@@ -376,17 +376,24 @@ class WC_Product_Video_Gallery {
 		$old_ids = get_post_meta( $post_id, '_rtgodam_product_video_gallery_ids', true );
 		$old_ids = is_array( $old_ids ) ? array_map( 'intval', $old_ids ) : array();
 
-		// Save video URLs and IDs as meta in product.
-		update_post_meta( $post_id, '_rtgodam_product_video_gallery', $urls );
-		update_post_meta( $post_id, '_rtgodam_product_video_gallery_ids', $new_ids );
+		// Step 3: Save or delete video meta based on whether videos exist.
+		if ( empty( $urls ) && empty( $new_ids ) ) {
+			// No videos set — clean up meta keys entirely.
+			delete_post_meta( $post_id, '_rtgodam_product_video_gallery' );
+			delete_post_meta( $post_id, '_rtgodam_product_video_gallery_ids' );
+		} else {
+			// Videos exist — save/update meta.
+			update_post_meta( $post_id, '_rtgodam_product_video_gallery', $urls );
+			update_post_meta( $post_id, '_rtgodam_product_video_gallery_ids', $new_ids );
+		}
 
 		$parent_meta_key = '_video_parent_product_id';
 
-		// Step 3: Determine which attachments are NEW (added) and which are REMOVED.
+		// Step 4: Determine which attachments are NEW (added) and which are REMOVED.
 		$added_ids   = array_diff( $new_ids, $old_ids );
 		$removed_ids = array_diff( $old_ids, $new_ids );
 
-		// Step 4: Add product ID meta to newly added attachments only.
+		// Step 5: Add product ID meta to newly added attachments only.
 		foreach ( $added_ids as $attachment_id ) {
 			$existing = get_post_meta( $attachment_id, $parent_meta_key, false );
 
@@ -396,7 +403,7 @@ class WC_Product_Video_Gallery {
 			}
 		}
 
-		// Step 5: Remove product ID meta from removed attachments only.
+		// Step 6: Remove product ID meta from removed attachments only.
 		foreach ( $removed_ids as $attachment_id ) {
 			delete_post_meta( $attachment_id, $parent_meta_key, $post_id );
 		}

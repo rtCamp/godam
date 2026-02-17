@@ -142,7 +142,11 @@ class GoDAM_Product_Gallery {
 				'block_id'                          => '',
 				'layout'                            => 'carousel',
 				'view'                              => '9-16',
-				'product'                           => '',
+				'products'                          => '',
+				'categories'                        => '',
+				'selected_videos'                   => '',
+				'order_by'                          => 'date_desc',
+				'align'                             => '',
 				'autoplay'                          => '',
 				'play_button_enabled'               => '',
 				'play_button_bg_color'              => 'rgba(0, 0, 0, 0.76)',
@@ -209,8 +213,14 @@ class GoDAM_Product_Gallery {
 			}
 		}
 
-		if ( isset( $atts['product'] ) && is_string( $atts['product'] ) ) {
-			$atts['product'] = trim( $atts['product'], " \t\n\r\0\x0B\"'" );
+		if ( isset( $atts['products'] ) && is_string( $atts['products'] ) ) {
+			$atts['products'] = trim( $atts['products'], " \t\n\r\0\x0B\"'" );
+		}
+		if ( isset( $atts['categories'] ) && is_string( $atts['categories'] ) ) {
+			$atts['categories'] = trim( $atts['categories'], " \t\n\r\0\x0B\"'" );
+		}
+		if ( isset( $atts['selected_videos'] ) && is_string( $atts['selected_videos'] ) ) {
+			$atts['selected_videos'] = trim( $atts['selected_videos'], " \t\n\r\0\x0B\"'" );
 		}
 
 		// Perform sanitization for Shortcode atts only as block attributes are already sanitized.
@@ -271,7 +281,7 @@ class GoDAM_Product_Gallery {
 			}
 
 			if ( $atts['play_button_size'] <= 0 ) {
-				$atts['play_button_size'] = 40;
+				$atts['play_button_size'] = 50;
 			}
 			if ( $atts['arrow_size'] <= 0 ) {
 				$atts['arrow_size'] = 35;
@@ -313,71 +323,118 @@ class GoDAM_Product_Gallery {
 
 		$product_ids = array();
 
-		// 4. Sanitize product IDs.
-		if ( ! empty( $atts['product'] ) ) {
-			// Logic for "random" argument.
-			if ( strtolower( $atts['product'] ) === 'random' ) {
-				// Optimized: Use ORDER BY RAND() LIMIT 8 instead of fetching all products.
-				$random_limit = apply_filters( 'rtgodam_product_gallery_random_limit', 8 );
-				// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
-				$product_ids = get_posts(
-					array(
-						'post_type'      => 'product',
-						'post_status'    => 'publish',
-						'fields'         => 'ids',
-						'posts_per_page' => $random_limit,
-						'orderby'        => 'rand', // phpcs:ignore WordPressVIPMinimum.Performance.OrderByRand.orderby_orderby
-						'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-							array(
-								'key'     => '_rtgodam_product_video_gallery_ids',
-								'compare' => 'EXISTS',
-							),
-						),
-					)
-				);
-			} else {
-				// Parse comma-separated IDs and ensure they're published products.
-				$parsed_ids = array_filter( array_map( 'absint', explode( ',', $atts['product'] ) ) );
-
-				if ( ! empty( $parsed_ids ) ) {
-					// Verify products exist and are published.
-					// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
-					$product_ids = get_posts(
-						array(
-							'post_type'      => 'product',
-							'post_status'    => 'publish',
-							'fields'         => 'ids',
-							'posts_per_page' => count( $parsed_ids ),
-							'post__in'       => $parsed_ids,
-							'orderby'        => 'post__in',
-						)
-					);
-				}
-			}
+		// 4. Build product IDs based on categories and products selection.
+		$selected_product_ids = array();
+		if ( ! empty( $atts['products'] ) ) {
+			$selected_product_ids = array_filter( array_map( 'absint', explode( ',', $atts['products'] ) ) );
 		}
 
-		// 5. Build WP_Query args for fetching videos.
-		// Optimized: Add reasonable limit with filter override instead of -1.
-		$video_limit = apply_filters( 'rtgodam_product_gallery_video_limit', 100 );
+		$category_ids = array();
+		if ( ! empty( $atts['categories'] ) ) {
+			$category_ids = array_filter( array_map( 'absint', explode( ',', $atts['categories'] ) ) );
+		}
+
+		// Build product query args — always require video gallery meta so we only fetch products with videos.
+		$product_query_args = array(
+			'post_type'      => 'product',
+			'post_status'    => 'publish',
+			'fields'         => 'ids',
+			'posts_per_page' => apply_filters( 'rtgodam_product_gallery_product_limit', 300, $atts ),
+			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				array(
+					'key'     => '_rtgodam_product_video_gallery_ids',
+					'compare' => 'EXISTS',
+				),
+			),
+		);
+
+		// If categories are selected, filter by categories.
+		if ( ! empty( $category_ids ) ) {
+			$product_query_args['tax_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+				array(
+					'taxonomy' => 'product_cat',
+					'field'    => 'term_id',
+					'terms'    => $category_ids,
+					'operator' => 'IN',
+				),
+			);
+		}
+
+		// If specific products are selected, use only those.
+		if ( ! empty( $selected_product_ids ) ) {
+			$product_query_args['post__in'] = $selected_product_ids;
+			$product_query_args['orderby']  = 'post__in';
+		}
+
+		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
+		$product_ids = get_posts( $product_query_args );
+
+		// Default maximum 100 videos (filterable).
+		$video_limit = apply_filters( 'rtgodam_product_gallery_video_limit', 100, $atts );
+		$video_limit = max( 1, absint( $video_limit ) );
+
+		// Determine orderby and order based on order_by attribute.
+		$orderby = 'date';
+		$order   = 'DESC';
+
+		switch ( $atts['order_by'] ) {
+			case 'date_asc':
+				$orderby = 'date';
+				$order   = 'ASC';
+				break;
+			case 'date_desc':
+				$orderby = 'date';
+				$order   = 'DESC';
+				break;
+			case 'title_asc':
+				$orderby = 'title';
+				$order   = 'ASC';
+				break;
+			case 'title_desc':
+				$orderby = 'title';
+				$order   = 'DESC';
+				break;
+			case 'random':
+				$orderby = 'rand'; // phpcs:ignore WordPressVIPMinimum.Performance.OrderByRand.orderby_orderby
+				$order   = '';
+				break;
+			default:
+				$orderby = 'date';
+				$order   = 'DESC';
+		}
 
 		$args = array(
 			'post_type'      => 'attachment',
 			'post_mime_type' => 'video',
 			'post_status'    => 'inherit',
 			'posts_per_page' => $video_limit,
-			'orderby'        => 'date',
-			'order'          => 'DESC',
+			'orderby'        => $orderby,
+			'order'          => $order,
 		);
 
 		// Add filter for query arguments.
 		$args = apply_filters( 'rtgodam_product_gallery_query_args', $args, $atts );
 
-		if ( ! empty( $product_ids ) ) {
+		// Priority: selectedVideos (within products) > products > categories > all.
+		$selected_video_ids = array();
+
+		if ( ! empty( $atts['selected_videos'] ) && ! empty( $selected_product_ids ) ) {
+			// Only honor selected_videos when specific products are also selected.
+			// This prevents stale video selections from overriding category/product filters.
+			$selected_video_ids = array_filter( array_map( 'absint', explode( ',', $atts['selected_videos'] ) ) );
+		}
+
+		if ( ! empty( $selected_video_ids ) ) {
+			// If specific videos are selected, fetch only those.
+			$args['post__in'] = $selected_video_ids;
+			$args['orderby']  = 'post__in';
+		} elseif ( ! empty( $product_ids ) ) {
 			// Only fetch videos for specific published products.
 			$args['meta_query'][] = array(
 				'key'     => '_video_parent_product_id',
 				'value'   => $product_ids,
 				'compare' => 'IN',
+				'type'    => 'NUMERIC',
 			);
 		} else {
 			// Fetch all videos - the parent product validation happens at render time.
@@ -388,8 +445,7 @@ class GoDAM_Product_Gallery {
 		}
 
 		// 6. Fetch videos.
-		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
-		$video_posts = get_posts( $args );
+		$video_posts = get_posts( $args ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
 
 		// Allow developers to modify fetched video posts before rendering.
 		$video_posts = apply_filters( 'rtgodam_product_gallery_video_posts', $video_posts, $atts );
@@ -412,15 +468,18 @@ class GoDAM_Product_Gallery {
 			 */
 			echo '<div ' . wp_kses_data( $godam_figure_attributes ) . '>';
 			echo '<div id="' . esc_attr( $instance_id ) . '" data-gallery-id="' . esc_attr( $instance_id ) . '" class="godam-product-gallery layout-' . esc_attr( $atts['layout'] ) . '"
-				data-product="' . esc_attr( $atts['product'] ) . '"
-				style="
-					--godam-product-gallery-card-width-desktop: ' . esc_attr( $atts['desktop_card_width'] ) . 'vw;
-					--godam-product-gallery-card-width-tablet: ' . esc_attr( $atts['tablet_card_width'] ) . 'vw;
-					--godam-product-gallery-card-width-mobile: ' . esc_attr( $atts['mobile_card_width'] ) . 'vw;
-					--godam-product-gallery-price-color-primary: ' . esc_attr( $atts['cta_product_price_color_primary'] ) . ';
-					--godam-product-gallery-price-color-secondary: ' . esc_attr( $atts['cta_product_price_color_secondary'] ) . ';
-					--godam-product-gallery-price-color-tertiary: ' . esc_attr( $atts['cta_product_price_color_tertiary'] ) . ';
-				"
+			data-products="' . esc_attr( $atts['products'] ) . '"
+			data-categories="' . esc_attr( $atts['categories'] ) . '"
+			data-selected-videos="' . esc_attr( $atts['selected_videos'] ) . '"
+			data-order-by="' . esc_attr( $atts['order_by'] ) . '"
+			style="
+				--godam-product-gallery-card-width-desktop: ' . esc_attr( $atts['desktop_card_width'] ) . 'vw;
+				--godam-product-gallery-card-width-tablet: ' . esc_attr( $atts['tablet_card_width'] ) . 'vw;
+				--godam-product-gallery-card-width-mobile: ' . esc_attr( $atts['mobile_card_width'] ) . 'vw;
+				--godam-product-gallery-price-color-primary: ' . esc_attr( $atts['cta_product_price_color_primary'] ) . ';
+				--godam-product-gallery-price-color-secondary: ' . esc_attr( $atts['cta_product_price_color_secondary'] ) . ';
+				--godam-product-gallery-price-color-tertiary: ' . esc_attr( $atts['cta_product_price_color_tertiary'] ) . ';
+			"
 			>';
 
 			/**
@@ -526,6 +585,10 @@ class GoDAM_Product_Gallery {
 	 */
 	private function render_video_wrapper( $video_posts, $atts, $video_attrs, $instance_id ) {
 
+		// Prime the post meta cache for all videos to avoid N+1 queries.
+		$video_ids = wp_list_pluck( $video_posts, 'ID' );
+		update_postmeta_cache( $video_ids );
+
 		foreach ( $video_posts as $video ) {
 			// Add action before each video item.
 			do_action( 'rtgodam_product_gallery_before_video_item', $video, $atts );
@@ -538,7 +601,7 @@ class GoDAM_Product_Gallery {
 
 			$thumbnail = $custom_thumbnail ?: $fallback_thumb;
 
-			$video_url = $video->guid;
+			$video_url = wp_get_attachment_url( $video_id );
 
 			$video_attached_products = get_post_meta( $video_id, '_video_parent_product_id', false );
 
@@ -598,7 +661,7 @@ class GoDAM_Product_Gallery {
 					printf(
 						'<button class="godam-play-button" style="background:%1$s;width:%2$dpx;height:%2$dpx;border-radius:%3$dpx;" aria-label="%5$s">
 							<svg width="%6$d" height="%6$d" viewBox="0 0 24 24" fill="%4$s" xmlns="http://www.w3.org/2000/svg">
-								<path 
+								<path
 									fill="%4$s"
 									d="M8 6
 									C8 4.8 9.3 4.1 10.4 4.9
@@ -696,7 +759,7 @@ class GoDAM_Product_Gallery {
 								$border_radius = $atts['cta_cart_border_radius'];
 							}
 
-								echo '<button 
+								echo '<button
 									class="cta-add-to-cart main-cta"
 									data-product-cart="' . esc_attr( $atts['cta_cart_action'] ) . '"
 									data-product-dropdown="' . esc_attr( $has_dropdown ) . '"
@@ -718,8 +781,8 @@ class GoDAM_Product_Gallery {
 
 							// Detached Dropdown for more products.
 							if ( $has_dropdown ) {
-								echo '<div class="cta-dropdown" 
-									data-gallery-id="' . esc_attr( $instance_id ) . '" 
+								echo '<div class="cta-dropdown"
+									data-gallery-id="' . esc_attr( $instance_id ) . '"
 									style="
 										--godam-product-gallery-dropdown-bg-color: ' . esc_attr( $atts['cta_dropdown_bg_color'] ) . ';
 										--godam-product-gallery-dropdown-icon-color: ' . esc_attr( $atts['cta_dropdown_icon_color'] ) . ';
@@ -761,13 +824,13 @@ class GoDAM_Product_Gallery {
 												echo ! $dropdown_product_is_on_sale ? 'color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['cta_product_price_color_primary'] ) ) . ';' : '';
 												echo 'margin:4px 0 0;" >' . wp_kses_post( $product->get_price_html() ) . '</p>';
 											echo '</div>'; // .cta-product-info ends.
-											echo '<button 
+											echo '<button
 												class="cta-add-to-cart"
 												data-product-cart="' . esc_attr( $atts['cta_cart_action'] ) . '"
 												data-product-id="' . esc_attr( $product_id ) . '"
 												data-product-page-url="' . esc_url( get_permalink( $product->get_id() ) ) . '"
 												style="
-													background-color:' . esc_attr( $this->utility_instance->hex_to_rgba( $this->utility_instance->hex_to_rgba( $atts['cta_cart_bg_color'] ) ) ) . ';
+													background-color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['cta_cart_bg_color'] ) ) . ';
 													color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['cta_cart_icon_color'] ) ) . ';
 													border:' . esc_attr( $atts['cta_cart_border_width'] ) . ' ' . esc_attr( $atts['cta_cart_border_style'] ) . ' ' . esc_attr( $atts['cta_cart_border_color'] ) . ';
 													border-radius:' . esc_attr( $atts['cta_cart_border_radius'] ) . 'px;
