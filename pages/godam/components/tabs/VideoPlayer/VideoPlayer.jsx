@@ -202,6 +202,10 @@ const VideoPlayer = () => {
 						return ShareVariationOne;
 					case 'Bubble':
 						return ShareVariationOne;
+					case 'Pulse':
+						return ShareVariationOne;
+					case 'Luma':
+						return ShareVariationOne;
 					default:
 						return Share;
 				}
@@ -351,6 +355,8 @@ const VideoPlayer = () => {
 				'godam-pills-skin',
 				'godam-bubble-skin',
 				'godam-classic-skin',
+				'godam-pulse-skin',
+				'godam-luma-skin',
 				'video-player-settings-preview',
 			);
 
@@ -367,6 +373,10 @@ const VideoPlayer = () => {
 				parent.classList.add( 'godam-bubble-skin' );
 			} else if ( selectedSkin === 'Classic' ) {
 				parent.classList.add( 'godam-classic-skin' );
+			} else if ( selectedSkin === 'Pulse' ) {
+				parent.classList.add( 'godam-pulse-skin' );
+			} else if ( selectedSkin === 'Luma' ) {
+				parent.classList.add( 'godam-luma-skin' );
 			}
 		}
 	}, [ mediaSettings?.video_player?.brand_color, mediaSettings?.video_player?.brand_image, mediaSettings?.video_player?.player_skin ] );
@@ -383,7 +393,7 @@ const VideoPlayer = () => {
 		return () => window.removeEventListener( 'beforeunload', handleBeforeUnload );
 	}, [ isChanged ] );
 
-	const isMinimalOrClassic = 'Minimal' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin;
+	const excludeBrandStyle = 'Minimal' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin || 'Pulse' === mediaSettings?.video_player?.player_skin || 'Luma' === mediaSettings?.video_player?.player_skin;
 
 	return (
 		<>
@@ -432,6 +442,14 @@ const VideoPlayer = () => {
 									label: 'Bubble',
 									value: 'Bubble',
 								},
+								{
+									label: 'Pulse',
+									value: 'Pulse',
+								},
+								{
+									label: 'Luma',
+									value: 'Luma',
+								},
 							] }
 							value={ mediaSettings?.video_player?.player_skin || 'Default' }
 							className="godam-player-skin-dropdown"
@@ -446,7 +464,7 @@ const VideoPlayer = () => {
 								label={ __( 'Brand color', 'godam' ) }
 								value={ mediaSettings?.video_player?.brand_color }
 								onChange={ ( value ) => handleSettingChange( 'brand_color', value ) }
-								disabled={ isMinimalOrClassic }
+								disabled={ excludeBrandStyle }
 							/>
 							{ mediaSettings?.video_player?.brand_color && (
 								<button
@@ -463,7 +481,7 @@ const VideoPlayer = () => {
 
 						<p className="text-[0.75rem] leading-[1.2] text-[#777]">
 							{
-								isMinimalOrClassic
+								excludeBrandStyle
 									? ( <div className="flex items-center gap-2 mt-[-4px]">
 										<Icon icon={ error } style={ { fill: '#EAB308' } } size={ 28 } />
 										<p className="text-[#AB3A6C] text-[0.75rem] leading-[1.2]">{ __(

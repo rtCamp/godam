@@ -1,0 +1,250 @@
+.godam-luma-skin {
+	container-type: inline-size;
+	container-name: godam-player-luma-skin;
+
+	.vjs-control {
+		width: 3em;
+	}
+
+	.video-js .vjs-control-bar {
+		width: 98% !important;
+		border-radius: 8px;
+		margin: -50px auto 0 auto;
+		background-color: rgba(0, 0, 0, 0.6) !important;
+		bottom: 0.5rem !important;
+		z-index: 19;
+
+		/* Add horizontal padding to prevent controls from touching the edges of the pill shape */
+		padding: 0 10px;
+
+	}
+
+	.video-js .vjs-big-play-button {
+		background-color: hsl(0deg 0 0 / 90%) !important;
+		box-shadow: 0 0 0 2px hsl(0deg 0 0 / 30%);
+		color: #fff !important;
+	}
+
+	.video-js .vjs-volume-control.vjs-control.vjs-volume-vertical {
+		background-color: transparent !important;
+	}
+
+	.video-js [class^="vjs-skip-backward-"],
+	.video-js [class^="vjs-skip-forward-"] {
+		display: none;
+	}
+
+	.vjs-progress-holder,
+	.vjs-play-progress,
+	.vjs-load-progress div {
+		border-radius: 20px;
+	}
+
+	.video-js .vjs-load-progress,
+	.video-js .vjs-load-progress div {
+		background: rgba(255, 255, 255, 0.2) !important;
+	}
+
+	.vjs-button>.vjs-icon-placeholder::before {
+		font-size: 1.6em;
+		line-height: 1.9;
+	}
+
+	.video-js .vjs-control:focus,
+	.video-js .vjs-control:focus::before,
+	.video-js .vjs-control:hover::before {
+		text-shadow: none;
+	}
+
+	.vjs-current-time {
+		display: flex;
+
+		/* Add left padding to separate time from the volume control in luma skin */
+		padding: 0 0 0 15px;
+		align-items: center;
+		justify-content: center;
+		min-width: 1.2em;
+	}
+
+	.vjs-time-divider, .vjs-duration {
+		display: flex !important;
+		padding: 0 !important;
+		align-items: center;
+		justify-content: center;
+		min-width: 1.2em;
+	}
+
+	.video-js .vjs-fullscreen-control {
+		order: 8;
+	}
+
+	.video-js .vjs-subs-caps-button {
+		order: 2;
+	}
+
+	.video-js .vjs-volume-panel {
+		order: 1;
+	}
+
+	.video-js .vjs-settings-button {
+		order: 3;
+	}
+
+	.video-js .vjs-custom-play-button img {
+		height: 100%;
+		width: auto;
+		object-fit: fill;
+		margin-right: 20px;
+	}
+
+	.video-js .vjs-menu-content {
+		background-color: #fff !important;
+		color: #000;
+		border-radius: 4px;
+		max-height: 300px;
+		overflow: auto;
+		
+		li {
+			padding: 8px;
+			font-size: 14px;
+		}
+
+		.master-settings-back-icon {
+			display: none;
+		}
+
+		span::before {
+			font-size: 16px;
+			color: #000;
+		}
+
+		.godam-back-item-container::after {
+			top: 35.5px;
+		}
+
+		.master-settings-back-icon, .godam-check-icon {
+			color: #000;
+		}
+	}
+
+	.vjs-button.godam-share-button {
+		background: #FFFFFF24;
+		border-radius: 4px;
+		width: 40px;
+		height: 36px;		
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		img {
+			height: 18px;
+			width: 16px;
+			max-width: unset;
+		}
+	}
+
+	.video-js .vjs-remaining-time {
+		display: none;
+	}
+
+	.vjs-play-control {
+		order: -1;
+	}
+
+	.vjs-progress-control {
+		order: -1;
+	}
+
+	@container godam-player-luma-skin (max-width: 480px) {
+
+		.video-js .vjs-big-play-button {
+			left: 55%;
+		}
+
+		.video-js .godam-central-controls {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 12px;
+			background-color: var(--rtgodam-control-bar-color, #000000AD) !important;
+			border-radius: 999px;
+			padding: 6px 12px;
+			width: 164px;
+			height: 30px;
+			z-index: 19;
+		}
+	
+		.video-js .vjs-control-bar {
+			height: initial !important;
+			margin: -40px auto 0;
+
+			.vjs-duration,
+			.vjs-current-time,
+			.vjs-time-divider,
+			.vjs-picture-in-picture-control,
+			.vjs-remaining-time,
+			.vjs-control.vjs-custom-play-button,
+			.vjs-volume-control {
+				display: none !important;
+			}
+
+			.vjs-control {
+				height: 3em !important;
+			}
+
+			.vjs-settings-button, div.vjs-subs-caps-button {
+				z-index: 19;
+			}
+
+			.vjs-fullscreen-control,
+			.vjs-settings-button,
+			div.vjs-subs-caps-button {
+				position: relative !important;
+				right: 0 !important;
+			}
+
+			.vjs-time-control.vjs-duration {
+				right: 120px;
+				transform: translateX(0%);
+			}
+
+			.vjs-time-control.vjs-current-time {
+				left: 30px;
+			}
+
+			.right-80 {
+				right: 80px !important;
+			}
+		}
+
+		.vjs-button.godam-share-button {
+			background-color: var(--rtgodam-control-bar-color, #000000AD);
+			border: 0.26px solid #FFF3;
+			height: 24px;
+			padding: 4px 20px;
+			border-radius: 12px;
+		}
+
+		.video-js .vjs-menu {
+			width: 8em;
+
+			.vjs-menu-content {
+
+				max-height: 120px !important;
+				
+				.godam-back-item-container::after {
+					top: 24.5px;
+				}
+
+				li {
+					font-size: 12px;
+					padding: 4px;
+				}
+
+				.vjs-menu-item-text span {
+					display: flex;
+				}
+			}
+		}
+	}
+}

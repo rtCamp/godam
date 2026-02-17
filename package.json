@@ -38,6 +38,7 @@
 		"@uppy/golden-retriever": "5.0.0",
 		"@uppy/screen-capture": "5.0.0",
 		"@uppy/webcam": "5.0.0",
+		"@wordpress/element": "6.39.0",
 		"analytics": "^0.8.18",
 		"axios": "^1.11.0",
 		"clsx": "^2.1.1",
