@@ -87,6 +87,7 @@ class GoDAM_Reel_Pops {
 				'enable_autoplay'   => true,
 				'show_mute_button'  => true,
 				'show_play_button'  => false,
+				'enable_modal_navigation' => true,
 				'popup_width'       => 120,
 				'bottom_spacing'    => 20,
 				'side_spacing'      => 20,
@@ -100,6 +101,7 @@ class GoDAM_Reel_Pops {
 		$attributes['enable_autoplay'] = filter_var( $attributes['enable_autoplay'], FILTER_VALIDATE_BOOLEAN );
 		$attributes['show_mute_button'] = filter_var( $attributes['show_mute_button'], FILTER_VALIDATE_BOOLEAN );
 		$attributes['show_play_button'] = filter_var( $attributes['show_play_button'], FILTER_VALIDATE_BOOLEAN );
+		$attributes['enable_modal_navigation'] = filter_var( $attributes['enable_modal_navigation'], FILTER_VALIDATE_BOOLEAN );
 
 		// Parse video IDs.
 		if ( empty( $attributes['video_ids'] ) ) {
@@ -189,6 +191,7 @@ class GoDAM_Reel_Pops {
 			'enableAutoplay'    => (bool) $attributes['enable_autoplay'],
 			'showMuteButton'    => (bool) $attributes['show_mute_button'],
 			'showPlayButton'    => (bool) $attributes['show_play_button'],
+			'enableModalNavigation' => (bool) $attributes['enable_modal_navigation'],
 			'popupWidth'        => absint( $attributes['popup_width'] ),
 			'bottomSpacing'     => absint( $attributes['bottom_spacing'] ),
 			'sideSpacing'       => absint( $attributes['side_spacing'] ),

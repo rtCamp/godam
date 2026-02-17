@@ -194,6 +194,7 @@ class WC_Reel_Pops_Metabox {
 				'enableAutoplay'    => true,
 				'showMuteButton'    => true,
 				'showPlayButton'    => false,
+				'enableModalNavigation' => true,
 				'popupWidth'        => 120,
 				'bottomSpacing'     => 20,
 				'sideSpacing'       => 20,
@@ -315,6 +316,13 @@ class WC_Reel_Pops_Metabox {
 					<label>
 						<input type="checkbox" name="godam_reel_pops[showPlayButton]" value="1" <?php checked( $config['showPlayButton'], true ); ?> />
 						<?php esc_html_e( 'Show Play/Pause Button Overlay', 'godam' ); ?>
+					</label>
+				</div>
+
+				<div class="godam-reel-pops-setting-item">
+					<label>
+						<input type="checkbox" name="godam_reel_pops[enableModalNavigation]" value="1" <?php checked( $config['enableModalNavigation'], true ); ?> />
+						<?php esc_html_e( 'Enable video navigations on modal', 'godam' ); ?>
 					</label>
 				</div>
 			</div>
@@ -518,6 +526,7 @@ class WC_Reel_Pops_Metabox {
 			'enableAutoplay'    => isset( $data['enableAutoplay'] ) && '1' === $data['enableAutoplay'],
 			'showMuteButton'    => isset( $data['showMuteButton'] ) && '1' === $data['showMuteButton'],
 			'showPlayButton'    => isset( $data['showPlayButton'] ) && '1' === $data['showPlayButton'],
+			'enableModalNavigation' => isset( $data['enableModalNavigation'] ) && '1' === $data['enableModalNavigation'],
 			'popupWidth'        => isset( $data['popupWidth'] ) ? absint( $data['popupWidth'] ) : 120,
 			'bottomSpacing'     => isset( $data['bottomSpacing'] ) ? absint( $data['bottomSpacing'] ) : 20,
 			'sideSpacing'       => isset( $data['sideSpacing'] ) ? absint( $data['sideSpacing'] ) : 20,
@@ -558,6 +567,26 @@ class WC_Reel_Pops_Metabox {
 			return;
 		}
 
+		$config = wp_parse_args(
+			$config,
+			array(
+				'aspectRatio'           => '9-16',
+				'position'              => 'bottom-right',
+				'animation'             => 'slide-up',
+				'animationDuration'     => 500,
+				'durationSeconds'       => 5,
+				'initialDelay'          => 3,
+				'closePersistence'      => 'show_again',
+				'enableAutoplay'        => true,
+				'showMuteButton'        => true,
+				'showPlayButton'        => false,
+				'enableModalNavigation' => true,
+				'popupWidth'            => 120,
+				'bottomSpacing'         => 20,
+				'sideSpacing'           => 20,
+			)
+		);
+
 		// Auto-populate product IDs with current product for all videos.
 		$videos = $config['videos'];
 		foreach ( $videos as &$video ) {
@@ -590,6 +619,7 @@ class WC_Reel_Pops_Metabox {
 			'enable_autoplay'    => $config['enableAutoplay'] ? 'true' : 'false',
 			'show_mute_button'   => ! empty( $config['showMuteButton'] ) ? 'true' : 'false',
 			'show_play_button'   => ! empty( $config['showPlayButton'] ) ? 'true' : 'false',
+			'enable_modal_navigation' => ! empty( $config['enableModalNavigation'] ) ? 'true' : 'false',
 			'popup_width'        => absint( $config['popupWidth'] ),
 			'bottom_spacing'     => absint( $config['bottomSpacing'] ),
 			'side_spacing'       => absint( $config['sideSpacing'] ),

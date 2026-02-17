@@ -73,6 +73,10 @@
       "type": "boolean",
       "default": false
     },
+    "enableModalNavigation": {
+      "type": "boolean",
+      "default": true
+    },
     "popupWidth": {
       "type": "number",
       "default": 120

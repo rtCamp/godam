@@ -35,6 +35,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		enableAutoplay,
 		showMuteButton,
 		showPlayButton,
+		enableModalNavigation,
 		popupWidth,
 		bottomSpacing,
 		sideSpacing,
@@ -347,6 +348,13 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						help={ __( 'Displays a play/pause button over the active video.', 'godam' ) }
 						checked={ showPlayButton }
 						onChange={ ( value ) => setAttributes( { showPlayButton: value } ) }
+					/>
+
+					<ToggleControl
+						label={ __( 'Enable video navigations on modal', 'godam' ) }
+						help={ __( 'Shows previous/next navigation controls in the opened modal.', 'godam' ) }
+						checked={ enableModalNavigation }
+						onChange={ ( value ) => setAttributes( { enableModalNavigation: value } ) }
 					/>
 				</PanelBody>
 

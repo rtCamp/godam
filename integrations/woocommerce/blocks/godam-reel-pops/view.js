@@ -364,7 +364,7 @@
 		/**
 		 * Show video by index with smooth cross-fade.
 		 *
-		 * @param {number} index Video index.
+		 * @param {number}  index         Video index.
 		 * @param {boolean} withAnimation Whether to show transition animation.
 		 */
 		showVideo( index, withAnimation = true ) {
@@ -522,8 +522,8 @@
 		/**
 		 * Open modal by ID.
 		 *
-		 * @param {string} modalId Modal ID.
-		 * @param {string} videoId Video ID.
+		 * @param {string} modalId    Modal ID.
+		 * @param {string} videoId    Video ID.
 		 * @param {string} productIds Product IDs string.
 		 */
 		openModal( modalId, videoId = '', productIds = '' ) {
@@ -533,6 +533,7 @@
 			// Reuse existing product gallery delegated modal flow so behavior
 			// (video loading, sidebar, escape, close) stays consistent.
 			if ( normalizedVideoId ) {
+				this.currentModalVideoId = normalizedVideoId;
 				const normalizedProductIds = String( productIds || '' ).trim();
 				const resolvedModal = modal || this.findModalByVideoId( normalizedVideoId );
 				if ( ! resolvedModal ) {
@@ -563,7 +564,7 @@
 					const isOpened = resolvedModal.classList.contains( 'open' ) || resolvedModal.classList.contains( 'active' );
 
 					if ( isOpened ) {
-						this.currentModalVideoId = normalizedVideoId;
+						resolvedModal.classList.add( 'godam-reel-pops-modal-instance' );
 						this.attachModalStateObserver( resolvedModal );
 						this.attachModalNavigation( resolvedModal );
 						this.hideForModal();
@@ -590,6 +591,7 @@
 			// Show modal.
 			modal.classList.remove( 'hidden' );
 			modal.classList.add( 'active' );
+			modal.classList.add( 'godam-reel-pops-modal-instance' );
 			this.hideForModal();
 		}
 
@@ -599,7 +601,9 @@
 		 * @param {HTMLElement} modal Modal element.
 		 */
 		attachModalNavigation( modal ) {
-			if ( ! modal || this.videoSlots.length < 2 ) {
+			if ( ! modal || this.videoSlots.length < 2 || this.config.enableModalNavigation === false ) {
+				modal?.classList.remove( 'godam-reel-pops-modal-nav-enabled' );
+				modal?.querySelector( '.godam-reel-pops-modal-nav' )?.remove();
 				return;
 			}
 
@@ -656,7 +660,10 @@
 				return;
 			}
 
-			const currentModalIndex = this.getVideoIndexById( this.currentModalVideoId );
+			const activeModal = this.wrapper.querySelector( '.godam-product-modal-container.open, .godam-product-modal-container.active' );
+			const activeModalVideoId = activeModal?.getAttribute( 'data-modal-video-id' ) || '';
+			const baseVideoId = activeModalVideoId || this.currentModalVideoId;
+			const currentModalIndex = this.getVideoIndexById( baseVideoId );
 			if ( currentModalIndex < 0 ) {
 				return;
 			}
@@ -670,20 +677,41 @@
 			const nextModalId = nextOverlay.getAttribute( 'data-modal-id' );
 			const nextVideoId = nextOverlay.getAttribute( 'data-video-id' );
 			const nextProductIds = nextOverlay.getAttribute( 'data-product-ids' ) || '';
+			const nextModal = ( nextModalId ? document.getElementById( nextModalId ) : null ) || this.findModalByVideoId( nextVideoId );
+			if ( ! nextModal ) {
+				return;
+			}
 
 			this.isSwitchingModal = true;
 
-			const currentOpenModal = this.wrapper.querySelector( '.godam-product-modal-container.open, .godam-product-modal-container.active' );
+			const currentOpenModal = activeModal || this.wrapper.querySelector( '.godam-product-modal-container.open, .godam-product-modal-container.active' );
+			this.currentModalVideoId = String( nextVideoId || '' ).trim();
 
 			this.openModal( nextModalId, nextVideoId, nextProductIds );
 
-			setTimeout( () => {
-				this.softCloseModal( currentOpenModal );
-			}, 120 );
+			const closeWhenOpened = ( attempt = 0 ) => {
+				const maxAttempts = 20;
+				const isNextOpen = nextModal.classList.contains( 'open' ) || nextModal.classList.contains( 'active' );
 
-			setTimeout( () => {
-				this.isSwitchingModal = false;
-			}, 240 );
+				if ( isNextOpen ) {
+					this.softCloseModal( currentOpenModal );
+					setTimeout( () => {
+						this.isSwitchingModal = false;
+					}, 180 );
+					return;
+				}
+
+				if ( attempt >= maxAttempts ) {
+					this.isSwitchingModal = false;
+					return;
+				}
+
+				setTimeout( () => {
+					closeWhenOpened( attempt + 1 );
+				}, 30 );
+			};
+
+			closeWhenOpened();
 		}
 
 		/**
@@ -756,6 +784,11 @@
 		 */
 		restoreAfterModal() {
 			if ( ! this.isHiddenForModal || this.isClosedByUser || this.isSwitchingModal ) {
+				return;
+			}
+
+			const hasOpenModal = !! this.wrapper.querySelector( '.godam-product-modal-container.open, .godam-product-modal-container.active' );
+			if ( hasOpenModal ) {
 				return;
 			}
 

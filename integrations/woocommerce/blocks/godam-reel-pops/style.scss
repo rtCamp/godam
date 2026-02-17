@@ -368,6 +368,15 @@
 	}
 }
 
+/* Hide swipe hint text/overlay in Reel Pops-opened modals */
+.godam-product-modal-container.godam-reel-pops-modal-instance {
+	.godam-swipe-overlay,
+	.godam-swipe-hint,
+	.godam-scroll-or-swipe-text {
+		display: none !important;
+	}
+}
+
 /* ANIMATION SYSTEM — uses CSS @keyframes (not transitions) to avoid specificity conflicts */
 
 /* Base state - hidden by default */
