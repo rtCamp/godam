@@ -7,6 +7,10 @@
  * @package godam
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 if ( ! isset( $product ) ) {
 	return;
 }

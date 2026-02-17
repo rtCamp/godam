@@ -8,6 +8,10 @@
  * @package godam
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 if ( ! isset( $product ) || ! $product instanceof WC_Product ) {
 	return;
 }
