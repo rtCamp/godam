@@ -152,7 +152,10 @@ export function initMinicartAndCtaDropdown() {
 
 	// Close dropdown on scroll outside dropdown.
 	window.addEventListener( 'scroll', ( event ) => {
-		if ( activeDropdown && ! activeDropdown.contains( event.target ) && ! activeButton?.contains( event.target ) ) {
+		if ( ! activeDropdown ) {
+			return;
+		}
+		if ( ! activeDropdown.contains( event.target ) && ! activeButton?.contains( event.target ) ) {
 			activeDropdown.remove();
 			activeDropdown = null;
 			activeButton = null;

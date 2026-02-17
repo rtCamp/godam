@@ -670,16 +670,19 @@ function renderRatingStars( average, ratingCount ) {
 	const fullStarSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#FFC107" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.568L24 9.423l-6 5.858L19.335 24 12 20.01 4.665 24l1.335-8.719-6-5.858 8.332-1.268z"/></svg>`;
 	const emptyStarSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#e0e0e0" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.568L24 9.423l-6 5.858L19.335 24 12 20.01 4.665 24l1.335-8.719-6-5.858 8.332-1.268z"/></svg>`;
 
-	const partialStarSVG = ( percentage ) => `
+	const partialStarSVG = ( percentage ) => {
+		const gradId = 'halfGradient' + Math.random().toString( 36 ).slice( 2 );
+		return `
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
             <defs>
-                <linearGradient id="halfGradient${ Math.random() }" x1="0" x2="100%" y1="0" y2="0">
+                <linearGradient id="${ gradId }" x1="0" x2="100%" y1="0" y2="0">
                     <stop offset="${ percentage }%" stop-color="#FFC107"/>
                     <stop offset="${ percentage }%" stop-color="#e0e0e0"/>
                 </linearGradient>
             </defs>
-            <path fill="url(#halfGradient${ Math.random() })" d="M12 .587l3.668 7.568L24 9.423l-6 5.858L19.335 24 12 20.01 4.665 24l1.335-8.719-6-5.858 8.332-1.268z"/>
+            <path fill="url(#${ gradId })" d="M12 .587l3.668 7.568L24 9.423l-6 5.858L19.335 24 12 20.01 4.665 24l1.335-8.719-6-5.858 8.332-1.268z"/>
         </svg>`;
+	};
 
 	let starsHTML = '';
 

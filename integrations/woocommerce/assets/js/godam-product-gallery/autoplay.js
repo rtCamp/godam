@@ -23,12 +23,20 @@ export function initAutoplayGalleries() {
 
 		videos.forEach( ( video ) => {
 			if ( video.hasAttribute( 'autoplay' ) ) {
-				// Create event listener for this video
+				// rAF-throttled handler to avoid excessive timeupdate callbacks
+				let rafPending = false;
 				const handleTimeUpdate = () => {
-					if ( video.currentTime >= 5 ) {
-						video.currentTime = 0;
-						video.play();
+					if ( rafPending ) {
+						return;
 					}
+					rafPending = true;
+					requestAnimationFrame( () => {
+						rafPending = false;
+						if ( video.currentTime >= 5 ) {
+							video.currentTime = 0;
+							video.play();
+						}
+					} );
 				};
 
 				// Store listener reference for cleanup
