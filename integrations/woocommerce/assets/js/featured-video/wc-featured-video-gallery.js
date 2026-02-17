@@ -1,11 +1,19 @@
-/* global jQuery, myGalleryAjaxData, GODAMPlayer */
+/* global jQuery, myGalleryAjaxData */
 
 // eslint-disable-next-line eslint-comments/disable-enable-pair
 /* eslint-disable no-console */
 
+/**
+ * Internal dependencies
+ */
+import { resetVideoModal, loadNewVideo } from '../global-video-popup/video-modal.js';
+import { initEscapeManager, registerEscapeHandler, unregisterEscapeHandler } from '../global-video-popup/escapeManager.js';
+
 jQuery( document ).ready( function( $ ) {
 	const emptySrcAlts = [];
 	const emptyImgs = [];
+
+	initEscapeManager();
 
 	/**
 	 * Process and identify empty thumbnails and trigger AJAX for video thumbnails.
@@ -134,159 +142,52 @@ jQuery( document ).ready( function( $ ) {
 
 		singlePageProductModal?.classList.add( 'hidden' );
 
-		let modal = document.getElementById( 'godam-woocommerce-featured-video-modal-container' );
-
-		if ( ! modal ) {
-			modal = document.createElement( 'div' );
-			modal.id = 'godam-woocommerce-featured-video-modal-container';
-			modal.className = 'godam-woocommerce-featured-video-modal-container';
-			document.body.appendChild( modal );
-		}
+		const modal = document.querySelector(
+			'.godam-woocommerce-featured-video-modal-container',
+		);
 
 		modal.classList.add( 'open' );
 		modal.dataset.currentVideoId = videoId;
 		modal.dataset.isLoading = 'false';
-		modal.innerHTML = `
-			<div class="godam-woocommerce-featured-video-modal-container-overlay">
-				<div class="close">
-					<button class="godam-woocommerce-featured-video-modal-close" aria-label="">
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);transform: ;msFilter:;"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
-					</button>
-				</div>
-				<div class="godam-woocommerce-featured-video-modal-container-content">
-					<div class="godam-woocommerce-featured-video-modal-content">
-					<div class="video-container animate-video-loading">
-						<div class="animate-play-btn">
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
-								<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
-							</svg>
-						</div>
-					</div>
-					</div>
-				</div>
-		`;
 
 		modal.classList.remove( 'hidden' );
-		document.body.style.overflow = 'hidden';
 
 		modal.querySelector( '.godam-woocommerce-featured-video-modal-container-close' )?.addEventListener( 'click', closeModal );
 		modal.addEventListener( 'click', ( e ) => {
-			if ( ! e.target.closest( '.godam-woocommerce-featured-video-modal-container-content' ) ) {
+			if ( ! e.target.closest( '.godam-woocommerce-featured-video-modal-content' ) ) {
 				closeModal();
 			}
 		} );
-		// Escape key
-		document.addEventListener( 'keydown', ( e ) => {
-			if ( e.key === 'Escape' || e.key === 'Esc' ) {
-				closeModal();
-			}
-		} );
+		// Escape key.
+		const handleEscapeClose = () => {
+			closeModal();
+			unregisterEscapeHandler( handleEscapeClose );
+		};
 
-		await loadVideoById( videoId );
-	}
+		modal._escapeHandler = handleEscapeClose;
 
-	/**
-	 * Loads the video by ID via REST API and updates modal content.
-	 *
-	 * @param {number} videoId
-	 */
-	async function loadVideoById( videoId ) {
-		const modal = document.getElementById( 'godam-woocommerce-featured-video-modal-container' );
-		const container = modal?.querySelector( '.video-container' );
-		if ( ! modal || ! container || modal.dataset.isLoading === 'true' ) {
-			return;
-		}
+		registerEscapeHandler( handleEscapeClose );
 
-		modal.dataset.isLoading = 'true';
-
-		container.innerHTML = `
-			<div class="animate-video-loading">
-				<div class="animate-play-btn">
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-						class="bi bi-play-fill" viewBox="0 0 16 16">
-						<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308
-						c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
-					</svg>
-				</div>
-			</div>
-		`;
-
-		try {
-			const restURL = window.godamRestRoute.url || '';
-			const res = await fetch( `${ restURL }godam/v1/video-shortcode?id=${ videoId }` );
-			const data = await res.json();
-
-			if ( data.status === 'success' && data.html ) {
-				let html = data.html;
-
-				html = html.replace( /data-options="([^"]+)"/, ( match, encoded ) => {
-					try {
-						const decoded = encoded.replace( /&quot;/g, '"' );
-						const options = JSON.parse( decoded );
-						options.aspectRatio = 'responsive';
-						const reEncoded = JSON.stringify( options ).replace( /"/g, '&quot;' );
-						return `data-options="${ reEncoded }"`;
-					} catch {
-						return match;
-					}
-				} );
-
-				html = html.replace( /--rtgodam-video-aspect-ratio:\s*[^;"]+/, '--rtgodam-video-aspect-ratio: responsive' );
-
-				container.innerHTML = html;
-				container.classList.remove( 'animate-video-loading' );
-
-				if ( typeof GODAMPlayer === 'function' ) {
-					GODAMPlayer( modal );
-
-					const videoPlayerElement = modal.querySelector( '.video-js' );
-					const videojs = window.videojs;
-
-					if ( videojs ) {
-						// Check if player is already ready (fallback for synchronous initialization)
-						const existingPlayer = videoPlayerElement ? videojs.getPlayer( videoPlayerElement ) : null;
-						if ( existingPlayer ) {
-							existingPlayer.play();
-						} else {
-							const onPlayerReady = ( event ) => {
-								// Ensure this event is for our video element
-								if ( event.detail.videoElement === videoPlayerElement ) {
-									event.detail.player.play();
-									document.removeEventListener( 'godamPlayerReady', onPlayerReady );
-									modal._galleryPlayerReadyHandler = null;
-								}
-							};
-							modal._galleryPlayerReadyHandler = onPlayerReady;
-							document.addEventListener( 'godamPlayerReady', onPlayerReady );
-						}
-					} else {
-						// eslint-disable-next-line no-console
-						console.error( 'Video.js is not loaded. Cannot initialize player.' );
-					}
-				}
-			} else {
-				container.innerHTML = '<div class="godam-error-message">Video could not be loaded.</div>';
-			}
-		} catch ( err ) {
-			console.error( err );
-			container.innerHTML = '<div class="godam-error-message">Error loading video.</div>';
-		} finally {
-			modal.dataset.isLoading = 'false';
-		}
+		await loadNewVideo( videoId, modal, false, 'godam-featured-video-gallery', false );
 	}
 
 	/**
 	 * Closes and resets the video modal.
 	 */
 	function closeModal() {
-		const modal = document.getElementById( 'godam-woocommerce-featured-video-modal-container' );
+		const modal = document.querySelector(
+			'.godam-woocommerce-featured-video-modal-container.open',
+		);
 		if ( ! modal ) {
 			return;
 		}
 
-		modal.querySelectorAll( '.video-js' ).forEach( ( player ) => player.player?.dispose?.() );
-		modal.classList.add( 'hidden' );
-		document.body.style.overflow = '';
+		if ( modal._escapeHandler ) {
+			unregisterEscapeHandler( modal._escapeHandler );
+			modal._escapeHandler = null;
+		}
+
+		resetVideoModal( modal );
 
 		const singlePageProductModal = document.querySelector( '.rtgodam-product-video-gallery-slider-modal.open.hidden' );
 		singlePageProductModal?.classList.remove( 'hidden' );

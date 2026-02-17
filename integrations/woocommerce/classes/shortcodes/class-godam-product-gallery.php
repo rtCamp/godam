@@ -90,7 +90,7 @@ class GoDAM_Product_Gallery {
 			'godam-player-reels-skin-css',
 			RTGODAM_URL . 'assets/build/integrations/woocommerce/css/godam-reels-skin.css',
 			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/integrations/woocommerce/css/godam-reels-skin.css' )
+			rtgodam_wc_get_asset_version( RTGODAM_PATH . 'assets/build/integrations/woocommerce/css/godam-reels-skin.css' )
 		);
 
 		$gallery_asset_path                  = RTGODAM_PATH . 'assets/build/js/godam-product-gallery.min.asset.php';
@@ -122,23 +122,6 @@ class GoDAM_Product_Gallery {
 			$gallery_deps,
 			$godam_product_gallery_script_assets['version'],
 			true
-		);
-
-		wp_localize_script(
-			'godam-product-gallery-script',
-			'godamVars',
-			array(
-				'namespaceRoot'                => '/godam/v1',
-				'videoShortcodeEP'             => '/video-shortcode',
-				'productByIdsEP'               => '/wcproducts-by-ids',
-				'addToCartAjax'                => 'wc/store/cart',
-				'ajaxUrl'                      => admin_url( 'admin-ajax.php' ),
-				'getSingleProductHtmlAction'   => 'godam_get_single_sidebar_product_html',
-				'getSingleProductHtmlNonce'    => wp_create_nonce( 'godam_get_single_sidebar_product_html' ),
-				'getMultipleProductHtmlAction' => 'godam_get_multiple_sidebar_product_html',
-				'getMultipleProductHtmlNonce'  => wp_create_nonce( 'godam_get_multiple_sidebar_product_html' ),
-				'api_nonce'                    => wp_create_nonce( 'wc_store_api' ),
-			)
 		);
 	}
 

@@ -213,6 +213,7 @@ const woocommerceIntegration = {
 		'wc-video-carousel': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'single-product-story', 'wc-video-carousel.js' ),
 		'wc-featured-video-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'featured-video', 'wc-featured-video-gallery.js' ),
 		'wc-woo-layer-cart-url-editor': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'woocommerce-layer', 'wc-woo-layer-cart-url-editor.js' ),
+		'wc-woo-global-script': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'global-video-popup', 'index.js' ),
 
 		// CSS files
 		'godam-video-carousel': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-video-carousel.scss' ),

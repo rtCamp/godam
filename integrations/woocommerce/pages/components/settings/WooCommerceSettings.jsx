@@ -146,7 +146,7 @@ const WooCommerceSettings = ( { settings = {}, onSettingChange } ) => {
 
 						{ /* Price Settings */ }
 						<div>
-							<p className="godam-settings-section-title">
+							<p>
 								<strong>{ __( 'Price Colors', 'godam' ) }</strong>
 							</p>
 

@@ -153,6 +153,9 @@ class Bootstrap {
 		// Enqueue global Woo variables.
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_global_woo_css_variables' ), 20 );
 
+		// Enqueue global Woo Script.
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_global_woo_script' ), 25 );
+
 		// Register WooCommerce layer via PHP filters.
 		add_filter( 'godam_video_editor_layer_options', array( $this, 'register_woocommerce_layer_option' ), 10 );
 		add_filter( 'godam_video_editor_layer_components', array( $this, 'register_woocommerce_layer_component' ), 10 );
@@ -259,6 +262,41 @@ class Bootstrap {
 		wp_enqueue_style( 'rtgodam-woo-video-modal-global' );
 
 		wp_add_inline_style( 'rtgodam-woo-video-modal-global', $css );
+	}
+
+	/**
+	 * Enqueue global WooCommerce JS (Escape Manager + shared logic).
+	 *
+	 * Loads only on product pages.
+	 *
+	 * @return void
+	 */
+	public function enqueue_global_woo_script() {
+
+		wp_enqueue_script(
+			'rtgodam-wc-woo-global-script',
+			RTGODAM_URL . 'assets/build/integrations/woocommerce/js/wc-woo-global-script.min.js',
+			array(),
+			rtgodam_wc_get_asset_version( RTGODAM_PATH . 'assets/build/integrations/woocommerce/wc-woo-global-script.min.js' ),
+			true 
+		);
+
+		wp_localize_script(
+			'rtgodam-wc-woo-global-script',
+			'godamVars',
+			array(
+				'namespaceRoot'                => '/godam/v1',
+				'videoShortcodeEP'             => '/video-shortcode',
+				'productByIdsEP'               => '/wcproducts-by-ids',
+				'addToCartAjax'                => 'wc/store/cart',
+				'ajaxUrl'                      => admin_url( 'admin-ajax.php' ),
+				'getSingleProductHtmlAction'   => 'godam_get_single_sidebar_product_html',
+				'getSingleProductHtmlNonce'    => wp_create_nonce( 'godam_get_single_sidebar_product_html' ),
+				'getMultipleProductHtmlAction' => 'godam_get_multiple_sidebar_product_html',
+				'getMultipleProductHtmlNonce'  => wp_create_nonce( 'godam_get_multiple_sidebar_product_html' ),
+				'api_nonce'                    => wp_create_nonce( 'wc_store_api' ),
+			)
+		);
 	}
 }
 

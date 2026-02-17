@@ -18,25 +18,31 @@ Important: bootstrap files must never output anything (no `echo`, `var_dump`, et
 
 ```
 integrations/woocommerce/
-├── class-bootstrap.php                    # Integration entry point (conditional bootstrap)
-├── README.md                              # This file
-├── helpers/                               # Helper functions
-├── classes/                               # PHP business logic (WooCommerce dependent)
-│   ├── class-wc.php                       # REST API endpoints for WooCommerce products
-│   ├── class-wc-product-video-gallery.php # Product video gallery display
-│   ├── class-wc-featured-video-gallery.php# Featured video support
-│   ├── class-wc-woocommerce-layer.php     # WC hotspots/layers management
-│   ├── class-wc-product-gallery-video-markup.php # Video markup rendering
-│   ├── class-wc-utility.php               # Helper utilities
+integrations/woocommerce/
+├── class-bootstrap.php                          # Integration entry point (conditional bootstrap)
+├── README.md                                    # This file
+├── helpers/                                     # Helper functions
+├── classes/                                     # PHP business logic (WooCommerce dependent)
+│   ├── class-wc.php                             # REST API endpoints for WooCommerce products
+│   ├── class-wc-product-video-gallery.php       # Product video gallery display
+│   ├── class-wc-featured-video-gallery.php      # Featured video support
+│   ├── class-wc-woocommerce-layer.php           # WC hotspots/layers management
+│   ├── class-wc-product-gallery-video-markup.php# Video modal & gallery markup rendering
+│   ├── class-wc-utility.php                     # Helper utilities
 │   └── shortcodes/
 │       └── class-godam-product-gallery.php
+├── templates/
+│   └── sidebar/                                 # Sidebar templates rendered inside video modal
+│       ├── hero-product.php                     # Hero/primary product layout
+│       ├── single-product-details.php           # Full single product details layout
+│       └── multiple-products-list.php           # Multiple product listing layout
 ├── blocks/
-│   └── godam-product-gallery/             # Block source (block.json, editor assets)
+│   └── godam-product-gallery/                   # Block source (block.json, editor assets)
 ├── assets/
-│   ├── css/                               # SCSS sources
-│   ├── js/                                # JS sources
+│   ├── css/                                     # SCSS sources
+│   ├── js/                                      # JS sources
 │   └── images/
-└── pages/                                 # Admin/editor UI components used by layers
+└── pages/                                       # Admin/editor UI components used by layers
 ```
 
 ## Features
