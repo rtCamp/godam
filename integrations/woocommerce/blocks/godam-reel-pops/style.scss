@@ -314,6 +314,60 @@
 	}
 }
 
+/* Modal navigation (Reel Pops only) */
+.godam-product-modal-container.godam-reel-pops-modal-nav-enabled {
+	.godam-woo-global-modal-content,
+	.godam-product-modal-content {
+		position: relative;
+	}
+
+	.godam-reel-pops-modal-nav {
+		position: absolute;
+		top: 50%;
+		left: 0;
+		right: 0;
+		transform: translateY(-50%);
+		display: flex;
+		justify-content: space-between;
+		padding: 0 12px;
+		z-index: 30;
+		pointer-events: none;
+	}
+
+	.godam-reel-pops-modal-nav-btn {
+		width: 36px;
+		height: 36px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border: none;
+		border-radius: 999px;
+		background: rgba(0, 0, 0, 0.6);
+		color: #fff;
+		cursor: pointer;
+		pointer-events: auto;
+		opacity: 0;
+		visibility: hidden;
+		transform: scale(0.96);
+		transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+	}
+
+	.godam-woo-global-modal-content:hover .godam-reel-pops-modal-nav-btn,
+	.godam-product-modal-content:hover .godam-reel-pops-modal-nav-btn {
+		opacity: 1;
+		visibility: visible;
+		transform: scale(1);
+	}
+
+	@media (hover: none) {
+		.godam-reel-pops-modal-nav-btn {
+			opacity: 1;
+			visibility: visible;
+			transform: scale(1);
+		}
+	}
+}
+
 /* ANIMATION SYSTEM — uses CSS @keyframes (not transitions) to avoid specificity conflicts */
 
 /* Base state - hidden by default */

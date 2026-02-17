@@ -84,6 +84,8 @@
 			this.isHiddenForModal = false;
 			this.wasRotationActiveBeforeModal = false;
 			this.modalObserver = null;
+			this.currentModalVideoId = '';
+			this.isSwitchingModal = false;
 
 			// Get all pre-rendered video slots.
 			this.videoSlots = this.videoSlotsContainer ?
@@ -561,7 +563,9 @@
 					const isOpened = resolvedModal.classList.contains( 'open' ) || resolvedModal.classList.contains( 'active' );
 
 					if ( isOpened ) {
+						this.currentModalVideoId = normalizedVideoId;
 						this.attachModalStateObserver( resolvedModal );
+						this.attachModalNavigation( resolvedModal );
 						this.hideForModal();
 					}
 
@@ -587,6 +591,124 @@
 			modal.classList.remove( 'hidden' );
 			modal.classList.add( 'active' );
 			this.hideForModal();
+		}
+
+		/**
+		 * Attach left/right navigation controls into an opened modal.
+		 *
+		 * @param {HTMLElement} modal Modal element.
+		 */
+		attachModalNavigation( modal ) {
+			if ( ! modal || this.videoSlots.length < 2 ) {
+				return;
+			}
+
+			modal.classList.add( 'godam-reel-pops-modal-nav-enabled' );
+
+			const modalContent = modal.querySelector( '.godam-woo-global-modal-content' ) || modal.querySelector( '.godam-product-modal-content' );
+			if ( ! modalContent ) {
+				return;
+			}
+
+			if ( modalContent.querySelector( '.godam-reel-pops-modal-nav' ) ) {
+				return;
+			}
+
+			const nav = document.createElement( 'div' );
+			nav.className = 'godam-reel-pops-modal-nav';
+
+			const prevButton = document.createElement( 'button' );
+			prevButton.type = 'button';
+			prevButton.className = 'godam-reel-pops-modal-nav-btn prev';
+			prevButton.setAttribute( 'aria-label', 'Show previous reel video' );
+			prevButton.innerHTML = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true"><path d="M14 6L8 12L14 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+			const nextButton = document.createElement( 'button' );
+			nextButton.type = 'button';
+			nextButton.className = 'godam-reel-pops-modal-nav-btn next';
+			nextButton.setAttribute( 'aria-label', 'Show next reel video' );
+			nextButton.innerHTML = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true"><path d="M10 6L16 12L10 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+			prevButton.addEventListener( 'click', ( event ) => {
+				event.preventDefault();
+				event.stopPropagation();
+				this.navigateModal( -1 );
+			} );
+
+			nextButton.addEventListener( 'click', ( event ) => {
+				event.preventDefault();
+				event.stopPropagation();
+				this.navigateModal( 1 );
+			} );
+
+			nav.appendChild( prevButton );
+			nav.appendChild( nextButton );
+			modalContent.appendChild( nav );
+		}
+
+		/**
+		 * Navigate opened modal to next/previous Reel Pops video.
+		 *
+		 * @param {number} step Step direction (-1 previous, 1 next).
+		 */
+		navigateModal( step ) {
+			if ( this.videoSlots.length < 2 || this.isSwitchingModal ) {
+				return;
+			}
+
+			const currentModalIndex = this.getVideoIndexById( this.currentModalVideoId );
+			if ( currentModalIndex < 0 ) {
+				return;
+			}
+
+			const nextIndex = ( currentModalIndex + step + this.videoSlots.length ) % this.videoSlots.length;
+			const nextOverlay = this.videoSlots[ nextIndex ]?.querySelector( '.godam-reel-pops-click-overlay' );
+			if ( ! nextOverlay ) {
+				return;
+			}
+
+			const nextModalId = nextOverlay.getAttribute( 'data-modal-id' );
+			const nextVideoId = nextOverlay.getAttribute( 'data-video-id' );
+			const nextProductIds = nextOverlay.getAttribute( 'data-product-ids' ) || '';
+
+			this.isSwitchingModal = true;
+
+			const currentOpenModal = this.wrapper.querySelector( '.godam-product-modal-container.open, .godam-product-modal-container.active' );
+
+			this.openModal( nextModalId, nextVideoId, nextProductIds );
+
+			setTimeout( () => {
+				this.softCloseModal( currentOpenModal );
+			}, 120 );
+
+			setTimeout( () => {
+				this.isSwitchingModal = false;
+			}, 240 );
+		}
+
+		/**
+		 * Soft-close modal without running full close lifecycle to prevent
+		 * backdrop flicker while navigating between Reel Pops modals.
+		 *
+		 * @param {HTMLElement|null} modal Modal element.
+		 */
+		softCloseModal( modal ) {
+			if ( ! modal ) {
+				return;
+			}
+
+			modal.classList.remove( 'open', 'active' );
+			modal.classList.add( 'hidden' );
+
+			const htmlVideo = modal.querySelector( 'video' );
+			if ( htmlVideo && typeof htmlVideo.pause === 'function' ) {
+				htmlVideo.pause();
+			}
+
+			const player = modal.querySelector( '.video-js' )?.player;
+			if ( player && typeof player.pause === 'function' ) {
+				player.pause();
+			}
 		}
 
 		/**
@@ -633,7 +755,7 @@
 		 * Restore Reel Pops after modal closes.
 		 */
 		restoreAfterModal() {
-			if ( ! this.isHiddenForModal || this.isClosedByUser ) {
+			if ( ! this.isHiddenForModal || this.isClosedByUser || this.isSwitchingModal ) {
 				return;
 			}
 
@@ -648,6 +770,7 @@
 			this.playCurrentVideo();
 			this.wasRotationActiveBeforeModal = false;
 			this.isHiddenForModal = false;
+			this.currentModalVideoId = '';
 		}
 
 		/**
@@ -677,6 +800,24 @@
 			this.modalObserver.observe( modal, {
 				attributes: true,
 				attributeFilter: [ 'class' ],
+			} );
+		}
+
+		/**
+		 * Resolve Reel Pops slot index from a video ID.
+		 *
+		 * @param {string} videoId Video ID.
+		 * @return {number} Slot index or -1 if not found.
+		 */
+		getVideoIndexById( videoId ) {
+			if ( ! videoId ) {
+				return -1;
+			}
+
+			const targetId = String( videoId );
+			return this.videoSlots.findIndex( ( slot ) => {
+				const slotVideoId = slot.getAttribute( 'data-video-id' );
+				return String( slotVideoId ) === targetId;
 			} );
 		}
 
