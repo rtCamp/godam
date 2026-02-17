@@ -1,4 +1,4 @@
-@import '../../../../assets/src/css/godam-video-popup.scss';
+@import './godam-video-popup.scss';
 
 .godam-product-gallery {
 	width: 100%;
@@ -512,11 +512,6 @@
 		opacity: 1;
 		pointer-events: auto;
 	}
-}
-
-/* Godam Product Gallery Mini Cart */
-.godam-product-video-gallery-sidebar--cart-basket .wc-block-mini-cart__badge {
-	font-size: 0.6em !important;
 }
 
 /* Only apply flex-wrap: nowrap to Stack blocks that contain the gallery */

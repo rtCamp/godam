@@ -43,6 +43,9 @@ class WC_Product_Gallery_Video_Markup {
 	 */
 	public function generate_product_gallery_video_modal_markup( $cta_enabled, $cta_display_position, $video_id, $product_ids, $instance_id, $timestamped = false ) {
 
+		$class_id_keyword       = 'godam-product';
+		$swipe_overlay_required = true;
+
 		if ( $cta_enabled && ( 'inside' === $cta_display_position || 'below-inside' === $cta_display_position ) ) {
 
 			$product_ids_array = array_map( 'absint', explode( ',', $product_ids ) );
@@ -50,15 +53,32 @@ class WC_Product_Gallery_Video_Markup {
 
 			// Mutiple - show all products.
 			if ( $no_of_products ) {
-				echo wp_kses_post( (string) $this->generate_cta_enabled_muliple_product_modal_markup( $product_ids_array, $video_id, $instance_id ) );
+				echo wp_kses_post( (string) $this->generate_cta_enabled_muliple_product_modal_markup( $product_ids_array, $video_id, $instance_id, $class_id_keyword, $swipe_overlay_required ) );
 			} else {
 				// single - show full product.
-				echo wp_kses_post( (string) $this->generate_cta_enabled_single_product_modal_markup( $product_ids, $video_id, $timestamped, $instance_id ) );
+				echo wp_kses_post( (string) $this->generate_cta_enabled_single_product_modal_markup( $product_ids, $video_id, $timestamped, $instance_id, $class_id_keyword, $swipe_overlay_required ) );
 			}
 		} else {
 			// video modal markup.
-			echo wp_kses_post( (string) $this->generate_video_modal_markup( $video_id, $instance_id ) );
+			echo wp_kses_post( (string) $this->generate_video_modal_markup( $video_id, $instance_id, $class_id_keyword, $swipe_overlay_required ) );
 		}
+	}
+
+	/**
+	 * Generates and outputs the modal markup for the featured product video
+	 * in the WooCommerce product gallery.
+	 *
+	 * This method prepares the required keyword and configuration flags,
+	 * then delegates the markup generation to `generate_video_modal_markup()`.
+	 * The generated markup is escaped using wp_kses_post() before being echoed.
+	 *
+	 * @return void Outputs the featured video modal HTML directly.
+	 */
+	public function generate_featured_video_gallery_video_modal_markup() {
+		$class_id_keyword       = 'godam-woocommerce-featured-video';
+		$swipe_overlay_required = false;
+
+		echo wp_kses_post( (string) $this->generate_video_modal_markup( NAN, '', $class_id_keyword, $swipe_overlay_required ) );
 	}
 
 	/**
@@ -80,20 +100,50 @@ class WC_Product_Gallery_Video_Markup {
 	 * @param array  $product_ids         Array of product IDs associated with the video.
 	 * @param int    $video_id            The ID of the video for which the modal is being rendered.
 	 * @param string $instance_id         Unique ID for each GoDAM Gallery Block.
+	 * @param string $keyword             Unique CSS class prefix used to scope modal elements.
+	 * @param bool   $swiper              Whether to render the swipe overlay hint inside the video container.
 	 */
-	private function generate_cta_enabled_muliple_product_modal_markup( $product_ids, $video_id, $instance_id ) {
+	private function generate_cta_enabled_muliple_product_modal_markup( $product_ids, $video_id, $instance_id, $keyword, $swiper ) {
+
+		// Normalize product IDs.
+		$product_ids = array_filter( array_map( 'absint', (array) $product_ids ) );
+
+		// Normalize video ID.
+		$video_id = absint( $video_id );
+
+		// Validate required params.
+		if ( empty( $product_ids ) || ! $video_id ) {
+
+			$message = sprintf(
+				'Multiple Product Modal not rendered. Invalid data. Product IDs: %s | Video ID: %s',
+				empty( $product_ids ) ? 'EMPTY' : implode( ',', $product_ids ),
+				$video_id ? $video_id : 'EMPTY'
+			);
+
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( '[GODAM WOO Multiple Product MODAL] ' . $message ); // phpcs:ignore
+			}
+
+			return;
+		}
+
 		ob_start();
 
-		$data_product_ids = implode( ',', array_map( 'absint', (array) $product_ids ) );
+		$data_product_ids = implode( ',', $product_ids );
 		?>
-			<div class="godam-product-modal-container" data-modal-video-id="<?php echo esc_attr( $video_id ); ?>" data-gallery-id="<?php echo esc_attr( $instance_id ); ?>"> <!-- overlay container -->
+			<div class="<?php echo esc_attr( $keyword ); ?>-modal-container godam-woo-global-modal-container" 
+				data-modal-video-id="<?php echo esc_attr( $video_id ); ?>" 
+				<?php if ( ! empty( $instance_id ) ) : ?>
+					data-gallery-id="<?php echo esc_attr( $instance_id ); ?>"
+				<?php endif; ?>
+			> <!-- overlay container -->
 				<div class="close">
-					<button class="godam-product-modal-close" aria-label="<?php __( 'Close modal', 'godam' ); ?>">
+					<button class="<?php echo esc_attr( $keyword ); ?>-modal-close godam-woo-global-modal-close" aria-label="<?php __( 'Close modal', 'godam' ); ?>">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
 					</button>
 				</div>
-				<div class="godam-product-modal-content">
-					<div class="godam-product-video-container column">
+				<div class="<?php echo esc_attr( $keyword ); ?>-modal-content godam-woo-global-modal-content">
+					<div class="<?php echo esc_attr( $keyword ); ?>-video-container godam-woo-global-video-container column">
 						<div class="video-container animate-video-loading" style="aspect-ratio:responsive;">
 							<div class="animate-play-btn">
 								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
@@ -101,17 +151,18 @@ class WC_Product_Gallery_Video_Markup {
 								</svg>
 							</div>
 						</div>
-						<div class="godam-swipe-overlay">
-							<div class="godam-swipe-hint">
-								<div class="chevron chevron-up"></div>
-								<div class="chevron chevron-down"></div>
-								<span class="godam-scroll-or-swipe-text"></span>
+						<?php if ( $swiper ) : ?>
+							<div class="godam-swipe-overlay">
+								<div class="godam-swipe-hint">
+									<div class="chevron chevron-up"></div>
+									<div class="chevron chevron-down"></div>
+									<span class="godam-scroll-or-swipe-text"></span>
+								</div>
 							</div>
-						</div>
+						<?php endif; ?>
 					</div>
 					<div class="godam-product-sidebar" data-product-ids="<?php echo esc_attr( $data_product_ids ); ?>">
 						<div class="godam-sidebar-header">
-							<h3 class="godam-header-text"><?php esc_html_e( 'Products seen in the video', 'godam' ); ?></h3>
 
 							<div class="godam-sidebar-header-actions">
 								<div class="godam-product-video-gallery-sidebar--cart-basket">
@@ -168,22 +219,55 @@ class WC_Product_Gallery_Video_Markup {
 	 * @param int    $video_id            The ID of the video the modal is for.
 	 * @param bool   $timestamped         Whether the modal should include timestamping (default false).
 	 * @param string $instance_id         Unique ID for each GoDAM Gallery Block.
+	 * @param string $keyword             Unique CSS class prefix used to scope modal elements.
+	 * @param bool   $swiper              Whether to render the swipe overlay hint inside the video container.
 	 */
-	private function generate_cta_enabled_single_product_modal_markup( $product_id, $video_id, $timestamped, $instance_id, ) {
+	private function generate_cta_enabled_single_product_modal_markup( $product_id, $video_id, $timestamped, $instance_id, $keyword, $swiper ) {
+
+		// Normalize video ID.
+		$video_id = absint( $video_id );
+
+		// Normalize video ID.
+		$product_id = absint( $product_id );
+
+		// Validate required params.
+		if ( empty( $video_id ) || empty( $product_id ) ) {
+
+			$message = sprintf(
+				'Modal not rendered. Missing required data. Product ID: %s | Video ID: %s',
+				$product_id ? $product_id : 'EMPTY',
+				$video_id ? $video_id : 'EMPTY'
+			);
+
+			// Log in the error.
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( '[GODAM WOO Single Product MODAL] ' . $message ); // phpcs:ignore
+			}
+
+			return;
+		}
+
 		ob_start();
 
 		if ( ! $timestamped ) {
 			$timestamped = 0;
 		}
 		?>
-			<div class="godam-product-modal-container" data-modal-video-id="<?php echo esc_attr( $video_id ); ?>" data-modal-timestamped="<?php echo esc_attr( $timestamped ); ?>" data-modal-attached-product-id="<?php echo esc_attr( $product_id ); ?>" data-gallery-id="<?php echo esc_attr( $instance_id ); ?>"> <!-- overlay container -->
+			<div class="<?php echo esc_attr( $keyword ); ?>-modal-container godam-woo-global-modal-container" 
+				data-modal-video-id="<?php echo esc_attr( $video_id ); ?>" 
+				data-modal-timestamped="<?php echo esc_attr( $timestamped ); ?>" 
+				data-modal-attached-product-id="<?php echo esc_attr( $product_id ); ?>" 
+				<?php if ( ! empty( $instance_id ) ) : ?>
+					data-gallery-id="<?php echo esc_attr( $instance_id ); ?>"
+				<?php endif; ?>
+			> <!-- overlay container -->
 				<div class="close">
-					<button class="godam-product-modal-close" aria-label="<?php __( 'Close modal', 'godam' ); ?>">
+					<button class="<?php echo esc_attr( $keyword ); ?>-modal-close godam-woo-global-modal-close" aria-label="<?php __( 'Close modal', 'godam' ); ?>">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
 					</button>
 				</div>
-				<div class="godam-product-modal-content">
-					<div class="godam-product-video-container column">
+				<div class="<?php echo esc_attr( $keyword ); ?>-modal-content godam-woo-global-modal-content">
+					<div class="<?php echo esc_attr( $keyword ); ?>-video-container godam-woo-global-video-container column">
 						<div class="video-container animate-video-loading" style="aspect-ratio:responsive;">
 							<div class="animate-play-btn">
 								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
@@ -191,17 +275,18 @@ class WC_Product_Gallery_Video_Markup {
 								</svg>
 							</div>
 						</div>
-						<div class="godam-swipe-overlay">
+						<?php if ( $swiper ) : ?>
+							<div class="godam-swipe-overlay">
 							<div class="godam-swipe-hint">
 								<div class="chevron chevron-up"></div>
 								<div class="chevron chevron-down"></div>
 								<span class="godam-scroll-or-swipe-text"></span>
 							</div>
-						</div>
+							</div>
+						<?php endif; ?>
 					</div>
 					<div class="godam-product-sidebar single-product-sidebar" data-product-ids="<?php echo esc_attr( $product_id ); ?>">
 						<div class="godam-sidebar-header">
-							<h3 class="godam-header-text hidden"><?php esc_html_e( 'Products seen in the video', 'godam' ); ?></h3>
 
 							<div class="godam-sidebar-header-actions">
 								<div class="godam-product-video-gallery-sidebar--cart-basket">
@@ -250,19 +335,29 @@ class WC_Product_Gallery_Video_Markup {
 	 *
 	 * @param int    $video_id            The ID of the video for which the modal is being rendered.
 	 * @param string $instance_id         Unique ID for each GoDAM Gallery Block.
+	 * @param string $keyword             Unique CSS class prefix used to scope modal elements.
+	 * @param bool   $swiper              Whether to render the swipe overlay hint inside the video container.
 	 */
-	private function generate_video_modal_markup( $video_id, $instance_id, ) {
+	private function generate_video_modal_markup( $video_id, $instance_id, $keyword, $swiper ) {
 		ob_start();
 
 		?>
-		<div class="godam-product-modal-container " data-modal-video-id="<?php echo esc_attr( $video_id ); ?>" data-gallery-id="<?php echo esc_attr( $instance_id ); ?>"> <!-- overlay container -->
+		<div 
+			class="<?php echo esc_attr( $keyword ); ?>-modal-container godam-woo-global-modal-container"
+			<?php if ( ! empty( $video_id ) && ! is_nan( $video_id ) ) : ?>
+				data-modal-video-id="<?php echo esc_attr( $video_id ); ?>"
+			<?php endif; ?>
+			<?php if ( ! empty( $instance_id ) ) : ?>
+				data-gallery-id="<?php echo esc_attr( $instance_id ); ?>"
+			<?php endif; ?>
+		> <!-- overlay container -->
 			<div class="close">
-				<button class="godam-product-modal-close" aria-label="<?php __( 'Close modal', 'godam' ); ?>">
+				<button class="<?php echo esc_attr( $keyword ); ?>-modal-close godam-woo-global-modal-close" aria-label="<?php __( 'Close modal', 'godam' ); ?>">
 					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
 				</button>
 			</div>
-			<div class="godam-product-modal-content no-sidebar">
-				<div class="godam-product-video-container">
+			<div class="<?php echo esc_attr( $keyword ); ?>-modal-content godam-woo-global-modal-content no-sidebar">
+				<div class="<?php echo esc_attr( $keyword ); ?>-video-container godam-woo-global-video-container">
 					<div class="video-container animate-video-loading" style="aspect-ratio:responsive;">
 						<div class="animate-play-btn">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
@@ -270,13 +365,15 @@ class WC_Product_Gallery_Video_Markup {
 							</svg>
 						</div>
 					</div>
-					<div class="godam-swipe-overlay">
-						<div class="godam-swipe-hint">
-							<div class="chevron chevron-up"></div>
-							<div class="chevron chevron-down"></div>
-							<span class="godam-scroll-or-swipe-text"></span>
+					<?php if ( $swiper ) : ?>
+						<div class="godam-swipe-overlay">
+							<div class="godam-swipe-hint">
+								<div class="chevron chevron-up"></div>
+								<div class="chevron chevron-down"></div>
+								<span class="godam-scroll-or-swipe-text"></span>
+							</div>
 						</div>
-					</div>
+					<?php endif; ?>
 				</div>
 			</div>
 		</div>

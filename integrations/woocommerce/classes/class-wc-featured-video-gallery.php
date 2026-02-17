@@ -23,6 +23,13 @@ class WC_Featured_Video_Gallery {
 
 	use Singleton;
 
+	/**
+	 * Holds the markup instance.
+	 *
+	 * @var WC_Product_Gallery_Video_Markup
+	 */
+	private $markup_instance;
+
 	const FALLBACK_THUMBNAIL = RTGODAM_URL . 'assets/src/images/cropped-video-thumbnail-default.png';
 
 	/**
@@ -30,6 +37,9 @@ class WC_Featured_Video_Gallery {
 	 * Initialize class by hooking into WordPress and WooCommerce actions/filters.
 	 */
 	public function __construct() {
+
+		// Initialize Video Markup class.
+		$this->markup_instance = WC_Product_Gallery_Video_Markup::get_instance();
 
 		// Enqueue Featured Video dedicated scripts.
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
@@ -56,6 +66,9 @@ class WC_Featured_Video_Gallery {
 				}
 			}
 		);
+
+		// Render markup.
+		add_action( 'woocommerce_after_single_product', array( $this, 'render_video_modal_markup' ) );
 	}
 
 	/**
@@ -368,5 +381,27 @@ class WC_Featured_Video_Gallery {
 				'videoThumbs' => $video_thumbnails,
 			)
 		);
+	}
+
+	/**
+	 * Renders the featured video modal markup on single product pages.
+	 *
+	 * This method checks whether the current page is a WooCommerce single
+	 * product page using `is_product()`. If true, it delegates the modal
+	 * markup generation to the markup instance.
+	 *
+	 * The modal is not rendered on non-product pages.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void Outputs the featured video modal HTML when applicable.
+	 */
+	public function render_video_modal_markup() {
+
+		if ( ! is_product() ) {
+			return;
+		}
+
+		$this->markup_instance->generate_featured_video_gallery_video_modal_markup();
 	}
 }

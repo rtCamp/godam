@@ -8,6 +8,8 @@
 
 namespace RTGODAM\Integrations\WooCommerce;
 
+use RTGODAM\Inc\WooCommerce\WC_Utility;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -26,6 +28,13 @@ class Bootstrap {
 	 * @var Bootstrap|null
 	 */
 	private static $instance = null;
+
+	/**
+	 * Holds the utility instance.
+	 *
+	 * @var WC_Utility
+	 */
+	private $utility_instance;
 
 	/**
 	 * Get instance of this class.
@@ -135,6 +144,9 @@ class Bootstrap {
 		require_once RTGODAM_WC_MODULE_PATH . 'classes/class-wc-woocommerce-layer.php';
 		require_once RTGODAM_WC_MODULE_PATH . 'classes/class-wc-product-gallery-video-markup.php';
 		require_once RTGODAM_WC_MODULE_PATH . 'classes/class-wc-utility.php';
+
+		// Initialize the Utility Helper class.
+		$this->utility_instance = WC_Utility::get_instance();
 	}
 
 	/**
@@ -143,9 +155,21 @@ class Bootstrap {
 	private function init_hooks() {
 		add_action( 'init', array( $this, 'init_woocommerce_integration' ), 20 );
 
+		// Enqueue global Woo variables.
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_global_woo_css_variables' ), 20 );
+
+		// Enqueue global Woo Script.
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_global_woo_script' ), 25 );
+
 		// Register WooCommerce layer via PHP filters.
 		add_filter( 'godam_video_editor_layer_options', array( $this, 'register_woocommerce_layer_option' ), 10 );
 		add_filter( 'godam_video_editor_layer_components', array( $this, 'register_woocommerce_layer_component' ), 10 );
+
+		// Register ajax hooks for sidebar.
+		add_action( 'wp_ajax_godam_get_single_sidebar_product_html', array( $this->utility_instance, 'godam_get_single_sidebar_product_html_callback' ) );
+		add_action( 'wp_ajax_nopriv_godam_get_single_sidebar_product_html', array( $this->utility_instance, 'godam_get_single_sidebar_product_html_callback' ) );
+		add_action( 'wp_ajax_godam_get_multiple_sidebar_product_html', array( $this->utility_instance, 'godam_get_multiple_sidebar_product_html_callback' ) );
+		add_action( 'wp_ajax_nopriv_godam_get_multiple_sidebar_product_html', array( $this->utility_instance, 'godam_get_multiple_sidebar_product_html_callback' ) );
 	}
 
 	/**
@@ -221,6 +245,64 @@ class Bootstrap {
 		return function_exists( 'is_plugin_active' )
 			? is_plugin_active( 'woocommerce/woocommerce.php' )
 			: class_exists( 'WooCommerce' );
+	}
+
+	/**
+	 * Enqueue global WooCommerce CSS variables.
+	 *
+	 * Makes Woo-related CSS variables available on all pages
+	 * when WooCommerce is active.
+	 *
+	 * @return void
+	 */
+	public function enqueue_global_woo_css_variables() {
+
+		$css = $this->utility_instance->get_woocommerce_video_modal_css_variables();
+
+		if ( empty( $css ) ) {
+			return;
+		}
+
+		// Register dummy handle if needed.
+		wp_register_style( 'rtgodam-woo-video-modal-global', false, array(), RTGODAM_VERSION, 'all' );
+		wp_enqueue_style( 'rtgodam-woo-video-modal-global' );
+
+		wp_add_inline_style( 'rtgodam-woo-video-modal-global', $css );
+	}
+
+	/**
+	 * Enqueue global WooCommerce JS (Escape Manager + shared logic).
+	 *
+	 * Loads only on product pages.
+	 *
+	 * @return void
+	 */
+	public function enqueue_global_woo_script() {
+
+		wp_enqueue_script(
+			'rtgodam-wc-woo-global-script',
+			RTGODAM_URL . 'assets/build/integrations/woocommerce/js/wc-woo-global-script.min.js',
+			array(),
+			rtgodam_wc_get_asset_version( RTGODAM_PATH . 'assets/build/integrations/woocommerce/wc-woo-global-script.min.js' ),
+			true 
+		);
+
+		wp_localize_script(
+			'rtgodam-wc-woo-global-script',
+			'godamWooVars',
+			array(
+				'namespaceRoot'                => '/godam/v1',
+				'videoShortcodeEP'             => '/video-shortcode',
+				'productByIdsEP'               => '/wcproducts-by-ids',
+				'addToCartAjax'                => 'wc/store/cart',
+				'ajaxUrl'                      => admin_url( 'admin-ajax.php' ),
+				'getSingleProductHtmlAction'   => 'godam_get_single_sidebar_product_html',
+				'getSingleProductHtmlNonce'    => wp_create_nonce( 'godam_get_single_sidebar_product_html' ),
+				'getMultipleProductHtmlAction' => 'godam_get_multiple_sidebar_product_html',
+				'getMultipleProductHtmlNonce'  => wp_create_nonce( 'godam_get_multiple_sidebar_product_html' ),
+				'api_nonce'                    => wp_create_nonce( 'wc_store_api' ),
+			)
+		);
 	}
 }
 
