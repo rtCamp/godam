@@ -49,15 +49,74 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	// Track expanded hotspot
 	const [ expandedHotspotIndex, setExpandedHotspotIndex ] = useState( null );
 
+	// Error message for duration validation
+	const [ durationNotice, setDurationNotice ] = useState( '' );
+
+	// Track duration input separately for validation on blur
+	const [ durationInput, setDurationInput ] = useState( String( layer?.duration || '' ) );
+
 	const containerRef = useRef( null );
 	const videoRef = useRef( null );
 
 	const [ contentRect, setContentRect ] = useState( null );
 
+	// Sync duration input with layer duration
+	useEffect( () => {
+		setDurationInput( String( layer?.duration || '' ) );
+	}, [ layer?.duration ] );
+
 	// Helper to dispatch updates
 	const updateField = useCallback( ( field, value ) => {
 		dispatch( updateLayerField( { id: layer.id, field, value } ) );
 	}, [ dispatch, layer?.id ] );
+
+	/**
+	 * Handle duration input change - allows typing but filters non-numeric input.
+	 *
+	 * @param {string} value - The input value.
+	 */
+	const handleDurationInputChange = ( value ) => {
+		// Allow only digits up to 5 characters (max 36000 = 10 hours)
+		if ( /^\d{0,5}$/.test( value ) ) {
+			setDurationInput( value );
+		}
+	};
+
+	/**
+	 * Validate duration value when input loses focus.
+	 * Ensures value is within valid range (1 to 36000 seconds = 10 hours).
+	 */
+	const validateDuration = () => {
+		const value = parseInt( durationInput, 10 );
+		let validatedValue;
+
+		// Maximum: 10 hours (36000 seconds)
+		const MAX_DURATION = 36000;
+		const MIN_DURATION = 1;
+
+		if ( Number.isNaN( value ) || value < MIN_DURATION ) {
+			validatedValue = MIN_DURATION;
+		} else if ( value > MAX_DURATION ) {
+			validatedValue = MAX_DURATION;
+		} else {
+			validatedValue = value;
+		}
+
+		// Check if duration exceeds remaining video length
+		const displayTime = parseFloat( layer?.displayTime || 0 );
+
+		if ( duration > 0 && validatedValue + displayTime > duration ) {
+			setDurationNotice( __( 'Layer duration exceeds the remaining video length. Please reduce the duration.', 'godam' ) );
+			validatedValue = Math.max( MIN_DURATION, Math.floor( duration - displayTime ) );
+		} else {
+			setDurationNotice( '' );
+		}
+
+		setDurationInput( String( validatedValue ) );
+		if ( validatedValue !== layer?.duration ) {
+			updateField( 'duration', validatedValue );
+		}
+	};
 
 	const percentToPx = useCallback( ( percent, dimension ) => {
 		if ( ! contentRect ) {
@@ -248,6 +307,17 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 				</Notice>
 			}
 
+			{
+				durationNotice &&
+				<Notice
+					className="mb-4"
+					status="error"
+					onRemove={ () => setDurationNotice( '' ) }
+				>
+					{ durationNotice }
+				</Notice>
+			}
+
 			{ /* Duration */ }
 			<div className="mb-6">
 				<TextControl
@@ -255,11 +325,10 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 					className="godam-input"
 					type="number"
 					min="1"
-					value={ layer?.duration || '' }
-					onChange={ ( val ) => {
-						const newVal = parseInt( val, 10 ) || 0;
-						updateField( 'duration', newVal );
-					} }
+					max="36000"
+					value={ durationInput }
+					onChange={ ( value ) => handleDurationInputChange( value ) }
+					onBlur={ validateDuration }
 					help={ __( 'Duration (in seconds) this layer will stay visible', 'godam' ) }
 					disabled={ ! isValidAPIKey }
 				/>
