@@ -50,6 +50,7 @@ class Media_Library_Ajax {
 
 		// Add filters for virtual media srcset support.
 		add_filter( 'wp_calculate_image_srcset', array( $this, 'filter_virtual_media_srcset' ), 10, 5 );
+		add_filter( 'wp_content_img_tag', array( $this, 'filter_rtgodam_content_img_tag' ), 10, 3 );
 	}
 
 	/**
@@ -886,6 +887,15 @@ class Media_Library_Ajax {
 	 * @return string The filtered attachment URL.
 	 */
 	public function filter_attachment_url_for_virtual_media( $url, $post_id ) {
+		$attachment_mime_type = get_post_mime_type( $post_id );
+
+		// For WordPress-uploaded images, use transcoded CDN URL if available.
+		if ( 'image' === substr( $attachment_mime_type, 0, 5 ) ) {
+			$rtgodam_transcoded_url = get_post_meta( $post_id, 'rtgodam_transcoded_url', true );
+			if ( ! empty( $rtgodam_transcoded_url ) ) {
+				return esc_url( $rtgodam_transcoded_url );
+			}
+		}
 
 		$godam_original_id = get_post_meta( $post_id, '_godam_original_id', true );
 
@@ -902,6 +912,84 @@ class Media_Library_Ajax {
 	}
 
 	/**
+	 * Read GoDAM CDN image size data for an attachment.
+	 *
+	 * @since 1.5.0
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return array
+	 */
+	private function get_rtgodam_image_sizes( $attachment_id ) {
+		$rtgodam_image_sizes = get_post_meta( $attachment_id, 'rtgodam_image_sizes', true );
+		return is_array( $rtgodam_image_sizes ) ? $rtgodam_image_sizes : array();
+	}
+
+	/**
+	 * Find best matching GoDAM CDN size for requested dimensions.
+	 *
+	 * @since 1.5.0
+	 *
+	 * @param array        $rtgodam_image_sizes CDN size array.
+	 * @param string|array $size               Requested size.
+	 * @return array|false
+	 */
+	private function find_best_rtgodam_size( $rtgodam_image_sizes, $size ) {
+		if ( empty( $rtgodam_image_sizes ) || ! is_array( $rtgodam_image_sizes ) ) {
+			return false;
+		}
+
+		$candidate = false;
+
+		if ( is_string( $size ) && isset( $rtgodam_image_sizes[ $size ] ) ) {
+			$candidate = $rtgodam_image_sizes[ $size ];
+		} else {
+			$target_width  = 0;
+			$target_height = 0;
+
+			if ( is_string( $size ) ) {
+				$wp_image_sizes = wp_get_registered_image_subsizes();
+				if ( isset( $wp_image_sizes[ $size ] ) ) {
+					$target_width  = (int) $wp_image_sizes[ $size ]['width'];
+					$target_height = (int) $wp_image_sizes[ $size ]['height'];
+				}
+			} elseif ( is_array( $size ) ) {
+				$target_width  = isset( $size[0] ) ? (int) $size[0] : 0;
+				$target_height = isset( $size[1] ) ? (int) $size[1] : 0;
+			}
+
+			if ( $target_width > 0 ) {
+				$best_diff = PHP_INT_MAX;
+				foreach ( $rtgodam_image_sizes as $rtgodam_size ) {
+					if ( empty( $rtgodam_size['width'] ) || empty( $rtgodam_size['height'] ) ) {
+						continue;
+					}
+
+					$width  = (int) $rtgodam_size['width'];
+					$height = (int) $rtgodam_size['height'];
+					$diff   = abs( $target_width - $width ) + abs( $target_height - $height );
+
+					if ( $diff < $best_diff ) {
+						$best_diff = $diff;
+						$candidate = $rtgodam_size;
+					}
+				}
+			}
+		}
+
+		if ( empty( $candidate['url'] ) ) {
+			return false;
+		}
+
+		return array(
+			'url'      => esc_url( $candidate['url'] ),
+			'width'    => isset( $candidate['width'] ) ? (int) $candidate['width'] : 0,
+			'height'   => isset( $candidate['height'] ) ? (int) $candidate['height'] : 0,
+			'file'     => isset( $candidate['file'] ) ? sanitize_file_name( $candidate['file'] ) : '',
+			'filesize' => isset( $candidate['filesize'] ) ? (int) $candidate['filesize'] : 0,
+		);
+	}
+
+	/**
 	 * Filter srcset calculation for virtual media to use full URLs.
 	 *
 	 * @since 1.5.0
@@ -914,14 +1002,7 @@ class Media_Library_Ajax {
 	 *
 	 * @return array|false Filtered sources array or false.
 	 */
-	public function filter_virtual_media_srcset( $sources, $size_array, $image_src, $image_meta, $attachment_id ) {
-		$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
-
-		if ( empty( $godam_original_id ) ) {
-			return $sources;
-		}
-
-		// Check if image attachment.
+	public function filter_virtual_media_srcset( $sources, $size_array, $image_src, $image_meta, $attachment_id ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Filter signature requires these params.
 		$attachment_mime_type = get_post_mime_type( $attachment_id );
 		if ( 'image' !== substr( $attachment_mime_type, 0, 5 ) ) {
 			return $sources;
@@ -932,22 +1013,87 @@ class Media_Library_Ajax {
 			return $sources;
 		}
 
-		// Use the current image URL as the base for all subsizes.
-		$base_url = trailingslashit( untrailingslashit( dirname( $image_src ) ) );
+		// Check if virtual media or if rtgodam_image_sizes meta exists (indicating GoDAM-managed image).
+		$godam_original_id   = get_post_meta( $attachment_id, '_godam_original_id', true );
+		$rtgodam_image_sizes = $this->get_rtgodam_image_sizes( $attachment_id );
 
-		// Rebuild sources array for virtual media.
-		foreach ( $sources as &$source ) {
-
-			// Get last string after the last slash in the file url.
-			$file_basename = basename( $source['url'] );
-
-			// Rebuild the full URL using the base URL and the file basename.
-			$url = $base_url . ltrim( $file_basename, '/' );
-
-			$source['url'] = esc_url( $url );
+		if ( empty( $godam_original_id ) && empty( $rtgodam_image_sizes ) ) {
+			return $sources;
 		}
-		unset( $source ); // Break the reference.
+
+		// if rtgodam_image_sizes meta exists, use it to build the srcset. 
+		// This is the case for GoDAM-managed images which may not be virtual but still need correct srcset URLs.
+		if ( ! empty( $rtgodam_image_sizes ) ) {
+
+			// Prepare new sources array based on rtgodam_image_sizes meta.
+			$new_sources = array();
+			// Sources element should have only url, descriptor, value. Remove any extra data added for our internal use.
+			foreach ( $rtgodam_image_sizes as &$image_size ) {
+				$new_sources[] = array(
+					'url'        => isset( $image_size['url'] ) ? esc_url( $image_size['url'] ) : '',
+					'descriptor' => 'w',
+					'value'      => isset( $image_size['width'] ) ? intval( $image_size['width'] ) : '',
+				);
+			}
+			unset( $image_size ); // Break the reference.
+
+			$sources = $new_sources;
+		} else {
+			// Compatibility handling for virtual media created before GoDAM image sizes meta was implemented. 
+			// In this case, we will reconstruct the URLs based on the original image URL and the file names in the sources array.
+
+			// Use the current image URL as the base for all subsizes.
+			$base_url = trailingslashit( untrailingslashit( dirname( $image_src ) ) );
+	
+			// Rebuild sources array for virtual media.
+			foreach ( $sources as &$source ) {
+	
+				// Get last string after the last slash in the file url.
+				$file_basename = basename( $source['url'] );
+	
+				// Rebuild the full URL using the base URL and the file basename.
+				$url = $base_url . ltrim( $file_basename, '/' );
+	
+				$source['url'] = esc_url( $url );
+			}
+			unset( $source ); // Break the reference.
+		}
 
 		return $sources;
+	}
+
+	/**
+	 * Replace final rendered content <img> src with CDN URL when available.
+	 *
+	 * @since 1.5.0
+	 *
+	 * @param string $filtered_image Full <img> tag.
+	 * @param string $context        Render context.
+	 * @param int    $attachment_id  Attachment ID.
+	 * @return string
+	 */
+	public function filter_rtgodam_content_img_tag( $filtered_image, $context, $attachment_id ) {
+		if ( empty( $attachment_id ) || empty( $filtered_image ) ) {
+			return $filtered_image;
+		}
+
+		$mime_type = get_post_mime_type( $attachment_id );
+		if ( 'image' !== substr( $mime_type, 0, 5 ) ) {
+			return $filtered_image;
+		}
+
+		$cdn_src = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+		if ( empty( $cdn_src ) ) {
+			return $filtered_image;
+		}
+
+		$updated_image = preg_replace(
+			'/\ssrc="[^"]*"/',
+			' src="' . esc_url( $cdn_src ) . '"',
+			$filtered_image,
+			1
+		);
+
+		return is_string( $updated_image ) ? $updated_image : $filtered_image;
 	}
 }
