@@ -16,6 +16,8 @@ $godam_video_id = isset( $_GET['id'] ) ? intval( wp_unslash( $_GET['id'] ) ) : 0
 
 $godam_preview_content = godam_preview_page_content( $godam_video_id );
 
+$godam_api_key_valid = rtgodam_is_api_key_valid();
+
 // translators: %s: video ID.
 $godam_page_title = empty( $godam_video_id ) ? __( 'Video Preview', 'godam' ) : sprintf( __( 'Video Preview: Attachment(%s)', 'godam' ), $godam_video_id );
 ?>
@@ -44,7 +46,7 @@ $godam_page_title = empty( $godam_video_id ) ? __( 'Video Preview', 'godam' ) : 
 			<div class="godam-video-preview-header--right">
 				<?php if ( $godam_video_id ) : ?>
 					<!-- Video analytics link -->
-					<?php if ( rtgodam_is_api_key_valid() ) : ?>
+					<?php if ( $godam_api_key_valid ) : ?>
 					<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtgodam_analytics&id=' . $godam_video_id ) ); ?>" class="godam-button button-secondary">
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.25 5h1.5v15h-1.5V5zM6 10h1.5v10H6V10zm12 4h-1.5v6H18v-6z"></path></svg>
 						<?php esc_html_e( 'Analytics', 'godam' ); ?>
@@ -66,13 +68,14 @@ $godam_page_title = empty( $godam_video_id ) ? __( 'Video Preview', 'godam' ) : 
 				echo $godam_preview_content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is escaped in the function.
 			?>
 		</div>
-		<?php if ( ! rtgodam_is_api_key_valid() ) : ?>
+		<?php if ( ! $godam_api_key_valid ) : ?>
 		<div class="godam-video-preview-main--sidebar">
 			<div class="godam-pro-features">
 				<h3 class="godam-pro-features__title"><?php esc_html_e( 'Our Pro Features', 'godam' ); ?></h3>
 				
 					<?php
 					$godam_pro_features = array(
+						__( 'Smart media offloading', 'godam' ),
 						__( 'Global CDN-powered delivery', 'godam' ),
 						__( 'Adaptive bitrate video streaming', 'godam' ),
 						__( 'Advanced video performance analytics', 'godam' ),

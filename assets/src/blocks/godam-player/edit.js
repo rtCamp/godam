@@ -649,7 +649,7 @@ function VideoEdit( {
 							<ToolbarButton
 								icon={ edit }
 								label={ __( 'Edit Video', 'godam' ) }
-								href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
+								href={ `${ window?.pluginInfo?.adminUrl || '/wp-admin/' }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
 								target="_blank"
 							/>
 						) }

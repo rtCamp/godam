@@ -654,16 +654,16 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		if ( ! activeUser ) {
 			return `
-			<a href="${ editVideoURL }" class="button button-primary" target="_blank">${ editIcon } Edit Video</a>
+			<a href="${ editVideoURL }" class="button button-primary" target="_blank">${ editIcon } ${ __( 'Edit Video', 'godam' ) }</a>
 			<div class="paid-feature" title="This feature is only available for paid users.">
-				<a href="${ analyticsURL }" class="button button-secondary" target="_blank">${ barChartIcon } Analytics</a>
+				<a href="${ analyticsURL }" class="button button-secondary" target="_blank">${ barChartIcon } ${ __( 'Analytics', 'godam' ) }</a>
 				<span>$</span>
 			</div>
 			`;
 		}
 
-		const editVideoButtonHTML = `<a href="${ editVideoURL }" class="button button-primary" target="_blank">${ editIcon } Edit Video</a>`;
-		const analyticsButtonHTML = `<a href="${ analyticsURL }" class="button button-secondary" target="_blank">${ barChartIcon } Analytics</a>`;
+		const editVideoButtonHTML = `<a href="${ editVideoURL }" class="button button-primary" target="_blank">${ editIcon } ${ __( 'Edit Video', 'godam' ) }</a>`;
+		const analyticsButtonHTML = `<a href="${ analyticsURL }" class="button button-secondary" target="_blank">${ barChartIcon } ${ __( 'Analytics', 'godam' ) }</a>`;
 
 		const buttons = [];
 
