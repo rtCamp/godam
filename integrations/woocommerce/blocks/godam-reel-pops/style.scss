@@ -321,6 +321,14 @@
 		position: relative;
 	}
 
+	@media (hover: hover) and (pointer: fine) {
+		.godam-swipe-overlay,
+		.godam-swipe-hint,
+		.godam-scroll-or-swipe-text {
+			display: none !important;
+		}
+	}
+
 	.godam-reel-pops-modal-nav {
 		position: absolute;
 		top: 50%;
@@ -360,20 +368,9 @@
 	}
 
 	@media (hover: none) {
-		.godam-reel-pops-modal-nav-btn {
-			opacity: 1;
-			visibility: visible;
-			transform: scale(1);
+		.godam-reel-pops-modal-nav {
+			display: none;
 		}
-	}
-}
-
-/* Hide swipe hint text/overlay in Reel Pops-opened modals */
-.godam-product-modal-container.godam-reel-pops-modal-instance {
-	.godam-swipe-overlay,
-	.godam-swipe-hint,
-	.godam-scroll-or-swipe-text {
-		display: none !important;
 	}
 }
 

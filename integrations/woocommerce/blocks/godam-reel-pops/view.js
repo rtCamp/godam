@@ -144,6 +144,7 @@
 
 				// Bind modal click overlays.
 				this.bindModalTriggers();
+				this.ensureModalNavigationSources();
 			}, delayMs );
 		}
 
@@ -532,19 +533,29 @@
 					return;
 				}
 
-				const triggerVideo = document.createElement( 'div' );
-				triggerVideo.className = 'godam-product-video-thumbnail';
-				triggerVideo.setAttribute( 'data-video-id', normalizedVideoId );
-				triggerVideo.setAttribute( 'data-video-attached-product-ids', normalizedProductIds );
-				triggerVideo.setAttribute( 'data-cta-enabled', hasProductIds ? 'true' : 'false' );
-				triggerVideo.setAttribute( 'data-cta-display-position', 'inside' );
+				this.ensureModalNavigationSources();
+				let triggerVideo = this.getModalNavigationSourceByVideoId( normalizedVideoId );
+
+				if ( ! triggerVideo ) {
+					triggerVideo = document.createElement( 'div' );
+					triggerVideo.className = 'godam-product-video-thumbnail godam-reel-pops-nav-source';
+					triggerVideo.setAttribute( 'data-video-id', normalizedVideoId );
+					triggerVideo.setAttribute( 'data-video-attached-product-ids', normalizedProductIds );
+					triggerVideo.setAttribute( 'data-cta-enabled', hasProductIds ? 'true' : 'false' );
+					triggerVideo.setAttribute( 'data-cta-display-position', 'inside' );
+					triggerVideo.style.display = 'none';
+					this.wrapper.appendChild( triggerVideo );
+				} else {
+					triggerVideo.setAttribute( 'data-video-attached-product-ids', normalizedProductIds );
+					triggerVideo.setAttribute( 'data-cta-enabled', hasProductIds ? 'true' : 'false' );
+				}
 
 				const triggerButton = document.createElement( 'button' );
 				triggerButton.type = 'button';
 				triggerButton.className = 'godam-play-button';
+				triggerButton.style.display = 'none';
 
-				this.wrapper.appendChild( triggerVideo );
-				this.wrapper.appendChild( triggerButton );
+				triggerVideo.insertAdjacentElement( 'afterend', triggerButton );
 
 				triggerButton.dispatchEvent( new MouseEvent( 'click', {
 					bubbles: true,
@@ -562,7 +573,6 @@
 						this.hideForModal();
 					}
 
-					triggerVideo.remove();
 					triggerButton.remove();
 				}, 50 );
 				return;
@@ -739,6 +749,58 @@
 			return this.wrapper.querySelector(
 				`.godam-product-modal-container[data-modal-video-id="${ videoId }"]:not([data-modal-timestamped]), .godam-product-modal-container[data-modal-video-id="${ videoId }"][data-modal-timestamped="0"]`,
 			);
+		}
+
+		/**
+		 * Ensure hidden thumbnail source items exist for product-gallery modal
+		 * scroll/swipe navigation integration.
+		 */
+		ensureModalNavigationSources() {
+			let sourcesContainer = this.wrapper.querySelector( '.godam-reel-pops-modal-sources' );
+			if ( ! sourcesContainer ) {
+				sourcesContainer = document.createElement( 'div' );
+				sourcesContainer.className = 'godam-reel-pops-modal-sources';
+				sourcesContainer.style.display = 'none';
+				sourcesContainer.setAttribute( 'aria-hidden', 'true' );
+				this.wrapper.appendChild( sourcesContainer );
+			}
+
+			sourcesContainer.innerHTML = '';
+
+			this.videoSlots.forEach( ( slot ) => {
+				const overlay = slot.querySelector( '.godam-reel-pops-click-overlay' );
+				if ( ! overlay ) {
+					return;
+				}
+
+				const videoId = String( overlay.getAttribute( 'data-video-id' ) || '' ).trim();
+				if ( ! videoId ) {
+					return;
+				}
+
+				const productIds = String( overlay.getAttribute( 'data-product-ids' ) || '' ).trim();
+				const source = document.createElement( 'div' );
+				source.className = 'godam-product-video-thumbnail godam-reel-pops-nav-source';
+				source.setAttribute( 'data-video-id', videoId );
+				source.setAttribute( 'data-video-attached-product-ids', productIds );
+				source.setAttribute( 'data-cta-enabled', productIds.length > 0 ? 'true' : 'false' );
+				source.setAttribute( 'data-cta-display-position', 'inside' );
+				sourcesContainer.appendChild( source );
+			} );
+		}
+
+		/**
+		 * Get hidden modal navigation source by video ID.
+		 *
+		 * @param {string} videoId Video ID.
+		 * @return {HTMLElement|null} Source element.
+		 */
+		getModalNavigationSourceByVideoId( videoId ) {
+			if ( ! videoId ) {
+				return null;
+			}
+
+			return this.wrapper.querySelector( `.godam-reel-pops-nav-source[data-video-id="${ videoId }"]` );
 		}
 
 		/**
