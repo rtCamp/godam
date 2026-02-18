@@ -95,7 +95,7 @@
   },
   "editorScript": ["file:./index.js"],
   "render": "file:./render.php",
-  "style": "file:./style.css",
+  "style": "file:./style-index.css",
   "editorStyle": ["file:./index.css"],
   "viewScript": ["file:./view.js"]
 }
