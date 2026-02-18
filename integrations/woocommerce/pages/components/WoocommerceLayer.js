@@ -16,6 +16,7 @@ import {
 	ColorPalette,
 	Notice,
 	Tooltip,
+	Icon,
 } from '@wordpress/components';
 import {
 	trash,
@@ -24,6 +25,7 @@ import {
 	chevronUp,
 	moreVertical,
 	check,
+	arrowRight,
 } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
 import { useState, useRef, useEffect, useCallback, useMemo } from '@wordpress/element';
@@ -392,8 +394,10 @@ const ProductHotspotPreview = ( { productHotspot, index, productCache } ) => {
 									__html: `${ productData.price }`,
 								} }
 							/>
+						</div>
+						<div className="product-hotspot-action">
 							<a
-								className="product-hotspot-woo-link"
+								className="product-hotspot-woo-link text-white  flex items-center"
 								href={
 									productHotspot.addToCart
 										? productData.link
@@ -404,14 +408,44 @@ const ProductHotspotPreview = ( { productHotspot, index, productCache } ) => {
 								style={ { background: productHotspot.backgroundColor } }
 							>
 								{ ( () => {
-									const defaultLabel = productHotspot.addToCart
-										? __( 'View Product', 'godam' )
-										: __( 'Buy Now', 'godam' );
+									const isVariable = productData?.type === 'variable';
+									const isGrouped = productData?.type === 'grouped';
+									const isExternal = productData?.type === 'external';
+									const isOutOfStock = productData?.in_stock === false;
 
-									const shopText = productHotspot.shopText?.trim();
+									const forceProductPage = isVariable || isGrouped || isExternal || isOutOfStock;
 
-									return shopText ? shopText : defaultLabel;
+									return forceProductPage ? (
+										<svg
+											className="rotate-me-editor"
+											xmlns="http://www.w3.org/2000/svg"
+											width={ 16 }
+											height={ 16 }
+											viewBox="0 0 24 24"
+										>
+											<path
+												fill="currentColor"
+												d="M21 11H6.414l5.293-5.293l-1.414-1.414L2.586 12l7.707 7.707l1.414-1.414L6.414 13H21z"
+											/>
+										</svg>
+
+									) : (
+										<svg
+											width="20"
+											height="20"
+											viewBox="0 0 24 24"
+											fill="currentColor"
+										>
+											<path
+												d="M12 5v14M5 12h14"
+												stroke="currentColor"
+												strokeWidth="2"
+												strokeLinecap="round"
+											/>
+										</svg>
+									);
 								} )() }
+
 							</a>
 						</div>
 					</div>
