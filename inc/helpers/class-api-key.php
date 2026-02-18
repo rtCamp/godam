@@ -50,7 +50,7 @@ class Api_Key {
 	 *
 	 * @var int
 	 */
-	const GRACE_PERIOD = 14400; // 4 * HOUR_IN_SECONDS.
+	const GRACE_PERIOD = 4 * HOUR_IN_SECONDS;
 
 	/**
 	 * Get the stored API key.
