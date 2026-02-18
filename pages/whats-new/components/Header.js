@@ -16,13 +16,13 @@ const Header = ( { version } ) => {
 				<div className="banner-content">
 					<div className="banner-content-meta">
 						<div className="godam-logo">
-							<img src={ GoDAMIcon } alt={ __( 'GoDAM Logo' ) } />
+							<img src={ GoDAMIcon } alt={ __( 'GoDAM Logo', 'godam' ) } />
 						</div>
 						{ version && <span className="godam-version">v{ version }</span> }
 					</div>
 
 					<div className="banner-content-title">
-						<h1>{ __( "What's New in GoDAM" ) }</h1>
+						<h1>{ __( "What's New in GoDAM", 'godam' ) }</h1>
 					</div>
 				</div>
 			</header>

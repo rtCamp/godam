@@ -10,6 +10,7 @@ import 'video.js/dist/video-js.css';
 import '../video-editor/style.scss';
 import axios from 'axios';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
+import { getAPIKeyErrorInfo } from '../godam/utils';
 import {
 	useFetchAnalyticsDataQuery,
 	useFetchProcessedAnalyticsHistoryQuery,
@@ -17,17 +18,18 @@ import {
 import { calculateEngagementRate, calculatePlayRate, generateLineChart } from './helper';
 import DOMPurify from 'isomorphic-dompurify';
 import './charts.js';
-import upgradePlanBackground from '../../assets/src/images/upgrade-plan-analytics-bg.png';
 
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { Button, Spinner } from '@wordpress/components';
+import { addQueryArgs } from '@wordpress/url';
 import SingleMetrics from './SingleMetrics.js';
 import PlaybackPerformanceDashboard from './PlaybackPerformance.js';
 import videojs from 'video.js';
 import { arrowLeft } from '@wordpress/icons';
+import { API_KEY_STATUS, ERROR_TYPE } from '../shared/enums';
 import { formatNumber, formatWatchTime } from '../utils/formatters';
 
 const adminUrl =
@@ -112,10 +114,13 @@ const Analytics = ( { attachmentID } ) => {
 		const container = document.getElementById( 'video-analytics-container' );
 		const overlay = document.getElementById( 'api-key-overlay' );
 
+		// Check for server-side errors OR local API key status issues
+		const apiKeyError = getAPIKeyErrorInfo();
 		const shouldShowOverlay =
-			analyticsDataFetched?.errorType === 'invalid_key' ||
-			analyticsDataFetched?.errorType === 'missing_key' ||
-			analyticsDataFetched?.errorType === 'microservice_error';
+			analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY ||
+			analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ||
+			analyticsDataFetched?.errorType === ERROR_TYPE.MICROSERVICE_ERROR ||
+			apiKeyError !== null;
 
 		if ( shouldShowOverlay ) {
 			if ( loadingEl ) {
@@ -340,6 +345,80 @@ const Analytics = ( { attachmentID } ) => {
 		return () => window.removeEventListener( 'resize', handleResize );
 	}, [] );
 
+	/**
+	 * Renders the appropriate overlay content based on API key status.
+	 *
+	 * @return {JSX.Element} The overlay content to display.
+	 */
+	const renderOverlayContent = () => {
+		const apiKeyError = getAPIKeyErrorInfo();
+
+		// Check for local API key status first (expired, verification_failed)
+		if ( apiKeyError?.type === API_KEY_STATUS.EXPIRED || apiKeyError?.type === API_KEY_STATUS.VERIFICATION_FAILED ) {
+			return (
+				<div className="api-key-overlay-banner">
+					<p className="api-key-overlay-banner-header">
+						{ apiKeyError.title }
+					</p>
+					<p className="api-key-overlay-banner-footer">
+						{ apiKeyError.message }
+						{ ' ' }
+						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+							{ __( 'Go to plugin settings', 'godam' ) }
+						</a>
+					</p>
+				</div>
+			);
+		}
+
+		// Show upgrade message for missing/invalid keys
+		if ( analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY || analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ) {
+			return (
+				<div className="api-key-overlay-banner">
+					<p className="api-key-overlay-banner-header">
+						{ __( 'Upgrade to unlock the media performance report.', 'godam' ) }
+					</p>
+
+					<p className="api-key-overlay-banner-footer">
+						{ __( 'If you already have a premium plan, connect your', 'godam' ) }
+						{ ' ' }
+						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+							{ __( 'API in the settings', 'godam' ) }
+						</a>
+					</p>
+
+					<a
+						href={ addQueryArgs( 'https://godam.io/pricing', {
+							utm_campaign: 'buy-plan',
+							utm_source: window?.location?.host || '',
+							utm_medium: 'plugin',
+							utm_content: 'analytics',
+						} ) }
+						className="components-button godam-button is-primary"
+						target="_blank"
+						rel="noopener noreferrer"
+					>{ __( 'Buy Plan', 'godam' ) }</a>
+				</div>
+			);
+		}
+
+		// Default error message for microservice errors or other issues
+		return (
+			<div className="api-key-overlay-banner">
+				<p>
+					{ sprintf(
+						/* translators: %s: error message from the server */
+						__( '%s', 'godam' ),
+						analyticsDataFetched?.message || __( 'An unknown error occurred. Please check your plugin settings.', 'godam' ),
+					) }
+				</p>
+				<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+					{ __( 'Go to plugin settings', 'godam' ) }
+				</a>
+			</div>
+		);
+	};
+
 	return (
 		<div className="godam-analytics-container">
 			<GodamHeader />
@@ -365,50 +444,14 @@ const Analytics = ( { attachmentID } ) => {
 
 			<div
 				id="api-key-overlay"
-				className="api-key-overlay hidden"
-				style={
-					analyticsDataFetched?.errorType === 'invalid_key' || analyticsDataFetched?.errorType === 'missing_key'
-						? {
-							backgroundImage: `url(${ upgradePlanBackground })`,
-							backgroundSize: '100% calc(100% - 32px)',
-							backgroundRepeat: 'no-repeat',
-							backgroundPosition: 'center 32px',
-						}
-						: {}
-				}
+				className={ `api-key-overlay hidden${
+					( analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY || analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ) && ! getAPIKeyErrorInfo()?.type
+						? ' api-key-overlay--upgrade'
+						: ''
+				}` }
 			>
 				<div className="api-key-message">
-					{ analyticsDataFetched?.errorType === 'invalid_key' || analyticsDataFetched?.errorType === 'missing_key'
-						? <div className="api-key-overlay-banner">
-							<p className="api-key-overlay-banner-header">
-								{ __(
-									'Upgrade to unlock the media performance report.',
-									'godam',
-								) }
-							</p>
-
-							<p className="api-key-overlay-banner-footer">
-								{ __( 'If you already have a premium plan, connect your', 'godam' ) }
-								{ ' ' }
-								<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-									{ __( 'API in the settings', 'godam' ) }
-								</a>
-							</p>
-
-							<a href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=analytics` } className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
-						</div>
-						:	<div className="api-key-overlay-banner">
-							<p>
-								{ analyticsDataFetched?.message + ' ' || __(
-									'An unknown error occurred. Please check your plugin settings.',
-									'godam',
-								) }
-							</p>
-							<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-								{ __( 'Go to plugin settings', 'godam' ) }
-							</a>
-						</div>
-					}
+					{ renderOverlayContent() }
 				</div>
 			</div>
 
