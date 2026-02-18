@@ -1290,10 +1290,12 @@ class Media_Library extends Base {
 		$type     = $request->get_param( 'type' ) ?? 'all';
 		$search   = $request->get_param( 'search' );
 
-		// For now, we hardcode total count as 0 till we get the API endpoint ready.
-		$total     = 0;
-		$all_items = array();
-		$has_more  = false;
+		// Pagination defaults for backward compatibility when upstream values are unavailable.
+		$total        = 0;
+		$total_pages  = 0;
+		$current_page = $page;
+		$all_items    = array();
+		$has_more     = false;
 
 		// Retrieve the GoDAM API key stored in WordPress options.
 		$api_key = get_option( 'rtgodam-api-key', '' );
@@ -1378,8 +1380,11 @@ class Media_Library extends Base {
 				);
 			}
 
-			$response = $body->message->files;
-			$has_more = isset( $body->message->has_more ) ? $body->message->has_more : false;
+			$response     = $body->message->files;
+			$total        = isset( $body->message->total_count ) ? absint( $body->message->total_count ) : 0;
+			$total_pages  = isset( $body->message->total_pages ) ? absint( $body->message->total_pages ) : 0;
+			$current_page = isset( $body->message->current_page ) ? max( 1, absint( $body->message->current_page ) ) : $page;
+			$has_more     = isset( $body->message->has_more ) ? (bool) $body->message->has_more : ( $total_pages > 0 ? $current_page < $total_pages : false );
 
 			$all_items = array();
 
@@ -1402,14 +1407,17 @@ class Media_Library extends Base {
 		// Return a REST response with pagination and status details.
 		return rest_ensure_response(
 			array(
-				'success'     => true,
-				'message'     => __( 'Filtered GoDAM files by MIME type.', 'godam' ),
-				'data'        => array_values( $all_items ),
-				'total_items' => $total,
-				'mime_type'   => $type,
-				'page'        => $page,
-				'per_page'    => $per_page,
-				'has_more'    => $has_more,
+				'success'      => true,
+				'message'      => __( 'Filtered GoDAM files by MIME type.', 'godam' ),
+				'data'         => array_values( $all_items ),
+				'total_items'  => $total,
+				'total_count'  => $total,
+				'total_pages'  => $total_pages,
+				'current_page' => $current_page,
+				'mime_type'    => $type,
+				'page'         => $page,
+				'per_page'     => $per_page,
+				'has_more'     => $has_more,
 			)
 		);
 	}

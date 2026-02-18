@@ -1,9 +1,6 @@
-/**
- * WordPress dependencies
- */
-import apiFetch from '@wordpress/api-fetch';
+const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
-const MEDIA_ENDPOINT = '/wp-json/wp/v2/media';
+const MEDIA_ENDPOINT = 'wp/v2/media';
 
 /**
  * Validates if the given string is a valid URL.
@@ -98,8 +95,17 @@ function createVideoAttributes( attachmentId, mediaData ) {
 
 async function fetchMediaData( attachmentId ) {
 	try {
-		const endpoint = `${ MEDIA_ENDPOINT }/${ attachmentId }`;
-		return await apiFetch( { path: endpoint } );
+		const endpoint = window.pathJoin( [ restURL, `/${ MEDIA_ENDPOINT }/${ attachmentId }` ] );
+		const response = await fetch( endpoint, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		} );
+		if ( ! response.ok ) {
+			return null;
+		}
+		return await response.json();
 	} catch ( error ) {
 		return null;
 	}

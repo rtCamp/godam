@@ -34,7 +34,7 @@ import { formatNumber, formatWatchTime } from '../utils/formatters';
 
 const adminUrl =
   window.videoData?.adminUrl;
-const restURL = window.godamRestRoute.url || '';
+const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
 const RenderVideo = ( { attachmentID, attachmentData, className, videoId } ) => {
 	const getMimiType = ( mime ) => {

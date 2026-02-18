@@ -14,6 +14,46 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// Enqueue player wrapper styles inline for high priority rendering.
+// Uses a global flag to ensure it's only output once per page.
+global $godam_player_wrapper_inline_css_added, $wp_filesystem;
+if ( empty( $godam_player_wrapper_inline_css_added ) ) {
+	$godam_player_wrapper_inline_css_added = true;
+	$godam_player_wrapper_css_path         = RTGODAM_PATH . 'assets/build/css/godam-player-wrapper.css';
+	$godam_player_wrapper_css_key          = 'godam_player_wrapper_css';
+
+	if ( file_exists( $godam_player_wrapper_css_path ) ) {
+		$godam_player_wrapper_css = get_transient( $godam_player_wrapper_css_key );
+
+		if ( false === $godam_player_wrapper_css ) {
+			// Initialize WP_Filesystem if not already done.
+			if ( empty( $wp_filesystem ) ) {
+				require_once ABSPATH . 'wp-admin/includes/file.php';
+				WP_Filesystem();
+			}
+
+			if ( ! empty( $wp_filesystem ) ) {
+				$godam_player_wrapper_css = $wp_filesystem->get_contents( $godam_player_wrapper_css_path );
+				set_transient( $godam_player_wrapper_css_key, $godam_player_wrapper_css, HOUR_IN_SECONDS );
+			}
+		}
+
+		// If wp_head already fired, output inline immediately.
+		if ( did_action( 'wp_head' ) ) {
+			echo '<style id="godam-player-wrapper-inline-css">' . esc_html( wp_strip_all_tags( $godam_player_wrapper_css ) ) . '</style>';
+		} else {
+			// Output inline style in wp_head for high priority rendering.
+			add_action(
+				'wp_head',
+				function () use ( $godam_player_wrapper_css ) {
+					echo '<style id="godam-player-wrapper-inline-css">' . esc_html( wp_strip_all_tags( $godam_player_wrapper_css ) ) . '</style>';
+				},
+				1 // High priority.
+			);
+		}
+	}
+}
+
 $godam_is_shortcode = false;
 if ( isset( $is_shortcode ) && $is_shortcode ) {
 	$godam_is_shortcode = true;
@@ -443,21 +483,35 @@ if ( $godam_should_preload_poster ) {
 					</div>
 				<?php endif; ?>
 
-				<div class="easydam-video-container animate-video-loading godam-<?php echo esc_attr( strtolower( $godam_player_skin ) ); ?>-skin" >
-					<?php if ( isset( $godam_hover_select ) && 'shadow-overlay' === $godam_hover_select ) : ?>
-						<div class="godam-player-overlay"></div>
-					<?php endif; ?>
+				<div class="godam-video-placeholder godam-animate-video-loading">
 					<div class="animate-play-btn">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
 							<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
 						</svg>
 					</div>
+					<?php if ( ! empty( $godam_video_poster ) ) : ?>
+					<img
+						class="godam-player-poster-image"
+						src="<?php echo esc_url( $godam_video_poster ); ?>"
+						fetchpriority="high"
+						aria-hidden="true"
+						alt="<?php echo esc_attr( $godam_attachment_title ); ?>"
+					/>
+					<?php endif; ?>
+				</div>
+
+				<div class="easydam-video-container loading godam-<?php echo esc_attr( strtolower( $godam_player_skin ) ); ?>-skin" >
+					<?php if ( isset( $godam_hover_select ) && 'shadow-overlay' === $godam_hover_select ) : ?>
+						<div class="godam-player-overlay"></div>
+					<?php endif; ?>
+
 					<?php if ( $godam_should_preload_poster ) : ?>
 						<img
 							class="godam-poster-image"
 							src="<?php echo esc_url( $godam_video_poster ); ?>"
 							fetchpriority="high"
 							aria-hidden="true"
+							alt="<?php echo esc_attr( $godam_attachment_title ); ?>"
 						/>
 					<?php endif; ?>
 					<video
