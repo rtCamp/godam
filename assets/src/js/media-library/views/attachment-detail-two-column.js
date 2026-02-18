@@ -53,8 +53,22 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		// Clean up virtual player
 		if ( this._virtualPlayer ) {
-			this._virtualPlayer.dispose();
-			this._virtualPlayer = null;
+			try {
+				// Check if player hasn't already been disposed and DOM element still exists
+				if ( typeof this._virtualPlayer.isDisposed === 'function' && ! this._virtualPlayer.isDisposed() ) {
+					// Verify that the player's DOM element still exists before disposal
+					const playerEl = this._virtualPlayer.el();
+					if ( playerEl && playerEl.parentNode ) {
+						this._virtualPlayer.dispose();
+					}
+				}
+			} catch ( error ) {
+				// Silently handle disposal errors that may occur if DOM is already removed
+				// eslint-disable-next-line no-console
+				console.warn( 'Video.js player disposal warning:', error.message );
+			} finally {
+				this._virtualPlayer = null;
+			}
 		}
 
 		// Clean up resize handler
