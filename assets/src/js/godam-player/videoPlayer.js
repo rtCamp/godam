@@ -120,7 +120,6 @@ export default class GodamVideoPlayer {
 		}
 
 		if ( placeholder ) {
-			// placeholder.style.display = 'none';
 			placeholder.classList.add( 'hidden' );
 		}
 
