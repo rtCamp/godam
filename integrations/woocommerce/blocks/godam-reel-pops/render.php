@@ -18,23 +18,23 @@ if ( ! is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
 $attributes = wp_parse_args(
 	$attributes,
 	array(
-		'blockId'           => '',
-		'videos'            => array(),
-		'aspectRatio'       => '9-16',
-		'position'          => 'bottom-right',
-		'animation'         => 'slide-up',
-		'animationDuration' => 500,
-		'durationSeconds'   => 5,
-		'initialDelay'      => 3,
-		'closePersistence'  => 'show_again',
-		'enableAutoplay'    => true,
-		'showMuteButton'    => true,
-		'showPlayButton'    => false,
+		'blockId'               => '',
+		'videos'                => array(),
+		'aspectRatio'           => '9-16',
+		'position'              => 'bottom-right',
+		'animation'             => 'slide-up',
+		'animationDuration'     => 500,
+		'durationSeconds'       => 5,
+		'initialDelay'          => 3,
+		'closePersistence'      => 'show_again',
+		'enableAutoplay'        => true,
+		'showMuteButton'        => true,
+		'showPlayButton'        => false,
 		'enableModalNavigation' => true,
-		'popupWidth'        => 120,
-		'mobilePopupWidth'  => 100,
-		'bottomSpacing'     => 20,
-		'sideSpacing'       => 20,
+		'popupWidth'            => 120,
+		'mobilePopupWidth'      => 100,
+		'bottomSpacing'         => 20,
+		'sideSpacing'           => 20,
 	)
 );
 
@@ -46,7 +46,7 @@ if ( empty( $attributes['videos'] ) || ! is_array( $attributes['videos'] ) ) {
 // Filter out invalid video IDs.
 $valid_videos = array_filter(
 	$attributes['videos'],
-	function( $video_id ) {
+	function ( $video_id ) {
 		return is_numeric( $video_id ) && absint( $video_id ) > 0;
 	}
 );
@@ -56,7 +56,7 @@ if ( empty( $valid_videos ) ) {
 }
 
 // Convert block attributes to shortcode attributes.
-$video_ids          = array();
+$video_ids = array();
 
 foreach ( $valid_videos as $video_id ) {
 	$video_ids[] = absint( $video_id );
@@ -64,23 +64,23 @@ foreach ( $valid_videos as $video_id ) {
 
 // Build shortcode attributes.
 $shortcode_atts = array(
-	'video_ids'          => implode( ',', $video_ids ),
-	'aspect_ratio'       => sanitize_text_field( $attributes['aspectRatio'] ),
-	'position'           => sanitize_text_field( $attributes['position'] ),
-	'animation'          => sanitize_text_field( $attributes['animation'] ),
-	'animation_duration' => absint( $attributes['animationDuration'] ),
-	'duration_seconds'   => absint( $attributes['durationSeconds'] ),
-	'initial_delay'      => absint( $attributes['initialDelay'] ),
-	'close_persistence'  => sanitize_text_field( $attributes['closePersistence'] ),
-	'enable_autoplay'    => $attributes['enableAutoplay'] ? 'true' : 'false',
-	'show_mute_button'   => $attributes['showMuteButton'] ? 'true' : 'false',
-	'show_play_button'   => $attributes['showPlayButton'] ? 'true' : 'false',
+	'video_ids'               => implode( ',', $video_ids ),
+	'aspect_ratio'            => sanitize_text_field( $attributes['aspectRatio'] ),
+	'position'                => sanitize_text_field( $attributes['position'] ),
+	'animation'               => sanitize_text_field( $attributes['animation'] ),
+	'animation_duration'      => absint( $attributes['animationDuration'] ),
+	'duration_seconds'        => absint( $attributes['durationSeconds'] ),
+	'initial_delay'           => absint( $attributes['initialDelay'] ),
+	'close_persistence'       => sanitize_text_field( $attributes['closePersistence'] ),
+	'enable_autoplay'         => $attributes['enableAutoplay'] ? 'true' : 'false',
+	'show_mute_button'        => $attributes['showMuteButton'] ? 'true' : 'false',
+	'show_play_button'        => $attributes['showPlayButton'] ? 'true' : 'false',
 	'enable_modal_navigation' => $attributes['enableModalNavigation'] ? 'true' : 'false',
-	'popup_width'        => absint( $attributes['popupWidth'] ),
-	'mobile_popup_width' => absint( $attributes['mobilePopupWidth'] ),
-	'bottom_spacing'     => absint( $attributes['bottomSpacing'] ),
-	'side_spacing'       => absint( $attributes['sideSpacing'] ),
-	'block_id'           => ! empty( $attributes['blockId'] ) ? sanitize_html_class( $attributes['blockId'] ) : '',
+	'popup_width'             => absint( $attributes['popupWidth'] ),
+	'mobile_popup_width'      => absint( $attributes['mobilePopupWidth'] ),
+	'bottom_spacing'          => absint( $attributes['bottomSpacing'] ),
+	'side_spacing'            => absint( $attributes['sideSpacing'] ),
+	'block_id'                => ! empty( $attributes['blockId'] ) ? sanitize_html_class( $attributes['blockId'] ) : '',
 );
 
 // Build shortcode string.

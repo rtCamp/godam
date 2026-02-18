@@ -75,33 +75,33 @@ class GoDAM_Reel_Pops {
 		// Parse shortcode attributes.
 		$attributes = shortcode_atts(
 			array(
-				'video_ids'         => '',
-				'product_ids'       => '', // Comma-separated product IDs per video (use | to separate videos: "123,456|789|101,102").
-				'aspect_ratio'      => '9-16',
-				'position'          => 'bottom-right',
-				'animation'         => 'slide-up',
-				'animation_duration' => 500,
-				'duration_seconds'  => 5,
-				'initial_delay'     => 3,
-				'close_persistence' => 'show_again',
-				'enable_autoplay'   => true,
-				'show_mute_button'  => true,
-				'show_play_button'  => false,
+				'video_ids'               => '',
+				'product_ids'             => '', // Comma-separated product IDs per video (use | to separate videos: "123,456|789|101,102").
+				'aspect_ratio'            => '9-16',
+				'position'                => 'bottom-right',
+				'animation'               => 'slide-up',
+				'animation_duration'      => 500,
+				'duration_seconds'        => 5,
+				'initial_delay'           => 3,
+				'close_persistence'       => 'show_again',
+				'enable_autoplay'         => true,
+				'show_mute_button'        => true,
+				'show_play_button'        => false,
 				'enable_modal_navigation' => true,
-				'popup_width'       => 120,
-				'mobile_popup_width' => 100,
-				'bottom_spacing'    => 20,
-				'side_spacing'      => 20,
-				'block_id'          => '',
+				'popup_width'             => 120,
+				'mobile_popup_width'      => 100,
+				'bottom_spacing'          => 20,
+				'side_spacing'            => 20,
+				'block_id'                => '',
 			),
 			$atts,
 			'godam_video_reel_pops'
 		);
 
 		// Handle boolean attributes.
-		$attributes['enable_autoplay'] = filter_var( $attributes['enable_autoplay'], FILTER_VALIDATE_BOOLEAN );
-		$attributes['show_mute_button'] = filter_var( $attributes['show_mute_button'], FILTER_VALIDATE_BOOLEAN );
-		$attributes['show_play_button'] = filter_var( $attributes['show_play_button'], FILTER_VALIDATE_BOOLEAN );
+		$attributes['enable_autoplay']         = filter_var( $attributes['enable_autoplay'], FILTER_VALIDATE_BOOLEAN );
+		$attributes['show_mute_button']        = filter_var( $attributes['show_mute_button'], FILTER_VALIDATE_BOOLEAN );
+		$attributes['show_play_button']        = filter_var( $attributes['show_play_button'], FILTER_VALIDATE_BOOLEAN );
 		$attributes['enable_modal_navigation'] = filter_var( $attributes['enable_modal_navigation'], FILTER_VALIDATE_BOOLEAN );
 
 		// Parse video IDs.
@@ -180,23 +180,23 @@ class GoDAM_Reel_Pops {
 		}
 
 		$config_data = array(
-			'blockId'           => $instance_id,
-			'videos'            => $videos_config,
-			'aspectRatio'       => sanitize_text_field( $attributes['aspect_ratio'] ),
-			'position'          => sanitize_text_field( $attributes['position'] ),
-			'animation'         => sanitize_text_field( $attributes['animation'] ),
-			'animationDuration' => absint( $attributes['animation_duration'] ),
-			'durationSeconds'   => max( 1, absint( $attributes['duration_seconds'] ) ),
-			'initialDelay'      => max( 0, absint( $attributes['initial_delay'] ) ),
-			'closePersistence'  => sanitize_text_field( $attributes['close_persistence'] ),
-			'enableAutoplay'    => (bool) $attributes['enable_autoplay'],
-			'showMuteButton'    => (bool) $attributes['show_mute_button'],
-			'showPlayButton'    => (bool) $attributes['show_play_button'],
+			'blockId'               => $instance_id,
+			'videos'                => $videos_config,
+			'aspectRatio'           => sanitize_text_field( $attributes['aspect_ratio'] ),
+			'position'              => sanitize_text_field( $attributes['position'] ),
+			'animation'             => sanitize_text_field( $attributes['animation'] ),
+			'animationDuration'     => absint( $attributes['animation_duration'] ),
+			'durationSeconds'       => max( 1, absint( $attributes['duration_seconds'] ) ),
+			'initialDelay'          => max( 0, absint( $attributes['initial_delay'] ) ),
+			'closePersistence'      => sanitize_text_field( $attributes['close_persistence'] ),
+			'enableAutoplay'        => (bool) $attributes['enable_autoplay'],
+			'showMuteButton'        => (bool) $attributes['show_mute_button'],
+			'showPlayButton'        => (bool) $attributes['show_play_button'],
 			'enableModalNavigation' => (bool) $attributes['enable_modal_navigation'],
-			'popupWidth'        => absint( $attributes['popup_width'] ),
-			'mobilePopupWidth'  => absint( $attributes['mobile_popup_width'] ),
-			'bottomSpacing'     => absint( $attributes['bottom_spacing'] ),
-			'sideSpacing'       => absint( $attributes['side_spacing'] ),
+			'popupWidth'            => absint( $attributes['popup_width'] ),
+			'mobilePopupWidth'      => absint( $attributes['mobile_popup_width'] ),
+			'bottomSpacing'         => absint( $attributes['bottom_spacing'] ),
+			'sideSpacing'           => absint( $attributes['side_spacing'] ),
 		);
 
 		// CSS custom properties for dynamic styling - no inline style tag needed.
