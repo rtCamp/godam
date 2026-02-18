@@ -20,15 +20,23 @@ global $godam_player_wrapper_inline_css_added, $wp_filesystem;
 if ( empty( $godam_player_wrapper_inline_css_added ) ) {
 	$godam_player_wrapper_inline_css_added = true;
 	$godam_player_wrapper_css_path         = RTGODAM_PATH . 'assets/build/css/godam-player-wrapper.css';
+	$godam_player_wrapper_css_key          = 'godam_player_wrapper_css';
 
 	if ( file_exists( $godam_player_wrapper_css_path ) ) {
-		// Initialize WP_Filesystem if not already done.
-		if ( empty( $wp_filesystem ) ) {
-			require_once ABSPATH . 'wp-admin/includes/file.php';
-			WP_Filesystem();
-		}
+		$godam_player_wrapper_css = get_transient( $godam_player_wrapper_css_key );
 
-		$godam_player_wrapper_css = $wp_filesystem->get_contents( $godam_player_wrapper_css_path );
+		if ( false === $godam_player_wrapper_css ) {
+			// Initialize WP_Filesystem if not already done.
+			if ( empty( $wp_filesystem ) ) {
+				require_once ABSPATH . 'wp-admin/includes/file.php';
+				WP_Filesystem();
+			}
+
+			if ( ! empty( $wp_filesystem ) ) {
+				$godam_player_wrapper_css = $wp_filesystem->get_contents( $godam_player_wrapper_css_path );
+				set_transient( $godam_player_wrapper_css_key, $godam_player_wrapper_css, HOUR_IN_SECONDS );
+			}
+		}
 
 		// If wp_head already fired, output inline immediately.
 		if ( did_action( 'wp_head' ) ) {
