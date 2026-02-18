@@ -8,7 +8,7 @@ import Editor from '@monaco-editor/react';
 /**
  * WordPress dependencies
  */
-import { Button, ToggleControl, ComboboxControl, Panel, PanelBody } from '@wordpress/components';
+import { Button, ToggleControl, ComboboxControl, Panel, PanelBody, Notice, ExternalLink } from '@wordpress/components';
 import { chevronRight } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
@@ -25,6 +25,7 @@ import LayersHeader from './LayersHeader.js';
 const PollLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
+	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
 
 	const { data: polls } = useGetPollsQuery();
 	const { data: currentPoll } = useGetPollQuery( layer.poll_id, { skip: ! layer.poll_id } );
@@ -36,13 +37,21 @@ const PollLayer = ( { layerID, goBack, duration } ) => {
 	return (
 		<>
 			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
+			{ ! isValidAPIKey && (
+				<Notice status="warning" isDismissible={ false } className="godam-ad-layer-notice mb-4">
+					<p>
+						{ __( 'Polls are a pro feature.', 'godam' ) } <ExternalLink href="https://godam.com/pricing">{ __( 'Upgrade your plan to unlock it.', 'godam' ) }</ExternalLink>
+					</p>
+				</Notice>
+			) }
 			{
 				polls?.length > 0 &&
 					<ComboboxControl
+						disabled={ ! isValidAPIKey }
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
 						label={ __( 'Select poll', 'godam' ) }
-						className="godam-combobox mb-4"
+						className={ `godam-combobox mb-4 ${ ! isValidAPIKey ? 'disabled' : '' }` }
 						value={ layer.poll_id }
 						onChange={ handlePollChange }
 						options={ polls.map( ( poll ) => ( { value: poll.pollq_id, label: poll.pollq_question } ) ) }
@@ -53,6 +62,7 @@ const PollLayer = ( { layerID, goBack, duration } ) => {
 				className="mb-4 godam-toggle"
 				label={ __( 'Allow user to skip', 'godam' ) }
 				checked={ layer.allow_skip }
+				disabled={ ! isValidAPIKey }
 				onChange={ ( value ) =>
 					dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
 				}
@@ -73,13 +83,15 @@ const PollLayer = ( { layerID, goBack, duration } ) => {
 					>
 						{ __( 'Color', 'godam' ) }
 					</label>
-					<ColorPickerButton
-						className="mb-4"
-						value={ layer?.bg_color ?? '#FFFFFFB3' }
-						label={ __( 'Layer background color', 'godam' ) }
-						enableAlpha={ true }
-						onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
-					/>
+					{ isValidAPIKey && (
+						<ColorPickerButton
+							className="mb-4"
+							value={ layer?.bg_color ?? '#FFFFFFB3' }
+							label={ __( 'Layer background color', 'godam' ) }
+							enableAlpha={ true }
+							onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
+						/>
+					) }
 
 					<label htmlFor="custom-css" className="text-base font-medium block mb-2">{ __( 'Custom CSS', 'godam' ) }</label>
 
@@ -90,6 +102,7 @@ const PollLayer = ( { layerID, goBack, duration } ) => {
 							defaultLanguage="css"
 							options={ {
 								minimap: { enabled: false },
+								readOnly: ! isValidAPIKey,
 							} }
 							defaultValue={ layer.custom_css }
 							onChange={ ( value ) =>

@@ -315,10 +315,25 @@ if ( ! empty( $godam_control_bar_settings ) ) {
 
 $godam_video_setup = wp_json_encode( $godam_video_setup );
 
+// Filter out premium layers from frontend config when API key is not valid.
+$godam_frontend_layers         = ! empty( $godam_meta_data['layers'] ) ? $godam_meta_data['layers'] : array();
+$godam_premium_layer_types_cfg = array( 'form', 'poll', 'ad' );
+
+if ( ! rtgodam_is_api_key_valid() && ! empty( $godam_frontend_layers ) ) {
+	$godam_frontend_layers = array_values(
+		array_filter(
+			$godam_frontend_layers,
+			function ( $layer ) use ( $godam_premium_layer_types_cfg ) {
+				return ! isset( $layer['type'] ) || ! in_array( $layer['type'], $godam_premium_layer_types_cfg, true );
+			}
+		)
+	);
+}
+
 $godam_video_config = wp_json_encode(
 	array(
 		'preview'          => $godam_video_preview,
-		'layers'           => ! empty( $godam_meta_data['layers'] ) ? $godam_meta_data['layers'] : array(), // contains list of layers.
+		'layers'           => $godam_frontend_layers, // contains list of layers (premium layers filtered when no API key).
 		'chapters'         => ! empty( $godam_meta_data['chapters'] ) ? $godam_meta_data['chapters'] : array(), // contains list of chapters.
 		'overlayTimeRange' => $godam_overlay_time_range, // Add overlay time range to video config.
 		'playerSkin'       => $godam_player_skin, // Add player skin to video config. Add brand image to video config.
@@ -339,21 +354,25 @@ $godam_easydam_custom_btn_img     = ! empty( $godam_meta_data['videoConfig']['co
 $godam_easydam_control_bar_config = ! empty( $godam_meta_data['videoConfig']['controlBar'] ) ? $godam_meta_data['videoConfig']['controlBar'] : array();
 
 $godam_layers     = $godam_meta_data['layers'] ?? array();
-$godam_ads_layers = array_filter(
-	$godam_layers,
-	function ( $godam_layer ) {
-		return 'ad' === $godam_layer['type'];
-	}
-);
 $godam_ad_tag_url = '';
 
-$godam_ad_server = isset( $godam_meta_data['videoConfig']['adServer'] ) ? sanitize_text_field( $godam_meta_data['videoConfig']['adServer'] ) : 'self-hosted';
+// Ad layers are a premium feature — only process them when the API key is valid.
+if ( rtgodam_is_api_key_valid() ) {
+	$godam_ads_layers = array_filter(
+		$godam_layers,
+		function ( $godam_layer ) {
+			return 'ad' === $godam_layer['type'];
+		}
+	);
 
-if ( ! empty( $godam_ad_server ) && 'ad-server' === $godam_ad_server ) :
-	$godam_ad_tag_url = isset( $godam_meta_data['videoConfig']['adTagURL'] ) ? $godam_meta_data['videoConfig']['adTagURL'] : '';
-elseif ( ! empty( $godam_ads_layers ) && 'self-hosted' === $godam_ad_server ) :
-	$godam_ad_tag_url = get_rest_url( get_current_blog_id(), '/godam/v1/adTagURL/' ) . $godam_attachment_id;
-endif;
+	$godam_ad_server = isset( $godam_meta_data['videoConfig']['adServer'] ) ? sanitize_text_field( $godam_meta_data['videoConfig']['adServer'] ) : 'self-hosted';
+
+	if ( ! empty( $godam_ad_server ) && 'ad-server' === $godam_ad_server ) :
+		$godam_ad_tag_url = isset( $godam_meta_data['videoConfig']['adTagURL'] ) ? $godam_meta_data['videoConfig']['adTagURL'] : '';
+	elseif ( ! empty( $godam_ads_layers ) && 'self-hosted' === $godam_ad_server ) :
+		$godam_ad_tag_url = get_rest_url( get_current_blog_id(), '/godam/v1/adTagURL/' ) . $godam_attachment_id;
+	endif;
+}
 
 // Enqueue IMA SDK assets only if Ad is enabled for this GoDAM player block.
 if ( ! empty( $godam_ad_tag_url ) ) {
@@ -555,8 +574,17 @@ if ( $godam_should_preload_poster ) {
 
 					<!-- Dynamically render shortcodes for form layers. -->
 					<?php
+					// Premium layer types require a valid API key to render on the frontend.
+					$godam_premium_layer_types = array( 'form', 'poll', 'ad' );
+					$godam_has_valid_api_key   = rtgodam_is_api_key_valid();
+
 					if ( ! empty( $godam_meta_data['layers'] ) ) :
 						foreach ( $godam_meta_data['layers'] as $godam_layer ) :
+							// Skip premium layers if the API key is not valid.
+							if ( ! $godam_has_valid_api_key && isset( $godam_layer['type'] ) && in_array( $godam_layer['type'], $godam_premium_layer_types, true ) ) :
+								continue;
+							endif;
+
 							$godam_form_type = ! empty( $godam_layer['form_type'] ) ? $godam_layer['form_type'] : 'gravity';
 							// FORM layer.
 							if ( isset( $godam_layer['type'] ) && 'form' === $godam_layer['type'] ) :

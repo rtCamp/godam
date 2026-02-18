@@ -46,6 +46,7 @@ export const layerTypes = [
 		icon: preformatted,
 		type: 'form',
 		isPremium: true,
+		premiumLabel: __( 'Pro', 'godam' ),
 		formType: {
 			gravity: {
 				layerText: __( 'Gravity Forms', 'godam' ),
@@ -114,7 +115,7 @@ export const layerTypes = [
 		icon: customPostType,
 		type: 'hotspot',
 		layerText: __( 'Hotspot', 'godam' ),
-		isPremium: true,
+		isPremium: false,
 	},
 	{
 		title: __( 'Ad', 'godam' ),
@@ -123,6 +124,7 @@ export const layerTypes = [
 		layerText: __( 'Ad', 'godam' ),
 		tooltipMessage: __( 'This ad will be overriden by Ad server\'s ads', 'godam' ),
 		isPremium: true,
+		premiumLabel: __( 'Pro', 'godam' ),
 	},
 	{
 		title: __( 'Poll', 'godam' ),
@@ -131,14 +133,15 @@ export const layerTypes = [
 		layerText: __( 'Poll', 'godam' ),
 		isActive: Boolean( window?.easydamMediaLibrary?.isPollPluginActive ) ?? false,
 		tooltipMessage: __( 'Poll plugin is not active', 'godam' ),
-		isPremium: false,
+		isPremium: true,
+		premiumLabel: __( 'Pro', 'godam' ),
 	},
 ];
 
 /**
  * Premium tooltip message.
  */
-const premiumMessage = __( 'This feature is available in the premium version', 'godam' );
+const premiumMessage = __( 'This is a Pro feature. Upgrade your plan to unlock it.', 'godam' );
 
 /**
  * Sidebar component to display and select different types of layers to be added to the video.
@@ -185,11 +188,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 	// Sort the array (ascending order)
 	const sortedLayers = [ ...layers ].sort( ( a, b ) => a.displayTime - b.displayTime );
 
-	// If we want to disable the premium layers the we can use this code
-	// const isValidAPiKey = window?.videoData?.valid_license;
-
-	// For now we are enabling all the features
-	const isValidAPiKey = true;
+	const isValidAPiKey = window?.videoData?.validApiKey ?? false;
 
 	const addNewLayer = ( type, formType ) => {
 		const layerType = layerTypes.find( ( l ) => l.type === type );
