@@ -72,6 +72,10 @@
       "type": "number",
       "default": 120
     },
+    "mobilePopupWidth": {
+      "type": "number",
+      "default": 100
+    },
     "bottomSpacing": {
       "type": "number",
       "default": 20

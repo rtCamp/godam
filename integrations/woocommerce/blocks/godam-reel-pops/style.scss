@@ -10,6 +10,7 @@
 	--reel-pops-position: 20px; // side-spacing (left or right)
 	--reel-pops-bottom: 20px;
 	--reel-pops-width: 120px;
+	--reel-pops-mobile-width: 100px;
 	--reel-pops-animation-duration: 500ms;
 	--reel-pops-aspect-ratio: 9 / 16;
 }
@@ -535,7 +536,7 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
 	.godam-reel-pops-container {
-		max-width: 100px;
+		width: var(--reel-pops-mobile-width, var(--reel-pops-width));
 	}
 
 	.godam-reel-pops-close {

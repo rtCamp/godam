@@ -196,6 +196,7 @@ class WC_Reel_Pops_Metabox {
 				'showPlayButton'    => false,
 				'enableModalNavigation' => true,
 				'popupWidth'        => 120,
+				'mobilePopupWidth'  => 100,
 				'bottomSpacing'     => 20,
 				'sideSpacing'       => 20,
 			)
@@ -285,6 +286,11 @@ class WC_Reel_Pops_Metabox {
 				<div class="godam-reel-pops-setting-item">
 					<label for="godam_reel_pops_popup_width"><?php esc_html_e( 'Popup Width (px)', 'godam' ); ?></label>
 					<input type="number" name="godam_reel_pops[popupWidth]" id="godam_reel_pops_popup_width" value="<?php echo esc_attr( $config['popupWidth'] ); ?>" min="80" max="300" step="10" />
+				</div>
+
+				<div class="godam-reel-pops-setting-item">
+					<label for="godam_reel_pops_mobile_popup_width"><?php esc_html_e( 'Mobile Popup Width (px)', 'godam' ); ?></label>
+					<input type="number" name="godam_reel_pops[mobilePopupWidth]" id="godam_reel_pops_mobile_popup_width" value="<?php echo esc_attr( $config['mobilePopupWidth'] ); ?>" min="80" max="300" step="10" />
 				</div>
 
 				<div class="godam-reel-pops-setting-item">
@@ -521,6 +527,7 @@ class WC_Reel_Pops_Metabox {
 			'showPlayButton'    => isset( $data['showPlayButton'] ) && '1' === $data['showPlayButton'],
 			'enableModalNavigation' => isset( $data['enableModalNavigation'] ) && '1' === $data['enableModalNavigation'],
 			'popupWidth'        => isset( $data['popupWidth'] ) ? absint( $data['popupWidth'] ) : 120,
+			'mobilePopupWidth'  => isset( $data['mobilePopupWidth'] ) ? absint( $data['mobilePopupWidth'] ) : 100,
 			'bottomSpacing'     => isset( $data['bottomSpacing'] ) ? absint( $data['bottomSpacing'] ) : 20,
 			'sideSpacing'       => isset( $data['sideSpacing'] ) ? absint( $data['sideSpacing'] ) : 20,
 		);
@@ -572,6 +579,7 @@ class WC_Reel_Pops_Metabox {
 				'showPlayButton'        => false,
 				'enableModalNavigation' => true,
 				'popupWidth'            => 120,
+				'mobilePopupWidth'      => 100,
 				'bottomSpacing'         => 20,
 				'sideSpacing'           => 20,
 			)
@@ -602,6 +610,7 @@ class WC_Reel_Pops_Metabox {
 			'show_play_button'   => ! empty( $config['showPlayButton'] ) ? 'true' : 'false',
 			'enable_modal_navigation' => ! empty( $config['enableModalNavigation'] ) ? 'true' : 'false',
 			'popup_width'        => absint( $config['popupWidth'] ),
+			'mobile_popup_width' => absint( $config['mobilePopupWidth'] ),
 			'bottom_spacing'     => absint( $config['bottomSpacing'] ),
 			'side_spacing'       => absint( $config['sideSpacing'] ),
 			'block_id'           => 'godam-reel-pops-product-' . $product_id,

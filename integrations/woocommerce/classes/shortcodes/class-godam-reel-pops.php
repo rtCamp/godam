@@ -89,6 +89,7 @@ class GoDAM_Reel_Pops {
 				'show_play_button'  => false,
 				'enable_modal_navigation' => true,
 				'popup_width'       => 120,
+				'mobile_popup_width' => 100,
 				'bottom_spacing'    => 20,
 				'side_spacing'      => 20,
 				'block_id'          => '',
@@ -193,6 +194,7 @@ class GoDAM_Reel_Pops {
 			'showPlayButton'    => (bool) $attributes['show_play_button'],
 			'enableModalNavigation' => (bool) $attributes['enable_modal_navigation'],
 			'popupWidth'        => absint( $attributes['popup_width'] ),
+			'mobilePopupWidth'  => absint( $attributes['mobile_popup_width'] ),
 			'bottomSpacing'     => absint( $attributes['bottom_spacing'] ),
 			'sideSpacing'       => absint( $attributes['side_spacing'] ),
 		);
@@ -202,8 +204,9 @@ class GoDAM_Reel_Pops {
 
 		// Build CSS variables inline style.
 		$css_variables = sprintf(
-			'--reel-pops-width: %dpx; --reel-pops-position: %dpx; --reel-pops-bottom: %dpx; --reel-pops-animation-duration: %dms;',
+			'--reel-pops-width: %dpx; --reel-pops-mobile-width: %dpx; --reel-pops-position: %dpx; --reel-pops-bottom: %dpx; --reel-pops-animation-duration: %dms;',
 			absint( $attributes['popup_width'] ),
+			absint( $attributes['mobile_popup_width'] ),
 			absint( $attributes['side_spacing'] ),
 			absint( $attributes['bottom_spacing'] ),
 			absint( $attributes['animation_duration'] )

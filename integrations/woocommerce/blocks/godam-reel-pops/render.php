@@ -32,6 +32,7 @@ $attributes = wp_parse_args(
 		'showPlayButton'    => false,
 		'enableModalNavigation' => true,
 		'popupWidth'        => 120,
+		'mobilePopupWidth'  => 100,
 		'bottomSpacing'     => 20,
 		'sideSpacing'       => 20,
 	)
@@ -76,6 +77,7 @@ $shortcode_atts = array(
 	'show_play_button'   => $attributes['showPlayButton'] ? 'true' : 'false',
 	'enable_modal_navigation' => $attributes['enableModalNavigation'] ? 'true' : 'false',
 	'popup_width'        => absint( $attributes['popupWidth'] ),
+	'mobile_popup_width' => absint( $attributes['mobilePopupWidth'] ),
 	'bottom_spacing'     => absint( $attributes['bottomSpacing'] ),
 	'side_spacing'       => absint( $attributes['sideSpacing'] ),
 	'block_id'           => ! empty( $attributes['blockId'] ) ? sanitize_html_class( $attributes['blockId'] ) : '',

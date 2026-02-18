@@ -36,6 +36,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		showPlayButton,
 		enableModalNavigation,
 		popupWidth,
+		mobilePopupWidth,
 		bottomSpacing,
 		sideSpacing,
 	} = attributes;
@@ -240,6 +241,15 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						label={ __( 'Popup Width (px)', 'godam' ) }
 						value={ popupWidth }
 						onChange={ ( value ) => setAttributes( { popupWidth: value } ) }
+						min={ 80 }
+						max={ 300 }
+						step={ 10 }
+					/>
+
+					<RangeControl
+						label={ __( 'Mobile Popup Width (px)', 'godam' ) }
+						value={ mobilePopupWidth }
+						onChange={ ( value ) => setAttributes( { mobilePopupWidth: value } ) }
 						min={ 80 }
 						max={ 300 }
 						step={ 10 }

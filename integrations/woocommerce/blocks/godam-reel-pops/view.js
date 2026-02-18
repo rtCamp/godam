@@ -17,14 +17,9 @@
 	function initReelPops() {
 		const wrappers = document.querySelectorAll( '.godam-reel-pops-wrapper' );
 
-		console.log( 'Reel pops is loading' );
-
 		if ( wrappers.length === 0 ) {
-			console.log( 'GoDAM Reel Pops: No wrappers found on page' );
 			return;
 		}
-
-		console.log( `GoDAM Reel Pops: Initializing ${ wrappers.length } instance(s)` );
 
 		wrappers.forEach( ( wrapper ) => {
 			const configData = wrapper.getAttribute( 'data-reel-pops-config' );
@@ -40,8 +35,6 @@
 			} catch ( e ) {
 				return;
 			}
-
-			console.log( 'GoDAM Reel Pops: Config loaded', config );
 
 			// Check close persistence.
 			const storageKey = `godam_reel_pops_closed_${ config.blockId }`;
@@ -119,7 +112,6 @@
 
 			setTimeout( () => {
 				// Show the wrapper (hidden by default).
-				console.log( 'GoDAM Reel Pops: Showing wrapper after initial delay' );
 				this.wrapper.style.display = 'block';
 
 				// Show first video immediately.
@@ -307,8 +299,6 @@
 				return;
 			}
 
-			console.log( 'GoDAM Reel Pops: Players already initialized via inline scripts' );
-
 			// Play first video if autoplay enabled
 			if ( this.config.enableAutoplay && this.videoSlots.length > 0 ) {
 				const firstVideo = this.videoSlots[ 0 ].querySelector( 'video' );
@@ -366,11 +356,8 @@
 			}
 
 			if ( this.isAnimating && withAnimation ) {
-				console.log( 'GoDAM Reel Pops: Skipping showVideo - already animating' );
 				return;
 			}
-
-			console.log( `GoDAM Reel Pops: Showing video ${ index } (animate: ${ withAnimation })` );
 
 			const previousIndex = this.currentIndex;
 			const previousSlot = this.videoSlots[ previousIndex ];
@@ -384,8 +371,6 @@
 				// 2. On animationend → swap video slots while hidden.
 				// 3. Play enter animation → container animates back in.
 				this.isAnimating = true;
-
-				console.log( 'GoDAM Reel Pops: Starting Exit animation' );
 
 				// Fallback safety timeout for isAnimating.
 				const fallbackTimeout = setTimeout( () => {
@@ -406,7 +391,6 @@
 					}
 
 					this.container.removeEventListener( 'animationend', onExitEnd );
-					console.log( 'GoDAM Reel Pops: Exit animation complete, swapping slots' );
 
 					// Pause old video.
 					if ( previousVideoElement && typeof previousVideoElement.pause === 'function' ) {
@@ -423,8 +407,6 @@
 
 					// Force reflow to ensure the browser sees the class removal before re-adding.
 					void this.container.offsetWidth;
-
-					console.log( 'GoDAM Reel Pops: Starting Entrance animation' );
 
 					// Step 3: Start entrance animation.
 					this.container.classList.add( 'reel-pops-animate-enter' );
@@ -448,7 +430,6 @@
 						this.container.classList.remove( 'reel-pops-animate-enter' );
 						this.isAnimating = false;
 						clearTimeout( fallbackTimeout );
-						console.log( 'GoDAM Reel Pops: Entrance animation complete' );
 					};
 					this.container.addEventListener( 'animationend', onEnterEnd );
 				};
