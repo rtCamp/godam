@@ -110,9 +110,33 @@ export default class GodamVideoPlayer {
 	setupVideoElement() {
 		this.video.classList.remove( 'vjs-hidden' );
 
-		const loadingElement = this.video.closest( '.animate-video-loading' );
-		if ( loadingElement ) {
-			loadingElement.classList.remove( 'animate-video-loading' );
+		const parentContainer = this.video.closest( '.godam-video-wrapper' );
+
+		let placeholder, originalVideoContainer;
+
+		if ( parentContainer ) {
+			placeholder = parentContainer.querySelector( '.godam-video-placeholder' );
+			originalVideoContainer = parentContainer.querySelector( '.easydam-video-container' );
+		}
+
+		if ( placeholder ) {
+			placeholder.classList.add( 'hidden' );
+		}
+
+		if ( originalVideoContainer ) {
+			originalVideoContainer.classList.remove( 'loading' );
+		}
+
+		// Preserve legacy behavior: remove any animate-video-loading class
+		// from the closest relevant container so loading styles are cleared
+		// after initialization. This supports both the new placeholder-based
+		// loading UI and older markup that still uses .animate-video-loading.
+		const loadingContainer =
+			this.video.closest( '.animate-video-loading' ) ||
+			parentContainer ||
+			originalVideoContainer;
+		if ( loadingContainer && loadingContainer.classList ) {
+			loadingContainer.classList.remove( 'animate-video-loading' );
 		}
 	}
 

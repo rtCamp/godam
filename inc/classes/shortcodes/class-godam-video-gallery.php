@@ -122,7 +122,6 @@ class GoDAM_Video_Gallery {
 		if ( ! is_admin() ) {
 			wp_enqueue_script( 'godam-player-frontend-script' );
 			wp_enqueue_script( 'godam-player-analytics-script' );
-			wp_enqueue_style( 'godam-player-frontend-style' );
 			wp_enqueue_style( 'godam-player-style' );
 		}
 
