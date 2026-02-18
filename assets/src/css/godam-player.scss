@@ -6,7 +6,7 @@
  */
 
 // import videojs styles
-@import "video.js/dist/video-js.css";
+@use "video.js/dist/video-js.css";
 
 // CF7 Form style.
 @use "./cf7-godam-theme";
