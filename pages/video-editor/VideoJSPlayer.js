@@ -114,11 +114,11 @@ export const VideoJS = ( props ) => {
 		const volumeSlider = document.querySelector( '.vjs-volume-panel' );
 		const brandingLogo = document.querySelector( '#branding-icon' );
 
-		if ( ! videoConfig.controlBar.volumePanel ) {
+		if ( volumeSlider && ! videoConfig.controlBar.volumePanel ) {
 			volumeSlider.classList.add( 'hide' );
 		}
 
-		if ( videoConfig.controlBar.subsCapsButton ) {
+		if ( captionsButton && videoConfig.controlBar.subsCapsButton ) {
 			captionsButton.classList.remove( 'vjs-hidden' );
 			captionsButton.classList.add( 'show' );
 		}
@@ -129,7 +129,7 @@ export const VideoJS = ( props ) => {
 			if ( ! brandingLogo ) {
 				let imageSrc = '';
 
-				if ( videoConfig.controlBar.customBrandImg.length > 0 ) {
+				if ( videoConfig.controlBar.customBrandImg && videoConfig.controlBar.customBrandImg.length > 0 ) {
 					imageSrc = videoConfig.controlBar.customBrandImg;
 				} else if ( godamSettings?.brandImage ) {
 					imageSrc = godamSettings?.brandImage;
@@ -141,69 +141,87 @@ export const VideoJS = ( props ) => {
 				img.id = 'branding-icon';
 				img.alt = 'Branding';
 
-				document.querySelector( '.vjs-control-bar' ).appendChild( img );
+				const controlBarElement = document.querySelector( '.vjs-control-bar' );
+				if ( controlBarElement ) {
+					controlBarElement.appendChild( img );
+				}
 			}
 		}
 
 		//change appearance color
 		const controlBar = document.querySelector( '.vjs-control-bar' );
 		const bigPlayButton = document.querySelector( '.vjs-big-play-button' );
-		controlBar.style.setProperty(
-			'background-color',
-			videoConfig.controlBar.appearanceColor,
-			'important',
-		);
-		bigPlayButton.style.setProperty(
-			'background-color',
-			videoConfig.controlBar.appearanceColor,
-			'important',
-		);
+
+		if ( controlBar ) {
+			controlBar.style.setProperty(
+				'background-color',
+				videoConfig.controlBar.appearanceColor || '#2b333fb3',
+				'important',
+			);
+		}
+
+		if ( bigPlayButton ) {
+			bigPlayButton.style.setProperty(
+				'background-color',
+				videoConfig.controlBar.appearanceColor || '#2b333fb3',
+				'important',
+			);
+		}
 
 		//change hover color and zoom level
-		const controls = controlBar.querySelectorAll( '.vjs-control' );
-		controls.forEach( ( control ) => {
-			// On hover
-			control.addEventListener( 'mouseenter', function() {
-				control.style.setProperty(
-					'color',
-					videoConfig.controlBar.hoverColor,
-					'important',
-				);
+		if ( controlBar ) {
+			const controls = controlBar.querySelectorAll( '.vjs-control' );
+			controls.forEach( ( control ) => {
+				// On hover
+				control.addEventListener( 'mouseenter', function() {
+					control.style.setProperty(
+						'color',
+						videoConfig.controlBar.hoverColor || '#fff',
+						'important',
+					);
 
-				if ( ! control.className.includes( 'vjs-progress-control' ) ) {
-					this.style.transform = `scale(${ 1 + parseFloat( videoConfig.controlBar.zoomLevel ) })`;
+					if ( ! control.className.includes( 'vjs-progress-control' ) ) {
+						this.style.transform = `scale(${ 1 + parseFloat( videoConfig.controlBar.zoomLevel || 0 ) })`;
+					}
+				} );
+
+				control.addEventListener( 'mouseleave', function() {
+					control.style.color = '#fff'; // Reset to default
+					this.style.transform = 'scale(1)';
+				} );
+			} );
+		}
+
+		const sliderBar = document.querySelector( '.vjs-slider-bar' );
+		if ( sliderBar ) {
+			sliderBar.addEventListener( 'mouseenter', function() {
+				this.style.backgroundColor = videoConfig.controlBar.hoverColor || '#fff';
+			} );
+		}
+
+		const controlBarForMouseLeave = document.querySelector( '.vjs-control-bar' );
+		if ( controlBarForMouseLeave ) {
+			controlBarForMouseLeave.addEventListener( 'mouseleave', function() {
+				const innerSliderBar = document.querySelector( '.vjs-slider-bar' );
+				if ( innerSliderBar ) {
+					innerSliderBar.style.backgroundColor = '#fff'; // Reset to default
 				}
 			} );
-
-			control.addEventListener( 'mouseleave', function() {
-				control.style.color = '#fff'; // Reset to default
-				this.style.transform = 'scale(1)';
-			} );
-		} );
-
-		document
-			.querySelector( '.vjs-slider-bar' )
-			.addEventListener( 'mouseenter', function() {
-				this.style.backgroundColor = videoConfig.controlBar.hoverColor;
-			} );
-
-		document
-			.querySelector( '.vjs-control-bar' )
-			.addEventListener( 'mouseleave', function() {
-				document.querySelector( '.vjs-slider-bar' ).style.backgroundColor =
-		'#fff'; // Reset to default
-			} );
+		}
 
 		//play button position
 		const playButton = document.querySelector( '.vjs-big-play-button' );
 
-		playButton.classList.add(
-			`${ videoConfig.controlBar.playButtonPosition }-align`,
-		);
+		if ( playButton && videoConfig.controlBar.playButtonPosition ) {
+			playButton.classList.add(
+				`${ videoConfig.controlBar.playButtonPosition }-align`,
+			);
+		}
 
 		//control bar position
-		if ( 'vertical' === videoConfig.controlBar.controlBarPosition ) {
+		if ( controlBar && 'vertical' === videoConfig.controlBar.controlBarPosition ) {
 			controlBar.classList.add( 'vjs-control-bar-vertical' );
+			const controls = controlBar.querySelectorAll( '.vjs-control' );
 			for ( const control of controls ) {
 				control.classList.add( 'vjs-control-vertical' );
 				if ( control.classList.contains( 'vjs-volume-panel' ) ) {
@@ -220,7 +238,7 @@ export const VideoJS = ( props ) => {
 		const customPlayBtnImg = videoConfig.controlBar.customPlayBtnImg;
 		const playButtonElement = document.querySelector( '.vjs-big-play-button' );
 
-		if ( customPlayBtnImg ) {
+		if ( customPlayBtnImg && playButtonElement ) {
 			// Create new image element
 			const imgElement = document.createElement( 'img' );
 			imgElement.src = customPlayBtnImg;
@@ -236,7 +254,9 @@ export const VideoJS = ( props ) => {
 			imgElement.style.cursor = 'pointer';
 
 			// Replace the original button with the new image
-			playButtonElement.parentNode.replaceChild( imgElement, playButtonElement );
+			if ( playButtonElement.parentNode ) {
+				playButtonElement.parentNode.replaceChild( imgElement, playButtonElement );
+			}
 		}
 
 		if ( playerRef.current ) {
