@@ -257,16 +257,14 @@ class GoDAM_Reel_Pops {
 								<?php echo $video['html']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 								<?php
 								// Create clickable overlay for modal trigger (without play button).
-								if ( ! empty( $video['productIds'] ) ) :
-									$modal_id = 'godam-video-modal-' . $instance_id . '-' . $video['videoId'];
-									?>
-									<div
-										class="godam-reel-pops-click-overlay"
-										data-modal-id="<?php echo esc_attr( $modal_id ); ?>"
-										data-video-id="<?php echo esc_attr( $video['videoId'] ); ?>"
-										data-product-ids="<?php echo esc_attr( $video['productIds'] ); ?>"
-									></div>
-								<?php endif; ?>
+								$modal_id = 'godam-video-modal-' . $instance_id . '-' . $video['videoId'];
+								?>
+								<div
+									class="godam-reel-pops-click-overlay"
+									data-modal-id="<?php echo esc_attr( $modal_id ); ?>"
+									data-video-id="<?php echo esc_attr( $video['videoId'] ); ?>"
+									data-product-ids="<?php echo esc_attr( $video['productIds'] ); ?>"
+								></div>
 							</div>
 						</div>
 					<?php endforeach; ?>
@@ -282,11 +280,7 @@ class GoDAM_Reel_Pops {
 					$video_id    = absint( $video['videoId'] );
 					$product_ids = ! empty( $video['productIds'] ) ? sanitize_text_field( $video['productIds'] ) : '';
 
-					if ( empty( $product_ids ) ) {
-						continue;
-					}
-
-					$cta_enabled          = true;
+					$cta_enabled          = ! empty( $product_ids );
 					$cta_display_position = 'inside';
 
 					if ( method_exists( $modal_markup_generator, 'generate_product_gallery_video_modal_markup' ) ) {

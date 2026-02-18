@@ -28,6 +28,7 @@
 
 		wrappers.forEach( ( wrapper ) => {
 			const configData = wrapper.getAttribute( 'data-reel-pops-config' );
+
 			if ( ! configData ) {
 				console.warn( 'GoDAM Reel Pops: No config data found for wrapper', wrapper );
 				return;
@@ -37,8 +38,6 @@
 			try {
 				config = JSON.parse( configData );
 			} catch ( e ) {
-				console.error( 'GoDAM Reel Pops: Invalid config data', e );
-				console.error( 'GoDAM Reel Pops: Config string:', configData.substring( 0, 200 ), '...' );
 				return;
 			}
 
@@ -50,7 +49,6 @@
 			if ( config.closePersistence === 'hide_after_close' ) {
 				const isClosed = localStorage.getItem( storageKey );
 				if ( isClosed === 'true' ) {
-					console.log( 'GoDAM Reel Pops: Skipping - previously closed by user' );
 					return; // Don't show if user closed it.
 				}
 			} else if ( config.closePersistence === 'show_again' ) {
@@ -104,13 +102,6 @@
 				} );
 				return;
 			}
-
-			console.log( 'GoDAM Reel Pops: Initializing instance', {
-				blockId: this.config.blockId,
-				videoCount: this.videoSlots.length,
-				autoplay: this.config.enableAutoplay,
-				initialDelay: this.config.initialDelay,
-			} );
 
 			// Bind close button.
 			this.closeButton?.addEventListener( 'click', () => this.close() );
@@ -535,6 +526,7 @@
 			if ( normalizedVideoId ) {
 				this.currentModalVideoId = normalizedVideoId;
 				const normalizedProductIds = String( productIds || '' ).trim();
+				const hasProductIds = normalizedProductIds.length > 0;
 				const resolvedModal = modal || this.findModalByVideoId( normalizedVideoId );
 				if ( ! resolvedModal ) {
 					return;
@@ -544,7 +536,7 @@
 				triggerVideo.className = 'godam-product-video-thumbnail';
 				triggerVideo.setAttribute( 'data-video-id', normalizedVideoId );
 				triggerVideo.setAttribute( 'data-video-attached-product-ids', normalizedProductIds );
-				triggerVideo.setAttribute( 'data-cta-enabled', 'true' );
+				triggerVideo.setAttribute( 'data-cta-enabled', hasProductIds ? 'true' : 'false' );
 				triggerVideo.setAttribute( 'data-cta-display-position', 'inside' );
 
 				const triggerButton = document.createElement( 'button' );
@@ -581,12 +573,6 @@
 			}
 
 			this.attachModalStateObserver( modal );
-
-			// Fallback open if delegated modal flow is unavailable.
-			// Use existing modal functionality (initVideoModal from modal.js).
-			if ( typeof window.initVideoModal === 'function' ) {
-				window.initVideoModal( modal );
-			}
 
 			// Show modal.
 			modal.classList.remove( 'hidden' );

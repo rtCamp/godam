@@ -13,7 +13,6 @@ import {
 	ToggleControl,
 	RangeControl,
 	Button,
-	TextControl,
 	Notice,
 } from '@wordpress/components';
 import { useEffect } from '@wordpress/element';
@@ -52,9 +51,9 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		( select ) => {
 			const core = select( 'core' );
 			const result = {};
-			videos.forEach( ( video ) => {
-				if ( video.videoId > 0 ) {
-					result[ video.videoId ] = core.getMedia( video.videoId );
+			videos.forEach( ( videoId ) => {
+				if ( videoId > 0 ) {
+					result[ videoId ] = core.getMedia( videoId );
 				}
 			} );
 			return result;
@@ -69,13 +68,10 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	 */
 	const appendSelectedVideos = ( media ) => {
 		const selectedMedia = Array.isArray( media ) ? media : [ media ];
-		const existingIds = new Set( videos.map( ( item ) => item.videoId ) );
+		const existingIds = new Set( videos );
 		const appendedVideos = selectedMedia
 			.filter( ( item ) => item && item.id && ! existingIds.has( item.id ) )
-			.map( ( item ) => ( {
-				videoId: item.id,
-				productIds: '',
-			} ) );
+			.map( ( item ) => item.id );
 
 		if ( appendedVideos.length === 0 ) {
 			return;
@@ -84,13 +80,6 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		setAttributes( {
 			videos: [ ...videos, ...appendedVideos ],
 		} );
-	};
-
-	// Update a specific video item.
-	const updateVideo = ( index, changes ) => {
-		const updatedVideos = [ ...videos ];
-		updatedVideos[ index ] = { ...updatedVideos[ index ], ...changes };
-		setAttributes( { videos: updatedVideos } );
 	};
 
 	/**
@@ -166,7 +155,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 							gap: '12px',
 						} }
 					>
-						{ videos.map( ( video, index ) => (
+						{ videos.map( ( videoId, index ) => (
 							<div
 								key={ index }
 								style={ {
@@ -179,9 +168,9 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 								<div style={ { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' } }>
 									<div style={ { display: 'flex', gap: '10px', alignItems: 'center' } }>
 										<div style={ { width: '64px', height: '64px', borderRadius: '4px', overflow: 'hidden', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center' } }>
-											{ mediaById[ video.videoId ]?.source_url ? (
+											{ mediaById[ videoId ]?.source_url ? (
 												<img
-													src={ mediaById[ video.videoId ]?.media_details?.sizes?.thumbnail?.source_url || mediaById[ video.videoId ]?.source_url }
+													src={ mediaById[ videoId ]?.media_details?.sizes?.thumbnail?.source_url || mediaById[ videoId ]?.source_url }
 													alt=""
 													style={ { width: '100%', height: '100%', objectFit: 'cover' } }
 												/>
@@ -190,8 +179,8 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 											) }
 										</div>
 										<div>
-											<strong>{ mediaById[ video.videoId ]?.title?.rendered || __( 'Untitled video', 'godam' ) }</strong>
-											<div style={ { fontSize: '12px', color: '#666' } }>{ __( 'ID:', 'godam' ) } { video.videoId }</div>
+											<strong>{ mediaById[ videoId ]?.title?.rendered || __( 'Untitled video', 'godam' ) }</strong>
+											<div style={ { fontSize: '12px', color: '#666' } }>{ __( 'ID:', 'godam' ) } { videoId }</div>
 										</div>
 									</div>
 									<div style={ { display: 'flex', gap: '4px' } }>
@@ -220,14 +209,6 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 										/>
 									</div>
 								</div>
-
-								<TextControl
-									label={ __( 'Product IDs (comma-separated)', 'godam' ) }
-									help={ __( 'Enter WooCommerce product IDs to show in the modal sidebar when this video is clicked.', 'godam' ) }
-									value={ video.productIds }
-									onChange={ ( value ) => updateVideo( index, { productIds: value } ) }
-									placeholder={ __( 'e.g., 123, 456, 789', 'godam' ) }
-								/>
 							</div>
 						) ) }
 					</div>

@@ -218,8 +218,8 @@ class WC_Reel_Pops_Metabox {
 				<div class="godam-reel-pops-video-list" id="godam-reel-pops-video-list">
 					<?php
 					if ( ! empty( $config['videos'] ) && is_array( $config['videos'] ) ) {
-						foreach ( $config['videos'] as $index => $video ) {
-							$this->render_video_item( $index, $video );
+						foreach ( $config['videos'] as $index => $video_id ) {
+							$this->render_video_item( $index, $video_id );
 						}
 					}
 					?>
@@ -374,7 +374,7 @@ class WC_Reel_Pops_Metabox {
 								<span class="godam-video-id-display"><?php esc_html_e( 'ID:', 'godam' ); ?> ${attachment.id}</span>
 							</div>
 						</div>
-						<input type="hidden" name="godam_reel_pops[videos][${index}][videoId]" class="godam-video-id" value="${attachment.id}" />
+						<input type="hidden" name="godam_reel_pops[videos][${index}]" class="godam-video-id" value="${attachment.id}" />
 					</div>
 				`;
 			};
@@ -383,7 +383,7 @@ class WC_Reel_Pops_Metabox {
 				$('#godam-reel-pops-video-list .godam-reel-pops-video-item').each(function(index) {
 					const item = $(this);
 					item.attr('data-index', index);
-					item.find('.godam-video-id').attr('name', `godam_reel_pops[videos][${index}][videoId]`);
+					item.find('.godam-video-id').attr('name', `godam_reel_pops[videos][${index}]`);
 				});
 				videoIndex = $('#godam-reel-pops-video-list .godam-reel-pops-video-item').length;
 			};
@@ -438,18 +438,11 @@ class WC_Reel_Pops_Metabox {
 	/**
 	 * Render a single video item.
 	 *
-	 * @param int   $index Video index.
-	 * @param array $video Video data.
+	 * @param int $index Video index.
+	 * @param int $video_id Video ID.
 	 */
-	private function render_video_item( $index, $video ) {
-		$video = wp_parse_args(
-			$video,
-			array(
-				'videoId'    => 0,
-				'productIds' => '',
-			)
-		);
-		$video_id    = absint( $video['videoId'] );
+	private function render_video_item( $index, $video_id ) {
+		$video_id    = absint( $video_id );
 		$video_title = $video_id ? get_the_title( $video_id ) : '';
 		$thumb_url   = '';
 
@@ -468,7 +461,7 @@ class WC_Reel_Pops_Metabox {
 			}
 		}
 		?>
-		<div class="godam-reel-pops-video-item" data-index="<?php echo esc_attr( $index ); ?>" data-video-id="<?php echo esc_attr( $video['videoId'] ); ?>">
+		<div class="godam-reel-pops-video-item" data-index="<?php echo esc_attr( $index ); ?>" data-video-id="<?php echo esc_attr( $video_id ); ?>">
 			<button type="button" class="godam-reel-pops-video-remove" aria-label="<?php esc_attr_e( 'Remove video', 'godam' ); ?>">✕</button>
 			<div class="godam-reel-pops-video-item-header">
 				<div class="godam-reel-pops-video-thumb">
@@ -480,10 +473,10 @@ class WC_Reel_Pops_Metabox {
 				</div>
 				<div class="godam-reel-pops-video-meta">
 					<strong class="godam-reel-pops-video-title"><?php echo esc_html( ! empty( $video_title ) ? $video_title : __( 'Untitled video', 'godam' ) ); ?></strong>
-					<span class="godam-video-id-display"><?php esc_html_e( 'ID:', 'godam' ); ?> <?php echo esc_html( $video['videoId'] ); ?></span>
+					<span class="godam-video-id-display"><?php esc_html_e( 'ID:', 'godam' ); ?> <?php echo esc_html( $video_id ); ?></span>
 				</div>
 			</div>
-			<input type="hidden" name="godam_reel_pops[videos][<?php echo esc_attr( $index ); ?>][videoId]" class="godam-video-id" value="<?php echo esc_attr( $video['videoId'] ); ?>" />
+			<input type="hidden" name="godam_reel_pops[videos][<?php echo esc_attr( $index ); ?>]" class="godam-video-id" value="<?php echo esc_attr( $video_id ); ?>" />
 		</div>
 		<?php
 	}
@@ -534,12 +527,9 @@ class WC_Reel_Pops_Metabox {
 
 		// Sanitize videos.
 		if ( isset( $data['videos'] ) && is_array( $data['videos'] ) ) {
-			foreach ( $data['videos'] as $video ) {
-				if ( isset( $video['videoId'] ) && absint( $video['videoId'] ) > 0 ) {
-					$config['videos'][] = array(
-						'videoId'    => absint( $video['videoId'] ),
-						'productIds' => isset( $video['productIds'] ) ? sanitize_text_field( $video['productIds'] ) : '',
-					);
+			foreach ( $data['videos'] as $video_id ) {
+				if ( absint( $video_id ) > 0 ) {
+					$config['videos'][] = absint( $video_id );
 				}
 			}
 		}
@@ -587,22 +577,13 @@ class WC_Reel_Pops_Metabox {
 			)
 		);
 
-		// Auto-populate product IDs with current product for all videos.
-		$videos = $config['videos'];
-		foreach ( $videos as &$video ) {
-			if ( empty( $video['productIds'] ) ) {
-				$video['productIds'] = (string) $product_id;
-			}
-		}
-		unset( $video );
-
 		// Convert metabox config to shortcode attributes.
 		$video_ids          = array();
 		$product_ids_groups = array();
 
-		foreach ( $videos as $video ) {
-			$video_ids[]          = absint( $video['videoId'] );
-			$product_ids_groups[] = ! empty( $video['productIds'] ) ? sanitize_text_field( $video['productIds'] ) : (string) $product_id;
+		foreach ( $config['videos'] as $video_id ) {
+			$video_ids[]          = absint( $video_id );
+			$product_ids_groups[] = (string) $product_id;
 		}
 
 		// Build shortcode attributes.

@@ -15,16 +15,7 @@
       "type": "array",
       "default": [],
       "items": {
-        "type": "object",
-        "properties": {
-          "videoId": {
-            "type": "number"
-          },
-          "productIds": {
-            "type": "string",
-            "default": ""
-          }
-        }
+        "type": "number"
       }
     },
     "aspectRatio": {

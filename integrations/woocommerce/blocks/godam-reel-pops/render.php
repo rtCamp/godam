@@ -42,11 +42,11 @@ if ( empty( $attributes['videos'] ) || ! is_array( $attributes['videos'] ) ) {
 	return;
 }
 
-// Filter out invalid videos.
+// Filter out invalid video IDs.
 $valid_videos = array_filter(
 	$attributes['videos'],
-	function( $video ) {
-		return ! empty( $video['videoId'] ) && is_numeric( $video['videoId'] );
+	function( $video_id ) {
+		return is_numeric( $video_id ) && absint( $video_id ) > 0;
 	}
 );
 
@@ -56,20 +56,14 @@ if ( empty( $valid_videos ) ) {
 
 // Convert block attributes to shortcode attributes.
 $video_ids          = array();
-$product_ids_groups = array();
 
-foreach ( $valid_videos as $video ) {
-	$video_ids[] = absint( $video['videoId'] );
-
-	// Build product IDs string for this video.
-	$product_ids          = ! empty( $video['productIds'] ) ? sanitize_text_field( $video['productIds'] ) : '';
-	$product_ids_groups[] = $product_ids;
+foreach ( $valid_videos as $video_id ) {
+	$video_ids[] = absint( $video_id );
 }
 
 // Build shortcode attributes.
 $shortcode_atts = array(
 	'video_ids'          => implode( ',', $video_ids ),
-	'product_ids'        => implode( '|', $product_ids_groups ),
 	'aspect_ratio'       => sanitize_text_field( $attributes['aspectRatio'] ),
 	'position'           => sanitize_text_field( $attributes['position'] ),
 	'animation'          => sanitize_text_field( $attributes['animation'] ),
