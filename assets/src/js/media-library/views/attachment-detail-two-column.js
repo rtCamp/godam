@@ -606,8 +606,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			// If the attachment is virtual (e.g. a GoDAM proxy video), override default preview.
 			if ( undefined !== virtual && virtual ) {
 				const videoUrl = this.model.get( 'transcoded_url' ); // Ensure it's a valid .mp4
-				const $container = this.$el.find( '.wp-video > div' );
+				const $container = this.$el.find( '.wp-video' ).children( '.wp-video-shortcode' );
 				const videoId = 'videojs-player-' + this.model.get( 'id' ); // Unique ID
+
+				$container.addClass( 'godam-attachment-details-two-columns-virtual-media' );
 
 				// Clear default preview, Create a <video> element to be used by Video.js.
 				$container.empty().append( `

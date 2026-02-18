@@ -836,3 +836,8 @@ to ensure proper responsiveness and avoid layout issues.
 .wp-core-ui .attachments-browser .attachment .thumbnail .centered img.icon {
 		transform: translate(-50%, -50%);
 }
+
+// Virtual media styling on Attachment Details two columns layout template.
+.godam-attachment-details-two-columns-virtual-media {
+	height: auto !important;
+}
