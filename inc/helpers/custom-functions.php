@@ -580,13 +580,12 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	 */
 	$default_settings = array(
 		'video' => array(
-			'adaptive_bitrate'     => true,
-			'watermark'            => false,
-			'watermark_text'       => '',
-			'watermark_url'        => '',
-			'video_thumbnails'     => 0,
-			'overwrite_thumbnails' => false,
-			'use_watermark_image'  => false,
+			'adaptive_bitrate'    => true,
+			'watermark'           => false,
+			'watermark_text'      => '',
+			'watermark_url'       => '',
+			'video_thumbnails'    => 0,
+			'use_watermark_image' => false,
 		),
 	);
 
@@ -858,10 +857,13 @@ function rtgodam_is_local_environment() {
 	$host = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
 	// phpcs:enable
 
+	// Strip port number if present (e.g., "localhost:8080" → "localhost").
+	$host_without_port = preg_replace( '/:\d+$/', '', $host );
+
 	$is_localhost = (
-		in_array( $host, $whitelist, true ) ||
-		strpos( $host, '.local' ) !== false ||
-		strpos( $host, '.test' ) !== false
+		in_array( $host_without_port, $whitelist, true ) ||
+		preg_match( '/\.local$/', $host_without_port ) ||
+		preg_match( '/\.test$/', $host_without_port )
 	);
 
 	return ( $is_localhost || ( defined( 'RTGODAM_IS_LOCAL' ) && RTGODAM_IS_LOCAL ) );
@@ -978,27 +980,19 @@ function godam_preview_page_content( $video_id ) {
 		// Display error message for missing or invalid video.
 		?>
 		<div class="godam-video-preview--container">
-			<h1 class="godam-video-preview--title"><?php esc_html_e( 'Video Preview', 'godam' ); ?></h1>
 			<p class="video-not-found"><?php esc_html_e( 'Oops! We could not locate your video', 'godam' ); ?></p>
 		</div>
 		<?php
 	} else {
 		// Display video content.
 		?>
-		<header class="godam-video-preview--container">
+		<div class="godam-video-preview--notice">
+			<?php esc_html_e( 'Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles.', 'godam' ); ?>
+		</div>
+		<div class="godam-video-preview">
 			<h1 class="godam-video-preview--title">
-				<strong><?php esc_html_e( 'Video Preview: ', 'godam' ); ?></strong>
 				<?php echo esc_html( get_the_title( $video_id ) ); ?>
 			</h1>
-		</header>
-
-		<div class="godam-video-preview--container">
-			<div class="godam-video-preview--notice">
-				<?php esc_html_e( 'Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles.', 'godam' ); ?>
-			</div>
-		</div>
-
-		<div class="godam-video-preview">
 			<?php echo do_shortcode( '[godam_video id="' . $video_id . '"]' ); ?>
 		</div>
 		<?php

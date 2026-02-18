@@ -47,6 +47,15 @@ class GoDAM_Video_Gallery {
 			$godam_gallery_script_assets['version'],
 			true
 		);
+		
+		// For multisite compatibility, use localized REST URL if available.
+		wp_localize_script(
+			'godam-gallery-script',
+			'godamGalleryData',
+			array(
+				'restUrl' => esc_url_raw( rest_url( 'godam/v1/gallery-shortcode' ) ),
+			)
+		);
 	}
 
 	/**

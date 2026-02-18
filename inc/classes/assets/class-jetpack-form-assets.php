@@ -55,6 +55,7 @@ class Jetpack_Form_Assets {
 				'successMessage'      => __( 'Your message has been sent successfully.', 'godam' ),
 				'errorMessage'        => __( 'An error occurred. Please try again.', 'godam' ),
 				'networkErrorMessage' => __( 'Network error. Please try again.', 'godam' ),
+				'restUrl'             => esc_url_raw( rest_url( 'godam/v1/jetpack-form-submit' ) ),
 			)
 		);
 

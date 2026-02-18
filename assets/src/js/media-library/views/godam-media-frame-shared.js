@@ -12,6 +12,7 @@
 import { getQuery } from '../utility.js';
 
 const l10n = wp?.media?.view?.l10n;
+const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
 /**
  * Check if the current frame is a featured image context.
@@ -132,8 +133,8 @@ const GoDAMMediaFrameShared = {
 		const selected = selection?.first();
 		const data = selected.attributes;
 
-		// API call to website to create the attachment.
-		fetch( '/wp-json/godam/v1/media-library/create-media-entry', {
+		// API call to website to create the attachment in the current site context.
+		fetch( window.pathJoin( [ restURL, '/godam/v1/media-library/create-media-entry' ] ), {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',

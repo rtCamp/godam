@@ -13,12 +13,12 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { addIcon, trashIcon } from '../media-library-icons';
+import { addIcon, trashIcon, editIcon, barChartIcon } from '../media-library-icons';
 import { canManageAttachment } from '../utility';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
 
-const restURL = window.godamRestRoute.url || '';
+const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
 export default AttachmentDetailsTwoColumn?.extend( {
 
@@ -736,16 +736,16 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		if ( ! activeUser ) {
 			return `
-			<a href="${ editVideoURL }" class="button button-primary" target="_blank">Edit Video</a>
+			<a href="${ editVideoURL }" class="button button-primary" target="_blank">${ editIcon } ${ __( 'Edit Video', 'godam' ) }</a>
 			<div class="paid-feature" title="This feature is only available for paid users.">
-				<a href="${ analyticsURL }" class="button button-secondary" target="_blank">Analytics</a>
+				<a href="${ analyticsURL }" class="button button-secondary" target="_blank">${ barChartIcon } ${ __( 'Analytics', 'godam' ) }</a>
 				<span>$</span>
 			</div>
 			`;
 		}
 
-		const editVideoButtonHTML = `<a href="${ editVideoURL }" class="button button-primary" target="_blank">Edit Video</a>`;
-		const analyticsButtonHTML = `<a href="${ analyticsURL }" class="button button-secondary" target="_blank">Analytics</a>`;
+		const editVideoButtonHTML = `<a href="${ editVideoURL }" class="button button-primary" target="_blank">${ editIcon } ${ __( 'Edit Video', 'godam' ) }</a>`;
+		const analyticsButtonHTML = `<a href="${ analyticsURL }" class="button button-secondary" target="_blank">${ barChartIcon } ${ __( 'Analytics', 'godam' ) }</a>`;
 
 		const buttons = [];
 
@@ -934,12 +934,13 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		// Check if the attachment is a video and render the edit buttons.
 		if ( this.model.get( 'type' ) === 'video' ) {
+			this.$el.find( '.attachment-video-actions, .attachment-video-thumbnails' ).remove();
 			const virtual = this.model.get( 'virtual' );
 
 			// If the attachment is virtual (e.g. a GoDAM proxy video), override default preview.
 			if ( undefined !== virtual && virtual ) {
 				const videoUrl = this.model.get( 'transcoded_url' ); // Ensure it's a valid .mp4
-				const $container = this.$el.find( '.wp-video' );
+				const $container = this.$el.find( '.wp-video > div' );
 				const videoId = 'videojs-player-' + this.model.get( 'id' ); // Unique ID
 
 				// Clear default preview, Create a <video> element to be used by Video.js.
@@ -1109,6 +1110,11 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 	showLoading() {
 		const actionsEl = this.$el.find( '.attachment-actions' );
+
+		if ( actionsEl.find( '.attachment-video-thumbnails' ).length > 0 ) {
+			return; // Stop loading if thumbnails are already present.
+		}
+
 		const ul = document.createElement( 'ul' );
 
 		const li = document.createElement( 'li' );

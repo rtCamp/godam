@@ -56,6 +56,7 @@ const slice = createSlice( {
 		forminatorPluginActive: false,
 		metforms: [],
 		metformPlugnActive: false,
+		addLayerModalTime: null,
 	},
 	reducers: {
 		initializeStore: ( state, action ) => {
@@ -179,6 +180,9 @@ const slice = createSlice( {
 		setMetformPluginActive: ( state, action ) => {
 			state.metformPlugnActive = action.payload;
 		},
+		setAddLayerModalTime: ( state, action ) => {
+			state.addLayerModalTime = action.payload;
+		},
 	},
 } );
 
@@ -212,5 +216,6 @@ export const {
 	setNinjaPluginActive,
 	setMetforms,
 	setMetformPluginActive,
+	setAddLayerModalTime,
 } = slice.actions;
 export default slice.reducer;
