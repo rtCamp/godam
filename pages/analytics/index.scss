@@ -49,8 +49,13 @@
 
 				width: calc(50% - 8px);
 
+				@media screen and (min-width: 1024px) {
+					width: 100%;
+					max-width: 350px;
+				}
+
 				@media screen and (min-width: 1535px) {
-					width: 350px;
+					max-width: 350px;
 				}
 
 				@media screen and (max-width: 640px) {
@@ -143,10 +148,11 @@
 	// Video Chart styles
 	.video-container {
 		position: relative;
-		width: 830px;
+		width: 100%;
+		max-width: 830px;
 
 		@media screen and (max-width: 1024px) {
-			width: 100%;
+			max-width: 100%;
 		}
 	}
 
