@@ -367,7 +367,7 @@ class Seo {
 			return $empty_result;
 		}
 
-		if ( null !== \Elementor\Plugin::$instance->documents && ! \Elementor\Plugin::$instance->documents->get( $post_id )->is_built_with_elementor() ) {
+		if ( ! $this->is_elementor_post( $post_id ) ) {
 			return $empty_result;
 		}
 

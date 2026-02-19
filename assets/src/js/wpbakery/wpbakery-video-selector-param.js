@@ -43,7 +43,7 @@ import { __ } from '@wordpress/i18n';
 				$input.val( attachment.id ).trigger( 'change' );
 
 				// Update button text
-				$button.text( 'Replace' );
+				$button.text( __( 'Replace', 'godam' ) );
 
 				// Add or update preview
 				let $preview = $container.find( '.video-selector-preview' );
