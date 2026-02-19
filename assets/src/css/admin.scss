@@ -836,3 +836,134 @@ to ensure proper responsiveness and avoid layout issues.
 .wp-core-ui .attachments-browser .attachment .thumbnail .centered img.icon {
 		transform: translate(-50%, -50%);
 }
+
+/**
+ * Necessary styles for the GoDAM Dashboard Widget. 
+ * These styles are scoped to the widget container to avoid conflicts with other admin styles.
+ */
+#godam_dashboard_widget {
+
+	.godam-dw-loading {
+		text-align: center;
+		padding: 20px 0;
+		color: #666;
+	}
+
+	.godam-dw-error {
+		background: #fef2f2;
+		border-left: 4px solid #dc2626;
+		padding: 10px 14px;
+		margin-bottom: 12px;
+		color: #991b1b;
+	}
+
+	.godam-dw-metrics {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+		gap: 10px;
+		margin-bottom: 16px;
+	}
+
+	.godam-dw-metric-card {
+		background: #f9fafb;
+		border: 1px solid #e5e7eb;
+		border-radius: 6px;
+		padding: 10px 12px;
+		text-align: center;
+	}
+
+	.godam-dw-metric-label {
+		display: block;
+		font-size: 11px;
+		color: #6b7280;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+		margin-bottom: 4px;
+	}
+
+	.godam-dw-metric-value {
+		display: block;
+		font-size: 20px;
+		font-weight: 600;
+		color: #1f2937;
+		line-height: 1.2;
+	}
+
+	.godam-dw-chart-section {
+		margin-bottom: 16px;
+
+		h4 {
+			font-size: 13px;
+			font-weight: 600;
+			color: #374151;
+			margin: 0 0 8px 0;
+		}
+
+		canvas {
+			width: 100%;
+			height: 60px;
+			display: block;
+		}
+	}
+
+	.godam-dw-top-videos-section {
+		h4 {
+			font-size: 13px;
+			font-weight: 600;
+			color: #374151;
+			margin: 0 0 8px 0;
+		}
+	}
+
+	.godam-dw-top-videos-table {
+		margin-bottom: 16px;
+
+		th {
+			font-size: 11px;
+			text-transform: uppercase;
+			color: #6b7280;
+			padding: 6px 8px;
+		}
+
+		td {
+			font-size: 12px;
+			padding: 6px 8px;
+			vertical-align: middle;
+		}
+	}
+
+	.godam-dw-video-title {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.godam-dw-video-thumb {
+		width: 40px;
+		height: 28px;
+		object-fit: cover;
+		border-radius: 3px;
+		background: #e5e7eb;
+	}
+
+	.godam-dw-video-name {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width: 180px;
+		display: inline-block;
+	}
+
+	.godam-dw-quick-links {
+		display: flex;
+		gap: 8px;
+		flex-wrap: wrap;
+		padding-top: 12px;
+		border-top: 1px solid #e5e7eb;
+
+		.button {
+			font-size: 12px;
+		}
+	}
+}
+

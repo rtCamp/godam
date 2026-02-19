@@ -271,6 +271,13 @@ const blockExtensions = {
 	},
 };
 
+const dashboardWidget = {
+	...sharedConfig,
+	entry: {
+		'godam-dashboard-widget': path.resolve( process.cwd(), 'assets', 'src', 'js', 'dashboard-widget.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -366,4 +373,5 @@ module.exports = [
 	wpBakeryImageSrcSelectorParam,
 	ninjaFormsSubmissionsList,
 	blockExtensions,
+	dashboardWidget,
 ];
