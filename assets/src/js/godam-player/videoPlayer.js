@@ -184,6 +184,34 @@ export default class GodamVideoPlayer {
 	}
 
 	/**
+	 * Detect and set aspect ratio from video metadata
+	 */
+	detectAndSetAspectRatio() {
+		const videoElement = this.player.el().querySelector( 'video' );
+		if ( ! videoElement ) {
+			return;
+		}
+
+		const setAspectRatioFromDimensions = () => {
+			const width = videoElement.videoWidth;
+			const height = videoElement.videoHeight;
+
+			if ( width && height ) {
+				const calculatedAspectRatio = `${ width }:${ height }`;
+				this.player.aspectRatio( calculatedAspectRatio );
+			}
+		};
+
+		// Try to get dimensions immediately if already loaded
+		if ( videoElement.videoWidth && videoElement.videoHeight ) {
+			setAspectRatioFromDimensions();
+		} else {
+			// Wait for metadata to load
+			videoElement.addEventListener( 'loadedmetadata', setAspectRatioFromDimensions, { once: true } );
+		}
+	}
+
+	/**
 	 * Setup player ready callback
 	 */
 	setupPlayerReady() {
@@ -219,12 +247,18 @@ export default class GodamVideoPlayer {
 
 		if ( ! isInModal ) {
 			const aspectRatio = this.configManager.videoSetupOptions?.aspectRatio || '16:9';
-			// Check if aspect ratio is valid x:y format
-			if ( ! /^\d+:\d+$/.test( aspectRatio ) ) {
+
+			// Handle responsive aspect ratio - detect from video dimensions
+			if ( aspectRatio === 'responsive' ) {
+				this.detectAndSetAspectRatio();
+			} else if ( /^\d+:\d+$/.test( aspectRatio ) ) {
+				// Valid x:y format
+				this.player.aspectRatio( aspectRatio );
+			} else {
+				// Invalid format - fall back to 16:9
 				// eslint-disable-next-line no-console
 				console.warn( `Invalid aspect ratio format: "${ aspectRatio }". Falling back to "16:9".` );
-			} else {
-				this.player.aspectRatio( aspectRatio );
+				this.player.aspectRatio( '16:9' );
 			}
 		}
 	}

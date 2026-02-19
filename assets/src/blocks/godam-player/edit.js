@@ -253,6 +253,14 @@ function VideoEdit( {
 					}
 
 					if ( response ) {
+						// Set dimensions if available.
+						if ( response.media_details?.width && response.media_details?.height ) {
+							setAttributes( {
+								videoWidth: `${ response.media_details.width }`,
+								videoHeight: `${ response.media_details.height }`,
+							} );
+						}
+
 						// Build sources list safely, declare newSources first.
 						const newSources = [];
 
@@ -421,6 +429,8 @@ function VideoEdit( {
 				caption: media.caption,
 				seo: newSEOData,
 				sources: mediaSources,
+				videoWidth: media.width ? `${ media.width }` : undefined,
+				videoHeight: media.height ? `${ media.height }` : undefined,
 			} );
 
 			setTemporaryURL();
@@ -486,6 +496,8 @@ function VideoEdit( {
 							...baseAttributes,
 							seo: newSEOData,
 							sources: mediaSources,
+							videoWidth: response.media_details?.width ? `${ response.media_details.width }` : undefined,
+							videoHeight: response.media_details?.height ? `${ response.media_details.height }` : undefined,
 						} );
 					} else {
 						// If meta not present, use media url.
@@ -765,10 +777,10 @@ function VideoEdit( {
 									__nextHasNoMarginBottom
 								>
 									<SelectControl
-										value={ attributes.aspectRatio || '16:9' }
+										value={ attributes.aspectRatio || 'responsive' }
 										options={ [
+											{ label: __( 'Original', 'godam' ), value: 'responsive' },
 											{ label: __( '16:9 (Standard)', 'godam' ), value: '16:9' },
-											{ label: __( 'Responsive', 'godam' ), value: 'responsive' },
 										] }
 										onChange={ ( value ) => setAttributes( { aspectRatio: value } ) }
 										help={ __( 'Choose the aspect ratio for the video player.', 'godam' ) }

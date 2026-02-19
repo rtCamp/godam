@@ -33,6 +33,8 @@ export default class EventsManager {
 		this.player.on( 'timeupdate', () => this.handleTimeUpdate() );
 		this.player.on( 'fullscreenchange', () => this.handleFullscreenChange() );
 		this.player.on( 'play', () => this.handlePlay() );
+		this.player.on( 'loadedmetadata', () => this.handleVideoResize() );
+		this.player.on( 'canplay', () => this.handleVideoResize() );
 	}
 
 	/**
@@ -43,6 +45,10 @@ export default class EventsManager {
 		if ( this.onPlayerConfigurationSetup ) {
 			this.onPlayerConfigurationSetup();
 		}
+
+		// Trigger initial control positioning after controls are created and layout stabilizes.
+		requestAnimationFrame( () => this.handleVideoResize() );
+		setTimeout( () => this.handleVideoResize(), 120 );
 	}
 
 	/**

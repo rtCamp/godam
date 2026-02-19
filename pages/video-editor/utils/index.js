@@ -67,14 +67,28 @@ function createGoDAMVideoBlockMarkup( attrs ) {
 function createVideoAttributes( attachmentId, mediaData ) {
 	const baseAttrs = {
 		id: Number( attachmentId ),
-		aspectRatio: '16:9',
+		aspectRatio: 'responsive',
 	};
 
 	if ( ! mediaData ) {
 		return baseAttrs;
 	}
 
-	const { source_url: sourceUrl, mime_type: mimeType } = mediaData;
+	const {
+		source_url: sourceUrl,
+		mime_type: mimeType,
+		media_details: mediaDetails,
+		meta,
+	} = mediaData;
+
+	const videoWidth = mediaDetails?.width || meta?.width;
+	const videoHeight = mediaDetails?.height || meta?.height;
+	const dimensionAttrs = ( videoWidth && videoHeight )
+		? {
+			videoWidth: `${ videoWidth }`,
+			videoHeight: `${ videoHeight }`,
+		}
+		: {};
 
 	if ( sourceUrl ) {
 		// Convert .mov files to video/mp4 type to match editor behavior
@@ -82,6 +96,7 @@ function createVideoAttributes( attachmentId, mediaData ) {
 
 		return {
 			...baseAttrs,
+			...dimensionAttrs,
 			src: sourceUrl,
 			sources: [ {
 				src: sourceUrl,
@@ -90,7 +105,10 @@ function createVideoAttributes( attachmentId, mediaData ) {
 		};
 	}
 
-	return baseAttrs;
+	return {
+		...baseAttrs,
+		...dimensionAttrs,
+	};
 }
 
 async function fetchMediaData( attachmentId ) {

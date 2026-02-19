@@ -179,7 +179,7 @@ const Analytics = ( { attachmentID } ) => {
 		const originalVideoEl = document.getElementById( 'original-analytics-video' );
 
 		const videoOptions = {
-			fluid: true,
+			fluid: false,
 			mute: true,
 			controls: false,
 			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
@@ -193,34 +193,103 @@ const Analytics = ( { attachmentID } ) => {
 			},
 		};
 
-		if ( originalVideoEl && analyticsData ) {
+		let originalResizeHandler = null;
+
+		if ( originalVideoEl ) {
 			const originalVideo = videojs( 'original-analytics-video', videoOptions );
 
-			generateLineChart(
-				JSON.parse( analyticsData?.all_time_heatmap ),
-				'#performance-line-chart',
-				originalVideo,
-				'.performance-line-chart-tooltip',
-				525,
-				300,
-			);
+			// Set aspect ratio when metadata loads
+			originalVideo.on( 'loadedmetadata', () => {
+				const videoWidth = originalVideo.videoWidth();
+				const videoHeight = originalVideo.videoHeight();
+
+				if ( videoWidth && videoHeight ) {
+					const aspectRatio = `${ videoWidth }:${ videoHeight }`;
+					originalVideo.aspectRatio( aspectRatio );
+
+					const container = originalVideoEl.closest( '.block' );
+					if ( container ) {
+						originalResizeHandler = () => {
+							const parentWidth = container.parentElement?.offsetWidth || window.innerWidth;
+							const maxWidth = Math.min( parentWidth - 40, 525 );
+							const calculatedWidth = 320 * ( videoWidth / videoHeight );
+							const finalWidth = Math.min( calculatedWidth, maxWidth );
+							container.style.width = `${ finalWidth }px`;
+							container.style.maxWidth = '100%';
+						};
+
+						originalResizeHandler();
+						window.addEventListener( 'resize', originalResizeHandler );
+					}
+				}
+			} );
+
+			if ( isABTestCompleted && analyticsData ) {
+				generateLineChart(
+					JSON.parse( analyticsData?.all_time_heatmap ),
+					'#performance-line-chart',
+					originalVideo,
+					'.performance-line-chart-tooltip',
+					525,
+					300,
+				);
+			}
 		}
 
 		const comparisonVideoEl = document.getElementById( 'comparison-analytics-video' );
+		let comparisonResizeHandler = null;
 
-		if ( comparisonVideoEl && abTestComparisonAnalyticsData ) {
+		if ( comparisonVideoEl ) {
 			const comparisonVideo = videojs( 'comparison-analytics-video', videoOptions );
 
-			generateLineChart(
-				JSON.parse( abTestComparisonAnalyticsData?.all_time_heatmap ),
-				'#comparison-line-chart',
-				comparisonVideo,
-				'.comparison-line-chart-tooltip',
-				525,
-				300,
-			);
+			// Set aspect ratio when metadata loads
+			comparisonVideo.on( 'loadedmetadata', () => {
+				const videoWidth = comparisonVideo.videoWidth();
+				const videoHeight = comparisonVideo.videoHeight();
+
+				if ( videoWidth && videoHeight ) {
+					const aspectRatio = `${ videoWidth }:${ videoHeight }`;
+					comparisonVideo.aspectRatio( aspectRatio );
+
+					const container = comparisonVideoEl.closest( '.block' );
+					if ( container ) {
+						comparisonResizeHandler = () => {
+							const parentWidth = container.parentElement?.offsetWidth || window.innerWidth;
+							const maxWidth = Math.min( parentWidth - 40, 525 );
+							const calculatedWidth = 320 * ( videoWidth / videoHeight );
+							const finalWidth = Math.min( calculatedWidth, maxWidth );
+							container.style.width = `${ finalWidth }px`;
+							container.style.maxWidth = '100%';
+						};
+
+						comparisonResizeHandler();
+						window.addEventListener( 'resize', comparisonResizeHandler );
+					}
+				}
+			} );
+
+			if ( isABTestCompleted && abTestComparisonAnalyticsData ) {
+				generateLineChart(
+					JSON.parse( abTestComparisonAnalyticsData?.all_time_heatmap ),
+					'#comparison-line-chart',
+					comparisonVideo,
+					'.comparison-line-chart-tooltip',
+					525,
+					300,
+				);
+			}
 		}
-	}, [ analyticsData, abTestComparisonAnalyticsData ] );
+
+		// Cleanup function to remove resize listeners
+		return () => {
+			if ( originalResizeHandler ) {
+				window.removeEventListener( 'resize', originalResizeHandler );
+			}
+			if ( comparisonResizeHandler ) {
+				window.removeEventListener( 'resize', comparisonResizeHandler );
+			}
+		};
+	}, [ analyticsData, abTestComparisonAnalyticsData, attachmentData, abTestComparisonAttachmentData, isABTestCompleted, mediaLibraryAttachment ] );
 
 	useEffect( () => {
 		const analyticsVideoEl = document.getElementById( 'analytics-video' );
@@ -235,7 +304,7 @@ const Analytics = ( { attachmentID } ) => {
 		}
 
 		const player = videojs( 'analytics-video', {
-			aspectRatio: '16:9',
+			fluid: false,
 			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
 			// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
 			html5: {
@@ -247,8 +316,58 @@ const Analytics = ( { attachmentID } ) => {
 			},
 		} );
 
+		let resizeHandler = null;
+
+		// When video metadata loads, get actual dimensions and set aspect ratio
+		player.on( 'loadedmetadata', () => {
+			const videoWidth = player.videoWidth();
+			const videoHeight = player.videoHeight();
+
+			if ( videoWidth && videoHeight ) {
+				// Calculate aspect ratio
+				const aspectRatio = `${ videoWidth }:${ videoHeight }`;
+				player.aspectRatio( aspectRatio );
+
+				const container = document.querySelector( '.video-container' );
+				if ( container ) {
+					// Function to update container width based on aspect ratio
+					resizeHandler = () => {
+						// Get available width (parent width or viewport width - padding)
+						const parentWidth = container.parentElement?.offsetWidth || window.innerWidth;
+						const maxWidth = Math.min( parentWidth - 40, 640 ); // 40px for padding
+						const calculatedWidth = 360 * ( videoWidth / videoHeight );
+
+						// Use the smaller of calculated width or available space
+						const finalWidth = Math.min( calculatedWidth, maxWidth );
+						container.style.width = `${ finalWidth }px`;
+					};
+
+					resizeHandler();
+
+					// Update on window resize
+					window.addEventListener( 'resize', resizeHandler );
+
+					// Generate line chart after container is set
+					if ( analyticsData?.all_time_heatmap ) {
+						const heatmapData = JSON.parse( analyticsData.all_time_heatmap );
+						generateLineChart(
+							heatmapData,
+							'#line-chart',
+							player,
+							'.line-chart-tooltip',
+							640,
+							300,
+						);
+					}
+				}
+			}
+		} );
+
 		// Add cleanup for when this specific effect unmounts
 		return () => {
+			if ( resizeHandler ) {
+				window.removeEventListener( 'resize', resizeHandler );
+			}
 			if ( player ) {
 				player.dispose();
 			}
@@ -474,9 +593,9 @@ const Analytics = ( { attachmentID } ) => {
 						className="video-analytics-container hidden"
 					>
 						<div>
-							<div className="flex gap-10 items-center flex-wrap flex-row">
-								<div className="flex-grow">
-									<div className="w-full analytics-info-container flex flex-wrap flex-row items-center 2xl:flex-col">
+							<div className="flex gap-6 items-center flex-wrap lg:flex-nowrap flex-row">
+								<div className="flex-grow w-full lg:w-auto">
+									<div className="w-full analytics-info-container flex flex-wrap flex-row items-center lg:flex-col lg:items-start lg:gap-4">
 										<SingleMetrics
 											metricType={ 'engagement-rate' }
 											label={ __( 'Average Engagement', 'godam' ) }
@@ -522,7 +641,7 @@ const Analytics = ( { attachmentID } ) => {
 										/>
 									</div>
 								</div>
-								<div className="min-w-full lg:min-w-[750px]">
+								<div className="w-full lg:w-auto lg:flex-grow lg:min-w-[650px] 2xl:min-w-[750px]">
 									<div>
 										<div className="video-container">
 											<RenderVideo
@@ -659,8 +778,8 @@ const Analytics = ( { attachmentID } ) => {
 											</div>
 										) }
 										{ mediaLibraryAttachment && (
-											<div className="flex gap-12 w-full h-full pt-6 justify-center">
-												<div className="block w-[525px] h-[350px]">
+											<div className="flex gap-4 md:gap-12 w-full h-full pt-6 justify-center flex-col md:flex-row">
+												<div className="block w-full md:w-[525px] max-w-full">
 													<div className="relative">
 														<RenderVideo
 															attachmentData={ attachmentData }
@@ -679,13 +798,13 @@ const Analytics = ( { attachmentID } ) => {
 														<h4 className="text-center m-0 mt-6">{ attachmentData?.title?.rendered }</h4>
 													</div>
 												</div>
-												<div className="w-px bg-gray-200 mx-4 divide-dashed"></div>
-												<div className="block w-[525px] h-[350px]">
+												<div className="w-px bg-gray-200 mx-4 divide-dashed hidden md:block"></div>
+												<div className="block w-full md:w-[525px] max-w-full">
 													<div className="relative">
 														<RenderVideo
 															attachmentData={ mediaLibraryAttachment }
 															attachmentID={ mediaLibraryAttachment?.id }
-															className="w-full h-[320px] object-fill comparison-video-container"
+															className="w-full object-fill comparison-video-container"
 															videoId={ 'comparison-analytics-video' }
 														/>
 														<div className="original-video-chart-container relative">

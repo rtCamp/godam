@@ -135,12 +135,6 @@ $godam_video_preview      = isset( $attributes['preview'] ) ? $attributes['previ
 $godam_overlay_time_range = ! empty( $attributes['overlayTimeRange'] ) ? floatval( $attributes['overlayTimeRange'] ) : 0;
 $godam_show_overlay       = isset( $attributes['showOverlay'] ) ? $attributes['showOverlay'] : false;
 $godam_vertical_alignment = ! empty( $attributes['verticalAlignment'] ) ? esc_attr( $attributes['verticalAlignment'] ) : 'center';
-$godam_aspect_ratio       = ! empty( $attributes['aspectRatio'] ) && 'responsive' === $attributes['aspectRatio']
-	? ( ! empty( $attributes['videoWidth'] ) && ! empty( $attributes['videoHeight'] )
-		? $attributes['videoWidth'] . ':' . $attributes['videoHeight']
-		: '16:9'
-	)
-	: '16:9';
 
 $godam_src                = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
 $godam_transcoded_url     = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attributes['transcoded_url'] ) : '';
@@ -152,6 +146,35 @@ $godam_meta_data = is_array( $godam_meta_data ) ? $godam_meta_data : array();
 
 if ( $godam_is_virtual ) {
 	$godam_meta_data = $godam_original_id ? get_post_meta( $godam_original_id, 'rtgodam_meta', true ) : array();
+}
+
+// Resolve aspect ratio after we have all metadata loaded.
+if ( ! empty( $attributes['aspectRatio'] ) && 'responsive' === $attributes['aspectRatio'] ) {
+	if ( ! empty( $attributes['videoWidth'] ) && ! empty( $attributes['videoHeight'] ) ) {
+		// Use explicitly provided dimensions (from block attributes).
+		$godam_aspect_ratio = $attributes['videoWidth'] . ':' . $attributes['videoHeight'];
+	} else {
+		// Try to resolve from attachment metadata.
+		$godam_attachment_to_check = $godam_is_virtual && ! empty( $godam_original_id ) ? $godam_original_id : $godam_attachment_id;
+		
+		if ( ! empty( $godam_attachment_to_check ) && is_numeric( $godam_attachment_to_check ) ) {
+			$godam_video_meta = wp_get_attachment_metadata( intval( $godam_attachment_to_check ) );
+			if ( ! empty( $godam_video_meta['width'] ) && ! empty( $godam_video_meta['height'] ) ) {
+				$godam_aspect_ratio = intval( $godam_video_meta['width'] ) . ':' . intval( $godam_video_meta['height'] );
+			} else {
+				// Fallback: let frontend JavaScript detect dimensions dynamically.
+				$godam_aspect_ratio = 'responsive';
+			}
+		} else {
+			// No attachment ID available - let frontend handle it.
+			$godam_aspect_ratio = 'responsive';
+		}
+	}
+} elseif ( ! empty( $attributes['aspectRatio'] ) && preg_match( '/^\d+:\d+$/', $attributes['aspectRatio'] ) ) {
+	// Use an explicitly set ratio like "16:9", "4:3", etc.
+	$godam_aspect_ratio = $attributes['aspectRatio'];
+} else {
+	$godam_aspect_ratio = '16:9';
 }
 // Extract control bar settings with a fallback to an empty array.
 $godam_control_bar_settings = $godam_meta_data['videoConfig']['controlBar'] ?? array();

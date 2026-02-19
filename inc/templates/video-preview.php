@@ -11,6 +11,7 @@ defined( 'ABSPATH' ) || exit;
 
 // Enqueue styles for the video preview page.
 wp_enqueue_style( 'godam-video-preview-style' );
+wp_enqueue_script( 'godam-video-preview-script' );
 
 $godam_video_id = isset( $_GET['id'] ) ? intval( wp_unslash( $_GET['id'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- no nonce verification needed for this page.
 
