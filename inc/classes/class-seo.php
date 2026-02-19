@@ -71,7 +71,7 @@ class Seo {
 		}
 
 		// Skip if this is an Elementor post (handled separately).
-		$is_elementor = 'builder' === get_post_meta( $post_ID, '_elementor_edit_mode', true );
+		$is_elementor = $this->is_elementor_post( $post_ID );
 		if ( $is_elementor ) {
 			return;
 		}
@@ -249,6 +249,16 @@ class Seo {
 		}
 
 		return $iso_duration;
+	}
+
+	/**
+	 * Check if a post is built with Elementor.
+	 *
+	 * @param int $post_id The post ID.
+	 * @return bool True if it's an Elementor post, false otherwise.
+	 */
+	public function is_elementor_post( $post_id ) {
+		return 'builder' === get_post_meta( $post_id, '_elementor_edit_mode', true );
 	}
 
 	/**
@@ -639,7 +649,7 @@ class Seo {
 			}
 
 			// Check if it's an Elementor post.
-			$is_elementor = 'builder' === get_post_meta( $post_id, '_elementor_edit_mode', true );
+			$is_elementor = $this->is_elementor_post( $post_id );
 
 			if ( $is_elementor ) {
 				$this->elementor_save_seo_data_as_postmeta( $post_id );
