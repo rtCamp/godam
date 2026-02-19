@@ -1,11 +1,20 @@
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
 ( function( $ ) {
 	'use strict';
+
+	let isVirtualAttachmentListenerBound = false;
 
 	// Initialize video selector on document ready and when WPBakery reloads the params
 	$( document ).ready( initVideoSelector );
 	$( document ).on( 'vc.reload', initVideoSelector );
 
 	function initVideoSelector() {
+		bindVirtualAttachmentReplacement();
+
 		$( '.video-selector-button' ).off( 'click' ).on( 'click', function( e ) {
 			e.preventDefault();
 
@@ -67,6 +76,64 @@
 
 		// Initialize remove handler
 		initRemoveHandler();
+	}
+
+	/**
+	 * Replace temporary virtual media IDs with actual attachment IDs
+	 * once media entry creation is completed.
+	 */
+	function bindVirtualAttachmentReplacement() {
+		if ( isVirtualAttachmentListenerBound ) {
+			return;
+		}
+
+		document.addEventListener( 'godam-virtual-attachment-created', function( event ) {
+			const { attachment, virtualMediaId } = event?.detail || {};
+
+			if ( ! attachment?.id || ! virtualMediaId ) {
+				return;
+			}
+
+			$( '.video_selector_field' ).each( function() {
+				const $input = $( this );
+				const currentValue = $input.val();
+
+				if ( String( currentValue ) !== String( virtualMediaId ) ) {
+					return;
+				}
+
+				const $container = $input.closest( '.video_selector_block' );
+				const $selectButton = $container.find( '.video-selector-button' );
+				const $buttonsWrapper = $container.find( '.video_selector-buttons-wrapper' );
+				const mimeType = attachment.mime || attachment.post_mime_type || 'video/mp4';
+
+				$input.val( attachment.id ).trigger( 'change' );
+				$selectButton.text( 'Replace' );
+
+				let $preview = $container.find( '.video-selector-preview' );
+				if ( $preview.length === 0 ) {
+					$preview = $( '<div class="video-selector-preview" style="margin-top: 10px;"></div>' );
+					$container.append( $preview );
+				}
+
+				if ( attachment.url ) {
+					$preview.html(
+						'<video width="100%" height="auto" controls style="max-width: 300px;">' +
+						'<source src="' + attachment.url + '" type="' + mimeType + '">' +
+						'</video>',
+					);
+				}
+
+				let $removeButton = $buttonsWrapper.find( '.video-selector-remove' );
+				if ( $removeButton.length === 0 ) {
+					$removeButton = $( `<button class="button video-selector-remove" style="margin-left: 5px;">${ __( 'Remove', 'godam' ) }</button>` );
+					$buttonsWrapper.append( $removeButton );
+					initRemoveHandler();
+				}
+			} );
+		} );
+
+		isVirtualAttachmentListenerBound = true;
 	}
 
 	function initRemoveHandler() {
