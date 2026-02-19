@@ -98,7 +98,7 @@ export default class TranscriptManager {
 		const url = `${ endpoint }?job_name=${ encodeURIComponent( this.jobId ) }`;
 
 		const headers = {
-			'Content-Type': 'application/json',
+			Accept: 'application/json',
 		};
 
 		// Add If-None-Match header for conditional request if we have a cached ETag
