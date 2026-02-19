@@ -293,7 +293,13 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 						update_post_meta( $attachment_id, 'rtgodam_transcoded_url', esc_url_raw( $post_array['download_url'] ) );
 
 						// Request CDN image subsizes and store them in dedicated meta.
-						\RTGODAM\Inc\REST_API\Media_Library::get_instance()->request_image_subsizes_for_attachment( $job_id, $attachment_id );
+						$subsize_result = \RTGODAM\Inc\REST_API\Media_Library::get_instance()->request_image_subsizes_for_attachment( $job_id, $attachment_id );
+
+						if ( is_wp_error( $subsize_result ) || empty( $subsize_result ) ) {
+							// translators: %s is replaced with the attachment ID for which subsizes generation failed.
+							$flag = sprintf( __( 'Failed to generate image subsizes for attachment ID %s.', 'godam' ), $attachment_id );
+							error_log( $flag ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Logging the error for debugging purposes.
+						}
 					}
 				} else {
 					$flag = __( 'Something went wrong. The required attachment id does not exists. It must have been deleted.', 'godam' );

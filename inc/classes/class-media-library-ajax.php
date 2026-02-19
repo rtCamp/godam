@@ -925,71 +925,6 @@ class Media_Library_Ajax {
 	}
 
 	/**
-	 * Find best matching GoDAM CDN size for requested dimensions.
-	 *
-	 * @since 1.5.0
-	 *
-	 * @param array        $rtgodam_image_sizes CDN size array.
-	 * @param string|array $size               Requested size.
-	 * @return array|false
-	 */
-	private function find_best_rtgodam_size( $rtgodam_image_sizes, $size ) {
-		if ( empty( $rtgodam_image_sizes ) || ! is_array( $rtgodam_image_sizes ) ) {
-			return false;
-		}
-
-		$candidate = false;
-
-		if ( is_string( $size ) && isset( $rtgodam_image_sizes[ $size ] ) ) {
-			$candidate = $rtgodam_image_sizes[ $size ];
-		} else {
-			$target_width  = 0;
-			$target_height = 0;
-
-			if ( is_string( $size ) ) {
-				$wp_image_sizes = wp_get_registered_image_subsizes();
-				if ( isset( $wp_image_sizes[ $size ] ) ) {
-					$target_width  = (int) $wp_image_sizes[ $size ]['width'];
-					$target_height = (int) $wp_image_sizes[ $size ]['height'];
-				}
-			} elseif ( is_array( $size ) ) {
-				$target_width  = isset( $size[0] ) ? (int) $size[0] : 0;
-				$target_height = isset( $size[1] ) ? (int) $size[1] : 0;
-			}
-
-			if ( $target_width > 0 ) {
-				$best_diff = PHP_INT_MAX;
-				foreach ( $rtgodam_image_sizes as $rtgodam_size ) {
-					if ( empty( $rtgodam_size['width'] ) || empty( $rtgodam_size['height'] ) ) {
-						continue;
-					}
-
-					$width  = (int) $rtgodam_size['width'];
-					$height = (int) $rtgodam_size['height'];
-					$diff   = abs( $target_width - $width ) + abs( $target_height - $height );
-
-					if ( $diff < $best_diff ) {
-						$best_diff = $diff;
-						$candidate = $rtgodam_size;
-					}
-				}
-			}
-		}
-
-		if ( empty( $candidate['url'] ) ) {
-			return false;
-		}
-
-		return array(
-			'url'      => esc_url( $candidate['url'] ),
-			'width'    => isset( $candidate['width'] ) ? (int) $candidate['width'] : 0,
-			'height'   => isset( $candidate['height'] ) ? (int) $candidate['height'] : 0,
-			'file'     => isset( $candidate['file'] ) ? sanitize_file_name( $candidate['file'] ) : '',
-			'filesize' => isset( $candidate['filesize'] ) ? (int) $candidate['filesize'] : 0,
-		);
-	}
-
-	/**
 	 * Filter srcset calculation for virtual media to use full URLs.
 	 *
 	 * @since 1.5.0
@@ -1021,7 +956,7 @@ class Media_Library_Ajax {
 			return $sources;
 		}
 
-		// if rtgodam_image_sizes meta exists, use it to build the srcset. 
+		// If rtgodam_image_sizes meta exists, use it to build the srcset. 
 		// This is the case for GoDAM-managed images which may not be virtual but still need correct srcset URLs.
 		if ( ! empty( $rtgodam_image_sizes ) ) {
 
@@ -1029,6 +964,11 @@ class Media_Library_Ajax {
 			$new_sources = array();
 			// Sources element should have only url, descriptor, value. Remove any extra data added for our internal use.
 			foreach ( $rtgodam_image_sizes as &$image_size ) {
+				// Skip entries that do not have a valid URL or width to avoid invalid srcset entries.
+				if ( empty( $image_size['url'] ) || empty( $image_size['width'] ) ) {
+					continue;
+				}
+
 				$new_sources[] = array(
 					'url'        => isset( $image_size['url'] ) ? esc_url( $image_size['url'] ) : '',
 					'descriptor' => 'w',
@@ -1065,7 +1005,7 @@ class Media_Library_Ajax {
 	/**
 	 * Replace final rendered content <img> src with CDN URL when available.
 	 *
-	 * @since 1.5.0
+	 * @since n.e.x.t
 	 *
 	 * @param string $filtered_image Full <img> tag.
 	 * @param string $context        Render context.
@@ -1088,7 +1028,7 @@ class Media_Library_Ajax {
 		}
 
 		$updated_image = preg_replace(
-			'/\ssrc="[^"]*"/',
+			'/\bsrc="[^"]*"/',
 			' src="' . esc_url( $cdn_src ) . '"',
 			$filtered_image,
 			1
