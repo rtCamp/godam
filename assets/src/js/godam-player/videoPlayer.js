@@ -16,6 +16,7 @@ import AdsManager from './managers/adsManager.js';
 import HoverManager from './managers/hoverManager.js';
 import ShareManager from './managers/shareManager.js';
 import MenuButtonHoverManager from './managers/menuButtonHover.js';
+import TranscriptManager from './managers/transcriptManager.js';
 import { loadFlvPlugin, requiresFlvPlugin, loadAdsPlugins } from './utils/pluginLoader.js';
 
 /**
@@ -38,6 +39,7 @@ export default class GodamVideoPlayer {
 		this.chaptersManager = null;
 		this.adsManager = null;
 		this.hoverManager = null;
+		this.transcriptManager = null;
 		this.shareManager = null;
 	}
 
@@ -182,6 +184,7 @@ export default class GodamVideoPlayer {
 			this.player.jobId = this.video.dataset.job_id;
 			this.initializeChapters();
 			this.setupQualitySelector();
+			this.initializeTranscript();
 
 			// Now that managers are initialized, we can safely access them
 			this.setupEventListeners();
@@ -288,6 +291,27 @@ export default class GodamVideoPlayer {
 	 */
 	initializeChapters() {
 		this.chaptersManager.initialize();
+	}
+
+	/**
+	 * Initialize AI-generated transcript loading.
+	 * Fetches transcript from GoDAM API and adds it as a text track.
+	 */
+	initializeTranscript() {
+		this.transcriptManager = new TranscriptManager(
+			this.player,
+			this.video,
+			this.configManager,
+		);
+
+		// Load transcript asynchronously (non-blocking)
+		this.transcriptManager.initialize().catch( ( error ) => {
+			// eslint-disable-next-line no-console
+			console.debug( 'Failed to initialize transcript:', error );
+		} );
+
+		// Attach to player for external access
+		this.player.transcriptManager = this.transcriptManager;
 	}
 
 	/**
