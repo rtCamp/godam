@@ -90,11 +90,54 @@ window.addEventListener( 'elementor/frontend/init', () => {
 					return;
 				}
 
+				const settings = model.get( 'settings' );
+
+				/**
+				 * Replace temporary virtual media ID with the newly created real attachment ID.
+				 *
+				 * This mirrors Gutenberg behavior for virtual media uploads.
+				 *
+				 * @param {CustomEvent} event - Event detail contains `virtualMediaId` and `attachment`.
+				 */
+				const handleVirtualAttachmentCreated = ( event ) => {
+					const { attachment, virtualMediaId } = event?.detail || {};
+					const currentVideoFile = settings.get( 'video-file' ) || {};
+					const currentId = currentVideoFile?.id;
+
+					if ( ! attachment?.id ) {
+						return;
+					}
+
+					// Update only when current ID is empty or still points to this virtual media placeholder.
+					const shouldReplaceId = currentId === undefined || currentId === null || currentId === '' || String( currentId ) === String( virtualMediaId );
+					if ( ! shouldReplaceId ) {
+						return;
+					}
+
+					settings.set( {
+						'video-file': {
+							...currentVideoFile,
+							id: attachment.id,
+							url: attachment.url || currentVideoFile.url,
+							name: attachment.filename || currentVideoFile.name,
+							title: attachment.title || currentVideoFile.title,
+						},
+					} );
+
+					panel.currentPageView.render();
+				};
+
+				// Prevent duplicate listeners if panel is opened multiple times.
+				if ( model._godamVirtualAttachmentCreatedHandler ) {
+					document.removeEventListener( 'godam-virtual-attachment-created', model._godamVirtualAttachmentCreatedHandler );
+				}
+				model._godamVirtualAttachmentCreatedHandler = handleVirtualAttachmentCreated;
+				document.addEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
+
 				/**
 				 * Handle seo_override toggle changes.
 				 */
 				const handleSeoOverrideChange = () => {
-					const settings = model.get( 'settings' );
 					const seoOverride = isSeoOverrideEnabled( settings );
 					// Delay to ensure DOM is updated
 					setTimeout( () => {
@@ -115,7 +158,6 @@ window.addEventListener( 'elementor/frontend/init', () => {
 				 * Automatically populates the SEO fields.
 				 */
 				model.get( 'settings' ).on( 'change:video-file', async () => {
-					const settings = model.get( 'settings' );
 					const videoFile = model.get( 'settings' ).get( 'video-file' );
 
 					if ( ! videoFile.url ) {
@@ -176,7 +218,6 @@ window.addEventListener( 'elementor/frontend/init', () => {
 				 * Updates the poster url field when the poster image is updated.
 				 */
 				model.get( 'settings' ).on( 'change:poster', async () => {
-					const settings = model.get( 'settings' );
 					const posterUrl = getPosterUrl( settings );
 
 					if ( ! posterUrl || ! isSeoOverrideEnabled( settings ) ) {
@@ -215,6 +256,13 @@ window.addEventListener( 'elementor/frontend/init', () => {
 				// Update help text when panel renders
 				panel.currentPageView.on( 'render', () => {
 					setTimeout( updateDescriptionHelp, DESCRIPTION_HELP_UPDATE_DELAY_MS );
+				} );
+
+				panel.currentPageView.on( 'destroy', () => {
+					if ( model._godamVirtualAttachmentCreatedHandler ) {
+						document.removeEventListener( 'godam-virtual-attachment-created', model._godamVirtualAttachmentCreatedHandler );
+						delete model._godamVirtualAttachmentCreatedHandler;
+					}
 				} );
 			},
 		);
