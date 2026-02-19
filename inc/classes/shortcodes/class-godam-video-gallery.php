@@ -47,6 +47,15 @@ class GoDAM_Video_Gallery {
 			$godam_gallery_script_assets['version'],
 			true
 		);
+		
+		// For multisite compatibility, use localized REST URL if available.
+		wp_localize_script(
+			'godam-gallery-script',
+			'godamGalleryData',
+			array(
+				'restUrl' => esc_url_raw( rest_url( 'godam/v1/gallery-shortcode' ) ),
+			)
+		);
 	}
 
 	/**
@@ -113,7 +122,6 @@ class GoDAM_Video_Gallery {
 		if ( ! is_admin() ) {
 			wp_enqueue_script( 'godam-player-frontend-script' );
 			wp_enqueue_script( 'godam-player-analytics-script' );
-			wp_enqueue_style( 'godam-player-frontend-style' );
 			wp_enqueue_style( 'godam-player-style' );
 		}
 

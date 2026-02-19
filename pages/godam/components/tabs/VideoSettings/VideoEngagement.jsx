@@ -6,14 +6,13 @@ import { useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { ToggleControl, Button, Panel, PanelBody } from '@wordpress/components';
-import { unlock } from '@wordpress/icons';
+import { ToggleControl, Panel, PanelBody } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import { hasValidAPIKey } from '../../../utils';
+import { hasAPIKey } from '../../../utils';
 
 const VideoEngagement = ( { handleSettingChange } ) => {
 	const enableGlobalEngagement = useSelector( ( state ) => state.mediaSettings.video.enable_global_video_engagement );
@@ -21,19 +20,6 @@ const VideoEngagement = ( { handleSettingChange } ) => {
 
 	return (
 		<div className="relative">
-			{ ! hasValidAPIKey && (
-				<div className="premium-feature-overlay">
-					<Button
-						className="godam-button"
-						icon={ unlock }
-						href="https://app.godam.io/web/billing?tab=Plans"
-						target="_blank"
-						variant="primary"
-					>
-						{ __( 'Upgrade to unlock', 'godam' ) }
-					</Button>
-				</div>
-			) }
 			<Panel
 				heading={ __( 'Video Engagements', 'godam' ) }
 				className="godam-panel godam-margin-bottom"
@@ -44,13 +30,11 @@ const VideoEngagement = ( { handleSettingChange } ) => {
 							__nextHasNoMarginBottom
 							className="godam-toggle"
 							label={ __( 'Enable video engagement globally', 'godam' ) }
-							checked={
-								! hasValidAPIKey ? false : enableGlobalEngagement
-							}
+							checked={ enableGlobalEngagement }
 							onChange={ ( value ) => {
 								handleSettingChange( 'enable_global_video_engagement', value );
 							} }
-							disabled={ ! hasValidAPIKey }
+							disabled={ ! hasAPIKey }
 							help={ __(
 								'If disabled, Likes and Comments will be disabled globally for all GoDAM Video and GoDAM Video Gallery blocks. If enabled, it can be overridden in the block settings panel.',
 								'godam',
@@ -60,13 +44,11 @@ const VideoEngagement = ( { handleSettingChange } ) => {
 							__nextHasNoMarginBottom
 							className="godam-toggle"
 							label={ __( 'Enable video share globally', 'godam' ) }
-							checked={
-								! hasValidAPIKey ? false : enableGlobalShare
-							}
+							checked={ enableGlobalShare }
 							onChange={ ( value ) => {
 								handleSettingChange( 'enable_global_video_share', value );
 							} }
-							disabled={ ! hasValidAPIKey }
+							disabled={ ! hasAPIKey }
 							help={ __(
 								'If disabled, sharing options (such as social sharing buttons) will not be available for GoDAM videos. If enabled, it can be overridden in the block settings panel.',
 							) }

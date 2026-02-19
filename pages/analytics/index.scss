@@ -49,8 +49,13 @@
 
 				width: calc(50% - 8px);
 
+				@media screen and (min-width: 1024px) {
+					width: 100%;
+					max-width: 350px;
+				}
+
 				@media screen and (min-width: 1535px) {
-					width: 350px;
+					max-width: 350px;
 				}
 
 				@media screen and (max-width: 640px) {
@@ -143,10 +148,11 @@
 	// Video Chart styles
 	.video-container {
 		position: relative;
-		width: 830px;
+		width: 100%;
+		max-width: 830px;
 
 		@media screen and (max-width: 1024px) {
-			width: 100%;
+			max-width: 100%;
 		}
 	}
 
@@ -339,6 +345,13 @@
 	background: rgba(0, 0, 0, 0.4);
 	backdrop-filter: blur(5px);
 	z-index: 99;
+}
+
+.api-key-overlay--upgrade {
+	background-image: url(../../assets/src/images/upgrade-plan-analytics-bg.png);
+	background-size: 100% calc(100% - 32px);
+	background-repeat: no-repeat;
+	background-position: center 32px;
 }
 
 .api-key-message, .screen-size-message {

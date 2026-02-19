@@ -41,6 +41,7 @@ class RTGODAM_Transcoder_Admin {
 			add_action( 'admin_notices', array( $this, 'free_plan_admin_notice' ) );
 			add_action( 'admin_notices', array( $this, 'usage_limit_notices' ) );
 			add_action( 'admin_notices', array( $this, 'posthog_tracking_notice' ) );
+			add_action( 'admin_notices', array( $this, 'api_key_status_notice' ) );
 			add_action( 'admin_init', array( $this, 'handle_posthog_tracking_action' ) );
 			add_action( 'admin_init', array( $this, 'handle_clear_godam_cache' ) );
 			add_action( 'wp_ajax_rtgodam_dismiss_free_plan_notice', array( $this, 'dismiss_free_plan_notice' ) );
@@ -58,7 +59,7 @@ class RTGODAM_Transcoder_Admin {
 		}
 
 		// Get the api key key from the site options.
-		$api_key = get_option( 'rtgodam-api-key', '' );
+		$api_key = \RTGODAM\Inc\Helpers\Api_Key::get_key();
 
 		// Admin URL to the video editor settings page.
 		$video_editor_settings_url = admin_url( 'admin.php?page=rtgodam_settings#video-settings' );
@@ -186,7 +187,7 @@ class RTGODAM_Transcoder_Admin {
 		<div class="notice notice-<?php echo esc_attr( $notice_type ); ?> is-dismissible rt-transcoder-api-key-notice">
 
 		<div class="godam-notice-header">
-			<img src="<?php echo esc_url( $logo_url ); ?>" alt="GoDAM Logo" class="godam-logo">
+			<img src="<?php echo esc_url( $logo_url ); ?>" alt="<?php echo esc_attr__( 'GoDAM Logo', 'godam' ); ?>" class="godam-logo">
 			<div>
 				<?php if ( $show_godam_message ) : ?>
 					<p>
@@ -441,7 +442,7 @@ class RTGODAM_Transcoder_Admin {
 		}
 
 		// Don't show usage notices if no API key is configured.
-		$api_key = get_option( 'rtgodam-api-key', '' );
+		$api_key = \RTGODAM\Inc\Helpers\Api_Key::get_key();
 		if ( empty( $api_key ) ) {
 			return;
 		}
@@ -664,7 +665,7 @@ class RTGODAM_Transcoder_Admin {
 		}
 
 		$settings = get_option( 'rtgodam-settings', array() );
-		$api_key  = get_option( 'rtgodam-api-key', '' );
+		$api_key  = \RTGODAM\Inc\Helpers\Api_Key::get_key();
 
 		// If API key is present, we don't show the notice (it's auto-enabled or already handled).
 		if ( ! empty( $api_key ) ) {
@@ -715,6 +716,65 @@ class RTGODAM_Transcoder_Admin {
 		echo '&nbsp;<a href="' . esc_url( $optin_url ) . '" class="button-primary button-large">' . esc_html__( 'Allow', 'godam' ) . '</a>';
 		echo '&nbsp;<a href="' . esc_url( $optout_url ) . '" class="button-secondary button-large">' . esc_html__( 'No thanks', 'godam' ) . '</a>';
 		echo '</p></div>';
+	}
+
+	/**
+	 * Display admin notice when API key is expired or invalid in media library.
+	 *
+	 * @since n.e.x.t
+	 */
+	public function api_key_status_notice() {
+		// Only show in media library and upload pages.
+		$screen = get_current_screen();
+		if ( ! $screen || ! in_array( $screen->id, array( 'upload', 'media' ), true ) ) {
+			return;
+		}
+
+		// Get API key.
+		$api_key = \RTGODAM\Inc\Helpers\Api_Key::get_key();
+		if ( empty( $api_key ) ) {
+			return; // No API key, no need to show status notice.
+		}
+
+		// Get user data which includes the current status including temporary verification_failed.
+		$user_data = rtgodam_get_user_data( true );
+
+		// Check API key status from user data (includes transient verification_failed).
+		$api_key_status = isset( $user_data['apiKeyStatus'] ) ? $user_data['apiKeyStatus'] : \RTGODAM\Inc\Enums\Api_Key_Status::VALID;
+
+		// Only show notice for expired or verification_failed status.
+		if ( \RTGODAM\Inc\Enums\Api_Key_Status::VALID === $api_key_status ) {
+			return;
+		}
+
+		$settings_url = admin_url( 'admin.php?page=rtgodam_settings#video-settings' );
+
+		$status_messages = array(
+			\RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED => sprintf(
+				/* translators: %s: URL to settings page */
+				__( 'Your GoDAM API key has expired. Transcoding is currently disabled. Please <a href="%s">renew your subscription</a> to continue transcoding videos.', 'godam' ),
+				esc_url( $settings_url )
+			),
+			\RTGODAM\Inc\Enums\Api_Key_Status::VERIFICATION_FAILED => sprintf(
+				/* translators: %s: URL to settings page */
+				__( 'Temporarily unable to verify your GoDAM API key. Transcoding may not work. Please <a href="%s">check your settings</a> or try refreshing the status.', 'godam' ),
+				esc_url( $settings_url )
+			),
+		);
+
+		$message = isset( $status_messages[ $api_key_status ] )
+			? $status_messages[ $api_key_status ]
+			: sprintf(
+				/* translators: %s: URL to settings page */
+				__( 'There is an issue with your GoDAM API key. Transcoding may not work. Please <a href="%s">check your settings</a>.', 'godam' ),
+				esc_url( $settings_url )
+			);
+
+		$notice_type = ( \RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED === $api_key_status ) ? 'error' : 'warning';
+
+		echo '<div class="notice notice-' . esc_attr( $notice_type ) . ' is-dismissible">';
+		echo '<p>' . wp_kses_post( $message ) . '</p>';
+		echo '</div>';
 	}
 
 	/**

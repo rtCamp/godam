@@ -68,6 +68,7 @@ function autoloader( $file_resource = '' ) {
 			case 'cron-jobs': // phpcs:ignore
 			case 'elementor-widgets': // phpcs:ignore
 			case 'elementor-controls': // phpcs:ignore
+			case 'enums': // phpcs:ignore
 			case 'wpforms': // phpcs:ignore
 			case 'ninja-forms': // phpcs:ignore
 			case 'everest-forms': // phpcs:ignore
