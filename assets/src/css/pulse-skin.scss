@@ -8,7 +8,7 @@
 		color: #1c1b1b !important;
 		height: 60px;
 		width: 60px;
-		left: 53% !important;
+		left: calc(50% + 30px) !important;
 
 		span::before {
 			font-size: 38px;
@@ -79,7 +79,7 @@
 
 		.vjs-play-control {
 			position: absolute;
-			bottom: 2px;
+			bottom: 2px !important;
 			left: 0;
 		}
 
@@ -269,7 +269,7 @@
 		}
 
 		.vjs-play-control.vjs-paused {
-			left: 50%;
+			left: calc(50% - 1em) !important;
 
 			span::before {
 				content: ''; /* Hide default icon */
@@ -282,7 +282,7 @@
 		}
 
 		.vjs-play-control.vjs-playing {
-			left: 50%;
+			left: calc(50% - 1em) !important;
 
 			span::before {
 				content: ''; /* Hide default icon */
@@ -295,7 +295,7 @@
 		}
 
 		.vjs-play-control.vjs-ended {
-			left: 50%;
+			left: calc(50% - 1em) !important;
 
 			span::before {
 				content: ''; /* Hide default icon */
@@ -539,7 +539,7 @@
 		.video-js .vjs-big-play-button {
 			height: 48px;
 			width: 48px;
-			left: 55% !important;
+			left: calc(50% + 24px) !important;
 
 			span::before {
 				font-size: 1.5rem;

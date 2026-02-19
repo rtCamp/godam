@@ -158,7 +158,8 @@
 	@container godam-player-luma-skin (max-width: 480px) {
 
 		.video-js .vjs-big-play-button {
-			left: 55%;
+			left: calc(50% - 25px) !important;
+			margin-inline: 0;
 		}
 
 		.video-js .godam-central-controls {
@@ -190,6 +191,11 @@
 
 			.vjs-control {
 				height: 3em !important;
+			}
+
+			.vjs-play-control {
+				bottom: 0 !important;
+				left: 0 !important;
 			}
 
 			.vjs-settings-button, div.vjs-subs-caps-button {
