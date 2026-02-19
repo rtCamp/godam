@@ -39,28 +39,23 @@ class MenuButtonHoverManager {
 				return;
 			}
 
+			// Avoid duplicate listeners when manager is initialized multiple times.
+			if ( btnEl.dataset.menuHoverBound === 'true' ) {
+				return;
+			}
+			btnEl.dataset.menuHoverBound = 'true';
+
 			// initialize clicked state per button
 			btnEl.dataset.clickedOpen = 'false';
-
-			const menuEl = btnEl.querySelector( '.vjs-menu' );
-			if ( menuEl ) {
-				this.attachMenuListeners( btnEl, menuEl );
-			} else {
-				const observer = new MutationObserver( () => {
-					const observedMenuEl = btnEl.querySelector( '.vjs-menu' );
-					if ( observedMenuEl ) {
-						this.attachMenuListeners( btnEl, observedMenuEl );
-						observer.disconnect();
-					}
-				} );
-				observer.observe( btnEl, { childList: true, subtree: true } );
-			}
+			this.attachMenuListeners( btnEl );
 		} );
 	}
 
-	attachMenuListeners( btnEl, menuEl ) {
+	attachMenuListeners( btnEl ) {
 		let overBtn = false;
 		let overMenu = false;
+		const getMenuEl = () => btnEl.querySelector( '.vjs-menu' );
+		let currentMenuEl = null;
 
 		// ensure dataset exists
 		if ( typeof btnEl.dataset.clickedOpen === 'undefined' ) {
@@ -70,14 +65,45 @@ class MenuButtonHoverManager {
 		const isClickedOpen = () => btnEl.dataset.clickedOpen === 'true';
 
 		const update = () => {
+			const menuEl = getMenuEl();
 			// only hide if not hovered and not clicked-open for this button
-			if ( ! overBtn && ! overMenu && ! isClickedOpen() ) {
+			if ( menuEl && ! overBtn && ! overMenu && ! isClickedOpen() ) {
 				this.hideMenu( menuEl );
 			}
 		};
 
+		const ensureMenuHoverListeners = () => {
+			const menuEl = getMenuEl();
+			if ( ! menuEl || menuEl === currentMenuEl ) {
+				return;
+			}
+			currentMenuEl = menuEl;
+
+			menuEl.addEventListener( 'mouseenter', () => {
+				overMenu = true;
+				if ( ! isClickedOpen() ) {
+					menuEl.style.display = 'block';
+					menuEl.classList.add( 'vjs-lock-showing' );
+					// Keep button in hover state while interacting with menu
+					btnEl.classList.add( 'vjs-hover' );
+					this.closeOtherMenus( menuEl );
+				}
+			} );
+
+			menuEl.addEventListener( 'mouseleave', () => {
+				overMenu = false;
+				btnEl.classList.remove( 'vjs-hover' );
+				setTimeout( update, 500 );
+			} );
+		};
+
 		// Click toggles state for THIS button only
 		btnEl.addEventListener( 'click', () => {
+			const menuEl = getMenuEl();
+			if ( ! menuEl ) {
+				return;
+			}
+
 			// toggle our per-button clicked state
 			const currently = isClickedOpen();
 			if ( ! currently ) {
@@ -96,8 +122,9 @@ class MenuButtonHoverManager {
 
 		// Hover logic: only affects non-click-opened menus
 		btnEl.addEventListener( 'mouseenter', () => {
+			const menuEl = getMenuEl();
 			overBtn = true;
-			if ( ! isClickedOpen() ) {
+			if ( menuEl && ! isClickedOpen() ) {
 				menuEl.style.display = 'block';
 				menuEl.classList.add( 'vjs-lock-showing' );
 				// Add vjs-hover class to button to maintain active state in Safari
@@ -112,31 +139,26 @@ class MenuButtonHoverManager {
 			setTimeout( update, 500 ); // small delay to allow moving between
 		} );
 
-		menuEl.addEventListener( 'mouseenter', () => {
-			overMenu = true;
-			if ( ! isClickedOpen() ) {
-				menuEl.style.display = 'block';
-				menuEl.classList.add( 'vjs-lock-showing' );
-				// Keep button in hover state while interacting with menu
-				btnEl.classList.add( 'vjs-hover' );
-				this.closeOtherMenus( menuEl );
-			}
-		} );
-
-		menuEl.addEventListener( 'mouseleave', () => {
-			overMenu = false;
-			btnEl.classList.remove( 'vjs-hover' );
-			setTimeout( update, 500 );
-		} );
-
 		// Detect outside clicks to reset clickedOpen for the specific button
 		document.addEventListener( 'click', ( e ) => {
+			const menuEl = getMenuEl();
+			if ( ! menuEl ) {
+				return;
+			}
+
 			// If clicked outside of this button/menu, clear its clicked flag and hide
 			if ( ! btnEl.contains( e.target ) && ! menuEl.contains( e.target ) ) {
 				btnEl.dataset.clickedOpen = 'false';
 				this.hideMenu( menuEl );
 			}
 		} );
+
+		// Bind menu hover listeners now and whenever Video.js swaps menu DOM.
+		ensureMenuHoverListeners();
+		const observer = new MutationObserver( () => {
+			ensureMenuHoverListeners();
+		} );
+		observer.observe( btnEl, { childList: true, subtree: true } );
 	}
 
 	hideMenu( menuEl ) {
