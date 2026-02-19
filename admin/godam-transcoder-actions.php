@@ -32,6 +32,7 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 		$is_allowed = (
 			str_starts_with( $mime_type, 'video/' ) ||
 			str_starts_with( $mime_type, 'audio/' ) ||
+			str_starts_with( $mime_type, 'image/' ) ||
 			'application/pdf' === $mime_type
 		);
 
@@ -44,15 +45,13 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 
 		$easydam_settings = get_option( 'rtgodam-settings', array() );
 
-		$adaptive_bitrate_enabled = ! empty( $easydam_settings['video']['adaptive_bitrate'] );
-
 		// Determine if the site has a valid API key (i.e., Premium user).
 		$api_key = get_option( 'rtgodam-api-key', '' );
 
 		if ( ! empty( $api_key ) ) {
 
-			// If $job_id is present then show the oEmbed URL.
-			if ( ! empty( $job_id ) ) {
+			// If $job_id is present then show the oEmbed URL field for video files.
+			if ( ! empty( $job_id ) && 0 === strpos( $mime_type, 'video/' ) ) {
 				$oembed_url = RTGODAM_API_BASE . '/web/video/' . $job_id;
 
 				$form_fields['oembed_url'] = array(
@@ -70,7 +69,7 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 			}
 
 			$transcoded_url_label = __( 'Transcoded CDN URL', 'godam' );
-			if ( strpos( $mime_type, 'video/' ) === 0 ) {
+			if ( 0 === strpos( $mime_type, 'video/' ) ) {
 				$transcoded_url_label = __( 'Transcoded CDN URL (MPD)', 'godam' );
 			}
 

@@ -39,16 +39,17 @@ export default function PlaybackPerformanceDashboard( {
 			case '1Y':
 				return 365;
 			case 'All':
-				return 730; // Set a large value for "All"
+				return null; // Return null to fetch all available days
 			default:
 				return 7;
 		}
 	};
 
 	// Fetch analytics data based on selected period
+	const days = getDaysFromPeriod( selectedPeriod );
 	const dashboardHistoryResult = useFetchDashboardMetricsHistoryQuery(
 		{
-			days: getDaysFromPeriod( selectedPeriod ),
+			...( days !== null && { days } ),
 			siteUrl: window.location.origin,
 		},
 		{ skip: mode !== 'dashboard' },
@@ -58,7 +59,7 @@ export default function PlaybackPerformanceDashboard( {
 		{
 			videoId: attachmentID,
 			siteUrl: window.location.origin,
-			days: getDaysFromPeriod( selectedPeriod ),
+			...( days !== null && { days } ),
 		},
 		{ skip: mode === 'dashboard' || ! attachmentID },
 	);
@@ -149,12 +150,13 @@ export default function PlaybackPerformanceDashboard( {
 
 		// Filter data based on selected period
 		const filterData = ( data, period ) => {
-			const today = new Date();
-			const cutoffDate = new Date( today );
+			const now = new Date();
+			const today = new Date( now.getFullYear(), now.getMonth(), now.getDate() );
+			let cutoffDate = new Date( today );
 
 			switch ( period ) {
 				case '7D':
-					cutoffDate.setDate( today.getDate() - 7 );
+					cutoffDate.setDate( today.getDate() - 6 ); // 6 days ago + today = 7 days
 					break;
 				case '1M':
 					cutoffDate.setMonth( today.getMonth() - 1 );
@@ -167,6 +169,10 @@ export default function PlaybackPerformanceDashboard( {
 					break;
 				case 'All':
 				default:
+					// For "All", use the earliest date in data if available
+					if ( data && data.length > 0 ) {
+						cutoffDate = d3.min( data, ( d ) => d.date );
+					}
 					return data;
 			}
 
@@ -175,11 +181,37 @@ export default function PlaybackPerformanceDashboard( {
 
 		const filteredData = filterData( parsedData, selectedPeriod );
 
-		const startDate = d3.min( filteredData, ( d ) => d.date );
-		const endDate = d3.max( filteredData, ( d ) => d.date );
+		// Calculate date range based on the selected period, not just the available data
+		const now = new Date();
+		const today = new Date( now.getFullYear(), now.getMonth(), now.getDate() );
+		let startDate;
+
+		if ( selectedPeriod === 'All' && filteredData.length > 0 ) {
+			startDate = d3.min( filteredData, ( d ) => d.date );
+		} else {
+			// Calculate start date based on period to ensure all days are included
+			startDate = new Date( today );
+			switch ( selectedPeriod ) {
+				case '7D':
+					startDate.setDate( today.getDate() - 6 ); // 6 days ago + today = 7 days
+					break;
+				case '1M':
+					startDate.setMonth( today.getMonth() - 1 );
+					break;
+				case '6M':
+					startDate.setMonth( today.getMonth() - 6 );
+					break;
+				case '1Y':
+					startDate.setFullYear( today.getFullYear() - 1 );
+					break;
+			}
+		}
+
+		const endDate = today; // Always end at today
+
 		const allDates = generateDateRange( startDate, endDate );
 
-		// For discontinous data, after the dates is generated, for the dates with no data, add a 0 value.
+		// For discontinuous data, after the dates are generated, for dates with no data, add a 0 value.
 		const completeData = allDates?.map( ( date ) => {
 			const match = filteredData?.find(
 				( d ) => d.date.getTime() === date.getTime(),
@@ -283,7 +315,7 @@ export default function PlaybackPerformanceDashboard( {
 			.style( 'opacity', 0 );
 
 		// Find the maximum value across all selected metrics
-		const maxValue = d3.max( filteredData, ( d ) => {
+		const maxValue = d3.max( completeData, ( d ) => {
 			return d3.max( selectedMetrics.map( ( metric ) => d[ metric ] ) );
 		} );
 
@@ -346,7 +378,7 @@ export default function PlaybackPerformanceDashboard( {
 
 			svg
 				.append( 'path' )
-				.datum( filteredData )
+				.datum( completeData )
 				.attr( 'fill', color )
 				.attr( 'fill-opacity', 0.2 )
 				.attr( 'd', area );
@@ -359,16 +391,16 @@ export default function PlaybackPerformanceDashboard( {
 
 			svg
 				.append( 'path' )
-				.datum( filteredData )
+				.datum( completeData )
 				.attr( 'fill', 'none' )
 				.attr( 'stroke', color )
 				.attr( 'stroke-width', 2 )
 				.attr( 'd', line );
 
-			// Add dots for data points
+			// Add dots for data points - always render them to show all days including zeros
 			svg
 				.selectAll( `.dot-${ metric }` )
-				.data( filteredData )
+				.data( completeData )
 				.enter()
 				.append( 'circle' )
 				.attr( 'class', `dot-${ metric }` )
@@ -442,7 +474,7 @@ export default function PlaybackPerformanceDashboard( {
 
 	useEffect( () => {
 		const interval = setInterval( () => {
-			if ( parsedData && parsedData.length > 0 && chartRef.current ) {
+			if ( parsedData && chartRef.current ) {
 				clearInterval( interval );
 				renderChart();
 			}
@@ -459,7 +491,7 @@ export default function PlaybackPerformanceDashboard( {
 		}
 
 		const resizeObserver = new ResizeObserver( () => {
-			if ( parsedData && parsedData.length > 0 ) {
+			if ( parsedData ) {
 				// Small delay to ensure the DOM has updated.
 				setTimeout( () => renderChart(), 20 );
 			}
@@ -578,7 +610,7 @@ export default function PlaybackPerformanceDashboard( {
 				</div>
 			</div>
 
-			<div className="w-full" style={ { height: '300px', overflowX: 'auto',
+			<div className="w-full" style={ { height: '300px', overflow: 'hidden',
 				width: '100%' } } ref={ chartRef }></div>
 		</div>
 	);

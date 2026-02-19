@@ -17,6 +17,8 @@ import {
 	ToggleControl,
 	RangeControl,
 	SelectControl,
+	ToolbarButton,
+	ToolbarGroup,
 } from '@wordpress/components';
 import {
 	BlockControls,
@@ -32,7 +34,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { __, _x, sprintf } from '@wordpress/i18n';
 import { useInstanceId } from '@wordpress/compose';
 import { useDispatch } from '@wordpress/data';
-import { search } from '@wordpress/icons';
+import { edit, search } from '@wordpress/icons';
 import { store as noticesStore } from '@wordpress/notices';
 
 /**
@@ -43,7 +45,7 @@ import Video from './VideoJS';
 import TracksEditor from './track-uploader';
 import { Caption } from './caption';
 import VideoSEOModal from './components/VideoSEOModal.js';
-import { appendTimezoneOffsetToUTC, isSEODataEmpty, secondsToISO8601 } from './utils/index.js';
+import { appendTimezoneOffsetToUTC, isSEODataEmpty, secondsToISO8601, stripHtmlTags } from './utils/index.js';
 import './editor.scss';
 import { ReactComponent as icon } from '../../images/godam-video-filled.svg';
 import { canManageAttachment } from '../../js/media-library/utility';
@@ -121,6 +123,9 @@ function VideoEdit( {
 		verticalAlignment,
 		overlayTimeRange,
 		showOverlay,
+		aspectRatio,
+		videoWidth,
+		videoHeight,
 	} = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 	const [ defaultPoster, setDefaultPoster ] = useState( '' );
@@ -132,35 +137,52 @@ function VideoEdit( {
 
 	const dispatch = useDispatch();
 
+	// Calculate aspect ratio in x:y format, matching frontend logic.
+	const calculatedAspectRatio = useMemo( () => {
+		if ( aspectRatio === 'responsive' && videoWidth && videoHeight ) {
+			return `${ videoWidth }:${ videoHeight }`;
+		}
+		// Return aspectRatio if it's in x:y format, otherwise return '' as default
+		if ( aspectRatio && /^\d+:\d+$/.test( aspectRatio ) ) {
+			return aspectRatio;
+		}
+
+		return '';
+	}, [ aspectRatio, videoWidth, videoHeight ] );
+
 	// Memoize video options to prevent unnecessary rerenders.
-	const videoOptions = useMemo( () => ( {
-		controls,
-		autoplay,
-		preload,
-		fluid: true,
-		playsinline: true,
-		flvjs: {
-			mediaDataSource: {
-				isLive: true,
-				cors: false,
-				withCredentials: false,
+	const videoOptions = useMemo( () => {
+		const options = {
+			controls,
+			autoplay,
+			preload,
+			fluid: true,
+			playsinline: true,
+			flvjs: {
+				mediaDataSource: {
+					isLive: true,
+					cors: false,
+					withCredentials: false,
+				},
 			},
-		},
-		loop,
-		muted,
-		poster: poster || defaultPoster,
-		sources,
-		aspectRatio: '16:9',
-		// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
-		// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
-		html5: {
-			vhs: {
-				bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
-				bandwidthVariance: 1.0, // allow renditions close to estimate
-				limitRenditionByPlayerDimensions: false, // don't cap by video element size
+			loop,
+			muted,
+			poster: poster || defaultPoster,
+			sources,
+			aspectRatio: calculatedAspectRatio,
+			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
+			// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
+			html5: {
+				vhs: {
+					bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
+					bandwidthVariance: 1.0, // allow renditions close to estimate
+					limitRenditionByPlayerDimensions: false, // don't cap by video element size
+				},
 			},
-		},
-	} ), [ controls, autoplay, preload, loop, muted, poster, defaultPoster, sources ] );
+		};
+
+		return options;
+	}, [ controls, autoplay, preload, loop, muted, poster, defaultPoster, sources, calculatedAspectRatio ] );
 
 	// Memoize the video component to prevent rerenders.
 	const videoComponent = useMemo( () => (
@@ -231,6 +253,14 @@ function VideoEdit( {
 					}
 
 					if ( response ) {
+						// Set dimensions if available.
+						if ( response.media_details?.width && response.media_details?.height ) {
+							setAttributes( {
+								videoWidth: `${ response.media_details.width }`,
+								videoHeight: `${ response.media_details.height }`,
+							} );
+						}
+
 						// Build sources list safely, declare newSources first.
 						const newSources = [];
 
@@ -304,7 +334,7 @@ function VideoEdit( {
 						const enhancedSEOData = {
 							contentUrl: response.meta?.rtgodam_transcoded_url || response.source_url || src || '',
 							headline: response.title?.rendered || '',
-							description: response.description?.rendered || '',
+							description: stripHtmlTags( response.description?.rendered || '' ),
 							uploadDate: appendTimezoneOffsetToUTC( response.date_gmt || '' ),
 							duration: response.video_duration_iso8601 || '',
 							thumbnailUrl: response.meta?.rtgodam_media_video_thumbnail || '',
@@ -366,7 +396,7 @@ function VideoEdit( {
 			const newSEOData = {
 				contentUrl: media?.url,
 				headline: media?.title || '',
-				description: media?.description || '',
+				description: stripHtmlTags( media?.description || '' ),
 				uploadDate: appendTimezoneOffsetToUTC( media?.date || '' ),
 				duration: secondsToISO8601( media?.duration || '' ),
 				thumbnailUrl: media?.thumbnail_url || '',
@@ -399,6 +429,8 @@ function VideoEdit( {
 				caption: media.caption,
 				seo: newSEOData,
 				sources: mediaSources,
+				videoWidth: media.width ? `${ media.width }` : undefined,
+				videoHeight: media.height ? `${ media.height }` : undefined,
 			} );
 
 			setTemporaryURL();
@@ -424,7 +456,7 @@ function VideoEdit( {
 					const newSEOData = {
 						contentUrl: response.meta?.rtgodam_transcoded_url || response.source_url,
 						headline: response.title?.rendered || '',
-						description: response.description?.rendered || '',
+						description: stripHtmlTags( response.description?.rendered || '' ),
 						uploadDate: appendTimezoneOffsetToUTC( response.date_gmt ),
 						duration: response.video_duration_iso8601 || '',
 						thumbnailUrl: response.meta?.rtgodam_media_video_thumbnail || '',
@@ -464,6 +496,8 @@ function VideoEdit( {
 							...baseAttributes,
 							seo: newSEOData,
 							sources: mediaSources,
+							videoWidth: response.media_details?.width ? `${ response.media_details.width }` : undefined,
+							videoHeight: response.media_details?.height ? `${ response.media_details.height }` : undefined,
 						} );
 					} else {
 						// If meta not present, use media url.
@@ -620,6 +654,25 @@ function VideoEdit( {
 
 	return (
 		<>
+			{ isSingleSelected && (
+				<BlockControls>
+					<ToolbarGroup>
+						{ canManageAttachment( attachmentAuthorId ) && (
+							<ToolbarButton
+								icon={ edit }
+								label={ __( 'Edit Video', 'godam' ) }
+								href={ `${ window?.pluginInfo?.adminUrl || '/wp-admin/' }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
+								target="_blank"
+							/>
+						) }
+						<ToolbarButton
+							icon={ search }
+							label={ __( 'Video SEO', 'godam' ) }
+							onClick={ () => setIsSEOModelOpen( true ) }
+						/>
+					</ToolbarGroup>
+				</BlockControls>
+			) }
 			{ ( isSingleSelected && ! isInsideQueryLoop ) && (
 				<BlockControls group="other">
 					<MediaReplaceFlow
@@ -718,50 +771,16 @@ function VideoEdit( {
 									checked={ attributes?.preloadPoster }
 								/>
 
-								{ canManageAttachment( attachmentAuthorId ) && (
-									<BaseControl
-										id={ `video-block__video-editor-${ instanceId }` }
-										label={ __( 'Customise Video', 'godam' ) }
-										__nextHasNoMarginBottom
-									>
-										<Button
-											__next40pxDefaultSize
-											href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
-											target="_blank"
-											variant="primary"
-										>
-											{ __( 'Customise', 'godam' ) }
-										</Button>
-									</BaseControl>
-								) }
-
-								<BaseControl
-									id={ `video-block__video-seo-${ instanceId }` }
-									label={ __( 'SEO Settings', 'godam' ) }
-									help={ __( 'Configure SEO metadata for this video. Note: SEO data will be cleared when replacing the video.', 'godam' ) }
-									__nextHasNoMarginBottom
-								>
-									<Button
-										__next40pxDefaultSize
-										onClick={ () => setIsSEOModelOpen( true ) }
-										variant="primary"
-										icon={ search }
-										iconPosition="right"
-									>
-										{ __( 'SEO Settings', 'godam' ) }
-									</Button>
-								</BaseControl>
-
 								<BaseControl
 									id={ `video-block__video--selected-aspect-ratio-${ instanceId }` }
 									label={ __( 'Aspect Ratio', 'godam' ) }
 									__nextHasNoMarginBottom
 								>
 									<SelectControl
-										value={ attributes.aspectRatio || '16:9' }
+										value={ attributes.aspectRatio || 'responsive' }
 										options={ [
+											{ label: __( 'Original', 'godam' ), value: 'responsive' },
 											{ label: __( '16:9 (Standard)', 'godam' ), value: '16:9' },
-											{ label: __( 'Responsive', 'godam' ), value: 'responsive' },
 										] }
 										onChange={ ( value ) => setAttributes( { aspectRatio: value } ) }
 										help={ __( 'Choose the aspect ratio for the video player.', 'godam' ) }

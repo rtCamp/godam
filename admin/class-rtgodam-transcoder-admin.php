@@ -40,6 +40,10 @@ class RTGODAM_Transcoder_Admin {
 			add_action( 'admin_notices', array( $this, 'dashboard_offer_banner' ) );
 			add_action( 'admin_notices', array( $this, 'free_plan_admin_notice' ) );
 			add_action( 'admin_notices', array( $this, 'usage_limit_notices' ) );
+			add_action( 'admin_notices', array( $this, 'posthog_tracking_notice' ) );
+			add_action( 'admin_notices', array( $this, 'api_key_status_notice' ) );
+			add_action( 'admin_init', array( $this, 'handle_posthog_tracking_action' ) );
+			add_action( 'admin_init', array( $this, 'handle_clear_godam_cache' ) );
 			add_action( 'wp_ajax_rtgodam_dismiss_free_plan_notice', array( $this, 'dismiss_free_plan_notice' ) );
 		}
 	}
@@ -55,7 +59,7 @@ class RTGODAM_Transcoder_Admin {
 		}
 
 		// Get the api key key from the site options.
-		$api_key = get_option( 'rtgodam-api-key', '' );
+		$api_key = \RTGODAM\Inc\Helpers\Api_Key::get_key();
 
 		// Admin URL to the video editor settings page.
 		$video_editor_settings_url = admin_url( 'admin.php?page=rtgodam_settings#video-settings' );
@@ -183,7 +187,7 @@ class RTGODAM_Transcoder_Admin {
 		<div class="notice notice-<?php echo esc_attr( $notice_type ); ?> is-dismissible rt-transcoder-api-key-notice">
 
 		<div class="godam-notice-header">
-			<img src="<?php echo esc_url( $logo_url ); ?>" alt="GoDAM Logo" class="godam-logo">
+			<img src="<?php echo esc_url( $logo_url ); ?>" alt="<?php echo esc_attr__( 'GoDAM Logo', 'godam' ); ?>" class="godam-logo">
 			<div>
 				<?php if ( $show_godam_message ) : ?>
 					<p>
@@ -389,6 +393,41 @@ class RTGODAM_Transcoder_Admin {
 	}
 
 	/**
+	 * Handle the cache clearing request for GoDAM usage data.
+	 * This runs on admin_init to ensure headers haven't been sent yet.
+	 *
+	 * @since 1.5.0
+	 */
+	public function handle_clear_godam_cache() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce is verified below.
+		if ( ! isset( $_GET['clear_godam_cache'] ) ) {
+			return;
+		}
+
+		// Verify user capabilities.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		// Verify nonce.
+		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'clear_godam_cache' ) ) {
+			return;
+		}
+
+		// Clear the cache.
+		delete_option( 'rtgodam_user_data' );
+
+		// Build redirect URL safely.
+		$current_url = remove_query_arg( array( 'clear_godam_cache', '_wpnonce' ) );
+
+		// Perform the redirect with error handling.
+		if ( ! headers_sent() ) {
+			wp_safe_redirect( $current_url );
+			exit;
+		}
+	}
+
+	/**
 	 * Display usage limit notices when bandwidth/storage usage is high.
 	 */
 	public function usage_limit_notices() {
@@ -403,18 +442,9 @@ class RTGODAM_Transcoder_Admin {
 		}
 
 		// Don't show usage notices if no API key is configured.
-		$api_key = get_option( 'rtgodam-api-key', '' );
+		$api_key = \RTGODAM\Inc\Helpers\Api_Key::get_key();
 		if ( empty( $api_key ) ) {
 			return;
-		}
-
-		// Handle cache clearing request.
-		if ( isset( $_GET['clear_godam_cache'] ) && current_user_can( 'manage_options' ) && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'clear_godam_cache' ) ) {
-			delete_option( 'rtgodam_user_data' );
-			// Redirect back to the same page without the query parameter.
-			$current_url = remove_query_arg( array( 'clear_godam_cache', '_wpnonce' ) );
-			wp_safe_redirect( $current_url );
-			exit;
 		}
 
 		// Get user data with usage information.
@@ -622,5 +652,168 @@ class RTGODAM_Transcoder_Admin {
 			</div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Display PostHog tracking notice.
+	 *
+	 * @since 1.5.0
+	 */
+	public function posthog_tracking_notice() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$settings = get_option( 'rtgodam-settings', array() );
+		$api_key  = \RTGODAM\Inc\Helpers\Api_Key::get_key();
+
+		// If API key is present, we don't show the notice (it's auto-enabled or already handled).
+		if ( ! empty( $api_key ) ) {
+			return;
+		}
+
+		// If posthog_initialized is true, it means the user has already made a choice or it was auto-enabled.
+		if ( ! empty( $settings['general']['posthog_initialized'] ) ) {
+			return;
+		}
+
+		$optin_url  = wp_nonce_url( add_query_arg( 'godam_tracker_optin', 'true' ), 'godam_tracker_action' );
+		$optout_url = wp_nonce_url( add_query_arg( 'godam_tracker_optout', 'true' ), 'godam_tracker_action' );
+
+		$notice = sprintf(
+			__( 'Want to help make <strong>GoDAM</strong> even more awesome? Allow GoDAM to collect anonymous diagnostic data and usage information.', 'godam' )
+		);
+
+		$policy_url = 'https://posthog.com/privacy';
+
+		echo '<div class="updated"><p>';
+		echo wp_kses_post( $notice );
+		echo ' (<a class="godam-insights-data-we-collect" href="#">' . esc_html__( 'what we collect', 'godam' ) . '</a>)';
+		echo '<div class="description" style="display:none; margin-top: 10px; padding: 10px; background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 4px;">';
+		echo '<p style="margin-top: 0;"><strong>' . esc_html__( 'Data we collect:', 'godam' ) . '</strong></p>';
+		echo '<ul style="list-style: disc; margin-left: 20px;">';
+		echo '<li>' . esc_html__( 'Server environment details (PHP, MySQL, Server, and WordPress versions)', 'godam' ) . '</li>';
+		echo '<li>' . esc_html__( 'Site and user count (Language and number of users)', 'godam' ) . '</li>';
+		echo '<li>' . esc_html__( 'Plugin details (Number of active and inactive plugins)', 'godam' ) . '</li>';
+		echo '<li>' . esc_html__( 'Usage data (Interactions, navigation, session replays, heatmaps, and errors via PostHog)', 'godam' ) . '</li>';
+		echo '</ul>';
+		echo '<p style="margin-bottom: 0;">';
+		printf(
+			wp_kses(
+				/* translators: %s: PostHog privacy policy URL */
+				__( 'We are using PostHog to collect anonymous data. <a href="%s" target="_blank">Learn more</a>. This can be disabled from the settings on the Help page.', 'godam' ),
+				array(
+					'a' => array(
+						'href'   => array(),
+						'target' => array(),
+					),
+				)
+			),
+			esc_url( $policy_url )
+		);
+		echo '</p></div>';
+		echo '</p><p class="submit">';
+		echo '&nbsp;<a href="' . esc_url( $optin_url ) . '" class="button-primary button-large">' . esc_html__( 'Allow', 'godam' ) . '</a>';
+		echo '&nbsp;<a href="' . esc_url( $optout_url ) . '" class="button-secondary button-large">' . esc_html__( 'No thanks', 'godam' ) . '</a>';
+		echo '</p></div>';
+	}
+
+	/**
+	 * Display admin notice when API key is expired or invalid in media library.
+	 *
+	 * @since n.e.x.t
+	 */
+	public function api_key_status_notice() {
+		// Only show in media library and upload pages.
+		$screen = get_current_screen();
+		if ( ! $screen || ! in_array( $screen->id, array( 'upload', 'media' ), true ) ) {
+			return;
+		}
+
+		// Get API key.
+		$api_key = \RTGODAM\Inc\Helpers\Api_Key::get_key();
+		if ( empty( $api_key ) ) {
+			return; // No API key, no need to show status notice.
+		}
+
+		// Get user data which includes the current status including temporary verification_failed.
+		$user_data = rtgodam_get_user_data( true );
+
+		// Check API key status from user data (includes transient verification_failed).
+		$api_key_status = isset( $user_data['apiKeyStatus'] ) ? $user_data['apiKeyStatus'] : \RTGODAM\Inc\Enums\Api_Key_Status::VALID;
+
+		// Only show notice for expired or verification_failed status.
+		if ( \RTGODAM\Inc\Enums\Api_Key_Status::VALID === $api_key_status ) {
+			return;
+		}
+
+		$settings_url = admin_url( 'admin.php?page=rtgodam_settings#video-settings' );
+
+		$status_messages = array(
+			\RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED => sprintf(
+				/* translators: %s: URL to settings page */
+				__( 'Your GoDAM API key has expired. Transcoding is currently disabled. Please <a href="%s">renew your subscription</a> to continue transcoding videos.', 'godam' ),
+				esc_url( $settings_url )
+			),
+			\RTGODAM\Inc\Enums\Api_Key_Status::VERIFICATION_FAILED => sprintf(
+				/* translators: %s: URL to settings page */
+				__( 'Temporarily unable to verify your GoDAM API key. Transcoding may not work. Please <a href="%s">check your settings</a> or try refreshing the status.', 'godam' ),
+				esc_url( $settings_url )
+			),
+		);
+
+		$message = isset( $status_messages[ $api_key_status ] )
+			? $status_messages[ $api_key_status ]
+			: sprintf(
+				/* translators: %s: URL to settings page */
+				__( 'There is an issue with your GoDAM API key. Transcoding may not work. Please <a href="%s">check your settings</a>.', 'godam' ),
+				esc_url( $settings_url )
+			);
+
+		$notice_type = ( \RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED === $api_key_status ) ? 'error' : 'warning';
+
+		echo '<div class="notice notice-' . esc_attr( $notice_type ) . ' is-dismissible">';
+		echo '<p>' . wp_kses_post( $message ) . '</p>';
+		echo '</div>';
+	}
+
+	/**
+	 * Handle PostHog tracking action.
+	 *
+	 * @since 1.4.9
+	 */
+	public function handle_posthog_tracking_action() {
+		if ( ! isset( $_GET['godam_tracker_optin'] ) && ! isset( $_GET['godam_tracker_optout'] ) ) {
+			return;
+		}
+
+		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+
+		if ( ! wp_verify_nonce( $nonce, 'godam_tracker_action' ) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$settings = get_option( 'rtgodam-settings', array() );
+
+		if ( ! isset( $settings['general'] ) ) {
+			$settings['general'] = array();
+		}
+
+		if ( isset( $_GET['godam_tracker_optin'] ) && 'true' === $_GET['godam_tracker_optin'] ) {
+			$settings['general']['enable_posthog_tracking'] = true;
+			$settings['general']['posthog_initialized']     = true;
+		} elseif ( isset( $_GET['godam_tracker_optout'] ) && 'true' === $_GET['godam_tracker_optout'] ) {
+			$settings['general']['enable_posthog_tracking'] = false;
+			$settings['general']['posthog_initialized']     = true;
+		}
+
+		update_option( 'rtgodam-settings', $settings );
+
+		wp_safe_redirect( esc_url_raw( remove_query_arg( array( 'godam_tracker_optin', 'godam_tracker_optout', '_wpnonce' ) ) ) );
+		exit;
 	}
 }

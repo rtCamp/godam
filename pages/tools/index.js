@@ -1,18 +1,23 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import ReactDOM from 'react-dom';
+import { PostHogProvider } from '@posthog/react';
 
 /**
  * Internal dependencies
  */
 import App from './App';
+import posthog from '../utils/posthog';
 
 import './index.scss';
 
 const Index = () => {
 	return (
-		<App />
+		<PostHogProvider client={ posthog }>
+			<App />
+		</PostHogProvider>
 	);
 };
 

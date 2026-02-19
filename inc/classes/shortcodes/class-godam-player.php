@@ -69,13 +69,6 @@ class GoDAM_Player {
 		);
 
 		wp_register_style(
-			'godam-player-frontend-style',
-			RTGODAM_URL . 'assets/build/css/godam-player-frontend.css',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/css/godam-player-frontend.css' )
-		);
-
-		wp_register_style(
 			'godam-player-style',
 			RTGODAM_URL . 'assets/build/css/godam-player.css',
 			array(),
@@ -135,7 +128,6 @@ class GoDAM_Player {
 			return;
 		}
 
-		wp_enqueue_style( 'godam-player-frontend-style' );
 		wp_enqueue_style( 'godam-player-style' );
 		wp_enqueue_style( 'godam-player-minimal-skin' );
 		wp_enqueue_style( 'godam-player-pills-skin' );
@@ -152,17 +144,62 @@ class GoDAM_Player {
 	public function render( $atts ) {
 		$attributes = shortcode_atts(
 			array(
-				'id'             => '',
-				'sources'        => '',
-				'src'            => '',
-				'transcoded_url' => '',
-				'poster'         => '',
-				'aspectRatio'    => '',
-				'engagements'    => '',
+				'id'                => '',
+				'autoplay'          => false,
+				'controls'          => true,
+				'loop'              => false,
+				'muted'             => false,
+				'hoverSelect'       => 'none',
+				'hover_select'      => 'none', // WPBakery format (lowercase with underscore).
+				'poster'            => '',
+				'preload'           => 'metadata',
+				'src'               => '',
+				'sources'           => '',
+				'transcoded_url'    => '',
+				'aspectRatio'       => 'responsive',
+				'aspect_ratio'      => '', // WPBakery format (lowercase with underscore).
+				'tracks'            => '',
+				'caption'           => '',
+				'engagements'       => false,
+				'preview'           => false,
+				'showShareButton'   => false,
+				'show_share_button' => false, // WPBakery format (lowercase with underscore).
+				'css'               => '',
 			),
 			$atts,
 			'godam_video'
 		);
+
+		// Handle boolean attributes passed as strings (do this before mapping).
+		$boolean_attributes = array( 'autoplay', 'controls', 'loop', 'muted', 'engagements', 'preview', 'showShareButton', 'show_share_button' );
+		foreach ( $boolean_attributes as $bool_attr ) {
+			if ( isset( $attributes[ $bool_attr ] ) ) {
+				$attributes[ $bool_attr ] = filter_var( $attributes[ $bool_attr ], FILTER_VALIDATE_BOOLEAN );
+			}
+		}
+
+		// Map WPBakery format (lowercase_underscore) to camelCase for backward compatibility.
+		// Check if WPBakery format exists and camelCase doesn't, then use WPBakery format.
+		if ( isset( $attributes['aspect_ratio'] ) && '' !== $attributes['aspect_ratio'] && ( ! isset( $attributes['aspectRatio'] ) || '' === $attributes['aspectRatio'] ) ) {
+			$attributes['aspectRatio'] = $attributes['aspect_ratio'];
+		}
+		if ( isset( $attributes['hover_select'] ) && '' !== $attributes['hover_select'] && ( ! isset( $attributes['hoverSelect'] ) || 'none' === $attributes['hoverSelect'] ) ) {
+			$attributes['hoverSelect'] = $attributes['hover_select'];
+		}
+		if ( isset( $attributes['show_share_button'] ) && '' !== $attributes['show_share_button'] && ( ! isset( $attributes['showShareButton'] ) || false === $attributes['showShareButton'] ) ) {
+			$attributes['showShareButton'] = $attributes['show_share_button'];
+		}
+
+		// Get WPBakery Design Options CSS class if available.
+		$attributes['css_class'] = '';
+		if ( ! empty( $attributes['css'] ) && function_exists( 'vc_shortcode_custom_css_class' ) ) {
+			$attributes['css_class'] = vc_shortcode_custom_css_class( $attributes['css'], ' ' );
+		}
+
+		// If autoplay is true, muted must be true for most browsers to allow autoplay.
+		if ( $attributes['autoplay'] ) {
+			$attributes['muted'] = true;
+		}
 
 		// Decode custom placeholders back to square brackets if sources contain them.
 		if ( ! empty( $attributes['sources'] ) && is_string( $attributes['sources'] ) ) {
@@ -170,11 +207,15 @@ class GoDAM_Player {
 			$attributes['sources'] = str_replace( array( '__rtgob__', '__rtgcb__' ), array( '[', ']' ), $attributes['sources'] );
 		}
 
-		$is_shortcode = true;
+		// Decode tracks if it's a JSON string.
+		if ( ! empty( $attributes['tracks'] ) && is_string( $attributes['tracks'] ) ) {
+			$attributes['tracks'] = str_replace( array( '__rtgob__', '__rtgcb__' ), array( '[', ']' ), $attributes['tracks'] );
+		}
+
+		$is_shortcode = true; // Do not remove this line, this variable is being used in godam-player template.
 
 		wp_enqueue_script( 'godam-player-frontend-script' );
 		wp_enqueue_script( 'godam-player-analytics-script' );
-		wp_enqueue_style( 'godam-player-frontend-style' );
 		wp_enqueue_style( 'godam-player-style' );
 
 		$godam_settings = get_option( 'rtgodam-settings', array() );

@@ -18,7 +18,6 @@ const initialState = {
 		video_quality: [],
 		video_compress_quality: 100,
 		video_thumbnails: 5,
-		overwrite_thumbnails: false,
 		watermark: false,
 		use_watermark_image: false,
 		watermark_text: '',
@@ -30,6 +29,8 @@ const initialState = {
 	general: {
 		enable_folder_organization: true,
 		enable_gtm_tracking: false,
+		enable_posthog_tracking: false,
+		posthog_initialized: false,
 	},
 	video_player: {
 		brand_image: '',

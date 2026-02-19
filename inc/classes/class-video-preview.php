@@ -8,6 +8,10 @@
 
 namespace RTGODAM\Inc;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use RTGODAM\Inc\Traits\Singleton;
 
 /**
@@ -65,6 +69,15 @@ class Video_Preview {
 			RTGODAM_URL . 'assets/build/css/godam-video-preview.css',
 			array(),
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-video-preview.css' )
+		);
+
+		// Register and enqueue the video preview JavaScript.
+		wp_register_script(
+			'godam-video-preview-script',
+			RTGODAM_URL . 'assets/build/js/godam-video-preview.min.js',
+			array( 'godam-player-frontend-script' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/godam-video-preview.min.js' ),
+			true
 		);
 	}
 }

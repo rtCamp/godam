@@ -6,14 +6,17 @@ on:
     branches:
       - develop
 
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
 
@@ -53,14 +56,14 @@ jobs:
 
       - name: Upload Test Artifact
         if: startsWith(github.ref, 'refs/tags/dry') || github.ref == 'refs/heads/develop'
-        uses: actions/upload-artifact@v4.6.1
+        uses: actions/upload-artifact@v6.0.0
         with:
           name: godam
           path: '${{ runner.temp }}/plugin-extract/'
 
       - name: Upload Release Artifact
         if: startsWith(github.ref, 'refs/tags/dry') == false && github.ref != 'refs/heads/develop'
-        uses: softprops/action-gh-release@v2.2.1
+        uses: softprops/action-gh-release@v2.5.0
         with:
           files: |
             '${{ github.workspace }}/godam.zip'

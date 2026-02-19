@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 /**
  * Internal dependencies
  */
-import { addLayer, setCurrentLayer } from '../redux/slice/videoSlice';
+import { addLayer, setCurrentLayer, setAddLayerModalTime } from '../redux/slice/videoSlice';
 import { v4 as uuidv4 } from 'uuid';
 import GFIcon from '../assets/layers/GFIcon.svg';
 import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
@@ -22,10 +22,10 @@ import MetformIcon from '../assets/layers/MetFormIcon.png';
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { Button, Icon, Tooltip } from '@wordpress/components';
 import { plus, preformatted, customLink, arrowRight, video, customPostType, thumbsUp, error } from '@wordpress/icons';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 
 import Layer from './layers/Layer';
 import LayerSelector from './LayerSelector.jsx';
@@ -154,6 +154,9 @@ const premiumMessage = __( 'This feature is available in the premium version', '
 const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const loading = useSelector( ( state ) => state.videoReducer.loading );
+	const addLayerModalTime = useSelector( ( state ) => state.videoReducer.addLayerModalTime );
+
+	const dispatch = useDispatch();
 
 	const openModal = () => {
 		setOpen( true );
@@ -161,9 +164,19 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 			onPauseVideo();
 		}
 	};
-	const closeModal = () => setOpen( false );
+	const closeModal = () => {
+		setOpen( false );
+		// Clear the addLayerModalTime when closing the modal
+		dispatch( setAddLayerModalTime( null ) );
+	};
 
-	const dispatch = useDispatch();
+	// Listen for addLayerModalTime changes to open the modal from the slider
+	useEffect( () => {
+		if ( addLayerModalTime !== null ) {
+			openModal();
+		}
+	}, [ addLayerModalTime ] );
+
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
@@ -204,12 +217,12 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					id: uuidv4(),
 					displayTime: currentTime,
 					type,
-					cta_type: 'text',
+					cta_type: 'image',
+					cardLayout: 'card-layout--imagecover-text',
 					text: '',
 					html: '',
 					link: '',
 					allow_skip: true,
-					imageOpacity: 1,
 				} ) );
 				break;
 			case 'hotspot':
@@ -220,21 +233,8 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 						type,
 						duration: 5,
 						pauseOnHover: false,
-						hotspots: [
-							{
-								id: uuidv4(),
-								tooltipText: __( 'Click me!', 'godam' ),
-								position: { x: 50, y: 50 },
-								size: { diameter: 48 },
-								oSize: { diameter: 48 },
-								oPosition: { x: 50, y: 50 },
-								link: '',
-								backgroundColor: '#0c80dfa6',
-								showStyle: false,
-								showIcon: false,
-								icon: '',
-							},
-						],
+						hotspots: [],
+						isNew: true,
 					} ),
 				);
 				break;
@@ -372,7 +372,11 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 										iconPosition="left"
 										onClick={ openModal }
 										disabled={ ! currentTime || layers.find( ( l ) => ( l.displayTime ) === ( currentTime ) ) }
-									>{ __( 'Add layer at ', 'godam' ) } { currentTime }s
+									>
+										{
+											// translators: %s is the current time in seconds.
+											sprintf( __( 'Add layer at %ss', 'godam' ), currentTime )
+										}
 									</Button>
 									{ layers.find( ( l ) => l.displayTime === currentTime ) && (
 										<p className="text-slate-500 text-center">

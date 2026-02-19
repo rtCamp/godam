@@ -118,12 +118,11 @@ class RTGODAM_Transcoder_Handler {
 
 		$default_settings = array(
 			'video' => array(
-				'adaptive_bitrate'     => false,
-				'watermark'            => false,
-				'watermark_text'       => '',
-				'watermark_url'        => '',
-				'video_thumbnails'     => 5,
-				'overwrite_thumbnails' => false,
+				'adaptive_bitrate' => false,
+				'watermark'        => false,
+				'watermark_text'   => '',
+				'watermark_url'    => '',
+				'video_thumbnails' => 5,
 			),
 		);
 
@@ -194,9 +193,9 @@ class RTGODAM_Transcoder_Handler {
 	 * @param array  $wp_metadata          Metadata of the attachment.
 	 * @param int    $attachment_id     ID of attachment.
 	 * @param string $autoformat        If true then generating thumbs only else trancode video.
-	 * @param bool   $retranscode       If its retranscoding request or not.
+	 * @param bool   $manual_retranscode       If its retranscoding request or not.
 	 */
-	public function wp_media_transcoding( $wp_metadata, $attachment_id, $autoformat = true, $retranscode = false ) {
+	public function wp_media_transcoding( $wp_metadata, $attachment_id, $autoformat = true, $manual_retranscode = false ) {
 		// Check if local development environment.
 		if ( rtgodam_is_local_environment() ) {
 			return;
@@ -213,16 +212,21 @@ class RTGODAM_Transcoder_Handler {
 		 * Example usage:
 		 * add_filter( 'godam_auto_transcode_on_upload', '__return_false' ); // Disable globally
 		 *
-		 * @since n.e.x.t
+		 * @since 1.5.0
 		 *
 		 * @param bool $auto_transcode_on_upload Whether to automatically transcode on upload. Default true.
 		 */
-		if ( ! $retranscode ) {
+		if ( ! $manual_retranscode ) {
 			$auto_transcode_on_upload = apply_filters( 'godam_auto_transcode_on_upload', true );
 
 			if ( ! $auto_transcode_on_upload ) {
 				return $wp_metadata;
 			}
+		}
+
+		// Skip transcoding and re-transcoding for images.
+		if ( preg_match( '/image/i', $wp_metadata['mime_type'], $type_array ) ) {
+			return $wp_metadata;
 		}
 
 		if ( empty( $wp_metadata['mime_type'] ) ) {
@@ -278,7 +282,6 @@ class RTGODAM_Transcoder_Handler {
 		$type             = strtolower( $type_arry[ count( $type_arry ) - 1 ] );
 		$extension        = pathinfo( $path, PATHINFO_EXTENSION );
 		$not_allowed_type = array();
-		preg_match( '/video|audio/i', $metadata['mime_type'], $type_array );
 
 		if ( (
 				preg_match( '/video|audio/i', $metadata['mime_type'], $type_array ) ||
@@ -344,14 +347,16 @@ class RTGODAM_Transcoder_Handler {
 			// Get author name with fallback to username.
 			$author_first_name = '';
 			$author_last_name  = '';
+			$author_email      = '';
 
 			if ( $attachment_author ) {
-				$author_first_name = $attachment_author->first_name;
-				$author_last_name  = $attachment_author->last_name;
+				$author_first_name = $attachment_author->first_name ?? '';
+				$author_last_name  = $attachment_author->last_name ?? '';
+				$author_email      = $attachment_author->user_email ?? '';
 
 				// If first and last names are empty, use username as fallback.
 				if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
-					$author_first_name = $attachment_author->user_login;
+					$author_first_name = $attachment_author->user_login ?? '';
 				}
 			}
 
@@ -375,7 +380,8 @@ class RTGODAM_Transcoder_Handler {
 						'watermark'            => boolval( $rtgodam_watermark ),
 						'resolutions'          => array( 'auto' ),
 						'video_quality'        => $rtgodam_video_compress_quality,
-						'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $attachment_author ? $attachment_author->user_email : '', $attachment_id ),
+						'mime_type'            => $metadata['mime_type'],
+						'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $author_email, $attachment_id ),
 						'wp_site'              => $site_url,
 						'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, $attachment_id ),
 						'wp_author_last_name'  => apply_filters( 'godam_author_last_name_to_send', $author_last_name, $attachment_id ),
@@ -401,7 +407,7 @@ class RTGODAM_Transcoder_Handler {
 					$job_id = $upload_info->data->name;
 					update_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', $job_id );
 
-					if ( $retranscode ) {
+					if ( $manual_retranscode ) {
 						$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
 
 						if ( isset( $failed_transcoding_attachments[ $attachment_id ] ) ) {
@@ -627,27 +633,20 @@ class RTGODAM_Transcoder_Handler {
 
 		if ( $first_thumbnail_url ) {
 
-			$is_retranscoding_job = get_post_meta( $post_id, 'rtgodam_retranscoding_sent', true );
+			// rtMedia support.
+			update_post_meta( $post_id, '_rt_media_video_thumbnail', $first_thumbnail_url );
 
-			/**
-			 * Determines the default thumbnail behavior:
-			 * - For newly uploaded videos: always assign the first generated thumbnail.
-			 * - For retranscoding jobs: assign the first thumbnail only when either:
-			 *     • the overwrite option is enabled, or
-			 *     • no existing thumbnail is currently set.
-			 */
-			$current_thumbnail    = get_post_meta( $post_id, 'rtgodam_media_video_thumbnail', true );
-			$should_set_thumbnail = ! $is_retranscoding_job || rtgodam_is_override_thumbnail() || empty( $current_thumbnail );
+			if ( class_exists( 'RTMediaModel' ) ) {
+				$model->update( array( 'cover_art' => $first_thumbnail_url ), array( 'media_id' => $post_id ) );
+				update_activity_after_thumb_set( $media_id );
+			}
 
-			if ( $should_set_thumbnail ) {
-				// rtMedia support.
-				update_post_meta( $post_id, '_rt_media_video_thumbnail', $first_thumbnail_url );
+			$current_thumbnail = get_post_meta( $post_id, 'rtgodam_media_video_thumbnail', true );
+			$custom_thumbnails = get_post_meta( $post_id, 'rtgodam_custom_media_thumbnails', true );
+			$custom_thumbnails = is_array( $custom_thumbnails ) ? $custom_thumbnails : array();
 
-				if ( class_exists( 'RTMediaModel' ) ) {
-					$model->update( array( 'cover_art' => $first_thumbnail_url ), array( 'media_id' => $post_id ) );
-					update_activity_after_thumb_set( $media_id );
-				}
-
+			// If the current selected thumbnail is NOT one of the custom uploaded thumbnails, overwrite it.
+			if ( empty( $current_thumbnail ) || ! in_array( $current_thumbnail, $custom_thumbnails, true ) ) {
 				update_post_meta( $post_id, 'rtgodam_media_video_thumbnail', $first_thumbnail_url );
 			}
 
@@ -788,7 +787,7 @@ class RTGODAM_Transcoder_Handler {
 		$meta = wp_cache_get( $cache_key, 'godam' );
 		if ( empty( $meta ) ) {
 			$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s", $key, $value ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-			wp_cache_set( $cache_key, $meta, 'godam', 3600 );
+			wp_cache_set( $cache_key, $meta, 'godam', HOUR_IN_SECONDS );
 		}
 
 		if ( is_array( $meta ) && ! empty( $meta ) && isset( $meta[0] ) ) {
