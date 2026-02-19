@@ -6,10 +6,22 @@
  */
 class MenuButtonHoverManager {
 	constructor( player ) {
+		if ( player.godamMenuButtonHoverManager?.destroy ) {
+			player.godamMenuButtonHoverManager.destroy();
+		}
+
 		this.player = player;
+		this.cleanups = [];
+		this.isDestroyed = false;
 
 		// Add more menu button component names as needed
 		this.menuButtons = [ 'SubsCapsButton', 'SettingsButton', 'CaptionsButton', 'SubtitlesButton' ];
+
+		this.player.godamMenuButtonHoverManager = this;
+
+		if ( typeof this.player.one === 'function' ) {
+			this.player.one( 'dispose', () => this.destroy() );
+		}
 
 		this.init();
 	}
@@ -56,6 +68,8 @@ class MenuButtonHoverManager {
 		let overMenu = false;
 		const getMenuEl = () => btnEl.querySelector( '.vjs-menu' );
 		let currentMenuEl = null;
+		const abortController = new AbortController();
+		let menuObserver = null;
 
 		// ensure dataset exists
 		if ( typeof btnEl.dataset.clickedOpen === 'undefined' ) {
@@ -88,13 +102,13 @@ class MenuButtonHoverManager {
 					btnEl.classList.add( 'vjs-hover' );
 					this.closeOtherMenus( menuEl );
 				}
-			} );
+			}, { signal: abortController.signal } );
 
 			menuEl.addEventListener( 'mouseleave', () => {
 				overMenu = false;
 				btnEl.classList.remove( 'vjs-hover' );
 				setTimeout( update, 500 );
-			} );
+			}, { signal: abortController.signal } );
 		};
 
 		// Click toggles state for THIS button only
@@ -118,7 +132,7 @@ class MenuButtonHoverManager {
 				btnEl.dataset.clickedOpen = 'false';
 				this.hideMenu( menuEl );
 			}
-		} );
+		}, { signal: abortController.signal } );
 
 		// Hover logic: only affects non-click-opened menus
 		btnEl.addEventListener( 'mouseenter', () => {
@@ -131,13 +145,13 @@ class MenuButtonHoverManager {
 				btnEl.classList.add( 'vjs-hover' );
 				this.closeOtherMenus( menuEl );
 			}
-		} );
+		}, { signal: abortController.signal } );
 
 		btnEl.addEventListener( 'mouseleave', () => {
 			overBtn = false;
 			btnEl.classList.remove( 'vjs-hover' );
 			setTimeout( update, 500 ); // small delay to allow moving between
-		} );
+		}, { signal: abortController.signal } );
 
 		// Detect outside clicks to reset clickedOpen for the specific button
 		document.addEventListener( 'click', ( e ) => {
@@ -151,14 +165,36 @@ class MenuButtonHoverManager {
 				btnEl.dataset.clickedOpen = 'false';
 				this.hideMenu( menuEl );
 			}
-		} );
+		}, { signal: abortController.signal } );
 
 		// Bind menu hover listeners now and whenever Video.js swaps menu DOM.
 		ensureMenuHoverListeners();
-		const observer = new MutationObserver( () => {
+		menuObserver = new MutationObserver( () => {
 			ensureMenuHoverListeners();
 		} );
-		observer.observe( btnEl, { childList: true, subtree: true } );
+		menuObserver.observe( btnEl, { childList: true, subtree: true } );
+
+		this.cleanups.push( () => {
+			abortController.abort();
+			menuObserver?.disconnect();
+			menuObserver = null;
+			delete btnEl.dataset.menuHoverBound;
+			delete btnEl.dataset.clickedOpen;
+		} );
+	}
+
+	destroy() {
+		if ( this.isDestroyed ) {
+			return;
+		}
+		this.isDestroyed = true;
+
+		this.cleanups.forEach( ( cleanup ) => cleanup() );
+		this.cleanups = [];
+
+		if ( this.player?.godamMenuButtonHoverManager === this ) {
+			delete this.player.godamMenuButtonHoverManager;
+		}
 	}
 
 	hideMenu( menuEl ) {
