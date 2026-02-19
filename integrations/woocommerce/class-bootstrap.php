@@ -190,7 +190,7 @@ class Bootstrap {
 			register_block_type(
 				$reel_pops_block_path,
 				array(
-					'render_callback' => function( $attributes ) use ( $reel_pops_block_path ) {
+					'render_callback' => function () use ( $reel_pops_block_path ) {
 						// Block context - ensure view.js has proper dependencies.
 						if ( wp_script_is( 'godam-reel-pops-view-script', 'registered' ) ) {
 							global $wp_scripts;
@@ -204,7 +204,7 @@ class Bootstrap {
 
 						// Render using template (block context - not metabox).
 						ob_start();
-						include $reel_pops_block_path . 'render.php';
+						include $reel_pops_block_path . 'render.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- Safe: path constructed from plugin constant.
 						return ob_get_clean();
 					},
 				)

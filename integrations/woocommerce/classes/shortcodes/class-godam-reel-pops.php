@@ -42,9 +42,9 @@ class GoDAM_Reel_Pops {
 		}
 
 		// Register view.js for frontend interactions.
-		$view_asset_path = RTGODAM_PATH . 'assets/build/integrations/woocommerce/blocks/godam-reel-pops/view.asset.php';
-		$view_asset      = file_exists( $view_asset_path )
-			? include $view_asset_path
+		$view_asset_file = RTGODAM_PATH . 'assets/build/integrations/woocommerce/blocks/godam-reel-pops/view.asset.php';
+		$view_asset      = file_exists( $view_asset_file )
+			? require $view_asset_file // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- Safe: path constructed from plugin constant.
 			: array(
 				'dependencies' => array(),
 				'version'      => RTGODAM_VERSION,

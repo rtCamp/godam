@@ -37,7 +37,7 @@ class WC_Reel_Pops_Metabox {
 	 */
 	private function init_hooks() {
 		add_action( 'add_meta_boxes', array( $this, 'add_metabox' ) );
-		add_action( 'save_post_product', array( $this, 'save_metabox' ), 10, 2 );
+		add_action( 'save_post_product', array( $this, 'save_metabox' ), 10 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 		add_action( 'wp_footer', array( $this, 'render_frontend_reel_pops' ) );
 	}
@@ -75,7 +75,9 @@ class WC_Reel_Pops_Metabox {
 		wp_enqueue_media();
 		wp_enqueue_script( 'jquery-ui-sortable' );
 
-		wp_add_inline_style( 'wp-admin', '
+		wp_add_inline_style(
+			'wp-admin',
+			'
 			.godam-reel-pops-metabox { padding: 15px; }
 			.godam-reel-pops-video-list {
 				margin-top: 15px;
@@ -163,7 +165,8 @@ class WC_Reel_Pops_Metabox {
 			@media (max-width: 580px) {
 				.godam-reel-pops-video-item { width: 100%; }
 			}
-		' );
+		'
+		);
 	}
 
 	/**
@@ -182,23 +185,23 @@ class WC_Reel_Pops_Metabox {
 		$config = wp_parse_args(
 			$config,
 			array(
-				'enabled'           => false,
-				'videos'            => array(),
-				'aspectRatio'       => '9-16',
-				'position'          => 'bottom-right',
-				'animation'         => 'slide-up',
-				'animationDuration' => 500,
-				'durationSeconds'   => 5,
-				'initialDelay'      => 3,
-				'closePersistence'  => 'show_again',
-				'enableAutoplay'    => true,
-				'showMuteButton'    => true,
-				'showPlayButton'    => false,
+				'enabled'               => false,
+				'videos'                => array(),
+				'aspectRatio'           => '9-16',
+				'position'              => 'bottom-right',
+				'animation'             => 'slide-up',
+				'animationDuration'     => 500,
+				'durationSeconds'       => 5,
+				'initialDelay'          => 3,
+				'closePersistence'      => 'show_again',
+				'enableAutoplay'        => true,
+				'showMuteButton'        => true,
+				'showPlayButton'        => false,
 				'enableModalNavigation' => true,
-				'popupWidth'        => 120,
-				'mobilePopupWidth'  => 100,
-				'bottomSpacing'     => 20,
-				'sideSpacing'       => 20,
+				'popupWidth'            => 120,
+				'mobilePopupWidth'      => 100,
+				'bottomSpacing'         => 20,
+				'sideSpacing'           => 20,
 			)
 		);
 
@@ -490,10 +493,9 @@ class WC_Reel_Pops_Metabox {
 	/**
 	 * Save metabox data.
 	 *
-	 * @param int      $post_id Post ID.
-	 * @param \WP_Post $post Post object.
+	 * @param int $post_id Post ID.
 	 */
-	public function save_metabox( $post_id, $post ) {
+	public function save_metabox( $post_id ) {
 		// Verify nonce.
 		if ( ! isset( $_POST['godam_reel_pops_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['godam_reel_pops_nonce'] ) ), 'godam_reel_pops_metabox' ) ) {
 			return;
@@ -513,23 +515,23 @@ class WC_Reel_Pops_Metabox {
 		$data = isset( $_POST['godam_reel_pops'] ) ? wp_unslash( $_POST['godam_reel_pops'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
 		$config = array(
-			'enabled'           => isset( $data['enabled'] ) && '1' === $data['enabled'],
-			'videos'            => array(),
-			'aspectRatio'       => isset( $data['aspectRatio'] ) ? sanitize_text_field( $data['aspectRatio'] ) : '9-16',
-			'position'          => isset( $data['position'] ) ? sanitize_text_field( $data['position'] ) : 'bottom-right',
-			'animation'         => isset( $data['animation'] ) ? sanitize_text_field( $data['animation'] ) : 'slide-up',
-			'animationDuration' => isset( $data['animationDuration'] ) ? absint( $data['animationDuration'] ) : 500,
-			'durationSeconds'   => isset( $data['durationSeconds'] ) ? absint( $data['durationSeconds'] ) : 5,
-			'initialDelay'      => isset( $data['initialDelay'] ) ? absint( $data['initialDelay'] ) : 3,
-			'closePersistence'  => isset( $data['closePersistence'] ) ? sanitize_text_field( $data['closePersistence'] ) : 'show_again',
-			'enableAutoplay'    => isset( $data['enableAutoplay'] ) && '1' === $data['enableAutoplay'],
-			'showMuteButton'    => isset( $data['showMuteButton'] ) && '1' === $data['showMuteButton'],
-			'showPlayButton'    => isset( $data['showPlayButton'] ) && '1' === $data['showPlayButton'],
+			'enabled'               => isset( $data['enabled'] ) && '1' === $data['enabled'],
+			'videos'                => array(),
+			'aspectRatio'           => isset( $data['aspectRatio'] ) ? sanitize_text_field( $data['aspectRatio'] ) : '9-16',
+			'position'              => isset( $data['position'] ) ? sanitize_text_field( $data['position'] ) : 'bottom-right',
+			'animation'             => isset( $data['animation'] ) ? sanitize_text_field( $data['animation'] ) : 'slide-up',
+			'animationDuration'     => isset( $data['animationDuration'] ) ? absint( $data['animationDuration'] ) : 500,
+			'durationSeconds'       => isset( $data['durationSeconds'] ) ? absint( $data['durationSeconds'] ) : 5,
+			'initialDelay'          => isset( $data['initialDelay'] ) ? absint( $data['initialDelay'] ) : 3,
+			'closePersistence'      => isset( $data['closePersistence'] ) ? sanitize_text_field( $data['closePersistence'] ) : 'show_again',
+			'enableAutoplay'        => isset( $data['enableAutoplay'] ) && '1' === $data['enableAutoplay'],
+			'showMuteButton'        => isset( $data['showMuteButton'] ) && '1' === $data['showMuteButton'],
+			'showPlayButton'        => isset( $data['showPlayButton'] ) && '1' === $data['showPlayButton'],
 			'enableModalNavigation' => isset( $data['enableModalNavigation'] ) && '1' === $data['enableModalNavigation'],
-			'popupWidth'        => isset( $data['popupWidth'] ) ? absint( $data['popupWidth'] ) : 120,
-			'mobilePopupWidth'  => isset( $data['mobilePopupWidth'] ) ? absint( $data['mobilePopupWidth'] ) : 100,
-			'bottomSpacing'     => isset( $data['bottomSpacing'] ) ? absint( $data['bottomSpacing'] ) : 20,
-			'sideSpacing'       => isset( $data['sideSpacing'] ) ? absint( $data['sideSpacing'] ) : 20,
+			'popupWidth'            => isset( $data['popupWidth'] ) ? absint( $data['popupWidth'] ) : 120,
+			'mobilePopupWidth'      => isset( $data['mobilePopupWidth'] ) ? absint( $data['mobilePopupWidth'] ) : 100,
+			'bottomSpacing'         => isset( $data['bottomSpacing'] ) ? absint( $data['bottomSpacing'] ) : 20,
+			'sideSpacing'           => isset( $data['sideSpacing'] ) ? absint( $data['sideSpacing'] ) : 20,
 		);
 
 		// Sanitize videos.
@@ -596,24 +598,24 @@ class WC_Reel_Pops_Metabox {
 
 		// Build shortcode attributes.
 		$shortcode_atts = array(
-			'video_ids'          => implode( ',', $video_ids ),
-			'product_ids'        => implode( '|', $product_ids_groups ),
-			'aspect_ratio'       => sanitize_text_field( $config['aspectRatio'] ),
-			'position'           => sanitize_text_field( $config['position'] ),
-			'animation'          => sanitize_text_field( $config['animation'] ),
-			'animation_duration' => absint( $config['animationDuration'] ),
-			'duration_seconds'   => absint( $config['durationSeconds'] ),
-			'initial_delay'      => isset( $config['initialDelay'] ) ? absint( $config['initialDelay'] ) : 3,
-			'close_persistence'  => sanitize_text_field( $config['closePersistence'] ),
-			'enable_autoplay'    => $config['enableAutoplay'] ? 'true' : 'false',
-			'show_mute_button'   => ! empty( $config['showMuteButton'] ) ? 'true' : 'false',
-			'show_play_button'   => ! empty( $config['showPlayButton'] ) ? 'true' : 'false',
+			'video_ids'               => implode( ',', $video_ids ),
+			'product_ids'             => implode( '|', $product_ids_groups ),
+			'aspect_ratio'            => sanitize_text_field( $config['aspectRatio'] ),
+			'position'                => sanitize_text_field( $config['position'] ),
+			'animation'               => sanitize_text_field( $config['animation'] ),
+			'animation_duration'      => absint( $config['animationDuration'] ),
+			'duration_seconds'        => absint( $config['durationSeconds'] ),
+			'initial_delay'           => isset( $config['initialDelay'] ) ? absint( $config['initialDelay'] ) : 3,
+			'close_persistence'       => sanitize_text_field( $config['closePersistence'] ),
+			'enable_autoplay'         => $config['enableAutoplay'] ? 'true' : 'false',
+			'show_mute_button'        => ! empty( $config['showMuteButton'] ) ? 'true' : 'false',
+			'show_play_button'        => ! empty( $config['showPlayButton'] ) ? 'true' : 'false',
 			'enable_modal_navigation' => ! empty( $config['enableModalNavigation'] ) ? 'true' : 'false',
-			'popup_width'        => absint( $config['popupWidth'] ),
-			'mobile_popup_width' => absint( $config['mobilePopupWidth'] ),
-			'bottom_spacing'     => absint( $config['bottomSpacing'] ),
-			'side_spacing'       => absint( $config['sideSpacing'] ),
-			'block_id'           => 'godam-reel-pops-product-' . $product_id,
+			'popup_width'             => absint( $config['popupWidth'] ),
+			'mobile_popup_width'      => absint( $config['mobilePopupWidth'] ),
+			'bottom_spacing'          => absint( $config['bottomSpacing'] ),
+			'side_spacing'            => absint( $config['sideSpacing'] ),
+			'block_id'                => 'godam-reel-pops-product-' . $product_id,
 		);
 
 		// Build shortcode string.
