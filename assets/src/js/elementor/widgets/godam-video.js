@@ -1,6 +1,7 @@
 /**
  * WordPress dependencies
  */
+import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -9,6 +10,22 @@ import { __ } from '@wordpress/i18n';
 import { getFirstNonEmpty, appendTimezoneOffsetToUTC, stripHtmlTags } from '../../../blocks/godam-player/utils';
 
 window.addEventListener( 'elementor/frontend/init', () => {
+	const SEO_FIELD_NAMES = [
+		'seo_content_url',
+		'seo_content_headline',
+		'seo_content_description',
+		'seo_content_upload_date',
+		'seo_content_duration',
+		'seo_content_video_thumbnail_url',
+		'seo_content_family_friendly',
+	];
+
+	const SEO_EDITABLE_FIELD_NAMES = [
+		'seo_content_headline',
+		'seo_content_description',
+		'seo_content_family_friendly',
+	];
+
 	function getPosterUrl( settings ) {
 		const poster = settings.get( 'poster' );
 		return getFirstNonEmpty( poster?.url, '' );
@@ -45,28 +62,94 @@ window.addEventListener( 'elementor/frontend/init', () => {
 		return initialVideoData;
 	}
 
+	function isNumericAttachmentId( attachmentId ) {
+		return /^\d+$/.test( String( attachmentId ) );
+	}
+
+	async function fetchVideoSeoMeta( videoFile ) {
+		if ( isNumericAttachmentId( videoFile.id ) ) {
+			try {
+				const data = await apiFetch( {
+					path: `/wp/v2/media/${ videoFile.id }`,
+				} );
+				return prepareVideoMeta( data );
+			} catch {
+				return null;
+			}
+		}
+
+		if ( ! videoFile?.url ) {
+			return null;
+		}
+
+		let duration = '';
+		try {
+			const videoDuration = await getVideoDuration( videoFile.url );
+			if ( Number.isFinite( videoDuration ) ) {
+				duration = formatDurationISO( videoDuration );
+			}
+		} catch {
+			duration = '';
+		}
+
+		return {
+			contentUrl: videoFile.url,
+			headline: getFirstNonEmpty( videoFile.title, videoFile.name ),
+			description: '',
+			uploadDate: new Date().toISOString(),
+			thumbnailUrl: getFirstNonEmpty( videoFile.icon ),
+			duration,
+			isFamilyFriendly: true,
+		};
+	}
+
+	function getSeoPayload( seoData, includeEditableFields = true ) {
+		const payload = {
+			seo_content_url: seoData.contentUrl,
+			seo_content_upload_date: seoData.uploadDate,
+			seo_content_video_thumbnail_url: seoData.thumbnailUrl,
+			seo_content_duration: seoData.duration,
+		};
+
+		if ( includeEditableFields ) {
+			payload.seo_content_headline = seoData.headline;
+			payload.seo_content_description = seoData.description;
+			payload.seo_content_family_friendly = seoData.isFamilyFriendly === false ? '' : 'yes';
+		}
+
+		return payload;
+	}
+
 	/**
 	 * Update SEO fields disabled state based on seo_override toggle.
 	 *
-	 * @param {Object}  panel    - Elementor panel object.
-	 * @param {boolean} disabled - Whether fields should be disabled.
+	 * @param {Object}  panel              - Elementor panel object.
+	 * @param {boolean} seoOverrideEnabled - Whether SEO override is enabled.
 	 */
-	function updateSEOFieldsDisabledState( panel, disabled ) {
-		const seoFields = panel.$el.find( '.godam-seo-field' );
-		seoFields.each( function() {
-			const $field = window.jQuery( this );
-			const $inputs = $field.find( 'input, textarea' );
-			const $switcher = $field.find( '.elementor-switch' );
-
-			if ( disabled ) {
-				$inputs.attr( 'readonly', 'readonly' );
-				$switcher.css( 'pointer-events', 'none' );
-				$field.css( 'opacity', '0.6' );
-			} else {
-				$inputs.removeAttr( 'readonly' );
-				$switcher.css( 'pointer-events', '' );
-				$field.css( 'opacity', '' );
+	function updateSEOFieldsDisabledState( panel, seoOverrideEnabled ) {
+		SEO_FIELD_NAMES.forEach( ( fieldName ) => {
+			const $field = panel.$el.find( `.elementor-control-${ fieldName }` );
+			if ( ! $field.length ) {
+				return;
 			}
+
+			const shouldEnable = seoOverrideEnabled && SEO_EDITABLE_FIELD_NAMES.includes( fieldName );
+			const $textInputs = $field.find( 'input[type="text"], input[type="url"], input:not([type]), textarea' );
+			const $switcher = $field.find( '.elementor-switch' );
+			const $inputWrapper = $field.find( '.elementor-control-input-wrapper' );
+
+			if ( shouldEnable ) {
+				$textInputs.removeAttr( 'readonly' );
+				$switcher.css( 'pointer-events', '' );
+				$inputWrapper.css( 'pointer-events', '' );
+				$field.css( 'opacity', '' );
+				return;
+			}
+
+			$textInputs.attr( 'readonly', 'readonly' );
+			$switcher.css( 'pointer-events', 'none' );
+			$inputWrapper.css( 'pointer-events', 'none' );
+			$field.css( 'opacity', '0.6' );
 		} );
 	}
 
@@ -141,9 +224,21 @@ window.addEventListener( 'elementor/frontend/init', () => {
 					const seoOverride = isSeoOverrideEnabled( settings );
 					// Delay to ensure DOM is updated
 					setTimeout( () => {
-						updateSEOFieldsDisabledState( panel, ! seoOverride );
+						updateSEOFieldsDisabledState( panel, seoOverride );
 						applyPosterThumbnailOverride( settings );
 					}, 100 );
+				};
+
+				const syncSeoFromAttachment = async ( includeEditableFields = true ) => {
+					const videoFile = settings.get( 'video-file' ) || {};
+					const seoData = await fetchVideoSeoMeta( videoFile );
+
+					if ( ! seoData ) {
+						return;
+					}
+
+					settings.set( getSeoPayload( seoData, includeEditableFields ) );
+					applyPosterThumbnailOverride( settings );
 				};
 
 				// Listen for seo_override changes
@@ -158,61 +253,23 @@ window.addEventListener( 'elementor/frontend/init', () => {
 				 * Automatically populates the SEO fields.
 				 */
 				model.get( 'settings' ).on( 'change:video-file', async () => {
-					const videoFile = model.get( 'settings' ).get( 'video-file' );
-
-					if ( ! videoFile.url ) {
-						return;
-					}
-
-					// Check if ID is purely numeric
-					const isNumericId = /^\d+$/.test( String( videoFile.id ) );
-
-					if ( ! isNumericId ) {
-						getVideoDuration( videoFile.url ).then( ( duration ) => {
-							// Set default SEO metadata for non-numeric IDs
-							const defaultSeoData = {
-								seo_content_url: videoFile.url,
-								seo_content_headline: videoFile.title || videoFile.name,
-								seo_content_upload_date: new Date().toISOString(),
-								seo_content_video_thumbnail_url: videoFile.icon || '', // use empty string or placeholder
-								seo_content_duration: formatDurationISO( duration ), // can be set later via video metadata
-							};
-
-							model.get( 'settings' ).set( defaultSeoData );
-							applyPosterThumbnailOverride( settings );
-							panel.currentPageView.render();
-						} );
-
-						return;
-					}
-
-					// Numeric ID: fetch from API
-					const apiURL = `/wp-json/wp/v2/media/${ videoFile.id }`;
-					fetch( apiURL )
-						.then( ( response ) => {
-							if ( response.ok ) {
-								return response.json();
-							}
-							return false;
-						} )
-						.then( ( data ) => {
-							if ( ! data ) {
-								return;
-							}
-							const seoData = prepareVideoMeta( data );
-
-							settings.set( {
-								seo_content_url: seoData.contentUrl,
-								seo_content_headline: seoData.headline,
-								seo_content_description: seoData.description,
-								seo_content_upload_date: seoData.uploadDate,
-								seo_content_video_thumbnail_url: seoData.thumbnailUrl,
-								seo_content_duration: seoData.duration,
-							} );
-							applyPosterThumbnailOverride( settings );
-							panel.currentPageView.render();
-						} );
+					await syncSeoFromAttachment( true );
+					panel.currentPageView.render();
 				} );
+
+				const handleSeoSettingsPopoverToggle = async () => {
+					// Wait for popover controls to mount before syncing and enforcing field state.
+					setTimeout( async () => {
+						await syncSeoFromAttachment( ! isSeoOverrideEnabled( settings ) );
+						handleSeoOverrideChange();
+					}, 120 );
+				};
+
+				if ( model._godamSeoPopoverToggleHandler ) {
+					panel.$el.off( 'click', '.elementor-control-seo_settings_popover_toggle', model._godamSeoPopoverToggleHandler );
+				}
+				model._godamSeoPopoverToggleHandler = handleSeoSettingsPopoverToggle;
+				panel.$el.on( 'click', '.elementor-control-seo_settings_popover_toggle', handleSeoSettingsPopoverToggle );
 
 				/**
 				 * Updates the poster url field when the poster image is updated.
@@ -262,6 +319,11 @@ window.addEventListener( 'elementor/frontend/init', () => {
 					if ( model._godamVirtualAttachmentCreatedHandler ) {
 						document.removeEventListener( 'godam-virtual-attachment-created', model._godamVirtualAttachmentCreatedHandler );
 						delete model._godamVirtualAttachmentCreatedHandler;
+					}
+
+					if ( model._godamSeoPopoverToggleHandler ) {
+						panel.$el.off( 'click', '.elementor-control-seo_settings_popover_toggle', model._godamSeoPopoverToggleHandler );
+						delete model._godamSeoPopoverToggleHandler;
 					}
 				} );
 			},
