@@ -339,17 +339,6 @@ class WC_Utility {
 		$settings = get_option( 'rtgodam-settings', array() );
 		$woo      = $settings['integrations']['woocommerce'] ?? array();
 
-		$woo = wp_parse_args(
-			$woo,
-			array(
-				'galleryVideoPlayBtnWidth'  => '2.375rem',
-				'carouselVideoPlayBtnWidth' => '2.375rem',
-				'playButtonBackgroundColor' => '#000000C2',
-				'playButtonColor'           => '#ffffff',
-				'playButtonBorderRadius'    => '50%',
-			)
-		);
-
 		$css = ':root {';
 
 		foreach ( $woo as $key => $value ) {
