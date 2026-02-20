@@ -117,7 +117,7 @@ class Settings extends Base {
 					'mobilePriceTertiaryColor'   => 'rgba(143, 143, 143, 1)',
 
 					'galleryVideoPlayBtnWidth'   => '2.375rem',
-					'carouselVideoPlayBtnWidth'  => '2.375rem',
+					'carouselVideoPlayBtnWidth'  => '3.375rem',
 					'playButtonBackgroundColor'  => '#000000C2',
 					'playButtonColor'            => '#ffffff',
 					'playButtonBorderRadius'     => '50%',

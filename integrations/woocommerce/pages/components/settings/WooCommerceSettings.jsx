@@ -235,9 +235,9 @@ const WooCommerceSettings = ( { settings = {}, onSettingChange } ) => {
 						<div style={ { minWidth: '250px' } }>
 							<TextControl
 								label={ __( 'Width for Carousel video', 'godam' ) }
-								value={ settings.carouselVideoPlayBtnWidth || '2.375rem' }
+								value={ settings.carouselVideoPlayBtnWidth || '3.375rem' }
 								onChange={ ( value ) => updateSetting( 'carouselVideoPlayBtnWidth', value ) }
-								help={ __( 'Example: 2.375rem or 38px', 'godam' ) }
+								help={ __( 'Example: 3.375rem or 54px', 'godam' ) }
 							/>
 						</div>
 					</div>
