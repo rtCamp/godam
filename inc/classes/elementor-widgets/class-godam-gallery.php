@@ -27,7 +27,7 @@ class Godam_Gallery extends Base {
 			'categories'      => array( 'godam' ),
 			'keywords'        => array( 'godam', 'gallery', 'video' ),
 			'depended_script' => array( 'godam-player-frontend-script', 'godam-player-analytics-script', 'godam-gallery-script' ),
-			'depended_styles' => array( 'godam-player-frontend-style', 'godam-player-style', 'godam-gallery-style' ),
+			'depended_styles' => array( 'godam-player-style', 'godam-gallery-style' ),
 		);
 	}
 

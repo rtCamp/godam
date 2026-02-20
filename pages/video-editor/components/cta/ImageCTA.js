@@ -122,7 +122,7 @@ const ImageCTA = ( { layerID } ) => {
 	);
 	const dispatch = useDispatch();
 
-	const restURL = window.godamRestRoute.url || '';
+	const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
 	const openImageCTAUploader = () => {
 		const fileFrame = wp.media( {

@@ -21,7 +21,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
-import { scrollToTop, hasValidAPIKey } from '../../../utils/index.js';
+import { scrollToTop, hasAPIKey } from '../../../utils/index.js';
 import APISettings from './APISettings.jsx';
 import VideoCompressQuality from './VideoCompressQuality.jsx';
 import VideoThumbnails from './VideoThumbnails.jsx';
@@ -98,7 +98,7 @@ const VideoSettings = () => {
 				</Notice>
 			) }
 
-			{ ! hasValidAPIKey && (
+			{ ! hasAPIKey && (
 				<Panel className="godam-panel godam-margin-bottom godam-api-key-banner">
 					<PanelBody opened>
 						<h2>{ __( 'Ensure Smooth Video Playback', 'godam' ) }</h2>
@@ -125,7 +125,7 @@ const VideoSettings = () => {
 
 			<APISettings setNotice={ setNotice } />
 
-			{ hasValidAPIKey && (
+			{ hasAPIKey && (
 				<>
 					<VideoCompressQuality handleSettingChange={ handleSettingChange } />
 					<VideoThumbnails handleSettingChange={ handleSettingChange } />
@@ -134,7 +134,7 @@ const VideoSettings = () => {
 				</>
 			) }
 
-			{ hasValidAPIKey && (
+			{ hasAPIKey && (
 				<Button
 					variant="primary"
 					className="godam-button"

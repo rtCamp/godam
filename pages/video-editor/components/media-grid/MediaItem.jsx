@@ -64,6 +64,11 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 		prefetchMediaDataForCopy( item.id );
 	}, [ item.id ] );
 
+	const isFallback = ! item?.image?.src ||
+		item?.image?.src.includes( '.svg' ) ||
+		item?.image?.src.includes( 'no-thumbnail' ) ||
+		item?.image?.src.includes( 'default' );
+
 	return (
 		<div
 			className={ `godam-video-list__video ${ ! canManageAttachment( item?.author ) ? 'disabled' : '' }` }
@@ -81,13 +86,11 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 		>
 			<div className="godam-video-list__video__thumbnail">
 
-				{ item?.image?.src && ! item?.image?.src.includes( '.svg' ) // svg is default image for video.
-					? (
-						<img src={ item?.image?.src } alt="video thumbnail" />
-					) : (
-						<img src={ NoThumbnailImage } alt="video thumbnail" />
-					)
-				}
+				<img
+					src={ isFallback ? NoThumbnailImage : item?.image?.src }
+					alt="video thumbnail"
+					className={ isFallback ? 'no-thumbnail' : '' }
+				/>
 
 				<DropdownMenu
 					className="godam-video-list__video__thumbnail__overlay"
@@ -95,13 +98,13 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 						className: 'godam-video-list__video__thumbnail__overlay__menu',
 					} }
 					controls={ [
-						{
+						...( window?.godamSettings?.videoPostSettings?.allow_single ? [ {
 							icon: <Icon icon={ seen } />,
 							onClick: () => {
 								window.open( getPreviewTemplateUrl( item ), '_blank' );
 							},
 							title: __( 'Preview template', 'godam' ),
-						},
+						} ] : [] ),
 						{
 							icon: <Icon icon={ video } />,
 							onClick: () => {
