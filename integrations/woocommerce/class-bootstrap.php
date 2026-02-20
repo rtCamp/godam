@@ -126,7 +126,7 @@ class Bootstrap {
 		}
 
 		// Load Product Gallery REST API class.
-		if ( ! class_exists( 'RTGODAM\\Inc\\REST_API\\Product_Gallery' ) ) {
+		if ( ! class_exists( 'RTGODAM\\Inc\\REST_API\\Product_Gallery_Rest' ) ) {
 			require_once RTGODAM_WC_MODULE_PATH . 'classes/class-product-gallery-rest.php';
 		}
 
@@ -184,7 +184,7 @@ class Bootstrap {
 
 		// Initialize REST API.
 		\RTGODAM\Inc\REST_API\WC::get_instance();
-		\RTGODAM\Inc\REST_API\Product_Gallery::get_instance();
+		\RTGODAM\Inc\REST_API\Product_Gallery_Rest::get_instance();
 
 		// Initialize WooCommerce-dependent shortcode.
 		\RTGODAM\Inc\Shortcodes\GoDAM_Product_Gallery::get_instance();
@@ -302,6 +302,14 @@ class Bootstrap {
 				'getMultipleProductHtmlNonce'  => wp_create_nonce( 'godam_get_multiple_sidebar_product_html' ),
 				'api_nonce'                    => wp_create_nonce( 'wc_store_api' ),
 			)
+		);
+
+		// Register WooCommerce Reels specific skin.
+		wp_register_style(
+			'godam-player-reels-skin-css',
+			RTGODAM_URL . 'assets/build/integrations/woocommerce/css/godam-reels-skin.css',
+			array(),
+			rtgodam_wc_get_asset_version( RTGODAM_PATH . 'assets/build/integrations/woocommerce/css/godam-reels-skin.css' )
 		);
 	}
 }

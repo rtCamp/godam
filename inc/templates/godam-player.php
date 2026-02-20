@@ -223,7 +223,7 @@ $godam_appearance_color       = isset( $godam_meta_data['videoConfig']['controlB
 $godam_brand_image            = isset( $godam_settings['video_player']['brand_image'] ) ? $godam_settings['video_player']['brand_image'] : null;
 $godam_individual_brand_image = isset( $godam_meta_data['videoConfig']['controlBar']['brand_image'] ) ? $godam_meta_data['videoConfig']['controlBar']['brand_image'] : null;
 
-if ( isset( $attributes['godam_context'] ) && 'godam-product-gallery' === $attributes['godam_context'] ) {
+if ( isset( $attributes['godam_context'] ) && ( 'godam-product-gallery' === $attributes['godam_context'] || 'godam_woo_product_page_reels' === $attributes['godam_context'] || 'godam-featured-video-gallery' === $attributes['godam_context'] ) ) {
 	$godam_player_skin = 'reels';
 } else {
 	$godam_player_skin = isset( $godam_settings['video_player']['player_skin'] )

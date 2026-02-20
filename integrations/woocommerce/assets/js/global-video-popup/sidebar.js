@@ -78,7 +78,7 @@ export function initSidebar() {
  * the product sidebar and adjust modal content layout accordingly.
  */
 function addToggleCloseSidebarListener() {
-	const modalContainer = document.querySelector( '.godam-product-modal-container.open' );
+	const modalContainer = document.querySelector( '.godam-woo-global-modal-container.open' );
 
 	// If modal is not present return immediately FAAAAAAAH.
 	if ( ! modalContainer ) {
@@ -95,8 +95,8 @@ function addToggleCloseSidebarListener() {
 		sidebarElement?.classList.add( 'close' );
 
 		// Update Modal.
-		modalContainer?.querySelector( '.godam-product-modal-content' )?.classList?.add( 'no-sidebar' );
-		modalContainer?.querySelector( '.godam-product-modal-content' )?.classList?.remove( 'sidebar' );
+		modalContainer?.querySelector( '.godam-woo-global-modal-content' )?.classList?.add( 'no-sidebar' );
+		modalContainer?.querySelector( '.godam-woo-global-modal-content' )?.classList?.remove( 'sidebar' );
 
 		// Display the sidebar open button.
 		sidebarOpenButton?.classList.remove( 'hidden' );
@@ -108,7 +108,7 @@ function addToggleCloseSidebarListener() {
  * the product sidebar and adjust modal content layout accordingly.
  */
 function addToggleOpenSidebarListener() {
-	const modalContainer = document.querySelector( '.godam-product-modal-container.open' );
+	const modalContainer = document.querySelector( '.godam-woo-global-modal-container.open' );
 
 	// If modal is not present return immediately.
 	if ( ! modalContainer ) {
@@ -124,8 +124,8 @@ function addToggleOpenSidebarListener() {
 		sidebarElement?.classList.remove( 'close' );
 
 		// Update the modal.
-		modalContainer?.querySelector( '.godam-product-modal-content' )?.classList?.remove( 'no-sidebar' );
-		modalContainer?.querySelector( '.godam-product-modal-content' )?.classList?.add( 'sidebar' );
+		modalContainer?.querySelector( '.godam-woo-global-modal-content' )?.classList?.remove( 'no-sidebar' );
+		modalContainer?.querySelector( '.godam-woo-global-modal-content' )?.classList?.add( 'sidebar' );
 
 		// Hide the sidebar open button.
 		sidebarOpen?.classList.add( 'hidden' );
@@ -143,7 +143,7 @@ function addToggleOpenSidebarListener() {
  * - Accessibility (keyboard navigation and ARIA labels)
  */
 function initImageGallery() {
-	const modalContainer = document.querySelector( '.godam-product-modal-container.open' );
+	const modalContainer = document.querySelector( '.godam-woo-global-modal-container.open' );
 
 	if ( ! modalContainer ) {
 		return;
