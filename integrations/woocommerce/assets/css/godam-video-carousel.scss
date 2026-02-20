@@ -34,10 +34,10 @@
 			top: 50%;
 			left: 50%;
 			transform: translate(-50%, -50%);
-			width: 38px;
-			height: 38px;
-			background-color: var(--wp--preset--color--primary, #000); /* Background color */
-			border-radius: 50%;
+			width: var(--rtgodam-woo-video-modal-carouselvideoplaybtnwidth, 3.375rem);
+			height: var(--rtgodam-woo-video-modal-carouselvideoplaybtnwidth, 3.375rem);
+			background-color: var(--rtgodam-woo-video-modal-playbuttonbackgroundcolor, var(--wp--preset--color--primary, #000000C2));
+			border-radius: var(--rtgodam-woo-video-modal-playbuttonborderradius, 50%);
 			z-index: 1;
 		}
 
@@ -47,10 +47,9 @@
 			top: 50%;
 			left: 50%;
 			transform: translate(-50%, -50%);
-			width: 20px;
-			height: 20px;
-			background-color: var(--wp--preset--color--base, var(--wp--preset--color--secondary, #fff));; /* Icon color */
-			
+			width: calc(var(--rtgodam-woo-video-modal-carouselvideoplaybtnwidth, 3.375rem) * 0.5263);
+			height: calc(var(--rtgodam-woo-video-modal-carouselvideoplaybtnwidth, 3.375rem) * 0.5263);
+			background-color: var(--rtgodam-woo-video-modal-playbuttoncolor, var(--wp--preset--color--base, var(--wp--preset--color--secondary, #fff)));
 			-webkit-mask: url(data:image/svg+xml;base64,PHN2ZwoJdmlld0JveD0iMCAwIDI0IDI0IgoJZmlsbD0iI2ZmZiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgo+Cgk8cGF0aCBkPSJNOCA1djE0bDExLTd6IiAvPgo8L3N2Zz4=) no-repeat center;
 			-webkit-mask-size: contain;
 			mask: url(data:image/svg+xml;base64,PHN2ZwoJdmlld0JveD0iMCAwIDI0IDI0IgoJZmlsbD0iI2ZmZiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgo+Cgk8cGF0aCBkPSJNOCA1djE0bDExLTd6IiAvPgo8L3N2Zz4=) no-repeat center;

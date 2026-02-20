@@ -119,6 +119,9 @@ jQuery( document ).ready( function( $ ) {
 					$img.attr( 'src', thumbUrl )
 						.attr( 'data-video-id', videoId )
 						.addClass( 'godam-video-thumbnail' )
+						.closest( 'li' )
+						.addClass( 'godam-video-gallery-element' )
+						.end()
 						.off( 'click touchstart' )
 						.on( 'click touchstart', function( e ) {
 							// Prevent double firing on some devices.

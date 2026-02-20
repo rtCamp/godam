@@ -116,6 +116,12 @@ class Settings extends Base {
 					'mobilePriceSecondaryColor'  => 'rgba(230, 134, 0, 1)',
 					'mobilePriceTertiaryColor'   => 'rgba(143, 143, 143, 1)',
 
+					'galleryVideoPlayBtnWidth'   => '2.375rem',
+					'carouselVideoPlayBtnWidth'  => '3.375rem',
+					'playButtonBackgroundColor'  => '#000000C2',
+					'playButtonColor'            => '#ffffff',
+					'playButtonBorderRadius'     => '50%',
+
 					'additionalComponentsColor'  => 'rgba(95, 95, 95, 1)',
 				),
 			),
@@ -464,10 +470,48 @@ class Settings extends Base {
 					'mobilePriceSecondaryColor'  => $this->sanitize_color_value( $settings['integrations']['woocommerce']['mobilePriceSecondaryColor'] ?? $default['integrations']['woocommerce']['mobilePriceSecondaryColor'] ),
 					'mobilePriceTertiaryColor'   => $this->sanitize_color_value( $settings['integrations']['woocommerce']['mobilePriceTertiaryColor'] ?? $default['integrations']['woocommerce']['mobilePriceTertiaryColor'] ),
 
+					'galleryVideoPlayBtnWidth'   => $this->sanitize_css_size_value( $settings['integrations']['woocommerce']['galleryVideoPlayBtnWidth'] ?? $default['integrations']['woocommerce']['galleryVideoPlayBtnWidth'] ),
+					'carouselVideoPlayBtnWidth'  => $this->sanitize_css_size_value( $settings['integrations']['woocommerce']['carouselVideoPlayBtnWidth'] ?? $default['integrations']['woocommerce']['carouselVideoPlayBtnWidth'] ),
+					'playButtonBackgroundColor'  => $this->sanitize_color_value( $settings['integrations']['woocommerce']['playButtonBackgroundColor'] ?? $default['integrations']['woocommerce']['playButtonBackgroundColor'] ),
+					'playButtonColor'            => $this->sanitize_color_value( $settings['integrations']['woocommerce']['playButtonColor'] ?? $default['integrations']['woocommerce']['playButtonColor'] ),
+					'playButtonBorderRadius'     => $this->sanitize_percent_value( $settings['integrations']['woocommerce']['playButtonBorderRadius'] ?? $default['integrations']['woocommerce']['playButtonBorderRadius'] ),
+
 					'additionalComponentsColor'  => $this->sanitize_color_value( $settings['integrations']['woocommerce']['additionalComponentsColor'] ?? $default['integrations']['woocommerce']['additionalComponentsColor'] ),
 				),
 			),
 		);
+	}
+
+	/**
+	 * Sanitize CSS size values for width-like settings.
+	 *
+	 * @param string $value CSS value.
+	 * @return string
+	 */
+	private function sanitize_css_size_value( $value ) {
+		$value = trim( (string) $value );
+
+		if ( preg_match( '/^-?(?:\\d+|\\d*\\.\\d+)(px|rem|em|vw|vh|vmin|vmax|%)$/i', $value ) ) {
+			return $value;
+		}
+
+		return '2.375rem';
+	}
+
+	/**
+	 * Sanitize percentage value.
+	 *
+	 * @param string $value Percentage value.
+	 * @return string
+	 */
+	private function sanitize_percent_value( $value ) {
+		$value = trim( (string) $value );
+
+		if ( preg_match( '/^(100|[1-9]?\\d)%$/', $value ) ) {
+			return $value;
+		}
+
+		return '50%';
 	}
 
 	/**
