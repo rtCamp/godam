@@ -136,6 +136,41 @@ class GoDAM_Video extends Base {
 		$this->start_popover();
 
 		$this->add_control(
+			'seo_override',
+			array(
+				'label'       => esc_html__( 'Override default SEO', 'godam' ),
+				'type'        => Controls_Manager::SWITCHER,
+				'description' => esc_html__( 'Enable to customize SEO for this specific widget. When disabled, SEO data is synced from the media library.', 'godam' ),
+				'default'     => '',
+				'classes'     => 'godam-seo-override-toggle',
+			)
+		);
+
+		$this->add_control(
+			'seo_override_notice',
+			array(
+				'type'            => Controls_Manager::RAW_HTML,
+				'raw'             => '<div class="godam-seo-notice godam-seo-notice--info">' . esc_html__( 'SEO data is automatically synced from the media library. Any changes made to the video in the media library will be reflected on the frontend.', 'godam' ) . '</div>',
+				'content_classes' => 'godam-seo-notice-wrapper',
+				'condition'       => array(
+					'seo_override!' => 'yes',
+				),
+			)
+		);
+
+		$this->add_control(
+			'seo_override_warning',
+			array(
+				'type'            => Controls_Manager::RAW_HTML,
+				'raw'             => '<div class="godam-seo-notice godam-seo-notice--warning">' . esc_html__( 'You have overridden the default SEO. Changes to this video in the media library will not update the SEO for this widget.', 'godam' ) . '</div>',
+				'content_classes' => 'godam-seo-notice-wrapper',
+				'condition'       => array(
+					'seo_override' => 'yes',
+				),
+			)
+		);
+
+		$this->add_control(
 			'seo_content_url',
 			array(
 				'label'       => esc_html__( 'Content URL', 'godam' ),
@@ -156,6 +191,7 @@ class GoDAM_Video extends Base {
 				'type'        => Controls_Manager::TEXT,
 				'label_block' => true,
 				'description' => esc_html__( 'Title of the video', 'godam' ),
+				'classes'     => 'godam-seo-field',
 			)
 		);
 
@@ -166,7 +202,7 @@ class GoDAM_Video extends Base {
 				'type'        => Controls_Manager::TEXTAREA,
 				'label_block' => true,
 				'description' => '<span class="godam-seo-description-help"></span>',
-				'classes'     => 'godam-seo-description-field',
+				'classes'     => 'godam-seo-description-field godam-seo-field',
 			)
 		);
 
@@ -220,6 +256,7 @@ class GoDAM_Video extends Base {
 				'type'        => Controls_Manager::SWITCHER,
 				'description' => esc_html__( 'Is the video suitable for all audiences?', 'godam' ),
 				'default'     => 'yes',
+				'classes'     => 'godam-seo-field',
 			)
 		);
 

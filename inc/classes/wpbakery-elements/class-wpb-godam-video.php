@@ -246,6 +246,68 @@ class WPB_GoDAM_Video {
 						'param_name' => 'css',
 						'group'      => esc_html__( 'Design Options', 'godam' ),
 					),
+
+					// SEO Settings.
+					array(
+						'type'        => 'dropdown',
+						'heading'     => esc_html__( 'Override SEO', 'godam' ),
+						'param_name'  => 'seo_override',
+						'value'       => array(
+							esc_html__( 'No', 'godam' )  => '0',
+							esc_html__( 'Yes', 'godam' ) => '1',
+						),
+						'std'         => '0',
+						'description' => esc_html__( 'When disabled, SEO data is automatically synced from the media library. Enable to override with custom values.', 'godam' ),
+						'group'       => esc_html__( 'SEO Settings', 'godam' ),
+						'save_always' => true,
+						'dependency'  => array(
+							'element'   => 'id',
+							'not_empty' => true,
+						),
+					),
+					array(
+						'type'        => 'textfield',
+						'heading'     => esc_html__( 'Headline', 'godam' ),
+						'param_name'  => 'seo_headline',
+						'value'       => '',
+						'description' => esc_html__( 'Title of the video for SEO.', 'godam' ),
+						'group'       => esc_html__( 'SEO Settings', 'godam' ),
+						'save_always' => true,
+						'dependency'  => array(
+							'element' => 'seo_override',
+							'value'   => '1',
+						),
+					),
+					array(
+						'type'        => 'textarea',
+						'heading'     => esc_html__( 'Description', 'godam' ),
+						'param_name'  => 'seo_description',
+						'value'       => '',
+						'description' => esc_html__( 'Description of the video for SEO. It is recommended to add a description for better video SEO.', 'godam' ),
+						'group'       => esc_html__( 'SEO Settings', 'godam' ),
+						'save_always' => true,
+						'dependency'  => array(
+							'element' => 'seo_override',
+							'value'   => '1',
+						),
+					),
+					array(
+						'type'        => 'dropdown',
+						'heading'     => esc_html__( 'Family Friendly', 'godam' ),
+						'param_name'  => 'seo_family_friendly',
+						'value'       => array(
+							esc_html__( 'Yes', 'godam' ) => '1',
+							esc_html__( 'No', 'godam' )  => '0',
+						),
+						'std'         => '1',
+						'description' => esc_html__( 'Is this video family friendly?', 'godam' ),
+						'group'       => esc_html__( 'SEO Settings', 'godam' ),
+						'save_always' => true,
+						'dependency'  => array(
+							'element' => 'seo_override',
+							'value'   => '1',
+						),
+					),
 				),
 			)
 		);
