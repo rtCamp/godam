@@ -590,6 +590,10 @@ class WC_Product_Video_Gallery {
 				$src_id  = $srcsets[ $item ]['id'];
 				$product = wc_get_product( $post->ID );
 
+				if ( ! $product instanceof \WC_Product ) {
+					return;
+				}
+
 				$product_name  = $product->get_name();
 				$product_price = $product->get_price_html();
 				$product_image = get_the_post_thumbnail(
