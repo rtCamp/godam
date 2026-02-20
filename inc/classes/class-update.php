@@ -9,6 +9,7 @@ namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 
+use RTGODAM\Inc\Patches\Runner as Patch_Runner;
 use RTGODAM\Inc\Traits\Singleton;
 
 /**
@@ -42,9 +43,11 @@ class Update {
 		$saved_version   = get_option( 'rtgodam_plugin_version' );
 		$current_version = RTGODAM_VERSION;
 
+		Patch_Runner::get_instance()->maybe_schedule_patches( (string) $saved_version, (string) $current_version );
+
 		if ( version_compare( $current_version, $saved_version, '>' ) ) {
 			// Set transient if this is a new version update.
-			if ( $this->rtgodam_is_release_bump( $saved_version, $current_version ) ) {
+			if ( ! empty( $saved_version ) && $this->rtgodam_is_release_bump( $saved_version, $current_version ) ) {
 				set_transient( 'rtgodam_show_whats_new', true );
 			}
 

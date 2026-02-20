@@ -21,6 +21,7 @@ use RTGODAM\Inc\Video_Embed;
 use RTGODAM\Inc\Video_Permalinks;
 use RTGODAM\Inc\Video_Engagement;
 use RTGODAM\Inc\Update;
+use RTGODAM\Inc\Patches\Runner as Patch_Runner;
 
 use RTGODAM\Inc\Post_Types\GoDAM_Video;
 
@@ -86,6 +87,7 @@ class Plugin {
 	protected function __construct() {
 
 		// Load plugin classes.
+		Patch_Runner::get_instance();
 		Update::get_instance();
 		Assets::get_instance();
 		Blocks::get_instance();
