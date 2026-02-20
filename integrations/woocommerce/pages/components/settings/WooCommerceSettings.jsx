@@ -11,6 +11,7 @@ import {
 	BorderControl,
 	FontSizePicker,
 	Icon,
+	TextControl,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { desktop, mobile } from '@wordpress/icons';
@@ -212,6 +213,73 @@ const WooCommerceSettings = ( { settings = {}, onSettingChange } ) => {
 
 	return (
 		<>
+			<PanelBody
+				title={ __( 'Product gallery & carousel play button settings', 'godam' ) }
+				initialOpen={ false }
+			>
+				<div className="godam-button-settings-group">
+					<div className="godam-control-group" style={ {
+						display: 'flex',
+						gap: '16px',
+						flexWrap: 'wrap',
+					} }>
+						<div style={ { minWidth: '250px' } }>
+							<TextControl
+								label={ __( 'Width for Gallery video', 'godam' ) }
+								value={ settings.galleryVideoPlayBtnWidth || '2.375rem' }
+								onChange={ ( value ) => updateSetting( 'galleryVideoPlayBtnWidth', value ) }
+								help={ __( 'Example: 2.375rem or 38px', 'godam' ) }
+							/>
+						</div>
+
+						<div style={ { minWidth: '250px' } }>
+							<TextControl
+								label={ __( 'Width for Carousel video', 'godam' ) }
+								value={ settings.carouselVideoPlayBtnWidth || '3.375rem' }
+								onChange={ ( value ) => updateSetting( 'carouselVideoPlayBtnWidth', value ) }
+								help={ __( 'Example: 3.375rem or 54px', 'godam' ) }
+							/>
+						</div>
+					</div>
+
+					<div className="godam-control-group" style={ {
+						display: 'flex',
+						gap: '24px',
+						marginTop: '12px',
+						flexWrap: 'wrap',
+					} }>
+						<div style={ { display: 'flex', flexDirection: 'column' } }>
+							<p><strong>{ __( 'Background color', 'godam' ) }</strong></p>
+							<ColorPalette
+								enableAlpha
+								value={ settings.playButtonBackgroundColor || '#000000C2' }
+								onChange={ ( value ) => updateSetting( 'playButtonBackgroundColor', value ) }
+							/>
+						</div>
+
+						<div style={ { display: 'flex', flexDirection: 'column' } }>
+							<p><strong>{ __( 'Play btn color', 'godam' ) }</strong></p>
+							<ColorPalette
+								enableAlpha
+								value={ settings.playButtonColor || '#ffffff' }
+								onChange={ ( value ) => updateSetting( 'playButtonColor', value ) }
+							/>
+						</div>
+
+						<div style={ { width: '260px' } }>
+							<RangeControl
+								label={ __( 'Border radius', 'godam' ) }
+								value={ parseInt( settings.playButtonBorderRadius || '50%', 10 ) }
+								onChange={ ( value ) => updateSetting( 'playButtonBorderRadius', `${ value }%` ) }
+								min={ 0 }
+								max={ 100 }
+								help={ __( 'Default: 50%', 'godam' ) }
+							/>
+						</div>
+					</div>
+				</div>
+			</PanelBody>
+
 			<PanelBody><strong>{ __( 'Video Popoup settings', 'godam' ) }</strong>
 
 				<PanelBody

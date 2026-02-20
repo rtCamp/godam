@@ -14,6 +14,41 @@
     object-position: center;
 }
 
+.woocommerce-product-gallery .godam-video-gallery-element {
+	position: relative;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: var(--rtgodam-woo-video-modal-galleryvideoplaybtnwidth, 2.375rem);
+		height: var(--rtgodam-woo-video-modal-galleryvideoplaybtnwidth, 2.375rem);
+		background-color: var(--rtgodam-woo-video-modal-playbuttonbackgroundcolor, var(--wp--preset--color--primary, #000000C2));
+		border-radius: var(--rtgodam-woo-video-modal-playbuttonborderradius, 50%);
+		z-index: 1;
+		pointer-events: none;
+	}
+
+	&::after {
+		content: "";
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: calc(var(--rtgodam-woo-video-modal-galleryvideoplaybtnwidth, 2.375rem) * 0.5263);
+		height: calc(var(--rtgodam-woo-video-modal-galleryvideoplaybtnwidth, 2.375rem) * 0.5263);
+		background-color: var(--rtgodam-woo-video-modal-playbuttoncolor, var(--wp--preset--color--base, var(--wp--preset--color--secondary, #fff)));
+		-webkit-mask: url(data:image/svg+xml;base64,PHN2ZwoJdmlld0JveD0iMCAwIDI0IDI0IgoJZmlsbD0iI2ZmZiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgo+Cgk8cGF0aCBkPSJNOCA1djE0bDExLTd6IiAvPgo8L3N2Zz4=) no-repeat center;
+		-webkit-mask-size: contain;
+		mask: url(data:image/svg+xml;base64,PHN2ZwoJdmlld0JveD0iMCAwIDI0IDI0IgoJZmlsbD0iI2ZmZiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgo+Cgk8cGF0aCBkPSJNOCA1djE0bDExLTd6IiAvPgo8L3N2Zz4=) no-repeat center;
+		mask-size: contain;
+		z-index: 1;
+		pointer-events: none;
+	}
+}
+
 .godam-woocommerce-featured-video-modal-content .godam-pills-skin .video-js .vjs-control-bar {
 	padding-left: 10px;
     padding-right: 0;
