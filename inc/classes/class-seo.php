@@ -393,7 +393,10 @@ class Seo {
 					isset( $element['widgetType'] ) &&
 					'godam-video' === $element['widgetType']
 				) {
-					$settings     = $element['settings'];
+					$settings = array();
+					if ( isset( $element['settings'] ) && is_array( $element['settings'] ) ) {
+						$settings = $element['settings'];
+					}
 					$seo_override = isset( $settings['seo_override'] ) && 'yes' === $settings['seo_override'];
 
 					// If seo_override is false, try to fetch SEO from the media attachment.

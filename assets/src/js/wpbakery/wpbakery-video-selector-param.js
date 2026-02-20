@@ -108,7 +108,7 @@ import { __ } from '@wordpress/i18n';
 				const mimeType = attachment.mime || attachment.post_mime_type || 'video/mp4';
 
 				$input.val( attachment.id ).trigger( 'change' );
-				$selectButton.text( 'Replace' );
+				$selectButton.text( __( 'Replace', 'godam' ) );
 
 				let $preview = $container.find( '.video-selector-preview' );
 				if ( $preview.length === 0 ) {
