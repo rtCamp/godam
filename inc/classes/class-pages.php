@@ -68,6 +68,13 @@ class Pages {
 	private $whats_new_slug = 'rtgodam_whats_new';
 
 	/**
+	 * Slug for the welcome walkthrough page.
+	 *
+	 * @var string
+	 */
+	private $welcome_slug = 'rtgodam_welcome';
+
+	/**
 	 * Menu pag ID.
 	 *
 	 * @var string
@@ -117,6 +124,13 @@ class Pages {
 	private $whats_new_page_id = 'godam_page_rtgodam_whats_new';
 
 	/**
+	 * Welcome page ID.
+	 *
+	 * @var string
+	 */
+	private $welcome_page_id = 'godam_page_rtgodam_welcome';
+
+	/**
 	 * Construct method.
 	 */
 	protected function __construct() {
@@ -139,6 +153,10 @@ class Pages {
 		// "What's New" page related actions.
 		add_action( 'current_screen', array( $this, 'redirect_to_whats_new' ) );
 		add_action( 'admin_menu', array( $this, 'remove_whats_new_page' ) );
+
+		// "Welcome" walkthrough page related actions.
+		add_action( 'current_screen', array( $this, 'redirect_to_welcome' ) );
+		add_action( 'admin_menu', array( $this, 'remove_welcome_page' ) );
 
 		// Remove anti-spam field during shortcode render for WPForms in Video Editor Page.
 		// @see https://github.com/rtCamp/godam/issues/597 issue link.
@@ -252,6 +270,20 @@ class Pages {
 				8
 			);
 		}
+
+		// Only add "Welcome" submenu page if we are on a GoDAM menu.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['page'] ) && sanitize_key( $_GET['page'] ) === $this->welcome_slug ) {
+			add_submenu_page(
+				$this->menu_slug,
+				__( 'Welcome', 'godam' ),
+				__( 'Welcome', 'godam' ),
+				'manage_options',
+				$this->welcome_slug,
+				array( $this, 'render_welcome_page' ),
+				9
+			);
+		}
 	}
 
 	/**
@@ -264,7 +296,7 @@ class Pages {
 		$screen = get_current_screen();
 
 		// Check if this is your custom admin page.
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id, $this->settings_page_id, $this->tools_page_id, $this->whats_new_page_id ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id, $this->settings_page_id, $this->tools_page_id, $this->whats_new_page_id, $this->welcome_page_id ), true ) ) {
 			// Remove admin notices.
 			remove_all_actions( 'admin_notices' );
 			remove_all_actions( 'all_admin_notices' );
@@ -430,6 +462,19 @@ class Pages {
 	}
 
 	/**
+	 * To render the welcome walkthrough page.
+	 *
+	 * @return void
+	 */
+	public function render_welcome_page() {
+		?>
+		<div class="godam-admin-root">
+			<div id="root-godam-welcome"></div>
+		</div>
+		<?php
+	}
+
+	/**
 	 * To enqueue scripts and styles in admin.
 	 *
 	 * @return void
@@ -437,7 +482,7 @@ class Pages {
 	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
 
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id, $this->tools_page_id ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id, $this->tools_page_id, $this->whats_new_page_id, $this->welcome_page_id ), true ) ) {
 
 			wp_register_script(
 				'rtgodam-page-style',
@@ -838,7 +883,43 @@ class Pages {
 				$this->get_posthog_config()
 			);
 
+			wp_set_script_translations( 'godam-page-script-whats-new', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'godam-page-script-whats-new' );
+		} elseif ( $screen && $this->welcome_page_id === $screen->id ) {
+
+			wp_register_script(
+				'godam-page-script-welcome',
+				RTGODAM_URL . 'assets/build/pages/welcome.min.js',
+				array( 'wp-element', 'wp-i18n' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/welcome.min.js' ),
+				true
+			);
+
+			wp_set_script_translations( 'godam-page-script-welcome', 'godam', RTGODAM_PATH . 'languages' );
+
+			wp_localize_script(
+				'godam-page-script-welcome',
+				'godamWelcomeData',
+				array(
+					'nonce'           => wp_create_nonce( 'wp_rest' ),
+					'dashboardUrl'    => admin_url( 'admin.php?page=' . $this->menu_slug ),
+					'mediaLibraryUrl' => admin_url( 'upload.php' ),
+					'videoEditorUrl'  => admin_url( 'admin.php?page=rtgodam_video_editor' ),
+					'analyticsUrl'    => admin_url( 'admin.php?page=' . $this->menu_slug ),
+					'settingsUrl'     => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
+					'host'            => wp_parse_url( home_url(), PHP_URL_HOST ),
+				)
+			);
+
+			wp_localize_script(
+				'godam-page-script-welcome',
+				'godamRestRoute',
+				array(
+					'url' => rest_url(),
+				)
+			);
+
+			wp_enqueue_script( 'godam-page-script-welcome' );
 		}
 
 		wp_enqueue_style( 'wp-components' );
@@ -1104,6 +1185,41 @@ class Pages {
 	}
 
 	/**
+	 * Redirects to "Welcome" walkthrough page on fresh install.
+	 *
+	 * Takes priority over the What's New redirect so the user sees
+	 * the walkthrough first. The What's New transient will be consumed
+	 * on the next GoDAM page load after the walkthrough completes.
+	 *
+	 * @param object $screen The current screen object.
+	 */
+	public function redirect_to_welcome( $screen ) {
+		// Only redirect if on a valid GoDAM admin page.
+		if (
+			! is_admin() ||
+			! $screen ||
+			false === strpos( $screen->id, $this->menu_slug )
+		) {
+			return;
+		}
+
+		// Don't redirect if already on the welcome page.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['page'] ) && sanitize_key( $_GET['page'] ) === $this->welcome_slug ) {
+			return;
+		}
+
+		if ( get_transient( 'rtgodam_show_welcome' ) ) {
+			// Redirect only once, then clean up.
+			delete_transient( 'rtgodam_show_welcome' );
+
+			// Redirect to Welcome walkthrough page.
+			wp_safe_redirect( admin_url( 'admin.php?page=' . $this->welcome_slug ) );
+			exit;
+		}
+	}
+
+	/**
 	 * Redirects to "What's New" submenu page after a plugin update.
 	 *
 	 * @param object $screen The current screen object.
@@ -1136,6 +1252,16 @@ class Pages {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( ( isset( $_GET['page'] ) && sanitize_key( $_GET['page'] ) !== $this->whats_new_slug ) ) {
 			remove_submenu_page( $this->menu_slug, $this->whats_new_slug );
+		}
+	}
+
+	/**
+	 * Remove the "Welcome" submenu page once the user navigates away.
+	 */
+	public function remove_welcome_page() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! isset( $_GET['page'] ) || sanitize_key( $_GET['page'] ) !== $this->welcome_slug ) {
+			remove_submenu_page( $this->menu_slug, $this->welcome_slug );
 		}
 	}
 }

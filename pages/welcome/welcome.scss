@@ -43,6 +43,16 @@
 		padding: 32px 40px 24px;
 	}
 
+	/*
+	 * Move pagination dots to the bottom.
+	 *
+	 * The Guide component's .components-guide__page is already a flex column
+	 * (set by @wordpress/components). The DOM order inside .components-guide__page
+	 * is: [.components-guide__page-control, step-content].
+	 * Setting order: 2 on the page-control moves the dots visually below the
+	 * step content without touching the container-level flex order (which would
+	 * displace the Next/Prev footer buttons).
+	 */
 	.components-guide__page-control {
 		order: 2;
 		margin-top: 20px;
@@ -61,6 +71,11 @@
 		font-weight: 600;
 		margin-bottom: 12px;
 		color: #1e1e1e;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 6px;
 	}
 
 	h1 {
@@ -81,6 +96,31 @@
 	font-size: 48px;
 	margin-bottom: 12px;
 	line-height: 1;
+}
+
+/* ----- Free / Pro tags ----- */
+
+.godam-welcome__tag {
+	display: inline-block;
+	margin-left: 8px;
+	padding: 2px 8px;
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	border-radius: 3px;
+	vertical-align: middle;
+	line-height: 1.6;
+}
+
+.godam-welcome__tag--free {
+	background: #e6f4ea;
+	color: #1a7f37;
+}
+
+.godam-welcome__tag--pro {
+	background: linear-gradient(83.85deg, #ab3a6c -9.3%, #e6533a 120.31%);
+	color: #fff;
 }
 
 /* ----- Hero step ----- */
@@ -105,13 +145,27 @@
 	}
 }
 
+.godam-welcome__hero-badges {
+	display: flex;
+	gap: 8px;
+	justify-content: center;
+	margin-top: 20px;
+	flex-wrap: wrap;
+
+	.godam-welcome__tag {
+		margin-left: 0;
+		padding: 4px 12px;
+		font-size: 12px;
+	}
+}
+
 /* ----- Feature list ----- */
 
 .godam-welcome__feature-list {
 	list-style: none;
 	padding: 0;
 	margin: 20px auto 0;
-	max-width: 400px;
+	max-width: 420px;
 	text-align: left;
 
 	li {
@@ -129,15 +183,98 @@
 			font-weight: 700;
 			font-size: 16px;
 		}
+
+		// Two-line items with a label + description sub-text.
+		strong {
+			display: block;
+			color: #1e1e1e;
+			font-weight: 600;
+			margin-bottom: 2px;
+		}
+
+		span {
+			display: block;
+			font-size: 12px;
+			color: #757575;
+		}
 	}
 
+	// Pro items use a star bullet instead of a checkmark.
 	&--pro li::before {
 		content: "★";
 		color: #dba617;
 	}
+
+	// Two-column variant for side-by-side comparisons.
+	&--two-col {
+		max-width: 480px;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		column-gap: 20px;
+
+		li {
+			padding: 8px 0 8px 24px;
+
+			&::before {
+				font-size: 14px;
+			}
+		}
+	}
 }
 
-/* ----- Pro note ----- */
+/* ----- Step action links ----- */
+
+.godam-welcome__step-actions {
+	display: flex;
+	gap: 12px;
+	justify-content: center;
+	flex-wrap: wrap;
+	margin-top: 24px;
+}
+
+.godam-welcome__action-link {
+	display: inline-block;
+	padding: 6px 14px;
+	border-radius: 3px;
+	font-size: 13px;
+	font-weight: 600;
+	text-decoration: none;
+	border: 1.5px solid #1d2327;
+	color: #1d2327;
+	transition: background 0.15s, color 0.15s;
+
+	&:hover {
+		background: #1d2327;
+		color: #fff;
+		text-decoration: none;
+	}
+
+	// Secondary link: subtle / ghost
+	&--secondary {
+		border-color: #c3c4c7;
+		color: #757575;
+		font-weight: 400;
+
+		&:hover {
+			background: #f0f0f0;
+			color: #1d2327;
+		}
+	}
+
+	// Pro upgrade CTA: brand gradient
+	&--pro {
+		border: none;
+		background: linear-gradient(83.85deg, #ab3a6c -9.3%, #e6533a 120.31%);
+		color: #fff;
+
+		&:hover {
+			opacity: 0.9;
+			color: #fff;
+		}
+	}
+}
+
+/* ----- Pro note (legacy, kept for back-compat) ----- */
 
 .godam-welcome__pro-note {
 	font-size: 13px !important;
