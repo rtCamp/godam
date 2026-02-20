@@ -49,6 +49,17 @@ function autoloader( $file_resource = '' ) {
 	if ( 'inc' === $path[0] ) {
 
 		switch ( $path[1] ) {
+			case 'patches':
+				// Load patch classes from inc/patches.
+				if ( ! empty( $path[2] ) ) {
+					$sub_directories = implode( '/', array_slice( $path, 2, -1 ) ); // Handle nested items.
+					$directory       = ! empty( $sub_directories ) ? sprintf( 'patches/%s', $sub_directories ) : 'patches';
+					$file_name       = sprintf( 'class-%s', trim( strtolower( end( $path ) ) ) );
+				} else {
+					$directory = 'patches';
+					$file_name = 'class-patches';
+				}
+				break;
 			case 'traits':
 				$directory = 'traits';
 				$file_name = sprintf( 'trait-%s', trim( strtolower( $path[2] ) ) );

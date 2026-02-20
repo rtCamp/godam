@@ -9,6 +9,28 @@ import { __ } from '@wordpress/i18n';
 import { getFirstNonEmpty, appendTimezoneOffsetToUTC, stripHtmlTags } from '../../../blocks/godam-player/utils';
 
 window.addEventListener( 'elementor/frontend/init', () => {
+	function getPosterUrl( settings ) {
+		const poster = settings.get( 'poster' );
+		return getFirstNonEmpty( poster?.url, '' );
+	}
+
+	function isSeoOverrideEnabled( settings ) {
+		return settings.get( 'seo_override' ) === 'yes';
+	}
+
+	function applyPosterThumbnailOverride( settings ) {
+		if ( ! isSeoOverrideEnabled( settings ) ) {
+			return;
+		}
+
+		const posterUrl = getPosterUrl( settings );
+		if ( ! posterUrl ) {
+			return;
+		}
+
+		settings.set( { seo_content_video_thumbnail_url: posterUrl } );
+	}
+
 	function prepareVideoMeta( attachmentData ) {
 		const initialVideoData = {
 			contentUrl: getFirstNonEmpty( attachmentData?.meta?.rtgodam_transcoded_url, attachmentData?.source_url ),
@@ -21,6 +43,31 @@ window.addEventListener( 'elementor/frontend/init', () => {
 		};
 
 		return initialVideoData;
+	}
+
+	/**
+	 * Update SEO fields disabled state based on seo_override toggle.
+	 *
+	 * @param {Object}  panel    - Elementor panel object.
+	 * @param {boolean} disabled - Whether fields should be disabled.
+	 */
+	function updateSEOFieldsDisabledState( panel, disabled ) {
+		const seoFields = panel.$el.find( '.godam-seo-field' );
+		seoFields.each( function() {
+			const $field = window.jQuery( this );
+			const $inputs = $field.find( 'input, textarea' );
+			const $switcher = $field.find( '.elementor-switch' );
+
+			if ( disabled ) {
+				$inputs.attr( 'readonly', 'readonly' );
+				$switcher.css( 'pointer-events', 'none' );
+				$field.css( 'opacity', '0.6' );
+			} else {
+				$inputs.removeAttr( 'readonly' );
+				$switcher.css( 'pointer-events', '' );
+				$field.css( 'opacity', '' );
+			}
+		} );
 	}
 
 	// eslint-disable-next-line no-undef
@@ -42,6 +89,70 @@ window.addEventListener( 'elementor/frontend/init', () => {
 				if ( model.get( 'widgetType' ) !== 'godam-video' ) {
 					return;
 				}
+
+				const settings = model.get( 'settings' );
+
+				/**
+				 * Replace temporary virtual media ID with the newly created real attachment ID.
+				 *
+				 * This mirrors Gutenberg behavior for virtual media uploads.
+				 *
+				 * @param {CustomEvent} event - Event detail contains `virtualMediaId` and `attachment`.
+				 */
+				const handleVirtualAttachmentCreated = ( event ) => {
+					const { attachment, virtualMediaId } = event?.detail || {};
+					const currentVideoFile = settings.get( 'video-file' ) || {};
+					const currentId = currentVideoFile?.id;
+
+					if ( ! attachment?.id ) {
+						return;
+					}
+
+					// Update only when current ID is empty or still points to this virtual media placeholder.
+					const shouldReplaceId = currentId === undefined || currentId === null || currentId === '' || String( currentId ) === String( virtualMediaId );
+					if ( ! shouldReplaceId ) {
+						return;
+					}
+
+					settings.set( {
+						'video-file': {
+							...currentVideoFile,
+							id: attachment.id,
+							url: attachment.url || currentVideoFile.url,
+							name: attachment.filename || currentVideoFile.name,
+							title: attachment.title || currentVideoFile.title,
+						},
+					} );
+
+					panel.currentPageView.render();
+				};
+
+				// Prevent duplicate listeners if panel is opened multiple times.
+				if ( model._godamVirtualAttachmentCreatedHandler ) {
+					document.removeEventListener( 'godam-virtual-attachment-created', model._godamVirtualAttachmentCreatedHandler );
+				}
+				model._godamVirtualAttachmentCreatedHandler = handleVirtualAttachmentCreated;
+				document.addEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
+
+				/**
+				 * Handle seo_override toggle changes.
+				 */
+				const handleSeoOverrideChange = () => {
+					const seoOverride = isSeoOverrideEnabled( settings );
+					// Delay to ensure DOM is updated
+					setTimeout( () => {
+						updateSEOFieldsDisabledState( panel, ! seoOverride );
+						applyPosterThumbnailOverride( settings );
+					}, 100 );
+				};
+
+				// Listen for seo_override changes
+				model.get( 'settings' ).on( 'change:seo_override', handleSeoOverrideChange );
+
+				// Initial state update when panel opens
+				panel.currentPageView.on( 'render', () => {
+					setTimeout( handleSeoOverrideChange, 100 );
+				} );
 
 				/**
 				 * Automatically populates the SEO fields.
@@ -68,6 +179,7 @@ window.addEventListener( 'elementor/frontend/init', () => {
 							};
 
 							model.get( 'settings' ).set( defaultSeoData );
+							applyPosterThumbnailOverride( settings );
 							panel.currentPageView.render();
 						} );
 
@@ -90,7 +202,7 @@ window.addEventListener( 'elementor/frontend/init', () => {
 							}
 							const seoData = prepareVideoMeta( data );
 
-							model.get( 'settings' ).set( {
+							settings.set( {
 								seo_content_url: seoData.contentUrl,
 								seo_content_headline: seoData.headline,
 								seo_content_description: seoData.description,
@@ -98,6 +210,7 @@ window.addEventListener( 'elementor/frontend/init', () => {
 								seo_content_video_thumbnail_url: seoData.thumbnailUrl,
 								seo_content_duration: seoData.duration,
 							} );
+							applyPosterThumbnailOverride( settings );
 							panel.currentPageView.render();
 						} );
 				} );
@@ -106,11 +219,13 @@ window.addEventListener( 'elementor/frontend/init', () => {
 				 * Updates the poster url field when the poster image is updated.
 				 */
 				model.get( 'settings' ).on( 'change:poster', async () => {
-					const posterFile = model.get( 'settings' ).get( 'video-file' );
-					if ( ! posterFile.url ) {
+					const posterUrl = getPosterUrl( settings );
+
+					if ( ! posterUrl || ! isSeoOverrideEnabled( settings ) ) {
 						return;
 					}
-					model.get( 'settings' ).set( { seo_content_video_thumbnail_url: posterFile.url } );
+
+					settings.set( { seo_content_video_thumbnail_url: posterUrl } );
 					panel.currentPageView.render();
 				} );
 
@@ -142,6 +257,13 @@ window.addEventListener( 'elementor/frontend/init', () => {
 				// Update help text when panel renders
 				panel.currentPageView.on( 'render', () => {
 					setTimeout( updateDescriptionHelp, DESCRIPTION_HELP_UPDATE_DELAY_MS );
+				} );
+
+				panel.currentPageView.on( 'destroy', () => {
+					if ( model._godamVirtualAttachmentCreatedHandler ) {
+						document.removeEventListener( 'godam-virtual-attachment-created', model._godamVirtualAttachmentCreatedHandler );
+						delete model._godamVirtualAttachmentCreatedHandler;
+					}
 				} );
 			},
 		);
