@@ -16,7 +16,7 @@ use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class WC_Utility
- * 
+ *
  * A utility class for WooCommerce-integration-related helper functions.
  */
 class WC_Utility {
@@ -43,7 +43,7 @@ class WC_Utility {
 		}
 
 		$hex = str_replace( '#', '', $hex );
-	
+
 		if ( strlen( $hex ) === 8 ) {
 			$r = hexdec( substr( $hex, 0, 2 ) );
 			$g = hexdec( substr( $hex, 2, 2 ) );
@@ -51,14 +51,14 @@ class WC_Utility {
 			$a = hexdec( substr( $hex, 6, 2 ) ) / 255;
 			return "rgba({$r}, {$g}, {$b}, {$a})";
 		}
-	
+
 		if ( strlen( $hex ) === 6 ) {
 			$r = hexdec( substr( $hex, 0, 2 ) );
 			$g = hexdec( substr( $hex, 2, 2 ) );
 			$b = hexdec( substr( $hex, 4, 2 ) );
 			return "rgb({$r}, {$g}, {$b})";
 		}
-	
+
 		return "#{$hex}";
 	}
 
@@ -338,6 +338,17 @@ class WC_Utility {
 
 		$settings = get_option( 'rtgodam-settings', array() );
 		$woo      = $settings['integrations']['woocommerce'] ?? array();
+
+		$woo = wp_parse_args(
+			$woo,
+			array(
+				'galleryVideoPlayBtnWidth'  => '2.375rem',
+				'carouselVideoPlayBtnWidth' => '2.375rem',
+				'playButtonBackgroundColor' => '#000000C2',
+				'playButtonColor'           => '#ffffff',
+				'playButtonBorderRadius'    => '50%',
+			)
+		);
 
 		$css = ':root {';
 
