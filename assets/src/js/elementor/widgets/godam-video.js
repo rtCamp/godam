@@ -237,7 +237,33 @@ window.addEventListener( 'elementor/frontend/init', () => {
 						return;
 					}
 
-					settings.set( getSeoPayload( seoData, includeEditableFields ) );
+					const payload = getSeoPayload( seoData, includeEditableFields );
+					settings.set( payload );
+
+					// Directly update the popover fields if open
+					if ( panel && panel.$el ) {
+						Object.entries( payload ).forEach( ( [ key, value ] ) => {
+							const $field = panel.$el.find( `.elementor-control-${ key }` );
+							if ( $field.length ) {
+								const $input = $field.find( 'input[type="text"], input[type="url"], input:not([type]), textarea' );
+								if ( $input.length ) {
+									$input.val( value );
+								}
+								// For switchers (e.g., family friendly yes/no)
+								if ( $field.hasClass( 'elementor-control-type-switcher' ) ) {
+									const $switch = $field.find( '.elementor-switch' );
+									if ( $switch.length ) {
+										if ( value === 'yes' ) {
+											$switch.addClass( 'elementor-active' );
+										} else {
+											$switch.removeClass( 'elementor-active' );
+										}
+									}
+								}
+							}
+						} );
+					}
+
 					applyPosterThumbnailOverride( settings );
 				};
 
