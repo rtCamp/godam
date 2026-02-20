@@ -55,6 +55,16 @@ const GravityForm = ( { layerID } ) => {
 	return (
 		<>
 			{
+				! isValidAPIKey &&
+				<Notice
+					className="mb-4"
+					status="warning"
+					isDismissible={ false }
+				>
+					{ __( 'Forms layer is a Pro feature. Upgrade your plan to unlock it.', 'godam' ) }
+				</Notice>
+			}
+			{
 				! isGFPluginActive &&
 				<Notice
 					className="mb-4"

@@ -340,7 +340,7 @@ $godam_video_setup = wp_json_encode( $godam_video_setup );
 
 // Filter out premium layers from frontend config when API key is not valid.
 $godam_frontend_layers         = ! empty( $godam_meta_data['layers'] ) ? $godam_meta_data['layers'] : array();
-$godam_premium_layer_types_cfg = array( 'form', 'poll', 'ad' );
+$godam_premium_layer_types_cfg = rtgodam_get_premium_layer_types();
 
 if ( ! rtgodam_is_api_key_valid() && ! empty( $godam_frontend_layers ) ) {
 	$godam_frontend_layers = array_values(
@@ -598,7 +598,7 @@ if ( $godam_should_preload_poster ) {
 					<!-- Dynamically render shortcodes for form layers. -->
 					<?php
 					// Premium layer types require a valid API key to render on the frontend.
-					$godam_premium_layer_types = array( 'form', 'poll', 'ad' );
+					$godam_premium_layer_types = rtgodam_get_premium_layer_types();
 					$godam_has_valid_api_key   = rtgodam_is_api_key_valid();
 
 					if ( ! empty( $godam_meta_data['layers'] ) ) :

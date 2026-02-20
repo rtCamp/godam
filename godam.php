@@ -158,7 +158,9 @@ function rtgodam_plugin_delete() {
 			switch_to_blog( $blog_id );
 
 			delete_option( 'rtgodam_plugin_version' );
+			delete_option( 'rtgodam_welcome_completed' );
 			delete_transient( 'rtgodam_show_whats_new' );
+			delete_transient( 'rtgodam_show_welcome' );
 			delete_transient( 'rtgodam_release_data' );
 
 			restore_current_blog();
@@ -166,7 +168,9 @@ function rtgodam_plugin_delete() {
 	} else {
 		// For single site, delete options directly.
 		delete_option( 'rtgodam_plugin_version' );
+		delete_option( 'rtgodam_welcome_completed' );
 		delete_transient( 'rtgodam_show_whats_new' );
+		delete_transient( 'rtgodam_show_welcome' );
 		delete_transient( 'rtgodam_release_data' );
 	}
 }

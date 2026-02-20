@@ -657,10 +657,17 @@ class RTGODAM_Transcoder_Admin {
 	/**
 	 * Display PostHog tracking notice.
 	 *
+	 * Only shown on the WP Dashboard, after the welcome walkthrough is completed.
+	 *
 	 * @since 1.5.0
 	 */
 	public function posthog_tracking_notice() {
 		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		// Only show on the WP Dashboard screen.
+		if ( ! $this->is_dashboard_screen() ) {
 			return;
 		}
 

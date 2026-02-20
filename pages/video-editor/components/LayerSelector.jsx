@@ -33,14 +33,11 @@ import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
 import MetFormIcon from '../assets/layers/MetFormIcon.png';
 
 /**
- * Premium layer types that require an API key.
+ * Shared premium layer constants — single source of truth.
  */
-const PREMIUM_LAYER_TYPES = [ 'poll', 'form', 'ad' ];
+import { PREMIUM_LAYER_TYPES, getPricingUrl } from '../../shared/premium-layers';
 
-/**
- * Pricing page URL for upselling premium features.
- */
-const pricingUrl = `https://godam.io/pricing?utm_campaign=upgrade&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=layer-selector`;
+const pricingUrl = getPricingUrl( 'layer-selector' );
 
 const Layers = [
 	{
