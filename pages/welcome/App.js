@@ -74,12 +74,8 @@ const WelcomeStep = () => (
 			{ __( 'Manage, edit, and deliver media directly from your WordPress dashboard.', 'godam' ) }
 		</p>
 		<p className="godam-welcome__subtitle">
-			{ __( 'Let\'s take a quick tour — starting with the features you can use right away for free, then a look at what\'s available with a Pro plan.', 'godam' ) }
+			{ __( 'Start your GoDAM adventure! Let\'s take a quick tour of the features.', 'godam' ) }
 		</p>
-		<div className="godam-welcome__hero-badges">
-			<span className="godam-welcome__tag godam-welcome__tag--free">{ __( 'Free features included', 'godam' ) }</span>
-			<span className="godam-welcome__tag godam-welcome__tag--pro">{ __( 'Pro features previewed', 'godam' ) }</span>
-		</div>
 	</div>
 );
 
@@ -92,17 +88,17 @@ const MediaLibraryStep = () => (
 	<div className="godam-welcome__step">
 		<div className="godam-welcome__step-icon">&#128193;</div>
 		<h2>
-			{ __( 'Media Library Folders', 'godam' ) }
+			{ __( 'Advanced Media Library Manager', 'godam' ) }
 			<span className="godam-welcome__tag godam-welcome__tag--free">{ __( 'Free', 'godam' ) }</span>
 		</h2>
 		<p>
 			{ __( 'WordPress doesn\'t support folders in the Media Library by default. GoDAM adds a folder overlay so you can organize all your media into a clean folder structure.', 'godam' ) }
 		</p>
 		<ul className="godam-welcome__feature-list">
-			<li>{ __( 'Drag and drop media into folders', 'godam' ) }</li>
-			<li>{ __( 'All existing media goes to an Uncategorized folder', 'godam' ) }</li>
-			<li>{ __( 'File URLs stay the same — no broken links', 'godam' ) }</li>
-			<li>{ __( 'Works with images, videos, audio, and documents', 'godam' ) }</li>
+			<li>{ __( 'Drag and drop media into unlimited folders', 'godam' ) }</li>
+			<li>{ __( 'Works with images, videos, audio, and PDFs', 'godam' ) }</li>
+			<li>{ __( 'Mark your folders with Bookmarks for quick access', 'godam' ) }</li>
+			<li>{ __( 'Lock private folders to prevent accidental edits or moves', 'godam' ) }</li>
 		</ul>
 		<div className="godam-welcome__step-actions">
 			<a
@@ -114,7 +110,7 @@ const MediaLibraryStep = () => (
 				{ __( 'Open Media Library →', 'godam' ) }
 			</a>
 			<a
-				href="https://godam.io/features/central-media-manager/?utm_source=plugin&utm_medium=welcome&utm_content=media-library"
+				href="https://godam.io/features/wordpress-advanced-media-management/?utm_source=plugin&utm_medium=welcome&utm_content=media-library"
 				target="_blank"
 				rel="noopener noreferrer"
 				className="godam-welcome__action-link godam-welcome__action-link--secondary"
@@ -138,16 +134,16 @@ const FreeLayersStep = () => (
 			<span className="godam-welcome__tag godam-welcome__tag--free">{ __( 'Free', 'godam' ) }</span>
 		</h2>
 		<p>
-			{ __( 'Make any video interactive with CTA and Hotspot overlays — no account required. Add them directly from the GoDAM Video Editor.', 'godam' ) }
+			{ __( 'Make any video interactive with CTA and Hotspot overlays, no account required. Add them directly from the GoDAM Video Editor.', 'godam' ) }
 		</p>
 		<ul className="godam-welcome__feature-list godam-welcome__feature-list--two-col">
 			<li>
 				<strong>{ __( 'Call to Action (CTA)', 'godam' ) }</strong>
-				<span>{ __( 'Show clickable buttons, images, or custom HTML at any point during playback', 'godam' ) }</span>
+				<span>{ __( 'Display interactive cards with images, text, or custom HTML right in the player at any point during playback', 'godam' ) }</span>
 			</li>
 			<li>
 				<strong>{ __( 'Hotspots', 'godam' ) }</strong>
-				<span>{ __( 'Place interactive markers anywhere on the video frame — link to any URL', 'godam' ) }</span>
+				<span>{ __( 'Place interactive markers anywhere on the video frame and link to any URL', 'godam' ) }</span>
 			</li>
 		</ul>
 		<div className="godam-welcome__step-actions">
@@ -189,11 +185,11 @@ const ProLayersStep = () => (
 		<ul className="godam-welcome__feature-list godam-welcome__feature-list--pro">
 			<li>
 				<strong>{ __( 'Form Layer', 'godam' ) }</strong>
-				<span>{ __( 'Embed Gravity Forms, WPForms, Fluent Forms, and more directly inside video', 'godam' ) }</span>
+				<span>{ __( 'Embed Gravity Forms, WPForms, Fluent Forms, and more directly inside your video', 'godam' ) }</span>
 			</li>
 			<li>
 				<strong>{ __( 'Ad Layer', 'godam' ) }</strong>
-				<span>{ __( 'Show pre-roll, mid-roll, or post-roll ads — or connect your own ad server (VAST)', 'godam' ) }</span>
+				<span>{ __( 'Show pre-roll, mid-roll, or post-roll ads, or connect your own ad server (VAST)', 'godam' ) }</span>
 			</li>
 			<li>
 				<strong>{ __( 'Poll Layer', 'godam' ) }</strong>
@@ -230,17 +226,17 @@ const AnalyticsStep = () => (
 	<div className="godam-welcome__step">
 		<div className="godam-welcome__step-icon">&#128200;</div>
 		<h2>
-			{ __( 'Video Analytics', 'godam' ) }
+			{ __( 'Get Actionable Insights', 'godam' ) }
 			<span className="godam-welcome__tag godam-welcome__tag--pro">{ __( 'Pro', 'godam' ) }</span>
 		</h2>
 		<p>
-			{ __( 'Understand exactly how your audience engages with every video. Track plays, watch time, drop-off points, and layer interactions.', 'godam' ) }
+			{ __( 'Understand what’s working (and what’s not) with real-time data on plays, play time, page loads, viewer retention, and more.', 'godam' ) }
 		</p>
-		<ul className="godam-welcome__feature-list godam-welcome__feature-list--pro">
+		<ul className="godam-welcome__feature-list godam-welcome__feature-list--pro godam-welcome__feature-list--two-col">
 			<li>{ __( 'Per-video play counts, watch time, and completion rates', 'godam' ) }</li>
-			<li>{ __( 'Engagement heatmaps — see which moments viewers rewatch or skip', 'godam' ) }</li>
-			<li>{ __( 'CTA clicks, form submissions, and poll vote tracking', 'godam' ) }</li>
-			<li>{ __( 'Side-by-side comparison of multiple videos', 'godam' ) }</li>
+			<li>{ __( 'With engagement heatmaps, see which moments viewers rewatch or skip', 'godam' ) }</li>
+			<li>{ __( 'Visualize your global reach with detailed geographic heatmaps', 'godam' ) }</li>
+			<li>{ __( 'Side-by-side comparison of videos', 'godam' ) }</li>
 		</ul>
 		<div className="godam-welcome__step-actions">
 			<a
@@ -276,12 +272,12 @@ const TranscodingStep = () => (
 			<span className="godam-welcome__tag godam-welcome__tag--pro">{ __( 'Pro', 'godam' ) }</span>
 		</h2>
 		<p>
-			{ __( 'Deliver lightning-fast, beautifully branded videos to every viewer — automatically optimized for their device and connection speed.', 'godam' ) }
+			{ __( 'Deliver lightning-fast, beautifully branded videos to every viewer.', 'godam' ) }
 		</p>
 		<ul className="godam-welcome__feature-list godam-welcome__feature-list--pro">
-			<li>{ __( 'Automatic transcoding to multiple resolutions (360p – 4K)', 'godam' ) }</li>
+			<li>{ __( 'Automatic transcoding to multiple resolutions', 'godam' ) }</li>
 			<li>{ __( 'Global CDN delivery for fast load times worldwide', 'godam' ) }</li>
-			<li>{ __( 'HLS adaptive streaming for smooth playback on any connection', 'godam' ) }</li>
+			<li>{ __( 'HLS adaptive streaming for smooth playback', 'godam' ) }</li>
 			<li>{ __( 'Custom player logo, colors, and branding', 'godam' ) }</li>
 		</ul>
 		<div className="godam-welcome__step-actions">
@@ -300,6 +296,14 @@ const TranscodingStep = () => (
 				className="godam-welcome__action-link godam-welcome__action-link--secondary"
 			>
 				{ __( 'Connect API key →', 'godam' ) }
+			</a>
+			<a
+				href="https://godam.io/features/adaptive-bitrate-streaming/?utm_source=plugin&utm_medium=welcome&utm_content=transcoding-step"
+				target="_blank"
+				rel="noopener noreferrer"
+				className="godam-welcome__action-link godam-welcome__action-link--secondary"
+			>
+				{ __( 'Learn more', 'godam' ) }
 			</a>
 		</div>
 	</div>
