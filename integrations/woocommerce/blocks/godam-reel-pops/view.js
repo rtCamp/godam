@@ -8,6 +8,14 @@
 /* global GODAMPlayer */
 /* eslint-disable no-console */
 
+/**
+ * Internal dependencies
+ */
+import { resetVideoModal, loadNewVideo, initScrollSwipeNavigation } from '../../assets/js/global-video-popup/video-modal.js';
+import { initSidebar, loadSidebarProducts, resetSidebarState } from '../../assets/js/global-video-popup/sidebar.js';
+import { registerEscapeHandler, unregisterEscapeHandler } from '../../assets/js/global-video-popup/escapeManager.js';
+import { isSafari } from '../../assets/js/global-video-popup/utility.js';
+
 ( function() {
 	'use strict';
 
@@ -493,83 +501,146 @@
 		}
 
 		/**
-		 * Open modal by ID.
+		 * Open modal by ID, load video, and initialize sidebar/navigation directly.
 		 *
 		 * @param {string} modalId    Modal ID.
 		 * @param {string} videoId    Video ID.
 		 * @param {string} productIds Product IDs string.
 		 */
-		openModal( modalId, videoId = '', productIds = '' ) {
+		async openModal( modalId, videoId = '', productIds = '' ) {
 			const modal = modalId ? document.getElementById( modalId ) : null;
 			const normalizedVideoId = String( videoId || '' ).trim();
 
-			// Reuse existing product gallery delegated modal flow so behavior
-			// (video loading, sidebar, escape, close) stays consistent.
-			if ( normalizedVideoId ) {
-				this.currentModalVideoId = normalizedVideoId;
-				const normalizedProductIds = String( productIds || '' ).trim();
-				const hasProductIds = normalizedProductIds.length > 0;
-				const resolvedModal = modal || this.findModalByVideoId( normalizedVideoId );
-				if ( ! resolvedModal ) {
+			// No video ID — simple show (no video loading needed).
+			if ( ! normalizedVideoId ) {
+				if ( ! modal ) {
 					return;
 				}
 
-				this.ensureModalNavigationSources();
-				let triggerVideo = this.getModalNavigationSourceByVideoId( normalizedVideoId );
+				this.attachModalStateObserver( modal );
+				modal.classList.remove( 'hidden' );
+				modal.classList.add( 'active' );
+				modal.classList.add( 'godam-reel-pops-modal-instance' );
+				this.hideForModal();
+				return;
+			}
 
-				if ( ! triggerVideo ) {
-					triggerVideo = document.createElement( 'div' );
-					triggerVideo.className = 'godam-product-video-thumbnail godam-reel-pops-nav-source';
-					triggerVideo.setAttribute( 'data-video-id', normalizedVideoId );
-					triggerVideo.setAttribute( 'data-video-attached-product-ids', normalizedProductIds );
-					triggerVideo.setAttribute( 'data-cta-enabled', hasProductIds ? 'true' : 'false' );
-					triggerVideo.setAttribute( 'data-cta-display-position', 'inside' );
-					triggerVideo.style.display = 'none';
-					this.wrapper.appendChild( triggerVideo );
-				} else {
-					triggerVideo.setAttribute( 'data-video-attached-product-ids', normalizedProductIds );
-					triggerVideo.setAttribute( 'data-cta-enabled', hasProductIds ? 'true' : 'false' );
-				}
+			this.currentModalVideoId = normalizedVideoId;
+			const normalizedProductIds = String( productIds || '' ).trim();
+			const hasProductIds = normalizedProductIds.length > 0;
+			const resolvedModal = modal || this.findModalByVideoId( normalizedVideoId );
 
-				const triggerButton = document.createElement( 'button' );
-				triggerButton.type = 'button';
-				triggerButton.className = 'godam-play-button';
-				triggerButton.style.display = 'none';
+			if ( ! resolvedModal ) {
+				return;
+			}
 
-				triggerVideo.insertAdjacentElement( 'afterend', triggerButton );
+			const ctaEnabled = hasProductIds;
+			const ctaDisplayPosition = 'inside';
+			const sidebarModal = resolvedModal.querySelector( '.godam-product-sidebar' );
 
-				triggerButton.dispatchEvent( new MouseEvent( 'click', {
-					bubbles: true,
-					cancelable: true,
-					view: window,
-				} ) );
+			resolvedModal.querySelector( '.godam-sidebar-header-actions' )?.classList.add( 'hide' );
+			resolvedModal.classList.add( 'open' );
 
-				setTimeout( () => {
-					const isOpened = resolvedModal.classList.contains( 'open' ) || resolvedModal.classList.contains( 'active' );
+			if ( ctaEnabled ) {
+				initSidebar();
+			}
 
-					if ( isOpened ) {
-						resolvedModal.classList.add( 'godam-reel-pops-modal-instance' );
-						this.attachModalStateObserver( resolvedModal );
-						this.attachModalNavigation( resolvedModal );
-						this.hideForModal();
+			resolvedModal.dataset.currentVideoId = normalizedVideoId;
+			resolvedModal.dataset.isLoading = 'false';
+			resolvedModal.dataset.ctaEnabled = String( ctaEnabled );
+			resolvedModal.dataset.ctaDisplayPosition = ctaDisplayPosition;
+
+			// Attach close listeners only once per modal instance.
+			if ( ! resolvedModal._reelPopsCloseBound ) {
+				resolvedModal._reelPopsCloseBound = true;
+
+				resolvedModal.querySelector( '.godam-product-modal-close' )?.addEventListener( 'click', () => {
+					this._closeModal( resolvedModal, sidebarModal, ctaEnabled, ctaDisplayPosition );
+				} );
+
+				resolvedModal.addEventListener( 'click', ( ev ) => {
+					if (
+						! ev.target.closest( '.godam-product-modal-content' ) &&
+						! ev.target.closest( '.godam-product-sidebar' )
+					) {
+						this._closeModal( resolvedModal, sidebarModal, ctaEnabled, ctaDisplayPosition );
 					}
-
-					triggerButton.remove();
-				}, 50 );
-				return;
+				} );
 			}
 
-			if ( ! modal ) {
-				return;
-			}
+			// Register escape handler for this open.
+			const handleEscapeClose = () => {
+				this._closeModal( resolvedModal, sidebarModal, ctaEnabled, ctaDisplayPosition );
+				unregisterEscapeHandler( handleEscapeClose );
+			};
 
-			this.attachModalStateObserver( modal );
+			resolvedModal._escapeHandler = handleEscapeClose;
+			registerEscapeHandler( handleEscapeClose );
 
-			// Show modal.
-			modal.classList.remove( 'hidden' );
-			modal.classList.add( 'active' );
-			modal.classList.add( 'godam-reel-pops-modal-instance' );
+			resolvedModal.classList.remove( 'hidden' );
+			resolvedModal.classList.add( 'godam-reel-pops-modal-instance' );
+			this.attachModalStateObserver( resolvedModal );
+			this.attachModalNavigation( resolvedModal );
+
+			// Hide the reel pops bubble immediately so it doesn't overlap the modal.
+			// Must be done synchronously BEFORE any awaits so _closeModal / the
+			// MutationObserver can see isHiddenForModal === true if the modal is
+			// closed before the video finishes loading.
 			this.hideForModal();
+
+			// Load video and sidebar products.
+			await loadNewVideo( normalizedVideoId, resolvedModal, true, 'godam-product-gallery', true );
+
+			if ( ctaEnabled && sidebarModal ) {
+				await loadSidebarProducts( normalizedProductIds, sidebarModal, resolvedModal );
+			}
+
+			// Scroll/swipe navigation driven by the reel pops nav sources.
+			this.ensureModalNavigationSources();
+			const videoModal = resolvedModal.querySelector( '.godam-product-video-container' );
+			const videoItems = this.wrapper.querySelectorAll( '.godam-reel-pops-nav-source[data-video-id]' );
+
+			if ( videoModal && videoItems.length ) {
+				initScrollSwipeNavigation(
+					resolvedModal,
+					videoModal,
+					videoItems,
+					true,
+					'godam-product-gallery',
+					true,
+					async ( newProductIds ) => {
+						if ( ctaEnabled && sidebarModal ) {
+							await loadSidebarProducts( newProductIds, sidebarModal, resolvedModal );
+						}
+					},
+				);
+			}
+		}
+
+		/**
+		 * Close modal and perform full teardown (video dispose, sidebar reset, escape cleanup).
+		 *
+		 * @param {HTMLElement}      modal              Modal element.
+		 * @param {HTMLElement|null} sidebarModal       Sidebar element.
+		 * @param {boolean}          ctaEnabled         Whether CTA is active.
+		 * @param {string}           ctaDisplayPosition CTA display position.
+		 */
+		_closeModal( modal, sidebarModal, ctaEnabled, ctaDisplayPosition ) {
+			if ( modal._escapeHandler ) {
+				unregisterEscapeHandler( modal._escapeHandler );
+				modal._escapeHandler = null;
+			}
+
+			resetVideoModal( modal );
+
+			if ( ctaEnabled && ( ctaDisplayPosition === 'below-inside' || ctaDisplayPosition === 'inside' ) ) {
+				const modalContent = modal.querySelector( '.godam-product-modal-content' );
+				resetSidebarState( modal, sidebarModal, modalContent );
+			}
+
+			if ( isSafari() && modal.parentElement === document.body ) {
+				modal.remove();
+			}
 		}
 
 		/**
@@ -637,7 +708,7 @@
 		 *
 		 * @param {number} step Step direction (-1 previous, 1 next).
 		 */
-		navigateModal( step ) {
+		async navigateModal( step ) {
 			if ( this.videoSlots.length < 2 || this.isSwitchingModal ) {
 				return;
 			}
@@ -669,31 +740,15 @@
 			const currentOpenModal = activeModal || this.wrapper.querySelector( '.godam-product-modal-container.open, .godam-product-modal-container.active' );
 			this.currentModalVideoId = String( nextVideoId || '' ).trim();
 
-			this.openModal( nextModalId, nextVideoId, nextProductIds );
+			// Soft-close the current modal first to avoid backdrop flicker.
+			this.softCloseModal( currentOpenModal );
 
-			const closeWhenOpened = ( attempt = 0 ) => {
-				const maxAttempts = 20;
-				const isNextOpen = nextModal.classList.contains( 'open' ) || nextModal.classList.contains( 'active' );
+			// Open the next modal and await full load before releasing the lock.
+			await this.openModal( nextModalId, nextVideoId, nextProductIds );
 
-				if ( isNextOpen ) {
-					this.softCloseModal( currentOpenModal );
-					setTimeout( () => {
-						this.isSwitchingModal = false;
-					}, 180 );
-					return;
-				}
-
-				if ( attempt >= maxAttempts ) {
-					this.isSwitchingModal = false;
-					return;
-				}
-
-				setTimeout( () => {
-					closeWhenOpened( attempt + 1 );
-				}, 30 );
-			};
-
-			closeWhenOpened();
+			setTimeout( () => {
+				this.isSwitchingModal = false;
+			}, 180 );
 		}
 
 		/**
@@ -828,6 +883,12 @@
 
 			if ( this.container ) {
 				this.container.style.display = '';
+
+				// Clear any stale animation classes that may have been interrupted
+				// when the container was hidden mid-animation (display:none cancels
+				// animationend, leaving isAnimating stuck and classes dangling).
+				this.container.classList.remove( 'reel-pops-animate-exit', 'reel-pops-animate-enter' );
+				this.isAnimating = false;
 			}
 
 			if ( this.wasRotationActiveBeforeModal && this.videoSlots.length > 1 ) {
