@@ -558,7 +558,7 @@ const wcVideoCarousel = {
 
 			/* Loads the video, Opens popup screen */
 			modal.classList.remove( 'hidden' );
-			await loadNewVideo( videoId, modal, true, 'godam_woo_product_page_reels', true );
+			await loadNewVideo( videoId, modal, true, 'godam-woo-product-page-reels', true );
 
 			await loadSidebarProducts( productId, sidebarModal, modal );
 
@@ -571,7 +571,7 @@ const wcVideoCarousel = {
 				videoModal,
 				currentVideoItems,
 				true,
-				'godam_woo_product_page_reels',
+				'godam-woo-product-page-reels',
 				true,
 				async ( newProductId ) => {
 					await loadSidebarProducts(

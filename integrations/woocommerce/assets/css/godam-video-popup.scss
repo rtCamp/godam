@@ -1419,3 +1419,53 @@
 		color: var(--rtgodam-woo-video-modal-minicartbg, rgba(255, 255, 255, 1));
 	}
 }
+
+/* CSS for keeping modal Video always in portrait mode */
+@media (max-width: 1023px) and (orientation: landscape) {
+
+	.godam-woo-global-modal-container {
+		position: fixed;
+		top: 50%;
+		left: 50%;
+
+		width: 100vh;   // swap
+		height: 100vw;  // swap
+
+		transform: translate(-50%, -50%) rotate(90deg);
+		transform-origin: center center;
+
+		.godam-product-sidebar {
+			width: 100vh !important;
+		}
+
+		&.godam-woo-global-modal-container:has(.godam-product-sidebar) .godam-woo-global-video-container,
+		.godam-woo-global-modal-content.no-sidebar .godam-woo-global-video-container,
+		.godam-woo-global-modal-content.no-sidebar,
+		.godam-woo-global-modal-content.no-sidebar .video-container.is-landscape .easydam-video-container,
+		.godam-woo-global-modal-content.no-sidebar .video-container.is-portrait .video-js,
+		.video-container.is-portrait .godam-video-wrapper,
+		.video-container.is-portrait .video-js {
+			height: 100vw !important;
+			max-height: 100vw !important;
+		}
+
+		.godam-woo-global-modal-content.no-sidebar .video-container.is-portrait .vjs-tech,
+		.godam-woo-global-modal-content.no-sidebar .video-container.is-portrait .easydam-video-container,
+		.godam-woo-global-modal-content.no-sidebar .video-container.is-portrait .godam-video-wrapper,
+		.video-container.is-portrait .easydam-video-container,
+		.video-container.is-portrait .vjs-tech {
+			height: 100vw !important;
+			max-height: 100vw !important;
+			width: 100vh !important;
+			max-width: 100vh !important;
+		}
+
+		.godam-woo-global-modal-content.no-sidebar .video-container.is-landscape .vjs-tech, .godam-woo-global-modal-content.no-sidebar .video-container.is-landscape video,
+		.godam-woo-global-modal-content.no-sidebar .video-container.is-landscape .video-js,
+		.godam-woo-global-modal-content.no-sidebar .video-container.is-landscape .godam-video-wrapper {
+			height: 40vw !important;
+    		max-height: 40vw !important;
+		}
+	}
+
+}
