@@ -9,6 +9,10 @@
 
 namespace RTGODAM\Inc\WooCommerce;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use RTGODAM\Inc\Traits\Singleton;
 
 /**
@@ -24,6 +28,13 @@ class WC_Reel_Pops_Metabox {
 	 * @var string
 	 */
 	const META_KEY = '_godam_reel_pops_config';
+
+	/**
+	 * Fallback thumbnail URL.
+	 *
+	 * @var string
+	 */
+	const FALLBACK_THUMBNAIL = RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png';
 
 	/**
 	 * Constructor.
@@ -126,7 +137,14 @@ class WC_Reel_Pops_Metabox {
 				align-items: center;
 				gap: 10px;
 			}
-			.godam-reel-pops-video-item-header strong { font-size: 14px; display: block; }
+			.godam-reel-pops-video-item-header strong {
+				font-size: 14px;
+				display: block;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				max-width: 180px;
+			}
 			.godam-reel-pops-video-meta { line-height: 1.4; }
 			.godam-reel-pops-video-remove {
 				position: absolute;
@@ -341,6 +359,7 @@ class WC_Reel_Pops_Metabox {
 		jQuery(document).ready(function($) {
 			let videoIndex = <?php echo count( $config['videos'] ); ?>;
 			const existingVideoIds = [];
+			const defaultThumb = '<?php echo esc_js( self::FALLBACK_THUMBNAIL ); ?>';
 
 			$('#godam-reel-pops-video-list .godam-video-id').each(function() {
 				const id = parseInt($(this).val(), 10);
@@ -367,7 +386,7 @@ class WC_Reel_Pops_Metabox {
 			});
 
 			const createVideoItem = (index, attachment) => {
-				const thumb = (attachment.image && attachment.image.src) || (attachment.sizes && attachment.sizes.thumbnail && attachment.sizes.thumbnail.url) || attachment.icon || '';
+				const thumb = (attachment.meta && attachment.meta.rtgodam_media_video_thumbnail) || (attachment.image && attachment.image.src) || (attachment.sizes && attachment.sizes.thumbnail && attachment.sizes.thumbnail.url) || attachment.icon || defaultThumb;
 				const title = attachment.title || '<?php echo esc_js( __( 'Untitled video', 'godam' ) ); ?>';
 				const thumbHtml = thumb
 					? `<img src="${thumb}" alt="" />`
@@ -453,10 +472,14 @@ class WC_Reel_Pops_Metabox {
 	private function render_video_item( $index, $video_id ) {
 		$video_id    = absint( $video_id );
 		$video_title = $video_id ? get_the_title( $video_id ) : '';
-		$thumb_url   = '';
+		$thumb_url   = self::FALLBACK_THUMBNAIL;
 
 		if ( $video_id ) {
-			$thumb_url = wp_get_attachment_image_url( $video_id, 'thumbnail' );
+			$thumb_url = get_post_meta( $video_id, 'rtgodam_media_video_thumbnail', true );
+
+			if ( empty( $thumb_url ) ) {
+				$thumb_url = wp_get_attachment_image_url( $video_id, 'thumbnail' );
+			}
 
 			if ( empty( $thumb_url ) ) {
 				$thumb_url = get_the_post_thumbnail_url( $video_id, 'thumbnail' );
@@ -468,17 +491,17 @@ class WC_Reel_Pops_Metabox {
 					$thumb_url = wp_get_attachment_image_url( $thumbnail_id, 'thumbnail' );
 				}
 			}
+
+			if ( empty( $thumb_url ) ) {
+				$thumb_url = self::FALLBACK_THUMBNAIL;
+			}
 		}
 		?>
 		<div class="godam-reel-pops-video-item" data-index="<?php echo esc_attr( $index ); ?>" data-video-id="<?php echo esc_attr( $video_id ); ?>">
 			<button type="button" class="godam-reel-pops-video-remove" aria-label="<?php esc_attr_e( 'Remove video', 'godam' ); ?>">✕</button>
 			<div class="godam-reel-pops-video-item-header">
 				<div class="godam-reel-pops-video-thumb">
-					<?php if ( ! empty( $thumb_url ) ) : ?>
-						<img src="<?php echo esc_url( $thumb_url ); ?>" alt="" />
-					<?php else : ?>
-						<span><?php esc_html_e( 'No Thumb', 'godam' ); ?></span>
-					<?php endif; ?>
+					<img src="<?php echo esc_url( $thumb_url ); ?>" alt="" />
 				</div>
 				<div class="godam-reel-pops-video-meta">
 					<strong class="godam-reel-pops-video-title"><?php echo esc_html( ! empty( $video_title ) ? $video_title : __( 'Untitled video', 'godam' ) ); ?></strong>

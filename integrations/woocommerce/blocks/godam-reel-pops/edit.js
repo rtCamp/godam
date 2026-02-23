@@ -62,6 +62,23 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		[ videos ],
 	);
 
+	const siteBaseUrl = window?.wpApiSettings?.root
+		? window.wpApiSettings.root.replace( /wp-json\/?$/, '/' )
+		: `${ window?.location?.origin || '' }/`;
+
+	const defaultThumbnail = window?.RTGodamVideoGallery?.defaultThumbnail || `${ siteBaseUrl }wp-content/plugins/godam/assets/src/images/video-thumbnail-default.png`;
+
+	const getVideoThumbnail = ( media ) => {
+		return (
+			media?.meta?.rtgodam_media_video_thumbnail ||
+			media?.media_details?.sizes?.thumbnail?.source_url ||
+			media?.media_details?.sizes?.medium?.source_url ||
+			media?.image?.src ||
+			media?.icon ||
+			defaultThumbnail
+		);
+	};
+
 	/**
 	 * Append selected videos from media library.
 	 *
@@ -156,62 +173,65 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 							gap: '12px',
 						} }
 					>
-						{ videos.map( ( videoId, index ) => (
-							<div
-								key={ index }
-								style={ {
-									padding: '12px',
-									border: '1px solid #ddd',
-									borderRadius: '4px',
-									backgroundColor: '#f9f9f9',
-								} }
-							>
-								<div style={ { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' } }>
-									<div style={ { display: 'flex', gap: '10px', alignItems: 'center' } }>
-										<div style={ { width: '64px', height: '64px', borderRadius: '4px', overflow: 'hidden', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center' } }>
-											{ mediaById[ videoId ]?.source_url ? (
-												<img
-													src={ mediaById[ videoId ]?.media_details?.sizes?.thumbnail?.source_url || mediaById[ videoId ]?.source_url }
-													alt=""
-													style={ { width: '100%', height: '100%', objectFit: 'cover' } }
+						{ videos.map( ( videoId, index ) => {
+							const thumbnailUrl = getVideoThumbnail( mediaById[ videoId ] );
+							return (
+								<div
+									key={ index }
+									style={ {
+										padding: '12px',
+										border: '1px solid #ddd',
+										borderRadius: '4px',
+										backgroundColor: '#f9f9f9',
+									} }
+								>
+									<div style={ { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', gap: '8px' } }>
+										<div style={ { display: 'flex', gap: '10px', alignItems: 'center', flex: '1 1 auto', minWidth: 0 } }>
+											<div style={ { width: '64px', minWidth: '64px', maxWidth: '64px', height: '64px', borderRadius: '4px', overflow: 'hidden', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }>
+												{ thumbnailUrl ? (
+													<img
+														src={ thumbnailUrl }
+														alt=""
+														style={ { width: '100%', height: '100%', objectFit: 'cover' } }
+													/>
+												) : (
+													<span style={ { color: '#fff', fontSize: '11px' } }>{ __( 'Video', 'godam' ) }</span>
+												) }
+											</div>
+											<div style={ { flex: '1 1 auto', minWidth: 0, maxWidth: '100%' } }>
+												<strong style={ { display: '-webkit-box', width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'normal', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: '1.25' } } title={ mediaById[ videoId ]?.title?.rendered || __( 'Untitled video', 'godam' ) }>{ mediaById[ videoId ]?.title?.rendered || __( 'Untitled video', 'godam' ) }</strong>
+												<div style={ { fontSize: '12px', color: '#666' } }>{ __( 'ID:', 'godam' ) } { videoId }</div>
+											</div>
+										</div>
+										<div style={ { display: 'flex', gap: '4px', flexShrink: 0 } }>
+											{ index > 0 && (
+												<Button
+													size="small"
+													onClick={ () => moveVideoUp( index ) }
+													icon="arrow-up-alt2"
+													label={ __( 'Move up', 'godam' ) }
 												/>
-											) : (
-												<span style={ { color: '#fff', fontSize: '11px' } }>{ __( 'Video', 'godam' ) }</span>
 											) }
-										</div>
-										<div>
-											<strong>{ mediaById[ videoId ]?.title?.rendered || __( 'Untitled video', 'godam' ) }</strong>
-											<div style={ { fontSize: '12px', color: '#666' } }>{ __( 'ID:', 'godam' ) } { videoId }</div>
-										</div>
-									</div>
-									<div style={ { display: 'flex', gap: '4px' } }>
-										{ index > 0 && (
+											{ index < videos.length - 1 && (
+												<Button
+													size="small"
+													onClick={ () => moveVideoDown( index ) }
+													icon="arrow-down-alt2"
+													label={ __( 'Move down', 'godam' ) }
+												/>
+											) }
 											<Button
-												isSmall
-												onClick={ () => moveVideoUp( index ) }
-												icon="arrow-up-alt2"
-												label={ __( 'Move up', 'godam' ) }
+												size="small"
+												isDestructive
+												onClick={ () => removeVideo( index ) }
+												icon="trash"
+												label={ __( 'Remove', 'godam' ) }
 											/>
-										) }
-										{ index < videos.length - 1 && (
-											<Button
-												isSmall
-												onClick={ () => moveVideoDown( index ) }
-												icon="arrow-down-alt2"
-												label={ __( 'Move down', 'godam' ) }
-											/>
-										) }
-										<Button
-											isSmall
-											isDestructive
-											onClick={ () => removeVideo( index ) }
-											icon="trash"
-											label={ __( 'Remove', 'godam' ) }
-										/>
+										</div>
 									</div>
 								</div>
-							</div>
-						) ) }
+							);
+						} ) }
 					</div>
 				</PanelBody>
 

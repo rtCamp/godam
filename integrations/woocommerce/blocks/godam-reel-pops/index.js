@@ -2,6 +2,7 @@
  * WordPress dependencies
  */
 import { registerBlockType } from '@wordpress/blocks';
+import { inbox as icon } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -16,6 +17,7 @@ import './editor.scss';
  */
 registerBlockType( metadata.name, {
 	...metadata,
+	icon,
 	edit: Edit,
 	save: () => null, // Dynamic block
 } );

@@ -97,5 +97,5 @@
   "render": "file:./render.php",
   "style": "file:./style-index.css",
   "editorStyle": ["file:./index.css"],
-  "viewScript": ["file:./view.js"]
+  "viewScript": ["file:./view.js", "godam-product-gallery-script"]
 }

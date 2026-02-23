@@ -187,28 +187,7 @@ class Bootstrap {
 		// Register GoDAM Reel Pops block from built assets if available.
 		$reel_pops_block_path = RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'blocks/godam-reel-pops/';
 		if ( file_exists( $reel_pops_block_path . 'block.json' ) ) {
-			register_block_type(
-				$reel_pops_block_path,
-				array(
-					'render_callback' => function () use ( $reel_pops_block_path ) {
-						// Block context - ensure view.js has proper dependencies.
-						if ( wp_script_is( 'godam-reel-pops-view-script', 'registered' ) ) {
-							global $wp_scripts;
-							if ( isset( $wp_scripts->registered['godam-reel-pops-view-script'] ) ) {
-								$script = &$wp_scripts->registered['godam-reel-pops-view-script'];
-								if ( ! in_array( 'godam-product-gallery-script', $script->deps, true ) ) {
-									$script->deps[] = 'godam-product-gallery-script';
-								}
-							}
-						}
-
-						// Render using template (block context - not metabox).
-						ob_start();
-						include $reel_pops_block_path . 'render.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- Safe: path constructed from plugin constant.
-						return ob_get_clean();
-					},
-				)
-			);
+			register_block_type( $reel_pops_block_path );
 		}
 
 		// Initialize REST API.

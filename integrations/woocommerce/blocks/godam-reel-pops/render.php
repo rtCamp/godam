@@ -10,8 +10,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Return if WooCommerce is not Active.
-if ( ! is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
+if ( ! class_exists( 'WooCommerce' ) ) {
 	return;
+}
+
+if ( ! isset( $attributes ) || ! is_array( $attributes ) ) {
+	$attributes = array();
 }
 
 // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- WordPress core variable.
@@ -42,6 +46,7 @@ $attributes = wp_parse_args(
 if ( empty( $attributes['videos'] ) || ! is_array( $attributes['videos'] ) ) {
 	return;
 }
+
 
 // Filter out invalid video IDs.
 $valid_videos = array_filter(
