@@ -13,7 +13,7 @@ import videojs from 'video.js';
 /**
  * Internal dependencies
  */
-import '../../libs/jquery-ui-1.14.1.draggable/jquery-ui';
+import '../../libs/jquery-ui-1.14.2.draggable/jquery-ui';
 import './transcoding-status';
 
 import AttachmentsBrowser from './views/attachment-browser.js';

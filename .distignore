@@ -2,7 +2,7 @@ node_modules/
 assets/src/blocks
 assets/src/css
 assets/src/js
-assets/src/libs/jquery-ui-1.14.1.draggable
+assets/src/libs/jquery-ui-1.14.2.draggable
 .browserslistrc
 .eslintignore
 .eslintrc
