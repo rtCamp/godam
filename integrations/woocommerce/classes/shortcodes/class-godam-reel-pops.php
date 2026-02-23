@@ -50,10 +50,11 @@ class GoDAM_Reel_Pops {
 				'version'      => RTGODAM_VERSION,
 			);
 
-		// Add godam-product-gallery-script as a dependency to ensure GODAMPlayer is available.
+		// Add player and product-gallery scripts as dependencies to ensure
+		// window.videojs, window.GODAMPlayer, and modal utilities are available.
 		$view_dependencies = array_merge(
 			$view_asset['dependencies'],
-			array( 'godam-product-gallery-script' )
+			array( 'godam-player-frontend-script', 'godam-product-gallery-script' )
 		);
 
 		wp_register_script(
@@ -132,6 +133,9 @@ class GoDAM_Reel_Pops {
 		}
 		wp_enqueue_style( 'godam-product-gallery-style' );
 		wp_enqueue_style( 'godam-player-reels-skin-css' );
+		wp_enqueue_style( 'godam-player-frontend-style' );
+		wp_enqueue_style( 'godam-player-style' );
+		wp_enqueue_script( 'godam-player-frontend-script' );
 		wp_enqueue_script( 'godam-product-gallery-script' );
 
 		// Enqueue required assets.
