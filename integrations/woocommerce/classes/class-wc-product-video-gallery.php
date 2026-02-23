@@ -660,7 +660,7 @@ class WC_Product_Video_Gallery {
 						%8$s
 					</div>
                 ',
-					do_shortcode( "[godam_video id='{$src_id}' godam_context='godam_woo_product_page_reels' autoplay=true]" ),
+					do_shortcode( "[godam_video id='{$src_id}' godam_context='godam-woo-product-page-reels' autoplay=true]" ),
 					$product_image,
 					esc_html( $product_name ),
 					$product_price,

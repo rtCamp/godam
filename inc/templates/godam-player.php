@@ -223,7 +223,17 @@ $godam_appearance_color       = isset( $godam_meta_data['videoConfig']['controlB
 $godam_brand_image            = isset( $godam_settings['video_player']['brand_image'] ) ? $godam_settings['video_player']['brand_image'] : null;
 $godam_individual_brand_image = isset( $godam_meta_data['videoConfig']['controlBar']['brand_image'] ) ? $godam_meta_data['videoConfig']['controlBar']['brand_image'] : null;
 
-if ( isset( $attributes['godam_context'] ) && ( 'godam-product-gallery' === $attributes['godam_context'] || 'godam_woo_product_page_reels' === $attributes['godam_context'] || 'godam-featured-video-gallery' === $attributes['godam_context'] ) ) {
+$godam_woocommerce_allowed_contexts = array(
+	'godam-product-gallery',
+	'godam-woo-product-page-reels',
+	'godam-featured-video-gallery',
+);
+
+if ( isset( $attributes['godam_context'] ) ) {
+	$godam_woocommerce_context = in_array( $attributes['godam_context'], $godam_woocommerce_allowed_contexts, true );
+}
+
+if ( isset( $attributes['godam_context'] ) && $godam_woocommerce_context ) {
 	$godam_player_skin = 'reels';
 } else {
 	$godam_player_skin = isset( $godam_settings['video_player']['player_skin'] )
@@ -520,7 +530,7 @@ if ( $godam_should_preload_poster ) {
 
 				<!-- Dynamically render shortcodes for form layers. -->
 				<?php
-				if ( ! empty( $godam_meta_data['layers'] ) ) :
+				if ( ! empty( $godam_meta_data['layers'] ) && ! $godam_woocommerce_context ) :
 					foreach ( $godam_meta_data['layers'] as $godam_layer ) :
 						$godam_form_type = ! empty( $godam_layer['form_type'] ) ? $godam_layer['form_type'] : 'gravity';
 						// FORM layer.
