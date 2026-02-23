@@ -28,6 +28,13 @@ class WC_Product_Video_Gallery {
 	private $utility_instance;
 
 	/**
+	 * Holds the markup instance.
+	 *
+	 * @var WC_Product_Gallery_Video_Markup
+	 */
+	private $markup_instance;
+
+	/**
 	 * Constructor method.
 	 *
 	 * Registers hooks for adding a meta box, saving video gallery data, enqueuing
@@ -48,6 +55,9 @@ class WC_Product_Video_Gallery {
 
 		// Initialize the Utility Helper class.
 		$this->utility_instance = WC_Utility::get_instance();
+
+		// Initialize Video Markup class.
+		$this->markup_instance = WC_Product_Gallery_Video_Markup::get_instance();
 
 		add_filter( 'wp_kses_allowed_html', array( $this, 'allow_svg_on_wp_kses' ), 10, 2 );
 	}
@@ -571,25 +581,99 @@ class WC_Product_Video_Gallery {
 			return '';
 		}
 
-		$single_product_modal_summary = apply_filters( 'rtgodam_single_product_modal_summary', $this->rtgodam_single_product_modal_summary() );
-		$modal_carousel_html          = array_map(
-			function ( $item ) use ( $srcsets, $single_product_modal_summary ) {
-				$src_id        = $srcsets[ $item ]['id'];
-				$is_transcoded = $srcsets[ $item ]['is_transcoded'] ? 'true' : 'false';
+		// Enqueue WooCommerce Reels specific skin.
+		wp_enqueue_style( 'godam-player-reels-skin-css' );
+
+		$modal_carousel_html = array_map(
+			function ( $item ) use ( $srcsets, $post ) {
+
+				$src_id  = $srcsets[ $item ]['id'];
+				$product = wc_get_product( $post->ID );
+
+				if ( ! $product instanceof \WC_Product ) {
+					return;
+				}
+
+				$product_name  = $product->get_name();
+				$product_price = $product->get_price_html();
+				$product_image = get_the_post_thumbnail(
+					$post->ID,
+					'woocommerce_thumbnail',
+					array( 'class' => 'rtgodam-modal-product-image' )
+				);
+
+				$product_type = $product->get_type();
+				$in_stock     = $product->is_in_stock() ? 'true' : 'false';
+
+				$first_variation_id = '';
+				$grouped_ids        = '';
+				$external_url       = '';
+
+				if ( 'variable' === $product_type ) {
+
+					$available_variations = $product->get_available_variations();
+
+					if ( ! empty( $available_variations ) ) {
+						$first_variation_id = $available_variations[0]['variation_id'];
+					}               
+				} elseif ( 'grouped' === $product_type ) {
+
+					$children = $product->get_children();
+
+					if ( ! empty( $children ) ) {
+						$grouped_ids = implode( ',', $children );
+					}               
+				} elseif ( 'external' === $product_type ) {
+
+					$external_url = $product->get_product_url();
+				}
 
 				return sprintf(
 					'
-					<div class="swiper-slide" data-is-transcoded="%3$s">
-						<div class="rtgodam-product-video-gallery-slider-modal-content-left">
+					<div class="swiper-slide" data-video-id="%6$s" data-product-id="%7$s" data-video-attached-product-ids="%7$s">
+						<div class="rtgodam-modal-video">
 							%1$s
 						</div>
-						<div class="rtgodam-product-video-gallery-slider-modal-content-right">
-							%2$s
+
+						<div class="rtgodam-modal-product-card">
+							<div class="rtgodam-modal-product-left">
+								%2$s
+								<div class="rtgodam-modal-product-meta">
+									<h3>%3$s</h3>
+									<span class="price">%4$s</span>
+								</div>
+							</div>
+
+							<button 
+								class="rtgodam-modal-add-to-cart %14$s"
+								data-product-id="%5$s"
+								data-product-type="%9$s"
+								data-first-variation-id="%10$s"
+								data-grouped-ids="%11$s"
+								data-external-url="%12$s"
+								data-in-stock="%13$s"
+							>
+								+
+							</button>
 						</div>
-					</div>',
-					do_shortcode( "[godam_video id='{$src_id}']" ),
-					$single_product_modal_summary,
-					esc_attr( $is_transcoded )
+
+						%8$s
+					</div>
+                ',
+					do_shortcode( "[godam_video id='{$src_id}' godam_context='godam_woo_product_page_reels' autoplay=true]" ),
+					$product_image,
+					esc_html( $product_name ),
+					$product_price,
+					esc_attr( $post->ID ),
+					$src_id,
+					$post->ID,
+					$this->markup_instance->generate_product_page_reel_video_modal_markup( $src_id, $post->ID ),
+					esc_attr( $product_type ),
+					esc_attr( $first_variation_id ),
+					esc_attr( $grouped_ids ),
+					esc_url( $external_url ),
+					esc_attr( $in_stock ),
+					( ! $product->is_in_stock() ? 'is-out-of-stock' : '' ),
 				);
 			},
 			$srcsets_keys
@@ -603,10 +687,48 @@ class WC_Product_Video_Gallery {
 			)
 		);
 
-		$slider_html .= '<div class="rtgodam-product-video-gallery-slider-modal">';
-		$slider_html .= '<div class="rtgodam-product-video-gallery-slider-modal-content">' . $modal_slider_html . '</div>';
-		$slider_html .= '<a href="#" class="rtgodam-product-video-gallery-slider-modal-close">&times;</a>';
-		$slider_html .= '</div>';
+		$mini_cart_block = do_blocks( '<!-- wp:woocommerce/mini-cart /-->' );
+
+		$slider_html     .= '<div class="rtgodam-product-video-gallery-slider-modal">';
+			$slider_html .= '<div class="rtgodam-product-video-gallery-slider-modal-content">' . $modal_slider_html . '</div>';
+			// Close button.
+			$slider_html .= '<a href="#" class="rtgodam-product-video-gallery-slider-modal-close">&times;</a>';
+			// Mini Cart Button.
+			$slider_html .= '<div class="rtgodam-product-video-gallery-slider-modal-content--cart-basket">' 
+				. ( ! empty( $mini_cart_block ) ? $mini_cart_block : '' ) 
+				. '</div>';
+			// Fullscreen button.
+			$slider_html .= '
+				<button type="button" 
+					class="rtgodam-product-video-gallery-slider-modal-fullscreen" 
+					aria-label="Toggle fullscreen">
+
+					<svg xmlns="http://www.w3.org/2000/svg"
+						viewBox="0 0 24 24"
+						width="22"
+						height="22"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2.4"
+						stroke-linecap="round"
+						stroke-linejoin="round">
+
+						<!-- Top left -->
+						<path d="M8 3 H4 Q3 3 3 4 V8" />
+
+						<!-- Top right -->
+						<path d="M16 3 H20 Q21 3 21 4 V8" />
+
+						<!-- Bottom left -->
+						<path d="M3 16 V20 Q3 21 4 21 H8" />
+
+						<!-- Bottom right -->
+						<path d="M21 16 V20 Q21 21 20 21 H16" />
+
+					</svg>
+				</button>
+			';
+		$slider_html     .= '</div>';
 
 		echo apply_filters( 'rtgodam_video_slider_html', $slider_html ); // phpcs:ignore
 	}
@@ -654,109 +776,6 @@ class WC_Product_Video_Gallery {
 			esc_attr( $args['wrapper_class_loader'] ),
 			$carousel_html
 		);
-	}
-
-	/**
-	 * Output the summary of a single product inside a modal.
-	 *
-	 * @return string The HTML markup of the summary.
-	 */
-	public function rtgodam_single_product_modal_summary() {
-		ob_start();
-		?>
-		<div class="rtgodam-product-video-gallery-slider-modal-content--cart-basket">
-			<?php
-				$mini_cart_block = do_blocks( '<!-- wp:woocommerce/mini-cart /-->' );
-				echo ! empty( $mini_cart_block ) ? $mini_cart_block : ''; // phpcs:ignore
-			?>
-		</div>
-		<div class="rtgodam-product-video-gallery-slider-modal-content--images">
-			<div class="rtgodam-product-video-gallery-slider-modal-content--images-desktop">
-				<?php
-				if ( function_exists( 'woocommerce_show_product_images' ) ) {
-					woocommerce_show_product_images();
-				}
-				?>
-			</div>
-			<div class="rtgodam-product-video-gallery-slider-modal-content--images-mobile">
-				<?php $this->display_main_product_image_only(); ?>
-			</div>
-		</div>
-		<div class="rtgodam-mobile-content">
-		<?php
-		if ( function_exists( 'woocommerce_template_single_title' ) ) {
-			woocommerce_template_single_title();
-		}
-		if ( function_exists( 'woocommerce_template_single_rating' ) ) {
-			woocommerce_template_single_rating();
-		}
-		if ( function_exists( 'woocommerce_template_single_price' ) ) {
-			woocommerce_template_single_price();
-		}
-		if ( function_exists( 'woocommerce_template_single_excerpt' ) ) {
-			woocommerce_template_single_excerpt();
-		}
-		?>
-		</div>
-		<div class="rtgodam-product-video-gallery-slider-modal-content--cart">
-			<div class="rtgodam-product-video-gallery-slider-modal-content--cart-form">
-				<?php
-				if ( function_exists( 'woocommerce_template_single_add_to_cart' ) ) {
-					woocommerce_template_single_add_to_cart();
-				}
-				?>
-			</div>
-		</div>
-
-		<?php
-		return ob_get_clean();
-	}
-
-	/**
-	 * Display only the main product image for mobile view.
-	 *
-	 * @return void
-	 */
-	public function display_main_product_image_only() {
-		global $product;
-
-		if ( ! $product ) {
-			return;
-		}
-
-		$attachment_ids    = $product->get_gallery_image_ids();
-		$post_thumbnail_id = $product->get_image_id();
-
-		if ( $post_thumbnail_id ) {
-			$image_url = wp_get_attachment_image_url( $post_thumbnail_id, 'woocommerce_single' );
-			$image_alt = get_post_meta( $post_thumbnail_id, '_wp_attachment_image_alt', true );
-
-			// Get image dimensions.
-			$image_data   = wp_get_attachment_image_src( $post_thumbnail_id, 'woocommerce_single' );
-			$image_width  = $image_data ? $image_data[1] : '';
-			$image_height = $image_data ? $image_data[2] : '';
-
-			// Fallback alt text to product title if alt is empty.
-			if ( empty( $image_alt ) ) {
-				$image_alt = $product->get_name();
-			}
-
-			if ( $image_url ) {
-				?>
-				<div class="rtgodam-product-video-gallery-slider-modal-content--main-image">
-					<img src="<?php echo esc_url( $image_url ); ?>"
-						alt="<?php echo esc_attr( $image_alt ); ?>"
-						<?php if ( $image_width ) : ?>
-							width="<?php echo esc_attr( $image_width ); ?>"
-						<?php endif; ?>
-						<?php if ( $image_height ) : ?>
-							height="<?php echo esc_attr( $image_height ); ?>"
-						<?php endif; ?>
-						class="rtgodam-product-video-gallery-slider-modal-content--main-image-img" />
-				</div>
-				<?php
-			}
-		}
 	}
 
 	/**

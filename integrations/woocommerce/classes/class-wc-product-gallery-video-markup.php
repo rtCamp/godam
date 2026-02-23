@@ -82,6 +82,31 @@ class WC_Product_Gallery_Video_Markup {
 	}
 
 	/**
+	 * Generates and outputs the WooCommerce product page reel video modal markup.
+	 *
+	 * This method prepares a unique modal instance for a given product and video,
+	 * configures required modal settings (such as swipe overlay support and
+	 * timestamp behavior), and renders the CTA-enabled single product video modal.
+	 *
+	 * A unique instance ID is generated to prevent DOM conflicts when multiple
+	 * modals exist on the same page.
+	 *
+	 * @param int|string $video_id   The ID of the video to be rendered inside the modal.
+	 * @param int        $product_id The WooCommerce product ID associated with the video.
+	 *
+	 * @return void Outputs the sanitized modal markup directly.
+	 */
+	public function generate_product_page_reel_video_modal_markup( $video_id, $product_id ) {
+		$class_id_keyword       = 'godam-woocommerce-product-page-reels';
+		$swipe_overlay_required = true;
+
+		$instance_id = $class_id_keyword . '-' . wp_unique_id( wp_rand( 1000, 9999999999 ) );
+		$timestamped = false;
+
+		echo wp_kses_post( (string) $this->generate_cta_enabled_single_product_modal_markup( $product_id, $video_id, $timestamped, $instance_id, $class_id_keyword, $swipe_overlay_required ) );
+	}
+
+	/**
 	 * Outputs the modal HTML markup for videos with multiple associated products and CTA enabled.
 	 *
 	 * This private function generates the complete modal structure when a video is linked to

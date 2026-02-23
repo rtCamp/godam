@@ -295,7 +295,7 @@ export default class GodamVideoPlayer {
 								aspectRatioClass = getClosestAspectRatioOrientation( playerWidth, playerHeight );
 							}
 
-							const godamProductModalContainer = document.querySelector( '.godam-product-modal-container.open' ) || document.querySelector( '.godam-woocommerce-featured-video-modal-container.open' );
+							const godamProductModalContainer = document.querySelector( '.godam-woo-global-modal-container.open' ) || document.querySelector( '.godam-woocommerce-featured-video-modal-container.open' );
 
 							if ( godamProductModalContainer ) {
 								const videoContainer = godamProductModalContainer.querySelector( '.video-container' );
@@ -337,7 +337,7 @@ export default class GodamVideoPlayer {
 							aspectRatioClass = getClosestAspectRatioOrientation( width, height );
 						}
 
-						const godamProductModalContainer = document.querySelector( '.godam-product-modal-container.open' ) || document.querySelector( '.godam-woocommerce-featured-video-modal-container.open' );
+						const godamProductModalContainer = document.querySelector( '.godam-woo-global-modal-container.open' ) || document.querySelector( '.godam-woocommerce-featured-video-modal-container.open' );
 
 						if ( godamProductModalContainer ) {
 							const videoContainer = godamProductModalContainer.querySelector( '.video-container' );

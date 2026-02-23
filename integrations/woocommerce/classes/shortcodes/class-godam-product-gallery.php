@@ -86,13 +86,6 @@ class GoDAM_Product_Gallery {
 			rtgodam_wc_get_asset_version( RTGODAM_PATH . 'assets/build/integrations/woocommerce/css/godam-product-gallery.css' )
 		);
 
-		wp_register_style(
-			'godam-player-reels-skin-css',
-			RTGODAM_URL . 'assets/build/integrations/woocommerce/css/godam-reels-skin.css',
-			array(),
-			rtgodam_wc_get_asset_version( RTGODAM_PATH . 'assets/build/integrations/woocommerce/css/godam-reels-skin.css' )
-		);
-
 		$gallery_asset_path                  = RTGODAM_PATH . 'assets/build/js/godam-product-gallery.min.asset.php';
 		$godam_product_gallery_script_assets = file_exists( $gallery_asset_path )
 			? include $gallery_asset_path // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- Safe: path is plugin-controlled, no user input.
@@ -310,7 +303,7 @@ class GoDAM_Product_Gallery {
 		wp_enqueue_script( 'rtgodam-swiper-script' );
 		wp_enqueue_style( 'rtgodam-swiper-style' );
 
-		// Enqueue GoDAM Product Gallery specific skin.
+		// Enqueue WooCommerce Reels specific skin.
 		wp_enqueue_style( 'godam-player-reels-skin-css' );
 
 		// Enqueue GoDAM Player.

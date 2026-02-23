@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Product Gallery REST API endpoints.
  */
-class Product_Gallery extends Base {
+class Product_Gallery_Rest extends Base {
 
 	/**
 	 * Route base.
