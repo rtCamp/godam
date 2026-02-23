@@ -1234,6 +1234,18 @@ class Pages {
 			return;
 		}
 
+		// If the Welcome walkthrough hasn't been shown yet, let it take priority.
+		// The What's New transient will be consumed after the walkthrough completes.
+		if ( get_transient( 'rtgodam_show_welcome' ) ) {
+			return;
+		}
+
+		// Don't redirect away from the Welcome page — the user must finish the walkthrough first.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['page'] ) && sanitize_key( $_GET['page'] ) === $this->welcome_slug ) {
+			return;
+		}
+
 		if ( get_transient( 'rtgodam_show_whats_new' ) ) {
 			// Redirect only once, then clean up any related transient data.
 			delete_transient( 'rtgodam_show_whats_new' );

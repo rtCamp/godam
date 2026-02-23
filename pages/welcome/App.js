@@ -332,7 +332,7 @@ const App = () => {
 	if ( ! isGuideVisible ) {
 		return (
 			<div className="godam-welcome__fallback">
-				<p>{ __( 'Redirecting to Dashboard…', 'godam' ) }</p>
+				<p>{ __( 'Redirecting…', 'godam' ) }</p>
 			</div>
 		);
 	}
