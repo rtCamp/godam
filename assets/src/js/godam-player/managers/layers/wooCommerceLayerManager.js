@@ -373,38 +373,6 @@ export default class WooCommerceLayerManager {
 	}
 
 	/**
-	 * Render product box content HTML
-	 *
-	 * @param {Object} hotspot - Hotspot with product details
-	 * @return {string} HTML content for product box
-	 */
-	renderProductBoxContent( hotspot ) {
-		const productData = hotspot.productDetails;
-
-		if ( ! productData ) {
-			return '<div>No product selected</div>';
-		}
-
-		const cartUrl = `${ window.easydamMediaLibrary.wooCartURL }?add-to-cart=${ hotspot.productId }&source=productHotspot`;
-		const productLink = hotspot.addToCart ? productData.link : cartUrl;
-
-		return `
-			<div class="product-hotspot-woo-display">
-				<div class="product-hotspot-woo-image-wrapper">
-					<img class="product-hotspot-woo-image" src="${ productData.image }" alt="${ productData.name }" />
-				</div>
-				<div class="product-hotspot-woo-details">
-					<div class="product-hotspot-woo-name">${ productData.name }</div>
-					<div class="product-hotspot-woo-price">${ productData.price }</div>
-					<a class="product-hotspot-woo-link" href="${ productLink }" target="_blank" rel="noopener noreferrer" style="background: ${ hotspot.backgroundColor || '#0c80dfa6' }">
-						${ hotspot.shopText || ( hotspot.addToCart ? 'View Product' : 'Buy Now' ) }
-					</a>
-				</div>
-			</div>
-		`;
-	}
-
-	/**
 	 * Compute content rectangle
 	 *
 	 * @return {Object|null} Content rectangle {left, top, width, height} or null
@@ -656,31 +624,13 @@ export default class WooCommerceLayerManager {
 		productPriceDiv.innerHTML = hotspot.productDetails.price;
 		productDetailsDiv.appendChild( productPriceDiv );
 
-		// product action
-
+		// Product Action
 		const productActionDiv = document.createElement( 'div' );
 		productActionDiv.classList.add( 'product-hotspot-action' );
-
-		const productLink = document.createElement( 'a' );
-		productLink.classList.add(
-			'product-hotspot-woo-link',
-			'text-white',
-			'flex',
-			'items-center',
-		);
-		// Set link behavior
-		productLink.href = hotspot.addToCart
-			? hotspot.productDetails.link
-			: `${ window.godamWooSettings.url }?add-to-cart=${ hotspot.productId }&source=productHotspot`;
-
-		productLink.target = '_blank';
-		productLink.rel = 'noopener noreferrer';
-		productLink.style.background = hotspot.backgroundColor;
 
 		// --------------------
 		// ICON LOGIC
 		// --------------------
-
 		const isVariable = hotspot.productDetails?.type === 'variable';
 		const isGrouped = hotspot.productDetails?.type === 'grouped';
 		const isExternal = hotspot.productDetails?.type === 'external';
@@ -694,93 +644,90 @@ export default class WooCommerceLayerManager {
 		iconSpan.classList.add( 'product-hotspot-icon' );
 
 		// Add rotation class if needed
-		if ( forceProductPage ) {
+		if ( forceProductPage || hotspot.addToCart ) {
 			iconSpan.classList.add( 'rotate-me' );
 		}
 
 		// Use inline SVG (clean + dependency-free)
-		iconSpan.innerHTML = forceProductPage
+		iconSpan.innerHTML = forceProductPage || hotspot.addToCart
 			? `<svg class="rotate-me" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M21 11H6.414l5.293-5.293l-1.414-1.414L2.586 12l7.707 7.707l1.414-1.414L6.414 13H21z"/></svg>`
 			: `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
 					<path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
 			</svg>`;
 
-		// Append icon inside link
-		productLink.appendChild( iconSpan );
+		if ( ! miniCart ) {
+			// Product link when Mini Cart is false.
+			const productLink = document.createElement( 'a' );
+			productLink.classList.add(
+				'product-hotspot-woo-link',
+				'text-white',
+				'flex',
+				'items-center',
+			);
+			productLink.href = hotspot.addToCart ? hotspot.productDetails.link : `${ window.godamWooSettings.url }?add-to-cart=${ hotspot.productId }&source=productHotspot`;
+			productLink.target = '_blank';
+			productLink.rel = 'noopener noreferrer';
+			productLink.style.background = hotspot.backgroundColor;
+			productLink.appendChild( iconSpan );
 
-		// Append link inside action wrapper
-		productActionDiv.appendChild( productLink );
+			productActionDiv.appendChild( productLink );
+			productDisplayDiv.appendChild( productActionDiv );
+		} else {
+			// Product Link Button when Mini Cart is True.
+			const productLinkButton = document.createElement( 'button' );
+			productLinkButton.classList.add(
+				'product-hotspot-woo-link',
+				'text-white',
+				'flex',
+				'items-center',
+			);
+			productLinkButton.style.background = hotspot.backgroundColor;
+			productLinkButton.appendChild( iconSpan );
 
-		// IMPORTANT: append action div to main display wrapper
-		productDisplayDiv.appendChild( productActionDiv );
-		// if ( ! miniCart ) {
-		// 	// Product link when Mini Cart is false.
-		// 	const productLink = document.createElement( 'a' );
-		// 	productLink.classList.add( 'product-hotspot-woo-link' );
-		// 	productLink.href = hotspot.addToCart ? hotspot.productDetails.link : `${ window.godamWooSettings.url }?add-to-cart=${ hotspot.productId }&source=productHotspot`;
-		// 	productLink.target = '_blank';
-		// 	productLink.rel = 'noopener noreferrer';
-		// 	productLink.style.background = hotspot.backgroundColor;
+			// Disable Product Link button during async operation
+			productLinkButton.addEventListener( 'click', ( event ) => {
+				event.preventDefault();
+				productLinkButton.disabled = true;
+				productLinkButton.classList.add( 'loading' );
 
-		// 	// Product Button Label.
-		// 	const defaultLabel = hotspot.addToCart ? __( 'View Product', 'godam' ) : __( 'Buy Now', 'godam' );
-		// 	const shopText = hotspot.shopText?.trim();
-		// 	productLink.textContent = shopText ? shopText : defaultLabel;
-		// 	productDetailsDiv.appendChild( productLink );
-		// } else {
-		// 	// Product Link Button when Mini Cart is True.
-		// 	const productLinkButton = document.createElement( 'button' );
-		// 	productLinkButton.classList.add( 'product-hotspot-woo-link' );
-		// 	productLinkButton.style.background = hotspot.backgroundColor;
+				if ( hotspot.addToCart ) {
+					// Redirect to product details page
+					window.open( hotspot.productDetails.link, '_blank' );
+					productLinkButton.disabled = false;
+					productLinkButton.classList.remove( 'loading' );
+				} else {
+					// Add to cart
+					const productId = hotspot.productId;
+					const quantity = 1;
 
-		// 	// Product link button text
-		// 	const defaultLabel = hotspot.addToCart ? __( 'View Product', 'godam' ) : __( 'Buy Now', 'godam' );
-		// 	const shopText = hotspot.shopText?.trim();
-		// 	productLinkButton.textContent = shopText ? shopText : defaultLabel;
+					dispatch( 'wc/store/cart' )
+						.addItemToCart( productId, quantity )
+						.then( () => {
+							productLinkButton.disabled = false;
+							productLinkButton.classList.remove( 'loading' );
+							this.showCartMessage( __( 'Product added successfully!', 'godam' ), 'success' );
+						} )
+						.catch( ( err ) => {
+							// eslint-disable-next-line no-console
+							console.error( 'Add to cart failed', err );
+							productLinkButton.disabled = false;
+							productLinkButton.classList.remove( 'loading' );
 
-		// 	// Disable Product Link button during async operation
-		// 	productLinkButton.addEventListener( 'click', ( event ) => {
-		// 		event.preventDefault();
-		// 		productLinkButton.disabled = true;
-		// 		productLinkButton.classList.add( 'loading' );
+							// Check if error code is WooCommerce stock error.
+							if ( err?.code === 'woocommerce_rest_product_partially_out_of_stock' ) {
+								this.showCartMessage( __( 'Product is partially out of stock.', 'godam' ), 'error' );
+							} else if ( err?.code === 'woocommerce_rest_product_out_of_stock' ) {
+								this.showCartMessage( __( 'Product is out of stock.', 'godam' ), 'error' );
+							} else {
+								this.showCartMessage( __( 'Something went wrong. Try again.', 'godam' ), 'error' );
+							}
+						} );
+				}
+			} );
 
-		// 		if ( hotspot.addToCart ) {
-		// 			// Redirect to product details page
-		// 			window.open( hotspot.productDetails.link, '_blank' );
-		// 			productLinkButton.disabled = false;
-		// 			productLinkButton.classList.remove( 'loading' );
-		// 		} else {
-		// 			// Add to cart
-		// 			const productId = hotspot.productId;
-		// 			const quantity = 1;
-
-		// 			dispatch( 'wc/store/cart' )
-		// 				.addItemToCart( productId, quantity )
-		// 				.then( () => {
-		// 					productLinkButton.disabled = false;
-		// 					productLinkButton.classList.remove( 'loading' );
-		// 					this.showCartMessage( __( 'Product added successfully!', 'godam' ), 'success' );
-		// 				} )
-		// 				.catch( ( err ) => {
-		// 					// eslint-disable-next-line no-console
-		// 					console.error( 'Add to cart failed', err );
-		// 					productLinkButton.disabled = false;
-		// 					productLinkButton.classList.remove( 'loading' );
-
-		// 					// Check if error code is WooCommerce stock error.
-		// 					if ( err?.code === 'woocommerce_rest_product_partially_out_of_stock' ) {
-		// 						this.showCartMessage( __( 'Product is partially out of stock.', 'godam' ), 'error' );
-		// 					} else if ( err?.code === 'woocommerce_rest_product_out_of_stock' ) {
-		// 						this.showCartMessage( __( 'Product is out of stock.', 'godam' ), 'error' );
-		// 					} else {
-		// 						this.showCartMessage( __( 'Something went wrong. Try again.', 'godam' ), 'error' );
-		// 					}
-		// 				} );
-		// 		}
-		// 	} );
-
-		// 	productDetailsDiv.appendChild( productLinkButton );
-		// }
+			productActionDiv.appendChild( productLinkButton );
+			productDisplayDiv.appendChild( productActionDiv );
+		}
 
 		return productBoxDiv;
 	}

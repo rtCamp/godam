@@ -16,7 +16,6 @@ import {
 	ColorPalette,
 	Notice,
 	Tooltip,
-	Icon,
 } from '@wordpress/components';
 import {
 	trash,
@@ -25,7 +24,6 @@ import {
 	chevronUp,
 	moreVertical,
 	check,
-	arrowRight,
 } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
 import { useState, useRef, useEffect, useCallback, useMemo } from '@wordpress/element';
@@ -137,7 +135,13 @@ const ProductHotspotPanel = ( {
 				<DropdownMenu
 					icon={ moreVertical }
 					label={ `${ getProductHotspotDisplayName( productHotspot, index, productData ) } ${ __( 'options', 'godam' ) }` }
-					toggleProps={ { 'aria-label': sprintf( __( 'Options for %s', 'godam' ), getProductHotspotDisplayName( productHotspot, index, productData ) ) } }
+					toggleProps={ {
+						'aria-label': sprintf(
+							/* translators: %s: Product hotspot display name. */
+							__( 'Options for %s', 'godam' ),
+							getProductHotspotDisplayName( productHotspot, index, productData ),
+						),
+					} }
 				>
 					{ () => (
 						<>
@@ -213,26 +217,8 @@ const ProductHotspotPanel = ( {
 								),
 							);
 						} }
-						help={ __( 'Give this Product hotspot a descriptive title', 'godam' ) }
+						help={ __( 'Give this Product hotspot a descriptive title.', 'godam' ) }
 						disabled={ ! isValidAPIKey }
-					/>
-					<TextControl
-						className="godam-input"
-						label={ __( 'Shop Button', 'godam' ) }
-						placeholder={ productHotspot.addToCart
-							? __( 'View Product', 'godam' )
-							: __( 'Buy Now', 'godam' ) }
-						value={ productHotspot.shopText }
-						onChange={ ( val ) =>
-							updateField(
-								'productHotspots',
-								productHotspots.map( ( h2, j ) =>
-									j === index ? { ...h2, shopText: val } : h2,
-								),
-							)
-						}
-						disabled={ ! isValidAPIKey }
-						help={ __( 'Shop button color follows Product hotspot color.', 'godam' ) }
 					/>
 					<div className="mt-3">
 						{ ( () => {
@@ -415,7 +401,7 @@ const ProductHotspotPreview = ( { productHotspot, index, productCache } ) => {
 
 									const forceProductPage = isVariable || isGrouped || isExternal || isOutOfStock;
 
-									return forceProductPage ? (
+									return forceProductPage || productHotspot.addToCart ? (
 										<svg
 											className="rotate-me-editor"
 											xmlns="http://www.w3.org/2000/svg"
@@ -542,7 +528,6 @@ const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 			productId: '',
 			// REMOVED: productDetails - will be fetched on-demand
 			addToCart: false,
-			shopText: __( 'Shop Me', 'godam' ),
 			position: { x: 50, y: 50 },
 			size: { diameter: diameterPercent },
 			oSize: { diameter: diameterPercent },

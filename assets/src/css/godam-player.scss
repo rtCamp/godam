@@ -648,9 +648,10 @@
 
 	/* Remove 50% width split */
 	.product-hotspot-woo-image-wrapper {
-		flex: 0 0 auto; // changed
+		flex: 0 0 auto;
 		display: flex;
 		align-items: center;
+		
 		.product-hotspot-woo-image {
 			width: 4.25rem;
 			height: 4.25rem;
@@ -672,10 +673,11 @@
 	}
 
 	.product-hotspot-action {
-		flex: 0 0 auto; // added
+		flex: 0 0 auto;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+
 		.product-hotspot-woo-link {
 			width: 36px;
 			height: 36px;
@@ -684,11 +686,108 @@
 			justify-content: center;
 			border-radius: 10px;
 			color: white;
+			line-height: 0.8;
+			border: none;
+			cursor: pointer;
+
+			&:disabled {
+				cursor: not-allowed;
+			}
+
+			/* Loading state */
+			&.loading {
+				pointer-events: none;
+				opacity: 0.7;
+
+				/* Hide icon/text while loading */
+				> * {
+					visibility: hidden;
+				}
+
+				&::after {
+					content: '';
+					position: absolute;
+					width: 16px;
+					height: 16px;
+					border: 2px solid rgba(255, 255, 255, 0.4);
+					border-top-color: #ffffff;
+					border-radius: 50%;
+					animation: hotspot-spin 0.6s linear infinite;
+				}
+			}
+
 			.rotate-me-editor{
 				transform: translateX(0px) translateY(0px) rotate(135deg) !important;
 			}
+
 			.rotate-me{
 				transform: translateX(-1px) translateY(1px) rotate(70deg) !important;
+				line-height: 1.5;
+			}
+		}
+	}
+
+	@keyframes hotspot-spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+}
+
+/* =========================
+   Mobile Optimisation for Product Hotspot
+========================= */
+@media (max-width: 640px) {
+
+	.product-hotspot-box {
+		min-width: unset;
+		width: max-content;
+		max-width: 85vw;
+		font-size: 12px;
+		border-radius: 10px;
+	}
+
+	.product-hotspot-woo-display {
+		padding: 6px 8px;
+		gap: 6px;
+	}
+
+	.product-hotspot-woo-display {
+
+		.product-hotspot-woo-image-wrapper {
+
+			.product-hotspot-woo-image {
+				width: 2.75rem;
+				height: 2.75rem;
+				border-radius: 8px;
+			}
+		}
+
+		.product-hotspot-woo-details {
+			padding: 0 0.4rem;
+			min-width: 60px;
+		}
+
+		.product-hotspot-woo-name {
+			font-size: 12px;
+			margin-bottom: 2px !important;
+		}
+
+		.woocommerce-Price-amount {
+			font-size: 11px;
+		}
+
+		.product-hotspot-action {
+
+			.product-hotspot-woo-link {
+				width: 28px;
+				height: 28px;
+				border-radius: 8px;
+
+				&.loading::after {
+					width: 12px;
+					height: 12px;
+				}
 			}
 		}
 	}
