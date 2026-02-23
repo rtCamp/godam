@@ -578,6 +578,9 @@
 		transform-origin: center;
 	}
 }
+.product-hotspot-box.tooltip-top {
+	display: flex !important;
+}
 
 /* Product Hotspot */
 .product-hotspot-box {
@@ -589,7 +592,7 @@
 	background-color: rgba(255, 255, 255);
 	color: #000;
 	text-align: center;
-	border-radius: 3px;
+	border-radius: 12px;
 	z-index: 200;
 	pointer-events: auto;
 	font-size: 14px;
@@ -597,7 +600,7 @@
 	opacity: 0;
 	transition: opacity 0.2s ease, visibility 0.2s ease;
 	word-wrap: break-word;
-	width: 20em;
+	min-width: 20em;
 
 	&::after {
 		content: "";
@@ -610,16 +613,6 @@
 		border-color: rgba(255, 255, 255) transparent transparent transparent;
 	}
 
-	a {
-		overflow-wrap: break-word;
-		word-break: break-word;
-
-		&:hover {
-			color: #fff;
-			text-decoration: underline;
-		}
-	}
-
 	@media (max-width: 768px) {
 		width: 11em;
 		font-size: 13px;
@@ -629,151 +622,171 @@
 .product-hotspot-woo-display {
 	display: flex;
 	flex-direction: row;
-	width: 100%;
+	align-items: center;
+	justify-content: space-between;
+	width: 93%;
 	max-width: 600px;
-	border-radius: 6px;
-	overflow: hidden;
-	align-items: stretch;
+	border-radius: 12px;
+	padding: 10px;
 
-	.product-hotspot-woo-image-wrapper,
-	.product-hotspot-woo-details {
-		width: 50%;
-		flex: 0 0 50%;
-		box-sizing: border-box;
+	.product-hotspot-woo-name{
+		color: #111 ;
+		font-weight:500;
+		margin-bottom: 0.5rem;
 	}
 
-	.product-hotspot-woo-image-wrapper {
-		display: flex;
-		aspect-ratio: 1 / 1;
+	.woocommerce-Price-amount{
+		color: #8c8c8c;
+	}
 
+	/* Remove 50% width split */
+	.product-hotspot-woo-image-wrapper {
+		flex: 0 0 auto;
+		display: flex;
+		align-items: center;
+		
 		.product-hotspot-woo-image {
-			width: 100%;
-			height: auto;
+			width: 4.25rem;
+			height: 4.25rem;
 			object-fit: cover;
 			display: block;
+			border-radius: 12px;
 
-			@media (max-width: 768px) {
-				height: auto;
-				max-height: 100px;
+			&.product-hotspot-image-clickable:hover {
+				transform: scale(1.05);
 			}
-		}
-
-		@media (max-width: 768px) {
-			width: 100%;
-			height: auto;
 		}
 	}
 
 	.product-hotspot-woo-details {
-		padding: 1rem;
+		flex: 1;
+		padding: 0 0.5rem;
 		display: flex;
 		flex-direction: column;
-		justify-content: space-between;
-		box-sizing: border-box;
+		justify-content: center;
 		align-items: flex-start;
 		text-align: left;
+		min-width: 80px;
+	}
 
-		.product-hotspot-woo-name {
-			font-weight: 300;
-			font-size: 16px;
-			margin-bottom: 1rem;
-			color: #8f8b8b;
-			display: -webkit-box;
-			-webkit-line-clamp: 2;
-			-webkit-box-orient: vertical;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			line-height: 1.3;
-			max-height: 2.6em;
-			min-height: 2.6em;
-
-			@media (max-width: 768px) {
-				font-size: 15px;
-			}
-		}
-
-		.product-hotspot-woo-price {
-			color: #000;
-			margin-bottom: 1rem;
-			font-size: 14px;
-			min-height: 2.6em;
-
-			@media (max-width: 768px) {
-				font-size: 13px;
-			}
-		}
+	.product-hotspot-action {
+		flex: 0 0 auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 
 		.product-hotspot-woo-link {
-			display: inline-block;
-			width: 100%;
-			text-align: center;
-			padding: 10px 0;
-			color: #fff;
-			border-radius: 3px;
-			text-decoration: none;
-			font-size: 14px;
-			box-sizing: border-box;
-			border: 0px;
+			width: 36px;
+			height: 36px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-radius: 10px;
+			color: white;
+			line-height: 0.8;
+			border: none;
+			cursor: pointer;
 
+			&:disabled {
+				cursor: not-allowed;
+			}
+
+			/* Loading state */
 			&.loading {
-				opacity: 0.5;
-                pointer-events: none;
+				pointer-events: none;
+				opacity: 0.7;
+
+				/* Hide icon/text while loading */
+				> * {
+					visibility: hidden;
+				}
+
+				&::after {
+					content: '';
+					position: absolute;
+					width: 16px;
+					height: 16px;
+					border: 2px solid rgba(255, 255, 255, 0.4);
+					border-top-color: #ffffff;
+					border-radius: 50%;
+					animation: hotspot-spin 0.6s linear infinite;
+				}
 			}
 
-			&:hover {
-				cursor: pointer;
-				pointer-events: auto;
+			.rotate-me-editor{
+				transform: translateX(0px) translateY(0px) rotate(135deg);
 			}
 
-			@media (max-width: 768px) {
-				font-size: 13px;
+			.rotate-me{
+				transform: translateX(-1px) translateY(1px) rotate(70deg);
+				line-height: 1.5;
 			}
-		}
-
-		@media (max-width: 768px) {
-			width: 100%;
-			padding: 0.75rem;
 		}
 	}
 
-	/* Image subtle tilt + brightness */
-	.product-hotspot-image-clickable {
-		transition: transform 0.3s ease, filter 0.3s ease;
-
-		&:hover {
-			transform: rotate3d(1, 1, 0, 5deg); // small tilt
-			filter: brightness(0.9);
-		}
-
-		&:active {
-			transform: scale(0.98); // tiny press feel
+	@keyframes hotspot-spin {
+		to {
+			transform: rotate(360deg);
 		}
 	}
+}
 
-	/* Product name underline slide */
-	.product-hotspot-name-clickable {
-		position: relative;
-		transition: color 0.3s ease;
+/* =========================
+   Mobile Optimisation for Product Hotspot
+========================= */
+@media (max-width: 640px) {
 
-		&::after {
-			content: "";
-			position: absolute;
-			left: 0;
-			bottom: -2px;
-			width: 0;
-			height: 2px;
-			background: currentColor;
-			transition: width 0.3s ease;
+	.product-hotspot-box {
+		min-width: unset;
+		width: max-content;
+		max-width: 85vw;
+		font-size: 12px;
+		border-radius: 10px;
+	}
+
+	.product-hotspot-woo-display {
+		padding: 6px 8px;
+		gap: 6px;
+	}
+
+	.product-hotspot-woo-display {
+
+		.product-hotspot-woo-image-wrapper {
+
+			.product-hotspot-woo-image {
+				width: 2.75rem;
+				height: 2.75rem;
+				border-radius: 8px;
+			}
 		}
 
-		&:hover::after {
-			width: 100%;
+		.product-hotspot-woo-details {
+			padding: 0 0.4rem;
+			min-width: 60px;
 		}
-	}	
 
-	@media (max-width: 768px) {
-		flex-direction: column;
-		max-width: 100%;
+		.product-hotspot-woo-name {
+			font-size: 12px;
+			margin-bottom: 2px !important;
+		}
+
+		.woocommerce-Price-amount {
+			font-size: 11px;
+		}
+
+		.product-hotspot-action {
+
+			.product-hotspot-woo-link {
+				width: 28px;
+				height: 28px;
+				border-radius: 8px;
+
+				&.loading::after {
+					width: 12px;
+					height: 12px;
+				}
+			}
+		}
 	}
 }
 
@@ -798,7 +811,7 @@
 	opacity: 0; /* initial */
 	pointer-events: auto;
 }
-  
+
 .mini-cart-product-message.success {
 	background-color: #28a745; /* green */
 }
