@@ -78,7 +78,7 @@
 		"@wordpress/server-side-render": "6.10.0",
 		"browserslist": "4.25.1",
 		"cross-env": "10.1.0",
-		"css-minimizer-webpack-plugin": "7.0.2",
+		"css-minimizer-webpack-plugin": "7.0.4",
 		"emoji-picker-react": "4.13.3",
 		"eslint": "8.57.1",
 		"eslint-plugin-eslint-comments": "3.2.0",
