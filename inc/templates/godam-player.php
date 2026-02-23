@@ -229,6 +229,8 @@ $godam_woocommerce_allowed_contexts = array(
 	'godam-featured-video-gallery',
 );
 
+$godam_woocommerce_context = false;
+
 if ( isset( $attributes['godam_context'] ) ) {
 	$godam_woocommerce_context = in_array( $attributes['godam_context'], $godam_woocommerce_allowed_contexts, true );
 }
