@@ -601,6 +601,7 @@
 	transition: opacity 0.2s ease, visibility 0.2s ease;
 	word-wrap: break-word;
 	min-width: 20em;
+
 	&::after {
 		content: "";
 		position: absolute;
@@ -611,15 +612,7 @@
 		border-style: solid;
 		border-color: rgba(255, 255, 255) transparent transparent transparent;
 	}
-	a {
-		overflow-wrap: break-word;
-		word-break: break-word;
 
-		&:hover {
-			color: #fff;
-			text-decoration: underline;
-		}
-	}
 	@media (max-width: 768px) {
 		width: 11em;
 		font-size: 13px;
@@ -631,19 +624,19 @@
 	flex-direction: row;
 	align-items: center;
 	justify-content: space-between;
-	width: 100%;
+	width: 93%;
 	max-width: 600px;
 	border-radius: 12px;
 	padding: 10px;
 
 	.product-hotspot-woo-name{
-		color: #111 !important;
+		color: #111 ;
 		font-weight:500;
-		margin-bottom: 0.5rem !important;
+		margin-bottom: 0.5rem;
 	}
 
 	.woocommerce-Price-amount{
-		color: #8c8c8c !important	;
+		color: #8c8c8c;
 	}
 
 	/* Remove 50% width split */
@@ -658,6 +651,10 @@
 			object-fit: cover;
 			display: block;
 			border-radius: 12px;
+
+			&.product-hotspot-image-clickable:hover {
+				transform: scale(1.05);
+			}
 		}
 	}
 
@@ -717,11 +714,11 @@
 			}
 
 			.rotate-me-editor{
-				transform: translateX(0px) translateY(0px) rotate(135deg) !important;
+				transform: translateX(0px) translateY(0px) rotate(135deg);
 			}
 
 			.rotate-me{
-				transform: translateX(-1px) translateY(1px) rotate(70deg) !important;
+				transform: translateX(-1px) translateY(1px) rotate(70deg);
 				line-height: 1.5;
 			}
 		}

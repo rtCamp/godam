@@ -651,7 +651,7 @@ export default class WooCommerceLayerManager {
 		// Use inline SVG (clean + dependency-free)
 		iconSpan.innerHTML = forceProductPage || hotspot.addToCart
 			? `<svg class="rotate-me" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M21 11H6.414l5.293-5.293l-1.414-1.414L2.586 12l7.707 7.707l1.414-1.414L6.414 13H21z"/></svg>`
-			: `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+			: `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
 					<path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
 			</svg>`;
 
