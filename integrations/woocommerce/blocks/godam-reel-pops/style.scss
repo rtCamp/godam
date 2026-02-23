@@ -317,11 +317,6 @@
 
 /* Modal navigation (Reel Pops only) */
 .godam-product-modal-container.godam-reel-pops-modal-nav-enabled {
-	.godam-woo-global-modal-content,
-	.godam-product-modal-content {
-		position: relative;
-	}
-
 	@media (hover: hover) and (pointer: fine) {
 		.godam-swipe-overlay,
 		.godam-swipe-hint,
@@ -331,15 +326,15 @@
 	}
 
 	.godam-reel-pops-modal-nav {
-		position: absolute;
+		position: fixed;
 		top: 50%;
 		left: 0;
 		right: 0;
 		transform: translateY(-50%);
 		display: flex;
 		justify-content: space-between;
-		padding: 0 12px;
-		z-index: 30;
+		padding: 0 1rem;
+		z-index: 10050;
 		pointer-events: none;
 	}
 
@@ -355,17 +350,10 @@
 		color: #fff;
 		cursor: pointer;
 		pointer-events: auto;
-		opacity: 0;
-		visibility: hidden;
-		transform: scale(0.96);
-		transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
-	}
-
-	.godam-woo-global-modal-content:hover .godam-reel-pops-modal-nav-btn,
-	.godam-product-modal-content:hover .godam-reel-pops-modal-nav-btn {
 		opacity: 1;
 		visibility: visible;
 		transform: scale(1);
+		transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
 	}
 
 	@media (hover: none) {

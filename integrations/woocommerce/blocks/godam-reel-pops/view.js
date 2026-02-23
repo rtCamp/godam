@@ -586,14 +586,13 @@
 
 			modal.classList.add( 'godam-reel-pops-modal-nav-enabled' );
 
-			const modalContent = modal.querySelector( '.godam-woo-global-modal-content' ) || modal.querySelector( '.godam-product-modal-content' );
-			if ( ! modalContent ) {
+			if ( modal.querySelector( '.godam-reel-pops-modal-nav' ) ) {
 				return;
 			}
 
-			if ( modalContent.querySelector( '.godam-reel-pops-modal-nav' ) ) {
-				return;
-			}
+			const modalContent =
+				modal.querySelector( '.godam-woo-global-modal-content' ) ||
+				modal.querySelector( '.godam-product-modal-content' );
 
 			const nav = document.createElement( 'div' );
 			nav.className = 'godam-reel-pops-modal-nav';
@@ -624,7 +623,13 @@
 
 			nav.appendChild( prevButton );
 			nav.appendChild( nextButton );
-			modalContent.appendChild( nav );
+
+			if ( modalContent?.parentNode ) {
+				modalContent.insertAdjacentElement( 'afterend', nav );
+				return;
+			}
+
+			modal.appendChild( nav );
 		}
 
 		/**

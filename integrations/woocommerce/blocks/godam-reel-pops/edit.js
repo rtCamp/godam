@@ -159,51 +159,37 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 							allowedTypes={ [ 'video' ] }
 							multiple
 							render={ ( { open } ) => (
-								<Button onClick={ open } variant="primary" icon={ videoIcon } style={ { marginBottom: '12px' } }>
+								<Button onClick={ open } variant="primary" icon={ videoIcon } className="godam-reel-pops-select-videos-button">
 									{ __( 'Select Videos', 'godam' ) }
 								</Button>
 							) }
 						/>
 					</MediaUploadCheck>
 
-					<div
-						style={ {
-							display: 'grid',
-							gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-							gap: '12px',
-						} }
-					>
+					<div className="godam-reel-pops-video-grid">
 						{ videos.map( ( videoId, index ) => {
 							const thumbnailUrl = getVideoThumbnail( mediaById[ videoId ] );
 							return (
-								<div
-									key={ index }
-									style={ {
-										padding: '12px',
-										border: '1px solid #ddd',
-										borderRadius: '4px',
-										backgroundColor: '#f9f9f9',
-									} }
-								>
-									<div style={ { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', gap: '8px' } }>
-										<div style={ { display: 'flex', gap: '10px', alignItems: 'center', flex: '1 1 auto', minWidth: 0 } }>
-											<div style={ { width: '64px', minWidth: '64px', maxWidth: '64px', height: '64px', borderRadius: '4px', overflow: 'hidden', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }>
+								<div key={ index } className="godam-reel-pops-video-card">
+									<div className="godam-reel-pops-video-card-row">
+										<div className="godam-reel-pops-video-meta-wrap">
+											<div className="godam-reel-pops-video-thumb-wrap">
 												{ thumbnailUrl ? (
 													<img
 														src={ thumbnailUrl }
 														alt=""
-														style={ { width: '100%', height: '100%', objectFit: 'cover' } }
+														className="godam-reel-pops-video-thumb"
 													/>
 												) : (
-													<span style={ { color: '#fff', fontSize: '11px' } }>{ __( 'Video', 'godam' ) }</span>
+													<span className="godam-reel-pops-video-thumb-fallback">{ __( 'Video', 'godam' ) }</span>
 												) }
 											</div>
-											<div style={ { flex: '1 1 auto', minWidth: 0, maxWidth: '100%' } }>
-												<strong style={ { display: '-webkit-box', width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'normal', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: '1.25' } } title={ mediaById[ videoId ]?.title?.rendered || __( 'Untitled video', 'godam' ) }>{ mediaById[ videoId ]?.title?.rendered || __( 'Untitled video', 'godam' ) }</strong>
-												<div style={ { fontSize: '12px', color: '#666' } }>{ __( 'ID:', 'godam' ) } { videoId }</div>
+											<div className="godam-reel-pops-video-info-wrap">
+												<strong className="godam-reel-pops-video-title" title={ mediaById[ videoId ]?.title?.rendered || __( 'Untitled video', 'godam' ) }>{ mediaById[ videoId ]?.title?.rendered || __( 'Untitled video', 'godam' ) }</strong>
+												<div className="godam-reel-pops-video-id">{ __( 'ID:', 'godam' ) } { videoId }</div>
 											</div>
 										</div>
-										<div style={ { display: 'flex', gap: '4px', flexShrink: 0 } }>
+										<div className="godam-reel-pops-video-actions">
 											{ index > 0 && (
 												<Button
 													size="small"
@@ -396,7 +382,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 									? __( '1 video configured', 'godam' )
 									: `${ videos.length } ${ __( 'videos configured', 'godam' ) }` }
 						</p>
-						<p style={ { fontSize: '12px', color: '#666', marginTop: '4px' } }>
+						<p className="godam-reel-pops-meta-text">
 							{ __( 'Position:', 'godam' ) } { position } | { __( 'Aspect:', 'godam' ) } { aspectRatio } | { __( 'Animation:', 'godam' ) } { animation }
 						</p>
 					</div>
