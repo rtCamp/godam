@@ -13,6 +13,7 @@ import '../../video-control.scss';
 import {
 	Button,
 	CustomSelectControl,
+	ExternalLink,
 	Notice,
 	TextareaControl,
 	ToggleControl,
@@ -25,6 +26,8 @@ import { updateVideoConfig, setCurrentLayer } from '../../redux/slice/videoSlice
 import GoDAM from '../../../../assets/src/images/GoDAM.png';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 import { closeSmall } from '@wordpress/icons';
+import { getPricingUrl } from '../../../shared/premium-layers.js';
+import { hasValidAPIKey } from '../../../godam/utils/index.js';
 
 const Appearance = () => {
 	const dispatch = useDispatch();
@@ -407,6 +410,18 @@ const Appearance = () => {
 
 	return (
 		<div id="easydam-player-settings" className="pb-20">
+			{ ! hasValidAPIKey && (
+				<Notice
+					className="mb-4"
+					status="warning"
+					isDismissible={ false }
+				>
+					{ __( 'Video player customization is a Pro feature.', 'godam' ) }{ ' ' }
+					<ExternalLink href={ getPricingUrl( 'player-settings' ) }>
+						{ __( 'Upgrade your plan to unlock it.', 'godam' ) }
+					</ExternalLink>
+				</Notice>
+			) }
 			<div className="accordion-item--content mt-4 flex flex-col gap-6">
 				<div className="display-settings godam-form-group">
 					<label
@@ -431,18 +446,54 @@ const Appearance = () => {
 							onChange={ handleCaptionsToggle }
 							checked={ videoConfig.controlBar.subsCapsButton }
 						/>
-						<ToggleControl
-							__nextHasNoMarginBottom
-							className="godam-toggle"
-							label={ __( 'Show Branding', 'godam' ) }
-							onChange={ handleBrandingToggle }
-							checked={ videoConfig.controlBar.brandingIcon }
+						<CustomSelectControl
+							__next40pxDefaultSize
+							className="godam-input"
+							onChange={ handleSkipTimeSettings }
+							options={ [
+								{
+									key: '5',
+									name: '5',
+								},
+								{
+									key: '10',
+									name: '10',
+								},
+								{
+									key: '30',
+									name: '30',
+								},
+							] }
+							label={ __( 'Adjust Skip Duration', 'godam' ) }
+							value={ {
+								key: videoConfig.controlBar.skipButtons?.forward?.toString() || '10',
+								name: videoConfig.controlBar.skipButtons?.forward?.toString() || '10',
+							} }
 						/>
 					</div>
 
 				</div>
 
-				{ videoConfig.controlBar.brandingIcon && (
+				<div className="godam-form-group">
+					<p className="label-text flex items-center gap-2">
+						{ __( 'Customization Settings', 'godam' ) }
+						{ ! hasValidAPIKey && (
+							<span className="godam-pro-badge">{ __( 'Pro', 'godam' ) }</span>
+						) }
+					</p>
+					<div className={ ! hasValidAPIKey ? 'opacity-50' : '' }>
+						<ToggleControl
+							__nextHasNoMarginBottom
+							className="godam-toggle"
+							label={ __( 'Show Branding', 'godam' ) }
+							onChange={ handleBrandingToggle }
+							checked={ ! hasValidAPIKey ? false : videoConfig.controlBar.brandingIcon }
+							disabled={ ! hasValidAPIKey }
+						/>
+					</div>
+				</div>
+
+				{ ( videoConfig.controlBar.brandingIcon && hasValidAPIKey ) && (
 					<div className="godam-form-group">
 						<label
 							htmlFor="custom-brand-logo"
@@ -487,7 +538,7 @@ const Appearance = () => {
 						) }
 					</div>
 				) }
-				<div className="form-group">
+				<div className={ `form-group ${ ! hasValidAPIKey ? 'opacity-50 pointer-events-none' : '' }` }>
 					<CustomSelectControl
 						__next40pxDefaultSize
 						className="godam-input"
@@ -521,7 +572,7 @@ const Appearance = () => {
 						} }
 					/>
 				</div>
-				<div className="godam-form-group">
+				<div className={ `godam-form-group ${ ! hasValidAPIKey ? 'opacity-50 pointer-events-none' : '' }` }>
 					<label
 						htmlFor="custom-hover-color"
 						className="label-text"
@@ -564,33 +615,7 @@ const Appearance = () => {
 						</Notice>
 					) }
 				</div>
-				<div className="form-group">
-					<CustomSelectControl
-						__next40pxDefaultSize
-						className="godam-input"
-						onChange={ handleSkipTimeSettings }
-						options={ [
-							{
-								key: '5',
-								name: '5',
-							},
-							{
-								key: '10',
-								name: '10',
-							},
-							{
-								key: '30',
-								name: '30',
-							},
-						] }
-						label={ __( 'Adjust Skip Duration', 'godam' ) }
-						value={ {
-							key: videoConfig.controlBar.skipButtons?.forward?.toString() || '10',
-							name: videoConfig.controlBar.skipButtons?.forward?.toString() || '10',
-						} }
-					/>
-				</div>
-				<div className="godam-form-group">
+				<div className={ `godam-form-group ${ ! hasValidAPIKey ? 'opacity-50 pointer-events-none' : '' }` }>
 					<label
 						htmlFor="appearance-color"
 						className="label-text"
@@ -657,7 +682,7 @@ const Appearance = () => {
 					/>
 				</div>
 
-				<div className="godam-form-group">
+				<div className={ `godam-form-group ${ ! hasValidAPIKey ? 'opacity-50 pointer-events-none' : '' }` }>
 					<label
 						htmlFor="custom-hover-color"
 						className="label-text"

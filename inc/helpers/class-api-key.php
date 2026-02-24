@@ -74,7 +74,7 @@ class Api_Key {
 	 * @return string One of Api_Key_Status constants.
 	 */
 	public static function get_status() {
-		return get_option( self::STATUS_OPTION_KEY, Api_Key_Status::VALID );
+		return get_option( self::STATUS_OPTION_KEY, Api_Key_Status::VERIFICATION_FAILED );
 	}
 
 	/**
