@@ -97,10 +97,22 @@ class Form_Submit {
 		 */
 		$form_title = ! empty( $form_title ) ? $form_title : __( 'Fluentforms', 'godam' );
 
+		// Detect file type to determine job_type.
+		$is_audio = godam_is_audio_file( $file_url );
+
+		// Set job_type based on file type.
+		$job_type = $is_audio ? 'audio' : 'stream';
+
 		/**
 		 * Send for transcoding.
 		 */
-		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding( 'fluentforms', $form_title, $file_url, $entry_id );
+		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding( 
+			'fluentforms', 
+			$form_title, 
+			$file_url, 
+			$entry_id,
+			$job_type
+		);
 
 		/**
 		 * Error handling.
