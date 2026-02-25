@@ -978,7 +978,7 @@ class Media_Library_Ajax {
 			unset( $image_size ); // Break the reference.
 
 			$sources = $new_sources;
-		} else {
+		} elseif ( ! empty( $godam_original_id ) ) {
 			// Compatibility handling for virtual media created before GoDAM image sizes meta was implemented. 
 			// In this case, we will reconstruct the URLs based on the original image URL and the file names in the sources array.
 
