@@ -1523,6 +1523,7 @@ class Media_Library extends Base {
 		// Prepare post data for the virtual media entry.
 		$attachment = array(
 			'post_title'     => sanitize_text_field( $data['title'] ),
+			'post_content'   => sanitize_text_field( $data['description'] ?? '' ),
 			'post_mime_type' => sanitize_text_field( $data['mime'] ),
 			'post_type'      => 'attachment',
 			'post_status'    => 'inherit',
