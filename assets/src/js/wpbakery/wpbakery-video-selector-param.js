@@ -7,6 +7,8 @@ import { __ } from '@wordpress/i18n';
 	'use strict';
 
 	let isVirtualAttachmentListenerBound = false;
+	let isSeoPrefillListenerBound = false;
+	const attachmentDataCache = new Map();
 
 	// Initialize video selector on document ready and when WPBakery reloads the params
 	$( document ).ready( initVideoSelector );
@@ -14,6 +16,7 @@ import { __ } from '@wordpress/i18n';
 
 	function initVideoSelector() {
 		bindVirtualAttachmentReplacement();
+		bindSeoPrefillHandlers();
 
 		$( '.video-selector-button' ).off( 'click' ).on( 'click', function( e ) {
 			e.preventDefault();
@@ -58,6 +61,8 @@ import { __ } from '@wordpress/i18n';
 					'</video>',
 				);
 
+				maybePrefillSeoFields( $container );
+
 				// Add or update remove button in the buttons wrapper
 				const $buttonsWrapper = $container.find( '.video_selector-buttons-wrapper' );
 				let $removeButton = $buttonsWrapper.find( '.video-selector-remove' );
@@ -76,6 +81,136 @@ import { __ } from '@wordpress/i18n';
 
 		// Initialize remove handler
 		initRemoveHandler();
+	}
+
+	function bindSeoPrefillHandlers() {
+		if ( isSeoPrefillListenerBound ) {
+			return;
+		}
+
+		$( document ).on( 'change', '.wpb_vc_param_value[name="seo_override"]', function() {
+			const $scope = getSeoScope( $( this ) );
+			const $overrideField = getParamField( $scope, 'seo_override' );
+
+			if ( ! $overrideField.length || '1' !== String( $overrideField.val() ) ) {
+				return;
+			}
+
+			const $headlineField = getParamField( $scope, 'seo_headline' );
+			const $descriptionField = getParamField( $scope, 'seo_description' );
+			const hasExistingSeo = !! ( $headlineField.val() || $descriptionField.val() );
+
+			prefillSeoFieldsFromAttachment( $scope, ! hasExistingSeo );
+		} );
+
+		$( document ).on( 'change', '.video_selector_field[name="id"]', function() {
+			const $scope = getSeoScope( $( this ) );
+			prefillSeoFieldsFromAttachment( $scope, false );
+		} );
+
+		isSeoPrefillListenerBound = true;
+	}
+
+	function getSeoScope( $element ) {
+		const $scope = $element.closest( '.vc_ui-panel-window' );
+		return $scope.length ? $scope : $( document );
+	}
+
+	function getParamField( $scope, paramName ) {
+		return $scope.find( `.wpb_vc_param_value[name="${ paramName }"]` ).first();
+	}
+
+	function maybePrefillSeoFields( $container ) {
+		const $scope = getSeoScope( $container );
+		prefillSeoFieldsFromAttachment( $scope, false );
+	}
+
+	function prefillSeoFieldsFromAttachment( $scope, forcePopulate ) {
+		const $overrideField = getParamField( $scope, 'seo_override' );
+		const $videoIdField = getParamField( $scope, 'id' );
+		const seoOverrideEnabled = '1' === String( $overrideField.val() );
+		const attachmentId = parseInt( $videoIdField.val(), 10 );
+
+		if ( ! seoOverrideEnabled || ! attachmentId ) {
+			return;
+		}
+
+		fetchAttachmentData( attachmentId ).then( ( attachmentData ) => {
+			if ( ! attachmentData ) {
+				return;
+			}
+
+			const seoData = getSeoDataFromAttachment( attachmentData );
+			const $headlineField = getParamField( $scope, 'seo_headline' );
+			const $descriptionField = getParamField( $scope, 'seo_description' );
+			const $familyFriendlyField = getParamField( $scope, 'seo_family_friendly' );
+
+			const shouldSetHeadline = forcePopulate || ! String( $headlineField.val() || '' ).trim();
+			const shouldSetDescription = forcePopulate || ! String( $descriptionField.val() || '' ).trim();
+			const shouldSetFamilyFriendly = forcePopulate || ! String( $familyFriendlyField.val() || '' ).trim();
+
+			if ( shouldSetHeadline ) {
+				$headlineField.val( seoData.headline ).trigger( 'change' );
+			}
+
+			if ( shouldSetDescription ) {
+				$descriptionField.val( seoData.description ).trigger( 'change' );
+			}
+
+			if ( shouldSetFamilyFriendly ) {
+				$familyFriendlyField.val( seoData.familyFriendly ).trigger( 'change' );
+			}
+		} ).catch( () => {
+			// Silently fail to avoid interrupting editor interactions.
+		} );
+	}
+
+	function fetchAttachmentData( attachmentId ) {
+		if ( attachmentDataCache.has( attachmentId ) ) {
+			return attachmentDataCache.get( attachmentId );
+		}
+
+		const requestPromise = ( wp?.apiFetch
+			? wp.apiFetch( { path: `/wp/v2/media/${ attachmentId }` } )
+			: wp.media.attachment( attachmentId ).fetch()
+		).then( ( response ) => response?.toJSON ? response.toJSON() : response );
+
+		attachmentDataCache.set( attachmentId, requestPromise );
+		return requestPromise;
+	}
+
+	function stripHtmlTags( html ) {
+		if ( ! html ) {
+			return '';
+		}
+
+		const tempDiv = document.createElement( 'div' );
+		tempDiv.innerHTML = String( html );
+		return ( tempDiv.textContent || tempDiv.innerText || '' ).trim();
+	}
+
+	function getFirstNonEmpty( ...values ) {
+		const validValue = values.find( ( value ) => {
+			if ( null === value || undefined === value ) {
+				return false;
+			}
+
+			if ( 'string' === typeof value || 'number' === typeof value ) {
+				return String( value ).trim().length > 0;
+			}
+
+			return false;
+		} );
+
+		return undefined === validValue ? '' : String( validValue );
+	}
+
+	function getSeoDataFromAttachment( attachmentData ) {
+		return {
+			headline: getFirstNonEmpty( attachmentData?.title?.rendered, attachmentData?.title, attachmentData?.slug ),
+			description: stripHtmlTags( getFirstNonEmpty( attachmentData?.description?.rendered, attachmentData?.description ) ),
+			familyFriendly: '1',
+		};
 	}
 
 	/**
@@ -123,6 +258,8 @@ import { __ } from '@wordpress/i18n';
 						'</video>',
 					);
 				}
+
+				maybePrefillSeoFields( $container );
 
 				let $removeButton = $buttonsWrapper.find( '.video-selector-remove' );
 				if ( $removeButton.length === 0 ) {
