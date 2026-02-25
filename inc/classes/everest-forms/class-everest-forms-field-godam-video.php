@@ -479,6 +479,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 					filemtime( RTGODAM_PATH . 'assets/build/js/godam-recorder.min.js' ),
 					true
 				);
+				wp_set_script_translations( 'godam-recorder-script', 'godam', RTGODAM_PATH . 'languages' );
 			}
 
 			if ( ! wp_script_is( 'everestforms-godam' ) ) {

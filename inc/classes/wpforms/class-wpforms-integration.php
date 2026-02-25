@@ -77,6 +77,7 @@ class WPForms_Integration {
 			filemtime( RTGODAM_PATH . 'assets/build/js/godam-recorder.min.js' ),
 			true
 		);
+		wp_set_script_translations( 'godam-recorder-script', 'godam', RTGODAM_PATH . 'languages' );
 	}
 
 	/**
