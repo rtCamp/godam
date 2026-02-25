@@ -5,7 +5,6 @@
 /**
  * VideoJs dependencies
  */
-import 'video.js/dist/video-js.css';
 /**
  * NOTE: Ads plugins (videojs-contrib-ads & videojs-ima) are loaded dynamically
  * in videoPlayer.js BEFORE player initialization when ads are detected.

@@ -181,7 +181,7 @@ export async function loadNewVideo( newVideoId, modal, hasSidebar, context, hasS
 
 				try {
 					const json = JSON.parse( decoded );
-					json.aspectRatio = 'responsive';
+					json.aspectRatio = 'woo-responsive';
 
 					// re-encode to match format.
 					const updatedJson = JSON.stringify( json ).replace( /"/g, '&quot;' );
@@ -195,7 +195,7 @@ export async function loadNewVideo( newVideoId, modal, hasSidebar, context, hasS
 			// Update CSS aspect ratio variable.
 			html = html.replace(
 				/--rtgodam-video-aspect-ratio:\s*[^;"]+/,
-				'--rtgodam-video-aspect-ratio: responsive',
+				'--rtgodam-video-aspect-ratio: woo-responsive',
 			);
 
 			// Inject updated HTML.

@@ -4,6 +4,9 @@
 import DOMPurify from 'isomorphic-dompurify';
 
 // Common function to load more videos
+// Get the REST URL from localized data, fallback to hardcoded path.
+const galleryRestUrl = window.godamGalleryData?.restUrl || '/wp-json/godam/v1/gallery-shortcode';
+
 async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVideos ) {
 	const loadCount = 3 * columns;
 	const spinnerContainer = document.querySelector( '.godam-spinner-container' );
@@ -34,7 +37,7 @@ async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVi
 			engagements: gallery.dataset.engagements === '1',
 			open_to_new_page: gallery.dataset.openToNewPage === '1',
 		} );
-		const response = await fetch( `/wp-json/godam/v1/gallery-shortcode?${ params.toString() }` );
+		const response = await fetch( `${ galleryRestUrl }?${ params.toString() }` );
 		const data = await response.json();
 
 		if ( data.status === 'success' && data.html && data.html.trim() !== '' ) {

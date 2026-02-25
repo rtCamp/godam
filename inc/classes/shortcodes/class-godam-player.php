@@ -79,13 +79,6 @@ class GoDAM_Player {
 		}
 
 		wp_register_style(
-			'godam-player-frontend-style',
-			RTGODAM_URL . 'assets/build/css/godam-player-frontend.css',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/css/godam-player-frontend.css' )
-		);
-
-		wp_register_style(
 			'godam-player-style',
 			RTGODAM_URL . 'assets/build/css/godam-player.css',
 			array(),
@@ -145,7 +138,6 @@ class GoDAM_Player {
 			return;
 		}
 
-		wp_enqueue_style( 'godam-player-frontend-style' );
 		wp_enqueue_style( 'godam-player-style' );
 		wp_enqueue_style( 'godam-player-minimal-skin' );
 		wp_enqueue_style( 'godam-player-pills-skin' );
@@ -174,7 +166,7 @@ class GoDAM_Player {
 				'src'               => '',
 				'sources'           => '',
 				'transcoded_url'    => '',
-				'aspectRatio'       => '', // Note: "responsive" aspect ratio is not working for shortcode. To be fixed later.
+				'aspectRatio'       => 'responsive',
 				'aspect_ratio'      => '', // WPBakery format (lowercase with underscore).
 				'tracks'            => '',
 				'caption'           => '',
@@ -235,7 +227,6 @@ class GoDAM_Player {
 
 		wp_enqueue_script( 'godam-player-frontend-script' );
 		wp_enqueue_script( 'godam-player-analytics-script' );
-		wp_enqueue_style( 'godam-player-frontend-style' );
 		wp_enqueue_style( 'godam-player-style' );
 
 		$godam_settings = get_option( 'rtgodam-settings', array() );

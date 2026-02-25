@@ -12,6 +12,7 @@ import apiFetch from '@wordpress/api-fetch';
  */
 import { ChromeExtensionSvg } from '../assets/svgs';
 import godamLogo from '../../../assets/src/images/godam-logo.png';
+import { hasAPIKey } from '../utils/index.js';
 
 const GodamHeader = () => {
 	const isVideoEditorPage = window.location.href.includes( 'page=rtgodam_video_editor' );
@@ -38,15 +39,18 @@ const GodamHeader = () => {
 
 		const fetchMediaLink = async () => {
 			try {
-				const response = await apiFetch(
-					{
-						path: '/wp-json/godam/v1/site/site-data',
-						headers: {
-							'Content-Type': 'application/json',
-							'X-WP-Nonce': window.wpApiSettings.nonce,
-						},
-					} );
-				if ( 'success' === response?.status && null !== response?.data?.message?.folder_id ) {
+				// Use apiFetch with full URL to handle multisite properly
+				const restUrl = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
+				const siteDataUrl = `${ restUrl }godam/v1/site/site-data`;
+
+				const response = await apiFetch( {
+					url: siteDataUrl,
+					method: 'GET',
+					headers: {
+						'X-WP-Nonce': window.wpApiSettings.nonce,
+					},
+				} );
+				if ( 'success' === response?.status && response?.data?.message?.folder_id ) {
 					const mediaUrl = `${ godamMediaLink }?page=1&viewMode=grid&tab=Folder&folder=${ response.data.message.folder_id }`;
 					setMediaLink( mediaUrl );
 				}
@@ -130,7 +134,7 @@ const GodamHeader = () => {
 									/>
 								) }
 							{
-								( ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan ) && (
+								( ! hasAPIKey ) && (
 									<Button
 										className="godam-button text-xs md:text-sm"
 										variant="primary"

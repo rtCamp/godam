@@ -9,7 +9,7 @@ import { useSelector, useDispatch } from 'react-redux';
  */
 import { Button, TabPanel, Snackbar, Tooltip, Spinner } from '@wordpress/components';
 import { __, _n } from '@wordpress/i18n';
-import { copy, seen } from '@wordpress/icons';
+import { chartBar, copy, seen } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -48,6 +48,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const [ duration, setDuration ] = useState( 0 );
 	const [ snackbarMessage, setSnackbarMessage ] = useState( '' );
 	const [ showSnackbar, setShowSnackbar ] = useState( false );
+	const [ aspectRatio, setAspectRatio ] = useState( '16:9' );
 
 	// Pre-fetch data on mount to ensure copy always works
 	useEffect( () => {
@@ -104,7 +105,17 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 			onBackToAttachmentPicker();
 		}
 
-		const { rtgodam_meta: rtGodamMeta, source_url: sourceURL, mime_type: mimeType, meta } = attachmentConfig;
+		const { rtgodam_meta: rtGodamMeta, source_url: sourceURL, mime_type: mimeType, meta, media_details: mediaDetails } = attachmentConfig;
+
+		// Calculate aspect ratio from video dimensions if available
+		// WordPress stores video dimensions in media_details object
+		const videoWidth = mediaDetails?.width || meta?.width;
+		const videoHeight = mediaDetails?.height || meta?.height;
+
+		if ( videoWidth && videoHeight ) {
+			const calculatedAspectRatio = `${ videoWidth }:${ videoHeight }`;
+			setAspectRatio( calculatedAspectRatio );
+		}
 
 		// Initialize the store if meta exists
 		if ( rtGodamMeta ) {
@@ -195,9 +206,43 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 			const video = playerEl.querySelector( 'video' );
 
 			if ( video ) {
-				video.addEventListener( 'loadedmetadata', () => {
+				video.onloadedmetadata = () => {
 					setDuration( player.duration() );
-				} );
+
+					// Prefer metadata dimensions; virtual media can be missing attachment dimensions.
+					const videoWidth = video.videoWidth;
+					const videoHeight = video.videoHeight;
+
+					if ( videoWidth && videoHeight ) {
+						const metadataAspectRatio = `${ videoWidth }:${ videoHeight }`;
+						setAspectRatio( metadataAspectRatio );
+						player.aspectRatio( metadataAspectRatio );
+					}
+
+					const [ fallbackW, fallbackH ] = String( aspectRatio || '16:9' )
+						.split( ':' )
+						.map( ( value ) => Number( value ) );
+					const widthForCalc = videoWidth || ( Number.isFinite( fallbackW ) && fallbackW > 0 ? fallbackW : 16 );
+					const heightForCalc = videoHeight || ( Number.isFinite( fallbackH ) && fallbackH > 0 ? fallbackH : 9 );
+
+					// Set width based on aspect ratio for 500px height
+					const targetHeight = 500;
+					const calculatedWidth = Math.round( targetHeight * ( widthForCalc / heightForCalc ) );
+					const canvasWrapper = document.querySelector( '.video-canvas-wrapper' );
+					const containerWidth = canvasWrapper?.getBoundingClientRect().width;
+					const maxWidth = containerWidth ? Math.floor( containerWidth ) : window.innerWidth;
+					const constrainedWidth = Math.min( calculatedWidth, maxWidth );
+
+					// Find the easydam-video-player wrapper and set its width
+					const videoPlayerElement = document.querySelector( '#easydam-video-player' );
+					if ( videoPlayerElement ) {
+						videoPlayerElement.style.width = `${ constrainedWidth }px`;
+					}
+				};
+
+				if ( video.readyState >= 1 ) {
+					video.onloadedmetadata();
+				}
 			}
 		}
 	};
@@ -223,7 +268,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		// Validate form layers before saving.
 		if ( invalidLayers.length > 0 ) {
 			const layerTimes = invalidLayers.join( ', ' );
-			setSnackbarMessage( _n( 'Please select a form for the layer at timestamp: ', 'Please select a form for the layers at timestamps: ', invalidLayers.length, 'godam' ) + layerTimes );
+			setSnackbarMessage( _n( 'Please select a form for the layer at timestamp:', 'Please select a form for the layers at timestamps:', invalidLayers.length, 'godam' ) + layerTimes );
 			setShowSnackbar( true );
 			setTimeout( () => {
 				setShowSnackbar( false );
@@ -400,6 +445,18 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 					) }
 
 					<div className="flex space-x-2 justify-end items-center w-full mb-4">
+						{
+							window?.userData?.validApiKey &&
+							<Button
+								variant="secondary"
+								href={ `${ window?.godamRestRoute?.homeUrl }/wp-admin/admin.php?page=rtgodam_analytics&id=${ attachmentID }` }
+								target="_blank"
+								className="godam-button"
+								icon={ chartBar }
+							>
+								{ __( 'Analytics', 'godam' ) }
+							</Button>
+						}
 						<Tooltip
 							text={
 								<p>
@@ -447,7 +504,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 												withCredentials: false,
 											},
 										},
-										aspectRatio: '16:9',
+										aspectRatio,
 										sources,
 										// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
 										// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
@@ -464,12 +521,10 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 											currentTimeDisplay: true,
 											timeDivider: true,
 											durationDisplay: true,
-											fullscreenToggle: true,
+											fullscreenToggle: false,
 											subsCapsButton: true,
-											skipButtons: {
-												forward: 10,
-												backward: 10,
-											},
+											skipButtons: false,
+											pictureInPictureToggle: false,
 										},
 									} }
 									onTimeupdate={ handleTimeUpdate }
