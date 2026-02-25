@@ -110,6 +110,7 @@ class Init {
 			);
 
 			if ( file_exists( $godam_recorder_asset_file ) ) {
+				// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
 				$godam_recorder_asset = include $godam_recorder_asset_file;
 			}
 

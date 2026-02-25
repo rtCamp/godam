@@ -340,6 +340,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 			);
 
 			if ( file_exists( $godam_recorder_asset_file ) ) {
+				// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
 				$godam_recorder_asset = include $godam_recorder_asset_file;
 			}
 
