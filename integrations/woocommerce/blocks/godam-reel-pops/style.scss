@@ -25,6 +25,16 @@
 	&.godam-reel-pops-active {
 		display: block;
 	}
+
+	.godam-reel-pops-modal-instance {
+		.godam-video-wrapper {
+			video {
+				object-fit: cover;
+				width: 100%;
+				height: 100%;
+			}
+		}
+	}
 }
 
 /* Container - floating fixed position with CSS variables */
