@@ -414,7 +414,7 @@ $godam_custom_css_properties = array(
 );
 
 if ( ! empty( $godam_aspect_ratio ) ) {
-	if( 'godam-woo-product-page-reels' === $attributes['godam_context'] ) {
+	if ( 'godam-woo-product-page-reels' === $attributes['godam_context'] ) {
 		$godam_custom_css_properties['--rtgodam-video-aspect-ratio'] = '16/9';
 	} else {
 		$godam_custom_css_properties['--rtgodam-video-aspect-ratio'] = str_replace( ':', '/', $godam_aspect_ratio );
@@ -529,7 +529,7 @@ if ( $godam_should_preload_poster ) {
 						<div class="godam-player-overlay"></div>
 					<?php endif; ?>
 
-					<?php if( ! $godam_woocommerce_context ) : ?>
+					<?php if ( ! $godam_woocommerce_context ) : ?>
 						<?php foreach ( $godam_layers as $godam_layer ) : ?>
 							<?php if ( isset( $godam_layer['miniCart'] ) ) : ?>
 								<?php if ( true === $godam_layer['miniCart'] ) : ?>
