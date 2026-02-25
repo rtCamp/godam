@@ -83,6 +83,8 @@ import { isSafari } from '../../assets/js/global-video-popup/utility.js';
 			this.isHiddenForModal = false;
 			this.wasRotationActiveBeforeModal = false;
 			this.modalObserver = null;
+			this.globalModalObserver = null;
+			this.isGlobalModalSyncScheduled = false;
 			this.currentModalVideoId = '';
 			this.isSwitchingModal = false;
 
@@ -145,7 +147,73 @@ import { isSafari } from '../../assets/js/global-video-popup/utility.js';
 				// Bind modal click overlays.
 				this.bindModalTriggers();
 				this.ensureModalNavigationSources();
+				this.attachGlobalModalObserver();
+				this.syncWithGlobalModalState();
 			}, delayMs );
+		}
+
+		/**
+		 * Attach a global observer so Reel Pops reacts when any product modal
+		 * is opened/closed on the page (including godam-product-gallery).
+		 */
+		attachGlobalModalObserver() {
+			if ( this.globalModalObserver || ! document.body ) {
+				return;
+			}
+
+			this.globalModalObserver = new MutationObserver( () => {
+				this.scheduleGlobalModalSync();
+			} );
+
+			this.globalModalObserver.observe( document.body, {
+				subtree: true,
+				childList: true,
+				attributes: true,
+				attributeFilter: [ 'class' ],
+			} );
+		}
+
+		/**
+		 * Schedule global modal sync to avoid excessive work on rapid mutations.
+		 */
+		scheduleGlobalModalSync() {
+			if ( this.isGlobalModalSyncScheduled ) {
+				return;
+			}
+
+			this.isGlobalModalSyncScheduled = true;
+			window.requestAnimationFrame( () => {
+				this.isGlobalModalSyncScheduled = false;
+				this.syncWithGlobalModalState();
+			} );
+		}
+
+		/**
+		 * Check if any blocking product modal is currently open on the page.
+		 *
+		 * @return {boolean} True if any supported modal is open/active.
+		 */
+		hasAnyBlockingOpenModal() {
+			return !! document.querySelector(
+				'.godam-woo-global-modal-container.open, .rtgodam-product-video-gallery-slider-modal.open',
+			);
+		}
+
+		/**
+		 * Hide Reel Pops when any product modal is open; restore when all are closed.
+		 */
+		syncWithGlobalModalState() {
+			if ( this.isClosedByUser ) {
+				return;
+			}
+
+			const hasAnyOpenModal = this.hasAnyBlockingOpenModal();
+			if ( hasAnyOpenModal ) {
+				this.hideForModal();
+				return;
+			}
+
+			this.restoreAfterModal();
 		}
 
 		/**
@@ -876,7 +944,7 @@ import { isSafari } from '../../assets/js/global-video-popup/utility.js';
 				return;
 			}
 
-			const hasOpenModal = !! this.wrapper.querySelector( '.godam-product-modal-container.open, .godam-product-modal-container.active' );
+			const hasOpenModal = this.hasAnyBlockingOpenModal();
 			if ( hasOpenModal ) {
 				return;
 			}
