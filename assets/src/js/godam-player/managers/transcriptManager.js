@@ -33,12 +33,14 @@ export default class TranscriptManager {
 
 	/**
 	 * Build the transcription API endpoint URL.
+	 * Uses the WordPress REST proxy to avoid CORS issues when fetching
+	 * from app.godam.io directly via browser JS.
 	 *
-	 * @return {string} The full API endpoint URL
+	 * @return {string} The full proxy endpoint URL
 	 */
 	getTranscriptionEndpoint() {
-		const apiBase = this.getApiBase();
-		return `${ apiBase }/api/method/godam_core.api.process.get_public_transcription_path`;
+		// Use the WP REST proxy URL (server-side, no CORS).
+		return `${ window?.godamRestRoute?.url || '/wp-json/' }godam/v1/transcoding/transcript-path/`;
 	}
 
 	/**

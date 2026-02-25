@@ -136,7 +136,112 @@ class Transcoding extends Base {
 					),
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/transcript-path/',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_transcript_path' ),
+					'permission_callback' => '__return_true',
+					'args'                => array(
+						'job_name' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'description'       => __( 'The transcoding job ID.', 'godam' ),
+							'sanitize_callback' => 'sanitize_key',
+						),
+					),
+				),
+			),
 		);
+	}
+
+	/**
+	 * Proxy endpoint: fetch the public transcription path from the GoDAM API.
+	 * Avoids CORS issues by making the request server-side.
+	 *
+	 * Fast path (no HTTP call):
+	 *   1. If transcript_path post meta already set by the transcription callback → return instantly.
+	 *   2. If a transient cache exists for this job → return from DB.
+	 * Slow path (HTTP call to app.godam.io):
+	 *   3. Otherwise fetch from the remote API, then cache:
+	 *      - exists:true  → 24 hours (URL is immutable once generated)
+	 *      - exists:false → 60 seconds (matches upstream Cache-Control: max-age=60)
+	 *
+	 * @param \WP_REST_Request $request REST request object.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function get_transcript_path( \WP_REST_Request $request ) {
+		$job_name      = $request->get_param( 'job_name' );
+		$transient_key = 'rtgodam_transcript_' . md5( $job_name );
+
+		// Fast path 1: transcript URL already stored in post meta by the transcription callback.
+		$attachment_id = $this->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_name );
+		if ( $attachment_id ) {
+			$stored_url = get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
+			if ( $stored_url ) {
+				return new \WP_REST_Response(
+					array(
+						'exists' => true,
+						'url'    => $stored_url,
+					),
+					200
+				);
+			}
+		}
+
+		// Fast path 2: transient cache (avoids HTTP call on repeat requests while transcript pending).
+		$cached = get_transient( $transient_key );
+		if ( false !== $cached ) {
+			return new \WP_REST_Response( $cached, 200 );
+		}
+
+		// Slow path: call app.godam.io server-side (no CORS restriction from PHP).
+		$api_url = add_query_arg(
+			array( 'job_name' => rawurlencode( $job_name ) ),
+			RTGODAM_API_BASE . '/api/method/godam_core.api.process.get_public_transcription_path'
+		);
+
+		$response = wp_safe_remote_get(
+			$api_url,
+			array(
+				'headers' => array(
+					'Accept' => 'application/json',
+				),
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			return new \WP_Error(
+				'godam_transcript_fetch_failed',
+				$response->get_error_message(),
+				array( 'status' => 502 )
+			);
+		}
+
+		$status_code = wp_remote_retrieve_response_code( $response );
+		$body        = wp_remote_retrieve_body( $response );
+		$data        = json_decode( $body, true );
+
+		if ( JSON_ERROR_NONE !== json_last_error() ) {
+			return new \WP_Error(
+				'godam_transcript_invalid_json',
+				__( 'Invalid JSON response from GoDAM API.', 'godam' ),
+				array( 'status' => 502 )
+			);
+		}
+
+		// Unwrap Frappe-style response wrapper.
+		$payload = isset( $data['message'] ) ? $data['message'] : $data;
+
+		if ( 200 === $status_code ) {
+			// Cache exists:true for 24h (transcript URL is permanent once it exists).
+			// Cache exists:false for 60s (matches upstream Cache-Control: max-age=60).
+			$ttl = ! empty( $payload['exists'] ) ? DAY_IN_SECONDS : 60;
+			set_transient( $transient_key, $payload, $ttl );
+		}
+
+		return new \WP_REST_Response( $payload, $status_code );
 	}
 
 	/**
