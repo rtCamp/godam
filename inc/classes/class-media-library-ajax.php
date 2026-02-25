@@ -984,16 +984,16 @@ class Media_Library_Ajax {
 
 			// Use the current image URL as the base for all subsizes.
 			$base_url = trailingslashit( untrailingslashit( dirname( $image_src ) ) );
-	
+
 			// Rebuild sources array for virtual media.
 			foreach ( $sources as &$source ) {
-	
+
 				// Get last string after the last slash in the file url.
 				$file_basename = basename( $source['url'] );
-	
+
 				// Rebuild the full URL using the base URL and the file basename.
 				$url = $base_url . ltrim( $file_basename, '/' );
-	
+
 				$source['url'] = esc_url( $url );
 			}
 			unset( $source ); // Break the reference.
@@ -1019,6 +1019,12 @@ class Media_Library_Ajax {
 
 		$mime_type = get_post_mime_type( $attachment_id );
 		if ( 'image' !== substr( $mime_type, 0, 5 ) ) {
+			return $filtered_image;
+		}
+
+		// If rtgodam_image_sizes meta exists, it indicates this is a GoDAM-managed image and we should attempt to replace the src with the CDN URL if available.
+		$rtgodam_image_sizes = $this->get_rtgodam_image_sizes( $attachment_id );
+		if ( empty( $rtgodam_image_sizes ) ) {
 			return $filtered_image;
 		}
 
