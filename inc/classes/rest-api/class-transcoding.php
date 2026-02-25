@@ -235,10 +235,21 @@ class Transcoding extends Base {
 		$payload = isset( $data['message'] ) ? $data['message'] : $data;
 
 		if ( 200 === $status_code ) {
-			// Cache exists:true for 24h (transcript URL is permanent once it exists).
-			// Cache exists:false for 60s (matches upstream Cache-Control: max-age=60).
-			$ttl = ! empty( $payload['exists'] ) ? DAY_IN_SECONDS : 60;
-			set_transient( $transient_key, $payload, $ttl );
+			if ( ! empty( $payload['exists'] ) && ! empty( $payload['url'] ) ) {
+				// Persist to post meta so future page loads embed the track directly in HTML
+				// via the PHP fast path, eliminating this HTTP request entirely.
+				if ( $attachment_id ) {
+					update_post_meta( $attachment_id, 'rtgodam_transcript_path', esc_url_raw( $payload['url'] ) );
+					// Clear the transient — post meta is the permanent cache now.
+					delete_transient( $transient_key );
+				} else {
+					// No attachment found (e.g. virtual media), use transient only.
+					set_transient( $transient_key, $payload, DAY_IN_SECONDS );
+				}
+			} else {
+				// Transcript not ready yet — cache for 60s (matches upstream Cache-Control: max-age=60).
+				set_transient( $transient_key, $payload, 60 );
+			}
 		}
 
 		return new \WP_REST_Response( $payload, $status_code );

@@ -1,9 +1,15 @@
 /**
  * Transcript Manager
- * Handles fetching and loading AI-generated transcription tracks from the GoDAM API.
+ * Handles loading AI-generated transcription tracks.
  *
- * Uses the public API endpoint with ETag/Cache-Control support:
- * GET /api/method/godam_core.api.process.get_public_transcription_path?job_name=<job_id>
+ * Fast path: If PHP has already embedded the transcript URL in the video element's
+ * data-transcript_url attribute (from post meta), the <track> is already in the DOM
+ * and no HTTP request is made.
+ *
+ * Slow path: If data-transcript_url is absent, fetches from the WP REST proxy:
+ * GET /wp-json/godam/v1/transcoding/transcript-path/?job_name=<job_id>
+ * PHP calls app.godam.io server-side (no CORS), persists URL to post meta,
+ * so the next page load takes the fast path.
  */
 export default class TranscriptManager {
 	/**
@@ -45,7 +51,14 @@ export default class TranscriptManager {
 
 	/**
 	 * Initialize transcript loading.
-	 * Fetches transcript URL from API and adds it as a text track.
+	 *
+	 * Fast path: PHP injected data-transcript_url on the <video> element because the
+	 * transcript URL was already in the DB. The <track> element is already in the DOM,
+	 * so we just record the URL and return — no HTTP request needed.
+	 *
+	 * Slow path: data-transcript_url is absent, meaning the transcript either doesn't
+	 * exist yet or was never persisted. Fetch from the WP REST proxy; if the transcript
+	 * exists, PHP will persist it to post meta so the next page load takes the fast path.
 	 *
 	 * @return {Promise<void>}
 	 */
@@ -54,11 +67,20 @@ export default class TranscriptManager {
 			return;
 		}
 
-		// Check if captions/subtitles are enabled in the player configuration
+		// Check if captions/subtitles are enabled in the player configuration.
 		if ( ! this.isCaptionsEnabled() ) {
 			return;
 		}
 
+		// Fast path: transcript URL was embedded by PHP from post meta.
+		// The <track> element is already in the DOM — videojs handles it, no fetch needed.
+		const preloadedUrl = this.video.dataset.transcript_url;
+		if ( preloadedUrl ) {
+			this.transcriptUrl = preloadedUrl;
+			return;
+		}
+
+		// Slow path: transcript not yet in DB, request the WP proxy.
 		try {
 			const transcriptData = await this.fetchTranscriptPath();
 
@@ -67,7 +89,7 @@ export default class TranscriptManager {
 				this.addTextTrack( transcriptData.url );
 			}
 		} catch ( error ) {
-			// Silently fail - transcript is optional
+			// Silently fail — transcript is optional.
 			// eslint-disable-next-line no-console
 			console.debug( 'GoDAM: Could not load transcript:', error.message );
 		}

@@ -430,15 +430,34 @@ if ( $godam_is_shortcode || $godam_is_elementor_widget ) {
 }
 
 /**
- * AI Generated video tracks (transcription) are now loaded dynamically from the frontend.
- * The frontend JavaScript will fetch the transcript URL using the job_id via the API endpoint:
- * GET /api/method/godam_core.api.process.get_public_transcription_path?job_name=<job_id>
+ * AI-generated transcript (subtitles) fast path:
+ * If the transcript URL is already stored in post meta (set when the transcription
+ * callback fires, or persisted by the JS proxy on first discovery), embed it directly
+ * as a <track> element in the HTML. JS will see data-transcript_url and skip the fetch.
  *
- * This approach provides:
- * - Better caching with ETag/Cache-Control headers
- * - Reduced server-side processing on page load
- * - Automatic cache invalidation when transcription is updated
+ * If the URL is NOT in post meta, JS will request the WP proxy which calls
+ * app.godam.io server-side and persists the URL to post meta for future page loads.
  */
+$godam_transcript_url = '';
+
+if ( ! empty( $godam_attachment_id ) && is_numeric( $godam_attachment_id ) ) {
+	$godam_transcript_url = get_post_meta( $godam_attachment_id, 'rtgodam_transcript_path', true );
+
+	if ( $godam_transcript_url ) {
+		// Add the transcript track only if captions are not explicitly disabled.
+		$godam_display_caption_check = ( ! isset( $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) ) ||
+			( isset( $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) && $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] );
+
+		if ( $godam_display_caption_check ) {
+			$godam_tracks[] = array(
+				'src'     => esc_url_raw( $godam_transcript_url ),
+				'kind'    => 'subtitles',
+				'srclang' => 'en',
+				'label'   => 'English',
+			);
+		}
+	}
+}
 
 $godam_attachment_title = '';
 
@@ -526,6 +545,9 @@ if ( $godam_should_preload_poster ) {
 						data-hover-select="<?php echo esc_attr( $godam_hover_select ); ?>"
 						data-video-title="<?php echo esc_attr( $godam_attachment_title ); ?>"
 						data-autoplay-on-view="<?php echo esc_attr( $godam_autoplay ? 'true' : 'false' ); ?>"
+						<?php if ( $godam_transcript_url ) : ?>
+						data-transcript_url="<?php echo esc_url( $godam_transcript_url ); ?>"
+						<?php endif; ?>
 					>
 						<?php
 
