@@ -198,7 +198,7 @@ class Transcoding extends Base {
 
 		// Slow path: call app.godam.io server-side (no CORS restriction from PHP).
 		$api_url = add_query_arg(
-			array( 'job_name' => rawurlencode( $job_name ) ),
+			array( 'job_name' => $job_name ),
 			RTGODAM_API_BASE . '/api/method/godam_core.api.process.get_public_transcription_path'
 		);
 
