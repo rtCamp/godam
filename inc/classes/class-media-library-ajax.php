@@ -210,6 +210,27 @@ class Media_Library_Ajax {
 			return;
 		}
 
+		// Check if HTTP auth is enabled.
+		if ( rtgodam_has_http_auth() ) {
+			if ( $manual_retranscode ) {
+				// Store in failed transcoding list for retry later.
+				$failed_transcoding_attachments                   = get_option( 'rtgodam-failed-transcoding-attachments', array() );
+				$failed_transcoding_attachments[ $attachment_id ] = array(
+					'wp_metadata'   => array( 'mime_type' => $mime_type ),
+					'attachment_id' => $attachment_id,
+					'autoformat'    => true,
+				);
+				update_option( 'rtgodam-failed-transcoding-attachments', $failed_transcoding_attachments );
+			}
+
+			// Update status to failed.
+			update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'failed' );
+			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', __( 'HTTP authentication is enabled on your site, preventing transcoding.', 'godam' ) );
+			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', 'http_auth_enabled' );
+
+			return;
+		}
+
 		$api_key = get_option( 'rtgodam-api-key', '' );
 
 		if ( empty( $api_key ) ) {
