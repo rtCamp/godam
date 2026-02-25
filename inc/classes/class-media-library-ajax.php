@@ -1022,6 +1022,12 @@ class Media_Library_Ajax {
 			return $filtered_image;
 		}
 
+		// Don't change the image src for virtual media as well.
+		$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+		if ( ! empty( $godam_original_id ) ) {
+			return $filtered_image;
+		}
+
 		// If rtgodam_image_sizes meta exists, it indicates this is a GoDAM-managed image and we should attempt to replace the src with the CDN URL if available.
 		$rtgodam_image_sizes = $this->get_rtgodam_image_sizes( $attachment_id );
 		if ( empty( $rtgodam_image_sizes ) ) {
