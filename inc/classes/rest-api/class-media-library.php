@@ -346,7 +346,14 @@ class Media_Library extends Base {
 	}
 
 	/**
-	 * Update image attachment meta with subsizes.
+	 * Update image attachment meta with CDN subsizes.
+	 *
+	 * For virtual images, stores sizes in both `rtgodam_image_sizes` and
+	 * `_wp_attachment_metadata['sizes']`.
+	 *
+	 * For WordPress-uploaded images, stores GoDAM sizes only in
+	 * `rtgodam_image_sizes` and keeps `_wp_attachment_metadata['sizes']`
+	 * untouched.
 	 *
 	 * @since 1.5.0
 	 *
@@ -380,13 +387,16 @@ class Media_Library extends Base {
 		}
 
 		$attachment_meta = get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
+		$is_virtual      = ! empty( get_post_meta( $attachment_id, '_godam_original_id', true ) );
 
 		// Normalize attachment meta to an array with a sizes key.
 		if ( ! is_array( $attachment_meta ) ) {
 			$attachment_meta = array();
 		}
 
-		if ( empty( $attachment_meta['sizes'] ) || ! is_array( $attachment_meta['sizes'] ) ) {
+		$rtgodam_image_sizes = array();
+
+		if ( $is_virtual && ( empty( $attachment_meta['sizes'] ) || ! is_array( $attachment_meta['sizes'] ) ) ) {
 			$attachment_meta['sizes'] = array();
 		}
 
@@ -426,12 +436,23 @@ class Media_Library extends Base {
 			// Get last string after the last slash in the file url.
 			$file_basename = basename( $size['file'] );
 
-			$attachment_meta['sizes'][ $external_size_name ] = array(
+			$rtgodam_image_sizes[ $external_size_name ] = array(
+				'url'      => esc_url_raw( $size['file'] ),
 				'file'     => $file_basename,
 				'filesize' => $size['filesize'],
 				'width'    => $size['width'],
 				'height'   => $size['height'],
 			);
+
+			// For virtual images, persist CDN sub-sizes in WordPress metadata too.
+			if ( $is_virtual ) {
+				$attachment_meta['sizes'][ $external_size_name ] = array(
+					'file'     => $file_basename,
+					'filesize' => $size['filesize'],
+					'width'    => $size['width'],
+					'height'   => $size['height'],
+				);
+			}
 		}
 
 		// Ensure top-level width/height exist for srcset calculation, fall back to the largest generated size.
@@ -463,7 +484,21 @@ class Media_Library extends Base {
 		}
 
 		update_post_meta( $attachment_id, '_wp_attachment_metadata', $attachment_meta );
+		update_post_meta( $attachment_id, 'rtgodam_image_sizes', $rtgodam_image_sizes );
 		return true;
+	}
+
+	/**
+	 * Request image subsizes generation from GoDAM for an image attachment.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $job_id        The GoDAM job ID.
+	 * @param int    $attachment_id The WordPress attachment ID.
+	 * @return bool True if request was successful, false otherwise.
+	 */
+	public function request_image_subsizes_for_attachment( $job_id, $attachment_id ) {
+		return $this->request_image_subsizes_from_godam( $job_id, $attachment_id );
 	}
 
 	/**
@@ -1290,10 +1325,12 @@ class Media_Library extends Base {
 		$type     = $request->get_param( 'type' ) ?? 'all';
 		$search   = $request->get_param( 'search' );
 
-		// For now, we hardcode total count as 0 till we get the API endpoint ready.
-		$total     = 0;
-		$all_items = array();
-		$has_more  = false;
+		// Pagination defaults for backward compatibility when upstream values are unavailable.
+		$total        = 0;
+		$total_pages  = 0;
+		$current_page = $page;
+		$all_items    = array();
+		$has_more     = false;
 
 		// Retrieve the GoDAM API key stored in WordPress options.
 		$api_key = get_option( 'rtgodam-api-key', '' );
@@ -1378,8 +1415,11 @@ class Media_Library extends Base {
 				);
 			}
 
-			$response = $body->message->files;
-			$has_more = isset( $body->message->has_more ) ? $body->message->has_more : false;
+			$response     = $body->message->files;
+			$total        = isset( $body->message->total_count ) ? absint( $body->message->total_count ) : 0;
+			$total_pages  = isset( $body->message->total_pages ) ? absint( $body->message->total_pages ) : 0;
+			$current_page = isset( $body->message->current_page ) ? max( 1, absint( $body->message->current_page ) ) : $page;
+			$has_more     = isset( $body->message->has_more ) ? (bool) $body->message->has_more : ( $total_pages > 0 ? $current_page < $total_pages : false );
 
 			$all_items = array();
 
@@ -1402,14 +1442,17 @@ class Media_Library extends Base {
 		// Return a REST response with pagination and status details.
 		return rest_ensure_response(
 			array(
-				'success'     => true,
-				'message'     => __( 'Filtered GoDAM files by MIME type.', 'godam' ),
-				'data'        => array_values( $all_items ),
-				'total_items' => $total,
-				'mime_type'   => $type,
-				'page'        => $page,
-				'per_page'    => $per_page,
-				'has_more'    => $has_more,
+				'success'      => true,
+				'message'      => __( 'Filtered GoDAM files by MIME type.', 'godam' ),
+				'data'         => array_values( $all_items ),
+				'total_items'  => $total,
+				'total_count'  => $total,
+				'total_pages'  => $total_pages,
+				'current_page' => $current_page,
+				'mime_type'    => $type,
+				'page'         => $page,
+				'per_page'     => $per_page,
+				'has_more'     => $has_more,
 			)
 		);
 	}

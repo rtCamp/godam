@@ -149,6 +149,13 @@ const godamVideoEmbed = {
 	},
 };
 
+const godamVideoPreview = {
+	...sharedConfig,
+	entry: {
+		'godam-video-preview': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-video-preview.js' ),
+	},
+};
+
 const gfGodamRecorderEditorJS = {
 	...sharedConfig,
 	entry: {
@@ -347,6 +354,7 @@ module.exports = [
 	httpAuthDetector,
 	godamGallery,
 	godamVideoEmbed,
+	godamVideoPreview,
 	gfGodamRecorderEditorJS,
 	wpFormsGodamRecorderEditorJS,
 	jetpackFormJS,

@@ -58,10 +58,9 @@ const Appearance = () => {
 
 	useEffect( () => {
 		//class gets re added upon component load, so we need to remove it.
-		if ( videoConfig.controlBar.subsCapsButton ) {
-			document
-				.querySelector( '.vjs-subs-caps-button' )
-				.classList.remove( 'vjs-hidden' );
+		const captionsButton = document.querySelector( '.vjs-subs-caps-button' );
+		if ( videoConfig.controlBar.subsCapsButton && captionsButton ) {
+			captionsButton.classList.remove( 'vjs-hidden' );
 		}
 		dispatch( setCurrentLayer( null ) );
 	}, [ dispatch, videoConfig.controlBar.subsCapsButton ] );
@@ -76,6 +75,11 @@ const Appearance = () => {
 				},
 			} ),
 		);
+
+		if ( ! volumeSlider ) {
+			return;
+		}
+
 		if ( volumeSlider.classList.contains( 'hide' ) ) {
 			volumeSlider.classList.remove( 'hide' );
 			volumeSlider.classList.add( 'show' );
@@ -95,6 +99,10 @@ const Appearance = () => {
 				},
 			} ),
 		);
+
+		if ( ! captionsButton ) {
+			return;
+		}
 
 		if ( captionsButton.classList.contains( 'show' ) ) {
 			captionsButton.classList.add( 'hide' );
@@ -120,7 +128,7 @@ const Appearance = () => {
 			} ),
 		);
 
-		if ( brandingLogo ) {
+		if ( brandingLogo && controlBar ) {
 			if ( ! videoConfig.controlBar.brandingIcon ) { // added opposite condition due to delayed update of redux state.
 				controlBar.appendChild( brandingLogo );
 			} else {
@@ -319,7 +327,9 @@ const Appearance = () => {
 			const restoredButton = originalPlayButton.cloneNode( true );
 
 			// Replace the image with the original button
-			customImageElement.parentNode.replaceChild( restoredButton, customImageElement );
+			if ( customImageElement.parentNode ) {
+				customImageElement.parentNode.replaceChild( restoredButton, customImageElement );
+			}
 		} else {
 		// Fallback: create a new default play button if original is not available
 			const playButtonContainer = document.querySelector( '.video-js' );
@@ -339,7 +349,9 @@ const Appearance = () => {
 				defaultButton.appendChild( iconSpan );
 
 				// Replace the image with the default button
-				existingCustomImage.parentNode.replaceChild( defaultButton, existingCustomImage );
+				if ( existingCustomImage.parentNode ) {
+					existingCustomImage.parentNode.replaceChild( defaultButton, existingCustomImage );
+				}
 			}
 		}
 	};
@@ -364,28 +376,32 @@ const Appearance = () => {
 			'[class^="vjs-skip-forward-"]',
 		);
 
-		const backwardClasses = Array.from( skipBackwardButton.classList );
-		const existingBackwardClass = backwardClasses.find( ( cls ) =>
-			cls.startsWith( 'vjs-skip-backward-' ),
-		);
-
-		if ( existingBackwardClass ) {
-			skipBackwardButton.classList.replace(
-				existingBackwardClass,
-				`vjs-skip-backward-${ selectedSkipVal }`,
+		if ( skipBackwardButton ) {
+			const backwardClasses = Array.from( skipBackwardButton.classList );
+			const existingBackwardClass = backwardClasses.find( ( cls ) =>
+				cls.startsWith( 'vjs-skip-backward-' ),
 			);
+
+			if ( existingBackwardClass ) {
+				skipBackwardButton.classList.replace(
+					existingBackwardClass,
+					`vjs-skip-backward-${ selectedSkipVal }`,
+				);
+			}
 		}
 
-		const forwardClasses = Array.from( skipForwardButton.classList );
-		const existingForwardClass = forwardClasses.find( ( cls ) =>
-			cls.startsWith( 'vjs-skip-forward-' ),
-		);
-
-		if ( existingForwardClass ) {
-			skipForwardButton.classList.replace(
-				existingForwardClass,
-				`vjs-skip-forward-${ selectedSkipVal }`,
+		if ( skipForwardButton ) {
+			const forwardClasses = Array.from( skipForwardButton.classList );
+			const existingForwardClass = forwardClasses.find( ( cls ) =>
+				cls.startsWith( 'vjs-skip-forward-' ),
 			);
+
+			if ( existingForwardClass ) {
+				skipForwardButton.classList.replace(
+					existingForwardClass,
+					`vjs-skip-forward-${ selectedSkipVal }`,
+				);
+			}
 		}
 	}
 
@@ -480,28 +496,28 @@ const Appearance = () => {
 						options={ [
 							{
 								key: 'center',
-								name: 'Center',
+								name: __( 'Center', 'godam' ),
 							},
 							{
 								key: 'left',
-								name: 'Left',
+								name: __( 'Left', 'godam' ),
 							},
 							{
 								key: 'top',
-								name: 'Top',
+								name: __( 'Top', 'godam' ),
 							},
 							{
 								key: 'bottom',
-								name: 'Bottom',
+								name: __( 'Bottom', 'godam' ),
 							},
 							{
 								key: 'right',
-								name: 'Right',
+								name: __( 'Right', 'godam' ),
 							},
 						] }
 						value={ {
 							key: videoConfig.controlBar.playButtonPosition,
-							name: videoConfig.controlBar.playButtonPositionName,
+							name: videoConfig.controlBar.playButtonPositionName || ( videoConfig.controlBar.playButtonPosition ? videoConfig.controlBar.playButtonPosition.charAt( 0 ).toUpperCase() + videoConfig.controlBar.playButtonPosition.slice( 1 ) : __( 'Center', 'godam' ) ),
 						} }
 					/>
 				</div>
@@ -569,8 +585,8 @@ const Appearance = () => {
 						] }
 						label={ __( 'Adjust Skip Duration', 'godam' ) }
 						value={ {
-							key: videoConfig.controlBar.skipButtons.forward.toString(),
-							name: videoConfig.controlBar.skipButtons.forward.toString(),
+							key: videoConfig.controlBar.skipButtons?.forward?.toString() || '10',
+							name: videoConfig.controlBar.skipButtons?.forward?.toString() || '10',
 						} }
 					/>
 				</div>
@@ -668,7 +684,7 @@ const Appearance = () => {
 								label={ __( 'adTag URL', 'godam' ) }
 								help={ <>
 									<div>
-										{ __( 'A VAST ad tag URL is used by a player to retrieve video and audio ads ', 'godam' ) }
+										{ __( 'A VAST ad tag URL is used by a player to retrieve video and audio ads', 'godam' ) }{ ' ' }
 										<a href="https://support.google.com/admanager/answer/177207?hl=en" target="_blank" rel="noreferrer noopener" className="text-blue-500 underline">{ __( 'Learn more.', 'godam' ) }</a>
 									</div>
 								</>

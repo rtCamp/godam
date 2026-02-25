@@ -10,6 +10,7 @@ import 'video.js/dist/video-js.css';
 import '../video-editor/style.scss';
 import axios from 'axios';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
+import { getAPIKeyErrorInfo } from '../godam/utils';
 import {
 	useFetchAnalyticsDataQuery,
 	useFetchProcessedAnalyticsHistoryQuery,
@@ -17,22 +18,23 @@ import {
 import { calculateEngagementRate, calculatePlayRate, generateLineChart } from './helper';
 import DOMPurify from 'isomorphic-dompurify';
 import './charts.js';
-import upgradePlanBackground from '../../assets/src/images/upgrade-plan-analytics-bg.png';
 
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { Button, Spinner } from '@wordpress/components';
+import { addQueryArgs } from '@wordpress/url';
 import SingleMetrics from './SingleMetrics.js';
 import PlaybackPerformanceDashboard from './PlaybackPerformance.js';
 import videojs from 'video.js';
 import { arrowLeft } from '@wordpress/icons';
+import { API_KEY_STATUS, ERROR_TYPE } from '../shared/enums';
 import { formatNumber, formatWatchTime } from '../utils/formatters';
 
 const adminUrl =
   window.videoData?.adminUrl;
-const restURL = window.godamRestRoute.url || '';
+const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
 const RenderVideo = ( { attachmentID, attachmentData, className, videoId } ) => {
 	const getMimiType = ( mime ) => {
@@ -112,10 +114,13 @@ const Analytics = ( { attachmentID } ) => {
 		const container = document.getElementById( 'video-analytics-container' );
 		const overlay = document.getElementById( 'api-key-overlay' );
 
+		// Check for server-side errors OR local API key status issues
+		const apiKeyError = getAPIKeyErrorInfo();
 		const shouldShowOverlay =
-			analyticsDataFetched?.errorType === 'invalid_key' ||
-			analyticsDataFetched?.errorType === 'missing_key' ||
-			analyticsDataFetched?.errorType === 'microservice_error';
+			analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY ||
+			analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ||
+			analyticsDataFetched?.errorType === ERROR_TYPE.MICROSERVICE_ERROR ||
+			apiKeyError !== null;
 
 		if ( shouldShowOverlay ) {
 			if ( loadingEl ) {
@@ -174,7 +179,7 @@ const Analytics = ( { attachmentID } ) => {
 		const originalVideoEl = document.getElementById( 'original-analytics-video' );
 
 		const videoOptions = {
-			fluid: true,
+			fluid: false,
 			mute: true,
 			controls: false,
 			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
@@ -188,34 +193,103 @@ const Analytics = ( { attachmentID } ) => {
 			},
 		};
 
-		if ( originalVideoEl && analyticsData ) {
+		let originalResizeHandler = null;
+
+		if ( originalVideoEl ) {
 			const originalVideo = videojs( 'original-analytics-video', videoOptions );
 
-			generateLineChart(
-				JSON.parse( analyticsData?.all_time_heatmap ),
-				'#performance-line-chart',
-				originalVideo,
-				'.performance-line-chart-tooltip',
-				525,
-				300,
-			);
+			// Set aspect ratio when metadata loads
+			originalVideo.on( 'loadedmetadata', () => {
+				const videoWidth = originalVideo.videoWidth();
+				const videoHeight = originalVideo.videoHeight();
+
+				if ( videoWidth && videoHeight ) {
+					const aspectRatio = `${ videoWidth }:${ videoHeight }`;
+					originalVideo.aspectRatio( aspectRatio );
+
+					const container = originalVideoEl.closest( '.block' );
+					if ( container ) {
+						originalResizeHandler = () => {
+							const parentWidth = container.parentElement?.offsetWidth || window.innerWidth;
+							const maxWidth = Math.min( parentWidth - 40, 525 );
+							const calculatedWidth = 320 * ( videoWidth / videoHeight );
+							const finalWidth = Math.min( calculatedWidth, maxWidth );
+							container.style.width = `${ finalWidth }px`;
+							container.style.maxWidth = '100%';
+						};
+
+						originalResizeHandler();
+						window.addEventListener( 'resize', originalResizeHandler );
+					}
+				}
+			} );
+
+			if ( isABTestCompleted && analyticsData ) {
+				generateLineChart(
+					JSON.parse( analyticsData?.all_time_heatmap ),
+					'#performance-line-chart',
+					originalVideo,
+					'.performance-line-chart-tooltip',
+					525,
+					300,
+				);
+			}
 		}
 
 		const comparisonVideoEl = document.getElementById( 'comparison-analytics-video' );
+		let comparisonResizeHandler = null;
 
-		if ( comparisonVideoEl && abTestComparisonAnalyticsData ) {
+		if ( comparisonVideoEl ) {
 			const comparisonVideo = videojs( 'comparison-analytics-video', videoOptions );
 
-			generateLineChart(
-				JSON.parse( abTestComparisonAnalyticsData?.all_time_heatmap ),
-				'#comparison-line-chart',
-				comparisonVideo,
-				'.comparison-line-chart-tooltip',
-				525,
-				300,
-			);
+			// Set aspect ratio when metadata loads
+			comparisonVideo.on( 'loadedmetadata', () => {
+				const videoWidth = comparisonVideo.videoWidth();
+				const videoHeight = comparisonVideo.videoHeight();
+
+				if ( videoWidth && videoHeight ) {
+					const aspectRatio = `${ videoWidth }:${ videoHeight }`;
+					comparisonVideo.aspectRatio( aspectRatio );
+
+					const container = comparisonVideoEl.closest( '.block' );
+					if ( container ) {
+						comparisonResizeHandler = () => {
+							const parentWidth = container.parentElement?.offsetWidth || window.innerWidth;
+							const maxWidth = Math.min( parentWidth - 40, 525 );
+							const calculatedWidth = 320 * ( videoWidth / videoHeight );
+							const finalWidth = Math.min( calculatedWidth, maxWidth );
+							container.style.width = `${ finalWidth }px`;
+							container.style.maxWidth = '100%';
+						};
+
+						comparisonResizeHandler();
+						window.addEventListener( 'resize', comparisonResizeHandler );
+					}
+				}
+			} );
+
+			if ( isABTestCompleted && abTestComparisonAnalyticsData ) {
+				generateLineChart(
+					JSON.parse( abTestComparisonAnalyticsData?.all_time_heatmap ),
+					'#comparison-line-chart',
+					comparisonVideo,
+					'.comparison-line-chart-tooltip',
+					525,
+					300,
+				);
+			}
 		}
-	}, [ analyticsData, abTestComparisonAnalyticsData ] );
+
+		// Cleanup function to remove resize listeners
+		return () => {
+			if ( originalResizeHandler ) {
+				window.removeEventListener( 'resize', originalResizeHandler );
+			}
+			if ( comparisonResizeHandler ) {
+				window.removeEventListener( 'resize', comparisonResizeHandler );
+			}
+		};
+	}, [ analyticsData, abTestComparisonAnalyticsData, attachmentData, abTestComparisonAttachmentData, isABTestCompleted, mediaLibraryAttachment ] );
 
 	useEffect( () => {
 		const analyticsVideoEl = document.getElementById( 'analytics-video' );
@@ -230,7 +304,7 @@ const Analytics = ( { attachmentID } ) => {
 		}
 
 		const player = videojs( 'analytics-video', {
-			aspectRatio: '16:9',
+			fluid: false,
 			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
 			// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
 			html5: {
@@ -242,8 +316,58 @@ const Analytics = ( { attachmentID } ) => {
 			},
 		} );
 
+		let resizeHandler = null;
+
+		// When video metadata loads, get actual dimensions and set aspect ratio
+		player.on( 'loadedmetadata', () => {
+			const videoWidth = player.videoWidth();
+			const videoHeight = player.videoHeight();
+
+			if ( videoWidth && videoHeight ) {
+				// Calculate aspect ratio
+				const aspectRatio = `${ videoWidth }:${ videoHeight }`;
+				player.aspectRatio( aspectRatio );
+
+				const container = document.querySelector( '.video-container' );
+				if ( container ) {
+					// Function to update container width based on aspect ratio
+					resizeHandler = () => {
+						// Get available width (parent width or viewport width - padding)
+						const parentWidth = container.parentElement?.offsetWidth || window.innerWidth;
+						const maxWidth = Math.min( parentWidth - 40, 640 ); // 40px for padding
+						const calculatedWidth = 360 * ( videoWidth / videoHeight );
+
+						// Use the smaller of calculated width or available space
+						const finalWidth = Math.min( calculatedWidth, maxWidth );
+						container.style.width = `${ finalWidth }px`;
+					};
+
+					resizeHandler();
+
+					// Update on window resize
+					window.addEventListener( 'resize', resizeHandler );
+
+					// Generate line chart after container is set
+					if ( analyticsData?.all_time_heatmap ) {
+						const heatmapData = JSON.parse( analyticsData.all_time_heatmap );
+						generateLineChart(
+							heatmapData,
+							'#line-chart',
+							player,
+							'.line-chart-tooltip',
+							640,
+							300,
+						);
+					}
+				}
+			}
+		} );
+
 		// Add cleanup for when this specific effect unmounts
 		return () => {
+			if ( resizeHandler ) {
+				window.removeEventListener( 'resize', resizeHandler );
+			}
 			if ( player ) {
 				player.dispose();
 			}
@@ -340,6 +464,80 @@ const Analytics = ( { attachmentID } ) => {
 		return () => window.removeEventListener( 'resize', handleResize );
 	}, [] );
 
+	/**
+	 * Renders the appropriate overlay content based on API key status.
+	 *
+	 * @return {JSX.Element} The overlay content to display.
+	 */
+	const renderOverlayContent = () => {
+		const apiKeyError = getAPIKeyErrorInfo();
+
+		// Check for local API key status first (expired, verification_failed)
+		if ( apiKeyError?.type === API_KEY_STATUS.EXPIRED || apiKeyError?.type === API_KEY_STATUS.VERIFICATION_FAILED ) {
+			return (
+				<div className="api-key-overlay-banner">
+					<p className="api-key-overlay-banner-header">
+						{ apiKeyError.title }
+					</p>
+					<p className="api-key-overlay-banner-footer">
+						{ apiKeyError.message }
+						{ ' ' }
+						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+							{ __( 'Go to plugin settings', 'godam' ) }
+						</a>
+					</p>
+				</div>
+			);
+		}
+
+		// Show upgrade message for missing/invalid keys
+		if ( analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY || analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ) {
+			return (
+				<div className="api-key-overlay-banner">
+					<p className="api-key-overlay-banner-header">
+						{ __( 'Upgrade to unlock the media performance report.', 'godam' ) }
+					</p>
+
+					<p className="api-key-overlay-banner-footer">
+						{ __( 'If you already have a premium plan, connect your', 'godam' ) }
+						{ ' ' }
+						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+							{ __( 'API in the settings', 'godam' ) }
+						</a>
+					</p>
+
+					<a
+						href={ addQueryArgs( 'https://godam.io/pricing', {
+							utm_campaign: 'buy-plan',
+							utm_source: window?.location?.host || '',
+							utm_medium: 'plugin',
+							utm_content: 'analytics',
+						} ) }
+						className="components-button godam-button is-primary"
+						target="_blank"
+						rel="noopener noreferrer"
+					>{ __( 'Buy Plan', 'godam' ) }</a>
+				</div>
+			);
+		}
+
+		// Default error message for microservice errors or other issues
+		return (
+			<div className="api-key-overlay-banner">
+				<p>
+					{ sprintf(
+						/* translators: %s: error message from the server */
+						__( '%s', 'godam' ),
+						analyticsDataFetched?.message || __( 'An unknown error occurred. Please check your plugin settings.', 'godam' ),
+					) }
+				</p>
+				<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+					{ __( 'Go to plugin settings', 'godam' ) }
+				</a>
+			</div>
+		);
+	};
+
 	return (
 		<div className="godam-analytics-container">
 			<GodamHeader />
@@ -365,50 +563,14 @@ const Analytics = ( { attachmentID } ) => {
 
 			<div
 				id="api-key-overlay"
-				className="api-key-overlay hidden"
-				style={
-					analyticsDataFetched?.errorType === 'invalid_key' || analyticsDataFetched?.errorType === 'missing_key'
-						? {
-							backgroundImage: `url(${ upgradePlanBackground })`,
-							backgroundSize: '100% calc(100% - 32px)',
-							backgroundRepeat: 'no-repeat',
-							backgroundPosition: 'center 32px',
-						}
-						: {}
-				}
+				className={ `api-key-overlay hidden${
+					( analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY || analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ) && ! getAPIKeyErrorInfo()?.type
+						? ' api-key-overlay--upgrade'
+						: ''
+				}` }
 			>
 				<div className="api-key-message">
-					{ analyticsDataFetched?.errorType === 'invalid_key' || analyticsDataFetched?.errorType === 'missing_key'
-						? <div className="api-key-overlay-banner">
-							<p className="api-key-overlay-banner-header">
-								{ __(
-									'Upgrade to unlock the media performance report.',
-									'godam',
-								) }
-							</p>
-
-							<p className="api-key-overlay-banner-footer">
-								{ __( 'If you already have a premium plan, connect your', 'godam' ) }
-								{ ' ' }
-								<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-									{ __( 'API in the settings', 'godam' ) }
-								</a>
-							</p>
-
-							<a href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=analytics` } className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
-						</div>
-						:	<div className="api-key-overlay-banner">
-							<p>
-								{ analyticsDataFetched?.message + ' ' || __(
-									'An unknown error occurred. Please check your plugin settings.',
-									'godam',
-								) }
-							</p>
-							<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-								{ __( 'Go to plugin settings', 'godam' ) }
-							</a>
-						</div>
-					}
+					{ renderOverlayContent() }
 				</div>
 			</div>
 
@@ -431,9 +593,9 @@ const Analytics = ( { attachmentID } ) => {
 						className="video-analytics-container hidden"
 					>
 						<div>
-							<div className="flex gap-10 items-center flex-wrap flex-row">
-								<div className="flex-grow">
-									<div className="w-full analytics-info-container flex flex-wrap flex-row items-center 2xl:flex-col">
+							<div className="flex gap-6 items-center flex-wrap lg:flex-nowrap flex-row">
+								<div className="flex-grow w-full lg:w-auto">
+									<div className="w-full analytics-info-container flex flex-wrap flex-row items-center lg:flex-col lg:items-start lg:gap-4">
 										<SingleMetrics
 											metricType={ 'engagement-rate' }
 											label={ __( 'Average Engagement', 'godam' ) }
@@ -479,7 +641,7 @@ const Analytics = ( { attachmentID } ) => {
 										/>
 									</div>
 								</div>
-								<div className="min-w-full lg:min-w-[750px]">
+								<div className="w-full lg:w-auto lg:flex-grow lg:min-w-[650px] 2xl:min-w-[750px]">
 									<div>
 										<div className="video-container">
 											<RenderVideo
@@ -616,8 +778,8 @@ const Analytics = ( { attachmentID } ) => {
 											</div>
 										) }
 										{ mediaLibraryAttachment && (
-											<div className="flex gap-12 w-full h-full pt-6 justify-center">
-												<div className="block w-[525px] h-[350px]">
+											<div className="flex gap-4 md:gap-12 w-full h-full pt-6 justify-center flex-col md:flex-row">
+												<div className="block w-full md:w-[525px] max-w-full">
 													<div className="relative">
 														<RenderVideo
 															attachmentData={ attachmentData }
@@ -636,13 +798,13 @@ const Analytics = ( { attachmentID } ) => {
 														<h4 className="text-center m-0 mt-6">{ attachmentData?.title?.rendered }</h4>
 													</div>
 												</div>
-												<div className="w-px bg-gray-200 mx-4 divide-dashed"></div>
-												<div className="block w-[525px] h-[350px]">
+												<div className="w-px bg-gray-200 mx-4 divide-dashed hidden md:block"></div>
+												<div className="block w-full md:w-[525px] max-w-full">
 													<div className="relative">
 														<RenderVideo
 															attachmentData={ mediaLibraryAttachment }
 															attachmentID={ mediaLibraryAttachment?.id }
-															className="w-full h-[320px] object-fill comparison-video-container"
+															className="w-full object-fill comparison-video-container"
 															videoId={ 'comparison-analytics-video' }
 														/>
 														<div className="original-video-chart-container relative">

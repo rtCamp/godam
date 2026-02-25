@@ -1,12 +1,19 @@
+/* global jQuery */
+
 /**
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
 
 /**
+ * External dependencies
+ */
+import videojs from 'video.js';
+
+/**
  * Internal dependencies
  */
-import '../../libs/jquery-ui-1.14.1.draggable/jquery-ui';
+import '../../libs/jquery-ui-1.14.2.draggable/jquery-ui';
 import './transcoding-status';
 
 import AttachmentsBrowser from './views/attachment-browser.js';
@@ -23,6 +30,46 @@ import { isFolderOrgDisabled, isUploadPage, addManageMediaButton } from './utili
 const $ = jQuery;
 
 /**
+ * Destroys all Video.js player instances found within a given DOM element.
+ * This is used to stop video playback and free resources when the media modal closes.
+ *
+ * WordPress core handles native mediaelement players by clicking the pause button
+ * inside Modal.close(). For Video.js players (used for virtual/GoDAM proxy videos),
+ * we need to explicitly dispose them since they are not managed by mediaelement.
+ *
+ * @param {HTMLElement} container - The DOM element to search for Video.js players.
+ */
+function destroyVideoJSPlayersInContainer( container ) {
+	if ( ! container || ! videojs ) {
+		return;
+	}
+
+	const videoElements = container.querySelectorAll( 'video.video-js, video[id^="videojs-player-"]' );
+
+	videoElements.forEach( ( videoElement ) => {
+		try {
+			const player = videojs.getPlayer( videoElement.id || videoElement );
+			if ( player && ! player.isDisposed() ) {
+				player.pause();
+				player.dispose();
+			}
+		} catch ( error ) {
+			// Silent fail - player might already be disposed or not initialized
+		}
+	} );
+
+	// Fallback for native elements if a Video.js instance is not available.
+	container.querySelectorAll( 'video' ).forEach( ( videoElement ) => {
+		try {
+			videoElement.pause();
+			videoElement.currentTime = 0;
+		} catch ( error ) {
+			// Silent fail.
+		}
+	} );
+}
+
+/**
  * MediaLibrary class.
  */
 class MediaLibrary {
@@ -32,6 +79,7 @@ class MediaLibrary {
 
 	initialize() {
 		this.setupAttachmentBrowser();
+		this.setupModalCloseCleanup();
 		document.addEventListener( 'DOMContentLoaded', () => this.onDOMContentLoaded() );
 	}
 
@@ -73,6 +121,33 @@ class MediaLibrary {
 				} );
 			}
 		}
+	}
+
+	/**
+	 * Hooks into WordPress media modal close to destroy VideoJS players.
+	 *
+	 * WordPress core's Modal.close() only hides the modal ($el.hide()) and clicks
+	 * the mediaelement pause button. It does NOT call Backbone's remove()/dispose()
+	 * on child views. This means any VideoJS player initialized for virtual media
+	 * keeps playing even after the modal is hidden.
+	 *
+	 * This method monkey-patches Modal.prototype.close to also dispose VideoJS players,
+	 * mirroring the same pattern WP core uses for mediaelement cleanup.
+	 */
+	setupModalCloseCleanup() {
+		if ( ! wp?.media?.view?.Modal?.prototype?.close ) {
+			return;
+		}
+
+		const originalClose = wp.media.view.Modal.prototype.close;
+
+		wp.media.view.Modal.prototype.close = function( ...args ) {
+			// Destroy all VideoJS players within this modal before it closes.
+			// This mirrors WP core's own cleanup: $('.mejs-pause button').trigger('click')
+			destroyVideoJSPlayersInContainer( this.el );
+
+			return originalClose.apply( this, args );
+		};
 	}
 
 	setupAttachmentBrowser() {

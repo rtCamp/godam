@@ -48,7 +48,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 	const [ imageCtaUrl, setImageCtaUrl ] = useState( '' );
 	const dispatch = useDispatch();
 
-	const restURL = window.godamRestRoute.url || '';
+	const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
