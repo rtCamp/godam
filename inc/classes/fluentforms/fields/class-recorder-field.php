@@ -288,7 +288,7 @@ class Recorder_Field extends BaseFieldManager {
 			wp_enqueue_script(
 				'godam-recorder-script',
 				RTGODAM_URL . 'assets/build/js/godam-recorder.min.js',
-				array( 'jquery' ),
+				array( 'jquery', 'wp-i18n' ),
 				filemtime( RTGODAM_PATH . 'assets/build/js/godam-recorder.min.js' ),
 				true
 			);
