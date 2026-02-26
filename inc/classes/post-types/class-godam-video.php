@@ -59,10 +59,6 @@ class GoDAM_Video extends Base {
 
 		$godam_video_id = $this->get_godam_video_from_attachment( $attachment->ID );
 
-		if ( ! $godam_video_id ) {
-			$godam_video_id = $this->create_video_post_from_attachment( $attachment->ID );
-		}
-
 		if ( $godam_video_id ) {
 			$response['godam_video_id']        = (int) $godam_video_id;
 			$response['godam_video_permalink'] = get_permalink( $godam_video_id );
@@ -567,6 +563,17 @@ class GoDAM_Video extends Base {
 	 * @return int|false Video post ID or false if not found.
 	 */
 	public function get_godam_video_from_attachment( $attachment_id ) {
+		static $lookup_cache = array();
+
+		$attachment_id = absint( $attachment_id );
+		if ( empty( $attachment_id ) ) {
+			return false;
+		}
+
+		if ( array_key_exists( $attachment_id, $lookup_cache ) ) {
+			return $lookup_cache[ $attachment_id ];
+		}
+
 		$query = new WP_Query(
 			array(
 				'post_type'              => self::SLUG,
@@ -586,9 +593,11 @@ class GoDAM_Video extends Base {
 		
 		// Check if the query returned post.
 		if ( count( $query->posts ) > 0 ) {
-			return $query->posts[0];
+			$lookup_cache[ $attachment_id ] = (int) $query->posts[0];
+			return $lookup_cache[ $attachment_id ];
 		}
 
+		$lookup_cache[ $attachment_id ] = false;
 		return false;
 	}
 }
