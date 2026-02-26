@@ -491,7 +491,7 @@ class Media_Library extends Base {
 	/**
 	 * Request image subsizes generation from GoDAM for an image attachment.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.7.0
 	 *
 	 * @param string $job_id        The GoDAM job ID.
 	 * @param int    $attachment_id The WordPress attachment ID.

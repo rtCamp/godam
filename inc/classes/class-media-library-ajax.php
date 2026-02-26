@@ -1057,7 +1057,7 @@ class Media_Library_Ajax {
 	/**
 	 * Replace final rendered content <img> src with CDN URL when available.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.7.0
 	 *
 	 * @param string $filtered_image Full <img> tag.
 	 * @param string $context        Render context.

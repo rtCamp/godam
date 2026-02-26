@@ -721,7 +721,7 @@ class RTGODAM_Transcoder_Admin {
 	/**
 	 * Display admin notice when API key is expired or invalid in media library.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.7.0
 	 */
 	public function api_key_status_notice() {
 		// Only show in media library and upload pages.

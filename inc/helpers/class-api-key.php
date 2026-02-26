@@ -6,7 +6,7 @@
  * and grace periods. Using a class with static methods avoids the need
  * for global function prefixing.
  *
- * @since n.e.x.t
+ * @since 1.7.0
  *
  * @package GoDAM
  */
@@ -55,7 +55,7 @@ class Api_Key {
 	/**
 	 * Get the stored API key.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.7.0
 	 *
 	 * @return string The API key, or empty string if not set.
 	 */
@@ -69,7 +69,7 @@ class Api_Key {
 	 * Only 'valid' and 'expired' are persisted in the database.
 	 * 'verification_failed' is a runtime state.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.7.0
 	 *
 	 * @return string One of Api_Key_Status constants.
 	 */
@@ -83,7 +83,7 @@ class Api_Key {
 	 * Only permanent states (valid, expired) can be persisted.
 	 * States like verification_failed are handled at runtime.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.7.0
 	 *
 	 * @param string $status Status to set. Must be a persistable Api_Key_Status constant.
 	 *
@@ -104,7 +104,7 @@ class Api_Key {
 	 * When an API key expires, we allow a grace period before stopping automatic checks.
 	 * After the grace period, automatic verification is paused until manual refresh.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.7.0
 	 *
 	 * @return bool True if in grace period (should not skip verification), false otherwise.
 	 */
@@ -129,7 +129,7 @@ class Api_Key {
 	/**
 	 * Mark API key as expired and set timestamp.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.7.0
 	 */
 	public static function mark_expired() {
 		self::set_status( Api_Key_Status::EXPIRED );
@@ -143,7 +143,7 @@ class Api_Key {
 	/**
 	 * Clear API key error timestamp.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.7.0
 	 */
 	public static function clear_error_timestamp() {
 		delete_option( self::ERROR_SINCE_OPTION_KEY );
