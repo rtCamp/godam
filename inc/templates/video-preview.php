@@ -88,10 +88,10 @@ $godam_page_title = empty( $godam_video_id ) ? __( 'Video Preview', 'godam' ) : 
 					);
 					?>
 					<ul class="godam-pro-features__list">
-						<?php foreach ( $godam_pro_features as $feature ) : ?>
+						<?php foreach ( $godam_pro_features as $godam_feature ) : ?>
 							<li class="godam-pro-features__list__item">
 								<span class="godam-pro-features__icon dashicons dashicons-yes-alt"></span>
-								<span><?php echo esc_html( $feature ); ?></span>
+								<span><?php echo esc_html( $godam_feature ); ?></span>
 							</li>
 						<?php endforeach; ?>
 					</ul>
