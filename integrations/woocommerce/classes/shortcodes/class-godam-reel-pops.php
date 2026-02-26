@@ -208,7 +208,7 @@ class GoDAM_Reel_Pops {
 
 		// Build CSS variables inline style.
 		$css_variables = sprintf(
-			'--reel-pops-width: %dpx; --reel-pops-mobile-width: %dpx; --reel-pops-position: %dpx; --reel-pops-bottom: %dpx; --reel-pops-animation-duration: %dms;',
+			'--godam-reel-pops-width: %dpx; --godam-reel-pops-mobile-width: %dpx; --godam-reel-pops-position: %dpx; --godam-reel-pops-bottom: %dpx; --godam-reel-pops-animation-duration: %dms;',
 			absint( $attributes['popup_width'] ),
 			absint( $attributes['mobile_popup_width'] ),
 			absint( $attributes['side_spacing'] ),
