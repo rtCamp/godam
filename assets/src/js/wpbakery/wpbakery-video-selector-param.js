@@ -3,12 +3,40 @@
  */
 import { __ } from '@wordpress/i18n';
 
+/**
+ * Internal dependencies
+ */
+import { stripHtmlTags } from '../../blocks/godam-player/utils/index.js';
+
 ( function( $ ) {
 	'use strict';
 
 	let isVirtualAttachmentListenerBound = false;
 	let isSeoPrefillListenerBound = false;
-	const attachmentDataCache = new Map();
+
+	const ATTACHMENT_CACHE_MAX_ENTRIES = 100;
+
+	/**
+	 * Simple size-limited cache that evicts the oldest entry when the maximum
+	 * size is reached, preventing unbounded memory growth in long editing sessions.
+	 */
+	class LRUCache extends Map {
+		constructor( maxSize ) {
+			super();
+			this.maxSize = maxSize;
+		}
+		set( key, value ) {
+			if ( this.maxSize && this.size >= this.maxSize && ! this.has( key ) ) {
+				const firstKey = this.keys().next().value;
+				if ( undefined !== firstKey ) {
+					this.delete( firstKey );
+				}
+			}
+			return super.set( key, value );
+		}
+	}
+
+	const attachmentDataCache = new LRUCache( ATTACHMENT_CACHE_MAX_ENTRIES );
 
 	// Initialize video selector on document ready and when WPBakery reloads the params
 	$( document ).ready( initVideoSelector );
@@ -173,20 +201,15 @@ import { __ } from '@wordpress/i18n';
 		const requestPromise = ( wp?.apiFetch
 			? wp.apiFetch( { path: `/wp/v2/media/${ attachmentId }` } )
 			: wp.media.attachment( attachmentId ).fetch()
-		).then( ( response ) => response?.toJSON ? response.toJSON() : response );
+		).then( ( response ) => response?.toJSON ? response.toJSON() : response )
+			.catch( ( error ) => {
+				// Remove failed requests from cache so subsequent calls can retry.
+				attachmentDataCache.delete( attachmentId );
+				throw error;
+			} );
 
 		attachmentDataCache.set( attachmentId, requestPromise );
 		return requestPromise;
-	}
-
-	function stripHtmlTags( html ) {
-		if ( ! html ) {
-			return '';
-		}
-
-		const tempDiv = document.createElement( 'div' );
-		tempDiv.innerHTML = String( html );
-		return ( tempDiv.textContent || tempDiv.innerText || '' ).trim();
 	}
 
 	function getFirstNonEmpty( ...values ) {
