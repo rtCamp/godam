@@ -36,11 +36,39 @@ class GoDAM_Video extends Base {
 		add_action( 'edit_attachment', array( $this, 'update_video_post_from_attachment' ) );
 		add_action( 'delete_attachment', array( $this, 'delete_video_post_from_attachment' ) );
 		add_action( 'save_post_attachment', array( $this, 'sync_attachment_to_video_post' ), 10, 3 );
+		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_godam_video_data_to_attachment' ), 10, 2 );
 		
 		// Handle direct URL access based on user settings.
 		add_action( 'template_redirect', array( $this, 'handle_url_access' ) );
 		add_filter( 'attachment_fields_to_edit', array( $this, 'add_custom_attachment_fields' ), 10, 2 );
 		add_filter( 'attachment_fields_to_save', array( $this, 'save_custom_attachment_fields' ) );
+	}
+
+	/**
+	 * Add linked GoDAM video post data to media attachment payload.
+	 *
+	 * @param array    $response   Attachment response data.
+	 * @param \WP_Post $attachment Attachment post object.
+	 *
+	 * @return array
+	 */
+	public function add_godam_video_data_to_attachment( $response, $attachment ) {
+		if ( ! is_array( $response ) || empty( $attachment->ID ) || ! $this->is_video_attachment( $attachment->ID ) ) {
+			return $response;
+		}
+
+		$godam_video_id = $this->get_godam_video_from_attachment( $attachment->ID );
+
+		if ( ! $godam_video_id ) {
+			$godam_video_id = $this->create_video_post_from_attachment( $attachment->ID );
+		}
+
+		if ( $godam_video_id ) {
+			$response['godam_video_id']        = (int) $godam_video_id;
+			$response['godam_video_permalink'] = get_permalink( $godam_video_id );
+		}
+
+		return $response;
 	}
 
 	/**
