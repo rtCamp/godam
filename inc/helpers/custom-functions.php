@@ -296,35 +296,77 @@ function rtgodam_image_cta_html( $layer ) {
  *
  * @param bool $use_for_localize_array Whether to use the data for localizing scripts. Defaults to false.
  * @param int  $timeout                The time in seconds after which the user data should be refreshed.
+ * @param bool $force_refresh          Whether to force refresh the API key verification bypassing grace period checks.
  */
-function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR_IN_SECONDS ) {
+function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR_IN_SECONDS, $force_refresh = false ) {
 	$rtgodam_user_data = get_option( 'rtgodam_user_data', false );
 	$api_key           = get_option( 'rtgodam-api-key', '' );
+	$api_key_status    = rtgodam_get_api_key_status();
 
-	if (
+	// Check if we should skip verification.
+	// Skip only for expired keys that are past their grace period.
+	$skip_verification = false;
+	if ( ! $force_refresh && \RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED === $api_key_status && ! rtgodam_is_api_key_in_grace_period() ) {
+		// Grace period expired for expired key, pause automatic checks until manual refresh.
+		$skip_verification = true;
+	}
+
+	$should_verify = (
 		empty( $rtgodam_user_data ) ||
-		( empty( $rtgodam_user_data ) && ! empty( $api_key ) ) ||
 		( isset( $rtgodam_user_data['timestamp'] ) && ( time() - $rtgodam_user_data['timestamp'] ) > $timeout )
-	) {
+	) && ! $skip_verification;
+
+	// Allow force refresh to bypass timeout and skip checks.
+	if ( $force_refresh ) {
+		$should_verify = true;
+	}
+
+	if ( $should_verify ) {
 		// Verify the user's API Key.
 		$result = rtgodam_verify_api_key( $api_key );
 
-		$valid_api_key = false;
-		$user_data     = array();
+		$valid_api_key    = false;
+		$user_data        = array();
+		$transient_status = null; // For temporary verification_failed state.
 
 		if ( is_wp_error( $result ) ) {
-			$valid_api_key               = false;
-			$user_data['masked_api_key'] = rtgodam_mask_string( $api_key );
+			// API Key shouldn't be invalid if there is a server error.
+			$error_data  = $result->get_error_data();
+			$status_code = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : \RTGODAM\Inc\Enums\HTTP_Status_Code::INTERNAL_SERVER_ERROR;
+
+			if ( \RTGODAM\Inc\Enums\HTTP_Status_Code::INTERNAL_SERVER_ERROR === $status_code && ! empty( $api_key ) ) {
+				// Server error with existing API key - DON'T change DB status, just show verification_failed to user.
+				// DON'T set error timestamp - this is temporary and we should keep checking.
+				$transient_status = \RTGODAM\Inc\Enums\Api_Key_Status::VERIFICATION_FAILED;
+				$valid_api_key    = false;
+			} elseif ( \RTGODAM\Inc\Enums\HTTP_Status_Code::INTERNAL_SERVER_ERROR !== $status_code ) {
+				$valid_api_key = false;
+				// Preserve existing user data for expired/invalid keys.
+				$existing_usage = get_option( 'rtgodam-usage', array() );
+				if ( ! empty( $existing_usage ) && isset( $existing_usage[ $api_key ] ) ) {
+					$user_data = is_object( $existing_usage[ $api_key ] ) ? (array) $existing_usage[ $api_key ] : $existing_usage[ $api_key ];
+				}
+			}
 		} else {
-			$valid_api_key               = true;
-			$user_data                   = $result['data'] ?? array();
-			$user_data['masked_api_key'] = rtgodam_mask_string( $api_key );
+			$valid_api_key = true;
+			$user_data     = $result['data'] ?? array();
+		}
+
+		$user_data['masked_api_key'] = rtgodam_mask_string( $api_key );
+
+		// Get updated status after verification.
+		$api_key_status = rtgodam_get_api_key_status();
+
+		// If there's a transient status (verification_failed), use it instead of DB status.
+		if ( ! is_null( $transient_status ) ) {
+			$api_key_status = $transient_status;
 		}
 
 		$rtgodam_user_data = array(
-			'currentUserId' => get_current_user_id(),
-			'valid_api_key' => $valid_api_key,
-			'user_data'     => $user_data,
+			'currentUserId'  => get_current_user_id(),
+			'valid_api_key'  => $valid_api_key,
+			'api_key_status' => $api_key_status,
+			'user_data'      => $user_data,
 		);
 
 		$usage_data = rtgodam_get_usage_data();
@@ -357,9 +399,9 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 					$bandwidth_percentage
 				);
 			}
-		} elseif ( ! $valid_api_key ) {
-			$rtgodam_user_data['storageBandwidthError'] = __( 'Oops! It looks like your API key is incorrect or has expired. Please update it and try again.', 'godam' );
-		} else {
+		} elseif ( is_wp_error( $usage_data ) && $valid_api_key ) {
+			// Only show usage data fetch error if API key is valid.
+			// API key errors are handled separately via apiKeyStatus.
 			$rtgodam_user_data['storageBandwidthError'] = $usage_data->get_error_message();
 		}
 
@@ -369,11 +411,17 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 		update_option( 'rtgodam_user_data', $rtgodam_user_data );
 	}
 
+	// Ensure api_key_status is always present in the data.
+	if ( ! isset( $rtgodam_user_data['api_key_status'] ) ) {
+		$rtgodam_user_data['api_key_status'] = rtgodam_get_api_key_status();
+	}
+
 	if ( $use_for_localize_array ) {
 		// Prepare the data for localizing scripts.
 		$localized_array_data = array(
 			'currentUserId' => $rtgodam_user_data['currentUserId'],
 			'validApiKey'   => $rtgodam_user_data['valid_api_key'],
+			'apiKeyStatus'  => $rtgodam_user_data['api_key_status'],
 			'userApiData'   => $rtgodam_user_data['user_data'],
 			'timestamp'     => $rtgodam_user_data['timestamp'],
 		);
@@ -580,13 +628,12 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	 */
 	$default_settings = array(
 		'video' => array(
-			'adaptive_bitrate'     => true,
-			'watermark'            => false,
-			'watermark_text'       => '',
-			'watermark_url'        => '',
-			'video_thumbnails'     => 0,
-			'overwrite_thumbnails' => false,
-			'use_watermark_image'  => false,
+			'adaptive_bitrate'    => true,
+			'watermark'           => false,
+			'watermark_text'      => '',
+			'watermark_url'       => '',
+			'video_thumbnails'    => 0,
+			'use_watermark_image' => false,
 		),
 	);
 
@@ -858,10 +905,13 @@ function rtgodam_is_local_environment() {
 	$host = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
 	// phpcs:enable
 
+	// Strip port number if present (e.g., "localhost:8080" → "localhost").
+	$host_without_port = preg_replace( '/:\d+$/', '', $host );
+
 	$is_localhost = (
-		in_array( $host, $whitelist, true ) ||
-		strpos( $host, '.local' ) !== false ||
-		strpos( $host, '.test' ) !== false
+		in_array( $host_without_port, $whitelist, true ) ||
+		preg_match( '/\.local$/', $host_without_port ) ||
+		preg_match( '/\.test$/', $host_without_port )
 	);
 
 	return ( $is_localhost || ( defined( 'RTGODAM_IS_LOCAL' ) && RTGODAM_IS_LOCAL ) );
@@ -978,27 +1028,19 @@ function godam_preview_page_content( $video_id ) {
 		// Display error message for missing or invalid video.
 		?>
 		<div class="godam-video-preview--container">
-			<h1 class="godam-video-preview--title"><?php esc_html_e( 'Video Preview', 'godam' ); ?></h1>
 			<p class="video-not-found"><?php esc_html_e( 'Oops! We could not locate your video', 'godam' ); ?></p>
 		</div>
 		<?php
 	} else {
 		// Display video content.
 		?>
-		<header class="godam-video-preview--container">
+		<div class="godam-video-preview--notice">
+			<?php esc_html_e( 'Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles.', 'godam' ); ?>
+		</div>
+		<div class="godam-video-preview">
 			<h1 class="godam-video-preview--title">
-				<strong><?php esc_html_e( 'Video Preview: ', 'godam' ); ?></strong>
 				<?php echo esc_html( get_the_title( $video_id ) ); ?>
 			</h1>
-		</header>
-
-		<div class="godam-video-preview--container">
-			<div class="godam-video-preview--notice">
-				<?php esc_html_e( 'Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles.', 'godam' ); ?>
-			</div>
-		</div>
-
-		<div class="godam-video-preview">
 			<?php echo do_shortcode( '[godam_video id="' . $video_id . '"]' ); ?>
 		</div>
 		<?php
@@ -1008,7 +1050,7 @@ function godam_preview_page_content( $video_id ) {
 
 /**
  * Get post id from meta key and value.
- * 
+ *
  * @since 1.5.0
  *
  * @param string $key   Meta key.
@@ -1078,4 +1120,54 @@ function godam_embed_page_content( $video_id, $show_engagements = false ) {
 		<?php
 	}
 	return ob_get_clean();
+}
+
+/**
+ * Convert one or more URLs to HTTPS if the current page is using SSL.
+ *
+ * This function checks whether the current page is using SSL and,
+ * if so, returns the given URL string or array of URLs with their scheme changed to HTTPS.
+ * If SSL is not active, the original value is returned unchanged.
+ *
+ * @since 1.7.0
+ *
+ * @param array|string $urls The URLs to change the scheme of.
+ *
+ * @return array|string The URLs with the scheme changed to HTTPS.
+ */
+function rtgodam_convert_to_https_url( $urls ) {
+
+	if ( ! is_ssl() ) {
+		return $urls;
+	}
+
+	if ( is_array( $urls ) ) {
+
+		$filtered_urls = array_filter(
+			$urls,
+			function ( $url ) {
+				return null !== $url && '' !== $url;
+			}
+		);
+
+		$converted_urls = array_map(
+			function ( $url ) {
+				return set_url_scheme( $url, 'https' );
+			},
+			$filtered_urls
+		);
+
+		return array_filter(
+			$converted_urls,
+			function ( $url ) {
+				return null !== $url && '' !== $url;
+			}
+		);
+	}
+
+	if ( null === $urls || '' === $urls ) {
+		return $urls;
+	}
+
+	return set_url_scheme( $urls, 'https' );
 }

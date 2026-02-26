@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 /**
  * Internal dependencies
  */
-import { addLayer, setCurrentLayer } from '../redux/slice/videoSlice';
+import { addLayer, setCurrentLayer, setAddLayerModalTime } from '../redux/slice/videoSlice';
 import { v4 as uuidv4 } from 'uuid';
 import GFIcon from '../assets/layers/GFIcon.svg';
 import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
@@ -25,7 +25,7 @@ import MetformIcon from '../assets/layers/MetFormIcon.png';
 import { __, sprintf } from '@wordpress/i18n';
 import { Button, Icon, Tooltip } from '@wordpress/components';
 import { plus, preformatted, customLink, arrowRight, video, customPostType, thumbsUp, error } from '@wordpress/icons';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 
 import Layer from './layers/Layer';
 import LayerSelector from './LayerSelector.jsx';
@@ -154,6 +154,9 @@ const premiumMessage = __( 'This feature is available in the premium version', '
 const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const loading = useSelector( ( state ) => state.videoReducer.loading );
+	const addLayerModalTime = useSelector( ( state ) => state.videoReducer.addLayerModalTime );
+
+	const dispatch = useDispatch();
 
 	const openModal = () => {
 		setOpen( true );
@@ -161,9 +164,19 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 			onPauseVideo();
 		}
 	};
-	const closeModal = () => setOpen( false );
+	const closeModal = () => {
+		setOpen( false );
+		// Clear the addLayerModalTime when closing the modal
+		dispatch( setAddLayerModalTime( null ) );
+	};
 
-	const dispatch = useDispatch();
+	// Listen for addLayerModalTime changes to open the modal from the slider
+	useEffect( () => {
+		if ( addLayerModalTime !== null ) {
+			openModal();
+		}
+	}, [ addLayerModalTime ] );
+
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );

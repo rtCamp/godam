@@ -16,6 +16,7 @@ import AdsManager from './managers/adsManager.js';
 import HoverManager from './managers/hoverManager.js';
 import ShareManager from './managers/shareManager.js';
 import MenuButtonHoverManager from './managers/menuButtonHover.js';
+import TranscriptManager from './managers/transcriptManager.js';
 import { loadFlvPlugin, requiresFlvPlugin, loadAdsPlugins } from './utils/pluginLoader.js';
 
 /**
@@ -38,6 +39,7 @@ export default class GodamVideoPlayer {
 		this.chaptersManager = null;
 		this.adsManager = null;
 		this.hoverManager = null;
+		this.transcriptManager = null;
 		this.shareManager = null;
 	}
 
@@ -110,9 +112,33 @@ export default class GodamVideoPlayer {
 	setupVideoElement() {
 		this.video.classList.remove( 'vjs-hidden' );
 
-		const loadingElement = this.video.closest( '.animate-video-loading' );
-		if ( loadingElement ) {
-			loadingElement.classList.remove( 'animate-video-loading' );
+		const parentContainer = this.video.closest( '.godam-video-wrapper' );
+
+		let placeholder, originalVideoContainer;
+
+		if ( parentContainer ) {
+			placeholder = parentContainer.querySelector( '.godam-video-placeholder' );
+			originalVideoContainer = parentContainer.querySelector( '.easydam-video-container' );
+		}
+
+		if ( placeholder ) {
+			placeholder.classList.add( 'hidden' );
+		}
+
+		if ( originalVideoContainer ) {
+			originalVideoContainer.classList.remove( 'loading' );
+		}
+
+		// Preserve legacy behavior: remove any animate-video-loading class
+		// from the closest relevant container so loading styles are cleared
+		// after initialization. This supports both the new placeholder-based
+		// loading UI and older markup that still uses .animate-video-loading.
+		const loadingContainer =
+			this.video.closest( '.animate-video-loading' ) ||
+			parentContainer ||
+			originalVideoContainer;
+		if ( loadingContainer && loadingContainer.classList ) {
+			loadingContainer.classList.remove( 'animate-video-loading' );
 		}
 	}
 
@@ -160,6 +186,34 @@ export default class GodamVideoPlayer {
 	}
 
 	/**
+	 * Detect and set aspect ratio from video metadata
+	 */
+	detectAndSetAspectRatio() {
+		const videoElement = this.player.el().querySelector( 'video' );
+		if ( ! videoElement ) {
+			return;
+		}
+
+		const setAspectRatioFromDimensions = () => {
+			const width = videoElement.videoWidth;
+			const height = videoElement.videoHeight;
+
+			if ( width && height ) {
+				const calculatedAspectRatio = `${ width }:${ height }`;
+				this.player.aspectRatio( calculatedAspectRatio );
+			}
+		};
+
+		// Try to get dimensions immediately if already loaded
+		if ( videoElement.videoWidth && videoElement.videoHeight ) {
+			setAspectRatioFromDimensions();
+		} else {
+			// Wait for metadata to load
+			videoElement.addEventListener( 'loadedmetadata', setAspectRatioFromDimensions, { once: true } );
+		}
+	}
+
+	/**
 	 * Setup player ready callback
 	 */
 	setupPlayerReady() {
@@ -170,6 +224,7 @@ export default class GodamVideoPlayer {
 			this.player.jobId = this.video.dataset.job_id;
 			this.initializeChapters();
 			this.setupQualitySelector();
+			this.initializeTranscript();
 
 			// Now that managers are initialized, we can safely access them
 			this.setupEventListeners();
@@ -195,12 +250,18 @@ export default class GodamVideoPlayer {
 
 		if ( ! isInModal ) {
 			const aspectRatio = this.configManager.videoSetupOptions?.aspectRatio || '16:9';
-			// Check if aspect ratio is valid x:y format
-			if ( ! /^\d+:\d+$/.test( aspectRatio ) ) {
+
+			// Handle responsive aspect ratio - detect from video dimensions
+			if ( aspectRatio === 'responsive' ) {
+				this.detectAndSetAspectRatio();
+			} else if ( /^\d+:\d+$/.test( aspectRatio ) ) {
+				// Valid x:y format
+				this.player.aspectRatio( aspectRatio );
+			} else {
+				// Invalid format - fall back to 16:9
 				// eslint-disable-next-line no-console
 				console.warn( `Invalid aspect ratio format: "${ aspectRatio }". Falling back to "16:9".` );
-			} else {
-				this.player.aspectRatio( aspectRatio );
+				this.player.aspectRatio( '16:9' );
 			}
 		}
 	}
@@ -276,6 +337,27 @@ export default class GodamVideoPlayer {
 	 */
 	initializeChapters() {
 		this.chaptersManager.initialize();
+	}
+
+	/**
+	 * Initialize AI-generated transcript loading.
+	 * Fetches transcript from GoDAM API and adds it as a text track.
+	 */
+	initializeTranscript() {
+		this.transcriptManager = new TranscriptManager(
+			this.player,
+			this.video,
+			this.configManager,
+		);
+
+		// Load transcript asynchronously (non-blocking)
+		this.transcriptManager.initialize().catch( ( error ) => {
+			// eslint-disable-next-line no-console
+			console.debug( 'Failed to initialize transcript:', error );
+		} );
+
+		// Attach to player for external access
+		this.player.transcriptManager = this.transcriptManager;
 	}
 
 	/**

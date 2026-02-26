@@ -12,6 +12,7 @@
 import { getQuery } from '../utility.js';
 
 const l10n = wp?.media?.view?.l10n;
+const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
 /**
  * Check if the current frame is a featured image context.
@@ -105,6 +106,14 @@ const GoDAMMediaFrameShared = {
 
 		this.$el.removeClass( 'hide-toolbar' );
 
+		// Clear the GoDAM query cache each time the tab is activated so that
+		// subsequent visits always start a fresh query (page 1, _hasMore=true).
+		// Without this, stale cached queries with _hasMore=false would prevent
+		// the Load More button from appearing on re-opened GoDAM tab sessions.
+		if ( wp?.media?.godamQuery?.clearCache ) {
+			wp.media.godamQuery.clearCache();
+		}
+
 		// Browse our library of attachments.
 		const RenderedContent = new wp.media.view.AttachmentsBrowser( {
 			controller: this,
@@ -132,8 +141,8 @@ const GoDAMMediaFrameShared = {
 		const selected = selection?.first();
 		const data = selected.attributes;
 
-		// API call to website to create the attachment.
-		fetch( '/wp-json/godam/v1/media-library/create-media-entry', {
+		// API call to website to create the attachment in the current site context.
+		fetch( window.pathJoin( [ restURL, '/godam/v1/media-library/create-media-entry' ] ), {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',

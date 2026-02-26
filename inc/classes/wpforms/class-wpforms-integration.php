@@ -70,13 +70,25 @@ class WPForms_Integration {
 		);
 
 		// Common godam recorder script.
+		$godam_recorder_asset_file = RTGODAM_PATH . 'assets/build/js/godam-recorder.min.asset.php';
+		$godam_recorder_asset      = array(
+			'dependencies' => array( 'jquery', 'wp-i18n' ),
+			'version'      => filemtime( RTGODAM_PATH . 'assets/build/js/godam-recorder.min.js' ),
+		);
+
+		if ( file_exists( $godam_recorder_asset_file ) ) {
+			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+			$godam_recorder_asset = include $godam_recorder_asset_file;
+		}
+
 		wp_register_script(
 			'godam-recorder-script',
 			RTGODAM_URL . 'assets/build/js/godam-recorder.min.js',
-			array( 'jquery' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/godam-recorder.min.js' ),
+			$godam_recorder_asset['dependencies'],
+			$godam_recorder_asset['version'],
 			true
 		);
+		wp_set_script_translations( 'godam-recorder-script', 'godam', RTGODAM_PATH . 'languages' );
 	}
 
 	/**

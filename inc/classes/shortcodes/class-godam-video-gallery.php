@@ -47,6 +47,15 @@ class GoDAM_Video_Gallery {
 			$godam_gallery_script_assets['version'],
 			true
 		);
+		
+		// For multisite compatibility, use localized REST URL if available.
+		wp_localize_script(
+			'godam-gallery-script',
+			'godamGalleryData',
+			array(
+				'restUrl' => esc_url_raw( rest_url( 'godam/v1/gallery-shortcode' ) ),
+			)
+		);
 	}
 
 	/**
@@ -113,7 +122,6 @@ class GoDAM_Video_Gallery {
 		if ( ! is_admin() ) {
 			wp_enqueue_script( 'godam-player-frontend-script' );
 			wp_enqueue_script( 'godam-player-analytics-script' );
-			wp_enqueue_style( 'godam-player-frontend-style' );
 			wp_enqueue_style( 'godam-player-style' );
 		}
 
@@ -338,11 +346,17 @@ class GoDAM_Video_Gallery {
 				$video_url = add_query_arg( $query_args, $cpt_base_url );
 
 				if ( isset( $atts['open_to_new_page'] ) && $atts['open_to_new_page'] ) {
-					$video_slug     = get_post_field( 'post_name', $video_id );
-					$video_settings = get_option( 'rtgodam_video_post_settings', array() );
-					$cpt_url_slug   = ! empty( $video_settings['video_slug'] ) ? sanitize_title( $video_settings['video_slug'] ) : 'videos';
-					$cpt_base_url   = home_url( '/' . $cpt_url_slug ); 
-					$video_url      = $cpt_base_url . '/' . $video_slug;
+					$godam_video_post_id = rtgodam_get_post_id_by_meta_key_and_value( '_godam_attachment_id', $video_id );
+					$video_url           = $godam_video_post_id ? get_permalink( (int) $godam_video_post_id ) : '';
+
+					// Backward compatibility fallback if the linked GoDAM video post does not exist yet.
+					if ( empty( $video_url ) ) {
+						$video_slug     = get_post_field( 'post_name', $video_id );
+						$video_settings = get_option( 'rtgodam_video_post_settings', array() );
+						$cpt_url_slug   = ! empty( $video_settings['video_slug'] ) ? sanitize_title( $video_settings['video_slug'] ) : 'videos';
+						$cpt_base_url   = home_url( '/' . $cpt_url_slug );
+						$video_url      = $cpt_base_url . '/' . $video_slug;
+					}
 
 					if ( $item_engagements_enabled ) {
 						$video_url = add_query_arg(
