@@ -1992,6 +1992,24 @@ class Media_Library extends Base {
 			);
 		}
 
+
+		// Add additional 100x100 cropped size if not already present, its commonly used in Media Library for list view thumbnails.
+		$has_100_crop = false;
+		foreach ( $additional_sizes as $size_name => $size_data ) {
+			if ( 100 === $size_data['width'] && 100 === $size_data['height'] && true === $size_data['crop'] ) {
+				$has_100_crop = true;
+				break;
+			}
+		}
+
+		if ( ! $has_100_crop ) {
+			$size_requests[] = array(
+				'width'  => 100,
+				'height' => 100,
+				'crop'   => true,
+			);
+		}
+
 		// Construct the GoDAM API endpoint URL.
 		$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.image.generate_resized_images';
 
