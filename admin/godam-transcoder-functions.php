@@ -19,7 +19,7 @@ use RTGODAM\Inc\Helpers\Api_Key;
  * Only 'valid' and 'expired' are persisted in the database.
  * 'verification_failed' is a runtime state.
  *
- * @since n.e.x.t
+ * @since 1.7.0
  *
  * @return string One of: 'valid', 'expired'.
  */
@@ -33,7 +33,7 @@ function rtgodam_get_api_key_status() {
  * Only permanent states (valid, expired) can be persisted.
  * States like verification_failed are handled at runtime.
  *
- * @since n.e.x.t
+ * @since 1.7.0
  *
  * @param string $status Status to set: 'valid' or 'expired'.
  *
@@ -50,7 +50,7 @@ function rtgodam_set_api_key_status( $status ) {
  * When an API key expires, we allow a grace period before stopping automatic checks.
  * After the grace period, automatic verification is paused until manual refresh.
  *
- * @since n.e.x.t
+ * @since 1.7.0
  *
  * @return bool True if in grace period (should not skip verification), false otherwise.
  */
@@ -61,7 +61,7 @@ function rtgodam_is_api_key_in_grace_period() {
 /**
  * Mark API key as invalid/expired and set timestamp.
  *
- * @since n.e.x.t
+ * @since 1.7.0
  */
 function rtgodam_mark_api_key_expired() {
 	Api_Key::mark_expired();
@@ -70,7 +70,7 @@ function rtgodam_mark_api_key_expired() {
 /**
  * Clear API key invalid timestamp.
  *
- * @since n.e.x.t
+ * @since 1.7.0
  */
 function rtgodam_clear_api_key_invalid_timestamp() {
 	Api_Key::clear_error_timestamp();
