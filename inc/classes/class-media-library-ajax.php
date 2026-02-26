@@ -390,6 +390,54 @@ class Media_Library_Ajax {
 			$response['transcoded_url'] = false;
 		}
 
+		// For GoDAM-managed images, use rtgodam_image_sizes for media library thumbnails/sizes.
+		if ( $is_image ) {
+			$rtgodam_image_sizes = $this->get_rtgodam_image_sizes( $attachment->ID );
+
+			if ( ! empty( $rtgodam_image_sizes ) ) {
+				$mapped_sizes = array();
+
+				foreach ( $rtgodam_image_sizes as $size_name => $size_data ) {
+					$width  = isset( $size_data['width'] ) ? (int) $size_data['width'] : 0;
+					$height = isset( $size_data['height'] ) ? (int) $size_data['height'] : 0;
+					$url    = isset( $size_data['url'] ) ? esc_url( $size_data['url'] ) : '';
+
+					if ( empty( $url ) || $width <= 0 || $height <= 0 ) {
+						continue;
+					}
+
+					$mapped_sizes[ $size_name ] = array(
+						'url'         => $url,
+						'width'       => $width,
+						'height'      => $height,
+						'orientation' => ( $width > $height ) ? 'landscape' : 'portrait',
+					);
+				}
+
+				if ( ! empty( $mapped_sizes ) ) {
+					$response['sizes'] = array_merge(
+						isset( $response['sizes'] ) && is_array( $response['sizes'] ) ? $response['sizes'] : array(),
+						$mapped_sizes
+					);
+
+					$preview_size = isset( $mapped_sizes['thumbnail'] ) ? $mapped_sizes['thumbnail'] : reset( $mapped_sizes );
+
+					if ( ! empty( $preview_size['url'] ) ) {
+						$response['icon']  = $preview_size['url'];
+						$response['image'] = array(
+							'src'    => $preview_size['url'],
+							'width'  => $preview_size['width'],
+							'height' => $preview_size['height'],
+						);
+					}
+
+					if ( ! empty( $transcoded_url ) ) {
+						$response['url'] = esc_url( $transcoded_url );
+					}
+				}
+			}
+		}
+
 		// Check if item is blocked but limits are no longer exceeded - change to not_started.
 		if ( 'blocked' === strtolower( $transcoding_status ) ) {
 			// Use cached usage data to avoid external API calls.
@@ -888,16 +936,20 @@ class Media_Library_Ajax {
 	 */
 	public function filter_attachment_url_for_virtual_media( $url, $post_id ) {
 		$attachment_mime_type = get_post_mime_type( $post_id );
+		$godam_original_id    = get_post_meta( $post_id, '_godam_original_id', true );
 
-		// For WordPress-uploaded images, use transcoded CDN URL if available.
+		// For WordPress-uploaded images, use CDN URL only when GoDAM sizes map exists.
+		// Otherwise WP may build thumbnail URLs using local metadata + CDN base path,
+		// which breaks old images (dimension mismatch like 350x263 vs 350x262).
 		if ( 'image' === substr( $attachment_mime_type, 0, 5 ) ) {
+			$rtgodam_image_sizes    = $this->get_rtgodam_image_sizes( $post_id );
 			$rtgodam_transcoded_url = get_post_meta( $post_id, 'rtgodam_transcoded_url', true );
-			if ( ! empty( $rtgodam_transcoded_url ) ) {
+			$can_use_cdn_src        = ( ! empty( $godam_original_id ) || ! empty( $rtgodam_image_sizes ) );
+
+			if ( $can_use_cdn_src && ! empty( $rtgodam_transcoded_url ) ) {
 				return esc_url( $rtgodam_transcoded_url );
 			}
 		}
-
-		$godam_original_id = get_post_meta( $post_id, '_godam_original_id', true );
 
 		if ( ! empty( $godam_original_id ) ) {
 			$attachment         = get_post( $post_id );
@@ -978,22 +1030,22 @@ class Media_Library_Ajax {
 			unset( $image_size ); // Break the reference.
 
 			$sources = $new_sources;
-		} else {
+		} elseif ( ! empty( $godam_original_id ) ) {
 			// Compatibility handling for virtual media created before GoDAM image sizes meta was implemented. 
 			// In this case, we will reconstruct the URLs based on the original image URL and the file names in the sources array.
 
 			// Use the current image URL as the base for all subsizes.
 			$base_url = trailingslashit( untrailingslashit( dirname( $image_src ) ) );
-	
+
 			// Rebuild sources array for virtual media.
 			foreach ( $sources as &$source ) {
-	
+
 				// Get last string after the last slash in the file url.
 				$file_basename = basename( $source['url'] );
-	
+
 				// Rebuild the full URL using the base URL and the file basename.
 				$url = $base_url . ltrim( $file_basename, '/' );
-	
+
 				$source['url'] = esc_url( $url );
 			}
 			unset( $source ); // Break the reference.
@@ -1019,6 +1071,18 @@ class Media_Library_Ajax {
 
 		$mime_type = get_post_mime_type( $attachment_id );
 		if ( 'image' !== substr( $mime_type, 0, 5 ) ) {
+			return $filtered_image;
+		}
+
+		// Don't change the image src for virtual media as well.
+		$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+		if ( ! empty( $godam_original_id ) ) {
+			return $filtered_image;
+		}
+
+		// If rtgodam_image_sizes meta exists, it indicates this is a GoDAM-managed image and we should attempt to replace the src with the CDN URL if available.
+		$rtgodam_image_sizes = $this->get_rtgodam_image_sizes( $attachment_id );
+		if ( empty( $rtgodam_image_sizes ) ) {
 			return $filtered_image;
 		}
 
