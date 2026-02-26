@@ -105,9 +105,26 @@ class WC_Reel_Pops_Metabox {
 				border: 1px solid #ddd;
 				padding: 12px;
 				border-radius: 4px;
-				cursor: move;
 				box-sizing: border-box;
 			}
+			.godam-reel-pops-video-item.ui-sortable-helper {
+				box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+				opacity: 0.9;
+			}
+			.godam-reel-pops-drag-handle {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				width: 20px;
+				min-width: 20px;
+				cursor: grab;
+				color: #aaa;
+				font-size: 18px;
+				user-select: none;
+				padding-right: 4px;
+				flex-shrink: 0;
+			}
+			.godam-reel-pops-drag-handle:active { cursor: grabbing; }
 			.godam-reel-pops-video-placeholder {
 				border: 2px dashed #b9b9b9;
 				background: #f3f3f3;
@@ -216,7 +233,7 @@ class WC_Reel_Pops_Metabox {
 				'showMuteButton'        => true,
 				'showPlayButton'        => false,
 				'enableModalNavigation' => true,
-				'popupWidth'            => 120,
+				'popupWidth'            => 160,
 				'mobilePopupWidth'      => 100,
 				'bottomSpacing'         => 20,
 				'sideSpacing'           => 20,
@@ -370,7 +387,7 @@ class WC_Reel_Pops_Metabox {
 
 			// Make video list sortable
 			$('#godam-reel-pops-video-list').sortable({
-				handle: '.godam-reel-pops-video-item',
+				handle: '.godam-reel-pops-drag-handle',
 				items: '> .godam-reel-pops-video-item',
 				placeholder: 'godam-reel-pops-video-placeholder',
 				forcePlaceholderSize: true,
@@ -396,6 +413,7 @@ class WC_Reel_Pops_Metabox {
 					<div class="godam-reel-pops-video-item" data-index="${index}" data-video-id="${attachment.id}">
 						<button type="button" class="godam-reel-pops-video-remove" aria-label="<?php esc_attr_e( 'Remove video', 'godam' ); ?>">✕</button>
 						<div class="godam-reel-pops-video-item-header">
+							<div class="godam-reel-pops-drag-handle" title="<?php esc_attr_e( 'Drag to reorder', 'godam' ); ?>">⠿</div>
 							<div class="godam-reel-pops-video-thumb">${thumbHtml}</div>
 							<div class="godam-reel-pops-video-meta">
 								<strong class="godam-reel-pops-video-title">${title}</strong>
@@ -500,6 +518,7 @@ class WC_Reel_Pops_Metabox {
 		<div class="godam-reel-pops-video-item" data-index="<?php echo esc_attr( $index ); ?>" data-video-id="<?php echo esc_attr( $video_id ); ?>">
 			<button type="button" class="godam-reel-pops-video-remove" aria-label="<?php esc_attr_e( 'Remove video', 'godam' ); ?>">✕</button>
 			<div class="godam-reel-pops-video-item-header">
+				<div class="godam-reel-pops-drag-handle" title="<?php esc_attr_e( 'Drag to reorder', 'godam' ); ?>">⠿</div>
 				<div class="godam-reel-pops-video-thumb">
 					<img src="<?php echo esc_url( $thumb_url ); ?>" alt="" />
 				</div>
@@ -551,7 +570,7 @@ class WC_Reel_Pops_Metabox {
 			'showMuteButton'        => isset( $data['showMuteButton'] ) && '1' === $data['showMuteButton'],
 			'showPlayButton'        => isset( $data['showPlayButton'] ) && '1' === $data['showPlayButton'],
 			'enableModalNavigation' => isset( $data['enableModalNavigation'] ) && '1' === $data['enableModalNavigation'],
-			'popupWidth'            => isset( $data['popupWidth'] ) ? absint( $data['popupWidth'] ) : 120,
+			'popupWidth'            => isset( $data['popupWidth'] ) ? absint( $data['popupWidth'] ) : 160,
 			'mobilePopupWidth'      => isset( $data['mobilePopupWidth'] ) ? absint( $data['mobilePopupWidth'] ) : 100,
 			'bottomSpacing'         => isset( $data['bottomSpacing'] ) ? absint( $data['bottomSpacing'] ) : 20,
 			'sideSpacing'           => isset( $data['sideSpacing'] ) ? absint( $data['sideSpacing'] ) : 20,
@@ -603,7 +622,7 @@ class WC_Reel_Pops_Metabox {
 				'showMuteButton'        => true,
 				'showPlayButton'        => false,
 				'enableModalNavigation' => true,
-				'popupWidth'            => 120,
+				'popupWidth'            => 160,
 				'mobilePopupWidth'      => 100,
 				'bottomSpacing'         => 20,
 				'sideSpacing'           => 20,

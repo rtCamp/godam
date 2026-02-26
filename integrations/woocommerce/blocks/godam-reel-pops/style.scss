@@ -7,12 +7,12 @@
 
 // CSS Variables defaults (can be overridden via data attributes)
 :root {
-	--reel-pops-position: 20px; // side-spacing (left or right)
-	--reel-pops-bottom: 20px;
-	--reel-pops-width: 120px;
-	--reel-pops-mobile-width: 100px;
-	--reel-pops-animation-duration: 500ms;
-	--reel-pops-aspect-ratio: 9 / 16;
+	--godam-reel-pops-position: 20px; // side-spacing (left or right)
+	--godam-reel-pops-bottom: 20px;
+	--godam-reel-pops-width: 160px;
+	--godam-reel-pops-mobile-width: 100px;
+	--godam-reel-pops-animation-duration: 500ms;
+	--godam-reel-pops-aspect-ratio: 9 / 16;
 }
 
 /* Wrapper - hidden by default, shown by JS */
@@ -41,21 +41,20 @@
 .godam-reel-pops-container {
 	position: fixed;
 	z-index: 99999;
-	width: var(--reel-pops-width);
+	width: var(--godam-reel-pops-width);
 	border-radius: 12px;
 	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-	background: #000;
 	cursor: pointer;
 
 	// Position from CSS variables
 	&.position-bottom-left {
-		left: var(--reel-pops-position);
-		bottom: var(--reel-pops-bottom);
+		left: var(--godam-reel-pops-position);
+		bottom: var(--godam-reel-pops-bottom);
 	}
 
 	&.position-bottom-right {
-		right: var(--reel-pops-position);
-		bottom: var(--reel-pops-bottom);
+		right: var(--godam-reel-pops-position);
+		bottom: var(--godam-reel-pops-bottom);
 	}
 
 	// Aspect ratios
@@ -112,7 +111,7 @@
 	left: 0;
 	width: 100%;
 	height: 100%;
-	background: #000;
+	border-radius: 12px; // Match container clipping to avoid edge bleed during animation
 
 	// Ensure video container fills
 	.easydam-video-container {
@@ -132,6 +131,7 @@
 		height: 100% !important;
 		padding: 0;
 		margin: 0;
+		background-color: transparent;
 
 		// Remove responsive padding behavior
 		&.vjs-fluid,
@@ -463,57 +463,58 @@
 
 /* === ENTER ANIMATION CLASSES === */
 .godam-reel-pops-container.animation-slide-up.reel-pops-animate-enter {
-	animation: reel-pops-slide-up-enter var(--reel-pops-animation-duration, 500ms) cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+	animation: reel-pops-slide-up-enter var(--godam-reel-pops-animation-duration, 500ms) cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 .godam-reel-pops-container.animation-slide-left.reel-pops-animate-enter {
-	animation: reel-pops-slide-left-enter var(--reel-pops-animation-duration, 500ms) cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+	animation: reel-pops-slide-left-enter var(--godam-reel-pops-animation-duration, 500ms) cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 .godam-reel-pops-container.animation-slide-right.reel-pops-animate-enter {
-	animation: reel-pops-slide-right-enter var(--reel-pops-animation-duration, 500ms) cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+	animation: reel-pops-slide-right-enter var(--godam-reel-pops-animation-duration, 500ms) cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 .godam-reel-pops-container.animation-fade.reel-pops-animate-enter {
-	animation: reel-pops-fade-enter var(--reel-pops-animation-duration, 500ms) ease forwards;
+	animation: reel-pops-fade-enter var(--godam-reel-pops-animation-duration, 500ms) ease forwards;
 }
 
 .godam-reel-pops-container.animation-bounce.reel-pops-animate-enter {
-	animation: reel-pops-bounce-enter var(--reel-pops-animation-duration, 500ms) cubic-bezier(0.34, 1.3, 0.64, 1) forwards;
+	will-change: transform, opacity; // Pre-promote layer for clean GPU compositing
+	animation: reel-pops-bounce-enter var(--godam-reel-pops-animation-duration, 500ms) cubic-bezier(0.34, 1.3, 0.64, 1) forwards;
 }
 
 .godam-reel-pops-container.animation-scale.reel-pops-animate-enter {
-	animation: reel-pops-scale-enter var(--reel-pops-animation-duration, 500ms) ease-out forwards;
+	animation: reel-pops-scale-enter var(--godam-reel-pops-animation-duration, 500ms) ease-out forwards;
 }
 
 /* === EXIT ANIMATION CLASSES === */
 .godam-reel-pops-container.animation-slide-up.reel-pops-animate-exit {
-	animation: reel-pops-slide-up-exit var(--reel-pops-animation-duration, 500ms) ease-in forwards;
+	animation: reel-pops-slide-up-exit var(--godam-reel-pops-animation-duration, 500ms) ease-in forwards;
 }
 
 .godam-reel-pops-container.animation-slide-left.reel-pops-animate-exit {
-	animation: reel-pops-slide-left-exit var(--reel-pops-animation-duration, 500ms) ease-in forwards;
+	animation: reel-pops-slide-left-exit var(--godam-reel-pops-animation-duration, 500ms) ease-in forwards;
 }
 
 .godam-reel-pops-container.animation-slide-right.reel-pops-animate-exit {
-	animation: reel-pops-slide-right-exit var(--reel-pops-animation-duration, 500ms) ease-in forwards;
+	animation: reel-pops-slide-right-exit var(--godam-reel-pops-animation-duration, 500ms) ease-in forwards;
 }
 
 .godam-reel-pops-container.animation-fade.reel-pops-animate-exit {
-	animation: reel-pops-fade-exit var(--reel-pops-animation-duration, 500ms) ease forwards;
+	animation: reel-pops-fade-exit var(--godam-reel-pops-animation-duration, 500ms) ease forwards;
 }
 
 .godam-reel-pops-container.animation-bounce.reel-pops-animate-exit {
-	animation: reel-pops-bounce-exit var(--reel-pops-animation-duration, 500ms) cubic-bezier(0.36, 0, 0.66, -0.3) forwards;
+	animation: reel-pops-bounce-exit var(--godam-reel-pops-animation-duration, 500ms) cubic-bezier(0.36, 0, 0.66, -0.3) forwards;
 }
 
 .godam-reel-pops-container.animation-scale.reel-pops-animate-exit {
-	animation: reel-pops-scale-exit var(--reel-pops-animation-duration, 500ms) ease-in forwards;
+	animation: reel-pops-scale-exit var(--godam-reel-pops-animation-duration, 500ms) ease-in forwards;
 }
 
 /* CLOSE ANIMATION (user clicks X) */
 .godam-reel-pops-container.reel-pops-closing {
-	animation: reel-pops-close var(--reel-pops-animation-duration, 500ms) ease-in forwards;
+	animation: reel-pops-close var(--godam-reel-pops-animation-duration, 500ms) ease-in forwards;
 }
 
 /* Reduced motion support */
@@ -534,7 +535,7 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
 	.godam-reel-pops-container {
-		width: var(--reel-pops-mobile-width, var(--reel-pops-width));
+		width: var(--godam-reel-pops-mobile-width, var(--godam-reel-pops-width));
 	}
 
 	.godam-reel-pops-close {
