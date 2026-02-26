@@ -49,9 +49,8 @@ class Media_Library_Ajax {
 		add_filter( 'wp_get_attachment_url', array( $this, 'filter_attachment_url_for_virtual_media' ), 10, 2 );
 
 		// Add filters for virtual media srcset support.
-		add_filter( 'image_downsize', array( $this, 'filter_rtgodam_image_downsize' ), 10, 3 );
 		add_filter( 'wp_calculate_image_srcset', array( $this, 'filter_virtual_media_srcset' ), 10, 5 );
-		// add_filter( 'wp_content_img_tag', array( $this, 'filter_rtgodam_content_img_tag' ), 10, 3 );
+		add_filter( 'wp_content_img_tag', array( $this, 'filter_rtgodam_content_img_tag' ), 10, 3 );
 	}
 
 	/**
@@ -943,9 +942,9 @@ class Media_Library_Ajax {
 		// Otherwise WP may build thumbnail URLs using local metadata + CDN base path,
 		// which breaks old images (dimension mismatch like 350x263 vs 350x262).
 		if ( 'image' === substr( $attachment_mime_type, 0, 5 ) ) {
-			$rtgodam_image_sizes   = $this->get_rtgodam_image_sizes( $post_id );
+			$rtgodam_image_sizes    = $this->get_rtgodam_image_sizes( $post_id );
 			$rtgodam_transcoded_url = get_post_meta( $post_id, 'rtgodam_transcoded_url', true );
-			$can_use_cdn_src       = ( ! empty( $godam_original_id ) || ! empty( $rtgodam_image_sizes ) );
+			$can_use_cdn_src        = ( ! empty( $godam_original_id ) || ! empty( $rtgodam_image_sizes ) );
 
 			if ( $can_use_cdn_src && ! empty( $rtgodam_transcoded_url ) ) {
 				return esc_url( $rtgodam_transcoded_url );
@@ -975,99 +974,6 @@ class Media_Library_Ajax {
 	private function get_rtgodam_image_sizes( $attachment_id ) {
 		$rtgodam_image_sizes = get_post_meta( $attachment_id, 'rtgodam_image_sizes', true );
 		return is_array( $rtgodam_image_sizes ) ? $rtgodam_image_sizes : array();
-	}
-
-	/**
-	 * Find best matching GoDAM CDN size for requested dimensions.
-	 *
-	 * @param array        $rtgodam_image_sizes CDN size array.
-	 * @param string|array $size Requested size.
-	 * @return array|false
-	 */
-	private function find_best_rtgodam_size( $rtgodam_image_sizes, $size ) {
-		if ( empty( $rtgodam_image_sizes ) || ! is_array( $rtgodam_image_sizes ) ) {
-			return false;
-		}
-
-		$candidate = false;
-
-		if ( is_string( $size ) && isset( $rtgodam_image_sizes[ $size ] ) ) {
-			$candidate = $rtgodam_image_sizes[ $size ];
-		} else {
-			$target_width  = 0;
-			$target_height = 0;
-
-			if ( is_string( $size ) ) {
-				$wp_image_sizes = wp_get_registered_image_subsizes();
-				if ( isset( $wp_image_sizes[ $size ] ) ) {
-					$target_width  = (int) $wp_image_sizes[ $size ]['width'];
-					$target_height = (int) $wp_image_sizes[ $size ]['height'];
-				}
-			} elseif ( is_array( $size ) ) {
-				$target_width  = isset( $size[0] ) ? (int) $size[0] : 0;
-				$target_height = isset( $size[1] ) ? (int) $size[1] : 0;
-			}
-
-			if ( $target_width > 0 ) {
-				$best_diff = PHP_INT_MAX;
-				foreach ( $rtgodam_image_sizes as $rtgodam_size ) {
-					if ( empty( $rtgodam_size['width'] ) || empty( $rtgodam_size['height'] ) ) {
-						continue;
-					}
-
-					$width  = (int) $rtgodam_size['width'];
-					$height = (int) $rtgodam_size['height'];
-					$diff   = abs( $target_width - $width ) + abs( $target_height - $height );
-
-					if ( $diff < $best_diff ) {
-						$best_diff = $diff;
-						$candidate = $rtgodam_size;
-					}
-				}
-			}
-		}
-
-		if ( empty( $candidate['url'] ) ) {
-			return false;
-		}
-
-		return array(
-			'url'    => esc_url( $candidate['url'] ),
-			'width'  => isset( $candidate['width'] ) ? (int) $candidate['width'] : 0,
-			'height' => isset( $candidate['height'] ) ? (int) $candidate['height'] : 0,
-		);
-	}
-
-	/**
-	 * Provide CDN image URL for requested attachment size.
-	 *
-	 * @param bool|array   $downsize Whether to short-circuit image_downsize.
-	 * @param int          $id Attachment ID.
-	 * @param string|array $size Requested size.
-	 * @return bool|array
-	 */
-	public function filter_rtgodam_image_downsize( $downsize, $id, $size ) {
-		$mime_type = get_post_mime_type( $id );
-		if ( 'image' !== substr( $mime_type, 0, 5 ) ) {
-			return $downsize;
-		}
-
-		$rtgodam_image_sizes = $this->get_rtgodam_image_sizes( $id );
-		if ( empty( $rtgodam_image_sizes ) ) {
-			return $downsize;
-		}
-
-		$best_size = $this->find_best_rtgodam_size( $rtgodam_image_sizes, $size );
-		if ( false === $best_size ) {
-			return $downsize;
-		}
-
-		return array(
-			$best_size['url'],
-			$best_size['width'],
-			$best_size['height'],
-			true,
-		);
 	}
 
 	/**
