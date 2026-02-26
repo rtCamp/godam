@@ -171,9 +171,9 @@ function main() {
 
 	const playsEl = document.getElementById( 'plays' );
 	if ( playsEl ) {
-		const formattedPlays = formatNumber( plays );
+		const formattedPlays = formatNumber( plays ?? 0 );
 		playsEl.innerText = formattedPlays;
-		playsEl.setAttribute( 'title', plays.toLocaleString() );
+		playsEl.setAttribute( 'title', ( plays ?? 0 ).toLocaleString() );
 	}
 
 	const watchTimeEl = document.getElementById( 'watch-time' );
