@@ -346,7 +346,14 @@ class Media_Library extends Base {
 	}
 
 	/**
-	 * Update image attachment meta with subsizes.
+	 * Update image attachment meta with CDN subsizes.
+	 *
+	 * For virtual images, stores sizes in both `rtgodam_image_sizes` and
+	 * `_wp_attachment_metadata['sizes']`.
+	 *
+	 * For WordPress-uploaded images, stores GoDAM sizes only in
+	 * `rtgodam_image_sizes` and keeps `_wp_attachment_metadata['sizes']`
+	 * untouched.
 	 *
 	 * @since 1.5.0
 	 *
@@ -380,13 +387,16 @@ class Media_Library extends Base {
 		}
 
 		$attachment_meta = get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
+		$is_virtual      = ! empty( get_post_meta( $attachment_id, '_godam_original_id', true ) );
 
 		// Normalize attachment meta to an array with a sizes key.
 		if ( ! is_array( $attachment_meta ) ) {
 			$attachment_meta = array();
 		}
 
-		if ( empty( $attachment_meta['sizes'] ) || ! is_array( $attachment_meta['sizes'] ) ) {
+		$rtgodam_image_sizes = array();
+
+		if ( $is_virtual && ( empty( $attachment_meta['sizes'] ) || ! is_array( $attachment_meta['sizes'] ) ) ) {
 			$attachment_meta['sizes'] = array();
 		}
 
@@ -426,12 +436,23 @@ class Media_Library extends Base {
 			// Get last string after the last slash in the file url.
 			$file_basename = basename( $size['file'] );
 
-			$attachment_meta['sizes'][ $external_size_name ] = array(
+			$rtgodam_image_sizes[ $external_size_name ] = array(
+				'url'      => esc_url_raw( $size['file'] ),
 				'file'     => $file_basename,
 				'filesize' => $size['filesize'],
 				'width'    => $size['width'],
 				'height'   => $size['height'],
 			);
+
+			// For virtual images, persist CDN sub-sizes in WordPress metadata too.
+			if ( $is_virtual ) {
+				$attachment_meta['sizes'][ $external_size_name ] = array(
+					'file'     => $file_basename,
+					'filesize' => $size['filesize'],
+					'width'    => $size['width'],
+					'height'   => $size['height'],
+				);
+			}
 		}
 
 		// Ensure top-level width/height exist for srcset calculation, fall back to the largest generated size.
@@ -463,7 +484,21 @@ class Media_Library extends Base {
 		}
 
 		update_post_meta( $attachment_id, '_wp_attachment_metadata', $attachment_meta );
+		update_post_meta( $attachment_id, 'rtgodam_image_sizes', $rtgodam_image_sizes );
 		return true;
+	}
+
+	/**
+	 * Request image subsizes generation from GoDAM for an image attachment.
+	 *
+	 * @since 1.7.0
+	 *
+	 * @param string $job_id        The GoDAM job ID.
+	 * @param int    $attachment_id The WordPress attachment ID.
+	 * @return bool True if request was successful, false otherwise.
+	 */
+	public function request_image_subsizes_for_attachment( $job_id, $attachment_id ) {
+		return $this->request_image_subsizes_from_godam( $job_id, $attachment_id );
 	}
 
 	/**
@@ -1394,7 +1429,7 @@ class Media_Library extends Base {
 				/**
 				 * For audio type, ensure that meta keys for artist and album exist.
 				 *
-				 * Note - This is a temporary fix till API starts sending the meta fields as well.
+				 * Note - This is a temporary fix till API starts sending the meta fields either.
 				 */
 				if ( 'audio' === $type ) {
 					$all_items[ $key ]['meta']           = isset( $all_items[ $key ]['meta'] ) ? $all_items[ $key ]['meta'] : array();
@@ -1439,6 +1474,11 @@ class Media_Library extends Base {
 		// Validate required fields.
 		if ( empty( $data['id'] ) || empty( $data['title'] ) || empty( $data['url'] ) || empty( $data['mime'] ) ) {
 			return new \WP_Error( 'missing_params', __( 'Required fields are missing.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		// Validate MIME type against an allowed pattern to prevent stored XSS.
+		if ( ! preg_match( '/^(video|audio|image)\/[a-z0-9][a-z0-9!#$&\-^_.+]{0,126}$/i', $data['mime'] ) ) {
+			return new \WP_Error( 'invalid_mime', __( 'Invalid or disallowed MIME type.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		// Sanitize the GoDAM ID.
@@ -1488,6 +1528,7 @@ class Media_Library extends Base {
 		// Prepare post data for the virtual media entry.
 		$attachment = array(
 			'post_title'     => sanitize_text_field( $data['title'] ),
+			'post_content'   => sanitize_textarea_field( $data['description'] ?? '' ),
 			'post_mime_type' => sanitize_text_field( $data['mime'] ),
 			'post_type'      => 'attachment',
 			'post_status'    => 'inherit',
@@ -1954,6 +1995,24 @@ class Media_Library extends Base {
 				'width'  => $size_data['width'],
 				'height' => $size_data['height'],
 				'crop'   => $size_data['crop'],
+			);
+		}
+
+
+		// Add additional 100x100 cropped size if not already present, it's commonly used in Media Library for list view thumbnails.
+		$has_100_crop = false;
+		foreach ( $additional_sizes as $size_name => $size_data ) {
+			if ( 100 === $size_data['width'] && 100 === $size_data['height'] ) {
+				$has_100_crop = true;
+				break;
+			}
+		}
+
+		if ( ! $has_100_crop ) {
+			$size_requests[] = array(
+				'width'  => 100,
+				'height' => 100,
+				'crop'   => true,
 			);
 		}
 

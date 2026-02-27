@@ -106,6 +106,14 @@ const GoDAMMediaFrameShared = {
 
 		this.$el.removeClass( 'hide-toolbar' );
 
+		// Clear the GoDAM query cache each time the tab is activated so that
+		// subsequent visits always start a fresh query (page 1, _hasMore=true).
+		// Without this, stale cached queries with _hasMore=false would prevent
+		// the Load More button from appearing on re-opened GoDAM tab sessions.
+		if ( wp?.media?.godamQuery?.clearCache ) {
+			wp.media.godamQuery.clearCache();
+		}
+
 		// Browse our library of attachments.
 		const RenderedContent = new wp.media.view.AttachmentsBrowser( {
 			controller: this,

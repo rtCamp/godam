@@ -51,12 +51,17 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 	};
 
 	const getPreviewTemplateUrl = ( videoItem ) => {
-		const homeUrl = window?.godamRestRoute?.homeUrl;
-		const videoSlug = window?.godamSettings?.videoPostSettings?.video_slug;
-		const videoName = videoItem?.name;
-		return ( homeUrl && videoSlug && videoName )
-			? `${ homeUrl }/${ videoSlug }/${ videoName }`
-			: videoItem?.link;
+		const homeUrl = window?.godamRestRoute?.homeUrl || window?.location?.origin || '';
+
+		if ( videoItem?.godam_video_permalink ) {
+			return videoItem.godam_video_permalink;
+		}
+
+		if ( videoItem?.godam_video_id ) {
+			return `${ homeUrl }/?post_type=godam-video&p=${ videoItem.godam_video_id }`;
+		}
+
+		return videoItem?.link;
 	};
 
 	// Pre-fetch data on mount to ensure copy always works

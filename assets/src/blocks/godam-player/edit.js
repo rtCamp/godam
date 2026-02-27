@@ -34,7 +34,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { __, _x, sprintf } from '@wordpress/i18n';
 import { useInstanceId } from '@wordpress/compose';
 import { useDispatch } from '@wordpress/data';
-import { edit, search } from '@wordpress/icons';
+import { edit, trendingUp } from '@wordpress/icons';
 import { store as noticesStore } from '@wordpress/notices';
 
 /**
@@ -360,6 +360,24 @@ function VideoEdit( {
 		}
 	}, [ id, src, attributes.seo, isVideoSelecting, setAttributes ] );
 
+	// Keep overridden SEO thumbnail synced with block poster.
+	useEffect( () => {
+		if ( ! attributes?.seoOverride || ! poster ) {
+			return;
+		}
+
+		if ( attributes?.seo?.thumbnailUrl === poster ) {
+			return;
+		}
+
+		setAttributes( {
+			seo: {
+				...( attributes?.seo || {} ),
+				thumbnailUrl: poster,
+			},
+		} );
+	}, [ attributes?.seoOverride, attributes?.seo, poster, setAttributes ] );
+
 	function onSelectVideo( media ) {
 		// Set flag to prevent backward compatibility logic during video selection
 		setIsVideoSelecting( true );
@@ -606,11 +624,33 @@ function VideoEdit( {
 	}
 
 	function onSelectPoster( image ) {
-		setAttributes( { poster: image.url } );
+		const nextAttributes = {
+			poster: image.url,
+		};
+
+		if ( attributes?.seoOverride ) {
+			nextAttributes.seo = {
+				...( attributes?.seo || {} ),
+				thumbnailUrl: image.url,
+			};
+		}
+
+		setAttributes( nextAttributes );
 	}
 
 	function onRemovePoster() {
-		setAttributes( { poster: undefined } );
+		const nextAttributes = {
+			poster: undefined,
+		};
+
+		if ( attributes?.seoOverride && defaultPoster ) {
+			nextAttributes.seo = {
+				...( attributes?.seo || {} ),
+				thumbnailUrl: defaultPoster,
+			};
+		}
+
+		setAttributes( nextAttributes );
 
 		// Move focus back to the Media Upload button.
 		posterImageButton.current.focus();
@@ -656,20 +696,24 @@ function VideoEdit( {
 		<>
 			{ isSingleSelected && (
 				<BlockControls>
-					<ToolbarGroup>
-						{ canManageAttachment( attachmentAuthorId ) && (
+					{ canManageAttachment( attachmentAuthorId ) && (
+						<ToolbarGroup>
 							<ToolbarButton
 								icon={ edit }
 								label={ __( 'Edit Video', 'godam' ) }
 								href={ `${ window?.pluginInfo?.adminUrl || '/wp-admin/' }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
 								target="_blank"
 							/>
-						) }
+						</ToolbarGroup>
+					) }
+					<ToolbarGroup>
 						<ToolbarButton
-							icon={ search }
+							icon={ trendingUp }
 							label={ __( 'Video SEO', 'godam' ) }
 							onClick={ () => setIsSEOModelOpen( true ) }
-						/>
+						>
+							{ __( 'SEO', 'godam' ) }
+						</ToolbarButton>
 					</ToolbarGroup>
 				</BlockControls>
 			) }
