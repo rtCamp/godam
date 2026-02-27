@@ -444,6 +444,21 @@ const VideoPlayer = () => {
 						</div>
 					</div>
 
+					{ /* Pro feature banner */ }
+					{ ! hasValidAPIKey && (
+						<div className="w-4/5 mb-6 mx-auto flex items-center justify-between p-3 bg-amber-50 border border-amber-200 rounded-lg">
+							<p className="text-sm text-amber-800 m-0">
+								{ __( 'Video Player Customization is a Pro feature. Your saved settings are still stored but won\'t be applied on the frontend.', 'godam' ) }
+							</p>
+							<ExternalLink
+								href={ getPricingUrl( 'video-player-settings' ) }
+								className="ml-4 flex-shrink-0 text-xs font-semibold text-[#AB3A6C] underline"
+							>
+								{ __( 'Upgrade to Pro', 'godam' ) }
+							</ExternalLink>
+						</div>
+					) }
+
 					{ /* Customize Branding section - Pro only */ }
 					<div className="w-4/5 mb-6 mx-auto">
 						<div className="flex items-center gap-2 mb-5 pb-2 border-b border-gray-200">
@@ -451,14 +466,6 @@ const VideoPlayer = () => {
 								{ __( 'Customize Branding', 'godam' ) }
 							</h3>
 							<span className="godam-pro-badge">{ __( 'Pro', 'godam' ) }</span>
-							{ ! hasValidAPIKey && (
-								<ExternalLink
-									href={ getPricingUrl( 'video-player-settings' ) }
-									className="ml-auto text-xs text-[#AB3A6C] underline"
-								>
-									{ __( 'Upgrade to unlock', 'godam' ) }
-								</ExternalLink>
-							) }
 						</div>
 
 						<div className={ `grid grid-cols-2 gap-6${ ! hasValidAPIKey ? ' opacity-50 pointer-events-none' : '' }` }>
@@ -516,7 +523,10 @@ const VideoPlayer = () => {
 						<label className="label-text" htmlFor="brand-color">{ __( 'Custom CSS', 'godam' ) }</label>
 						<CustomVideoPlayerCSS handleSettingChange={ handleSettingChange } />
 						<div className="text-[0.75rem] leading-[1.2] text-[#777] mt-2">
-							{ __( 'Any custom CSS you add will be applied to all player skins. It\'s global and not tied to a specific skin style.', 'godam' ) }
+							{ ! hasValidAPIKey
+								? __( 'Your saved CSS is stored but will not be applied on the frontend without an active Pro plan.', 'godam' )
+								: __( 'Any custom CSS you add will be applied to all player skins. It\'s global and not tied to a specific skin style.', 'godam' )
+							}
 						</div>
 					</div>
 

@@ -416,7 +416,7 @@ const Appearance = () => {
 					status="warning"
 					isDismissible={ false }
 				>
-					{ __( 'Video player customization is a Pro feature.', 'godam' ) }{ ' ' }
+					{ __( 'Video player customization is a Pro feature. Your saved settings are stored but will not be applied on the frontend without an active Pro plan.', 'godam' ) }{ ' ' }
 					<ExternalLink href={ getPricingUrl( 'player-settings' ) }>
 						{ __( 'Upgrade your plan to unlock it.', 'godam' ) }
 					</ExternalLink>

@@ -280,6 +280,9 @@ if ( empty( $godam_attachment_id ) && empty( $godam_src ) && empty( $godam_trans
 
 $godam_easydam_control_bar_color = 'initial'; // Default color.
 
+// Cache the API key validity check so it is only evaluated once per render.
+$godam_has_valid_api_key = rtgodam_is_api_key_valid();
+
 $godam_settings               = get_option( 'rtgodam-settings', array() );
 $godam_brand_color            = isset( $godam_settings['video_player']['brand_color'] ) ? $godam_settings['video_player']['brand_color'] : null;
 $godam_appearance_color       = isset( $godam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $godam_meta_data['videoConfig']['controlBar']['appearanceColor'] : null;
@@ -322,6 +325,14 @@ $godam_video_setup = array(
 	),
 );
 if ( ! empty( $godam_control_bar_settings ) ) {
+	// Strip premium-only fields from controlBar settings when API key is not valid.
+	// Free features (volume, skip, captions) are kept; branding/colors are Pro-only.
+	if ( ! $godam_has_valid_api_key ) {
+		$godam_premium_controlbar_fields = array( 'brand_image', 'hoverColor', 'customPlayBtnImg', 'appearanceColor', 'playBtnPosition', 'showBranding', 'brandingIcon' );
+		foreach ( $godam_premium_controlbar_fields as $godam_premium_field ) {
+			unset( $godam_control_bar_settings[ $godam_premium_field ] );
+		}
+	}
 	$godam_video_setup['controlBar'] = $godam_control_bar_settings; // contains settings specific to control bar.
 
 	if ( isset( $godam_control_bar_settings['volumePanel'] ) && empty( $godam_control_bar_settings['volumePanel'] ) ) {
@@ -342,7 +353,7 @@ $godam_video_setup = wp_json_encode( $godam_video_setup );
 $godam_frontend_layers         = ! empty( $godam_meta_data['layers'] ) ? $godam_meta_data['layers'] : array();
 $godam_premium_layer_types_cfg = rtgodam_get_premium_layer_types();
 
-if ( ! rtgodam_is_api_key_valid() && ! empty( $godam_frontend_layers ) ) {
+if ( ! $godam_has_valid_api_key && ! empty( $godam_frontend_layers ) ) {
 	$godam_frontend_layers = array_values(
 		array_filter(
 			$godam_frontend_layers,
@@ -365,22 +376,26 @@ $godam_video_config = wp_json_encode(
 	)
 );
 
-if ( ! empty( $godam_appearance_color ) ) {
-	$godam_easydam_control_bar_color = $godam_appearance_color;
-} elseif ( ! empty( $godam_brand_color ) ) {
-	$godam_easydam_control_bar_color = $godam_brand_color;
+// Pro customization (brand color, hover color, custom play button) is only applied on the
+// frontend when the API key is valid. Player skin is a free feature and is always applied.
+if ( $godam_has_valid_api_key ) {
+	if ( ! empty( $godam_appearance_color ) ) {
+		$godam_easydam_control_bar_color = $godam_appearance_color;
+	} elseif ( ! empty( $godam_brand_color ) ) {
+		$godam_easydam_control_bar_color = $godam_brand_color;
+	}
 }
 
-$godam_easydam_hover_color        = ! empty( $godam_meta_data['videoConfig']['controlBar']['hoverColor'] ) ? $godam_meta_data['videoConfig']['controlBar']['hoverColor'] : '#fff';
-$godam_easydam_hover_zoom         = ! empty( $godam_meta_data['videoConfig']['controlBar']['zoomLevel'] ) ? $godam_meta_data['videoConfig']['controlBar']['zoomLevel'] : 0;
-$godam_easydam_custom_btn_img     = ! empty( $godam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] ) ? $godam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] : '';
+$godam_easydam_hover_color        = $godam_has_valid_api_key && ! empty( $godam_meta_data['videoConfig']['controlBar']['hoverColor'] ) ? $godam_meta_data['videoConfig']['controlBar']['hoverColor'] : '#fff';
+$godam_easydam_hover_zoom         = $godam_has_valid_api_key && ! empty( $godam_meta_data['videoConfig']['controlBar']['zoomLevel'] ) ? $godam_meta_data['videoConfig']['controlBar']['zoomLevel'] : 0;
+$godam_easydam_custom_btn_img     = $godam_has_valid_api_key && ! empty( $godam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] ) ? $godam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] : '';
 $godam_easydam_control_bar_config = ! empty( $godam_meta_data['videoConfig']['controlBar'] ) ? $godam_meta_data['videoConfig']['controlBar'] : array();
 
 $godam_layers     = $godam_meta_data['layers'] ?? array();
 $godam_ad_tag_url = '';
 
 // Ad layers are a premium feature — only process them when the API key is valid.
-if ( rtgodam_is_api_key_valid() ) {
+if ( $godam_has_valid_api_key ) {
 	$godam_ads_layers = array_filter(
 		$godam_layers,
 		function ( $godam_layer ) {
@@ -576,7 +591,6 @@ if ( $godam_should_preload_poster ) {
 					<?php
 					// Premium layer types require a valid API key to render on the frontend.
 					$godam_premium_layer_types = rtgodam_get_premium_layer_types();
-					$godam_has_valid_api_key   = rtgodam_is_api_key_valid();
 
 					if ( ! empty( $godam_meta_data['layers'] ) ) :
 						foreach ( $godam_meta_data['layers'] as $godam_layer ) :
