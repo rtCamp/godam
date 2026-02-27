@@ -17,12 +17,12 @@ import 'videojs-flvjs-es6';
  * Internal dependencies
  */
 import GoDAM from '../../assets/src/images/GoDAM.png';
-import { setCurrentLayer } from './redux/slice/videoSlice';
+import { setCurrentLayer, setAddLayerModalTime, updateLayerField } from './redux/slice/videoSlice';
 
 /**
  * WordPress dependencies
  */
-import { customLink, customPostType, preformatted, video, thumbsUp } from '@wordpress/icons';
+import { customLink, customPostType, preformatted, video, thumbsUp, plus } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { Icon } from '@wordpress/components';
 
@@ -111,31 +111,6 @@ export const VideoJS = ( props ) => {
 			player.on( 'loadedmetadata', () => {
 				setDuration( player.duration() );
 			} );
-		} else {
-			//handle skip timer control
-			const skipTime = videoConfig.controlBar.skipButtons.forward;
-			const player = playerRef.current;
-			const skipBackwardButton = player.controlBar.getChild( 'skipBackward' );
-			const skipForwardButton = player.controlBar.getChild( 'skipForward' );
-			if ( skipForwardButton ) {
-				skipForwardButton.off( 'click' ); // Remove default click behavior
-				skipForwardButton.on( 'click', () => {
-					const newTime = Math.min(
-						player.currentTime() + skipTime,
-						player.duration(),
-					);
-					player.currentTime( newTime );
-				} );
-			}
-
-			// Override default skip backward button
-			if ( skipBackwardButton ) {
-				skipBackwardButton.off( 'click' ); // Remove default click behavior
-				skipBackwardButton.on( 'click', () => {
-					const newTime = Math.max( player.currentTime() - skipTime, 0 );
-					player.currentTime( newTime );
-				} );
-			}
 		}
 	}, [ videoRef, videoConfig ] );
 
@@ -144,11 +119,11 @@ export const VideoJS = ( props ) => {
 		const volumeSlider = document.querySelector( '.vjs-volume-panel' );
 		const brandingLogo = document.querySelector( '#branding-icon' );
 
-		if ( ! videoConfig.controlBar.volumePanel ) {
+		if ( volumeSlider && ! videoConfig.controlBar.volumePanel ) {
 			volumeSlider.classList.add( 'hide' );
 		}
 
-		if ( videoConfig.controlBar.subsCapsButton ) {
+		if ( captionsButton && videoConfig.controlBar.subsCapsButton ) {
 			captionsButton.classList.remove( 'vjs-hidden' );
 			captionsButton.classList.add( 'show' );
 		}
@@ -159,7 +134,7 @@ export const VideoJS = ( props ) => {
 			if ( ! brandingLogo ) {
 				let imageSrc = '';
 
-				if ( videoConfig.controlBar.customBrandImg.length > 0 ) {
+				if ( videoConfig.controlBar.customBrandImg && videoConfig.controlBar.customBrandImg.length > 0 ) {
 					imageSrc = videoConfig.controlBar.customBrandImg;
 				} else if ( godamSettings?.brandImage ) {
 					imageSrc = godamSettings?.brandImage;
@@ -171,101 +146,87 @@ export const VideoJS = ( props ) => {
 				img.id = 'branding-icon';
 				img.alt = 'Branding';
 
-				document.querySelector( '.vjs-control-bar' ).appendChild( img );
+				const controlBarElement = document.querySelector( '.vjs-control-bar' );
+				if ( controlBarElement ) {
+					controlBarElement.appendChild( img );
+				}
 			}
 		}
 
 		//change appearance color
 		const controlBar = document.querySelector( '.vjs-control-bar' );
 		const bigPlayButton = document.querySelector( '.vjs-big-play-button' );
-		controlBar.style.setProperty(
-			'background-color',
-			videoConfig.controlBar.appearanceColor,
-			'important',
-		);
-		bigPlayButton.style.setProperty(
-			'background-color',
-			videoConfig.controlBar.appearanceColor,
-			'important',
-		);
+
+		if ( controlBar ) {
+			controlBar.style.setProperty(
+				'background-color',
+				videoConfig.controlBar.appearanceColor || '#2b333fb3',
+				'important',
+			);
+		}
+
+		if ( bigPlayButton ) {
+			bigPlayButton.style.setProperty(
+				'background-color',
+				videoConfig.controlBar.appearanceColor || '#2b333fb3',
+				'important',
+			);
+		}
 
 		//change hover color and zoom level
-		const controls = controlBar.querySelectorAll( '.vjs-control' );
-		controls.forEach( ( control ) => {
-			// On hover
-			control.addEventListener( 'mouseenter', function() {
-				control.style.setProperty(
-					'color',
-					videoConfig.controlBar.hoverColor,
-					'important',
-				);
+		if ( controlBar ) {
+			const controls = controlBar.querySelectorAll( '.vjs-control' );
+			controls.forEach( ( control ) => {
+				// On hover
+				control.addEventListener( 'mouseenter', function() {
+					control.style.setProperty(
+						'color',
+						videoConfig.controlBar.hoverColor || '#fff',
+						'important',
+					);
 
-				if ( ! control.className.includes( 'vjs-progress-control' ) ) {
-					this.style.transform = `scale(${ 1 + parseFloat( videoConfig.controlBar.zoomLevel ) })`;
+					if ( ! control.className.includes( 'vjs-progress-control' ) ) {
+						this.style.transform = `scale(${ 1 + parseFloat( videoConfig.controlBar.zoomLevel || 0 ) })`;
+					}
+				} );
+
+				control.addEventListener( 'mouseleave', function() {
+					control.style.color = '#fff'; // Reset to default
+					this.style.transform = 'scale(1)';
+				} );
+			} );
+		}
+
+		const sliderBar = document.querySelector( '.vjs-slider-bar' );
+		if ( sliderBar ) {
+			sliderBar.addEventListener( 'mouseenter', function() {
+				this.style.backgroundColor = videoConfig.controlBar.hoverColor || '#fff';
+			} );
+		}
+
+		const controlBarForMouseLeave = document.querySelector( '.vjs-control-bar' );
+		if ( controlBarForMouseLeave ) {
+			controlBarForMouseLeave.addEventListener( 'mouseleave', function() {
+				const innerSliderBar = document.querySelector( '.vjs-slider-bar' );
+				if ( innerSliderBar ) {
+					innerSliderBar.style.backgroundColor = '#fff'; // Reset to default
 				}
 			} );
-
-			control.addEventListener( 'mouseleave', function() {
-				control.style.color = '#fff'; // Reset to default
-				this.style.transform = 'scale(1)';
-			} );
-		} );
-
-		document
-			.querySelector( '.vjs-slider-bar' )
-			.addEventListener( 'mouseenter', function() {
-				this.style.backgroundColor = videoConfig.controlBar.hoverColor;
-			} );
-
-		document
-			.querySelector( '.vjs-control-bar' )
-			.addEventListener( 'mouseleave', function() {
-				document.querySelector( '.vjs-slider-bar' ).style.backgroundColor =
-		'#fff'; // Reset to default
-			} );
+		}
 
 		//play button position
 		const playButton = document.querySelector( '.vjs-big-play-button' );
 
-		playButton.classList.add(
-			`${ videoConfig.controlBar.playButtonPosition }-align`,
-		);
-
-		//skip buttons
-		const skipBackwardButton = document.querySelector(
-			'[class^="vjs-skip-backward-"]',
-		);
-		const skipForwardButton = document.querySelector(
-			'[class^="vjs-skip-forward-"]',
-		);
-
-		const backwardClasses = Array.from( skipBackwardButton.classList );
-		const existingBackwardClass = backwardClasses.find( ( cls ) =>
-			cls.startsWith( 'vjs-skip-backward-' ),
-		);
-
-		if ( existingBackwardClass ) {
-			skipBackwardButton.classList.replace(
-				existingBackwardClass,
-				`vjs-skip-backward-${ videoConfig.controlBar.skipButtons.forward }`,
-			);
-		}
-
-		const forwardClasses = Array.from( skipForwardButton.classList );
-		const existingForwardClass = forwardClasses.find( ( cls ) =>
-			cls.startsWith( 'vjs-skip-forward-' ),
-		);
-
-		if ( existingForwardClass ) {
-			skipForwardButton.classList.replace(
-				existingForwardClass,
-				`vjs-skip-forward-${ videoConfig.controlBar.skipButtons.forward }`,
+		if ( playButton && videoConfig.controlBar.playButtonPosition ) {
+			playButton.classList.add(
+				`${ videoConfig.controlBar.playButtonPosition }-align`,
 			);
 		}
 
 		//control bar position
-		if ( 'vertical' === videoConfig.controlBar.controlBarPosition ) {
+		if ( controlBar && 'vertical' === videoConfig.controlBar.controlBarPosition ) {
 			controlBar.classList.add( 'vjs-control-bar-vertical' );
+			const controls = controlBar.querySelectorAll( '.vjs-control' );
 			for ( const control of controls ) {
 				control.classList.add( 'vjs-control-vertical' );
 				if ( control.classList.contains( 'vjs-volume-panel' ) ) {
@@ -282,7 +243,7 @@ export const VideoJS = ( props ) => {
 		const customPlayBtnImg = videoConfig.controlBar.customPlayBtnImg;
 		const playButtonElement = document.querySelector( '.vjs-big-play-button' );
 
-		if ( customPlayBtnImg ) {
+		if ( customPlayBtnImg && playButtonElement ) {
 			// Create new image element
 			const imgElement = document.createElement( 'img' );
 			imgElement.src = customPlayBtnImg;
@@ -298,7 +259,9 @@ export const VideoJS = ( props ) => {
 			imgElement.style.cursor = 'pointer';
 
 			// Replace the original button with the new image
-			playButtonElement.parentNode.replaceChild( imgElement, playButtonElement );
+			if ( playButtonElement.parentNode ) {
+				playButtonElement.parentNode.replaceChild( imgElement, playButtonElement );
+			}
 		}
 
 		if ( playerRef.current ) {
@@ -339,6 +302,9 @@ export const VideoJS = ( props ) => {
 		try {
 			const player = playerRef.current;
 			// player.sources( options.sources );
+			if ( options.aspectRatio ) {
+				player.aspectRatio( options.aspectRatio );
+			}
 			player.poster( options.poster );
 			player.autoplay( options.autoplay );
 			player.muted( options.muted );
@@ -413,6 +379,12 @@ export const VideoJS = ( props ) => {
 					<Slider
 						className="mt-12 mb-6"
 						value={ sliderValue }
+						onInteract={ () => {
+							// Allow scrubbing even when a layer is selected by clearing it first.
+							if ( currentLayer ) {
+								dispatch( setCurrentLayer( null ) );
+							}
+						} }
 						onChange={ ( value ) => {
 							setSliderValue( value );
 							if ( playerRef.current ) {
@@ -425,10 +397,16 @@ export const VideoJS = ( props ) => {
 							dispatch( setCurrentLayer( layer ) );
 							playerRef.current.currentTime( layer.displayTime );
 						} }
-						disabled={ currentLayer }
+						disabled={ false }
 						currentLayerID={ currentLayer?.id }
 						chapters={ [] }
 						formatTimeForInput={ formatTimeForInput }
+						onAddLayer={ ( time ) => {
+							dispatch( setAddLayerModalTime( time ) );
+						} }
+						onLayerDrag={ ( layerId, newDisplayTime ) => {
+							dispatch( updateLayerField( { id: layerId, field: 'displayTime', value: newDisplayTime } ) );
+						} }
 					/>
 				)
 			}
@@ -438,6 +416,12 @@ export const VideoJS = ( props ) => {
 					<Slider
 						className="mt-12 mb-6"
 						value={ sliderValue }
+						onInteract={ () => {
+							// Keep behavior consistent across tabs.
+							if ( currentLayer ) {
+								dispatch( setCurrentLayer( null ) );
+							}
+						} }
 						onChange={ ( value ) => {
 							setSliderValue( value );
 							if ( playerRef.current ) {
@@ -459,10 +443,16 @@ export const VideoJS = ( props ) => {
 };
 
 const Slider = ( props ) => {
-	const { max, value, onChange, className, layers, onLayerSelect, disabled, currentLayerID, chapters, formatTimeForInput } = props;
+	const { max, value, onChange, className, layers, onLayerSelect, disabled, currentLayerID, chapters, formatTimeForInput, onInteract, onAddLayer, onLayerDrag } = props;
 
+	const sliderRef = useRef( null );
 	const [ sliderValue, setSliderValue ] = useState( value );
 	const [ hoverValue, setHoverValue ] = useState( null ); // Hover value
+	const [ isDragging, setIsDragging ] = useState( false ); // Track if user is dragging the slider
+	const [ isHovering, setIsHovering ] = useState( false ); // Track if mouse is over slider area
+	const [ draggingLayer, setDraggingLayer ] = useState( null ); // Track which layer is being dragged
+	const [ dragPosition, setDragPosition ] = useState( null ); // Track drag position as percentage
+	const pressTimerRef = useRef( null ); // Timer for press-and-hold detection
 
 	useEffect( () => {
 		setSliderValue( value );
@@ -505,115 +495,276 @@ const Slider = ( props ) => {
 		return `${ minutes }:${ remainingSeconds < 10 ? '0' : '' }${ remainingSeconds }`;
 	};
 
-	return (
-		<div className={ `slider ${ className }` }>
-			<input
-				style={ {
-					'--progress-value': `${ sliderValue / max * 100 }%`,
-				} }
-				disabled={ disabled }
-				type="range"
-				min="0"
-				step={ 0.01 }
-				max={ max }
-				className="slider-input"
-				value={ sliderValue }
-				onChange={ ( e ) => {
-					if ( onChange ) {
-						onChange( e.target.value );
-					}
-					setSliderValue( e.target.value );
-				} }
-				onMouseMove={ handleHover }
-				onMouseLeave={ handleLeave }
-			/>
-			<span
-				className="slider-progress"
-				style={ {
-					width: `${ sliderValue / max * 100 }%`,
-				} }
-			>
-			</span>
-			{
-				hoverValue && hoverValue >= 0 && hoverValue <= max && (
-					<div className="tooltip" style={ { left: `${ hoverValue / max * 100 }%` } }>
-						{ formatTime( hoverValue ) }
-					</div>
-				)
-			}
-			{
-				sortedLayers?.map( ( layer ) => {
-					const layerLeft = layer.displayTime / max * 100;
+	// Handle layer drag start (after press-and-hold delay)
+	const handleLayerPointerDown = ( e, layer ) => {
+		e.stopPropagation();
+		const PRESS_HOLD_DELAY = 200; // milliseconds
 
-					return (
-						// eslint-disable-next-line jsx-a11y/click-events-have-key-events
+		pressTimerRef.current = setTimeout( () => {
+			setDraggingLayer( layer );
+			setDragPosition( ( layer.displayTime / max ) * 100 );
+			document.body.style.cursor = 'grabbing';
+		}, PRESS_HOLD_DELAY );
+	};
+
+	// Handle pointer up - either select layer or finish drag
+	const handleLayerPointerUp = ( layer ) => {
+		if ( pressTimerRef.current ) {
+			clearTimeout( pressTimerRef.current );
+			pressTimerRef.current = null;
+		}
+
+		if ( draggingLayer ) {
+			// Finish drag - update the layer's displayTime and select the layer
+			const newDisplayTime = Math.round( ( dragPosition / 100 ) * max * 100 ) / 100;
+			if ( onLayerDrag ) {
+				onLayerDrag( draggingLayer.id, Math.max( 0, Math.min( newDisplayTime, max ) ) );
+			}
+			// Select the dragged layer
+			onLayerSelect( { ...draggingLayer, displayTime: Math.max( 0, Math.min( newDisplayTime, max ) ) } );
+			setDraggingLayer( null );
+			setDragPosition( null );
+			document.body.style.cursor = '';
+		} else {
+			// Normal click - select layer
+			onLayerSelect( layer );
+		}
+	};
+
+	// Handle pointer move during drag
+	const handlePointerMove = ( e ) => {
+		if ( ! draggingLayer || ! sliderRef.current ) {
+			return;
+		}
+
+		const rect = sliderRef.current.getBoundingClientRect();
+		const offsetX = e.clientX - rect.left;
+		const percentage = Math.max( 0, Math.min( ( offsetX / rect.width ) * 100, 100 ) );
+		setDragPosition( percentage );
+	};
+
+	// Handle pointer leave during drag
+	const handlePointerLeaveWhileDragging = () => {
+		if ( pressTimerRef.current ) {
+			clearTimeout( pressTimerRef.current );
+			pressTimerRef.current = null;
+		}
+	};
+
+	// Cleanup on unmount
+	useEffect( () => {
+		return () => {
+			if ( pressTimerRef.current ) {
+				clearTimeout( pressTimerRef.current );
+			}
+		};
+	}, [] );
+
+	// Add global pointer up listener when dragging
+	useEffect( () => {
+		if ( ! draggingLayer ) {
+			return;
+		}
+
+		const handleGlobalPointerUp = () => {
+			if ( draggingLayer ) {
+				const newDisplayTime = Math.round( ( dragPosition / 100 ) * max * 100 ) / 100;
+				if ( onLayerDrag ) {
+					onLayerDrag( draggingLayer.id, Math.max( 0, Math.min( newDisplayTime, max ) ) );
+				}
+				// Select the dragged layer
+				onLayerSelect( { ...draggingLayer, displayTime: Math.max( 0, Math.min( newDisplayTime, max ) ) } );
+				setDraggingLayer( null );
+				setDragPosition( null );
+				document.body.style.cursor = '';
+			}
+		};
+
+		const handleGlobalPointerMove = ( e ) => {
+			if ( draggingLayer && sliderRef.current ) {
+				const rect = sliderRef.current.getBoundingClientRect();
+				const offsetX = e.clientX - rect.left;
+				const percentage = Math.max( 0, Math.min( ( offsetX / rect.width ) * 100, 100 ) );
+				setDragPosition( percentage );
+			}
+		};
+
+		document.addEventListener( 'pointerup', handleGlobalPointerUp );
+		document.addEventListener( 'pointermove', handleGlobalPointerMove );
+
+		return () => {
+			document.removeEventListener( 'pointerup', handleGlobalPointerUp );
+			document.removeEventListener( 'pointermove', handleGlobalPointerMove );
+		};
+	}, [ draggingLayer, dragPosition, max, onLayerDrag ] );
+
+	return (
+		<div
+			className={ `slider-hover-area ${ className }` }
+			style={ { padding: '48px 20px', margin: '0 -20px' } }
+			onMouseEnter={ () => setIsHovering( true ) }
+			onMouseLeave={ () => {
+				setIsHovering( false );
+				handlePointerLeaveWhileDragging();
+			} }
+		>
+			<div className="slider" ref={ sliderRef } onPointerMove={ handlePointerMove }>
+				<input
+					style={ {
+						'--progress-value': `${ sliderValue / max * 100 }%`,
+					} }
+					disabled={ disabled }
+					type="range"
+					min="0"
+					step={ 0.01 }
+					max={ max }
+					className="slider-input"
+					value={ sliderValue }
+					onPointerDown={ () => {
+						setIsDragging( true );
+						onInteract?.();
+					} }
+					onPointerUp={ () => setIsDragging( false ) }
+					onMouseDown={ () => {
+						setIsDragging( true );
+						onInteract?.();
+					} }
+					onMouseUp={ () => setIsDragging( false ) }
+					onTouchStart={ () => {
+						setIsDragging( true );
+						onInteract?.();
+					} }
+					onTouchEnd={ () => setIsDragging( false ) }
+					onFocus={ () => onInteract?.() }
+					onChange={ ( e ) => {
+						if ( onChange ) {
+							onChange( e.target.value );
+						}
+						setSliderValue( e.target.value );
+					} }
+					onMouseMove={ handleHover }
+					onMouseLeave={ handleLeave }
+				/>
+				<span
+					className="slider-progress"
+					style={ {
+						width: `${ sliderValue / max * 100 }%`,
+					} }
+				>
+				</span>
+				{
+					hoverValue && hoverValue >= 0 && hoverValue <= max && (
+						<div className="tooltip" style={ { left: `${ hoverValue / max * 100 }%` } }>
+							{ formatTime( hoverValue ) }
+						</div>
+					)
+				}
+				{
+					sortedLayers?.map( ( layer ) => {
+						const isBeingDragged = draggingLayer?.id === layer.id;
+						const layerLeft = isBeingDragged ? dragPosition : ( layer.displayTime / max * 100 );
+
+						return (
+							// eslint-disable-next-line jsx-a11y/click-events-have-key-events
+							<div
+								key={ layer.id }
+								className={ `layer-indicator ${ layer.type === 'hotspot' ? 'hotspot-indicator' : '' } ${ isBeingDragged ? 'dragging' : '' }` }
+								style={ {
+									left: `${ layerLeft }%`,
+									'--hover-width': layer?.duration ? `${ Math.min( ( layer.duration / max ) * 100, 100 - layerLeft ) }%` : '8px',
+									cursor: isBeingDragged ? 'grabbing' : 'grab',
+								} }
+								onPointerDown={ ( e ) => handleLayerPointerDown( e, layer ) }
+								onPointerUp={ () => handleLayerPointerUp( layer ) }
+								onPointerCancel={ handlePointerLeaveWhileDragging }
+								role="button"
+								tabIndex={ 0 }
+							>
+								<div className="layer-indicator--container">
+									<div className={ `icon ${ layer.id === currentLayerID ? 'active' : '' }` }>
+										<Icon icon={ layerTypes.find( ( type ) => type.type === layer.type )?.icon } />
+										<div>
+											{ layer?.type?.toUpperCase() }
+											{
+												layer?.duration && (
+													<div className="duration">
+														for { layer.duration }s
+													</div>
+												)
+											}
+										</div>
+									</div>
+									<div className="info">{ formatTime( isBeingDragged ? ( dragPosition / 100 ) * max : layer.displayTime ) }</div>
+								</div>
+							</div>
+						);
+					} )
+				}
+				{
+					/* Add New Layer Indicator at current time */
+					onAddLayer && sliderValue > 0 && ! currentLayerID && ! isDragging && isHovering && (
 						<div
-							key={ layer.id }
-							className={ `layer-indicator ${ layer.type === 'hotspot' ? 'hotspot-indicator' : '' }` }
+							className="layer-indicator add-layer-indicator"
 							style={ {
-								left: `${ layerLeft }%`,
-								'--hover-width': layer?.duration ? `${ Math.min( ( layer.duration / max ) * 100, 100 - layerLeft ) }%` : '8px',
+								left: `${ ( sliderValue / max ) * 100 }%`,
 							} }
-							onClick={ () => onLayerSelect( layer ) }
+							onClick={ () => onAddLayer( sliderValue ) }
+							onKeyDown={ ( e ) => {
+								if ( e.key === 'Enter' || e.key === ' ' ) {
+									e.preventDefault();
+									onAddLayer( sliderValue );
+								}
+							} }
 							role="button"
 							tabIndex={ 0 }
+							title={ __( 'Add layer at this time', 'godam' ) }
 						>
-							<div className="layer-indicator--container">
-								<div className={ `icon ${ layer.id === currentLayerID ? 'active' : '' }` }>
-									<Icon icon={ layerTypes.find( ( type ) => type.type === layer.type )?.icon } />
-									<div>
-										{ layer?.type?.toUpperCase() }
-										{
-											layer?.duration && (
-												<div className="duration">
-													for { layer.duration }s
-												</div>
-											)
-										}
-									</div>
+							<div className="layer-indicator--container add-layer-container">
+								<div className="icon add-icon">
+									<Icon icon={ plus } />
+									<div>{ __( 'ADD LAYER', 'godam' ) }</div>
 								</div>
-								<div className="info">{ formatTime( layer.displayTime ) }</div>
+								<div className="info">{ formatTime( sliderValue ) }</div>
 							</div>
 						</div>
-					);
-				} )
-			}
-			{
-				sortedChapters?.map( ( chapter, index ) => {
-					const chapterLeft = ( chapter.startTime / max ) * 100;
+					)
+				}
+				{
+					sortedChapters?.map( ( chapter, index ) => {
+						const chapterLeft = ( chapter.startTime / max ) * 100;
 
-					// Calculate difference to next chapter
-					const nextChapter = sortedChapters[ index + 1 ];
-					const nextStart = nextChapter ? nextChapter.startTime : max; // fallback to end
-					const hoverWidth = ( ( nextStart - chapter.startTime ) / max ) * 100;
+						// Calculate difference to next chapter
+						const nextChapter = sortedChapters[ index + 1 ];
+						const nextStart = nextChapter ? nextChapter.startTime : max; // fallback to end
+						const hoverWidth = ( ( nextStart - chapter.startTime ) / max ) * 100;
 
-					return (
-						<div
-							key={ chapter.id }
-							className="layer-indicator hotspot-indicator chapter-indicator"
-							style={ {
-								left: `${ chapterLeft }%`,
-								'--hover-width': `${ hoverWidth }%`,
-							} }
-						>
-							<div className="chapter-indicator--duration">
-								{ `${ chapter?.originalTime } - ${ nextChapter ? nextChapter?.originalTime : formatTimeForInput( max ) }` }
-							</div>
+						return (
 							<div
-								className="chapter-indicator--text"
+								key={ chapter.id }
+								className="layer-indicator hotspot-indicator chapter-indicator"
 								style={ {
+									left: `${ chapterLeft }%`,
 									'--hover-width': `${ hoverWidth }%`,
 								} }
 							>
-								{ chapter?.text?.length > 13
-									? `${ chapter.text.slice( 0, 13 ) }...`
-									: chapter?.text }
+								<div className="chapter-indicator--duration">
+									{ `${ chapter?.originalTime } - ${ nextChapter ? nextChapter?.originalTime : formatTimeForInput( max ) }` }
+								</div>
+								<div
+									className="chapter-indicator--text"
+									style={ {
+										'--hover-width': `${ hoverWidth }%`,
+									} }
+								>
+									{ chapter?.text?.length > 13
+										? `${ chapter.text.slice( 0, 13 ) }...`
+										: chapter?.text }
+								</div>
 							</div>
-						</div>
-					);
-				} )
-			}
-
+						);
+					} )
+				}
+			</div>
 		</div>
 	);
 };

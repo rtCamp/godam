@@ -10,6 +10,9 @@ namespace RTGODAM\Inc\REST_API;
 defined( 'ABSPATH' ) || exit;
 
 use RTGODAM\Inc\Post_Types\GoDAM_Video;
+use RTGODAM\Inc\Enums\Api_Key_Status;
+use RTGODAM\Inc\Enums\HTTP_Status_Code;
+use RTGODAM\Inc\Helpers\Api_Key;
 
 /**
  * Class Settings
@@ -37,7 +40,6 @@ class Settings extends Base {
 				'video_format'                   => 'auto',
 				'video_compress_quality'         => 100,
 				'video_thumbnails'               => 5,
-				'overwrite_thumbnails'           => false,
 				'watermark'                      => false,
 				'watermark_text'                 => '',
 				'watermark_url'                  => '',
@@ -167,6 +169,17 @@ class Settings extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/refresh-api-key-status',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'refresh_api_key_status' ),
+					'permission_callback' => function () {
+						return current_user_can( 'manage_options' );
+					},
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/get-api-key',
 				'args'      => array(
 					'methods'             => \WP_REST_Server::READABLE,
@@ -221,7 +234,7 @@ class Settings extends Base {
 	/**
 	 * Verify GoDAM Central permission using stored API key.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.6.0
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return true|\WP_Error
@@ -266,11 +279,14 @@ class Settings extends Base {
 		if ( is_wp_error( $result ) ) {
 
 			$error_data  = $result->get_error_data();
-			$status_code = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : 500;
+			$status_code = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : HTTP_Status_Code::INTERNAL_SERVER_ERROR;
+
+			// For 500 errors, return as warning instead of error to indicate temporary issue.
+			$response_status = ( HTTP_Status_Code::INTERNAL_SERVER_ERROR === $status_code ) ? 'warning' : 'error';
 
 			return new \WP_REST_Response(
 				array(
-					'status'  => 'error',
+					'status'  => $response_status,
 					'message' => $result->get_error_message(),
 					'code'    => $result->get_error_code(),
 				),
@@ -306,6 +322,10 @@ class Settings extends Base {
 		// Delete the user data from the site_option.
 		delete_option( 'rtgodam_user_data' );
 
+		// Clear API key status and grace period timestamp.
+		delete_option( 'rtgodam-api-key-status' );
+		delete_option( 'rtgodam-api-key-error-since' );
+
 		if ( $deleted_key || $deleted_token ) {
 			return new \WP_REST_Response(
 				array(
@@ -326,12 +346,48 @@ class Settings extends Base {
 	}
 
 	/**
+	 * Refresh API key status by forcing verification.
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public function refresh_api_key_status() {
+		// Force refresh user data which will verify the API key.
+		$user_data = rtgodam_get_user_data( false, HOUR_IN_SECONDS, true );
+
+		if ( empty( $user_data ) ) {
+			return new \WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => __( 'Failed to refresh API key status.', 'godam' ),
+				),
+				500
+			);
+		}
+
+		// Use the status from user_data which might include transient verification_failed.
+		$api_key_status = isset( $user_data['api_key_status'] ) ? $user_data['api_key_status'] : rtgodam_get_api_key_status();
+		$is_valid       = Api_Key_Status::VALID === $api_key_status;
+
+		$status_messages = Api_Key_Status::get_all_messages();
+
+		return new \WP_REST_Response(
+			array(
+				'status'         => $is_valid ? 'success' : 'error',
+				'message'        => $status_messages[ $api_key_status ] ?? __( 'API key status refreshed.', 'godam' ),
+				'api_key_status' => $api_key_status,
+				'valid_api_key'  => $is_valid,
+			),
+			200
+		);
+	}
+
+	/**
 	 * Fetch the saved API key.
 	 *
 	 * @return \WP_REST_Response
 	 */
 	public function get_api_key() {
-		$api_key = get_option( 'rtgodam-api-key', '' );
+		$api_key = Api_Key::get_key();
 
 		return new \WP_REST_Response(
 			array(
@@ -406,7 +462,6 @@ class Settings extends Base {
 				'video_format'                   => sanitize_text_field( $settings['video']['video_format'] ?? $default['video']['video_format'] ),
 				'video_compress_quality'         => intval( $settings['video']['video_compress_quality'] ?? $default['video']['video_compress_quality'] ),
 				'video_thumbnails'               => intval( $settings['video']['video_thumbnails'] ?? $default['video']['video_thumbnails'] ),
-				'overwrite_thumbnails'           => rest_sanitize_boolean( $settings['video']['overwrite_thumbnails'] ?? $default['video']['overwrite_thumbnails'] ),
 				'watermark'                      => rest_sanitize_boolean( $settings['video']['watermark'] ?? $default['video']['watermark'] ),
 				'watermark_text'                 => sanitize_text_field( $settings['video']['watermark_text'] ?? $default['video']['watermark_text'] ),
 				'watermark_url'                  => esc_url_raw( $settings['video']['watermark_url'] ?? $default['video']['watermark_url'] ),

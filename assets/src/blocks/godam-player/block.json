@@ -73,7 +73,7 @@
 		},
 		"aspectRatio": {
 			"type": "string",
-			"default": "16:9"
+			"default": "responsive"
 		},
 		"videoHeight": {
 			"type": "string"
@@ -88,6 +88,10 @@
 		"seo": {
 			"type": "object",
 			"default": {}
+		},
+		"seoOverride": {
+			"type": "boolean",
+			"default": false
 		},
 		"verticalAlignment": {
 			"type": "string",
@@ -153,8 +157,8 @@
 		}
 	},
 	"usesContext": [ "queryId" ],
-	"editorStyle": [ "file:./index.css", "godam-player-frontend-style" ],
-	"style": [ "file:./style-index.css", "godam-player-style", "godam-player-frontend-style" ],
+	"editorStyle": [ "file:./index.css" ],
+	"style": [ "file:./style-index.css", "godam-player-style" ],
 	"editorScript": [ "file:./index.js" ],
 	"viewScript": [ "godam-player-frontend-script", "godam-player-analytics-script" ],
 	"render": "file:./render.php"

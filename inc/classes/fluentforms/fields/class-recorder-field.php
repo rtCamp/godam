@@ -124,9 +124,6 @@ class Recorder_Field extends BaseFieldManager {
 			true
 		);
 
-
-		wp_enqueue_style( 'godam-player-frontend-style' );
-
 		wp_enqueue_style( 'godam-player-style' );
 
 		$godam_settings = get_option( 'rtgodam-settings', array() );

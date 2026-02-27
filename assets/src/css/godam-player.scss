@@ -5,6 +5,9 @@
  * Replace them with your own styles or remove the file completely.
  */
 
+// import videojs styles
+@use "video.js/dist/video-js.min.css";
+
 // CF7 Form style.
 @use "./cf7-godam-theme";
 @use './variables';
@@ -1733,9 +1736,8 @@ body.godam-share-modal-open {
 
 @keyframes pulse {
 
-
 	50% {
-		opacity: 0.5;
+		opacity: 0.8;
 	}
 }
 
