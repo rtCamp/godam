@@ -42,6 +42,20 @@ const pricingUrl = getPricingUrl( 'layer-selector' );
 const Layers = [
 	{
 		id: 1,
+		title: __( 'CTA', 'godam' ),
+		description: __( 'Guide users toward a specific action', 'godam' ),
+		image: CTA,
+		type: 'cta',
+	},
+	{
+		id: 2,
+		title: __( 'Hotspot', 'godam' ),
+		description: __( 'Highlighting key areas with focus', 'godam' ),
+		image: Hotspot,
+		type: 'hotspot',
+	},
+	{
+		id: 3,
 		title: __( 'Gravity Forms', 'godam' ),
 		description: __( 'Collect user input using Gravity Forms', 'godam' ),
 		image: Form,
@@ -53,7 +67,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://docs.gravityforms.com/installation/">${ __( 'Gravity Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 2,
+		id: 4,
 		title: __( 'WPForms', 'godam' ),
 		description: __( 'Collect user input using WPForms', 'godam' ),
 		image: Form,
@@ -65,7 +79,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/wpforms-lite/">${ __( 'WP Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 3,
+		id: 5,
 		title: __( 'Contact Form 7', 'godam' ),
 		description: __( 'Collect user input using Contact Form 7', 'godam' ),
 		image: Form,
@@ -77,7 +91,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/contact-form-7/">${ __( 'Contact Form 7', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 4,
+		id: 6,
 		title: __( 'Jetpack Forms', 'godam' ),
 		description: __( 'Collect user input using Jetpack Forms', 'godam' ),
 		image: Form,
@@ -90,7 +104,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/jetpack/">${ __( 'Jetpack', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 5,
+		id: 7,
 		title: __( 'SureForms', 'godam' ),
 		description: __( 'Collect user input using SureForms', 'godam' ),
 		image: Form,
@@ -103,7 +117,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/sureforms/">${ __( 'SureForms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 6,
+		id: 8,
 		title: __( 'Forminator Forms', 'godam' ),
 		description: __( 'Collect user input using Forminator Forms', 'godam' ),
 		image: Form,
@@ -116,7 +130,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/forminator">${ __( 'Forminator Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 7,
+		id: 9,
 		title: __( 'Fluent Forms', 'godam' ),
 		description: __( 'Collect user input using Fluent Forms', 'godam' ),
 		image: Form,
@@ -129,7 +143,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/fluentform">${ __( 'Fluent Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 8,
+		id: 10,
 		title: __( 'Everest Forms', 'godam' ),
 		description: __( 'Collect user input using Everest Forms', 'godam' ),
 		image: Form,
@@ -142,7 +156,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/everest-forms/">${ __( 'Everest Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 9,
+		id: 11,
 		title: __( 'Ninja Forms', 'godam' ),
 		description: __( 'Collect user input using Ninja Forms', 'godam' ),
 		image: Form,
@@ -155,7 +169,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/ninja-forms/">${ __( 'Ninja Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 10,
+		id: 12,
 		title: __( 'MetForm', 'godam' ),
 		description: __( 'Collect user input using MetForm', 'godam' ),
 		image: Form,
@@ -165,20 +179,6 @@ const Layers = [
 		isRequired: true,
 		isActive: Boolean( window?.videoData?.metformActive ) ?? false,
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/metform/">${ __( 'MetForm', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
-	},
-	{
-		id: 11,
-		title: __( 'CTA', 'godam' ),
-		description: __( 'Guide users toward a specific action', 'godam' ),
-		image: CTA,
-		type: 'cta',
-	},
-	{
-		id: 12,
-		title: __( 'Hotspot', 'godam' ),
-		description: __( 'Highlighting key areas with focus', 'godam' ),
-		image: Hotspot,
-		type: 'hotspot',
 	},
 	{
 		id: 13,

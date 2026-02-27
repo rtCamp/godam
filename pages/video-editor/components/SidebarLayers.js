@@ -42,6 +42,13 @@ export const layerTypes = [
 		isPremium: false,
 	},
 	{
+		title: __( 'Hotspot', 'godam' ),
+		icon: customPostType,
+		type: 'hotspot',
+		layerText: __( 'Hotspot', 'godam' ),
+		isPremium: false,
+	},
+	{
 		title: __( 'Forms', 'godam' ),
 		icon: preformatted,
 		type: 'form',
@@ -109,13 +116,6 @@ export const layerTypes = [
 				tooltipMessage: __( 'MetForm plugin is not active', 'godam' ),
 			},
 		},
-	},
-	{
-		title: __( 'Hotspot', 'godam' ),
-		icon: customPostType,
-		type: 'hotspot',
-		layerText: __( 'Hotspot', 'godam' ),
-		isPremium: false,
 	},
 	{
 		title: __( 'Ad', 'godam' ),
