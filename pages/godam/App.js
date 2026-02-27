@@ -42,10 +42,7 @@ const TABS = [
 	},
 	{
 		id: 'video-player',
-		label: <>
-			{ __( 'Video Player', 'godam' ) }
-			<span className="godam-pro-badge">{ __( 'Pro', 'godam' ) }</span>
-		</>,
+		label: __( 'Video Player', 'godam' ),
 		component: VideoPlayer,
 		icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="18" fill="currentColor" className="bi bi-palette" viewBox="0 0 18 18">
 			<path d="M8 5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3m4 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M5.5 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m.5 6a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
