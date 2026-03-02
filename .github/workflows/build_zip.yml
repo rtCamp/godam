@@ -2,6 +2,9 @@ name: Build Plugin Zip
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - copilot/fix-dashboard-background-issue
 
 permissions:
   contents: read
