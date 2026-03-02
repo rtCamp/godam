@@ -29,30 +29,17 @@ jobs:
           npm install
           npm run build:prod
 
-      - name: WordPress Plugin Deploy (generate zip only)
-        id: deploy
-        uses: 10up/action-wordpress-plugin-deploy@2.3.0
-        with:
-          generate-zip: 'true'
-          dry-run: 'true'
-        env:
-          SLUG: 'godam'
-          ASSETS_DIR: 'wp-assets'
-          SVN_USERNAME: 'placeholder'
-          SVN_PASSWORD: 'placeholder'
-          VERSION: '${{ github.ref_name }}'
-
-      - name: Repack as installable zip
+      - name: Package plugin zip
         shell: bash
         run: |
-          mkdir -p "${{ runner.temp }}/plugin-extract"
-          unzip -q "${{ steps.deploy.outputs.zip-path }}" -d "${{ runner.temp }}/plugin-extract"
-          cd "${{ runner.temp }}/plugin-extract"
-          zip -r -q "${{ github.workspace }}/godam.zip" .
+          mkdir -p /tmp/godam/godam
+          rsync -rc --exclude-from=".distignore" . /tmp/godam/godam/
+          cd /tmp/godam
+          zip -r -q "${{ github.workspace }}/godam.zip" godam/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: godam
-          path: '${{ github.workspace }}/godam.zip'
+          path: ${{ github.workspace }}/godam.zip
           retention-days: 7
