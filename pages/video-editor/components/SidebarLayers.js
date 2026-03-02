@@ -188,11 +188,11 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 	// Sort the array (ascending order)
 	const sortedLayers = [ ...layers ].sort( ( a, b ) => a.displayTime - b.displayTime );
 
-	const isValidAPiKey = window?.videoData?.validApiKey ?? false;
+	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
 
 	const addNewLayer = ( type, formType ) => {
 		const layerType = layerTypes.find( ( l ) => l.type === type );
-		const isPremiumLayer = ! isValidAPiKey && layerType && layerType?.isPremium;
+		const isPremiumLayer = ! isValidAPIKey && layerType && layerType?.isPremium;
 
 		if ( isPremiumLayer ) {
 			return;
@@ -280,7 +280,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								 * Get Tooltip message.
 								 */
 								const tooltipMessage = ( () => {
-									if ( layerData.isPremium && ! isValidAPiKey ) {
+									if ( layerData.isPremium && ! isValidAPIKey ) {
 										return premiumMessage;
 									}
 

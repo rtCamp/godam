@@ -367,7 +367,7 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 								key={ layer.id }
 								className={ `godam-layer-selector__item ${ selectedLayer?.id === layer.id ? 'selected' : '' } ${ isLockedPremium ? 'premium-locked' : '' }` }
 								onClick={ () => ! isLockedPremium && handleLayerSelect( layer ) }
-								disabled={ isDisabled }
+								disabled={ isDisabled || isLockedPremium }
 							>
 								<span className="godam-layer-selector__item__inner">
 									<div className="godam-layer-selector__item__image-container">

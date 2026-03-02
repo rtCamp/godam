@@ -19,5 +19,5 @@ export const PREMIUM_LAYER_TYPES = [ 'form', 'ad', 'poll' ];
  */
 export const getPricingUrl = ( utmContent = 'upgrade' ) => {
 	const host = window?.location?.host || '';
-	return `https://godam.io/pricing?utm_campaign=upgrade&utm_source=${ host }&utm_medium=plugin&utm_content=${ utmContent }`;
+	return `https://godam.io/pricing?utm_campaign=upgrade&utm_source=${ encodeURIComponent( host ) }&utm_medium=plugin&utm_content=${ encodeURIComponent( utmContent ) }`;
 };

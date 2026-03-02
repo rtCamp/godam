@@ -216,13 +216,14 @@ class Settings extends Base {
 	/**
 	 * Mark the welcome walkthrough as completed.
 	 *
-	 * Sets the rtgodam_welcome_completed option so the redirect
-	 * no longer fires.
+	 * Persists the rtgodam_welcome_completed option for record-keeping and
+	 * deletes the rtgodam_show_welcome transient so the redirect no longer fires.
 	 *
 	 * @return \WP_REST_Response
 	 */
 	public function mark_welcome_complete() {
 		update_option( 'rtgodam_welcome_completed', true );
+		delete_transient( 'rtgodam_show_welcome' );
 
 		return new \WP_REST_Response(
 			array( 'success' => true ),

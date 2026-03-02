@@ -27,7 +27,7 @@ import GoDAMLogoImg from '../../assets/src/images/godam-logo.png';
  */
 const pricingUrl = ( utmContent ) => {
 	const host = window?.godamWelcomeData?.host || window?.location?.host || '';
-	return `https://godam.io/pricing?utm_campaign=welcome-walkthrough&utm_source=${ host }&utm_medium=plugin&utm_content=${ utmContent }`;
+	return `https://godam.io/pricing?utm_campaign=welcome-walkthrough&utm_source=${ encodeURIComponent( host ) }&utm_medium=plugin&utm_content=${ encodeURIComponent( utmContent ) }`;
 };
 
 /**

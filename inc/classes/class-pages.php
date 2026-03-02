@@ -883,7 +883,6 @@ class Pages {
 				$this->get_posthog_config()
 			);
 
-			wp_set_script_translations( 'godam-page-script-whats-new', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'godam-page-script-whats-new' );
 		} elseif ( $screen && $this->welcome_page_id === $screen->id ) {
 

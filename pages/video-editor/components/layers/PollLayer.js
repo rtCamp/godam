@@ -40,7 +40,7 @@ const PollLayer = ( { layerID, goBack, duration } ) => {
 			{ ! isValidAPIKey && (
 				<Notice status="warning" isDismissible={ false } className="godam-ad-layer-notice mb-4">
 					<p>
-						{ __( 'Polls are a pro feature.', 'godam' ) } <ExternalLink href="https://godam.com/pricing">{ __( 'Upgrade your plan to unlock it.', 'godam' ) }</ExternalLink>
+						{ __( 'Polls are a pro feature.', 'godam' ) } <ExternalLink href={ `https://godam.io/pricing?utm_campaign=upgrade&utm_source=${ encodeURIComponent( window?.location?.host || '' ) }&utm_medium=plugin&utm_content=poll-layer` }>{ __( 'Upgrade your plan to unlock it.', 'godam' ) }</ExternalLink>
 					</p>
 				</Notice>
 			) }

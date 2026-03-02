@@ -3,7 +3,6 @@
  *
  * Mounts the welcome walkthrough Guide component for first-time users.
  *
- * @package
  */
 
 /**
