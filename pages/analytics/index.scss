@@ -5,6 +5,13 @@
 
 /* Video Editor Set up */
 
+.godam-analytics-container {
+	background-color: #fff;
+	overflow-x: hidden;
+	width: 100%;
+	max-width: 100vw;
+}
+
 .tooltip {
 	position: absolute;
 	background: rgba(0, 0, 0, 0.75);
