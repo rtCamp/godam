@@ -1,3 +1,4 @@
+# Builds a distributable plugin zip from this branch and uploads it as a GitHub Actions artifact.
 name: Build Plugin Zip
 
 on:
