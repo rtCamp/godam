@@ -1208,9 +1208,9 @@ class Pages {
 			return;
 		}
 
-		if ( get_transient( 'rtgodam_show_welcome' ) ) {
+		if ( get_option( 'rtgodam_show_welcome' ) ) {
 			// Redirect only once, then clean up.
-			delete_transient( 'rtgodam_show_welcome' );
+			delete_option( 'rtgodam_show_welcome' );
 
 			// Redirect to Welcome walkthrough page.
 			wp_safe_redirect( admin_url( 'admin.php?page=' . $this->welcome_slug ) );
@@ -1234,8 +1234,8 @@ class Pages {
 		}
 
 		// If the Welcome walkthrough hasn't been shown yet, let it take priority.
-		// The What's New transient will be consumed after the walkthrough completes.
-		if ( get_transient( 'rtgodam_show_welcome' ) ) {
+		// The What's New option will be consumed after the walkthrough completes.
+		if ( get_option( 'rtgodam_show_welcome' ) ) {
 			return;
 		}
 
@@ -1245,9 +1245,9 @@ class Pages {
 			return;
 		}
 
-		if ( get_transient( 'rtgodam_show_whats_new' ) ) {
-			// Redirect only once, then clean up any related transient data.
-			delete_transient( 'rtgodam_show_whats_new' );
+		if ( get_option( 'rtgodam_show_whats_new' ) ) {
+			// Redirect only once, then clean up any related data.
+			delete_option( 'rtgodam_show_whats_new' );
 			delete_transient( 'rtgodam_release_data' );
 
 			// Redirect to "What's New" admin page.

@@ -35,8 +35,8 @@ class Update {
 	/**
 	 * Check if the plugin version has changed.
 	 *
-	 * Fresh install: sets transients for both Welcome walkthrough AND What's New page.
-	 * Version bump:  sets transient for What's New page only.
+	 * Fresh install: sets options for both Welcome walkthrough AND What's New page.
+	 * Version bump:  sets option for What's New page only.
 	 */
 	public function rtgodam_update_plugin_version() {
 		$saved_version   = get_option( 'rtgodam_plugin_version' );
@@ -44,8 +44,8 @@ class Update {
 
 		if ( false === $saved_version ) {
 			// Fresh install — show the welcome walkthrough first, then What's New.
-			set_transient( 'rtgodam_show_welcome', true );
-			set_transient( 'rtgodam_show_whats_new', true );
+			update_option( 'rtgodam_show_welcome', true );
+			update_option( 'rtgodam_show_whats_new', true );
 			update_option( 'rtgodam_plugin_version', $current_version );
 			return;
 		}
@@ -53,7 +53,7 @@ class Update {
 		if ( version_compare( $current_version, $saved_version, '>' ) ) {
 			// Existing install with a version bump — show What's New only.
 			if ( $this->rtgodam_is_release_bump( $saved_version, $current_version ) ) {
-				set_transient( 'rtgodam_show_whats_new', true );
+				update_option( 'rtgodam_show_whats_new', true );
 			}
 
 			update_option( 'rtgodam_plugin_version', $current_version );
