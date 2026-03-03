@@ -32,9 +32,30 @@ import EverestFormsIcon from '../assets/layers/EverestFormsIcon.svg';
 import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
 import MetFormIcon from '../assets/layers/MetFormIcon.png';
 
+/**
+ * Shared premium layer constants — single source of truth.
+ */
+import { PREMIUM_LAYER_TYPES, getPricingUrl } from '../../shared/premium-layers';
+
+const pricingUrl = getPricingUrl( 'layer-selector' );
+
 const Layers = [
 	{
 		id: 1,
+		title: __( 'CTA', 'godam' ),
+		description: __( 'Guide users toward a specific action', 'godam' ),
+		image: CTA,
+		type: 'cta',
+	},
+	{
+		id: 2,
+		title: __( 'Hotspot', 'godam' ),
+		description: __( 'Highlighting key areas with focus', 'godam' ),
+		image: Hotspot,
+		type: 'hotspot',
+	},
+	{
+		id: 3,
 		title: __( 'Gravity Forms', 'godam' ),
 		description: __( 'Collect user input using Gravity Forms', 'godam' ),
 		image: Form,
@@ -46,7 +67,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://docs.gravityforms.com/installation/">${ __( 'Gravity Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 2,
+		id: 4,
 		title: __( 'WPForms', 'godam' ),
 		description: __( 'Collect user input using WPForms', 'godam' ),
 		image: Form,
@@ -58,7 +79,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/wpforms-lite/">${ __( 'WP Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 3,
+		id: 5,
 		title: __( 'Contact Form 7', 'godam' ),
 		description: __( 'Collect user input using Contact Form 7', 'godam' ),
 		image: Form,
@@ -70,7 +91,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/contact-form-7/">${ __( 'Contact Form 7', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 4,
+		id: 6,
 		title: __( 'Jetpack Forms', 'godam' ),
 		description: __( 'Collect user input using Jetpack Forms', 'godam' ),
 		image: Form,
@@ -83,7 +104,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/jetpack/">${ __( 'Jetpack', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 5,
+		id: 7,
 		title: __( 'SureForms', 'godam' ),
 		description: __( 'Collect user input using SureForms', 'godam' ),
 		image: Form,
@@ -96,7 +117,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/sureforms/">${ __( 'SureForms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 6,
+		id: 8,
 		title: __( 'Forminator Forms', 'godam' ),
 		description: __( 'Collect user input using Forminator Forms', 'godam' ),
 		image: Form,
@@ -109,7 +130,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/forminator">${ __( 'Forminator Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 7,
+		id: 9,
 		title: __( 'Fluent Forms', 'godam' ),
 		description: __( 'Collect user input using Fluent Forms', 'godam' ),
 		image: Form,
@@ -122,7 +143,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/fluentform">${ __( 'Fluent Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 8,
+		id: 10,
 		title: __( 'Everest Forms', 'godam' ),
 		description: __( 'Collect user input using Everest Forms', 'godam' ),
 		image: Form,
@@ -135,7 +156,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/everest-forms/">${ __( 'Everest Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 9,
+		id: 11,
 		title: __( 'Ninja Forms', 'godam' ),
 		description: __( 'Collect user input using Ninja Forms', 'godam' ),
 		image: Form,
@@ -148,7 +169,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/ninja-forms/">${ __( 'Ninja Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 10,
+		id: 12,
 		title: __( 'MetForm', 'godam' ),
 		description: __( 'Collect user input using MetForm', 'godam' ),
 		image: Form,
@@ -158,20 +179,6 @@ const Layers = [
 		isRequired: true,
 		isActive: Boolean( window?.videoData?.metformActive ) ?? false,
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/metform/">${ __( 'MetForm', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
-	},
-	{
-		id: 11,
-		title: __( 'CTA', 'godam' ),
-		description: __( 'Guide users toward a specific action', 'godam' ),
-		image: CTA,
-		type: 'cta',
-	},
-	{
-		id: 12,
-		title: __( 'Hotspot', 'godam' ),
-		description: __( 'Highlighting key areas with focus', 'godam' ),
-		image: Hotspot,
-		type: 'hotspot',
 	},
 	{
 		id: 13,
@@ -206,6 +213,8 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 	const [ searchQuery, setSearchQuery ] = useState( '' );
 	const [ filteredLayers, setFilteredLayers ] = useState( Layers );
 	const [ activeTab, setActiveTab ] = useState( 'all' );
+
+	const isValidApiKey = window?.videoData?.validApiKey ?? false;
 
 	const uniqueLayerTypes = useMemo( () => {
 		return Layers.reduce( ( acc, layer ) => {
@@ -349,14 +358,16 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 				{ filteredLayers.map( ( layer ) => {
 					const isDisabled = true === layer?.isRequired && false === layer?.isActive;
 					const isRequiredMessage = layer?.requireMessage ?? '';
+					const isPremiumLayer = PREMIUM_LAYER_TYPES.includes( layer.type );
+					const isLockedPremium = isPremiumLayer && ! isValidApiKey;
 
 					return (
 						<div key={ layer.id }>
 							<button
 								key={ layer.id }
-								className={ `godam-layer-selector__item ${ selectedLayer?.id === layer.id ? 'selected' : '' }` }
-								onClick={ () => handleLayerSelect( layer ) }
-								disabled={ isDisabled }
+								className={ `godam-layer-selector__item ${ selectedLayer?.id === layer.id ? 'selected' : '' } ${ isLockedPremium ? 'premium-locked' : '' }` }
+								onClick={ () => ! isLockedPremium && handleLayerSelect( layer ) }
+								disabled={ isDisabled || isLockedPremium }
 							>
 								<span className="godam-layer-selector__item__inner">
 									<div className="godam-layer-selector__item__image-container">
@@ -377,7 +388,12 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 									</div>
 
 									<div className="godam-layer-selector__item__content">
-										<h3>{ layer.title }</h3>
+										<h3>
+											{ layer.title }
+											{ isPremiumLayer && (
+												<span className="godam-pro-badge">{ __( 'Pro', 'godam' ) }</span>
+											) }
+										</h3>
 										<p>{ layer.description }</p>
 									</div>
 
@@ -387,7 +403,19 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 								</span>
 							</button>
 							{
-								isDisabled &&
+								isLockedPremium &&
+								<p className="godam-layer-selector__item__message godam-layer-selector__item__message--premium">
+									<Icon icon={ cautionFilled } />
+									<span>
+										{ __( 'Pro feature —', 'godam' ) }{ ' ' }
+										<a href={ pricingUrl } target="_blank" rel="noopener noreferrer" className="godam-link">
+											{ __( 'Upgrade to unlock', 'godam' ) }
+										</a>
+									</span>
+								</p>
+							}
+							{
+								isDisabled && ! isLockedPremium &&
 								<p className="godam-layer-selector__item__message">
 									<Icon icon={ cautionFilled } />
 									<div dangerouslySetInnerHTML={ { __html: DOMPurify.sanitize( isRequiredMessage ) } } />
@@ -405,14 +433,25 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 				>
 					{ __( 'Cancel', 'godam' ) }
 				</Button>
-				<Button
-					variant="primary"
-					className="godam-button"
-					disabled={ ! selectedLayer }
-					onClick={ () => handleCustomiseLayer() }
-				>
-					{ __( 'Customise Layer', 'godam' ) }
-				</Button>
+				{ selectedLayer && PREMIUM_LAYER_TYPES.includes( selectedLayer.type ) && ! isValidApiKey ? (
+					<a
+						href={ pricingUrl }
+						target="_blank"
+						rel="noopener noreferrer"
+						className="components-button godam-button is-primary"
+					>
+						{ __( 'Upgrade to Pro', 'godam' ) }
+					</a>
+				) : (
+					<Button
+						variant="primary"
+						className="godam-button"
+						disabled={ ! selectedLayer }
+						onClick={ () => handleCustomiseLayer() }
+					>
+						{ __( 'Customise Layer', 'godam' ) }
+					</Button>
+				) }
 			</div>
 		</Modal>
 	);

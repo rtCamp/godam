@@ -157,11 +157,21 @@ const JetpackForm = ( { layerID } ) => {
 		return `${ window?.videoData?.adminUrl }post.php?post=${ postId }&action=edit`;
 	};
 
-	const isValidAPIKey = true;
+	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
 	const isJetpackPluginActive = Boolean( window?.videoData?.jetpackActive );
 
 	return (
 		<>
+			{
+				! isValidAPIKey &&
+				<Notice
+					className="mb-4"
+					status="warning"
+					isDismissible={ false }
+				>
+					{ __( 'Forms layer is a Pro feature. Upgrade your plan to unlock it.', 'godam' ) }
+				</Notice>
+			}
 			{
 				! isJetpackPluginActive &&
 				<Notice
@@ -240,7 +250,7 @@ const JetpackForm = ( { layerID } ) => {
 							! layer.jp_id && forms.length === 0 && (
 								<div className="form-container">
 									<p>
-										{ __( 'No Jetpack forms found. Please ', 'godam' ) }
+										{ __( 'No Jetpack forms found. Please', 'godam' ) }{ ' ' }
 										<a
 											href={ `${ window?.videoData?.adminUrl }admin.php?page=jetpack-forms-admin#/responses` }
 											target="_blank"
@@ -249,7 +259,7 @@ const JetpackForm = ( { layerID } ) => {
 										>
 											{ __( 'create a Jetpack contact form', 'godam' ) }
 										</a>
-										{ __( ' first.', 'godam' ) }
+										{ ' ' }{ __( 'first.', 'godam' ) }
 									</p>
 								</div>
 							)

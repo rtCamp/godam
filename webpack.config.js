@@ -329,6 +329,7 @@ const pages = {
 		'react-dom': 'ReactDOM',
 		'@wordpress/element': [ 'wp', 'element' ], // For WordPress compatibility
 		'@wordpress/i18n': [ 'wp', 'i18n' ],
+		'@wordpress/components': [ 'wp', 'components' ],
 	},
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions

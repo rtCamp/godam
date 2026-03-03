@@ -27,6 +27,7 @@ function FormSelector( { className, disabled, formID, forms, handleChange } ) {
 	return (
 		<>
 			<ComboboxControl
+				disabled={ disabled }
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
 				label={ __( 'Select form', 'godam' ) }

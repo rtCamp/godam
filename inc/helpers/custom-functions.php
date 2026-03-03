@@ -520,6 +520,21 @@ function rtgodam_is_api_key_valid() {
 }
 
 /**
+ * Get the list of premium (Pro) layer types.
+ *
+ * Single source of truth on the PHP side for which video layer types
+ * require a valid API key. Keep in sync with the JS constant
+ * PREMIUM_LAYER_TYPES in pages/shared/premium-layers.js.
+ *
+ * @since n.e.x.t
+ *
+ * @return string[] Array of premium layer type slugs.
+ */
+function rtgodam_get_premium_layer_types() {
+	return array( 'form', 'ad', 'poll' );
+}
+
+/**
  * Checks if the given filename is an audio file based on its name.
  *
  * Note: The files created by uppy webcam, screen capture, and audio plugin are in the same format. So we are checking the filename to determine if it's an audio file.

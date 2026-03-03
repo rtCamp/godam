@@ -20,6 +20,7 @@ defined( 'ABSPATH' ) || exit;
  * VALID: API key is verified and working.
  * EXPIRED: API key was previously valid but has expired.
  * VERIFICATION_FAILED: Temporary server error during verification (stored in user data cache).
+ * NO_API_KEY: No API key has been entered yet (default state for new installs / free users).
  */
 class Api_Key_Status {
 
@@ -48,6 +49,17 @@ class Api_Key_Status {
 	const VERIFICATION_FAILED = 'verification_failed';
 
 	/**
+	 * No API key has been provided (free user / new install).
+	 *
+	 * This is the neutral default state for installations that have never
+	 * had an API key entered. It is persisted in the database and used as
+	 * the fallback value when no status option exists.
+	 *
+	 * @var string
+	 */
+	const NO_API_KEY = 'no_api_key';
+
+	/**
 	 * Get the status message for a given API key status.
 	 *
 	 * @param string $status The API key status.
@@ -70,6 +82,7 @@ class Api_Key_Status {
 			self::VALID               => __( 'API key is valid and active.', 'godam' ),
 			self::EXPIRED             => __( 'API key has expired. Please renew your subscription.', 'godam' ),
 			self::VERIFICATION_FAILED => __( 'Unable to verify API key. Please try again later.', 'godam' ),
+			self::NO_API_KEY          => __( 'No API key has been entered.', 'godam' ),
 		);
 	}
 
@@ -83,6 +96,7 @@ class Api_Key_Status {
 			self::VALID,
 			self::EXPIRED,
 			self::VERIFICATION_FAILED,
+			self::NO_API_KEY,
 		);
 	}
 
@@ -97,6 +111,7 @@ class Api_Key_Status {
 		return array(
 			self::VALID,
 			self::EXPIRED,
+			self::NO_API_KEY,
 		);
 	}
 

@@ -271,6 +271,22 @@ $settings-page-breakpoint: 782px;
 		}
 	}
 
+	.godam-pro-badge {
+		display: inline-block;
+		margin-left: 0.25rem;
+		padding: 0.1rem 0.4rem;
+		font-size: 0.6rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: #fff;
+		background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
+		border-radius: 0.25rem;
+		vertical-align: middle;
+		line-height: 1.5;
+		white-space: nowrap;
+	}
+
 	// Circular progress bar
 	.circle-container {
 		position: relative;
