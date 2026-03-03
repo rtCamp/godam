@@ -57,16 +57,6 @@ function destroyVideoJSPlayersInContainer( container ) {
 			// Silent fail - player might already be disposed or not initialized
 		}
 	} );
-
-	// Fallback for native elements if a Video.js instance is not available.
-	container.querySelectorAll( 'video' ).forEach( ( videoElement ) => {
-		try {
-			videoElement.pause();
-			videoElement.currentTime = 0;
-		} catch ( error ) {
-			// Silent fail.
-		}
-	} );
 }
 
 /**

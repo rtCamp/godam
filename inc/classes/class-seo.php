@@ -171,7 +171,7 @@ class Seo {
 	/**
 	 * Get SEO data from a media library attachment.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.7.0
 	 *
 	 * @param int $attachment_id The attachment ID.
 	 * @return array The SEO data from the attachment.

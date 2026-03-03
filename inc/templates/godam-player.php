@@ -38,15 +38,15 @@ if ( empty( $godam_player_wrapper_inline_css_added ) ) {
 			}
 		}
 
-		// If wp_head already fired, output inline immediately.
+			// If wp_head already fired, output inline immediately.
 		if ( did_action( 'wp_head' ) ) {
-			echo '<style id="godam-player-wrapper-inline-css">' . esc_html( wp_strip_all_tags( $godam_player_wrapper_css ) ) . '</style>';
+			echo '<style id="godam-player-wrapper-inline-css">' . wp_strip_all_tags( $godam_player_wrapper_css ) . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS is stripped to plain text before inline output.
 		} else {
 			// Output inline style in wp_head for high priority rendering.
 			add_action(
 				'wp_head',
 				function () use ( $godam_player_wrapper_css ) {
-					echo '<style id="godam-player-wrapper-inline-css">' . esc_html( wp_strip_all_tags( $godam_player_wrapper_css ) ) . '</style>';
+					echo '<style id="godam-player-wrapper-inline-css">' . wp_strip_all_tags( $godam_player_wrapper_css ) . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS is stripped to plain text before inline output.
 				},
 				1 // High priority.
 			);

@@ -1162,7 +1162,7 @@ function godam_embed_page_content( $video_id, $show_engagements = false ) {
  * if so, returns the given URL string or array of URLs with their scheme changed to HTTPS.
  * If SSL is not active, the original value is returned unchanged.
  *
- * @since n.e.x.t
+ * @since 1.7.0
  *
  * @param array|string $urls The URLs to change the scheme of.
  *

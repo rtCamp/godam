@@ -63,6 +63,12 @@ const Attachments = wp?.media?.model?.Attachments.extend( {
 } );
 
 /**
+ * Module-level cache for GoDAM queries, shared between get() and clearCache().
+ * Exposed here so clearCache() can reset it without needing a nested closure.
+ */
+let _godamQueryCache = [];
+
+/**
  * Custom Query model to handle fetching DAM (GoDAM) media items from a custom REST endpoint.
  * This class mimics the native `wp.media.model.Query` but is wired to a different backend source.
  */
@@ -168,15 +174,22 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 							this._page++;
 						}
 
-						// Update total counts.
+						// Update supplementary pagination data.
 						this.total = effectiveTotal;
-						// WordPress uses this field for the "Showing x of y media items" footer text.
-						this.totalAttachments = effectiveTotal;
 						this.totalPages = totalPages;
 						this.currentPage = currentPage;
 
 						// Call success callback with items - this resolves the promise.
+						// NOTE: options.success triggers Backbone's collection.set(), which fires
+						// 'add' events, causing WordPress's _addToTotalAttachments to increment
+						// this.totalAttachments once per newly added item. We must set
+						// totalAttachments AFTER this to counteract that inflation and keep
+						// the "Showing X of Y" footer accurate.
 						options.success?.( items );
+
+						// WordPress uses this field for the "Showing x of y media items" footer text.
+						// Set AFTER options.success so it overrides the increments from _addToTotalAttachments.
+						this.totalAttachments = effectiveTotal;
 
 						return items;
 					}
@@ -199,47 +212,55 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 	 */
 	{
 		/**
-		 * Create and return a new instance of the GODAMAttachmentCollection.
+		 * Create and return a new instance of the GODAMAttachmentCollection,
+		 * reusing an existing cached instance when props are identical.
 		 *
-		 * @param {Object} props   - Props for the query (e.g., type).
+		 * @param {Object} props   - Props for the query (e.g., type, search).
 		 * @param {Object} options - Additional options to pass to the collection.
-		 * @return {GODAMAttachmentCollection}
+		 * @return {GODAMAttachmentCollection} - A collection instance matching the given props.
 		 */
-		get: ( () => {
-			const queries = [];
+		get( props = {}, options = {} ) {
+			delete props.query;
+			_.defaults( props );
 
-			return function( props = {}, options = {} ) {
-				delete props.query;
-				_.defaults( props );
+			// Check if we already have a query with these props to prevent redundant instances.
+			let query = _.find( _godamQueryCache, ( q ) => {
+				return _.isEqual( q.props.toJSON(), props );
+			} );
 
-				// Check if we already have a query with these props to prevent redundant instances.
-				let query = _.find( queries, ( q ) => {
-					return _.isEqual( q.props.toJSON(), props );
+			if ( ! query ) {
+				query = new wp.media.godamQuery( [], {
+					props,
+					args: {},
+					...options,
 				} );
+				_godamQueryCache.push( query );
 
-				if ( ! query ) {
-					query = new wp.media.godamQuery( [], {
-						props,
-						args: {},
-						...options,
-					} );
-					queries.push( query );
-
-					// Initialize internal pagination state only for newly created queries.
-					if ( typeof query._page !== 'undefined' ) {
-						query._page = 1;
-					}
-					if ( typeof query._hasMore !== 'undefined' ) {
-						query._hasMore = true;
-					}
-					if ( typeof query.reset === 'function' ) {
-						query.reset();
-					}
+				// Initialize internal pagination state only for newly created queries.
+				if ( typeof query._page !== 'undefined' ) {
+					query._page = 1;
 				}
+				if ( typeof query._hasMore !== 'undefined' ) {
+					query._hasMore = true;
+				}
+				if ( typeof query.reset === 'function' ) {
+					query.reset();
+				}
+			}
 
-				return query;
-			};
-		} )(),
+			return query;
+		},
+
+		/**
+		 * Clear the query cache so the next GoDAM tab session starts fresh.
+		 *
+		 * Called from GoDAMCreate() each time the GoDAM tab is activated,
+		 * preventing stale _hasMore / _page state from a previous session
+		 * from hiding the Load More button on subsequent visits.
+		 */
+		clearCache() {
+			_godamQueryCache = [];
+		},
 	},
 );
 
