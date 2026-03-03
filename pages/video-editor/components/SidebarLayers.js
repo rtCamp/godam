@@ -274,13 +274,13 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								const layerData = layerTypes.find( ( l ) => l.type === layer.type );
 								const formType = 'form' === layerData?.type ? layerData?.formType[ layer.form_type ?? 'gravity' ] : false;
 								const icon = formType ? formType?.icon : layerData?.icon;
-								const layerText = formType ? formType?.layerText : layerData.layerText;
+								const layerText = formType ? formType?.layerText : layerData?.layerText;
 
 								/**
 								 * Get Tooltip message.
 								 */
 								const tooltipMessage = ( () => {
-									if ( layerData.isPremium && ! isValidAPIKey ) {
+									if ( layerData?.isPremium && ! isValidAPIKey ) {
 										return premiumMessage;
 									}
 
