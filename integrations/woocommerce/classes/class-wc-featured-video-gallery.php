@@ -112,6 +112,9 @@ class WC_Featured_Video_Gallery {
 			return;
 		}
 
+		// Enqueue WooCommerce Reels specific skin.
+		wp_enqueue_style( 'godam-player-reels-skin-css' );
+
 		wp_enqueue_style(
 			'godam-featured-video-style',
 			RTGODAM_URL . 'assets/build/integrations/woocommerce/css/godam-featured-video.css',

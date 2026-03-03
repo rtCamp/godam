@@ -491,7 +491,7 @@ class Media_Library extends Base {
 	/**
 	 * Request image subsizes generation from GoDAM for an image attachment.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.7.0
 	 *
 	 * @param string $job_id        The GoDAM job ID.
 	 * @param int    $attachment_id The WordPress attachment ID.
@@ -1429,7 +1429,7 @@ class Media_Library extends Base {
 				/**
 				 * For audio type, ensure that meta keys for artist and album exist.
 				 *
-				 * Note - This is a temporary fix till API starts sending the meta fields as well.
+				 * Note - This is a temporary fix till API starts sending the meta fields either.
 				 */
 				if ( 'audio' === $type ) {
 					$all_items[ $key ]['meta']           = isset( $all_items[ $key ]['meta'] ) ? $all_items[ $key ]['meta'] : array();
@@ -1474,6 +1474,11 @@ class Media_Library extends Base {
 		// Validate required fields.
 		if ( empty( $data['id'] ) || empty( $data['title'] ) || empty( $data['url'] ) || empty( $data['mime'] ) ) {
 			return new \WP_Error( 'missing_params', __( 'Required fields are missing.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		// Validate MIME type against an allowed pattern to prevent stored XSS.
+		if ( ! preg_match( '/^(video|audio|image)\/[a-z0-9][a-z0-9!#$&\-^_.+]{0,126}$/i', $data['mime'] ) ) {
+			return new \WP_Error( 'invalid_mime', __( 'Invalid or disallowed MIME type.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		// Sanitize the GoDAM ID.
@@ -1523,6 +1528,7 @@ class Media_Library extends Base {
 		// Prepare post data for the virtual media entry.
 		$attachment = array(
 			'post_title'     => sanitize_text_field( $data['title'] ),
+			'post_content'   => sanitize_textarea_field( $data['description'] ?? '' ),
 			'post_mime_type' => sanitize_text_field( $data['mime'] ),
 			'post_type'      => 'attachment',
 			'post_status'    => 'inherit',
@@ -1989,6 +1995,24 @@ class Media_Library extends Base {
 				'width'  => $size_data['width'],
 				'height' => $size_data['height'],
 				'crop'   => $size_data['crop'],
+			);
+		}
+
+
+		// Add additional 100x100 cropped size if not already present, it's commonly used in Media Library for list view thumbnails.
+		$has_100_crop = false;
+		foreach ( $additional_sizes as $size_name => $size_data ) {
+			if ( 100 === $size_data['width'] && 100 === $size_data['height'] ) {
+				$has_100_crop = true;
+				break;
+			}
+		}
+
+		if ( ! $has_100_crop ) {
+			$size_requests[] = array(
+				'width'  => 100,
+				'height' => 100,
+				'crop'   => true,
 			);
 		}
 
