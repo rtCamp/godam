@@ -227,8 +227,27 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 		$format      = $request->get_param( 'format' );
 		$job_type    = $request->get_param( 'job_type' );
 
+		// GoDAM Central calls back with file_status=error when transcoding fails on its end.
+		// Acknowledge the callback with a 200 so Central does not retry, but store the error
+		// information in post meta so the site admin can see what went wrong.
 		if ( ! empty( $job_id ) && ! empty( $file_status ) && ( 'error' === $file_status ) ) {
-			return new WP_Error( 'rtgodam_transcoding_error', 'Something went wrong. Invalid post request.', array( 'status' => 400 ) );
+			if ( 'wp-media' === $job_for ) {
+				$failed_id = $this->rtgodam_transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
+				if ( ! empty( $failed_id ) && is_numeric( $failed_id ) ) {
+					update_post_meta( $failed_id, 'rtgodam_transcoding_status', 'failed' );
+					// Use rtgodam_transcoding_error_msg so the REST status endpoint can surface it.
+					if ( ! empty( $error_msg ) ) {
+						update_post_meta( $failed_id, 'rtgodam_transcoding_error_msg', sanitize_text_field( $error_msg ) );
+					}
+				}
+			}
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'message' => __( 'Transcoding error received and recorded.', 'godam' ),
+				),
+				200
+			);
 		}
 
 		$attachment_id = '';
@@ -236,7 +255,6 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 		if ( isset( $job_for ) && ( 'wp-media' === $job_for ) ) {
 			if ( isset( $job_id ) ) {
 				$has_thumbs = isset( $thumbnail ) ? true : false;
-				$flag       = false;
 
 				$id = $this->rtgodam_transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
 
@@ -258,7 +276,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 					}
 
 					if ( isset( $format ) && 'thumbnail' === $format ) {
-						return new WP_REST_Response( esc_html_e( 'Thumbnail created successfully.', 'godam' ), 200 );
+						return new WP_REST_Response( esc_html__( 'Thumbnail created successfully.', 'godam' ), 200 );
 					}
 
 					if ( ! empty( $post_array['files'] ) ) {
@@ -293,23 +311,44 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 						update_post_meta( $attachment_id, 'rtgodam_transcoded_url', esc_url_raw( $post_array['download_url'] ) );
 
 						// Request CDN image subsizes and store them in dedicated meta.
+						// This is a secondary async operation; a failure here must not cause a 500 response
+						// to GoDAM Central, which would mark the already-completed transcoding job as failed.
 						$subsize_result = \RTGODAM\Inc\REST_API\Media_Library::get_instance()->request_image_subsizes_for_attachment( $job_id, $attachment_id );
 
 						if ( is_wp_error( $subsize_result ) || empty( $subsize_result ) ) {
 							// translators: %s is replaced with the attachment ID for which subsizes generation failed.
-							$flag = sprintf( __( 'Failed to generate image subsizes for attachment ID %s.', 'godam' ), $attachment_id );
-							error_log( $flag ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Logging the error for debugging purposes.
+							error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Logging the error for debugging purposes.
+								// translators: %s is replaced with the attachment ID for which subsizes generation failed.
+								sprintf( __( 'GoDAM: Failed to request image subsizes for attachment ID %s. The transcoded image URL has been saved; subsizes may be retried separately.', 'godam' ), $attachment_id )
+							);
+
+							return new WP_REST_Response(
+								array(
+									'success' => false,
+									'message' => __( 'Transcoded image URL saved, but failed to request subsizes.', 'godam' ),
+								),
+								200
+							);
 						}
 					}
 				} else {
-					$flag = __( 'Something went wrong. The required attachment id does not exists. It must have been deleted.', 'godam' );
+					// The attachment no longer exists (deleted between queuing and callback).
+					// Log for visibility but return 200 so GoDAM Central does not retry or mark
+					// the job as failed due to an error in the callback itself.
+					error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Logging the error for debugging purposes.
+						sprintf( 'GoDAM: Transcoder callback received for job %s but the corresponding attachment no longer exists. It may have been deleted.', sanitize_text_field( $job_id ) )
+					);
+					$this->rtgodam_transcoder_handler->update_usage( $this->rtgodam_transcoder_handler->api_key );
+					return new WP_REST_Response(
+						array(
+							'success' => false,
+							'message' => __( 'Attachment not found; it may have been deleted.', 'godam' ),
+						),
+						200
+					);
 				}
 
 				$this->rtgodam_transcoder_handler->update_usage( $this->rtgodam_transcoder_handler->api_key );
-
-				if ( $flag ) {
-					return new WP_Error( 'rtgodam_transcoding_error', $flag, array( 'status' => 500 ) );
-				}
 			}
 		}
 
@@ -404,6 +443,14 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 		 * @param \WP_Request $request      WP_Request instance.
 		 */
 		do_action( 'rtgodam_handle_callback_finished', $attachment_id, $job_id, $job_for, $request );
+
+		return new WP_REST_Response(
+			array(
+				'success' => true,
+				'message' => __( 'Callback processed successfully.', 'godam' ),
+			),
+			200
+		);
 	}
 
 	/**
