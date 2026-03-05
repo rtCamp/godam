@@ -290,8 +290,15 @@ $godam_brand_image            = isset( $godam_settings['video_player']['brand_im
 $godam_individual_brand_image = isset( $godam_meta_data['videoConfig']['controlBar']['brand_image'] ) ? $godam_meta_data['videoConfig']['controlBar']['brand_image'] : null;
 $godam_player_skin            = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : 'Default';
 $godam_ads_settings           = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : array();
-$godam_ads_settings           = wp_json_encode( $godam_ads_settings );
-$godam_global_video_share     = isset( $godam_settings['video']['enable_global_video_share'] ) ? $godam_settings['video']['enable_global_video_share'] : true;
+
+// Global video ads is a Pro feature — do not pass the ad tag to the player for free users,
+// even if the setting was previously saved as enabled (backward-compatibility guard).
+if ( ! $godam_has_valid_api_key ) {
+	$godam_ads_settings['enable_global_video_ads'] = false;
+}
+
+$godam_ads_settings       = wp_json_encode( $godam_ads_settings );
+$godam_global_video_share = isset( $godam_settings['video']['enable_global_video_share'] ) ? $godam_settings['video']['enable_global_video_share'] : true;
 
 $godam_video_poster = empty( $godam_poster ) ? $godam_poster_image : $godam_poster;
 
