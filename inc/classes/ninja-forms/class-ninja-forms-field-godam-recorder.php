@@ -552,16 +552,11 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 				continue;
 			}
 
-			$file_type = wp_check_filetype( $field['value'] );
-			$is_audio  = strpos( $file_type['type'], 'audio' ) !== false;
-			$is_video  = strpos( $file_type['type'], 'video' ) !== false;
+			// Set job_type based on file type.
+			$job_type = godam_get_job_type( $field['value'] );
 
-			if ( 'webm' === $file_type['ext'] && godam_is_audio_file_by_name( $field['value'] ) ) {
-				$is_audio = true;
-				$is_video = false;
-			}
 			// Send to godam for transcoding.
-			$this->send_data_to_godam( $form_name, $form_id, $insert_id, $field['value'], $is_audio ? 'audio' : 'stream' );
+			$this->send_data_to_godam( $form_name, $form_id, $insert_id, $field['value'], $job_type );
 		}
 	}
 
@@ -593,7 +588,13 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 		/**
 		 * Send for transcoding.
 		 */
-		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding( 'ninja-forms', $form_title, $file_url, $entry_id, $job_type );
+		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding(
+			'ninja-forms',
+			$form_title,
+			$file_url,
+			$entry_id,
+			$job_type
+		);
 
 		/**
 		 * Error handling.
