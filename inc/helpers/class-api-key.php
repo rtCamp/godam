@@ -66,15 +66,16 @@ class Api_Key {
 	/**
 	 * Get the API key status from the database.
 	 *
-	 * Only 'valid' and 'expired' are persisted in the database.
-	 * 'verification_failed' is a runtime state.
+	 * Only 'valid', 'expired', and 'no_api_key' are persisted in the database.
+	 * 'verification_failed' is a runtime state stored in transient/user-data cache.
+	 * Defaults to 'no_api_key' for new installs where no status has been stored yet.
 	 *
 	 * @since 1.7.0
 	 *
 	 * @return string One of Api_Key_Status constants.
 	 */
 	public static function get_status() {
-		return get_option( self::STATUS_OPTION_KEY, Api_Key_Status::VALID );
+		return get_option( self::STATUS_OPTION_KEY, Api_Key_Status::NO_API_KEY );
 	}
 
 	/**

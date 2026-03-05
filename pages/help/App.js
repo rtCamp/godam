@@ -8,7 +8,7 @@ import { useSelector, useDispatch } from 'react-redux';
  */
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Icon, ToggleControl } from '@wordpress/components';
+import { Icon, ToggleControl, Button } from '@wordpress/components';
 import { chevronRight } from '@wordpress/icons';
 
 /**
@@ -224,6 +224,25 @@ const App = () => {
 						onChange={ handlePostHogToggle }
 						disabled={ isSettingsLoading }
 					/>
+				</div>
+			</div>
+
+			<div className="max-w-[1260px] mx-auto px-4 pb-8">
+				<div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg border border-gray-100">
+					<div>
+						<h4 className="text-sm font-medium text-gray-900 m-0">
+							{ __( 'Setup wizard', 'godam' ) }
+						</h4>
+						<p className="text-xs text-gray-500 mb-0">
+							{ __( 'Re-run the GoDAM setup wizard to get a quick overview of the free features available in the plugin.', 'godam' ) }
+						</p>
+					</div>
+					<Button
+						variant="secondary"
+						href={ `${ window?.footerData?.adminUrl || '/wp-admin/admin.php' }?page=rtgodam_welcome` }
+					>
+						{ __( 'Re-run wizard', 'godam' ) }
+					</Button>
 				</div>
 			</div>
 

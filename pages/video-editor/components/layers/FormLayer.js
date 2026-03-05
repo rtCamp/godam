@@ -7,7 +7,7 @@ import Editor from '@monaco-editor/react';
 /**
  * WordPress dependencies
  */
-import { ToggleControl, Panel, PanelBody, Notice } from '@wordpress/components';
+import { ToggleControl, Panel, PanelBody, Notice, ExternalLink } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -117,10 +117,7 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 
-	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.validApiKey;
-	// For now we are enabling all the features
-	const isValidAPIKey = true;
+	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
 
 	const FormLayerData = FormLayerComponentType[ layer?.form_type ?? 'gravity' ];
 	const FormLayerComponent = FormLayerData?.component;
@@ -142,7 +139,10 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 					status="warning"
 					isDismissible={ false }
 				>
-					{ __( 'This features is available in premium version', 'godam' ) }
+					{ __( 'Forms layer is a Pro feature.', 'godam' ) }{ ' ' }
+					<ExternalLink href={ `https://godam.io/pricing?utm_campaign=upgrade&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=form-layer` }>
+						{ __( 'Upgrade your plan to unlock it.', 'godam' ) }
+					</ExternalLink>
 				</Notice>
 			}
 
