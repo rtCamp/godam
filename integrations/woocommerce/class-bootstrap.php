@@ -9,6 +9,8 @@
 namespace RTGODAM\Integrations\WooCommerce;
 
 use RTGODAM\Inc\WooCommerce\WC_Utility;
+use WP_Block_Editor_Context;
+use WP_Block_Type_Registry;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -156,6 +158,7 @@ class Bootstrap {
 	 */
 	private function init_hooks() {
 		add_action( 'init', array( $this, 'init_woocommerce_integration' ), 20 );
+		add_filter( 'allowed_block_types_all', array( $this, 'filter_premium_blocks_for_inserter' ), 10, 2 );
 
 		// Enqueue global Woo variables.
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_global_woo_css_variables' ), 20 );
@@ -172,6 +175,43 @@ class Bootstrap {
 		add_action( 'wp_ajax_nopriv_godam_get_single_sidebar_product_html', array( $this->utility_instance, 'godam_get_single_sidebar_product_html_callback' ) );
 		add_action( 'wp_ajax_godam_get_multiple_sidebar_product_html', array( $this->utility_instance, 'godam_get_multiple_sidebar_product_html_callback' ) );
 		add_action( 'wp_ajax_nopriv_godam_get_multiple_sidebar_product_html', array( $this->utility_instance, 'godam_get_multiple_sidebar_product_html_callback' ) );
+	}
+
+	/**
+	 * Hide premium Woo blocks from inserter when API key is invalid.
+	 *
+	 * @since n.e.x.t
+	 * 
+	 * @param bool|array<string>      $allowed_block_types Allowed block types.
+	 * @param WP_Block_Editor_Context $editor_context      Editor context.
+	 *
+	 * @return bool|array<string>
+	 */
+	public function filter_premium_blocks_for_inserter( $allowed_block_types, $editor_context ) {
+		unset( $editor_context );
+
+		if ( rtgodam_is_api_key_valid() ) {
+			return $allowed_block_types;
+		}
+
+		$disallowed_blocks = array(
+			'godam/product-gallery',
+			'godam/reel-pops',
+		);
+
+		if ( ! is_array( $allowed_block_types ) || empty( $allowed_block_types ) ) {
+			$registered_blocks   = WP_Block_Type_Registry::get_instance()->get_all_registered();
+			$allowed_block_types = array_keys( $registered_blocks );
+		}
+
+		return array_values(
+			array_filter(
+				$allowed_block_types,
+				function ( $block_name ) use ( $disallowed_blocks ) {
+					return ! in_array( $block_name, $disallowed_blocks, true );
+				}
+			)
+		);
 	}
 
 	/**

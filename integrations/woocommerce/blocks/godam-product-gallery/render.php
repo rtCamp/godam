@@ -14,6 +14,11 @@ if ( ! is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
 	return;
 }
 
+// Premium block: hide frontend output when API key is invalid.
+if ( ! rtgodam_is_api_key_valid() ) {
+	return;
+}
+
 // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- WordPress core variable.
 $attributes = wp_parse_args(
 	$attributes,
