@@ -76,7 +76,7 @@
 		"@wordpress/i18n": "6.7.0",
 		"@wordpress/icons": "10.28.0",
 		"@wordpress/jest-preset-default": "12.28.0",
-		"@wordpress/scripts": "30.21.0",
+		"@wordpress/scripts": "31.6.0",
 		"@wordpress/server-side-render": "6.10.0",
 		"browserslist": "4.25.1",
 		"cross-env": "10.1.0",
