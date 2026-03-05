@@ -198,10 +198,11 @@ class WPB_GoDAM_Params {
 	 *
 	 * @since n.e.x.t
 	 *
-	 * @param array $settings Field settings.
+	 * @param array  $settings Field settings.
+	 * @param string $value    Field value.
 	 * @return string
 	 */
-	public function godam_premium_notice_field( $settings ) {
+	public function godam_premium_notice_field( $settings, $value = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $value is required by WPBakery's vc_add_shortcode_param callback signature.
 		// Output only a hidden input so WPBakery can track the param without
 		// rendering any editable control on screen.
 		return '<input type="hidden" name="' . esc_attr( $settings['param_name'] ) . '" class="wpb_vc_param_value ' .
