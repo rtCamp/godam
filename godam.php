@@ -148,17 +148,19 @@ register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );
  * Runs when the plugin is deleted.
  */
 function rtgodam_plugin_delete() {
-	// Delete options and transients related to Whats New page.
+	// Delete options related to plugin state (welcome walkthrough, What's New, version).
 	// This is to ensure redirection on a fresh install.
 	if ( is_multisite() ) {
 		// Get all blogs in the network and delete options from each blog.
 		$blogs = get_sites( array( 'fields' => 'ids' ) );
 
 		foreach ( $blogs as $blog_id ) {
-			switch_to_blog( $blog_id );
+			switch_to_blog( $blog_id ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.switch_to_blog_switch_to_blog
 
 			delete_option( 'rtgodam_plugin_version' );
-			delete_transient( 'rtgodam_show_whats_new' );
+			delete_option( 'rtgodam_welcome_completed' );
+			delete_option( 'rtgodam_show_whats_new' );
+			delete_option( 'rtgodam_show_welcome' );
 			delete_transient( 'rtgodam_release_data' );
 
 			restore_current_blog();
@@ -166,7 +168,9 @@ function rtgodam_plugin_delete() {
 	} else {
 		// For single site, delete options directly.
 		delete_option( 'rtgodam_plugin_version' );
-		delete_transient( 'rtgodam_show_whats_new' );
+		delete_option( 'rtgodam_welcome_completed' );
+		delete_option( 'rtgodam_show_whats_new' );
+		delete_option( 'rtgodam_show_welcome' );
 		delete_transient( 'rtgodam_release_data' );
 	}
 }

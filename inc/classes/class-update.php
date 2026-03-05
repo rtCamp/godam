@@ -35,17 +35,25 @@ class Update {
 	/**
 	 * Check if the plugin version has changed.
 	 *
-	 * If a version bump is detected, sets a transient
-	 * to show the "What's New" page on next GoDAM menu admin load.
+	 * Fresh install: sets options for both Welcome walkthrough AND What's New page.
+	 * Version bump:  sets option for What's New page only.
 	 */
 	public function rtgodam_update_plugin_version() {
 		$saved_version   = get_option( 'rtgodam_plugin_version' );
 		$current_version = RTGODAM_VERSION;
 
+		if ( false === $saved_version ) {
+			// Fresh install — show the welcome walkthrough first, then What's New.
+			update_option( 'rtgodam_show_welcome', true );
+			update_option( 'rtgodam_show_whats_new', true );
+			update_option( 'rtgodam_plugin_version', $current_version );
+			return;
+		}
+
 		if ( version_compare( $current_version, $saved_version, '>' ) ) {
-			// Set transient if this is a new version update.
+			// Existing install with a version bump — show What's New only.
 			if ( $this->rtgodam_is_release_bump( $saved_version, $current_version ) ) {
-				set_transient( 'rtgodam_show_whats_new', true );
+				update_option( 'rtgodam_show_whats_new', true );
 			}
 
 			update_option( 'rtgodam_plugin_version', $current_version );

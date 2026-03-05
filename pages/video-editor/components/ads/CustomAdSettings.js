@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, TextControl, ToggleControl, Notice, Tooltip } from '@wordpress/components';
+import { Button, TextControl, ToggleControl, Notice, Tooltip, ExternalLink } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from 'react';
 
@@ -149,10 +149,7 @@ const CustomAdSettings = ( { layerID } ) => {
 	};
 
 	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.validApiKey;
-
-	// For now we are enabling all the features
-	const isValidAPIKey = true;
+	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
 
 	return (
 		<div className="relative">
@@ -174,7 +171,10 @@ const CustomAdSettings = ( { layerID } ) => {
 					status="warning"
 					isDismissible={ false }
 				>
-					{ __( 'This features is available in premium version', 'godam' ) }
+					{ __( 'Ads layer is a Pro feature.', 'godam' ) }{ ' ' }
+					<ExternalLink href={ `https://godam.io/pricing?utm_campaign=upgrade&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=ad-layer` }>
+						{ __( 'Upgrade your plan to unlock it.', 'godam' ) }
+					</ExternalLink>
 				</Notice>
 			}
 			<div className="flex flex-col items-start mb-4">
@@ -199,10 +199,10 @@ const CustomAdSettings = ( { layerID } ) => {
 						</div>
 						<div className="ml-[6px] flex flex-col">
 							<Tooltip text={ __( 'Replace Ad Video', 'godam' ) } placement="right">
-								<Button className="!text-brand-neutral-900" icon={ replace } onClick={ OpenVideoSelector } />
+								<Button className="!text-brand-neutral-900" icon={ replace } onClick={ OpenVideoSelector } disabled={ adServer === 'ad-server' || ! isValidAPIKey } />
 							</Tooltip>
 							<Tooltip text={ __( 'Remove Ad Video', 'godam' ) } placement="right">
-								<Button className="mt-1" icon={ trash } isDestructive onClick={ () => dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: '' } ) ) } />
+								<Button className="mt-1" icon={ trash } isDestructive onClick={ () => dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: '' } ) ) } disabled={ adServer === 'ad-server' || ! isValidAPIKey } />
 							</Tooltip>
 						</div>
 					</div>

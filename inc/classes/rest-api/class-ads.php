@@ -93,6 +93,15 @@ class Ads extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function get_ad_tag_url( $request ) {
+		// Ads are a premium feature — require a valid API key.
+		if ( ! rtgodam_is_api_key_valid() ) {
+			return new \WP_Error(
+				'rest_forbidden',
+				__( 'Ads layer is a premium feature. Please activate your API key to use it.', 'godam' ),
+				array( 'status' => 403 )
+			);
+		}
+
 		// Retrieve and sanitize input parameters.
 		$display_time = intval( $request->get_param( 'display_time' ) );
 		$ad_duration  = intval( $request->get_param( 'duration' ) );
@@ -196,6 +205,15 @@ class Ads extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function get_video_ad_tag_url( $request ) {
+
+		// Ads are a premium feature — require a valid API key.
+		if ( ! rtgodam_is_api_key_valid() ) {
+			return new \WP_Error(
+				'rest_forbidden',
+				__( 'Ads layer is a premium feature. Please activate your API key to use it.', 'godam' ),
+				array( 'status' => 403 )
+			);
+		}
 
 		$video_id = $request->get_param( 'id' );
 		$video_id = intval( $video_id );
