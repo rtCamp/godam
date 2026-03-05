@@ -291,10 +291,14 @@ $godam_individual_brand_image = isset( $godam_meta_data['videoConfig']['controlB
 $godam_player_skin            = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : 'Default';
 $godam_ads_settings           = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : array();
 
-// Global video ads is a Pro feature — do not pass the ad tag to the player for free users,
-// even if the setting was previously saved as enabled (backward-compatibility guard).
+// Global video ads is a Pro feature — disable global ads and clear the ad tag URL for free users,
+// even if the settings were previously saved (backward-compatibility guard).
 if ( ! $godam_has_valid_api_key ) {
 	$godam_ads_settings['enable_global_video_ads'] = false;
+	// Ensure the ad tag URL is not exposed to the frontend config for free users.
+	if ( isset( $godam_ads_settings['adTagUrl'] ) ) {
+		$godam_ads_settings['adTagUrl'] = '';
+	}
 }
 
 $godam_ads_settings       = wp_json_encode( $godam_ads_settings );

@@ -500,7 +500,7 @@ const Appearance = () => {
 						<Icon icon={ openSections.customization ? chevronUp : chevronDown } />
 					</button>
 					{ openSections.customization && (
-						<div id="godam-appearance-customization-settings" className={ `godam-collapsible-section__body flex flex-col gap-4 ${ ! hasValidAPIKey ? 'opacity-50 pointer-events-none' : '' }` }>
+						<fieldset id="godam-appearance-customization-settings" className={ `godam-collapsible-section__body flex flex-col gap-4 ${ ! hasValidAPIKey ? 'opacity-50' : '' }` } disabled={ ! hasValidAPIKey || undefined }>
 							<ToggleControl
 								__nextHasNoMarginBottom
 								className="godam-toggle"
@@ -647,7 +647,7 @@ const Appearance = () => {
 									} }
 								/>
 							</div>
-						</div>
+						</fieldset>
 					) }
 				</div>
 
@@ -662,17 +662,18 @@ const Appearance = () => {
 					>
 						<span className="flex items-center gap-2">
 							{ __( 'Ad Server', 'godam' ) }
-							<span className="godam-pro-badge">{ __( 'Pro', 'godam' ) }</span>
+							{ ! hasValidAPIKey && <span className="godam-pro-badge">{ __( 'Pro', 'godam' ) }</span> }
 						</span>
 						<Icon icon={ openSections.adServer ? chevronUp : chevronDown } />
 					</button>
 					{ openSections.adServer && (
-						<div id="godam-appearance-ad-server-settings" className={ `godam-collapsible-section__body flex flex-col gap-3 ${ ! hasValidAPIKey ? 'opacity-50 pointer-events-none' : '' }` }>
+						<fieldset id="godam-appearance-ad-server-settings" className={ `godam-collapsible-section__body flex flex-col gap-3 ${ ! hasValidAPIKey ? 'opacity-50' : '' }` } disabled={ ! hasValidAPIKey || undefined }>
 							<ToggleControl
 								className="godam-toggle"
 								label={ __( 'Use ad server\'s ads', 'godam' ) }
 								help={ __( 'Enable this option to use ads from the ad server. This option will disable the ads layer', 'godam' ) }
 								checked={ videoConfig.adServer === 'ad-server' }
+								disabled={ ! hasValidAPIKey }
 								onChange={ ( checked ) => {
 									dispatch(
 										updateVideoConfig( {
@@ -701,7 +702,7 @@ const Appearance = () => {
 									} }
 								/>
 							) }
-						</div>
+						</fieldset>
 					) }
 				</div>
 

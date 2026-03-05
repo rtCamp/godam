@@ -98,7 +98,7 @@ const AdsSettings = () => {
 					status="warning"
 					isDismissible={ false }
 				>
-					{ __( 'Video ads settings is a Pro feature. Your saved settings are stored but will not be applied on the frontend without an active Pro plan.', 'godam' ) }{ ' ' }
+					{ __( 'Video ads settings are a Pro feature. Your saved settings are stored but will not be applied on the frontend without an active Pro plan.', 'godam' ) }{ ' ' }
 					<ExternalLink href={ getPricingUrl( 'video-ads-settings' ) }>
 						{ __( 'Upgrade your plan to unlock it.', 'godam' ) }
 					</ExternalLink>
