@@ -493,9 +493,9 @@ const Appearance = () => {
 					>
 						<span className="flex items-center gap-2">
 							{ __( 'Customization Settings', 'godam' ) }
-							{ ! hasValidAPIKey && (
+							{
 								<span className="godam-pro-badge">{ __( 'Pro', 'godam' ) }</span>
-							) }
+							}
 						</span>
 						<Icon icon={ openSections.customization ? chevronUp : chevronDown } />
 					</button>
