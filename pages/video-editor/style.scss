@@ -62,6 +62,48 @@
 	}
 }
 
+.godam-collapsible-section {
+	border: 1px solid #e2e8f0;
+	border-radius: 0.75rem;
+	background: #fff;
+	overflow: hidden;
+
+	&__header {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.85rem 1rem;
+		border: 0;
+		background: #f8fafc;
+		color: #1e293b;
+		font-size: 0.85rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.02em;
+		cursor: pointer;
+		transition: background-color 0.15s ease;
+
+		&:hover {
+			background: #f1f5f9;
+		}
+
+		&:focus-visible {
+			outline: 2px solid #ab3a6c;
+			outline-offset: -2px;
+		}
+
+		&.is-open {
+			border-bottom: 1px solid #e2e8f0;
+			background: #f1f5f9;
+		}
+	}
+
+	&__body {
+		padding: 1rem;
+	}
+}
+
 .slider {
 	position: relative;
 	height: 12px;

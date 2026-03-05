@@ -25,7 +25,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { updateVideoConfig, setCurrentLayer } from '../../redux/slice/videoSlice';
 import GoDAM from '../../../../assets/src/images/GoDAM.png';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
-import { closeSmall } from '@wordpress/icons';
+import { closeSmall, chevronDown, chevronUp } from '@wordpress/icons';
 import { getPricingUrl } from '../../../shared/premium-layers.js';
 import { hasValidAPIKey } from '../../../godam/utils/index.js';
 
@@ -359,6 +359,16 @@ const Appearance = () => {
 		}
 	};
 
+	const [ openSections, setOpenSections ] = useState( {
+		display: true,
+		customization: false,
+		adServer: false,
+	} );
+
+	const toggleSection = ( section ) => {
+		setOpenSections( ( prev ) => ( { ...prev, [ section ]: ! prev[ section ] } ) );
+	};
+
 	function handleSkipTimeSettings( e ) {
 		const selectedSkipVal = parseFloat( e.selectedItem.name );
 		dispatch(
@@ -422,310 +432,279 @@ const Appearance = () => {
 					</ExternalLink>
 				</Notice>
 			) }
-			<div className="accordion-item--content mt-4 flex flex-col gap-6">
-				<div className="display-settings godam-form-group">
-					<label
-						htmlFor="custom-brand-logo"
-						className="label-text"
+
+			<div className="accordion-item--content mt-4 flex flex-col gap-2">
+
+				{ /* ── Section 1: Display Settings (free) ── */ }
+				<div className="godam-collapsible-section">
+					<button
+						type="button"
+						className={ `godam-collapsible-section__header${ openSections.display ? ' is-open' : '' }` }
+						onClick={ () => toggleSection( 'display' ) }
+						aria-expanded={ openSections.display }
+						aria-controls="godam-appearance-display-settings"
 					>
-						{ __( 'Display Settings', 'godam' ) }
-					</label>
-
-					<div className="flex flex-col gap-3">
-						<ToggleControl
-							__nextHasNoMarginBottom
-							className="godam-toggle"
-							label={ __( 'Show Volume Slider', 'godam' ) }
-							checked={ videoConfig.controlBar.volumePanel }
-							onChange={ handleVolumeToggle }
-						/>
-						<ToggleControl
-							__nextHasNoMarginBottom
-							className="godam-toggle"
-							label={ __( 'Display Captions', 'godam' ) }
-							onChange={ handleCaptionsToggle }
-							checked={ videoConfig.controlBar.subsCapsButton }
-						/>
-						<CustomSelectControl
-							__next40pxDefaultSize
-							className="godam-input"
-							onChange={ handleSkipTimeSettings }
-							options={ [
-								{
-									key: '5',
-									name: '5',
-								},
-								{
-									key: '10',
-									name: '10',
-								},
-								{
-									key: '30',
-									name: '30',
-								},
-							] }
-							label={ __( 'Adjust Skip Duration', 'godam' ) }
-							value={ {
-								key: videoConfig.controlBar.skipButtons?.forward?.toString() || '10',
-								name: videoConfig.controlBar.skipButtons?.forward?.toString() || '10',
-							} }
-						/>
-					</div>
-
-				</div>
-
-				<div className="godam-form-group">
-					<p className="label-text flex items-center gap-2">
-						{ __( 'Customization Settings', 'godam' ) }
-						{ ! hasValidAPIKey && (
-							<span className="godam-pro-badge">{ __( 'Pro', 'godam' ) }</span>
-						) }
-					</p>
-					<div className={ ! hasValidAPIKey ? 'opacity-50' : '' }>
-						<ToggleControl
-							__nextHasNoMarginBottom
-							className="godam-toggle"
-							label={ __( 'Show Branding', 'godam' ) }
-							onChange={ handleBrandingToggle }
-							checked={ ! hasValidAPIKey ? false : videoConfig.controlBar.brandingIcon }
-							disabled={ ! hasValidAPIKey }
-						/>
-					</div>
-				</div>
-
-				{ ( videoConfig.controlBar.brandingIcon && hasValidAPIKey ) && (
-					<div className="godam-form-group">
-						<label
-							htmlFor="custom-brand-logo"
-							className="label-text"
-						>
-							{ __( 'Custom Brand Logo', 'godam' ) }
-						</label>
-						<Button
-							onClick={ openBrandMediaPicker }
-							variant="primary"
-							className="mr-2 godam-button"
-						>
-							{ videoConfig.controlBar.customBrandImg?.length > 0 ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
-						</Button>
-						{ videoConfig.controlBar.customBrandImg?.length > 0 && (
-							<Button
-								onClick={ removeBrandImage }
-								variant="secondary"
-								isDestructive
-								className="godam-button"
-							>
-								{ __( 'Remove', 'godam' ) }
-							</Button>
-						) }
-						{ videoConfig.controlBar.customBrandImg?.length > 0 && (
-							<div className="mt-2">
-								<img
-									src={ videoConfig.controlBar.customBrandImg }
-									alt={ 'Selected custom brand' }
-									className="max-w-[200px]"
-								/>
-							</div>
-						) }
-						{ customBrandNotice.isVisible && (
-							<Notice
-								className="my-4"
-								status={ customBrandNotice.status }
-								onRemove={ () => setCustomBrandNotice( { ...customBrandNotice, isVisible: false } ) }
-							>
-								{ customBrandNotice.message }
-							</Notice>
-						) }
-					</div>
-				) }
-				<div className={ `form-group ${ ! hasValidAPIKey ? 'opacity-50 pointer-events-none' : '' }` }>
-					<CustomSelectControl
-						__next40pxDefaultSize
-						className="godam-input"
-						label={ __( 'Play Button Position', 'godam' ) }
-						onChange={ handlePlayButtonPosition }
-						options={ [
-							{
-								key: 'center',
-								name: __( 'Center', 'godam' ),
-							},
-							{
-								key: 'left',
-								name: __( 'Left', 'godam' ),
-							},
-							{
-								key: 'top',
-								name: __( 'Top', 'godam' ),
-							},
-							{
-								key: 'bottom',
-								name: __( 'Bottom', 'godam' ),
-							},
-							{
-								key: 'right',
-								name: __( 'Right', 'godam' ),
-							},
-						] }
-						value={ {
-							key: videoConfig.controlBar.playButtonPosition,
-							name: videoConfig.controlBar.playButtonPositionName || ( videoConfig.controlBar.playButtonPosition ? videoConfig.controlBar.playButtonPosition.charAt( 0 ).toUpperCase() + videoConfig.controlBar.playButtonPosition.slice( 1 ) : __( 'Center', 'godam' ) ),
-						} }
-					/>
-				</div>
-				<div className={ `godam-form-group ${ ! hasValidAPIKey ? 'opacity-50 pointer-events-none' : '' }` }>
-					<label
-						htmlFor="custom-hover-color"
-						className="label-text"
-					>
-						{ __( 'Custom Play Button', 'godam' ) }
-					</label>
-					<Button
-						onClick={ openCustomBtnImg }
-						variant="primary"
-						className="mr-2 godam-button"
-					>
-						{ videoConfig.controlBar.customPlayBtnImg?.length > 0 ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
-					</Button>
-					{ videoConfig.controlBar.customPlayBtnImg?.length > 0 && (
-						<Button
-							onClick={ removeCustomPlayBtnImage }
-							variant="secondary"
-							className="godam-button"
-							isDestructive
-						>
-							{ __( 'Remove', 'godam' ) }
-						</Button>
-					) }
-					{ videoConfig.controlBar.customPlayBtnImg?.length > 0 && (
-						<div className="mt-2">
-							<img
-								src={ videoConfig.controlBar.customPlayBtnImg }
-								alt={ 'Selected custom play button' }
-								className="max-w-[200px] mt-2"
+						<span>{ __( 'Display Settings', 'godam' ) }</span>
+						<Icon icon={ openSections.display ? chevronUp : chevronDown } />
+					</button>
+					{ openSections.display && (
+						<div id="godam-appearance-display-settings" className="godam-collapsible-section__body flex flex-col gap-3">
+							<ToggleControl
+								__nextHasNoMarginBottom
+								className="godam-toggle"
+								label={ __( 'Show Volume Slider', 'godam' ) }
+								checked={ videoConfig.controlBar.volumePanel }
+								onChange={ handleVolumeToggle }
+							/>
+							<ToggleControl
+								__nextHasNoMarginBottom
+								className="godam-toggle"
+								label={ __( 'Display Captions', 'godam' ) }
+								onChange={ handleCaptionsToggle }
+								checked={ videoConfig.controlBar.subsCapsButton }
+							/>
+							<CustomSelectControl
+								__next40pxDefaultSize
+								className="godam-input"
+								onChange={ handleSkipTimeSettings }
+								options={ [
+									{ key: '5', name: '5' },
+									{ key: '10', name: '10' },
+									{ key: '30', name: '30' },
+								] }
+								label={ __( 'Adjust Skip Duration', 'godam' ) }
+								value={ {
+									key: videoConfig.controlBar.skipButtons?.forward?.toString() || '10',
+									name: videoConfig.controlBar.skipButtons?.forward?.toString() || '10',
+								} }
 							/>
 						</div>
 					) }
-					{ customPlayNotice.isVisible && (
-						<Notice
-							className="my-4"
-							status={ customPlayNotice.status }
-							onRemove={ () => setCustomPlayNotice( { ...customPlayNotice, isVisible: false } ) }
-						>
-							{ customPlayNotice.message }
-						</Notice>
-					) }
-				</div>
-				<div className={ `godam-form-group ${ ! hasValidAPIKey ? 'opacity-50 pointer-events-none' : '' }` }>
-					<label
-						htmlFor="appearance-color"
-						className="label-text"
-					>
-						{ __( 'Player Theme', 'godam' ) }
-					</label>
-					<div className="flex items-center gap-2">
-						<ColorPickerButton
-							value={ videoConfig.controlBar.appearanceColor }
-							label={ __( 'Player Appearance', 'godam' ) }
-							className="mb-0"
-							contentClassName="border-b-0"
-							enableAlpha={ true }
-							onChange={ ( value ) => {
-								if ( ! value ) {
-									value = '#2b333fb3';
-								}
-								dispatch(
-									updateVideoConfig( {
-										controlBar: {
-											...videoConfig.controlBar,
-											appearanceColor: value,
-										},
-									} ),
-								);
-							} }
-						/>
-						{ videoConfig.controlBar.appearanceColor && (
-							<button
-								type="button"
-								className="text-xs text-red-500 underline hover:text-red-600 bg-transparent cursor-pointer"
-								onClick={ () => dispatch(
-									updateVideoConfig( {
-										controlBar: {
-											...videoConfig.controlBar,
-											appearanceColor: '',
-										},
-									} ),
-								) }
-								aria-haspopup="true"
-								aria-label={ __( 'Remove', 'godam' ) }
-							>
-								<Icon icon={ closeSmall } />
-							</button>
-						) }
-					</div>
-					<ColorPickerButton
-						value={ videoConfig.controlBar.hoverColor }
-						label={ __( 'Icons hover color', 'godam' ) }
-						enableAlpha={ true }
-						onChange={ ( value ) => {
-							if ( ! value ) {
-								value = '#2b333fb3';
-							}
-							dispatch(
-								updateVideoConfig( {
-									controlBar: {
-										...videoConfig.controlBar,
-										hoverColor: value,
-									},
-								} ),
-							);
-						} }
-					/>
 				</div>
 
-				<div className={ `godam-form-group ${ ! hasValidAPIKey ? 'opacity-50 pointer-events-none' : '' }` }>
-					<label
-						htmlFor="custom-hover-color"
-						className="label-text"
+				{ /* ── Section 2: Customization Settings (Pro) ── */ }
+				<div className="godam-collapsible-section">
+					<button
+						type="button"
+						className={ `godam-collapsible-section__header${ openSections.customization ? ' is-open' : '' }` }
+						onClick={ () => toggleSection( 'customization' ) }
+						aria-expanded={ openSections.customization }
+						aria-controls="godam-appearance-customization-settings"
 					>
-						{ __( 'Select Ad Server', 'godam' ) }
-					</label>
-					<ToggleControl
-						className="godam-toggle"
-						label={ __( 'Use ad server\'s ads', 'godam' ) }
-						help={ __( 'Enable this option to use ads from the ad server. This option will disable the ads layer', 'godam' ) }
-						checked={ videoConfig.adServer === 'ad-server' }
-						onChange={ ( checked ) => {
-							dispatch(
-								updateVideoConfig( {
-									adServer: checked ? 'ad-server' : 'self-hosted',
-								} ),
-							);
-						} }
-					/>
-					{
-						videoConfig.adServer === 'ad-server' && (
-							<TextareaControl
-								className="godam-input"
-								label={ __( 'adTag URL', 'godam' ) }
-								help={ <>
-									<div>
-										{ __( 'A VAST ad tag URL is used by a player to retrieve video and audio ads', 'godam' ) }{ ' ' }
-										<a href="https://support.google.com/admanager/answer/177207?hl=en" target="_blank" rel="noreferrer noopener" className="text-blue-500 underline">{ __( 'Learn more.', 'godam' ) }</a>
+						<span className="flex items-center gap-2">
+							{ __( 'Customization Settings', 'godam' ) }
+							{ ! hasValidAPIKey && (
+								<span className="godam-pro-badge">{ __( 'Pro', 'godam' ) }</span>
+							) }
+						</span>
+						<Icon icon={ openSections.customization ? chevronUp : chevronDown } />
+					</button>
+					{ openSections.customization && (
+						<div id="godam-appearance-customization-settings" className={ `godam-collapsible-section__body flex flex-col gap-4 ${ ! hasValidAPIKey ? 'opacity-50 pointer-events-none' : '' }` }>
+							<ToggleControl
+								__nextHasNoMarginBottom
+								className="godam-toggle"
+								label={ __( 'Show Branding', 'godam' ) }
+								onChange={ handleBrandingToggle }
+								checked={ ! hasValidAPIKey ? false : videoConfig.controlBar.brandingIcon }
+								disabled={ ! hasValidAPIKey }
+							/>
+							{ ( videoConfig.controlBar.brandingIcon && hasValidAPIKey ) && (
+								<div className="godam-form-group">
+									<label htmlFor="custom-brand-logo" className="label-text">
+										{ __( 'Custom Brand Logo', 'godam' ) }
+									</label>
+									<Button onClick={ openBrandMediaPicker } variant="primary" className="mr-2 godam-button">
+										{ videoConfig.controlBar.customBrandImg?.length > 0 ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
+									</Button>
+									{ videoConfig.controlBar.customBrandImg?.length > 0 && (
+										<Button onClick={ removeBrandImage } variant="secondary" isDestructive className="godam-button">
+											{ __( 'Remove', 'godam' ) }
+										</Button>
+									) }
+									{ videoConfig.controlBar.customBrandImg?.length > 0 && (
+										<div className="mt-2">
+											<img src={ videoConfig.controlBar.customBrandImg } alt="Selected custom brand" className="max-w-[200px]" />
+										</div>
+									) }
+									{ customBrandNotice.isVisible && (
+										<Notice
+											className="my-4"
+											status={ customBrandNotice.status }
+											onRemove={ () => setCustomBrandNotice( { ...customBrandNotice, isVisible: false } ) }
+										>
+											{ customBrandNotice.message }
+										</Notice>
+									) }
+								</div>
+							) }
+							<div className="godam-form-group">
+								<CustomSelectControl
+									__next40pxDefaultSize
+									className="godam-input"
+									label={ __( 'Play Button Position', 'godam' ) }
+									onChange={ handlePlayButtonPosition }
+									options={ [
+										{ key: 'center', name: __( 'Center', 'godam' ) },
+										{ key: 'left', name: __( 'Left', 'godam' ) },
+										{ key: 'top', name: __( 'Top', 'godam' ) },
+										{ key: 'bottom', name: __( 'Bottom', 'godam' ) },
+										{ key: 'right', name: __( 'Right', 'godam' ) },
+									] }
+									value={ {
+										key: videoConfig.controlBar.playButtonPosition,
+										name: videoConfig.controlBar.playButtonPositionName || ( videoConfig.controlBar.playButtonPosition ? videoConfig.controlBar.playButtonPosition.charAt( 0 ).toUpperCase() + videoConfig.controlBar.playButtonPosition.slice( 1 ) : __( 'Center', 'godam' ) ),
+									} }
+								/>
+							</div>
+							<div className="godam-form-group">
+								<label htmlFor="custom-play-btn" className="label-text">
+									{ __( 'Custom Play Button', 'godam' ) }
+								</label>
+								<Button onClick={ openCustomBtnImg } variant="primary" className="mr-2 godam-button">
+									{ videoConfig.controlBar.customPlayBtnImg?.length > 0 ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
+								</Button>
+								{ videoConfig.controlBar.customPlayBtnImg?.length > 0 && (
+									<Button onClick={ removeCustomPlayBtnImage } variant="secondary" isDestructive className="godam-button">
+										{ __( 'Remove', 'godam' ) }
+									</Button>
+								) }
+								{ videoConfig.controlBar.customPlayBtnImg?.length > 0 && (
+									<div className="mt-2">
+										<img src={ videoConfig.controlBar.customPlayBtnImg } alt="Selected custom play button" className="max-w-[200px] mt-2" />
 									</div>
-								</>
-								}
-								value={ videoConfig.adTagURL }
-								onChange={ ( val ) => {
+								) }
+								{ customPlayNotice.isVisible && (
+									<Notice
+										className="my-4"
+										status={ customPlayNotice.status }
+										onRemove={ () => setCustomPlayNotice( { ...customPlayNotice, isVisible: false } ) }
+									>
+										{ customPlayNotice.message }
+									</Notice>
+								) }
+							</div>
+							<div className="godam-form-group">
+								<label htmlFor="appearance-color" className="label-text">
+									{ __( 'Player Theme', 'godam' ) }
+								</label>
+								<div className="flex items-center gap-2">
+									<ColorPickerButton
+										value={ videoConfig.controlBar.appearanceColor }
+										label={ __( 'Player Appearance', 'godam' ) }
+										className="mb-0"
+										contentClassName="border-b-0"
+										enableAlpha={ true }
+										onChange={ ( value ) => {
+											if ( ! value ) {
+												value = '#2b333fb3';
+											}
+											dispatch(
+												updateVideoConfig( {
+													controlBar: {
+														...videoConfig.controlBar,
+														appearanceColor: value,
+													},
+												} ),
+											);
+										} }
+									/>
+									{ videoConfig.controlBar.appearanceColor && (
+										<button
+											type="button"
+											className="text-xs text-red-500 underline hover:text-red-600 bg-transparent cursor-pointer"
+											onClick={ () => dispatch(
+												updateVideoConfig( {
+													controlBar: {
+														...videoConfig.controlBar,
+														appearanceColor: '',
+													},
+												} ),
+											) }
+											aria-haspopup="true"
+											aria-label={ __( 'Remove', 'godam' ) }
+										>
+											<Icon icon={ closeSmall } />
+										</button>
+									) }
+								</div>
+								<ColorPickerButton
+									value={ videoConfig.controlBar.hoverColor }
+									label={ __( 'Icons hover color', 'godam' ) }
+									enableAlpha={ true }
+									onChange={ ( value ) => {
+										if ( ! value ) {
+											value = '#2b333fb3';
+										}
+										dispatch(
+											updateVideoConfig( {
+												controlBar: {
+													...videoConfig.controlBar,
+													hoverColor: value,
+												},
+											} ),
+										);
+									} }
+								/>
+							</div>
+						</div>
+					) }
+				</div>
+
+				{ /* ── Section 3: Ad Server (Pro) ── */ }
+				<div className="godam-collapsible-section">
+					<button
+						type="button"
+						className={ `godam-collapsible-section__header${ openSections.adServer ? ' is-open' : '' }` }
+						onClick={ () => toggleSection( 'adServer' ) }
+						aria-expanded={ openSections.adServer }
+						aria-controls="godam-appearance-ad-server-settings"
+					>
+						<span className="flex items-center gap-2">
+							{ __( 'Ad Server', 'godam' ) }
+							<span className="godam-pro-badge">{ __( 'Pro', 'godam' ) }</span>
+						</span>
+						<Icon icon={ openSections.adServer ? chevronUp : chevronDown } />
+					</button>
+					{ openSections.adServer && (
+						<div id="godam-appearance-ad-server-settings" className={ `godam-collapsible-section__body flex flex-col gap-3 ${ ! hasValidAPIKey ? 'opacity-50 pointer-events-none' : '' }` }>
+							<ToggleControl
+								className="godam-toggle"
+								label={ __( 'Use ad server\'s ads', 'godam' ) }
+								help={ __( 'Enable this option to use ads from the ad server. This option will disable the ads layer', 'godam' ) }
+								checked={ videoConfig.adServer === 'ad-server' }
+								onChange={ ( checked ) => {
 									dispatch(
 										updateVideoConfig( {
-											adTagURL: val,
+											adServer: checked ? 'ad-server' : 'self-hosted',
 										} ),
 									);
 								} }
 							/>
-						)
-					}
+							{ videoConfig.adServer === 'ad-server' && (
+								<TextareaControl
+									className="godam-input"
+									label={ __( 'Ad Tag URL', 'godam' ) }
+									help={
+										<div>
+											{ __( 'A VAST ad tag URL is used by a player to retrieve video and audio ads', 'godam' ) }{ ' ' }
+											<a href="https://support.google.com/admanager/answer/177207?hl=en" target="_blank" rel="noreferrer noopener" className="text-blue-500 underline">{ __( 'Learn more.', 'godam' ) }</a>
+										</div>
+									}
+									value={ videoConfig.adTagURL }
+									onChange={ ( val ) => {
+										dispatch(
+											updateVideoConfig( {
+												adTagURL: val,
+											} ),
+										);
+									} }
+								/>
+							) }
+						</div>
+					) }
 				</div>
+
 			</div>
 		</div>
 	);
