@@ -69,6 +69,11 @@ class WPB_GoDAM_Params {
 			'textfield_hidden',
 			array( $this, 'textfield_hidden_settings_field' ),
 		);
+
+		vc_add_shortcode_param(
+			'godam_premium_notice',
+			array( $this, 'godam_premium_notice_field' ),
+		);
 	}
 
 	/**
@@ -181,6 +186,26 @@ class WPB_GoDAM_Params {
 			. '</div>'
 			. $preview_html
 			. '</div>';
+	}
+
+	/**
+	 * Premium notice field for WPBakery.
+	 *
+	 * Renders no visible input — just a hidden input so WPBakery's value-tracking
+	 * doesn't break. The actual notice text (heading + description with upgrade
+	 * link) is rendered by WPBakery itself from the 'heading' and 'description'
+	 * keys defined in vc_map().
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $settings Field settings.
+	 * @return string
+	 */
+	public function godam_premium_notice_field( $settings ) {
+		// Output only a hidden input so WPBakery can track the param without
+		// rendering any editable control on screen.
+		return '<input type="hidden" name="' . esc_attr( $settings['param_name'] ) . '" class="wpb_vc_param_value ' .
+			esc_attr( $settings['param_name'] ) . ' godam_premium_notice_field" value="" />';
 	}
 
 	/**

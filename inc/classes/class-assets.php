@@ -168,9 +168,13 @@ class Assets {
 			'rtgodam-script',
 			'pluginInfo',
 			array(
-				'version'   => RTGODAM_VERSION,
-				'adminUrl'  => admin_url(),
-				'uploadUrl' => wp_upload_dir()['baseurl'],
+				'version'         => RTGODAM_VERSION,
+				'adminUrl'        => admin_url(),
+				'uploadUrl'       => wp_upload_dir()['baseurl'],
+				// Expose API-key validity and the list of premium features so that
+				// Gutenberg block code can gate premium UI without a REST round-trip.
+				'validApiKey'     => rtgodam_is_api_key_valid(),
+				'premiumFeatures' => rtgodam_get_premium_features(),
 			)
 		);
 

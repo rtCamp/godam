@@ -135,130 +135,164 @@ class GoDAM_Video extends Base {
 
 		$this->start_popover();
 
-		$this->add_control(
-			'seo_override',
-			array(
-				'label'       => esc_html__( 'Override default SEO', 'godam' ),
-				'type'        => Controls_Manager::SWITCHER,
-				'description' => esc_html__( 'Enable to customize SEO for this specific widget. When disabled, SEO data is synced from the media library.', 'godam' ),
-				'default'     => '',
-				'classes'     => 'godam-seo-override-toggle',
-			)
-		);
+		// SEO settings are a Pro feature — show a premium notice for free users.
+		// The underlying popover and toggle remain visible so free users understand
+		// that the feature exists and can be unlocked by upgrading.
+		if ( rtgodam_is_feature_premium( 'seo' ) && ! rtgodam_is_api_key_valid() ) {
 
-		$this->add_control(
-			'seo_override_notice',
-			array(
-				'type'            => Controls_Manager::RAW_HTML,
-				'raw'             => '<div class="godam-seo-notice godam-seo-notice--info">' . esc_html__( 'SEO data is automatically synced from the media library. Any changes made to the video in the media library will be reflected on the frontend.', 'godam' ) . '</div>',
-				'content_classes' => 'godam-seo-notice-wrapper',
-				'condition'       => array(
-					'seo_override!' => 'yes',
-				),
-			)
-		);
+			$this->add_control(
+				'seo_premium_notice',
+				array(
+					'type'            => Controls_Manager::RAW_HTML,
+					'raw'             => '<div class="godam-premium-notice">' .
+						'<strong class="godam-premium-badge">&#9733; ' . esc_html__( 'Pro Feature', 'godam' ) . '</strong>' .
+						'<p>' . wp_kses(
+							sprintf(
+								/* translators: %s: GoDAM pricing page URL */
+								__( 'Video SEO (JSON-LD structured data) is a GoDAM Pro feature. <a href="%s" target="_blank" rel="noopener noreferrer">Upgrade to Pro</a> to enable it.', 'godam' ),
+								'https://godam.io/pricing?utm_campaign=upgrade&utm_source=elementor&utm_medium=plugin&utm_content=seo-notice'
+							),
+							array(
+								'a' => array(
+									'href'   => array(),
+									'target' => array(),
+									'rel'    => array(),
+								),
+							)
+						) .
+						'</p></div>',
+					'content_classes' => 'godam-premium-notice-wrapper',
+				)
+			);
 
-		$this->add_control(
-			'seo_override_warning',
-			array(
-				'type'            => Controls_Manager::RAW_HTML,
-				'raw'             => '<div class="godam-seo-notice godam-seo-notice--warning">' . esc_html__( 'You have overridden the default SEO. Changes to this video in the media library will not update the SEO for this widget.', 'godam' ) . '</div>',
-				'content_classes' => 'godam-seo-notice-wrapper',
-				'condition'       => array(
-					'seo_override' => 'yes',
-				),
-			)
-		);
+		} else {
 
-		$this->add_control(
-			'seo_content_url',
-			array(
-				'label'       => esc_html__( 'Content URL', 'godam' ),
-				'type'        => Controls_Manager::TEXT,
-				'label_block' => true,
-				'description' => esc_html__( 'URL of the video content can be MOV, MP4, MPD. Example: https://www.example.com/video.mp4', 'godam' ),
-				'classes'     => 'godam-readonly-field',
-				'attributes'  => array(
-					'readonly' => 'readonly',
-				),
-			)
-		);
+			$this->add_control(
+				'seo_override',
+				array(
+					'label'       => esc_html__( 'Override default SEO', 'godam' ),
+					'type'        => Controls_Manager::SWITCHER,
+					'description' => esc_html__( 'Enable to customize SEO for this specific widget. When disabled, SEO data is synced from the media library.', 'godam' ),
+					'default'     => '',
+					'classes'     => 'godam-seo-override-toggle',
+				)
+			);
 
-		$this->add_control(
-			'seo_content_headline',
-			array(
-				'label'       => esc_html__( 'Headline', 'godam' ),
-				'type'        => Controls_Manager::TEXT,
-				'label_block' => true,
-				'description' => esc_html__( 'Title of the video', 'godam' ),
-				'classes'     => 'godam-seo-field',
-			)
-		);
+			$this->add_control(
+				'seo_override_notice',
+				array(
+					'type'            => Controls_Manager::RAW_HTML,
+					'raw'             => '<div class="godam-seo-notice godam-seo-notice--info">' . esc_html__( 'SEO data is automatically synced from the media library. Any changes made to the video in the media library will be reflected on the frontend.', 'godam' ) . '</div>',
+					'content_classes' => 'godam-seo-notice-wrapper',
+					'condition'       => array(
+						'seo_override!' => 'yes',
+					),
+				)
+			);
 
-		$this->add_control(
-			'seo_content_description',
-			array(
-				'label'       => esc_html__( 'Description', 'godam' ),
-				'type'        => Controls_Manager::TEXTAREA,
-				'label_block' => true,
-				'description' => '<span class="godam-seo-description-help"></span>',
-				'classes'     => 'godam-seo-description-field godam-seo-field',
-			)
-		);
+			$this->add_control(
+				'seo_override_warning',
+				array(
+					'type'            => Controls_Manager::RAW_HTML,
+					'raw'             => '<div class="godam-seo-notice godam-seo-notice--warning">' . esc_html__( 'You have overridden the default SEO. Changes to this video in the media library will not update the SEO for this widget.', 'godam' ) . '</div>',
+					'content_classes' => 'godam-seo-notice-wrapper',
+					'condition'       => array(
+						'seo_override' => 'yes',
+					),
+				)
+			);
 
-		$this->add_control(
-			'seo_content_upload_date',
-			array(
-				'label'          => esc_html__( 'Upload Date', 'godam' ),
-				'type'           => Controls_Manager::DATE_TIME,
-				'picker_options' => array(
-					'enableTime' => false,
-					'clickOpens' => false,
-				),
-				'classes'        => 'godam-readonly-field',
-				'attributes'     => array(
-					'readonly' => 'readonly',
-				),
-			)
-		);
+			$this->add_control(
+				'seo_content_url',
+				array(
+					'label'       => esc_html__( 'Content URL', 'godam' ),
+					'type'        => Controls_Manager::TEXT,
+					'label_block' => true,
+					'description' => esc_html__( 'URL of the video content can be MOV, MP4, MPD. Example: https://www.example.com/video.mp4', 'godam' ),
+					'classes'     => 'godam-readonly-field',
+					'attributes'  => array(
+						'readonly' => 'readonly',
+					),
+				)
+			);
 
-		$this->add_control(
-			'seo_content_duration',
-			array(
-				'label'       => esc_html__( 'Duration', 'godam' ),
-				'type'        => Controls_Manager::TEXT,
-				'description' => esc_html__( 'ISO 8601 format. Example: PT1H30M', 'godam' ),
-				'label_block' => true,
-				'classes'     => 'godam-readonly-field',
-				'attributes'  => array(
-					'readonly' => 'readonly',
-				),
-			)
-		);
+			$this->add_control(
+				'seo_content_headline',
+				array(
+					'label'       => esc_html__( 'Headline', 'godam' ),
+					'type'        => Controls_Manager::TEXT,
+					'label_block' => true,
+					'description' => esc_html__( 'Title of the video', 'godam' ),
+					'classes'     => 'godam-seo-field',
+				)
+			);
 
-		$this->add_control(
-			'seo_content_video_thumbnail_url',
-			array(
-				'label'       => esc_html__( 'Video Thumbnail URL', 'godam' ),
-				'type'        => Controls_Manager::TEXT,
-				'label_block' => true,
-				'classes'     => 'godam-readonly-field',
-				'attributes'  => array(
-					'readonly' => 'readonly',
-				),
-			)
-		);
+			$this->add_control(
+				'seo_content_description',
+				array(
+					'label'       => esc_html__( 'Description', 'godam' ),
+					'type'        => Controls_Manager::TEXTAREA,
+					'label_block' => true,
+					'description' => '<span class="godam-seo-description-help"></span>',
+					'classes'     => 'godam-seo-description-field godam-seo-field',
+				)
+			);
 
-		$this->add_control(
-			'seo_content_family_friendly',
-			array(
-				'label'       => esc_html__( 'Is Family Friendly', 'godam' ),
-				'type'        => Controls_Manager::SWITCHER,
-				'description' => esc_html__( 'Is the video suitable for all audiences?', 'godam' ),
-				'default'     => 'yes',
-				'classes'     => 'godam-seo-field',
-			)
-		);
+			$this->add_control(
+				'seo_content_upload_date',
+				array(
+					'label'          => esc_html__( 'Upload Date', 'godam' ),
+					'type'           => Controls_Manager::DATE_TIME,
+					'picker_options' => array(
+						'enableTime' => false,
+						'clickOpens' => false,
+					),
+					'classes'        => 'godam-readonly-field',
+					'attributes'     => array(
+						'readonly' => 'readonly',
+					),
+				)
+			);
+
+			$this->add_control(
+				'seo_content_duration',
+				array(
+					'label'       => esc_html__( 'Duration', 'godam' ),
+					'type'        => Controls_Manager::TEXT,
+					'description' => esc_html__( 'ISO 8601 format. Example: PT1H30M', 'godam' ),
+					'label_block' => true,
+					'classes'     => 'godam-readonly-field',
+					'attributes'  => array(
+						'readonly' => 'readonly',
+					),
+				)
+			);
+
+			$this->add_control(
+				'seo_content_video_thumbnail_url',
+				array(
+					'label'       => esc_html__( 'Video Thumbnail URL', 'godam' ),
+					'type'        => Controls_Manager::TEXT,
+					'label_block' => true,
+					'classes'     => 'godam-readonly-field',
+					'attributes'  => array(
+						'readonly' => 'readonly',
+					),
+				)
+			);
+
+			$this->add_control(
+				'seo_content_family_friendly',
+				array(
+					'label'       => esc_html__( 'Is Family Friendly', 'godam' ),
+					'type'        => Controls_Manager::SWITCHER,
+					'description' => esc_html__( 'Is the video suitable for all audiences?', 'godam' ),
+					'default'     => 'yes',
+					'classes'     => 'godam-seo-field',
+				)
+			);
+
+		}
 
 		$this->end_popover();
 

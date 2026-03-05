@@ -247,66 +247,98 @@ class WPB_GoDAM_Video {
 						'group'      => esc_html__( 'Design Options', 'godam' ),
 					),
 
-					// SEO Settings.
-					array(
-						'type'        => 'dropdown',
-						'heading'     => esc_html__( 'Override SEO', 'godam' ),
-						'param_name'  => 'seo_override',
-						'value'       => array(
-							esc_html__( 'No', 'godam' )  => '0',
-							esc_html__( 'Yes', 'godam' ) => '1',
-						),
-						'std'         => '0',
-						'description' => esc_html__( 'When disabled, SEO data is automatically synced from the media library. Enable to override with custom values.', 'godam' ),
-						'group'       => esc_html__( 'SEO Settings', 'godam' ),
-						'save_always' => true,
-						'dependency'  => array(
-							'element'   => 'id',
-							'not_empty' => true,
-						),
-					),
-					array(
-						'type'        => 'textfield',
-						'heading'     => esc_html__( 'Headline', 'godam' ),
-						'param_name'  => 'seo_headline',
-						'value'       => '',
-						'description' => esc_html__( 'Title of the video for SEO.', 'godam' ),
-						'group'       => esc_html__( 'SEO Settings', 'godam' ),
-						'save_always' => true,
-						'dependency'  => array(
-							'element' => 'seo_override',
-							'value'   => '1',
-						),
-					),
-					array(
-						'type'        => 'textarea',
-						'heading'     => esc_html__( 'Description', 'godam' ),
-						'param_name'  => 'seo_description',
-						'value'       => '',
-						'description' => esc_html__( 'Description of the video for SEO. It is recommended to add a description for better video SEO.', 'godam' ),
-						'group'       => esc_html__( 'SEO Settings', 'godam' ),
-						'save_always' => true,
-						'dependency'  => array(
-							'element' => 'seo_override',
-							'value'   => '1',
-						),
-					),
-					array(
-						'type'        => 'dropdown',
-						'heading'     => esc_html__( 'Family Friendly', 'godam' ),
-						'param_name'  => 'seo_family_friendly',
-						'value'       => array(
-							esc_html__( 'Yes', 'godam' ) => '1',
-							esc_html__( 'No', 'godam' )  => '0',
-						),
-						'std'         => '1',
-						'description' => esc_html__( 'Is this video family friendly?', 'godam' ),
-						'group'       => esc_html__( 'SEO Settings', 'godam' ),
-						'save_always' => true,
-						'dependency'  => array(
-							'element' => 'seo_override',
-							'value'   => '1',
-						),
+					// SEO Settings — gated behind a Pro license.
+					// Free users see a premium notice; Pro users see the full controls.
+					...( rtgodam_is_feature_premium( 'seo' ) && ! rtgodam_is_api_key_valid()
+						? array(
+							array(
+								// godam_premium_notice is a custom WPBakery param type (registered in
+								// class-wpb-godam-params.php). It outputs only a hidden input so
+								// WPBakery's value-tracking doesn't break. WPBakery natively renders
+								// 'heading' as a <label> and 'description' as <p class="description">,
+								// giving a clean label + help-text line with no editable input.
+								'type'        => 'godam_premium_notice',
+								'heading'     => '&#9733; ' . esc_html__( 'Pro Feature — Video SEO', 'godam' ),
+								'param_name'  => 'seo_premium_notice',
+								'description' => wp_kses(
+									sprintf(
+										/* translators: %s: GoDAM pricing page URL */
+										__( 'Video SEO (JSON-LD structured data) is a GoDAM Pro feature. <a href="%s" target="_blank" rel="noopener noreferrer">Upgrade to Pro</a> to enable it.', 'godam' ),
+										'https://godam.io/pricing?utm_campaign=upgrade&utm_source=wpbakery&utm_medium=plugin&utm_content=seo-notice'
+									),
+									array(
+										'a' => array(
+											'href'   => array(),
+											'target' => array(),
+											'rel'    => array(),
+										),
+									)
+								),
+								'group'       => esc_html__( 'SEO Settings', 'godam' ),
+							),
+						)
+						: array(
+							array(
+								'type'        => 'dropdown',
+								'heading'     => esc_html__( 'Override SEO', 'godam' ),
+								'param_name'  => 'seo_override',
+								'value'       => array(
+									esc_html__( 'No', 'godam' )  => '0',
+									esc_html__( 'Yes', 'godam' ) => '1',
+								),
+								'std'         => '0',
+								'description' => esc_html__( 'When disabled, SEO data is automatically synced from the media library. Enable to override with custom values.', 'godam' ),
+								'group'       => esc_html__( 'SEO Settings', 'godam' ),
+								'save_always' => true,
+								'dependency'  => array(
+									'element'   => 'id',
+									'not_empty' => true,
+								),
+							),
+							array(
+								'type'        => 'textfield',
+								'heading'     => esc_html__( 'Headline', 'godam' ),
+								'param_name'  => 'seo_headline',
+								'value'       => '',
+								'description' => esc_html__( 'Title of the video for SEO.', 'godam' ),
+								'group'       => esc_html__( 'SEO Settings', 'godam' ),
+								'save_always' => true,
+								'dependency'  => array(
+									'element' => 'seo_override',
+									'value'   => '1',
+								),
+							),
+							array(
+								'type'        => 'textarea',
+								'heading'     => esc_html__( 'Description', 'godam' ),
+								'param_name'  => 'seo_description',
+								'value'       => '',
+								'description' => esc_html__( 'Description of the video for SEO. It is recommended to add a description for better video SEO.', 'godam' ),
+								'group'       => esc_html__( 'SEO Settings', 'godam' ),
+								'save_always' => true,
+								'dependency'  => array(
+									'element' => 'seo_override',
+									'value'   => '1',
+								),
+							),
+							array(
+								'type'        => 'dropdown',
+								'heading'     => esc_html__( 'Family Friendly', 'godam' ),
+								'param_name'  => 'seo_family_friendly',
+								'value'       => array(
+									esc_html__( 'Yes', 'godam' ) => '1',
+									esc_html__( 'No', 'godam' )  => '0',
+								),
+								'std'         => '1',
+								'description' => esc_html__( 'Is this video family friendly?', 'godam' ),
+								'group'       => esc_html__( 'SEO Settings', 'godam' ),
+								'save_always' => true,
+								'dependency'  => array(
+									'element' => 'seo_override',
+									'value'   => '1',
+								),
+							),
+						)
 					),
 				),
 			)
