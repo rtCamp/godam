@@ -155,7 +155,7 @@ function rtgodam_plugin_delete() {
 		$blogs = get_sites( array( 'fields' => 'ids' ) );
 
 		foreach ( $blogs as $blog_id ) {
-			switch_to_blog( $blog_id );
+			switch_to_blog( $blog_id ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.switch_to_blog_switch_to_blog
 
 			delete_option( 'rtgodam_plugin_version' );
 			delete_option( 'rtgodam_welcome_completed' );
