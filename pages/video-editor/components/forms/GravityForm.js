@@ -61,7 +61,7 @@ const GravityForm = ( { layerID } ) => {
 					status="warning"
 					isDismissible={ false }
 				>
-					{ __( 'Forms layer is a Pro feature. Upgrade your plan to unlock it.', 'godam' ) }
+					{ __( 'Forms layer is a Pro feature. Your saved settings are stored but will not be applied on the frontend without an active Pro plan. Upgrade your plan to unlock it.', 'godam' ) }
 				</Notice>
 			}
 			{
