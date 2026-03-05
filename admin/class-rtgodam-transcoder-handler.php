@@ -428,9 +428,24 @@ class RTGODAM_Transcoder_Handler {
 
 				// Preserve the existing retry_count so the cron-job retry limiter is not reset
 				// when a subsequent 5xx response re-adds this attachment to the queue.
-				$existing_retry_count = isset( $failed_transcoding_attachments[ $attachment_id ]['retry_count'] )
-					? (int) $failed_transcoding_attachments[ $attachment_id ]['retry_count']
-					: 0;
+				$existing_retry_count = 0;
+				if ( isset( $failed_transcoding_attachments[ $attachment_id ]['retry_count'] ) ) {
+					$existing_retry_count = (int) $failed_transcoding_attachments[ $attachment_id ]['retry_count'];
+				} else {
+					// Handle legacy structures where the option is a numerically indexed list of
+					// arrays containing an 'attachment_id' field.
+					foreach ( $failed_transcoding_attachments as $failed_attachment ) {
+						if ( ! is_array( $failed_attachment ) ) {
+							continue;
+						}
+						if ( isset( $failed_attachment['attachment_id'], $failed_attachment['retry_count'] )
+							&& (int) $failed_attachment['attachment_id'] === (int) $attachment_id
+						) {
+							$existing_retry_count = (int) $failed_attachment['retry_count'];
+							break;
+						}
+					}
+				}
 
 				$failed_transcoding_attachments[ $attachment_id ] = array(
 					'wp_metadata'   => $wp_metadata,

@@ -21,6 +21,13 @@ class Retranscode_Failed_Media {
 	use Singleton;
 
 	/**
+	 * Maximum number of retry attempts for failed transcoding.
+	 *
+	 * @var int
+	 */
+	const MAX_RETRY_ATTEMPTS = 3;
+
+	/**
 	 * Construct method.
 	 */
 	final protected function __construct() {
@@ -67,13 +74,6 @@ class Retranscode_Failed_Media {
 			wp_schedule_event( time(), 'retranscode_failed_media', 'retranscode_failed_media_event' );
 		}
 	}
-
-	/**
-	 * Maximum number of retry attempts for failed transcoding.
-	 *
-	 * @var int
-	 */
-	const MAX_RETRY_ATTEMPTS = 3;
 
 	/**
 	 * Retranscode media that failed during the initial transcoding process.
@@ -165,22 +165,20 @@ class Retranscode_Failed_Media {
 				<?php
 				$media_library_link = '<a href="' . esc_url( $media_library_url ) . '">' . esc_html__( 'Media Library', 'godam' ) . '</a>';
 
-				if ( $failed_count > 0 ) {
-					$message = sprintf(
-						/* translators: 1: number of media items queued, 2: retry interval in minutes, 3: max retries, 4: Media Library link */
-						__( '%1$d media file(s) could not be sent to the GoDAM transcoding server and have been queued for automatic retry (every %2$d minutes, up to %3$d attempts). Visit the %4$s to see their status.', 'godam' ),
-						(int) $failed_count,
-						10,
-						(int) self::MAX_RETRY_ATTEMPTS,
-						$media_library_link
-					);
-				} else {
-					$message = sprintf(
-						/* translators: 1: Media Library link */
-						__( 'There was an issue sending a media file to the GoDAM transcoding server. The file has been queued for automatic retry. Visit the %1$s to see its status.', 'godam' ),
-						$media_library_link
-					);
+				if ( 0 === $failed_count ) {
+					// The queue is now empty (retry succeeded or max retries reached).
+					// Do not show a "queued for retry" notice.
+					return;
 				}
+
+				$message = sprintf(
+					/* translators: 1: number of media items queued, 2: retry interval in minutes, 3: max retries, 4: Media Library link */
+					__( '%1$d media file(s) could not be sent to the GoDAM transcoding server and have been queued for automatic retry (every %2$d minutes, up to %3$d attempts). Visit the %4$s to see their status.', 'godam' ),
+					(int) $failed_count,
+					10,
+					(int) self::MAX_RETRY_ATTEMPTS,
+					$media_library_link
+				);
 
 				echo wp_kses(
 					$message,

@@ -322,6 +322,8 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 								sprintf( __( 'GoDAM: Failed to request image subsizes for attachment ID %s. The transcoded image URL has been saved; subsizes may be retried separately.', 'godam' ), $attachment_id )
 							);
 
+							$this->rtgodam_transcoder_handler->update_usage( $this->rtgodam_transcoder_handler->api_key );
+
 							return new WP_REST_Response(
 								array(
 									'success' => false,
