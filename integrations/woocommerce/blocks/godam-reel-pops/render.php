@@ -14,6 +14,11 @@ if ( ! class_exists( 'WooCommerce' ) ) {
 	return;
 }
 
+// Premium block: hide frontend output when API key is invalid.
+if ( ! rtgodam_is_api_key_valid() ) {
+	return;
+}
+
 if ( ! isset( $attributes ) || ! is_array( $attributes ) ) {
 	$attributes = array();
 }
