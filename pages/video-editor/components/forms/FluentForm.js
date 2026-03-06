@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, Notice, ExternalLink } from '@wordpress/components';
+import { Button, Notice } from '@wordpress/components';
 import { chevronRight, pencil } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
@@ -83,11 +83,6 @@ const FluentForm = ( { layerID } ) => {
 							<div className="form-container">
 								<p>{ __( 'Loading form…', 'godam' ) }</p>
 							</div>
-						}
-
-						{
-							! isValidAPIKey &&
-							<p className="text-sm text-gray-500">{ __( 'Forms layer is a Pro feature.', 'godam' ) } <ExternalLink href={ `https://godam.io/pricing?utm_campaign=upgrade&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=form-layer` } className="godam-link">{ __( 'Upgrade your plan', 'godam' ) }</ExternalLink></p>
 						}
 
 						{
