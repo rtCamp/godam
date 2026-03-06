@@ -298,6 +298,13 @@ class Seo {
 			return;
 		}
 
+		// SEO schema output is a Pro feature — suppress it when no valid API key is active.
+		// The cached schema postmeta is intentionally preserved so output resumes
+		// automatically on license reactivation without any re-save required.
+		if ( rtgodam_is_feature_premium( 'seo' ) && ! rtgodam_is_api_key_valid() ) {
+			return;
+		}
+
 		$post_id = get_queried_object_id();
 		if ( ! $post_id ) {
 			return;

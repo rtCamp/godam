@@ -9,6 +9,7 @@ namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 
+use RTGODAM\Inc\Enums\Api_Key_Status;
 use RTGODAM\Inc\Traits\Singleton;
 
 /**
@@ -46,6 +47,7 @@ class Update {
 			// Fresh install — show the welcome walkthrough first, then What's New.
 			update_option( 'rtgodam_show_welcome', true );
 			update_option( 'rtgodam_show_whats_new', true );
+			$this->rtgodam_reconcile_api_key_state();
 			update_option( 'rtgodam_plugin_version', $current_version );
 			return;
 		}
@@ -56,8 +58,27 @@ class Update {
 				update_option( 'rtgodam_show_whats_new', true );
 			}
 
+			$this->rtgodam_reconcile_api_key_state();
 			update_option( 'rtgodam_plugin_version', $current_version );
 		}
+	}
+
+	/**
+	 * Reconcile API-key-related cached state during install/update.
+	 *
+	 * If no API key exists, stale cached user data and old persisted statuses
+	 * are normalized to "no_api_key" to avoid backward-compatibility issues.
+	 */
+	private function rtgodam_reconcile_api_key_state() {
+		$api_key = get_option( 'rtgodam-api-key', '' );
+
+		if ( ! empty( $api_key ) ) {
+			return;
+		}
+
+		rtgodam_set_api_key_status( Api_Key_Status::NO_API_KEY );
+		rtgodam_clear_api_key_invalid_timestamp();
+		delete_option( 'rtgodam_user_data' );
 	}
 
 	/**

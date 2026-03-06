@@ -161,6 +161,12 @@ function rtgodam_plugin_delete() {
 			delete_option( 'rtgodam_welcome_completed' );
 			delete_option( 'rtgodam_show_whats_new' );
 			delete_option( 'rtgodam_show_welcome' );
+			delete_option( 'rtgodam_user_data' );
+			delete_option( 'rtgodam-api-key' );
+			delete_option( 'rtgodam-api-key-stored' );
+			delete_option( 'rtgodam-account-token' );
+			delete_option( 'rtgodam-api-key-status' );
+			delete_option( 'rtgodam-api-key-error-since' );
 			delete_transient( 'rtgodam_release_data' );
 
 			restore_current_blog();
@@ -171,6 +177,12 @@ function rtgodam_plugin_delete() {
 		delete_option( 'rtgodam_welcome_completed' );
 		delete_option( 'rtgodam_show_whats_new' );
 		delete_option( 'rtgodam_show_welcome' );
+		delete_option( 'rtgodam_user_data' );
+		delete_option( 'rtgodam-api-key' );
+		delete_option( 'rtgodam-api-key-stored' );
+		delete_option( 'rtgodam-account-token' );
+		delete_option( 'rtgodam-api-key-status' );
+		delete_option( 'rtgodam-api-key-error-since' );
 		delete_transient( 'rtgodam_release_data' );
 	}
 }
