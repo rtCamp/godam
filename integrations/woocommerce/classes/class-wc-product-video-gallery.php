@@ -72,9 +72,6 @@ class WC_Product_Video_Gallery {
 	public function enqueue_admin_assets() {
 		if ( get_post_type() === 'product' ) {
 
-			// Check the API key validity.
-			$godam_has_valid_api_key = rtgodam_is_api_key_valid();
-
 			wp_enqueue_media();
 
 			wp_enqueue_script(
@@ -109,7 +106,7 @@ class WC_Product_Video_Gallery {
 					'defaultThumbnail' => RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png',
 					'Ptag'             => RTGODAM_WC_MODULE_URL . 'assets/images/product-tag.svg',
 					'DeleteIcon'       => RTGODAM_URL . 'assets/src/images/delete-video-bin.svg',
-					'hasValidAPIKey'   => $godam_has_valid_api_key,
+					'hasValidAPIKey'   => rtgodam_is_api_key_valid(),
 				)
 			);
 		}

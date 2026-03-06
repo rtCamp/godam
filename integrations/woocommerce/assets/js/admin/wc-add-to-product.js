@@ -24,7 +24,7 @@ import { useRef, useEffect } from 'react';
 import Ptag from '../../images/product-tag.svg';
 
 jQuery( document ).ready( function( $ ) {
-	if ( ! RTGodamVideoGallery?.hasValidApiKey ) {
+	if ( ! RTGodamVideoGallery?.hasValidAPIKey ) {
 		return;
 	}
 

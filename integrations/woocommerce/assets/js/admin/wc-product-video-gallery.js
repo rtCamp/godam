@@ -1,7 +1,7 @@
 /* global jQuery, RTGodamVideoGallery, mejs */
 
 jQuery( document ).ready( function( $ ) {
-	if ( ! RTGodamVideoGallery?.hasValidApiKey ) {
+	if ( ! RTGodamVideoGallery?.hasValidAPIKey ) {
 		return;
 	}
 
