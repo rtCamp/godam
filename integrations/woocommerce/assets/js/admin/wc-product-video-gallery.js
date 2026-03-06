@@ -1,6 +1,10 @@
 /* global jQuery, RTGodamVideoGallery, mejs */
 
 jQuery( document ).ready( function( $ ) {
+	if ( ! RTGodamVideoGallery?.hasValidApiKey ) {
+		return;
+	}
+
 	const { __, sprintf } = wp.i18n;
 
 	const videoList = $( '.godam-product-video-gallery-list' );

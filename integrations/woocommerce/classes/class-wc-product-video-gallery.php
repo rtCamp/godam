@@ -72,6 +72,9 @@ class WC_Product_Video_Gallery {
 	public function enqueue_admin_assets() {
 		if ( get_post_type() === 'product' ) {
 
+			// Check the API key validity.
+			$godam_has_valid_api_key = rtgodam_is_api_key_valid();
+
 			wp_enqueue_media();
 
 			wp_enqueue_script(
@@ -106,6 +109,7 @@ class WC_Product_Video_Gallery {
 					'defaultThumbnail' => RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png',
 					'Ptag'             => RTGODAM_WC_MODULE_URL . 'assets/images/product-tag.svg',
 					'DeleteIcon'       => RTGODAM_URL . 'assets/src/images/delete-video-bin.svg',
+					'hasValidAPIKey'   => $godam_has_valid_api_key,
 				)
 			);
 		}
@@ -164,7 +168,11 @@ class WC_Product_Video_Gallery {
 	 * @since 1.0.0
 	 */
 	public function add_video_gallery_metabox() {
-		$title = apply_filters( 'rtgodam_video_gallery_metabox_title', __( 'Product Reels', 'godam' ) );
+		$title = apply_filters(
+			'rtgodam_video_gallery_metabox_title',
+			__( 'Product Reels', 'godam' ) .
+			' <span class="godam-pro-badge">' . __( 'Pro', 'godam' ) . '</span>'
+		);
 
 		add_meta_box(
 			'rtgodam_product_video_gallery',
@@ -219,6 +227,10 @@ class WC_Product_Video_Gallery {
 	 * @param \WP_Post $post The current post object.
 	 */
 	public function render_video_gallery_metabox( $post ) {
+
+		// Check the API key validity.
+		$godam_has_valid_api_key = rtgodam_is_api_key_valid();
+
 		$video_urls = get_post_meta( $post->ID, '_rtgodam_product_video_gallery', true );
 		$video_urls = is_array( $video_urls ) ? $video_urls : array();
 
@@ -231,7 +243,19 @@ class WC_Product_Video_Gallery {
 		$ids = get_post_meta( $post->ID, '_rtgodam_product_video_gallery_ids', true ) ?: array();
 
 		echo '<div id="rtgodam-product-video-gallery">';
+
+		if ( ! $godam_has_valid_api_key ) {
+			echo '<div class="notice notice-warning inline">';
+			echo '<p><strong>' . esc_html__( 'Product Reels is a Pro feature.', 'godam' ) . '</strong> ';
+			echo '<a href="' . esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=upgrade&utm_source=plugin&utm_medium=admin-notice&utm_content=godam_woo_product_reels' ) . '" target="_blank">';
+			echo esc_html__( 'Upgrade your plan to unlock it.', 'godam' );
+			echo '</a></p>';
+			echo '</div>';
+		}
+
 		wp_nonce_field( 'rtgodam_save_video_gallery', 'rtgodam_video_gallery_nonce' );
+
+		echo '<div class="' . ( ! $godam_has_valid_api_key ? 'godam-disabled-ui' : '' ) . '">';
 
 		echo '<ul class="godam-product-video-gallery-list godam-margin-top godam-margin-bottom godam-product-video-gallery-list wc-godam-product-admin">';
 
@@ -240,6 +264,37 @@ class WC_Product_Video_Gallery {
 					<div class="spinner"></div>
 				</div>
 			</div>';
+
+		if ( ! $godam_has_valid_api_key && empty( $video_urls ) ) {
+
+			$dummy_thumb = RTGODAM_URL . 'assets/src/images/dummy-reel-thumb.png';
+
+			printf(
+				'<li class="godam-dummy-card">
+					<div class="video-thumb-wrapper">
+						<img src="%s" style="display:block; max-width:200px; margin-bottom:10px;" />
+					</div>
+					<div class="godam-product-video-title">%s</div>
+					<div class="godam-dummy-products">%s</div>
+				</li>',
+				esc_url( $dummy_thumb ),
+				esc_html__( 'Dummy Video 1', 'godam' ),
+				'<span class="godam-dummy-pill">' . esc_html__( '+ Add products', 'godam' ) . '</span>'
+			);
+
+			printf(
+				'<li class="godam-dummy-card">
+					<div class="video-thumb-wrapper">
+						<img src="%s" style="display:block; max-width:200px; margin-bottom:10px;" />
+					</div>
+					<div class="godam-product-video-title">%s</div>
+					<div class="godam-dummy-products">%s</div>
+				</li>',
+				esc_url( $dummy_thumb ),
+				esc_html__( 'Dummy Video 2', 'godam' ),
+				'<span class="godam-dummy-pill">' . esc_html__( '+ Add products', 'godam' ) . '</span>'
+			);
+		}
 
 		foreach ( $video_urls as $index => $url ) {
 			$id            = isset( $ids[ $index ] ) ? intval( $ids[ $index ] ) : '';
@@ -327,9 +382,12 @@ class WC_Product_Video_Gallery {
 			);
 		}
 
+		$disabled_attr = ! $godam_has_valid_api_key ? 'disabled="disabled"' : '';
+
 		echo '</ul><div id="button-container" class="godam-center-button godam-margin-top">';
 		printf(
-			'<button type="button" class="components-button ml-2 godam-button is-primary godam-margin-bottom-no-top wc-godam-add-video-button wc-godam-product-admin" aria-label="%s">',
+			'<button type="button" %1$s class="components-button ml-2 godam-button is-primary godam-margin-bottom-no-top wc-godam-add-video-button wc-godam-product-admin" aria-label="%2s">',
+			esc_attr( $disabled_attr ),
 			esc_attr__( 'Add video to gallery', 'godam' )
 		);
 		echo '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 64 64" fill="none" style="margin-right: 6px; vertical-align: middle;">
@@ -338,7 +396,7 @@ class WC_Product_Video_Gallery {
 				<path d="M43.5059 38.1036L38.6667 57.8907C37.7741 61.5255 33.2521 62.7891 30.6066 60.1436L26.0363 55.5732L43.5059 38.1036Z" fill="white" />
 			</svg>';
 		echo esc_html__( 'Add Product Reels', 'godam' );
-		echo '</button></div></div>';
+		echo '</button></div></div></div>';
 	}
 
 	/**
@@ -354,6 +412,10 @@ class WC_Product_Video_Gallery {
 	 * @param int $post_id The ID of the post being saved.
 	 */
 	public function save_video_gallery( $post_id ) {
+
+		if ( ! rtgodam_is_api_key_valid() ) {
+			return;
+		}
 
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			return;
@@ -530,6 +592,11 @@ class WC_Product_Video_Gallery {
 	 * are generated using the [godam_video] shortcode.
 	 */
 	public function add_video_slider_to_single_product() {
+
+		if ( ! rtgodam_is_api_key_valid() ) {
+			return;
+		}
+
 		global $post;
 
 		if ( ! apply_filters( 'rtgodam_display_video_slider_to_single_product', true ) ) {

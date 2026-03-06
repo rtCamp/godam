@@ -894,3 +894,52 @@ to ensure proper responsiveness and avoid layout issues.
 .wp-core-ui .attachments-browser .attachment .thumbnail .centered img.icon {
 		transform: translate(-50%, -50%);
 }
+
+/*
+ * Pro badge shown next to premium layer titles.
+ */
+.godam-pro-badge {
+	display: inline-block;
+	margin-left: 0.5rem;
+	padding: 0.125rem 0.5rem;
+	font-size: 0.65rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: #fff;
+	background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
+	border-radius: 0.25rem;
+	vertical-align: middle;
+	line-height: 1.5;
+}
+
+/*
+ * Disabled UI state
+ */
+.godam-disabled-ui {
+	opacity: 0.5;
+	pointer-events: none;
+}
+
+#rtgodam_product_video_gallery, #godam_reel_pops_metabox {
+	.postbox-header .hndle {
+		justify-content: unset;
+	}
+}
+
+.godam-dummy-card {
+	opacity: 0.85;
+
+	.godam-dummy-products {
+		margin-top: 6px;
+	}
+}
+
+.godam-dummy-pill {
+	display: inline-block;
+	padding: 4px 10px;
+	border: 1px dashed #000000;
+	border-radius: 0.5rem;
+	font-size: 12px;
+	background: rgb(243, 245, 247);
+}

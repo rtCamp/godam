@@ -12,11 +12,13 @@ import {
 	FontSizePicker,
 	Icon,
 	TextControl,
+	Notice,
+	ExternalLink,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { desktop, mobile } from '@wordpress/icons';
 
-const WooCommerceSettings = ( { settings = {}, onSettingChange } ) => {
+const WooCommerceSettings = ( { settings = {}, onSettingChange, hasValidAPIKey, getPricingUrl } ) => {
 	const updateSetting = ( key, value ) => {
 		onSettingChange( key, value );
 	};
@@ -213,231 +215,245 @@ const WooCommerceSettings = ( { settings = {}, onSettingChange } ) => {
 
 	return (
 		<>
-			<PanelBody
-				title={ __( 'Product gallery & carousel play button settings', 'godam' ) }
-				initialOpen={ false }
-			>
-				<div className="godam-button-settings-group">
-					<div className="godam-control-group" style={ {
-						display: 'flex',
-						gap: '16px',
-						flexWrap: 'wrap',
-					} }>
-						<div style={ { minWidth: '250px' } }>
-							<TextControl
-								label={ __( 'Width for Gallery video', 'godam' ) }
-								value={ settings.galleryVideoPlayBtnWidth || '2.375rem' }
-								onChange={ ( value ) => updateSetting( 'galleryVideoPlayBtnWidth', value ) }
-								help={ __( 'Example: 2.375rem or 38px', 'godam' ) }
-							/>
-						</div>
-
-						<div style={ { minWidth: '250px' } }>
-							<TextControl
-								label={ __( 'Width for Carousel video', 'godam' ) }
-								value={ settings.carouselVideoPlayBtnWidth || '3.375rem' }
-								onChange={ ( value ) => updateSetting( 'carouselVideoPlayBtnWidth', value ) }
-								help={ __( 'Example: 3.375rem or 54px', 'godam' ) }
-							/>
-						</div>
-					</div>
-
-					<div className="godam-control-group" style={ {
-						display: 'flex',
-						gap: '24px',
-						marginTop: '12px',
-						flexWrap: 'wrap',
-					} }>
-						<div style={ { display: 'flex', flexDirection: 'column' } }>
-							<p><strong>{ __( 'Background color', 'godam' ) }</strong></p>
-							<ColorPalette
-								enableAlpha
-								value={ settings.playButtonBackgroundColor || '#000000C2' }
-								onChange={ ( value ) => updateSetting( 'playButtonBackgroundColor', value ) }
-							/>
-						</div>
-
-						<div style={ { display: 'flex', flexDirection: 'column' } }>
-							<p><strong>{ __( 'Play btn color', 'godam' ) }</strong></p>
-							<ColorPalette
-								enableAlpha
-								value={ settings.playButtonColor || '#ffffff' }
-								onChange={ ( value ) => updateSetting( 'playButtonColor', value ) }
-							/>
-						</div>
-
-						<div style={ { width: '260px' } }>
-							<RangeControl
-								label={ __( 'Border radius', 'godam' ) }
-								value={ parseInt( settings.playButtonBorderRadius || '50%', 10 ) }
-								onChange={ ( value ) => updateSetting( 'playButtonBorderRadius', `${ value }%` ) }
-								min={ 0 }
-								max={ 100 }
-								help={ __( 'Default: 50%', 'godam' ) }
-							/>
-						</div>
-					</div>
-				</div>
-			</PanelBody>
-
-			<PanelBody><strong>{ __( 'Video Popoup settings', 'godam' ) }</strong>
-
-				<PanelBody
-					title={ __( 'Buttons', 'godam' ) }
-					initialOpen={ false }
+			{ ! hasValidAPIKey && (
+				<Notice
+					status="warning"
+					isDismissible={ false }
 				>
-					{ /* Tabs */ }
-					<div className="godam-settings-tabs">
-						{ [
-							{ key: 'close', label: 'Close Button' },
-							{ key: 'minicart', label: 'MiniCart Button' },
-							{ key: 'cart', label: 'Cart Button' },
-							{ key: 'toggle', label: 'Toggle Button' },
-						].map( ( tab ) => (
-							<button
-								key={ tab.key }
-								type="button"
-								className={ `godam-settings-tab ${
-									activeButtonTab === tab.key ? 'is-active' : ''
-								}` }
-								onClick={ () => setActiveButtonTab( tab.key ) }
-							>
-								{ __( tab.label, 'godam' ) }
-							</button>
-						) ) }
-					</div>
+					{ __( 'WooCommerce settings is a Pro feature.', 'godam' ) }{ ' ' }
+					<ExternalLink href={ getPricingUrl( 'woocommerce-settings' ) }>
+						{ __( 'Upgrade your plan to unlock it.', 'godam' ) }
+					</ExternalLink>
+				</Notice>
+			) }
 
-					<div className="godam-tab-content">
-						<div
-							key={ activeButtonTab }
-							className="godam-tab-panel"
-						>
-							{ activeButtonTab === 'close' && (
-								<ButtonSettings
-									title="Popup Close Button"
-									bgKey="videoCloseBg"
-									iconKey="videoCloseIcon"
-									borderKey="videoCloseBorder"
-									radiusKey="videoCloseRadius"
-								/>
-							) }
-
-							{ activeButtonTab === 'minicart' && (
-								<ButtonSettings
-									title="Popup MiniCart Button"
-									bgKey="miniCartBg"
-									iconKey="miniCartIcon"
-									borderKey="miniCartBorder"
-									radiusKey="miniCartRadius"
-								/>
-							) }
-
-							{ activeButtonTab === 'cart' && (
-								<ButtonSettings
-									title="Popup Add to Cart Button"
-									bgKey="addToCartBgColor"
-									iconKey="addToCartFontColor"
-									borderKey="addToCartBorder"
-									radiusKey="addToCartRadius"
-									fontSizeKey="addToCartFontSize"
-								/>
-							) }
-
-							{ activeButtonTab === 'toggle' && (
-								<ButtonSettings
-									title="Popup Toggle Button"
-									bgKey="toggleBgColor"
-									iconKey="toggleFontColor"
-									borderKey="toggleBorder"
-									radiusKey="toggleRadius"
-									fontSizeKey="toggleFontSize"
-								/>
-							) }
-						</div>
-					</div>
-
-				</PanelBody>
-
+			<div className={ ! hasValidAPIKey ? 'opacity-50 pointer-events-none' : '' }>
 				<PanelBody
-					title={ __( 'Popup Modal', 'godam' ) }
-					initialOpen={ false }
-				>
-
-					{ /* Icon Tabs */ }
-					<div className="godam-settings-tabs godam-device-tabs">
-						{ [
-							{ key: 'desktop', icon: desktop },
-							{ key: 'mobile', icon: mobile },
-						].map( ( tab ) => (
-							<button
-								key={ tab.key }
-								type="button"
-								className={ `godam-settings-tab ${
-									activeModalTab === tab.key ? 'is-active' : ''
-								}` }
-								onClick={ () => setActiveModalTab( tab.key ) }
-							>
-								<Icon icon={ tab.icon } size={ 16 } />
-								<span>{ __( tab.label, 'godam' ) }</span>
-							</button>
-						) ) }
-					</div>
-
-					<div className="godam-tab-content">
-						<div key={ activeModalTab } className="godam-tab-panel">
-
-							{ activeModalTab === 'desktop' && (
-								<ModalSettings
-									title="Desktop Sidebar Settings"
-									bgKey="desktopModalBgColor"
-									textKey="desktopModalTextColor"
-									priceKeys={ {
-										primary: 'desktopPricePrimaryColor',
-										secondary: 'desktopPriceSecondaryColor',
-										tertiary: 'desktopPriceTertiaryColor',
-									} }
-								/>
-							) }
-
-							{ activeModalTab === 'mobile' && (
-								<ModalSettings
-									title="Mobile Floating Tile Settings"
-									bgKey="mobileModalBgColor"
-									textKey="mobileModalTextColor"
-									priceKeys={ {
-										primary: 'mobilePricePrimaryColor',
-										secondary: 'mobilePriceSecondaryColor',
-										tertiary: 'mobilePriceTertiaryColor',
-									} }
-								/>
-							) }
-
-						</div>
-					</div>
-
-				</PanelBody>
-
-				<PanelBody
-					title={ __( 'Other Visual Enhancements', 'godam' ) }
+					title={ __( 'Product gallery & carousel play button settings', 'godam' ) }
 					initialOpen={ false }
 				>
 					<div className="godam-button-settings-group">
 						<div className="godam-control-group" style={ {
 							display: 'flex',
 							gap: '16px',
+							flexWrap: 'wrap',
+						} }>
+							<div style={ { minWidth: '250px' } }>
+								<TextControl
+									label={ __( 'Width for Gallery video', 'godam' ) }
+									value={ settings.galleryVideoPlayBtnWidth || '2.375rem' }
+									onChange={ ( value ) => updateSetting( 'galleryVideoPlayBtnWidth', value ) }
+									help={ __( 'Example: 2.375rem or 38px', 'godam' ) }
+								/>
+							</div>
+
+							<div style={ { minWidth: '250px' } }>
+								<TextControl
+									label={ __( 'Width for Carousel video', 'godam' ) }
+									value={ settings.carouselVideoPlayBtnWidth || '3.375rem' }
+									onChange={ ( value ) => updateSetting( 'carouselVideoPlayBtnWidth', value ) }
+									help={ __( 'Example: 3.375rem or 54px', 'godam' ) }
+								/>
+							</div>
+						</div>
+
+						<div className="godam-control-group" style={ {
+							display: 'flex',
+							gap: '24px',
+							marginTop: '12px',
+							flexWrap: 'wrap',
 						} }>
 							<div style={ { display: 'flex', flexDirection: 'column' } }>
-								<p><strong>{ __( 'Modal Tertiary Font Color', 'godam' ) }</strong></p>
+								<p><strong>{ __( 'Background color', 'godam' ) }</strong></p>
 								<ColorPalette
 									enableAlpha
-									value={ settings.additionalComponentsColor }
-									onChange={ ( value ) => updateSetting( 'additionalComponentsColor', value ) }
+									value={ settings.playButtonBackgroundColor || '#000000C2' }
+									onChange={ ( value ) => updateSetting( 'playButtonBackgroundColor', value ) }
+								/>
+							</div>
+
+							<div style={ { display: 'flex', flexDirection: 'column' } }>
+								<p><strong>{ __( 'Play btn color', 'godam' ) }</strong></p>
+								<ColorPalette
+									enableAlpha
+									value={ settings.playButtonColor || '#ffffff' }
+									onChange={ ( value ) => updateSetting( 'playButtonColor', value ) }
+								/>
+							</div>
+
+							<div style={ { width: '260px' } }>
+								<RangeControl
+									label={ __( 'Border radius', 'godam' ) }
+									value={ parseInt( settings.playButtonBorderRadius || '50%', 10 ) }
+									onChange={ ( value ) => updateSetting( 'playButtonBorderRadius', `${ value }%` ) }
+									min={ 0 }
+									max={ 100 }
+									help={ __( 'Default: 50%', 'godam' ) }
 								/>
 							</div>
 						</div>
 					</div>
 				</PanelBody>
-			</PanelBody>
+
+				<PanelBody><strong>{ __( 'Video Popoup settings', 'godam' ) }</strong>
+
+					<PanelBody
+						title={ __( 'Buttons', 'godam' ) }
+						initialOpen={ false }
+					>
+						{ /* Tabs */ }
+						<div className="godam-settings-tabs">
+							{ [
+								{ key: 'close', label: 'Close Button' },
+								{ key: 'minicart', label: 'MiniCart Button' },
+								{ key: 'cart', label: 'Cart Button' },
+								{ key: 'toggle', label: 'Toggle Button' },
+							].map( ( tab ) => (
+								<button
+									key={ tab.key }
+									type="button"
+									className={ `godam-settings-tab ${
+										activeButtonTab === tab.key ? 'is-active' : ''
+									}` }
+									onClick={ () => setActiveButtonTab( tab.key ) }
+								>
+									{ __( tab.label, 'godam' ) }
+								</button>
+							) ) }
+						</div>
+
+						<div className="godam-tab-content">
+							<div
+								key={ activeButtonTab }
+								className="godam-tab-panel"
+							>
+								{ activeButtonTab === 'close' && (
+									<ButtonSettings
+										title="Popup Close Button"
+										bgKey="videoCloseBg"
+										iconKey="videoCloseIcon"
+										borderKey="videoCloseBorder"
+										radiusKey="videoCloseRadius"
+									/>
+								) }
+
+								{ activeButtonTab === 'minicart' && (
+									<ButtonSettings
+										title="Popup MiniCart Button"
+										bgKey="miniCartBg"
+										iconKey="miniCartIcon"
+										borderKey="miniCartBorder"
+										radiusKey="miniCartRadius"
+									/>
+								) }
+
+								{ activeButtonTab === 'cart' && (
+									<ButtonSettings
+										title="Popup Add to Cart Button"
+										bgKey="addToCartBgColor"
+										iconKey="addToCartFontColor"
+										borderKey="addToCartBorder"
+										radiusKey="addToCartRadius"
+										fontSizeKey="addToCartFontSize"
+									/>
+								) }
+
+								{ activeButtonTab === 'toggle' && (
+									<ButtonSettings
+										title="Popup Toggle Button"
+										bgKey="toggleBgColor"
+										iconKey="toggleFontColor"
+										borderKey="toggleBorder"
+										radiusKey="toggleRadius"
+										fontSizeKey="toggleFontSize"
+									/>
+								) }
+							</div>
+						</div>
+
+					</PanelBody>
+
+					<PanelBody
+						title={ __( 'Popup Modal', 'godam' ) }
+						initialOpen={ false }
+					>
+
+						{ /* Icon Tabs */ }
+						<div className="godam-settings-tabs godam-device-tabs">
+							{ [
+								{ key: 'desktop', icon: desktop },
+								{ key: 'mobile', icon: mobile },
+							].map( ( tab ) => (
+								<button
+									key={ tab.key }
+									type="button"
+									className={ `godam-settings-tab ${
+										activeModalTab === tab.key ? 'is-active' : ''
+									}` }
+									onClick={ () => setActiveModalTab( tab.key ) }
+								>
+									<Icon icon={ tab.icon } size={ 16 } />
+									<span>{ __( tab.label, 'godam' ) }</span>
+								</button>
+							) ) }
+						</div>
+
+						<div className="godam-tab-content">
+							<div key={ activeModalTab } className="godam-tab-panel">
+
+								{ activeModalTab === 'desktop' && (
+									<ModalSettings
+										title="Desktop Sidebar Settings"
+										bgKey="desktopModalBgColor"
+										textKey="desktopModalTextColor"
+										priceKeys={ {
+											primary: 'desktopPricePrimaryColor',
+											secondary: 'desktopPriceSecondaryColor',
+											tertiary: 'desktopPriceTertiaryColor',
+										} }
+									/>
+								) }
+
+								{ activeModalTab === 'mobile' && (
+									<ModalSettings
+										title="Mobile Floating Tile Settings"
+										bgKey="mobileModalBgColor"
+										textKey="mobileModalTextColor"
+										priceKeys={ {
+											primary: 'mobilePricePrimaryColor',
+											secondary: 'mobilePriceSecondaryColor',
+											tertiary: 'mobilePriceTertiaryColor',
+										} }
+									/>
+								) }
+
+							</div>
+						</div>
+
+					</PanelBody>
+
+					<PanelBody
+						title={ __( 'Other Visual Enhancements', 'godam' ) }
+						initialOpen={ false }
+					>
+						<div className="godam-button-settings-group">
+							<div className="godam-control-group" style={ {
+								display: 'flex',
+								gap: '16px',
+							} }>
+								<div style={ { display: 'flex', flexDirection: 'column' } }>
+									<p><strong>{ __( 'Modal Tertiary Font Color', 'godam' ) }</strong></p>
+									<ColorPalette
+										enableAlpha
+										value={ settings.additionalComponentsColor }
+										onChange={ ( value ) => updateSetting( 'additionalComponentsColor', value ) }
+									/>
+								</div>
+							</div>
+						</div>
+					</PanelBody>
+				</PanelBody>
+			</div>
 		</>
 	);
 };

@@ -19,9 +19,10 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { scrollToTop } from '../../../utils/index.js';
+import { scrollToTop, hasValidAPIKey } from '../../../utils/index.js';
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
+import { getPricingUrl } from '../../../../shared/premium-layers.js';
 import WooCommerceSettings from './../../../../../integrations/woocommerce/pages/components/settings/WooCommerceSettings.jsx';
 
 const IntegrationSettings = () => {
@@ -35,7 +36,14 @@ const IntegrationSettings = () => {
 			? [
 				{
 					name: 'woocommerce',
-					title: __( 'WooCommerce', 'godam' ),
+					title: (
+						<>
+							{ __( 'WooCommerce', 'godam' ) }
+							<span className="godam-pro-badge">
+								{ __( 'Pro', 'godam' ) }
+							</span>
+						</>
+					),
 					className: 'godam-tab',
 				},
 			]
@@ -135,6 +143,8 @@ const IntegrationSettings = () => {
 									<WooCommerceSettings
 										settings={ mediaSettings.integrations?.woocommerce || {} }
 										onSettingChange={ handleSettingChange }
+										hasValidAPIKey={ hasValidAPIKey }
+										getPricingUrl={ getPricingUrl }
 									/>
 								);
 
@@ -151,7 +161,7 @@ const IntegrationSettings = () => {
 				onClick={ handleSaveSettings }
 				icon={ saveMediaSettingsLoading && <Spinner /> }
 				isBusy={ saveMediaSettingsLoading }
-				disabled={ saveMediaSettingsLoading || ! isChanged }
+				disabled={ saveMediaSettingsLoading || ! isChanged || ! hasValidAPIKey }
 			>
 				{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 			</Button>
