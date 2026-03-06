@@ -407,9 +407,9 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 								<p className="godam-layer-selector__item__message godam-layer-selector__item__message--premium">
 									<Icon icon={ cautionFilled } />
 									<span>
-										{ __( 'Pro feature —', 'godam' ) }{ ' ' }
+										{ __( 'Pro feature -', 'godam' ) }{ ' ' }
 										<a href={ pricingUrl } target="_blank" rel="noopener noreferrer" className="godam-link">
-											{ __( 'Upgrade to unlock', 'godam' ) }
+											{ __( 'Get started for free', 'godam' ) }
 										</a>
 									</span>
 								</p>
@@ -440,7 +440,7 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 						rel="noopener noreferrer"
 						className="components-button godam-button is-primary"
 					>
-						{ __( 'Upgrade to Pro', 'godam' ) }
+						{ __( 'Get started for free', 'godam' ) }
 					</a>
 				) : (
 					<Button

@@ -21,6 +21,7 @@ const CustomAdSettings = ( { layerID } ) => {
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
 	);
+	const videoSettingsUrl = window.godamRestRoute?.adminUrl + 'admin.php?page=rtgodam_settings#video-settings';
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
 	const adServer = videoConfig?.adServer ?? 'self-hosted';
 	const [ isValid, setIsValid ] = useState( true );
@@ -171,10 +172,14 @@ const CustomAdSettings = ( { layerID } ) => {
 					status="warning"
 					isDismissible={ false }
 				>
-					{ __( 'Ads layer is a Pro feature. Your saved settings are stored but will not be applied on the frontend without an active Pro plan.', 'godam' ) }{ ' ' }
-					<ExternalLink href={ `https://godam.io/pricing?utm_campaign=upgrade&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=ad-layer` }>
-						{ __( 'Upgrade your plan to unlock it.', 'godam' ) }
-					</ExternalLink>
+					{ __( 'Ads layer is a Pro feature.', 'godam' ) }{ ' ' }
+					<a href={ videoSettingsUrl } className="godam-link underline" target="_blank" rel="noopener noreferrer">
+						{ __( 'Activate your license', 'godam' ) }
+					</a>{ ' or ' }
+					<ExternalLink className="godam-link underline" href={ `https://godam.io/pricing?utm_campaign=upgrade&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=ad-layer` }>
+						{ __( 'get started for free', 'godam' ) }
+					</ExternalLink>{ ' ' }
+					{ __( 'to unlock all features.', 'godam' ) }
 				</Notice>
 			}
 			<div className="flex flex-col items-start mb-4">

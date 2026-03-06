@@ -141,7 +141,7 @@ export const layerTypes = [
 /**
  * Premium tooltip message.
  */
-const premiumMessage = __( 'This is a Pro feature. Upgrade your plan to unlock it.', 'godam' );
+const premiumMessage = __( 'This is a Pro feature. Activate your license or get started for free to unlock all features.', 'godam' );
 
 /**
  * Sidebar component to display and select different types of layers to be added to the video.

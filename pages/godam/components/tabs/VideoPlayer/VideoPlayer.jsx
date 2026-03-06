@@ -30,6 +30,8 @@ const VideoPlayer = () => {
 	const dispatch = useDispatch();
 	const wrapperRef = useRef( null );
 
+	const videoSettingsUrl = window.godamRestRoute?.adminUrl + 'admin.php?page=rtgodam_settings#video-settings';
+
 	// Selectors to get media settings and change flag
 	const { mediaSettings, isChanged } = useSelector( ( state ) => ( {
 		mediaSettings: state.mediaSettings,
@@ -448,14 +450,22 @@ const VideoPlayer = () => {
 					{ ! hasValidAPIKey && (
 						<div className="w-4/5 mb-6 mx-auto flex items-center justify-between p-3 bg-amber-50 border border-amber-200 rounded-lg">
 							<p className="text-sm text-amber-800 m-0">
-								{ __( 'Video Player Customization is a Pro feature. Your saved settings are still stored but won\'t be applied on the frontend.', 'godam' ) }
+								{ __( 'Video Player Customization is a Pro feature.', 'godam' ) }{ ' ' }
+								<a
+									href={ videoSettingsUrl }
+									className="text-[#AB3A6C]"
+									target="_blank" rel="noopener noreferrer"
+								>
+									{ __( 'Activate your license', 'godam' ) }
+								</a>{ ' or ' }
+								<ExternalLink
+									href={ getPricingUrl( 'video-player-settings' ) }
+									className="text-[#AB3A6C]"
+								>
+									{ __( 'get started for free', 'godam' ) }
+								</ExternalLink>{ ' ' }
+								{ __( 'to unlock all features.', 'godam' ) }{ ' ' }
 							</p>
-							<ExternalLink
-								href={ getPricingUrl( 'video-player-settings' ) }
-								className="ml-4 flex-shrink-0 text-xs font-semibold text-[#AB3A6C] underline"
-							>
-								{ __( 'Upgrade to Pro', 'godam' ) }
-							</ExternalLink>
 						</div>
 					) }
 
@@ -524,7 +534,26 @@ const VideoPlayer = () => {
 						<CustomVideoPlayerCSS handleSettingChange={ handleSettingChange } />
 						<div className="text-[0.75rem] leading-[1.2] text-[#777] mt-2">
 							{ ! hasValidAPIKey
-								? __( 'Your saved CSS is stored but will not be applied on the frontend without an active Pro plan.', 'godam' )
+								? (
+									<>
+										{ __( 'Custom CSS is a Pro feature.', 'godam' ) }{ ' ' }
+										<a
+											href={ videoSettingsUrl }
+											className="font-medium text-[#AB3A6C]"
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											{ __( 'Activate your license', 'godam' ) }
+										</a>{ ' or ' }
+										<ExternalLink
+											href={ getPricingUrl( 'video-player-settings' ) }
+											className="font-medium text-[#AB3A6C]"
+										>
+											{ __( 'get started for free', 'godam' ) }
+										</ExternalLink>{ ' ' }
+										{ __( 'to unlock all features.', 'godam' ) }
+									</>
+								)
 								: __( 'Any custom CSS you add will be applied to all player skins. It\'s global and not tied to a specific skin style.', 'godam' )
 							}
 						</div>
