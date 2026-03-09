@@ -5,60 +5,65 @@
  */
 import { createSlice } from '@reduxjs/toolkit';
 
+const initialState = {
+	videoConfig: {
+		controls: true,
+		fluid: true,
+		preload: 'auto',
+		width: '100%',
+		sources: [],
+		playbackRates: [ 0.5, 1, 1.5, 2 ],
+		captions: [],
+		adServer: 'self-hosted',
+		controlBar: {
+			playToggle: true, // Play/Pause button
+			volumePanel: true,
+			currentTimeDisplay: true, // Current time
+			timeDivider: true, // Divider between current time and duration
+			durationDisplay: true, // Total duration
+			fullscreenToggle: true, // Full-screen button
+			subsCapsButton: true,
+			pictureInPictureToggle: false,
+			//custom controls
+			brandingIcon: true,
+			appearanceColor: godamSettings?.brandColor ? godamSettings?.brandColor : '#2b333fb3',
+			hoverColor: '#fff',
+			zoomLevel: 0,
+			playButtonPosition: 'center',
+			controlBarPosition: 'horizontal',
+			customBrandImg: '',
+			customPlayBtnImg: '',
+		},
+	},
+	layers: [],
+	chapters: [],
+	isChanged: false,
+	currentLayer: null,
+	currentTab: 'layers',
+	loading: false,
+	gforms: [],
+	cf7Forms: [],
+	fluentForms: [],
+	wpforms: [],
+	gformPluginActive: true,
+	jetpackForms: [],
+	jetpackPluginActive: false,
+	sureforms: [],
+	sureformsPlugnActive: false,
+	forminatorForms: [],
+	forminatorPluginActive: false,
+	metforms: [],
+	metformPlugnActive: false,
+	addLayerModalTime: null,
+};
+
 const slice = createSlice( {
 	name: 'video',
-	initialState: {
-		videoConfig: {
-			controls: true,
-			fluid: true,
-			preload: 'auto',
-			width: '100%',
-			sources: [],
-			playbackRates: [ 0.5, 1, 1.5, 2 ],
-			captions: [],
-			adServer: 'self-hosted',
-			controlBar: {
-				playToggle: true, // Play/Pause button
-				volumePanel: true,
-				currentTimeDisplay: true, // Current time
-				timeDivider: true, // Divider between current time and duration
-				durationDisplay: true, // Total duration
-				fullscreenToggle: true, // Full-screen button
-				subsCapsButton: true,
-				pictureInPictureToggle: false,
-				//custom controls
-				brandingIcon: true,
-				appearanceColor: godamSettings?.brandColor ? godamSettings?.brandColor : '#2b333fb3',
-				hoverColor: '#fff',
-				zoomLevel: 0,
-				playButtonPosition: 'center',
-				controlBarPosition: 'horizontal',
-				customBrandImg: '',
-				customPlayBtnImg: '',
-			},
-		},
-		layers: [],
-		chapters: [],
-		isChanged: false,
-		currentLayer: null,
-		currentTab: 'layers',
-		loading: false,
-		gforms: [],
-		cf7Forms: [],
-		fluentForms: [],
-		wpforms: [],
-		gformPluginActive: true,
-		jetpackForms: [],
-		jetpackPluginActive: false,
-		sureforms: [],
-		sureformsPlugnActive: false,
-		forminatorForms: [],
-		forminatorPluginActive: false,
-		metforms: [],
-		metformPlugnActive: false,
-		addLayerModalTime: null,
-	},
+	initialState,
 	reducers: {
+		resetVideoState: () => {
+			return initialState;
+		},
 		initializeStore: ( state, action ) => {
 			const { videoConfig, layers, chapters } = action.payload;
 			state.videoConfig = {
@@ -187,6 +192,7 @@ const slice = createSlice( {
 } );
 
 export const {
+	resetVideoState,
 	initializeStore, saveVideoMeta,
 	addLayer,
 	removeLayer,

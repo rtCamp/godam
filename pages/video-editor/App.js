@@ -13,11 +13,16 @@ import '../../assets/src/css/godam-player.scss';
 /**
  * WordPress dependencies
  */
+import { useDispatch } from 'react-redux';
 import AttachmentPicker from './AttachmentPicker.jsx';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
-import { useGetResolvedAttachmentQuery } from './redux/api/attachment.js';
+import { useGetResolvedAttachmentQuery, attachmentAPI } from './redux/api/attachment.js';
+import { resetVideoState } from './redux/slice/videoSlice';
+import { videosAPI } from './redux/api/video';
+import { pollsAPI } from './redux/api/polls';
 
 const App = () => {
+	const dispatch = useDispatch();
 	const [ attachmentID, setAttachmentID ] = useState( null );
 	const [ rawID, setRawID ] = useState( null );
 	const {
@@ -64,7 +69,18 @@ const App = () => {
 		return () => window.removeEventListener( 'popstate', handlePopState );
 	}, [] );
 
+	/**
+	 * Reset all Redux store state to prevent stale data from a previous video.
+	 */
+	const resetStore = () => {
+		dispatch( resetVideoState() );
+		dispatch( videosAPI.util.resetApiState() );
+		dispatch( pollsAPI.util.resetApiState() );
+		dispatch( attachmentAPI.util.resetApiState() );
+	};
+
 	const handleAttachmentClick = ( id ) => {
+		resetStore();
 		setAttachmentID( id );
 		const newUrl = new URL( window.location );
 		newUrl.searchParams.set( 'id', id );
@@ -72,6 +88,7 @@ const App = () => {
 	};
 
 	const handleBackToAttachmentPicker = () => {
+		resetStore();
 		setAttachmentID( null );
 		setRawID( null );
 		const newUrl = new URL( window.location );
@@ -89,7 +106,7 @@ const App = () => {
 	}
 
 	return (
-		<VideoEditor attachmentID={ attachmentID } onBackToAttachmentPicker={ handleBackToAttachmentPicker } />
+		<VideoEditor key={ attachmentID } attachmentID={ attachmentID } onBackToAttachmentPicker={ handleBackToAttachmentPicker } />
 	);
 };
 
