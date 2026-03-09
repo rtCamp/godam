@@ -242,12 +242,25 @@ class WC_Product_Video_Gallery {
 		echo '<div id="rtgodam-product-video-gallery">';
 
 		if ( ! $godam_has_valid_api_key ) {
-			echo '<div class="notice notice-warning inline">';
-			echo '<p><strong>' . esc_html__( 'Product Reels is a Pro feature.', 'godam' ) . '</strong> ';
-			echo '<a href="' . esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=upgrade&utm_source=plugin&utm_medium=admin-notice&utm_content=godam_woo_product_reels' ) . '" target="_blank">';
-			echo esc_html__( 'Upgrade your plan to unlock it.', 'godam' );
-			echo '</a></p>';
-			echo '</div>';
+			$video_editor_settings_url = admin_url( 'admin.php?page=rtgodam_settings#video-settings' );
+
+			echo '<div class="notice notice-warning inline"><p>';
+
+			echo '<strong>' . esc_html__( 'Product Reels is a Pro feature.', 'godam' ) . '</strong> ';
+
+			echo '<a href="' . esc_url( $video_editor_settings_url ) . '" target="_blank" rel="noopener noreferrer" class="text-[#AB3A6C] no-underline">';
+			echo esc_html__( 'Activate your license', 'godam' );
+			echo '</a>';
+
+			echo esc_html__( ' or ', 'godam' );
+
+			echo '<a href="' . esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=upgrade&utm_source=plugin&utm_medium=admin-notice&utm_content=godam_woo_product_reels' ) . '" target="_blank" rel="noopener noreferrer" class="text-[#AB3A6C]">';
+			echo esc_html__( 'get started for free↗', 'godam' );
+			echo '</a> ';
+
+			echo esc_html__( 'to unlock all features.', 'godam' );
+
+			echo '</p></div>';
 		}
 
 		wp_nonce_field( 'rtgodam_save_video_gallery', 'rtgodam_video_gallery_nonce' );
@@ -269,26 +282,28 @@ class WC_Product_Video_Gallery {
 			printf(
 				'<li class="godam-dummy-card">
 					<div class="video-thumb-wrapper">
-						<img src="%s" style="display:block; max-width:200px; margin-bottom:10px;" />
+						<img src="%s" style="display:block; max-width:200px; margin-bottom:10px;" alt="%s" />
 					</div>
 					<div class="godam-product-video-title">%s</div>
 					<div class="godam-dummy-products">%s</div>
 				</li>',
 				esc_url( $dummy_thumb ),
-				esc_html__( 'Dummy Video 1', 'godam' ),
+				esc_attr__( 'Sample Video 1 thumbnail', 'godam' ),
+				esc_html__( 'Sample Video 1', 'godam' ),
 				'<span class="godam-dummy-pill">' . esc_html__( '+ Add products', 'godam' ) . '</span>'
 			);
 
 			printf(
 				'<li class="godam-dummy-card">
 					<div class="video-thumb-wrapper">
-						<img src="%s" style="display:block; max-width:200px; margin-bottom:10px;" />
+						<img src="%s" style="display:block; max-width:200px; margin-bottom:10px;" alt="%s" />
 					</div>
 					<div class="godam-product-video-title">%s</div>
 					<div class="godam-dummy-products">%s</div>
 				</li>',
 				esc_url( $dummy_thumb ),
-				esc_html__( 'Dummy Video 2', 'godam' ),
+				esc_attr__( 'Sample Video 2 thumbnail', 'godam' ),
+				esc_html__( 'Sample Video 2', 'godam' ),
 				'<span class="godam-dummy-pill">' . esc_html__( '+ Add products', 'godam' ) . '</span>'
 			);
 		}
@@ -379,12 +394,10 @@ class WC_Product_Video_Gallery {
 			);
 		}
 
-		$disabled_attr = ! $godam_has_valid_api_key ? 'disabled="disabled"' : '';
-
 		echo '</ul><div id="button-container" class="godam-center-button godam-margin-top">';
 		printf(
-			'<button type="button" %1$s class="components-button ml-2 godam-button is-primary godam-margin-bottom-no-top wc-godam-add-video-button wc-godam-product-admin" aria-label="%2s">',
-			esc_attr( $disabled_attr ),
+			'<button type="button" %1$s class="components-button ml-2 godam-button is-primary godam-margin-bottom-no-top wc-godam-add-video-button wc-godam-product-admin" aria-label="%2$s">',
+			disabled( ! $godam_has_valid_api_key, true, false ),
 			esc_attr__( 'Add video to gallery', 'godam' )
 		);
 		echo '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 64 64" fill="none" style="margin-right: 6px; vertical-align: middle;">

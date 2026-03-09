@@ -63,6 +63,8 @@ class WC_Reel_Pops_Metabox {
 			' <span class="godam-pro-badge">' . __( 'Pro', 'godam' ) . '</span>'
 		);
 
+		$title = wp_kses_post( $title );
+
 		add_meta_box(
 			'godam_reel_pops_metabox',
 			$title,
@@ -250,17 +252,28 @@ class WC_Reel_Pops_Metabox {
 
 		if ( ! $godam_has_valid_api_key ) {
 
-			echo '<div class="notice notice-warning inline">';
-			echo '<p><strong>' . esc_html__( 'GoDAM Reel Pops is a Pro feature.', 'godam' ) . '</strong> ';
-			echo '<a href="' . esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=upgrade&utm_source=plugin&utm_medium=admin-notice&utm_content=reel_pops' ) . '" target="_blank">';
-			echo esc_html__( 'Upgrade your plan to unlock it.', 'godam' );
-			echo '</a></p>';
-			echo '</div>';
+			$video_editor_settings_url = admin_url( 'admin.php?page=rtgodam_settings#video-settings' );
+
+			echo '<div class="notice notice-warning inline"><p>';
+
+			echo '<strong>' . esc_html__( 'GoDAM Reel Pops is a Pro feature.', 'godam' ) . '</strong> ';
+
+			echo '<a href="' . esc_url( $video_editor_settings_url ) . '" class="text-[#AB3A6C] no-underline">';
+			echo esc_html__( 'Activate your license', 'godam' );
+			echo '</a>';
+
+			echo esc_html__( ' or ', 'godam' );
+
+			echo '<a href="' . esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=upgrade&utm_source=plugin&utm_medium=admin-notice&utm_content=reel_pops' ) . '" target="_blank" rel="noopener noreferrer" class="text-[#AB3A6C]">';
+			echo esc_html__( 'get started for free↗', 'godam' );
+			echo '</a> ';
+
+			echo esc_html__( 'to unlock all features.', 'godam' );
+
+			echo '</p></div>';
 
 			echo '<div class="godam-disabled-ui">';
 		}
-
-		$disabled_attr = ! $godam_has_valid_api_key ? 'disabled="disabled"' : '';
 
 		?>
 		<div class="godam-reel-pops-metabox">
@@ -285,7 +298,7 @@ class WC_Reel_Pops_Metabox {
 					}
 					?>
 				</div>
-				<button type="button" class="button" id="godam-reel-pops-add-video" <?php echo esc_attr( $disabled_attr ); ?>>
+				<button type="button" class="button" id="godam-reel-pops-add-video" <?php disabled( ! $godam_has_valid_api_key ); ?>>
 					<?php esc_html_e( 'Select Videos', 'godam' ); ?>
 				</button>
 			</div>

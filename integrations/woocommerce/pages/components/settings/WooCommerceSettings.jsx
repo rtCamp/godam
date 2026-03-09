@@ -213,6 +213,8 @@ const WooCommerceSettings = ( { settings = {}, onSettingChange, hasValidAPIKey, 
 		);
 	};
 
+	const videoSettingsUrl = window.godamRestRoute?.adminUrl + 'admin.php?page=rtgodam_settings#video-settings';
+
 	return (
 		<>
 			{ ! hasValidAPIKey && (
@@ -220,10 +222,28 @@ const WooCommerceSettings = ( { settings = {}, onSettingChange, hasValidAPIKey, 
 					status="warning"
 					isDismissible={ false }
 				>
-					{ __( 'WooCommerce settings is a Pro feature.', 'godam' ) }{ ' ' }
-					<ExternalLink href={ getPricingUrl( 'woocommerce-settings' ) }>
-						{ __( 'Upgrade your plan to unlock it.', 'godam' ) }
-					</ExternalLink>
+					{ __( 'WooCommerce settings are a Pro feature.', 'godam' ) }{ ' ' }
+					<a
+						href={ videoSettingsUrl }
+						className="text-[#AB3A6C]"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						{ __( 'Activate your license', 'godam' ) }
+					</a>
+
+					{
+						// eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace
+						__( ' or ', 'godam' )
+					}
+					<ExternalLink
+						className="text-[#AB3A6C]"
+						href={ getPricingUrl( 'woocommerce-settings' ) }
+					>
+						{ __( 'get started for free', 'godam' ) }
+					</ExternalLink>{ ' ' }
+
+					{ __( 'to unlock all features.', 'godam' ) }
 				</Notice>
 			) }
 
@@ -295,7 +315,7 @@ const WooCommerceSettings = ( { settings = {}, onSettingChange, hasValidAPIKey, 
 					</div>
 				</PanelBody>
 
-				<PanelBody><strong>{ __( 'Video Popoup settings', 'godam' ) }</strong>
+				<PanelBody><strong>{ __( 'Video Popup settings', 'godam' ) }</strong>
 
 					<PanelBody
 						title={ __( 'Buttons', 'godam' ) }
