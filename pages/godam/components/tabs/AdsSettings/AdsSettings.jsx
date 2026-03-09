@@ -102,7 +102,11 @@ const AdsSettings = () => {
 					{ __( 'Video ads settings are a Pro feature.', 'godam' ) }{ ' ' }
 					<a href={ videoSettingsUrl } className="text-[#AB3A6C]" target="_blank" rel="noopener noreferrer">
 						{ __( 'Activate your license', 'godam' ) }
-					</a>{ ' or ' }
+					</a>
+					{
+						// eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace
+						__( ' or ', 'godam' )
+					}
 					<ExternalLink className="text-[#AB3A6C]" href={ getPricingUrl( 'video-ads-settings' ) }>
 						{ __( 'get started for free', 'godam' ) }
 					</ExternalLink>{ ' ' }

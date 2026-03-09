@@ -143,7 +143,11 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 					{ __( 'Forms layer is a Pro feature.', 'godam' ) }{ ' ' }
 					<a href={ videoSettingsUrl } className="godam-link underline" target="_blank" rel="noopener noreferrer">
 						{ __( 'Activate your license', 'godam' ) }
-					</a>{ ' or ' }
+					</a>
+					{
+						// eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace
+						__( ' or ', 'godam' )
+					}
 					<ExternalLink className="godam-link underline" href={ `https://godam.io/pricing?utm_campaign=upgrade&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=form-layer` }>
 						{ __( 'get started for free', 'godam' ) }
 					</ExternalLink>{ ' ' }

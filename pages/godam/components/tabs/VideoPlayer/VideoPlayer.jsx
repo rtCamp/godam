@@ -457,7 +457,11 @@ const VideoPlayer = () => {
 									target="_blank" rel="noopener noreferrer"
 								>
 									{ __( 'Activate your license', 'godam' ) }
-								</a>{ ' or ' }
+								</a>
+								{
+									// eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace
+									__( ' or ', 'godam' )
+								}
 								<ExternalLink
 									href={ getPricingUrl( 'video-player-settings' ) }
 									className="text-[#AB3A6C]"
@@ -544,7 +548,11 @@ const VideoPlayer = () => {
 											rel="noopener noreferrer"
 										>
 											{ __( 'Activate your license', 'godam' ) }
-										</a>{ ' or ' }
+										</a>
+										{
+											// eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace
+											__( ' or ', 'godam' )
+										}
 										<ExternalLink
 											href={ getPricingUrl( 'video-player-settings' ) }
 											className="font-medium text-[#AB3A6C]"
