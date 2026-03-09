@@ -24,6 +24,10 @@ import { useRef, useEffect } from 'react';
 import Ptag from '../../images/product-tag.svg';
 
 jQuery( document ).ready( function( $ ) {
+	if ( ! RTGodamVideoGallery?.hasValidAPIKey ) {
+		return;
+	}
+
 	const videoList = $( '.godam-product-video-gallery-list' );
 
 	const tagIconSVG = `<img src="${ Ptag }"

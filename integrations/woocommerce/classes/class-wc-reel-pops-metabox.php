@@ -57,9 +57,17 @@ class WC_Reel_Pops_Metabox {
 	 * Add metabox to product edit screen.
 	 */
 	public function add_metabox() {
+		$title = apply_filters(
+			'rtgodam_reels_pops_metabox_title',
+			__( 'GoDAM Reel Pops', 'godam' ) .
+			' <span class="godam-pro-badge">' . __( 'Pro', 'godam' ) . '</span>'
+		);
+
+		$title = wp_kses_post( $title );
+
 		add_meta_box(
 			'godam_reel_pops_metabox',
-			__( 'GoDAM Reel Pops', 'godam' ),
+			$title,
 			array( $this, 'render_metabox' ),
 			'product',
 			'normal',
@@ -240,6 +248,33 @@ class WC_Reel_Pops_Metabox {
 			)
 		);
 
+		$godam_has_valid_api_key = rtgodam_is_api_key_valid();
+
+		if ( ! $godam_has_valid_api_key ) {
+
+			$video_editor_settings_url = admin_url( 'admin.php?page=rtgodam_settings#video-settings' );
+
+			echo '<div class="notice notice-warning inline"><p>';
+
+			echo '<strong>' . esc_html__( 'GoDAM Reel Pops is a Pro feature.', 'godam' ) . '</strong> ';
+
+			echo '<a href="' . esc_url( $video_editor_settings_url ) . '" class="text-[#AB3A6C] no-underline">';
+			echo esc_html__( 'Activate your license', 'godam' );
+			echo '</a>';
+
+			echo esc_html__( ' or ', 'godam' );
+
+			echo '<a href="' . esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=upgrade&utm_source=plugin&utm_medium=admin-notice&utm_content=reel_pops' ) . '" target="_blank" rel="noopener noreferrer" class="text-[#AB3A6C]">';
+			echo esc_html__( 'get started for free↗', 'godam' );
+			echo '</a> ';
+
+			echo esc_html__( 'to unlock all features.', 'godam' );
+
+			echo '</p></div>';
+
+			echo '<div class="godam-disabled-ui">';
+		}
+
 		?>
 		<div class="godam-reel-pops-metabox">
 			<p>
@@ -263,7 +298,7 @@ class WC_Reel_Pops_Metabox {
 					}
 					?>
 				</div>
-				<button type="button" class="button" id="godam-reel-pops-add-video">
+				<button type="button" class="button" id="godam-reel-pops-add-video" <?php disabled( ! $godam_has_valid_api_key ); ?>>
 					<?php esc_html_e( 'Select Videos', 'godam' ); ?>
 				</button>
 			</div>
@@ -434,8 +469,18 @@ class WC_Reel_Pops_Metabox {
 				videoIndex = $('#godam-reel-pops-video-list .godam-reel-pops-video-item').length;
 			};
 
+			const hasValidAPIKey = <?php echo $godam_has_valid_api_key ? 'true' : 'false'; ?>;
+
 			// Add videos button
-			$('#godam-reel-pops-add-video').on('click', function() {
+			$('#godam-reel-pops-add-video').on('click', function(e) {
+				if ( ! hasValidAPIKey ) {
+					e.preventDefault();
+					e.stopImmediatePropagation();
+
+					alert('<?php echo esc_js( __( 'This is a Pro feature. Please upgrade to use it.', 'godam' ) ); ?>');
+					return false;
+				}
+
 				const mediaFrame = wp.media({
 					title: '<?php esc_html_e( 'Select Videos', 'godam' ); ?>',
 					library: { type: 'video' },
@@ -479,6 +524,10 @@ class WC_Reel_Pops_Metabox {
 		});
 		</script>
 		<?php
+
+		if ( ! rtgodam_is_api_key_valid() ) {
+			echo '</div>';
+		}
 	}
 
 	/**
@@ -538,6 +587,10 @@ class WC_Reel_Pops_Metabox {
 	 * @param int $post_id Post ID.
 	 */
 	public function save_metabox( $post_id ) {
+		if ( ! rtgodam_is_api_key_valid() ) {
+			return;
+		}
+
 		// Verify nonce.
 		if ( ! isset( $_POST['godam_reel_pops_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['godam_reel_pops_nonce'] ) ), 'godam_reel_pops_metabox' ) ) {
 			return;
@@ -597,6 +650,10 @@ class WC_Reel_Pops_Metabox {
 	 * Render reel pops on frontend for single product pages.
 	 */
 	public function render_frontend_reel_pops() {
+		if ( ! rtgodam_is_api_key_valid() ) {
+			return;
+		}
+
 		if ( ! is_singular( 'product' ) ) {
 			return;
 		}
