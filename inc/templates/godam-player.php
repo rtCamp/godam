@@ -309,7 +309,7 @@ if ( isset( $attributes['godam_context'] ) && $godam_woocommerce_context ) {
 		: 'Default';
 }
 
-$godam_ads_settings       = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : array();
+$godam_ads_settings = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : array();
 
 // Global video ads is a Pro feature — disable global ads and clear the ad tag URL for free users,
 // even if the settings were previously saved (backward-compatibility guard).
