@@ -163,16 +163,6 @@ const JetpackForm = ( { layerID } ) => {
 	return (
 		<>
 			{
-				! isValidAPIKey &&
-				<Notice
-					className="mb-4"
-					status="warning"
-					isDismissible={ false }
-				>
-					{ __( 'Forms layer is a Pro feature. Upgrade your plan to unlock it.', 'godam' ) }
-				</Notice>
-			}
-			{
 				! isJetpackPluginActive &&
 				<Notice
 					className="mb-4"

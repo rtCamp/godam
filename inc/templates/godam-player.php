@@ -310,6 +310,17 @@ if ( isset( $attributes['godam_context'] ) && $godam_woocommerce_context ) {
 }
 
 $godam_ads_settings       = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : array();
+
+// Global video ads is a Pro feature — disable global ads and clear the ad tag URL for free users,
+// even if the settings were previously saved (backward-compatibility guard).
+if ( ! $godam_has_valid_api_key ) {
+	$godam_ads_settings['enable_global_video_ads'] = false;
+	// Ensure the ad tag URL is not exposed to the frontend config for free users.
+	if ( isset( $godam_ads_settings['adTagUrl'] ) ) {
+		$godam_ads_settings['adTagUrl'] = '';
+	}
+}
+
 $godam_ads_settings       = wp_json_encode( $godam_ads_settings );
 $godam_global_video_share = isset( $godam_settings['video']['enable_global_video_share'] ) ? $godam_settings['video']['enable_global_video_share'] : true;
 

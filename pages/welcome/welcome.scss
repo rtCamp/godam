@@ -43,6 +43,15 @@
 		padding: 32px 40px 24px;
 	}
 
+	// Keep the Guide close icon visible and unchanged on hover/focus.
+	.components-modal__header button.components-button.is-compact.has-icon {
+
+		svg,
+		svg path {
+			fill: currentcolor !important;
+		}
+	}
+
 	/*
 	 * Move pagination dots to the bottom.
 	 *
