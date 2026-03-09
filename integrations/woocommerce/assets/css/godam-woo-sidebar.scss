@@ -1,0 +1,222 @@
+/*Hero section */
+.godam-multiple-hero,
+.godam-sidebar-hero {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding-bottom: 16px;
+	border-radius: 28px;
+
+	// Image
+    .godam-multiple-hero-image,
+    .godam-sidebar-hero__media {
+		flex-shrink: 0;
+
+		img {
+			width: 5rem;
+			height: 5rem;
+			object-fit: cover;
+			border-radius: 6px;
+			display: block;
+		}
+	}
+
+	// Content
+    .godam-multiple-hero-content,
+    .godam-sidebar-hero__content {
+		flex: 1;
+		margin-left: 10px;
+
+        .godam-multiple-hero-title,
+        .godam-sidebar-hero__title {
+			h3 {
+				margin: 0 0 10px;
+				font-size: 1rem;
+				font-weight: 500;
+				color: var(
+					--rtgodam-woo-video-modal-desktopmodaltextcolor,
+					rgba(28, 28, 28, 1)
+				);
+				line-height: 1.15;
+			}
+		}
+
+        .godam-multiple-hero-price,
+        .godam-sidebar-hero__price {
+			margin: 0;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			font-size: 0.9rem;
+            color: var(--rtgodam-woo-video-modal-desktoppriceprimarycolor, rgba(28, 28, 28, 1));
+
+			del {
+				color: var(--rtgodam-woo-video-modal-desktoppricetertiarycolor, rgba(143, 143, 143, 1));
+				font-weight: 400;
+			}
+
+			ins {
+				color: var(--rtgodam-woo-video-modal-desktoppricesecondarycolor, rgba(230, 134, 0, 1));
+				text-decoration: none;
+				font-weight: 500;
+			}
+		}
+	}
+
+	@media (max-width: 1024px) {
+		display: none;
+	}
+}
+
+/* Cart button */
+.godam-product-sidebar .godam-sidebar-hero__actions a.godam-product-sidebar-view-product-button,
+.godam-product-sidebar .godam-sidebar-hero__actions button.godam-product-sidebar-add-to-cart-button {
+	gap: 10px;
+
+	.godam-add-to-cart-icon {
+		display: flex;
+		align-items: center;
+
+		svg {
+			width: 18px;
+			height: 18px;
+		}
+	}
+
+	@media (max-width: 1024px) {
+		display: none;
+	}
+}
+
+
+/* Divider */
+.godam-sidebar-divider {
+	border: none;
+	height: 1px;
+	background: #dcdcdc;
+	margin: 24px 0;
+
+	@media (max-width: 1024px) {
+		display: none;
+	}
+}
+
+/* Toggle Header */
+.godam-sidebar-product-toggle {
+	cursor: pointer;
+
+	.godam-sidebar-product-toggle__header {
+		display: flex;
+		align-items: center;
+		font-size: 1rem;
+		font-weight: 400;
+		color: var(
+			--rtgodam-woo-video-modal-additionalcomponentscolor,
+			rgba(95, 95, 95, 1)
+		);
+        gap: 8px;
+
+		.godam-toggle-icon {
+			display: flex;
+			align-items: center;
+			transition: transform 0.3s ease;
+
+			svg {
+				width: 20px;
+				height: 20px;
+			}
+		}
+	}
+
+	&[data-expanded="true"] {
+		.godam-toggle-icon {
+			transform: rotate(180deg);
+		}
+	}
+
+	@media (max-width: 1024px) {
+		display: none;
+	}
+}
+
+/* Collapsible Content */
+.godam-single-product-sidebar-content,
+.godam-image-gallery,
+.godam-sidebar-multiple-list {
+	overflow: hidden;
+	transition: all 0.3s ease;
+
+	&.is-collapsed {
+		max-height: 0;
+		opacity: 0;
+		padding-top: 0;
+	}
+
+	&:not(.is-collapsed) {
+		max-height: 1000px;
+		opacity: 1;
+		margin-top: 16px;
+	}
+}
+
+/* Miscs */
+.godam-product-sidebar .godam-multiple-sidebar-small-cart-button .godam-small-cart-icon,
+.godam-product-sidebar .godam-single-sidebar-small-cart-button .godam-small-cart-icon {
+    border-radius: var(--rtgodam-woo-video-modal-addtocartradius, 8px);
+    width: 32px;
+    height: 32px;
+    padding: 0px 12px;
+	line-height: 0.5;
+}
+
+.godam-product-sidebar .godam-sidebar-multiple-list .godam-sidebar-product-rating {
+    margin-bottom: 0;
+    margin-top: 5px;
+}
+
+@media (max-width: 1024px) {
+	.godam-small-cart-icon {
+		display: block;
+	}
+
+	.godam-sidebar-product {
+		display: flex;
+        flex-direction: row;
+        max-width: 100%;
+        margin: 0 auto;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding: 0 !important;
+        scroll-behavior: smooth;
+        height: max-content;
+        scroll-snap-type: x mandatory;
+	}
+
+	.godam-single-product-sidebar-content,
+	.godam-image-gallery,
+	.godam-sidebar-multiple-list {
+		&.is-collapsed {
+			max-height: 1000px;
+			opacity: 1;
+			margin-top: 5px;
+		}
+	}
+
+	.godam-sidebar-hero__actions {
+		display: none;
+	}
+
+	.godam-image-gallery.is-collapsed {
+		margin: 0;
+	}
+}
+
+.godam-single-sidebar-small-cart-button {
+	display: none;
+
+	@media (max-width: 1024px) {
+		display: block;
+	}
+}

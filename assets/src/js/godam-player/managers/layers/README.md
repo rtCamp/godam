@@ -7,6 +7,7 @@ This directory contains the refactored components of the LayersManager class, sp
 - **`LayerValidator.js`** - Handles layer dependency checking and validation logic
 - **`FormLayerManager.js`** - Manages form layer functionality including skip buttons, form observation, and time-based updates
 - **`HotspotLayerManager.js`** - Manages hotspot layer functionality including creation, positioning, tooltip management, and interactions
+- **`WooCommerceLayerManager.js`** - Manages WooCommerce layer functionality including creation, positioning, tooltip management, and interactions of Product Hotspots
 - **`../layersManager.js`** - Main orchestrator that coordinates the above components
 
 ## Benefits of this refactoring

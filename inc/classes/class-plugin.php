@@ -21,6 +21,7 @@ use RTGODAM\Inc\Video_Embed;
 use RTGODAM\Inc\Video_Permalinks;
 use RTGODAM\Inc\Video_Engagement;
 use RTGODAM\Inc\Update;
+use RTGODAM\Inc\Integrations;
 
 use RTGODAM\Inc\Post_Types\GoDAM_Video;
 
@@ -98,6 +99,7 @@ class Plugin {
 		Video_Embed::get_instance();
 		Video_Permalinks::get_instance();
 		Embed::get_instance();
+		Integrations::get_instance();
 
 		// Load shortcodes.
 		GoDAM_Player::get_instance();
@@ -111,6 +113,7 @@ class Plugin {
 		$this->load_post_types();
 		$this->load_taxonomies();
 		$this->load_plugin_configs();
+
 		$this->load_rest_api();
 		$this->init_gravity_forms();
 		$this->load_sureforms();
