@@ -49,6 +49,7 @@ import { appendTimezoneOffsetToUTC, isSEODataEmpty, secondsToISO8601, stripHtmlT
 import './editor.scss';
 import { ReactComponent as icon } from '../../images/godam-video-filled.svg';
 import { canManageAttachment } from '../../js/media-library/utility';
+import { isFeaturePremium } from '../../js/premium-features.js';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
 const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
@@ -131,6 +132,10 @@ function VideoEdit( {
 	const [ defaultPoster, setDefaultPoster ] = useState( '' );
 	const [ isSEOModalOpen, setIsSEOModelOpen ] = useState( false );
 	const [ duration, setDuration ] = useState( 0 );
+
+	// Determine whether the SEO feature is locked for this user.
+	const isValidApiKey = window?.pluginInfo?.validApiKey ?? false;
+	const isSEOLocked = isFeaturePremium( 'seo' ) && ! isValidApiKey;
 	const [ isVideoSelecting, setIsVideoSelecting ] = useState( false );
 	const [ attachmentAuthorId, setattachmentAuthorId ] = useState( null );
 	const isInsideQueryLoop = context?.hasOwnProperty( 'queryId' );
@@ -709,10 +714,12 @@ function VideoEdit( {
 					<ToolbarGroup>
 						<ToolbarButton
 							icon={ trendingUp }
-							label={ __( 'Video SEO', 'godam' ) }
-							onClick={ () => setIsSEOModelOpen( true ) }
+							label={ isSEOLocked ? __( 'Video SEO (Pro)', 'godam' ) : __( 'Video SEO', 'godam' ) }
+							onClick={ () => ! isSEOLocked && setIsSEOModelOpen( true ) }
+							disabled={ isSEOLocked }
+							className={ isSEOLocked ? 'godam-toolbar-button--premium-locked' : '' }
 						>
-							{ __( 'SEO', 'godam' ) }
+							{ isSEOLocked ? __( 'SEO (Pro)', 'godam' ) : __( 'SEO', 'godam' ) }
 						</ToolbarButton>
 					</ToolbarGroup>
 				</BlockControls>

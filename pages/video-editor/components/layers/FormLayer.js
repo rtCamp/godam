@@ -139,7 +139,7 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 					status="warning"
 					isDismissible={ false }
 				>
-					{ __( 'Forms layer is a Pro feature.', 'godam' ) }{ ' ' }
+					{ __( 'Forms layer is a Pro feature. Your saved settings are stored but will not be applied on the frontend without an active Pro plan.', 'godam' ) }{ ' ' }
 					<ExternalLink href={ `https://godam.io/pricing?utm_campaign=upgrade&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=form-layer` }>
 						{ __( 'Upgrade your plan to unlock it.', 'godam' ) }
 					</ExternalLink>
