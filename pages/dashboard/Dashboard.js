@@ -24,6 +24,7 @@ import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
 import chevronLeft from '../../assets/src/images/chevron-left.svg';
 import chevronRight from '../../assets/src/images/chevron-right.svg';
 import NewYearSaleBanner from '../../assets/src/images/new-year-sale-2026.webp';
+import UpgradePlanDashboardBg from '../../assets/src/images/upgrade-plan-dashboard-bg.png';
 import { formatNumber, formatWatchTime } from '../utils/formatters';
 
 const Dashboard = () => {
@@ -44,6 +45,12 @@ const Dashboard = () => {
 	const totalTopVideosPages = topVideosResponse?.totalPages || 1;
 
 	const showNewYearSaleBanner = window.videoData?.showNewYearSaleBanner;
+	const apiKeyError = getAPIKeyErrorInfo();
+	const apiKeyErrorType = apiKeyError?.type || null;
+	const shouldShowUpgradeMessage =
+		apiKeyErrorType === ERROR_TYPE.MISSING_KEY ||
+		dashboardMetrics?.errorType === ERROR_TYPE.INVALID_KEY ||
+		dashboardMetrics?.errorType === ERROR_TYPE.MISSING_KEY;
 
 	useEffect( () => {
 		const loadingEl = document.getElementById( 'loading-analytics-animation' );
@@ -51,12 +58,11 @@ const Dashboard = () => {
 		const overlay = document.getElementById( 'api-key-overlay' );
 
 		// Check for server-side errors OR local API key status issues
-		const apiKeyError = getAPIKeyErrorInfo();
 		const shouldShowOverlay =
-			dashboardMetrics?.errorType === ERROR_TYPE.INVALID_KEY ||
-			dashboardMetrics?.errorType === ERROR_TYPE.MISSING_KEY ||
-			dashboardMetrics?.errorType === ERROR_TYPE.MICROSERVICE_ERROR ||
-			apiKeyError !== null;
+				dashboardMetrics?.errorType === ERROR_TYPE.INVALID_KEY ||
+				dashboardMetrics?.errorType === ERROR_TYPE.MISSING_KEY ||
+				dashboardMetrics?.errorType === ERROR_TYPE.MICROSERVICE_ERROR ||
+				apiKeyErrorType !== null;
 
 		if ( shouldShowOverlay ) {
 			if ( loadingEl ) {
@@ -77,7 +83,7 @@ const Dashboard = () => {
 				container.classList.remove( 'hidden' );
 			}
 		}
-	}, [ dashboardMetrics, isDashboardMetricsLoading, isDashboardMetricsError ] );
+	}, [ dashboardMetrics, isDashboardMetricsLoading, isDashboardMetricsError, apiKeyErrorType ] );
 
 	useEffect( () => {
 		if (
@@ -186,8 +192,6 @@ const Dashboard = () => {
 	 * @return {JSX.Element} The overlay content to display.
 	 */
 	const renderOverlayContent = () => {
-		const apiKeyError = getAPIKeyErrorInfo();
-
 		// Check for local API key status first (expired, verification_failed)
 		if ( apiKeyError?.type === API_KEY_STATUS.EXPIRED || apiKeyError?.type === API_KEY_STATUS.VERIFICATION_FAILED ) {
 			return (
@@ -207,7 +211,7 @@ const Dashboard = () => {
 		}
 
 		// Show upgrade message for missing/invalid keys
-		if ( dashboardMetrics?.errorType === ERROR_TYPE.INVALID_KEY || dashboardMetrics?.errorType === ERROR_TYPE.MISSING_KEY ) {
+		if ( shouldShowUpgradeMessage ) {
 			return (
 				<>
 					{ showNewYearSaleBanner && (
@@ -247,30 +251,26 @@ const Dashboard = () => {
 						</p>
 
 						<a
-						href={ addQueryArgs( 'https://godam.io/pricing', {
-							utm_campaign: 'buy-plan',
-							utm_source: window?.location?.host || '',
-							utm_medium: 'plugin',
-							utm_content: 'analytics',
-						} ) }
-						className="components-button godam-button is-primary"
-						target="_blank"
-						rel="noopener noreferrer"
-					>{ __( 'Buy Plan', 'godam' ) }</a>
+							href={ addQueryArgs( 'https://godam.io/pricing', {
+								utm_campaign: 'buy-plan',
+								utm_source: window?.location?.host || '',
+								utm_medium: 'plugin',
+								utm_content: 'analytics',
+							} ) }
+							className="components-button godam-button is-primary"
+							target="_blank"
+							rel="noopener noreferrer"
+						>{ __( 'Buy Plan', 'godam' ) }</a>
 					</div>
 				</>
 			);
 		}
 
-		// Default error message for microservice errors or other issues
+		// Default error message for microservice errors or other issues.
 		return (
 			<div className="api-key-overlay-banner">
 				<p>
-					{ sprintf(
-						/* translators: %s: error message from the server */
-						__( '%s', 'godam' ),
-						dashboardMetrics?.message || __( 'An unknown error occurred. Please check your plugin settings.', 'godam' ),
-					) }
+					{ dashboardMetrics?.message || __( 'An unknown error occurred. Please check your plugin settings.', 'godam' ) }
 				</p>
 				<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
 					{ __( 'Go to plugin settings', 'godam' ) }
@@ -294,10 +294,11 @@ const Dashboard = () => {
 			<div
 				id="api-key-overlay"
 				className={ `api-key-overlay hidden${
-					( dashboardMetrics?.errorType === ERROR_TYPE.INVALID_KEY || dashboardMetrics?.errorType === ERROR_TYPE.MISSING_KEY ) && ! getAPIKeyErrorInfo()?.type
+					shouldShowUpgradeMessage
 						? ' api-key-overlay--upgrade'
 						: ''
 				}` }
+				style={ shouldShowUpgradeMessage ? { backgroundImage: `url(${ UpgradePlanDashboardBg })` } : undefined }
 			>
 				<div className="api-key-message">
 					{ renderOverlayContent() }

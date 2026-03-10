@@ -22,7 +22,7 @@ import './charts.js';
 /**
  * WordPress dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { Button, Spinner } from '@wordpress/components';
 import { addQueryArgs } from '@wordpress/url';
 import SingleMetrics from './SingleMetrics.js';
@@ -31,6 +31,7 @@ import videojs from 'video.js';
 import { arrowLeft } from '@wordpress/icons';
 import { API_KEY_STATUS, ERROR_TYPE } from '../shared/enums';
 import { formatNumber, formatWatchTime } from '../utils/formatters';
+import UpgradePlanAnalyticsBg from '../../assets/src/images/upgrade-plan-analytics-bg.png';
 
 const adminUrl =
   window.videoData?.adminUrl;
@@ -85,6 +86,12 @@ const Analytics = ( { attachmentID } ) => {
 		{ videoId: attachmentID, siteUrl },
 		{ skip: ! attachmentID },
 	);
+	const apiKeyError = getAPIKeyErrorInfo();
+	const apiKeyErrorType = apiKeyError?.type || null;
+	const shouldShowUpgradeMessage =
+		apiKeyErrorType === ERROR_TYPE.MISSING_KEY ||
+		analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY ||
+		analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY;
 
 	window.analyticsDataFetched = analyticsDataFetched;
 
@@ -115,12 +122,11 @@ const Analytics = ( { attachmentID } ) => {
 		const overlay = document.getElementById( 'api-key-overlay' );
 
 		// Check for server-side errors OR local API key status issues
-		const apiKeyError = getAPIKeyErrorInfo();
 		const shouldShowOverlay =
-			analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY ||
-			analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ||
-			analyticsDataFetched?.errorType === ERROR_TYPE.MICROSERVICE_ERROR ||
-			apiKeyError !== null;
+				analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY ||
+				analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ||
+				analyticsDataFetched?.errorType === ERROR_TYPE.MICROSERVICE_ERROR ||
+				apiKeyErrorType !== null;
 
 		if ( shouldShowOverlay ) {
 			if ( loadingEl ) {
@@ -135,7 +141,7 @@ const Analytics = ( { attachmentID } ) => {
 		} else if ( analyticsDataFetched ) {
 			setAnalyticsData( analyticsDataFetched );
 		}
-	}, [ analyticsDataFetched ] );
+	}, [ analyticsDataFetched, apiKeyErrorType ] );
 
 	// Sync A/B test comparison data
 	useEffect( () => {
@@ -470,8 +476,6 @@ const Analytics = ( { attachmentID } ) => {
 	 * @return {JSX.Element} The overlay content to display.
 	 */
 	const renderOverlayContent = () => {
-		const apiKeyError = getAPIKeyErrorInfo();
-
 		// Check for local API key status first (expired, verification_failed)
 		if ( apiKeyError?.type === API_KEY_STATUS.EXPIRED || apiKeyError?.type === API_KEY_STATUS.VERIFICATION_FAILED ) {
 			return (
@@ -491,7 +495,7 @@ const Analytics = ( { attachmentID } ) => {
 		}
 
 		// Show upgrade message for missing/invalid keys
-		if ( analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY || analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ) {
+		if ( shouldShowUpgradeMessage ) {
 			return (
 				<div className="api-key-overlay-banner">
 					<p className="api-key-overlay-banner-header">
@@ -525,11 +529,7 @@ const Analytics = ( { attachmentID } ) => {
 		return (
 			<div className="api-key-overlay-banner">
 				<p>
-					{ sprintf(
-						/* translators: %s: error message from the server */
-						__( '%s', 'godam' ),
-						analyticsDataFetched?.message || __( 'An unknown error occurred. Please check your plugin settings.', 'godam' ),
-					) }
+					{ analyticsDataFetched?.message || __( 'An unknown error occurred. Please check your plugin settings.', 'godam' ) }
 				</p>
 				<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
 					{ __( 'Go to plugin settings', 'godam' ) }
@@ -564,10 +564,11 @@ const Analytics = ( { attachmentID } ) => {
 			<div
 				id="api-key-overlay"
 				className={ `api-key-overlay hidden${
-					( analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY || analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ) && ! getAPIKeyErrorInfo()?.type
+					shouldShowUpgradeMessage
 						? ' api-key-overlay--upgrade'
 						: ''
 				}` }
+				style={ shouldShowUpgradeMessage ? { backgroundImage: `url(${ UpgradePlanAnalyticsBg })` } : undefined }
 			>
 				<div className="api-key-message">
 					{ renderOverlayContent() }
