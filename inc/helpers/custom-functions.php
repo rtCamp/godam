@@ -549,7 +549,8 @@ function rtgodam_get_premium_layer_types() {
  * @return string[] Array of premium feature slugs.
  */
 function rtgodam_get_premium_features() {
-	return array( 'seo' );
+	// Add 'seo' to the returned array below to gate SEO features behind a Pro license, for example.
+	return array();
 }
 
 /**
