@@ -6,6 +6,12 @@ $GREEN: #4CAF50;
 $RED: #F44336;
 $LIGHT_BLUE: #2196F3;
 
+#root-easydam,
+#root-video-editor,
+.wc-godam-product-admin {
+	--wp-components-color-accent: #ab3a6c;
+}
+
 $media-library-sidebar-bg: #fff;
 $media-library-sidebar-bg-dark: #a3a3a3;
 $media-library-sidebar-border: #E0E0E0;
@@ -819,6 +825,58 @@ to ensure proper responsiveness and avoid layout issues.
 	}
 }
 
+/* stylelint-disable-next-line no-descending-specificity */
+.godam-product-timestamp-input input:focus {
+	box-shadow: 0 0 0 0.7px #ab3a6c;
+	border-color: #ab3a6c;
+}
+
+.godam-admin-video-add-to-product-container {
+
+	.vjs-control.vjs-custom-play-button {
+		width: auto !important;
+
+		@media screen and (max-width: 768px) {
+			display: none;
+		}
+
+		#branding-icon {
+			height: 100%;
+			width: auto;
+			object-fit: fill;
+		}
+	}
+}
+
+.godam-product-admin-video-spinner-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.4);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 9999;
+
+	.godam-product-admin-video-spinner {
+		width: 50px;
+		height: 50px;
+		border: 5px solid rgba(255, 255, 255, 0.3);
+		border-top: 5px solid #ab3a6c;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+	}
+
+	@keyframes spin {
+
+		from { transform: rotate(0deg); }
+
+		to { transform: rotate(360deg); }
+	}
+}
+
 /**
  * Center custom icon images in media library thumbnails.
  *
@@ -835,4 +893,61 @@ to ensure proper responsiveness and avoid layout issues.
  */
 .wp-core-ui .attachments-browser .attachment .thumbnail .centered img.icon {
 		transform: translate(-50%, -50%);
+}
+
+/*
+ * Pro badge shown next to premium layer titles.
+ */
+.godam-pro-badge {
+	display: inline-block;
+	margin-left: 0.5rem;
+	padding: 0.125rem 0.5rem;
+	font-size: 0.65rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: #fff;
+	background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
+	border-radius: 0.25rem;
+	vertical-align: middle;
+	line-height: 1.5;
+}
+
+/*
+ * Disabled UI state
+ */
+.godam-disabled-ui {
+	opacity: 0.5;
+	pointer-events: none;
+}
+
+#rtgodam_product_video_gallery, #godam_reel_pops_metabox {
+	.postbox-header .hndle {
+		justify-content: unset;
+	}
+}
+
+.godam-dummy-card {
+	opacity: 0.85;
+
+	.godam-dummy-products {
+		margin-top: 6px;
+	}
+}
+
+.godam-dummy-pill {
+	display: inline-block;
+	padding: 4px 10px;
+	border: 1px dashed #000000;
+	border-radius: 0.5rem;
+	font-size: 12px;
+	background: rgb(243, 245, 247);
+}
+
+.text-\[\#AB3A6C\] {
+	color: #AB3A6C;
+}
+
+.no-underline {
+	text-decoration: none;
 }
