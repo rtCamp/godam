@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 /**
  * Internal dependencies
@@ -39,6 +39,16 @@ const App = () => {
 	}, [ isSuccess, resolvedAttachment ] );
 
 	/**
+	 * Reset all Redux store state to prevent stale data from a previous video.
+	 */
+	const resetStore = useCallback( () => {
+		dispatch( resetVideoState() );
+		dispatch( videosAPI.util.resetApiState() );
+		dispatch( pollsAPI.util.resetApiState() );
+		dispatch( attachmentAPI.util.resetApiState() );
+	}, [ dispatch ] );
+
+	/**
 	 * Handle the back/forward navigation
 	 *
 	 * When navigating back from the video editor to the attachment picker, the attachment ID is removed from the URL.
@@ -60,28 +70,28 @@ const App = () => {
 
 		// Handle back/forward navigation
 		const handlePopState = () => {
+			resetStore();
+
 			const newParams = new URLSearchParams( window.location.search );
 			const newId = newParams.get( 'id' );
-			setAttachmentID( newId && ! isNaN( newId ) ? newId : null );
+
+			if ( newId && ! isNaN( newId ) ) {
+				setRawID( newId );
+				setAttachmentID( newId );
+			} else {
+				setRawID( null );
+				setAttachmentID( null );
+			}
 		};
 
 		window.addEventListener( 'popstate', handlePopState );
 		return () => window.removeEventListener( 'popstate', handlePopState );
-	}, [] );
-
-	/**
-	 * Reset all Redux store state to prevent stale data from a previous video.
-	 */
-	const resetStore = () => {
-		dispatch( resetVideoState() );
-		dispatch( videosAPI.util.resetApiState() );
-		dispatch( pollsAPI.util.resetApiState() );
-		dispatch( attachmentAPI.util.resetApiState() );
-	};
+	}, [ resetStore ] );
 
 	const handleAttachmentClick = ( id ) => {
 		resetStore();
 		setAttachmentID( id );
+		setRawID( id );
 		const newUrl = new URL( window.location );
 		newUrl.searchParams.set( 'id', id );
 		window.history.pushState( {}, '', newUrl );
