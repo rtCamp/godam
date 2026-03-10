@@ -76,11 +76,11 @@
 		"@wordpress/i18n": "6.7.0",
 		"@wordpress/icons": "10.28.0",
 		"@wordpress/jest-preset-default": "12.28.0",
-		"@wordpress/scripts": "30.21.0",
+		"@wordpress/scripts": "31.5.0",
 		"@wordpress/server-side-render": "6.10.0",
 		"browserslist": "4.25.1",
 		"cross-env": "10.1.0",
-		"css-minimizer-webpack-plugin": "7.0.2",
+		"css-minimizer-webpack-plugin": "7.0.4",
 		"emoji-picker-react": "4.13.3",
 		"eslint": "8.57.1",
 		"eslint-plugin-eslint-comments": "3.2.0",
@@ -95,6 +95,16 @@
 		"tailwindcss": "^3.4.15",
 		"tailwindcss-animate": "1.0.7",
 		"webpack-remove-empty-scripts": "1.1.1"
+	},
+	"overrides": {
+		"@wordpress/scripts": {
+			"svgo@>3.0.0 <3.3.3": "3.3.3",
+			"minimatch@<3.1.5": "3.1.5",
+			"immutable@>=5.0.0 <5.1.5": "5.1.5",
+			"serialize-javascript@<7.0.3": "7.0.3",
+			"webpack-dev-server@<5.2.1": "5.2.1"
+		},
+		"minimatch@>=9.0.0 <9.0.7": "9.0.7"
 	},
 	"scripts": {
 		"start:blocks": "wp-scripts start --config ./node_modules/@wordpress/scripts/config/webpack.config.js --webpack-src-dir=./assets/src/blocks/ --output-path=./assets/build/blocks/",
