@@ -31,7 +31,7 @@ import videojs from 'video.js';
 import { arrowLeft } from '@wordpress/icons';
 import { API_KEY_STATUS, ERROR_TYPE } from '../shared/enums';
 import { formatNumber, formatWatchTime } from '../utils/formatters';
-import UpgradePlanAnalyticsBg from '../../assets/src/images/upgrade-plan-analytics-bg.png';
+import UpgradePlanAnalyticsBg from '../../assets/src/images/upgrade-plan-analytics-bg.webp';
 
 const adminUrl =
   window.videoData?.adminUrl;
@@ -90,8 +90,9 @@ const Analytics = ( { attachmentID } ) => {
 	const apiKeyErrorType = apiKeyError?.type || null;
 	const shouldShowUpgradeMessage =
 		apiKeyErrorType === ERROR_TYPE.MISSING_KEY ||
-		analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY ||
-		analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY;
+		( apiKeyErrorType === null &&
+			( analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY ||
+				analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ) );
 
 	window.analyticsDataFetched = analyticsDataFetched;
 
@@ -123,10 +124,10 @@ const Analytics = ( { attachmentID } ) => {
 
 		// Check for server-side errors OR local API key status issues
 		const shouldShowOverlay =
-				analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY ||
-				analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ||
-				analyticsDataFetched?.errorType === ERROR_TYPE.MICROSERVICE_ERROR ||
-				apiKeyErrorType !== null;
+			analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY ||
+			analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ||
+			analyticsDataFetched?.errorType === ERROR_TYPE.MICROSERVICE_ERROR ||
+			apiKeyErrorType !== null;
 
 		if ( shouldShowOverlay ) {
 			if ( loadingEl ) {

@@ -24,7 +24,7 @@ import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
 import chevronLeft from '../../assets/src/images/chevron-left.svg';
 import chevronRight from '../../assets/src/images/chevron-right.svg';
 import NewYearSaleBanner from '../../assets/src/images/new-year-sale-2026.webp';
-import UpgradePlanDashboardBg from '../../assets/src/images/upgrade-plan-dashboard-bg.png';
+import UpgradePlanDashboardBg from '../../assets/src/images/upgrade-plan-dashboard-bg.webp';
 import { formatNumber, formatWatchTime } from '../utils/formatters';
 
 const Dashboard = () => {
@@ -49,8 +49,9 @@ const Dashboard = () => {
 	const apiKeyErrorType = apiKeyError?.type || null;
 	const shouldShowUpgradeMessage =
 		apiKeyErrorType === ERROR_TYPE.MISSING_KEY ||
-		dashboardMetrics?.errorType === ERROR_TYPE.INVALID_KEY ||
-		dashboardMetrics?.errorType === ERROR_TYPE.MISSING_KEY;
+		( apiKeyErrorType === null &&
+			( dashboardMetrics?.errorType === ERROR_TYPE.INVALID_KEY ||
+				dashboardMetrics?.errorType === ERROR_TYPE.MISSING_KEY ) );
 
 	useEffect( () => {
 		const loadingEl = document.getElementById( 'loading-analytics-animation' );
@@ -59,10 +60,10 @@ const Dashboard = () => {
 
 		// Check for server-side errors OR local API key status issues
 		const shouldShowOverlay =
-				dashboardMetrics?.errorType === ERROR_TYPE.INVALID_KEY ||
-				dashboardMetrics?.errorType === ERROR_TYPE.MISSING_KEY ||
-				dashboardMetrics?.errorType === ERROR_TYPE.MICROSERVICE_ERROR ||
-				apiKeyErrorType !== null;
+			dashboardMetrics?.errorType === ERROR_TYPE.INVALID_KEY ||
+			dashboardMetrics?.errorType === ERROR_TYPE.MISSING_KEY ||
+			dashboardMetrics?.errorType === ERROR_TYPE.MICROSERVICE_ERROR ||
+			apiKeyErrorType !== null;
 
 		if ( shouldShowOverlay ) {
 			if ( loadingEl ) {
@@ -255,7 +256,7 @@ const Dashboard = () => {
 								utm_campaign: 'buy-plan',
 								utm_source: window?.location?.host || '',
 								utm_medium: 'plugin',
-								utm_content: 'analytics',
+								utm_content: 'dashboard',
 							} ) }
 							className="components-button godam-button is-primary"
 							target="_blank"
