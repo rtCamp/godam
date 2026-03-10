@@ -26,6 +26,7 @@ const PollLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
+	const videoSettingsUrl = window.godamRestRoute?.adminUrl + 'admin.php?page=rtgodam_settings#video-settings';
 
 	const { data: polls } = useGetPollsQuery();
 	const { data: currentPoll } = useGetPollQuery( layer.poll_id, { skip: ! layer.poll_id } );
@@ -40,7 +41,21 @@ const PollLayer = ( { layerID, goBack, duration } ) => {
 			{ ! isValidAPIKey && (
 				<Notice status="warning" isDismissible={ false } className="godam-ad-layer-notice mb-4">
 					<p>
-						{ __( 'Polls are a pro feature.', 'godam' ) } <ExternalLink href={ `https://godam.io/pricing?utm_campaign=upgrade&utm_source=${ encodeURIComponent( window?.location?.host || '' ) }&utm_medium=plugin&utm_content=poll-layer` }>{ __( 'Upgrade your plan to unlock it.', 'godam' ) }</ExternalLink>
+						{ __( 'Polls are a Pro feature.', 'godam' ) }{ ' ' }
+						<a href={ videoSettingsUrl } className="godam-link underline" target="_blank" rel="noopener noreferrer">
+							{ __( 'Activate your license', 'godam' ) }
+						</a>
+						{
+							// eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace
+							__( ' or ', 'godam' )
+						}
+						<ExternalLink
+							className="godam-link underline"
+							href={ `https://godam.io/pricing?utm_campaign=upgrade&utm_source=${ encodeURIComponent( window?.location?.host || '' ) }&utm_medium=plugin&utm_content=poll-layer` }
+						>
+							{ __( 'get started for free', 'godam' ) }
+						</ExternalLink>{ ' ' }
+						{ __( 'to unlock all features.', 'godam' ) }
 					</p>
 				</Notice>
 			) }

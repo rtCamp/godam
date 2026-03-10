@@ -32,6 +32,7 @@ import { hasValidAPIKey } from '../../../godam/utils/index.js';
 const Appearance = () => {
 	const dispatch = useDispatch();
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
+	const videoSettingsUrl = window.godamRestRoute?.adminUrl + 'admin.php?page=rtgodam_settings#video-settings';
 
 	/**
 	 * State to manage the notice message and visibility.
@@ -426,10 +427,18 @@ const Appearance = () => {
 					status="warning"
 					isDismissible={ false }
 				>
-					{ __( 'Video player customization is a Pro feature. Your saved settings are stored but will not be applied on the frontend without an active Pro plan.', 'godam' ) }{ ' ' }
-					<ExternalLink href={ getPricingUrl( 'player-settings' ) }>
-						{ __( 'Upgrade your plan to unlock it.', 'godam' ) }
-					</ExternalLink>
+					{ __( 'Video player customization is a Pro feature.', 'godam' ) }{ ' ' }
+					<a href={ videoSettingsUrl } className="godam-link underline" target="_blank" rel="noopener noreferrer">
+						{ __( 'Activate your license', 'godam' ) }
+					</a>
+					{
+						// eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace
+						__( ' or ', 'godam' )
+					}
+					<ExternalLink className="godam-link underline" href={ getPricingUrl( 'player-settings' ) }>
+						{ __( 'get started for free', 'godam' ) }
+					</ExternalLink>{ ' ' }
+					{ __( 'to unlock all features.', 'godam' ) }
 				</Notice>
 			) }
 
