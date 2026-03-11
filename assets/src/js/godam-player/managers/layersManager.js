@@ -33,10 +33,27 @@ export default class LayersManager {
 	}
 
 	/**
+	 * Reset layer state - clears all layers from previous video instances
+	 * This should be called when switching between videos to prevent
+	 * layer data from one video incorrectly appearing on another
+	 */
+	reset() {
+		this.formLayerManager.reset();
+		this.hotspotLayerManager.reset();
+		// Also reset the isDisplayingLayers flag for this video instance
+		if ( this.isDisplayingLayers && this.currentPlayerVideoInstanceId ) {
+			this.isDisplayingLayers[ this.currentPlayerVideoInstanceId ] = false;
+		}
+	}
+
+	/**
 	 * Setup layers
 	 * Loads FontAwesome dynamically if hotspots with icons exist
 	 */
 	async setupLayers() {
+		// Reset layer state before setting up new layers
+		this.reset();
+
 		const layers = this.config.videoSetupOptions?.layers || [];
 
 		// Check if we need to load FontAwesome for hotspot icons
