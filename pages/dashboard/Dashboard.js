@@ -63,7 +63,7 @@ const Dashboard = () => {
 				loadingEl.style.display = 'none';
 			}
 			if ( container ) {
-				container.classList.add( 'hidden' );
+				container.classList.remove( 'hidden' );
 				container.classList.add( 'blurred' );
 			}
 			if ( overlay ) {
