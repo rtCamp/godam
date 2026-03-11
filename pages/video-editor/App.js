@@ -20,6 +20,16 @@ import { useGetResolvedAttachmentQuery, attachmentAPI } from './redux/api/attach
 import { resetVideoState } from './redux/slice/videoSlice';
 import { videosAPI } from './redux/api/video';
 import { pollsAPI } from './redux/api/polls';
+import { gravityFormsAPI } from './redux/api/gravity-forms';
+import { contactForm7Api } from './redux/api/cf7-forms';
+import { wpFormsApi } from './redux/api/wpforms';
+import { jetpackFormsApi } from './redux/api/jetpack-forms';
+import { sureformsApi } from './redux/api/sureforms';
+import { forminatorFormsApi } from './redux/api/forminator-forms';
+import { fluentFormsApi } from './redux/api/fluent-forms';
+import { everestFormsApi } from './redux/api/everest-forms';
+import { ninjaFormsApi } from './redux/api/ninja-forms';
+import { metformApi } from './redux/api/metform';
 
 const App = () => {
 	const dispatch = useDispatch();
@@ -46,6 +56,16 @@ const App = () => {
 		dispatch( videosAPI.util.resetApiState() );
 		dispatch( pollsAPI.util.resetApiState() );
 		dispatch( attachmentAPI.util.resetApiState() );
+		dispatch( gravityFormsAPI.util.resetApiState() );
+		dispatch( contactForm7Api.util.resetApiState() );
+		dispatch( wpFormsApi.util.resetApiState() );
+		dispatch( jetpackFormsApi.util.resetApiState() );
+		dispatch( sureformsApi.util.resetApiState() );
+		dispatch( forminatorFormsApi.util.resetApiState() );
+		dispatch( fluentFormsApi.util.resetApiState() );
+		dispatch( everestFormsApi.util.resetApiState() );
+		dispatch( ninjaFormsApi.util.resetApiState() );
+		dispatch( metformApi.util.resetApiState() );
 	}, [ dispatch ] );
 
 	/**
