@@ -622,6 +622,8 @@
         &-text {
             font-size: clamp( 0.75rem, 2vw, 0.875rem );
             line-height: 1.3;
+            word-break: break-word;
+            overflow-wrap: break-word;
 
             &.deleted-text {
                 color: var( --godam-video-engagement-brand-neutral-shades-100 );
