@@ -418,7 +418,7 @@ class RTGODAM_Transcoder_Handler {
 				}
 			}
 
-			if ( is_wp_error( $upload_page ) || 500 <= intval( $upload_page['response']['code'] ) ) {
+			if ( is_wp_error( $upload_page ) || 200 !== intval( $upload_page['response']['code'] ?? 0 ) ) {
 				$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
 
 				$failed_transcoding_attachments[ $attachment_id ] = array(

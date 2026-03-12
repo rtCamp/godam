@@ -127,7 +127,7 @@ class Metform_Integration {
 	 */
 	public function render_layer_form_for_video_editor( $layer, $layer_id ) {
 		if ( 'metform' === $layer && ! empty( $layer_id ) ) {
-			echo do_shortcode( "[metform form_id='{$layer_id}']" ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo wp_kses_post( do_shortcode( "[metform form_id='{$layer_id}']" ) );
 		}
 	}
 }

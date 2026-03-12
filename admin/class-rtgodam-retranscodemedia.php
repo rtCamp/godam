@@ -71,7 +71,7 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 		if ( isset( $this->usage_info ) && is_array( $this->usage_info ) && array_key_exists( $this->api_key, $this->usage_info ) ) {
-			if ( is_object( $this->usage_info[ $this->api_key ] ) && isset( $this->usage_info[ $this->api_key ]->status ) && $this->usage_info[ $this->api_key ]->status ) {
+			if ( is_object( $this->usage_info[ $this->api_key ] ) && isset( $this->usage_info[ $this->api_key ]->status ) && 'Active' === $this->usage_info[ $this->api_key ]->status ) {
 				if ( isset( $this->usage_info[ $this->api_key ]->remaining ) && $this->usage_info[ $this->api_key ]->remaining <= 0 ) {
 					return;
 				}

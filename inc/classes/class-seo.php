@@ -83,12 +83,19 @@ class Seo {
 
 		// Parse Gutenberg blocks if content contains them.
 		if ( ! empty( $content ) && strpos( $content, '<!-- wp:godam/video' ) !== false ) {
-			$blocks = parse_blocks( $content );
+			$blocks            = parse_blocks( $content );
+			$schema_chunks     = array();
+			$attachment_chunks = array();
 
 			foreach ( $blocks as $block ) {
-				$result           = $this->extract_video_seo_schema_from_block( $block, true );
-				$video_seo_schema = array_merge( $video_seo_schema, $result['schemas'] );
-				$attachments_used = array_merge( $attachments_used, $result['attachments'] );
+				$result              = $this->extract_video_seo_schema_from_block( $block, true );
+				$schema_chunks[]     = $result['schemas'];
+				$attachment_chunks[] = $result['attachments'];
+			}
+
+			if ( ! empty( $schema_chunks ) ) {
+				$video_seo_schema = array_merge( $video_seo_schema, ...$schema_chunks );
+				$attachments_used = array_merge( $attachments_used, ...$attachment_chunks );
 			}
 		}
 
