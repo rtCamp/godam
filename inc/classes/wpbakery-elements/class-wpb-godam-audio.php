@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class WPB_GoDAM_Audio
- * 
+ *
  * @since 1.6.0
  *
  * @package GoDAM
@@ -23,7 +23,7 @@ class WPB_GoDAM_Audio {
 
 	/**
 	 * WPB_GoDAM_Audio constructor.
-	 * 
+	 *
 	 * @since 1.6.0
 	 */
 	protected function __construct() {
@@ -40,7 +40,7 @@ class WPB_GoDAM_Audio {
 
 	/**
 	 * Setup hooks.
-	 * 
+	 *
 	 * @since 1.6.0
 	 *
 	 * @return void
@@ -51,13 +51,17 @@ class WPB_GoDAM_Audio {
 
 	/**
 	 * Map audio element to WPBakery.
-	 * 
+	 *
 	 * @since 1.6.0
 	 *
 	 * @return void
 	 */
 	public function godam_audio() {
 		if ( ! function_exists( 'vc_map' ) ) {
+			return;
+		}
+
+		if ( is_admin() && ! current_user_can( 'publish_posts' ) ) {
 			return;
 		}
 
@@ -146,7 +150,7 @@ class WPB_GoDAM_Audio {
 							'not_empty' => true,
 						),
 					),
-					
+
 					// Caption Settings.
 					array(
 						'type'        => 'textfield',

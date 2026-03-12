@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  * Class WPB_GoDAM_Params
  *
  * @since 1.6.0
- * 
+ *
  * @package GoDAM
  */
 class WPB_GoDAM_Params {
@@ -40,20 +40,24 @@ class WPB_GoDAM_Params {
 
 	/**
 	 * Setup custom params.
-	 * 
+	 *
 	 * @since 1.6.0
 	 *
 	 * @return void
 	 */
 	public function setup_custom_params() {
 
-		vc_add_shortcode_param( 
+		if ( is_admin() && ! current_user_can( 'publish_posts' ) ) {
+			return;
+		}
+
+		vc_add_shortcode_param(
 			'video_selector',
 			array( $this, 'video_selector_settings_field' ),
 			RTGODAM_URL . 'assets/build/js/wpbakery-video-selector-param.min.js'
 		);
 
-		vc_add_shortcode_param( 
+		vc_add_shortcode_param(
 			'audio_selector',
 			array( $this, 'audio_selector_settings_field' ),
 			RTGODAM_URL . 'assets/build/js/wpbakery-audio-selector-param.min.js'
@@ -78,7 +82,7 @@ class WPB_GoDAM_Params {
 
 	/**
 	 * Video selector settings field.
-	 * 
+	 *
 	 * @since 1.6.0
 	 *
 	 * @param array  $settings Field settings.
@@ -89,7 +93,7 @@ class WPB_GoDAM_Params {
 		$button_text   = ! empty( $value ) ? esc_html__( 'Replace', 'godam' ) : esc_html__( 'Select video', 'godam' );
 		$preview_html  = '';
 		$remove_button = '';
-		
+
 		// If a video is selected, show preview and remove button.
 		if ( ! empty( $value ) && is_numeric( $value ) ) {
 			$attachment = wp_get_attachment_url( $value );
@@ -102,7 +106,7 @@ class WPB_GoDAM_Params {
 				$remove_button = '<button class="button video-selector-remove" data-param="' . esc_attr( $settings['param_name'] ) . '" style="margin-left: 5px;">' . esc_html__( 'Remove', 'godam' ) . '</button>';
 			}
 		}
-		
+
 		return '<div class="video_selector_block">'
 			. '<input name="' . esc_attr( $settings['param_name'] ) . '" class="wpb_vc_param_value wpb-textinput video_selector_field ' .
 			esc_attr( $settings['param_name'] ) . ' ' .
@@ -117,7 +121,7 @@ class WPB_GoDAM_Params {
 
 	/**
 	 * Audio selector settings field.
-	 * 
+	 *
 	 * @since 1.6.0
 	 *
 	 * @param array  $settings Field settings.
@@ -128,7 +132,7 @@ class WPB_GoDAM_Params {
 		$button_text   = ! empty( $value ) ? esc_html__( 'Replace', 'godam' ) : esc_html__( 'Select audio', 'godam' );
 		$preview_html  = '';
 		$remove_button = '';
-		
+
 		// If an audio is selected, show preview and remove button.
 		if ( ! empty( $value ) && is_numeric( $value ) ) {
 			$attachment = wp_get_attachment_url( $value );
@@ -141,7 +145,7 @@ class WPB_GoDAM_Params {
 				$remove_button = '<button class="button audio-selector-remove" data-param="' . esc_attr( $settings['param_name'] ) . '" style="margin-left: 5px;">' . esc_html__( 'Remove', 'godam' ) . '</button>';
 			}
 		}
-		
+
 		return '<div class="audio_selector_block">'
 			. '<input name="' . esc_attr( $settings['param_name'] ) . '" class="wpb_vc_param_value wpb-textinput audio_selector_field ' .
 			esc_attr( $settings['param_name'] ) . ' ' .
@@ -156,7 +160,7 @@ class WPB_GoDAM_Params {
 
 	/**
 	 * Image Src selector settings field.
-	 * 
+	 *
 	 * @since 1.6.0
 	 *
 	 * @param array  $settings Field settings.
@@ -167,15 +171,15 @@ class WPB_GoDAM_Params {
 		$button_text   = ! empty( $value ) ? esc_html__( 'Replace', 'godam' ) : esc_html__( 'Select image', 'godam' );
 		$preview_html  = '';
 		$remove_button = '';
-		
+
 		// If an image is selected, show preview and remove button.
 		if ( ! empty( $value ) ) {
 			$preview_html  = '<div class="image-src-selector-preview" style="margin-top: 10px;">
                 <img src="' . esc_url( $value ) . '" alt="" style="max-width: 300px; height: auto;" />
             </div>';
-			$remove_button = '<button class="button image-src-selector-remove" data-param="' . esc_attr( $settings['param_name'] ) . '" style="margin-left: 5px;">' . esc_html__( 'Remove', 'godam' ) . '</button>';            
+			$remove_button = '<button class="button image-src-selector-remove" data-param="' . esc_attr( $settings['param_name'] ) . '" style="margin-left: 5px;">' . esc_html__( 'Remove', 'godam' ) . '</button>';
 		}
-		
+
 		return '<div class="image_src_selector_block">'
 			. '<input name="' . esc_attr( $settings['param_name'] ) . '" class="wpb_vc_param_value wpb-textinput image_src_selector_field ' .
 			esc_attr( $settings['param_name'] ) . ' ' .
@@ -211,7 +215,7 @@ class WPB_GoDAM_Params {
 
 	/**
 	 * Textfield hidden settings field.
-	 * 
+	 *
 	 * @since 1.6.0
 	 *
 	 * @param array  $settings Field settings.
@@ -221,6 +225,6 @@ class WPB_GoDAM_Params {
 	public function textfield_hidden_settings_field( $settings, $value ) {
 		return '<input style="pointer-events: none; opacity: 0.5;" name="' . esc_attr( $settings['param_name'] ) . '" class="wpb_vc_param_value wpb-textinput textfield_hidden_field ' .
 			esc_attr( $settings['param_name'] ) . ' ' .
-			esc_attr( $settings['type'] ) . '_field" value="' . esc_attr( $value ) . '" />';        
+			esc_attr( $settings['type'] ) . '_field" value="' . esc_attr( $value ) . '" />';
 	}
 }
