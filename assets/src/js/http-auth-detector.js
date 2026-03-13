@@ -95,6 +95,11 @@
 			// Before files are uploaded, check for HTTP auth.
 			if ( this.uploader ) {
 				this.uploader.bind( 'BeforeUpload', function( up, file ) {
+					// If this file has already been checked, allow upload to proceed.
+					if ( file.httpAuthChecked ) {
+						return;
+					}
+
 					// If detection is already in progress, pause uploads and wait.
 					if ( up.httpAuthDetectionInProgress ) {
 						file.status = window?.plupload?.STOPPED;
@@ -108,6 +113,8 @@
 					// Run detection and resume uploads when done.
 					$.when( detectHttpAuth() ).always( function() {
 						up.httpAuthDetectionInProgress = false;
+						// Mark this file as checked so we don't run detection again for it.
+						file.httpAuthChecked = true;
 						up.start();
 					} );
 				} );

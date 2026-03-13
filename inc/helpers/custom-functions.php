@@ -1278,11 +1278,6 @@ function godam_should_load_auth_detector_script( $screen ) {
 		return true;
 	}
 
-	// Check if post type supports editor (where media modal can be opened).
-	if ( 'post' === $screen->base && post_type_supports( $screen->post_type, 'editor' ) ) {
-		return true;
-	}
-
 	// Check if on GoDAM admin pages (where media library/modal can be opened).
 	$godam_pages = array(
 		'toplevel_page_godam',             // Dashboard page.
