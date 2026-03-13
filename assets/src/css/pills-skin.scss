@@ -1,3 +1,5 @@
+@use "./mobile-brand-logo";
+
 .godam-pills-skin {
 	container-type: inline-size;
 	container-name: godam-player-pills-skin;
@@ -65,8 +67,10 @@
 	.video-js .vjs-custom-play-button img {
 		height: 100%;
 		width: auto;
-		object-fit: fill;
-		margin-right: 20px;
+		object-fit: contain;
+		display: block;
+		border-top-right-radius: 999px;
+		border-bottom-right-radius: 999px;
 	}
 
 	.video-js .vjs-menu-content {
@@ -121,6 +125,28 @@
 
 	@container godam-player-pills-skin (max-width: 480px) {
 
+		@include mobile-brand-logo.mobile-brand-logo(70px, 30px);
+
+		.vjs-control.vjs-custom-play-button {
+			position: relative;
+			margin-left: auto;
+			bottom: 0 !important;
+			right: 0px !important;
+			height: 100%;
+			display: flex !important;
+			align-items: center;
+			justify-content: flex-end;
+			flex-shrink: 0; 
+
+			img {
+				max-height: 2.2em !important;
+				height: auto;
+				width: auto;
+				object-fit: contain;
+				border-radius: 0 40px 40px 0;
+			}
+		}
+
 		.video-js .vjs-big-play-button {
 			left: 55%;
 		}
@@ -142,7 +168,7 @@
 			height: initial !important;
 			margin: -40px auto 0;
 
-			.vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-remaining-time, .vjs-control.vjs-custom-play-button, .vjs-volume-control {
+			.vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-remaining-time {
 				display: none !important;
 			}
 

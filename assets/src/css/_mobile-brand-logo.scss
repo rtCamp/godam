@@ -1,0 +1,23 @@
+@mixin mobile-brand-logo($logo-width, $btn-width) {
+
+	.vjs-control-bar {
+		--godam-logo-width: #{$logo-width};
+		--godam-btn-width: #{$btn-width};
+	}
+
+	.vjs-control.vjs-custom-play-button {
+		display: flex !important;
+		align-items: center;
+		justify-content: center;
+		width: var(--godam-logo-width);
+		z-index: 25;
+
+		img {
+			display: block;
+			margin: auto;
+			max-height: 2.2em;
+			max-width: 100%;
+			object-fit: contain;
+		}
+	}
+}

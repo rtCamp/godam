@@ -1,3 +1,5 @@
+@use "./mobile-brand-logo";
+
 .godam-minimal-skin {
 	container-type: inline-size;
 	container-name: godam-player-minimal-skin;
@@ -87,6 +89,36 @@
 	}
 
 	@container godam-player-minimal-skin (max-width: 480px) {
+
+		@include mobile-brand-logo.mobile-brand-logo(66px, 30px);
+
+		.vjs-control.vjs-custom-play-button {
+			position: absolute;
+			bottom: 0;
+			right: 0;
+		}
+
+		.vjs-fullscreen-control {
+			position: absolute;
+			bottom: 0;
+			height: 3em !important;
+			right: var(--godam-logo-width) !important;
+		}
+
+		.vjs-volume-panel {
+			position: absolute;
+			bottom: 0;
+			height: 3em !important;
+			right: calc(var(--godam-logo-width) + var(--godam-btn-width)) !important;
+		}
+
+		.vjs-settings-button {
+			position: absolute;
+			bottom: 0;
+			height: 3em !important;
+			z-index: 99;
+			right: calc(var(--godam-logo-width) + (2 * var(--godam-btn-width))) !important;
+		}
 		
 		.video-js .vjs-big-play-button {
 			left: 55%;
@@ -135,24 +167,6 @@
 				height: 2em !important;
 			}
 
-			.vjs-settings-button{
-				right: 40px;
-				bottom: 0;
-				position: absolute;
-				z-index: 99;
-			}
-
-			.vjs-volume-panel {
-				bottom: 0;
-				position: absolute;
-				right: 120px;
-			}
-
-			&:has(.vjs-subs-caps-button.vjs-hidden) .vjs-volume-panel {
-				right: 80px;
-			}
-
-
 			.vjs-subs-caps-button {
 				right: 80px !important;
 			}
@@ -185,7 +199,7 @@
 			height: 3em !important;
 		}
 
-	   .vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-remaining-time, .vjs-custom-play-button {
+	   .vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-remaining-time {
 			display: none !important;
 		}
 
