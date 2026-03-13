@@ -331,18 +331,21 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 		return;
 	}
 
-	if ( empty( $transcoded_files ) && rtgodam_is_file_being_transcoded( $post_id ) ) {
-		$check_button_text = __( 'Check Status', 'godam' );
-
-		/**
-		 * Filters the text of transcoding process status check button.
-		 *
-		 * @since 1.2
-		 *
-		 * @param string $check_button_text Default text of transcoding process status check button.
-		 */
-		$check_button_text = apply_filters( 'rtgodam_check_status_button_text', $check_button_text );
-
+	if ( empty( $transcoded_files ) && in_array( strtolower( (string) $transcoding_status ), array( 'failed', 'blocked' ), true ) ) {
+		// Show error indicator for both: items where Central rejected the job (no job_id)
+		// and items where the job was accepted but later failed. JS polling will update
+		// this element if a subsequent retry succeeds.
+		?>
+		<div id="list-transcoder-status-<?php echo esc_attr( $post_id ); ?>" class="transcoding-status transcoding-status--failed transcoding-status-list" data-id="<?php echo esc_attr( $post_id ); ?>">
+			<div class="transcoding-status__loader">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+					<path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd" />
+				</svg>
+			</div>
+			<span class="status-text"><?php esc_html_e( 'Transcoding failed, please try again.', 'godam' ); ?></span>
+		</div>
+		<?php
+	} elseif ( empty( $transcoded_files ) && rtgodam_is_file_being_transcoded( $post_id ) ) {
 		?>
 		<div id="list-transcoder-status-<?php echo esc_attr( $post_id ); ?>" class="transcoding-status transcoding-status-list" data-id="<?php echo esc_attr( $post_id ); ?>">
 			<div class="transcoding-status__loader">
@@ -354,7 +357,6 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 			<span class="status-text"><?php echo esc_html( $transcoding_status ); ?></span>
 		</div>
 		<?php
-
 	} elseif ( ! empty( $transcoded_files ) ) {
 		?>
 		<div id="list-transcoder-status-<?php echo esc_attr( $post_id ); ?>" class="transcoding-status transcoding-status--completed transcoding-status-list" data-id="<?php echo esc_attr( $post_id ); ?>">

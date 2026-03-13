@@ -222,6 +222,7 @@ class Transcoding extends Base {
 
 			return array(
 				'status'     => 'failed',
+				'progress'   => 0,
 				'error_code' => $error_code,
 				'error_msg'  => $error_msg,
 			);

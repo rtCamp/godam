@@ -520,6 +520,54 @@ function rtgodam_is_api_key_valid() {
 }
 
 /**
+ * Get the list of premium (Pro) layer types.
+ *
+ * Single source of truth on the PHP side for which video layer types
+ * require a valid API key. Keep in sync with the JS constant
+ * PREMIUM_LAYER_TYPES in pages/shared/premium-layers.js.
+ *
+ * @since n.e.x.t
+ *
+ * @return string[] Array of premium layer type slugs.
+ */
+function rtgodam_get_premium_layer_types() {
+	return array( 'form', 'ad', 'poll' );
+}
+
+/**
+ * Get the list of premium (Pro) plugin features.
+ *
+ * Single source of truth for which plugin-level features require a valid API
+ * key. Add or remove feature slugs here to change the gating in one place.
+ *
+ * The array is localized to JavaScript via wp_localize_script() in
+ * class-assets.php as window.pluginInfo.premiumFeatures, so JS always reads
+ * the authoritative list from PHP rather than maintaining its own copy.
+ *
+ * @since n.e.x.t
+ *
+ * @return string[] Array of premium feature slugs.
+ */
+function rtgodam_get_premium_features() {
+	// Add 'seo' to the returned array below to gate SEO features behind a Pro license, for example.
+	return array();
+}
+
+/**
+ * Check whether a specific plugin feature requires a Pro license.
+ *
+ * Usage: if ( rtgodam_is_feature_premium( 'seo' ) && ! rtgodam_is_api_key_valid() ) { ... }
+ *
+ * @since n.e.x.t
+ *
+ * @param string $feature Feature slug (e.g. 'seo').
+ * @return bool True if the feature is gated behind a Pro license.
+ */
+function rtgodam_is_feature_premium( $feature ) {
+	return in_array( $feature, rtgodam_get_premium_features(), true );
+}
+
+/**
  * Checks if the given filename is an audio file based on its name.
  *
  * Note: The files created by uppy webcam, screen capture, and audio plugin are in the same format. So we are checking the filename to determine if it's an audio file.

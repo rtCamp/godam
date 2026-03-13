@@ -42,10 +42,18 @@ export const layerTypes = [
 		isPremium: false,
 	},
 	{
+		title: __( 'Hotspot', 'godam' ),
+		icon: customPostType,
+		type: 'hotspot',
+		layerText: __( 'Hotspot', 'godam' ),
+		isPremium: false,
+	},
+	{
 		title: __( 'Forms', 'godam' ),
 		icon: preformatted,
 		type: 'form',
 		isPremium: true,
+		premiumLabel: __( 'Pro', 'godam' ),
 		formType: {
 			gravity: {
 				layerText: __( 'Gravity Forms', 'godam' ),
@@ -110,19 +118,13 @@ export const layerTypes = [
 		},
 	},
 	{
-		title: __( 'Hotspot', 'godam' ),
-		icon: customPostType,
-		type: 'hotspot',
-		layerText: __( 'Hotspot', 'godam' ),
-		isPremium: true,
-	},
-	{
 		title: __( 'Ad', 'godam' ),
 		icon: video,
 		type: 'ad',
 		layerText: __( 'Ad', 'godam' ),
 		tooltipMessage: __( 'This ad will be overriden by Ad server\'s ads', 'godam' ),
 		isPremium: true,
+		premiumLabel: __( 'Pro', 'godam' ),
 	},
 	{
 		title: __( 'Poll', 'godam' ),
@@ -131,14 +133,15 @@ export const layerTypes = [
 		layerText: __( 'Poll', 'godam' ),
 		isActive: Boolean( window?.easydamMediaLibrary?.isPollPluginActive ) ?? false,
 		tooltipMessage: __( 'Poll plugin is not active', 'godam' ),
-		isPremium: false,
+		isPremium: true,
+		premiumLabel: __( 'Pro', 'godam' ),
 	},
 ];
 
 /**
  * Premium tooltip message.
  */
-const premiumMessage = __( 'This feature is available in the premium version', 'godam' );
+const premiumMessage = __( 'This is a Pro feature. Activate your license or get started for free to unlock all features.', 'godam' );
 
 /**
  * Sidebar component to display and select different types of layers to be added to the video.
@@ -185,15 +188,11 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 	// Sort the array (ascending order)
 	const sortedLayers = [ ...layers ].sort( ( a, b ) => a.displayTime - b.displayTime );
 
-	// If we want to disable the premium layers the we can use this code
-	// const isValidAPiKey = window?.videoData?.valid_license;
-
-	// For now we are enabling all the features
-	const isValidAPiKey = true;
+	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
 
 	const addNewLayer = ( type, formType ) => {
 		const layerType = layerTypes.find( ( l ) => l.type === type );
-		const isPremiumLayer = ! isValidAPiKey && layerType && layerType?.isPremium;
+		const isPremiumLayer = ! isValidAPIKey && layerType && layerType?.isPremium;
 
 		if ( isPremiumLayer ) {
 			return;
@@ -275,13 +274,13 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								const layerData = layerTypes.find( ( l ) => l.type === layer.type );
 								const formType = 'form' === layerData?.type ? layerData?.formType[ layer.form_type ?? 'gravity' ] : false;
 								const icon = formType ? formType?.icon : layerData?.icon;
-								const layerText = formType ? formType?.layerText : layerData.layerText;
+								const layerText = formType ? formType?.layerText : layerData?.layerText;
 
 								/**
 								 * Get Tooltip message.
 								 */
 								const tooltipMessage = ( () => {
-									if ( layerData.isPremium && ! isValidAPiKey ) {
+									if ( layerData?.isPremium && ! isValidAPIKey ) {
 										return premiumMessage;
 									}
 

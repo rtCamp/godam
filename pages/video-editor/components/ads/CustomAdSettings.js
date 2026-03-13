@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, TextControl, ToggleControl, Notice, Tooltip } from '@wordpress/components';
+import { Button, TextControl, ToggleControl, Notice, Tooltip, ExternalLink } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from 'react';
 
@@ -21,6 +21,7 @@ const CustomAdSettings = ( { layerID } ) => {
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
 	);
+	const videoSettingsUrl = window.godamRestRoute?.adminUrl + 'admin.php?page=rtgodam_settings#video-settings';
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
 	const adServer = videoConfig?.adServer ?? 'self-hosted';
 	const [ isValid, setIsValid ] = useState( true );
@@ -149,10 +150,7 @@ const CustomAdSettings = ( { layerID } ) => {
 	};
 
 	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.validApiKey;
-
-	// For now we are enabling all the features
-	const isValidAPIKey = true;
+	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
 
 	return (
 		<div className="relative">
@@ -174,7 +172,18 @@ const CustomAdSettings = ( { layerID } ) => {
 					status="warning"
 					isDismissible={ false }
 				>
-					{ __( 'This features is available in premium version', 'godam' ) }
+					{ __( 'Ads layer is a Pro feature.', 'godam' ) }{ ' ' }
+					<a href={ videoSettingsUrl } className="godam-link underline" target="_blank" rel="noopener noreferrer">
+						{ __( 'Activate your license', 'godam' ) }
+					</a>
+					{
+						// eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace
+						__( ' or ', 'godam' )
+					}
+					<ExternalLink className="godam-link underline" href={ `https://godam.io/pricing?utm_campaign=upgrade&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=ad-layer` }>
+						{ __( 'get started for free', 'godam' ) }
+					</ExternalLink>{ ' ' }
+					{ __( 'to unlock all features.', 'godam' ) }
 				</Notice>
 			}
 			<div className="flex flex-col items-start mb-4">
@@ -199,10 +208,10 @@ const CustomAdSettings = ( { layerID } ) => {
 						</div>
 						<div className="ml-[6px] flex flex-col">
 							<Tooltip text={ __( 'Replace Ad Video', 'godam' ) } placement="right">
-								<Button className="!text-brand-neutral-900" icon={ replace } onClick={ OpenVideoSelector } />
+								<Button className="!text-brand-neutral-900" icon={ replace } onClick={ OpenVideoSelector } disabled={ adServer === 'ad-server' || ! isValidAPIKey } />
 							</Tooltip>
 							<Tooltip text={ __( 'Remove Ad Video', 'godam' ) } placement="right">
-								<Button className="mt-1" icon={ trash } isDestructive onClick={ () => dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: '' } ) ) } />
+								<Button className="mt-1" icon={ trash } isDestructive onClick={ () => dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: '' } ) ) } disabled={ adServer === 'ad-server' || ! isValidAPIKey } />
 							</Tooltip>
 						</div>
 					</div>

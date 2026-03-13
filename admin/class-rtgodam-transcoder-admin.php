@@ -81,7 +81,7 @@ class RTGODAM_Transcoder_Admin {
 			$this->render_admin_notice(
 				sprintf(
 					// translators: %s is the URL to the plugin settings page where the API key can be activated.
-					__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, <a href="%s">please activate your api key.</a>', 'godam' ),
+					__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock Premium Video Layers, Transcoding, Analytics and more, <a href="%s">please activate your API key.</a>', 'godam' ),
 					esc_url( $video_editor_settings_url )
 				),
 				'warning',
@@ -130,7 +130,7 @@ class RTGODAM_Transcoder_Admin {
 				$this->render_admin_notice(
 					sprintf(
 						/* translators: %d: Number of days until transcoded videos are deleted after subscription ends */
-						__( 'Your subscription has ended. No further transcoding can be done. Transcoded videos will be removed after <strong>%d days</strong>, and advanced video layers will not be accessible. After the 30-day grace period, already transcoded videos will no longer be served from the CDN. Renew your subscription to keep it up and running.', 'godam' ),
+						__( 'Your subscription has ended. No further transcoding can be done. Transcoded videos will be removed after <strong>%d days</strong>, and Pro features will not be accessible. After the 30-day grace period, already transcoded videos will no longer be served from the CDN. Renew your subscription to keep it up and running.', 'godam' ),
 						$days_until_deletion
 					),
 					'error',
@@ -143,7 +143,7 @@ class RTGODAM_Transcoder_Admin {
 				$this->render_admin_notice(
 					sprintf(
 						// translators: %s is the URL to the plugin settings page where the API key can be activated.
-						__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, <a href="%s">please activate your api key.</a>', 'godam' ),
+						__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock Premium Video Layers, Transcoding, Analytics and more, <a href="%s">please activate your API key.</a>', 'godam' ),
 						esc_url( $video_editor_settings_url )
 					),
 					'error',
@@ -158,7 +158,7 @@ class RTGODAM_Transcoder_Admin {
 		$this->render_admin_notice(
 			sprintf(
 				// translators: %s is the URL to the plugin settings page where the API key can be activated.
-				__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, <a href="%s">please activate your api key.</a>', 'godam' ),
+				__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock Premium Video Layers, Transcoding, Analytics and more, <a href="%s">please activate your API key.</a>', 'godam' ),
 				esc_url( $video_editor_settings_url )
 			),
 			'warning',
@@ -334,7 +334,7 @@ class RTGODAM_Transcoder_Admin {
 				<img src="<?php echo esc_url( $logo_url ); ?>" alt="<?php esc_attr_e( 'GoDAM Logo', 'godam' ); ?>" class="godam-logo" />
 				<div>
 					<p style="font-size: 16px; font-weight: 600; margin-bottom: 15px;">
-						<?php esc_html_e( 'Try GoDAM free for 60 days with all features, unlimited sites and users.', 'godam' ); ?>
+						<?php esc_html_e( 'Unlock Premium Video Layers, Video Analytics, Transcoding and more with GoDAM Pro. Start with a free 60-day trial.', 'godam' ); ?>
 					</p>
 					<div style="display: flex; gap: 10px; margin-top: 10px; margin-bottom: 15px;">
 						<a href="<?php echo esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=free-plan-notice&utm_source=plugin&utm_medium=admin-notice&utm_content=dashboard' ); ?>" target="_blank" rel="noopener noreferrer" class="button button-primary">
@@ -657,10 +657,17 @@ class RTGODAM_Transcoder_Admin {
 	/**
 	 * Display PostHog tracking notice.
 	 *
+	 * Only shown on the WP Dashboard, after the welcome walkthrough is completed.
+	 *
 	 * @since 1.5.0
 	 */
 	public function posthog_tracking_notice() {
 		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		// Only show on the WP Dashboard screen.
+		if ( ! $this->is_dashboard_screen() ) {
 			return;
 		}
 
@@ -752,7 +759,7 @@ class RTGODAM_Transcoder_Admin {
 		$status_messages = array(
 			\RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED => sprintf(
 				/* translators: %s: URL to settings page */
-				__( 'Your GoDAM API key has expired. Transcoding is currently disabled. Please <a href="%s">renew your subscription</a> to continue transcoding videos.', 'godam' ),
+				__( 'Your GoDAM API key has expired. Transcoding and other Pro features are currently disabled. Please <a href="%s">renew your subscription</a> to restore access.', 'godam' ),
 				esc_url( $settings_url )
 			),
 			\RTGODAM\Inc\Enums\Api_Key_Status::VERIFICATION_FAILED => sprintf(

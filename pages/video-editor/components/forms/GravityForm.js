@@ -46,10 +46,7 @@ const GravityForm = ( { layerID } ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'gf_id', value: formID } ) );
 	};
 
-	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.validApiKey;
-	// For now we are enabling all the features
-	const isValidAPIKey = true;
+	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
 
 	const isGFPluginActive = Boolean( window?.videoData?.gfActive );
 

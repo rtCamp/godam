@@ -32,8 +32,12 @@ class GoDAM_Player {
 
 	/**
 	 * Outputs custom css from video player settings tab input field.
+	 * Custom CSS is a Pro feature — only output when the API key is valid.
 	 */
 	public function godam_output_admin_player_css() {
+		if ( ! rtgodam_is_api_key_valid() ) {
+			return;
+		}
 		$godam_settings = get_option( 'rtgodam-settings', array() );
 		$custom_css     = $godam_settings['video_player']['custom_css'] ?? '';
 		if ( ! empty( $custom_css ) ) {

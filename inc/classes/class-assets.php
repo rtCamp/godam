@@ -168,9 +168,13 @@ class Assets {
 			'rtgodam-script',
 			'pluginInfo',
 			array(
-				'version'   => RTGODAM_VERSION,
-				'adminUrl'  => admin_url(),
-				'uploadUrl' => wp_upload_dir()['baseurl'],
+				'version'         => RTGODAM_VERSION,
+				'adminUrl'        => admin_url(),
+				'uploadUrl'       => wp_upload_dir()['baseurl'],
+				// Expose API-key validity and the list of premium features so that
+				// Gutenberg block code can gate premium UI without a REST round-trip.
+				'validApiKey'     => rtgodam_is_api_key_valid(),
+				'premiumFeatures' => rtgodam_get_premium_features(),
 			)
 		);
 
@@ -348,8 +352,10 @@ class Assets {
 	private function enqueue_godam_settings() {
 		$godam_settings = get_option( 'rtgodam-settings' );
 
-		$brand_image                    = $godam_settings['video_player']['brand_image'] ?? '';
-		$brand_color                    = $godam_settings['video_player']['brand_color'] ?? '';
+		// Brand image and color are Pro-only features — only expose them to the frontend when the API key is valid.
+		$is_api_key_valid               = rtgodam_is_api_key_valid();
+		$brand_image                    = $is_api_key_valid ? ( $godam_settings['video_player']['brand_image'] ?? '' ) : '';
+		$brand_color                    = $is_api_key_valid ? ( $godam_settings['video_player']['brand_color'] ?? '' ) : '';
 		$enable_gtm_tracking            = $godam_settings['general']['enable_gtm_tracking'] ?? false;
 		$enable_global_video_engagement = $godam_settings['video']['enable_global_video_engagement'] ?? true;
 		$enable_global_share            = $godam_settings['video']['enable_global_video_share'] ?? true;
