@@ -156,7 +156,7 @@ class Ninja_Forms_Integration {
 	 */
 	public function render_layer_form_for_video_editor( $layer, $layer_id ) {
 		if ( 'ninja-forms' === $layer && ! empty( $layer_id ) ) {
-			echo do_shortcode( "[ninja_form id='{$layer_id}']" ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo wp_kses_post( do_shortcode( "[ninja_form id='{$layer_id}']" ) );
 		}
 	}
 

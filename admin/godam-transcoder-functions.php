@@ -604,7 +604,7 @@ function rtgodam_get_tags_list( $post_id ) {
 	$tags      = get_the_tags( $post_id );
 	$tag_names = array();
 
-	if ( ! is_array( $tags ) && ! empty( $tags ) ) {
+	if ( is_array( $tags ) && ! empty( $tags ) ) {
 
 		foreach ( $tags as $tag ) {
 			$tag_names[] = $tag->name;
@@ -670,7 +670,7 @@ function rtgodam_get_localize_array() {
 	}
 
 	$localize_array['token'] = get_option( 'rtgodam-account-token', 'unverified' );
-	
+
 	// Admin page detection.
 	$localize_array['isAdminPage'] = is_admin();
 

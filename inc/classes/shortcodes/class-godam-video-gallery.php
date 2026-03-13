@@ -287,6 +287,7 @@ class GoDAM_Video_Gallery {
 				data-engagements="' . esc_attr( $atts['engagements'] ) . '"
 				data-open-to-new-page="' . esc_attr( $atts['open_to_new_page'] ) . '"
 			>';
+			update_meta_cache( 'post', wp_list_pluck( $query->posts, 'ID' ) );
 			foreach ( $query->posts as $video ) {
 				// Add action before each video item.
 				do_action( 'rtgodam_gallery_before_video_item', $video, $atts );
@@ -351,11 +352,9 @@ class GoDAM_Video_Gallery {
 
 					// Backward compatibility fallback if the linked GoDAM video post does not exist yet.
 					if ( empty( $video_url ) ) {
-						$video_slug     = get_post_field( 'post_name', $video_id );
-						$video_settings = get_option( 'rtgodam_video_post_settings', array() );
-						$cpt_url_slug   = ! empty( $video_settings['video_slug'] ) ? sanitize_title( $video_settings['video_slug'] ) : 'videos';
-						$cpt_base_url   = home_url( '/' . $cpt_url_slug );
-						$video_url      = $cpt_base_url . '/' . $video_slug;
+						$video_slug   = get_post_field( 'post_name', $video_id );
+						$cpt_base_url = home_url( '/' . $cpt_url_slug );
+						$video_url    = $cpt_base_url . '/' . $video_slug;
 					}
 
 					if ( $item_engagements_enabled ) {
