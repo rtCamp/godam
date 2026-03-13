@@ -52,20 +52,27 @@ const App = () => {
 	 * Reset all Redux store state to prevent stale data from a previous video.
 	 */
 	const resetStore = useCallback( () => {
+		// Array of all API slices that need to be reset
+		const apiSlices = [
+			videosAPI,
+			pollsAPI,
+			attachmentAPI,
+			gravityFormsAPI,
+			contactForm7Api,
+			wpFormsApi,
+			jetpackFormsApi,
+			sureformsApi,
+			forminatorFormsApi,
+			fluentFormsApi,
+			everestFormsApi,
+			ninjaFormsApi,
+			metformApi,
+		];
+
 		dispatch( resetVideoState() );
-		dispatch( videosAPI.util.resetApiState() );
-		dispatch( pollsAPI.util.resetApiState() );
-		dispatch( attachmentAPI.util.resetApiState() );
-		dispatch( gravityFormsAPI.util.resetApiState() );
-		dispatch( contactForm7Api.util.resetApiState() );
-		dispatch( wpFormsApi.util.resetApiState() );
-		dispatch( jetpackFormsApi.util.resetApiState() );
-		dispatch( sureformsApi.util.resetApiState() );
-		dispatch( forminatorFormsApi.util.resetApiState() );
-		dispatch( fluentFormsApi.util.resetApiState() );
-		dispatch( everestFormsApi.util.resetApiState() );
-		dispatch( ninjaFormsApi.util.resetApiState() );
-		dispatch( metformApi.util.resetApiState() );
+		apiSlices.forEach( ( api ) => {
+			dispatch( api.util.resetApiState() );
+		} );
 	}, [ dispatch ] );
 
 	/**
