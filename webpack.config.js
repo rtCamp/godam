@@ -128,6 +128,13 @@ const deactivationJS = {
 	},
 };
 
+const httpAuthDetector = {
+	...sharedConfig,
+	entry: {
+		'http-auth-detector': path.resolve( process.cwd(), 'assets', 'src', 'js', 'http-auth-detector.js' ),
+	},
+};
+
 const godamGallery = {
 	...sharedConfig,
 	entry: {
@@ -345,6 +352,7 @@ module.exports = [
 	godamPlayerFrontend,
 	godamPlayerAnalytics,
 	deactivationJS,
+	httpAuthDetector,
 	godamGallery,
 	godamVideoEmbed,
 	godamVideoPreview,
