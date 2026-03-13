@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
  */
 import { useFetchProcessedAnalyticsHistoryQuery } from './redux/api/analyticsApi';
 import { useFetchDashboardMetricsHistoryQuery } from '../dashboard/redux/api/dashboardAnalyticsApi';
+import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
 /**
  * WordPress dependencies
  */
@@ -26,6 +27,10 @@ export default function PlaybackPerformanceDashboard( {
 		'play_rate',
 	] );
 	const [ parsedData, setParsedData ] = useState( initialData ); // Stores formatted data.
+
+	const apiKeyError = getAPIKeyErrorInfo();
+	const apiKeyErrorType = apiKeyError?.type || null;
+	const shouldSkipAnalytics = ! hasAPIKey || !! apiKeyErrorType;
 
 	// Get days value from selected period
 	const getDaysFromPeriod = ( period ) => {
@@ -52,7 +57,7 @@ export default function PlaybackPerformanceDashboard( {
 			...( days !== null && { days } ),
 			siteUrl: window.location.origin,
 		},
-		{ skip: mode !== 'dashboard' },
+		{ skip: mode !== 'dashboard' || shouldSkipAnalytics },
 	);
 
 	const analyticsHistoryResult = useFetchProcessedAnalyticsHistoryQuery(
@@ -61,7 +66,7 @@ export default function PlaybackPerformanceDashboard( {
 			siteUrl: window.location.origin,
 			...( days !== null && { days } ),
 		},
-		{ skip: mode === 'dashboard' || ! attachmentID },
+		{ skip: mode === 'dashboard' || ! attachmentID || shouldSkipAnalytics },
 	);
 
 	// Then pick the right one based on mode

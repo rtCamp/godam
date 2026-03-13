@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 /**
  * Internal dependencies
@@ -13,11 +13,26 @@ import '../../assets/src/css/godam-player.scss';
 /**
  * WordPress dependencies
  */
+import { useDispatch } from 'react-redux';
 import AttachmentPicker from './AttachmentPicker.jsx';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
-import { useGetResolvedAttachmentQuery } from './redux/api/attachment.js';
+import { useGetResolvedAttachmentQuery, attachmentAPI } from './redux/api/attachment.js';
+import { resetVideoState } from './redux/slice/videoSlice';
+import { videosAPI } from './redux/api/video';
+import { pollsAPI } from './redux/api/polls';
+import { gravityFormsAPI } from './redux/api/gravity-forms';
+import { contactForm7Api } from './redux/api/cf7-forms';
+import { wpFormsApi } from './redux/api/wpforms';
+import { jetpackFormsApi } from './redux/api/jetpack-forms';
+import { sureformsApi } from './redux/api/sureforms';
+import { forminatorFormsApi } from './redux/api/forminator-forms';
+import { fluentFormsApi } from './redux/api/fluent-forms';
+import { everestFormsApi } from './redux/api/everest-forms';
+import { ninjaFormsApi } from './redux/api/ninja-forms';
+import { metformApi } from './redux/api/metform';
 
 const App = () => {
+	const dispatch = useDispatch();
 	const [ attachmentID, setAttachmentID ] = useState( null );
 	const [ rawID, setRawID ] = useState( null );
 	const {
@@ -32,6 +47,33 @@ const App = () => {
 			setAttachmentID( resolvedAttachment.id );
 		}
 	}, [ isSuccess, resolvedAttachment ] );
+
+	/**
+	 * Reset all Redux store state to prevent stale data from a previous video.
+	 */
+	const resetStore = useCallback( () => {
+		// Array of all API slices that need to be reset
+		const apiSlices = [
+			videosAPI,
+			pollsAPI,
+			attachmentAPI,
+			gravityFormsAPI,
+			contactForm7Api,
+			wpFormsApi,
+			jetpackFormsApi,
+			sureformsApi,
+			forminatorFormsApi,
+			fluentFormsApi,
+			everestFormsApi,
+			ninjaFormsApi,
+			metformApi,
+		];
+
+		dispatch( resetVideoState() );
+		apiSlices.forEach( ( api ) => {
+			dispatch( api.util.resetApiState() );
+		} );
+	}, [ dispatch ] );
 
 	/**
 	 * Handle the back/forward navigation
@@ -55,23 +97,35 @@ const App = () => {
 
 		// Handle back/forward navigation
 		const handlePopState = () => {
+			resetStore();
+
 			const newParams = new URLSearchParams( window.location.search );
 			const newId = newParams.get( 'id' );
-			setAttachmentID( newId && ! isNaN( newId ) ? newId : null );
+
+			if ( newId && ! isNaN( newId ) ) {
+				setRawID( newId );
+				setAttachmentID( newId );
+			} else {
+				setRawID( null );
+				setAttachmentID( null );
+			}
 		};
 
 		window.addEventListener( 'popstate', handlePopState );
 		return () => window.removeEventListener( 'popstate', handlePopState );
-	}, [] );
+	}, [ resetStore ] );
 
 	const handleAttachmentClick = ( id ) => {
+		resetStore();
 		setAttachmentID( id );
+		setRawID( id );
 		const newUrl = new URL( window.location );
 		newUrl.searchParams.set( 'id', id );
 		window.history.pushState( {}, '', newUrl );
 	};
 
 	const handleBackToAttachmentPicker = () => {
+		resetStore();
 		setAttachmentID( null );
 		setRawID( null );
 		const newUrl = new URL( window.location );
@@ -89,7 +143,7 @@ const App = () => {
 	}
 
 	return (
-		<VideoEditor attachmentID={ attachmentID } onBackToAttachmentPicker={ handleBackToAttachmentPicker } />
+		<VideoEditor key={ attachmentID } attachmentID={ attachmentID } onBackToAttachmentPicker={ handleBackToAttachmentPicker } />
 	);
 };
 
