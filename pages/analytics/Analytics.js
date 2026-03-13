@@ -10,7 +10,7 @@ import 'video.js/dist/video-js.css';
 import '../video-editor/style.scss';
 import axios from 'axios';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
-import { getAPIKeyErrorInfo } from '../godam/utils';
+import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
 import {
 	useFetchAnalyticsDataQuery,
 	useFetchProcessedAnalyticsHistoryQuery,
@@ -80,14 +80,18 @@ const Analytics = ( { attachmentID } ) => {
 
 	// RTK Query hooks
 	const siteUrl = window.location.origin;
+	const apiKeyError = getAPIKeyErrorInfo();
+	const apiKeyErrorType = apiKeyError?.type || null;
+
+	// Skip all analytics queries when there is no API key or there is a locally-known key error.
+	const shouldSkipAnalytics = ! hasAPIKey || !! apiKeyErrorType;
+
 	const {
 		data: analyticsDataFetched,
 	} = useFetchAnalyticsDataQuery(
 		{ videoId: attachmentID, siteUrl },
-		{ skip: ! attachmentID },
+		{ skip: ! attachmentID || shouldSkipAnalytics },
 	);
-	const apiKeyError = getAPIKeyErrorInfo();
-	const apiKeyErrorType = apiKeyError?.type || null;
 	const shouldShowUpgradeMessage =
 		apiKeyErrorType === ERROR_TYPE.MISSING_KEY ||
 		( apiKeyErrorType === null &&
@@ -96,12 +100,16 @@ const Analytics = ( { attachmentID } ) => {
 
 	window.analyticsDataFetched = analyticsDataFetched;
 
+	// Skip secondary queries until the primary analytics call has returned without an error.
+	// This prevents parallel requests being sent when the server rejects the API key.
+	const shouldSkipSecondaryQueries = ! attachmentID || shouldSkipAnalytics || ! analyticsDataFetched || !! analyticsDataFetched?.errorType;
+
 	// Query for last 30 days of processed analytics history
 	const {
 		data: processedAnalyticsHistory,
 	} = useFetchProcessedAnalyticsHistoryQuery(
 		{ videoId: attachmentID, siteUrl, days: 7 },
-		{ skip: ! attachmentID },
+		{ skip: shouldSkipSecondaryQueries },
 	);
 
 	window.processedAnalyticsHistory = processedAnalyticsHistory;
@@ -113,7 +121,7 @@ const Analytics = ( { attachmentID } ) => {
 			videoId: abTestComparisonAttachmentData?.id,
 			siteUrl,
 		},
-		{ skip: ! abTestComparisonAttachmentData?.id },
+		{ skip: ! abTestComparisonAttachmentData?.id || !! apiKeyErrorType || !! analyticsDataFetched?.errorType },
 	);
 
 	// Sync main analytics data

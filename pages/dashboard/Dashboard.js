@@ -18,7 +18,7 @@ import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.pn
 import ExportBtn from '../../assets/src/images/export.svg';
 import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, useFetchTopVideosQuery } from './redux/api/dashboardAnalyticsApi';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
-import { getAPIKeyErrorInfo } from '../godam/utils';
+import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
 import SingleMetrics from '../analytics/SingleMetrics';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
 import chevronLeft from '../../assets/src/images/chevron-left.svg';
@@ -32,21 +32,29 @@ const Dashboard = () => {
 	const siteUrl = window.location.origin;
 	const adminUrl = window.videoData?.adminUrl;
 
-	const { data: dashboardMetrics, isLoading: isDashboardMetricsLoading, isError: isDashboardMetricsError } = useFetchDashboardMetricsQuery( { siteUrl } );
+	const apiKeyError = getAPIKeyErrorInfo();
+	const apiKeyErrorType = apiKeyError?.type || null;
+
+	// Skip all analytics queries when there is no API key or there is a locally-known key error.
+	const shouldSkipAnalytics = ! hasAPIKey || !! apiKeyErrorType;
+
+	const { data: dashboardMetrics, isLoading: isDashboardMetricsLoading, isError: isDashboardMetricsError } = useFetchDashboardMetricsQuery( { siteUrl }, { skip: shouldSkipAnalytics } );
 	window.dashboardMetrics = dashboardMetrics;
 
-	const { data: dashboardMetricsHistory } = useFetchDashboardMetricsHistoryQuery( { days: 60, siteUrl } );
+	// Skip secondary queries until the primary metrics call has returned without an error.
+	// This prevents parallel requests being sent when the server rejects the API key.
+	const shouldSkipSecondaryQueries = shouldSkipAnalytics || ! dashboardMetrics || !! dashboardMetrics?.errorType;
+
+	const { data: dashboardMetricsHistory } = useFetchDashboardMetricsHistoryQuery( { days: 60, siteUrl }, { skip: shouldSkipSecondaryQueries } );
 	const {
 		data: topVideosResponse,
 		isFetching: isTopVideosFetching,
-	} = useFetchTopVideosQuery( { siteUrl, page: topVideosPage, limit: 10 } );
+	} = useFetchTopVideosQuery( { siteUrl, page: topVideosPage, limit: 10 }, { skip: shouldSkipSecondaryQueries } );
 
 	const topVideosData = topVideosResponse?.videos || [];
 	const totalTopVideosPages = topVideosResponse?.totalPages || 1;
 
 	const showNewYearSaleBanner = window.videoData?.showNewYearSaleBanner;
-	const apiKeyError = getAPIKeyErrorInfo();
-	const apiKeyErrorType = apiKeyError?.type || null;
 	const shouldShowUpgradeMessage =
 		apiKeyErrorType === ERROR_TYPE.MISSING_KEY ||
 		( apiKeyErrorType === null &&
