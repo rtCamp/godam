@@ -407,6 +407,11 @@ class RTGODAM_Transcoder_Handler {
 					$job_id = $upload_info->data->name;
 					update_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', $job_id );
 
+					// Job successfully submitted to Central — reset any prior failure state so the
+					// media library shows the item as in-queue rather than failed.
+					update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'Queued' );
+					delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg' );
+
 					if ( $manual_retranscode ) {
 						$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
 
@@ -421,17 +426,57 @@ class RTGODAM_Transcoder_Handler {
 			if ( is_wp_error( $upload_page ) || 500 <= intval( $upload_page['response']['code'] ) ) {
 				$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
 
+				// Preserve the existing retry_count so the cron-job retry limiter is not reset
+				// when a subsequent 5xx response re-adds this attachment to the queue.
+				$existing_retry_count = 0;
+				if ( isset( $failed_transcoding_attachments[ $attachment_id ]['retry_count'] ) ) {
+					$existing_retry_count = (int) $failed_transcoding_attachments[ $attachment_id ]['retry_count'];
+				} else {
+					// Handle legacy structures where the option is a numerically indexed list of
+					// arrays containing an 'attachment_id' field.
+					foreach ( $failed_transcoding_attachments as $failed_attachment ) {
+						if ( ! is_array( $failed_attachment ) ) {
+							continue;
+						}
+						if ( isset( $failed_attachment['attachment_id'], $failed_attachment['retry_count'] )
+							&& (int) $failed_attachment['attachment_id'] === (int) $attachment_id
+						) {
+							$existing_retry_count = (int) $failed_attachment['retry_count'];
+							break;
+						}
+					}
+				}
+
 				$failed_transcoding_attachments[ $attachment_id ] = array(
 					'wp_metadata'   => $wp_metadata,
 					'attachment_id' => $attachment_id,
 					'autoformat'    => $autoformat,
+					'retry_count'   => $existing_retry_count,
 				);
 
 				update_option( 'rtgodam-failed-transcoding-attachments', $failed_transcoding_attachments );
 
-				// display notice to user for next 5 minutes.
-				$timestamp = time();
-				update_option( 'rtgodam-transcoding-failed-notice-timestamp', $timestamp );
+				// Mark the attachment as failed immediately so the media library reflects the
+				// error state right away (the cron will clear this once retries succeed or are exhausted).
+				update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'failed' );
+
+				$max_retries = class_exists( '\RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media' )
+					? \RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media::MAX_RETRY_ATTEMPTS
+					: 3;
+
+				update_post_meta(
+					$attachment_id,
+					'rtgodam_transcoding_error_msg',
+					sprintf(
+						/* translators: 1: max retry attempts, 2: retry interval in minutes */
+						__( 'GoDAM Central returned a server error. Transcoding will be retried automatically (up to %1$d times, every %2$d minutes).', 'godam' ),
+						$max_retries,
+						10
+					)
+				);
+
+				// Show a brief admin notice for the next 5 minutes.
+				update_option( 'rtgodam-transcoding-failed-notice-timestamp', time() );
 			}
 		}
 
