@@ -626,6 +626,23 @@ function godam_is_audio_file( $file_path_or_url ) {
 }
 
 /**
+ * Get job type based on file type or URL.
+ * 
+ * @since n.e.x.t
+ *
+ * @param string $file_path_or_url File URL.
+ *
+ * @return string Job type ('audio' or 'stream').
+ */
+function godam_get_job_type( $file_path_or_url ) {
+	// Detect file type for each file.
+	$is_audio = godam_is_audio_file( $file_path_or_url );
+
+	// Set job_type based on file type.
+	return $is_audio ? 'audio' : 'stream';
+}
+
+/**
  * Send Video file to GoDAM for transcoding.
  *
  * @param string  $form_type  Form Type.
@@ -670,6 +687,19 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	 */
 	$file_type_info = wp_check_filetype( $file_url );
 	$content_type   = $file_type_info['type'] ?? '';
+
+	/**
+	 * Fix MIME type for audio files.
+	 * When job_type is 'audio', ensure MIME type reflects audio, not video.
+	 * This is important for container formats like webm that can hold both audio and video.
+	 */
+	if ( 'audio' === $job_type && ! empty( $content_type ) ) {
+		// If the detected MIME type is video, replace it with audio.
+		if ( str_starts_with( $content_type, 'video/' ) ) {
+			// Replace 'video/' with 'audio/' to get correct MIME type.
+			$content_type = str_replace( 'video/', 'audio/', $content_type );
+		}
+	}
 
 	/**
 	 * Set the default settings.
