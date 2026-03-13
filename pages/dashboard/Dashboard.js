@@ -302,12 +302,8 @@ const Dashboard = () => {
 
 			<div
 				id="api-key-overlay"
-				className={ `api-key-overlay hidden${
-					shouldShowUpgradeMessage
-						? ' api-key-overlay--upgrade'
-						: ''
-				}` }
-				style={ shouldShowUpgradeMessage ? { backgroundImage: `url(${ UpgradePlanDashboardBg })` } : undefined }
+				className="api-key-overlay api-key-overlay--upgrade hidden"
+				style={ { backgroundImage: `url(${ UpgradePlanDashboardBg })` } }
 			>
 				<div className="api-key-message">
 					{ renderOverlayContent() }

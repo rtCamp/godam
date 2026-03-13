@@ -559,7 +559,11 @@ const Analytics = ( { attachmentID } ) => {
 				</div>
 			</div>
 
-			<div id="media-not-found-overlay" className={ `api-key-overlay ${ ! mediaNotFound ? 'hidden' : '' }` }>
+			<div
+				id="media-not-found-overlay"
+				className={ `api-key-overlay api-key-overlay--upgrade ${ ! mediaNotFound ? 'hidden' : '' }` }
+				style={ { backgroundImage: `url(${ UpgradePlanAnalyticsBg })` } }
+			>
 				<div className="api-key-message">
 					<p>
 						{ __( 'This media doesn\'t exist.', 'godam' ) }
@@ -572,12 +576,8 @@ const Analytics = ( { attachmentID } ) => {
 
 			<div
 				id="api-key-overlay"
-				className={ `api-key-overlay hidden${
-					shouldShowUpgradeMessage
-						? ' api-key-overlay--upgrade'
-						: ''
-				}` }
-				style={ shouldShowUpgradeMessage ? { backgroundImage: `url(${ UpgradePlanAnalyticsBg })` } : undefined }
+				className="api-key-overlay api-key-overlay--upgrade hidden"
+				style={ { backgroundImage: `url(${ UpgradePlanAnalyticsBg })` } }
 			>
 				<div className="api-key-message">
 					{ renderOverlayContent() }
