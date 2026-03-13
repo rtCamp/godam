@@ -1,0 +1,189 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "godam/product-gallery",
+  "title": "GoDAM Product Gallery",
+  "category": "media",
+  "description": "Display a video gallery for selected WooCommerce products.",
+  "keywords": ["product", "gallery", "video", "godam", "carousel", "grid"],
+  "textdomain": "godam",
+  "attributes": {
+    "blockId": {
+      "type": "string"
+    },
+    "autoplay": {
+      "type": "boolean",
+      "attribute": "autoplay"
+    },
+    "layout": {
+      "type": "string",
+      "default": "carousel"
+    },
+    "view": {
+      "type": "string",
+      "default": "9-16"
+    },
+    "products": {
+      "type": "array",
+      "default": []
+    },
+    "categories": {
+      "type": "array",
+      "default": []
+    },
+    "selectedVideos": {
+      "type": "array",
+      "default": []
+    },
+    "orderBy": {
+      "type": "string",
+      "default": "date_desc"
+    },
+    "playButtonEnabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "playButtonBgColor": {
+      "type": "string",
+      "default": "rgba(0, 0, 0, 0.76)"
+    },
+    "playButtonIconColor": {
+      "type": "string",
+      "default": "rgba(255, 255, 255, 1)"
+    },
+    "playButtonSize": {
+      "type": "number",
+      "default": 50
+    },
+    "playButtonBorderRadius": {
+      "type": "number",
+      "default": 50
+    },
+    "unmuteButtonEnabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "unmuteButtonBgColor": {
+      "type": "string",
+      "default": "rgba(0,0,0,0.4)"
+    },
+    "unmuteButtonIconColor": {
+      "type": "string",
+      "default": "rgba(255, 255, 255, 1)"
+    },
+    "cardWidth": {
+      "type": "object",
+      "default": {
+        "desktop": null,
+        "tablet": null,
+        "mobile": null
+      }
+    },
+    "arrowBgColor": {
+      "type": "string",
+      "default": "rgba(250, 146, 0, 1)"
+    },
+	  "arrowIconColor": {
+      "type": "string",
+      "default": "rgba(255, 255, 255, 1)"
+    },
+    "arrowSize": {
+      "type": "number",
+      "default": 35
+    },
+    "arrowBorderRadius": {
+      "type": "number",
+      "default": 30
+    },
+    "arrowVisibility": {
+      "type": "string",
+      "default": "always"
+    },
+    "gridColumns": {
+      "type": "object",
+      "default": {
+        "desktop": 4,
+        "tablet": 3,
+        "mobile": 2
+      }
+    },
+    "gridRowGap": {
+      "type": "number",
+      "default": 1
+    },
+    "gridColumnGap": {
+      "type": "number",
+      "default": 1
+    },
+    "ctaEnabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "ctaDisplayPosition": {
+      "type": "string",
+      "default": "below-inside"
+    },
+    "ctaBgColor": {
+      "type": "string",
+      "default": "rgba(255, 255, 255, 1)"
+    },
+    "ctaProductNameFontSize": {
+      "type": "number",
+      "default": 0.9
+    },
+    "ctaProductPriceFontSize": {
+      "type": "number",
+      "default": 0.8
+    },
+    "ctaProductNameColor": {
+      "type": "string",
+      "default": "rgba(0, 0, 0, 1)"
+    },
+    "ctaProductPriceColor": {
+      "type": "object",
+      "default": {
+        "primary": "rgba(66, 66, 66, 1)",
+        "secondary": "rgba(230, 134, 0, 1)",
+        "tertiary": "rgba(143, 143, 143, 1)"
+      }
+    },
+    "ctaCart": {
+      "type": "object",
+      "default": {
+        "bgColor": "rgba(28, 28, 28, 1)",
+        "iconColor": "rgba(255, 255, 255, 1)",
+        "border": {
+          "color": "rgba(224, 224, 224, 1)",
+          "style": "solid",
+          "width": "1px"
+        },
+        "borderRadius": 8,
+        "action": "mini-cart"
+      }
+    },
+    "ctaDropdown": {
+      "type": "object",
+      "default": {
+        "bgColor": "rgba(255, 255, 255, 1)",
+        "iconColor": "rgba(28, 28, 28, 1)",
+        "border": {
+          "color": "rgba(224, 224, 224, 1)",
+          "style": "solid",
+          "width": "1px"
+        },
+        "borderRadius": 8
+      }
+    }
+  },
+  "supports": {
+    "anchor": true,
+    "align": ["center", "wide", "full"],
+    "spacing": {
+      "margin": true,
+      "padding": true
+    }
+  },
+  "editorScript": ["file:./index.js"],
+  "render": "file:./render.php",
+  "editorStyle": ["file:./index.css"]
+}

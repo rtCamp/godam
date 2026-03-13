@@ -65,6 +65,68 @@ class Settings extends Base {
 				'enable_global_video_ads' => false,
 				'adTagUrl'                => '',
 			),
+			'integrations' => array(
+				'woocommerce' => array(
+					'videoCloseBg'               => 'rgba(28, 28, 28, 0.4)',
+					'videoCloseIcon'             => 'rgba(255, 255, 255, 1)',
+					'videoCloseBorder'           => array(
+						'width' => '0.59px',
+						'style' => 'solid',
+						'color' => 'rgba(224, 224, 224, 1)',
+					),
+					'videoCloseRadius'           => 45.13,
+
+					'miniCartBg'                 => 'rgba(255, 255, 255, 1)',
+					'miniCartIcon'               => 'rgba(28, 28, 28, 1)',
+					'miniCartBorder'             => array(
+						'width' => '1.38px',
+						'style' => 'solid',
+						'color' => 'rgba(224, 224, 224, 1)',
+					),
+					'miniCartRadius'             => 11,
+
+					'addToCartFontSize'          => 14,
+					'addToCartBgColor'           => 'rgba(28, 28, 28, 1)',
+					'addToCartFontColor'         => 'rgba(255, 255, 255, 1)',
+					'addToCartBorder'            => array(
+						'width' => '1px',
+						'style' => 'solid',
+						'color' => 'rgba(28, 28, 28, 1)',
+					),
+					'addToCartRadius'            => 40,
+
+					'toggleFontSize'             => 16,
+					'toggleBgColor'              => 'rgba(0, 0, 0, 0.7)',
+					'toggleFontColor'            => 'rgba(255, 255, 255, 1)',
+					'toggleBorder'               => array(
+						'width' => '0.59px',
+						'style' => 'solid',
+						'color' => 'rgba(224, 224, 224, 1)',
+					),
+					'toggleRadius'               => 8,
+
+					'desktopModalBgColor'        => 'rgba(255, 255, 255, 1)',
+					'desktopModalTextColor'      => 'rgba(28, 28, 28, 1)',
+					'mobileModalBgColor'         => 'rgba(0, 0, 0, 0.7)',
+					'mobileModalTextColor'       => 'rgba(255, 255, 255, 1)',
+
+					'desktopPricePrimaryColor'   => 'rgba(28, 28, 28, 1)',
+					'desktopPriceSecondaryColor' => 'rgba(230, 134, 0, 1)',
+					'desktopPriceTertiaryColor'  => 'rgba(143, 143, 143, 1)',
+
+					'mobilePricePrimaryColor'    => 'rgba(255, 255, 255, 1)',
+					'mobilePriceSecondaryColor'  => 'rgba(230, 134, 0, 1)',
+					'mobilePriceTertiaryColor'   => 'rgba(143, 143, 143, 1)',
+
+					'galleryVideoPlayBtnWidth'   => '2.375rem',
+					'carouselVideoPlayBtnWidth'  => '3.375rem',
+					'playButtonBackgroundColor'  => '#000000C2',
+					'playButtonColor'            => '#ffffff',
+					'playButtonBorderRadius'     => '50%',
+
+					'additionalComponentsColor'  => 'rgba(95, 95, 95, 1)',
+				),
+			),
 		);
 	}
 
@@ -455,7 +517,85 @@ class Settings extends Base {
 				'enable_global_video_ads' => rest_sanitize_boolean( $settings['ads_settings']['enable_global_video_ads'] ?? $default['ads_settings']['enable_global_video_ads'] ),
 				'adTagUrl'                => esc_url_raw( $settings['ads_settings']['adTagUrl'] ?? $default['ads_settings']['adTagUrl'] ),
 			),
+			'integrations' => array(
+				'woocommerce' => array(
+					'videoCloseBg'               => $this->sanitize_color_value( $settings['integrations']['woocommerce']['videoCloseBg'] ?? $default['integrations']['woocommerce']['videoCloseBg'] ),
+					'videoCloseIcon'             => $this->sanitize_color_value( $settings['integrations']['woocommerce']['videoCloseIcon'] ?? $default['integrations']['woocommerce']['videoCloseIcon'] ),
+					'videoCloseBorder'           => $this->sanitize_border( $settings['integrations']['woocommerce']['videoCloseBorder'] ?? $default['integrations']['woocommerce']['videoCloseBorder'], $default['integrations']['woocommerce']['videoCloseBorder'] ),
+					'videoCloseRadius'           => floatval( $settings['integrations']['woocommerce']['videoCloseRadius'] ?? $default['integrations']['woocommerce']['videoCloseRadius'] ),
+
+					'miniCartBg'                 => $this->sanitize_color_value( $settings['integrations']['woocommerce']['miniCartBg'] ?? $default['integrations']['woocommerce']['miniCartBg'] ),
+					'miniCartIcon'               => $this->sanitize_color_value( $settings['integrations']['woocommerce']['miniCartIcon'] ?? $default['integrations']['woocommerce']['miniCartIcon'] ),
+					'miniCartBorder'             => $this->sanitize_border( $settings['integrations']['woocommerce']['miniCartBorder'] ?? $default['integrations']['woocommerce']['miniCartBorder'], $default['integrations']['woocommerce']['miniCartBorder'] ),
+					'miniCartRadius'             => floatval( $settings['integrations']['woocommerce']['miniCartRadius'] ?? $default['integrations']['woocommerce']['miniCartRadius'] ),
+
+					'addToCartFontSize'          => absint( $settings['integrations']['woocommerce']['addToCartFontSize'] ?? $default['integrations']['woocommerce']['addToCartFontSize'] ),
+					'addToCartBgColor'           => $this->sanitize_color_value( $settings['integrations']['woocommerce']['addToCartBgColor'] ?? $default['integrations']['woocommerce']['addToCartBgColor'] ),
+					'addToCartFontColor'         => $this->sanitize_color_value( $settings['integrations']['woocommerce']['addToCartFontColor'] ?? $default['integrations']['woocommerce']['addToCartFontColor'] ),
+					'addToCartBorder'            => $this->sanitize_border( $settings['integrations']['woocommerce']['addToCartBorder'] ?? $default['integrations']['woocommerce']['addToCartBorder'], $default['integrations']['woocommerce']['addToCartBorder'] ),
+					'addToCartRadius'            => floatval( $settings['integrations']['woocommerce']['addToCartRadius'] ?? $default['integrations']['woocommerce']['addToCartRadius'] ),
+
+					'toggleFontSize'             => absint( $settings['integrations']['woocommerce']['toggleFontSize'] ?? $default['integrations']['woocommerce']['toggleFontSize'] ),
+					'toggleBgColor'              => $this->sanitize_color_value( $settings['integrations']['woocommerce']['toggleBgColor'] ?? $default['integrations']['woocommerce']['toggleBgColor'] ),
+					'toggleFontColor'            => $this->sanitize_color_value( $settings['integrations']['woocommerce']['toggleFontColor'] ?? $default['integrations']['woocommerce']['toggleFontColor'] ),
+					'toggleBorder'               => $this->sanitize_border( $settings['integrations']['woocommerce']['toggleBorder'] ?? $default['integrations']['woocommerce']['toggleBorder'], $default['integrations']['woocommerce']['toggleBorder'] ),
+					'toggleRadius'               => floatval( $settings['integrations']['woocommerce']['toggleRadius'] ?? $default['integrations']['woocommerce']['toggleRadius'] ),
+
+					'desktopModalBgColor'        => $this->sanitize_color_value( $settings['integrations']['woocommerce']['desktopModalBgColor'] ?? $default['integrations']['woocommerce']['desktopModalBgColor'] ),
+					'desktopModalTextColor'      => $this->sanitize_color_value( $settings['integrations']['woocommerce']['desktopModalTextColor'] ?? $default['integrations']['woocommerce']['desktopModalTextColor'] ),
+					'mobileModalBgColor'         => $this->sanitize_color_value( $settings['integrations']['woocommerce']['mobileModalBgColor'] ?? $default['integrations']['woocommerce']['mobileModalBgColor'] ),
+					'mobileModalTextColor'       => $this->sanitize_color_value( $settings['integrations']['woocommerce']['mobileModalTextColor'] ?? $default['integrations']['woocommerce']['mobileModalTextColor'] ),
+
+					'desktopPricePrimaryColor'   => $this->sanitize_color_value( $settings['integrations']['woocommerce']['desktopPricePrimaryColor'] ?? $default['integrations']['woocommerce']['desktopPricePrimaryColor'] ),
+					'desktopPriceSecondaryColor' => $this->sanitize_color_value( $settings['integrations']['woocommerce']['desktopPriceSecondaryColor'] ?? $default['integrations']['woocommerce']['desktopPriceSecondaryColor'] ),
+					'desktopPriceTertiaryColor'  => $this->sanitize_color_value( $settings['integrations']['woocommerce']['desktopPriceTertiaryColor'] ?? $default['integrations']['woocommerce']['desktopPriceTertiaryColor'] ),
+
+					'mobilePricePrimaryColor'    => $this->sanitize_color_value( $settings['integrations']['woocommerce']['mobilePricePrimaryColor'] ?? $default['integrations']['woocommerce']['mobilePricePrimaryColor'] ),
+					'mobilePriceSecondaryColor'  => $this->sanitize_color_value( $settings['integrations']['woocommerce']['mobilePriceSecondaryColor'] ?? $default['integrations']['woocommerce']['mobilePriceSecondaryColor'] ),
+					'mobilePriceTertiaryColor'   => $this->sanitize_color_value( $settings['integrations']['woocommerce']['mobilePriceTertiaryColor'] ?? $default['integrations']['woocommerce']['mobilePriceTertiaryColor'] ),
+
+					'galleryVideoPlayBtnWidth'   => $this->sanitize_css_size_value( $settings['integrations']['woocommerce']['galleryVideoPlayBtnWidth'] ?? $default['integrations']['woocommerce']['galleryVideoPlayBtnWidth'] ),
+					'carouselVideoPlayBtnWidth'  => $this->sanitize_css_size_value( $settings['integrations']['woocommerce']['carouselVideoPlayBtnWidth'] ?? $default['integrations']['woocommerce']['carouselVideoPlayBtnWidth'] ),
+					'playButtonBackgroundColor'  => $this->sanitize_color_value( $settings['integrations']['woocommerce']['playButtonBackgroundColor'] ?? $default['integrations']['woocommerce']['playButtonBackgroundColor'] ),
+					'playButtonColor'            => $this->sanitize_color_value( $settings['integrations']['woocommerce']['playButtonColor'] ?? $default['integrations']['woocommerce']['playButtonColor'] ),
+					'playButtonBorderRadius'     => $this->sanitize_percent_value( $settings['integrations']['woocommerce']['playButtonBorderRadius'] ?? $default['integrations']['woocommerce']['playButtonBorderRadius'] ),
+
+					'additionalComponentsColor'  => $this->sanitize_color_value( $settings['integrations']['woocommerce']['additionalComponentsColor'] ?? $default['integrations']['woocommerce']['additionalComponentsColor'] ),
+				),
+			),
 		);
+	}
+
+	/**
+	 * Sanitize CSS size values for width-like settings.
+	 *
+	 * @param string $value CSS value.
+	 * @return string
+	 */
+	private function sanitize_css_size_value( $value ) {
+		$value = trim( (string) $value );
+
+		if ( preg_match( '/^-?(?:\\d+|\\d*\\.\\d+)(px|rem|em|vw|vh|vmin|vmax|%)$/i', $value ) ) {
+			return $value;
+		}
+
+		return '2.375rem';
+	}
+
+	/**
+	 * Sanitize percentage value.
+	 *
+	 * @param string $value Percentage value.
+	 * @return string
+	 */
+	private function sanitize_percent_value( $value ) {
+		$value = trim( (string) $value );
+
+		if ( preg_match( '/^(100|[1-9]?\\d)%$/', $value ) ) {
+			return $value;
+		}
+
+		return '50%';
 	}
 
 	/**
@@ -486,5 +626,32 @@ class Settings extends Base {
 
 		// If none of the above, return empty string.
 		return '';
+	}
+
+	/**
+	 * Sanitizes a border configuration array.
+	 *
+	 * Ensures that the provided border values (color, style, width) are safe
+	 * and properly formatted before being used or stored. If any value is
+	 * missing, the corresponding default value is applied.
+	 *
+	 * @param array $border  Border settings array. Expected keys:
+	 *                       - 'color' (string) Border color value.
+	 *                       - 'style' (string) Border style (e.g., solid, dashed).
+	 *                       - 'width' (string) Border width (e.g., 1px, 0.1rem).
+	 * @param array $default_data Default border settings array used as fallback
+	 *                            when a value is not provided.
+	 *
+	 * @return array Sanitized border array containing:
+	 *               - 'color' (string) Sanitized color value.
+	 *               - 'style' (string) Sanitized border style key.
+	 *               - 'width' (string) Sanitized border width value.
+	 */
+	private function sanitize_border( $border, $default_data ) {
+		return array(
+			'color' => $this->sanitize_color_value( $border['color'] ?? $default_data['color'] ),
+			'style' => sanitize_key( $border['style'] ?? $default_data['style'] ),
+			'width' => sanitize_text_field( $border['width'] ?? $default_data['width'] ),
+		);
 	}
 }
