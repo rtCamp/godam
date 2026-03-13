@@ -231,12 +231,15 @@ class Transcoding extends Base {
 		}
 
 		// Handle failure case with error details.
-		if ( 'Failed' === $status ) {
+		// Covers both title-cased 'Failed' (sent by GoDAM Central via status-callback)
+		// and lowercase 'failed' (stored by the transcoder-callback handler).
+		if ( 'failed' === strtolower( $status ) ) {
 			$error_code = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', true ) );
 			$error_msg  = sanitize_textarea_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ) );
 
 			return array(
 				'status'     => 'failed',
+				'progress'   => 0,
 				'error_code' => $error_code,
 				'error_msg'  => $error_msg,
 			);

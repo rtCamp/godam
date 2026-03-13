@@ -21,6 +21,13 @@ class Retranscode_Failed_Media {
 	use Singleton;
 
 	/**
+	 * Maximum number of retry attempts for failed transcoding.
+	 *
+	 * @var int
+	 */
+	const MAX_RETRY_ATTEMPTS = 3;
+
+	/**
 	 * Construct method.
 	 */
 	final protected function __construct() {
@@ -71,44 +78,118 @@ class Retranscode_Failed_Media {
 	/**
 	 * Retranscode media that failed during the initial transcoding process.
 	 *
-	 * This function retrieves a list of attachments that failed transcoding,
-	 * and attempts to re-transcode them using the RTGODAM_Transcoder_Handler class.
+	 * Retries are only triggered when GoDAM Central returned a 5xx error during job submission.
+	 * Each attachment is retried at most MAX_RETRY_ATTEMPTS times. After that the attachment is
+	 * marked as permanently failed and removed from the retry queue.
+	 *
+	 * IMPORTANT: Every mutation of the option is persisted immediately inside the loop so that
+	 * a successful job dispatch (which removes the entry inside wp_media_transcoding) is never
+	 * accidentally re-added by a blanket save after the loop finishes.
 	 */
 	public function retranscode_failed_media() {
 
 		$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
 
-		foreach ( $failed_transcoding_attachments as $attachment ) {
-			$attachment_id = $attachment['attachment_id'] ?? 0;
-			if ( ! $attachment_id ) {
-				continue; // Skip if no attachment ID is set.
+		if ( empty( $failed_transcoding_attachments ) ) {
+			return;
+		}
+
+		if ( ! class_exists( 'RTGODAM_Transcoder_Handler' ) ) {
+			include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-handler.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+		}
+
+		foreach ( $failed_transcoding_attachments as $attachment_id => $attachment ) {
+			$real_attachment_id = $attachment['attachment_id'] ?? 0;
+			if ( ! $real_attachment_id ) {
+				// Remove stale entry and persist immediately.
+				unset( $failed_transcoding_attachments[ $attachment_id ] );
+				update_option( 'rtgodam-failed-transcoding-attachments', $failed_transcoding_attachments );
+				continue;
 			}
 
-			if ( ! class_exists( 'RTGODAM_Transcoder_Handler' ) ) {
-				include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-handler.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant 
+			$retry_count = isset( $attachment['retry_count'] ) ? (int) $attachment['retry_count'] : 0;
+
+			// If we have exhausted all retry attempts, mark the attachment as permanently
+			// failed and remove it from the retry queue — persist immediately.
+			if ( $retry_count >= self::MAX_RETRY_ATTEMPTS ) {
+				update_post_meta( $real_attachment_id, 'rtgodam_transcoding_status', 'failed' );
+				update_post_meta(
+					$real_attachment_id,
+					'rtgodam_transcoding_error_msg',
+					// translators: %d is the maximum number of retry attempts.
+					sprintf( __( 'Transcoding failed after %d retry attempts. GoDAM Central returned a server error on each attempt.', 'godam' ), self::MAX_RETRY_ATTEMPTS )
+				);
+				unset( $failed_transcoding_attachments[ $attachment_id ] );
+				update_option( 'rtgodam-failed-transcoding-attachments', $failed_transcoding_attachments );
+				continue;
 			}
+
+			// Increment the retry count and persist BEFORE calling wp_media_transcoding.
+			// This ensures the incremented count survives even if wp_media_transcoding
+			// re-adds the entry (on another 5xx). The handler reads `existing_retry_count`
+			// from the DB, so it will pick up the incremented value.
+			$failed_transcoding_attachments[ $attachment_id ]['retry_count'] = $retry_count + 1;
+			update_option( 'rtgodam-failed-transcoding-attachments', $failed_transcoding_attachments );
 
 			$transcoder_handler = new \RTGODAM_Transcoder_Handler();
-
-			$transcoder_handler->wp_media_transcoding( $attachment['wp_metadata'], $attachment['attachment_id'], $attachment['autoformat'], true );
+			$transcoder_handler->wp_media_transcoding( $attachment['wp_metadata'], $real_attachment_id, $attachment['autoformat'], true );
+			// NOTE: No final update_option here — wp_media_transcoding persists its own
+			// changes (success → removes entry, failure → updates entry) independently.
 		}
 	}
 
 	/**
 	 * Display a notice when transcoding fails.
+	 *
+	 * The notice is shown for up to 5 minutes after the last failure.
 	 */
 	public function failed_transcoding_notice() {
 
 		$failed_notice_timestamp = get_option( 'rtgodam-transcoding-failed-notice-timestamp', 0 );
 		$failed_notice_timestamp = intval( $failed_notice_timestamp );
 
-		if ( ! $failed_notice_timestamp || ( time() - $failed_notice_timestamp ) >= 60 ) { // 5 minutes
+		if ( ! $failed_notice_timestamp || ( time() - $failed_notice_timestamp ) >= 5 * MINUTE_IN_SECONDS ) {
 			return;
 		}
+
+		$failed_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
+		$failed_count       = count( $failed_attachments );
+		$media_library_url  = admin_url( 'upload.php' );
+
 		?>
 		<div class="notice notice-warning is-dismissible">
 			<p>
-				<?php esc_html_e( 'There was an issue transcoding the video on the GoDAM server. Don\'t worry — the attachment details have been saved and transcoding will retry automatically once the issue is resolved.', 'godam' ); ?>
+				<strong><?php esc_html_e( 'GoDAM: Transcoding server error', 'godam' ); ?></strong>
+			</p>
+			<p>
+				<?php
+				$media_library_link = '<a href="' . esc_url( $media_library_url ) . '">' . esc_html__( 'Media Library', 'godam' ) . '</a>';
+
+				if ( 0 === $failed_count ) {
+					// The queue is now empty (retry succeeded or max retries reached).
+					// Do not show a "queued for retry" notice.
+					return;
+				}
+
+				$message = sprintf(
+					/* translators: 1: number of media items queued, 2: retry interval in minutes, 3: max retries, 4: Media Library link */
+					__( '%1$d media file(s) could not be sent to the GoDAM transcoding server and have been queued for automatic retry (every %2$d minutes, up to %3$d attempts). Visit the %4$s to see their status.', 'godam' ),
+					(int) $failed_count,
+					10,
+					(int) self::MAX_RETRY_ATTEMPTS,
+					$media_library_link
+				);
+
+				echo wp_kses(
+					$message,
+					array(
+						'a' => array(
+							'href'   => array(),
+							'target' => array(),
+						),
+					)
+				);
+				?>
 			</p>
 		</div>
 		<?php
