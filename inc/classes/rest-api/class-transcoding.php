@@ -604,6 +604,11 @@ class Transcoding extends Base {
 				absint( $attachment_id )
 			);
 
+			// Persist failure state so the Media Library UI reflects the error.
+			update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'failed' );
+			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', 'http_auth_enabled' );
+			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', $message );
+
 			return new \WP_REST_Response(
 				array(
 					'message' => $message,
