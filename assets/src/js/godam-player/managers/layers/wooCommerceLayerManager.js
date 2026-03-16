@@ -700,7 +700,18 @@ export default class WooCommerceLayerManager {
 					const productId = hotspot.productId;
 					const quantity = 1;
 
-					dispatch( 'wc/store/cart' )
+					const cartStore = dispatch( 'wc/store/cart' );
+
+					if ( ! cartStore || typeof cartStore.addItemToCart !== 'function' ) {
+						// eslint-disable-next-line no-console
+						console.error( 'WooCommerce cart store is not available' );
+						productLinkButton.disabled = false;
+						productLinkButton.classList.remove( 'loading' );
+						this.showCartMessage( __( 'WooCommerce cart is not available. Please refresh the page.', 'godam' ), 'error' );
+						return;
+					}
+
+					cartStore
 						.addItemToCart( productId, quantity )
 						.then( () => {
 							productLinkButton.disabled = false;
