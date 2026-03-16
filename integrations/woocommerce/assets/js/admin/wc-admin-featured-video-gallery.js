@@ -59,6 +59,12 @@ import { __ } from '@wordpress/i18n';
 			} );
 
 			frame.on( 'select', function() {
+				// If the media frame is currently in GoDAM mode, let the
+				// 'godam-virtual-attachment-created' handler manage attachments.
+				if ( frame.content && typeof frame.content.mode === 'function' && frame.content.mode() === 'godam' ) {
+					return;
+				}
+
 				const selection = frame.state().get( 'selection' );
 
 				selection.forEach( function( attachment ) {
@@ -86,6 +92,7 @@ import { __ } from '@wordpress/i18n';
 				} );
 			} );
 
+			window._godamWCActiveMediaSource = 'featured-gallery';
 			frame.open();
 		} );
 
@@ -96,6 +103,47 @@ import { __ } from '@wordpress/i18n';
 			e.preventDefault();
 			$( this ).closest( 'li.image' ).remove();
 			updateProductGalleryInput();
+		} );
+
+		/**
+		 * Listen for GoDAM virtual attachment creation.
+		 *
+		 * When a user selects media from the GoDAM tab, the real WordPress
+		 * attachment is created asynchronously. This handler adds the newly
+		 * created attachment to the product gallery.
+		 */
+		document.addEventListener( 'godam-virtual-attachment-created', function( event ) {
+			if ( window._godamWCActiveMediaSource !== 'featured-gallery' ) {
+				return;
+			}
+
+			const { attachment } = event.detail || {};
+			if ( ! attachment || ! attachment.id || ! rtGodamSettings?.ajaxurl || ! rtGodamSettings?.nonce ) {
+				return;
+			}
+
+			$.post( rtGodamSettings.ajaxurl, {
+				action: 'get_wc_gallery_thumbnail',
+				attachment_id: attachment.id,
+				nonce: rtGodamSettings.nonce,
+			}, function( response ) {
+				if ( response.success && response.data ) {
+					// Prevent duplicate gallery entries for the same attachment.
+					if ( $galleryList.find( 'li.image[data-attachment_id="' + attachment.id + '"]' ).length ) {
+						return;
+					}
+					$galleryList.append( response.data );
+					updateProductGalleryInput();
+				} else {
+					// eslint-disable-next-line eslint-comments/no-duplicate-disable
+					// eslint-disable-next-line no-console
+					console.error( 'Failed to append gallery thumbnail for GoDAM media.', response );
+				}
+			} ).fail( function( xhr ) {
+				// eslint-disable-next-line eslint-comments/no-duplicate-disable
+				// eslint-disable-next-line no-console
+				console.error( 'AJAX failed for GoDAM media:', xhr );
+			} );
 		} );
 	} );
 }( jQuery ) );
