@@ -42,6 +42,13 @@ class Blocks {
 	 */
 	public function register_blocks() {
 
+		/**
+		 * Allow block availability for Author and above on editor.
+		 */
+		if ( is_admin() && ! current_user_can( 'publish_posts' ) ) {
+			return;
+		}
+
 		// Register blocks.
 		register_block_type(
 			RTGODAM_PATH . '/assets/build/blocks/godam-player/'
