@@ -48,6 +48,50 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		}
 	}, [] );
 
+	// Handle GoDAM virtual attachment creation
+	useEffect( () => {
+		/**
+		 * Listen for GoDAM virtual attachment creation.
+		 *
+		 * When a user selects videos from the GoDAM tab, the real WordPress
+		 * attachments are created asynchronously. This handler adds the newly
+		 * created attachments to the block's video list.
+		 *
+		 * @param {CustomEvent} event - The custom event containing attachment details.
+		 */
+		const handleVirtualAttachmentCreated = ( event ) => {
+			const { attachment } = event.detail || {};
+
+			// Validate attachment data
+			if ( ! attachment || ! attachment.id ) {
+				return;
+			}
+
+			// Only process video attachments
+			if ( ! attachment.mime || ! attachment.mime.startsWith( 'video/' ) ) {
+				return;
+			}
+
+			// Skip if already exists
+			if ( videos.includes( attachment.id ) ) {
+				return;
+			}
+
+			// Add the new video to the list
+			setAttributes( {
+				videos: [ ...videos, attachment.id ],
+			} );
+		};
+
+		// Attach event listener
+		document.addEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
+
+		// Cleanup function to remove event listener
+		return () => {
+			document.removeEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
+		};
+	}, [ videos, setAttributes ] );
+
 	const mediaById = useSelect(
 		( select ) => {
 			const core = select( 'core' );
@@ -82,13 +126,29 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	/**
 	 * Append selected videos from media library.
 	 *
+	 * Filters out virtual GoDAM media (non-numeric IDs) to prevent duplicates.
+	 * Virtual media is handled by the godam-virtual-attachment-created event listener.
+	 *
 	 * @param {Object|Object[]} media Selected media or list.
 	 */
 	const appendSelectedVideos = ( media ) => {
 		const selectedMedia = Array.isArray( media ) ? media : [ media ];
 		const existingIds = new Set( videos );
 		const appendedVideos = selectedMedia
-			.filter( ( item ) => item && item.id && ! existingIds.has( item.id ) )
+			.filter( ( item ) => {
+				// Skip if no ID or already exists
+				if ( ! item || ! item.id || existingIds.has( item.id ) ) {
+					return false;
+				}
+
+				// Skip virtual GoDAM media (non-numeric IDs).
+				// These will be handled by the godam-virtual-attachment-created event.
+				if ( typeof item.id === 'string' && ! /^\d+$/.test( item.id ) ) {
+					return false;
+				}
+
+				return true;
+			} )
 			.map( ( item ) => item.id );
 
 		if ( appendedVideos.length === 0 ) {
