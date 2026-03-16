@@ -64,6 +64,13 @@ jQuery( document ).ready( function( $ ) {
 		} );
 
 		mediaFrame.on( 'select', function() {
+			// If the selection comes from the GoDAM tab, let the GoDAM virtual
+			// attachment handler deal with it and skip the default wp.media
+			// select logic to avoid 404s on virtual IDs.
+			if ( mediaFrame?.content?.mode && mediaFrame.content.mode() === 'godam' ) {
+				return;
+			}
+
 			mediaFrame
 				.state()
 				.get( 'selection' )

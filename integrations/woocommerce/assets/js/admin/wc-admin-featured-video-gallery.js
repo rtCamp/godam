@@ -59,6 +59,12 @@ import { __ } from '@wordpress/i18n';
 			} );
 
 			frame.on( 'select', function() {
+				// If the media frame is currently in GoDAM mode, let the
+				// 'godam-virtual-attachment-created' handler manage attachments.
+				if ( frame.content && typeof frame.content.mode === 'function' && frame.content.mode() === 'godam' ) {
+					return;
+				}
+
 				const selection = frame.state().get( 'selection' );
 
 				selection.forEach( function( attachment ) {
@@ -122,6 +128,10 @@ import { __ } from '@wordpress/i18n';
 				nonce: rtGodamSettings.nonce,
 			}, function( response ) {
 				if ( response.success && response.data ) {
+					// Prevent duplicate gallery entries for the same attachment.
+					if ( $galleryList.find( 'li.image[data-attachment_id="' + attachment.id + '"]' ).length ) {
+						return;
+					}
 					$galleryList.append( response.data );
 					updateProductGalleryInput();
 				} else {
