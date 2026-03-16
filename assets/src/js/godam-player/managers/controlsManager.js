@@ -46,9 +46,17 @@ export default class ControlsManager {
 		// control bar (seek bar, volume, settings, etc.) while keeping the big
 		// play button visible and functional.
 		if ( this.config.playbackControlsEnabled === false ) {
+			// Still apply big-play-button configuration (position + custom image)
+			// so that "no control bar" mode honours existing block settings.
+			this.setupPlayButtonPosition( controlBarSettings );
+			this.setupCustomPlayButton( controlBarSettings );
 			this.player.el().classList.add( 'godam-no-controls-bar' );
 			return;
 		}
+
+		// Ensure the control bar is visible again when playback controls
+		// are enabled or not explicitly disabled.
+		this.player.el().classList.remove( 'godam-no-controls-bar' );
 
 		this.setupPlayButtonPosition( controlBarSettings );
 		this.setupControlBarComponents( controlBarSettings );

@@ -1943,7 +1943,7 @@ body.godam-share-modal-open {
 	display: none !important;
 }
 
-.godam-show-controls-on-hover {
+.godam-show-controls-on-hover:not(.godam-no-controls-bar) {
 
 	&:hover {
 
