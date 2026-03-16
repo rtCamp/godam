@@ -1900,7 +1900,6 @@ body.godam-share-modal-open {
 		display: none !important;
 	}
 
-
 	.video-js {
 
 		.vjs-big-play-button {
@@ -1926,6 +1925,22 @@ body.godam-share-modal-open {
 			}
 		}
 	}
+
+	// Re-show the big play button once the video has ended.
+	// Necessary because `.vjs-has-started .vjs-big-play-button { display: none }`
+	// (from video.js core CSS) has equal specificity; adding vjs-ended with
+	// !important ensures the button reappears as a replay prompt after playback.
+	.godam-no-controls-bar.vjs-ended .vjs-big-play-button {
+		display: block !important;
+	}
+}
+
+// When the "Playback controls" block toggle is OFF, hide the control bar
+// (seek bar, volume, settings, etc.) while keeping the big play button
+// functional. The !important ensures Video.js's user-activity state changes
+// (vjs-user-active / vjs-user-inactive) cannot override this rule.
+.godam-no-controls-bar .vjs-control-bar {
+	display: none !important;
 }
 
 .godam-show-controls-on-hover {

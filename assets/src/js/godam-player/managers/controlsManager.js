@@ -42,6 +42,14 @@ export default class ControlsManager {
 	setupControlBarConfiguration() {
 		const controlBarSettings = this.config.videoSetupControls?.controlBar;
 
+		// When the "Playback controls" block toggle is OFF, hide the entire
+		// control bar (seek bar, volume, settings, etc.) while keeping the big
+		// play button visible and functional.
+		if ( this.config.playbackControlsEnabled === false ) {
+			this.player.el().classList.add( 'godam-no-controls-bar' );
+			return;
+		}
+
 		this.setupPlayButtonPosition( controlBarSettings );
 		this.setupControlBarComponents( controlBarSettings );
 		this.setupCustomPlayButton( controlBarSettings );
