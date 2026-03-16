@@ -61,11 +61,19 @@ class GoDAM_Player {
 				'version'      => RTGODAM_VERSION,
 			);
 
+		// Add WooCommerce Blocks data store as a dependency if WooCommerce is active.
+		// This is required for the WooCommerce cart store (wc/store/cart) to be available.
+		$dependencies = $godam_player_frontend_assets['dependencies'];
+		if ( is_plugin_active( 'woocommerce/woocommerce.php' ) && 
+			! in_array( 'wc-blocks-data-store', $dependencies, true ) ) {
+			$dependencies[] = 'wc-blocks-data-store';
+		}
+
 		// Register your scripts and styles here.
 		wp_register_script(
 			'godam-player-frontend-script',
 			RTGODAM_URL . 'assets/build/js/godam-player-frontend.min.js',
-			$godam_player_frontend_assets['dependencies'],
+			$dependencies,
 			$godam_player_frontend_assets['version'],
 			true
 		);
