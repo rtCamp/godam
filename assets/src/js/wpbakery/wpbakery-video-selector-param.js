@@ -46,6 +46,9 @@ import { stripHtmlTags } from '../../blocks/godam-player/utils/index.js';
 		bindVirtualAttachmentReplacement();
 		bindSeoPrefillHandlers();
 
+		// Initialize previews for already selected videos on page load
+		initializeExistingPreviews();
+
 		$( '.video-selector-button' ).off( 'click' ).on( 'click', function( e ) {
 			e.preventDefault();
 
@@ -109,6 +112,54 @@ import { stripHtmlTags } from '../../blocks/godam-player/utils/index.js';
 
 		// Initialize remove handler
 		initRemoveHandler();
+	}
+
+	/**
+	 * Initialize previews for already selected videos on page load
+	 */
+	function initializeExistingPreviews() {
+		$( '.video_selector_block' ).each( function() {
+			const $container = $( this );
+			const $input = $container.find( '.video_selector_field' );
+			const $button = $container.find( '.video-selector-button' );
+			const attachmentId = $input.val();
+
+			if ( attachmentId ) {
+				// Update button text to show video can be replaced
+				$button.text( __( 'Replace', 'godam' ) );
+
+				// Fetch attachment data and create preview
+				fetchAttachmentData( attachmentId ).then( function( attachment ) {
+					if ( ! attachment || ! attachment.url ) {
+						return;
+					}
+
+					let $preview = $container.find( '.video-selector-preview' );
+					if ( $preview.length === 0 ) {
+						$preview = $( '<div class="video-selector-preview" style="margin-top: 10px;"></div>' );
+						$container.append( $preview );
+					}
+
+					const mimeType = attachment.mime || attachment.post_mime_type || 'video/mp4';
+					$preview.html(
+						'<video width="100%" height="auto" controls style="max-width: 300px;">' +
+						'<source src="' + attachment.url + '" type="' + mimeType + '">' +
+						'</video>',
+					);
+
+					// Add remove button if not exists
+					const $buttonsWrapper = $container.find( '.video_selector-buttons-wrapper' );
+					let $removeButton = $buttonsWrapper.find( '.video-selector-remove' );
+					if ( $removeButton.length === 0 ) {
+						$removeButton = $( '<button class="button video-selector-remove" style="margin-left: 5px;">Remove</button>' );
+						$buttonsWrapper.append( $removeButton );
+						initRemoveHandler();
+					}
+				} ).catch( function() {
+					// Silently fail for existing previews
+				} );
+			}
+		} );
 	}
 
 	function bindSeoPrefillHandlers() {
