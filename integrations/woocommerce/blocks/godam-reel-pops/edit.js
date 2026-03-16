@@ -57,9 +57,17 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		 * attachments are created asynchronously. This handler adds the newly
 		 * created attachments to the block's video list.
 		 *
+		 * Scoped to this specific block instance using clientId to prevent
+		 * cross-block interference when multiple Reel Pops blocks exist.
+		 *
 		 * @param {CustomEvent} event - The custom event containing attachment details.
 		 */
 		const handleVirtualAttachmentCreated = ( event ) => {
+			// Only process events intended for this specific block instance
+			if ( window._godamActiveReelPopsBlockId !== clientId ) {
+				return;
+			}
+
 			const { attachment } = event.detail || {};
 
 			// Validate attachment data
@@ -90,7 +98,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		return () => {
 			document.removeEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
 		};
-	}, [ videos, setAttributes ] );
+	}, [ videos, setAttributes, clientId ] );
 
 	const mediaById = useSelect(
 		( select ) => {
@@ -218,11 +226,18 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 							onSelect={ appendSelectedVideos }
 							allowedTypes={ [ 'video' ] }
 							multiple
-							render={ ( { open } ) => (
-								<Button onClick={ open } variant="primary" icon={ videoIcon } className="godam-reel-pops-select-videos-button">
-									{ __( 'Select Videos', 'godam' ) }
-								</Button>
-							) }
+							render={ ( { open } ) => {
+								const handleOpen = () => {
+								// Set the active block ID before opening media modal
+									window._godamActiveReelPopsBlockId = clientId;
+									open();
+								};
+								return (
+									<Button onClick={ handleOpen } variant="primary" icon={ videoIcon } className="godam-reel-pops-select-videos-button">
+										{ __( 'Select Videos', 'godam' ) }
+									</Button>
+								);
+							} }
 						/>
 					</MediaUploadCheck>
 
