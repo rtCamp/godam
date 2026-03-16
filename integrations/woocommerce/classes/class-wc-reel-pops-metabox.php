@@ -489,6 +489,13 @@ class WC_Reel_Pops_Metabox {
 				});
 
 				mediaFrame.on('select', function() {
+					// Skip processing when selecting from GoDAM tab.
+					// GoDAM virtual attachments will be handled by the
+					// godam-virtual-attachment-created event listener.
+					if ( mediaFrame.content && mediaFrame.content.mode && mediaFrame.content.mode() === 'godam' ) {
+						return;
+					}
+
 					const selection = mediaFrame.state().get('selection').toJSON();
 					selection.forEach(function(attachment) {
 						if (!attachment.id || existingVideoIds.indexOf(attachment.id) !== -1) {
@@ -503,6 +510,7 @@ class WC_Reel_Pops_Metabox {
 					reindexVideoItems();
 				});
 
+				window._godamWCActiveMediaSource = 'reel-pops';
 				mediaFrame.open();
 			});
 
@@ -519,6 +527,35 @@ class WC_Reel_Pops_Metabox {
 				item.remove();
 				reindexVideoItems();
 			});
+
+			/**
+			 * Listen for GoDAM virtual attachment creation.
+			 *
+			 * When a user selects a video from the GoDAM tab, the real WordPress
+			 * attachment is created asynchronously. This handler adds the newly
+			 * created attachment to the Reel Pops video list.
+			 */
+			document.addEventListener( 'godam-virtual-attachment-created', function( event ) {
+				if ( window._godamWCActiveMediaSource !== 'reel-pops' ) {
+					return;
+				}
+
+				var detail = event.detail || {};
+				var attachment = detail.attachment;
+				if ( ! attachment || ! attachment.id ) {
+					return;
+				}
+
+				// Skip duplicates.
+				if ( existingVideoIds.indexOf( attachment.id ) !== -1 ) {
+					return;
+				}
+
+				existingVideoIds.push( attachment.id );
+				$( '#godam-reel-pops-video-list' ).append( createVideoItem( videoIndex, attachment ) );
+				videoIndex++;
+				reindexVideoItems();
+			} );
 
 			reindexVideoItems();
 		});

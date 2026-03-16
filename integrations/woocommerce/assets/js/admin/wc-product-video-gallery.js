@@ -169,11 +169,112 @@ jQuery( document ).ready( function( $ ) {
 				} );
 		} );
 
+		window._godamWCActiveMediaSource = 'product-reels';
 		mediaFrame.open();
 	} );
 
 	videoList.on( 'click', '.godam-remove-video-button', function( e ) {
 		e.preventDefault();
 		$( this ).closest( 'li' ).remove();
+	} );
+
+	/**
+	 * Listen for GoDAM virtual attachment creation.
+	 *
+	 * When a user selects a video from the GoDAM tab, the real WordPress
+	 * attachment is created asynchronously. This handler adds the newly
+	 * created attachment to the Product Reels gallery.
+	 */
+	document.addEventListener( 'godam-virtual-attachment-created', function( event ) {
+		if ( window._godamWCActiveMediaSource !== 'product-reels' ) {
+			return;
+		}
+
+		const { attachment } = event.detail || {};
+		if ( ! attachment || ! attachment.id ) {
+			return;
+		}
+
+		// Skip duplicates.
+		if ( videoList.find( `input[data-vid-id="${ attachment.id }"]` ).length ) {
+			return;
+		}
+
+		$( '.godam-product-admin-video-spinner-overlay' ).show();
+
+		const thumbnail = ( attachment.meta && attachment.meta.rtgodam_media_video_thumbnail ) || RTGodamVideoGallery.defaultThumbnail;
+		const videoTitle = attachment.title || '';
+
+		const $addBtn = $( '<button>', {
+			type: 'button',
+			class: 'godam-add-product-button components-button godam-button is-compact is-tertiary wc-godam-product-admin',
+			'aria-label': __( 'Associate products with this video', 'godam' ),
+			text: __( '+ Add Products', 'godam' ),
+			'data-linked-products': '[]',
+		} );
+
+		const listItem = $( '<li>' ).append(
+			`<input type="hidden"
+				name="rtgodam_product_video_gallery_ids[]"
+				value="${ attachment.id }"
+				data-vid-id="${ attachment.id }" />`,
+			`<input type="hidden"
+				name="rtgodam_product_video_gallery_urls[]"
+				value="${ attachment.url }" />`,
+		);
+
+		const $thumbWrapper = $( '<div>', {
+			class: 'video-thumb-wrapper',
+		} );
+
+		if ( thumbnail ) {
+			$thumbWrapper.append(
+				`<img src="${ thumbnail }" alt="${ __( 'Video thumbnail', 'godam' ) }" class="godam-video-thumbnail" />`,
+			);
+		} else {
+			$thumbWrapper.append(
+				`<span style="color:#aaa; margin-bottom: 10px; display:block;">${ __( 'No thumbnail available', 'godam' ) }</span>`,
+			);
+		}
+
+		const $videoTitle = $( '<div>', {
+			class: 'godam-product-video-title',
+			text: videoTitle,
+			title: videoTitle,
+		} );
+
+		$thumbWrapper.append(
+			$( '<button>', {
+				type: 'button',
+				class: 'godam-remove-video-button components-button godam-button is-compact is-secondary has-icon wc-godam-product-admin',
+				'aria-label': __( 'Remove video from gallery', 'godam' ),
+				html: `<img src="${ RTGodamVideoGallery.DeleteIcon }" alt="${ __( 'Delete Bin Icon', 'godam' ) }" width="14" height="14" style="vertical-align:middle;" />`,
+			} ),
+		);
+
+		listItem.append( $thumbWrapper ).append( $videoTitle ).append( $addBtn );
+		videoList.append( listItem );
+
+		// Fetch linked products count.
+		wp.apiFetch( {
+			path: `${ RTGodamVideoGallery.namespace }${ RTGodamVideoGallery.videoCountEP }/${ attachment.id }`,
+		} )
+			.then( ( res ) => {
+				updateAddProductButtonLabel( $addBtn, res.count );
+
+				if ( Array.isArray( res.linked ) ) {
+					$addBtn.attr(
+						'data-linked-products',
+						JSON.stringify( res.linked ),
+					);
+				}
+			} )
+			.catch( () => {
+				// eslint-disable-next-line no-console
+				console.warn( 'Could not fetch count of product for ID:' + attachment.id );
+			} )
+			.finally( () => {
+				$( '.godam-product-admin-video-spinner-overlay' ).hide();
+			} );
 	} );
 } );

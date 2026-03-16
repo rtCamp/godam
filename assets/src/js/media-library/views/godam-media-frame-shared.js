@@ -138,58 +138,61 @@ const GoDAMMediaFrameShared = {
 		}
 
 		const selection = this.state().get( 'selection' );
-		const selected = selection?.first();
-		const data = selected.attributes;
 
-		// API call to website to create the attachment in the current site context.
-		fetch( window.pathJoin( [ restURL, '/godam/v1/media-library/create-media-entry' ] ), {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-WP-Nonce': window.wpApiSettings?.nonce,
-			},
-			body: JSON.stringify( {
-				id: data.id,
-				title: data.title,
-				filename: data.filename,
-				name: data.title,
-				url: data.url,
-				hls_url: data.hls_url,
-				mpd_url: data.mpd_url,
-				mime: data.mime,
-				type: data.type,
-				subtype: data.subtype,
-				status: data.status,
-				date: data.date,
-				modified: data.modified,
-				filesizeInBytes: data.filesizeInBytes,
-				filesizeHumanReadable: data.filesizeHumanReadable,
-				owner: data.owner,
-				label: data.label,
-				icon: data.icon,
-				thumbnail_url: data.thumbnail_url,
-				caption: data.caption,
-				description: data.description,
-				video_duration: data.video_duration || 0,
-			} ),
-		} )
-			.then( ( res ) => res.json() )
-			.then( ( response ) => {
-				if ( response && response.success ) {
-					const attachment = response.attachment;
+		// Process every selected item (supports multi-select).
+		selection.each( ( selected ) => {
+			const data = selected.attributes;
 
-					// Trigger custom JS event godam-virtual-attachment-created
-					const event = new CustomEvent( 'godam-virtual-attachment-created', {
-						detail: { virtualMediaId: data.id, attachment },
-					} );
+			// API call to website to create the attachment in the current site context.
+			fetch( window.pathJoin( [ restURL, '/godam/v1/media-library/create-media-entry' ] ), {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': window.wpApiSettings?.nonce,
+				},
+				body: JSON.stringify( {
+					id: data.id,
+					title: data.title,
+					filename: data.filename,
+					name: data.title,
+					url: data.url,
+					hls_url: data.hls_url,
+					mpd_url: data.mpd_url,
+					mime: data.mime,
+					type: data.type,
+					subtype: data.subtype,
+					status: data.status,
+					date: data.date,
+					modified: data.modified,
+					filesizeInBytes: data.filesizeInBytes,
+					filesizeHumanReadable: data.filesizeHumanReadable,
+					owner: data.owner,
+					label: data.label,
+					icon: data.icon,
+					thumbnail_url: data.thumbnail_url,
+					caption: data.caption,
+					description: data.description,
+					video_duration: data.video_duration || 0,
+				} ),
+			} )
+				.then( ( res ) => res.json() )
+				.then( ( response ) => {
+					if ( response && response.success ) {
+						const attachment = response.attachment;
 
-					document.dispatchEvent( event );
+						// Trigger custom JS event godam-virtual-attachment-created
+						const event = new CustomEvent( 'godam-virtual-attachment-created', {
+							detail: { virtualMediaId: data.id, attachment },
+						} );
 
-					// Also trigger count refresh for React components
-					const countRefreshEvent = new CustomEvent( 'godam-attachment-browser:changed' );
-					document.dispatchEvent( countRefreshEvent );
-				}
-			} );
+						document.dispatchEvent( event );
+
+						// Also trigger count refresh for React components
+						const countRefreshEvent = new CustomEvent( 'godam-attachment-browser:changed' );
+						document.dispatchEvent( countRefreshEvent );
+					}
+				} );
+		} );
 	},
 };
 
