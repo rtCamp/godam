@@ -68,7 +68,11 @@ export const VideoJS = ( props ) => {
 
 	const videoMeta = useSelector( ( state ) => state.videoReducer );
 	const videoConfig = videoMeta.videoConfig;
-	const layers = videoMeta.layers;
+	// Exclude layers with unknown types (e.g. added in a different branch/version)
+	// so they don't appear on the seeker.
+	const layers = videoMeta.layers.filter(
+		( layer ) => layerTypes.some( ( lt ) => lt.type === layer.type ),
+	);
 	const chapters = videoMeta.chapters;
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
 	const currentTab = useSelector( ( state ) => state.videoReducer.currentTab );
