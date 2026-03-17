@@ -1975,14 +1975,6 @@ class Media_Library extends Base {
 
 		// Get registered image sizes from WordPress Settings > Media.
 		$registered_sizes = wp_get_registered_image_subsizes();
-		$additional_sizes = wp_get_additional_image_sizes();
-
-		// Remove additional sizes from registered sizes to avoid duplicates.
-		foreach ( $additional_sizes as $size_name => $size_data ) {
-			if ( isset( $registered_sizes[ $size_name ] ) ) {
-				unset( $registered_sizes[ $size_name ] );
-			}
-		}
 
 		if ( empty( $registered_sizes ) ) {
 			return false;
@@ -1999,9 +1991,9 @@ class Media_Library extends Base {
 		}
 
 
-		// Add additional 100x100 cropped size if not already present, it's commonly used in Media Library for list view thumbnails.
+		// Ensure there is a 100x100 crop size for thumbnail fallback if not already present.
 		$has_100_crop = false;
-		foreach ( $additional_sizes as $size_name => $size_data ) {
+		foreach ( $size_requests as $size_data ) {
 			if ( 100 === $size_data['width'] && 100 === $size_data['height'] ) {
 				$has_100_crop = true;
 				break;
