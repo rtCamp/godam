@@ -1097,7 +1097,7 @@ class Media_Library_Ajax {
 	/**
 	 * AJAX handler to save HTTP auth detection result.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.7.1
 	 *
 	 * @return void
 	 */
@@ -1131,7 +1131,7 @@ class Media_Library_Ajax {
 	/**
 	 * Display HTTP authentication warning notice.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.7.1
 	 *
 	 * @return void
 	 */

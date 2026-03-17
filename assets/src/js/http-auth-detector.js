@@ -4,7 +4,7 @@
  * Detects if HTTP authentication is enabled by making a fresh request
  * from the browser (not server-side) to check for 401 responses.
  *
- * @since n.e.x.t
+ * @since 1.7.1
  */
 
 /* global jQuery */
@@ -20,7 +20,7 @@
 	/**
 	 * Check if HTTP authentication is enabled.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.7.1
 	 *
 	 * @return {Promise<boolean>} Promise resolving to true if HTTP auth is enabled, false otherwise.
 	 */
@@ -53,7 +53,7 @@
 	/**
 	 * Save HTTP auth detection result via AJAX.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.7.1
 	 *
 	 * @param {boolean} hasHttpAuth Whether HTTP auth is detected.
 	 *
@@ -74,7 +74,7 @@
 	/**
 	 * Intercept media uploads and check for HTTP auth before proceeding.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.7.1
 	 *
 	 * @return {boolean} True if interception is set up, false otherwise.
 	 */
@@ -129,7 +129,7 @@
 	/**
 	 * Initialize immediately (before DOM ready) to ensure we catch uploader initialization.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.7.1
 	 *
 	 * @return {boolean} True if interception is set up, false otherwise.
 	 */
@@ -146,7 +146,7 @@
 	/**
 	 * Initialize on document ready.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.7.1
 	 *
 	 * @return {void}
 	 */
