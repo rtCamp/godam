@@ -963,7 +963,7 @@ function rtgodam_is_local_environment() {
  * by making a request without credentials, then stores the result in an option.
  * If no cached status exists, this function falls back to a default of "not enabled".
  *
- * @since n.e.x.t
+ * @since 1.7.1
  *
  * @return bool True if HTTP auth is enforced, false otherwise.
  */
@@ -981,7 +981,7 @@ function rtgodam_has_http_auth(): bool {
 	/**
 	 * Filter to override HTTP auth detection.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.7.1
 	 *
 	 * @param bool $has_http_auth Whether HTTP auth is enforced.
 	 */
