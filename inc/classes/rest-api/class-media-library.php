@@ -1981,7 +1981,14 @@ class Media_Library extends Base {
 		}
 
 		// Prepare size requests for GoDAM Central.
-		$size_requests = array();
+		// Always include 100x100 crop as a fallback for thumbnail generation.
+		$size_requests = array(
+			array(
+				'width'  => 100,
+				'height' => 100,
+				'crop'   => true,
+			),
+		);
 		foreach ( $registered_sizes as $size_name => $size_data ) {
 			$size_requests[] = array(
 				'width'  => $size_data['width'],
@@ -1990,23 +1997,10 @@ class Media_Library extends Base {
 			);
 		}
 
-
-		// Ensure there is a 100x100 crop size for thumbnail fallback if not already present.
-		$has_100_crop = false;
-		foreach ( $size_requests as $size_data ) {
-			if ( 100 === $size_data['width'] && 100 === $size_data['height'] ) {
-				$has_100_crop = true;
-				break;
-			}
-		}
-
-		if ( ! $has_100_crop ) {
-			$size_requests[] = array(
-				'width'  => 100,
-				'height' => 100,
-				'crop'   => true,
-			);
-		}
+		// Remove duplicate size entries.
+		$size_requests = array_values(
+			array_unique( $size_requests, SORT_REGULAR )
+		);
 
 		// Construct the GoDAM API endpoint URL.
 		$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.image.generate_resized_images';
