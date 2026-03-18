@@ -432,6 +432,7 @@ class RTGODAM_Transcoder_Handler {
 					// media library shows the item as in-queue rather than failed.
 					update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'Queued' );
 					delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg' );
+					delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_code' );
 
 					if ( $manual_retranscode ) {
 						$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );

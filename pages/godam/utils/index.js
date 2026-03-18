@@ -54,17 +54,20 @@ export const GODAM_API_BASE = window?.godamSettings?.apiBase || '';
  * @return {Object|null} Error object with title, message, and showRefresh properties, or null if valid.
  */
 export const getAPIKeyErrorInfo = () => {
-	if ( hasValidAPIKey ) {
-		return null;
-	}
-
-	if ( ! hasAPIKey ) {
+	// NO_API_KEY is the explicit "no key entered" state. Also guard against the
+	// legacy case where the status was never persisted and still reads 'valid'
+	// but no physical key exists (hasAPIKey catches that).
+	if ( ! hasAPIKey || apiKeyStatus === API_KEY_STATUS.NO_API_KEY ) {
 		return {
 			type: 'missing_key',
 			title: null, // Use default "Upgrade" message
 			message: null,
 			showRefresh: false,
 		};
+	}
+
+	if ( hasValidAPIKey ) {
+		return null;
 	}
 
 	// Has key but it's not valid

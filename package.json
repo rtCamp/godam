@@ -1,6 +1,6 @@
 {
 	"name": "godam",
-	"version": "1.7.0",
+	"version": "1.7.1",
 	"description": "A WordPress plugin to manage digital assets",
 	"private": true,
 	"author": "rtCamp",
@@ -107,7 +107,8 @@
 		"minimatch@>=9.0.0 <9.0.7": "9.0.7",
 		"monaco-editor": {
 			"dompurify": "3.3.2"
-		}
+		},
+		"yauzl": "3.2.1"
 	},
 	"scripts": {
 		"start:blocks": "wp-scripts start --config ./node_modules/@wordpress/scripts/config/webpack.config.js --webpack-src-dir=./assets/src/blocks/ --output-path=./assets/build/blocks/",

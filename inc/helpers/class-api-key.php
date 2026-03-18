@@ -66,9 +66,10 @@ class Api_Key {
 	/**
 	 * Get the API key status from the database.
 	 *
-	 * Only 'valid', 'expired', and 'no_api_key' are persisted in the database.
-	 * 'verification_failed' is a runtime state stored in transient/user-data cache.
-	 * Defaults to 'no_api_key' for new installs where no status has been stored yet.
+	 * 'valid', 'expired', and 'no_api_key' are persisted in the database.
+	 * 'verification_failed' is a runtime state stored only in user-data cache.
+	 * Defaults to 'no_api_key' so fresh installs and wiped keys are handled
+	 * correctly without relying on the legacy 'valid' fallback.
 	 *
 	 * @since 1.7.0
 	 *
