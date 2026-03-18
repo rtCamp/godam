@@ -400,58 +400,60 @@ class Media_Library extends Base {
 			$attachment_meta['sizes'] = array();
 		}
 
-		// Get registered image sizes from WordPress Settings > Media.
+		// Get all registered image sizes (core + theme/plugin-registered additional sizes).
 		$registered_sizes = wp_get_registered_image_subsizes();
-		$additional_sizes = wp_get_additional_image_sizes();
 
-		// Remove additional sizes from registered sizes to avoid duplicates.
-		foreach ( $additional_sizes as $size_name => $size_data ) {
-			if ( isset( $registered_sizes[ $size_name ] ) ) {
-				unset( $registered_sizes[ $size_name ] );
+		// Build lookup maps: each key maps to an array of matching size names.
+		// For cropped sizes: exact W×H match.
+		// For uncropped sizes: width-only match (WordPress scales height proportionally).
+		$exact_map = array(); // "width:height" mapped to array of strings  (crop=true)
+		$width_map = array(); // "width"        mapped to array of strings  (crop=false)
+		foreach ( $registered_sizes as $size_name => $size_data ) {
+			if ( $size_data['crop'] ) {
+				$key                 = $size_data['width'] . ':' . $size_data['height'];
+				$exact_map[ $key ][] = $size_name;
+			} else {
+				$wkey                 = (string) $size_data['width'];
+				$width_map[ $wkey ][] = $size_name;
 			}
 		}
 
-		// Map received subsizes to registered size names.
-		// Determine the closest matching registered size for each received size.
+		// Map each GoDAM-returned subsize to all matching registered size names.
 		foreach ( $subsizes as $size ) {
-			$external_size_name = '';
-			$min_diff           = PHP_INT_MAX;
-			foreach ( $registered_sizes as $size_name => $registered_size_data ) {
-				if ( $registered_size_data['width'] === $size['width'] && $registered_size_data['height'] === $size['height'] ) {
-					$external_size_name = $size_name;
-					break;
-				} elseif ( $size['width'] <= $registered_size_data['width'] && $size['height'] <= $registered_size_data['height'] ) {
-					$diff = $registered_size_data['width'] - $size['width'] + $registered_size_data['height'] - $size['height'];
-					if ( $diff < $min_diff ) {
-						$min_diff           = $diff;
-						$external_size_name = $size_name;
-					}
-				}
+			// 1. Exact W×H match (always correct for cropped sizes).
+			$exact_key     = $size['width'] . ':' . $size['height'];
+			$matched_names = isset( $exact_map[ $exact_key ] ) ? $exact_map[ $exact_key ] : array();
+
+			// 2. Width-only match for uncropped sizes (height varies with source aspect ratio).
+			if ( empty( $matched_names ) ) {
+				$wkey          = (string) $size['width'];
+				$matched_names = isset( $width_map[ $wkey ] ) ? $width_map[ $wkey ] : array();
 			}
 
-			if ( empty( $external_size_name ) ) {
+			if ( empty( $matched_names ) ) {
 				continue;
 			}
 
-			// Get last string after the last slash in the file url.
 			$file_basename = basename( $size['file'] );
 
-			$rtgodam_image_sizes[ $external_size_name ] = array(
-				'url'      => esc_url_raw( $size['file'] ),
-				'file'     => $file_basename,
-				'filesize' => $size['filesize'],
-				'width'    => $size['width'],
-				'height'   => $size['height'],
-			);
-
-			// For virtual images, persist CDN sub-sizes in WordPress metadata too.
-			if ( $is_virtual ) {
-				$attachment_meta['sizes'][ $external_size_name ] = array(
+			foreach ( $matched_names as $external_size_name ) {
+				$rtgodam_image_sizes[ $external_size_name ] = array(
+					'url'      => esc_url_raw( $size['file'] ),
 					'file'     => $file_basename,
 					'filesize' => $size['filesize'],
 					'width'    => $size['width'],
 					'height'   => $size['height'],
 				);
+
+				// For virtual images, persist CDN sub-sizes in WordPress metadata too.
+				if ( $is_virtual ) {
+					$attachment_meta['sizes'][ $external_size_name ] = array(
+						'file'     => $file_basename,
+						'filesize' => $size['filesize'],
+						'width'    => $size['width'],
+						'height'   => $size['height'],
+					);
+				}
 			}
 		}
 

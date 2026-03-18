@@ -1204,6 +1204,17 @@ class Media_Library_Ajax {
 			return $filtered_image;
 		}
 
+		// If the current src is already on the same CDN host, it is already a correctly-sized
+		// CDN URL (e.g. a subsize chosen via the Image block). Don't overwrite it with the
+		// full-size CDN URL.
+		if ( preg_match( '/\bsrc="([^"]*)"/', $filtered_image, $src_match ) ) {
+			$cdn_host     = wp_parse_url( $cdn_src, PHP_URL_HOST );
+			$current_host = wp_parse_url( $src_match[1], PHP_URL_HOST );
+			if ( $cdn_host && $current_host && $cdn_host === $current_host ) {
+				return $filtered_image;
+			}
+		}
+
 		$updated_image = preg_replace(
 			'/\bsrc="[^"]*"/',
 			' src="' . esc_url( $cdn_src ) . '"',
