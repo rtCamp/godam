@@ -402,10 +402,10 @@
 		max-width: 123px;
 		box-sizing: border-box;
 		transition: box-shadow 0.2s ease;
-		height: 168px;
 
 		&:hover {
-			.godam-remove-video-button {
+			.godam-remove-video-button,
+			.godam-select-variation-button {
 				opacity: 1;
 			}
 		}
@@ -426,6 +426,37 @@
 		border: 1px solid #ccc;
 		border-radius: 6px;
 		display: block;
+	}
+}
+
+.godam-select-variation-button {
+	position: absolute;
+	bottom: 4px;
+	left: 4px;
+	background: rgba(255, 255, 255, 0.9);
+	border: none;
+	padding: 3px;
+	border-radius: 50%;
+	cursor: pointer;
+	box-shadow: 0 0 5px var(--wp-components-color-accent) !important;
+	width: 20px;
+	height: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0;
+	transition: opacity 0.2s ease;
+
+	&:hover {
+		svg {
+			color: var(--wp-components-color-accent);
+		}
+	}
+
+	svg {
+		width: 11px;
+		height: 11px;
+		color: #111827;
 	}
 }
 

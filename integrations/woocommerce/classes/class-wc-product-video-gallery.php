@@ -437,11 +437,11 @@ class WC_Product_Video_Gallery {
 						<button type="button" class="godam-remove-video-button components-button godam-button is-compact is-secondary has-icon wc-godam-product-admin" aria-label="%6$s">
 							%7$s
 						</button>
+						%13$s
 					</div>
 					<div class="godam-product-video-title" title="%8$s">%9$s</div>
 					<div class="godam-video-actions-row">
 						<button type="button" data-linked-products="%10$s" class="godam-add-product-button components-button godam-button is-compact is-tertiary wc-godam-product-admin" aria-label="%11$s">%12$s</button>
-						%13$s
 					</div>
 					<div class="godam-variation-chips">%14$s</div>
 				</li>',
