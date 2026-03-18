@@ -3,7 +3,6 @@
  *
  * Mirrors the PHP Api_Key_Status enum class values.
  *
- * @package GoDAM
  */
 
 /**
@@ -16,6 +15,7 @@ export const API_KEY_STATUS = Object.freeze( {
 	VALID: 'valid',
 	EXPIRED: 'expired',
 	VERIFICATION_FAILED: 'verification_failed',
+	NO_API_KEY: 'no_api_key',
 } );
 
 /**

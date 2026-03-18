@@ -185,8 +185,10 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
 	const adServer = videoConfig?.adServer ?? 'self-hosted';
 
-	// Sort the array (ascending order)
-	const sortedLayers = [ ...layers ].sort( ( a, b ) => a.displayTime - b.displayTime );
+	// Sort the array (ascending order), excluding layers with unknown types.
+	const sortedLayers = [ ...layers ]
+		.filter( ( layer ) => layerTypes.some( ( lt ) => lt.type === layer.type ) )
+		.sort( ( a, b ) => a.displayTime - b.displayTime );
 
 	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
 

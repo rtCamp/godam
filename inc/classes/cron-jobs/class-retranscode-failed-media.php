@@ -156,6 +156,12 @@ class Retranscode_Failed_Media {
 		$failed_count       = count( $failed_attachments );
 		$media_library_url  = admin_url( 'upload.php' );
 
+		if ( 0 === $failed_count ) {
+			// The queue is now empty (retry succeeded or max retries reached).
+			// Do not show a "queued for retry" notice.
+			return;
+		}
+
 		?>
 		<div class="notice notice-warning is-dismissible">
 			<p>
@@ -164,12 +170,6 @@ class Retranscode_Failed_Media {
 			<p>
 				<?php
 				$media_library_link = '<a href="' . esc_url( $media_library_url ) . '">' . esc_html__( 'Media Library', 'godam' ) . '</a>';
-
-				if ( 0 === $failed_count ) {
-					// The queue is now empty (retry succeeded or max retries reached).
-					// Do not show a "queued for retry" notice.
-					return;
-				}
 
 				$message = sprintf(
 					/* translators: 1: number of media items queued, 2: retry interval in minutes, 3: max retries, 4: Media Library link */

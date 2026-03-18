@@ -237,7 +237,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 					update_post_meta( $failed_id, 'rtgodam_transcoding_status', 'failed' );
 					// Use rtgodam_transcoding_error_msg so the REST status endpoint can surface it.
 					if ( ! empty( $error_msg ) ) {
-						update_post_meta( $failed_id, 'rtgodam_transcoding_error_msg', sanitize_text_field( $error_msg ) );
+						update_post_meta( $failed_id, 'rtgodam_transcoding_error_msg', sanitize_textarea_field( $error_msg ) );
 					}
 				}
 			}
@@ -276,7 +276,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 					}
 
 					if ( isset( $format ) && 'thumbnail' === $format ) {
-						return new WP_REST_Response( esc_html__( 'Thumbnail created successfully.', 'godam' ), 200 );
+						return new WP_REST_Response( __( 'Thumbnail created successfully.', 'godam' ), 200 );
 					}
 
 					if ( ! empty( $post_array['files'] ) ) {

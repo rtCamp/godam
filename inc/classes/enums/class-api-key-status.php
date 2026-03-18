@@ -51,9 +51,9 @@ class Api_Key_Status {
 	/**
 	 * No API key has been provided (free user / new install).
 	 *
-	 * This is the neutral default state for installations that have never
-	 * had an API key entered. It is persisted in the database and used as
-	 * the fallback value when no status option exists.
+	 * This is the neutral default state for installations that don't have an API
+	 * key entered. It is persisted in the database and used as the fallback value
+	 * when no status option exists, replacing the old implicit 'valid' default.
 	 *
 	 * @var string
 	 */

@@ -1,5 +1,14 @@
 # Changelog #
 
+## v1.7.1 (March 17, 2026) ##
+
+- Fix: Resolved invalid duration issue for hotspot layer in the video editor.
+- Fix: Improved transcoding failure flow for plugin-based transcoding.
+- Fix: Reset state in the video editor on load to prevent stale data.
+- Fix: Resolved inconsistent transcoding job failure state caused by HTTP authentication.
+- Fix: Fixed Analytics overlay message loading and background image rendering.
+- Fix: Fixed security issues
+
 ## v1.7.0 (February 26, 2026) ##
 
 - Feat: Added GoDAM CDN image support with srcset integration for images uploaded from WordPress.

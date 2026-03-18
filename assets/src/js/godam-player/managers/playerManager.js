@@ -23,6 +23,12 @@ import { parseDataAttribute } from '../utils/dataHelpers.js';
 import { engagement } from '../engagement';
 
 /**
+ * Seek indicator SVG icons (no inline styles – styled via CSS class .godam-seek-icon).
+ */
+const BACKWARD_SEEK_INDICATOR_SVG = '<svg class="godam-seek-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M459.5 440.6c9.5 7.9 22.8 9.7 34.1 4.4s18.4-16.6 18.4-29V96c0-12.4-7.2-23.7-18.4-29s-24.5-3.5-34.1 4.4L288 214.3V256v41.7L459.5 440.6zM256 352V256 128 96c0-12.4-7.2-23.7-18.4-29s-24.5-3.5-34.1 4.4l-192 160C4.2 237.5 0 246.5 0 256s4.2 18.5 11.5 24.6l192 160c9.5 7.9 22.8 9.7 34.1 4.4s18.4-16.6 18.4-29V352z"/></svg>';
+const FORWARD_SEEK_INDICATOR_SVG = '<svg class="godam-seek-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M52.5 440.6c-9.5 7.9-22.8 9.7-34.1 4.4S0 428.4 0 416V96C0 83.6 7.2 72.3 18.4 67s24.5-3.5 34.1 4.4L224 214.3V256v41.7L52.5 440.6zM256 352V256 128 96c0-12.4 7.2-23.7 18.4-29s24.5-3.5 34.1 4.4l192 160c7.3 6.1 11.5 15.1 11.5 24.6s-4.2 18.5-11.5 24.6l-192 160c-9.5 7.9-22.8 9.7-34.1 4.4S256 428.4 256 416V352z"/></svg>';
+
+/**
  * Main GoDAM Player Manager Class
  */
 export default class PlayerManager {
@@ -359,7 +365,8 @@ export default class PlayerManager {
 
 		player.currentTime( Math.max( 0, player.currentTime() - skipSeconds ) );
 		/* translators: %d: number of seconds to seek backward */
-		this.showIndicator( player.el(), 'backward', sprintf( '<i class="fa-solid fa-backward"></i> %s', sprintf( __( '%ds', 'godam' ), skipSeconds ) ) );
+		const backwardLabel = sprintf( __( '%ds', 'godam' ), skipSeconds );
+		this.showIndicator( player.el(), 'backward', `${ BACKWARD_SEEK_INDICATOR_SVG } ${ backwardLabel }` );
 	}
 
 	/**
@@ -374,7 +381,8 @@ export default class PlayerManager {
 
 		player.currentTime( player.currentTime() + skipSeconds );
 		/* translators: %d: number of seconds to seek forward */
-		this.showIndicator( player.el(), 'forward', sprintf( '%s <i class="fa-solid fa-forward"></i>', sprintf( __( '%ds', 'godam' ), skipSeconds ) ) );
+		const forwardLabel = sprintf( __( '%ds', 'godam' ), skipSeconds );
+		this.showIndicator( player.el(), 'forward', `${ forwardLabel } ${ FORWARD_SEEK_INDICATOR_SVG }` );
 	}
 
 	/**
@@ -408,8 +416,8 @@ export default class PlayerManager {
 
 		// Sanitize HTML content with DOMPurify before setting innerHTML
 		const sanitizedHtml = DOMPurify.sanitize( html, {
-			ALLOWED_TAGS: [ 'i', 'span', 'strong', 'em' ],
-			ALLOWED_ATTR: [ 'class' ],
+			ALLOWED_TAGS: [ 'i', 'span', 'strong', 'em', 'svg', 'path' ],
+			ALLOWED_ATTR: [ 'class', 'xmlns', 'viewBox', 'width', 'height', 'fill', 'fill-rule', 'clip-rule', 'd' ],
 			KEEP_CONTENT: true,
 		} );
 
