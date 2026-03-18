@@ -400,6 +400,17 @@ const wcVideoCarousel = {
 			priceEl.className = 'rtgodam-variation-price';
 			selector.appendChild( priceEl );
 
+			// Close button — top-right corner.
+			const closeBtn = document.createElement( 'button' );
+			closeBtn.type = 'button';
+			closeBtn.className = 'rtgodam-variation-close-btn';
+			closeBtn.setAttribute( 'aria-label', 'Close variation selector' );
+			closeBtn.innerHTML = '&times;';
+			closeBtn.addEventListener( 'click', () => {
+				wrapper.classList.remove( 'is-open' );
+			} );
+			selector.prepend( closeBtn );
+
 			wrapper.appendChild( selector );
 
 			// ---- Pill click toggles ----
@@ -450,8 +461,10 @@ const wcVideoCarousel = {
 					return;
 				}
 
+				const originalText = addBtn.textContent;
 				addBtn.disabled = true;
 				addBtn.classList.add( 'loading' );
+				addBtn.textContent = 'Adding…';
 
 				try {
 					// Build variation data array for WooCommerce Store API
@@ -469,12 +482,15 @@ const wcVideoCarousel = {
 
 					await cartStore.addItemToCart( matchedId, 1, variationData );
 					self.showCartNotice( 'Added to cart' );
+					// Collapse the selector on success.
+					wrapper.classList.remove( 'is-open' );
 				} catch ( err ) {
 					console.error( err );
 					self.showCartNotice( 'Failed to add to cart', 'error' );
 				} finally {
 					addBtn.disabled = false;
 					addBtn.classList.remove( 'loading' );
+					addBtn.textContent = originalText;
 				}
 			} );
 
@@ -506,8 +522,10 @@ const wcVideoCarousel = {
 			attributes.forEach( ( attr ) => {
 				const pill = selector.querySelector( `.rtgodam-variation-pill.is-selected[data-attr-slug="${ attr.slug }"]` );
 				if ( pill ) {
-					// Use lowercase slug to match WooCommerce variation attribute keys (e.g., 'attribute_size')
-					const normalizedSlug = attr.slug.toLowerCase().replace( /^(pa_|attribute_)/, '' );
+					// Strip only the 'attribute_' prefix so 'pa_color' becomes 'attribute_pa_color',
+					// matching the keys WooCommerce stores in get_available_variations() attributes
+					// (e.g., 'attribute_pa_color'). Do NOT strip 'pa_' here.
+					const normalizedSlug = attr.slug.toLowerCase().replace( /^attribute_/, '' );
 					selected[ 'attribute_' + normalizedSlug ] = pill.dataset.attrValue;
 				} else {
 					allSelected = false;
