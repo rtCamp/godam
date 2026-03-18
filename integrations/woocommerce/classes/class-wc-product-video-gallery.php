@@ -90,23 +90,54 @@ class WC_Product_Video_Gallery {
 				true
 			);
 
+			// Build product type and variation attributes for the admin picker.
+			$current_product_id = get_the_ID();
+			$product_type_name  = 'simple';
+			$product_attributes = array();
+
+			if ( $current_product_id ) {
+				$current_product = wc_get_product( $current_product_id );
+				if ( $current_product instanceof \WC_Product ) {
+					$product_type_name = $current_product->get_type();
+					if ( $current_product->is_type( 'variable' ) ) {
+						foreach ( $current_product->get_variation_attributes() as $attribute_slug => $attribute_values ) {
+							$options = array();
+							foreach ( $attribute_values as $value ) {
+								$term      = get_term_by( 'slug', $value, $attribute_slug );
+								$options[] = array(
+									'value' => $value,
+									'label' => $term ? $term->name : ucfirst( str_replace( '-', ' ', $value ) ),
+								);
+							}
+							$product_attributes[] = array(
+								'slug'    => $attribute_slug,
+								'label'   => wc_attribute_label( $attribute_slug ),
+								'options' => $options,
+							);
+						}
+					}
+				}
+			}
+
 			wp_localize_script(
 				'rtgodam-wc-add-to-product',
 				'RTGodamVideoGallery',
 				array(
-					'apiRoot'          => esc_url_raw( rest_url() ),
-					'namespace'        => 'godam/v1',
-					'productsEP'       => '/wcproducts',
-					'linkVideoEP'      => '/link-video',
-					'unLinkVideoEP'    => '/unlink-video',
-					'timestampEP'      => '/save-product-meta',
-					'getTimestampEP'   => '/get-product-meta',
-					'videoCountEP'     => '/video-product-count',
-					'currentProductId' => get_the_ID(),
-					'defaultThumbnail' => RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png',
-					'Ptag'             => RTGODAM_WC_MODULE_URL . 'assets/images/product-tag.svg',
-					'DeleteIcon'       => RTGODAM_URL . 'assets/src/images/delete-video-bin.svg',
-					'hasValidAPIKey'   => rtgodam_is_api_key_valid(),
+					'apiRoot'           => esc_url_raw( rest_url() ),
+					'namespace'         => 'godam/v1',
+					'productsEP'        => '/wcproducts',
+					'linkVideoEP'       => '/link-video',
+					'unLinkVideoEP'     => '/unlink-video',
+					'timestampEP'       => '/save-product-meta',
+					'getTimestampEP'    => '/get-product-meta',
+					'videoCountEP'      => '/video-product-count',
+					'currentProductId'  => get_the_ID(),
+					'defaultThumbnail'  => RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png',
+					'Ptag'              => RTGODAM_WC_MODULE_URL . 'assets/images/product-tag.svg',
+					'DeleteIcon'        => RTGODAM_URL . 'assets/src/images/delete-video-bin.svg',
+					'hasValidAPIKey'    => rtgodam_is_api_key_valid(),
+					'productType'       => $product_type_name,
+					'productAttributes' => $product_attributes,
 				)
 			);
 		}
@@ -308,6 +339,14 @@ class WC_Product_Video_Gallery {
 			);
 		}
 
+		// Load saved per-video variation selections.
+		$saved_variations = get_post_meta( $post->ID, '_rtgodam_product_video_variations', true );
+		$saved_variations = is_array( $saved_variations ) ? $saved_variations : array();
+
+		// Check whether this is a variable product so we can show the variation picker button.
+		$product_for_type = wc_get_product( $post->ID );
+		$is_variable      = $product_for_type && $product_for_type->is_type( 'variable' );
+
 		foreach ( $video_urls as $index => $url ) {
 			$id            = isset( $ids[ $index ] ) ? intval( $ids[ $index ] ) : '';
 			$sanitised_url = esc_url( $url );
@@ -366,31 +405,65 @@ class WC_Product_Video_Gallery {
 				esc_attr__( 'Delete Bin Icon', 'godam' )
 			);
 
+			// Build variation-picker elements for this video.
+			$saved_variation_json = ! empty( $saved_variations[ $id ] )
+				? esc_attr( wp_json_encode( $saved_variations[ $id ] ) )
+				: '';
+
+			// Build initial variation chips from any already-saved selection.
+			$variation_chips_html = '';
+			if ( $is_variable && ! empty( $saved_variations[ $id ] ) ) {
+				$chips = array();
+				foreach ( $saved_variations[ $id ] as $attr_slug => $attr_value ) {
+					$attr_label  = wc_attribute_label( $attr_slug );
+					$term        = get_term_by( 'slug', $attr_value, $attr_slug );
+					$value_label = $term ? $term->name : ucfirst( str_replace( '-', ' ', $attr_value ) );
+					$chips[]     = sprintf(
+						'<span class="godam-variation-chip">%s: %s</span>',
+						esc_html( $attr_label ),
+						esc_html( $value_label )
+					);
+				}
+				$variation_chips_html = implode( '', $chips );
+			}
+
 			printf(
 				'<li>
-					<input type="hidden" name="rtgodam_product_video_gallery_ids[]" value="%d" data-vid-id="%d" />
-					<input type="hidden" name="rtgodam_product_video_gallery_urls[]" value="%s" />
+					<input type="hidden" name="rtgodam_product_video_gallery_ids[]" value="%1$d" data-vid-id="%1$d" />
+					<input type="hidden" name="rtgodam_product_video_gallery_urls[]" value="%2$s" />
+					<input type="hidden" name="rtgodam_product_video_variations[%1$d]" value="%3$s" class="godam-variation-data" />
 					<div class="video-thumb-wrapper">
-						<img src="%s" alt="%s" style="display:block; max-width: 200px; margin-bottom: 10px;" />
-						<button type="button" class="godam-remove-video-button components-button godam-button is-compact is-secondary has-icon wc-godam-product-admin" aria-label="%s">
-							%s
+						<img src="%4$s" alt="%5$s" style="display:block; max-width: 200px; margin-bottom: 10px;" />
+						<button type="button" class="godam-remove-video-button components-button godam-button is-compact is-secondary has-icon wc-godam-product-admin" aria-label="%6$s">
+							%7$s
 						</button>
 					</div>
-					<div class="godam-product-video-title" title="%s">%s</div>
-					<button type="button" data-linked-products="%s" class="godam-add-product-button components-button godam-button is-compact is-tertiary wc-godam-product-admin" aria-label="%s">%s</button>
+					<div class="godam-product-video-title" title="%8$s">%9$s</div>
+					<div class="godam-video-actions-row">
+						<button type="button" data-linked-products="%10$s" class="godam-add-product-button components-button godam-button is-compact is-tertiary wc-godam-product-admin" aria-label="%11$s">%12$s</button>
+						%13$s
+					</div>
+					<div class="godam-variation-chips">%14$s</div>
 				</li>',
-				esc_attr( $id ),
-				esc_attr( $id ),
-				esc_attr( $sanitised_url ),
-				esc_url( $video_thumbnail ),
-				esc_attr__( 'Video thumbnail', 'godam' ),
-				esc_attr__( 'Remove video from gallery', 'godam' ),
-				wp_kses_post( $delete_bin_svg ),
-				esc_attr( $video_title ),
-				esc_html( $video_title ),
-				esc_attr( $linked_json ),
-				esc_attr( $aria_label ),
-				$label // phpcs:ignore
+				esc_attr( $id ),                                        // %1$d (used multiple times)
+				esc_attr( $sanitised_url ),                             // %2$s
+				$saved_variation_json, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped above // %3$s (already esc_attr'd)
+				esc_url( $video_thumbnail ),                            // %4$s
+				esc_attr__( 'Video thumbnail', 'godam' ),               // %5$s
+				esc_attr__( 'Remove video from gallery', 'godam' ),     // %6$s
+				wp_kses_post( $delete_bin_svg ),                        // %7$s
+				esc_attr( $video_title ),                               // %8$s
+				esc_html( $video_title ),                               // %9$s
+				esc_attr( $linked_json ),                               // %10$s
+				esc_attr( $aria_label ),                                // %11$s
+				$label, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped above
+				$is_variable ? sprintf(                                 // %13$s — variation picker icon button
+					'<button type="button" class="godam-select-variation-button components-button godam-button is-compact is-tertiary has-icon wc-godam-product-admin" aria-label="%1$s" title="%1$s">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+					</button>',
+					esc_attr__( 'Select variation', 'godam' )
+				) : '',
+				$variation_chips_html // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built with esc_html above
 			);
 		}
 
@@ -498,6 +571,38 @@ class WC_Product_Video_Gallery {
 		 * @param array $ids     Saved video attachment IDs.
 		 */
 		do_action( 'rtgodam_product_gallery_after_save_video_gallery', $post_id, $urls, $new_ids );
+
+		// Save per-video preselected variation attributes.
+		$raw_variations   = isset( $_POST['rtgodam_product_video_variations'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce already verified above
+			? array_map( 'sanitize_text_field', wp_unslash( $_POST['rtgodam_product_video_variations'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			: array();
+		$clean_variations = array();
+
+		if ( is_array( $raw_variations ) ) {
+			foreach ( $raw_variations as $video_id => $json_string ) {
+				$video_id_int = absint( $video_id );
+				if ( ! $video_id_int ) {
+					continue;
+				}
+				$decoded = json_decode( sanitize_text_field( $json_string ), true );
+				if ( ! is_array( $decoded ) || empty( $decoded ) ) {
+					continue;
+				}
+				$sanitized = array();
+				foreach ( $decoded as $attr_slug => $attr_value ) {
+					$sanitized[ sanitize_key( $attr_slug ) ] = sanitize_text_field( $attr_value );
+				}
+				if ( ! empty( $sanitized ) ) {
+					$clean_variations[ $video_id_int ] = $sanitized;
+				}
+			}
+		}
+
+		if ( ! empty( $clean_variations ) ) {
+			update_post_meta( $post_id, '_rtgodam_product_video_variations', $clean_variations );
+		} else {
+			delete_post_meta( $post_id, '_rtgodam_product_video_variations' );
+		}
 	}
 
 	/**
@@ -661,8 +766,12 @@ class WC_Product_Video_Gallery {
 		// Enqueue WooCommerce Reels specific skin.
 		wp_enqueue_style( 'godam-player-reels-skin-css' );
 
+		// Load preselected per-video variation selections for the frontend.
+		$video_variations = get_post_meta( $post->ID, '_rtgodam_product_video_variations', true );
+		$video_variations = is_array( $video_variations ) ? $video_variations : array();
+
 		$modal_carousel_html = array_map(
-			function ( $item ) use ( $srcsets, $post ) {
+			function ( $item ) use ( $srcsets, $post, $video_variations ) {
 
 				$src_id  = $srcsets[ $item ]['id'];
 				$product = wc_get_product( $post->ID );
@@ -682,17 +791,52 @@ class WC_Product_Video_Gallery {
 				$product_type = $product->get_type();
 				$in_stock     = $product->is_in_stock() ? 'true' : 'false';
 
-				$first_variation_id = '';
-				$grouped_ids        = '';
-				$external_url       = '';
+				$grouped_ids      = '';
+				$external_url     = '';
+				$variations_json  = '';
+				$attributes_json  = '';
+				$preselected_json = '';
 
 				if ( 'variable' === $product_type ) {
 
 					$available_variations = $product->get_available_variations();
 
-					if ( ! empty( $available_variations ) ) {
-						$first_variation_id = $available_variations[0]['variation_id'];
-					}               
+					// Build a compact variations map: [ { id, attributes: { pa_color: 'red', ... } }, ... ].
+					$var_map = array();
+					foreach ( $available_variations as $variation ) {
+						$var_map[] = array(
+							'id'         => $variation['variation_id'],
+							'attributes' => $variation['attributes'],
+							'in_stock'   => $variation['is_in_stock'],
+							'price_html' => $variation['price_html'],
+						);
+					}
+					$variations_json = wp_json_encode( $var_map );
+
+					// Build attributes for selector.
+					$attr_data = array();
+					foreach ( $product->get_variation_attributes() as $attribute_slug => $attribute_values ) {
+						$options = array();
+						foreach ( $attribute_values as $value ) {
+							$term      = get_term_by( 'slug', $value, $attribute_slug );
+							$options[] = array(
+								'value' => $value,
+								'label' => $term ? $term->name : ucfirst( str_replace( '-', ' ', $value ) ),
+							);
+						}
+						$attr_data[] = array(
+							'slug'    => $attribute_slug,
+							'label'   => wc_attribute_label( $attribute_slug ),
+							'options' => $options,
+						);
+					}
+					$attributes_json = wp_json_encode( $attr_data );
+
+					// Pass store-owner preselected attributes (if any) so the frontend can pre-fill.
+					$preselected_attrs = isset( $video_variations[ $src_id ] ) ? $video_variations[ $src_id ] : array();
+					if ( ! empty( $preselected_attrs ) ) {
+						$preselected_json = wp_json_encode( $preselected_attrs );
+					}
 				} elseif ( 'grouped' === $product_type ) {
 
 					$children = $product->get_children();
@@ -712,7 +856,13 @@ class WC_Product_Video_Gallery {
 							%1$s
 						</div>
 
-						<div class="rtgodam-modal-product-card">
+						<div class="rtgodam-variation-selector-wrapper"></div>
+
+						<div class="rtgodam-modal-product-card"
+							data-variations="%14$s"
+							data-variation-attributes="%15$s"
+							data-preselected-attrs="%16$s"
+						>
 							<div class="rtgodam-modal-product-left">
 								%2$s
 								<div class="rtgodam-modal-product-meta">
@@ -722,13 +872,12 @@ class WC_Product_Video_Gallery {
 							</div>
 
 							<button 
-								class="rtgodam-modal-add-to-cart %14$s"
+								class="rtgodam-modal-add-to-cart %13$s"
 								data-product-id="%5$s"
 								data-product-type="%9$s"
-								data-first-variation-id="%10$s"
-								data-grouped-ids="%11$s"
-								data-external-url="%12$s"
-								data-in-stock="%13$s"
+								data-grouped-ids="%10$s"
+								data-external-url="%11$s"
+								data-in-stock="%12$s"
 							>
 								+
 							</button>
@@ -746,11 +895,13 @@ class WC_Product_Video_Gallery {
 					$post->ID,
 					$this->markup_instance->generate_product_page_reel_video_modal_markup( $src_id, $post->ID ),
 					esc_attr( $product_type ),
-					esc_attr( $first_variation_id ),
 					esc_attr( $grouped_ids ),
 					esc_url( $external_url ),
 					esc_attr( $in_stock ),
 					( ! $product->is_in_stock() ? 'is-out-of-stock' : '' ),
+					esc_attr( $variations_json ),
+					esc_attr( $attributes_json ),
+					esc_attr( $preselected_json )
 				);
 			},
 			$srcsets_keys

@@ -176,4 +176,246 @@ jQuery( document ).ready( function( $ ) {
 		e.preventDefault();
 		$( this ).closest( 'li' ).remove();
 	} );
+
+	// ---- Variation Picker -------------------------------------------------------
+	// Only relevant for variable products.
+	if (
+		RTGodamVideoGallery.productType === 'variable' &&
+		Array.isArray( RTGodamVideoGallery.productAttributes ) &&
+		RTGodamVideoGallery.productAttributes.length
+	) {
+		// Build attribute lookup once.
+		const attrMap = {};
+		RTGodamVideoGallery.productAttributes.forEach( ( attr ) => {
+			const optLabels = {};
+			attr.options.forEach( ( o ) => {
+				optLabels[ o.value ] = o.label;
+			} );
+			attrMap[ attr.slug ] = { label: attr.label, optLabels };
+		} );
+
+		/**
+		 * Refresh the chip pills shown for a video's current variation selection.
+		 *
+		 * @param {jQuery} $li           - The list item.
+		 * @param {Object} selectedAttrs - Plain object of { slug: value }.
+		 */
+		function updateVariationChips( $li, selectedAttrs ) {
+			const $chips = $li.find( '.godam-variation-chips' );
+			$chips.empty();
+
+			Object.entries( selectedAttrs ).forEach( ( [ slug, value ] ) => {
+				if ( ! value ) {
+					return;
+				}
+				const info       = attrMap[ slug ] || {};
+				const attrLabel  = info.label || slug;
+				const valueLabel = ( info.optLabels || {} )[ value ] || value;
+				$chips.append(
+					$( '<span>', {
+						class: 'godam-variation-chip',
+						text: `${ attrLabel }: ${ valueLabel }`,
+					} ),
+				);
+			} );
+		}
+
+		/**
+		 * Open a modal popup for selecting variation attributes.
+		 *
+		 * @param {jQuery} $li - The list item containing the video.
+		 */
+		function openVariationModal( $li ) {
+			const $dataInput   = $li.find( '.godam-variation-data' );
+			const currentAttrs = JSON.parse( $dataInput.val() || '{}' );
+			const videoTitle   = $li.find( '.godam-product-video-title' ).text() || __( 'Video', 'godam' );
+
+			// Backdrop overlay.
+			const $overlay = $( '<div>', { class: 'godam-variation-modal-overlay' } );
+
+			// Modal container.
+			const $modal = $( '<div>', { class: 'godam-variation-modal' } );
+
+			// Header.
+			const $header = $( '<div>', { class: 'godam-variation-modal-header' } );
+			$header.append( $( '<h3>', { text: __( 'Select Variation', 'godam' ) } ) );
+			$header.append(
+				$( '<button>', {
+					type: 'button',
+					class: 'godam-variation-modal-close',
+					html: '&times;',
+					'aria-label': __( 'Close', 'godam' ),
+				} ),
+			);
+			$modal.append( $header );
+
+			// Subtitle.
+			$modal.append( $( '<p>', {
+				class: 'godam-variation-modal-subtitle',
+				text: sprintf(
+					/* translators: %s: video title */
+					__( 'Pre-select variation attributes for "%s"', 'godam' ),
+					videoTitle,
+				),
+			} ) );
+
+			// Body — attribute rows.
+			const $body = $( '<div>', { class: 'godam-variation-modal-body' } );
+
+			RTGodamVideoGallery.productAttributes.forEach( ( attr ) => {
+				const $row    = $( '<div>', { class: 'godam-variation-modal-row' } );
+				const $label  = $( '<label>', { text: attr.label } );
+				const $select = $( '<select>', { 'data-attribute': attr.slug } );
+
+				$select.append( $( '<option>', { value: '', text: __( '— Any —', 'godam' ) } ) );
+
+				attr.options.forEach( ( opt ) => {
+					const $opt = $( '<option>', { value: opt.value, text: opt.label } );
+					if ( currentAttrs[ attr.slug ] === opt.value ) {
+						$opt.prop( 'selected', true );
+					}
+					$select.append( $opt );
+				} );
+
+				$row.append( $label ).append( $select );
+				$body.append( $row );
+			} );
+
+			$modal.append( $body );
+
+			// Footer with actions.
+			const $footer = $( '<div>', { class: 'godam-variation-modal-footer' } );
+
+			$footer.append(
+				$( '<button>', {
+					type: 'button',
+					class: 'godam-variation-modal-clear-btn components-button godam-button is-compact is-tertiary wc-godam-product-admin',
+					text: __( 'Clear', 'godam' ),
+				} ),
+			);
+
+			$footer.append(
+				$( '<button>', {
+					type: 'button',
+					class: 'godam-variation-modal-apply-btn components-button godam-button is-compact is-primary wc-godam-product-admin',
+					text: __( 'Apply', 'godam' ),
+				} ),
+			);
+
+			$modal.append( $footer );
+			$overlay.append( $modal );
+			$( 'body' ).append( $overlay );
+
+			// Focus trap — prevent background scrolling.
+			$( 'body' ).addClass( 'godam-modal-open' );
+
+			// Animate in.
+			requestAnimationFrame( () => $overlay.addClass( 'is-visible' ) );
+
+			// ---- Close handler ----
+			function closeModal() {
+				$overlay.removeClass( 'is-visible' );
+				setTimeout( () => {
+					$overlay.remove();
+					$( 'body' ).removeClass( 'godam-modal-open' );
+				}, 200 );
+			}
+
+			$overlay.on( 'click', '.godam-variation-modal-close', closeModal );
+			$overlay.on( 'click', function( ev ) {
+				if ( $( ev.target ).is( $overlay ) ) {
+					closeModal();
+				}
+			} );
+
+			// ---- Apply handler ----
+			$overlay.on( 'click', '.godam-variation-modal-apply-btn', function() {
+				const selected = {};
+				$body.find( 'select[data-attribute]' ).each( function() {
+					const val = $( this ).val();
+					if ( val ) {
+						selected[ $( this ).data( 'attribute' ) ] = val;
+					}
+				} );
+				$dataInput.val( JSON.stringify( selected ) );
+				updateVariationChips( $li, selected );
+				closeModal();
+			} );
+
+			// ---- Clear handler ----
+			$overlay.on( 'click', '.godam-variation-modal-clear-btn', function() {
+				$body.find( 'select' ).val( '' );
+				$dataInput.val( '{}' );
+				updateVariationChips( $li, {} );
+				closeModal();
+			} );
+		}
+
+		// ---- Event: open the modal ----
+		videoList.on( 'click', '.godam-select-variation-button', function( e ) {
+			e.preventDefault();
+			openVariationModal( $( this ).closest( 'li' ) );
+		} );
+
+		// ---- Also append variation input + button to videos added dynamically ----
+		const observer = new MutationObserver( ( mutations ) => {
+			mutations.forEach( ( mutation ) => {
+				mutation.addedNodes.forEach( ( node ) => {
+					if ( node.nodeType !== 1 ) {
+						return;
+					}
+					const $node = $( node );
+					const $li = $node.is( 'li' ) ? $node : $node.find( 'li' );
+					$li.each( function() {
+						const $item = $( this );
+						if ( $item.find( '.godam-variation-data' ).length ) {
+							return;
+						}
+						const vidId = $item.find( '[data-vid-id]' ).data( 'vid-id' );
+						if ( ! vidId ) {
+							return;
+						}
+
+						// Add hidden variation input.
+						$item.append(
+							$( '<input>', {
+								type: 'hidden',
+								name: `rtgodam_product_video_variations[${ vidId }]`,
+								value: '{}',
+								class: 'godam-variation-data',
+							} ),
+						);
+
+						// Add chips container.
+						if ( ! $item.find( '.godam-variation-chips' ).length ) {
+							$item.append( $( '<div>', { class: 'godam-variation-chips' } ) );
+						}
+
+						// Wrap "Add Products" and variation button together if actions row doesn't exist.
+						let $actionsRow = $item.find( '.godam-video-actions-row' );
+						if ( ! $actionsRow.length ) {
+							// Create the actions row and move the add-product button into it.
+							$actionsRow = $( '<div>', { class: 'godam-video-actions-row' } );
+							const $addBtn = $item.find( '.godam-add-product-button' );
+							$addBtn.after( $actionsRow );
+							$actionsRow.append( $addBtn );
+						}
+
+						// Add "Select Variation" icon button into the actions row.
+						$actionsRow.append(
+							$( '<button>', {
+								type: 'button',
+								class: 'godam-select-variation-button components-button godam-button is-compact is-tertiary has-icon wc-godam-product-admin',
+								'aria-label': __( 'Select variation', 'godam' ),
+								title: __( 'Select variation', 'godam' ),
+								html: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>',
+							} ),
+						);
+					} );
+				} );
+			} );
+		} );
+
+		observer.observe( videoList[ 0 ], { childList: true, subtree: true } );
+	}
 } );

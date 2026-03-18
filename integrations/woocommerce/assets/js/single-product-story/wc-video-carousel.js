@@ -308,6 +308,235 @@ const wcVideoCarousel = {
 	},
 
 	addToCartSimple() {
+		const self = this;
+
+		/**
+		 * Build the variation selector UI inside the .rtgodam-variation-selector-wrapper
+		 * above the product card for a given slide.
+		 *
+		 * @param {HTMLElement} slide - The .swiper-slide element.
+		 */
+		function buildVariationSelector( slide ) {
+			const card = slide.querySelector( '.rtgodam-modal-product-card' );
+			const wrapper = slide.querySelector( '.rtgodam-variation-selector-wrapper' );
+
+			if ( ! card || ! wrapper ) {
+				return;
+			}
+
+			// Don't rebuild if already populated.
+			if ( wrapper.querySelector( '.rtgodam-variation-selector' ) ) {
+				return;
+			}
+
+			const variationsRaw = card.dataset.variations;
+			const attributesRaw = card.dataset.variationAttributes;
+			const preselectedRaw = card.dataset.preselectedAttrs;
+
+			if ( ! variationsRaw || ! attributesRaw ) {
+				return;
+			}
+
+			let variations, attributes, preselected;
+			try {
+				variations = JSON.parse( variationsRaw );
+				attributes = JSON.parse( attributesRaw );
+				preselected = preselectedRaw ? JSON.parse( preselectedRaw ) : {};
+			} catch ( e ) {
+				return;
+			}
+
+			if ( ! variations.length || ! attributes.length ) {
+				return;
+			}
+
+			const selector = document.createElement( 'div' );
+			selector.className = 'rtgodam-variation-selector';
+
+			attributes.forEach( ( attr ) => {
+				const row = document.createElement( 'div' );
+				row.className = 'rtgodam-variation-attr-row';
+
+				const label = document.createElement( 'span' );
+				label.className = 'rtgodam-variation-attr-label';
+				label.textContent = attr.label;
+				row.appendChild( label );
+
+				const optionsWrap = document.createElement( 'div' );
+				optionsWrap.className = 'rtgodam-variation-attr-options';
+
+				attr.options.forEach( ( opt ) => {
+					const pill = document.createElement( 'button' );
+					pill.type = 'button';
+					pill.className = 'rtgodam-variation-pill';
+					pill.textContent = opt.label;
+					pill.dataset.attrSlug = attr.slug;
+					pill.dataset.attrValue = opt.value;
+
+					// Pre-select if store owner set a default.
+					// Normalize slug to lowercase for comparison (handles 'Size', 'pa_size', 'attribute_size')
+					const normalizedAttrSlug = attr.slug.toLowerCase().replace( /^(pa_|attribute_)/, '' );
+					const preselectedValue = preselected[ attr.slug ] || preselected[ normalizedAttrSlug ] || preselected[ 'pa_' + normalizedAttrSlug ] || preselected[ 'attribute_' + normalizedAttrSlug ];
+					if ( preselectedValue === opt.value ) {
+						pill.classList.add( 'is-selected' );
+					}
+
+					optionsWrap.appendChild( pill );
+				} );
+
+				row.appendChild( optionsWrap );
+				selector.appendChild( row );
+			} );
+
+			// "Add to Cart" confirm button.
+			const addBtn = document.createElement( 'button' );
+			addBtn.type = 'button';
+			addBtn.className = 'rtgodam-variation-add-btn';
+			addBtn.textContent = 'Add to Cart';
+			selector.appendChild( addBtn );
+
+			// Price display area.
+			const priceEl = document.createElement( 'span' );
+			priceEl.className = 'rtgodam-variation-price';
+			selector.appendChild( priceEl );
+
+			wrapper.appendChild( selector );
+
+			// ---- Pill click toggles ----
+			selector.addEventListener( 'click', ( e ) => {
+				const pill = e.target.closest( '.rtgodam-variation-pill' );
+				if ( ! pill ) {
+					return;
+				}
+
+				// Deselect siblings in the same attribute row.
+				const row = pill.closest( '.rtgodam-variation-attr-row' );
+				row.querySelectorAll( '.rtgodam-variation-pill' ).forEach( ( p ) => p.classList.remove( 'is-selected' ) );
+				pill.classList.add( 'is-selected' );
+
+				// Update price preview.
+				const matchedId = findMatchingVariation( selector, attributes, variations );
+				if ( matchedId ) {
+					const v = variations.find( ( vr ) => vr.id === matchedId );
+					if ( v && v.price_html ) {
+						priceEl.innerHTML = v.price_html;
+					}
+					addBtn.disabled = false;
+					addBtn.classList.remove( 'is-disabled' );
+				} else {
+					priceEl.innerHTML = '';
+					addBtn.disabled = true;
+					addBtn.classList.add( 'is-disabled' );
+				}
+			} );
+
+			// ---- Add to Cart click ----
+			addBtn.addEventListener( 'click', async () => {
+				const matchedId = findMatchingVariation( selector, attributes, variations );
+				if ( ! matchedId ) {
+					self.showCartNotice( 'Please select all options', 'error' );
+					return;
+				}
+
+				const v = variations.find( ( vr ) => vr.id === matchedId );
+				if ( v && ! v.in_stock ) {
+					self.showCartNotice( 'Selected variation is out of stock', 'error' );
+					return;
+				}
+
+				const cartStore = dispatch( 'wc/store/cart' );
+				if ( ! cartStore ) {
+					self.showCartNotice( 'Cart not available', 'error' );
+					return;
+				}
+
+				addBtn.disabled = true;
+				addBtn.classList.add( 'loading' );
+
+				try {
+					// Build variation data array for WooCommerce Store API
+					const variationData = [];
+					attributes.forEach( ( attr ) => {
+						const pill = selector.querySelector( `.rtgodam-variation-pill.is-selected[data-attr-slug="${ attr.slug }"]` );
+						if ( pill ) {
+							const normalizedSlug = attr.slug.toLowerCase().replace( /^(pa_|attribute_)/, '' );
+							variationData.push( {
+								attribute: normalizedSlug,
+								value: pill.dataset.attrValue,
+							} );
+						}
+					} );
+
+					await cartStore.addItemToCart( matchedId, 1, variationData );
+					self.showCartNotice( 'Added to cart' );
+				} catch ( err ) {
+					console.error( err );
+					self.showCartNotice( 'Failed to add to cart', 'error' );
+				} finally {
+					addBtn.disabled = false;
+					addBtn.classList.remove( 'loading' );
+				}
+			} );
+
+			// Initial state: disable add button if not all attrs are pre-selected.
+			const initialMatch = findMatchingVariation( selector, attributes, variations );
+			if ( ! initialMatch ) {
+				addBtn.disabled = true;
+				addBtn.classList.add( 'is-disabled' );
+			} else {
+				const v = variations.find( ( vr ) => vr.id === initialMatch );
+				if ( v && v.price_html ) {
+					priceEl.innerHTML = v.price_html;
+				}
+			}
+		}
+
+		/**
+		 * Find the matching variation ID from the currently selected pills.
+		 *
+		 * @param {HTMLElement} selector   - The .rtgodam-variation-selector container.
+		 * @param {Array}       attributes - The attributes definitions.
+		 * @param {Array}       variations - The available variations.
+		 * @return {number|null} The matching variation ID or null.
+		 */
+		function findMatchingVariation( selector, attributes, variations ) {
+			const selected = {};
+			let allSelected = true;
+
+			attributes.forEach( ( attr ) => {
+				const pill = selector.querySelector( `.rtgodam-variation-pill.is-selected[data-attr-slug="${ attr.slug }"]` );
+				if ( pill ) {
+					// Use lowercase slug to match WooCommerce variation attribute keys (e.g., 'attribute_size')
+					const normalizedSlug = attr.slug.toLowerCase().replace( /^(pa_|attribute_)/, '' );
+					selected[ 'attribute_' + normalizedSlug ] = pill.dataset.attrValue;
+				} else {
+					allSelected = false;
+				}
+			} );
+
+			if ( ! allSelected ) {
+				return null;
+			}
+
+			for ( const variation of variations ) {
+				let match = true;
+				for ( const [ key, val ] of Object.entries( selected ) ) {
+					const varVal = variation.attributes[ key ];
+					// An empty string in WC means "Any" — matches any value.
+					if ( varVal !== '' && varVal !== val ) {
+						match = false;
+						break;
+					}
+				}
+				if ( match ) {
+					return variation.id;
+				}
+			}
+
+			return null;
+		}
+
+		// ---- Main click handler ----
 		document.addEventListener( 'click', async ( e ) => {
 			const button = e.target.closest( '.rtgodam-modal-add-to-cart' );
 			if ( ! button ) {
@@ -316,12 +545,9 @@ const wcVideoCarousel = {
 
 			const productId = button.dataset.productId;
 			const productType = button.dataset.productType;
-			const firstVariationId = button.dataset.firstVariationId;
 			const groupedIds = button.dataset.groupedIds;
 			const externalUrl = button.dataset.externalUrl;
 			const inStock = button.dataset.inStock === 'true';
-
-			console.log( inStock );
 
 			// OUT OF STOCK
 			if ( ! inStock ) {
@@ -332,6 +558,17 @@ const wcVideoCarousel = {
 			// EXTERNAL PRODUCT
 			if ( productType === 'external' && externalUrl ) {
 				window.location.href = externalUrl;
+				return;
+			}
+
+			// VARIABLE PRODUCT — toggle the variation selector.
+			if ( productType === 'variable' ) {
+				const slide = button.closest( '.swiper-slide' );
+				const wrapper = slide?.querySelector( '.rtgodam-variation-selector-wrapper' );
+				if ( wrapper ) {
+					buildVariationSelector( slide );
+					wrapper.classList.toggle( 'is-open' );
+				}
 				return;
 			}
 
@@ -348,10 +585,7 @@ const wcVideoCarousel = {
 			try {
 				let successMessage = 'Added to cart successfully';
 
-				if ( productType === 'variable' && firstVariationId ) {
-					await cartStore.addItemToCart( firstVariationId, 1 );
-					successMessage = 'First Variation added to cart';
-				} else if ( productType === 'grouped' && groupedIds ) {
+				if ( productType === 'grouped' && groupedIds ) {
 					const ids = groupedIds
 						.split( ',' )
 						.map( ( id ) => id.trim() )
