@@ -208,8 +208,8 @@ jQuery( document ).ready( function( $ ) {
 				if ( ! value ) {
 					return;
 				}
-				const info       = attrMap[ slug ] || {};
-				const attrLabel  = info.label || slug;
+				const info = attrMap[ slug ] || {};
+				const attrLabel = info.label || slug;
 				const valueLabel = ( info.optLabels || {} )[ value ] || value;
 				$chips.append(
 					$( '<span>', {
@@ -226,9 +226,9 @@ jQuery( document ).ready( function( $ ) {
 		 * @param {jQuery} $li - The list item containing the video.
 		 */
 		function openVariationModal( $li ) {
-			const $dataInput   = $li.find( '.godam-variation-data' );
+			const $dataInput = $li.find( '.godam-variation-data' );
 			const currentAttrs = JSON.parse( $dataInput.val() || '{}' );
-			const videoTitle   = $li.find( '.godam-product-video-title' ).text() || __( 'Video', 'godam' );
+			const videoTitle = $li.find( '.godam-product-video-title' ).text() || __( 'Video', 'godam' );
 
 			// Backdrop overlay.
 			const $overlay = $( '<div>', { class: 'godam-variation-modal-overlay' } );
@@ -263,8 +263,8 @@ jQuery( document ).ready( function( $ ) {
 			const $body = $( '<div>', { class: 'godam-variation-modal-body' } );
 
 			RTGodamVideoGallery.productAttributes.forEach( ( attr ) => {
-				const $row    = $( '<div>', { class: 'godam-variation-modal-row' } );
-				const $label  = $( '<label>', { text: attr.label } );
+				const $row = $( '<div>', { class: 'godam-variation-modal-row' } );
+				const $label = $( '<label>', { text: attr.label } );
 				const $select = $( '<select>', { 'data-attribute': attr.slug } );
 
 				$select.append( $( '<option>', { value: '', text: __( '— Any —', 'godam' ) } ) );
@@ -391,26 +391,28 @@ jQuery( document ).ready( function( $ ) {
 							$item.append( $( '<div>', { class: 'godam-variation-chips' } ) );
 						}
 
-						// Wrap "Add Products" and variation button together if actions row doesn't exist.
-						let $actionsRow = $item.find( '.godam-video-actions-row' );
-						if ( ! $actionsRow.length ) {
-							// Create the actions row and move the add-product button into it.
-							$actionsRow = $( '<div>', { class: 'godam-video-actions-row' } );
+						// Ensure actions row exists (contains only the "Add Products" button).
+						if ( ! $item.find( '.godam-video-actions-row' ).length ) {
+							const $actionsRow = $( '<div>', { class: 'godam-video-actions-row' } );
 							const $addBtn = $item.find( '.godam-add-product-button' );
 							$addBtn.after( $actionsRow );
 							$actionsRow.append( $addBtn );
 						}
 
-						// Add "Select Variation" icon button into the actions row.
-						$actionsRow.append(
-							$( '<button>', {
-								type: 'button',
-								class: 'godam-select-variation-button components-button godam-button is-compact is-tertiary has-icon wc-godam-product-admin',
-								'aria-label': __( 'Select variation', 'godam' ),
-								title: __( 'Select variation', 'godam' ),
-								html: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>',
-							} ),
-						);
+						// Add "Select Variation" icon button into the thumbnail overlay (bottom-left),
+						// mirroring the delete button at top-right.
+						const $thumbWrapper = $item.find( '.video-thumb-wrapper' );
+						if ( $thumbWrapper.length && ! $thumbWrapper.find( '.godam-select-variation-button' ).length ) {
+							$thumbWrapper.append(
+								$( '<button>', {
+									type: 'button',
+									class: 'godam-select-variation-button components-button godam-button is-compact is-tertiary has-icon wc-godam-product-admin',
+									'aria-label': __( 'Select variation', 'godam' ),
+									title: __( 'Select variation', 'godam' ),
+									html: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>',
+								} ),
+							);
+						}
 					} );
 				} );
 			} );
