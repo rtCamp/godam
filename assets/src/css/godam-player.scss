@@ -17,6 +17,7 @@
 
 // CTA Card styles - Shared component (also used in video editor)
 @use './cta-card';
+@use "./mobile-brand-logo";
 
 .rtgodam-video-caption {
 
@@ -1285,20 +1286,13 @@ body.godam-share-modal-open {
  }
 
  .vjs-control.vjs-custom-play-button {
-	 width: auto !important;
-	 order: 8;
+	width: auto !important;
+	order: 8;
 
-	 #branding-icon {
-		 height: 100%;
-		 width: auto;
-		 object-fit: fill;
-	 }
-
-	 @container godam-player-default-skin (max-width: 480px) {
-
-		& {
-			display: none;
-		}
+	#branding-icon {
+		height: 100%;
+		width: auto;
+		object-fit: fill;
 	}
  }
 
@@ -1531,6 +1525,30 @@ body.godam-share-modal-open {
 
 	@container godam-player-default-skin (max-width: 480px) {
 
+		@include mobile-brand-logo.mobile-brand-logo(66px, 30px);
+
+		.vjs-control.vjs-custom-play-button {
+			position: absolute;
+			bottom: 0;
+			right: 0;
+		}
+
+		.vjs-fullscreen-control {
+			right: var(--godam-logo-width) !important;
+		}
+
+		.vjs-picture-in-picture-control {
+			right: calc(var(--godam-logo-width) + var(--godam-btn-width)) !important;
+		}
+
+		.vjs-settings-button {
+			right: calc(var(--godam-logo-width) + (2 * var(--godam-btn-width))) !important;
+		}
+
+		.vjs-quality-menu-wrapper {
+			right: calc(var(--godam-logo-width) + (3 * var(--godam-btn-width))) !important;
+		}
+		
 		.vjs-big-play-button {
 			left: 55% !important;
 		}
