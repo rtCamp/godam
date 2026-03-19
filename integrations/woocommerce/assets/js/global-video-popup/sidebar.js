@@ -391,13 +391,23 @@ export function initSidebarToggle( modal ) {
  * @param {boolean} [isError=false] - Whether the message indicates an error (adds `error` class if true).
  */
 function showAddToCartNotification( message, isError = false ) {
-	const toast = document.getElementById( 'godam-add-to-cart-toast' );
+	let toast = document.getElementById( 'godam-add-to-cart-toast' );
+
+	// Create toast if it doesn't exist yet.
 	if ( ! toast ) {
-		return;
+		toast = document.createElement( 'div' );
+		toast.id = 'godam-add-to-cart-toast';
+		document.body.appendChild( toast );
 	}
 
 	toast.textContent = message;
-	toast.className = ''; // Reset existing classes.
+
+	// Reset only state classes, not any base styling class.
+	toast.classList.remove( 'visible', 'error' );
+
+	// Force reflow so CSS transition re-triggers properly.
+	void toast.offsetWidth;
+
 	toast.classList.add( 'visible' );
 	if ( isError ) {
 		toast.classList.add( 'error' );
@@ -410,13 +420,255 @@ function showAddToCartNotification( message, isError = false ) {
 }
 
 /**
+ * Builds the inline variation selector UI inside the given wrapper element.
+ *
+ * Reads variation data from the button's data attributes, constructs pill-based
+ * attribute selectors, and wires up add-to-cart logic using the WooCommerce Store API.
+ *
+ * @param {HTMLElement} button  - The `.godam-product-sidebar-add-to-cart-button` that holds variation data.
+ * @param {HTMLElement} wrapper - The `.godam-sidebar-variation-selector-wrapper` to populate.
+ */
+function buildSidebarVariationSelector( button, wrapper ) {
+	// Don't rebuild if already populated.
+	if ( wrapper.querySelector( '.rtgodam-variation-selector' ) ) {
+		return;
+	}
+
+	const variationsRaw = button.dataset.variations;
+	const attributesRaw = button.dataset.variationAttributes;
+	const preselectedRaw = button.dataset.preselectedAttrs;
+
+	if ( ! variationsRaw || ! attributesRaw ) {
+		return;
+	}
+
+	let variations, attributes, preselected;
+	try {
+		variations = JSON.parse( variationsRaw );
+		attributes = JSON.parse( attributesRaw );
+		preselected = preselectedRaw ? JSON.parse( preselectedRaw ) : {};
+	} catch ( e ) {
+		return;
+	}
+
+	if ( ! variations.length || ! attributes.length ) {
+		return;
+	}
+
+	const selector = document.createElement( 'div' );
+	selector.className = 'rtgodam-variation-selector';
+
+	attributes.forEach( ( attr ) => {
+		const row = document.createElement( 'div' );
+		row.className = 'rtgodam-variation-attr-row';
+
+		const label = document.createElement( 'span' );
+		label.className = 'rtgodam-variation-attr-label';
+		label.textContent = attr.label;
+		row.appendChild( label );
+
+		const optionsWrap = document.createElement( 'div' );
+		optionsWrap.className = 'rtgodam-variation-attr-options';
+
+		attr.options.forEach( ( opt ) => {
+			const pill = document.createElement( 'button' );
+			pill.type = 'button';
+			pill.className = 'rtgodam-variation-pill';
+			pill.textContent = opt.label;
+			pill.dataset.attrSlug = attr.slug;
+			pill.dataset.attrValue = opt.value;
+
+			// Pre-select if WooCommerce default attributes match.
+			// WC default_attributes keys are slugs without 'pa_' or 'attribute_' prefix.
+			const normalizedAttrSlug = attr.slug.toLowerCase().replace( /^(pa_|attribute_)/, '' );
+			const preselectedValue =
+				preselected[ attr.slug ] ??
+				preselected[ normalizedAttrSlug ] ??
+				preselected[ 'pa_' + normalizedAttrSlug ] ??
+				preselected[ 'attribute_' + normalizedAttrSlug ];
+
+			if ( preselectedValue !== undefined && preselectedValue === opt.value ) {
+				pill.classList.add( 'is-selected' );
+			}
+
+			optionsWrap.appendChild( pill );
+		} );
+
+		row.appendChild( optionsWrap );
+		selector.appendChild( row );
+	} );
+
+	// "Add to Cart" confirm button.
+	const addBtn = document.createElement( 'button' );
+	addBtn.type = 'button';
+	addBtn.className = 'rtgodam-variation-add-btn is-disabled';
+	addBtn.textContent = __( 'Add to Cart', 'godam' );
+	addBtn.disabled = true;
+	selector.appendChild( addBtn );
+
+	// Price display area.
+	const priceEl = document.createElement( 'span' );
+	priceEl.className = 'rtgodam-variation-price';
+	selector.appendChild( priceEl );
+
+	// Close button — top-right corner.
+	const closeBtn = document.createElement( 'button' );
+	closeBtn.type = 'button';
+	closeBtn.className = 'rtgodam-variation-close-btn';
+	closeBtn.setAttribute( 'aria-label', 'Close variation selector' );
+	closeBtn.innerHTML = '&times;';
+	closeBtn.addEventListener( 'click', () => {
+		wrapper.classList.remove( 'is-open' );
+	} );
+	selector.prepend( closeBtn );
+
+	wrapper.appendChild( selector );
+
+	// If defaults were pre-selected, show initial price and enable add button.
+	const initialMatch = findSidebarMatchingVariation( selector, attributes, variations );
+	if ( initialMatch ) {
+		const v = variations.find( ( vr ) => vr.id === initialMatch );
+		if ( v && v.price_html ) {
+			priceEl.innerHTML = v.price_html;
+		}
+		addBtn.disabled = false;
+		addBtn.classList.remove( 'is-disabled' );
+	}
+
+	// ---- Pill click: update selection + price preview ----
+	selector.addEventListener( 'click', ( e ) => {
+		const pill = e.target.closest( '.rtgodam-variation-pill' );
+		if ( ! pill ) {
+			return;
+		}
+
+		const row = pill.closest( '.rtgodam-variation-attr-row' );
+		row.querySelectorAll( '.rtgodam-variation-pill' ).forEach( ( p ) => p.classList.remove( 'is-selected' ) );
+		pill.classList.add( 'is-selected' );
+
+		const matchedId = findSidebarMatchingVariation( selector, attributes, variations );
+		if ( matchedId ) {
+			const v = variations.find( ( vr ) => vr.id === matchedId );
+			if ( v && v.price_html ) {
+				priceEl.innerHTML = v.price_html;
+			}
+			addBtn.disabled = false;
+			addBtn.classList.remove( 'is-disabled' );
+		} else {
+			priceEl.innerHTML = '';
+			addBtn.disabled = true;
+			addBtn.classList.add( 'is-disabled' );
+		}
+	} );
+
+	// ---- Add to Cart click ----
+	addBtn.addEventListener( 'click', async () => {
+		const matchedId = findSidebarMatchingVariation( selector, attributes, variations );
+		if ( ! matchedId ) {
+			showAddToCartNotification( __( 'Please select all options.', 'godam' ), true );
+			return;
+		}
+
+		const v = variations.find( ( vr ) => vr.id === matchedId );
+		if ( v && ! v.in_stock ) {
+			showAddToCartNotification( __( 'Selected variation is out of stock.', 'godam' ), true );
+			return;
+		}
+
+		const cartStore = dispatch( godamWooVars.addToCartAjax );
+		if ( ! cartStore ) {
+			showAddToCartNotification( __( 'Cart not available.', 'godam' ), true );
+			return;
+		}
+
+		const originalText = addBtn.textContent;
+		addBtn.disabled = true;
+		addBtn.classList.add( 'loading' );
+		addBtn.textContent = __( 'Adding…', 'godam' );
+
+		try {
+			const variationData = [];
+			attributes.forEach( ( attr ) => {
+				const selectedPill = selector.querySelector(
+					`.rtgodam-variation-pill.is-selected[data-attr-slug="${ attr.slug }"]`,
+				);
+				if ( selectedPill ) {
+					const normalizedSlug = attr.slug.toLowerCase().replace( /^(pa_|attribute_)/, '' );
+					variationData.push( {
+						attribute: normalizedSlug,
+						value: selectedPill.dataset.attrValue,
+					} );
+				}
+			} );
+
+			await cartStore.addItemToCart( matchedId, 1, variationData );
+			showAddToCartNotification( __( 'Product added successfully!', 'godam' ) );
+			wrapper.classList.remove( 'is-open' );
+		} catch ( err ) {
+			console.error( err );
+			showAddToCartNotification( __( 'Failed to add to cart.', 'godam' ), true );
+		} finally {
+			addBtn.disabled = false;
+			addBtn.classList.remove( 'loading' );
+			addBtn.textContent = originalText;
+		}
+	} );
+}
+
+/**
+ * Finds the matching variation ID from the currently selected pills.
+ *
+ * @param {HTMLElement} selector   - The `.rtgodam-variation-selector` container.
+ * @param {Array}       attributes - The attribute definitions.
+ * @param {Array}       variations - The available variations.
+ * @return {number|null} The matching variation ID, or null if not all attributes are selected.
+ */
+function findSidebarMatchingVariation( selector, attributes, variations ) {
+	const selected = {};
+	let allSelected = true;
+
+	attributes.forEach( ( attr ) => {
+		const pill = selector.querySelector(
+			`.rtgodam-variation-pill.is-selected[data-attr-slug="${ attr.slug }"]`,
+		);
+		if ( pill ) {
+			// Strip only 'attribute_' prefix so 'pa_color' becomes 'attribute_pa_color',
+			// matching the keys WooCommerce stores in get_available_variations() attributes.
+			const normalizedSlug = attr.slug.toLowerCase().replace( /^attribute_/, '' );
+			selected[ 'attribute_' + normalizedSlug ] = pill.dataset.attrValue;
+		} else {
+			allSelected = false;
+		}
+	} );
+
+	if ( ! allSelected ) {
+		return null;
+	}
+
+	for ( const variation of variations ) {
+		let match = true;
+		for ( const [ key, val ] of Object.entries( selected ) ) {
+			const varVal = variation.attributes[ key ];
+			// An empty string in WC means "Any" — matches any value.
+			if ( varVal !== '' && varVal !== val ) {
+				match = false;
+				break;
+			}
+		}
+		if ( match ) {
+			return variation.id;
+		}
+	}
+
+	return null;
+}
+
+/**
  * Attaches "Add to Cart" click listeners to buttons inside the given container.
  *
- * - Targets elements with the `.godam-product-sidebar-add-to-cart-button` class.
- * - On click, retrieves the associated product ID and sends an AJAX request to WooCommerce.
- * - If successful, updates WooCommerce fragments (e.g. cart count) on the page.
+ * - For simple products: fires the WooCommerce Store API directly.
+ * - For variable products: toggles an inline variation selector panel.
  * - Displays a toast notification for success or failure.
- * - Dynamically creates the toast element if it doesn't already exist in the DOM.
  *
  * @param {HTMLElement} containerElement - The container within which to look for add-to-cart buttons.
  */
@@ -429,18 +681,43 @@ function attachAddToCartListeners( containerElement ) {
 
 	buttons.forEach( ( button ) => {
 		button.addEventListener( 'click', async () => {
+			const productType = button.dataset.productType;
+
+			// VARIABLE PRODUCT — toggle the inline variation selector.
+			if ( productType === 'variable' ) {
+				// Find the sidebar container and place/reuse the wrapper right after godam-sidebar-header.
+				const productSidebar = button.closest( '.godam-product-sidebar' );
+				let wrapper = productSidebar?.querySelector( ':scope > .godam-sidebar-variation-selector-wrapper' );
+
+				if ( ! wrapper && productSidebar ) {
+					wrapper = document.createElement( 'div' );
+					wrapper.className = 'godam-sidebar-variation-selector-wrapper';
+					const header = productSidebar.querySelector( '.godam-sidebar-header' );
+					if ( header ) {
+						header.insertAdjacentElement( 'afterend', wrapper );
+					} else {
+						productSidebar.prepend( wrapper );
+					}
+				}
+
+				if ( wrapper ) {
+					// Rebuild selector for the new product if button changed.
+					if ( wrapper._sourceButton !== button ) {
+						wrapper.innerHTML = '';
+						wrapper._sourceButton = button;
+					}
+					buildSidebarVariationSelector( button, wrapper );
+					wrapper.classList.toggle( 'is-open' );
+				}
+				return;
+			}
+
+			// SIMPLE PRODUCT.
 			button.classList.add( 'loading' );
 
 			const productId = button.dataset.productId;
 			if ( ! productId ) {
 				return;
-			}
-
-			// Ensure toast element exists.
-			if ( ! document.getElementById( 'godam-add-to-cart-toast' ) ) {
-				const toast = document.createElement( 'div' );
-				toast.id = 'godam-add-to-cart-toast';
-				document.body.appendChild( toast );
 			}
 
 			try {
@@ -482,8 +759,9 @@ function attachAddToCartListeners( containerElement ) {
  */
 async function loadSingleProductSidebar( productId, sidebarModal, sidebarElement, modal ) {
 	try {
+		const videoId = modal?.dataset?.modalVideoId || '';
 		const response = await fetch(
-			`${ godamWooVars.ajaxUrl }?action=${ godamWooVars.getSingleProductHtmlAction }&product_id=${ productId }&_wpnonce=${ godamWooVars.getSingleProductHtmlNonce }`,
+			`${ godamWooVars.ajaxUrl }?action=${ godamWooVars.getSingleProductHtmlAction }&product_id=${ productId }&video_id=${ videoId }&_wpnonce=${ godamWooVars.getSingleProductHtmlNonce }`,
 		);
 
 		const result = await response.json();
@@ -550,10 +828,12 @@ async function loadMultipleProductsSidebar( idsArray, sidebarModal, sidebarEleme
 			.map( ( product ) => parseInt( product.id ) )
 			.filter( Boolean );
 
+		const videoId = modal?.dataset?.modalVideoId || '';
+
 		const response = await fetch(
 			`${ godamWooVars.ajaxUrl }?action=${ godamWooVars.getMultipleProductHtmlAction }&products=${ encodeURIComponent(
 				ids.join( ',' ),
-			) }&_wpnonce=${ godamWooVars.getMultipleProductHtmlNonce }`,
+			) }&video_id=${ videoId }&_wpnonce=${ godamWooVars.getMultipleProductHtmlNonce }`,
 		);
 
 		const result = await response.json();
