@@ -1690,8 +1690,11 @@ body.godam-share-modal-open {
 					display: none;
 				}
 
+				// Show time controls on mobile - only hide the divider, keep current time and duration
 				@container godam-player-default-skin (max-width: 420px) {
-					display: none !important;
+					.vjs-time-divider {
+						display: none !important;
+					}
 				}
 			}
 
