@@ -198,6 +198,7 @@ $allowed_svg = array(
 		<button class="godam-product-sidebar-add-to-cart-button godam-small-cart-icon"
 			data-product-id="<?php echo esc_attr( $product->get_id() ); ?>"
 			data-product-type="variable"
+			data-product-url="<?php echo esc_url( get_permalink( $product->get_id() ) ); ?>"
 			data-variations="<?php echo esc_attr( $small_variations_json ); ?>"
 			data-variation-attributes="<?php echo esc_attr( $small_attributes_json ); ?>"
 			data-preselected-attrs="<?php echo esc_attr( $small_preselected_json ?? '' ); ?>">

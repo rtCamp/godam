@@ -98,6 +98,7 @@ if ( 'variable' === $product_type ) {
 		<button class="godam-product-sidebar-add-to-cart-button"
 				data-product-id="<?php echo esc_attr( $product->get_id() ); ?>"
 				data-product-type="variable"
+				data-product-url="<?php echo esc_url( $product_url ); ?>"
 				data-variations="<?php echo esc_attr( $variations_json ); ?>"
 				data-variation-attributes="<?php echo esc_attr( $attributes_json ); ?>"
 				data-preselected-attrs="<?php echo esc_attr( $preselected_json ); ?>">

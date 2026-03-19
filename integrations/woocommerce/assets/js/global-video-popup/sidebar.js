@@ -683,9 +683,18 @@ function attachAddToCartListeners( containerElement ) {
 		button.addEventListener( 'click', async () => {
 			const productType = button.dataset.productType;
 
-			// VARIABLE PRODUCT — toggle the inline variation selector.
+			// VARIABLE PRODUCT — on desktop open product page in new tab; on mobile show variation selector.
 			if ( productType === 'variable' ) {
-				// Find the sidebar container and place/reuse the wrapper right after godam-sidebar-header.
+				// Desktop (> 1024px): open product page in new tab.
+				if ( window.innerWidth > 1024 ) {
+					const productUrl = button.dataset.productUrl;
+					if ( productUrl ) {
+						window.open( productUrl, '_blank' );
+						return;
+					}
+				}
+
+				// Mobile: show inline variation selector.
 				const productSidebar = button.closest( '.godam-product-sidebar' );
 				let wrapper = productSidebar?.querySelector( ':scope > .godam-sidebar-variation-selector-wrapper' );
 
