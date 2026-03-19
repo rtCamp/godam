@@ -953,6 +953,9 @@ to ensure proper responsiveness and avoid layout issues.
 }
 
 .godam-video-thumb-wrapper {
+	position: relative;
+	display: block;
+
 	&.godam-locked img {
 		filter: blur(3px) brightness(0.7);
 	}
@@ -971,7 +974,7 @@ to ensure proper responsiveness and avoid layout issues.
 
 		filter: drop-shadow(0 2px 4px rgba(0,0,0,0.55));
 
-		.svg {
+		svg {
 			filter: drop-shadow(0 2px 4px rgba(0,0,0,0.55));
 		}
 	}

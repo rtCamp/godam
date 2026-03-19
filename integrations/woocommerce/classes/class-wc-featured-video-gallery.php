@@ -96,7 +96,7 @@ class WC_Featured_Video_Gallery {
 			array(
 				'ajaxurl'        => admin_url( 'admin-ajax.php' ),
 				'nonce'          => wp_create_nonce( 'godam_admin_featured_video_gallery_nonce' ),
-				'hasValidApiKey' => rtgodam_is_api_key_valid(),
+				'hasValidAPIKey' => rtgodam_is_api_key_valid(),
 				'adminUrl'       => admin_url(),
 				'pricingUrl'     => RTGODAM_IO_API_BASE . '/pricing?utm_campaign=upgrade&utm_source=plugin&utm_medium=admin-notice&utm_content=godam_woo_featured_video_gallery',
 			)
@@ -139,7 +139,7 @@ class WC_Featured_Video_Gallery {
 			array(
 				'ajax_url'       => admin_url( 'admin-ajax.php' ),
 				'nonce'          => wp_create_nonce( 'godam_featured_video_gallery_nonce' ),
-				'hasValidApiKey' => rtgodam_is_api_key_valid(),
+				'hasValidAPIKey' => rtgodam_is_api_key_valid(),
 			)
 		);
 

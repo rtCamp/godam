@@ -45,6 +45,9 @@ jQuery( document ).ready( function( $ ) {
 			if ( ! src || src.trim() === '' ) {
 				emptySrcAlts.push( alt );
 				emptyImgs.push( this );
+
+				$img.closest( 'li' ).addClass( 'godam-thumb-loading' );
+				$img.css( 'visibility', 'hidden' );
 			}
 		} );
 
@@ -130,6 +133,8 @@ jQuery( document ).ready( function( $ ) {
 							}
 							openVideoModal( videoId );
 						} );
+					$img.css( 'visibility', 'visible' );
+					$img.closest( 'li' ).removeClass( 'godam-thumb-loading' );
 				} );
 			},
 		);
@@ -200,7 +205,7 @@ jQuery( document ).ready( function( $ ) {
 	 * Remove video tiles if API key invalid
 	 */
 	function removeFrontendVideosIfNeeded() {
-		if ( myGalleryAjaxData?.hasValidApiKey ) {
+		if ( myGalleryAjaxData?.hasValidAPIKey ) {
 			return;
 		}
 
@@ -235,8 +240,11 @@ jQuery( document ).ready( function( $ ) {
 		const observer = new MutationObserver( function( _, obs ) {
 			if ( $( targetNode ).find( 'ol.flex-control-thumbs li img' ).length > 0 ) {
 				obs.disconnect();
-				removeFrontendVideosIfNeeded();
-				handleGalleryImages();
+				if ( myGalleryAjaxData?.hasValidAPIKey ) {
+					handleGalleryImages();
+				} else {
+					removeFrontendVideosIfNeeded();
+				}
 			}
 		} );
 
@@ -244,13 +252,19 @@ jQuery( document ).ready( function( $ ) {
 
 		// Optional immediate execution if already present.
 		if ( $( targetNode ).find( 'ol.flex-control-thumbs li img' ).length > 0 ) {
-			removeFrontendVideosIfNeeded();
-			handleGalleryImages();
+			if ( myGalleryAjaxData?.hasValidAPIKey ) {
+				handleGalleryImages();
+			} else {
+				removeFrontendVideosIfNeeded();
+			}
 		}
 	}
 
 	$( 'body' ).on( 'wc-product-gallery-before-init', function() {
-		removeFrontendVideosIfNeeded();
-		handleGalleryImages();
+		if ( myGalleryAjaxData?.hasValidAPIKey ) {
+			handleGalleryImages();
+		} else {
+			removeFrontendVideosIfNeeded();
+		}
 	} );
 } );

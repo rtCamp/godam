@@ -64,7 +64,7 @@ import { __ } from '@wordpress/i18n';
 				let hasVideo = false;
 
 				const filteredFiles = selection.filter( function( file ) {
-					if ( file.type === 'video' && ! rtGodamSettings?.hasValidApiKey ) {
+					if ( file.type === 'video' && ! rtGodamSettings?.hasValidAPIKey ) {
 						hasVideo = true;
 						return false;
 					}
@@ -130,7 +130,7 @@ import { __ } from '@wordpress/i18n';
 		const notice = $( `
 			<div class="notice notice-warning is-dismissible godam-pro-video-notice godam-featured-video-gallery-notice">
 				<p>
-					<strong>${ __( 'Product Gallery videos is a Pro feature.', 'godam' ) }</strong>
+					<strong>${ __( 'Product Gallery videos are a Pro feature.', 'godam' ) }</strong>
 					<a href="${ videoEditorSettingsUrl }" target="_blank" rel="noopener noreferrer" class="text-[#AB3A6C] godam-notice-link no-underline">
 						${ __( 'Activate your license', 'godam' ) }
 					</a>
@@ -149,7 +149,7 @@ import { __ } from '@wordpress/i18n';
 	/**
 	 * Lock behavior for videos
 	 */
-	if ( ! rtGodamSettings?.hasValidApiKey ) {
+	if ( ! rtGodamSettings?.hasValidAPIKey ) {
 		const lockedVideos = $( '#product_images_container li.image' ).filter( function() {
 			const $li = $( this );
 
