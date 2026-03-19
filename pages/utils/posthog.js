@@ -13,7 +13,7 @@ const initPostHog = () => {
 
 	const posthogKey = posthogConfig.key || '';
 	const posthogHost = posthogConfig.host || '';
-	const posthogEnabled = posthogConfig.enabled !== '0'; // Enable by default, disable on 0, "0", or false
+	const posthogEnabled = posthogConfig.enabled === '1' || posthogConfig.enabled === 1; // Only enable when explicitly opted in; never default to enabled.
 
 	if ( ! posthogEnabled ) {
 		return posthog;
