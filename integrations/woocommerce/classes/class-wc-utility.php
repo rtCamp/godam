@@ -401,6 +401,7 @@ class WC_Utility {
 
 		ob_start();
 
+		$video_id     = isset( $_GET['video_id'] ) ? absint( $_GET['video_id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- nonce already verified above
 		$toggle_label = __( 'Product Details', 'godam' );
 		$utility      = $this;
 
@@ -467,6 +468,7 @@ class WC_Utility {
 
 		ob_start();
 
+		$video_id     = isset( $_GET['video_id'] ) ? absint( $_GET['video_id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- nonce already verified above
 		$toggle_label = __( 'All Attached Products', 'godam' );
 		$utility      = $this;
 		$products     = $additional_products;

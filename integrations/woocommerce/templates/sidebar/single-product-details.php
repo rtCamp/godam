@@ -139,7 +139,79 @@ $allowed_svg = array(
 </div>
 
 <div class="godam-single-sidebar-small-cart-button">
-	<?php if ( $product->is_type( array( 'variable', 'grouped', 'external' ) ) || ! $product->is_in_stock() ) : ?>
+	<?php
+	$small_product_type     = $product->get_type();
+	$small_variations_json  = '';
+	$small_attributes_json  = '';
+	$small_preselected_json = '';
+
+	if ( 'variable' === $small_product_type ) {
+		$small_available_variations = $product->get_available_variations();
+		$small_var_map              = array();
+		foreach ( $small_available_variations as $variation ) {
+			$small_var_map[] = array(
+				'id'         => $variation['variation_id'],
+				'attributes' => $variation['attributes'],
+				'in_stock'   => $variation['is_in_stock'],
+				'price_html' => $variation['price_html'],
+			);
+		}
+		$small_variations_json = wp_json_encode( $small_var_map );
+
+		$small_attr_data = array();
+		foreach ( $product->get_variation_attributes() as $attribute_slug => $attribute_values ) {
+			$options = array();
+			foreach ( $attribute_values as $value ) {
+				$attr_term = get_term_by( 'slug', $value, $attribute_slug );
+				$options[] = array(
+					'value' => $value,
+					'label' => $attr_term ? $attr_term->name : ucfirst( str_replace( '-', ' ', $value ) ),
+				);
+			}
+			$small_attr_data[] = array(
+				'slug'    => $attribute_slug,
+				'label'   => wc_attribute_label( $attribute_slug ),
+				'options' => $options,
+			);
+		}
+		$small_attributes_json = wp_json_encode( $small_attr_data );
+
+		// Look up admin-configured preselected attrs for this video first;
+		// fall back to WooCommerce product default attributes.
+		$small_video_id_ref = isset( $video_id ) ? absint( $video_id ) : 0;
+		$small_preselected  = array();
+		if ( $small_video_id_ref ) {
+			$small_video_variations = get_post_meta( $product->get_id(), '_rtgodam_product_video_variations', true );
+			$small_video_variations = is_array( $small_video_variations ) ? $small_video_variations : array();
+			if ( isset( $small_video_variations[ $small_video_id_ref ] ) ) {
+				$small_preselected = $small_video_variations[ $small_video_id_ref ];
+			}
+		}
+		if ( empty( $small_preselected ) ) {
+			$small_preselected = $product->get_default_attributes();
+		}
+		$small_preselected_json = ! empty( $small_preselected ) ? wp_json_encode( $small_preselected ) : '';
+	}
+	?>
+
+	<?php if ( 'variable' === $small_product_type && $product->is_in_stock() ) : ?>
+		<button class="godam-product-sidebar-add-to-cart-button godam-small-cart-icon"
+			data-product-id="<?php echo esc_attr( $product->get_id() ); ?>"
+			data-product-type="variable"
+			data-product-url="<?php echo esc_url( get_permalink( $product->get_id() ) ); ?>"
+			data-variations="<?php echo esc_attr( $small_variations_json ); ?>"
+			data-variation-attributes="<?php echo esc_attr( $small_attributes_json ); ?>"
+			data-preselected-attrs="<?php echo esc_attr( $small_preselected_json ?? '' ); ?>">
+			<span class="godam-add-to-cart-icon">
+				<svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+					<path d="M12 5V19M5 12H19"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"/>
+				</svg>
+			</span>
+		</button>
+	<?php elseif ( $product->is_type( array( 'grouped', 'external' ) ) || ! $product->is_in_stock() ) : ?>
 		<a class="godam-product-sidebar-view-product-button godam-small-cart-icon"
 			href="<?php echo esc_url( $product_url ); ?>"
 			target="_blank">

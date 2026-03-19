@@ -402,10 +402,10 @@
 		max-width: 123px;
 		box-sizing: border-box;
 		transition: box-shadow 0.2s ease;
-		height: 168px;
 
 		&:hover {
-			.godam-remove-video-button {
+			.godam-remove-video-button,
+			.godam-select-variation-button {
 				opacity: 1;
 			}
 		}
@@ -426,6 +426,37 @@
 		border: 1px solid #ccc;
 		border-radius: 6px;
 		display: block;
+	}
+}
+
+.godam-select-variation-button {
+	position: absolute;
+	bottom: 4px;
+	left: 4px;
+	background: rgba(255, 255, 255, 0.9);
+	border: none;
+	padding: 3px;
+	border-radius: 50%;
+	cursor: pointer;
+	box-shadow: 0 0 5px var(--wp-components-color-accent) !important;
+	width: 20px;
+	height: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0;
+	transition: opacity 0.2s ease;
+
+	&:hover {
+		svg {
+			color: var(--wp-components-color-accent);
+		}
+	}
+
+	svg {
+		width: 11px;
+		height: 11px;
+		color: #111827;
 	}
 }
 
@@ -462,6 +493,178 @@
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+
+// ---- Variation Picker (admin metabox) ----
+
+// Actions row — "Add Products" button + variation icon side-by-side.
+.godam-video-actions-row {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	margin-top: 4px;
+}
+
+.godam-select-variation-button {
+	flex-shrink: 0;
+	padding: 2px !important;
+	min-width: 24px;
+	min-height: 24px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: #3c434a;
+	border-radius: 4px;
+
+	&:hover {
+		color: #1d2327;
+		background: #f0f0f0;
+	}
+
+	svg {
+		display: block;
+	}
+}
+
+.godam-variation-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 3px;
+	margin-top: 4px;
+}
+
+.godam-variation-chip {
+	display: inline-block;
+	font-size: 10px;
+	line-height: 1.4;
+	padding: 1px 7px;
+	background: #e8f0fe;
+	border-radius: 10px;
+	color: #1a56db;
+	font-weight: 500;
+}
+
+// ---- Variation Modal Overlay ----
+
+body.godam-modal-open {
+	overflow: hidden;
+}
+
+.godam-variation-modal-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 100100;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0;
+	transition: opacity 0.2s ease;
+
+	&.is-visible {
+		opacity: 1;
+	}
+}
+
+.godam-variation-modal {
+	background: #fff;
+	border-radius: 8px;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+	width: 420px;
+	max-width: 90vw;
+	max-height: 80vh;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	transform: translateY(10px);
+	transition: transform 0.2s ease;
+
+	.is-visible & {
+		transform: translateY(0);
+	}
+}
+
+.godam-variation-modal-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 16px 20px 0;
+
+	h3 {
+		margin: 0;
+		font-size: 16px;
+		font-weight: 600;
+		color: #1d2327;
+	}
+}
+
+.godam-variation-modal-close {
+	background: none;
+	border: none;
+	font-size: 22px;
+	line-height: 1;
+	color: #757575;
+	cursor: pointer;
+	padding: 0 4px;
+	border-radius: 4px;
+
+	&:hover {
+		color: #1d2327;
+		background: #f0f0f0;
+	}
+}
+
+.godam-variation-modal-subtitle {
+	margin: 4px 20px 0;
+	font-size: 12px;
+	color: #757575;
+}
+
+.godam-variation-modal-body {
+	padding: 16px 20px;
+	overflow-y: auto;
+	flex: 1;
+}
+
+.godam-variation-modal-row {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 12px;
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+
+	label {
+		font-size: 13px;
+		font-weight: 600;
+		min-width: 80px;
+		color: #3c434a;
+	}
+
+	select {
+		flex: 1;
+		font-size: 13px;
+		padding: 6px 8px;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+		background: #fff;
+
+		&:focus {
+			border-color: var(--wp-admin-theme-color, #2271b1);
+			box-shadow: 0 0 0 1px var(--wp-admin-theme-color, #2271b1);
+			outline: none;
+		}
+	}
+}
+
+.godam-variation-modal-footer {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	padding: 12px 20px 16px;
+	border-top: 1px solid #e0e0e0;
 }
 
 .godam-video-picker-modal {

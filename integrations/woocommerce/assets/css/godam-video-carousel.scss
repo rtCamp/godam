@@ -1,3 +1,5 @@
+@use 'variation-selector';
+
 /**
  * The following styles get applied on the front of your site
  * You can customize them to fit your needs
@@ -92,8 +94,7 @@
 		flex-wrap: wrap;
 		padding: 0;
 		margin: 0 !important;
-		box-shadow: 0px 10px 10px -6.47px rgba(0, 0, 0, 0.05), 0px 10px 25px -5.39px rgba(0, 0, 0, 0.1);
-
+		box-shadow: 0 10px 10px -6.47px rgba(0, 0, 0, 0.05), 0 10px 25px -5.39px rgba(0, 0, 0, 0.1);
 
 		&:not(.open) {
 			display: none;
@@ -163,7 +164,9 @@
 			&-items {
 				background-color: var(--wp--preset--color--white);
 				border-radius: 8px;
+
 				&:hover {
+
 					.swiper-button-next,
 					.swiper-button-prev {
 						opacity: 1;
@@ -194,11 +197,13 @@
 				flex-direction: column;
 
 				.variations {
+
 					th, td {
 						padding: 0 10px 10px 0 !important;
 						color: var(--rtgodam-wc-gallery-primary-color);
 						font-size: 14px;
 					}
+
 					select {
 						border-color: var(--rtgodam-wc-gallery-primary-color);
 						border-radius: 10px;
@@ -267,6 +272,7 @@
 	}
 
 	&:hover {
+
 		.swiper-button-next,
 		.swiper-button-prev {
 			opacity: 1;
@@ -316,12 +322,15 @@
 
 // Animation for the swiper-slide
 @keyframes dimWhite {
+
   0% {
 	background-color: var(--wp--preset--color--white);
   }
+
   50% {
 	background-color: var(--wp--preset--color--cyan-bluish-gray);
   }
+
   100% {
 	background-color: var(--wp--preset--color--white);
   }
@@ -329,6 +338,7 @@
 
 // Animation for loading button
 @keyframes button-loading {
+
   to {
 	transform: translate(-50%, -50%) rotate(360deg);
   }
@@ -372,6 +382,7 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: 12px;
+	z-index: 99;
 
 	.rtgodam-modal-product-left {
 		display: flex;
@@ -446,12 +457,12 @@
     backdrop-filter: blur(8px);
     border-radius: 10.67px;
 
-    color: #ffffff;
+    color: #fff;
     cursor: pointer;
 
     opacity: 1;
-	transform: translateY(0px) scale(1);
-	filter: blur(0px);
+	transform: translateY(0) scale(1);
+	filter: blur(0);
 
 	transition:
 		opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
@@ -495,4 +506,27 @@
 
 .godam-cart-notice.error {
 	background: #d63638;
+}
+
+// ---- Variation Selector (frontend product card) ----
+
+.rtgodam-variation-selector-wrapper {
+	position: absolute;
+	bottom: 90px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: min(85%, 500px);
+	pointer-events: none;
+	opacity: 0;
+	max-height: 0;
+	overflow: hidden;
+	transition: opacity 0.25s ease, max-height 0.3s ease;
+	z-index: 999;
+
+	&.is-open {
+		pointer-events: auto;
+		opacity: 1;
+		max-height: 400px;
+		overflow: visible;
+	}
 }
