@@ -1421,7 +1421,7 @@
 }
 
 /* CSS for keeping modal Video always in portrait mode */
-@media (max-width: 1023px) and (orientation: landscape) {
+@media (max-width: 1023px) and (orientation: landscape) and (pointer: coarse) and (hover: none) and (max-height: 600px) {
 
 	.godam-woo-global-modal-container {
 		position: fixed;
