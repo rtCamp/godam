@@ -59,19 +59,27 @@ import { __ } from '@wordpress/i18n';
 			} );
 
 			frame.on( 'select', function() {
-				const selection = frame.state().get( 'selection' );
+				const selection = frame.state().get( 'selection' ).toJSON();
 
-				selection.forEach( function( attachment ) {
-					const data = attachment.toJSON();
+				let hasVideo = false;
 
-					if ( ! data.id || ! rtGodamSettings?.ajaxurl || ! rtGodamSettings?.nonce ) {
+				const filteredFiles = selection.filter( function( file ) {
+					if ( file.type === 'video' && ! rtGodamSettings?.hasValidAPIKey ) {
+						hasVideo = true;
+						return false;
+					}
+					return true;
+				} );
+
+				filteredFiles.forEach( function( file ) {
+					if ( ! file.id || ! rtGodamSettings?.ajaxurl || ! rtGodamSettings?.nonce ) {
 						console.error( 'Missing required data for AJAX request.' );
 						return;
 					}
 
 					$.post( rtGodamSettings.ajaxurl, {
 						action: 'get_wc_gallery_thumbnail',
-						attachment_id: data.id,
+						attachment_id: file.id,
 						nonce: rtGodamSettings.nonce,
 					}, function( response ) {
 						if ( response.success && response.data ) {
@@ -84,6 +92,10 @@ import { __ } from '@wordpress/i18n';
 						console.error( 'AJAX failed:', xhr );
 					} );
 				} );
+
+				if ( hasVideo ) {
+					showGodamProNotice();
+				}
 			} );
 
 			frame.open();
@@ -98,4 +110,70 @@ import { __ } from '@wordpress/i18n';
 			updateProductGalleryInput();
 		} );
 	} );
+
+	function showGodamProNotice() {
+		const $metaBox = $( '#woocommerce-product-images' );
+		const $inside = $metaBox.find( '.inside' );
+
+		if ( ! $inside.length ) {
+			return;
+		}
+
+		if ( $inside.find( '.godam-pro-video-notice' ).length ) {
+			return;
+		}
+
+		const videoEditorSettingsUrl = `${ rtGodamSettings?.adminUrl || '' }admin.php?page=rtgodam_settings#video-settings`;
+
+		const pricingUrl = `${ rtGodamSettings?.pricingUrl || '' }`;
+
+		const notice = $( `
+			<div class="notice notice-warning is-dismissible godam-pro-video-notice godam-featured-video-gallery-notice">
+				<p>
+					<strong>${ __( 'Product Gallery videos are a Pro feature.', 'godam' ) }</strong>
+					<a href="${ videoEditorSettingsUrl }" target="_blank" rel="noopener noreferrer" class="text-[#AB3A6C] godam-notice-link no-underline">
+						${ __( 'Activate your license', 'godam' ) }
+					</a>
+					${ __( 'or', 'godam' ) }
+					<a href="${ pricingUrl }" target="_blank" rel="noopener noreferrer" class="text-[#AB3A6C] godam-notice-link">
+						${ __( 'get started for free↗', 'godam' ) }
+					</a>
+					${ __( 'to unlock all features.', 'godam' ) }
+				</p>
+			</div>
+		` );
+
+		$inside.prepend( notice );
+	}
+
+	/**
+	 * Lock behavior for videos
+	 */
+	if ( ! rtGodamSettings?.hasValidAPIKey ) {
+		const lockedVideos = $( '#product_images_container li.image' ).filter( function() {
+			const $li = $( this );
+
+			if ( $li.attr( 'data-is-video' ) ) {
+				return true;
+			}
+
+			return false;
+		} );
+
+		if ( lockedVideos.length ) {
+			showGodamProNotice();
+
+			lockedVideos.each( function() {
+				const $li = $( this );
+
+				$li.on( 'click', function( e ) {
+					e.preventDefault();
+					e.stopPropagation();
+					showGodamProNotice();
+				} );
+
+				$li.css( 'pointer-events', 'auto' );
+			} );
+		}
+	}
 }( jQuery ) );

@@ -45,6 +45,9 @@ jQuery( document ).ready( function( $ ) {
 			if ( ! src || src.trim() === '' ) {
 				emptySrcAlts.push( alt );
 				emptyImgs.push( this );
+
+				$img.closest( 'li' ).addClass( 'godam-thumb-loading' );
+				$img.css( 'visibility', 'hidden' );
 			}
 		} );
 
@@ -130,6 +133,8 @@ jQuery( document ).ready( function( $ ) {
 							}
 							openVideoModal( videoId );
 						} );
+					$img.css( 'visibility', 'visible' );
+					$img.closest( 'li' ).removeClass( 'godam-thumb-loading' );
 				} );
 			},
 		);
@@ -197,6 +202,37 @@ jQuery( document ).ready( function( $ ) {
 	}
 
 	/**
+	 * Remove video tiles if API key invalid
+	 */
+	function removeFrontendVideosIfNeeded() {
+		if ( myGalleryAjaxData?.hasValidAPIKey ) {
+			return;
+		}
+
+		// Remove thumbnails.
+		$( '.woocommerce-product-gallery ol.flex-control-thumbs li' ).each( function() {
+			const $li = $( this );
+			const $img = $li.find( 'img' );
+
+			if ( $img.hasClass( 'godam-video-thumbnail' ) || $img.attr( 'data-video-id' ) ) {
+				$li.remove();
+			}
+		} );
+
+		// Remove main slides.
+		$( '.woocommerce-product-gallery__wrapper .woocommerce-product-gallery__image' ).each( function() {
+			const $slide = $( this );
+
+			if (
+				$slide.find( 'img' ).length === 0 ||
+			$slide.find( '[data-video-id]' ).length
+			) {
+				$slide.remove();
+			}
+		} );
+	}
+
+	/**
 	 * Observes gallery and runs handler when images are loaded.
 	 */
 	const targetNode = document.querySelector( '.woocommerce-product-gallery' );
@@ -204,7 +240,11 @@ jQuery( document ).ready( function( $ ) {
 		const observer = new MutationObserver( function( _, obs ) {
 			if ( $( targetNode ).find( 'ol.flex-control-thumbs li img' ).length > 0 ) {
 				obs.disconnect();
-				handleGalleryImages();
+				if ( myGalleryAjaxData?.hasValidAPIKey ) {
+					handleGalleryImages();
+				} else {
+					removeFrontendVideosIfNeeded();
+				}
 			}
 		} );
 
@@ -212,11 +252,19 @@ jQuery( document ).ready( function( $ ) {
 
 		// Optional immediate execution if already present.
 		if ( $( targetNode ).find( 'ol.flex-control-thumbs li img' ).length > 0 ) {
-			handleGalleryImages();
+			if ( myGalleryAjaxData?.hasValidAPIKey ) {
+				handleGalleryImages();
+			} else {
+				removeFrontendVideosIfNeeded();
+			}
 		}
 	}
 
 	$( 'body' ).on( 'wc-product-gallery-before-init', function() {
-		handleGalleryImages();
+		if ( myGalleryAjaxData?.hasValidAPIKey ) {
+			handleGalleryImages();
+		} else {
+			removeFrontendVideosIfNeeded();
+		}
 	} );
 } );

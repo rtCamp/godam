@@ -94,8 +94,11 @@ class WC_Featured_Video_Gallery {
 			'rtgodam-wc-admin-featured-video-gallery',
 			'rtGodamSettings',
 			array(
-				'ajaxurl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'godam_admin_featured_video_gallery_nonce' ),
+				'ajaxurl'        => admin_url( 'admin-ajax.php' ),
+				'nonce'          => wp_create_nonce( 'godam_admin_featured_video_gallery_nonce' ),
+				'hasValidAPIKey' => rtgodam_is_api_key_valid(),
+				'adminUrl'       => admin_url(),
+				'pricingUrl'     => RTGODAM_IO_API_BASE . '/pricing?utm_campaign=upgrade&utm_source=plugin&utm_medium=admin-notice&utm_content=godam_woo_featured_video_gallery',
 			)
 		);
 
@@ -134,8 +137,9 @@ class WC_Featured_Video_Gallery {
 			'rtgodam-wc-featured-video-gallery',
 			'myGalleryAjaxData',
 			array(
-				'ajax_url' => admin_url( 'admin-ajax.php' ),
-				'nonce'    => wp_create_nonce( 'godam_featured_video_gallery_nonce' ),
+				'ajax_url'       => admin_url( 'admin-ajax.php' ),
+				'nonce'          => wp_create_nonce( 'godam_featured_video_gallery_nonce' ),
+				'hasValidAPIKey' => rtgodam_is_api_key_valid(),
 			)
 		);
 
@@ -278,6 +282,8 @@ class WC_Featured_Video_Gallery {
 		$gallery_ids = get_post_meta( $post->ID, '_product_image_gallery', true );
 		$gallery_ids = ! empty( $gallery_ids ) ? explode( ',', $gallery_ids ) : array();
 
+		// Check the API key validity.
+		$godam_has_valid_api_key = rtgodam_is_api_key_valid();
 		?>
 		<div id="product_images_container">
 			<ul class="product_images">
@@ -287,21 +293,39 @@ class WC_Featured_Video_Gallery {
 					$attachment_id = absint( $attachment_id );
 					$mime_type     = get_post_mime_type( $attachment_id );
 					$is_video      = strpos( $mime_type, 'video/' ) === 0;
+					$video_attr    = $is_video ? ' data-is-video="1"' : '';
 
-					echo '<li class="image" data-attachment_id="' . esc_attr( $attachment_id ) . '">';
+					echo '<li class="image" data-attachment_id="' . esc_attr( $attachment_id ) . '"' . esc_attr( $video_attr ) . '>';
 
 					if ( $is_video ) {
 						$thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 						$src       = $thumbnail ?: self::FALLBACK_THUMBNAIL;
+
+						$is_locked = ! $godam_has_valid_api_key;
+
+						echo '<div class="godam-video-thumb-wrapper' . ( $is_locked ? ' godam-locked' : '' ) . '">';
+						
 						echo '<img src="' . esc_url( $src ) . '" class="attachment-thumbnail size-thumbnail" width="150" height="150" alt="" loading="lazy" decoding="async" srcset="' . esc_url( $src ) . ' 150w, ' . esc_url( $src ) . ' 300w, ' . esc_url( $src ) . ' 100w"
                         sizes="auto, (max-width: 150px) 100vw, 150px" />';
+
+						if ( $is_locked ) {
+							echo '<span class="godam-lock-overlay">
+									<svg width="26" height="26" viewBox="0 0 24 24" fill="#ab3a6c">
+									<path d="M12 2a4 4 0 00-4 4v3H6a2 2 0 00-2 2v7a2 2 0 002 2h12a2 2 0 002-2v-7a2 2 0 00-2-2h-2V6a4 4 0 00-4-4zm-2 7V6a2 2 0 114 0v3h-4z"/>
+									</svg>
+								</span>';
+						}
+
+						echo '</div>';
 					} else {
 						echo wp_get_attachment_image( $attachment_id, 'thumbnail' );
 					}
 
-					echo '<ul class="actions">
-						<li><a href="#" class="delete tips" data-tip="' . esc_attr__( 'Delete image', 'godam' ) . '">' . esc_html__( 'Delete', 'godam' ) . '</a></li>
-					</ul>';
+					echo '<ul class="actions">';
+					if ( ! ( $is_video && ! $godam_has_valid_api_key ) ) {
+						echo '<li><a href="#" class="delete tips" data-tip="' . esc_attr__( 'Delete image', 'godam' ) . '">' . esc_html__( 'Delete', 'godam' ) . '</a></li>';
+					}
+					echo '</ul>';
 					echo '</li>';
 				}
 				?>
