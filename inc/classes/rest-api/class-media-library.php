@@ -403,31 +403,47 @@ class Media_Library extends Base {
 		// Get all registered image sizes (core + theme/plugin-registered additional sizes).
 		$registered_sizes = wp_get_registered_image_subsizes();
 
-		// Build lookup maps: each key maps to an array of matching size names.
-		// For cropped sizes: exact W×H match.
-		// For uncropped sizes: width-only match (WordPress scales height proportionally).
-		$exact_map = array(); // "width:height" mapped to array of strings  (crop=true)
-		$width_map = array(); // "width"        mapped to array of strings  (crop=false)
+		// Build a lookup map for cropped sizes: exact W×H → [size_names].
+		$exact_map = array(); // "width:height" => array of size names (crop=true)
 		foreach ( $registered_sizes as $size_name => $size_data ) {
 			if ( $size_data['crop'] ) {
 				$key                 = $size_data['width'] . ':' . $size_data['height'];
 				$exact_map[ $key ][] = $size_name;
-			} else {
-				$wkey                 = (string) $size_data['width'];
-				$width_map[ $wkey ][] = $size_name;
 			}
 		}
 
 		// Map each GoDAM-returned subsize to all matching registered size names.
 		foreach ( $subsizes as $size ) {
+			$sub_width  = (int) $size['width'];
+			$sub_height = (int) $size['height'];
+
 			// 1. Exact W×H match (always correct for cropped sizes).
-			$exact_key     = $size['width'] . ':' . $size['height'];
+			$exact_key     = $sub_width . ':' . $sub_height;
 			$matched_names = isset( $exact_map[ $exact_key ] ) ? $exact_map[ $exact_key ] : array();
 
-			// 2. Width-only match for uncropped sizes (height varies with source aspect ratio).
+			// 2. Bounding-box match for uncropped sizes.
+			// WordPress registered sizes are a max bounding box (width × height), and the
+			// generated size can be smaller when the opposite dimension's constraint is hit
+			// (e.g. a 300×300 max on a portrait image yields 150×300). A width-only map
+			// would miss these cases. Instead, accept a subsize when both dimensions fit
+			// within the registered bounding box, treating 0 as "unlimited".
 			if ( empty( $matched_names ) ) {
-				$wkey          = (string) $size['width'];
-				$matched_names = isset( $width_map[ $wkey ] ) ? $width_map[ $wkey ] : array();
+				foreach ( $registered_sizes as $reg_size_name => $reg_size_data ) {
+					// Only consider uncropped sizes — cropped sizes are handled via exact match above.
+					if ( ! empty( $reg_size_data['crop'] ) ) {
+						continue;
+					}
+
+					$reg_width  = (int) $reg_size_data['width'];
+					$reg_height = (int) $reg_size_data['height'];
+
+					$width_fits  = ( 0 === $reg_width ) || ( $sub_width <= $reg_width );
+					$height_fits = ( 0 === $reg_height ) || ( $sub_height <= $reg_height );
+
+					if ( $width_fits && $height_fits ) {
+						$matched_names[] = $reg_size_name;
+					}
+				}
 			}
 
 			if ( empty( $matched_names ) ) {
@@ -1955,7 +1971,7 @@ class Media_Library extends Base {
 	 * Request image subsizes generation from GoDAM Central.
 	 *
 	 * Sends a request to GoDAM Central API to generate image subsizes based on
-	 * WordPress registered image sizes (from Settings > Media). The API endpoint
+	 * all registered WordPress image subsizes (core, theme, and plugin). The API endpoint
 	 * should accept:
 	 * - job_id: The GoDAM file ID
 	 * - api_key: The GoDAM API key
@@ -1975,7 +1991,7 @@ class Media_Library extends Base {
 			return false;
 		}
 
-		// Get registered image sizes from WordPress Settings > Media.
+		// Get all registered image subsizes from WordPress.
 		$registered_sizes = wp_get_registered_image_subsizes();
 
 		if ( empty( $registered_sizes ) ) {
@@ -1983,24 +1999,37 @@ class Media_Library extends Base {
 		}
 
 		// Prepare size requests for GoDAM Central.
-		// Always include 100x100 crop as a fallback for thumbnail generation.
-		$size_requests = array(
-			array(
-				'width'  => 100,
-				'height' => 100,
-				'crop'   => true,
-			),
-		);
+		// Only add the 100x100 crop fallback when no equivalent registered size already covers it.
+		$size_requests    = array();
+		$has_100x100_crop = false;
 		foreach ( $registered_sizes as $size_name => $size_data ) {
 			// Skip cropped sizes that are missing a width or height — GoDAM requires both dimensions to crop.
 			if ( $size_data['crop'] && ( empty( $size_data['width'] ) || empty( $size_data['height'] ) ) ) {
 				continue;
 			}
 
+			// Normalize crop to boolean — WordPress allows array values like ['left','top']
+			// for position-based cropping; GoDAM expects a plain boolean.
+			$crop_bool = (bool) $size_data['crop'];
+
 			$size_requests[] = array(
 				'width'  => $size_data['width'],
 				'height' => $size_data['height'],
-				'crop'   => $size_data['crop'],
+				'crop'   => $crop_bool,
+			);
+
+			if ( 100 === (int) $size_data['width'] && 100 === (int) $size_data['height'] && $crop_bool ) {
+				$has_100x100_crop = true;
+			}
+		}
+
+		// Add the 100x100 crop fallback only when no equivalent registered size exists.
+		// This size is commonly used in the Media Library list view for thumbnails.
+		if ( ! $has_100x100_crop ) {
+			$size_requests[] = array(
+				'width'  => 100,
+				'height' => 100,
+				'crop'   => true,
 			);
 		}
 
