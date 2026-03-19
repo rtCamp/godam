@@ -182,39 +182,54 @@ if ( ! window.pageLoadEventTracked ) {
  * @param {Object}      player - VideoJS player instance
  * @param {HTMLElement} video  - Video container element
  */
-function setupPlayerAnalytics( player, video ) {
-	// Skip if already set up
-	if ( video.dataset.analyticsSetup === 'true' ) {
+const trackedPlayers = new Map();
+
+// Global listener for analytics
+if ( ! window.godamUnloadListenerBound ) {
+	window.godamUnloadListenerBound = true;
+
+	const handleUnload = () => {
+		trackedPlayers.forEach( ( videoEl, playerInstance ) => {
+			sendPlayerHeatmap( playerInstance, videoEl );
+		} );
+		// Clear to avoid duplicate sends if event fires multiple times
+		trackedPlayers.clear();
+	};
+
+	window.addEventListener( 'beforeunload', handleUnload );
+	window.addEventListener( 'pagehide', handleUnload ); // For better mobile support
+}
+
+async function sendPlayerHeatmap( player, video ) {
+	if ( ! player || ! video ) {
 		return;
 	}
-	video.dataset.analyticsSetup = 'true';
 
-	// Initialize GTM tracker for this video
-	if ( typeof window.dataLayer !== 'undefined' && window.godamSettings?.enableGTMTracking ) {
-		const gtmTracker = new GTMVideoTracker( player, video );
-		// Store tracker reference for potential cleanup
-		video.gtmTracker = gtmTracker;
-	}
-
-	window.addEventListener( 'beforeunload', () => {
-		const played = player.played();
-		const ranges = [];
-		const videoLength = player.duration();
-
-		// Extract time ranges from the player.played() object
-		for ( let i = 0; i < played.length; i++ ) {
-			ranges.push( [ played.start( i ), played.end( i ) ] );
+	try {
+		// Double check player isn't disposed natively beforehand
+		if ( player.isDisposed ? player.isDisposed() : false ) {
+			return;
 		}
 
-		// Send the ranges using updateHeatmap
-		updateHeatmap( ranges, videoLength );
-	} );
+		const played = player.played();
+		const ranges = [];
+		const videoLength = Number( player.duration && player.duration() ) || 0;
 
-	async function updateHeatmap( ranges, videoLength ) {
+		// Extract time ranges from the player.played() object
+		if ( played && typeof played.length === 'number' ) {
+			for ( let i = 0; i < played.length; i++ ) {
+				ranges.push( [ played.start( i ), played.end( i ) ] );
+			}
+		}
+
+		if ( ranges.length === 0 ) {
+			return; // Skip sending if no valid data
+		}
+
 		const videoId = video.getAttribute( 'data-id' );
 		const jobId = video.getAttribute( 'data-job_id' ) || '';
-		if ( ! videoId || ranges.length === 0 ) {
-			return; // Skip sending if no valid data
+		if ( ! videoId ) {
+			return;
 		}
 
 		if ( window.analytics ) {
@@ -226,7 +241,35 @@ function setupPlayerAnalytics( player, video ) {
 				videoLength,
 			} );
 		}
+	} catch ( e ) {
+		// Ignore errors from disposed players fetching metadata
 	}
+}
+
+function setupPlayerAnalytics( player, video ) {
+	// Skip if already set up
+	if ( video.dataset.analyticsSetup === 'true' ) {
+		return;
+	}
+	video.dataset.analyticsSetup = 'true';
+
+	// Track the active player
+	trackedPlayers.set( player, video );
+
+	// Initialize GTM tracker for this video
+	if ( typeof window.dataLayer !== 'undefined' && window.godamSettings?.enableGTMTracking ) {
+		const gtmTracker = new GTMVideoTracker( player, video );
+		// Store tracker reference for potential cleanup
+		video.gtmTracker = gtmTracker;
+	}
+
+	// Send heatmap when player is unmounted/disposed (e.g. AJAX navigation)
+	player.on( 'dispose', () => {
+		if ( trackedPlayers.has( player ) ) {
+			sendPlayerHeatmap( player, video );
+			trackedPlayers.delete( player );
+		}
+	} );
 }
 
 /**
