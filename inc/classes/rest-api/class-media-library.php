@@ -1992,6 +1992,11 @@ class Media_Library extends Base {
 			),
 		);
 		foreach ( $registered_sizes as $size_name => $size_data ) {
+			// Skip cropped sizes that are missing a width or height — GoDAM requires both dimensions to crop.
+			if ( $size_data['crop'] && ( empty( $size_data['width'] ) || empty( $size_data['height'] ) ) ) {
+				continue;
+			}
+
 			$size_requests[] = array(
 				'width'  => $size_data['width'],
 				'height' => $size_data['height'],
