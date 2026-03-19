@@ -1191,6 +1191,26 @@ function CommentBox( props ) {
 		videoContainer.appendChild( currentVideo );
 		document.body.classList.add( 'no-scroll' );
 
+		// Trigger a resize after moving the current video into the modal container
+		// to reposition the skip control buttons according to the new dimensions,
+		// particularly for mobile devices.
+
+		// Prefer triggering a scoped resize on the Video.js player first
+		// instead of dispatching a global window resize event.
+		const videoElement = videoContainer?.querySelector( 'video' );
+		let resizeHandled = false;
+		if ( videoElement && window.videojs ) {
+			try {
+				const player = window.videojs.getPlayer( videoElement );
+				player.trigger( 'resize' );
+				resizeHandled = true;
+			} catch ( error ) {
+				// Fall back to dispatching a global window resize event.
+			}
+		}
+		if ( ! resizeHandled ) {
+			window.dispatchEvent( new Event( 'resize' ) );
+		}
 		return () => {
 			if ( currentVideoParent && currentVideo ) {
 				currentVideoParent.insertBefore( currentVideo, currentVideoParent.firstChild );
