@@ -182,18 +182,23 @@ if ( ! window.pageLoadEventTracked ) {
  * @param {Object}      player - VideoJS player instance
  * @param {HTMLElement} video  - Video container element
  */
-const trackedPlayers = new Map();
+// Store the Map on window so all script evaluations share the same instance.
+// If this script runs more than once (guarded via window.pageLoadEventTracked),
+// the already-bound unload handler will still see every player registered by any run.
+window.godamTrackedPlayers = window.godamTrackedPlayers || new Map();
 
 // Global listener for analytics
 if ( ! window.godamUnloadListenerBound ) {
 	window.godamUnloadListenerBound = true;
 
 	const handleUnload = () => {
-		trackedPlayers.forEach( ( videoEl, playerInstance ) => {
+		// Read from window each time so we always see the current shared map,
+		// not a stale closure over a module-scoped variable.
+		window.godamTrackedPlayers.forEach( ( videoEl, playerInstance ) => {
 			sendPlayerHeatmap( playerInstance, videoEl );
 		} );
-		// Clear to avoid duplicate sends if event fires multiple times
-		trackedPlayers.clear();
+		// Clear to avoid duplicate sends if the event fires multiple times (e.g. cancelled unload).
+		window.godamTrackedPlayers.clear();
 	};
 
 	window.addEventListener( 'beforeunload', handleUnload );
@@ -207,7 +212,7 @@ async function sendPlayerHeatmap( player, video ) {
 
 	try {
 		// Double check player isn't disposed natively beforehand
-		if ( player.isDisposed ? player.isDisposed() : false ) {
+		if ( typeof player.isDisposed === 'function' && player.isDisposed() ) {
 			return;
 		}
 
@@ -254,7 +259,7 @@ function setupPlayerAnalytics( player, video ) {
 	video.dataset.analyticsSetup = 'true';
 
 	// Track the active player
-	trackedPlayers.set( player, video );
+	window.godamTrackedPlayers.set( player, video );
 
 	// Initialize GTM tracker for this video
 	if ( typeof window.dataLayer !== 'undefined' && window.godamSettings?.enableGTMTracking ) {
@@ -265,9 +270,9 @@ function setupPlayerAnalytics( player, video ) {
 
 	// Send heatmap when player is unmounted/disposed (e.g. AJAX navigation)
 	player.on( 'dispose', () => {
-		if ( trackedPlayers.has( player ) ) {
+		if ( window.godamTrackedPlayers.has( player ) ) {
 			sendPlayerHeatmap( player, video );
-			trackedPlayers.delete( player );
+			window.godamTrackedPlayers.delete( player );
 		}
 	} );
 }
