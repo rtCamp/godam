@@ -52,6 +52,7 @@ const SingleMetrics = ( {
 	metricType,
 	label,
 	tooltipText,
+	dataLabel,
 	processedAnalyticsHistory,
 	analyticsDataFetched,
 } ) => {
@@ -208,9 +209,12 @@ const SingleMetrics = ( {
 						>
 							0%
 						</p>
-						<p className="text-zinc-500 text-xs">{ __( 'Last 7 days', 'godam' ) }</p>
+						<p className="text-zinc-500 text-xs">{ dataLabel || __( 'All time', 'godam' ) }</p>
 					</div>
-					<div id={ `single-${ metricType }-chart` } className="metrics-chart"></div>
+					<div className="flex flex-col gap-1 items-end">
+						<div id={ `single-${ metricType }-chart` } className="metrics-chart"></div>
+						<p className="text-zinc-400 text-[10px]">{ __( 'Last 7 days', 'godam' ) }</p>
+					</div>
 				</div>
 			</div>
 		</div>
