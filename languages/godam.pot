@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GoDAM 1.7.1\n"
+"Project-Id-Version: GoDAM 1.7.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-03-17T12:44:23+00:00\n"
+"POT-Creation-Date: 2026-03-20T11:34:21+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -222,7 +222,7 @@ msgstr ""
 #: admin/class-rtgodam-transcoder-admin.php:190
 #: admin/class-rtgodam-transcoder-admin.php:334
 #: admin/godam-transcoder-functions.php:319
-#: inc/classes/class-media-library-ajax.php:1156
+#: inc/classes/class-media-library-ajax.php:1207
 #: inc/templates/video-preview.php:42
 #: pages/godam/components/GoDAMHeader.jsx:71
 #: pages/whats-new/components/Header.js:19
@@ -241,21 +241,21 @@ msgid "Learn More"
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:274
-#: inc/classes/class-media-library-ajax.php:819
+#: inc/classes/class-media-library-ajax.php:820
 #: pages/dashboard/Dashboard.js:238
 #: pages/video-editor/AttachmentPicker.jsx:45
 msgid "Claim the GoDAM New Year Sale 2026 offer"
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:276
-#: inc/classes/class-media-library-ajax.php:821
+#: inc/classes/class-media-library-ajax.php:822
 #: pages/dashboard/Dashboard.js:242
 #: pages/video-editor/AttachmentPicker.jsx:49
 msgid "New Year Sale 2026 offer from GoDAM"
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:277
-#: inc/classes/class-media-library-ajax.php:822
+#: inc/classes/class-media-library-ajax.php:823
 #: pages/video-editor/AttachmentPicker.jsx:58
 msgid "Dismiss banner"
 msgstr ""
@@ -421,7 +421,7 @@ msgid "Please upgrade your plan to continue transcoding."
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-handler.php:286
-#: inc/classes/class-media-library-ajax.php:231
+#: inc/classes/class-media-library-ajax.php:232
 msgid "HTTP authentication is enabled on your site, preventing transcoding."
 msgstr ""
 
@@ -682,49 +682,49 @@ msgstr ""
 msgid "Invalid data."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:685
+#: inc/classes/class-media-library-ajax.php:686
 #: pages/media-library/App.js:214
 msgid "Uncategorized"
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:689
+#: inc/classes/class-media-library-ajax.php:690
 msgid "All collections"
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:771
+#: inc/classes/class-media-library-ajax.php:772
 msgid "Offer banner dismissed successfully."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:865
+#: inc/classes/class-media-library-ajax.php:866
 msgid "Invalid attachment ID or URL."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:871
-#: inc/classes/rest-api/class-media-library.php:582
+#: inc/classes/class-media-library-ajax.php:872
+#: inc/classes/rest-api/class-media-library.php:624
 msgid "Invalid attachment ID."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:883
+#: inc/classes/class-media-library-ajax.php:884
 msgid "Could not initialize WordPress filesystem."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:903
+#: inc/classes/class-media-library-ajax.php:904
 msgid "Could not move file into uploads directory."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1108
+#: inc/classes/class-media-library-ajax.php:1159
 msgid "Insufficient permissions."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1125
+#: inc/classes/class-media-library-ajax.php:1176
 msgid "HTTP auth status saved."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1158
+#: inc/classes/class-media-library-ajax.php:1209
 msgid "GoDAM Transcoding Blocked"
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1161
+#: inc/classes/class-media-library-ajax.php:1212
 msgid "HTTP authentication is enabled on your site, which prevents GoDAM from accessing media files for transcoding. Please disable HTTP authentication to enable transcoding."
 msgstr ""
 
@@ -2179,261 +2179,261 @@ msgid "The desired bookmark status (true for bookmarked, false for unbookmarked)
 msgstr ""
 
 #: inc/classes/rest-api/class-media-library.php:342
-#: inc/classes/rest-api/class-media-library.php:519
+#: inc/classes/rest-api/class-media-library.php:561
 msgid "Invalid event."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:528
+#: inc/classes/rest-api/class-media-library.php:570
 msgid "job_id and resized_images are required."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:534
+#: inc/classes/rest-api/class-media-library.php:576
 msgid "Failed to update attachment metadata."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:540
+#: inc/classes/rest-api/class-media-library.php:582
 msgid "Image subsizes successfully generated."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:562
+#: inc/classes/rest-api/class-media-library.php:604
 msgid "Failed to remove folder from the attachments."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:569
+#: inc/classes/rest-api/class-media-library.php:611
 msgid "Attachments successfully removed from the folder."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:577
-#: inc/classes/rest-api/class-media-library.php:1037
+#: inc/classes/rest-api/class-media-library.php:619
+#: inc/classes/rest-api/class-media-library.php:1079
 msgid "Invalid folder term ID."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:588
+#: inc/classes/rest-api/class-media-library.php:630
 msgid "Failed to associate attachments with the folder."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:595
+#: inc/classes/rest-api/class-media-library.php:637
 msgid "Attachments successfully associated with the folder."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:610
+#: inc/classes/rest-api/class-media-library.php:652
 msgid "Invalid taxonomy."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:638
+#: inc/classes/rest-api/class-media-library.php:680
 msgid "Image file not found."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:645
+#: inc/classes/rest-api/class-media-library.php:687
 msgid "No EXIF data found."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:711
-#: inc/classes/rest-api/class-media-library.php:881
-#: inc/classes/rest-api/class-media-library.php:938
-#: inc/classes/rest-api/class-media-library.php:997
+#: inc/classes/rest-api/class-media-library.php:753
+#: inc/classes/rest-api/class-media-library.php:923
+#: inc/classes/rest-api/class-media-library.php:980
+#: inc/classes/rest-api/class-media-library.php:1039
 msgid "Attachment is not a video."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:744
+#: inc/classes/rest-api/class-media-library.php:786
 msgid "Failed to fetch thumbnails from GoDAM."
 msgstr ""
 
 #. translators: %s is the HTTP status code from the GoDAM API response.
-#: inc/classes/rest-api/class-media-library.php:750
-#: inc/classes/rest-api/class-media-library.php:1400
+#: inc/classes/rest-api/class-media-library.php:792
+#: inc/classes/rest-api/class-media-library.php:1442
 #, php-format
 msgid "GoDAM API returned HTTP status: %s"
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:755
+#: inc/classes/rest-api/class-media-library.php:797
 msgid "Invalid JSON response from GoDAM API."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:763
-#: inc/classes/rest-api/class-media-library.php:785
+#: inc/classes/rest-api/class-media-library.php:805
+#: inc/classes/rest-api/class-media-library.php:827
 msgid "No thumbnails found."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:895
+#: inc/classes/rest-api/class-media-library.php:937
 msgid "Only 3 custom thumbnails are allowed per video."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:947
+#: inc/classes/rest-api/class-media-library.php:989
 msgid "Custom thumbnail not found."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:959
-#: inc/classes/rest-api/class-media-library.php:976
+#: inc/classes/rest-api/class-media-library.php:1001
+#: inc/classes/rest-api/class-media-library.php:1018
 msgid "Custom video thumbnail removed successfully."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1002
+#: inc/classes/rest-api/class-media-library.php:1044
 msgid "Invalid thumbnail URL."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1011
+#: inc/classes/rest-api/class-media-library.php:1053
 msgid "Video thumbnail successfully set."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1030
+#: inc/classes/rest-api/class-media-library.php:1072
 msgid "Invalid folder ID."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1049
+#: inc/classes/rest-api/class-media-library.php:1091
 msgid "ZIP file created successfully."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1069
+#: inc/classes/rest-api/class-media-library.php:1111
 msgid "You do not have permission to delete folders."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1075
-#: inc/classes/rest-api/class-media-library.php:1202
-#: inc/classes/rest-api/class-media-library.php:1260
+#: inc/classes/rest-api/class-media-library.php:1117
+#: inc/classes/rest-api/class-media-library.php:1244
+#: inc/classes/rest-api/class-media-library.php:1302
 msgid "No folder IDs provided or invalid format."
 msgstr ""
 
 #. translators: %s is the invalid folder ID.
-#: inc/classes/rest-api/class-media-library.php:1084
-#: inc/classes/rest-api/class-media-library.php:1153
+#: inc/classes/rest-api/class-media-library.php:1126
+#: inc/classes/rest-api/class-media-library.php:1195
 #, php-format
 msgid "Invalid folder ID: %s"
 msgstr ""
 
 #. translators: %s is the invalid folder ID.
-#: inc/classes/rest-api/class-media-library.php:1092
-#: inc/classes/rest-api/class-media-library.php:1161
+#: inc/classes/rest-api/class-media-library.php:1134
+#: inc/classes/rest-api/class-media-library.php:1203
 #, php-format
 msgid "Folder ID %s not found or invalid."
 msgstr ""
 
 #. translators: %s is the invalid folder ID where delete failed.
-#: inc/classes/rest-api/class-media-library.php:1100
+#: inc/classes/rest-api/class-media-library.php:1142
 #, php-format
 msgid "Failed to delete folder %s"
 msgstr ""
 
 #. translators: %s is the ID of folder not found.
-#: inc/classes/rest-api/class-media-library.php:1103
+#: inc/classes/rest-api/class-media-library.php:1145
 #, php-format
 msgid "Folder ID %s not found during deletion attempt."
 msgstr ""
 
 #. translators: %s is the invalid folder ID.
-#: inc/classes/rest-api/class-media-library.php:1106
+#: inc/classes/rest-api/class-media-library.php:1148
 #, php-format
 msgid "Folder ID %s cannot be deleted (possibly uncategorized or default term)."
 msgstr ""
 
 #. translators: %d is the number of folders deleted.
-#: inc/classes/rest-api/class-media-library.php:1117
+#: inc/classes/rest-api/class-media-library.php:1159
 #, php-format
 msgid "%d folder(s) deleted successfully."
 msgstr ""
 
 #. translators: %1$d is the number of folders deleted, %2$s are the errors.
-#: inc/classes/rest-api/class-media-library.php:1125
+#: inc/classes/rest-api/class-media-library.php:1167
 #, php-format
 msgid "Error deleting some folders. Deleted: %1$d. Errors: %2$s"
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1132
+#: inc/classes/rest-api/class-media-library.php:1174
 msgid "No folders were deleted."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1195
+#: inc/classes/rest-api/class-media-library.php:1237
 msgid "You do not have permission to lock or unlock folders."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:1214
+#: inc/classes/rest-api/class-media-library.php:1256
 #, php-format
 msgid "%d folder(s) locked successfully."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:1216
+#: inc/classes/rest-api/class-media-library.php:1258
 #, php-format
 msgid "%d folder(s) unlocked successfully."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:1230
+#: inc/classes/rest-api/class-media-library.php:1272
 #, php-format
 msgid "Some folders locked, but issues occurred with others. Locked: %d."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:1232
+#: inc/classes/rest-api/class-media-library.php:1274
 #, php-format
 msgid "Some folders unlocked, but issues occurred with others. Unlocked: %d."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1243
+#: inc/classes/rest-api/class-media-library.php:1285
 msgid "No folders were updated for lock status."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:1272
+#: inc/classes/rest-api/class-media-library.php:1314
 #, php-format
 msgid "%d folder(s) bookmarked successfully."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:1274
+#: inc/classes/rest-api/class-media-library.php:1316
 #, php-format
 msgid "%d folder(s) unbookmarked successfully."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:1288
+#: inc/classes/rest-api/class-media-library.php:1330
 #, php-format
 msgid "Some folders bookmarked, but issues occurred with others. Bookmarked: %d."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:1290
+#: inc/classes/rest-api/class-media-library.php:1332
 #, php-format
 msgid "Some folders unbookmarked, but issues occurred with others. Unbookmarked: %d."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1301
+#: inc/classes/rest-api/class-media-library.php:1343
 msgid "No folders were updated for bookmark status."
 msgstr ""
 
 #. translators: %s is the error message from the GoDAM API request.
-#: inc/classes/rest-api/class-media-library.php:1385
+#: inc/classes/rest-api/class-media-library.php:1427
 #, php-format
 msgid "GoDAM API request failed: %s"
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1413
+#: inc/classes/rest-api/class-media-library.php:1455
 msgid "Unexpected API response format."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1446
+#: inc/classes/rest-api/class-media-library.php:1488
 msgid "Filtered GoDAM files by MIME type."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1476
+#: inc/classes/rest-api/class-media-library.php:1518
 msgid "Required fields are missing."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1481
+#: inc/classes/rest-api/class-media-library.php:1523
 msgid "Invalid or disallowed MIME type."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1495
-#: inc/classes/rest-api/class-media-library.php:1522
+#: inc/classes/rest-api/class-media-library.php:1537
+#: inc/classes/rest-api/class-media-library.php:1564
 msgid "Attachment already exists"
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1641
+#: inc/classes/rest-api/class-media-library.php:1683
 msgid "Attachment created"
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1706
+#: inc/classes/rest-api/class-media-library.php:1748
 msgid "A Folder ID is required"
 msgstr ""
 
@@ -4048,7 +4048,11 @@ msgctxt "1 year period"
 msgid "1Y"
 msgstr ""
 
-#: pages/analytics/SingleMetrics.js:211
+#: pages/analytics/SingleMetrics.js:212
+msgid "All time"
+msgstr ""
+
+#: pages/analytics/SingleMetrics.js:216
 msgid "Last 7 days"
 msgstr ""
 
