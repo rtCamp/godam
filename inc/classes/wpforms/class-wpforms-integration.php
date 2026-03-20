@@ -38,7 +38,16 @@ class WPForms_Integration {
 
 			add_action( 'wpforms_frontend_confirmation_message_before', array( $this, 'load_godam_recorder_script_on_success' ), 10, 4 );
 
-			add_action( 'wpforms_loaded', array( $this, 'init_godam_video_field' ) );
+			/**
+			 * Initialize the GoDAM video field.
+			 *
+			 * @see https://github.com/rtCamp/godam/issues/465
+			 *
+			 * Previously, the field was loaded on `wpforms_loaded`, which triggered the `_load_textdomain_just_in_time was called incorrectly` warning.
+			 * Since the translation function is invoked within the field constructor, it caused the warning because translations had not yet been loaded.
+			 * All the WPForms fields are initialized in the `init` hook. See, WPForms\Loader->populate_fields().
+			 */
+			add_action( 'init', array( $this, 'init_godam_video_field' ) );
 
 			add_action( 'wpforms_process_entry_saved', array( $this, 'send_saved_files_for_transcoding' ), 10, 4 );
 
