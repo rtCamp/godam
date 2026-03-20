@@ -49,6 +49,7 @@ class Media_Library_Ajax {
 		add_filter( 'wp_get_attachment_url', array( $this, 'filter_attachment_url_for_virtual_media' ), 10, 2 );
 
 		// Add filters for virtual media srcset support.
+		add_filter( 'wp_calculate_image_srcset_meta', array( $this, 'filter_image_srcset_meta' ), 10, 4 );
 		add_filter( 'wp_calculate_image_srcset', array( $this, 'filter_virtual_media_srcset' ), 10, 5 );
 
 		// Add admin notice for HTTP auth and AJAX handler to save HTTP auth status.
@@ -1017,6 +1018,56 @@ class Media_Library_Ajax {
 	}
 
 	/**
+	 * Pre-filter image meta so WordPress can match a CDN image src during srcset build.
+	 *
+	 * WordPress determines whether the current image src is a known size by checking
+	 * if `$image_src` contains `$dirname . $size_file` (e.g. `2026/03/image-300x200.jpg`).
+	 * When the stored src is already a CDN URL the date sub-directory is absent, so the
+	 * check always fails and WordPress returns `false` for srcset – discarding any CDN
+	 * sources our `wp_calculate_image_srcset` filter would inject.
+	 *
+	 * Stripping the upload sub-directory from `file` makes `$dirname` empty, so
+	 * WordPress can match by basename alone and proceeds with srcset computation.
+	 * The `wp_calculate_image_srcset` filter then replaces the locally-built source
+	 * URLs with the authoritative CDN URLs from `rtgodam_image_sizes`.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array  $image_meta    The image meta data as returned by wp_get_attachment_metadata().
+	 * @param int[]  $size_array    The requested size as [width, height].
+	 * @param string $image_src     The current image source URL.
+	 * @param int    $attachment_id The image attachment ID or 0.
+	 *
+	 * @return array Modified (or unchanged) image meta.
+	 */
+	public function filter_image_srcset_meta( $image_meta, $size_array, $image_src, $attachment_id ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Filter signature requires these params.
+		if ( empty( $attachment_id ) || ! is_array( $image_meta ) || empty( $image_meta['file'] ) ) {
+			return $image_meta;
+		}
+
+		$rtgodam_image_sizes = $this->get_rtgodam_image_sizes( $attachment_id );
+		if ( empty( $rtgodam_image_sizes ) ) {
+			return $image_meta;
+		}
+
+		$cdn_src = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+		if ( empty( $cdn_src ) ) {
+			return $image_meta;
+		}
+
+		$cdn_host = wp_parse_url( $cdn_src, PHP_URL_HOST );
+		$src_host = wp_parse_url( $image_src, PHP_URL_HOST );
+
+		// Only act when the src is already served from the CDN and the file path
+		// still carries a sub-directory prefix (i.e. hasn't been stripped yet).
+		if ( $cdn_host && $src_host && $cdn_host === $src_host && wp_basename( $image_meta['file'] ) !== $image_meta['file'] ) {
+			$image_meta['file'] = wp_basename( $image_meta['file'] );
+		}
+
+		return $image_meta;
+	}
+
+	/**
 	 * Filter srcset calculation for virtual media to use full URLs.
 	 *
 	 * @since 1.5.0
@@ -1053,21 +1104,21 @@ class Media_Library_Ajax {
 		if ( ! empty( $rtgodam_image_sizes ) ) {
 
 			// Prepare new sources array based on rtgodam_image_sizes meta.
+			// Keyed by width to deduplicate and match WordPress's expected format.
 			$new_sources = array();
-			// Sources element should have only url, descriptor, value. Remove any extra data added for our internal use.
-			foreach ( $rtgodam_image_sizes as &$image_size ) {
+			foreach ( $rtgodam_image_sizes as $image_size ) {
 				// Skip entries that do not have a valid URL or width to avoid invalid srcset entries.
 				if ( empty( $image_size['url'] ) || empty( $image_size['width'] ) ) {
 					continue;
 				}
 
-				$new_sources[] = array(
-					'url'        => isset( $image_size['url'] ) ? esc_url( $image_size['url'] ) : '',
+				$width                 = intval( $image_size['width'] );
+				$new_sources[ $width ] = array(
+					'url'        => esc_url( $image_size['url'] ),
 					'descriptor' => 'w',
-					'value'      => isset( $image_size['width'] ) ? intval( $image_size['width'] ) : '',
+					'value'      => $width,
 				);
 			}
-			unset( $image_size ); // Break the reference.
 
 			$sources = $new_sources;
 		} elseif ( ! empty( $godam_original_id ) ) {
@@ -1202,6 +1253,17 @@ class Media_Library_Ajax {
 		$cdn_src = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
 		if ( empty( $cdn_src ) ) {
 			return $filtered_image;
+		}
+
+		// If the current src is already on the same CDN host, it is already a correctly-sized
+		// CDN URL (e.g. a subsize chosen via the Image block). Don't overwrite it with the
+		// full-size CDN URL.
+		if ( preg_match( '/\bsrc="([^"]*)"/', $filtered_image, $src_match ) ) {
+			$cdn_host     = wp_parse_url( $cdn_src, PHP_URL_HOST );
+			$current_host = wp_parse_url( $src_match[1], PHP_URL_HOST );
+			if ( $cdn_host && $current_host && $cdn_host === $current_host ) {
+				return $filtered_image;
+			}
 		}
 
 		$updated_image = preg_replace(
