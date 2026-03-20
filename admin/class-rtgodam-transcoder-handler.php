@@ -445,7 +445,7 @@ class RTGODAM_Transcoder_Handler {
 				}
 			}
 
-			if ( is_wp_error( $upload_page ) || 500 <= intval( $upload_page['response']['code'] ) ) {
+			if ( is_wp_error( $upload_page ) || 200 !== intval( $upload_page['response']['code'] ?? 0 ) ) {
 				$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
 
 				// Preserve the existing retry_count so the cron-job retry limiter is not reset
