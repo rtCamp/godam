@@ -369,11 +369,15 @@ function sendPlayerHeatmap( player, video, skipIfKey = null ) {
 }
 
 function setupPlayerAnalytics( player, video ) {
-	// Skip if already set up
-	if ( video.dataset.analyticsSetup === 'true' ) {
+	// Skip if already set up for this player instance.
+	// We use the player object rather than the DOM element because
+	// godamPlayerReady provides the raw <video> element, but playerAnalytics()
+	// queries the wrapper <div> element. Attaching to player prevents double-setup.
+	if ( player._godamAnalyticsSetup ) {
 		return;
 	}
-	video.dataset.analyticsSetup = 'true';
+	player._godamAnalyticsSetup = true;
+	video.dataset.analyticsSetup = 'true'; // Keep for backwards compatibility
 
 	// Track the active player. Entry shape: { videoEl, lastSentKey }
 	// lastSentKey is the JSON fingerprint of the last ranges sent via visibilitychange,
