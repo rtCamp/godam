@@ -1031,7 +1031,7 @@ class Media_Library_Ajax {
 	 * The `wp_calculate_image_srcset` filter then replaces the locally-built source
 	 * URLs with the authoritative CDN URLs from `rtgodam_image_sizes`.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.7.2
 	 *
 	 * @param array  $image_meta    The image meta data as returned by wp_get_attachment_metadata().
 	 * @param int[]  $size_array    The requested size as [width, height].
