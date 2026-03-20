@@ -288,8 +288,28 @@ $godam_brand_color            = isset( $godam_settings['video_player']['brand_co
 $godam_appearance_color       = isset( $godam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $godam_meta_data['videoConfig']['controlBar']['appearanceColor'] : null;
 $godam_brand_image            = isset( $godam_settings['video_player']['brand_image'] ) ? $godam_settings['video_player']['brand_image'] : null;
 $godam_individual_brand_image = isset( $godam_meta_data['videoConfig']['controlBar']['brand_image'] ) ? $godam_meta_data['videoConfig']['controlBar']['brand_image'] : null;
-$godam_player_skin            = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : 'Default';
-$godam_ads_settings           = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : array();
+
+$godam_woocommerce_allowed_contexts = array(
+	'godam-product-gallery',
+	'godam-woo-product-page-reels',
+	'godam-featured-video-gallery',
+);
+
+$godam_woocommerce_context = false;
+
+if ( isset( $attributes['godam_context'] ) ) {
+	$godam_woocommerce_context = in_array( $attributes['godam_context'], $godam_woocommerce_allowed_contexts, true );
+}
+
+if ( isset( $attributes['godam_context'] ) && $godam_woocommerce_context ) {
+	$godam_player_skin = 'reels';
+} else {
+	$godam_player_skin = isset( $godam_settings['video_player']['player_skin'] )
+		? $godam_settings['video_player']['player_skin']
+		: 'Default';
+}
+
+$godam_ads_settings = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : array();
 
 // Global video ads is a Pro feature — disable global ads and clear the ad tag URL for free users,
 // even if the settings were previously saved (backward-compatibility guard).
@@ -439,7 +459,11 @@ $godam_custom_css_properties = array(
 );
 
 if ( ! empty( $godam_aspect_ratio ) ) {
-	$godam_custom_css_properties['--rtgodam-video-aspect-ratio'] = str_replace( ':', '/', $godam_aspect_ratio );
+	if ( isset( $attributes['godam_context'] ) && 'godam-woo-product-page-reels' === $attributes['godam_context'] ) {
+		$godam_custom_css_properties['--rtgodam-video-aspect-ratio'] = '16/9';
+	} else {
+		$godam_custom_css_properties['--rtgodam-video-aspect-ratio'] = str_replace( ':', '/', $godam_aspect_ratio );
+	}
 }
 
 // Build the inline style string, escaping each value.
@@ -550,6 +574,19 @@ if ( $godam_should_preload_poster ) {
 						<div class="godam-player-overlay"></div>
 					<?php endif; ?>
 
+					<?php if ( ! $godam_woocommerce_context ) : ?>
+						<?php foreach ( $godam_layers as $godam_layer ) : ?>
+							<?php if ( isset( $godam_layer['miniCart'] ) ) : ?>
+								<?php if ( true === $godam_layer['miniCart'] ) : ?>
+									<div class="godam-video--cart-basket">
+										<?php echo do_blocks( '<!-- wp:woocommerce/mini-cart /-->' ); // phpcs:ignore ?>
+									</div>
+								<?php endif; ?>
+								<?php break; ?>
+							<?php endif; ?>
+						<?php endforeach; ?>
+					<?php endif; ?>
+
 					<?php if ( $godam_should_preload_poster ) : ?>
 						<img
 							class="godam-poster-image"
@@ -600,10 +637,11 @@ if ( $godam_should_preload_poster ) {
 
 					<!-- Dynamically render shortcodes for form layers. -->
 					<?php
+
 					// Premium layer types require a valid API key to render on the frontend.
 					$godam_premium_layer_types = rtgodam_get_premium_layer_types();
 
-					if ( ! empty( $godam_meta_data['layers'] ) ) :
+					if ( ! empty( $godam_meta_data['layers'] ) && ! $godam_woocommerce_context ) :
 						foreach ( $godam_meta_data['layers'] as $godam_layer ) :
 							// Skip premium layers if the API key is not valid.
 							if ( ! $godam_has_valid_api_key && isset( $godam_layer['type'] ) && in_array( $godam_layer['type'], $godam_premium_layer_types, true ) ) :
@@ -818,6 +856,18 @@ if ( $godam_should_preload_poster ) {
 									if ( ! empty( $godam_layer['bg_color'] ) ) :
 										?>
 										style="background-color: <?php echo esc_attr( $godam_layer['bg_color'] ); ?>"<?php endif; ?>
+								>
+								</div>
+								<?php
+								// WooCommerce layer.
+							elseif ( isset( $godam_layer['type'] ) && 'woo' === $godam_layer['type'] ) :
+								?>
+								<div
+									id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>"
+									class="easydam-layer hidden hotspot-layer"
+									<?php if ( ! empty( $godam_layer['bg_color'] ) ) : ?>
+										style="background-color: <?php echo esc_attr( $godam_layer['bg_color'] ); ?>"
+									<?php endif; ?>
 								>
 								</div>
 								<?php
