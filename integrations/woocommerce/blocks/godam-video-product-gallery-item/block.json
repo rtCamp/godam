@@ -1,0 +1,58 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "godam/video-product-gallery-item",
+  "title": "Gallery Item",
+  "category": "media",
+  "description": "A single video and product item for the Video Product Gallery.",
+  "keywords": ["video", "product", "item", "godam"],
+  "textdomain": "godam",
+  "parent": ["godam/video-product-gallery"],
+  "attributes": {
+    "videoId": {
+      "type": "number",
+      "default": 0
+    },
+    "videoUrl": {
+      "type": "string",
+      "default": ""
+    },
+    "videoThumbnail": {
+      "type": "string",
+      "default": ""
+    },
+    "videoTitle": {
+      "type": "string",
+      "default": ""
+    },
+    "productId": {
+      "type": "number",
+      "default": 0
+    },
+    "productName": {
+      "type": "string",
+      "default": ""
+    },
+    "productPrice": {
+      "type": "string",
+      "default": ""
+    },
+    "productImage": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "usesContext": [
+    "godam/videoProductGallery/layout",
+    "godam/videoProductGallery/viewRatio",
+    "godam/videoProductGallery/itemWidth",
+    "godam/videoProductGallery/gap"
+  ],
+  "supports": {
+    "reusable": false,
+    "html": false
+  },
+  "editorScript": ["file:./index.js"],
+  "render": "file:./render.php",
+  "editorStyle": ["file:./index.css"]
+}

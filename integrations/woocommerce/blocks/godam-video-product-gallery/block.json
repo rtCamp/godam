@@ -1,0 +1,48 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "godam/video-product-gallery",
+  "title": "GoDAM Video Product Gallery",
+  "category": "media",
+  "description": "Create a customizable video product gallery with carousel or grid layout.",
+  "keywords": ["video", "product", "gallery", "godam", "carousel", "grid", "woocommerce"],
+  "textdomain": "godam",
+  "attributes": {
+    "blockId": {
+      "type": "string"
+    },
+    "layout": {
+      "type": "string",
+      "default": "carousel"
+    },
+    "viewRatio": {
+      "type": "string",
+      "default": "9:16"
+    },
+    "itemWidth": {
+      "type": "number",
+      "default": 180
+    },
+    "gap": {
+      "type": "number",
+      "default": 16
+    }
+  },
+  "providesContext": {
+    "godam/videoProductGallery/layout": "layout",
+    "godam/videoProductGallery/viewRatio": "viewRatio",
+    "godam/videoProductGallery/itemWidth": "itemWidth",
+    "godam/videoProductGallery/gap": "gap"
+  },
+  "supports": {
+    "anchor": true,
+    "align": ["center", "wide", "full"],
+    "spacing": {
+      "margin": true,
+      "padding": true
+    }
+  },
+  "editorScript": ["file:./index.js"],
+  "render": "file:./render.php",
+  "editorStyle": ["file:./index.css"]
+}

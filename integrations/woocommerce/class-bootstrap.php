@@ -230,6 +230,18 @@ class Bootstrap {
 			register_block_type( $reel_pops_block_path );
 		}
 
+		// Register GoDAM Video Product Gallery block from built assets if available.
+		$video_product_gallery_path = RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'blocks/godam-video-product-gallery/';
+		if ( file_exists( $video_product_gallery_path . 'block.json' ) ) {
+			register_block_type( $video_product_gallery_path );
+		}
+
+		// Register GoDAM Video Product Gallery Item block from built assets if available.
+		$video_product_gallery_item_path = RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'blocks/godam-video-product-gallery-item/';
+		if ( file_exists( $video_product_gallery_item_path . 'block.json' ) ) {
+			register_block_type( $video_product_gallery_item_path );
+		}
+
 		// Initialize REST API.
 		\RTGODAM\Inc\REST_API\WC::get_instance();
 		\RTGODAM\Inc\REST_API\Product_Gallery_Rest::get_instance();

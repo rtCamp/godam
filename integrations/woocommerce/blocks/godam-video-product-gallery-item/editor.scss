@@ -1,0 +1,359 @@
+/**
+ * GoDAM Video Product Gallery Item - Editor Styles
+ */
+
+.godam-gallery-item__video-preview {
+	width: 100%;
+	aspect-ratio: 9 / 16;
+	background: #f0f0f0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+	cursor: pointer;
+	overflow: hidden;
+    box-sizing: border-box;
+    border-radius: 0.5rem 0.5rem 0 0;
+
+	&--empty {
+		background: #e0e0e0;
+		border: 2px dashed #999;
+	}
+
+	.godam-gallery-item__placeholder {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 8px;
+		color: #666;
+		text-align: center;
+		padding: 16px;
+
+		svg {
+			width: 32px;
+			height: 32px;
+			opacity: 0.6;
+		}
+
+		span {
+			font-size: 12px;
+			opacity: 0.8;
+		}
+	}
+
+	.godam-gallery-item__thumbnail {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.godam-gallery-item__play-icon {
+		position: absolute;
+		width: 48px;
+		height: 48px;
+		background: rgba(0, 0, 0, 0.6);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: #fff;
+		opacity: 0.9;
+		transition: opacity 0.2s ease, transform 0.2s ease;
+
+		svg {
+			width: 24px;
+			height: 24px;
+			margin-left: 2px;
+		}
+	}
+
+	&:hover .godam-gallery-item__play-icon {
+		opacity: 1;
+		transform: scale(1.1);
+	}
+}
+
+.godam-video-product-gallery-item {
+	min-width: 180px;
+	background: #fff;
+	border-radius: 0.5rem;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	overflow: hidden;
+	transition: box-shadow 0.2s ease;
+
+	&:hover {
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+	}
+
+	// Aspect ratio variations
+	&--ratio-4-3 .godam-gallery-item__video-preview {
+		aspect-ratio: 4 / 3;
+	}
+
+	&--ratio-9-16 .godam-gallery-item__video-preview {
+		aspect-ratio: 9 / 16;
+	}
+
+	&--ratio-3-4 .godam-gallery-item__video-preview {
+		aspect-ratio: 3 / 4;
+	}
+
+	&--ratio-1-1 .godam-gallery-item__video-preview {
+		aspect-ratio: 1 / 1;
+	}
+
+	&--ratio-16-9 .godam-gallery-item__video-preview {
+		aspect-ratio: 16 / 9;
+	}
+}
+
+.godam-gallery-item__product {
+	padding: 12px;
+	background: #fff;
+	border-top: 1px solid #f0f0f0;
+
+	&--empty {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 8px;
+		padding: 16px 12px;
+	}
+
+	.godam-gallery-item__product-placeholder {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 4px;
+		color: #666;
+		text-align: center;
+
+		svg {
+			width: 24px;
+			height: 24px;
+			opacity: 0.5;
+		}
+
+		span {
+			font-size: 11px;
+			opacity: 0.7;
+		}
+	}
+
+	.godam-gallery-item__product-info {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+
+		.godam-gallery-item__product-image {
+			width: 36px;
+			height: 36px;
+			border-radius: 6px;
+			object-fit: cover;
+			background: #f5f5f5;
+		}
+
+		.godam-gallery-item__product-details {
+			flex: 1;
+			min-width: 0;
+
+			.godam-gallery-item__product-name {
+				font-size: 12px;
+				font-weight: 500;
+				color: #1e1e1e;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				margin: 0 0 2px;
+			}
+
+			.godam-gallery-item__product-price {
+				font-size: 11px;
+				color: #007cba;
+				font-weight: 600;
+				margin: 0;
+			}
+		}
+
+		.godam-gallery-item__product-change {
+			flex-shrink: 0;
+			padding: 4px;
+			min-width: auto;
+
+			svg {
+				width: 16px;
+				height: 16px;
+			}
+		}
+	}
+}
+
+// Video/Product selector button styles
+.godam-gallery-item__select-button {
+	width: 100%;
+	justify-content: center;
+	padding: 8px 12px;
+	font-size: 12px;
+}
+
+// Modal/Popover styles
+.godam-product-search-popover {
+	width: 300px;
+	max-height: 400px;
+
+	.godam-product-search__input {
+		width: 100%;
+		padding: 8px 12px;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		font-size: 14px;
+		margin-bottom: 8px;
+
+		&:focus {
+			border-color: #007cba;
+			outline: none;
+			box-shadow: 0 0 0 1px #007cba;
+		}
+	}
+
+	.godam-product-search__results {
+		max-height: 280px;
+		overflow-y: auto;
+	}
+
+	.godam-product-search__item {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 8px;
+		cursor: pointer;
+		border-radius: 4px;
+		transition: background 0.15s ease;
+
+		&:hover {
+			background: #f0f0f0;
+		}
+
+		img {
+			width: 40px;
+			height: 40px;
+			object-fit: cover;
+			border-radius: 4px;
+			background: #f5f5f5;
+		}
+
+		.godam-product-search__item-info {
+			flex: 1;
+
+			.godam-product-search__item-name {
+				font-size: 13px;
+				font-weight: 500;
+				color: #1e1e1e;
+			}
+
+			.godam-product-search__item-price {
+				font-size: 12px;
+				color: #666;
+			}
+		}
+	}
+
+	.godam-product-search__loading,
+	.godam-product-search__empty {
+		padding: 16px;
+		text-align: center;
+		color: #666;
+		font-size: 13px;
+	}
+}
+
+// Select Product Button
+.godam-gallery-item__product-select {
+	display: flex;
+	justify-content: center;
+
+	.godam-gallery-item__select-product-button {
+		width: 100%;
+		justify-content: center;
+	}
+}
+
+// Product Picker Modal
+.godam-product-picker-modal {
+
+	.components-modal__content {
+		padding: 16px;
+	}
+
+	.godam-product-picker-modal__results {
+		min-height: 200px;
+		max-height: 400px;
+		overflow-y: auto;
+	}
+
+	.godam-product-picker-modal__loading {
+		padding: 40px 0;
+	}
+
+	.godam-product-picker-modal__empty,
+	.godam-product-picker-modal__hint {
+		text-align: center;
+		color: #757575;
+		padding: 40px 16px;
+		margin: 0;
+	}
+
+	.godam-product-picker-modal__list {
+		padding: 0;
+	}
+
+	.godam-product-picker-modal__item {
+		display: block;
+		width: 100%;
+		padding: 10px 12px;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		background: #fff;
+		cursor: pointer;
+		text-align: left;
+		transition: all 0.15s ease;
+
+		&:hover {
+			background: #f6f7f7;
+			border-color: #007cba;
+		}
+
+		&:focus {
+			outline: 2px solid #007cba;
+			outline-offset: -2px;
+		}
+
+		.godam-product-picker-modal__item-image {
+			width: 48px;
+			height: 48px;
+			object-fit: cover;
+			border-radius: 4px;
+			background: #f5f5f5;
+			flex-shrink: 0;
+		}
+
+		.godam-product-picker-modal__item-info {
+			flex: 1;
+			min-width: 0;
+			align-items: flex-start !important;
+		}
+
+		.godam-product-picker-modal__item-name {
+			font-size: 14px;
+			font-weight: 500;
+			color: #1e1e1e;
+			line-height: 1.4;
+		}
+
+		.godam-product-picker-modal__item-price {
+			font-size: 13px;
+			color: #007cba;
+			font-weight: 600;
+		}
+	}
+}
