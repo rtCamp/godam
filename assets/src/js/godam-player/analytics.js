@@ -16,6 +16,25 @@ const analytics = Analytics( {
 } );
 window.analytics = analytics;
 
+/**
+ * Collect all played time ranges from a VideoJS player instance.
+ * Module-scoped so it is accessible to both the IIFE (trackVideoEvent)
+ * and the module-level sendPlayerHeatmap function.
+ *
+ * @param {Object} player - VideoJS player instance
+ * @return {Array} Array of [start, end] pairs representing played ranges
+ */
+function collectPlayedRanges( player ) {
+	const played = player && player.played && player.played();
+	const ranges = [];
+	if ( played && typeof played.length === 'number' ) {
+		for ( let i = 0; i < played.length; i++ ) {
+			ranges.push( [ played.start( i ), played.end( i ) ] );
+		}
+	}
+	return ranges;
+}
+
 // Generic video analytics helper
 ( function() {
 	function findVideoElementById( videoId, root ) {
@@ -39,17 +58,6 @@ window.analytics = analytics;
 		} catch ( e ) {
 			return null;
 		}
-	}
-
-	function collectPlayedRanges( player ) {
-		const played = player && player.played && player.played();
-		const ranges = [];
-		if ( played && typeof played.length === 'number' ) {
-			for ( let i = 0; i < played.length; i++ ) {
-				ranges.push( [ played.start( i ), played.end( i ) ] );
-			}
-		}
-		return ranges;
 	}
 
 	// Attach to window.analytics
@@ -182,12 +190,199 @@ if ( ! window.pageLoadEventTracked ) {
  * @param {Object}      player - VideoJS player instance
  * @param {HTMLElement} video  - Video container element
  */
+// Store the Map on window so all script evaluations share the same instance.
+// If this script runs more than once (guarded via window.pageLoadEventTracked),
+// the already-bound unload handler will still see every player registered by any run.
+window.godamTrackedPlayers = window.godamTrackedPlayers || new Map();
+
+// Global listener for analytics
+if ( ! window.godamUnloadListenerBound ) {
+	window.godamUnloadListenerBound = true;
+
+	/**
+	 * Final flush on true page unload (navigation away or tab close).
+	 * Clears the map since the page will not recover.
+	 */
+	const handleUnload = () => {
+		window.godamTrackedPlayers.forEach( ( entry, playerInstance ) => {
+			// Pass lastSentKey so sendPlayerHeatmap skips if visibilitychange already
+			// sent these exact ranges (avoids double-send on tab close).
+			sendPlayerHeatmap( playerInstance, entry.videoEl, entry.lastSentKey );
+		} );
+		// Clear to avoid duplicate sends if the event fires multiple times (e.g. cancelled unload).
+		window.godamTrackedPlayers.clear();
+	};
+
+	/**
+	 * Intermediate flush when the page is hidden (tab switch, window minimize, screen lock).
+	 *
+	 * visibilitychange fires before pagehide/beforeunload, so when a user closes a tab
+	 * BOTH events fire in sequence. To prevent sending the same data twice, we stamp a
+	 * fingerprint (JSON of ranges) on the entry after sending. The final unload handler
+	 * re-computes the current ranges — if they match the fingerprint, the user did not
+	 * watch anything new after returning, so we skip. If they differ, updated data is sent.
+	 */
+	const handleVisibilityHidden = () => {
+		if ( document.visibilityState === 'hidden' ) {
+			window.godamTrackedPlayers.forEach( ( entry, playerInstance ) => {
+				const sent = sendPlayerHeatmap( playerInstance, entry.videoEl );
+				if ( sent ) {
+					// Stamp the ranges that were just sent so the unload handler
+					// can skip if nothing new was watched after the user returned.
+					entry.lastSentKey = sent;
+				}
+			} );
+			// Intentionally NOT clearing the map — ranges keep accumulating if user returns.
+		}
+	};
+
+	window.addEventListener( 'beforeunload', handleUnload );
+	window.addEventListener( 'pagehide', handleUnload ); // For better mobile / bfcache support
+	document.addEventListener( 'visibilitychange', handleVisibilityHidden ); // Tab switch, minimize, screen lock
+}
+
+/**
+ * Send heatmap data for a single player via a keepalive fetch.
+ *
+ * Returns a string fingerprint of the ranges sent (used by the visibilitychange handler
+ * to avoid re-sending identical data in the subsequent pagehide/beforeunload), or null
+ * if nothing was sent.
+ *
+ * @param {Object}      player    - VideoJS player instance
+ * @param {HTMLElement} video     - Video container element
+ * @param {string|null} skipIfKey - If provided, skip sending when current ranges fingerprint matches this key.
+ * @return {string|null} Fingerprint of sent ranges, or null if skipped.
+ */
+function sendPlayerHeatmap( player, video, skipIfKey = null ) {
+	if ( ! player || ! video ) {
+		return null;
+	}
+
+	try {
+		// Double check player isn't disposed natively beforehand
+		if ( typeof player.isDisposed === 'function' && player.isDisposed() ) {
+			return null;
+		}
+
+		const ranges = collectPlayedRanges( player );
+
+		if ( ranges.length === 0 ) {
+			return null; // Nothing played — skip
+		}
+
+		const rangesKey = JSON.stringify( ranges );
+
+		// Skip if the caller already sent these exact ranges (visibilitychange → pagehide dedup).
+		if ( skipIfKey && rangesKey === skipIfKey ) {
+			return null;
+		}
+
+		const videoId = video.getAttribute( 'data-id' );
+		const jobId = video.getAttribute( 'data-job_id' ) || '';
+		if ( ! videoId ) {
+			return null;
+		}
+
+		const videoLength = Number( player.duration && player.duration() ) || 0;
+
+		/*
+		 * IMPORTANT: We bypass window.analytics.track() here intentionally.
+		 *
+		 * This function is called from beforeunload / pagehide / dispose handlers.
+		 * window.analytics.track() dispatches async work (Promises, microtasks).
+		 * The browser does NOT block page unload waiting for async work to settle —
+		 * the async chain can be silently abandoned mid-flight.
+		 *
+		 * The correct fix is to call fetch() with keepalive: true SYNCHRONOUSLY
+		 * inside the handler. The browser queues a keepalive request at the network
+		 * level and guarantees delivery even after the JS context is torn down.
+		 * This is the spec-compliant equivalent of navigator.sendBeacon() for POST
+		 * requests that need a JSON body.
+		 *
+		 * Reference: https://fetch.spec.whatwg.org/#keep-alive-flag
+		 */
+		const {
+			endpoint,
+			token,
+			userId,
+			emailId,
+			locationIP,
+			isPost,
+			isPage,
+			isArchive,
+			postType,
+			postId,
+			postTitle,
+			categories,
+			tags,
+			author,
+		} = window.videoAnalyticsParams || {};
+
+		// Honour the same skip conditions as the analytics plugin itself.
+		if ( ! endpoint || token === 'unverified' ) {
+			return null;
+		}
+
+		const requestBody = {
+			site_url: window.location.origin,
+			account_token: token || '',
+			wp_user_id: parseInt( userId, 10 ) || 0,
+			email: emailId || '',
+			visitor_timestamp: Date.now(),
+			visit_entry_action_url: window.location.href,
+			visit_entry_action_name: document.title,
+			referer_url: document.referrer || '',
+			referer_name: document.referrer || '',
+			location_ip: locationIP || '',
+			is_post: isPost === '1',
+			is_page: isPage === '1',
+			is_archive: isArchive === '1',
+			post_type: postType,
+			post_id: parseInt( postId, 0 ),
+			post_title: postTitle,
+			categories,
+			tags,
+			author,
+			type: 2,
+			video_id: parseInt( videoId, 10 ),
+			job_id: jobId,
+			video_ids: [],
+			ranges,
+			video_length: videoLength,
+		};
+
+		// keepalive: true guarantees the request outlives the page. We do NOT
+		// await — the browser handles delivery asynchronously at the network
+		// layer, entirely outside our JS execution context.
+		fetch( endpoint + '/analytics/', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify( requestBody ),
+			keepalive: true,
+		} );
+
+		return rangesKey; // Return fingerprint so caller can stamp it.
+	} catch ( e ) {
+		// Silently ignore — we are in an unload handler and cannot surface errors.
+		return null;
+	}
+}
+
 function setupPlayerAnalytics( player, video ) {
-	// Skip if already set up
-	if ( video.dataset.analyticsSetup === 'true' ) {
+	// Skip if already set up for this player instance.
+	// We use the player object rather than the DOM element because
+	// godamPlayerReady provides the raw <video> element, but playerAnalytics()
+	// queries the wrapper <div> element. Attaching to player prevents double-setup.
+	if ( player._godamAnalyticsSetup ) {
 		return;
 	}
-	video.dataset.analyticsSetup = 'true';
+	player._godamAnalyticsSetup = true;
+	video.dataset.analyticsSetup = 'true'; // Keep for backwards compatibility
+
+	// Track the active player. Entry shape: { videoEl, lastSentKey }
+	// lastSentKey is the JSON fingerprint of the last ranges sent via visibilitychange,
+	// used to avoid re-sending identical data in the subsequent pagehide/beforeunload.
+	window.godamTrackedPlayers.set( player, { videoEl: video, lastSentKey: null } );
 
 	// Initialize GTM tracker for this video
 	if ( typeof window.dataLayer !== 'undefined' && window.godamSettings?.enableGTMTracking ) {
@@ -196,37 +391,14 @@ function setupPlayerAnalytics( player, video ) {
 		video.gtmTracker = gtmTracker;
 	}
 
-	window.addEventListener( 'beforeunload', () => {
-		const played = player.played();
-		const ranges = [];
-		const videoLength = player.duration();
-
-		// Extract time ranges from the player.played() object
-		for ( let i = 0; i < played.length; i++ ) {
-			ranges.push( [ played.start( i ), played.end( i ) ] );
+	// Send heatmap when player is unmounted/disposed (e.g. AJAX navigation)
+	player.on( 'dispose', () => {
+		if ( window.godamTrackedPlayers.has( player ) ) {
+			const { videoEl, lastSentKey } = window.godamTrackedPlayers.get( player );
+			sendPlayerHeatmap( player, videoEl, lastSentKey );
+			window.godamTrackedPlayers.delete( player );
 		}
-
-		// Send the ranges using updateHeatmap
-		updateHeatmap( ranges, videoLength );
 	} );
-
-	async function updateHeatmap( ranges, videoLength ) {
-		const videoId = video.getAttribute( 'data-id' );
-		const jobId = video.getAttribute( 'data-job_id' ) || '';
-		if ( ! videoId || ranges.length === 0 ) {
-			return; // Skip sending if no valid data
-		}
-
-		if ( window.analytics ) {
-			window.analytics.track( 'video_heatmap', {
-				type: 2, // Enum: 2 = Heatmap
-				videoId: parseInt( videoId, 10 ),
-				jobId,
-				ranges,
-				videoLength,
-			} );
-		}
-	}
 }
 
 /**
