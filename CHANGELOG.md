@@ -1,5 +1,10 @@
 # Changelog #
 
+## v1.7.2 (March 20, 2026) ##
+
+- Fix: Fixed video data collection in analytics.
+- Fix: Improved image optimization to support all registered image sizes.
+
 ## v1.7.1 (March 17, 2026) ##
 
 - Fix: Resolved invalid duration issue for hotspot layer in the video editor.

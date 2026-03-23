@@ -424,10 +424,16 @@ class Media_Library extends Base {
 			// 2. Bounding-box match for uncropped sizes.
 			// WordPress registered sizes are a max bounding box (width × height), and the
 			// generated size can be smaller when the opposite dimension's constraint is hit
-			// (e.g. a 300×300 max on a portrait image yields 150×300). A width-only map
-			// would miss these cases. Instead, accept a subsize when both dimensions fit
-			// within the registered bounding box, treating 0 as "unlimited".
+			// (e.g. a 300×300 max on a portrait image yields 150×300). Find the single
+			// best match — the smallest bounding box that still contains the subsize —
+			// and only map to multiple names when they share the exact same bounding box
+			// dimensions (true duplicates). Treat 0 as "unlimited" (effectively infinity).
 			if ( empty( $matched_names ) ) {
+				$best_eff_area = PHP_INT_MAX;
+				$best_reg_w    = -1;
+				$best_reg_h    = -1;
+				$candidates    = array();
+
 				foreach ( $registered_sizes as $reg_size_name => $reg_size_data ) {
 					// Only consider uncropped sizes — cropped sizes are handled via exact match above.
 					if ( ! empty( $reg_size_data['crop'] ) ) {
@@ -440,10 +446,28 @@ class Media_Library extends Base {
 					$width_fits  = ( 0 === $reg_width ) || ( $sub_width <= $reg_width );
 					$height_fits = ( 0 === $reg_height ) || ( $sub_height <= $reg_height );
 
-					if ( $width_fits && $height_fits ) {
-						$matched_names[] = $reg_size_name;
+					if ( ! $width_fits || ! $height_fits ) {
+						continue;
+					}
+
+					// Treat 0 (unlimited) as a very large value so specific dimensions are preferred.
+					$eff_w    = ( 0 === $reg_width ) ? PHP_INT_MAX : $reg_width;
+					$eff_h    = ( 0 === $reg_height ) ? PHP_INT_MAX : $reg_height;
+					$eff_area = (float) $eff_w * (float) $eff_h;
+
+					if ( $eff_area < $best_eff_area ) {
+						// New best match — smaller bounding box.
+						$best_eff_area = $eff_area;
+						$best_reg_w    = $reg_width;
+						$best_reg_h    = $reg_height;
+						$candidates    = array( $reg_size_name );
+					} elseif ( $eff_area === $best_eff_area && $reg_width === $best_reg_w && $reg_height === $best_reg_h ) {
+						// True duplicate — different size name, same bounding box dimensions.
+						$candidates[] = $reg_size_name;
 					}
 				}
+
+				$matched_names = $candidates;
 			}
 
 			if ( empty( $matched_names ) ) {
