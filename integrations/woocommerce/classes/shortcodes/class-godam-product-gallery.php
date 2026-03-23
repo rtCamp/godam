@@ -1,0 +1,1125 @@
+<?php
+/**
+ * GoDAM Product Gallery Shortcode Class.
+ *
+ * @package GoDAM
+ */
+
+namespace RTGODAM\Inc\Shortcodes;
+
+defined( 'ABSPATH' ) || exit;
+
+use RTGODAM\Inc\Traits\Singleton;
+use RTGODAM\Inc\WooCommerce\WC_Product_Gallery_Video_Markup;
+use RTGODAM\Inc\WooCommerce\WC_Utility;
+
+/**
+ * Class GoDAM_Product_Gallery.
+ *
+ * Handles [godam_product_gallery] shortcode.
+ */
+class GoDAM_Product_Gallery {
+
+	use Singleton;
+
+	/**
+	 * Holds the markup instance.
+	 *
+	 * @var WC_Product_Gallery_Video_Markup
+	 */
+	private $markup_instance;
+
+	/**
+	 * Holds the utility instance.
+	 *
+	 * @var WC_Utility
+	 */
+	private $utility_instance;
+
+	/**
+	 * Constructor.
+	 */
+	final protected function __construct() {
+
+		// Initialize Video Markup class.
+		$this->markup_instance = WC_Product_Gallery_Video_Markup::get_instance();
+
+		// Initialize the Utility Helper class.
+		$this->utility_instance = WC_Utility::get_instance();
+
+		// Add shortcode.
+		add_shortcode( 'godam_product_gallery', array( $this, 'render' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
+
+		add_action( 'wp_ajax_godam_get_product_html', array( $this, 'godam_get_product_html_callback' ) );
+		add_action( 'wp_ajax_nopriv_godam_get_product_html', array( $this, 'godam_get_product_html_callback' ) );
+	}
+
+	/**
+	 * Register gallery-specific scripts and styles.
+	 */
+	public function register_scripts() {
+		// Register Swiper library first.
+		if ( ! wp_script_is( 'rtgodam-swiper-script', 'registered' ) ) {
+			wp_register_script(
+				'rtgodam-swiper-script',
+				RTGODAM_URL . 'assets/src/libs/swiper/swiper-bundle.min.js',
+				array( 'jquery' ),
+				rtgodam_wc_get_asset_version( RTGODAM_PATH . 'assets/src/libs/swiper/swiper-bundle.min.js' ),
+				true
+			);
+		}
+
+		if ( ! wp_style_is( 'rtgodam-swiper-style', 'registered' ) ) {
+			wp_register_style(
+				'rtgodam-swiper-style',
+				RTGODAM_URL . 'assets/src/libs/swiper/swiper-bundle.min.css',
+				array(),
+				rtgodam_wc_get_asset_version( RTGODAM_PATH . 'assets/src/libs/swiper/swiper-bundle.min.css' )
+			);
+		}
+
+		wp_register_style(
+			'godam-product-gallery-style',
+			RTGODAM_URL . 'assets/build/integrations/woocommerce/css/godam-product-gallery.css',
+			array(),
+			rtgodam_wc_get_asset_version( RTGODAM_PATH . 'assets/build/integrations/woocommerce/css/godam-product-gallery.css' )
+		);
+
+		$gallery_asset_path                  = RTGODAM_PATH . 'assets/build/js/godam-product-gallery.min.asset.php';
+		$godam_product_gallery_script_assets = file_exists( $gallery_asset_path )
+			? include $gallery_asset_path // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- Safe: path is plugin-controlled, no user input.
+			: array(
+				'dependencies' => array(),
+				'version'      => RTGODAM_VERSION,
+			);
+
+		$gallery_deps = isset( $godam_product_gallery_script_assets['dependencies'] )
+			? (array) $godam_product_gallery_script_assets['dependencies']
+			: array();
+
+		// The add-to-cart UX in the gallery relies on the WooCommerce Blocks cart store
+		// (`wp.data.dispatch( 'wc/store/cart' )`). Ensure the store scripts are available.
+		$gallery_deps = array_values(
+			array_unique(
+				array_merge(
+					$gallery_deps,
+					array( 'wp-data', 'wc-settings', 'wc-blocks-data-store' )
+				)
+			)
+		);
+
+		wp_register_script(
+			'godam-product-gallery-script',
+			RTGODAM_URL . 'assets/build/js/godam-product-gallery.min.js',
+			$gallery_deps,
+			$godam_product_gallery_script_assets['version'],
+			true
+		);
+	}
+
+	/**
+	 * Render callback for the [godam_product_gallery] shortcode.
+	 *
+	 * Outputs a dynamic product video gallery based on provided or default attributes.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string Rendered HTML for the gallery.
+	 */
+	public function render( $atts ) {
+
+		// 1. Define default attributes and allow filtering. Add filter for default attributes.
+		$default_atts = apply_filters(
+			'rtgodam_product_gallery_default_attributes',
+			array(
+				'block_id'                          => '',
+				'layout'                            => 'carousel',
+				'view'                              => '9-16',
+				'products'                          => '',
+				'categories'                        => '',
+				'selected_videos'                   => '',
+				'order_by'                          => 'date_desc',
+				'align'                             => '',
+				'autoplay'                          => '',
+				'play_button_enabled'               => '',
+				'play_button_bg_color'              => 'rgba(0, 0, 0, 0.76)',
+				'play_button_icon_color'            => 'rgba(255, 255, 255, 1)',
+				'play_button_size'                  => 50,
+				'play_button_radius'                => 50,
+				'unmute_button_enabled'             => '',
+				'unmute_button_bg_color'            => 'rgba(0,0,0,0.4)',
+				'unmute_button_icon_color'          => 'rgba(255, 255, 255, 1)',
+				'desktop_card_width'                => 16.5,
+				'tablet_card_width'                 => 35.5,
+				'mobile_card_width'                 => 59.5,
+				'arrow_bg_color'                    => 'rgba(250, 146, 0, 1)',
+				'arrow_icon_color'                  => 'rgba(255, 255, 255, 1)',
+				'arrow_size'                        => 35,
+				'arrow_border_radius'               => 30,
+				'arrow_visibility'                  => 'always',
+				'grid_columns_desktop'              => 4,
+				'grid_columns_tablet'               => 3,
+				'grid_columns_mobile'               => 2,
+				'grid_row_gap'                      => 1,
+				'grid_column_gap'                   => 1,
+				'cta_enabled'                       => false,
+				'cta_display_position'              => 'below-inside',
+				'cta_bg_color'                      => 'rgba(255, 255, 255, 1)',
+				'cta_product_name_font_size'        => 0.9,
+				'cta_product_price_font_size'       => 0.8,
+				'cta_product_name_color'            => 'rgba(0, 0, 0, 1)',
+				'cta_product_price_color_primary'   => 'rgba(66, 66, 66, 1)',
+				'cta_product_price_color_secondary' => 'rgba(230, 134, 0, 1)',
+				'cta_product_price_color_tertiary'  => 'rgba(143, 143, 143, 1)',
+				// Cart.
+				'cta_cart_bg_color'                 => 'rgba(28, 28, 28, 1)',
+				'cta_cart_icon_color'               => 'rgba(255, 255, 255, 1)',
+				'cta_cart_border_color'             => 'rgba(224, 224, 224, 1)',
+				'cta_cart_border_style'             => 'solid',
+				'cta_cart_border_width'             => '1px',
+				'cta_cart_border_radius'            => 8,
+				'cta_cart_action'                   => 'mini-cart',
+				// Dropdown.
+				'cta_dropdown_bg_color'             => 'rgba(255, 255, 255, 1)',
+				'cta_dropdown_icon_color'           => 'rgba(28, 28, 28, 1)',
+				'cta_dropdown_border_color'         => 'rgba(224, 224, 224, 1)',
+				'cta_dropdown_border_style'         => 'solid',
+				'cta_dropdown_border_width'         => '1px',
+				'cta_dropdown_border_radius'        => 8,
+			)
+		);
+
+		// 2. Merge provided attributes with defaults.
+		$atts = shortcode_atts(
+			$default_atts,
+			$atts,
+			'godam_product_gallery'
+		);
+
+		// 3. Allow filtering of final attributes. Add filter for processed attributes.
+		$atts = apply_filters( 'rtgodam_product_gallery_attributes', $atts );
+
+		// Normalize attribute types (shortcode/block attributes often arrive as strings).
+		foreach ( $atts as $key => $value ) {
+			if ( is_string( $value ) ) {
+				$atts[ $key ] = html_entity_decode( $value, ENT_QUOTES );
+			}
+		}
+
+		if ( isset( $atts['products'] ) && is_string( $atts['products'] ) ) {
+			$atts['products'] = trim( $atts['products'], " \t\n\r\0\x0B\"'" );
+		}
+		if ( isset( $atts['categories'] ) && is_string( $atts['categories'] ) ) {
+			$atts['categories'] = trim( $atts['categories'], " \t\n\r\0\x0B\"'" );
+		}
+		if ( isset( $atts['selected_videos'] ) && is_string( $atts['selected_videos'] ) ) {
+			$atts['selected_videos'] = trim( $atts['selected_videos'], " \t\n\r\0\x0B\"'" );
+		}
+
+		// Perform sanitization for Shortcode atts only as block attributes are already sanitized.
+		if ( empty( $atts['block_id'] ) ) {
+			$atts['layout']                = sanitize_text_field( $atts['layout'] );
+			$atts['view']                  = sanitize_text_field( $atts['view'] );
+			$atts['autoplay']              = filter_var( $atts['autoplay'], FILTER_VALIDATE_BOOLEAN );
+			$atts['play_button_enabled']   = filter_var( $atts['play_button_enabled'], FILTER_VALIDATE_BOOLEAN );
+			$atts['unmute_button_enabled'] = filter_var( $atts['unmute_button_enabled'], FILTER_VALIDATE_BOOLEAN );
+			$atts['cta_enabled']           = filter_var( $atts['cta_enabled'], FILTER_VALIDATE_BOOLEAN );
+
+			$atts['play_button_size']            = absint( $atts['play_button_size'] );
+			$atts['play_button_radius']          = absint( $atts['play_button_radius'] );
+			$atts['arrow_size']                  = absint( $atts['arrow_size'] );
+			$atts['arrow_border_radius']         = absint( $atts['arrow_border_radius'] );
+			$atts['grid_columns_desktop']        = max( 1, absint( $atts['grid_columns_desktop'] ) );
+			$atts['grid_columns_tablet']         = max( 1, absint( $atts['grid_columns_tablet'] ) );
+			$atts['grid_columns_mobile']         = max( 1, absint( $atts['grid_columns_mobile'] ) );
+			$atts['grid_row_gap']                = absint( $atts['grid_row_gap'] );
+			$atts['grid_column_gap']             = absint( $atts['grid_column_gap'] );
+			$atts['cta_product_name_font_size']  = floatval( $atts['cta_product_name_font_size'] );
+			$atts['cta_product_price_font_size'] = floatval( $atts['cta_product_price_font_size'] );
+			$atts['desktop_card_width']          = (float) $atts['desktop_card_width'];
+			$atts['tablet_card_width']           = (float) $atts['tablet_card_width'];
+			$atts['mobile_card_width']           = (float) $atts['mobile_card_width'];
+			$atts['arrow_visibility']            = sanitize_text_field( $atts['arrow_visibility'] );
+			$atts['cta_display_position']        = sanitize_text_field( $atts['cta_display_position'] );
+			$atts['cta_cart_action']             = sanitize_text_field( $atts['cta_cart_action'] );
+			$atts['cta_cart_border_radius']      = absint( $atts['cta_cart_border_radius'] );
+			$atts['cta_dropdown_border_radius']  = absint( $atts['cta_dropdown_border_radius'] );
+			$atts['cta_cart_border_width']       = $this->utility_instance->sanitize_css_unit( $atts['cta_cart_border_width'], '1px' );
+			$atts['cta_dropdown_border_width']   = $this->utility_instance->sanitize_css_unit( $atts['cta_dropdown_border_width'], '1px' );
+
+			$color_fields = array(
+				'play_button_bg_color',
+				'play_button_icon_color',
+				'unmute_button_bg_color',
+				'unmute_button_icon_color',
+				'arrow_bg_color',
+				'arrow_icon_color',
+				'cta_bg_color',
+				'cta_product_name_color',
+				'cta_product_price_color_primary',
+				'cta_product_price_color_secondary',
+				'cta_product_price_color_tertiary',
+				'cta_cart_bg_color',
+				'cta_cart_icon_color',
+				'cta_cart_border_color',
+				'cta_dropdown_bg_color',
+				'cta_dropdown_icon_color',
+				'cta_dropdown_border_color',
+			);
+
+			foreach ( $color_fields as $field ) {
+				if ( isset( $atts[ $field ] ) ) {
+					$atts[ $field ] = $this->utility_instance->sanitize_color( $atts[ $field ] );
+				}
+			}
+
+			if ( $atts['play_button_size'] <= 0 ) {
+				$atts['play_button_size'] = 50;
+			}
+			if ( $atts['arrow_size'] <= 0 ) {
+				$atts['arrow_size'] = 35;
+			}
+			if ( $atts['desktop_card_width'] <= 0 ) {
+				$atts['desktop_card_width'] = 16.5;
+			}
+			if ( $atts['tablet_card_width'] <= 0 ) {
+				$atts['tablet_card_width'] = 35.5;
+			}
+			if ( $atts['mobile_card_width'] <= 0 ) {
+				$atts['mobile_card_width'] = 59.5;
+			}
+		}
+
+		$instance_id = ! empty( $atts['block_id'] )
+			? 'godam-product-gallery-' . $atts['block_id']
+			: 'godam-product-gallery-shortcode-' . wp_unique_id( wp_rand( 1000, 9999999999 ) );
+
+
+		// Enqueue GoDAM Product Gallery Scripts and Styles.
+		wp_enqueue_style( 'godam-product-gallery-style' );
+		wp_enqueue_script( 'godam-product-gallery-script' );
+
+		// Enqueue Swiper library for carousel functionality.
+		wp_enqueue_script( 'rtgodam-swiper-script' );
+		wp_enqueue_style( 'rtgodam-swiper-style' );
+
+		// Enqueue WooCommerce Reels specific skin.
+		wp_enqueue_style( 'godam-player-reels-skin-css' );
+
+		// Enqueue GoDAM Player.
+		if ( ! is_admin() ) {
+			wp_enqueue_script( 'godam-player-frontend-script' );
+			wp_enqueue_script( 'godam-player-analytics-script' );
+			wp_enqueue_style( 'godam-player-frontend-style' );
+			wp_enqueue_style( 'godam-player-style' );
+		}
+
+		$product_ids = array();
+
+		// 4. Build product IDs based on categories and products selection.
+		$selected_product_ids = array();
+		if ( ! empty( $atts['products'] ) ) {
+			$selected_product_ids = array_filter( array_map( 'absint', explode( ',', $atts['products'] ) ) );
+		}
+
+		$category_ids = array();
+		if ( ! empty( $atts['categories'] ) ) {
+			$category_ids = array_filter( array_map( 'absint', explode( ',', $atts['categories'] ) ) );
+		}
+
+		// Build product query args — always require video gallery meta so we only fetch products with videos.
+		$product_query_args = array(
+			'post_type'      => 'product',
+			'post_status'    => 'publish',
+			'fields'         => 'ids',
+			'posts_per_page' => apply_filters( 'rtgodam_product_gallery_product_limit', 300, $atts ),
+			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				array(
+					'key'     => '_rtgodam_product_video_gallery_ids',
+					'compare' => 'EXISTS',
+				),
+			),
+		);
+
+		// If categories are selected, filter by categories.
+		if ( ! empty( $category_ids ) ) {
+			$product_query_args['tax_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+				array(
+					'taxonomy' => 'product_cat',
+					'field'    => 'term_id',
+					'terms'    => $category_ids,
+					'operator' => 'IN',
+				),
+			);
+		}
+
+		// If specific products are selected, use only those.
+		if ( ! empty( $selected_product_ids ) ) {
+			$product_query_args['post__in'] = $selected_product_ids;
+			$product_query_args['orderby']  = 'post__in';
+		}
+
+		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
+		$product_ids = get_posts( $product_query_args );
+
+		// Default maximum 100 videos (filterable).
+		$video_limit = apply_filters( 'rtgodam_product_gallery_video_limit', 100, $atts );
+		$video_limit = max( 1, absint( $video_limit ) );
+
+		// Determine orderby and order based on order_by attribute.
+		$orderby = 'date';
+		$order   = 'DESC';
+
+		switch ( $atts['order_by'] ) {
+			case 'date_asc':
+				$orderby = 'date';
+				$order   = 'ASC';
+				break;
+			case 'date_desc':
+				$orderby = 'date';
+				$order   = 'DESC';
+				break;
+			case 'title_asc':
+				$orderby = 'title';
+				$order   = 'ASC';
+				break;
+			case 'title_desc':
+				$orderby = 'title';
+				$order   = 'DESC';
+				break;
+			case 'random':
+				$orderby = 'rand'; // phpcs:ignore WordPressVIPMinimum.Performance.OrderByRand.orderby_orderby
+				$order   = '';
+				break;
+			default:
+				$orderby = 'date';
+				$order   = 'DESC';
+		}
+
+		$args = array(
+			'post_type'      => 'attachment',
+			'post_mime_type' => 'video',
+			'post_status'    => 'inherit',
+			'posts_per_page' => $video_limit,
+			'orderby'        => $orderby,
+			'order'          => $order,
+		);
+
+		// Add filter for query arguments.
+		$args = apply_filters( 'rtgodam_product_gallery_query_args', $args, $atts );
+
+		// Priority: selectedVideos (within products) > products > categories > all.
+		$selected_video_ids = array();
+
+		if ( ! empty( $atts['selected_videos'] ) && ! empty( $selected_product_ids ) ) {
+			// Only honor selected_videos when specific products are also selected.
+			// This prevents stale video selections from overriding category/product filters.
+			$selected_video_ids = array_filter( array_map( 'absint', explode( ',', $atts['selected_videos'] ) ) );
+		}
+
+		if ( ! empty( $selected_video_ids ) ) {
+			// If specific videos are selected, fetch only those.
+			$args['post__in'] = $selected_video_ids;
+			$args['orderby']  = 'post__in';
+		} elseif ( ! empty( $product_ids ) ) {
+			// Only fetch videos for specific published products.
+			$args['meta_query'][] = array(
+				'key'     => '_video_parent_product_id',
+				'value'   => $product_ids,
+				'compare' => 'IN',
+				'type'    => 'NUMERIC',
+			);
+		} else {
+			// Fetch all videos - the parent product validation happens at render time.
+			$args['meta_query'][] = array(
+				'key'     => '_video_parent_product_id',
+				'compare' => 'EXISTS',
+			);
+		}
+
+		// 6. Fetch videos.
+		$video_posts = get_posts( $args ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- 'suppress_filters' is set to false; safe per VIP docs
+
+		// Allow developers to modify fetched video posts before rendering.
+		$video_posts = apply_filters( 'rtgodam_product_gallery_video_posts', $video_posts, $atts );
+
+		ob_start();
+
+		if ( $video_posts ) {
+
+			// Add action before gallery output.
+			do_action( 'rtgodam_product_gallery_before_output', $video_posts, $atts );
+
+			$godam_figure_attributes = get_block_wrapper_attributes(
+				array(
+					'class' => 'godam-product-gallery-wrapper',
+				)
+			);
+
+			/**
+			 * Start of godam-product-gallery rendering.
+			 */
+			echo '<div ' . wp_kses_data( $godam_figure_attributes ) . '>';
+			echo '<div id="' . esc_attr( $instance_id ) . '" data-gallery-id="' . esc_attr( $instance_id ) . '" class="godam-product-gallery layout-' . esc_attr( $atts['layout'] ) . '"
+			data-products="' . esc_attr( $atts['products'] ) . '"
+			data-categories="' . esc_attr( $atts['categories'] ) . '"
+			data-selected-videos="' . esc_attr( $atts['selected_videos'] ) . '"
+			data-order-by="' . esc_attr( $atts['order_by'] ) . '"
+			style="
+				--godam-product-gallery-card-width-desktop: ' . esc_attr( $atts['desktop_card_width'] ) . 'vw;
+				--godam-product-gallery-card-width-tablet: ' . esc_attr( $atts['tablet_card_width'] ) . 'vw;
+				--godam-product-gallery-card-width-mobile: ' . esc_attr( $atts['mobile_card_width'] ) . 'vw;
+				--godam-product-gallery-price-color-primary: ' . esc_attr( $atts['cta_product_price_color_primary'] ) . ';
+				--godam-product-gallery-price-color-secondary: ' . esc_attr( $atts['cta_product_price_color_secondary'] ) . ';
+				--godam-product-gallery-price-color-tertiary: ' . esc_attr( $atts['cta_product_price_color_tertiary'] ) . ';
+			"
+			>';
+
+			/**
+			 * Layout Logic begins here.
+			 */
+			if ( 'carousel' === $atts['layout'] ) {
+				echo '<div class="godam-carousel-wrapper">';
+
+				printf(
+					'<button class="carousel-arrow left %s" style="background:%s;color:%s;border-radius:%dpx;width:%dpx;height:%dpx;font-size:%dpx;" aria-label="%s">&#10094;</button>',
+					esc_attr( 'hover' === $atts['arrow_visibility'] ? 'hide-until-hover' : '' ),
+					esc_attr( $this->utility_instance->hex_to_rgba( $atts['arrow_bg_color'] ) ),
+					esc_attr( $this->utility_instance->hex_to_rgba( $atts['arrow_icon_color'] ) ),
+					intval( $atts['arrow_border_radius'] ),
+					intval( $atts['arrow_size'] ),
+					intval( $atts['arrow_size'] ),
+					intval( $atts['arrow_size'] / 2 ),
+					esc_attr__( 'Scroll left', 'godam' )
+				);
+
+				echo '<div class="carousel-track">';
+			} elseif ( 'grid' === $atts['layout'] ) {
+				echo '<div class="godam-grid-wrapper">';
+
+				printf(
+					'<div class="grid-container" style="
+						--godam-product-gallery-grid-columns-desktop: %1$d;
+						--godam-product-gallery-grid-columns-tablet: %2$d;
+						--godam-product-gallery-grid-columns-mobile: %3$d;
+						--godam-product-gallery-grid-row-gap: %4$drem;
+						--godam-product-gallery-grid-column-gap: %5$drem;
+					">',
+					intval( $atts['grid_columns_desktop'] ),
+					intval( $atts['grid_columns_tablet'] ),
+					intval( $atts['grid_columns_mobile'] ),
+					floatval( $atts['grid_row_gap'] ),
+					floatval( $atts['grid_column_gap'] ),
+				);
+			}
+
+			/**
+			 * Video Wrapper Begins here.
+			 */
+			$video_attrs = $atts['autoplay'] ? ' autoplay muted loop preload="none" playsinline' : ' preload="none"';
+			$this->render_video_wrapper( $video_posts, $atts, $video_attrs, $instance_id );
+			/**
+			 * Video Wrapper Ends here.
+			 */
+
+			/**
+			 * Layout Logic ends here.
+			 */
+			if ( 'carousel' === $atts['layout'] ) {
+				echo '</div>'; // .carousel-track ends.
+
+				// Right Scroll Arrow.
+				printf(
+					'<button class="carousel-arrow right %s" style="background:%s;color:%s;border-radius:%dpx;width:%dpx;height:%dpx;font-size:%dpx;" aria-label="%s">&#10095;</button>',
+					esc_attr( 'hover' === $atts['arrow_visibility'] ? 'hide-until-hover' : '' ),
+					esc_attr( $this->utility_instance->hex_to_rgba( $atts['arrow_bg_color'] ) ),
+					esc_attr( $this->utility_instance->hex_to_rgba( $atts['arrow_icon_color'] ) ),
+					intval( $atts['arrow_border_radius'] ),
+					intval( $atts['arrow_size'] ),
+					intval( $atts['arrow_size'] ),
+					intval( $atts['arrow_size'] / 2 ),
+					esc_attr__( 'Scroll right', 'godam' )
+				);
+
+				echo '</div>'; // .godam-carousel-wrapper ends.
+			} elseif ( 'grid' === $atts['layout'] ) {
+				echo '</div></div>'; // .godam-grid-wrapper ends, .grid-container ends.
+			}
+
+			// Add Mini Cart for fetching it when CTA cart action is Mini Cart.
+			echo '<div class="godam-product-video-gallery--cart-basket hidden">';
+				$mini_cart_block = do_blocks( '<!-- wp:woocommerce/mini-cart /-->' );
+				echo ! empty( $mini_cart_block ) ? $mini_cart_block : ''; // phpcs:ignore
+			echo '</div>';
+
+			echo '</div>'; // .godam-product-gallery ends.
+			echo '</div>'; // .godam-product-gallery-wrapper ends.
+
+			// Add action after gallery output.
+			do_action( 'rtgodam_product_gallery_after_output', $video_posts, $atts );
+
+		} else {
+			echo '<p>' . esc_html__( 'No videos found.', 'godam' ) . '</p>';
+		}
+
+		$html = ob_get_clean();
+
+		// Ensure we always return a string, never null.
+		return is_string( $html ) ? $html : '';
+	}
+
+	/**
+	 * Render individual video items and video Wrapper.
+	 *
+	 * @param array  $video_posts Array of WP_Post video attachments.
+	 * @param array  $atts        Shortcode attributes.
+	 * @param string $video_attrs Extra attributes for video tag (autoplay/muted/loop).
+	 * @param string $instance_id Unique ID for each GoDAM Gallery Block.
+	 */
+	private function render_video_wrapper( $video_posts, $atts, $video_attrs, $instance_id ) {
+
+		// Prime the post meta cache for all videos to avoid N+1 queries.
+		$video_ids = wp_list_pluck( $video_posts, 'ID' );
+		update_postmeta_cache( $video_ids );
+
+		foreach ( $video_posts as $video ) {
+			// Add action before each video item.
+			do_action( 'rtgodam_product_gallery_before_video_item', $video, $atts );
+
+			$video_id    = intval( $video->ID );
+			$video_title = get_the_title( $video_id );
+
+			$custom_thumbnail = get_post_meta( $video_id, 'rtgodam_media_video_thumbnail', true );
+			$fallback_thumb   = RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png';
+
+			$thumbnail = $custom_thumbnail ?: $fallback_thumb;
+
+			$video_url = wp_get_attachment_url( $video_id );
+
+			$video_attached_products = get_post_meta( $video_id, '_video_parent_product_id', false );
+
+			// Filter out any products that aren't published (validation at render time).
+			if ( ! empty( $video_attached_products ) ) {
+				$video_attached_products = array_filter(
+					$video_attached_products,
+					function ( $product_id ) {
+						return 'publish' === get_post_status( $product_id ) && 'product' === get_post_type( $product_id );
+					}
+				);
+				$video_attached_products = array_values( $video_attached_products );
+			}
+
+			// Skip this video if it has no valid published products.
+			if ( empty( $video_attached_products ) ) {
+				continue;
+			}
+
+			$data_product_ids = implode( ',', array_map( 'absint', (array) $video_attached_products ) );
+
+			echo '<div class="godam-product-video-item view-' . esc_attr( $atts['view'] ) . '">';
+
+			if ( ! empty( $video_url ) ) {
+
+				echo '<div class="godam-video-wrapper">';
+
+				if ( ! $atts['autoplay'] ) {
+					// Thumbnail video.
+					printf(
+						'<div class="godam-product-video-thumbnail" data-video-id="%s" data-video-attached-product-ids="%s" data-cta-enabled="%s" data-cta-display-position="%s">',
+						esc_attr( $video_id ),
+						esc_attr( $data_product_ids ),
+						esc_attr( $atts['cta_enabled'] ),
+						esc_attr( $atts['cta_display_position'] ),
+					);
+					echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
+					echo '</div>'; // .godam-product-video-thumbnail ends.
+				} else {
+					// Autoplay video.
+					printf(
+						'<video class="godam-product-video" data-video-id="%s" data-video-attached-product-ids="%s" data-cta-enabled="%s" data-cta-display-position="%s" src="%s" %s playsinline></video>',
+						esc_attr( $video_id ),
+						esc_attr( $data_product_ids ),
+						esc_attr( $atts['cta_enabled'] ),
+						esc_attr( $atts['cta_display_position'] ),
+						esc_url( $video_url ),
+						esc_attr( $video_attrs ),
+					);
+				}
+
+				// Show play button if autoplay is off, or if autoplay is on and play button is enabled.
+				$show_play_button = ! $atts['autoplay'] || $atts['play_button_enabled'];
+
+				if ( $show_play_button ) {
+					// Play button overlay.
+					printf(
+						'<button class="godam-play-button" style="background:%1$s;width:%2$dpx;height:%2$dpx;border-radius:%3$dpx;" aria-label="%5$s">
+							<svg width="%6$d" height="%6$d" viewBox="0 0 24 24" fill="%4$s" xmlns="http://www.w3.org/2000/svg">
+								<path
+									fill="%4$s"
+									d="M8 6
+									C8 4.8 9.3 4.1 10.4 4.9
+									L19 10.9
+									C20 11.6 20 12.4 19 13.1
+									L10.4 19.1
+									C9.3 19.9 8 19.2 8 18
+									Z"
+								/>
+							</svg>
+						</button>',
+						esc_attr( $this->utility_instance->hex_to_rgba( $atts['play_button_bg_color'] ) ),
+						esc_attr( $atts['play_button_size'] ),
+						esc_attr( $atts['play_button_radius'] ),
+						esc_attr( $this->utility_instance->hex_to_rgba( $atts['play_button_icon_color'] ) ),
+						esc_attr__( 'Play video', 'godam' ),
+						intval( $atts['play_button_size'] / 2 )
+					);
+
+				} elseif ( $atts['autoplay'] ) {
+					// Unmute button overlay. Only visible when autoplay is on.
+					printf(
+						'<button class="godam-unmute-button" style="background:%1$s;color:%2$s;width:30px;height:30px;font-size:16px;border-radius:50%%;" aria-label="%3$s">
+							<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+								<path d="M5 9v6h4l5 5V4l-5 5H5z" />
+								<g transform="translate(17, 9)">
+									<line x1="0" y1="0" x2="6" y2="6" stroke="currentColor" stroke-width="2" />
+									<line x1="0" y1="6" x2="6" y2="0" stroke="currentColor" stroke-width="2" />
+								</g>
+							</svg>
+						</button>',
+						esc_attr( $this->utility_instance->hex_to_rgba( $atts['unmute_button_bg_color'] ) ),
+						esc_attr( $this->utility_instance->hex_to_rgba( $atts['unmute_button_icon_color'] ) ),
+						esc_attr__( 'Unmute video', 'godam' )
+					);
+				}
+
+				echo '</div>'; // .godam-video-wrapper ends.
+
+				if ( $atts['cta_enabled'] && ( 'below' === $atts['cta_display_position'] || 'below-inside' === $atts['cta_display_position'] ) ) {
+
+					$product_ids = array_map( 'absint', (array) $video_attached_products );
+
+					$main_product            = wc_get_product( $product_ids[0] );
+					$main_product_is_on_sale = $main_product->is_on_sale();
+
+					$has_dropdown = count( $video_attached_products ) > 1;
+
+					// Add action to allow overriding CTA markup.
+					if ( apply_filters( 'rtgodam_product_gallery_render_cta', true, $main_product, $product_ids, $atts ) ) {
+
+						echo '<div class="godam-product-cta-wrapper">';
+
+						if ( $main_product ) {
+							printf(
+								'<div class="godam-product-cta" style="background-color:%s">',
+								esc_attr( $this->utility_instance->hex_to_rgba( $atts['cta_bg_color'] ) ),
+							);
+
+								echo '<div class="cta-thumbnail">';
+									echo wp_kses_post( $main_product->get_image( 'woocommerce_thumbnail' ) );
+								echo '</div>'; // .cta-thumbnail ends.
+
+								echo '<div class="cta-details">';
+									echo '<p class="product-title" style="';
+										echo 'font-size:' . floatval( $atts['cta_product_name_font_size'] ) . 'rem;';
+										echo 'color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['cta_product_name_color'] ) ) . ';';
+										echo 'margin-top:0;';
+									echo '">';
+										echo '<a href="' . esc_url( get_permalink( $main_product->get_id() ) ) . '" class="product-title-link">';
+											echo esc_html( $main_product->get_name() );
+										echo '</a>';
+									echo '</p>';
+
+									echo '<p class="product-price ' . ( $main_product_is_on_sale ? 'on-sale' : '' ) . '" style="';
+										echo 'font-size:' . floatval( $atts['cta_product_price_font_size'] ) . 'rem;';
+										echo ! $main_product_is_on_sale ? 'color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['cta_product_price_color_primary'] ) ) . ';' : '';
+										echo 'margin:4px 0 0;';
+									echo '">' . wp_kses_post( $main_product->get_price_html() ) . '</p>';
+								echo '</div>'; // .cta-details ends
+
+							if ( $has_dropdown ) {
+								$bg_color      = $atts['cta_dropdown_bg_color'];
+								$icon_color    = $atts['cta_dropdown_icon_color'];
+								$border_width  = $atts['cta_dropdown_border_width'];
+								$border_style  = $atts['cta_dropdown_border_style'];
+								$border_color  = $atts['cta_dropdown_border_color'];
+								$border_radius = $atts['cta_dropdown_border_radius'];
+							} else {
+								$bg_color      = $atts['cta_cart_bg_color'];
+								$icon_color    = $atts['cta_cart_icon_color'];
+								$border_width  = $atts['cta_cart_border_width'];
+								$border_style  = $atts['cta_cart_border_style'];
+								$border_color  = $atts['cta_cart_border_color'];
+								$border_radius = $atts['cta_cart_border_radius'];
+							}
+
+								echo '<button
+									class="cta-add-to-cart main-cta"
+									data-product-cart="' . esc_attr( $atts['cta_cart_action'] ) . '"
+									data-product-dropdown="' . esc_attr( $has_dropdown ) . '"
+									data-product-id="' . esc_attr( $main_product->get_id() ) . '"
+									data-product-page-url="' . esc_url( get_permalink( $main_product->get_id() ) ) . '"
+									style="
+										background-color:' . esc_attr( $this->utility_instance->hex_to_rgba( $bg_color ) ) . ';
+										color:' . esc_attr( $this->utility_instance->hex_to_rgba( $icon_color ) ) . ';
+										border:' . esc_attr( $border_width ) . ' ' . esc_attr( $border_style ) . ' ' . esc_attr( $border_color ) . ';
+										border-radius:' . esc_attr( $border_radius ) . 'px;
+									"
+									aria-label="' . esc_attr__( 'Add to cart/Product Dropdown', 'godam' ) . '"
+								>';
+									echo $has_dropdown ? '&#8963;' : '+';
+								echo '</button>';
+
+							// Add action before the dropdown.
+							do_action( 'rtgodam_product_gallery_cta_dropdown_before', $product_ids, $video, $atts );
+
+							// Detached Dropdown for more products.
+							if ( $has_dropdown ) {
+								echo '<div class="cta-dropdown"
+									data-gallery-id="' . esc_attr( $instance_id ) . '"
+									style="
+										--godam-product-gallery-dropdown-bg-color: ' . esc_attr( $atts['cta_dropdown_bg_color'] ) . ';
+										--godam-product-gallery-dropdown-icon-color: ' . esc_attr( $atts['cta_dropdown_icon_color'] ) . ';
+									"
+								>';
+								foreach ( $product_ids as $product_id ) {
+									$product                     = wc_get_product( $product_id );
+									$dropdown_product_is_on_sale = $product->is_on_sale();
+
+									if ( $product ) {
+										$timestamp_meta_key = 'godam_product_timestamp_meta_' . $video_id;
+										$timestamp          = get_post_meta( $product_id, $timestamp_meta_key, true );
+
+										echo '<div class="cta-dropdown-item">';
+											echo '<div class="cta-thumbnail-small">';
+												echo wp_kses_post( $product->get_image( 'woocommerce_gallery_thumbnail' ) );
+
+												// Add play icon if timestamp is available.
+										if ( ! empty( $timestamp ) ) {
+											echo '<button class="product-play-timestamp-button" data-video-id="' . esc_attr( $video_id ) . '" data-timestamp="' . esc_attr( $timestamp ) . '" data-video-attached-product-id="' . esc_attr( $product_id ) . '" data-cta-enabled="' . esc_attr( $atts['cta_enabled'] ) . '" data-cta-display-position="' . esc_attr( $atts['cta_display_position'] ) . '"aria-label="Play at timestamp" style="background-color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['play_button_bg_color'] ) ) . ';color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['play_button_icon_color'] ) ) . ';border-radius:' . esc_attr( $atts['play_button_radius'] ) . '%;">';
+												echo '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/></svg>';
+											echo '</button>';
+
+											$this->markup_instance->generate_product_gallery_video_modal_markup( $atts['cta_enabled'], $atts['cta_display_position'], $video_id, $product_id, $instance_id, true );
+										}
+											echo '</div>'; // .cta-thumbnail-small ends.
+											echo '<div class="cta-product-info">';
+												echo '<p class="product-title" style="';
+													echo 'font-size:' . floatval( $atts['cta_product_name_font_size'] ) . 'rem;';
+													echo 'color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['cta_product_name_color'] ) ) . ';';
+													echo 'margin-top:0;">';
+														echo '<a href="' . esc_url( get_permalink( $product->get_id() ) ) . '" class="product-title-link">';
+															echo esc_html( $product->get_name() );
+														echo '</a>';
+												echo '</p>';
+
+												echo '<p class="product-price ' . ( $dropdown_product_is_on_sale ? 'on-sale' : '' ) . '" style="';
+												echo 'font-size:' . floatval( $atts['cta_product_price_font_size'] ) . 'rem;';
+												echo ! $dropdown_product_is_on_sale ? 'color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['cta_product_price_color_primary'] ) ) . ';' : '';
+												echo 'margin:4px 0 0;" >' . wp_kses_post( $product->get_price_html() ) . '</p>';
+											echo '</div>'; // .cta-product-info ends.
+											echo '<button
+												class="cta-add-to-cart"
+												data-product-cart="' . esc_attr( $atts['cta_cart_action'] ) . '"
+												data-product-id="' . esc_attr( $product_id ) . '"
+												data-product-page-url="' . esc_url( get_permalink( $product->get_id() ) ) . '"
+												style="
+													background-color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['cta_cart_bg_color'] ) ) . ';
+													color:' . esc_attr( $this->utility_instance->hex_to_rgba( $atts['cta_cart_icon_color'] ) ) . ';
+													border:' . esc_attr( $atts['cta_cart_border_width'] ) . ' ' . esc_attr( $atts['cta_cart_border_style'] ) . ' ' . esc_attr( $atts['cta_cart_border_color'] ) . ';
+													border-radius:' . esc_attr( $atts['cta_cart_border_radius'] ) . 'px;
+												"
+												aria-label="' . esc_attr__( 'Add to cart', 'godam' ) . '"
+											>+</button>';
+										echo '</div>'; // .cta-dropdown-item ends.
+									}
+								}
+								echo '</div>'; // .cta-dropdown ends.
+							}
+
+							// Add action after the dropdown.
+							do_action( 'rtgodam_product_gallery_cta_dropdown_after', $product_ids, $video, $atts );
+
+							echo '</div>'; // .godam-product-cta ends.
+						}
+
+						echo '</div>'; // .godam-product-cta-wrapper ends.
+
+					}
+				}
+
+				$this->markup_instance->generate_product_gallery_video_modal_markup( $atts['cta_enabled'], $atts['cta_display_position'], $video_id, $data_product_ids, $instance_id );
+			}
+
+			echo '</div>'; // .godam-product-video-item ends.
+
+			// Add action after each video item.
+			do_action( 'rtgodam_product_gallery_after_video_item', $video, $atts );
+		}
+	}
+
+	/**
+	 * AJAX callback to fetch and return a product's HTML content.
+	 *
+	 * This function is triggered via an AJAX request and returns rendered HTML for a single product,
+	 * typically used in quick views, sidebars, or modal popups.
+	 *
+	 * @return void
+	 */
+	public function godam_get_product_html_callback() {
+
+		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+
+		if ( ! wp_verify_nonce( $nonce, 'godam_get_product_html' ) ) {
+			wp_send_json_error( 'Invalid request.', 400 );
+		}
+
+		if ( ! isset( $_GET['product_id'] ) ) {
+			wp_send_json_error( 'Missing product ID', 400 );
+		}
+
+		$product_id = absint( $_GET['product_id'] );
+
+		$post = get_post( $product_id );
+
+		if ( ! $post || 'product' !== $post->post_type ) {
+			wp_send_json_error( 'Invalid product ID', 400 );
+		}
+
+		// Set up post and product for WooCommerce template functions.
+		global $product;
+		$product = wc_get_product( $product_id ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- WordPress core variable.
+
+		if ( ! $product ) {
+			wp_send_json_error( 'Product not found.', 400 );
+		}
+
+		setup_postdata( $post );
+
+		$product = wc_get_product( $product_id ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- WordPress core variable.
+
+		$product_images = array();
+
+		// Get the main product image first.
+		$main_image_id = $product->get_image_id();
+		if ( $main_image_id ) {
+			$main_image_url = wp_get_attachment_image_url( $main_image_id, 'full' );
+			if ( $main_image_url ) {
+				$product_images[] = $main_image_url;
+			}
+		}
+
+		// Get all gallery images.
+		$gallery_image_ids = $product->get_gallery_image_ids();
+		foreach ( $gallery_image_ids as $gallery_image_id ) {
+			$gallery_image_url = wp_get_attachment_image_url( $gallery_image_id, 'full' );
+			if ( $gallery_image_url ) {
+				$product_images[] = $gallery_image_url;
+			}
+		}
+
+		// Fallback to placeholder if no images found.
+		if ( empty( $product_images ) ) {
+			$product_images[] = wc_placeholder_img_src( 'full' );
+		}
+
+		ob_start();
+		?>
+		<!-- Hero section -->
+		<div class="godma-single-sidebar-hero-section">
+			<!-- Image -->
+			<div class="godam-single-sidebar-hero-main-image">
+				<img src="<?php echo esc_url( $product_images[0] ); ?>" alt="<?php echo esc_attr( $product->get_name() ); ?>" />
+			</div>
+
+			<!-- Hero Content -->
+			<div class="godam-single-sidebar-hero-content">
+				<div class="godam-single-sidebar-hero-product-title">
+					<h3><?php echo esc_html( $product->get_name() ); ?></h3>
+				</div>
+				<p class="godam-single-sidebar-hero-product-price"><?php echo wp_kses_post( $product->get_price_html() ); ?></p>
+			</div>
+		</div>
+
+		<!-- Add to Cart button -->
+		<?php
+		// Replace Woo's form/button with Product Sidebar Add to Cart button or Product Sidebar View Product button.
+		$product_url = get_permalink( $product_id );
+		?>
+		<div class="single-product-sidebar-actions">
+			<?php if ( $product->is_type( 'variable' ) || $product->is_type( 'grouped' ) || $product->is_type( 'external' ) || ! $product->is_in_stock() ) : ?>
+				<a class="godam-product-sidebar-view-product-button" href="<?php echo esc_url( $product_url ); ?>" target="_blank" rel="noopener noreferrer">
+					<?php echo esc_html__( 'View Product', 'godam' ); ?>
+				</a>
+			<?php else : ?>
+				<button class="godam-product-sidebar-add-to-cart-button" data-product-id="<?php echo esc_attr( $product_id ); ?>">
+					<span class="godam-add-to-cart-icon" aria-hidden="true">
+						<svg
+							width="18"
+							height="18"
+							viewBox="0 0 24 24"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								d="M12 5V19M5 12H19"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+							/>
+						</svg>
+					</span>
+					<span class="godam-add-to-cart-text">
+						<?php echo esc_html__( 'Add to Cart', 'godam' ); ?>
+					</span>
+				</button>
+			<?php endif; ?>
+
+			<div class="rtgodam-product-video-gallery-slider-modal-content--cart-basket">
+				<?php
+				$mini_cart_block = do_blocks( '<!-- wp:woocommerce/mini-cart /-->' );
+				echo ! empty( $mini_cart_block ) ? $mini_cart_block : ''; // phpcs:ignore
+				?>
+			</div>
+		</div>
+
+		<hr class="godam-sidebar-divider" />
+
+		<!-- Toggle dwopdown -->
+		<div class="godam-product-info-toggle" data-expanded="false">
+			<div class="godam-product-info-toggle-header">
+				<span><?php esc_html_e( 'Product Details', 'godam' ); ?></span>
+
+				<span class="godam-toggle-icon" aria-hidden="true">
+					<svg
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<path
+							d="M6 9L12 15L18 9"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+					</svg>
+				</span>
+			</div>
+		</div>
+
+		<div class="godam-image-gallery is-collapsed">
+			<!-- main image display -->
+			<div class="godam-main-image">
+				<img src="<?php echo esc_url( $product_images[0] ); ?>" alt="<?php echo esc_attr( $product->get_name() ); ?>" />
+			</div>
+
+			<!-- thumbnail carousel with horizontal scroll -->
+			<div class="godam-thumbnail-carousel">
+				<button class="godam-thumbnail-nav godam-thumbnail-prev" aria-label="<?php echo esc_attr__( 'Previous thumbnails', 'godam' ); ?>">
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);"><path d="M15 19V5l-8 7z"></path></svg>
+				</button>
+
+				<div class="godam-thumbnail-container">
+					<div class="godam-thumbnail-track">
+						<?php foreach ( $product_images as $index => $image_url ) : ?>
+							<div class="godam-thumbnail-item <?php echo ( 0 === $index ) ? 'active' : ''; ?>" data-index="<?php echo esc_attr( $index ); ?>">
+								<?php // translators: %d refers to the image index (1-based). ?>
+								<img class="godam-thumbnail-image" src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( sprintf( __( 'Image %d', 'godam' ), $index + 1 ) ); ?>">
+							</div>
+						<?php endforeach; ?>
+					</div>
+				</div>
+
+				<button class="godam-thumbnail-nav godam-thumbnail-next" aria-label="<?php echo esc_attr__( 'Next thumbnails', 'godam' ); ?>">
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);"><path d="m9 19 8-7-8-7z"></path></svg>
+				</button>
+			</div>
+		</div>
+		<div class="godam-single-product-sidebar-content is-collapsed">
+			<div class="godam-sidebar-product-title">
+				<h3><?php echo esc_html( $product->get_name() ); ?></h3>
+			</div>
+			<p class="godam-sidebar-product-price"><?php echo wp_kses_post( $product->get_price_html() ); ?></p>
+
+			<?php
+				$average      = $product->get_average_rating();
+				$rating_count = $product->get_rating_count();
+
+				$full_star_svg  = sprintf(
+					'<img src="%s" alt="%s" width="16" height="16" style="vertical-align:middle;" />',
+					esc_url( RTGODAM_URL . 'assets/src/images/rating-full-star.svg' ),
+					esc_attr__( 'Full Star', 'godam' )
+				);
+				$empty_star_svg = sprintf(
+					'<img src="%s" alt="%s" width="16" height="16" style="vertical-align:middle;" />',
+					esc_url( RTGODAM_URL . 'assets/src/images/rating-empty-star.svg' ),
+					esc_attr__( 'Empty Star', 'godam' )
+				);
+
+				$allowed_svg = array(
+					'svg'            => array(
+						'xmlns'   => true,
+						'width'   => true,
+						'height'  => true,
+						'viewBox' => true,
+					),
+					'defs'           => array(),
+					'linearGradient' => array(
+						'id' => true,
+						'x1' => true,
+						'y1' => true,
+						'x2' => true,
+						'y2' => true,
+					),
+					'stop'           => array(
+						'offset'     => true,
+						'stop-color' => true,
+					),
+					'path'           => array(
+						'd'    => true,
+						'fill' => true,
+					),
+				);
+				?>
+
+			<div class="godam-sidebar-product-rating">
+				<?php
+				// Always render 5 stars.
+				for ( $i = 1; $i <= 5; $i++ ) {
+					if ( 0 === $rating_count ) {
+						// No reviews → show all empty stars.
+						echo wp_kses_post( $empty_star_svg );
+					} elseif ( $average >= $i ) {
+							echo wp_kses_post( $full_star_svg ); // Full star.
+					} elseif ( $average > $i - 1 ) {
+						$partial = ( $average - ( $i - 1 ) ) * 100; // % fill for partial star.
+						echo $this->utility_instance->get_partial_star_svg( $partial ); /* phpcs:ignore */
+					} else {
+						echo wp_kses_post( $empty_star_svg ); // Empty star.
+
+					}
+				}
+				?>
+			</div>
+
+			<p class="godam-sidebar-product-description"><?php echo wp_kses_post( $product->get_description() ); ?></p>
+		<?php
+
+		echo '</div>';
+
+
+		wp_reset_postdata();
+
+		$html = ob_get_clean();
+
+		// Add filter to change html markup for product sidebar.
+		$html = apply_filters( 'rtgodam_ajax_product_html', $html, $product_id );
+
+		// Add action before sending JSON response.
+		do_action( 'rtgodam_ajax_product_html_sent', $product_id );
+
+		wp_send_json_success( $html );
+	}
+}
