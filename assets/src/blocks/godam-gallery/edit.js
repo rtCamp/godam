@@ -40,6 +40,7 @@ export default function Edit( { attributes, setAttributes } ) {
 		infiniteScroll,
 		category,
 		tag,
+		mediaFolder,
 		author,
 		dateRange,
 		customDateStart,
@@ -49,13 +50,16 @@ export default function Edit( { attributes, setAttributes } ) {
 		showTitle,
 		layout,
 		engagements,
+		openToNewPage,
 	} = attributes;
+	const showOpenToNewPage = window?.godamSettings?.videoPostSettings?.allow_single ?? false;
 	const blockProps = useBlockProps();
 
 	// Add state for date picker popovers
 	const [ startDatePopoverOpen, setStartDatePopoverOpen ] = useState( false );
 	const [ endDatePopoverOpen, setEndDatePopoverOpen ] = useState( false );
 	const [ dateError, setDateError ] = useState( '' );
+	const showEngagementSetting = window?.godamSettings?.enableGlobalVideoEngagement ?? false;
 
 	// Fetch categories and tags
 	const categories = useSelect( ( select ) => {
@@ -64,6 +68,10 @@ export default function Edit( { attributes, setAttributes } ) {
 
 	const tags = useSelect( ( select ) => {
 		return select( coreStore ).getEntityRecords( 'taxonomy', 'post_tag', { per_page: -1 } );
+	}, [] );
+
+	const mediaFolders = useSelect( ( select ) => {
+		return select( coreStore ).getEntityRecords( 'taxonomy', 'media-folder', { per_page: -1 } );
 	}, [] );
 
 	// Fetch authors
@@ -206,12 +214,26 @@ export default function Edit( { attributes, setAttributes } ) {
 							/>
 						</>
 					) }
-					<ToggleControl
-						label={ __( 'Enable Likes & Comments', 'godam' ) }
-						checked={ !! engagements }
-						onChange={ ( value ) => setAttributes( { engagements: value } ) }
-						help={ __( 'Engagement will only be visible for transcoded videos', 'godam' ) }
-					/>
+					{
+						showEngagementSetting && (
+							<ToggleControl
+								label={ __( 'Enable Likes & Comments', 'godam' ) }
+								checked={ !! engagements }
+								onChange={ ( value ) => setAttributes( { engagements: value } ) }
+								help={ __( 'Engagement will only be visible for transcoded videos', 'godam' ) }
+							/>
+						)
+					}
+					{
+						showOpenToNewPage && (
+							<ToggleControl
+								label={ __( 'Open Video To New Page', 'godam' ) }
+								checked={ !! openToNewPage }
+								onChange={ ( value ) => setAttributes( { openToNewPage: value } ) }
+								help={ __( 'If enabled, clicking a video will open it in a new page', 'godam' ) }
+							/>
+						)
+					}
 					<SelectControl
 						label={ __( 'Layout', 'godam' ) }
 						value={ layout }
@@ -286,6 +308,18 @@ export default function Edit( { attributes, setAttributes } ) {
 							} ) ),
 						] }
 						onChange={ ( value ) => setAttributes( { tag: value } ) }
+					/>
+					<SelectControl
+						label={ __( 'Media Folder', 'godam' ) }
+						value={ mediaFolder }
+						options={ [
+							{ label: __( 'All Folders', 'godam' ), value: '' },
+							...( mediaFolders || [] ).map( ( dir ) => ( {
+								label: dir.name,
+								value: dir.id.toString(),
+							} ) ),
+						] }
+						onChange={ ( value ) => setAttributes( { mediaFolder: value } ) }
 					/>
 					<SelectControl
 						label={ __( 'Author', 'godam' ) }

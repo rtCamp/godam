@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 /**
  * Internal dependencies
  */
-import { addLayer, setCurrentLayer } from '../redux/slice/videoSlice';
+import { addLayer, setCurrentLayer, setAddLayerModalTime } from '../redux/slice/videoSlice';
 import { v4 as uuidv4 } from 'uuid';
 import GFIcon from '../assets/layers/GFIcon.svg';
 import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
@@ -22,10 +22,10 @@ import MetformIcon from '../assets/layers/MetFormIcon.png';
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { Button, Icon, Tooltip } from '@wordpress/components';
 import { plus, preformatted, customLink, arrowRight, video, customPostType, thumbsUp, error } from '@wordpress/icons';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 
 import Layer from './layers/Layer';
 import LayerSelector from './LayerSelector.jsx';
@@ -42,10 +42,18 @@ export const layerTypes = [
 		isPremium: false,
 	},
 	{
+		title: __( 'Hotspot', 'godam' ),
+		icon: customPostType,
+		type: 'hotspot',
+		layerText: __( 'Hotspot', 'godam' ),
+		isPremium: false,
+	},
+	{
 		title: __( 'Forms', 'godam' ),
 		icon: preformatted,
 		type: 'form',
 		isPremium: true,
+		premiumLabel: __( 'Pro', 'godam' ),
 		formType: {
 			gravity: {
 				layerText: __( 'Gravity Forms', 'godam' ),
@@ -110,19 +118,13 @@ export const layerTypes = [
 		},
 	},
 	{
-		title: __( 'Hotspot', 'godam' ),
-		icon: customPostType,
-		type: 'hotspot',
-		layerText: __( 'Hotspot', 'godam' ),
-		isPremium: true,
-	},
-	{
 		title: __( 'Ad', 'godam' ),
 		icon: video,
 		type: 'ad',
 		layerText: __( 'Ad', 'godam' ),
 		tooltipMessage: __( 'This ad will be overriden by Ad server\'s ads', 'godam' ),
 		isPremium: true,
+		premiumLabel: __( 'Pro', 'godam' ),
 	},
 	{
 		title: __( 'Poll', 'godam' ),
@@ -131,14 +133,15 @@ export const layerTypes = [
 		layerText: __( 'Poll', 'godam' ),
 		isActive: Boolean( window?.easydamMediaLibrary?.isPollPluginActive ) ?? false,
 		tooltipMessage: __( 'Poll plugin is not active', 'godam' ),
-		isPremium: false,
+		isPremium: true,
+		premiumLabel: __( 'Pro', 'godam' ),
 	},
 ];
 
 /**
  * Premium tooltip message.
  */
-const premiumMessage = __( 'This feature is available in the premium version', 'godam' );
+const premiumMessage = __( 'This is a Pro feature. Activate your license or get started for free to unlock all features.', 'godam' );
 
 /**
  * Sidebar component to display and select different types of layers to be added to the video.
@@ -154,6 +157,9 @@ const premiumMessage = __( 'This feature is available in the premium version', '
 const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const loading = useSelector( ( state ) => state.videoReducer.loading );
+	const addLayerModalTime = useSelector( ( state ) => state.videoReducer.addLayerModalTime );
+
+	const dispatch = useDispatch();
 
 	const openModal = () => {
 		setOpen( true );
@@ -161,26 +167,34 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 			onPauseVideo();
 		}
 	};
-	const closeModal = () => setOpen( false );
+	const closeModal = () => {
+		setOpen( false );
+		// Clear the addLayerModalTime when closing the modal
+		dispatch( setAddLayerModalTime( null ) );
+	};
 
-	const dispatch = useDispatch();
+	// Listen for addLayerModalTime changes to open the modal from the slider
+	useEffect( () => {
+		if ( addLayerModalTime !== null ) {
+			openModal();
+		}
+	}, [ addLayerModalTime ] );
+
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
 	const adServer = videoConfig?.adServer ?? 'self-hosted';
 
-	// Sort the array (ascending order)
-	const sortedLayers = [ ...layers ].sort( ( a, b ) => a.displayTime - b.displayTime );
+	// Sort the array (ascending order), excluding layers with unknown types.
+	const sortedLayers = [ ...layers ]
+		.filter( ( layer ) => layerTypes.some( ( lt ) => lt.type === layer.type ) )
+		.sort( ( a, b ) => a.displayTime - b.displayTime );
 
-	// If we want to disable the premium layers the we can use this code
-	// const isValidAPiKey = window?.videoData?.valid_license;
-
-	// For now we are enabling all the features
-	const isValidAPiKey = true;
+	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
 
 	const addNewLayer = ( type, formType ) => {
 		const layerType = layerTypes.find( ( l ) => l.type === type );
-		const isPremiumLayer = ! isValidAPiKey && layerType && layerType?.isPremium;
+		const isPremiumLayer = ! isValidAPIKey && layerType && layerType?.isPremium;
 
 		if ( isPremiumLayer ) {
 			return;
@@ -204,12 +218,12 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					id: uuidv4(),
 					displayTime: currentTime,
 					type,
-					cta_type: 'text',
+					cta_type: 'image',
+					cardLayout: 'card-layout--imagecover-text',
 					text: '',
 					html: '',
 					link: '',
 					allow_skip: true,
-					imageOpacity: 1,
 				} ) );
 				break;
 			case 'hotspot':
@@ -220,21 +234,8 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 						type,
 						duration: 5,
 						pauseOnHover: false,
-						hotspots: [
-							{
-								id: uuidv4(),
-								tooltipText: __( 'Click me!', 'godam' ),
-								position: { x: 50, y: 50 },
-								size: { diameter: 48 },
-								oSize: { diameter: 48 },
-								oPosition: { x: 50, y: 50 },
-								link: '',
-								backgroundColor: '#0c80dfa6',
-								showStyle: false,
-								showIcon: false,
-								icon: '',
-							},
-						],
+						hotspots: [],
+						isNew: true,
 					} ),
 				);
 				break;
@@ -275,13 +276,13 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								const layerData = layerTypes.find( ( l ) => l.type === layer.type );
 								const formType = 'form' === layerData?.type ? layerData?.formType[ layer.form_type ?? 'gravity' ] : false;
 								const icon = formType ? formType?.icon : layerData?.icon;
-								const layerText = formType ? formType?.layerText : layerData.layerText;
+								const layerText = formType ? formType?.layerText : layerData?.layerText;
 
 								/**
 								 * Get Tooltip message.
 								 */
 								const tooltipMessage = ( () => {
-									if ( layerData.isPremium && ! isValidAPiKey ) {
+									if ( layerData?.isPremium && ! isValidAPIKey ) {
 										return premiumMessage;
 									}
 
@@ -372,7 +373,11 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 										iconPosition="left"
 										onClick={ openModal }
 										disabled={ ! currentTime || layers.find( ( l ) => ( l.displayTime ) === ( currentTime ) ) }
-									>{ __( 'Add layer at ', 'godam' ) } { currentTime }s
+									>
+										{
+											// translators: %s is the current time in seconds.
+											sprintf( __( 'Add layer at %ss', 'godam' ), currentTime )
+										}
 									</Button>
 									{ layers.find( ( l ) => l.displayTime === currentTime ) && (
 										<p className="text-slate-500 text-center">

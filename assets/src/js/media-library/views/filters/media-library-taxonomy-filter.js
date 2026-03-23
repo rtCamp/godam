@@ -20,8 +20,10 @@ MediaLibraryTaxonomyFilter = MediaLibraryTaxonomyFilter?.extend( {
 				},
 			};
 		} else {
-			const props = this.filters[ this.el.value ].props;
-			this.model.set( props );
+			const props = this.filters[ this.el.value ]?.props;
+			if ( props ) {
+				this.model.set( props );
+			}
 		}
 	},
 

@@ -4,6 +4,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
+import { PostHogProvider } from '@posthog/react';
 /**
  * Internal dependencies
  */
@@ -12,12 +13,15 @@ import './index.scss';
 import '../analytics/index.scss';
 import './components/ChartsDashboard.js';
 import App from './App.js';
+import posthog from '../utils/posthog';
 
 const Index = () => {
 	return (
-		<Provider store={ store }>
-			<App />
-		</Provider>
+		<PostHogProvider client={ posthog }>
+			<Provider store={ store }>
+				<App />
+			</Provider>
+		</PostHogProvider>
 	);
 };
 

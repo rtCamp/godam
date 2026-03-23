@@ -1,0 +1,68 @@
+
+.godam-video-placeholder {
+
+	&.hidden {
+		display: none !important;
+	}
+
+	.godam-player-poster-image {
+		position:absolute;
+		aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
+		width: 100%;
+		height: auto;
+		max-height: 100%;
+		object-fit: contain;
+		background-color: #000;
+	}
+}
+
+.godam-animate-video-loading {
+	position: relative;
+	animation: godam_pulse_animation 2s cubic-bezier(.4, 0, .6, 1) infinite;
+	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
+
+	.animate-play-btn {
+		width: 50px;
+		height: 50px;
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		border-radius: 50%;
+		background-color: rgba(0, 0, 0, 0.6);
+		color: #fff;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		z-index: 10;
+
+		svg {
+			width: 28px;
+			height: 28px;
+		}
+
+		@container godam-player-default-skin (max-width: 480px) {
+			width: 40px;
+			height: 40px;
+
+			svg {
+				width: 20px;
+				height: 20px;
+			}
+		}
+	}
+}
+
+.easydam-video-container {
+
+	&.loading {
+		display: none;
+	}
+}
+
+@keyframes godam_pulse_animation {
+
+	50% {
+		opacity: 0.8;
+	}
+}

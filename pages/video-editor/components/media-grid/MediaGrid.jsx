@@ -106,16 +106,18 @@ const MediaGrid = ( { search, page, handleAttachmentClick, setPage, attachments,
 					{ __( 'No video found', 'godam' ) }
 				</h2>
 				<p className="text-sm text-gray-500 m-0 text-center">
-					{ __( 'Upload videos from WordPress ', 'godam' ) }
+					{ __( 'Upload videos from WordPress', 'godam' ) }
+					{ ' ' }
 					<a
 						href={ `${ window?.videoData?.adminUrl }upload.php` }
 						target="_blank"
 						rel="noopener noreferrer"
 						className="text-blue-500 underline"
 					>
-						{ __( 'media library', 'godam' ) }
+						{ __( 'Media Library', 'godam' ) }
 					</a>
-					{ __( ' to use them in Godam.', 'godam' ) }
+					{ ' ' }
+					{ __( 'to use them in GoDAM.', 'godam' ) }
 				</p>
 			</div>
 		);

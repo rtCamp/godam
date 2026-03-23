@@ -23,6 +23,12 @@ import { parseDataAttribute } from '../utils/dataHelpers.js';
 import { engagement } from '../engagement';
 
 /**
+ * Seek indicator SVG icons (no inline styles – styled via CSS class .godam-seek-icon).
+ */
+const BACKWARD_SEEK_INDICATOR_SVG = '<svg class="godam-seek-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M459.5 440.6c9.5 7.9 22.8 9.7 34.1 4.4s18.4-16.6 18.4-29V96c0-12.4-7.2-23.7-18.4-29s-24.5-3.5-34.1 4.4L288 214.3V256v41.7L459.5 440.6zM256 352V256 128 96c0-12.4-7.2-23.7-18.4-29s-24.5-3.5-34.1 4.4l-192 160C4.2 237.5 0 246.5 0 256s4.2 18.5 11.5 24.6l192 160c9.5 7.9 22.8 9.7 34.1 4.4s18.4-16.6 18.4-29V352z"/></svg>';
+const FORWARD_SEEK_INDICATOR_SVG = '<svg class="godam-seek-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M52.5 440.6c-9.5 7.9-22.8 9.7-34.1 4.4S0 428.4 0 416V96C0 83.6 7.2 72.3 18.4 67s24.5-3.5 34.1 4.4L224 214.3V256v41.7L52.5 440.6zM256 352V256 128 96c0-12.4 7.2-23.7 18.4-29s24.5-3.5 34.1 4.4l192 160c7.3 6.1 11.5 15.1 11.5 24.6s-4.2 18.5-11.5 24.6l-192 160c-9.5 7.9-22.8 9.7-34.1 4.4S256 428.4 256 416V352z"/></svg>';
+
+/**
  * Main GoDAM Player Manager Class
  */
 export default class PlayerManager {
@@ -51,8 +57,24 @@ export default class PlayerManager {
 	 */
 	init() {
 		this.initializeDisplayLayers();
-		this.videos.forEach( ( video ) => this.initializeVideo( video ) );
+
+		const initPromises = [];
+		this.videos.forEach( ( video ) => {
+			initPromises.push( this.initializeVideo( video ) );
+		} );
+
+		// Dispatch event when all players are initialized
+		Promise.allSettled( initPromises ).then( () => {
+			const allPlayersReadyEvent = new CustomEvent( 'godamAllPlayersReady', {
+				detail: {
+					players: window.GoDAMAPI ? window.GoDAMAPI.getAllPlayers() : [],
+				},
+			} );
+			document.dispatchEvent( allPlayersReadyEvent );
+		} );
+
 		this.initializeGlobalKeyboardHandler();
+		this.initializeAutoplayOnView();
 		this.initEngagement = engagement();
 	}
 
@@ -69,16 +91,21 @@ export default class PlayerManager {
 	 * Initialize individual video
 	 *
 	 * @param {HTMLElement} video - Video element to initialize
+	 * @return {Promise} Promise that resolves when initialization is complete
 	 */
 	initializeVideo( video ) {
 		// Skip if already initialized (prevents re-init by external observers)
 		if ( video.dataset.godamInitialized === '1' ) {
-			return;
+			return Promise.resolve();
 		}
 		video.dataset.godamInitialized = '1';
 
 		const playerInstance = new VideoPlayer( video, this.isDisplayingLayers );
-		playerInstance.initialize();
+		// Handle async initialization (plugins loaded dynamically)
+		return playerInstance.initialize().catch( ( error ) => {
+			// eslint-disable-next-line no-console
+			console.error( 'Failed to initialize video player:', error );
+		} );
 	}
 
 	/**
@@ -91,6 +118,126 @@ export default class PlayerManager {
 
 		window.godamKeyboardHandlerInitialized = true;
 		document.addEventListener( 'keydown', ( event ) => this.handleGlobalKeyboard( event ) );
+	}
+
+	/**
+	 * Initialize intersection observer for autoplay-on-view
+	 */
+	initializeAutoplayOnView() {
+		// Check if IntersectionObserver is supported
+		if ( ! ( 'IntersectionObserver' in window ) ) {
+			return;
+		}
+
+		// Find all videos with autoplay-on-view attribute
+		const autoplayOnViewVideos = Array.from( this.videos ).filter(
+			( video ) => video.dataset.autoplayOnView === 'true',
+		);
+
+		if ( autoplayOnViewVideos.length === 0 ) {
+			return;
+		}
+
+		// Create intersection observer
+		const observerOptions = {
+			root: null, // Use viewport as root
+			rootMargin: '0px',
+			threshold: 0.35, // Trigger when 35% of video is visible
+		};
+
+		const observer = new IntersectionObserver( ( entries ) => {
+			entries.forEach( ( entry ) => {
+				if ( entry.isIntersecting ) {
+					this.handleAutoplayOnView( entry.target );
+					// Unobserve after playing to prevent re-triggering
+					observer.unobserve( entry.target );
+				}
+			} );
+		}, observerOptions );
+
+		// Observe each video
+		autoplayOnViewVideos.forEach( ( video ) => {
+			// Check if video is already intersecting (35% visible threshold)
+			const rect = video.getBoundingClientRect();
+			const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+			const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+
+			// Calculate intersection ratio manually (matching threshold 0.35)
+			const visibleTop = Math.max( 0, Math.min( rect.bottom, viewportHeight ) - Math.max( rect.top, 0 ) );
+			const visibleLeft = Math.max( 0, Math.min( rect.right, viewportWidth ) - Math.max( rect.left, 0 ) );
+			const visibleArea = visibleTop * visibleLeft;
+			const totalArea = rect.height * rect.width;
+			const intersectionRatio = totalArea > 0 ? visibleArea / totalArea : 0;
+
+			if ( intersectionRatio >= 0.35 && rect.height > 0 && rect.width > 0 ) {
+				// Video is already 35%+ visible, trigger autoplay immediately
+				// Use setTimeout to ensure player initialization has started
+				setTimeout( () => {
+					this.handleAutoplayOnView( video );
+				}, 100 );
+			} else {
+				// Observe for when video enters viewport
+				observer.observe( video );
+			}
+		} );
+	}
+
+	/**
+	 * Handle autoplay when video enters viewport
+	 *
+	 * @param {HTMLElement} videoElement - Video element that entered viewport
+	 */
+	handleAutoplayOnView( videoElement ) {
+		// Get the VideoJS player instance
+		const player = videojs.getPlayer( videoElement );
+
+		if ( ! player ) {
+			// Player not ready yet, wait for it
+			const checkPlayer = setInterval( () => {
+				const playerInstance = videojs.getPlayer( videoElement );
+				if ( playerInstance ) {
+					clearInterval( checkPlayer );
+					this.playVideoWhenReady( playerInstance );
+				}
+			}, 100 );
+
+			// Stop checking after 5 seconds
+			setTimeout( () => clearInterval( checkPlayer ), 5000 );
+			return;
+		}
+
+		this.playVideoWhenReady( player );
+	}
+
+	/**
+	 * Play video when player is ready
+	 *
+	 * @param {Object} player - VideoJS player instance
+	 */
+	playVideoWhenReady( player ) {
+		if ( ! player ) {
+			return;
+		}
+
+		// Wait for player to be ready
+		if ( player.readyState() >= 2 ) {
+			// Player has enough data to play
+			player.play().catch( ( error ) => {
+				// Autoplay was prevented (browser policy)
+				// eslint-disable-next-line no-console
+				console.warn( 'Autoplay prevented:', error );
+			} );
+		} else {
+			// Wait for loadeddata event
+			const playOnReady = () => {
+				player.play().catch( ( error ) => {
+					// eslint-disable-next-line no-console
+					console.warn( 'Autoplay prevented:', error );
+				} );
+				player.off( 'loadeddata', playOnReady );
+			};
+			player.on( 'loadeddata', playOnReady );
+		}
 	}
 
 	/**
@@ -218,7 +365,8 @@ export default class PlayerManager {
 
 		player.currentTime( Math.max( 0, player.currentTime() - skipSeconds ) );
 		/* translators: %d: number of seconds to seek backward */
-		this.showIndicator( player.el(), 'backward', sprintf( '<i class="fa-solid fa-backward"></i> %s', sprintf( __( '%ds', 'godam' ), skipSeconds ) ) );
+		const backwardLabel = sprintf( __( '%ds', 'godam' ), skipSeconds );
+		this.showIndicator( player.el(), 'backward', `${ BACKWARD_SEEK_INDICATOR_SVG } ${ backwardLabel }` );
 	}
 
 	/**
@@ -232,8 +380,9 @@ export default class PlayerManager {
 		const skipSeconds = skipSettings.forward;
 
 		player.currentTime( player.currentTime() + skipSeconds );
-		/* translators: %s: number of seconds to seek forward */
-		this.showIndicator( player.el(), 'forward', sprintf( '%s <i class="fa-solid fa-forward"></i>', sprintf( __( '%ds', 'godam' ), skipSeconds ) ) );
+		/* translators: %d: number of seconds to seek forward */
+		const forwardLabel = sprintf( __( '%ds', 'godam' ), skipSeconds );
+		this.showIndicator( player.el(), 'forward', `${ forwardLabel } ${ FORWARD_SEEK_INDICATOR_SVG }` );
 	}
 
 	/**
@@ -244,10 +393,10 @@ export default class PlayerManager {
 	togglePlayPause( player ) {
 		if ( player.paused() ) {
 			player.play();
-			this.showIndicator( player.el(), 'play-indicator', '<i class="fa-solid fa-play"></i>' );
+			this.showIndicator( player.el(), 'play-indicator', '<span class="vjs-icon-placeholder vjs-icon-play" aria-hidden="true"></span>' );
 		} else {
 			player.pause();
-			this.showIndicator( player.el(), 'pause-indicator', '<i class="fa-solid fa-pause"></i>' );
+			this.showIndicator( player.el(), 'pause-indicator', '<span class="vjs-icon-placeholder vjs-icon-pause" aria-hidden="true"></span>' );
 		}
 	}
 
@@ -267,8 +416,8 @@ export default class PlayerManager {
 
 		// Sanitize HTML content with DOMPurify before setting innerHTML
 		const sanitizedHtml = DOMPurify.sanitize( html, {
-			ALLOWED_TAGS: [ 'i', 'span', 'strong', 'em' ],
-			ALLOWED_ATTR: [ 'class' ],
+			ALLOWED_TAGS: [ 'i', 'span', 'strong', 'em', 'svg', 'path' ],
+			ALLOWED_ATTR: [ 'class', 'xmlns', 'viewBox', 'width', 'height', 'fill', 'fill-rule', 'clip-rule', 'd' ],
 			KEEP_CONTENT: true,
 		} );
 

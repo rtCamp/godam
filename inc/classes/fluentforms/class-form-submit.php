@@ -7,6 +7,10 @@
 
 namespace RTGODAM\Inc\FluentForms;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use RTGODAM\Inc\Traits\Singleton;
 
 /**

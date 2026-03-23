@@ -10,6 +10,72 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use RTGODAM\Inc\Enums\Api_Key_Status;
+use RTGODAM\Inc\Helpers\Api_Key;
+
+/**
+ * Get the API key status from database.
+ *
+ * Only 'valid' and 'expired' are persisted in the database.
+ * 'verification_failed' is a runtime state.
+ *
+ * @since 1.7.0
+ *
+ * @return string One of: 'valid', 'expired'.
+ */
+function rtgodam_get_api_key_status() {
+	return Api_Key::get_status();
+}
+
+/**
+ * Set the API key status in the database.
+ *
+ * Only permanent states (valid, expired) can be persisted.
+ * States like verification_failed are handled at runtime.
+ *
+ * @since 1.7.0
+ *
+ * @param string $status Status to set: 'valid' or 'expired'.
+ *
+ * @return bool Whether the option was updated.
+ */
+function rtgodam_set_api_key_status( $status ) {
+	return Api_Key::set_status( $status );
+}
+
+/**
+ * Check if API key is in grace period (automatic verification should NOT be skipped yet).
+ *
+ * Grace period only applies to EXPIRED keys to reduce unnecessary verification attempts.
+ * When an API key expires, we allow a grace period before stopping automatic checks.
+ * After the grace period, automatic verification is paused until manual refresh.
+ *
+ * @since 1.7.0
+ *
+ * @return bool True if in grace period (should not skip verification), false otherwise.
+ */
+function rtgodam_is_api_key_in_grace_period() {
+	return Api_Key::is_in_grace_period();
+}
+
+/**
+ * Mark API key as invalid/expired and set timestamp.
+ *
+ * @since 1.7.0
+ */
+function rtgodam_mark_api_key_expired() {
+	Api_Key::mark_expired();
+}
+
+/**
+ * Clear API key invalid timestamp.
+ *
+ * @since 1.7.0
+ */
+function rtgodam_clear_api_key_invalid_timestamp() {
+	Api_Key::clear_error_timestamp();
+}
+
 /**
  * Check whether the file is sent to the transcoder or not.
  *
@@ -196,36 +262,6 @@ function rtgodam_get_upload_dir() {
 }
 
 /**
- * Check if override media thumbnail setting is ON or OFF.
- *
- * @since 1.1.0
- *
- * @param int|string $attachment_id ID of attachment.
- *
- * @return boolean TRUE if override is ON, FALSE is OFF
- */
-function rtgodam_is_override_thumbnail( $attachment_id = '' ) {
-
-	// Fetch EasyDAM settings directly.
-	$easydam_settings = get_option( 'rtgodam-settings', array() );
-
-	// Return the 'overwrite_thumbnails' value, defaulting to false if not set.
-	$rtgodam_override_thumbnail = ! empty( $easydam_settings['video']['overwrite_thumbnails'] );
-
-	/**
-	 * Allow user to override the setting.
-	 *
-	 * @since 1.1.0
-	 *
-	 * @param boolean   $rtgodam_override_thumbnail     Number of thumbnails set in setting.
-	 * @param int       $attachment_id              ID of attachment.
-	 */
-	$rtgodam_override_thumbnail = apply_filters( 'rtgodam_is_override_thumbnail', $rtgodam_override_thumbnail, $attachment_id );
-
-	return $rtgodam_override_thumbnail;
-}
-
-/**
  * Get remote IP address
  *
  * @return string Remote IP address
@@ -273,6 +309,21 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 
 	$transcoded_files = get_post_meta( $post_id, 'rtgodam_transcoded_url', true );
 
+	// Detect virtual media created from GoDAM tab.
+	$is_virtual = ! empty( get_post_meta( $post_id, '_godam_original_id', true ) );
+
+	if ( $is_virtual ) {
+		?>
+		<div id="list-transcoder-status-<?php echo esc_attr( $post_id ); ?>" class="transcoding-status transcoding-status--completed transcoding-status-list" data-id="<?php echo esc_attr( $post_id ); ?>">
+			<div class="transcoding-status__loader" data-percent="100">
+				<img src="<?php echo esc_url( RTGODAM_URL . '/assets/src/images/godam-logo-gradient.svg' ); ?>" alt="<?php esc_attr_e( 'GoDAM Logo', 'godam' ); ?>" width="22" height="22" />
+				</div>
+			<span class="status-text"><?php echo esc_html__( 'Media is transcoded.', 'godam' ); ?></span>
+		</div>
+		<?php
+		return;
+	}
+
 	// only display the check status button for media that are transcoding.
 	$transcoding_status = get_post_meta( $post_id, 'rtgodam_transcoding_status', true );
 
@@ -280,18 +331,21 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 		return;
 	}
 
-	if ( empty( $transcoded_files ) && rtgodam_is_file_being_transcoded( $post_id ) ) {
-		$check_button_text = __( 'Check Status', 'godam' );
-
-		/**
-		 * Filters the text of transcoding process status check button.
-		 *
-		 * @since 1.2
-		 *
-		 * @param string $check_button_text Default text of transcoding process status check button.
-		 */
-		$check_button_text = apply_filters( 'rtgodam_check_status_button_text', $check_button_text );
-
+	if ( empty( $transcoded_files ) && in_array( strtolower( (string) $transcoding_status ), array( 'failed', 'blocked' ), true ) ) {
+		// Show error indicator for both: items where Central rejected the job (no job_id)
+		// and items where the job was accepted but later failed. JS polling will update
+		// this element if a subsequent retry succeeds.
+		?>
+		<div id="list-transcoder-status-<?php echo esc_attr( $post_id ); ?>" class="transcoding-status transcoding-status--failed transcoding-status-list" data-id="<?php echo esc_attr( $post_id ); ?>">
+			<div class="transcoding-status__loader">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+					<path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd" />
+				</svg>
+			</div>
+			<span class="status-text"><?php esc_html_e( 'Transcoding failed, please try again.', 'godam' ); ?></span>
+		</div>
+		<?php
+	} elseif ( empty( $transcoded_files ) && rtgodam_is_file_being_transcoded( $post_id ) ) {
 		?>
 		<div id="list-transcoder-status-<?php echo esc_attr( $post_id ); ?>" class="transcoding-status transcoding-status-list" data-id="<?php echo esc_attr( $post_id ); ?>">
 			<div class="transcoding-status__loader">
@@ -303,7 +357,6 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 			<span class="status-text"><?php echo esc_html( $transcoding_status ); ?></span>
 		</div>
 		<?php
-
 	} elseif ( ! empty( $transcoded_files ) ) {
 		?>
 		<div id="list-transcoder-status-<?php echo esc_attr( $post_id ); ?>" class="transcoding-status transcoding-status--completed transcoding-status-list" data-id="<?php echo esc_attr( $post_id ); ?>">
@@ -312,7 +365,7 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 					<path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clip-rule="evenodd" />
 				</svg>
 			</div>
-			<span class="status-text"><?php echo esc_html__( 'File is transcoded.', 'godam' ); ?></span>
+			<span class="status-text"><?php echo esc_html__( 'Media is transcoded.', 'godam' ); ?></span>
 		</div>
 		<?php
 	}
@@ -374,16 +427,38 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		return new \WP_Error( 'missing_api_key', __( 'API key is required.', 'godam' ), array( 'status' => 400 ) );
 	}
 
+	// Check if request should be blocked due to HTTP or localhost environment.
+	if ( rtgodam_is_local_environment() ) {
+		// Check if RTGODAM_API_KEY constant is defined in wp-config.php.
+		if ( ! defined( 'RTGODAM_API_KEY' ) ) {
+			return new \WP_Error(
+				'localhost_blocked',
+				__( 'API key verification is blocked for localhost environments. To use production API keys on localhost, please add the following constant to your wp-config.php file: define(\'RTGODAM_API_KEY\', \'your-api-key-here\');', 'godam' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		// Match the provided API key with the RTGODAM_API_KEY constant.
+		if ( RTGODAM_API_KEY !== $api_key ) {
+			return new \WP_Error(
+				'api_key_mismatch',
+				__( 'The provided API key does not match the RTGODAM_API_KEY constant defined in wp-config.php.', 'godam' ),
+				array( 'status' => 403 )
+			);
+		}
+	}
+
 	$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.verification.verify_api_key';
 
 	// Prepare request body with site title.
 	$site_url   = get_site_url();
 	$site_title = get_bloginfo( 'name' ); // Get site title from WordPress options.
-	
+
 	$request_body = array(
-		'api_key'    => $api_key,
-		'site_url'   => $site_url,
-		'site_title' => $site_title, // Add site title to request.
+		'api_key'        => $api_key,
+		'site_url'       => $site_url,
+		'site_title'     => $site_title,
+		'plugin_version' => RTGODAM_VERSION,
 	);
 
 	$args = array(
@@ -411,13 +486,44 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 
 	// Central sends 200 status code with error if API Key is invalid.
 	if ( isset( $body['message']['error'] ) ) {
-		return new \WP_Error( 'invalid_api_key', $body['message']['error'], array( 'status' => 400 ) );
+		$error_message = $body['message']['error'];
+
+		// Check if there was a previously valid key (existing key in DB).
+		$previous_status  = rtgodam_get_api_key_status();
+		$has_existing_key = ! empty( $existing_api_key ) && $existing_api_key === $api_key;
+
+		if ( $has_existing_key && ( Api_Key_Status::VALID === $previous_status ) ) {
+			// Previously saved key is expired - preserve it and mark as expired. This function will also check if it is already expired.
+			rtgodam_mark_api_key_expired();
+			// Key is already in DB, no need to save again.
+			return new \WP_Error( 'expired_api_key', $error_message, array( 'status' => 400 ) );
+		}
+
+		// New invalid key - don't save it, just return error.
+		return new \WP_Error( 'invalid_api_key', $error_message, array( 'status' => 400 ) );
 	}
 
 	// Handle 200 Success - Save the API key.
 	if ( 200 === $status_code && isset( $body['message']['account_token'] ) ) {
 
 		$account_token = $body['message']['account_token'];
+
+		// Mark API key as valid and clear any invalid timestamp.
+		rtgodam_set_api_key_status( Api_Key_Status::VALID );
+		rtgodam_clear_api_key_invalid_timestamp();
+
+		// Enable PostHog tracking once API key is activated or plugin is updated with active API key.
+		$settings = get_option( 'rtgodam-settings', array() );
+		if ( $save || empty( $settings['general']['posthog_initialized'] ) ) {
+			$settings['general']['enable_posthog_tracking'] = true;
+			$settings['general']['posthog_initialized']     = true;
+			update_option( 'rtgodam-settings', $settings );
+		} elseif ( ! empty( $settings['general']['posthog_initialized'] ) && ! $settings['general']['enable_posthog_tracking'] && $save ) {
+			// If user previously opted out but is now activating an API key, re-enable tracking.
+			$settings['general']['enable_posthog_tracking'] = true;
+			update_option( 'rtgodam-settings', $settings );
+		}
+
 		if ( $save ) {
 			// Save the API key in the site options only if it is verified.
 			update_option( 'rtgodam-api-key', $api_key );
@@ -437,17 +543,9 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		);
 	}
 
-	// Handle other errors - Preserve existing API key and user data.
-	// If existing API key exists, preserve it. If not, don't save new key.
-	if ( ! empty( $existing_api_key ) ) {
-		return array(
-			'status'  => 'success',
-			'message' => __( 'API key verification temporarily unavailable.', 'godam' ),
-			'data'    => $preserved_data,
-		);
-	}
-
-	return new \WP_Error( 'unexpected_error', __( 'An unexpected error occurred. Please try again later.', 'godam' ), array( 'status' => 500 ) );
+	// Handle other errors - Return 500 error to indicate temporary verification failure.
+	// The DB status (valid/expired) will be preserved by rtgodam_get_user_data().
+	return new \WP_Error( 'verification_error', __( 'Unable to verify API key. Please try again later.', 'godam' ), array( 'status' => 500 ) );
 }
 
 /**

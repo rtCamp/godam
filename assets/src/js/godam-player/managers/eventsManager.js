@@ -33,6 +33,8 @@ export default class EventsManager {
 		this.player.on( 'timeupdate', () => this.handleTimeUpdate() );
 		this.player.on( 'fullscreenchange', () => this.handleFullscreenChange() );
 		this.player.on( 'play', () => this.handlePlay() );
+		this.player.on( 'loadedmetadata', () => this.handleVideoResize() );
+		this.player.on( 'canplay', () => this.handleVideoResize() );
 	}
 
 	/**
@@ -43,6 +45,10 @@ export default class EventsManager {
 		if ( this.onPlayerConfigurationSetup ) {
 			this.onPlayerConfigurationSetup();
 		}
+
+		// Trigger initial control positioning after controls are created and layout stabilizes.
+		requestAnimationFrame( () => this.handleVideoResize() );
+		setTimeout( () => this.handleVideoResize(), 120 );
 	}
 
 	/**
@@ -54,6 +60,7 @@ export default class EventsManager {
 		this.onPlayerConfigurationSetup = callbacks.onPlayerConfigurationSetup;
 		this.onTimeUpdate = callbacks.onTimeUpdate;
 		this.onFullscreenChange = callbacks.onFullscreenChange;
+		this.onVideoResize = callbacks.onVideoResize;
 		this.onPlay = callbacks.onPlay;
 		this.onControlsMove = callbacks.onControlsMove;
 	}
@@ -103,12 +110,17 @@ export default class EventsManager {
 		this.player.on( 'resize', () => this.handleVideoResize() );
 		window.addEventListener( 'resize', () => this.handleVideoResize() );
 		this.player.on( 'fullscreenchange', () => this.handleVideoResize() );
+		this.player.on( 'customfullscreenchange', () => this.handleVideoResize() );
 	}
 
 	/**
 	 * Handle video resize events
 	 */
 	handleVideoResize() {
+		if ( this.onVideoResize ) {
+			this.onVideoResize();
+		}
+
 		// Skip if video is fullscreen or classic skin
 		if ( ! this.player ||
 			typeof this.player.isFullscreen !== 'function' ||
@@ -119,7 +131,7 @@ export default class EventsManager {
 		// Handle control bar positioning during fullscreen
 		this.handleFullscreenControlBar();
 
-		// Check container width constraint
+		// Check container width constraint for other skins
 		const videoContainer = this.video.closest( '.easydam-video-container' );
 		if ( videoContainer?.offsetWidth > 480 ) {
 			return;

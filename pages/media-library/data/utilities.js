@@ -211,4 +211,32 @@ const utilities = {
 	},
 };
 
-export { utilities };
+/**
+ * Detects current media type filter from URL or media library state.
+ *
+ * @param {string} paramName
+ *
+ * @return {Object} The mime type filter parameter.
+ */
+const getCurrentMimeTypeFilter = ( paramName = 'post_mime_type' ) => {
+	const urlParams = new URLSearchParams( window.location.search );
+	const postMimeType = urlParams.get( 'post_mime_type' );
+
+	if ( postMimeType ) {
+		return { [ paramName ]: postMimeType };
+	}
+
+	if ( typeof wp !== 'undefined' && wp.media && wp.media.frame ) {
+		const collection = wp.media.frame.state().get( 'library' );
+		if ( collection && collection.props ) {
+			const mimeType = collection.props.get( 'type' );
+			if ( mimeType && mimeType !== 'all' ) {
+				return { [ paramName ]: mimeType };
+			}
+		}
+	}
+
+	return {};
+};
+
+export { utilities, getCurrentMimeTypeFilter };

@@ -9,12 +9,14 @@ import { edit, media } from '@wordpress/icons';
 import { useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Provider } from 'react-redux';
+import { PostHogProvider } from '@posthog/react';
 import ReactDOM from 'react-dom/client';
 /**
  * Internal dependencies
  */
 import store from './redux/store';
 import Analytics from './Analytics';
+import posthog from '../utils/posthog';
 import './index.scss';
 
 const Frontpage = () => {
@@ -94,9 +96,11 @@ const Frontpage = () => {
 
 	return (
 		<>
-			<Provider store={ store }>
-				<Analytics attachmentID={ attachmentID } />
-			</Provider>
+			<PostHogProvider client={ posthog }>
+				<Provider store={ store }>
+					<Analytics attachmentID={ attachmentID } />
+				</Provider>
+			</PostHogProvider>
 		</>
 	);
 };

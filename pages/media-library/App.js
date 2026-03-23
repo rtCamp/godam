@@ -36,8 +36,8 @@ const App = () => {
 	const contextSelectedFolder = useSelector( ( state ) => state.FolderReducer.currentContextMenuFolder );
 	const isMultiSelecting = useSelector( ( state ) => state.FolderReducer.isMultiSelecting );
 	const currentSortOrder = useSelector( ( state ) => state.FolderReducer.sortOrder );
-	const { data: allMediaCount } = useGetAllMediaCountQuery();
-	const { data: uncategorizedCount } = useGetCategoryMediaCountQuery( { folderId: 0 } );
+	const { data: allMediaCount, refetch: refetchAllMediaCount } = useGetAllMediaCountQuery();
+	const { data: uncategorizedCount, refetch: refetchUncategorizedCount } = useGetCategoryMediaCountQuery( { folderId: 0 } );
 
 	const allFolders = useSelector( ( state ) => state.FolderReducer.folders );
 	const currentFolder = useMemo( () => {
@@ -89,6 +89,20 @@ const App = () => {
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );
+
+	// Listen for media type filter changes and refetch media count queries
+	useEffect( () => {
+		const handleMediaTypeChange = () => {
+			refetchAllMediaCount();
+			refetchUncategorizedCount();
+		};
+
+		document.addEventListener( 'godam-attachment-browser:changed', handleMediaTypeChange );
+
+		return () => {
+			document.removeEventListener( 'godam-attachment-browser:changed', handleMediaTypeChange );
+		};
+	}, [ refetchAllMediaCount, refetchUncategorizedCount ] );
 
 	const toggleSidebar = ( e ) => {
 		const target = e.target;

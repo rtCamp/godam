@@ -1,0 +1,54 @@
+name: Plugin Check 🔎
+
+on: pull_request
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  plugin-check:
+    name: Run Plugin Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository 📥
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js ⚙️
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Install Dependencies & Build Assets 📦
+        shell: bash
+        run: |
+          composer install --no-dev --optimize-autoloader
+          npm ci
+          npm run build:prod
+
+      - name: Create Plugin ZIP 🧩
+        id: bundle
+        uses: 10up/action-wordpress-plugin-deploy@2.3.0
+        with:
+          generate-zip: true
+          dry-run: true
+        env:
+          SLUG: 'godam'
+          SVN_USERNAME: 'dummy-username'
+          SVN_PASSWORD: 'dummy-password'
+          VERSION: 'temp-${{ github.event.number }}'
+
+      - name: Prepare Plugin for Check 🧰
+        shell: bash
+        run: |
+          unzip -q "${{ steps.bundle.outputs.zip-path }}" -d "${{ runner.temp }}"
+
+      - name: Perform Plugin Check 🔍
+        # TODO: Switch to specific action version once PR comment features are released in wordpress/plugin-check-action
+        uses: wordpress/plugin-check-action@main
+        with:
+          build-dir: '${{ runner.temp }}/godam'

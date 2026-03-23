@@ -7,6 +7,10 @@
 
 namespace RTGODAM\Inc;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use RTGODAM\Inc\Elementor_Controls\Godam_Media;
 use RTGODAM\Inc\Elementor_Widgets\Godam_Audio;
 use RTGODAM\Inc\Elementor_Widgets\Godam_Gallery;

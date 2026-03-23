@@ -7,8 +7,51 @@
  * @package GoDAM
  */
 
+use RTGODAM\Inc\Assets\IMA_Assets;
+use RTGODAM\Inc\Assets\Jetpack_Form_Assets;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
+}
+
+// Enqueue player wrapper styles inline for high priority rendering.
+// Uses a global flag to ensure it's only output once per page.
+global $godam_player_wrapper_inline_css_added, $wp_filesystem;
+if ( empty( $godam_player_wrapper_inline_css_added ) ) {
+	$godam_player_wrapper_inline_css_added = true;
+	$godam_player_wrapper_css_path         = RTGODAM_PATH . 'assets/build/css/godam-player-wrapper.css';
+	$godam_player_wrapper_css_key          = 'godam_player_wrapper_css';
+
+	if ( file_exists( $godam_player_wrapper_css_path ) ) {
+		$godam_player_wrapper_css = get_transient( $godam_player_wrapper_css_key );
+
+		if ( false === $godam_player_wrapper_css ) {
+			// Initialize WP_Filesystem if not already done.
+			if ( empty( $wp_filesystem ) ) {
+				require_once ABSPATH . 'wp-admin/includes/file.php';
+				WP_Filesystem();
+			}
+
+			if ( ! empty( $wp_filesystem ) ) {
+				$godam_player_wrapper_css = $wp_filesystem->get_contents( $godam_player_wrapper_css_path );
+				set_transient( $godam_player_wrapper_css_key, $godam_player_wrapper_css, HOUR_IN_SECONDS );
+			}
+		}
+
+			// If wp_head already fired, output inline immediately.
+		if ( did_action( 'wp_head' ) ) {
+			echo '<style id="godam-player-wrapper-inline-css">' . wp_strip_all_tags( $godam_player_wrapper_css ) . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS is stripped to plain text before inline output.
+		} else {
+			// Output inline style in wp_head for high priority rendering.
+			add_action(
+				'wp_head',
+				function () use ( $godam_player_wrapper_css ) {
+					echo '<style id="godam-player-wrapper-inline-css">' . wp_strip_all_tags( $godam_player_wrapper_css ) . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS is stripped to plain text before inline output.
+				},
+				1 // High priority.
+			);
+		}
+	}
 }
 
 $godam_is_shortcode = false;
@@ -92,12 +135,6 @@ $godam_video_preview      = isset( $attributes['preview'] ) ? $attributes['previ
 $godam_overlay_time_range = ! empty( $attributes['overlayTimeRange'] ) ? floatval( $attributes['overlayTimeRange'] ) : 0;
 $godam_show_overlay       = isset( $attributes['showOverlay'] ) ? $attributes['showOverlay'] : false;
 $godam_vertical_alignment = ! empty( $attributes['verticalAlignment'] ) ? esc_attr( $attributes['verticalAlignment'] ) : 'center';
-$godam_aspect_ratio       = ! empty( $attributes['aspectRatio'] ) && 'responsive' === $attributes['aspectRatio']
-	? ( ! empty( $attributes['videoWidth'] ) && ! empty( $attributes['videoHeight'] )
-		? $attributes['videoWidth'] . ':' . $attributes['videoHeight']
-		: '16:9'
-	)
-	: '16:9';
 
 $godam_src                = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
 $godam_transcoded_url     = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attributes['transcoded_url'] ) : '';
@@ -109,6 +146,35 @@ $godam_meta_data = is_array( $godam_meta_data ) ? $godam_meta_data : array();
 
 if ( $godam_is_virtual ) {
 	$godam_meta_data = $godam_original_id ? get_post_meta( $godam_original_id, 'rtgodam_meta', true ) : array();
+}
+
+// Resolve aspect ratio after we have all metadata loaded.
+if ( ! empty( $attributes['aspectRatio'] ) && 'responsive' === $attributes['aspectRatio'] ) {
+	if ( ! empty( $attributes['videoWidth'] ) && ! empty( $attributes['videoHeight'] ) ) {
+		// Use explicitly provided dimensions (from block attributes).
+		$godam_aspect_ratio = $attributes['videoWidth'] . ':' . $attributes['videoHeight'];
+	} else {
+		// Try to resolve from attachment metadata.
+		$godam_attachment_to_check = $godam_is_virtual && ! empty( $godam_original_id ) ? $godam_original_id : $godam_attachment_id;
+		
+		if ( ! empty( $godam_attachment_to_check ) && is_numeric( $godam_attachment_to_check ) ) {
+			$godam_video_meta = wp_get_attachment_metadata( intval( $godam_attachment_to_check ) );
+			if ( ! empty( $godam_video_meta['width'] ) && ! empty( $godam_video_meta['height'] ) ) {
+				$godam_aspect_ratio = intval( $godam_video_meta['width'] ) . ':' . intval( $godam_video_meta['height'] );
+			} else {
+				// Fallback: let frontend JavaScript detect dimensions dynamically.
+				$godam_aspect_ratio = 'responsive';
+			}
+		} else {
+			// No attachment ID available - let frontend handle it.
+			$godam_aspect_ratio = 'responsive';
+		}
+	}
+} elseif ( ! empty( $attributes['aspectRatio'] ) && preg_match( '/^\d+:\d+$/', $attributes['aspectRatio'] ) ) {
+	// Use an explicitly set ratio like "16:9", "4:3", etc.
+	$godam_aspect_ratio = $attributes['aspectRatio'];
+} else {
+	$godam_aspect_ratio = '16:9';
 }
 // Extract control bar settings with a fallback to an empty array.
 $godam_control_bar_settings = $godam_meta_data['videoConfig']['controlBar'] ?? array();
@@ -214,6 +280,9 @@ if ( empty( $godam_attachment_id ) && empty( $godam_src ) && empty( $godam_trans
 
 $godam_easydam_control_bar_color = 'initial'; // Default color.
 
+// Cache the API key validity check so it is only evaluated once per render.
+$godam_has_valid_api_key = rtgodam_is_api_key_valid();
+
 $godam_settings               = get_option( 'rtgodam-settings', array() );
 $godam_brand_color            = isset( $godam_settings['video_player']['brand_color'] ) ? $godam_settings['video_player']['brand_color'] : null;
 $godam_appearance_color       = isset( $godam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $godam_meta_data['videoConfig']['controlBar']['appearanceColor'] : null;
@@ -221,7 +290,19 @@ $godam_brand_image            = isset( $godam_settings['video_player']['brand_im
 $godam_individual_brand_image = isset( $godam_meta_data['videoConfig']['controlBar']['brand_image'] ) ? $godam_meta_data['videoConfig']['controlBar']['brand_image'] : null;
 $godam_player_skin            = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : 'Default';
 $godam_ads_settings           = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : array();
-$godam_ads_settings           = wp_json_encode( $godam_ads_settings );
+
+// Global video ads is a Pro feature — disable global ads and clear the ad tag URL for free users,
+// even if the settings were previously saved (backward-compatibility guard).
+if ( ! $godam_has_valid_api_key ) {
+	$godam_ads_settings['enable_global_video_ads'] = false;
+	// Ensure the ad tag URL is not exposed to the frontend config for free users.
+	if ( isset( $godam_ads_settings['adTagUrl'] ) ) {
+		$godam_ads_settings['adTagUrl'] = '';
+	}
+}
+
+$godam_ads_settings       = wp_json_encode( $godam_ads_settings );
+$godam_global_video_share = isset( $godam_settings['video']['enable_global_video_share'] ) ? $godam_settings['video']['enable_global_video_share'] : true;
 
 $godam_video_poster = empty( $godam_poster ) ? $godam_poster_image : $godam_poster;
 
@@ -255,6 +336,14 @@ $godam_video_setup = array(
 	),
 );
 if ( ! empty( $godam_control_bar_settings ) ) {
+	// Strip premium-only fields from controlBar settings when API key is not valid.
+	// Free features (volume, skip, captions) are kept; branding/colors are Pro-only.
+	if ( ! $godam_has_valid_api_key ) {
+		$godam_premium_controlbar_fields = array( 'brand_image', 'hoverColor', 'customPlayBtnImg', 'appearanceColor', 'playBtnPosition', 'showBranding', 'brandingIcon' );
+		foreach ( $godam_premium_controlbar_fields as $godam_premium_field ) {
+			unset( $godam_control_bar_settings[ $godam_premium_field ] );
+		}
+	}
 	$godam_video_setup['controlBar'] = $godam_control_bar_settings; // contains settings specific to control bar.
 
 	if ( isset( $godam_control_bar_settings['volumePanel'] ) && empty( $godam_control_bar_settings['volumePanel'] ) ) {
@@ -271,45 +360,73 @@ if ( ! empty( $godam_control_bar_settings ) ) {
 
 $godam_video_setup = wp_json_encode( $godam_video_setup );
 
+// Filter out premium layers from frontend config when API key is not valid.
+$godam_frontend_layers         = ! empty( $godam_meta_data['layers'] ) ? $godam_meta_data['layers'] : array();
+$godam_premium_layer_types_cfg = rtgodam_get_premium_layer_types();
+
+if ( ! $godam_has_valid_api_key && ! empty( $godam_frontend_layers ) ) {
+	$godam_frontend_layers = array_values(
+		array_filter(
+			$godam_frontend_layers,
+			function ( $layer ) use ( $godam_premium_layer_types_cfg ) {
+				return ! isset( $layer['type'] ) || ! in_array( $layer['type'], $godam_premium_layer_types_cfg, true );
+			}
+		)
+	);
+}
+
 $godam_video_config = wp_json_encode(
 	array(
 		'preview'          => $godam_video_preview,
-		'layers'           => ! empty( $godam_meta_data['layers'] ) ? $godam_meta_data['layers'] : array(), // contains list of layers.
+		'layers'           => $godam_frontend_layers, // contains list of layers (premium layers filtered when no API key).
 		'chapters'         => ! empty( $godam_meta_data['chapters'] ) ? $godam_meta_data['chapters'] : array(), // contains list of chapters.
 		'overlayTimeRange' => $godam_overlay_time_range, // Add overlay time range to video config.
 		'playerSkin'       => $godam_player_skin, // Add player skin to video config. Add brand image to video config.
 		'aspectRatio'      => $godam_aspect_ratio,
-		'showShareBtn'     => $godam_show_share_btn,
+		'showShareBtn'     => true === $godam_global_video_share ? $godam_show_share_btn : false,
 	)
 );
 
-if ( ! empty( $godam_appearance_color ) ) {
-	$godam_easydam_control_bar_color = $godam_appearance_color;
-} elseif ( ! empty( $godam_brand_color ) ) {
-	$godam_easydam_control_bar_color = $godam_brand_color;
+// Pro customization (brand color, hover color, custom play button) is only applied on the
+// frontend when the API key is valid. Player skin is a free feature and is always applied.
+if ( $godam_has_valid_api_key ) {
+	if ( ! empty( $godam_appearance_color ) ) {
+		$godam_easydam_control_bar_color = $godam_appearance_color;
+	} elseif ( ! empty( $godam_brand_color ) ) {
+		$godam_easydam_control_bar_color = $godam_brand_color;
+	}
 }
 
-$godam_easydam_hover_color        = ! empty( $godam_meta_data['videoConfig']['controlBar']['hoverColor'] ) ? $godam_meta_data['videoConfig']['controlBar']['hoverColor'] : '#fff';
-$godam_easydam_hover_zoom         = ! empty( $godam_meta_data['videoConfig']['controlBar']['zoomLevel'] ) ? $godam_meta_data['videoConfig']['controlBar']['zoomLevel'] : 0;
-$godam_easydam_custom_btn_img     = ! empty( $godam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] ) ? $godam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] : '';
+$godam_easydam_hover_color        = $godam_has_valid_api_key && ! empty( $godam_meta_data['videoConfig']['controlBar']['hoverColor'] ) ? $godam_meta_data['videoConfig']['controlBar']['hoverColor'] : '#fff';
+$godam_easydam_hover_zoom         = $godam_has_valid_api_key && ! empty( $godam_meta_data['videoConfig']['controlBar']['zoomLevel'] ) ? $godam_meta_data['videoConfig']['controlBar']['zoomLevel'] : 0;
+$godam_easydam_custom_btn_img     = $godam_has_valid_api_key && ! empty( $godam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] ) ? $godam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] : '';
 $godam_easydam_control_bar_config = ! empty( $godam_meta_data['videoConfig']['controlBar'] ) ? $godam_meta_data['videoConfig']['controlBar'] : array();
 
 $godam_layers     = $godam_meta_data['layers'] ?? array();
-$godam_ads_layers = array_filter(
-	$godam_layers,
-	function ( $godam_layer ) {
-		return 'ad' === $godam_layer['type'];
-	}
-);
 $godam_ad_tag_url = '';
 
-$godam_ad_server = isset( $godam_meta_data['videoConfig']['adServer'] ) ? sanitize_text_field( $godam_meta_data['videoConfig']['adServer'] ) : 'self-hosted';
+// Ad layers are a premium feature — only process them when the API key is valid.
+if ( $godam_has_valid_api_key ) {
+	$godam_ads_layers = array_filter(
+		$godam_layers,
+		function ( $godam_layer ) {
+			return 'ad' === $godam_layer['type'];
+		}
+	);
 
-if ( ! empty( $godam_ad_server ) && 'ad-server' === $godam_ad_server ) :
-	$godam_ad_tag_url = isset( $godam_meta_data['videoConfig']['adTagURL'] ) ? $godam_meta_data['videoConfig']['adTagURL'] : '';
-elseif ( ! empty( $godam_ads_layers ) && 'self-hosted' === $godam_ad_server ) :
-	$godam_ad_tag_url = get_rest_url( get_current_blog_id(), '/godam/v1/adTagURL/' ) . $godam_attachment_id;
-endif;
+	$godam_ad_server = isset( $godam_meta_data['videoConfig']['adServer'] ) ? sanitize_text_field( $godam_meta_data['videoConfig']['adServer'] ) : 'self-hosted';
+
+	if ( ! empty( $godam_ad_server ) && 'ad-server' === $godam_ad_server ) :
+		$godam_ad_tag_url = isset( $godam_meta_data['videoConfig']['adTagURL'] ) ? $godam_meta_data['videoConfig']['adTagURL'] : '';
+	elseif ( ! empty( $godam_ads_layers ) && 'self-hosted' === $godam_ad_server ) :
+		$godam_ad_tag_url = get_rest_url( get_current_blog_id(), '/godam/v1/adTagURL/' ) . $godam_attachment_id;
+	endif;
+}
+
+// Enqueue IMA SDK assets only if Ad is enabled for this GoDAM player block.
+if ( ! empty( $godam_ad_tag_url ) ) {
+	IMA_Assets::get_instance();
+}
 
 $godam_instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 
@@ -333,52 +450,40 @@ foreach ( $godam_custom_css_properties as $godam_property => $godam_value ) {
 	}
 }
 
+// Get WPBakery Design Options CSS class if available.
+$godam_css_class = ! empty( $attributes['css_class'] ) ? trim( $attributes['css_class'] ) : '';
+
 // Build the figure attributes for the <figure> element.
 if ( $godam_is_shortcode || $godam_is_elementor_widget ) {
-	$godam_figure_attributes = ! empty( $godam_custom_inline_styles )
+	$godam_style_attr = ! empty( $godam_custom_inline_styles )
 		? 'style="' . esc_attr( $godam_custom_inline_styles ) . '"'
 		: '';
+	$godam_class_attr = '';
+	if ( ! empty( $godam_css_class ) ) {
+		$godam_class_attr = 'class="' . esc_attr( $godam_css_class ) . '"';
+	}
+	$godam_figure_attributes = trim( $godam_class_attr . ' ' . $godam_style_attr );
 } else {
 	$godam_additional_attributes = array();
 	if ( ! empty( $godam_custom_inline_styles ) ) {
 		$godam_additional_attributes['style'] = esc_attr( $godam_custom_inline_styles );
 	}
+	if ( ! empty( $godam_css_class ) ) {
+		$godam_additional_attributes['class'] = esc_attr( $godam_css_class );
+	}
 	$godam_figure_attributes = get_block_wrapper_attributes( $godam_additional_attributes );
 }
 
 /**
- * Fetch AI Generated video tracks from post meta
+ * AI Generated video tracks (transcription) are now loaded dynamically from the frontend.
+ * The frontend JavaScript will fetch the transcript URL using the job_id via the API endpoint:
+ * GET /api/method/godam_core.api.process.get_public_transcription_path?job_name=<job_id>
+ *
+ * This approach provides:
+ * - Better caching with ETag/Cache-Control headers
+ * - Reduced server-side processing on page load
+ * - Automatic cache invalidation when transcription is updated
  */
-$godam_transcript_path = '';
-
-// Determine which attachment ID to use for transcript check.
-// If attachment_id is a string, it's a job ID - resolve it to attachment ID.
-$godam_transcript_attachment_id = $godam_attachment_id;
-
-if ( ! empty( $godam_attachment_id ) && ! is_numeric( $godam_attachment_id ) ) {
-	// It's a job ID string, find the actual attachment ID.
-	if ( ! class_exists( 'RTGODAM_Transcoder_Handler' ) ) {
-		include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-handler.php';
-	}
-
-	$godam_transcoder_handler       = new RTGODAM_Transcoder_Handler();
-	$godam_transcript_attachment_id = $godam_transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $godam_attachment_id );
-}
-
-// Check for transcription if we have a valid numeric attachment ID.
-// The function will check post meta first before making API calls.
-if ( ! empty( $godam_transcript_attachment_id ) && is_numeric( $godam_transcript_attachment_id ) ) {
-	$godam_transcript_path = godam_get_transcript_path( $godam_transcript_attachment_id, $godam_job_id );
-}
-
-if ( ! empty( $godam_transcript_path ) ) {
-	$godam_tracks[] = array(
-		'src'     => esc_url( $godam_transcript_path ),
-		'kind'    => 'subtitles',
-		'label'   => 'English',
-		'srclang' => 'en',
-	);
-}
 
 $godam_attachment_title = '';
 
@@ -407,302 +512,328 @@ if ( $godam_should_preload_poster ) {
 ?>
 
 <?php if ( ! empty( $godam_sources ) ) : ?>
-	<figure 
-		id="godam-player-container-<?php echo esc_attr( $godam_instance_id ); ?>"
-		<?php echo wp_kses_data( $godam_figure_attributes ); ?>>
-		<div class="godam-video-wrapper">
-			<?php if ( $godam_show_overlay && ! empty( $godam_inner_blocks_content ) ) : ?>
-				<div
-					class="godam-video-overlay-container godam-overlay-alignment-<?php echo esc_attr( $godam_vertical_alignment ); ?>"
-					data-overlay-content
-					data-overlay-time-range="<?php echo esc_attr( $godam_overlay_time_range ); ?>"
-				>
-					<?php
-					// Safely output the inner blocks content.
-					echo wp_kses_post( $godam_inner_blocks_content );
-					?>
-				</div>
-			<?php endif; ?>
-
-			<div class="easydam-video-container animate-video-loading godam-<?php echo esc_attr( strtolower( $godam_player_skin ) ); ?>-skin" >
-				<?php if ( isset( $godam_hover_select ) && 'shadow-overlay' === $godam_hover_select ) : ?>
-					<div class="godam-player-overlay"></div>
+	<div <?php echo wp_kses_data( $godam_figure_attributes ); ?>>
+		<figure id="godam-player-container-<?php echo esc_attr( $godam_instance_id ); ?>">
+			<div class="godam-video-wrapper">
+				<?php if ( $godam_show_overlay && ! empty( $godam_inner_blocks_content ) ) : ?>
+					<div
+						class="godam-video-overlay-container godam-overlay-alignment-<?php echo esc_attr( $godam_vertical_alignment ); ?>"
+						data-overlay-content
+						data-overlay-time-range="<?php echo esc_attr( $godam_overlay_time_range ); ?>"
+					>
+						<?php
+						// Safely output the inner blocks content.
+						echo wp_kses_post( $godam_inner_blocks_content );
+						?>
+					</div>
 				<?php endif; ?>
-				<div class="animate-play-btn">
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
-						<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
-					</svg>
-				</div>
-				<?php if ( $godam_should_preload_poster ) : ?>
+
+				<div class="godam-video-placeholder godam-animate-video-loading">
+					<div class="animate-play-btn">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+							<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
+						</svg>
+					</div>
+					<?php if ( ! empty( $godam_video_poster ) ) : ?>
 					<img
-						class="godam-poster-image"
+						class="godam-player-poster-image"
 						src="<?php echo esc_url( $godam_video_poster ); ?>"
 						fetchpriority="high"
 						aria-hidden="true"
+						alt="<?php echo esc_attr( $godam_attachment_title ); ?>"
 					/>
-				<?php endif; ?>
-				<video
-					class="easydam-player video-js vjs-big-play-centered vjs-hidden"
-					data-options="<?php echo esc_attr( $godam_video_config ); ?>"
-					data-ad_tag_url="<?php echo esc_url( $godam_ad_tag_url ); ?>"
-					data-id="<?php echo esc_attr( is_numeric( $godam_attachment_id ) ? $godam_attachment_id : $godam_original_id ); ?>"
-					data-instance-id="<?php echo esc_attr( $godam_instance_id ); ?>"
-					data-controls="<?php echo esc_attr( $godam_video_setup ); ?>"
-					data-job_id="<?php echo esc_attr( $godam_job_id ); ?>"
-					data-global_ads_settings="<?php echo esc_attr( $godam_ads_settings ); ?>"
-					data-hover-select="<?php echo esc_attr( $godam_hover_select ); ?>"
-					data-video-title="<?php echo esc_attr( $godam_attachment_title ); ?>"
-				>
+					<?php endif; ?>
+				</div>
+
+				<div class="easydam-video-container loading godam-<?php echo esc_attr( strtolower( $godam_player_skin ) ); ?>-skin" >
+					<?php if ( isset( $godam_hover_select ) && 'shadow-overlay' === $godam_hover_select ) : ?>
+						<div class="godam-player-overlay"></div>
+					<?php endif; ?>
+
+					<?php if ( $godam_should_preload_poster ) : ?>
+						<img
+							class="godam-poster-image"
+							src="<?php echo esc_url( $godam_video_poster ); ?>"
+							fetchpriority="high"
+							aria-hidden="true"
+							alt="<?php echo esc_attr( $godam_attachment_title ); ?>"
+						/>
+					<?php endif; ?>
+					<video
+						class="easydam-player video-js vjs-big-play-centered vjs-hidden"
+						data-options="<?php echo esc_attr( $godam_video_config ); ?>"
+						data-ad_tag_url="<?php echo esc_url( $godam_ad_tag_url ); ?>"
+						data-id="<?php echo esc_attr( is_numeric( $godam_attachment_id ) ? $godam_attachment_id : $godam_original_id ); ?>"
+						data-instance-id="<?php echo esc_attr( $godam_instance_id ); ?>"
+						data-controls="<?php echo esc_attr( $godam_video_setup ); ?>"
+						data-job_id="<?php echo esc_attr( $godam_job_id ); ?>"
+						data-global_ads_settings="<?php echo esc_attr( $godam_ads_settings ); ?>"
+						data-hover-select="<?php echo esc_attr( $godam_hover_select ); ?>"
+						data-video-title="<?php echo esc_attr( $godam_attachment_title ); ?>"
+						data-autoplay-on-view="<?php echo esc_attr( $godam_autoplay ? 'true' : 'false' ); ?>"
+					>
+						<?php
+
+						$godam_display_caption = ( ! isset( $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) ) ||
+							( isset( $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) && $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] );
+
+						if ( $godam_display_caption ) {
+							foreach ( $godam_tracks as $godam_track ) :
+								if ( ! empty( $godam_track['src'] ) && ! empty( $godam_track['kind'] ) ) :
+									?>
+									<track
+										src="<?php echo esc_url( $godam_track['src'] ); ?>"
+										kind="<?php echo esc_attr( $godam_track['kind'] ); ?>"
+										<?php
+										echo ! empty( $godam_track['srclang'] ) ? sprintf( 'srclang="%s"', esc_attr( $godam_track['srclang'] ) ) : '';
+										echo ! empty( $godam_track['label'] ) ? sprintf( 'label="%s"', esc_attr( $godam_track['label'] ) ) : '';
+										?>
+									/>
+									<?php
+								endif;
+							endforeach;
+						}
+						?>
+					</video>
+					<!-- Add this to target godam uppy modal inside video. -->
+					<div id="uppy-godam-video-modal-container"></div>
+
+					<!-- Dynamically render shortcodes for form layers. -->
 					<?php
+					// Premium layer types require a valid API key to render on the frontend.
+					$godam_premium_layer_types = rtgodam_get_premium_layer_types();
 
-					$godam_display_caption = ( ! isset( $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) ) ||
-						( isset( $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) && $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] );
-
-					if ( $godam_display_caption ) {
-						foreach ( $godam_tracks as $godam_track ) :
-							if ( ! empty( $godam_track['src'] ) && ! empty( $godam_track['kind'] ) ) :
-								?>
-								<track
-									src="<?php echo esc_url( $godam_track['src'] ); ?>"
-									kind="<?php echo esc_attr( $godam_track['kind'] ); ?>"
-									<?php
-									echo ! empty( $godam_track['srclang'] ) ? sprintf( 'srclang="%s"', esc_attr( $godam_track['srclang'] ) ) : '';
-									echo ! empty( $godam_track['label'] ) ? sprintf( 'label="%s"', esc_attr( $godam_track['label'] ) ) : '';
-									?>
-								/>
-								<?php
+					if ( ! empty( $godam_meta_data['layers'] ) ) :
+						foreach ( $godam_meta_data['layers'] as $godam_layer ) :
+							// Skip premium layers if the API key is not valid.
+							if ( ! $godam_has_valid_api_key && isset( $godam_layer['type'] ) && in_array( $godam_layer['type'], $godam_premium_layer_types, true ) ) :
+								continue;
 							endif;
-						endforeach;
-					}
-					?>
-				</video>
-				<!-- Add this to target godam uppy modal inside video. -->
-				<div id="uppy-godam-video-modal-container"></div>
 
-				<!-- Dynamically render shortcodes for form layers. -->
-				<?php
-				if ( ! empty( $godam_meta_data['layers'] ) ) :
-					foreach ( $godam_meta_data['layers'] as $godam_layer ) :
-						$godam_form_type = ! empty( $godam_layer['form_type'] ) ? $godam_layer['form_type'] : 'gravity';
-						// FORM layer.
-						if ( isset( $godam_layer['type'] ) && 'form' === $godam_layer['type'] ) :
-							if ( 'gravity' === $godam_form_type && ! empty( $godam_layer['gf_id'] ) ) :
-								?>
-							<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
-								<div class="form-container">
-									<?php
-										$godam_theme = ! empty( $godam_layer['theme'] ) ? esc_attr( $godam_layer['theme'] ) : '';
-										echo do_shortcode(
-											sprintf(
-												"[gravityform id='%d' title='false' description='false' ajax='true'%s]",
-												intval( $godam_layer['gf_id'] ),
-												$godam_theme ? " theme='$godam_theme'" : ''
-											)
-										);
+							$godam_form_type = ! empty( $godam_layer['form_type'] ) ? $godam_layer['form_type'] : 'gravity';
+							// FORM layer.
+							if ( isset( $godam_layer['type'] ) && 'form' === $godam_layer['type'] ) :
+								if ( 'gravity' === $godam_form_type && ! empty( $godam_layer['gf_id'] ) ) :
 									?>
-								</div>
-							</div>
-								<?php
-							elseif ( 'cf7' === $godam_form_type && ! empty( $godam_layer['cf7_id'] ) ) :
-								$godam_form_theme = ! empty( $godam_layer['theme'] ) ? $godam_layer['theme'] : 'godam';
-								?>
-								<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
-									<div class="form-container <?php echo esc_attr( 'godam' === $godam_form_theme ? 'rtgodam-wpcf7-form' : '' ); ?>">
-										<?php
-											echo do_shortcode(
-												sprintf(
-													"[contact-form-7 id='%d' title='false' ajax='true']",
-													intval( $godam_layer['cf7_id'] )
-												)
-											);
-										?>
-									</div>
-								</div>
-								<?php
-							elseif ( 'wpforms' === $godam_form_type && ! empty( $godam_layer['wpform_id'] ) ) :
-								?>
 								<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 									<div class="form-container">
 										<?php
+											$godam_theme = ! empty( $godam_layer['theme'] ) ? esc_attr( $godam_layer['theme'] ) : '';
 											echo do_shortcode(
 												sprintf(
-													"[wpforms id='%d' title='false' description='false' ajax='true']",
-													intval( $godam_layer['wpform_id'] )
+													"[gravityform id='%d' title='false' description='false' ajax='true'%s]",
+													intval( $godam_layer['gf_id'] ),
+													$godam_theme ? " theme='$godam_theme'" : ''
 												)
 											);
 										?>
 									</div>
 								</div>
-								<?php
-							elseif ( 'sureforms' === $godam_form_type && ! empty( $godam_layer['sureform_id'] ) ) :
-								?>
-								<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
-									<div class="form-container">
-										<?php
-											echo do_shortcode(
-												sprintf(
-													"[sureforms id='%d']",
-													intval( $godam_layer['sureform_id'] )
-												)
-											);
-										?>
-									</div>
-								</div>
-								<?php
-							elseif ( 'forminator' === $godam_form_type && ! empty( $godam_layer['forminator_id'] ) ) :
-								?>
-								<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
-									<div class="form-container">
-										<?php
-											echo do_shortcode(
-												sprintf(
-													"[forminator_form id='%d']",
-													intval( $godam_layer['forminator_id'] )
-												)
-											);
-										?>
-									</div>
-								</div>
-								<?php
-							elseif ( 'metform' === $godam_form_type && ! empty( $godam_layer['metform_id'] ) ) :
-								?>
-								<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden <?php echo esc_attr( $godam_form_type ); ?>" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
-									<div class="form-container">
-										<?php
-											echo do_shortcode(
-												sprintf(
-													"[metform form_id='%d']",
-													intval( $godam_layer['metform_id'] )
-												)
-											);
-										?>
-									</div>
-								</div>
-								<?php
-							elseif ( 'jetpack' === $godam_form_type && ! empty( $godam_layer['jp_id'] ) ) :
-								// Get the origin post ID from the layer data.
-								$godam_origin_post_id = isset( $godam_layer['origin_post_id'] ) ? $godam_layer['origin_post_id'] : '';
-
-								// Use the static helper method to get the rendered form HTML.
-								$godam_form_html = \RTGODAM\Inc\REST_API\Jetpack::get_rendered_form_html_static( $godam_layer['jp_id'] );
-
-								if ( $godam_form_html && ! is_wp_error( $godam_form_html ) ) :
+									<?php
+								elseif ( 'cf7' === $godam_form_type && ! empty( $godam_layer['cf7_id'] ) ) :
+									$godam_form_theme = ! empty( $godam_layer['theme'] ) ? $godam_layer['theme'] : 'godam';
 									?>
 									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
-										<div class="form-container jetpack-form-container" <?php echo ! empty( $godam_origin_post_id ) ? 'data-origin-post-id="' . esc_attr( $godam_origin_post_id ) . '"' : ''; ?>>
+										<div class="form-container <?php echo esc_attr( 'godam' === $godam_form_theme ? 'rtgodam-wpcf7-form' : '' ); ?>">
 											<?php
-												// HTML generated dynamically using Block content.
-												// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-												echo $godam_form_html;
+												echo do_shortcode(
+													sprintf(
+														"[contact-form-7 id='%d' title='false' ajax='true']",
+														intval( $godam_layer['cf7_id'] )
+													)
+												);
+											?>
+										</div>
+									</div>
+									<?php
+								elseif ( 'wpforms' === $godam_form_type && ! empty( $godam_layer['wpform_id'] ) ) :
+									?>
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+										<div class="form-container">
+											<?php
+												echo do_shortcode(
+													sprintf(
+														"[wpforms id='%d' title='false' description='false' ajax='true']",
+														intval( $godam_layer['wpform_id'] )
+													)
+												);
+											?>
+										</div>
+									</div>
+									<?php
+								elseif ( 'sureforms' === $godam_form_type && ! empty( $godam_layer['sureform_id'] ) ) :
+									?>
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+										<div class="form-container">
+											<?php
+												echo do_shortcode(
+													sprintf(
+														"[sureforms id='%d']",
+														intval( $godam_layer['sureform_id'] )
+													)
+												);
+											?>
+										</div>
+									</div>
+									<?php
+								elseif ( 'forminator' === $godam_form_type && ! empty( $godam_layer['forminator_id'] ) ) :
+									?>
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+										<div class="form-container">
+											<?php
+												echo do_shortcode(
+													sprintf(
+														"[forminator_form id='%d']",
+														intval( $godam_layer['forminator_id'] )
+													)
+												);
+											?>
+										</div>
+									</div>
+									<?php
+								elseif ( 'metform' === $godam_form_type && ! empty( $godam_layer['metform_id'] ) ) :
+									?>
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden <?php echo esc_attr( $godam_form_type ); ?>" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+										<div class="form-container">
+											<?php
+												echo do_shortcode(
+													sprintf(
+														"[metform form_id='%d']",
+														intval( $godam_layer['metform_id'] )
+													)
+												);
+											?>
+										</div>
+									</div>
+									<?php
+								elseif ( 'jetpack' === $godam_form_type && ! empty( $godam_layer['jp_id'] ) ) :
+									// Get the origin post ID from the layer data.
+									$godam_origin_post_id = isset( $godam_layer['origin_post_id'] ) ? $godam_layer['origin_post_id'] : '';
+
+									// Enqueue GoDAM specific jetpack form script only if Jetpack form is used in this GoDAM player block.
+									Jetpack_Form_Assets::get_instance();
+
+									// Use the static helper method to get the rendered form HTML.
+									$godam_form_html = \RTGODAM\Inc\REST_API\Jetpack::get_rendered_form_html_static( $godam_layer['jp_id'] );
+
+									if ( $godam_form_html && ! is_wp_error( $godam_form_html ) ) :
+										?>
+										<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+											<div class="form-container jetpack-form-container" <?php echo ! empty( $godam_origin_post_id ) ? 'data-origin-post-id="' . esc_attr( $godam_origin_post_id ) . '"' : ''; ?>>
+												<?php
+													// HTML generated dynamically using Block content.
+													// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+													echo $godam_form_html;
+												?>
+											</div>
+										</div>
+										<?php
+									endif;
+								elseif ( 'fluentforms' === $godam_form_type && ! empty( $godam_layer['fluent_form_id'] ) ) :
+									?>
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+										<div class="form-container">
+											<?php
+												echo do_shortcode(
+													sprintf(
+														"[fluentform id='%d']",
+														intval( $godam_layer['fluent_form_id'] )
+													)
+												);
+											?>
+										</div>
+									</div>
+										<?php
+								elseif ( 'everestforms' === $godam_form_type && ! empty( $godam_layer['everest_form_id'] ) ) :
+									?>
+									<div
+										id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>"
+										class="easydam-layer hidden"
+										style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>"
+									>
+										<div class="form-container everest-form">
+											<?php
+												echo do_shortcode(
+													sprintf(
+														"[everest_form id='%d' title='false' description='false']",
+														intval( $godam_layer['everest_form_id'] )
+													)
+												);
+											?>
+										</div>
+									</div>
+									<?php
+								elseif ( 'ninjaforms' === $godam_form_type && ! empty( $godam_layer['ninja_form_id'] ) ) :
+									?>
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden <?php echo esc_attr( $godam_form_type ); ?>" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+										<div class="form-container">
+											<?php
+												echo do_shortcode(
+													sprintf(
+														"[ninja_form id='%d']",
+														intval( $godam_layer['ninja_form_id'] )
+													)
+												);
 											?>
 										</div>
 									</div>
 									<?php
 								endif;
-							elseif ( 'fluentforms' === $godam_form_type && ! empty( $godam_layer['fluent_form_id'] ) ) :
+									// Poll layer.
+							elseif ( isset( $godam_layer['type'] ) && 'poll' === $godam_layer['type'] ) :
 								?>
 								<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
-									<div class="form-container">
+									<div class="form-container poll-container">
 										<?php
-											echo do_shortcode(
-												sprintf(
-													"[fluentform id='%d']",
-													intval( $godam_layer['fluent_form_id'] )
-												)
-											);
+										$godam_poll_id = ! empty( $godam_layer['poll_id'] ) ? intval( $godam_layer['poll_id'] ) : 0;
+										echo do_shortcode( "[poll id='$godam_poll_id']" );
 										?>
 									</div>
 								</div>
-									<?php
-							elseif ( 'everestforms' === $godam_form_type && ! empty( $godam_layer['everest_form_id'] ) ) :
+								<?php
+								// CTA layer.
+							elseif ( isset( $godam_layer['type'] ) && 'cta' === $godam_layer['type'] ) :
+								?>
+								<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<?php if ( 'text' === $godam_layer['cta_type'] ) : ?>
+										<div class="ql-editor easydam-layer--cta-text">
+											<?php echo wp_kses_post( $godam_layer['text'] ); ?>
+										</div>
+									<?php elseif ( 'html' === $godam_layer['cta_type'] && ! empty( $godam_layer['html'] ) ) : ?>
+										<div class="easydam-layer--cta-html">
+											<?php echo wp_kses_post( $godam_layer['html'] ); ?>
+										</div>
+									<?php elseif ( 'image' === $godam_layer['cta_type'] ) : ?>
+										<?php echo wp_kses_post( rtgodam_image_cta_html( $godam_layer ) ); ?>
+									<?php endif; ?>
+								</div>
+								<?php
+								// HOTSPOT layer.
+							elseif ( isset( $godam_layer['type'] ) && 'hotspot' === $godam_layer['type'] ) :
 								?>
 								<div
 									id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>"
-									class="easydam-layer hidden"
-									style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>"
+									class="easydam-layer hidden hotspot-layer"
+									<?php
+									if ( ! empty( $godam_layer['bg_color'] ) ) :
+										?>
+										style="background-color: <?php echo esc_attr( $godam_layer['bg_color'] ); ?>"<?php endif; ?>
 								>
-									<div class="form-container everest-form">
-										<?php
-											echo do_shortcode(
-												sprintf(
-													"[everest_form id='%d' title='false' description='false']",
-													intval( $godam_layer['everest_form_id'] )
-												)
-											);
-										?>
-									</div>
-								</div>
-								<?php
-							elseif ( 'ninjaforms' === $godam_form_type && ! empty( $godam_layer['ninja_form_id'] ) ) :
-								?>
-								<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden <?php echo esc_attr( $godam_form_type ); ?>" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
-									<div class="form-container">
-										<?php
-											echo do_shortcode(
-												sprintf(
-													"[ninja_form id='%d']",
-													intval( $godam_layer['ninja_form_id'] )
-												)
-											);
-										?>
-									</div>
 								</div>
 								<?php
 							endif;
-								// Poll layer.
-						elseif ( isset( $godam_layer['type'] ) && 'poll' === $godam_layer['type'] ) :
-							?>
-							<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
-								<div class="form-container poll-container">
-									<?php
-									$godam_poll_id = ! empty( $godam_layer['poll_id'] ) ? intval( $godam_layer['poll_id'] ) : 0;
-									echo do_shortcode( "[poll id='$godam_poll_id']" );
-									?>
-								</div>
-							</div>
-							<?php
-							// CTA layer.
-						elseif ( isset( $godam_layer['type'] ) && 'cta' === $godam_layer['type'] ) :
-							?>
-							<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
-								<?php if ( 'text' === $godam_layer['cta_type'] ) : ?>
-									<div class="ql-editor easydam-layer--cta-text">
-										<?php echo wp_kses_post( $godam_layer['text'] ); ?>
-									</div>
-								<?php elseif ( 'html' === $godam_layer['cta_type'] && ! empty( $godam_layer['html'] ) ) : ?>
-									<div class="easydam-layer--cta-html">
-										<?php echo wp_kses_post( $godam_layer['html'] ); ?>
-									</div>
-								<?php elseif ( 'image' === $godam_layer['cta_type'] && ! empty( $godam_layer['image'] ) ) : ?>
-									<?php echo wp_kses_post( rtgodam_image_cta_html( $godam_layer ) ); ?>
-								<?php endif; ?>
-							</div>
-							<?php
-							// HOTSPOT layer.
-						elseif ( isset( $godam_layer['type'] ) && 'hotspot' === $godam_layer['type'] ) :
-							?>
-							<div
-								id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>"
-								class="easydam-layer hidden hotspot-layer"
-								<?php
-								if ( ! empty( $godam_layer['bg_color'] ) ) :
-									?>
-									style="background-color: <?php echo esc_attr( $godam_layer['bg_color'] ); ?>"<?php endif; ?>
-							>
-							</div>
-							<?php
-						endif;
-					endforeach;
-					?>
-				<?php endif; ?>
+						endforeach;
+						?>
+					<?php endif; ?>
+				</div>
 			</div>
-		</div>
 
-		<?php if ( $godam_caption && ! empty( $godam_caption ) ) : ?>
-			<figcaption class="wp-element-caption rtgodam-video-caption"><?php echo esc_html( $godam_caption ); ?></figcaption>
-			<?php
-			endif;
-				do_action( 'rtgodam_after_video_html', $attributes, $godam_instance_id, $godam_meta_data );
-		?>
-	</figure>
+			<?php if ( $godam_caption && ! empty( $godam_caption ) ) : ?>
+				<figcaption class="wp-element-caption rtgodam-video-caption"><?php echo esc_html( $godam_caption ); ?></figcaption>
+				<?php
+				endif;
+					do_action( 'rtgodam_after_video_html', $attributes, $godam_instance_id, $godam_meta_data, $godam_settings );
+			?>
+		</figure>
+	</div>
 <?php endif; ?>

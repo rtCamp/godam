@@ -51,18 +51,28 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 	};
 
 	const getPreviewTemplateUrl = ( videoItem ) => {
-		const homeUrl = window?.godamRestRoute?.homeUrl;
-		const videoSlug = window?.godamSettings?.videoPostSettings?.video_slug;
-		const videoName = videoItem?.name;
-		return ( homeUrl && videoSlug && videoName )
-			? `${ homeUrl }/${ videoSlug }/${ videoName }`
-			: videoItem?.link;
+		const homeUrl = window?.godamRestRoute?.homeUrl || window?.location?.origin || '';
+
+		if ( videoItem?.godam_video_permalink ) {
+			return videoItem.godam_video_permalink;
+		}
+
+		if ( videoItem?.godam_video_id ) {
+			return `${ homeUrl }/?post_type=godam-video&p=${ videoItem.godam_video_id }`;
+		}
+
+		return videoItem?.link;
 	};
 
 	// Pre-fetch data on mount to ensure copy always works
 	useEffect( () => {
 		prefetchMediaDataForCopy( item.id );
 	}, [ item.id ] );
+
+	const isFallback = ! item?.image?.src ||
+		item?.image?.src.includes( '.svg' ) ||
+		item?.image?.src.includes( 'no-thumbnail' ) ||
+		item?.image?.src.includes( 'default' );
 
 	return (
 		<div
@@ -81,13 +91,11 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 		>
 			<div className="godam-video-list__video__thumbnail">
 
-				{ item?.image?.src && ! item?.image?.src.includes( '.svg' ) // svg is default image for video.
-					? (
-						<img src={ item?.image?.src } alt="video thumbnail" />
-					) : (
-						<img src={ NoThumbnailImage } alt="video thumbnail" />
-					)
-				}
+				<img
+					src={ isFallback ? NoThumbnailImage : item?.image?.src }
+					alt="video thumbnail"
+					className={ isFallback ? 'no-thumbnail' : '' }
+				/>
 
 				<DropdownMenu
 					className="godam-video-list__video__thumbnail__overlay"
@@ -95,13 +103,13 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 						className: 'godam-video-list__video__thumbnail__overlay__menu',
 					} }
 					controls={ [
-						{
+						...( window?.godamSettings?.videoPostSettings?.allow_single ? [ {
 							icon: <Icon icon={ seen } />,
 							onClick: () => {
 								window.open( getPreviewTemplateUrl( item ), '_blank' );
 							},
 							title: __( 'Preview template', 'godam' ),
-						},
+						} ] : [] ),
 						{
 							icon: <Icon icon={ video } />,
 							onClick: () => {

@@ -40,6 +40,8 @@ class Media_Folders_REST_API {
 	private function setup_hooks() {
 		add_action( 'set_object_terms', array( $this, 'invalidate_attachment_count_cache' ), 10, 4 );
 		add_action( 'delete_term_relationships', array( $this, 'invalidate_attachment_cache_on_delete_relationship' ), 10, 3 );
+		add_action( 'godam_attachment_added', array( $this, 'invalidate_all_attachment_caches' ), 10, 1 );
+		add_action( 'godam_attachment_deleted', array( $this, 'invalidate_all_attachment_caches' ), 10, 1 );
 
 		add_action( 'godam_cleanup_zip', array( $this, 'godam_cleanup_zip_file' ), 10, 1 );
 	}
@@ -102,6 +104,32 @@ class Media_Folders_REST_API {
 		if ( ! empty( $term_ids ) ) {
 			Media_Folder_Utils::get_instance()->invalidate_multiple_attachment_count_cache( $term_ids );
 		}
+	}
+
+	/**
+	 * Invalidate all attachment count caches when a new attachment is added.
+	 *
+	 * This ensures that folder counts are refreshed in the React components
+	 * when new media is uploaded.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param int $attachment_id The ID of the newly added attachment.
+	 */
+	public function invalidate_all_attachment_caches( $attachment_id ) {
+		// Get all media folder terms to invalidate their caches.
+		$folder_terms = wp_get_object_terms(
+			$attachment_id,
+			Media_Folders::SLUG,
+			array( 'fields' => 'ids' )
+		);
+
+		if ( ! is_wp_error( $folder_terms ) && ! empty( $folder_terms ) ) {
+			Media_Folder_Utils::get_instance()->invalidate_multiple_attachment_count_cache( $folder_terms );
+		}
+
+		// Also invalidate the general attachment count (for unorganized files).
+		Media_Folder_Utils::get_instance()->invalidate_attachment_count_cache( -1 );
 	}
 
 	/**

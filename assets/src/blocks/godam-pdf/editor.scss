@@ -1,0 +1,33 @@
+.wp-block-godam-pdf {
+	// Remove the left and right margin the figure is born with.
+	margin-left: 0;
+	margin-right: 0;
+	position: relative;
+
+	.godam-pdf-preview {
+		width: 100%;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		overflow: hidden;
+		background: #f5f5f5;
+
+		embed {
+			display: block;
+		}
+	}
+
+	&.is-transient .godam-pdf-preview {
+		opacity: 0.3;
+	}
+
+	// Shown while PDF is being uploaded
+	.components-spinner {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		margin-top: -9px;
+		margin-left: -9px;
+	}
+}
+
+

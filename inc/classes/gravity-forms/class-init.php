@@ -103,13 +103,25 @@ class Init {
 			/**
 			 * Enqueue script if not already enqueued.
 			 */
+			$godam_recorder_asset_file = RTGODAM_PATH . 'assets/build/js/godam-recorder.min.asset.php';
+			$godam_recorder_asset      = array(
+				'dependencies' => array( 'jquery', 'wp-i18n' ),
+				'version'      => filemtime( RTGODAM_PATH . 'assets/build/js/godam-recorder.min.js' ),
+			);
+
+			if ( file_exists( $godam_recorder_asset_file ) ) {
+				// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+				$godam_recorder_asset = include $godam_recorder_asset_file;
+			}
+
 			wp_enqueue_script(
 				'godam-recorder-script',
 				RTGODAM_URL . 'assets/build/js/godam-recorder.min.js',
-				array( 'jquery' ),
-				filemtime( RTGODAM_PATH . 'assets/build/js/godam-recorder.min.js' ),
+				$godam_recorder_asset['dependencies'],
+				$godam_recorder_asset['version'],
 				true
 			);
+			wp_set_script_translations( 'godam-recorder-script', 'godam', RTGODAM_PATH . 'languages' );
 		}
 	}
 
@@ -146,7 +158,7 @@ class Init {
 
 				<!-- Checkbox-->
 				<div class="field_godam_video_sync <?php echo $valid_godam_license ? '' : 'godam_no_license'; ?>">
-					<input type="checkbox" id="field_godam_video_sync" class="field_godam_video_sync" name="field_godam_video_sync" checked" />
+					<input type="checkbox" id="field_godam_video_sync" class="field_godam_video_sync" name="field_godam_video_sync" checked />
 					<label for="field_godam_video_sync">
 						<?php esc_html_e( 'Sync video', 'godam' ); ?>
 					</label>
@@ -191,6 +203,15 @@ class Init {
 						</label>
 					</div>
 				</div>
+			</li>
+			<li class="godam-video-field-setting field_setting" style="display: none;">
+				<label class="section_label" for="field_godam_max_duration">
+					<?php esc_html_e( 'Max duration (seconds)', 'godam' ); ?>
+				</label>
+				<input type="number" min="1" step="1" id="field_godam_max_duration" name="field_godam_max_duration" value="" />
+				<p class="description">
+					<?php esc_html_e( 'Leave empty to allow any duration. Example: 180 = 3 minutes.', 'godam' ); ?>
+				</p>
 			</li>
 			<?php
 		}

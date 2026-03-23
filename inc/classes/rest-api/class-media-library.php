@@ -303,6 +303,260 @@ class Media_Library extends Base {
 					},
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/generate-image-subsizes-callback',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'generate_image_subsizes_callback' ),
+					'permission_callback' => array( $this, 'verify_callback_permission' ),
+				),
+			),
+		);
+	}
+
+	/**
+	 * Verify callback permission by checking API key.
+	 *
+	 * @since 1.5.0
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return bool|WP_Error True if permission granted, WP_Error otherwise.
+	 */
+	public function verify_callback_permission( $request ) {
+		$event = $request->get_param( 'event' );
+		$data  = $request->get_param( 'data' );
+
+		if ( empty( $data['api_key'] ) ) {
+			return new \WP_Error( 'api_key_required', __( 'API key is required.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		$provided_api_key = $data['api_key'];
+		$stored_api_key   = get_option( 'rtgodam-api-key' );
+
+		if ( ! hash_equals( $stored_api_key, $provided_api_key ) ) {
+			return new \WP_Error( 'forbidden', __( 'Invalid API key.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		if ( 'image_resize' !== $event ) {
+			return new \WP_Error( 'invalid_event', __( 'Invalid event.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		return true;
+	}
+
+	/**
+	 * Update image attachment meta with CDN subsizes.
+	 *
+	 * For virtual images, stores sizes in both `rtgodam_image_sizes` and
+	 * `_wp_attachment_metadata['sizes']`.
+	 *
+	 * For WordPress-uploaded images, stores GoDAM sizes only in
+	 * `rtgodam_image_sizes` and keeps `_wp_attachment_metadata['sizes']`
+	 * untouched.
+	 *
+	 * @since 1.5.0
+	 *
+	 * @param array $sizes         Array of sizes data.
+	 * @param int   $job_id        Job ID.
+	 * @param int   $attachment_id Attachment ID. Default to 0.
+	 *
+	 * @return bool True if successful, false otherwise.
+	 */
+	private function update_image_attachment_meta( $sizes, $job_id, $attachment_id = 0 ) {
+		if ( empty( $sizes ) || ! is_array( $sizes ) ) {
+			return false;
+		}
+
+		if ( empty( $attachment_id ) && empty( $job_id ) ) {
+			return false;
+		}
+
+		if ( empty( $attachment_id ) || ! is_numeric( $attachment_id ) ) {
+			$attachment_id = rtgodam_get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
+		}
+
+		$subsizes = array();
+		foreach ( $sizes as $size ) {
+			$subsizes[] = array(
+				'file'     => $size['url'],
+				'filesize' => $size['file_size'],
+				'width'    => $size['width'],
+				'height'   => $size['height'],
+			);
+		}
+
+		$attachment_meta = get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
+		$is_virtual      = ! empty( get_post_meta( $attachment_id, '_godam_original_id', true ) );
+
+		// Normalize attachment meta to an array with a sizes key.
+		if ( ! is_array( $attachment_meta ) ) {
+			$attachment_meta = array();
+		}
+
+		$rtgodam_image_sizes = array();
+
+		if ( $is_virtual && ( empty( $attachment_meta['sizes'] ) || ! is_array( $attachment_meta['sizes'] ) ) ) {
+			$attachment_meta['sizes'] = array();
+		}
+
+		// Get all registered image sizes (core + theme/plugin-registered additional sizes).
+		$registered_sizes = wp_get_registered_image_subsizes();
+
+		// Build a lookup map for cropped sizes: exact W×H → [size_names].
+		$exact_map = array(); // "width:height" => array of size names (crop=true)
+		foreach ( $registered_sizes as $size_name => $size_data ) {
+			if ( $size_data['crop'] ) {
+				$key                 = $size_data['width'] . ':' . $size_data['height'];
+				$exact_map[ $key ][] = $size_name;
+			}
+		}
+
+		// Map each GoDAM-returned subsize to all matching registered size names.
+		foreach ( $subsizes as $size ) {
+			$sub_width  = (int) $size['width'];
+			$sub_height = (int) $size['height'];
+
+			// 1. Exact W×H match (always correct for cropped sizes).
+			$exact_key     = $sub_width . ':' . $sub_height;
+			$matched_names = isset( $exact_map[ $exact_key ] ) ? $exact_map[ $exact_key ] : array();
+
+			// 2. Bounding-box match for uncropped sizes.
+			// WordPress registered sizes are a max bounding box (width × height), and the
+			// generated size can be smaller when the opposite dimension's constraint is hit
+			// (e.g. a 300×300 max on a portrait image yields 150×300). A width-only map
+			// would miss these cases. Instead, accept a subsize when both dimensions fit
+			// within the registered bounding box, treating 0 as "unlimited".
+			if ( empty( $matched_names ) ) {
+				foreach ( $registered_sizes as $reg_size_name => $reg_size_data ) {
+					// Only consider uncropped sizes — cropped sizes are handled via exact match above.
+					if ( ! empty( $reg_size_data['crop'] ) ) {
+						continue;
+					}
+
+					$reg_width  = (int) $reg_size_data['width'];
+					$reg_height = (int) $reg_size_data['height'];
+
+					$width_fits  = ( 0 === $reg_width ) || ( $sub_width <= $reg_width );
+					$height_fits = ( 0 === $reg_height ) || ( $sub_height <= $reg_height );
+
+					if ( $width_fits && $height_fits ) {
+						$matched_names[] = $reg_size_name;
+					}
+				}
+			}
+
+			if ( empty( $matched_names ) ) {
+				continue;
+			}
+
+			$file_basename = basename( $size['file'] );
+
+			foreach ( $matched_names as $external_size_name ) {
+				$rtgodam_image_sizes[ $external_size_name ] = array(
+					'url'      => esc_url_raw( $size['file'] ),
+					'file'     => $file_basename,
+					'filesize' => $size['filesize'],
+					'width'    => $size['width'],
+					'height'   => $size['height'],
+				);
+
+				// For virtual images, persist CDN sub-sizes in WordPress metadata too.
+				if ( $is_virtual ) {
+					$attachment_meta['sizes'][ $external_size_name ] = array(
+						'file'     => $file_basename,
+						'filesize' => $size['filesize'],
+						'width'    => $size['width'],
+						'height'   => $size['height'],
+					);
+				}
+			}
+		}
+
+		// Ensure top-level width/height exist for srcset calculation, fall back to the largest generated size.
+		if ( ( empty( $attachment_meta['width'] ) || empty( $attachment_meta['height'] ) ) && ! empty( $subsizes ) ) {
+			$largest = array_reduce(
+				$subsizes,
+				function ( $carry, $item ) {
+					if ( null === $carry ) {
+						return $item;
+					}
+					return ( $item['width'] > $carry['width'] ) ? $item : $carry;
+				},
+				null
+			);
+
+			if ( $largest ) {
+				$attachment_meta['width']  = (int) $largest['width'];
+				$attachment_meta['height'] = (int) $largest['height'];
+			}
+		}
+
+		// Backfill the "file" key so WordPress does not bail early while building srcset.
+		if ( empty( $attachment_meta['file'] ) ) {
+			$full_url = wp_get_attachment_url( $attachment_id );
+			if ( $full_url ) {
+				$path                    = wp_parse_url( $full_url, PHP_URL_PATH );
+				$attachment_meta['file'] = ltrim( wp_basename( $path ), '/' );
+			}
+		}
+
+		update_post_meta( $attachment_id, '_wp_attachment_metadata', $attachment_meta );
+		update_post_meta( $attachment_id, 'rtgodam_image_sizes', $rtgodam_image_sizes );
+		return true;
+	}
+
+	/**
+	 * Request image subsizes generation from GoDAM for an image attachment.
+	 *
+	 * @since 1.7.0
+	 *
+	 * @param string $job_id        The GoDAM job ID.
+	 * @param int    $attachment_id The WordPress attachment ID.
+	 * @return bool True if request was successful, false otherwise.
+	 */
+	public function request_image_subsizes_for_attachment( $job_id, $attachment_id ) {
+		return $this->request_image_subsizes_from_godam( $job_id, $attachment_id );
+	}
+
+	/**
+	 * Generate image subsizes callback.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response|WP_Error Success response or WP_Error on invalid event.
+	 *
+	 * @since 1.5.0
+	 */
+	public function generate_image_subsizes_callback( $request ) {
+		$data = $request->get_json_params();
+
+		if ( 'image_resize' !== $data['event'] ) {
+			return rest_ensure_response(
+				array(
+					'success' => false,
+					'message' => __( 'Invalid event.', 'godam' ),
+				)
+			);
+		}
+
+		$job_id = isset( $data['data']['job_id'] ) ? $data['data']['job_id'] : '';
+		$sizes  = isset( $data['data']['resized_images'] ) && is_array( $data['data']['resized_images'] ) ? $data['data']['resized_images'] : array();
+
+		if ( empty( $job_id ) || empty( $sizes ) ) {
+			return new \WP_Error( 'invalid_data', __( 'job_id and resized_images are required.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		$result = $this->update_image_attachment_meta( $sizes, $job_id );
+
+		if ( ! $result ) {
+			return new \WP_Error( 'update_failed', __( 'Failed to update attachment metadata.', 'godam' ), array( 'status' => 500 ) );
+		}
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => __( 'Image subsizes successfully generated.', 'godam' ),
+			)
 		);
 	}
 
@@ -542,6 +796,8 @@ class Media_Library extends Base {
 		}
 
 		$custom_thumbnails = get_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', true );
+		$custom_thumbnails = rtgodam_convert_to_https_url( $custom_thumbnails );
+		$thumbnail_array   = rtgodam_convert_to_https_url( $thumbnail_array );
 
 		if ( ! is_array( $thumbnail_array ) ) {
 			return new \WP_Error( 'thumbnails_not_found', __( 'No thumbnails found.', 'godam' ), array( 'status' => 204 ) );
@@ -575,8 +831,8 @@ class Media_Library extends Base {
 			$custom_thumbnails = array();
 		}
 
-
 		$selected_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
+		$selected_thumbnail = rtgodam_convert_to_https_url( $selected_thumbnail );
 
 		// Ensure selected thumbnail is valid. Fallback if not in either array.
 		if (
@@ -659,7 +915,6 @@ class Media_Library extends Base {
 			);
 		}
 
-
 		// Add new custom thumbnail at beginning and remove duplicates.
 		if ( ! in_array( $thumbnail_url, $existing_thumbnails, true ) ) {
 			array_unshift( $existing_thumbnails, $thumbnail_url );
@@ -703,6 +958,8 @@ class Media_Library extends Base {
 
 		// Get current custom thumbnails.
 		$custom_thumbnails = get_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', true );
+		$custom_thumbnails = rtgodam_convert_to_https_url( $custom_thumbnails );
+		$thumbnail_url     = rtgodam_convert_to_https_url( $thumbnail_url );
 
 		if ( ! is_array( $custom_thumbnails ) || ! in_array( $thumbnail_url, $custom_thumbnails, true ) ) {
 			return new \WP_Error( 'thumbnail_not_found', __( 'Custom thumbnail not found.', 'godam' ), array( 'status' => 404 ) );
@@ -1086,9 +1343,12 @@ class Media_Library extends Base {
 		$type     = $request->get_param( 'type' ) ?? 'all';
 		$search   = $request->get_param( 'search' );
 
-		// For now, we hardcode total count as 20 for all types till we get the API endpoint ready.
-		$total     = 'video' === $type ? 20 : ( 'audio' === $type ? 20 : 20 );
-		$all_items = array();
+		// Pagination defaults for backward compatibility when upstream values are unavailable.
+		$total        = 0;
+		$total_pages  = 0;
+		$current_page = $page;
+		$all_items    = array();
+		$has_more     = false;
 
 		// Retrieve the GoDAM API key stored in WordPress options.
 		$api_key = get_option( 'rtgodam-api-key', '' );
@@ -1108,7 +1368,9 @@ class Media_Library extends Base {
 			// For video, GoDAM expects `job_type=stream`.
 			if ( 'video' === $type ) {
 				$request_body['job_type'] = 'stream';
-			} elseif ( 'image-video' !== $type && 'all' !== $type ) {
+			} elseif ( 'application/pdf' === $type ) { // For application/pdf, GoDAM expects `job_type=pdf`.
+				$request_body['job_type'] = 'pdf';
+			} elseif ( 'image-video' !== $type && 'all' !== $type ) { // TODO: For job type 'image-video', we need to add support on Central.
 				$request_body['job_type'] = $type;
 			}
 
@@ -1162,16 +1424,20 @@ class Media_Library extends Base {
 
 			$body = json_decode( wp_remote_retrieve_body( $response ) );
 
-			if ( empty( $body->message->files ) || ! is_array( $body->message->files ) ) {
+			if ( ! isset( $body->message->files ) || ! is_array( $body->message->files ) ) {
 				return rest_ensure_response(
 					array(
 						'success' => false,
-						'message' => __( 'Unexpected API response format or no files found.', 'godam' ),
+						'message' => __( 'Unexpected API response format.', 'godam' ),
 					)
 				);
 			}
 
-			$response = $body->message->files;
+			$response     = $body->message->files;
+			$total        = isset( $body->message->total_count ) ? absint( $body->message->total_count ) : 0;
+			$total_pages  = isset( $body->message->total_pages ) ? absint( $body->message->total_pages ) : 0;
+			$current_page = isset( $body->message->current_page ) ? max( 1, absint( $body->message->current_page ) ) : $page;
+			$has_more     = isset( $body->message->has_more ) ? (bool) $body->message->has_more : ( $total_pages > 0 ? $current_page < $total_pages : false );
 
 			$all_items = array();
 
@@ -1181,7 +1447,7 @@ class Media_Library extends Base {
 				/**
 				 * For audio type, ensure that meta keys for artist and album exist.
 				 *
-				 * Note - This is a temporary fix till API starts sending the meta fields as well.
+				 * Note - This is a temporary fix till API starts sending the meta fields either.
 				 */
 				if ( 'audio' === $type ) {
 					$all_items[ $key ]['meta']           = isset( $all_items[ $key ]['meta'] ) ? $all_items[ $key ]['meta'] : array();
@@ -1194,14 +1460,17 @@ class Media_Library extends Base {
 		// Return a REST response with pagination and status details.
 		return rest_ensure_response(
 			array(
-				'success'     => true,
-				'message'     => __( 'Filtered GoDAM files by MIME type.', 'godam' ),
-				'data'        => array_values( $all_items ),
-				'total_items' => $total,
-				'mime_type'   => $type,
-				'page'        => $page,
-				'per_page'    => $per_page,
-				'has_more'    => $body->message->has_more,
+				'success'      => true,
+				'message'      => __( 'Filtered GoDAM files by MIME type.', 'godam' ),
+				'data'         => array_values( $all_items ),
+				'total_items'  => $total,
+				'total_count'  => $total,
+				'total_pages'  => $total_pages,
+				'current_page' => $current_page,
+				'mime_type'    => $type,
+				'page'         => $page,
+				'per_page'     => $per_page,
+				'has_more'     => $has_more,
 			)
 		);
 	}
@@ -1223,6 +1492,11 @@ class Media_Library extends Base {
 		// Validate required fields.
 		if ( empty( $data['id'] ) || empty( $data['title'] ) || empty( $data['url'] ) || empty( $data['mime'] ) ) {
 			return new \WP_Error( 'missing_params', __( 'Required fields are missing.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		// Validate MIME type against an allowed pattern to prevent stored XSS.
+		if ( ! preg_match( '/^(video|audio|image)\/[a-z0-9][a-z0-9!#$&\-^_.+]{0,126}$/i', $data['mime'] ) ) {
+			return new \WP_Error( 'invalid_mime', __( 'Invalid or disallowed MIME type.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		// Sanitize the GoDAM ID.
@@ -1272,6 +1546,7 @@ class Media_Library extends Base {
 		// Prepare post data for the virtual media entry.
 		$attachment = array(
 			'post_title'     => sanitize_text_field( $data['title'] ),
+			'post_content'   => sanitize_textarea_field( $data['description'] ?? '' ),
 			'post_mime_type' => sanitize_text_field( $data['mime'] ),
 			'post_type'      => 'attachment',
 			'post_status'    => 'inherit',
@@ -1305,15 +1580,76 @@ class Media_Library extends Base {
 
 		// Set custom metadata to track GoDAM-related properties.
 		update_post_meta( $attach_id, '_godam_original_id', $godam_id );
-		update_post_meta( $attach_id, '_godam_icon', esc_url_raw( $data['icon'] ?? '' ) );
-		update_post_meta( $attach_id, '_filesize_human', sanitize_text_field( $data['filesizeHumanReadable'] ?? '' ) );
-		update_post_meta( $attach_id, '_godam_label', sanitize_text_field( $data['label'] ?? '' ) );
 		update_post_meta( $attach_id, '_owner_email', sanitize_email( $data['owner'] ?? '' ) );
 		update_post_meta( $attach_id, 'rtgodam_transcoded_url', esc_url_raw( $data['mpd_url'] ?? '' ) );
 		update_post_meta( $attach_id, 'rtgodam_transcoding_status', 'transcoded' );
-		update_post_meta( $attach_id, 'icon', $data['icon'] );
-		update_post_meta( $attach_id, 'rtgodam_hls_transcoded_url', esc_url_raw( $data['hls_url'] ?? '' ) );
 		update_post_meta( $attach_id, 'rtgodam_transcoding_job_id', $godam_id );
+		update_post_meta( $attach_id, '_wp_attached_file', sanitize_text_field( $data['filename'] ) ); // Virtual media path.
+
+		$video_duration_in_seconds = 0;
+		$video_duration_formatted  = '';
+		if ( isset( $data['video_duration'] ) && ! empty( $data['video_duration'] ) ) {
+			// Convert into number of seconds.
+			$video_duration_in_seconds = is_numeric( $data['video_duration'] ) ? (int) $data['video_duration'] : 0;
+			// Convert into formatted i:s.
+			$video_duration_formatted = gmdate( 'i:s', $video_duration_in_seconds );
+		}
+
+		if ( 'video' === $data['type'] ) {
+			update_post_meta( $attach_id, 'rtgodam_hls_transcoded_url', esc_url_raw( $data['hls_url'] ?? '' ) );
+
+			$wp_attachment_metadata = array(
+				'filesize' => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,
+			);
+
+			if ( ! empty( $video_duration_in_seconds ) ) {
+				update_post_meta( $attach_id, '_video_duration', $video_duration_in_seconds );
+				$wp_attachment_metadata['length']           = $video_duration_in_seconds;
+				$wp_attachment_metadata['length_formatted'] = $video_duration_formatted;
+			}
+
+			// Set Video thumbnail from icon URL if provided.
+			if ( ! empty( $data['icon'] ) ) {
+				update_post_meta( $attach_id, 'rtgodam_media_video_thumbnail', esc_url_raw( $data['icon'] ) );
+			}
+
+			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
+		} elseif ( 'image' === $data['type'] ) {
+			// Initialize metadata with basic info.
+			$wp_attachment_metadata = array(
+				'filesize' => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,
+				'sizes'    => array(),
+			);
+
+			// Add width and height if available.
+			if ( ! empty( $data['width'] ) && ! empty( $data['height'] ) ) {
+				$wp_attachment_metadata['width']  = (int) $data['width'];
+				$wp_attachment_metadata['height'] = (int) $data['height'];
+			}
+
+			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
+
+			// Request image subsizes from GoDAM Central.
+			$this->request_image_subsizes_from_godam( $godam_id, $attach_id );
+		} elseif ( 'audio' === $data['type'] ) {
+			$wp_attachment_metadata = array(
+				'filesize'  => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,
+				'mime_type' => $data['mime'],
+			);
+
+			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
+		} elseif ( 'pdf' === $data['type'] ) {
+			$wp_attachment_metadata = array(
+				'filesize' => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,
+			);
+
+			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
+
+			// Set PDF thumbnail from icon URL if provided.
+			if ( ! empty( $data['icon'] ) ) {
+				update_post_meta( $attach_id, 'rtgodam_media_pdf_thumbnail', esc_url_raw( $data['icon'] ) );
+			}
+		}
 
 		// Return the newly created media object.
 		return new \WP_REST_Response(
@@ -1376,7 +1712,7 @@ class Media_Library extends Base {
 	}
 
 	/**
-	 * Get the number of items in a media folder by id.
+	 * Get the number of items in a media folder by id with mime type filtering support.
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response|\WP_Error
@@ -1411,6 +1747,23 @@ class Media_Library extends Base {
 			'no_found_rows'  => false,
 			'tax_query'      => $tax_query, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 		);
+
+		// Add mime type filtering if available.
+		$mime_type_filter = Media_Folder_Utils::get_instance()->get_current_mime_type_filter();
+
+		if ( $mime_type_filter ) {
+			if ( is_array( $mime_type_filter ) ) {
+				$args['post_mime_type'] = $mime_type_filter;
+			} elseif ( 'image/' === $mime_type_filter ) {
+				$args['post_mime_type'] = 'image';
+			} elseif ( 'video/' === $mime_type_filter ) {
+				$args['post_mime_type'] = 'video';
+			} elseif ( 'audio/' === $mime_type_filter ) {
+				$args['post_mime_type'] = 'audio';
+			} else {
+				$args['post_mime_type'] = $mime_type_filter;
+			}
+		}
 
 		$query = new \WP_Query( $args );
 
@@ -1596,6 +1949,9 @@ class Media_Library extends Base {
 			$locked   = ( '1' === $locked_raw || 1 === $locked_raw || true === $locked_raw || 'true' === $locked_raw ) ? true : false;
 			$bookmark = ( '1' === $bookmark_raw || 1 === $bookmark_raw || true === $bookmark_raw || 'true' === $bookmark_raw ) ? true : false;
 
+			// Get current mime type filter to return filtered counts.
+			$mime_type_filter = Media_Folder_Utils::get_instance()->get_current_mime_type_filter();
+
 			$prepared[] = array(
 				'id'              => $term->term_id,
 				'name'            => $term->name,
@@ -1604,10 +1960,138 @@ class Media_Library extends Base {
 					'locked'   => $locked,
 					'bookmark' => $bookmark,
 				),
-				'attachmentCount' => (int) Media_Folder_Utils::get_instance()->get_attachment_count( $term->term_id ),
+				'attachmentCount' => (int) Media_Folder_Utils::get_instance()->get_attachment_count( $term->term_id, false, $mime_type_filter ),
 			);
 		}
 
 		return $prepared;
+	}
+
+	/**
+	 * Request image subsizes generation from GoDAM Central.
+	 *
+	 * Sends a request to GoDAM Central API to generate image subsizes based on
+	 * all registered WordPress image subsizes (core, theme, and plugin). The API endpoint
+	 * should accept:
+	 * - job_id: The GoDAM file ID
+	 * - api_key: The GoDAM API key
+	 * - sizes_data: Array of size requests with width, height, crop
+	 * - events_callback_url: The URL to send events to.
+	 *
+	 * @since 1.5.0
+	 *
+	 * @param string $job_id        The GoDAM job ID.
+	 * @param int    $attachment_id The WordPress attachment ID.
+	 * @return bool True if request was successful, false otherwise.
+	 */
+	private function request_image_subsizes_from_godam( $job_id, $attachment_id ) {
+		$api_key = get_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $api_key ) ) {
+			return false;
+		}
+
+		// Get all registered image subsizes from WordPress.
+		$registered_sizes = wp_get_registered_image_subsizes();
+
+		if ( empty( $registered_sizes ) ) {
+			return false;
+		}
+
+		// Prepare size requests for GoDAM Central.
+		// Only add the 100x100 crop fallback when no equivalent registered size already covers it.
+		$size_requests    = array();
+		$has_100x100_crop = false;
+		foreach ( $registered_sizes as $size_name => $size_data ) {
+			// Skip cropped sizes that are missing a width or height — GoDAM requires both dimensions to crop.
+			if ( $size_data['crop'] && ( empty( $size_data['width'] ) || empty( $size_data['height'] ) ) ) {
+				continue;
+			}
+
+			// Normalize crop to boolean — WordPress allows array values like ['left','top']
+			// for position-based cropping; GoDAM expects a plain boolean.
+			$crop_bool = (bool) $size_data['crop'];
+
+			$size_requests[] = array(
+				'width'  => $size_data['width'],
+				'height' => $size_data['height'],
+				'crop'   => $crop_bool,
+			);
+
+			if ( 100 === (int) $size_data['width'] && 100 === (int) $size_data['height'] && $crop_bool ) {
+				$has_100x100_crop = true;
+			}
+		}
+
+		// Add the 100x100 crop fallback only when no equivalent registered size exists.
+		// This size is commonly used in the Media Library list view for thumbnails.
+		if ( ! $has_100x100_crop ) {
+			$size_requests[] = array(
+				'width'  => 100,
+				'height' => 100,
+				'crop'   => true,
+			);
+		}
+
+		// Remove duplicate size entries.
+		$size_requests = array_values(
+			array_unique( $size_requests, SORT_REGULAR )
+		);
+
+		// Construct the GoDAM API endpoint URL.
+		$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.image.generate_resized_images';
+
+		$events_callback_url = rest_url( 'godam/v1/media-library/generate-image-subsizes-callback' );
+
+		// Prepare request body.
+		$request_body = array(
+			'job_id'              => $job_id,
+			'api_key'             => $api_key,
+			'sizes_data'          => $size_requests,
+			'events_callback_url' => $events_callback_url,
+		);
+
+		$args = array(
+			'body'    => wp_json_encode( $request_body ),
+			'headers' => array(
+				'Content-Type' => 'application/json',
+			),
+		);
+
+		// Use vip_safe_wp_remote_post as primary and wp_safe_remote_post as fallback.
+		if ( function_exists( 'vip_safe_wp_remote_post' ) ) {
+			$response = vip_safe_wp_remote_post( $api_url, $args, 3, 3 );
+		} else {
+			$response = wp_safe_remote_post( $api_url, $args );
+		}
+
+		// Check for WP_Error or non-200 status codes.
+		if ( is_wp_error( $response ) ) {
+			return false;
+		}
+
+		$response_code = wp_remote_retrieve_response_code( $response );
+
+		if ( 200 !== $response_code ) {
+			return false;
+		}
+
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( empty( $body ) || ! is_array( $body ) ) {
+			return false;
+		}
+
+		$body = isset( $body['message'] ) && ! empty( $body['message'] ) ? $body['message'] : array();
+
+		if ( ! isset( $body['message'] ) ) {
+			return false;
+		}
+
+		if ( 'sizes_exist' === $body['message'] && isset( $body['sizes'] ) && is_array( $body['sizes'] ) ) {
+			return $this->update_image_attachment_meta( $body['sizes'], $job_id, $attachment_id );
+		}
+
+		return true;
 	}
 }

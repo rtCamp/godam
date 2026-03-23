@@ -60,35 +60,78 @@ const SingleMetrics = ( {
 			return;
 		}
 
+		// Function to ensure all 7 days are present
+		const ensureAll7Days = ( dataArray ) => {
+			// Get today's date at midnight in local timezone
+			const now = new Date();
+			const today = new Date( now.getFullYear(), now.getMonth(), now.getDate() );
+
+			// Create an array of all dates for the last 7 days (including today)
+			const last7Days = [];
+			for ( let i = 6; i >= 0; i-- ) {
+				const date = new Date( today );
+				date.setDate( today.getDate() - i );
+				// Format as YYYY-MM-DD in local timezone
+				const year = date.getFullYear();
+				const month = String( date.getMonth() + 1 ).padStart( 2, '0' );
+				const day = String( date.getDate() ).padStart( 2, '0' );
+				const dateStr = `${ year }-${ month }-${ day }`;
+				last7Days.push( dateStr );
+			}
+
+			// Create a map of existing data
+			const dataMap = {};
+			dataArray.forEach( ( d ) => {
+				dataMap[ d.date ] = d;
+			} );
+
+			// Fill in missing days with zero values
+			return last7Days.map( ( dateStr ) => {
+				if ( dataMap[ dateStr ] ) {
+					return dataMap[ dateStr ];
+				}
+				return {
+					date: dateStr,
+					engagement_rate: 0,
+					play_rate: 0,
+					watch_time: 0,
+					plays: 0,
+					total_videos: 0,
+				};
+			} );
+		};
+
 		let finalHistoryArray = [];
 
 		if ( mode === 'analytics' ) {
-			finalHistoryArray = processedAnalyticsHistory.map( ( history ) => {
+			const mappedData = processedAnalyticsHistory.map( ( history ) => {
 				return {
 					date: history.date,
-					engagement_rate: calculateEngagementRate(
+					engagement_rate: parseFloat( calculateEngagementRate(
 						history.plays,
 						history.video_length,
 						history.play_time,
-					),
-					play_rate: calculatePlayRate( history.page_load, history.plays ),
-					plays: history.plays.toFixed( 2 ),
-					watch_time: history.play_time,
+					) ) || 0,
+					play_rate: parseFloat( calculatePlayRate( history.page_load, history.plays ) ) || 0,
+					plays: parseFloat( history.plays ) || 0,
+					watch_time: parseFloat( history.play_time ) || 0,
 				};
 			} );
+			finalHistoryArray = ensureAll7Days( mappedData );
 		} else if ( mode === 'dashboard' ) {
-			finalHistoryArray = processedAnalyticsHistory.map( ( history ) => {
+			const mappedData = processedAnalyticsHistory.map( ( history ) => {
 				return {
 					date: history.date,
-					engagement_rate: history.avg_engagement || 0,
+					engagement_rate: parseFloat( history.avg_engagement ) || 0,
 					play_rate: history.play_rate
-						? parseFloat( history.play_rate * 100 ).toFixed( 2 )
+						? parseFloat( history.play_rate * 100 )
 						: 0,
-					plays: history.plays.toFixed( 2 ),
-					watch_time: history.watch_time,
-					total_videos: history.total_videos ?? 0,
+					plays: parseFloat( history.plays ) || 0,
+					watch_time: parseFloat( history.watch_time ) || 0,
+					total_videos: parseInt( history.total_videos ) || 0,
 				};
 			} );
+			finalHistoryArray = ensureAll7Days( mappedData );
 		}
 
 		const config = chartConfigMap[ metricType ];
@@ -97,13 +140,32 @@ const SingleMetrics = ( {
 			let trendChange = 0;
 			let trendPercentage = 0;
 
-			if ( finalHistoryArray.length >= 2 ) {
-				const last = parseFloat( finalHistoryArray[ 0 ][ config.key ] );
-				const first = parseFloat( finalHistoryArray[ finalHistoryArray.length - 1 ][ config.key ] );
+			// Ensure we have the data sorted by date (oldest to newest)
+			const sortedData = [ ...finalHistoryArray ].sort( ( a, b ) => {
+				return new Date( a.date ) - new Date( b.date );
+			} );
 
-				if ( ! isNaN( first ) && first !== 0 ) {
+			if ( sortedData.length >= 2 ) {
+				// First day is the oldest, last day is the most recent
+				const first = parseFloat( sortedData[ 0 ][ config.key ] );
+				const last = parseFloat( sortedData[ sortedData.length - 1 ][ config.key ] );
+				if ( ! isNaN( first ) && ! isNaN( last ) ) {
 					trendChange = last - first;
 					trendPercentage = ( trendChange / first ) * 100;
+
+					// Handle the case when first value is 0
+					if ( first === 0 ) {
+						// If first is 0 and last is > 0, show 100% increase
+						// If first is 0 and last is 0, show 0% change
+						// If first is 0 and last is < 0 (shouldn't happen but just in case), show negative
+						if ( last > 0 ) {
+							trendPercentage = 100;
+						} else if ( last < 0 ) {
+							trendPercentage = -100;
+						} else {
+							trendPercentage = 0;
+						}
+					}
 				}
 			}
 
@@ -113,14 +175,16 @@ const SingleMetrics = ( {
 				const rounded = Math.abs( trendPercentage ).toFixed( 2 );
 				const prefix = trendPercentage >= 0 ? '+' : '-';
 				changeEl.innerText = `${ prefix }${ rounded }%`;
+				// Remove existing classes first
+				changeEl.classList.remove( 'change-rise', 'change-drop' );
 				changeEl.classList.add( trendPercentage >= 0 ? 'change-rise' : 'change-drop' );
 			}
 
 			singleMetricsChart(
-				finalHistoryArray,
+				sortedData,
 				config.id,
 				config.key,
-				Math.min( 7, finalHistoryArray.length ), // Cap to available data
+				7, // Always show last 7 days
 				trendPercentage,
 			);
 		}

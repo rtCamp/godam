@@ -93,6 +93,15 @@ class Ads extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function get_ad_tag_url( $request ) {
+		// Ads are a premium feature — require a valid API key.
+		if ( ! rtgodam_is_api_key_valid() ) {
+			return new \WP_Error(
+				'rest_forbidden',
+				__( 'Ads layer is a premium feature. Please activate your API key to use it.', 'godam' ),
+				array( 'status' => 403 )
+			);
+		}
+
 		// Retrieve and sanitize input parameters.
 		$display_time = intval( $request->get_param( 'display_time' ) );
 		$ad_duration  = intval( $request->get_param( 'duration' ) );
@@ -103,6 +112,13 @@ class Ads extends Base {
 		$click_link   = esc_url( $request->get_param( 'click_link' ) ?? '' );
 		$use_vmap     = rest_sanitize_boolean( $request->get_param( 'use_vmap' ) ?? false );
 		
+		// Ad skip feature will not work for ads with duration 0.
+		// Add fallback to set ad duration if skippable is true.
+		// When $ad_duration is 0, and the ad is skippable, set ad duration to skip_offset + 5 seconds.
+		if ( $skippable && $skip_offset > 0 && $ad_duration <= 0 ) {
+			$ad_duration = max( $skip_offset + 5, 10 ); // Ensure ad duration is at least skip_offset + 5 seconds, minimum 10 seconds.
+		}
+
 		// convert ad duration to HH:MM:SS format.  e.g. 16 seconds = 00:00:16.
 		$display_time = gmdate( 'H:i:s', $display_time );
 		$ad_duration  = gmdate( 'H:i:s', $ad_duration );
@@ -190,6 +206,15 @@ class Ads extends Base {
 	 */
 	public function get_video_ad_tag_url( $request ) {
 
+		// Ads are a premium feature — require a valid API key.
+		if ( ! rtgodam_is_api_key_valid() ) {
+			return new \WP_Error(
+				'rest_forbidden',
+				__( 'Ads layer is a premium feature. Please activate your API key to use it.', 'godam' ),
+				array( 'status' => 403 )
+			);
+		}
+
 		$video_id = $request->get_param( 'id' );
 		$video_id = intval( $video_id );
 
@@ -231,7 +256,7 @@ class Ads extends Base {
 				foreach ( $ads_layers as $layer ) :
 					// Current endpoint URL.
 					$display_time = intval( $layer['displayTime'] ?? 0 );
-					$ad_duration  = intval( $layer['duration'] ?? 0 );
+					$ad_duration  = intval( $layer['ad_duration'] ?? $layer['duration'] ?? 0 );
 					$ad_title     = $layer['title'] ?? '';
 					$skippable    = $layer['skippable'] ?? false;
 					$skip_offset  = intval( $layer['skip_offset'] ?? 0 );

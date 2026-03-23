@@ -12,13 +12,59 @@
 import { getQuery } from '../utility.js';
 
 const l10n = wp?.media?.view?.l10n;
+const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
+
+/**
+ * Check if the current frame is a featured image context.
+ *
+ * Note: This will not cover the media modal opened from the core feature image block.
+ *
+ * @since 1.4.8
+ *
+ * @param {wp.media.view.MediaFrame} frame
+ * @return {boolean} True if featured image context, false otherwise.
+ */
+const checkIfFeatureImage = ( frame ) => {
+	// Check if this is a featured image context.
+	if ( frame && frame.state && frame.state() ) {
+		const state = frame.state();
+		const stateId = state.id || '';
+
+		// Featured image context
+		if ( stateId === 'featured-image' || frame.id === 'featured-image' ) {
+			return true;
+		}
+	}
+
+	return false;
+};
+
+/**
+ * Check if the current frame is an analytics context.
+ *
+ * @since 1.6.0
+ *
+ * @param {wp.media.view.MediaFrame} frame
+ * @return {boolean} True if analytics context, false otherwise.
+ */
+const checkIfAnalyticsContext = ( frame ) => {
+	// Check if this frame was opened from the Analytics page
+	if ( frame && frame.options && frame.options.godamAnalyticsContext === true ) {
+		return true;
+	}
+
+	return false;
+};
 
 /**
  * Shared object containing GoDAM-specific media frame functionality
  */
 const GoDAMMediaFrameShared = {
 	browseRouter( routerView ) {
-		if ( window.godamTabCallback && window.godamTabCallback.validAPIKey ) {
+		const isFeatureImage = checkIfFeatureImage( this );
+		const isAnalyticsContext = checkIfAnalyticsContext( this );
+
+		if ( window.godamTabCallback && window.godamTabCallback.validAPIKey && ! isFeatureImage && ! isAnalyticsContext ) {
 			routerView.set( {
 				upload: {
 					text: l10n.uploadFilesTitle,
@@ -60,6 +106,14 @@ const GoDAMMediaFrameShared = {
 
 		this.$el.removeClass( 'hide-toolbar' );
 
+		// Clear the GoDAM query cache each time the tab is activated so that
+		// subsequent visits always start a fresh query (page 1, _hasMore=true).
+		// Without this, stale cached queries with _hasMore=false would prevent
+		// the Load More button from appearing on re-opened GoDAM tab sessions.
+		if ( wp?.media?.godamQuery?.clearCache ) {
+			wp.media.godamQuery.clearCache();
+		}
+
 		// Browse our library of attachments.
 		const RenderedContent = new wp.media.view.AttachmentsBrowser( {
 			controller: this,
@@ -71,10 +125,8 @@ const GoDAMMediaFrameShared = {
 		this.content.set( RenderedContent );
 
 		// Attaches callback to create attachment entry in WordPress for GoDAM Video.
-		if ( 'video' === mimeTypes ) {
-			state.off( 'select', this.onGoDAMSelect, this );
-			state.on( 'select', this.onGoDAMSelect, this );
-		}
+		state.off( 'select', this.onGoDAMSelect, this );
+		state.on( 'select', this.onGoDAMSelect, this );
 	},
 
 	onGoDAMSelect() {
@@ -89,8 +141,8 @@ const GoDAMMediaFrameShared = {
 		const selected = selection?.first();
 		const data = selected.attributes;
 
-		// API call to website to create the attachment.
-		fetch( '/wp-json/godam/v1/media-library/create-media-entry', {
+		// API call to website to create the attachment in the current site context.
+		fetch( window.pathJoin( [ restURL, '/godam/v1/media-library/create-media-entry' ] ), {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -104,7 +156,7 @@ const GoDAMMediaFrameShared = {
 				url: data.url,
 				hls_url: data.hls_url,
 				mpd_url: data.mpd_url,
-				mime: 'video/mp4',
+				mime: data.mime,
 				type: data.type,
 				subtype: data.subtype,
 				status: data.status,
@@ -115,8 +167,10 @@ const GoDAMMediaFrameShared = {
 				owner: data.owner,
 				label: data.label,
 				icon: data.icon,
+				thumbnail_url: data.thumbnail_url,
 				caption: data.caption,
 				description: data.description,
+				video_duration: data.video_duration || 0,
 			} ),
 		} )
 			.then( ( res ) => res.json() )
@@ -130,6 +184,10 @@ const GoDAMMediaFrameShared = {
 					} );
 
 					document.dispatchEvent( event );
+
+					// Also trigger count refresh for React components
+					const countRefreshEvent = new CustomEvent( 'godam-attachment-browser:changed' );
+					document.dispatchEvent( countRefreshEvent );
 				}
 			} );
 	},

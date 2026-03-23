@@ -51,6 +51,9 @@ class Media_Tracker {
 
 		// Check if the attachment is a video.
 		update_option( 'rtgodam_new_attachment', $attachment_data, '', true );
+
+		// Trigger cache invalidation for attachment counts in folders.
+		do_action( 'godam_attachment_added', $attachment_id );
 	}
 
 	/**
@@ -65,6 +68,9 @@ class Media_Tracker {
 		if ( ! empty( $attachment_data ) && $attachment_data['attachment_id'] === $attachment_id ) {
 			delete_option( 'rtgodam_new_attachment' );
 		}
+
+		// Trigger cache invalidation for attachment counts in folders when deleted.
+		do_action( 'godam_attachment_deleted', $attachment_id );
 	}
 
 	/**

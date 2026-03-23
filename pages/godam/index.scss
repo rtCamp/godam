@@ -131,6 +131,7 @@ $settings-page-breakpoint: 782px;
 		&__container {
 			padding: 2rem 20px;
 			max-width: 1440px;
+			margin: 0 auto;
 			display: flex;
 			justify-content: space-between;
 			gap: 2em;
@@ -157,13 +158,17 @@ $settings-page-breakpoint: 782px;
 					background: $settings-page-color-white;
 					padding: 1rem;
 					box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-					transform: translateX(-100%);
+					transform: translateX(-120%);
 					overflow: auto;
 					transition: transform 0.3s ease-in-out;
 					z-index: 99999;
 
 					&.open {
 						transform: translateX(0);
+
+						&.is-safari {
+							transform: translateX(-10px);
+						}
 					}
 				}
 
@@ -238,8 +243,12 @@ $settings-page-breakpoint: 782px;
 	.invalid-api-key {
 
 		input {
-			border-color: #fb2c36;
+			border-color: #fb2c36 !important;
 		}
+	}
+
+	span.invalid-api-key {
+		color: #fb2c36;
 	}
 
 	input[type="number"] {
@@ -260,6 +269,22 @@ $settings-page-breakpoint: 782px;
 
 			@apply bg-gray-50;
 		}
+	}
+
+	.godam-pro-badge {
+		display: inline-block;
+		margin-left: 0.25rem;
+		padding: 0.1rem 0.4rem;
+		font-size: 0.6rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: #fff;
+		background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
+		border-radius: 0.25rem;
+		vertical-align: middle;
+		line-height: 1.5;
+		white-space: nowrap;
 	}
 
 	// Circular progress bar

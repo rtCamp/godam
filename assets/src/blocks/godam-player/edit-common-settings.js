@@ -26,6 +26,8 @@ const options = [
 const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false } ) => {
 	const { autoplay, controls, loop, muted, preload, showShareButton, engagements } =
 	attributes;
+	const showEngagementSetting = window?.godamSettings?.enableGlobalVideoEngagement ?? false;
+	const showShareButtonSetting = window?.godamSettings?.enableGlobalVideoShare ?? false;
 
 	// Show a specific help for autoplay setting.
 	const getAutoplayHelp = useMemo( () => {
@@ -44,14 +46,6 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 
 		return null;
 	}, [ autoplay, muted ] );
-
-	const getShowShareButtonHelp = useMemo( () => {
-		if ( ! showShareButton ) {
-			return __( 'Removes the share button from the video player.', 'godam' );
-		}
-
-		return null;
-	}, [ showShareButton ] );
 
 	const toggleFactory = useMemo( () => {
 		const toggleAttribute = ( attribute ) => {
@@ -110,13 +104,17 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 				onChange={ toggleFactory.controls }
 				checked={ !! controls }
 			/>
-			<ToggleControl
-				__nextHasNoMarginBottom
-				label={ __( 'Share Button', 'godam' ) }
-				onChange={ toggleFactory.showShareButton }
-				checked={ !! showShareButton }
-				help={ getShowShareButtonHelp }
-			/>
+			{
+				showShareButtonSetting && (
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ __( 'Share Button', 'godam' ) }
+						onChange={ toggleFactory.showShareButton }
+						checked={ !! showShareButton }
+						help={ __( 'Adds a share button on the video player for transcoded videos', 'godam' ) }
+					/>
+				)
+			}
 			{ ! isInsideQueryLoop && (
 				<SelectControl
 					__next40pxDefaultSize
@@ -128,13 +126,17 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 					hideCancelButton
 				/>
 			) }
-			<ToggleControl
-				__nextHasNoMarginBottom
-				label={ __( 'Enable Likes & Comments', 'godam' ) }
-				onChange={ toggleFactory.engagements }
-				checked={ !! engagements }
-				help={ __( 'Engagement will only be visible for transcoded videos', 'godam' ) }
-			/>
+			{
+				showEngagementSetting && (
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ __( 'Enable Likes & Comments', 'godam' ) }
+						onChange={ toggleFactory.engagements }
+						checked={ !! engagements }
+						help={ __( 'Engagement will only be visible for transcoded videos', 'godam' ) }
+					/>
+				)
+			}
 		</>
 	);
 };

@@ -8,14 +8,14 @@ import { registerBlockType } from '@wordpress/blocks';
  */
 import edit from './edit';
 import metadata from './block.json';
-import { ReactComponent as icon } from '../../images/godam-gallery-filled.svg';
+import icon from '../../images/godam-gallery-filled.svg';
 
 /**
  * Register the block
  */
 registerBlockType( metadata.name, {
 	...metadata,
-	icon,
+	icon: <img src={ icon } alt="GoDAM Gallery Block icon" />,
 	edit,
 	save: () => null, // Dynamic block, so save returns null
 } );

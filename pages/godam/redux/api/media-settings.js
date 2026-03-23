@@ -3,7 +3,7 @@
  */
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const restURL = window.godamRestRoute.url || '';
+const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
 export const generalAPI = createApi( {
 	reducerPath: 'generalAPI',
@@ -50,12 +50,23 @@ export const generalAPI = createApi( {
 				},
 			} ),
 		} ),
+		refreshAPIKeyStatus: builder.mutation( {
+			query: () => ( {
+				url: 'refresh-api-key-status',
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': window.wpApiSettings.nonce,
+				},
+			} ),
+		} ),
 	} ),
 } );
 
 export const {
 	useVerifyAPIKeyMutation,
 	useDeactivateAPIKeyMutation,
+	useRefreshAPIKeyStatusMutation,
 	useGetMediaSettingsQuery,
 	useSaveMediaSettingsMutation,
 } = generalAPI;

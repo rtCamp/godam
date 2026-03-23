@@ -38,12 +38,23 @@ class GoDAM_Video_Gallery {
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-gallery.css' )
 		);
 
+		$godam_gallery_script_assets = include RTGODAM_PATH . 'assets/build/js/godam-gallery.min.asset.php';
+
 		wp_register_script(
 			'godam-gallery-script',
 			RTGODAM_URL . 'assets/build/js/godam-gallery.min.js',
-			array( 'wp-data' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/godam-gallery.min.js' ),
+			$godam_gallery_script_assets['dependencies'],
+			$godam_gallery_script_assets['version'],
 			true
+		);
+		
+		// For multisite compatibility, use localized REST URL if available.
+		wp_localize_script(
+			'godam-gallery-script',
+			'godamGalleryData',
+			array(
+				'restUrl' => esc_url_raw( rest_url( 'godam/v1/gallery-shortcode' ) ),
+			)
 		);
 	}
 
@@ -66,6 +77,7 @@ class GoDAM_Video_Gallery {
 				'infinite_scroll'   => false,
 				'category'          => '',
 				'tag'               => '',
+				'media_folder'      => '',
 				'author'            => 0,
 				'date_range'        => '',
 				'include'           => '',
@@ -75,13 +87,33 @@ class GoDAM_Video_Gallery {
 				'show_title'        => true,
 				'align'             => '',
 				'engagements'       => true,
+				'css'               => '',
+				'open_to_new_page'  => false,
 			)
 		);
 
-		$atts = shortcode_atts( $default_atts, $atts, 'godam_video_gallery' );
-		
+		$atts                     = shortcode_atts( $default_atts, $atts, 'godam_video_gallery' );
+		$video_post_settings      = get_option( 'rtgodam_video_post_settings', array() );
+		$godam_allow_single_video = isset( $video_post_settings['allow_single'] ) ? $video_post_settings['allow_single'] : false;
+
+		if ( ! $godam_allow_single_video ) {
+			$atts['open_to_new_page'] = false;
+		}
+
 		// Add filter for processed attributes.
 		$atts = apply_filters( 'rtgodam_gallery_attributes', $atts );
+
+		// Handle boolean attributes passed as strings.
+		$boolean_attributes = array( 'infinite_scroll', 'show_title', 'engagements' );
+		foreach ( $boolean_attributes as $bool_attr ) {
+			$atts[ $bool_attr ] = filter_var( $atts[ $bool_attr ], FILTER_VALIDATE_BOOLEAN );
+		}
+
+		// Get WPBakery Design Options CSS class if available.
+		$atts['css_class'] = '';
+		if ( ! empty( $atts['css'] ) && function_exists( 'vc_shortcode_custom_css_class' ) ) {
+			$atts['css_class'] = vc_shortcode_custom_css_class( $atts['css'], ' ' );
+		}
 
 		wp_enqueue_style( 'godam-gallery-style' );
 
@@ -90,7 +122,6 @@ class GoDAM_Video_Gallery {
 		if ( ! is_admin() ) {
 			wp_enqueue_script( 'godam-player-frontend-script' );
 			wp_enqueue_script( 'godam-player-analytics-script' );
-			wp_enqueue_style( 'godam-player-frontend-style' );
 			wp_enqueue_style( 'godam-player-style' );
 		}
 
@@ -124,6 +155,15 @@ class GoDAM_Video_Gallery {
 			);
 		}
 
+		// Add media_folder filter.
+		if ( ! empty( $atts['media_folder'] ) ) {
+			$args['tax_query'][] = array(
+				'taxonomy' => 'media-folder',
+				'field'    => 'term_id',
+				'terms'    => intval( $atts['media_folder'] ),
+			);
+		}
+
 		// Add author filter.
 		if ( ! empty( $atts['author'] ) ) {
 			$args['author'] = intval( $atts['author'] );
@@ -153,18 +193,18 @@ class GoDAM_Video_Gallery {
 						// Convert UTC dates to local timezone.
 						$start_date = new \DateTime( $atts['custom_date_start'] );
 						$end_date   = new \DateTime( $atts['custom_date_end'] );
-						
+
 						// Set timezone to WordPress timezone.
 						$wp_timezone = new \DateTimeZone( wp_timezone_string() );
 						$start_date->setTimezone( $wp_timezone );
 						$end_date->setTimezone( $wp_timezone );
-						
+
 						// Set start date to beginning of day (00:00:00).
 						$start_date->setTime( 0, 0, 0 );
-						
+
 						// Set end date to end of day (23:59:59).
 						$end_date->setTime( 23, 59, 59 );
-						
+
 						$date_query = array(
 							'after'     => $start_date->format( 'Y-m-d H:i:s' ),
 							'before'    => $end_date->format( 'Y-m-d H:i:s' ),
@@ -199,6 +239,10 @@ class GoDAM_Video_Gallery {
 			$args['orderby']  = 'meta_value_num';
 		}
 
+		$video_settings = get_option( 'rtgodam_video_post_settings', array() );
+		$cpt_url_slug   = ! empty( $video_settings['video_slug'] ) ? sanitize_title( $video_settings['video_slug'] ) : 'videos';
+		$cpt_base_url   = home_url( '/' );
+
 		$query = new \WP_Query( $args );
 
 		ob_start();
@@ -207,14 +251,23 @@ class GoDAM_Video_Gallery {
 			// Add action before gallery output.
 			do_action( 'rtgodam_gallery_before_output', $query, $atts );
 
+			$godam_figure_attributes = get_block_wrapper_attributes(
+				array(
+					'class' => 'godam-video-gallery-wrapper',
+				)
+			);
+
 			// Calculate these values before using them.
 			$total_videos = $query->found_posts;
 			$shown_videos = count( $query->posts );
 
 			$alignment_class = ! empty( $atts['align'] ) ? ' align' . $atts['align'] : '';
+			$css_class       = ! empty( $atts['css_class'] ) ? ' ' . trim( $atts['css_class'] ) : '';
+
+			echo '<div ' . wp_kses_data( $godam_figure_attributes ) . '>';
 			echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) . 
 				( 'grid' === $atts['layout'] ? ' columns-' . intval( $atts['columns'] ) : '' ) . 
-				esc_attr( $alignment_class ) . '" 
+				esc_attr( $alignment_class ) . esc_attr( $css_class ) . '"
 				data-infinite-scroll="' . esc_attr( $atts['infinite_scroll'] ) . '"
 				data-offset="' . esc_attr( $shown_videos ) . '"
 				data-columns="' . esc_attr( $atts['columns'] ) . '"
@@ -232,6 +285,7 @@ class GoDAM_Video_Gallery {
 				data-custom-date-start="' . esc_attr( $atts['custom_date_start'] ) . '"
 				data-custom-date-end="' . esc_attr( $atts['custom_date_end'] ) . '"
 				data-engagements="' . esc_attr( $atts['engagements'] ) . '"
+				data-open-to-new-page="' . esc_attr( $atts['open_to_new_page'] ) . '"
 			>';
 			foreach ( $query->posts as $video ) {
 				// Add action before each video item.
@@ -239,36 +293,83 @@ class GoDAM_Video_Gallery {
 
 				$video_id    = intval( $video->ID );
 				$video_title = get_the_title( $video_id );
+				$video_slug  = get_post_field( 'post_name', $video_id );
 				$video_date  = get_the_date( 'F j, Y', $video_id );
-				
+
 				// Add filter for video title.
 				$video_title = apply_filters( 'rtgodam_gallery_video_title', $video_title, $video_id );
-				
+
 				// Add filter for video date format.
 				$video_date = apply_filters( 'rtgodam_gallery_video_date', $video_date, $video_id );
-			
+
 				$custom_thumbnail = get_post_meta( $video_id, 'rtgodam_media_video_thumbnail', true );
 				$fallback_thumb   = RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png';
-			
+
 				$thumbnail = $custom_thumbnail ?: $fallback_thumb;
-			
+
 				// Get video duration using file path.
 				$file_path = get_attached_file( $video_id );
 				$duration  = null;
-			
+
 				if ( file_exists( $file_path ) ) {
 					if ( ! function_exists( 'wp_read_video_metadata' ) ) {
 						require_once ABSPATH . 'wp-admin/includes/media.php';
 					}
-			
+
 					$metadata = wp_read_video_metadata( $file_path );
 					if ( ! empty( $metadata['length_formatted'] ) ) {
 						$duration = $metadata['length_formatted'];
 					}
 				}
-			
+
+				// Check if engagements are enabled for the video.
+				$engagements_enabled      = $atts['engagements'];
+				$item_engagements_enabled = false;
+				if ( $engagements_enabled ) {
+					// Check if the video is transcoded when engagements are enabled.
+					$transcoded_job_id        = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
+					$transcoded_status        = get_post_meta( $video_id, 'rtgodam_transcoding_status', true );
+					$item_engagements_enabled = ! empty( $transcoded_job_id ) && 'transcoded' === strtolower( $transcoded_status );
+				}
+
+				// Build the query arguments for the video embed page.
+				$query_args = array(
+					'godam_page' => 'video-embed',
+					'id'         => $video_id,
+				);
+
+				// Add the engagements query argument if it is enabled.
+				if ( $item_engagements_enabled ) {
+					$query_args['engagements'] = 'show';
+				}
+
+				$video_url = add_query_arg( $query_args, $cpt_base_url );
+
+				if ( isset( $atts['open_to_new_page'] ) && $atts['open_to_new_page'] ) {
+					$godam_video_post_id = rtgodam_get_post_id_by_meta_key_and_value( '_godam_attachment_id', $video_id );
+					$video_url           = $godam_video_post_id ? get_permalink( (int) $godam_video_post_id ) : '';
+
+					// Backward compatibility fallback if the linked GoDAM video post does not exist yet.
+					if ( empty( $video_url ) ) {
+						$video_slug     = get_post_field( 'post_name', $video_id );
+						$video_settings = get_option( 'rtgodam_video_post_settings', array() );
+						$cpt_url_slug   = ! empty( $video_settings['video_slug'] ) ? sanitize_title( $video_settings['video_slug'] ) : 'videos';
+						$cpt_base_url   = home_url( '/' . $cpt_url_slug );
+						$video_url      = $cpt_base_url . '/' . $video_slug;
+					}
+
+					if ( $item_engagements_enabled ) {
+						$video_url = add_query_arg(
+							array(
+								'engagements' => 'show',
+							),
+							$video_url 
+						);
+					}
+				}
+
 				echo '<div class="godam-video-item">';
-				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '">';
+				echo '<div class="godam-video-thumbnail" data-gallery-item-engagements="' . esc_attr( $item_engagements_enabled ? 'true' : 'false' ) . '" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $video_url ) . '">';
 				echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
 				if ( $duration ) {
 					echo '<span class="godam-video-duration">' . esc_html( $duration ) . '</span>';
@@ -287,7 +388,6 @@ class GoDAM_Video_Gallery {
 			}
 			echo '</div>';
 
-
 			if ( $shown_videos < $total_videos ) {
 				if ( ! $atts['infinite_scroll'] ) {
 					echo '<button 
@@ -298,10 +398,14 @@ class GoDAM_Video_Gallery {
 						data-orderby="' . esc_attr( $atts['orderby'] ) . '" 
 						data-order="' . esc_attr( $atts['order'] ) . '"
 						data-total="' . esc_attr( $total_videos ) . '"
+						data-engagements="' . esc_attr( $atts['engagements'] ) . '"
+						data-open-to-new-page="' . esc_attr( $atts['open_to_new_page'] ) . '"
 					>' . esc_html__( 'Load More', 'godam' ) . '</button>';
 				}
 				echo '<div class="godam-spinner-container"><div class="godam-spinner"></div></div>';
 			}
+
+			echo '</div>';
 
 			echo '
 			<div id="godam-video-modal" class="godam-modal hidden">

@@ -118,12 +118,11 @@ class RTGODAM_Transcoder_Handler {
 
 		$default_settings = array(
 			'video' => array(
-				'adaptive_bitrate'     => false,
-				'watermark'            => false,
-				'watermark_text'       => '',
-				'watermark_url'        => '',
-				'video_thumbnails'     => 5,
-				'overwrite_thumbnails' => false,
+				'adaptive_bitrate' => false,
+				'watermark'        => false,
+				'watermark_text'   => '',
+				'watermark_url'    => '',
+				'video_thumbnails' => 5,
 			),
 		);
 
@@ -194,12 +193,40 @@ class RTGODAM_Transcoder_Handler {
 	 * @param array  $wp_metadata          Metadata of the attachment.
 	 * @param int    $attachment_id     ID of attachment.
 	 * @param string $autoformat        If true then generating thumbs only else trancode video.
-	 * @param bool   $retranscode       If its retranscoding request or not.
+	 * @param bool   $manual_retranscode       If its retranscoding request or not.
 	 */
-	public function wp_media_transcoding( $wp_metadata, $attachment_id, $autoformat = true, $retranscode = false ) {
+	public function wp_media_transcoding( $wp_metadata, $attachment_id, $autoformat = true, $manual_retranscode = false ) {
 		// Check if local development environment.
 		if ( rtgodam_is_local_environment() ) {
 			return;
+		}
+
+		/**
+		 * Filter to allow external developers to disable automatic transcoding on upload.
+		 * This allows users to have manual control over when videos get transcoded.
+		 *
+		 * Note: This filter only applies to automatic uploads. Manual retranscoding requests
+		 * (via bulk actions, tools page, etc.) will always proceed regardless of this setting.
+		 * Form integrations will also use this filter to disable transcoding for form uploads.
+		 *
+		 * Example usage:
+		 * add_filter( 'godam_auto_transcode_on_upload', '__return_false' ); // Disable globally
+		 *
+		 * @since 1.5.0
+		 *
+		 * @param bool $auto_transcode_on_upload Whether to automatically transcode on upload. Default true.
+		 */
+		if ( ! $manual_retranscode ) {
+			$auto_transcode_on_upload = apply_filters( 'godam_auto_transcode_on_upload', true );
+
+			if ( ! $auto_transcode_on_upload ) {
+				return $wp_metadata;
+			}
+		}
+
+		// Skip transcoding and re-transcoding for images.
+		if ( preg_match( '/image/i', $wp_metadata['mime_type'], $type_array ) ) {
+			return $wp_metadata;
 		}
 
 		if ( empty( $wp_metadata['mime_type'] ) ) {
@@ -217,6 +244,51 @@ class RTGODAM_Transcoder_Handler {
 			return $wp_metadata;
 		}
 
+		/** Block if bandwidth or storage limits are exceeded */
+		$user_data = rtgodam_get_user_data();
+		if ( ! empty( $user_data ) && isset( $user_data['bandwidth_used'], $user_data['total_bandwidth'], $user_data['storage_used'], $user_data['total_storage'] ) ) {
+			$storage_exceeded = $user_data['storage_used'] > $user_data['total_storage'];
+
+			// Only block transcoding when storage is exceeded (bandwidth exceeded still allows transcoding).
+			if ( $storage_exceeded ) {
+				$reason_parts   = array();
+				$reason_parts[] = sprintf(
+					/* translators: %s: storage usage percent */
+					__( 'Storage exceeded (%s%%).', 'godam' ),
+					number_format( ( $user_data['storage_used'] / max( 1, $user_data['total_storage'] ) ) * 100, 1 )
+				);
+
+				$reason = implode( ' ', $reason_parts ) . ' ' . __( 'Please upgrade your plan to continue transcoding.', 'godam' );
+
+				// Persist status on the attachment so UI can show it.
+				update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'blocked' );
+				update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', $reason );
+
+				return $wp_metadata; // Stop before calling the transcoder API.
+			}
+		}
+
+		// Check if HTTP auth is enabled.
+		if ( rtgodam_has_http_auth() ) {
+			if ( $manual_retranscode ) {
+				// Store in failed transcoding list for retry later.
+				$failed_transcoding_attachments                   = get_option( 'rtgodam-failed-transcoding-attachments', array() );
+				$failed_transcoding_attachments[ $attachment_id ] = array(
+					'wp_metadata'   => $wp_metadata,
+					'attachment_id' => $attachment_id,
+					'autoformat'    => $autoformat,
+				);
+				update_option( 'rtgodam-failed-transcoding-attachments', $failed_transcoding_attachments );
+			}
+
+			// Update status to failed.
+			update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'failed' );
+			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', __( 'HTTP authentication is enabled on your site, preventing transcoding.', 'godam' ) );
+			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', 'http_auth_enabled' );
+
+			return $wp_metadata;
+		}
+
 		$path = get_attached_file( $attachment_id );
 		$url  = wp_get_attachment_url( $attachment_id );
 
@@ -231,7 +303,6 @@ class RTGODAM_Transcoder_Handler {
 		$type             = strtolower( $type_arry[ count( $type_arry ) - 1 ] );
 		$extension        = pathinfo( $path, PATHINFO_EXTENSION );
 		$not_allowed_type = array();
-		preg_match( '/video|audio/i', $metadata['mime_type'], $type_array );
 
 		if ( (
 				preg_match( '/video|audio/i', $metadata['mime_type'], $type_array ) ||
@@ -297,14 +368,16 @@ class RTGODAM_Transcoder_Handler {
 			// Get author name with fallback to username.
 			$author_first_name = '';
 			$author_last_name  = '';
-			
+			$author_email      = '';
+
 			if ( $attachment_author ) {
-				$author_first_name = $attachment_author->first_name;
-				$author_last_name  = $attachment_author->last_name;
-				
+				$author_first_name = $attachment_author->first_name ?? '';
+				$author_last_name  = $attachment_author->last_name ?? '';
+				$author_email      = $attachment_author->user_email ?? '';
+
 				// If first and last names are empty, use username as fallback.
 				if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
-					$author_first_name = $attachment_author->user_login;
+					$author_first_name = $attachment_author->user_login ?? '';
 				}
 			}
 
@@ -328,10 +401,11 @@ class RTGODAM_Transcoder_Handler {
 						'watermark'            => boolval( $rtgodam_watermark ),
 						'resolutions'          => array( 'auto' ),
 						'video_quality'        => $rtgodam_video_compress_quality,
-						'wp_author_email'      => $attachment_author ? $attachment_author->user_email : '',
+						'mime_type'            => $metadata['mime_type'],
+						'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $author_email, $attachment_id ),
 						'wp_site'              => $site_url,
-						'wp_author_first_name' => $author_first_name,
-						'wp_author_last_name'  => $author_last_name,
+						'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, $attachment_id ),
+						'wp_author_last_name'  => apply_filters( 'godam_author_last_name_to_send', $author_last_name, $attachment_id ),
 						'public'               => 1,
 					),
 					$watermark_to_use
@@ -354,7 +428,13 @@ class RTGODAM_Transcoder_Handler {
 					$job_id = $upload_info->data->name;
 					update_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', $job_id );
 
-					if ( $retranscode ) {
+					// Job successfully submitted to Central — reset any prior failure state so the
+					// media library shows the item as in-queue rather than failed.
+					update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'Queued' );
+					delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg' );
+					delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_code' );
+
+					if ( $manual_retranscode ) {
 						$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
 
 						if ( isset( $failed_transcoding_attachments[ $attachment_id ] ) ) {
@@ -365,21 +445,60 @@ class RTGODAM_Transcoder_Handler {
 				}
 			}
 
-
 			if ( is_wp_error( $upload_page ) || 500 <= intval( $upload_page['response']['code'] ) ) {
 				$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
+
+				// Preserve the existing retry_count so the cron-job retry limiter is not reset
+				// when a subsequent 5xx response re-adds this attachment to the queue.
+				$existing_retry_count = 0;
+				if ( isset( $failed_transcoding_attachments[ $attachment_id ]['retry_count'] ) ) {
+					$existing_retry_count = (int) $failed_transcoding_attachments[ $attachment_id ]['retry_count'];
+				} else {
+					// Handle legacy structures where the option is a numerically indexed list of
+					// arrays containing an 'attachment_id' field.
+					foreach ( $failed_transcoding_attachments as $failed_attachment ) {
+						if ( ! is_array( $failed_attachment ) ) {
+							continue;
+						}
+						if ( isset( $failed_attachment['attachment_id'], $failed_attachment['retry_count'] )
+							&& (int) $failed_attachment['attachment_id'] === (int) $attachment_id
+						) {
+							$existing_retry_count = (int) $failed_attachment['retry_count'];
+							break;
+						}
+					}
+				}
 
 				$failed_transcoding_attachments[ $attachment_id ] = array(
 					'wp_metadata'   => $wp_metadata,
 					'attachment_id' => $attachment_id,
 					'autoformat'    => $autoformat,
+					'retry_count'   => $existing_retry_count,
 				);
 
 				update_option( 'rtgodam-failed-transcoding-attachments', $failed_transcoding_attachments );
 
-				// display notice to user for next 5 minutes.
-				$timestamp = time();
-				update_option( 'rtgodam-transcoding-failed-notice-timestamp', $timestamp );
+				// Mark the attachment as failed immediately so the media library reflects the
+				// error state right away (the cron will clear this once retries succeed or are exhausted).
+				update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'failed' );
+
+				$max_retries = class_exists( '\RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media' )
+					? \RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media::MAX_RETRY_ATTEMPTS
+					: 3;
+
+				update_post_meta(
+					$attachment_id,
+					'rtgodam_transcoding_error_msg',
+					sprintf(
+						/* translators: 1: max retry attempts, 2: retry interval in minutes */
+						__( 'GoDAM Central returned a server error. Transcoding will be retried automatically (up to %1$d times, every %2$d minutes).', 'godam' ),
+						$max_retries,
+						10
+					)
+				);
+
+				// Show a brief admin notice for the next 5 minutes.
+				update_option( 'rtgodam-transcoding-failed-notice-timestamp', time() );
 			}
 		}
 
@@ -581,17 +700,20 @@ class RTGODAM_Transcoder_Handler {
 
 		if ( $first_thumbnail_url ) {
 
-			$is_retranscoding_job = get_post_meta( $post_id, 'rtgodam_retranscoding_sent', true );
+			// rtMedia support.
+			update_post_meta( $post_id, '_rt_media_video_thumbnail', $first_thumbnail_url );
 
-			if ( ! $is_retranscoding_job || rtgodam_is_override_thumbnail() ) {
-				// rtMedia support.
-				update_post_meta( $post_id, '_rt_media_video_thumbnail', $first_thumbnail_url );
+			if ( class_exists( 'RTMediaModel' ) ) {
+				$model->update( array( 'cover_art' => $first_thumbnail_url ), array( 'media_id' => $post_id ) );
+				update_activity_after_thumb_set( $media_id );
+			}
 
-				if ( class_exists( 'RTMediaModel' ) ) {
-					$model->update( array( 'cover_art' => $first_thumbnail_url ), array( 'media_id' => $post_id ) );
-					update_activity_after_thumb_set( $media_id );
-				}
+			$current_thumbnail = get_post_meta( $post_id, 'rtgodam_media_video_thumbnail', true );
+			$custom_thumbnails = get_post_meta( $post_id, 'rtgodam_custom_media_thumbnails', true );
+			$custom_thumbnails = is_array( $custom_thumbnails ) ? $custom_thumbnails : array();
 
+			// If the current selected thumbnail is NOT one of the custom uploaded thumbnails, overwrite it.
+			if ( empty( $current_thumbnail ) || ! in_array( $current_thumbnail, $custom_thumbnails, true ) ) {
 				update_post_meta( $post_id, 'rtgodam_media_video_thumbnail', $first_thumbnail_url );
 			}
 
@@ -732,7 +854,7 @@ class RTGODAM_Transcoder_Handler {
 		$meta = wp_cache_get( $cache_key, 'godam' );
 		if ( empty( $meta ) ) {
 			$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s", $key, $value ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-			wp_cache_set( $cache_key, $meta, 'godam', 3600 );
+			wp_cache_set( $cache_key, $meta, 'godam', HOUR_IN_SECONDS );
 		}
 
 		if ( is_array( $meta ) && ! empty( $meta ) && isset( $meta[0] ) ) {

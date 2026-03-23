@@ -650,7 +650,7 @@ class Jetpack extends Base {
 
 			// Set DOING_AJAX constant to ensure process_submission returns success message.
 			if ( ! defined( 'DOING_AJAX' ) ) {
-				define( 'DOING_AJAX', true );
+				define( 'DOING_AJAX', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- required for Jetpack form processing.
 			}
 			
 			// Process the submission using Jetpack's built-in method.

@@ -5,64 +5,74 @@
  */
 import { createSlice } from '@reduxjs/toolkit';
 
+const initialState = {
+	videoConfig: {
+		controls: true,
+		fluid: true,
+		preload: 'auto',
+		width: '100%',
+		sources: [],
+		playbackRates: [ 0.5, 1, 1.5, 2 ],
+		captions: [],
+		adServer: 'self-hosted',
+		controlBar: {
+			playToggle: true, // Play/Pause button
+			volumePanel: true,
+			currentTimeDisplay: true, // Current time
+			timeDivider: true, // Divider between current time and duration
+			durationDisplay: true, // Total duration
+			fullscreenToggle: true, // Full-screen button
+			subsCapsButton: true,
+			pictureInPictureToggle: false,
+			//custom controls
+			brandingIcon: true,
+			appearanceColor: godamSettings?.brandColor ? godamSettings?.brandColor : '#2b333fb3',
+			hoverColor: '#fff',
+			zoomLevel: 0,
+			playButtonPosition: 'center',
+			controlBarPosition: 'horizontal',
+			customBrandImg: '',
+			customPlayBtnImg: '',
+		},
+	},
+	layers: [],
+	chapters: [],
+	isChanged: false,
+	currentLayer: null,
+	currentTab: 'layers',
+	loading: false,
+	gforms: [],
+	jetpackForms: [],
+	sureforms: [],
+	forminatorForms: [],
+	metforms: [],
+	cf7Forms: [],
+	fluentForms: [],
+	wpforms: [],
+	everestForms: [],
+	ninjaForms: [],
+	gformPluginActive: true,
+	jetpackPluginActive: false,
+	sureformsPlugnActive: false,
+	forminatorPluginActive: false,
+	metformPlugnActive: false,
+	cf7PluginActive: false,
+	wpFormPluginActive: false,
+	fluentPluginActive: false,
+	everestPluginActive: false,
+	ninjaPluginActive: false,
+	addLayerModalTime: null,
+};
+
 const slice = createSlice( {
 	name: 'video',
-	initialState: {
-		videoConfig: {
-			controls: true,
-			fluid: true,
-			preload: 'auto',
-			width: '100%',
-			sources: [],
-			playbackRates: [ 0.5, 1, 1.5, 2 ],
-			captions: [],
-			adServer: 'self-hosted',
-			controlBar: {
-				playToggle: true, // Play/Pause button
-				volumePanel: true,
-				currentTimeDisplay: true, // Current time
-				timeDivider: true, // Divider between current time and duration
-				durationDisplay: true, // Total duration
-				fullscreenToggle: true, // Full-screen button
-				subsCapsButton: true,
-				skipButtons: {
-					forward: 10,
-					backward: 10,
-				},
-				//custom controls
-				brandingIcon: true,
-				appearanceColor: godamSettings?.brandColor ? godamSettings?.brandColor : '#2b333fb3',
-				hoverColor: '#fff',
-				zoomLevel: 0,
-				playButtonPosition: 'center',
-				controlBarPosition: 'horizontal',
-				customBrandImg: '',
-				customPlayBtnImg: '',
-			},
-		},
-		layers: [],
-		chapters: [],
-		isChanged: false,
-		currentLayer: null,
-		currentTab: 'layers',
-		loading: false,
-		gforms: [],
-		cf7Forms: [],
-		fluentForms: [],
-		wpforms: [],
-		gformPluginActive: true,
-		jetpackForms: [],
-		jetpackPluginActive: false,
-		sureforms: [],
-		sureformsPlugnActive: false,
-		forminatorForms: [],
-		forminatorPluginActive: false,
-		metforms: [],
-		metformPlugnActive: false,
-	},
+	initialState,
 	reducers: {
+		resetVideoState: () => {
+			return initialState;
+		},
 		initializeStore: ( state, action ) => {
-			const { videoConfig, layers, skipTime, chapters } = action.payload;
+			const { videoConfig, layers, chapters } = action.payload;
 			state.videoConfig = {
 				...state.videoConfig,
 				...videoConfig,
@@ -73,7 +83,6 @@ const slice = createSlice( {
 			};
 			state.layers = layers;
 			state.isChanged = false;
-			state.skipTime = skipTime;
 			state.chapters = chapters || [];
 		},
 		saveVideoMeta: ( state ) => {
@@ -115,10 +124,6 @@ const slice = createSlice( {
 		},
 		updateVideoConfig: ( state, action ) => {
 			state.videoConfig = { ...state.videoConfig, ...action.payload };
-			state.isChanged = true;
-		},
-		updateSkipTime: ( state, action ) => {
-			state.skipTime = action.payload.selectedSkipVal;
 			state.isChanged = true;
 		},
 		setCurrentLayer: ( state, action ) => {
@@ -187,10 +192,14 @@ const slice = createSlice( {
 		setMetformPluginActive: ( state, action ) => {
 			state.metformPlugnActive = action.payload;
 		},
+		setAddLayerModalTime: ( state, action ) => {
+			state.addLayerModalTime = action.payload;
+		},
 	},
 } );
 
 export const {
+	resetVideoState,
 	initializeStore, saveVideoMeta,
 	addLayer,
 	removeLayer,
@@ -199,7 +208,6 @@ export const {
 	removeChapter,
 	updateChapterField,
 	updateVideoConfig,
-	updateSkipTime,
 	setCurrentLayer,
 	setCurrentTab,
 	setLoading,
@@ -221,5 +229,6 @@ export const {
 	setNinjaPluginActive,
 	setMetforms,
 	setMetformPluginActive,
+	setAddLayerModalTime,
 } = slice.actions;
 export default slice.reducer;

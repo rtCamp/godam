@@ -280,14 +280,15 @@ $grey-text: #5f6368;
 .card {
 
 	&-image {
-		height: 200px;
 		overflow: hidden;
+		display: flex;
+		justify-content: center;
+		align-items: center;
 
 		img {
 			width: 100%;
 			height: 100%;
-			object-fit: cover;
-			border-radius: 1rem;
+			object-fit: contain;
 		}
 	}
 

@@ -37,10 +37,7 @@ const FluentForm = ( { layerID } ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'fluent_form_id', value: formID } ) );
 	};
 
-	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.valid_api_key;
-	// For now we are enabling all the features
-	const isValidAPIKey = true;
+	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
 
 	const isFluentFormsPluginActive = Boolean( window?.videoData?.fluentformsActive );
 
@@ -86,11 +83,6 @@ const FluentForm = ( { layerID } ) => {
 							<div className="form-container">
 								<p>{ __( 'Loading form…', 'godam' ) }</p>
 							</div>
-						}
-
-						{
-							! isValidAPIKey &&
-							<p className="text-sm text-gray-500">{ __( 'This features is available in premium version', 'godam' ) }</p>
 						}
 
 						{

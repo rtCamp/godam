@@ -53,6 +53,8 @@ class Player {
 	customLayers = [];
 	layerIdCounter = 0;
 	timeUpdateHandler = null; // Store reference for cleanup
+	eventListeners = {}; // Store custom event listeners
+	isCurrentlyFullscreen = false; // Track fullscreen state
 
 	constructor( videoJs, video ) {
 		// Input validation
@@ -72,6 +74,9 @@ class Player {
 
 		// Setup time update listener for custom layers
 		this.setupTimeUpdateListener();
+
+		// Setup custom event listeners
+		this.setupCustomEventListeners();
 	}
 
 	/**
@@ -85,6 +90,208 @@ class Player {
 		};
 
 		this.videoJs.on( 'timeupdate', this.timeUpdateHandler );
+	}
+
+	// ==============================
+	// EVENT EMITTER METHODS
+	// ==============================
+
+	/**
+	 * Subscribe to a player event
+	 *
+	 * @param {string}   eventName - Event name to listen for
+	 * @param {Function} callback  - Function to call when event is triggered
+	 * @return {Function} Unsubscribe function
+	 *
+	 * @example
+	 * // Listen for fullscreen changes
+	 * player.on('fullscreenchange', (data) => {
+	 *     console.log('Fullscreen:', data.isFullscreen);
+	 * });
+	 *
+	 * // Listen for play event
+	 * player.on('play', () => {
+	 *     console.log('Video started playing');
+	 * });
+	 */
+	on( eventName, callback ) {
+		if ( typeof eventName !== 'string' || ! eventName ) {
+			console.error( 'Event name must be a non-empty string' );
+			return () => {};
+		}
+
+		if ( typeof callback !== 'function' ) {
+			console.error( 'Callback must be a function' );
+			return () => {};
+		}
+
+		// Initialize event listeners array for this event if it doesn't exist
+		if ( ! this.eventListeners[ eventName ] ) {
+			this.eventListeners[ eventName ] = [];
+		}
+
+		// Add callback to listeners
+		this.eventListeners[ eventName ].push( callback );
+
+		// Return unsubscribe function
+		return () => this.off( eventName, callback );
+	}
+
+	/**
+	 * Unsubscribe from a player event
+	 *
+	 * @param {string}   eventName - Event name to stop listening for
+	 * @param {Function} callback  - Function to remove (optional, removes all if not provided)
+	 * @return {boolean} True if listener was removed
+	 *
+	 * @example
+	 * // Remove specific listener
+	 * const handler = (data) => console.log(data);
+	 * player.on('fullscreenchange', handler);
+	 * player.off('fullscreenchange', handler);
+	 *
+	 * // Remove all listeners for an event
+	 * player.off('fullscreenchange');
+	 */
+	off( eventName, callback = null ) {
+		if ( ! this.eventListeners[ eventName ] ) {
+			return false;
+		}
+
+		if ( callback === null ) {
+			// Remove all listeners for this event
+			delete this.eventListeners[ eventName ];
+			return true;
+		}
+
+		// Remove specific callback
+		const index = this.eventListeners[ eventName ].indexOf( callback );
+		if ( index > -1 ) {
+			this.eventListeners[ eventName ].splice( index, 1 );
+
+			// Clean up empty array
+			if ( this.eventListeners[ eventName ].length === 0 ) {
+				delete this.eventListeners[ eventName ];
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Trigger a custom event
+	 *
+	 * @param {string} eventName - Event name to trigger
+	 * @param {*}      data      - Data to pass to event listeners (optional)
+	 * @return {number} Number of listeners that were called
+	 *
+	 * @example
+	 * // Trigger a custom event
+	 * player.trigger('customEvent', { message: 'Hello' });
+	 */
+	trigger( eventName, data = null ) {
+		if ( ! this.eventListeners[ eventName ] || this.eventListeners[ eventName ].length === 0 ) {
+			return 0;
+		}
+
+		let callCount = 0;
+
+		// Call all registered listeners
+		this.eventListeners[ eventName ].forEach( ( callback ) => {
+			try {
+				callback( data );
+				callCount++;
+			} catch ( error ) {
+				console.error( `Error in event listener for "${ eventName }":`, error );
+			}
+		} );
+
+		return callCount;
+	}
+
+	/**
+	 * Subscribe to an event that will only fire once
+	 *
+	 * @param {string}   eventName - Event name to listen for
+	 * @param {Function} callback  - Function to call when event is triggered
+	 * @return {Function} Unsubscribe function
+	 *
+	 * @example
+	 * // Listen for first play event only
+	 * player.once('play', () => {
+	 *     console.log('Video played for the first time');
+	 * });
+	 */
+	once( eventName, callback ) {
+		const onceWrapper = ( data ) => {
+			callback( data );
+			this.off( eventName, onceWrapper );
+		};
+
+		return this.on( eventName, onceWrapper );
+	}
+
+	/**
+	 * Setup custom event listeners for VideoJS events
+	 */
+	setupCustomEventListeners() {
+		// Listen for fullscreen changes
+		this.videoJs.on( 'fullscreenchange', () => {
+			const isFullscreen = this.isFullscreen();
+
+			// Only trigger if state actually changed
+			if ( isFullscreen !== this.isCurrentlyFullscreen ) {
+				this.isCurrentlyFullscreen = isFullscreen;
+				this.trigger( 'fullscreenchange', { isFullscreen } );
+			}
+		} );
+
+		this.videoJs.on( 'customfullscreenchange', () => {
+			const isFullscreen = this.isFullscreen();
+
+			// Only trigger if state actually changed
+			if ( isFullscreen !== this.isCurrentlyFullscreen ) {
+				this.isCurrentlyFullscreen = isFullscreen;
+				this.trigger( 'fullscreenchange', { isFullscreen } );
+			}
+		} );
+
+		// Listen for play event
+		this.videoJs.on( 'play', () => {
+			this.trigger( 'play' );
+		} );
+
+		// Listen for pause event
+		this.videoJs.on( 'pause', () => {
+			this.trigger( 'pause' );
+		} );
+
+		// Listen for ended event
+		this.videoJs.on( 'ended', () => {
+			this.trigger( 'ended' );
+		} );
+
+		// Listen for timeupdate event (throttled)
+		this.videoJs.on( 'timeupdate', () => {
+			this.trigger( 'timeupdate', { currentTime: this.currentTime() } );
+		} );
+
+		// Listen for volumechange event
+		this.videoJs.on( 'volumechange', () => {
+			this.trigger( 'volumechange', { volume: this.getVolume() } );
+		} );
+
+		// Listen for seeking event
+		this.videoJs.on( 'seeking', () => {
+			this.trigger( 'seeking', { currentTime: this.currentTime() } );
+		} );
+
+		// Listen for seeked event
+		this.videoJs.on( 'seeked', () => {
+			this.trigger( 'seeked', { currentTime: this.currentTime() } );
+		} );
 	}
 
 	/**
@@ -587,6 +794,14 @@ class Player {
 	 */
 	isFullscreen() {
 		try {
+			if ( this.video.classList.contains( 'vjs-fullscreen' ) ) {
+				return true;
+			}
+			// Check for our custom fullscreen CSS class.
+			const parent = this.video.closest( '.easydam-video-container' );
+			if ( parent && parent.classList.contains( 'godam-video-fullscreen' ) ) {
+				return true;
+			}
 			return this.videoJs.isFullscreen();
 		} catch ( error ) {
 			console.error( 'Error checking fullscreen state:', error );
@@ -620,6 +835,9 @@ class Player {
 
 		// Remove all custom layers
 		this.removeAllCustomLayers();
+
+		// Clear all custom event listeners
+		this.eventListeners = {};
 
 		// Clear references
 		this.videoJs = null;

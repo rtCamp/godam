@@ -54,6 +54,7 @@ function autoloader( $file_resource = '' ) {
 				$file_name = sprintf( 'trait-%s', trim( strtolower( $path[2] ) ) );
 				break;
 			case 'providers':
+			case 'assets':
 			case 'media-library': // phpcs:ignore
 			case 'meta-boxes': // phpcs:ignore
 			case 'rest-controller': // phpcs:ignore
@@ -67,11 +68,13 @@ function autoloader( $file_resource = '' ) {
 			case 'cron-jobs': // phpcs:ignore
 			case 'elementor-widgets': // phpcs:ignore
 			case 'elementor-controls': // phpcs:ignore
+			case 'enums': // phpcs:ignore
 			case 'wpforms': // phpcs:ignore
 			case 'ninja-forms': // phpcs:ignore
 			case 'everest-forms': // phpcs:ignore
 			case 'metform': // phpcs:ignore
 			case 'lifter-lms': // phpcs:ignore
+			case 'wpbakery-elements': // phpcs:ignore
 				/**
 				 * If there is class name provided for specific directory then load that.
 				 * otherwise find in inc/ directory.

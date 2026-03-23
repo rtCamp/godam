@@ -170,7 +170,7 @@ const SearchBar = () => {
 	return (
 		<div className="folder-search-bar-container" ref={ inputRef }>
 			<SearchControl
-				placeholder={ __( 'Search folders…', 'godam' ) }
+				placeholder={ __( 'Search folder', 'godam' ) }
 				onChange={ handleSearchChange }
 				className="search-input"
 				value={ searchTerm }

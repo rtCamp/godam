@@ -40,7 +40,6 @@ class Media_Library_Ajax {
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_media_transcoding_status_js' ), 10, 2 );
 
 		add_action( 'pre_delete_term', array( $this, 'delete_child_media_folder' ), 10, 2 );
-		add_action( 'delete_attachment', array( $this, 'handle_media_deletion' ), 10, 1 );
 
 		add_action( 'admin_notices', array( $this, 'media_library_offer_banner' ) );
 		add_action( 'wp_ajax_godam_dismiss_offer_banner', array( $this, 'dismiss_offer_banner' ) );
@@ -48,6 +47,29 @@ class Media_Library_Ajax {
 		add_action( 'rtgodam_handle_callback_finished', array( $this, 'download_transcoded_mp4_source' ), 10, 4 );
 
 		add_filter( 'wp_get_attachment_url', array( $this, 'filter_attachment_url_for_virtual_media' ), 10, 2 );
+
+		// Add filters for virtual media srcset support.
+		add_filter( 'wp_calculate_image_srcset_meta', array( $this, 'filter_image_srcset_meta' ), 10, 4 );
+		add_filter( 'wp_calculate_image_srcset', array( $this, 'filter_virtual_media_srcset' ), 10, 5 );
+
+		// Add admin notice for HTTP auth and AJAX handler to save HTTP auth status.
+		add_action( 'admin_notices', array( $this, 'http_auth_warning_notice' ) );
+		add_action( 'wp_ajax_godam_save_http_auth_status', array( $this, 'save_http_auth_status' ) );
+
+		add_filter( 'wp_content_img_tag', array( $this, 'filter_rtgodam_content_img_tag' ), 10, 3 );
+	}
+
+	/**
+	 * Validate if a URL is valid.
+	 * Ref: https://cmljnelson.blog/2018/08/31/url-validation-in-wordpress
+	 *
+	 * @since 1.5.0
+	 *
+	 * @param string $url The URL to validate.
+	 * @return bool True if valid, false otherwise.
+	 */
+	public function is_valid_url( $url ) {
+		return esc_url_raw( $url ) === $url;
 	}
 
 	/**
@@ -68,10 +90,18 @@ class Media_Library_Ajax {
 		$api_mime_type = $item['mime_type'] ?? '';
 		$computed_mime = $this->get_mime_type_for_job_type( $job_type, $api_mime_type );
 		$title         = isset( $item['title'] ) ? $item['title'] : ( isset( $item['orignal_file_name'] ) ? pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) : $item['name'] );
+		// trim the extension from title if present.
+		$title = preg_replace( '/\.[^.]+$/', '', $title );
+
+		// Get video duration in seconds.
+		$video_duration = isset( $item['playtime'] ) ? $item['playtime'] : 0;
+		// Round video duration to integer seconds.
+		$video_duration = is_numeric( $video_duration ) ? (int) round( $video_duration ) : 0;
 
 		$result = array(
 			'id'                    => $item['name'],
 			'title'                 => $title,
+			'description'           => $item['description'] ?? '',
 			'filename'              => $item['orignal_file_name'] ?? $item['name'],
 			'url'                   => isset( $item['transcoded_mp4_url'] ) ? $item['transcoded_mp4_url'] : ( isset( $item['transcoded_file_path'] ) ? $item['transcoded_file_path'] : '' ),
 			'mime'                  => isset( $item['transcoded_mp4_url'] ) ? 'video/mp4' : $computed_mime,
@@ -89,10 +119,22 @@ class Media_Library_Ajax {
 			'duration'              => $item['playtime'] ?? '',
 			'hls_url'               => $item['transcoded_hls_path'] ?? '',
 			'mpd_url'               => $item['transcoded_file_path'] ?? '',
+			'video_duration'        => $video_duration ?? 0,
 		);
 
+		// Set icon with fallback to default mime type icon for audio and PDF.
+		$result['icon'] = $item['thumbnail_url'] ?? '';
+
+		// If no thumbnail URL, use WordPress default icons for audio and PDF.
+		if ( empty( $result['icon'] ) ) {
+			if ( 'audio' === $item['job_type'] ) {
+				$result['icon'] = includes_url( 'images/media/audio.png' );
+			} elseif ( 'application/pdf' === $item['mime_type'] ) {
+				$result['icon'] = includes_url( 'images/media/document.png' );
+			}
+		}
+
 		if ( 'stream' === $item['job_type'] ) {
-			$result['icon'] = $item['thumbnail_url'] ?? '';
 			$result['type'] = 'video';
 		}
 
@@ -122,17 +164,74 @@ class Media_Library_Ajax {
 	/**
 	 * Upload media to the Frappe backend.
 	 *
-	 * @param int $attachment_id Attachment ID.
+	 * @param int  $attachment_id Attachment ID.
+	 * @param bool $manual_retranscode Whether this is a retranscode request.
 	 * @return void
 	 */
-	public function upload_media_to_frappe_backend( $attachment_id ) {
+	public function upload_media_to_frappe_backend( $attachment_id, $manual_retranscode = false ) {
 		// Check if local development environment.
 		if ( rtgodam_is_local_environment() ) {
 			return;
 		}
 
-		// Only if attachment type if image.
-		if ( 'image' !== substr( get_post_mime_type( $attachment_id ), 0, 5 ) ) {
+		/**
+		 * Filter to allow external developers to disable automatic transcoding on upload.
+		 * This allows users to have manual control over when media files get transcoded.
+		 *
+		 * Note: This filter only applies to automatic uploads. Manual retranscoding requests
+		 * (via bulk actions, tools page, etc.) will always proceed regardless of this setting.
+		 * Form integrations will also use this filter to disable transcoding for form uploads.
+		 *
+		 * Example usage:
+		 * add_filter( 'godam_auto_transcode_on_upload', '__return_false' ); // Disable globally
+		 *
+		 * @since 1.5.0
+		 *
+		 * @param bool $auto_transcode_on_upload Whether to automatically transcode on upload. Default true.
+		 */
+		if ( ! $manual_retranscode ) {
+			$auto_transcode_on_upload = apply_filters( 'godam_auto_transcode_on_upload', true );
+
+			if ( ! $auto_transcode_on_upload ) {
+				return;
+			}
+		}
+
+		$transcoding_job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+
+		// Check virtual media status for transcoding requests.
+		$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+		$is_virtual_media  = ! empty( $godam_original_id );
+
+		// Skip transcoding for virtual media.
+		if ( $is_virtual_media ) {
+			return;
+		}
+
+		// Only if attachment type is image.
+		$mime_type = get_post_mime_type( $attachment_id );
+		if ( 'image' !== substr( $mime_type, 0, 5 ) ) {
+			return;
+		}
+
+		// Check if HTTP auth is enabled.
+		if ( rtgodam_has_http_auth() ) {
+			if ( $manual_retranscode ) {
+				// Store in failed transcoding list for retry later.
+				$failed_transcoding_attachments                   = get_option( 'rtgodam-failed-transcoding-attachments', array() );
+				$failed_transcoding_attachments[ $attachment_id ] = array(
+					'wp_metadata'   => array( 'mime_type' => $mime_type ),
+					'attachment_id' => $attachment_id,
+					'autoformat'    => true,
+				);
+				update_option( 'rtgodam-failed-transcoding-attachments', $failed_transcoding_attachments );
+			}
+
+			// Update status to failed.
+			update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'failed' );
+			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', __( 'HTTP authentication is enabled on your site, preventing transcoding.', 'godam' ) );
+			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', 'http_auth_enabled' );
+
 			return;
 		}
 
@@ -142,24 +241,68 @@ class Media_Library_Ajax {
 			return;
 		}
 
-		$api_url = RTGODAM_API_BASE . '/api/resource/Transcoder Job';
+		$api_url = RTGODAM_API_BASE . '/api/resource/Transcoder Job' . ( empty( $transcoding_job_id ) ? '' : '/' . $transcoding_job_id );
 
 		$attachment_url = wp_get_attachment_url( $attachment_id );
 
 		$file_title = get_the_title( $attachment_id );
 		$file_name  = pathinfo( $attachment_url, PATHINFO_FILENAME ) . '.' . pathinfo( $attachment_url, PATHINFO_EXTENSION );
 
+		// Get attachment author information.
+		$attachment_author_id = get_post_field( 'post_author', $attachment_id );
+		$attachment_author    = get_user_by( 'id', $attachment_author_id );
+		$site_url             = get_site_url();
+
+		// Get author name with fallback to username.
+		$author_first_name = '';
+		$author_last_name  = '';
+		$author_email      = '';
+
+		if ( $attachment_author ) {
+			$author_first_name = $attachment_author->first_name ?? '';
+			$author_last_name  = $attachment_author->last_name ?? '';
+			$author_email      = $attachment_author->user_email ?? '';
+
+			// If first and last names are empty, use username as fallback.
+			if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
+				$author_first_name = $attachment_author->user_login ?? '';
+			}
+		}
+
+		if ( ! defined( 'RTGODAM_TRANSCODER_CALLBACK_URL' ) ) {
+			include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-rest-routes.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+			define( 'RTGODAM_TRANSCODER_CALLBACK_URL', \RTGODAM_Transcoder_Rest_Routes::get_callback_url() );
+		}
+
+		$callback_url = RTGODAM_TRANSCODER_CALLBACK_URL;
+
+		/**
+		 * Manually setting the rest api endpoint, we can refactor that later to use similar functionality as callback_url.
+		 */
+		$status_callback_url = get_rest_url( get_current_blog_id(), '/godam/v1/transcoding/transcoding-status' );
+
 		// Request params.
 		$params = array(
-			'api_token'         => $api_key,
-			'job_type'          => 'image',
-			'file_origin'       => $attachment_url,
-			'orignal_file_name' => $file_name ?? $file_title,
+			'retranscode'          => empty( $transcoding_job_id ) ? 0 : 1,
+			'api_token'            => $api_key,
+			'job_type'             => 'image',
+			'job_for'              => 'wp-media',
+			'file_origin'          => $attachment_url,
+			'orignal_file_name'    => $file_name ?? $file_title,
+			'mime_type'            => $mime_type,
+			'callback_url'         => rawurlencode( $callback_url ),
+			'status_callback'      => rawurlencode( $status_callback_url ),
+			'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $author_email, $attachment_id ),
+			'wp_site'              => $site_url,
+			'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, $attachment_id ),
+			'wp_author_last_name'  => apply_filters( 'godam_author_last_name_to_send', $author_last_name, $attachment_id ),
+			'public'               => 1,
 		);
 
-		$upload_media = wp_remote_post(
+		$upload_media = wp_remote_request(
 			$api_url,
 			array(
+				'method'  => empty( $transcoding_job_id ) ? 'POST' : 'PUT',
 				'body'    => wp_json_encode( $params ),
 				'headers' => array(
 					'Content-Type' => 'application/json',
@@ -253,8 +396,15 @@ class Media_Library_Ajax {
 	 * @return array $response Attachment response.
 	 */
 	public function add_media_transcoding_status_js( $response, $attachment ) {
-		// Check if attachment type is video.
-		if ( 'video' !== substr( $attachment->post_mime_type, 0, 5 ) ) {
+		// Check if attachment type is video, audio, PDF, or image.
+		$mime_type = $attachment->post_mime_type;
+		$is_video  = 'video' === substr( $mime_type, 0, 5 );
+		$is_audio  = 'audio' === substr( $mime_type, 0, 5 );
+		$is_pdf    = 'application/pdf' === $mime_type;
+		$is_image  = 'image' === substr( $mime_type, 0, 5 );
+
+		// Only process supported attachment types.
+		if ( ! ( $is_video || $is_audio || $is_pdf || $is_image ) ) {
 			return $response;
 		}
 
@@ -267,6 +417,87 @@ class Media_Library_Ajax {
 			$response['transcoded_url'] = false;
 		}
 
+		// For GoDAM-managed images, use rtgodam_image_sizes for media library thumbnails/sizes.
+		if ( $is_image ) {
+			$rtgodam_image_sizes = $this->get_rtgodam_image_sizes( $attachment->ID );
+
+			if ( ! empty( $rtgodam_image_sizes ) ) {
+				$mapped_sizes = array();
+
+				foreach ( $rtgodam_image_sizes as $size_name => $size_data ) {
+					$width  = isset( $size_data['width'] ) ? (int) $size_data['width'] : 0;
+					$height = isset( $size_data['height'] ) ? (int) $size_data['height'] : 0;
+					$url    = isset( $size_data['url'] ) ? esc_url( $size_data['url'] ) : '';
+
+					if ( empty( $url ) || $width <= 0 || $height <= 0 ) {
+						continue;
+					}
+
+					$mapped_sizes[ $size_name ] = array(
+						'url'         => $url,
+						'width'       => $width,
+						'height'      => $height,
+						'orientation' => ( $width > $height ) ? 'landscape' : 'portrait',
+					);
+				}
+
+				if ( ! empty( $mapped_sizes ) ) {
+					$response['sizes'] = array_merge(
+						isset( $response['sizes'] ) && is_array( $response['sizes'] ) ? $response['sizes'] : array(),
+						$mapped_sizes
+					);
+
+					$preview_size = isset( $mapped_sizes['thumbnail'] ) ? $mapped_sizes['thumbnail'] : reset( $mapped_sizes );
+
+					if ( ! empty( $preview_size['url'] ) ) {
+						$response['icon']  = $preview_size['url'];
+						$response['image'] = array(
+							'src'    => $preview_size['url'],
+							'width'  => $preview_size['width'],
+							'height' => $preview_size['height'],
+						);
+					}
+
+					if ( ! empty( $transcoded_url ) ) {
+						$response['url'] = esc_url( $transcoded_url );
+					}
+				}
+			}
+		}
+
+		// Check if item failed due to HTTP auth but auth is now disabled - change to not_started.
+		if ( 'failed' === strtolower( $transcoding_status ) ) {
+			$error_code = get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_code', true );
+
+			// If failed due to HTTP auth but auth is now disabled, reset status.
+			if ( 'http_auth_enabled' === $error_code && ! rtgodam_has_http_auth() ) {
+				$transcoding_status = 'not_started';
+				update_post_meta( $attachment->ID, 'rtgodam_transcoding_status', 'not_started' );
+				delete_post_meta( $attachment->ID, 'rtgodam_transcoding_error_msg' );
+				delete_post_meta( $attachment->ID, 'rtgodam_transcoding_error_code' );
+			}
+		}
+
+		// Check if item is blocked but limits are no longer exceeded - change to not_started.
+		if ( 'blocked' === strtolower( $transcoding_status ) ) {
+			// Use cached usage data to avoid external API calls.
+			$user_data = rtgodam_get_user_data();
+			if ( ! empty( $user_data ) && isset( $user_data['bandwidth_used'], $user_data['total_bandwidth'], $user_data['storage_used'], $user_data['total_storage'] ) ) {
+				$storage_exceeded = $user_data['storage_used'] > $user_data['total_storage'];
+
+				// If storage limit is no longer exceeded, change status to not_started.
+				// (Bandwidth exceeded doesn't block transcoding, so don't reset based on bandwidth).
+				if ( ! $storage_exceeded ) {
+					$transcoding_status = 'not_started';
+					// Update the stored status so it persists.
+					update_post_meta( $attachment->ID, 'rtgodam_transcoding_status', 'not_started' );
+					// Clear the error message since it's no longer blocked.
+					delete_post_meta( $attachment->ID, 'rtgodam_transcoding_error_msg' );
+					delete_post_meta( $attachment->ID, 'rtgodam_transcoding_error_code' );
+				}
+			}
+		}
+
 		// Add transcoding status to response.
 		$response['transcoding_status'] = $transcoding_status ? strtolower( $transcoding_status ) : 'not_started';
 
@@ -276,11 +507,26 @@ class Media_Library_Ajax {
 		if ( ! empty( $godam_original_id ) ) {
 			// Indicate that this is a virtual attachment.
 			$response['virtual'] = true;
+
 			// Set the icon to be used for the virtual media preview.
-			$response['icon'] = get_post_meta( $attachment->ID, 'icon', true );
 			// Populate the image field used by the media library to show previews.
-			$response['image']        = array();
-			$response['image']['src'] = $response['icon'];
+			$icon_url = wp_mime_type_icon( $attachment->ID );
+			
+			// For audio and PDF, ensure we use the default icons.
+			if ( empty( $icon_url ) || strpos( $icon_url, '.svg' ) !== false ) {
+				if ( $is_audio ) {
+					$icon_url = includes_url( 'images/media/audio.png' );
+				} elseif ( $is_pdf ) {
+					$icon_url = includes_url( 'images/media/document.png' );
+				}
+			}
+			
+			$response['image'] = array();
+
+			if ( ! empty( $icon_url ) ) {
+				$response['icon']         = $icon_url;
+				$response['image']['src'] = $icon_url;
+			}
 		}
 
 		return $response;
@@ -510,42 +756,6 @@ class Media_Library_Ajax {
 	}
 
 	/**
-	 * Handle media deletion and notify the external API.
-	 *
-	 * @param int $attachment_id Attachment ID.
-	 * @return void
-	 */
-	public function handle_media_deletion( $attachment_id ) {
-		$job_id        = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
-		$account_token = get_option( 'rtgodam-account-token', '' );
-		$api_key       = get_option( 'rtgodam-api-key', '' );
-
-		// Ensure all required data is available.
-		if ( empty( $job_id ) || empty( $account_token ) || empty( $api_key ) ) {
-			return;
-		}
-
-		// API URL using RTGODAM_API_BASE.
-		$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.mutate.delete_attachment';
-
-		// Request params.
-		$params = array(
-			'job_id'        => $job_id,
-			'api_key'       => $api_key,
-			'account_token' => $account_token,
-		);
-
-		// Send POST request.
-		wp_remote_post(
-			$api_url,
-			array(
-				'body'    => wp_json_encode( $params ),
-				'headers' => array( 'Content-Type' => 'application/json' ),
-			)
-		);
-	}
-
-	/**
 	 * Dismiss the offer banner by updating the option in the database.
 	 *
 	 * @return void
@@ -572,61 +782,68 @@ class Media_Library_Ajax {
 
 		$show_offer_banner = get_option( 'rtgodam-offer-banner', 1 );
 
+		$timezone     = wp_timezone();
+		$current_time = new \DateTime( 'now', $timezone );
+		$end_time     = new \DateTime( '2026-01-20 23:59:59', $timezone );
+
 		// Only show on the Media Library page.
-		if ( $screen && 'upload' === $screen->base && ! rtgodam_is_api_key_valid() && $show_offer_banner ) {
+		if ( $current_time <= $end_time && $screen && 'upload' === $screen->base && $show_offer_banner ) {
 			$host = wp_parse_url( home_url(), PHP_URL_HOST );
 
+			$banner_image = RTGODAM_URL . 'assets/src/images/new-year-sale-2026.webp';
+
 			$banner_html = sprintf(
-				'<div class="notice annual-plan-offer-banner px-10">
-					<canvas id="godam-particle-canvas"></canvas>
-					<div class="annual-plan-offer-banner__content">
-						<div class="annual-plan-offer-banner__message">
-							<h3 class="annual-plan-offer-banner__title">%1$s</h3>
-							<p class="annual-plan-offer-banner__description">%2$s</p>
-						</div>
-						<div class="annual-plan-offer-banner__cta-container">
-							<a
-								href="%3$s"
-								class="annual-plan-offer-banner__cta"
-								target="_blank"
-								rel="noopener noreferrer"
-								title="%4$s"
-							>
-								%4$s
-							</a>
-						</div>
-					</div>
+				'<div class="notice annual-plan-offer-banner">
+					<a
+						href="%1$s"
+						class="annual-plan-offer-banner__link"
+						target="_blank"
+						rel="noopener noreferrer"
+						aria-label="%2$s"
+					>
+						<img
+							src="%3$s"
+							class="annual-plan-offer-banner__image"
+							alt="%4$s"
+							loading="lazy"
+						/>
+					</a>
 					<button
 						type="button"
 						class="annual-plan-offer-banner__dismiss"
-						aria-label="Dismiss banner"
+						aria-label="%5$s"
 					>
 						&times;
 					</button>
 				</div>',
-				esc_html__( 'Pay for 10 months and get 2 months free with our annual plan.', 'godam' ),
-				esc_html__( 'Elevate your media management, transcoding, storage, delivery and more.', 'godam' ),
-				esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=annual-plan&utm_source=' . $host . '&utm_medium=plugin&utm_content=banner' ),
-				esc_html__( 'Buy Now', 'godam' )
+				esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=new-year-sale-2026&utm_source=' . $host . '&utm_medium=plugin&utm_content=media-library-banner' ),
+				esc_attr__( 'Claim the GoDAM New Year Sale 2026 offer', 'godam' ),
+				esc_url( $banner_image ),
+				esc_attr__( 'New Year Sale 2026 offer from GoDAM', 'godam' ),
+				esc_html__( 'Dismiss banner', 'godam' )
 			);
 
 			echo wp_kses(
 				$banner_html,
 				array(
 					'div'    => array( 'class' => array() ),
-					'canvas' => array( 'id' => array() ),
-					'h3'     => array( 'class' => array() ),
-					'p'      => array( 'class' => array() ),
 					'a'      => array(
-						'href'   => array(),
-						'class'  => array(),
-						'target' => array(),
-						'rel'    => array(),
-						'title'  => array(),
+						'href'       => array(),
+						'class'      => array(),
+						'target'     => array(),
+						'rel'        => array(),
+						'aria-label' => array(),
+					),
+					'img'    => array(
+						'src'     => array(),
+						'alt'     => array(),
+						'class'   => array(),
+						'loading' => array(),
 					),
 					'button' => array(
-						'type'  => array(),
-						'class' => array(),
+						'type'       => array(),
+						'class'      => array(),
+						'aria-label' => array(),
 					),
 				)
 			);
@@ -636,7 +853,7 @@ class Media_Library_Ajax {
 	/**
 	 * Replace an existing WordPress media attachment with a file from an external URL,
 	 * using the WordPress Filesystem API.
-	 * 
+	 *
 	 * @since 1.4.2
 	 *
 	 * @param int    $attachment_id The ID of the existing media attachment.
@@ -645,7 +862,7 @@ class Media_Library_Ajax {
 	 * @return int|WP_Error Attachment ID on success, WP_Error on failure.
 	 */
 	private function godam_replace_attachment_with_external_file( $attachment_id, $file_url = '' ) {
-		if ( ! $attachment_id || ! filter_var( $file_url, FILTER_VALIDATE_URL ) || ! wp_http_validate_url( $file_url ) ) {
+		if ( ! $attachment_id || ! $this->is_valid_url( $file_url ) ) {
 			return new \WP_Error( 'invalid_input', __( 'Invalid attachment ID or URL.', 'godam' ) );
 		}
 
@@ -754,13 +971,26 @@ class Media_Library_Ajax {
 	 * @param string $url    The original attachment URL.
 	 * @param int    $post_id The attachment post ID.
 	 *
-	 * @since n.e.x.t 
+	 * @since 1.4.7
 	 *
 	 * @return string The filtered attachment URL.
 	 */
 	public function filter_attachment_url_for_virtual_media( $url, $post_id ) {
+		$attachment_mime_type = get_post_mime_type( $post_id );
+		$godam_original_id    = get_post_meta( $post_id, '_godam_original_id', true );
 
-		$godam_original_id = get_post_meta( $post_id, '_godam_original_id', true );
+		// For WordPress-uploaded images, use CDN URL only when GoDAM sizes map exists.
+		// Otherwise WP may build thumbnail URLs using local metadata + CDN base path,
+		// which breaks old images (dimension mismatch like 350x263 vs 350x262).
+		if ( 'image' === substr( $attachment_mime_type, 0, 5 ) ) {
+			$rtgodam_image_sizes    = $this->get_rtgodam_image_sizes( $post_id );
+			$rtgodam_transcoded_url = get_post_meta( $post_id, 'rtgodam_transcoded_url', true );
+			$can_use_cdn_src        = ( ! empty( $godam_original_id ) || ! empty( $rtgodam_image_sizes ) );
+
+			if ( $can_use_cdn_src && ! empty( $rtgodam_transcoded_url ) ) {
+				return esc_url( $rtgodam_transcoded_url );
+			}
+		}
 
 		if ( ! empty( $godam_original_id ) ) {
 			$attachment         = get_post( $post_id );
@@ -772,5 +1002,277 @@ class Media_Library_Ajax {
 		}
 
 		return $url;
+	}
+
+	/**
+	 * Read GoDAM CDN image size data for an attachment.
+	 *
+	 * @since 1.5.0
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return array
+	 */
+	private function get_rtgodam_image_sizes( $attachment_id ) {
+		$rtgodam_image_sizes = get_post_meta( $attachment_id, 'rtgodam_image_sizes', true );
+		return is_array( $rtgodam_image_sizes ) ? $rtgodam_image_sizes : array();
+	}
+
+	/**
+	 * Pre-filter image meta so WordPress can match a CDN image src during srcset build.
+	 *
+	 * WordPress determines whether the current image src is a known size by checking
+	 * if `$image_src` contains `$dirname . $size_file` (e.g. `2026/03/image-300x200.jpg`).
+	 * When the stored src is already a CDN URL the date sub-directory is absent, so the
+	 * check always fails and WordPress returns `false` for srcset – discarding any CDN
+	 * sources our `wp_calculate_image_srcset` filter would inject.
+	 *
+	 * Stripping the upload sub-directory from `file` makes `$dirname` empty, so
+	 * WordPress can match by basename alone and proceeds with srcset computation.
+	 * The `wp_calculate_image_srcset` filter then replaces the locally-built source
+	 * URLs with the authoritative CDN URLs from `rtgodam_image_sizes`.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array  $image_meta    The image meta data as returned by wp_get_attachment_metadata().
+	 * @param int[]  $size_array    The requested size as [width, height].
+	 * @param string $image_src     The current image source URL.
+	 * @param int    $attachment_id The image attachment ID or 0.
+	 *
+	 * @return array Modified (or unchanged) image meta.
+	 */
+	public function filter_image_srcset_meta( $image_meta, $size_array, $image_src, $attachment_id ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Filter signature requires these params.
+		if ( empty( $attachment_id ) || ! is_array( $image_meta ) || empty( $image_meta['file'] ) ) {
+			return $image_meta;
+		}
+
+		$rtgodam_image_sizes = $this->get_rtgodam_image_sizes( $attachment_id );
+		if ( empty( $rtgodam_image_sizes ) ) {
+			return $image_meta;
+		}
+
+		$cdn_src = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+		if ( empty( $cdn_src ) ) {
+			return $image_meta;
+		}
+
+		$cdn_host = wp_parse_url( $cdn_src, PHP_URL_HOST );
+		$src_host = wp_parse_url( $image_src, PHP_URL_HOST );
+
+		// Only act when the src is already served from the CDN and the file path
+		// still carries a sub-directory prefix (i.e. hasn't been stripped yet).
+		if ( $cdn_host && $src_host && $cdn_host === $src_host && wp_basename( $image_meta['file'] ) !== $image_meta['file'] ) {
+			$image_meta['file'] = wp_basename( $image_meta['file'] );
+		}
+
+		return $image_meta;
+	}
+
+	/**
+	 * Filter srcset calculation for virtual media to use full URLs.
+	 *
+	 * @since 1.5.0
+	 *
+	 * @param array|false $sources       Array of image sources for srcset or false.
+	 * @param array       $size_array    Array of width and height values.
+	 * @param string      $image_src     The 'src' of the image.
+	 * @param array       $image_meta    The image meta data.
+	 * @param int         $attachment_id The image attachment ID.
+	 *
+	 * @return array|false Filtered sources array or false.
+	 */
+	public function filter_virtual_media_srcset( $sources, $size_array, $image_src, $image_meta, $attachment_id ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Filter signature requires these params.
+		$attachment_mime_type = get_post_mime_type( $attachment_id );
+		if ( 'image' !== substr( $attachment_mime_type, 0, 5 ) ) {
+			return $sources;
+		}
+
+		// Rebuild sources array for virtual media.
+		if ( empty( $sources ) || ! is_array( $sources ) ) {
+			return $sources;
+		}
+
+		// Check if virtual media or if rtgodam_image_sizes meta exists (indicating GoDAM-managed image).
+		$godam_original_id   = get_post_meta( $attachment_id, '_godam_original_id', true );
+		$rtgodam_image_sizes = $this->get_rtgodam_image_sizes( $attachment_id );
+
+		if ( empty( $godam_original_id ) && empty( $rtgodam_image_sizes ) ) {
+			return $sources;
+		}
+
+		// If rtgodam_image_sizes meta exists, use it to build the srcset. 
+		// This is the case for GoDAM-managed images which may not be virtual but still need correct srcset URLs.
+		if ( ! empty( $rtgodam_image_sizes ) ) {
+
+			// Prepare new sources array based on rtgodam_image_sizes meta.
+			// Keyed by width to deduplicate and match WordPress's expected format.
+			$new_sources = array();
+			foreach ( $rtgodam_image_sizes as $image_size ) {
+				// Skip entries that do not have a valid URL or width to avoid invalid srcset entries.
+				if ( empty( $image_size['url'] ) || empty( $image_size['width'] ) ) {
+					continue;
+				}
+
+				$width                 = intval( $image_size['width'] );
+				$new_sources[ $width ] = array(
+					'url'        => esc_url( $image_size['url'] ),
+					'descriptor' => 'w',
+					'value'      => $width,
+				);
+			}
+
+			$sources = $new_sources;
+		} elseif ( ! empty( $godam_original_id ) ) {
+			// Compatibility handling for virtual media created before GoDAM image sizes meta was implemented. 
+			// In this case, we will reconstruct the URLs based on the original image URL and the file names in the sources array.
+
+			// Use the current image URL as the base for all subsizes.
+			$base_url = trailingslashit( untrailingslashit( dirname( $image_src ) ) );
+
+			// Rebuild sources array for virtual media.
+			foreach ( $sources as &$source ) {
+
+				// Get last string after the last slash in the file url.
+				$file_basename = basename( $source['url'] );
+
+				// Rebuild the full URL using the base URL and the file basename.
+				$url = $base_url . ltrim( $file_basename, '/' );
+
+				$source['url'] = esc_url( $url );
+			}
+			unset( $source ); // Break the reference.
+		}
+
+		return $sources;
+	}
+
+	/**
+	 * AJAX handler to save HTTP auth detection result.
+	 *
+	 * @since 1.7.1
+	 *
+	 * @return void
+	 */
+	public function save_http_auth_status() {
+		check_ajax_referer( 'godam-http-auth-detector', 'nonce' );
+	
+		if ( ! current_user_can( 'upload_files' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'godam' ) ) );
+		}
+
+		$has_http_auth_raw = isset( $_POST['has_http_auth'] ) ? sanitize_text_field( wp_unslash( $_POST['has_http_auth'] ) ) : '';
+		$has_http_auth     = ( '1' === $has_http_auth_raw );
+	
+		// Save status.
+		update_option(
+			'rtgodam_http_auth_status',
+			array(
+				'enabled'   => $has_http_auth,
+				'timestamp' => time(),
+			)
+		);
+
+		wp_send_json_success(
+			array(
+				'message'       => __( 'HTTP auth status saved.', 'godam' ),
+				'has_http_auth' => $has_http_auth,
+			)
+		);
+	}
+	
+	/**
+	 * Display HTTP authentication warning notice.
+	 *
+	 * @since 1.7.1
+	 *
+	 * @return void
+	 */
+	public function http_auth_warning_notice() {
+		// Only show on media library page.
+		$screen = get_current_screen();
+		if ( ! $screen || 'upload' !== $screen->id ) {
+			return;
+		}
+
+		// Check if HTTP auth is enabled.
+		if ( ! rtgodam_has_http_auth() ) {
+			return;
+		}
+
+		// Get the GoDAM logo URL.
+		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', dirname( __DIR__ ) );
+
+		?>
+		<div class="notice notice-error godam-http-auth-notice">
+			<div class="godam-notice-header">
+				<img src="<?php echo esc_url( $logo_url ); ?>" alt="<?php esc_attr_e( 'GoDAM Logo', 'godam' ); ?>" class="godam-logo">
+				<div>
+					<p><strong><?php esc_html_e( 'GoDAM Transcoding Blocked', 'godam' ); ?></strong></p>
+					<p>
+						<?php
+						esc_html_e( 'HTTP authentication is enabled on your site, which prevents GoDAM from accessing media files for transcoding. Please disable HTTP authentication to enable transcoding.', 'godam' );
+						?>
+					</p>
+				</div>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Replace final rendered content <img> src with CDN URL when available.
+	 *
+	 * @since 1.7.0
+	 *
+	 * @param string $filtered_image Full <img> tag.
+	 * @param string $context        Render context.
+	 * @param int    $attachment_id  Attachment ID.
+	 * @return string
+	 */
+	public function filter_rtgodam_content_img_tag( $filtered_image, $context, $attachment_id ) {
+		if ( empty( $attachment_id ) || empty( $filtered_image ) ) {
+			return $filtered_image;
+		}
+
+		$mime_type = get_post_mime_type( $attachment_id );
+		if ( 'image' !== substr( $mime_type, 0, 5 ) ) {
+			return $filtered_image;
+		}
+
+		// Don't change the image src for virtual media as well.
+		$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+		if ( ! empty( $godam_original_id ) ) {
+			return $filtered_image;
+		}
+
+		// If rtgodam_image_sizes meta exists, it indicates this is a GoDAM-managed image and we should attempt to replace the src with the CDN URL if available.
+		$rtgodam_image_sizes = $this->get_rtgodam_image_sizes( $attachment_id );
+		if ( empty( $rtgodam_image_sizes ) ) {
+			return $filtered_image;
+		}
+
+		$cdn_src = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+		if ( empty( $cdn_src ) ) {
+			return $filtered_image;
+		}
+
+		// If the current src is already on the same CDN host, it is already a correctly-sized
+		// CDN URL (e.g. a subsize chosen via the Image block). Don't overwrite it with the
+		// full-size CDN URL.
+		if ( preg_match( '/\bsrc="([^"]*)"/', $filtered_image, $src_match ) ) {
+			$cdn_host     = wp_parse_url( $cdn_src, PHP_URL_HOST );
+			$current_host = wp_parse_url( $src_match[1], PHP_URL_HOST );
+			if ( $cdn_host && $current_host && $cdn_host === $current_host ) {
+				return $filtered_image;
+			}
+		}
+
+		$updated_image = preg_replace(
+			'/\bsrc="[^"]*"/',
+			' src="' . esc_url( $cdn_src ) . '"',
+			$filtered_image,
+			1
+		);
+
+		return is_string( $updated_image ) ? $updated_image : $filtered_image;
 	}
 }

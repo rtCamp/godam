@@ -17,11 +17,11 @@ $godam_max_file_size = wp_max_upload_size();
 /**
  * Get all required attributes.
  */
-$godam_label         = ! empty( $attributes['label'] ) ? $attributes['label'] : __( 'Record Video', 'godam' );
+$godam_label         = ! empty( $attributes['label'] ) ? $attributes['label'] : __( 'GoDAM Recorder', 'godam' );
 $godam_help          = ! empty( $attributes['description'] ) ? $attributes['description'] : '';
 $godam_block_id      = ! empty( $attributes['blockId'] ) ? $attributes['blockId'] : '';
 $godam_required      = ! empty( $attributes['required'] ) ? $attributes['required'] : false;
-$godam_record_button = ! empty( $attributes['recordButton'] ) ? $attributes['recordButton'] : __( 'Record Video', 'godam' );
+$godam_record_button = ! empty( $attributes['recordButton'] ) ? $attributes['recordButton'] : __( 'Start Recording', 'godam' );
 $godam_file_selector = ! empty( $attributes['fileSelector'] ) ? $attributes['fileSelector'] : array( 'file_input' );
 $godam_max_file_size = ! empty( $attributes['maxFileSize'] ) ? absint( $attributes['maxFileSize'] ) * 1048576 : $godam_max_file_size;
 $godam_form_id       = ! empty( $attributes['formId'] ) ? $attributes['formId'] : '';
@@ -87,6 +87,7 @@ $godam_wrapper_attributes = get_block_wrapper_attributes(
 	<label
 		for="<?php echo esc_attr( $godam_video_upload_button_id ); ?>"
 		class="srfm-description"
+		style="margin-top: 0;"
 		><?php echo esc_html( $godam_help ); ?></label>
 	<div
 		style="margin: 4px 0;"
@@ -105,7 +106,10 @@ $godam_wrapper_attributes = get_block_wrapper_attributes(
 			<span class="dashicons dashicons-video-alt"></span>
 			<?php echo esc_html( $godam_record_button ); ?>
 		</button>
-		<p class="srfm-description">
+		<p
+			class="srfm-description"
+			style="margin-bottom: 0;"
+		>
 			<?php
 				echo esc_html(
 					sprintf(
@@ -116,6 +120,8 @@ $godam_wrapper_attributes = get_block_wrapper_attributes(
 				);
 				?>
 		</p>
+		<div id="<?php echo esc_attr( $godam_uppy_preview_id ); ?>" class="uppy-video-upload-preview" style="margin-top: 0;"></div>
+		<div id="<?php echo esc_attr( $godam_uppy_file_name_id ); ?>" class="upp-video-upload-filename srfm-description"></div>
 		<div class="srfm-error-wrap">
 			<div
 				class="srfm-error-message"
@@ -123,7 +129,5 @@ $godam_wrapper_attributes = get_block_wrapper_attributes(
 				data-error-msg="<?php echo esc_attr( $godam_error_msg ); ?>"
 			><?php echo esc_html( $godam_error_msg ); ?></div>
 		</div>
-		<div id="<?php echo esc_attr( $godam_uppy_preview_id ); ?>" class="uppy-video-upload-preview"></div>
-		<div id="<?php echo esc_attr( $godam_uppy_file_name_id ); ?>" class="upp-video-upload-filename srfm-description"></div>
 	</div>
 </div>

@@ -68,6 +68,13 @@ class Pages {
 	private $whats_new_slug = 'rtgodam_whats_new';
 
 	/**
+	 * Slug for the welcome walkthrough page.
+	 *
+	 * @var string
+	 */
+	private $welcome_slug = 'rtgodam_welcome';
+
+	/**
 	 * Menu pag ID.
 	 *
 	 * @var string
@@ -117,6 +124,13 @@ class Pages {
 	private $whats_new_page_id = 'godam_page_rtgodam_whats_new';
 
 	/**
+	 * Welcome page ID.
+	 *
+	 * @var string
+	 */
+	private $welcome_page_id = 'godam_page_rtgodam_welcome';
+
+	/**
 	 * Construct method.
 	 */
 	protected function __construct() {
@@ -139,6 +153,10 @@ class Pages {
 		// "What's New" page related actions.
 		add_action( 'current_screen', array( $this, 'redirect_to_whats_new' ) );
 		add_action( 'admin_menu', array( $this, 'remove_whats_new_page' ) );
+
+		// "Welcome" walkthrough page related actions.
+		add_action( 'current_screen', array( $this, 'redirect_to_welcome' ) );
+		add_action( 'admin_menu', array( $this, 'remove_welcome_page' ) );
 
 		// Remove anti-spam field during shortcode render for WPForms in Video Editor Page.
 		// @see https://github.com/rtCamp/godam/issues/597 issue link.
@@ -252,6 +270,20 @@ class Pages {
 				8
 			);
 		}
+
+		// Only add "Welcome" submenu page if we are on a GoDAM menu.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['page'] ) && sanitize_key( $_GET['page'] ) === $this->welcome_slug ) {
+			add_submenu_page(
+				$this->menu_slug,
+				__( 'Welcome', 'godam' ),
+				__( 'Welcome', 'godam' ),
+				'manage_options',
+				$this->welcome_slug,
+				array( $this, 'render_welcome_page' ),
+				9
+			);
+		}
 	}
 
 	/**
@@ -264,7 +296,7 @@ class Pages {
 		$screen = get_current_screen();
 
 		// Check if this is your custom admin page.
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id, $this->settings_page_id, $this->tools_page_id, $this->whats_new_page_id ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id, $this->settings_page_id, $this->tools_page_id, $this->whats_new_page_id, $this->welcome_page_id ), true ) ) {
 			// Remove admin notices.
 			remove_all_actions( 'admin_notices' );
 			remove_all_actions( 'all_admin_notices' );
@@ -376,7 +408,7 @@ class Pages {
 		}
 
 		?>
-		<div class="godam-admin-root">
+		<div class="godam-admin-root godam-video-editor-page">
 			<div id="root-video-editor">
 				<div class="progress-bar-wrapper">
 					<div class="progress-bar-container">
@@ -396,9 +428,10 @@ class Pages {
 	 * @return void
 	 */
 	public function render_dashboard_page() {
+		$is_premium_user = rtgodam_is_api_key_valid();
 		?>
 		<div class="godam-admin-root">
-			<div id="root-video-dashboard"></div>
+			<div id="root-video-dashboard" class="<?php echo $is_premium_user ? '' : 'free-user'; ?>"></div>
 		</div>
 		<?php
 	}
@@ -409,9 +442,10 @@ class Pages {
 	 * @return void
 	 */
 	public function render_analytics_page() {
+		$is_premium_user = rtgodam_is_api_key_valid();
 		?>
 		<div class="godam-admin-root">
-			<div id="root-video-analytics"></div>
+			<div id="root-video-analytics" class="<?php echo $is_premium_user ? '' : 'free-user'; ?>"></div>
 		</div>
 		<?php
 	}
@@ -428,6 +462,19 @@ class Pages {
 	}
 
 	/**
+	 * To render the welcome walkthrough page.
+	 *
+	 * @return void
+	 */
+	public function render_welcome_page() {
+		?>
+		<div class="godam-admin-root">
+			<div id="root-godam-welcome"></div>
+		</div>
+		<?php
+	}
+
+	/**
 	 * To enqueue scripts and styles in admin.
 	 *
 	 * @return void
@@ -435,7 +482,7 @@ class Pages {
 	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
 
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id, $this->tools_page_id ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id, $this->tools_page_id, $this->whats_new_page_id, $this->welcome_page_id ), true ) ) {
 
 			wp_register_script(
 				'rtgodam-page-style',
@@ -505,6 +552,12 @@ class Pages {
 					'ninjaFormsActive'   => $is_ninja_forms_active,
 					'metformActive'      => $is_met_form_active,
 				)
+			);
+
+			wp_localize_script(
+				'transcoder-page-script-video-editor',
+				'posthogConfig',
+				$this->get_posthog_config()
 			);
 
 			// Enqueue Gravity Forms styles if the plugin is active.
@@ -605,11 +658,23 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			$timezone     = wp_timezone();
+			$current_time = new \DateTime( 'now', $timezone );
+			$end_time     = new \DateTime( '2026-01-20 23:59:59', $timezone );
+
+			wp_localize_script(
+				'godam-page-script-dashboard',
+				'posthogConfig',
+				$this->get_posthog_config()
+			);
+
 			wp_localize_script(
 				'godam-page-script-dashboard',
 				'videoData',
 				array(
-					'adminUrl' => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
+					'adminUrl'              => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
+					'godamBaseUrl'          => RTGODAM_IO_API_BASE,
+					'showNewYearSaleBanner' => ( $current_time <= $end_time ),
 				)
 			);
 
@@ -658,7 +723,14 @@ class Pages {
 					'currentUserId'    => get_current_user_id(),            // Current user ID.
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
 					'adminUrl'         => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
+					'godamBaseUrl'     => RTGODAM_IO_API_BASE,
 				)
+			);
+
+			wp_localize_script(
+				'transcoder-page-script-analytics',
+				'posthogConfig',
+				$this->get_posthog_config()
 			);
 
 			$rtgodam_user_data = rtgodam_get_user_data( true );
@@ -696,6 +768,12 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			wp_localize_script(
+				'godam-page-script-help',
+				'posthogConfig',
+				$this->get_posthog_config()
+			);
+
 			// Footer URL data for internal redirection.
 			wp_localize_script(
 				'godam-page-script-help',
@@ -725,6 +803,12 @@ class Pages {
 					$rtgodam_user_data
 				);
 			}
+
+			wp_localize_script(
+				'transcoder-page-script-godam',
+				'posthogConfig',
+				$this->get_posthog_config()
+			);
 
 			// Footer URL data for internal redirection.
 			wp_localize_script(
@@ -757,6 +841,12 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			wp_localize_script(
+				'godam-page-script-tools',
+				'posthogConfig',
+				$this->get_posthog_config()
+			);
+
 			// Footer URL data for internal redirection.
 			wp_localize_script(
 				'godam-page-script-tools',
@@ -787,7 +877,48 @@ class Pages {
 				)
 			);
 
+			wp_localize_script(
+				'godam-page-script-whats-new',
+				'posthogConfig',
+				$this->get_posthog_config()
+			);
+
 			wp_enqueue_script( 'godam-page-script-whats-new' );
+		} elseif ( $screen && $this->welcome_page_id === $screen->id ) {
+
+			wp_register_script(
+				'godam-page-script-welcome',
+				RTGODAM_URL . 'assets/build/pages/welcome.min.js',
+				array( 'wp-element', 'wp-i18n' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/welcome.min.js' ),
+				true
+			);
+
+			wp_set_script_translations( 'godam-page-script-welcome', 'godam', RTGODAM_PATH . 'languages' );
+
+			wp_localize_script(
+				'godam-page-script-welcome',
+				'godamWelcomeData',
+				array(
+					'nonce'           => wp_create_nonce( 'wp_rest' ),
+					'dashboardUrl'    => admin_url( 'admin.php?page=' . $this->menu_slug ),
+					'mediaLibraryUrl' => admin_url( 'upload.php' ),
+					'videoEditorUrl'  => admin_url( 'admin.php?page=rtgodam_video_editor' ),
+					'analyticsUrl'    => admin_url( 'admin.php?page=' . $this->menu_slug ),
+					'settingsUrl'     => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
+					'host'            => wp_parse_url( home_url(), PHP_URL_HOST ),
+				)
+			);
+
+			wp_localize_script(
+				'godam-page-script-welcome',
+				'godamRestRoute',
+				array(
+					'url' => rest_url(),
+				)
+			);
+
+			wp_enqueue_script( 'godam-page-script-welcome' );
 		}
 
 		wp_enqueue_style( 'wp-components' );
@@ -819,6 +950,53 @@ class Pages {
 				'roles'    => $roles,
 			)
 		);
+
+		wp_localize_script(
+			'media-library-react',
+			'posthogConfig',
+			$this->get_posthog_config()
+		);
+	}
+
+	/**
+	 * Get PostHog configuration for internal GoDAM analytics tracking.
+	 * These are hardcoded public keys - clients don't need to configure anything.
+	 *
+	 * @return array PostHog configuration array with 'key', 'host', and 'enabled' settings.
+	 */
+	private function get_posthog_config() {
+		$settings        = get_option( 'rtgodam-settings', array() );
+		$enable_tracking = isset( $settings['general']['enable_posthog_tracking'] ) ? $settings['general']['enable_posthog_tracking'] : false;
+
+		$config = array(
+			'key'     => 'phc_9P3X3py1SfwrF78SXXkIyL2cHjkRTpvWzqf8RZJDaSk',
+			'host'    => 'https://us.i.posthog.com',
+			'enabled' => (int) $enable_tracking, // Convert boolean to int (0/1) for proper JS encoding.
+		);
+
+		if ( $enable_tracking ) {
+			global $wpdb, $wp_version;
+
+			if ( ! function_exists( 'get_plugins' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
+
+			$all_plugins    = get_plugins();
+			$active_plugins = get_option( 'active_plugins', array() );
+
+			$config['properties'] = array(
+				'php_version'          => phpversion(),
+				'mysql_version'        => $wpdb->db_version(),
+				'server_software'      => isset( $_SERVER['SERVER_SOFTWARE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) ) : '',
+				'wp_version'           => $wp_version,
+				'site_language'        => get_locale(),
+				'active_plugins_count' => count( $active_plugins ),
+				'total_plugins_count'  => count( $all_plugins ),
+				'user_count'           => count_users()['total_users'] ?? 0,
+			);
+		}
+
+		return $config;
 	}
 
 	/**
@@ -1006,6 +1184,41 @@ class Pages {
 	}
 
 	/**
+	 * Redirects to "Welcome" walkthrough page on fresh install.
+	 *
+	 * Takes priority over the What's New redirect so the user sees
+	 * the walkthrough first. The What's New transient will be consumed
+	 * on the next GoDAM page load after the walkthrough completes.
+	 *
+	 * @param object $screen The current screen object.
+	 */
+	public function redirect_to_welcome( $screen ) {
+		// Only redirect if on a valid GoDAM admin page.
+		if (
+			! is_admin() ||
+			! $screen ||
+			false === strpos( $screen->id, $this->menu_slug )
+		) {
+			return;
+		}
+
+		// Don't redirect if already on the welcome page.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['page'] ) && sanitize_key( $_GET['page'] ) === $this->welcome_slug ) {
+			return;
+		}
+
+		if ( get_option( 'rtgodam_show_welcome' ) ) {
+			// Redirect only once, then clean up.
+			delete_option( 'rtgodam_show_welcome' );
+
+			// Redirect to Welcome walkthrough page.
+			wp_safe_redirect( admin_url( 'admin.php?page=' . $this->welcome_slug ) );
+			exit;
+		}
+	}
+
+	/**
 	 * Redirects to "What's New" submenu page after a plugin update.
 	 *
 	 * @param object $screen The current screen object.
@@ -1020,9 +1233,21 @@ class Pages {
 			return;
 		}
 
-		if ( get_transient( 'rtgodam_show_whats_new' ) ) {
-			// Redirect only once, then clean up any related transient data.
-			delete_transient( 'rtgodam_show_whats_new' );
+		// If the Welcome walkthrough hasn't been shown yet, let it take priority.
+		// The What's New option will be consumed after the walkthrough completes.
+		if ( get_option( 'rtgodam_show_welcome' ) ) {
+			return;
+		}
+
+		// Don't redirect away from the Welcome page — the user must finish the walkthrough first.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['page'] ) && sanitize_key( $_GET['page'] ) === $this->welcome_slug ) {
+			return;
+		}
+
+		if ( get_option( 'rtgodam_show_whats_new' ) ) {
+			// Redirect only once, then clean up any related data.
+			delete_option( 'rtgodam_show_whats_new' );
 			delete_transient( 'rtgodam_release_data' );
 
 			// Redirect to "What's New" admin page.
@@ -1038,6 +1263,16 @@ class Pages {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( ( isset( $_GET['page'] ) && sanitize_key( $_GET['page'] ) !== $this->whats_new_slug ) ) {
 			remove_submenu_page( $this->menu_slug, $this->whats_new_slug );
+		}
+	}
+
+	/**
+	 * Remove the "Welcome" submenu page once the user navigates away.
+	 */
+	public function remove_welcome_page() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! isset( $_GET['page'] ) || sanitize_key( $_GET['page'] ) !== $this->welcome_slug ) {
+			remove_submenu_page( $this->menu_slug, $this->welcome_slug );
 		}
 	}
 }

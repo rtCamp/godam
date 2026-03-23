@@ -128,10 +128,31 @@ const deactivationJS = {
 	},
 };
 
+const httpAuthDetector = {
+	...sharedConfig,
+	entry: {
+		'http-auth-detector': path.resolve( process.cwd(), 'assets', 'src', 'js', 'http-auth-detector.js' ),
+	},
+};
+
 const godamGallery = {
 	...sharedConfig,
 	entry: {
 		'godam-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-gallery.js' ),
+	},
+};
+
+const godamVideoEmbed = {
+	...sharedConfig,
+	entry: {
+		'godam-video-embed': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-video-embed.js' ),
+	},
+};
+
+const godamVideoPreview = {
+	...sharedConfig,
+	entry: {
+		'godam-video-preview': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-video-preview.js' ),
 	},
 };
 
@@ -223,6 +244,40 @@ const ninjaForms = {
 	},
 };
 
+const wpBakeryVideoSelectorParam = {
+	...sharedConfig,
+	entry: {
+		'wpbakery-video-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-video-selector-param.js' ),
+	},
+};
+
+const wpBakeryAudioSelectorParam = {
+	...sharedConfig,
+	entry: {
+		'wpbakery-audio-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-audio-selector-param.js' ),
+	},
+};
+
+const wpBakeryImageSrcSelectorParam = {
+	...sharedConfig,
+	entry: {
+		'wpbakery-image-src-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-image-src-selector-param.js' ),
+	},
+};
+const ninjaFormsSubmissionsList = {
+	...sharedConfig,
+	entry: {
+		'ninja-forms-submissions-list': path.resolve( process.cwd(), 'assets', 'src', 'js', 'ninja-forms', 'ninja-forms-submissions-list.js' ),
+	},
+};
+
+const blockExtensions = {
+	...sharedConfig,
+	entry: {
+		'block-extensions': path.resolve( process.cwd(), 'assets', 'src', 'block-extensions', 'index.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -281,6 +336,7 @@ const pages = {
 		'react-dom': 'ReactDOM',
 		'@wordpress/element': [ 'wp', 'element' ], // For WordPress compatibility
 		'@wordpress/i18n': [ 'wp', 'i18n' ],
+		'@wordpress/components': [ 'wp', 'components' ],
 	},
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
@@ -296,7 +352,10 @@ module.exports = [
 	godamPlayerFrontend,
 	godamPlayerAnalytics,
 	deactivationJS,
+	httpAuthDetector,
 	godamGallery,
+	godamVideoEmbed,
+	godamVideoPreview,
 	gfGodamRecorderEditorJS,
 	wpFormsGodamRecorderEditorJS,
 	jetpackFormJS,
@@ -311,4 +370,9 @@ module.exports = [
 	lifterLMSBlock,
 	lifterLMSEmbed,
 	ninjaForms,
+	wpBakeryVideoSelectorParam,
+	wpBakeryAudioSelectorParam,
+	wpBakeryImageSrcSelectorParam,
+	ninjaFormsSubmissionsList,
+	blockExtensions,
 ];

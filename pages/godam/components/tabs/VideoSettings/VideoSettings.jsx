@@ -21,11 +21,12 @@ import { __ } from '@wordpress/i18n';
  */
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
-import { scrollToTop, hasValidAPIKey } from '../../../utils/index.js';
+import { scrollToTop, hasAPIKey } from '../../../utils/index.js';
 import APISettings from './APISettings.jsx';
 import VideoCompressQuality from './VideoCompressQuality.jsx';
 import VideoThumbnails from './VideoThumbnails.jsx';
 import VideoWatermark from './VideoWatermark.jsx';
+import VideoEngagement from './VideoEngagement.jsx';
 
 /**
  * Styles
@@ -97,7 +98,7 @@ const VideoSettings = () => {
 				</Notice>
 			) }
 
-			{ ! hasValidAPIKey && (
+			{ ! hasAPIKey && (
 				<Panel className="godam-panel godam-margin-bottom godam-api-key-banner">
 					<PanelBody opened>
 						<h2>{ __( 'Ensure Smooth Video Playback', 'godam' ) }</h2>
@@ -114,21 +115,26 @@ const VideoSettings = () => {
 								{ __( 'Choose GoDAM plan', 'godam' ) }
 							</Button>
 						</div>
+
+						<p className="text-sm text-gray-600 mt-3">
+							{ __( 'Start with GoDAM Free for 60 days, or plans starting from $9/mo.', 'godam' ) }
+						</p>
 					</PanelBody>
 				</Panel>
 			) }
 
 			<APISettings setNotice={ setNotice } />
 
-			{ hasValidAPIKey && (
+			{ hasAPIKey && (
 				<>
 					<VideoCompressQuality handleSettingChange={ handleSettingChange } />
 					<VideoThumbnails handleSettingChange={ handleSettingChange } />
 					<VideoWatermark handleSettingChange={ handleSettingChange } />
+					<VideoEngagement handleSettingChange={ handleSettingChange } />
 				</>
 			) }
 
-			{ hasValidAPIKey && (
+			{ hasAPIKey && (
 				<Button
 					variant="primary"
 					className="godam-button"

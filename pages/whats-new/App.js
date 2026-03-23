@@ -21,7 +21,8 @@ const App = () => {
 				setIsLoading( true );
 				setHasError( false );
 
-				const response = await fetch( '/wp-json/godam/v1/release-post' );
+				const restUrl = window.godamRestRoute?.url || '/wp-json/';
+				const response = await fetch( `${ restUrl }godam/v1/release-post` );
 
 				if ( ! response.ok ) {
 					throw new Error( 'Failed to fetch data' );
