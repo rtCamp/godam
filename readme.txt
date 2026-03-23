@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.7.1
+Stable tag: 1.7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -219,6 +219,11 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v1.7.2 (March 20, 2026) =
+
+- Fix: Fixed video data collection in analytics.
+- Fix: Improved image optimization to support all registered image sizes.
+
 = v1.7.1 (March 17, 2026) =
 
 - Fix: Resolved invalid duration issue for hotspot layer in the video editor.
@@ -245,19 +250,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: Resolved endpoint routing issues on subdomain-based multisite setups.
 - Fix: Fixed audio duration display issue in audio preview.
 - Fix: Improved video transcript path fetching.
-- Fix: Addressed security vulnerabilities.
-
-= v1.6.0 (February 05, 2026) =
-
-- Feat: Added WPBakery Page Builder integration for GoDAM Video, Audio, and Gallery blocks.
-- Feat: Added new Card CTA featuring multiple layout options, responsive design, and image width customization.
-- Feat: Added support for custom SVG and image icons for hotspot layers.
-- Feat: Extended audio recording capabilities for WPForms, SureForms, and Everest Forms GoDAM Recorder.
-- Feat: Added Video Duration Limit option to Gravity Forms Recorder.
-- Tweak: Unified URL validation guide messages across CTA, Ads, and Hotspot layers.
-- Fix: Improved video SEO with proper HTML content stripping, warning messages for empty descriptions, and video duration metadata storage.
-- Fix: Addressed admin pages styling and media library UI issues.
-- Fix: Fixed issues with Analytics.
 - Fix: Addressed security vulnerabilities.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
