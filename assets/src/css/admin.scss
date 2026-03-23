@@ -951,3 +951,36 @@ to ensure proper responsiveness and avoid layout issues.
 .no-underline {
 	text-decoration: none;
 }
+
+.godam-video-thumb-wrapper {
+	position: relative;
+	display: block;
+
+	&.godam-locked img {
+		filter: blur(3px) brightness(0.7);
+	}
+
+	.godam-lock-overlay {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 28px;
+		color: #fff;
+		background: rgba(0,0,0,0.25);
+		border-radius: 4px;
+		pointer-events: none;
+
+		filter: drop-shadow(0 2px 4px rgba(0,0,0,0.55));
+
+		svg {
+			filter: drop-shadow(0 2px 4px rgba(0,0,0,0.55));
+		}
+	}
+}
+
+.godam-featured-video-gallery-notice {
+	margin-left: 8px !important;
+    margin-right: 8px !important;
+}

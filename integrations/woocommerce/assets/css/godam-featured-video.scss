@@ -57,3 +57,29 @@
 .godam-woocommerce-featured-video-modal-content .is-landscape .godam-bubble-skin .video-js .vjs-control-bar .vjs-progress-control {
 	max-width: 81%;
 }
+
+.godam-thumb-loading {
+	position: relative;
+	aspect-ratio: 1 / 1;
+	width: 100%;
+
+	&::after {
+		content: "";
+		width: 24px;
+		height: 24px;
+		border: 3px solid #ddd;
+		border-top: 3px solid #333;
+		border-radius: 50%;
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		animation: godam-spin 0.8s linear infinite;
+	}
+}
+
+@keyframes godam-spin {
+	to {
+		transform: translate(-50%, -50%) rotate(360deg);
+	}
+}

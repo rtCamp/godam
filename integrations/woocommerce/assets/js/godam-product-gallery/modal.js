@@ -39,7 +39,7 @@
  * Internal dependencies
  */
 import { initSidebar, loadSidebarProducts, resetSidebarState } from '../global-video-popup/sidebar.js';
-import { parseTimestamp, isSafari } from '../global-video-popup/utility.js';
+import { parseTimestamp } from '../global-video-popup/utility.js';
 import { resetVideoModal, loadNewVideo, initScrollSwipeNavigation } from '../global-video-popup/video-modal.js';
 import { registerEscapeHandler, unregisterEscapeHandler } from '../global-video-popup/escapeManager.js';
 
@@ -139,7 +139,7 @@ export function initProductGalleryVideoModal() {
 
 		const modal = getModal;
 
-		if ( isSafari() && timestampBtn ) {
+		if ( timestampBtn ) {
 			document.body.appendChild( modal );
 		}
 
@@ -239,7 +239,7 @@ function close( modal, sidebarModal, ctaEnabled, ctaDisplayPosition ) {
 		resetSidebarState( modal, sidebarModal, modalContent );
 	}
 
-	if ( isSafari() && modal.parentElement === document.body ) {
+	if ( modal.parentElement === document.body ) {
 		modal.remove();
 	}
 }
