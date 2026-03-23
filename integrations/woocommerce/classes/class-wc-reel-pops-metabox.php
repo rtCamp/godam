@@ -94,121 +94,11 @@ class WC_Reel_Pops_Metabox {
 		wp_enqueue_media();
 		wp_enqueue_script( 'jquery-ui-sortable' );
 
-		wp_add_inline_style(
-			'wp-admin',
-			'
-			.godam-reel-pops-metabox { padding: 15px; }
-			.godam-reel-pops-video-list {
-				margin-top: 15px;
-				display: flex;
-				flex-wrap: wrap;
-				gap: 10px;
-				margin-bottom: 1.5rem;
-			}
-			.godam-reel-pops-video-item {
-				width: calc(33.333% - 10px);
-				min-width: 240px;
-				position: relative;
-				background: #f9f9f9;
-				border: 1px solid #ddd;
-				padding: 12px;
-				border-radius: 4px;
-				box-sizing: border-box;
-			}
-			.godam-reel-pops-video-item.ui-sortable-helper {
-				box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-				opacity: 0.9;
-			}
-			.godam-reel-pops-drag-handle {
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				width: 20px;
-				min-width: 20px;
-				cursor: grab;
-				color: #aaa;
-				font-size: 18px;
-				user-select: none;
-				padding-right: 4px;
-				flex-shrink: 0;
-			}
-			.godam-reel-pops-drag-handle:active { cursor: grabbing; }
-			.godam-reel-pops-video-placeholder {
-				border: 2px dashed #b9b9b9;
-				background: #f3f3f3;
-				border-radius: 4px;
-				min-height: 96px;
-			}
-			.godam-reel-pops-video-thumb {
-				width: 70px;
-				height: 70px;
-				border-radius: 4px;
-				background: #111;
-				overflow: hidden;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				color: #fff;
-				font-size: 11px;
-			}
-			.godam-reel-pops-video-thumb img {
-				width: 100%;
-				height: 100%;
-				object-fit: cover;
-			}
-			.godam-reel-pops-video-item-header {
-				display: flex;
-				justify-content: flex-start;
-				align-items: center;
-				gap: 10px;
-			}
-			.godam-reel-pops-video-item-header strong {
-				font-size: 14px;
-				display: block;
-				white-space: nowrap;
-				overflow: hidden;
-				text-overflow: ellipsis;
-				max-width: 180px;
-			}
-			.godam-reel-pops-video-meta { line-height: 1.4; }
-			.godam-reel-pops-video-remove {
-				position: absolute;
-				top: 8px;
-				right: 8px;
-				width: 24px;
-				height: 24px;
-				border-radius: 50%;
-				border: 1px solid #ccc;
-				background: #fff;
-				color: #a00;
-				cursor: pointer;
-				line-height: 1;
-			}
-			.godam-reel-pops-video-item-controls { display: flex; gap: 8px; }
-			.godam-reel-pops-video-item input[type="text"] { width: 100%; }
-			.godam-reel-pops-settings-grid {
-				display: grid;
-				grid-template-columns: repeat(2, 1fr);
-				gap: 15px;
-				margin-top: 15px;
-			}
-			.godam-reel-pops-setting-item label {
-				display: block;
-				margin-bottom: 5px;
-				font-weight: 600;
-			}
-			.godam-reel-pops-setting-item select,
-			.godam-reel-pops-setting-item input[type="number"] {
-				width: 100%;
-			}
-			@media (max-width: 782px) {
-				.godam-reel-pops-settings-grid { grid-template-columns: 1fr; }
-				.godam-reel-pops-video-item { width: calc(50% - 10px); min-width: 0; }
-			}
-			@media (max-width: 580px) {
-				.godam-reel-pops-video-item { width: 100%; }
-			}
-		'
+		wp_enqueue_style(
+			'godam-reel-pops-metabox',
+			RTGODAM_URL . 'assets/build/integrations/woocommerce/css/godam-reel-pops-metabox.css',
+			array(),
+			rtgodam_wc_get_asset_version( RTGODAM_PATH . 'assets/build/integrations/woocommerce/css/godam-reel-pops-metabox.css' )
 		);
 	}
 
@@ -303,7 +193,14 @@ class WC_Reel_Pops_Metabox {
 				</button>
 			</div>
 
-			<div class="godam-reel-pops-settings-grid">
+			<details class="godam-reel-pops-advanced-panel" id="godam-reel-pops-advanced-panel">
+				<summary>
+					<?php esc_html_e( 'Advanced Settings', 'godam' ); ?>
+					<em class="godam-reel-pops-advanced-chevron" aria-hidden="true">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+					</em>
+				</summary>
+				<div class="godam-reel-pops-settings-grid">
 				<div class="godam-reel-pops-setting-item">
 					<label for="godam_reel_pops_aspect_ratio"><?php esc_html_e( 'Aspect Ratio', 'godam' ); ?></label>
 					<select name="godam_reel_pops[aspectRatio]" id="godam_reel_pops_aspect_ratio">
@@ -404,7 +301,8 @@ class WC_Reel_Pops_Metabox {
 						<?php esc_html_e( 'Enable video navigations on modal', 'godam' ); ?>
 					</label>
 				</div>
-			</div>
+				</div>
+			</details>
 		</div>
 
 		<script type="text/javascript">
