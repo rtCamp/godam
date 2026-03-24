@@ -10,7 +10,6 @@ import { useBlockProps, InspectorControls, MediaUpload, MediaUploadCheck } from 
 import {
 	PanelBody,
 	SelectControl,
-	ToggleControl,
 	RangeControl,
 	Button,
 	Notice,
@@ -27,18 +26,9 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		aspectRatio,
 		position,
 		animation,
-		animationDuration,
 		durationSeconds,
 		initialDelay,
 		closePersistence,
-		enableAutoplay,
-		showMuteButton,
-		showPlayButton,
-		enableModalNavigation,
-		popupWidth,
-		mobilePopupWidth,
-		bottomSpacing,
-		sideSpacing,
 	} = attributes;
 
 	// Initialize blockId once
@@ -243,41 +233,6 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						onChange={ ( value ) => setAttributes( { position: value } ) }
 					/>
 
-					<RangeControl
-						label={ __( 'Popup Width (px)', 'godam' ) }
-						value={ popupWidth }
-						onChange={ ( value ) => setAttributes( { popupWidth: value } ) }
-						min={ 80 }
-						max={ 300 }
-						step={ 10 }
-					/>
-
-					<RangeControl
-						label={ __( 'Mobile Popup Width (px)', 'godam' ) }
-						value={ mobilePopupWidth }
-						onChange={ ( value ) => setAttributes( { mobilePopupWidth: value } ) }
-						min={ 80 }
-						max={ 300 }
-						step={ 10 }
-					/>
-
-					<RangeControl
-						label={ __( 'Bottom Spacing (px)', 'godam' ) }
-						value={ bottomSpacing }
-						onChange={ ( value ) => setAttributes( { bottomSpacing: value } ) }
-						min={ 0 }
-						max={ 100 }
-						step={ 5 }
-					/>
-
-					<RangeControl
-						label={ __( 'Side Spacing (px)', 'godam' ) }
-						value={ sideSpacing }
-						onChange={ ( value ) => setAttributes( { sideSpacing: value } ) }
-						min={ 0 }
-						max={ 100 }
-						step={ 5 }
-					/>
 				</PanelBody>
 
 				<PanelBody title={ __( 'Animation Settings', 'godam' ) } initialOpen={ false }>
@@ -295,14 +250,6 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						onChange={ ( value ) => setAttributes( { animation: value } ) }
 					/>
 
-					<RangeControl
-						label={ __( 'Animation Duration (ms)', 'godam' ) }
-						value={ animationDuration }
-						onChange={ ( value ) => setAttributes( { animationDuration: value } ) }
-						min={ 200 }
-						max={ 2000 }
-						step={ 100 }
-					/>
 				</PanelBody>
 
 				<PanelBody title={ __( 'Playback Settings', 'godam' ) } initialOpen={ false }>
@@ -326,33 +273,6 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						step={ 1 }
 					/>
 
-					<ToggleControl
-						label={ __( 'Enable Autoplay', 'godam' ) }
-						help={ __( 'Videos will autoplay muted (browser-safe). Disable to show play button overlay.', 'godam' ) }
-						checked={ enableAutoplay }
-						onChange={ ( value ) => setAttributes( { enableAutoplay: value } ) }
-					/>
-
-					<ToggleControl
-						label={ __( 'Show Mute Button', 'godam' ) }
-						help={ __( 'Displays a mute/unmute toggle on the reel popup.', 'godam' ) }
-						checked={ showMuteButton }
-						onChange={ ( value ) => setAttributes( { showMuteButton: value } ) }
-					/>
-
-					<ToggleControl
-						label={ __( 'Show Play Button Overlay', 'godam' ) }
-						help={ __( 'Displays a play/pause button over the active video.', 'godam' ) }
-						checked={ showPlayButton }
-						onChange={ ( value ) => setAttributes( { showPlayButton: value } ) }
-					/>
-
-					<ToggleControl
-						label={ __( 'Enable video navigations on modal', 'godam' ) }
-						help={ __( 'Shows previous/next navigation controls in the opened modal.', 'godam' ) }
-						checked={ enableModalNavigation }
-						onChange={ ( value ) => setAttributes( { enableModalNavigation: value } ) }
-					/>
 				</PanelBody>
 
 				<PanelBody title={ __( 'Close Behavior', 'godam' ) } initialOpen={ false }>
