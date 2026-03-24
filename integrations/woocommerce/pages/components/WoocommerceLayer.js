@@ -198,27 +198,13 @@ const ProductHotspotPanel = ( {
 
 			{ isExpanded && (
 				<div className="mt-3">
-					{ /* Product Hotspot Name */ }
-					<TextControl
-						className="godam-input"
-						label={ __( 'Product Hotspot Name', 'godam' ) }
-						value={ productHotspot.name ?? '' }
-						/* translators: %d is the hotspot index */
-						placeholder={ productData?.name
-							? `${ index + 1 }. ${ productData.name }`
-							: `Product Hotspot ${ index + 1 }` }
-						maxLength={ 40 }
-						onChange={ ( val ) => {
-							const v = ( val || '' ).slice( 0, 40 );
-							updateField(
-								'productHotspots',
-								productHotspots.map( ( h2, j ) =>
-									j === index ? { ...h2, name: v } : h2,
-								),
-							);
-						} }
-						help={ __( 'Give this Product hotspot a descriptive title.', 'godam' ) }
-						disabled={ ! isValidAPIKey }
+					<ProductSelector
+						index={ index }
+						value={ productHotspot.productId }
+						productHotspot={ productHotspot }
+						productHotspots={ productHotspots }
+						updateField={ updateField }
+						isValidAPIKey={ isValidAPIKey }
 					/>
 					<div className="mt-3">
 						{ ( () => {
@@ -277,14 +263,6 @@ const ProductHotspotPanel = ( {
 							);
 						} )() }
 					</div>
-					<ProductSelector
-						index={ index }
-						value={ productHotspot.productId }
-						productHotspot={ productHotspot }
-						productHotspots={ productHotspots }
-						updateField={ updateField }
-						isValidAPIKey={ isValidAPIKey }
-					/>
 					{ productHotspot.showIcon && (
 						<div className="flex flex-col gap-2 mt-2">
 							<FontAwesomeIconPicker
