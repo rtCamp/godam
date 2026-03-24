@@ -57,9 +57,25 @@ class WC_Reel_Pops_Metabox {
 	 * Add metabox to product edit screen.
 	 */
 	public function add_metabox() {
+		$preview_image_url = RTGODAM_WC_MODULE_URL . 'assets/images/product-reel-pops.webp';
+
+		$help_tip = sprintf(
+			'<span class="godam-help-tip">' .
+				'<span class="godam-help-tip__icon">?</span>' .
+				'<span class="godam-help-tip__popup">' .
+					'<img src="%1$s" alt="%2$s" class="godam-help-tip__preview" />' .
+					'<span class="godam-help-tip__text">%3$s</span>' .
+				'</span>' .
+			'</span>',
+			esc_url( $preview_image_url ),
+			esc_attr__( 'Reel Pops preview', 'godam' ),
+			esc_html__( 'Display a floating video reel popup on your product page. Reel Pops grab attention with an interactive video overlay that showcases your product.', 'godam' )
+		);
+
 		$title = apply_filters(
 			'rtgodam_reels_pops_metabox_title',
 			__( 'GoDAM Reel Pops', 'godam' ) .
+			' ' . $help_tip .
 			' <span class="godam-pro-badge">' . __( 'Pro', 'godam' ) . '</span>'
 		);
 

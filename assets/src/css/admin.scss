@@ -962,13 +962,13 @@ to ensure proper responsiveness and avoid layout issues.
 		position: absolute;
 		top: calc(100% + 8px);
 		left: 50%;
-		transform: translateX(-90%);
+		transform: translateX(-50%);
 		z-index: 100001;
 		width: 280px;
 		padding: 0;
 		background: #fff;
 		border-radius: 8px;
-		box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+		box-shadow: 0 4px 24px 8px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
 		overflow: hidden;
 		pointer-events: none;
 	}
