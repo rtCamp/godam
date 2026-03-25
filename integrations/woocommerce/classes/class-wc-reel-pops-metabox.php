@@ -61,8 +61,8 @@ class WC_Reel_Pops_Metabox {
 
 		$help_tip = sprintf(
 			'<span class="godam-help-tip">' .
-				'<span class="godam-help-tip__icon">?</span>' .
-				'<span class="godam-help-tip__popup">' .
+				'<span class="godam-help-tip__icon" role="button" tabindex="0" aria-expanded="false" aria-controls="godam-help-tip-popup--reel-pops">?</span>' .
+				'<span id="godam-help-tip-popup--reel-pops" class="godam-help-tip__popup" role="tooltip" aria-hidden="true">' .
 					'<img src="%1$s" alt="%2$s" class="godam-help-tip__preview" />' .
 					'<span class="godam-help-tip__text">%3$s</span>' .
 				'</span>' .
@@ -72,11 +72,13 @@ class WC_Reel_Pops_Metabox {
 			esc_html__( 'Display a floating video reel popup on your product page. Reel Pops grab attention with an interactive video overlay that showcases your product.', 'godam' )
 		);
 
-		$title = apply_filters(
-			'rtgodam_reels_pops_metabox_title',
-			__( 'GoDAM Reel Pops', 'godam' ) .
-			' ' . $help_tip .
-			' <span class="godam-pro-badge">' . __( 'Pro', 'godam' ) . '</span>'
+		$title = wp_kses_post( 
+			apply_filters(
+				'rtgodam_reels_pops_metabox_title',
+				__( 'GoDAM Reel Pops', 'godam' ) .
+				$help_tip .
+				' <span class="godam-pro-badge">' . __( 'Pro', 'godam' ) . '</span>'
+			) 
 		);
 
 		$title = wp_kses_post( $title );

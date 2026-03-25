@@ -922,13 +922,14 @@ to ensure proper responsiveness and avoid layout issues.
 }
 
 #rtgodam_product_video_gallery, #godam_reel_pops_metabox {
+
 	.postbox-header .hndle {
 		justify-content: unset;
 	}
 }
 
 /*
- * Help-tip tooltip shown on hover in metabox titles.
+ * Help-tip tooltip shown on hover/focus in metabox titles.
  */
 .godam-help-tip {
 	position: relative;
@@ -938,6 +939,13 @@ to ensure proper responsiveness and avoid layout issues.
 	margin-left: 6px;
 
 	&__icon {
+		// Reset button styles.
+		appearance: none;
+		border: none;
+		padding: 0;
+		margin: 0;
+		font-family: inherit;
+
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -955,6 +963,16 @@ to ensure proper responsiveness and avoid layout issues.
 		&:hover {
 			background: #6b7280;
 		}
+
+		&:focus {
+			outline: 2px solid #3b82f6;
+			outline-offset: 2px;
+			background: #6b7280;
+		}
+
+		&:focus:not(:focus-visible) {
+			outline: none;
+		}
 	}
 
 	&__popup {
@@ -970,10 +988,10 @@ to ensure proper responsiveness and avoid layout issues.
 		border-radius: 8px;
 		box-shadow: 0 4px 24px 8px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
 		overflow: hidden;
-		pointer-events: none;
 	}
 
-	&:hover &__popup {
+	&:hover &__popup,
+	&:focus-within &__popup {
 		display: block;
 	}
 

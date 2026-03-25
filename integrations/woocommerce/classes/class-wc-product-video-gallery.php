@@ -151,8 +151,8 @@ class WC_Product_Video_Gallery {
 
 		$help_tip = sprintf(
 			'<span class="godam-help-tip">' .
-				'<span class="godam-help-tip__icon">?</span>' .
-				'<span class="godam-help-tip__popup">' .
+				'<span class="godam-help-tip__icon" role="button" tabindex="0" aria-expanded="false" aria-controls="godam-help-tip-popup--product-reels">?</span>' .
+				'<span id="godam-help-tip-popup--product-reels" class="godam-help-tip__popup" role="tooltip" aria-hidden="true">' .
 					'<img src="%1$s" alt="%2$s" class="godam-help-tip__preview" />' .
 					'<span class="godam-help-tip__text">%3$s</span>' .
 				'</span>' .
@@ -162,11 +162,13 @@ class WC_Product_Video_Gallery {
 			esc_html__( 'Add short video reels to your product pages. Reels appear as a scrollable carousel, helping customers see your products in action.', 'godam' )
 		);
 
-		$title = apply_filters(
-			'rtgodam_video_gallery_metabox_title',
-			__( 'Product Reels', 'godam' ) .
-			' ' . $help_tip .
-			' <span class="godam-pro-badge">' . __( 'Pro', 'godam' ) . '</span>'
+		$title = wp_kses_post( 
+			apply_filters(
+				'rtgodam_video_gallery_metabox_title',
+				__( 'Product Reels', 'godam' ) .
+				$help_tip .
+				' <span class="godam-pro-badge">' . __( 'Pro', 'godam' ) . '</span>'
+			) 
 		);
 
 		add_meta_box(
