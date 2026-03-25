@@ -29,8 +29,6 @@ import WooCommerceSettings from './../../../../../integrations/woocommerce/pages
 const IntegrationSettings = () => {
 	const isWooActive = Boolean( window?.easydamMediaLibrary?.isWooActive );
 
-	const [ , setActiveTab ] = useState( 'woocommerce' );
-
 	// Build tabs conditionally.
 	const tabs = [
 		...( isWooActive
@@ -135,7 +133,6 @@ const IntegrationSettings = () => {
 					className="godam-tab-panel"
 					activeClass="is-active"
 					tabs={ tabs }
-					onSelect={ ( tabName ) => setActiveTab( tabName ) }
 				>
 					{ ( tab ) => {
 						switch ( tab.name ) {

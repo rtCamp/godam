@@ -28,7 +28,7 @@ const WooCommerceSettings = ( { settings = {}, onSettingChange, hasValidAPIKey, 
 					)
 					: __( 'Enable or disable the WooCommerce integration.', 'godam' )
 			}
-			disabled={ ! hasValidAPIKey }
+			disabled={ ! hasValidAPIKey && ! enable }
 			onChange={ ( value ) => onSettingChange( 'enable', value ) }
 		/>
 	);
