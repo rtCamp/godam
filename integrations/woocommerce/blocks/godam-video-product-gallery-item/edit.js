@@ -16,7 +16,7 @@ import {
 } from '@wordpress/components';
 import { useState, useEffect, useCallback } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
-import { video as videoIcon, closeSmall, store as storeIcon } from '@wordpress/icons';
+import { video as videoIcon, closeSmall, store as storeIcon, edit as editIcon } from '@wordpress/icons';
 import apiFetch from '@wordpress/api-fetch';
 
 /**
@@ -53,10 +53,11 @@ export default function Edit( { attributes, setAttributes, context } ) {
 		productImage,
 	} = attributes;
 
-	// Get context from parent block - layout for future use
+	// Get context from parent block.
 	// eslint-disable-next-line no-unused-vars
 	const layout = context[ 'godam/videoProductGallery/layout' ] || 'carousel';
 	const viewRatio = context[ 'godam/videoProductGallery/viewRatio' ] || '9:16';
+	const showAddToCart = context[ 'godam/videoProductGallery/showAddToCart' ] !== false;
 
 	// Convert ratio to CSS-friendly format
 	const ratioClass = viewRatio.replace( ':', '-' );
@@ -231,28 +232,54 @@ export default function Edit( { attributes, setAttributes, context } ) {
 			{ /* Product Section */ }
 			<div className={ `godam-gallery-item__product ${ ! productId ? 'godam-gallery-item__product--empty' : '' }` }>
 				{ productId ? (
-					<div className="godam-gallery-item__product-info">
-						{ productImage && (
-							<img
-								src={ productImage }
-								alt={ productName }
-								className="godam-gallery-item__product-image"
-							/>
-						) }
-						<div className="godam-gallery-item__product-details">
-							<p className="godam-gallery-item__product-name">{ productName }</p>
-							{ productPrice && (
-								<p className="godam-gallery-item__product-price">{ productPrice }</p>
+					<>
+						<div className="godam-gallery-item__product-info">
+							{ productImage && (
+								<img
+									src={ productImage }
+									alt={ productName }
+									className="godam-gallery-item__product-image"
+								/>
 							) }
+							<div className="godam-gallery-item__product-details">
+								<p className="godam-gallery-item__product-name">{ productName }</p>
+								{ productPrice && (
+									<p className="godam-gallery-item__product-price">{ productPrice }</p>
+								) }
+							</div>
 						</div>
-						<Button
-							icon={ closeSmall }
-							className="godam-gallery-item__product-remove"
-							onClick={ onClearProduct }
-							label={ __( 'Remove product', 'godam' ) }
-							size="small"
-						/>
-					</div>
+						<div className="godam-gallery-item__product-overlay">
+							<Button
+								variant="secondary"
+								icon={ editIcon }
+								onClick={ () => setIsProductModalOpen( true ) }
+								className="godam-gallery-item__product-overlay-btn"
+								size="compact"
+							>
+								{ __( 'Replace', 'godam' ) }
+							</Button>
+							<Button
+								variant="secondary"
+								isDestructive
+								icon={ closeSmall }
+								onClick={ onClearProduct }
+								className="godam-gallery-item__product-overlay-btn"
+								size="compact"
+							>
+								{ __( 'Remove', 'godam' ) }
+							</Button>
+						</div>
+						{ showAddToCart && (
+							<span
+								className="godam-gallery-item__add-to-cart-preview wp-element-button"
+								aria-label={ __( 'Add to Cart (preview)', 'godam' ) }
+							>
+								<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
+									<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+								</svg>
+							</span>
+						) }
+					</>
 				) : (
 					<div className="godam-gallery-item__product-select">
 						<Button

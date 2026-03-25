@@ -123,6 +123,18 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						<ToggleGroupControlOption label="1:1" value="1:1" />
 						<ToggleGroupControlOption label="16:9" value="16:9" />
 					</ToggleGroupControl>
+
+					{ /* Item Width Selector */ }
+					<RangeControl
+						__nextHasNoMarginBottom
+						label={ __( 'Item Width', 'godam' ) }
+						value={ itemWidth }
+						onChange={ ( value ) => setAttributes( { itemWidth: value } ) }
+						min={ 180 }
+						max={ 600 }
+						step={ 10 }
+						help={ __( 'Width of each gallery item in pixels.', 'godam' ) }
+					/>
 				</PanelBody>
 
 				<PanelBody title={ __( 'Playback & Interaction', 'godam' ) } initialOpen={ true }>
@@ -147,19 +159,6 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						}
 						checked={ !! showAddToCart }
 						onChange={ ( value ) => setAttributes( { showAddToCart: value } ) }
-					/>
-				</PanelBody>
-
-				<PanelBody title={ __( 'Settings', 'godam' ) } initialOpen={ false }>
-					<RangeControl
-						__nextHasNoMarginBottom
-						label={ __( 'Item Width', 'godam' ) }
-						value={ itemWidth }
-						onChange={ ( value ) => setAttributes( { itemWidth: value } ) }
-						min={ 180 }
-						max={ 600 }
-						step={ 10 }
-						help={ __( 'Width of each gallery item in pixels.', 'godam' ) }
 					/>
 				</PanelBody>
 			</InspectorControls>

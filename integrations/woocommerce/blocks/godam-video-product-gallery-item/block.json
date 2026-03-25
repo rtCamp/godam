@@ -45,7 +45,8 @@
   "usesContext": [
     "godam/videoProductGallery/layout",
     "godam/videoProductGallery/viewRatio",
-    "godam/videoProductGallery/itemWidth"
+    "godam/videoProductGallery/itemWidth",
+    "godam/videoProductGallery/showAddToCart"
   ],
   "supports": {
     "reusable": false,

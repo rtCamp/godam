@@ -74,6 +74,8 @@
 }
 
 .godam-video-product-gallery-item {
+	container-type: inline-size;
+	container-name: gallery-item;
 	min-width: 180px;
 	background: #fff;
 	border-radius: 0.5rem;
@@ -108,9 +110,13 @@
 }
 
 .godam-gallery-item__product {
+	position: relative;
 	padding: 12px;
 	background: #fff;
 	border-top: 1px solid #f0f0f0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
 
 	&--empty {
 		display: flex;
@@ -144,13 +150,16 @@
 		display: flex;
 		align-items: center;
 		gap: 8px;
+		flex-grow: 1;
+		min-width: 0;
 
 		.godam-gallery-item__product-image {
-			width: 36px;
-			height: 36px;
+			width: 40px;
+			height: 40px;
 			border-radius: 6px;
 			object-fit: cover;
 			background: #f5f5f5;
+			flex-shrink: 0;
 		}
 
 		.godam-gallery-item__product-details {
@@ -174,17 +183,54 @@
 				margin: 0;
 			}
 		}
+	}
 
-		.godam-gallery-item__product-change {
-			flex-shrink: 0;
-			padding: 4px;
-			min-width: auto;
+	// Hover overlay with Replace + Remove buttons.
+	.godam-gallery-item__product-overlay {
+		position: absolute;
+		inset: 0;
+		background: rgba(255, 255, 255, 0.85);
+		backdrop-filter: blur(4px);
+		-webkit-backdrop-filter: blur(4px);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		opacity: 0;
+		transition: opacity 0.15s ease;
+		pointer-events: none;
+		z-index: 1;
+	}
 
-			svg {
-				width: 16px;
-				height: 16px;
-			}
-		}
+	&:hover .godam-gallery-item__product-overlay {
+		opacity: 1;
+		pointer-events: auto;
+	}
+
+	.godam-gallery-item__product-overlay-btn {
+		font-size: 12px;
+	}
+}
+
+// Add to Cart preview button (editor only).
+.godam-gallery-item__add-to-cart-preview {
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	padding: 0 !important;
+	border: none;
+	border-radius: 0.5rem;
+	cursor: default;
+	line-height: 1;
+	pointer-events: none;
+
+	svg {
+		display: block;
+		width: 18px;
+		height: 18px;
 	}
 }
 
@@ -354,6 +400,19 @@
 			font-size: 13px;
 			color: #007cba;
 			font-weight: 600;
+		}
+	}
+}
+
+// Container query — small gallery items (width < 220px).
+@container gallery-item (max-width: 220px) {
+
+	.godam-gallery-item__product {
+		padding-top: 30px;
+
+		.godam-gallery-item__product-image {
+			position: absolute;
+			top: -20px;
 		}
 	}
 }

@@ -35,7 +35,8 @@
   "providesContext": {
     "godam/videoProductGallery/layout": "layout",
     "godam/videoProductGallery/viewRatio": "viewRatio",
-    "godam/videoProductGallery/itemWidth": "itemWidth"
+    "godam/videoProductGallery/itemWidth": "itemWidth",
+    "godam/videoProductGallery/showAddToCart": "showAddToCart"
   },
   "supports": {
     "anchor": true,

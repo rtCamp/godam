@@ -23,6 +23,7 @@
 	gap: var(--gallery-gap);
 	scroll-snap-type: x mandatory;
 	-webkit-overflow-scrolling: touch;
+	align-items: start;
 }
 
 // Carousel layout.
@@ -48,11 +49,8 @@
 .godam-video-product-gallery--grid {
 
 	.godam-video-product-gallery__container {
-		flex-wrap: wrap;
-	}
-
-	.godam-video-product-gallery-item {
-		flex: 0 0 var(--gallery-item-width);
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(var(--gallery-item-width), 1fr));
 	}
 }
 
@@ -80,6 +78,8 @@
 
 // Gallery Item.
 .godam-video-product-gallery-item {
+	container-type: inline-size;
+	container-name: gallery-item;
 	position: relative;
 	display: flex;
 	flex-direction: column;
@@ -224,21 +224,21 @@
 
 // Progress bar — thin stripe at the bottom.
 .godam-gallery-item__progress {
-	padding: 0 0 6px;
+	padding: 0 0 0;
 	cursor: pointer;
 }
 
 .godam-gallery-item__progress-bar {
 	position: relative;
 	width: 100%;
-	height: 3px;
-	background: rgba(255, 255, 255, 0.3);
+	height: 6px;
+	background: rgba(0, 0, 0, 0.4);
 	border-radius: 2px;
 	overflow: hidden;
 	transition: height 0.15s ease;
 
 	.godam-gallery-item__video-wrapper:hover & {
-		height: 5px;
+		height: 8px;
 	}
 }
 
@@ -266,6 +266,7 @@
 
 // Product Section.
 .godam-gallery-item__product {
+	position: relative;
 	padding: 10px;
 	background: var(--product-bg);
 	display: flex;
@@ -365,6 +366,7 @@
 }
 
 @keyframes godam-spin {
+
 	from {
 		transform: rotate(0deg);
 	}
@@ -497,14 +499,17 @@
 			height: 18px;
 		}
 	}
+}
 
-	.godam-gallery-item__play-button {
-		width: 40px;
-		height: 40px;
+// Container query — small gallery items (width < 220px).
+@container gallery-item (max-width: 220px) {
 
-		svg {
-			width: 20px;
-			height: 20px;
+	.godam-gallery-item__product {
+		padding-top: 30px;
+
+		.godam-gallery-item__product-image {
+			position: absolute;
+			top: -20px;
 		}
 	}
 }
