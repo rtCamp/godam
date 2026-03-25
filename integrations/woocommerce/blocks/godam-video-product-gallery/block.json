@@ -26,6 +26,14 @@
     "gap": {
       "type": "number",
       "default": 16
+    },
+    "autoplay": {
+      "type": "boolean",
+      "default": false
+    },
+    "showAddToCart": {
+      "type": "boolean",
+      "default": true
     }
   },
   "providesContext": {
@@ -39,7 +47,8 @@
     "align": ["center", "wide", "full"],
     "spacing": {
       "margin": true,
-      "padding": true
+      "padding": true,
+      "blockGap": true
     }
   },
   "editorScript": ["file:./index.js"],

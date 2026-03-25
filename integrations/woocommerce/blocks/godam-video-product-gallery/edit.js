@@ -14,6 +14,7 @@ import {
 import {
 	PanelBody,
 	RangeControl,
+	ToggleControl,
 	__experimentalToggleGroupControl as ToggleGroupControl,
 	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
 	__experimentalToggleGroupControlOptionIcon as ToggleGroupControlOptionIcon,
@@ -37,7 +38,7 @@ import './editor.scss';
  * @return {JSX.Element} Element to render.
  */
 export default function Edit( { attributes, setAttributes, clientId } ) {
-	const { blockId, layout, viewRatio, itemWidth, gap } = attributes;
+	const { blockId, layout, viewRatio, itemWidth, gap, autoplay, showAddToCart } = attributes;
 
 	// Set the Block id of the Block as ClientId.
 	useEffect( () => {
@@ -75,7 +76,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody title={ __( 'Gallery Settings', 'godam' ) } initialOpen={ true }>
+				<PanelBody title={ __( 'Layout', 'godam' ) } initialOpen={ true }>
 					{ /* Layout Selector with Icons */ }
 					<ToggleGroupControl
 						__nextHasNoMarginBottom
@@ -112,14 +113,39 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					</ToggleGroupControl>
 				</PanelBody>
 
-				<PanelBody title={ __( 'Style Settings', 'godam' ) } initialOpen={ false }>
+				<PanelBody title={ __( 'Playback & Interaction', 'godam' ) } initialOpen={ true }>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ __( 'Autoplay', 'godam' ) }
+						help={
+							autoplay
+								? __( 'Videos will autoplay when visible.', 'godam' )
+								: __( 'Videos will not autoplay.', 'godam' )
+						}
+						checked={ !! autoplay }
+						onChange={ ( value ) => setAttributes( { autoplay: value } ) }
+					/>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ __( 'Show Add to Cart Button', 'godam' ) }
+						help={
+							showAddToCart
+								? __( 'Displays an Add to Cart button on each product.', 'godam' )
+								: __( 'Add to Cart button is hidden. Clicking the product title opens the product page.', 'godam' )
+						}
+						checked={ !! showAddToCart }
+						onChange={ ( value ) => setAttributes( { showAddToCart: value } ) }
+					/>
+				</PanelBody>
+
+				<PanelBody title={ __( 'Settings', 'godam' ) } initialOpen={ false }>
 					<RangeControl
 						__nextHasNoMarginBottom
 						label={ __( 'Item Width', 'godam' ) }
 						value={ itemWidth }
 						onChange={ ( value ) => setAttributes( { itemWidth: value } ) }
-						min={ 100 }
-						max={ 400 }
+						min={ 180 }
+						max={ 600 }
 						step={ 10 }
 						help={ __( 'Width of each gallery item in pixels.', 'godam' ) }
 					/>

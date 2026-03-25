@@ -33,6 +33,7 @@
 		constructor( element ) {
 			this.element = element;
 			this.layout = element.dataset.layout || 'carousel';
+			this.autoplay = element.dataset.autoplay === 'true';
 			this.container = element.querySelector( '.godam-video-product-gallery__container' );
 			this.items = element.querySelectorAll( '.godam-video-product-gallery-item' );
 			this.prevBtn = element.querySelector( '.godam-video-product-gallery__nav--prev' );
@@ -48,6 +49,149 @@
 			this.items.forEach( ( item, index ) => {
 				this.players[ index ] = new VideoPlayer( item );
 			} );
+
+			if ( this.autoplay ) {
+				this.initAutoplay();
+			}
+
+			this.initAddToCart();
+		}
+
+		/**
+		 * Use IntersectionObserver to autoplay videos when ≥50% visible
+		 * and pause when they scroll out of view.
+		 */
+		initAutoplay() {
+			const observer = new IntersectionObserver(
+				( entries ) => {
+					entries.forEach( ( entry ) => {
+						const video = entry.target.querySelector( 'video' );
+						if ( ! video ) {
+							return;
+						}
+						if ( entry.isIntersecting ) {
+							video.play().catch( () => {} );
+						} else {
+							video.pause();
+						}
+					} );
+				},
+				{ threshold: 0.5 },
+			);
+
+			this.items.forEach( ( item ) => observer.observe( item ) );
+		}
+
+		/**
+		 * Attach click handlers on Add to Cart buttons.
+		 * Simple/external products: POST to WooCommerce Store API, then open the mini-cart.
+		 * Variable products: rendered as <a> links, so they navigate to product page natively.
+		 */
+		initAddToCart() {
+			const buttons = this.element.querySelectorAll( 'button.godam-gallery-item__add-to-cart' );
+			buttons.forEach( ( btn ) => {
+				btn.addEventListener( 'click', ( e ) => {
+					e.preventDefault();
+					e.stopPropagation();
+					this.handleAddToCart( btn );
+				} );
+			} );
+		}
+
+		/**
+		 * Handle the add-to-cart action for a button.
+		 *
+		 * @param {HTMLButtonElement} btn The add-to-cart button element.
+		 */
+		async handleAddToCart( btn ) {
+			const productId = btn.dataset.productId;
+			if ( ! productId || btn.classList.contains( 'is-loading' ) ) {
+				return;
+			}
+
+			const iconEl = btn.querySelector( '.godam-gallery-item__add-to-cart-icon' );
+			const spinnerEl = btn.querySelector( '.godam-gallery-item__add-to-cart-spinner' );
+			const checkEl = btn.querySelector( '.godam-gallery-item__add-to-cart-check' );
+
+			// Show loading state.
+			btn.classList.add( 'is-loading' );
+			btn.disabled = true;
+			if ( iconEl ) {
+				iconEl.style.display = 'none';
+			}
+			if ( spinnerEl ) {
+				spinnerEl.style.display = 'block';
+			}
+
+			try {
+				const response = await fetch( '/wp-json/wc/store/v1/cart/add-item', {
+					method: 'POST',
+					credentials: 'same-origin',
+					headers: {
+						'Content-Type': 'application/json',
+						Nonce: ( typeof wcBlocksMiddlewareConfig !== 'undefined' && wcBlocksMiddlewareConfig.storeApiNonce ) || '',
+					},
+					body: JSON.stringify( { id: parseInt( productId, 10 ), quantity: 1 } ),
+				} );
+
+				if ( ! response.ok ) {
+					throw new Error( 'Add to cart failed' );
+				}
+
+				// Show success state.
+				if ( spinnerEl ) {
+					spinnerEl.style.display = 'none';
+				}
+				if ( checkEl ) {
+					checkEl.style.display = 'block';
+				}
+				btn.classList.remove( 'is-loading' );
+				btn.classList.add( 'is-added' );
+
+				// Open mini-cart sidebar if available (block themes).
+				this.openMiniCart();
+
+				// Refresh WooCommerce fragments (classic themes).
+				if ( typeof jQuery !== 'undefined' ) {
+					jQuery( document.body ).trigger( 'wc_fragment_refresh' );
+				}
+
+				// Reset button after 2 seconds.
+				setTimeout( () => {
+					if ( checkEl ) {
+						checkEl.style.display = 'none';
+					}
+					if ( iconEl ) {
+						iconEl.style.display = 'block';
+					}
+					btn.classList.remove( 'is-added' );
+					btn.disabled = false;
+				}, 2000 );
+			} catch {
+				// Reset on error.
+				if ( spinnerEl ) {
+					spinnerEl.style.display = 'none';
+				}
+				if ( iconEl ) {
+					iconEl.style.display = 'block';
+				}
+				btn.classList.remove( 'is-loading' );
+				btn.disabled = false;
+			}
+		}
+
+		/**
+		 * Try to open the WooCommerce Mini Cart sidebar (block themes).
+		 */
+		openMiniCart() {
+			// Method 1: Dispatch a custom event that WooCommerce mini-cart listens to.
+			document.body.dispatchEvent( new Event( 'wc-blocks_added_to_cart' ) );
+
+			// Method 2: Click the mini-cart button if it exists.
+			const miniCartBtn = document.querySelector( '.wc-block-mini-cart__button' );
+			if ( miniCartBtn ) {
+				miniCartBtn.click();
+			}
 		}
 
 		initCarousel() {
