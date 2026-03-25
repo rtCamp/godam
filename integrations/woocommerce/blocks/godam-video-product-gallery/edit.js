@@ -38,7 +38,19 @@ import './editor.scss';
  * @return {JSX.Element} Element to render.
  */
 export default function Edit( { attributes, setAttributes, clientId } ) {
-	const { blockId, layout, viewRatio, itemWidth, gap, autoplay, showAddToCart } = attributes;
+	const { blockId, layout, viewRatio, itemWidth, autoplay, showAddToCart } = attributes;
+
+	// Read blockGap from native spacing support and convert preset values to CSS.
+	const rawGap = attributes.style?.spacing?.blockGap;
+	const gapCss = ( () => {
+		if ( ! rawGap ) {
+			return '16px';
+		}
+		if ( typeof rawGap === 'string' && rawGap.startsWith( 'var:preset|spacing|' ) ) {
+			return rawGap.replace( 'var:preset|spacing|', 'var(--wp--preset--spacing--' ) + ')';
+		}
+		return rawGap;
+	} )();
 
 	// Set the Block id of the Block as ClientId.
 	useEffect( () => {
@@ -63,7 +75,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		className: `godam-video-product-gallery godam-video-product-gallery--${ layout }`,
 		style: {
 			'--godam-gallery-item-width': `${ itemWidth }px`,
-			'--godam-gallery-gap': `${ gap }px`,
+			'--godam-gallery-gap': gapCss,
 		},
 	} );
 
@@ -148,16 +160,6 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						max={ 600 }
 						step={ 10 }
 						help={ __( 'Width of each gallery item in pixels.', 'godam' ) }
-					/>
-					<RangeControl
-						__nextHasNoMarginBottom
-						label={ __( 'Gap', 'godam' ) }
-						value={ gap }
-						onChange={ ( value ) => setAttributes( { gap: value } ) }
-						min={ 0 }
-						max={ 48 }
-						step={ 4 }
-						help={ __( 'Spacing between gallery items.', 'godam' ) }
 					/>
 				</PanelBody>
 			</InspectorControls>

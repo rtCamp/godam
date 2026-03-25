@@ -45,8 +45,7 @@
   "usesContext": [
     "godam/videoProductGallery/layout",
     "godam/videoProductGallery/viewRatio",
-    "godam/videoProductGallery/itemWidth",
-    "godam/videoProductGallery/gap"
+    "godam/videoProductGallery/itemWidth"
   ],
   "supports": {
     "reusable": false,

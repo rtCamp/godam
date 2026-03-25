@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! function_exists( 'godam_vpg_get_video_sources' ) ) {
+
 	/**
 	 * Get video sources from attachment metadata.
 	 *
@@ -65,6 +66,7 @@ if ( ! function_exists( 'godam_vpg_get_video_sources' ) ) {
 }
 
 if ( ! function_exists( 'godam_vpg_get_video_thumbnail' ) ) {
+
 	/**
 	 * Get video thumbnail/poster from attachment.
 	 *
@@ -98,6 +100,7 @@ if ( ! function_exists( 'godam_vpg_get_video_thumbnail' ) ) {
 }
 
 if ( ! function_exists( 'godam_vpg_get_product_data' ) ) {
+
 	/**
 	 * Get fresh product data from WooCommerce.
 	 *
@@ -152,7 +155,7 @@ if ( ! function_exists( 'godam_vpg_get_product_data' ) ) {
 
 			// Get attribute labels and options.
 			foreach ( $attributes as $attribute_name => $options ) {
-				$attribute_label = wc_attribute_label( $attribute_name );
+				$attribute_label                          = wc_attribute_label( $attribute_name );
 				$product_data['variants']['attributes'][] = array(
 					'name'    => $attribute_name,
 					'label'   => $attribute_label,
@@ -190,7 +193,19 @@ $block_id   = isset( $attributes['blockId'] ) ? 'godam-vpg-' . esc_attr( $attrib
 $layout     = isset( $attributes['layout'] ) ? esc_attr( $attributes['layout'] ) : 'carousel';
 $view_ratio = isset( $attributes['viewRatio'] ) ? esc_attr( $attributes['viewRatio'] ) : '9:16';
 $item_width = isset( $attributes['itemWidth'] ) ? absint( $attributes['itemWidth'] ) : 180;
-$gap        = isset( $attributes['gap'] ) ? absint( $attributes['gap'] ) : 16;
+$autoplay   = ! empty( $attributes['autoplay'] );
+
+// Read blockGap from native spacing support (Dimensions > Block spacing).
+$block_gap_raw = isset( $attributes['style']['spacing']['blockGap'] ) ? $attributes['style']['spacing']['blockGap'] : '16px';
+
+// Convert preset spacing values (e.g. "var:preset|spacing|50") to CSS var().
+if ( is_string( $block_gap_raw ) && str_starts_with( $block_gap_raw, 'var:preset|spacing|' ) ) {
+	$slug      = str_replace( 'var:preset|spacing|', '', $block_gap_raw );
+	$block_gap = 'var(--wp--preset--spacing--' . $slug . ')';
+} else {
+	$block_gap = $block_gap_raw;
+}
+$show_add_to_cart = isset( $attributes['showAddToCart'] ) ? (bool) $attributes['showAddToCart'] : true;
 
 // Convert ratio to CSS class format.
 $ratio_class = str_replace( ':', '-', $view_ratio );
@@ -244,33 +259,31 @@ if ( empty( $gallery_items ) ) {
 
 // Build inline styles for CSS custom properties.
 $inline_styles = sprintf(
-	'--godam-gallery-item-width: %dpx; --godam-gallery-gap: %dpx;',
+	'--godam-gallery-item-width: %dpx; --godam-gallery-gap: %s;',
 	$item_width,
-	$gap
+	$block_gap
 );
 
 // Build wrapper attributes.
 $wrapper_attributes = get_block_wrapper_attributes(
 	array(
-		'id'            => $block_id,
-		'class'         => sprintf(
+		'id'                    => $block_id,
+		'class'                 => sprintf(
 			'godam-video-product-gallery godam-video-product-gallery--%s godam-video-product-gallery--ratio-%s',
 			$layout,
 			$ratio_class
 		),
-		'style'         => $inline_styles,
-		'data-block-id' => $block_id,
-		'data-layout'   => $layout,
-		'data-ratio'    => $view_ratio,
+		'style'                 => $inline_styles,
+		'data-block-id'         => $block_id,
+		'data-layout'           => $layout,
+		'data-ratio'            => $view_ratio,
+		'data-autoplay'         => $autoplay ? 'true' : 'false',
+		'data-show-add-to-cart' => $show_add_to_cart ? 'true' : 'false',
 	)
 );
 
-// Temporarily disabled Video.js for demo - using native HTML5 video.
-// wp_enqueue_style( 'video-js', 'https://vjs.zencdn.net/8.10.0/video-js.css', array(), '8.10.0' );
-// wp_enqueue_script( 'video-js', 'https://vjs.zencdn.net/8.10.0/video.min.js', array(), '8.10.0', true );
-
 ?>
-<div <?php echo $wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+<div <?php echo wp_kses_data( $wrapper_attributes ); ?>>
 	<div class="godam-video-product-gallery__container">
 		<?php foreach ( $gallery_items as $index => $item ) : ?>
 			<div 
@@ -290,7 +303,10 @@ $wrapper_attributes = get_block_wrapper_attributes(
 						playsinline
 						muted
 						loop
-						preload="metadata"
+						<?php if ( $autoplay ) : ?>
+							autoplay
+						<?php endif; ?>
+						preload="<?php echo $autoplay ? 'auto' : 'metadata'; ?>"
 						data-sources="<?php echo esc_attr( wp_json_encode( $item['videoSources'] ) ); ?>"
 					>
 						<?php foreach ( $item['videoSources'] as $source ) : ?>
@@ -334,9 +350,10 @@ $wrapper_attributes = get_block_wrapper_attributes(
 				</div>
 
 				<!-- Product Section -->
-				<?php if ( ! empty( $item['productData'] ) ) : 
+				<?php
+				if ( ! empty( $item['productData'] ) ) : 
 					$product = $item['productData'];
-				?>
+					?>
 					<div class="godam-gallery-item__product">
 						<a href="<?php echo esc_url( $product['permalink'] ); ?>" class="godam-gallery-item__product-link">
 							<?php if ( ! empty( $product['image'] ) ) : ?>
@@ -368,6 +385,41 @@ $wrapper_attributes = get_block_wrapper_attributes(
 								<?php endif; ?>
 							</div>
 						</a>
+
+						<?php if ( $show_add_to_cart && $product['in_stock'] ) : ?>
+							<?php if ( 'variable' === $product['type'] ) : ?>
+								<a
+									href="<?php echo esc_url( $product['permalink'] ); ?>"
+									class="godam-gallery-item__add-to-cart wp-element-button"
+									<?php /* translators: %s: product name */ ?>
+									aria-label="<?php echo esc_attr( sprintf( __( 'Select options for %s', 'godam' ), $product['name'] ) ); ?>"
+								>
+									<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
+										<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+									</svg>
+								</a>
+							<?php else : ?>
+								<button
+									type="button"
+									class="godam-gallery-item__add-to-cart wp-element-button"
+									data-product-id="<?php echo esc_attr( $product['id'] ); ?>"
+									data-product-type="<?php echo esc_attr( $product['type'] ); ?>"
+									data-product-permalink="<?php echo esc_url( $product['permalink'] ); ?>"
+									<?php /* translators: %s: product name */ ?>
+									aria-label="<?php echo esc_attr( sprintf( __( 'Add %s to cart', 'godam' ), $product['name'] ) ); ?>"
+								>
+									<svg class="godam-gallery-item__add-to-cart-icon" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
+										<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+									</svg>
+									<svg class="godam-gallery-item__add-to-cart-spinner" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true" style="display:none;">
+										<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4 31.4" stroke-linecap="round"/>
+									</svg>
+									<svg class="godam-gallery-item__add-to-cart-check" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true" style="display:none;">
+										<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+									</svg>
+								</button>
+							<?php endif; ?>
+						<?php endif; ?>
 					</div>
 				<?php endif; ?>
 			</div>

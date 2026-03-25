@@ -23,10 +23,6 @@
       "type": "number",
       "default": 180
     },
-    "gap": {
-      "type": "number",
-      "default": 16
-    },
     "autoplay": {
       "type": "boolean",
       "default": false
@@ -39,8 +35,7 @@
   "providesContext": {
     "godam/videoProductGallery/layout": "layout",
     "godam/videoProductGallery/viewRatio": "viewRatio",
-    "godam/videoProductGallery/itemWidth": "itemWidth",
-    "godam/videoProductGallery/gap": "gap"
+    "godam/videoProductGallery/itemWidth": "itemWidth"
   },
   "supports": {
     "anchor": true,
