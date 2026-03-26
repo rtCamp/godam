@@ -1,8 +1,11 @@
 /**
  * GoDAM Video Product Gallery - Frontend Runtime
  *
- * Handles custom video controls, carousel navigation, and interactions.
+ * Handles custom video playback and add-to-cart interactions for
+ * the GoDAM Video Product Gallery block on the frontend.
  */
+
+/* global jQuery */
 
 ( function() {
 	'use strict';
@@ -103,7 +106,7 @@
 		 *
 		 * @param {HTMLButtonElement} btn The add-to-cart button element.
 		 */
-		async handleAddToCart( btn ) {
+		handleAddToCart( btn ) {
 			const productId = btn.dataset.productId;
 			if ( ! productId || btn.classList.contains( 'is-loading' ) ) {
 				return;
@@ -123,61 +126,62 @@
 				spinnerEl.style.display = 'block';
 			}
 
-			try {
-				const response = await fetch( '/wp-json/wc/store/v1/cart/add-item', {
-					method: 'POST',
-					credentials: 'same-origin',
-					headers: {
-						'Content-Type': 'application/json',
-						Nonce: ( typeof wcBlocksMiddlewareConfig !== 'undefined' && wcBlocksMiddlewareConfig.storeApiNonce ) || '',
-					},
-					body: JSON.stringify( { id: parseInt( productId, 10 ), quantity: 1 } ),
-				} );
+			fetch( '/?wc-ajax=add_to_cart', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+				body: new URLSearchParams( { product_id: productId, quantity: 1 } ),
+				credentials: 'same-origin',
+			} )
+				.then( ( response ) => response.json() )
+				.then( ( data ) => {
+					if ( data.error ) {
+						throw new Error( 'Add to cart failed' );
+					}
 
-				if ( ! response.ok ) {
-					throw new Error( 'Add to cart failed' );
-				}
-
-				// Show success state.
-				if ( spinnerEl ) {
-					spinnerEl.style.display = 'none';
-				}
-				if ( checkEl ) {
-					checkEl.style.display = 'block';
-				}
-				btn.classList.remove( 'is-loading' );
-				btn.classList.add( 'is-added' );
-
-				// Open mini-cart sidebar if available (block themes).
-				this.openMiniCart();
-
-				// Refresh WooCommerce fragments (classic themes).
-				if ( typeof jQuery !== 'undefined' ) {
-					jQuery( document.body ).trigger( 'wc_fragment_refresh' );
-				}
-
-				// Reset button after 2 seconds.
-				setTimeout( () => {
+					// Show success state.
+					if ( spinnerEl ) {
+						spinnerEl.style.display = 'none';
+					}
 					if ( checkEl ) {
-						checkEl.style.display = 'none';
+						checkEl.style.display = 'block';
+					}
+					btn.classList.remove( 'is-loading' );
+					btn.classList.add( 'is-added' );
+
+					// Update WooCommerce cart fragments (classic themes).
+					if ( data.fragments && typeof jQuery !== 'undefined' ) {
+						jQuery.each( data.fragments, ( key, value ) => {
+							jQuery( key ).replaceWith( value );
+						} );
+						jQuery( document.body ).trigger( 'wc_fragments_refreshed' );
+					}
+
+					// Open mini-cart sidebar if available (block themes).
+					this.openMiniCart();
+
+					// Reset button after 2 seconds.
+					setTimeout( () => {
+						if ( checkEl ) {
+							checkEl.style.display = 'none';
+						}
+						if ( iconEl ) {
+							iconEl.style.display = 'block';
+						}
+						btn.classList.remove( 'is-added' );
+						btn.disabled = false;
+					}, 2000 );
+				} )
+				.catch( () => {
+					// Reset on error.
+					if ( spinnerEl ) {
+						spinnerEl.style.display = 'none';
 					}
 					if ( iconEl ) {
 						iconEl.style.display = 'block';
 					}
-					btn.classList.remove( 'is-added' );
+					btn.classList.remove( 'is-loading' );
 					btn.disabled = false;
-				}, 2000 );
-			} catch {
-				// Reset on error.
-				if ( spinnerEl ) {
-					spinnerEl.style.display = 'none';
-				}
-				if ( iconEl ) {
-					iconEl.style.display = 'block';
-				}
-				btn.classList.remove( 'is-loading' );
-				btn.disabled = false;
-			}
+				} );
 		}
 
 		/**

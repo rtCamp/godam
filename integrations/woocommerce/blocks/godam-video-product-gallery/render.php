@@ -367,22 +367,6 @@ $wrapper_attributes = get_block_wrapper_attributes(
 							<div class="godam-gallery-item__product-details">
 								<p class="godam-gallery-item__product-name"><?php echo esc_html( $product['name'] ); ?></p>
 								<p class="godam-gallery-item__product-price"><?php echo wp_kses_post( $product['price'] ); ?></p>
-
-								<?php if ( ! empty( $product['variants']['attributes'] ) ) : ?>
-									<div class="godam-gallery-item__product-variants">
-										<?php foreach ( $product['variants']['attributes'] as $attribute ) : ?>
-											<div class="godam-gallery-item__variant-group" data-attribute="<?php echo esc_attr( $attribute['name'] ); ?>">
-												<span class="godam-gallery-item__variant-label"><?php echo esc_html( $attribute['label'] ); ?>:</span>
-												<span class="godam-gallery-item__variant-options">
-													<?php echo esc_html( implode( ', ', array_slice( $attribute['options'], 0, 3 ) ) ); ?>
-													<?php if ( count( $attribute['options'] ) > 3 ) : ?>
-														<span class="godam-gallery-item__variant-more">+<?php echo esc_html( count( $attribute['options'] ) - 3 ); ?></span>
-													<?php endif; ?>
-												</span>
-											</div>
-										<?php endforeach; ?>
-									</div>
-								<?php endif; ?>
 							</div>
 						</a>
 
@@ -390,6 +374,7 @@ $wrapper_attributes = get_block_wrapper_attributes(
 							<?php if ( 'variable' === $product['type'] ) : ?>
 								<a
 									href="<?php echo esc_url( $product['permalink'] ); ?>"
+									target="_blank"
 									class="godam-gallery-item__add-to-cart wp-element-button"
 									<?php /* translators: %s: product name */ ?>
 									aria-label="<?php echo esc_attr( sprintf( __( 'Select options for %s', 'godam' ), $product['name'] ) ); ?>"
