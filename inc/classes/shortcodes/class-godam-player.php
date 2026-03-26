@@ -153,44 +153,54 @@ class GoDAM_Player {
 				'controls'          => true,
 				'loop'              => false,
 				'muted'             => false,
-				'hoverSelect'       => 'none',
-				'hover_select'      => 'none', // WPBakery format (lowercase with underscore).
+				'hoverselect'       => 'none', // Backward compatibility: WordPress lowercases hoverSelect to hoverselect.
+				'hover_select'      => 'none',
 				'poster'            => '',
 				'preload'           => 'metadata',
 				'src'               => '',
 				'sources'           => '',
 				'transcoded_url'    => '',
-				'aspectRatio'       => 'responsive',
-				'aspect_ratio'      => '', // WPBakery format (lowercase with underscore).
+				'aspectratio'       => '', // Backward compatibility: WordPress lowercases aspectRatio to aspectratio.
+				'aspect_ratio'      => 'responsive',
 				'tracks'            => '',
 				'caption'           => '',
 				'engagements'       => false,
 				'preview'           => false,
-				'showShareButton'   => false,
-				'show_share_button' => false, // WPBakery format (lowercase with underscore).
+				'showsharebutton'   => false, // Backward compatibility: WordPress lowercases showShareButton to showsharebutton.
+				'show_share_button' => false,
 				'css'               => '',
 			),
 			$atts,
 			'godam_video'
 		);
 
-		// Handle boolean attributes passed as strings (do this before mapping).
-		$boolean_attributes = array( 'autoplay', 'controls', 'loop', 'muted', 'engagements', 'preview', 'showShareButton', 'show_share_button' );
+		// Handle boolean attributes passed as strings.
+		$boolean_attributes = array( 'autoplay', 'controls', 'loop', 'muted', 'engagements', 'preview', 'showsharebutton', 'show_share_button' );
 		foreach ( $boolean_attributes as $bool_attr ) {
 			if ( isset( $attributes[ $bool_attr ] ) ) {
 				$attributes[ $bool_attr ] = filter_var( $attributes[ $bool_attr ], FILTER_VALIDATE_BOOLEAN );
 			}
 		}
 
-		// Map WPBakery format (lowercase_underscore) to camelCase for backward compatibility.
-		// Check if WPBakery format exists and camelCase doesn't, then use WPBakery format.
-		if ( isset( $attributes['aspect_ratio'] ) && '' !== $attributes['aspect_ratio'] && ( ! isset( $attributes['aspectRatio'] ) || '' === $attributes['aspectRatio'] ) ) {
+		// Map shortcode attributes to camelCase for internal/JS use.
+		// WordPress lowercases all shortcode attribute names, so camelCase attributes like
+		// aspectRatio become 'aspectratio'. We keep both the lowercased form (backward compat)
+		// and the snake_case form (preferred), with the old form taking priority when set.
+		if ( '' !== $attributes['aspectratio'] ) {
+			$attributes['aspectRatio'] = $attributes['aspectratio'];
+		} else {
 			$attributes['aspectRatio'] = $attributes['aspect_ratio'];
 		}
-		if ( isset( $attributes['hover_select'] ) && '' !== $attributes['hover_select'] && ( ! isset( $attributes['hoverSelect'] ) || 'none' === $attributes['hoverSelect'] ) ) {
+
+		if ( 'none' !== $attributes['hoverselect'] ) {
+			$attributes['hoverSelect'] = $attributes['hoverselect'];
+		} else {
 			$attributes['hoverSelect'] = $attributes['hover_select'];
 		}
-		if ( isset( $attributes['show_share_button'] ) && '' !== $attributes['show_share_button'] && ( ! isset( $attributes['showShareButton'] ) || false === $attributes['showShareButton'] ) ) {
+
+		if ( false !== $attributes['showsharebutton'] ) {
+			$attributes['showShareButton'] = $attributes['showsharebutton'];
+		} else {
 			$attributes['showShareButton'] = $attributes['show_share_button'];
 		}
 

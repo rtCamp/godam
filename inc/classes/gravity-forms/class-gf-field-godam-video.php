@@ -393,7 +393,7 @@ if ( class_exists( 'GF_Field' ) ) {
 						$transcoded_url = esc_url( $transcoded_url );
 					}
 
-					$video_output = do_shortcode( "[godam_video src='{$file_path}' transcoded_url='{$transcoded_url}' aspectRatio='']" );
+					$video_output = do_shortcode( "[godam_video src='{$file_path}' transcoded_url='{$transcoded_url}' aspect_ratio='']" );
 					$video_output = '<div class="gf-godam-video-preview">' . $video_output . '</div>';
 					$output_arr[] = $video_output;
 				}
