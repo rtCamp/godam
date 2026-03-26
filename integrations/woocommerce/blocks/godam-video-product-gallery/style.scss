@@ -58,14 +58,16 @@
 .godam-gallery-item__video-wrapper {
 	position: relative;
 	width: 100%;
-	background: #000;
 	overflow: hidden;
 	border-radius: var(--item-border-radius) var(--item-border-radius) 0 0;
 
+	// Make the GoDAM player fill the wrapper.
+	.godam-player__wrapper {
+		width: 100%;
+		height: 100%;
+	}
+
 	.video-js {
-		position: absolute;
-		top: 0;
-		left: 0;
 		width: 100%;
 		height: 100%;
 	}
@@ -116,152 +118,6 @@
 			aspect-ratio: 1 / 1;
 		}
 	}
-}
-
-// Video element.
-.godam-gallery-item__video {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-}
-
-// Custom Video Controls overlay.
-.godam-gallery-item__controls {
-	position: absolute;
-	inset: 0;
-	z-index: 10;
-	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
-	opacity: 0;
-	transition: opacity 0.25s ease;
-	pointer-events: none;
-
-	// Always show on mobile (no hover), hide on desktop until hover.
-	@media (hover: none) {
-		opacity: 1;
-		pointer-events: auto;
-	}
-
-	&.is-visible,
-	.godam-gallery-item__video-wrapper:hover & {
-		opacity: 1;
-		pointer-events: auto;
-	}
-}
-
-// Top row: mute + fullscreen buttons.
-.godam-gallery-item__controls-top {
-	display: flex;
-	gap: 8px;
-	padding: 10px;
-}
-
-// Shared button style - dark rounded square (iOS-style).
-.godam-gallery-item__btn {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border: none;
-	border-radius: 10px;
-	background: rgba(0, 0, 0, 0.6);
-	backdrop-filter: blur(6px);
-	-webkit-backdrop-filter: blur(6px);
-	color: #fff;
-	cursor: pointer;
-	padding: 0;
-	transition: background 0.15s ease, transform 0.1s ease;
-
-	&:hover {
-		background: rgba(0, 0, 0, 0.8);
-	}
-
-	&:active {
-		transform: scale(0.93);
-	}
-
-	svg {
-		display: block;
-		width: 20px;
-		height: 20px;
-	}
-
-	// Mute / fullscreen: small square.
-	&--mute,
-	&--fullscreen {
-		width: 38px;
-		height: 38px;
-	}
-
-	// Play/pause: larger centered button.
-	&--playpause {
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		width: 52px;
-		height: 52px;
-		border-radius: 14px;
-
-		&:active {
-			transform: translate(-50%, -50%) scale(0.9);
-		}
-
-		svg {
-			width: 26px;
-			height: 26px;
-		}
-	}
-}
-
-// SVG icon visibility helpers.
-.godam-icon {
-	display: none;
-}
-
-// Progress bar — thin stripe at the bottom.
-.godam-gallery-item__progress {
-	padding: 0 0 0;
-	cursor: pointer;
-}
-
-.godam-gallery-item__progress-bar {
-	position: relative;
-	width: 100%;
-	height: 6px;
-	background: rgba(0, 0, 0, 0.4);
-	border-radius: 2px;
-	overflow: hidden;
-	transition: height 0.15s ease;
-
-	.godam-gallery-item__video-wrapper:hover & {
-		height: 8px;
-	}
-}
-
-.godam-gallery-item__progress-fill {
-	height: 100%;
-	width: 0%;
-	background: #fff;
-	border-radius: 2px;
-	transition: width 0.1s linear;
-}
-
-// Thumbnail Overlay — kept for backward compat but hidden.
-.godam-gallery-item__thumbnail-overlay {
-	display: none;
-}
-
-.godam-gallery-item__thumbnail {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
 }
 
 // Product Section.
@@ -457,33 +313,6 @@
 
 	&--next {
 		right: 8px;
-	}
-}
-
-// Video.js customizations.
-.godam-video-product-gallery .video-js {
-
-	.vjs-big-play-button {
-		display: none; // We use our own play button.
-	}
-
-	.vjs-control-bar {
-		background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
-		padding-top: 20px;
-	}
-
-	.vjs-progress-control {
-		position: absolute;
-		bottom: 30px;
-		left: 0;
-		right: 0;
-		width: 100%;
-	}
-
-	.vjs-play-control,
-	.vjs-volume-panel,
-	.vjs-fullscreen-control {
-		font-size: 12px;
 	}
 }
 

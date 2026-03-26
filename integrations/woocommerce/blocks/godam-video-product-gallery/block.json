@@ -49,7 +49,7 @@
   },
   "editorScript": ["file:./index.js"],
   "render": "file:./render.php",
-  "style": "file:./style-index.css",
+  "style": ["file:./style-index.css", "godam-player-wc-reels-skin"],
   "editorStyle": ["file:./index.css"],
   "viewScript": ["file:./view.js"]
 }

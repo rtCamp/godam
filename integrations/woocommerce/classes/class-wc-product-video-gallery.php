@@ -157,6 +157,13 @@ class WC_Product_Video_Gallery {
 			wp_enqueue_script( 'rtgodam-wc-video-carousel' );
 			wp_enqueue_style( 'rtgodam-wc-video-carousel-style' );
 		}
+
+		wp_register_style(
+			'godam-player-wc-reels-skin',
+			RTGODAM_URL . 'assets/build/integrations/woocommerce/css/godam-reels-skin-v2.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/integrations/woocommerce/css/godam-reels-skin-v2.css' )
+		);
 	}
 
 	/**
