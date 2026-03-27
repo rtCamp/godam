@@ -371,7 +371,7 @@
 
 .godam-product-video-gallery-list {
 	display: grid;
-	grid-template-columns: repeat(2, 1fr);
+	grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
 	gap: 4px;
 	padding: 8px 0;
 	margin: 0;
@@ -402,7 +402,6 @@
 		flex-direction: column;
 		align-items: stretch;
 		width: 100%;
-		max-width: 123px;
 		box-sizing: border-box;
 		transition: box-shadow 0.2s ease;
 
@@ -416,8 +415,8 @@
 			border-radius: 50%;
 			cursor: pointer;
 			box-shadow: 0 0 5px var(--wp-components-color-accent) !important;
-			width: 20px;
-			height: 20px;
+			min-width: 20px;
+			min-height: 20px;
 			display: flex;
 			align-items: center;
 			justify-content: center;
