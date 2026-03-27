@@ -26,34 +26,6 @@
 	align-items: start;
 }
 
-// Carousel layout.
-.godam-video-product-gallery--carousel {
-
-	.godam-video-product-gallery__container {
-		overflow-x: auto;
-		scrollbar-width: none;
-		-ms-overflow-style: none;
-
-		&::-webkit-scrollbar {
-			display: none;
-		}
-	}
-
-	.godam-video-product-gallery-item {
-		flex: 0 0 var(--gallery-item-width);
-		scroll-snap-align: start;
-	}
-}
-
-// Grid layout.
-.godam-video-product-gallery--grid {
-
-	.godam-video-product-gallery__container {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(var(--gallery-item-width), 1fr));
-	}
-}
-
 // Video Wrapper.
 .godam-gallery-item__video-wrapper {
 	position: relative;
@@ -132,6 +104,34 @@
 		.godam-gallery-item__video-wrapper {
 			aspect-ratio: 1 / 1;
 		}
+	}
+}
+
+// Carousel layout.
+.godam-video-product-gallery--carousel {
+
+	.godam-video-product-gallery__container {
+		overflow-x: auto;
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+
+		&::-webkit-scrollbar {
+			display: none;
+		}
+	}
+
+	.godam-video-product-gallery-item {
+		flex: 0 0 var(--gallery-item-width);
+		scroll-snap-align: start;
+	}
+}
+
+// Grid layout.
+.godam-video-product-gallery--grid {
+
+	.godam-video-product-gallery__container {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(var(--gallery-item-width), 1fr));
 	}
 }
 
@@ -369,6 +369,7 @@
 	inset: 0;
 	z-index: 990;
 	background: rgba(0, 0, 0, 0.4);
+	backdrop-filter: blur(4px);
 	opacity: 0;
 	visibility: hidden;
 	transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -381,26 +382,45 @@
 	}
 }
 
-// The original gallery item promoted to modal view.
-.godam-video-product-gallery-item--modal {
-	position: fixed !important;
-	z-index: 995 !important;
-	top: 50% !important;
-	left: 50% !important;
-	transform: translate(-50%, -50%) !important;
-	max-width: 480px !important;
-	width: 100% !important;
-	max-height: 90vh !important;
-	flex: none !important;
-	border-radius: 12px !important;
-	overflow: hidden !important;
-	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+// ──────────────────────────────────────────
+// Modal Wrapper — holds video item + sidebar
+// ──────────────────────────────────────────
+
+.godam-vpg-modal-wrapper {
+	--godam-vpg-modal-radius: 12px;
+
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 995;
+	display: flex;
+	gap: 0;
+	max-height: 90dvh;
 	opacity: 0;
+	pointer-events: none;
 	transition: opacity 0.3s ease;
 
 	&.is-active {
 		opacity: 1;
+		pointer-events: auto;
 	}
+}
+
+// The original gallery item promoted to modal view (now inside wrapper).
+.godam-vpg-modal-wrapper .godam-video-product-gallery-item--modal {
+	position: relative !important;
+	top: auto !important;
+	left: auto !important;
+	transform: none !important;
+	z-index: auto !important;
+	opacity: 1 !important;
+	max-width: 480px !important;
+	width: 480px !important;
+	max-height: 90dvh !important;
+	flex-shrink: 0;
+	border-radius: var(--godam-vpg-modal-radius) !important;
+	overflow: hidden auto !important;
 
 	// Show controls in modal view.
 	.godam-gallery-item__video-wrapper {
@@ -408,7 +428,6 @@
 		.vjs-control-bar {
 			display: flex !important;
 		}
-
 	}
 
 	// Product bar overlays the bottom inside modal.
@@ -418,7 +437,7 @@
 		left: 0;
 		right: 0;
 		padding: 12px;
-		background: rgba(0, 0, 0, .5);
+		background: rgba(0, 0, 0, 0.5);
 		border-radius: 1rem;
 		margin: 1rem;
 		z-index: 999;
@@ -434,10 +453,12 @@
 	}
 }
 
-// Placeholder keeps gallery layout intact while item is in modal.
-.godam-video-product-gallery-item--placeholder {
-	visibility: hidden;
-	pointer-events: none;
+.godam-vpg-modal-wrapper .godam-video-product-gallery-item--modal:has(+ .godam-vpg-modal-sidebar.is-active) {
+	border-radius: var(--godam-vpg-modal-radius) 0 0 var(--godam-vpg-modal-radius) !important;
+
+	@media (max-width: 1024px) {
+		border-radius: var(--godam-vpg-modal-radius) !important;
+	}
 }
 
 // Close button.
@@ -449,11 +470,10 @@
 	width: 40px;
 	height: 40px;
 	padding: 0;
-	border: none;
+	border: 0.35px solid rgba(255, 255, 255, 0.2);
 	border-radius: 50%;
 	background-color: rgba(0, 0, 0, 0.5);
 	backdrop-filter: blur(8px);
-	order: 0.35px solid rgba(255, 255, 255, 0.2);
 	color: #fff;
 	cursor: pointer;
 	display: none;
@@ -462,7 +482,7 @@
 	transition: background 0.2s ease;
 
 	&:hover {
-		background: rgba(255, 255, 255, 0.3);
+		background-color: rgba(0, 0, 0, 0.6);
 	}
 
 	&.is-active {
@@ -486,7 +506,8 @@
 	padding: 0;
 	border: none;
 	border-radius: 50%;
-	background: rgba(255, 255, 255, 0.15);
+	background-color: rgba(0, 0, 0, 0.5);
+	backdrop-filter: blur(8px);
 	color: #fff;
 	cursor: pointer;
 	display: none;
@@ -495,7 +516,7 @@
 	transition: background 0.2s ease;
 
 	&:hover {
-		background: rgba(255, 255, 255, 0.3);
+		background-color: rgba(0, 0, 0, 0.6);
 	}
 
 	&.is-active {
@@ -516,6 +537,310 @@
 	}
 }
 
+// ──────────────────────────────────────────
+// Product Sidebar (inside modal wrapper)
+// ──────────────────────────────────────────
+
+.godam-vpg-modal-sidebar {
+	width: 340px;
+	max-height: 90dvh;
+	overflow-y: auto;
+	background: #fff;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+	flex-shrink: 0;
+	display: none;
+	border-radius: 0 var(--godam-vpg-modal-radius) var(--godam-vpg-modal-radius) 0;
+
+	&.is-active {
+		display: flex;
+		flex-direction: column;
+	}
+
+	// Hide on mobile/tablet — sidebar is desktop-only.
+	@media (max-width: 1024px) {
+		display: none !important;
+	}
+
+	// Hero section.
+	.godam-vpg-sidebar-product {
+		padding: 20px;
+		flex: 1;
+	}
+
+	// Loading spinner.
+	.godam-vpg-sidebar-spinner {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 60px 20px;
+
+		&::after {
+			content: "";
+			width: 28px;
+			height: 28px;
+			border: 3px solid #e0e0e0;
+			border-top-color: #333;
+			border-radius: 50%;
+			animation: godam-spin 0.8s linear infinite;
+		}
+	}
+
+	// Image gallery.
+	.godam-main-image img {
+		width: 100%;
+		height: 200px;
+		object-fit: contain;
+		border-radius: 8px;
+		display: block;
+	}
+
+	.godam-thumbnail-carousel {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		margin-top: 8px;
+	}
+
+	.godam-thumbnail-track {
+		display: flex;
+		gap: 6px;
+		overflow-x: auto;
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+		scroll-behavior: smooth;
+
+		&::-webkit-scrollbar {
+			display: none;
+		}
+	}
+
+	.godam-thumbnail-item {
+		flex-shrink: 0;
+		cursor: pointer;
+		border: 2px solid transparent;
+		border-radius: 4px;
+		transition: border-color 0.2s ease;
+
+		&.active {
+			border-color: #333;
+		}
+
+		img {
+			object-fit: cover;
+			border-radius: 3px;
+			display: block;
+		}
+	}
+
+		.godam-thumbnail-nav {
+			flex-shrink: 0;
+			background: none;
+			border: 1px solid #333;
+			padding: 2px;
+			cursor: pointer;
+			color: #666;
+
+			&:hover {
+				color: #333;
+			}
+
+			svg {
+				width: 18px;
+				height: 18px;
+			}
+		}
+
+		.godam-sidebar-hero__actions {
+
+			a,
+			button {
+				width: 100%;
+				height: 45px;
+				display: inline-flex;
+				align-items: center !important;
+				justify-content: center !important;
+				border-radius: clamp(0px, var(--rtgodam-woo-video-modal-addtocartradius, 8px), 0.2rem);
+				overflow: hidden;
+				outline: none !important;
+				border: var(--rtgodam-woo-video-modal-addtocartborder, 1px solid rgb(28, 28, 28));
+				padding: 0 !important;
+				font-size: var(--rtgodam-woo-video-modal-addtocartfontsize, 14px);
+				margin: 0 !important;
+				cursor: pointer !important;
+				text-decoration: none !important;
+				color: var(--rtgodam-woo-video-modal-addtocartfontcolor, rgb(255, 255, 255));
+				background-color: var(--rtgodam-woo-video-modal-addtocartbgcolor, rgb(28, 28, 28));
+
+				&:hover {
+					opacity: 0.85;
+				}
+
+				.godam-add-to-cart-icon {
+					display: flex;
+					align-items: center;
+
+					svg {
+						width: 16px;
+						height: 16px;
+					}
+				}
+
+				&.loading {
+					opacity: 0.6;
+					pointer-events: none;
+				}
+			}
+		}
+
+		// Divider.
+		.godam-sidebar-divider {
+			border: none;
+			height: 1px;
+			background: #e0e0e0;
+			margin: 20px 0;
+		}
+
+	// Collapsible toggle.
+	.godam-sidebar-product-toggle {
+		cursor: pointer;
+
+		.godam-sidebar-product-toggle__header {
+			display: flex;
+			align-items: center;
+			font-size: 0.9rem;
+			font-weight: 400;
+			color: #5f5f5f;
+			gap: 8px;
+
+			.godam-toggle-icon {
+				display: flex;
+				align-items: center;
+				transition: transform 0.3s ease;
+
+				svg {
+					width: 18px;
+					height: 18px;
+				}
+			}
+		}
+
+		&[data-expanded="true"] .godam-toggle-icon {
+			transform: rotate(180deg);
+		}
+	}
+
+	// Collapsible content sections.
+	.godam-single-product-sidebar-content,
+	.godam-image-gallery,
+	.godam-sidebar-multiple-list {
+		overflow: hidden;
+		transition: max-height 0.3s ease, opacity 0.3s ease;
+
+		&.is-collapsed {
+			max-height: 0;
+			opacity: 0;
+			padding-top: 0;
+		}
+
+		&:not(.is-collapsed) {
+			max-height: 2000px;
+			opacity: 1;
+			margin-top: 16px;
+		}
+	}
+
+	// Product details section.
+	.godam-sidebar-product-title h3 {
+		margin: 0 0 6px;
+		font-size: 1rem;
+		font-weight: 600;
+		color: #1c1c1c;
+	}
+
+	.godam-sidebar-product-price {
+		margin: 0 0 8px;
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: #1c1c1c;
+	}
+
+	.godam-sidebar-product-rating {
+		display: flex;
+		gap: 2px;
+		margin-bottom: 8px;
+	}
+
+	.godam-sidebar-product-description {
+		font-size: 0.85rem;
+		line-height: 1.5;
+		color: #444;
+		margin: 8px 0 0;
+
+		p {
+			margin: 0 0 8px;
+		}
+	}
+
+	// Hide small-cart button (mobile-only element).
+	.godam-single-sidebar-small-cart-button {
+		display: none;
+	}
+
+	// Hero section.
+	.godam-sidebar-hero {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		padding-bottom: 16px;
+
+		.godam-sidebar-hero__media img {
+			width: 5rem;
+			height: 5rem;
+			object-fit: cover;
+			border-radius: 6px;
+			display: block;
+		}
+
+		.godam-sidebar-hero__content {
+			flex: 1;
+
+			h3 {
+				margin: 0 0 8px;
+				font-size: 1rem;
+				font-weight: 500;
+				color: #1c1c1c;
+				line-height: 1.2;
+			}
+
+			.godam-sidebar-hero__price {
+				margin: 0;
+				font-size: 0.9rem;
+				color: #1c1c1c;
+				display: flex;
+				align-items: center;
+				gap: 8px;
+
+				del {
+					color: #8f8f8f;
+					font-weight: 400;
+				}
+
+				ins {
+					color: #e68600;
+					text-decoration: none;
+					font-weight: 500;
+				}
+			}
+		}
+	}
+}
+
+// Placeholder keeps gallery layout intact while item is in modal.
+.godam-video-product-gallery-item--placeholder {
+	visibility: hidden;
+	pointer-events: none;
+}
+
 // Lock body scroll when modal is open.
 body.godam-vpg-modal-open {
 	overflow: hidden !important;
@@ -528,8 +853,8 @@ body.admin-bar {
 		top: 32px;
 	}
 
-	.godam-video-product-gallery-item--modal {
-		top: calc(50% + 16px) !important;
+	.godam-vpg-modal-wrapper {
+		top: calc(50% + 16px);
 	}
 
 	.godam-vpg-modal-close {
@@ -546,8 +871,8 @@ body.admin-bar {
 			top: 46px;
 		}
 
-		.godam-video-product-gallery-item--modal {
-			top: calc(50% + 23px) !important;
+		.godam-vpg-modal-wrapper {
+			top: calc(50% + 23px);
 		}
 
 		.godam-vpg-modal-close {
@@ -565,8 +890,8 @@ body.admin-bar {
 			top: 0;
 		}
 
-		.godam-video-product-gallery-item--modal {
-			top: 50% !important;
+		.godam-vpg-modal-wrapper {
+			top: 50%;
 		}
 
 		.godam-vpg-modal-close {
@@ -582,9 +907,10 @@ body.admin-bar {
 // Responsive.
 @media (max-width: 600px) {
 
-	.godam-video-product-gallery-item--modal {
+	.godam-vpg-modal-wrapper .godam-video-product-gallery-item--modal {
 		max-width: 92vw !important;
-		max-height: 85vh !important;
+		width: 92vw !important;
+		max-height: 85dvh !important;
 	}
 
 	.godam-vpg-modal-nav {

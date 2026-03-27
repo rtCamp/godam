@@ -10,6 +10,9 @@
 ( function() {
 	'use strict';
 
+	// Shared product HTML cache across all gallery instances on the page.
+	const productHtmlCache = new Map();
+
 	/**
 	 * Initialize all video product galleries on the page.
 	 */
@@ -42,11 +45,18 @@
 			this.prevBtn = element.querySelector( '.godam-video-product-gallery__nav--prev' );
 			this.nextBtn = element.querySelector( '.godam-video-product-gallery__nav--next' );
 
+			// AJAX configuration from data attributes.
+			this.ajaxUrl = element.dataset.ajaxUrl || '';
+			this.productNonce = element.dataset.productNonce || '';
+
 			// Modal state.
 			this.modalOpen = false;
 			this.modalIndex = -1;
 			this.modalOriginalItem = null;
 			this.modalPlaceholder = null;
+
+			// Sidebar state.
+			this.currentSidebarProductId = null;
 
 			this.createModalElements();
 			this.init();
@@ -224,7 +234,7 @@
 		// ─────────────────────────────────────────────
 
 		/**
-		 * Create modal UI elements (overlay, close, prev/next) and append to body.
+		 * Create modal UI elements (overlay, close, wrapper with sidebar, prev/next) and append to body.
 		 */
 		createModalElements() {
 			// Overlay.
@@ -238,6 +248,20 @@
 			this.modalCloseBtn.setAttribute( 'aria-label', 'Close' );
 			this.modalCloseBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
 			document.body.appendChild( this.modalCloseBtn );
+
+			// Modal wrapper — holds promoted video item + sidebar.
+			this.modalWrapper = document.createElement( 'div' );
+			this.modalWrapper.className = 'godam-vpg-modal-wrapper';
+			document.body.appendChild( this.modalWrapper );
+
+			// Sidebar element inside the wrapper.
+			this.sidebar = document.createElement( 'div' );
+			this.sidebar.className = 'godam-vpg-modal-sidebar';
+			this.sidebar.innerHTML =
+				'<div class="godam-vpg-sidebar-product">' +
+				'<div class="godam-vpg-sidebar-spinner"></div>' +
+				'</div>';
+			this.modalWrapper.appendChild( this.sidebar );
 
 			// Prev button.
 			this.modalPrevBtn = document.createElement( 'button' );
@@ -340,9 +364,9 @@
 				cloneVideo.muted = true;
 			}
 
-			// Insert placeholder before the original, then move original to body.
+			// Insert placeholder before the original, then move original into modal wrapper.
 			this.modalOriginalItem.parentNode.insertBefore( this.modalPlaceholder, this.modalOriginalItem );
-			document.body.appendChild( this.modalOriginalItem );
+			this.modalWrapper.prepend( this.modalOriginalItem );
 
 			// Add modal class to the original element.
 			this.modalOriginalItem.classList.add( 'godam-video-product-gallery-item--modal' );
@@ -350,8 +374,6 @@
 			// Unmute and play the full video (remove 5s loop limit).
 			const modalVideo = this.modalOriginalItem.querySelector( 'video' );
 			if ( modalVideo ) {
-				// modalVideo.muted = false;
-
 				// Remove the 5-second preview limiter.
 				if ( modalVideo._godamTimeUpdate ) {
 					modalVideo.removeEventListener( 'timeupdate', modalVideo._godamTimeUpdate );
@@ -370,13 +392,26 @@
 				this.modalNextBtn.classList.add( 'is-active' );
 			}
 
-			// Trigger entry animation on next frame.
+			// Trigger entry animation on the wrapper.
 			requestAnimationFrame( () => {
-				this.modalOriginalItem.classList.add( 'is-active' );
+				this.modalWrapper.classList.add( 'is-active' );
 			} );
 
 			// Lock body scroll.
 			document.body.classList.add( 'godam-vpg-modal-open' );
+
+			// Load sidebar product when a product is assigned.
+			const productId = this.items[ index ]?.dataset?.productId;
+			const hasProduct = productId && productId !== '0';
+
+			if ( hasProduct ) {
+				this.showSidebar( productId );
+			} else {
+				this.hideSidebar();
+			}
+
+			// Always prefetch adjacent products for instant navigation on next/prev.
+			this.prefetchAdjacentProducts( index );
 		}
 
 		/**
@@ -389,11 +424,15 @@
 
 			this.restoreCurrentItem();
 
-			// Hide overlay, close, nav.
+			// Hide overlay, close, nav, wrapper.
 			this.overlay.classList.remove( 'is-active' );
 			this.modalCloseBtn.classList.remove( 'is-active' );
 			this.modalPrevBtn.classList.remove( 'is-active' );
 			this.modalNextBtn.classList.remove( 'is-active' );
+			this.modalWrapper.classList.remove( 'is-active' );
+
+			// Hide sidebar.
+			this.hideSidebar();
 
 			this.modalOpen = false;
 			this.modalIndex = -1;
@@ -461,6 +500,225 @@
 			// Reset state so openModal doesn't try to restore again.
 			this.modalOpen = false;
 			this.openModal( newIndex );
+		}
+
+		// ─────────────────────────────────────────────
+		// Product Sidebar — fetch, cache, render
+		// ─────────────────────────────────────────────
+
+		/**
+		 * Fetch product HTML for a given product ID, using cache when available.
+		 *
+		 * @param {number|string} productId The product ID to fetch.
+		 * @return {Promise<string|null>} The product HTML string, or null on failure.
+		 */
+		async fetchProductHtml( productId ) {
+			if ( ! productId ) {
+				return null;
+			}
+
+			const cacheKey = String( productId );
+
+			// Return cached HTML if available.
+			if ( productHtmlCache.has( cacheKey ) ) {
+				return productHtmlCache.get( cacheKey );
+			}
+
+			// Require AJAX configuration.
+			if ( ! this.ajaxUrl || ! this.productNonce ) {
+				return null;
+			}
+
+			try {
+				const url =
+					this.ajaxUrl +
+					'?action=godam_get_single_sidebar_product_html' +
+					'&product_id=' + encodeURIComponent( productId ) +
+					'&_wpnonce=' + encodeURIComponent( this.productNonce );
+
+				const response = await fetch( url, { credentials: 'same-origin' } );
+				const result = await response.json();
+
+				if ( result.success && result.data ) {
+					productHtmlCache.set( cacheKey, result.data );
+					return result.data;
+				}
+			} catch ( err ) {
+				// Silently fail — sidebar won't show for this product.
+			}
+
+			return null;
+		}
+
+		/**
+		 * Prefetch product HTML for adjacent gallery items (previous and next).
+		 * Fire-and-forget — results are stored in cache for instant access on navigation.
+		 *
+		 * @param {number} index The current item index.
+		 */
+		prefetchAdjacentProducts( index ) {
+			if ( this.items.length <= 1 ) {
+				return;
+			}
+
+			const total = this.items.length;
+			const adjacentIndices = [
+				( index - 1 + total ) % total,
+				( index + 1 ) % total,
+			];
+
+			adjacentIndices.forEach( ( i ) => {
+				const pid = this.items[ i ]?.dataset?.productId;
+				if ( pid && pid !== '0' && ! productHtmlCache.has( String( pid ) ) ) {
+					this.fetchProductHtml( pid ); // Fire-and-forget.
+				}
+			} );
+		}
+
+		/**
+		 * Show the sidebar with product content for the given product ID.
+		 *
+		 * @param {number|string} productId The product ID to display.
+		 */
+		async showSidebar( productId ) {
+			if ( ! this.sidebar || ! productId ) {
+				this.hideSidebar();
+				return;
+			}
+
+			// Track which product we're loading to guard against race conditions.
+			this.currentSidebarProductId = productId;
+
+			const productContent = this.sidebar.querySelector( '.godam-vpg-sidebar-product' );
+
+			// Show sidebar with loading spinner.
+			this.sidebar.classList.add( 'is-active' );
+			productContent.innerHTML = '<div class="godam-vpg-sidebar-spinner"></div>';
+
+			// Fetch product HTML (from cache or AJAX).
+			const html = await this.fetchProductHtml( productId );
+
+			// Guard: make sure the modal is still open for this product.
+			if ( this.currentSidebarProductId !== productId || ! this.modalOpen ) {
+				return;
+			}
+
+			if ( html ) {
+				productContent.innerHTML = html;
+				this.initSidebarInteractions();
+			} else {
+				this.hideSidebar();
+			}
+		}
+
+		/**
+		 * Hide the product sidebar.
+		 */
+		hideSidebar() {
+			if ( this.sidebar ) {
+				this.sidebar.classList.remove( 'is-active' );
+			}
+			this.currentSidebarProductId = null;
+		}
+
+		/**
+		 * Initialize all interactive elements within the sidebar after AJAX content is injected.
+		 * Handles: collapsible toggle, image gallery thumbnails, and add-to-cart buttons.
+		 */
+		initSidebarInteractions() {
+			if ( ! this.sidebar ) {
+				return;
+			}
+
+			// Collapsible toggle.
+			const toggle = this.sidebar.querySelector( '.godam-sidebar-product-toggle' );
+			if ( toggle ) {
+				toggle.addEventListener( 'click', () => {
+					const expanded = toggle.dataset.expanded === 'true';
+					toggle.dataset.expanded = expanded ? 'false' : 'true';
+
+					// Toggle collapsed class on content sections.
+					const sections = this.sidebar.querySelectorAll(
+						'.godam-image-gallery, .godam-single-product-sidebar-content, .godam-sidebar-multiple-list',
+					);
+					sections.forEach( ( el ) => {
+						el.classList.toggle( 'is-collapsed', expanded );
+					} );
+				} );
+			}
+
+			// Image gallery — thumbnail click to swap main image.
+			const mainImage = this.sidebar.querySelector( '.godam-main-image img' );
+			const thumbnails = this.sidebar.querySelectorAll( '.godam-thumbnail-item' );
+			if ( mainImage && thumbnails.length ) {
+				thumbnails.forEach( ( thumb ) => {
+					thumb.addEventListener( 'click', () => {
+						const img = thumb.querySelector( 'img' );
+						if ( img ) {
+							mainImage.src = img.src;
+						}
+						thumbnails.forEach( ( t ) => t.classList.remove( 'active' ) );
+						thumb.classList.add( 'active' );
+					} );
+				} );
+			}
+
+			// Image gallery — prev/next nav buttons.
+			const track = this.sidebar.querySelector( '.godam-thumbnail-track' );
+			const prevNav = this.sidebar.querySelector( '.godam-thumbnail-prev' );
+			const nextNav = this.sidebar.querySelector( '.godam-thumbnail-next' );
+			if ( track ) {
+				if ( prevNav ) {
+					prevNav.addEventListener( 'click', () => {
+						track.scrollBy( { left: -120, behavior: 'smooth' } );
+					} );
+				}
+				if ( nextNav ) {
+					nextNav.addEventListener( 'click', () => {
+						track.scrollBy( { left: 120, behavior: 'smooth' } );
+					} );
+				}
+			}
+
+			// Add to cart buttons inside the sidebar.
+			const cartButtons = this.sidebar.querySelectorAll( '.godam-product-sidebar-add-to-cart-button' );
+			cartButtons.forEach( ( btn ) => {
+				btn.addEventListener( 'click', () => {
+					const pid = btn.dataset.productId;
+					if ( ! pid || btn.classList.contains( 'loading' ) ) {
+						return;
+					}
+
+					btn.classList.add( 'loading' );
+
+					fetch( '/?wc-ajax=add_to_cart', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+						body: new URLSearchParams( { product_id: pid, quantity: 1 } ),
+						credentials: 'same-origin',
+					} )
+						.then( ( response ) => response.json() )
+						.then( ( data ) => {
+							btn.classList.remove( 'loading' );
+							if ( data.error ) {
+								return;
+							}
+
+							// Update WooCommerce cart fragments.
+							if ( data.fragments && typeof jQuery !== 'undefined' ) {
+								jQuery.each( data.fragments, ( key, value ) => {
+									jQuery( key ).replaceWith( value );
+								} );
+								jQuery( document.body ).trigger( 'wc_fragments_refreshed' );
+							}
+
+							this.openMiniCart();
+						} )
+						.catch( () => {
+							btn.classList.remove( 'loading' );
+						} );
+				} );
+			} );
 		}
 
 		// ─────────────────────────────────────────────

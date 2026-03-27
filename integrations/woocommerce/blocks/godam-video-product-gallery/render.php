@@ -178,6 +178,8 @@ $wrapper_attributes = get_block_wrapper_attributes(
 		'data-ratio'            => $view_ratio,
 		'data-autoplay'         => $autoplay ? 'true' : 'false',
 		'data-show-add-to-cart' => $show_add_to_cart ? 'true' : 'false',
+		'data-ajax-url'         => admin_url( 'admin-ajax.php' ),
+		'data-product-nonce'    => wp_create_nonce( 'godam_get_single_sidebar_product_html' ),
 	)
 );
 
