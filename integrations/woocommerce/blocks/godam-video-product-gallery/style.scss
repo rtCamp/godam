@@ -368,7 +368,7 @@
 	position: fixed;
 	inset: 0;
 	z-index: 990;
-	background: rgba(0, 0, 0, 0.85);
+	background: rgba(0, 0, 0, 0.4);
 	opacity: 0;
 	visibility: hidden;
 	transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -451,7 +451,9 @@
 	padding: 0;
 	border: none;
 	border-radius: 50%;
-	background: rgba(255, 255, 255, 0.15);
+	background-color: rgba(0, 0, 0, 0.5);
+	backdrop-filter: blur(8px);
+	order: 0.35px solid rgba(255, 255, 255, 0.2);
 	color: #fff;
 	cursor: pointer;
 	display: none;
@@ -517,6 +519,64 @@
 // Lock body scroll when modal is open.
 body.godam-vpg-modal-open {
 	overflow: hidden !important;
+}
+
+// Offset modal elements when WP Admin Bar is present.
+body.admin-bar {
+
+	.godam-vpg-modal-overlay {
+		top: 32px;
+	}
+
+	.godam-video-product-gallery-item--modal {
+		top: calc(50% + 16px) !important;
+	}
+
+	.godam-vpg-modal-close {
+		top: 48px;
+	}
+
+	.godam-vpg-modal-nav {
+		top: calc(50% + 16px);
+	}
+
+	@media (max-width: 782px) {
+
+		.godam-vpg-modal-overlay {
+			top: 46px;
+		}
+
+		.godam-video-product-gallery-item--modal {
+			top: calc(50% + 23px) !important;
+		}
+
+		.godam-vpg-modal-close {
+			top: 62px;
+		}
+
+		.godam-vpg-modal-nav {
+			top: calc(50% + 23px);
+		}
+	}
+
+	@media (max-width: 600px) {
+
+		.godam-vpg-modal-overlay {
+			top: 0;
+		}
+
+		.godam-video-product-gallery-item--modal {
+			top: 50% !important;
+		}
+
+		.godam-vpg-modal-close {
+			top: 16px;
+		}
+
+		.godam-vpg-modal-nav {
+			top: 50%;
+		}
+	}
 }
 
 // Responsive.
