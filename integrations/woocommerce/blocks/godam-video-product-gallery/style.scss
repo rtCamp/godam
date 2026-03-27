@@ -358,3 +358,185 @@
 		}
 	}
 }
+
+// ──────────────────────────────────────────
+// Video Modal — overlay + promoted item
+// ──────────────────────────────────────────
+
+// Dark backdrop.
+.godam-vpg-modal-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 990;
+	background: rgba(0, 0, 0, 0.85);
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 0.3s ease, visibility 0.3s ease;
+	pointer-events: none;
+
+	&.is-active {
+		opacity: 1;
+		visibility: visible;
+		pointer-events: auto;
+	}
+}
+
+// The original gallery item promoted to modal view.
+.godam-video-product-gallery-item--modal {
+	position: fixed !important;
+	z-index: 995 !important;
+	top: 50% !important;
+	left: 50% !important;
+	transform: translate(-50%, -50%) !important;
+	max-width: 480px !important;
+	width: 100% !important;
+	max-height: 90vh !important;
+	flex: none !important;
+	border-radius: 12px !important;
+	overflow: hidden !important;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+	opacity: 0;
+	transition: opacity 0.3s ease;
+
+	&.is-active {
+		opacity: 1;
+	}
+
+	// Show controls in modal view.
+	.godam-gallery-item__video-wrapper {
+
+		.vjs-control-bar {
+			display: flex !important;
+		}
+
+	}
+
+	// Product bar overlays the bottom inside modal.
+	.godam-gallery-item__product {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		padding: 12px;
+		background: rgba(0, 0, 0, .5);
+		border-radius: 1rem;
+		margin: 1rem;
+		z-index: 999;
+
+		.godam-gallery-item__product-name,
+		.godam-gallery-item__product-price {
+			color: #fff;
+		}
+
+		.godam-gallery-item__product-link:hover .godam-gallery-item__product-name {
+			color: #ddd;
+		}
+	}
+}
+
+// Placeholder keeps gallery layout intact while item is in modal.
+.godam-video-product-gallery-item--placeholder {
+	visibility: hidden;
+	pointer-events: none;
+}
+
+// Close button.
+.godam-vpg-modal-close {
+	position: fixed;
+	z-index: 999;
+	top: 16px;
+	right: 16px;
+	width: 40px;
+	height: 40px;
+	padding: 0;
+	border: none;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.15);
+	color: #fff;
+	cursor: pointer;
+	display: none;
+	align-items: center;
+	justify-content: center;
+	transition: background 0.2s ease;
+
+	&:hover {
+		background: rgba(255, 255, 255, 0.3);
+	}
+
+	&.is-active {
+		display: flex;
+	}
+
+	svg {
+		width: 20px;
+		height: 20px;
+	}
+}
+
+// Prev / Next navigation in modal.
+.godam-vpg-modal-nav {
+	position: fixed;
+	z-index: 999;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 44px;
+	height: 44px;
+	padding: 0;
+	border: none;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.15);
+	color: #fff;
+	cursor: pointer;
+	display: none;
+	align-items: center;
+	justify-content: center;
+	transition: background 0.2s ease;
+
+	&:hover {
+		background: rgba(255, 255, 255, 0.3);
+	}
+
+	&.is-active {
+		display: flex;
+	}
+
+	svg {
+		width: 24px;
+		height: 24px;
+	}
+
+	&--prev {
+		left: 16px;
+	}
+
+	&--next {
+		right: 16px;
+	}
+}
+
+// Lock body scroll when modal is open.
+body.godam-vpg-modal-open {
+	overflow: hidden !important;
+}
+
+// Responsive.
+@media (max-width: 600px) {
+
+	.godam-video-product-gallery-item--modal {
+		max-width: 92vw !important;
+		max-height: 85vh !important;
+	}
+
+	.godam-vpg-modal-nav {
+		width: 36px;
+		height: 36px;
+
+		&--prev {
+			left: 8px;
+		}
+
+		&--next {
+			right: 8px;
+		}
+	}
+}
