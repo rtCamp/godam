@@ -10,7 +10,7 @@ import 'video.js/dist/video-js.css';
 import '../video-editor/style.scss';
 import axios from 'axios';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
-import { getAPIKeyErrorInfo } from '../godam/utils';
+import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
 import {
 	useFetchAnalyticsDataQuery,
 	useFetchProcessedAnalyticsHistoryQuery,
@@ -22,7 +22,7 @@ import './charts.js';
 /**
  * WordPress dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { Button, Spinner } from '@wordpress/components';
 import { addQueryArgs } from '@wordpress/url';
 import SingleMetrics from './SingleMetrics.js';
@@ -31,6 +31,7 @@ import videojs from 'video.js';
 import { arrowLeft } from '@wordpress/icons';
 import { API_KEY_STATUS, ERROR_TYPE } from '../shared/enums';
 import { formatNumber, formatWatchTime } from '../utils/formatters';
+import UpgradePlanAnalyticsBg from '../../assets/src/images/upgrade-plan-analytics-bg.webp';
 
 const adminUrl =
   window.videoData?.adminUrl;
@@ -79,21 +80,36 @@ const Analytics = ( { attachmentID } ) => {
 
 	// RTK Query hooks
 	const siteUrl = window.location.origin;
+	const apiKeyError = getAPIKeyErrorInfo();
+	const apiKeyErrorType = apiKeyError?.type || null;
+
+	// Skip all analytics queries when there is no API key or there is a locally-known key error.
+	const shouldSkipAnalytics = ! hasAPIKey || !! apiKeyErrorType;
+
 	const {
 		data: analyticsDataFetched,
 	} = useFetchAnalyticsDataQuery(
 		{ videoId: attachmentID, siteUrl },
-		{ skip: ! attachmentID },
+		{ skip: ! attachmentID || shouldSkipAnalytics },
 	);
+	const shouldShowUpgradeMessage =
+		apiKeyErrorType === ERROR_TYPE.MISSING_KEY ||
+		( apiKeyErrorType === null &&
+			( analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY ||
+				analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ) );
 
 	window.analyticsDataFetched = analyticsDataFetched;
+
+	// Skip secondary queries until the primary analytics call has returned without an error.
+	// This prevents parallel requests being sent when the server rejects the API key.
+	const shouldSkipSecondaryQueries = ! attachmentID || shouldSkipAnalytics || ! analyticsDataFetched || !! analyticsDataFetched?.errorType;
 
 	// Query for last 30 days of processed analytics history
 	const {
 		data: processedAnalyticsHistory,
 	} = useFetchProcessedAnalyticsHistoryQuery(
 		{ videoId: attachmentID, siteUrl, days: 7 },
-		{ skip: ! attachmentID },
+		{ skip: shouldSkipSecondaryQueries },
 	);
 
 	window.processedAnalyticsHistory = processedAnalyticsHistory;
@@ -105,7 +121,7 @@ const Analytics = ( { attachmentID } ) => {
 			videoId: abTestComparisonAttachmentData?.id,
 			siteUrl,
 		},
-		{ skip: ! abTestComparisonAttachmentData?.id },
+		{ skip: ! abTestComparisonAttachmentData?.id || !! apiKeyErrorType || !! analyticsDataFetched?.errorType },
 	);
 
 	// Sync main analytics data
@@ -115,12 +131,11 @@ const Analytics = ( { attachmentID } ) => {
 		const overlay = document.getElementById( 'api-key-overlay' );
 
 		// Check for server-side errors OR local API key status issues
-		const apiKeyError = getAPIKeyErrorInfo();
 		const shouldShowOverlay =
 			analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY ||
 			analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ||
 			analyticsDataFetched?.errorType === ERROR_TYPE.MICROSERVICE_ERROR ||
-			apiKeyError !== null;
+			apiKeyErrorType !== null;
 
 		if ( shouldShowOverlay ) {
 			if ( loadingEl ) {
@@ -135,7 +150,7 @@ const Analytics = ( { attachmentID } ) => {
 		} else if ( analyticsDataFetched ) {
 			setAnalyticsData( analyticsDataFetched );
 		}
-	}, [ analyticsDataFetched ] );
+	}, [ analyticsDataFetched, apiKeyErrorType ] );
 
 	// Sync A/B test comparison data
 	useEffect( () => {
@@ -470,8 +485,6 @@ const Analytics = ( { attachmentID } ) => {
 	 * @return {JSX.Element} The overlay content to display.
 	 */
 	const renderOverlayContent = () => {
-		const apiKeyError = getAPIKeyErrorInfo();
-
 		// Check for local API key status first (expired, verification_failed)
 		if ( apiKeyError?.type === API_KEY_STATUS.EXPIRED || apiKeyError?.type === API_KEY_STATUS.VERIFICATION_FAILED ) {
 			return (
@@ -491,7 +504,7 @@ const Analytics = ( { attachmentID } ) => {
 		}
 
 		// Show upgrade message for missing/invalid keys
-		if ( analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY || analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ) {
+		if ( shouldShowUpgradeMessage ) {
 			return (
 				<div className="api-key-overlay-banner">
 					<p className="api-key-overlay-banner-header">
@@ -525,11 +538,7 @@ const Analytics = ( { attachmentID } ) => {
 		return (
 			<div className="api-key-overlay-banner">
 				<p>
-					{ sprintf(
-						/* translators: %s: error message from the server */
-						__( '%s', 'godam' ),
-						analyticsDataFetched?.message || __( 'An unknown error occurred. Please check your plugin settings.', 'godam' ),
-					) }
+					{ analyticsDataFetched?.message || __( 'An unknown error occurred. Please check your plugin settings.', 'godam' ) }
 				</p>
 				<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
 					{ __( 'Go to plugin settings', 'godam' ) }
@@ -550,7 +559,11 @@ const Analytics = ( { attachmentID } ) => {
 				</div>
 			</div>
 
-			<div id="media-not-found-overlay" className={ `api-key-overlay ${ ! mediaNotFound ? 'hidden' : '' }` }>
+			<div
+				id="media-not-found-overlay"
+				className={ `api-key-overlay api-key-overlay--upgrade ${ ! mediaNotFound ? 'hidden' : '' }` }
+				style={ { backgroundImage: `url(${ UpgradePlanAnalyticsBg })` } }
+			>
 				<div className="api-key-message">
 					<p>
 						{ __( 'This media doesn\'t exist.', 'godam' ) }
@@ -563,11 +576,8 @@ const Analytics = ( { attachmentID } ) => {
 
 			<div
 				id="api-key-overlay"
-				className={ `api-key-overlay hidden${
-					( analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY || analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ) && ! getAPIKeyErrorInfo()?.type
-						? ' api-key-overlay--upgrade'
-						: ''
-				}` }
+				className="api-key-overlay api-key-overlay--upgrade hidden"
+				style={ { backgroundImage: `url(${ UpgradePlanAnalyticsBg })` } }
 			>
 				<div className="api-key-message">
 					{ renderOverlayContent() }

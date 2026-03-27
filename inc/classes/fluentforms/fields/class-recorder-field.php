@@ -857,7 +857,7 @@ class Recorder_Field extends BaseFieldManager {
 		/**
 		 * Generate video output.
 		 */
-		$video_output = do_shortcode( "[godam_video src='{$video_url}' transcoded_url='{$transcoded_url}' aspectRatio='']" );
+		$video_output = do_shortcode( "[godam_video src='{$video_url}' transcoded_url='{$transcoded_url}' aspect_ratio='']" );
 		$video_output = '<div class="gf-godam-video-preview">' . $video_output . '</div>';
 
 		$download_url = sprintf(
