@@ -1,3 +1,5 @@
+/* eslint-disable eslint-comments/disable-enable-pair */
+/* eslint-disable no-console */
 /**
  * WordPress dependencies
  */
@@ -30,6 +32,8 @@ export default class WooCommerceLayerManager {
 		this.productFetchPromises = new Map();
 		this.didBindPrefetchHandlers = false;
 		this.didPrefetchProducts = false;
+
+		this.bindMiniCartFullscreenFix();
 	}
 
 	bindProductPrefetchHandlers() {
@@ -133,7 +137,6 @@ export default class WooCommerceLayerManager {
 			method: 'POST',
 			data: { ids: uncached },
 		} ).catch( ( error ) => {
-			// eslint-disable-next-line no-console
 			console.warn( 'Batch product fetch failed, individual requests will be used:', error );
 			return [];
 		} );
@@ -263,6 +266,11 @@ export default class WooCommerceLayerManager {
 				if ( msg ) {
 					videoContainer.appendChild( msg );
 				}
+
+				const miniCart = document.querySelector( '.godam-video--cart-basket' );
+				if ( miniCart ) {
+					videoContainer.appendChild( miniCart );
+				}
 			}
 		} );
 
@@ -277,6 +285,148 @@ export default class WooCommerceLayerManager {
 			}
 		};
 		window.requestAnimationFrame( waitForResize );
+	}
+
+	/**
+	 * Handle Mini Cart click in fullscreen
+	 * → exit fullscreen → open drawer → wait until close → re-enter fullscreen
+	 */
+	bindMiniCartFullscreenFix() {
+		if ( this._miniCartFsBound ) {
+			return;
+		}
+		this._miniCartFsBound = true;
+
+		document.addEventListener( 'click', ( e ) => {
+			const trigger = e.target.closest(
+				'.wc-block-mini-cart, .godam-video--cart-basket',
+			);
+
+			if ( ! trigger ) {
+				return;
+			}
+
+			const isFullscreen = this.player?.el()?.classList.contains( 'vjs-fullscreen' );
+			if ( ! isFullscreen ) {
+				return;
+			}
+
+			e.preventDefault();
+			e.stopPropagation();
+
+			const playerEl = this.player?.el?.();
+
+			const isIOS = /iPhone|iPad|iPod/i.test( navigator.userAgent );
+
+			try {
+				const doc = document;
+
+				if ( isIOS ) {
+					doc.getElementsByClassName( 'vjs-custom-fullscreen-exit-control' )[ 0 ].click();
+				} else {
+					doc.exitFullscreen();
+					doc.webkitExitFullscreen();
+				}
+
+				setTimeout( () => {
+					trigger.click();
+
+					this.showFullscreenReturnMessage();
+					this.waitForDrawerCloseAndRestoreFullscreen( playerEl );
+				}, 120 );
+			} catch ( err ) {
+				console.warn( 'Mini cart fullscreen fix failed:', err );
+			}
+		} );
+	}
+
+	/**
+	 * Show message to guide user
+	 */
+	showFullscreenReturnMessage() {
+		if ( document.querySelector( '.godam-fs-return-msg' ) ) {
+			return;
+		}
+
+		const msg = document.createElement( 'div' );
+		msg.className = 'godam-fs-return-msg';
+
+		const message = __( 'Close cart & return to fullscreen', 'godam' );
+		const returnButton = __( 'Return to Fullscreen', 'godam' );
+
+		msg.innerHTML = `
+			${ message }
+			<br/>
+			<button class="godam-return-fs-btn">${ returnButton }</button>
+		`;
+
+		document.body.appendChild( msg );
+
+		// Bind click.
+		const btn = msg.querySelector( '.godam-return-fs-btn' );
+		btn.addEventListener( 'click', () => {
+			const playerEl = this.player?.el?.();
+
+			const isIOS = /iPhone|iPad|iPod/i.test( navigator.userAgent );
+
+			// 1. Try closing drawer (Woo way).
+			const closeBtn = document.querySelector(
+				'.wc-block-components-drawer__close',
+			);
+
+			if ( closeBtn ) {
+				closeBtn.click();
+			} else {
+				// fallback: click overlay.
+				const overlay = document.querySelector(
+					'.wc-block-components-drawer__screen-overlay',
+				);
+				if ( overlay ) {
+					overlay.click();
+				}
+			}
+
+			// 2. Enter fullscreen.
+			if ( ! isIOS && playerEl?.requestFullscreen ) {
+				playerEl.requestFullscreen();
+			} else {
+				playerEl.querySelector( '.vjs-fullscreen-control' )?.click();
+			}
+
+			// 3. Cleanup message.
+			this.cleanupFullscreenMessage();
+		} );
+	}
+
+	/**
+	 * Wait until Woo drawer closes, then re-enter fullscreen
+	 */
+	waitForDrawerCloseAndRestoreFullscreen() {
+		const checkDrawer = () => {
+			const drawer = document.querySelector(
+				'.wc-block-components-drawer__screen-overlay',
+			);
+
+			// Drawer closed.
+			if ( ! drawer || drawer.offsetParent === null ) {
+				// Just show button (no auto fullscreen).
+				return;
+			}
+
+			requestAnimationFrame( checkDrawer );
+		};
+
+		requestAnimationFrame( checkDrawer );
+	}
+
+	/**
+	 * Remove helper message
+	 */
+	cleanupFullscreenMessage() {
+		const msg = document.querySelector( '.godam-fs-return-msg' );
+		if ( msg ) {
+			msg.remove();
+		}
 	}
 
 	/**
@@ -708,7 +858,6 @@ export default class WooCommerceLayerManager {
 							this.showCartMessage( __( 'Product added successfully!', 'godam' ), 'success' );
 						} )
 						.catch( ( err ) => {
-							// eslint-disable-next-line no-console
 							console.error( 'Add to cart failed', err );
 							productLinkButton.disabled = false;
 							productLinkButton.classList.remove( 'loading' );
