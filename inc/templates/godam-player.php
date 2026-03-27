@@ -297,8 +297,6 @@ $godam_woocommerce_allowed_contexts = array(
 
 $godam_woocommerce_context = false;
 
-error_log( 'godam_context: ' . ( isset( $attributes['godam_context'] ) ? $attributes['godam_context'] : 'not set' ) ); // Debug log for context.
-
 if ( isset( $attributes['godam_context'] ) ) {
 	$godam_woocommerce_context = in_array( $attributes['godam_context'], $godam_woocommerce_allowed_contexts, true );
 }
@@ -555,7 +553,7 @@ if ( $godam_should_preload_poster ) {
 					</div>
 				<?php endif; ?>
 
-				<div class="godam-video-placeholder godam-animate-video-loading">
+				<div class="godam-video-placeholder godam-animate-video-loading <?php echo esc_attr( 'godam-' . strtolower( $godam_player_skin ) . '-skin' ); ?>">
 					<div class="animate-play-btn">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
 							<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
@@ -572,7 +570,7 @@ if ( $godam_should_preload_poster ) {
 					<?php endif; ?>
 				</div>
 
-				<div class="easydam-video-container loading godam-<?php echo esc_attr( strtolower( $godam_player_skin ) ); ?>-skin" >
+				<div class="easydam-video-container loading <?php echo esc_attr( 'godam-' . strtolower( $godam_player_skin ) . '-skin' ); ?>" >
 					<?php if ( isset( $godam_hover_select ) && 'shadow-overlay' === $godam_hover_select ) : ?>
 						<div class="godam-player-overlay"></div>
 					<?php endif; ?>

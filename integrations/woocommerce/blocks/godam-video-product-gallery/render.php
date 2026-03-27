@@ -194,11 +194,10 @@ $wrapper_attributes = get_block_wrapper_attributes(
 				<!-- Video Section -->
 				<div class="godam-gallery-item__video-wrapper">
 					<?php
-					error_log( 'aspect Ratio: ' . $view_ratio );
 					// Render the video using the godam_video shortcode.
 					echo do_shortcode(
 						sprintf(
-							'[godam_video id="%d" muted="true" loop="true" autoplay="%s" controls="true" aspectRatio="%s" godam_context="godam-product-gallery" showShareButton="1"]',
+							'[godam_video id="%d" muted="true" loop="true" autoplay="%s" controls="true" aspect_ratio="%s" godam_context="godam-product-gallery" showShareButton="1"]',
 							$item['videoId'],
 							$autoplay ? 'true' : 'false',
 							esc_attr( $view_ratio )
