@@ -61,6 +61,21 @@
 	overflow: hidden;
 	border-radius: var(--item-border-radius) var(--item-border-radius) 0 0;
 
+	// Remove video player figure element margin.
+	figure {
+		margin: 0;
+	}
+
+	// Don't show any player controls
+	.vjs-control-bar {
+		display: none !important;
+	}
+
+	// Hide big play button when autoplay is enabled.
+	[data-autoplay="true"] & .vjs-big-play-button {
+		display: none !important;
+	}
+
 	// Make the GoDAM player fill the wrapper.
 	.godam-player__wrapper {
 		width: 100%;
