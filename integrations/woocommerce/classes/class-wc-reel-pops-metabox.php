@@ -527,7 +527,7 @@ class WC_Reel_Pops_Metabox {
 		 *
 		 * Allows developers to override popup width, mobile width, spacing, and autoplay defaults.
 		 *
-		 * @since 1.5.0
+		 * @since n.e.x.t
 		 *
 		 * @param array $settings {
 		 *     Reel pops display settings.
