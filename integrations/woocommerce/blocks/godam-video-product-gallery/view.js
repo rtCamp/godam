@@ -57,10 +57,12 @@
 		}
 
 		/**
-		 * Use IntersectionObserver to autoplay videos when ≥50% visible
-		 * and pause when they scroll out of view.
+		 * Use IntersectionObserver to autoplay the first 5 seconds of each video
+		 * in a loop when ≥50% visible, and pause when they scroll out of view.
 		 */
 		initAutoplay() {
+			const PREVIEW_DURATION = 5; // Loop only the initial 5 seconds.
+
 			const observer = new IntersectionObserver(
 				( entries ) => {
 					entries.forEach( ( entry ) => {
@@ -69,16 +71,29 @@
 							return;
 						}
 						if ( entry.isIntersecting ) {
+							video.currentTime = 0;
 							video.play().catch( () => {} );
 						} else {
 							video.pause();
+							video.currentTime = 0;
 						}
 					} );
 				},
 				{ threshold: 0.5 },
 			);
 
-			this.items.forEach( ( item ) => observer.observe( item ) );
+			this.items.forEach( ( item ) => {
+				const video = item.querySelector( 'video' );
+				if ( video ) {
+					// Reset to the beginning once the preview duration is reached.
+					video.addEventListener( 'timeupdate', () => {
+						if ( video.currentTime >= PREVIEW_DURATION ) {
+							video.currentTime = 0;
+						}
+					} );
+				}
+				observer.observe( item );
+			} );
 		}
 
 		/**
