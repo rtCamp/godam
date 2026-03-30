@@ -213,7 +213,6 @@ const woocommerceIntegration = {
 	entry: {
 		// Admin scripts
 		'admin/wc-product-video-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'admin', 'wc-product-video-gallery.js' ),
-		'admin/wc-add-to-product': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'admin', 'wc-add-to-product.js' ),
 		'admin/wc-admin-featured-video-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'admin', 'wc-admin-featured-video-gallery.js' ),
 
 		// Frontend scripts

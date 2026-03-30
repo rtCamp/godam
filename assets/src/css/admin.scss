@@ -922,26 +922,100 @@ to ensure proper responsiveness and avoid layout issues.
 }
 
 #rtgodam_product_video_gallery, #godam_reel_pops_metabox {
+
 	.postbox-header .hndle {
 		justify-content: unset;
 	}
 }
 
-.godam-dummy-card {
-	opacity: 0.85;
+/*
+ * Help-tip tooltip shown on hover/focus in metabox titles.
+ */
+.godam-help-tip {
+	position: relative;
+	display: inline-block;
+	vertical-align: middle;
+	line-height: 1;
+	margin-left: 6px;
 
-	.godam-dummy-products {
-		margin-top: 6px;
+	&__icon {
+		// Reset button styles.
+		appearance: none;
+		border: none;
+		padding: 0;
+		margin: 0;
+		font-family: inherit;
+
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 16px;
+		height: 16px;
+		border-radius: 50%;
+		background: #9ca3af;
+		color: #fff;
+		font-size: 10px;
+		font-weight: 700;
+		line-height: 1;
+		cursor: help;
+		transition: background 0.15s ease;
+
+		&:hover {
+			background: #6b7280;
+		}
+
+		&:focus {
+			outline: 2px solid #3b82f6;
+			outline-offset: 2px;
+			background: #6b7280;
+		}
+
+		&:focus:not(:focus-visible) {
+			outline: none;
+		}
+	}
+
+	&__popup {
+		display: none;
+		position: absolute;
+		top: calc(100% + 8px);
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 100001;
+		width: 280px;
+		padding: 0;
+		background: #fff;
+		border-radius: 8px;
+		box-shadow: 0 4px 24px 8px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+		overflow: hidden;
+	}
+
+	&:hover &__popup,
+	&:focus-within &__popup {
+		display: block;
+	}
+
+	&__preview {
+		display: block;
+		width: 100%;
+		height: auto;
+		object-fit: cover;
+		border-bottom: 1px solid #e5e7eb;
+	}
+
+	&__text {
+		display: block;
+		padding: 10px 12px;
+		font-size: 12px;
+		line-height: 1.5;
+		color: #374151;
+		font-weight: 400;
+		width: 100%;
 	}
 }
 
-.godam-dummy-pill {
-	display: inline-block;
-	padding: 4px 10px;
-	border: 1px dashed #000000;
-	border-radius: 0.5rem;
-	font-size: 12px;
-	background: rgb(243, 245, 247);
+.godam-dummy-card {
+	opacity: 0.85;
 }
 
 .text-\[\#AB3A6C\] {
