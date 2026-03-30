@@ -442,8 +442,8 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 									label={ __( 'Order', 'godam' ) }
 									value={ order }
 									options={ [
-										{ label: __( 'Descending', 'godam' ), value: 'DESC' },
-										{ label: __( 'Ascending', 'godam' ), value: 'ASC' },
+										{ label: __( 'Descending', 'godam' ), value: 'desc' },
+										{ label: __( 'Ascending', 'godam' ), value: 'asc' },
 									] }
 									onChange={ ( value ) => setAttributes( { order: value } ) }
 								/>
@@ -603,7 +603,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 											{ video.thumbnail ? (
 												<img src={ video.thumbnail } alt={ video.title } />
 											) : (
-												<span>{ __( 'Video', 'godam' ) }</span>
+												<span>{ __( 'GoDAM Video', 'godam' ) }</span>
 											) }
 										</div>
 										{ showTitle && (
