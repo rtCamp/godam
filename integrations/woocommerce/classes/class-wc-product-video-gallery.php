@@ -144,7 +144,7 @@ class WC_Product_Video_Gallery {
 			'godam-player-wc-reels-skin',
 			RTGODAM_URL . 'assets/build/integrations/woocommerce/css/godam-reels-skin-v2.css',
 			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/integrations/woocommerce/css/godam-reels-skin-v2.css' )
+			filemtime( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'css/godam-reels-skin-v2.css' )
 		);
 	}
 

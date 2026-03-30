@@ -116,6 +116,7 @@ if ( is_string( $block_gap_raw ) && str_starts_with( $block_gap_raw, 'var:preset
 	$block_gap = $block_gap_raw;
 }
 $show_add_to_cart = isset( $attributes['showAddToCart'] ) ? (bool) $attributes['showAddToCart'] : true;
+$wc_ajax_url      = class_exists( 'WC_AJAX' ) ? WC_AJAX::get_endpoint( '%%endpoint%%' ) : '';
 
 // Convert ratio to CSS class format.
 $ratio_class = str_replace( ':', '-', $view_ratio );
@@ -179,6 +180,7 @@ $wrapper_attributes = get_block_wrapper_attributes(
 		'data-autoplay'         => $autoplay ? 'true' : 'false',
 		'data-show-add-to-cart' => $show_add_to_cart ? 'true' : 'false',
 		'data-ajax-url'         => admin_url( 'admin-ajax.php' ),
+		'data-wc-ajax-url'      => $wc_ajax_url,
 		'data-product-nonce'    => wp_create_nonce( 'godam_get_single_sidebar_product_html' ),
 	)
 );

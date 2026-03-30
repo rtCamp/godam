@@ -5,13 +5,116 @@
  * the GoDAM Video Product Gallery block on the frontend.
  */
 
-/* global jQuery */
+/* global jQuery, wc_add_to_cart_params */
 
 ( function() {
 	'use strict';
 
 	// Shared product HTML cache across all gallery instances on the page.
 	const productHtmlCache = new Map();
+	let activeModalGallery = null;
+	let sharedModalElements = null;
+
+	/**
+	 * Route document-level keyboard navigation to the currently active modal.
+	 *
+	 * @param {KeyboardEvent} e The keyboard event.
+	 */
+	function handleModalKeydown( e ) {
+		if ( ! activeModalGallery || ! activeModalGallery.modalOpen ) {
+			return;
+		}
+
+		if ( e.key === 'Escape' ) {
+			activeModalGallery.closeModal();
+		} else if ( e.key === 'ArrowLeft' ) {
+			activeModalGallery.navigateModal( -1 );
+		} else if ( e.key === 'ArrowRight' ) {
+			activeModalGallery.navigateModal( 1 );
+		}
+	}
+
+	document.addEventListener( 'keydown', handleModalKeydown );
+
+	/**
+	 * Create the shared modal shell once and reuse it across gallery instances.
+	 *
+	 * @return {Object} Shared modal elements.
+	 */
+	function getSharedModalElements() {
+		if ( sharedModalElements ) {
+			return sharedModalElements;
+		}
+
+		const overlay = document.createElement( 'div' );
+		overlay.className = 'godam-vpg-modal-overlay';
+		document.body.appendChild( overlay );
+
+		const modalCloseBtn = document.createElement( 'button' );
+		modalCloseBtn.className = 'godam-vpg-modal-close';
+		modalCloseBtn.setAttribute( 'aria-label', 'Close' );
+		modalCloseBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
+		document.body.appendChild( modalCloseBtn );
+
+		const modalWrapper = document.createElement( 'div' );
+		modalWrapper.className = 'godam-vpg-modal-wrapper';
+		document.body.appendChild( modalWrapper );
+
+		const sidebar = document.createElement( 'div' );
+		sidebar.className = 'godam-vpg-modal-sidebar';
+		sidebar.innerHTML =
+			'<div class="godam-vpg-sidebar-product">' +
+			'<div class="godam-vpg-sidebar-spinner"></div>' +
+			'</div>';
+		modalWrapper.appendChild( sidebar );
+
+		const modalPrevBtn = document.createElement( 'button' );
+		modalPrevBtn.className = 'godam-vpg-modal-nav godam-vpg-modal-nav--prev';
+		modalPrevBtn.setAttribute( 'aria-label', 'Previous video' );
+		modalPrevBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>';
+		document.body.appendChild( modalPrevBtn );
+
+		const modalNextBtn = document.createElement( 'button' );
+		modalNextBtn.className = 'godam-vpg-modal-nav godam-vpg-modal-nav--next';
+		modalNextBtn.setAttribute( 'aria-label', 'Next video' );
+		modalNextBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>';
+		document.body.appendChild( modalNextBtn );
+
+		overlay.addEventListener( 'click', () => {
+			if ( activeModalGallery ) {
+				activeModalGallery.closeModal();
+			}
+		} );
+
+		modalCloseBtn.addEventListener( 'click', () => {
+			if ( activeModalGallery ) {
+				activeModalGallery.closeModal();
+			}
+		} );
+
+		modalPrevBtn.addEventListener( 'click', () => {
+			if ( activeModalGallery ) {
+				activeModalGallery.navigateModal( -1 );
+			}
+		} );
+
+		modalNextBtn.addEventListener( 'click', () => {
+			if ( activeModalGallery ) {
+				activeModalGallery.navigateModal( 1 );
+			}
+		} );
+
+		sharedModalElements = {
+			overlay,
+			modalCloseBtn,
+			modalWrapper,
+			sidebar,
+			modalPrevBtn,
+			modalNextBtn,
+		};
+
+		return sharedModalElements;
+	}
 
 	/**
 	 * Initialize all video product galleries on the page.
@@ -47,6 +150,7 @@
 
 			// AJAX configuration from data attributes.
 			this.ajaxUrl = element.dataset.ajaxUrl || '';
+			this.wcAjaxUrl = element.dataset.wcAjaxUrl || '';
 			this.productNonce = element.dataset.productNonce || '';
 
 			// Modal state.
@@ -157,7 +261,7 @@
 				spinnerEl.style.display = 'block';
 			}
 
-			fetch( '/?wc-ajax=add_to_cart', {
+			fetch( this.getWcAjaxEndpoint( 'add_to_cart' ), {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 				body: new URLSearchParams( { product_id: productId, quantity: 1 } ),
@@ -216,6 +320,28 @@
 		}
 
 		/**
+		 * Resolve a WooCommerce AJAX endpoint in a way that works for subdirectory installs.
+		 *
+		 * @param {string} endpoint The WooCommerce AJAX endpoint name.
+		 * @return {string} The resolved endpoint URL.
+		 */
+		getWcAjaxEndpoint( endpoint ) {
+			if (
+				typeof wc_add_to_cart_params !== 'undefined' &&
+				wc_add_to_cart_params &&
+				wc_add_to_cart_params.wc_ajax_url
+			) {
+				return wc_add_to_cart_params.wc_ajax_url.replace( '%%endpoint%%', endpoint );
+			}
+
+			if ( this.wcAjaxUrl ) {
+				return this.wcAjaxUrl.replace( '%%endpoint%%', endpoint );
+			}
+
+			return `/?wc-ajax=${ endpoint }`;
+		}
+
+		/**
 		 * Try to open the WooCommerce Mini Cart sidebar (block themes).
 		 */
 		openMiniCart() {
@@ -237,45 +363,14 @@
 		 * Create modal UI elements (overlay, close, wrapper with sidebar, prev/next) and append to body.
 		 */
 		createModalElements() {
-			// Overlay.
-			this.overlay = document.createElement( 'div' );
-			this.overlay.className = 'godam-vpg-modal-overlay';
-			document.body.appendChild( this.overlay );
+			const modalElements = getSharedModalElements();
 
-			// Close button.
-			this.modalCloseBtn = document.createElement( 'button' );
-			this.modalCloseBtn.className = 'godam-vpg-modal-close';
-			this.modalCloseBtn.setAttribute( 'aria-label', 'Close' );
-			this.modalCloseBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
-			document.body.appendChild( this.modalCloseBtn );
-
-			// Modal wrapper — holds promoted video item + sidebar.
-			this.modalWrapper = document.createElement( 'div' );
-			this.modalWrapper.className = 'godam-vpg-modal-wrapper';
-			document.body.appendChild( this.modalWrapper );
-
-			// Sidebar element inside the wrapper.
-			this.sidebar = document.createElement( 'div' );
-			this.sidebar.className = 'godam-vpg-modal-sidebar';
-			this.sidebar.innerHTML =
-				'<div class="godam-vpg-sidebar-product">' +
-				'<div class="godam-vpg-sidebar-spinner"></div>' +
-				'</div>';
-			this.modalWrapper.appendChild( this.sidebar );
-
-			// Prev button.
-			this.modalPrevBtn = document.createElement( 'button' );
-			this.modalPrevBtn.className = 'godam-vpg-modal-nav godam-vpg-modal-nav--prev';
-			this.modalPrevBtn.setAttribute( 'aria-label', 'Previous video' );
-			this.modalPrevBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>';
-			document.body.appendChild( this.modalPrevBtn );
-
-			// Next button.
-			this.modalNextBtn = document.createElement( 'button' );
-			this.modalNextBtn.className = 'godam-vpg-modal-nav godam-vpg-modal-nav--next';
-			this.modalNextBtn.setAttribute( 'aria-label', 'Next video' );
-			this.modalNextBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>';
-			document.body.appendChild( this.modalNextBtn );
+			this.overlay = modalElements.overlay;
+			this.modalCloseBtn = modalElements.modalCloseBtn;
+			this.modalWrapper = modalElements.modalWrapper;
+			this.sidebar = modalElements.sidebar;
+			this.modalPrevBtn = modalElements.modalPrevBtn;
+			this.modalNextBtn = modalElements.modalNextBtn;
 		}
 
 		/**
@@ -305,28 +400,6 @@
 					} );
 				}
 			} );
-
-			// Close handlers.
-			this.overlay.addEventListener( 'click', () => this.closeModal() );
-			this.modalCloseBtn.addEventListener( 'click', () => this.closeModal() );
-
-			// Nav handlers.
-			this.modalPrevBtn.addEventListener( 'click', () => this.navigateModal( -1 ) );
-			this.modalNextBtn.addEventListener( 'click', () => this.navigateModal( 1 ) );
-
-			// Keyboard handlers.
-			document.addEventListener( 'keydown', ( e ) => {
-				if ( ! this.modalOpen ) {
-					return;
-				}
-				if ( e.key === 'Escape' ) {
-					this.closeModal();
-				} else if ( e.key === 'ArrowLeft' ) {
-					this.navigateModal( -1 );
-				} else if ( e.key === 'ArrowRight' ) {
-					this.navigateModal( 1 );
-				}
-			} );
 		}
 
 		/**
@@ -335,6 +408,10 @@
 		 * @param {number} index The index of the item to show in the modal.
 		 */
 		openModal( index ) {
+			if ( activeModalGallery && activeModalGallery !== this ) {
+				activeModalGallery.closeModal();
+			}
+
 			// If already open with a different item, restore the current one first.
 			if ( this.modalOpen ) {
 				this.restoreCurrentItem();
@@ -343,6 +420,7 @@
 			this.modalIndex = index;
 			this.modalOpen = true;
 			this.modalOriginalItem = this.items[ index ];
+			activeModalGallery = this;
 
 			// Pause all gallery preview videos.
 			this.items.forEach( ( item ) => {
@@ -436,6 +514,9 @@
 
 			this.modalOpen = false;
 			this.modalIndex = -1;
+			if ( activeModalGallery === this ) {
+				activeModalGallery = null;
+			}
 
 			// Unlock body scroll.
 			document.body.classList.remove( 'godam-vpg-modal-open' );
@@ -691,7 +772,7 @@
 
 					btn.classList.add( 'loading' );
 
-					fetch( '/?wc-ajax=add_to_cart', {
+					fetch( this.getWcAjaxEndpoint( 'add_to_cart' ), {
 						method: 'POST',
 						headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 						body: new URLSearchParams( { product_id: pid, quantity: 1 } ),
