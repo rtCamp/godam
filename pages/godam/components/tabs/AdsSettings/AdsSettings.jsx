@@ -14,7 +14,6 @@ import {
 	Button,
 	TextareaControl,
 	Spinner,
-	ExternalLink,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
@@ -22,14 +21,12 @@ import { useState, useEffect } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { scrollToTop, hasValidAPIKey } from '../../../utils/index.js';
+import { scrollToTop } from '../../../utils/index.js';
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
-import { getPricingUrl } from '../../../../shared/premium-layers.js';
 
 const AdsSettings = () => {
 	const dispatch = useDispatch();
-	const videoSettingsUrl = window.godamRestRoute?.adminUrl + 'admin.php?page=rtgodam_settings#video-settings';
 
 	// Selectors to get media settings and change flag
 	const { mediaSettings, isChanged } = useSelector( ( state ) => ( {
@@ -93,28 +90,7 @@ const AdsSettings = () => {
 				</Notice>
 			) }
 
-			{ ! hasValidAPIKey && (
-				<Notice
-					className="mb-4"
-					status="warning"
-					isDismissible={ false }
-				>
-					{ __( 'Video ads settings are a Pro feature.', 'godam' ) }{ ' ' }
-					<a href={ videoSettingsUrl } className="text-[#AB3A6C]" target="_blank" rel="noopener noreferrer">
-						{ __( 'Activate your license', 'godam' ) }
-					</a>
-					{
-						// eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace
-						__( ' or ', 'godam' )
-					}
-					<ExternalLink className="text-[#AB3A6C]" href={ getPricingUrl( 'video-ads-settings' ) }>
-						{ __( 'get started for free', 'godam' ) }
-					</ExternalLink>{ ' ' }
-					{ __( 'to unlock all features.', 'godam' ) }
-				</Notice>
-			) }
-
-			<div className={ ! hasValidAPIKey ? 'opacity-50 pointer-events-none' : '' }>
+			<div>
 				<Panel header={ __( 'Video Ads Settings', 'godam' ) } className="godam-panel">
 					<PanelBody opened>
 						<ToggleControl
@@ -149,7 +125,7 @@ const AdsSettings = () => {
 					onClick={ handleSaveSettings }
 					icon={ saveMediaSettingsLoading && <Spinner /> }
 					isBusy={ saveMediaSettingsLoading }
-					disabled={ saveMediaSettingsLoading || ! isChanged || ! hasValidAPIKey }
+					disabled={ saveMediaSettingsLoading || ! isChanged }
 				>
 					{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 				</Button>

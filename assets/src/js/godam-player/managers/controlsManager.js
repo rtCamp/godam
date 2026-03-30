@@ -400,7 +400,7 @@ export default class ControlsManager {
 	setupCustomButtons() {
 		const controlBarSettings = this.config.videoSetupControls?.controlBar;
 
-		if ( controlBarSettings?.brandingIcon || ! window?.godamAPIKeyData?.validApiKey ) {
+		if ( controlBarSettings?.brandingIcon ) {
 			this.setupBrandingButton( controlBarSettings );
 		}
 	}

@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, TextControl, ToggleControl, Notice, Tooltip, ExternalLink } from '@wordpress/components';
+import { Button, TextControl, ToggleControl, Notice, Tooltip } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from 'react';
 
@@ -21,7 +21,6 @@ const CustomAdSettings = ( { layerID } ) => {
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
 	);
-	const videoSettingsUrl = window.godamRestRoute?.adminUrl + 'admin.php?page=rtgodam_settings#video-settings';
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
 	const adServer = videoConfig?.adServer ?? 'self-hosted';
 	const [ isValid, setIsValid ] = useState( true );
@@ -149,41 +148,17 @@ const CustomAdSettings = ( { layerID } ) => {
 		setIsValid( valid );
 	};
 
-	// If we want to disable the premium layers the we can use this code
-	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
-
 	return (
 		<div className="relative">
 
 			{
-				( adServer === 'ad-server' && isValidAPIKey ) &&
+				adServer === 'ad-server' &&
 				<Notice
 					className="mb-4"
 					status="warning"
 					isDismissible={ false }
 				>
 					{ __( 'This ad will be overriden by Ad server\'s ads', 'godam' ) }
-				</Notice>
-			}
-			{
-				( ! isValidAPIKey ) &&
-				<Notice
-					className="mb-4"
-					status="warning"
-					isDismissible={ false }
-				>
-					{ __( 'Ads layer is a Pro feature.', 'godam' ) }{ ' ' }
-					<a href={ videoSettingsUrl } className="godam-link underline" target="_blank" rel="noopener noreferrer">
-						{ __( 'Activate your license', 'godam' ) }
-					</a>
-					{
-						// eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace
-						__( ' or ', 'godam' )
-					}
-					<ExternalLink className="godam-link underline" href={ `https://godam.io/pricing?utm_campaign=upgrade&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=ad-layer` }>
-						{ __( 'get started for free', 'godam' ) }
-					</ExternalLink>{ ' ' }
-					{ __( 'to unlock all features.', 'godam' ) }
 				</Notice>
 			}
 			<div className="flex flex-col items-start mb-4">
@@ -194,24 +169,24 @@ const CustomAdSettings = ( { layerID } ) => {
 						className="mb-2 godam-button"
 						variant="primary"
 						onClick={ () => OpenVideoSelector() }
-						disabled={ adServer === 'ad-server' || ! isValidAPIKey }
+						disabled={ adServer === 'ad-server' }
 					>{ __( 'Select Ad video', 'godam' ) }</Button> ) }
 				</div>
 				{ layer?.ad_url && (
 					<div className="flex mt-3">
-						<div className={ `sidebar-video-container rounded-xl overflow-scroll ${ adServer === 'ad-server' || ! isValidAPIKey ? 'disabled-video' : '' }` }>
+						<div className={ `sidebar-video-container rounded-xl overflow-scroll ${ adServer === 'ad-server' ? 'disabled-video' : '' }` }>
 							<video
 								src={ layer.ad_url }
 								controls={ adServer !== 'ad-server' }
 							/>
-							{ ( adServer === 'ad-server' || ! isValidAPIKey ) && <div className="video-overlay" /> }
+							{ ( adServer === 'ad-server' ) && <div className="video-overlay" /> }
 						</div>
 						<div className="ml-[6px] flex flex-col">
 							<Tooltip text={ __( 'Replace Ad Video', 'godam' ) } placement="right">
-								<Button className="!text-brand-neutral-900" icon={ replace } onClick={ OpenVideoSelector } disabled={ adServer === 'ad-server' || ! isValidAPIKey } />
+								<Button className="!text-brand-neutral-900" icon={ replace } onClick={ OpenVideoSelector } disabled={ adServer === 'ad-server' } />
 							</Tooltip>
 							<Tooltip text={ __( 'Remove Ad Video', 'godam' ) } placement="right">
-								<Button className="mt-1" icon={ trash } isDestructive onClick={ () => dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: '' } ) ) } disabled={ adServer === 'ad-server' || ! isValidAPIKey } />
+								<Button className="mt-1" icon={ trash } isDestructive onClick={ () => dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: '' } ) ) } disabled={ adServer === 'ad-server' } />
 							</Tooltip>
 						</div>
 					</div>
@@ -227,7 +202,7 @@ const CustomAdSettings = ( { layerID } ) => {
 					dispatch( updateLayerField( { id: layer.id, field: 'skippable', value } ) )
 				}
 				help={ __( 'Allow user to skip ad', 'godam' ) }
-				disabled={ adServer === 'ad-server' || ! isValidAPIKey }
+				disabled={ adServer === 'ad-server' }
 			/>
 			{
 				layer?.skippable &&
@@ -239,7 +214,7 @@ const CustomAdSettings = ( { layerID } ) => {
 					onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'skip_offset', value } ) ) }
 					type="number"
 					min="0"
-					disabled={ adServer === 'ad-server' || ! isValidAPIKey }
+					disabled={ adServer === 'ad-server' }
 				/>
 			}
 
@@ -251,7 +226,7 @@ const CustomAdSettings = ( { layerID } ) => {
 					value={ layer?.click_link }
 					className="godam-input"
 					onChange={ handleChange }
-					disabled={ adServer === 'ad-server' || ! isValidAPIKey }
+					disabled={ adServer === 'ad-server' }
 					type="url"
 				/>
 				{ ! isValid && (

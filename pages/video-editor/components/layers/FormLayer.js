@@ -7,7 +7,7 @@ import Editor from '@monaco-editor/react';
 /**
  * WordPress dependencies
  */
-import { ToggleControl, Panel, PanelBody, Notice, ExternalLink } from '@wordpress/components';
+import { ToggleControl, Panel, PanelBody } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -116,9 +116,6 @@ export const FormLayerComponentType = {
 const FormLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
-	const videoSettingsUrl = window.godamRestRoute?.adminUrl + 'admin.php?page=rtgodam_settings#video-settings';
-
-	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
 
 	const FormLayerData = FormLayerComponentType[ layer?.form_type ?? 'gravity' ];
 	const FormLayerComponent = FormLayerData?.component;
@@ -133,28 +130,6 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 		<>
 			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
 
-			{
-				! isValidAPIKey &&
-				<Notice
-					className="mb-4"
-					status="warning"
-					isDismissible={ false }
-				>
-					{ __( 'Forms layer is a Pro feature.', 'godam' ) }{ ' ' }
-					<a href={ videoSettingsUrl } className="godam-link underline" target="_blank" rel="noopener noreferrer">
-						{ __( 'Activate your license', 'godam' ) }
-					</a>
-					{
-						// eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace
-						__( ' or ', 'godam' )
-					}
-					<ExternalLink className="godam-link underline" href={ `https://godam.io/pricing?utm_campaign=upgrade&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=form-layer` }>
-						{ __( 'get started for free', 'godam' ) }
-					</ExternalLink>{ ' ' }
-					{ __( 'to unlock all features.', 'godam' ) }
-				</Notice>
-			}
-
 			<FormLayerComponent layerID={ layer.id } />
 
 			<AjaxWarning formType={ layer?.form_type } formId={ getFormId() } />
@@ -168,7 +143,7 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 					dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
 				}
 				help={ __( 'If enabled, the user will be able to skip the form submission.', 'godam' ) }
-				disabled={ ! isValidAPIKey || ! isPluginActive }
+				disabled={ ! isPluginActive }
 			/>
 
 			<Panel className="-mx-4 border-x-0">
@@ -185,12 +160,12 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 						label={ __( 'Layer background color', 'godam' ) }
 						enableAlpha={ true }
 						onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
-						disabled={ ! isValidAPIKey || ! isPluginActive }
+						disabled={ ! isPluginActive }
 					/>
 
 					<label htmlFor="custom-css" className="easydam-label">{ __( 'Custom CSS', 'godam' ) }</label>
 
-					<div className={ ( ! isValidAPIKey || ! isPluginActive ) ? 'pointer-events-none opacity-50' : '' }>
+					<div className={ ( ! isPluginActive ) ? 'pointer-events-none opacity-50' : '' }>
 						<Editor
 							id="custom-css"
 							className="code-editor"

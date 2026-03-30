@@ -37,8 +37,6 @@ const FluentForm = ( { layerID } ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'fluent_form_id', value: formID } ) );
 	};
 
-	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
-
 	const isFluentFormsPluginActive = Boolean( window?.videoData?.fluentformsActive );
 
 	return (
@@ -56,7 +54,7 @@ const FluentForm = ( { layerID } ) => {
 
 			{
 				<FormSelector
-					disabled={ ! isValidAPIKey || ! isFluentFormsPluginActive }
+					disabled={ ! isFluentFormsPluginActive }
 					className="mb-4"
 					formID={ layer.fluent_form_id }
 					forms={ forms }

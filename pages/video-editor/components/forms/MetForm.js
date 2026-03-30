@@ -36,8 +36,6 @@ const MetForm = ( { layerID } ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'metform_id', value: formID } ) );
 	};
 
-	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
-
 	const isMetFormPluginActive = Boolean( window?.videoData?.metformActive );
 
 	return (
@@ -55,7 +53,7 @@ const MetForm = ( { layerID } ) => {
 
 			{
 				<FormSelector
-					disabled={ ! isValidAPIKey || ! isMetFormPluginActive }
+					disabled={ ! isMetFormPluginActive }
 					className="met-form-selector mb-4"
 					formID={ layer.metform_id }
 					forms={ forms }
