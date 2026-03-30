@@ -156,7 +156,6 @@ if ( ! empty( $attributes['aspectRatio'] ) && 'responsive' === $attributes['aspe
 	} else {
 		// Try to resolve from attachment metadata.
 		$godam_attachment_to_check = $godam_is_virtual && ! empty( $godam_original_id ) ? $godam_original_id : $godam_attachment_id;
-		
 		if ( ! empty( $godam_attachment_to_check ) && is_numeric( $godam_attachment_to_check ) ) {
 			$godam_video_meta = wp_get_attachment_metadata( intval( $godam_attachment_to_check ) );
 			if ( ! empty( $godam_video_meta['width'] ) && ! empty( $godam_video_meta['height'] ) ) {
@@ -293,6 +292,7 @@ $godam_woocommerce_allowed_contexts = array(
 	'godam-product-gallery',
 	'godam-woo-product-page-reels',
 	'godam-featured-video-gallery',
+	'godam-video-product-gallery',
 );
 
 $godam_woocommerce_context = false;
@@ -302,8 +302,13 @@ if ( isset( $attributes['godam_context'] ) ) {
 }
 
 if ( isset( $attributes['godam_context'] ) && $godam_woocommerce_context ) {
-	// $godam_player_skin = 'reels'; // Commented temporarily to allow testing of control bar colors on WooCommerce product gallery videos.
-	$godam_player_skin = 'reels-v2';
+	if ( 'godam-video-product-gallery' === $attributes['godam_context'] ) {
+		// Use the new "reels-v2" skin for the product gallery context
+		// which is an enhanced version of the original "reels" skin with additional features and a more modern design.
+		$godam_player_skin = 'reels-v2';
+	} else {
+		$godam_player_skin = 'reels';
+	}
 } else {
 	$godam_player_skin = isset( $godam_settings['video_player']['player_skin'] )
 		? $godam_settings['video_player']['player_skin']
