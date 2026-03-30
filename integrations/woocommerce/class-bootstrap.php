@@ -59,6 +59,13 @@ class Bootstrap {
 			return;
 		}
 
+		// Bail if the admin has disabled the WooCommerce integration.
+		$settings = get_option( 'rtgodam-settings', array() );
+		$enabled  = $settings['integrations']['woocommerce']['enable'] ?? true;
+		if ( false === $enabled ) {
+			return;
+		}
+
 		$this->define_constants();
 		$this->load_helpers();
 		$this->register_autoloader();
@@ -159,9 +166,6 @@ class Bootstrap {
 	private function init_hooks() {
 		add_action( 'init', array( $this, 'init_woocommerce_integration' ), 20 );
 		add_filter( 'allowed_block_types_all', array( $this, 'filter_premium_blocks_for_inserter' ), 10, 2 );
-
-		// Enqueue global Woo variables.
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_global_woo_css_variables' ), 20 );
 
 		// Enqueue global Woo Script.
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_global_woo_script' ), 25 );
@@ -307,29 +311,6 @@ class Bootstrap {
 		return function_exists( 'is_plugin_active' )
 			? is_plugin_active( 'woocommerce/woocommerce.php' )
 			: class_exists( 'WooCommerce' );
-	}
-
-	/**
-	 * Enqueue global WooCommerce CSS variables.
-	 *
-	 * Makes Woo-related CSS variables available on all pages
-	 * when WooCommerce is active.
-	 *
-	 * @return void
-	 */
-	public function enqueue_global_woo_css_variables() {
-
-		$css = $this->utility_instance->get_woocommerce_video_modal_css_variables();
-
-		if ( empty( $css ) ) {
-			return;
-		}
-
-		// Register dummy handle if needed.
-		wp_register_style( 'rtgodam-woo-video-modal-global', false, array(), RTGODAM_VERSION, 'all' );
-		wp_enqueue_style( 'rtgodam-woo-video-modal-global' );
-
-		wp_add_inline_style( 'rtgodam-woo-video-modal-global', $css );
 	}
 
 	/**

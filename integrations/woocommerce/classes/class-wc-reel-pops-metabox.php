@@ -57,10 +57,28 @@ class WC_Reel_Pops_Metabox {
 	 * Add metabox to product edit screen.
 	 */
 	public function add_metabox() {
-		$title = apply_filters(
-			'rtgodam_reels_pops_metabox_title',
-			__( 'GoDAM Reel Pops', 'godam' ) .
-			' <span class="godam-pro-badge">' . __( 'Pro', 'godam' ) . '</span>'
+		$preview_image_url = RTGODAM_WC_MODULE_URL . 'assets/images/product-reel-pops.webp';
+
+		$help_tip = sprintf(
+			'<span class="godam-help-tip">' .
+				'<span class="godam-help-tip__icon" role="button" tabindex="0" aria-expanded="false" aria-controls="godam-help-tip-popup--reel-pops">?</span>' .
+				'<span id="godam-help-tip-popup--reel-pops" class="godam-help-tip__popup" role="tooltip" aria-hidden="true">' .
+					'<img src="%1$s" alt="%2$s" class="godam-help-tip__preview" />' .
+					'<span class="godam-help-tip__text">%3$s</span>' .
+				'</span>' .
+			'</span>',
+			esc_url( $preview_image_url ),
+			esc_attr__( 'Reel Pops preview', 'godam' ),
+			esc_html__( 'Display a floating video reel popup on your product page. Reel Pops grab attention with an interactive video overlay that showcases your product.', 'godam' )
+		);
+
+		$title = wp_kses_post( 
+			apply_filters(
+				'rtgodam_reels_pops_metabox_title',
+				__( 'GoDAM Reel Pops', 'godam' ) .
+				$help_tip .
+				' <span class="godam-pro-badge">' . __( 'Pro', 'godam' ) . '</span>'
+			) 
 		);
 
 		$title = wp_kses_post( $title );
@@ -94,121 +112,11 @@ class WC_Reel_Pops_Metabox {
 		wp_enqueue_media();
 		wp_enqueue_script( 'jquery-ui-sortable' );
 
-		wp_add_inline_style(
-			'wp-admin',
-			'
-			.godam-reel-pops-metabox { padding: 15px; }
-			.godam-reel-pops-video-list {
-				margin-top: 15px;
-				display: flex;
-				flex-wrap: wrap;
-				gap: 10px;
-				margin-bottom: 1.5rem;
-			}
-			.godam-reel-pops-video-item {
-				width: calc(33.333% - 10px);
-				min-width: 240px;
-				position: relative;
-				background: #f9f9f9;
-				border: 1px solid #ddd;
-				padding: 12px;
-				border-radius: 4px;
-				box-sizing: border-box;
-			}
-			.godam-reel-pops-video-item.ui-sortable-helper {
-				box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-				opacity: 0.9;
-			}
-			.godam-reel-pops-drag-handle {
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				width: 20px;
-				min-width: 20px;
-				cursor: grab;
-				color: #aaa;
-				font-size: 18px;
-				user-select: none;
-				padding-right: 4px;
-				flex-shrink: 0;
-			}
-			.godam-reel-pops-drag-handle:active { cursor: grabbing; }
-			.godam-reel-pops-video-placeholder {
-				border: 2px dashed #b9b9b9;
-				background: #f3f3f3;
-				border-radius: 4px;
-				min-height: 96px;
-			}
-			.godam-reel-pops-video-thumb {
-				width: 70px;
-				height: 70px;
-				border-radius: 4px;
-				background: #111;
-				overflow: hidden;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				color: #fff;
-				font-size: 11px;
-			}
-			.godam-reel-pops-video-thumb img {
-				width: 100%;
-				height: 100%;
-				object-fit: cover;
-			}
-			.godam-reel-pops-video-item-header {
-				display: flex;
-				justify-content: flex-start;
-				align-items: center;
-				gap: 10px;
-			}
-			.godam-reel-pops-video-item-header strong {
-				font-size: 14px;
-				display: block;
-				white-space: nowrap;
-				overflow: hidden;
-				text-overflow: ellipsis;
-				max-width: 180px;
-			}
-			.godam-reel-pops-video-meta { line-height: 1.4; }
-			.godam-reel-pops-video-remove {
-				position: absolute;
-				top: 8px;
-				right: 8px;
-				width: 24px;
-				height: 24px;
-				border-radius: 50%;
-				border: 1px solid #ccc;
-				background: #fff;
-				color: #a00;
-				cursor: pointer;
-				line-height: 1;
-			}
-			.godam-reel-pops-video-item-controls { display: flex; gap: 8px; }
-			.godam-reel-pops-video-item input[type="text"] { width: 100%; }
-			.godam-reel-pops-settings-grid {
-				display: grid;
-				grid-template-columns: repeat(2, 1fr);
-				gap: 15px;
-				margin-top: 15px;
-			}
-			.godam-reel-pops-setting-item label {
-				display: block;
-				margin-bottom: 5px;
-				font-weight: 600;
-			}
-			.godam-reel-pops-setting-item select,
-			.godam-reel-pops-setting-item input[type="number"] {
-				width: 100%;
-			}
-			@media (max-width: 782px) {
-				.godam-reel-pops-settings-grid { grid-template-columns: 1fr; }
-				.godam-reel-pops-video-item { width: calc(50% - 10px); min-width: 0; }
-			}
-			@media (max-width: 580px) {
-				.godam-reel-pops-video-item { width: 100%; }
-			}
-		'
+		wp_enqueue_style(
+			'godam-reel-pops-metabox',
+			RTGODAM_URL . 'assets/build/integrations/woocommerce/css/godam-reel-pops-metabox.css',
+			array(),
+			rtgodam_wc_get_asset_version( RTGODAM_PATH . 'assets/build/integrations/woocommerce/css/godam-reel-pops-metabox.css' )
 		);
 	}
 
@@ -228,23 +136,14 @@ class WC_Reel_Pops_Metabox {
 		$config = wp_parse_args(
 			$config,
 			array(
-				'enabled'               => false,
-				'videos'                => array(),
-				'aspectRatio'           => '9-16',
-				'position'              => 'bottom-right',
-				'animation'             => 'slide-up',
-				'animationDuration'     => 500,
-				'durationSeconds'       => 5,
-				'initialDelay'          => 3,
-				'closePersistence'      => 'show_again',
-				'enableAutoplay'        => true,
-				'showMuteButton'        => true,
-				'showPlayButton'        => false,
-				'enableModalNavigation' => true,
-				'popupWidth'            => 160,
-				'mobilePopupWidth'      => 100,
-				'bottomSpacing'         => 20,
-				'sideSpacing'           => 20,
+				'enabled'          => false,
+				'videos'           => array(),
+				'aspectRatio'      => '9-16',
+				'position'         => 'bottom-right',
+				'animation'        => 'slide-up',
+				'durationSeconds'  => 5,
+				'initialDelay'     => 3,
+				'closePersistence' => 'show_again',
 			)
 		);
 
@@ -303,7 +202,14 @@ class WC_Reel_Pops_Metabox {
 				</button>
 			</div>
 
-			<div class="godam-reel-pops-settings-grid">
+			<details class="godam-reel-pops-advanced-panel" id="godam-reel-pops-advanced-panel">
+				<summary>
+					<?php esc_html_e( 'Advanced Settings', 'godam' ); ?>
+					<em class="godam-reel-pops-advanced-chevron" aria-hidden="true">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+					</em>
+				</summary>
+				<div class="godam-reel-pops-settings-grid">
 				<div class="godam-reel-pops-setting-item">
 					<label for="godam_reel_pops_aspect_ratio"><?php esc_html_e( 'Aspect Ratio', 'godam' ); ?></label>
 					<select name="godam_reel_pops[aspectRatio]" id="godam_reel_pops_aspect_ratio">
@@ -334,11 +240,6 @@ class WC_Reel_Pops_Metabox {
 				</div>
 
 				<div class="godam-reel-pops-setting-item">
-					<label for="godam_reel_pops_animation_duration"><?php esc_html_e( 'Animation Duration (ms)', 'godam' ); ?></label>
-					<input type="number" name="godam_reel_pops[animationDuration]" id="godam_reel_pops_animation_duration" value="<?php echo esc_attr( $config['animationDuration'] ); ?>" min="200" max="2000" step="100" />
-				</div>
-
-				<div class="godam-reel-pops-setting-item">
 					<label for="godam_reel_pops_duration_seconds"><?php esc_html_e( 'Duration per Video (seconds)', 'godam' ); ?></label>
 					<input type="number" name="godam_reel_pops[durationSeconds]" id="godam_reel_pops_duration_seconds" value="<?php echo esc_attr( $config['durationSeconds'] ); ?>" min="1" max="30" step="1" />
 				</div>
@@ -356,55 +257,8 @@ class WC_Reel_Pops_Metabox {
 					</select>
 				</div>
 
-				<div class="godam-reel-pops-setting-item">
-					<label for="godam_reel_pops_popup_width"><?php esc_html_e( 'Popup Width (px)', 'godam' ); ?></label>
-					<input type="number" name="godam_reel_pops[popupWidth]" id="godam_reel_pops_popup_width" value="<?php echo esc_attr( $config['popupWidth'] ); ?>" min="80" max="300" step="10" />
 				</div>
-
-				<div class="godam-reel-pops-setting-item">
-					<label for="godam_reel_pops_mobile_popup_width"><?php esc_html_e( 'Mobile Popup Width (px)', 'godam' ); ?></label>
-					<input type="number" name="godam_reel_pops[mobilePopupWidth]" id="godam_reel_pops_mobile_popup_width" value="<?php echo esc_attr( $config['mobilePopupWidth'] ); ?>" min="80" max="300" step="10" />
-				</div>
-
-				<div class="godam-reel-pops-setting-item">
-					<label for="godam_reel_pops_bottom_spacing"><?php esc_html_e( 'Bottom Spacing (px)', 'godam' ); ?></label>
-					<input type="number" name="godam_reel_pops[bottomSpacing]" id="godam_reel_pops_bottom_spacing" value="<?php echo esc_attr( $config['bottomSpacing'] ); ?>" min="0" max="100" step="5" />
-				</div>
-
-				<div class="godam-reel-pops-setting-item">
-					<label for="godam_reel_pops_side_spacing"><?php esc_html_e( 'Side Spacing (px)', 'godam' ); ?></label>
-					<input type="number" name="godam_reel_pops[sideSpacing]" id="godam_reel_pops_side_spacing" value="<?php echo esc_attr( $config['sideSpacing'] ); ?>" min="0" max="100" step="5" />
-				</div>
-
-				<div class="godam-reel-pops-setting-item">
-					<label>
-						<input type="checkbox" name="godam_reel_pops[enableAutoplay]" value="1" <?php checked( $config['enableAutoplay'], true ); ?> />
-						<?php esc_html_e( 'Enable Autoplay (muted)', 'godam' ); ?>
-					</label>
-					<p class="description"><?php esc_html_e( 'Videos will autoplay muted. Disable to show play button overlay.', 'godam' ); ?></p>
-				</div>
-
-				<div class="godam-reel-pops-setting-item">
-					<label>
-						<input type="checkbox" name="godam_reel_pops[showMuteButton]" value="1" <?php checked( $config['showMuteButton'], true ); ?> />
-						<?php esc_html_e( 'Show Mute/Unmute Button', 'godam' ); ?>
-					</label>
-				</div>
-
-				<div class="godam-reel-pops-setting-item">
-					<label>
-						<input type="checkbox" name="godam_reel_pops[showPlayButton]" value="1" <?php checked( $config['showPlayButton'], true ); ?> />
-						<?php esc_html_e( 'Show Play/Pause Button Overlay', 'godam' ); ?>
-					</label>
-				</div>
-
-				<div class="godam-reel-pops-setting-item">
-					<label>
-						<input type="checkbox" name="godam_reel_pops[enableModalNavigation]" value="1" <?php checked( $config['enableModalNavigation'], true ); ?> />
-						<?php esc_html_e( 'Enable video navigations on modal', 'godam' ); ?>
-					</label>
-				</div>
-			</div>
+			</details>
 		</div>
 
 		<script type="text/javascript">
@@ -610,23 +464,14 @@ class WC_Reel_Pops_Metabox {
 		$data = isset( $_POST['godam_reel_pops'] ) ? wp_unslash( $_POST['godam_reel_pops'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
 		$config = array(
-			'enabled'               => isset( $data['enabled'] ) && '1' === $data['enabled'],
-			'videos'                => array(),
-			'aspectRatio'           => isset( $data['aspectRatio'] ) ? sanitize_text_field( $data['aspectRatio'] ) : '9-16',
-			'position'              => isset( $data['position'] ) ? sanitize_text_field( $data['position'] ) : 'bottom-right',
-			'animation'             => isset( $data['animation'] ) ? sanitize_text_field( $data['animation'] ) : 'slide-up',
-			'animationDuration'     => isset( $data['animationDuration'] ) ? absint( $data['animationDuration'] ) : 500,
-			'durationSeconds'       => isset( $data['durationSeconds'] ) ? absint( $data['durationSeconds'] ) : 5,
-			'initialDelay'          => isset( $data['initialDelay'] ) ? absint( $data['initialDelay'] ) : 3,
-			'closePersistence'      => isset( $data['closePersistence'] ) ? sanitize_text_field( $data['closePersistence'] ) : 'show_again',
-			'enableAutoplay'        => isset( $data['enableAutoplay'] ) && '1' === $data['enableAutoplay'],
-			'showMuteButton'        => isset( $data['showMuteButton'] ) && '1' === $data['showMuteButton'],
-			'showPlayButton'        => isset( $data['showPlayButton'] ) && '1' === $data['showPlayButton'],
-			'enableModalNavigation' => isset( $data['enableModalNavigation'] ) && '1' === $data['enableModalNavigation'],
-			'popupWidth'            => isset( $data['popupWidth'] ) ? absint( $data['popupWidth'] ) : 160,
-			'mobilePopupWidth'      => isset( $data['mobilePopupWidth'] ) ? absint( $data['mobilePopupWidth'] ) : 100,
-			'bottomSpacing'         => isset( $data['bottomSpacing'] ) ? absint( $data['bottomSpacing'] ) : 20,
-			'sideSpacing'           => isset( $data['sideSpacing'] ) ? absint( $data['sideSpacing'] ) : 20,
+			'enabled'          => isset( $data['enabled'] ) && '1' === $data['enabled'],
+			'videos'           => array(),
+			'aspectRatio'      => isset( $data['aspectRatio'] ) ? sanitize_text_field( $data['aspectRatio'] ) : '9-16',
+			'position'         => isset( $data['position'] ) ? sanitize_text_field( $data['position'] ) : 'bottom-right',
+			'animation'        => isset( $data['animation'] ) ? sanitize_text_field( $data['animation'] ) : 'slide-up',
+			'durationSeconds'  => isset( $data['durationSeconds'] ) ? absint( $data['durationSeconds'] ) : 5,
+			'initialDelay'     => isset( $data['initialDelay'] ) ? absint( $data['initialDelay'] ) : 3,
+			'closePersistence' => isset( $data['closePersistence'] ) ? sanitize_text_field( $data['closePersistence'] ) : 'show_again',
 		);
 
 		// Sanitize videos.
@@ -668,21 +513,40 @@ class WC_Reel_Pops_Metabox {
 		$config = wp_parse_args(
 			$config,
 			array(
-				'aspectRatio'           => '9-16',
-				'position'              => 'bottom-right',
-				'animation'             => 'slide-up',
-				'animationDuration'     => 500,
-				'durationSeconds'       => 5,
-				'initialDelay'          => 3,
-				'closePersistence'      => 'show_again',
-				'enableAutoplay'        => true,
-				'showMuteButton'        => true,
-				'showPlayButton'        => false,
-				'enableModalNavigation' => true,
-				'popupWidth'            => 160,
-				'mobilePopupWidth'      => 100,
-				'bottomSpacing'         => 20,
-				'sideSpacing'           => 20,
+				'aspectRatio'      => '9-16',
+				'position'         => 'bottom-right',
+				'animation'        => 'slide-up',
+				'durationSeconds'  => 5,
+				'initialDelay'     => 3,
+				'closePersistence' => 'show_again',
+			)
+		);
+
+		/**
+		 * Filter the reel pops display settings.
+		 *
+		 * Allows developers to override popup width, mobile width, spacing, and autoplay defaults.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param array $settings {
+		 *     Reel pops display settings.
+		 *
+		 *     @type int  $popup_width        Popup width in pixels. Default 160.
+		 *     @type int  $mobile_popup_width  Mobile popup width in pixels. Default 100.
+		 *     @type int  $bottom_spacing      Bottom spacing in pixels. Default 20.
+		 *     @type int  $side_spacing        Side spacing in pixels. Default 20.
+		 *     @type bool $enable_autoplay     Whether to autoplay videos muted. Default true.
+		 * }
+		 */
+		$reel_pops_settings = apply_filters(
+			'godam_reel_pops_settings',
+			array(
+				'popup_width'        => 160,
+				'mobile_popup_width' => 100,
+				'bottom_spacing'     => 20,
+				'side_spacing'       => 20,
+				'enable_autoplay'    => true,
 			)
 		);
 
@@ -697,24 +561,20 @@ class WC_Reel_Pops_Metabox {
 
 		// Build shortcode attributes.
 		$shortcode_atts = array(
-			'video_ids'               => implode( ',', $video_ids ),
-			'product_ids'             => implode( '|', $product_ids_groups ),
-			'aspect_ratio'            => sanitize_text_field( $config['aspectRatio'] ),
-			'position'                => sanitize_text_field( $config['position'] ),
-			'animation'               => sanitize_text_field( $config['animation'] ),
-			'animation_duration'      => absint( $config['animationDuration'] ),
-			'duration_seconds'        => absint( $config['durationSeconds'] ),
-			'initial_delay'           => isset( $config['initialDelay'] ) ? absint( $config['initialDelay'] ) : 3,
-			'close_persistence'       => sanitize_text_field( $config['closePersistence'] ),
-			'enable_autoplay'         => $config['enableAutoplay'] ? 'true' : 'false',
-			'show_mute_button'        => ! empty( $config['showMuteButton'] ) ? 'true' : 'false',
-			'show_play_button'        => ! empty( $config['showPlayButton'] ) ? 'true' : 'false',
-			'enable_modal_navigation' => ! empty( $config['enableModalNavigation'] ) ? 'true' : 'false',
-			'popup_width'             => absint( $config['popupWidth'] ),
-			'mobile_popup_width'      => absint( $config['mobilePopupWidth'] ),
-			'bottom_spacing'          => absint( $config['bottomSpacing'] ),
-			'side_spacing'            => absint( $config['sideSpacing'] ),
-			'block_id'                => 'godam-reel-pops-product-' . $product_id,
+			'video_ids'          => implode( ',', $video_ids ),
+			'product_ids'        => implode( '|', $product_ids_groups ),
+			'aspect_ratio'       => sanitize_text_field( $config['aspectRatio'] ),
+			'position'           => sanitize_text_field( $config['position'] ),
+			'animation'          => sanitize_text_field( $config['animation'] ),
+			'duration_seconds'   => absint( $config['durationSeconds'] ),
+			'initial_delay'      => isset( $config['initialDelay'] ) ? absint( $config['initialDelay'] ) : 3,
+			'close_persistence'  => sanitize_text_field( $config['closePersistence'] ),
+			'enable_autoplay'    => ! empty( $reel_pops_settings['enable_autoplay'] ) ? 'true' : 'false',
+			'popup_width'        => absint( $reel_pops_settings['popup_width'] ),
+			'mobile_popup_width' => absint( $reel_pops_settings['mobile_popup_width'] ),
+			'bottom_spacing'     => absint( $reel_pops_settings['bottom_spacing'] ),
+			'side_spacing'       => absint( $reel_pops_settings['side_spacing'] ),
+			'block_id'           => 'godam-reel-pops-product-' . $product_id,
 		);
 
 		// Build shortcode string.

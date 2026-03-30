@@ -326,51 +326,6 @@ class WC_Utility {
 	}
 
 	/**
-	 * Generate WooCommerce CSS variables.
-	 *
-	 * @return string
-	 */
-	public static function get_woocommerce_video_modal_css_variables() {
-
-		if ( ! class_exists( 'WooCommerce' ) ) {
-			return '';
-		}
-
-		$settings = get_option( 'rtgodam-settings', array() );
-		$woo      = $settings['integrations']['woocommerce'] ?? array();
-
-		$css = ':root {';
-
-		foreach ( $woo as $key => $value ) {
-
-			if ( empty( $value ) ) {
-				continue;
-			}
-
-			$css_key = '--rtgodam-woo-video-modal-' . sanitize_key( $key );
-
-			// Handle border array.
-			if ( is_array( $value ) ) {
-
-				$width = isset( $value['width'] ) ? $value['width'] : '1px';
-				$style = isset( $value['style'] ) ? $value['style'] : 'solid';
-				$color = isset( $value['color'] ) ? $value['color'] : '#000';
-
-				$value = "{$width} {$style} {$color}";
-			} elseif ( is_numeric( $value ) ) {
-				// Handle numeric values (like radius).
-				$value = $value . 'px';
-			}
-
-			$css .= $css_key . ':' . esc_attr( $value ) . ';';
-		}
-
-		$css .= '}';
-
-		return $css;
-	}
-
-	/**
 	 * AJAX callback to fetch and return a sidebar single product's HTML content.
 	 *
 	 * This function is triggered via an AJAX request and returns rendered HTML for a single product,
