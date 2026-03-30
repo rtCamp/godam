@@ -1,0 +1,89 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "godam/gallery-v2",
+	"title": "GoDAM Video Gallery V2",
+	"category": "media",
+	"description": "Create a handpicked or query-based GoDAM video gallery.",
+	"keywords": [ "video", "gallery", "grid", "godam" ],
+	"textdomain": "godam",
+	"attributes": {
+		"mode": {
+			"type": "string",
+			"default": "handpicked"
+		},
+		"itemWidth": {
+			"type": "number",
+			"default": 180
+		},
+		"count": {
+			"type": "number",
+			"default": 6
+		},
+		"orderby": {
+			"type": "string",
+			"default": "date"
+		},
+		"order": {
+			"type": "string",
+			"default": "DESC"
+		},
+		"layout": {
+			"type": "string",
+			"default": "carousel"
+		},
+		"viewRatio": {
+			"type": "string",
+			"default": "16:9"
+		},
+		"infiniteScroll": {
+			"type": "boolean",
+			"default": false
+		},
+		"mediaFolder": {
+			"type": "string",
+			"default": ""
+		},
+		"author": {
+			"type": "number",
+			"default": 0
+		},
+		"dateRange": {
+			"type": "string",
+			"default": ""
+		},
+		"customDateStart": {
+			"type": "string",
+			"default": ""
+		},
+		"customDateEnd": {
+			"type": "string",
+			"default": ""
+		},
+		"include": {
+			"type": "string",
+			"default": ""
+		},
+		"showTitle": {
+			"type": "boolean",
+			"default": true
+		}
+	},
+	"providesContext": {
+		"godam/galleryV2/layout": "layout",
+		"godam/galleryV2/showTitle": "showTitle",
+		"godam/galleryV2/itemWidth": "itemWidth",
+		"godam/galleryV2/viewRatio": "viewRatio"
+	},
+	"supports": {
+		"anchor": true,
+		"align": [ "left", "center", "right", "wide", "full" ],
+		"spacing": {
+			"margin": true,
+			"padding": true
+		}
+	},
+	"editorScript": [ "file:./index.js" ],
+	"editorStyle": [ "file:./index.css" ],
+	"render": "file:./render.php"
+}
