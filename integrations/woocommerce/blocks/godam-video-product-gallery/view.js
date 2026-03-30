@@ -12,6 +12,8 @@
 
 	// Shared product HTML cache across all gallery instances on the page.
 	const productHtmlCache = new Map();
+	const PREVIEW_DURATION = 5;
+	const AUTOPLAY_VISIBILITY_THRESHOLD = 0.5;
 	let activeModalGallery = null;
 	let sharedModalElements = null;
 
@@ -184,25 +186,14 @@
 		 * in a loop when ≥50% visible, and pause when they scroll out of view.
 		 */
 		initAutoplay() {
-			const PREVIEW_DURATION = 5; // Loop only the initial 5 seconds.
-
-			const observer = new IntersectionObserver(
+			this.autoplayObserver = new IntersectionObserver(
 				( entries ) => {
 					entries.forEach( ( entry ) => {
-						const video = entry.target.querySelector( 'video' );
-						if ( ! video ) {
-							return;
-						}
-						if ( entry.isIntersecting ) {
-							video.currentTime = 0;
-							video.play().catch( () => {} );
-						} else {
-							video.pause();
-							video.currentTime = 0;
-						}
+						entry.target.dataset.isInViewport = entry.isIntersecting ? 'true' : 'false';
+						this.syncPreviewVideo( entry.target, entry.isIntersecting );
 					} );
 				},
-				{ threshold: 0.5 },
+				{ threshold: AUTOPLAY_VISIBILITY_THRESHOLD },
 			);
 
 			this.items.forEach( ( item ) => {
@@ -216,7 +207,43 @@
 					};
 					video.addEventListener( 'timeupdate', video._godamTimeUpdate );
 				}
-				observer.observe( item );
+				item.dataset.isInViewport = 'false';
+				this.autoplayObserver.observe( item );
+			} );
+		}
+
+		/**
+		 * Start or stop preview playback for a gallery item.
+		 *
+		 * @param {Element} item The gallery item.
+		 * @param {boolean} shouldPlay Whether preview playback should run.
+		 */
+		syncPreviewVideo( item, shouldPlay ) {
+			const video = item?.querySelector( 'video' );
+			if ( ! video ) {
+				return;
+			}
+
+			if ( shouldPlay ) {
+				video.currentTime = 0;
+				video.play().catch( () => {} );
+				return;
+			}
+
+			video.pause();
+			video.currentTime = 0;
+		}
+
+		/**
+		 * Sync preview playback for every gallery item using the latest observer state.
+		 */
+		syncVisiblePreviewVideos() {
+			if ( ! this.autoplay ) {
+				return;
+			}
+
+			this.items.forEach( ( item ) => {
+				this.syncPreviewVideo( item, item.dataset.isInViewport === 'true' );
 			} );
 		}
 
@@ -424,23 +451,12 @@
 
 			// Pause all gallery preview videos.
 			this.items.forEach( ( item ) => {
-				const video = item.querySelector( 'video' );
-				if ( video ) {
-					video.pause();
-				}
+				this.syncPreviewVideo( item, false );
 			} );
 
 			// Create a placeholder clone to maintain gallery layout.
 			this.modalPlaceholder = this.modalOriginalItem.cloneNode( true );
 			this.modalPlaceholder.classList.add( 'godam-video-product-gallery-item--placeholder' );
-
-			// Pause any video in the clone so it doesn't play in the background.
-			const cloneVideo = this.modalPlaceholder.querySelector( 'video' );
-			if ( cloneVideo ) {
-				cloneVideo.pause();
-				cloneVideo.removeAttribute( 'autoplay' );
-				cloneVideo.muted = true;
-			}
 
 			// Insert placeholder before the original, then move original into modal wrapper.
 			this.modalOriginalItem.parentNode.insertBefore( this.modalPlaceholder, this.modalOriginalItem );
@@ -520,6 +536,8 @@
 
 			// Unlock body scroll.
 			document.body.classList.remove( 'godam-vpg-modal-open' );
+
+			this.syncVisiblePreviewVideos();
 		}
 
 		/**
@@ -530,14 +548,16 @@
 				return;
 			}
 
+			const restoredItem = this.modalOriginalItem;
+
 			// Remove modal classes.
-			this.modalOriginalItem.classList.remove(
+			restoredItem.classList.remove(
 				'godam-video-product-gallery-item--modal',
 				'is-active',
 			);
 
 			// Mute, pause, and reset the video.
-			const video = this.modalOriginalItem.querySelector( 'video' );
+			const video = restoredItem.querySelector( 'video' );
 			if ( video ) {
 				video.pause();
 				video.muted = true;
@@ -551,7 +571,7 @@
 
 			// Move original item back into gallery (before placeholder).
 			this.modalPlaceholder.parentNode.insertBefore(
-				this.modalOriginalItem,
+				restoredItem,
 				this.modalPlaceholder,
 			);
 
