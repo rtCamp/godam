@@ -45,8 +45,8 @@
 			"default": ""
 		},
 		"author": {
-			"type": "number",
-			"default": 0
+			"type": "string",
+			"default": ""
 		},
 		"dateRange": {
 			"type": "string",

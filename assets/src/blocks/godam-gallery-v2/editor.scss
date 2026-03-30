@@ -158,6 +158,17 @@
 	margin: 10px 0;
 }
 
+.godam-gallery-v2__query-row {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: 12px;
+	margin-bottom: 1rem;;
+}
+
+.godam-gallery-v2__query-col {
+	min-width: 0;
+}
+
 .godam-gallery-v2__date-field {
 	margin-bottom: 12px;
 
@@ -166,6 +177,11 @@
 		margin-bottom: 4px;
 		font-weight: 500;
 	}
+}
+
+.media-folder-token-field,
+.author-token-field {
+	margin-bottom: 1rem;
 }
 
 .godam-gallery-v2__date-button {
@@ -190,6 +206,10 @@
 @media (max-width: 782px) {
 
 	.godam-gallery-v2--query.godam-gallery-v2 .godam-gallery-v2__canvas--grid .godam-gallery-v2__query-list {
+		grid-template-columns: 1fr;
+	}
+
+	.godam-gallery-v2__query-row {
 		grid-template-columns: 1fr;
 	}
 }

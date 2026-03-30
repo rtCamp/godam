@@ -18,6 +18,7 @@ import {
 	RangeControl,
 	ToggleControl,
 	TextControl,
+	FormTokenField,
 	DatePicker,
 	Popover,
 	Notice,
@@ -83,12 +84,20 @@ const parseIncludeIds = ( include = '' ) =>
 		.map( ( value ) => parseInt( value.trim(), 10 ) )
 		.filter( ( value ) => ! Number.isNaN( value ) && value > 0 );
 
+const parseIdList = ( value = '' ) =>
+	value
+		.split( ',' )
+		.map( ( item ) => item.trim() )
+		.filter( Boolean );
+
 const getVideoThumbnail = ( media ) =>
 	media?.meta?.rtgodam_media_video_thumbnail ||
 	media?.media_details?.sizes?.medium?.source_url ||
 	media?.media_details?.sizes?.thumbnail?.source_url ||
 	media?.icon ||
 	'';
+
+const normalizeTokenValue = ( value = '' ) => value.trim().toLowerCase();
 
 const getPreviewQueryArgs = ( attributes ) => {
 	const {
@@ -104,6 +113,8 @@ const getPreviewQueryArgs = ( attributes ) => {
 	} = attributes;
 
 	const includeIds = parseIncludeIds( include );
+	const mediaFolderIds = parseIdList( mediaFolder ).map( ( value ) => parseInt( value, 10 ) ).filter( ( value ) => ! Number.isNaN( value ) && value > 0 );
+	const authorIds = parseIdList( author ).map( ( value ) => parseInt( value, 10 ) ).filter( ( value ) => ! Number.isNaN( value ) && value > 0 );
 	const queryArgs = {
 		per_page: count,
 		orderby,
@@ -112,12 +123,12 @@ const getPreviewQueryArgs = ( attributes ) => {
 		media_type: 'video',
 	};
 
-	if ( mediaFolder ) {
-		queryArgs[ 'media-folder' ] = parseInt( mediaFolder, 10 );
+	if ( mediaFolderIds.length ) {
+		queryArgs[ 'media-folder' ] = mediaFolderIds.join( ',' );
 	}
 
-	if ( author ) {
-		queryArgs.author = author;
+	if ( authorIds.length ) {
+		queryArgs.author = authorIds.join( ',' );
 	}
 
 	if ( includeIds.length ) {
@@ -198,6 +209,88 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 			'--godam-gallery-gap': '16px',
 		},
 	} );
+
+	const mediaFolderOptions = useMemo(
+		() =>
+			( mediaFolders || [] ).map( ( folder ) => ( {
+				id: folder.id.toString(),
+				value: folder.name,
+			} ) ),
+		[ mediaFolders ],
+	);
+
+	const authorOptions = useMemo(
+		() =>
+			( authors || [] ).map( ( item ) => ( {
+				id: item.id,
+				value: item.name,
+			} ) ),
+		[ authors ],
+	);
+
+	const selectedMediaFolderToken = useMemo(
+		() =>
+			parseIdList( mediaFolder )
+				.map( ( id ) => mediaFolderOptions.find( ( option ) => option.id === id )?.value )
+				.filter( Boolean ),
+		[ mediaFolder, mediaFolderOptions ],
+	);
+
+	const selectedAuthorToken = useMemo(
+		() =>
+			parseIdList( author )
+				.map( ( id ) => authorOptions.find( ( option ) => `${ option.id }` === id )?.value )
+				.filter( Boolean ),
+		[ author, authorOptions ],
+	);
+
+	const mediaFolderSuggestions = useMemo(
+		() => mediaFolderOptions.map( ( option ) => option.value ),
+		[ mediaFolderOptions ],
+	);
+
+	const authorSuggestions = useMemo(
+		() => authorOptions.map( ( option ) => option.value ),
+		[ authorOptions ],
+	);
+
+	const updateMediaFolderToken = ( tokens ) => {
+		if ( ! tokens.length ) {
+			setAttributes( { mediaFolder: '' } );
+			return;
+		}
+
+		const selectedIds = tokens
+			.map( ( token ) =>
+				mediaFolderOptions.find(
+					( option ) => normalizeTokenValue( option.value ) === normalizeTokenValue( token ),
+				)?.id,
+			)
+			.filter( Boolean );
+
+		setAttributes( {
+			mediaFolder: selectedIds.join( ',' ),
+		} );
+	};
+
+	const updateAuthorToken = ( tokens ) => {
+		if ( ! tokens.length ) {
+			setAttributes( { author: '' } );
+			return;
+		}
+
+		const selectedIds = tokens
+			.map( ( token ) =>
+				authorOptions.find(
+					( option ) => normalizeTokenValue( option.value ) === normalizeTokenValue( token ),
+				)?.id,
+			)
+			.filter( Boolean );
+
+		setAttributes( {
+			author: selectedIds.join( ',' ),
+		} );
+	};
 
 	const previewItems = useMemo( () => {
 		if ( mode !== 'query' || ! Array.isArray( queryPreviewVideos ) ) {
@@ -330,50 +423,53 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 							min={ 1 }
 							max={ 30 }
 						/>
-						<SelectControl
-							label={ __( 'Order by', 'godam' ) }
-							value={ orderby }
-							options={ [
-								{ label: __( 'Date', 'godam' ), value: 'date' },
-								{ label: __( 'Title', 'godam' ), value: 'title' },
-								{ label: __( 'Duration', 'godam' ), value: 'duration' },
-								{ label: __( 'Size', 'godam' ), value: 'size' },
-							] }
-							onChange={ ( value ) => setAttributes( { orderby: value } ) }
-						/>
-						<SelectControl
-							label={ __( 'Order', 'godam' ) }
-							value={ order }
-							options={ [
-								{ label: __( 'Descending', 'godam' ), value: 'DESC' },
-								{ label: __( 'Ascending', 'godam' ), value: 'ASC' },
-							] }
-							onChange={ ( value ) => setAttributes( { order: value } ) }
-						/>
-						<SelectControl
+						<div className="godam-gallery-v2__query-row">
+							<div className="godam-gallery-v2__query-col">
+								<SelectControl
+									label={ __( 'Order by', 'godam' ) }
+									value={ orderby }
+									options={ [
+										{ label: __( 'Date', 'godam' ), value: 'date' },
+										{ label: __( 'Title', 'godam' ), value: 'title' },
+										{ label: __( 'Duration', 'godam' ), value: 'duration' },
+										{ label: __( 'Size', 'godam' ), value: 'size' },
+									] }
+									onChange={ ( value ) => setAttributes( { orderby: value } ) }
+								/>
+							</div>
+							<div className="godam-gallery-v2__query-col">
+								<SelectControl
+									label={ __( 'Order', 'godam' ) }
+									value={ order }
+									options={ [
+										{ label: __( 'Descending', 'godam' ), value: 'DESC' },
+										{ label: __( 'Ascending', 'godam' ), value: 'ASC' },
+									] }
+									onChange={ ( value ) => setAttributes( { order: value } ) }
+								/>
+							</div>
+						</div>
+
+						<FormTokenField
+							className="media-folder-token-field"
 							label={ __( 'Media Folder', 'godam' ) }
-							value={ mediaFolder }
-							options={ [
-								{ label: __( 'All Folders', 'godam' ), value: '' },
-								...( mediaFolders || [] ).map( ( folder ) => ( {
-									label: folder.name,
-									value: folder.id.toString(),
-								} ) ),
-							] }
-							onChange={ ( value ) => setAttributes( { mediaFolder: value } ) }
+							value={ selectedMediaFolderToken }
+							suggestions={ mediaFolderSuggestions }
+							onChange={ updateMediaFolderToken }
+							placeholder={ __( 'Search and select media folders', 'godam' ) }
+							__experimentalShowHowTo={ false }
 						/>
-						<SelectControl
+
+						<FormTokenField
+							className="author-token-field"
 							label={ __( 'Author', 'godam' ) }
-							value={ author }
-							options={ [
-								{ label: __( 'All Authors', 'godam' ), value: 0 },
-								...( authors || [] ).map( ( item ) => ( {
-									label: item.name,
-									value: item.id,
-								} ) ),
-							] }
-							onChange={ ( value ) => setAttributes( { author: value } ) }
+							value={ selectedAuthorToken }
+							suggestions={ authorSuggestions }
+							onChange={ updateAuthorToken }
+							placeholder={ __( 'Search and select authors', 'godam' ) }
+							__experimentalShowHowTo={ false }
 						/>
+
 						<SelectControl
 							label={ __( 'Date Range', 'godam' ) }
 							value={ dateRange }
