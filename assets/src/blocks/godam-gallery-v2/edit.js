@@ -186,7 +186,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						: [],
 			};
 		},
-		[ attributes, clientId, mode ],
+		[ attributes, mode ],
 	);
 
 	const blockProps = useBlockProps( {
@@ -573,7 +573,6 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 												onClick={ open }
 												icon={ plus }
 												label={ __( 'Add New Video', 'godam' ) }
-												// text={ __( 'Add New Video', 'godam' ) }
 												showTooltip
 												aria-label={ __( 'Add New Video', 'godam' ) }
 											/>

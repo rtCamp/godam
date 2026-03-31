@@ -53,20 +53,96 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 	const viewRatio = context[ 'godam/galleryV2/viewRatio' ] || '9:16';
 	const { removeBlock } = useDispatch( 'core/block-editor' );
 
-	const media = useSelect(
+	const { media, hasResolvedMedia } = useSelect(
 		( select ) => {
+			const coreSelect = select( coreStore );
+
 			if ( videoId > 0 ) {
-				return select( coreStore ).getMedia( videoId );
+				return {
+					media: coreSelect.getMedia( videoId ),
+					hasResolvedMedia: coreSelect.hasFinishedResolution( 'getMedia', [ videoId ] ),
+				};
 			}
 
-			return null;
+			return {
+				media: null,
+				hasResolvedMedia: false,
+			};
 		},
 		[ videoId ],
 	);
+	const isLoadingMedia = videoId > 0 && ! hasResolvedMedia;
 
 	const videoTitle = media?.title?.rendered || __( 'Untitled video', 'godam' );
 	const videoThumbnail = getVideoThumbnail( media );
 	const videoDate = formatDisplayDate( media?.date );
+	let previewContent;
+
+	if ( isLoadingMedia ) {
+		previewContent = (
+			<div className="godam-gallery-v2-item__loading" aria-hidden="true">
+				<div className="godam-gallery-v2-item__loading-shimmer" />
+			</div>
+		);
+	} else if ( videoId && videoThumbnail ) {
+		previewContent = (
+			<>
+				<img
+					src={ videoThumbnail }
+					alt={ videoTitle }
+					className="godam-gallery-v2-item__thumbnail"
+				/>
+				<div className="godam-gallery-v2-item__play-icon">
+					<PlayIcon />
+				</div>
+				<div className="godam-gallery-v2-item__preview-overlay">
+					<MediaUploadCheck>
+						<MediaUpload
+							onSelect={ ( mediaItem ) => {
+								if ( mediaItem?.id ) {
+									setAttributes( { videoId: mediaItem.id } );
+								}
+							} }
+							allowedTypes={ [ 'video' ] }
+							value={ videoId }
+							render={ ( { open: openMediaModal } ) => (
+								<Button
+									variant="secondary"
+									icon={ pencil }
+									className="godam-gallery-v2-item__overlay-action"
+									onClick={ ( event ) => {
+										event.stopPropagation();
+										openMediaModal();
+									} }
+								>
+									{ __( 'Replace', 'godam' ) }
+								</Button>
+							) }
+						/>
+					</MediaUploadCheck>
+					<Button
+						variant="secondary"
+						icon={ closeSmall }
+						isDestructive
+						className="godam-gallery-v2-item__overlay-action"
+						onClick={ ( event ) => {
+							event.stopPropagation();
+							removeBlock( clientId );
+						} }
+					>
+						{ __( 'Remove', 'godam' ) }
+					</Button>
+				</div>
+			</>
+		);
+	} else {
+		previewContent = (
+			<div className="godam-gallery-v2-item__placeholder">
+				{ videoIcon }
+				<span>{ __( 'Select Video', 'godam' ) }</span>
+			</div>
+		);
+	}
 
 	const blockProps = useBlockProps( {
 		className: `godam-gallery-v2-item godam-gallery-v2-item--${ layout } godam-gallery-v2-item--ratio-${ viewRatio.replace( ':', '-' ) }`,
@@ -99,61 +175,7 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 							role="button"
 							tabIndex={ 0 }
 						>
-							{ videoId && videoThumbnail ? (
-								<>
-									<img
-										src={ videoThumbnail }
-										alt={ videoTitle }
-										className="godam-gallery-v2-item__thumbnail"
-									/>
-									<div className="godam-gallery-v2-item__play-icon">
-										<PlayIcon />
-									</div>
-									<div className="godam-gallery-v2-item__preview-overlay">
-										<MediaUploadCheck>
-											<MediaUpload
-												onSelect={ ( mediaItem ) => {
-													if ( mediaItem?.id ) {
-														setAttributes( { videoId: mediaItem.id } );
-													}
-												} }
-												allowedTypes={ [ 'video' ] }
-												value={ videoId }
-												render={ ( { open: openMediaModal } ) => (
-													<Button
-														variant="secondary"
-														icon={ pencil }
-														className="godam-gallery-v2-item__overlay-action"
-														onClick={ ( event ) => {
-															event.stopPropagation();
-															openMediaModal();
-														} }
-													>
-														{ __( 'Replace', 'godam' ) }
-													</Button>
-												) }
-											/>
-										</MediaUploadCheck>
-										<Button
-											variant="secondary"
-											icon={ closeSmall }
-											isDestructive
-											className="godam-gallery-v2-item__overlay-action"
-											onClick={ ( event ) => {
-												event.stopPropagation();
-												removeBlock( clientId );
-											} }
-										>
-											{ __( 'Remove', 'godam' ) }
-										</Button>
-									</div>
-								</>
-							) : (
-								<div className="godam-gallery-v2-item__placeholder">
-									{ videoIcon }
-									<span>{ __( 'Select Video', 'godam' ) }</span>
-								</div>
-							) }
+							{ previewContent }
 						</div>
 					) }
 				/>
@@ -163,10 +185,17 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 				<>
 					{ showTitle && (
 						<div className="godam-gallery-v2-item__meta">
-							<div className="godam-gallery-v2-item__copy">
-								<strong title={ videoTitle }>{ videoTitle }</strong>
-								{ videoDate && <span>{ videoDate }</span> }
-							</div>
+							{ isLoadingMedia ? (
+								<div className="godam-gallery-v2-item__meta-skeleton" aria-hidden="true">
+									<div className="godam-gallery-v2-item__meta-skeleton-line godam-gallery-v2-item__meta-skeleton-line--title" />
+									<div className="godam-gallery-v2-item__meta-skeleton-line godam-gallery-v2-item__meta-skeleton-line--date" />
+								</div>
+							) : (
+								<div className="godam-gallery-v2-item__copy">
+									<strong title={ videoTitle }>{ videoTitle }</strong>
+									{ videoDate && <span>{ videoDate }</span> }
+								</div>
+							) }
 						</div>
 					) }
 				</>
