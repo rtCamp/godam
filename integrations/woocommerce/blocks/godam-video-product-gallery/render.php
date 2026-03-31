@@ -36,7 +36,6 @@ if ( ! function_exists( 'godam_vpg_get_product_data' ) ) {
 			'image'           => '',
 			'image_id'        => $product->get_image_id(),
 			'type'            => $product->get_type(),
-			'variants'        => array(),
 			'in_stock'        => $product->is_in_stock(),
 			'add_to_cart_url' => $product->add_to_cart_url(),
 		);
@@ -47,51 +46,6 @@ if ( ! function_exists( 'godam_vpg_get_product_data' ) ) {
 			$product_data['image'] = wp_get_attachment_image_url( $image_id, 'woocommerce_thumbnail' );
 		} else {
 			$product_data['image'] = wc_placeholder_img_src( 'woocommerce_thumbnail' );
-		}
-
-		// Get variants for variable products.
-		if ( $product->is_type( 'variable' ) && $product instanceof WC_Product_Variable ) {
-			$variations = $product->get_available_variations();
-			$attributes = $product->get_variation_attributes();
-
-			$product_data['variants'] = array(
-				'attributes'  => array(),
-				'variations'  => array(),
-				'price_range' => array(
-					'min' => $product->get_variation_price( 'min' ),
-					'max' => $product->get_variation_price( 'max' ),
-				),
-			);
-
-			// Get attribute labels and options.
-			foreach ( $attributes as $attribute_name => $options ) {
-				$attribute_label                          = wc_attribute_label( $attribute_name );
-				$product_data['variants']['attributes'][] = array(
-					'name'    => $attribute_name,
-					'label'   => $attribute_label,
-					'options' => $options,
-				);
-			}
-
-			// Get variation details (limit to first 10 for performance).
-			$variation_count = 0;
-			foreach ( $variations as $variation ) {
-				if ( $variation_count >= 10 ) {
-					break;
-				}
-				$variation_obj = wc_get_product( $variation['variation_id'] );
-				if ( $variation_obj ) {
-					$product_data['variants']['variations'][] = array(
-						'id'         => $variation['variation_id'],
-						'price'      => $variation_obj->get_price_html(),
-						'price_raw'  => $variation_obj->get_price(),
-						'attributes' => $variation['attributes'],
-						'in_stock'   => $variation_obj->is_in_stock(),
-						'image'      => ! empty( $variation['image']['url'] ) ? $variation['image']['url'] : '',
-					);
-				}
-				++$variation_count;
-			}
 		}
 
 		return $product_data;
@@ -173,7 +127,7 @@ $wrapper_attributes = get_block_wrapper_attributes(
 			$layout,
 			$ratio_class
 		),
-		'style'                 => $inline_styles,
+		'style'                 => esc_attr( $inline_styles ),
 		'data-block-id'         => $block_id,
 		'data-layout'           => $layout,
 		'data-ratio'            => $view_ratio,
