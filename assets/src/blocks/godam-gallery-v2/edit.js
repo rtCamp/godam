@@ -17,7 +17,6 @@ import {
 	SelectControl,
 	RangeControl,
 	ToggleControl,
-	TextControl,
 	FormTokenField,
 	DatePicker,
 	Popover,
@@ -78,12 +77,6 @@ const getRelativeDate = ( days ) => {
 	return date.toISOString();
 };
 
-const parseIncludeIds = ( include = '' ) =>
-	include
-		.split( ',' )
-		.map( ( value ) => parseInt( value.trim(), 10 ) )
-		.filter( ( value ) => ! Number.isNaN( value ) && value > 0 );
-
 const parseIdList = ( value = '' ) =>
 	value
 		.split( ',' )
@@ -109,10 +102,8 @@ const getPreviewQueryArgs = ( attributes ) => {
 		dateRange,
 		customDateStart,
 		customDateEnd,
-		include,
 	} = attributes;
 
-	const includeIds = parseIncludeIds( include );
 	const mediaFolderIds = parseIdList( mediaFolder ).map( ( value ) => parseInt( value, 10 ) ).filter( ( value ) => ! Number.isNaN( value ) && value > 0 );
 	const authorIds = parseIdList( author ).map( ( value ) => parseInt( value, 10 ) ).filter( ( value ) => ! Number.isNaN( value ) && value > 0 );
 	const queryArgs = {
@@ -129,10 +120,6 @@ const getPreviewQueryArgs = ( attributes ) => {
 
 	if ( authorIds.length ) {
 		queryArgs.author = authorIds.join( ',' );
-	}
-
-	if ( includeIds.length ) {
-		queryArgs.include = includeIds;
 	}
 
 	if ( dateRange === '7days' ) {
@@ -174,7 +161,6 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		dateRange,
 		customDateStart,
 		customDateEnd,
-		include,
 		showTitle,
 		layout,
 	} = attributes;
@@ -431,8 +417,6 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 									options={ [
 										{ label: __( 'Date', 'godam' ), value: 'date' },
 										{ label: __( 'Title', 'godam' ), value: 'title' },
-										{ label: __( 'Duration', 'godam' ), value: 'duration' },
-										{ label: __( 'Size', 'godam' ), value: 'size' },
 									] }
 									onChange={ ( value ) => setAttributes( { orderby: value } ) }
 								/>
@@ -549,12 +533,6 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 								</div>
 							</div>
 						) }
-						<TextControl
-							label={ __( 'Include Video IDs', 'godam' ) }
-							help={ __( 'Comma-separated list of video IDs to include.', 'godam' ) }
-							value={ include }
-							onChange={ ( value ) => setAttributes( { include: value } ) }
-						/>
 					</PanelBody>
 				) }
 			</InspectorControls>
@@ -588,7 +566,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						{ Array.isArray( queryPreviewVideos ) && queryPreviewVideos.length === 0 && (
 							<div className="godam-gallery-v2__state">
 								<strong>{ __( 'No videos found', 'godam' ) }</strong>
-								<p>{ __( 'Try changing the selected folder, author, dates, or include IDs.', 'godam' ) }</p>
+								<p>{ __( 'Try changing the selected folder, author, or dates.', 'godam' ) }</p>
 							</div>
 						) }
 
