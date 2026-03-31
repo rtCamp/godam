@@ -11,7 +11,7 @@ import {
 	MediaUploadCheck,
 } from '@wordpress/block-editor';
 import { Button } from '@wordpress/components';
-import { useSelect } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
 import { closeSmall, pencil, video as videoIcon } from '@wordpress/icons';
 
@@ -45,12 +45,13 @@ const formatDisplayDate = ( dateString ) => {
 	} );
 };
 
-export default function Edit( { attributes, setAttributes, context } ) {
+export default function Edit( { attributes, setAttributes, context, clientId } ) {
 	const { videoId } = attributes;
 	const layout = context[ 'godam/galleryV2/layout' ] || 'carousel';
 	const showTitle = context[ 'godam/galleryV2/showTitle' ] !== false;
 	const itemWidth = context[ 'godam/galleryV2/itemWidth' ] || 180;
 	const viewRatio = context[ 'godam/galleryV2/viewRatio' ] || '9:16';
+	const { removeBlock } = useDispatch( 'core/block-editor' );
 
 	const media = useSelect(
 		( select ) => {
@@ -140,7 +141,7 @@ export default function Edit( { attributes, setAttributes, context } ) {
 											className="godam-gallery-v2-item__overlay-action"
 											onClick={ ( event ) => {
 												event.stopPropagation();
-												setAttributes( { videoId: 0 } );
+												removeBlock( clientId );
 											} }
 										>
 											{ __( 'Remove', 'godam' ) }

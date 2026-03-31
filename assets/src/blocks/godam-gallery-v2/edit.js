@@ -5,11 +5,14 @@
 /**
  * WordPress dependencies
  */
+import { createBlock } from '@wordpress/blocks';
 import { __ } from '@wordpress/i18n';
 import {
 	useBlockProps,
 	InspectorControls,
 	InnerBlocks,
+	MediaUpload,
+	MediaUploadCheck,
 	store as blockEditorStore,
 } from '@wordpress/block-editor';
 import {
@@ -25,11 +28,12 @@ import {
 	__experimentalToggleGroupControl as ToggleGroupControl,
 	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
 	__experimentalToggleGroupControlOptionIcon as ToggleGroupControlOptionIcon,
+	Button,
 } from '@wordpress/components';
-import { useSelect } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
 import { useMemo, useState } from '@wordpress/element';
-import { columns, grid } from '@wordpress/icons';
+import { columns, grid, plus } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -37,7 +41,6 @@ import { columns, grid } from '@wordpress/icons';
 import './editor.scss';
 
 const ALLOWED_BLOCKS = [ 'godam/gallery-v2-item' ];
-const TEMPLATE = [ [ 'godam/gallery-v2-item', {} ] ];
 
 const formatDisplayDate = ( dateString ) => {
 	if ( ! dateString ) {
@@ -167,12 +170,11 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	const [ startDatePopoverOpen, setStartDatePopoverOpen ] = useState( false );
 	const [ endDatePopoverOpen, setEndDatePopoverOpen ] = useState( false );
 	const [ dateError, setDateError ] = useState( '' );
+	const { insertBlocks } = useDispatch( blockEditorStore );
 
-	const { mediaFolders, authors, queryPreviewVideos, hasInnerBlocks } = useSelect(
+	const { mediaFolders, authors, queryPreviewVideos } = useSelect(
 		( select ) => {
 			const coreSelect = select( coreStore );
-			const { getBlock } = select( blockEditorStore );
-			const block = getBlock( clientId );
 			const queryArgs = getPreviewQueryArgs( attributes );
 
 			return {
@@ -182,7 +184,6 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					mode === 'query'
 						? coreSelect.getEntityRecords( 'postType', 'attachment', queryArgs )
 						: [],
-				hasInnerBlocks: !! ( block && block.innerBlocks.length ),
 			};
 		},
 		[ attributes, clientId, mode ],
@@ -239,6 +240,20 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		() => authorOptions.map( ( option ) => option.value ),
 		[ authorOptions ],
 	);
+
+	const insertHandpickedVideo = ( mediaItem ) => {
+		if ( ! mediaItem?.id ) {
+			return;
+		}
+
+		insertBlocks(
+			createBlock( 'godam/gallery-v2-item', {
+				videoId: mediaItem.id,
+			} ),
+			undefined,
+			clientId,
+		);
+	};
 
 	const updateMediaFolderToken = ( tokens ) => {
 		if ( ! tokens.length ) {
@@ -545,9 +560,27 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					>
 						<InnerBlocks
 							allowedBlocks={ ALLOWED_BLOCKS }
-							template={ hasInnerBlocks ? undefined : TEMPLATE }
 							orientation={ layout === 'carousel' ? 'horizontal' : 'vertical' }
-							renderAppender={ InnerBlocks.ButtonBlockAppender }
+							renderAppender={ () => (
+								<MediaUploadCheck>
+									<MediaUpload
+										allowedTypes={ [ 'video' ] }
+										onSelect={ insertHandpickedVideo }
+										render={ ( { open } ) => (
+											<Button
+												className="godam-gallery-v2__add-video-button"
+												variant="secondary"
+												onClick={ open }
+												icon={ plus }
+												label={ __( 'Add New Video', 'godam' ) }
+												// text={ __( 'Add New Video', 'godam' ) }
+												showTooltip
+												aria-label={ __( 'Add New Video', 'godam' ) }
+											/>
+										) }
+									/>
+								</MediaUploadCheck>
+							) }
 						/>
 					</div>
 				) }
