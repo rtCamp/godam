@@ -258,16 +258,28 @@ if ( ! function_exists( 'godam_gallery_v2_get_video_data' ) ) {
 	}
 }
 
-$gallery_mode      = isset( $attributes['mode'] ) ? sanitize_key( $attributes['mode'] ) : 'handpicked';
-$layout            = isset( $attributes['layout'] ) ? sanitize_key( $attributes['layout'] ) : 'carousel';
-$view_ratio        = isset( $attributes['viewRatio'] ) ? sanitize_text_field( $attributes['viewRatio'] ) : '16:9';
-$item_width        = isset( $attributes['itemWidth'] ) ? max( 180, absint( $attributes['itemWidth'] ) ) : 180;
-$show_title        = ! isset( $attributes['showTitle'] ) || (bool) $attributes['showTitle'];
-$infinite_scroll   = ! empty( $attributes['infiniteScroll'] );
-$ratio_class       = str_replace( ':', '-', $view_ratio );
-$block_gap_raw     = $attributes['style']['spacing']['blockGap'] ?? '16px';
-$rest_query_args   = array();
-$total_query_items = 0;
+$gallery_mode        = isset( $attributes['mode'] ) ? sanitize_key( $attributes['mode'] ) : 'handpicked';
+$layout              = isset( $attributes['layout'] ) ? sanitize_key( $attributes['layout'] ) : 'carousel';
+$view_ratio          = isset( $attributes['viewRatio'] ) ? sanitize_text_field( $attributes['viewRatio'] ) : '16:9';
+$item_width          = isset( $attributes['itemWidth'] ) ? max( 180, absint( $attributes['itemWidth'] ) ) : 180;
+$show_title          = ! isset( $attributes['showTitle'] ) || (bool) $attributes['showTitle'];
+$enable_more_items   = array_key_exists( 'enableMoreItems', $attributes ) ? ! empty( $attributes['enableMoreItems'] ) : true;
+$more_items_behavior = isset( $attributes['moreItemsBehavior'] ) ? sanitize_key( $attributes['moreItemsBehavior'] ) : '';
+
+if ( ! in_array( $more_items_behavior, array( 'button', 'infinite' ), true ) ) {
+	$more_items_behavior = ! empty( $attributes['infiniteScroll'] ) ? 'infinite' : 'button';
+}
+
+if ( $enable_more_items && 'carousel' === $layout ) {
+	$more_items_behavior = 'infinite';
+}
+
+$infinite_scroll       = $enable_more_items && 'infinite' === $more_items_behavior;
+$show_load_more_button = $enable_more_items && 'button' === $more_items_behavior;
+$ratio_class           = str_replace( ':', '-', $view_ratio );
+$block_gap_raw         = $attributes['style']['spacing']['blockGap'] ?? '16px';
+$rest_query_args       = array();
+$total_query_items     = 0;
 
 if ( is_string( $block_gap_raw ) && str_starts_with( $block_gap_raw, 'var:preset|spacing|' ) ) {
 	$block_gap = 'var(--wp--preset--spacing--' . str_replace( 'var:preset|spacing|', '', $block_gap_raw ) . ')';
@@ -356,6 +368,8 @@ if ( 'query' === $gallery_mode ) {
 				data-query-args="<?php echo esc_attr( wp_json_encode( $rest_query_args ) ); ?>"
 				data-current-offset="<?php echo esc_attr( count( $items ) ); ?>"
 				data-total-items="<?php echo esc_attr( $total_query_items ); ?>"
+				data-enable-more-items="<?php echo $enable_more_items ? 'true' : 'false'; ?>"
+				data-more-items-behavior="<?php echo esc_attr( $more_items_behavior ); ?>"
 				data-infinite-scroll="<?php echo $infinite_scroll ? 'true' : 'false'; ?>"
 				data-show-title="<?php echo $show_title ? 'true' : 'false'; ?>"
 				data-view-ratio="<?php echo esc_attr( $view_ratio ); ?>"
@@ -389,16 +403,18 @@ if ( 'query' === $gallery_mode ) {
 						</button>
 					</div>
 				<?php endforeach; ?>
-				<?php if ( $total_query_items > count( $items ) && ! $infinite_scroll && 'carousel' === $layout ) : ?>
+				<?php if ( $total_query_items > count( $items ) && $show_load_more_button && 'carousel' === $layout ) : ?>
 					<div class="godam-gallery-v2__load-more-item">
 						<button type="button" class="godam-gallery-v2__load-more wp-element-button">
 							<?php esc_html_e( 'Load More', 'godam' ); ?>
 						</button>
 					</div>
 				<?php endif; ?>
-				<div class="godam-gallery-v2__load-sentinel" aria-hidden="true"></div>
+				<?php if ( $infinite_scroll ) : ?>
+					<div class="godam-gallery-v2__load-sentinel" aria-hidden="true"></div>
+				<?php endif; ?>
 			</div>
-			<?php if ( $total_query_items > count( $items ) && ! $infinite_scroll && 'carousel' !== $layout ) : ?>
+			<?php if ( $total_query_items > count( $items ) && $show_load_more_button && 'carousel' !== $layout ) : ?>
 				<div class="godam-gallery-v2__load-more-wrap">
 					<button type="button" class="godam-gallery-v2__load-more wp-element-button">
 						<?php esc_html_e( 'Load More', 'godam' ); ?>

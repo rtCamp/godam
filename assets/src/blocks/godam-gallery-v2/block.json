@@ -40,6 +40,14 @@
 			"type": "boolean",
 			"default": false
 		},
+		"enableMoreItems": {
+			"type": "boolean",
+			"default": false
+		},
+		"moreItemsBehavior": {
+			"type": "string",
+			"default": "button"
+		},
 		"mediaFolder": {
 			"type": "string",
 			"default": ""

@@ -116,7 +116,12 @@
 			this.queryArgs = this.parseQueryArgs( this.queryArea?.dataset.queryArgs || '{}' );
 			this.currentOffset = parseInt( this.queryArea?.dataset.currentOffset || '0', 10 );
 			this.totalItems = parseInt( this.queryArea?.dataset.totalItems || '0', 10 );
-			this.infiniteScroll = this.queryArea?.dataset.infiniteScroll === 'true';
+			this.enableMoreItems = this.queryArea?.dataset.enableMoreItems !== 'false';
+			this.moreItemsBehavior =
+				this.queryArea?.dataset.moreItemsBehavior ||
+				( this.queryArea?.dataset.infiniteScroll === 'true' ? 'infinite' : 'button' );
+			this.infiniteScroll =
+				this.enableMoreItems && this.moreItemsBehavior === 'infinite';
 			this.items = [];
 
 			this.refreshItems();
@@ -164,6 +169,7 @@
 		initInfiniteScroll() {
 			if (
 				this.mode !== 'query' ||
+				! this.enableMoreItems ||
 				! this.infiniteScroll ||
 				! this.sentinel ||
 				! this.hasMorePages()
@@ -201,7 +207,10 @@
 			this.queryArea.dataset.totalItems = String( this.totalItems );
 
 			if ( this.loadMoreButton ) {
-				const shouldShow = ! this.infiniteScroll && this.hasMorePages();
+				const shouldShow =
+					this.enableMoreItems &&
+					! this.infiniteScroll &&
+					this.hasMorePages();
 				this.loadMoreButton.hidden = ! shouldShow;
 				this.loadMoreButton.disabled = this.isLoading;
 				this.loadMoreButton.classList.toggle( 'is-loading', this.isLoading );
@@ -212,7 +221,10 @@
 			}
 
 			if ( this.sentinel ) {
-				this.sentinel.hidden = ! this.infiniteScroll || ! this.hasMorePages();
+				this.sentinel.hidden =
+					! this.enableMoreItems ||
+					! this.infiniteScroll ||
+					! this.hasMorePages();
 			}
 
 			if ( this.observer && ! this.hasMorePages() ) {

@@ -32,7 +32,7 @@ import {
 } from '@wordpress/components';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
-import { useMemo, useState } from '@wordpress/element';
+import { useEffect, useMemo, useState } from '@wordpress/element';
 import { columns, grid, listView, plus } from '@wordpress/icons';
 
 /**
@@ -159,6 +159,8 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		order,
 		viewRatio,
 		infiniteScroll,
+		enableMoreItems,
+		moreItemsBehavior,
 		mediaFolder,
 		author,
 		dateRange,
@@ -172,9 +174,10 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	const [ dateError, setDateError ] = useState( '' );
 	const { insertBlocks } = useDispatch( blockEditorStore );
 
-	const { mediaFolders, authors, queryPreviewVideos } = useSelect(
+	const { mediaFolders, authors, queryPreviewVideos, wasJustInserted } = useSelect(
 		( select ) => {
 			const coreSelect = select( coreStore );
+			const blockEditorSelect = select( blockEditorStore );
 			const queryArgs = getPreviewQueryArgs( attributes );
 
 			return {
@@ -184,10 +187,81 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					mode === 'query'
 						? coreSelect.getEntityRecords( 'postType', 'attachment', queryArgs )
 						: [],
+				wasJustInserted:
+					blockEditorSelect.wasBlockJustInserted( clientId, 'inserter' ) ||
+					blockEditorSelect.wasBlockJustInserted( clientId, 'directInsert' ) ||
+					blockEditorSelect.wasBlockJustInserted( clientId, 'transform' ),
 			};
 		},
-		[ attributes, mode ],
+		[ attributes, clientId, mode ],
 	);
+
+	useEffect( () => {
+		if (
+			mode !== 'query' ||
+			! wasJustInserted ||
+			typeof enableMoreItems !== 'undefined' ||
+			typeof moreItemsBehavior !== 'undefined'
+		) {
+			return;
+		}
+
+		setAttributes( {
+			enableMoreItems: false,
+			moreItemsBehavior: 'button',
+			infiniteScroll: false,
+		} );
+	}, [
+		enableMoreItems,
+		infiniteScroll,
+		mode,
+		moreItemsBehavior,
+		setAttributes,
+		wasJustInserted,
+	] );
+
+	const resolvedEnableMoreItems =
+		typeof enableMoreItems === 'boolean' ? enableMoreItems : true;
+	const isCarouselLayout = layout === 'carousel';
+	const resolvedMoreItemsBehavior =
+		isCarouselLayout && resolvedEnableMoreItems
+			? 'infinite'
+			: moreItemsBehavior || ( infiniteScroll ? 'infinite' : 'button' );
+
+	const updateMoreItemsSettings = ( nextEnableMoreItems, nextBehavior = resolvedMoreItemsBehavior ) => {
+		const behavior =
+			isCarouselLayout && nextEnableMoreItems ? 'infinite' : nextBehavior;
+
+		setAttributes( {
+			enableMoreItems: nextEnableMoreItems,
+			moreItemsBehavior: behavior,
+			infiniteScroll: nextEnableMoreItems && behavior === 'infinite',
+		} );
+	};
+
+	useEffect( () => {
+		if (
+			mode !== 'query' ||
+			! isCarouselLayout ||
+			! resolvedEnableMoreItems ||
+			moreItemsBehavior === 'infinite' ||
+			infiniteScroll
+		) {
+			return;
+		}
+
+		setAttributes( {
+			moreItemsBehavior: 'infinite',
+			infiniteScroll: true,
+		} );
+	}, [
+		infiniteScroll,
+		isCarouselLayout,
+		mode,
+		moreItemsBehavior,
+		resolvedEnableMoreItems,
+		setAttributes,
+	] );
 
 	const blockProps = useBlockProps( {
 		className: `godam-gallery-v2 godam-gallery-v2--${ mode }`,
@@ -367,7 +441,22 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						isBlock
 						label={ __( 'Layout', 'godam' ) }
 						value={ layout }
-						onChange={ ( value ) => value && setAttributes( { layout: value } ) }
+						onChange={ ( value ) => {
+							if ( ! value ) {
+								return;
+							}
+
+							if ( value === 'carousel' && resolvedEnableMoreItems ) {
+								setAttributes( {
+									layout: value,
+									moreItemsBehavior: 'infinite',
+									infiniteScroll: true,
+								} );
+								return;
+							}
+
+							setAttributes( { layout: value } );
+						} }
 					>
 						<ToggleGroupControlOptionIcon
 							icon={ columns }
@@ -417,11 +506,6 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 
 				{ mode === 'query' && (
 					<PanelBody title={ __( 'Query Settings', 'godam' ) } initialOpen={ true }>
-						<ToggleControl
-							label={ __( 'Enable Infinite Scroll', 'godam' ) }
-							checked={ !! infiniteScroll }
-							onChange={ ( value ) => setAttributes( { infiniteScroll: value } ) }
-						/>
 						<RangeControl
 							label={ __( 'Number of videos', 'godam' ) }
 							value={ count }
@@ -552,6 +636,28 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 									) }
 								</div>
 							</div>
+						) }
+						<ToggleControl
+							label={ __( 'Enable More Items', 'godam' ) }
+							checked={ !! resolvedEnableMoreItems }
+							onChange={ ( value ) => updateMoreItemsSettings( value ) }
+						/>
+						{ resolvedEnableMoreItems && (
+							<SelectControl
+								label={ __( 'More Items Behavior', 'godam' ) }
+								value={ resolvedMoreItemsBehavior }
+								options={ [
+									{ label: __( 'Load More Button', 'godam' ), value: 'button' },
+									{ label: __( 'Infinite Scroll', 'godam' ), value: 'infinite' },
+								] }
+								disabled={ isCarouselLayout }
+								help={
+									isCarouselLayout
+										? __( 'Carousel layout always uses Infinite Scroll when more items are enabled.', 'godam' )
+										: __( 'Choose how visitors load more videos in query galleries.', 'godam' )
+								}
+								onChange={ ( value ) => updateMoreItemsSettings( true, value ) }
+							/>
 						) }
 					</PanelBody>
 				) }
