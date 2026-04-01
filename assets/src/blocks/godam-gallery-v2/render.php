@@ -389,9 +389,16 @@ if ( 'query' === $gallery_mode ) {
 						</button>
 					</div>
 				<?php endforeach; ?>
+				<?php if ( $total_query_items > count( $items ) && ! $infinite_scroll && 'carousel' === $layout ) : ?>
+					<div class="godam-gallery-v2__load-more-item">
+						<button type="button" class="godam-gallery-v2__load-more wp-element-button">
+							<?php esc_html_e( 'Load More', 'godam' ); ?>
+						</button>
+					</div>
+				<?php endif; ?>
 				<div class="godam-gallery-v2__load-sentinel" aria-hidden="true"></div>
 			</div>
-			<?php if ( $total_query_items > count( $items ) && ! $infinite_scroll ) : ?>
+			<?php if ( $total_query_items > count( $items ) && ! $infinite_scroll && 'carousel' !== $layout ) : ?>
 				<div class="godam-gallery-v2__load-more-wrap">
 					<button type="button" class="godam-gallery-v2__load-more wp-element-button">
 						<?php esc_html_e( 'Load More', 'godam' ); ?>

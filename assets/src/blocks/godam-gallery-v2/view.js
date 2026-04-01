@@ -110,6 +110,7 @@
 			this.queryArea = element.querySelector( '.godam-gallery-v2__query-area' );
 			this.queryList = element.querySelector( '.godam-gallery-v2__query-list' );
 			this.loadMoreButton = element.querySelector( '.godam-gallery-v2__load-more' );
+			this.loadMoreItem = element.querySelector( '.godam-gallery-v2__load-more-item' );
 			this.sentinel = element.querySelector( '.godam-gallery-v2__load-sentinel' );
 			this.queryRestUrl = this.queryArea?.dataset.queryRestUrl || '';
 			this.queryArgs = this.parseQueryArgs( this.queryArea?.dataset.queryArgs || '{}' );
@@ -206,6 +207,10 @@
 				this.loadMoreButton.classList.toggle( 'is-loading', this.isLoading );
 			}
 
+			if ( this.loadMoreItem ) {
+				this.loadMoreItem.hidden = this.loadMoreButton ? this.loadMoreButton.hidden : true;
+			}
+
 			if ( this.sentinel ) {
 				this.sentinel.hidden = ! this.infiniteScroll || ! this.hasMorePages();
 			}
@@ -248,7 +253,8 @@
 					);
 
 					if ( newItems.length > 0 ) {
-						this.queryList.insertBefore( template.content, this.sentinel );
+						const insertionTarget = this.loadMoreItem || this.sentinel;
+						this.queryList.insertBefore( template.content, insertionTarget );
 						this.currentOffset += newItems.length;
 					} else {
 						this.currentOffset = this.totalItems;

@@ -30,7 +30,7 @@
 		},
 		"layout": {
 			"type": "string",
-			"default": "carousel"
+			"default": "grid"
 		},
 		"viewRatio": {
 			"type": "string",

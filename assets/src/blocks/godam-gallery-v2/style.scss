@@ -107,6 +107,13 @@
 	justify-content: center;
 }
 
+.godam-gallery-v2__load-more-item {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: var(--godam-gallery-item-width);
+}
+
 .godam-gallery-v2__load-more {
 	min-width: 160px;
 
@@ -266,6 +273,7 @@
 			}
 
 			.godam-gallery-v2__query-list > .godam-gallery-v2__query-item,
+			.godam-gallery-v2__query-list > .godam-gallery-v2__load-more-item,
 			.godam-gallery-v2__item-list > .godam-gallery-v2-item,
 			.block-editor-inner-blocks .block-editor-block-list__layout > .wp-block {
 				flex-shrink: 0;
