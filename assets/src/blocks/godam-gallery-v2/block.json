@@ -10,7 +10,7 @@
 	"attributes": {
 		"mode": {
 			"type": "string",
-			"default": "handpicked"
+			"default": "query"
 		},
 		"itemWidth": {
 			"type": "number",
