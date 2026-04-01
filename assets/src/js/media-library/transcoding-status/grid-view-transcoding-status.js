@@ -50,6 +50,17 @@ class GridViewTranscodingStatus {
 		this.transcodingStatusLoader = this.transcodingStatusElement.querySelector( '.transcoding-status__loader' );
 		this.transcodingStatusSVG = this.transcodingStatusLoader.querySelector( 'svg' );
 
+		// Handle failure first — takes priority over any progress value.
+		if ( status === 'failed' ) {
+			this.updateFailedStatus();
+			return;
+		}
+
+		if ( status === 'not_transcoding' ) {
+			this.updateNotTranscodingStatus();
+			return;
+		}
+
 		if ( progress === 100 ) {
 			this.updateCompletedStatus();
 
@@ -61,14 +72,7 @@ class GridViewTranscodingStatus {
 					imgElement.src = thumbnail;
 				}
 			}
-		}
-
-		if ( status === 'failed' ) {
-			this.updateFailedStatus();
-		}
-
-		if ( status === 'not_transcoding' ) {
-			this.updateNotTranscodingStatus();
+			return;
 		}
 
 		if ( progress < 100 ) {

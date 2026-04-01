@@ -80,7 +80,16 @@ class Product_Gallery_Rest extends Base {
 								'description'       => __( 'Comma-separated product IDs.', 'godam' ),
 								'type'              => 'string',
 								'sanitize_callback' => 'sanitize_text_field',
-								'required'          => true,
+							),
+							'categories'  => array(
+								'description'       => __( 'Comma-separated category IDs to filter products.', 'godam' ),
+								'type'              => 'string',
+								'sanitize_callback' => 'sanitize_text_field',
+							),
+							'count'       => array(
+								'description'       => __( 'Maximum number of videos to return.', 'godam' ),
+								'type'              => 'integer',
+								'sanitize_callback' => 'absint',
 							),
 						),
 					),
@@ -241,25 +250,62 @@ class Product_Gallery_Rest extends Base {
 	 */
 	public function get_videos_by_products( $request ) {
 		$product_ids_string = $request->get_param( 'product_ids' );
+		$categories_string  = $request->get_param( 'categories' );
+		$count              = absint( $request->get_param( 'count' ) );
 		$product_ids        = array_filter( array_map( 'absint', explode( ',', $product_ids_string ) ) );
+		$category_ids       = array_filter( array_map( 'absint', explode( ',', $categories_string ) ) );
+		$query_limit        = (int) apply_filters( 'rtgodam_product_gallery_rest_query_limit', 100, $request );
+		$query_limit        = max( 1, min( 100, $query_limit ) );
+		$query_limit        = $count > 0 ? min( $count, $query_limit ) : $query_limit;
 
-		if ( empty( $product_ids ) ) {
-			return rest_ensure_response( array() );
+		if ( empty( $product_ids ) && ! empty( $category_ids ) ) {
+			$product_query_args = array(
+				'post_type'      => 'product',
+				'post_status'    => 'publish',
+				'fields'         => 'ids',
+				'posts_per_page' => $query_limit,
+				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					array(
+						'key'     => '_rtgodam_product_video_gallery_ids',
+						'compare' => 'EXISTS',
+					),
+				),
+				'tax_query'      => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+					array(
+						'taxonomy' => 'product_cat',
+						'field'    => 'term_id',
+						'terms'    => $category_ids,
+						'operator' => 'IN',
+					),
+				),
+			);
+
+			// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
+			$product_ids = get_posts( $product_query_args );
 		}
 
 		$args = array(
 			'post_type'      => 'attachment',
 			'post_mime_type' => 'video',
 			'post_status'    => 'inherit',
-			'posts_per_page' => -1,
-			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-				array(
-					'key'     => '_video_parent_product_id',
-					'value'   => $product_ids,
-					'compare' => 'IN',
-				),
-			),
+			'posts_per_page' => $query_limit,
+			'meta_query'     => array(), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 		);
+
+		if ( ! empty( $product_ids ) ) {
+			$args['meta_query'][] = array(
+				'key'     => '_video_parent_product_id',
+				'value'   => $product_ids,
+				'compare' => 'IN',
+			);
+		} elseif ( empty( $category_ids ) ) {
+			$args['meta_query'][] = array(
+				'key'     => '_video_parent_product_id',
+				'compare' => 'EXISTS',
+			);
+		} else {
+			return rest_ensure_response( array() );
+		}
 
 		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
 		$video_posts = get_posts( $args );
@@ -272,6 +318,45 @@ class Product_Gallery_Rest extends Base {
 			$thumbnail            = $custom_thumbnail ?: $fallback_thumb;
 			$duration             = get_post_meta( $video_id, 'rtgodam_media_video_duration', true );
 			$attached_product_ids = get_post_meta( $video_id, '_video_parent_product_id', false );
+			$resolved_product     = null;
+
+			foreach ( $attached_product_ids as $attached_product_id ) {
+				$attached_product_id = absint( $attached_product_id );
+
+				if ( ! $attached_product_id || 'publish' !== get_post_status( $attached_product_id ) ) {
+					continue;
+				}
+
+				if ( ! empty( $product_ids ) && ! in_array( $attached_product_id, $product_ids, true ) ) {
+					continue;
+				}
+
+				if ( ! empty( $category_ids ) && ! has_term( $category_ids, 'product_cat', $attached_product_id ) ) {
+					continue;
+				}
+
+				$product = wc_get_product( $attached_product_id );
+
+				if ( ! $product ) {
+					continue;
+				}
+
+				$product_image_id = $product->get_image_id();
+				$resolved_product = array(
+					'id'        => $product->get_id(),
+					'name'      => $product->get_name(),
+					'price'     => $product->get_price_html(),
+					'image'     => $product_image_id ? wp_get_attachment_image_url( $product_image_id, 'woocommerce_thumbnail' ) : wc_placeholder_img_src( 'woocommerce_thumbnail' ),
+					'type'      => $product->get_type(),
+					'in_stock'  => $product->is_in_stock(),
+					'permalink' => $product->get_permalink(),
+				);
+				break;
+			}
+
+			if ( empty( $resolved_product ) ) {
+				continue;
+			}
 
 			// Format duration if available.
 			$duration_formatted = '';
@@ -294,6 +379,7 @@ class Product_Gallery_Rest extends Base {
 				'thumbnail'         => $thumbnail,
 				'duration'          => $duration_formatted,
 				'productIds'        => array_map( 'intval', $attached_product_ids ),
+				'productData'       => $resolved_product,
 			);
 		}
 

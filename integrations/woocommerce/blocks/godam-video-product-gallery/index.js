@@ -2,7 +2,6 @@
  * WordPress dependencies
  */
 import { registerBlockType } from '@wordpress/blocks';
-import { gallery as galleryIcon } from '@wordpress/icons';
 import { InnerBlocks } from '@wordpress/block-editor';
 
 /**
@@ -10,6 +9,7 @@ import { InnerBlocks } from '@wordpress/block-editor';
  */
 import Edit from './edit';
 import metadata from './block.json';
+import icon from '../../assets/images/godam-product-gallery-filled.svg';
 import './style.scss';
 import './editor.scss';
 
@@ -18,7 +18,7 @@ import './editor.scss';
  */
 registerBlockType( metadata.name, {
 	...metadata,
-	icon: galleryIcon,
+	icon: <img src={ icon } alt="GoDAM Video Product Gallery Block icon" />,
 	edit: Edit,
 	save: () => <InnerBlocks.Content />,
 } );
