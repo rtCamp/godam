@@ -103,23 +103,169 @@
 	class GalleryV2 {
 		constructor( element ) {
 			this.element = element;
-			this.items = Array.from(
-				element.querySelectorAll( '[data-godam-gallery-v2-trigger="true"]' ),
-			);
+			this.mode = element.dataset.mode || 'handpicked';
 			this.currentIndex = -1;
+			this.isLoading = false;
 			this.modal = getSharedModal();
+			this.queryArea = element.querySelector( '.godam-gallery-v2__query-area' );
+			this.queryList = element.querySelector( '.godam-gallery-v2__query-list' );
+			this.loadMoreButton = element.querySelector( '.godam-gallery-v2__load-more' );
+			this.sentinel = element.querySelector( '.godam-gallery-v2__load-sentinel' );
+			this.queryRestUrl = this.queryArea?.dataset.queryRestUrl || '';
+			this.queryArgs = this.parseQueryArgs( this.queryArea?.dataset.queryArgs || '{}' );
+			this.currentOffset = parseInt( this.queryArea?.dataset.currentOffset || '0', 10 );
+			this.totalItems = parseInt( this.queryArea?.dataset.totalItems || '0', 10 );
+			this.infiniteScroll = this.queryArea?.dataset.infiniteScroll === 'true';
+			this.items = [];
+
+			this.refreshItems();
 			this.bindEvents();
+			this.initInfiniteScroll();
+			this.updateLoadControls();
+		}
+
+		parseQueryArgs( value ) {
+			try {
+				return JSON.parse( value );
+			} catch ( error ) {
+				return {};
+			}
+		}
+
+		refreshItems() {
+			this.items = Array.from(
+				this.element.querySelectorAll( '[data-godam-gallery-v2-trigger="true"]' ),
+			);
 		}
 
 		bindEvents() {
-			this.items.forEach( ( item, index ) => {
-				item.addEventListener( 'click', () => {
+			this.element.addEventListener( 'click', ( event ) => {
+				const loadMoreButton = event.target.closest( '.godam-gallery-v2__load-more' );
+				if ( loadMoreButton && this.loadMoreButton === loadMoreButton ) {
+					event.preventDefault();
+					this.loadMoreItems();
+					return;
+				}
+
+				const trigger = event.target.closest( '[data-godam-gallery-v2-trigger="true"]' );
+				if ( ! trigger || ! this.element.contains( trigger ) ) {
+					return;
+				}
+
+				this.refreshItems();
+				const index = this.items.indexOf( trigger );
+				if ( index !== -1 ) {
 					this.openModalByIndex( index );
-				} );
+				}
 			} );
 		}
 
+		initInfiniteScroll() {
+			if (
+				this.mode !== 'query' ||
+				! this.infiniteScroll ||
+				! this.sentinel ||
+				! this.hasMorePages()
+			) {
+				return;
+			}
+
+			const options = {
+				root: this.element.dataset.layout === 'carousel' ? this.queryList : null,
+				rootMargin: '200px',
+				threshold: 0.1,
+			};
+
+			this.observer = new IntersectionObserver( ( entries ) => {
+				entries.forEach( ( entry ) => {
+					if ( entry.isIntersecting ) {
+						this.loadMoreItems();
+					}
+				} );
+			}, options );
+
+			this.observer.observe( this.sentinel );
+		}
+
+		hasMorePages() {
+			return this.mode === 'query' && this.currentOffset < this.totalItems;
+		}
+
+		updateLoadControls() {
+			if ( ! this.queryArea ) {
+				return;
+			}
+
+			this.queryArea.dataset.currentOffset = String( this.currentOffset );
+			this.queryArea.dataset.totalItems = String( this.totalItems );
+
+			if ( this.loadMoreButton ) {
+				const shouldShow = ! this.infiniteScroll && this.hasMorePages();
+				this.loadMoreButton.hidden = ! shouldShow;
+				this.loadMoreButton.disabled = this.isLoading;
+				this.loadMoreButton.classList.toggle( 'is-loading', this.isLoading );
+			}
+
+			if ( this.sentinel ) {
+				this.sentinel.hidden = ! this.infiniteScroll || ! this.hasMorePages();
+			}
+
+			if ( this.observer && ! this.hasMorePages() ) {
+				this.observer.disconnect();
+				this.observer = null;
+			}
+		}
+
+		async loadMoreItems() {
+			if ( this.isLoading || ! this.hasMorePages() || ! this.queryRestUrl ) {
+				return;
+			}
+
+			this.isLoading = true;
+			this.updateLoadControls();
+
+			const params = new URLSearchParams( {
+				...this.queryArgs,
+				offset: String( this.currentOffset ),
+			} );
+
+			try {
+				const response = await fetch( `${ this.queryRestUrl }?${ params.toString() }`, {
+					credentials: 'same-origin',
+				} );
+
+				if ( ! response.ok ) {
+					throw new Error( 'Failed to load gallery items.' );
+				}
+
+				const data = await response.json();
+
+				if ( data?.status === 'success' && data?.html ) {
+					const template = document.createElement( 'template' );
+					template.innerHTML = data.html.trim();
+					const newItems = Array.from(
+						template.content.querySelectorAll( '.godam-gallery-v2__query-item' ),
+					);
+
+					if ( newItems.length > 0 ) {
+						this.queryList.insertBefore( template.content, this.sentinel );
+						this.currentOffset += newItems.length;
+					} else {
+						this.currentOffset = this.totalItems;
+					}
+				} else {
+					this.currentOffset = this.totalItems;
+				}
+				this.refreshItems();
+			} catch ( error ) {
+			} finally {
+				this.isLoading = false;
+				this.updateLoadControls();
+			}
+		}
+
 		openModalByIndex( index ) {
+			this.refreshItems();
 			const item = this.items[ index ];
 			const videoId = item?.dataset?.videoId;
 
@@ -143,6 +289,8 @@
 		}
 
 		navigateModal( direction ) {
+			this.refreshItems();
+
 			if ( this.items.length <= 1 ) {
 				return;
 			}

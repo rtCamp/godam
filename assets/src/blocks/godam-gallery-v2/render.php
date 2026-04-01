@@ -110,9 +110,10 @@ if ( ! function_exists( 'godam_gallery_v2_build_query_args' ) ) {
 	 * Build attachment query args from block attributes.
 	 *
 	 * @param array $attributes Block attributes.
+	 * @param int   $page       Results page number.
 	 * @return array
 	 */
-	function godam_gallery_v2_build_query_args( $attributes ) {
+	function godam_gallery_v2_build_query_args( $attributes, $page = 1 ) {
 		$media_folder_ids = godam_gallery_v2_parse_id_list( $attributes['mediaFolder'] ?? '' );
 		$author_ids       = godam_gallery_v2_parse_id_list( $attributes['author'] ?? '' );
 		$count            = isset( $attributes['count'] ) ? max( 1, absint( $attributes['count'] ) ) : 6;
@@ -151,15 +152,17 @@ if ( ! function_exists( 'godam_gallery_v2_build_query_args' ) ) {
 			'post_status'            => 'inherit',
 			'post_mime_type'         => 'video',
 			'posts_per_page'         => $count,
+			'paged'                  => max( 1, absint( $page ) ),
 			'orderby'                => in_array( $orderby, array( 'date', 'title' ), true ) ? $orderby : 'date',
 			'order'                  => in_array( $order, array( 'ASC', 'DESC' ), true ) ? $order : 'DESC',
 			'ignore_sticky_posts'    => true,
-			'no_found_rows'          => true,
+			'no_found_rows'          => false,
 			'update_post_meta_cache' => true,
 			'update_post_term_cache' => true,
 		);
 
 		if ( ! empty( $media_folder_ids ) ) {
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- Tax query is necessary for folder filtering.
 			$query_args['tax_query'] = array(
 				array(
 					'taxonomy' => 'media-folder',
@@ -175,6 +178,55 @@ if ( ! function_exists( 'godam_gallery_v2_build_query_args' ) ) {
 
 		if ( ! empty( $date_query ) ) {
 			$query_args['date_query'] = $date_query;
+		}
+
+		return $query_args;
+	}
+}
+
+if ( ! function_exists( 'godam_gallery_v2_build_rest_query_args' ) ) {
+
+	/**
+	 * Build media REST query args from block attributes.
+	 *
+	 * @param array $attributes Block attributes.
+	 * @return array
+	 */
+	function godam_gallery_v2_build_rest_query_args( $attributes ) {
+		$query_args = array(
+			'per_page'   => isset( $attributes['count'] ) ? max( 1, absint( $attributes['count'] ) ) : 6,
+			'orderby'    => isset( $attributes['orderby'] ) ? sanitize_key( $attributes['orderby'] ) : 'date',
+			'order'      => isset( $attributes['order'] ) ? sanitize_key( $attributes['order'] ) : 'desc',
+			'status'     => 'inherit',
+			'media_type' => 'video',
+		);
+
+		$media_folder_ids = godam_gallery_v2_parse_id_list( $attributes['mediaFolder'] ?? '' );
+		$author_ids       = godam_gallery_v2_parse_id_list( $attributes['author'] ?? '' );
+		$date_range       = isset( $attributes['dateRange'] ) ? sanitize_key( $attributes['dateRange'] ) : '';
+
+		if ( ! empty( $media_folder_ids ) ) {
+			$query_args['media-folder'] = implode( ',', $media_folder_ids );
+		}
+
+		if ( ! empty( $author_ids ) ) {
+			$query_args['author'] = implode( ',', $author_ids );
+		}
+
+		if ( '7days' === $date_range ) {
+			$query_args['after'] = gmdate( 'c', strtotime( '-7 days' ) );
+		} elseif ( '30days' === $date_range ) {
+			$query_args['after'] = gmdate( 'c', strtotime( '-30 days' ) );
+		} elseif ( '90days' === $date_range ) {
+			$query_args['after'] = gmdate( 'c', strtotime( '-90 days' ) );
+		} elseif ( 'custom' === $date_range ) {
+			if ( ! empty( $attributes['customDateStart'] ) ) {
+				$query_args['after'] = gmdate( 'c', strtotime( $attributes['customDateStart'] ) );
+			}
+
+			if ( ! empty( $attributes['customDateEnd'] ) ) {
+				$query_args['before'] = gmdate( 'c', strtotime( $attributes['customDateEnd'] ) );
+			}
 		}
 
 		return $query_args;
@@ -206,13 +258,16 @@ if ( ! function_exists( 'godam_gallery_v2_get_video_data' ) ) {
 	}
 }
 
-$mode          = isset( $attributes['mode'] ) ? sanitize_key( $attributes['mode'] ) : 'handpicked';
-$layout        = isset( $attributes['layout'] ) ? sanitize_key( $attributes['layout'] ) : 'carousel';
-$view_ratio    = isset( $attributes['viewRatio'] ) ? sanitize_text_field( $attributes['viewRatio'] ) : '16:9';
-$item_width    = isset( $attributes['itemWidth'] ) ? max( 180, absint( $attributes['itemWidth'] ) ) : 180;
-$show_title    = ! isset( $attributes['showTitle'] ) || (bool) $attributes['showTitle'];
-$ratio_class   = str_replace( ':', '-', $view_ratio );
-$block_gap_raw = $attributes['style']['spacing']['blockGap'] ?? '16px';
+$gallery_mode      = isset( $attributes['mode'] ) ? sanitize_key( $attributes['mode'] ) : 'handpicked';
+$layout            = isset( $attributes['layout'] ) ? sanitize_key( $attributes['layout'] ) : 'carousel';
+$view_ratio        = isset( $attributes['viewRatio'] ) ? sanitize_text_field( $attributes['viewRatio'] ) : '16:9';
+$item_width        = isset( $attributes['itemWidth'] ) ? max( 180, absint( $attributes['itemWidth'] ) ) : 180;
+$show_title        = ! isset( $attributes['showTitle'] ) || (bool) $attributes['showTitle'];
+$infinite_scroll   = ! empty( $attributes['infiniteScroll'] );
+$ratio_class       = str_replace( ':', '-', $view_ratio );
+$block_gap_raw     = $attributes['style']['spacing']['blockGap'] ?? '16px';
+$rest_query_args   = array();
+$total_query_items = 0;
 
 if ( is_string( $block_gap_raw ) && str_starts_with( $block_gap_raw, 'var:preset|spacing|' ) ) {
 	$block_gap = 'var(--wp--preset--spacing--' . str_replace( 'var:preset|spacing|', '', $block_gap_raw ) . ')';
@@ -228,9 +283,9 @@ $inline_styles = sprintf(
 
 $wrapper_attributes = get_block_wrapper_attributes(
 	array(
-		'class'       => sprintf( 'godam-gallery-v2 godam-gallery-v2--%s', $mode ),
+		'class'       => sprintf( 'godam-gallery-v2 godam-gallery-v2--%s', $gallery_mode ),
 		'style'       => $inline_styles,
-		'data-mode'   => $mode,
+		'data-mode'   => $gallery_mode,
 		'data-layout' => $layout,
 		'data-ratio'  => $view_ratio,
 	)
@@ -238,8 +293,27 @@ $wrapper_attributes = get_block_wrapper_attributes(
 
 $items = array();
 
-if ( 'query' === $mode ) {
-	$query = new WP_Query( godam_gallery_v2_build_query_args( $attributes ) );
+if ( 'query' === $gallery_mode ) {
+	$rest_query_args   = array(
+		'offset'            => 0,
+		'columns'           => 1,
+		'count'             => isset( $attributes['count'] ) ? max( 1, absint( $attributes['count'] ) ) : 6,
+		'orderby'           => isset( $attributes['orderby'] ) ? sanitize_key( $attributes['orderby'] ) : 'date',
+		'order'             => isset( $attributes['order'] ) ? strtoupper( sanitize_key( $attributes['order'] ) ) : 'DESC',
+		'show_title'        => $show_title ? '1' : '0',
+		'layout'            => $layout,
+		'author'            => $attributes['author'] ?? '',
+		'media_folder'      => $attributes['mediaFolder'] ?? '',
+		'include'           => '',
+		'search'            => '',
+		'date_range'        => $attributes['dateRange'] ?? '',
+		'custom_date_start' => $attributes['customDateStart'] ?? '',
+		'custom_date_end'   => $attributes['customDateEnd'] ?? '',
+		'gallery_variant'   => 'gallery-v2',
+		'view_ratio'        => $view_ratio,
+	);
+	$query             = new WP_Query( godam_gallery_v2_build_query_args( $attributes, 1 ) );
+	$total_query_items = (int) $query->found_posts;
 
 	if ( $query->have_posts() ) {
 		foreach ( $query->posts as $video_post ) {
@@ -275,7 +349,17 @@ if ( 'query' === $mode ) {
 				<strong><?php esc_html_e( 'No videos found', 'godam' ); ?></strong>
 				<p><?php esc_html_e( 'Try changing the selected folder, author, or dates.', 'godam' ); ?></p>
 			</div>
-		<?php elseif ( 'query' === $mode ) : ?>
+		<?php elseif ( 'query' === $gallery_mode ) : ?>
+			<div
+				class="godam-gallery-v2__query-area"
+				data-query-rest-url="<?php echo esc_url( rest_url( 'godam/v1/gallery-shortcode' ) ); ?>"
+				data-query-args="<?php echo esc_attr( wp_json_encode( $rest_query_args ) ); ?>"
+				data-current-offset="<?php echo esc_attr( count( $items ) ); ?>"
+				data-total-items="<?php echo esc_attr( $total_query_items ); ?>"
+				data-infinite-scroll="<?php echo $infinite_scroll ? 'true' : 'false'; ?>"
+				data-show-title="<?php echo $show_title ? 'true' : 'false'; ?>"
+				data-view-ratio="<?php echo esc_attr( $view_ratio ); ?>"
+			>
 			<div class="godam-gallery-v2__query-list">
 				<?php foreach ( $items as $item ) : ?>
 					<div class="<?php echo esc_attr( sprintf( 'godam-gallery-v2__query-item godam-gallery-v2__query-item--ratio-%s', $ratio_class ) ); ?>">
@@ -284,6 +368,7 @@ if ( 'query' === $mode ) {
 							class="godam-gallery-v2__query-button"
 							data-godam-gallery-v2-trigger="true"
 							data-video-id="<?php echo esc_attr( $item['id'] ); ?>"
+							<?php /* translators: %s: video title. */ ?>
 							aria-label="<?php echo esc_attr( sprintf( __( 'Open video: %s', 'godam' ), $item['title'] ) ); ?>"
 						>
 							<div class="godam-gallery-v2__query-thumb">
@@ -304,6 +389,15 @@ if ( 'query' === $mode ) {
 						</button>
 					</div>
 				<?php endforeach; ?>
+				<div class="godam-gallery-v2__load-sentinel" aria-hidden="true"></div>
+			</div>
+			<?php if ( $total_query_items > count( $items ) && ! $infinite_scroll ) : ?>
+				<div class="godam-gallery-v2__load-more-wrap">
+					<button type="button" class="godam-gallery-v2__load-more wp-element-button">
+						<?php esc_html_e( 'Load More', 'godam' ); ?>
+					</button>
+				</div>
+			<?php endif; ?>
 			</div>
 		<?php else : ?>
 			<div class="godam-gallery-v2__item-list">
@@ -314,6 +408,7 @@ if ( 'query' === $mode ) {
 							class="godam-gallery-v2-item__button"
 							data-godam-gallery-v2-trigger="true"
 							data-video-id="<?php echo esc_attr( $item['id'] ); ?>"
+							<?php /* translators: %s: video title. */ ?>
 							aria-label="<?php echo esc_attr( sprintf( __( 'Open video: %s', 'godam' ), $item['title'] ) ); ?>"
 						>
 							<div class="godam-gallery-v2-item__preview">
