@@ -32,7 +32,7 @@ import {
 } from '@wordpress/components';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
-import { useEffect, useMemo, useState } from '@wordpress/element';
+import { useCallback, useEffect, useMemo, useState } from '@wordpress/element';
 import { columns, grid, listView, plus } from '@wordpress/icons';
 
 /**
@@ -149,6 +149,26 @@ const getPreviewQueryArgs = ( attributes ) => {
 
 	return queryArgs;
 };
+
+const AddVideoAppender = ( { onSelect } ) => (
+	<MediaUploadCheck>
+		<MediaUpload
+			allowedTypes={ [ 'video' ] }
+			onSelect={ onSelect }
+			render={ ( { open } ) => (
+				<Button
+					className="godam-gallery-v2__add-video-button"
+					variant="secondary"
+					onClick={ open }
+					icon={ plus }
+					label={ __( 'Add New Video', 'godam' ) }
+					showTooltip
+					aria-label={ __( 'Add New Video', 'godam' ) }
+				/>
+			) }
+		/>
+	</MediaUploadCheck>
+);
 
 export default function Edit( { attributes, setAttributes, clientId } ) {
 	const {
@@ -315,19 +335,27 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		[ authorOptions ],
 	);
 
-	const insertHandpickedVideo = ( mediaItem ) => {
-		if ( ! mediaItem?.id ) {
-			return;
-		}
+	const insertHandpickedVideo = useCallback(
+		( mediaItem ) => {
+			if ( ! mediaItem?.id ) {
+				return;
+			}
 
-		insertBlocks(
-			createBlock( 'godam/gallery-v2-item', {
-				videoId: mediaItem.id,
-			} ),
-			undefined,
-			clientId,
-		);
-	};
+			insertBlocks(
+				createBlock( 'godam/gallery-v2-item', {
+					videoId: mediaItem.id,
+				} ),
+				undefined,
+				clientId,
+			);
+		},
+		[ clientId, insertBlocks ],
+	);
+
+	const renderVideoAppender = useCallback(
+		() => <AddVideoAppender onSelect={ insertHandpickedVideo } />,
+		[ insertHandpickedVideo ],
+	);
 
 	const updateMediaFolderToken = ( tokens ) => {
 		if ( ! tokens.length ) {
@@ -672,25 +700,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						<InnerBlocks
 							allowedBlocks={ ALLOWED_BLOCKS }
 							orientation={ layout === 'carousel' ? 'horizontal' : 'vertical' }
-							renderAppender={ () => (
-								<MediaUploadCheck>
-									<MediaUpload
-										allowedTypes={ [ 'video' ] }
-										onSelect={ insertHandpickedVideo }
-										render={ ( { open } ) => (
-											<Button
-												className="godam-gallery-v2__add-video-button"
-												variant="secondary"
-												onClick={ open }
-												icon={ plus }
-												label={ __( 'Add New Video', 'godam' ) }
-												showTooltip
-												aria-label={ __( 'Add New Video', 'godam' ) }
-											/>
-										) }
-									/>
-								</MediaUploadCheck>
-							) }
+							renderAppender={ renderVideoAppender }
 						/>
 					</div>
 				) }
