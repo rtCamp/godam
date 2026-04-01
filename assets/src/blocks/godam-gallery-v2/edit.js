@@ -33,7 +33,7 @@ import {
 import { useDispatch, useSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
 import { useMemo, useState } from '@wordpress/element';
-import { columns, grid, plus } from '@wordpress/icons';
+import { columns, grid, listView, plus } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -378,6 +378,11 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 							icon={ grid }
 							label={ __( 'Grid', 'godam' ) }
 							value="grid"
+						/>
+						<ToggleGroupControlOptionIcon
+							icon={ listView }
+							label={ __( 'List', 'godam' ) }
+							value="list"
 						/>
 					</ToggleGroupControl>
 					<ToggleGroupControl
