@@ -14,7 +14,6 @@ import {
 	PanelBody,
 	Spinner,
 	Placeholder,
-	ToggleControl,
 	SelectControl,
 	ToolbarButton,
 	ToolbarGroup,
@@ -743,14 +742,6 @@ function VideoEdit( {
 										</div>
 									</MediaUploadCheck>
 								</BaseControl>
-
-								<ToggleControl
-									__nextHasNoMarginBottom
-									label={ __( 'Preload Video Thumbnail', 'godam' ) }
-									help={ __( 'Enable to show the video thumbnail faster when the page loads. Recommended for videos placed near the top of your page.', 'godam' ) }
-									onChange={ ( value ) => setAttributes( { preloadPoster: value } ) }
-									checked={ attributes?.preloadPoster }
-								/>
 
 								<BaseControl
 									id={ `video-block__video--selected-aspect-ratio-${ instanceId }` }

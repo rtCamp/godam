@@ -8,6 +8,7 @@ import { useMemo, useCallback } from '@wordpress/element';
 const options = [
 	{ value: 'auto', label: __( 'Auto', 'godam' ) },
 	{ value: 'metadata', label: __( 'Metadata', 'godam' ) },
+	{ value: 'thumbnail', label: __( 'Preload Only Video Thumbnail', 'godam' ) },
 	{ value: 'none', label: _x( 'None', 'Preload value', 'godam' ) },
 ];
 
@@ -24,7 +25,7 @@ const options = [
  * @return {WPElement} The video settings component.
  */
 const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false } ) => {
-	const { autoplay, controls, loop, muted, preload, showShareButton } =
+	const { autoplay, controls, loop, muted, preload, preloadPoster, showShareButton } =
 	attributes;
 	const showShareButtonSetting = window?.godamSettings?.enableGlobalVideoShare ?? false;
 
@@ -62,8 +63,23 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 		};
 	}, [ setAttributes ] );
 
+	const selectedPreloadValue = useMemo( () => {
+		if ( preloadPoster ) {
+			return 'thumbnail';
+		}
+
+		return preload || 'auto';
+	}, [ preload, preloadPoster ] );
+
 	const onChangePreload = useCallback( ( value ) => {
-		setAttributes( { preload: value } );
+		if ( 'thumbnail' === value ) {
+			// Keep video preload off while preloading only poster image.
+			setAttributes( { preload: 'none', preloadPoster: true } );
+
+			return;
+		}
+
+		setAttributes( { preload: value, preloadPoster: false } );
 	}, [ setAttributes ] );
 
 	return (
@@ -118,10 +134,11 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 					__next40pxDefaultSize
 					__nextHasNoMarginBottom
 					label={ __( 'Preload', 'godam' ) }
-					value={ preload }
+					value={ selectedPreloadValue }
 					onChange={ onChangePreload }
 					options={ options }
 					hideCancelButton
+					help={ __( 'Choose how the video should preload.', 'godam' ) }
 				/>
 			) }
 		</>
