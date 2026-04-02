@@ -8,6 +8,7 @@ import { useMemo, useCallback } from '@wordpress/element';
 const options = [
 	{ value: 'auto', label: __( 'Auto', 'godam' ) },
 	{ value: 'metadata', label: __( 'Metadata', 'godam' ) },
+	{ value: 'thumbnail', label: __( 'Preload Only Video Thumbnail', 'godam' ) },
 	{ value: 'none', label: _x( 'None', 'Preload value', 'godam' ) },
 ];
 
@@ -24,9 +25,8 @@ const options = [
  * @return {WPElement} The video settings component.
  */
 const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false } ) => {
-	const { autoplay, controls, loop, muted, preload, showShareButton, engagements } =
+	const { autoplay, controls, loop, muted, preload, preloadPoster, showShareButton } =
 	attributes;
-	const showEngagementSetting = window?.godamSettings?.enableGlobalVideoEngagement ?? false;
 	const showShareButtonSetting = window?.godamSettings?.enableGlobalVideoShare ?? false;
 
 	// Show a specific help for autoplay setting.
@@ -59,13 +59,27 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 			loop: toggleAttribute( 'loop' ),
 			muted: toggleAttribute( 'muted' ),
 			controls: toggleAttribute( 'controls' ),
-			engagements: toggleAttribute( 'engagements' ),
 			showShareButton: toggleAttribute( 'showShareButton' ),
 		};
 	}, [ setAttributes ] );
 
+	const selectedPreloadValue = useMemo( () => {
+		if ( preloadPoster ) {
+			return 'thumbnail';
+		}
+
+		return preload || 'auto';
+	}, [ preload, preloadPoster ] );
+
 	const onChangePreload = useCallback( ( value ) => {
-		setAttributes( { preload: value } );
+		if ( 'thumbnail' === value ) {
+			// Keep video preload off while preloading only poster image.
+			setAttributes( { preload: 'none', preloadPoster: true } );
+
+			return;
+		}
+
+		setAttributes( { preload: value, preloadPoster: false } );
 	}, [ setAttributes ] );
 
 	return (
@@ -120,23 +134,13 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 					__next40pxDefaultSize
 					__nextHasNoMarginBottom
 					label={ __( 'Preload', 'godam' ) }
-					value={ preload }
+					value={ selectedPreloadValue }
 					onChange={ onChangePreload }
 					options={ options }
 					hideCancelButton
+					help={ __( 'Choose how the video should preload.', 'godam' ) }
 				/>
 			) }
-			{
-				showEngagementSetting && (
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={ __( 'Enable Likes & Comments', 'godam' ) }
-						onChange={ toggleFactory.engagements }
-						checked={ !! engagements }
-						help={ __( 'Engagement will only be visible for transcoded videos', 'godam' ) }
-					/>
-				)
-			}
 		</>
 	);
 };

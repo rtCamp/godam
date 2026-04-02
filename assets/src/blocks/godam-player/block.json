@@ -42,7 +42,7 @@
 		},
 		"preload": {
 			"type": "string",
-			"default": "metadata"
+			"default": "auto"
 		},
 		"blob": {
 			"type": "string",
@@ -106,10 +106,6 @@
 			"default": false
 		},
 		"showShareButton": {
-			"type": "boolean",
-			"default": false
-		},
-		"engagements": {
 			"type": "boolean",
 			"default": false
 		}
