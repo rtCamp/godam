@@ -97,6 +97,7 @@
 		"webpack-remove-empty-scripts": "1.1.1"
 	},
 	"overrides": {
+		"@xmldom/xmldom": "0.8.12",
 		"node-forge": "1.4.0",
 		"picomatch@<=2.3.1": "2.3.2",
 		"picomatch@>=4.0.0 <=4.0.3": "4.0.4",
