@@ -252,6 +252,8 @@
 	font-size: 12px;
 	font-weight: 700;
 	color: #111;
+	display: flex;
+	gap: 8px;
 
 	del {
 		color: #999;
@@ -260,7 +262,6 @@
 
 	ins {
 		text-decoration: none;
-		color: #e74c3c;
 	}
 }
 
@@ -587,12 +588,16 @@
 	}
 
 	// Image gallery.
-	.godam-main-image img {
-		width: 100%;
-		height: 200px;
-		object-fit: contain;
-		border-radius: 8px;
-		display: block;
+	.godam-main-image {
+		background-color: #f2f2f2;
+
+		img {
+			width: 100%;
+			height: 200px;
+			object-fit: contain;
+			border-radius: 8px;
+			display: block;
+		}
 	}
 
 	.godam-thumbnail-carousel {
@@ -600,20 +605,33 @@
 		align-items: center;
 		gap: 4px;
 		margin-top: 8px;
-	}
 
-	.godam-thumbnail-track {
-		display: flex;
-		gap: 6px;
-		overflow-x: auto;
-		scrollbar-width: none;
-		-ms-overflow-style: none;
-		scroll-behavior: smooth;
+		.godam-thumbnail-container {
+			flex: 1;
+			overflow-x: auto;
+			scrollbar-width: none;
+			-ms-overflow-style: none;
 
-		&::-webkit-scrollbar {
-			display: none;
+			&::-webkit-scrollbar {
+				display: none;
+			}
+		}
+
+
+		.godam-thumbnail-track {
+			display: flex;
+			gap: 6px;
+			overflow-x: auto;
+			scrollbar-width: none;
+			-ms-overflow-style: none;
+			scroll-behavior: smooth;
+	
+			&::-webkit-scrollbar {
+				display: none;
+			}
 		}
 	}
+
 
 	.godam-thumbnail-item {
 		flex-shrink: 0;
@@ -624,6 +642,12 @@
 
 		&.active {
 			border-color: #333;
+		}
+
+		.godam-thumbnail-image {
+			width: 60px;
+			height: 60px;
+			object-fit: cover;
 		}
 
 		img {
@@ -827,7 +851,7 @@
 				}
 
 				ins {
-					color: #e68600;
+					// color: #e68600;
 					text-decoration: none;
 					font-weight: 500;
 				}
