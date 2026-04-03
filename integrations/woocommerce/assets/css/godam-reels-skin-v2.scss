@@ -134,10 +134,7 @@
 
 .godam-video-placeholder.godam-reels-v2-skin {
 
-    .godam-player-poster-image {
-    
-        img {
-            object-fit: cover;
-        }
+    img.godam-player-poster-image {
+object-fit: cover;
     }
 }
