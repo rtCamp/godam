@@ -23,6 +23,13 @@
         height: 100% !important;
         background-color: transparent !important;
 
+        // Disable pointer events on the control bar to allow interactions with the video element, but enable them on the controls themselves.
+        pointer-events: none;
+
+        .vjs-control {
+            pointer-events: all;
+        }
+
         /* HIDDEN CONTROLS */
         .vjs-picture-in-picture-control,
         .vjs-remaining-time,
@@ -41,7 +48,7 @@
         .vjs-skip-backward-20,
         .vjs-skip-forward-30,
         .vjs-skip-backward-30 {
-            display: none;
+            display: none !important;
         }
 
         /* CENTER CONTROLS ICONS */
