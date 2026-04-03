@@ -14,6 +14,11 @@
 	const productHtmlCache = new Map();
 	const PREVIEW_DURATION = 5;
 	const AUTOPLAY_VISIBILITY_THRESHOLD = 0.5;
+	const MOBILE_BREAKPOINT = 600;
+	const SWIPE_THRESHOLD = 50; // Minimum vertical drag (px) to commit a swipe navigation.
+	const WHEEL_THRESHOLD = 80; // Accumulated deltaY (px) required to trigger a wheel navigation.
+	const SLIDE_DURATION_MS = 300; // Must match the CSS transition duration on the modal item.
+	const SLIDE_SAFETY_MS = SLIDE_DURATION_MS + 100; // Safety timeout in case transitionend doesn't fire.
 	let activeModalGallery = null;
 	let sharedModalElements = null;
 
@@ -29,9 +34,9 @@
 
 		if ( e.key === 'Escape' ) {
 			activeModalGallery.closeModal();
-		} else if ( e.key === 'ArrowLeft' ) {
+		} else if ( e.key === 'ArrowLeft' || e.key === 'ArrowUp' ) {
 			activeModalGallery.navigateModal( -1 );
-		} else if ( e.key === 'ArrowRight' ) {
+		} else if ( e.key === 'ArrowRight' || e.key === 'ArrowDown' ) {
 			activeModalGallery.navigateModal( 1 );
 		}
 	}
@@ -164,6 +169,12 @@
 			// Sidebar state.
 			this.currentSidebarProductId = null;
 
+			// Vertical-swipe / wheel-scroll navigation state (mobile only).
+			this._swipe = { active: false, startY: 0, currentY: 0 };
+			this._wheelAccumulator = 0;
+			this._wheelResetTimer = null;
+			this._slideNavigating = false; // Shared lock — only one slide animation at a time.
+
 			this.createModalElements();
 			this.init();
 		}
@@ -179,6 +190,7 @@
 
 			this.initAddToCart();
 			this.initModal();
+			this.initMobileSwipe();
 		}
 
 		/**
@@ -311,12 +323,7 @@
 					btn.classList.add( 'is-added' );
 
 					// Update WooCommerce cart fragments (classic themes).
-					if ( data.fragments && typeof jQuery !== 'undefined' ) {
-						jQuery.each( data.fragments, ( key, value ) => {
-							jQuery( key ).replaceWith( value );
-						} );
-						jQuery( document.body ).trigger( 'wc_fragments_refreshed' );
-					}
+					this.updateCartFragments( data.fragments );
 
 					// Open mini-cart sidebar if available (block themes).
 					this.openMiniCart();
@@ -369,6 +376,21 @@
 		}
 
 		/**
+		 * Apply WooCommerce cart fragments to the DOM (classic theme cart widgets).
+		 *
+		 * @param {Object|undefined} fragments Key→HTML map returned by the add-to-cart AJAX endpoint.
+		 */
+		updateCartFragments( fragments ) {
+			if ( ! fragments || typeof jQuery === 'undefined' ) {
+				return;
+			}
+			jQuery.each( fragments, ( key, value ) => {
+				jQuery( key ).replaceWith( value );
+			} );
+			jQuery( document.body ).trigger( 'wc_fragments_refreshed' );
+		}
+
+		/**
 		 * Try to open the WooCommerce Mini Cart sidebar (block themes).
 		 */
 		openMiniCart() {
@@ -401,31 +423,79 @@
 		}
 
 		/**
-		 * Attach click handlers to open modal when clicking on a video item.
+		 * Attach event handlers to open the modal when tapping or clicking a gallery item.
+		 *
+		 * On touch devices, Video.js intercepts bubble-phase touch events and begins
+		 * playback before a synthetic click can fire. We therefore register capture-phase
+		 * touchstart/touchend listeners on the wrapper so we see the gesture first.
+		 * If the touch qualifies as a tap (minimal movement), we call preventDefault() and
+		 * stopPropagation() to prevent Video.js from reacting, then open the modal.
+		 * A regular click handler covers pointer (desktop/mouse) devices.
 		 */
 		initModal() {
-			// Click on video wrapper to open modal.
 			this.items.forEach( ( item, index ) => {
 				const videoWrapper = item.querySelector( '.godam-gallery-item__video-wrapper' );
-				if ( videoWrapper ) {
-					videoWrapper.style.cursor = 'pointer';
-					videoWrapper.addEventListener( 'click', ( e ) => {
-						// Don't open modal if clicking on player controls.
-						if (
-							e.target.closest( '.godam-gallery-item__product' ) ||
-							e.target.closest( '.godam-gallery-item__add-to-cart' )
-						) {
-							return;
-						}
-
-						// If this item is already in modal, let video player handle the click.
-						if ( item.classList.contains( 'godam-video-product-gallery-item--modal' ) ) {
-							return;
-						}
-
-						this.openModal( index );
-					} );
+				if ( ! videoWrapper ) {
+					return;
 				}
+
+				videoWrapper.style.cursor = 'pointer';
+
+				// Track where the touch started so we can distinguish a tap from a scroll.
+				let tapStartX = 0;
+				let tapStartY = 0;
+
+				// Capture-phase: record start position before any inner listener sees it.
+				videoWrapper.addEventListener( 'touchstart', ( e ) => {
+					if ( item.classList.contains( 'godam-video-product-gallery-item--modal' ) ) {
+						return; // Already in modal — let the player handle normally.
+					}
+					tapStartX = e.touches[ 0 ].clientX;
+					tapStartY = e.touches[ 0 ].clientY;
+				}, { passive: true, capture: true } );
+
+				// Capture-phase: intercept the tap before Video.js can play the video.
+				videoWrapper.addEventListener( 'touchend', ( e ) => {
+					if ( item.classList.contains( 'godam-video-product-gallery-item--modal' ) ) {
+						return; // Already in modal — let the player handle normally.
+					}
+
+					// Ignore taps on product info / add-to-cart.
+					if (
+						e.target.closest( '.godam-gallery-item__product' ) ||
+						e.target.closest( '.godam-gallery-item__add-to-cart' )
+					) {
+						return;
+					}
+
+					const touch = e.changedTouches[ 0 ];
+					const moved = Math.abs( touch.clientX - tapStartX ) + Math.abs( touch.clientY - tapStartY );
+
+					// Only treat as a tap when the finger barely moved (< 10 px total).
+					if ( moved < 10 ) {
+						e.preventDefault(); // Stops the synthetic click from reaching Video.js.
+						e.stopPropagation(); // Stops inner Video.js touch listeners.
+						this.openModal( index );
+					}
+				}, { passive: false, capture: true } );
+
+				// Desktop / pointer device click handler.
+				videoWrapper.addEventListener( 'click', ( e ) => {
+					// Don't open modal if clicking on player controls.
+					if (
+						e.target.closest( '.godam-gallery-item__product' ) ||
+						e.target.closest( '.godam-gallery-item__add-to-cart' )
+					) {
+						return;
+					}
+
+					// Already in modal — let the video player handle the click.
+					if ( item.classList.contains( 'godam-video-product-gallery-item--modal' ) ) {
+						return;
+					}
+
+					this.openModal( index );
+				} );
 			} );
 		}
 
@@ -556,6 +626,11 @@
 				'is-active',
 			);
 
+			// Clear any inline swipe/animation styles.
+			restoredItem.style.transform = '';
+			restoredItem.style.opacity = '';
+			restoredItem.style.transition = '';
+
 			// Mute, pause, and reset the video.
 			const video = restoredItem.querySelector( 'video' );
 			if ( video ) {
@@ -579,6 +654,236 @@
 			this.modalPlaceholder.remove();
 			this.modalPlaceholder = null;
 			this.modalOriginalItem = null;
+		}
+
+		/**
+		 * Attach touch event listeners on the modal wrapper for vertical swipe
+		 * navigation on mobile (≤ 600px). Swipe up → next, swipe down → previous.
+		 */
+		initMobileSwipe() {
+			const wrapper = this.modalWrapper;
+			if ( ! wrapper ) {
+				return;
+			}
+
+			wrapper.addEventListener( 'touchstart', ( e ) => {
+				if ( ! this._isMobileActive() ) {
+					return;
+				}
+
+				// Block new swipe while a slide animation is in progress.
+				if ( this._slideNavigating ) {
+					return;
+				}
+
+				// Ignore touches on player controls.
+				if ( e.target.closest( '.vjs-control-bar' ) || e.target.closest( '.godam-gallery-item__product' ) ) {
+					return;
+				}
+
+				this._swipe.active = true;
+				this._swipe.startY = e.touches[ 0 ].clientY;
+				this._swipe.currentY = this._swipe.startY;
+
+				// Disable the CSS transition while dragging for real-time tracking.
+				if ( this.modalOriginalItem ) {
+					this.modalOriginalItem.style.transition = 'none';
+				}
+			}, { passive: true } );
+
+			wrapper.addEventListener( 'touchmove', ( e ) => {
+				if ( ! this._swipe.active ) {
+					return;
+				}
+
+				this._swipe.currentY = e.touches[ 0 ].clientY;
+				const deltaY = this._swipe.currentY - this._swipe.startY;
+
+				// Apply a dampened translateY so the item follows the finger.
+				if ( this.modalOriginalItem ) {
+					this.modalOriginalItem.style.transform = `translateY(${ deltaY * 0.4 }px)`;
+					this.modalOriginalItem.style.opacity = Math.max( 0.4, 1 - ( Math.abs( deltaY ) / 600 ) );
+				}
+			}, { passive: true } );
+
+			wrapper.addEventListener( 'touchend', () => {
+				if ( ! this._swipe.active ) {
+					return;
+				}
+
+				this._swipe.active = false;
+
+				// If another slide started already, just clean up.
+				if ( this._slideNavigating ) {
+					this.resetSwipeTransform();
+					return;
+				}
+
+				const deltaY = this._swipe.currentY - this._swipe.startY;
+
+				if ( Math.abs( deltaY ) >= SWIPE_THRESHOLD ) {
+					// Swipe up (negative delta) → next (+1), swipe down → previous (-1).
+					const direction = deltaY < 0 ? 1 : -1;
+					this.navigateModalWithSlide( direction );
+				} else {
+					// Snap back — not enough distance.
+					this.resetSwipeTransform();
+				}
+			}, { passive: true } );
+
+			wrapper.addEventListener( 'touchcancel', () => {
+				if ( this._swipe.active ) {
+					this._swipe.active = false;
+					this.resetSwipeTransform();
+				}
+			}, { passive: true } );
+
+			// Wheel / trackpad scroll navigation on small screens.
+			wrapper.addEventListener( 'wheel', ( e ) => {
+				if ( ! this._isMobileActive() ) {
+					return;
+				}
+
+				// Don't trigger a new navigation while one is still animating.
+				if ( this._slideNavigating ) {
+					e.preventDefault();
+					return;
+				}
+
+				e.preventDefault();
+
+				// Accumulate scroll delta (supports both mouse wheel and trackpad).
+				this._wheelAccumulator += e.deltaY;
+
+				// Reset accumulator after a short idle (new scroll gesture).
+				clearTimeout( this._wheelResetTimer );
+				this._wheelResetTimer = setTimeout( () => {
+					this._wheelAccumulator = 0;
+				}, 200 );
+
+				if ( Math.abs( this._wheelAccumulator ) >= WHEEL_THRESHOLD ) {
+					const direction = this._wheelAccumulator > 0 ? 1 : -1;
+					this._wheelAccumulator = 0;
+
+					this.navigateModalWithSlide( direction );
+				}
+			}, { passive: false } );
+		}
+
+		/**
+		 * Returns true when mobile swipe / wheel navigation should be active.
+		 * Centralises the repeated guard check used by touch and wheel handlers.
+		 *
+		 * @return {boolean} Whether mobile swipe navigation is currently applicable.
+		 */
+		_isMobileActive() {
+			return this.modalOpen && window.innerWidth <= MOBILE_BREAKPOINT && this.items.length > 1;
+		}
+
+		/**
+		 * Reset wheel accumulator and timer so continued scrolling after an
+		 * animation cannot immediately re-trigger navigation.
+		 */
+		resetWheelState() {
+			clearTimeout( this._wheelResetTimer );
+			this._wheelResetTimer = null;
+			this._wheelAccumulator = 0;
+		}
+
+		/**
+		 * Release the slide-navigation lock and flush wheel state so the next
+		 * gesture starts clean.
+		 */
+		_releaseSlideLock() {
+			this.resetWheelState();
+			this._slideNavigating = false;
+		}
+
+		/**
+		 * Reset the modal item's transform and opacity back to default with a transition.
+		 */
+		resetSwipeTransform() {
+			if ( ! this.modalOriginalItem ) {
+				return;
+			}
+
+			this.modalOriginalItem.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
+			this.modalOriginalItem.style.transform = '';
+			this.modalOriginalItem.style.opacity = '';
+		}
+
+		/**
+		 * Navigate with a vertical slide animation (mobile only).
+		 * Slides the current item out, swaps the content, then slides the new item in.
+		 *
+		 * @param {number} direction -1 for previous (slide down), 1 for next (slide up).
+		 */
+		navigateModalWithSlide( direction ) {
+			if ( ! this.modalOpen || ! this.modalOriginalItem ) {
+				return;
+			}
+
+			// Prevent overlapping navigations.
+			if ( this._slideNavigating ) {
+				return;
+			}
+			this._slideNavigating = true;
+
+			const item = this.modalOriginalItem;
+			const slideOutY = direction > 0 ? '-100%' : '100%';
+
+			// Animate current item out.
+			item.style.transition = `transform ${ SLIDE_DURATION_MS }ms ease, opacity ${ SLIDE_DURATION_MS }ms ease`;
+			item.style.transform = `translateY(${ slideOutY })`;
+			item.style.opacity = '0';
+
+			// After the exit animation, swap and slide in the new item.
+			const onExitEnd = () => {
+				item.removeEventListener( 'transitionend', onExitEnd );
+
+				// Swap content via navigateModal.
+				this.navigateModal( direction );
+
+				// Position the new item off-screen on the entry side and animate in.
+				const newItem = this.modalOriginalItem;
+				if ( newItem ) {
+					const slideInY = direction > 0 ? '100%' : '-100%';
+					newItem.style.transition = 'none';
+					newItem.style.transform = `translateY(${ slideInY })`;
+					newItem.style.opacity = '0';
+
+					requestAnimationFrame( () => {
+						newItem.style.transition = `transform ${ SLIDE_DURATION_MS }ms ease, opacity ${ SLIDE_DURATION_MS }ms ease`;
+						newItem.style.transform = '';
+						newItem.style.opacity = '';
+
+						// Release the lock once the entry animation ends.
+						const onEntryEnd = () => {
+							newItem.removeEventListener( 'transitionend', onEntryEnd );
+							this._releaseSlideLock();
+						};
+						newItem.addEventListener( 'transitionend', onEntryEnd, { once: true } );
+
+						// Safety fallback in case transitionend doesn't fire.
+						setTimeout( () => {
+							newItem.removeEventListener( 'transitionend', onEntryEnd );
+							this._releaseSlideLock();
+						}, SLIDE_SAFETY_MS );
+					} );
+				} else {
+					this._releaseSlideLock();
+				}
+			};
+
+			item.addEventListener( 'transitionend', onExitEnd, { once: true } );
+
+			// Safety timeout in case transitionend doesn't fire.
+			setTimeout( () => {
+				item.removeEventListener( 'transitionend', onExitEnd );
+				if ( this.modalOpen && this.modalOriginalItem === item ) {
+					onExitEnd();
+				}
+			}, SLIDE_SAFETY_MS );
 		}
 
 		/**

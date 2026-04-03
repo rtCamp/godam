@@ -377,6 +377,10 @@
 	transition: opacity 0.3s ease, visibility 0.3s ease;
 	pointer-events: none;
 
+	@media screen and (max-width: 600px) {
+		background-color: #111 !important;
+	}
+
 	&.is-active {
 		opacity: 1;
 		visibility: visible;
@@ -421,6 +425,7 @@
 	@media screen and (max-width: 600px) {
 		max-height: 100dvh;
 		height: 100dvh;
+		overflow: visible; // Allow swiping items to be visible outside the wrapper.
 
 		.video-js {
 			padding-top: 100dvh !important;
@@ -451,9 +456,9 @@
 	position: relative !important;
 	top: auto !important;
 	left: auto !important;
-	transform: none !important;
+	transform: none;
 	z-index: auto !important;
-	opacity: 1 !important;
+	opacity: 1;
 	max-width: 480px !important;
 	width: 480px !important;
 	max-height: 90dvh !important;
@@ -485,6 +490,7 @@
 		right: 0;
 		padding: 12px;
 		background: rgba(0, 0, 0, 0.5);
+		backdrop-filter: blur(4px);
 		border-radius: 1rem;
 		margin: 1rem;
 		z-index: 999;
@@ -678,6 +684,16 @@
 			&::-webkit-scrollbar {
 				display: none;
 			}
+		}
+
+		.godam-thumbnail-prev,
+		.godam-thumbnail-next {
+			width: 30px;
+			height: 30px;
+			border-radius: 100px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
 		}
 	}
 
@@ -981,22 +997,13 @@ body.admin-bar {
 // Responsive.
 @media (max-width: 600px) {
 
-	// .godam-vpg-modal-wrapper .godam-video-product-gallery-item--modal {
-	// 	max-width: 92vw !important;
-	// 	width: 92vw !important;
-	// 	max-height: 85dvh !important;
-	// }
-
+	// Hide left/right nav buttons on mobile — swipe up/down is used instead.
 	.godam-vpg-modal-nav {
-		width: 36px;
-		height: 36px;
+		display: none !important;
+	}
 
-		&--prev {
-			left: 8px;
-		}
-
-		&--next {
-			right: 8px;
-		}
+	// Ensure the modal item can be animated during swipe transitions.
+	.godam-vpg-modal-wrapper .godam-video-product-gallery-item--modal {
+		will-change: transform, opacity;
 	}
 }
