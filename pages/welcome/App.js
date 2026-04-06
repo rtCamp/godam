@@ -168,21 +168,21 @@ const FreeLayersStep = () => (
 );
 
 /**
- * Pro Video Layers step — Forms, Ads, Polls.
+ * Video Layers step — Forms, Ads, Polls.
  *
- * @return {JSX.Element} Pro layers overview.
+ * @return {JSX.Element} Layers overview.
  */
-const ProLayersStep = () => (
+const LayersStep = () => (
 	<div className="godam-welcome__step">
 		<div className="godam-welcome__step-icon">&#128202;</div>
 		<h2>
-			{ __( 'Pro Video Layers', 'godam' ) }
-			<span className="godam-welcome__tag godam-welcome__tag--pro">{ __( 'Pro', 'godam' ) }</span>
+			{ __( 'Video Layers', 'godam' ) }
+			<span className="godam-welcome__tag godam-welcome__tag--free">{ __( 'Free', 'godam' ) }</span>
 		</h2>
 		<p>
-			{ __( 'Turn passive viewers into active participants and monetize your videos with three powerful Pro layer types.', 'godam' ) }
+			{ __( 'Turn passive viewers into active participants and monetize your videos with three powerful layer types.', 'godam' ) }
 		</p>
-		<ul className="godam-welcome__feature-list godam-welcome__feature-list--pro">
+		<ul className="godam-welcome__feature-list">
 			<li>
 				<strong>{ __( 'Form Layer', 'godam' ) }</strong>
 				<span>{ __( 'Embed Gravity Forms, WPForms, Fluent Forms, and more directly inside your video', 'godam' ) }</span>
@@ -198,15 +198,7 @@ const ProLayersStep = () => (
 		</ul>
 		<div className="godam-welcome__step-actions">
 			<a
-				href={ pricingUrl( 'pro-layers-step' ) }
-				target="_blank"
-				rel="noopener noreferrer"
-				className="godam-welcome__action-link godam-welcome__action-link--pro"
-			>
-				{ __( 'Upgrade to unlock →', 'godam' ) }
-			</a>
-			<a
-				href="https://godam.io/features/video-overlay/?utm_source=plugin&utm_medium=welcome&utm_content=pro-layers"
+				href="https://godam.io/features/video-overlay/?utm_source=plugin&utm_medium=welcome&utm_content=layers"
 				target="_blank"
 				rel="noopener noreferrer"
 				className="godam-welcome__action-link godam-welcome__action-link--secondary"
@@ -260,7 +252,7 @@ const AnalyticsStep = () => (
 );
 
 /**
- * Transcoding, CDN & Branding step — Pro feature.
+ * Transcoding & CDN step — Pro feature.
  *
  * @return {JSX.Element} Transcoding and CDN feature overview.
  */
@@ -268,17 +260,16 @@ const TranscodingStep = () => (
 	<div className="godam-welcome__step">
 		<div className="godam-welcome__step-icon">&#9889;</div>
 		<h2>
-			{ __( 'Transcoding, CDN & Player Branding', 'godam' ) }
+			{ __( 'Transcoding & CDN', 'godam' ) }
 			<span className="godam-welcome__tag godam-welcome__tag--pro">{ __( 'Pro', 'godam' ) }</span>
 		</h2>
 		<p>
-			{ __( 'Deliver lightning-fast, beautifully branded videos to every viewer.', 'godam' ) }
+			{ __( 'Deliver lightning-fast videos to every viewer.', 'godam' ) }
 		</p>
 		<ul className="godam-welcome__feature-list godam-welcome__feature-list--pro">
 			<li>{ __( 'Automatic transcoding to multiple resolutions', 'godam' ) }</li>
 			<li>{ __( 'Global CDN delivery for fast load times worldwide', 'godam' ) }</li>
 			<li>{ __( 'HLS adaptive streaming for smooth playback', 'godam' ) }</li>
-			<li>{ __( 'Custom player logo, colors, and branding', 'godam' ) }</li>
 		</ul>
 		<div className="godam-welcome__step-actions">
 			<a
@@ -348,7 +339,7 @@ const App = () => {
 					{ content: <WelcomeStep /> },
 					{ content: <MediaLibraryStep /> },
 					{ content: <FreeLayersStep /> },
-					{ content: <ProLayersStep /> },
+					{ content: <LayersStep /> },
 					{ content: <AnalyticsStep /> },
 					{ content: <TranscodingStep /> },
 				] }

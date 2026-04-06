@@ -35,8 +35,6 @@ const EverestForm = ( { layerID } ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'everest_form_id', value: formID } ) );
 	};
 
-	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
-
 	const isEverestFormsPluginActive = Boolean( window?.videoData?.everestFormsActive );
 
 	return (
@@ -54,7 +52,7 @@ const EverestForm = ( { layerID } ) => {
 
 			{
 				<FormSelector
-					disabled={ ! isValidAPIKey || ! isEverestFormsPluginActive }
+					disabled={ ! isEverestFormsPluginActive }
 					className="everest-form-selector mb-4"
 					formID={ layer.everest_form_id }
 					forms={ forms }

@@ -25,13 +25,13 @@ import MetformIcon from '../assets/layers/MetFormIcon.png';
 import { __, sprintf } from '@wordpress/i18n';
 import { Button, Icon, Tooltip } from '@wordpress/components';
 import { plus, preformatted, customLink, arrowRight, video, customPostType, thumbsUp, error } from '@wordpress/icons';
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useCallback } from '@wordpress/element';
 
 import Layer from './layers/Layer';
 import LayerSelector from './LayerSelector.jsx';
 
 /**
- * Layer types with detail related to title, text and premium feature.
+ * Layer types with their labels, icons, and integration-specific state.
  */
 export const layerTypes = [
 	{
@@ -39,21 +39,17 @@ export const layerTypes = [
 		icon: customLink,
 		type: 'cta',
 		layerText: __( 'CTA', 'godam' ),
-		isPremium: false,
 	},
 	{
 		title: __( 'Hotspot', 'godam' ),
 		icon: customPostType,
 		type: 'hotspot',
 		layerText: __( 'Hotspot', 'godam' ),
-		isPremium: false,
 	},
 	{
 		title: __( 'Forms', 'godam' ),
 		icon: preformatted,
 		type: 'form',
-		isPremium: true,
-		premiumLabel: __( 'Pro', 'godam' ),
 		formType: {
 			gravity: {
 				layerText: __( 'Gravity Forms', 'godam' ),
@@ -122,9 +118,7 @@ export const layerTypes = [
 		icon: video,
 		type: 'ad',
 		layerText: __( 'Ad', 'godam' ),
-		tooltipMessage: __( 'This ad will be overriden by Ad server\'s ads', 'godam' ),
-		isPremium: true,
-		premiumLabel: __( 'Pro', 'godam' ),
+		tooltipMessage: __( 'This ad will be overridden by Ad server\'s ads', 'godam' ),
 	},
 	{
 		title: __( 'Poll', 'godam' ),
@@ -133,15 +127,8 @@ export const layerTypes = [
 		layerText: __( 'Poll', 'godam' ),
 		isActive: Boolean( window?.easydamMediaLibrary?.isPollPluginActive ) ?? false,
 		tooltipMessage: __( 'Poll plugin is not active', 'godam' ),
-		isPremium: true,
-		premiumLabel: __( 'Pro', 'godam' ),
 	},
 ];
-
-/**
- * Premium tooltip message.
- */
-const premiumMessage = __( 'This is a Pro feature. Activate your license or get started for free to unlock all features.', 'godam' );
 
 /**
  * Sidebar component to display and select different types of layers to be added to the video.
@@ -161,12 +148,12 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 
 	const dispatch = useDispatch();
 
-	const openModal = () => {
+	const openModal = useCallback( () => {
 		setOpen( true );
 		if ( onPauseVideo ) {
 			onPauseVideo();
 		}
-	};
+	}, [ onPauseVideo ] );
 	const closeModal = () => {
 		setOpen( false );
 		// Clear the addLayerModalTime when closing the modal
@@ -178,7 +165,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 		if ( addLayerModalTime !== null ) {
 			openModal();
 		}
-	}, [ addLayerModalTime ] );
+	}, [ addLayerModalTime, openModal ] );
 
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
@@ -190,16 +177,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 		.filter( ( layer ) => layerTypes.some( ( lt ) => lt.type === layer.type ) )
 		.sort( ( a, b ) => a.displayTime - b.displayTime );
 
-	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
-
 	const addNewLayer = ( type, formType ) => {
-		const layerType = layerTypes.find( ( l ) => l.type === type );
-		const isPremiumLayer = ! isValidAPIKey && layerType && layerType?.isPremium;
-
-		if ( isPremiumLayer ) {
-			return;
-		}
-
 		switch ( type ) {
 			case 'form':
 				dispatch( addLayer( {
@@ -282,10 +260,6 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								 * Get Tooltip message.
 								 */
 								const tooltipMessage = ( () => {
-									if ( layerData?.isPremium && ! isValidAPIKey ) {
-										return premiumMessage;
-									}
-
 									if ( formType && ! formType.isActive ) {
 										return formType.tooltipMessage;
 									}

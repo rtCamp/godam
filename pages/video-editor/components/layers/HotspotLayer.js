@@ -260,12 +260,6 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 		};
 	}, [] );
 
-	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.validApiKey;
-
-	// For now we are enabling all the features
-	const isValidAPIKey = true;
-
 	// Validate existing hotspot links on component load
 	useEffect( () => {
 		if ( hotspots.length > 0 ) {
@@ -296,17 +290,6 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
 
 			{
-				! isValidAPIKey &&
-				<Notice
-					className="mb-4"
-					status="warning"
-					isDismissible={ false }
-				>
-					{ __( 'This features is available in premium version', 'godam' ) }
-				</Notice>
-			}
-
-			{
 				durationNotice &&
 				<Notice
 					className="mb-4"
@@ -329,7 +312,6 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 					onChange={ ( value ) => handleDurationInputChange( value ) }
 					onBlur={ validateDuration }
 					help={ __( 'Duration (in seconds) this layer will stay visible. Maximum: 10 hours (36000 seconds)', 'godam' ) }
-					disabled={ ! isValidAPIKey }
 				/>
 			</div>
 
@@ -340,7 +322,6 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 					label={ __( 'Pause video on hover', 'godam' ) }
 					checked={ layer?.pauseOnHover || false }
 					onChange={ ( isChecked ) => updateField( 'pauseOnHover', isChecked ) }
-					disabled={ ! isValidAPIKey }
 				/>
 				<p className="text-xs text-gray-500 mt-1">
 					{ __(
@@ -440,7 +421,6 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 											),
 										)
 									}
-									disabled={ ! isValidAPIKey }
 								/>
 								<TextControl
 									label={ __( 'Link', 'godam' ) }
@@ -455,7 +435,6 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 										updateField( 'hotspots', updated );
 									} }
 									className="godam-input"
-									disabled={ ! isValidAPIKey }
 								/>
 								{ hotspot.linkInvalid && (
 									<div className="text-yellow-600 text-sm mt-1 flex items-center gap-1">
@@ -469,7 +448,6 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 											index={ index }
 											updateField={ updateField }
 											hotspots={ hotspots }
-											disabled={ ! isValidAPIKey }
 										/>
 									</div>
 								) }
@@ -484,7 +462,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 										<ColorPalette
 											id={ `hotspot-color-${ index }` }
 											value={ hotspot.backgroundColor || '#0c80dfa6' }
-											className={ ! isValidAPIKey ? 'pointer-events-none opacity-50' : '' }
+											className=""
 											onChange={ ( newColor ) => {
 												updateField(
 													'hotspots',
@@ -514,7 +492,6 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 					iconPosition="left"
 					className="godam-button"
 					onClick={ handleAddHotspot }
-					disabled={ ! isValidAPIKey }
 				>
 					{ __( 'Add Hotspot', 'godam' ) }
 				</Button>

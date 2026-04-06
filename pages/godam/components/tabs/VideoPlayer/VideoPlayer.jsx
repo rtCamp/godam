@@ -7,7 +7,7 @@ import videojs from 'video.js';
 /**
  * WordPress dependencies
  */
-import { Button, Notice, ComboboxControl, Icon, Spinner, ExternalLink } from '@wordpress/components';
+import { Button, Notice, ComboboxControl, Icon, Spinner } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { closeSmall, error } from '@wordpress/icons';
 import { useState, useRef, useEffect } from '@wordpress/element';
@@ -15,10 +15,9 @@ import { useState, useRef, useEffect } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { scrollToTop, hasValidAPIKey } from '../../../utils/index.js';
+import { scrollToTop } from '../../../utils/index.js';
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
-import { getPricingUrl } from '../../../../shared/premium-layers.js';
 import BrandImageSelector from '../GeneralSettings/BrandImageSelector.jsx';
 import SettingsButton from '../../../../../assets/src/js/godam-player/masterSettings.js';
 import ColorPickerButton from '../../../../video-editor/components/shared/color-picker/ColorPickerButton.jsx';
@@ -29,8 +28,6 @@ import CustomVideoPlayerCSS from './CustomVideoPlayerCSS.jsx';
 const VideoPlayer = () => {
 	const dispatch = useDispatch();
 	const wrapperRef = useRef( null );
-
-	const videoSettingsUrl = window.godamRestRoute?.adminUrl + 'admin.php?page=rtgodam_settings#video-settings';
 
 	// Selectors to get media settings and change flag
 	const { mediaSettings, isChanged } = useSelector( ( state ) => ( {
@@ -446,43 +443,16 @@ const VideoPlayer = () => {
 						</div>
 					</div>
 
-					{ /* Pro feature banner */ }
-					{ ! hasValidAPIKey && (
-						<div className="w-4/5 mb-6 mx-auto flex items-center justify-between p-3 bg-amber-50 border border-amber-200 rounded-lg">
-							<p className="text-sm text-amber-800 m-0">
-								{ __( 'Video Player Customization is a Pro feature.', 'godam' ) }{ ' ' }
-								<a
-									href={ videoSettingsUrl }
-									className="text-[#AB3A6C]"
-									target="_blank" rel="noopener noreferrer"
-								>
-									{ __( 'Activate your license', 'godam' ) }
-								</a>
-								{
-									// eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace
-									__( ' or ', 'godam' )
-								}
-								<ExternalLink
-									href={ getPricingUrl( 'video-player-settings' ) }
-									className="text-[#AB3A6C]"
-								>
-									{ __( 'get started for free', 'godam' ) }
-								</ExternalLink>{ ' ' }
-								{ __( 'to unlock all features.', 'godam' ) }{ ' ' }
-							</p>
-						</div>
-					) }
-
-					{ /* Customize Branding section - Pro only */ }
+					{ /* Customize Branding section */ }
 					<div className="w-4/5 mb-6 mx-auto">
 						<div className="flex items-center gap-2 mb-5 pb-2 border-b border-gray-200">
 							<h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wider m-0">
 								{ __( 'Customize Branding', 'godam' ) }
 							</h3>
-							<span className="godam-pro-badge">{ __( 'Pro', 'godam' ) }</span>
+
 						</div>
 
-						<div className={ `grid grid-cols-2 gap-6${ ! hasValidAPIKey ? ' opacity-50 pointer-events-none' : '' }` }>
+						<div className="grid grid-cols-2 gap-6">
 							<div className="godam-form-group">
 								<label className="label-text" htmlFor="brand-color">
 									{ __( 'Brand color', 'godam' ) }
@@ -533,37 +503,11 @@ const VideoPlayer = () => {
 						</div>
 					</div>
 
-					<div className={ `godam-form-group godam-settings__container__custom-css mb-8 mx-auto${ ! hasValidAPIKey ? ' opacity-50 pointer-events-none' : '' }` }>
+					<div className="godam-form-group godam-settings__container__custom-css mb-8 mx-auto">
 						<label className="label-text" htmlFor="brand-color">{ __( 'Custom CSS', 'godam' ) }</label>
 						<CustomVideoPlayerCSS handleSettingChange={ handleSettingChange } />
 						<div className="text-[0.75rem] leading-[1.2] text-[#777] mt-2">
-							{ ! hasValidAPIKey
-								? (
-									<>
-										{ __( 'Custom CSS is a Pro feature.', 'godam' ) }{ ' ' }
-										<a
-											href={ videoSettingsUrl }
-											className="font-medium text-[#AB3A6C]"
-											target="_blank"
-											rel="noopener noreferrer"
-										>
-											{ __( 'Activate your license', 'godam' ) }
-										</a>
-										{
-											// eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace
-											__( ' or ', 'godam' )
-										}
-										<ExternalLink
-											href={ getPricingUrl( 'video-player-settings' ) }
-											className="font-medium text-[#AB3A6C]"
-										>
-											{ __( 'get started for free', 'godam' ) }
-										</ExternalLink>{ ' ' }
-										{ __( 'to unlock all features.', 'godam' ) }
-									</>
-								)
-								: __( 'Any custom CSS you add will be applied to all player skins. It\'s global and not tied to a specific skin style.', 'godam' )
-							}
+							{ __( 'Any custom CSS you add will be applied to all player skins. It\'s global and not tied to a specific skin style.', 'godam' ) }
 						</div>
 					</div>
 

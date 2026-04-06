@@ -157,7 +157,6 @@ const JetpackForm = ( { layerID } ) => {
 		return `${ window?.videoData?.adminUrl }post.php?post=${ postId }&action=edit`;
 	};
 
-	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
 	const isJetpackPluginActive = Boolean( window?.videoData?.jetpackActive );
 
 	return (
@@ -175,7 +174,7 @@ const JetpackForm = ( { layerID } ) => {
 
 			{
 				<FormSelector
-					disabled={ ! isValidAPIKey || ! isJetpackPluginActive }
+					disabled={ ! isJetpackPluginActive }
 					className="jetpack-form-selector mb-4"
 					formID={ layer.jp_id }
 					forms={ forms }
