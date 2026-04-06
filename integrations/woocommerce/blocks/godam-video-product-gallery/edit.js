@@ -23,7 +23,7 @@ import {
 } from '@wordpress/components';
 import { useEffect, useMemo, useState } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
-import { columns, grid, store as storeIcon, video as videoIcon } from '@wordpress/icons';
+import { columns, grid, video as videoIcon } from '@wordpress/icons';
 import apiFetch from '@wordpress/api-fetch';
 
 /**

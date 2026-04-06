@@ -241,12 +241,14 @@ if ( ! function_exists( 'godam_vpg_build_gallery_items' ) ) {
 }
 
 // Block attributes.
-$block_id     = isset( $attributes['blockId'] ) ? 'godam-vpg-' . esc_attr( $attributes['blockId'] ) : wp_unique_id( 'godam-vpg-' );
-$gallery_mode = isset( $attributes['mode'] ) ? esc_attr( $attributes['mode'] ) : 'handpicked';
-$layout       = isset( $attributes['layout'] ) ? esc_attr( $attributes['layout'] ) : 'carousel';
-$view_ratio   = isset( $attributes['viewRatio'] ) ? esc_attr( $attributes['viewRatio'] ) : '9:16';
-$item_width   = isset( $attributes['itemWidth'] ) ? absint( $attributes['itemWidth'] ) : 180;
-$autoplay     = ! empty( $attributes['autoplay'] );
+$block_id         = isset( $attributes['blockId'] ) ? 'godam-vpg-' . esc_attr( $attributes['blockId'] ) : wp_unique_id( 'godam-vpg-' );
+$gallery_mode_raw = isset( $attributes['mode'] ) ? sanitize_key( $attributes['mode'] ) : 'handpicked';
+$allowed_modes    = array( 'handpicked', 'query' );
+$gallery_mode     = in_array( $gallery_mode_raw, $allowed_modes, true ) ? $gallery_mode_raw : 'handpicked';
+$layout           = isset( $attributes['layout'] ) ? esc_attr( $attributes['layout'] ) : 'carousel';
+$view_ratio       = isset( $attributes['viewRatio'] ) ? esc_attr( $attributes['viewRatio'] ) : '9:16';
+$item_width       = isset( $attributes['itemWidth'] ) ? absint( $attributes['itemWidth'] ) : 180;
+$autoplay         = ! empty( $attributes['autoplay'] );
 
 // Read blockGap from native spacing support (Dimensions > Block spacing).
 $block_gap_raw = isset( $attributes['style']['spacing']['blockGap'] ) ? $attributes['style']['spacing']['blockGap'] : '16px';
