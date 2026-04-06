@@ -22,7 +22,6 @@ import {
 	BlockControls,
 	InspectorControls,
 	MediaUpload,
-	MediaUploadCheck,
 	MediaReplaceFlow,
 	useBlockProps,
 } from '@wordpress/block-editor';
@@ -42,6 +41,7 @@ import Video from './VideoJS';
 import TracksEditor from './track-uploader';
 import { Caption } from './caption';
 import VideoSEOModal from './components/VideoSEOModal.js';
+import ThumbnailPanel from './components/ThumbnailPanel.js';
 import { appendTimezoneOffsetToUTC, isSEODataEmpty, secondsToISO8601, stripHtmlTags } from './utils/index.js';
 import './editor.scss';
 import { ReactComponent as icon } from '../../images/godam-video-filled.svg';
@@ -49,7 +49,6 @@ import { canManageAttachment } from '../../js/media-library/utility';
 import { isFeaturePremium } from '../../js/premium-features.js';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
-const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
 
 /**
  * Edit component for the GoDAM Player block.
@@ -74,7 +73,6 @@ function VideoEdit( {
 } ) {
 	const instanceId = useInstanceId( VideoEdit );
 	const videoPlayer = useRef();
-	const posterImageButton = useRef();
 
 	const {
 		id,
@@ -620,12 +618,7 @@ function VideoEdit( {
 		}
 
 		setAttributes( nextAttributes );
-
-		// Move focus back to the Media Upload button.
-		posterImageButton.current.focus();
 	}
-
-	const videoPosterDescription = `video-block__poster-image-description-${ instanceId }`;
 
 	return (
 		<>
@@ -698,50 +691,13 @@ function VideoEdit( {
 									/>
 								</BaseControl>
 
-								<BaseControl
-									id={ `video-block__poster-image-${ instanceId }` }
-									label={ __( 'Video Thumbnail', 'godam' ) }
-									__nextHasNoMarginBottom
-								>
-									<MediaUploadCheck>
-										<div className="editor-video-poster-control">
-											<MediaUpload
-												title={ __( 'Select Video Thumbnail', 'godam' ) }
-												onSelect={ onSelectPoster }
-												allowedTypes={ VIDEO_POSTER_ALLOWED_MEDIA_TYPES }
-												render={ ( { open } ) => (
-													<Button
-														__next40pxDefaultSize
-														variant="primary"
-														onClick={ open }
-														ref={ posterImageButton }
-														aria-describedby={ videoPosterDescription }
-													>
-														{ ! poster ? __( 'Select', 'godam' ) : __( 'Replace', 'godam' ) }
-													</Button>
-												) }
-											/>
-											<p id={ videoPosterDescription } hidden>
-												{ poster
-													? sprintf(
-														/* translators: %s: poster image URL. */
-														__( 'The current poster image url is %s', 'godam' ),
-														poster,
-													)
-													: __( 'There is no poster image currently selected', 'godam' ) }
-											</p>
-											{ !! poster && (
-												<Button
-													__next40pxDefaultSize
-													onClick={ onRemovePoster }
-													variant="tertiary"
-												>
-													{ __( 'Remove', 'godam' ) }
-												</Button>
-											) }
-										</div>
-									</MediaUploadCheck>
-								</BaseControl>
+								<ThumbnailPanel
+									attachmentId={ id }
+									poster={ poster }
+									defaultPoster={ defaultPoster }
+									onSelect={ onSelectPoster }
+									onRemove={ onRemovePoster }
+								/>
 
 								<BaseControl
 									id={ `video-block__video--selected-aspect-ratio-${ instanceId }` }
