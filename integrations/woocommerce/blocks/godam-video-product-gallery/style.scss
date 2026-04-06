@@ -495,6 +495,10 @@
 		margin: 1rem;
 		z-index: 999;
 
+		@media screen and (min-width: 1024px) {
+			display: none;
+		}
+
 		.godam-gallery-item__product-name,
 		.godam-gallery-item__product-price {
 			color: #fff;
