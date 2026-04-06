@@ -158,7 +158,7 @@ const CustomAdSettings = ( { layerID } ) => {
 					status="warning"
 					isDismissible={ false }
 				>
-					{ __( 'This ad will be overriden by Ad server\'s ads', 'godam' ) }
+					{ __( 'This ad will be overridden by Ad server\'s ads', 'godam' ) }
 				</Notice>
 			}
 			<div className="flex flex-col items-start mb-4">

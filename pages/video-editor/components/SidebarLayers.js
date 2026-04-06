@@ -118,7 +118,7 @@ export const layerTypes = [
 		icon: video,
 		type: 'ad',
 		layerText: __( 'Ad', 'godam' ),
-		tooltipMessage: __( 'This ad will be overriden by Ad server\'s ads', 'godam' ),
+		tooltipMessage: __( 'This ad will be overridden by Ad server\'s ads', 'godam' ),
 	},
 	{
 		title: __( 'Poll', 'godam' ),

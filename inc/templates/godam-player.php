@@ -359,8 +359,9 @@ if ( ! empty( $godam_appearance_color ) ) {
 	$godam_easydam_control_bar_color = $godam_brand_color;
 }
 
-$godam_easydam_hover_color        = ! empty( $godam_meta_data['videoConfig']['controlBar']['hoverColor'] ) ? $godam_meta_data['videoConfig']['controlBar']['hoverColor'] : '#fff';
-$godam_easydam_hover_zoom         = ! empty( $godam_meta_data['videoConfig']['controlBar']['zoomLevel'] ) ? $godam_meta_data['videoConfig']['controlBar']['zoomLevel'] : 0;
+$godam_raw_hover_color            = ! empty( $godam_meta_data['videoConfig']['controlBar']['hoverColor'] ) ? $godam_meta_data['videoConfig']['controlBar']['hoverColor'] : '#fff';
+$godam_easydam_hover_color        = preg_match( '/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/', $godam_raw_hover_color ) ? $godam_raw_hover_color : '#fff';
+$godam_easydam_hover_zoom         = (float) ( $godam_meta_data['videoConfig']['controlBar']['zoomLevel'] ?? 0 );
 $godam_easydam_custom_btn_img     = ! empty( $godam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] ) ? $godam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] : '';
 $godam_easydam_control_bar_config = ! empty( $godam_meta_data['videoConfig']['controlBar'] ) ? $godam_meta_data['videoConfig']['controlBar'] : array();
 
