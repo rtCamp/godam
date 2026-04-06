@@ -97,11 +97,16 @@
 		"webpack-remove-empty-scripts": "1.1.1"
 	},
 	"overrides": {
+		"@xmldom/xmldom": "0.8.12",
+		"lodash-es": "^4.18.1",
+		"node-forge": "1.4.0",
+		"picomatch@<=2.3.1": "2.3.2",
+		"picomatch@>=4.0.0 <=4.0.3": "4.0.4",
+		"serialize-javascript": "7.0.5",
 		"@wordpress/scripts": {
 			"svgo@>3.0.0 <3.3.3": "3.3.3",
 			"minimatch@<3.1.5": "3.1.5",
 			"immutable@>=5.0.0 <5.1.5": "5.1.5",
-			"serialize-javascript@<7.0.3": "7.0.3",
 			"webpack-dev-server@<5.2.1": "5.2.1"
 		},
 		"minimatch@>=9.0.0 <9.0.7": "9.0.7",
