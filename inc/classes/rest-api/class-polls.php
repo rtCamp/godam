@@ -71,7 +71,7 @@ class Polls extends Base {
 
 		if ( false === $polls ) {
 			// Not cached — run the query.
-			$polls = $wpdb->get_results( "SELECT * FROM $wpdb->pollsq ORDER BY pollq_timestamp DESC" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- direct query is needed because custom table.
+			$polls = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i ORDER BY pollq_timestamp DESC', $wpdb->pollsq ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- direct query is needed because custom table.
 
 			// Cache the results for 10 minutes.
 			wp_cache_set( $cache_key, $polls, $cache_group, 10 * MINUTE_IN_SECONDS );

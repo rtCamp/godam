@@ -157,7 +157,7 @@ class SureForms extends Base {
 			return new WP_Error( 'sureforms_not_active', __( 'Sureforms plugin is not active.', 'godam' ), array( 'status' => 404 ) );
 		}
 
-		$form_id = $request->get_param( 'id' );
+		$form_id = absint( $request->get_param( 'id' ) );
 
 		if ( empty( $form_id ) ) {
 			return new WP_Error( 'invalid_form_id', __( 'Invalid form ID.', 'godam' ), array( 'status' => 404 ) );

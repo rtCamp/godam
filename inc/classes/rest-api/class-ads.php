@@ -74,7 +74,6 @@ class Ads extends Base {
 		// Set necessary CORS headers.
 		header( 'Access-Control-Allow-Origin: *' ); // Allow all origins.
 		header( 'Access-Control-Allow-Methods: GET, POST, OPTIONS' ); // Allow specific methods.
-		header( 'Access-Control-Allow-Credentials: true' );
 		header( 'Access-Control-Allow-Headers: Content-Type, Authorization, X-WP-Nonce' );
 	
 		// Ensure the response is XML.

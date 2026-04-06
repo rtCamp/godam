@@ -63,14 +63,14 @@ class CF7 extends Base {
 			return new \WP_Error( 'contactform7_not_active', __( 'Contact Form 7 plugin is not active.', 'godam' ), array( 'status' => 404 ) );
 		}
 
-		$form_id = $request->get_param( 'id' );
-		$theme   = $request->get_param( 'theme' );
+		$form_id = absint( $request->get_param( 'id' ) );
+		$theme   = sanitize_text_field( $request->get_param( 'theme' ) );
 
 		if ( empty( $form_id ) ) {
 			return new \WP_Error( 'invalid_form_id', __( 'Invalid form ID.', 'godam' ), array( 'status' => 404 ) );
 		}
 
-		$cf7_form = do_shortcode( "[contact-form-7 id='{$form_id}' theme='{$theme}']" );
+		$cf7_form = do_shortcode( "[contact-form-7 id='{$form_id}' theme='" . esc_attr( $theme ) . "']" );
 
 		return rest_ensure_response( $cf7_form );
 	}

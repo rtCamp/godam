@@ -108,15 +108,14 @@ class GF extends Base {
 			return new \WP_Error( 'gravity_forms_not_active', __( 'Gravity Forms plugin is not active.', 'godam' ), array( 'status' => 404 ) );
 		}
 
-		$form_id = $request->get_param( 'id' );
-		$theme   = $request->get_param( 'theme' );
-		$form_id = absint( $form_id );
+		$form_id = absint( $request->get_param( 'id' ) );
+		$theme   = sanitize_text_field( $request->get_param( 'theme' ) );
 
 		if ( empty( $form_id ) ) {
 			return new \WP_Error( 'invalid_form_id', __( 'Invalid form ID.', 'godam' ), array( 'status' => 404 ) );
 		}
 
-		$gform = do_shortcode( "[gravityform id='{$form_id}' title='false' description='false' ajax='true' theme='{$theme}']" );
+		$gform = do_shortcode( "[gravityform id='{$form_id}' title='false' description='false' ajax='true' theme='" . esc_attr( $theme ) . "']" );
 
 		return rest_ensure_response( $gform );
 	}

@@ -146,7 +146,7 @@ class Metform_Rest_Api extends Base {
 		}
 
 		if ( $form_id ) {
-			$metform = do_shortcode( "[metform form_id={$form_id}]" );
+			$metform = do_shortcode( "[metform form_id='{$form_id}']" );
 		} else {
 			/* translators: %d is the Metform ID */
 			$metform = sprintf( __( 'Unable to find the Metform with ID:%d', 'godam' ), $form_id );
