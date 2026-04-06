@@ -323,7 +323,8 @@ const ProductHotspotPreview = ( { productHotspot, index, productCache } ) => {
 	const productData = productCache[ productHotspot.productId ] || null;
 
 	return (
-		<div className={ `hotspot-content flex items-center justify-center ${ ! productHotspot.icon ? 'no-icon' : '' }` }>
+		<div className={ `hotspot-content flex items-center justify-center ${ ! ( productHotspot.icon || productHotspot.customIconUrl ) ? 'no-icon' : '' }` }>
+			{ /* eslint-disable-next-line no-nested-ternary */ }
 			{ productHotspot.icon ? (
 				<FontAwesomeIcon
 					icon={ [ 'fas', productHotspot.icon ] }
@@ -332,6 +333,18 @@ const ProductHotspotPreview = ( { productHotspot, index, productCache } ) => {
 						width: '50%',
 						height: '50%',
 						color: '#000',
+					} }
+				/>
+			) : productHotspot.customIconUrl ? (
+				<img
+					src={ productHotspot.customIconUrl }
+					alt={ __( 'Custom Icon', 'godam' ) }
+					className="pointer-events-none"
+					style={ {
+						width: '100%',
+						height: '100%',
+						color: '#941d1d',
+						objectFit: 'cover',
 					} }
 				/>
 			) : null }
@@ -942,7 +955,7 @@ const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 								onClick={ () => setExpandedProductHotspotIndex( index ) }
 								className="hotspot circle"
 								style={ {
-									backgroundColor: productHotspot.icon ? 'white' : productHotspot.backgroundColor || '#0c80dfa6',
+									backgroundColor: ( productHotspot.icon || productHotspot.customIconUrl ) ? 'white' : productHotspot.backgroundColor || '#0c80dfa6',
 									zIndex: 20,
 								} }
 							>
