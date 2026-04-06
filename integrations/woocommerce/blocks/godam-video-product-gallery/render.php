@@ -9,6 +9,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// Premium block: hide frontend output when API key is invalid.
+if ( ! rtgodam_is_api_key_valid() ) {
+	return;
+}
+
 if ( ! function_exists( 'godam_vpg_get_matching_product_ids' ) ) {
 
 	/**

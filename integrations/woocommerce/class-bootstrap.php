@@ -199,7 +199,7 @@ class Bootstrap {
 		}
 
 		$disallowed_blocks = array(
-			'godam/product-gallery',
+			'godam/video-product-gallery',
 			'godam/reel-pops',
 		);
 
