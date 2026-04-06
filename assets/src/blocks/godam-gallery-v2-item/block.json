@@ -1,0 +1,25 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "godam/gallery-v2-item",
+	"title": "Gallery V2 Item",
+	"category": "media",
+	"description": "A single video item for the GoDAM Gallery V2 block.",
+	"keywords": [ "video", "gallery", "item", "godam" ],
+	"textdomain": "godam",
+	"parent": [ "godam/gallery-v2" ],
+	"attributes": {
+		"videoId": {
+			"type": "number",
+			"default": 0
+		}
+	},
+	"usesContext": [ "godam/galleryV2/layout", "godam/galleryV2/showTitle", "godam/galleryV2/itemWidth", "godam/galleryV2/viewRatio" ],
+	"supports": {
+		"reusable": false,
+		"html": false
+	},
+	"editorScript": [ "file:./index.js" ],
+	"editorStyle": [ "file:./index.css" ],
+	"render": "file:./render.php"
+}

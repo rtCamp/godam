@@ -78,8 +78,12 @@ class Dynamic_Gallery extends Base {
 							'default' => 0,
 						),
 						'author'            => array(
-							'type'    => 'integer',
-							'default' => 0,
+							'type'    => 'string',
+							'default' => '',
+						),
+						'media_folder'      => array(
+							'type'    => 'string',
+							'default' => '',
 						),
 						'include'           => array(
 							'type'    => 'string',
@@ -109,6 +113,14 @@ class Dynamic_Gallery extends Base {
 							'type'    => 'boolean',
 							'default' => false,
 						),
+						'gallery_variant'   => array(
+							'type'    => 'string',
+							'default' => '',
+						),
+						'view_ratio'        => array(
+							'type'    => 'string',
+							'default' => '16:9',
+						),
 					),
 				),
 			),
@@ -134,6 +146,7 @@ class Dynamic_Gallery extends Base {
 			'category'          => $request->get_param( 'category' ),
 			'tag'               => $request->get_param( 'tag' ),
 			'author'            => $request->get_param( 'author' ),
+			'media_folder'      => $request->get_param( 'media_folder' ),
 			'include'           => $request->get_param( 'include' ),
 			'search'            => $request->get_param( 'search' ),
 			'date_range'        => $request->get_param( 'date_range' ),
@@ -141,6 +154,8 @@ class Dynamic_Gallery extends Base {
 			'custom_date_end'   => $request->get_param( 'custom_date_end' ),
 			'engagements'       => $request->get_param( 'engagements' ),
 			'open_to_new_page'  => $request->get_param( 'open_to_new_page' ),
+			'gallery_variant'   => $request->get_param( 'gallery_variant' ),
+			'view_ratio'        => $request->get_param( 'view_ratio' ),
 		);
 
 		// Add filter for dynamic gallery attributes.
@@ -176,7 +191,26 @@ class Dynamic_Gallery extends Base {
 
 		// Add author filter.
 		if ( ! empty( $atts['author'] ) ) {
-			$args['author'] = intval( $atts['author'] );
+			$author_ids = array_map( 'absint', array_filter( array_map( 'trim', explode( ',', (string) $atts['author'] ) ) ) );
+
+			if ( 1 === count( $author_ids ) ) {
+				$args['author'] = $author_ids[0];
+			} elseif ( ! empty( $author_ids ) ) {
+				$args['author__in'] = $author_ids;
+			}
+		}
+
+		// Add media folder filter.
+		if ( ! empty( $atts['media_folder'] ) ) {
+			$media_folder_ids = array_map( 'absint', array_filter( array_map( 'trim', explode( ',', (string) $atts['media_folder'] ) ) ) );
+
+			if ( ! empty( $media_folder_ids ) ) {
+				$args['tax_query'][] = array(
+					'taxonomy' => 'media-folder',
+					'field'    => 'term_id',
+					'terms'    => $media_folder_ids,
+				);
+			}
 		}
 
 		// Add include filter.
@@ -203,27 +237,23 @@ class Dynamic_Gallery extends Base {
 					$date_query = array( 'after' => '3 months ago' );
 					break;
 				case 'custom':
-					if ( ! empty( $atts['custom_date_start'] ) && ! empty( $atts['custom_date_end'] ) ) {
-						// Convert UTC dates to local timezone.
-						$start_date = new \DateTime( $atts['custom_date_start'] );
-						$end_date   = new \DateTime( $atts['custom_date_end'] );
-						
-						// Set timezone to WordPress timezone.
+					if ( ! empty( $atts['custom_date_start'] ) || ! empty( $atts['custom_date_end'] ) ) {
 						$wp_timezone = new \DateTimeZone( wp_timezone_string() );
-						$start_date->setTimezone( $wp_timezone );
-						$end_date->setTimezone( $wp_timezone );
-						
-						// Set start date to beginning of day (00:00:00).
-						$start_date->setTime( 0, 0, 0 );
-						
-						// Set end date to end of day (23:59:59).
-						$end_date->setTime( 23, 59, 59 );
-						
-						$date_query = array(
-							'after'     => $start_date->format( 'Y-m-d H:i:s' ),
-							'before'    => $end_date->format( 'Y-m-d H:i:s' ),
-							'inclusive' => true,
-						);
+						$date_query  = array( 'inclusive' => true );
+
+						if ( ! empty( $atts['custom_date_start'] ) ) {
+							$start_date = new \DateTime( $atts['custom_date_start'] );
+							$start_date->setTimezone( $wp_timezone );
+							$start_date->setTime( 0, 0, 0 );
+							$date_query['after'] = $start_date->format( 'Y-m-d H:i:s' );
+						}
+
+						if ( ! empty( $atts['custom_date_end'] ) ) {
+							$end_date = new \DateTime( $atts['custom_date_end'] );
+							$end_date->setTimezone( $wp_timezone );
+							$end_date->setTime( 23, 59, 59 );
+							$date_query['before'] = $end_date->format( 'Y-m-d H:i:s' );
+						}
 					}
 					break;
 			}
@@ -256,8 +286,10 @@ class Dynamic_Gallery extends Base {
 			$total_videos    = $query->found_posts;
 			$shown_videos    = count( $query->posts );
 			$alignment_class = '';
+			$is_gallery_v2   = 'gallery-v2' === $atts['gallery_variant'];
+			$ratio_class     = str_replace( ':', '-', $atts['view_ratio'] ?? '16:9' );
 	
-			if ( intval( $atts['offset'] ) === 0 ) {
+			if ( ! $is_gallery_v2 && intval( $atts['offset'] ) === 0 ) {
 				echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) .
 					( 'grid' === $atts['layout'] ? ' columns-' . intval( $atts['columns'] ) : '' ) .
 					esc_attr( $alignment_class ) . '" 
@@ -354,26 +386,49 @@ class Dynamic_Gallery extends Base {
 					}
 				}
 
-				echo '<div class="godam-video-item">';
-				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $video_url ) . '">';
-				echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
-				if ( $duration ) {
-					echo '<span class="godam-video-duration">' . esc_html( $duration ) . '</span>';
-				}
-				echo '</div>';
-	
-				if ( ! empty( $atts['show_title'] ) ) {
-					echo '<div class="godam-video-info">';
-					echo '<div class="godam-video-title">' . esc_html( $video_title ) . '</div>';
-					echo '<div class="godam-video-date">' . esc_html( $video_date ) . '</div>';
+				if ( $is_gallery_v2 ) {
+					echo '<div class="godam-gallery-v2__query-item godam-gallery-v2__query-item--ratio-' . esc_attr( $ratio_class ) . '">';
+					/* translators: %s: video title. */
+					echo '<button type="button" class="godam-gallery-v2__query-button" data-godam-gallery-v2-trigger="true" data-video-id="' . esc_attr( $video_id ) . '" aria-label="' . esc_attr( sprintf( __( 'Open video: %s', 'godam' ), $video_title ) ) . '">';
+					echo '<div class="godam-gallery-v2__query-thumb">';
+					if ( ! empty( $thumbnail ) ) {
+						echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" loading="lazy" />';
+					} else {
+						echo '<span>' . esc_html__( 'GoDAM Video', 'godam' ) . '</span>';
+					}
+					echo '</div>';
+
+					if ( ! empty( $atts['show_title'] ) ) {
+						echo '<div class="godam-gallery-v2__query-meta">';
+						echo '<strong>' . esc_html( $video_title ) . '</strong>';
+						echo '<span>' . esc_html( $video_date ) . '</span>';
+						echo '</div>';
+					}
+
+					echo '</button>';
+					echo '</div>';
+				} else {
+					echo '<div class="godam-video-item">';
+					echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $video_url ) . '">';
+					echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
+					if ( $duration ) {
+						echo '<span class="godam-video-duration">' . esc_html( $duration ) . '</span>';
+					}
+					echo '</div>';
+		
+					if ( ! empty( $atts['show_title'] ) ) {
+						echo '<div class="godam-video-info">';
+						echo '<div class="godam-video-title">' . esc_html( $video_title ) . '</div>';
+						echo '<div class="godam-video-date">' . esc_html( $video_date ) . '</div>';
+						echo '</div>';
+					}
 					echo '</div>';
 				}
-				echo '</div>';
 	
 				do_action( 'rtgodam_dynamic_gallery_after_video_item', $video, $atts );
 			}
 	
-			if ( intval( $atts['offset'] ) === 0 ) {
+			if ( ! $is_gallery_v2 && intval( $atts['offset'] ) === 0 ) {
 				echo '</div>';
 			}
 	
