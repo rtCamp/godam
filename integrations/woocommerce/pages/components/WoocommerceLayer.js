@@ -341,10 +341,9 @@ const ProductHotspotPreview = ( { productHotspot, index, productCache } ) => {
 					alt={ __( 'Custom Icon', 'godam' ) }
 					className="pointer-events-none"
 					style={ {
-						width: '100%',
-						height: '100%',
-						color: '#941d1d',
-						objectFit: 'cover',
+						width: '50%',
+						height: '50%',
+						objectFit: 'contain',
 					} }
 				/>
 			) : null }
