@@ -64,7 +64,10 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 	}, [ setAttributes ] );
 
 	const selectedPreloadValue = useMemo( () => {
-		if ( preloadPoster ) {
+		// Only report 'thumbnail' when the legacy preloadPoster flag is set
+		// AND preload is already 'none', so existing content with preloadPoster=true
+		// but a non-'none' preload value is not misrepresented in the UI.
+		if ( preloadPoster && ( ! preload || 'none' === preload ) ) {
 			return 'thumbnail';
 		}
 

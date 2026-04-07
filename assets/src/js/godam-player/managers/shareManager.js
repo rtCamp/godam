@@ -268,8 +268,10 @@ class ShareManager {
 		const message = encodeURIComponent( __( 'Check out this video!', 'godam' ) );
 
 		// Build page link: current WP page URL with an anchor pointing to this video block.
-		const pageBase = window.location.origin + window.location.pathname;
-		const pageLink = `${ pageBase }#godam-video-${ jobId }`;
+		// Use URL API to preserve any existing query params while replacing only the hash.
+		const pageUrl = new URL( window.location.href );
+		pageUrl.hash = `godam-video-${ jobId }`;
+		const pageLink = pageUrl.toString();
 
 		return { videoLink, embedUrl, embedCode, encodedLink, message, pageLink };
 	}
@@ -478,15 +480,21 @@ class ShareManager {
 
 		const wpPageLinkInput = container.querySelector( '.wp-page-link' );
 
-		// WP page link: append timestamp query param before the hash anchor.
+		// WP page link: update/append the timestamp query param while preserving
+		// any existing query params and the hash anchor.
 		if ( wpPageLinkInput ) {
 			const wpPageBase = urls.pageLink || '';
-			const hashIndex = wpPageBase.indexOf( '#' );
-			const wpPagePath = hashIndex !== -1 ? wpPageBase.slice( 0, hashIndex ) : wpPageBase;
-			const wpPageHash = hashIndex !== -1 ? wpPageBase.slice( hashIndex ) : '';
-			wpPageLinkInput.value = timestamp
-				? `${ wpPagePath }?t=${ timestamp }${ wpPageHash }`
-				: wpPageBase;
+			if ( timestamp && wpPageBase ) {
+				try {
+					const wpPageUrl = new URL( wpPageBase, window.location.origin );
+					wpPageUrl.searchParams.set( 't', timestamp );
+					wpPageLinkInput.value = wpPageUrl.toString();
+				} catch ( error ) {
+					wpPageLinkInput.value = wpPageBase;
+				}
+			} else {
+				wpPageLinkInput.value = wpPageBase;
+			}
 		}
 
 		pageLinkInput.value = fullPage;

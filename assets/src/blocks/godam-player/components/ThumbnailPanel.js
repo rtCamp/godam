@@ -3,6 +3,7 @@
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
+import { addQueryArgs } from '@wordpress/url';
 import { Button, Spinner } from '@wordpress/components';
 import { MediaUpload, MediaUploadCheck } from '@wordpress/block-editor';
 import { __, sprintf } from '@wordpress/i18n';
@@ -58,7 +59,7 @@ export default function ThumbnailPanel( {
 		setCustomUploadedPoster( null );
 
 		apiFetch( {
-			path: `/godam/v1/media-library/get-video-thumbnail?attachment_id=${ attachmentId }`,
+			path: addQueryArgs( '/godam/v1/media-library/get-video-thumbnail', { attachment_id: attachmentId } ),
 		} )
 			.then( ( response ) => {
 				if ( cancelled || ! response?.success ) {
@@ -153,28 +154,21 @@ export default function ThumbnailPanel( {
 
 					{ /* Block-level custom poster — persists independently of which tile is active */ }
 					{ customUploadedPoster && (
-						<div
-							className={ `godam-thumbnail-tile godam-thumbnail-custom-block-tile${ activePoster === customUploadedPoster ? ' is-selected' : '' }` }
-							title={ __( 'Custom uploaded thumbnail', 'godam' ) }
-							role="button"
-							tabIndex={ 0 }
-							onClick={ () => onSelect( { url: customUploadedPoster } ) }
-							onKeyDown={ ( e ) => {
-								if ( e.key === 'Enter' || e.key === ' ' ) {
-									onSelect( { url: customUploadedPoster } );
-								}
-							} }
-							aria-label={ __( 'Select custom thumbnail', 'godam' ) }
-							aria-pressed={ activePoster === customUploadedPoster }
-						>
-							<img src={ customUploadedPoster } alt={ __( 'Custom thumbnail', 'godam' ) } draggable="false" />
+						<div className="godam-thumbnail-custom-block-wrapper">
+							<button
+								type="button"
+								className={ `godam-thumbnail-tile godam-thumbnail-custom-block-tile${ activePoster === customUploadedPoster ? ' is-selected' : '' }` }
+								title={ __( 'Custom uploaded thumbnail', 'godam' ) }
+								onClick={ () => onSelect( { url: customUploadedPoster } ) }
+								aria-label={ __( 'Select custom thumbnail', 'godam' ) }
+								aria-pressed={ activePoster === customUploadedPoster }
+							>
+								<img src={ customUploadedPoster } alt={ __( 'Custom thumbnail', 'godam' ) } draggable="false" />
+							</button>
 							<button
 								type="button"
 								className="godam-thumbnail-delete-btn"
-								onClick={ ( e ) => {
-									e.stopPropagation();
-									handleRemoveCustom();
-								} }
+								onClick={ handleRemoveCustom }
 								aria-label={ __( 'Remove custom thumbnail', 'godam' ) }
 							>
 								&#x2715;
