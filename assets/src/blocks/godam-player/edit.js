@@ -19,6 +19,8 @@ import {
 	SelectControl,
 	ToolbarButton,
 	ToolbarGroup,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
+	__experimentalUnitControl as UnitControl,
 } from '@wordpress/components';
 import {
 	BlockControls,
@@ -125,6 +127,7 @@ function VideoEdit( {
 		aspectRatio,
 		videoWidth,
 		videoHeight,
+		playerHeight,
 	} = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 	const [ defaultPoster, setDefaultPoster ] = useState( '' );
@@ -152,6 +155,34 @@ function VideoEdit( {
 
 		return '';
 	}, [ aspectRatio, videoWidth, videoHeight ] );
+
+	// When a player height is set, derive a max-width from the height + aspect ratio.
+	// This mirrors the video-editor pattern: width = height × (arW / arH).
+	// Applying max-width lets Video.js fill that width with fluid: true, which naturally
+	// produces the desired height via the aspect-ratio padding trick.
+	const computedMaxWidth = useMemo( () => {
+		if ( ! playerHeight || ! calculatedAspectRatio ) {
+			return null;
+		}
+		const heightMatch = playerHeight.match( /^(\d+(?:\.\d+)?)([a-z%]*)$/ );
+		if ( ! heightMatch ) {
+			return null;
+		}
+
+		const unit = heightMatch[ 2 ] || 'px';
+		const arMatch = calculatedAspectRatio.match( /^(\d+(?:\.\d+)?):(\d+(?:\.\d+)?)$/ );
+		if ( ! arMatch ) {
+			return null;
+		}
+		const arH = parseFloat( arMatch[ 2 ] );
+		if ( ! arH ) {
+			return null;
+		}
+
+		const heightValue = parseFloat( heightMatch[ 1 ] );
+		const arW = parseFloat( arMatch[ 1 ] );
+		return `${ Math.round( heightValue * ( arW / arH ) ) }${ unit }`;
+	}, [ playerHeight, calculatedAspectRatio ] );
 
 	// Memoize video options to prevent unnecessary rerenders.
 	const videoOptions = useMemo( () => {
@@ -597,6 +628,7 @@ function VideoEdit( {
 
 	const blockProps = useBlockProps( {
 		className: classes,
+		...( computedMaxWidth ? { style: { maxWidth: computedMaxWidth } } : {} ),
 	} );
 
 	if ( ! src && ! temporaryURL && ! isInsideQueryLoop ) {
@@ -783,6 +815,14 @@ function VideoEdit( {
 										help={ __( 'Choose the aspect ratio for the video player.', 'godam' ) }
 									/>
 								</BaseControl>
+
+								<UnitControl
+									__nextHasNoMarginBottom
+									label={ __( 'Height', 'godam' ) }
+									value={ playerHeight || '' }
+									onChange={ ( value ) => setAttributes( { playerHeight: value || '' } ) }
+									help={ __( 'Set the video height. Width is auto-calculated from the aspect ratio.', 'godam' ) }
+								/>
 
 								<BaseControl
 									id={ `video-block__tracks-editor-${ instanceId }` }

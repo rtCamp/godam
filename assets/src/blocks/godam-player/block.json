@@ -108,6 +108,10 @@
 		"showShareButton": {
 			"type": "boolean",
 			"default": false
+		},
+		"playerHeight": {
+			"type": "string",
+			"default": ""
 		}
 	},
 	"supports": {

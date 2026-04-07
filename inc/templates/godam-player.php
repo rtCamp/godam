@@ -430,6 +430,28 @@ if ( ! empty( $godam_ad_tag_url ) ) {
 
 $godam_instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 
+// When a player height is set, derive max-width = height × (arW / arH), mirroring
+// the video-editor approach. This lets Video.js (fluid:true) fill the width and
+// naturally reach the desired height via the aspect-ratio padding trick.
+$godam_player_height      = ! empty( $attributes['playerHeight'] ) ? $attributes['playerHeight'] : '';
+$godam_computed_max_width = '';
+if ( ! empty( $godam_player_height ) && preg_match( '/^\d+:\d+$/', $godam_aspect_ratio ) ) {
+	preg_match( '/^([\d.]+)([a-z%]*)$/', $godam_player_height, $godam_height_match );
+	if ( ! empty( $godam_height_match[1] ) ) {
+		$godam_height_value  = (float) $godam_height_match[1];
+		$godam_allowed_units = array( 'px', 'em', 'rem', 'vh', 'vw', '%' );
+		$godam_height_unit   = ( isset( $godam_height_match[2] ) && in_array( $godam_height_match[2], $godam_allowed_units, true ) )
+			? $godam_height_match[2]
+			: 'px';
+		$godam_ar_parts      = explode( ':', $godam_aspect_ratio );
+		$godam_ar_w          = (float) $godam_ar_parts[0];
+		$godam_ar_h          = (float) $godam_ar_parts[1];
+		if ( $godam_ar_h > 0 && $godam_ar_w > 0 ) {
+			$godam_computed_max_width = round( $godam_height_value * ( $godam_ar_w / $godam_ar_h ) ) . $godam_height_unit;
+		}
+	}
+}
+
 // Create custom inline styles in a more maintainable way.
 $godam_custom_css_properties = array(
 	'--rtgodam-control-bar-color'      => $godam_easydam_control_bar_color,
@@ -440,6 +462,10 @@ $godam_custom_css_properties = array(
 
 if ( ! empty( $godam_aspect_ratio ) ) {
 	$godam_custom_css_properties['--rtgodam-video-aspect-ratio'] = str_replace( ':', '/', $godam_aspect_ratio );
+}
+
+if ( ! empty( $godam_computed_max_width ) ) {
+	$godam_custom_css_properties['max-width'] = $godam_computed_max_width;
 }
 
 // Build the inline style string, escaping each value.
