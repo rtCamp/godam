@@ -14,6 +14,8 @@ import {
 	PanelBody,
 	Spinner,
 	Placeholder,
+	ToggleControl,
+	RangeControl,
 	SelectControl,
 	ToolbarButton,
 	ToolbarGroup,
@@ -24,6 +26,7 @@ import {
 	MediaUpload,
 	MediaReplaceFlow,
 	useBlockProps,
+	InnerBlocks,
 } from '@wordpress/block-editor';
 import { useRef, useEffect, useState, useMemo } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
@@ -49,6 +52,36 @@ import { canManageAttachment } from '../../js/media-library/utility';
 import { isFeaturePremium } from '../../js/premium-features.js';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
+
+// Define allowed blocks for the overlay.
+const ALLOWED_BLOCKS = [
+	'core/paragraph',
+	'core/heading',
+	'core/button',
+	'core/image',
+	'core/group',
+	'core/columns',
+	'core/column',
+	'core/spacer',
+	'core/html',
+	'core/shortcode',
+];
+
+// Define template for initial blocks.
+const TEMPLATE = [
+	[ 'core/group', {
+		className: 'godam-video-overlay',
+		layout: {
+			type: 'default',
+			inherit: true,
+		},
+	}, [
+		[ 'core/heading', {
+			level: 2,
+			placeholder: __( 'Add a heading…', 'godam' ),
+		} ],
+	] ],
+];
 
 /**
  * Edit component for the GoDAM Player block.
@@ -86,6 +119,9 @@ function VideoEdit( {
 		muted,
 		loop,
 		preload,
+		verticalAlignment,
+		overlayTimeRange,
+		showOverlay,
 		aspectRatio,
 		videoWidth,
 		videoHeight,
@@ -620,6 +656,39 @@ function VideoEdit( {
 		setAttributes( nextAttributes );
 	}
 
+	// Add function to handle vertical alignment change.
+	const onChangeVerticalAlignment = ( alignment ) => {
+		setAttributes( { verticalAlignment: alignment } );
+	};
+
+	// Format time for display.
+	const formatTime = ( seconds ) => {
+		const hours = Math.floor( seconds / 3600 );
+		const minutes = Math.floor( ( seconds % 3600 ) / 60 );
+		const remainingSeconds = Math.floor( seconds % 60 );
+
+		let timeString = '';
+
+		if ( hours > 0 ) {
+			timeString += `${ hours } hour${ hours !== 1 ? 's' : '' }`;
+		}
+
+		if ( minutes > 0 ) {
+			if ( timeString ) {
+				timeString += ', ';
+			}
+			timeString += `${ minutes } minute${ minutes !== 1 ? 's' : '' }`;
+		}
+
+		if ( remainingSeconds > 0 || timeString === '' ) {
+			if ( timeString ) {
+				timeString += ', ';
+			}
+			timeString += `${ remainingSeconds } second${ remainingSeconds !== 1 ? 's' : '' }`;
+		}
+
+		return timeString;
+	};
 	return (
 		<>
 			{ isSingleSelected && (
@@ -732,6 +801,57 @@ function VideoEdit( {
 					}
 				</PanelBody>
 
+				{ /* Only show additional settings when not inside a Query Loop */ }
+				{ ! isInsideQueryLoop && (
+					<PanelBody title={ __( 'Overlay Blocks', 'godam' ) }>
+						<ToggleControl
+							label={ __( 'Show overlay blocks', 'godam' ) }
+							checked={ showOverlay }
+							onChange={ ( value ) => setAttributes( { showOverlay: value } ) }
+							help={ __( 'Display blocks on top of the video player.', 'godam' ) }
+						/>
+
+						{ showOverlay && (
+							<>
+								<SelectControl
+									label={ __( 'Vertical alignment', 'godam' ) }
+									value={ verticalAlignment }
+									options={ [
+										{ label: __( 'Top', 'godam' ), value: 'top' },
+										{ label: __( 'Center', 'godam' ), value: 'center' },
+										{ label: __( 'Bottom', 'godam' ), value: 'bottom' },
+									] }
+									onChange={ onChangeVerticalAlignment }
+									help={ __( 'Choose where to position the overlay blocks vertically.', 'godam' ) }
+								/>
+
+								<RangeControl
+									label={ __( 'Time range', 'godam' ) }
+									value={ overlayTimeRange }
+									onChange={ ( value ) => setAttributes( { overlayTimeRange: value } ) }
+									min={ 0 }
+									max={ duration || 100 }
+									step={ 0.1 }
+									help={ sprintf(
+										/* translators: %s: formatted time */
+										__( 'Overlay will be visible for %s from the start of the video.', 'godam' ),
+										formatTime( overlayTimeRange || 0 ),
+									) }
+								/>
+
+								{ duration > 0 && (
+									<p style={ { fontSize: '12px', color: '#757575', marginTop: '8px' } }>
+										{ sprintf(
+											/* translators: %s: formatted time */
+											__( 'Video duration: %s', 'godam' ),
+											formatTime( duration ),
+										) }
+									</p>
+								) }
+							</>
+						) }
+					</PanelBody>
+				) }
 			</InspectorControls>
 			{
 				isInsideQueryLoop ? (
@@ -753,6 +873,22 @@ function VideoEdit( {
 
 						<figure { ...blockProps }>
 							<div className="godam-video-wrapper">
+								{ showOverlay && (
+									<div
+										className={ `godam-video-overlay-container godam-overlay-alignment-${ verticalAlignment }` }
+									>
+										<InnerBlocks
+											allowedBlocks={ ALLOWED_BLOCKS }
+											template={ TEMPLATE }
+											templateLock={ false }
+											renderAppender={ isSingleSelected ? InnerBlocks.ButtonBlockAppender : false }
+											__experimentalLayout={ {
+												type: 'default',
+												inherit: true,
+											} }
+										/>
+									</div>
+								) }
 								{ videoComponent }
 								{ !! temporaryURL && <Spinner /> }
 							</div>

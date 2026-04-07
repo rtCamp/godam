@@ -131,7 +131,10 @@ if ( $godam_is_virtual ) {
 	}
 }
 
-$godam_video_preview = isset( $attributes['preview'] ) ? $attributes['preview'] : false;
+$godam_video_preview      = isset( $attributes['preview'] ) ? $attributes['preview'] : false;
+$godam_overlay_time_range = ! empty( $attributes['overlayTimeRange'] ) ? floatval( $attributes['overlayTimeRange'] ) : 0;
+$godam_show_overlay       = isset( $attributes['showOverlay'] ) ? $attributes['showOverlay'] : false;
+$godam_vertical_alignment = ! empty( $attributes['verticalAlignment'] ) ? esc_attr( $attributes['verticalAlignment'] ) : 'center';
 
 $godam_src                = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
 $godam_transcoded_url     = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attributes['transcoded_url'] ) : '';
@@ -377,7 +380,7 @@ $godam_video_config = wp_json_encode(
 		'preview'          => $godam_video_preview,
 		'layers'           => $godam_frontend_layers, // contains list of layers (premium layers filtered when no API key).
 		'chapters'         => ! empty( $godam_meta_data['chapters'] ) ? $godam_meta_data['chapters'] : array(), // contains list of chapters.
-		'overlayTimeRange' => 0, // Add overlay time range to video config.
+		'overlayTimeRange' => $godam_overlay_time_range, // Add overlay time range to video config.
 		'playerSkin'       => $godam_player_skin, // Add player skin to video config. Add brand image to video config.
 		'aspectRatio'      => $godam_aspect_ratio,
 		'showShareBtn'     => true === $godam_global_video_share ? $godam_show_share_btn : false,
@@ -512,6 +515,19 @@ if ( $godam_should_preload_poster ) {
 	<div <?php echo wp_kses_data( $godam_figure_attributes ); ?>>
 		<figure id="godam-player-container-<?php echo esc_attr( $godam_instance_id ); ?>">
 			<div class="godam-video-wrapper">
+				<?php if ( $godam_show_overlay && ! empty( $godam_inner_blocks_content ) ) : ?>
+					<div
+						class="godam-video-overlay-container godam-overlay-alignment-<?php echo esc_attr( $godam_vertical_alignment ); ?>"
+						data-overlay-content
+						data-overlay-time-range="<?php echo esc_attr( $godam_overlay_time_range ); ?>"
+					>
+						<?php
+						// Safely output the inner blocks content.
+						echo wp_kses_post( $godam_inner_blocks_content );
+						?>
+					</div>
+				<?php endif; ?>
+
 				<div class="godam-video-placeholder godam-animate-video-loading">
 					<div class="animate-play-btn">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
@@ -530,6 +546,10 @@ if ( $godam_should_preload_poster ) {
 				</div>
 
 				<div class="easydam-video-container loading godam-<?php echo esc_attr( strtolower( $godam_player_skin ) ); ?>-skin" >
+					<?php if ( isset( $godam_hover_select ) && 'shadow-overlay' === $godam_hover_select ) : ?>
+						<div class="godam-player-overlay"></div>
+					<?php endif; ?>
+
 					<?php if ( $godam_should_preload_poster ) : ?>
 						<img
 							class="godam-poster-image"
