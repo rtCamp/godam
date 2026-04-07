@@ -95,6 +95,20 @@ const getVideoThumbnail = ( media ) =>
 
 const normalizeTokenValue = ( value = '' ) => value.trim().toLowerCase();
 
+const resolveBlockGap = ( style ) => {
+	const raw = style?.spacing?.blockGap;
+
+	if ( ! raw ) {
+		return '16px';
+	}
+
+	if ( typeof raw === 'string' && raw.startsWith( 'var:preset|spacing|' ) ) {
+		return `var(--wp--preset--spacing--${ raw.replace( 'var:preset|spacing|', '' ) })`;
+	}
+
+	return raw;
+};
+
 const getPreviewQueryArgs = ( attributes ) => {
 	const {
 		count,
@@ -283,11 +297,13 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		setAttributes,
 	] );
 
+	const blockGap = resolveBlockGap( attributes.style );
+
 	const blockProps = useBlockProps( {
 		className: `godam-gallery-v2 godam-gallery-v2--${ mode }`,
 		style: {
 			'--godam-gallery-item-width': `${ itemWidth }px`,
-			'--godam-gallery-gap': '16px',
+			'--godam-gallery-gap': blockGap,
 		},
 	} );
 

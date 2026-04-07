@@ -295,11 +295,12 @@ $inline_styles = sprintf(
 
 $wrapper_attributes = get_block_wrapper_attributes(
 	array(
-		'class'       => sprintf( 'godam-gallery-v2 godam-gallery-v2--%s', $gallery_mode ),
-		'style'       => $inline_styles,
-		'data-mode'   => $gallery_mode,
-		'data-layout' => $layout,
-		'data-ratio'  => $view_ratio,
+		'class'               => sprintf( 'godam-gallery-v2 godam-gallery-v2--%s', $gallery_mode ),
+		'style'               => $inline_styles,
+		'data-mode'           => $gallery_mode,
+		'data-layout'         => $layout,
+		'data-ratio'          => $view_ratio,
+		'data-embed-base-url' => home_url( '/' ),
 	)
 );
 
