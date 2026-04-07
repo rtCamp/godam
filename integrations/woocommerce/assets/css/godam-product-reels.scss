@@ -1,0 +1,71 @@
+/**
+ * Frontend styles for the Product Video Gallery carousel
+ * on WooCommerce single product pages.
+ */
+
+.rtgodam-product-video-gallery {
+	position: relative;
+	width: 100%;
+}
+
+.rtgodam-product-video-gallery__container {
+	display: flex;
+	gap: 12px;
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
+}
+
+.rtgodam-product-video-gallery__item {
+	flex: 0 0 180px;
+	scroll-snap-align: start;
+	border-radius: 12px;
+	overflow: hidden;
+	background: #000;
+
+	.godam-video-placeholder {
+
+		.animate-play-btn {
+			display: none;
+		}
+
+		img.godam-player-poster-image {
+			object-fit: cover;
+		}
+	}
+
+	.godam-gallery-video-wrapper {
+		position: relative;
+		width: 100%;
+		aspect-ratio: 9 / 16;
+		overflow: hidden;
+
+		figure {
+			margin: 0;
+		}
+
+		.godam-player__wrapper,
+		.video-js {
+			width: 100%;
+			height: 100%;
+		}
+
+		.vjs-tech {
+			object-fit: cover;
+		}
+
+		.vjs-control-bar {
+			display: none !important;
+		}
+
+		.vjs-big-play-button {
+			display: none !important;
+		}
+	}
+}

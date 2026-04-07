@@ -28,13 +28,6 @@ class WC_Product_Video_Gallery {
 	private $utility_instance;
 
 	/**
-	 * Holds the markup instance.
-	 *
-	 * @var WC_Product_Gallery_Video_Markup
-	 */
-	private $markup_instance;
-
-	/**
 	 * Constructor method.
 	 *
 	 * Registers hooks for adding a meta box, saving video gallery data, enqueuing
@@ -45,9 +38,7 @@ class WC_Product_Video_Gallery {
 		add_action( 'add_meta_boxes', array( $this, 'add_video_gallery_metabox' ) );
 		add_action( 'save_post_product', array( $this, 'save_video_gallery' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
-		// Enqueue early so WooCommerce can localize its scripts (wc-settings / Blocks data stores)
-		// before scripts are printed.
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ), 5 );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
 		add_action( 'woocommerce_single_product_summary', array( $this, 'add_video_slider_to_single_product' ), 70 );
 		add_action( 'delete_attachment', array( $this, 'on_attachment_deleted' ) );
 		add_action( 'before_delete_post', array( $this, 'on_product_deleted' ) );
@@ -55,9 +46,6 @@ class WC_Product_Video_Gallery {
 
 		// Initialize the Utility Helper class.
 		$this->utility_instance = WC_Utility::get_instance();
-
-		// Initialize Video Markup class.
-		$this->markup_instance = WC_Product_Gallery_Video_Markup::get_instance();
 
 		add_filter( 'wp_kses_allowed_html', array( $this, 'allow_svg_on_wp_kses' ), 10, 2 );
 	}
@@ -95,57 +83,21 @@ class WC_Product_Video_Gallery {
 	}
 
 	/**
-	 * Registers and enqueues frontend assets for the video carousel on the product page.
+	 * Enqueues frontend styles for the product video gallery carousel.
 	 *
-	 * Registers the Swiper library and a custom script for initializing the carousel.
-	 * Enqueues the styles and scripts if the current post type is 'product'.
+	 * Only loads on the single product pages.
 	 *
 	 * @since 1.0.0
 	 */
 	public function enqueue_frontend_assets() {
-		wp_register_script(
-			'rtgodam-swiper-script',
-			RTGODAM_URL . 'assets/src/libs/swiper/swiper-bundle.min.js',
-			array( 'jquery' ),
-			filemtime( RTGODAM_PATH . 'assets/src/libs/swiper/swiper-bundle.min.js' ),
-			true
-		);
-
-		wp_register_style(
-			'rtgodam-swiper-style',
-			RTGODAM_URL . 'assets/src/libs/swiper/swiper-bundle.min.css',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/src/libs/swiper/swiper-bundle.min.css' )
-		);
-
-		wp_register_script(
-			'rtgodam-wc-video-carousel',
-			RTGODAM_URL . 'assets/build/integrations/woocommerce/js/wc-video-carousel.min.js',
-			array( 'jquery', 'rtgodam-script', 'rtgodam-swiper-script', 'wp-data', 'wc-settings', 'wc-blocks-data-store' ),
-			filemtime( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'js/wc-video-carousel.min.js' ),
-			true
-		);
-
-		wp_register_style(
-			'rtgodam-wc-video-carousel-style',
-			RTGODAM_URL . 'assets/build/integrations/woocommerce/css/godam-video-carousel.css',
-			array(),
-			filemtime( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'css/godam-video-carousel.css' )
-		);
-
-		if ( 'product' === get_post_type() ) {
-			wp_enqueue_script( 'rtgodam-swiper-script' );
-			wp_enqueue_style( 'rtgodam-swiper-style' );
-			wp_enqueue_script( 'rtgodam-wc-video-carousel' );
-			wp_enqueue_style( 'rtgodam-wc-video-carousel-style' );
+		if ( 'product' === get_post_type() && is_singular( 'product' ) ) {
+			wp_enqueue_style(
+				'rtgodam-product-reels',
+				RTGODAM_URL . 'assets/build/integrations/woocommerce/css/godam-product-reels.css',
+				array(),
+				filemtime( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'css/godam-product-reels.css' )
+			);
 		}
-
-		wp_register_style(
-			'godam-player-wc-reels-skin',
-			RTGODAM_URL . 'assets/build/integrations/woocommerce/css/godam-reels-skin-v2.css',
-			array(),
-			filemtime( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'css/godam-reels-skin-v2.css' )
-		);
 	}
 
 	/**
@@ -547,12 +499,12 @@ class WC_Product_Video_Gallery {
 	}
 
 	/**
-	 * Renders a video slider in a single product page.
+	 * Renders product videos as a horizontal scrollable carousel on a single product page.
 	 *
-	 * The method retrieves the video attachment IDs associated with the current product
-	 * from the '_rtgodam_product_video_gallery_ids' meta key. If the array is not empty,
-	 * it outputs a Swiper slider with pagination and navigation controls. The slider items
-	 * are generated using the [godam_video] shortcode.
+	 * Retrieves the video attachment IDs associated with the current product
+	 * from the '_rtgodam_product_video_gallery_ids' meta key and renders each
+	 * video using the [godam_video] shortcode with autoplay, muted and loop enabled.
+	 * Videos are displayed in a 9:16 aspect ratio carousel layout.
 	 */
 	public function add_video_slider_to_single_product() {
 
@@ -572,240 +524,21 @@ class WC_Product_Video_Gallery {
 			return '';
 		}
 
-		$srcsets = array_map(
-			function ( $attachment_id ) {
-				$transcoded_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+		$videos_html = '<div class="rtgodam-product-video-gallery">';
+		$videos_html .= '<div class="rtgodam-product-video-gallery__container">';
 
-				return array(
-					'id'            => $attachment_id,
-					'src'           => wp_get_attachment_url( $attachment_id ),
-					'is_transcoded' => ! empty( $transcoded_url ),
-				);
-			},
-			$rtgodam_product_video_gallery_ids
-		);
-
-		$srcsets_keys = array_keys( $srcsets );
-
-		$carousel_html = array_map(
-			function ( $item ) use ( $srcsets ) {
-				return sprintf(
-					'<div class="swiper-slide">
-						<video autoplay loop muted preload="none" playsinline width="%1$s" class="video-js" data-index-id="%2$s"><source src="%3$s" type="video/mp4"/></video>
-					</div>',
-					esc_attr( '100%' ),
-					esc_attr( $item ),
-					esc_url( $srcsets[ $item ]['src'] ),
-				);
-			},
-			$srcsets_keys
-		);
-
-		$slider_html = $this->generate_video_carousel_mark_up(
-			array(
-				'carousel_html' => $carousel_html,
-			)
-		);
-
-		if ( empty( $slider_html ) ) {
-			return '';
+		foreach ( $rtgodam_product_video_gallery_ids as $attachment_id ) {
+			$videos_html .= '<div class="rtgodam-product-video-gallery__item">';
+			$videos_html .= '<div class="godam-gallery-video-wrapper">';
+			$videos_html .= do_shortcode( "[godam_video id='{$attachment_id}' autoplay=true muted=true loop=true controls=false aspect_ratio='9:16']" );
+			$videos_html .= '</div>';
+			$videos_html .= '</div>';
 		}
 
-		// Enqueue WooCommerce Reels specific skin.
-		wp_enqueue_style( 'godam-player-reels-skin-css' );
+		$videos_html .= '</div>';
+		$videos_html .= '</div>';
 
-		$modal_carousel_html = array_map(
-			function ( $item ) use ( $srcsets, $post ) {
-
-				$src_id  = $srcsets[ $item ]['id'];
-				$product = wc_get_product( $post->ID );
-
-				if ( ! $product instanceof \WC_Product ) {
-					return;
-				}
-
-				$product_name  = $product->get_name();
-				$product_price = $product->get_price_html();
-				$product_image = get_the_post_thumbnail(
-					$post->ID,
-					'woocommerce_thumbnail',
-					array( 'class' => 'rtgodam-modal-product-image' )
-				);
-
-				$product_type = $product->get_type();
-				$in_stock     = $product->is_in_stock() ? 'true' : 'false';
-
-				$first_variation_id = '';
-				$grouped_ids        = '';
-				$external_url       = '';
-
-				if ( 'variable' === $product_type ) {
-
-					$available_variations = $product->get_available_variations();
-
-					if ( ! empty( $available_variations ) ) {
-						$first_variation_id = $available_variations[0]['variation_id'];
-					}               
-				} elseif ( 'grouped' === $product_type ) {
-
-					$children = $product->get_children();
-
-					if ( ! empty( $children ) ) {
-						$grouped_ids = implode( ',', $children );
-					}               
-				} elseif ( 'external' === $product_type ) {
-
-					$external_url = $product->get_product_url();
-				}
-
-				return sprintf(
-					'
-					<div class="swiper-slide" data-video-id="%6$s" data-product-id="%7$s" data-video-attached-product-ids="%7$s">
-						<div class="rtgodam-modal-video">
-							%1$s
-						</div>
-
-						<div class="rtgodam-modal-product-card">
-							<div class="rtgodam-modal-product-left">
-								%2$s
-								<div class="rtgodam-modal-product-meta">
-									<h3>%3$s</h3>
-									<span class="price">%4$s</span>
-								</div>
-							</div>
-
-							<button 
-								class="rtgodam-modal-add-to-cart %14$s"
-								data-product-id="%5$s"
-								data-product-type="%9$s"
-								data-first-variation-id="%10$s"
-								data-grouped-ids="%11$s"
-								data-external-url="%12$s"
-								data-in-stock="%13$s"
-							>
-								+
-							</button>
-						</div>
-
-						%8$s
-					</div>
-                ',
-					do_shortcode( "[godam_video id='{$src_id}' godam_context='godam-woo-product-page-reels' autoplay=true]" ),
-					$product_image,
-					esc_html( $product_name ),
-					$product_price,
-					esc_attr( $post->ID ),
-					$src_id,
-					$post->ID,
-					$this->markup_instance->generate_product_page_reel_video_modal_markup( $src_id, $post->ID ),
-					esc_attr( $product_type ),
-					esc_attr( $first_variation_id ),
-					esc_attr( $grouped_ids ),
-					esc_url( $external_url ),
-					esc_attr( $in_stock ),
-					( ! $product->is_in_stock() ? 'is-out-of-stock' : '' ),
-				);
-			},
-			$srcsets_keys
-		);
-
-		$modal_slider_html = $this->generate_video_carousel_mark_up(
-			array(
-				'wrapper_class'        => 'rtgodam-product-video-gallery-slider-modal-content-items',
-				'wrapper_class_loader' => '',
-				'carousel_html'        => $modal_carousel_html,
-			)
-		);
-
-		$mini_cart_block = do_blocks( '<!-- wp:woocommerce/mini-cart /-->' );
-
-		$slider_html     .= '<div class="rtgodam-product-video-gallery-slider-modal">';
-			$slider_html .= '<div class="rtgodam-product-video-gallery-slider-modal-content">' . $modal_slider_html . '</div>';
-			// Close button.
-			$slider_html .= '<a href="#" class="rtgodam-product-video-gallery-slider-modal-close">&times;</a>';
-			// Mini Cart Button.
-			$slider_html .= '<div class="rtgodam-product-video-gallery-slider-modal-content--cart-basket">' 
-				. ( ! empty( $mini_cart_block ) ? $mini_cart_block : '' ) 
-				. '</div>';
-			// Fullscreen button.
-			$slider_html .= '
-				<button type="button" 
-					class="rtgodam-product-video-gallery-slider-modal-fullscreen" 
-					aria-label="Toggle fullscreen">
-
-					<svg xmlns="http://www.w3.org/2000/svg"
-						viewBox="0 0 24 24"
-						width="22"
-						height="22"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2.4"
-						stroke-linecap="round"
-						stroke-linejoin="round">
-
-						<!-- Top left -->
-						<path d="M8 3 H4 Q3 3 3 4 V8" />
-
-						<!-- Top right -->
-						<path d="M16 3 H20 Q21 3 21 4 V8" />
-
-						<!-- Bottom left -->
-						<path d="M3 16 V20 Q3 21 4 21 H8" />
-
-						<!-- Bottom right -->
-						<path d="M21 16 V20 Q21 21 20 21 H16" />
-
-					</svg>
-				</button>
-			';
-		$slider_html     .= '</div>';
-
-		echo apply_filters( 'rtgodam_video_slider_html', $slider_html ); // phpcs:ignore
-	}
-
-	/**
-	 * Generates the HTML markup for the video carousel slider.
-	 *
-	 * @param array $args {
-	 *     Args for the video carousel slider.
-	 *
-	 *     @type string $wrapper_class        The class name for the wrapper container. Default is 'rtgodam-product-video-gallery-slider'.
-	 *     @type string $wrapper_class_loader The class name for the wrapper container when loading. Default is 'rtgodam-product-video-gallery-slider-loading'.
-	 *     @type array  $carousel_html        An array of HTML markup for the carousel items. Default is an empty array.
-	 * }
-	 *
-	 * @return string The HTML markup for the video carousel slider.
-	 */
-	public function generate_video_carousel_mark_up( $args ) {
-		$args = wp_parse_args(
-			$args,
-			array(
-				'wrapper_class'        => 'rtgodam-product-video-gallery-slider',
-				'wrapper_class_loader' => 'rtgodam-product-video-gallery-slider-loading',
-				'carousel_html'        => array(),
-			)
-		);
-
-		if ( empty( $args['carousel_html'] ) || ! is_array( $args['carousel_html'] ) ) {
-			return '';
-		}
-
-		$carousel_html = implode( '', $args['carousel_html'] );
-
-		return sprintf(
-			'
-			<div class="%1$s %2$s swiper">
-				<div class="swiper-wrapper">
-					%3$s
-				</div>
-				<div class="swiper-pagination"></div>
-				<div class="swiper-button-next"></div>
-				<div class="swiper-button-prev"></div>
-			</div>',
-			esc_attr( $args['wrapper_class'] ),
-			esc_attr( $args['wrapper_class_loader'] ),
-			$carousel_html
-		);
+		echo apply_filters( 'rtgodam_video_slider_html', $videos_html ); // phpcs:ignore
 	}
 
 	/**
