@@ -1,5 +1,4 @@
 /* eslint-disable eslint-comments/disable-enable-pair */
-/* eslint-disable import/no-unresolved */
 
 /**
  * WordPress dependencies
@@ -50,7 +49,7 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 	const layout = context[ 'godam/galleryV2/layout' ] || 'carousel';
 	const showTitle = context[ 'godam/galleryV2/showTitle' ] !== false;
 	const itemWidth = context[ 'godam/galleryV2/itemWidth' ] || 180;
-	const viewRatio = context[ 'godam/galleryV2/viewRatio' ] || '9:16';
+	const viewRatio = context[ 'godam/galleryV2/viewRatio' ] || '16:9';
 	const { removeBlock } = useDispatch( 'core/block-editor' );
 
 	const { media, hasResolvedMedia } = useSelect(

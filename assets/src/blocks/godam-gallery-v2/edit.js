@@ -1,7 +1,3 @@
-/* eslint-disable eslint-comments/disable-enable-pair */
-/* eslint-disable import/no-unresolved */
-/* eslint-disable @wordpress/no-unsafe-wp-apis */
-
 /**
  * WordPress dependencies
  */
