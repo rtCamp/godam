@@ -483,10 +483,10 @@ export default class WooCommerceLayerManager {
 		hotspotDiv.style.height = `${ pixelDiameter }px`;
 
 		// Background color
-		hotspotDiv.style.backgroundColor = hotspot.icon ? 'white' : ( hotspot.backgroundColor || '#0c80dfa6' );
+		hotspotDiv.style.backgroundColor = ( hotspot.icon || hotspot.customIconUrl ) ? 'white' : ( hotspot.backgroundColor || '#0c80dfa6' );
 
 		// Create content
-		const hotspotContent = this.createProductHotspotContent( hotspot, miniCart );
+		const hotspotContent = this.createProductHotspotContent( hotspot, miniCart, hotspotDiv );
 		hotspotDiv.appendChild( hotspotContent );
 
 		return hotspotDiv;
@@ -495,11 +495,12 @@ export default class WooCommerceLayerManager {
 	/**
 	 * Create hotspot content
 	 *
-	 * @param {Object}  hotspot  - Product Hotspot configuration object
-	 * @param {boolean} miniCart - Minicart toggle value
+	 * @param {Object}      hotspot    - Product Hotspot configuration object
+	 * @param {boolean}     miniCart   - Minicart toggle value
+	 * @param {HTMLElement} hotspotDiv - Parent hotspot div element
 	 * @return {HTMLElement} Created content element
 	 */
-	createProductHotspotContent( hotspot, miniCart ) {
+	createProductHotspotContent( hotspot, miniCart, hotspotDiv ) {
 		const hotspotContent = document.createElement( 'div' );
 		hotspotContent.classList.add( 'hotspot-content' );
 		hotspotContent.style.position = 'relative';
@@ -509,6 +510,9 @@ export default class WooCommerceLayerManager {
 		if ( hotspot.icon ) {
 			const iconEl = this.createProductHotspotIcon( hotspot.icon );
 			hotspotContent.appendChild( iconEl );
+		} else if ( hotspot.customIconUrl ) {
+			const customIconEl = this.createCustomIcon( hotspot.customIconUrl, hotspot.backgroundColor, hotspotDiv );
+			hotspotContent.appendChild( customIconEl );
 		} else {
 			hotspotContent.classList.add( 'no-icon' );
 		}
@@ -538,6 +542,48 @@ export default class WooCommerceLayerManager {
 		iconEl.style.color = '#000';
 
 		return iconEl;
+	}
+
+	/**
+	 * Create custom icon element
+	 *
+	 * @param {string}      customIconUrl   - URL of the custom icon
+	 * @param {string}      backgroundColor - Background color for fallback
+	 * @param {HTMLElement} hotspotDiv      - Parent hotspot div element
+	 * @return {HTMLElement} Created custom icon element
+	 */
+	createCustomIcon( customIconUrl, backgroundColor, hotspotDiv ) {
+		const customIconEl = document.createElement( 'img' );
+		customIconEl.src = customIconUrl;
+		customIconEl.alt = __( 'Custom Icon', 'godam' );
+		customIconEl.style.width = '50%';
+		customIconEl.style.height = '50%';
+		customIconEl.style.maxWidth = '100%';
+		customIconEl.style.maxHeight = '100%';
+		customIconEl.style.objectFit = 'contain';
+		customIconEl.style.display = 'block';
+		customIconEl.style.margin = 'auto';
+		customIconEl.style.pointerEvents = 'none';
+
+		// Add error handling for failed image loads - convert to normal hotspot point
+		customIconEl.onerror = function() {
+			// Remove the failed image element
+			customIconEl.remove();
+
+			// Get the hotspot content container
+			const hotspotContent = hotspotDiv?.querySelector( '.hotspot-content' );
+			if ( hotspotContent ) {
+				// Add no-icon class to show as normal hotspot
+				hotspotContent.classList.add( 'no-icon' );
+			}
+
+			// Reset hotspot background to default (non-icon) color
+			if ( hotspotDiv ) {
+				hotspotDiv.style.backgroundColor = backgroundColor || '#0c80dfa6';
+			}
+		};
+
+		return customIconEl;
 	}
 
 	/**
