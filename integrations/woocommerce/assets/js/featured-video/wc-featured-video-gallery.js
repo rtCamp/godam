@@ -115,7 +115,21 @@ jQuery( document ).ready( function( $ ) {
 						width: 600,
 						height: 744,
 					} );
-					$div.html( '' ).append( $( '<a>', { href: fullImage } ).append( $divImg ) );
+					// $div.html( '' ).append( $( '<a>', { href: fullImage } ).append( $divImg ) );
+					const videoUrl = response.data.videoUrls[ index ];
+
+					const $video = $( '<video>', {
+						src: videoUrl,
+						controls: false,
+						preload: 'metadata',
+						style: 'width:100%; height:auto;',
+					} );
+
+					$video.prop( 'muted', true );
+					$video.prop( 'autoplay', true );
+					$video.prop( 'loop', true );
+
+					$div.html( '' ).append( $video );
 
 					// Thumbnail gallery Image video.
 					const $img = $( imgEl );
@@ -128,10 +142,10 @@ jQuery( document ).ready( function( $ ) {
 						.off( 'click touchstart' )
 						.on( 'click touchstart', function( e ) {
 							// Prevent double firing on some devices.
-							if ( e.type === 'touchstart' ) {
-								e.preventDefault();
-							}
-							openVideoModal( videoId );
+							// if ( e.type === 'touchstart' ) {
+							// 	e.preventDefault();
+							// }
+							// openVideoModal( videoId );
 						} );
 					$img.css( 'visibility', 'visible' );
 					$img.closest( 'li' ).removeClass( 'godam-thumb-loading' );

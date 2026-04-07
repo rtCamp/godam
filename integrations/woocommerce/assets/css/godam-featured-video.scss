@@ -83,3 +83,11 @@
 		transform: translate(-50%, -50%) rotate(360deg);
 	}
 }
+
+.woocommerce.woocommerce div.product div.images .flex-control-thumbs li img {
+	opacity: unset;
+}
+
+.woocommerce-product-gallery__trigger {
+	display: none;
+}

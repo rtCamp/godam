@@ -370,6 +370,7 @@ class WC_Featured_Video_Gallery {
 
 		$video_ids        = array();
 		$video_thumbnails = array();
+		$video_urls       = array();
 
 		// Get gallery images for current product.
 		$gallery     = get_post_meta( $product_id, '_product_image_gallery', true );
@@ -397,6 +398,7 @@ class WC_Featured_Video_Gallery {
 				}
 
 				$video_thumbnails[] = esc_url( get_post_meta( $video_id, 'rtgodam_media_video_thumbnail', true ) ?: self::FALLBACK_THUMBNAIL );
+				$video_urls[]       = wp_get_attachment_url( $video_id );
 			}
 		}
 
@@ -406,6 +408,7 @@ class WC_Featured_Video_Gallery {
 				'message'     => 'Fetched video IDs successfully',
 				'videoIds'    => $video_ids,
 				'videoThumbs' => $video_thumbnails,
+				'videoUrls'   => $video_urls,
 			)
 		);
 	}
