@@ -69,3 +69,54 @@
 		}
 	}
 }
+
+// Navigation Arrows.
+.rtgodam-product-video-gallery__nav {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border: none;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.95);
+	color: #333;
+	cursor: pointer;
+	z-index: 20;
+	transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+	&:hover {
+		background: #fff;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+	}
+
+	svg {
+		width: 20px;
+		height: 20px;
+	}
+
+	&--prev {
+		left: 8px;
+	}
+
+	&--next {
+		right: 8px;
+	}
+}
+
+@media (max-width: 768px) {
+
+	.rtgodam-product-video-gallery__nav {
+		width: 32px;
+		height: 32px;
+
+		svg {
+			width: 18px;
+			height: 18px;
+		}
+	}
+}

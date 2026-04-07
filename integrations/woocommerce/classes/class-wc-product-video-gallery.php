@@ -97,6 +97,14 @@ class WC_Product_Video_Gallery {
 				array(),
 				filemtime( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'css/godam-product-reels.css' )
 			);
+
+			wp_enqueue_script(
+				'rtgodam-product-reels',
+				RTGODAM_URL . 'assets/build/integrations/woocommerce/js/product-reels-carousel.min.js',
+				array(),
+				filemtime( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'js/product-reels-carousel.min.js' ),
+				true
+			);
 		}
 	}
 
@@ -524,7 +532,7 @@ class WC_Product_Video_Gallery {
 			return '';
 		}
 
-		$videos_html = '<div class="rtgodam-product-video-gallery">';
+		$videos_html  = '<div class="rtgodam-product-video-gallery">';
 		$videos_html .= '<div class="rtgodam-product-video-gallery__container">';
 
 		foreach ( $rtgodam_product_video_gallery_ids as $attachment_id ) {
@@ -536,6 +544,16 @@ class WC_Product_Video_Gallery {
 		}
 
 		$videos_html .= '</div>';
+
+		if ( count( $rtgodam_product_video_gallery_ids ) > 1 ) {
+			$videos_html .= '<button class="rtgodam-product-video-gallery__nav rtgodam-product-video-gallery__nav--prev" aria-label="' . esc_attr__( 'Previous', 'godam' ) . '">';
+			$videos_html .= '<svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>';
+			$videos_html .= '</button>';
+			$videos_html .= '<button class="rtgodam-product-video-gallery__nav rtgodam-product-video-gallery__nav--next" aria-label="' . esc_attr__( 'Next', 'godam' ) . '">';
+			$videos_html .= '<svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>';
+			$videos_html .= '</button>';
+		}
+
 		$videos_html .= '</div>';
 
 		echo apply_filters( 'rtgodam_video_slider_html', $videos_html ); // phpcs:ignore
