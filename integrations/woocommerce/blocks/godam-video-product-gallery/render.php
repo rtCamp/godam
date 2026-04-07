@@ -14,7 +14,7 @@ if ( ! rtgodam_is_api_key_valid() ) {
 	return;
 }
 
-if ( ! function_exists( 'godam_vpg_get_matching_product_ids' ) ) {
+if ( ! function_exists( 'godam_vpg_get_query_limit' ) ) {
 
 	/**
 	 * Resolve the query item limit for video product gallery.
@@ -29,6 +29,9 @@ if ( ! function_exists( 'godam_vpg_get_matching_product_ids' ) ) {
 
 		return $count > 0 ? min( $count, $query_limit ) : $query_limit;
 	}
+}
+
+if ( ! function_exists( 'godam_vpg_get_matching_product_ids' ) ) {
 
 	/**
 	 * Resolve product IDs for query mode.
@@ -275,7 +278,17 @@ $gallery_items = godam_vpg_build_gallery_items( $attributes, $block );
 
 // Skip rendering if no items.
 if ( empty( $gallery_items ) ) {
-	return '<p>' . esc_html__( 'No video products found.', 'godam' ) . '</p>';
+	$empty_wrapper_attrs = get_block_wrapper_attributes(
+		array(
+			'id'    => $block_id,
+			'class' => sprintf(
+				'godam-video-product-gallery godam-video-product-gallery--%s godam-video-product-gallery--%s',
+				$layout,
+				$gallery_mode
+			),
+		)
+	);
+	return '<div ' . wp_kses_data( $empty_wrapper_attrs ) . '><p class="godam-video-product-gallery__empty">' . esc_html__( 'No video products found.', 'godam' ) . '</p></div>';
 }
 
 // Build inline styles for CSS custom properties.
