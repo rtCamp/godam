@@ -14,7 +14,7 @@ if ( ! rtgodam_is_api_key_valid() ) {
 	return;
 }
 
-if ( ! function_exists( 'godam_vpg_get_matching_product_ids' ) ) {
+if ( ! function_exists( 'godam_vpg_get_query_limit' ) ) {
 
 	/**
 	 * Resolve the query item limit for video product gallery.
@@ -29,6 +29,9 @@ if ( ! function_exists( 'godam_vpg_get_matching_product_ids' ) ) {
 
 		return $count > 0 ? min( $count, $query_limit ) : $query_limit;
 	}
+}
+
+if ( ! function_exists( 'godam_vpg_get_matching_product_ids' ) ) {
 
 	/**
 	 * Resolve product IDs for query mode.
@@ -259,7 +262,13 @@ $allowed_modes    = array( 'handpicked', 'query' );
 $gallery_mode     = in_array( $gallery_mode_raw, $allowed_modes, true ) ? $gallery_mode_raw : 'handpicked';
 $layout           = isset( $attributes['layout'] ) ? esc_attr( $attributes['layout'] ) : 'carousel';
 $view_ratio       = isset( $attributes['viewRatio'] ) ? esc_attr( $attributes['viewRatio'] ) : '9:16';
-$item_width       = isset( $attributes['itemWidth'] ) ? absint( $attributes['itemWidth'] ) : 180;
+$item_width_size  = isset( $attributes['itemWidth'] ) ? $attributes['itemWidth'] : 'M';
+$item_width_map   = array(
+	'S' => 220,
+	'M' => 260,
+	'L' => 300,
+);
+$item_width       = isset( $item_width_map[ $item_width_size ] ) ? $item_width_map[ $item_width_size ] : 220;
 $autoplay         = ! empty( $attributes['autoplay'] );
 
 // Read blockGap from native spacing support (Dimensions > Block spacing).
@@ -282,7 +291,17 @@ $gallery_items = godam_vpg_build_gallery_items( $attributes, $block );
 
 // Skip rendering if no items.
 if ( empty( $gallery_items ) ) {
-	return '<p>' . esc_html__( 'No video products found.', 'godam' ) . '</p>';
+	$empty_wrapper_attrs = get_block_wrapper_attributes(
+		array(
+			'id'    => $block_id,
+			'class' => sprintf(
+				'godam-video-product-gallery godam-video-product-gallery--%s godam-video-product-gallery--%s',
+				$layout,
+				$gallery_mode
+			),
+		)
+	);
+	return '<div ' . wp_kses_data( $empty_wrapper_attrs ) . '><p class="godam-video-product-gallery__empty">' . esc_html__( 'No video products found.', 'godam' ) . '</p></div>';
 }
 
 // Build inline styles for CSS custom properties.
@@ -328,6 +347,13 @@ $wrapper_attributes = get_block_wrapper_attributes(
 				<!-- Video Section + Dropdown section(if available) -->
 				<div class="godam-gallery-item__video-and-dropdown">
 					<div class="godam-gallery-item__video-wrapper">
+						<?php if ( ! $autoplay ) : ?>
+							<div class="godam-gallery-item__play-icon" aria-hidden="true">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+									<path d="M8 5v14l11-7z"/>
+								</svg>
+							</div>
+						<?php endif; ?>
 						<?php
 						// Render the video using the godam_video shortcode.
 						echo do_shortcode(
@@ -344,7 +370,7 @@ $wrapper_attributes = get_block_wrapper_attributes(
 					<!-- Multiple products dropdown -->
 					<?php if ( count( $item['productId'] ) > 1 ) : ?>
 						<div class="cta-wrapper">
-							<div class="cta-dropdown" data-gallery-id="<?php echo esc_attr( $gallery_id ); ?>">
+							<div class="cta-dropdown" data-gallery-id="<?php echo esc_attr( $block_id ); ?>">
 								<?php foreach ( $item['productData'] as $cta_product ) : ?>
 									<div class="cta-dropdown-item">
 										<a href="<?php echo esc_url( $cta_product['permalink'] ); ?>" class="cta-dropdown-link">

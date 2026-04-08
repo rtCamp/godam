@@ -24,8 +24,12 @@
       "default": "9:16"
     },
     "itemWidth": {
+      "type": "string",
+      "default": "M"
+    },
+    "count": {
       "type": "number",
-      "default": 180
+      "default": 12
     },
     "count": {
       "type": "number",

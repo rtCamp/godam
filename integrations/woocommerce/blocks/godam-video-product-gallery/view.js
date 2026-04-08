@@ -191,6 +191,8 @@ import { dispatch } from '@wordpress/data';
 
 			if ( this.autoplay ) {
 				this.initAutoplay();
+			} else {
+				this.initHoverPlay();
 			}
 
 			this.initAddToCart();
@@ -229,6 +231,35 @@ import { dispatch } from '@wordpress/data';
 				}
 				item.dataset.isInViewport = 'false';
 				this.autoplayObserver.observe( item );
+			} );
+		}
+
+		/**
+		 * Play the first 5 seconds of each video in a loop on hover.
+		 * Used when autoplay is disabled — videos stay paused until the user hovers.
+		 */
+		initHoverPlay() {
+			this.items.forEach( ( item ) => {
+				const video = item.querySelector( 'video' );
+				if ( video ) {
+					// Loop video back to start after PREVIEW_DURATION seconds.
+					video._godamTimeUpdate = () => {
+						if ( video.currentTime >= PREVIEW_DURATION ) {
+							video.currentTime = 0;
+						}
+					};
+					video.addEventListener( 'timeupdate', video._godamTimeUpdate );
+				}
+
+				// Play on hover.
+				item.addEventListener( 'mouseenter', () => {
+					this.syncPreviewVideo( item, true );
+				} );
+
+				// Stop on hover out.
+				item.addEventListener( 'mouseleave', () => {
+					this.syncPreviewVideo( item, false );
+				} );
 			} );
 		}
 
