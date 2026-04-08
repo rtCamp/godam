@@ -1,0 +1,71 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "godam/video-product-gallery",
+  "title": "GoDAM Video Product Gallery",
+  "category": "media",
+  "description": "Create a customizable video product gallery with carousel or grid layout.",
+  "keywords": ["video", "product", "gallery", "godam", "carousel", "grid", "woocommerce"],
+  "textdomain": "godam",
+  "attributes": {
+    "blockId": {
+      "type": "string"
+    },
+    "mode": {
+      "type": "string",
+      "default": "handpicked"
+    },
+    "layout": {
+      "type": "string",
+      "default": "carousel"
+    },
+    "viewRatio": {
+      "type": "string",
+      "default": "9:16"
+    },
+    "itemWidth": {
+      "type": "string",
+      "default": "M"
+    },
+    "count": {
+      "type": "number",
+      "default": 12
+    },
+    "autoplay": {
+      "type": "boolean",
+      "default": false
+    },
+    "categories": {
+      "type": "array",
+      "default": []
+    },
+    "products": {
+      "type": "array",
+      "default": []
+    },
+    "showAddToCart": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "providesContext": {
+    "godam/videoProductGallery/layout": "layout",
+    "godam/videoProductGallery/viewRatio": "viewRatio",
+    "godam/videoProductGallery/itemWidth": "itemWidth",
+    "godam/videoProductGallery/showAddToCart": "showAddToCart"
+  },
+  "supports": {
+    "anchor": true,
+    "align": ["center", "wide", "full"],
+    "spacing": {
+      "margin": true,
+      "padding": true,
+      "blockGap": true
+    }
+  },
+  "editorScript": ["file:./index.js"],
+  "render": "file:./render.php",
+  "style": ["file:./style-index.css", "godam-player-wc-reels-skin"],
+  "editorStyle": ["file:./index.css"],
+  "viewScript": ["file:./view.js"]
+}

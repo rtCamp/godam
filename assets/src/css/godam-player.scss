@@ -556,6 +556,273 @@
 	}
 }
 
+/* Mini cart - Woo Layer */
+.godam-video--cart-basket {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	color: var(--wp--preset--color--base, var(--wp--preset--color--secondary, #fff));
+	right: 100%;
+    top: 3%;
+    margin-left: 10px;
+
+	.wc-block-mini-cart.wp-block-woocommerce-mini-cart {
+		background: var(--wp--preset--color--primary, #000);
+		border-radius: 50%;
+	}
+
+	@media (max-width: 640px) {
+		transform: translateX(6px);
+		transform-origin: center;
+	}
+
+	@media (max-width: 500px) {
+		transform: scale(0.9) translateX(-10px);
+		transform-origin: center;
+	}
+}
+.product-hotspot-box.tooltip-top {
+	display: flex !important;
+}
+
+/* Product Hotspot */
+.product-hotspot-box {
+	position: absolute;
+	bottom: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	visibility: hidden;
+	background-color: rgba(255, 255, 255);
+	color: #000;
+	text-align: center;
+	border-radius: 12px;
+	z-index: 200;
+	pointer-events: auto;
+	font-size: 14px;
+	line-height: 1.2;
+	opacity: 0;
+	transition: opacity 0.2s ease, visibility 0.2s ease;
+	word-wrap: break-word;
+	min-width: 20em;
+
+	&::after {
+		content: "";
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		transform: translateX(-50%);
+		border-width: 5px;
+		border-style: solid;
+		border-color: rgba(255, 255, 255) transparent transparent transparent;
+	}
+
+	@media (max-width: 768px) {
+		width: 11em;
+		font-size: 13px;
+	}
+}
+
+.product-hotspot-woo-display {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	width: 93%;
+	max-width: 600px;
+	border-radius: 12px;
+	padding: 10px;
+
+	.product-hotspot-woo-name{
+		color: #111 ;
+		font-weight:500;
+		margin-bottom: 0.5rem;
+	}
+
+	.woocommerce-Price-amount{
+		color: #8c8c8c;
+	}
+
+	/* Remove 50% width split */
+	.product-hotspot-woo-image-wrapper {
+		flex: 0 0 auto;
+		display: flex;
+		align-items: center;
+		
+		.product-hotspot-woo-image {
+			width: 4.25rem;
+			height: 4.25rem;
+			object-fit: cover;
+			display: block;
+			border-radius: 12px;
+
+			&.product-hotspot-image-clickable:hover {
+				transform: scale(1.05);
+			}
+		}
+	}
+
+	.product-hotspot-woo-details {
+		flex: 1;
+		padding: 0 0.5rem;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: flex-start;
+		text-align: left;
+		min-width: 80px;
+	}
+
+	.product-hotspot-action {
+		flex: 0 0 auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		.product-hotspot-woo-link {
+			width: 36px;
+			height: 36px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-radius: 10px;
+			color: white;
+			line-height: 0.8;
+			border: none;
+			cursor: pointer;
+
+			&:disabled {
+				cursor: not-allowed;
+			}
+
+			/* Loading state */
+			&.loading {
+				pointer-events: none;
+				opacity: 0.7;
+
+				/* Hide icon/text while loading */
+				> * {
+					visibility: hidden;
+				}
+
+				&::after {
+					content: '';
+					position: absolute;
+					width: 16px;
+					height: 16px;
+					border: 2px solid rgba(255, 255, 255, 0.4);
+					border-top-color: #ffffff;
+					border-radius: 50%;
+					animation: hotspot-spin 0.6s linear infinite;
+				}
+			}
+
+			.rotate-me-editor{
+				transform: translateX(0px) translateY(0px) rotate(135deg);
+			}
+
+			.rotate-me{
+				transform: translateX(-1px) translateY(1px) rotate(70deg);
+				line-height: 1.5;
+			}
+		}
+	}
+
+	@keyframes hotspot-spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+}
+
+/* =========================
+   Mobile Optimisation for Product Hotspot
+========================= */
+@media (max-width: 640px) {
+
+	.product-hotspot-box {
+		min-width: unset;
+		width: max-content;
+		max-width: 85vw;
+		font-size: 12px;
+		border-radius: 10px;
+	}
+
+	.product-hotspot-woo-display {
+		padding: 6px 8px;
+		gap: 6px;
+	}
+
+	.product-hotspot-woo-display {
+
+		.product-hotspot-woo-image-wrapper {
+
+			.product-hotspot-woo-image {
+				width: 2.75rem;
+				height: 2.75rem;
+				border-radius: 8px;
+			}
+		}
+
+		.product-hotspot-woo-details {
+			padding: 0 0.4rem;
+			min-width: 60px;
+		}
+
+		.product-hotspot-woo-name {
+			font-size: 12px;
+			margin-bottom: 2px !important;
+		}
+
+		.woocommerce-Price-amount {
+			font-size: 11px;
+		}
+
+		.product-hotspot-action {
+
+			.product-hotspot-woo-link {
+				width: 28px;
+				height: 28px;
+				border-radius: 8px;
+
+				&.loading::after {
+					width: 12px;
+					height: 12px;
+				}
+			}
+		}
+	}
+}
+
+.godam-notification-area {
+	pointer-events: none;
+}
+
+.mini-cart-product-message {
+	font-size: 14px;
+	padding: 8px 16px;
+	border-radius: 6px;
+	font-weight: 600;
+	text-align: center;
+	color: #fff;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	transition: opacity 0.28s cubic-bezier(.2,.8,.2,1), transform 0.28s cubic-bezier(.2,.8,.2,1);
+	will-change: opacity, transform;
+	-webkit-backface-visibility: hidden;
+	backface-visibility: hidden;
+	-webkit-transform: translateZ(0);
+	transform: translateZ(0);
+	opacity: 0; /* initial */
+	pointer-events: auto;
+}
+
+.mini-cart-product-message.success {
+	background-color: #28a745; /* green */
+}
+  
+.mini-cart-product-message.error {
+	background-color: #dc3545; /* red */
+}
+
 .godam-menu-item-container {
 	align-items: center;
 	width: 100%;
@@ -624,7 +891,6 @@
 .hotspot {
 	pointer-events: auto;
 	position: absolute;
-	z-index: 100;
 	background-color: rgba(12, 128, 223, 0.65);
 	box-sizing: border-box;
 	cursor: pointer;
@@ -1006,13 +1272,16 @@ body.godam-share-modal-open {
 	}
 }
 
-.fullscreen-layer .hotspot-tooltip {
+.fullscreen-layer .hotspot-tooltip,
+.fullscreen-layer .product-hotspot-box {
 	font-size: 16px;
 }
 
 /* Show tooltip on hover */
 .hotspot-tooltip:hover,
-.hotspot:hover .hotspot-tooltip {
+.hotspot:hover .hotspot-tooltip,
+.product-hotspot-box:hover,
+.hotspot:hover .product-hotspot-box {
 	visibility: visible;
 	opacity: 1;
 	transition: opacity 0.6s ease;
@@ -1094,6 +1363,18 @@ body.godam-share-modal-open {
 	border-width: 5px;
 	border-style: solid;
 	border-color: transparent transparent rgba(0, 0, 0, 0.8) transparent;
+}
+
+.product-bottom::after {
+	content: "";
+	position: absolute;
+	bottom: 100%;
+	top: auto;
+	left: 50%;
+	transform: translateX(-50%);
+	border-width: 5px;
+	border-style: solid;
+	border-color: transparent transparent rgba(255, 255, 255) transparent;
 }
 
 .fullscreen-layer .hotspot {
