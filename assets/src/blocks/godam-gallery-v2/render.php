@@ -184,55 +184,6 @@ if ( ! function_exists( 'godam_gallery_v2_build_query_args' ) ) {
 	}
 }
 
-if ( ! function_exists( 'godam_gallery_v2_build_rest_query_args' ) ) {
-
-	/**
-	 * Build media REST query args from block attributes.
-	 *
-	 * @param array $attributes Block attributes.
-	 * @return array
-	 */
-	function godam_gallery_v2_build_rest_query_args( $attributes ) {
-		$query_args = array(
-			'per_page'   => isset( $attributes['count'] ) ? max( 1, absint( $attributes['count'] ) ) : 6,
-			'orderby'    => isset( $attributes['orderby'] ) ? sanitize_key( $attributes['orderby'] ) : 'date',
-			'order'      => isset( $attributes['order'] ) ? sanitize_key( $attributes['order'] ) : 'desc',
-			'status'     => 'inherit',
-			'media_type' => 'video',
-		);
-
-		$media_folder_ids = godam_gallery_v2_parse_id_list( $attributes['mediaFolder'] ?? '' );
-		$author_ids       = godam_gallery_v2_parse_id_list( $attributes['author'] ?? '' );
-		$date_range       = isset( $attributes['dateRange'] ) ? sanitize_key( $attributes['dateRange'] ) : '';
-
-		if ( ! empty( $media_folder_ids ) ) {
-			$query_args['media-folder'] = implode( ',', $media_folder_ids );
-		}
-
-		if ( ! empty( $author_ids ) ) {
-			$query_args['author'] = implode( ',', $author_ids );
-		}
-
-		if ( '7days' === $date_range ) {
-			$query_args['after'] = gmdate( 'c', strtotime( '-7 days' ) );
-		} elseif ( '30days' === $date_range ) {
-			$query_args['after'] = gmdate( 'c', strtotime( '-30 days' ) );
-		} elseif ( '90days' === $date_range ) {
-			$query_args['after'] = gmdate( 'c', strtotime( '-90 days' ) );
-		} elseif ( 'custom' === $date_range ) {
-			if ( ! empty( $attributes['customDateStart'] ) ) {
-				$query_args['after'] = gmdate( 'c', strtotime( $attributes['customDateStart'] ) );
-			}
-
-			if ( ! empty( $attributes['customDateEnd'] ) ) {
-				$query_args['before'] = gmdate( 'c', strtotime( $attributes['customDateEnd'] ) );
-			}
-		}
-
-		return $query_args;
-	}
-}
-
 if ( ! function_exists( 'godam_gallery_v2_get_video_data' ) ) {
 
 	/**
@@ -260,7 +211,9 @@ if ( ! function_exists( 'godam_gallery_v2_get_video_data' ) ) {
 
 $gallery_mode        = isset( $attributes['mode'] ) ? sanitize_key( $attributes['mode'] ) : 'handpicked';
 $layout              = isset( $attributes['layout'] ) ? sanitize_key( $attributes['layout'] ) : 'carousel';
-$view_ratio          = isset( $attributes['viewRatio'] ) ? sanitize_text_field( $attributes['viewRatio'] ) : '16:9';
+$view_ratio          = isset( $attributes['viewRatio'] ) ? $attributes['viewRatio'] : '16:9';
+$allowed_ratios      = array( '16:9', '4:3', '9:16', '3:4', '1:1' );
+$view_ratio          = in_array( $view_ratio, $allowed_ratios, true ) ? $view_ratio : '16:9';
 $item_width          = isset( $attributes['itemWidth'] ) ? max( 180, absint( $attributes['itemWidth'] ) ) : 180;
 $show_title          = ! isset( $attributes['showTitle'] ) || (bool) $attributes['showTitle'];
 $enable_more_items   = array_key_exists( 'enableMoreItems', $attributes ) ? ! empty( $attributes['enableMoreItems'] ) : true;

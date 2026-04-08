@@ -238,21 +238,31 @@ class Dynamic_Gallery extends Base {
 					break;
 				case 'custom':
 					if ( ! empty( $atts['custom_date_start'] ) || ! empty( $atts['custom_date_end'] ) ) {
-						$wp_timezone = new \DateTimeZone( wp_timezone_string() );
-						$date_query  = array( 'inclusive' => true );
+						try {
+							$wp_timezone = new \DateTimeZone( wp_timezone_string() );
+							$date_query  = array( 'inclusive' => true );
 
-						if ( ! empty( $atts['custom_date_start'] ) ) {
-							$start_date = new \DateTime( $atts['custom_date_start'] );
-							$start_date->setTimezone( $wp_timezone );
-							$start_date->setTime( 0, 0, 0 );
-							$date_query['after'] = $start_date->format( 'Y-m-d H:i:s' );
-						}
+							if ( ! empty( $atts['custom_date_start'] ) ) {
+								$start_date = new \DateTime( $atts['custom_date_start'] );
+								$start_date->setTimezone( $wp_timezone );
+								$start_date->setTime( 0, 0, 0 );
+								$date_query['after'] = $start_date->format( 'Y-m-d H:i:s' );
+							}
 
-						if ( ! empty( $atts['custom_date_end'] ) ) {
-							$end_date = new \DateTime( $atts['custom_date_end'] );
-							$end_date->setTimezone( $wp_timezone );
-							$end_date->setTime( 23, 59, 59 );
-							$date_query['before'] = $end_date->format( 'Y-m-d H:i:s' );
+							if ( ! empty( $atts['custom_date_end'] ) ) {
+								$end_date = new \DateTime( $atts['custom_date_end'] );
+								$end_date->setTimezone( $wp_timezone );
+								$end_date->setTime( 23, 59, 59 );
+								$date_query['before'] = $end_date->format( 'Y-m-d H:i:s' );
+							}
+						} catch ( \Exception $e ) {
+							return new WP_REST_Response(
+								array(
+									'status'  => 'error',
+									'message' => __( 'Invalid custom date format provided.', 'godam' ),
+								),
+								400
+							);
 						}
 					}
 					break;

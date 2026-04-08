@@ -52,10 +52,6 @@ class Blocks {
 		);
 
 		register_block_type(
-			RTGODAM_PATH . '/assets/build/blocks/godam-gallery/'
-		);
-
-		register_block_type(
 			RTGODAM_PATH . '/assets/build/blocks/godam-gallery-v2/'
 		);
 

@@ -257,13 +257,6 @@
 	}
 }
 
-@keyframes godam-gallery-v2-item-shimmer {
-
-	100% {
-		transform: translateX(100%);
-	}
-}
-
 @container gallery-item (max-width: 220px) {
 
 	.godam-gallery-v2-item__preview-overlay {
