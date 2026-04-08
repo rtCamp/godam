@@ -31,6 +31,10 @@
       "type": "number",
       "default": 12
     },
+    "count": {
+      "type": "number",
+      "default": 12
+    },
     "autoplay": {
       "type": "boolean",
       "default": false
@@ -67,5 +71,5 @@
   "render": "file:./render.php",
   "style": ["file:./style-index.css", "godam-player-wc-reels-skin"],
   "editorStyle": ["file:./index.css"],
-  "viewScript": ["file:./view.js"]
+  "viewScript": ["wc-blocks-data-store","file:./view.js"]
 }

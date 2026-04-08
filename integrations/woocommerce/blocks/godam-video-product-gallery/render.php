@@ -158,8 +158,8 @@ if ( ! function_exists( 'godam_vpg_build_gallery_items' ) ) {
 
 				$gallery_items[] = array(
 					'videoId'     => $video_id,
-					'productId'   => $product_id,
-					'productData' => $product_id ? godam_vpg_get_product_data( $product_id ) : null,
+					'productId'   => $product_id ? array( $product_id ) : array(),
+					'productData' => $product_id ? array( godam_vpg_get_product_data( $product_id ) ) : array(),
 				);
 			}
 
@@ -206,7 +206,9 @@ if ( ! function_exists( 'godam_vpg_build_gallery_items' ) ) {
 
 		foreach ( $video_posts as $video_post ) {
 			$attached_product_ids = get_post_meta( $video_post->ID, '_video_parent_product_id', false );
-			$resolved_product_id  = 0;
+			$valid_product_ids    = array();
+			$valid_product_data   = array();
+			$mode                 = 'single';
 
 			foreach ( $attached_product_ids as $attached_product_id ) {
 				$attached_product_id = absint( $attached_product_id );
@@ -223,24 +225,29 @@ if ( ! function_exists( 'godam_vpg_build_gallery_items' ) ) {
 					continue;
 				}
 
-				$resolved_product_id = $attached_product_id;
-				break;
+				$product_data = godam_vpg_get_product_data( $attached_product_id );
+
+				if ( ! $product_data ) {
+					continue;
+				}
+
+				$valid_product_ids[]  = $attached_product_id;
+				$valid_product_data[] = $product_data;
 			}
 
-			if ( ! $resolved_product_id ) {
+			if ( empty( $valid_product_ids ) ) {
 				continue;
 			}
 
-			$product_data = godam_vpg_get_product_data( $resolved_product_id );
-
-			if ( ! $product_data ) {
-				continue;
+			if ( 1 !== count( $valid_product_ids ) ) {
+				$mode = 'multiple';
 			}
 
 			$gallery_items[] = array(
 				'videoId'     => absint( $video_post->ID ),
-				'productId'   => $resolved_product_id,
-				'productData' => $product_data,
+				'productMode' => $mode,
+				'productId'   => $valid_product_ids,
+				'productData' => $valid_product_data,
 			);
 		}
 
@@ -334,35 +341,99 @@ $wrapper_attributes = get_block_wrapper_attributes(
 			<div 
 				class="godam-video-product-gallery-item godam-video-product-gallery-item--ratio-<?php echo esc_attr( $ratio_class ); ?>"
 				data-video-id="<?php echo esc_attr( $item['videoId'] ); ?>"
-				data-product-id="<?php echo esc_attr( $item['productId'] ); ?>"
+				data-product-id="<?php echo esc_attr( implode( ',', $item['productId'] ) ); ?>"
 				data-index="<?php echo esc_attr( $index ); ?>"
 			>
-				<!-- Video Section -->
-				<div class="godam-gallery-item__video-wrapper">
-					<?php if ( ! $autoplay ) : ?>
-						<div class="godam-gallery-item__play-icon" aria-hidden="true">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
-								<path d="M8 5v14l11-7z"/>
-							</svg>
+				<!-- Video Section + Dropdown section(if available) -->
+				<div class="godam-gallery-item__video-and-dropdown">
+					<div class="godam-gallery-item__video-wrapper">
+						<?php if ( ! $autoplay ) : ?>
+							<div class="godam-gallery-item__play-icon" aria-hidden="true">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+									<path d="M8 5v14l11-7z"/>
+								</svg>
+							</div>
+						<?php endif; ?>
+						<?php
+						// Render the video using the godam_video shortcode.
+						echo do_shortcode(
+							sprintf(
+								'[godam_video id="%d" muted="true" loop="true" autoplay="%s" controls="true" aspect_ratio="%s" godam_context="godam-video-product-gallery" showShareButton="1"]',
+								$item['videoId'],
+								$autoplay ? 'true' : 'false',
+								esc_attr( $view_ratio )
+							)
+						);
+						?>
+					</div>
+
+					<!-- Multiple products dropdown -->
+					<?php if ( count( $item['productId'] ) > 1 ) : ?>
+						<div class="cta-wrapper">
+							<div class="cta-dropdown" data-gallery-id="<?php echo esc_attr( $block_id ); ?>">
+								<?php foreach ( $item['productData'] as $cta_product ) : ?>
+									<div class="cta-dropdown-item">
+										<a href="<?php echo esc_url( $cta_product['permalink'] ); ?>" class="cta-dropdown-link">
+											<?php if ( ! empty( $cta_product['image'] ) ) : ?>
+												<img
+													src="<?php echo esc_url( $cta_product['image'] ); ?>"
+													alt="<?php echo esc_attr( $cta_product['name'] ); ?>"
+													class="cta-dropdown-image"
+													loading="lazy"
+												/>
+											<?php endif; ?>
+											<div class="cta-dropdown-details">
+												<p class="cta-dropdown-name"><?php echo esc_html( $cta_product['name'] ); ?></p>
+												<p class="cta-dropdown-price"><?php echo wp_kses_post( $cta_product['price'] ); ?></p>
+											</div>
+										</a>
+										<?php if ( $show_add_to_cart && $cta_product['in_stock'] ) : ?>
+											<?php if ( 'variable' === $cta_product['type'] ) : ?>
+												<a
+													href="<?php echo esc_url( $cta_product['permalink'] ); ?>"
+													target="_blank"
+													rel="noopener noreferrer"
+													class="cta-dropdown-add-to-cart wp-element-button"
+													<?php /* translators: %s: product name */ ?>
+													aria-label="<?php echo esc_attr( sprintf( __( 'Select options for %s', 'godam' ), $cta_product['name'] ) ); ?>"
+												>
+													<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
+														<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+													</svg>
+												</a>
+											<?php else : ?>
+												<button
+													type="button"
+													class="cta-dropdown-add-to-cart wp-element-button"
+													data-product-id="<?php echo esc_attr( $cta_product['id'] ); ?>"
+													data-product-type="<?php echo esc_attr( $cta_product['type'] ); ?>"
+													data-product-permalink="<?php echo esc_url( $cta_product['permalink'] ); ?>"
+													<?php /* translators: %s: product name */ ?>
+													aria-label="<?php echo esc_attr( sprintf( __( 'Add %s to cart', 'godam' ), $cta_product['name'] ) ); ?>"
+												>
+													<svg class="cta-dropdown-add-to-cart-icon" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
+														<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+													</svg>
+													<svg class="cta-dropdown-add-to-cart-spinner" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true" style="display:none;">
+														<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4 31.4" stroke-linecap="round"/>
+													</svg>
+													<svg class="cta-dropdown-add-to-cart-check" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true" style="display:none;">
+														<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+													</svg>
+												</button>
+											<?php endif; ?>
+										<?php endif; ?>
+									</div>
+								<?php endforeach; ?>
+							</div>
 						</div>
 					<?php endif; ?>
-					<?php
-					// Render the video using the godam_video shortcode.
-					echo do_shortcode(
-						sprintf(
-							'[godam_video id="%d" muted="true" loop="true" autoplay="%s" controls="true" aspect_ratio="%s" godam_context="godam-video-product-gallery" showShareButton="1"]',
-							$item['videoId'],
-							$autoplay ? 'true' : 'false',
-							esc_attr( $view_ratio )
-						)
-					);
-					?>
 				</div>
 
 				<!-- Product Section -->
 				<?php
 				if ( ! empty( $item['productData'] ) ) : 
-					$product = $item['productData'];
+					$product = $item['productData'][0];
 					?>
 					<div class="godam-gallery-item__product">
 						<a href="<?php echo esc_url( $product['permalink'] ); ?>" class="godam-gallery-item__product-link">
@@ -380,40 +451,54 @@ $wrapper_attributes = get_block_wrapper_attributes(
 							</div>
 						</a>
 
-						<?php if ( $show_add_to_cart && $product['in_stock'] ) : ?>
-							<?php if ( 'variable' === $product['type'] ) : ?>
-								<a
-									href="<?php echo esc_url( $product['permalink'] ); ?>"
-									target="_blank"
-									class="godam-gallery-item__add-to-cart wp-element-button"
-									<?php /* translators: %s: product name */ ?>
-									aria-label="<?php echo esc_attr( sprintf( __( 'Select options for %s', 'godam' ), $product['name'] ) ); ?>"
-								>
-									<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
-										<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-									</svg>
-								</a>
-							<?php else : ?>
-								<button
-									type="button"
-									class="godam-gallery-item__add-to-cart wp-element-button"
-									data-product-id="<?php echo esc_attr( $product['id'] ); ?>"
-									data-product-type="<?php echo esc_attr( $product['type'] ); ?>"
-									data-product-permalink="<?php echo esc_url( $product['permalink'] ); ?>"
-									<?php /* translators: %s: product name */ ?>
-									aria-label="<?php echo esc_attr( sprintf( __( 'Add %s to cart', 'godam' ), $product['name'] ) ); ?>"
-								>
-									<svg class="godam-gallery-item__add-to-cart-icon" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
-										<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-									</svg>
-									<svg class="godam-gallery-item__add-to-cart-spinner" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true" style="display:none;">
-										<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4 31.4" stroke-linecap="round"/>
-									</svg>
-									<svg class="godam-gallery-item__add-to-cart-check" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true" style="display:none;">
-										<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+						<?php if ( count( $item['productId'] ) === 1 ) : ?>
+							<?php if ( $show_add_to_cart && $product['in_stock'] ) : ?>
+								<?php if ( 'variable' === $product['type'] ) : ?>
+									<a
+										href="<?php echo esc_url( $product['permalink'] ); ?>"
+										target="_blank"
+										class="godam-gallery-item__add-to-cart wp-element-button"
+										<?php /* translators: %s: product name */ ?>
+										aria-label="<?php echo esc_attr( sprintf( __( 'Select options for %s', 'godam' ), $product['name'] ) ); ?>"
+									>
+										<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
+											<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+										</svg>
+									</a>
+								<?php else : ?>
+									<button
+										type="button"
+										class="godam-gallery-item__add-to-cart wp-element-button"
+										data-product-id="<?php echo esc_attr( $product['id'] ); ?>"
+										data-product-type="<?php echo esc_attr( $product['type'] ); ?>"
+										data-product-permalink="<?php echo esc_url( $product['permalink'] ); ?>"
+										<?php /* translators: %s: product name */ ?>
+										aria-label="<?php echo esc_attr( sprintf( __( 'Add %s to cart', 'godam' ), $product['name'] ) ); ?>"
+									>
+										<svg class="godam-gallery-item__add-to-cart-icon" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
+											<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+										</svg>
+										<svg class="godam-gallery-item__add-to-cart-spinner" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true" style="display:none;">
+											<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4 31.4" stroke-linecap="round"/>
+										</svg>
+										<svg class="godam-gallery-item__add-to-cart-check" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true" style="display:none;">
+											<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+										</svg>
+									</button>
+								<?php endif; ?>
+							<?php endif; ?>
+						<?php else : ?>
+							<!-- show dropdown for multiple products attached to the same video and the dropdown should open upwards if the item is in the bottom half of the gallery. -->
+							<?php
+							$dropdown_class = 'godam-gallery-item__product-dropdown';
+							?>
+							<div class="<?php echo esc_attr( $dropdown_class ); ?>">
+								<button class="godam-gallery-item__product-dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">
+									<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+										<path d="M6 14L12 8L18 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 									</svg>
 								</button>
-							<?php endif; ?>
+							</div>			
 						<?php endif; ?>
 					</div>
 				<?php endif; ?>

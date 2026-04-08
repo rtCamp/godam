@@ -26,6 +26,12 @@
 	align-items: start;
 }
 
+// Video and Dropdown Wrapper — holds the video and the CTA dropdown together for better positioning.
+.godam-gallery-item__video-and-dropdown {
+	position: relative;
+	width: 100%;
+}
+
 // Video Wrapper.
 .godam-gallery-item__video-wrapper {
 	position: relative;
@@ -238,7 +244,9 @@
 }
 
 // Add to Cart Button.
-.godam-gallery-item__add-to-cart {
+.godam-gallery-item__add-to-cart,
+.godam-gallery-item__product-dropdown-toggle,
+.cta-dropdown-add-to-cart {
 	flex-shrink: 0;
 	display: inline-flex;
 	align-items: center;
@@ -272,7 +280,8 @@
 		pointer-events: none;
 		opacity: 0.7;
 
-		.godam-gallery-item__add-to-cart-spinner {
+		.godam-gallery-item__add-to-cart-spinner,
+		.cta-dropdown-add-to-cart-spinner {
 			animation: godam-spin 0.8s linear infinite;
 		}
 	}
@@ -403,6 +412,10 @@
 			top: -20px;
 			z-index: 99;
 		}
+	}
+
+	.cta-wrapper.cta-wrapper {
+		bottom: 20px;
 	}
 }
 
@@ -1055,5 +1068,157 @@ body.admin-bar {
 	// Ensure the modal item can be animated during swipe transitions.
 	.godam-vpg-modal-wrapper .godam-video-product-gallery-item--modal {
 		will-change: transform, opacity;
+	}
+}
+
+// Dropdown Toggle.
+.godam-gallery-item__product-dropdown-toggle svg {
+	transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* When active → rotate */
+.godam-gallery-item__product-dropdown-toggle.is-open svg {
+	transform: rotate(180deg);
+}
+
+// CTA Dropdown.
+.cta-wrapper {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+    margin: 5px;
+    z-index: 11;
+
+	.cta-dropdown {
+		position: absolute;
+		bottom: 100%;
+
+		width: 100%;
+		max-height: calc(3 * 60px);
+		overflow-y: auto;
+
+		box-sizing: border-box;
+
+		background: #fff;
+		border-radius: 12px;
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+
+		padding: 9px;
+		z-index: 9999;
+
+		opacity: 0;
+		visibility: hidden;
+		transform: translateY(10px);
+		transition: all 0.25s ease;
+
+		&.is-active {
+			opacity: 1;
+			visibility: visible;
+			transform: translateY(0);
+		}
+
+		&.has-scroll::after {
+			content: "↓";
+			position: absolute;
+			bottom: 8px;
+			left: 50%;
+			transform: translateX(-50%);
+			font-size: 18px;
+			font-weight: 600;
+			color: var(--godam-product-gallery-dropdown-icon-color, rgba(28, 28, 28, 1));
+			background: var(--godam-product-gallery-dropdown-bg-color, rgba(255, 255, 255, 1));
+			border-radius: 50%;
+			width: 28px;
+			height: 28px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+			pointer-events: none;
+			animation: bounce 1.5s infinite;
+			transition: opacity 0.3s ease;
+		}
+
+		&.has-scroll.scrolled::after {
+			opacity: 0;
+			pointer-events: none;
+		}
+
+		@keyframes bounce {
+			0%, 100% { transform: translateX(-50%) translateY(0); }
+			50% { transform: translateX(-50%) translateY(6px); }
+		}
+
+		.cta-dropdown-item {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 10px;
+
+			padding: 8px;
+			border-radius: 8px;
+			transition: background 0.2s ease;
+
+			&:hover {
+				background: #f5f5f5;
+			}
+
+			.cta-dropdown-link {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				text-decoration: none;
+				color: inherit;
+				flex: 1;
+			}
+
+			.cta-dropdown-image {
+				width: 45px;
+				height: 45px;
+				object-fit: cover;
+				border-radius: 6px;
+			}
+
+			.cta-dropdown-details {
+				display: flex;
+				flex-direction: column;
+			}
+
+			.cta-dropdown-name {
+				font-size: 12px;
+				font-weight: 600;
+				margin: 0;
+			}
+
+			.cta-dropdown-price {
+				font-size: 12px;
+				color: #666;
+				margin: 0;
+			}
+
+			.cta-dropdown-add-to-cart {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+
+				width: 36px;
+				height: 36px;
+
+				border: none;
+				cursor: pointer;
+
+				background: #000;
+				color: #fff;
+
+				transition: all 0.2s ease;
+
+				&:hover {
+					transform: scale(1.05);
+					background: #222;
+				}
+			}
+
+		}
 	}
 }
