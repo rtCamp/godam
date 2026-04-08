@@ -6,8 +6,7 @@
 /**
  * Internal dependencies
  */
-import { resetVideoModal, loadNewVideo } from '../global-video-popup/video-modal.js';
-import { initEscapeManager, registerEscapeHandler, unregisterEscapeHandler } from '../global-video-popup/escapeManager.js';
+import { initEscapeManager } from '../global-video-popup/escapeManager.js';
 
 jQuery( document ).ready( function( $ ) {
 	const emptySrcAlts = [];
@@ -70,7 +69,9 @@ jQuery( document ).ready( function( $ ) {
 				product_id: productId,
 			},
 			function( response ) {
-				if ( ! response.success || ! response.data?.videoThumbs || ! response.data?.videoIds ) {
+				if (
+					! response.success || ! response.data?.videoThumbs || ! response.data?.videoIds || ! response.data?.videoUrls
+				) {
 					console.error( 'Invalid AJAX response for video thumbnails' );
 					return;
 				}

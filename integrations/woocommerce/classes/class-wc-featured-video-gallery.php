@@ -393,12 +393,11 @@ class WC_Featured_Video_Gallery {
 				$zero_indexed = $index - 2;
 
 				if ( isset( $gallery_ids[ $zero_indexed ] ) ) {
-					$video_id    = absint( $gallery_ids[ $zero_indexed ] );
-					$video_ids[] = $video_id;
+					$video_id           = absint( $gallery_ids[ $zero_indexed ] );
+					$video_ids[]        = $video_id;
+					$video_thumbnails[] = esc_url( get_post_meta( $video_id, 'rtgodam_media_video_thumbnail', true ) ?: self::FALLBACK_THUMBNAIL );
+					$video_urls[]       = wp_get_attachment_url( $video_id );
 				}
-
-				$video_thumbnails[] = esc_url( get_post_meta( $video_id, 'rtgodam_media_video_thumbnail', true ) ?: self::FALLBACK_THUMBNAIL );
-				$video_urls[]       = wp_get_attachment_url( $video_id );
 			}
 		}
 
