@@ -71,5 +71,5 @@
   "render": "file:./render.php",
   "style": ["file:./style-index.css", "godam-player-wc-reels-skin"],
   "editorStyle": ["file:./index.css"],
-  "viewScript": ["file:./view.js"]
+  "viewScript": ["wc-blocks-data-store","file:./view.js"]
 }
