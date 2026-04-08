@@ -158,8 +158,8 @@ if ( ! function_exists( 'godam_vpg_build_gallery_items' ) ) {
 
 				$gallery_items[] = array(
 					'videoId'     => $video_id,
-					'productId'   => $product_id,
-					'productData' => $product_id ? godam_vpg_get_product_data( $product_id ) : null,
+					'productId'   => $product_id ? array( $product_id ) : array(),
+					'productData' => $product_id ? array( godam_vpg_get_product_data( $product_id ) ) : array(),
 				);
 			}
 
@@ -392,6 +392,7 @@ $wrapper_attributes = get_block_wrapper_attributes(
 												<a
 													href="<?php echo esc_url( $cta_product['permalink'] ); ?>"
 													target="_blank"
+													rel="noopener noreferrer"
 													class="cta-dropdown-add-to-cart wp-element-button"
 													<?php /* translators: %s: product name */ ?>
 													aria-label="<?php echo esc_attr( sprintf( __( 'Select options for %s', 'godam' ), $cta_product['name'] ) ); ?>"
@@ -490,12 +491,9 @@ $wrapper_attributes = get_block_wrapper_attributes(
 							<!-- show dropdown for multiple products attached to the same video and the dropdown should open upwards if the item is in the bottom half of the gallery. -->
 							<?php
 							$dropdown_class = 'godam-gallery-item__product-dropdown';
-							if ( $index >= floor( count( $gallery_items ) / 2 ) ) {
-								$dropdown_class .= ' godam-gallery-item__product-dropdown--upwards';
-							}
 							?>
 							<div class="<?php echo esc_attr( $dropdown_class ); ?>">
-								<button class="godam-gallery-item__product-dropdown-toggle" aria-haspopup="true" aria-expanded="false">
+								<button class="godam-gallery-item__product-dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">
 									<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 										<path d="M6 14L12 8L18 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 									</svg>

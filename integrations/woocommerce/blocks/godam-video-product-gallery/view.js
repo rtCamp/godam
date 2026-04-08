@@ -27,6 +27,9 @@ import { dispatch } from '@wordpress/data';
 	let activeModalGallery = null;
 	let sharedModalElements = null;
 
+	const galleryInstances = new Set();
+	let isGlobalClickBound = false;
+
 	/**
 	 * Route document-level keyboard navigation to the currently active modal.
 	 *
@@ -182,6 +185,17 @@ import { dispatch } from '@wordpress/data';
 
 			this.createModalElements();
 			this.init();
+
+			galleryInstances.add( this );
+
+			if ( ! isGlobalClickBound ) {
+				document.addEventListener( 'click', () => {
+					galleryInstances.forEach( ( instance ) => {
+						instance.closeAllDropdowns();
+					} );
+				} );
+				isGlobalClickBound = true;
+			}
 		}
 
 		init() {
@@ -363,6 +377,12 @@ import { dispatch } from '@wordpress/data';
 
 					if ( response?.fragments ) {
 						this.updateCartFragments( response.fragments );
+					} else if (
+						typeof jQuery === 'function' &&
+						typeof wc_add_to_cart_params !== 'undefined' &&
+						wc_add_to_cart_params?.wc_ajax_url
+					) {
+						jQuery( document.body ).trigger( 'wc_fragment_refresh' );
 					}
 
 					// Open mini-cart sidebar if available (block themes).
@@ -1242,10 +1262,10 @@ import { dispatch } from '@wordpress/data';
 
 					const isActive = dropdown.classList.contains( 'is-active' );
 
-					// Close all first
+					// Close all first.
 					this.closeAllDropdowns();
 
-					// Toggle current
+					// Toggle current.
 					if ( ! isActive ) {
 						dropdown.classList.add( 'is-active' );
 						btn.setAttribute( 'aria-expanded', 'true' );
@@ -1258,14 +1278,9 @@ import { dispatch } from '@wordpress/data';
 				} );
 			} );
 
-			// Prevent closing when clicking inside dropdown
+			// Prevent closing when clicking inside dropdown.
 			this.element.querySelectorAll( '.cta-dropdown' ).forEach( ( dd ) => {
 				dd.addEventListener( 'click', ( e ) => e.stopPropagation() );
-			} );
-
-			// Outside click
-			document.addEventListener( 'click', () => {
-				this.closeAllDropdowns();
 			} );
 		}
 

@@ -280,7 +280,8 @@
 		pointer-events: none;
 		opacity: 0.7;
 
-		.godam-gallery-item__add-to-cart-spinner {
+		.godam-gallery-item__add-to-cart-spinner,
+		.cta-dropdown-add-to-cart-spinner {
 			animation: godam-spin 0.8s linear infinite;
 		}
 	}
