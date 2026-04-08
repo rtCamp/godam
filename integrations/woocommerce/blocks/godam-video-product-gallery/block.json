@@ -11,6 +11,10 @@
     "blockId": {
       "type": "string"
     },
+    "mode": {
+      "type": "string",
+      "default": "handpicked"
+    },
     "layout": {
       "type": "string",
       "default": "carousel"
@@ -20,12 +24,24 @@
       "default": "9:16"
     },
     "itemWidth": {
+      "type": "string",
+      "default": "M"
+    },
+    "count": {
       "type": "number",
-      "default": 180
+      "default": 12
     },
     "autoplay": {
       "type": "boolean",
       "default": false
+    },
+    "categories": {
+      "type": "array",
+      "default": []
+    },
+    "products": {
+      "type": "array",
+      "default": []
     },
     "showAddToCart": {
       "type": "boolean",

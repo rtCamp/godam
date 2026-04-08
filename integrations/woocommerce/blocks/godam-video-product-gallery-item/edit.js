@@ -14,7 +14,7 @@ import {
 	__experimentalHStack as HStack,
 	__experimentalVStack as VStack,
 } from '@wordpress/components';
-import { useState, useEffect, useCallback } from '@wordpress/element';
+import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
 import { video as videoIcon, closeSmall, store as storeIcon, edit as editIcon } from '@wordpress/icons';
 import apiFetch from '@wordpress/api-fetch';
@@ -67,6 +67,7 @@ export default function Edit( { attributes, setAttributes, context } ) {
 	const [ productSearchQuery, setProductSearchQuery ] = useState( '' );
 	const [ searchResults, setSearchResults ] = useState( [] );
 	const [ isSearching, setIsSearching ] = useState( false );
+	const productSearchInputRef = useRef( null );
 
 	// Get video details when videoId changes
 	const videoMedia = useSelect(
@@ -157,6 +158,18 @@ export default function Edit( { attributes, setAttributes, context } ) {
 
 		return () => clearTimeout( timeoutId );
 	}, [ productSearchQuery, searchProducts ] );
+
+	useEffect( () => {
+		if ( ! isProductModalOpen ) {
+			return;
+		}
+
+		const timeoutId = setTimeout( () => {
+			productSearchInputRef.current?.focus();
+		}, 0 );
+
+		return () => clearTimeout( timeoutId );
+	}, [ isProductModalOpen ] );
 
 	// Handle product selection
 	const onSelectProduct = ( product ) => {
@@ -309,6 +322,7 @@ export default function Edit( { attributes, setAttributes, context } ) {
 				>
 					<VStack spacing={ 4 }>
 						<SearchControl
+							ref={ productSearchInputRef }
 							__nextHasNoMarginBottom
 							label={ __( 'Search products', 'godam' ) }
 							value={ productSearchQuery }

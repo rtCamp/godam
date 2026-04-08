@@ -199,7 +199,7 @@ class Bootstrap {
 		}
 
 		$disallowed_blocks = array(
-			'godam/product-gallery',
+			'godam/video-product-gallery',
 			'godam/reel-pops',
 		);
 
@@ -222,12 +222,6 @@ class Bootstrap {
 	 * Initialize WooCommerce integration classes.
 	 */
 	public function init_woocommerce_integration() {
-		// Register WooCommerce product gallery block from built assets if available.
-		$wc_block_path = RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'blocks/godam-product-gallery/';
-		if ( file_exists( $wc_block_path . 'block.json' ) ) {
-			register_block_type( $wc_block_path );
-		}
-
 		// Register GoDAM Reel Pops block from built assets if available.
 		$reel_pops_block_path = RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'blocks/godam-reel-pops/';
 		if ( file_exists( $reel_pops_block_path . 'block.json' ) ) {
