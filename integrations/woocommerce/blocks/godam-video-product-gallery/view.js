@@ -7,6 +7,11 @@
 
 /* global jQuery, wc_add_to_cart_params */
 
+/**
+ * WordPress dependencies
+ */
+import { dispatch } from '@wordpress/data';
+
 ( function() {
 	'use strict';
 
@@ -21,6 +26,9 @@
 	const SLIDE_SAFETY_MS = SLIDE_DURATION_MS + 100; // Safety timeout in case transitionend doesn't fire.
 	let activeModalGallery = null;
 	let sharedModalElements = null;
+
+	const galleryInstances = new Set();
+	let isGlobalClickBound = false;
 
 	/**
 	 * Route document-level keyboard navigation to the currently active modal.
@@ -177,6 +185,17 @@
 
 			this.createModalElements();
 			this.init();
+
+			galleryInstances.add( this );
+
+			if ( ! isGlobalClickBound ) {
+				document.addEventListener( 'click', () => {
+					galleryInstances.forEach( ( instance ) => {
+						instance.closeAllDropdowns();
+					} );
+				} );
+				isGlobalClickBound = true;
+			}
 		}
 
 		init() {
@@ -193,6 +212,9 @@
 			this.initAddToCart();
 			this.initModal();
 			this.initMobileSwipe();
+
+			this.handleDropdownScrollState();
+			this.initDropdownToggle();
 		}
 
 		/**
@@ -258,7 +280,7 @@
 		/**
 		 * Start or stop preview playback for a gallery item.
 		 *
-		 * @param {Element} item The gallery item.
+		 * @param {Element} item       The gallery item.
 		 * @param {boolean} shouldPlay Whether preview playback should run.
 		 */
 		syncPreviewVideo( item, shouldPlay ) {
@@ -296,7 +318,9 @@
 		 * Variable products: rendered as <a> links, so they navigate to product page natively.
 		 */
 		initAddToCart() {
-			const buttons = this.element.querySelectorAll( 'button.godam-gallery-item__add-to-cart' );
+			const buttons = this.element.querySelectorAll(
+				'button.godam-gallery-item__add-to-cart, button.cta-dropdown-add-to-cart',
+			);
 			buttons.forEach( ( btn ) => {
 				btn.addEventListener( 'click', ( e ) => {
 					e.preventDefault();
@@ -317,9 +341,17 @@
 				return;
 			}
 
-			const iconEl = btn.querySelector( '.godam-gallery-item__add-to-cart-icon' );
-			const spinnerEl = btn.querySelector( '.godam-gallery-item__add-to-cart-spinner' );
-			const checkEl = btn.querySelector( '.godam-gallery-item__add-to-cart-check' );
+			const iconEl = btn.querySelector(
+				'.godam-gallery-item__add-to-cart-icon, .cta-dropdown-add-to-cart-icon',
+			);
+
+			const spinnerEl = btn.querySelector(
+				'.godam-gallery-item__add-to-cart-spinner, .cta-dropdown-add-to-cart-spinner',
+			);
+
+			const checkEl = btn.querySelector(
+				'.godam-gallery-item__add-to-cart-check, .cta-dropdown-add-to-cart-check',
+			);
 
 			// Show loading state.
 			btn.classList.add( 'is-loading' );
@@ -331,19 +363,9 @@
 				spinnerEl.style.display = 'block';
 			}
 
-			fetch( this.getWcAjaxEndpoint( 'add_to_cart' ), {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-				body: new URLSearchParams( { product_id: productId, quantity: 1 } ),
-				credentials: 'same-origin',
-			} )
-				.then( ( response ) => response.json() )
-				.then( ( data ) => {
-					if ( data.error ) {
-						throw new Error( 'Add to cart failed' );
-					}
-
-					// Show success state.
+			dispatch( 'wc/store/cart' )
+				.addItemToCart( productId, 1 )
+				.then( ( response ) => {
 					if ( spinnerEl ) {
 						spinnerEl.style.display = 'none';
 					}
@@ -353,8 +375,15 @@
 					btn.classList.remove( 'is-loading' );
 					btn.classList.add( 'is-added' );
 
-					// Update WooCommerce cart fragments (classic themes).
-					this.updateCartFragments( data.fragments );
+					if ( response?.fragments ) {
+						this.updateCartFragments( response.fragments );
+					} else if (
+						typeof jQuery === 'function' &&
+						typeof wc_add_to_cart_params !== 'undefined' &&
+						wc_add_to_cart_params?.wc_ajax_url
+					) {
+						jQuery( document.body ).trigger( 'wc_fragment_refresh' );
+					}
 
 					// Open mini-cart sidebar if available (block themes).
 					this.openMiniCart();
@@ -1190,6 +1219,80 @@
 			const { scrollLeft, scrollWidth, clientWidth } = this.container;
 			this.prevBtn.style.display = scrollLeft <= 0 ? 'none' : 'flex';
 			this.nextBtn.style.display = scrollLeft + clientWidth >= scrollWidth - 1 ? 'none' : 'flex';
+		}
+
+		handleDropdownScrollState() {
+			const dropdowns = this.element.querySelectorAll( '.cta-dropdown' );
+
+			dropdowns.forEach( ( dropdown ) => {
+				// Check if scroll exists.
+				const hasScroll = dropdown.scrollHeight > dropdown.clientHeight;
+
+				if ( hasScroll ) {
+					dropdown.classList.add( 'has-scroll' );
+				} else {
+					dropdown.classList.remove( 'has-scroll' );
+				}
+
+				// Listen for scroll.
+				dropdown.addEventListener( 'scroll', () => {
+					if ( dropdown.scrollTop > 5 ) {
+						dropdown.classList.add( 'scrolled' );
+					}
+				} );
+			} );
+		}
+
+		initDropdownToggle() {
+			const toggles = this.element.querySelectorAll( '.godam-gallery-item__product-dropdown-toggle' );
+
+			toggles.forEach( ( btn ) => {
+				btn.addEventListener( 'click', ( e ) => {
+					e.stopPropagation();
+
+					const galleryItem = btn.closest( '.godam-video-product-gallery-item' );
+					if ( ! galleryItem ) {
+						return;
+					}
+
+					const dropdown = galleryItem.querySelector( '.cta-dropdown' );
+					if ( ! dropdown ) {
+						return;
+					}
+
+					const isActive = dropdown.classList.contains( 'is-active' );
+
+					// Close all first.
+					this.closeAllDropdowns();
+
+					// Toggle current.
+					if ( ! isActive ) {
+						dropdown.classList.add( 'is-active' );
+						btn.setAttribute( 'aria-expanded', 'true' );
+						btn.classList.add( 'is-open' );
+					} else {
+						dropdown.classList.remove( 'is-active' );
+						btn.setAttribute( 'aria-expanded', 'false' );
+						btn.classList.remove( 'is-open' );
+					}
+				} );
+			} );
+
+			// Prevent closing when clicking inside dropdown.
+			this.element.querySelectorAll( '.cta-dropdown' ).forEach( ( dd ) => {
+				dd.addEventListener( 'click', ( e ) => e.stopPropagation() );
+			} );
+		}
+
+		closeAllDropdowns() {
+			const dropdowns = this.element.querySelectorAll( '.cta-dropdown' );
+			const toggles = this.element.querySelectorAll( '.godam-gallery-item__product-dropdown-toggle' );
+
+			dropdowns.forEach( ( dd ) => dd.classList.remove( 'is-active' ) );
+			toggles.forEach( ( btn ) => {
+				btn.setAttribute( 'aria-expanded', 'false' );
+				btn.classList.remove( 'is-open' );
+			} );
 		}
 	}
 
