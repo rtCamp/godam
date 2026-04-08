@@ -255,7 +255,13 @@ $allowed_modes    = array( 'handpicked', 'query' );
 $gallery_mode     = in_array( $gallery_mode_raw, $allowed_modes, true ) ? $gallery_mode_raw : 'handpicked';
 $layout           = isset( $attributes['layout'] ) ? esc_attr( $attributes['layout'] ) : 'carousel';
 $view_ratio       = isset( $attributes['viewRatio'] ) ? esc_attr( $attributes['viewRatio'] ) : '9:16';
-$item_width       = isset( $attributes['itemWidth'] ) ? absint( $attributes['itemWidth'] ) : 180;
+$item_width_size  = isset( $attributes['itemWidth'] ) ? $attributes['itemWidth'] : 'M';
+$item_width_map   = array(
+	'S' => 220,
+	'M' => 260,
+	'L' => 300,
+);
+$item_width       = isset( $item_width_map[ $item_width_size ] ) ? $item_width_map[ $item_width_size ] : 220;
 $autoplay         = ! empty( $attributes['autoplay'] );
 
 // Read blockGap from native spacing support (Dimensions > Block spacing).
