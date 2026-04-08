@@ -7,6 +7,11 @@
 
 /* global jQuery, wc_add_to_cart_params */
 
+/**
+ * WordPress dependencies
+ */
+import { dispatch } from '@wordpress/data';
+
 ( function() {
 	'use strict';
 
@@ -313,19 +318,9 @@
 				spinnerEl.style.display = 'block';
 			}
 
-			fetch( this.getWcAjaxEndpoint( 'add_to_cart' ), {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-				body: new URLSearchParams( { product_id: productId, quantity: 1 } ),
-				credentials: 'same-origin',
-			} )
-				.then( ( response ) => response.json() )
-				.then( ( data ) => {
-					if ( data.error ) {
-						throw new Error( 'Add to cart failed' );
-					}
-
-					// Show success state.
+			dispatch( 'wc/store/cart' )
+				.addItemToCart( productId, 1 )
+				.then( ( response ) => {
 					if ( spinnerEl ) {
 						spinnerEl.style.display = 'none';
 					}
@@ -335,8 +330,9 @@
 					btn.classList.remove( 'is-loading' );
 					btn.classList.add( 'is-added' );
 
-					// Update WooCommerce cart fragments (classic themes).
-					this.updateCartFragments( data.fragments );
+					if ( response?.fragments ) {
+						this.updateCartFragments( response.fragments );
+					}
 
 					// Open mini-cart sidebar if available (block themes).
 					this.openMiniCart();
