@@ -91,3 +91,14 @@
 .woocommerce-product-gallery__trigger {
 	display: none;
 }
+
+.woocommerce-product-gallery__image[data-thumb-alt="Orange Mini Carry Bag - Image 2"] video,
+.woocommerce-product-gallery__image[data-thumb-alt="Orange Mini Carry Bag - Image 3"] video {
+  	height: 768.188px !important;
+}
+
+.woocommerce div.product div.images .flex-control-thumbs li img {
+	aspect-ratio: 1 / 1 !important;
+	object-fit: cover;
+	object-position: center;
+}

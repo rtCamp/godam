@@ -249,8 +249,8 @@ class Product_Gallery_Rest extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function get_videos_by_products( $request ) {
-		$product_ids_string = $request->get_param( 'product_ids' );
-		$categories_string  = $request->get_param( 'categories' );
+		$product_ids_string = (string) $request->get_param( 'product_ids' );
+		$categories_string  = (string) $request->get_param( 'categories' );
 		$count              = absint( $request->get_param( 'count' ) );
 		$product_ids        = array_filter( array_map( 'absint', explode( ',', $product_ids_string ) ) );
 		$category_ids       = array_filter( array_map( 'absint', explode( ',', $categories_string ) ) );

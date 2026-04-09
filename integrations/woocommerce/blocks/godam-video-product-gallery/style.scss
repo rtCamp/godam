@@ -26,6 +26,12 @@
 	align-items: start;
 }
 
+// Video and Dropdown Wrapper — holds the video and the CTA dropdown together for better positioning.
+.godam-gallery-item__video-and-dropdown {
+	position: relative;
+	width: 100%;
+}
+
 // Video Wrapper.
 .godam-gallery-item__video-wrapper {
 	position: relative;
@@ -43,8 +49,13 @@
 		display: none !important;
 	}
 
-	// Hide big play button when autoplay is enabled.
-	[data-autoplay="true"] & .vjs-big-play-button {
+	// Hide big play button.
+	.vjs-big-play-button {
+		display: none !important;
+	}
+
+	// Hide loading spinner when autoplay is enabled (prevents it from showing briefly before video starts).
+	.vjs-loading-spinner {
 		display: none !important;
 	}
 
@@ -65,6 +76,34 @@
 	}
 }
 
+// Play icon overlay — shown when autoplay is off, hidden on hover.
+.godam-gallery-item__play-icon {
+	position: absolute;
+	top: 8px;
+	left: 8px;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	background: rgba(0, 0, 0, 0.5);
+	color: #fff;
+	pointer-events: none;
+	transition: opacity 0.2s ease;
+
+	svg {
+		width: 14px;
+		height: 14px;
+	}
+}
+
+// Hide play icon when the gallery item is hovered.
+.godam-video-product-gallery-item:hover .godam-gallery-item__play-icon {
+	opacity: 0;
+}
+
 // Gallery Item.
 .godam-video-product-gallery-item {
 	container-type: inline-size;
@@ -76,6 +115,19 @@
 	overflow: hidden;
 	background: var(--product-bg);
 	box-shadow: var(--product-shadow);
+
+	.godam-video-placeholder {
+		
+		.animate-play-btn {
+			display: none;
+		}
+
+		img.godam-player-poster-image {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+	}
 
 	// Aspect ratio variations.
 	&--ratio-9-16 {
@@ -192,7 +244,9 @@
 }
 
 // Add to Cart Button.
-.godam-gallery-item__add-to-cart {
+.godam-gallery-item__add-to-cart,
+.godam-gallery-item__product-dropdown-toggle,
+.cta-dropdown-add-to-cart {
 	flex-shrink: 0;
 	display: inline-flex;
 	align-items: center;
@@ -226,7 +280,8 @@
 		pointer-events: none;
 		opacity: 0.7;
 
-		.godam-gallery-item__add-to-cart-spinner {
+		.godam-gallery-item__add-to-cart-spinner,
+		.cta-dropdown-add-to-cart-spinner {
 			animation: godam-spin 0.8s linear infinite;
 		}
 	}
@@ -252,6 +307,8 @@
 	font-size: 12px;
 	font-weight: 700;
 	color: #111;
+	display: flex;
+	gap: 8px;
 
 	del {
 		color: #999;
@@ -260,7 +317,6 @@
 
 	ins {
 		text-decoration: none;
-		color: #e74c3c;
 	}
 }
 
@@ -357,6 +413,10 @@
 			z-index: 99;
 		}
 	}
+
+	.cta-wrapper.cta-wrapper {
+		bottom: 20px;
+	}
 }
 
 // ──────────────────────────────────────────
@@ -375,6 +435,10 @@
 	visibility: hidden;
 	transition: opacity 0.3s ease, visibility 0.3s ease;
 	pointer-events: none;
+
+	@media screen and (max-width: 600px) {
+		background-color: #111 !important;
+	}
 
 	&.is-active {
 		opacity: 1;
@@ -397,14 +461,52 @@
 	z-index: 995;
 	display: flex;
 	gap: 0;
-	max-height: 90dvh;
+	max-height: min(90dvh, 800px);
 	opacity: 0;
 	pointer-events: none;
 	transition: opacity 0.3s ease;
 
+	// videojs padding hack to maintain aspect ratio inside modal — forces the player to fill the wrapper height.
+	.video-js {
+		padding-top: min(90dvh, 800px) !important;
+
+		// Todo: Confirm with team if we want to show the latter-pillar boxing effect on videos inside modal.
+		// It can be a bit jarring on wider aspect ratios, but it does ensure the entire video is visible without cropping.
+
+		// If we want to remove the boxing and just have videos fill the modal (cropping on wider aspect ratios)
+		// we can set object-fit: cover on the video element.
+		// This will ensure the video fills the entire modal area, but parts of it may be cropped on wider aspect ratios.
+		video {
+			object-fit: cover !important;
+		}
+	}
+
+	@media screen and (max-width: 600px) {
+		max-height: 100dvh;
+		height: 100dvh;
+		overflow: visible; // Allow swiping items to be visible outside the wrapper.
+
+		.video-js {
+			padding-top: 100dvh !important;
+		}
+	}
+
+	
+
 	&.is-active {
 		opacity: 1;
 		pointer-events: auto;
+	}
+
+	.godam-video-product-gallery-item {
+
+		// Aspect ratio variations.
+		&--ratio-9-16, &--ratio-16-9, &--ratio-4-3, &--ratio-1-1 {
+
+			.godam-gallery-item__video-wrapper {
+				aspect-ratio: unset !important;
+			}
+		}
 	}
 }
 
@@ -413,15 +515,23 @@
 	position: relative !important;
 	top: auto !important;
 	left: auto !important;
-	transform: none !important;
+	transform: none;
 	z-index: auto !important;
-	opacity: 1 !important;
+	opacity: 1;
 	max-width: 480px !important;
 	width: 480px !important;
 	max-height: 90dvh !important;
 	flex-shrink: 0;
 	border-radius: var(--godam-vpg-modal-radius) !important;
 	overflow: hidden auto !important;
+
+	@media screen and (max-width: 600px) {
+		max-height: 100dvh !important;
+		height: 100dvh !important;
+		max-width: 100vw !important;
+		width: 100vw !important;
+		border-radius: 0 !important;
+	}
 
 	// Show controls in modal view.
 	.godam-gallery-item__video-wrapper {
@@ -439,9 +549,14 @@
 		right: 0;
 		padding: 12px;
 		background: rgba(0, 0, 0, 0.5);
+		backdrop-filter: blur(4px);
 		border-radius: 1rem;
 		margin: 1rem;
 		z-index: 999;
+
+		@media screen and (min-width: 1024px) {
+			display: none;
+		}
 
 		.godam-gallery-item__product-name,
 		.godam-gallery-item__product-price {
@@ -459,6 +574,10 @@
 
 	@media (max-width: 1024px) {
 		border-radius: var(--godam-vpg-modal-radius) !important;
+	}
+
+	@media screen and (max-width: 600px) {
+		border-radius: 0 !important;
 	}
 }
 
@@ -543,7 +662,7 @@
 // ──────────────────────────────────────────
 
 .godam-vpg-modal-sidebar {
-	width: 340px;
+	width: 400px;
 	max-height: 90dvh;
 	overflow-y: auto;
 	background: #fff;
@@ -587,12 +706,16 @@
 	}
 
 	// Image gallery.
-	.godam-main-image img {
-		width: 100%;
-		height: 200px;
-		object-fit: contain;
-		border-radius: 8px;
-		display: block;
+	.godam-main-image {
+		background-color: #f2f2f2;
+
+		img {
+			width: 100%;
+			height: 200px;
+			object-fit: contain;
+			border-radius: 8px;
+			display: block;
+		}
 	}
 
 	.godam-thumbnail-carousel {
@@ -600,20 +723,43 @@
 		align-items: center;
 		gap: 4px;
 		margin-top: 8px;
-	}
 
-	.godam-thumbnail-track {
-		display: flex;
-		gap: 6px;
-		overflow-x: auto;
-		scrollbar-width: none;
-		-ms-overflow-style: none;
-		scroll-behavior: smooth;
+		.godam-thumbnail-container {
+			flex: 1;
+			overflow-x: auto;
+			scrollbar-width: none;
+			-ms-overflow-style: none;
 
-		&::-webkit-scrollbar {
-			display: none;
+			&::-webkit-scrollbar {
+				display: none;
+			}
+		}
+
+
+		.godam-thumbnail-track {
+			display: flex;
+			gap: 6px;
+			overflow-x: auto;
+			scrollbar-width: none;
+			-ms-overflow-style: none;
+			scroll-behavior: smooth;
+	
+			&::-webkit-scrollbar {
+				display: none;
+			}
+		}
+
+		.godam-thumbnail-prev,
+		.godam-thumbnail-next {
+			width: 30px;
+			height: 30px;
+			border-radius: 100px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
 		}
 	}
+
 
 	.godam-thumbnail-item {
 		flex-shrink: 0;
@@ -624,6 +770,12 @@
 
 		&.active {
 			border-color: #333;
+		}
+
+		.godam-thumbnail-image {
+			width: 60px;
+			height: 60px;
+			object-fit: cover;
 		}
 
 		img {
@@ -827,7 +979,7 @@
 				}
 
 				ins {
-					color: #e68600;
+					// color: #e68600;
 					text-decoration: none;
 					font-weight: 500;
 				}
@@ -908,22 +1060,165 @@ body.admin-bar {
 // Responsive.
 @media (max-width: 600px) {
 
-	.godam-vpg-modal-wrapper .godam-video-product-gallery-item--modal {
-		max-width: 92vw !important;
-		width: 92vw !important;
-		max-height: 85dvh !important;
+	// Hide left/right nav buttons on mobile — swipe up/down is used instead.
+	.godam-vpg-modal-nav {
+		display: none !important;
 	}
 
-	.godam-vpg-modal-nav {
-		width: 36px;
-		height: 36px;
+	// Ensure the modal item can be animated during swipe transitions.
+	.godam-vpg-modal-wrapper .godam-video-product-gallery-item--modal {
+		will-change: transform, opacity;
+	}
+}
 
-		&--prev {
-			left: 8px;
+// Dropdown Toggle.
+.godam-gallery-item__product-dropdown-toggle svg {
+	transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* When active → rotate */
+.godam-gallery-item__product-dropdown-toggle.is-open svg {
+	transform: rotate(180deg);
+}
+
+// CTA Dropdown.
+.cta-wrapper {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+    margin: 5px;
+    z-index: 11;
+
+	.cta-dropdown {
+		position: absolute;
+		bottom: 100%;
+
+		width: 100%;
+		max-height: calc(3 * 60px);
+		overflow-y: auto;
+
+		box-sizing: border-box;
+
+		background: #fff;
+		border-radius: 12px;
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+
+		padding: 9px;
+		z-index: 9999;
+
+		opacity: 0;
+		visibility: hidden;
+		transform: translateY(10px);
+		transition: all 0.25s ease;
+
+		&.is-active {
+			opacity: 1;
+			visibility: visible;
+			transform: translateY(0);
 		}
 
-		&--next {
-			right: 8px;
+		&.has-scroll::after {
+			content: "↓";
+			position: absolute;
+			bottom: 8px;
+			left: 50%;
+			transform: translateX(-50%);
+			font-size: 18px;
+			font-weight: 600;
+			color: var(--godam-product-gallery-dropdown-icon-color, rgba(28, 28, 28, 1));
+			background: var(--godam-product-gallery-dropdown-bg-color, rgba(255, 255, 255, 1));
+			border-radius: 50%;
+			width: 28px;
+			height: 28px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+			pointer-events: none;
+			animation: bounce 1.5s infinite;
+			transition: opacity 0.3s ease;
+		}
+
+		&.has-scroll.scrolled::after {
+			opacity: 0;
+			pointer-events: none;
+		}
+
+		@keyframes bounce {
+			0%, 100% { transform: translateX(-50%) translateY(0); }
+			50% { transform: translateX(-50%) translateY(6px); }
+		}
+
+		.cta-dropdown-item {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 10px;
+
+			padding: 8px;
+			border-radius: 8px;
+			transition: background 0.2s ease;
+
+			&:hover {
+				background: #f5f5f5;
+			}
+
+			.cta-dropdown-link {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				text-decoration: none;
+				color: inherit;
+				flex: 1;
+			}
+
+			.cta-dropdown-image {
+				width: 45px;
+				height: 45px;
+				object-fit: cover;
+				border-radius: 6px;
+			}
+
+			.cta-dropdown-details {
+				display: flex;
+				flex-direction: column;
+			}
+
+			.cta-dropdown-name {
+				font-size: 12px;
+				font-weight: 600;
+				margin: 0;
+			}
+
+			.cta-dropdown-price {
+				font-size: 12px;
+				color: #666;
+				margin: 0;
+			}
+
+			.cta-dropdown-add-to-cart {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+
+				width: 36px;
+				height: 36px;
+
+				border: none;
+				cursor: pointer;
+
+				background: #000;
+				color: #fff;
+
+				transition: all 0.2s ease;
+
+				&:hover {
+					transform: scale(1.05);
+					background: #222;
+				}
+			}
+
 		}
 	}
 }

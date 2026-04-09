@@ -23,7 +23,7 @@ import {
 } from '@wordpress/components';
 import { useEffect, useMemo, useState } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
-import { columns, grid, store as storeIcon, video as videoIcon } from '@wordpress/icons';
+import { columns, grid, video as videoIcon } from '@wordpress/icons';
 import apiFetch from '@wordpress/api-fetch';
 
 /**
@@ -247,10 +247,13 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		[ productOptionsById, products ],
 	);
 
+	const itemWidthMap = { S: 220, M: 260, L: 300 };
+	const itemWidthPx = itemWidthMap[ itemWidth ] || itemWidthMap.M;
+
 	const blockProps = useBlockProps( {
 		className: `godam-video-product-gallery godam-video-product-gallery--${ layout } godam-video-product-gallery--${ mode }`,
 		style: {
-			'--godam-gallery-item-width': `${ itemWidth }px`,
+			'--godam-gallery-item-width': `${ itemWidthPx }px`,
 			'--godam-gallery-gap': gapCss,
 		},
 	} );
@@ -362,7 +365,6 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					</ToggleGroupControl>
 				</PanelBody>
 
-
 				{ mode === 'query' && (
 					<PanelBody title={ __( 'Query Settings', 'godam' ) } initialOpen={ true }>
 						<RangeControl
@@ -467,16 +469,18 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					</ToggleGroupControl>
 
 					{ /* Item Width Selector */ }
-					<RangeControl
+					<ToggleGroupControl
 						__nextHasNoMarginBottom
-						label={ __( 'Item Width', 'godam' ) }
+						isBlock
+						label={ __( 'Item Size', 'godam' ) }
 						value={ itemWidth }
 						onChange={ ( value ) => setAttributes( { itemWidth: value } ) }
-						min={ 180 }
-						max={ 600 }
-						step={ 10 }
-						help={ __( 'Width of each gallery item in pixels.', 'godam' ) }
-					/>
+						help={ __( 'Size of each gallery item.', 'godam' ) }
+					>
+						<ToggleGroupControlOption label={ __( 'S', 'godam' ) } value="S" />
+						<ToggleGroupControlOption label={ __( 'M', 'godam' ) } value="M" />
+						<ToggleGroupControlOption label={ __( 'L', 'godam' ) } value="L" />
+					</ToggleGroupControl>
 				</PanelBody>
 
 				<PanelBody title={ __( 'Playback & Interaction', 'godam' ) } initialOpen={ true }>
