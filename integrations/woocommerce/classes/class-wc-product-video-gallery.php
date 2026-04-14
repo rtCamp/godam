@@ -83,7 +83,7 @@ class WC_Product_Video_Gallery {
 	}
 
 	/**
-	 * Enqueues frontend styles for the product video gallery carousel.
+	 *  Enqueues frontend styles for the product video gallery carousel (Product Reels).
 	 *
 	 * Only loads on the single product pages.
 	 *
@@ -538,6 +538,11 @@ class WC_Product_Video_Gallery {
 		$is_first_video = true;
 
 		foreach ( $rtgodam_product_video_gallery_ids as $attachment_id ) {
+			$attachment_id = absint( $attachment_id );
+			if ( ! $attachment_id ) {
+				continue;
+			}
+
 			$autoplay = $is_first_video ? 'true' : 'false';
 
 			$videos_html .= '<div class="rtgodam-product-video-gallery__item">';
