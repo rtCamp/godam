@@ -192,7 +192,7 @@ class Virtual_Media_Registrar {
 		$job_name = (string) $job_name;
 
 		// If the virtual media registration meta is not present, we can skip the API call.
-		$meta_registered = get_post_meta( $post_id, self::META_REGISTERED, 1 );
+		$meta_registered = get_post_meta( $post_id, self::META_REGISTERED, true );
 		if ( empty( $meta_registered ) ) {
 			return;
 		}
@@ -218,7 +218,7 @@ class Virtual_Media_Registrar {
 	 * @param string $job_name The original job name associated with this virtual media site.
 	 * @return true|\WP_Error True if removal is successful, WP_Error if it fails.
 	 */
-	private static function remove_virtual_media_site( string $job_name ) {
+	private function remove_virtual_media_site( string $job_name ) {
 		$api_key = get_option( 'rtgodam-api-key' );
 		if ( empty( $api_key ) ) {
 			return new \WP_Error( 'godam_missing_api_key', __( 'GoDAM API key is not configured on this site.', 'godam' ) );

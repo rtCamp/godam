@@ -23,7 +23,7 @@ class Virtual_Media_Migration extends Base {
 		return array(
 			array(
 				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/virtual-media-migration',
+				'route'     => '/virtual-media-migration',
 				'args'      => array(
 					array(
 						'methods'             => \WP_REST_Server::CREATABLE,
@@ -72,16 +72,18 @@ class Virtual_Media_Migration extends Base {
 	 */
 	public function migrate_virtual_media( $request ) {
 		// Ensure the transcoder callback URL is defined.
-		if ( ! defined( 'RTGODAM_TRANSCODER_CALLBACK_URL' ) || empty( RTGODAM_TRANSCODER_CALLBACK_URL ) ) {
+		if ( defined( 'RTGODAM_TRANSCODER_CALLBACK_URL' ) && ! empty( RTGODAM_TRANSCODER_CALLBACK_URL ) ) {
+			$transcoder_callback_url = RTGODAM_TRANSCODER_CALLBACK_URL;
+		} else {
 			include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-rest-routes.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
-			define( 'RTGODAM_TRANSCODER_CALLBACK_URL', \RTGODAM_Transcoder_Rest_Routes::get_callback_url() );
+			$transcoder_callback_url = \RTGODAM_Transcoder_Rest_Routes::get_callback_url();
 		}
 
 		return new \WP_REST_Response(
 			array(
 				'success'      => true,
 				'site_url'     => site_url(),
-				'callback_url' => RTGODAM_TRANSCODER_CALLBACK_URL,
+				'callback_url' => $transcoder_callback_url,
 				'job_ids'      => $this->get_job_ids_for_migration(),
 			),
 			200
