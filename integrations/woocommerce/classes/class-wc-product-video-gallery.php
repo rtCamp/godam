@@ -538,7 +538,7 @@ class WC_Product_Video_Gallery {
 		foreach ( $rtgodam_product_video_gallery_ids as $attachment_id ) {
 			$videos_html .= '<div class="rtgodam-product-video-gallery__item">';
 			$videos_html .= '<div class="godam-gallery-video-wrapper">';
-			$videos_html .= do_shortcode( "[godam_video id='{$attachment_id}' autoplay=true muted=true loop=true controls=false aspect_ratio='9:16']" );
+			$videos_html .= do_shortcode( "[godam_video id='{$attachment_id}' autoplay=true muted=true loop=true controls=false aspect_ratio='9:16' godam_context='godam-woo-product-page-reels']" );
 			$videos_html .= '</div>';
 			$videos_html .= '</div>';
 		}
