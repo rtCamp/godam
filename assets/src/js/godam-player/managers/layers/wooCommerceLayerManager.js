@@ -655,90 +655,70 @@ export default class WooCommerceLayerManager {
 					<path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
 			</svg>`;
 
-		if ( ! miniCart ) {
-			// Product link when Mini Cart is false.
-			const productLink = document.createElement( 'a' );
-			productLink.classList.add(
-				'product-hotspot-woo-link',
-				'text-white',
-				'flex',
-				'items-center',
-			);
-			productLink.href = hotspot.addToCart ? hotspot.productDetails.link : `${ window.godamWooSettings.url }?add-to-cart=${ hotspot.productId }&source=productHotspot`;
-			productLink.target = '_blank';
-			productLink.rel = 'noopener noreferrer';
-			productLink.style.background = hotspot.backgroundColor;
-			productLink.appendChild( iconSpan );
+		// Always use button with add-to-cart store API; miniCart only controls CSS visibility of the cart widget.
+		const productLinkButton = document.createElement( 'button' );
+		productLinkButton.classList.add(
+			'product-hotspot-woo-link',
+			'text-white',
+			'flex',
+			'items-center',
+		);
+		productLinkButton.style.background = hotspot.backgroundColor;
+		productLinkButton.appendChild( iconSpan );
 
-			productActionDiv.appendChild( productLink );
-			productDisplayDiv.appendChild( productActionDiv );
-		} else {
-			// Product Link Button when Mini Cart is True.
-			const productLinkButton = document.createElement( 'button' );
-			productLinkButton.classList.add(
-				'product-hotspot-woo-link',
-				'text-white',
-				'flex',
-				'items-center',
-			);
-			productLinkButton.style.background = hotspot.backgroundColor;
-			productLinkButton.appendChild( iconSpan );
+		// Disable Product Link button during async operation
+		productLinkButton.addEventListener( 'click', ( event ) => {
+			event.preventDefault();
+			productLinkButton.disabled = true;
+			productLinkButton.classList.add( 'loading' );
 
-			// Disable Product Link button during async operation
-			productLinkButton.addEventListener( 'click', ( event ) => {
-				event.preventDefault();
-				productLinkButton.disabled = true;
-				productLinkButton.classList.add( 'loading' );
+			if ( hotspot.addToCart ) {
+				// Redirect to product details page
+				window.open( hotspot.productDetails.link, '_blank' );
+				productLinkButton.disabled = false;
+				productLinkButton.classList.remove( 'loading' );
+			} else {
+				// Add to cart
+				const productId = hotspot.productId;
+				const quantity = 1;
 
-				if ( hotspot.addToCart ) {
-					// Redirect to product details page
-					window.open( hotspot.productDetails.link, '_blank' );
+				const cartStore = dispatch( 'wc/store/cart' );
+
+				if ( ! cartStore || typeof cartStore.addItemToCart !== 'function' ) {
+					// eslint-disable-next-line no-console
+					console.error( 'WooCommerce cart store is not available' );
 					productLinkButton.disabled = false;
 					productLinkButton.classList.remove( 'loading' );
-				} else {
-					// Add to cart
-					const productId = hotspot.productId;
-					const quantity = 1;
+					this.showCartMessage( __( 'WooCommerce cart is not available. Please refresh the page.', 'godam' ), 'error' );
+					return;
+				}
 
-					const cartStore = dispatch( 'wc/store/cart' );
-
-					if ( ! cartStore || typeof cartStore.addItemToCart !== 'function' ) {
-						// eslint-disable-next-line no-console
-						console.error( 'WooCommerce cart store is not available' );
+				cartStore
+					.addItemToCart( productId, quantity )
+					.then( () => {
 						productLinkButton.disabled = false;
 						productLinkButton.classList.remove( 'loading' );
-						this.showCartMessage( __( 'WooCommerce cart is not available. Please refresh the page.', 'godam' ), 'error' );
-						return;
-					}
+						this.showCartMessage( __( 'Product added successfully!', 'godam' ), 'success' );
+					} )
+					.catch( ( err ) => {
+						// eslint-disable-next-line no-console
+						console.error( 'Add to cart failed', err );
+						productLinkButton.disabled = false;
+						productLinkButton.classList.remove( 'loading' );
 
-					cartStore
-						.addItemToCart( productId, quantity )
-						.then( () => {
-							productLinkButton.disabled = false;
-							productLinkButton.classList.remove( 'loading' );
-							this.showCartMessage( __( 'Product added successfully!', 'godam' ), 'success' );
-						} )
-						.catch( ( err ) => {
-							// eslint-disable-next-line no-console
-							console.error( 'Add to cart failed', err );
-							productLinkButton.disabled = false;
-							productLinkButton.classList.remove( 'loading' );
-
-							// Check if error code is WooCommerce stock error.
-							if ( err?.code === 'woocommerce_rest_product_partially_out_of_stock' ) {
-								this.showCartMessage( __( 'Product is partially out of stock.', 'godam' ), 'error' );
-							} else if ( err?.code === 'woocommerce_rest_product_out_of_stock' ) {
-								this.showCartMessage( __( 'Product is out of stock.', 'godam' ), 'error' );
-							} else {
-								this.showCartMessage( __( 'Something went wrong. Try again.', 'godam' ), 'error' );
-							}
-						} );
-				}
-			} );
-
-			productActionDiv.appendChild( productLinkButton );
-			productDisplayDiv.appendChild( productActionDiv );
-		}
+						// Check if error code is WooCommerce stock error.
+						if ( err?.code === 'woocommerce_rest_product_partially_out_of_stock' ) {
+							this.showCartMessage( __( 'Product is partially out of stock.', 'godam' ), 'error' );
+						} else if ( err?.code === 'woocommerce_rest_product_out_of_stock' ) {
+							this.showCartMessage( __( 'Product is out of stock.', 'godam' ), 'error' );
+						} else {
+							this.showCartMessage( __( 'Something went wrong. Try again.', 'godam' ), 'error' );
+						}
+					} );
+			}
+		} );
+		productActionDiv.appendChild( productLinkButton );
+		productDisplayDiv.appendChild( productActionDiv );
 
 		return productBoxDiv;
 	}

@@ -301,6 +301,10 @@ if ( isset( $attributes['godam_context'] ) ) {
 	$godam_woocommerce_context = in_array( $attributes['godam_context'], $godam_woocommerce_allowed_contexts, true );
 }
 
+// Check if this video is loaded inside a GoDAM Gallery modal iframe.
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- No nonce needed for this read-only context flag.
+$godam_is_gallery_context = ! empty( $_GET['godam_gallery'] ) && '1' === sanitize_key( $_GET['godam_gallery'] );
+
 if ( isset( $attributes['godam_context'] ) && $godam_woocommerce_context ) {
 	$godam_player_skin = 'reels';
 } else {
@@ -577,11 +581,14 @@ if ( $godam_should_preload_poster ) {
 					<?php if ( ! $godam_woocommerce_context ) : ?>
 						<?php foreach ( $godam_layers as $godam_layer ) : ?>
 							<?php if ( isset( $godam_layer['miniCart'] ) ) : ?>
-								<?php if ( true === $godam_layer['miniCart'] ) : ?>
-									<div class="godam-video--cart-basket">
-										<?php echo do_blocks( '<!-- wp:woocommerce/mini-cart /-->' ); // phpcs:ignore ?>
-									</div>
-								<?php endif; ?>
+								<?php
+								// Always render the mini cart so the WooCommerce cart store initialises.
+								// Use CSS to show/hide based on the layer setting and the gallery context.
+								$godam_mini_cart_hidden = ( ! $godam_layer['miniCart'] || $godam_is_gallery_context );
+								?>
+								<div class="godam-video--cart-basket<?php echo $godam_mini_cart_hidden ? ' godam-mini-cart-hidden' : ''; ?>">
+									<?php echo do_blocks( '<!-- wp:woocommerce/mini-cart /-->' ); // phpcs:ignore ?>
+								</div>
 								<?php break; ?>
 							<?php endif; ?>
 						<?php endforeach; ?>
