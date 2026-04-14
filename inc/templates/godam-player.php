@@ -302,7 +302,7 @@ if ( isset( $attributes['godam_context'] ) ) {
 }
 
 if ( isset( $attributes['godam_context'] ) && $godam_woocommerce_context ) {
-	if ( 'godam-video-product-gallery' === $attributes['godam_context'] ) {
+	if ( in_array( $attributes['godam_context'], array( 'godam-woo-product-page-reels', 'godam-video-product-gallery' ), true ) ) {
 		// Use the new "reels-v2" skin for the product gallery context
 		// which is an enhanced version of the original "reels" skin with additional features and a more modern design.
 		$godam_player_skin = 'reels-v2';

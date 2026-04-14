@@ -60,8 +60,22 @@
 			object-fit: cover;
 		}
 
-		.vjs-control-bar {
+		// Hide default Video.js controls and loading spinner, only show the progress bar.
+		.vjs-loading-spinner {
 			display: none !important;
+		}
+
+		.vjs-control-bar {
+			display: block !important;
+			opacity: 1 !important;
+
+			.vjs-control {
+				display: none !important;
+
+				&.vjs-progress-control {
+					display: block !important;
+				}
+			}
 		}
 
 		.vjs-big-play-button {

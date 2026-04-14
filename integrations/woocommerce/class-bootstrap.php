@@ -350,9 +350,9 @@ class Bootstrap {
 		// Register WooCommerce Reels specific skin.
 		wp_register_style(
 			'godam-player-reels-skin-css',
-			RTGODAM_URL . 'assets/build/integrations/woocommerce/css/godam-reels-skin.css',
+			RTGODAM_URL . 'assets/build/integrations/woocommerce/css/godam-reels-skin-v2.css',
 			array(),
-			rtgodam_wc_get_asset_version( RTGODAM_PATH . 'assets/build/integrations/woocommerce/css/godam-reels-skin.css' )
+			rtgodam_wc_get_asset_version( RTGODAM_PATH . 'assets/build/integrations/woocommerce/css/godam-reels-skin-v2.css' )
 		);
 	}
 }
