@@ -47,7 +47,7 @@ class Virtual_Media_Registrar {
 	protected function setup_hooks() {
 		add_action( 'added_post_meta', array( $this, 'maybe_register_from_meta_change' ), 10, 3 );
 		add_action( 'updated_post_meta', array( $this, 'maybe_register_from_meta_change' ), 10, 3 );
-		add_action( 'add_attachment', array( $this, 'maybe_register_from_attachment' ), 20, 1 );
+		add_action( 'add_attachment', array( $this, 'maybe_register_from_attachment' ), 22, 1 );
 		add_action( 'before_delete_post', array( $this, 'maybe_remove_virtual_media_site_on_delete' ) );
 	}
 
