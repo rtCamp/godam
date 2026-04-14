@@ -132,7 +132,7 @@ class Virtual_Media_Registrar {
 			$endpoint,
 			array(
 				'method'  => 'POST',
-				'timeout' => 30,  // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
+				'timeout' => 10,  // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
 				'headers' => array(
 					'Content-Type' => 'application/json',
 				),
@@ -240,7 +240,7 @@ class Virtual_Media_Registrar {
 			$endpoint,
 			array(
 				'method'  => 'POST',
-				'timeout' => 30,  // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
+				'timeout' => 5,  // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
 				'headers' => array(
 					'Content-Type' => 'application/json',
 				),
