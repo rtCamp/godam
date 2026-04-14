@@ -178,7 +178,7 @@ class GoDAM_Player {
 				'src'               => '',
 				'sources'           => '',
 				'transcoded_url'    => '',
-				'aspectRatio'       => 'responsive',
+				'aspectratio'       => 'responsive',
 				'aspect_ratio'      => '', // WPBakery format (lowercase with underscore).
 				'tracks'            => '',
 				'caption'           => '',

@@ -198,27 +198,13 @@ const ProductHotspotPanel = ( {
 
 			{ isExpanded && (
 				<div className="mt-3">
-					{ /* Product Hotspot Name */ }
-					<TextControl
-						className="godam-input"
-						label={ __( 'Product Hotspot Name', 'godam' ) }
-						value={ productHotspot.name ?? '' }
-						/* translators: %d is the hotspot index */
-						placeholder={ productData?.name
-							? `${ index + 1 }. ${ productData.name }`
-							: `Product Hotspot ${ index + 1 }` }
-						maxLength={ 40 }
-						onChange={ ( val ) => {
-							const v = ( val || '' ).slice( 0, 40 );
-							updateField(
-								'productHotspots',
-								productHotspots.map( ( h2, j ) =>
-									j === index ? { ...h2, name: v } : h2,
-								),
-							);
-						} }
-						help={ __( 'Give this Product hotspot a descriptive title.', 'godam' ) }
-						disabled={ ! isValidAPIKey }
+					<ProductSelector
+						index={ index }
+						value={ productHotspot.productId }
+						productHotspot={ productHotspot }
+						productHotspots={ productHotspots }
+						updateField={ updateField }
+						isValidAPIKey={ isValidAPIKey }
 					/>
 					<div className="mt-3">
 						{ ( () => {
@@ -277,14 +263,6 @@ const ProductHotspotPanel = ( {
 							);
 						} )() }
 					</div>
-					<ProductSelector
-						index={ index }
-						value={ productHotspot.productId }
-						productHotspot={ productHotspot }
-						productHotspots={ productHotspots }
-						updateField={ updateField }
-						isValidAPIKey={ isValidAPIKey }
-					/>
 					{ productHotspot.showIcon && (
 						<div className="flex flex-col gap-2 mt-2">
 							<FontAwesomeIconPicker
@@ -345,7 +323,8 @@ const ProductHotspotPreview = ( { productHotspot, index, productCache } ) => {
 	const productData = productCache[ productHotspot.productId ] || null;
 
 	return (
-		<div className={ `hotspot-content flex items-center justify-center ${ ! productHotspot.icon ? 'no-icon' : '' }` }>
+		<div className={ `hotspot-content flex items-center justify-center ${ ! ( productHotspot.icon || productHotspot.customIconUrl ) ? 'no-icon' : '' }` }>
+			{ /* eslint-disable-next-line no-nested-ternary */ }
 			{ productHotspot.icon ? (
 				<FontAwesomeIcon
 					icon={ [ 'fas', productHotspot.icon ] }
@@ -354,6 +333,17 @@ const ProductHotspotPreview = ( { productHotspot, index, productCache } ) => {
 						width: '50%',
 						height: '50%',
 						color: '#000',
+					} }
+				/>
+			) : productHotspot.customIconUrl ? (
+				<img
+					src={ productHotspot.customIconUrl }
+					alt={ __( 'Custom Icon', 'godam' ) }
+					className="pointer-events-none"
+					style={ {
+						width: '50%',
+						height: '50%',
+						objectFit: 'contain',
 					} }
 				/>
 			) : null }
@@ -964,7 +954,7 @@ const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 								onClick={ () => setExpandedProductHotspotIndex( index ) }
 								className="hotspot circle"
 								style={ {
-									backgroundColor: productHotspot.icon ? 'white' : productHotspot.backgroundColor || '#0c80dfa6',
+									backgroundColor: ( productHotspot.icon || productHotspot.customIconUrl ) ? 'white' : productHotspot.backgroundColor || '#0c80dfa6',
 									zIndex: 20,
 								} }
 							>

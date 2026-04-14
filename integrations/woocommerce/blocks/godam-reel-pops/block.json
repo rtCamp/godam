@@ -33,10 +33,6 @@
       "default": "slide-up",
       "enum": ["slide-up", "slide-left", "slide-right", "fade", "bounce", "scale"]
     },
-    "animationDuration": {
-      "type": "number",
-      "default": 500
-    },
     "durationSeconds": {
       "type": "number",
       "default": 5,
@@ -51,38 +47,6 @@
       "type": "string",
       "default": "show_again",
       "enum": ["show_again", "hide_after_close"]
-    },
-    "enableAutoplay": {
-      "type": "boolean",
-      "default": true
-    },
-    "showMuteButton": {
-      "type": "boolean",
-      "default": true
-    },
-    "showPlayButton": {
-      "type": "boolean",
-      "default": false
-    },
-    "enableModalNavigation": {
-      "type": "boolean",
-      "default": true
-    },
-    "popupWidth": {
-      "type": "number",
-      "default": 120
-    },
-    "mobilePopupWidth": {
-      "type": "number",
-      "default": 100
-    },
-    "bottomSpacing": {
-      "type": "number",
-      "default": 20
-    },
-    "sideSpacing": {
-      "type": "number",
-      "default": 20
     }
   },
   "supports": {

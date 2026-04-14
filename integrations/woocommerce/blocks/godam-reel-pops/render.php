@@ -27,23 +27,14 @@ if ( ! isset( $attributes ) || ! is_array( $attributes ) ) {
 $attributes = wp_parse_args(
 	$attributes,
 	array(
-		'blockId'               => '',
-		'videos'                => array(),
-		'aspectRatio'           => '9-16',
-		'position'              => 'bottom-right',
-		'animation'             => 'slide-up',
-		'animationDuration'     => 500,
-		'durationSeconds'       => 5,
-		'initialDelay'          => 3,
-		'closePersistence'      => 'show_again',
-		'enableAutoplay'        => true,
-		'showMuteButton'        => true,
-		'showPlayButton'        => false,
-		'enableModalNavigation' => true,
-		'popupWidth'            => 160,
-		'mobilePopupWidth'      => 100,
-		'bottomSpacing'         => 20,
-		'sideSpacing'           => 20,
+		'blockId'          => '',
+		'videos'           => array(),
+		'aspectRatio'      => '9-16',
+		'position'         => 'bottom-right',
+		'animation'        => 'slide-up',
+		'durationSeconds'  => 5,
+		'initialDelay'     => 3,
+		'closePersistence' => 'show_again',
 	)
 );
 
@@ -74,23 +65,14 @@ foreach ( $valid_videos as $video_id ) {
 
 // Build shortcode attributes.
 $shortcode_atts = array(
-	'video_ids'               => implode( ',', $video_ids ),
-	'aspect_ratio'            => sanitize_text_field( $attributes['aspectRatio'] ),
-	'position'                => sanitize_text_field( $attributes['position'] ),
-	'animation'               => sanitize_text_field( $attributes['animation'] ),
-	'animation_duration'      => absint( $attributes['animationDuration'] ),
-	'duration_seconds'        => absint( $attributes['durationSeconds'] ),
-	'initial_delay'           => absint( $attributes['initialDelay'] ),
-	'close_persistence'       => sanitize_text_field( $attributes['closePersistence'] ),
-	'enable_autoplay'         => $attributes['enableAutoplay'] ? 'true' : 'false',
-	'show_mute_button'        => $attributes['showMuteButton'] ? 'true' : 'false',
-	'show_play_button'        => $attributes['showPlayButton'] ? 'true' : 'false',
-	'enable_modal_navigation' => $attributes['enableModalNavigation'] ? 'true' : 'false',
-	'popup_width'             => absint( $attributes['popupWidth'] ),
-	'mobile_popup_width'      => absint( $attributes['mobilePopupWidth'] ),
-	'bottom_spacing'          => absint( $attributes['bottomSpacing'] ),
-	'side_spacing'            => absint( $attributes['sideSpacing'] ),
-	'block_id'                => ! empty( $attributes['blockId'] ) ? sanitize_html_class( $attributes['blockId'] ) : '',
+	'video_ids'         => implode( ',', $video_ids ),
+	'aspect_ratio'      => sanitize_text_field( $attributes['aspectRatio'] ),
+	'position'          => sanitize_text_field( $attributes['position'] ),
+	'animation'         => sanitize_text_field( $attributes['animation'] ),
+	'duration_seconds'  => absint( $attributes['durationSeconds'] ),
+	'initial_delay'     => absint( $attributes['initialDelay'] ),
+	'close_persistence' => sanitize_text_field( $attributes['closePersistence'] ),
+	'block_id'          => ! empty( $attributes['blockId'] ) ? sanitize_html_class( $attributes['blockId'] ) : '',
 );
 
 // Build shortcode string.

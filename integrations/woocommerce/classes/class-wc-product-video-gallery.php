@@ -82,29 +82,11 @@ class WC_Product_Video_Gallery {
 				true
 			);
 
-			wp_enqueue_script(
-				'rtgodam-wc-add-to-product',
-				RTGODAM_URL . 'assets/build/integrations/woocommerce/js/admin/wc-add-to-product.min.js',
-				array( 'jquery', 'wp-api-fetch', 'wp-components', 'wp-element', 'godam-player-frontend-script' ),
-				rtgodam_wc_get_asset_version( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'js/admin/wc-add-to-product.min.js' ),
-				true
-			);
-
 			wp_localize_script(
-				'rtgodam-wc-add-to-product',
+				'rtgodam-wc-product-video-gallery',
 				'RTGodamVideoGallery',
 				array(
-					'apiRoot'          => esc_url_raw( rest_url() ),
-					'namespace'        => 'godam/v1',
-					'productsEP'       => '/wcproducts',
-					'linkVideoEP'      => '/link-video',
-					'unLinkVideoEP'    => '/unlink-video',
-					'timestampEP'      => '/save-product-meta',
-					'getTimestampEP'   => '/get-product-meta',
-					'videoCountEP'     => '/video-product-count',
-					'currentProductId' => get_the_ID(),
 					'defaultThumbnail' => RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png',
-					'Ptag'             => RTGODAM_WC_MODULE_URL . 'assets/images/product-tag.svg',
 					'DeleteIcon'       => RTGODAM_URL . 'assets/src/images/delete-video-bin.svg',
 					'hasValidAPIKey'   => rtgodam_is_api_key_valid(),
 				)
@@ -157,6 +139,13 @@ class WC_Product_Video_Gallery {
 			wp_enqueue_script( 'rtgodam-wc-video-carousel' );
 			wp_enqueue_style( 'rtgodam-wc-video-carousel-style' );
 		}
+
+		wp_register_style(
+			'godam-player-wc-reels-skin',
+			RTGODAM_URL . 'assets/build/integrations/woocommerce/css/godam-reels-skin-v2.css',
+			array(),
+			filemtime( RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'css/godam-reels-skin-v2.css' )
+		);
 	}
 
 	/**
@@ -165,10 +154,28 @@ class WC_Product_Video_Gallery {
 	 * @since 1.0.0
 	 */
 	public function add_video_gallery_metabox() {
-		$title = apply_filters(
-			'rtgodam_video_gallery_metabox_title',
-			__( 'Product Reels', 'godam' ) .
-			' <span class="godam-pro-badge">' . __( 'Pro', 'godam' ) . '</span>'
+		$preview_image_url = RTGODAM_WC_MODULE_URL . 'assets/images/product-reels-preview.webp';
+
+		$help_tip = sprintf(
+			'<span class="godam-help-tip">' .
+				'<span class="godam-help-tip__icon" role="button" tabindex="0" aria-expanded="false" aria-controls="godam-help-tip-popup--product-reels">?</span>' .
+				'<span id="godam-help-tip-popup--product-reels" class="godam-help-tip__popup" role="tooltip" aria-hidden="true">' .
+					'<img src="%1$s" alt="%2$s" class="godam-help-tip__preview" />' .
+					'<span class="godam-help-tip__text">%3$s</span>' .
+				'</span>' .
+			'</span>',
+			esc_url( $preview_image_url ),
+			esc_attr__( 'Product Reels preview', 'godam' ),
+			esc_html__( 'Add short video reels to your product pages. Reels appear as a scrollable carousel, helping customers see your products in action.', 'godam' )
+		);
+
+		$title = wp_kses_post( 
+			apply_filters(
+				'rtgodam_video_gallery_metabox_title',
+				__( 'Product Reels', 'godam' ) .
+				$help_tip .
+				' <span class="godam-pro-badge">' . __( 'Pro', 'godam' ) . '</span>'
+			) 
 		);
 
 		add_meta_box(
@@ -231,12 +238,6 @@ class WC_Product_Video_Gallery {
 		$video_urls = get_post_meta( $post->ID, '_rtgodam_product_video_gallery', true );
 		$video_urls = is_array( $video_urls ) ? $video_urls : array();
 
-		$tag_icon_svg = sprintf(
-			'<img src="%s" alt="%s" width="14" height="14" style="vertical-align:middle; margin-right:4px;" />',
-			esc_url( RTGODAM_URL . 'assets/src/images/product-tag.svg' ),
-			esc_attr__( 'Tag Icon', 'godam' )
-		);
-
 		$ids = get_post_meta( $post->ID, '_rtgodam_product_video_gallery_ids', true ) ?: array();
 
 		echo '<div id="rtgodam-product-video-gallery">';
@@ -285,12 +286,10 @@ class WC_Product_Video_Gallery {
 						<img src="%s" style="display:block; max-width:200px; margin-bottom:10px;" alt="%s" />
 					</div>
 					<div class="godam-product-video-title">%s</div>
-					<div class="godam-dummy-products">%s</div>
 				</li>',
 				esc_url( $dummy_thumb ),
 				esc_attr__( 'Sample Video 1 thumbnail', 'godam' ),
-				esc_html__( 'Sample Video 1', 'godam' ),
-				'<span class="godam-dummy-pill">' . esc_html__( '+ Add products', 'godam' ) . '</span>'
+				esc_html__( 'Sample Video 1', 'godam' )
 			);
 
 			printf(
@@ -299,58 +298,16 @@ class WC_Product_Video_Gallery {
 						<img src="%s" style="display:block; max-width:200px; margin-bottom:10px;" alt="%s" />
 					</div>
 					<div class="godam-product-video-title">%s</div>
-					<div class="godam-dummy-products">%s</div>
 				</li>',
 				esc_url( $dummy_thumb ),
 				esc_attr__( 'Sample Video 2 thumbnail', 'godam' ),
-				esc_html__( 'Sample Video 2', 'godam' ),
-				'<span class="godam-dummy-pill">' . esc_html__( '+ Add products', 'godam' ) . '</span>'
+				esc_html__( 'Sample Video 2', 'godam' )
 			);
 		}
 
 		foreach ( $video_urls as $index => $url ) {
 			$id            = isset( $ids[ $index ] ) ? intval( $ids[ $index ] ) : '';
 			$sanitised_url = esc_url( $url );
-
-			$linked_products     = $id ? get_post_meta( $id, '_video_parent_product_id', false ) : array();
-			$linked_products_obj = array_map(
-				function ( $pid ) {
-					$thumb_id  = get_post_thumbnail_id( $pid );
-					$thumb_url = $thumb_id
-						? wp_get_attachment_image_url( $thumb_id, 'woocommerce_thumbnail' )
-						: wc_placeholder_img_src();
-
-					return array(
-						'id'    => (int) $pid,
-						'name'  => get_the_title( $pid ),
-						'image' => $thumb_url,
-					);
-				},
-				$linked_products
-			);
-			$linked_json         = wp_json_encode( $linked_products_obj );
-
-			$count = is_array( $linked_products ) ? count( $linked_products ) - 1 : 0;
-
-			if ( $count > 0 ) {
-				$raw_label  = sprintf(
-					'&nbsp;%s%d&nbsp;%s',
-					$tag_icon_svg,
-					$count,
-					_n( 'product', 'products', $count, 'godam' )
-				);
-				$aria_label = sprintf(
-					/* translators: %1$d: product count, %2$s: plural suffix */
-					__( '%1$d product%2$s attached to this video', 'godam' ),
-					$count,
-					$count > 1 ? 's' : ''
-				);
-			} else {
-				$raw_label  = esc_html__( '+ Add products', 'godam' );
-				$aria_label = __( 'Associate products with this video', 'godam' );
-			}
-
-			$label = $raw_label;
 
 			$video_title = $id ? get_the_title( $id ) : '';
 
@@ -377,7 +334,6 @@ class WC_Product_Video_Gallery {
 						</button>
 					</div>
 					<div class="godam-product-video-title" title="%s">%s</div>
-					<button type="button" data-linked-products="%s" class="godam-add-product-button components-button godam-button is-compact is-tertiary wc-godam-product-admin" aria-label="%s">%s</button>
 				</li>',
 				esc_attr( $id ),
 				esc_attr( $id ),
@@ -387,10 +343,7 @@ class WC_Product_Video_Gallery {
 				esc_attr__( 'Remove video from gallery', 'godam' ),
 				wp_kses_post( $delete_bin_svg ),
 				esc_attr( $video_title ),
-				esc_html( $video_title ),
-				esc_attr( $linked_json ),
-				esc_attr( $aria_label ),
-				$label // phpcs:ignore
+				esc_html( $video_title )
 			);
 		}
 

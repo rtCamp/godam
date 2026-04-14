@@ -156,7 +156,6 @@ if ( ! empty( $attributes['aspectRatio'] ) && 'responsive' === $attributes['aspe
 	} else {
 		// Try to resolve from attachment metadata.
 		$godam_attachment_to_check = $godam_is_virtual && ! empty( $godam_original_id ) ? $godam_original_id : $godam_attachment_id;
-		
 		if ( ! empty( $godam_attachment_to_check ) && is_numeric( $godam_attachment_to_check ) ) {
 			$godam_video_meta = wp_get_attachment_metadata( intval( $godam_attachment_to_check ) );
 			if ( ! empty( $godam_video_meta['width'] ) && ! empty( $godam_video_meta['height'] ) ) {
@@ -293,6 +292,7 @@ $godam_woocommerce_allowed_contexts = array(
 	'godam-product-gallery',
 	'godam-woo-product-page-reels',
 	'godam-featured-video-gallery',
+	'godam-video-product-gallery',
 );
 
 $godam_woocommerce_context = false;
@@ -306,7 +306,13 @@ if ( isset( $attributes['godam_context'] ) ) {
 $godam_is_gallery_context = ! empty( $_GET['godam_gallery'] ) && '1' === sanitize_key( $_GET['godam_gallery'] );
 
 if ( isset( $attributes['godam_context'] ) && $godam_woocommerce_context ) {
-	$godam_player_skin = 'reels';
+	if ( 'godam-video-product-gallery' === $attributes['godam_context'] ) {
+		// Use the new "reels-v2" skin for the product gallery context
+		// which is an enhanced version of the original "reels" skin with additional features and a more modern design.
+		$godam_player_skin = 'reels-v2';
+	} else {
+		$godam_player_skin = 'reels';
+	}
 } else {
 	$godam_player_skin = isset( $godam_settings['video_player']['player_skin'] )
 		? $godam_settings['video_player']['player_skin']
@@ -556,7 +562,7 @@ if ( $godam_should_preload_poster ) {
 					</div>
 				<?php endif; ?>
 
-				<div class="godam-video-placeholder godam-animate-video-loading">
+				<div class="godam-video-placeholder godam-animate-video-loading <?php echo esc_attr( 'godam-' . strtolower( $godam_player_skin ) . '-skin' ); ?>">
 					<div class="animate-play-btn">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
 							<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
@@ -573,7 +579,7 @@ if ( $godam_should_preload_poster ) {
 					<?php endif; ?>
 				</div>
 
-				<div class="easydam-video-container loading godam-<?php echo esc_attr( strtolower( $godam_player_skin ) ); ?>-skin" >
+				<div class="easydam-video-container loading <?php echo esc_attr( 'godam-' . strtolower( $godam_player_skin ) . '-skin' ); ?>" >
 					<?php if ( isset( $godam_hover_select ) && 'shadow-overlay' === $godam_hover_select ) : ?>
 						<div class="godam-player-overlay"></div>
 					<?php endif; ?>
@@ -606,7 +612,7 @@ if ( $godam_should_preload_poster ) {
 					<video
 						class="easydam-player video-js vjs-big-play-centered vjs-hidden"
 						data-options="<?php echo esc_attr( $godam_video_config ); ?>"
-						data-ad_tag_url="<?php echo esc_url( $godam_ad_tag_url ); ?>"
+						data-ad_tag_url="<?php echo ! $godam_woocommerce_context ? esc_url( $godam_ad_tag_url ) : ''; ?>"
 						data-id="<?php echo esc_attr( is_numeric( $godam_attachment_id ) ? $godam_attachment_id : $godam_original_id ); ?>"
 						data-instance-id="<?php echo esc_attr( $godam_instance_id ); ?>"
 						data-controls="<?php echo esc_attr( $godam_video_setup ); ?>"

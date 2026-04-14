@@ -76,34 +76,27 @@ class GoDAM_Reel_Pops {
 		// Parse shortcode attributes.
 		$attributes = shortcode_atts(
 			array(
-				'video_ids'               => '',
-				'product_ids'             => '', // Comma-separated product IDs per video (use | to separate videos: "123,456|789|101,102").
-				'aspect_ratio'            => '9-16',
-				'position'                => 'bottom-right',
-				'animation'               => 'slide-up',
-				'animation_duration'      => 500,
-				'duration_seconds'        => 5,
-				'initial_delay'           => 3,
-				'close_persistence'       => 'show_again',
-				'enable_autoplay'         => true,
-				'show_mute_button'        => true,
-				'show_play_button'        => false,
-				'enable_modal_navigation' => true,
-				'popup_width'             => 120,
-				'mobile_popup_width'      => 100,
-				'bottom_spacing'          => 20,
-				'side_spacing'            => 20,
-				'block_id'                => '',
+				'video_ids'          => '',
+				'product_ids'        => '', // Comma-separated product IDs per video (use | to separate videos: "123,456|789|101,102").
+				'aspect_ratio'       => '9-16',
+				'position'           => 'bottom-right',
+				'animation'          => 'slide-up',
+				'duration_seconds'   => 5,
+				'initial_delay'      => 3,
+				'close_persistence'  => 'show_again',
+				'enable_autoplay'    => true,
+				'popup_width'        => 160,
+				'mobile_popup_width' => 100,
+				'bottom_spacing'     => 20,
+				'side_spacing'       => 20,
+				'block_id'           => '',
 			),
 			$atts,
 			'godam_video_reel_pops'
 		);
 
 		// Handle boolean attributes.
-		$attributes['enable_autoplay']         = filter_var( $attributes['enable_autoplay'], FILTER_VALIDATE_BOOLEAN );
-		$attributes['show_mute_button']        = filter_var( $attributes['show_mute_button'], FILTER_VALIDATE_BOOLEAN );
-		$attributes['show_play_button']        = filter_var( $attributes['show_play_button'], FILTER_VALIDATE_BOOLEAN );
-		$attributes['enable_modal_navigation'] = filter_var( $attributes['enable_modal_navigation'], FILTER_VALIDATE_BOOLEAN );
+		$attributes['enable_autoplay'] = filter_var( $attributes['enable_autoplay'], FILTER_VALIDATE_BOOLEAN );
 
 		// Parse video IDs.
 		if ( empty( $attributes['video_ids'] ) ) {
@@ -189,14 +182,14 @@ class GoDAM_Reel_Pops {
 			'aspectRatio'           => sanitize_text_field( $attributes['aspect_ratio'] ),
 			'position'              => sanitize_text_field( $attributes['position'] ),
 			'animation'             => sanitize_text_field( $attributes['animation'] ),
-			'animationDuration'     => absint( $attributes['animation_duration'] ),
+			'animationDuration'     => 500,
 			'durationSeconds'       => max( 1, absint( $attributes['duration_seconds'] ) ),
 			'initialDelay'          => max( 0, absint( $attributes['initial_delay'] ) ),
 			'closePersistence'      => sanitize_text_field( $attributes['close_persistence'] ),
 			'enableAutoplay'        => (bool) $attributes['enable_autoplay'],
-			'showMuteButton'        => (bool) $attributes['show_mute_button'],
-			'showPlayButton'        => (bool) $attributes['show_play_button'],
-			'enableModalNavigation' => (bool) $attributes['enable_modal_navigation'],
+			'showMuteButton'        => true,
+			'showPlayButton'        => false,
+			'enableModalNavigation' => true,
 			'popupWidth'            => absint( $attributes['popup_width'] ),
 			'mobilePopupWidth'      => absint( $attributes['mobile_popup_width'] ),
 			'bottomSpacing'         => absint( $attributes['bottom_spacing'] ),
@@ -208,12 +201,11 @@ class GoDAM_Reel_Pops {
 
 		// Build CSS variables inline style.
 		$css_variables = sprintf(
-			'--godam-reel-pops-width: %dpx; --godam-reel-pops-mobile-width: %dpx; --godam-reel-pops-position: %dpx; --godam-reel-pops-bottom: %dpx; --godam-reel-pops-animation-duration: %dms;',
+			'--godam-reel-pops-width: %dpx; --godam-reel-pops-mobile-width: %dpx; --godam-reel-pops-position: %dpx; --godam-reel-pops-bottom: %dpx; --godam-reel-pops-animation-duration: 500ms;',
 			absint( $attributes['popup_width'] ),
 			absint( $attributes['mobile_popup_width'] ),
 			absint( $attributes['side_spacing'] ),
-			absint( $attributes['bottom_spacing'] ),
-			absint( $attributes['animation_duration'] )
+			absint( $attributes['bottom_spacing'] )
 		);
 
 		// Start output buffering.
@@ -236,25 +228,15 @@ class GoDAM_Reel_Pops {
 					</svg>
 				</button>
 
-				<?php if ( $attributes['show_mute_button'] ) : ?>
-					<button class="godam-reel-pops-mute-toggle is-muted" aria-label="<?php esc_attr_e( 'Unmute video', 'godam' ); ?>" type="button">
-						<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" width="16" height="16" aria-hidden="true">
-							<path d="M5 9v6h4l5 5V4l-5 5H5z" />
-							<g transform="translate(17, 9)">
-								<line x1="0" y1="0" x2="6" y2="6" stroke="currentColor" stroke-width="2" />
-								<line x1="0" y1="6" x2="6" y2="0" stroke="currentColor" stroke-width="2" />
-							</g>
-						</svg>
-					</button>
-				<?php endif; ?>
-
-				<?php if ( $attributes['show_play_button'] ) : ?>
-					<button class="godam-reel-pops-play-toggle is-paused" aria-label="<?php esc_attr_e( 'Play video', 'godam' ); ?>" type="button">
-						<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-							<path d="M8 6C8 4.8 9.3 4.1 10.4 4.9L19 10.9C20 11.6 20 12.4 19 13.1L10.4 19.1C9.3 19.9 8 19.2 8 18Z" />
-						</svg>
-					</button>
-				<?php endif; ?>
+				<button class="godam-reel-pops-mute-toggle is-muted" aria-label="<?php esc_attr_e( 'Unmute video', 'godam' ); ?>" type="button">
+					<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" width="16" height="16" aria-hidden="true">
+						<path d="M5 9v6h4l5 5V4l-5 5H5z" />
+						<g transform="translate(17, 9)">
+							<line x1="0" y1="0" x2="6" y2="6" stroke="currentColor" stroke-width="2" />
+							<line x1="0" y1="6" x2="6" y2="0" stroke="currentColor" stroke-width="2" />
+						</g>
+					</svg>
+				</button>
 
 				<!-- Video Slots (pre-rendered) -->
 				<div class="godam-reel-pops-video-slots">

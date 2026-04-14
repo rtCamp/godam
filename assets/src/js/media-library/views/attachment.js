@@ -191,6 +191,16 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 
 				this.$el.addClass( 'transcoding-status' );
 				this.$el.addClass( 'transcoding-status--completed' );
+			} else if ( transcodingStatus === 'failed' ) {
+				// Show transcoding failed status with warning icon.
+				this.$el.append( `
+					<div class="transcoding-status__loader" data-percent="100">
+						${ ICONS.exclamation }
+					</div>
+				` );
+
+				this.$el.addClass( 'transcoding-status' );
+				this.$el.addClass( 'transcoding-status--failed' );
 			} else if ( transcodingStatus === 'blocked' ) {
 				// Show blocked status with warning icon (same as transcoding failed)
 				this.$el.append( `
