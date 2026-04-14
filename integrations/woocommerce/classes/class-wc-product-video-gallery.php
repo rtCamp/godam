@@ -77,6 +77,7 @@ class WC_Product_Video_Gallery {
 					'defaultThumbnail' => RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png',
 					'DeleteIcon'       => RTGODAM_URL . 'assets/src/images/delete-video-bin.svg',
 					'hasValidAPIKey'   => rtgodam_is_api_key_valid(),
+					'maxVideos'        => 5,
 				)
 			);
 		}
@@ -367,6 +368,11 @@ class WC_Product_Video_Gallery {
 		$urls    = apply_filters( 'rtgodam_product_gallery_save_video_gallery_urls', $urls, $post_id );
 		$new_ids = apply_filters( 'rtgodam_product_gallery_save_video_gallery_ids', $new_ids, $post_id );
 
+		// Enforce maximum of 5 videos for product reels.
+		$max_videos = 5;
+		$urls       = array_slice( $urls, 0, $max_videos );
+		$new_ids    = array_slice( $new_ids, 0, $max_videos );
+
 		// Step 2: Get OLD attachment IDs before updating (for comparison).
 		$old_ids = get_post_meta( $post_id, '_rtgodam_product_video_gallery_ids', true );
 		$old_ids = is_array( $old_ids ) ? array_map( 'intval', $old_ids ) : array();
@@ -528,6 +534,11 @@ class WC_Product_Video_Gallery {
 
 		$rtgodam_product_video_gallery_ids = get_post_meta( $post->ID, '_rtgodam_product_video_gallery_ids', true );
 
+		// Defensively normalize: ensure it's an array of positive integers.
+		$rtgodam_product_video_gallery_ids = is_array( $rtgodam_product_video_gallery_ids )
+			? array_filter( array_map( 'absint', $rtgodam_product_video_gallery_ids ) )
+			: array();
+
 		if ( empty( $rtgodam_product_video_gallery_ids ) ) {
 			return '';
 		}
@@ -538,10 +549,6 @@ class WC_Product_Video_Gallery {
 		$is_first_video = true;
 
 		foreach ( $rtgodam_product_video_gallery_ids as $attachment_id ) {
-			$attachment_id = absint( $attachment_id );
-			if ( ! $attachment_id ) {
-				continue;
-			}
 
 			$autoplay = $is_first_video ? 'true' : 'false';
 

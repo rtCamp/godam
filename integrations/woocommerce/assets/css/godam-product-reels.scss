@@ -74,6 +74,7 @@
 
 				&.vjs-progress-control {
 					display: block !important;
+					pointer-events: none;
 				}
 			}
 		}
