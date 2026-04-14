@@ -21,6 +21,7 @@ use RTGODAM\Inc\Video_Embed;
 use RTGODAM\Inc\Video_Permalinks;
 use RTGODAM\Inc\Video_Engagement;
 use RTGODAM\Inc\Update;
+use RTGODAM\Inc\Virtual_Media_Registrar;
 
 use RTGODAM\Inc\Post_Types\GoDAM_Video;
 
@@ -45,6 +46,7 @@ use RTGODAM\Inc\REST_API\Dynamic_Gallery;
 use RTGODAM\Inc\REST_API\Engagement;
 use RTGODAM\Inc\REST_API\Site;
 use RTGODAM\Inc\REST_API\Video_Migration;
+use RTGODAM\Inc\REST_API\Virtual_Media_Migration;
 use RTGODAM\Inc\REST_API\Release_Post;
 use RTGODAM\Inc\REST_API\Video_Sync;
 use RTGODAM\Inc\Gravity_Forms;
@@ -98,6 +100,7 @@ class Plugin {
 		Video_Embed::get_instance();
 		Video_Permalinks::get_instance();
 		Embed::get_instance();
+		Virtual_Media_Registrar::get_instance();
 
 		// Load shortcodes.
 		GoDAM_Player::get_instance();
@@ -186,6 +189,7 @@ class Plugin {
 		Engagement::get_instance();
 		Site::get_instance();
 		Video_Migration::get_instance();
+		Virtual_Media_Migration::get_instance();
 		Release_Post::get_instance();
 		Video_Sync::get_instance();
 	}
