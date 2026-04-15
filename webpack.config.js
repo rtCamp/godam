@@ -235,7 +235,6 @@ const woocommerceIntegration = {
 		'godam-product-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-product-gallery.scss' ),
 		'godam-reels-skin': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-reels-skin.scss' ),
 		'godam-reels-skin-v2': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-reels-skin-v2.scss' ),
-		'godam-reel-pops-metabox': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-reel-pops-metabox.scss' ),
 	},
 	output: {
 		path: path.resolve( process.cwd(), 'assets', 'build', 'integrations', 'woocommerce', 'js' ),
