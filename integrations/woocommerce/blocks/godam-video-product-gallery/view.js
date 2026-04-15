@@ -227,7 +227,7 @@ import { dispatch } from '@wordpress/data';
 
 			this.initHoverPlay();
 
-			if ( this.autoplay && this.layout === 'carousel' ) {
+			if ( this.autoplay ) {
 				this.initAutoplay();
 			}
 
@@ -245,13 +245,13 @@ import { dispatch } from '@wordpress/data';
 		 * Track which items are autoplay-eligible based on viewport visibility.
 		 */
 		initAutoplay() {
-			// On desktop carousel, observe items relative to the scroll container so
-			// items scrolled out of the carousel (but still in the browser viewport)
-			// are correctly treated as out-of-view.
-			// On mobile carousel, use the default browser viewport (root: null) so the
-			// full-width single-item layout is observed correctly without a container root.
+			// Carousel on desktop: observe relative to the scroll container so items
+			// scrolled out of the carousel (but still in the browser viewport) are
+			// correctly treated as out-of-view.
+			// Grid (any screen) and mobile carousel: use the browser viewport (null)
+			// because items are in normal document flow, not a scroll container.
 			const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
-			const observerRoot = isMobile ? null : this.container;
+			const observerRoot = ( this.layout === 'carousel' && ! isMobile ) ? this.container : null;
 
 			this.autoplayObserver = new IntersectionObserver(
 				( entries ) => {
@@ -317,7 +317,7 @@ import { dispatch } from '@wordpress/data';
 					this.autoplay &&
 					! this.modalOpen &&
 					item === this.autoplayActiveItem &&
-					item.dataset.isInViewport === 'true' &&
+					( this.layout === 'grid' || item.dataset.isInViewport === 'true' ) &&
 					! this.isVideoPlaying( video )
 				) {
 					video.play().catch( () => {} );
@@ -534,6 +534,19 @@ import { dispatch } from '@wordpress/data';
 		 * @return {Element|null} The next visible gallery item.
 		 */
 		getNextAutoplayItem( currentItem = this.autoplayActiveItem ) {
+			// Grid: cycle through every item in DOM order regardless of visibility.
+			if ( this.layout === 'grid' ) {
+				if ( this.items.length === 0 ) {
+					return null;
+				}
+				const currentIndex = this.items.indexOf( currentItem );
+				const nextIndex = currentIndex === -1
+					? 0
+					: ( currentIndex + 1 ) % this.items.length;
+				return this.items[ nextIndex ];
+			}
+
+			// Carousel: only consider viewport-visible items.
 			const visibleItems = this.getVisibleAutoplayItems();
 
 			if ( visibleItems.length === 0 ) {
@@ -620,6 +633,18 @@ import { dispatch } from '@wordpress/data';
 				return;
 			}
 
+			// Grid: play sequentially through all items in DOM order.
+			// Viewport changes must never interrupt or reset the active item —
+			// only kick-start playback when nothing is active yet.
+			if ( this.layout === 'grid' ) {
+				if ( ! this.autoplayActiveItem ) {
+					this.playAutoplayItem( this.items[ 0 ], { restart: true } );
+				}
+				// Already playing — leave it alone.
+				return;
+			}
+
+			// Carousel: viewport-driven logic.
 			const visibleItems = this.getVisibleAutoplayItems();
 
 			if ( visibleItems.length === 0 ) {
