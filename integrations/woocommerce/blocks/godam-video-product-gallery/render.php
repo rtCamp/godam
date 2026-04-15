@@ -282,6 +282,7 @@ if ( is_string( $block_gap_raw ) && str_starts_with( $block_gap_raw, 'var:preset
 	$block_gap = $block_gap_raw;
 }
 $show_add_to_cart = isset( $attributes['showAddToCart'] ) ? (bool) $attributes['showAddToCart'] : true;
+$show_play_button = isset( $attributes['showPlayButton'] ) ? (bool) $attributes['showPlayButton'] : false;
 $wc_ajax_url      = class_exists( 'WC_AJAX' ) ? WC_AJAX::get_endpoint( '%%endpoint%%' ) : '';
 
 // Convert ratio to CSS class format.
@@ -327,6 +328,7 @@ $wrapper_attributes = get_block_wrapper_attributes(
 		'data-layout'           => $layout,
 		'data-ratio'            => $view_ratio,
 		'data-autoplay'         => $autoplay ? 'true' : 'false',
+		'data-show-play-button' => $show_play_button ? 'true' : 'false',
 		'data-show-add-to-cart' => $show_add_to_cart ? 'true' : 'false',
 		'data-ajax-url'         => admin_url( 'admin-ajax.php' ),
 		'data-wc-ajax-url'      => $wc_ajax_url,
@@ -347,20 +349,18 @@ $wrapper_attributes = get_block_wrapper_attributes(
 				<!-- Video Section + Dropdown section(if available) -->
 				<div class="godam-gallery-item__video-and-dropdown">
 					<div class="godam-gallery-item__video-wrapper">
-						<?php if ( ! $autoplay ) : ?>
-							<div class="godam-gallery-item__play-icon" aria-hidden="true">
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
-									<path d="M8 5v14l11-7z"/>
-								</svg>
-							</div>
-						<?php endif; ?>
+						<div class="godam-gallery-item__play-icon" aria-hidden="true">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+								<path d="M8 5v14l11-7z"/>
+							</svg>
+						</div>
 						<?php
 						// Render the video using the godam_video shortcode.
 						echo do_shortcode(
 							sprintf(
-								'[godam_video id="%d" muted="true" loop="true" autoplay="%s" controls="true" aspect_ratio="%s" godam_context="godam-video-product-gallery" showShareButton="1"]',
+								'[godam_video id="%d" muted="true" loop="false" autoplay="%s" controls="true" aspect_ratio="%s" godam_context="godam-video-product-gallery" showShareButton="1"]',
 								$item['videoId'],
-								$autoplay ? 'true' : 'false',
+								'false',
 								esc_attr( $view_ratio )
 							)
 						);

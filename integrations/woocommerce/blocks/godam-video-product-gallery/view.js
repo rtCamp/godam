@@ -17,8 +17,8 @@ import { dispatch } from '@wordpress/data';
 
 	// Shared product HTML cache across all gallery instances on the page.
 	const productHtmlCache = new Map();
-	const PREVIEW_DURATION = 5;
 	const AUTOPLAY_VISIBILITY_THRESHOLD = 0.5;
+	const HOVER_INTENT_DELAY_MS = 200;
 	const MOBILE_BREAKPOINT = 600;
 	const SWIPE_THRESHOLD = 50; // Minimum vertical drag (px) to commit a swipe navigation.
 	const WHEEL_THRESHOLD = 80; // Accumulated deltaY (px) required to trigger a wheel navigation.
@@ -158,6 +158,7 @@ import { dispatch } from '@wordpress/data';
 			this.element = element;
 			this.layout = element.dataset.layout || 'carousel';
 			this.autoplay = element.dataset.autoplay === 'true';
+			this.showPlayButton = element.dataset.showPlayButton === 'true';
 			this.container = element.querySelector( '.godam-video-product-gallery__container' );
 			this.items = Array.from( element.querySelectorAll( '.godam-video-product-gallery-item' ) );
 			this.prevBtn = element.querySelector( '.godam-video-product-gallery__nav--prev' );
@@ -183,6 +184,17 @@ import { dispatch } from '@wordpress/data';
 			this._wheelResetTimer = null;
 			this._slideNavigating = false; // Shared lock — only one slide animation at a time.
 
+			// Autoplay sequencing state.
+			this.autoplayActiveItem = null;
+			this.hoverActiveItem = null;
+			this.hoverIntentTimers = new Map();
+
+			this.handleGalleryResize = () => {
+				this.updateNavVisibility();
+				this.updateAllPlayButtonStates();
+				this.updateVideoPreloadStrategy();
+			};
+
 			this.createModalElements();
 			this.init();
 
@@ -203,113 +215,506 @@ import { dispatch } from '@wordpress/data';
 				this.initCarousel();
 			}
 
+			this.initHoverPlay();
+
 			if ( this.autoplay ) {
 				this.initAutoplay();
-			} else {
-				this.initHoverPlay();
 			}
 
 			this.initAddToCart();
 			this.initModal();
 			this.initMobileSwipe();
+			window.addEventListener( 'resize', this.handleGalleryResize );
 
 			this.handleDropdownScrollState();
 			this.initDropdownToggle();
+			this.updateAllPlayButtonStates();
+			this.updateVideoPreloadStrategy();
 		}
 
 		/**
-		 * Use IntersectionObserver to autoplay the first 5 seconds of each video
-		 * in a loop when ≥50% visible, and pause when they scroll out of view.
+		 * Track which items are autoplay-eligible based on viewport visibility.
 		 */
 		initAutoplay() {
 			this.autoplayObserver = new IntersectionObserver(
 				( entries ) => {
 					entries.forEach( ( entry ) => {
 						entry.target.dataset.isInViewport = entry.isIntersecting ? 'true' : 'false';
-						this.syncPreviewVideo( entry.target, entry.isIntersecting );
 					} );
+
+					this.syncAutoplaySequence();
 				},
 				{ threshold: AUTOPLAY_VISIBILITY_THRESHOLD },
 			);
 
 			this.items.forEach( ( item ) => {
-				const video = item.querySelector( 'video' );
-				if ( video ) {
-					// Store the time-update handler so we can remove/re-attach it.
-					video._godamTimeUpdate = () => {
-						if ( video.currentTime >= PREVIEW_DURATION ) {
-							video.currentTime = 0;
-						}
-					};
-					video.addEventListener( 'timeupdate', video._godamTimeUpdate );
-				}
 				item.dataset.isInViewport = 'false';
 				this.autoplayObserver.observe( item );
 			} );
 		}
 
 		/**
-		 * Play the first 5 seconds of each video in a loop on hover.
-		 * Used when autoplay is disabled — videos stay paused until the user hovers.
+		 * Attach hover interactions and playback state tracking for each item.
 		 */
 		initHoverPlay() {
 			this.items.forEach( ( item ) => {
 				const video = item.querySelector( 'video' );
 				if ( video ) {
-					// Loop video back to start after PREVIEW_DURATION seconds.
-					video._godamTimeUpdate = () => {
-						if ( video.currentTime >= PREVIEW_DURATION ) {
-							video.currentTime = 0;
-						}
-					};
-					video.addEventListener( 'timeupdate', video._godamTimeUpdate );
+					this.initItemVideoState( item, video );
 				}
 
-				// Play on hover.
 				item.addEventListener( 'mouseenter', () => {
-					this.syncPreviewVideo( item, true );
+					this.scheduleItemHoverStart( item );
 				} );
 
-				// Stop on hover out.
 				item.addEventListener( 'mouseleave', () => {
-					this.syncPreviewVideo( item, false );
+					this.handleItemHoverEnd( item );
 				} );
 			} );
 		}
 
 		/**
-		 * Start or stop preview playback for a gallery item.
+		 * Track playback state for an item so UI and autoplay stay in sync.
+		 *
+		 * @param {Element}          item  The gallery item.
+		 * @param {HTMLVideoElement} video The gallery video element.
+		 */
+		initItemVideoState( item, video ) {
+			if ( ! item || ! video || video._godamGalleryStateBound ) {
+				return;
+			}
+
+			video._godamGalleryStateBound = true;
+
+			[ 'play', 'pause', 'waiting', 'loadedmetadata' ].forEach( ( eventName ) => {
+				video.addEventListener( eventName, () => {
+					this.refreshPlayButtonState( item );
+					this.updateVideoPreloadStrategy();
+				} );
+			} );
+
+			// When Video.js finishes loading sources (e.g. HLS/DASH via MSE),
+			// retry autoplay if it was attempted before the player was ready.
+			video.addEventListener( 'loadeddata', () => {
+				if (
+					this.autoplay &&
+					! this.modalOpen &&
+					item === this.autoplayActiveItem &&
+					item.dataset.isInViewport === 'true' &&
+					! this.isVideoPlaying( video )
+				) {
+					video.play().catch( () => {} );
+				}
+			}, { once: true } );
+
+			video.addEventListener( 'ended', () => {
+				this.refreshPlayButtonState( item );
+
+				if (
+					this.autoplay &&
+					! this.modalOpen &&
+					item === this.autoplayActiveItem
+				) {
+					this.advanceAutoplaySequence( item );
+					return;
+				}
+
+				this.updateVideoPreloadStrategy();
+			} );
+		}
+
+		/**
+		 * Get the primary video element for a gallery item.
+		 *
+		 * @param {Element} item The gallery item.
+		 * @return {HTMLVideoElement|null} The video element, if found.
+		 */
+		getItemVideo( item ) {
+			return item?.querySelector( 'video' ) || null;
+		}
+
+		/**
+		 * Start or stop playback for a gallery item.
 		 *
 		 * @param {Element} item       The gallery item.
-		 * @param {boolean} shouldPlay Whether preview playback should run.
+		 * @param {boolean} shouldPlay Whether playback should run.
+		 * @param {Object}  options    Playback options.
 		 */
-		syncPreviewVideo( item, shouldPlay ) {
+		syncPreviewVideo( item, shouldPlay, options = {} ) {
 			const video = item?.querySelector( 'video' );
 			if ( ! video ) {
 				return;
 			}
 
 			if ( shouldPlay ) {
-				video.currentTime = 0;
+				if ( options.restart ) {
+					video.currentTime = 0;
+				}
+
+				if ( Object.prototype.hasOwnProperty.call( options, 'muted' ) ) {
+					video.muted = !! options.muted;
+				}
+
 				video.play().catch( () => {} );
 				return;
 			}
 
 			video.pause();
-			video.currentTime = 0;
+			if ( options.reset !== false ) {
+				video.currentTime = 0;
+			}
+
+			if ( Object.prototype.hasOwnProperty.call( options, 'muted' ) ) {
+				video.muted = !! options.muted;
+			}
+
+			this.refreshPlayButtonState( item );
 		}
 
 		/**
-		 * Sync preview playback for every gallery item using the latest observer state.
+		 * Returns true when the provided video is actively playing.
+		 *
+		 * @param {HTMLVideoElement|null} video The gallery video element.
+		 * @return {boolean} Whether the video is currently playing.
 		 */
-		syncVisiblePreviewVideos() {
+		isVideoPlaying( video ) {
+			return !! (
+				video &&
+				! video.paused &&
+				! video.ended &&
+				video.currentTime > 0
+			);
+		}
+
+		/**
+		 * Schedule hover playback after a short intent delay.
+		 *
+		 * @param {Element} item The hovered gallery item.
+		 */
+		scheduleItemHoverStart( item ) {
+			if (
+				! item ||
+				this.modalOpen ||
+				item.classList.contains( 'godam-video-product-gallery-item--modal' )
+			) {
+				return;
+			}
+
+			this.clearItemHoverTimer( item );
+
+			const timerId = setTimeout( () => {
+				this.hoverIntentTimers.delete( item );
+				this.handleItemHoverStart( item );
+			}, HOVER_INTENT_DELAY_MS );
+
+			this.hoverIntentTimers.set( item, timerId );
+		}
+
+		/**
+		 * Cancel a pending hover intent timer.
+		 *
+		 * @param {Element} item The gallery item.
+		 */
+		clearItemHoverTimer( item ) {
+			if ( ! this.hoverIntentTimers.has( item ) ) {
+				return;
+			}
+
+			clearTimeout( this.hoverIntentTimers.get( item ) );
+			this.hoverIntentTimers.delete( item );
+		}
+
+		/**
+		 * Handle hover playback start for a gallery item.
+		 *
+		 * @param {Element} item The hovered gallery item.
+		 */
+		handleItemHoverStart( item ) {
+			if (
+				! item ||
+				this.modalOpen ||
+				item.classList.contains( 'godam-video-product-gallery-item--modal' )
+			) {
+				return;
+			}
+
+			this.hoverActiveItem = item;
+
+			if ( this.autoplay ) {
+				if ( this.autoplayActiveItem === item ) {
+					this.updateVideoPreloadStrategy();
+					return;
+				}
+
+				this.playAutoplayItem( item, { restart: true } );
+				return;
+			}
+
+			this.stopInactiveAutoplayItems( item );
+			this.syncPreviewVideo( item, true, { restart: true, muted: true } );
+			this.updateVideoPreloadStrategy();
+		}
+
+		/**
+		 * Handle hover playback end for a gallery item.
+		 *
+		 * @param {Element} item The gallery item losing hover.
+		 */
+		handleItemHoverEnd( item ) {
+			this.clearItemHoverTimer( item );
+
+			if (
+				! item ||
+				this.modalOpen ||
+				item.classList.contains( 'godam-video-product-gallery-item--modal' )
+			) {
+				return;
+			}
+
+			if ( this.hoverActiveItem === item ) {
+				this.hoverActiveItem = null;
+			}
+
+			if ( this.autoplay ) {
+				this.updateVideoPreloadStrategy();
+				return;
+			}
+
+			this.syncPreviewVideo( item, false, { reset: true, muted: true } );
+			this.updateVideoPreloadStrategy();
+		}
+
+		/**
+		 * Return gallery items currently eligible for autoplay in DOM order.
+		 *
+		 * @return {Element[]} Visible gallery items.
+		 */
+		getVisibleAutoplayItems() {
+			return this.items.filter(
+				( item ) => item.dataset.isInViewport === 'true',
+			);
+		}
+
+		/**
+		 * Pause and reset all autoplay candidates except the active one.
+		 *
+		 * @param {Element|null} activeItem Item that should remain playing.
+		 */
+		stopInactiveAutoplayItems( activeItem = null ) {
+			this.items.forEach( ( item ) => {
+				if ( item !== activeItem ) {
+					item.classList.remove( 'godam-video-product-gallery-item--autoplaying' );
+					this.syncPreviewVideo( item, false, { reset: true, muted: true } );
+				}
+			} );
+		}
+
+		/**
+		 * Return the next eligible autoplay item in DOM order.
+		 *
+		 * @param {Element|null} currentItem The current autoplay item.
+		 * @return {Element|null} The next visible gallery item.
+		 */
+		getNextAutoplayItem( currentItem = this.autoplayActiveItem ) {
+			const visibleItems = this.getVisibleAutoplayItems();
+
+			if ( visibleItems.length === 0 ) {
+				return null;
+			}
+
+			const currentIndex = visibleItems.indexOf( currentItem );
+			const nextIndex = currentIndex === -1
+				? 0
+				: ( currentIndex + 1 ) % visibleItems.length;
+
+			return visibleItems[ nextIndex ];
+		}
+
+		/**
+		 * Start full playback for the active autoplay item.
+		 *
+		 * @param {Element} item    The gallery item to play.
+		 * @param {Object}  options Playback options.
+		 */
+		playAutoplayItem( item, options = {} ) {
+			if ( ! item ) {
+				this.stopAutoplaySequence();
+				return;
+			}
+
+			this.autoplayActiveItem = item;
+			item.classList.add( 'godam-video-product-gallery-item--autoplaying' );
+			this.stopInactiveAutoplayItems( item );
+			this.syncPreviewVideo( item, true, {
+				restart: options.restart !== false,
+				muted: true,
+			} );
+			this.updateVideoPreloadStrategy();
+		}
+
+		/**
+		 * Stop autoplay sequencing and reset all preview videos.
+		 */
+		stopAutoplaySequence() {
+			if ( this.autoplayActiveItem ) {
+				this.autoplayActiveItem.classList.remove( 'godam-video-product-gallery-item--autoplaying' );
+				this.syncPreviewVideo( this.autoplayActiveItem, false, {
+					reset: true,
+					muted: true,
+				} );
+			}
+
+			this.autoplayActiveItem = null;
+			this.updateVideoPreloadStrategy();
+		}
+
+		/**
+		 * Move autoplay to the next visible gallery item in DOM order.
+		 */
+		advanceAutoplaySequence( currentItem = this.autoplayActiveItem ) {
+			if ( ! this.autoplay || this.modalOpen ) {
+				this.stopAutoplaySequence();
+				return;
+			}
+
+			const nextItem = this.getNextAutoplayItem( currentItem );
+			if ( ! nextItem ) {
+				this.stopAutoplaySequence();
+				return;
+			}
+
+			this.playAutoplayItem( nextItem, { restart: true } );
+		}
+
+		/**
+		 * Reconcile autoplay state with the latest viewport visibility.
+		 */
+		syncAutoplaySequence( preferredItem = null ) {
 			if ( ! this.autoplay ) {
 				return;
 			}
 
+			if ( this.modalOpen ) {
+				this.stopAutoplaySequence();
+				return;
+			}
+
+			const visibleItems = this.getVisibleAutoplayItems();
+
+			if ( visibleItems.length === 0 ) {
+				this.stopInactiveAutoplayItems();
+				this.stopAutoplaySequence();
+				return;
+			}
+
+			if ( preferredItem && visibleItems.includes( preferredItem ) ) {
+				this.playAutoplayItem( preferredItem, { restart: true } );
+				return;
+			}
+
+			if (
+				this.autoplayActiveItem &&
+				visibleItems.includes( this.autoplayActiveItem )
+			) {
+				this.stopInactiveAutoplayItems( this.autoplayActiveItem );
+				this.updateVideoPreloadStrategy();
+				return;
+			}
+
+			this.playAutoplayItem( visibleItems[ 0 ], { restart: true } );
+		}
+
+		/**
+		 * Return the leading playback item for preload decisions.
+		 *
+		 * @return {Element|null} The item currently driving playback.
+		 */
+		getCurrentPlaybackItem() {
+			if ( this.modalOpen ) {
+				return this.modalOriginalItem;
+			}
+
+			return this.autoplay ? this.autoplayActiveItem : this.hoverActiveItem;
+		}
+
+		/**
+		 * Update the preload strategy so only the active and next videos can eagerly load.
+		 */
+		updateVideoPreloadStrategy() {
+			const currentItem = this.getCurrentPlaybackItem();
+			const nextItem = this.modalOpen || ! this.autoplay
+				? null
+				: this.getNextAutoplayItem( currentItem );
+
 			this.items.forEach( ( item ) => {
-				this.syncPreviewVideo( item, item.dataset.isInViewport === 'true' );
+				const video = this.getItemVideo( item );
+				if ( ! video ) {
+					return;
+				}
+
+				const preloadValue = item === currentItem || item === nextItem
+					? 'auto'
+					: 'metadata';
+
+				if ( video.preload !== preloadValue ) {
+					video.preload = preloadValue;
+					video.setAttribute( 'preload', preloadValue );
+				}
 			} );
+		}
+
+		/**
+		 * Determine whether the play button overlay should be visible for an item.
+		 *
+		 * @param {Element} item The gallery item.
+		 * @return {boolean} Whether the play button should be shown.
+		 */
+		shouldShowPlayButton( item ) {
+			const video = this.getItemVideo( item );
+			if ( ! video ) {
+				return false;
+			}
+
+			const enabled = this.showPlayButton || ( ! this.autoplay && window.innerWidth <= MOBILE_BREAKPOINT );
+			return enabled && ! this.isVideoPlaying( video );
+		}
+
+		/**
+		 * Refresh the play button state for a single gallery item.
+		 *
+		 * @param {Element} item The gallery item.
+		 */
+		refreshPlayButtonState( item ) {
+			if ( ! item ) {
+				return;
+			}
+
+			item.classList.toggle(
+				'godam-video-product-gallery-item--show-play-button',
+				this.shouldShowPlayButton( item ),
+			);
+		}
+
+		/**
+		 * Refresh play button visibility for the whole gallery.
+		 */
+		updateAllPlayButtonStates() {
+			this.items.forEach( ( item ) => {
+				this.refreshPlayButtonState( item );
+			} );
+		}
+
+		/**
+		 * Sync gallery playback after external state changes.
+		 */
+		syncVisiblePreviewVideos() {
+			if ( this.autoplay ) {
+				this.syncAutoplaySequence();
+				return;
+			}
+
+			this.updateAllPlayButtonStates();
+			this.updateVideoPreloadStrategy();
 		}
 
 		/**
@@ -579,10 +984,20 @@ import { dispatch } from '@wordpress/data';
 			this.modalOriginalItem = this.items[ index ];
 			activeModalGallery = this;
 
-			// Pause all gallery preview videos.
-			this.items.forEach( ( item ) => {
-				this.syncPreviewVideo( item, false );
+			this.hoverIntentTimers.forEach( ( timerId ) => {
+				clearTimeout( timerId );
 			} );
+			this.hoverIntentTimers.clear();
+
+			// Pause all gallery preview videos.
+			if ( this.autoplay ) {
+				this.stopAutoplaySequence();
+			} else {
+				this.items.forEach( ( item ) => {
+					this.syncPreviewVideo( item, false, { reset: true, muted: true } );
+				} );
+			}
+			this.hoverActiveItem = null;
 
 			// Create a placeholder clone to maintain gallery layout.
 			this.modalPlaceholder = this.modalOriginalItem.cloneNode( true );
@@ -595,14 +1010,16 @@ import { dispatch } from '@wordpress/data';
 			// Add modal class to the original element.
 			this.modalOriginalItem.classList.add( 'godam-video-product-gallery-item--modal' );
 
-			// Unmute and play the full video (remove 5s loop limit).
+			// Always autoplay the modal video from the start.
 			const modalVideo = this.modalOriginalItem.querySelector( 'video' );
 			if ( modalVideo ) {
-				// Remove the 5-second preview limiter.
-				if ( modalVideo._godamTimeUpdate ) {
-					modalVideo.removeEventListener( 'timeupdate', modalVideo._godamTimeUpdate );
-				}
-
+				// Modal playback should always start when a video is opened, regardless
+				// of the gallery autoplay setting.
+				modalVideo.loop = false;
+				modalVideo.autoplay = true;
+				modalVideo.muted = false;
+				modalVideo.preload = 'auto';
+				modalVideo.setAttribute( 'preload', 'auto' );
 				modalVideo.currentTime = 0;
 				modalVideo.play().catch( () => {} );
 			}
@@ -696,12 +1113,8 @@ import { dispatch } from '@wordpress/data';
 			if ( video ) {
 				video.pause();
 				video.muted = true;
+				video.autoplay = false;
 				video.currentTime = 0;
-
-				// Re-attach the 5-second preview limiter if autoplay is enabled.
-				if ( this.autoplay && video._godamTimeUpdate ) {
-					video.addEventListener( 'timeupdate', video._godamTimeUpdate );
-				}
 			}
 
 			// Move original item back into gallery (before placeholder).
@@ -1197,7 +1610,6 @@ import { dispatch } from '@wordpress/data';
 			}
 			this.updateNavVisibility();
 			this.container.addEventListener( 'scroll', () => this.updateNavVisibility() );
-			window.addEventListener( 'resize', () => this.updateNavVisibility() );
 			if ( this.prevBtn ) {
 				this.prevBtn.addEventListener( 'click', () => this.scrollCarousel( -1 ) );
 			}

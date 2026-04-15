@@ -49,6 +49,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		itemWidth,
 		count = 12,
 		autoplay,
+		showPlayButton,
 		categories = [],
 		products = [],
 		showAddToCart,
@@ -489,11 +490,18 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						label={ __( 'Autoplay', 'godam' ) }
 						help={
 							autoplay
-								? __( 'Videos will autoplay when visible.', 'godam' )
-								: __( 'Videos will not autoplay.', 'godam' )
+								? __( 'Visible videos autoplay one at a time and continue through the full video.', 'godam' )
+								: __( 'Videos only play when hovered.', 'godam' )
 						}
 						checked={ !! autoplay }
 						onChange={ ( value ) => setAttributes( { autoplay: value } ) }
+					/>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ __( 'Show Play Button', 'godam' ) }
+						help={ __( 'Shows an overlay play button whenever a video is not playing. On mobile, this still appears when autoplay is off.', 'godam' ) }
+						checked={ !! showPlayButton }
+						onChange={ ( value ) => setAttributes( { showPlayButton: value } ) }
 					/>
 					<ToggleControl
 						__nextHasNoMarginBottom

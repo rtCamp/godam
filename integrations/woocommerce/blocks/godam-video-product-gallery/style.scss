@@ -76,32 +76,39 @@
 	}
 }
 
-// Play icon overlay — shown when autoplay is off, hidden on hover.
+// Play icon overlay — visible only when runtime marks the item as idle.
 .godam-gallery-item__play-icon {
 	position: absolute;
-	top: 8px;
-	left: 8px;
+	top: 50%;
+	left: 50%;
 	z-index: 2;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 28px;
-	height: 28px;
+	width: 48px;
+	height: 48px;
 	border-radius: 50%;
 	background: rgba(0, 0, 0, 0.5);
+	backdrop-filter: blur(4px);
 	color: #fff;
 	pointer-events: none;
+	opacity: 0;
+	transform: translate(-50%, -50%);
 	transition: opacity 0.2s ease;
 
 	svg {
-		width: 14px;
-		height: 14px;
+		width: 22px;
+		height: 22px;
 	}
 }
 
-// Hide play icon when the gallery item is hovered.
-.godam-video-product-gallery-item:hover .godam-gallery-item__play-icon {
-	opacity: 0;
+.godam-video-product-gallery-item--show-play-button .godam-gallery-item__play-icon {
+	opacity: 1;
+}
+
+// Hide play icon on the actively autoplaying item.
+.godam-video-product-gallery-item--autoplaying .godam-gallery-item__play-icon {
+	opacity: 0 !important;
 }
 
 // Gallery Item.
@@ -507,6 +514,16 @@
 				aspect-ratio: unset !important;
 			}
 		}
+
+		.godam-gallery-item__play-icon {
+			opacity: 0 !important;
+			display: none !important;
+		}
+
+		.vjs-play-control {
+			display: none !important;
+			opacity: 0 !important;
+		}
 	}
 }
 
@@ -523,7 +540,7 @@
 	max-height: 90dvh !important;
 	flex-shrink: 0;
 	border-radius: var(--godam-vpg-modal-radius) !important;
-	overflow: hidden auto !important;
+	overflow: hidden !important;
 
 	@media screen and (max-width: 600px) {
 		max-height: 100dvh !important;
@@ -1146,7 +1163,9 @@ body.admin-bar {
 		}
 
 		@keyframes bounce {
+
 			0%, 100% { transform: translateX(-50%) translateY(0); }
+
 			50% { transform: translateX(-50%) translateY(6px); }
 		}
 
