@@ -227,7 +227,7 @@ import { dispatch } from '@wordpress/data';
 
 			this.initHoverPlay();
 
-			if ( this.autoplay ) {
+			if ( this.autoplay && this.layout === 'carousel' ) {
 				this.initAutoplay();
 			}
 
@@ -245,6 +245,14 @@ import { dispatch } from '@wordpress/data';
 		 * Track which items are autoplay-eligible based on viewport visibility.
 		 */
 		initAutoplay() {
+			// On desktop carousel, observe items relative to the scroll container so
+			// items scrolled out of the carousel (but still in the browser viewport)
+			// are correctly treated as out-of-view.
+			// On mobile carousel, use the default browser viewport (root: null) so the
+			// full-width single-item layout is observed correctly without a container root.
+			const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
+			const observerRoot = isMobile ? null : this.container;
+
 			this.autoplayObserver = new IntersectionObserver(
 				( entries ) => {
 					entries.forEach( ( entry ) => {
@@ -253,7 +261,7 @@ import { dispatch } from '@wordpress/data';
 
 					this.syncAutoplaySequence();
 				},
-				{ threshold: AUTOPLAY_VISIBILITY_THRESHOLD },
+				{ root: observerRoot, threshold: AUTOPLAY_VISIBILITY_THRESHOLD },
 			);
 
 			this.items.forEach( ( item ) => {
