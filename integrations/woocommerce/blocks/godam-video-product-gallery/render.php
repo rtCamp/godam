@@ -282,7 +282,7 @@ if ( is_string( $block_gap_raw ) && str_starts_with( $block_gap_raw, 'var:preset
 	$block_gap = $block_gap_raw;
 }
 $show_add_to_cart = isset( $attributes['showAddToCart'] ) ? (bool) $attributes['showAddToCart'] : true;
-$show_play_button = isset( $attributes['showPlayButton'] ) ? (bool) $attributes['showPlayButton'] : false;
+$show_play_button = isset( $attributes['showPlayButton'] ) ? (bool) $attributes['showPlayButton'] : true;
 $wc_ajax_url      = class_exists( 'WC_AJAX' ) ? WC_AJAX::get_endpoint( '%%endpoint%%' ) : '';
 
 // Convert ratio to CSS class format.

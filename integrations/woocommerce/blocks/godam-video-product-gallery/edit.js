@@ -499,7 +499,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={ __( 'Show Play Button', 'godam' ) }
-						help={ __( 'Shows an overlay play button whenever a video is not playing. On mobile, this still appears when autoplay is off.', 'godam' ) }
+						help={ __( 'Shows an overlay play button whenever a video is not playing.', 'godam' ) }
 						checked={ !! showPlayButton }
 						onChange={ ( value ) => setAttributes( { showPlayButton: value } ) }
 					/>

@@ -29,6 +29,7 @@ import { dispatch } from '@wordpress/data';
 
 	const galleryInstances = new Set();
 	let isGlobalClickBound = false;
+	let isGlobalResizeBound = false;
 
 	/**
 	 * Route document-level keyboard navigation to the currently active modal.
@@ -208,6 +209,15 @@ import { dispatch } from '@wordpress/data';
 				} );
 				isGlobalClickBound = true;
 			}
+
+			if ( ! isGlobalResizeBound ) {
+				window.addEventListener( 'resize', () => {
+					galleryInstances.forEach( ( instance ) => {
+						instance.handleGalleryResize();
+					} );
+				} );
+				isGlobalResizeBound = true;
+			}
 		}
 
 		init() {
@@ -224,7 +234,6 @@ import { dispatch } from '@wordpress/data';
 			this.initAddToCart();
 			this.initModal();
 			this.initMobileSwipe();
-			window.addEventListener( 'resize', this.handleGalleryResize );
 
 			this.handleDropdownScrollState();
 			this.initDropdownToggle();
@@ -381,8 +390,7 @@ import { dispatch } from '@wordpress/data';
 			return !! (
 				video &&
 				! video.paused &&
-				! video.ended &&
-				video.currentTime > 0
+				! video.ended
 			);
 		}
 
@@ -572,6 +580,8 @@ import { dispatch } from '@wordpress/data';
 
 		/**
 		 * Move autoplay to the next visible gallery item in DOM order.
+		 *
+		 * @param {Element|null} currentItem The current autoplay item.
 		 */
 		advanceAutoplaySequence( currentItem = this.autoplayActiveItem ) {
 			if ( ! this.autoplay || this.modalOpen ) {
@@ -590,6 +600,7 @@ import { dispatch } from '@wordpress/data';
 
 		/**
 		 * Reconcile autoplay state with the latest viewport visibility.
+		 * @param preferredItem
 		 */
 		syncAutoplaySequence( preferredItem = null ) {
 			if ( ! this.autoplay ) {
