@@ -13,8 +13,8 @@ import {
 } from '@wordpress/block-editor';
 import {
 	PanelBody,
-	SelectControl,
 	RangeControl,
+	SelectControl,
 	ToggleControl,
 	FormTokenField,
 	DatePicker,
@@ -295,10 +295,13 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 
 	const blockGap = resolveBlockGap( attributes.style );
 
+	const itemWidthMap = { S: 200, M: 260, L: 320 };
+	const itemWidthPx = itemWidthMap[ itemWidth ] || itemWidthMap.M;
+
 	const blockProps = useBlockProps( {
 		className: `godam-gallery-v2 godam-gallery-v2--${ mode }`,
 		style: {
-			'--godam-gallery-item-width': `${ itemWidth }px`,
+			'--godam-gallery-item-width': `${ itemWidthPx }px`,
 			'--godam-gallery-gap': blockGap,
 		},
 	} );
@@ -527,16 +530,18 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						<ToggleGroupControlOption label="1:1" value="1:1" />
 						<ToggleGroupControlOption label="16:9" value="16:9" />
 					</ToggleGroupControl>
-					<RangeControl
+					<ToggleGroupControl
 						__nextHasNoMarginBottom
-						label={ __( 'Item Width', 'godam' ) }
+						isBlock
+						label={ __( 'Item Size', 'godam' ) }
 						value={ itemWidth }
-						onChange={ ( value ) => setAttributes( { itemWidth: value } ) }
-						min={ 180 }
-						max={ 600 }
-						step={ 10 }
-						help={ __( 'Width of each gallery item in pixels.', 'godam' ) }
-					/>
+						onChange={ ( value ) => value && setAttributes( { itemWidth: value } ) }
+						help={ __( 'Size of each gallery item.', 'godam' ) }
+					>
+						<ToggleGroupControlOption label={ __( 'S', 'godam' ) } value="S" />
+						<ToggleGroupControlOption label={ __( 'M', 'godam' ) } value="M" />
+						<ToggleGroupControlOption label={ __( 'L', 'godam' ) } value="L" />
+					</ToggleGroupControl>
 					<ToggleControl
 						label={ __( 'Show Video Titles and Dates', 'godam' ) }
 						checked={ !! showTitle }
