@@ -58,6 +58,7 @@ export default function Edit( { attributes, setAttributes, context } ) {
 	const layout = context[ 'godam/videoProductGallery/layout' ] || 'carousel';
 	const viewRatio = context[ 'godam/videoProductGallery/viewRatio' ] || '9:16';
 	const showAddToCart = context[ 'godam/videoProductGallery/showAddToCart' ] !== false;
+	const showPlayButton = context[ 'godam/videoProductGallery/showPlayButton' ] !== false;
 
 	// Convert ratio to CSS-friendly format
 	const ratioClass = viewRatio.replace( ':', '-' );
@@ -229,9 +230,11 @@ export default function Edit( { attributes, setAttributes, context } ) {
 												alt={ videoTitle || __( 'Video thumbnail', 'godam' ) }
 												className="godam-gallery-item__thumbnail"
 											/>
-											<div className="godam-gallery-item__play-icon">
-												<PlayIcon />
-											</div>
+											{ showPlayButton && (
+												<div className="godam-gallery-item__play-icon">
+													<PlayIcon />
+												</div>
+											) }
 										</>
 									);
 								}
