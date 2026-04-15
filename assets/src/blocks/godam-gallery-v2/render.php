@@ -222,7 +222,7 @@ $item_width_map      = array(
 );
 $item_width          = isset( $item_width_map[ $item_width_size ] ) ? $item_width_map[ $item_width_size ] : 200;
 $show_title          = ! isset( $attributes['showTitle'] ) || (bool) $attributes['showTitle'];
-$enable_more_items   = array_key_exists( 'enableMoreItems', $attributes ) ? ! empty( $attributes['enableMoreItems'] ) : true;
+$enable_more_items   = array_key_exists( 'enableMoreItems', $attributes ) ? ! empty( $attributes['enableMoreItems'] ) : false;
 $more_items_behavior = isset( $attributes['moreItemsBehavior'] ) ? sanitize_key( $attributes['moreItemsBehavior'] ) : '';
 
 if ( ! in_array( $more_items_behavior, array( 'button', 'infinite' ), true ) ) {
