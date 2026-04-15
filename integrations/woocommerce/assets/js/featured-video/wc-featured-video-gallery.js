@@ -1,35 +1,92 @@
 /* global jQuery, myGalleryAjaxData */
 
-// eslint-disable-next-line eslint-comments/disable-enable-pair
-/* eslint-disable no-console */
+/**
+ * External dependencies
+ */
+import DOMPurify from 'isomorphic-dompurify';
 
 /**
- * Internal dependencies
+ * WooCommerce Product Gallery Video Enhancements (GoDAM Integration)
+ *
+ * Extends the default WooCommerce product gallery to support video playback
+ * alongside images. This script identifies video thumbnails, synchronizes
+ * playback with the active gallery slide, and conditionally removes video
+ * elements based on API availability.
+ *
+ * Key responsibilities:
+ * - Detects video thumbnails using a custom `alt` format (`video|{id}|...`).
+ * - Adds helper classes and data attributes to video thumbnails for identification.
+ * - Controls video playback:
+ *    - Pauses all videos when switching slides.
+ *    - Plays video only on the active gallery slide.
+ * - Syncs playback state with WooCommerce Flexslider events.
+ * - Observes DOM mutations to initialize gallery behavior when content loads dynamically.
+ * - Removes video elements (thumbnails + slides) when API key is invalid.
+ * - Hooks into WooCommerce gallery lifecycle events (`wc-product-gallery-before-init`).
+ *
+ * Functions:
+ * - toggleGalleryVideoPlayback($activeSlide)
+ *      Pauses all videos and plays the video in the active slide (if applicable).
+ *
+ * - syncActiveGalleryVideo()
+ *      Finds the current active slide and ensures correct playback state.
+ *
+ * - handleGalleryImages()
+ *      Processes thumbnail images, identifies video entries, and adds required
+ *      classes and data attributes for frontend handling.
+ *
+ * - removeFrontendVideosIfNeeded()
+ *      Removes all video-related elements from the gallery when API access is unavailable.
+ *
+ * Behavior notes:
+ * - Uses MutationObserver to handle dynamically rendered WooCommerce galleries.
+ * - Ensures compatibility with WooCommerce Flexslider structure.
+ * - Prevents autoplay conflicts by allowing only one active video at a time.
+ *
+ * Dependencies:
+ * - jQuery
+ * - WooCommerce product gallery (Flexslider)
+ * - Global config object: `myGalleryAjaxData`
  */
-import { resetVideoModal, loadNewVideo } from '../global-video-popup/video-modal.js';
-import { initEscapeManager, registerEscapeHandler, unregisterEscapeHandler } from '../global-video-popup/escapeManager.js';
-
 jQuery( document ).ready( function( $ ) {
-	const emptySrcAlts = [];
-	const emptyImgs = [];
+	function toggleGalleryVideoPlayback( $activeSlide ) {
+		const $gallery = $activeSlide.closest( '.woocommerce-product-gallery' );
 
-	initEscapeManager();
-
-	/**
-	 * Process and identify empty thumbnails and trigger AJAX for video thumbnails.
-	 */
-	function handleGalleryImages() {
-		// Open Photoswipe gallery.
-		const $galleryWrapper = $( 'body' ).find( '.woocommerce-product-gallery__wrapper' );
-
-		const emptyDivs = $galleryWrapper.find( '.woocommerce-product-gallery__image' ).filter( function() {
-			return $( this ).find( 'img' ).length === 0;
-		} );
-
-		if ( ! emptyDivs.length ) {
+		if ( ! $gallery.length ) {
 			return;
 		}
 
+		$gallery.find( '.woocommerce-product-gallery__image video' ).each( function() {
+			this.pause();
+		} );
+
+		if ( ! $activeSlide.length || ! $activeSlide.is( '.godam-product-gallery-video' ) ) {
+			return;
+		}
+
+		const videoElement = $activeSlide.find( '.godam-featured-video-wrapper video' ).get( 0 );
+
+		if ( videoElement ) {
+			const playPromise = videoElement.play();
+
+			if ( playPromise && typeof playPromise.catch === 'function' ) {
+				playPromise.catch( () => {} );
+			}
+		}
+	}
+
+	function syncActiveGalleryVideo() {
+		const $activeSlide = $( '.woocommerce-product-gallery .flex-active-slide' ).first();
+
+		if ( $activeSlide.length ) {
+			toggleGalleryVideoPlayback( $activeSlide );
+		}
+	}
+
+	/**
+	 * Process and identify thumbnails and add class and data attributes for videos.
+	 */
+	function handleGalleryImages() {
 		// Thumbnail gallery.
 		const $imgs = $( '.woocommerce-product-gallery' ).find( 'ol.flex-control-thumbs li img' );
 
@@ -39,166 +96,16 @@ jQuery( document ).ready( function( $ ) {
 
 		$imgs.each( function() {
 			const $img = $( this );
-			const src = $img.attr( 'src' );
 			const alt = $img.attr( 'alt' ) || '';
 
-			if ( ! src || src.trim() === '' ) {
-				emptySrcAlts.push( alt );
-				emptyImgs.push( this );
+			if ( alt.startsWith( 'video|' ) ) {
+				$img.addClass( 'godam-video-thumbnail' );
+				$img.closest( 'li' ).addClass( 'godam-video-gallery-element' );
 
-				$img.closest( 'li' ).addClass( 'godam-thumb-loading' );
-				$img.css( 'visibility', 'hidden' );
+				const videoId = alt.split( '|' )[ 1 ];
+				$img.attr( 'data-video-id', videoId );
 			}
 		} );
-
-		if ( emptySrcAlts.length === 0 ) {
-			return;
-		}
-
-		// Get Product Id.
-		const productId = $( 'body' ).attr( 'class' ).split( ' ' ).find( ( c ) => c.startsWith( 'postid-' ) ).replace( 'postid-', '' );
-		if ( ! productId || ! myGalleryAjaxData?.ajax_url || ! myGalleryAjaxData?.nonce ) {
-			return;
-		}
-
-		$.post(
-			myGalleryAjaxData.ajax_url,
-			{
-				action: 'send_empty_alts',
-				nonce: myGalleryAjaxData.nonce,
-				alts: emptySrcAlts,
-				product_id: productId,
-			},
-			function( response ) {
-				if ( ! response.success || ! response.data?.videoThumbs || ! response.data?.videoIds ) {
-					console.error( 'Invalid AJAX response for video thumbnails' );
-					return;
-				}
-
-				response.data.videoThumbs.forEach( function( thumbUrl, index ) {
-					const videoId = response.data.videoIds[ index ];
-					const imgEl = emptyImgs[ index ];
-					const divEl = emptyDivs[ index ];
-
-					if ( ! thumbUrl || ! videoId || ( ! imgEl && ! divEl ) ) {
-						return;
-					}
-
-					// Open Photoswipe gallery Image video.
-					const $div = $( divEl );
-					const fullImage = thumbUrl.replace( '-100x100', '' );
-					const thumbSrcSet = `${ thumbUrl } 100w, ${ thumbUrl.replace( '-100x100', '-150x150' ) } 150w, ${ thumbUrl.replace( '-100x100', '-300x300' ) } 300w`;
-					const thumbSizes = '(max-width: 100px) 100vw, 100px';
-					const mainImgSrc = thumbUrl.replace( '-100x100', '-600x744' );
-					const mainSrcSet = `${ mainImgSrc } 600w, ${ mainImgSrc.replace( '-600x744', '-242x300' ) } 242w, ${ mainImgSrc.replace( '-600x744', '-825x1024' ) } 825w, ${ mainImgSrc.replace( '-600x744', '-768x953' ) } 768w, ${ fullImage } 1080w`;
-					const mainSizes = '(max-width: 600px) 100vw, 600px';
-					$div.attr( {
-						'data-thumb': thumbUrl,
-						'data-thumb-alt': $div.data( 'thumb-alt' ) || '',
-						'data-thumb-srcset': thumbSrcSet,
-						'data-thumb-sizes': thumbSizes,
-					} );
-					const $divImg = $( '<img>', {
-						src: mainImgSrc,
-						alt: $div.data( 'thumb-alt' ) || '',
-						'data-caption': '',
-						'data-src': fullImage,
-						'data-large_image': fullImage,
-						'data-large_image_width': 1080,
-						'data-large_image_height': 1340,
-						decoding: 'async',
-						srcset: mainSrcSet,
-						sizes: mainSizes,
-						draggable: false,
-						class: '',
-					} ).attr( {
-						width: 600,
-						height: 744,
-					} );
-					$div.html( '' ).append( $( '<a>', { href: fullImage } ).append( $divImg ) );
-
-					// Thumbnail gallery Image video.
-					const $img = $( imgEl );
-					$img.attr( 'src', thumbUrl )
-						.attr( 'data-video-id', videoId )
-						.addClass( 'godam-video-thumbnail' )
-						.closest( 'li' )
-						.addClass( 'godam-video-gallery-element' )
-						.end()
-						.off( 'click touchstart' )
-						.on( 'click touchstart', function( e ) {
-							// Prevent double firing on some devices.
-							if ( e.type === 'touchstart' ) {
-								e.preventDefault();
-							}
-							openVideoModal( videoId );
-						} );
-					$img.css( 'visibility', 'visible' );
-					$img.closest( 'li' ).removeClass( 'godam-thumb-loading' );
-				} );
-			},
-		);
-	}
-
-	/**
-	 * Opens the video modal for a given video ID.
-	 *
-	 * @param {number} videoId
-	 */
-	async function openVideoModal( videoId ) {
-		const singlePageProductModal = document.querySelector( '.rtgodam-product-video-gallery-slider-modal.open' );
-
-		singlePageProductModal?.classList.add( 'hidden' );
-
-		const modal = document.querySelector(
-			'.godam-woocommerce-featured-video-modal-container',
-		);
-
-		modal.classList.add( 'open' );
-		modal.dataset.currentVideoId = videoId;
-		modal.dataset.isLoading = 'false';
-
-		modal.classList.remove( 'hidden' );
-
-		modal.querySelector( '.godam-woocommerce-featured-video-modal-container-close' )?.addEventListener( 'click', closeModal );
-		modal.addEventListener( 'click', ( e ) => {
-			if ( ! e.target.closest( '.godam-woocommerce-featured-video-modal-content' ) ) {
-				closeModal();
-			}
-		} );
-		// Escape key.
-		const handleEscapeClose = () => {
-			closeModal();
-			unregisterEscapeHandler( handleEscapeClose );
-		};
-
-		modal._escapeHandler = handleEscapeClose;
-
-		registerEscapeHandler( handleEscapeClose );
-
-		await loadNewVideo( videoId, modal, false, 'godam-featured-video-gallery', false );
-	}
-
-	/**
-	 * Closes and resets the video modal.
-	 */
-	function closeModal() {
-		const modal = document.querySelector(
-			'.godam-woocommerce-featured-video-modal-container.open',
-		);
-		if ( ! modal ) {
-			return;
-		}
-
-		if ( modal._escapeHandler ) {
-			unregisterEscapeHandler( modal._escapeHandler );
-			modal._escapeHandler = null;
-		}
-
-		resetVideoModal( modal );
-
-		const singlePageProductModal = document.querySelector( '.rtgodam-product-video-gallery-slider-modal.open.hidden' );
-		singlePageProductModal?.classList.remove( 'hidden' );
 	}
 
 	/**
@@ -213,8 +120,9 @@ jQuery( document ).ready( function( $ ) {
 		$( '.woocommerce-product-gallery ol.flex-control-thumbs li' ).each( function() {
 			const $li = $( this );
 			const $img = $li.find( 'img' );
+			const alt = $img.attr( 'alt' ) || '';
 
-			if ( $img.hasClass( 'godam-video-thumbnail' ) || $img.attr( 'data-video-id' ) ) {
+			if ( alt.startsWith( 'video|' ) ) {
 				$li.remove();
 			}
 		} );
@@ -223,10 +131,11 @@ jQuery( document ).ready( function( $ ) {
 		$( '.woocommerce-product-gallery__wrapper .woocommerce-product-gallery__image' ).each( function() {
 			const $slide = $( this );
 
-			if (
-				$slide.find( 'img' ).length === 0 ||
-			$slide.find( '[data-video-id]' ).length
-			) {
+			const hasVideo = $slide.find( '[data-video-id]' ).length ||
+			$slide.find( 'video' ).length ||
+			$slide.hasClass( 'godam-product-gallery-video' );
+
+			if ( hasVideo ) {
 				$slide.remove();
 			}
 		} );
@@ -267,4 +176,129 @@ jQuery( document ).ready( function( $ ) {
 			removeFrontendVideosIfNeeded();
 		}
 	} );
+
+	$( document ).on( 'click', '.woocommerce-product-gallery .flex-control-thumbs li', function() {
+		const $thumb = $( this );
+		const thumbIndex = $thumb.index();
+
+		setTimeout( function() {
+			const $slides = $( '.woocommerce-product-gallery .woocommerce-product-gallery__image' );
+			const $targetSlide = $slides.eq( thumbIndex );
+
+			if ( $targetSlide.length ) {
+				toggleGalleryVideoPlayback( $targetSlide );
+			} else {
+				syncActiveGalleryVideo();
+			}
+		}, 120 );
+	} );
+
+	$( window ).on( 'load', function() {
+		setTimeout( syncActiveGalleryVideo, 200 );
+	} );
+} );
+
+/**
+ * Patches the WooCommerce product gallery to support video items in PhotoSwipe (lightbox).
+ *
+ * This function overrides the default `getGalleryItems()` method of the WooCommerce
+ * gallery instance to include video entries alongside images when opening the gallery
+ * lightbox.
+ *
+ * Key responsibilities:
+ * - Waits for the WooCommerce gallery instance (`product_gallery`) to be initialized.
+ * - Prevents multiple patches using an internal `_godam_patched` flag.
+ * - Overrides `getGalleryItems()` to customize the data passed to PhotoSwipe.
+ *
+ * Custom behavior:
+ * - For elements with `data-video-id`:
+ *    - Injects a custom HTML slide containing an iframe (GoDAM video player).
+ *    - Sanitizes the video URL using DOMPurify for security.
+ *
+ * - For standard image elements:
+ *    - Preserves default behavior by returning image metadata
+ *      (`src`, `width`, `height`, `title`) for PhotoSwipe.
+ *
+ * Implementation details:
+ * - Uses polling (`setTimeout`) to wait until the gallery instance is available.
+ * - Iterates over all gallery items (`this.$images`) to build a unified list
+ *   of image and video slides.
+ * - Ensures compatibility with WooCommerce's native lightbox system.
+ *
+ * Dependencies:
+ * - jQuery
+ * - WooCommerce product gallery (`product_gallery` instance)
+ * - DOMPurify (for sanitizing iframe URLs)
+ *
+ * Notes:
+ * - Video slides are rendered using `<iframe>` inside PhotoSwipe instead of `<img>`.
+ * - This approach enables seamless mixing of images and videos in the lightbox view.
+ */
+jQuery( function( $ ) {
+	function patchGallery() {
+		const $gallery = $( '.woocommerce-product-gallery' );
+
+		if ( ! $gallery.length ) {
+			return;
+		}
+
+		const gallery = $gallery.data( 'product_gallery' );
+
+		if ( ! gallery ) {
+			setTimeout( patchGallery, 200 );
+			return;
+		}
+
+		// Prevent double patch
+		if ( gallery._godam_patched ) {
+			return;
+		}
+		gallery._godam_patched = true;
+
+		const original = gallery.getGalleryItems;
+
+		gallery.getGalleryItems = function() {
+			const items = [];
+
+			this.$images.each( function( i, el ) {
+				const $el = $( el );
+				const videoId = $el.attr( 'data-video-id' );
+				const videoUrl = $el.attr( 'data-video-url' );
+
+				// ✅ VIDEO
+				if ( videoId ) {
+					items.push( {
+						html: `
+							<div class="pswp__video-wrapper">
+								<iframe
+									src="${ DOMPurify.sanitize( videoUrl ) }"
+									title="Godam Video Player"
+									frameborder="0"
+									allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+									allowfullscreen
+								></iframe>
+							</div>
+						`,
+					} );
+					return;
+				}
+
+				const $img = $el.find( 'img' );
+
+				// ✅ IMAGE
+				if ( $img.length ) {
+					items.push( {
+						src: $img.attr( 'data-large_image' ),
+						w: $img.attr( 'data-large_image_width' ),
+						h: $img.attr( 'data-large_image_height' ),
+						title: $img.attr( 'title' ),
+					} );
+				}
+			} );
+
+			return items;
+		};
+	}
+
+	patchGallery();
 } );
