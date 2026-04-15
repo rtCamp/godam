@@ -48,7 +48,9 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 	const { videoId } = attributes;
 	const layout = context[ 'godam/galleryV2/layout' ] || 'carousel';
 	const showTitle = context[ 'godam/galleryV2/showTitle' ] !== false;
-	const itemWidth = context[ 'godam/galleryV2/itemWidth' ] || 180;
+	const itemWidthRaw = context[ 'godam/galleryV2/itemWidth' ] || 'M';
+	const itemWidthMap = { S: 200, M: 260, L: 320 };
+	const itemWidth = itemWidthMap[ itemWidthRaw ] || itemWidthMap.M;
 	const viewRatio = context[ 'godam/galleryV2/viewRatio' ] || '16:9';
 	const { removeBlock } = useDispatch( 'core/block-editor' );
 
@@ -146,7 +148,7 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 	const blockProps = useBlockProps( {
 		className: `godam-gallery-v2-item godam-gallery-v2-item--${ layout } godam-gallery-v2-item--ratio-${ viewRatio.replace( ':', '-' ) }`,
 		style: {
-			'--godam-gallery-item-width': `${ itemWidth }px`,
+			'--godam-gallery-item-width': `${ itemWidth }px`, // resolved from size key
 		},
 	} );
 

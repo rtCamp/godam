@@ -214,7 +214,13 @@ $layout              = isset( $attributes['layout'] ) ? sanitize_key( $attribute
 $view_ratio          = isset( $attributes['viewRatio'] ) ? $attributes['viewRatio'] : '16:9';
 $allowed_ratios      = array( '16:9', '4:3', '9:16', '3:4', '1:1' );
 $view_ratio          = in_array( $view_ratio, $allowed_ratios, true ) ? $view_ratio : '16:9';
-$item_width          = isset( $attributes['itemWidth'] ) ? max( 180, absint( $attributes['itemWidth'] ) ) : 180;
+$item_width_size     = isset( $attributes['itemWidth'] ) ? $attributes['itemWidth'] : 'M';
+$item_width_map      = array(
+	'S' => 200,
+	'M' => 260,
+	'L' => 320,
+);
+$item_width          = isset( $item_width_map[ $item_width_size ] ) ? $item_width_map[ $item_width_size ] : 260;
 $show_title          = ! isset( $attributes['showTitle'] ) || (bool) $attributes['showTitle'];
 $enable_more_items   = array_key_exists( 'enableMoreItems', $attributes ) ? ! empty( $attributes['enableMoreItems'] ) : true;
 $more_items_behavior = isset( $attributes['moreItemsBehavior'] ) ? sanitize_key( $attributes['moreItemsBehavior'] ) : '';

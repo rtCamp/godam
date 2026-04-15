@@ -13,8 +13,8 @@
 			"default": "query"
 		},
 		"itemWidth": {
-			"type": "number",
-			"default": 180
+			"type": "string",
+			"default": "M"
 		},
 		"count": {
 			"type": "number",
