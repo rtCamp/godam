@@ -220,23 +220,36 @@ export default function Edit( { attributes, setAttributes, context } ) {
 							role="button"
 							tabIndex={ 0 }
 						>
-							{ videoId && videoThumbnail ? (
-								<>
-									<img
-										src={ videoThumbnail }
-										alt={ videoTitle || __( 'Video thumbnail', 'godam' ) }
-										className="godam-gallery-item__thumbnail"
-									/>
-									<div className="godam-gallery-item__play-icon">
-										<PlayIcon />
+							{ ( () => {
+								if ( videoId && videoThumbnail ) {
+									return (
+										<>
+											<img
+												src={ videoThumbnail }
+												alt={ videoTitle || __( 'Video thumbnail', 'godam' ) }
+												className="godam-gallery-item__thumbnail"
+											/>
+											<div className="godam-gallery-item__play-icon">
+												<PlayIcon />
+											</div>
+										</>
+									);
+								}
+								if ( videoId ) {
+									return (
+										<div className="godam-gallery-item__placeholder">
+											<span style={ { width: 48, height: 48 } }>{ videoIcon }</span>
+											{ videoTitle && <span>{ videoTitle }</span> }
+										</div>
+									);
+								}
+								return (
+									<div className="godam-gallery-item__placeholder">
+										{ videoIcon }
+										<span>{ __( 'Select Video', 'godam' ) }</span>
 									</div>
-								</>
-							) : (
-								<div className="godam-gallery-item__placeholder">
-									{ videoIcon }
-									<span>{ __( 'Select Video', 'godam' ) }</span>
-								</div>
-							) }
+								);
+							} )() }
 						</div>
 					) }
 				/>
