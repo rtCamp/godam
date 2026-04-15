@@ -74,12 +74,12 @@ class Gallery_V1_To_V2 {
 	 * Maps a V1 column count to a V2 itemWidth size token.
 	 *
 	 * V2 uses three size tokens rendered by the block:
-	 *   S = 200 px  (~3–4 items per row)
-	 *   M = 260 px  (~2–3 items per row, V2 default)
+	 *   S = 200 px  (~3–4 items per row, V2 default)
+	 *   M = 260 px  (~2–3 items per row)
 	 *   L = 320 px  (~1–2 items per row)
 	 *
-	 * V1 column 3 was the default and maps to M (the V2 default), preserving
-	 * layout density for the most common case.
+	 * V1 column 3 was the default and maps to S (which is also the V2 default),
+	 * preserving layout density for the most common case.
 	 *
 	 * @var array<int,string>
 	 */
@@ -101,6 +101,12 @@ class Gallery_V1_To_V2 {
 	 */
 	public static function maybe_run() {
 		if ( get_option( self::OPTION_KEY ) ) {
+			return;
+		}
+
+		// Only run during admin requests, WP-CLI, or cron. Bulk content writes
+		// must not be triggered by unauthenticated frontend page loads.
+		if ( ! is_admin() && ! wp_doing_cron() && ! ( defined( 'WP_CLI' ) && WP_CLI ) ) {
 			return;
 		}
 
@@ -149,7 +155,7 @@ class Gallery_V1_To_V2 {
 					   AND post_status NOT IN ('auto-draft', 'trash', 'inherit')
 					 ORDER BY ID ASC
 					 LIMIT %d",
-					'%<!-- wp:godam/gallery %',
+					'%<!-- wp:godam/gallery%',
 					$last_id,
 					self::BATCH_SIZE
 				)
@@ -197,32 +203,21 @@ class Gallery_V1_To_V2 {
 			$row_count = count( $rows );
 		} while ( self::BATCH_SIZE === $row_count );
 
-		// Only mark migration as complete when every write succeeded.
-		// If any update failed the option is left unset so the migration
-		// retries on the next request; already-converted posts are skipped
-		// by contains_v1_block() so they are never processed twice.
-		if ( 0 === $failed ) {
-			update_option( self::OPTION_KEY, '1', false );
-		}
+		// Mark the migration as done regardless of individual post failures.
+		// Any posts that could not be updated are logged below for manual review.
+		update_option( self::OPTION_KEY, 'done', false );
 
 		self::release_lock();
 
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			$status_msg = 0 === $failed
-				? 'Migration completed and marked as done.'
-				: sprintf( 'Migration finished with %d failure(s) and will retry on the next request.', $failed );
-
-			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-			error_log(
-				sprintf(
-					'[GoDAM] Gallery V1→V2: Updated %d post(s), skipped %d post(s), failed %d post(s). %s',
-					$updated,
-					$skipped,
-					$failed,
-					$status_msg
-				)
-			);
-		}
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		error_log(
+			sprintf(
+				'[GoDAM] Gallery V1→V2 migration complete. Updated: %d post(s). Skipped: %d post(s). Failed: %d post(s).',
+				$updated,
+				$skipped,
+				$failed
+			)
+		);
 	}
 
 	// -------------------------------------------------------------------------
@@ -233,13 +228,16 @@ class Gallery_V1_To_V2 {
 	 * Acquire a short-lived option-based lock so only one request runs the
 	 * migration at a time.
 	 *
-	 * Uses add_option() atomically: it only succeeds when the option does not
-	 * yet exist, preventing two simultaneous requests from both proceeding.
-	 * A stale lock (expired timestamp) is overridden via update_option().
+	 * `add_option()` is atomic (MySQL INSERT IGNORE) and prevents two
+	 * simultaneous fresh requests from both proceeding. For the stale-lock
+	 * case a compare-and-swap UPDATE is used so two concurrent requests racing
+	 * on the same expired timestamp cannot both succeed.
 	 *
 	 * @return bool True when the lock was acquired, false otherwise.
 	 */
 	private static function acquire_lock(): bool {
+		global $wpdb;
+
 		$expires_at = time() + self::LOCK_TIMEOUT;
 
 		// Attempt an atomic insert; succeeds only if the option is absent.
@@ -247,14 +245,26 @@ class Gallery_V1_To_V2 {
 			return true;
 		}
 
-		// Allow overriding a stale lock whose expiry has passed.
+		// CAS: only override a stale lock if the stored value still equals what
+		// we read. Two concurrent requests cannot both win this UPDATE.
 		$current = (int) get_option( self::LOCK_KEY, 0 );
-		if ( $current < time() ) {
-			update_option( self::LOCK_KEY, $expires_at, 'no' );
-			return true;
+		if ( $current >= time() ) {
+			return false; // Lock is still held by another request.
 		}
 
-		return false;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->update(
+			$wpdb->options,
+			array( 'option_value' => $expires_at ),
+			array( 
+				'option_name'  => self::LOCK_KEY,
+				'option_value' => (string) $current,
+			),
+			array( '%s' ),
+			array( '%s', '%s' )
+		);
+
+		return 1 === $wpdb->rows_affected;
 	}
 
 	/**
