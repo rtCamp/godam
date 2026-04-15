@@ -714,7 +714,7 @@ const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 			<div className="mb-4">
 				<ToggleControl
 					className="godam-toggle"
-					label={ __( 'Enable/Disable Mini Cart', 'godam' ) }
+					label={ __( 'Show/Hide Mini Cart', 'godam' ) }
 					checked={
 						layer?.previousDisplayTime
 							? firstWoocommerceLayer?.miniCart
