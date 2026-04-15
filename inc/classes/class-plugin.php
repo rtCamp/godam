@@ -55,6 +55,7 @@ use RTGODAM\Inc\Shortcodes\GoDAM_Player;
 use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
 use RTGODAM\Inc\Shortcodes\GoDAM_Audio;
 
+use RTGODAM\Inc\Migrations\Runner as Migrations_Runner;
 use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
 use RTGODAM\Inc\Everest_Forms\Everest_Forms_Integration;
 use RTGODAM\Inc\Video_Metadata;
@@ -84,6 +85,9 @@ class Plugin {
 	 * Construct method.
 	 */
 	protected function __construct() {
+
+		// Run one-time migrations before loading plugin components.
+		Migrations_Runner::run();
 
 		// Load plugin classes.
 		Update::get_instance();
