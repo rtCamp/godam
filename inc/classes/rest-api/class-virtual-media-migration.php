@@ -9,6 +9,8 @@
 
 namespace RTGODAM\Inc\REST_API;
 
+use RTGODAM\Inc\Virtual_Media_Registrar;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -96,52 +98,23 @@ class Virtual_Media_Migration extends Base {
 	 * @return array Array of job ids.
 	 */
 	private function get_job_ids_for_migration() {
-		$job_ids        = array();
-		$current_page   = 1;
-		$posts_per_page = 100;
 
-		do {
-			$query = new \WP_Query(
-				array(
-					'post_type'      => 'attachment',
-					'post_status'    => 'inherit',
-					'fields'         => 'ids',
-					'posts_per_page' => $posts_per_page,
-					'paged'          => $current_page,
-					'orderby'        => 'ID',
-					'order'          => 'ASC',
-					'meta_query'     => array(  // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-						'relation' => 'AND',
-						array(
-							'key'     => '_godam_original_id',
-							'compare' => 'EXISTS',
-						),
-						array(
-							'key'     => '_godam_original_id',
-							'value'   => '',
-							'compare' => '!=',
-						),
-					),
+		$job_ids = get_transient( 'rtgodam_virtual_media_job_ids' );
+
+		if ( false === $job_ids ) {
+			global $wpdb;
+			$job_ids = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$wpdb->prepare(
+					"SELECT DISTINCT meta_value FROM {$wpdb->postmeta} pm
+					INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+					WHERE pm.meta_key = %s AND pm.meta_value != ''
+					AND p.post_type = 'attachment'",
+					Virtual_Media_Registrar::META_ORIGINAL_ID,
 				)
 			);
+			set_transient( 'rtgodam_virtual_media_job_ids', $job_ids, HOUR_IN_SECONDS );
+		}
 
-			$query_count = count( $query->posts );
-
-			if ( empty( $query_count ) ) {
-				break;
-			}
-
-			foreach ( $query->posts as $attachment_id ) {
-				$job_id = get_post_meta( $attachment_id, '_godam_original_id', true );
-
-				if ( '' !== $job_id ) {
-					$job_ids[] = $job_id;
-				}
-			}
-
-			++$current_page;
-		} while ( $query_count === $posts_per_page );
-
-		return array_values( array_unique( $job_ids ) );
+		return $job_ids;
 	}
 }
