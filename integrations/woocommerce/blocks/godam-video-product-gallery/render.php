@@ -349,11 +349,13 @@ $wrapper_attributes = get_block_wrapper_attributes(
 				<!-- Video Section + Dropdown section(if available) -->
 				<div class="godam-gallery-item__video-and-dropdown">
 					<div class="godam-gallery-item__video-wrapper">
-						<div class="godam-gallery-item__play-icon" aria-hidden="true">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
-								<path d="M8 5v14l11-7z"/>
-							</svg>
-						</div>
+					<?php if ( $show_play_button ) : ?>
+					<div class="godam-gallery-item__play-icon" aria-hidden="true">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+							<path d="M8 5v14l11-7z"/>
+						</svg>
+					</div>
+					<?php endif; ?>
 						<?php
 						// Render the video using the godam_video shortcode.
 						echo do_shortcode(

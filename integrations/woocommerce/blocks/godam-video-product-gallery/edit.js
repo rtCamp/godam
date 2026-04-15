@@ -305,11 +305,13 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 										<span>{ __( 'Product Video', 'godam' ) }</span>
 									</div>
 								) }
-								<div className="godam-gallery-item__play-icon">
-									<svg viewBox="0 0 24 24" fill="currentColor">
-										<path d="M8 5v14l11-7z" />
-									</svg>
-								</div>
+								{ showPlayButton && (
+									<div className="godam-gallery-item__play-icon">
+										<svg viewBox="0 0 24 24" fill="currentColor">
+											<path d="M8 5v14l11-7z" />
+										</svg>
+									</div>
+								) }
 							</div>
 							<div className="godam-gallery-item__product">
 								<a href="#" className="godam-gallery-item__product-link" onClick={ ( event ) => event.preventDefault() }>
