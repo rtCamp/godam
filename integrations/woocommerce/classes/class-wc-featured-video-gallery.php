@@ -379,8 +379,10 @@ class WC_Featured_Video_Gallery {
 
 			// Url.
 			$query_args   = array(
-				'godam_page' => 'video-embed',
-				'id'         => $attachment_id,
+				'godam_page'    => 'video-embed',
+				'id'            => $attachment_id,
+				'godam_context' => 'godam-video-product-gallery',
+				'bg'            => 'f2f2f2', // dark background of video player letter/pillar boxing for better visibility in lightbox, can be customized or made dynamic as needed.
 			);
 			$cpt_base_url = home_url( '/' );
 			$video_url    = add_query_arg( $query_args, $cpt_base_url );
