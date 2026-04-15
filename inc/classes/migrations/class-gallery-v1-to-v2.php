@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Migrates all saved godam/gallery (V1) blocks to godam/gallery-v2 (V2).
  *
- * Runs once per site; progress is tracked in the WordPress option
+ * Runs once per site; completion is recorded in the WordPress option
  * `rtgodam_gallery_v1_v2_migration_done`. Re-run is possible by deleting
  * that option.
  *
@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * | V1 attribute    | V2 attribute       | Notes                                     |
  * |-----------------|--------------------|-------------------------------------------|
- * | columns (int)   | itemWidth (int)    | See COLUMNS_TO_ITEM_WIDTH_MAP             |
+ * | columns (int)   | itemWidth (string) | See COLUMNS_TO_ITEM_SIZE_MAP              |
  * | count           | count              | direct pass-through                       |
  * | orderby         | orderby            | direct pass-through                       |
  * | order           | order              | normalised to lowercase                   |
@@ -49,6 +49,21 @@ class Gallery_V1_To_V2 {
 	const OPTION_KEY = 'rtgodam_gallery_v1_v2_migration_done';
 
 	/**
+	 * WordPress option key used as a short-lived concurrency lock.
+	 *
+	 * @var string
+	 */
+	const LOCK_KEY = 'rtgodam_gallery_v1_v2_migration_lock';
+
+	/**
+	 * How long (seconds) the concurrency lock is held before it is
+	 * considered stale and overridden by another request.
+	 *
+	 * @var int
+	 */
+	const LOCK_TIMEOUT = 300;
+
+	/**
 	 * Posts to process per DB batch.
 	 *
 	 * @var int
@@ -56,24 +71,25 @@ class Gallery_V1_To_V2 {
 	const BATCH_SIZE = 50;
 
 	/**
-	 * Maps a V1 column count to a V2 itemWidth value (pixels).
+	 * Maps a V1 column count to a V2 itemWidth size token.
 	 *
-	 * V2 layout: `repeat(auto-fill, minmax(--godam-gallery-item-width, 1fr))`
-	 * render.php enforces a minimum of 180 px, so columns 5 and 6 both
-	 * resolve to the 180 px minimum (~4 columns in a standard 720 px container).
+	 * V2 uses three size tokens rendered by the block:
+	 *   S = 200 px  (~3–4 items per row)
+	 *   M = 260 px  (~2–3 items per row, V2 default)
+	 *   L = 320 px  (~1–2 items per row)
 	 *
-	 * Approximation assumes a ~720 px content column width:
-	 *   itemWidth = floor( 720 / columns )
+	 * V1 column 3 was the default and maps to M (the V2 default), preserving
+	 * layout density for the most common case.
 	 *
-	 * @var array<int,int>
+	 * @var array<int,string>
 	 */
-	const COLUMNS_TO_ITEM_WIDTH_MAP = array(
-		1 => 720,
-		2 => 360,
-		3 => 240,
-		4 => 180,
-		5 => 180, // below render.php's min(180) – best available approximation.
-		6 => 180, // below render.php's min(180) – best available approximation.
+	const COLUMNS_TO_ITEM_SIZE_MAP = array(
+		1 => 'L',
+		2 => 'M',
+		3 => 'S',
+		4 => 'S',
+		5 => 'S',
+		6 => 'S',
 	);
 
 	/**
@@ -102,6 +118,12 @@ class Gallery_V1_To_V2 {
 	 */
 	public static function run() {
 		global $wpdb;
+
+		// Acquire a short-lived lock so concurrent requests on the same site
+		// do not each kick off a full migration sweep simultaneously.
+		if ( ! self::acquire_lock() ) {
+			return;
+		}
 
 		$last_id = 0;
 		$updated = 0;
@@ -139,9 +161,9 @@ class Gallery_V1_To_V2 {
 
 			foreach ( $rows as $row ) {
 
-				// The LIKE pattern may return rows whose only match is a
-				// godam/gallery-v2 block (the LIKE has no way to exclude the
-				// "-v2" suffix). Skip those cleanly.
+				// The LIKE clause is only a coarse prefilter. Confirm the post
+				// content actually contains a V1 godam/gallery block before
+				// attempting migration.
 				if ( ! self::contains_v1_block( $row->post_content ) ) {
 					++$skipped;
 					continue;
@@ -154,21 +176,19 @@ class Gallery_V1_To_V2 {
 					continue;
 				}
 
-				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-				$result = $wpdb->update(
-					$wpdb->posts,
-					array( 'post_content' => $new_content ),
-					array( 'ID' => (int) $row->ID ),
-					array( '%s' ),
-					array( '%d' )
+				$result = wp_update_post(
+					array(
+						'ID'           => (int) $row->ID,
+						'post_content' => $new_content,
+					),
+					true
 				);
 
-				if ( false === $result ) {
+				if ( is_wp_error( $result ) || 0 === $result ) {
 					++$failed;
 					continue;
 				}
 
-				clean_post_cache( (int) $row->ID );
 				++$updated;
 			}
 
@@ -185,15 +205,65 @@ class Gallery_V1_To_V2 {
 			update_option( self::OPTION_KEY, '1', false );
 		}
 
-		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-		error_log(
-			sprintf(
-				'[GoDAM] Gallery V1→V2 migration complete. Updated: %d post(s). Skipped: %d post(s). Failed: %d post(s).',
-				$updated,
-				$skipped,
-				$failed
-			)
-		);
+		self::release_lock();
+
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			$status_msg = 0 === $failed
+				? 'Migration completed and marked as done.'
+				: sprintf( 'Migration finished with %d failure(s) and will retry on the next request.', $failed );
+
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log(
+				sprintf(
+					'[GoDAM] Gallery V1→V2: Updated %d post(s), skipped %d post(s), failed %d post(s). %s',
+					$updated,
+					$skipped,
+					$failed,
+					$status_msg
+				)
+			);
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// Concurrency helpers
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Acquire a short-lived option-based lock so only one request runs the
+	 * migration at a time.
+	 *
+	 * Uses add_option() atomically: it only succeeds when the option does not
+	 * yet exist, preventing two simultaneous requests from both proceeding.
+	 * A stale lock (expired timestamp) is overridden via update_option().
+	 *
+	 * @return bool True when the lock was acquired, false otherwise.
+	 */
+	private static function acquire_lock(): bool {
+		$expires_at = time() + self::LOCK_TIMEOUT;
+
+		// Attempt an atomic insert; succeeds only if the option is absent.
+		if ( add_option( self::LOCK_KEY, $expires_at, '', 'no' ) ) {
+			return true;
+		}
+
+		// Allow overriding a stale lock whose expiry has passed.
+		$current = (int) get_option( self::LOCK_KEY, 0 );
+		if ( $current < time() ) {
+			update_option( self::LOCK_KEY, $expires_at, 'no' );
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Release the concurrency lock after the migration finishes.
+	 *
+	 * @return void
+	 */
+	private static function release_lock(): void {
+		delete_option( self::LOCK_KEY );
 	}
 
 	// -------------------------------------------------------------------------
@@ -264,7 +334,7 @@ class Gallery_V1_To_V2 {
 		// block comment lean (matching the editor's own serialisation behaviour).
 		$v2_defaults = array(
 			'mode'              => 'query',
-			'itemWidth'         => 180,
+			'itemWidth'         => 'S',
 			'count'             => 6,
 			'orderby'           => 'date',
 			'order'             => 'desc',
@@ -306,15 +376,16 @@ class Gallery_V1_To_V2 {
 		// V2 always starts in query mode; V1 had no handpicked mode.
 		$v2['mode'] = 'query';
 
-		// columns (int) → itemWidth (int).
-		// V2 uses CSS auto-fill grid with minmax( itemWidth, 1fr ).
-		// render.php enforces min 180 px, so columns > 4 map to 180.
-		if ( isset( $v1['columns'] ) ) {
-			$cols            = (int) $v1['columns'];
-			$v2['itemWidth'] = isset( self::COLUMNS_TO_ITEM_WIDTH_MAP[ $cols ] )
-				? self::COLUMNS_TO_ITEM_WIDTH_MAP[ $cols ]
-				: 180; // Default for any out-of-range value.
-		}
+		// columns (int) → itemWidth (string: 'S' | 'M' | 'L').
+		// V2 renders tile sizes as S=200 px, M=260 px, L=320 px.
+		// V1 defaults columns to 3, and Gutenberg omits default-valued
+		// attributes from the serialised block comment JSON. Apply that V1
+		// default here so migrated blocks preserve the original layout density
+		// (3 cols → S) rather than relying on the V2 default.
+		$cols            = isset( $v1['columns'] ) ? (int) $v1['columns'] : 3;
+		$v2['itemWidth'] = isset( self::COLUMNS_TO_ITEM_SIZE_MAP[ $cols ] )
+			? self::COLUMNS_TO_ITEM_SIZE_MAP[ $cols ]
+			: 'S'; // Default for any out-of-range value.
 
 		// Direct pass-through attributes (same key, same type).
 		$passthrough = array(
