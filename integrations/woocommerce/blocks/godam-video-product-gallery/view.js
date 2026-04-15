@@ -451,6 +451,7 @@ import { dispatch } from '@wordpress/data';
 			}
 
 			this.stopInactiveAutoplayItems( item );
+			item.classList.add( 'godam-video-product-gallery-item--autoplaying' );
 			this.syncPreviewVideo( item, true, { restart: true, muted: true } );
 			this.updateVideoPreloadStrategy();
 		}
@@ -480,6 +481,7 @@ import { dispatch } from '@wordpress/data';
 				return;
 			}
 
+			item.classList.remove( 'godam-video-product-gallery-item--autoplaying' );
 			this.syncPreviewVideo( item, false, { reset: true, muted: true } );
 			this.updateVideoPreloadStrategy();
 		}
