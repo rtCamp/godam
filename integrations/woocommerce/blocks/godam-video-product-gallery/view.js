@@ -1019,7 +1019,7 @@ import { dispatch } from '@wordpress/data';
 				// of the gallery autoplay setting.
 				modalVideo.loop = false;
 				modalVideo.autoplay = true;
-				modalVideo.muted = false;
+				modalVideo.muted = true;
 				modalVideo.preload = 'auto';
 				modalVideo.setAttribute( 'preload', 'auto' );
 				modalVideo.currentTime = 0;
