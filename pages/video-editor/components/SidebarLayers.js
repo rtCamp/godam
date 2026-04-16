@@ -151,7 +151,7 @@ export const layerTypes = [
 /**
  * Premium tooltip message.
  */
-const premiumMessage = __( 'This is a Pro feature. Upgrade your plan to unlock it.', 'godam' );
+const premiumMessage = __( 'This is a Pro feature. Activate your license or get started for free to unlock all features.', 'godam' );
 
 /**
  * Sidebar component to display and select different types of layers to be added to the video.
@@ -195,8 +195,10 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
 	const adServer = videoConfig?.adServer ?? 'self-hosted';
 
-	// Sort the array (ascending order)
-	const sortedLayers = [ ...layers ].sort( ( a, b ) => a.displayTime - b.displayTime );
+	// Sort the array (ascending order), excluding layers with unknown types.
+	const sortedLayers = [ ...layers ]
+		.filter( ( layer ) => layerTypes.some( ( lt ) => lt.type === layer.type ) )
+		.sort( ( a, b ) => a.displayTime - b.displayTime );
 
 	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
 

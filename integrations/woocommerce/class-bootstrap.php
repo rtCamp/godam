@@ -59,6 +59,13 @@ class Bootstrap {
 			return;
 		}
 
+		// Bail if the admin has disabled the WooCommerce integration.
+		$settings = get_option( 'rtgodam-settings', array() );
+		$enabled  = $settings['integrations']['woocommerce']['enable'] ?? true;
+		if ( false === $enabled ) {
+			return;
+		}
+
 		$this->define_constants();
 		$this->load_helpers();
 		$this->register_autoloader();
@@ -149,8 +156,6 @@ class Bootstrap {
 
 		// Initialize the Utility Helper class.
 		$this->utility_instance = WC_Utility::get_instance();
-		require_once RTGODAM_WC_MODULE_PATH . 'classes/class-wc-reel-pops-metabox.php';
-		require_once RTGODAM_WC_MODULE_PATH . 'classes/shortcodes/class-godam-reel-pops.php';
 	}
 
 	/**
@@ -159,9 +164,6 @@ class Bootstrap {
 	private function init_hooks() {
 		add_action( 'init', array( $this, 'init_woocommerce_integration' ), 20 );
 		add_filter( 'allowed_block_types_all', array( $this, 'filter_premium_blocks_for_inserter' ), 10, 2 );
-
-		// Enqueue global Woo variables.
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_global_woo_css_variables' ), 20 );
 
 		// Enqueue global Woo Script.
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_global_woo_script' ), 25 );
@@ -195,8 +197,7 @@ class Bootstrap {
 		}
 
 		$disallowed_blocks = array(
-			'godam/product-gallery',
-			'godam/reel-pops',
+			'godam/video-product-gallery',
 		);
 
 		if ( ! is_array( $allowed_block_types ) || empty( $allowed_block_types ) ) {
@@ -218,16 +219,17 @@ class Bootstrap {
 	 * Initialize WooCommerce integration classes.
 	 */
 	public function init_woocommerce_integration() {
-		// Register WooCommerce product gallery block from built assets if available.
-		$wc_block_path = RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'blocks/godam-product-gallery/';
-		if ( file_exists( $wc_block_path . 'block.json' ) ) {
-			register_block_type( $wc_block_path );
+
+		// Register GoDAM Video Product Gallery block from built assets if available.
+		$video_product_gallery_path = RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'blocks/godam-video-product-gallery/';
+		if ( file_exists( $video_product_gallery_path . 'block.json' ) ) {
+			register_block_type( $video_product_gallery_path );
 		}
 
-		// Register GoDAM Reel Pops block from built assets if available.
-		$reel_pops_block_path = RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'blocks/godam-reel-pops/';
-		if ( file_exists( $reel_pops_block_path . 'block.json' ) ) {
-			register_block_type( $reel_pops_block_path );
+		// Register GoDAM Video Product Gallery Item block from built assets if available.
+		$video_product_gallery_item_path = RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'blocks/godam-video-product-gallery-item/';
+		if ( file_exists( $video_product_gallery_item_path . 'block.json' ) ) {
+			register_block_type( $video_product_gallery_item_path );
 		}
 
 		// Initialize REST API.
@@ -236,13 +238,11 @@ class Bootstrap {
 
 		// Initialize WooCommerce-dependent shortcodes.
 		\RTGODAM\Inc\Shortcodes\GoDAM_Product_Gallery::get_instance();
-		\RTGODAM\Inc\WooCommerce\GoDAM_Reel_Pops::get_instance();
 
 		// Initialize WooCommerce classes.
 		\RTGODAM\Inc\WooCommerce\WC_Product_Video_Gallery::get_instance();
 		\RTGODAM\Inc\WooCommerce\WC_Featured_Video_Gallery::get_instance();
 		\RTGODAM\Inc\WooCommerce\WC_Woocommerce_Layer::get_instance();
-		\RTGODAM\Inc\WooCommerce\WC_Reel_Pops_Metabox::get_instance();
 	}
 
 	/**
@@ -295,29 +295,6 @@ class Bootstrap {
 		return function_exists( 'is_plugin_active' )
 			? is_plugin_active( 'woocommerce/woocommerce.php' )
 			: class_exists( 'WooCommerce' );
-	}
-
-	/**
-	 * Enqueue global WooCommerce CSS variables.
-	 *
-	 * Makes Woo-related CSS variables available on all pages
-	 * when WooCommerce is active.
-	 *
-	 * @return void
-	 */
-	public function enqueue_global_woo_css_variables() {
-
-		$css = $this->utility_instance->get_woocommerce_video_modal_css_variables();
-
-		if ( empty( $css ) ) {
-			return;
-		}
-
-		// Register dummy handle if needed.
-		wp_register_style( 'rtgodam-woo-video-modal-global', false, array(), RTGODAM_VERSION, 'all' );
-		wp_enqueue_style( 'rtgodam-woo-video-modal-global' );
-
-		wp_add_inline_style( 'rtgodam-woo-video-modal-global', $css );
 	}
 
 	/**

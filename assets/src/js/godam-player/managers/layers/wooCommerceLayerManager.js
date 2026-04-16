@@ -34,6 +34,12 @@ export default class WooCommerceLayerManager {
 		this.didPrefetchProducts = false;
 
 		this.bindMiniCartFullscreenFix();
+
+		if ( typeof this.player?.on === 'function' ) {
+			this.player.on( 'dispose', () => {
+				this.disposeMiniCartFullscreenFix();
+			} );
+		}
 	}
 
 	bindProductPrefetchHandlers() {
@@ -297,7 +303,9 @@ export default class WooCommerceLayerManager {
 		}
 		this._miniCartFsBound = true;
 
-		document.addEventListener( 'click', ( e ) => {
+		const container = this.player?.el?.() || document;
+
+		this._miniCartClickHandler = ( e ) => {
 			const trigger = e.target.closest(
 				'.wc-block-mini-cart, .godam-video--cart-basket',
 			);
@@ -321,23 +329,59 @@ export default class WooCommerceLayerManager {
 			try {
 				const doc = document;
 
+				let didExitFullscreen = false;
 				if ( isIOS ) {
-					doc.getElementsByClassName( 'vjs-custom-fullscreen-exit-control' )[ 0 ].click();
-				} else {
-					doc.exitFullscreen();
-					doc.webkitExitFullscreen();
+					const exitControl = doc.getElementsByClassName(
+						'vjs-custom-fullscreen-exit-control',
+					)[ 0 ];
+					if ( exitControl && typeof exitControl.click === 'function' ) {
+						console.log( 'Clicking custom exit control for iOS fullscreen exit' );
+						exitControl.click();
+						didExitFullscreen = true;
+					}
+				} else if ( typeof this.player.exitFullscreen === 'function' ) {
+					this.player.exitFullscreen();
+					didExitFullscreen = true;
+				} else if ( typeof this.player.webkitExitFullscreen === 'function' ) {
+					this.player.webkitExitFullscreen();
+					didExitFullscreen = true;
+				}
+				if ( ! didExitFullscreen ) {
+					return;
 				}
 
+				let isProgrammaticClick = false;
+
 				setTimeout( () => {
+					if ( isProgrammaticClick ) {
+						return;
+					}
+
+					isProgrammaticClick = true;
 					trigger.click();
 
 					this.showFullscreenReturnMessage();
 					this.waitForDrawerCloseAndRestoreFullscreen( playerEl );
+
+					setTimeout( () => {
+						isProgrammaticClick = false;
+					}, 0 );
 				}, 120 );
 			} catch ( err ) {
 				console.warn( 'Mini cart fullscreen fix failed:', err );
 			}
-		} );
+		};
+
+		container.addEventListener( 'click', this._miniCartClickHandler );
+	}
+
+	disposeMiniCartFullscreenFix() {
+		if ( this._miniCartClickHandler ) {
+			const container = this.player?.el?.() || document;
+			container.removeEventListener( 'click', this._miniCartClickHandler );
+			this._miniCartClickHandler = null;
+			this._miniCartFsBound = false;
+		}
 	}
 
 	/**
@@ -354,16 +398,20 @@ export default class WooCommerceLayerManager {
 		const message = __( 'Close cart & return to fullscreen', 'godam' );
 		const returnButton = __( 'Return to Fullscreen', 'godam' );
 
-		msg.innerHTML = `
-			${ message }
-			<br/>
-			<button class="godam-return-fs-btn">${ returnButton }</button>
-		`;
+		const messageText = document.createTextNode( message );
+		const lineBreak = document.createElement( 'br' );
+
+		const btn = document.createElement( 'button' );
+		btn.className = 'godam-return-fs-btn';
+		btn.textContent = returnButton;
+
+		msg.appendChild( messageText );
+		msg.appendChild( lineBreak );
+		msg.appendChild( btn );
 
 		document.body.appendChild( msg );
 
 		// Bind click.
-		const btn = msg.querySelector( '.godam-return-fs-btn' );
 		btn.addEventListener( 'click', () => {
 			const playerEl = this.player?.el?.();
 
@@ -633,10 +681,10 @@ export default class WooCommerceLayerManager {
 		hotspotDiv.style.height = `${ pixelDiameter }px`;
 
 		// Background color
-		hotspotDiv.style.backgroundColor = hotspot.icon ? 'white' : ( hotspot.backgroundColor || '#0c80dfa6' );
+		hotspotDiv.style.backgroundColor = ( hotspot.icon || hotspot.customIconUrl ) ? 'white' : ( hotspot.backgroundColor || '#0c80dfa6' );
 
 		// Create content
-		const hotspotContent = this.createProductHotspotContent( hotspot, miniCart );
+		const hotspotContent = this.createProductHotspotContent( hotspot, miniCart, hotspotDiv );
 		hotspotDiv.appendChild( hotspotContent );
 
 		return hotspotDiv;
@@ -645,11 +693,12 @@ export default class WooCommerceLayerManager {
 	/**
 	 * Create hotspot content
 	 *
-	 * @param {Object}  hotspot  - Product Hotspot configuration object
-	 * @param {boolean} miniCart - Minicart toggle value
+	 * @param {Object}      hotspot    - Product Hotspot configuration object
+	 * @param {boolean}     miniCart   - Minicart toggle value
+	 * @param {HTMLElement} hotspotDiv - Parent hotspot div element
 	 * @return {HTMLElement} Created content element
 	 */
-	createProductHotspotContent( hotspot, miniCart ) {
+	createProductHotspotContent( hotspot, miniCart, hotspotDiv ) {
 		const hotspotContent = document.createElement( 'div' );
 		hotspotContent.classList.add( 'hotspot-content' );
 		hotspotContent.style.position = 'relative';
@@ -659,6 +708,9 @@ export default class WooCommerceLayerManager {
 		if ( hotspot.icon ) {
 			const iconEl = this.createProductHotspotIcon( hotspot.icon );
 			hotspotContent.appendChild( iconEl );
+		} else if ( hotspot.customIconUrl ) {
+			const customIconEl = this.createCustomIcon( hotspot.customIconUrl, hotspot.backgroundColor, hotspotDiv );
+			hotspotContent.appendChild( customIconEl );
 		} else {
 			hotspotContent.classList.add( 'no-icon' );
 		}
@@ -688,6 +740,48 @@ export default class WooCommerceLayerManager {
 		iconEl.style.color = '#000';
 
 		return iconEl;
+	}
+
+	/**
+	 * Create custom icon element
+	 *
+	 * @param {string}      customIconUrl   - URL of the custom icon
+	 * @param {string}      backgroundColor - Background color for fallback
+	 * @param {HTMLElement} hotspotDiv      - Parent hotspot div element
+	 * @return {HTMLElement} Created custom icon element
+	 */
+	createCustomIcon( customIconUrl, backgroundColor, hotspotDiv ) {
+		const customIconEl = document.createElement( 'img' );
+		customIconEl.src = customIconUrl;
+		customIconEl.alt = __( 'Custom Icon', 'godam' );
+		customIconEl.style.width = '50%';
+		customIconEl.style.height = '50%';
+		customIconEl.style.maxWidth = '100%';
+		customIconEl.style.maxHeight = '100%';
+		customIconEl.style.objectFit = 'contain';
+		customIconEl.style.display = 'block';
+		customIconEl.style.margin = 'auto';
+		customIconEl.style.pointerEvents = 'none';
+
+		// Add error handling for failed image loads - convert to normal hotspot point
+		customIconEl.onerror = function() {
+			// Remove the failed image element
+			customIconEl.remove();
+
+			// Get the hotspot content container
+			const hotspotContent = hotspotDiv?.querySelector( '.hotspot-content' );
+			if ( hotspotContent ) {
+				// Add no-icon class to show as normal hotspot
+				hotspotContent.classList.add( 'no-icon' );
+			}
+
+			// Reset hotspot background to default (non-icon) color
+			if ( hotspotDiv ) {
+				hotspotDiv.style.backgroundColor = backgroundColor || '#0c80dfa6';
+			}
+		};
+
+		return customIconEl;
 	}
 
 	/**
@@ -805,78 +899,70 @@ export default class WooCommerceLayerManager {
 					<path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
 			</svg>`;
 
-		if ( ! miniCart ) {
-			// Product link when Mini Cart is false.
-			const productLink = document.createElement( 'a' );
-			productLink.classList.add(
-				'product-hotspot-woo-link',
-				'text-white',
-				'flex',
-				'items-center',
-			);
-			productLink.href = hotspot.addToCart ? hotspot.productDetails.link : `${ window.godamWooSettings.url }?add-to-cart=${ hotspot.productId }&source=productHotspot`;
-			productLink.target = '_blank';
-			productLink.rel = 'noopener noreferrer';
-			productLink.style.background = hotspot.backgroundColor;
-			productLink.appendChild( iconSpan );
+		// Always use button with add-to-cart store API; miniCart only controls CSS visibility of the cart widget.
+		const productLinkButton = document.createElement( 'button' );
+		productLinkButton.classList.add(
+			'product-hotspot-woo-link',
+			'text-white',
+			'flex',
+			'items-center',
+		);
+		productLinkButton.style.background = hotspot.backgroundColor;
+		productLinkButton.appendChild( iconSpan );
 
-			productActionDiv.appendChild( productLink );
-			productDisplayDiv.appendChild( productActionDiv );
-		} else {
-			// Product Link Button when Mini Cart is True.
-			const productLinkButton = document.createElement( 'button' );
-			productLinkButton.classList.add(
-				'product-hotspot-woo-link',
-				'text-white',
-				'flex',
-				'items-center',
-			);
-			productLinkButton.style.background = hotspot.backgroundColor;
-			productLinkButton.appendChild( iconSpan );
+		// Disable Product Link button during async operation
+		productLinkButton.addEventListener( 'click', ( event ) => {
+			event.preventDefault();
+			productLinkButton.disabled = true;
+			productLinkButton.classList.add( 'loading' );
 
-			// Disable Product Link button during async operation
-			productLinkButton.addEventListener( 'click', ( event ) => {
-				event.preventDefault();
-				productLinkButton.disabled = true;
-				productLinkButton.classList.add( 'loading' );
+			if ( hotspot.addToCart ) {
+				// Redirect to product details page
+				window.open( hotspot.productDetails.link, '_blank' );
+				productLinkButton.disabled = false;
+				productLinkButton.classList.remove( 'loading' );
+			} else {
+				// Add to cart
+				const productId = hotspot.productId;
+				const quantity = 1;
 
-				if ( hotspot.addToCart ) {
-					// Redirect to product details page
-					window.open( hotspot.productDetails.link, '_blank' );
+				const cartStore = dispatch( 'wc/store/cart' );
+
+				if ( ! cartStore || typeof cartStore.addItemToCart !== 'function' ) {
+					// eslint-disable-next-line no-console
+					console.error( 'WooCommerce cart store is not available' );
 					productLinkButton.disabled = false;
 					productLinkButton.classList.remove( 'loading' );
-				} else {
-					// Add to cart
-					const productId = hotspot.productId;
-					const quantity = 1;
-
-					dispatch( 'wc/store/cart' )
-						.addItemToCart( productId, quantity )
-						.then( () => {
-							productLinkButton.disabled = false;
-							productLinkButton.classList.remove( 'loading' );
-							this.showCartMessage( __( 'Product added successfully!', 'godam' ), 'success' );
-						} )
-						.catch( ( err ) => {
-							console.error( 'Add to cart failed', err );
-							productLinkButton.disabled = false;
-							productLinkButton.classList.remove( 'loading' );
-
-							// Check if error code is WooCommerce stock error.
-							if ( err?.code === 'woocommerce_rest_product_partially_out_of_stock' ) {
-								this.showCartMessage( __( 'Product is partially out of stock.', 'godam' ), 'error' );
-							} else if ( err?.code === 'woocommerce_rest_product_out_of_stock' ) {
-								this.showCartMessage( __( 'Product is out of stock.', 'godam' ), 'error' );
-							} else {
-								this.showCartMessage( __( 'Something went wrong. Try again.', 'godam' ), 'error' );
-							}
-						} );
+					this.showCartMessage( __( 'WooCommerce cart is not available. Please refresh the page.', 'godam' ), 'error' );
+					return;
 				}
-			} );
 
-			productActionDiv.appendChild( productLinkButton );
-			productDisplayDiv.appendChild( productActionDiv );
-		}
+				cartStore
+					.addItemToCart( productId, quantity )
+					.then( () => {
+						productLinkButton.disabled = false;
+						productLinkButton.classList.remove( 'loading' );
+						this.showCartMessage( __( 'Product added successfully!', 'godam' ), 'success' );
+					} )
+					.catch( ( err ) => {
+						// eslint-disable-next-line no-console
+						console.error( 'Add to cart failed', err );
+						productLinkButton.disabled = false;
+						productLinkButton.classList.remove( 'loading' );
+
+						// Check if error code is WooCommerce stock error.
+						if ( err?.code === 'woocommerce_rest_product_partially_out_of_stock' ) {
+							this.showCartMessage( __( 'Product is partially out of stock.', 'godam' ), 'error' );
+						} else if ( err?.code === 'woocommerce_rest_product_out_of_stock' ) {
+							this.showCartMessage( __( 'Product is out of stock.', 'godam' ), 'error' );
+						} else {
+							this.showCartMessage( __( 'Something went wrong. Try again.', 'godam' ), 'error' );
+						}
+					} );
+			}
+		} );
+		productActionDiv.appendChild( productLinkButton );
+		productDisplayDiv.appendChild( productActionDiv );
 
 		return productBoxDiv;
 	}

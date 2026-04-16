@@ -29,6 +29,7 @@ import { getPricingUrl } from '../../../../shared/premium-layers.js';
 
 const AdsSettings = () => {
 	const dispatch = useDispatch();
+	const videoSettingsUrl = window.godamRestRoute?.adminUrl + 'admin.php?page=rtgodam_settings#video-settings';
 
 	// Selectors to get media settings and change flag
 	const { mediaSettings, isChanged } = useSelector( ( state ) => ( {
@@ -98,10 +99,18 @@ const AdsSettings = () => {
 					status="warning"
 					isDismissible={ false }
 				>
-					{ __( 'Video ads settings are a Pro feature. Your saved settings are stored but will not be applied on the frontend without an active Pro plan.', 'godam' ) }{ ' ' }
-					<ExternalLink href={ getPricingUrl( 'video-ads-settings' ) }>
-						{ __( 'Upgrade your plan to unlock it.', 'godam' ) }
-					</ExternalLink>
+					{ __( 'Video ads settings are a Pro feature.', 'godam' ) }{ ' ' }
+					<a href={ videoSettingsUrl } className="text-[#AB3A6C]" target="_blank" rel="noopener noreferrer">
+						{ __( 'Activate your license', 'godam' ) }
+					</a>
+					{
+						// eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace
+						__( ' or ', 'godam' )
+					}
+					<ExternalLink className="text-[#AB3A6C]" href={ getPricingUrl( 'video-ads-settings' ) }>
+						{ __( 'get started for free', 'godam' ) }
+					</ExternalLink>{ ' ' }
+					{ __( 'to unlock all features.', 'godam' ) }
 				</Notice>
 			) }
 

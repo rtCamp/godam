@@ -2,22 +2,21 @@
  * WordPress dependencies
  */
 import { registerBlockType } from '@wordpress/blocks';
+import { video as videoIcon } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
-import icon from '../../assets/images/godam-reel-pops-filled.svg';
 import Edit from './edit';
 import metadata from './block.json';
-import './style.scss';
 import './editor.scss';
 
 /**
- * Register block.
+ * Register the block
  */
 registerBlockType( metadata.name, {
 	...metadata,
-	icon: <img src={ icon } alt="GoDAM Reel Pops Block icon" />,
+	icon: videoIcon,
 	edit: Edit,
 	save: () => null, // Dynamic block
 } );

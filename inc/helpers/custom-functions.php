@@ -303,6 +303,44 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 	$api_key           = get_option( 'rtgodam-api-key', '' );
 	$api_key_status    = rtgodam_get_api_key_status();
 
+	// If no API key is stored, skip all remote verification — there is nothing
+	// to verify. Return (or persist) a clean NO_API_KEY state immediately.
+	// This also handles the legacy backward-compat case: older plugin versions
+	// never wrote the status option, so it defaulted to 'valid' even when no key
+	// was present. With the new NO_API_KEY default in get_status() that edge case
+	// is resolved for new installs; the early-return here is the safety net for
+	// any sites that still have stale cached data.
+	if ( empty( $api_key ) ) {
+		$no_key_data = array(
+			'currentUserId'  => get_current_user_id(),
+			'valid_api_key'  => false,
+			'api_key_status' => \RTGODAM\Inc\Enums\Api_Key_Status::NO_API_KEY,
+			'user_data'      => array( 'masked_api_key' => '' ),
+			'timestamp'      => time(),
+		);
+
+		// Persist only if the cache is missing or has an incorrect status.
+		if (
+			empty( $rtgodam_user_data ) ||
+			! isset( $rtgodam_user_data['api_key_status'] ) ||
+			\RTGODAM\Inc\Enums\Api_Key_Status::NO_API_KEY !== $rtgodam_user_data['api_key_status']
+		) {
+			update_option( 'rtgodam_user_data', $no_key_data );
+		}
+
+		if ( $use_for_localize_array ) {
+			return array(
+				'currentUserId' => $no_key_data['currentUserId'],
+				'validApiKey'   => false,
+				'apiKeyStatus'  => \RTGODAM\Inc\Enums\Api_Key_Status::NO_API_KEY,
+				'userApiData'   => $no_key_data['user_data'],
+				'timestamp'     => $no_key_data['timestamp'],
+			);
+		}
+
+		return $no_key_data;
+	}
+
 	// Check if we should skip verification.
 	// Skip only for expired keys that are past their grace period.
 	$skip_verification = false;
@@ -549,7 +587,8 @@ function rtgodam_get_premium_layer_types() {
  * @return string[] Array of premium feature slugs.
  */
 function rtgodam_get_premium_features() {
-	return array( 'seo' );
+	// Add 'seo' to the returned array below to gate SEO features behind a Pro license, for example.
+	return array();
 }
 
 /**
@@ -965,6 +1004,39 @@ function rtgodam_is_local_environment() {
 }
 
 /**
+ * Check if the site has HTTP authentication enabled.
+ *
+ * This function uses a result from JavaScript-based detection.
+ * The JS detection runs in the browser and can accurately detect HTTP auth
+ * by making a request without credentials, then stores the result in an option.
+ * If no cached status exists, this function falls back to a default of "not enabled".
+ *
+ * @since 1.7.1
+ *
+ * @return bool True if HTTP auth is enforced, false otherwise.
+ */
+function rtgodam_has_http_auth(): bool {
+	$has_http_auth = false;
+
+	// Get detection result from JavaScript detector.
+	$cached_status = get_option( 'rtgodam_http_auth_status', array() );
+
+	// If we have a recent detection result, use it.
+	if ( ! empty( $cached_status ) && isset( $cached_status['enabled'] ) ) {
+		$has_http_auth = (bool) $cached_status['enabled'];
+	}
+
+	/**
+	 * Filter to override HTTP auth detection.
+	 *
+	 * @since 1.7.1
+	 *
+	 * @param bool $has_http_auth Whether HTTP auth is enforced.
+	 */
+	return apply_filters( 'godam_has_http_auth', $has_http_auth );
+}
+
+/**
  * Fetch AI-generated video transcript path.
  *
  * @param int         $attachment_id The attachment ID (must be numeric).
@@ -1217,4 +1289,42 @@ function rtgodam_convert_to_https_url( $urls ) {
 	}
 
 	return set_url_scheme( $urls, 'https' );
+}
+
+/**
+ * Check if auth detector scripts should be loaded on current screen.
+ *
+ * @param WP_Screen|null $screen Current screen object.
+ *
+ * @return bool True if auth detector scripts should load.
+ */
+function godam_should_load_auth_detector_script( $screen ) {
+	if ( ! $screen ) {
+		return false;
+	}
+
+	// Pages where media library/modal is directly accessible.
+	$media_screens = array(
+		'upload',     // Media Library page (grid & list views).
+		'post',       // Add/Edit Post.
+		'page',       // Add/Edit Page.
+		'attachment', // Edit Media page.
+	);
+
+	// Check if current screen is in the list.
+	if ( in_array( $screen->base, $media_screens, true ) || in_array( $screen->id, $media_screens, true ) ) {
+		return true;
+	}
+
+	// Check if on GoDAM admin pages (where media library/modal can be opened).
+	$godam_pages = array(
+		'toplevel_page_godam',             // Dashboard page.
+		'godam_page_rtgodam_video_editor', // Video Editor page.
+	);
+
+	if ( in_array( $screen->id, $godam_pages, true ) ) {
+		return true;
+	}
+
+	return false;
 }

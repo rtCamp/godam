@@ -501,6 +501,9 @@ class ShareManager {
 		input.readOnly = ! checkbox.checked;
 		input.value = formatTime( this.video.currentTime || 0 );
 
+		// Initialize link inputs via JS to bypass DOMPurify stripping the iframe embed code from HTML attribute values.
+		this.updateTimestampLinks( checkbox, input, socialLinks, urls, container );
+
 		// Set up event listeners
 		checkbox.addEventListener( 'change', this.handleTimestampCheckboxChange.bind( this, checkbox, input, socialLinks, urls, container ) );
 		input.addEventListener( 'input', this.handleTimestampInputChange.bind( this, input, socialLinks, urls, container ) );

@@ -66,19 +66,32 @@ class Update {
 	/**
 	 * Reconcile API-key-related cached state during install/update.
 	 *
-	 * If no API key exists, stale cached user data and old persisted statuses
-	 * are normalized to "no_api_key" to avoid backward-compatibility issues.
+	 * Older plugin versions defaulted the stored api_key_status to 'valid' even
+	 * when no key had ever been entered. This method detects that stale state on
+	 * upgrade and corrects it to 'no_api_key', preventing the dashboard from
+	 * loading indefinitely because the JS thinks the key is valid but no key
+	 * is actually stored.
 	 */
 	private function rtgodam_reconcile_api_key_state() {
-		$api_key = get_option( 'rtgodam-api-key', '' );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
+		$stored_status = get_option( 'rtgodam-api-key-status', null );
 
-		if ( ! empty( $api_key ) ) {
+		// Nothing to reconcile if the status option was explicitly set already.
+		if ( null !== $stored_status ) {
 			return;
 		}
 
-		rtgodam_set_api_key_status( Api_Key_Status::NO_API_KEY );
-		rtgodam_clear_api_key_invalid_timestamp();
-		delete_option( 'rtgodam_user_data' );
+		// Status option has never been written. Normalise based on whether a key exists.
+		if ( empty( $api_key ) ) {
+			// No key → set the explicit no-key status and wipe any stale user data.
+			rtgodam_set_api_key_status( \RTGODAM\Inc\Enums\Api_Key_Status::NO_API_KEY );
+			rtgodam_clear_api_key_invalid_timestamp();
+			delete_option( 'rtgodam_user_data' );
+		} else {
+			// Key exists but status was never persisted → write 'valid' explicitly so
+			// future reads no longer fall back to the NO_API_KEY default.
+			rtgodam_set_api_key_status( \RTGODAM\Inc\Enums\Api_Key_Status::VALID );
+		}
 	}
 
 	/**

@@ -557,6 +557,10 @@
 }
 
 /* Mini cart - Woo Layer */
+.godam-mini-cart-hidden {
+	display: none;
+}
+
 .godam-video--cart-basket {
 	position: absolute;
 	inset: 0;
@@ -572,7 +576,7 @@
 	}
 
 	.wc-block-mini-cart__button {
-		font-size: var(--wp--preset--font-size--superbfont-small)
+		font-size: clamp(16px, 1rem + ((1vw - 3.2px) * 0.227), 18px);
 	}
 
 	@media (max-width: 640px) {
@@ -1660,6 +1664,10 @@ body.godam-share-modal-open {
 
 .vjs-seek-indicator.forward {
 	right: 20px;
+}
+
+.godam-seek-icon {
+	vertical-align: middle;
 }
 
 .vjs-seek-indicator.play-indicator,

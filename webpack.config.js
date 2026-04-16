@@ -128,6 +128,13 @@ const deactivationJS = {
 	},
 };
 
+const httpAuthDetector = {
+	...sharedConfig,
+	entry: {
+		'http-auth-detector': path.resolve( process.cwd(), 'assets', 'src', 'js', 'http-auth-detector.js' ),
+	},
+};
+
 const godamGallery = {
 	...sharedConfig,
 	entry: {
@@ -213,7 +220,6 @@ const woocommerceIntegration = {
 	entry: {
 		// Admin scripts
 		'admin/wc-product-video-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'admin', 'wc-product-video-gallery.js' ),
-		'admin/wc-add-to-product': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'admin', 'wc-add-to-product.js' ),
 		'admin/wc-admin-featured-video-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'admin', 'wc-admin-featured-video-gallery.js' ),
 
 		// Frontend scripts
@@ -228,7 +234,7 @@ const woocommerceIntegration = {
 		'godam-product-editor-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-product-editor-gallery.scss' ),
 		'godam-product-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-product-gallery.scss' ),
 		'godam-reels-skin': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-reels-skin.scss' ),
-		'godam-reel-pops-metabox': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-reel-pops-metabox.scss' ),
+		'godam-reels-skin-v2': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-reels-skin-v2.scss' ),
 	},
 	output: {
 		path: path.resolve( process.cwd(), 'assets', 'build', 'integrations', 'woocommerce', 'js' ),
@@ -397,6 +403,7 @@ module.exports = [
 	godamPlayerFrontend,
 	godamPlayerAnalytics,
 	deactivationJS,
+	httpAuthDetector,
 	godamGallery,
 	godamProductGallery,
 	godamVideoEmbed,
