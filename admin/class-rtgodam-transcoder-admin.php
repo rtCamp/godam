@@ -657,7 +657,7 @@ class RTGODAM_Transcoder_Admin {
 	/**
 	 * Display PostHog tracking notice.
 	 *
-	 * Only shown on the WP Dashboard, after the welcome walkthrough is completed.
+	 * Only shown on the WP Dashboard.
 	 *
 	 * @since 1.5.0
 	 */
