@@ -806,9 +806,35 @@ export default class WooCommerceLayerManager {
 
 		// Placeholder
 		const placeholderDiv = document.createElement( 'div' );
-		placeholderDiv.textContent = hotspot?.productId
-			? __( 'Loading…', 'godam' )
-			: __( 'No product found', 'godam' );
+		placeholderDiv.classList.add( 'product-hotspot-loading' );
+
+		const SVG_NS = 'http://www.w3.org/2000/svg';
+
+		if ( hotspot?.productId ) {
+			const spinnerDiv = document.createElement( 'div' );
+			spinnerDiv.classList.add( 'godam-product-hotspot-spinner' );
+
+			// Create SVG
+			const svg = document.createElementNS( SVG_NS, 'svg' );
+			svg.setAttribute( 'class', 'spinner-svg' );
+			svg.setAttribute( 'viewBox', '0 0 50 50' );
+
+			// Create circle
+			const circle = document.createElementNS( SVG_NS, 'circle' );
+			circle.setAttribute( 'class', 'spinner-circle' );
+			circle.setAttribute( 'cx', '25' );
+			circle.setAttribute( 'cy', '25' );
+			circle.setAttribute( 'r', '20' );
+			circle.setAttribute( 'fill', 'none' );
+			circle.setAttribute( 'stroke-width', '4' );
+
+			// Append
+			svg.appendChild( circle );
+			spinnerDiv.appendChild( svg );
+			placeholderDiv.appendChild( spinnerDiv );
+		} else {
+			placeholderDiv.textContent = __( 'No product found', 'godam' );
+		}
 
 		// Product display
 		const productDisplayDiv = document.createElement( 'div' );
