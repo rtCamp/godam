@@ -27,10 +27,6 @@
       "type": "string",
       "default": "M"
     },
-    "count": {
-      "type": "number",
-      "default": 12
-    },
     "autoplay": {
       "type": "boolean",
       "default": false
@@ -38,14 +34,6 @@
     "showPlayButton": {
       "type": "boolean",
       "default": true
-    },
-    "categories": {
-      "type": "array",
-      "default": []
-    },
-    "products": {
-      "type": "array",
-      "default": []
     },
     "showAddToCart": {
       "type": "boolean",
