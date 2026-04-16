@@ -1,3 +1,5 @@
+/* eslint-disable eslint-comments/disable-enable-pair */
+/* eslint-disable no-console */
 /**
  * WordPress dependencies
  */
@@ -30,6 +32,14 @@ export default class WooCommerceLayerManager {
 		this.productFetchPromises = new Map();
 		this.didBindPrefetchHandlers = false;
 		this.didPrefetchProducts = false;
+
+		this.bindMiniCartFullscreenFix();
+
+		if ( typeof this.player?.on === 'function' ) {
+			this.player.on( 'dispose', () => {
+				this.disposeMiniCartFullscreenFix();
+			} );
+		}
 	}
 
 	bindProductPrefetchHandlers() {
@@ -133,7 +143,6 @@ export default class WooCommerceLayerManager {
 			method: 'POST',
 			data: { ids: uncached },
 		} ).catch( ( error ) => {
-			// eslint-disable-next-line no-console
 			console.warn( 'Batch product fetch failed, individual requests will be used:', error );
 			return [];
 		} );
@@ -263,6 +272,13 @@ export default class WooCommerceLayerManager {
 				if ( msg ) {
 					videoContainer.appendChild( msg );
 				}
+
+				const wrapper = videoContainer.parentNode;
+				const miniCart = wrapper.querySelector( '.godam-video--cart-basket' );
+
+				if ( miniCart ) {
+					videoContainer.appendChild( miniCart );
+				}
 			}
 		} );
 
@@ -277,6 +293,195 @@ export default class WooCommerceLayerManager {
 			}
 		};
 		window.requestAnimationFrame( waitForResize );
+	}
+
+	/**
+	 * Handle Mini Cart click in fullscreen
+	 * → exit fullscreen → open drawer → wait until close → re-enter fullscreen
+	 */
+	bindMiniCartFullscreenFix() {
+		if ( this._miniCartFsBound ) {
+			return;
+		}
+		this._miniCartFsBound = true;
+
+		const container = this.player?.el?.() || document;
+
+		this._miniCartClickHandler = ( e ) => {
+			const trigger = e.target.closest(
+				'.wc-block-mini-cart, .godam-video--cart-basket',
+			);
+
+			if ( ! trigger ) {
+				return;
+			}
+
+			const isFullscreen = this.player?.el()?.classList.contains( 'vjs-fullscreen' );
+			if ( ! isFullscreen ) {
+				return;
+			}
+
+			e.preventDefault();
+			e.stopPropagation();
+
+			const playerEl = this.player?.el?.();
+
+			const isIOS = /iPhone|iPad|iPod/i.test( navigator.userAgent );
+
+			try {
+				const doc = document;
+
+				let didExitFullscreen = false;
+				if ( isIOS ) {
+					const exitControl = doc.getElementsByClassName(
+						'vjs-custom-fullscreen-exit-control',
+					)[ 0 ];
+					if ( exitControl && typeof exitControl.click === 'function' ) {
+						console.log( 'Clicking custom exit control for iOS fullscreen exit' );
+						exitControl.click();
+						didExitFullscreen = true;
+					}
+				} else if ( typeof this.player.exitFullscreen === 'function' ) {
+					this.player.exitFullscreen();
+					didExitFullscreen = true;
+				} else if ( typeof this.player.webkitExitFullscreen === 'function' ) {
+					this.player.webkitExitFullscreen();
+					didExitFullscreen = true;
+				}
+				if ( ! didExitFullscreen ) {
+					return;
+				}
+
+				let isProgrammaticClick = false;
+
+				setTimeout( () => {
+					if ( isProgrammaticClick ) {
+						return;
+					}
+
+					isProgrammaticClick = true;
+					trigger.click();
+
+					this.showFullscreenReturnMessage();
+					this.waitForDrawerCloseAndRestoreFullscreen( playerEl );
+
+					setTimeout( () => {
+						isProgrammaticClick = false;
+					}, 0 );
+				}, 120 );
+			} catch ( err ) {
+				console.warn( 'Mini cart fullscreen fix failed:', err );
+			}
+		};
+
+		container.addEventListener( 'click', this._miniCartClickHandler );
+	}
+
+	disposeMiniCartFullscreenFix() {
+		if ( this._miniCartClickHandler ) {
+			const container = this.player?.el?.() || document;
+			container.removeEventListener( 'click', this._miniCartClickHandler );
+			this._miniCartClickHandler = null;
+			this._miniCartFsBound = false;
+		}
+	}
+
+	/**
+	 * Show message to guide user
+	 */
+	showFullscreenReturnMessage() {
+		if ( document.querySelector( '.godam-fs-return-msg' ) ) {
+			return;
+		}
+
+		const msg = document.createElement( 'div' );
+		msg.className = 'godam-fs-return-msg';
+
+		const message = __( 'Close cart & return to fullscreen', 'godam' );
+		const returnButton = __( 'Return to Fullscreen', 'godam' );
+
+		const messageText = document.createTextNode( message );
+		const lineBreak = document.createElement( 'br' );
+
+		const btn = document.createElement( 'button' );
+		btn.className = 'godam-return-fs-btn';
+		btn.textContent = returnButton;
+
+		msg.appendChild( messageText );
+		msg.appendChild( lineBreak );
+		msg.appendChild( btn );
+
+		document.body.appendChild( msg );
+
+		// Bind click.
+		btn.addEventListener( 'click', () => {
+			const playerEl = this.player?.el?.();
+
+			const isIOS = /iPhone|iPad|iPod/i.test( navigator.userAgent );
+
+			// 1. Try closing drawer (Woo way).
+			const closeBtn = document.querySelector(
+				'.wc-block-components-drawer__close',
+			);
+
+			if ( closeBtn ) {
+				closeBtn.click();
+			} else {
+				// fallback: click overlay.
+				const overlay = document.querySelector(
+					'.wc-block-components-drawer__screen-overlay',
+				);
+				if ( overlay ) {
+					overlay.click();
+				}
+			}
+
+			// 2. Enter fullscreen.
+			if ( ! isIOS && playerEl?.requestFullscreen ) {
+				playerEl.requestFullscreen();
+			} else {
+				playerEl.querySelector( '.vjs-fullscreen-control' )?.click();
+			}
+
+			// 3. Cleanup message.
+			this.cleanupFullscreenMessage();
+		} );
+	}
+
+	/**
+	 * Watches the Woo mini-cart drawer and cleans up the fullscreen return CTA
+	 * when the drawer is no longer visible.
+	 */
+	waitForDrawerCloseAndRestoreFullscreen() {
+		const checkDrawer = () => {
+			const drawer = document.querySelector(
+				'.wc-block-components-drawer__screen-overlay',
+			);
+
+			const isOpen =
+				drawer &&
+				window.getComputedStyle( drawer ).display !== 'none' &&
+				window.getComputedStyle( drawer ).visibility !== 'hidden';
+
+			if ( ! isOpen ) {
+				this.cleanupFullscreenMessage();
+				return;
+			}
+
+			requestAnimationFrame( checkDrawer );
+		};
+
+		requestAnimationFrame( checkDrawer );
+	}
+
+	/**
+	 * Remove helper message
+	 */
+	cleanupFullscreenMessage() {
+		const msg = document.querySelector( '.godam-fs-return-msg' );
+		if ( msg ) {
+			msg.remove();
+		}
 	}
 
 	/**
