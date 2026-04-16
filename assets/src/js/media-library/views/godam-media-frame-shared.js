@@ -7,12 +7,16 @@
  */
 
 /**
+ * WordPress dependencies
+ */
+import apiFetch from '@wordpress/api-fetch';
+
+/**
  * Internal dependencies
  */
 import { getQuery } from '../utility.js';
 
 const l10n = wp?.media?.view?.l10n;
-const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
 /**
  * Check if the current frame is a featured image context.
@@ -129,7 +133,7 @@ const GoDAMMediaFrameShared = {
 		state.on( 'select', this.onGoDAMSelect, this );
 	},
 
-	onGoDAMSelect() {
+	async onGoDAMSelect() {
 		// Use the actual content mode instead of stale state
 		const isGodamTab = this.content.mode() === 'godam';
 
@@ -138,43 +142,42 @@ const GoDAMMediaFrameShared = {
 		}
 
 		const selection = this.state().get( 'selection' );
-		const selected = selection?.first();
-		const data = selected.attributes;
 
-		// API call to website to create the attachment in the current site context.
-		fetch( window.pathJoin( [ restURL, '/godam/v1/media-library/create-media-entry' ] ), {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-WP-Nonce': window.wpApiSettings?.nonce,
-			},
-			body: JSON.stringify( {
-				id: data.id,
-				title: data.title,
-				filename: data.filename,
-				name: data.title,
-				url: data.url,
-				hls_url: data.hls_url,
-				mpd_url: data.mpd_url,
-				mime: data.mime,
-				type: data.type,
-				subtype: data.subtype,
-				status: data.status,
-				date: data.date,
-				modified: data.modified,
-				filesizeInBytes: data.filesizeInBytes,
-				filesizeHumanReadable: data.filesizeHumanReadable,
-				owner: data.owner,
-				label: data.label,
-				icon: data.icon,
-				thumbnail_url: data.thumbnail_url,
-				caption: data.caption,
-				description: data.description,
-				video_duration: data.video_duration || 0,
-			} ),
-		} )
-			.then( ( res ) => res.json() )
-			.then( ( response ) => {
+		// Process every selected item (supports multi-select).
+		selection.each( async ( selected ) => {
+			const data = selected.attributes;
+
+			try {
+				// apiFetch uses the WordPress REST API configuration, including nonce handling.
+				const response = await apiFetch( {
+					path: '/godam/v1/media-library/create-media-entry',
+					method: 'POST',
+					data: {
+						id: data.id,
+						title: data.title,
+						filename: data.filename,
+						name: data.title,
+						url: data.url,
+						hls_url: data.hls_url,
+						mpd_url: data.mpd_url,
+						mime: data.mime,
+						type: data.type,
+						subtype: data.subtype,
+						status: data.status,
+						date: data.date,
+						modified: data.modified,
+						filesizeInBytes: data.filesizeInBytes,
+						filesizeHumanReadable: data.filesizeHumanReadable,
+						owner: data.owner,
+						label: data.label,
+						icon: data.icon,
+						thumbnail_url: data.thumbnail_url,
+						caption: data.caption,
+						description: data.description,
+						video_duration: data.video_duration || 0,
+					},
+				} );
+
 				if ( response && response.success ) {
 					const attachment = response.attachment;
 
@@ -189,7 +192,10 @@ const GoDAMMediaFrameShared = {
 					const countRefreshEvent = new CustomEvent( 'godam-attachment-browser:changed' );
 					document.dispatchEvent( countRefreshEvent );
 				}
-			} );
+			} catch {
+				// Swallow request failures so one item does not break the rest of the selection flow.
+			}
+		} );
 	},
 };
 
