@@ -36,7 +36,7 @@ class Update {
 	/**
 	 * Check if the plugin version has changed.
 	 *
-	 * Fresh install: sets options for both Welcome walkthrough AND What's New page.
+	 * Fresh install: sets options for What's New page.
 	 * Version bump:  sets option for What's New page only.
 	 */
 	public function rtgodam_update_plugin_version() {
@@ -44,8 +44,7 @@ class Update {
 		$current_version = RTGODAM_VERSION;
 
 		if ( false === $saved_version ) {
-			// Fresh install — show the welcome walkthrough first, then What's New.
-			update_option( 'rtgodam_show_welcome', true );
+			// Fresh install — show What's New page.
 			update_option( 'rtgodam_show_whats_new', true );
 			$this->rtgodam_reconcile_api_key_state();
 			update_option( 'rtgodam_plugin_version', $current_version );
