@@ -7,6 +7,43 @@
  * @since 1.5.0
  */
 
+const GODAM_IFRAME_PAUSE_MESSAGE = 'godamPause';
+let shouldPausePlayersOnReady = false;
+
+const pauseEmbeddedPlayers = () => {
+	if ( ! window.GoDAMAPI ) {
+		shouldPausePlayersOnReady = true;
+		return;
+	}
+
+	const players = typeof window.GoDAMAPI.getAllReadyPlayers === 'function'
+		? window.GoDAMAPI.getAllReadyPlayers()
+		: window.GoDAMAPI.getAllPlayers();
+
+	if ( ! players.length ) {
+		shouldPausePlayersOnReady = true;
+		return;
+	}
+
+	shouldPausePlayersOnReady = false;
+
+	players.forEach( ( playerObj ) => {
+		if ( playerObj?.player?.pause ) {
+			playerObj.player.pause();
+		}
+	} );
+};
+
+window.addEventListener( 'message', ( event ) => {
+	if ( event.origin !== window.location.origin ) {
+		return;
+	}
+
+	if ( event.data?.type === GODAM_IFRAME_PAUSE_MESSAGE ) {
+		pauseEmbeddedPlayers();
+	}
+} );
+
 document.addEventListener( 'DOMContentLoaded', function() {
 	// Only run if we're in an iframe
 	if ( window.self === window.top ) {
@@ -275,6 +312,10 @@ document.addEventListener( 'DOMContentLoaded', function() {
 
 // Listen for GoDAM Player ready event to set up fullscreen change listener
 document.addEventListener( 'godamAllPlayersReady', () => {
+	if ( shouldPausePlayersOnReady ) {
+		pauseEmbeddedPlayers();
+	}
+
 	// Check if GoDAM API is available
 	if ( ! window.GoDAMAPI ) {
 		return;

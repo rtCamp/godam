@@ -1,4 +1,4 @@
-/* global jQuery, myGalleryAjaxData */
+/* global jQuery, myGalleryAjaxData, PhotoSwipe, PhotoSwipeUI_Default */
 
 /**
  * External dependencies
@@ -16,27 +16,20 @@ import DOMPurify from 'isomorphic-dompurify';
  * Key responsibilities:
  * - Detects video thumbnails using a custom `alt` format (`video|{id}|...`).
  * - Adds helper classes and data attributes to video thumbnails for identification.
- * - Controls video playback:
- *    - Pauses all videos when switching slides.
- *    - Plays video only on the active gallery slide.
+ * - Controls video playback by pausing inactive videos and playing the active one.
  * - Syncs playback state with WooCommerce Flexslider events.
  * - Observes DOM mutations to initialize gallery behavior when content loads dynamically.
  * - Removes video elements (thumbnails + slides) when API key is invalid.
  * - Hooks into WooCommerce gallery lifecycle events (`wc-product-gallery-before-init`).
  *
  * Functions:
- * - toggleGalleryVideoPlayback($activeSlide)
- *      Pauses all videos and plays the video in the active slide (if applicable).
+ * - `toggleGalleryVideoPlayback( $activeSlide )`: pauses all videos and plays the active slide video when applicable.
  *
- * - syncActiveGalleryVideo()
- *      Finds the current active slide and ensures correct playback state.
+ * - `syncActiveGalleryVideo()`: finds the current active slide and syncs playback state.
  *
- * - handleGalleryImages()
- *      Processes thumbnail images, identifies video entries, and adds required
- *      classes and data attributes for frontend handling.
+ * - `handleGalleryImages()`: processes thumbnails, identifies video entries, and adds the required classes and data attributes.
  *
- * - removeFrontendVideosIfNeeded()
- *      Removes all video-related elements from the gallery when API access is unavailable.
+ * - `removeFrontendVideosIfNeeded()`: removes video-related elements from the gallery when API access is unavailable.
  *
  * Behavior notes:
  * - Uses MutationObserver to handle dynamically rendered WooCommerce galleries.
@@ -211,18 +204,14 @@ jQuery( document ).ready( function( $ ) {
  * - Overrides `getGalleryItems()` to customize the data passed to PhotoSwipe.
  *
  * Custom behavior:
- * - For elements with `data-video-id`:
- *    - Injects a custom HTML slide containing an iframe (GoDAM video player).
- *    - Sanitizes the video URL using DOMPurify for security.
+ * - For elements with `data-video-id`, injects a custom HTML slide containing a GoDAM player iframe.
+ * - Sanitizes the video URL using DOMPurify for security.
  *
- * - For standard image elements:
- *    - Preserves default behavior by returning image metadata
- *      (`src`, `width`, `height`, `title`) for PhotoSwipe.
+ * - For standard image elements, preserves the default image metadata (`src`, `width`, `height`, `title`) for PhotoSwipe.
  *
  * Implementation details:
  * - Uses polling (`setTimeout`) to wait until the gallery instance is available.
- * - Iterates over all gallery items (`this.$images`) to build a unified list
- *   of image and video slides.
+ * - Iterates over all gallery items (`this.$images`) to build a unified list of image and video slides.
  * - Ensures compatibility with WooCommerce's native lightbox system.
  *
  * Dependencies:
@@ -235,6 +224,63 @@ jQuery( document ).ready( function( $ ) {
  * - This approach enables seamless mixing of images and videos in the lightbox view.
  */
 jQuery( function( $ ) {
+	const GODAM_IFRAME_PAUSE_MESSAGE = 'godamPause';
+
+	function getIframeTargetOrigin( iframe ) {
+		const iframeSrc = iframe?.getAttribute( 'src' );
+
+		if ( ! iframeSrc ) {
+			return window.location.origin;
+		}
+
+		try {
+			return new URL( iframeSrc, window.location.href ).origin;
+		} catch ( error ) {
+			return window.location.origin;
+		}
+	}
+
+	function postPauseMessageToIframe( iframe ) {
+		if ( ! iframe?.contentWindow ) {
+			return;
+		}
+
+		iframe.contentWindow.postMessage(
+			{ type: GODAM_IFRAME_PAUSE_MESSAGE },
+			getIframeTargetOrigin( iframe ),
+		);
+	}
+
+	function pausePhotoSwipeVideoIframes( selector ) {
+		document.querySelectorAll( selector ).forEach( ( iframe ) => {
+			postPauseMessageToIframe( iframe );
+		} );
+	}
+
+	function pauseActivePhotoSwipeVideoIframes() {
+		pausePhotoSwipeVideoIframes( '.pswp .pswp__item:not(.pswp__item--hidden) .pswp__video-wrapper iframe' );
+	}
+
+	function pauseAllPhotoSwipeVideoIframes() {
+		pausePhotoSwipeVideoIframes( '.pswp .pswp__video-wrapper iframe' );
+	}
+
+	function bindPatchedPhotoswipeEvents( photoswipe, currentTarget, gallery ) {
+		photoswipe.listen( 'afterInit', function() {
+			gallery.trapFocusPhotoswipe( true );
+		} );
+
+		photoswipe.listen( 'beforeChange', function() {
+			pauseActivePhotoSwipeVideoIframes();
+		} );
+
+		photoswipe.listen( 'close', function() {
+			pauseAllPhotoSwipeVideoIframes();
+			gallery.trapFocusPhotoswipe( false );
+			currentTarget.focus();
+		} );
+	}
+
 	function patchGallery() {
 		const $gallery = $( '.woocommerce-product-gallery' );
 
@@ -254,6 +300,8 @@ jQuery( function( $ ) {
 			return;
 		}
 		gallery._godam_patched = true;
+
+		const originalOpenPhotoswipe = gallery.openPhotoswipe;
 
 		gallery.getGalleryItems = function() {
 			const items = [];
@@ -299,6 +347,52 @@ jQuery( function( $ ) {
 
 			return items;
 		};
+
+		gallery.openPhotoswipe = function( e ) {
+			e.preventDefault();
+
+			const pswpElement = $( '.pswp' )[ 0 ];
+			const items = this.getGalleryItems();
+			// eslint-disable-next-line camelcase
+			const photoSwipeOptions = window.wc_single_product_params?.photoswipe_options || {};
+			const eventTarget = $( e.target );
+			const currentTarget = e.currentTarget;
+			const clicked = eventTarget.closest( '.woocommerce-product-gallery__trigger' ).length
+				? this.$target.find( '.flex-active-slide' )
+				: eventTarget.closest( '.woocommerce-product-gallery__image' );
+
+			const options = $.extend( {
+				index: $( clicked ).index(),
+				addCaptionHTMLFn( item, captionEl ) {
+					if ( ! item.title ) {
+						captionEl.children[ 0 ].textContent = '';
+						return false;
+					}
+
+					captionEl.children[ 0 ].textContent = item.title;
+					return true;
+				},
+				timeToIdle: 0,
+			}, photoSwipeOptions );
+
+			const photoswipe = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, items, options );
+
+			bindPatchedPhotoswipeEvents( photoswipe, currentTarget, this );
+			photoswipe.init();
+		}.bind( gallery );
+
+		gallery.$target.off( 'click', '.woocommerce-product-gallery__trigger', originalOpenPhotoswipe );
+		gallery.$target.off( 'click', '.woocommerce-product-gallery__image a', originalOpenPhotoswipe );
+
+		if ( gallery.zoom_enabled && gallery.$images.length > 0 ) {
+			gallery.$target.on( 'click', '.woocommerce-product-gallery__trigger', gallery.openPhotoswipe );
+
+			if ( ! gallery.flexslider_enabled ) {
+				gallery.$target.on( 'click', '.woocommerce-product-gallery__image a', gallery.openPhotoswipe );
+			}
+		} else {
+			gallery.$target.on( 'click', '.woocommerce-product-gallery__image a', gallery.openPhotoswipe );
+		}
 	}
 
 	patchGallery();
