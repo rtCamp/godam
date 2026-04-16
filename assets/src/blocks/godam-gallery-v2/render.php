@@ -276,7 +276,6 @@ if ( 'query' === $gallery_mode ) {
 		'layout'            => $layout,
 		'author'            => $attributes['author'] ?? '',
 		'media_folder'      => $attributes['mediaFolder'] ?? '',
-		'include'           => '',
 		'search'            => '',
 		'date_range'        => $attributes['dateRange'] ?? '',
 		'custom_date_start' => $attributes['customDateStart'] ?? '',

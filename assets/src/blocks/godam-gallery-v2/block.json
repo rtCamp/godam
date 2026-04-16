@@ -68,10 +68,6 @@
 			"type": "string",
 			"default": ""
 		},
-		"include": {
-			"type": "string",
-			"default": ""
-		},
 		"showTitle": {
 			"type": "boolean",
 			"default": true

@@ -31,7 +31,7 @@ defined( 'ABSPATH' ) || exit;
  * | dateRange       | dateRange          | direct pass-through                       |
  * | customDateStart | customDateStart    | direct pass-through                       |
  * | customDateEnd   | customDateEnd      | direct pass-through                       |
- * | include         | include            | direct pass-through                       |
+ * | include         | (dropped)          | V2 does not support include               |
  * | showTitle       | showTitle          | direct pass-through                       |
  * | category        | (dropped)          | V2 query does not support category filter |
  * | tag             | (dropped)          | V2 query does not support tag filter      |
@@ -358,7 +358,6 @@ class Gallery_V1_To_V2 {
 			'dateRange'         => '',
 			'customDateStart'   => '',
 			'customDateEnd'     => '',
-			'include'           => '',
 			'showTitle'         => true,
 		);
 
@@ -407,7 +406,6 @@ class Gallery_V1_To_V2 {
 			'dateRange',
 			'customDateStart',
 			'customDateEnd',
-			'include',
 			'showTitle',
 		);
 
@@ -433,7 +431,7 @@ class Gallery_V1_To_V2 {
 
 		/*
 		 * Intentionally dropped (no equivalent in V2):
-		 * category, tag, search, engagements, openToNewPage.
+		 * category, tag, search, engagements, openToNewPage, include.
 		 */
 
 		return $v2;
