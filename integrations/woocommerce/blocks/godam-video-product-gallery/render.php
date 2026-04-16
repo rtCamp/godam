@@ -14,74 +14,6 @@ if ( ! rtgodam_is_api_key_valid() ) {
 	return;
 }
 
-if ( ! function_exists( 'godam_vpg_get_query_limit' ) ) {
-
-	/**
-	 * Resolve the query item limit for video product gallery.
-	 *
-	 * @param array $attributes Block attributes.
-	 * @return int
-	 */
-	function godam_vpg_get_query_limit( $attributes ) {
-		$query_limit = (int) apply_filters( 'rtgodam_video_product_gallery_query_limit', 100, $attributes );
-		$query_limit = max( 1, min( 100, $query_limit ) );
-		$count       = isset( $attributes['count'] ) ? absint( $attributes['count'] ) : 12;
-
-		return $count > 0 ? min( $count, $query_limit ) : $query_limit;
-	}
-}
-
-if ( ! function_exists( 'godam_vpg_get_matching_product_ids' ) ) {
-
-	/**
-	 * Resolve product IDs for query mode.
-	 *
-	 * @param array $attributes Block attributes.
-	 * @return int[]
-	 */
-	function godam_vpg_get_matching_product_ids( $attributes ) {
-		$selected_product_ids = isset( $attributes['products'] ) && is_array( $attributes['products'] )
-			? array_filter( array_map( 'absint', $attributes['products'] ) )
-			: array();
-		$category_ids         = isset( $attributes['categories'] ) && is_array( $attributes['categories'] )
-			? array_filter( array_map( 'absint', $attributes['categories'] ) )
-			: array();
-		$query_limit          = godam_vpg_get_query_limit( $attributes );
-
-		$product_query_args = array(
-			'post_type'      => 'product',
-			'post_status'    => 'publish',
-			'fields'         => 'ids',
-			'posts_per_page' => $query_limit,
-			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-				array(
-					'key'     => '_rtgodam_product_video_gallery_ids',
-					'compare' => 'EXISTS',
-				),
-			),
-		);
-
-		if ( ! empty( $category_ids ) ) {
-			$product_query_args['tax_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
-				array(
-					'taxonomy' => 'product_cat',
-					'field'    => 'term_id',
-					'terms'    => $category_ids,
-					'operator' => 'IN',
-				),
-			);
-		}
-
-		if ( ! empty( $selected_product_ids ) ) {
-			$product_query_args['post__in'] = $selected_product_ids;
-			$product_query_args['orderby']  = 'post__in';
-		}
-
-		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
-		return get_posts( $product_query_args );
-	}
-}
-
 if ( ! function_exists( 'godam_vpg_get_product_data' ) ) {
 
 	/**
@@ -135,119 +67,29 @@ if ( ! function_exists( 'godam_vpg_build_gallery_items' ) ) {
 	 * @return array
 	 */
 	function godam_vpg_build_gallery_items( $attributes, $block ) {
-		$gallery_mode  = isset( $attributes['mode'] ) ? sanitize_key( $attributes['mode'] ) : 'handpicked';
 		$gallery_items = array();
 
-		if ( 'query' !== $gallery_mode ) {
-			if ( empty( $block->inner_blocks ) ) {
-				return array();
-			}
-
-			foreach ( $block->inner_blocks as $inner_block ) {
-				if ( 'godam/video-product-gallery-item' !== $inner_block->name ) {
-					continue;
-				}
-
-				$item_attrs = $inner_block->attributes;
-				$video_id   = isset( $item_attrs['videoId'] ) ? absint( $item_attrs['videoId'] ) : 0;
-				$product_id = isset( $item_attrs['productId'] ) ? absint( $item_attrs['productId'] ) : 0;
-
-				if ( ! $video_id ) {
-					continue;
-				}
-
-				$gallery_items[] = array(
-					'videoId'     => $video_id,
-					'productId'   => $product_id ? array( $product_id ) : array(),
-					'productData' => $product_id ? array( godam_vpg_get_product_data( $product_id ) ) : array(),
-				);
-			}
-
-			return $gallery_items;
-		}
-
-		$product_ids        = godam_vpg_get_matching_product_ids( $attributes );
-		$has_active_filters = ! empty( $attributes['products'] ) || ! empty( $attributes['categories'] );
-		$query_limit        = godam_vpg_get_query_limit( $attributes );
-
-		if ( $has_active_filters && empty( $product_ids ) ) {
+		if ( empty( $block->inner_blocks ) ) {
 			return array();
 		}
 
-		$video_query_args = array(
-			'post_type'      => 'attachment',
-			'post_mime_type' => 'video',
-			'post_status'    => 'inherit',
-			'posts_per_page' => $query_limit,
-			'orderby'        => 'date',
-			'order'          => 'DESC',
-			'meta_query'     => array(), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-		);
-
-		if ( ! empty( $product_ids ) ) {
-			$video_query_args['meta_query'][] = array(
-				'key'     => '_video_parent_product_id',
-				'value'   => $product_ids,
-				'compare' => 'IN',
-				'type'    => 'NUMERIC',
-			);
-		} else {
-			$video_query_args['meta_query'][] = array(
-				'key'     => '_video_parent_product_id',
-				'compare' => 'EXISTS',
-			);
-		}
-
-		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
-		$video_posts  = get_posts( $video_query_args );
-		$category_ids = isset( $attributes['categories'] ) && is_array( $attributes['categories'] )
-			? array_filter( array_map( 'absint', $attributes['categories'] ) )
-			: array();
-
-		foreach ( $video_posts as $video_post ) {
-			$attached_product_ids = get_post_meta( $video_post->ID, '_video_parent_product_id', false );
-			$valid_product_ids    = array();
-			$valid_product_data   = array();
-			$mode                 = 'single';
-
-			foreach ( $attached_product_ids as $attached_product_id ) {
-				$attached_product_id = absint( $attached_product_id );
-
-				if ( ! $attached_product_id || 'publish' !== get_post_status( $attached_product_id ) || 'product' !== get_post_type( $attached_product_id ) ) {
-					continue;
-				}
-
-				if ( ! empty( $product_ids ) && ! in_array( $attached_product_id, $product_ids, true ) ) {
-					continue;
-				}
-
-				if ( ! empty( $category_ids ) && ! has_term( $category_ids, 'product_cat', $attached_product_id ) ) {
-					continue;
-				}
-
-				$product_data = godam_vpg_get_product_data( $attached_product_id );
-
-				if ( ! $product_data ) {
-					continue;
-				}
-
-				$valid_product_ids[]  = $attached_product_id;
-				$valid_product_data[] = $product_data;
-			}
-
-			if ( empty( $valid_product_ids ) ) {
+		foreach ( $block->inner_blocks as $inner_block ) {
+			if ( 'godam/video-product-gallery-item' !== $inner_block->name ) {
 				continue;
 			}
 
-			if ( 1 !== count( $valid_product_ids ) ) {
-				$mode = 'multiple';
+			$item_attrs = $inner_block->attributes;
+			$video_id   = isset( $item_attrs['videoId'] ) ? absint( $item_attrs['videoId'] ) : 0;
+			$product_id = isset( $item_attrs['productId'] ) ? absint( $item_attrs['productId'] ) : 0;
+
+			if ( ! $video_id ) {
+				continue;
 			}
 
 			$gallery_items[] = array(
-				'videoId'     => absint( $video_post->ID ),
-				'productMode' => $mode,
-				'productId'   => $valid_product_ids,
-				'productData' => $valid_product_data,
+				'videoId'     => $video_id,
+				'productId'   => $product_id ? array( $product_id ) : array(),
+				'productData' => $product_id ? array( godam_vpg_get_product_data( $product_id ) ) : array(),
 			);
 		}
 
@@ -256,20 +98,18 @@ if ( ! function_exists( 'godam_vpg_build_gallery_items' ) ) {
 }
 
 // Block attributes.
-$block_id         = isset( $attributes['blockId'] ) ? 'godam-vpg-' . esc_attr( $attributes['blockId'] ) : wp_unique_id( 'godam-vpg-' );
-$gallery_mode_raw = isset( $attributes['mode'] ) ? sanitize_key( $attributes['mode'] ) : 'handpicked';
-$allowed_modes    = array( 'handpicked', 'query' );
-$gallery_mode     = in_array( $gallery_mode_raw, $allowed_modes, true ) ? $gallery_mode_raw : 'handpicked';
-$layout           = isset( $attributes['layout'] ) ? esc_attr( $attributes['layout'] ) : 'carousel';
-$view_ratio       = isset( $attributes['viewRatio'] ) ? esc_attr( $attributes['viewRatio'] ) : '9:16';
-$item_width_size  = isset( $attributes['itemWidth'] ) ? $attributes['itemWidth'] : 'M';
-$item_width_map   = array(
+$block_id        = isset( $attributes['blockId'] ) ? 'godam-vpg-' . esc_attr( $attributes['blockId'] ) : wp_unique_id( 'godam-vpg-' );
+$gallery_mode    = 'handpicked';
+$layout          = isset( $attributes['layout'] ) ? esc_attr( $attributes['layout'] ) : 'carousel';
+$view_ratio      = isset( $attributes['viewRatio'] ) ? esc_attr( $attributes['viewRatio'] ) : '9:16';
+$item_width_size = isset( $attributes['itemWidth'] ) ? $attributes['itemWidth'] : 'M';
+$item_width_map  = array(
 	'S' => 220,
 	'M' => 260,
 	'L' => 300,
 );
-$item_width       = isset( $item_width_map[ $item_width_size ] ) ? $item_width_map[ $item_width_size ] : 220;
-$autoplay         = ! empty( $attributes['autoplay'] );
+$item_width      = isset( $item_width_map[ $item_width_size ] ) ? $item_width_map[ $item_width_size ] : 220;
+$autoplay        = ! empty( $attributes['autoplay'] );
 
 // Read blockGap from native spacing support (Dimensions > Block spacing).
 $block_gap_raw = isset( $attributes['style']['spacing']['blockGap'] ) ? $attributes['style']['spacing']['blockGap'] : '16px';
