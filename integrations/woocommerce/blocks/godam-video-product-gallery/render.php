@@ -60,11 +60,11 @@ if ( ! function_exists( 'godam_vpg_get_product_data' ) ) {
 if ( ! function_exists( 'godam_vpg_build_gallery_items' ) ) {
 
 	/**
-	 * Build gallery items for the current block mode.
+	 * Build gallery items from the block's inner blocks.
 	 *
-	 * @param array         $attributes Block attributes.
-	 * @param WP_Block|null $block      Parsed block instance.
-	 * @return array
+	 * @param array    $attributes Block attributes (unused, kept for future extensibility).
+	 * @param WP_Block $block      Parsed block instance containing inner blocks.
+	 * @return array List of gallery item arrays with videoId, productId, and productData.
 	 */
 	function godam_vpg_build_gallery_items( $attributes, $block ) {
 		$gallery_items = array();
