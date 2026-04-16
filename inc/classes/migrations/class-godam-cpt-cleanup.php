@@ -13,8 +13,8 @@ defined( 'ABSPATH' ) || exit;
  * Permanently deletes all `godam-video` Custom Post Type posts from the database.
  *
  * The `godam-video` CPT was discontinued as of GoDAM 1.5.1. This migration
- * runs once per site and removes all remaining CPT posts (including their meta,
- * taxonomy terms, and attachments) so they no longer pollute sitemaps or the
+ * runs once per site and removes all remaining CPT posts (including their post
+ * meta and taxonomy relationships) so they no longer pollute sitemaps or the
  * WordPress database.
  *
  * ## Execution model
@@ -110,9 +110,17 @@ class Godam_Cpt_Cleanup {
 			return;
 		}
 
-		// Only trigger during admin requests, WP-CLI, or cron. Bulk deletions
-		// must not be initiated by unauthenticated frontend page loads.
-		if ( ! is_admin() && ! wp_doing_cron() && ! ( defined( 'WP_CLI' ) && WP_CLI ) ) {
+		$is_cli  = defined( 'WP_CLI' ) && WP_CLI;
+		$is_cron = wp_doing_cron();
+
+		// Only trigger during authenticated admin requests, WP-CLI, or cron.
+		// is_admin() is also true for admin-ajax.php which can be hit without
+		// authentication, so non-cron/non-CLI requests require an explicit auth
+		// and capability check before scheduling a destructive migration.
+		if ( ! is_admin() && ! $is_cron && ! $is_cli ) {
+			return;
+		}
+		if ( ! $is_cron && ! $is_cli && ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) ) {
 			return;
 		}
 
@@ -151,12 +159,26 @@ class Godam_Cpt_Cleanup {
 			return;
 		}
 
+		if ( ! function_exists( 'as_enqueue_async_action' ) ) {
+			// Action Scheduler is unavailable — reset so the next request retries.
+			self::release_lock();
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( '[GoDAM] CPT cleanup: Action Scheduler unavailable. Migration will be retried on next qualifying request.' );
+			return;
+		}
+
 		// Mark as in-progress so maybe_run() does not re-trigger on the next request.
 		update_option( self::OPTION_KEY, 'processing', false );
+
+		$action_id = as_enqueue_async_action( self::AS_HOOK, array(), self::AS_GROUP );
 		self::release_lock();
 
-		if ( function_exists( 'as_enqueue_async_action' ) ) {
-			as_enqueue_async_action( self::AS_HOOK, array(), self::AS_GROUP );
+		if ( ! $action_id ) {
+			// Enqueue failed — reset so migration can be retried.
+			delete_option( self::OPTION_KEY );
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( '[GoDAM] CPT cleanup: failed to queue first batch. Migration state reset for retry.' );
+			return;
 		}
 
 		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log

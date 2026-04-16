@@ -97,7 +97,10 @@ class Video_Migration extends Base {
 		$processed_count = isset( $current_status['done'] ) ? (int) $current_status['done'] : 0;
 		$total_count     = isset( $current_status['total'] ) ? (int) $current_status['total'] : 0;
 
-		// Unschedule pending actions scoped to the migration type.
+		// Unschedule all pending discovery and batch jobs. Core and Vimeo
+		// migrations share these two AS hooks (distinguished only by arguments),
+		// so aborting one type also cancels any concurrently queued jobs for the
+		// other. In practice only one migration runs at a time, so this is safe.
 		if ( function_exists( 'as_unschedule_all_actions' ) ) {
 			as_unschedule_all_actions( 'godam_process_full_video_migration' );
 			as_unschedule_all_actions( 'godam_migrate_post_batch_video_blocks' );

@@ -105,10 +105,6 @@ class Dynamic_Gallery extends Base {
 							'type'    => 'boolean',
 							'default' => true,
 						),
-						'open_to_new_page'  => array(
-							'type'    => 'boolean',
-							'default' => false,
-						),
 						'gallery_variant'   => array(
 							'type'    => 'string',
 							'default' => '',
@@ -148,7 +144,6 @@ class Dynamic_Gallery extends Base {
 			'custom_date_start' => $request->get_param( 'custom_date_start' ),
 			'custom_date_end'   => $request->get_param( 'custom_date_end' ),
 			'engagements'       => $request->get_param( 'engagements' ),
-			'open_to_new_page'  => $request->get_param( 'open_to_new_page' ),
 			'gallery_variant'   => $request->get_param( 'gallery_variant' ),
 			'view_ratio'        => $request->get_param( 'view_ratio' ),
 		);
@@ -308,8 +303,7 @@ class Dynamic_Gallery extends Base {
 					data-date-range="' . esc_attr( $atts['date_range'] ?? '' ) . '"
 					data-custom-date-start="' . esc_attr( $atts['custom_date_start'] ?? '' ) . '"
 					data-custom-date-end="' . esc_attr( $atts['custom_date_end'] ?? '' ) . '"
-					data-engagements="' . ( $atts['engagements'] ? '1' : '0' ) . '"
-					data-open-to-new-page="' . ( $atts['open_to_new_page'] ? '1' : '0' ) . '">';
+data-engagements="' . ( $atts['engagements'] ? '1' : '0' ) . '">';
 			}
 	
 			do_action( 'rtgodam_dynamic_gallery_before_output', $query, $atts );
@@ -361,19 +355,6 @@ class Dynamic_Gallery extends Base {
 				}
 
 				$video_url = add_query_arg( $query_args, $cpt_base_url );
-
-				if ( isset( $atts['open_to_new_page'] ) && $atts['open_to_new_page'] ) {
-					$video_url = '';
-
-					if ( $item_engagements_enabled ) {
-						$video_url = add_query_arg(
-							array(
-								'engagements' => 'show',
-							),
-							$video_url
-						);
-					}
-				}
 
 				if ( $is_gallery_v2 ) {
 					echo '<div class="godam-gallery-v2__query-item godam-gallery-v2__query-item--ratio-' . esc_attr( $ratio_class ) . '">';

@@ -88,17 +88,12 @@ class GoDAM_Video_Gallery {
 				'align'             => '',
 				'engagements'       => true,
 				'css'               => '',
-				'open_to_new_page'  => false,
 			)
 		);
 
 		$atts                     = shortcode_atts( $default_atts, $atts, 'godam_video_gallery' );
 		$video_post_settings      = get_option( 'rtgodam_video_post_settings', array() );
 		$godam_allow_single_video = isset( $video_post_settings['allow_single'] ) ? $video_post_settings['allow_single'] : false;
-
-		if ( ! $godam_allow_single_video ) {
-			$atts['open_to_new_page'] = false;
-		}
 
 		// Add filter for processed attributes.
 		$atts = apply_filters( 'rtgodam_gallery_attributes', $atts );
@@ -285,7 +280,7 @@ class GoDAM_Video_Gallery {
 				data-custom-date-start="' . esc_attr( $atts['custom_date_start'] ) . '"
 				data-custom-date-end="' . esc_attr( $atts['custom_date_end'] ) . '"
 				data-engagements="' . esc_attr( $atts['engagements'] ) . '"
-				data-open-to-new-page="' . esc_attr( $atts['open_to_new_page'] ) . '"
+
 			>';
 			foreach ( $query->posts as $video ) {
 				// Add action before each video item.
@@ -345,19 +340,6 @@ class GoDAM_Video_Gallery {
 
 				$video_url = add_query_arg( $query_args, $cpt_base_url );
 
-				if ( isset( $atts['open_to_new_page'] ) && $atts['open_to_new_page'] ) {
-					$video_url = '';
-
-					if ( $item_engagements_enabled ) {
-						$video_url = add_query_arg(
-							array(
-								'engagements' => 'show',
-							),
-							$video_url
-						);
-					}
-				}
-
 				echo '<div class="godam-video-item">';
 				echo '<div class="godam-video-thumbnail" data-gallery-item-engagements="' . esc_attr( $item_engagements_enabled ? 'true' : 'false' ) . '" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $video_url ) . '">';
 				echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
@@ -389,7 +371,6 @@ class GoDAM_Video_Gallery {
 						data-order="' . esc_attr( $atts['order'] ) . '"
 						data-total="' . esc_attr( $total_videos ) . '"
 						data-engagements="' . esc_attr( $atts['engagements'] ) . '"
-						data-open-to-new-page="' . esc_attr( $atts['open_to_new_page'] ) . '"
 					>' . esc_html__( 'Load More', 'godam' ) . '</button>';
 				}
 				echo '<div class="godam-spinner-container"><div class="godam-spinner"></div></div>';
