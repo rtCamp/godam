@@ -50,10 +50,6 @@ class WC_Featured_Video_Gallery {
 		add_action( 'save_post_product', array( $this, 'save_product_gallery_with_videos' ), 99 );
 		add_action( 'add_meta_boxes', array( $this, 'replace_product_gallery_metabox' ), 99 );
 
-		// Hooks to handle AJAX Calls for handing videos in fronted.
-		add_action( 'wp_ajax_send_empty_alts', array( $this, 'handle_send_empty_alts' ) );
-		add_action( 'wp_ajax_nopriv_send_empty_alts', array( $this, 'handle_send_empty_alts' ) );
-
 		// Enqueue GoDAM Player.
 		add_action(
 			'wp_enqueue_scripts',
@@ -67,7 +63,7 @@ class WC_Featured_Video_Gallery {
 			}
 		);
 
-		// Add videos on fronted.
+		// Add videos on frontend.
 		add_filter( 'woocommerce_single_product_image_thumbnail_html', array( $this, 'filter_single_product_image_html' ), 10, 2 );
 	}
 
@@ -166,7 +162,7 @@ class WC_Featured_Video_Gallery {
 			wp_send_json_error( __( 'Invalid attachment.', 'godam' ) );
 		}
 
-		$mime_type = get_post_mime_type( $attachment_id );
+		$mime_type = (string) get_post_mime_type( $attachment_id );
 		$is_video  = strpos( $mime_type, 'video/' ) === 0;
 
 		$html = apply_filters(
@@ -446,7 +442,7 @@ class WC_Featured_Video_Gallery {
 				esc_url( $full_src ),
 				$shortcode_html,
 				esc_attr( $attachment_id ),
-				$video_url
+				esc_attr( esc_url( $video_url ) )
 			);
 		}
 

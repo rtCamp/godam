@@ -255,8 +255,6 @@ jQuery( function( $ ) {
 		}
 		gallery._godam_patched = true;
 
-		const original = gallery.getGalleryItems;
-
 		gallery.getGalleryItems = function() {
 			const items = [];
 
@@ -285,12 +283,15 @@ jQuery( function( $ ) {
 
 				const $img = $el.find( 'img' );
 
+				const width = parseInt( $img.attr( 'data-large_image_width' ), 10 );
+				const height = parseInt( $img.attr( 'data-large_image_height' ), 10 );
+
 				// ✅ IMAGE
 				if ( $img.length ) {
 					items.push( {
 						src: $img.attr( 'data-large_image' ),
-						w: $img.attr( 'data-large_image_width' ),
-						h: $img.attr( 'data-large_image_height' ),
+						w: Number.isFinite( width ) ? width : 0,
+						h: Number.isFinite( height ) ? height : 0,
 						title: $img.attr( 'title' ),
 					} );
 				}

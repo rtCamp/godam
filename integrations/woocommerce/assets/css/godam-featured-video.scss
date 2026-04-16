@@ -50,15 +50,15 @@
 }
 
 .woocommerce.woocommerce div.product div.images .flex-control-thumbs li img {
-	opacity: unset;
+	opacity: 1;
 }
 
 .pswp__video-wrapper{
 	position: absolute;
-	top: 5%;
-	left: 5%;
-	width: 90%;
-	height: 90%;
+	top: 8%;
+	left: 7%;
+	width: 85%;
+	height: 85%;
 
 	iframe {
 		width: 100%;
