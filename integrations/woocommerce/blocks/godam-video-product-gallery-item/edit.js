@@ -43,15 +43,7 @@ const PlayIcon = () => (
  * @return {JSX.Element} Element to render.
  */
 export default function Edit( { attributes, setAttributes, context } ) {
-	const {
-		videoId,
-		videoThumbnail,
-		videoTitle,
-		productId,
-		productName,
-		productPrice,
-		productImage,
-	} = attributes;
+	const { videoId, productId } = attributes;
 
 	// Get context from parent block.
 	// eslint-disable-next-line no-unused-vars
@@ -70,52 +62,64 @@ export default function Edit( { attributes, setAttributes, context } ) {
 	const [ isSearching, setIsSearching ] = useState( false );
 	const productSearchInputRef = useRef( null );
 
-	// Get video details when videoId changes
-	const videoMedia = useSelect(
+	// Derive video display details from the media store (never saved to attributes).
+	const { videoThumbnail, videoTitle } = useSelect(
 		( select ) => {
-			if ( videoId > 0 ) {
-				return select( 'core' ).getMedia( videoId );
+			if ( ! videoId ) {
+				return { videoThumbnail: '', videoTitle: '' };
 			}
-			return null;
+			const media = select( 'core' ).getMedia( videoId );
+			if ( ! media ) {
+				return { videoThumbnail: '', videoTitle: '' };
+			}
+			return {
+				videoThumbnail:
+					media.meta?.rtgodam_media_video_thumbnail ||
+					media.media_details?.sizes?.thumbnail?.source_url ||
+					media.media_details?.sizes?.medium?.source_url ||
+					'',
+				videoTitle: media.title?.rendered || '',
+			};
 		},
 		[ videoId ],
 	);
 
-	// Update video attributes when media is loaded
+	// Fetch product display details dynamically (never saved to attributes).
+	const [ productData, setProductData ] = useState( { name: '', price: '', image: '' } );
+
 	useEffect( () => {
-		if ( videoMedia ) {
-			const thumbnail =
-				videoMedia?.meta?.rtgodam_media_video_thumbnail ||
-				videoMedia?.media_details?.sizes?.thumbnail?.source_url ||
-				videoMedia?.media_details?.sizes?.medium?.source_url ||
-				'';
-
-			setAttributes( {
-				videoUrl: videoMedia.source_url || '',
-				videoThumbnail: thumbnail,
-				videoTitle: videoMedia.title?.rendered || '',
-			} );
+		if ( ! productId ) {
+			setProductData( { name: '', price: '', image: '' } );
+			return;
 		}
-	}, [ videoMedia, setAttributes ] );
 
-	// Handle video selection
+		apiFetch( {
+			path: `/wc/store/v1/products/${ productId }`,
+		} )
+			.then( ( product ) => {
+				setProductData( {
+					name: product.name || '',
+					price: product.prices?.price
+						? `${ product.prices.currency_symbol || '$' }${ ( parseInt( product.prices.price, 10 ) / 100 ).toFixed( 2 ) }`
+						: '',
+					image: product.images?.[ 0 ]?.src || product.images?.[ 0 ]?.thumbnail || '',
+				} );
+			} )
+			.catch( () => {
+				setProductData( { name: '', price: '', image: '' } );
+			} );
+	}, [ productId ] );
+
+	const productName = productData.name;
+	const productPrice = productData.price;
+	const productImage = productData.image;
+
+	// Handle video selection — only persist the ID.
 	const onSelectVideo = ( media ) => {
 		if ( ! media || ! media.id ) {
 			return;
 		}
-
-		const thumbnail =
-			media?.meta?.rtgodam_media_video_thumbnail ||
-			media?.image?.src ||
-			media?.icon ||
-			'';
-
-		setAttributes( {
-			videoId: media.id,
-			videoUrl: media.url || '',
-			videoThumbnail: thumbnail,
-			videoTitle: media.title || '',
-		} );
+		setAttributes( { videoId: media.id } );
 	};
 
 	// Product search with debounce
@@ -172,20 +176,9 @@ export default function Edit( { attributes, setAttributes, context } ) {
 		return () => clearTimeout( timeoutId );
 	}, [ isProductModalOpen ] );
 
-	// Handle product selection
+	// Handle product selection — only persist the ID.
 	const onSelectProduct = ( product ) => {
-		setAttributes( {
-			productId: product.id,
-			productName: product.name,
-			productPrice: product.prices?.price
-				? `${ product.prices.currency_symbol || '$' }${ ( parseInt( product.prices.price, 10 ) / 100 ).toFixed( 2 ) }`
-				: product.price || '',
-			productImage:
-				product.images?.[ 0 ]?.src ||
-				product.images?.[ 0 ]?.thumbnail ||
-				product.thumbnail ||
-				'',
-		} );
+		setAttributes( { productId: product.id } );
 		setIsProductModalOpen( false );
 		setProductSearchQuery( '' );
 		setSearchResults( [] );
@@ -193,12 +186,7 @@ export default function Edit( { attributes, setAttributes, context } ) {
 
 	// Clear product
 	const onClearProduct = () => {
-		setAttributes( {
-			productId: 0,
-			productName: '',
-			productPrice: '',
-			productImage: '',
-		} );
+		setAttributes( { productId: 0 } );
 	};
 
 	const blockProps = useBlockProps( {
