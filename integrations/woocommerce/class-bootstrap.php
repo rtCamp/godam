@@ -156,8 +156,6 @@ class Bootstrap {
 
 		// Initialize the Utility Helper class.
 		$this->utility_instance = WC_Utility::get_instance();
-		require_once RTGODAM_WC_MODULE_PATH . 'classes/class-wc-reel-pops-metabox.php';
-		require_once RTGODAM_WC_MODULE_PATH . 'classes/shortcodes/class-godam-reel-pops.php';
 	}
 
 	/**
@@ -200,7 +198,6 @@ class Bootstrap {
 
 		$disallowed_blocks = array(
 			'godam/video-product-gallery',
-			'godam/reel-pops',
 		);
 
 		if ( ! is_array( $allowed_block_types ) || empty( $allowed_block_types ) ) {
@@ -222,11 +219,6 @@ class Bootstrap {
 	 * Initialize WooCommerce integration classes.
 	 */
 	public function init_woocommerce_integration() {
-		// Register GoDAM Reel Pops block from built assets if available.
-		$reel_pops_block_path = RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'blocks/godam-reel-pops/';
-		if ( file_exists( $reel_pops_block_path . 'block.json' ) ) {
-			register_block_type( $reel_pops_block_path );
-		}
 
 		// Register GoDAM Video Product Gallery block from built assets if available.
 		$video_product_gallery_path = RTGODAM_WC_MODULE_ASSETS_BUILD_PATH . 'blocks/godam-video-product-gallery/';
@@ -246,13 +238,11 @@ class Bootstrap {
 
 		// Initialize WooCommerce-dependent shortcodes.
 		\RTGODAM\Inc\Shortcodes\GoDAM_Product_Gallery::get_instance();
-		\RTGODAM\Inc\WooCommerce\GoDAM_Reel_Pops::get_instance();
 
 		// Initialize WooCommerce classes.
 		\RTGODAM\Inc\WooCommerce\WC_Product_Video_Gallery::get_instance();
 		\RTGODAM\Inc\WooCommerce\WC_Featured_Video_Gallery::get_instance();
 		\RTGODAM\Inc\WooCommerce\WC_Woocommerce_Layer::get_instance();
-		\RTGODAM\Inc\WooCommerce\WC_Reel_Pops_Metabox::get_instance();
 	}
 
 	/**
