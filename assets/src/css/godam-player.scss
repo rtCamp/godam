@@ -557,6 +557,10 @@
 }
 
 /* Mini cart - Woo Layer */
+.godam-mini-cart-hidden {
+	display: none;
+}
+
 .godam-video--cart-basket {
 	position: absolute;
 	inset: 0;
@@ -571,6 +575,10 @@
 		border-radius: 50%;
 	}
 
+	.wc-block-mini-cart__button {
+		font-size: clamp(16px, 1rem + ((1vw - 3.2px) * 0.227), 18px);
+	}
+
 	@media (max-width: 640px) {
 		transform: translateX(6px);
 		transform-origin: center;
@@ -581,8 +589,47 @@
 		transform-origin: center;
 	}
 }
-.product-hotspot-box.tooltip-top {
-	display: flex !important;
+
+/* Fullscreen -- Mini Cart */
+.video-js.vjs-fullscreen .godam-video--cart-basket {
+	.wc-block-mini-cart__button {
+		height: 60px;
+		font-size: inherit;
+	}
+
+	.wc-block-mini-cart__icon {
+		height: 40px;
+    	width: 50px;
+	}
+
+	.wc-block-mini-cart__badge {
+		font-size: 16px;
+	}
+}
+
+/* Full screen Message */
+.godam-fs-return-msg {
+	position: fixed;
+	bottom: 20px;
+	left: 50%;
+	transform: translateX(-50%);
+	background: rgba(0,0,0,0.85);
+	color: #fff;
+	padding: 12px 18px;
+	border-radius: 8px;
+	font-size: 14px;
+	z-index: 999999999;
+	text-align: center;
+
+	.godam-return-fs-btn {
+		margin-top: 8px;
+		padding: 6px 12px;
+		border: none;
+		background: #fff;
+		color: #000;
+		border-radius: 4px;
+		cursor: pointer;
+	}
 }
 
 /* Product Hotspot */
@@ -1617,6 +1664,10 @@ body.godam-share-modal-open {
 
 .vjs-seek-indicator.forward {
 	right: 20px;
+}
+
+.godam-seek-icon {
+	vertical-align: middle;
 }
 
 .vjs-seek-indicator.play-indicator,

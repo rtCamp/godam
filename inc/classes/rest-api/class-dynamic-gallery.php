@@ -320,8 +320,9 @@ class Dynamic_Gallery extends Base {
 
 				// Build the query arguments for the video embed page.
 				$query_args = array(
-					'godam_page' => 'video-embed',
-					'id'         => $video_id,
+					'godam_page'    => 'video-embed',
+					'id'            => $video_id,
+					'godam_gallery' => '1',
 				);
 
 				// Add the engagements query argument if it is enabled.

@@ -8,6 +8,34 @@ jQuery( document ).ready( function( $ ) {
 	const { __, sprintf } = wp.i18n;
 
 	const videoList = $( '.godam-product-video-gallery-list' );
+	const maxVideos = parseInt( RTGodamVideoGallery?.maxVideos, 10 ) || 5;
+	const $addButton = $( '.wc-godam-add-video-button' );
+
+	// Limit-reached notice element (inserted once, toggled as needed).
+	const $limitNotice = $( '<p class="godam-video-limit-notice" style="background:#FFF8E5;border-left:4px solid #DBA617;padding:8px 12px;margin:8px 0;color:#6E4E00;font-size:13px;"></p>' );
+	videoList.before( $limitNotice.hide() );
+
+	/**
+	 * Update the "Add Product Reels" button state based on current video count.
+	 */
+	function updateAddButtonState() {
+		const count = videoList.children( 'li' ).not( '.godam-dummy-card' ).length;
+
+		if ( count >= maxVideos ) {
+			$addButton.prop( 'disabled', true );
+			$limitNotice.text( sprintf(
+				/* translators: %d: maximum number of videos allowed */
+				__( 'Maximum limit of %d product reels has been reached.', 'godam' ),
+				maxVideos,
+			) ).show();
+		} else {
+			$addButton.prop( 'disabled', false );
+			$limitNotice.hide();
+		}
+	}
+
+	// Run once on page load.
+	updateAddButtonState();
 
 	// Prevent MediaElement from auto-initializing on our gallery items
 	// This fixes the "Cannot read properties of null (reading 'length')" error
@@ -22,36 +50,7 @@ jQuery( document ).ready( function( $ ) {
 		};
 	}
 
-	const tagIconSVG = `<img src="${ RTGodamVideoGallery.Ptag }" width="14" height="14" alt="Tag Icon" style="vertical-align:middle; margin-right:4px;" />`;
-
 	let mediaFrame = null; // Store frame instance to prevent duplicates
-
-	function updateAddProductButtonLabel( $btn, count ) {
-		if ( count > 0 ) {
-			const productText = sprintf(
-				/* translators: 1: count, 2: plural suffix (s if >1) */
-				__( '%1$d product%2$s', 'godam' ),
-				count,
-				count > 1 ? 's' : '',
-			);
-
-			$btn.html( `${ tagIconSVG }${ productText }` );
-
-			$btn.attr(
-				'aria-label',
-				sprintf(
-					/* translators: 1: count, 2: plural suffix (s if >1) */
-					__( '%1$d product%2$s attached to this video', 'godam' ),
-					count,
-					count > 1 ? 's' : '',
-				),
-			);
-		} else {
-			const label = __( '+ Add Products', 'godam' );
-			$btn.text( label );
-			$btn.attr( 'aria-label', label );
-		}
-	}
 
 	$( '.wc-godam-add-video-button' ).on( 'click', function( e ) {
 		e.preventDefault();
@@ -71,27 +70,30 @@ jQuery( document ).ready( function( $ ) {
 				return;
 			}
 
+			let limitReached = false;
+			let queued = 0; // Track how many we've already accepted in this batch.
+			const baseCount = videoList.children( 'li' ).not( '.godam-dummy-card' ).length;
+
 			mediaFrame
 				.state()
 				.get( 'selection' )
 				.each( function( attachment ) {
-					const data = attachment.toJSON();
-
-					$( '.godam-product-admin-video-spinner-overlay' ).show();
-
-					// Skip duplicates.
-					if ( videoList.find( `input[data-vid-id="${ data.id }"]` ).length ) {
-						$( '.godam-product-admin-video-spinner-overlay' ).hide();
+					// Enforce video limit using base count + already queued.
+					if ( baseCount + queued >= maxVideos ) {
+						limitReached = true;
 						return;
 					}
 
-					const $addBtn = $( '<button>', {
-						type: 'button',
-						class: 'godam-add-product-button components-button godam-button is-compact is-tertiary wc-godam-product-admin',
-						'aria-label': __( 'Associate products with this video', 'godam' ),
-						text: __( '+ Add Products', 'godam' ),
-						'data-linked-products': '[]',
-					} );
+					const data = attachment.toJSON();
+
+					// Skip duplicates (don't count them toward the queue).
+					if ( videoList.find( `input[data-vid-id="${ data.id }"]` ).length ) {
+						return;
+					}
+
+					queued++;
+
+					$( '.godam-product-admin-video-spinner-overlay' ).show();
 
 					wp.apiFetch( {
 						path: `/wp/v2/media/${ data.id }`,
@@ -101,13 +103,17 @@ jQuery( document ).ready( function( $ ) {
 							const videoTitle = media.title?.rendered || '';
 
 							const listItem = $( '<li>' ).append(
-								`<input type="hidden"
-									name="rtgodam_product_video_gallery_ids[]"
-									value="${ data.id }"
-									data-vid-id="${ data.id }" />`,
-								`<input type="hidden"
-									name="rtgodam_product_video_gallery_urls[]"
-									value="${ data.url }" />`,
+								$( '<input>', {
+									type: 'hidden',
+									name: 'rtgodam_product_video_gallery_ids[]',
+									value: data.id,
+									'data-vid-id': data.id,
+								} ),
+								$( '<input>', {
+									type: 'hidden',
+									name: 'rtgodam_product_video_gallery_urls[]',
+									value: data.url,
+								} ),
 							);
 
 							const $thumbWrapper = $( '<div>', {
@@ -116,11 +122,19 @@ jQuery( document ).ready( function( $ ) {
 
 							if ( thumbnail ) {
 								$thumbWrapper.append(
-									`<img src="${ thumbnail }" alt="${ __( 'Video thumbnail', 'godam' ) }" class="godam-video-thumbnail" />`,
+									$( '<img>', {
+										src: thumbnail,
+										alt: __( 'Video thumbnail', 'godam' ),
+										class: 'godam-video-thumbnail',
+									} ),
 								);
 							} else {
 								$thumbWrapper.append(
-									`<span style="color:#aaa; margin-bottom: 10px; display:block; aria-label="${ __( 'No thumbnail available', 'godam' ) }"">${ __( 'No thumbnail available', 'godam' ) }</span>`,
+									$( '<span>', {
+										text: __( 'No thumbnail available', 'godam' ),
+										'aria-label': __( 'No thumbnail available', 'godam' ),
+										css: { color: '#aaa', marginBottom: '10px', display: 'block' },
+									} ),
 								);
 							}
 
@@ -135,38 +149,22 @@ jQuery( document ).ready( function( $ ) {
 									type: 'button',
 									class: 'godam-remove-video-button components-button godam-button is-compact is-secondary has-icon wc-godam-product-admin',
 									'aria-label': __( 'Remove video from gallery', 'godam' ),
-									html: `
-									<img src="${ RTGodamVideoGallery.DeleteIcon }" alt="${ __( 'Delete Bin Icon', 'godam' ) }" width="14" height="14" style="vertical-align:middle;" />
-								`,
-								} ),
+								} ).append(
+									$( '<img>', {
+										src: RTGodamVideoGallery.DeleteIcon,
+										alt: __( 'Delete Bin Icon', 'godam' ),
+										width: 14,
+										height: 14,
+										css: { verticalAlign: 'middle' },
+									} ),
+								),
 							);
 
-							listItem.append( $thumbWrapper ).append( $videoTitle ).append( $addBtn );
+							listItem.append( $thumbWrapper ).append( $videoTitle );
 							videoList.append( listItem );
 
-							wp.apiFetch( {
-								path: `${ RTGodamVideoGallery.namespace }${ RTGodamVideoGallery.videoCountEP }/${ data.id }`,
-							} )
-								.then( ( res ) => {
-									updateAddProductButtonLabel( $addBtn, res.count );
-
-									if ( Array.isArray( res.linked ) ) {
-										$addBtn.attr(
-											'data-linked-products',
-											JSON.stringify( res.linked ),
-										);
-									}
-								} )
-								.catch( () => {
-									// If endpoint fails just leave the default label & an empty list.
-									// eslint-disable-next-line no-console
-									console.warn( 'Could not fetch count of product for ID:' + data.id );
-									$( '.godam-product-admin-video-spinner-overlay' ).hide();
-								} )
-								.finally( () => {
-									// Hide spinner once linked product fetch is done.
-									$( '.godam-product-admin-video-spinner-overlay' ).hide();
-								} );
+							updateAddButtonState();
+							$( '.godam-product-admin-video-spinner-overlay' ).hide();
 						} )
 						.catch( () => {
 							// eslint-disable-next-line no-console
@@ -174,6 +172,31 @@ jQuery( document ).ready( function( $ ) {
 							$( '.godam-product-admin-video-spinner-overlay' ).hide();
 						} );
 				} );
+
+			if ( limitReached ) {
+				// Remove any existing limit notice before showing a new one.
+				$( '.godam-reels-limit-notice' ).remove();
+
+				const $notice = $( '<div>', {
+					class: 'notice notice-warning inline godam-reels-limit-notice',
+					html: '<p>' +
+						sprintf(
+							/* translators: %d: maximum number of videos allowed */
+							__( 'Product Reels are limited to %d videos. Some selections were skipped.', 'godam' ),
+							maxVideos,
+						) +
+						'</p>',
+				} );
+
+				$( '#rtgodam-product-video-gallery' ).prepend( $notice );
+
+				// Auto-dismiss after 8 seconds.
+				setTimeout( function() {
+					$notice.fadeOut( 300, function() {
+						$notice.remove();
+					} );
+				}, 8000 );
+			}
 		} );
 
 		window._godamWCActiveMediaSource = 'product-reels';
@@ -183,6 +206,7 @@ jQuery( document ).ready( function( $ ) {
 	videoList.on( 'click', '.godam-remove-video-button', function( e ) {
 		e.preventDefault();
 		$( this ).closest( 'li' ).remove();
+		updateAddButtonState();
 	} );
 
 	/**

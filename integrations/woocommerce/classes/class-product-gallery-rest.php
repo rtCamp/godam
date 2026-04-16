@@ -67,25 +67,6 @@ class Product_Gallery_Rest extends Base {
 					),
 				),
 			),
-			array(
-				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/videos',
-				'args'      => array(
-					array(
-						'methods'             => \WP_REST_Server::READABLE,
-						'callback'            => array( $this, 'get_videos_by_products' ),
-						'permission_callback' => array( $this, 'check_permission' ),
-						'args'                => array(
-							'product_ids' => array(
-								'description'       => __( 'Comma-separated product IDs.', 'godam' ),
-								'type'              => 'string',
-								'sanitize_callback' => 'sanitize_text_field',
-								'required'          => true,
-							),
-						),
-					),
-				),
-			),
 		);
 	}
 
@@ -231,72 +212,5 @@ class Product_Gallery_Rest extends Base {
 		}
 
 		return $result;
-	}
-
-	/**
-	 * Get videos by product IDs.
-	 *
-	 * @param \WP_REST_Request $request Request object.
-	 * @return \WP_REST_Response
-	 */
-	public function get_videos_by_products( $request ) {
-		$product_ids_string = $request->get_param( 'product_ids' );
-		$product_ids        = array_filter( array_map( 'absint', explode( ',', $product_ids_string ) ) );
-
-		if ( empty( $product_ids ) ) {
-			return rest_ensure_response( array() );
-		}
-
-		$args = array(
-			'post_type'      => 'attachment',
-			'post_mime_type' => 'video',
-			'post_status'    => 'inherit',
-			'posts_per_page' => -1,
-			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-				array(
-					'key'     => '_video_parent_product_id',
-					'value'   => $product_ids,
-					'compare' => 'IN',
-				),
-			),
-		);
-
-		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
-		$video_posts = get_posts( $args );
-
-		$videos = array();
-		foreach ( $video_posts as $video ) {
-			$video_id             = $video->ID;
-			$custom_thumbnail     = get_post_meta( $video_id, 'rtgodam_media_video_thumbnail', true );
-			$fallback_thumb       = RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png';
-			$thumbnail            = $custom_thumbnail ?: $fallback_thumb;
-			$duration             = get_post_meta( $video_id, 'rtgodam_media_video_duration', true );
-			$attached_product_ids = get_post_meta( $video_id, '_video_parent_product_id', false );
-
-			// Format duration if available.
-			$duration_formatted = '';
-			if ( ! empty( $duration ) ) {
-				$duration_seconds   = intval( $duration );
-				$minutes            = floor( $duration_seconds / 60 );
-				$seconds            = $duration_seconds % 60;
-				$duration_formatted = sprintf( '%d:%02d', $minutes, $seconds );
-			}
-
-			$title_with_duration = $video->post_title;
-			if ( ! empty( $duration_formatted ) ) {
-				$title_with_duration .= ' (' . $duration_formatted . ')';
-			}
-
-			$videos[] = array(
-				'id'                => $video_id,
-				'title'             => $video->post_title,
-				'titleWithDuration' => $title_with_duration,
-				'thumbnail'         => $thumbnail,
-				'duration'          => $duration_formatted,
-				'productIds'        => array_map( 'intval', $attached_product_ids ),
-			);
-		}
-
-		return rest_ensure_response( $videos );
 	}
 }

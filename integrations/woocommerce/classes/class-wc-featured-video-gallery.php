@@ -50,10 +50,6 @@ class WC_Featured_Video_Gallery {
 		add_action( 'save_post_product', array( $this, 'save_product_gallery_with_videos' ), 99 );
 		add_action( 'add_meta_boxes', array( $this, 'replace_product_gallery_metabox' ), 99 );
 
-		// Hooks to handle AJAX Calls for handing videos in fronted.
-		add_action( 'wp_ajax_send_empty_alts', array( $this, 'handle_send_empty_alts' ) );
-		add_action( 'wp_ajax_nopriv_send_empty_alts', array( $this, 'handle_send_empty_alts' ) );
-
 		// Enqueue GoDAM Player.
 		add_action(
 			'wp_enqueue_scripts',
@@ -67,8 +63,8 @@ class WC_Featured_Video_Gallery {
 			}
 		);
 
-		// Render markup.
-		add_action( 'woocommerce_after_single_product', array( $this, 'render_video_modal_markup' ) );
+		// Add videos on frontend.
+		add_filter( 'woocommerce_single_product_image_thumbnail_html', array( $this, 'filter_single_product_image_html' ), 10, 2 );
 	}
 
 	/**
@@ -166,7 +162,7 @@ class WC_Featured_Video_Gallery {
 			wp_send_json_error( __( 'Invalid attachment.', 'godam' ) );
 		}
 
-		$mime_type = get_post_mime_type( $attachment_id );
+		$mime_type = (string) get_post_mime_type( $attachment_id );
 		$is_video  = strpos( $mime_type, 'video/' ) === 0;
 
 		$html = apply_filters(
@@ -345,90 +341,111 @@ class WC_Featured_Video_Gallery {
 	}
 
 	/**
-	 * AJAX handler to return missing alt data and video IDs.
+	 * Filters the WooCommerce single product gallery HTML to support video attachments.
 	 *
-	 * Used to analyze gallery entries that may have incomplete metadata.
-	 * Accepts a list of alt-tag hints and attempts to resolve
-	 * them to video IDs and their corresponding data.
+	 * This function intercepts the default gallery item HTML and replaces it with a
+	 * custom structure when the attachment is a video. It ensures that video items
+	 * are rendered in a format compatible with WooCommerce's gallery (Flexslider),
+	 * while embedding the GoDAM video player via shortcode.
 	 *
-	 * @return void Outputs JSON with video IDs, thumbnails, and URLs.
+	 * Key responsibilities:
+	 * - Detects whether the given attachment is a video based on MIME type.
+	 * - Generates a custom video embed URL for iframe/lightbox usage.
+	 * - Retrieves and prepares a thumbnail (or fallback image) for gallery display.
+	 * - Extracts `data-thumb-alt` from existing HTML when available, with fallbacks
+	 *   to attachment alt text or title.
+	 * - Prefixes alt text with `video|{attachment_id}|` to identify video thumbnails
+	 *   in frontend scripts.
+	 * - Mimics WooCommerce image attributes (`data-thumb`, `data-thumb-srcset`, etc.)
+	 *   to maintain compatibility with gallery behavior.
+	 * - Injects the `[godam_video]` shortcode for inline video playback.
+	 * - Adds custom data attributes (`data-video-id`, `data-video-url`) for JS handling.
+	 *
+	 * @param string $html          Original HTML markup for the gallery item.
+	 * @param int    $attachment_id Attachment ID of the media item.
+	 *
+	 * @return string Modified HTML for video attachments, or original HTML for images.
 	 */
-	public function handle_send_empty_alts() {
+	public function filter_single_product_image_html( $html, $attachment_id ) {
 
-		check_ajax_referer( 'godam_featured_video_gallery_nonce', 'nonce' );
+		$mime_type = get_post_mime_type( $attachment_id );
+		$is_video  = strpos( $mime_type, 'video/' ) === 0;
 
-		$alts = isset( $_POST['alts'] ) && is_array( $_POST['alts'] )
-		? array_map( 'sanitize_text_field', wp_unslash( $_POST['alts'] ) )
-		: array();
+		if ( $is_video ) {
 
-		// Get current product ID.
-		if ( ! isset( $_POST['product_id'] ) ) {
-			wp_send_json_error( array( 'message' => __( 'Product ID missing.', 'godam' ) ) );
-		}
+			// Url.
+			$query_args   = array(
+				'godam_page'    => 'video-embed',
+				'id'            => $attachment_id,
+				'godam_context' => 'godam-video-product-gallery',
+				'bg'            => 'f2f2f2', // dark background of video player letter/pillar boxing for better visibility in lightbox, can be customized or made dynamic as needed.
+			);
+			$cpt_base_url = home_url( '/' );
+			$video_url    = add_query_arg( $query_args, $cpt_base_url );
 
-		$product_id = absint( $_POST['product_id'] );
+			// Thumbnail.
+			$thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
+			$thumb_src = $thumbnail ?: self::FALLBACK_THUMBNAIL;
 
-		$video_ids        = array();
-		$video_thumbnails = array();
+			// Alt.
+			// Try extracting from existing HTML.
+			preg_match( '/data-thumb-alt="([^"]*)"/', $html, $matches );
+			$thumb_alt = $matches[1] ?? '';
 
-		// Get gallery images for current product.
-		$gallery     = get_post_meta( $product_id, '_product_image_gallery', true );
-		$gallery_ids = $gallery ? explode( ',', $gallery ) : array();
-
-		/**
-		 * Parse each alt label to extract its trailing numeric index, convert it to the
-		 * zero-based gallery position (index - 2), then:
-		 * - Append the corresponding gallery attachment ID to $video_ids (when it exists).
-		 * - Append the resolved video thumbnail URL to $video_thumbnails, falling back to
-		 *   self::FALLBACK_THUMBNAIL when no custom thumbnail is set.
-		 * Sanitizes values via absint() and esc_url().
-		 */
-		foreach ( $alts as $alt ) {
-			// Extract numeric index from alt.
-			if ( preg_match( '/\d+$/', $alt, $matches ) ) {
-				$index = intval( $matches[0] );
-
-				// Subtract 2 to match array index.
-				$zero_indexed = $index - 2;
-
-				if ( isset( $gallery_ids[ $zero_indexed ] ) ) {
-					$video_id    = absint( $gallery_ids[ $zero_indexed ] );
-					$video_ids[] = $video_id;
-				}
-
-				$video_thumbnails[] = esc_url( get_post_meta( $video_id, 'rtgodam_media_video_thumbnail', true ) ?: self::FALLBACK_THUMBNAIL );
+			// Fallback if missing.
+			if ( empty( $thumb_alt ) ) {
+				$thumb_alt = get_post_meta( $attachment_id, '_wp_attachment_image_alt', true );
 			}
+
+			if ( empty( $thumb_alt ) ) {
+				$thumb_alt = get_the_title( $attachment_id );
+			}
+
+			$thumb_alt = 'video|' . $attachment_id . '|' . $thumb_alt;
+
+			// Srcset + sizes (fake but required for Woo slider).
+			$srcset = sprintf( '%1$s 100w, %1$s 150w, %1$s 300w', esc_url( $thumb_src ) );
+			$sizes  = '(max-width: 100px) 100vw, 100px';
+
+			// Full image (Woo expects this even if fake).
+			$full_src = esc_url( $thumb_src );
+
+			// Shortcode.
+			$shortcode_html = do_shortcode(
+				"[godam_video id='{$attachment_id}' muted='true' loop='true' autoplay='true' controls='false' aspect_ratio='responsive' godam_context='godam-featured-video-gallery']"
+			);
+
+			return sprintf(
+				'<div 
+					data-thumb="%1$s"
+					data-thumb-alt="%2$s"
+					data-thumb-srcset="%3$s"
+					data-thumb-sizes="%4$s"
+					data-video-id="%7$s"
+					data-video-url="%8$s"
+					class="woocommerce-product-gallery__image godam-product-gallery-video">
+
+					<a href="%5$s">
+
+						<!-- actual video -->
+						<div class="godam-featured-video-wrapper">
+							%6$s
+						</div>
+
+					</a>
+
+				</div>',
+				esc_url( $thumb_src ),
+				esc_attr( $thumb_alt ),
+				esc_attr( $srcset ),
+				esc_attr( $sizes ),
+				esc_url( $full_src ),
+				$shortcode_html,
+				esc_attr( $attachment_id ),
+				esc_attr( esc_url( $video_url ) )
+			);
 		}
 
-
-		wp_send_json_success(
-			array(
-				'message'     => 'Fetched video IDs successfully',
-				'videoIds'    => $video_ids,
-				'videoThumbs' => $video_thumbnails,
-			)
-		);
-	}
-
-	/**
-	 * Renders the featured video modal markup on single product pages.
-	 *
-	 * This method checks whether the current page is a WooCommerce single
-	 * product page using `is_product()`. If true, it delegates the modal
-	 * markup generation to the markup instance.
-	 *
-	 * The modal is not rendered on non-product pages.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return void Outputs the featured video modal HTML when applicable.
-	 */
-	public function render_video_modal_markup() {
-
-		if ( ! is_product() ) {
-			return;
-		}
-
-		$this->markup_instance->generate_featured_video_gallery_video_modal_markup();
+		return $html;
 	}
 }
