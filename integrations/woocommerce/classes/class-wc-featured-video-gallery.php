@@ -23,13 +23,6 @@ class WC_Featured_Video_Gallery {
 
 	use Singleton;
 
-	/**
-	 * Holds the markup instance.
-	 *
-	 * @var WC_Product_Gallery_Video_Markup
-	 */
-	private $markup_instance;
-
 	const FALLBACK_THUMBNAIL = RTGODAM_URL . 'assets/src/images/cropped-video-thumbnail-default.png';
 
 	/**
@@ -37,9 +30,6 @@ class WC_Featured_Video_Gallery {
 	 * Initialize class by hooking into WordPress and WooCommerce actions/filters.
 	 */
 	public function __construct() {
-
-		// Initialize Video Markup class.
-		$this->markup_instance = WC_Product_Gallery_Video_Markup::get_instance();
 
 		// Enqueue Featured Video dedicated scripts.
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );

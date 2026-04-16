@@ -49,13 +49,6 @@ class Blocks {
 			'window.RTGoDAMProductGalleryBlockSettings = { isWooActive: ' . ( is_plugin_active( 'woocommerce/woocommerce.php' ) ? 'true' : 'false' ) . ' };',
 			'before'
 		);
-
-		wp_enqueue_style(
-			'godam-product-editor-gallery-style',
-			RTGODAM_URL . 'assets/build/integrations/woocommerce/css/godam-product-editor-gallery.css',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/integrations/woocommerce/css/godam-product-editor-gallery.css' )
-		);
 	}
 
 	/**

@@ -139,19 +139,12 @@ class Bootstrap {
 			require_once RTGODAM_WC_MODULE_PATH . 'classes/class-product-gallery-rest.php';
 		}
 
-		// Load GoDAM Product Gallery shortcode (WooCommerce-dependent).
-		if ( ! class_exists( 'RTGODAM\\Inc\\Shortcodes\\GoDAM_Product_Gallery' ) ) {
-			require_once RTGODAM_WC_MODULE_PATH . 'classes/shortcodes/class-godam-product-gallery.php';
-		}
-
 		// Load REST API class.
 		require_once RTGODAM_WC_MODULE_PATH . 'classes/class-wc.php';
 
 		// Load WooCommerce integration classes.
 		require_once RTGODAM_WC_MODULE_PATH . 'classes/class-wc-product-video-gallery.php';
 		require_once RTGODAM_WC_MODULE_PATH . 'classes/class-wc-featured-video-gallery.php';
-		require_once RTGODAM_WC_MODULE_PATH . 'classes/class-wc-woocommerce-layer.php';
-		require_once RTGODAM_WC_MODULE_PATH . 'classes/class-wc-product-gallery-video-markup.php';
 		require_once RTGODAM_WC_MODULE_PATH . 'classes/class-wc-utility.php';
 
 		// Initialize the Utility Helper class.
@@ -236,13 +229,9 @@ class Bootstrap {
 		\RTGODAM\Inc\REST_API\WC::get_instance();
 		\RTGODAM\Inc\REST_API\Product_Gallery_Rest::get_instance();
 
-		// Initialize WooCommerce-dependent shortcodes.
-		\RTGODAM\Inc\Shortcodes\GoDAM_Product_Gallery::get_instance();
-
 		// Initialize WooCommerce classes.
 		\RTGODAM\Inc\WooCommerce\WC_Product_Video_Gallery::get_instance();
 		\RTGODAM\Inc\WooCommerce\WC_Featured_Video_Gallery::get_instance();
-		\RTGODAM\Inc\WooCommerce\WC_Woocommerce_Layer::get_instance();
 	}
 
 	/**

@@ -497,8 +497,6 @@ export default class WooCommerceLayerManager {
 		const baseWidth = WooCommerceLayerManager.BASE_WIDTH;
 		const baseHeight = WooCommerceLayerManager.BASE_HEIGHT;
 
-		const miniCart = layerObj.miniCart;
-
 		// Get all unique product IDs
 		const productIds = [ ...new Set(
 			layerObj.productHotspots
@@ -520,7 +518,7 @@ export default class WooCommerceLayerManager {
 				// Create a clean hotspot object without old productDetails
 				const cleanHotspot = { ...hotspot, productDetails: null };
 
-				const hotspotDiv = this.createProductHotspotElement( cleanHotspot, miniCart, containerWidth, containerHeight, baseWidth, baseHeight );
+				const hotspotDiv = this.createProductHotspotElement( cleanHotspot, containerWidth, containerHeight, baseWidth, baseHeight );
 
 				// Store element reference by index
 				hotspotElements[ index ] = hotspotDiv;
@@ -563,7 +561,7 @@ export default class WooCommerceLayerManager {
 						// Replace placeholder box with a newly built one (ensures correct markup + handlers)
 						const oldProductBoxDiv = hotspotEl.querySelector( '.product-hotspot-box' );
 						if ( oldProductBoxDiv ) {
-							const newProductBoxDiv = this.createProductHotspotProductBox( hotspot, miniCart );
+							const newProductBoxDiv = this.createProductHotspotProductBox( hotspot );
 							oldProductBoxDiv.replaceWith( newProductBoxDiv );
 
 							// Reposition the product box
@@ -638,15 +636,14 @@ export default class WooCommerceLayerManager {
 	/**
 	 * Create Product hotspot element
 	 *
-	 * @param {Object}  hotspot         - Product Hotspot configuration object
-	 * @param {boolean} miniCart        - Minicart toggle value
-	 * @param {number}  containerWidth  - Width of the video container
-	 * @param {number}  containerHeight - Height of the video container
-	 * @param {number}  baseWidth       - Base width for calculations
-	 * @param {number}  baseHeight      - Base height for calculations
+	 * @param {Object} hotspot         - Product Hotspot configuration object
+	 * @param {number} containerWidth  - Width of the video container
+	 * @param {number} containerHeight - Height of the video container
+	 * @param {number} baseWidth       - Base width for calculations
+	 * @param {number} baseHeight      - Base height for calculations
 	 * @return {HTMLElement} Created hotspot element
 	 */
-	createProductHotspotElement( hotspot, miniCart, containerWidth, containerHeight, baseWidth, baseHeight ) {
+	createProductHotspotElement( hotspot, containerWidth, containerHeight, baseWidth, baseHeight ) {
 		const hotspotDiv = document.createElement( 'div' );
 		hotspotDiv.classList.add( 'hotspot', 'circle' );
 		hotspotDiv.style.position = 'absolute';
@@ -691,7 +688,7 @@ export default class WooCommerceLayerManager {
 		hotspotDiv.style.backgroundColor = ( hotspot.icon || hotspot.customIconUrl ) ? 'white' : ( hotspot.backgroundColor || '#0c80dfa6' );
 
 		// Create content
-		const hotspotContent = this.createProductHotspotContent( hotspot, miniCart, hotspotDiv );
+		const hotspotContent = this.createProductHotspotContent( hotspot, hotspotDiv );
 		hotspotDiv.appendChild( hotspotContent );
 
 		return hotspotDiv;
@@ -701,11 +698,10 @@ export default class WooCommerceLayerManager {
 	 * Create hotspot content
 	 *
 	 * @param {Object}      hotspot    - Product Hotspot configuration object
-	 * @param {boolean}     miniCart   - Minicart toggle value
 	 * @param {HTMLElement} hotspotDiv - Parent hotspot div element
 	 * @return {HTMLElement} Created content element
 	 */
-	createProductHotspotContent( hotspot, miniCart, hotspotDiv ) {
+	createProductHotspotContent( hotspot, hotspotDiv ) {
 		const hotspotContent = document.createElement( 'div' );
 		hotspotContent.classList.add( 'hotspot-content' );
 		hotspotContent.style.position = 'relative';
@@ -722,7 +718,7 @@ export default class WooCommerceLayerManager {
 			hotspotContent.classList.add( 'no-icon' );
 		}
 
-		const productBoxDiv = this.createProductHotspotProductBox( hotspot, miniCart );
+		const productBoxDiv = this.createProductHotspotProductBox( hotspot );
 		hotspotContent.appendChild( productBoxDiv );
 
 		return hotspotContent;
@@ -794,11 +790,10 @@ export default class WooCommerceLayerManager {
 	/**
 	 * Create Product Hotspot Product Box
 	 *
-	 * @param {Object}  hotspot  - Product Hotspot configuration object
-	 * @param {boolean} miniCart - Minicart toggle value
+	 * @param {Object} hotspot - Product Hotspot configuration object
 	 * @return {HTMLElement} Created product box element
 	 */
-	createProductHotspotProductBox( hotspot, miniCart ) {
+	createProductHotspotProductBox( hotspot ) {
 		// Product box
 		const productBoxDiv = document.createElement( 'div' );
 		productBoxDiv.classList.add( 'product-hotspot-box' );

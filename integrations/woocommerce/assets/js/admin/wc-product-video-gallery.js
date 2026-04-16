@@ -285,27 +285,5 @@ jQuery( document ).ready( function( $ ) {
 
 		listItem.append( $thumbWrapper ).append( $videoTitle ).append( $addBtn );
 		videoList.append( listItem );
-
-		// Fetch linked products count.
-		wp.apiFetch( {
-			path: `${ RTGodamVideoGallery.namespace }${ RTGodamVideoGallery.videoCountEP }/${ attachment.id }`,
-		} )
-			.then( ( res ) => {
-				updateAddProductButtonLabel( $addBtn, res.count );
-
-				if ( Array.isArray( res.linked ) ) {
-					$addBtn.attr(
-						'data-linked-products',
-						JSON.stringify( res.linked ),
-					);
-				}
-			} )
-			.catch( () => {
-				// eslint-disable-next-line no-console
-				console.warn( 'Could not fetch count of product for ID:' + attachment.id );
-			} )
-			.finally( () => {
-				$( '.godam-product-admin-video-spinner-overlay' ).hide();
-			} );
 	} );
 } );
