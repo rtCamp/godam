@@ -13,33 +13,9 @@
       "type": "number",
       "default": 0
     },
-    "videoUrl": {
-      "type": "string",
-      "default": ""
-    },
-    "videoThumbnail": {
-      "type": "string",
-      "default": ""
-    },
-    "videoTitle": {
-      "type": "string",
-      "default": ""
-    },
     "productId": {
       "type": "number",
       "default": 0
-    },
-    "productName": {
-      "type": "string",
-      "default": ""
-    },
-    "productPrice": {
-      "type": "string",
-      "default": ""
-    },
-    "productImage": {
-      "type": "string",
-      "default": ""
     }
   },
   "usesContext": [
