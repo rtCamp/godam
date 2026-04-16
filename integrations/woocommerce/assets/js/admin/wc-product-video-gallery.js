@@ -11,6 +11,10 @@ jQuery( document ).ready( function( $ ) {
 	const maxVideos = parseInt( RTGodamVideoGallery?.maxVideos, 10 ) || 5;
 	const $addButton = $( '.wc-godam-add-video-button' );
 
+	// Limit-reached notice element (inserted once, toggled as needed).
+	const $limitNotice = $( '<p class="godam-video-limit-notice" style="background:#FFF8E5;border-left:4px solid #DBA617;padding:8px 12px;margin:8px 0;color:#6E4E00;font-size:13px;"></p>' );
+	videoList.before( $limitNotice.hide() );
+
 	/**
 	 * Update the "Add Product Reels" button state based on current video count.
 	 */
@@ -19,8 +23,14 @@ jQuery( document ).ready( function( $ ) {
 
 		if ( count >= maxVideos ) {
 			$addButton.prop( 'disabled', true );
+			$limitNotice.text( sprintf(
+				/* translators: %d: maximum number of videos allowed */
+				__( 'Maximum limit of %d product reels has been reached.', 'godam' ),
+				maxVideos,
+			) ).show();
 		} else {
 			$addButton.prop( 'disabled', false );
+			$limitNotice.hide();
 		}
 	}
 
