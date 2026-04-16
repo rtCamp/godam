@@ -273,7 +273,9 @@ export default class WooCommerceLayerManager {
 					videoContainer.appendChild( msg );
 				}
 
-				const miniCart = document.querySelector( '.godam-video--cart-basket' );
+				const wrapper = videoContainer.parentNode;
+				const miniCart = wrapper.querySelector( '.godam-video--cart-basket' );
+
 				if ( miniCart ) {
 					videoContainer.appendChild( miniCart );
 				}
@@ -447,7 +449,8 @@ export default class WooCommerceLayerManager {
 	}
 
 	/**
-	 * Wait until Woo drawer closes, then re-enter fullscreen
+	 * Watches the Woo mini-cart drawer and cleans up the fullscreen return CTA
+	 * when the drawer is no longer visible.
 	 */
 	waitForDrawerCloseAndRestoreFullscreen() {
 		const checkDrawer = () => {
@@ -455,9 +458,13 @@ export default class WooCommerceLayerManager {
 				'.wc-block-components-drawer__screen-overlay',
 			);
 
-			// Drawer closed.
-			if ( ! drawer || drawer.offsetParent === null ) {
-				// Just show button (no auto fullscreen).
+			const isOpen =
+				drawer &&
+				window.getComputedStyle( drawer ).display !== 'none' &&
+				window.getComputedStyle( drawer ).visibility !== 'hidden';
+
+			if ( ! isOpen ) {
+				this.cleanupFullscreenMessage();
 				return;
 			}
 
