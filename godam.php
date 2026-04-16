@@ -121,11 +121,7 @@ add_filter( 'network_admin_plugin_action_links', 'rtgodam_action_links', 11, 2 )
 function rtgodam_plugin_activate() {
 	update_option( 'rtgodam_plugin_activation_time', time() );
 
-	// Explicitly register post types to ensure they are available before flushing.
-	$godam_video = \RTGODAM\Inc\Post_Types\GoDAM_Video::get_instance();
-	$godam_video->register_post_type();
-
-	// Flush rewrite rules to ensure CPT rules are applied.
+	// Flush rewrite rules on activation.
 	flush_rewrite_rules( true );
 }
 
@@ -138,7 +134,7 @@ function rtgodam_plugin_deactivate() {
 	delete_option( 'rtgodam_plugin_activation_time' );
 	delete_option( 'rtgodam_video_metadata_migration_completed' );
 
-	// Flush rewrite rules to remove CPT rules.
+	// Flush rewrite rules on deactivation.
 	flush_rewrite_rules( true );
 }
 

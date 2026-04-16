@@ -18,11 +18,8 @@ use RTGODAM\Inc\Media_Tracker;
 use RTGODAM\Inc\Rewrite;
 use RTGODAM\Inc\Video_Preview;
 use RTGODAM\Inc\Video_Embed;
-use RTGODAM\Inc\Video_Permalinks;
 use RTGODAM\Inc\Video_Engagement;
 use RTGODAM\Inc\Update;
-
-use RTGODAM\Inc\Post_Types\GoDAM_Video;
 
 use RTGODAM\Inc\Taxonomies\Media_Folders;
 
@@ -100,7 +97,6 @@ class Plugin {
 		Rewrite::get_instance();
 		Video_Preview::get_instance();
 		Video_Embed::get_instance();
-		Video_Permalinks::get_instance();
 		Embed::get_instance();
 
 		// Load shortcodes.
@@ -112,7 +108,6 @@ class Plugin {
 		Video_Editor_Form_Layer_Handler::get_instance()->init();
 		Everest_Forms_Integration::get_instance()->init();
 
-		$this->load_post_types();
 		$this->load_taxonomies();
 		$this->load_plugin_configs();
 		$this->load_rest_api();
@@ -140,13 +135,6 @@ class Plugin {
 		$this->load_wpbakery_elements();
 
 		$this->load_media_library();
-	}
-
-	/**
-	 * Load Post Types.
-	 */
-	public function load_post_types() {
-		GoDAM_Video::get_instance();
 	}
 
 	/**

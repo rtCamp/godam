@@ -9,7 +9,6 @@ namespace RTGODAM\Inc\REST_API;
 
 defined( 'ABSPATH' ) || exit;
 
-use RTGODAM\Inc\Post_Types\GoDAM_Video;
 use RTGODAM\Inc\Enums\Api_Key_Status;
 use RTGODAM\Inc\Enums\HTTP_Status_Code;
 use RTGODAM\Inc\Helpers\Api_Key;

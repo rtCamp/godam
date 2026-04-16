@@ -21,6 +21,7 @@ defined( 'ABSPATH' ) || exit;
  * Re-running all migrations (e.g. for testing) requires deleting each
  * migration's guard option individually:
  *   wp option delete rtgodam_gallery_v1_v2_migration_done
+ *   wp option delete rtgodam_godam_cpt_cleanup_done
  */
 class Runner {
 
@@ -33,5 +34,6 @@ class Runner {
 	 */
 	public static function run() {
 		Gallery_V1_To_V2::maybe_run();
+		Godam_Cpt_Cleanup::maybe_run();
 	}
 }
