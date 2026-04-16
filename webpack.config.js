@@ -142,13 +142,6 @@ const godamGallery = {
 	},
 };
 
-const godamProductGallery = {
-	...sharedConfig,
-	entry: {
-		'godam-product-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'godam-product-gallery', 'godam-product-gallery.js' ),
-	},
-};
-
 const godamVideoEmbed = {
 	...sharedConfig,
 	entry: {
@@ -400,7 +393,6 @@ module.exports = [
 	deactivationJS,
 	httpAuthDetector,
 	godamGallery,
-	godamProductGallery,
 	godamVideoEmbed,
 	godamVideoPreview,
 	gfGodamRecorderEditorJS,
