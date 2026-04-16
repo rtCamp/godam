@@ -632,6 +632,53 @@
 	}
 }
 
+/* Product Hotspot Loading Spinner */
+.godam-product-hotspot-spinner {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+
+	.spinner-svg {
+		width: 26px;
+    	height: 30px;
+		margin: 8px 0;
+		animation: spinner-rotate 1s linear infinite;
+
+		.spinner-circle {
+			stroke: #7b7979;
+			stroke-linecap: round;
+			stroke-dasharray: 90, 150;
+			stroke-dashoffset: 0;
+			animation: spinner-dash 1.5s ease-in-out infinite;
+		}
+	}
+}
+
+/* Rotation */
+@keyframes spinner-rotate {
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+/* Dash animation (this makes it look like a loader, not a circle) */
+@keyframes spinner-dash {
+	0% {
+		stroke-dasharray: 1, 150;
+		stroke-dashoffset: 0;
+	}
+	50% {
+		stroke-dasharray: 90, 150;
+		stroke-dashoffset: -35;
+	}
+	100% {
+		stroke-dasharray: 90, 150;
+		stroke-dashoffset: -124;
+	}
+}
+
 /* Product Hotspot */
 .product-hotspot-box {
 	position: absolute;
