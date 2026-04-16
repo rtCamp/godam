@@ -49,6 +49,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		itemWidth,
 		count = 12,
 		autoplay,
+		showPlayButton,
 		categories = [],
 		products = [],
 		showAddToCart,
@@ -304,11 +305,13 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 										<span>{ __( 'Product Video', 'godam' ) }</span>
 									</div>
 								) }
-								<div className="godam-gallery-item__play-icon">
-									<svg viewBox="0 0 24 24" fill="currentColor">
-										<path d="M8 5v14l11-7z" />
-									</svg>
-								</div>
+								{ showPlayButton && (
+									<div className="godam-gallery-item__play-icon">
+										<svg viewBox="0 0 24 24" fill="currentColor">
+											<path d="M8 5v14l11-7z" />
+										</svg>
+									</div>
+								) }
 							</div>
 							<div className="godam-gallery-item__product">
 								<a href="#" className="godam-gallery-item__product-link" onClick={ ( event ) => event.preventDefault() }>
@@ -489,11 +492,18 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						label={ __( 'Autoplay', 'godam' ) }
 						help={
 							autoplay
-								? __( 'Videos will autoplay when visible.', 'godam' )
-								: __( 'Videos will not autoplay.', 'godam' )
+								? __( 'Visible videos autoplay one at a time and continue through the full video.', 'godam' )
+								: __( 'Videos only play when hovered.', 'godam' )
 						}
 						checked={ !! autoplay }
 						onChange={ ( value ) => setAttributes( { autoplay: value } ) }
+					/>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ __( 'Show Play Button', 'godam' ) }
+						help={ __( 'Shows an overlay play button whenever a video is not playing.', 'godam' ) }
+						checked={ !! showPlayButton }
+						onChange={ ( value ) => setAttributes( { showPlayButton: value } ) }
 					/>
 					<ToggleControl
 						__nextHasNoMarginBottom
