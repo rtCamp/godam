@@ -31,7 +31,6 @@
 		// ── State ─────────────────────────────────────────────
 		let sequenceIndex = 0; // index of the video currently playing in sequence
 		let galleryVisible = false; // true when carousel is in viewport
-		let isAutoScrolling = false; // true while a programmatic scroll is in progress
 
 		// ── Helpers ───────────────────────────────────────────
 
@@ -94,22 +93,33 @@
 		// ── Scroll helpers ───────────────────────────────────
 
 		/**
-		 * Scroll the carousel so the item at `index` is visible.
+		 * Check if an item is visible inside the scroll container.
+		 *
+		 * @param {number} index Item index.
+		 * @return {boolean} True if the item is at least partially visible.
+		 */
+		function isItemInView( index ) {
+			const item = items[ index ];
+			if ( ! item ) {
+				return false;
+			}
+			const rect = item.getBoundingClientRect();
+			const cRect = container.getBoundingClientRect();
+			return rect.left < cRect.right && rect.right > cRect.left;
+		}
+
+		/**
+		 * Scroll the carousel so the item at `index` is visible,
+		 * but only if it is not already in the viewport.
 		 *
 		 * @param {number} index
 		 */
 		function scrollToItem( index ) {
 			const item = items[ index ];
-			if ( ! item ) {
+			if ( ! item || isItemInView( index ) ) {
 				return;
 			}
-			isAutoScrolling = true;
 			item.scrollIntoView( { behavior: 'smooth', inline: 'center', block: 'nearest' } );
-
-			// Reset after the smooth scroll has had time to settle.
-			setTimeout( () => {
-				isAutoScrolling = false;
-			}, 500 );
 		}
 
 		// ── Sequential autoplay ─────────────────────────────
@@ -185,43 +195,40 @@
 			} );
 		} );
 
-		// ── Scroll-snap detection ─────────────────────────────
-		// After the user scrolls (swipe on touch, wheel/drag on desktop)
-		// and scroll-snap settles, detect which item is closest to the
-		// container center and jump the sequence to it.
+		// ── Active-video visibility observer ──────────────────
+		// When the currently playing video scrolls out of the
+		// container viewport, find the first visible item and
+		// jump the sequence to it.
 
-		let scrollTimer = null;
+		const itemObserver = new IntersectionObserver(
+			( entries ) => {
+				entries.forEach( ( entry ) => {
+					const index = items.indexOf( entry.target );
 
-		container.addEventListener( 'scroll', () => {
-			// Don't react to scrolls triggered by scrollToItem().
-			if ( isAutoScrolling ) {
-				return;
-			}
+					// Only care when the *active* video leaves the view.
+					if ( index !== sequenceIndex || entry.intersectionRatio >= 0.5 || ! galleryVisible ) {
+						return;
+					}
 
-			if ( scrollTimer ) {
-				clearTimeout( scrollTimer );
-			}
-			scrollTimer = setTimeout( () => {
-				const rect = container.getBoundingClientRect();
-				const center = rect.left + ( rect.width / 2 );
-				let closest = 0;
-				let minDist = Infinity;
+					// Find the first item (other than current) that is visible.
+					const cRect = container.getBoundingClientRect();
+					const firstVisible = items.findIndex( ( item, i ) => {
+						if ( i === sequenceIndex ) {
+							return false;
+						}
+						const rect = item.getBoundingClientRect();
+						return rect.left < cRect.right && rect.right > cRect.left;
+					} );
 
-				items.forEach( ( item, i ) => {
-					const r = item.getBoundingClientRect();
-					const mid = r.left + ( r.width / 2 );
-					const dist = Math.abs( mid - center );
-					if ( dist < minDist ) {
-						minDist = dist;
-						closest = i;
+					if ( firstVisible !== -1 && firstVisible !== sequenceIndex ) {
+						jumpSequenceTo( firstVisible );
 					}
 				} );
+			},
+			{ root: container, threshold: 0.5 },
+		);
 
-				if ( closest !== sequenceIndex && galleryVisible ) {
-					jumpSequenceTo( closest );
-				}
-			}, 150 );
-		}, { passive: true } );
+		items.forEach( ( item ) => itemObserver.observe( item ) );
 
 		// ── Visibility observer ───────────────────────────────
 
