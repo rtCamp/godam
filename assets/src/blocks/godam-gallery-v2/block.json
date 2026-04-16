@@ -2,7 +2,7 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "godam/gallery-v2",
-	"title": "GoDAM Video Gallery V2",
+	"title": "GoDAM Video Gallery",
 	"category": "media",
 	"description": "Create a handpicked or query-based GoDAM video gallery.",
 	"keywords": [ "video", "gallery", "grid", "godam" ],
@@ -14,7 +14,7 @@
 		},
 		"itemWidth": {
 			"type": "string",
-			"default": "M"
+			"default": "S"
 		},
 		"count": {
 			"type": "number",
@@ -65,10 +65,6 @@
 			"default": ""
 		},
 		"customDateEnd": {
-			"type": "string",
-			"default": ""
-		},
-		"include": {
 			"type": "string",
 			"default": ""
 		},

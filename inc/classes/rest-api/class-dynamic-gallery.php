@@ -85,10 +85,6 @@ class Dynamic_Gallery extends Base {
 							'type'    => 'string',
 							'default' => '',
 						),
-						'include'           => array(
-							'type'    => 'string',
-							'default' => '',
-						),
 						'search'            => array(
 							'type'    => 'string',
 							'default' => '',
@@ -147,7 +143,6 @@ class Dynamic_Gallery extends Base {
 			'tag'               => $request->get_param( 'tag' ),
 			'author'            => $request->get_param( 'author' ),
 			'media_folder'      => $request->get_param( 'media_folder' ),
-			'include'           => $request->get_param( 'include' ),
 			'search'            => $request->get_param( 'search' ),
 			'date_range'        => $request->get_param( 'date_range' ),
 			'custom_date_start' => $request->get_param( 'custom_date_start' ),
@@ -211,11 +206,6 @@ class Dynamic_Gallery extends Base {
 					'terms'    => $media_folder_ids,
 				);
 			}
-		}
-
-		// Add include filter.
-		if ( ! empty( $atts['include'] ) ) {
-			$args['post__in'] = array_map( 'intval', explode( ',', $atts['include'] ) );
 		}
 
 		// Add search filter.
@@ -314,7 +304,6 @@ class Dynamic_Gallery extends Base {
 					data-category="' . esc_attr( $atts['category'] ?? '' ) . '"
 					data-tag="' . esc_attr( $atts['tag'] ?? '' ) . '"
 					data-author="' . esc_attr( $atts['author'] ?? '' ) . '"
-					data-include="' . esc_attr( $atts['include'] ?? '' ) . '"
 					data-search="' . esc_attr( $atts['search'] ?? '' ) . '"
 					data-date-range="' . esc_attr( $atts['date_range'] ?? '' ) . '"
 					data-custom-date-start="' . esc_attr( $atts['custom_date_start'] ?? '' ) . '"
