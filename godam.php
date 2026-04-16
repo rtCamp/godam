@@ -148,7 +148,7 @@ register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );
  * Runs when the plugin is deleted.
  */
 function rtgodam_plugin_delete() {
-	// Delete options related to plugin state (welcome walkthrough, What's New, version).
+	// Delete options related to plugin state (What's New, version).
 	// This is to ensure redirection on a fresh install.
 	if ( is_multisite() ) {
 		// Get all blogs in the network and delete options from each blog.
@@ -158,9 +158,7 @@ function rtgodam_plugin_delete() {
 			switch_to_blog( $blog_id );
 
 			delete_option( 'rtgodam_plugin_version' );
-			delete_option( 'rtgodam_welcome_completed' );
 			delete_option( 'rtgodam_show_whats_new' );
-			delete_option( 'rtgodam_show_welcome' );
 			delete_option( 'rtgodam_user_data' );
 			delete_option( 'rtgodam-api-key' );
 			delete_option( 'rtgodam-api-key-stored' );
@@ -174,9 +172,7 @@ function rtgodam_plugin_delete() {
 	} else {
 		// For single site, delete options directly.
 		delete_option( 'rtgodam_plugin_version' );
-		delete_option( 'rtgodam_welcome_completed' );
 		delete_option( 'rtgodam_show_whats_new' );
-		delete_option( 'rtgodam_show_welcome' );
 		delete_option( 'rtgodam_user_data' );
 		delete_option( 'rtgodam-api-key' );
 		delete_option( 'rtgodam-api-key-stored' );
