@@ -143,12 +143,8 @@ const GoDAMMediaFrameShared = {
 
 		const selection = this.state().get( 'selection' );
 
-		if ( ! selection || ! selection.length ) {
-			return;
-		}
-
-		// Process items one at a time to avoid flooding the server with concurrent requests.
-		for ( const selected of selection.models ) {
+		// Process every selected item (supports multi-select).
+		selection.each( async ( selected ) => {
 			const data = selected.attributes;
 
 			try {
@@ -182,27 +178,24 @@ const GoDAMMediaFrameShared = {
 					},
 				} );
 
-				if ( response?.success ) {
+				if ( response && response.success ) {
 					const attachment = response.attachment;
 
 					// Trigger custom JS event godam-virtual-attachment-created
-					document.dispatchEvent(
-						new CustomEvent( 'godam-virtual-attachment-created', {
-							detail: { virtualMediaId: data.id, attachment },
-						} ),
-					);
+					const event = new CustomEvent( 'godam-virtual-attachment-created', {
+						detail: { virtualMediaId: data.id, attachment },
+					} );
+
+					document.dispatchEvent( event );
 
 					// Also trigger count refresh for React components
-					document.dispatchEvent(
-						new CustomEvent( 'godam-attachment-browser:changed' ),
-					);
+					const countRefreshEvent = new CustomEvent( 'godam-attachment-browser:changed' );
+					document.dispatchEvent( countRefreshEvent );
 				}
-			} catch ( error ) {
-				// Log failure but continue processing remaining items.
-				// eslint-disable-next-line no-console
-				console.error( 'Failed to create GoDAM media entry:', data.id, error );
+			} catch {
+				// Swallow request failures so one item does not break the rest of the selection flow.
 			}
-		}
+		} );
 	},
 };
 
