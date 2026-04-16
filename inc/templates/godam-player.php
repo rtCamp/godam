@@ -636,7 +636,7 @@ if ( $godam_should_preload_poster ) {
 
 					<!-- Dynamically render shortcodes for form layers. -->
 					<?php
-					if ( ! empty( $godam_meta_data['layers'] ) && ! $godam_woocommerce_context) :
+					if ( ! empty( $godam_meta_data['layers'] ) && ! $godam_woocommerce_context ) :
 						foreach ( $godam_meta_data['layers'] as $godam_layer ) :
 
 							$godam_form_type = ! empty( $godam_layer['form_type'] ) ? $godam_layer['form_type'] : 'gravity';
