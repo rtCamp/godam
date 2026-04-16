@@ -306,8 +306,8 @@ if ( isset( $attributes['godam_context'] ) ) {
 $godam_is_gallery_context = ! empty( $_GET['godam_gallery'] ) && '1' === sanitize_key( $_GET['godam_gallery'] );
 
 if ( isset( $attributes['godam_context'] ) && $godam_woocommerce_context ) {
-	if ( 'godam-video-product-gallery' === $attributes['godam_context'] ) {
-		// Use the new "reels-v2" skin for the product gallery context
+	if ( in_array( $attributes['godam_context'], array( 'godam-woo-product-page-reels', 'godam-video-product-gallery' ), true ) ) {
+		// Use the new "reels-v2" skin for the Woo product page reels and video product gallery contexts,
 		// which is an enhanced version of the original "reels" skin with additional features and a more modern design.
 		$godam_player_skin = 'reels-v2';
 	} else {

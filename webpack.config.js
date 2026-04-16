@@ -223,16 +223,16 @@ const woocommerceIntegration = {
 		'admin/wc-admin-featured-video-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'admin', 'wc-admin-featured-video-gallery.js' ),
 
 		// Frontend scripts
-		'wc-video-carousel': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'single-product-story', 'wc-video-carousel.js' ),
 		'wc-featured-video-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'featured-video', 'wc-featured-video-gallery.js' ),
 		'wc-woo-layer-cart-url-editor': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'woocommerce-layer', 'wc-woo-layer-cart-url-editor.js' ),
 		'wc-woo-global-script': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'global-video-popup', 'index.js' ),
+		'product-reels-carousel': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'single-product-story', 'product-reels-carousel.js' ),
 
 		// CSS files
-		'godam-video-carousel': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-video-carousel.scss' ),
 		'godam-featured-video': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-featured-video.scss' ),
 		'godam-product-editor-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-product-editor-gallery.scss' ),
 		'godam-product-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-product-gallery.scss' ),
+		'godam-product-reels': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-product-reels.scss' ),
 		'godam-reels-skin': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-reels-skin.scss' ),
 		'godam-reels-skin-v2': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-reels-skin-v2.scss' ),
 	},
