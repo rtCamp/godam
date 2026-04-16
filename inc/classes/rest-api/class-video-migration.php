@@ -11,8 +11,6 @@
 
 namespace RTGODAM\Inc\REST_API;
 
-use RTGODAM\Inc\Post_Types\GoDAM_Video;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -99,9 +97,11 @@ class Video_Migration extends Base {
 		$processed_count = isset( $current_status['done'] ) ? (int) $current_status['done'] : 0;
 		$total_count     = isset( $current_status['total'] ) ? (int) $current_status['total'] : 0;
 
-		// Best-effort: unschedule pending actions for this migration. This may cancel both types if they run simultaneously.
+		// Unschedule all pending discovery and batch jobs. Core and Vimeo
+		// migrations share these two AS hooks (distinguished only by arguments),
+		// so aborting one type also cancels any concurrently queued jobs for the
+		// other. In practice only one migration runs at a time, so this is safe.
 		if ( function_exists( 'as_unschedule_all_actions' ) ) {
-			// Root discovery job (find posts) and all batch jobs.
 			as_unschedule_all_actions( 'godam_process_full_video_migration' );
 			as_unschedule_all_actions( 'godam_migrate_post_batch_video_blocks' );
 		}
@@ -109,7 +109,11 @@ class Video_Migration extends Base {
 		// Reset the status to initial state (pending) by deleting the option.
 		delete_option( $wp_option_key );
 
-		$migration_name = ( 'core' === $migration_type ) ? __( 'Core Video Migration', 'godam' ) : __( 'Vimeo Video Migration', 'godam' );
+		if ( 'core' === $migration_type ) {
+			$migration_name = __( 'Core Video Migration', 'godam' );
+		} else {
+			$migration_name = __( 'Vimeo Video Migration', 'godam' );
+		}
 
 		$response = array(
 			'status'  => 'aborted',
@@ -1252,7 +1256,7 @@ class Video_Migration extends Base {
 
 		foreach ( $post_types as $post_type ) {
 			// Check if post type supports editor and Gutenberg is not disabled.
-			if ( post_type_supports( $post_type->name, 'editor' ) && use_block_editor_for_post_type( $post_type->name ) && GoDAM_Video::SLUG !== $post_type->name ) {
+			if ( post_type_supports( $post_type->name, 'editor' ) && use_block_editor_for_post_type( $post_type->name ) ) {
 				$gutenberg_post_types[] = $post_type->name;
 			}
 		}

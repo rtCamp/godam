@@ -35,7 +35,6 @@ async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVi
 			custom_date_start: gallery.dataset.customDateStart || '',
 			custom_date_end: gallery.dataset.customDateEnd || '',
 			engagements: gallery.dataset.engagements === '1',
-			open_to_new_page: gallery.dataset.openToNewPage === '1',
 		} );
 		const response = await fetch( `${ galleryRestUrl }?${ params.toString() }` );
 		const data = await response.json();
@@ -128,12 +127,11 @@ document.addEventListener( 'click', async function( e ) {
 		const order = btn.getAttribute( 'data-order' );
 		const totalVideos = parseInt( btn.getAttribute( 'data-total' ), 10 );
 		const engagements = btn.getAttribute( 'data-engagements' ) === '1';
-		const openToNewPage = btn.getAttribute( 'data-open-to-new-page' ) === '1';
 
 		// Hide button
 		btn.style.display = 'none';
 
-		const newOffset = await loadMoreVideos( gallery, offset, columns, orderby, order, totalVideos, engagements, openToNewPage );
+		const newOffset = await loadMoreVideos( gallery, offset, columns, orderby, order, totalVideos, engagements );
 
 		if ( newOffset ) {
 			btn.setAttribute( 'data-offset', newOffset );
@@ -158,13 +156,6 @@ document.addEventListener( 'click', function( e ) {
 		// Get the current gallery
 		const currentGallery = thumbnail.closest( '.godam-video-gallery' );
 		if ( ! currentGallery ) {
-			return;
-		}
-
-		// If the gallery is configured to open videos in a new page, do so and skip the modal
-		const openToNewPage = currentGallery.getAttribute( 'data-open-to-new-page' ) === '1';
-		if ( openToNewPage && videoUrl ) {
-			window.open( DOMPurify.sanitize( videoUrl ), '_blank' );
 			return;
 		}
 

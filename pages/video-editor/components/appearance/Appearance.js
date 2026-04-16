@@ -13,7 +13,6 @@ import '../../video-control.scss';
 import {
 	Button,
 	CustomSelectControl,
-	ExternalLink,
 	Notice,
 	TextareaControl,
 	ToggleControl,
@@ -26,13 +25,10 @@ import { updateVideoConfig, setCurrentLayer } from '../../redux/slice/videoSlice
 import GoDAM from '../../../../assets/src/images/GoDAM.png';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 import { closeSmall, chevronDown, chevronUp } from '@wordpress/icons';
-import { getPricingUrl } from '../../../shared/premium-layers.js';
-import { hasValidAPIKey } from '../../../godam/utils/index.js';
 
 const Appearance = () => {
 	const dispatch = useDispatch();
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
-	const videoSettingsUrl = window.godamRestRoute?.adminUrl + 'admin.php?page=rtgodam_settings#video-settings';
 
 	/**
 	 * State to manage the notice message and visibility.
@@ -421,27 +417,6 @@ const Appearance = () => {
 
 	return (
 		<div id="easydam-player-settings" className="pb-20">
-			{ ! hasValidAPIKey && (
-				<Notice
-					className="mb-4"
-					status="warning"
-					isDismissible={ false }
-				>
-					{ __( 'Video player customization is a Pro feature.', 'godam' ) }{ ' ' }
-					<a href={ videoSettingsUrl } className="godam-link underline" target="_blank" rel="noopener noreferrer">
-						{ __( 'Activate your license', 'godam' ) }
-					</a>
-					{
-						// eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace
-						__( ' or ', 'godam' )
-					}
-					<ExternalLink className="godam-link underline" href={ getPricingUrl( 'player-settings' ) }>
-						{ __( 'get started for free', 'godam' ) }
-					</ExternalLink>{ ' ' }
-					{ __( 'to unlock all features.', 'godam' ) }
-				</Notice>
-			) }
-
 			<div className="accordion-item--content mt-4 flex flex-col gap-2">
 
 				{ /* ── Section 1: Display Settings (free) ── */ }
@@ -491,7 +466,7 @@ const Appearance = () => {
 					) }
 				</div>
 
-				{ /* ── Section 2: Customization Settings (Pro) ── */ }
+				{ /* ── Section 2: Customization Settings ── */ }
 				<div className="godam-collapsible-section">
 					<button
 						type="button"
@@ -502,23 +477,19 @@ const Appearance = () => {
 					>
 						<span className="flex items-center gap-2">
 							{ __( 'Customization Settings', 'godam' ) }
-							{
-								<span className="godam-pro-badge">{ __( 'Pro', 'godam' ) }</span>
-							}
 						</span>
 						<Icon icon={ openSections.customization ? chevronUp : chevronDown } />
 					</button>
 					{ openSections.customization && (
-						<fieldset id="godam-appearance-customization-settings" className={ `godam-collapsible-section__body flex flex-col gap-4 ${ ! hasValidAPIKey ? 'opacity-50' : '' }` } disabled={ ! hasValidAPIKey || undefined }>
+						<fieldset id="godam-appearance-customization-settings" className="godam-collapsible-section__body flex flex-col gap-4">
 							<ToggleControl
 								__nextHasNoMarginBottom
 								className="godam-toggle"
 								label={ __( 'Show Branding', 'godam' ) }
 								onChange={ handleBrandingToggle }
-								checked={ ! hasValidAPIKey ? false : videoConfig.controlBar.brandingIcon }
-								disabled={ ! hasValidAPIKey }
+								checked={ videoConfig.controlBar.brandingIcon }
 							/>
-							{ ( videoConfig.controlBar.brandingIcon && hasValidAPIKey ) && (
+							{ videoConfig.controlBar.brandingIcon && (
 								<div className="godam-form-group">
 									<label htmlFor="custom-brand-logo" className="label-text">
 										{ __( 'Custom Brand Logo', 'godam' ) }
@@ -660,7 +631,7 @@ const Appearance = () => {
 					) }
 				</div>
 
-				{ /* ── Section 3: Ad Server (Pro) ── */ }
+				{ /* ── Section 3: Ad Server ── */ }
 				<div className="godam-collapsible-section">
 					<button
 						type="button"
@@ -671,18 +642,17 @@ const Appearance = () => {
 					>
 						<span className="flex items-center gap-2">
 							{ __( 'Ad Server', 'godam' ) }
-							{ ! hasValidAPIKey && <span className="godam-pro-badge">{ __( 'Pro', 'godam' ) }</span> }
+
 						</span>
 						<Icon icon={ openSections.adServer ? chevronUp : chevronDown } />
 					</button>
 					{ openSections.adServer && (
-						<fieldset id="godam-appearance-ad-server-settings" className={ `godam-collapsible-section__body flex flex-col gap-3 ${ ! hasValidAPIKey ? 'opacity-50' : '' }` } disabled={ ! hasValidAPIKey || undefined }>
+						<fieldset id="godam-appearance-ad-server-settings" className="godam-collapsible-section__body flex flex-col gap-3">
 							<ToggleControl
 								className="godam-toggle"
 								label={ __( 'Use ad server\'s ads', 'godam' ) }
 								help={ __( 'Enable this option to use ads from the ad server. This option will disable the ads layer', 'godam' ) }
 								checked={ videoConfig.adServer === 'ad-server' }
-								disabled={ ! hasValidAPIKey }
 								onChange={ ( checked ) => {
 									dispatch(
 										updateVideoConfig( {

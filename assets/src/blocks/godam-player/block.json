@@ -42,7 +42,7 @@
 		},
 		"preload": {
 			"type": "string",
-			"default": "metadata"
+			"default": "auto"
 		},
 		"blob": {
 			"type": "string",
@@ -109,9 +109,9 @@
 			"type": "boolean",
 			"default": false
 		},
-		"engagements": {
-			"type": "boolean",
-			"default": false
+		"playerHeight": {
+			"type": "string",
+			"default": ""
 		}
 	},
 	"supports": {

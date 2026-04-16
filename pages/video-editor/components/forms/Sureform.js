@@ -35,8 +35,6 @@ const SureForm = ( { layerID } ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'sureform_id', value: formID } ) );
 	};
 
-	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
-
 	const isSureformsPluginActive = Boolean( window?.videoData?.sureformsActive );
 
 	return (
@@ -53,7 +51,7 @@ const SureForm = ( { layerID } ) => {
 			}
 
 			{
-				<FormSelector disabled={ ! isValidAPIKey || ! isSureformsPluginActive } className="mb-4" formID={ layer.sureform_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector disabled={ ! isSureformsPluginActive } className="mb-4" formID={ layer.sureform_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<LayerControl>

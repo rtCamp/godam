@@ -35,8 +35,6 @@ const ForminatorForm = ( { layerID } ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'forminator_id', value: formID } ) );
 	};
 
-	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
-
 	const isForminatorFormsPluginActive = Boolean( window?.videoData?.forminatorActive );
 
 	return (
@@ -53,7 +51,7 @@ const ForminatorForm = ( { layerID } ) => {
 			}
 
 			{
-				<FormSelector disabled={ ! isValidAPIKey || ! isForminatorFormsPluginActive } className="mb-4" formID={ layer.forminator_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector disabled={ ! isForminatorFormsPluginActive } className="mb-4" formID={ layer.forminator_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<LayerControl>

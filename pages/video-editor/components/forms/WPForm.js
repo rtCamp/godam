@@ -35,8 +35,6 @@ const WPForm = ( { layerID } ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'wpform_id', value: formID } ) );
 	};
 
-	const isValidAPIKey = window?.videoData?.validApiKey ?? false;
-
 	const isWPFormsPluginActive = Boolean( window?.videoData?.wpformsActive );
 
 	return (
@@ -53,7 +51,7 @@ const WPForm = ( { layerID } ) => {
 			}
 
 			{
-				<FormSelector disabled={ ! isValidAPIKey || ! isWPFormsPluginActive } className="mb-4" formID={ layer.wpform_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector disabled={ ! isWPFormsPluginActive } className="mb-4" formID={ layer.wpform_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<LayerControl>

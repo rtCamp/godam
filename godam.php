@@ -121,11 +121,7 @@ add_filter( 'network_admin_plugin_action_links', 'rtgodam_action_links', 11, 2 )
 function rtgodam_plugin_activate() {
 	update_option( 'rtgodam_plugin_activation_time', time() );
 
-	// Explicitly register post types to ensure they are available before flushing.
-	$godam_video = \RTGODAM\Inc\Post_Types\GoDAM_Video::get_instance();
-	$godam_video->register_post_type();
-
-	// Flush rewrite rules to ensure CPT rules are applied.
+	// Flush rewrite rules on activation.
 	flush_rewrite_rules( true );
 }
 
@@ -138,7 +134,7 @@ function rtgodam_plugin_deactivate() {
 	delete_option( 'rtgodam_plugin_activation_time' );
 	delete_option( 'rtgodam_video_metadata_migration_completed' );
 
-	// Flush rewrite rules to remove CPT rules.
+	// Flush rewrite rules on deactivation.
 	flush_rewrite_rules( true );
 }
 
@@ -148,7 +144,7 @@ register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );
  * Runs when the plugin is deleted.
  */
 function rtgodam_plugin_delete() {
-	// Delete options related to plugin state (welcome walkthrough, What's New, version).
+	// Delete options related to plugin state (What's New, version).
 	// This is to ensure redirection on a fresh install.
 	if ( is_multisite() ) {
 		// Get all blogs in the network and delete options from each blog.
@@ -158,9 +154,7 @@ function rtgodam_plugin_delete() {
 			switch_to_blog( $blog_id ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.switch_to_blog_switch_to_blog
 
 			delete_option( 'rtgodam_plugin_version' );
-			delete_option( 'rtgodam_welcome_completed' );
 			delete_option( 'rtgodam_show_whats_new' );
-			delete_option( 'rtgodam_show_welcome' );
 			delete_option( 'rtgodam_user_data' );
 			delete_option( 'rtgodam-api-key' );
 			delete_option( 'rtgodam-api-key-stored' );
@@ -174,9 +168,7 @@ function rtgodam_plugin_delete() {
 	} else {
 		// For single site, delete options directly.
 		delete_option( 'rtgodam_plugin_version' );
-		delete_option( 'rtgodam_welcome_completed' );
 		delete_option( 'rtgodam_show_whats_new' );
-		delete_option( 'rtgodam_show_welcome' );
 		delete_option( 'rtgodam_user_data' );
 		delete_option( 'rtgodam-api-key' );
 		delete_option( 'rtgodam-api-key-stored' );

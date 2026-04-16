@@ -81,7 +81,7 @@ class RTGODAM_Transcoder_Admin {
 			$this->render_admin_notice(
 				sprintf(
 					// translators: %s is the URL to the plugin settings page where the API key can be activated.
-					__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock Premium Video Layers, Transcoding, Analytics and more, <a href="%s">please activate your API key.</a>', 'godam' ),
+					__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock Transcoding, Analytics and more, <a href="%s">please activate your API key.</a>', 'godam' ),
 					esc_url( $video_editor_settings_url )
 				),
 				'warning',
@@ -143,7 +143,7 @@ class RTGODAM_Transcoder_Admin {
 				$this->render_admin_notice(
 					sprintf(
 						// translators: %s is the URL to the plugin settings page where the API key can be activated.
-						__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock Premium Video Layers, Transcoding, Analytics and more, <a href="%s">please activate your API key.</a>', 'godam' ),
+						__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock Transcoding, Analytics and more, <a href="%s">please activate your API key.</a>', 'godam' ),
 						esc_url( $video_editor_settings_url )
 					),
 					'error',
@@ -158,7 +158,7 @@ class RTGODAM_Transcoder_Admin {
 		$this->render_admin_notice(
 			sprintf(
 				// translators: %s is the URL to the plugin settings page where the API key can be activated.
-				__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock Premium Video Layers, Transcoding, Analytics and more, <a href="%s">please activate your API key.</a>', 'godam' ),
+				__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock Transcoding, Analytics and more, <a href="%s">please activate your API key.</a>', 'godam' ),
 				esc_url( $video_editor_settings_url )
 			),
 			'warning',
@@ -334,7 +334,7 @@ class RTGODAM_Transcoder_Admin {
 				<img src="<?php echo esc_url( $logo_url ); ?>" alt="<?php esc_attr_e( 'GoDAM Logo', 'godam' ); ?>" class="godam-logo" />
 				<div>
 					<p style="font-size: 16px; font-weight: 600; margin-bottom: 15px;">
-						<?php esc_html_e( 'Unlock Premium Video Layers, Video Analytics, Transcoding and more with GoDAM Pro. Start with a free 60-day trial.', 'godam' ); ?>
+						<?php esc_html_e( 'Unlock Video Analytics, Transcoding and more with GoDAM Pro. Start with a free 60-day trial.', 'godam' ); ?>
 					</p>
 					<div style="display: flex; gap: 10px; margin-top: 10px; margin-bottom: 15px;">
 						<a href="<?php echo esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=free-plan-notice&utm_source=plugin&utm_medium=admin-notice&utm_content=dashboard' ); ?>" target="_blank" rel="noopener noreferrer" class="button button-primary">
@@ -657,7 +657,7 @@ class RTGODAM_Transcoder_Admin {
 	/**
 	 * Display PostHog tracking notice.
 	 *
-	 * Only shown on the WP Dashboard, after the welcome walkthrough is completed.
+	 * Only shown on the WP Dashboard.
 	 *
 	 * @since 1.5.0
 	 */

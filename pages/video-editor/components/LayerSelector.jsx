@@ -33,13 +33,6 @@ import EverestFormsIcon from '../assets/layers/EverestFormsIcon.svg';
 import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
 import MetFormIcon from '../assets/layers/MetFormIcon.png';
 
-/**
- * Shared premium layer constants — single source of truth.
- */
-import { PREMIUM_LAYER_TYPES, getPricingUrl } from '../../shared/premium-layers';
-
-const pricingUrl = getPricingUrl( 'layer-selector' );
-
 const Layers = [
 	{
 		id: 1,
@@ -219,8 +212,6 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 	const [ filteredLayers, setFilteredLayers ] = useState( AllLayers );
 	const [ activeTab, setActiveTab ] = useState( 'all' );
 
-	const isValidApiKey = window?.videoData?.validApiKey ?? false;
-
 	const uniqueLayerTypes = useMemo( () => {
 		return AllLayers.reduce( ( acc, layer ) => {
 			if ( ! acc.includes( layer.type ) ) {
@@ -363,16 +354,14 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 				{ filteredLayers.map( ( layer ) => {
 					const isDisabled = true === layer?.isRequired && false === layer?.isActive;
 					const isRequiredMessage = layer?.requireMessage ?? '';
-					const isPremiumLayer = PREMIUM_LAYER_TYPES.includes( layer.type );
-					const isLockedPremium = isPremiumLayer && ! isValidApiKey;
 
 					return (
 						<div key={ layer.id }>
 							<button
 								key={ layer.id }
-								className={ `godam-layer-selector__item ${ selectedLayer?.id === layer.id ? 'selected' : '' } ${ isLockedPremium ? 'premium-locked' : '' }` }
-								onClick={ () => ! isLockedPremium && handleLayerSelect( layer ) }
-								disabled={ isDisabled || isLockedPremium }
+								className={ `godam-layer-selector__item ${ selectedLayer?.id === layer.id ? 'selected' : '' }` }
+								onClick={ () => handleLayerSelect( layer ) }
+								disabled={ isDisabled }
 							>
 								<span className="godam-layer-selector__item__inner">
 									<div className="godam-layer-selector__item__image-container">
@@ -395,9 +384,6 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 									<div className="godam-layer-selector__item__content">
 										<h3>
 											{ layer.title }
-											{ isPremiumLayer && (
-												<span className="godam-pro-badge">{ __( 'Pro', 'godam' ) }</span>
-											) }
 										</h3>
 										<p>{ layer.description }</p>
 									</div>
@@ -408,19 +394,7 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 								</span>
 							</button>
 							{
-								isLockedPremium &&
-								<p className="godam-layer-selector__item__message godam-layer-selector__item__message--premium">
-									<Icon icon={ cautionFilled } />
-									<span>
-										{ __( 'Pro feature -', 'godam' ) }{ ' ' }
-										<a href={ pricingUrl } target="_blank" rel="noopener noreferrer" className="godam-link">
-											{ __( 'Get started for free', 'godam' ) }
-										</a>
-									</span>
-								</p>
-							}
-							{
-								isDisabled && ! isLockedPremium &&
+								isDisabled &&
 								<p className="godam-layer-selector__item__message">
 									<Icon icon={ cautionFilled } />
 									<div dangerouslySetInnerHTML={ { __html: DOMPurify.sanitize( isRequiredMessage ) } } />
@@ -438,25 +412,14 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 				>
 					{ __( 'Cancel', 'godam' ) }
 				</Button>
-				{ selectedLayer && PREMIUM_LAYER_TYPES.includes( selectedLayer.type ) && ! isValidApiKey ? (
-					<a
-						href={ pricingUrl }
-						target="_blank"
-						rel="noopener noreferrer"
-						className="components-button godam-button is-primary"
-					>
-						{ __( 'Get started for free', 'godam' ) }
-					</a>
-				) : (
-					<Button
-						variant="primary"
-						className="godam-button"
-						disabled={ ! selectedLayer }
-						onClick={ () => handleCustomiseLayer() }
-					>
-						{ __( 'Customise Layer', 'godam' ) }
-					</Button>
-				) }
+				<Button
+					variant="primary"
+					className="godam-button"
+					disabled={ ! selectedLayer }
+					onClick={ () => handleCustomiseLayer() }
+				>
+					{ __( 'Customise Layer', 'godam' ) }
+				</Button>
 			</div>
 		</Modal>
 	);

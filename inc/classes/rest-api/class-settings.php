@@ -9,7 +9,6 @@ namespace RTGODAM\Inc\REST_API;
 
 defined( 'ABSPATH' ) || exit;
 
-use RTGODAM\Inc\Post_Types\GoDAM_Video;
 use RTGODAM\Inc\Enums\Api_Key_Status;
 use RTGODAM\Inc\Enums\HTTP_Status_Code;
 use RTGODAM\Inc\Helpers\Api_Key;
@@ -171,17 +170,6 @@ class Settings extends Base {
 					'permission_callback' => array( $this, 'verify_api_key_permission' ),
 				),
 			),
-			array(
-				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/welcome-complete',
-				'args'      => array(
-					'methods'             => \WP_REST_Server::CREATABLE,
-					'callback'            => array( $this, 'mark_welcome_complete' ),
-					'permission_callback' => function () {
-						return current_user_can( 'manage_options' );
-					},
-				),
-			),
 		);
 	}
 
@@ -219,24 +207,7 @@ class Settings extends Base {
 	}
 
 	/**
-	 * Mark the welcome walkthrough as completed.
-	 *
-	 * Persists the rtgodam_welcome_completed option for record-keeping and
-	 * deletes the rtgodam_show_welcome option so the redirect no longer fires.
-	 *
-	 * @return \WP_REST_Response
-	 */
-	public function mark_welcome_complete() {
-		update_option( 'rtgodam_welcome_completed', true );
-		delete_option( 'rtgodam_show_welcome' );
 
-		return new \WP_REST_Response(
-			array( 'success' => true ),
-			200
-		);
-	}
-
-	/**
 	 * Verify the API key using external API.
 	 *
 	 * @param \WP_REST_Request $request REST API request.
