@@ -168,8 +168,6 @@ class Bootstrap {
 		// Register ajax hooks for sidebar.
 		add_action( 'wp_ajax_godam_get_single_sidebar_product_html', array( $this->utility_instance, 'godam_get_single_sidebar_product_html_callback' ) );
 		add_action( 'wp_ajax_nopriv_godam_get_single_sidebar_product_html', array( $this->utility_instance, 'godam_get_single_sidebar_product_html_callback' ) );
-		add_action( 'wp_ajax_godam_get_multiple_sidebar_product_html', array( $this->utility_instance, 'godam_get_multiple_sidebar_product_html_callback' ) );
-		add_action( 'wp_ajax_nopriv_godam_get_multiple_sidebar_product_html', array( $this->utility_instance, 'godam_get_multiple_sidebar_product_html_callback' ) );
 	}
 
 	/**
@@ -294,35 +292,6 @@ class Bootstrap {
 	 * @return void
 	 */
 	public function enqueue_global_woo_script() {
-
-		if ( ! is_woocommerce() && ! is_cart() && ! is_checkout() && ! is_account_page() ) {
-			return;
-		}
-
-		wp_enqueue_script(
-			'rtgodam-wc-woo-global-script',
-			RTGODAM_URL . 'assets/build/integrations/woocommerce/js/wc-woo-global-script.min.js',
-			array(),
-			rtgodam_wc_get_asset_version( RTGODAM_PATH . 'assets/build/integrations/woocommerce/js/wc-woo-global-script.min.js' ),
-			true
-		);
-
-		wp_localize_script(
-			'rtgodam-wc-woo-global-script',
-			'godamWooVars',
-			array(
-				'namespaceRoot'                => '/godam/v1',
-				'videoShortcodeEP'             => '/video-shortcode',
-				'productByIdsEP'               => '/wcproducts-by-ids',
-				'addToCartAjax'                => 'wc/store/cart',
-				'ajaxUrl'                      => admin_url( 'admin-ajax.php' ),
-				'getSingleProductHtmlAction'   => 'godam_get_single_sidebar_product_html',
-				'getSingleProductHtmlNonce'    => wp_create_nonce( 'godam_get_single_sidebar_product_html' ),
-				'getMultipleProductHtmlAction' => 'godam_get_multiple_sidebar_product_html',
-				'getMultipleProductHtmlNonce'  => wp_create_nonce( 'godam_get_multiple_sidebar_product_html' ),
-				'api_nonce'                    => wp_create_nonce( 'wc_store_api' ),
-			)
-		);
 
 		// Register WooCommerce Reels specific skin.
 		wp_register_style(
