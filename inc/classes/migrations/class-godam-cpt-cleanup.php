@@ -120,9 +120,6 @@ class Godam_Cpt_Cleanup {
 		if ( ! is_admin() && ! $is_cron && ! $is_cli ) {
 			return;
 		}
-		if ( ! $is_cron && ! $is_cli && ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) ) {
-			return;
-		}
 
 		add_action( 'init', array( static::class, 'run' ), 99 );
 	}
@@ -136,6 +133,16 @@ class Godam_Cpt_Cleanup {
 	 * @return void
 	 */
 	public static function run() {
+		// This runs on the 'init' hook, so is_user_logged_in() and current_user_can()
+		// are always available (pluggable.php fully loaded, auth cookies processed).
+		// Non-cron, non-CLI requests must come from an authenticated admin.
+		$is_cli  = defined( 'WP_CLI' ) && WP_CLI;
+		$is_cron = wp_doing_cron();
+
+		if ( ! $is_cron && ! $is_cli && ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) ) {
+			return;
+		}
+
 		if ( ! self::acquire_lock() ) {
 			return;
 		}
