@@ -6,6 +6,9 @@
 	$( document ).on( 'vc.reload', initAudioSelector );
 
 	function initAudioSelector() {
+		// Initialize previews for already selected audio on page load
+		initializeExistingAudioPreviews();
+
 		$( '.audio-selector-button' ).off( 'click' ).on( 'click', function( e ) {
 			e.preventDefault();
 
@@ -70,6 +73,80 @@
 
 		// Initialize remove handler
 		initRemoveHandler();
+	}
+
+	/**
+	 * Initialize previews for already selected audio on page load
+	 */
+	function initializeExistingAudioPreviews() {
+		$( '.audio_selector_block' ).each( function() {
+			const $container = $( this );
+			const $input = $container.find( '.audio_selector_field' );
+			const $button = $container.find( '.audio-selector-button' );
+			const attachmentId = $input.val();
+
+			if ( attachmentId ) {
+				// Update button text to show audio can be replaced
+				$button.text( 'Replace' );
+
+				// Fetch attachment data and create preview
+				fetchAudioAttachmentData( attachmentId ).then( function( attachment ) {
+					if ( ! attachment || ! attachment.url ) {
+						return;
+					}
+
+					let $preview = $container.find( '.audio-selector-preview' );
+					if ( $preview.length === 0 ) {
+						$preview = $( '<div class="audio-selector-preview" style="margin-top: 10px;"></div>' );
+						$container.append( $preview );
+					}
+
+					$preview.html(
+						'<audio controls style="max-width: 300px;">' +
+						'<source src="' + attachment.url + '" type="' + attachment.mime + '">' +
+						'</audio>',
+					);
+
+					// Add remove button if not exists
+					const $buttonsWrapper = $container.find( '.audio_selector-buttons-wrapper' );
+					let $removeButton = $buttonsWrapper.find( '.audio-selector-remove' );
+					if ( $removeButton.length === 0 ) {
+						$removeButton = $( '<button class="button audio-selector-remove" style="margin-left: 5px;">Remove</button>' );
+						$buttonsWrapper.append( $removeButton );
+						initRemoveHandler();
+					}
+				} ).catch( function() {
+					// Silently fail for existing previews
+				} );
+			}
+		} );
+	}
+
+	/**
+	 * Fetch audio attachment data
+	 */
+	function fetchAudioAttachmentData( attachmentId ) {
+		if ( ! attachmentId ) {
+			return Promise.resolve( null );
+		}
+
+		// Use wp.apiFetch if available, otherwise use wp.media.attachment
+		if ( wp?.apiFetch ) {
+			return wp.apiFetch( { path: `/wp/v2/media/${ attachmentId }` } )
+				.then( function( response ) {
+						return response?.toJSON ? response.toJSON() : response;
+					} );
+		}
+
+		const deferred = $.Deferred();
+		wp.media.attachment( attachmentId ).fetch()
+			.done( function( attachment ) {
+				deferred.resolve( attachment );
+			} )
+			.fail( function() {
+				deferred.resolve( null );
+			} );
+		return deferred.promise();
 	}
 
 	function initRemoveHandler() {
