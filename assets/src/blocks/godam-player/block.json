@@ -42,7 +42,7 @@
 		},
 		"preload": {
 			"type": "string",
-			"default": "auto"
+			"default": "metadata"
 		},
 		"blob": {
 			"type": "string",
