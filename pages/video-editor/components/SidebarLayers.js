@@ -248,7 +248,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					custom_css: '',
 				} ) );
 				break;
-			case 'woo':
+			case 'woo': {
 				const lastWooLayer = [ ...layers ]
 					.reverse()
 					.find( ( layer ) => layer.type === 'woo' );
@@ -274,6 +274,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					} ),
 				);
 				break;
+			}
 			default:
 				break;
 		}

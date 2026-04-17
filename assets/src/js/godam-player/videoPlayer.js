@@ -182,13 +182,6 @@ export default class GodamVideoPlayer {
 			} else {
 				this.player.aspectRatio( aspectRatio );
 			}
-			// Check if aspect ratio is valid x:y format
-			if ( ! /^\d+:\d+$/.test( aspectRatio ) ) {
-				// eslint-disable-next-line no-console
-				console.warn( `Invalid aspect ratio format: "${ aspectRatio }". Falling back to "16:9".` );
-			} else {
-				this.player.aspectRatio( aspectRatio );
-			}
 		}
 	}
 

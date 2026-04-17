@@ -24,6 +24,60 @@ class WC_Utility {
 	use Singleton;
 
 	/**
+	 * Returns an inline SVG for a partially-filled star at the given fill percentage.
+	 *
+	 * @param float $percent Fill percentage (0–100).
+	 * @return string Sanitized SVG markup.
+	 */
+	public function get_partial_star_svg( $percent ) {
+		$percent   = max( 0, min( 100, (float) $percent ) );
+		$unique_id = 'godam-partial-' . wp_unique_id();
+
+		$svg = sprintf(
+			'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">'
+			. '<defs>'
+			. '<linearGradient id="%1$s" x1="0" y1="0" x2="1" y2="0">'
+			. '<stop offset="%2$s%%" stop-color="#f0a500"/>'
+			. '<stop offset="%2$s%%" stop-color="#cccccc"/>'
+			. '</linearGradient>'
+			. '</defs>'
+			. '<path fill="url(#%1$s)" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>'
+			. '</svg>',
+			esc_attr( $unique_id ),
+			esc_attr( number_format( $percent, 2, '.', '' ) )
+		);
+
+		return wp_kses(
+			$svg,
+			array(
+				'svg'            => array(
+					'xmlns'       => true,
+					'width'       => true,
+					'height'      => true,
+					'viewbox'     => true,
+					'aria-hidden' => true,
+				),
+				'defs'           => array(),
+				'linearGradient' => array(
+					'id' => true,
+					'x1' => true,
+					'y1' => true,
+					'x2' => true,
+					'y2' => true,
+				),
+				'stop'           => array(
+					'offset'     => true,
+					'stop-color' => true,
+				),
+				'path'           => array(
+					'fill' => true,
+					'd'    => true,
+				),
+			)
+		);
+	}
+
+	/**
 	 * Returns the list of allowed SVG tags and attributes for use with wp_kses().
 	 *
 	 * This method defines a whitelist of commonly used and safe SVG elements and
@@ -233,74 +287,6 @@ class WC_Utility {
 
 		include RTGODAM_PATH . 'integrations/woocommerce/templates/sidebar/hero-product.php';
 		include RTGODAM_PATH . 'integrations/woocommerce/templates/sidebar/single-product-details.php';
-
-		$html = ob_get_clean();
-
-		wp_send_json_success( $html );
-	}
-
-	/**
-	 * AJAX callback to fetch and return a sidebar multiple product's HTML content.
-	 *
-	 * This function is triggered via an AJAX request and returns rendered HTML for a multiple products,
-	 * typically used in quick views, sidebars, or modal popups.
-	 *
-	 * @return void
-	 */
-	public function godam_get_multiple_sidebar_product_html_callback() {
-
-		$nonce = isset( $_GET['_wpnonce'] )
-		? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) )
-		: '';
-
-		if ( ! wp_verify_nonce( $nonce, 'godam_get_multiple_sidebar_product_html' ) ) {
-			wp_send_json_error( 'Invalid request.', 400 );
-		}
-
-		if ( empty( $_GET['products'] ) ) {
-			wp_send_json_error( 'Missing products array.', 400 );
-		}
-
-		// Expect comma separated IDs.
-		$raw_ids = sanitize_text_field( wp_unslash( $_GET['products'] ) );
-
-		$ids = array_filter(
-			array_map(
-				'absint',
-				explode( ',', $raw_ids )
-			)
-		);
-
-		if ( empty( $ids ) ) {
-			wp_send_json_error( 'Invalid product IDs.', 400 );
-		}
-
-		$hero_product = wc_get_product( $ids[0] );
-
-		if ( ! $hero_product ) {
-			wp_send_json_error( 'Hero product not found.', 400 );
-		}
-
-		$additional_products = array();
-
-		if ( count( $ids ) > 1 ) {
-			foreach ( $ids as $id ) {
-				$per_product = wc_get_product( $id );
-				if ( $per_product ) {
-					$additional_products[] = $per_product;
-				}
-			}
-		}
-
-		ob_start();
-
-		$toggle_label = __( 'All Attached Products', 'godam' );
-		$utility      = $this;
-		$products     = $additional_products;
-		$product      = $hero_product;
-
-		include RTGODAM_PATH . 'integrations/woocommerce/templates/sidebar/hero-product.php';
-		include RTGODAM_PATH . 'integrations/woocommerce/templates/sidebar/multiple-products-list.php';
 
 		$html = ob_get_clean();
 
