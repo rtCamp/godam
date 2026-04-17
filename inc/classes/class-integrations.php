@@ -41,6 +41,12 @@ class Integrations {
 			return;
 		}
 
+		$base_real_path = realpath( $base_path );
+		if ( false === $base_real_path ) {
+			return;
+		}
+		$base_real_path = rtrim( $base_real_path, '/\\' ) . DIRECTORY_SEPARATOR;
+
 		$files = array();
 
 		// Common layout: integrations/<integration>/class-bootstrap.php.
@@ -50,11 +56,12 @@ class Integrations {
 		sort( $files );
 
 		foreach ( $files as $file_path ) {
-			if ( validate_file( $file_path ) !== 0 ) {
+			$real_file_path = realpath( $file_path );
+			if ( false === $real_file_path || ! is_file( $real_file_path ) || 0 !== strpos( $real_file_path, $base_real_path ) ) {
 				continue;
 			}
 
-			require_once $file_path; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable
+			require_once $real_file_path; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable
 		}
 	}
 }

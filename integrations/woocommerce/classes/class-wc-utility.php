@@ -24,6 +24,60 @@ class WC_Utility {
 	use Singleton;
 
 	/**
+	 * Returns an inline SVG for a partially-filled star at the given fill percentage.
+	 *
+	 * @param float $percent Fill percentage (0–100).
+	 * @return string Sanitized SVG markup.
+	 */
+	public function get_partial_star_svg( $percent ) {
+		$percent   = max( 0, min( 100, (float) $percent ) );
+		$unique_id = 'godam-partial-' . wp_unique_id();
+
+		$svg = sprintf(
+			'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">'
+			. '<defs>'
+			. '<linearGradient id="%1$s" x1="0" y1="0" x2="1" y2="0">'
+			. '<stop offset="%2$s%%" stop-color="#f0a500"/>'
+			. '<stop offset="%2$s%%" stop-color="#cccccc"/>'
+			. '</linearGradient>'
+			. '</defs>'
+			. '<path fill="url(#%1$s)" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>'
+			. '</svg>',
+			esc_attr( $unique_id ),
+			esc_attr( number_format( $percent, 2, '.', '' ) )
+		);
+
+		return wp_kses(
+			$svg,
+			array(
+				'svg'            => array(
+					'xmlns'       => true,
+					'width'       => true,
+					'height'      => true,
+					'viewbox'     => true,
+					'aria-hidden' => true,
+				),
+				'defs'           => array(),
+				'linearGradient' => array(
+					'id' => true,
+					'x1' => true,
+					'y1' => true,
+					'x2' => true,
+					'y2' => true,
+				),
+				'stop'           => array(
+					'offset'     => true,
+					'stop-color' => true,
+				),
+				'path'           => array(
+					'fill' => true,
+					'd'    => true,
+				),
+			)
+		);
+	}
+
+	/**
 	 * Returns the list of allowed SVG tags and attributes for use with wp_kses().
 	 *
 	 * This method defines a whitelist of commonly used and safe SVG elements and

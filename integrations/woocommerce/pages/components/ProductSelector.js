@@ -21,7 +21,7 @@ const ProductSelector = ( { index, value, productHotspot, productHotspots, updat
 	const [ isLoading, setIsLoading ] = useState( false );
 	const [ searchTerm, setSearchTerm ] = useState( '' );
 
-	const restURL = window.godamRestRoute.url || '';
+	const restURL = window.godamRestRoute?.url || '';
 
 	const fetchProducts = useCallback(
 		( term ) => {

@@ -16,11 +16,16 @@ export const ensureWooLayerRegistered = async () => {
 	}
 
 	// Dynamically import the WooCommerce layer component from the integrations folder.
-	const module = await import(
-		/* webpackChunkName: "woo-layer-component" */
-		'../../../integrations/woocommerce/pages/components/WoocommerceLayer'
-	);
+	try {
+		const module = await import(
+			/* webpackChunkName: "woo-layer-component" */
+			'../../../integrations/woocommerce/pages/components/WoocommerceLayer'
+		);
 
-	window.godamLayerComponents = window.godamLayerComponents || {};
-	window.godamLayerComponents[ componentName ] = module.default;
+		window.godamLayerComponents = window.godamLayerComponents || {};
+		window.godamLayerComponents[ componentName ] = module.default;
+	} catch ( error ) {
+		// eslint-disable-next-line no-console
+		console.error( 'GoDAM: Failed to load WooCommerce layer component.', error );
+	}
 };

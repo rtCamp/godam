@@ -295,11 +295,15 @@ class Bootstrap {
 	 */
 	public function enqueue_global_woo_script() {
 
+		if ( ! is_woocommerce() && ! is_cart() && ! is_checkout() && ! is_account_page() ) {
+			return;
+		}
+
 		wp_enqueue_script(
 			'rtgodam-wc-woo-global-script',
 			RTGODAM_URL . 'assets/build/integrations/woocommerce/js/wc-woo-global-script.min.js',
 			array(),
-			rtgodam_wc_get_asset_version( RTGODAM_PATH . 'assets/build/integrations/woocommerce/wc-woo-global-script.min.js' ),
+			rtgodam_wc_get_asset_version( RTGODAM_PATH . 'assets/build/integrations/woocommerce/js/wc-woo-global-script.min.js' ),
 			true
 		);
 

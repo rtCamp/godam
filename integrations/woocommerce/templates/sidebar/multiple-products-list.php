@@ -20,6 +20,8 @@ if ( empty( $products ) ) {
 
 	<?php foreach ( $products as $product ) : ?>
 
+		<?php $product_url = get_permalink( $product->get_id() ); ?>
+
 		<div class="godam-sidebar-product-item">
 
 			<div class="godam-sidebar-product-image">
