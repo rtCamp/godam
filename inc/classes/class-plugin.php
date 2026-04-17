@@ -84,8 +84,13 @@ class Plugin {
 	 */
 	protected function __construct() {
 
-		// Run one-time migrations before loading plugin components.
-		Migrations_Runner::run();
+		// Always register persistent hooks (e.g. Action Scheduler callbacks)
+		// so queued async jobs can fire on any request.
+		Migrations_Runner::init();
+
+		// Trigger pending migrations only when the plugin version has changed
+		// (fresh install or update). No-ops on every other request.
+		Migrations_Runner::maybe_run();
 
 		// Load plugin classes.
 		Update::get_instance();

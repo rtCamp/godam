@@ -25,7 +25,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * ## Lifecycle
  *
- * 1. `Runner::run()` calls `maybe_run()` on every plugin bootstrap.
+ * 1. `Runner::maybe_run()` calls `maybe_run()` when the plugin version has changed.
  * 2. `maybe_run()` bails immediately if the guard option is set, or if the
  *    current context is a frontend request.
  * 3. On the first qualifying request `run()` is scheduled on `init` priority 99.
@@ -93,18 +93,30 @@ class Godam_Cpt_Cleanup {
 	const AS_GROUP = 'godam-cpt-cleanup';
 
 	/**
+	 * Register the Action Scheduler batch callback.
+	 *
+	 * Must be called on every request so Action Scheduler can invoke
+	 * process_batch() for jobs that were queued on a previous request,
+	 * regardless of whether the migration is still pending.
+	 *
+	 * Called by Runner::init() during plugin bootstrap.
+	 *
+	 * @return void
+	 */
+	public static function register_hooks(): void {
+		add_action( self::AS_HOOK, array( static::class, 'process_batch' ) );
+	}
+
+	/**
 	 * Register the AS batch callback and schedule the migration if needed.
 	 *
-	 * Called by Runner::run() on every plugin bootstrap. The AS hook is
-	 * registered unconditionally so Action Scheduler can fire it on any
-	 * request, even while a migration is already in progress.
+	 * Called by Runner::maybe_run() only when the plugin version has changed.
+	 * The AS hook is registered by register_hooks() unconditionally; this
+	 * method only decides whether to queue a new migration run.
 	 *
 	 * @return void
 	 */
 	public static function maybe_run() {
-		// Always register the batch callback so AS can fire it on any request.
-		add_action( self::AS_HOOK, array( static::class, 'process_batch' ) );
-
 		// 'processing' or 'done' — migration already started or complete.
 		if ( get_option( self::OPTION_KEY ) ) {
 			return;

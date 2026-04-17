@@ -123,6 +123,14 @@ class Gallery_V1_To_V2 {
 	 * @return void
 	 */
 	public static function run() {
+		// Non-cron, non-CLI requests must originate from an authenticated admin.
+		$is_cli  = defined( 'WP_CLI' ) && WP_CLI;
+		$is_cron = wp_doing_cron();
+
+		if ( ! $is_cron && ! $is_cli && ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) ) {
+			return;
+		}
+
 		global $wpdb;
 
 		// Acquire a short-lived lock so concurrent requests on the same site
