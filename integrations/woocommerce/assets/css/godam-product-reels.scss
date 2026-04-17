@@ -1,0 +1,137 @@
+/**
+ * Frontend styles for the Product Video Gallery carousel
+ * on WooCommerce single product pages.
+ */
+
+.rtgodam-product-video-gallery {
+	position: relative;
+	width: 100%;
+}
+
+.rtgodam-product-video-gallery__container {
+	display: flex;
+	gap: 12px;
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
+}
+
+.rtgodam-product-video-gallery__item {
+	flex: 0 0 180px;
+	scroll-snap-align: start;
+	border-radius: 12px;
+	overflow: hidden;
+	background: #000;
+
+	.godam-video-placeholder {
+
+		.animate-play-btn {
+			display: none;
+		}
+
+		img.godam-player-poster-image {
+			object-fit: cover;
+		}
+	}
+
+	.godam-gallery-video-wrapper {
+		position: relative;
+		width: 100%;
+		aspect-ratio: 9 / 16;
+		overflow: hidden;
+
+		figure {
+			margin: 0;
+		}
+
+		.godam-player__wrapper,
+		.video-js {
+			width: 100%;
+			height: 100%;
+		}
+
+		.vjs-tech {
+			object-fit: cover;
+		}
+
+		// Hide default Video.js controls and loading spinner, only show the progress bar.
+		.vjs-loading-spinner {
+			display: none !important;
+		}
+
+		.vjs-control-bar {
+			display: block !important;
+			opacity: 1 !important;
+
+			.vjs-control {
+				display: none !important;
+
+				&.vjs-progress-control {
+					display: block !important;
+					pointer-events: none;
+				}
+			}
+		}
+
+		.vjs-big-play-button {
+			display: none !important;
+		}
+	}
+}
+
+// Navigation Arrows.
+.rtgodam-product-video-gallery__nav {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border: none;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.95);
+	color: #333;
+	cursor: pointer;
+	z-index: 20;
+	transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+	&:hover {
+		background: #fff;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+	}
+
+	svg {
+		width: 20px;
+		height: 20px;
+	}
+
+	&--prev {
+		left: 8px;
+	}
+
+	&--next {
+		right: 8px;
+	}
+}
+
+@media (max-width: 768px) {
+
+	.rtgodam-product-video-gallery__nav {
+		width: 32px;
+		height: 32px;
+
+		svg {
+			width: 18px;
+			height: 18px;
+		}
+	}
+}

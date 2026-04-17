@@ -192,6 +192,10 @@ const Layers = [
 	},
 ];
 
+// Merge with PHP-filtered layers (e.g., WooCommerce)
+const phpFilteredLayers = window.godamVideoEditorConfig?.layerOptions || [];
+const AllLayers = [ ...Layers, ...phpFilteredLayers ];
+
 /**
  * Modal to select the layer to be added on the video at a particular timestamp.
  *
@@ -204,17 +208,17 @@ const Layers = [
 const LayerSelector = ( { closeModal, addNewLayer } ) => {
 	const [ selectedLayer, setSelectedLayer ] = useState( null );
 	const [ searchQuery, setSearchQuery ] = useState( '' );
-	const [ filteredLayers, setFilteredLayers ] = useState( Layers );
+	const [ filteredLayers, setFilteredLayers ] = useState( AllLayers );
 	const [ activeTab, setActiveTab ] = useState( 'all' );
 
 	const uniqueLayerTypes = useMemo( () => {
-		return Layers.reduce( ( acc, layer ) => {
+		return AllLayers.reduce( ( acc, layer ) => {
 			if ( ! acc.includes( layer.type ) ) {
 				acc.push( layer.type );
 			}
 			return acc;
 		}, [] );
-	}, [] );
+	}, [ AllLayers ] );
 
 	// Create tabs array with "all" as the first item
 	const allTabs = useMemo( () => {
@@ -274,7 +278,7 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 			setActiveTab( 'all' );
 		}
 
-		const filtered = Layers.filter( ( layer ) =>
+		const filtered = AllLayers.filter( ( layer ) =>
 			layer.title.toLowerCase().includes( lowerCaseQuery ) ||
 		layer.description.toLowerCase().includes( lowerCaseQuery ),
 		);
@@ -290,7 +294,7 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 	const handleTabClick = ( type ) => {
 		if ( activeTab === type ) {
 			setActiveTab( 'all' );
-			setFilteredLayers( Layers );
+			setFilteredLayers( AllLayers );
 			return;
 		}
 
@@ -299,9 +303,9 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 
 		setActiveTab( type );
 		if ( type === 'all' ) {
-			setFilteredLayers( Layers );
+			setFilteredLayers( AllLayers );
 		} else {
-			const filtered = Layers.filter( ( layer ) => layer.type === type );
+			const filtered = AllLayers.filter( ( layer ) => layer.type === type );
 			setFilteredLayers( filtered );
 		}
 	};
@@ -366,7 +370,7 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 											alt={ layer.title }
 										/>
 										{
-											( layer.type === 'form' ) && layer.formIcon && (
+											( layer.type === 'form' || layer.type === 'woo' ) && layer.formIcon && (
 												<img
 													className="godam-layer-selector__item__image-container__form-icon"
 													src={ layer.formIcon }

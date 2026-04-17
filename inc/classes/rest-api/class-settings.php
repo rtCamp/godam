@@ -64,6 +64,11 @@ class Settings extends Base {
 				'enable_global_video_ads' => false,
 				'adTagUrl'                => '',
 			),
+			'integrations' => array(
+				'woocommerce' => array(
+					'enable' => true,
+				),
+			),
 		);
 	}
 
@@ -425,6 +430,11 @@ class Settings extends Base {
 			'ads_settings' => array(
 				'enable_global_video_ads' => rest_sanitize_boolean( $settings['ads_settings']['enable_global_video_ads'] ?? $default['ads_settings']['enable_global_video_ads'] ),
 				'adTagUrl'                => esc_url_raw( $settings['ads_settings']['adTagUrl'] ?? $default['ads_settings']['adTagUrl'] ),
+			),
+			'integrations' => array(
+				'woocommerce' => array(
+					'enable' => rest_sanitize_boolean( $settings['integrations']['woocommerce']['enable'] ?? $default['integrations']['woocommerce']['enable'] ),
+				),
 			),
 		);
 	}

@@ -20,6 +20,7 @@ use RTGODAM\Inc\Video_Preview;
 use RTGODAM\Inc\Video_Embed;
 use RTGODAM\Inc\Video_Engagement;
 use RTGODAM\Inc\Update;
+use RTGODAM\Inc\Integrations;
 
 use RTGODAM\Inc\Taxonomies\Media_Folders;
 
@@ -98,6 +99,7 @@ class Plugin {
 		Video_Preview::get_instance();
 		Video_Embed::get_instance();
 		Embed::get_instance();
+		Integrations::get_instance();
 
 		// Load shortcodes.
 		GoDAM_Player::get_instance();
@@ -110,6 +112,7 @@ class Plugin {
 
 		$this->load_taxonomies();
 		$this->load_plugin_configs();
+
 		$this->load_rest_api();
 		$this->init_gravity_forms();
 		$this->load_sureforms();

@@ -1,0 +1,152 @@
+/**
+ * GoDAM Video Product Gallery - Editor Styles
+ */
+
+// Inspector Controls Styles
+.godam-layout-control,
+.godam-view-ratio-control {
+	margin-bottom: 16px;
+
+	.godam-control-label {
+		margin-bottom: 8px;
+		font-weight: 500;
+		font-size: 11px;
+		text-transform: uppercase;
+		color: #1e1e1e;
+	}
+}
+
+.godam-layout-button-group {
+	display: flex;
+	gap: 8px;
+
+	.godam-layout-button {
+		min-width: 44px;
+		min-height: 44px;
+		padding: 8px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+		background: #fff;
+
+		&:hover {
+			background: #f0f0f0;
+		}
+
+		svg {
+			width: 24px;
+			height: 24px;
+		}
+
+		&.is-pressed {
+			background: #007cba;
+			border-color: #007cba;
+			color: #fff;
+
+			svg {
+				stroke: #fff;
+			}
+		}
+
+	}
+}
+
+.godam-view-ratio-buttons {
+	display: flex;
+	flex-wrap: nowrap;
+	gap: 0;
+
+	.godam-view-ratio-button {
+		min-width: auto;
+		padding: 6px 10px;
+		font-size: 12px;
+		border-radius: 0;
+		margin: 0;
+
+		&:first-child {
+			border-radius: 4px 0 0 4px;
+		}
+
+		&:last-child {
+			border-radius: 0 4px 4px 0;
+		}
+
+		&.is-secondary {
+			background: #fff;
+			border: 1px solid #ccc;
+			border-left-width: 0;
+			color: #1e1e1e;
+
+			&:first-child {
+				border-left-width: 1px;
+			}
+
+			&:hover {
+				background: #f0f0f0;
+			}
+		}
+
+		&.is-primary {
+			background: #007cba;
+			border-color: #007cba;
+			color: #fff;
+		}
+	}
+}
+
+// Block Editor Styles
+.godam-video-product-gallery {
+	width: 100%;
+	padding: 16px;
+	background: #f8f9fa;
+	border: 1px dashed #ccc;
+	border-radius: 8px;
+	min-height: 200px;
+
+	// CSS Custom Properties with defaults
+	--godam-gallery-item-width: 180px;
+	--godam-gallery-gap: 16px;
+
+	// Carousel Layout
+	&--carousel {
+
+		.block-editor-inner-blocks {
+
+			.block-editor-block-list__layout {
+				display: flex;
+				flex-direction: row;
+				gap: var(--godam-gallery-gap);
+				overflow-x: auto;
+				padding: 8px 0;
+				align-items: stretch;
+
+				> .wp-block {
+					flex-shrink: 0;
+					width: var(--godam-gallery-item-width);
+				}
+			}
+		}
+	}
+
+	// Grid Layout
+	&--grid {
+
+		.block-editor-inner-blocks {
+
+			.block-editor-block-list__layout {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(var(--godam-gallery-item-width), 1fr));
+				gap: var(--godam-gallery-gap);
+				padding: 8px 0;
+			}
+		}
+	}
+
+	.block-list-appender {
+		position: initial;
+	}
+}
+
+
