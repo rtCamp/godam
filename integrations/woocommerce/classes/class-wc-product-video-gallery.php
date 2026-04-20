@@ -554,7 +554,7 @@ class WC_Product_Video_Gallery {
 
 			$videos_html .= '<div class="rtgodam-product-video-gallery__item">';
 			$videos_html .= '<div class="godam-gallery-video-wrapper">';
-			$videos_html .= do_shortcode( "[godam_video id='{$attachment_id}' autoplay={$autoplay} muted=true loop=false controls=true aspect_ratio='9:16' godam_context='godam-woo-product-page-reels']" );
+			$videos_html .= do_shortcode( "[godam_video id='{$attachment_id}' autoplay={$autoplay} muted=true loop=false controls=true aspect_ratio='9:16' godam_context='godam-woo-product-page-reels' preload='none']" );
 			$videos_html .= '</div>';
 			$videos_html .= '</div>';
 

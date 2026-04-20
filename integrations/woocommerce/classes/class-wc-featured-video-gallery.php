@@ -402,7 +402,7 @@ class WC_Featured_Video_Gallery {
 
 			// Shortcode.
 			$shortcode_html = do_shortcode(
-				"[godam_video id='{$attachment_id}' muted='true' loop='true' autoplay='true' controls='false' aspect_ratio='responsive' godam_context='godam-featured-video-gallery']"
+				"[godam_video id='{$attachment_id}' muted='true' loop='true' autoplay='true' controls='false' aspect_ratio='responsive' godam_context='godam-featured-video-gallery' preload='none']"
 			);
 
 			return sprintf(
