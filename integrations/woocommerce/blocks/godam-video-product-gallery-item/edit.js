@@ -114,13 +114,54 @@ export default function Edit( { attributes, setAttributes, context } ) {
 	const productPrice = productData.price;
 	const productImage = productData.image;
 
+	// Ref to track the GoDAM virtual media ID from the most recent selection.
+	// When a GoDAM-tab item is chosen, MediaUpload fires onSelect with the
+	// virtual (non-WP) ID before the real attachment is created. We capture
+	// that ID here so the godam-virtual-attachment-created handler can match it.
+	const pendingVirtualMediaId = useRef( null );
+
 	// Handle video selection — only persist the ID.
 	const onSelectVideo = ( media ) => {
 		if ( ! media || ! media.id ) {
 			return;
 		}
-		setAttributes( { videoId: media.id } );
+		// Always track the raw ID for virtual attachment matching.
+		pendingVirtualMediaId.current = media.id;
+
+		// Only immediately set the attribute for valid numeric WP attachment IDs.
+		// For GoDAM virtual IDs (non-numeric strings like "idcirqui0b"), skip the
+		// immediate setAttributes call to avoid a 404 on /wp/v2/media/<virtual-id>.
+		// The godam-virtual-attachment-created event will provide the real WP ID.
+		const numericId = parseInt( media.id, 10 );
+		if ( numericId > 0 && String( numericId ) === String( media.id ) ) {
+			setAttributes( { videoId: numericId } );
+		}
 	};
+
+	// Listen for the GoDAM virtual attachment event.
+	// When the user picks a video from the GoDAM tab, the real WordPress
+	// attachment is created asynchronously AFTER onSelectVideo fires.
+	// This effect waits for that creation and then corrects videoId to the
+	// real WP attachment ID.
+	useEffect( () => {
+		const handleVirtualAttachmentCreated = ( event ) => {
+			const { attachment, virtualMediaId } = event.detail || {};
+			if (
+				attachment?.id &&
+				pendingVirtualMediaId.current !== null &&
+				String( pendingVirtualMediaId.current ) === String( virtualMediaId )
+			) {
+				pendingVirtualMediaId.current = null;
+				setAttributes( { videoId: attachment.id } );
+			}
+		};
+
+		document.addEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
+
+		return () => {
+			document.removeEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
+		};
+	}, [ setAttributes ] );
 
 	// Product search with debounce
 	const searchProducts = useCallback(
