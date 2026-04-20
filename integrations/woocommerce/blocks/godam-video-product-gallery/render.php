@@ -200,7 +200,7 @@ $wrapper_attributes = get_block_wrapper_attributes(
 						// Render the video using the godam_video shortcode.
 						echo do_shortcode(
 							sprintf(
-								'[godam_video id="%d" muted="true" loop="false" autoplay="%s" controls="true" aspect_ratio="%s" godam_context="godam-video-product-gallery" showShareButton="1"]',
+								'[godam_video id="%d" muted="true" loop="false" autoplay="%s" controls="true" aspect_ratio="%s" godam_context="godam-video-product-gallery" preload="none"]',
 								$item['videoId'],
 								'false',
 								esc_attr( $view_ratio )
