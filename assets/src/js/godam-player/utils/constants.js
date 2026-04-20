@@ -1,3 +1,6 @@
+/* eslint-disable eslint-comments/disable-enable-pair */
+/* eslint-disable jsdoc/check-indentation */
+
 /**
  * Constants.
  */
@@ -39,27 +42,30 @@ export const HOTSPOT_CONSTANTS = {
 };
 
 /**
- * Product Hotspot constants.
- */
-export const PRODUCT_HOTSPOT_CONSTANTS = {
-	DEFAULT_DIAMETER_PERCENT: 15,
-	DEFAULT_DIAMETER_PX: 48,
-	MIN_PX: 10,
-	MIN_PERCENT_FALLBACK: 5,
-	BASE_WIDTH: 800,
-	BASE_HEIGHT: 600,
-};
-
-/**
  * Layer types.
+ *
+ * NOTE: Add-ons can register custom layer types using:
+ * import { registerLayerType } from './layer-registry.js';
+ * registerLayerType( 'custom-id', {
+ *   label: 'Custom Layer',
+ *   validator: (layer, dependencies) => true,
+ *   manager: CustomLayerManager // optional
+ * });
  */
 export const LAYER_TYPES = {
 	FORM: 'form',
 	CTA: 'cta',
 	POLL: 'poll',
 	HOTSPOT: 'hotspot',
-	WOOCOMMERCE: 'woo',
 };
+
+/**
+ * Get dynamic layer types (including add-on registered types)
+ * Use this if you need to access dynamically registered layer types
+ *
+ * @return {Object} Object with all available layer types
+ */
+export { getLayerTypes } from './layer-registry.js';
 
 /**
  * Keyboard controls.

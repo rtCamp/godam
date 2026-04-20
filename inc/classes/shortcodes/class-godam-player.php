@@ -60,13 +60,7 @@ class GoDAM_Player {
 		// Add WooCommerce Blocks data store as a dependency if WooCommerce is active.
 		// This is required for the WooCommerce cart store (wc/store/cart) to be available.
 		$dependencies = $godam_player_frontend_assets['dependencies'];
-		if ( ! function_exists( 'is_plugin_active' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		}
-		if ( is_plugin_active( 'woocommerce/woocommerce.php' ) &&
-			! in_array( 'wc-blocks-data-store', $dependencies, true ) ) {
-			$dependencies[] = 'wc-blocks-data-store';
-		}
+		$dependencies = apply_filters( 'godam_player_frontend_dependencies', $dependencies );
 
 		// Register your scripts and styles here.
 		wp_register_script(

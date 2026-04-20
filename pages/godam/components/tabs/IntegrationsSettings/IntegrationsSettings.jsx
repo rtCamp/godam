@@ -24,14 +24,18 @@ import { scrollToTop, hasValidAPIKey } from '../../../utils/index.js';
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
 import { getPricingUrl } from '../../../../shared/premium-layers.js';
-import WooCommerceSettings from './../../../../../integrations/woocommerce/pages/components/settings/WooCommerceSettings.jsx';
+
+// WooCommerceSettings is loaded dynamically by the GoDAM for Woo add-on.
+// It registers itself via window.godamIntegrationComponents.
+const getWooCommerceSettings = () => window.godamIntegrationComponents?.WooCommerceSettings || null;
 
 const IntegrationSettings = () => {
 	const isWooActive = Boolean( window?.easydamMediaLibrary?.isWooActive );
+	const WooCommerceSettings = getWooCommerceSettings();
 
-	// Build tabs conditionally.
+	// Build tabs conditionally — only show Woo tab when add-on provides its component.
 	const tabs = [
-		...( isWooActive
+		...( isWooActive && WooCommerceSettings
 			? [
 				{
 					name: 'woocommerce',
