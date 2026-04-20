@@ -41,7 +41,6 @@ $media-library-active-folder: #f5f5f5;
 #godam-snackbar {
 	visibility: hidden;
 	min-width: 250px;
-	background: #cc1818;
 	color: #fff;
 	text-align: center;
 	border-radius: 4px;
@@ -51,6 +50,14 @@ $media-library-active-folder: #f5f5f5;
 	bottom: 35px;
 	z-index: 999999;
 	font-size: 14px;
+}
+
+#godam-snackbar.godam-snackbar-error {
+	background: #cc1818;
+}
+
+#godam-snackbar.godam-snackbar-success {
+	background: #1a8f4c;
 }
 
 #godam-snackbar.show {
@@ -470,7 +477,8 @@ $media-library-active-folder: #f5f5f5;
  */
 .attachment-actions {
 
-	.attachment-video-actions {
+	.attachment-video-actions,
+	.manage-versions-container {
 		display: flex;
 		justify-content: start;
 		gap: 0.5rem;
@@ -717,5 +725,230 @@ $media-library-active-folder: #f5f5f5;
 
 	.mejs-poster {
 		background-size: contain !important;
+	}
+}
+
+.rtgodam-manage-versions-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 160001;  // 160000 is the media library modal z-index.
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	.rtgodam-manage-versions-overlay {
+		position: absolute;
+		inset: 0;
+		background: rgba( 0, 0, 0, 0.45 );
+	}
+
+	.rtgodam-manage-versions-card {
+		position: relative;
+		width: min( 1200px, calc( 100vw - 32px ) );
+		background: #fff;
+		border-radius: 14px;
+		box-shadow: 0 18px 48px rgba( 0, 0, 0, 0.24 );
+
+		.rtgodam-manage-versions-header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 4px 20px;
+			border-bottom: 1px solid #e0e0e0;
+
+			h2 {
+				margin: 0;
+				font-size: 22px;
+				line-height: 50px;
+			}
+
+			.rtgodam-manage-versions-close {
+				background: transparent;
+				border: 0;
+				font-size: 22px;
+				line-height: 1;
+				cursor: pointer;
+			}
+		}
+
+		.rtgodam-manage-versions-body {
+			padding: 16px 20px 32px;
+			max-height: calc( 100vh - 200px );
+			overflow: auto;
+
+			.rtgodam-manage-versions-toolbar {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 12px;
+				margin-bottom: 16px;
+
+				.rtgodam-manage-versions-count {
+					font-size: 18px;
+					line-height: 24px;
+					font-weight: 700;
+				}
+
+				.rtgodam-add-version {
+					background: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
+					border: 1px solid transparent;
+					border-radius: 8px;
+					box-shadow: 0px 1px 2px 0px #0A0D120D;
+					padding: 10px 16px;
+					font-size: 14px;
+					line-height: 24px;
+					font-weight: 500;
+					transition: transform 0.1s ease;
+
+					&:active {
+						 transform: translateY(2px) scale(0.98);
+					}
+				}
+			}
+
+			.rtgodam-manage-versions-list {
+				display: grid;
+				gap: 12px;
+
+				.rtgodam-version-row {
+					display: flex;
+					align-items: center;
+					justify-content: space-between;
+					gap: 12px;
+					padding: 24px;
+					border: 1px solid #e0e0e0;
+					border-radius: 12px;
+					background: #fff;
+
+					&.is-active {
+						background: #f5f5f5;
+					}
+
+					.rtgodam-version-left {
+						display: flex;
+						align-items: center;
+						gap: 20px;
+						min-width: 0;
+					}
+
+					.rtgodam-version-badge {
+						width: 40px;
+						height: 40px;
+						display: inline-flex;
+						align-items: center;
+						justify-content: center;
+						background: #e0e0e0;
+						color: #1D2327;
+						border-radius: 50%;
+						font-weight: 600;
+						font-size: 16px;
+						line-height: 1;
+					}
+
+					.rtgodam-version-title-row {
+						display: flex;
+						align-items: center;
+						flex-wrap: wrap;
+						gap: 12px;
+						margin-bottom: 12px;
+						font-size: 16px;
+						line-height: 1;
+
+						.rtgodam-version-title {
+							color: #1D2327;
+							font-weight: 600;
+						}
+
+						.rtgodam-version-chip {
+							display: inline-flex;
+							align-items: center;
+							padding: 2px 10px;
+							border-radius: 16px;
+							font-size: 14px;
+							line-height: 20px;
+							font-weight: 500;
+						}
+
+						.rtgodam-version-chip--default {
+							color: #1d4ed8;
+							background: #eff8ff;
+						}
+
+						.rtgodam-version-chip--active {
+							color: #027948;
+							background: #ecfdf3;
+						}
+					}
+
+					.rtgodam-version-details {
+						font-size: 14px;
+						line-height: 22px;
+						display: flex;
+						gap: 12px;
+						color: #777;
+						font-weight: 400;
+					}
+
+					.rtgodam-version-size,
+					.rtgodam-version-duration {
+						display: flex;
+						align-items: center;
+						gap: 4px;
+
+						> span {
+							display: inline-flex;
+
+							svg {
+								height: 14px;
+							}
+						}
+					}
+
+					.rtgodam-version-right {
+						display: flex;
+						align-items: center;
+						gap: 12px;
+					}
+
+					.rtgodam-version-action {
+						border-radius: 8px;
+						border: 1px solid #b8b8b8;
+						height: 40px;
+						padding: 8px 14px;
+						background: #fff;
+						color: #292929;
+						box-shadow: 0px 1px 2px 0px #0a0d120d;
+						font-size: 14px;
+						line-height: 24px;
+						font-weight: 500;
+						transition: transform 0.1s ease;
+
+						&:active {
+							transform: translateY(2px) scale(0.98);
+						}
+					}
+
+					.rtgodam-version-delete {
+						display: inline-flex;
+						align-items: center;
+						justify-content: center;
+						width: 40px;
+						height: 40px;
+						border: 1px solid #fff;
+						border-radius: 8px;
+						padding: 8px;
+						background: transparent;
+						fill: #b32318;
+						cursor: pointer;
+						transition: transform 0.1s ease, border 0.1s ease;
+
+						&:active {
+							border: 1px solid #b32318;
+							transform: translateY(2px) scale(0.98);
+						}
+					}
+				}
+			}
+		}
 	}
 }

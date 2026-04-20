@@ -55,6 +55,9 @@ class Media_Library_Ajax {
 		// Add admin notice for HTTP auth and AJAX handler to save HTTP auth status.
 		add_action( 'admin_notices', array( $this, 'http_auth_warning_notice' ) );
 		add_action( 'wp_ajax_godam_save_http_auth_status', array( $this, 'save_http_auth_status' ) );
+		add_action( 'wp_ajax_godam_get_media_versions', array( $this, 'get_media_versions' ) );
+		add_action( 'wp_ajax_godam_switch_active_version', array( $this, 'switch_active_version' ) );
+		add_action( 'wp_ajax_godam_delete_version', array( $this, 'delete_version' ) );
 
 		add_filter( 'wp_content_img_tag', array( $this, 'filter_rtgodam_content_img_tag' ), 10, 3 );
 	}
@@ -511,7 +514,7 @@ class Media_Library_Ajax {
 			// Set the icon to be used for the virtual media preview.
 			// Populate the image field used by the media library to show previews.
 			$icon_url = wp_mime_type_icon( $attachment->ID );
-			
+
 			// For audio and PDF, ensure we use the default icons.
 			if ( empty( $icon_url ) || strpos( $icon_url, '.svg' ) !== false ) {
 				if ( $is_audio ) {
@@ -520,7 +523,7 @@ class Media_Library_Ajax {
 					$icon_url = includes_url( 'images/media/document.png' );
 				}
 			}
-			
+
 			$response['image'] = array();
 
 			if ( ! empty( $icon_url ) ) {
@@ -1099,7 +1102,7 @@ class Media_Library_Ajax {
 			return $sources;
 		}
 
-		// If rtgodam_image_sizes meta exists, use it to build the srcset. 
+		// If rtgodam_image_sizes meta exists, use it to build the srcset.
 		// This is the case for GoDAM-managed images which may not be virtual but still need correct srcset URLs.
 		if ( ! empty( $rtgodam_image_sizes ) ) {
 
@@ -1122,7 +1125,7 @@ class Media_Library_Ajax {
 
 			$sources = $new_sources;
 		} elseif ( ! empty( $godam_original_id ) ) {
-			// Compatibility handling for virtual media created before GoDAM image sizes meta was implemented. 
+			// Compatibility handling for virtual media created before GoDAM image sizes meta was implemented.
 			// In this case, we will reconstruct the URLs based on the original image URL and the file names in the sources array.
 
 			// Use the current image URL as the base for all subsizes.
@@ -1154,14 +1157,14 @@ class Media_Library_Ajax {
 	 */
 	public function save_http_auth_status() {
 		check_ajax_referer( 'godam-http-auth-detector', 'nonce' );
-	
+
 		if ( ! current_user_can( 'upload_files' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'godam' ) ) );
 		}
 
 		$has_http_auth_raw = isset( $_POST['has_http_auth'] ) ? sanitize_text_field( wp_unslash( $_POST['has_http_auth'] ) ) : '';
 		$has_http_auth     = ( '1' === $has_http_auth_raw );
-	
+
 		// Save status.
 		update_option(
 			'rtgodam_http_auth_status',
@@ -1178,7 +1181,261 @@ class Media_Library_Ajax {
 			)
 		);
 	}
-	
+
+	/**
+	 * Fetch media versions from GoDAM API for a given attachment.
+	 *
+	 * @return void
+	 */
+	public function get_media_versions() {
+		check_ajax_referer( 'easydam_media_library', 'nonce' );
+
+		if ( ! current_user_can( 'upload_files' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'godam' ) ), 403 );
+		}
+
+		$attachment_id = isset( $_POST['attachment_id'] ) ? absint( wp_unslash( $_POST['attachment_id'] ) ) : 0;
+
+		if ( empty( $attachment_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'Attachment ID is required.', 'godam' ) ), 400 );
+		}
+
+		$job_name = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+
+		if ( empty( $job_name ) ) {
+			wp_send_json_error( array( 'message' => __( 'Job name not found for this attachment.', 'godam' ) ), 400 );
+		}
+
+		$api_key = get_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $api_key ) ) {
+			wp_send_json_error( array( 'message' => __( 'GoDAM API key is missing.', 'godam' ) ), 400 );
+		}
+
+		$endpoint = trailingslashit( RTGODAM_API_BASE ) . 'api/method/godam_core.api.media.list_all_versions';
+		$url      = add_query_arg(
+			array(
+				'job_name' => $job_name,
+				'api_key'  => $api_key,
+			),
+			$endpoint
+		);
+
+		$response = wp_remote_get(
+			$url,
+			array(
+				'timeout' => 20,
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'Failed to fetch media versions from GoDAM.', 'godam' ),
+					'error'   => $response->get_error_message(),
+				),
+				500
+			);
+		}
+
+		$status_code = wp_remote_retrieve_response_code( $response );
+		$body        = wp_remote_retrieve_body( $response );
+		$decoded     = json_decode( $body, true );
+
+		if ( $status_code !== 200 ) {
+			wp_send_json_error(
+				array(
+					'message'  => __( 'GoDAM API returned an error.', 'godam' ),
+					'status'   => $status_code,
+					'response' => is_array( $decoded ) ? $decoded : $body,
+				),
+				$status_code
+			);
+		}
+
+		wp_send_json_success(
+			array(
+				'job_name' => $job_name,
+				'response' => is_array( $decoded ) ? $decoded : $body,
+			)
+		);
+	}
+
+	/**
+	 * Switch active media version in GoDAM.
+	 *
+	 * @return void
+	 */
+	public function switch_active_version() {
+		check_ajax_referer( 'easydam_media_library', 'nonce' );
+
+		if ( ! current_user_can( 'upload_files' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'godam' ) ), 403 );
+		}
+
+		$attachment_id = isset( $_POST['attachment_id'] ) ? absint( wp_unslash( $_POST['attachment_id'] ) ) : 0;
+		if ( empty( $attachment_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'Attachment ID is required.', 'godam' ) ), 400 );
+		}
+
+		$version_number = isset( $_POST['version_number'] ) ? absint( wp_unslash( $_POST['version_number'] ) ) : 0;
+		if ( $version_number < 1 ) {
+			wp_send_json_error( array( 'message' => __( 'Version number must be greater than 0.', 'godam' ) ), 400 );
+		}
+
+		$job_name = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+		if ( empty( $job_name ) ) {
+			wp_send_json_error( array( 'message' => __( 'Job name not found for this attachment.', 'godam' ) ), 400 );
+		}
+
+		$api_key = get_option( 'rtgodam-api-key', '' );
+		if ( empty( $api_key ) ) {
+			wp_send_json_error( array( 'message' => __( 'GoDAM API key is missing.', 'godam' ) ), 400 );
+		}
+
+		$max_versions = isset( $_POST['max_versions'] ) ? absint( wp_unslash( $_POST['max_versions'] ) ) : 5;
+		if ( $max_versions < 1 ) {
+			$max_versions = 5;
+		}
+
+		if ( $version_number > $max_versions ) {
+			wp_send_json_error( array( 'message' => sprintf( __( 'Version number must be between 1 and %d.', 'godam' ), $max_versions ) ), 400 );
+		}
+
+		$endpoint = trailingslashit( RTGODAM_API_BASE ) . 'api/method/godam_core.api.media.switch_active_version';
+		$url      = add_query_arg(
+			array(
+				'job_name'       => $job_name,
+				'api_key'        => $api_key,
+				'version_number' => $version_number,
+			),
+			$endpoint
+		);
+
+		$response = wp_remote_post(
+			$url,
+			array(
+				'timeout' => 20,
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'Failed to switch active version.', 'godam' ),
+					'error'   => $response->get_error_message(),
+				),
+				500
+			);
+		}
+
+		$status_code = wp_remote_retrieve_response_code( $response );
+		$body        = wp_remote_retrieve_body( $response );
+		$decoded     = json_decode( $body, true );
+
+		if ( $status_code !== 200 ) {
+			wp_send_json_error(
+				array(
+					'message'  => __( 'GoDAM API returned an error while switching version.', 'godam' ),
+					'status'   => $status_code,
+					'response' => is_array( $decoded ) ? $decoded : $body,
+				),
+				$status_code
+			);
+		}
+
+		wp_send_json_success(
+			array(
+				'job_name'       => $job_name,
+				'version_number' => $version_number,
+				'response'       => is_array( $decoded ) ? $decoded : $body,
+			)
+		);
+	}
+
+	/**
+	 * Delete a media version in GoDAM.
+	 *
+	 * @return void
+	 */
+	public function delete_version() {
+		check_ajax_referer( 'easydam_media_library', 'nonce' );
+
+		if ( ! current_user_can( 'upload_files' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'godam' ) ), 403 );
+		}
+
+		$attachment_id = isset( $_POST['attachment_id'] ) ? absint( wp_unslash( $_POST['attachment_id'] ) ) : 0;
+		if ( empty( $attachment_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'Attachment ID is required.', 'godam' ) ), 400 );
+		}
+
+		$version_number = isset( $_POST['version_number'] ) ? absint( wp_unslash( $_POST['version_number'] ) ) : 0;
+		if ( $version_number < 2 ) {
+			wp_send_json_error( array( 'message' => __( 'Cannot delete this version.', 'godam' ) ), 400 );
+		}
+
+		$job_name = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+		if ( empty( $job_name ) ) {
+			wp_send_json_error( array( 'message' => __( 'Job name not found for this attachment.', 'godam' ) ), 400 );
+		}
+
+		$api_key = get_option( 'rtgodam-api-key', '' );
+		if ( empty( $api_key ) ) {
+			wp_send_json_error( array( 'message' => __( 'GoDAM API key is missing.', 'godam' ) ), 400 );
+		}
+
+		$endpoint = trailingslashit( RTGODAM_API_BASE ) . 'api/method/godam_core.api.media.delete_version';
+		$url      = add_query_arg(
+			array(
+				'job_name'       => $job_name,
+				'api_key'        => $api_key,
+				'version_number' => $version_number,
+			),
+			$endpoint
+		);
+
+		$response = wp_remote_post(
+			$url,
+			array(
+				'timeout' => 20,
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'Failed to delete version.', 'godam' ),
+					'error'   => $response->get_error_message(),
+				),
+				500
+			);
+		}
+
+		$status_code = wp_remote_retrieve_response_code( $response );
+		$body        = wp_remote_retrieve_body( $response );
+		$decoded     = json_decode( $body, true );
+
+		if ( $status_code !== 200 ) {
+			wp_send_json_error(
+				array(
+					'message'  => __( 'GoDAM API returned an error while deleting version.', 'godam' ),
+					'status'   => $status_code,
+					'response' => is_array( $decoded ) ? $decoded : $body,
+				),
+				$status_code
+			);
+		}
+
+		wp_send_json_success(
+			array(
+				'job_name'         => $job_name,
+				'deleted_version'  => $version_number,
+				'response'         => is_array( $decoded ) ? $decoded : $body,
+			)
+		);
+	}
+
 	/**
 	 * Display HTTP authentication warning notice.
 	 *
