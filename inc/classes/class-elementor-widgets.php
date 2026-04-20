@@ -48,7 +48,7 @@ class Elementor_Widgets {
 
 	/**
 	 * Scripts for elementor frontend rendering.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function enqueue_scripts() {
@@ -74,7 +74,6 @@ class Elementor_Widgets {
 			array(),
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-audio.css' )
 		);
-		
 
 		wp_register_script(
 			'godam-elementor-frontend',
@@ -120,6 +119,11 @@ class Elementor_Widgets {
 	 * Register Widgets.
 	 */
 	public function widgets_registered() {
+
+		if ( is_admin() && ! current_user_can( 'publish_posts' ) ) {
+			return;
+		}
+
 		\Elementor\Plugin::$instance->widgets_manager->register( new GoDAM_Video() );
 		\Elementor\Plugin::$instance->widgets_manager->register( new Godam_Gallery() );
 		\Elementor\Plugin::$instance->widgets_manager->register( new Godam_Audio() );

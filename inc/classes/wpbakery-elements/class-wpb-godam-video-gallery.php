@@ -61,6 +61,10 @@ class WPB_GoDAM_Video_Gallery {
 			return;
 		}
 
+		if ( is_admin() && ! current_user_can( 'publish_posts' ) ) {
+			return;
+		}
+
 		vc_map(
 			array(
 				'name'        => esc_html__( 'GoDAM Video Gallery', 'godam' ),
