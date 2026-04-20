@@ -93,9 +93,9 @@ class Gallery_V1_To_V2 {
 	);
 
 	/**
-	 * Schedule the migration to run on `init` if it has not yet run.
+	 * Run the migration if it has not yet completed.
 	 *
-	 * Called by Runner::run() during plugin bootstrap.
+	 * Called by Runner::maybe_run() on admin_init when the plugin version has changed.
 	 *
 	 * @return void
 	 */

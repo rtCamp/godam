@@ -25,10 +25,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * ## Lifecycle
  *
- * 1. `Runner::maybe_run()` calls `maybe_run()` when the plugin version has changed.
- * 2. `maybe_run()` bails immediately if the guard option is set.
- *    Context filtering (admin/CLI/cron) is handled by Runner::maybe_run().
- * 3. On the first qualifying request `run()` is scheduled on `init` priority 99.
+ * 1. `Runner::maybe_run()` (hooked to `admin_init`) calls `maybe_run()` when
+ *    the stored db version is behind the current plugin version.
+ * 2. `maybe_run()` bails immediately if the guard option is already set.
+ * 3. On the first qualifying admin page load, `maybe_run()` calls `run()` directly.
  * 4. `run()` counts posts. If none exist, marks done immediately. Otherwise,
  *    writes `processing` to the guard option and queues the first AS batch job.
  * 5. Each `process_batch()` job deletes up to BATCH_SIZE posts and, if posts
@@ -131,15 +131,15 @@ class Godam_Cpt_Cleanup {
 	/**
 	 * Entry point: count posts and queue the first Action Scheduler batch.
 	 *
-	 * Runs once on `init` (priority 99). A concurrency lock prevents two
-	 * simultaneous admin page loads from each queuing a batch.
+	 * Called directly from maybe_run() on admin_init. A concurrency lock prevents
+	 * two simultaneous admin page loads from each queuing a batch.
 	 *
 	 * @return void
 	 */
 	public static function run() {
-		// This runs on the 'init' hook, so is_user_logged_in() and current_user_can()
-		// are always available (pluggable.php fully loaded, auth cookies processed).
-		// Non-cron, non-CLI requests must come from an authenticated admin.
+		// Called from maybe_run() on admin_init — pluggable.php is fully loaded
+		// and auth cookies are processed, so is_user_logged_in() and
+		// current_user_can() are guaranteed available.
 		$is_cli  = defined( 'WP_CLI' ) && WP_CLI;
 		$is_cron = wp_doing_cron();
 
