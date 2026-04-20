@@ -6,7 +6,8 @@
  * 2. Sequential autoplay – videos play one after another in order.
  * 3. Click / tap to jump sequence to a specific video.
  * 4. Swipe detection on touch devices to switch the active video.
- * 5. IntersectionObserver gates autoplay to only run when the carousel is ≥ 50 % visible in the viewport.
+ * 5. IntersectionObserver gates autoplay to only run when the carousel
+ * container is visible in the viewport.
  */
 ( function() {
 	'use strict';
@@ -31,6 +32,7 @@
 		// ── State ─────────────────────────────────────────────
 		let sequenceIndex = 0; // index of the video currently playing in sequence
 		let galleryVisible = false; // true when carousel is in viewport
+		let hasEnteredViewport = false; // true after the carousel container first enters viewport
 
 		// ── Helpers ───────────────────────────────────────────
 
@@ -126,9 +128,16 @@
 
 		/**
 		 * Start (or resume) the sequential playback at `sequenceIndex`.
+		 *
+		 * @param {Object}  [options={}]                 Optional sequence start options.
+		 * @param {boolean} [options.fromViewport=false] Whether the start was triggered by viewport entry.
 		 */
-		function startSequence() {
-			if ( ! galleryVisible ) {
+		function startSequence( { fromViewport = false } = {} ) {
+			if ( fromViewport ) {
+				hasEnteredViewport = true;
+			}
+
+			if ( ! galleryVisible || ! hasEnteredViewport ) {
 				return;
 			}
 
@@ -236,11 +245,11 @@
 			( entries ) => {
 				entries.forEach( ( entry ) => {
 					const wasVisible = galleryVisible;
-					galleryVisible = entry.isIntersecting;
+					galleryVisible = entry.isIntersecting && entry.intersectionRatio >= VISIBILITY_THRESHOLD;
 
 					if ( galleryVisible && ! wasVisible ) {
-						// Carousel scrolled into view → start sequence.
-						startSequence();
+						// Carousel container scrolled into view → start sequence.
+						startSequence( { fromViewport: true } );
 					} else if ( ! galleryVisible && wasVisible ) {
 						// Carousel scrolled out of view → pause everything.
 						pauseAll();
@@ -250,7 +259,7 @@
 			{ threshold: VISIBILITY_THRESHOLD },
 		);
 
-		visibilityObserver.observe( gallery );
+		visibilityObserver.observe( container );
 
 		// ── Arrow navigation ──────────────────────────────────
 

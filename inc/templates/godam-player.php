@@ -458,11 +458,7 @@ $godam_custom_css_properties = array(
 );
 
 if ( ! empty( $godam_aspect_ratio ) ) {
-	if ( isset( $attributes['godam_context'] ) && 'godam-woo-product-page-reels' === $attributes['godam_context'] ) {
-		$godam_custom_css_properties['--rtgodam-video-aspect-ratio'] = '16/9';
-	} else {
-		$godam_custom_css_properties['--rtgodam-video-aspect-ratio'] = str_replace( ':', '/', $godam_aspect_ratio );
-	}
+	$godam_custom_css_properties['--rtgodam-video-aspect-ratio'] = str_replace( ':', '/', $godam_aspect_ratio );
 }
 
 if ( ! empty( $godam_computed_max_width ) ) {
