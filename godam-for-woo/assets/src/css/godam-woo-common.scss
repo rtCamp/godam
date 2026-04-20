@@ -1,0 +1,188 @@
+@use '../../../../godam/assets/src/css/variables';
+
+/**
+ * Product Selector – selected chip & dropdown thumbnails
+ */
+.godam-product-selector {
+	// Selected-product preview chip
+	.godam-product-selected-preview {
+
+		.godam-product-selected-label {
+			display: block;
+			font-size: 0.875rem !important;
+			line-height: 1 !important;
+			font-weight: 500;
+			color: variables.$godam-black-color;
+			margin-bottom: 0.75rem !important;
+			text-transform: none !important;
+		}
+
+		.godam-product-selected-chip {
+			display: flex;
+			align-items: center;
+			gap: 0.625rem;
+			padding: 0.5rem 0.75rem;
+			border: 1px solid rgba(225, 225, 225, 1);
+			border-radius: 0.5rem;
+			background: rgba(255, 255, 255, 1);
+
+			.godam-product-selected-thumb {
+				width: 2rem;
+				height: 2rem;
+				object-fit: cover;
+				border-radius: 0.25rem;
+				flex-shrink: 0;
+				background-color: rgba(230, 230, 230, 1);
+			}
+
+			.godam-product-selected-name {
+				flex: 1;
+				font-size: 0.875rem;
+				font-weight: 500;
+				color: variables.$godam-black-color;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+
+			.godam-product-selected-remove {
+				flex-shrink: 0;
+				padding: 0.25rem !important;
+				min-height: unset !important;
+				height: 1.5rem !important;
+				width: 1.5rem !important;
+				background: transparent !important;
+				border: none !important;
+				color: rgba(100, 100, 100, 1);
+
+				&:hover {
+					color: rgba(172, 58, 107, 1) !important;
+					background: rgba(245, 245, 245, 1) !important;
+					border-radius: 0.25rem;
+				}
+
+				svg {
+					width: 14px !important;
+					height: 14px !important;
+				}
+			}
+		}
+	}
+
+	// Dropdown option item
+	.components-form-token-field__suggestion {
+		
+		.godam-product-option {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.625rem;
+
+			.godam-product-option-thumb {
+				width: 2rem;
+				height: 2rem;
+				object-fit: cover;
+				border-radius: 0.25rem;
+				flex-shrink: 0;
+				background-color: rgba(230, 230, 230, 1);
+			}
+
+			.godam-product-option-name {
+				flex: 1;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+		}
+	}
+}
+
+/* Product Reels video list */
+.godam-product-video-gallery-list {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+	gap: 4px;
+	padding: 8px 0;
+	margin: 0;
+	margin-right: -12px;
+	padding-right: 12px;
+	list-style: none;
+	max-height: 20rem;
+	overflow-y: auto;
+	scrollbar-width: thin;
+
+	&::-webkit-scrollbar {
+		width: 6px;
+	}
+
+	&::-webkit-scrollbar-thumb {
+		background: #ccc;
+		border-radius: 4px;
+	}
+
+	li {
+		background: #fff;
+		border: 1px solid rgba(225, 225, 225, 1);
+		border-radius: 8px;
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+		padding: 0;
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		width: 100%;
+		box-sizing: border-box;
+		transition: box-shadow 0.2s ease;
+
+		.godam-remove-video-button {
+			position: absolute;
+			top: 4px;
+			right: 4px;
+			background: rgba(255, 255, 255, 0.9);
+			border: none;
+			padding: 3px;
+			border-radius: 50%;
+			cursor: pointer;
+			box-shadow: 0 0 5px var(--wp-components-color-accent) !important;
+			min-width: 20px;
+			min-height: 20px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			opacity: 0;
+			transition: opacity 0.2s ease;
+
+			img {
+				width: 12px;
+				height: 12px;
+				filter: brightness(0) saturate(100%) invert(31%) sepia(36%) saturate(1577%) hue-rotate(309deg) brightness(95%) contrast(101%);
+			}
+		}
+		
+
+		&:hover {
+
+			.godam-remove-video-button {
+				opacity: 1;
+			}
+		}
+	}
+}
+/* Product Reels video title */
+.godam-product-video-title {
+	padding: 6px;
+	font-size: 12px;
+	font-weight: 300;
+	color: #454952;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.godam-admin-video-add-to-product-container figure {
+	margin: 0;
+
+	.rtgodam-video-engagement,
+	.godam-video-wrapper .easydam-video-container .godam-share-button {
+		display: none;
+	}
+}
