@@ -92,6 +92,13 @@ $godam_hover_select   = isset( $attributes['hoverSelect'] ) ? $attributes['hover
 $godam_caption        = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
 $godam_tracks         = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $godam_show_share_btn = ! empty( $attributes['showShareButton'] );
+// Determine if subtitles and transcript should be disabled based on the context (e.g., product gallery or reels contexts not require them).
+$godam_disable_subtitles_and_transcript = isset( $attributes['godam_context'] ) &&
+	in_array(
+		$attributes['godam_context'],
+		array( 'godam-video-product-gallery', 'godam-woo-product-page-reels' ),
+		true
+	);
 
 // Resolve the attachment ID (could be WordPress or virtual media).
 $godam_attachment_id = '';
@@ -603,20 +610,23 @@ if ( $godam_should_preload_poster ) {
 						data-instance-id="<?php echo esc_attr( $godam_instance_id ); ?>"
 						data-controls="<?php echo esc_attr( $godam_video_setup ); ?>"
 						data-job_id="<?php echo esc_attr( $godam_job_id ); ?>"
-						data-global_ads_settings="<?php echo esc_attr( $godam_ads_settings ); ?>"
-						data-hover-select="<?php echo esc_attr( $godam_hover_select ); ?>"
-						data-video-title="<?php echo esc_attr( $godam_attachment_title ); ?>"
-						data-autoplay-on-view="<?php echo esc_attr( $godam_autoplay ? 'true' : 'false' ); ?>"
-					>
-						<?php
+							data-global_ads_settings="<?php echo esc_attr( $godam_ads_settings ); ?>"
+							data-hover-select="<?php echo esc_attr( $godam_hover_select ); ?>"
+							data-video-title="<?php echo esc_attr( $godam_attachment_title ); ?>"
+							data-autoplay-on-view="<?php echo esc_attr( $godam_autoplay ? 'true' : 'false' ); ?>"
+							data-disable-transcript="<?php echo esc_attr( $godam_disable_subtitles_and_transcript ? 'true' : 'false' ); ?>"
+						>
+							<?php
 
-						$godam_display_caption = ( ! isset( $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) ) ||
-							( isset( $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) && $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] );
+							$godam_display_caption = ! $godam_disable_subtitles_and_transcript && (
+								( ! isset( $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) ) ||
+								( isset( $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) && $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] )
+							);
 
-						if ( $godam_display_caption ) {
-							foreach ( $godam_tracks as $godam_track ) :
-								if ( ! empty( $godam_track['src'] ) && ! empty( $godam_track['kind'] ) ) :
-									?>
+							if ( $godam_display_caption ) {
+								foreach ( $godam_tracks as $godam_track ) :
+									if ( ! empty( $godam_track['src'] ) && ! empty( $godam_track['kind'] ) ) :
+										?>
 									<track
 										src="<?php echo esc_url( $godam_track['src'] ); ?>"
 										kind="<?php echo esc_attr( $godam_track['kind'] ); ?>"
@@ -625,11 +635,11 @@ if ( $godam_should_preload_poster ) {
 										echo ! empty( $godam_track['label'] ) ? sprintf( 'label="%s"', esc_attr( $godam_track['label'] ) ) : '';
 										?>
 									/>
-									<?php
-								endif;
-							endforeach;
-						}
-						?>
+										<?php
+									endif;
+								endforeach;
+							}
+							?>
 					</video>
 					<!-- Add this to target godam uppy modal inside video. -->
 					<div id="uppy-godam-video-modal-container"></div>
