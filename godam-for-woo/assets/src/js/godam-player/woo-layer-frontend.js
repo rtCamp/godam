@@ -16,7 +16,9 @@ import WooCommerceLayerManager from './managers/layers/wooCommerceLayerManager';
  */
 const wooLayerConfig = {
 	label: 'WooCommerce Layer',
-	validator: ( layer, dependencies ) => !! dependencies?.woocommerce,
+	validator: ( layer, dependencies ) =>
+		!! dependencies?.woocommerce &&
+		!! window.godamAPIKeyData?.validApiKey,
 	manager: WooCommerceLayerManager,
 };
 

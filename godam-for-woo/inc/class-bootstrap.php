@@ -404,6 +404,11 @@ class Bootstrap {
 	 * @param bool  $is_gallery_context Whether the player is inside a gallery iframe.
 	 */
 	public function render_mini_cart( $layers, $is_gallery_context ) {
+
+		if ( ! rtgodam_is_api_key_valid() ) {
+			return;
+		}
+
 		foreach ( $layers as $layer ) {
 			if ( isset( $layer['miniCart'] ) ) {
 				$hidden = ( ! $layer['miniCart'] || $is_gallery_context );
@@ -427,6 +432,11 @@ class Bootstrap {
 		if ( ! isset( $layer['type'] ) || 'woo' !== $layer['type'] ) {
 			return;
 		}
+
+		if ( ! rtgodam_is_api_key_valid() ) {
+			return;
+		}
+		
 		?>
 		<div
 			id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>"
