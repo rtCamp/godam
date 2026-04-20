@@ -31,14 +31,15 @@ import { useState, useRef, useEffect, useCallback, useMemo } from '@wordpress/el
 /**
  * Internal dependencies
  */
-import { updateLayerField } from '@godam/pages/video-editor/redux/slice/videoSlice';
 import { v4 as uuidv4 } from 'uuid';
-import LayerControls from '@godam/pages/video-editor/components/LayerControls';
 import ProductSelector from './ProductSelector';
 import FontAwesomeIconPicker from './FontAwesomeIconPicker';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
-import LayersHeader from '@godam/pages/video-editor/components/layers/LayersHeader';
+import {
+	getGodamVideoEditorAction,
+	getGodamVideoEditorComponent,
+} from './godamRuntime';
 import { PRODUCT_HOTSPOT_CONSTANTS } from '../../assets/src/js/godam-player/utils/constants.js';
 import { fetchProductData } from '../utils/productDataCache';
 
@@ -436,6 +437,9 @@ const ProductHotspotPreview = ( { productHotspot, index, productCache } ) => {
 
 const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
+	const LayerControls = getGodamVideoEditorComponent( 'LayerControls' );
+	const LayersHeader = getGodamVideoEditorComponent( 'LayersHeader' );
+	const updateLayerField = getGodamVideoEditorAction( 'updateLayerField' );
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
 	);
@@ -663,7 +667,7 @@ const WoocommerceLayer = ( { layerID, goBack, duration } ) => {
 
 	return (
 		<>
-			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
+			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } layerName={ __( 'WooCommerce', 'godam-woo' ) } />
 
 			{
 				! isValidAPIKey &&

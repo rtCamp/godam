@@ -14,9 +14,6 @@ const isProduction = process.env.NODE_ENV === 'production';
 const mode = isProduction ? 'production' : 'development';
 const pluginRoot = __dirname;
 
-// Path to the main GoDAM plugin for resolving shared source imports.
-const GODAM_PLUGIN_PATH = path.resolve( pluginRoot, '..', 'godam' );
-
 // Shared config extending @wordpress/scripts defaults.
 const sharedConfig = {
 	mode,
@@ -74,7 +71,6 @@ const wooJS = {
 };
 
 // WooCommerce layer component for the video editor (loaded dynamically).
-// Needs resolve aliases to import shared components from the main GoDAM plugin.
 const wooLayerComponent = {
 	mode,
 	entry: {
@@ -128,22 +124,10 @@ const wooLayerComponent = {
 	},
 	resolve: {
 		extensions: [ '.js', '.jsx' ],
-		alias: {
-			// Resolve imports from the main GoDAM plugin source.
-			'@godam': GODAM_PLUGIN_PATH,
-		},
-		modules: [
-			'node_modules',
-			// Resolve node_modules from the main GoDAM plugin for shared dependencies.
-			path.resolve( GODAM_PLUGIN_PATH, 'node_modules' ),
-		],
+		modules: [ 'node_modules' ],
 	},
 	resolveLoader: {
-		modules: [
-			'node_modules',
-			// Resolve loaders from main GoDAM plugin dependencies for shared imports.
-			path.resolve( GODAM_PLUGIN_PATH, 'node_modules' ),
-		],
+		modules: [ 'node_modules' ],
 	},
 	devtool: isProduction ? false : 'source-map',
 };
