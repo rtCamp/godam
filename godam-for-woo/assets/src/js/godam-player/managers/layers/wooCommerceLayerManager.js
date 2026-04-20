@@ -261,6 +261,16 @@ export default class WooCommerceLayerManager {
 					if ( ! layerObj.layerElement.dataset?.productHotspotsInitialized ) {
 						this.createProductHotspots( layerObj );
 						layerObj.layerElement.dataset.productHotspotsInitialized = true;
+					} else {
+						requestAnimationFrame( () => {
+							const hotspotDivs = layerObj.layerElement.querySelectorAll( '.hotspot' );
+							hotspotDivs.forEach( ( hotspotDiv ) => {
+								const tooltipDiv = hotspotDiv.querySelector( '.hotspot-tooltip' );
+								if ( tooltipDiv ) {
+									this.positionTooltip( hotspotDiv, tooltipDiv );
+								}
+							} );
+						} );
 					}
 				}
 			} else if ( ! layerObj.layerElement.classList.contains( 'hidden' ) ) {
@@ -1178,6 +1188,7 @@ export default class WooCommerceLayerManager {
 		const contentRect = this.computeContentRect();
 
 		this.wooLayers.forEach( ( layerObj ) => {
+			const isLayerHidden = layerObj.layerElement.classList.contains( 'hidden' );
 			const hotspotDivs = layerObj.layerElement.querySelectorAll( '.hotspot' );
 			hotspotDivs.forEach( ( hotspotDiv, index ) => {
 				const hotspot = layerObj.productHotspots[ index ];
@@ -1207,6 +1218,11 @@ export default class WooCommerceLayerManager {
 				hotspotDiv.style.top = `${ pixelY }px`;
 				hotspotDiv.style.width = `${ pixelDiameter }px`;
 				hotspotDiv.style.height = `${ pixelDiameter }px`;
+
+				// Product Box geometry relies on measurable layout; skip while layer is hidden.
+				if ( isLayerHidden ) {
+					return;
+				}
 
 				const productBoxDiv = hotspotDiv.querySelector( '.product-hotspot-box' );
 				if ( productBoxDiv ) {
