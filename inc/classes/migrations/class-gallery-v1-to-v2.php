@@ -104,13 +104,10 @@ class Gallery_V1_To_V2 {
 			return;
 		}
 
-		// Only run during admin requests, WP-CLI, or cron. Bulk content writes
-		// must not be triggered by unauthenticated frontend page loads.
-		if ( ! is_admin() && ! wp_doing_cron() && ! ( defined( 'WP_CLI' ) && WP_CLI ) ) {
-			return;
-		}
-
-		add_action( 'init', array( static::class, 'run' ), 99 );
+		// Called from Runner::maybe_run() on admin_init — is_user_logged_in()
+		// and current_user_can() are guaranteed available. Call run() directly;
+		// no need to defer to a later hook.
+		self::run();
 	}
 
 	/**

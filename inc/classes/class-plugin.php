@@ -84,13 +84,8 @@ class Plugin {
 	 */
 	protected function __construct() {
 
-		// Always register persistent hooks (e.g. Action Scheduler callbacks)
-		// so queued async jobs can fire on any request.
+		// Register persistent migration hooks (includes admin_init trigger).
 		Migrations_Runner::init();
-
-		// Trigger pending migrations only when the plugin version has changed
-		// (fresh install or update). No-ops on every other request.
-		Migrations_Runner::maybe_run();
 
 		// Load plugin classes.
 		Update::get_instance();

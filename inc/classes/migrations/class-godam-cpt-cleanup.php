@@ -26,8 +26,8 @@ defined( 'ABSPATH' ) || exit;
  * ## Lifecycle
  *
  * 1. `Runner::maybe_run()` calls `maybe_run()` when the plugin version has changed.
- * 2. `maybe_run()` bails immediately if the guard option is set, or if the
- *    current context is a frontend request.
+ * 2. `maybe_run()` bails immediately if the guard option is set.
+ *    Context filtering (admin/CLI/cron) is handled by Runner::maybe_run().
  * 3. On the first qualifying request `run()` is scheduled on `init` priority 99.
  * 4. `run()` counts posts. If none exist, marks done immediately. Otherwise,
  *    writes `processing` to the guard option and queues the first AS batch job.
@@ -122,18 +122,10 @@ class Godam_Cpt_Cleanup {
 			return;
 		}
 
-		$is_cli  = defined( 'WP_CLI' ) && WP_CLI;
-		$is_cron = wp_doing_cron();
-
-		// Only trigger during authenticated admin requests, WP-CLI, or cron.
-		// is_admin() is also true for admin-ajax.php which can be hit without
-		// authentication, so non-cron/non-CLI requests require an explicit auth
-		// and capability check before scheduling a destructive migration.
-		if ( ! is_admin() && ! $is_cron && ! $is_cli ) {
-			return;
-		}
-
-		add_action( 'init', array( static::class, 'run' ), 99 );
+		// Called from Runner::maybe_run() on admin_init — is_user_logged_in()
+		// and current_user_can() are guaranteed available. Call run() directly;
+		// no need to defer to a later hook.
+		self::run();
 	}
 
 	/**
