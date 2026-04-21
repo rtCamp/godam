@@ -85,15 +85,20 @@ class Media_Library extends Base {
 						return current_user_can( 'edit_posts' );
 					},
 					'args'                => array(
-						'attachment_id' => array(
+						'attachment_id'             => array(
 							'required'    => true,
 							'type'        => 'integer',
 							'description' => __( 'Attachment ID to set video thumbnail for.', 'godam' ),
 						),
-						'thumbnail_url' => array(
+						'thumbnail_url'             => array(
 							'required'    => true,
 							'type'        => 'string',
 							'description' => __( 'Attachment URL to set as the thumbnail.', 'godam' ),
+						),
+						'placeholder_thumbnail_url' => array(
+							'required'    => false,
+							'type'        => 'string',
+							'description' => __( 'Placeholder (low-quality blur-up) thumbnail URL for this thumbnail.', 'godam' ),
 						),
 					),
 				),
@@ -805,17 +810,31 @@ class Media_Library extends Base {
 				return new \WP_Error( 'thumbnails_not_found', __( 'No thumbnails found.', 'godam' ), array( 'status' => 204 ) );
 			}
 
-			// Extract thumbnail URLs from objects.
-			$thumbnail_array = array();
+			// Extract thumbnail URLs and placeholder mapping from Frappe response objects.
+			$thumbnail_array        = array();
+			$frappe_placeholder_map = array();
 			foreach ( $body->message->thumbnails as $thumb_obj ) {
 				if ( isset( $thumb_obj->thumbnail_url ) ) {
-					$thumbnail_array[] = $thumb_obj->thumbnail_url;
+					$thumb_url         = $thumb_obj->thumbnail_url;
+					$thumbnail_array[] = $thumb_url;
+					if ( ! empty( $thumb_obj->placeholder_thumbnail ) ) {
+						$frappe_placeholder_map[ $thumb_url ] = $thumb_obj->placeholder_thumbnail;
+					}
 				}
 			}
 
 			$thumbnail_array = array_values( array_unique( $thumbnail_array ) );
 			if ( ! empty( $thumbnail_array ) ) {
 				update_post_meta( $attachment_id, 'rtgodam_media_thumbnails', $thumbnail_array );
+			}
+
+			if ( ! empty( $frappe_placeholder_map ) ) {
+				update_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails', $frappe_placeholder_map );
+				// Set placeholder for the currently active/selected thumbnail.
+				$active_thumb_url = ! empty( $body->message->thumbnail_url ) ? $body->message->thumbnail_url : '';
+				if ( ! empty( $active_thumb_url ) && isset( $frappe_placeholder_map[ $active_thumb_url ] ) ) {
+					update_post_meta( $attachment_id, 'rtgodam_media_video_placeholder_thumbnail', $frappe_placeholder_map[ $active_thumb_url ] );
+				}
 			}
 		}
 
@@ -896,6 +915,9 @@ class Media_Library extends Base {
 		$data['thumbnails'] = $thumbnail_array;
 
 		$data['customThumbnails'] = $custom_thumbnails;
+
+		$godam_placeholder_map         = get_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails', true );
+		$data['placeholderThumbnails'] = is_array( $godam_placeholder_map ) ? $godam_placeholder_map : array();
 
 		return rest_ensure_response(
 			array(
@@ -1029,8 +1051,9 @@ class Media_Library extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function set_video_thumbnail( $request ) {
-		$attachment_id = $request->get_param( 'attachment_id' );
-		$thumbnail_url = $request->get_param( 'thumbnail_url' );
+		$attachment_id             = $request->get_param( 'attachment_id' );
+		$thumbnail_url             = $request->get_param( 'thumbnail_url' );
+		$placeholder_thumbnail_url = $request->get_param( 'placeholder_thumbnail_url' );
 
 		// Check if attachment is of type video.
 		$mime_type = get_post_mime_type( $attachment_id );
@@ -1044,8 +1067,33 @@ class Media_Library extends Base {
 			return new \WP_Error( 'invalid_thumbnail_url', __( 'Invalid thumbnail URL.', 'godam' ), array( 'status' => 400 ) );
 		}
 
+		// Validate optional placeholder URL if provided.
+		if ( ! empty( $placeholder_thumbnail_url ) && ! filter_var( $placeholder_thumbnail_url, FILTER_VALIDATE_URL ) ) {
+			return new \WP_Error( 'invalid_placeholder_thumbnail_url', __( 'Invalid placeholder thumbnail URL.', 'godam' ), array( 'status' => 400 ) );
+		}
+
 		// Update the video thumbnail.
 		update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $thumbnail_url );
+
+		// If a placeholder URL was explicitly supplied, store it and update the map.
+		if ( ! empty( $placeholder_thumbnail_url ) ) {
+			$godam_placeholder_map = get_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails', true );
+			if ( ! is_array( $godam_placeholder_map ) ) {
+				$godam_placeholder_map = array();
+			}
+			$godam_placeholder_map[ $thumbnail_url ] = esc_url_raw( $placeholder_thumbnail_url );
+			update_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails', $godam_placeholder_map );
+			update_post_meta( $attachment_id, 'rtgodam_media_video_placeholder_thumbnail', esc_url_raw( $placeholder_thumbnail_url ) );
+		} else {
+			// Sync the placeholder thumbnail based on the new selection from the existing map.
+			$godam_placeholder_map = get_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails', true );
+			if ( is_array( $godam_placeholder_map ) && isset( $godam_placeholder_map[ $thumbnail_url ] ) ) {
+				update_post_meta( $attachment_id, 'rtgodam_media_video_placeholder_thumbnail', esc_url_raw( $godam_placeholder_map[ $thumbnail_url ] ) );
+			} else {
+				// Custom/uploaded thumbnails have no placeholder – clear it.
+				delete_post_meta( $attachment_id, 'rtgodam_media_video_placeholder_thumbnail' );
+			}
+		}
 
 		return rest_ensure_response(
 			array(

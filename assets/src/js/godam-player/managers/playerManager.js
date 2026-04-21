@@ -76,6 +76,35 @@ export default class PlayerManager {
 		this.initializeGlobalKeyboardHandler();
 		this.initializeAutoplayOnView();
 		this.initEngagement = engagement();
+		this.initBlurUpPlaceholders();
+	}
+
+	/**
+	 * Initialize blur-up LQIP placeholders.
+	 *
+	 * For each .godam-blurred-img div, listen for the inner full-quality
+	 * poster image to finish loading, then add the 'loaded' class so CSS
+	 * fades it in over the blurry background placeholder.
+	 */
+	initBlurUpPlaceholders() {
+		document.querySelectorAll( '.godam-blurred-img' ).forEach( ( div ) => {
+			const img = div.querySelector( '.godam-player-poster-image' );
+			if ( ! img ) {
+				return;
+			}
+			const markLoaded = () => div.classList.add( 'loaded' );
+			const markError = () => {
+				// On error, remove the blurry background so nothing is broken.
+				div.style.backgroundImage = '';
+				div.classList.add( 'loaded' );
+			};
+			if ( img.complete && img.naturalWidth > 0 ) {
+				markLoaded();
+			} else {
+				img.addEventListener( 'load', markLoaded );
+				img.addEventListener( 'error', markError );
+			}
+		} );
 	}
 
 	/**
