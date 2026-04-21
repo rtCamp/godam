@@ -57,14 +57,14 @@ class Assets {
 					</div>
 					<div class="rtgodam-manage-versions-body">
 						<div class="rtgodam-manage-versions-toolbar">
-							<div class="rtgodam-manage-versions-count"><?php esc_html_e( 'Versions', 'godam' ); ?> ({{ data.activeCount }}/{{ data.totalCount }})</div>
+							<div class="rtgodam-manage-versions-count"><?php esc_html_e( 'Versions', 'godam' ); ?> ({{ data.totalVersions }}/{{ data.maxVersions }})</div>
 							<button type="button" class="button button-primary rtgodam-add-version" <# if ( data.isLoading ) { #>disabled<# } #>>+ <?php esc_html_e( 'Add New Version', 'godam' ); ?></button>
 						</div>
 						<div class="rtgodam-manage-versions-list">
 							<# if ( data.isLoading ) { #>
 								<div class="rtgodam-manage-versions-loading">
 									<span class="spinner is-active" aria-hidden="true"></span>
-									<span><?php esc_html_e( 'Loading versions...', 'godam' ); ?></span>
+									<span>{{ data.loadingMessage || '<?php echo esc_js( __( 'Loading versions...', 'godam' ) ); ?>' }}</span>
 								</div>
 							<# } else if ( ! data.versions || ! data.versions.length ) { #>
 								<div class="rtgodam-manage-versions-empty"><?php esc_html_e( 'No versions found.', 'godam' ); ?></div>
@@ -108,6 +108,7 @@ class Assets {
 											<# if ( ! version.isActive ) { #>
 												<button type="button" class="button button-secondary rtgodam-version-action" data-version-number="{{ version.versionNumber }}"><?php esc_html_e( 'Set Active', 'godam' ); ?></button>
 												<# if ( index !== 0 ) { #>
+													<?php // phpcs:ignore WordPressVIPMinimum.Security.Mustache.OutputNotation ?>
 													<button type="button" class="rtgodam-version-delete" aria-label="<?php esc_attr_e( 'Delete Version', 'godam' ); ?>">{{{ data.trashIcon }}}</button>
 												<# } #>
 											<# } #>

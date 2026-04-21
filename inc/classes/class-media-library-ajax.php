@@ -58,6 +58,7 @@ class Media_Library_Ajax {
 		add_action( 'wp_ajax_godam_get_media_versions', array( $this, 'get_media_versions' ) );
 		add_action( 'wp_ajax_godam_switch_active_version', array( $this, 'switch_active_version' ) );
 		add_action( 'wp_ajax_godam_delete_version', array( $this, 'delete_version' ) );
+		add_action( 'wp_ajax_godam_replace_media_version', array( $this, 'replace_media_version' ) );
 
 		add_filter( 'wp_content_img_tag', array( $this, 'filter_rtgodam_content_img_tag' ), 10, 3 );
 	}
@@ -1224,7 +1225,7 @@ class Media_Library_Ajax {
 		$response = wp_remote_get(
 			$url,
 			array(
-				'timeout' => 20,
+				'timeout' => 5,  // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
 			)
 		);
 
@@ -1242,7 +1243,7 @@ class Media_Library_Ajax {
 		$body        = wp_remote_retrieve_body( $response );
 		$decoded     = json_decode( $body, true );
 
-		if ( $status_code !== 200 ) {
+		if ( 200 !== $status_code ) {
 			wp_send_json_error(
 				array(
 					'message'  => __( 'GoDAM API returned an error.', 'godam' ),
@@ -1299,6 +1300,7 @@ class Media_Library_Ajax {
 		}
 
 		if ( $version_number > $max_versions ) {
+			// translators: %d is the maximum number of versions allowed.
 			wp_send_json_error( array( 'message' => sprintf( __( 'Version number must be between 1 and %d.', 'godam' ), $max_versions ) ), 400 );
 		}
 
@@ -1315,7 +1317,7 @@ class Media_Library_Ajax {
 		$response = wp_remote_post(
 			$url,
 			array(
-				'timeout' => 20,
+				'timeout' => 5,  // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
 			)
 		);
 
@@ -1333,7 +1335,7 @@ class Media_Library_Ajax {
 		$body        = wp_remote_retrieve_body( $response );
 		$decoded     = json_decode( $body, true );
 
-		if ( $status_code !== 200 ) {
+		if ( 200 !== $status_code ) {
 			wp_send_json_error(
 				array(
 					'message'  => __( 'GoDAM API returned an error while switching version.', 'godam' ),
@@ -1398,7 +1400,7 @@ class Media_Library_Ajax {
 		$response = wp_remote_post(
 			$url,
 			array(
-				'timeout' => 20,
+				'timeout' => 5,  // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
 			)
 		);
 
@@ -1416,7 +1418,7 @@ class Media_Library_Ajax {
 		$body        = wp_remote_retrieve_body( $response );
 		$decoded     = json_decode( $body, true );
 
-		if ( $status_code !== 200 ) {
+		if ( 200 !== $status_code ) {
 			wp_send_json_error(
 				array(
 					'message'  => __( 'GoDAM API returned an error while deleting version.', 'godam' ),
@@ -1429,11 +1431,144 @@ class Media_Library_Ajax {
 
 		wp_send_json_success(
 			array(
-				'job_name'         => $job_name,
-				'deleted_version'  => $version_number,
-				'response'         => is_array( $decoded ) ? $decoded : $body,
+				'job_name'        => $job_name,
+				'deleted_version' => $version_number,
+				'response'        => is_array( $decoded ) ? $decoded : $body,
 			)
 		);
+	}
+
+	/**
+	 * Replaces source media and starts new version creation in GoDAM.
+	 *
+	 * @return void
+	 */
+	public function replace_media_version() {
+		check_ajax_referer( 'easydam_media_library', 'nonce' );
+
+		if ( ! current_user_can( 'upload_files' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'godam' ) ), 403 );
+		}
+
+		$attachment_id = isset( $_POST['attachment_id'] ) ? absint( wp_unslash( $_POST['attachment_id'] ) ) : 0;
+		if ( empty( $attachment_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'Attachment ID is required.', 'godam' ) ), 400 );
+		}
+
+		$version_attachment_id = isset( $_POST['version_attachment_id'] ) ? absint( wp_unslash( $_POST['version_attachment_id'] ) ) : 0;
+		$file_origin           = '';
+
+		if ( $version_attachment_id < 1 ) {
+			wp_send_json_error( array( 'message' => __( 'Please select a valid media file from the Media Library.', 'godam' ) ), 400 );
+		}
+
+		$version_attachment = get_post( $version_attachment_id );
+		if ( ! $version_attachment || 'attachment' !== $version_attachment->post_type ) {
+			wp_send_json_error( array( 'message' => __( 'Selected media is invalid.', 'godam' ) ), 400 );
+		}
+
+		$uploaded_mime = sanitize_mime_type( get_post_mime_type( $version_attachment_id ) );
+		if ( ! $this->is_compatible_version_upload_mime( $attachment_id, $uploaded_mime ) ) {
+			wp_send_json_error( array( 'message' => __( 'Please upload a similar media type for a new version.', 'godam' ) ), 400 );
+		}
+
+		$file_origin = wp_get_attachment_url( $version_attachment_id );
+		if ( empty( $file_origin ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unable to read selected media URL.', 'godam' ) ), 400 );
+		}
+
+		$job_name = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+		if ( empty( $job_name ) ) {
+			wp_send_json_error( array( 'message' => __( 'Job name not found for this attachment.', 'godam' ) ), 400 );
+		}
+
+		$api_key = get_option( 'rtgodam-api-key', '' );
+		if ( empty( $api_key ) ) {
+			wp_send_json_error( array( 'message' => __( 'GoDAM API key is missing.', 'godam' ) ), 400 );
+		}
+
+		$endpoint = trailingslashit( RTGODAM_API_BASE ) . 'api/method/godam_core.api.retranscode.replace_media';
+
+		$response = wp_remote_post(
+			$endpoint,
+			array(
+				'timeout' => 5,  // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
+				'body'    => array(
+					'job_id'      => $job_name,
+					'file_origin' => rawurlencode( $file_origin ),
+					'api_key'     => $api_key,
+				),
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'Failed to replace media version.', 'godam' ),
+					'error'   => $response->get_error_message(),
+				),
+				500
+			);
+		}
+
+		$status_code = wp_remote_retrieve_response_code( $response );
+		$body        = wp_remote_retrieve_body( $response );
+		$decoded     = json_decode( $body, true );
+
+		if ( 200 !== $status_code ) {
+			wp_send_json_error(
+				array(
+					'message'  => __( 'GoDAM API returned an error while adding a new version.', 'godam' ),
+					'status'   => $status_code,
+					'response' => is_array( $decoded ) ? $decoded : $body,
+				),
+				$status_code
+			);
+		}
+
+		if ( ! is_array( $decoded ) || empty( $decoded['success'] ) ) {
+			$error_message = is_array( $decoded ) && ! empty( $decoded['message'] )
+				? $decoded['message']
+				: __( 'GoDAM did not accept the new version.', 'godam' );
+
+			wp_send_json_error(
+				array(
+					'message'  => $error_message,
+					'response' => is_array( $decoded ) ? $decoded : $body,
+				),
+				400
+			);
+		}
+
+		wp_send_json_success(
+			array(
+				'job_name' => $job_name,
+				'response' => $decoded,
+			)
+		);
+	}
+
+	/**
+	 * Validates if uploaded file mime is compatible with existing attachment.
+	 *
+	 * @param int    $attachment_id Attachment ID.
+	 * @param string $uploaded_mime Uploaded file mime.
+	 * @return bool True if compatible.
+	 */
+	private function is_compatible_version_upload_mime( $attachment_id, $uploaded_mime ) {
+		$current_mime = sanitize_mime_type( get_post_mime_type( $attachment_id ) );
+		if ( empty( $current_mime ) || empty( $uploaded_mime ) ) {
+			return false;
+		}
+
+		if ( $current_mime === $uploaded_mime ) {
+			return true;
+		}
+
+		$current_primary  = strtok( $current_mime, '/' );
+		$uploaded_primary = strtok( $uploaded_mime, '/' );
+
+		return ( ! empty( $current_primary ) && $current_primary === $uploaded_primary );
 	}
 
 	/**

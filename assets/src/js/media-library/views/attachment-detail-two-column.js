@@ -867,6 +867,163 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	},
 
 	/**
+	 * Replaces media source and starts creation of a new version.
+	 *
+	 * @param {Object} selectedMedia Selected media object.
+	 * @return {Promise<Object>} API response.
+	 */
+	async replaceMediaVersion( selectedMedia ) {
+		const attachmentId = this.model.get( 'id' );
+		const nonce = window?.easydamMediaLibrary?.nonce || '';
+		const ajaxUrl =
+			window?.ajaxurl ||
+			window?.easydamMediaLibrary?.ajaxurl ||
+			`${ window.location.origin }/wp-admin/admin-ajax.php`;
+
+		const versionAttachmentId = Number( selectedMedia?.id || 0 );
+		if ( ! Number.isInteger( versionAttachmentId ) || versionAttachmentId < 1 ) {
+			throw new Error( __( 'Please select a valid media file from the Media Library.', 'godam' ) );
+		}
+
+		const formData = new FormData();
+		formData.append( 'action', 'godam_replace_media_version' );
+		formData.append( 'nonce', nonce );
+		formData.append( 'attachment_id', String( attachmentId ) );
+		formData.append( 'version_attachment_id', String( versionAttachmentId ) );
+
+		const response = await fetch( ajaxUrl, {
+			method: 'POST',
+			body: formData,
+			credentials: 'same-origin',
+			headers: {
+				'X-Requested-With': 'XMLHttpRequest',
+			},
+		} );
+
+		let payload = null;
+		try {
+			payload = await response.json();
+		} catch {
+			throw new Error( __( 'Failed to upload a new version.', 'godam' ) );
+		}
+
+		if ( response.status !== 400 || ! payload?.data?.message?.success ) {
+			throw new Error( payload?.data?.message?.message || __( 'Failed to upload a new version.', 'godam' ) );
+		}
+
+		return payload.data;
+	},
+
+	/**
+	 * Returns whether more versions can be added from versions API response.
+	 *
+	 * @param {Object} mediaVersionsResponse API response from admin-ajax.
+	 * @return {boolean} True when new versions can be added.
+	 */
+	isAddVersionAllowed( mediaVersionsResponse ) {
+		const canAddMore = mediaVersionsResponse?.response?.message?.can_add_more;
+
+		if ( typeof canAddMore === 'boolean' ) {
+			return canAddMore;
+		}
+
+		if ( typeof canAddMore === 'string' ) {
+			return 'true' === canAddMore.toLowerCase();
+		}
+
+		if ( typeof canAddMore === 'number' ) {
+			return canAddMore === 1;
+		}
+
+		return false;
+	},
+
+	/**
+	 * Opens WordPress media uploader and resolves selected media for add-version action.
+	 *
+	 * @return {Promise<Object|null>} Selected media object or null.
+	 */
+	openAddVersionUploader() {
+		if ( ! window?.wp?.media ) {
+			return Promise.resolve( null );
+		}
+
+		const attachmentType = String( this.model.get( 'type' ) || '' ).toLowerCase();
+
+		return new Promise( ( resolve ) => {
+			const mediaFrame = wp.media( {
+				title: __( 'Select or Upload Media Version', 'godam' ),
+				button: { text: __( 'Use this media', 'godam' ) },
+				multiple: false,
+				library: attachmentType ? { type: [ attachmentType ] } : {},
+			} );
+
+			mediaFrame.on( 'select', () => {
+				const selection = mediaFrame.state().get( 'selection' ).first();
+				resolve( selection ? selection.toJSON() : null );
+			} );
+
+			mediaFrame.on( 'close', () => {
+				const hasSelection = mediaFrame.state().get( 'selection' )?.length;
+				if ( ! hasSelection ) {
+					resolve( null );
+				}
+			} );
+
+			mediaFrame.open();
+		} );
+	},
+
+	/**
+	 * Polls versions using setTimeout until a newly added version appears.
+	 *
+	 * @param {Object}      options                 Poll options.
+	 * @param {number}      options.baseCount       Existing version count before replace.
+	 * @param {number}      options.attempt         Current polling attempt.
+	 * @param {number|null} options.expectedVersion Expected version number from replace API.
+	 */
+	pollForNewVersion( { baseCount = 0, attempt = 1, expectedVersion = null } = {} ) {
+		const maxAttempts = 24;
+		const pollDelay = 5000;
+
+		setTimeout( async () => {
+			try {
+				const versionsData = await this.fetchVersionsData();
+				const versions = Array.isArray( versionsData?.response?.message?.versions )
+					? versionsData.response.message.versions
+					: [];
+
+				const matchedExpected = Number.isInteger( expectedVersion ) && expectedVersion > 0
+					? versions.some( ( version ) => Number( version?.version ) === expectedVersion )
+					: false;
+				const detectedByCount = versions.length > baseCount;
+
+				this.mediaVersions = versionsData;
+
+				if ( matchedExpected || detectedByCount ) {
+					this.openManageVersionsModal();
+					this.showGodamSnackbar( __( 'New version added successfully.', 'godam' ), 'success' );
+					return;
+				}
+			} catch {
+				// Keep polling until max attempts are reached.
+			}
+
+			if ( attempt >= maxAttempts ) {
+				this.openManageVersionsModal();
+				this.showGodamSnackbar( __( 'New version is still processing. Please check again in a few moments.', 'godam' ) );
+				return;
+			}
+
+			this.pollForNewVersion( {
+				baseCount,
+				attempt: attempt + 1,
+				expectedVersion,
+			} );
+		}, pollDelay );
+	},
+
+	/**
 	 * Shows a confirmation dialog for deleting a version.
 	 *
 	 * @param {number} versionNumber Version number to confirm deletion for.
@@ -935,6 +1092,68 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		const modal = document.getElementById( 'rtgodam-manage-versions-modal' );
 		if ( ! modal ) {
 			return;
+		}
+
+		const addVersionButton = modal.querySelector( '.rtgodam-add-version' );
+		if ( addVersionButton ) {
+			addVersionButton.addEventListener( 'click', async ( event ) => {
+				event.preventDefault();
+				event.stopPropagation();
+
+				addVersionButton.disabled = true;
+
+				try {
+					const latestVersions = await this.fetchVersionsData();
+					this.mediaVersions = latestVersions;
+					const baseVersionsCount = Array.isArray( latestVersions?.response?.message?.versions )
+						? latestVersions.response.message.versions.length
+						: 0;
+
+					if ( ! this.isAddVersionAllowed( latestVersions ) ) {
+						this.showGodamSnackbar( __( 'Maximum version limit reached. Please delete an old version first.', 'godam' ) );
+						this.openManageVersionsModal();
+						return;
+					}
+
+					this.closeManageVersionsModal();
+					const selectedMedia = await this.openAddVersionUploader();
+					if ( ! selectedMedia ) {
+						this.openManageVersionsModal();
+						return;
+					}
+
+					if ( ! selectedMedia?.id ) {
+						this.showGodamSnackbar( __( 'Please select a valid media file from the Media Library.', 'godam' ) );
+						this.openManageVersionsModal();
+						return;
+					}
+
+					const replaceResponse = await this.replaceMediaVersion( selectedMedia );
+					const expectedVersion = Number(
+						replaceResponse?.response?.new_version ??
+						replaceResponse?.message?.new_version ??
+						replaceResponse?.new_version,
+					);
+					const versionStartMessage = __( 'New version upload started. It will be updated in a few moments.', 'godam' );
+					this.openManageVersionsModal( {
+						isLoading: true,
+						loadingMessage: versionStartMessage,
+					} );
+					this.showGodamSnackbar( versionStartMessage, 'success' );
+					this.pollForNewVersion( {
+						baseCount: baseVersionsCount,
+						expectedVersion: Number.isInteger( expectedVersion ) && expectedVersion > 0 ? expectedVersion : null,
+					} );
+				} catch ( error ) {
+					this.showGodamSnackbar( error?.message || __( 'Unable to add a new version.', 'godam' ) );
+					try {
+						this.mediaVersions = await this.fetchVersionsData();
+						this.openManageVersionsModal();
+					} catch {
+						this.closeManageVersionsModal();
+					}
+				}
+			} );
 		}
 
 		// Setup Set Active buttons
@@ -1142,7 +1361,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			return;
 		}
 
-		const { isLoading = false } = options;
+		const { isLoading = false, loadingMessage = '' } = options;
 		const attachmentId = this.model.get( 'id' );
 		const attachmentTitle = this.model.get( 'title' ) || this.model.get( 'filename' ) || __( 'Media File', 'godam' );
 		const versions = isLoading ? [] : this.normalizeMediaVersions( this.mediaVersions, attachmentTitle );
@@ -1152,8 +1371,9 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			attachmentId,
 			versions,
 			isLoading,
-			activeCount: versions.filter( ( version ) => version.isActive ).length,
-			totalCount: versions.length,
+			loadingMessage,
+			totalVersions: versions.length,
+			maxVersions: this.getMaxVersions( this.mediaVersions ),
 			trashIcon: DOMPurify.sanitize( trashIcon ),
 		} );
 
