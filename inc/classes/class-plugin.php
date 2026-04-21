@@ -84,8 +84,8 @@ class Plugin {
 	 */
 	protected function __construct() {
 
-		// Run one-time migrations before loading plugin components.
-		Migrations_Runner::run();
+		// Register persistent migration hooks (includes admin_init trigger).
+		Migrations_Runner::init();
 
 		// Load plugin classes.
 		Update::get_instance();
