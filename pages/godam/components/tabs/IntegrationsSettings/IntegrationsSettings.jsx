@@ -1,3 +1,5 @@
+/* eslint-disable eslint-comments/disable-enable-pair */
+/* eslint-disable no-nested-ternary */
 /**
  * External dependencies
  */
@@ -15,7 +17,8 @@ import {
 	Button,
 	Spinner,
 } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
@@ -24,34 +27,26 @@ import { scrollToTop, hasValidAPIKey } from '../../../utils/index.js';
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
 import { getPricingUrl } from '../../../../shared/premium-layers.js';
+import IntegrationToggle from './IntegrationToggle.jsx';
+import integrationTabs from './integration-tabs.js';
 
-// WooCommerceSettings is loaded dynamically by the GoDAM for Woo add-on.
-// It registers itself via window.godamIntegrationComponents.
-const getWooCommerceSettings = () => window.godamIntegrationComponents?.WooCommerceSettings || null;
+/**
+ * Retrieve the extended-settings component registered by an add-on for a
+ * given integration tab.
+ *
+ * Add-ons register themselves on `window.godamIntegrationComponents` keyed by
+ * the integration slug (must match the tab `name`), e.g.:
+ *
+ * window.godamIntegrationComponents.woocommerce = MySettingsComponent;
+ *
+ * @param {string} tabName The integration slug / tab name.
+ * @return {Function|null} React component, or null.
+ */
+const getExtendedSettings = ( tabName ) =>
+	window.godamIntegrationComponents?.[ tabName ] || null;
 
 const IntegrationSettings = () => {
-	const isWooActive = Boolean( window?.easydamMediaLibrary?.isWooActive );
-	const WooCommerceSettings = getWooCommerceSettings();
-
-	// Build tabs conditionally — only show Woo tab when add-on provides its component.
-	const tabs = [
-		...( isWooActive && WooCommerceSettings
-			? [
-				{
-					name: 'woocommerce',
-					title: (
-						<>
-							{ __( 'WooCommerce', 'godam' ) }
-							<span className="godam-pro-badge">
-								{ __( 'Pro', 'godam' ) }
-							</span>
-						</>
-					),
-					className: 'godam-tab',
-				},
-			]
-			: [] ),
-	];
+	const tabs = integrationTabs;
 
 	const dispatch = useDispatch();
 
@@ -63,6 +58,7 @@ const IntegrationSettings = () => {
 
 	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] = useSaveMediaSettingsMutation();
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
+	const [ togglingPlugin, setTogglingPlugin ] = useState( null );
 
 	// Function to show a notice message
 	const showNotice = ( message, status = 'success' ) => {
@@ -72,12 +68,42 @@ const IntegrationSettings = () => {
 		}
 	};
 
-	// Function to handle setting change
-	const handleSettingChange = ( key, value ) => {
+	// Handle integration toggle — activate / deactivate the add-on plugin.
+	const handleToggle = async ( tab, value ) => {
+		if ( tab.pluginSlug ) {
+			setTogglingPlugin( tab.name );
+			try {
+				const response = await apiFetch( {
+					path: '/godam/v1/addon/toggle',
+					method: 'POST',
+					data: {
+						plugin: tab.pluginSlug,
+						activate: value,
+					},
+				} );
+
+				if ( response?.status === 'success' ) {
+					window.location.reload();
+				}
+			} catch ( error ) {
+				showNotice(
+					error.message || __( 'Failed to toggle add-on.', 'godam' ),
+					'error',
+				);
+			} finally {
+				setTogglingPlugin( null );
+			}
+		} else {
+			handleSettingChange( tab.name, 'enable', value );
+		}
+	};
+
+	// Function to handle setting change for a given integration.
+	const handleSettingChange = ( subCategory, key, value ) => {
 		dispatch(
 			updateMediaSetting( {
 				category: 'integrations',
-				subCategory: 'woocommerce',
+				subCategory,
 				key,
 				value,
 			} ),
@@ -139,21 +165,52 @@ const IntegrationSettings = () => {
 					tabs={ tabs }
 				>
 					{ ( tab ) => {
-						switch ( tab.name ) {
-							case 'woocommerce':
-								return (
-									<PanelBody opened>
-										<WooCommerceSettings
-											settings={ mediaSettings.integrations?.woocommerce || {} }
-											onSettingChange={ handleSettingChange }
+						const integrationSettings = mediaSettings.integrations?.[ tab.name ] || {};
+						const addonStatus = tab.pluginSlug ? window.godamAddonStatuses?.[ tab.pluginSlug ] : null;
+						const isInstalled = ! tab.pluginSlug || !! addonStatus?.installed;
+						const isPluginActive = tab.pluginSlug
+							? !! addonStatus?.active
+							: ( integrationSettings?.enable !== undefined ? integrationSettings.enable : true );
+
+						return (
+							<PanelBody opened>
+								{ isInstalled ? (
+									<IntegrationToggle
+										label={ tab.integrationLabel }
+										enabled={ isPluginActive }
+										onChange={ ( value ) => handleToggle( tab, value ) }
+										hasValidAPIKey={ hasValidAPIKey }
+										getPricingUrl={ getPricingUrl }
+										featureSlug={ `${ tab.name }-integration` }
+										isToggling={ togglingPlugin === tab.name }
+									/>
+								) : (
+									<p>
+										{ sprintf(
+											/* translators: %s: Integration name, e.g. "WooCommerce". */
+											__( 'The %s add-on plugin is not installed. Please install it to enable this integration.', 'godam' ),
+											tab.integrationLabel,
+										) }
+									</p>
+								) }
+
+								{ /* Render add-on extended settings if the add-on registered a component. */ }
+								{ ( () => {
+									const ExtendedSettings = getExtendedSettings( tab.name );
+									if ( ! ExtendedSettings ) {
+										return null;
+									}
+									return (
+										<ExtendedSettings
+											settings={ integrationSettings }
+											onSettingChange={ ( key, value ) => handleSettingChange( tab.name, key, value ) }
 											hasValidAPIKey={ hasValidAPIKey }
 											getPricingUrl={ getPricingUrl }
 										/>
-									</PanelBody>
-								);
-							default:
-								return null;
-						}
+									);
+								} )() }
+							</PanelBody>
+						);
 					} }
 				</TabPanel>
 			</Panel>

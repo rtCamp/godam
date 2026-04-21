@@ -43,6 +43,43 @@ if ( ! defined( 'GODAM_WOO_DEACTIVATED_GALLERY_OPTION' ) ) {
 	define( 'GODAM_WOO_DEACTIVATED_GALLERY_OPTION', 'godam_woo_deactivated_gallery_video_map' );
 }
 
+if ( ! defined( 'GODAM_WOO_FD_API_URL' ) ) {
+	define( 'GODAM_WOO_FD_API_URL', 'https://app.godam.io' );
+}
+
+if ( ! defined( 'GODAM_WOO_FD_ITEM_ID' ) ) {
+	define( 'GODAM_WOO_FD_ITEM_ID', 'godam-for-woo' );
+}
+
+// ── Frappe Dispatch Updater ──────────────────────────────────────────────
+
+if ( ! class_exists( 'Frappe_Dispatch_Updater' ) ) {
+	require_once GODAM_WOO_PATH . 'lib/Frappe_Dispatch_Updater.php';
+}
+
+/**
+ * Initialize the Frappe Dispatch updater for GoDAM for Woo.
+ *
+ * Follows the client integration guide: hook into admin_init at priority 0
+ * so WordPress picks up updates from the Frappe Dispatch backend.
+ */
+function godam_woo_frappe_dispatch_setup() {
+	$license_key = get_option( 'rtgodam-api-key', '' );
+
+	$GLOBALS['godam_woo_updater'] = new Frappe_Dispatch_Updater(
+		GODAM_WOO_FD_API_URL,
+		__FILE__,
+		array(
+			'version' => GODAM_WOO_VERSION,
+			'license' => $license_key,
+			'item_id' => GODAM_WOO_FD_ITEM_ID,
+			'author'  => 'rtCamp',
+		)
+	);
+}
+
+add_action( 'admin_init', 'godam_woo_frappe_dispatch_setup', 0 );
+
 /**
  * Register the add-on with GoDAM's add-on system.
  *
@@ -54,6 +91,24 @@ function godam_woo_register_addon( $registry ) {
 }
 
 add_action( 'godam_register_addons', 'godam_woo_register_addon' );
+
+/**
+ * Show the "update available" admin notice on the plugins page when
+ * the user clicked "Check for Updates" and a new version was found.
+ */
+function godam_woo_update_admin_notice() {
+	$notice = get_transient( 'godam_woo_update_notice' );
+
+	if ( 'update_available' === $notice ) {
+		delete_transient( 'godam_woo_update_notice' );
+		printf(
+			'<div class="notice notice-warning is-dismissible"><p>%s</p></div>',
+			esc_html__( 'A new version of GoDAM for Woo is available. Please click "update now" below to update the plugin.', 'godam-woo' )
+		);
+	}
+}
+
+add_action( 'admin_notices', 'godam_woo_update_admin_notice' );
 
 /**
  * Show admin notice if GoDAM is not active.

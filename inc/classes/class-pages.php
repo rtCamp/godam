@@ -798,7 +798,7 @@ class Pages {
 			wp_register_script(
 				'transcoder-page-script-godam',
 				RTGODAM_URL . 'assets/build/pages/godam.min.js',
-				array( 'wp-element', 'wp-i18n' ),
+				array( 'wp-element', 'wp-i18n', 'wp-api-fetch' ),
 				filemtime( RTGODAM_PATH . 'assets/build/pages/godam.min.js' ),
 				true
 			);
@@ -829,6 +829,35 @@ class Pages {
 			);
 
 			wp_set_script_translations( 'transcoder-page-script-godam', 'godam', RTGODAM_PATH . 'languages' );
+
+			if ( ! function_exists( 'is_plugin_active' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
+
+			$addon_slugs = array( 'godam-for-woo/godam-for-woo.php' );
+
+			/**
+			 * Filter the list of recognised add-on plugin slugs.
+			 *
+			 * @param string[] $addon_slugs Plugin file slugs (e.g. 'godam-for-woo/godam-for-woo.php').
+			 */
+			$addon_slugs = apply_filters( 'godam_addon_plugin_slugs', $addon_slugs );
+
+			$addon_statuses = array();
+			foreach ( $addon_slugs as $slug ) {
+				$file_exists             = file_exists( WP_PLUGIN_DIR . '/' . $slug );
+				$addon_statuses[ $slug ] = array(
+					'installed' => $file_exists ? '1' : '',
+					'active'    => ( $file_exists && is_plugin_active( $slug ) ) ? '1' : '',
+				);
+			}
+
+			wp_localize_script(
+				'transcoder-page-script-godam',
+				'godamAddonStatuses',
+				$addon_statuses
+			);
+
 			wp_enqueue_script( 'transcoder-page-script-godam' );
 
 			/**

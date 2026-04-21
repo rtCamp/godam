@@ -122,6 +122,7 @@ class Bootstrap {
 		// Load REST API classes.
 		require_once GODAM_WOO_PATH . 'inc/classes/class-product-gallery-rest.php';
 		require_once GODAM_WOO_PATH . 'inc/classes/class-wc-rest.php';
+		require_once GODAM_WOO_PATH . 'inc/classes/class-update-check-rest.php';
 
 		// Load WooCommerce integration classes.
 		require_once GODAM_WOO_PATH . 'inc/classes/class-wc-product-video-gallery.php';
@@ -250,6 +251,7 @@ class Bootstrap {
 		// Initialize REST API.
 		\GoDAM_Woo\Classes\WC_REST::get_instance();
 		\GoDAM_Woo\Classes\Product_Gallery_Rest::get_instance();
+		\GoDAM_Woo\Classes\Update_Check_REST::get_instance();
 
 		// Initialize WooCommerce classes.
 		\GoDAM_Woo\Classes\WC_Product_Video_Gallery::get_instance();
@@ -355,9 +357,18 @@ class Bootstrap {
 			wp_enqueue_script(
 				'godam-woo-settings-component',
 				GODAM_WOO_URL . 'assets/build/pages/woo-settings-component.min.js',
-				array( 'wp-element', 'wp-components', 'wp-i18n' ),
+				array( 'wp-element', 'wp-components', 'wp-i18n', 'wp-api-fetch' ),
 				godam_woo_get_asset_version( $asset_path ),
 				true
+			);
+
+			wp_localize_script(
+				'godam-woo-settings-component',
+				'godamWooSettings',
+				array(
+					'version'    => GODAM_WOO_VERSION,
+					'pluginsUrl' => admin_url( 'plugins.php?plugin_status=all&s=godam-for-woo' ),
+				)
 			);
 		}
 	}

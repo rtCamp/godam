@@ -23,18 +23,10 @@ import IntegrationsSettings from './components/tabs/IntegrationsSettings/Integra
 import VideoSettings from './components/tabs/VideoSettings/VideoSettings.jsx';
 import VideoPlayer from './components/tabs/VideoPlayer/VideoPlayer.jsx';
 import AdsSettings from './components/tabs/AdsSettings/AdsSettings.jsx';
-import { isSafari } from './utils/index.js';
+import { isSafari, hasValidAPIKey } from './utils/index.js';
 
 import { useGetMediaSettingsQuery } from './redux/api/media-settings.js';
 import { setMediaSettings } from './redux/slice/media-settings.js';
-
-const isWooActive = Boolean( window?.easydamMediaLibrary?.isWooActive );
-
-/* Determines whether the Integrations section should be shown.
- * Extend this condition when adding new integrations
- * (e.g., isWooActive || isShopifyActive || isEDDActive).
- */
-const hasIntegrations = isWooActive;
 
 const TABS = [
 	{
@@ -67,7 +59,7 @@ const TABS = [
 			<path d="M14 3a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM2 2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" />
 		</svg>,
 	},
-	...( hasIntegrations
+	...( hasValidAPIKey
 		? [
 			{
 				id: 'integrations-settings',

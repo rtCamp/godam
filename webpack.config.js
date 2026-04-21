@@ -337,6 +337,7 @@ const pages = {
 		'@wordpress/element': [ 'wp', 'element' ], // For WordPress compatibility
 		'@wordpress/i18n': [ 'wp', 'i18n' ],
 		'@wordpress/components': [ 'wp', 'components' ],
+		'@wordpress/api-fetch': [ 'wp', 'apiFetch' ],
 	},
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
