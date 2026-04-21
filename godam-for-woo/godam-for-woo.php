@@ -51,6 +51,10 @@ if ( ! defined( 'GODAM_WOO_FD_ITEM_ID' ) ) {
 	define( 'GODAM_WOO_FD_ITEM_ID', 'godam-for-woo' );
 }
 
+if ( ! defined( 'FRAPPE_DISPATCH_SITE_URL' ) ) {
+	define( 'FRAPPE_DISPATCH_SITE_URL', 'https://app-godam-preprod.rt.gw' );
+}
+
 // ── Frappe Dispatch Updater ──────────────────────────────────────────────
 
 if ( ! class_exists( 'Frappe_Dispatch_Updater' ) ) {
@@ -109,27 +113,6 @@ function godam_woo_update_admin_notice() {
 }
 
 add_action( 'admin_notices', 'godam_woo_update_admin_notice' );
-
-/**
- * Show admin notice if GoDAM is not active.
- */
-function godam_woo_missing_godam_notice() {
-	if ( ! class_exists( 'RTGODAM\Inc\Addons\Addon_Registry' ) ) {
-		printf(
-			'<div class="notice notice-error"><p>%s</p></div>',
-			wp_kses_post(
-				sprintf(
-					/* translators: 1: Opening link tag, 2: Closing link tag */
-					__( '<strong>GoDAM for Woo</strong> requires the %1$sGoDAM%2$s plugin to be installed and activated.', 'godam-woo' ),
-					'<a href="https://wordpress.org/plugins/godam/" target="_blank" rel="noopener noreferrer">',
-					'</a>'
-				)
-			)
-		);
-	}
-}
-
-add_action( 'admin_notices', 'godam_woo_missing_godam_notice' );
 
 /**
  * Check whether an attachment is a video.

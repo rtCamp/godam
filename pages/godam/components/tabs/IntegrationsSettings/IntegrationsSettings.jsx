@@ -28,6 +28,7 @@ import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.
 import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
 import { getPricingUrl } from '../../../../shared/premium-layers.js';
 import IntegrationToggle from './IntegrationToggle.jsx';
+import IntegrationActionButton from './IntegrationActionButton.jsx';
 import integrationTabs from './integration-tabs.js';
 
 /**
@@ -59,6 +60,8 @@ const IntegrationSettings = () => {
 	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] = useSaveMediaSettingsMutation();
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 	const [ togglingPlugin, setTogglingPlugin ] = useState( null );
+	const [ installingPlugin, setInstallingPlugin ] = useState( null );
+	const [ installError, setInstallError ] = useState( null );
 
 	// Function to show a notice message
 	const showNotice = ( message, status = 'success' ) => {
@@ -95,6 +98,40 @@ const IntegrationSettings = () => {
 			}
 		} else {
 			handleSettingChange( tab.name, 'enable', value );
+		}
+	};
+
+	// Handle add-on installation via Frappe Dispatch.
+	const handleInstall = async ( tab ) => {
+		if ( ! tab.fdItemId ) {
+			return;
+		}
+
+		setInstallingPlugin( tab.name );
+		try {
+			const response = await apiFetch( {
+				path: '/godam/v1/addon/install',
+				method: 'POST',
+				data: {
+					plugin_slug: tab.fdItemId,
+				},
+			} );
+
+			if ( response?.status === 'success' ) {
+				showNotice(
+					__( 'Add-on installed successfully! Reloading…', 'godam' ),
+				);
+				window.location.reload();
+			}
+		} catch ( error ) {
+			const downloadLink = error?.data?.download_link || null;
+			setInstallError( { tabName: tab.name, downloadLink } );
+			showNotice(
+				__( 'Installation failed.', 'godam' ),
+				'error',
+			);
+		} finally {
+			setInstallingPlugin( null );
 		}
 	};
 
@@ -171,10 +208,73 @@ const IntegrationSettings = () => {
 						const isPluginActive = tab.pluginSlug
 							? !! addonStatus?.active
 							: ( integrationSettings?.enable !== undefined ? integrationSettings.enable : true );
+						const requiredStatus = tab.requiredPlugin ? window.godamAddonStatuses?.[ tab.requiredPlugin ] : null;
+						const isRequiredActive = ! tab.requiredPlugin || ( !! requiredStatus?.installed && !! requiredStatus?.active );
 
 						return (
 							<PanelBody opened>
-								{ isInstalled ? (
+								<IntegrationActionButton
+									label={ tab.addonLabel || tab.integrationLabel }
+									isAddonInstalled={ isInstalled }
+									isRequiredActive={ isRequiredActive }
+									hasValidAPIKey={ hasValidAPIKey }
+									getPricingUrl={ getPricingUrl }
+									featureSlug={ `${ tab.name }-integration` }
+									learnMoreUrl="https://godam.io/woo/"
+									onInstall={ () => handleInstall( tab ) }
+									isInstalling={ installingPlugin === tab.name }
+								/>
+
+								{ installError?.tabName === tab.name && ! isInstalled && (
+									<Notice
+										status="error"
+										isDismissible={ true }
+										onRemove={ () => setInstallError( null ) }
+										className="godam-install-error-notice"
+									>
+										<p>
+											{ __( 'Installation failed. Please download the ZIP and install it like any other WordPress plugin.', 'godam' ) }
+										</p>
+										<div style={ { display: 'flex', gap: '12px', marginTop: '8px' } }>
+											{ installError.downloadLink && (
+												<Button
+													variant="secondary"
+													href={ installError.downloadLink }
+													icon="download"
+												>
+													{ __( 'Download ZIP', 'godam' ) }
+												</Button>
+											) }
+											<Button
+												variant="link"
+												href="https://wordpress.org/documentation/article/manage-plugins/#upload-via-wordpress-admin"
+												target="_blank"
+												rel="noopener noreferrer"
+												icon="external"
+											>
+												{ __( 'View Installation Guide', 'godam' ) }
+											</Button>
+										</div>
+									</Notice>
+								) }
+
+								{ isRequiredActive && hasValidAPIKey && ! isInstalled && (
+									<p>
+										{ sprintf(
+										/* translators: %s: Integration name, e.g. "WooCommerce". */
+											__( 'The %s add-on plugin is not installed. Please install it to enable this integration.', 'godam' ),
+											tab.integrationLabel,
+										) }
+									</p>
+								) }
+
+								{ ! hasValidAPIKey && (
+									<p>
+										{ __( 'This is a Pro feature. Upgrade to Pro to use this integration.', 'godam' ) }
+									</p>
+								) }
+
+								{ isInstalled && (
 									<IntegrationToggle
 										label={ tab.integrationLabel }
 										enabled={ isPluginActive }
@@ -184,14 +284,6 @@ const IntegrationSettings = () => {
 										featureSlug={ `${ tab.name }-integration` }
 										isToggling={ togglingPlugin === tab.name }
 									/>
-								) : (
-									<p>
-										{ sprintf(
-											/* translators: %s: Integration name, e.g. "WooCommerce". */
-											__( 'The %s add-on plugin is not installed. Please install it to enable this integration.', 'godam' ),
-											tab.integrationLabel,
-										) }
-									</p>
 								) }
 
 								{ /* Render add-on extended settings if the add-on registered a component. */ }

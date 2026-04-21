@@ -46,6 +46,7 @@ use RTGODAM\Inc\REST_API\Video_Migration;
 use RTGODAM\Inc\REST_API\Release_Post;
 use RTGODAM\Inc\REST_API\Video_Sync;
 use RTGODAM\Inc\REST_API\Addon_Toggle;
+use RTGODAM\Inc\REST_API\Addon_Install;
 use RTGODAM\Inc\Gravity_Forms;
 use RTGODAM\Inc\REST_API\MetForm;
 
@@ -185,6 +186,7 @@ class Plugin {
 		Release_Post::get_instance();
 		Video_Sync::get_instance();
 		Addon_Toggle::get_instance();
+		Addon_Install::get_instance();
 	}
 
 	/**

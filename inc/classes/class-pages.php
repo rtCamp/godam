@@ -852,6 +852,24 @@ class Pages {
 				);
 			}
 
+			// Required / dependency plugins (e.g. WooCommerce itself).
+			$required_slugs = array( 'woocommerce/woocommerce.php' );
+
+			/**
+			 * Filter the list of required dependency plugin slugs to check.
+			 *
+			 * @param string[] $required_slugs Plugin file slugs.
+			 */
+			$required_slugs = apply_filters( 'godam_required_plugin_slugs', $required_slugs );
+
+			foreach ( $required_slugs as $slug ) {
+				$file_exists             = file_exists( WP_PLUGIN_DIR . '/' . $slug );
+				$addon_statuses[ $slug ] = array(
+					'installed' => $file_exists ? '1' : '',
+					'active'    => ( $file_exists && is_plugin_active( $slug ) ) ? '1' : '',
+				);
+			}
+
 			wp_localize_script(
 				'transcoder-page-script-godam',
 				'godamAddonStatuses',

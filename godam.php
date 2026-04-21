@@ -58,6 +58,10 @@ if ( ! defined( 'RTGODAM_IO_API_BASE' ) ) {
 	define( 'RTGODAM_IO_API_BASE', 'https://godam.io' );
 }
 
+if ( ! defined( 'FRAPPE_DISPATCH_SITE_URL' ) ) {
+	define( 'FRAPPE_DISPATCH_SITE_URL', 'https://app-godam-preprod.rt.gw' );
+}
+
 require_once RTGODAM_PATH . 'inc/helpers/autoloader.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once RTGODAM_PATH . 'inc/helpers/custom-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once RTGODAM_PATH . 'inc/helpers/class-api-key.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant

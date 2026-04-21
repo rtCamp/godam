@@ -17,7 +17,10 @@ const integrationTabs = [
 	{
 		name: 'woocommerce',
 		pluginSlug: 'godam-for-woo/godam-for-woo.php',
+		requiredPlugin: 'woocommerce/woocommerce.php',
+		fdItemId: 'godam-for-woo',
 		integrationLabel: __( 'WooCommerce', 'godam' ),
+		addonLabel: __( 'GoDAM for Woo', 'godam' ),
 		title: (
 			<>
 				{ __( 'WooCommerce', 'godam' ) }
