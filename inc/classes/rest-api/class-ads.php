@@ -93,6 +93,7 @@ class Ads extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function get_ad_tag_url( $request ) {
+
 		// Retrieve and sanitize input parameters.
 		$display_time = intval( $request->get_param( 'display_time' ) );
 		$ad_duration  = intval( $request->get_param( 'duration' ) );
@@ -196,6 +197,7 @@ class Ads extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function get_video_ad_tag_url( $request ) {
+
 
 		$video_id = $request->get_param( 'id' );
 		$video_id = intval( $video_id );

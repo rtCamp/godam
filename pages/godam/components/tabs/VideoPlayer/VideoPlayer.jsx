@@ -400,110 +400,128 @@ const VideoPlayer = () => {
 			<div className="bg-neutral-50 p-6 rounded-lg shadow-sm">
 				<div ref={ wrapperRef } className="text-center max-w-[650px] mx-auto shadow-xl rounded-lg overflow-hidden"></div>
 
-				<div className="godam-settings__container__global-settings w-4/5 mt-9 mb-6 mx-auto">
-					<div className="godam-form-group">
-						<label className="label-text" htmlFor="brand-color">
-							{ __( 'Player Skin', 'godam' ) }
-						</label>
+				<div className="relative">
 
-						<ComboboxControl
-							__next40pxDefaultSize
-							__nextHasNoMarginBottom
-							label=""
-							onChange={ ( value ) => handleSettingChange( 'player_skin', value ) }
-							options={ [
-								{
-									label: 'Default',
-									value: 'Default',
-								},
-								{
-									label: 'Classic',
-									value: 'Classic',
-								},
-								{
-									label: 'Minimal',
-									value: 'Minimal',
-								},
-								{
-									label: 'Pills',
-									value: 'Pills',
-								},
-								{
-									label: 'Bubble',
-									value: 'Bubble',
-								},
-							] }
-							value={ mediaSettings?.video_player?.player_skin || 'Default' }
-							className="godam-player-skin-dropdown"
-						/>
+					<div className="w-4/5 mt-9 mb-6 mx-auto">
+						<div className="w-1/4">
+							<div className="godam-form-group">
+								<label className="label-text" htmlFor="brand-color">
+									{ __( 'Player Skin', 'godam' ) }
+								</label>
+
+								<ComboboxControl
+									__next40pxDefaultSize
+									__nextHasNoMarginBottom
+									label=""
+									onChange={ ( value ) => handleSettingChange( 'player_skin', value ) }
+									options={ [
+										{
+											label: 'Default',
+											value: 'Default',
+										},
+										{
+											label: 'Classic',
+											value: 'Classic',
+										},
+										{
+											label: 'Minimal',
+											value: 'Minimal',
+										},
+										{
+											label: 'Pills',
+											value: 'Pills',
+										},
+										{
+											label: 'Bubble',
+											value: 'Bubble',
+										},
+									] }
+									value={ mediaSettings?.video_player?.player_skin || 'Default' }
+									className="godam-player-skin-dropdown"
+								/>
+							</div>
+						</div>
 					</div>
-					<div className="godam-form-group">
-						<label className="label-text" htmlFor="brand-color">
-							{ __( 'Brand color', 'godam' ) }
-						</label>
-						<div className="flex items-center gap-2">
-							<ColorPickerButton
-								label={ __( 'Brand color', 'godam' ) }
-								value={ mediaSettings?.video_player?.brand_color }
-								onChange={ ( value ) => handleSettingChange( 'brand_color', value ) }
-								disabled={ isMinimalOrClassic }
-							/>
-							{ mediaSettings?.video_player?.brand_color && (
-								<button
-									type="button"
-									className="text-xs text-red-500 underline hover:text-red-600 bg-transparent cursor-pointer"
-									onClick={ () => handleSettingChange( 'brand_color', '' ) }
-									aria-haspopup="true"
-									aria-label={ __( 'Remove', 'godam' ) }
-								>
-									<Icon icon={ closeSmall } />
-								</button>
-							) }
+
+					{ /* Customize Branding section */ }
+					<div className="w-4/5 mb-6 mx-auto">
+						<div className="flex items-center gap-2 mb-5 pb-2 border-b border-gray-200">
+							<h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wider m-0">
+								{ __( 'Customize Branding', 'godam' ) }
+							</h3>
+
 						</div>
 
-						<p className="text-[0.75rem] leading-[1.2] text-[#777]">
-							{
-								isMinimalOrClassic
-									? ( <div className="flex items-center gap-2 mt-[-4px]">
-										<Icon icon={ error } style={ { fill: '#EAB308' } } size={ 28 } />
-										<p className="text-[#AB3A6C] text-[0.75rem] leading-[1.2]">{ __(
-											'The brand color will not be applied to the player skin.',
-											'godam',
-										) }
-										</p>
-									</div>
-									) : __(
-										'Select a brand color to apply to the video block. This can be overridden for individual videos by the video editor',
-										'godam',
-									)
-							}
-						</p>
+						<div className="grid grid-cols-2 gap-6">
+							<div className="godam-form-group">
+								<label className="label-text" htmlFor="brand-color">
+									{ __( 'Brand color', 'godam' ) }
+								</label>
+								<div className="flex items-center gap-2">
+									<ColorPickerButton
+										label={ __( 'Brand color', 'godam' ) }
+										value={ mediaSettings?.video_player?.brand_color }
+										onChange={ ( value ) => handleSettingChange( 'brand_color', value ) }
+										disabled={ isMinimalOrClassic }
+									/>
+									{ mediaSettings?.video_player?.brand_color && (
+										<button
+											type="button"
+											className="text-xs text-red-500 underline hover:text-red-600 bg-transparent cursor-pointer"
+											onClick={ () => handleSettingChange( 'brand_color', '' ) }
+											aria-haspopup="true"
+											aria-label={ __( 'Remove', 'godam' ) }
+										>
+											<Icon icon={ closeSmall } />
+										</button>
+									) }
+								</div>
+
+								<p className="text-[0.75rem] leading-[1.2] text-[#777]">
+									{
+										isMinimalOrClassic
+											? ( <div className="flex items-center gap-2 mt-[-4px]">
+												<Icon icon={ error } style={ { fill: '#EAB308' } } size={ 28 } />
+												<p className="text-[#AB3A6C] text-[0.75rem] leading-[1.2]">{ __(
+													'The brand color will not be applied to the player skin.',
+													'godam',
+												) }
+												</p>
+											</div>
+											) : __(
+												'Select a brand color to apply to the video block. This can be overridden for individual videos by the video editor',
+												'godam',
+											)
+									}
+								</p>
+							</div>
+
+							<BrandImageSelector
+								mediaSettings={ mediaSettings }
+								handleSettingChange={ handleSettingChange }
+							/>
+						</div>
 					</div>
 
-					<BrandImageSelector
-						mediaSettings={ mediaSettings }
-						handleSettingChange={ handleSettingChange }
-					/>
-				</div>
-
-				<div className="godam-form-group godam-settings__container__custom-css mb-8 mx-auto">
-					<label className="label-text" htmlFor="brand-color">{ __( 'Custom CSS', 'godam' ) }</label>
-					<CustomVideoPlayerCSS handleSettingChange={ handleSettingChange } />
-					<div className="text-[0.75rem] leading-[1.2] text-[#777] mt-2">
-						{ __( 'Any custom CSS you add will be applied to all player skins. It’s global and not tied to a specific skin style.', 'godam' ) }
+					<div className="godam-form-group godam-settings__container__custom-css mb-8 mx-auto">
+						<label className="label-text" htmlFor="brand-color">{ __( 'Custom CSS', 'godam' ) }</label>
+						<CustomVideoPlayerCSS handleSettingChange={ handleSettingChange } />
+						<div className="text-[0.75rem] leading-[1.2] text-[#777] mt-2">
+							{ __( 'Any custom CSS you add will be applied to all player skins. It\'s global and not tied to a specific skin style.', 'godam' ) }
+						</div>
 					</div>
-				</div>
 
-				<Button
-					variant="primary"
-					className="godam-button"
-					onClick={ handleSaveSettings }
-					icon={ saveMediaSettingsLoading && <Spinner /> }
-					isBusy={ saveMediaSettingsLoading }
-					disabled={ saveMediaSettingsLoading || ! isChanged }
-				>
-					{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
-				</Button>
+					<Button
+						variant="primary"
+						className="godam-button"
+						onClick={ handleSaveSettings }
+						icon={ saveMediaSettingsLoading && <Spinner /> }
+						isBusy={ saveMediaSettingsLoading }
+						disabled={ saveMediaSettingsLoading || ! isChanged }
+					>
+						{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
+					</Button>
+				</div>
 			</div>
 		</>
 	);

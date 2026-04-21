@@ -148,33 +148,17 @@ const CustomAdSettings = ( { layerID } ) => {
 		setIsValid( valid );
 	};
 
-	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.validApiKey;
-
-	// For now we are enabling all the features
-	const isValidAPIKey = true;
-
 	return (
 		<div className="relative">
 
 			{
-				( adServer === 'ad-server' && isValidAPIKey ) &&
+				adServer === 'ad-server' &&
 				<Notice
 					className="mb-4"
 					status="warning"
 					isDismissible={ false }
 				>
-					{ __( 'This ad will be overriden by Ad server\'s ads', 'godam' ) }
-				</Notice>
-			}
-			{
-				( ! isValidAPIKey ) &&
-				<Notice
-					className="mb-4"
-					status="warning"
-					isDismissible={ false }
-				>
-					{ __( 'This features is available in premium version', 'godam' ) }
+					{ __( 'This ad will be overridden by Ad server\'s ads', 'godam' ) }
 				</Notice>
 			}
 			<div className="flex flex-col items-start mb-4">
@@ -185,24 +169,24 @@ const CustomAdSettings = ( { layerID } ) => {
 						className="mb-2 godam-button"
 						variant="primary"
 						onClick={ () => OpenVideoSelector() }
-						disabled={ adServer === 'ad-server' || ! isValidAPIKey }
+						disabled={ adServer === 'ad-server' }
 					>{ __( 'Select Ad video', 'godam' ) }</Button> ) }
 				</div>
 				{ layer?.ad_url && (
 					<div className="flex mt-3">
-						<div className={ `sidebar-video-container rounded-xl overflow-scroll ${ adServer === 'ad-server' || ! isValidAPIKey ? 'disabled-video' : '' }` }>
+						<div className={ `sidebar-video-container rounded-xl overflow-scroll ${ adServer === 'ad-server' ? 'disabled-video' : '' }` }>
 							<video
 								src={ layer.ad_url }
 								controls={ adServer !== 'ad-server' }
 							/>
-							{ ( adServer === 'ad-server' || ! isValidAPIKey ) && <div className="video-overlay" /> }
+							{ ( adServer === 'ad-server' ) && <div className="video-overlay" /> }
 						</div>
 						<div className="ml-[6px] flex flex-col">
 							<Tooltip text={ __( 'Replace Ad Video', 'godam' ) } placement="right">
-								<Button className="!text-brand-neutral-900" icon={ replace } onClick={ OpenVideoSelector } />
+								<Button className="!text-brand-neutral-900" icon={ replace } onClick={ OpenVideoSelector } disabled={ adServer === 'ad-server' } />
 							</Tooltip>
 							<Tooltip text={ __( 'Remove Ad Video', 'godam' ) } placement="right">
-								<Button className="mt-1" icon={ trash } isDestructive onClick={ () => dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: '' } ) ) } />
+								<Button className="mt-1" icon={ trash } isDestructive onClick={ () => dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: '' } ) ) } disabled={ adServer === 'ad-server' } />
 							</Tooltip>
 						</div>
 					</div>
@@ -218,7 +202,7 @@ const CustomAdSettings = ( { layerID } ) => {
 					dispatch( updateLayerField( { id: layer.id, field: 'skippable', value } ) )
 				}
 				help={ __( 'Allow user to skip ad', 'godam' ) }
-				disabled={ adServer === 'ad-server' || ! isValidAPIKey }
+				disabled={ adServer === 'ad-server' }
 			/>
 			{
 				layer?.skippable &&
@@ -230,7 +214,7 @@ const CustomAdSettings = ( { layerID } ) => {
 					onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'skip_offset', value } ) ) }
 					type="number"
 					min="0"
-					disabled={ adServer === 'ad-server' || ! isValidAPIKey }
+					disabled={ adServer === 'ad-server' }
 				/>
 			}
 
@@ -242,7 +226,7 @@ const CustomAdSettings = ( { layerID } ) => {
 					value={ layer?.click_link }
 					className="godam-input"
 					onChange={ handleChange }
-					disabled={ adServer === 'ad-server' || ! isValidAPIKey }
+					disabled={ adServer === 'ad-server' }
 					type="url"
 				/>
 				{ ! isValid && (

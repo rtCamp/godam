@@ -437,7 +437,7 @@ class Pages {
 	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
 
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id, $this->tools_page_id ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id, $this->tools_page_id, $this->whats_new_page_id ), true ) ) {
 
 			wp_register_script(
 				'rtgodam-page-style',
@@ -551,6 +551,42 @@ class Pages {
 				'transcoder-page-script-video-editor',
 				'userData',
 				$rtgodam_user_data
+			);
+
+			// Localize easydamMediaLibrary data needed by WooCommerce integration.
+			$enable_folder_organization = get_option( 'rtgodam-settings', array() )['general']['enable_folder_organization'] ?? true;
+			$current_user_id            = get_current_user_id();
+
+			wp_localize_script(
+				'transcoder-page-script-video-editor',
+				'easydamMediaLibrary',
+				array(
+					'ajaxUrl'                  => admin_url( 'admin-ajax.php' ),
+					'nonce'                    => wp_create_nonce( 'easydam_media_library' ),
+					'godamToolsNonce'          => wp_create_nonce( 'rtgodam_tools' ),
+					'enableFolderOrganization' => $enable_folder_organization,
+					'isPollPluginActive'       => is_plugin_active( 'wp-polls/wp-polls.php' ),
+					'isWooActive'              => is_plugin_active( 'woocommerce/woocommerce.php' ),
+					'wooCartURL'               => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '',
+					'page'                     => $screen ? $screen->id : '',
+					'userId'                   => $current_user_id,
+					'canEditOthersMedia'       => current_user_can( 'edit_others_posts' ),
+					'canManageOptions'         => current_user_can( 'manage_options' ),
+					'canEditPages'             => current_user_can( 'edit_pages' ),
+				)
+			);
+
+			// Localize video editor layer options and components via PHP filters.
+			$layer_options    = apply_filters( 'godam_video_editor_layer_options', array() );
+			$layer_components = apply_filters( 'godam_video_editor_layer_components', array() );
+
+			wp_localize_script(
+				'transcoder-page-script-video-editor',
+				'godamVideoEditorConfig',
+				array(
+					'layerOptions'    => $layer_options,
+					'layerComponents' => $layer_components,
+				)
 			);
 
 			wp_set_script_translations( 'transcoder-page-script-video-editor', 'godam', RTGODAM_PATH . 'languages' );
@@ -1118,9 +1154,9 @@ class Pages {
 			return;
 		}
 
-		if ( get_transient( 'rtgodam_show_whats_new' ) ) {
-			// Redirect only once, then clean up any related transient data.
-			delete_transient( 'rtgodam_show_whats_new' );
+		if ( get_option( 'rtgodam_show_whats_new' ) ) {
+			// Redirect only once, then clean up any related data.
+			delete_option( 'rtgodam_show_whats_new' );
 			delete_transient( 'rtgodam_release_data' );
 
 			// Redirect to "What's New" admin page.

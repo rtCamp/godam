@@ -46,11 +46,6 @@ const GravityForm = ( { layerID } ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'gf_id', value: formID } ) );
 	};
 
-	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.validApiKey;
-	// For now we are enabling all the features
-	const isValidAPIKey = true;
-
 	const isGFPluginActive = Boolean( window?.videoData?.gfActive );
 
 	const handleThemeChange = ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'theme', value } ) );
@@ -69,7 +64,7 @@ const GravityForm = ( { layerID } ) => {
 			}
 
 			{
-				<FormSelector disabled={ ! isValidAPIKey || ! isGFPluginActive } className="mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector disabled={ ! isGFPluginActive } className="mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<SelectControl
@@ -79,7 +74,7 @@ const GravityForm = ( { layerID } ) => {
 				options={ templateOptions }
 				value={ layer.theme || 'orbital' }
 				onChange={ handleThemeChange }
-				disabled={ ! isValidAPIKey || ! isGFPluginActive }
+				disabled={ ! isGFPluginActive }
 			/>
 
 			<LayerControl>

@@ -43,6 +43,11 @@ const initialState = {
 		enable_global_video_ads: false,
 		adTagUrl: '',
 	},
+	integrations: {
+		woocommerce: {
+			enable: true,
+		},
+	},
 	isChanged: false,
 };
 
@@ -69,13 +74,20 @@ const mediaSettingsSlice = createSlice( {
 
 		// Updates a specific setting dynamically
 		updateMediaSetting: ( state, action ) => {
-			const { category, key, value } = action.payload; // e.g., { category: 'video', key: 'video_format', value: 'mp4' }
+			const { category, subCategory, key, value } = action.payload; // e.g., { category: 'video', subCategory: 'woocommerce' key: 'video_format', value: 'mp4' }
 
 			if ( state[ category ] && key in state[ category ] ) {
 				// Only update isChanged if the value is different
 				if ( state[ category ][ key ] !== value ) {
 					state[ category ][ key ] = value;
 					state.isChanged = true; // Mark as changed
+				}
+			}
+
+			if ( state[ category ] && subCategory ) {
+				if ( state[ category ][ subCategory ] && state[ category ][ subCategory ][ key ] !== value ) {
+					state[ category ][ subCategory ][ key ] = value;
+					state.isChanged = true;
 				}
 			}
 		},

@@ -36,11 +36,6 @@ const MetForm = ( { layerID } ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'metform_id', value: formID } ) );
 	};
 
-	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.valid_api_key;
-	// For now we are enabling all the features
-	const isValidAPIKey = true;
-
 	const isMetFormPluginActive = Boolean( window?.videoData?.metformActive );
 
 	return (
@@ -58,7 +53,7 @@ const MetForm = ( { layerID } ) => {
 
 			{
 				<FormSelector
-					disabled={ ! isValidAPIKey || ! isMetFormPluginActive }
+					disabled={ ! isMetFormPluginActive }
 					className="met-form-selector mb-4"
 					formID={ layer.metform_id }
 					forms={ forms }
@@ -89,11 +84,6 @@ const MetForm = ( { layerID } ) => {
 									{ isFetching && <p>{ __( 'Loading form…', 'godam' ) }</p> }
 								</div>
 							)
-						}
-
-						{
-							! isValidAPIKey &&
-							<p className="text-sm text-gray-500">{ __( 'This features is available in premium version', 'godam' ) }</p>
 						}
 
 						{

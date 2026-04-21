@@ -206,6 +206,45 @@ const fluentForms = {
 	},
 };
 
+// WooCommerce Integration Module - Consolidated build configuration
+const woocommerceIntegration = {
+	mode,
+	...sharedConfig,
+	entry: {
+		// Admin scripts
+		'admin/wc-product-video-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'admin', 'wc-product-video-gallery.js' ),
+		'admin/wc-admin-featured-video-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'admin', 'wc-admin-featured-video-gallery.js' ),
+
+		// Frontend scripts
+		'wc-featured-video-gallery': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'featured-video', 'wc-featured-video-gallery.js' ),
+		'product-reels-carousel': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'js', 'single-product-story', 'product-reels-carousel.js' ),
+
+		// CSS files
+		'godam-featured-video': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-featured-video.scss' ),
+		'godam-product-reels': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-product-reels.scss' ),
+		'godam-reels-skin-v2': path.resolve( process.cwd(), 'integrations', 'woocommerce', 'assets', 'css', 'godam-reels-skin-v2.scss' ),
+	},
+	output: {
+		path: path.resolve( process.cwd(), 'assets', 'build', 'integrations', 'woocommerce', 'js' ),
+		filename: '[name].min.js',
+		chunkFilename: '[name].min.js',
+	},
+	plugins: [
+		...sharedConfig.plugins
+			.filter( ( plugin ) => plugin.constructor.name !== 'RtlCssPlugin' )
+			.map(
+				( plugin ) => {
+					if ( plugin.constructor.name === 'MiniCssExtractPlugin' ) {
+						plugin.options.filename = '../css/[name].css';
+					}
+					return plugin;
+				},
+			),
+		new RemoveEmptyScriptsPlugin(),
+	],
+	devtool: isProduction ? false : 'source-map',
+};
+
 const everestForms = {
 	...sharedConfig,
 	entry: {
@@ -336,6 +375,7 @@ const pages = {
 		'react-dom': 'ReactDOM',
 		'@wordpress/element': [ 'wp', 'element' ], // For WordPress compatibility
 		'@wordpress/i18n': [ 'wp', 'i18n' ],
+		'@wordpress/components': [ 'wp', 'components' ],
 	},
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
@@ -357,6 +397,7 @@ module.exports = [
 	godamVideoPreview,
 	gfGodamRecorderEditorJS,
 	wpFormsGodamRecorderEditorJS,
+	woocommerceIntegration, // WooCommerce module (consolidated)
 	jetpackFormJS,
 	styles, // Do not remove this.
 	pages,

@@ -40,10 +40,21 @@ class Dynamic_Shortcode extends Base {
 					'callback'            => array( $this, 'render_shortcode' ),
 					'permission_callback' => '__return_true',
 					'args'                => array(
-						'id' => array(
+						'id'            => array(
 							'required'          => true,
 							'type'              => 'integer',
 							'sanitize_callback' => 'absint',
+						),
+						'engagements'   => array(
+							'required' => false,
+							'type'     => 'string',
+							'default'  => '',
+						),
+						'godam_context' => array(
+							'required'          => false,
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'sanitize_text_field',
 						),
 					),
 				),
@@ -59,6 +70,10 @@ class Dynamic_Shortcode extends Base {
 	 */
 	public function render_shortcode( WP_REST_Request $request ) {
 		$id = $request->get_param( 'id' );
+
+		$engagements = $request->get_param( 'engagements' );
+
+		$godam_context = $request->get_param( 'godam_context' );
 
 		$attachment = get_post( $id );
 
@@ -113,7 +128,13 @@ class Dynamic_Shortcode extends Base {
 		$video_date  = apply_filters( 'rtgodam_shortcode_video_date', $video_date, $id );
 
 		ob_start();
-		$shortcode = "[godam_video id='{$id}' engagements=show sources='{$sources_with_placeholders}']";
+		$shortcode = "[godam_video id='{$id}' engagements='{$engagements}' sources='{$sources_with_placeholders}'";
+
+		if ( ! empty( $godam_context ) ) {
+			$shortcode .= " godam_context='{$godam_context}'";
+		}
+
+		$shortcode .= ']';
 
 		// Add filter for shortcode.
 		$shortcode = apply_filters( 'rtgodam_shortcode_output', $shortcode, $id );

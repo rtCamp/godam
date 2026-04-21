@@ -49,24 +49,45 @@ class GoDAM_Player {
 		// Allow external stylesheets to be enqueued.
 		do_action( 'godam_player_enqueue_styles' );
 
-		$godam_player_frontend_assets = include RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.asset.php';
+		$player_frontend_asset_path   = RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.asset.php';
+		$godam_player_frontend_assets = file_exists( $player_frontend_asset_path )
+			? include $player_frontend_asset_path
+			: array(
+				'dependencies' => array(),
+				'version'      => RTGODAM_VERSION,
+			);
+
+		// Add WooCommerce Blocks data store as a dependency if WooCommerce is active.
+		// This is required for the WooCommerce cart store (wc/store/cart) to be available.
+		$dependencies = $godam_player_frontend_assets['dependencies'];
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		if ( is_plugin_active( 'woocommerce/woocommerce.php' ) &&
+			! in_array( 'wc-blocks-data-store', $dependencies, true ) ) {
+			$dependencies[] = 'wc-blocks-data-store';
+		}
 
 		// Register your scripts and styles here.
 		wp_register_script(
 			'godam-player-frontend-script',
 			RTGODAM_URL . 'assets/build/js/godam-player-frontend.min.js',
-			$godam_player_frontend_assets['dependencies'],
+			$dependencies,
 			$godam_player_frontend_assets['version'],
 			true
 		);
 
-		wp_register_script(
-			'godam-player-analytics-script',
-			RTGODAM_URL . 'assets/build/js/godam-player-analytics.min.js',
-			array( 'godam-player-frontend-script', 'wp-i18n' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-analytics.min.js' ),
-			true
-		);
+		$player_analytics_path = RTGODAM_PATH . 'assets/build/js/godam-player-analytics.min.js';
+
+		if ( file_exists( $player_analytics_path ) ) {
+			wp_register_script(
+				'godam-player-analytics-script',
+				RTGODAM_URL . 'assets/build/js/godam-player-analytics.min.js',
+				array( 'godam-player-frontend-script', 'wp-i18n' ),
+				filemtime( $player_analytics_path ),
+				true
+			);
+		}
 
 		wp_register_style(
 			'godam-player-style',
@@ -156,7 +177,7 @@ class GoDAM_Player {
 				'src'               => '',
 				'sources'           => '',
 				'transcoded_url'    => '',
-				'aspectRatio'       => 'responsive',
+				'aspectratio'       => 'responsive',
 				'aspect_ratio'      => '', // WPBakery format (lowercase with underscore).
 				'tracks'            => '',
 				'caption'           => '',
@@ -165,6 +186,7 @@ class GoDAM_Player {
 				'showShareButton'   => false,
 				'show_share_button' => false, // WPBakery format (lowercase with underscore).
 				'css'               => '',
+				'godam_context'     => '',
 			),
 			$atts,
 			'godam_video'
