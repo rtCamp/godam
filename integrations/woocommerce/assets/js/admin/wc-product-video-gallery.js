@@ -233,16 +233,8 @@ jQuery( document ).ready( function( $ ) {
 
 		$( '.godam-product-admin-video-spinner-overlay' ).show();
 
-		const thumbnail = ( attachment.meta && attachment.meta.rtgodam_media_video_thumbnail ) || RTGodamVideoGallery.defaultThumbnail;
+		const thumbnail = ( attachment.meta && attachment.meta.rtgodam_media_video_thumbnail ) || attachment.image?.src || RTGodamVideoGallery.defaultThumbnail;
 		const videoTitle = attachment.title || '';
-
-		const $addBtn = $( '<button>', {
-			type: 'button',
-			class: 'godam-add-product-button components-button godam-button is-compact is-tertiary wc-godam-product-admin',
-			'aria-label': __( 'Associate products with this video', 'godam' ),
-			text: __( '+ Add Products', 'godam' ),
-			'data-linked-products': '[]',
-		} );
 
 		const listItem = $( '<li>' ).append(
 			`<input type="hidden"
@@ -283,7 +275,9 @@ jQuery( document ).ready( function( $ ) {
 			} ),
 		);
 
-		listItem.append( $thumbWrapper ).append( $videoTitle ).append( $addBtn );
+		listItem.append( $thumbWrapper ).append( $videoTitle );
 		videoList.append( listItem );
+		updateAddButtonState();
+		$( '.godam-product-admin-video-spinner-overlay' ).hide();
 	} );
 } );
