@@ -48,6 +48,15 @@ class RTGODAM_Transcoder_Handler {
 	public $uploaded = array();
 
 	/**
+	 * The author of the rtMedia item being processed.
+	 *
+	 * @since    1.0.0
+	 * @access   public
+	 * @var      int|null    $media_author    rtMedia media author ID.
+	 */
+	public $media_author = null;
+
+	/**
 	 * The api key of transcoding service subscription.
 	 *
 	 * @since    1.0.0
@@ -689,15 +698,19 @@ class RTGODAM_Transcoder_Handler {
 			}
 		}
 
+		$media_id = null;
 		if ( class_exists( 'RTMediaModel' ) ) {
-			$model    = new RTMediaModel();
-			$media    = $model->get( array( 'media_id' => $post_id ) );
-			$media_id = $media[0]->id;
+			$model = new RTMediaModel();
+			$media = $model->get( array( 'media_id' => $post_id ) );
 
-			$this->media_author             = $media[0]->media_author;
-			$this->uploaded['context']      = $media[0]->context;
-			$this->uploaded['context_id']   = $media[0]->context_id;
-			$this->uploaded['media_author'] = $media[0]->media_author;
+			if ( ! empty( $media ) && isset( $media[0] ) ) {
+				$media_id = $media[0]->id;
+
+				$this->media_author             = $media[0]->media_author;
+				$this->uploaded['context']      = $media[0]->context;
+				$this->uploaded['context_id']   = $media[0]->context_id;
+				$this->uploaded['media_author'] = $media[0]->media_author;
+			}
 		}
 
 		// rtMedia support.
@@ -719,7 +732,7 @@ class RTGODAM_Transcoder_Handler {
 			// rtMedia support.
 			update_post_meta( $post_id, '_rt_media_video_thumbnail', $first_thumbnail_url );
 
-			if ( class_exists( 'RTMediaModel' ) ) {
+			if ( class_exists( 'RTMediaModel' ) && ! empty( $media_id ) ) {
 				$model->update( array( 'cover_art' => $first_thumbnail_url ), array( 'media_id' => $post_id ) );
 				update_activity_after_thumb_set( $media_id );
 			}
