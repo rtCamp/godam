@@ -28,7 +28,7 @@ import {
 } from '@wordpress/components';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
-import { useCallback, useEffect, useMemo, useState } from '@wordpress/element';
+import { useCallback, useEffect, useMemo, useRef, useState } from '@wordpress/element';
 import { columns, grid, listView, plus } from '@wordpress/icons';
 
 /**
@@ -202,7 +202,11 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	const [ startDatePopoverOpen, setStartDatePopoverOpen ] = useState( false );
 	const [ endDatePopoverOpen, setEndDatePopoverOpen ] = useState( false );
 	const [ dateError, setDateError ] = useState( '' );
-	const { insertBlocks } = useDispatch( blockEditorStore );
+	const { insertBlocks, updateBlockAttributes } = useDispatch( blockEditorStore );
+
+	// Tracks {virtualId, blockClientId} pairs for GoDAM virtual insertions
+	// so the godam-virtual-attachment-created event can update the correct block.
+	const pendingVirtualInserts = useRef( [] );
 
 	const { mediaFolders, authors, queryPreviewVideos, wasJustInserted } = useSelect(
 		( select ) => {
@@ -356,16 +360,52 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 				return;
 			}
 
-			insertBlocks(
-				createBlock( 'godam/gallery-v2-item', {
-					videoId: mediaItem.id,
-				} ),
-				undefined,
-				clientId,
-			);
+			const numericId = parseInt( mediaItem.id, 10 );
+			const isVirtual = ! ( numericId > 0 && String( numericId ) === String( mediaItem.id ) );
+
+			const newBlock = createBlock( 'godam/gallery-v2-item', {
+				videoId: isVirtual ? 0 : numericId,
+			} );
+
+			if ( isVirtual ) {
+				pendingVirtualInserts.current.push( {
+					virtualId: mediaItem.id,
+					blockClientId: newBlock.clientId,
+				} );
+			}
+
+			insertBlocks( newBlock, undefined, clientId );
 		},
 		[ clientId, insertBlocks ],
 	);
+
+	// When GoDAM creates a real WP attachment, find the pending child block
+	// and set its videoId to the actual attachment ID.
+	useEffect( () => {
+		const handleVirtualAttachmentCreated = ( event ) => {
+			const { attachment, virtualMediaId } = event.detail || {};
+			if ( ! attachment?.id || ! virtualMediaId ) {
+				return;
+			}
+
+			const idx = pendingVirtualInserts.current.findIndex(
+				( entry ) => String( entry.virtualId ) === String( virtualMediaId ),
+			);
+
+			if ( idx === -1 ) {
+				return;
+			}
+
+			const [ { blockClientId } ] = pendingVirtualInserts.current.splice( idx, 1 );
+			updateBlockAttributes( blockClientId, { videoId: attachment.id } );
+		};
+
+		document.addEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
+
+		return () => {
+			document.removeEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
+		};
+	}, [ updateBlockAttributes ] );
 
 	const renderVideoAppender = useCallback(
 		() => <AddVideoAppender onSelect={ insertHandpickedVideo } />,
