@@ -21,8 +21,6 @@ use RTGODAM\Inc\Video_Embed;
 use RTGODAM\Inc\Video_Engagement;
 use RTGODAM\Inc\Update;
 use RTGODAM\Inc\Virtual_Media_Registrar;
-
-use RTGODAM\Inc\Post_Types\GoDAM_Video;
 use RTGODAM\Inc\Integrations;
 
 use RTGODAM\Inc\Taxonomies\Media_Folders;
