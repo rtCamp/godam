@@ -92,6 +92,13 @@ $godam_hover_select   = isset( $attributes['hoverSelect'] ) ? $attributes['hover
 $godam_caption        = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
 $godam_tracks         = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $godam_show_share_btn = ! empty( $attributes['showShareButton'] );
+// Determine if subtitles and transcript should be disabled based on the context (e.g., product gallery or reels contexts not require them).
+$godam_disable_subtitles_and_transcript = isset( $attributes['godam_context'] ) &&
+	in_array(
+		$attributes['godam_context'],
+		array( 'godam-video-product-gallery', 'godam-woo-product-page-reels' ),
+		true
+	);
 
 // Resolve the attachment ID (could be WordPress or virtual media).
 $godam_attachment_id = '';
