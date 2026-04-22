@@ -42,9 +42,12 @@ class RTGODAM_Transcoder_Admin {
 			add_action( 'admin_notices', array( $this, 'usage_limit_notices' ) );
 			add_action( 'admin_notices', array( $this, 'posthog_tracking_notice' ) );
 			add_action( 'admin_notices', array( $this, 'api_key_status_notice' ) );
+			add_action( 'admin_notices', array( $this, 'expired_api_key_notice' ) );
+			add_action( 'admin_notices', array( $this, 'woo_integration_promo_notice' ) );
 			add_action( 'admin_init', array( $this, 'handle_posthog_tracking_action' ) );
 			add_action( 'admin_init', array( $this, 'handle_clear_godam_cache' ) );
 			add_action( 'wp_ajax_rtgodam_dismiss_free_plan_notice', array( $this, 'dismiss_free_plan_notice' ) );
+			add_action( 'wp_ajax_rtgodam_dismiss_woo_promo_notice', array( $this, 'dismiss_woo_promo_notice' ) );
 		}
 	}
 
@@ -378,6 +381,20 @@ class RTGODAM_Transcoder_Admin {
 
 		// Store timestamp for 7-day temporary dismissal.
 		update_option( 'rtgodam_free_plan_notice_dismissed_timestamp', time() );
+
+		wp_die();
+	}
+
+	/**
+	 * Dismiss the WooCommerce integration promo notice.
+	 *
+	 * @return void
+	 */
+	public function dismiss_woo_promo_notice() {
+		check_ajax_referer( 'dismiss_woo_promo_notice', 'nonce' );
+
+		// Store timestamp for 30-day temporary dismissal.
+		update_option( 'rtgodam_woo_promo_dismissed_timestamp', time() );
 
 		wp_die();
 	}
@@ -822,5 +839,131 @@ class RTGODAM_Transcoder_Admin {
 
 		wp_safe_redirect( esc_url_raw( remove_query_arg( array( 'godam_tracker_optin', 'godam_tracker_optout', '_wpnonce' ) ) ) );
 		exit;
+	}
+
+	/**
+	 * Show a warning notice on all admin pages when the GoDAM API key has expired.
+	 *
+	 * Only displayed when:
+	 * - An API key is configured but is no longer valid.
+	 *
+	 * @since 1.8.0
+	 */
+	public function expired_api_key_notice() {
+
+		$api_key = \RTGODAM\Inc\Helpers\Api_Key::get_key();
+		if ( empty( $api_key ) || rtgodam_is_api_key_valid() ) {
+			return;
+		}
+
+		$pricing_url = add_query_arg(
+			array(
+				'utm_campaign' => 'expired-key',
+				'utm_source'   => rawurlencode( site_url() ),
+				'utm_medium'   => 'plugin',
+				'utm_content'  => 'godam-admin-notice',
+			),
+			'https://godam.io/pricing'
+		);
+
+		printf(
+			'<div class="notice notice-warning"><p>%s</p></div>',
+			wp_kses_post(
+				sprintf(
+					/* translators: 1: Opening link tag, 2: Closing link tag */
+					__( '<strong>GoDAM API key has expired.</strong> Pro features in GoDAM are currently disabled. %1$sPurchase a new key%2$s to restore access.', 'godam' ),
+					'<a href="' . esc_url( $pricing_url ) . '" target="_blank" rel="noopener noreferrer">',
+					'</a>'
+				)
+			)
+		);
+	}
+
+	/**
+	 * Display a contextual admin notice promoting WooCommerce integration.
+	 *
+	 * The notice adapts based on whether:
+	 * - The GoDAM for Woo add-on is installed.
+	 * - WooCommerce is installed & active.
+	 * - The API key is valid.
+	 *
+	 * Once the add-on is installed the notice is permanently hidden.
+	 *
+	 * @since 1.8.0
+	 */
+	public function woo_integration_promo_notice() {
+
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
+		// If the add-on is already installed, no promo needed.
+		$addon_slug = 'godam-for-woo/godam-for-woo.php';
+		if ( file_exists( WP_PLUGIN_DIR . '/' . $addon_slug ) ) {
+			return;
+		}
+
+		// Check if user dismissed the notice (re-show after 30 days).
+		$dismissed = get_option( 'rtgodam_woo_promo_dismissed_timestamp', false );
+		if ( $dismissed && ( time() - (int) $dismissed ) < ( 30 * DAY_IN_SECONDS ) ) {
+			return;
+		}
+
+		$is_woo_active    = is_plugin_active( 'woocommerce/woocommerce.php' );
+		$has_valid_key    = rtgodam_is_api_key_valid();
+		$pricing_url      = add_query_arg(
+			array(
+				'utm_campaign' => 'woo-promo',
+				'utm_source'   => rawurlencode( site_url() ),
+				'utm_medium'   => 'plugin',
+				'utm_content'  => 'woo-admin-notice',
+			),
+			'https://godam.io/pricing'
+		);
+		$integrations_url = admin_url( 'admin.php?page=rtgodam_settings#integrations-settings' );
+		$woo_plugin_url   = admin_url( 'plugin-install.php?s=woocommerce&tab=search&type=term' );
+
+		if ( $is_woo_active && $has_valid_key ) {
+			// Case 4: Required active + valid key → link to integrations page.
+			$message = sprintf(
+				/* translators: 1: opening link tag, 2: closing link tag */
+				__( '<strong>GoDAM now supports WooCommerce!</strong> Head over to the %1$sIntegration Settings%2$s to get started.', 'godam' ),
+				'<a href="' . esc_url( $integrations_url ) . '">',
+				'</a>'
+			);
+		} elseif ( ! $is_woo_active && $has_valid_key ) {
+			// Case 2: WooCommerce not active + valid key → install/activate WooCommerce.
+			$message = sprintf(
+				/* translators: 1: opening link tag, 2: closing link tag */
+				__( '<strong>GoDAM now supports WooCommerce!</strong> %1$sInstall & activate WooCommerce%2$s to use our Woo integration.', 'godam' ),
+				'<a href="' . esc_url( $woo_plugin_url ) . '">',
+				'</a>'
+			);
+		} else {
+			// Cases 1 & 3: No valid key → purchase.
+			$message = sprintf(
+				/* translators: 1: opening link tag, 2: closing link tag */
+				__( '<strong>GoDAM now supports WooCommerce!</strong> %1$sPurchase a plan%2$s to access our Woo integration.', 'godam' ),
+				'<a href="' . esc_url( $pricing_url ) . '" target="_blank" rel="noopener noreferrer">',
+				'</a>'
+			);
+		}
+
+		printf(
+			'<div class="notice notice-info is-dismissible rtgodam-woo-promo-notice"><p>%s</p></div>',
+			wp_kses_post( $message )
+		);
+
+		// Inline script to persist dismissal via AJAX.
+		?>
+		<script>
+			jQuery( document ).on( 'click', '.rtgodam-woo-promo-notice .notice-dismiss', function() {
+				jQuery.post( ajaxurl, {
+					action: 'rtgodam_dismiss_woo_promo_notice',
+					nonce: '<?php echo esc_js( wp_create_nonce( 'dismiss_woo_promo_notice' ) ); ?>'
+				} );
+			} );
+		</script>
+		<?php
 	}
 }

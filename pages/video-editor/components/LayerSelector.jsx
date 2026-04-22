@@ -370,7 +370,7 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 											alt={ layer.title }
 										/>
 										{
-											( layer.type === 'form' || layer.type === 'woo' ) && layer.formIcon && (
+											layer.formIcon && (
 												<img
 													className="godam-layer-selector__item__image-container__form-icon"
 													src={ layer.formIcon }

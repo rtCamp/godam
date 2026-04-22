@@ -288,57 +288,9 @@ input, textarea, select {
 
 /* stylelint-disable-next-line no-descending-specificity -- as styles are grouped  */
 
-.hotspot-tooltip a,
-.product-hotspot-box a {
+.hotspot-tooltip a {
 	overflow-wrap: break-word;
 	word-break: break-word;
-}
-
-/* Product Hotspot */
-.product-hotspot-box {
-	position: absolute;
-	bottom: 100%;
-	left: 50%;
-	transform: translateX(-50%);
-	visibility: hidden;
-	background-color: rgba(255, 255, 255);
-	color: #000;
-	text-align: center;
-	border-radius: 3px;
-	z-index: 200;
-	pointer-events: auto;
-	font-size: 14px;
-	line-height: 1.2;
-	opacity: 0;
-	transition: opacity 0.2s ease, visibility 0.2s ease;
-	word-wrap: break-word;
-	min-width: 20em;
-
-	&::after {
-		content: "";
-		position: absolute;
-		top: 100%;
-		left: 50%;
-		transform: translateX(-50%);
-		border-width: 5px;
-		border-style: solid;
-		border-color: rgba(255, 255, 255) transparent transparent transparent;
-	}
-
-	a {
-		overflow-wrap: break-word;
-		word-break: break-word;
-
-		&:hover {
-			color: #fff;
-			text-decoration: underline;
-		}
-	}
-
-	@media (max-width: 768px) {
-		width: 11em;
-		font-size: 13px;
-	}
 }
 
 .hotspot-tooltip a:hover {
@@ -612,10 +564,6 @@ input, textarea, select {
 		z-index: 99;
 	}
 }
-
-/* GODAM PRODUCT HOTSPOT BOX */
-
-
 
 /* Style for GoDAM admin pages container container */
 .godam-admin-root {

@@ -20,7 +20,7 @@ use RTGODAM\Inc\Video_Preview;
 use RTGODAM\Inc\Video_Embed;
 use RTGODAM\Inc\Video_Engagement;
 use RTGODAM\Inc\Update;
-use RTGODAM\Inc\Integrations;
+use RTGODAM\Inc\Addons\Addon_Registry;
 
 use RTGODAM\Inc\Taxonomies\Media_Folders;
 
@@ -45,6 +45,8 @@ use RTGODAM\Inc\REST_API\Site;
 use RTGODAM\Inc\REST_API\Video_Migration;
 use RTGODAM\Inc\REST_API\Release_Post;
 use RTGODAM\Inc\REST_API\Video_Sync;
+use RTGODAM\Inc\REST_API\Addon_Toggle;
+use RTGODAM\Inc\REST_API\Addon_Install;
 use RTGODAM\Inc\Gravity_Forms;
 use RTGODAM\Inc\REST_API\MetForm;
 
@@ -99,7 +101,7 @@ class Plugin {
 		Video_Preview::get_instance();
 		Video_Embed::get_instance();
 		Embed::get_instance();
-		Integrations::get_instance();
+		Addon_Registry::get_instance();
 
 		// Load shortcodes.
 		GoDAM_Player::get_instance();
@@ -183,6 +185,8 @@ class Plugin {
 		Video_Migration::get_instance();
 		Release_Post::get_instance();
 		Video_Sync::get_instance();
+		Addon_Toggle::get_instance();
+		Addon_Install::get_instance();
 	}
 
 	/**

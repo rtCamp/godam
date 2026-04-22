@@ -92,13 +92,6 @@ $godam_hover_select   = isset( $attributes['hoverSelect'] ) ? $attributes['hover
 $godam_caption        = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
 $godam_tracks         = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $godam_show_share_btn = ! empty( $attributes['showShareButton'] );
-// Determine if subtitles and transcript should be disabled based on the context (e.g., product gallery or reels contexts not require them).
-$godam_disable_subtitles_and_transcript = isset( $attributes['godam_context'] ) &&
-	in_array(
-		$attributes['godam_context'],
-		array( 'godam-video-product-gallery', 'godam-woo-product-page-reels' ),
-		true
-	);
 
 // Resolve the attachment ID (could be WordPress or virtual media).
 $godam_attachment_id = '';
@@ -292,16 +285,11 @@ $godam_appearance_color       = isset( $godam_meta_data['videoConfig']['controlB
 $godam_brand_image            = isset( $godam_settings['video_player']['brand_image'] ) ? $godam_settings['video_player']['brand_image'] : null;
 $godam_individual_brand_image = isset( $godam_meta_data['videoConfig']['controlBar']['brand_image'] ) ? $godam_meta_data['videoConfig']['controlBar']['brand_image'] : null;
 
-$godam_woocommerce_allowed_contexts = array(
-	'godam-product-gallery',
-	'godam-woo-product-page-reels',
-	'godam-featured-video-gallery',
-	'godam-video-product-gallery',
-);
+$godam_woocommerce_allowed_contexts = apply_filters( 'godam_player_woocommerce_contexts', array() );
 
 $godam_woocommerce_context = false;
 
-if ( isset( $attributes['godam_context'] ) ) {
+if ( isset( $attributes['godam_context'] ) && ! empty( $godam_woocommerce_allowed_contexts ) ) {
 	$godam_woocommerce_context = in_array( $attributes['godam_context'], $godam_woocommerce_allowed_contexts, true );
 }
 
@@ -310,13 +298,7 @@ if ( isset( $attributes['godam_context'] ) ) {
 $godam_is_gallery_context = ! empty( $_GET['godam_gallery'] ) && '1' === sanitize_key( $_GET['godam_gallery'] );
 
 if ( isset( $attributes['godam_context'] ) && $godam_woocommerce_context ) {
-	if ( in_array( $attributes['godam_context'], array( 'godam-woo-product-page-reels', 'godam-video-product-gallery' ), true ) ) {
-		// Use the new "reels-v2" skin for the Woo product page reels and video product gallery contexts,
-		// which is an enhanced version of the original "reels" skin with additional features and a more modern design.
-		$godam_player_skin = 'reels-v2';
-	} else {
-		$godam_player_skin = 'reels';
-	}
+	$godam_player_skin = apply_filters( 'godam_player_woocommerce_skin', 'reels', $attributes['godam_context'] );
 } else {
 	$godam_player_skin = isset( $godam_settings['video_player']['player_skin'] )
 		? $godam_settings['video_player']['player_skin']
@@ -620,19 +602,15 @@ if ( $godam_should_preload_poster ) {
 					<?php endif; ?>
 
 					<?php if ( ! $godam_woocommerce_context ) : ?>
-						<?php foreach ( $godam_layers as $godam_layer ) : ?>
-							<?php if ( isset( $godam_layer['miniCart'] ) ) : ?>
-								<?php
-								// Always render the mini cart so the WooCommerce cart store initialises.
-								// Use CSS to show/hide based on the layer setting and the gallery context.
-								$godam_mini_cart_hidden = ( ! $godam_layer['miniCart'] || $godam_is_gallery_context );
-								?>
-								<div class="godam-video--cart-basket<?php echo $godam_mini_cart_hidden ? ' godam-mini-cart-hidden' : ''; ?>">
-									<?php echo do_blocks( '<!-- wp:woocommerce/mini-cart /-->' ); // phpcs:ignore ?>
-								</div>
-								<?php break; ?>
-							<?php endif; ?>
-						<?php endforeach; ?>
+						<?php
+						/**
+						 * Action to render the WooCommerce mini-cart inside the player.
+						 *
+						 * @param array   $godam_layers             The layers configuration.
+						 * @param boolean $godam_is_gallery_context Whether this is a gallery iframe context.
+						 */
+						do_action( 'godam_player_render_mini_cart', $godam_layers, $godam_is_gallery_context );
+						?>
 					<?php endif; ?>
 
 					<?php if ( $godam_should_preload_poster ) : ?>
@@ -902,18 +880,15 @@ if ( $godam_should_preload_poster ) {
 								>
 								</div>
 								<?php
-								// WooCommerce layer.
-							elseif ( isset( $godam_layer['type'] ) && 'woo' === $godam_layer['type'] ) :
-								?>
-								<div
-									id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>"
-									class="easydam-layer hidden hotspot-layer"
-									<?php if ( ! empty( $godam_layer['bg_color'] ) ) : ?>
-										style="background-color: <?php echo esc_attr( $godam_layer['bg_color'] ); ?>"
-									<?php endif; ?>
-								>
-								</div>
-								<?php
+								// Extensible layer types (e.g. WooCommerce) rendered by add-ons.
+							else :
+								/**
+								 * Action to render add-on layer containers.
+								 *
+								 * @param array  $godam_layer       Layer configuration.
+								 * @param string $godam_instance_id Player instance ID.
+								 */
+								do_action( 'godam_player_render_layer', $godam_layer, $godam_instance_id );
 							endif;
 						endforeach;
 						?>
