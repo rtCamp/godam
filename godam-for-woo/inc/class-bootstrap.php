@@ -140,8 +140,8 @@ class Bootstrap {
 		add_action( 'init', array( $this, 'init_woocommerce_integration' ), 20 );
 		add_filter( 'allowed_block_types_all', array( $this, 'filter_premium_blocks_for_inserter' ), 10, 2 );
 
-		// Enqueue global Woo Script.
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_global_woo_script' ), 25 );
+		// Register global Woo styles early so block style handles exist before blocks enqueue them.
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_global_woo_script' ), 5 );
 
 		// Register WooCommerce layer via PHP filters.
 		add_filter( 'godam_video_editor_layer_options', array( $this, 'register_woocommerce_layer_option' ), 10 );
@@ -194,7 +194,7 @@ class Bootstrap {
 		add_action( 'admin_enqueue_scripts', array( $this, 'register_woo_admin_assets' ), 5 );
 
 		// Auto-enqueue WooCommerce player CSS when the player style is loaded.
-		add_action( 'wp_footer', array( $this, 'maybe_enqueue_woo_player_style' ) );
+		add_action( 'wp_print_styles', array( $this, 'maybe_enqueue_woo_player_style' ) );
 	}
 
 	/**
@@ -343,6 +343,8 @@ class Bootstrap {
 				godam_woo_get_asset_version( $asset_path ),
 				true
 			);
+
+			wp_set_script_translations( 'godam-woo-layer-component', 'godam-woo', GODAM_WOO_PATH . 'languages' );
 		}
 	}
 
@@ -361,6 +363,8 @@ class Bootstrap {
 				godam_woo_get_asset_version( $asset_path ),
 				true
 			);
+
+			wp_set_script_translations( 'godam-woo-settings-component', 'godam-woo', GODAM_WOO_PATH . 'languages' );
 
 			wp_localize_script(
 				'godam-woo-settings-component',
@@ -405,7 +409,7 @@ class Bootstrap {
 		if ( in_array( $context, array( 'godam-woo-product-page-reels', 'godam-video-product-gallery' ), true ) ) {
 			return 'reels';
 		}
-		return 'reels';
+		return 'default';
 	}
 
 	/**

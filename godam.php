@@ -59,7 +59,7 @@ if ( ! defined( 'RTGODAM_IO_API_BASE' ) ) {
 }
 
 if ( ! defined( 'FRAPPE_DISPATCH_SITE_URL' ) ) {
-	define( 'FRAPPE_DISPATCH_SITE_URL', 'https://app-godam-preprod.rt.gw' );
+	define( 'FRAPPE_DISPATCH_SITE_URL', 'https://app.godam.io' );
 }
 
 require_once RTGODAM_PATH . 'inc/helpers/autoloader.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant

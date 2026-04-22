@@ -246,7 +246,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 				if ( addonCreator ) {
 					const layerData = addonCreator( { layers, currentTime, type } );
 					if ( layerData ) {
-						dispatch( addLayer( { id: uuidv4(), ...layerData } ) );
+						dispatch( addLayer( { ...layerData, id: uuidv4() } ) );
 					}
 				}
 				break;

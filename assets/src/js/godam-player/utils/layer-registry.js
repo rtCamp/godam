@@ -60,10 +60,10 @@ export function registerLayerType( id, config ) {
  */
 export function getLayerTypes() {
 	const defaultTypes = {
-		form: 'form',
-		cta: 'cta',
-		poll: 'poll',
-		hotspot: 'hotspot',
+		FORM: 'form',
+		CTA: 'cta',
+		POLL: 'poll',
+		HOTSPOT: 'hotspot',
 		...Object.keys( layerRegistry.types ).reduce( ( acc, key ) => {
 			acc[ key.toUpperCase() ] = key;
 			return acc;

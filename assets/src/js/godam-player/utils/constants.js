@@ -1,6 +1,3 @@
-/* eslint-disable eslint-comments/disable-enable-pair */
-/* eslint-disable jsdoc/check-indentation */
-
 /**
  * Constants.
  */

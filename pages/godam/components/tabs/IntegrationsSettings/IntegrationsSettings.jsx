@@ -268,12 +268,6 @@ const IntegrationSettings = () => {
 									</p>
 								) }
 
-								{ ! hasValidAPIKey && (
-									<p>
-										{ __( 'This is a Pro feature. Upgrade to Pro to use this integration.', 'godam' ) }
-									</p>
-								) }
-
 								{ isInstalled && (
 									<IntegrationToggle
 										label={ tab.integrationLabel }

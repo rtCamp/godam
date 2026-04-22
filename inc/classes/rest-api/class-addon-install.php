@@ -108,7 +108,7 @@ class Addon_Install extends Base {
 			require_once RTGODAM_PATH . 'lib/Frappe_Dispatch_Installer.php';
 		}
 
-		$api_url = defined( 'GODAM_WOO_FD_API_URL' ) ? GODAM_WOO_FD_API_URL : 'https://app.godam.io';
+		$api_url = defined( 'RTGODAM_API_BASE' ) ? RTGODAM_API_BASE : 'https://app.godam.io';
 
 		/**
 		 * Filter the Frappe Dispatch API URL used for add-on installation.

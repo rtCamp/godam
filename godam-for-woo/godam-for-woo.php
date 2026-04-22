@@ -52,7 +52,7 @@ if ( ! defined( 'GODAM_WOO_FD_ITEM_ID' ) ) {
 }
 
 if ( ! defined( 'FRAPPE_DISPATCH_SITE_URL' ) ) {
-	define( 'FRAPPE_DISPATCH_SITE_URL', 'https://app-godam-preprod.rt.gw' );
+	define( 'FRAPPE_DISPATCH_SITE_URL', 'https://app.godam.io' );
 }
 
 // ── Frappe Dispatch Updater ──────────────────────────────────────────────

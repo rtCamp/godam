@@ -46,8 +46,14 @@ const IntegrationToggle = ( {
 						<>
 							{ __( 'This is a Pro feature.', 'godam' ) }
 							{ ' ' }
-							<a href={ getPricingUrl( featureSlug ) } target="_blank" rel="noopener noreferrer">
+							<a
+								href={ getPricingUrl( featureSlug ) }
+								target="_blank"
+								rel="noopener noreferrer"
+								style={ { color: '#b02544', textDecoration: 'underline', fontWeight: 500 } }
+							>
 								{ __( 'Upgrade to Pro', 'godam' ) }
+								{ ' ↗' }
 							</a>
 							{ ' ' }
 							{ __( 'to use this integration.', 'godam' ) }
