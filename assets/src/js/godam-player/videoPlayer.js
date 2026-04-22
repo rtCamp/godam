@@ -29,6 +29,8 @@ export default class GodamVideoPlayer {
 		this.isDisplayingLayers = isDisplayingLayers;
 		this.currentPlayerVideoInstanceId = video.dataset.instanceId;
 		this.player = null;
+		this.metadataPreloadObserver = null;
+		this.deferMetadataPreloadUntilInView = false;
 
 		// Initialize managers
 		this.configManager = new ConfigurationManager( video );
@@ -156,6 +158,8 @@ export default class GodamVideoPlayer {
 			this.player = videojs( this.video, this.configManager.videoSetupControls );
 		}
 
+		this.setupDeferredMetadataPreload();
+
 		// Initialize ads manager (async - loads plugins dynamically)
 		this.adsManager = new AdsManager( this.player, this.configManager );
 		this.adsManager?.setupAdsIntegration().catch( ( error ) => {
@@ -165,6 +169,70 @@ export default class GodamVideoPlayer {
 
 		this.setupAspectRatio();
 		this.setupPlayerReady();
+	}
+
+	/**
+	 * Defer metadata loading until the player is at least 10% visible
+	 * when preload is explicitly disabled.
+	 */
+	setupDeferredMetadataPreload() {
+		const preload = this.configManager.videoSetupControls?.preload;
+
+		if ( preload !== 'none' ) {
+			this.deferMetadataPreloadUntilInView = false;
+			return;
+		}
+
+		this.deferMetadataPreloadUntilInView = true;
+
+		if ( ! ( 'IntersectionObserver' in window ) ) {
+			this.preloadVideoMetadata();
+			return;
+		}
+
+		this.metadataPreloadObserver = new IntersectionObserver(
+			( entries ) => {
+				entries.forEach( ( entry ) => {
+					if ( entry.intersectionRatio >= 0.1 ) {
+						this.preloadVideoMetadata();
+					}
+				} );
+			},
+			{
+				root: null,
+				rootMargin: '0px',
+				threshold: 0.1,
+			},
+		);
+
+		this.metadataPreloadObserver.observe( this.video );
+		this.player.one( 'dispose', () => this.cleanupMetadataPreloadObserver() );
+	}
+
+	/**
+	 * Upgrade preload mode to metadata and start loading video metadata.
+	 */
+	preloadVideoMetadata() {
+		if ( ! this.deferMetadataPreloadUntilInView ) {
+			return;
+		}
+
+		this.deferMetadataPreloadUntilInView = false;
+		this.cleanupMetadataPreloadObserver();
+
+		this.player.preload( 'metadata' );
+		this.video.setAttribute( 'preload', 'metadata' );
+		this.player.load();
+	}
+
+	/**
+	 * Disconnect the metadata preload observer when it is no longer needed.
+	 */
+	cleanupMetadataPreloadObserver() {
+		if ( this.metadataPreloadObserver ) {
+			this.metadataPreloadObserver.disconnect();
+			this.metadataPreloadObserver = null;
+		}
 	}
 
 	/**
@@ -590,6 +658,14 @@ export default class GodamVideoPlayer {
 	 * Setup quality selector button in control bar.
 	 */
 	setupQualitySelector() {
+		if ( this.deferMetadataPreloadUntilInView ) {
+			this.player.one( 'loadedmetadata', () => this.renderQualitySelectorButton() );
+			if ( ! this.hasQualitySelectorButton() ) {
+				this.eventsManager.onQualityLevelsAvailable( () => this.renderQualitySelectorButton() );
+			}
+			return;
+		}
+
 		// Force load. Required.
 		if ( this.player.readyState() === 0 ) {
 			this.player.load();

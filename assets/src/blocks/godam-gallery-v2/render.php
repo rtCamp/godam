@@ -346,7 +346,7 @@ if ( 'query' === $gallery_mode ) {
 						>
 							<div class="godam-gallery-v2__query-thumb">
 								<?php if ( ! empty( $item['thumbnail'] ) ) : ?>
-									<img src="<?php echo esc_url( $item['thumbnail'] ); ?>" alt="<?php echo esc_attr( $item['title'] ); ?>" loading="lazy" />
+									<img src="<?php echo esc_url( $item['thumbnail'] ); ?>" alt="<?php echo esc_attr( $item['title'] ); ?>" loading="lazy" fetchpriority="high" />
 								<?php else : ?>
 									<span><?php esc_html_e( 'GoDAM Video', 'godam' ); ?></span>
 								<?php endif; ?>
@@ -400,6 +400,7 @@ if ( 'query' === $gallery_mode ) {
 										alt="<?php echo esc_attr( $item['title'] ); ?>"
 										class="godam-gallery-v2-item__thumbnail"
 										loading="lazy"
+										fetchpriority="high"
 									/>
 								<?php else : ?>
 									<div class="godam-gallery-v2-item__placeholder">
