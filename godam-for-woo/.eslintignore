@@ -1,7 +1,0 @@
-vendor/
-node_modules
-assets/src/libs
-assets/build/
-.lintstagedrc.js
-**config.js
-/admin/js/jquery.ui.progressbar.min.js
