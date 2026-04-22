@@ -114,13 +114,54 @@ export default function Edit( { attributes, setAttributes, context } ) {
 	const productPrice = productData.price;
 	const productImage = productData.image;
 
+	// Ref to track the GoDAM virtual media ID from the most recent selection.
+	// When a GoDAM-tab item is chosen, MediaUpload fires onSelect with the
+	// virtual (non-WP) ID before the real attachment is created. We capture
+	// that ID here so the godam-virtual-attachment-created handler can match it.
+	const pendingVirtualMediaId = useRef( null );
+
 	// Handle video selection — only persist the ID.
 	const onSelectVideo = ( media ) => {
 		if ( ! media || ! media.id ) {
 			return;
 		}
-		setAttributes( { videoId: media.id } );
+		// Always track the raw ID for virtual attachment matching.
+		pendingVirtualMediaId.current = media.id;
+
+		// Only immediately set the attribute for valid numeric WP attachment IDs.
+		// For GoDAM virtual IDs (non-numeric strings like "idcirqui0b"), skip the
+		// immediate setAttributes call to avoid a 404 on /wp/v2/media/<virtual-id>.
+		// The godam-virtual-attachment-created event will provide the real WP ID.
+		const numericId = parseInt( media.id, 10 );
+		if ( numericId > 0 && String( numericId ) === String( media.id ) ) {
+			setAttributes( { videoId: numericId } );
+		}
 	};
+
+	// Listen for the GoDAM virtual attachment event.
+	// When the user picks a video from the GoDAM tab, the real WordPress
+	// attachment is created asynchronously AFTER onSelectVideo fires.
+	// This effect waits for that creation and then corrects videoId to the
+	// real WP attachment ID.
+	useEffect( () => {
+		const handleVirtualAttachmentCreated = ( event ) => {
+			const { attachment, virtualMediaId } = event.detail || {};
+			if (
+				attachment?.id &&
+				pendingVirtualMediaId.current !== null &&
+				String( pendingVirtualMediaId.current ) === String( virtualMediaId )
+			) {
+				pendingVirtualMediaId.current = null;
+				setAttributes( { videoId: attachment.id } );
+			}
+		};
+
+		document.addEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
+
+		return () => {
+			document.removeEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
+		};
+	}, [ setAttributes ] );
 
 	// Product search with debounce
 	const searchProducts = useCallback(
@@ -215,7 +256,7 @@ export default function Edit( { attributes, setAttributes, context } ) {
 										<>
 											<img
 												src={ videoThumbnail }
-												alt={ videoTitle || __( 'Video thumbnail', 'godam-woo' ) }
+												alt={ videoTitle || __( 'Video thumbnail', 'godam' ) }
 												className="godam-gallery-item__thumbnail"
 											/>
 											{ showPlayButton && (
@@ -237,7 +278,7 @@ export default function Edit( { attributes, setAttributes, context } ) {
 								return (
 									<div className="godam-gallery-item__placeholder">
 										{ videoIcon }
-										<span>{ __( 'Select Video', 'godam-woo' ) }</span>
+										<span>{ __( 'Select Video', 'godam' ) }</span>
 									</div>
 								);
 							} )() }
@@ -273,7 +314,7 @@ export default function Edit( { attributes, setAttributes, context } ) {
 								className="godam-gallery-item__product-overlay-btn"
 								size="compact"
 							>
-								{ __( 'Replace', 'godam-woo' ) }
+								{ __( 'Replace', 'godam' ) }
 							</Button>
 							<Button
 								variant="secondary"
@@ -283,13 +324,13 @@ export default function Edit( { attributes, setAttributes, context } ) {
 								className="godam-gallery-item__product-overlay-btn"
 								size="compact"
 							>
-								{ __( 'Remove', 'godam-woo' ) }
+								{ __( 'Remove', 'godam' ) }
 							</Button>
 						</div>
 						{ showAddToCart && (
 							<span
 								className="godam-gallery-item__add-to-cart-preview wp-element-button"
-								aria-label={ __( 'Add to Cart (preview)', 'godam-woo' ) }
+								aria-label={ __( 'Add to Cart (preview)', 'godam' ) }
 							>
 								<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
 									<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
@@ -306,7 +347,7 @@ export default function Edit( { attributes, setAttributes, context } ) {
 							className="godam-gallery-item__select-product-button"
 							size="compact"
 						>
-							{ __( 'Select Product', 'godam-woo' ) }
+							{ __( 'Select Product', 'godam' ) }
 						</Button>
 					</div>
 				) }
@@ -315,7 +356,7 @@ export default function Edit( { attributes, setAttributes, context } ) {
 			{ /* Product Picker Modal */ }
 			{ isProductModalOpen && (
 				<Modal
-					title={ __( 'Select Product', 'godam-woo' ) }
+					title={ __( 'Select Product', 'godam' ) }
 					onRequestClose={ () => {
 						setIsProductModalOpen( false );
 						setProductSearchQuery( '' );
@@ -328,10 +369,10 @@ export default function Edit( { attributes, setAttributes, context } ) {
 						<SearchControl
 							ref={ productSearchInputRef }
 							__nextHasNoMarginBottom
-							label={ __( 'Search products', 'godam-woo' ) }
+							label={ __( 'Search products', 'godam' ) }
 							value={ productSearchQuery }
 							onChange={ setProductSearchQuery }
-							placeholder={ __( 'Search products…', 'godam-woo' ) }
+							placeholder={ __( 'Search products…', 'godam' ) }
 						/>
 
 						<div className="godam-product-picker-modal__results">
@@ -343,13 +384,13 @@ export default function Edit( { attributes, setAttributes, context } ) {
 
 							{ ! isSearching && productSearchQuery && searchResults.length === 0 && (
 								<p className="godam-product-picker-modal__empty">
-									{ __( 'No products found. Try a different search term.', 'godam-woo' ) }
+									{ __( 'No products found. Try a different search term.', 'godam' ) }
 								</p>
 							) }
 
 							{ ! isSearching && ! productSearchQuery && (
 								<p className="godam-product-picker-modal__hint">
-									{ __( 'Start typing to search for products.', 'godam-woo' ) }
+									{ __( 'Start typing to search for products.', 'godam' ) }
 								</p>
 							) }
 

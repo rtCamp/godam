@@ -39,6 +39,18 @@ export const HOTSPOT_CONSTANTS = {
 };
 
 /**
+ * Product Hotspot constants.
+ */
+export const PRODUCT_HOTSPOT_CONSTANTS = {
+	DEFAULT_DIAMETER_PERCENT: 15,
+	DEFAULT_DIAMETER_PX: 48,
+	MIN_PX: 10,
+	MIN_PERCENT_FALLBACK: 5,
+	BASE_WIDTH: 800,
+	BASE_HEIGHT: 600,
+};
+
+/**
  * Layer types.
  *
  * NOTE: Add-ons can register custom layer types using:
@@ -54,6 +66,7 @@ export const LAYER_TYPES = {
 	CTA: 'cta',
 	POLL: 'poll',
 	HOTSPOT: 'hotspot',
+	WOOCOMMERCE: 'woo',
 };
 
 /**

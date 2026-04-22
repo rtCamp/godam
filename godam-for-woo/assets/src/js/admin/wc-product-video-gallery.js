@@ -25,7 +25,7 @@ jQuery( document ).ready( function( $ ) {
 			$addButton.prop( 'disabled', true );
 			$limitNotice.text( sprintf(
 				/* translators: %d: maximum number of videos allowed */
-				__( 'Maximum limit of %d product reels has been reached.', 'godam-woo' ),
+				__( 'Maximum limit of %d product reels has been reached.', 'godam' ),
 				maxVideos,
 			) ).show();
 		} else {
@@ -56,8 +56,8 @@ jQuery( document ).ready( function( $ ) {
 		e.preventDefault();
 
 		mediaFrame = wp.media( {
-			title: __( 'Select videos for gallery', 'godam-woo' ),
-			button: { text: __( 'Add to Video Gallery', 'godam-woo' ) },
+			title: __( 'Select videos for gallery', 'godam' ),
+			button: { text: __( 'Add to Video Gallery', 'godam' ) },
 			multiple: true,
 			library: { type: 'video' },
 		} );
@@ -66,7 +66,7 @@ jQuery( document ).ready( function( $ ) {
 			// If the selection comes from the GoDAM tab, let the GoDAM virtual
 			// attachment handler deal with it and skip the default wp.media
 			// select logic to avoid 404s on virtual IDs.
-			if ( mediaFrame?.content?.mode && mediaFrame.content.mode() === 'godam-woo' ) {
+			if ( mediaFrame?.content?.mode && mediaFrame.content.mode() === 'godam' ) {
 				return;
 			}
 
@@ -124,15 +124,15 @@ jQuery( document ).ready( function( $ ) {
 								$thumbWrapper.append(
 									$( '<img>', {
 										src: thumbnail,
-										alt: __( 'Video thumbnail', 'godam-woo' ),
+										alt: __( 'Video thumbnail', 'godam' ),
 										class: 'godam-video-thumbnail',
 									} ),
 								);
 							} else {
 								$thumbWrapper.append(
 									$( '<span>', {
-										text: __( 'No thumbnail available', 'godam-woo' ),
-										'aria-label': __( 'No thumbnail available', 'godam-woo' ),
+										text: __( 'No thumbnail available', 'godam' ),
+										'aria-label': __( 'No thumbnail available', 'godam' ),
 										css: { color: '#aaa', marginBottom: '10px', display: 'block' },
 									} ),
 								);
@@ -148,11 +148,11 @@ jQuery( document ).ready( function( $ ) {
 								$( '<button>', {
 									type: 'button',
 									class: 'godam-remove-video-button components-button godam-button is-compact is-secondary has-icon wc-godam-product-admin',
-									'aria-label': __( 'Remove video from gallery', 'godam-woo' ),
+									'aria-label': __( 'Remove video from gallery', 'godam' ),
 								} ).append(
 									$( '<img>', {
 										src: RTGodamVideoGallery.DeleteIcon,
-										alt: __( 'Delete Bin Icon', 'godam-woo' ),
+										alt: __( 'Delete Bin Icon', 'godam' ),
 										width: 14,
 										height: 14,
 										css: { verticalAlign: 'middle' },
@@ -182,7 +182,7 @@ jQuery( document ).ready( function( $ ) {
 					html: '<p>' +
 						sprintf(
 							/* translators: %d: maximum number of videos allowed */
-							__( 'Product Reels are limited to %d videos. Some selections were skipped.', 'godam-woo' ),
+							__( 'Product Reels are limited to %d videos. Some selections were skipped.', 'godam' ),
 							maxVideos,
 						) +
 						'</p>',
@@ -233,16 +233,8 @@ jQuery( document ).ready( function( $ ) {
 
 		$( '.godam-product-admin-video-spinner-overlay' ).show();
 
-		const thumbnail = ( attachment.meta && attachment.meta.rtgodam_media_video_thumbnail ) || RTGodamVideoGallery.defaultThumbnail;
+		const thumbnail = ( attachment.meta && attachment.meta.rtgodam_media_video_thumbnail ) || attachment.image?.src || RTGodamVideoGallery.defaultThumbnail;
 		const videoTitle = attachment.title || '';
-
-		const $addBtn = $( '<button>', {
-			type: 'button',
-			class: 'godam-add-product-button components-button godam-button is-compact is-tertiary wc-godam-product-admin',
-			'aria-label': __( 'Associate products with this video', 'godam-woo' ),
-			text: __( '+ Add Products', 'godam-woo' ),
-			'data-linked-products': '[]',
-		} );
 
 		const listItem = $( '<li>' ).append(
 			`<input type="hidden"
@@ -260,11 +252,11 @@ jQuery( document ).ready( function( $ ) {
 
 		if ( thumbnail ) {
 			$thumbWrapper.append(
-				`<img src="${ thumbnail }" alt="${ __( 'Video thumbnail', 'godam-woo' ) }" class="godam-video-thumbnail" />`,
+				`<img src="${ thumbnail }" alt="${ __( 'Video thumbnail', 'godam' ) }" class="godam-video-thumbnail" />`,
 			);
 		} else {
 			$thumbWrapper.append(
-				`<span style="color:#aaa; margin-bottom: 10px; display:block;">${ __( 'No thumbnail available', 'godam-woo' ) }</span>`,
+				`<span style="color:#aaa; margin-bottom: 10px; display:block;">${ __( 'No thumbnail available', 'godam' ) }</span>`,
 			);
 		}
 
@@ -278,12 +270,14 @@ jQuery( document ).ready( function( $ ) {
 			$( '<button>', {
 				type: 'button',
 				class: 'godam-remove-video-button components-button godam-button is-compact is-secondary has-icon wc-godam-product-admin',
-				'aria-label': __( 'Remove video from gallery', 'godam-woo' ),
-				html: `<img src="${ RTGodamVideoGallery.DeleteIcon }" alt="${ __( 'Delete Bin Icon', 'godam-woo' ) }" width="14" height="14" style="vertical-align:middle;" />`,
+				'aria-label': __( 'Remove video from gallery', 'godam' ),
+				html: `<img src="${ RTGodamVideoGallery.DeleteIcon }" alt="${ __( 'Delete Bin Icon', 'godam' ) }" width="14" height="14" style="vertical-align:middle;" />`,
 			} ),
 		);
 
-		listItem.append( $thumbWrapper ).append( $videoTitle ).append( $addBtn );
+		listItem.append( $thumbWrapper ).append( $videoTitle );
 		videoList.append( listItem );
+		updateAddButtonState();
+		$( '.godam-product-admin-video-spinner-overlay' ).hide();
 	} );
 } );

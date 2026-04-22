@@ -312,7 +312,25 @@ $godam_global_video_share = isset( $godam_settings['video']['enable_global_video
 
 $godam_video_poster = empty( $godam_poster ) ? $godam_poster_image : $godam_poster;
 
-// Build the video setup options for data-setup.
+// Resolve the blur-up placeholder thumbnail.
+// For block-editor poster overrides, look up the mapping directly.
+// For auto-selected thumbnails, use the pre-synced single meta key.
+// Supports both normal WP media and virtual GoDAM media.
+$godam_placeholder_thumbnail = '';
+$godam_placeholder_lookup_id = is_numeric( $godam_attachment_id )
+	? intval( $godam_attachment_id )
+	: ( is_numeric( $godam_original_id ) ? intval( $godam_original_id ) : 0 );
+
+if ( $godam_placeholder_lookup_id > 0 ) {
+	if ( ! empty( $godam_poster ) ) {
+		$godam_placeholder_map = get_post_meta( $godam_placeholder_lookup_id, 'rtgodam_media_placeholder_thumbnails', true );
+		if ( is_array( $godam_placeholder_map ) && isset( $godam_placeholder_map[ $godam_poster ] ) ) {
+			$godam_placeholder_thumbnail = esc_url( $godam_placeholder_map[ $godam_poster ] );
+		}
+	} else {
+		$godam_placeholder_thumbnail = esc_url( get_post_meta( $godam_placeholder_lookup_id, 'rtgodam_media_video_placeholder_thumbnail', true ) );
+	}
+}
 $godam_video_setup = array(
 	'controls'    => $godam_controls,
 	'autoplay'    => $godam_autoplay,
@@ -440,11 +458,7 @@ $godam_custom_css_properties = array(
 );
 
 if ( ! empty( $godam_aspect_ratio ) ) {
-	if ( isset( $attributes['godam_context'] ) && 'godam-woo-product-page-reels' === $attributes['godam_context'] ) {
-		$godam_custom_css_properties['--rtgodam-video-aspect-ratio'] = '16/9';
-	} else {
-		$godam_custom_css_properties['--rtgodam-video-aspect-ratio'] = str_replace( ':', '/', $godam_aspect_ratio );
-	}
+	$godam_custom_css_properties['--rtgodam-video-aspect-ratio'] = str_replace( ':', '/', $godam_aspect_ratio );
 }
 
 if ( ! empty( $godam_computed_max_width ) ) {
@@ -537,22 +551,50 @@ if ( $godam_should_preload_poster ) {
 					</div>
 				<?php endif; ?>
 
+				<?php if ( ! empty( $godam_video_poster ) && ! empty( $godam_placeholder_thumbnail ) ) : ?>
+				<div
+					class="godam-video-placeholder godam-blurred-img <?php echo esc_attr( 'godam-' . strtolower( $godam_player_skin ) . '-skin' ); ?>"
+					style="background-image: url('<?php echo esc_url( $godam_placeholder_thumbnail ); ?>')"
+				>
+					<div class="animate-play-btn">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+							<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
+						</svg>
+					</div>
+					<img
+						class="godam-player-poster-image"
+						src="<?php echo esc_url( $godam_video_poster ); ?>"
+						loading="lazy"
+						fetchpriority="low"
+						aria-hidden="true"
+						alt="<?php echo esc_attr( $godam_attachment_title ); ?>"
+					/>
+				</div>
+				<?php elseif ( ! empty( $godam_video_poster ) ) : ?>
+				<div class="godam-video-placeholder <?php echo esc_attr( 'godam-' . strtolower( $godam_player_skin ) . '-skin' ); ?>">
+					<div class="animate-play-btn">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+							<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
+						</svg>
+					</div>
+					<img
+						class="godam-player-poster-image"
+						src="<?php echo esc_url( $godam_video_poster ); ?>"
+						fetchpriority="high"
+						loading="lazy"
+						aria-hidden="true"
+						alt="<?php echo esc_attr( $godam_attachment_title ); ?>"
+					/>
+				</div>
+				<?php else : ?>
 				<div class="godam-video-placeholder godam-animate-video-loading <?php echo esc_attr( 'godam-' . strtolower( $godam_player_skin ) . '-skin' ); ?>">
 					<div class="animate-play-btn">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
 							<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
 						</svg>
 					</div>
-					<?php if ( ! empty( $godam_video_poster ) ) : ?>
-					<img
-						class="godam-player-poster-image"
-						src="<?php echo esc_url( $godam_video_poster ); ?>"
-						fetchpriority="high"
-						aria-hidden="true"
-						alt="<?php echo esc_attr( $godam_attachment_title ); ?>"
-					/>
-					<?php endif; ?>
 				</div>
+				<?php endif; ?>
 
 				<div class="easydam-video-container loading <?php echo esc_attr( 'godam-' . strtolower( $godam_player_skin ) . '-skin' ); ?>" >
 					<?php if ( isset( $godam_hover_select ) && 'shadow-overlay' === $godam_hover_select ) : ?>
@@ -588,20 +630,23 @@ if ( $godam_should_preload_poster ) {
 						data-instance-id="<?php echo esc_attr( $godam_instance_id ); ?>"
 						data-controls="<?php echo esc_attr( $godam_video_setup ); ?>"
 						data-job_id="<?php echo esc_attr( $godam_job_id ); ?>"
-						data-global_ads_settings="<?php echo esc_attr( $godam_ads_settings ); ?>"
-						data-hover-select="<?php echo esc_attr( $godam_hover_select ); ?>"
-						data-video-title="<?php echo esc_attr( $godam_attachment_title ); ?>"
-						data-autoplay-on-view="<?php echo esc_attr( $godam_autoplay ? 'true' : 'false' ); ?>"
-					>
-						<?php
+							data-global_ads_settings="<?php echo esc_attr( $godam_ads_settings ); ?>"
+							data-hover-select="<?php echo esc_attr( $godam_hover_select ); ?>"
+							data-video-title="<?php echo esc_attr( $godam_attachment_title ); ?>"
+							data-autoplay-on-view="<?php echo esc_attr( $godam_autoplay ? 'true' : 'false' ); ?>"
+							data-disable-transcript="<?php echo esc_attr( $godam_disable_subtitles_and_transcript ? 'true' : 'false' ); ?>"
+						>
+							<?php
 
-						$godam_display_caption = ( ! isset( $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) ) ||
-							( isset( $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) && $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] );
+							$godam_display_caption = ! $godam_disable_subtitles_and_transcript && (
+								( ! isset( $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) ) ||
+								( isset( $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) && $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] )
+							);
 
-						if ( $godam_display_caption ) {
-							foreach ( $godam_tracks as $godam_track ) :
-								if ( ! empty( $godam_track['src'] ) && ! empty( $godam_track['kind'] ) ) :
-									?>
+							if ( $godam_display_caption ) {
+								foreach ( $godam_tracks as $godam_track ) :
+									if ( ! empty( $godam_track['src'] ) && ! empty( $godam_track['kind'] ) ) :
+										?>
 									<track
 										src="<?php echo esc_url( $godam_track['src'] ); ?>"
 										kind="<?php echo esc_attr( $godam_track['kind'] ); ?>"
@@ -610,11 +655,11 @@ if ( $godam_should_preload_poster ) {
 										echo ! empty( $godam_track['label'] ) ? sprintf( 'label="%s"', esc_attr( $godam_track['label'] ) ) : '';
 										?>
 									/>
-									<?php
-								endif;
-							endforeach;
-						}
-						?>
+										<?php
+									endif;
+								endforeach;
+							}
+							?>
 					</video>
 					<!-- Add this to target godam uppy modal inside video. -->
 					<div id="uppy-godam-video-modal-container"></div>

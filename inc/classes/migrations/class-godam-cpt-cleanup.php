@@ -25,10 +25,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * ## Lifecycle
  *
- * 1. `Runner::run()` calls `maybe_run()` on every plugin bootstrap.
- * 2. `maybe_run()` bails immediately if the guard option is set, or if the
- *    current context is a frontend request.
- * 3. On the first qualifying request `run()` is scheduled on `init` priority 99.
+ * 1. `Runner::maybe_run()` (hooked to `admin_init`) calls `maybe_run()` when
+ *    the stored db version is behind the current plugin version.
+ * 2. `maybe_run()` bails immediately if the guard option is already set.
+ * 3. On the first qualifying admin page load, `maybe_run()` calls `run()` directly.
  * 4. `run()` counts posts. If none exist, marks done immediately. Otherwise,
  *    writes `processing` to the guard option and queues the first AS batch job.
  * 5. Each `process_batch()` job deletes up to BATCH_SIZE posts and, if posts
@@ -93,49 +93,60 @@ class Godam_Cpt_Cleanup {
 	const AS_GROUP = 'godam-cpt-cleanup';
 
 	/**
+	 * Register the Action Scheduler batch callback.
+	 *
+	 * Must be called on every request so Action Scheduler can invoke
+	 * process_batch() for jobs that were queued on a previous request,
+	 * regardless of whether the migration is still pending.
+	 *
+	 * Called by Runner::init() during plugin bootstrap.
+	 *
+	 * @return void
+	 */
+	public static function register_hooks(): void {
+		add_action( self::AS_HOOK, array( static::class, 'process_batch' ) );
+	}
+
+	/**
 	 * Register the AS batch callback and schedule the migration if needed.
 	 *
-	 * Called by Runner::run() on every plugin bootstrap. The AS hook is
-	 * registered unconditionally so Action Scheduler can fire it on any
-	 * request, even while a migration is already in progress.
+	 * Called by Runner::maybe_run() only when the plugin version has changed.
+	 * The AS hook is registered by register_hooks() unconditionally; this
+	 * method only decides whether to queue a new migration run.
 	 *
 	 * @return void
 	 */
 	public static function maybe_run() {
-		// Always register the batch callback so AS can fire it on any request.
-		add_action( self::AS_HOOK, array( static::class, 'process_batch' ) );
-
 		// 'processing' or 'done' — migration already started or complete.
 		if ( get_option( self::OPTION_KEY ) ) {
 			return;
 		}
 
-		$is_cli  = defined( 'WP_CLI' ) && WP_CLI;
-		$is_cron = wp_doing_cron();
-
-		// Only trigger during authenticated admin requests, WP-CLI, or cron.
-		// is_admin() is also true for admin-ajax.php which can be hit without
-		// authentication, so non-cron/non-CLI requests require an explicit auth
-		// and capability check before scheduling a destructive migration.
-		if ( ! is_admin() && ! $is_cron && ! $is_cli ) {
-			return;
-		}
-		if ( ! $is_cron && ! $is_cli && ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) ) {
-			return;
-		}
-
-		add_action( 'init', array( static::class, 'run' ), 99 );
+		// Called from Runner::maybe_run() on admin_init — is_user_logged_in()
+		// and current_user_can() are guaranteed available. Call run() directly;
+		// no need to defer to a later hook.
+		self::run();
 	}
 
 	/**
 	 * Entry point: count posts and queue the first Action Scheduler batch.
 	 *
-	 * Runs once on `init` (priority 99). A concurrency lock prevents two
-	 * simultaneous admin page loads from each queuing a batch.
+	 * Called directly from maybe_run() on admin_init. A concurrency lock prevents
+	 * two simultaneous admin page loads from each queuing a batch.
 	 *
 	 * @return void
 	 */
 	public static function run() {
+		// Called from maybe_run() on admin_init — pluggable.php is fully loaded
+		// and auth cookies are processed, so is_user_logged_in() and
+		// current_user_can() are guaranteed available.
+		$is_cli  = defined( 'WP_CLI' ) && WP_CLI;
+		$is_cron = wp_doing_cron();
+
+		if ( ! $is_cron && ! $is_cli && ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) ) {
+			return;
+		}
+
 		if ( ! self::acquire_lock() ) {
 			return;
 		}
