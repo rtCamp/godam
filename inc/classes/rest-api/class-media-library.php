@@ -830,11 +830,16 @@ class Media_Library extends Base {
 
 			if ( ! empty( $frappe_placeholder_map ) ) {
 				update_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails', $frappe_placeholder_map );
-				// Set placeholder for the currently active/selected thumbnail.
-				$active_thumb_url = ! empty( $body->message->thumbnail_url ) ? $body->message->thumbnail_url : '';
-				if ( ! empty( $active_thumb_url ) && isset( $frappe_placeholder_map[ $active_thumb_url ] ) ) {
-					update_post_meta( $attachment_id, 'rtgodam_media_video_placeholder_thumbnail', $frappe_placeholder_map[ $active_thumb_url ] );
-				}
+			} else {
+				delete_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails' );
+			}
+
+			// Always sync the active placeholder thumbnail; clear it when there's no mapping.
+			$active_thumb_url = ! empty( $body->message->thumbnail_url ) ? $body->message->thumbnail_url : '';
+			if ( ! empty( $active_thumb_url ) && ! empty( $frappe_placeholder_map ) && isset( $frappe_placeholder_map[ $active_thumb_url ] ) ) {
+				update_post_meta( $attachment_id, 'rtgodam_media_video_placeholder_thumbnail', $frappe_placeholder_map[ $active_thumb_url ] );
+			} else {
+				delete_post_meta( $attachment_id, 'rtgodam_media_video_placeholder_thumbnail' );
 			}
 		}
 
@@ -916,8 +921,17 @@ class Media_Library extends Base {
 
 		$data['customThumbnails'] = $custom_thumbnails;
 
-		$godam_placeholder_map         = get_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails', true );
-		$data['placeholderThumbnails'] = is_array( $godam_placeholder_map ) ? $godam_placeholder_map : array();
+		$godam_placeholder_map = get_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails', true );
+		if ( is_array( $godam_placeholder_map ) ) {
+			$normalized_placeholder_map = array();
+			foreach ( $godam_placeholder_map as $placeholder_key => $placeholder_value ) {
+				$normalized_key                                = is_string( $placeholder_key ) ? rtgodam_convert_to_https_url( $placeholder_key ) : $placeholder_key;
+				$normalized_placeholder_map[ $normalized_key ] = is_string( $placeholder_value ) ? rtgodam_convert_to_https_url( $placeholder_value ) : $placeholder_value;
+			}
+			$data['placeholderThumbnails'] = $normalized_placeholder_map;
+		} else {
+			$data['placeholderThumbnails'] = array();
+		}
 
 		return rest_ensure_response(
 			array(

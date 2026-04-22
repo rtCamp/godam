@@ -8,7 +8,7 @@
 	}
 
 	.godam-player-poster-image {
-		position:absolute;
+		position: absolute;
 		aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
 		width: 100%;
 		height: auto;
@@ -16,12 +16,6 @@
 		object-fit: contain;
 		background-color: #000;
 	}
-}
-
-.godam-animate-video-loading {
-	position: relative;
-	animation: godam_pulse_animation 2s cubic-bezier(.4, 0, .6, 1) infinite;
-	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
 
 	.animate-play-btn {
 		width: 50px;
@@ -55,6 +49,10 @@
 	}
 }
 
+.godam-animate-video-loading {
+	animation: godam_pulse_animation 2s cubic-bezier(.4, 0, .6, 1) infinite;
+}
+
 .easydam-video-container {
 
 	&.loading {
@@ -78,13 +76,13 @@
 		animation: godam_blur_pulse 2.5s infinite;
 		background-color: #fff;
 		z-index: 1;
+		pointer-events: none;
 	}
 
 	.godam-player-poster-image {
 		opacity: 0;
 		transition: opacity 250ms ease-in-out;
-		position: relative; // ensure poster renders above ::before shimmer
-		z-index: 2;
+		z-index: 2; // render above ::before shimmer; base absolute positioning preserved
 	}
 
 	&.loaded {

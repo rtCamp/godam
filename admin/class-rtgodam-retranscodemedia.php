@@ -651,6 +651,8 @@ class RTGODAM_RetranscodeMedia {
 			$godam_placeholder_map = get_post_meta( $media_id, 'rtgodam_media_placeholder_thumbnails', true );
 			if ( is_array( $godam_placeholder_map ) && isset( $godam_placeholder_map[ $primary_remote_thumbnail_url ] ) ) {
 				update_post_meta( $media_id, 'rtgodam_media_video_placeholder_thumbnail', $godam_placeholder_map[ $primary_remote_thumbnail_url ] );
+			} else {
+				delete_post_meta( $media_id, 'rtgodam_media_video_placeholder_thumbnail' );
 			}
 		}
 	}

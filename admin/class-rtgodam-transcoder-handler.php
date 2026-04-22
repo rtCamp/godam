@@ -672,30 +672,33 @@ class RTGODAM_Transcoder_Handler {
 		$post_thumbs_array = maybe_unserialize( $post_thumbs );
 
 		$thumbnail_urls      = array();
+		$placeholder_map     = array();
 		$first_thumbnail_url = false;
 
-		foreach ( $post_thumbs_array['thumbnail'] as $thumbnail_url ) {
-				$sanitized_url = esc_url_raw( $thumbnail_url );
+		$raw_thumbnails   = $post_thumbs_array['thumbnail'];
+		$raw_placeholders = ! empty( $post_thumbs_array['placeholder_thumbnail'] ) && is_array( $post_thumbs_array['placeholder_thumbnail'] )
+			? $post_thumbs_array['placeholder_thumbnail']
+			: array();
+
+		// Iterate both parallel arrays by the same raw index so positions stay aligned.
+		foreach ( $raw_thumbnails as $idx => $thumbnail_url ) {
+			$sanitized_url = esc_url_raw( $thumbnail_url );
 			if ( empty( $sanitized_url ) ) {
 				continue;
 			}
 
-				$thumbnail_urls[] = $sanitized_url;
+			$thumbnail_urls[] = $sanitized_url;
+
+			if ( isset( $raw_placeholders[ $idx ] ) ) {
+				$sanitized_placeholder = esc_url_raw( $raw_placeholders[ $idx ] );
+				if ( ! empty( $sanitized_placeholder ) ) {
+					$placeholder_map[ $sanitized_url ] = $sanitized_placeholder;
+				}
+			}
 		}
 
 		if ( ! empty( $thumbnail_urls ) ) {
 			$first_thumbnail_url = $thumbnail_urls[0];
-		}
-
-		// Build placeholder thumbnail URLs if the transcoder provides them.
-		$placeholder_urls = array();
-		if ( ! empty( $post_thumbs_array['placeholder_thumbnail'] ) && is_array( $post_thumbs_array['placeholder_thumbnail'] ) ) {
-			foreach ( $post_thumbs_array['placeholder_thumbnail'] as $placeholder_url ) {
-				$sanitized_placeholder = esc_url_raw( $placeholder_url );
-				if ( ! empty( $sanitized_placeholder ) ) {
-					$placeholder_urls[] = $sanitized_placeholder;
-				}
-			}
 		}
 
 		$media_id = null;
@@ -720,9 +723,11 @@ class RTGODAM_Transcoder_Handler {
 		update_post_meta( $post_id, 'rtgodam_media_source', $post_thumbs_array['job_for'] );
 		update_post_meta( $post_id, 'rtgodam_media_thumbnails', $thumbnail_urls );
 
-		// Store thumbnail → placeholder mapping when both parallel arrays are present and match.
-		if ( ! empty( $placeholder_urls ) && count( $placeholder_urls ) === count( $thumbnail_urls ) ) {
-			update_post_meta( $post_id, 'rtgodam_media_placeholder_thumbnails', array_combine( $thumbnail_urls, $placeholder_urls ) );
+		// Store thumbnail → placeholder mapping, or clear stale meta when no valid placeholders.
+		if ( ! empty( $placeholder_map ) ) {
+			update_post_meta( $post_id, 'rtgodam_media_placeholder_thumbnails', $placeholder_map );
+		} else {
+			delete_post_meta( $post_id, 'rtgodam_media_placeholder_thumbnails' );
 		}
 
 		do_action( 'rtgodam_transcoded_thumbnails_added', $post_id );
@@ -744,9 +749,11 @@ class RTGODAM_Transcoder_Handler {
 			// If the current selected thumbnail is NOT one of the custom uploaded thumbnails, overwrite it.
 			if ( empty( $current_thumbnail ) || ! in_array( $current_thumbnail, $custom_thumbnails, true ) ) {
 				update_post_meta( $post_id, 'rtgodam_media_video_thumbnail', $first_thumbnail_url );
-				// Also sync the placeholder for the newly set primary thumbnail.
-				if ( ! empty( $placeholder_urls ) ) {
-					update_post_meta( $post_id, 'rtgodam_media_video_placeholder_thumbnail', $placeholder_urls[0] );
+				// Sync placeholder for the newly set primary thumbnail using the verified map.
+				if ( isset( $placeholder_map[ $first_thumbnail_url ] ) ) {
+					update_post_meta( $post_id, 'rtgodam_media_video_placeholder_thumbnail', $placeholder_map[ $first_thumbnail_url ] );
+				} else {
+					delete_post_meta( $post_id, 'rtgodam_media_video_placeholder_thumbnail' );
 				}
 			}
 

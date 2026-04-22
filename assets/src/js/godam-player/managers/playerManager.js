@@ -88,6 +88,13 @@ export default class PlayerManager {
 	 */
 	initBlurUpPlaceholders() {
 		document.querySelectorAll( '.godam-blurred-img' ).forEach( ( div ) => {
+			// Skip already-initialized placeholders to prevent duplicate listeners
+			// when multiple PlayerManager instances run (e.g. Elementor, FluentForms).
+			if ( div.dataset.godamBlurInit === '1' ) {
+				return;
+			}
+			div.dataset.godamBlurInit = '1';
+
 			const img = div.querySelector( '.godam-player-poster-image' );
 			if ( ! img ) {
 				return;
@@ -101,8 +108,8 @@ export default class PlayerManager {
 			if ( img.complete && img.naturalWidth > 0 ) {
 				markLoaded();
 			} else {
-				img.addEventListener( 'load', markLoaded );
-				img.addEventListener( 'error', markError );
+				img.addEventListener( 'load', markLoaded, { once: true } );
+				img.addEventListener( 'error', markError, { once: true } );
 			}
 		} );
 	}
