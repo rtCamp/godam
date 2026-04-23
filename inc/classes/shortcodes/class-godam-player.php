@@ -167,6 +167,8 @@ class GoDAM_Player {
 				'hoverSelect'       => 'none',
 				'hover_select'      => 'none', // WPBakery format (lowercase with underscore).
 				'poster'            => '',
+				'performanceMode'   => 'balanced',
+				'performance_mode'  => 'balanced',
 				'preload'           => 'metadata',
 				'src'               => '',
 				'sources'           => '',
@@ -204,6 +206,11 @@ class GoDAM_Player {
 		}
 		if ( isset( $attributes['show_share_button'] ) && '' !== $attributes['show_share_button'] && ( ! isset( $attributes['showShareButton'] ) || false === $attributes['showShareButton'] ) ) {
 			$attributes['showShareButton'] = $attributes['show_share_button'];
+		}
+		$raw_has_performance_mode            = is_array( $atts ) && array_key_exists( 'performance_mode', $atts );
+		$raw_has_performance_mode_camel_case = is_array( $atts ) && array_key_exists( 'performanceMode', $atts );
+		if ( $raw_has_performance_mode && ! $raw_has_performance_mode_camel_case && isset( $attributes['performance_mode'] ) && '' !== $attributes['performance_mode'] ) {
+			$attributes['performanceMode'] = $attributes['performance_mode'];
 		}
 
 		// Get WPBakery Design Options CSS class if available.

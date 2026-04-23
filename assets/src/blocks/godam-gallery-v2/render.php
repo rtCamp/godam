@@ -222,6 +222,7 @@ $item_width_map      = array(
 );
 $item_width          = isset( $item_width_map[ $item_width_size ] ) ? $item_width_map[ $item_width_size ] : 200;
 $show_title          = ! isset( $attributes['showTitle'] ) || (bool) $attributes['showTitle'];
+$performance_mode    = rtgodam_resolve_video_performance_mode( $attributes, 'balanced' );
 $enable_more_items   = array_key_exists( 'enableMoreItems', $attributes ) ? ! empty( $attributes['enableMoreItems'] ) : false;
 $more_items_behavior = isset( $attributes['moreItemsBehavior'] ) ? sanitize_key( $attributes['moreItemsBehavior'] ) : '';
 
@@ -282,6 +283,7 @@ if ( 'query' === $gallery_mode ) {
 		'custom_date_end'   => $attributes['customDateEnd'] ?? '',
 		'gallery_variant'   => 'gallery-v2',
 		'view_ratio'        => $view_ratio,
+		'performance_mode'  => $performance_mode,
 	);
 	$query             = new WP_Query( godam_gallery_v2_build_query_args( $attributes, 1 ) );
 	$total_query_items = (int) $query->found_posts;
@@ -334,7 +336,8 @@ if ( 'query' === $gallery_mode ) {
 				data-view-ratio="<?php echo esc_attr( $view_ratio ); ?>"
 			>
 			<div class="godam-gallery-v2__query-list">
-				<?php foreach ( $items as $item ) : ?>
+				<?php foreach ( $items as $index => $item ) : ?>
+					<?php $thumbnail_attributes = rtgodam_format_html_attributes( rtgodam_get_gallery_tile_image_attributes( $performance_mode, $index ) ); ?>
 					<div class="<?php echo esc_attr( sprintf( 'godam-gallery-v2__query-item godam-gallery-v2__query-item--ratio-%s', $ratio_class ) ); ?>">
 						<button
 							type="button"
@@ -346,7 +349,7 @@ if ( 'query' === $gallery_mode ) {
 						>
 							<div class="godam-gallery-v2__query-thumb">
 								<?php if ( ! empty( $item['thumbnail'] ) ) : ?>
-									<img src="<?php echo esc_url( $item['thumbnail'] ); ?>" alt="<?php echo esc_attr( $item['title'] ); ?>" loading="lazy" fetchpriority="high" />
+									<img src="<?php echo esc_url( $item['thumbnail'] ); ?>" alt="<?php echo esc_attr( $item['title'] ); ?>" <?php echo $thumbnail_attributes ? wp_kses_data( $thumbnail_attributes ) : ''; ?> />
 								<?php else : ?>
 									<span><?php esc_html_e( 'GoDAM Video', 'godam' ); ?></span>
 								<?php endif; ?>
@@ -383,7 +386,8 @@ if ( 'query' === $gallery_mode ) {
 			</div>
 		<?php else : ?>
 			<div class="godam-gallery-v2__item-list">
-				<?php foreach ( $items as $item ) : ?>
+				<?php foreach ( $items as $index => $item ) : ?>
+					<?php $thumbnail_attributes = rtgodam_format_html_attributes( rtgodam_get_gallery_tile_image_attributes( $performance_mode, $index ) ); ?>
 					<div class="<?php echo esc_attr( sprintf( 'godam-gallery-v2-item godam-gallery-v2-item--%s godam-gallery-v2-item--ratio-%s', $layout, $ratio_class ) ); ?>">
 						<button
 							type="button"
@@ -399,8 +403,7 @@ if ( 'query' === $gallery_mode ) {
 										src="<?php echo esc_url( $item['thumbnail'] ); ?>"
 										alt="<?php echo esc_attr( $item['title'] ); ?>"
 										class="godam-gallery-v2-item__thumbnail"
-										loading="lazy"
-										fetchpriority="high"
+										<?php echo $thumbnail_attributes ? wp_kses_data( $thumbnail_attributes ) : ''; ?>
 									/>
 								<?php else : ?>
 									<div class="godam-gallery-v2-item__placeholder">

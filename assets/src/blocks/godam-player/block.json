@@ -42,7 +42,11 @@
 		},
 		"preload": {
 			"type": "string",
-			"default": "metadata"
+			"default": "none"
+		},
+		"performanceMode": {
+			"type": "string",
+			"default": "balanced"
 		},
 		"blob": {
 			"type": "string",

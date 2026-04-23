@@ -37,6 +37,14 @@ import { columns, grid, listView, plus } from '@wordpress/icons';
 import './editor.scss';
 
 const ALLOWED_BLOCKS = [ 'godam/gallery-v2-item' ];
+const performanceModeOptions = [
+	{ label: __( 'Balanced', 'godam' ), value: 'balanced' },
+	{ label: __( 'Priority', 'godam' ), value: 'priority' },
+];
+const performanceModeHelpText = {
+	balanced: __( 'Recommended for most videos. Loads thumbnails as visitors scroll and prepares the video just before they reach it. Best for overall page performance.', 'godam' ),
+	priority: __( 'For hero videos above the fold. Loads the thumbnail immediately and prepares the video for the fastest possible first play. Use sparingly - one or two per page.', 'godam' ),
+};
 
 const formatDisplayDate = ( dateString ) => {
 	if ( ! dateString ) {
@@ -198,6 +206,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		customDateEnd,
 		showTitle,
 		layout,
+		performanceMode,
 	} = attributes;
 	const [ startDatePopoverOpen, setStartDatePopoverOpen ] = useState( false );
 	const [ endDatePopoverOpen, setEndDatePopoverOpen ] = useState( false );
@@ -586,6 +595,13 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						label={ __( 'Show Video Titles and Dates', 'godam' ) }
 						checked={ !! showTitle }
 						onChange={ ( value ) => setAttributes( { showTitle: value } ) }
+					/>
+					<SelectControl
+						label={ __( 'Performance', 'godam' ) }
+						value={ performanceMode || 'balanced' }
+						options={ performanceModeOptions }
+						help={ performanceModeHelpText[ performanceMode || 'balanced' ] }
+						onChange={ ( value ) => setAttributes( { performanceMode: value } ) }
 					/>
 				</PanelBody>
 
