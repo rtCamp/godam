@@ -411,7 +411,10 @@ if ( ! empty( $godam_control_bar_settings ) ) {
 // Allow add-ons to disable double-click-to-fullscreen for specific contexts.
 $godam_no_dblclick_fullscreen_contexts = apply_filters( 'godam_player_no_dblclick_fullscreen_contexts', array() );
 if ( isset( $attributes['godam_context'] ) && in_array( $attributes['godam_context'], $godam_no_dblclick_fullscreen_contexts, true ) ) {
-	$godam_video_setup['userActions'] = array( 'doubleClick' => false );
+	if ( ! isset( $godam_video_setup['userActions'] ) || ! is_array( $godam_video_setup['userActions'] ) ) {
+		$godam_video_setup['userActions'] = array();
+	}
+	$godam_video_setup['userActions']['doubleClick'] = false;
 }
 
 $godam_video_setup = wp_json_encode( $godam_video_setup );
