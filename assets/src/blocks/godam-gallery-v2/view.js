@@ -334,7 +334,7 @@ const { __ } = require( '@wordpress/i18n' );
 
 			this.currentIndex = index;
 			activeGallery = this;
-			this.modal.iframe.src = `${ this.embedBaseUrl }?godam_page=video-embed&id=${ encodeURIComponent( videoId ) }`;
+			this.modal.iframe.src = `${ this.embedBaseUrl }?godam_page=video-embed&id=${ encodeURIComponent( videoId ) }&godam_gallery=1`;
 			this.modal.overlay.classList.add( 'is-active' );
 			this.modal.modal.classList.add( 'is-active' );
 			this.modal.closeButton.classList.add( 'is-active' );
