@@ -408,6 +408,12 @@ if ( ! empty( $godam_control_bar_settings ) ) {
 	$godam_video_setup['controlBar']['volumePanel'] = $godam_volume_panel_setting;
 }
 
+// Allow add-ons to disable double-click-to-fullscreen for specific contexts.
+$godam_no_dblclick_fullscreen_contexts = apply_filters( 'godam_player_no_dblclick_fullscreen_contexts', array() );
+if ( isset( $attributes['godam_context'] ) && in_array( $attributes['godam_context'], $godam_no_dblclick_fullscreen_contexts, true ) ) {
+	$godam_video_setup['userActions'] = array( 'doubleClick' => false );
+}
+
 $godam_video_setup = wp_json_encode( $godam_video_setup );
 
 $godam_frontend_layers = ! empty( $godam_meta_data['layers'] ) ? $godam_meta_data['layers'] : array();
