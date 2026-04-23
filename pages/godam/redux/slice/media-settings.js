@@ -56,16 +56,13 @@ const mediaSettingsSlice = createSlice( {
 	initialState,
 	reducers: {
 		// Sets the entire media settings (validates allowed keys)
+		// Used only for initialization from API data — must NOT set isChanged = true.
 		setMediaSettings: ( state, action ) => {
 			Object.keys( action.payload ).forEach( ( category ) => {
 				if ( state[ category ] ) {
 					Object.keys( action.payload[ category ] ).forEach( ( key ) => {
 						if ( key in state[ category ] ) {
-							// Check if the value is actually different
-							if ( state[ category ][ key ] !== action.payload[ category ][ key ] ) {
-								state[ category ][ key ] = action.payload[ category ][ key ];
-								state.isChanged = true; // Mark as changed
-							}
+							state[ category ][ key ] = action.payload[ category ][ key ];
 						}
 					} );
 				}
