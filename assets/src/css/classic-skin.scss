@@ -54,6 +54,11 @@
 			background: unset !important;
 		}
 
+		button.vjs-subs-caps-button, .vjs-settings-button button {
+			width: auto;
+			height: auto;
+		}
+
 		.vjs-vol-3 {
 			left: 6px;
 
@@ -466,7 +471,16 @@
 			display: none;
 		}
 	
+		@-moz-document url-prefix() {
+			/* CSS rules here apply only in Firefox */
+			.vjs-settings-button {
+			  right: 40px;
+			}
 
+			.vjs-subs-caps-button.vjs-control.vjs-menu-button {
+			  right: 80px;
+			}
+		  }
 	}
 
 	.video-js {
