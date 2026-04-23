@@ -258,6 +258,7 @@ const IntegrationSettings = () => {
 									</Notice>
 								) }
 
+								{ /* This will show when the Button Displays Install Addon text */ }
 								{ isRequiredActive && hasValidAPIKey && ! isInstalled && (
 									<p>
 										{ sprintf(
@@ -266,6 +267,25 @@ const IntegrationSettings = () => {
 											tab.integrationLabel,
 										) }
 									</p>
+								) }
+
+								{ /* This will show when the Button Displays Purchase Now text */ }
+								{ ! isInstalled && ! hasValidAPIKey && (
+									<>
+										{ __( 'This is a Pro feature.', 'godam' ) }
+										{ ' ' }
+										<a
+											href={ getPricingUrl( `${ tab.name }-integration` ) }
+											target="_blank"
+											rel="noopener noreferrer"
+											style={ { color: '#b02544', textDecoration: 'underline', fontWeight: 500 } }
+										>
+											{ __( 'Upgrade to Pro', 'godam' ) }
+											{ ' ↗' }
+										</a>
+										{ ' ' }
+										{ __( 'to use this integration.', 'godam' ) }
+									</>
 								) }
 
 								{ isInstalled && (
