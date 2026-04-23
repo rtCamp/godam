@@ -1333,16 +1333,16 @@ function rtgodam_resolve_video_performance_mode( $attributes, $default_mode = 'b
 
 	$legacy_preload = isset( $attributes['preload'] ) ? strtolower( trim( (string) $attributes['preload'] ) ) : '';
 
-	if ( in_array( $legacy_preload, array( 'metadata', 'auto' ), true ) ) {
+	if ( in_array( $legacy_preload, array( 'metadata', 'auto', 'none' ), true ) ) {
+		return 'balanced';
+	}
+
+	if ( in_array( $legacy_preload, array( 'preload only video thumbnail' ), true ) ) {
 		return 'priority';
 	}
 
-	if ( in_array( $legacy_preload, array( 'none', 'preload only video thumbnail' ), true ) ) {
-		return 'balanced';
-	}
-
 	if ( ! empty( $attributes['preloadPoster'] ) ) {
-		return 'balanced';
+		return 'priority';
 	}
 
 	return rtgodam_normalize_video_performance_mode( '', $default_mode );
