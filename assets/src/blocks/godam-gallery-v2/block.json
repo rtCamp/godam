@@ -71,6 +71,10 @@
 		"showTitle": {
 			"type": "boolean",
 			"default": true
+		},
+		"performanceMode": {
+			"type": "string",
+			"default": "balanced"
 		}
 	},
 	"providesContext": {

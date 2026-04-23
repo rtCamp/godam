@@ -1290,3 +1290,146 @@ function godam_should_load_auth_detector_script( $screen ) {
 
 	return false;
 }
+
+/**
+ * Normalize a GoDAM video performance mode value.
+ *
+ * @param string $mode     Candidate performance mode.
+ * @param string $fallback Fallback mode when the candidate is invalid.
+ *
+ * @return string
+ */
+function rtgodam_normalize_video_performance_mode( $mode, $fallback = 'balanced' ) {
+	$mode     = is_string( $mode ) ? sanitize_key( $mode ) : '';
+	$fallback = 'priority' === sanitize_key( $fallback ) ? 'priority' : 'balanced';
+
+	if ( in_array( $mode, array( 'balanced', 'priority' ), true ) ) {
+		return $mode;
+	}
+
+	return $fallback;
+}
+
+/**
+ * Resolve the effective performance mode for a video from modern or legacy attributes.
+ *
+ * @param array  $attributes Block or shortcode attributes.
+ * @param string $default_mode Default performance mode when no stored value exists.
+ *
+ * @return string
+ */
+function rtgodam_resolve_video_performance_mode( $attributes, $default_mode = 'balanced' ) {
+	if ( ! is_array( $attributes ) ) {
+		return rtgodam_normalize_video_performance_mode( '', $default_mode );
+	}
+
+	if ( ! empty( $attributes['performanceMode'] ) ) {
+		return rtgodam_normalize_video_performance_mode( $attributes['performanceMode'], $default_mode );
+	}
+
+	if ( ! empty( $attributes['performance_mode'] ) ) {
+		return rtgodam_normalize_video_performance_mode( $attributes['performance_mode'], $default_mode );
+	}
+
+	$legacy_preload = isset( $attributes['preload'] ) ? strtolower( trim( (string) $attributes['preload'] ) ) : '';
+
+	if ( in_array( $legacy_preload, array( 'metadata', 'auto' ), true ) ) {
+		return 'priority';
+	}
+
+	if ( in_array( $legacy_preload, array( 'none', 'preload only video thumbnail' ), true ) ) {
+		return 'balanced';
+	}
+
+	if ( ! empty( $attributes['preloadPoster'] ) ) {
+		return 'balanced';
+	}
+
+	return rtgodam_normalize_video_performance_mode( '', $default_mode );
+}
+
+/**
+ * Resolve the final performance-driven render settings for a single video.
+ *
+ * @param array  $attributes Block or shortcode attributes.
+ * @param string $default_mode Default performance mode.
+ *
+ * @return array<string, mixed>
+ */
+function rtgodam_get_video_performance_settings( $attributes, $default_mode = 'balanced' ) {
+	$mode = rtgodam_resolve_video_performance_mode( $attributes, $default_mode );
+
+	return array(
+		'mode'              => $mode,
+		'video_attributes'  => array(
+			'preload' => 'priority' === $mode ? 'metadata' : 'none',
+		),
+		'poster_attributes' => 'priority' === $mode
+			? array(
+				'fetchpriority' => 'high',
+			)
+			: array(
+				'loading' => 'lazy',
+			),
+	);
+}
+
+/**
+ * Resolve the render attributes for a gallery tile thumbnail.
+ *
+ * Priority mode is intentionally capped to the leading tiles to avoid over-eager
+ * image loading in multi-video layouts.
+ *
+ * @param string $performance_mode Requested performance mode.
+ * @param int    $index            Zero-based tile index.
+ * @param int    $priority_cutoff  Number of leading tiles that may stay in priority mode.
+ *
+ * @return array<string, string>
+ */
+function rtgodam_get_gallery_tile_image_attributes( $performance_mode, $index = 0, $priority_cutoff = 3 ) {
+	$performance_mode = rtgodam_normalize_video_performance_mode( $performance_mode );
+	$index            = max( 0, intval( $index ) );
+	$priority_cutoff  = max( 0, intval( $priority_cutoff ) );
+	$is_priority_tile = 'priority' === $performance_mode && $index < $priority_cutoff;
+
+	if ( $is_priority_tile ) {
+		return array(
+			'fetchpriority' => 'high',
+		);
+	}
+
+	return array(
+		'loading' => 'lazy',
+	);
+}
+
+/**
+ * Format an associative array of HTML attributes into a string.
+ *
+ * @param array<string, scalar> $attributes Attributes to serialize.
+ *
+ * @return string
+ */
+function rtgodam_format_html_attributes( $attributes ) {
+	if ( ! is_array( $attributes ) || empty( $attributes ) ) {
+		return '';
+	}
+
+	$formatted = array();
+
+	foreach ( $attributes as $name => $value ) {
+		if ( ! is_scalar( $value ) || '' === $value ) {
+			continue;
+		}
+
+		$name = strtolower( trim( (string) $name ) );
+
+		if ( ! preg_match( '/^[a-z_:][-a-z0-9_:.]*$/', $name ) ) {
+			continue;
+		}
+
+		$formatted[] = sprintf( '%s="%s"', $name, esc_attr( (string) $value ) );
+	}
+
+	return implode( ' ', $formatted );
+}

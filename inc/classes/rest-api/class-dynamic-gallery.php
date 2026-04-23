@@ -113,6 +113,10 @@ class Dynamic_Gallery extends Base {
 							'type'    => 'string',
 							'default' => '16:9',
 						),
+						'performance_mode'  => array(
+							'type'    => 'string',
+							'default' => 'balanced',
+						),
 					),
 				),
 			),
@@ -146,6 +150,7 @@ class Dynamic_Gallery extends Base {
 			'engagements'       => $request->get_param( 'engagements' ),
 			'gallery_variant'   => $request->get_param( 'gallery_variant' ),
 			'view_ratio'        => $request->get_param( 'view_ratio' ),
+			'performance_mode'  => $request->get_param( 'performance_mode' ),
 		);
 
 		// Add filter for dynamic gallery attributes.
@@ -278,11 +283,12 @@ class Dynamic_Gallery extends Base {
 		$query = new \WP_Query( $args );
 		ob_start();
 		if ( $query->have_posts() ) {
-			$total_videos    = $query->found_posts;
-			$shown_videos    = count( $query->posts );
-			$alignment_class = '';
-			$is_gallery_v2   = 'gallery-v2' === $atts['gallery_variant'];
-			$ratio_class     = str_replace( ':', '-', $atts['view_ratio'] ?? '16:9' );
+			$total_videos     = $query->found_posts;
+			$shown_videos     = count( $query->posts );
+			$alignment_class  = '';
+			$is_gallery_v2    = 'gallery-v2' === $atts['gallery_variant'];
+			$ratio_class      = str_replace( ':', '-', $atts['view_ratio'] ?? '16:9' );
+			$performance_mode = rtgodam_normalize_video_performance_mode( $atts['performance_mode'] ?? 'balanced' );
 	
 			if ( ! $is_gallery_v2 && intval( $atts['offset'] ) === 0 ) {
 				echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) .
@@ -308,7 +314,7 @@ data-engagements="' . ( $atts['engagements'] ? '1' : '0' ) . '">';
 	
 			do_action( 'rtgodam_dynamic_gallery_before_output', $query, $atts );
 	
-			foreach ( $query->posts as $video ) {
+			foreach ( $query->posts as $index => $video ) {
 				do_action( 'rtgodam_dynamic_gallery_before_video_item', $video, $atts );
 	
 				$video_id    = intval( $video->ID );
@@ -358,12 +364,20 @@ data-engagements="' . ( $atts['engagements'] ? '1' : '0' ) . '">';
 				$video_url = add_query_arg( $query_args, $cpt_base_url );
 
 				if ( $is_gallery_v2 ) {
+					$thumbnail_attributes = rtgodam_format_html_attributes(
+						rtgodam_get_gallery_tile_image_attributes(
+							$performance_mode,
+							intval( $atts['offset'] ) + $index
+						)
+					);
+
 					echo '<div class="godam-gallery-v2__query-item godam-gallery-v2__query-item--ratio-' . esc_attr( $ratio_class ) . '">';
 					/* translators: %s: video title. */
 					echo '<button type="button" class="godam-gallery-v2__query-button" data-godam-gallery-v2-trigger="true" data-video-id="' . esc_attr( $video_id ) . '" aria-label="' . esc_attr( sprintf( __( 'Open video: %s', 'godam' ), $video_title ) ) . '">';
 					echo '<div class="godam-gallery-v2__query-thumb">';
 					if ( ! empty( $thumbnail ) ) {
-						echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" loading="lazy" />';
+						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $thumbnail_attributes is pre-sanitized via rtgodam_format_html_attributes(), and rtgodam_get_gallery_tile_image_attributes() returns pre-sanitized attributes.
+						echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '"' . ( $thumbnail_attributes ? ' ' . $thumbnail_attributes : '' ) . ' />';
 					} else {
 						echo '<span>' . esc_html__( 'GoDAM Video', 'godam' ) . '</span>';
 					}

@@ -86,8 +86,6 @@ $godam_controls       = isset( $attributes['controls'] ) ? $attributes['controls
 $godam_loop           = ! empty( $attributes['loop'] );
 $godam_muted          = ! empty( $attributes['muted'] );
 $godam_poster         = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
-$godam_preload_poster = ! empty( $attributes['preloadPoster'] );
-$godam_preload        = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
 $godam_hover_select   = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSelect'] : 'none';
 $godam_caption        = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
 $godam_tracks         = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
@@ -318,6 +316,34 @@ $godam_ads_settings       = wp_json_encode( $godam_ads_settings );
 $godam_global_video_share = isset( $godam_settings['video']['enable_global_video_share'] ) ? $godam_settings['video']['enable_global_video_share'] : true;
 
 $godam_video_poster = empty( $godam_poster ) ? $godam_poster_image : $godam_poster;
+$godam_performance  = rtgodam_get_video_performance_settings( $attributes );
+
+/**
+ * Filter the final performance-resolved attributes used to render a GoDAM video block.
+ *
+ * This runs after legacy preload values are mapped to the new performance modes,
+ * and before the HTML attributes are printed.
+ *
+ * @param array $render_attributes {
+ *     Final resolved render attributes.
+ *
+ *     @type string $mode                  Balanced or priority.
+ *     @type array  $video_attributes      Attributes applied to the <video> element.
+ *     @type array  $poster_attributes     Attributes applied to the poster <img>.
+ * }
+ * @param array $attributes Original block or shortcode attributes.
+ */
+$godam_performance = apply_filters(
+	'godam_video_block_attributes',
+	$godam_performance,
+	$attributes
+);
+
+$godam_preload                  = isset( $godam_performance['video_attributes']['preload'] ) ? sanitize_text_field( $godam_performance['video_attributes']['preload'] ) : 'none';
+$godam_poster_render_attributes = isset( $godam_performance['poster_attributes'] ) && is_array( $godam_performance['poster_attributes'] )
+	? $godam_performance['poster_attributes']
+	: array();
+$godam_poster_attribute_string  = rtgodam_format_html_attributes( $godam_poster_render_attributes );
 
 // Resolve the blur-up placeholder thumbnail.
 // For block-editor poster overrides, look up the mapping directly.
@@ -527,18 +553,6 @@ if ( empty( $godam_attachment_title ) ) {
 	$godam_attachment_title = basename( get_attached_file( $godam_attachment_id ) );
 }
 
-$godam_should_preload_poster = $godam_preload_poster && ! empty( $godam_video_poster );
-
-// Preload poster image if enabled to improve performance, especially LCP.
-if ( $godam_should_preload_poster ) {
-	add_action(
-		'wp_head',
-		function () use ( $godam_video_poster ) {
-			printf( '<link rel="preload" as="image" fetchpriority="high" href="%s">', esc_url( $godam_video_poster ) );
-		}
-	);
-}
-
 ?>
 
 <?php if ( ! empty( $godam_sources ) ) : ?>
@@ -571,8 +585,7 @@ if ( $godam_should_preload_poster ) {
 					<img
 						class="godam-player-poster-image"
 						src="<?php echo esc_url( $godam_video_poster ); ?>"
-						loading="lazy"
-						fetchpriority="low"
+						<?php echo $godam_poster_attribute_string ? wp_kses_data( $godam_poster_attribute_string ) : ''; ?>
 						aria-hidden="true"
 						alt="<?php echo esc_attr( $godam_attachment_title ); ?>"
 					/>
@@ -587,8 +600,7 @@ if ( $godam_should_preload_poster ) {
 					<img
 						class="godam-player-poster-image"
 						src="<?php echo esc_url( $godam_video_poster ); ?>"
-						fetchpriority="high"
-						loading="lazy"
+						<?php echo $godam_poster_attribute_string ? wp_kses_data( $godam_poster_attribute_string ) : ''; ?>
 						aria-hidden="true"
 						alt="<?php echo esc_attr( $godam_attachment_title ); ?>"
 					/>
@@ -620,15 +632,6 @@ if ( $godam_should_preload_poster ) {
 						?>
 					<?php endif; ?>
 
-					<?php if ( $godam_should_preload_poster ) : ?>
-						<img
-							class="godam-poster-image"
-							src="<?php echo esc_url( $godam_video_poster ); ?>"
-							fetchpriority="high"
-							aria-hidden="true"
-							alt="<?php echo esc_attr( $godam_attachment_title ); ?>"
-						/>
-					<?php endif; ?>
 					<video
 						class="easydam-player video-js vjs-big-play-centered vjs-hidden"
 						data-options="<?php echo esc_attr( $godam_video_config ); ?>"
