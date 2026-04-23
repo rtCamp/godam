@@ -880,16 +880,11 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			window?.easydamMediaLibrary?.ajaxurl ||
 			`${ window.location.origin }/wp-admin/admin-ajax.php`;
 
-		const versionAttachmentId = Number( selectedMedia?.id || 0 );
-		if ( ! Number.isInteger( versionAttachmentId ) || versionAttachmentId < 1 ) {
-			throw new Error( __( 'Please select a valid media file from the Media Library.', 'godam' ) );
-		}
-
 		const formData = new FormData();
 		formData.append( 'action', 'godam_replace_media_version' );
 		formData.append( 'nonce', nonce );
 		formData.append( 'attachment_id', String( attachmentId ) );
-		formData.append( 'version_attachment_id', String( versionAttachmentId ) );
+		formData.append( 'version_attachment_id', String( selectedMedia?.id ) );
 
 		const response = await fetch( ajaxUrl, {
 			method: 'POST',
@@ -912,6 +907,69 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		}
 
 		return payload.data;
+	},
+
+	/**
+	 * Finalizes a pending media URL replacement after a new version appears.
+	 *
+	 * @return {Promise<Object>} API response.
+	 */
+	async finalizePendingVersionReplace() {
+		const attachmentId = this.model.get( 'id' );
+		const nonce = window?.easydamMediaLibrary?.nonce || '';
+
+		return new Promise( ( resolve, reject ) => {
+			window.wp.ajax.post( 'godam_finalize_media_version_replace', {
+				nonce,
+				attachment_id: String( attachmentId ),
+			} )
+				.done( ( data ) => resolve( data ) )
+				.fail( ( error ) => reject( new Error( error?.message || __( 'Failed to finalize media version update.', 'godam' ) ) ) );
+		} );
+	},
+
+	/**
+	 * Refreshes current attachment model and library item from WP media API.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async refreshCurrentAttachmentInFrame() {
+		const attachmentId = Number( this.model?.get( 'id' ) || 0 );
+
+		if ( attachmentId < 1 || ! window?.wp?.media?.attachment ) {
+			return;
+		}
+
+		try {
+			const attachment = wp.media.attachment( attachmentId );
+			await attachment.fetch();
+
+			const selectedAttachmentElement = document.querySelector( `[data-id="${ attachmentId }"]` );
+
+			const newUrl = attachment.get( 'url' );
+
+			// Update File URL input field manually.
+			const urlInput = document.querySelector(
+				'#attachment-details-two-column-copy-link' );
+
+			// Also update the download link manually in case the URL has changed, to ensure users can still download the correct file.
+			const downloadUrlLink = document.querySelector( '.attachment-info .actions a[download]' );
+
+			if ( urlInput ) {
+				urlInput.value = newUrl;
+			}
+
+			if ( downloadUrlLink ) {
+				downloadUrlLink.href = newUrl;
+			}
+
+			if ( selectedAttachmentElement ) {
+				// To trigger media refresh in attachment details view
+				selectedAttachmentElement.click();
+			}
+		} catch {
+			// Keep UX non-blocking; modal refresh already handles fallback UI updates.
+		}
 	},
 
 	/**
@@ -1001,9 +1059,15 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				this.mediaVersions = versionsData;
 
 				if ( matchedExpected || detectedByCount ) {
-					this.openManageVersionsModal();
-					this.showGodamSnackbar( __( 'New version added successfully.', 'godam' ), 'success' );
-					return;
+					const replaceResult = await this.finalizePendingVersionReplace();
+
+					if ( replaceResult?.completed ) {
+						this.mediaVersions = await this.fetchVersionsData();
+						await this.refreshCurrentAttachmentInFrame();
+						this.openManageVersionsModal();
+						this.showGodamSnackbar( __( 'New version added successfully.', 'godam' ), 'success' );
+						return;
+					}
 				}
 			} catch {
 				// Keep polling until max attempts are reached.
@@ -1178,6 +1242,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				try {
 					await this.switchActiveVersion( versionNumber, maxVersions );
 					this.mediaVersions = await this.fetchVersionsData();
+					await this.refreshCurrentAttachmentInFrame();
 					this.openManageVersionsModal();
 					this.showGodamSnackbar( __( 'Active version updated successfully.', 'godam' ), 'success' );
 				} catch {
