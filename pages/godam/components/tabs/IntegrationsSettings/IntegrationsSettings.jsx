@@ -271,7 +271,7 @@ const IntegrationSettings = () => {
 
 								{ /* This will show when the Button Displays Purchase Now text */ }
 								{ ! isInstalled && ! hasValidAPIKey && (
-									<>
+									<p>
 										{ __( 'This is a Pro feature.', 'godam' ) }
 										{ ' ' }
 										<a
@@ -285,7 +285,7 @@ const IntegrationSettings = () => {
 										</a>
 										{ ' ' }
 										{ __( 'to use this integration.', 'godam' ) }
-									</>
+									</p>
 								) }
 
 								{ isInstalled && (
