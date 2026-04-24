@@ -4274,7 +4274,7 @@ msgstr ""
 #: pages/video-editor/components/appearance/Appearance.js:271
 #: pages/video-editor/components/cta/ImageCTA.js:146
 #: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:81
-msgid "Only Image file is allowed"
+msgid "Only Image files are allowed"
 msgstr ""
 
 #: pages/godam/components/tabs/GeneralSettings/BrandImageSelector.jsx:89
