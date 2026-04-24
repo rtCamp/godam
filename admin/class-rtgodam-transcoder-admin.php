@@ -950,14 +950,14 @@ class RTGODAM_Transcoder_Admin {
 		}
 
 		printf(
-			'<div class="notice notice-info is-dismissible rtgodam-woo-promo-notice"><p>%s</p></div>',
+			'<div class="notice notice-info is-dismissible rtgodam-for-woo-promo-notice"><p>%s</p></div>',
 			wp_kses_post( $message )
 		);
 
 		// Inline script to persist dismissal via AJAX.
 		?>
 		<script>
-			jQuery( document ).on( 'click', '.rtgodam-woo-promo-notice .notice-dismiss', function() {
+			jQuery( document ).on( 'click', '.rtgodam-for-woo-promo-notice .notice-dismiss', function() {
 				jQuery.post( ajaxurl, {
 					action: 'rtgodam_dismiss_woo_promo_notice',
 					nonce: '<?php echo esc_js( wp_create_nonce( 'dismiss_woo_promo_notice' ) ); ?>'

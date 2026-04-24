@@ -95,7 +95,7 @@ $godam_show_share_btn = ! empty( $attributes['showShareButton'] );
 $godam_disable_subtitles_and_transcript = isset( $attributes['godam_context'] ) &&
 	in_array(
 		$attributes['godam_context'],
-		array( 'godam-video-product-gallery', 'godam-woo-product-page-reels' ),
+		array( 'godam-video-product-gallery', 'godam-for-woo-product-page-reels' ),
 		true
 	);
 

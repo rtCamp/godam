@@ -196,7 +196,7 @@ const Appearance = () => {
 			 * This handles the case for the uploader tab of WordPress media library.
 			 */
 			if ( attachment?.type !== 'image' ) {
-				showCustomPlayNotice( __( 'Only Image file is allowed', 'godam' ), 'error' );
+				showCustomPlayNotice( __( 'Only Image files are allowed', 'godam' ), 'error' );
 				return;
 			}
 
@@ -268,7 +268,7 @@ const Appearance = () => {
 			 * This handles the case for the uploader tab of WordPress media library.
 			 */
 			if ( attachment?.type !== 'image' ) {
-				showCustomBrandNotice( __( 'Only Image file is allowed', 'godam' ), 'error' );
+				showCustomBrandNotice( __( 'Only Image files are allowed', 'godam' ), 'error' );
 				return;
 			}
 
