@@ -1367,6 +1367,7 @@ function rtgodam_get_video_performance_settings( $attributes, $default_mode = 'b
 		'poster_attributes' => 'priority' === $mode
 			? array(
 				'fetchpriority' => 'high',
+				'loading'       => 'eager',
 			)
 			: array(
 				'loading' => 'lazy',
@@ -1395,6 +1396,7 @@ function rtgodam_get_gallery_tile_image_attributes( $performance_mode, $index = 
 	if ( $is_priority_tile ) {
 		return array(
 			'fetchpriority' => 'high',
+			'loading'       => 'eager',
 		);
 	}
 
