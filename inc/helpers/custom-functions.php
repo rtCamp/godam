@@ -1296,13 +1296,19 @@ function godam_should_load_auth_detector_script( $screen ) {
 // ---------------------------------------------------------------------------
 
 /** Cache group used across all work-cache entries. */
-define( 'RTGODAM_WORK_CACHE_GROUP', 'rtgodam_work_cache' );
+if ( ! defined( 'RTGODAM_WORK_CACHE_GROUP' ) ) {
+	define( 'RTGODAM_WORK_CACHE_GROUP', 'rtgodam_work_cache' );
+}
 
 /** Cache version — bump to globally invalidate all work-cache entries. */
-define( 'RTGODAM_WORK_CACHE_VERSION', 'v1' );
+if ( ! defined( 'RTGODAM_WORK_CACHE_VERSION' ) ) {
+	define( 'RTGODAM_WORK_CACHE_VERSION', 'v1' );
+}
 
 /** Default TTL (seconds) used as hard-expiry fallback: 30 minutes. */
-define( 'RTGODAM_WORK_CACHE_TTL', 30 * MINUTE_IN_SECONDS );
+if ( ! defined( 'RTGODAM_WORK_CACHE_TTL' ) ) {
+	define( 'RTGODAM_WORK_CACHE_TTL', 30 * MINUTE_IN_SECONDS );
+}
 
 /**
  * Retrieve a value from the work cache.
@@ -1356,32 +1362,46 @@ function rtgodam_work_cache_delete( $key ) {
 /**
  * Register a cache key under an index so it can be bulk-deleted later.
  *
- * The index itself is stored as a transient keyed by `$index_key`.
+ * The index is stored as a transient with a TTL aligned to the maximum
+ * render-cache TTL (RTGODAM_WORK_CACHE_TTL). This ensures stale keys are
+ * pruned naturally when the index expires rather than accumulating indefinitely
+ * in permanent options.
+ *
+ * If a key is already registered under the index the TTL of the transient is
+ * refreshed so the index stays alive as long as any of its members could still
+ * be cached.
  *
  * @param string $index_key Human-readable index identifier (e.g. `work_cache_godam_meta_{post_id}`).
  * @param string $cache_key The cache key to register.
  */
 function rtgodam_work_cache_index_add( $index_key, $cache_key ) {
-	$members = get_option( 'rtgodam_wc_idx_' . md5( $index_key ), array() );
+	$transient_name = 'rtgodam_wc_idx_' . md5( $index_key );
+	$members        = (array) get_transient( $transient_name );
 
 	if ( ! in_array( $cache_key, $members, true ) ) {
 		$members[] = $cache_key;
-		update_option( 'rtgodam_wc_idx_' . md5( $index_key ), $members, false );
 	}
+
+	// Always refresh the TTL so the index outlives the youngest member.
+	set_transient( $transient_name, $members, RTGODAM_WORK_CACHE_TTL );
 }
 
 /**
  * Return all cache keys registered under an index.
  *
+ * Returns an empty array when the index transient has expired, which means
+ * all previously registered cache entries have also naturally expired.
+ *
  * @param string $index_key Index identifier.
  * @return string[] List of registered cache keys.
  */
 function rtgodam_work_cache_index_members( $index_key ) {
-	return (array) get_option( 'rtgodam_wc_idx_' . md5( $index_key ), array() );
+	$members = get_transient( 'rtgodam_wc_idx_' . md5( $index_key ) );
+	return is_array( $members ) ? $members : array();
 }
 
 /**
- * Delete every cache key registered under an index and remove the index.
+ * Delete every cache key registered under an index and remove the index transient.
  *
  * @param string $index_key Index identifier.
  */
@@ -1392,7 +1412,7 @@ function rtgodam_work_cache_index_clear( $index_key ) {
 		rtgodam_work_cache_delete( $cache_key );
 	}
 
-	delete_option( 'rtgodam_wc_idx_' . md5( $index_key ) );
+	delete_transient( 'rtgodam_wc_idx_' . md5( $index_key ) );
 }
 
 // ---------------------------------------------------------------------------

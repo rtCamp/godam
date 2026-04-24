@@ -36,7 +36,7 @@ class GoDAM_Player {
 
 		// Fallback: invalidate on attachment save/delete.
 		add_action( 'edit_attachment', array( $this, 'invalidate_video_cache_for_post' ) );
-		add_action( 'deleted_post', array( $this, 'invalidate_video_cache_for_post' ) );
+		add_action( 'delete_attachment', array( $this, 'invalidate_video_cache_for_post' ) );
 	}
 
 	/**
@@ -67,6 +67,8 @@ class GoDAM_Player {
 			'rtgodam_transcoded_url',
 			'rtgodam_hls_transcoded_url',
 			'rtgodam_media_video_thumbnail',
+			'rtgodam_media_video_placeholder_thumbnail',
+			'rtgodam_media_placeholder_thumbnails',
 			'rtgodam_transcript_path',
 		);
 
@@ -317,51 +319,8 @@ class GoDAM_Player {
 			wp_enqueue_style( $skins[ $selected_skin ] );
 		}
 
-		// Build a deterministic cache key from the attributes that affect rendered HTML.
-		$cache_key_attrs = array(
-			'id'              => $attributes['id'],
-			'autoplay'        => (int) $attributes['autoplay'],
-			'controls'        => (int) $attributes['controls'],
-			'loop'            => (int) $attributes['loop'],
-			'muted'           => (int) $attributes['muted'],
-			'performanceMode' => $attributes['performanceMode'],
-			'preload'         => $attributes['preload'],
-			'poster'          => $attributes['poster'],
-			'aspectratio'     => $attributes['aspectratio'],
-			'aspect_ratio'    => $attributes['aspect_ratio'],
-			'tracks'          => $attributes['tracks'],
-			'godam_context'   => $attributes['godam_context'],
-			'hoverSelect'     => $attributes['hoverSelect'],
-			'showShareButton' => (int) $attributes['showShareButton'],
-			'engagements'     => (int) $attributes['engagements'],
-			'preview'         => (int) $attributes['preview'],
-		);
-		$cache_key       = 'work_cache_godam_video_' . md5( wp_json_encode( $cache_key_attrs ) );
-
-		// Skip cache on preview or debug requests.
-		$skip_cache = ( isset( $_GET['preview'] ) || ( defined( 'WP_DEBUG' ) && WP_DEBUG && isset( $_GET['nocache'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-
-		if ( ! $skip_cache ) {
-			$cached_html = rtgodam_work_cache_get( $cache_key );
-			if ( false !== $cached_html ) {
-				return $cached_html;
-			}
-		}
-
 		ob_start();
 		require RTGODAM_PATH . 'inc/templates/godam-player.php';
-		$player_html = ob_get_clean();
-
-		// Cache and register against the video index for targeted invalidation.
-		if ( ! $skip_cache && $player_html ) {
-			rtgodam_work_cache_set( $cache_key, $player_html );
-
-			$post_id = absint( $attributes['id'] );
-			if ( $post_id ) {
-				rtgodam_work_cache_index_add( $this->get_video_cache_index_key( $post_id ), $cache_key );
-			}
-		}
-
-		return $player_html;
+		return ob_get_clean();
 	}
 }
