@@ -2,7 +2,11 @@
 	--godam-gallery-item-width: 200px;
 	--godam-gallery-gap: 16px;
 
-	width: 100%;
+	// Only apply 100% width when no block-level alignment is set.
+	// alignfull/alignwide rely on theme CSS for their own width.
+	&:not(.alignfull):not(.alignwide) {
+		width: 100%;
+	}
 }
 
 .godam-gallery-v2__canvas {

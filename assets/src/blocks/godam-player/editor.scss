@@ -4,8 +4,13 @@
  * including in flex layouts (Row/Stack).
  */
 .wp-block-godam-video {
-	width: 100%;
 	min-width: 0; // Allow shrinking in flex layouts (Row/Stack)
+
+	// Only apply 100% width when no block-level alignment is set.
+	// alignfull/alignwide rely on editor CSS for their own width.
+	&:not(.alignfull):not(.alignwide) {
+		width: 100%;
+	}
 
 	// Ensure the figure takes full width
 	> figure {
