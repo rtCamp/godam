@@ -1291,6 +1291,112 @@ function godam_should_load_auth_detector_script( $screen ) {
 	return false;
 }
 
+// ---------------------------------------------------------------------------
+// Work-cache helpers
+// ---------------------------------------------------------------------------
+
+/** Cache group used across all work-cache entries. */
+define( 'RTGODAM_WORK_CACHE_GROUP', 'rtgodam_work_cache' );
+
+/** Cache version — bump to globally invalidate all work-cache entries. */
+define( 'RTGODAM_WORK_CACHE_VERSION', 'v1' );
+
+/** Default TTL (seconds) used as hard-expiry fallback: 30 minutes. */
+define( 'RTGODAM_WORK_CACHE_TTL', 30 * MINUTE_IN_SECONDS );
+
+/**
+ * Retrieve a value from the work cache.
+ *
+ * Tries the WordPress object cache first, falls back to transients.
+ *
+ * @param string $key Cache key (without version prefix).
+ * @return mixed|false Cached value or false on miss.
+ */
+function rtgodam_work_cache_get( $key ) {
+	$versioned_key = RTGODAM_WORK_CACHE_VERSION . '_' . $key;
+
+	$value = wp_cache_get( $versioned_key, RTGODAM_WORK_CACHE_GROUP );
+	if ( false !== $value ) {
+		return $value;
+	}
+
+	return get_transient( 'rtgodam_wc_' . md5( $versioned_key ) );
+}
+
+/**
+ * Store a value in the work cache.
+ *
+ * Writes to both the object cache and transients so the value is available
+ * across processes even when persistent object caching is absent.
+ *
+ * @param string $key   Cache key (without version prefix).
+ * @param mixed  $value Value to cache.
+ * @param int    $ttl   Time-to-live in seconds. Defaults to RTGODAM_WORK_CACHE_TTL.
+ */
+function rtgodam_work_cache_set( $key, $value, $ttl = RTGODAM_WORK_CACHE_TTL ) {
+	$versioned_key = RTGODAM_WORK_CACHE_VERSION . '_' . $key;
+
+	// phpcs:ignore WordPressVIPMinimum.Performance.LowExpiryCacheTime.CacheTimeUndetermined -- $ttl defaults to RTGODAM_WORK_CACHE_TTL (1800s) and callers must pass >= 300s.
+	wp_cache_set( $versioned_key, $value, RTGODAM_WORK_CACHE_GROUP, $ttl );
+	set_transient( 'rtgodam_wc_' . md5( $versioned_key ), $value, $ttl );
+}
+
+/**
+ * Delete a single entry from the work cache.
+ *
+ * @param string $key Cache key (without version prefix).
+ */
+function rtgodam_work_cache_delete( $key ) {
+	$versioned_key = RTGODAM_WORK_CACHE_VERSION . '_' . $key;
+
+	wp_cache_delete( $versioned_key, RTGODAM_WORK_CACHE_GROUP );
+	delete_transient( 'rtgodam_wc_' . md5( $versioned_key ) );
+}
+
+/**
+ * Register a cache key under an index so it can be bulk-deleted later.
+ *
+ * The index itself is stored as a transient keyed by `$index_key`.
+ *
+ * @param string $index_key Human-readable index identifier (e.g. `work_cache_godam_meta_{post_id}`).
+ * @param string $cache_key The cache key to register.
+ */
+function rtgodam_work_cache_index_add( $index_key, $cache_key ) {
+	$members = get_option( 'rtgodam_wc_idx_' . md5( $index_key ), array() );
+
+	if ( ! in_array( $cache_key, $members, true ) ) {
+		$members[] = $cache_key;
+		update_option( 'rtgodam_wc_idx_' . md5( $index_key ), $members, false );
+	}
+}
+
+/**
+ * Return all cache keys registered under an index.
+ *
+ * @param string $index_key Index identifier.
+ * @return string[] List of registered cache keys.
+ */
+function rtgodam_work_cache_index_members( $index_key ) {
+	return (array) get_option( 'rtgodam_wc_idx_' . md5( $index_key ), array() );
+}
+
+/**
+ * Delete every cache key registered under an index and remove the index.
+ *
+ * @param string $index_key Index identifier.
+ */
+function rtgodam_work_cache_index_clear( $index_key ) {
+	$members = rtgodam_work_cache_index_members( $index_key );
+
+	foreach ( $members as $cache_key ) {
+		rtgodam_work_cache_delete( $cache_key );
+	}
+
+	delete_option( 'rtgodam_wc_idx_' . md5( $index_key ) );
+}
+
+// ---------------------------------------------------------------------------
+
 /**
  * Normalize a GoDAM video performance mode value.
  *

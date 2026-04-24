@@ -28,6 +28,69 @@ class GoDAM_Player {
 		add_action( 'admin_enqueue_scripts', array( $this, 'register_scripts' ) );
 		add_action( 'wp_head', array( $this, 'godam_output_admin_player_css' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'godam_skin_styles_enqueue' ) );
+
+		// Invalidate video render cache when rtgodam_meta changes.
+		add_action( 'updated_post_meta', array( $this, 'invalidate_video_cache_on_meta_change' ), 10, 3 );
+		add_action( 'added_post_meta', array( $this, 'invalidate_video_cache_on_meta_change' ), 10, 3 );
+		add_action( 'deleted_post_meta', array( $this, 'invalidate_video_cache_on_meta_change' ), 10, 3 );
+
+		// Fallback: invalidate on attachment save/delete.
+		add_action( 'edit_attachment', array( $this, 'invalidate_video_cache_for_post' ) );
+		add_action( 'deleted_post', array( $this, 'invalidate_video_cache_for_post' ) );
+	}
+
+	/**
+	 * Return the work-cache index key for a given video post ID.
+	 *
+	 * @param int $post_id Post/attachment ID.
+	 * @return string
+	 */
+	public function get_video_cache_index_key( $post_id ) {
+		return 'work_cache_godam_meta_' . absint( $post_id );
+	}
+
+	/**
+	 * Invalidate the render cache for a video when its rtgodam_meta post meta changes.
+	 *
+	 * @param int    $meta_id    Meta entry ID (unused).
+	 * @param int    $object_id  Post ID the meta belongs to.
+	 * @param string $meta_key   Meta key being updated.
+	 */
+	public function invalidate_video_cache_on_meta_change( $meta_id, $object_id, $meta_key ) {
+		// Only invalidate for attachment posts (GoDAM videos are stored as attachments).
+		if ( 'attachment' !== get_post_type( $object_id ) ) {
+			return;
+		}
+
+		$watched_keys = array(
+			'rtgodam_meta',
+			'rtgodam_transcoded_url',
+			'rtgodam_hls_transcoded_url',
+			'rtgodam_media_video_thumbnail',
+			'rtgodam_transcript_path',
+		);
+
+		if ( ! in_array( $meta_key, $watched_keys, true ) ) {
+			return;
+		}
+
+		$this->invalidate_video_cache_for_post( $object_id );
+	}
+
+	/**
+	 * Clear all cached render output for a given post/video ID.
+	 *
+	 * Only acts on attachment post types to avoid unnecessary cache work on
+	 * unrelated post deletions/edits.
+	 *
+	 * @param int $post_id Post ID.
+	 */
+	public function invalidate_video_cache_for_post( $post_id ) {
+		if ( 'attachment' !== get_post_type( $post_id ) ) {
+			return;
+		}
+
+		rtgodam_work_cache_index_clear( $this->get_video_cache_index_key( $post_id ) );
 	}
 
 	/**
@@ -254,9 +317,51 @@ class GoDAM_Player {
 			wp_enqueue_style( $skins[ $selected_skin ] );
 		}
 
+		// Build a deterministic cache key from the attributes that affect rendered HTML.
+		$cache_key_attrs = array(
+			'id'              => $attributes['id'],
+			'autoplay'        => (int) $attributes['autoplay'],
+			'controls'        => (int) $attributes['controls'],
+			'loop'            => (int) $attributes['loop'],
+			'muted'           => (int) $attributes['muted'],
+			'performanceMode' => $attributes['performanceMode'],
+			'preload'         => $attributes['preload'],
+			'poster'          => $attributes['poster'],
+			'aspectratio'     => $attributes['aspectratio'],
+			'aspect_ratio'    => $attributes['aspect_ratio'],
+			'tracks'          => $attributes['tracks'],
+			'godam_context'   => $attributes['godam_context'],
+			'hoverSelect'     => $attributes['hoverSelect'],
+			'showShareButton' => (int) $attributes['showShareButton'],
+			'engagements'     => (int) $attributes['engagements'],
+			'preview'         => (int) $attributes['preview'],
+		);
+		$cache_key       = 'work_cache_godam_video_' . md5( wp_json_encode( $cache_key_attrs ) );
+
+		// Skip cache on preview or debug requests.
+		$skip_cache = ( isset( $_GET['preview'] ) || ( defined( 'WP_DEBUG' ) && WP_DEBUG && isset( $_GET['nocache'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		if ( ! $skip_cache ) {
+			$cached_html = rtgodam_work_cache_get( $cache_key );
+			if ( false !== $cached_html ) {
+				return $cached_html;
+			}
+		}
+
 		ob_start();
 		require RTGODAM_PATH . 'inc/templates/godam-player.php';
 		$player_html = ob_get_clean();
+
+		// Cache and register against the video index for targeted invalidation.
+		if ( ! $skip_cache && $player_html ) {
+			rtgodam_work_cache_set( $cache_key, $player_html );
+
+			$post_id = absint( $attributes['id'] );
+			if ( $post_id ) {
+				rtgodam_work_cache_index_add( $this->get_video_cache_index_key( $post_id ), $cache_key );
+			}
+		}
+
 		return $player_html;
 	}
 }
