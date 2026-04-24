@@ -902,6 +902,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			throw new Error( __( 'Failed to upload a new version.', 'godam' ) );
 		}
 
+		// When media replacement starts, it throws payload.success as false with a status 400, because replacement is started and not completed.
 		if ( response.status !== 400 || ! payload?.data?.message?.success ) {
 			throw new Error( payload?.data?.message?.message || __( 'Failed to upload a new version.', 'godam' ) );
 		}
@@ -1061,7 +1062,9 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				if ( matchedExpected || detectedByCount ) {
 					const replaceResult = await this.finalizePendingVersionReplace();
 
-					if ( replaceResult?.completed ) {
+					// Treat as completed if finalized, or if source URL was already cleaned up
+					// by the GoDAM callback before this poll had a chance to finalize.
+					if ( replaceResult?.completed || replaceResult?.reason === 'missing_source_url' ) {
 						this.mediaVersions = await this.fetchVersionsData();
 						await this.refreshCurrentAttachmentInFrame();
 						this.openManageVersionsModal();
