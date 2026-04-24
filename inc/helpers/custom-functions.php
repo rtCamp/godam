@@ -1367,6 +1367,7 @@ function rtgodam_get_video_performance_settings( $attributes, $default_mode = 'b
 		'poster_attributes' => 'priority' === $mode
 			? array(
 				'fetchpriority' => 'high',
+				'loading'       => 'eager',
 			)
 			: array(
 				'loading' => 'lazy',
