@@ -1,5 +1,10 @@
 .godam-gallery-v2 {
-	width: 100%;
+	// Only apply 100% width when no block-level alignment is set.
+	// alignfull/alignwide rely on theme/editor CSS for their own width.
+	&:not(.alignfull):not(.alignwide) {
+		width: 100%;
+	}
+
 	padding: 16px;
 	background: #f8f9fa;
 	border: 1px dashed #ccc;
