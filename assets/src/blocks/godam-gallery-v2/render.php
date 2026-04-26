@@ -209,72 +209,72 @@ if ( ! function_exists( 'godam_gallery_v2_get_video_data' ) ) {
 	}
 }
 
-$gallery_mode        = isset( $attributes['mode'] ) ? sanitize_key( $attributes['mode'] ) : 'handpicked';
-$layout              = isset( $attributes['layout'] ) ? sanitize_key( $attributes['layout'] ) : 'carousel';
-$view_ratio          = isset( $attributes['viewRatio'] ) ? $attributes['viewRatio'] : '16:9';
-$allowed_ratios      = array( '16:9', '4:3', '9:16', '3:4', '1:1' );
-$view_ratio          = in_array( $view_ratio, $allowed_ratios, true ) ? $view_ratio : '16:9';
-$item_width_size     = isset( $attributes['itemWidth'] ) ? $attributes['itemWidth'] : 'S';
-$item_width_map      = array(
+$godam_gallery_mode        = isset( $attributes['mode'] ) ? sanitize_key( $attributes['mode'] ) : 'handpicked';
+$godam_layout              = isset( $attributes['layout'] ) ? sanitize_key( $attributes['layout'] ) : 'carousel';
+$godam_view_ratio          = isset( $attributes['viewRatio'] ) ? $attributes['viewRatio'] : '16:9';
+$godam_allowed_ratios      = array( '16:9', '4:3', '9:16', '3:4', '1:1' );
+$godam_view_ratio          = in_array( $godam_view_ratio, $godam_allowed_ratios, true ) ? $godam_view_ratio : '16:9';
+$godam_item_width_size     = isset( $attributes['itemWidth'] ) ? $attributes['itemWidth'] : 'S';
+$godam_item_width_map      = array(
 	'S' => 200,
 	'M' => 260,
 	'L' => 320,
 );
-$item_width          = isset( $item_width_map[ $item_width_size ] ) ? $item_width_map[ $item_width_size ] : 200;
-$show_title          = ! isset( $attributes['showTitle'] ) || (bool) $attributes['showTitle'];
-$performance_mode    = rtgodam_resolve_video_performance_mode( $attributes, 'balanced' );
-$enable_more_items   = array_key_exists( 'enableMoreItems', $attributes ) ? ! empty( $attributes['enableMoreItems'] ) : false;
-$more_items_behavior = isset( $attributes['moreItemsBehavior'] ) ? sanitize_key( $attributes['moreItemsBehavior'] ) : '';
+$godam_item_width          = isset( $godam_item_width_map[ $godam_item_width_size ] ) ? $godam_item_width_map[ $godam_item_width_size ] : 200;
+$godam_show_title          = ! isset( $attributes['showTitle'] ) || (bool) $attributes['showTitle'];
+$godam_performance_mode    = rtgodam_resolve_video_performance_mode( $attributes, 'balanced' );
+$godam_enable_more_items   = array_key_exists( 'enableMoreItems', $attributes ) ? ! empty( $attributes['enableMoreItems'] ) : false;
+$godam_more_items_behavior = isset( $attributes['moreItemsBehavior'] ) ? sanitize_key( $attributes['moreItemsBehavior'] ) : '';
 
-if ( ! in_array( $more_items_behavior, array( 'button', 'infinite' ), true ) ) {
-	$more_items_behavior = ! empty( $attributes['infiniteScroll'] ) ? 'infinite' : 'button';
+if ( ! in_array( $godam_more_items_behavior, array( 'button', 'infinite' ), true ) ) {
+	$godam_more_items_behavior = ! empty( $attributes['infiniteScroll'] ) ? 'infinite' : 'button';
 }
 
-if ( $enable_more_items && 'carousel' === $layout ) {
-	$more_items_behavior = 'infinite';
+if ( $godam_enable_more_items && 'carousel' === $godam_layout ) {
+	$godam_more_items_behavior = 'infinite';
 }
 
-$infinite_scroll       = $enable_more_items && 'infinite' === $more_items_behavior;
-$show_load_more_button = $enable_more_items && 'button' === $more_items_behavior;
-$ratio_class           = str_replace( ':', '-', $view_ratio );
-$block_gap_raw         = $attributes['style']['spacing']['blockGap'] ?? '16px';
-$rest_query_args       = array();
-$total_query_items     = 0;
+$godam_infinite_scroll       = $godam_enable_more_items && 'infinite' === $godam_more_items_behavior;
+$godam_show_load_more_button = $godam_enable_more_items && 'button' === $godam_more_items_behavior;
+$godam_ratio_class           = str_replace( ':', '-', $godam_view_ratio );
+$godam_block_gap_raw         = $attributes['style']['spacing']['blockGap'] ?? '16px';
+$godam_rest_query_args       = array();
+$godam_total_query_items     = 0;
 
-if ( is_string( $block_gap_raw ) && str_starts_with( $block_gap_raw, 'var:preset|spacing|' ) ) {
-	$block_gap = 'var(--wp--preset--spacing--' . str_replace( 'var:preset|spacing|', '', $block_gap_raw ) . ')';
+if ( is_string( $godam_block_gap_raw ) && str_starts_with( $godam_block_gap_raw, 'var:preset|spacing|' ) ) {
+	$godam_block_gap = 'var(--wp--preset--spacing--' . str_replace( 'var:preset|spacing|', '', $godam_block_gap_raw ) . ')';
 } else {
-	$block_gap = $block_gap_raw;
+	$godam_block_gap = $godam_block_gap_raw;
 }
 
-$inline_styles = sprintf(
+$godam_inline_styles = sprintf(
 	'--godam-gallery-item-width: %dpx; --godam-gallery-gap: %s;',
-	$item_width,
-	esc_attr( $block_gap )
+	$godam_item_width,
+	esc_attr( $godam_block_gap )
 );
 
-$wrapper_attributes = get_block_wrapper_attributes(
+$godam_wrapper_attributes = get_block_wrapper_attributes(
 	array(
-		'class'               => sprintf( 'godam-gallery-v2 godam-gallery-v2--%s', $gallery_mode ),
-		'style'               => $inline_styles,
-		'data-mode'           => $gallery_mode,
-		'data-layout'         => $layout,
-		'data-ratio'          => $view_ratio,
+		'class'               => sprintf( 'godam-gallery-v2 godam-gallery-v2--%s', $godam_gallery_mode ),
+		'style'               => $godam_inline_styles,
+		'data-mode'           => $godam_gallery_mode,
+		'data-layout'         => $godam_layout,
+		'data-ratio'          => $godam_view_ratio,
 		'data-embed-base-url' => home_url( '/' ),
 	)
 );
 
-$items = array();
+$godam_items = array();
 
-if ( 'query' === $gallery_mode ) {
-	$rest_query_args   = array(
+if ( 'query' === $godam_gallery_mode ) {
+	$godam_rest_query_args   = array(
 		'offset'            => 0,
 		'columns'           => 1,
 		'count'             => isset( $attributes['count'] ) ? max( 1, absint( $attributes['count'] ) ) : 6,
 		'orderby'           => isset( $attributes['orderby'] ) ? sanitize_key( $attributes['orderby'] ) : 'date',
 		'order'             => isset( $attributes['order'] ) ? strtoupper( sanitize_key( $attributes['order'] ) ) : 'DESC',
-		'show_title'        => $show_title ? '1' : '0',
-		'layout'            => $layout,
+		'show_title'        => $godam_show_title ? '1' : '0',
+		'layout'            => $godam_layout,
 		'author'            => $attributes['author'] ?? '',
 		'media_folder'      => $attributes['mediaFolder'] ?? '',
 		'search'            => '',
@@ -282,101 +282,101 @@ if ( 'query' === $gallery_mode ) {
 		'custom_date_start' => $attributes['customDateStart'] ?? '',
 		'custom_date_end'   => $attributes['customDateEnd'] ?? '',
 		'gallery_variant'   => 'gallery-v2',
-		'view_ratio'        => $view_ratio,
-		'performance_mode'  => $performance_mode,
+		'view_ratio'        => $godam_view_ratio,
+		'performance_mode'  => $godam_performance_mode,
 	);
-	$query             = new WP_Query( godam_gallery_v2_build_query_args( $attributes, 1 ) );
-	$total_query_items = (int) $query->found_posts;
+	$godam_query             = new WP_Query( godam_gallery_v2_build_query_args( $attributes, 1 ) );
+	$godam_total_query_items = (int) $godam_query->found_posts;
 
-	if ( $query->have_posts() ) {
-		foreach ( $query->posts as $video_post ) {
-			$item = godam_gallery_v2_get_video_data( $video_post->ID );
+	if ( $godam_query->have_posts() ) {
+		foreach ( $godam_query->posts as $godam_video_post ) {
+			$godam_item = godam_gallery_v2_get_video_data( $godam_video_post->ID );
 
-			if ( $item ) {
-				$items[] = $item;
+			if ( $godam_item ) {
+				$godam_items[] = $godam_item;
 			}
 		}
 	}
 
 	wp_reset_postdata();
 } elseif ( ! empty( $block->inner_blocks ) ) {
-	foreach ( $block->inner_blocks as $inner_block ) {
-		if ( 'godam/gallery-v2-item' !== $inner_block->name ) {
+	foreach ( $block->inner_blocks as $godam_inner_block ) {
+		if ( 'godam/gallery-v2-item' !== $godam_inner_block->name ) {
 			continue;
 		}
 
-		$video_id = isset( $inner_block->attributes['videoId'] ) ? absint( $inner_block->attributes['videoId'] ) : 0;
-		$item     = godam_gallery_v2_get_video_data( $video_id );
+		$godam_video_id = isset( $godam_inner_block->attributes['videoId'] ) ? absint( $godam_inner_block->attributes['videoId'] ) : 0;
+		$godam_item     = godam_gallery_v2_get_video_data( $godam_video_id );
 
-		if ( $item ) {
-			$items[] = $item;
+		if ( $godam_item ) {
+			$godam_items[] = $godam_item;
 		}
 	}
 }
 
 ?>
-<div <?php echo wp_kses_data( $wrapper_attributes ); ?>>
-	<div class="<?php echo esc_attr( sprintf( 'godam-gallery-v2__canvas godam-gallery-v2__canvas--%s', $layout ) ); ?>">
-		<?php if ( empty( $items ) ) : ?>
+<div <?php echo wp_kses_data( $godam_wrapper_attributes ); ?>>
+	<div class="<?php echo esc_attr( sprintf( 'godam-gallery-v2__canvas godam-gallery-v2__canvas--%s', $godam_layout ) ); ?>">
+		<?php if ( empty( $godam_items ) ) : ?>
 			<div class="godam-gallery-v2__state">
 				<strong><?php esc_html_e( 'No videos found', 'godam' ); ?></strong>
 				<p><?php esc_html_e( 'Try changing the selected folder, author, or dates.', 'godam' ); ?></p>
 			</div>
-		<?php elseif ( 'query' === $gallery_mode ) : ?>
+		<?php elseif ( 'query' === $godam_gallery_mode ) : ?>
 			<div
 				class="godam-gallery-v2__query-area"
 				data-query-rest-url="<?php echo esc_url( rest_url( 'godam/v1/gallery-shortcode' ) ); ?>"
-				data-query-args="<?php echo esc_attr( wp_json_encode( $rest_query_args ) ); ?>"
-				data-current-offset="<?php echo esc_attr( count( $items ) ); ?>"
-				data-total-items="<?php echo esc_attr( $total_query_items ); ?>"
-				data-enable-more-items="<?php echo $enable_more_items ? 'true' : 'false'; ?>"
-				data-more-items-behavior="<?php echo esc_attr( $more_items_behavior ); ?>"
-				data-infinite-scroll="<?php echo $infinite_scroll ? 'true' : 'false'; ?>"
-				data-show-title="<?php echo $show_title ? 'true' : 'false'; ?>"
-				data-view-ratio="<?php echo esc_attr( $view_ratio ); ?>"
+				data-query-args="<?php echo esc_attr( wp_json_encode( $godam_rest_query_args ) ); ?>"
+				data-current-offset="<?php echo esc_attr( count( $godam_items ) ); ?>"
+				data-total-items="<?php echo esc_attr( $godam_total_query_items ); ?>"
+				data-enable-more-items="<?php echo $godam_enable_more_items ? 'true' : 'false'; ?>"
+				data-more-items-behavior="<?php echo esc_attr( $godam_more_items_behavior ); ?>"
+				data-infinite-scroll="<?php echo $godam_infinite_scroll ? 'true' : 'false'; ?>"
+				data-show-title="<?php echo $godam_show_title ? 'true' : 'false'; ?>"
+				data-view-ratio="<?php echo esc_attr( $godam_view_ratio ); ?>"
 			>
 			<div class="godam-gallery-v2__query-list">
-				<?php foreach ( $items as $index => $item ) : ?>
-					<?php $thumbnail_attributes = rtgodam_format_html_attributes( rtgodam_get_gallery_tile_image_attributes( $performance_mode, $index ) ); ?>
-					<div class="<?php echo esc_attr( sprintf( 'godam-gallery-v2__query-item godam-gallery-v2__query-item--ratio-%s', $ratio_class ) ); ?>">
+				<?php foreach ( $godam_items as $godam_index => $godam_item ) : ?>
+					<?php $godam_thumbnail_attributes = rtgodam_format_html_attributes( rtgodam_get_gallery_tile_image_attributes( $godam_performance_mode, $godam_index ) ); ?>
+					<div class="<?php echo esc_attr( sprintf( 'godam-gallery-v2__query-item godam-gallery-v2__query-item--ratio-%s', $godam_ratio_class ) ); ?>">
 						<button
 							type="button"
 							class="godam-gallery-v2__query-button"
 							data-godam-gallery-v2-trigger="true"
-							data-video-id="<?php echo esc_attr( $item['id'] ); ?>"
+							data-video-id="<?php echo esc_attr( $godam_item['id'] ); ?>"
 							<?php /* translators: %s: video title. */ ?>
-							aria-label="<?php echo esc_attr( sprintf( __( 'Open video: %s', 'godam' ), $item['title'] ) ); ?>"
+							aria-label="<?php echo esc_attr( sprintf( __( 'Open video: %s', 'godam' ), $godam_item['title'] ) ); ?>"
 						>
 							<div class="godam-gallery-v2__query-thumb">
-								<?php if ( ! empty( $item['thumbnail'] ) ) : ?>
-									<img src="<?php echo esc_url( $item['thumbnail'] ); ?>" alt="<?php echo esc_attr( $item['title'] ); ?>" <?php echo $thumbnail_attributes ? wp_kses_data( $thumbnail_attributes ) : ''; ?> />
+								<?php if ( ! empty( $godam_item['thumbnail'] ) ) : ?>
+									<img src="<?php echo esc_url( $godam_item['thumbnail'] ); ?>" alt="<?php echo esc_attr( $godam_item['title'] ); ?>" <?php echo $godam_thumbnail_attributes ? wp_kses_data( $godam_thumbnail_attributes ) : ''; ?> />
 								<?php else : ?>
 									<span><?php esc_html_e( 'GoDAM Video', 'godam' ); ?></span>
 								<?php endif; ?>
 							</div>
-							<?php if ( $show_title ) : ?>
+							<?php if ( $godam_show_title ) : ?>
 								<div class="godam-gallery-v2__query-meta">
-									<strong><?php echo esc_html( $item['title'] ); ?></strong>
-									<?php if ( ! empty( $item['date'] ) ) : ?>
-										<span><?php echo esc_html( $item['date'] ); ?></span>
+									<strong><?php echo esc_html( $godam_item['title'] ); ?></strong>
+									<?php if ( ! empty( $godam_item['date'] ) ) : ?>
+										<span><?php echo esc_html( $godam_item['date'] ); ?></span>
 									<?php endif; ?>
 								</div>
 							<?php endif; ?>
 						</button>
 					</div>
 				<?php endforeach; ?>
-				<?php if ( $total_query_items > count( $items ) && $show_load_more_button && 'carousel' === $layout ) : ?>
+				<?php if ( $godam_total_query_items > count( $godam_items ) && $godam_show_load_more_button && 'carousel' === $godam_layout ) : ?>
 					<div class="godam-gallery-v2__load-more-item">
 						<button type="button" class="godam-gallery-v2__load-more wp-element-button">
 							<?php esc_html_e( 'Load More', 'godam' ); ?>
 						</button>
 					</div>
 				<?php endif; ?>
-				<?php if ( $infinite_scroll ) : ?>
+				<?php if ( $godam_infinite_scroll ) : ?>
 					<div class="godam-gallery-v2__load-sentinel" aria-hidden="true"></div>
 				<?php endif; ?>
 			</div>
-			<?php if ( $total_query_items > count( $items ) && $show_load_more_button && 'carousel' !== $layout ) : ?>
+			<?php if ( $godam_total_query_items > count( $godam_items ) && $godam_show_load_more_button && 'carousel' !== $godam_layout ) : ?>
 				<div class="godam-gallery-v2__load-more-wrap">
 					<button type="button" class="godam-gallery-v2__load-more wp-element-button">
 						<?php esc_html_e( 'Load More', 'godam' ); ?>
@@ -386,24 +386,24 @@ if ( 'query' === $gallery_mode ) {
 			</div>
 		<?php else : ?>
 			<div class="godam-gallery-v2__item-list">
-				<?php foreach ( $items as $index => $item ) : ?>
-					<?php $thumbnail_attributes = rtgodam_format_html_attributes( rtgodam_get_gallery_tile_image_attributes( $performance_mode, $index ) ); ?>
-					<div class="<?php echo esc_attr( sprintf( 'godam-gallery-v2-item godam-gallery-v2-item--%s godam-gallery-v2-item--ratio-%s', $layout, $ratio_class ) ); ?>">
+				<?php foreach ( $godam_items as $godam_index => $godam_item ) : ?>
+					<?php $godam_thumbnail_attributes = rtgodam_format_html_attributes( rtgodam_get_gallery_tile_image_attributes( $godam_performance_mode, $godam_index ) ); ?>
+					<div class="<?php echo esc_attr( sprintf( 'godam-gallery-v2-item godam-gallery-v2-item--%s godam-gallery-v2-item--ratio-%s', $godam_layout, $godam_ratio_class ) ); ?>">
 						<button
 							type="button"
 							class="godam-gallery-v2-item__button"
 							data-godam-gallery-v2-trigger="true"
-							data-video-id="<?php echo esc_attr( $item['id'] ); ?>"
+							data-video-id="<?php echo esc_attr( $godam_item['id'] ); ?>"
 							<?php /* translators: %s: video title. */ ?>
-							aria-label="<?php echo esc_attr( sprintf( __( 'Open video: %s', 'godam' ), $item['title'] ) ); ?>"
+							aria-label="<?php echo esc_attr( sprintf( __( 'Open video: %s', 'godam' ), $godam_item['title'] ) ); ?>"
 						>
 							<div class="godam-gallery-v2-item__preview">
-								<?php if ( ! empty( $item['thumbnail'] ) ) : ?>
+								<?php if ( ! empty( $godam_item['thumbnail'] ) ) : ?>
 									<img
-										src="<?php echo esc_url( $item['thumbnail'] ); ?>"
-										alt="<?php echo esc_attr( $item['title'] ); ?>"
+										src="<?php echo esc_url( $godam_item['thumbnail'] ); ?>"
+										alt="<?php echo esc_attr( $godam_item['title'] ); ?>"
 										class="godam-gallery-v2-item__thumbnail"
-										<?php echo $thumbnail_attributes ? wp_kses_data( $thumbnail_attributes ) : ''; ?>
+										<?php echo $godam_thumbnail_attributes ? wp_kses_data( $godam_thumbnail_attributes ) : ''; ?>
 									/>
 								<?php else : ?>
 									<div class="godam-gallery-v2-item__placeholder">
@@ -416,12 +416,12 @@ if ( 'query' === $gallery_mode ) {
 									</svg>
 								</div>
 							</div>
-							<?php if ( $show_title ) : ?>
+							<?php if ( $godam_show_title ) : ?>
 								<div class="godam-gallery-v2-item__meta">
 									<div class="godam-gallery-v2-item__copy">
-										<strong title="<?php echo esc_attr( $item['title'] ); ?>"><?php echo esc_html( $item['title'] ); ?></strong>
-										<?php if ( ! empty( $item['date'] ) ) : ?>
-											<span><?php echo esc_html( $item['date'] ); ?></span>
+										<strong title="<?php echo esc_attr( $godam_item['title'] ); ?>"><?php echo esc_html( $godam_item['title'] ); ?></strong>
+										<?php if ( ! empty( $godam_item['date'] ) ) : ?>
+											<span><?php echo esc_html( $godam_item['date'] ); ?></span>
 										<?php endif; ?>
 									</div>
 								</div>
