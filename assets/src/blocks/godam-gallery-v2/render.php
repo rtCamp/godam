@@ -241,7 +241,7 @@ $godam_block_gap_raw         = $attributes['style']['spacing']['blockGap'] ?? '1
 $godam_rest_query_args       = array();
 $godam_total_query_items     = 0;
 
-if ( is_string( $godam_block_gap_raw ) && str_starts_with( $godam_block_gap_raw, 'var:preset|spacing|' ) ) {
+if ( is_string( $godam_block_gap_raw ) && 0 === strpos( $godam_block_gap_raw, 'var:preset|spacing|' ) ) {
 	$godam_block_gap = 'var(--wp--preset--spacing--' . str_replace( 'var:preset|spacing|', '', $godam_block_gap_raw ) . ')';
 } else {
 	$godam_block_gap = $godam_block_gap_raw;
