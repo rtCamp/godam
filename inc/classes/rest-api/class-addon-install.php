@@ -104,8 +104,8 @@ class Addon_Install extends Base {
 		}
 
 		// Load the Frappe Dispatch Installer.
-		if ( ! class_exists( 'Frappe_Dispatch_Installer' ) ) {
-			require_once RTGODAM_PATH . 'lib/Frappe_Dispatch_Installer.php';
+		if ( ! class_exists( 'Godam_Frappe_Dispatch_Installer' ) ) {
+			require_once RTGODAM_PATH . 'lib/class-godam-frappe-dispatch-installer.php';
 		}
 
 		$api_url = defined( 'RTGODAM_API_BASE' ) ? RTGODAM_API_BASE : 'https://app.godam.io';
@@ -118,7 +118,7 @@ class Addon_Install extends Base {
 		 */
 		$api_url = apply_filters( 'godam_addon_install_api_url', $api_url, $plugin_slug );
 
-		$installer = new \Frappe_Dispatch_Installer( $api_url, $license_key );
+		$installer = new \Godam_Frappe_Dispatch_Installer( $api_url, $license_key );
 
 		ob_start();
 		$result = $installer->install_plugin( $plugin_slug, true );

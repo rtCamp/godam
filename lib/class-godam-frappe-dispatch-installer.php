@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * A client class to handle first-time plugin installations
  * directly from your Frappe Dispatch backend.
  */
-class Frappe_Dispatch_Installer {
+class Godam_Frappe_Dispatch_Installer {
 
 	/**
 	 * The URL to the Frappe API endpoint.
@@ -463,7 +463,7 @@ class Frappe_Dispatch_Installer {
 	private function post_request( $url, $body, $timeout ) {
 		$request_options = array(
 			'timeout'   => $timeout,
-			'sslverify' => apply_filters( 'frappe_dispatch_verify_ssl', true ),
+			'sslverify' => apply_filters( 'godam_frappe_dispatch_verify_ssl', true ),
 			'body'      => $body,
 		);
 
@@ -484,7 +484,7 @@ class Frappe_Dispatch_Installer {
 	private function get_request( $url, $timeout ) {
 		$request_options = array(
 			'timeout'   => $timeout,
-			'sslverify' => apply_filters( 'frappe_dispatch_verify_ssl', true ),
+			'sslverify' => apply_filters( 'godam_frappe_dispatch_verify_ssl', true ),
 		);
 
 		if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
