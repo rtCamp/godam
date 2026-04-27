@@ -140,9 +140,11 @@ if ( $godam_is_virtual ) {
 		);
 		if ( $godam_query->have_posts() ) {
 			$godam_original_id = $godam_query->posts[0];
-		}
-		if ( function_exists( 'rtgodam_work_cache_set' ) ) {
-			rtgodam_work_cache_set( $godam_virtual_map_key, $godam_original_id );
+			// Only cache a successful resolution — never cache a miss, so a
+			// newly-created attachment is resolvable on the very next request.
+			if ( function_exists( 'rtgodam_work_cache_set' ) ) {
+				rtgodam_work_cache_set( $godam_virtual_map_key, $godam_original_id );
+			}
 		}
 	}
 }
@@ -173,12 +175,19 @@ if ( $godam_is_virtual && is_numeric( $godam_original_id ) ) {
 	$godam_numeric_id = intval( $godam_attachment_id );
 }
 
+// Always start as an empty array — safe for all downstream ?? / isset() / empty() access.
+// A populated array means a cache hit; an empty array means miss or no numeric ID.
 $godam_meta_cache_key  = $godam_numeric_id ? 'work_cache_godam_meta_' . $godam_numeric_id : '';
-$godam_attachment_data = ( $godam_meta_cache_key && function_exists( 'rtgodam_work_cache_get' ) )
-	? rtgodam_work_cache_get( $godam_meta_cache_key )
-	: false;
+$godam_attachment_data = array();
 
-if ( false === $godam_attachment_data && $godam_numeric_id ) {
+if ( $godam_meta_cache_key && function_exists( 'rtgodam_work_cache_get' ) ) {
+	$godam_cached = rtgodam_work_cache_get( $godam_meta_cache_key );
+	if ( is_array( $godam_cached ) ) {
+		$godam_attachment_data = $godam_cached;
+	}
+}
+
+if ( empty( $godam_attachment_data ) && $godam_numeric_id ) {
 	// Cache miss — collect every DB/meta call for this attachment in one pass.
 	$_raw_transcoded_url     = rtgodam_get_transcoded_url_from_attachment( $godam_numeric_id );
 	$_raw_hls_transcoded_url = rtgodam_get_hls_transcoded_url_from_attachment( $godam_numeric_id );
