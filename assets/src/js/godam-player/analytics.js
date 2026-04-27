@@ -265,6 +265,11 @@ function sendPlayerHeatmap( player, video, skipIfKey = null ) {
 		return null;
 	}
 
+	// Honour the opt-out flag set by the PHP template (e.g. Woo Shoppable Video block).
+	if ( video.getAttribute( 'data-skip-analytics' ) === 'true' ) {
+		return null;
+	}
+
 	try {
 		// Double check player isn't disposed natively beforehand
 		if ( typeof player.isDisposed === 'function' && player.isDisposed() ) {
@@ -376,6 +381,11 @@ function sendPlayerHeatmap( player, video, skipIfKey = null ) {
 }
 
 function setupPlayerAnalytics( player, video ) {
+	// Honour the opt-out flag set by the PHP template (e.g. Woo Shoppable Video block).
+	if ( video && video.getAttribute( 'data-skip-analytics' ) === 'true' ) {
+		return;
+	}
+
 	// Skip if already set up for this player instance.
 	// We use the player object rather than the DOM element because
 	// godamPlayerReady provides the raw <video> element, but playerAnalytics()
@@ -416,6 +426,11 @@ function playerAnalytics() {
 	const videos = document.querySelectorAll( '.easydam-player.video-js' );
 
 	videos.forEach( ( video ) => {
+		// Skip opted-out videos (e.g. Woo Shoppable Video block).
+		if ( video.getAttribute( 'data-skip-analytics' ) === 'true' ) {
+			return;
+		}
+
 		// Skip if player is still initializing
 		if ( video.dataset.videojsInitializing === 'true' ) {
 			return;

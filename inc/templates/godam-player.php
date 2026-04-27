@@ -101,10 +101,13 @@ $godam_disable_subtitles_and_transcript = isset( $attributes['godam_context'] ) 
 
 // Determine if analytics tracking should be skipped for this video instance.
 // Add-ons can opt-out by returning true from the filter; the context is also passed for convenience.
-$godam_skip_analytics = apply_filters(
-	'godam_skip_analytics',
-	false,
-	isset( $attributes['godam_context'] ) ? $attributes['godam_context'] : ''
+// wp_validate_boolean() normalises the return value.
+$godam_skip_analytics = wp_validate_boolean(
+	apply_filters(
+		'godam_skip_analytics',
+		false,
+		isset( $attributes['godam_context'] ) ? $attributes['godam_context'] : ''
+	)
 );
 
 // Resolve the attachment ID (could be WordPress or virtual media).
