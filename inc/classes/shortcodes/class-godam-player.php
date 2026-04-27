@@ -42,6 +42,8 @@ class GoDAM_Player {
 	/**
 	 * Return the work-cache index key for a given video post ID.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param int $post_id Post/attachment ID.
 	 * @return string
 	 */
@@ -51,6 +53,8 @@ class GoDAM_Player {
 
 	/**
 	 * Invalidate the render cache for a video when its rtgodam_meta post meta changes.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param int    $meta_id    Meta entry ID (unused).
 	 * @param int    $object_id  Post ID the meta belongs to.
@@ -84,6 +88,8 @@ class GoDAM_Player {
 	 *
 	 * Only acts on attachment post types to avoid unnecessary cache work on
 	 * unrelated post deletions/edits.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param int $post_id Post ID.
 	 */
@@ -217,6 +223,21 @@ class GoDAM_Player {
 
 	/**
 	 * Render the GoDAM player shortcode.
+	 *
+	 * HTML output is NOT cached here by design.  Caching the full rendered blob
+	 * would suppress per-request side effects that the template performs on every
+	 * call: adding wrapper CSS to wp_head, suppressing Gravity Forms autoscroll,
+	 * conditionally initialising the IMA SDK for ad-enabled videos, and generating
+	 * a unique per-render $godam_instance_id used in DOM IDs.
+	 *
+	 * Performance is instead improved at the data layer: the template bundles all
+	 * expensive attachment meta calls (rtgodam_meta, transcoded URLs, thumbnails,
+	 * etc.) into a single persistent cache entry (work_cache_godam_meta_{id}) that
+	 * is invalidated precisely when the underlying meta changes.  This avoids the
+	 * heavy DB work on warm requests while keeping HTML generation stateless and
+	 * side-effect-safe on every render.
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return string HTML output of the player.
