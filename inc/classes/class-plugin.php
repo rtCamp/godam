@@ -61,6 +61,7 @@ use RTGODAM\Inc\Video_Metadata;
 use RTGODAM\Inc\Media_Library\Media_Folders_REST_API;
 use RTGODAM\Inc\WPForms\WPForms_Integration;
 use RTGODAM\Inc\Media_Library\Media_Edit_Enhancements;
+use RTGODAM\Inc\MCP\Bootstrap as MCP_Bootstrap;
 use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Rest_Api;
 use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Integration;
 use RTGODAM\Inc\Metform\Metform_Integration;
@@ -114,6 +115,9 @@ class Plugin {
 		$this->load_plugin_configs();
 
 		$this->load_rest_api();
+
+		MCP_Bootstrap::get_instance();
+
 		$this->init_gravity_forms();
 		$this->load_sureforms();
 		$this->load_fluentforms();
