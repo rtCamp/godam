@@ -1020,4 +1020,132 @@ trait Abilities_Execution {
 	 * @param array<string, mixed> $params Request params.
 	 * @return array<string, mixed>|WP_Error
 	 */
+
+	/**
+	 * Fuzzy-search GoDAM media folders and return scored candidates (parity with godam_search_media_folders Node tool).
+	 *
+	 * @param array<string, mixed>|null $input Ability input.
+	 * @return array<string, mixed>|WP_Error
+	 */
+	public function search_media_folders_ability( $input = null ) {
+		$query = isset( $input['query'] ) ? trim( sanitize_text_field( wp_unslash( (string) $input['query'] ) ) ) : '';
+		if ( '' === $query ) {
+			return new WP_Error( 'godam_mcp_invalid_input', __( 'A non-empty query is required to search media folders.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		$limit     = isset( $input['limit'] ) ? max( 1, min( 10, absint( $input['limit'] ) ) ) : 5;
+		$parent_id = isset( $input['parent_id'] ) ? absint( $input['parent_id'] ) : null;
+
+		$has_bookmark_filter = array_key_exists( 'bookmark', (array) $input );
+		$bookmark_filter     = $has_bookmark_filter ? (bool) $input['bookmark'] : null;
+		$has_locked_filter   = array_key_exists( 'locked', (array) $input );
+		$locked_filter       = $has_locked_filter ? (bool) $input['locked'] : null;
+
+		$term_args = array(
+			'taxonomy'   => 'media-folder',
+			'hide_empty' => false,
+			'number'     => 100,
+		);
+
+		if ( null !== $parent_id ) {
+			$term_args['parent'] = $parent_id;
+		}
+
+		$terms = get_terms( $term_args );
+
+		if ( is_wp_error( $terms ) || ! is_array( $terms ) ) {
+			$terms = array();
+		}
+
+		$candidates = array();
+
+		foreach ( $terms as $term ) {
+			if ( ! $term instanceof \WP_Term ) {
+				continue;
+			}
+
+			$locked_raw   = get_term_meta( $term->term_id, 'locked', true );
+			$bookmark_raw = get_term_meta( $term->term_id, 'bookmark', true );
+			$locked       = in_array( $locked_raw, array( '1', 1, true, 'true' ), true );
+			$bookmark     = in_array( $bookmark_raw, array( '1', 1, true, 'true' ), true );
+
+			if ( null !== $bookmark_filter && $bookmark !== $bookmark_filter ) {
+				continue;
+			}
+
+			if ( null !== $locked_filter && $locked !== $locked_filter ) {
+				continue;
+			}
+
+			$id_exact_match   = ctype_digit( trim( $query ) ) && trim( $query ) === (string) $term->term_id;
+			$name_exact_match = $this->normalize_search_text( $term->name ) === $this->normalize_search_text( $query );
+			$score            = $id_exact_match ? 1.0 : $this->score_search_match( $query, $term->name );
+
+			if ( $score < 0.2 && ! $id_exact_match && ! $name_exact_match ) {
+				continue;
+			}
+
+			$item_count = max( 0, (int) $term->count );
+			if ( 0 === $item_count ) {
+				$status = 'empty_folder';
+			} elseif ( $item_count > 250 ) {
+				$status = 'oversized_folder';
+			} else {
+				$status = 'healthy';
+			}
+
+			$candidates[] = array(
+				'folder_id'    => (int) $term->term_id,
+				'name'         => (string) $term->name,
+				'parent'       => (int) $term->parent,
+				'item_count'   => $item_count,
+				'locked'       => $locked,
+				'bookmark'     => $bookmark,
+				'status'       => $status,
+				'score'        => (float) $score,
+				'exact_match'  => $id_exact_match || $name_exact_match,
+				'match_reason' => $id_exact_match ? 'id' : ( $name_exact_match ? 'name' : 'fuzzy' ),
+			);
+		}
+
+		usort(
+			$candidates,
+			static function ( $left, $right ) {
+				$exact_compare = ( (int) ! empty( $right['exact_match'] ) ) <=> ( (int) ! empty( $left['exact_match'] ) );
+				if ( 0 !== $exact_compare ) {
+					return $exact_compare;
+				}
+
+				return ( $right['score'] <=> $left['score'] );
+			}
+		);
+
+		$total_matches = count( $candidates );
+		$folders       = array_slice( $candidates, 0, $limit );
+
+		return $this->build_bridge_envelope(
+			array(
+				'query'         => $query,
+				'limit'         => $limit,
+				'total_matches' => $total_matches,
+				'folders'       => $folders,
+			),
+			sprintf(
+				/* translators: 1: Total folder matches count. 2: Returned folder count. 3: Search query. */
+				__( 'Found %1$d matching folders, returning %2$d for query "%3$s".', 'godam' ),
+				$total_matches,
+				count( $folders ),
+				$query
+			),
+			array(
+				'media_folders' => array(
+					'ok'          => true,
+					'status_code' => 200,
+					'error'       => null,
+				),
+			),
+			array(),
+			true
+		);
+	}
 }

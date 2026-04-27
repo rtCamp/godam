@@ -104,6 +104,7 @@ trait Abilities_Analytics {
 			'godam/retranscode-media',
 			'godam/get-site-capabilities',
 			'godam/search-entities',
+			'godam/search-media-folders',
 			'godam/get-transcoded-video-urls',
 			'godam/get-rising-trend-videos',
 			'godam/get-media-inventory',

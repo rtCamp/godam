@@ -28,6 +28,67 @@ trait Abilities_Registration {
 	 *
 	 * @return void
 	 */
+	private function register_search_media_folders_ability() {
+		$this->register_ability_for_mcp(
+			'godam/search-media-folders',
+			array(
+				'label'               => __( 'Search GoDAM Media Folders', 'godam' ),
+				'description'         => __( 'Fuzzy-search GoDAM media folders and return scored candidates with folder details and match reasoning.', 'godam' ),
+				'category'            => 'godam-mcp',
+				'input_schema'        => array(
+					'type'                 => 'object',
+					'properties'           => array(
+						'query'     => array(
+							'type'        => 'string',
+							'minLength'   => 1,
+							'description' => __( 'Search query string.', 'godam' ),
+						),
+						'limit'     => array(
+							'type'        => 'integer',
+							'minimum'     => 1,
+							'maximum'     => 10,
+							'description' => __( 'Maximum number of results to return (1-10, default 5).', 'godam' ),
+						),
+						'bookmark'  => array(
+							'type'        => 'boolean',
+							'description' => __( 'Filter by bookmark status.', 'godam' ),
+						),
+						'locked'    => array(
+							'type'        => 'boolean',
+							'description' => __( 'Filter by locked status.', 'godam' ),
+						),
+						'parent_id' => array(
+							'type'        => 'integer',
+							'minimum'     => 0,
+							'description' => __( 'Restrict search to children of this folder ID.', 'godam' ),
+						),
+					),
+					'required'             => array( 'query' ),
+					'additionalProperties' => false,
+				),
+				'output_schema'       => array(
+					'type'                 => 'object',
+					'additionalProperties' => true,
+				),
+				'permission_callback' => array( $this, 'can_read_media_library' ),
+				'execute_callback'    => array( $this, 'search_media_folders_ability' ),
+				'meta'                => array(
+					'annotations'  => array(
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					),
+					'show_in_rest' => true,
+				),
+			)
+		);
+	}
+
+	/**
+	 * Register transcoded video URLs ability.
+	 *
+	 * @return void
+	 */
 	public function register_category() {
 		if ( ! function_exists( 'wp_register_ability_category' ) ) {
 			return;
@@ -94,6 +155,7 @@ trait Abilities_Registration {
 		$this->register_retranscode_media_ability();
 		$this->register_site_capabilities_ability();
 		$this->register_search_entities_ability();
+		$this->register_search_media_folders_ability();
 		$this->register_transcoded_video_urls_ability();
 		$this->register_rising_trend_videos_ability();
 		$this->register_media_inventory_bridge_ability();
