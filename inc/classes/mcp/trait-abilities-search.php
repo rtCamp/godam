@@ -79,10 +79,11 @@ trait Abilities_Search {
 	 */
 	private function search_media_candidates( $entity, $query, $per_page ) {
 		$args = array(
-			'post_type'      => 'attachment',
-			'post_status'    => 'any',
-			'posts_per_page' => $per_page,
-			's'              => $query,
+			'post_type'        => 'attachment',
+			'post_status'      => 'any',
+			'posts_per_page'   => $per_page,
+			's'                => $query,
+			'suppress_filters' => false,
 		);
 
 		if ( 'video' === $entity ) {

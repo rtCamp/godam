@@ -75,6 +75,30 @@ trait Abilities_Permissions {
 	}
 
 	/**
+	 * Check whether the current user can upload video and optionally assign it to a folder.
+	 *
+	 * @param array<string, mixed>|null $input Ability input.
+	 * @return bool|WP_Error
+	 */
+	public function can_upload_video_to_media( $input = null ) {
+		if ( ! is_user_logged_in() ) {
+			return new WP_Error( 'godam_mcp_auth_required', __( 'Authentication is required to upload GoDAM media.', 'godam' ) );
+		}
+
+		if ( ! current_user_can( 'upload_files' ) ) {
+			return new WP_Error( 'godam_mcp_forbidden', __( 'You do not have permission to upload GoDAM media.', 'godam' ) );
+		}
+
+		if ( ! empty( $input['folderId'] ) || ! empty( $input['folderName'] ) ) {
+			if ( ! current_user_can( 'edit_posts' ) ) {
+				return new WP_Error( 'godam_mcp_forbidden', __( 'You do not have permission to assign uploaded media to folders.', 'godam' ) );
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * Check whether the current user can update media metadata.
 	 *
 	 * @param array<string, mixed>|null $input Ability input.
@@ -177,10 +201,4 @@ trait Abilities_Permissions {
 
 		return true;
 	}
-
-	/**
-	 * Return the MCP route contract.
-	 *
-	 * @return array<string, mixed>
-	 */
 }

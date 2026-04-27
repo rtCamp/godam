@@ -1210,7 +1210,7 @@ trait Abilities_Registration {
 					'type'                 => 'object',
 					'additionalProperties' => true,
 				),
-				'permission_callback' => array( $this, 'can_manage_media_folders' ),
+				'permission_callback' => array( $this, 'can_upload_video_to_media' ),
 				'execute_callback'    => array( $this, 'upload_video_to_media_bridge_ability' ),
 				'meta'                => array(
 					'annotations'  => array(
@@ -1257,7 +1257,7 @@ trait Abilities_Registration {
 					'type'                 => 'object',
 					'additionalProperties' => true,
 				),
-				'permission_callback' => array( $this, 'can_manage_media_folders' ),
+				'permission_callback' => array( $this, 'can_upload_video_to_media' ),
 				'execute_callback'    => array( $this, 'upload_and_track_transcode_bridge_ability' ),
 				'meta'                => array(
 					'annotations'  => array(
@@ -1527,10 +1527,4 @@ trait Abilities_Registration {
 			)
 		);
 	}
-
-	/**
-	 * Check whether the current user can read the MCP contract.
-	 *
-	 * @return bool|WP_Error
-	 */
 }

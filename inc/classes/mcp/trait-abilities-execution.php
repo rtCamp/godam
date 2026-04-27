@@ -1014,14 +1014,6 @@ trait Abilities_Execution {
 	}
 
 	/**
-	 * Dispatch an input payload through the existing analytics REST controller.
-	 *
-	 * @param string               $method Analytics controller method.
-	 * @param array<string, mixed> $params Request params.
-	 * @return array<string, mixed>|WP_Error
-	 */
-
-	/**
 	 * Fuzzy-search GoDAM media folders and return scored candidates (parity with godam_search_media_folders Node tool).
 	 *
 	 * @param array<string, mixed>|null $input Ability input.

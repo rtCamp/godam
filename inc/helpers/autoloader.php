@@ -50,7 +50,7 @@ function autoloader( $file_resource = '' ) {
 
 		switch ( $path[1] ) {
 			case 'mcp':
-				if ( ! empty( $path[2] ) ) {
+				if ( ! empty( $path[3] ) ) {
 					$sub_directories = implode( '/', array_slice( $path, 2, -1 ) );
 					$directory       = sprintf( 'classes/%s/%s', $path[1], $sub_directories );
 					$file_name       = sprintf( 'class-%s', trim( strtolower( end( $path ) ) ) );

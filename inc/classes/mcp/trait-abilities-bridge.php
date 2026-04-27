@@ -452,6 +452,11 @@ trait Abilities_Bridge {
 		$folder_assignment = null;
 		$write_result      = $uploaded_attachment['raw_attachment'];
 		if ( is_array( $resolved_folder ) ) {
+			if ( ! current_user_can( 'edit_post', (int) $uploaded_attachment['attachment_id'] ) ) {
+				$this->cleanup_upload_source( $source );
+				return new WP_Error( 'godam_mcp_forbidden', __( 'You do not have permission to assign this uploaded media item to a folder.', 'godam' ), array( 'status' => 403 ) );
+			}
+
 			$assignment = $this->assign_media_to_folder_exact( array( (int) $uploaded_attachment['attachment_id'] ), (int) $resolved_folder['id'] );
 			if ( is_wp_error( $assignment ) ) {
 				$this->cleanup_upload_source( $source );
@@ -671,7 +676,7 @@ trait Abilities_Bridge {
 				'folders'      => $this->build_source_status(),
 			),
 			array(),
-			empty( $write_result['success'] ) ? true : (bool) $write_result['success']
+			array_key_exists( 'success', $write_result ) ? (bool) $write_result['success'] : true
 		);
 	}
 
