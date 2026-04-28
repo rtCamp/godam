@@ -13,6 +13,33 @@ const { __ } = require( '@wordpress/i18n' );
 	let activeGallery = null;
 	let sharedModal = null;
 
+	function initBlurUpPlaceholders( root = document ) {
+		root.querySelectorAll( '.godam-gallery-blurred-img' ).forEach( ( div ) => {
+			if ( div.dataset.godamGalleryBlurInit === '1' ) {
+				return;
+			}
+			div.dataset.godamGalleryBlurInit = '1';
+
+			const img = div.querySelector( 'img' );
+			if ( ! img ) {
+				return;
+			}
+
+			const markLoaded = () => div.classList.add( 'loaded' );
+			const markError = () => {
+				div.style.backgroundImage = '';
+				div.classList.add( 'loaded' );
+			};
+
+			if ( img.complete && img.naturalWidth > 0 ) {
+				markLoaded();
+			} else {
+				img.addEventListener( 'load', markLoaded, { once: true } );
+				img.addEventListener( 'error', markError, { once: true } );
+			}
+		} );
+	}
+
 	function handleModalKeydown( event ) {
 		if ( ! activeGallery ) {
 			return;
@@ -158,6 +185,7 @@ const { __ } = require( '@wordpress/i18n' );
 			this.items = [];
 
 			this.refreshItems();
+			initBlurUpPlaceholders( this.element );
 			this.bindEvents();
 			this.initInfiniteScroll();
 			this.updateLoadControls();
@@ -303,6 +331,7 @@ const { __ } = require( '@wordpress/i18n' );
 						const insertionTarget = this.loadMoreItem || this.sentinel;
 						this.queryList.insertBefore( template.content, insertionTarget );
 						this.currentOffset += newItems.length;
+						initBlurUpPlaceholders( this.element );
 					} else {
 						this.currentOffset = this.totalItems;
 					}
