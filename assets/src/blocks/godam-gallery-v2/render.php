@@ -41,32 +41,24 @@ if ( ! function_exists( 'godam_gallery_v2_get_thumbnail_url' ) ) {
 	 * @return string
 	 */
 	function godam_gallery_v2_get_thumbnail_url( $attachment_id ) {
-		$attachment_id = absint( $attachment_id );
+		$thumbnail_sources = rtgodam_get_video_thumbnail_sources( $attachment_id );
 
-		if ( ! $attachment_id ) {
-			return '';
-		}
+		return $thumbnail_sources['thumbnail'];
+	}
+}
 
-		$custom_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
-		if ( ! empty( $custom_thumbnail ) ) {
-			return esc_url_raw( $custom_thumbnail );
-		}
+if ( ! function_exists( 'godam_gallery_v2_get_placeholder_thumbnail_url' ) ) {
 
-		$image = wp_get_attachment_image_url( $attachment_id, 'medium' );
-		if ( $image ) {
-			return $image;
-		}
+	/**
+	 * Resolve the placeholder thumbnail for a video attachment.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return string
+	 */
+	function godam_gallery_v2_get_placeholder_thumbnail_url( $attachment_id ) {
+		$thumbnail_sources = rtgodam_get_video_thumbnail_sources( $attachment_id );
 
-		$icon = wp_mime_type_icon( $attachment_id );
-		if ( $icon ) {
-			return $icon;
-		}
-
-		if ( defined( 'RTGODAM_URL' ) ) {
-			return trailingslashit( RTGODAM_URL ) . 'assets/src/images/video-thumbnail-default.png';
-		}
-
-		return '';
+		return $thumbnail_sources['placeholder'];
 	}
 }
 
@@ -201,10 +193,11 @@ if ( ! function_exists( 'godam_gallery_v2_get_video_data' ) ) {
 		}
 
 		return array(
-			'id'        => $attachment_id,
-			'title'     => get_the_title( $attachment_id ) ?: __( 'Untitled video', 'godam' ),
-			'date'      => godam_gallery_v2_format_display_date( $post->post_date ),
-			'thumbnail' => godam_gallery_v2_get_thumbnail_url( $attachment_id ),
+			'id'          => $attachment_id,
+			'title'       => get_the_title( $attachment_id ) ?: __( 'Untitled video', 'godam' ),
+			'date'        => godam_gallery_v2_format_display_date( $post->post_date ),
+			'thumbnail'   => godam_gallery_v2_get_thumbnail_url( $attachment_id ),
+			'placeholder' => godam_gallery_v2_get_placeholder_thumbnail_url( $attachment_id ),
 		);
 	}
 }
@@ -347,9 +340,9 @@ if ( 'query' === $godam_gallery_mode ) {
 							<?php /* translators: %s: video title. */ ?>
 							aria-label="<?php echo esc_attr( sprintf( __( 'Open video: %s', 'godam' ), $godam_item['title'] ) ); ?>"
 						>
-							<div class="godam-gallery-v2__query-thumb">
+							<div class="godam-gallery-v2__query-thumb<?php echo ! empty( $godam_item['placeholder'] ) ? ' godam-gallery-blurred-img godam-blurred-img' : ''; ?>"<?php echo ! empty( $godam_item['placeholder'] ) ? ' style="background-image: url(\'' . esc_url( $godam_item['placeholder'] ) . '\')"' : ''; ?>>
 								<?php if ( ! empty( $godam_item['thumbnail'] ) ) : ?>
-									<img src="<?php echo esc_url( $godam_item['thumbnail'] ); ?>" alt="<?php echo esc_attr( $godam_item['title'] ); ?>" <?php echo $godam_thumbnail_attributes ? wp_kses_data( $godam_thumbnail_attributes ) : ''; ?> />
+									<img src="<?php echo esc_url( $godam_item['thumbnail'] ); ?>" alt="<?php echo esc_attr( $godam_item['title'] ); ?>" class="godam-gallery-v2__thumbnail" <?php echo $godam_thumbnail_attributes ? wp_kses_data( $godam_thumbnail_attributes ) : ''; ?> />
 								<?php else : ?>
 									<span><?php esc_html_e( 'GoDAM Video', 'godam' ); ?></span>
 								<?php endif; ?>
@@ -397,12 +390,12 @@ if ( 'query' === $godam_gallery_mode ) {
 							<?php /* translators: %s: video title. */ ?>
 							aria-label="<?php echo esc_attr( sprintf( __( 'Open video: %s', 'godam' ), $godam_item['title'] ) ); ?>"
 						>
-							<div class="godam-gallery-v2-item__preview">
+							<div class="godam-gallery-v2-item__preview<?php echo ! empty( $godam_item['placeholder'] ) ? ' godam-gallery-blurred-img godam-blurred-img' : ''; ?>"<?php echo ! empty( $godam_item['placeholder'] ) ? ' style="background-image: url(\'' . esc_url( $godam_item['placeholder'] ) . '\')"' : ''; ?>>
 								<?php if ( ! empty( $godam_item['thumbnail'] ) ) : ?>
 									<img
 										src="<?php echo esc_url( $godam_item['thumbnail'] ); ?>"
 										alt="<?php echo esc_attr( $godam_item['title'] ); ?>"
-										class="godam-gallery-v2-item__thumbnail"
+										class="godam-gallery-v2-item__thumbnail godam-gallery-v2__thumbnail"
 										<?php echo $godam_thumbnail_attributes ? wp_kses_data( $godam_thumbnail_attributes ) : ''; ?>
 									/>
 								<?php else : ?>

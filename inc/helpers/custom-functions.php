@@ -1557,6 +1557,87 @@ function rtgodam_get_gallery_tile_image_attributes( $performance_mode, $index = 
 }
 
 /**
+ * Resolve the selected video thumbnail and its matching blur-up placeholder.
+ *
+ * @since n.e.x.t
+ *
+ * @param int    $attachment_id Attachment ID.
+ * @param string $thumbnail_url Optional pre-resolved thumbnail URL.
+ * @return array<string, string>
+ */
+function rtgodam_get_video_thumbnail_sources( $attachment_id, $thumbnail_url = '' ) {
+	$attachment_id = absint( $attachment_id );
+
+	if ( ! $attachment_id ) {
+		return array(
+			'thumbnail'   => '',
+			'placeholder' => '',
+		);
+	}
+
+	$resolved_thumbnail   = '';
+	$resolved_placeholder = '';
+
+	if ( ! empty( $thumbnail_url ) && is_string( $thumbnail_url ) ) {
+		$resolved_thumbnail = esc_url_raw( rtgodam_convert_to_https_url( $thumbnail_url ) );
+	}
+
+	if ( empty( $resolved_thumbnail ) ) {
+		$custom_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
+		if ( ! empty( $custom_thumbnail ) && is_string( $custom_thumbnail ) ) {
+			$resolved_thumbnail = esc_url_raw( rtgodam_convert_to_https_url( $custom_thumbnail ) );
+		}
+	}
+
+	if ( empty( $resolved_thumbnail ) ) {
+		$image = wp_get_attachment_image_url( $attachment_id, 'medium' );
+		if ( $image ) {
+			$resolved_thumbnail = esc_url_raw( $image );
+		}
+	}
+
+	if ( ! empty( $resolved_thumbnail ) ) {
+		$placeholder_map = get_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails', true );
+		if ( is_array( $placeholder_map ) ) {
+			$normalized_thumbnail = rtgodam_convert_to_https_url( $resolved_thumbnail );
+			foreach ( $placeholder_map as $thumbnail_key => $placeholder_url ) {
+				if ( empty( $thumbnail_key ) || empty( $placeholder_url ) ) {
+					continue;
+				}
+
+				if ( rtgodam_convert_to_https_url( (string) $thumbnail_key ) === $normalized_thumbnail ) {
+					$resolved_placeholder = esc_url_raw( rtgodam_convert_to_https_url( (string) $placeholder_url ) );
+					break;
+				}
+			}
+		}
+	}
+
+	if ( empty( $resolved_placeholder ) ) {
+		$single_placeholder = get_post_meta( $attachment_id, 'rtgodam_media_video_placeholder_thumbnail', true );
+		if ( ! empty( $single_placeholder ) && is_string( $single_placeholder ) ) {
+			$resolved_placeholder = esc_url_raw( rtgodam_convert_to_https_url( $single_placeholder ) );
+		}
+	}
+
+	if ( empty( $resolved_thumbnail ) ) {
+		$icon = wp_mime_type_icon( $attachment_id );
+		if ( $icon ) {
+			$resolved_thumbnail = esc_url_raw( $icon );
+		}
+	}
+
+	if ( empty( $resolved_thumbnail ) && defined( 'RTGODAM_URL' ) ) {
+		$resolved_thumbnail = trailingslashit( RTGODAM_URL ) . 'assets/src/images/video-thumbnail-default.png';
+	}
+
+	return array(
+		'thumbnail'   => $resolved_thumbnail,
+		'placeholder' => $resolved_placeholder,
+	);
+}
+
+/**
  * Format an associative array of HTML attributes into a string.
  *
  * @since n.e.x.t

@@ -7,6 +7,34 @@ import DOMPurify from 'isomorphic-dompurify';
 // Get the REST URL from localized data, fallback to hardcoded path.
 const galleryRestUrl = window.godamGalleryData?.restUrl || '/wp-json/godam/v1/gallery-shortcode';
 
+function initBlurUpPlaceholders( root = document ) {
+	root.querySelectorAll( '.godam-gallery-blurred-img' ).forEach( ( div ) => {
+		if ( div.dataset.godamBlurInit === '1' ) {
+			return;
+		}
+
+		div.dataset.godamBlurInit = '1';
+
+		const img = div.querySelector( 'img' );
+		if ( ! img ) {
+			return;
+		}
+
+		const markLoaded = () => div.classList.add( 'loaded' );
+		const markError = () => {
+			div.style.backgroundImage = '';
+			div.classList.add( 'loaded' );
+		};
+
+		if ( img.complete && img.naturalWidth > 0 ) {
+			markLoaded();
+		} else {
+			img.addEventListener( 'load', markLoaded, { once: true } );
+			img.addEventListener( 'error', markError, { once: true } );
+		}
+	} );
+}
+
 async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVideos ) {
 	const loadCount = 3 * columns;
 	const spinnerContainer = document.querySelector( '.godam-spinner-container' );
@@ -41,6 +69,7 @@ async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVi
 
 		if ( data.status === 'success' && data.html && data.html.trim() !== '' ) {
 			gallery.insertAdjacentHTML( 'beforeend', data.html );
+			initBlurUpPlaceholders( gallery );
 			const newOffset = offset + loadCount;
 
 			// Check if we've loaded all videos
@@ -66,6 +95,8 @@ async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVi
 }
 
 document.addEventListener( 'DOMContentLoaded', function() {
+	initBlurUpPlaceholders();
+
 	// Get all galleries with infinite scroll enabled
 	document.querySelectorAll( '.godam-video-gallery[data-infinite-scroll="1"]' ).forEach( ( gallery ) => {
 		const offset = parseInt( gallery.getAttribute( 'data-offset' ), 10 );
