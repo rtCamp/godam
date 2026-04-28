@@ -1291,8 +1291,154 @@ function godam_should_load_auth_detector_script( $screen ) {
 	return false;
 }
 
+// ---------------------------------------------------------------------------
+// Work-cache helpers
+// ---------------------------------------------------------------------------
+
+/** Cache group used across all work-cache entries. */
+if ( ! defined( 'RTGODAM_WORK_CACHE_GROUP' ) ) {
+	define( 'RTGODAM_WORK_CACHE_GROUP', 'rtgodam_work_cache' );
+}
+
+/** Cache version — bump to globally invalidate all work-cache entries. */
+if ( ! defined( 'RTGODAM_WORK_CACHE_VERSION' ) ) {
+	define( 'RTGODAM_WORK_CACHE_VERSION', 'v1' );
+}
+
+/** Default TTL (seconds) used as hard-expiry fallback: 30 minutes. */
+if ( ! defined( 'RTGODAM_WORK_CACHE_TTL' ) ) {
+	define( 'RTGODAM_WORK_CACHE_TTL', 30 * MINUTE_IN_SECONDS );
+}
+
+/**
+ * Retrieve a value from the work cache.
+ *
+ * Uses the WordPress object cache when an external cache is active,
+ * otherwise uses transients.
+ *
+ * @since n.e.x.t
+ *
+ * @param string $key Cache key (without version prefix).
+ * @return mixed|false Cached value or false on miss.
+ */
+function rtgodam_work_cache_get( $key ) {
+	$versioned_key = RTGODAM_WORK_CACHE_VERSION . '_' . $key;
+
+	if ( wp_using_ext_object_cache() ) {
+		return wp_cache_get( $versioned_key, RTGODAM_WORK_CACHE_GROUP );
+	}
+
+	return get_transient( 'rtgodam_wc_' . md5( $versioned_key ) );
+}
+
+/**
+ * Store a value in the work cache.
+ *
+ * Uses the WordPress object cache when an external cache is active,
+ * otherwise uses transients.
+ *
+ * @since n.e.x.t
+ *
+ * @param string $key   Cache key (without version prefix).
+ * @param mixed  $value Value to cache.
+ * @param int    $ttl   Time-to-live in seconds. Defaults to RTGODAM_WORK_CACHE_TTL.
+ */
+function rtgodam_work_cache_set( $key, $value, $ttl = RTGODAM_WORK_CACHE_TTL ) {
+	$versioned_key = RTGODAM_WORK_CACHE_VERSION . '_' . $key;
+
+	if ( wp_using_ext_object_cache() ) {
+		// phpcs:ignore WordPressVIPMinimum.Performance.LowExpiryCacheTime.CacheTimeUndetermined -- $ttl defaults to RTGODAM_WORK_CACHE_TTL (1800s) and callers must pass >= 300s.
+		wp_cache_set( $versioned_key, $value, RTGODAM_WORK_CACHE_GROUP, $ttl );
+	} else {
+		set_transient( 'rtgodam_wc_' . md5( $versioned_key ), $value, $ttl );
+	}
+}
+
+/**
+ * Delete a single entry from the work cache.
+ *
+ * Clears both the dedicated object-cache entry and the transient key so
+ * stale data is removed even if the site's cache backend changed.
+ *
+ * @since n.e.x.t
+ *
+ * @param string $key Cache key (without version prefix).
+ */
+function rtgodam_work_cache_delete( $key ) {
+	$versioned_key = RTGODAM_WORK_CACHE_VERSION . '_' . $key;
+
+	wp_cache_delete( $versioned_key, RTGODAM_WORK_CACHE_GROUP );
+	delete_transient( 'rtgodam_wc_' . md5( $versioned_key ) );
+}
+
+/**
+ * Register a cache key under an index so it can be bulk-deleted later.
+ *
+ * The index is stored as a transient with a TTL aligned to the maximum
+ * render-cache TTL (RTGODAM_WORK_CACHE_TTL). This ensures stale keys are
+ * pruned naturally when the index expires rather than accumulating indefinitely
+ * in permanent options.
+ *
+ * If a key is already registered under the index the TTL of the transient is
+ * refreshed so the index stays alive as long as any of its members could still
+ * be cached.
+ *
+ * @since n.e.x.t
+ *
+ * @param string $index_key Human-readable index identifier (e.g. `work_cache_godam_meta_{post_id}`).
+ * @param string $cache_key The cache key to register.
+ */
+function rtgodam_work_cache_index_add( $index_key, $cache_key ) {
+	$transient_name = 'rtgodam_wc_idx_' . md5( $index_key );
+	$members        = (array) get_transient( $transient_name );
+
+	if ( ! in_array( $cache_key, $members, true ) ) {
+		$members[] = $cache_key;
+	}
+
+	// Always refresh the TTL so the index outlives the youngest member.
+	set_transient( $transient_name, $members, RTGODAM_WORK_CACHE_TTL );
+}
+
+/**
+ * Return all cache keys registered under an index.
+ *
+ * Returns an empty array when the index transient has expired, which means
+ * all previously registered cache entries have also naturally expired.
+ *
+ * @since n.e.x.t
+ *
+ * @param string $index_key Index identifier.
+ * @return string[] List of registered cache keys.
+ */
+function rtgodam_work_cache_index_members( $index_key ) {
+	$members = get_transient( 'rtgodam_wc_idx_' . md5( $index_key ) );
+	return is_array( $members ) ? $members : array();
+}
+
+/**
+ * Delete every cache key registered under an index and remove the index transient.
+ *
+ * @since n.e.x.t
+ *
+ * @param string $index_key Index identifier.
+ */
+function rtgodam_work_cache_index_clear( $index_key ) {
+	$members = rtgodam_work_cache_index_members( $index_key );
+
+	foreach ( $members as $cache_key ) {
+		rtgodam_work_cache_delete( $cache_key );
+	}
+
+	delete_transient( 'rtgodam_wc_idx_' . md5( $index_key ) );
+}
+
+// ---------------------------------------------------------------------------
+
 /**
  * Normalize a GoDAM video performance mode value.
+ *
+ * @since n.e.x.t
  *
  * @param string $mode     Candidate performance mode.
  * @param string $fallback Fallback mode when the candidate is invalid.
@@ -1312,6 +1458,8 @@ function rtgodam_normalize_video_performance_mode( $mode, $fallback = 'balanced'
 
 /**
  * Resolve the effective performance mode for a video from modern or legacy attributes.
+ *
+ * @since n.e.x.t
  *
  * @param array  $attributes Block or shortcode attributes.
  * @param string $default_mode Default performance mode when no stored value exists.
@@ -1351,6 +1499,8 @@ function rtgodam_resolve_video_performance_mode( $attributes, $default_mode = 'b
 /**
  * Resolve the final performance-driven render settings for a single video.
  *
+ * @since n.e.x.t
+ *
  * @param array  $attributes Block or shortcode attributes.
  * @param string $default_mode Default performance mode.
  *
@@ -1380,6 +1530,8 @@ function rtgodam_get_video_performance_settings( $attributes, $default_mode = 'b
  * Priority mode is intentionally capped to the leading tiles to avoid over-eager
  * image loading in multi-video layouts.
  *
+ * @since n.e.x.t
+ *
  * @param string $performance_mode Requested performance mode.
  * @param int    $index            Zero-based tile index.
  * @param int    $priority_cutoff  Number of leading tiles that may stay in priority mode.
@@ -1395,6 +1547,7 @@ function rtgodam_get_gallery_tile_image_attributes( $performance_mode, $index = 
 	if ( $is_priority_tile ) {
 		return array(
 			'fetchpriority' => 'high',
+			'loading'       => 'eager',
 		);
 	}
 
@@ -1405,6 +1558,8 @@ function rtgodam_get_gallery_tile_image_attributes( $performance_mode, $index = 
 
 /**
  * Format an associative array of HTML attributes into a string.
+ *
+ * @since n.e.x.t
  *
  * @param array<string, scalar> $attributes Attributes to serialize.
  *

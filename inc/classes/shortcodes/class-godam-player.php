@@ -28,6 +28,77 @@ class GoDAM_Player {
 		add_action( 'admin_enqueue_scripts', array( $this, 'register_scripts' ) );
 		add_action( 'wp_head', array( $this, 'godam_output_admin_player_css' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'godam_skin_styles_enqueue' ) );
+
+		// Invalidate video render cache when rtgodam_meta changes.
+		add_action( 'updated_post_meta', array( $this, 'invalidate_video_cache_on_meta_change' ), 10, 3 );
+		add_action( 'added_post_meta', array( $this, 'invalidate_video_cache_on_meta_change' ), 10, 3 );
+		add_action( 'deleted_post_meta', array( $this, 'invalidate_video_cache_on_meta_change' ), 10, 3 );
+
+		// Fallback: invalidate on attachment save/delete.
+		add_action( 'edit_attachment', array( $this, 'invalidate_video_cache_for_post' ) );
+		add_action( 'delete_attachment', array( $this, 'invalidate_video_cache_for_post' ) );
+	}
+
+	/**
+	 * Return the work-cache index key for a given video post ID.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int $post_id Post/attachment ID.
+	 * @return string
+	 */
+	public function get_video_cache_index_key( $post_id ) {
+		return 'work_cache_godam_meta_' . absint( $post_id );
+	}
+
+	/**
+	 * Invalidate the render cache for a video when its rtgodam_meta post meta changes.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int    $meta_id    Meta entry ID (unused).
+	 * @param int    $object_id  Post ID the meta belongs to.
+	 * @param string $meta_key   Meta key being updated.
+	 */
+	public function invalidate_video_cache_on_meta_change( $meta_id, $object_id, $meta_key ) {
+		// Only invalidate for attachment posts (GoDAM videos are stored as attachments).
+		if ( 'attachment' !== get_post_type( $object_id ) ) {
+			return;
+		}
+
+		$watched_keys = array(
+			'rtgodam_meta',
+			'rtgodam_transcoded_url',
+			'rtgodam_hls_transcoded_url',
+			'rtgodam_media_video_thumbnail',
+			'rtgodam_media_video_placeholder_thumbnail',
+			'rtgodam_media_placeholder_thumbnails',
+			'rtgodam_transcript_path',
+		);
+
+		if ( ! in_array( $meta_key, $watched_keys, true ) ) {
+			return;
+		}
+
+		$this->invalidate_video_cache_for_post( $object_id );
+	}
+
+	/**
+	 * Clear all cached render output for a given post/video ID.
+	 *
+	 * Only acts on attachment post types to avoid unnecessary cache work on
+	 * unrelated post deletions/edits.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int $post_id Post ID.
+	 */
+	public function invalidate_video_cache_for_post( $post_id ) {
+		if ( 'attachment' !== get_post_type( $post_id ) ) {
+			return;
+		}
+
+		rtgodam_work_cache_index_clear( $this->get_video_cache_index_key( $post_id ) );
 	}
 
 	/**
@@ -153,6 +224,21 @@ class GoDAM_Player {
 	/**
 	 * Render the GoDAM player shortcode.
 	 *
+	 * HTML output is NOT cached here by design.  Caching the full rendered blob
+	 * would suppress per-request side effects that the template performs on every
+	 * call: adding wrapper CSS to wp_head, suppressing Gravity Forms autoscroll,
+	 * conditionally initialising the IMA SDK for ad-enabled videos, and generating
+	 * a unique per-render $godam_instance_id used in DOM IDs.
+	 *
+	 * Performance is instead improved at the data layer: the template bundles all
+	 * expensive attachment meta calls (rtgodam_meta, transcoded URLs, thumbnails,
+	 * etc.) into a single persistent cache entry (work_cache_godam_meta_{id}) that
+	 * is invalidated precisely when the underlying meta changes.  This avoids the
+	 * heavy DB work on warm requests while keeping HTML generation stateless and
+	 * side-effect-safe on every render.
+	 * 
+	 * @since n.e.x.t
+	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return string HTML output of the player.
 	 */
@@ -256,7 +342,6 @@ class GoDAM_Player {
 
 		ob_start();
 		require RTGODAM_PATH . 'inc/templates/godam-player.php';
-		$player_html = ob_get_clean();
-		return $player_html;
+		return ob_get_clean();
 	}
 }
