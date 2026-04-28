@@ -360,7 +360,7 @@ class GoDAM_Video_Gallery {
 				echo '<div class="godam-video-item">';
 				echo '<div class="godam-video-thumbnail" data-gallery-item-engagements="' . esc_attr( $item_engagements_enabled ? 'true' : 'false' ) . '" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $video_url ) . '">';
 				if ( ! empty( $thumbnail ) && ! empty( $placeholder_thumbnail ) ) {
-					echo '<div class="godam-gallery-blurred-img godam-blurred-img" style="background-image: url(\'' . esc_url( $placeholder_thumbnail ) . '\')">';
+					echo '<div class="godam-gallery-blurred-img" style="background-image: url(\'' . esc_url( $placeholder_thumbnail ) . '\')">';
 					echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" class="godam-gallery-thumbnail-image" />';
 					echo '</div>';
 				} elseif ( ! empty( $thumbnail ) ) {

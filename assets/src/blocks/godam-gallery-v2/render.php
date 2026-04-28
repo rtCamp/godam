@@ -340,7 +340,7 @@ if ( 'query' === $godam_gallery_mode ) {
 							<?php /* translators: %s: video title. */ ?>
 							aria-label="<?php echo esc_attr( sprintf( __( 'Open video: %s', 'godam' ), $godam_item['title'] ) ); ?>"
 						>
-							<div class="godam-gallery-v2__query-thumb<?php echo ! empty( $godam_item['placeholder'] ) ? ' godam-gallery-blurred-img godam-blurred-img' : ''; ?>"<?php echo ! empty( $godam_item['placeholder'] ) ? ' style="background-image: url(\'' . esc_url( $godam_item['placeholder'] ) . '\')"' : ''; ?>>
+							<div class="godam-gallery-v2__query-thumb<?php echo ! empty( $godam_item['placeholder'] ) ? ' godam-gallery-blurred-img' : ''; ?>"<?php echo ! empty( $godam_item['placeholder'] ) ? ' style="background-image: url(\'' . esc_url( $godam_item['placeholder'] ) . '\')"' : ''; ?>>
 								<?php if ( ! empty( $godam_item['thumbnail'] ) ) : ?>
 									<img src="<?php echo esc_url( $godam_item['thumbnail'] ); ?>" alt="<?php echo esc_attr( $godam_item['title'] ); ?>" class="godam-gallery-v2__thumbnail" <?php echo $godam_thumbnail_attributes ? wp_kses_data( $godam_thumbnail_attributes ) : ''; ?> />
 								<?php else : ?>
@@ -390,7 +390,7 @@ if ( 'query' === $godam_gallery_mode ) {
 							<?php /* translators: %s: video title. */ ?>
 							aria-label="<?php echo esc_attr( sprintf( __( 'Open video: %s', 'godam' ), $godam_item['title'] ) ); ?>"
 						>
-							<div class="godam-gallery-v2-item__preview<?php echo ! empty( $godam_item['placeholder'] ) ? ' godam-gallery-blurred-img godam-blurred-img' : ''; ?>"<?php echo ! empty( $godam_item['placeholder'] ) ? ' style="background-image: url(\'' . esc_url( $godam_item['placeholder'] ) . '\')"' : ''; ?>>
+							<div class="godam-gallery-v2-item__preview<?php echo ! empty( $godam_item['placeholder'] ) ? ' godam-gallery-blurred-img' : ''; ?>"<?php echo ! empty( $godam_item['placeholder'] ) ? ' style="background-image: url(\'' . esc_url( $godam_item['placeholder'] ) . '\')"' : ''; ?>>
 								<?php if ( ! empty( $godam_item['thumbnail'] ) ) : ?>
 									<img
 										src="<?php echo esc_url( $godam_item['thumbnail'] ); ?>"

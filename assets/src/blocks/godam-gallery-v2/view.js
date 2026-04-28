@@ -15,11 +15,10 @@ const { __ } = require( '@wordpress/i18n' );
 
 	function initBlurUpPlaceholders( root = document ) {
 		root.querySelectorAll( '.godam-gallery-blurred-img' ).forEach( ( div ) => {
-			if ( div.dataset.godamBlurInit === '1' ) {
+			if ( div.dataset.godamGalleryBlurInit === '1' ) {
 				return;
 			}
-
-			div.dataset.godamBlurInit = '1';
+			div.dataset.godamGalleryBlurInit = '1';
 
 			const img = div.querySelector( 'img' );
 			if ( ! img ) {

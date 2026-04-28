@@ -396,7 +396,7 @@ data-engagements="' . ( $atts['engagements'] ? '1' : '0' ) . '">';
 					echo '<div class="godam-video-item">';
 					echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $video_url ) . '">';
 					if ( ! empty( $thumbnail ) && ! empty( $placeholder_thumbnail ) ) {
-						echo '<div class="godam-gallery-blurred-img godam-blurred-img" style="background-image: url(\'' . esc_url( $placeholder_thumbnail ) . '\')">';
+						echo '<div class="godam-gallery-blurred-img" style="background-image: url(\'' . esc_url( $placeholder_thumbnail ) . '\')">';
 						echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" class="godam-gallery-thumbnail-image" />';
 						echo '</div>';
 					} elseif ( ! empty( $thumbnail ) ) {
