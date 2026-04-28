@@ -81,7 +81,8 @@
 	color: initial;
 }
 
-.hidden {
+.video-js .hidden,
+.easydam-layer.hidden {
 	display: none !important;
 }
 
