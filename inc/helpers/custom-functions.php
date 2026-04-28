@@ -1313,7 +1313,8 @@ if ( ! defined( 'RTGODAM_WORK_CACHE_TTL' ) ) {
 /**
  * Retrieve a value from the work cache.
  *
- * Tries the WordPress object cache first, falls back to transients.
+ * Uses the WordPress object cache when an external cache is active,
+ * otherwise uses transients.
  *
  * @since n.e.x.t
  *
@@ -1323,9 +1324,8 @@ if ( ! defined( 'RTGODAM_WORK_CACHE_TTL' ) ) {
 function rtgodam_work_cache_get( $key ) {
 	$versioned_key = RTGODAM_WORK_CACHE_VERSION . '_' . $key;
 
-	$value = wp_cache_get( $versioned_key, RTGODAM_WORK_CACHE_GROUP );
-	if ( false !== $value ) {
-		return $value;
+	if ( wp_using_ext_object_cache() ) {
+		return wp_cache_get( $versioned_key, RTGODAM_WORK_CACHE_GROUP );
 	}
 
 	return get_transient( 'rtgodam_wc_' . md5( $versioned_key ) );
@@ -1334,8 +1334,8 @@ function rtgodam_work_cache_get( $key ) {
 /**
  * Store a value in the work cache.
  *
- * Writes to both the object cache and transients so the value is available
- * across processes even when persistent object caching is absent.
+ * Uses the WordPress object cache when an external cache is active,
+ * otherwise uses transients.
  *
  * @since n.e.x.t
  *
@@ -1346,13 +1346,19 @@ function rtgodam_work_cache_get( $key ) {
 function rtgodam_work_cache_set( $key, $value, $ttl = RTGODAM_WORK_CACHE_TTL ) {
 	$versioned_key = RTGODAM_WORK_CACHE_VERSION . '_' . $key;
 
-	// phpcs:ignore WordPressVIPMinimum.Performance.LowExpiryCacheTime.CacheTimeUndetermined -- $ttl defaults to RTGODAM_WORK_CACHE_TTL (1800s) and callers must pass >= 300s.
-	wp_cache_set( $versioned_key, $value, RTGODAM_WORK_CACHE_GROUP, $ttl );
-	set_transient( 'rtgodam_wc_' . md5( $versioned_key ), $value, $ttl );
+	if ( wp_using_ext_object_cache() ) {
+		// phpcs:ignore WordPressVIPMinimum.Performance.LowExpiryCacheTime.CacheTimeUndetermined -- $ttl defaults to RTGODAM_WORK_CACHE_TTL (1800s) and callers must pass >= 300s.
+		wp_cache_set( $versioned_key, $value, RTGODAM_WORK_CACHE_GROUP, $ttl );
+	} else {
+		set_transient( 'rtgodam_wc_' . md5( $versioned_key ), $value, $ttl );
+	}
 }
 
 /**
  * Delete a single entry from the work cache.
+ *
+ * Clears both the dedicated object-cache entry and the transient key so
+ * stale data is removed even if the site's cache backend changed.
  *
  * @since n.e.x.t
  *
