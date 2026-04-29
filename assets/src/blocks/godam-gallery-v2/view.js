@@ -163,6 +163,7 @@ const { __ } = require( '@wordpress/i18n' );
 			this.element = element;
 			this.mode = element.dataset.mode || 'handpicked';
 			this.embedBaseUrl = element.dataset.embedBaseUrl || '/';
+			this.engagements = element.dataset.engagements || '';
 			this.currentIndex = -1;
 			this.previouslyFocusedElement = null;
 			this.isLoading = false;
@@ -363,7 +364,8 @@ const { __ } = require( '@wordpress/i18n' );
 
 			this.currentIndex = index;
 			activeGallery = this;
-			this.modal.iframe.src = `${ this.embedBaseUrl }?godam_page=video-embed&id=${ encodeURIComponent( videoId ) }&godam_gallery=1`;
+			const engagementsParam = this.engagements === 'show' ? '&engagements=show' : '';
+			this.modal.iframe.src = `${ this.embedBaseUrl }?godam_page=video-embed&id=${ encodeURIComponent( videoId ) }&godam_gallery=1${ engagementsParam }`;
 			this.modal.overlay.classList.add( 'is-active' );
 			this.modal.modal.classList.add( 'is-active' );
 			this.modal.closeButton.classList.add( 'is-active' );
