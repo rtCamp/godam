@@ -1149,6 +1149,30 @@ function rtgodam_get_post_id_by_meta_key_and_value( $key, $value ) {
 }
 
 /**
+ * Check whether the engagement feature is available in GoDAM.
+ *
+ * Returning true enables engagement settings and runtime behavior for
+ * GoDAM video, gallery, and embed experiences.
+ *
+ * @since 1.8.0
+ *
+ * @return bool Whether the engagement feature is enabled.
+ */
+function rtgodam_is_engagement_feature_enabled() {
+	/**
+	 * Filters whether the GoDAM engagement feature is enabled.
+	 *
+	 * Return true to enable engagement settings and functionality for GoDAM
+	 * videos, galleries, and embeds.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @param bool $is_enabled Whether the engagement feature is enabled. Default false.
+	 */
+	return (bool) apply_filters( 'rtgodam_enable_engagement_feature', false );
+}
+
+/**
  * Generate HTML content for the video embed page.
  *
  * This function produces the HTML markup for embedding a single video.
@@ -1170,7 +1194,7 @@ function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '
 	$video_attachment = null;
 	$show_video       = false;
 	$video_id         = intval( $video_id );
-	$show_engagements = $show_engagements ? 'show' : '';
+	$show_engagements = rtgodam_is_engagement_feature_enabled() && $show_engagements ? 'show' : '';
 
 	if ( ! empty( $video_id ) ) {
 		$video_attachment = get_post( $video_id );

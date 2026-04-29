@@ -45,7 +45,8 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 	const { autoplay, controls, loop, muted, preload, preloadPoster, performanceMode, showShareButton, engagements } =
 	attributes;
 	const showShareButtonSetting = window?.godamSettings?.enableGlobalVideoShare ?? false;
-	const showEngagementSetting = window?.godamSettings?.enableGlobalVideoEngagement ?? false;
+	const engagementFeatureEnabled = window?.godamSettings?.engagementFeatureEnabled ?? false;
+	const showEngagementSetting = engagementFeatureEnabled && ( window?.godamSettings?.enableGlobalVideoEngagement ?? false );
 
 	// Show a specific help for autoplay setting.
 	const getAutoplayHelp = useMemo( () => {

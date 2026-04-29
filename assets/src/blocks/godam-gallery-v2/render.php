@@ -254,7 +254,7 @@ $godam_wrapper_attributes = get_block_wrapper_attributes(
 		'data-layout'         => $godam_layout,
 		'data-ratio'          => $godam_view_ratio,
 		'data-embed-base-url' => home_url( '/' ),
-		'data-engagements'    => ! empty( $attributes['engagements'] ) ? 'show' : '',
+		'data-engagements'    => rtgodam_is_engagement_feature_enabled() && ! empty( $attributes['engagements'] ) ? 'show' : '',
 	)
 );
 

@@ -386,6 +386,7 @@ class Assets {
 		$brand_image                    = $godam_settings['video_player']['brand_image'] ?? '';
 		$brand_color                    = $godam_settings['video_player']['brand_color'] ?? '';
 		$enable_gtm_tracking            = $godam_settings['general']['enable_gtm_tracking'] ?? false;
+		$engagement_feature_enabled     = rtgodam_is_engagement_feature_enabled();
 		$enable_global_video_engagement = $godam_settings['video']['enable_global_video_engagement'] ?? true;
 		$enable_global_share            = $godam_settings['video']['enable_global_video_share'] ?? true;
 
@@ -396,7 +397,8 @@ class Assets {
 			'apiBase'                     => RTGODAM_API_BASE,
 			'enableGTMTracking'           => $enable_gtm_tracking,
 			'videoPostSettings'           => get_option( 'rtgodam_video_post_settings', array() ),
-			'enableGlobalVideoEngagement' => $enable_global_video_engagement,
+			'engagementFeatureEnabled'    => $engagement_feature_enabled,
+			'enableGlobalVideoEngagement' => $engagement_feature_enabled ? $enable_global_video_engagement : false,
 			'enableGlobalVideoShare'      => $enable_global_share,
 
 		);

@@ -209,7 +209,8 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		performanceMode,
 		engagements,
 	} = attributes;
-	const showEngagementSetting = window?.godamSettings?.enableGlobalVideoEngagement ?? false;
+	const engagementFeatureEnabled = window?.godamSettings?.engagementFeatureEnabled ?? false;
+	const showEngagementSetting = engagementFeatureEnabled && ( window?.godamSettings?.enableGlobalVideoEngagement ?? false );
 	const [ startDatePopoverOpen, setStartDatePopoverOpen ] = useState( false );
 	const [ endDatePopoverOpen, setEndDatePopoverOpen ] = useState( false );
 	const [ dateError, setDateError ] = useState( '' );

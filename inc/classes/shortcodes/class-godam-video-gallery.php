@@ -296,7 +296,7 @@ class GoDAM_Video_Gallery {
 				data-date-range="' . esc_attr( $atts['date_range'] ) . '"
 				data-custom-date-start="' . esc_attr( $atts['custom_date_start'] ) . '"
 				data-custom-date-end="' . esc_attr( $atts['custom_date_end'] ) . '"
-				data-engagements="' . esc_attr( $atts['engagements'] ) . '"
+				data-engagements="' . esc_attr( rtgodam_is_engagement_feature_enabled() && $atts['engagements'] ? '1' : '0' ) . '"
 
 			>';
 			foreach ( $query->posts as $video ) {
@@ -334,7 +334,7 @@ class GoDAM_Video_Gallery {
 				}
 
 				// Check if engagements are enabled for the video.
-				$engagements_enabled      = $atts['engagements'];
+				$engagements_enabled      = rtgodam_is_engagement_feature_enabled() && $atts['engagements'];
 				$item_engagements_enabled = false;
 				if ( $engagements_enabled ) {
 					// Check if the video is transcoded when engagements are enabled.

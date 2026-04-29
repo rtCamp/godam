@@ -346,13 +346,13 @@ document.addEventListener( 'godamAllPlayersReady', () => {
  * @since 1.5.0
  */
 document.addEventListener( 'DOMContentLoaded', function() {
-	const urlParams = new URLSearchParams( window.location.search );
+	const embedElement = document.querySelector( '.godam-video-embed' );
 
-	// Only run if engagements query parameter is enabled.
-	const engagementsParam = ( urlParams.get( 'engagements' ) || '' ).toLowerCase();
-	if ( ! [ '1', 'true', 'on', 'show' ].includes( engagementsParam ) ) {
+	if ( embedElement?.getAttribute( 'data-show-engagements' ) !== 'true' ) {
 		return;
 	}
+
+	const urlParams = new URLSearchParams( window.location.search );
 
 	const videoId = urlParams.get( 'id' );
 
@@ -419,7 +419,6 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		const siteUrl = window.location.origin;
 
 		// Determine if engagements should be shown
-		const embedElement = document.querySelector( '.godam-video-embed' );
 		const skipEngagements = embedElement?.getAttribute( 'data-show-engagements' ) !== 'true';
 
 		// Dispatch action to initiate comment modal
