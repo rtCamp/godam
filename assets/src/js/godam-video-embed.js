@@ -347,6 +347,13 @@ document.addEventListener( 'godamAllPlayersReady', () => {
  */
 document.addEventListener( 'DOMContentLoaded', function() {
 	const urlParams = new URLSearchParams( window.location.search );
+
+	// Only run if engagements query parameter is enabled.
+	const engagementsParam = ( urlParams.get( 'engagements' ) || '' ).toLowerCase();
+	if ( ! [ '1', 'true', 'on', 'show' ].includes( engagementsParam ) ) {
+		return;
+	}
+
 	const videoId = urlParams.get( 'id' );
 
 	if ( ! videoId ) {

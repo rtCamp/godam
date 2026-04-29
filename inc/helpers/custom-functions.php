@@ -1158,17 +1158,19 @@ function rtgodam_get_post_id_by_meta_key_and_value( $key, $value ) {
  * @param int    $video_id      The ID of the video attachment to embed.
  * @param string $godam_context Optional. The player context passed to the godam_video shortcode (e.g. 'video-only').
  * @param string $bg_color      Optional. Hex background color applied as --godam-video-bg-color CSS variable on the wrapper.
+ * @param bool   $show_engagements Optional. Whether to show engagements in the embed. Default false (no engagements shown).
  *
  * @since 1.5.0
  *
  * @return string The generated HTML content for the video embed page.
  */
-function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '' ) {
+function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '', $show_engagements = false ) {
 	ob_start();
 	// Check if video ID is provided and if video attachment exists.
 	$video_attachment = null;
 	$show_video       = false;
 	$video_id         = intval( $video_id );
+	$show_engagements = $show_engagements ? 'show' : '';
 
 	if ( ! empty( $video_id ) ) {
 		$video_attachment = get_post( $video_id );
@@ -1188,12 +1190,16 @@ function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '
 		if ( ! empty( $godam_context ) ) {
 			$godam_shortcode .= ' godam_context="' . esc_attr( $godam_context ) . '"';
 		}
+		if ( ! empty( $show_engagements ) ) {
+			$godam_shortcode .= ' engagements="' . esc_attr( $show_engagements ) . '"';
+		}
 		$godam_shortcode .= ']';
 
 		$godam_wrapper_style = ! empty( $bg_color ) ? '--godam-video-bg-color: ' . $bg_color . ';' : '';
 		?>
 		<div 
 			class="godam-video-embed" data-godam-context="<?php echo esc_attr( $godam_context ); ?>"
+			data-show-engagements="<?php echo esc_attr( $show_engagements ? 'true' : 'false' ); ?>"
 			style="<?php echo esc_attr( $godam_wrapper_style ); ?>"
 		>
 			<?php echo do_shortcode( $godam_shortcode ); ?>
