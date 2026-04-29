@@ -97,17 +97,27 @@ class Gallery_V1_To_V2 {
 	 *
 	 * Called by Runner::maybe_run() on admin_init when the plugin version has changed.
 	 *
-	 * @return void
+	 * Returns true when the migration is already done or was successfully started
+	 * so the runner can advance the stored DB version. Returns false when the
+	 * migration bailed before starting (e.g. insufficient capabilities), signalling
+	 * the runner to hold the DB version so the migration retries on the next
+	 * qualifying admin_init.
+	 *
+	 * @return bool True if migration is complete or in progress; false if it bailed.
 	 */
-	public static function maybe_run() {
+	public static function maybe_run(): bool {
 		if ( get_option( self::OPTION_KEY ) ) {
-			return;
+			return true; // Already done.
 		}
 
 		// Called from Runner::maybe_run() on admin_init — is_user_logged_in()
 		// and current_user_can() are guaranteed available. Call run() directly;
 		// no need to defer to a later hook.
 		self::run();
+
+		// If run() completed successfully it sets OPTION_KEY; if it bailed
+		// (e.g. cap check) the option is still absent.
+		return (bool) get_option( self::OPTION_KEY );
 	}
 
 	/**

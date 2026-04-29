@@ -114,18 +114,27 @@ class Godam_Cpt_Cleanup {
 	 * The AS hook is registered by register_hooks() unconditionally; this
 	 * method only decides whether to queue a new migration run.
 	 *
-	 * @return void
+	 * Returns true when the migration is already started/done or was successfully
+	 * queued, so the runner can advance the stored DB version. Returns false when
+	 * the migration bailed before starting (e.g. insufficient capabilities),
+	 * signalling the runner to hold the DB version for a retry.
+	 *
+	 * @return bool True if migration is complete, in progress, or just queued; false if it bailed.
 	 */
-	public static function maybe_run() {
+	public static function maybe_run(): bool {
 		// 'processing' or 'done' — migration already started or complete.
 		if ( get_option( self::OPTION_KEY ) ) {
-			return;
+			return true; // Already started or done.
 		}
 
 		// Called from Runner::maybe_run() on admin_init — is_user_logged_in()
 		// and current_user_can() are guaranteed available. Call run() directly;
 		// no need to defer to a later hook.
 		self::run();
+
+		// If run() started the migration it sets OPTION_KEY to 'processing';
+		// if it bailed (e.g. cap check) the option is still absent.
+		return (bool) get_option( self::OPTION_KEY );
 	}
 
 	/**

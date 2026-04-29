@@ -103,6 +103,12 @@ class Runner {
 	 * are available. The version compare is the sole gate — if stored version
 	 * equals current version, this is a single option read and returns.
 	 *
+	 * The runner only advances the stored DB version for a given version-batch
+	 * when every migration class in that batch returns true from maybe_run().
+	 * If any migration bails (e.g. the current user lacks manage_options), the
+	 * runner stops without bumping the stored version so the whole batch retries
+	 * on the next qualifying admin_init.
+	 *
 	 * @return void
 	 */
 	public static function maybe_run(): void {
@@ -116,8 +122,17 @@ class Runner {
 				continue;
 			}
 
+			$all_complete = true;
 			foreach ( $classes as $class ) {
-				$class::maybe_run();
+				if ( ! $class::maybe_run() ) {
+					$all_complete = false;
+				}
+			}
+
+			if ( ! $all_complete ) {
+				// At least one migration bailed — hold the stored version so
+				// the entire batch retries on the next qualifying admin_init.
+				return;
 			}
 
 			// Advance the stored version after each batch so that if the

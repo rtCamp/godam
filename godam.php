@@ -159,6 +159,7 @@ function rtgodam_plugin_delete() {
 
 			delete_option( 'rtgodam_plugin_version' );
 			delete_option( 'rtgodam_show_whats_new' );
+			delete_transient( 'rtgodam_show_whats_new' ); // Stored as a transient in ≤1.7.2.
 			delete_option( 'rtgodam_user_data' );
 			delete_option( 'rtgodam-api-key' );
 			delete_option( 'rtgodam-api-key-stored' );
@@ -173,6 +174,7 @@ function rtgodam_plugin_delete() {
 		// For single site, delete options directly.
 		delete_option( 'rtgodam_plugin_version' );
 		delete_option( 'rtgodam_show_whats_new' );
+		delete_transient( 'rtgodam_show_whats_new' ); // Stored as a transient in ≤1.7.2.
 		delete_option( 'rtgodam_user_data' );
 		delete_option( 'rtgodam-api-key' );
 		delete_option( 'rtgodam-api-key-stored' );
