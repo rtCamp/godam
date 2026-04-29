@@ -3,7 +3,7 @@
  * Plugin Name: GoDAM
  * Plugin URI: https://godam.io
  * Description: Seamlessly manage and deliver your media assets directly from the cloud-based media management. Store assets efficiently, stream them via a CDN, and enhance your website's performance and user experience. Featuring adaptive bit rate streaming, adding interactive layers in videos, and taking full advantage of a digital asset management solution within WordPress.
- * Version: 1.7.2
+ * Version: 999
  * Requires at least: 6.5
  * Requires PHP: 7.4
  * Text Domain: godam
@@ -43,7 +43,7 @@ if ( ! defined( 'RTGODAM_VERSION' ) ) {
 	/**
 	 * The version of the plugin
 	 */
-	define( 'RTGODAM_VERSION', '1.7.2' );
+	define( 'RTGODAM_VERSION', '999' );
 }
 
 if ( ! defined( 'RTGODAM_API_BASE' ) ) {
@@ -114,6 +114,37 @@ function rtgodam_action_links( $links, $file ) {
 
 add_filter( 'plugin_action_links', 'rtgodam_action_links', 11, 2 );
 add_filter( 'network_admin_plugin_action_links', 'rtgodam_action_links', 11, 2 );
+
+/**
+ * Block WordPress.org from delivering updates for this plugin.
+ *
+ * Removes the GoDAM entry from the update transient so WordPress will never
+ * show or apply an update sourced from the WordPress.org plugin repository.
+ * The version is also set to 999 in the plugin header so any wp.org release
+ * will always appear older than the installed copy.
+ *
+ * @since 999
+ *
+ * @param object $transient The update_plugins site transient.
+ * @return object Modified transient with GoDAM removed from the update list.
+ */
+function rtgodam_block_wporg_updates( $transient ) {
+	$plugin_slug = plugin_basename( __FILE__ );
+
+	if ( isset( $transient->response[ $plugin_slug ] ) ) {
+		unset( $transient->response[ $plugin_slug ] );
+	}
+
+	// Also remove from the "no-update" list so the plugin is hidden from
+	// the update screen entirely.
+	if ( isset( $transient->no_update[ $plugin_slug ] ) ) {
+		unset( $transient->no_update[ $plugin_slug ] );
+	}
+
+	return $transient;
+}
+
+add_filter( 'site_transient_update_plugins', 'rtgodam_block_wporg_updates' );
 
 /**
  * Runs when the plugin is activated.
