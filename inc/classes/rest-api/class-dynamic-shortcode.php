@@ -46,9 +46,13 @@ class Dynamic_Shortcode extends Base {
 							'sanitize_callback' => 'absint',
 						),
 						'engagements'   => array(
-							'required' => false,
-							'type'     => 'string',
-							'default'  => '',
+							'required'          => false,
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'sanitize_text_field',
+							'validate_callback' => function ( $value ) {
+								return in_array( $value, array( '', 'show', 'hide' ), true );
+							},
 						),
 						'godam_context' => array(
 							'required'          => false,
@@ -128,10 +132,10 @@ class Dynamic_Shortcode extends Base {
 		$video_date  = apply_filters( 'rtgodam_shortcode_video_date', $video_date, $id );
 
 		ob_start();
-		$shortcode = "[godam_video id='{$id}' engagements='{$engagements}' sources='{$sources_with_placeholders}'";
+		$shortcode = "[godam_video id='{$id}' engagements='" . esc_attr( $engagements ) . "' sources='{$sources_with_placeholders}'";
 
 		if ( ! empty( $godam_context ) ) {
-			$shortcode .= " godam_context='{$godam_context}'";
+			$shortcode .= " godam_context='" . esc_attr( $godam_context ) . "'";
 		}
 
 		$shortcode .= ']';
