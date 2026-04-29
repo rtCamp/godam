@@ -20,7 +20,8 @@ use RTGODAM\Inc\Video_Preview;
 use RTGODAM\Inc\Video_Embed;
 use RTGODAM\Inc\Video_Engagement;
 use RTGODAM\Inc\Update;
-use RTGODAM\Inc\Addons\Addon_Registry;
+// phpcs:ignore Squiz.PHP.CommentedOutCode.Found, Squiz.Commenting.InlineComment.InvalidEndChar -- GoDAM for Woo
+// use RTGODAM\Inc\Addons\Addon_Registry;
 
 use RTGODAM\Inc\Taxonomies\Media_Folders;
 
@@ -101,7 +102,8 @@ class Plugin {
 		Video_Preview::get_instance();
 		Video_Embed::get_instance();
 		Embed::get_instance();
-		Addon_Registry::get_instance();
+		// phpcs:ignore Squiz.PHP.CommentedOutCode.Found, Squiz.Commenting.InlineComment.InvalidEndChar -- GoDAM for Woo
+		// Addon_Registry::get_instance();
 
 		// Load shortcodes.
 		GoDAM_Player::get_instance();

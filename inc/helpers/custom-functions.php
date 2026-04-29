@@ -1316,7 +1316,7 @@ if ( ! defined( 'RTGODAM_WORK_CACHE_TTL' ) ) {
  * Uses the WordPress object cache when an external cache is active,
  * otherwise uses transients.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param string $key Cache key (without version prefix).
  * @return mixed|false Cached value or false on miss.
@@ -1337,7 +1337,7 @@ function rtgodam_work_cache_get( $key ) {
  * Uses the WordPress object cache when an external cache is active,
  * otherwise uses transients.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param string $key   Cache key (without version prefix).
  * @param mixed  $value Value to cache.
@@ -1360,7 +1360,7 @@ function rtgodam_work_cache_set( $key, $value, $ttl = RTGODAM_WORK_CACHE_TTL ) {
  * Clears both the dedicated object-cache entry and the transient key so
  * stale data is removed even if the site's cache backend changed.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param string $key Cache key (without version prefix).
  */
@@ -1383,7 +1383,7 @@ function rtgodam_work_cache_delete( $key ) {
  * refreshed so the index stays alive as long as any of its members could still
  * be cached.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param string $index_key Human-readable index identifier (e.g. `work_cache_godam_meta_{post_id}`).
  * @param string $cache_key The cache key to register.
@@ -1406,7 +1406,7 @@ function rtgodam_work_cache_index_add( $index_key, $cache_key ) {
  * Returns an empty array when the index transient has expired, which means
  * all previously registered cache entries have also naturally expired.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param string $index_key Index identifier.
  * @return string[] List of registered cache keys.
@@ -1419,7 +1419,7 @@ function rtgodam_work_cache_index_members( $index_key ) {
 /**
  * Delete every cache key registered under an index and remove the index transient.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param string $index_key Index identifier.
  */
@@ -1438,7 +1438,7 @@ function rtgodam_work_cache_index_clear( $index_key ) {
 /**
  * Normalize a GoDAM video performance mode value.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param string $mode     Candidate performance mode.
  * @param string $fallback Fallback mode when the candidate is invalid.
@@ -1459,7 +1459,7 @@ function rtgodam_normalize_video_performance_mode( $mode, $fallback = 'balanced'
 /**
  * Resolve the effective performance mode for a video from modern or legacy attributes.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param array  $attributes Block or shortcode attributes.
  * @param string $default_mode Default performance mode when no stored value exists.
@@ -1499,7 +1499,7 @@ function rtgodam_resolve_video_performance_mode( $attributes, $default_mode = 'b
 /**
  * Resolve the final performance-driven render settings for a single video.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param array  $attributes Block or shortcode attributes.
  * @param string $default_mode Default performance mode.
@@ -1530,7 +1530,7 @@ function rtgodam_get_video_performance_settings( $attributes, $default_mode = 'b
  * Priority mode is intentionally capped to the leading tiles to avoid over-eager
  * image loading in multi-video layouts.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param string $performance_mode Requested performance mode.
  * @param int    $index            Zero-based tile index.
@@ -1559,7 +1559,7 @@ function rtgodam_get_gallery_tile_image_attributes( $performance_mode, $index = 
 /**
  * Resolve the selected video thumbnail and its matching blur-up placeholder.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param int    $attachment_id Attachment ID.
  * @param string $thumbnail_url Optional pre-resolved thumbnail URL.
@@ -1640,7 +1640,7 @@ function rtgodam_get_video_thumbnail_sources( $attachment_id, $thumbnail_url = '
 /**
  * Format an associative array of HTML attributes into a string.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param array<string, scalar> $attributes Attributes to serialize.
  *

@@ -42,7 +42,7 @@ class GoDAM_Player {
 	/**
 	 * Return the work-cache index key for a given video post ID.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.8.0
 	 *
 	 * @param int $post_id Post/attachment ID.
 	 * @return string
@@ -54,7 +54,7 @@ class GoDAM_Player {
 	/**
 	 * Invalidate the render cache for a video when its rtgodam_meta post meta changes.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.8.0
 	 *
 	 * @param int    $meta_id    Meta entry ID (unused).
 	 * @param int    $object_id  Post ID the meta belongs to.
@@ -89,7 +89,7 @@ class GoDAM_Player {
 	 * Only acts on attachment post types to avoid unnecessary cache work on
 	 * unrelated post deletions/edits.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.8.0
 	 *
 	 * @param int $post_id Post ID.
 	 */
@@ -237,7 +237,7 @@ class GoDAM_Player {
 	 * heavy DB work on warm requests while keeping HTML generation stateless and
 	 * side-effect-safe on every render.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.8.0
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return string HTML output of the player.

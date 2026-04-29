@@ -43,11 +43,13 @@ class RTGODAM_Transcoder_Admin {
 			add_action( 'admin_notices', array( $this, 'posthog_tracking_notice' ) );
 			add_action( 'admin_notices', array( $this, 'api_key_status_notice' ) );
 			add_action( 'admin_notices', array( $this, 'expired_api_key_notice' ) );
-			add_action( 'admin_notices', array( $this, 'woo_integration_promo_notice' ) );
+			// phpcs:ignore Squiz.PHP.CommentedOutCode.Found, Squiz.Commenting.InlineComment.InvalidEndChar -- GoDAM for Woo
+			// add_action( 'admin_notices', array( $this, 'woo_integration_promo_notice' ) );
 			add_action( 'admin_init', array( $this, 'handle_posthog_tracking_action' ) );
 			add_action( 'admin_init', array( $this, 'handle_clear_godam_cache' ) );
 			add_action( 'wp_ajax_rtgodam_dismiss_free_plan_notice', array( $this, 'dismiss_free_plan_notice' ) );
-			add_action( 'wp_ajax_rtgodam_dismiss_woo_promo_notice', array( $this, 'dismiss_woo_promo_notice' ) );
+			// phpcs:ignore Squiz.PHP.CommentedOutCode.Found, Squiz.Commenting.InlineComment.InvalidEndChar -- GoDAM for Woo
+			// add_action( 'wp_ajax_rtgodam_dismiss_woo_promo_notice', array( $this, 'dismiss_woo_promo_notice' ) ); 
 		}
 	}
 

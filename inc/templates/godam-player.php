@@ -200,26 +200,26 @@ if ( $godam_meta_cache_key && function_exists( 'rtgodam_work_cache_get' ) ) {
 
 if ( empty( $godam_attachment_data ) && $godam_numeric_id ) {
 	// Cache miss — collect every DB/meta call for this attachment in one pass.
-	$_raw_transcoded_url     = rtgodam_get_transcoded_url_from_attachment( $godam_numeric_id );
-	$_raw_hls_transcoded_url = rtgodam_get_hls_transcoded_url_from_attachment( $godam_numeric_id );
-	$_raw_video_src          = wp_get_attachment_url( $godam_numeric_id );
-	$_raw_video_src_type     = get_post_mime_type( $godam_numeric_id );
-	$_raw_job_id             = '';
-	if ( ! empty( $_raw_transcoded_url ) ) {
-		$_raw_job_id = get_post_meta( $godam_numeric_id, 'rtgodam_transcoding_job_id', true );
-		if ( empty( $_raw_job_id ) ) {
-			$_raw_job_id = get_post_meta( $godam_numeric_id, '_godam_original_id', true );
+	$rtgodam_raw_transcoded_url     = rtgodam_get_transcoded_url_from_attachment( $godam_numeric_id );
+	$rtgodam_raw_hls_transcoded_url = rtgodam_get_hls_transcoded_url_from_attachment( $godam_numeric_id );
+	$rtgodam_raw_video_src          = wp_get_attachment_url( $godam_numeric_id );
+	$rtgodam_raw_video_src_type     = get_post_mime_type( $godam_numeric_id );
+	$rtgodam_raw_job_id             = '';
+	if ( ! empty( $rtgodam_raw_transcoded_url ) ) {
+		$rtgodam_raw_job_id = get_post_meta( $godam_numeric_id, 'rtgodam_transcoding_job_id', true );
+		if ( empty( $rtgodam_raw_job_id ) ) {
+			$rtgodam_raw_job_id = get_post_meta( $godam_numeric_id, '_godam_original_id', true );
 		}
 	}
 
 	$godam_attachment_data = array(
 		'meta_data'          => get_post_meta( $godam_numeric_id, 'rtgodam_meta', true ),
 		'poster_image'       => get_post_meta( $godam_numeric_id, 'rtgodam_media_video_thumbnail', true ),
-		'transcoded_url'     => $_raw_transcoded_url,
-		'hls_transcoded_url' => $_raw_hls_transcoded_url,
-		'video_src'          => $_raw_video_src,
-		'video_src_type'     => $_raw_video_src_type,
-		'job_id'             => $_raw_job_id,
+		'transcoded_url'     => $rtgodam_raw_transcoded_url,
+		'hls_transcoded_url' => $rtgodam_raw_hls_transcoded_url,
+		'video_src'          => $rtgodam_raw_video_src,
+		'video_src_type'     => $rtgodam_raw_video_src_type,
+		'job_id'             => $rtgodam_raw_job_id,
 		'placeholder_map'    => get_post_meta( $godam_numeric_id, 'rtgodam_media_placeholder_thumbnails', true ),
 		'placeholder_single' => get_post_meta( $godam_numeric_id, 'rtgodam_media_video_placeholder_thumbnail', true ),
 		'attachment_meta'    => wp_get_attachment_metadata( $godam_numeric_id ),

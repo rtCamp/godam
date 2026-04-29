@@ -67,7 +67,7 @@ class Runner {
 	 * @var array<string, class-string[]>
 	 */
 	private static $migrations = array(
-		'2.0.0' => array(
+		'1.8.0' => array(
 			Gallery_V1_To_V2::class,
 			Godam_Cpt_Cleanup::class,
 		),
