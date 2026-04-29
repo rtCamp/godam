@@ -75,6 +75,7 @@
 	<exclude-pattern>*.asset.php</exclude-pattern>
 	<exclude-pattern>*/.github/*</exclude-pattern>
 	<exclude-pattern>*/.lando/*</exclude-pattern>
+	<exclude-pattern>*/lib/*</exclude-pattern>
 
 	<!-- Exclude wordpress dir if using Lando -->
 	<exclude-pattern>/wordpress/*</exclude-pattern>

@@ -63,7 +63,7 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 			 * This handles the case for the uploader tab of WordPress media library.
 			 */
 			if ( attachment.type !== 'image' ) {
-				showNotice( __( 'Only Image file is allowed', 'godam' ), 'error' );
+				showNotice( __( 'Only Image files are allowed', 'godam' ), 'error' );
 				return;
 			}
 

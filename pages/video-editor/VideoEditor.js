@@ -39,6 +39,7 @@ import Chapters from './components/chapters/Chapters';
 import { copyGoDAMVideoBlock, prefetchMediaDataForCopy } from './utils/index';
 import { getFormIdFromLayer } from './utils/formUtils';
 import { canManageAttachment } from '../../assets/src/js/media-library/utility.js';
+import { ensureAddonLayersRegistered } from './utils/loadAddonLayers';
 
 const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );
@@ -53,6 +54,11 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	useEffect( () => {
 		prefetchMediaDataForCopy( attachmentID );
 	}, [ attachmentID ] );
+
+	useEffect( () => {
+		// Verify add-on layer components are registered via PHP filters.
+		ensureAddonLayersRegistered();
+	}, [] );
 
 	const playerRef = useRef( null );
 

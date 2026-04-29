@@ -52,6 +52,10 @@ export default class TranscriptManager {
 			return;
 		}
 
+		if ( this.video.dataset.disableTranscript === 'true' ) {
+			return;
+		}
+
 		// Check if captions/subtitles are enabled in the player configuration
 		if ( ! this.isCaptionsEnabled() ) {
 			return;

@@ -4,9 +4,14 @@
  * including in flex layouts (Row/Stack).
  */
 .wp-block-godam-video {
-	width: 100%;
 	min-width: 0; // Allow shrinking in flex layouts (Row/Stack)
-	
+
+	// Only apply 100% width when no block-level alignment is set.
+	// alignfull/alignwide rely on editor CSS for their own width.
+	&:not(.alignfull):not(.alignwide) {
+		width: 100%;
+	}
+
 	// Ensure the figure takes full width
 	> figure {
 		width: 100%;
@@ -18,21 +23,18 @@
 		position: relative;
 		width: 100%;
 	}
-}
 
-.wp-block-godam-video .godam-editor-video-placeholder {
-	width: 100%;
-	height: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background: #e5e5e5;
-	border-radius: 6px;
-	position: relative;
-	aspect-ratio: 16 / 9;
-}
-
-.wp-block-godam-video {
+	.godam-editor-video-placeholder {
+		width: 100%;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: #e5e5e5;
+		border-radius: 6px;
+		position: relative;
+		aspect-ratio: 16 / 9;
+	}
 
 	.godam-video-container {
 		position: relative;
@@ -65,15 +67,203 @@
 			}
 		}
 	}
+}
 
-	@keyframes godam-spin {
+@keyframes godam-spin {
 
-		0% {
-			transform: rotate(0deg);
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+// Video Thumbnail panel in the block Inspector sidebar
+.godam-thumbnail-panel {
+	margin-bottom: 16px;
+
+	&__label {
+		font-size: 11px;
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: #1e1e1e;
+		margin: 0 0 8px;
+	}
+
+	&__spinner {
+		display: flex;
+		justify-content: center;
+		padding: 8px 0;
+	}
+
+	.godam-thumbnail-grid {
+		display: flex !important;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		gap: 6px;
+		padding: 4px 2px;
+		margin: 0;
+		scrollbar-width: thin;
+		scrollbar-color: #ccc transparent;
+
+		&::-webkit-scrollbar {
+			height: 4px;
 		}
 
-		100% {
-			transform: rotate(360deg);
+		&::-webkit-scrollbar-track {
+			background: transparent;
 		}
+
+		&::-webkit-scrollbar-thumb {
+			background: #ccc;
+			border-radius: 2px;
+		}
+	}
+
+	.godam-thumbnail-tile {
+		flex: 0 0 auto;
+		width: 72px;
+		height: 48px;
+		border: 2px solid transparent;
+		border-radius: 4px;
+		overflow: hidden;
+		cursor: pointer;
+		transition: border-color 0.1s ease, box-shadow 0.1s ease;
+		padding: 0;
+		background: #f0f0f0;
+		position: relative;
+
+		img {
+			display: block;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			pointer-events: none;
+		}
+
+		&:hover {
+			border-color: #a0a0a0;
+		}
+
+		&:focus {
+			outline: none;
+			border-color: var(--wp-admin-theme-color, #007cba);
+			box-shadow: 0 0 0 2px var(--wp-admin-theme-color, #007cba);
+		}
+
+		&.is-selected {
+			border-color: var(--wp-admin-theme-color, #007cba);
+			box-shadow: 0 0 0 2px var(--wp-admin-theme-color, #007cba), inset 0 0 0 1px #fff;
+
+			&::after {
+				content: '\2713';
+				position: absolute;
+				bottom: 3px;
+				right: 3px;
+				width: 14px;
+				height: 14px;
+				background: var(--wp-admin-theme-color, #007cba);
+				color: #fff;
+				font-size: 9px;
+				font-weight: 700;
+				line-height: 1.56;
+				text-align: center;
+				border-radius: 50%;
+				z-index: 1;
+			}
+		}
+
+		&.godam-thumbnail-upload-tile {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-style: dashed;
+			border-color: #949494;
+			background: transparent;
+
+			&:hover {
+				border-color: var(--wp-admin-theme-color, #007cba);
+			}
+		}
+
+		/* Block-level custom thumbnail uploaded via the block editor "+" button */
+		&.godam-thumbnail-custom-block-tile {
+			cursor: default;
+
+			/* When selected, push checkmark to bottom-right so it doesn't overlap the delete btn */
+			&.is-selected::after {
+				bottom: 3px;
+				right: 3px;
+				top: auto;
+			}
+		}
+	}
+
+	/* Wrapper for the custom-uploaded tile — provides the positioning context for the X button */
+	.godam-thumbnail-custom-block-wrapper {
+		position: relative;
+		flex: 0 0 auto;
+		width: 72px;
+		height: 48px;
+
+		.godam-thumbnail-delete-btn {
+			position: absolute;
+			top: 4px;
+			right: 4px;
+			width: 16px;
+			height: 16px;
+			padding: 0;
+			background: rgba(0, 0, 0, 0.55);
+			color: #fff;
+			border: none;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			font-size: 10px;
+			line-height: 1;
+			z-index: 2;
+			transition: background 0.1s ease;
+
+			&:hover {
+				background: #cc1818;
+			}
+		}
+	}
+}
+
+.godam-thumbnail-upload-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	font-size: 22px;
+	font-weight: 300;
+	color: #757575;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	padding: 0;
+	line-height: 1;
+
+	&:hover {
+		color: var(--wp-admin-theme-color, #007cba);
+	}
+}
+
+.godam-thumbnail-override-notice {
+	font-size: 11px;
+	color: #757575;
+	margin: 0;
+
+	.components-button.is-link {
+		font-size: 11px;
+		vertical-align: baseline;
 	}
 }

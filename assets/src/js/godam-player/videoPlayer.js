@@ -6,6 +6,9 @@ import videojs from 'video.js';
 /**
  * Internal dependencies
  */
+// Initialize layer registry early so add-ons can register custom layers
+import './utils/layer-registry-init.js';
+
 import ConfigurationManager from './managers/configurationManager.js';
 import ControlsManager from './managers/controlsManager.js';
 import PreviewManager from './managers/previewManager.js';
@@ -29,6 +32,8 @@ export default class GodamVideoPlayer {
 		this.isDisplayingLayers = isDisplayingLayers;
 		this.currentPlayerVideoInstanceId = video.dataset.instanceId;
 		this.player = null;
+		this.metadataPreloadObserver = null;
+		this.deferMetadataPreloadUntilInView = false;
 
 		// Initialize managers
 		this.configManager = new ConfigurationManager( video );
@@ -156,6 +161,8 @@ export default class GodamVideoPlayer {
 			this.player = videojs( this.video, this.configManager.videoSetupControls );
 		}
 
+		this.setupDeferredMetadataPreload();
+
 		// Initialize ads manager (async - loads plugins dynamically)
 		this.adsManager = new AdsManager( this.player, this.configManager );
 		this.adsManager?.setupAdsIntegration().catch( ( error ) => {
@@ -165,6 +172,70 @@ export default class GodamVideoPlayer {
 
 		this.setupAspectRatio();
 		this.setupPlayerReady();
+	}
+
+	/**
+	 * Defer metadata loading until the player is at least 10% visible
+	 * when preload is explicitly disabled.
+	 */
+	setupDeferredMetadataPreload() {
+		const preload = this.configManager.videoSetupControls?.preload;
+
+		if ( preload !== 'none' ) {
+			this.deferMetadataPreloadUntilInView = false;
+			return;
+		}
+
+		this.deferMetadataPreloadUntilInView = true;
+
+		if ( ! ( 'IntersectionObserver' in window ) ) {
+			this.preloadVideoMetadata();
+			return;
+		}
+
+		this.metadataPreloadObserver = new IntersectionObserver(
+			( entries ) => {
+				entries.forEach( ( entry ) => {
+					if ( entry.intersectionRatio >= 0.1 ) {
+						this.preloadVideoMetadata();
+					}
+				} );
+			},
+			{
+				root: null,
+				rootMargin: '0px',
+				threshold: 0.1,
+			},
+		);
+
+		this.metadataPreloadObserver.observe( this.video );
+		this.player.one( 'dispose', () => this.cleanupMetadataPreloadObserver() );
+	}
+
+	/**
+	 * Upgrade preload mode to metadata and start loading video metadata.
+	 */
+	preloadVideoMetadata() {
+		if ( ! this.deferMetadataPreloadUntilInView ) {
+			return;
+		}
+
+		this.deferMetadataPreloadUntilInView = false;
+		this.cleanupMetadataPreloadObserver();
+
+		this.player.preload( 'metadata' );
+		this.video.setAttribute( 'preload', 'metadata' );
+		this.player.load();
+	}
+
+	/**
+	 * Disconnect the metadata preload observer when it is no longer needed.
+	 */
+	cleanupMetadataPreloadObserver() {
+		if ( this.metadataPreloadObserver ) {
+			this.metadataPreloadObserver.disconnect();
+			this.metadataPreloadObserver = null;
+		}
 	}
 
 	/**
@@ -249,18 +320,18 @@ export default class GodamVideoPlayer {
 		const isInModal = this.video.closest( '.godam-modal' ) !== null;
 
 		if ( ! isInModal ) {
-			const aspectRatio = this.configManager.videoSetupOptions?.aspectRatio || '16:9';
+			const currentAspectRatio = this.configManager.videoSetupOptions?.aspectRatio || '16:9';
 
 			// Handle responsive aspect ratio - detect from video dimensions
-			if ( aspectRatio === 'responsive' ) {
+			if ( currentAspectRatio === 'responsive' ) {
 				this.detectAndSetAspectRatio();
-			} else if ( /^\d+:\d+$/.test( aspectRatio ) ) {
+			} else if ( /^\d+:\d+$/.test( currentAspectRatio ) ) {
 				// Valid x:y format
-				this.player.aspectRatio( aspectRatio );
+				this.player.aspectRatio( currentAspectRatio );
 			} else {
 				// Invalid format - fall back to 16:9
 				// eslint-disable-next-line no-console
-				console.warn( `Invalid aspect ratio format: "${ aspectRatio }". Falling back to "16:9".` );
+				console.warn( `Invalid aspect ratio format: "${ currentAspectRatio }". Falling back to "16:9".` );
 				this.player.aspectRatio( '16:9' );
 			}
 		}
@@ -385,6 +456,9 @@ export default class GodamVideoPlayer {
 
 		// Handle hotspot layers
 		this.layersManager.handleHotspotLayersTimeUpdate( currentTime );
+
+		// Handle custom add-on layers (WooCommerce, etc.)
+		this.layersManager.handleCustomLayersTimeUpdate( currentTime );
 	}
 
 	/**
@@ -411,6 +485,14 @@ export default class GodamVideoPlayer {
 	 * Setup quality selector button in control bar.
 	 */
 	setupQualitySelector() {
+		if ( this.deferMetadataPreloadUntilInView ) {
+			this.player.one( 'loadedmetadata', () => this.renderQualitySelectorButton() );
+			if ( ! this.hasQualitySelectorButton() ) {
+				this.eventsManager.onQualityLevelsAvailable( () => this.renderQualitySelectorButton() );
+			}
+			return;
+		}
+
 		// Force load. Required.
 		if ( this.player.readyState() === 0 ) {
 			this.player.load();

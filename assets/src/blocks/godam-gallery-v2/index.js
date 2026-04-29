@@ -2,20 +2,19 @@
  * WordPress dependencies
  */
 import { registerBlockType } from '@wordpress/blocks';
+import { InnerBlocks } from '@wordpress/block-editor';
 
 /**
  * Internal dependencies
  */
-import edit from './edit';
+import Edit from './edit';
 import metadata from './block.json';
 import icon from '../../images/godam-gallery-filled.svg';
+import './style.scss';
 
-/**
- * Register the block
- */
 registerBlockType( metadata.name, {
 	...metadata,
 	icon: <img src={ icon } alt="GoDAM Gallery Block icon" />,
-	edit,
-	save: () => null, // Dynamic block, so save returns null
+	edit: Edit,
+	save: () => <InnerBlocks.Content />,
 } );

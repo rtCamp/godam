@@ -1,0 +1,127 @@
+.godam-gallery-v2 {
+	// Only apply 100% width when no block-level alignment is set.
+	// alignfull/alignwide rely on theme/editor CSS for their own width.
+	&:not(.alignfull):not(.alignwide) {
+		width: 100%;
+	}
+
+	padding: 16px;
+	background: #f8f9fa;
+	border: 1px dashed #ccc;
+	border-radius: 8px;
+
+	&__add-video-button {
+		width: 100%;
+	}
+
+	&__state--loading {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 10px;
+	}
+
+	.block-list-appender {
+		position: initial;
+	}
+}
+
+.godam-gallery-v2__canvas--list {
+
+	.godam-gallery-v2__query-list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--godam-gallery-gap, 16px);
+		padding: 8px 0;
+	}
+
+	.godam-gallery-v2__query-item {
+		width: 100%;
+	}
+
+	.godam-gallery-v2__query-item > .godam-gallery-v2__query-button,
+	.godam-gallery-v2__query-item {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.godam-gallery-v2__query-thumb {
+		flex: 0 0 clamp(120px, 24vw, var(--godam-gallery-item-width, 180px));
+		min-height: 120px;
+		height: 100%;
+		border-radius: 0;
+	}
+
+	.godam-gallery-v2__query-meta {
+		flex: 1 1 auto;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		justify-content: center;
+		padding: 16px 18px;
+		border-left: 1px solid #f0f0f0;
+	}
+}
+
+.godam-gallery-v2__date-range-picker {
+	margin: 10px 0;
+}
+
+.godam-gallery-v2__query-row {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: 12px;
+	margin-bottom: 1rem;
+}
+
+.godam-gallery-v2__query-col {
+	min-width: 0;
+}
+
+.godam-gallery-v2__date-field {
+	margin-bottom: 12px;
+
+	label {
+		display: block;
+		margin-bottom: 4px;
+		font-weight: 500;
+	}
+}
+
+.media-folder-token-field,
+.author-token-field {
+	margin-bottom: 1rem;
+}
+
+.godam-gallery-v2__date-button {
+	width: 100%;
+	padding: 8px 12px;
+	border: 1px solid #c9d0bd;
+	border-radius: 4px;
+	background: #fff;
+	text-align: left;
+	cursor: pointer;
+	transition: border-color 0.2s ease;
+
+	&:hover {
+		border-color: #8f9a81;
+	}
+
+	&.has-error {
+		border-color: #cc1818;
+	}
+}
+
+@media (max-width: 782px) {
+
+	.godam-gallery-v2__query-row {
+		grid-template-columns: 1fr;
+	}
+
+	.godam-gallery-v2__canvas--list .godam-gallery-v2__query-thumb {
+		flex-basis: clamp(88px, 22vw, 132px);
+		min-height: 70px;
+	}
+}

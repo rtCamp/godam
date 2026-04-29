@@ -8,7 +8,7 @@ import React, { forwardRef, useState, useEffect } from 'react';
  */
 import { __ } from '@wordpress/i18n';
 import { DropdownMenu, Snackbar } from '@wordpress/components';
-import { Icon, moreHorizontalMobile, seen, link, chartBar, video, copy } from '@wordpress/icons';
+import { Icon, moreHorizontalMobile, link, chartBar, video, copy } from '@wordpress/icons';
 import { createPortal } from '@wordpress/element';
 
 /**
@@ -50,20 +50,6 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 		setShowSnackbar( false );
 	};
 
-	const getPreviewTemplateUrl = ( videoItem ) => {
-		const homeUrl = window?.godamRestRoute?.homeUrl || window?.location?.origin || '';
-
-		if ( videoItem?.godam_video_permalink ) {
-			return videoItem.godam_video_permalink;
-		}
-
-		if ( videoItem?.godam_video_id ) {
-			return `${ homeUrl }/?post_type=godam-video&p=${ videoItem.godam_video_id }`;
-		}
-
-		return videoItem?.link;
-	};
-
 	// Pre-fetch data on mount to ensure copy always works
 	useEffect( () => {
 		prefetchMediaDataForCopy( item.id );
@@ -103,13 +89,6 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 						className: 'godam-video-list__video__thumbnail__overlay__menu',
 					} }
 					controls={ [
-						...( window?.godamSettings?.videoPostSettings?.allow_single ? [ {
-							icon: <Icon icon={ seen } />,
-							onClick: () => {
-								window.open( getPreviewTemplateUrl( item ), '_blank' );
-							},
-							title: __( 'Preview template', 'godam' ),
-						} ] : [] ),
 						{
 							icon: <Icon icon={ video } />,
 							onClick: () => {

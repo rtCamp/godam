@@ -24,10 +24,11 @@ import { layerTypes } from '../SidebarLayers';
  * @param {Object}   param0.layer    - The layer object containing type and metadata.
  * @param {Function} param0.goBack   - Callback to navigate back to the previous view.
  * @param {number}   param0.duration - Total duration of the video (in seconds or milliseconds).
+ * @param {string}   param0.layerName - Optional custom layer label for add-ons.
  *
  * @return {JSX.Element} The rendered LayersHeader component.
  */
-const LayersHeader = ( { layer, goBack, duration } ) => {
+const LayersHeader = ( { layer, goBack, duration, layerName: customLayerName } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const [ isEditing, setIsEditing ] = useState( false );
 	const [ initialTimePeriod, setInitialTimePeriod ] = useState( '' );
@@ -51,7 +52,11 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 	 * Get the layer data.
 	 */
 	const layerTypeData = layerTypes.find( ( l ) => l.type === layer.type );
-	const layerName = 'form' === layer.type ? layerTypeData?.formType[ layer?.form_type ?? 'gravity' ]?.layerText : layerTypeData?.layerText;
+	const layerName = customLayerName || (
+		'form' === layer.type
+			? layerTypeData?.formType[ layer?.form_type ?? 'gravity' ]?.layerText
+			: layerTypeData?.layerText
+	);
 
 	const handleDeleteLayer = () => {
 		dispatch( removeLayer( { id: layer.id } ) );

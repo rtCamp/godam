@@ -7,7 +7,7 @@ import Editor from '@monaco-editor/react';
 /**
  * WordPress dependencies
  */
-import { ToggleControl, Panel, PanelBody, Notice } from '@wordpress/components';
+import { ToggleControl, Panel, PanelBody } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -117,11 +117,6 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 
-	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.validApiKey;
-	// For now we are enabling all the features
-	const isValidAPIKey = true;
-
 	const FormLayerData = FormLayerComponentType[ layer?.form_type ?? 'gravity' ];
 	const FormLayerComponent = FormLayerData?.component;
 	const isPluginActive = FormLayerData?.isActive;
@@ -134,17 +129,6 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 	return (
 		<>
 			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
-
-			{
-				! isValidAPIKey &&
-				<Notice
-					className="mb-4"
-					status="warning"
-					isDismissible={ false }
-				>
-					{ __( 'This features is available in premium version', 'godam' ) }
-				</Notice>
-			}
 
 			<FormLayerComponent layerID={ layer.id } />
 
@@ -159,7 +143,7 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 					dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
 				}
 				help={ __( 'If enabled, the user will be able to skip the form submission.', 'godam' ) }
-				disabled={ ! isValidAPIKey || ! isPluginActive }
+				disabled={ ! isPluginActive }
 			/>
 
 			<Panel className="-mx-4 border-x-0">
@@ -176,12 +160,12 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 						label={ __( 'Layer background color', 'godam' ) }
 						enableAlpha={ true }
 						onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
-						disabled={ ! isValidAPIKey || ! isPluginActive }
+						disabled={ ! isPluginActive }
 					/>
 
 					<label htmlFor="custom-css" className="easydam-label">{ __( 'Custom CSS', 'godam' ) }</label>
 
-					<div className={ ( ! isValidAPIKey || ! isPluginActive ) ? 'pointer-events-none opacity-50' : '' }>
+					<div className={ ( ! isPluginActive ) ? 'pointer-events-none opacity-50' : '' }>
 						<Editor
 							id="custom-css"
 							className="code-editor"

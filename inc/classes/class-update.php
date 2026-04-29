@@ -9,6 +9,7 @@ namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 
+use RTGODAM\Inc\Enums\Api_Key_Status;
 use RTGODAM\Inc\Traits\Singleton;
 
 /**
@@ -17,6 +18,13 @@ use RTGODAM\Inc\Traits\Singleton;
 class Update {
 
 	use Singleton;
+
+	/**
+	 * Option flag used to show the post-update video performance notice once.
+	 *
+	 * @var string
+	 */
+	const VIDEO_PERFORMANCE_NOTICE_OPTION = 'rtgodam_show_video_performance_notice';
 
 	/**
 	 * Construct method.
@@ -30,27 +38,62 @@ class Update {
 	 */
 	protected function setup_hooks() {
 		add_action( 'admin_init', array( $this, 'rtgodam_update_plugin_version' ) );
+		add_action( 'admin_notices', array( $this, 'maybe_render_video_performance_notice' ) );
 	}
 
 	/**
 	 * Check if the plugin version has changed.
 	 *
-	 * If a version bump is detected, sets a transient
-	 * to show the "What's New" page on next GoDAM menu admin load.
+	 * Fresh install: sets options for What's New page.
+	 * Version bump:  sets option for What's New page only.
 	 */
 	public function rtgodam_update_plugin_version() {
 		$saved_version   = get_option( 'rtgodam_plugin_version' );
 		$current_version = RTGODAM_VERSION;
 
+		if ( false === $saved_version ) {
+			// Fresh install — show What's New page.
+			update_option( 'rtgodam_show_whats_new', true );
+			$this->rtgodam_reconcile_api_key_state();
+			update_option( 'rtgodam_plugin_version', $current_version );
+			return;
+		}
+
 		if ( version_compare( $current_version, $saved_version, '>' ) ) {
-			// Set transient if this is a new version update.
+			// Existing install with a version bump — show What's New only.
 			if ( $this->rtgodam_is_release_bump( $saved_version, $current_version ) ) {
-				set_transient( 'rtgodam_show_whats_new', true );
+				update_option( 'rtgodam_show_whats_new', true );
 			}
 
+			update_option( self::VIDEO_PERFORMANCE_NOTICE_OPTION, true, false );
 			$this->rtgodam_reconcile_api_key_state();
 			update_option( 'rtgodam_plugin_version', $current_version );
 		}
+	}
+
+	/**
+	 * Render a one-time admin notice after the video performance controls change.
+	 *
+	 * @return void
+	 */
+	public function maybe_render_video_performance_notice() {
+		if ( ! current_user_can( 'manage_options' ) || ! get_option( self::VIDEO_PERFORMANCE_NOTICE_OPTION ) ) {
+			return;
+		}
+
+		delete_option( self::VIDEO_PERFORMANCE_NOTICE_OPTION );
+		?>
+		<div class="notice notice-info is-dismissible">
+			<p>
+				<?php
+				esc_html_e(
+					'GoDAM video performance settings have been simplified to Balanced and Priority modes. Please review any hero videos that should stay in Priority mode after this update.',
+					'godam'
+				);
+				?>
+			</p>
+		</div>
+		<?php
 	}
 
 	/**

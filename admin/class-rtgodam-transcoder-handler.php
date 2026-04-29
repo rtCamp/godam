@@ -48,6 +48,15 @@ class RTGODAM_Transcoder_Handler {
 	public $uploaded = array();
 
 	/**
+	 * The author of the rtMedia item being processed.
+	 *
+	 * @since    1.0.0
+	 * @access   public
+	 * @var      int|null    $media_author    rtMedia media author ID.
+	 */
+	public $media_author = null;
+
+	/**
 	 * The api key of transcoding service subscription.
 	 *
 	 * @since    1.0.0
@@ -663,30 +672,48 @@ class RTGODAM_Transcoder_Handler {
 		$post_thumbs_array = maybe_unserialize( $post_thumbs );
 
 		$thumbnail_urls      = array();
+		$placeholder_map     = array();
 		$first_thumbnail_url = false;
 
-		foreach ( $post_thumbs_array['thumbnail'] as $thumbnail_url ) {
-				$sanitized_url = esc_url_raw( $thumbnail_url );
+		$raw_thumbnails   = $post_thumbs_array['thumbnail'];
+		$raw_placeholders = ! empty( $post_thumbs_array['placeholder_thumbnail'] ) && is_array( $post_thumbs_array['placeholder_thumbnail'] )
+			? $post_thumbs_array['placeholder_thumbnail']
+			: array();
+
+		// Iterate both parallel arrays by the same raw index so positions stay aligned.
+		foreach ( $raw_thumbnails as $idx => $thumbnail_url ) {
+			$sanitized_url = esc_url_raw( $thumbnail_url );
 			if ( empty( $sanitized_url ) ) {
 				continue;
 			}
 
-				$thumbnail_urls[] = $sanitized_url;
+			$thumbnail_urls[] = $sanitized_url;
+
+			if ( isset( $raw_placeholders[ $idx ] ) ) {
+				$sanitized_placeholder = esc_url_raw( $raw_placeholders[ $idx ] );
+				if ( ! empty( $sanitized_placeholder ) ) {
+					$placeholder_map[ $sanitized_url ] = $sanitized_placeholder;
+				}
+			}
 		}
 
 		if ( ! empty( $thumbnail_urls ) ) {
 			$first_thumbnail_url = $thumbnail_urls[0];
 		}
 
+		$media_id = null;
 		if ( class_exists( 'RTMediaModel' ) ) {
-			$model    = new RTMediaModel();
-			$media    = $model->get( array( 'media_id' => $post_id ) );
-			$media_id = $media[0]->id;
+			$model = new RTMediaModel();
+			$media = $model->get( array( 'media_id' => $post_id ) );
 
-			$this->media_author             = $media[0]->media_author;
-			$this->uploaded['context']      = $media[0]->context;
-			$this->uploaded['context_id']   = $media[0]->context_id;
-			$this->uploaded['media_author'] = $media[0]->media_author;
+			if ( ! empty( $media ) && isset( $media[0] ) ) {
+				$media_id = $media[0]->id;
+
+				$this->media_author             = $media[0]->media_author;
+				$this->uploaded['context']      = $media[0]->context;
+				$this->uploaded['context_id']   = $media[0]->context_id;
+				$this->uploaded['media_author'] = $media[0]->media_author;
+			}
 		}
 
 		// rtMedia support.
@@ -696,6 +723,13 @@ class RTGODAM_Transcoder_Handler {
 		update_post_meta( $post_id, 'rtgodam_media_source', $post_thumbs_array['job_for'] );
 		update_post_meta( $post_id, 'rtgodam_media_thumbnails', $thumbnail_urls );
 
+		// Store thumbnail → placeholder mapping, or clear stale meta when no valid placeholders.
+		if ( ! empty( $placeholder_map ) ) {
+			update_post_meta( $post_id, 'rtgodam_media_placeholder_thumbnails', $placeholder_map );
+		} else {
+			delete_post_meta( $post_id, 'rtgodam_media_placeholder_thumbnails' );
+		}
+
 		do_action( 'rtgodam_transcoded_thumbnails_added', $post_id );
 
 		if ( $first_thumbnail_url ) {
@@ -703,7 +737,7 @@ class RTGODAM_Transcoder_Handler {
 			// rtMedia support.
 			update_post_meta( $post_id, '_rt_media_video_thumbnail', $first_thumbnail_url );
 
-			if ( class_exists( 'RTMediaModel' ) ) {
+			if ( class_exists( 'RTMediaModel' ) && ! empty( $media_id ) ) {
 				$model->update( array( 'cover_art' => $first_thumbnail_url ), array( 'media_id' => $post_id ) );
 				update_activity_after_thumb_set( $media_id );
 			}
@@ -715,6 +749,12 @@ class RTGODAM_Transcoder_Handler {
 			// If the current selected thumbnail is NOT one of the custom uploaded thumbnails, overwrite it.
 			if ( empty( $current_thumbnail ) || ! in_array( $current_thumbnail, $custom_thumbnails, true ) ) {
 				update_post_meta( $post_id, 'rtgodam_media_video_thumbnail', $first_thumbnail_url );
+				// Sync placeholder for the newly set primary thumbnail using the verified map.
+				if ( isset( $placeholder_map[ $first_thumbnail_url ] ) ) {
+					update_post_meta( $post_id, 'rtgodam_media_video_placeholder_thumbnail', $placeholder_map[ $first_thumbnail_url ] );
+				} else {
+					delete_post_meta( $post_id, 'rtgodam_media_video_placeholder_thumbnail' );
+				}
 			}
 
 			/**

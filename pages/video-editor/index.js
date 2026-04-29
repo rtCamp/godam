@@ -12,6 +12,20 @@ import { PostHogProvider } from '@posthog/react';
 import store from './redux/store';
 import App from './App';
 import posthog from '../utils/posthog';
+import LayerControls from './components/LayerControls';
+import LayersHeader from './components/layers/LayersHeader';
+import { updateLayerField } from './redux/slice/videoSlice';
+
+window.godamVideoEditorComponents = {
+	...( window.godamVideoEditorComponents || {} ),
+	LayerControls,
+	LayersHeader,
+};
+
+window.godamVideoEditorActions = {
+	...( window.godamVideoEditorActions || {} ),
+	updateLayerField,
+};
 
 const Index = () => {
 	return (

@@ -9,7 +9,6 @@ namespace RTGODAM\Inc\REST_API;
 
 defined( 'ABSPATH' ) || exit;
 
-use RTGODAM\Inc\Post_Types\GoDAM_Video;
 use RTGODAM\Inc\Enums\Api_Key_Status;
 use RTGODAM\Inc\Enums\HTTP_Status_Code;
 use RTGODAM\Inc\Helpers\Api_Key;
@@ -65,6 +64,7 @@ class Settings extends Base {
 				'enable_global_video_ads' => false,
 				'adTagUrl'                => '',
 			),
+			'integrations' => apply_filters( 'godam_default_integration_settings', array() ),
 		);
 	}
 
@@ -203,6 +203,7 @@ class Settings extends Base {
 	}
 
 	/**
+
 	 * Verify the API key using external API.
 	 *
 	 * @param \WP_REST_Request $request REST API request.
@@ -426,6 +427,7 @@ class Settings extends Base {
 				'enable_global_video_ads' => rest_sanitize_boolean( $settings['ads_settings']['enable_global_video_ads'] ?? $default['ads_settings']['enable_global_video_ads'] ),
 				'adTagUrl'                => esc_url_raw( $settings['ads_settings']['adTagUrl'] ?? $default['ads_settings']['adTagUrl'] ),
 			),
+			'integrations' => apply_filters( 'godam_sanitize_integration_settings', array(), $settings, $default ),
 		);
 	}
 

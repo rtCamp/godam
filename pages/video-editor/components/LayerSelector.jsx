@@ -35,6 +35,20 @@ import MetFormIcon from '../assets/layers/MetFormIcon.png';
 const Layers = [
 	{
 		id: 1,
+		title: __( 'CTA', 'godam' ),
+		description: __( 'Guide users toward a specific action', 'godam' ),
+		image: CTA,
+		type: 'cta',
+	},
+	{
+		id: 2,
+		title: __( 'Hotspot', 'godam' ),
+		description: __( 'Highlighting key areas with focus', 'godam' ),
+		image: Hotspot,
+		type: 'hotspot',
+	},
+	{
+		id: 3,
 		title: __( 'Gravity Forms', 'godam' ),
 		description: __( 'Collect user input using Gravity Forms', 'godam' ),
 		image: Form,
@@ -46,7 +60,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://docs.gravityforms.com/installation/">${ __( 'Gravity Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 2,
+		id: 4,
 		title: __( 'WPForms', 'godam' ),
 		description: __( 'Collect user input using WPForms', 'godam' ),
 		image: Form,
@@ -58,7 +72,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/wpforms-lite/">${ __( 'WP Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 3,
+		id: 5,
 		title: __( 'Contact Form 7', 'godam' ),
 		description: __( 'Collect user input using Contact Form 7', 'godam' ),
 		image: Form,
@@ -70,7 +84,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/contact-form-7/">${ __( 'Contact Form 7', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 4,
+		id: 6,
 		title: __( 'Jetpack Forms', 'godam' ),
 		description: __( 'Collect user input using Jetpack Forms', 'godam' ),
 		image: Form,
@@ -83,7 +97,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/jetpack/">${ __( 'Jetpack', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 5,
+		id: 7,
 		title: __( 'SureForms', 'godam' ),
 		description: __( 'Collect user input using SureForms', 'godam' ),
 		image: Form,
@@ -96,7 +110,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/sureforms/">${ __( 'SureForms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 6,
+		id: 8,
 		title: __( 'Forminator Forms', 'godam' ),
 		description: __( 'Collect user input using Forminator Forms', 'godam' ),
 		image: Form,
@@ -109,7 +123,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/forminator">${ __( 'Forminator Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 7,
+		id: 9,
 		title: __( 'Fluent Forms', 'godam' ),
 		description: __( 'Collect user input using Fluent Forms', 'godam' ),
 		image: Form,
@@ -122,7 +136,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/fluentform">${ __( 'Fluent Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 8,
+		id: 10,
 		title: __( 'Everest Forms', 'godam' ),
 		description: __( 'Collect user input using Everest Forms', 'godam' ),
 		image: Form,
@@ -135,7 +149,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/everest-forms/">${ __( 'Everest Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 9,
+		id: 11,
 		title: __( 'Ninja Forms', 'godam' ),
 		description: __( 'Collect user input using Ninja Forms', 'godam' ),
 		image: Form,
@@ -148,7 +162,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/ninja-forms/">${ __( 'Ninja Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 10,
+		id: 12,
 		title: __( 'MetForm', 'godam' ),
 		description: __( 'Collect user input using MetForm', 'godam' ),
 		image: Form,
@@ -158,20 +172,6 @@ const Layers = [
 		isRequired: true,
 		isActive: Boolean( window?.videoData?.metformActive ) ?? false,
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/metform/">${ __( 'MetForm', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
-	},
-	{
-		id: 11,
-		title: __( 'CTA', 'godam' ),
-		description: __( 'Guide users toward a specific action', 'godam' ),
-		image: CTA,
-		type: 'cta',
-	},
-	{
-		id: 12,
-		title: __( 'Hotspot', 'godam' ),
-		description: __( 'Highlighting key areas with focus', 'godam' ),
-		image: Hotspot,
-		type: 'hotspot',
 	},
 	{
 		id: 13,
@@ -192,6 +192,10 @@ const Layers = [
 	},
 ];
 
+// Merge with PHP-filtered layers (e.g., WooCommerce)
+const phpFilteredLayers = window.godamVideoEditorConfig?.layerOptions || [];
+const AllLayers = [ ...Layers, ...phpFilteredLayers ];
+
 /**
  * Modal to select the layer to be added on the video at a particular timestamp.
  *
@@ -204,17 +208,17 @@ const Layers = [
 const LayerSelector = ( { closeModal, addNewLayer } ) => {
 	const [ selectedLayer, setSelectedLayer ] = useState( null );
 	const [ searchQuery, setSearchQuery ] = useState( '' );
-	const [ filteredLayers, setFilteredLayers ] = useState( Layers );
+	const [ filteredLayers, setFilteredLayers ] = useState( AllLayers );
 	const [ activeTab, setActiveTab ] = useState( 'all' );
 
 	const uniqueLayerTypes = useMemo( () => {
-		return Layers.reduce( ( acc, layer ) => {
+		return AllLayers.reduce( ( acc, layer ) => {
 			if ( ! acc.includes( layer.type ) ) {
 				acc.push( layer.type );
 			}
 			return acc;
 		}, [] );
-	}, [] );
+	}, [ AllLayers ] );
 
 	// Create tabs array with "all" as the first item
 	const allTabs = useMemo( () => {
@@ -274,7 +278,7 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 			setActiveTab( 'all' );
 		}
 
-		const filtered = Layers.filter( ( layer ) =>
+		const filtered = AllLayers.filter( ( layer ) =>
 			layer.title.toLowerCase().includes( lowerCaseQuery ) ||
 		layer.description.toLowerCase().includes( lowerCaseQuery ),
 		);
@@ -290,7 +294,7 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 	const handleTabClick = ( type ) => {
 		if ( activeTab === type ) {
 			setActiveTab( 'all' );
-			setFilteredLayers( Layers );
+			setFilteredLayers( AllLayers );
 			return;
 		}
 
@@ -299,9 +303,9 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 
 		setActiveTab( type );
 		if ( type === 'all' ) {
-			setFilteredLayers( Layers );
+			setFilteredLayers( AllLayers );
 		} else {
-			const filtered = Layers.filter( ( layer ) => layer.type === type );
+			const filtered = AllLayers.filter( ( layer ) => layer.type === type );
 			setFilteredLayers( filtered );
 		}
 	};
@@ -366,7 +370,7 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 											alt={ layer.title }
 										/>
 										{
-											( layer.type === 'form' ) && layer.formIcon && (
+											layer.formIcon && (
 												<img
 													className="godam-layer-selector__item__image-container__form-icon"
 													src={ layer.formIcon }
@@ -377,7 +381,9 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 									</div>
 
 									<div className="godam-layer-selector__item__content">
-										<h3>{ layer.title }</h3>
+										<h3>
+											{ layer.title }
+										</h3>
 										<p>{ layer.description }</p>
 									</div>
 

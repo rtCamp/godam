@@ -57,72 +57,77 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 				'callback'            => array( $this, 'handle_callback' ),
 				'permission_callback' => array( $this, 'verify_callback_permission' ),
 				'args'                => array(
-					'job_id'           => array(
+					'job_id'                => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					),
-					'job_type'         => array(
+					'job_type'              => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					),
-					'job_for'          => array(
+					'job_for'               => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					),
-					'format'           => array(
+					'format'                => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					),
-					'download_url'     => array(
+					'download_url'          => array(
 						'required'          => false,
 						'type'              => 'string',
 						'sanitize_callback' => 'esc_url_raw',
 					),
-					'file_name'        => array(
+					'file_name'             => array(
 						'required'          => false,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					),
-					'thumb_count'      => array(
+					'thumb_count'           => array(
 						'required'          => false,
 						'type'              => 'integer',
 						'sanitize_callback' => 'absint',
 					),
-					'status'           => array(
+					'status'                => array(
 						'required'          => false,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					),
-					'file_status'      => array(
+					'file_status'           => array(
 						'required'          => false,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					),
-					'files'            => array(
+					'files'                 => array(
 						'required'          => false,
 						'type'              => 'array',
 						'sanitize_callback' => array( $this, 'sanitize_array_of_urls' ),
 					),
-					'thumbnail'        => array(
+					'thumbnail'             => array(
 						'required'          => false,
 						'type'              => 'array',
 						'sanitize_callback' => array( $this, 'sanitize_array_of_urls' ),
 					),
-					'error_msg'        => array(
+					'placeholder_thumbnail' => array(
+						'required'          => false,
+						'type'              => 'array',
+						'sanitize_callback' => array( $this, 'sanitize_array_of_urls' ),
+					),
+					'error_msg'             => array(
 						'required'          => false,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					),
-					'job_manager_form' => array(
+					'job_manager_form'      => array(
 						'required'          => false,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					),
-					'api_key'          => array(
+					'api_key'               => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
