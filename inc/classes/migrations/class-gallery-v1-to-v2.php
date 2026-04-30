@@ -36,7 +36,7 @@ defined( 'ABSPATH' ) || exit;
  * | category        | (dropped)          | V2 query does not support category filter |
  * | tag             | (dropped)          | V2 query does not support tag filter      |
  * | search          | (dropped)          | V2 query does not support search filter   |
- * | engagements     | (dropped)          | V2 does not have engagement support       |
+ * | engagements     | engagements        | direct pass-through                       |
  * | openToNewPage   | (dropped)          | V2 does not have single-page linking      |
  */
 class Gallery_V1_To_V2 {
@@ -364,6 +364,7 @@ class Gallery_V1_To_V2 {
 			'customDateStart'   => '',
 			'customDateEnd'     => '',
 			'showTitle'         => true,
+			'engagements'       => true,
 		);
 
 		$diff = array();
@@ -412,6 +413,7 @@ class Gallery_V1_To_V2 {
 			'customDateStart',
 			'customDateEnd',
 			'showTitle',
+			'engagements',
 		);
 
 		foreach ( $passthrough as $key ) {
@@ -436,7 +438,7 @@ class Gallery_V1_To_V2 {
 
 		/*
 		 * Intentionally dropped (no equivalent in V2):
-		 * category, tag, search, engagements, openToNewPage, include.
+		 * category, tag, search, openToNewPage, include.
 		 */
 
 		return $v2;
