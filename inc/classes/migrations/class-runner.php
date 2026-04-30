@@ -36,9 +36,16 @@ defined( 'ABSPATH' ) || exit;
  *
  * ## Re-running migrations (e.g. for testing)
  *
+ * Single-site:
  *   wp option delete rtgodam_db_version
  *   wp option delete rtgodam_gallery_v1_v2_migration_done
  *   wp option delete rtgodam_godam_cpt_cleanup_done
+ *
+ * Multisite (repeat for each subsite ID, e.g. 1, 2, 3):
+ *   wp option --url=example.com delete rtgodam_db_version
+ *   wp option --url=sub.example.com delete rtgodam_db_version
+ *   wp option --url=sub.example.com delete rtgodam_gallery_v1_v2_migration_done
+ *   wp option --url=sub.example.com delete rtgodam_godam_cpt_cleanup_done
  */
 class Runner {
 
@@ -101,8 +108,43 @@ class Runner {
 	 * Hooked to admin_init by Plugin::__construct(), mirroring RankMath's
 	 * pattern. admin_init fires on every admin page load so is_admin() is
 	 * guaranteed and auth functions (is_user_logged_in, current_user_can)
-	 * are available. The version compare is the sole gate — if stored version
-	 * equals current version, this is a single option read and returns.
+	 * are available.
+	 *
+	 * On multisite, iterates every registered site using switch_to_blog() so
+	 * that all subsites are migrated when any admin page loads — regardless of
+	 * which subsite the current request targets. Each site tracks its own
+	 * DB_VERSION_OPTION, so the version compare gate is evaluated independently
+	 * per site.
+	 *
+	 * @return void
+	 */
+	public static function maybe_run(): void {
+		if ( is_multisite() ) {
+			$site_ids = get_sites(
+				array(
+					'fields' => 'ids',
+					'number' => 0,
+				)
+			);
+
+			foreach ( $site_ids as $site_id ) {
+				switch_to_blog( $site_id );
+				self::run_for_current_site();
+				restore_current_blog();
+			}
+
+			return;
+		}
+
+		self::run_for_current_site();
+	}
+
+	/**
+	 * Run pending migrations for the site that is currently active.
+	 *
+	 * The version compare is the sole gate — if the stored version equals the
+	 * current plugin version, this is a single option read and returns immediately
+	 * with no per-migration overhead.
 	 *
 	 * The runner only advances the stored DB version for a given version-batch
 	 * when every migration class in that batch returns true from maybe_run().
@@ -112,7 +154,7 @@ class Runner {
 	 *
 	 * @return void
 	 */
-	public static function maybe_run(): void {
+	private static function run_for_current_site(): void {
 		$installed_version = get_option( self::DB_VERSION_OPTION, '' );
 		if ( version_compare( $installed_version, RTGODAM_VERSION, '>=' ) ) {
 			return;
