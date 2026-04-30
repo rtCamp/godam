@@ -108,6 +108,60 @@ class Godam_Cpt_Cleanup {
 	}
 
 	/**
+	 * Register the template_redirect handler that emits 410 Gone for old CPT URLs.
+	 *
+	 * Called unconditionally from Runner::init() on every request so the handler
+	 * is active on all front-end requests once the migration is complete. The
+	 * handler itself bails immediately unless OPTION_KEY === 'done'.
+	 *
+	 * @return void
+	 */
+	public static function register_redirect_hooks(): void {
+		add_action( 'template_redirect', array( static::class, 'maybe_send_410' ) );
+	}
+
+	/**
+	 * Emit HTTP 410 Gone for requests that match the discontinued godam-video CPT URL patterns.
+	 *
+	 * Runs on template_redirect. Returns early unless all three conditions are met:
+	 *   - The cleanup migration is complete (OPTION_KEY === 'done').
+	 *   - WordPress has already determined the current request is a 404.
+	 *   - The request path matches /{video_slug} (archive) or /{video_slug}/{slug} (single).
+	 *
+	 * Responding with 410 Gone (instead of 404 Not Found) signals to search engines
+	 * that the removal is intentional, prompting faster de-indexing and preserving
+	 * crawl budget for the rest of the site.
+	 *
+	 * @return void
+	 */
+	public static function maybe_send_410(): void {
+		if ( 'done' !== get_option( self::OPTION_KEY ) ) {
+			return;
+		}
+
+		if ( ! is_404() ) {
+			return;
+		}
+
+		$video_settings = get_option( 'rtgodam_video_post_settings', array() );
+		$cpt_url_slug   = ! empty( $video_settings['video_slug'] )
+			? sanitize_title( $video_settings['video_slug'] )
+			: 'videos';
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- path used for pattern matching only, never output.
+		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		$path        = (string) wp_parse_url( $request_uri, PHP_URL_PATH );
+
+		if ( ! preg_match( '#^/' . preg_quote( $cpt_url_slug, '#' ) . '(/[^/]*/?)?$#', $path ) ) {
+			return;
+		}
+
+		status_header( 410 );
+		nocache_headers();
+		exit;
+	}
+
+	/**
 	 * Register the AS batch callback and schedule the migration if needed.
 	 *
 	 * Called by Runner::maybe_run() only when the plugin version has changed.
