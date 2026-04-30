@@ -36,9 +36,18 @@ defined( 'ABSPATH' ) || exit;
  *
  * ## Re-running migrations (e.g. for testing)
  *
+ * Single-site:
  *   wp option delete rtgodam_db_version
  *   wp option delete rtgodam_gallery_v1_v2_migration_done
  *   wp option delete rtgodam_godam_cpt_cleanup_done
+ *
+ * Multisite (repeat for each subsite, e.g. example.com, sub.example.com):
+ *   wp option --url=example.com delete rtgodam_db_version
+ *   wp option --url=example.com delete rtgodam_gallery_v1_v2_migration_done
+ *   wp option --url=example.com delete rtgodam_godam_cpt_cleanup_done
+ *   wp option --url=sub.example.com delete rtgodam_db_version
+ *   wp option --url=sub.example.com delete rtgodam_gallery_v1_v2_migration_done
+ *   wp option --url=sub.example.com delete rtgodam_godam_cpt_cleanup_done
  */
 class Runner {
 
@@ -80,10 +89,11 @@ class Runner {
 	 * can fire queued batch jobs on any request, independent of whether a
 	 * migration is currently pending.
 	 *
-	 * Also registers the migration trigger on admin_init, which fires on every
-	 * admin page load where is_admin() is guaranteed and auth functions are
-	 * available. The version compare gate ensures this is a single option read
-	 * on requests where no migrations are pending.
+	 * Also registers the migration trigger on init, which fires on every
+	 * request (frontend, admin, REST, AJAX, WP-Cron) so pending migrations
+	 * are not blocked behind an admin page visit. The version compare gate
+	 * ensures this is a single option read on requests where no migrations
+	 * are pending.
 	 *
 	 * @return void
 	 */
@@ -91,28 +101,63 @@ class Runner {
 		Godam_Cpt_Cleanup::register_hooks();
 		Godam_Cpt_Cleanup::register_redirect_hooks();
 
-		// Trigger pending migrations on admin page loads after version changes.
-		add_action( 'admin_init', array( self::class, 'maybe_run' ) );
+		// Trigger pending migrations on every request after version changes.
+		add_action( 'init', array( self::class, 'maybe_run' ) );
 	}
 
 	/**
 	 * Trigger pending migrations when the plugin version has changed.
 	 *
-	 * Hooked to admin_init by Plugin::__construct(), mirroring RankMath's
-	 * pattern. admin_init fires on every admin page load so is_admin() is
-	 * guaranteed and auth functions (is_user_logged_in, current_user_can)
-	 * are available. The version compare is the sole gate — if stored version
-	 * equals current version, this is a single option read and returns.
+	 * Hooked to init so migrations fire on every request type — frontend,
+	 * admin, REST, AJAX, and WP-Cron — without requiring an admin page visit.
+	 * The version compare gate keeps per-request overhead to a single option
+	 * read once migrations are complete.
 	 *
-	 * The runner only advances the stored DB version for a given version-batch
-	 * when every migration class in that batch returns true from maybe_run().
-	 * If any migration bails (e.g. the current user lacks manage_options), the
-	 * runner stops without bumping the stored version so the whole batch retries
-	 * on the next qualifying admin_init.
+	 * On multisite, iterates every registered site using switch_to_blog() so
+	 * that all subsites are migrated when any request loads — regardless of
+	 * which subsite the current request targets. Each site tracks its own
+	 * DB_VERSION_OPTION, so the version compare gate is evaluated independently
+	 * per site.
 	 *
 	 * @return void
 	 */
 	public static function maybe_run(): void {
+		if ( is_multisite() ) {
+			$site_ids = get_sites(
+				array(
+					'fields' => 'ids',
+					'number' => 0,
+				)
+			);
+
+			foreach ( $site_ids as $site_id ) {
+				switch_to_blog( $site_id );
+				self::run_for_current_site();
+				restore_current_blog();
+			}
+
+			return;
+		}
+
+		self::run_for_current_site();
+	}
+
+	/**
+	 * Run pending migrations for the site that is currently active.
+	 *
+	 * The version compare is the sole gate — if the stored version equals the
+	 * current plugin version, this is a single option read and returns immediately
+	 * with no per-migration overhead.
+	 *
+	 * The runner only advances the stored DB version for a given version-batch
+	 * when every migration class in that batch returns true from maybe_run().
+	 * If any migration bails (e.g. the concurrency lock is held), the runner
+	 * stops without bumping the stored version so the whole batch retries
+	 * on the next qualifying init.
+	 *
+	 * @return void
+	 */
+	private static function run_for_current_site(): void {
 		$installed_version = get_option( self::DB_VERSION_OPTION, '' );
 		if ( version_compare( $installed_version, RTGODAM_VERSION, '>=' ) ) {
 			return;
@@ -132,7 +177,7 @@ class Runner {
 
 			if ( ! $all_complete ) {
 				// At least one migration bailed — hold the stored version so
-				// the entire batch retries on the next qualifying admin_init.
+				// the entire batch retries on the next qualifying init.
 				return;
 			}
 
