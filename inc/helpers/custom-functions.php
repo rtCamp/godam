@@ -1191,10 +1191,10 @@ function rtgodam_is_engagement_feature_enabled() {
 function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '', $show_engagements = false ) {
 	ob_start();
 	// Check if video ID is provided and if video attachment exists.
-	$video_attachment = null;
-	$show_video       = false;
-	$video_id         = intval( $video_id );
-	$show_engagements = rtgodam_is_engagement_feature_enabled() && $show_engagements ? 'show' : '';
+	$video_attachment  = null;
+	$show_video        = false;
+	$video_id          = intval( $video_id );
+	$engagements_value = rtgodam_is_engagement_feature_enabled() && $show_engagements ? 'show' : '';
 
 	if ( ! empty( $video_id ) ) {
 		$video_attachment = get_post( $video_id );
@@ -1214,8 +1214,8 @@ function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '
 		if ( ! empty( $godam_context ) ) {
 			$godam_shortcode .= ' godam_context="' . esc_attr( $godam_context ) . '"';
 		}
-		if ( ! empty( $show_engagements ) ) {
-			$godam_shortcode .= ' engagements="' . esc_attr( $show_engagements ) . '"';
+		if ( ! empty( $engagements_value ) ) {
+			$godam_shortcode .= ' engagements="' . esc_attr( $engagements_value ) . '"';
 		}
 		$godam_shortcode .= ']';
 

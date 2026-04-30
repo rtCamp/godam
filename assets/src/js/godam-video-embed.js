@@ -368,7 +368,6 @@ document.addEventListener( 'DOMContentLoaded', function() {
 	// Create and show loading overlay
 	const loadingOverlay = document.createElement( 'div' );
 	loadingOverlay.className = 'godam-video-embed-loading';
-	loadingOverlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;';
 
 	// Create spinner element
 	const spinner = document.createElement( 'div' );
@@ -389,13 +388,21 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		}
 	};
 
-	// Listen for the engagement store to be initialized.
-	document.addEventListener( 'godamEngagementStoreInitialized', renderCommentBox );
+	// Fallback: remove the overlay after 10 s in case the engagement store
+	// event never fires or renderCommentBox() exits early.
+	const overlayFallbackTimer = setTimeout( hideLoadingOverlay, 10000 );
+
+	// Listen for the engagement store to be initialized (once only).
+	document.addEventListener( 'godamEngagementStoreInitialized', renderCommentBox, { once: true } );
 
 	// Render the comment box.
 	function renderCommentBox() {
+		// Always clear the fallback timer — we are now handling the overlay ourselves.
+		clearTimeout( overlayFallbackTimer );
+
 		// Check WordPress dependencies
 		if ( typeof wp === 'undefined' || ! wp.data || ! wp.element?.createRoot ) {
+			hideLoadingOverlay();
 			return;
 		}
 
@@ -404,6 +411,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		const dispatch = wp.data.dispatch( storeName );
 
 		if ( ! select || ! dispatch ) {
+			hideLoadingOverlay();
 			return;
 		}
 
@@ -412,6 +420,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		const videoInstanceId = videoElement?.getAttribute( 'data-instance-id' );
 
 		if ( ! videoInstanceId ) {
+			hideLoadingOverlay();
 			return;
 		}
 
