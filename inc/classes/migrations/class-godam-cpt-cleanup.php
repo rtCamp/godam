@@ -25,10 +25,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * ## Lifecycle
  *
- * 1. `Runner::maybe_run()` (hooked to `admin_init`) calls `maybe_run()` when
+ * 1. `Runner::maybe_run()` (hooked to `init`) calls `maybe_run()` when
  *    the stored db version is behind the current plugin version.
  * 2. `maybe_run()` bails immediately if the guard option is already set.
- * 3. On the first qualifying admin page load, `maybe_run()` calls `run()` directly.
+ * 3. On the first qualifying request, `maybe_run()` calls `run()` directly.
  * 4. `run()` counts posts. If none exist, marks done immediately. Otherwise,
  *    writes `processing` to the guard option and queues the first AS batch job.
  * 5. Each `process_batch()` job deletes up to BATCH_SIZE posts and, if posts
@@ -223,8 +223,8 @@ class Godam_Cpt_Cleanup {
 	 *
 	 * Returns true when the migration is already started/done or was successfully
 	 * queued, so the runner can advance the stored DB version. Returns false when
-	 * the migration bailed before starting (e.g. insufficient capabilities),
-	 * signalling the runner to hold the DB version for a retry.
+	 * the concurrency lock is held by another request, signalling the runner to
+	 * retry on the next request.
 	 *
 	 * @return bool True if migration is complete, in progress, or just queued; false if it bailed.
 	 */
@@ -234,34 +234,27 @@ class Godam_Cpt_Cleanup {
 			return true; // Already started or done.
 		}
 
-		// Called from Runner::maybe_run() on admin_init — is_user_logged_in()
-		// and current_user_can() are guaranteed available. Call run() directly;
-		// no need to defer to a later hook.
+		// Called from Runner::maybe_run() on init — fires on every request
+		// type (frontend, admin, REST, WP-Cron) so no auth gate is needed here.
 		self::run();
 
 		// If run() started the migration it sets OPTION_KEY to 'processing';
-		// if it bailed (e.g. cap check) the option is still absent.
+		// if the lock was held by another concurrent request the option is still absent.
 		return (bool) get_option( self::OPTION_KEY );
 	}
 
 	/**
 	 * Entry point: count posts and queue the first Action Scheduler batch.
 	 *
-	 * Called directly from maybe_run() on admin_init. A concurrency lock prevents
-	 * two simultaneous admin page loads from each queuing a batch.
+	 * Called directly from maybe_run() on init. A concurrency lock prevents
+	 * two simultaneous requests from each queuing a batch.
 	 *
 	 * @return void
 	 */
 	public static function run() {
-		// Called from maybe_run() on admin_init — pluggable.php is fully loaded
-		// and auth cookies are processed, so is_user_logged_in() and
-		// current_user_can() are guaranteed available.
-		$is_cli  = defined( 'WP_CLI' ) && WP_CLI;
-		$is_cron = wp_doing_cron();
-
-		if ( ! $is_cron && ! $is_cli && ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) ) {
-			return;
-		}
+		// This migration only counts godam-video posts and queues Action
+		// Scheduler jobs — the actual work runs via WP-Cron. No auth check
+		// is required; the concurrency lock prevents parallel starts.
 
 		if ( ! self::acquire_lock() ) {
 			return;

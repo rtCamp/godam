@@ -41,8 +41,10 @@ defined( 'ABSPATH' ) || exit;
  *   wp option delete rtgodam_gallery_v1_v2_migration_done
  *   wp option delete rtgodam_godam_cpt_cleanup_done
  *
- * Multisite (repeat for each subsite ID, e.g. 1, 2, 3):
+ * Multisite (repeat for each subsite, e.g. example.com, sub.example.com):
  *   wp option --url=example.com delete rtgodam_db_version
+ *   wp option --url=example.com delete rtgodam_gallery_v1_v2_migration_done
+ *   wp option --url=example.com delete rtgodam_godam_cpt_cleanup_done
  *   wp option --url=sub.example.com delete rtgodam_db_version
  *   wp option --url=sub.example.com delete rtgodam_gallery_v1_v2_migration_done
  *   wp option --url=sub.example.com delete rtgodam_godam_cpt_cleanup_done
@@ -87,10 +89,11 @@ class Runner {
 	 * can fire queued batch jobs on any request, independent of whether a
 	 * migration is currently pending.
 	 *
-	 * Also registers the migration trigger on admin_init, which fires on every
-	 * admin page load where is_admin() is guaranteed and auth functions are
-	 * available. The version compare gate ensures this is a single option read
-	 * on requests where no migrations are pending.
+	 * Also registers the migration trigger on init, which fires on every
+	 * request (frontend, admin, REST, AJAX, WP-Cron) so pending migrations
+	 * are not blocked behind an admin page visit. The version compare gate
+	 * ensures this is a single option read on requests where no migrations
+	 * are pending.
 	 *
 	 * @return void
 	 */
@@ -98,20 +101,20 @@ class Runner {
 		Godam_Cpt_Cleanup::register_hooks();
 		Godam_Cpt_Cleanup::register_redirect_hooks();
 
-		// Trigger pending migrations on admin page loads after version changes.
-		add_action( 'admin_init', array( self::class, 'maybe_run' ) );
+		// Trigger pending migrations on every request after version changes.
+		add_action( 'init', array( self::class, 'maybe_run' ) );
 	}
 
 	/**
 	 * Trigger pending migrations when the plugin version has changed.
 	 *
-	 * Hooked to admin_init by Plugin::__construct(), mirroring RankMath's
-	 * pattern. admin_init fires on every admin page load so is_admin() is
-	 * guaranteed and auth functions (is_user_logged_in, current_user_can)
-	 * are available.
+	 * Hooked to init so migrations fire on every request type — frontend,
+	 * admin, REST, AJAX, and WP-Cron — without requiring an admin page visit.
+	 * The version compare gate keeps per-request overhead to a single option
+	 * read once migrations are complete.
 	 *
 	 * On multisite, iterates every registered site using switch_to_blog() so
-	 * that all subsites are migrated when any admin page loads — regardless of
+	 * that all subsites are migrated when any request loads — regardless of
 	 * which subsite the current request targets. Each site tracks its own
 	 * DB_VERSION_OPTION, so the version compare gate is evaluated independently
 	 * per site.
@@ -148,9 +151,9 @@ class Runner {
 	 *
 	 * The runner only advances the stored DB version for a given version-batch
 	 * when every migration class in that batch returns true from maybe_run().
-	 * If any migration bails (e.g. the current user lacks manage_options), the
-	 * runner stops without bumping the stored version so the whole batch retries
-	 * on the next qualifying admin_init.
+	 * If any migration bails (e.g. the concurrency lock is held), the runner
+	 * stops without bumping the stored version so the whole batch retries
+	 * on the next qualifying init.
 	 *
 	 * @return void
 	 */
@@ -174,7 +177,7 @@ class Runner {
 
 			if ( ! $all_complete ) {
 				// At least one migration bailed — hold the stored version so
-				// the entire batch retries on the next qualifying admin_init.
+				// the entire batch retries on the next qualifying init.
 				return;
 			}
 
