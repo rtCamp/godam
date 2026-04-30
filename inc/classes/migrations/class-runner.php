@@ -89,6 +89,7 @@ class Runner {
 	 */
 	public static function init(): void {
 		Godam_Cpt_Cleanup::register_hooks();
+		Godam_Cpt_Cleanup::register_redirect_hooks();
 
 		// Trigger pending migrations on admin page loads after version changes.
 		add_action( 'admin_init', array( self::class, 'maybe_run' ) );

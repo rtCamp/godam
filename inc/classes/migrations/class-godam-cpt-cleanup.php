@@ -108,6 +108,113 @@ class Godam_Cpt_Cleanup {
 	}
 
 	/**
+	 * Register the template_redirect handler that emits 410 Gone for old CPT URLs.
+	 *
+	 * Called unconditionally from Runner::init() on every request so the handler
+	 * is active on all front-end requests once the migration is complete. The
+	 * handler itself bails immediately unless OPTION_KEY === 'done'.
+	 *
+	 * Priority 1 ensures this runs before WordPress's redirect_canonical handler
+	 * (default priority 10). Without this, canonical trailing-slash redirects on
+	 * URLs like /videos would issue a 301 before our 410 ever fires.
+	 *
+	 * @return void
+	 */
+	public static function register_redirect_hooks(): void {
+		add_action( 'template_redirect', array( static::class, 'maybe_send_410' ), 1 );
+	}
+
+	/**
+	 * Emit HTTP 410 Gone for requests that match the discontinued godam-video CPT URL patterns.
+	 *
+	 * Runs on template_redirect at priority 1 (before redirect_canonical at 10).
+	 * Returns early unless all three conditions are met:
+	 *   - WordPress has already determined the current request is a 404 (checked first
+	 *     because it is a free in-memory query-var read — no DB cost).
+	 *   - The cleanup migration is complete (OPTION_KEY === 'done').
+	 *   - The request path, normalised relative to the home URL base path, matches
+	 *     the CPT slug root or any sub-path beneath it (single posts, paginated
+	 *     archives /page/N/, embeds, feeds, etc.).
+	 *
+	 * Normalising against the home path means subdirectory WordPress installs and
+	 * multisite subdirectory networks are handled correctly — the match is always
+	 * against the site-relative portion of the URL, not the server-absolute path.
+	 *
+	 * Responding with 410 Gone (instead of 404 Not Found) signals to search engines
+	 * that the removal is intentional, prompting faster de-indexing and preserving
+	 * crawl budget for the rest of the site. The theme's 404 template is loaded so
+	 * human visitors receive a helpful page rather than a blank response.
+	 *
+	 * 410 is a permanent status; a public Cache-Control header lets CDNs and reverse
+	 * proxies cache the response so repeated crawls do not hit the PHP origin.
+	 *
+	 * @return void
+	 */
+	public static function maybe_send_410(): void {
+		// is_404() is a free in-memory check — run it first to avoid the
+		// get_option() DB call on every non-404 front-end page load.
+		if ( ! is_404() ) {
+			return;
+		}
+
+		if ( 'done' !== get_option( self::OPTION_KEY ) ) {
+			return;
+		}
+
+		$video_settings = get_option( 'rtgodam_video_post_settings', array() );
+		$cpt_url_slug   = ! empty( $video_settings['video_slug'] )
+			? sanitize_title( $video_settings['video_slug'] )
+			: 'videos';
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- path used for pattern matching only, never output.
+		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+
+		// rawurldecode() normalises percent-encoded slugs (e.g. /videos/my%20slug/)
+		// so they match the sanitize_title()-processed value stored in the option.
+		$path = rawurldecode( (string) wp_parse_url( $request_uri, PHP_URL_PATH ) );
+
+		// Strip the home-URL base path so matching is site-relative.
+		// On a root install home_path is '/' and this is a no-op.
+		// On a subdirectory install (e.g. example.com/wp/) the path prefix /wp
+		// is removed before matching, so /wp/videos/slug/ correctly resolves to
+		// /videos/slug/ and the regex fires as expected.
+		$home_path = rtrim( (string) wp_parse_url( home_url( '/' ), PHP_URL_PATH ), '/' );
+		if ( '' !== $home_path && 0 === strpos( $path, $home_path ) ) {
+			$path = substr( $path, strlen( $home_path ) );
+		}
+		$path = '/' . ltrim( $path, '/' );
+
+		// Match the archive root (/videos/), single-post permalinks (/videos/slug/),
+		// and any deeper sub-paths (paginated archives /videos/page/2/, embed
+		// endpoints /videos/slug/embed/, feed URLs /videos/slug/feed/, etc.)
+		// that Google may have indexed from the now-deleted CPT.
+		if ( ! preg_match( '#^/' . preg_quote( $cpt_url_slug, '#' ) . '(/.*)?$#', $path ) ) {
+			return;
+		}
+
+		status_header( 410 );
+		// 410 Gone is a permanent status — allow CDNs and reverse proxies to cache
+		// the response so repeated crawls do not generate PHP origin requests.
+		header( 'Cache-Control: public, max-age=3600' );
+
+		// Render the theme's 404 template so human visitors receive a helpful page
+		// rather than a blank response. The template is included after headers are
+		// set so WordPress renders it under the already-emitted 410 status.
+		$template = get_query_template( '404' );
+		if ( ! empty( $template ) ) {
+			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- template path resolved via get_query_template(), which validates against the active theme directory.
+			include $template;
+			exit;
+		}
+
+		wp_die(
+			esc_html__( 'This content has been permanently removed.', 'godam' ),
+			esc_html__( 'Gone', 'godam' ),
+			array( 'response' => 410 )
+		);
+	}
+
+	/**
 	 * Register the AS batch callback and schedule the migration if needed.
 	 *
 	 * Called by Runner::maybe_run() only when the plugin version has changed.
@@ -190,7 +297,13 @@ class Godam_Cpt_Cleanup {
 		// Mark as in-progress so maybe_run() does not re-trigger on the next request.
 		update_option( self::OPTION_KEY, 'processing', false );
 
-		$action_id = as_enqueue_async_action( self::AS_HOOK, array(), self::AS_GROUP );
+		// Pass the current blog ID as an AS argument so process_batch() can
+		// switch_to_blog() before operating. On single-site this is a no-op.
+		// On multisite with an external/system cron, AS jobs fire in the main-site
+		// context regardless of which subsite queued them — without the blog ID the
+		// batch would delete main-site posts and mark main-site done, never touching
+		// the subsite that actually queued the migration.
+		$action_id = as_enqueue_async_action( self::AS_HOOK, array( get_current_blog_id() ), self::AS_GROUP );
 		self::release_lock();
 
 		if ( ! $action_id ) {
@@ -220,9 +333,25 @@ class Godam_Cpt_Cleanup {
 	 * Each job is independent — only one batch runs per AS execution, so PHP
 	 * memory and runtime are bounded regardless of total post count.
 	 *
+	 * The $blog_id parameter ensures correctness on multisite. Action Scheduler
+	 * fires callbacks in whatever blog context the cron request loaded (usually
+	 * the main site). Passing the queuing site's blog ID and calling
+	 * switch_to_blog() guarantees that $wpdb->posts, get_option(), and
+	 * wp_delete_post() all operate against the correct subsite's tables.
+	 *
+	 * @param int $blog_id Blog ID that queued this batch. 0 or 1 on single-site.
 	 * @return void
 	 */
-	public static function process_batch() {
+	public static function process_batch( int $blog_id = 0 ) {
+		// On multisite, switch to the blog that queued this batch so that all DB
+		// operations ($wpdb->posts, get_option, wp_delete_post) target the correct
+		// subsite. restore_current_blog() is called before every return path.
+		$switched = false;
+		if ( is_multisite() && $blog_id > 0 && get_current_blog_id() !== $blog_id ) {
+			switch_to_blog( $blog_id );
+			$switched = true;
+		}
+
 		global $wpdb;
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -240,6 +369,9 @@ class Godam_Cpt_Cleanup {
 			self::flush_sitemap_caches();
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			error_log( '[GoDAM] CPT cleanup migration complete. All CPT posts deleted.' );
+			if ( $switched ) {
+				restore_current_blog();
+			}
 			return;
 		}
 
@@ -276,7 +408,7 @@ class Godam_Cpt_Cleanup {
 
 		if ( $remaining > 0 ) {
 			if ( function_exists( 'as_enqueue_async_action' ) ) {
-				as_enqueue_async_action( self::AS_HOOK, array(), self::AS_GROUP );
+				as_enqueue_async_action( self::AS_HOOK, array( $blog_id ), self::AS_GROUP );
 			}
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			error_log(
@@ -290,6 +422,10 @@ class Godam_Cpt_Cleanup {
 			self::flush_sitemap_caches();
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			error_log( '[GoDAM] CPT cleanup migration complete. All CPT posts deleted.' );
+		}
+
+		if ( $switched ) {
+			restore_current_blog();
 		}
 	}
 
