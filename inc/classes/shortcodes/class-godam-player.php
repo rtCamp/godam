@@ -275,11 +275,20 @@ class GoDAM_Player {
 		);
 
 		// Handle boolean attributes passed as strings (do this before mapping).
-		$boolean_attributes = array( 'autoplay', 'controls', 'loop', 'muted', 'engagements', 'preview', 'showShareButton', 'show_share_button' );
+		$boolean_attributes = array( 'autoplay', 'controls', 'loop', 'muted', 'preview', 'showShareButton', 'show_share_button' );
 		foreach ( $boolean_attributes as $bool_attr ) {
 			if ( isset( $attributes[ $bool_attr ] ) ) {
 				$attributes[ $bool_attr ] = filter_var( $attributes[ $bool_attr ], FILTER_VALIDATE_BOOLEAN );
 			}
+		}
+
+		// Normalize 'engagements' separately: the embed page passes 'show' as a truthy value,
+		// which filter_var() would incorrectly map to false. Treat 'show' as true, then fall
+		// back to standard boolean parsing for all other string representations.
+		if ( isset( $attributes['engagements'] ) && is_string( $attributes['engagements'] ) ) {
+			$attributes['engagements'] = 'show' === $attributes['engagements']
+				? true
+				: filter_var( $attributes['engagements'], FILTER_VALIDATE_BOOLEAN );
 		}
 
 		// Map WPBakery format (lowercase_underscore) to camelCase for backward compatibility.

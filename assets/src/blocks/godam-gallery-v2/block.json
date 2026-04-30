@@ -75,6 +75,10 @@
 		"performanceMode": {
 			"type": "string",
 			"default": "balanced"
+		},
+		"engagements": {
+			"type": "boolean",
+			"default": true
 		}
 	},
 	"providesContext": {
