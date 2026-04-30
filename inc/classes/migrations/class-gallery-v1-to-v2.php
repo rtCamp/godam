@@ -364,7 +364,7 @@ class Gallery_V1_To_V2 {
 			'customDateStart'   => '',
 			'customDateEnd'     => '',
 			'showTitle'         => true,
-			'engagements'       => true,
+			'engagements'       => false,
 		);
 
 		$diff = array();
