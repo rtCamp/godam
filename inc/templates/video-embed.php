@@ -14,10 +14,12 @@ wp_enqueue_style( 'godam-video-embed-style' );
 wp_enqueue_script( 'godam-video-embed-script' );
 
 $godam_video_id         = isset( $_GET['id'] ) ? intval( wp_unslash( $_GET['id'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- no nonce verification needed for this page.
+$godam_video_transcoded = sanitize_text_field( (string) get_post_meta( $godam_video_id, 'rtgodam_transcoding_status', true ) );
 $godam_context          = isset( $_GET['godam_context'] ) ? sanitize_text_field( wp_unslash( $_GET['godam_context'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- no nonce verification needed for this page.
 $godam_bg_color         = isset( $_GET['bg'] ) ? sanitize_hex_color( '#' . ltrim( wp_unslash( $_GET['bg'] ), '#' ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- no nonce verification needed for this page.
 $godam_show_engagements = isset( $_GET['engagements'] ) ? sanitize_text_field( wp_unslash( $_GET['engagements'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- no nonce verification needed for this page.
-$godam_show_engagements = rtgodam_is_engagement_feature_enabled() && in_array( strtolower( $godam_show_engagements ), array( '1', 'true', 'on', 'show' ), true );
+$godam_show_engagements = rtgodam_is_engagement_feature_enabled() && rtgodam_is_api_key_valid() && 'transcoded' === $godam_video_transcoded && in_array( strtolower( $godam_show_engagements ), array( '1', 'true', 'on', 'show' ), true );
+
 
 $godam_embed_content = godam_embed_page_content( $godam_video_id, $godam_context, $godam_bg_color, $godam_show_engagements );
 
