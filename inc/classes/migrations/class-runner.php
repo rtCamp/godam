@@ -34,6 +34,16 @@ defined( 'ABSPATH' ) || exit;
  * 3. Add it to the $migrations array below, keyed by the plugin version it ships in.
  *    Multiple classes can share the same version key.
  *
+ * ## Multisite performance
+ *
+ * Iterating every subsite on every request would be extremely expensive at scale
+ * (50 sites = 50× switch_to_blog + 50× option read per request). To avoid this,
+ * the runner stores a network-wide option (DB_VERSION_NETWORK_OPTION) once every
+ * subsite has been fully migrated. Subsequent requests do a single
+ * get_network_option() call — which is object-cache backed and essentially free —
+ * and return immediately. The loop only runs again after a plugin update raises
+ * RTGODAM_VERSION above the stored network version.
+ *
  * ## Re-running migrations (e.g. for testing)
  *
  * Single-site:
@@ -41,7 +51,9 @@ defined( 'ABSPATH' ) || exit;
  *   wp option delete rtgodam_gallery_v1_v2_migration_done
  *   wp option delete rtgodam_godam_cpt_cleanup_done
  *
- * Multisite (repeat for each subsite, e.g. example.com, sub.example.com):
+ * Multisite (also clear the network-level fast-path flag):
+ *   wp network meta delete 1 rtgodam_db_version_network
+ *   Then for each subsite (e.g. example.com, sub.example.com):
  *   wp option --url=example.com delete rtgodam_db_version
  *   wp option --url=example.com delete rtgodam_gallery_v1_v2_migration_done
  *   wp option --url=example.com delete rtgodam_godam_cpt_cleanup_done
@@ -60,6 +72,19 @@ class Runner {
 	 * @var string
 	 */
 	const DB_VERSION_OPTION = 'rtgodam_db_version';
+
+	/**
+	 * Network option key used as a fast-path gate on multisite.
+	 *
+	 * Set to RTGODAM_VERSION once every subsite has been fully migrated.
+	 * Stored in wp_sitemeta; object-cache backed on most hosts, making the
+	 * per-request check essentially free.
+	 *
+	 * Reset command: wp network meta delete 1 rtgodam_db_version_network
+	 *
+	 * @var string
+	 */
+	const DB_VERSION_NETWORK_OPTION = 'rtgodam_db_version_network';
 
 	/**
 	 * Version-keyed migration map.
@@ -123,6 +148,15 @@ class Runner {
 	 */
 	public static function maybe_run(): void {
 		if ( is_multisite() ) {
+			// Fast-path: a single network option read (object-cache backed) so that
+			// requests on fully-migrated networks avoid the expensive get_sites()
+			// loop entirely. The version compare naturally re-enables the loop after
+			// every plugin update that raises RTGODAM_VERSION.
+			$network_version = get_network_option( null, self::DB_VERSION_NETWORK_OPTION, '' );
+			if ( version_compare( $network_version, RTGODAM_VERSION, '>=' ) ) {
+				return;
+			}
+
 			$site_ids = get_sites(
 				array(
 					'fields' => 'ids',
@@ -130,10 +164,22 @@ class Runner {
 				)
 			);
 
+			$all_done = true;
 			foreach ( $site_ids as $site_id ) {
 				switch_to_blog( $site_id );
 				self::run_for_current_site();
+				// get_option() is object-cache backed here; the value was already
+				// loaded by run_for_current_site(), so this is effectively free.
+				if ( version_compare( get_option( self::DB_VERSION_OPTION, '' ), RTGODAM_VERSION, '<' ) ) {
+					$all_done = false;
+				}
 				restore_current_blog();
+			}
+
+			// Once every subsite is fully migrated, stamp the network option so
+			// all future requests skip this loop via the fast-path gate above.
+			if ( $all_done ) {
+				update_network_option( null, self::DB_VERSION_NETWORK_OPTION, RTGODAM_VERSION );
 			}
 
 			return;
