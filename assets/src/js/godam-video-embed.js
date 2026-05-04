@@ -339,3 +339,107 @@ document.addEventListener( 'godamAllPlayersReady', () => {
 		}
 	} );
 } );
+
+/**
+ * Render CommentBox component on video embed page by default.
+ *
+ * @since 1.5.0
+ */
+document.addEventListener( 'DOMContentLoaded', function() {
+	const embedElement = document.querySelector( '.godam-video-embed' );
+
+	if ( embedElement?.getAttribute( 'data-show-engagements' ) !== 'true' ) {
+		return;
+	}
+
+	const urlParams = new URLSearchParams( window.location.search );
+
+	const videoId = urlParams.get( 'id' );
+
+	if ( ! videoId ) {
+		return;
+	}
+
+	const videoIdNum = parseInt( videoId, 10 );
+	if ( ! videoIdNum || isNaN( videoIdNum ) ) {
+		return;
+	}
+
+	// Create and show loading overlay
+	const loadingOverlay = document.createElement( 'div' );
+	loadingOverlay.className = 'godam-video-embed-loading';
+
+	// Create spinner element
+	const spinner = document.createElement( 'div' );
+	spinner.className = 'godam-video-embed-spinner';
+	loadingOverlay.appendChild( spinner );
+
+	document.body.appendChild( loadingOverlay );
+
+	// Function to hide loading overlay
+	const hideLoadingOverlay = () => {
+		if ( loadingOverlay && loadingOverlay.parentNode ) {
+			loadingOverlay.style.opacity = '0';
+			loadingOverlay.style.pointerEvents = 'none';
+			loadingOverlay.style.transition = 'opacity 0.3s ease-out';
+			setTimeout( () => {
+				loadingOverlay.remove();
+			}, 300 );
+		}
+	};
+
+	// Fallback: remove the overlay after 10 s in case the engagement store
+	// event never fires or renderCommentBox() exits early.
+	const overlayFallbackTimer = setTimeout( hideLoadingOverlay, 10000 );
+
+	// Listen for the engagement store to be initialized (once only).
+	document.addEventListener( 'godamEngagementStoreInitialized', renderCommentBox, { once: true } );
+
+	// Render the comment box.
+	function renderCommentBox() {
+		// Always clear the fallback timer — we are now handling the overlay ourselves.
+		clearTimeout( overlayFallbackTimer );
+
+		// Check WordPress dependencies
+		if ( typeof wp === 'undefined' || ! wp.data || ! wp.element?.createRoot ) {
+			hideLoadingOverlay();
+			return;
+		}
+
+		const storeName = 'godam-video-engagement';
+		const select = wp.data.select( storeName );
+		const dispatch = wp.data.dispatch( storeName );
+
+		if ( ! select || ! dispatch ) {
+			hideLoadingOverlay();
+			return;
+		}
+
+		// Find video element and get instance ID
+		const videoElement = document.querySelector( `.easydam-player.video-js[data-id="${ videoIdNum }"]` );
+		const videoInstanceId = videoElement?.getAttribute( 'data-instance-id' );
+
+		if ( ! videoInstanceId ) {
+			hideLoadingOverlay();
+			return;
+		}
+
+		// Get site URL
+		const siteUrl = window.location.origin;
+
+		// Determine if engagements should be shown
+		const skipEngagements = embedElement?.getAttribute( 'data-show-engagements' ) !== 'true';
+
+		// Dispatch action to initiate comment modal
+		dispatch.initiateCommentModal(
+			videoIdNum.toString(),
+			siteUrl,
+			`engagement-${ videoInstanceId }`,
+			skipEngagements,
+			true,
+		);
+
+		// Hide loading overlay after modal is initiated
+		hideLoadingOverlay();
+	}
+} );

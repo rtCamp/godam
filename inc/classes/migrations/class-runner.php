@@ -34,11 +34,32 @@ defined( 'ABSPATH' ) || exit;
  * 3. Add it to the $migrations array below, keyed by the plugin version it ships in.
  *    Multiple classes can share the same version key.
  *
+ * ## Multisite performance
+ *
+ * Iterating every subsite on every request would be extremely expensive at scale
+ * (50 sites = 50× switch_to_blog + 50× option read per request). To avoid this,
+ * the runner stores a network-wide option (DB_VERSION_NETWORK_OPTION) once every
+ * subsite has been fully migrated. Subsequent requests do a single
+ * get_network_option() call — which is object-cache backed and essentially free —
+ * and return immediately. The loop only runs again after a plugin update raises
+ * RTGODAM_VERSION above the stored network version.
+ *
  * ## Re-running migrations (e.g. for testing)
  *
+ * Single-site:
  *   wp option delete rtgodam_db_version
  *   wp option delete rtgodam_gallery_v1_v2_migration_done
  *   wp option delete rtgodam_godam_cpt_cleanup_done
+ *
+ * Multisite (also clear the network-level fast-path flag):
+ *   wp network meta delete 1 rtgodam_db_version_network
+ *   Then for each subsite (e.g. example.com, sub.example.com):
+ *   wp option --url=example.com delete rtgodam_db_version
+ *   wp option --url=example.com delete rtgodam_gallery_v1_v2_migration_done
+ *   wp option --url=example.com delete rtgodam_godam_cpt_cleanup_done
+ *   wp option --url=sub.example.com delete rtgodam_db_version
+ *   wp option --url=sub.example.com delete rtgodam_gallery_v1_v2_migration_done
+ *   wp option --url=sub.example.com delete rtgodam_godam_cpt_cleanup_done
  */
 class Runner {
 
@@ -51,6 +72,19 @@ class Runner {
 	 * @var string
 	 */
 	const DB_VERSION_OPTION = 'rtgodam_db_version';
+
+	/**
+	 * Network option key used as a fast-path gate on multisite.
+	 *
+	 * Set to RTGODAM_VERSION once every subsite has been fully migrated.
+	 * Stored in wp_sitemeta; object-cache backed on most hosts, making the
+	 * per-request check essentially free.
+	 *
+	 * Reset command: wp network meta delete 1 rtgodam_db_version_network
+	 *
+	 * @var string
+	 */
+	const DB_VERSION_NETWORK_OPTION = 'rtgodam_db_version_network';
 
 	/**
 	 * Version-keyed migration map.
@@ -67,7 +101,7 @@ class Runner {
 	 * @var array<string, class-string[]>
 	 */
 	private static $migrations = array(
-		'2.0.0' => array(
+		'1.8.0' => array(
 			Gallery_V1_To_V2::class,
 			Godam_Cpt_Cleanup::class,
 		),
@@ -80,32 +114,96 @@ class Runner {
 	 * can fire queued batch jobs on any request, independent of whether a
 	 * migration is currently pending.
 	 *
-	 * Also registers the migration trigger on admin_init, which fires on every
-	 * admin page load where is_admin() is guaranteed and auth functions are
-	 * available. The version compare gate ensures this is a single option read
-	 * on requests where no migrations are pending.
+	 * Also registers the migration trigger on init, which fires on every
+	 * request (frontend, admin, REST, AJAX, WP-Cron) so pending migrations
+	 * are not blocked behind an admin page visit. The version compare gate
+	 * ensures this is a single option read on requests where no migrations
+	 * are pending.
 	 *
 	 * @return void
 	 */
 	public static function init(): void {
 		Godam_Cpt_Cleanup::register_hooks();
+		Godam_Cpt_Cleanup::register_redirect_hooks();
 
-		// Trigger pending migrations on admin page loads after version changes.
-		add_action( 'admin_init', array( self::class, 'maybe_run' ) );
+		// Trigger pending migrations on every request after version changes.
+		add_action( 'init', array( self::class, 'maybe_run' ) );
 	}
 
 	/**
 	 * Trigger pending migrations when the plugin version has changed.
 	 *
-	 * Hooked to admin_init by Plugin::__construct(), mirroring RankMath's
-	 * pattern. admin_init fires on every admin page load so is_admin() is
-	 * guaranteed and auth functions (is_user_logged_in, current_user_can)
-	 * are available. The version compare is the sole gate — if stored version
-	 * equals current version, this is a single option read and returns.
+	 * Hooked to init so migrations fire on every request type — frontend,
+	 * admin, REST, AJAX, and WP-Cron — without requiring an admin page visit.
+	 * The version compare gate keeps per-request overhead to a single option
+	 * read once migrations are complete.
+	 *
+	 * On multisite, iterates every registered site using switch_to_blog() so
+	 * that all subsites are migrated when any request loads — regardless of
+	 * which subsite the current request targets. Each site tracks its own
+	 * DB_VERSION_OPTION, so the version compare gate is evaluated independently
+	 * per site.
 	 *
 	 * @return void
 	 */
 	public static function maybe_run(): void {
+		if ( is_multisite() ) {
+			// Fast-path: a single network option read (object-cache backed) so that
+			// requests on fully-migrated networks avoid the expensive get_sites()
+			// loop entirely. The version compare naturally re-enables the loop after
+			// every plugin update that raises RTGODAM_VERSION.
+			$network_version = get_network_option( null, self::DB_VERSION_NETWORK_OPTION, '' );
+			if ( version_compare( $network_version, RTGODAM_VERSION, '>=' ) ) {
+				return;
+			}
+
+			$site_ids = get_sites(
+				array(
+					'fields' => 'ids',
+					'number' => 0,
+				)
+			);
+
+			$all_done = true;
+			foreach ( $site_ids as $site_id ) {
+				switch_to_blog( $site_id );
+				self::run_for_current_site();
+				// get_option() is object-cache backed here; the value was already
+				// loaded by run_for_current_site(), so this is effectively free.
+				if ( version_compare( get_option( self::DB_VERSION_OPTION, '' ), RTGODAM_VERSION, '<' ) ) {
+					$all_done = false;
+				}
+				restore_current_blog();
+			}
+
+			// Once every subsite is fully migrated, stamp the network option so
+			// all future requests skip this loop via the fast-path gate above.
+			if ( $all_done ) {
+				update_network_option( null, self::DB_VERSION_NETWORK_OPTION, RTGODAM_VERSION );
+			}
+
+			return;
+		}
+
+		self::run_for_current_site();
+	}
+
+	/**
+	 * Run pending migrations for the site that is currently active.
+	 *
+	 * The version compare is the sole gate — if the stored version equals the
+	 * current plugin version, this is a single option read and returns immediately
+	 * with no per-migration overhead.
+	 *
+	 * The runner only advances the stored DB version for a given version-batch
+	 * when every migration class in that batch returns true from maybe_run().
+	 * If any migration bails (e.g. the concurrency lock is held), the runner
+	 * stops without bumping the stored version so the whole batch retries
+	 * on the next qualifying init.
+	 *
+	 * @return void
+	 */
+	private static function run_for_current_site(): void {
 		$installed_version = get_option( self::DB_VERSION_OPTION, '' );
 		if ( version_compare( $installed_version, RTGODAM_VERSION, '>=' ) ) {
 			return;
@@ -116,8 +214,17 @@ class Runner {
 				continue;
 			}
 
+			$all_complete = true;
 			foreach ( $classes as $class ) {
-				$class::maybe_run();
+				if ( ! $class::maybe_run() ) {
+					$all_complete = false;
+				}
+			}
+
+			if ( ! $all_complete ) {
+				// At least one migration bailed — hold the stored version so
+				// the entire batch retries on the next qualifying init.
+				return;
 			}
 
 			// Advance the stored version after each batch so that if the

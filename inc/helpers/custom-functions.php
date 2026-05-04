@@ -1149,6 +1149,30 @@ function rtgodam_get_post_id_by_meta_key_and_value( $key, $value ) {
 }
 
 /**
+ * Check whether the engagement feature is available in GoDAM.
+ *
+ * Returning true enables engagement settings and runtime behavior for
+ * GoDAM video, gallery, and embed experiences.
+ *
+ * @since 1.8.0
+ *
+ * @return bool Whether the engagement feature is enabled.
+ */
+function rtgodam_is_engagement_feature_enabled() {
+	/**
+	 * Filters whether the GoDAM engagement feature is enabled.
+	 *
+	 * Return true to enable engagement settings and functionality for GoDAM
+	 * videos, galleries, and embeds.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @param bool $is_enabled Whether the engagement feature is enabled. Default false.
+	 */
+	return (bool) apply_filters( 'rtgodam_enable_engagement_feature', false );
+}
+
+/**
  * Generate HTML content for the video embed page.
  *
  * This function produces the HTML markup for embedding a single video.
@@ -1158,17 +1182,19 @@ function rtgodam_get_post_id_by_meta_key_and_value( $key, $value ) {
  * @param int    $video_id      The ID of the video attachment to embed.
  * @param string $godam_context Optional. The player context passed to the godam_video shortcode (e.g. 'video-only').
  * @param string $bg_color      Optional. Hex background color applied as --godam-video-bg-color CSS variable on the wrapper.
+ * @param bool   $show_engagements Optional. Whether to show engagements in the embed. Default false (no engagements shown).
  *
  * @since 1.5.0
  *
  * @return string The generated HTML content for the video embed page.
  */
-function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '' ) {
+function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '', $show_engagements = false ) {
 	ob_start();
 	// Check if video ID is provided and if video attachment exists.
-	$video_attachment = null;
-	$show_video       = false;
-	$video_id         = intval( $video_id );
+	$video_attachment  = null;
+	$show_video        = false;
+	$video_id          = intval( $video_id );
+	$engagements_value = rtgodam_is_engagement_feature_enabled() && $show_engagements ? 'show' : '';
 
 	if ( ! empty( $video_id ) ) {
 		$video_attachment = get_post( $video_id );
@@ -1188,12 +1214,16 @@ function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '
 		if ( ! empty( $godam_context ) ) {
 			$godam_shortcode .= ' godam_context="' . esc_attr( $godam_context ) . '"';
 		}
+		if ( ! empty( $engagements_value ) ) {
+			$godam_shortcode .= ' engagements="' . esc_attr( $engagements_value ) . '"';
+		}
 		$godam_shortcode .= ']';
 
 		$godam_wrapper_style = ! empty( $bg_color ) ? '--godam-video-bg-color: ' . $bg_color . ';' : '';
 		?>
 		<div 
 			class="godam-video-embed" data-godam-context="<?php echo esc_attr( $godam_context ); ?>"
+			data-show-engagements="<?php echo esc_attr( $show_engagements ? 'true' : 'false' ); ?>"
 			style="<?php echo esc_attr( $godam_wrapper_style ); ?>"
 		>
 			<?php echo do_shortcode( $godam_shortcode ); ?>
@@ -1316,7 +1346,7 @@ if ( ! defined( 'RTGODAM_WORK_CACHE_TTL' ) ) {
  * Uses the WordPress object cache when an external cache is active,
  * otherwise uses transients.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param string $key Cache key (without version prefix).
  * @return mixed|false Cached value or false on miss.
@@ -1337,7 +1367,7 @@ function rtgodam_work_cache_get( $key ) {
  * Uses the WordPress object cache when an external cache is active,
  * otherwise uses transients.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param string $key   Cache key (without version prefix).
  * @param mixed  $value Value to cache.
@@ -1360,7 +1390,7 @@ function rtgodam_work_cache_set( $key, $value, $ttl = RTGODAM_WORK_CACHE_TTL ) {
  * Clears both the dedicated object-cache entry and the transient key so
  * stale data is removed even if the site's cache backend changed.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param string $key Cache key (without version prefix).
  */
@@ -1383,7 +1413,7 @@ function rtgodam_work_cache_delete( $key ) {
  * refreshed so the index stays alive as long as any of its members could still
  * be cached.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param string $index_key Human-readable index identifier (e.g. `work_cache_godam_meta_{post_id}`).
  * @param string $cache_key The cache key to register.
@@ -1406,7 +1436,7 @@ function rtgodam_work_cache_index_add( $index_key, $cache_key ) {
  * Returns an empty array when the index transient has expired, which means
  * all previously registered cache entries have also naturally expired.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param string $index_key Index identifier.
  * @return string[] List of registered cache keys.
@@ -1419,7 +1449,7 @@ function rtgodam_work_cache_index_members( $index_key ) {
 /**
  * Delete every cache key registered under an index and remove the index transient.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param string $index_key Index identifier.
  */
@@ -1438,7 +1468,7 @@ function rtgodam_work_cache_index_clear( $index_key ) {
 /**
  * Normalize a GoDAM video performance mode value.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param string $mode     Candidate performance mode.
  * @param string $fallback Fallback mode when the candidate is invalid.
@@ -1459,7 +1489,7 @@ function rtgodam_normalize_video_performance_mode( $mode, $fallback = 'balanced'
 /**
  * Resolve the effective performance mode for a video from modern or legacy attributes.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param array  $attributes Block or shortcode attributes.
  * @param string $default_mode Default performance mode when no stored value exists.
@@ -1499,7 +1529,7 @@ function rtgodam_resolve_video_performance_mode( $attributes, $default_mode = 'b
 /**
  * Resolve the final performance-driven render settings for a single video.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param array  $attributes Block or shortcode attributes.
  * @param string $default_mode Default performance mode.
@@ -1530,7 +1560,7 @@ function rtgodam_get_video_performance_settings( $attributes, $default_mode = 'b
  * Priority mode is intentionally capped to the leading tiles to avoid over-eager
  * image loading in multi-video layouts.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param string $performance_mode Requested performance mode.
  * @param int    $index            Zero-based tile index.
@@ -1559,7 +1589,7 @@ function rtgodam_get_gallery_tile_image_attributes( $performance_mode, $index = 
 /**
  * Resolve the selected video thumbnail and its matching blur-up placeholder.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param int    $attachment_id Attachment ID.
  * @param string $thumbnail_url Optional pre-resolved thumbnail URL.
@@ -1640,7 +1670,7 @@ function rtgodam_get_video_thumbnail_sources( $attachment_id, $thumbnail_url = '
 /**
  * Format an associative array of HTML attributes into a string.
  *
- * @since n.e.x.t
+ * @since 1.8.0
  *
  * @param array<string, scalar> $attributes Attributes to serialize.
  *

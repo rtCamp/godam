@@ -309,7 +309,7 @@ class Dynamic_Gallery extends Base {
 					data-date-range="' . esc_attr( $atts['date_range'] ?? '' ) . '"
 					data-custom-date-start="' . esc_attr( $atts['custom_date_start'] ?? '' ) . '"
 					data-custom-date-end="' . esc_attr( $atts['custom_date_end'] ?? '' ) . '"
-data-engagements="' . ( $atts['engagements'] ? '1' : '0' ) . '">';
+data-engagements="' . ( rtgodam_is_engagement_feature_enabled() && $atts['engagements'] ? '1' : '0' ) . '">';
 			}
 	
 			do_action( 'rtgodam_dynamic_gallery_before_output', $query, $atts );
@@ -340,7 +340,7 @@ data-engagements="' . ( $atts['engagements'] ? '1' : '0' ) . '">';
 				}
 
 				// Check if engagements are enabled for the video.
-				$engagements_enabled      = $atts['engagements'];
+				$engagements_enabled      = rtgodam_is_engagement_feature_enabled() && $atts['engagements'];
 				$item_engagements_enabled = false;
 				if ( $engagements_enabled ) {
 					// Check if engagements are enabled for the video is transcoded.

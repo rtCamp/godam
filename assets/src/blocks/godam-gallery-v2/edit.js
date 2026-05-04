@@ -207,7 +207,10 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		showTitle,
 		layout,
 		performanceMode,
+		engagements,
 	} = attributes;
+	const engagementFeatureEnabled = window?.godamSettings?.engagementFeatureEnabled ?? false;
+	const showEngagementSetting = engagementFeatureEnabled && ( window?.godamSettings?.enableGlobalVideoEngagement ?? false );
 	const [ startDatePopoverOpen, setStartDatePopoverOpen ] = useState( false );
 	const [ endDatePopoverOpen, setEndDatePopoverOpen ] = useState( false );
 	const [ dateError, setDateError ] = useState( '' );
@@ -596,6 +599,16 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						checked={ !! showTitle }
 						onChange={ ( value ) => setAttributes( { showTitle: value } ) }
 					/>
+					{
+						showEngagementSetting && (
+							<ToggleControl
+								label={ __( 'Enable Likes & Comments', 'godam' ) }
+								checked={ !! engagements }
+								onChange={ ( value ) => setAttributes( { engagements: value } ) }
+								help={ __( 'Engagement will only be visible for transcoded videos', 'godam' ) }
+							/>
+						)
+					}
 					<SelectControl
 						label={ __( 'Performance', 'godam' ) }
 						value={ performanceMode || 'balanced' }

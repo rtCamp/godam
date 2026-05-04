@@ -17,13 +17,13 @@ import LayersHeader from './components/layers/LayersHeader';
 import { updateLayerField } from './redux/slice/videoSlice';
 
 window.godamVideoEditorComponents = {
-	...window.godamVideoEditorComponents,
+	...( window.godamVideoEditorComponents || {} ),
 	LayerControls,
 	LayersHeader,
 };
 
 window.godamVideoEditorActions = {
-	...window.godamVideoEditorActions,
+	...( window.godamVideoEditorActions || {} ),
 	updateLayerField,
 };
 

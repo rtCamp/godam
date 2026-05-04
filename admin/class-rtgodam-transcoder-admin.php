@@ -47,7 +47,7 @@ class RTGODAM_Transcoder_Admin {
 			add_action( 'admin_init', array( $this, 'handle_posthog_tracking_action' ) );
 			add_action( 'admin_init', array( $this, 'handle_clear_godam_cache' ) );
 			add_action( 'wp_ajax_rtgodam_dismiss_free_plan_notice', array( $this, 'dismiss_free_plan_notice' ) );
-			add_action( 'wp_ajax_rtgodam_dismiss_woo_promo_notice', array( $this, 'dismiss_woo_promo_notice' ) );
+			add_action( 'wp_ajax_rtgodam_dismiss_woo_promo_notice', array( $this, 'dismiss_woo_promo_notice' ) ); 
 		}
 	}
 

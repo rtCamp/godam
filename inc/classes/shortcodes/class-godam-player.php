@@ -42,7 +42,7 @@ class GoDAM_Player {
 	/**
 	 * Return the work-cache index key for a given video post ID.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.8.0
 	 *
 	 * @param int $post_id Post/attachment ID.
 	 * @return string
@@ -54,7 +54,7 @@ class GoDAM_Player {
 	/**
 	 * Invalidate the render cache for a video when its rtgodam_meta post meta changes.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.8.0
 	 *
 	 * @param int    $meta_id    Meta entry ID (unused).
 	 * @param int    $object_id  Post ID the meta belongs to.
@@ -89,7 +89,7 @@ class GoDAM_Player {
 	 * Only acts on attachment post types to avoid unnecessary cache work on
 	 * unrelated post deletions/edits.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.8.0
 	 *
 	 * @param int $post_id Post ID.
 	 */
@@ -237,7 +237,7 @@ class GoDAM_Player {
 	 * heavy DB work on warm requests while keeping HTML generation stateless and
 	 * side-effect-safe on every render.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.8.0
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return string HTML output of the player.
@@ -275,11 +275,20 @@ class GoDAM_Player {
 		);
 
 		// Handle boolean attributes passed as strings (do this before mapping).
-		$boolean_attributes = array( 'autoplay', 'controls', 'loop', 'muted', 'engagements', 'preview', 'showShareButton', 'show_share_button' );
+		$boolean_attributes = array( 'autoplay', 'controls', 'loop', 'muted', 'preview', 'showShareButton', 'show_share_button' );
 		foreach ( $boolean_attributes as $bool_attr ) {
 			if ( isset( $attributes[ $bool_attr ] ) ) {
 				$attributes[ $bool_attr ] = filter_var( $attributes[ $bool_attr ], FILTER_VALIDATE_BOOLEAN );
 			}
+		}
+
+		// Normalize 'engagements' separately: the embed page passes 'show' as a truthy value,
+		// which filter_var() would incorrectly map to false. Treat 'show' as true, then fall
+		// back to standard boolean parsing for all other string representations.
+		if ( isset( $attributes['engagements'] ) && is_string( $attributes['engagements'] ) ) {
+			$attributes['engagements'] = 'show' === $attributes['engagements']
+				? true
+				: filter_var( $attributes['engagements'], FILTER_VALIDATE_BOOLEAN );
 		}
 
 		// Map WPBakery format (lowercase_underscore) to camelCase for backward compatibility.

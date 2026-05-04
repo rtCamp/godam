@@ -36,7 +36,7 @@ defined( 'ABSPATH' ) || exit;
  * | category        | (dropped)          | V2 query does not support category filter |
  * | tag             | (dropped)          | V2 query does not support tag filter      |
  * | search          | (dropped)          | V2 query does not support search filter   |
- * | engagements     | (dropped)          | V2 does not have engagement support       |
+ * | engagements     | engagements        | direct pass-through                       |
  * | openToNewPage   | (dropped)          | V2 does not have single-page linking      |
  */
 class Gallery_V1_To_V2 {
@@ -95,19 +95,27 @@ class Gallery_V1_To_V2 {
 	/**
 	 * Run the migration if it has not yet completed.
 	 *
-	 * Called by Runner::maybe_run() on admin_init when the plugin version has changed.
+	 * Called by Runner::maybe_run() on init when the plugin version has changed.
 	 *
-	 * @return void
+	 * Returns true when the migration is already done or was successfully run
+	 * so the runner can advance the stored DB version. Returns false only when
+	 * a concurrency lock is held by another concurrent request, signalling the
+	 * runner to retry on the next request.
+	 *
+	 * @return bool True if migration is complete or was just run; false if it bailed.
 	 */
-	public static function maybe_run() {
+	public static function maybe_run(): bool {
 		if ( get_option( self::OPTION_KEY ) ) {
-			return;
+			return true; // Already done.
 		}
 
-		// Called from Runner::maybe_run() on admin_init — is_user_logged_in()
-		// and current_user_can() are guaranteed available. Call run() directly;
-		// no need to defer to a later hook.
+		// Called from Runner::maybe_run() on init — fires on every request
+		// type (frontend, admin, REST, WP-Cron) so no auth gate is needed here.
 		self::run();
+
+		// If run() completed successfully it sets OPTION_KEY; if the lock was
+		// held by another concurrent request the option is still absent.
+		return (bool) get_option( self::OPTION_KEY );
 	}
 
 	/**
@@ -120,13 +128,9 @@ class Gallery_V1_To_V2 {
 	 * @return void
 	 */
 	public static function run() {
-		// Non-cron, non-CLI requests must originate from an authenticated admin.
-		$is_cli  = defined( 'WP_CLI' ) && WP_CLI;
-		$is_cron = wp_doing_cron();
-
-		if ( ! $is_cron && ! $is_cli && ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) ) {
-			return;
-		}
+		// This migration only rewrites block markup in post_content — it is a
+		// safe, idempotent, one-time operation. The concurrency lock below
+		// prevents simultaneous runs; no auth check is required.
 
 		global $wpdb;
 
@@ -364,6 +368,7 @@ class Gallery_V1_To_V2 {
 			'customDateStart'   => '',
 			'customDateEnd'     => '',
 			'showTitle'         => true,
+			'engagements'       => true,
 		);
 
 		$diff = array();
@@ -412,6 +417,7 @@ class Gallery_V1_To_V2 {
 			'customDateStart',
 			'customDateEnd',
 			'showTitle',
+			'engagements',
 		);
 
 		foreach ( $passthrough as $key ) {
@@ -436,7 +442,7 @@ class Gallery_V1_To_V2 {
 
 		/*
 		 * Intentionally dropped (no equivalent in V2):
-		 * category, tag, search, engagements, openToNewPage, include.
+		 * category, tag, search, openToNewPage, include.
 		 */
 
 		return $v2;

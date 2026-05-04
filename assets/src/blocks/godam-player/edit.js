@@ -166,6 +166,13 @@ function VideoEdit( {
 		}
 
 		const unit = heightMatch[ 2 ] || 'px';
+
+		// Skip width derivation for percentage units: % resolves against different
+		// axes for width vs. height, so the computed max-width would be meaningless.
+		if ( '%' === unit ) {
+			return null;
+		}
+
 		const arMatch = calculatedAspectRatio.match( /^(\d+(?:\.\d+)?):(\d+(?:\.\d+)?)$/ );
 		if ( ! arMatch ) {
 			return null;

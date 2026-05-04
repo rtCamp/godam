@@ -2,6 +2,7 @@
 /**
  * WordPress dependencies
  */
+import { __ } from '@wordpress/i18n';
 import { Suspense } from '@wordpress/element';
 
 /**
@@ -80,13 +81,13 @@ const Layer = ( { layer, goBack, duration } ) => {
 	if ( ! Component ) {
 		const FallbackComponent = LayerComponents.cta?.component;
 		if ( ! FallbackComponent ) {
-			return <div>Error: No layer components registered</div>;
+			return <div>{ __( 'Error: No layer components registered', 'godam' ) }</div>;
 		}
 		return <FallbackComponent layerID={ layer.id } goBack={ goBack } duration={ duration } />;
 	}
 
 	return (
-		<Suspense fallback={ <div>Loading layer...</div> }>
+		<Suspense fallback={ <div>{ __( 'Loading layer…', 'godam' ) }</div> }>
 			<Component layerID={ layer.id } goBack={ goBack } duration={ duration } />
 		</Suspense>
 	);
