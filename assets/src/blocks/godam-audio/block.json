@@ -2,10 +2,10 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "godam/audio",
-	"title": "GoDAM Audio",
+	"title": "Audio",
 	"category": "media",
 	"description": "Embed a GoDAM audio player.",
-	"keywords": [ "music", "sound", "podcast", "recording" ],
+	"keywords": [ "music", "sound", "podcast", "recording", "godam" ],
 	"textdomain": "godam",
 	"attributes": {
 		"blob": {

@@ -2,10 +2,10 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "godam/pdf",
-	"title": "GoDAM PDF",
+	"title": "Document",
 	"category": "media",
 	"description": "Embed a PDF file with preview.",
-	"keywords": [ "document", "pdf", "file", "preview" ],
+	"keywords": [ "document", "pdf", "file", "preview", "godam" ],
 	"textdomain": "godam",
 	"attributes": {
 		"blob": {
