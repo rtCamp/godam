@@ -269,7 +269,7 @@ const IntegrationSettings = () => {
 									</p>
 								) }
 
-								{ /* This will show when the Button Displays Purchase Now text */ }
+								{ /* This will show when the Button Displays Upgrade Plan text */ }
 								{ ! isInstalled && ! hasValidAPIKey && (
 									<p>
 										{ __( 'This is a Pro feature.', 'godam' ) }

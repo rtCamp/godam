@@ -927,7 +927,7 @@ class RTGODAM_Transcoder_Admin {
 			// Case 4: Required active + valid key → link to integrations page.
 			$message = sprintf(
 				/* translators: 1: opening link tag, 2: closing link tag */
-				__( '<strong>GoDAM now supports WooCommerce!</strong> Head over to the %1$sIntegration Settings%2$s to get started.', 'godam' ),
+				__( '<strong>Shoppable video for WooCommerce is live!</strong> %1$sActivate%2$s to start selling directly from your videos.', 'godam' ),
 				'<a href="' . esc_url( $integrations_url ) . '">',
 				'</a>'
 			);
@@ -935,7 +935,7 @@ class RTGODAM_Transcoder_Admin {
 			// Case 2: WooCommerce not active + valid key → install/activate WooCommerce.
 			$message = sprintf(
 				/* translators: 1: opening link tag, 2: closing link tag */
-				__( '<strong>GoDAM now supports WooCommerce!</strong> %1$sInstall & activate WooCommerce%2$s to use our Woo integration.', 'godam' ),
+				__( '<strong>GoDAM now supports WooCommerce!</strong> %1$sInstall WooCommerce%2$s to start using shoppable videos with GoDAM.', 'godam' ),
 				'<a href="' . esc_url( $woo_plugin_url ) . '">',
 				'</a>'
 			);
@@ -943,7 +943,7 @@ class RTGODAM_Transcoder_Admin {
 			// Cases 1 & 3: No valid key → purchase.
 			$message = sprintf(
 				/* translators: 1: opening link tag, 2: closing link tag */
-				__( '<strong>GoDAM now supports WooCommerce!</strong> %1$sPurchase a plan%2$s to access our Woo integration.', 'godam' ),
+				__( '<strong>Add shoppable videos to your WooCommerce store!</strong> %1$sUpgrade your plan%2$s to unlock this feature.', 'godam' ),
 				'<a href="' . esc_url( $pricing_url ) . '" target="_blank" rel="noopener noreferrer">',
 				'</a>'
 			);
