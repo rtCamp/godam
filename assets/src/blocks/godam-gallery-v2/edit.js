@@ -820,7 +820,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 											{ video.thumbnail ? (
 												<img src={ video.thumbnail } alt={ video.title } />
 											) : (
-												<span>{ __( 'GoDAM Video', 'godam' ) }</span>
+														<span>{ __( 'Video', 'godam' ) }</span>
 											) }
 										</div>
 										{ showTitle && (
