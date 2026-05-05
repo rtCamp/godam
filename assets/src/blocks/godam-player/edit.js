@@ -398,7 +398,17 @@ function VideoEdit( {
 	}, [ id, src, attributes.seo, isVideoSelecting, setAttributes ] );
 
 	// When autoplay is enabled, hoverSelect is incompatible — reset it to 'none'.
+	// Only apply this when autoplay is toggled on after mount so older content
+	// is not rewritten as a side effect of opening the editor.
+	const previousAutoplayRef = useRef( autoplay );
+
 	useEffect( () => {
+		const previousAutoplay = previousAutoplayRef.current;
+		if ( previousAutoplay === autoplay ) {
+			return;
+		}
+		previousAutoplayRef.current = autoplay;
+
 		if ( autoplay && attributes.hoverSelect !== 'none' ) {
 			setAttributes( { hoverSelect: 'none' } );
 		}

@@ -81,12 +81,19 @@ $attributes = apply_filters(
 );
 
 // attributes.
-$godam_autoplay       = ! empty( $attributes['autoplay'] );
-$godam_controls       = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
-$godam_loop           = ! empty( $attributes['loop'] );
-$godam_muted          = ! empty( $attributes['muted'] );
-$godam_poster         = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
-$godam_hover_select   = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSelect'] : 'none';
+$godam_autoplay     = ! empty( $attributes['autoplay'] );
+$godam_controls     = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
+$godam_loop         = ! empty( $attributes['loop'] );
+$godam_muted        = ! empty( $attributes['muted'] );
+$godam_poster       = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
+$godam_hover_select = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSelect'] : 'none';
+
+// Autoplay and hover modes are mutually exclusive – reset hover to 'none' so
+// the frontend player never initialises hover behaviour on autoplay videos,
+// regardless of the stored block/shortcode attribute value.
+if ( $godam_autoplay ) {
+	$godam_hover_select = 'none';
+}
 $godam_caption        = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
 $godam_tracks         = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $godam_show_share_btn = ! empty( $attributes['showShareButton'] );
