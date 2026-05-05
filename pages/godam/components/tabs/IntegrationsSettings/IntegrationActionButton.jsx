@@ -11,9 +11,9 @@ import { sprintf, __ } from '@wordpress/i18n';
  * the toggle button handles activation/deactivation instead.
  *
  * States (add-on NOT installed):
- * 1. Required plugin NOT active + no API key  → "Purchase Now"
+ * 1. Required plugin NOT active + no API key  → "Upgrade Plan"
  * 2. Required plugin NOT active + valid key   → "Learn More"
- * 3. Required plugin active + no API key      → "Purchase Now"
+ * 3. Required plugin active + no API key      → "Upgrade Plan"
  * 4. Required plugin active + valid API key   → "Install {name}" (triggers install)
  *
  * If the add-on IS installed → returns null (no button).
@@ -86,7 +86,7 @@ const IntegrationActionButton = ( {
 		);
 	}
 
-	// 1 & 3. No valid API key (regardless of required plugin) → Purchase Now.
+	// 1 & 3. No valid API key (regardless of required plugin) → Upgrade Plan.
 	return (
 		<Button
 			variant="primary"
@@ -95,7 +95,7 @@ const IntegrationActionButton = ( {
 			target="_blank"
 			rel="noopener noreferrer"
 		>
-			{ __( 'Purchase Now', 'godam' ) }
+			{ __( 'Upgrade Plan', 'godam' ) }
 		</Button>
 	);
 };
