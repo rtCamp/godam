@@ -899,7 +899,7 @@ function VideoEdit( {
 					<div { ...blockProps }>
 						<div className="godam-editor-video-placeholder">
 							<span className="godam-editor-video-label">
-							{ __( 'Video', 'godam' ) }
+								{ __( 'Video', 'godam' ) }
 							</span>
 						</div>
 					</div>
