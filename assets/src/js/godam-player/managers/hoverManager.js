@@ -42,6 +42,13 @@ class HoverManager {
 	 * Sets up event listeners for the appropriate behavior.
 	 */
 	init() {
+		// Hover behaviour is incompatible with autoplay – skip initialisation
+		// entirely so shortcodes/WPBakery/cached blocks with a stale hoverSelect
+		// value cannot start hover mode on an autoplay-enabled player.
+		if ( this.videoElement.dataset.autoplayOnView === 'true' || this.player.autoplay() ) {
+			return;
+		}
+
 		if ( this.hoverSelect === 'start-preview' ) {
 			this.setupPreview();
 		} else if ( this.hoverSelect === 'show-player-controls' ) {

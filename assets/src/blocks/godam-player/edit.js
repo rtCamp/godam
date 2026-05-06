@@ -397,6 +397,23 @@ function VideoEdit( {
 		}
 	}, [ id, src, attributes.seo, isVideoSelecting, setAttributes ] );
 
+	// When autoplay is enabled, hoverSelect is incompatible — reset it to 'none'.
+	// Only apply this when autoplay is toggled on after mount so older content
+	// is not rewritten as a side effect of opening the editor.
+	const previousAutoplayRef = useRef( autoplay );
+
+	useEffect( () => {
+		const previousAutoplay = previousAutoplayRef.current;
+		if ( previousAutoplay === autoplay ) {
+			return;
+		}
+		previousAutoplayRef.current = autoplay;
+
+		if ( autoplay && attributes.hoverSelect !== 'none' ) {
+			setAttributes( { hoverSelect: 'none' } );
+		}
+	}, [ autoplay ] ); // eslint-disable-line react-hooks/exhaustive-deps
+
 	// Keep overridden SEO thumbnail synced with block poster.
 	useEffect( () => {
 		if ( ! attributes?.seoOverride || ! poster ) {
@@ -780,9 +797,12 @@ function VideoEdit( {
 									<SelectControl
 										__nextHasNoMarginBottom
 										label={ __( 'Hover Option', 'godam' ) }
-										help={ __( 'Choose the action to perform on video hover.', 'godam' ) }
+										help={ autoplay
+											? __( 'Hover option is disabled when autoplay is on.', 'godam' )
+											: __( 'Choose the action to perform on video hover.', 'godam' ) }
 										value={ attributes.hoverSelect || 'none' }
 										onChange={ ( value ) => setAttributes( { hoverSelect: value } ) }
+										disabled={ !! autoplay }
 										options={
 											[
 												{ label: __( 'None', 'godam' ), value: 'none' },
