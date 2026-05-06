@@ -290,10 +290,13 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 									addWarning = true;
 								}
 
+								// Disable the button when the required plugin/feature is inactive
+								// (e.g. form plugin not installed, or WooCommerce layer API key missing/expired).
+								const isLayerDisabled = ( formType && ! formType.isActive ) || layerData?.isActive === false;
+
 								return (
 									<Tooltip
 										key={ layer.id }
-										className="w-full flex justify-between items-center px-2 py-3 border rounded-md mb-2 hover:bg-gray-50 cursor-pointer"
 										text={ tooltipMessage }
 										placement="right"
 									>
@@ -304,6 +307,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 													dispatch( setCurrentLayer( layer ) );
 													onSelectLayer( layer.displayTime );
 												} }
+												disabled={ isLayerDisabled }
 											>
 												<div className="flex items-center gap-2">
 													{
