@@ -421,12 +421,14 @@
 	inset: 0;
 	background: rgba(15, 18, 12, 0.7);
 	opacity: 0;
+	visibility: hidden;
 	pointer-events: none;
 	transition: opacity 0.2s ease;
 	z-index: 999998;
 
 	&.is-active {
 		opacity: 1;
+		visibility: visible;
 		pointer-events: auto;
 	}
 }
@@ -442,12 +444,14 @@
 	overflow: hidden;
 	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
 	opacity: 0;
+	visibility: hidden;
 	pointer-events: none;
 	transition: opacity 0.2s ease, transform 0.2s ease;
 	z-index: 999999;
 
 	&.is-active {
 		opacity: 1;
+		visibility: visible;
 		transform: translate(-50%, -50%) scale(1);
 		pointer-events: auto;
 	}
