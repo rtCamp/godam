@@ -856,6 +856,22 @@ class RTGODAM_Transcoder_Admin {
 			return;
 		}
 
+		// rtgodam_get_api_key_status() only reads the persistent DB status option
+		// ('rtgodam-api-key-status') which can NEVER contain 'verification_failed'
+		// because that state is transient and not persistable. The actual runtime
+		// status — including transient 'verification_failed' — is stored in the
+		// 'rtgodam_user_data' option by rtgodam_get_user_data(). Read from there
+		// so we don't show a false "expired" banner when the server is temporarily
+		// unreachable.
+		$cached_user_data = get_option( 'rtgodam_user_data', array() );
+		$runtime_status   = isset( $cached_user_data['api_key_status'] )
+			? $cached_user_data['api_key_status']
+			: rtgodam_get_api_key_status();
+
+		if ( \RTGODAM\Inc\Enums\Api_Key_Status::VERIFICATION_FAILED === $runtime_status ) {
+			return;
+		}
+
 		$pricing_url = add_query_arg(
 			array(
 				'utm_campaign' => 'expired-key',
