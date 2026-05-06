@@ -231,11 +231,10 @@ class Form_Submit {
 		 */
 		$form_title = ! empty( $form_title ) ? $form_title : __( 'Sureforms', 'godam' );
 
-		// Detect file type to determine job_type.
-		$is_audio = godam_is_audio_file( $file_url );
-		
-		// Set job_type based on file type.
-		$job_type = $is_audio ? 'audio' : 'stream';
+		/**
+		 * Set job_type based on file type.
+		 */
+		$job_type = godam_get_job_type( $file_url );
 		
 		/**
 		 * Send for transcoding.

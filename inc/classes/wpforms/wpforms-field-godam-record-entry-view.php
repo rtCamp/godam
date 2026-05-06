@@ -21,7 +21,7 @@ $godam_attachment_url     = $value; // URL of the saved file, which is under /up
 $godam_attachment_name    = basename( $value );
 $godam_transcoded_url     = WPForms_Integration_Helper::get_transcoded_url( $godam_form_id, $godam_entry_id, $godam_field_id );
 $godam_hls_transcoded_url = WPForms_Integration_Helper::get_hls_transcoded_url( $godam_form_id, $godam_entry_id, $godam_field_id );
-$godam_transcoded_status  = WPForms_Integration_Helper::get_transcoded_status( $godam_form_id, $godam_entry_id, $godam_field_id );
+$godam_transcoded_status  = WPForms_Integration_Helper::get_transcoded_status( $godam_form_id, $godam_entry_id, $godam_field_id ) ?? '';
 
 // Detect if this is an audio file.
 $godam_is_audio = godam_is_audio_file( $godam_attachment_url );
@@ -75,7 +75,7 @@ $godam_content_type = $godam_is_audio ? __( 'Audio', 'godam' ) : __( 'Video', 'g
 			<?php if ( $godam_transcoded_url ) : ?>
 				<source src="<?php echo esc_url( $godam_transcoded_url ); ?>" type="audio/mpeg">
 			<?php endif; ?>
-			<source src="<?php echo esc_url( $godam_attachment_url ); ?>" type="<?php echo esc_attr( $mime_type ); ?>">
+			<source src="<?php echo esc_url( $godam_attachment_url ); ?>" type="audio/mpeg">
 			<?php esc_html_e( 'Your browser does not support the audio element.', 'godam' ); ?>
 		</audio>
 	<?php else : ?>

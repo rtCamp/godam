@@ -259,15 +259,6 @@ class Init {
 			$field_id   = $field->id;
 			$file_value = rgar( $entry, $field_id );
 
-			$file_type = wp_check_filetype( $file_value );
-			$is_audio  = strpos( $file_type['type'], 'audio' ) !== false;
-			$is_video  = strpos( $file_type['type'], 'video' ) !== false;
-
-			if ( 'webm' === $file_type['ext'] && godam_is_audio_file_by_name( $file_value ) ) {
-				$is_video = false;
-				$is_audio = true;
-			}
-
 			if ( empty( $file_value ) ) {
 				continue;
 			}
@@ -280,11 +271,16 @@ class Init {
 				}
 
 				foreach ( $files as $index => $file_url ) {
-					$this->send_to_godam( $form_title, $file_url, $entry['id'], $field_id, $index, $is_audio ? 'audio' : 'stream' );
+					// Set job_type based on file type.
+					$job_type = godam_get_job_type( $file_url );
+
+					$this->send_to_godam( $form_title, $file_url, $entry['id'], $field_id, $index, $job_type );
 				}
-			} else {
-				// Single file.
-				$this->send_to_godam( $form_title, $file_value, $entry['id'], $field_id, 0, $is_audio ? 'audio' : 'stream' );
+			} else { // Single file.
+				// Set job_type based on file type.
+				$job_type = godam_get_job_type( $file_value );
+
+				$this->send_to_godam( $form_title, $file_value, $entry['id'], $field_id, 0, $job_type );
 			}
 		}
 	}
@@ -316,7 +312,13 @@ class Init {
 		/**
 		 * Send for transcoding.
 		 */
-		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding( 'gf', $form_title, $file_url, $entry_id, $job_type );
+		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding(
+			'gf',
+			$form_title,
+			$file_url,
+			$entry_id,
+			$job_type
+		);
 
 		/**
 		 * Error handling.

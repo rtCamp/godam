@@ -96,11 +96,22 @@ class Form_Submit {
 		 * Form Title.
 		 */
 		$form_title = ! empty( $form_title ) ? $form_title : __( 'Fluentforms', 'godam' );
+		
+		/**
+		 * Set job_type based on file type.
+		 */
+		$job_type = godam_get_job_type( $file_url );
 
 		/**
 		 * Send for transcoding.
 		 */
-		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding( 'fluentforms', $form_title, $file_url, $entry_id );
+		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding(
+			'fluentforms',
+			$form_title,
+			$file_url,
+			$entry_id,
+			$job_type
+		);
 
 		/**
 		 * Error handling.
