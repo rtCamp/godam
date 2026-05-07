@@ -856,6 +856,22 @@ class RTGODAM_Transcoder_Admin {
 			return;
 		}
 
+		// rtgodam_get_api_key_status() only reads the persistent DB status option
+		// ('rtgodam-api-key-status') which can NEVER contain 'verification_failed'
+		// because that state is transient and not persistable. The actual runtime
+		// status — including transient 'verification_failed' — is stored in the
+		// 'rtgodam_user_data' option by rtgodam_get_user_data(). Read from there
+		// so we don't show a false "expired" banner when the server is temporarily
+		// unreachable.
+		$cached_user_data = get_option( 'rtgodam_user_data', array() );
+		$runtime_status   = isset( $cached_user_data['api_key_status'] )
+			? $cached_user_data['api_key_status']
+			: rtgodam_get_api_key_status();
+
+		if ( \RTGODAM\Inc\Enums\Api_Key_Status::VERIFICATION_FAILED === $runtime_status ) {
+			return;
+		}
+
 		$pricing_url = add_query_arg(
 			array(
 				'utm_campaign' => 'expired-key',
@@ -927,7 +943,7 @@ class RTGODAM_Transcoder_Admin {
 			// Case 4: Required active + valid key → link to integrations page.
 			$message = sprintf(
 				/* translators: 1: opening link tag, 2: closing link tag */
-				__( '<strong>GoDAM now supports WooCommerce!</strong> Head over to the %1$sIntegration Settings%2$s to get started.', 'godam' ),
+				__( '<strong>Shoppable video for WooCommerce is live!</strong> %1$sActivate%2$s to start selling directly from your videos.', 'godam' ),
 				'<a href="' . esc_url( $integrations_url ) . '">',
 				'</a>'
 			);
@@ -935,7 +951,7 @@ class RTGODAM_Transcoder_Admin {
 			// Case 2: WooCommerce not active + valid key → install/activate WooCommerce.
 			$message = sprintf(
 				/* translators: 1: opening link tag, 2: closing link tag */
-				__( '<strong>GoDAM now supports WooCommerce!</strong> %1$sInstall & activate WooCommerce%2$s to use our Woo integration.', 'godam' ),
+				__( '<strong>GoDAM now supports WooCommerce!</strong> %1$sInstall WooCommerce%2$s to start using shoppable videos with GoDAM.', 'godam' ),
 				'<a href="' . esc_url( $woo_plugin_url ) . '">',
 				'</a>'
 			);
@@ -943,7 +959,7 @@ class RTGODAM_Transcoder_Admin {
 			// Cases 1 & 3: No valid key → purchase.
 			$message = sprintf(
 				/* translators: 1: opening link tag, 2: closing link tag */
-				__( '<strong>GoDAM now supports WooCommerce!</strong> %1$sPurchase a plan%2$s to access our Woo integration.', 'godam' ),
+				__( '<strong>Add shoppable videos to your WooCommerce store!</strong> %1$sUpgrade your plan%2$s to unlock this feature.', 'godam' ),
 				'<a href="' . esc_url( $pricing_url ) . '" target="_blank" rel="noopener noreferrer">',
 				'</a>'
 			);

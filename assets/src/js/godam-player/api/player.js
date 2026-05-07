@@ -64,7 +64,10 @@ class Player {
 
 		this.videoJs = videoJs;
 		this.video = video;
-		this.instanceId = video.dataset.instanceId;
+
+		// Check the element itself first, then fall back to descendants.
+		this.instanceId = video.dataset.instanceId ||
+			video.querySelector?.( '[data-instance-id]' )?.dataset?.instanceId;
 
 		// Validate instanceId exists
 		if ( ! this.instanceId ) {

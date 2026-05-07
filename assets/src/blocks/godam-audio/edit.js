@@ -122,7 +122,7 @@ function AudioEdit( {
 					allowedTypes={ ALLOWED_MEDIA_TYPES }
 					value={ attributes }
 					onError={ onUploadError }
-					labels={ { title: __( 'GoDAM Audio', 'godam' ) } }
+					labels={ { title: __( 'Audio', 'godam' ) } }
 				/>
 			</div>
 		);

@@ -2,11 +2,11 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "godam/video",
-	"title": "GoDAM Video",
+	"title": "Video",
 	"category": "media",
 	"description": "Embed a video from your media library or upload a new one.",
-	"keywords": [ "movie", "video", "player" ],
-	"textdomain": "transcoder",
+	"keywords": [ "movie", "video", "player", "godam" ],
+	"textdomain": "godam",
 	"attributes": {
 		"autoplay": {
 			"type": "boolean",

@@ -345,7 +345,7 @@ if ( 'query' === $godam_gallery_mode ) {
 								<?php if ( ! empty( $godam_item['thumbnail'] ) ) : ?>
 									<img src="<?php echo esc_url( $godam_item['thumbnail'] ); ?>" alt="<?php echo esc_attr( $godam_item['title'] ); ?>" class="godam-gallery-v2__thumbnail" <?php echo $godam_thumbnail_attributes ? wp_kses_data( $godam_thumbnail_attributes ) : ''; ?> />
 								<?php else : ?>
-									<span><?php esc_html_e( 'GoDAM Video', 'godam' ); ?></span>
+									<span><?php esc_html_e( 'Video', 'godam' ); ?></span>
 								<?php endif; ?>
 							</div>
 							<?php if ( $godam_show_title ) : ?>
@@ -401,7 +401,7 @@ if ( 'query' === $godam_gallery_mode ) {
 									/>
 								<?php else : ?>
 									<div class="godam-gallery-v2-item__placeholder">
-										<span><?php esc_html_e( 'GoDAM Video', 'godam' ); ?></span>
+										<span><?php esc_html_e( 'Video', 'godam' ); ?></span>
 									</div>
 								<?php endif; ?>
 								<div class="godam-gallery-v2-item__play-icon" aria-hidden="true">

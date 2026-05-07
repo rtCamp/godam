@@ -246,6 +246,16 @@
 				}
 			}
 
+			// Add-on layer icon (e.g. WooCommerce) rendered as <img>.
+			// Matches the intrinsic 24x24 size of the WordPress <Icon> SVG component.
+			.layer-indicator__addon-icon {
+				width: 20px;
+				height: 20px;
+				display: block;
+				flex-shrink: 0;
+				margin: 2px;
+			}
+
 			.info {
 				position: absolute;
 				bottom: -3rem;

@@ -2,7 +2,7 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "godam/gallery-v2",
-	"title": "GoDAM Video Gallery",
+	"title": "Video Gallery",
 	"category": "media",
 	"description": "Create a handpicked or query-based GoDAM video gallery.",
 	"keywords": [ "video", "gallery", "grid", "godam" ],
