@@ -439,7 +439,7 @@ $godam_video_setup = array(
 	'controls'    => $godam_controls,
 	'autoplay'    => $godam_autoplay,
 	'loop'        => $godam_loop,
-	'muted'       => $godam_muted,
+	'muted'       => $godam_autoplay ? true : $godam_muted,
 	'preload'     => $godam_preload,
 	'poster'      => $godam_video_poster,
 	'fluid'       => true,
@@ -719,6 +719,13 @@ if ( empty( $godam_attachment_title ) ) {
 
 					<video
 						class="easydam-player video-js vjs-big-play-centered vjs-hidden"
+						<?php if ( $godam_autoplay || $godam_muted ) : ?>
+							muted
+						<?php endif; ?>
+						<?php if ( $godam_autoplay ) : ?>
+							autoplay
+						<?php endif; ?>
+						playsinline webkit-playsinline
 						data-options="<?php echo esc_attr( $godam_video_config ); ?>"
 						data-ad_tag_url="<?php echo ! $godam_woocommerce_context ? esc_url( $godam_ad_tag_url ) : ''; ?>"
 						data-id="<?php echo esc_attr( is_numeric( $godam_attachment_id ) ? $godam_attachment_id : $godam_original_id ); ?>"
@@ -732,7 +739,7 @@ if ( empty( $godam_attachment_title ) ) {
 							data-global_ads_settings="<?php echo esc_attr( $godam_ads_settings ); ?>"
 							data-hover-select="<?php echo esc_attr( $godam_hover_select ); ?>"
 							data-video-title="<?php echo esc_attr( $godam_attachment_title ); ?>"
-							data-autoplay-on-view="<?php echo esc_attr( $godam_autoplay ? 'true' : 'false' ); ?>"
+							data-autoplay-on-view="<?php echo esc_attr( ( $godam_autoplay && 'auto' !== $godam_preload ) ? 'true' : 'false' ); ?>"
 							data-disable-transcript="<?php echo esc_attr( $godam_disable_subtitles_and_transcript ? 'true' : 'false' ); ?>"
 						>
 							<?php
