@@ -219,6 +219,13 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v1.9.0 (May 7, 2026) =
+
+- Feat: Introduced WooCommerce integration — first beta release of GoDAM for WooCommerce support.
+- Fix: Disabled hover option when autoplay is enabled in the Video block.
+- Fix: Resolved Gallery Carousel scroll issue on iOS devices.
+- Tweak: Revamped GoDAM blocks to Video, Video Gallery, Audio and Document blocks.
+
 = v1.8.0 (April 29, 2026) =
 
 - Feat: Enhanced GoDAM Gallery block with improved layouts and controls.
@@ -236,15 +243,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 - Fix: Fixed video data collection in analytics.
 - Fix: Improved image optimization to support all registered image sizes.
-
-= v1.7.1 (March 17, 2026) =
-
-- Fix: Resolved invalid duration issue for hotspot layer in the video editor.
-- Fix: Improved transcoding failure flow for plugin-based transcoding.
-- Fix: Reset state in the video editor on load to prevent stale data.
-- Fix: Resolved inconsistent transcoding job failure state caused by HTTP authentication.
-- Fix: Fixed Analytics overlay message loading and background image rendering.
-- Fix: Fixed security issues
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
