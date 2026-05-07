@@ -437,9 +437,9 @@ if ( $godam_placeholder_lookup_id > 0 ) {
 }
 $godam_video_setup = array(
 	'controls'    => $godam_controls,
-	'autoplay'    => $godam_autoplay,
+	'autoplay'    => $godam_autoplay ? 'muted' : false,
 	'loop'        => $godam_loop,
-	'muted'       => $godam_muted,
+	'muted'       => $godam_autoplay ? true : $godam_muted,
 	'preload'     => $godam_preload,
 	'poster'      => $godam_video_poster,
 	'fluid'       => true,
