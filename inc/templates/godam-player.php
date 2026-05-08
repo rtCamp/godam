@@ -106,17 +106,6 @@ $godam_disable_subtitles_and_transcript = isset( $attributes['godam_context'] ) 
 		true
 	);
 
-// Determine if analytics tracking should be skipped for this video instance.
-// Add-ons can opt-out by returning true from the filter; the context is also passed for convenience.
-// wp_validate_boolean() normalises the return value.
-$godam_skip_analytics = wp_validate_boolean(
-	apply_filters(
-		'godam_skip_analytics',
-		false,
-		isset( $attributes['godam_context'] ) ? $attributes['godam_context'] : ''
-	)
-);
-
 // Resolve the attachment ID (could be WordPress or virtual media).
 $godam_attachment_id = '';
 
@@ -725,10 +714,6 @@ if ( empty( $godam_attachment_title ) ) {
 						data-instance-id="<?php echo esc_attr( $godam_instance_id ); ?>"
 						data-controls="<?php echo esc_attr( $godam_video_setup ); ?>"
 						data-job_id="<?php echo esc_attr( $godam_job_id ); ?>"
-						<?php
-						if ( $godam_skip_analytics ) :
-							?>
-							data-skip-analytics="true"<?php endif; ?>
 							data-global_ads_settings="<?php echo esc_attr( $godam_ads_settings ); ?>"
 							data-hover-select="<?php echo esc_attr( $godam_hover_select ); ?>"
 							data-video-title="<?php echo esc_attr( $godam_attachment_title ); ?>"
