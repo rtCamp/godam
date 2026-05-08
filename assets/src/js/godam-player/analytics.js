@@ -101,11 +101,6 @@ function collectPlayedRanges( player ) {
 
 			const videoEl = findVideoElementById( vid, root ) || ctx.querySelector( '.easydam-player.video-js, .video-js' );
 
-			// Skip analytics tracking if the video element has opted out.
-			if ( videoEl && videoEl.getAttribute( 'data-skip-analytics' ) === 'true' ) {
-				return false;
-			}
-
 			// If no videoId provided, automatically find the current video
 			if ( ! vid && videoEl ) {
 				vid = parseInt( videoEl.getAttribute( 'data-id' ), 10 ) || 0;
@@ -159,10 +154,8 @@ if ( ! window.pageLoadEventTracked ) {
 	document.addEventListener( 'DOMContentLoaded', () => {
 		const videos = document.querySelectorAll( '.easydam-player.video-js' );
 
-		// Collect all video IDs and Job IDs, excluding videos that have opted out of
-		// analytics tracking (e.g. Woo Shoppable Video block sets data-skip-analytics="true").
+		// Collect all video IDs and Job IDs
 		const videoInfo = Array.from( videos )
-			.filter( ( video ) => video.getAttribute( 'data-skip-analytics' ) !== 'true' )
 			.map( ( video ) => ( {
 				id: video.getAttribute( 'data-id' ),
 				jobId: video.getAttribute( 'data-job_id' ) || '',
@@ -262,11 +255,6 @@ if ( ! window.godamUnloadListenerBound ) {
  */
 function sendPlayerHeatmap( player, video, skipIfKey = null ) {
 	if ( ! player || ! video ) {
-		return null;
-	}
-
-	// Honour the opt-out flag set by the PHP template (e.g. Woo Shoppable Video block).
-	if ( video.getAttribute( 'data-skip-analytics' ) === 'true' ) {
 		return null;
 	}
 
@@ -381,11 +369,6 @@ function sendPlayerHeatmap( player, video, skipIfKey = null ) {
 }
 
 function setupPlayerAnalytics( player, video ) {
-	// Honour the opt-out flag set by the PHP template (e.g. Woo Shoppable Video block).
-	if ( video && video.getAttribute( 'data-skip-analytics' ) === 'true' ) {
-		return;
-	}
-
 	// Skip if already set up for this player instance.
 	// We use the player object rather than the DOM element because
 	// godamPlayerReady provides the raw <video> element, but playerAnalytics()
@@ -426,11 +409,6 @@ function playerAnalytics() {
 	const videos = document.querySelectorAll( '.easydam-player.video-js' );
 
 	videos.forEach( ( video ) => {
-		// Skip opted-out videos (e.g. Woo Shoppable Video block).
-		if ( video.getAttribute( 'data-skip-analytics' ) === 'true' ) {
-			return;
-		}
-
 		// Skip if player is still initializing
 		if ( video.dataset.videojsInitializing === 'true' ) {
 			return;
