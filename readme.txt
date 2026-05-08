@@ -219,7 +219,7 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
-= v1.9.0 (May 7, 2026) =
+= v1.9.0 (May 8, 2026) =
 
 - Feat: Introduced WooCommerce integration — first beta release of GoDAM for WooCommerce support.
 - Fix: Disabled hover option when autoplay is enabled in the Video block.
