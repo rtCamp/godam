@@ -161,6 +161,10 @@ if ( ! window.pageLoadEventTracked ) {
 
 		// Collect all video IDs and Job IDs, excluding videos that have opted out of
 		// analytics tracking (e.g. Woo Shoppable Video block sets data-skip-analytics="true").
+		// Deduplicate by video ID to prevent inflated page_load counts when the same
+		// video appears in multiple player contexts on the same page (e.g. product reels
+		// + WC featured gallery on a WooCommerce product page).
+		const seenVideoIds = new Set();
 		const videoInfo = Array.from( videos )
 			.filter( ( video ) => video.getAttribute( 'data-skip-analytics' ) !== 'true' )
 			.map( ( video ) => ( {
@@ -168,7 +172,14 @@ if ( ! window.pageLoadEventTracked ) {
 				jobId: video.getAttribute( 'data-job_id' ) || '',
 			} ) )
 			.filter( ( info ) => info.id !== null && info.id !== '' && ! isNaN( info.id ) )
-			.map( ( info ) => [ parseInt( info.id, 10 ), info.jobId ] );
+			.map( ( info ) => [ parseInt( info.id, 10 ), info.jobId ] )
+			.filter( ( [ id ] ) => {
+				if ( seenVideoIds.has( id ) ) {
+					return false;
+				}
+				seenVideoIds.add( id );
+				return true;
+			} );
 
 		// Send a single page_load request with all video ID and Job ID pairs
 		if ( window.analytics && videoInfo.length > 0 ) {
@@ -393,6 +404,19 @@ function setupPlayerAnalytics( player, video ) {
 	if ( player._godamAnalyticsSetup ) {
 		return;
 	}
+
+	// Deduplicate by video ID: if another player instance for the same video is already
+	// tracked, skip this one. This prevents inflated play counts when the same video
+	// appears in multiple contexts on one page (e.g. product reels + WC featured gallery).
+	const currentVideoId = video.getAttribute( 'data-id' );
+	if ( currentVideoId ) {
+		for ( const entry of window.godamTrackedPlayers.values() ) {
+			if ( entry.videoEl.getAttribute( 'data-id' ) === currentVideoId ) {
+				return;
+			}
+		}
+	}
+
 	player._godamAnalyticsSetup = true;
 	video.dataset.analyticsSetup = 'true'; // Keep for backwards compatibility
 
