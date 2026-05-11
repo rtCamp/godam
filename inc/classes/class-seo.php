@@ -100,6 +100,19 @@ class Seo {
 		}
 
 		if ( ! empty( $video_seo_schema ) ) {
+			/**
+			 * Filter the video SEO schema data before it is cached as post meta.
+			 *
+			 * Allows add-ons (e.g. WooCommerce integration) to enrich each video's
+			 * cached SEO data with additional information such as product details.
+			 *
+			 * @since 1.10.0
+			 *
+			 * @param array $video_seo_schema Array of video SEO data arrays.
+			 * @param int   $post_ID          The post ID being saved.
+			 */
+			$video_seo_schema = apply_filters( 'godam_video_seo_cache_data', $video_seo_schema, $post_ID );
+
 			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY, $video_seo_schema );
 			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY, time() );
 			$this->update_attachment_post_mapping( $post_ID, array_unique( $attachments_used ) );
@@ -335,8 +348,38 @@ class Seo {
 				$schema['duration'] = sanitize_text_field( $video['duration'] );
 			}
 
+			/**
+			 * Filter an individual video SEO schema entry before output.
+			 *
+			 * Allows add-ons to modify or extend a single VideoObject schema,
+			 * e.g. by adding an associatedProduct for WooCommerce integration.
+			 *
+			 * @since 1.10.0
+			 *
+			 * @param array $schema  The VideoObject schema array.
+			 * @param array $video   The raw cached video SEO data.
+			 * @param int   $post_id The current post ID.
+			 */
+			$schema = apply_filters( 'godam_video_seo_schema', $schema, $video, $post_id );
+
 			$schemas[] = $schema;
 		}
+
+		if ( empty( $schemas ) ) {
+			return;
+		}
+
+		/**
+		 * Filter the complete array of video SEO schemas before JSON-LD output.
+		 *
+		 * Allows add-ons to add, remove, or reorder schema entries.
+		 *
+		 * @since 1.10.0
+		 *
+		 * @param array $schemas Array of VideoObject schema arrays.
+		 * @param int   $post_id The current post ID.
+		 */
+		$schemas = apply_filters( 'godam_video_seo_schemas', $schemas, $post_id );
 
 		if ( empty( $schemas ) ) {
 			return;
@@ -476,6 +519,9 @@ class Seo {
 		$attachments_used = $result['attachments'];
 
 		if ( ! empty( $video_seo_schema ) ) {
+			/** This filter is documented in inc/classes/class-seo.php */
+			$video_seo_schema = apply_filters( 'godam_video_seo_cache_data', $video_seo_schema, $post_ID );
+
 			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY, $video_seo_schema );
 			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY, time() );
 			$this->update_attachment_post_mapping( $post_ID, array_unique( $attachments_used ) );
