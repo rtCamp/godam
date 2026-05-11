@@ -255,21 +255,28 @@ export default class PlayerManager {
 			return;
 		}
 
+		// Force muted state before attempting play for iOS compatibility
+		player.muted( true );
+
+		const attemptPlay = () => {
+			const playPromise = player.play();
+			if ( playPromise !== undefined ) {
+				playPromise.catch( ( error ) => {
+					// Autoplay was prevented (browser policy)
+					// eslint-disable-next-line no-console
+					console.debug( 'Autoplay blocked', error );
+				} );
+			}
+		};
+
 		// Wait for player to be ready
 		if ( player.readyState() >= 2 ) {
 			// Player has enough data to play
-			player.play().catch( ( error ) => {
-				// Autoplay was prevented (browser policy)
-				// eslint-disable-next-line no-console
-				console.warn( 'Autoplay prevented:', error );
-			} );
+			attemptPlay();
 		} else {
 			// Wait for loadeddata event
 			const playOnReady = () => {
-				player.play().catch( ( error ) => {
-					// eslint-disable-next-line no-console
-					console.warn( 'Autoplay prevented:', error );
-				} );
+				attemptPlay();
 				player.off( 'loadeddata', playOnReady );
 			};
 			player.on( 'loadeddata', playOnReady );
