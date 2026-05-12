@@ -111,7 +111,7 @@ export function getUserAgent( userAgent ) {
  * @param {Array}  [opts.videoIds]         Array of [videoId, jobId] pairs (type 1).
  * @param {Array}  [opts.ranges]           Played time-range pairs (type 2).
  * @param {number} [opts.videoLength]      Duration in seconds (type 2).
- * @return {Object} Ready-to-serialize request body.
+ * @return {{endpoint: (?string), body: (?Object)}} Object containing the analytics endpoint and the ready-to-serialize request body, or null values for both when no request should be sent.
  */
 export function buildAnalyticsRequestBody( {
 	type,
