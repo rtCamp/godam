@@ -182,7 +182,7 @@ export function buildAnalyticsRequestBody( {
 		is_page: isPage === '1',
 		is_archive: isArchive === '1',
 		post_type: postType,
-		post_id: parseInt( postId, 0 ),
+		post_id: parseInt( postId, 10 ) || 0,
 		post_title: postTitle,
 		categories,
 		tags,
