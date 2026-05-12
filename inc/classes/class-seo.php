@@ -47,14 +47,15 @@ class Seo {
 	}
 
 	/**
-	 * Save SEO schema data from 'godam/video' and 'godam/video-product-gallery' blocks as post meta.
+	 * Save SEO schema data from 'godam/video' blocks as post meta.
 	 *
 	 * This function parses the Gutenberg block content of the post and extracts
-	 * any `seo` attribute from blocks of type `godam/video`. It also extracts
-	 * video/product data from `godam/video-product-gallery` (Shoppable Video) blocks.
-	 * The extracted data is then saved in the post meta under the key
-	 * `godam_video_seo_schema`, along with a timestamp in
-	 * `godam_video_seo_schema_updated`.
+	 * any `seo` attribute from blocks of type `godam/video`. The extracted data
+	 * is then saved in the post meta under the key `godam_video_seo_schema`,
+	 * along with a timestamp in `godam_video_seo_schema_updated`.
+	 *
+	 * Add-ons can contribute additional schemas via the
+	 * `godam_video_seo_extra_block_schemas` filter.
 	 *
 	 * Also handles WPBakery shortcodes in the same post.
 	 *
@@ -83,11 +84,10 @@ class Seo {
 		$video_seo_schema = array();
 		$attachments_used = array();
 
-		// Parse Gutenberg blocks if content contains godam/video or godam/video-product-gallery blocks.
-		$has_video_block   = ! empty( $content ) && strpos( $content, '<!-- wp:godam/video' ) !== false;
-		$has_gallery_block = ! empty( $content ) && strpos( $content, '<!-- wp:godam/video-product-gallery ' ) !== false;
+		// Parse Gutenberg blocks if content contains godam/video blocks.
+		$has_video_block = ! empty( $content ) && strpos( $content, '<!-- wp:godam/video' ) !== false;
 
-		if ( $has_video_block || $has_gallery_block ) {
+		if ( $has_video_block ) {
 			$blocks = parse_blocks( $content );
 
 			foreach ( $blocks as $block ) {
@@ -103,6 +103,22 @@ class Seo {
 			$video_seo_schema = array_merge( $video_seo_schema, $result['schemas'] );
 			$attachments_used = array_merge( $attachments_used, $result['attachments'] );
 		}
+
+		/**
+		 * Filter to let add-ons contribute extra block-based video SEO schemas.
+		 *
+		 * For example, the GoDAM for WooCommerce add-on uses this to parse
+		 * `godam/video-product-gallery` (Shoppable Video) blocks and return
+		 * the resulting VideoObject SEO entries.
+		 *
+		 * @since 1.11.0
+		 *
+		 * @param array  $extra_schemas Array of extra SEO data arrays (initially empty).
+		 * @param string $content       The post content.
+		 * @param int    $post_ID       The post ID.
+		 */
+		$extra_schemas    = apply_filters( 'godam_video_seo_extra_block_schemas', array(), $content, $post_ID );
+		$video_seo_schema = array_merge( $video_seo_schema, $extra_schemas );
 
 		if ( ! empty( $video_seo_schema ) ) {
 			/**
@@ -122,18 +138,31 @@ class Seo {
 			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY, time() );
 			$this->update_attachment_post_mapping( $post_ID, array_unique( $attachments_used ) );
 
-			// Track VPG product IDs for reverse lookup when products are updated.
-			$vpg_product_ids = $this->extract_vpg_product_ids( $video_seo_schema );
-			if ( ! empty( $vpg_product_ids ) ) {
-				update_post_meta( $post_ID, '_godam_vpg_product_ids', $vpg_product_ids );
-			} else {
-				delete_post_meta( $post_ID, '_godam_vpg_product_ids' );
-			}
+			/**
+			 * Fired after video SEO schema is saved as post meta.
+			 *
+			 * Add-ons can use this to perform additional save-time operations,
+			 * such as storing reverse-lookup meta for gallery block product IDs.
+			 *
+			 * @since 1.11.0
+			 *
+			 * @param int   $post_ID          The post ID.
+			 * @param array $video_seo_schema The saved schema array.
+			 */
+			do_action( 'godam_video_seo_schema_saved', $post_ID, $video_seo_schema );
 		} else {
 			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY );
 			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY );
-			delete_post_meta( $post_ID, '_godam_vpg_product_ids' );
 			$this->update_attachment_post_mapping( $post_ID, array() );
+
+			/**
+			 * Fired after video SEO schema is cleared from a post.
+			 *
+			 * @since 1.11.0
+			 *
+			 * @param int $post_ID The post ID.
+			 */
+			do_action( 'godam_video_seo_schema_cleared', $post_ID );
 		}
 	}
 
@@ -171,11 +200,6 @@ class Seo {
 				// Fallback to block SEO if no attachment ID.
 				$schemas[] = $block['attrs']['seo'];
 			}
-		} elseif ( isset( $block['blockName'] ) && 'godam/video-product-gallery' === $block['blockName'] ) {
-			// Extract SEO data from Shoppable Video gallery block.
-			$result      = $this->extract_seo_from_video_product_gallery( $block, $track_attachments );
-			$schemas     = array_merge( $schemas, $track_attachments ? $result['schemas'] : $result );
-			$attachments = $track_attachments ? array_merge( $attachments, $result['attachments'] ) : $attachments;
 		}
 
 		if ( ! empty( $block['innerBlocks'] ) ) {
@@ -187,78 +211,6 @@ class Seo {
 				} else {
 					$schemas = array_merge( $schemas, $result );
 				}
-			}
-		}
-
-		if ( $track_attachments ) {
-			return array(
-				'schemas'     => $schemas,
-				'attachments' => $attachments,
-			);
-		}
-
-		return $schemas;
-	}
-
-	/**
-	 * Extract SEO data from a Shoppable Video (video-product-gallery) block.
-	 *
-	 * Iterates inner `godam/video-product-gallery-item` blocks to extract video
-	 * attachment metadata and associated product IDs. Each gallery item produces
-	 * a VideoObject SEO entry tagged with `_source => vpg` and `_vpg_product_ids`
-	 * so the WooCommerce add-on can enrich them with product data at save-time.
-	 *
-	 * @since 1.11.0
-	 *
-	 * @param array $block             Parsed block data for the gallery.
-	 * @param bool  $track_attachments Whether to track attachment IDs.
-	 * @return array Contains 'schemas' and 'attachments' arrays when tracking, otherwise just schemas.
-	 */
-	private function extract_seo_from_video_product_gallery( $block, $track_attachments = false ) {
-		$schemas     = array();
-		$attachments = array();
-
-		if ( empty( $block['innerBlocks'] ) ) {
-			return $track_attachments ? array(
-				'schemas'     => $schemas,
-				'attachments' => $attachments,
-			) : $schemas;
-		}
-
-		$position = 0;
-
-		foreach ( $block['innerBlocks'] as $inner_block ) {
-			if ( ! isset( $inner_block['blockName'] ) || 'godam/video-product-gallery-item' !== $inner_block['blockName'] ) {
-				continue;
-			}
-
-			$video_id   = isset( $inner_block['attrs']['videoId'] ) ? absint( $inner_block['attrs']['videoId'] ) : 0;
-			$product_id = isset( $inner_block['attrs']['productId'] ) ? absint( $inner_block['attrs']['productId'] ) : 0;
-
-			if ( ! $video_id ) {
-				continue;
-			}
-
-			$media_seo = $this->get_seo_from_attachment( $video_id );
-
-			if ( empty( $media_seo ) ) {
-				continue;
-			}
-
-			++$position;
-
-			// Tag with gallery source and product IDs for WooCommerce enrichment.
-			$media_seo['_source']       = 'vpg';
-			$media_seo['_vpg_position'] = $position;
-
-			if ( $product_id ) {
-				$media_seo['_vpg_product_ids'] = array( $product_id );
-			}
-
-			$schemas[] = $media_seo;
-
-			if ( $track_attachments ) {
-				$attachments[] = $video_id;
 			}
 		}
 
@@ -414,17 +366,33 @@ class Seo {
 			return;
 		}
 
-		$standalone_schemas = array();
-		$vpg_schemas        = array();
-		$seen_content_urls  = array();
+		$output_schemas    = array();
+		$seen_content_urls = array();
+
+		// Build a set of contentUrls claimed by VPG (Shoppable Video) entries.
+		// When the same video appears in both a godam/video block and a VPG block,
+		// the VPG version takes priority (it carries product data via the add-on).
+		$vpg_content_urls = array();
+		foreach ( $cached_schemas as $video ) {
+			if ( ! empty( $video['_source'] ) && 'vpg' === $video['_source'] && ! empty( $video['contentUrl'] ) ) {
+				$vpg_content_urls[ $video['contentUrl'] ] = true;
+			}
+		}
 
 		foreach ( $cached_schemas as $video ) {
 			if ( ! is_array( $video ) || empty( $video['headline'] ) ) {
 				continue;
 			}
 
-			// Deduplicate by contentUrl (same video in both godam/video and gallery).
 			$content_url = ! empty( $video['contentUrl'] ) ? $video['contentUrl'] : '';
+			$is_vpg      = ! empty( $video['_source'] ) && 'vpg' === $video['_source'];
+
+			// Skip standalone entries whose video already exists in a VPG block.
+			if ( ! $is_vpg && $content_url && isset( $vpg_content_urls[ $content_url ] ) ) {
+				continue;
+			}
+
+			// Deduplicate by contentUrl within the same context.
 			if ( $content_url && isset( $seen_content_urls[ $content_url ] ) ) {
 				continue;
 			}
@@ -464,40 +432,7 @@ class Seo {
 			 */
 			$schema = apply_filters( 'godam_video_seo_schema', $schema, $video, $post_id );
 
-			// Group gallery-sourced schemas for ItemList output.
-			if ( ! empty( $video['_source'] ) && 'vpg' === $video['_source'] ) {
-				$position = ! empty( $video['_vpg_position'] ) ? (int) $video['_vpg_position'] : count( $vpg_schemas ) + 1;
-
-				$vpg_schemas[] = array(
-					'@type'    => 'ListItem',
-					'position' => $position,
-					'item'     => $schema,
-				);
-			} else {
-				$standalone_schemas[] = $schema;
-			}
-		}
-
-		$output_schemas = array();
-
-		// Add standalone VideoObject schemas.
-		foreach ( $standalone_schemas as $schema ) {
 			$output_schemas[] = $schema;
-		}
-
-		// Wrap gallery schemas in an ItemList for carousel-eligible rich results.
-		if ( ! empty( $vpg_schemas ) ) {
-			// Remove @context from individual items — it's set on the ItemList.
-			foreach ( $vpg_schemas as &$list_item ) {
-				unset( $list_item['item']['@context'] );
-			}
-			unset( $list_item );
-
-			$output_schemas[] = array(
-				'@context'        => 'https://schema.org',
-				'@type'           => 'ItemList',
-				'itemListElement' => $vpg_schemas,
-			);
 		}
 
 		if ( empty( $output_schemas ) ) {
@@ -507,14 +442,21 @@ class Seo {
 		/**
 		 * Filter the complete array of video SEO schemas before JSON-LD output.
 		 *
-		 * Allows add-ons to add, remove, or reorder schema entries.
+		 * Allows add-ons to add, remove, reorder, or group schema entries —
+		 * for example, the GoDAM for WooCommerce add-on uses this to wrap
+		 * Shoppable Video schemas in an ItemList for carousel rich results.
+		 *
+		 * A third argument `$cached_schemas` is passed so add-ons can inspect
+		 * the raw cached data (including `_source` markers) without an extra
+		 * `get_post_meta()` call.
 		 *
 		 * @since 1.10.0
 		 *
-		 * @param array $output_schemas Array of schema arrays (VideoObject and/or ItemList).
-		 * @param int   $post_id        The current post ID.
+		 * @param array $output_schemas  Array of schema arrays (VideoObject entries).
+		 * @param int   $post_id         The current post ID.
+		 * @param array $cached_schemas  Raw cached SEO data from post meta.
 		 */
-		$output_schemas = apply_filters( 'godam_video_seo_schemas', $output_schemas, $post_id );
+		$output_schemas = apply_filters( 'godam_video_seo_schemas', $output_schemas, $post_id, $cached_schemas );
 
 		if ( empty( $output_schemas ) ) {
 			return;
@@ -743,26 +685,6 @@ class Seo {
 		}
 
 		return $seo_data;
-	}
-
-	/**
-	 * Extract unique product IDs from VPG-sourced schema entries.
-	 *
-	 * @since 1.11.0
-	 *
-	 * @param array $video_seo_schemas Array of cached video SEO data.
-	 * @return array Unique product IDs from gallery block entries.
-	 */
-	private function extract_vpg_product_ids( $video_seo_schemas ) {
-		$product_ids = array();
-
-		foreach ( $video_seo_schemas as $video ) {
-			if ( ! empty( $video['_vpg_product_ids'] ) && is_array( $video['_vpg_product_ids'] ) ) {
-				$product_ids = array_merge( $product_ids, $video['_vpg_product_ids'] );
-			}
-		}
-
-		return array_values( array_unique( array_map( 'absint', $product_ids ) ) );
 	}
 
 	/**
