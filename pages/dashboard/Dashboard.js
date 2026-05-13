@@ -20,6 +20,7 @@ import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, us
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
 import SingleMetrics from '../analytics/SingleMetrics';
+import PlaysVsViewers from '../analytics/PlaysVsViewers';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
 import chevronLeft from '../../assets/src/images/chevron-left.svg';
 import chevronRight from '../../assets/src/images/chevron-right.svg';
@@ -330,18 +331,6 @@ const Dashboard = () => {
 
 						<SingleMetrics
 							mode="dashboard"
-							metricType={ 'plays' }
-							label={ __( 'Total Plays', 'godam' ) }
-							tooltipText={ __(
-								'Plays represent the total number of times the video has been viewed',
-								'godam',
-							) }
-							processedAnalyticsHistory={ dashboardMetricsHistory }
-							analyticsDataFetched={ dashboardMetrics }
-						/>
-
-						<SingleMetrics
-							mode="dashboard"
 							metricType={ 'play-rate' }
 							label={ __( 'Play Rate', 'godam' ) }
 							tooltipText={ __(
@@ -362,6 +351,16 @@ const Dashboard = () => {
 							) }
 							processedAnalyticsHistory={ dashboardMetricsHistory }
 							analyticsDataFetched={ dashboardMetrics }
+						/>
+
+						<PlaysVsViewers
+							mode="dashboard"
+							plays={ dashboardMetrics?.plays ?? 0 }
+							uniqueViewers={ dashboardMetrics?.unique_viewers ?? 0 }
+							replayRatioDenominator={ dashboardMetrics?.total_unique_viewer_engagements ?? 0 }
+							showRatio={ true }
+							isLoading={ isDashboardMetricsLoading }
+							processedAnalyticsHistory={ dashboardMetricsHistory }
 						/>
 					</div>
 				</div>

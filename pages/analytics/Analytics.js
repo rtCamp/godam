@@ -26,6 +26,7 @@ import { __ } from '@wordpress/i18n';
 import { Button, Spinner } from '@wordpress/components';
 import { addQueryArgs } from '@wordpress/url';
 import SingleMetrics from './SingleMetrics.js';
+import PlaysVsViewers from './PlaysVsViewers.js';
 import PlaybackPerformanceDashboard from './PlaybackPerformance.js';
 import videojs from 'video.js';
 import { arrowLeft } from '@wordpress/icons';
@@ -618,17 +619,6 @@ const Analytics = ( { attachmentID } ) => {
 										/>
 
 										<SingleMetrics
-											metricType={ 'plays' }
-											label={ __( 'Total Plays', 'godam' ) }
-											tooltipText={ __(
-												'Plays represent the total number of times the video has been viewed',
-												'godam',
-											) }
-											processedAnalyticsHistory={ processedAnalyticsHistory }
-											analyticsDataFetched={ analyticsDataFetched }
-										/>
-
-										<SingleMetrics
 											metricType={ 'play-rate' }
 											label={ __( 'Play Rate', 'godam' ) }
 											tooltipText={ __(
@@ -648,6 +638,14 @@ const Analytics = ( { attachmentID } ) => {
 											) }
 											processedAnalyticsHistory={ processedAnalyticsHistory }
 											analyticsDataFetched={ analyticsDataFetched }
+										/>
+
+										<PlaysVsViewers
+											plays={ analyticsDataFetched?.plays ?? 0 }
+											uniqueViewers={ analyticsDataFetched?.unique_viewers ?? 0 }
+											showRatio={ true }
+											isLoading={ ! analyticsDataFetched }
+											processedAnalyticsHistory={ processedAnalyticsHistory }
 										/>
 									</div>
 								</div>
