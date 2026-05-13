@@ -6,7 +6,7 @@ import React, { useEffect } from 'react';
 /**
  * Internal dependencies
  */
-import { calculateEngagementRate, calculatePlayRate, singleMetricsChart } from './helper';
+import { calculateEngagementRate, calculatePlayRate, singleMetricsChart, ensureAll7Days, calculateTrendPercentage } from './helper';
 import './charts.js';
 
 /**
@@ -64,33 +64,6 @@ const PlaysVsViewers = ( {
 			return;
 		}
 
-		// Ensure all 7 days are present, filling gaps with zeros (same as SingleMetrics).
-		const ensureAll7Days = ( dataArray ) => {
-			const now = new Date();
-			const today = new Date( now.getFullYear(), now.getMonth(), now.getDate() );
-			const last7Days = [];
-			for ( let i = 6; i >= 0; i-- ) {
-				const date = new Date( today );
-				date.setDate( today.getDate() - i );
-				const year = date.getFullYear();
-				const month = String( date.getMonth() + 1 ).padStart( 2, '0' );
-				const day = String( date.getDate() ).padStart( 2, '0' );
-				last7Days.push( `${ year }-${ month }-${ day }` );
-			}
-			const dataMap = {};
-			dataArray.forEach( ( d ) => {
-				dataMap[ d.date ] = d;
-			} );
-			return last7Days.map( ( dateStr ) => dataMap[ dateStr ] || {
-				date: dateStr,
-				plays: 0,
-				engagement_rate: 0,
-				play_rate: 0,
-				watch_time: 0,
-				total_videos: 0,
-			} );
-		};
-
 		let mappedData;
 		if ( mode === 'analytics' ) {
 			mappedData = processedAnalyticsHistory.map( ( h ) => ( {
@@ -115,25 +88,7 @@ const PlaysVsViewers = ( {
 			( a, b ) => new Date( a.date ) - new Date( b.date ),
 		);
 
-		// Calculate percentage change over the last 7 days (same logic as SingleMetrics).
-		let trendPercentage = 0;
-		if ( sortedData.length >= 2 ) {
-			const first = parseFloat( sortedData[ 0 ].plays );
-			const last = parseFloat( sortedData[ sortedData.length - 1 ].plays );
-			if ( ! isNaN( first ) && ! isNaN( last ) ) {
-				if ( first === 0 ) {
-					if ( last > 0 ) {
-						trendPercentage = 100;
-					} else if ( last < 0 ) {
-						trendPercentage = -100;
-					} else {
-						trendPercentage = 0;
-					}
-				} else {
-					trendPercentage = ( ( last - first ) / first ) * 100;
-				}
-			}
-		}
+		const trendPercentage = calculateTrendPercentage( sortedData, 'plays' );
 
 		const changeEl = document.getElementById( 'plays-vs-viewers-change' );
 		if ( changeEl ) {

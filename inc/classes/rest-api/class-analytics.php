@@ -452,7 +452,7 @@ class Analytics extends Base {
 		return new WP_REST_Response(
 			array(
 				'status'            => 'success',
-				'dashboard_metrics' => $body['dashboard_metrics'] ?? $empty_metrics,
+				'dashboard_metrics' => array_merge( $empty_metrics, $body['dashboard_metrics'] ?? array() ),
 			),
 			200
 		);
