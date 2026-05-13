@@ -203,12 +203,21 @@ class Seo {
 
 			if ( $seo_override && isset( $block['attrs']['seo'] ) && ! empty( $block['attrs']['seo'] ) ) {
 				// Use overridden SEO from block attributes.
-				$schemas[] = $block['attrs']['seo'];
+				$seo_entry = $block['attrs']['seo'];
+
+				// Include attachment_id so add-ons can resolve the attachment
+				// on the first save (before _godam_seo_attachments exists).
+				if ( $attachment_id > 0 ) {
+					$seo_entry['attachment_id'] = $attachment_id;
+				}
+
+				$schemas[] = $seo_entry;
 			} elseif ( $attachment_id > 0 ) {
 				// Fetch SEO from media library attachment.
 				$media_seo = $this->get_seo_from_attachment( $attachment_id );
 				if ( ! empty( $media_seo ) ) {
-					$schemas[] = $media_seo;
+					$media_seo['attachment_id'] = $attachment_id;
+					$schemas[]                  = $media_seo;
 					if ( $track_attachments ) {
 						$attachments[] = $attachment_id;
 					}
