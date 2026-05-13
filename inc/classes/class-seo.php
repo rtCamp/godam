@@ -120,6 +120,23 @@ class Seo {
 		$extra_schemas    = apply_filters( 'godam_video_seo_extra_block_schemas', array(), $content, $post_ID );
 		$video_seo_schema = array_merge( $video_seo_schema, $extra_schemas );
 
+		/**
+		 * Filter to let add-ons contribute extra attachment IDs for the
+		 * attachment ↔ post mapping used by `edit_attachment` SEO resync.
+		 *
+		 * For example, the GoDAM for WooCommerce add-on uses this to register
+		 * video attachments from `godam/video-product-gallery` blocks, which
+		 * are not parsed by the core `extract_video_seo_schema_from_block()`.
+		 *
+		 * @since 1.11.0
+		 *
+		 * @param int[]  $extra_attachments Array of extra attachment IDs (initially empty).
+		 * @param string $content           The post content.
+		 * @param int    $post_ID           The post ID.
+		 */
+		$extra_attachments = apply_filters( 'godam_video_seo_extra_block_attachments', array(), $content, $post_ID );
+		$attachments_used  = array_merge( $attachments_used, $extra_attachments );
+
 		if ( ! empty( $video_seo_schema ) ) {
 			/**
 			 * Filter the video SEO schema data before it is cached as post meta.
