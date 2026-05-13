@@ -632,10 +632,16 @@ class Seo {
 			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY, $video_seo_schema );
 			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY, time() );
 			$this->update_attachment_post_mapping( $post_ID, array_unique( $attachments_used ) );
+
+			/** This action is documented in inc/classes/class-seo.php */
+			do_action( 'godam_video_seo_schema_saved', $post_ID, $video_seo_schema );
 		} else {
 			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY );
 			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY );
 			$this->update_attachment_post_mapping( $post_ID, array() );
+
+			/** This action is documented in inc/classes/class-seo.php */
+			do_action( 'godam_video_seo_schema_cleared', $post_ID );
 		}
 	}
 
