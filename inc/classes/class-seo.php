@@ -724,6 +724,9 @@ class Seo {
 	 * @param array $attachments Array of attachment IDs used in the post.
 	 */
 	private function update_attachment_post_mapping( $post_id, $attachments ) {
+		// Normalize: cast to positive integers and discard zeroes/non-numeric values.
+		$attachments = array_values( array_unique( array_filter( array_map( 'absint', $attachments ) ) ) );
+
 		// Get current attachments this post was using.
 		$previous_attachments = get_post_meta( $post_id, self::POST_ATTACHMENTS_META_KEY, true );
 		$previous_attachments = is_array( $previous_attachments ) ? $previous_attachments : array();
