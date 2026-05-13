@@ -117,8 +117,10 @@ class Seo {
 		 * @param string $content       The post content.
 		 * @param int    $post_ID       The post ID.
 		 */
-		$extra_schemas    = apply_filters( 'godam_video_seo_extra_block_schemas', array(), $content, $post_ID );
-		$video_seo_schema = array_merge( $video_seo_schema, $extra_schemas );
+		$extra_schemas = apply_filters( 'godam_video_seo_extra_block_schemas', array(), $content, $post_ID );
+		if ( is_array( $extra_schemas ) ) {
+			$video_seo_schema = array_merge( $video_seo_schema, $extra_schemas );
+		}
 
 		/**
 		 * Filter to let add-ons contribute extra attachment IDs for the
@@ -135,7 +137,9 @@ class Seo {
 		 * @param int    $post_ID           The post ID.
 		 */
 		$extra_attachments = apply_filters( 'godam_video_seo_extra_block_attachments', array(), $content, $post_ID );
-		$attachments_used  = array_merge( $attachments_used, $extra_attachments );
+		if ( is_array( $extra_attachments ) ) {
+			$attachments_used = array_merge( $attachments_used, $extra_attachments );
+		}
 
 		if ( ! empty( $video_seo_schema ) ) {
 			/**
@@ -400,7 +404,7 @@ class Seo {
 		// the VPG version takes priority (it carries product data via the add-on).
 		$vpg_content_urls = array();
 		foreach ( $cached_schemas as $video ) {
-			if ( ! empty( $video['_source'] ) && 'vpg' === $video['_source'] && ! empty( $video['contentUrl'] ) ) {
+			if ( ! empty( $video['_source'] ) && 'vpg' === $video['_source'] && ! empty( $video['contentUrl'] ) && is_string( $video['contentUrl'] ) ) {
 				$vpg_content_urls[ $video['contentUrl'] ] = true;
 			}
 		}
@@ -410,7 +414,7 @@ class Seo {
 				continue;
 			}
 
-			$content_url = ! empty( $video['contentUrl'] ) ? $video['contentUrl'] : '';
+			$content_url = ! empty( $video['contentUrl'] ) && is_string( $video['contentUrl'] ) ? $video['contentUrl'] : '';
 			$is_vpg      = ! empty( $video['_source'] ) && 'vpg' === $video['_source'];
 
 			// Skip standalone entries whose video already exists in a VPG block.
