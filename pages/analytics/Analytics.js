@@ -89,6 +89,7 @@ const Analytics = ( { attachmentID } ) => {
 
 	const {
 		data: analyticsDataFetched,
+		isLoading: isAnalyticsDataLoading,
 	} = useFetchAnalyticsDataQuery(
 		{ videoId: attachmentID, siteUrl },
 		{ skip: ! attachmentID || shouldSkipAnalytics },
@@ -644,7 +645,7 @@ const Analytics = ( { attachmentID } ) => {
 											plays={ analyticsDataFetched?.plays ?? 0 }
 											uniqueViewers={ analyticsDataFetched?.unique_viewers ?? 0 }
 											showRatio={ true }
-											isLoading={ ! analyticsDataFetched }
+											isLoading={ isAnalyticsDataLoading }
 											processedAnalyticsHistory={ processedAnalyticsHistory }
 										/>
 									</div>
