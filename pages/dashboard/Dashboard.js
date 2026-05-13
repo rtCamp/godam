@@ -357,7 +357,6 @@ const Dashboard = () => {
 							mode="dashboard"
 							plays={ dashboardMetrics?.plays ?? 0 }
 							uniqueViewers={ dashboardMetrics?.unique_viewers ?? 0 }
-							replayRatioDenominator={ dashboardMetrics?.total_unique_viewer_engagements ?? 0 }
 							showRatio={ true }
 							isLoading={ isDashboardMetricsLoading }
 							processedAnalyticsHistory={ dashboardMetricsHistory }

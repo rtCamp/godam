@@ -398,17 +398,16 @@ class Analytics extends Base {
 		);
 
 		$empty_metrics = array(
-			'plays'                           => 0,
-			'play_time'                       => 0.0,
-			'page_load'                       => 0,
-			'avg_engagement'                  => 0.0,
-			'country_views'                   => array(),
-			'views_change'                    => 0.0,
-			'watch_time_change'               => 0.0,
-			'play_rate_change'                => 0.0,
-			'avg_engagement_change'           => 0.0,
-			'unique_viewers'                  => 0,
-			'total_unique_viewer_engagements' => 0,
+			'plays'                 => 0,
+			'play_time'             => 0.0,
+			'page_load'             => 0,
+			'avg_engagement'        => 0.0,
+			'country_views'         => array(),
+			'views_change'          => 0.0,
+			'watch_time_change'     => 0.0,
+			'play_rate_change'      => 0.0,
+			'avg_engagement_change' => 0.0,
+			'unique_viewers'        => 0,
 		);
 
 		$response = wp_remote_get( $endpoint );

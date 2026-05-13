@@ -17,22 +17,17 @@ import { __ } from '@wordpress/i18n';
 /**
  * PlaysVsViewers — combined stat card that replaces the standalone "Total Plays" card.
  * Inherits the sparkline chart and percentage-change badge from SingleMetrics (plays),
- * and adds Unique Viewers and a Replay Ratio footer.
+ * and adds Unique Viewers and a "Sessions per user" footer.
  *
- * unique_viewers is an all-time distinct-person count, never a daily figure.
- * It must never be summed across date rows for display.
- *
- * replayRatioDenominator:
- * - Per-video page: omit (defaults to uniqueViewers). Ratio = plays / uniqueViewers.
- * - Dashboard: pass total_unique_viewer_engagements = SUM(per-video unique_viewers).
- * This counts unique viewer-video pairs — the correct denominator at account level.
+ * unique_viewers is a deduplicated all-time distinct-person count (Model B).
+ * The "Sessions per user" ratio is always plays / uniqueViewers — the industry-standard
+ * "Average views per viewer" formula. Never summed across per-video rows.
  *
  * @param {Object}  props
  * @param {string}  [props.mode='analytics']          'analytics' | 'dashboard'
  * @param {number}  props.plays                       Total plays count.
- * @param {number}  props.uniqueViewers               Distinct-person count shown in the card.
- * @param {number}  [props.replayRatioDenominator]    Override denominator for ratio math.
- * @param {boolean} [props.showRatio=true]            Whether to render the replay-ratio footer.
+ * @param {number}  props.uniqueViewers               Deduplicated distinct-person count.
+ * @param {boolean} [props.showRatio=true]            Whether to render the ratio footer.
  * @param {boolean} [props.isLoading=false]           Show skeleton state when true.
  * @param {Array}   [props.processedAnalyticsHistory] History rows for the sparkline.
  */
@@ -40,20 +35,15 @@ const PlaysVsViewers = ( {
 	mode = 'analytics',
 	plays = 0,
 	uniqueViewers = 0,
-	replayRatioDenominator,
 	showRatio = true,
 	isLoading = false,
 	processedAnalyticsHistory,
 } ) => {
-	// Use the explicit denominator when provided (dashboard); otherwise fall back to
-	// uniqueViewers (per-video). Both are valid — they answer different questions.
-	const denominator = replayRatioDenominator ?? uniqueViewers;
-
-	// Guard against division by zero. The server invariant guarantees plays >= denominator
-	// for any well-formed dataset, but we defend at the UI layer too.
-	const replayRatio =
-		denominator > 0 && plays >= denominator
-			? ( plays / denominator ).toFixed( 2 )
+	// Plays / deduplicated unique viewers (industry-standard "avg views per viewer").
+	// Guard against division by zero only.
+	const sessionsPerUser =
+		uniqueViewers > 0
+			? ( plays / uniqueViewers ).toFixed( 2 )
 			: null;
 
 	const formattedPlays = Number( plays ).toLocaleString();
@@ -146,9 +136,9 @@ const PlaysVsViewers = ( {
 				{ showRatio && (
 					<>
 						<p className="text-xs text-zinc-500">
-							{ __( 'Replay ratio:', 'godam' ) }{ ' ' }
-							{ replayRatio !== null ? (
-								<strong className="text-zinc-700">{ replayRatio }×</strong>
+							{ __( 'Sessions per user:', 'godam' ) }{ ' ' }
+							{ sessionsPerUser !== null ? (
+								<strong className="text-zinc-700">{ sessionsPerUser }×</strong>
 							) : (
 								<span>—</span>
 							) }
