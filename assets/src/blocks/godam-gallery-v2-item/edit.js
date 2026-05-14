@@ -8,9 +8,10 @@ import {
 	useBlockProps,
 	MediaUpload,
 	MediaUploadCheck,
+	store as blockEditorStore,
 } from '@wordpress/block-editor';
 import { Button } from '@wordpress/components';
-import { useDispatch, useSelect } from '@wordpress/data';
+import { useDispatch, useSelect, select as dataSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
 import { closeSmall, pencil, video as videoIcon } from '@wordpress/icons';
 import { useRef, useEffect } from '@wordpress/element';
@@ -65,9 +66,26 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 		if ( ! mediaItem?.id ) {
 			return;
 		}
+		// Only allow video attachments.
+		if ( mediaItem.type && mediaItem.type !== 'video' ) {
+			return;
+		}
+		if ( mediaItem.mime && ! mediaItem.mime.startsWith( 'video/' ) ) {
+			return;
+		}
 		pendingVirtualMediaId.current = mediaItem.id;
 		const numericId = parseInt( mediaItem.id, 10 );
 		if ( numericId > 0 && String( numericId ) === String( mediaItem.id ) ) {
+			// Prevent selecting a video already used by a sibling.
+			const { getBlockRootClientId, getBlock } = dataSelect( blockEditorStore );
+			const parentClientId = getBlockRootClientId( clientId );
+			const parentBlock = getBlock( parentClientId );
+			const isDuplicate = ( parentBlock?.innerBlocks || [] ).some(
+				( block ) => block.clientId !== clientId && block.attributes?.videoId === numericId,
+			);
+			if ( isDuplicate ) {
+				return;
+			}
 			setAttributes( { videoId: numericId } );
 		}
 	};

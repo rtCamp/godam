@@ -26,7 +26,7 @@ import {
 	__experimentalToggleGroupControlOptionIcon as ToggleGroupControlOptionIcon,
 	Button,
 } from '@wordpress/components';
-import { useDispatch, useSelect } from '@wordpress/data';
+import { useDispatch, useSelect, select as dataSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
 import { useCallback, useEffect, useMemo, useRef, useState } from '@wordpress/element';
 import { columns, grid, listView, plus } from '@wordpress/icons';
@@ -172,6 +172,7 @@ const AddVideoAppender = ( { onSelect } ) => (
 	<MediaUploadCheck>
 		<MediaUpload
 			allowedTypes={ [ 'video' ] }
+			multiple
 			onSelect={ onSelect }
 			render={ ( { open } ) => (
 				<Button
@@ -367,26 +368,64 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	);
 
 	const insertHandpickedVideo = useCallback(
-		( mediaItem ) => {
-			if ( ! mediaItem?.id ) {
+		( mediaItemOrArray ) => {
+			const items = Array.isArray( mediaItemOrArray ) ? mediaItemOrArray : [ mediaItemOrArray ];
+			if ( ! items.length ) {
 				return;
 			}
 
-			const numericId = parseInt( mediaItem.id, 10 );
-			const isVirtual = ! ( numericId > 0 && String( numericId ) === String( mediaItem.id ) );
+			// Get existing video IDs from inner blocks to prevent duplicates.
+			const { getBlock } = dataSelect( blockEditorStore );
+			const parentBlock = getBlock( clientId );
+			const existingVideoIds = new Set(
+				( parentBlock?.innerBlocks || [] )
+					.map( ( block ) => block.attributes?.videoId )
+					.filter( Boolean ),
+			);
 
-			const newBlock = createBlock( 'godam/gallery-v2-item', {
-				videoId: isVirtual ? 0 : numericId,
+			const newBlocks = [];
+
+			items.forEach( ( mediaItem ) => {
+				if ( ! mediaItem?.id ) {
+					return;
+				}
+
+				// Only allow video attachments.
+				if ( mediaItem.type && mediaItem.type !== 'video' ) {
+					return;
+				}
+				if ( mediaItem.mime && ! mediaItem.mime.startsWith( 'video/' ) ) {
+					return;
+				}
+
+				const numericId = parseInt( mediaItem.id, 10 );
+				const isVirtual = ! ( numericId > 0 && String( numericId ) === String( mediaItem.id ) );
+
+				if ( ! isVirtual ) {
+					// Skip if this video is already in the gallery.
+					if ( existingVideoIds.has( numericId ) ) {
+						return;
+					}
+					existingVideoIds.add( numericId );
+				}
+
+				const newBlock = createBlock( 'godam/gallery-v2-item', {
+					videoId: isVirtual ? 0 : numericId,
+				} );
+
+				if ( isVirtual ) {
+					pendingVirtualInserts.current.push( {
+						virtualId: mediaItem.id,
+						blockClientId: newBlock.clientId,
+					} );
+				}
+
+				newBlocks.push( newBlock );
 			} );
 
-			if ( isVirtual ) {
-				pendingVirtualInserts.current.push( {
-					virtualId: mediaItem.id,
-					blockClientId: newBlock.clientId,
-				} );
+			if ( newBlocks.length > 0 ) {
+				insertBlocks( newBlocks, undefined, clientId );
 			}
-
-			insertBlocks( newBlock, undefined, clientId );
 		},
 		[ clientId, insertBlocks ],
 	);
