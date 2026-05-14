@@ -115,6 +115,22 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 				String( pendingVirtualMediaId.current ) === String( virtualMediaId )
 			) {
 				pendingVirtualMediaId.current = null;
+
+				// Prevent selecting a video already used by a sibling.
+				const { getBlockRootClientId, getBlock } = dataSelect( blockEditorStore );
+				const parentClientId = getBlockRootClientId( clientId );
+				const parentBlock = getBlock( parentClientId );
+				const isDuplicate = ( parentBlock?.innerBlocks || [] ).some(
+					( block ) => block.clientId !== clientId && block.attributes?.videoId === attachment.id,
+				);
+				if ( isDuplicate ) {
+					createNotice( 'warning', __( 'This video is already in the gallery.', 'godam' ), {
+						type: 'snackbar',
+						isDismissible: true,
+					} );
+					return;
+				}
+
 				setAttributes( { videoId: attachment.id } );
 			}
 		};
@@ -124,7 +140,7 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 		return () => {
 			document.removeEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
 		};
-	}, [ setAttributes ] );
+	}, [ clientId, setAttributes, createNotice ] );
 
 	const { media, hasResolvedMedia } = useSelect(
 		( select ) => {

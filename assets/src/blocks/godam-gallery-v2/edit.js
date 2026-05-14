@@ -216,7 +216,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	const [ startDatePopoverOpen, setStartDatePopoverOpen ] = useState( false );
 	const [ endDatePopoverOpen, setEndDatePopoverOpen ] = useState( false );
 	const [ dateError, setDateError ] = useState( '' );
-	const { insertBlocks, updateBlockAttributes } = useDispatch( blockEditorStore );
+	const { insertBlocks, updateBlockAttributes, removeBlock } = useDispatch( blockEditorStore );
 	const { createNotice } = useDispatch( noticesStore );
 
 	// Tracks {virtualId, blockClientId} pairs for GoDAM virtual insertions
@@ -469,6 +469,22 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 			}
 
 			const [ { blockClientId } ] = pendingVirtualInserts.current.splice( idx, 1 );
+
+			// Skip if this video already exists in another gallery item.
+			const { getBlock } = dataSelect( blockEditorStore );
+			const parentBlock = getBlock( clientId );
+			const isDuplicate = ( parentBlock?.innerBlocks || [] ).some(
+				( block ) => block.clientId !== blockClientId && block.attributes?.videoId === attachment.id,
+			);
+			if ( isDuplicate ) {
+				createNotice( 'warning', __( 'Duplicate videos were skipped.', 'godam' ), {
+					type: 'snackbar',
+					isDismissible: true,
+				} );
+				removeBlock( blockClientId );
+				return;
+			}
+
 			updateBlockAttributes( blockClientId, { videoId: attachment.id } );
 		};
 
@@ -477,7 +493,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		return () => {
 			document.removeEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
 		};
-	}, [ updateBlockAttributes ] );
+	}, [ clientId, createNotice, removeBlock, updateBlockAttributes ] );
 
 	const renderVideoAppender = useCallback(
 		() => <AddVideoAppender onSelect={ insertHandpickedVideo } />,
