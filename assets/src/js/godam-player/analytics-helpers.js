@@ -111,7 +111,9 @@ export function getUserAgent( userAgent ) {
  * @param {Array}  [opts.videoIds]         Array of [videoId, jobId] pairs (type 1).
  * @param {Array}  [opts.ranges]           Played time-range pairs (type 2).
  * @param {number} [opts.videoLength]      Duration in seconds (type 2).
- * @return {{endpoint: (?string), body: (?Object)}} Object containing the analytics endpoint and the ready-to-serialize request body, or null values for both when no request should be sent.
+ * @return {{ endpoint: string|null, body: Object|null }} Object with `endpoint` (the base
+ * API URL) and `body` (the request payload). Both are `null` when the plugin token is
+ * missing or unverified — callers must check `endpoint` before sending.
  */
 export function buildAnalyticsRequestBody( {
 	type,

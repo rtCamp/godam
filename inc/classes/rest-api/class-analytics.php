@@ -287,6 +287,7 @@ class Analytics extends Base {
 					'page_load'             => 0,
 					'play_time'             => 0.0,
 					'plays'                 => 0,
+					'unique_viewers'        => 0,
 					'site_url'              => '',
 					'video_id'              => 0,
 					'video_length'          => 0.0,
@@ -406,6 +407,7 @@ class Analytics extends Base {
 			'watch_time_change'     => 0.0,
 			'play_rate_change'      => 0.0,
 			'avg_engagement_change' => 0.0,
+			'unique_viewers'        => 0,
 		);
 
 		$response = wp_remote_get( $endpoint );
@@ -449,7 +451,7 @@ class Analytics extends Base {
 		return new WP_REST_Response(
 			array(
 				'status'            => 'success',
-				'dashboard_metrics' => $body['dashboard_metrics'] ?? $empty_metrics,
+				'dashboard_metrics' => array_merge( $empty_metrics, $body['dashboard_metrics'] ?? array() ),
 			),
 			200
 		);
