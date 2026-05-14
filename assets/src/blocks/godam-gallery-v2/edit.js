@@ -28,6 +28,7 @@ import {
 } from '@wordpress/components';
 import { useDispatch, useSelect, select as dataSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
+import { store as noticesStore } from '@wordpress/notices';
 import { useCallback, useEffect, useMemo, useRef, useState } from '@wordpress/element';
 import { columns, grid, listView, plus } from '@wordpress/icons';
 
@@ -216,6 +217,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	const [ endDatePopoverOpen, setEndDatePopoverOpen ] = useState( false );
 	const [ dateError, setDateError ] = useState( '' );
 	const { insertBlocks, updateBlockAttributes } = useDispatch( blockEditorStore );
+	const { createNotice } = useDispatch( noticesStore );
 
 	// Tracks {virtualId, blockClientId} pairs for GoDAM virtual insertions
 	// so the godam-virtual-attachment-created event can update the correct block.
@@ -384,6 +386,8 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 			);
 
 			const newBlocks = [];
+			let skippedNonVideo = false;
+			let skippedDuplicate = false;
 
 			items.forEach( ( mediaItem ) => {
 				if ( ! mediaItem?.id ) {
@@ -392,9 +396,11 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 
 				// Only allow video attachments.
 				if ( mediaItem.type && mediaItem.type !== 'video' ) {
+					skippedNonVideo = true;
 					return;
 				}
 				if ( mediaItem.mime && ! mediaItem.mime.startsWith( 'video/' ) ) {
+					skippedNonVideo = true;
 					return;
 				}
 
@@ -404,6 +410,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 				if ( ! isVirtual ) {
 					// Skip if this video is already in the gallery.
 					if ( existingVideoIds.has( numericId ) ) {
+						skippedDuplicate = true;
 						return;
 					}
 					existingVideoIds.add( numericId );
@@ -423,11 +430,25 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 				newBlocks.push( newBlock );
 			} );
 
+			if ( skippedNonVideo ) {
+				createNotice( 'warning', __( 'Only video files can be added to the gallery.', 'godam' ), {
+					type: 'snackbar',
+					isDismissible: true,
+				} );
+			}
+
+			if ( skippedDuplicate ) {
+				createNotice( 'warning', __( 'Duplicate videos were skipped.', 'godam' ), {
+					type: 'snackbar',
+					isDismissible: true,
+				} );
+			}
+
 			if ( newBlocks.length > 0 ) {
 				insertBlocks( newBlocks, undefined, clientId );
 			}
 		},
-		[ clientId, insertBlocks ],
+		[ clientId, createNotice, insertBlocks ],
 	);
 
 	// When GoDAM creates a real WP attachment, find the pending child block
