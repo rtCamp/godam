@@ -157,7 +157,6 @@ const JetpackForm = ( { layerID } ) => {
 		return `${ window?.videoData?.adminUrl }post.php?post=${ postId }&action=edit`;
 	};
 
-	const isValidAPIKey = true;
 	const isJetpackPluginActive = Boolean( window?.videoData?.jetpackActive );
 
 	return (
@@ -175,7 +174,7 @@ const JetpackForm = ( { layerID } ) => {
 
 			{
 				<FormSelector
-					disabled={ ! isValidAPIKey || ! isJetpackPluginActive }
+					disabled={ ! isJetpackPluginActive }
 					className="jetpack-form-selector mb-4"
 					formID={ layer.jp_id }
 					forms={ forms }
@@ -240,7 +239,7 @@ const JetpackForm = ( { layerID } ) => {
 							! layer.jp_id && forms.length === 0 && (
 								<div className="form-container">
 									<p>
-										{ __( 'No Jetpack forms found. Please ', 'godam' ) }
+										{ __( 'No Jetpack forms found. Please', 'godam' ) }{ ' ' }
 										<a
 											href={ `${ window?.videoData?.adminUrl }admin.php?page=jetpack-forms-admin#/responses` }
 											target="_blank"
@@ -249,7 +248,7 @@ const JetpackForm = ( { layerID } ) => {
 										>
 											{ __( 'create a Jetpack contact form', 'godam' ) }
 										</a>
-										{ __( ' first.', 'godam' ) }
+										{ ' ' }{ __( 'first.', 'godam' ) }
 									</p>
 								</div>
 							)

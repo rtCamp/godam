@@ -1,5 +1,25 @@
 # Changelog #
 
+## v1.9.0 (May 8, 2026) ##
+
+- Feat: Introduced WooCommerce integration — first beta release of GoDAM for WooCommerce support.
+- Fix: Disabled hover option when autoplay is enabled in the Video block.
+- Fix: Resolved Gallery Carousel scroll issue on iOS devices.
+- Tweak: Revamped GoDAM blocks to Video, Video Gallery, Audio and Document blocks.
+
+## v1.8.0 (April 29, 2026) ##
+
+- Feat: Enhanced GoDAM Gallery block with improved layouts and controls.
+- Feat: Introduced Performance Mode settings for video and gallery blocks.
+- Feat: Implemented blur-up thumbnail optimization in Video and Video Gallery blocks.
+- Tweak: Replaced gallery item width range input with S/M/L size selector.
+- Tweak: Performance improvements for GoDAM blocks.
+- Fix: Improved GoDAM Video and Video Gallery Block UX.
+- Fix: Added GoDAM Gallery migration support.
+- Fix: Removed GoDAM CPT and added migration for existing data.
+- Fix: Fixed alignment issues on GoDAM blocks.
+- Fix: Addressed security vulnerabilities.
+
 ## v1.7.2 (March 20, 2026) ##
 
 - Fix: Fixed video data collection in analytics.

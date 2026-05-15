@@ -35,11 +35,6 @@ const SureForm = ( { layerID } ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'sureform_id', value: formID } ) );
 	};
 
-	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.valid_api_key;
-	// For now we are enabling all the features
-	const isValidAPIKey = true;
-
 	const isSureformsPluginActive = Boolean( window?.videoData?.sureformsActive );
 
 	return (
@@ -56,7 +51,7 @@ const SureForm = ( { layerID } ) => {
 			}
 
 			{
-				<FormSelector disabled={ ! isValidAPIKey || ! isSureformsPluginActive } className="mb-4" formID={ layer.sureform_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector disabled={ ! isSureformsPluginActive } className="mb-4" formID={ layer.sureform_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<LayerControl>
@@ -78,11 +73,6 @@ const SureForm = ( { layerID } ) => {
 							<div className="form-container">
 								<p>{ __( 'Loading form…', 'godam' ) }</p>
 							</div>
-						}
-
-						{
-							! isValidAPIKey &&
-							<p className="text-sm text-gray-500">{ __( 'This features is available in premium version', 'godam' ) }</p>
 						}
 
 						{

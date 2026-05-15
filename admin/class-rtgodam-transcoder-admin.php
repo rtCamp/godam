@@ -42,9 +42,12 @@ class RTGODAM_Transcoder_Admin {
 			add_action( 'admin_notices', array( $this, 'usage_limit_notices' ) );
 			add_action( 'admin_notices', array( $this, 'posthog_tracking_notice' ) );
 			add_action( 'admin_notices', array( $this, 'api_key_status_notice' ) );
+			add_action( 'admin_notices', array( $this, 'expired_api_key_notice' ) );
+			add_action( 'admin_notices', array( $this, 'woo_integration_promo_notice' ) );
 			add_action( 'admin_init', array( $this, 'handle_posthog_tracking_action' ) );
 			add_action( 'admin_init', array( $this, 'handle_clear_godam_cache' ) );
 			add_action( 'wp_ajax_rtgodam_dismiss_free_plan_notice', array( $this, 'dismiss_free_plan_notice' ) );
+			add_action( 'wp_ajax_rtgodam_dismiss_woo_promo_notice', array( $this, 'dismiss_woo_promo_notice' ) ); 
 		}
 	}
 
@@ -81,7 +84,7 @@ class RTGODAM_Transcoder_Admin {
 			$this->render_admin_notice(
 				sprintf(
 					// translators: %s is the URL to the plugin settings page where the API key can be activated.
-					__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, <a href="%s">please activate your api key.</a>', 'godam' ),
+					__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock Transcoding, Analytics and more, <a href="%s">please activate your API key.</a>', 'godam' ),
 					esc_url( $video_editor_settings_url )
 				),
 				'warning',
@@ -130,7 +133,7 @@ class RTGODAM_Transcoder_Admin {
 				$this->render_admin_notice(
 					sprintf(
 						/* translators: %d: Number of days until transcoded videos are deleted after subscription ends */
-						__( 'Your subscription has ended. No further transcoding can be done. Transcoded videos will be removed after <strong>%d days</strong>, and advanced video layers will not be accessible. After the 30-day grace period, already transcoded videos will no longer be served from the CDN. Renew your subscription to keep it up and running.', 'godam' ),
+						__( 'Your subscription has ended. No further transcoding can be done. Transcoded videos will be removed after <strong>%d days</strong>, and Pro features will not be accessible. After the 30-day grace period, already transcoded videos will no longer be served from the CDN. Renew your subscription to keep it up and running.', 'godam' ),
 						$days_until_deletion
 					),
 					'error',
@@ -143,7 +146,7 @@ class RTGODAM_Transcoder_Admin {
 				$this->render_admin_notice(
 					sprintf(
 						// translators: %s is the URL to the plugin settings page where the API key can be activated.
-						__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, <a href="%s">please activate your api key.</a>', 'godam' ),
+						__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock Transcoding, Analytics and more, <a href="%s">please activate your API key.</a>', 'godam' ),
 						esc_url( $video_editor_settings_url )
 					),
 					'error',
@@ -158,7 +161,7 @@ class RTGODAM_Transcoder_Admin {
 		$this->render_admin_notice(
 			sprintf(
 				// translators: %s is the URL to the plugin settings page where the API key can be activated.
-				__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, <a href="%s">please activate your api key.</a>', 'godam' ),
+				__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock Transcoding, Analytics and more, <a href="%s">please activate your API key.</a>', 'godam' ),
 				esc_url( $video_editor_settings_url )
 			),
 			'warning',
@@ -334,7 +337,7 @@ class RTGODAM_Transcoder_Admin {
 				<img src="<?php echo esc_url( $logo_url ); ?>" alt="<?php esc_attr_e( 'GoDAM Logo', 'godam' ); ?>" class="godam-logo" />
 				<div>
 					<p style="font-size: 16px; font-weight: 600; margin-bottom: 15px;">
-						<?php esc_html_e( 'Try GoDAM free for 60 days with all features, unlimited sites and users.', 'godam' ); ?>
+						<?php esc_html_e( 'Unlock Video Analytics, Transcoding and more with GoDAM Pro. Start with a free 60-day trial.', 'godam' ); ?>
 					</p>
 					<div style="display: flex; gap: 10px; margin-top: 10px; margin-bottom: 15px;">
 						<a href="<?php echo esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=free-plan-notice&utm_source=plugin&utm_medium=admin-notice&utm_content=dashboard' ); ?>" target="_blank" rel="noopener noreferrer" class="button button-primary">
@@ -378,6 +381,20 @@ class RTGODAM_Transcoder_Admin {
 
 		// Store timestamp for 7-day temporary dismissal.
 		update_option( 'rtgodam_free_plan_notice_dismissed_timestamp', time() );
+
+		wp_die();
+	}
+
+	/**
+	 * Dismiss the WooCommerce integration promo notice.
+	 *
+	 * @return void
+	 */
+	public function dismiss_woo_promo_notice() {
+		check_ajax_referer( 'dismiss_woo_promo_notice', 'nonce' );
+
+		// Store timestamp for 30-day temporary dismissal.
+		update_option( 'rtgodam_woo_promo_dismissed_timestamp', time() );
 
 		wp_die();
 	}
@@ -657,10 +674,17 @@ class RTGODAM_Transcoder_Admin {
 	/**
 	 * Display PostHog tracking notice.
 	 *
+	 * Only shown on the WP Dashboard.
+	 *
 	 * @since 1.5.0
 	 */
 	public function posthog_tracking_notice() {
 		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		// Only show on the WP Dashboard screen.
+		if ( ! $this->is_dashboard_screen() ) {
 			return;
 		}
 
@@ -752,7 +776,7 @@ class RTGODAM_Transcoder_Admin {
 		$status_messages = array(
 			\RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED => sprintf(
 				/* translators: %s: URL to settings page */
-				__( 'Your GoDAM API key has expired. Transcoding is currently disabled. Please <a href="%s">renew your subscription</a> to continue transcoding videos.', 'godam' ),
+				__( 'Your GoDAM API key has expired. Transcoding and other Pro features are currently disabled. Please <a href="%s">renew your subscription</a> to restore access.', 'godam' ),
 				esc_url( $settings_url )
 			),
 			\RTGODAM\Inc\Enums\Api_Key_Status::VERIFICATION_FAILED => sprintf(
@@ -815,5 +839,147 @@ class RTGODAM_Transcoder_Admin {
 
 		wp_safe_redirect( esc_url_raw( remove_query_arg( array( 'godam_tracker_optin', 'godam_tracker_optout', '_wpnonce' ) ) ) );
 		exit;
+	}
+
+	/**
+	 * Show a warning notice on all admin pages when the GoDAM API key has expired.
+	 *
+	 * Only displayed when:
+	 * - An API key is configured but is no longer valid.
+	 *
+	 * @since 1.8.0
+	 */
+	public function expired_api_key_notice() {
+
+		$api_key = \RTGODAM\Inc\Helpers\Api_Key::get_key();
+		if ( empty( $api_key ) || rtgodam_is_api_key_valid() ) {
+			return;
+		}
+
+		// rtgodam_get_api_key_status() only reads the persistent DB status option
+		// ('rtgodam-api-key-status') which can NEVER contain 'verification_failed'
+		// because that state is transient and not persistable. The actual runtime
+		// status — including transient 'verification_failed' — is stored in the
+		// 'rtgodam_user_data' option by rtgodam_get_user_data(). Read from there
+		// so we don't show a false "expired" banner when the server is temporarily
+		// unreachable.
+		$cached_user_data = get_option( 'rtgodam_user_data', array() );
+		$runtime_status   = isset( $cached_user_data['api_key_status'] )
+			? $cached_user_data['api_key_status']
+			: rtgodam_get_api_key_status();
+
+		if ( \RTGODAM\Inc\Enums\Api_Key_Status::VERIFICATION_FAILED === $runtime_status ) {
+			return;
+		}
+
+		$pricing_url = add_query_arg(
+			array(
+				'utm_campaign' => 'expired-key',
+				'utm_source'   => rawurlencode( site_url() ),
+				'utm_medium'   => 'plugin',
+				'utm_content'  => 'godam-admin-notice',
+			),
+			'https://godam.io/pricing'
+		);
+
+		printf(
+			'<div class="notice notice-warning"><p>%s</p></div>',
+			wp_kses_post(
+				sprintf(
+					/* translators: 1: Opening link tag, 2: Closing link tag */
+					__( '<strong>GoDAM API key has expired.</strong> Pro features in GoDAM are currently disabled. %1$sPurchase a new key%2$s to restore access.', 'godam' ),
+					'<a href="' . esc_url( $pricing_url ) . '" target="_blank" rel="noopener noreferrer">',
+					'</a>'
+				)
+			)
+		);
+	}
+
+	/**
+	 * Display a contextual admin notice promoting WooCommerce integration.
+	 *
+	 * The notice adapts based on whether:
+	 * - The GoDAM for Woo add-on is installed.
+	 * - WooCommerce is installed & active.
+	 * - The API key is valid.
+	 *
+	 * Once the add-on is installed the notice is permanently hidden.
+	 *
+	 * @since 1.8.0
+	 */
+	public function woo_integration_promo_notice() {
+
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
+		// If the add-on is already installed, no promo needed.
+		$addon_slug = 'godam-for-woo/godam-for-woo.php';
+		if ( file_exists( WP_PLUGIN_DIR . '/' . $addon_slug ) ) {
+			return;
+		}
+
+		// Check if user dismissed the notice (re-show after 30 days).
+		$dismissed = get_option( 'rtgodam_woo_promo_dismissed_timestamp', false );
+		if ( $dismissed && ( time() - (int) $dismissed ) < ( 30 * DAY_IN_SECONDS ) ) {
+			return;
+		}
+
+		$is_woo_active    = is_plugin_active( 'woocommerce/woocommerce.php' );
+		$has_valid_key    = rtgodam_is_api_key_valid();
+		$pricing_url      = add_query_arg(
+			array(
+				'utm_campaign' => 'woo-promo',
+				'utm_source'   => rawurlencode( site_url() ),
+				'utm_medium'   => 'plugin',
+				'utm_content'  => 'woo-admin-notice',
+			),
+			'https://godam.io/pricing'
+		);
+		$integrations_url = admin_url( 'admin.php?page=rtgodam_settings#integrations-settings' );
+		$woo_plugin_url   = admin_url( 'plugin-install.php?s=woocommerce&tab=search&type=term' );
+
+		if ( $is_woo_active && $has_valid_key ) {
+			// Case 4: Required active + valid key → link to integrations page.
+			$message = sprintf(
+				/* translators: 1: opening link tag, 2: closing link tag */
+				__( '<strong>Shoppable video for WooCommerce is live!</strong> %1$sActivate%2$s to start selling directly from your videos.', 'godam' ),
+				'<a href="' . esc_url( $integrations_url ) . '">',
+				'</a>'
+			);
+		} elseif ( ! $is_woo_active && $has_valid_key ) {
+			// Case 2: WooCommerce not active + valid key → install/activate WooCommerce.
+			$message = sprintf(
+				/* translators: 1: opening link tag, 2: closing link tag */
+				__( '<strong>GoDAM now supports WooCommerce!</strong> %1$sInstall WooCommerce%2$s to start using shoppable videos with GoDAM.', 'godam' ),
+				'<a href="' . esc_url( $woo_plugin_url ) . '">',
+				'</a>'
+			);
+		} else {
+			// Cases 1 & 3: No valid key → purchase.
+			$message = sprintf(
+				/* translators: 1: opening link tag, 2: closing link tag */
+				__( '<strong>Add shoppable videos to your WooCommerce store!</strong> %1$sUpgrade your plan%2$s to unlock this feature.', 'godam' ),
+				'<a href="' . esc_url( $pricing_url ) . '" target="_blank" rel="noopener noreferrer">',
+				'</a>'
+			);
+		}
+
+		printf(
+			'<div class="notice notice-info is-dismissible rtgodam-for-woo-promo-notice"><p>%s</p></div>',
+			wp_kses_post( $message )
+		);
+
+		// Inline script to persist dismissal via AJAX.
+		?>
+		<script>
+			jQuery( document ).on( 'click', '.rtgodam-for-woo-promo-notice .notice-dismiss', function() {
+				jQuery.post( ajaxurl, {
+					action: 'rtgodam_dismiss_woo_promo_notice',
+					nonce: '<?php echo esc_js( wp_create_nonce( 'dismiss_woo_promo_notice' ) ); ?>'
+				} );
+			} );
+		</script>
+		<?php
 	}
 }

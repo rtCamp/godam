@@ -1,10 +1,10 @@
 === GoDAM - Organize WordPress Media Library & File Manager with Unlimited Folders for Images, Videos & more ===
-Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, mi5t4n, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia, kishu7270, opurockey, utsavladani, whiteshadow01, ahmarzaidi
+Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, mi5t4n, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia, kishu7270, opurockey, utsavladani, whiteshadow01, ahmarzaidi, im3dabasia1
 Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.7.2
+Stable tag: 1.9.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -219,38 +219,30 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v1.9.0 (May 8, 2026) =
+
+- Feat: Introduced WooCommerce integration — first beta release of GoDAM for WooCommerce support.
+- Fix: Disabled hover option when autoplay is enabled in the Video block.
+- Fix: Resolved Gallery Carousel scroll issue on iOS devices.
+- Tweak: Revamped GoDAM blocks to Video, Video Gallery, Audio and Document blocks.
+
+= v1.8.0 (April 29, 2026) =
+
+- Feat: Enhanced GoDAM Gallery block with improved layouts and controls.
+- Feat: Introduced Performance Mode settings for video and gallery blocks.
+- Feat: Implemented blur-up thumbnail optimization in Video and Video Gallery blocks.
+- Tweak: Replaced gallery item width range input with S/M/L size selector.
+- Tweak: Performance improvements for GoDAM blocks.
+- Fix: Improved GoDAM Video and Video Gallery Block UX.
+- Fix: Added GoDAM Gallery migration support.
+- Fix: Removed GoDAM CPT and added migration for existing data.
+- Fix: Fixed alignment issues on GoDAM blocks.
+- Fix: Addressed security vulnerabilities.
+
 = v1.7.2 (March 20, 2026) =
 
 - Fix: Fixed video data collection in analytics.
 - Fix: Improved image optimization to support all registered image sizes.
-
-= v1.7.1 (March 17, 2026) =
-
-- Fix: Resolved invalid duration issue for hotspot layer in the video editor.
-- Fix: Improved transcoding failure flow for plugin-based transcoding.
-- Fix: Reset state in the video editor on load to prevent stale data.
-- Fix: Resolved inconsistent transcoding job failure state caused by HTTP authentication.
-- Fix: Fixed Analytics overlay message loading and background image rendering.
-- Fix: Fixed security issues
-
-= v1.7.0 (February 26, 2026) =
-
-- Feat: Added GoDAM CDN image support with srcset integration for images uploaded from WordPress.
-- Feat: Implemented auto-sync of Video SEO metadata with Media Library media item details.
-- Tweak: Improved video player loading performance.
-- Tweak: Improved UI/UX of GoDAM plugin pages and components.
-- Tweak: Overwrite thumbnails by default and persist selected custom thumbnails.
-- Fix: Resolved skip button visibility issue when Skippable option is enabled for Ad Layer.
-- Fix: Preserved video aspect ratio consistently across admin and frontend.
-- Fix: Improved API Key verification error handling.
-- Fix: Fixed mixed content issues for images loaded over HTTP on HTTPS sites.
-- Fix: Fixed input validation for the video thumbnail count field.
-- Fix: Fixed pagination display for GoDAM videos in the GoDAM tab.
-- Fix: Resolved custom and existing thumbnail selection issues for Vimeo videos.
-- Fix: Resolved endpoint routing issues on subdomain-based multisite setups.
-- Fix: Fixed audio duration display issue in audio preview.
-- Fix: Improved video transcript path fetching.
-- Fix: Addressed security vulnerabilities.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 

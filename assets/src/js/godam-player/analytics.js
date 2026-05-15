@@ -7,6 +7,7 @@ import { Analytics } from 'analytics';
  */
 import videoAnalyticsPlugin from './video-analytics-plugin';
 import GTMVideoTracker from './gtm-video-tracker';
+import { shouldSkipAnalytics, buildAnalyticsRequestBody } from './analytics-helpers';
 
 const analytics = Analytics( {
 	app: 'analytics-cdp-plugin',
@@ -33,6 +34,133 @@ function collectPlayedRanges( player ) {
 		}
 	}
 	return ranges;
+}
+
+/**
+ * Resolve the canonical video element used for analytics.
+ * Falls back to a descendant so callers can pass either the raw <video>
+ * element or a wrapping player container.
+ *
+ * @param {HTMLElement} video - Candidate video or wrapper element.
+ * @return {HTMLElement|null} The element carrying analytics data attributes.
+ */
+function resolveAnalyticsVideoElement( video ) {
+	if ( ! video ) {
+		return null;
+	}
+
+	if ( video.getAttribute?.( 'data-instance-id' ) ) {
+		return video;
+	}
+
+	return video.querySelector?.( '[data-instance-id]' ) || null;
+}
+
+/**
+ * Build analytics metadata for a single video instance.
+ *
+ * @param {HTMLElement} video - Candidate video or wrapper element.
+ * @return {{ videoEl: HTMLElement, instanceId: string, videoId: number, jobId: string }|null} Parsed analytics data.
+ */
+function getPageLoadVideoInfo( video ) {
+	const videoEl = resolveAnalyticsVideoElement( video );
+	const instanceId = videoEl?.getAttribute( 'data-instance-id' ) || '';
+	const videoId = parseInt( videoEl?.getAttribute( 'data-id' ), 10 ) || 0;
+
+	if ( ! videoEl || ! instanceId || ! videoId ) {
+		return null;
+	}
+
+	return {
+		videoEl,
+		instanceId,
+		videoId,
+		jobId: videoEl.getAttribute( 'data-job_id' ) || '',
+	};
+}
+
+// Keep instance tracking on window so repeat evaluations share one registry.
+window.godamTrackedPageLoadInstances = window.godamTrackedPageLoadInstances || new Set();
+window.godamObservedPageLoadVideos = window.godamObservedPageLoadVideos || new WeakSet();
+window.godamPageLoadObserver = window.godamPageLoadObserver || null;
+
+/**
+ * Send a type 1 page_load event for a single video instance exactly once.
+ * Deduplication is per data-instance-id so duplicate renders of the same
+ * underlying video each send independently, while re-entries do not.
+ *
+ * @param {HTMLElement} video - Candidate video or wrapper element.
+ * @return {boolean} True when an event was sent, false otherwise.
+ */
+function trackPageLoadForVideo( video ) {
+	const videoInfo = getPageLoadVideoInfo( video );
+
+	if ( ! videoInfo || ! window.analytics ) {
+		return false;
+	}
+
+	if ( window.godamTrackedPageLoadInstances.has( videoInfo.instanceId ) ) {
+		return false;
+	}
+
+	window.analytics.track( 'page_load', {
+		type: 1,
+		videoIds: [ [ videoInfo.videoId, videoInfo.jobId ] ],
+	} );
+
+	window.godamTrackedPageLoadInstances.add( videoInfo.instanceId );
+
+	return true;
+}
+
+/**
+ * Observe a video instance and send its page_load event the first time at
+ * least 10% of it is visible in the viewport.
+ *
+ * @param {HTMLElement} video - Candidate video or wrapper element.
+ */
+function observePageLoadForVideo( video ) {
+	const videoInfo = getPageLoadVideoInfo( video );
+
+	if ( ! videoInfo ) {
+		return;
+	}
+
+	if (
+		window.godamTrackedPageLoadInstances.has( videoInfo.instanceId ) ||
+		window.godamObservedPageLoadVideos.has( videoInfo.videoEl )
+	) {
+		return;
+	}
+
+	if ( ! ( 'IntersectionObserver' in window ) ) {
+		trackPageLoadForVideo( videoInfo.videoEl );
+		return;
+	}
+
+	if ( ! window.godamPageLoadObserver ) {
+		window.godamPageLoadObserver = new IntersectionObserver(
+			( entries, observer ) => {
+				entries.forEach( ( entry ) => {
+					if ( ! entry.isIntersecting || entry.intersectionRatio < 0.1 ) {
+						return;
+					}
+
+					trackPageLoadForVideo( entry.target );
+					observer.unobserve( entry.target );
+					window.godamObservedPageLoadVideos.delete( entry.target );
+				} );
+			},
+			{
+				root: null,
+				rootMargin: '0px',
+				threshold: 0.1,
+			},
+		);
+	}
+
+	window.godamObservedPageLoadVideos.add( videoInfo.videoEl );
+	window.godamPageLoadObserver.observe( videoInfo.videoEl );
 }
 
 // Generic video analytics helper
@@ -77,11 +205,11 @@ function collectPlayedRanges( player ) {
 	 *
 	 * **IMPORTANT: Automatic Type 1 Event Behavior**
 	 * When type 2 (heatmap) is requested, this function automatically sends a type 1 'page_load' (Video Loaded)
-	 * event BEFORE sending the type 2 (Video Played) event, if sendPageLoad is true (default true). This behavior is intentional but may result
-	 * in duplicate type 1 events in certain scenarios:
+	 * event BEFORE sending the type 2 (Video Played) event, if sendPageLoad is true (default true). This behavior is intentional and now uses
+	 * the shared per-instance type 1 helper so viewport-triggered and type 2-triggered sends stay deduplicated:
 	 *
-	 * - Called during video switches: Will send type 2 for the old video
-	 * - Called when videos are closed: Will send type 2 for the closing video
+	 * - Called during video switches: Will send a type 1 fallback only if that video instance has not already been tracked
+	 * - Called when videos are closed: Will send a type 1 fallback only if that video instance has not already been tracked
 	 *
 	 * **Event Types:**
 	 * - Type 1: Video Loaded (automatically sent before type 2)
@@ -115,11 +243,11 @@ function collectPlayedRanges( player ) {
 				return false;
 			}
 
-			// Send type 1 first (for the current video) if sendPageLoad is true
-			// NOTE: This automatically sends a 'page_load' event before the heatmap event, for ease of use.
-			// This is intentional behavior but may cause duplicate type 1 events in some scenarios
+			// Send type 1 first (for the current video instance) if sendPageLoad is true.
+			// This reuses the shared page_load helper so viewport and heatmap paths
+			// follow the same per-instance deduplication rules.
 			if ( sendPageLoad ) {
-				window.analytics.track( 'page_load', { type: 1, videoIds: [ [ vid, jobId ] ] } );
+				trackPageLoadForVideo( videoEl );
 			}
 
 			const player = getPlayer( videoEl );
@@ -149,31 +277,19 @@ function collectPlayedRanges( player ) {
 }() );
 
 if ( ! window.pageLoadEventTracked ) {
-	window.pageLoadEventTracked = true; // Mark as tracked to avoid duplicate execution
+	window.pageLoadEventTracked = true; // Mark page_load tracking listeners as initialized.
 
 	document.addEventListener( 'DOMContentLoaded', () => {
 		const videos = document.querySelectorAll( '.easydam-player.video-js' );
 
-		// Collect all video IDs and Job IDs
-		const videoInfo = Array.from( videos )
-			.map( ( video ) => ( {
-				id: video.getAttribute( 'data-id' ),
-				jobId: video.getAttribute( 'data-job_id' ) || '',
-			} ) )
-			.filter( ( info ) => info.id !== null && info.id !== '' && ! isNaN( info.id ) )
-			.map( ( info ) => [ parseInt( info.id, 10 ), info.jobId ] );
-
-		// Send a single page_load request with all video ID and Job ID pairs
-		if ( window.analytics && videoInfo.length > 0 ) {
-			window.analytics.track( 'page_load', {
-				type: 1, // Enum: 1 = Page Load
-				videoIds: videoInfo, // Array of [video_id, job_id] pairs
-			} );
-		}
+		// Observe all current videos and send type 1 only when each individual
+		// player instance first enters the viewport.
+		videos.forEach( ( video ) => observePageLoadForVideo( video ) );
 
 		// Set up analytics for each player when it's ready
 		// This prevents double initialization issues during async plugin loading
 		document.addEventListener( 'godamPlayerReady', ( event ) => {
+			observePageLoadForVideo( event.detail.videoElement );
 			setupPlayerAnalytics( event.detail.player, event.detail.videoElement );
 		} );
 
@@ -283,6 +399,11 @@ function sendPlayerHeatmap( player, video, skipIfKey = null ) {
 			return null;
 		}
 
+		// Skip the same conditions the analytics plugin does.
+		if ( shouldSkipAnalytics() ) {
+			return null;
+		}
+
 		const videoLength = Number( player.duration && player.duration() ) || 0;
 
 		/*
@@ -301,55 +422,18 @@ function sendPlayerHeatmap( player, video, skipIfKey = null ) {
 		 *
 		 * Reference: https://fetch.spec.whatwg.org/#keep-alive-flag
 		 */
-		const {
-			endpoint,
-			token,
-			userId,
-			emailId,
-			locationIP,
-			isPost,
-			isPage,
-			isArchive,
-			postType,
-			postId,
-			postTitle,
-			categories,
-			tags,
-			author,
-		} = window.videoAnalyticsParams || {};
+		const { endpoint, body } = buildAnalyticsRequestBody( {
+			type: 2,
+			userToken: window.analytics?.user?.()?.anonymousId || '',
+			videoId: parseInt( videoId, 10 ),
+			jobId,
+			ranges,
+			videoLength,
+		} );
 
-		// Honour the same skip conditions as the analytics plugin itself.
-		if ( ! endpoint || token === 'unverified' ) {
+		if ( ! endpoint ) {
 			return null;
 		}
-
-		const requestBody = {
-			site_url: window.location.origin,
-			account_token: token || '',
-			wp_user_id: parseInt( userId, 10 ) || 0,
-			email: emailId || '',
-			visitor_timestamp: Date.now(),
-			visit_entry_action_url: window.location.href,
-			visit_entry_action_name: document.title,
-			referer_url: document.referrer || '',
-			referer_name: document.referrer || '',
-			location_ip: locationIP || '',
-			is_post: isPost === '1',
-			is_page: isPage === '1',
-			is_archive: isArchive === '1',
-			post_type: postType,
-			post_id: parseInt( postId, 0 ),
-			post_title: postTitle,
-			categories,
-			tags,
-			author,
-			type: 2,
-			video_id: parseInt( videoId, 10 ),
-			job_id: jobId,
-			video_ids: [],
-			ranges,
-			video_length: videoLength,
-		};
 
 		// keepalive: true guarantees the request outlives the page. We do NOT
 		// await — the browser handles delivery asynchronously at the network
@@ -357,7 +441,7 @@ function sendPlayerHeatmap( player, video, skipIfKey = null ) {
 		fetch( endpoint + '/analytics/', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify( requestBody ),
+			body: JSON.stringify( body ),
 			keepalive: true,
 		} );
 
@@ -369,6 +453,8 @@ function sendPlayerHeatmap( player, video, skipIfKey = null ) {
 }
 
 function setupPlayerAnalytics( player, video ) {
+	observePageLoadForVideo( video );
+
 	// Skip if already set up for this player instance.
 	// We use the player object rather than the DOM element because
 	// godamPlayerReady provides the raw <video> element, but playerAnalytics()
@@ -386,13 +472,18 @@ function setupPlayerAnalytics( player, video ) {
 
 	// Initialize GTM tracker for this video
 	if ( typeof window.dataLayer !== 'undefined' && window.godamSettings?.enableGTMTracking ) {
-		const gtmTracker = new GTMVideoTracker( player, video );
 		// Store tracker reference for potential cleanup
-		video.gtmTracker = gtmTracker;
+		video.gtmTracker = new GTMVideoTracker( player, video );
 	}
 
 	// Send heatmap when player is unmounted/disposed (e.g. AJAX navigation)
 	player.on( 'dispose', () => {
+		const pageLoadVideo = resolveAnalyticsVideoElement( video );
+		if ( pageLoadVideo && window.godamPageLoadObserver ) {
+			window.godamPageLoadObserver.unobserve( pageLoadVideo );
+			window.godamObservedPageLoadVideos.delete( pageLoadVideo );
+		}
+
 		if ( window.godamTrackedPlayers.has( player ) ) {
 			const { videoEl, lastSentKey } = window.godamTrackedPlayers.get( player );
 			sendPlayerHeatmap( player, videoEl, lastSentKey );

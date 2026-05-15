@@ -18,11 +18,9 @@ use RTGODAM\Inc\Media_Tracker;
 use RTGODAM\Inc\Rewrite;
 use RTGODAM\Inc\Video_Preview;
 use RTGODAM\Inc\Video_Embed;
-use RTGODAM\Inc\Video_Permalinks;
 use RTGODAM\Inc\Video_Engagement;
 use RTGODAM\Inc\Update;
-
-use RTGODAM\Inc\Post_Types\GoDAM_Video;
+use RTGODAM\Inc\Addons\Addon_Registry;
 
 use RTGODAM\Inc\Taxonomies\Media_Folders;
 
@@ -47,6 +45,8 @@ use RTGODAM\Inc\REST_API\Site;
 use RTGODAM\Inc\REST_API\Video_Migration;
 use RTGODAM\Inc\REST_API\Release_Post;
 use RTGODAM\Inc\REST_API\Video_Sync;
+use RTGODAM\Inc\REST_API\Addon_Toggle;
+use RTGODAM\Inc\REST_API\Addon_Install;
 use RTGODAM\Inc\Gravity_Forms;
 use RTGODAM\Inc\REST_API\MetForm;
 
@@ -55,6 +55,7 @@ use RTGODAM\Inc\Shortcodes\GoDAM_Player;
 use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
 use RTGODAM\Inc\Shortcodes\GoDAM_Audio;
 
+use RTGODAM\Inc\Migrations\Runner as Migrations_Runner;
 use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
 use RTGODAM\Inc\Everest_Forms\Everest_Forms_Integration;
 use RTGODAM\Inc\Video_Metadata;
@@ -85,6 +86,9 @@ class Plugin {
 	 */
 	protected function __construct() {
 
+		// Register persistent migration hooks (includes admin_init trigger).
+		Migrations_Runner::init();
+
 		// Load plugin classes.
 		Update::get_instance();
 		Assets::get_instance();
@@ -96,8 +100,8 @@ class Plugin {
 		Rewrite::get_instance();
 		Video_Preview::get_instance();
 		Video_Embed::get_instance();
-		Video_Permalinks::get_instance();
 		Embed::get_instance();
+		Addon_Registry::get_instance();
 
 		// Load shortcodes.
 		GoDAM_Player::get_instance();
@@ -108,9 +112,9 @@ class Plugin {
 		Video_Editor_Form_Layer_Handler::get_instance()->init();
 		Everest_Forms_Integration::get_instance()->init();
 
-		$this->load_post_types();
 		$this->load_taxonomies();
 		$this->load_plugin_configs();
+
 		$this->load_rest_api();
 		$this->init_gravity_forms();
 		$this->load_sureforms();
@@ -136,13 +140,6 @@ class Plugin {
 		$this->load_wpbakery_elements();
 
 		$this->load_media_library();
-	}
-
-	/**
-	 * Load Post Types.
-	 */
-	public function load_post_types() {
-		GoDAM_Video::get_instance();
 	}
 
 	/**
@@ -188,6 +185,8 @@ class Plugin {
 		Video_Migration::get_instance();
 		Release_Post::get_instance();
 		Video_Sync::get_instance();
+		Addon_Toggle::get_instance();
+		Addon_Install::get_instance();
 	}
 
 	/**

@@ -78,7 +78,7 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 
 			// Check if the selected file is an image
 			if ( attachment.type !== 'image' ) {
-				showNotice( __( 'Only Image file is allowed', 'godam' ), 'error' );
+				showNotice( __( 'Only Image files are allowed', 'godam' ), 'error' );
 				return;
 			}
 

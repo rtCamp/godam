@@ -267,7 +267,13 @@ class ShareManager {
 		const encodedLink = encodeURI( videoLink );
 		const message = encodeURIComponent( __( 'Check out this video!', 'godam' ) );
 
-		return { videoLink, embedUrl, embedCode, encodedLink, message };
+		// Build page link: current WP page URL with an anchor pointing to this video block.
+		// Use URL API to preserve any existing query params while replacing only the hash.
+		const pageUrl = new URL( window.location.href );
+		pageUrl.hash = `godam-video-${ jobId }`;
+		const pageLink = pageUrl.toString();
+
+		return { videoLink, embedUrl, embedCode, encodedLink, message, pageLink };
 	}
 
 	/**
@@ -302,7 +308,8 @@ class ShareManager {
 					</div>
 				</div>
 				<div class="${ MODAL_POPUP_CLASS }__footer">
-					${ this.renderCopySection( 'page-link', videoLink, __( 'Page Link', 'godam' ) ) }
+					${ this.renderCopySection( 'wp-page-link', '', __( 'Page Link', 'godam' ) ) }
+					${ this.renderCopySection( 'page-link', videoLink, __( 'GoDAM Central', 'godam' ) ) }
 					${ this.renderCopySection( 'embed-code', embedCode, __( 'Embed', 'godam' ) ) }
 				</div>
 				<div class="${ MODAL_POPUP_CLASS }__timestamp-container">
@@ -352,11 +359,12 @@ class ShareManager {
 	setupModalEventListeners( container, socialLinks, urls ) {
 		const cancelButton = container.querySelector( '.share-modal-popup__close-button' );
 		const copyPageLink = container.querySelector( '.copy-page-link' );
+		const copyWpPageLink = container.querySelector( '.copy-wp-page-link' );
 		const copyEmbedCode = container.querySelector( '.copy-embed-code' );
 
 		this.setupSocialLinkUrls( container, socialLinks, urls );
 		this.setupModalCloseHandlers( container, cancelButton );
-		this.setupCopyButtonHandlers( copyPageLink, copyEmbedCode );
+		this.setupCopyButtonHandlers( copyPageLink, copyWpPageLink, copyEmbedCode );
 		this.setupTimestampControls( container, socialLinks, urls );
 	}
 
@@ -423,12 +431,14 @@ class ShareManager {
 	/**
 	 * Sets up copy button event handlers.
 	 *
-	 * @param {HTMLElement} copyPageLink  - Page link copy button.
-	 * @param {HTMLElement} copyEmbedCode - Embed code copy button.
+	 * @param {HTMLElement} copyPageLink   - GoDAM Central link copy button.
+	 * @param {HTMLElement} copyWpPageLink - WP page link copy button.
+	 * @param {HTMLElement} copyEmbedCode  - Embed code copy button.
 	 */
-	setupCopyButtonHandlers( copyPageLink, copyEmbedCode ) {
+	setupCopyButtonHandlers( copyPageLink, copyWpPageLink, copyEmbedCode ) {
 		const copyButtons = [
 			{ button: copyPageLink, inputSelector: '.page-link' },
+			{ button: copyWpPageLink, inputSelector: '.wp-page-link' },
 			{ button: copyEmbedCode, inputSelector: '.embed-code' },
 		];
 
@@ -468,6 +478,25 @@ class ShareManager {
 		const fullEmbed = timestamp ? `<iframe src="${ urls.embedUrl }?t=${ timestamp }"></iframe>` : urls.embedCode;
 		const encodedHref = encodeURI( fullPage );
 
+		const wpPageLinkInput = container.querySelector( '.wp-page-link' );
+
+		// WP page link: update/append the timestamp query param while preserving
+		// any existing query params and the hash anchor.
+		if ( wpPageLinkInput ) {
+			const wpPageBase = urls.pageLink || '';
+			if ( timestamp && wpPageBase ) {
+				try {
+					const wpPageUrl = new URL( wpPageBase, window.location.origin );
+					wpPageUrl.searchParams.set( 't', timestamp );
+					wpPageLinkInput.value = wpPageUrl.toString();
+				} catch ( error ) {
+					wpPageLinkInput.value = wpPageBase;
+				}
+			} else {
+				wpPageLinkInput.value = wpPageBase;
+			}
+		}
+
 		pageLinkInput.value = fullPage;
 		embedInput.value = fullEmbed;
 
@@ -496,6 +525,13 @@ class ShareManager {
 
 		if ( ! checkbox || ! input || ! pageLinkInput || ! embedInput ) {
 			return;
+		}
+
+		const wpPageLinkInput = container.querySelector( '.wp-page-link' );
+
+		// Initialize wp-page-link input value via JS (DOMPurify may strip it from HTML attributes).
+		if ( wpPageLinkInput ) {
+			wpPageLinkInput.value = urls.pageLink || '';
 		}
 
 		input.readOnly = ! checkbox.checked;

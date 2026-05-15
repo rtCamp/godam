@@ -25,13 +25,13 @@ import MetformIcon from '../assets/layers/MetFormIcon.png';
 import { __, sprintf } from '@wordpress/i18n';
 import { Button, Icon, Tooltip } from '@wordpress/components';
 import { plus, preformatted, customLink, arrowRight, video, customPostType, thumbsUp, error } from '@wordpress/icons';
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useCallback } from '@wordpress/element';
 
 import Layer from './layers/Layer';
 import LayerSelector from './LayerSelector.jsx';
 
 /**
- * Layer types with detail related to title, text and premium feature.
+ * Layer types with their labels, icons, and integration-specific state.
  */
 export const layerTypes = [
 	{
@@ -39,13 +39,17 @@ export const layerTypes = [
 		icon: customLink,
 		type: 'cta',
 		layerText: __( 'CTA', 'godam' ),
-		isPremium: false,
+	},
+	{
+		title: __( 'Hotspot', 'godam' ),
+		icon: customPostType,
+		type: 'hotspot',
+		layerText: __( 'Hotspot', 'godam' ),
 	},
 	{
 		title: __( 'Forms', 'godam' ),
 		icon: preformatted,
 		type: 'form',
-		isPremium: true,
 		formType: {
 			gravity: {
 				layerText: __( 'Gravity Forms', 'godam' ),
@@ -110,19 +114,11 @@ export const layerTypes = [
 		},
 	},
 	{
-		title: __( 'Hotspot', 'godam' ),
-		icon: customPostType,
-		type: 'hotspot',
-		layerText: __( 'Hotspot', 'godam' ),
-		isPremium: true,
-	},
-	{
 		title: __( 'Ad', 'godam' ),
 		icon: video,
 		type: 'ad',
 		layerText: __( 'Ad', 'godam' ),
-		tooltipMessage: __( 'This ad will be overriden by Ad server\'s ads', 'godam' ),
-		isPremium: true,
+		tooltipMessage: __( 'This ad will be overridden by Ad server\'s ads', 'godam' ),
 	},
 	{
 		title: __( 'Poll', 'godam' ),
@@ -131,14 +127,10 @@ export const layerTypes = [
 		layerText: __( 'Poll', 'godam' ),
 		isActive: Boolean( window?.easydamMediaLibrary?.isPollPluginActive ) ?? false,
 		tooltipMessage: __( 'Poll plugin is not active', 'godam' ),
-		isPremium: false,
 	},
+	// Add-on layers (e.g., WooCommerce) are merged from PHP via godamVideoEditorConfig.
+	...( window.godamVideoEditorConfig?.layerOptions || [] ),
 ];
-
-/**
- * Premium tooltip message.
- */
-const premiumMessage = __( 'This feature is available in the premium version', 'godam' );
 
 /**
  * Sidebar component to display and select different types of layers to be added to the video.
@@ -158,12 +150,12 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 
 	const dispatch = useDispatch();
 
-	const openModal = () => {
+	const openModal = useCallback( () => {
 		setOpen( true );
 		if ( onPauseVideo ) {
 			onPauseVideo();
 		}
-	};
+	}, [ onPauseVideo ] );
 	const closeModal = () => {
 		setOpen( false );
 		// Clear the addLayerModalTime when closing the modal
@@ -175,7 +167,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 		if ( addLayerModalTime !== null ) {
 			openModal();
 		}
-	}, [ addLayerModalTime ] );
+	}, [ addLayerModalTime, openModal ] );
 
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
@@ -187,20 +179,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 		.filter( ( layer ) => layerTypes.some( ( lt ) => lt.type === layer.type ) )
 		.sort( ( a, b ) => a.displayTime - b.displayTime );
 
-	// If we want to disable the premium layers the we can use this code
-	// const isValidAPiKey = window?.videoData?.valid_license;
-
-	// For now we are enabling all the features
-	const isValidAPiKey = true;
-
 	const addNewLayer = ( type, formType ) => {
-		const layerType = layerTypes.find( ( l ) => l.type === type );
-		const isPremiumLayer = ! isValidAPiKey && layerType && layerType?.isPremium;
-
-		if ( isPremiumLayer ) {
-			return;
-		}
-
 		switch ( type ) {
 			case 'form':
 				dispatch( addLayer( {
@@ -261,8 +240,17 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					custom_css: '',
 				} ) );
 				break;
-			default:
+			default: {
+				// Check for add-on layer creators (registered via window.godamLayerCreators).
+				const addonCreator = window.godamLayerCreators?.[ type ];
+				if ( addonCreator ) {
+					const layerData = addonCreator( { layers, currentTime, type } );
+					if ( layerData ) {
+						dispatch( addLayer( { ...layerData, id: uuidv4() } ) );
+					}
+				}
 				break;
+			}
 		}
 	};
 
@@ -276,17 +264,13 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								let addWarning = false;
 								const layerData = layerTypes.find( ( l ) => l.type === layer.type );
 								const formType = 'form' === layerData?.type ? layerData?.formType[ layer.form_type ?? 'gravity' ] : false;
-								const icon = formType ? formType?.icon : layerData?.icon;
-								const layerText = formType ? formType?.layerText : layerData?.layerText;
+								const icon = formType ? formType?.icon : ( layerData?.icon || layerData?.iconUrl );
+								const layerText = formType ? formType?.layerText : ( layerData?.layerText || layerData?.title );
 
 								/**
 								 * Get Tooltip message.
 								 */
 								const tooltipMessage = ( () => {
-									if ( layerData.isPremium && ! isValidAPiKey ) {
-										return premiumMessage;
-									}
-
 									if ( formType && ! formType.isActive ) {
 										return formType.tooltipMessage;
 									}
@@ -306,10 +290,13 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 									addWarning = true;
 								}
 
+								// Disable the button when the required plugin/feature is inactive
+								// (e.g. form plugin not installed, or WooCommerce layer API key missing/expired).
+								const isLayerDisabled = ( formType && ! formType.isActive ) || layerData?.isActive === false;
+
 								return (
 									<Tooltip
 										key={ layer.id }
-										className="w-full flex justify-between items-center px-2 py-3 border rounded-md mb-2 hover:bg-gray-50 cursor-pointer"
 										text={ tooltipMessage }
 										placement="right"
 									>
@@ -320,16 +307,22 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 													dispatch( setCurrentLayer( layer ) );
 													onSelectLayer( layer.displayTime );
 												} }
+												disabled={ isLayerDisabled }
 											>
 												<div className="flex items-center gap-2">
 													{
-														formType ? (
+														formType || ( typeof icon === 'string' && icon ) ? (
 															<img src={ icon } alt={ layer.type } className="w-6 h-6" />
 														) : (
 															<Icon icon={ icon } />
 														)
 													}
 													<p className="m-0 text-base">{ layerText } layer at <b>{ layer.displayTime }s</b></p>
+													{ layer.badge && (
+														<span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded-full">
+															{ layer.badge }
+														</span>
+													) }
 												</div>
 												<div>
 													<Icon icon={ arrowRight } />

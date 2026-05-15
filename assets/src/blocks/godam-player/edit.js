@@ -19,12 +19,13 @@ import {
 	SelectControl,
 	ToolbarButton,
 	ToolbarGroup,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
+	__experimentalUnitControl as UnitControl,
 } from '@wordpress/components';
 import {
 	BlockControls,
 	InspectorControls,
 	MediaUpload,
-	MediaUploadCheck,
 	MediaReplaceFlow,
 	useBlockProps,
 	InnerBlocks,
@@ -45,13 +46,13 @@ import Video from './VideoJS';
 import TracksEditor from './track-uploader';
 import { Caption } from './caption';
 import VideoSEOModal from './components/VideoSEOModal.js';
+import ThumbnailPanel from './components/ThumbnailPanel.js';
 import { appendTimezoneOffsetToUTC, isSEODataEmpty, secondsToISO8601, stripHtmlTags } from './utils/index.js';
 import './editor.scss';
 import { ReactComponent as icon } from '../../images/godam-video-filled.svg';
 import { canManageAttachment } from '../../js/media-library/utility';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
-const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
 
 // Define allowed blocks for the overlay.
 const ALLOWED_BLOCKS = [
@@ -106,7 +107,6 @@ function VideoEdit( {
 } ) {
 	const instanceId = useInstanceId( VideoEdit );
 	const videoPlayer = useRef();
-	const posterImageButton = useRef();
 
 	const {
 		id,
@@ -126,11 +126,13 @@ function VideoEdit( {
 		aspectRatio,
 		videoWidth,
 		videoHeight,
+		playerHeight,
 	} = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 	const [ defaultPoster, setDefaultPoster ] = useState( '' );
 	const [ isSEOModalOpen, setIsSEOModelOpen ] = useState( false );
 	const [ duration, setDuration ] = useState( 0 );
+
 	const [ isVideoSelecting, setIsVideoSelecting ] = useState( false );
 	const [ attachmentAuthorId, setattachmentAuthorId ] = useState( null );
 	const isInsideQueryLoop = context?.hasOwnProperty( 'queryId' );
@@ -149,6 +151,41 @@ function VideoEdit( {
 
 		return '';
 	}, [ aspectRatio, videoWidth, videoHeight ] );
+
+	// When a player height is set, derive a max-width from the height + aspect ratio.
+	// This mirrors the video-editor pattern: width = height × (arW / arH).
+	// Applying max-width lets Video.js fill that width with fluid: true, which naturally
+	// produces the desired height via the aspect-ratio padding trick.
+	const computedMaxWidth = useMemo( () => {
+		if ( ! playerHeight || ! calculatedAspectRatio ) {
+			return null;
+		}
+		const heightMatch = playerHeight.match( /^(\d+(?:\.\d+)?)([a-z%]*)$/ );
+		if ( ! heightMatch ) {
+			return null;
+		}
+
+		const unit = heightMatch[ 2 ] || 'px';
+
+		// Skip width derivation for percentage units: % resolves against different
+		// axes for width vs. height, so the computed max-width would be meaningless.
+		if ( '%' === unit ) {
+			return null;
+		}
+
+		const arMatch = calculatedAspectRatio.match( /^(\d+(?:\.\d+)?):(\d+(?:\.\d+)?)$/ );
+		if ( ! arMatch ) {
+			return null;
+		}
+		const arH = parseFloat( arMatch[ 2 ] );
+		if ( ! arH ) {
+			return null;
+		}
+
+		const heightValue = parseFloat( heightMatch[ 1 ] );
+		const arW = parseFloat( arMatch[ 1 ] );
+		return `${ Math.round( heightValue * ( arW / arH ) ) }${ unit }`;
+	}, [ playerHeight, calculatedAspectRatio ] );
 
 	// Memoize video options to prevent unnecessary rerenders.
 	const videoOptions = useMemo( () => {
@@ -359,6 +396,23 @@ function VideoEdit( {
 			}
 		}
 	}, [ id, src, attributes.seo, isVideoSelecting, setAttributes ] );
+
+	// When autoplay is enabled, hoverSelect is incompatible — reset it to 'none'.
+	// Only apply this when autoplay is toggled on after mount so older content
+	// is not rewritten as a side effect of opening the editor.
+	const previousAutoplayRef = useRef( autoplay );
+
+	useEffect( () => {
+		const previousAutoplay = previousAutoplayRef.current;
+		if ( previousAutoplay === autoplay ) {
+			return;
+		}
+		previousAutoplayRef.current = autoplay;
+
+		if ( autoplay && attributes.hoverSelect !== 'none' ) {
+			setAttributes( { hoverSelect: 'none' } );
+		}
+	}, [ autoplay ] ); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// Keep overridden SEO thumbnail synced with block poster.
 	useEffect( () => {
@@ -594,6 +648,7 @@ function VideoEdit( {
 
 	const blockProps = useBlockProps( {
 		className: classes,
+		...( computedMaxWidth ? { style: { maxWidth: computedMaxWidth } } : {} ),
 	} );
 
 	if ( ! src && ! temporaryURL && ! isInsideQueryLoop ) {
@@ -603,7 +658,7 @@ function VideoEdit( {
 					className="block-editor-media-placeholder"
 					withIllustration={ ! isSingleSelected }
 					icon={ icon }
-					label={ __( 'GoDAM video', 'godam' ) }
+					label={ __( 'Video', 'godam' ) }
 					instructions={ __(
 						'Drag and drop a video, upload, or choose from your library.',
 						'godam',
@@ -651,12 +706,7 @@ function VideoEdit( {
 		}
 
 		setAttributes( nextAttributes );
-
-		// Move focus back to the Media Upload button.
-		posterImageButton.current.focus();
 	}
-
-	const videoPosterDescription = `video-block__poster-image-description-${ instanceId }`;
 
 	// Add function to handle vertical alignment change.
 	const onChangeVerticalAlignment = ( alignment ) => {
@@ -691,7 +741,6 @@ function VideoEdit( {
 
 		return timeString;
 	};
-
 	return (
 		<>
 			{ isSingleSelected && (
@@ -748,71 +797,28 @@ function VideoEdit( {
 									<SelectControl
 										__nextHasNoMarginBottom
 										label={ __( 'Hover Option', 'godam' ) }
-										help={ __( 'Choose the action to perform on video hover.', 'godam' ) }
+										help={ autoplay
+											? __( 'Hover option is disabled when autoplay is on.', 'godam' )
+											: __( 'Choose the action to perform on video hover.', 'godam' ) }
 										value={ attributes.hoverSelect || 'none' }
 										onChange={ ( value ) => setAttributes( { hoverSelect: value } ) }
+										disabled={ !! autoplay }
 										options={
 											[
 												{ label: __( 'None', 'godam' ), value: 'none' },
 												{ label: __( 'Show Player Controls', 'godam' ), value: 'show-player-controls' },
 												{ label: __( 'Start Preview', 'godam' ), value: 'start-preview' },
-												{ label: __( 'Shadow Overlay', 'godam' ), value: 'shadow-overlay' },
 											]
 										}
 									/>
 								</BaseControl>
 
-								<BaseControl
-									id={ `video-block__poster-image-${ instanceId }` }
-									label={ __( 'Video Thumbnail', 'godam' ) }
-									__nextHasNoMarginBottom
-								>
-									<MediaUploadCheck>
-										<div className="editor-video-poster-control">
-											<MediaUpload
-												title={ __( 'Select Video Thumbnail', 'godam' ) }
-												onSelect={ onSelectPoster }
-												allowedTypes={ VIDEO_POSTER_ALLOWED_MEDIA_TYPES }
-												render={ ( { open } ) => (
-													<Button
-														__next40pxDefaultSize
-														variant="primary"
-														onClick={ open }
-														ref={ posterImageButton }
-														aria-describedby={ videoPosterDescription }
-													>
-														{ ! poster ? __( 'Select', 'godam' ) : __( 'Replace', 'godam' ) }
-													</Button>
-												) }
-											/>
-											<p id={ videoPosterDescription } hidden>
-												{ poster
-													? sprintf(
-														/* translators: %s: poster image URL. */
-														__( 'The current poster image url is %s', 'godam' ),
-														poster,
-													)
-													: __( 'There is no poster image currently selected', 'godam' ) }
-											</p>
-											{ !! poster && (
-												<Button
-													__next40pxDefaultSize
-													onClick={ onRemovePoster }
-													variant="tertiary"
-												>
-													{ __( 'Remove', 'godam' ) }
-												</Button>
-											) }
-										</div>
-									</MediaUploadCheck>
-								</BaseControl>
-
-								<ToggleControl
-									__nextHasNoMarginBottom
-									label={ __( 'Preload Video Thumbnail', 'godam' ) }
-									help={ __( 'Enable to show the video thumbnail faster when the page loads. Recommended for videos placed near the top of your page.', 'godam' ) }
-									onChange={ ( value ) => setAttributes( { preloadPoster: value } ) }
-									checked={ attributes?.preloadPoster }
+								<ThumbnailPanel
+									attachmentId={ id }
+									poster={ poster }
+									defaultPoster={ defaultPoster }
+									onSelect={ onSelectPoster }
+									onRemove={ onRemovePoster }
 								/>
 
 								<BaseControl
@@ -830,6 +836,14 @@ function VideoEdit( {
 										help={ __( 'Choose the aspect ratio for the video player.', 'godam' ) }
 									/>
 								</BaseControl>
+
+								<UnitControl
+									__nextHasNoMarginBottom
+									label={ __( 'Height', 'godam' ) }
+									value={ playerHeight || '' }
+									onChange={ ( value ) => setAttributes( { playerHeight: value || '' } ) }
+									help={ __( 'Set the video height. Width is auto-calculated from the aspect ratio.', 'godam' ) }
+								/>
 
 								<BaseControl
 									id={ `video-block__tracks-editor-${ instanceId }` }
@@ -905,7 +919,7 @@ function VideoEdit( {
 					<div { ...blockProps }>
 						<div className="godam-editor-video-placeholder">
 							<span className="godam-editor-video-label">
-								{ __( 'GoDAM Video', 'godam' ) }
+								{ __( 'Video', 'godam' ) }
 							</span>
 						</div>
 					</div>

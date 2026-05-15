@@ -149,6 +149,9 @@ class Video_Engagement {
 	 * @return bool True if engagements are enabled, otherwise false.
 	 */
 	public function check_if_engagements_enabled( $attachment_id, $attributes ) {
+		if ( ! rtgodam_is_engagement_feature_enabled() ) {
+			return false;
+		}
 
 		if ( empty( $attachment_id ) || ! isset( $attributes['engagements'] ) ) {
 			return false;

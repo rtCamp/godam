@@ -437,7 +437,7 @@ class Pages {
 	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
 
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id, $this->tools_page_id ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id, $this->tools_page_id, $this->whats_new_page_id ), true ) ) {
 
 			wp_register_script(
 				'rtgodam-page-style',
@@ -553,8 +553,62 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			// Localize easydamMediaLibrary data for the video editor.
+			$enable_folder_organization = get_option( 'rtgodam-settings', array() )['general']['enable_folder_organization'] ?? true;
+			$current_user_id            = get_current_user_id();
+
+			$easydam_media_library_data = array(
+				'ajaxUrl'                  => admin_url( 'admin-ajax.php' ),
+				'nonce'                    => wp_create_nonce( 'easydam_media_library' ),
+				'godamToolsNonce'          => wp_create_nonce( 'rtgodam_tools' ),
+				'enableFolderOrganization' => $enable_folder_organization,
+				'isPollPluginActive'       => is_plugin_active( 'wp-polls/wp-polls.php' ),
+				'page'                     => $screen ? $screen->id : '',
+				'userId'                   => $current_user_id,
+				'canEditOthersMedia'       => current_user_can( 'edit_others_posts' ),
+				'canManageOptions'         => current_user_can( 'manage_options' ),
+				'canEditPages'             => current_user_can( 'edit_pages' ),
+			);
+
+			/**
+			 * Filters the easydamMediaLibrary localized data on the video editor page.
+			 * Add-ons can use this to provide additional data (e.g., WooCommerce status).
+			 *
+			 * @since 1.8.0
+			 *
+			 * @param array $easydam_media_library_data The data array.
+			 */
+			$easydam_media_library_data = apply_filters( 'godam_easydam_media_library_data', $easydam_media_library_data );
+
+			wp_localize_script(
+				'transcoder-page-script-video-editor',
+				'easydamMediaLibrary',
+				$easydam_media_library_data
+			);
+
+			// Localize video editor layer options and components via PHP filters.
+			$layer_options    = apply_filters( 'godam_video_editor_layer_options', array() );
+			$layer_components = apply_filters( 'godam_video_editor_layer_components', array() );
+
+			wp_localize_script(
+				'transcoder-page-script-video-editor',
+				'godamVideoEditorConfig',
+				array(
+					'layerOptions'    => $layer_options,
+					'layerComponents' => $layer_components,
+				)
+			);
+
 			wp_set_script_translations( 'transcoder-page-script-video-editor', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
+
+			/**
+			 * Fires after the video editor scripts are enqueued.
+			 * Add-ons can use this to enqueue their own scripts on the video editor page.
+			 *
+			 * @since 1.8.0
+			 */
+			do_action( 'godam_enqueue_video_editor_scripts' );
 
 			if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
 				$this->enqueue_gravity_forms_styles();
@@ -744,7 +798,7 @@ class Pages {
 			wp_register_script(
 				'transcoder-page-script-godam',
 				RTGODAM_URL . 'assets/build/pages/godam.min.js',
-				array( 'wp-element', 'wp-i18n' ),
+				array( 'wp-element', 'wp-i18n', 'wp-api-fetch' ),
 				filemtime( RTGODAM_PATH . 'assets/build/pages/godam.min.js' ),
 				true
 			);
@@ -775,7 +829,62 @@ class Pages {
 			);
 
 			wp_set_script_translations( 'transcoder-page-script-godam', 'godam', RTGODAM_PATH . 'languages' );
+
+			if ( ! function_exists( 'is_plugin_active' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
+
+			$addon_slugs = array( 'godam-for-woo/godam-for-woo.php' );
+
+			/**
+			 * Filter the list of recognised add-on plugin slugs.
+			 *
+			 * @param string[] $addon_slugs Plugin file slugs (e.g. 'godam-for-woo/godam-for-woo.php').
+			 */
+			$addon_slugs = apply_filters( 'godam_addon_plugin_slugs', $addon_slugs );
+
+			$addon_statuses = array();
+			foreach ( $addon_slugs as $slug ) {
+				$file_exists             = file_exists( WP_PLUGIN_DIR . '/' . $slug );
+				$addon_statuses[ $slug ] = array(
+					'installed' => $file_exists ? '1' : '',
+					'active'    => ( $file_exists && is_plugin_active( $slug ) ) ? '1' : '',
+				);
+			}
+
+			// Required / dependency plugins (e.g. WooCommerce itself).
+			$required_slugs = array( 'woocommerce/woocommerce.php' );
+
+			/**
+			 * Filter the list of required dependency plugin slugs to check.
+			 *
+			 * @param string[] $required_slugs Plugin file slugs.
+			 */
+			$required_slugs = apply_filters( 'godam_required_plugin_slugs', $required_slugs );
+
+			foreach ( $required_slugs as $slug ) {
+				$file_exists             = file_exists( WP_PLUGIN_DIR . '/' . $slug );
+				$addon_statuses[ $slug ] = array(
+					'installed' => $file_exists ? '1' : '',
+					'active'    => ( $file_exists && is_plugin_active( $slug ) ) ? '1' : '',
+				);
+			}
+
+			wp_localize_script(
+				'transcoder-page-script-godam',
+				'godamAddonStatuses',
+				$addon_statuses
+			);
+
 			wp_enqueue_script( 'transcoder-page-script-godam' );
+
+			/**
+			 * Fires after the GoDAM settings page scripts are enqueued.
+			 * Add-ons can use this to enqueue their own settings scripts.
+			 *
+			 * @since 1.8.0
+			 */
+			do_action( 'godam_enqueue_settings_page_scripts' );
 		} elseif ( $screen && $this->tools_page_id === $screen->id ) {
 
 			wp_register_script(
@@ -1118,9 +1227,9 @@ class Pages {
 			return;
 		}
 
-		if ( get_transient( 'rtgodam_show_whats_new' ) ) {
-			// Redirect only once, then clean up any related transient data.
-			delete_transient( 'rtgodam_show_whats_new' );
+		if ( get_option( 'rtgodam_show_whats_new' ) ) {
+			// Redirect only once, then clean up any related data.
+			delete_option( 'rtgodam_show_whats_new' );
 			delete_transient( 'rtgodam_release_data' );
 
 			// Redirect to "What's New" admin page.

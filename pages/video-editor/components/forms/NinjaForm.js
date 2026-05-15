@@ -36,11 +36,6 @@ const NinjaForm = ( { layerID } ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'ninja_form_id', value: formID } ) );
 	};
 
-	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.valid_api_key;
-	// For now we are enabling all the features
-	const isValidAPIKey = true;
-
 	const isNinjaFormsPluginActive = Boolean( window?.videoData?.ninjaFormsActive );
 
 	return (
@@ -58,7 +53,7 @@ const NinjaForm = ( { layerID } ) => {
 
 			{
 				<FormSelector
-					disabled={ ! isValidAPIKey || ! isNinjaFormsPluginActive }
+					disabled={ ! isNinjaFormsPluginActive }
 					className="ninja-form-selector mb-4"
 					formID={ layer.ninja_form_id }
 					forms={ forms }
@@ -91,11 +86,6 @@ const NinjaForm = ( { layerID } ) => {
 									<p>{ __( 'Loading form…', 'godam' ) }</p>
 								}
 							</div>
-						}
-
-						{
-							! isValidAPIKey &&
-							<p className="text-sm text-gray-500">{ __( 'This features is available in premium version', 'godam' ) }</p>
 						}
 
 						{

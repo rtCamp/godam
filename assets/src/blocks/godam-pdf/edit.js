@@ -109,7 +109,7 @@ function PdfEdit( {
 					allowedTypes={ ALLOWED_MEDIA_TYPES }
 					value={ attributes }
 					onError={ onUploadError }
-					labels={ { title: __( 'GoDAM PDF', 'godam' ) } }
+					labels={ { title: __( 'Document', 'godam' ) } }
 				/>
 			</div>
 		);

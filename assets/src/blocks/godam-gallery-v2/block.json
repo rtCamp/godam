@@ -1,16 +1,20 @@
 {
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
-	"name": "godam/gallery",
-	"title": "GoDAM Video Gallery",
+	"name": "godam/gallery-v2",
+	"title": "Video Gallery",
 	"category": "media",
-	"description": "Display a grid of GoDAM videos.",
-	"keywords": [ "video", "gallery", "grid", "videos" ],
+	"description": "Create a handpicked or query-based GoDAM video gallery.",
+	"keywords": [ "video", "gallery", "grid", "godam" ],
 	"textdomain": "godam",
 	"attributes": {
-		"columns": {
-			"type": "number",
-			"default": 3
+		"mode": {
+			"type": "string",
+			"default": "query"
+		},
+		"itemWidth": {
+			"type": "string",
+			"default": "S"
 		},
 		"count": {
 			"type": "number",
@@ -22,31 +26,35 @@
 		},
 		"order": {
 			"type": "string",
-			"default": "DESC"
+			"default": "desc"
 		},
 		"layout": {
 			"type": "string",
 			"default": "grid"
 		},
+		"viewRatio": {
+			"type": "string",
+			"default": "16:9"
+		},
 		"infiniteScroll": {
 			"type": "boolean",
 			"default": false
 		},
-		"category": {
-			"type": "string",
-			"default": ""
+		"enableMoreItems": {
+			"type": "boolean",
+			"default": false
 		},
-		"tag": {
+		"moreItemsBehavior": {
 			"type": "string",
-			"default": ""
+			"default": "button"
 		},
 		"mediaFolder": {
 			"type": "string",
 			"default": ""
 		},
 		"author": {
-			"type": "number",
-			"default": 0
+			"type": "string",
+			"default": ""
 		},
 		"dateRange": {
 			"type": "string",
@@ -60,36 +68,37 @@
 			"type": "string",
 			"default": ""
 		},
-		"include": {
-			"type": "string",
-			"default": ""
-		},
-		"search": {
-			"type": "string",
-			"default": ""
-		},
 		"showTitle": {
 			"type": "boolean",
 			"default": true
 		},
+		"performanceMode": {
+			"type": "string",
+			"default": "balanced"
+		},
 		"engagements": {
 			"type": "boolean",
 			"default": true
-		},
-		"openToNewPage": {
-			"type": "boolean",
-			"default": false
 		}
+	},
+	"providesContext": {
+		"godam/galleryV2/layout": "layout",
+		"godam/galleryV2/showTitle": "showTitle",
+		"godam/galleryV2/itemWidth": "itemWidth",
+		"godam/galleryV2/viewRatio": "viewRatio"
 	},
 	"supports": {
 		"anchor": true,
 		"align": [ "left", "center", "right", "wide", "full" ],
 		"spacing": {
 			"margin": true,
-			"padding": true
+			"padding": true,
+			"blockGap": true
 		}
 	},
-	"editorStyle": [ "file:./index.css" ],
 	"editorScript": [ "file:./index.js" ],
+	"editorStyle": [ "file:./index.css" ],
+	"style": [ "file:./style-index.css" ],
+	"viewScript": [ "file:./view.js" ],
 	"render": "file:./render.php"
 }

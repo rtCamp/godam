@@ -66,7 +66,8 @@
 	container-name: easydam-layer-container;
 }
 
-.hidden {
+.video-js .hidden,
+.easydam-layer.hidden {
 	display: none !important;
 }
 
@@ -624,7 +625,6 @@
 .hotspot {
 	pointer-events: auto;
 	position: absolute;
-	z-index: 100;
 	background-color: rgba(12, 128, 223, 0.65);
 	box-sizing: border-box;
 	cursor: pointer;
@@ -1753,9 +1753,14 @@ body.godam-share-modal-open {
  * including flex layouts (Row, Stack) and standard layouts (Group, Columns).
  */
 .wp-block-godam-video {
-	width: 100%;
 	min-width: 0; // Allow shrinking in flex layouts (Row/Stack)
-	
+
+	// Only apply 100% width when no block-level alignment is set.
+	// alignfull/alignwide rely on theme CSS for their own width (e.g. 100vw + negative margins).
+	&:not(.alignfull):not(.alignwide) {
+		width: 100%;
+	}
+
 	// Ensure the figure takes full width
 	figure[id^="godam-player-container"] {
 		width: 100%;

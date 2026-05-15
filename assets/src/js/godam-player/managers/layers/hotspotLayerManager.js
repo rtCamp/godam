@@ -73,6 +73,16 @@ export default class HotspotLayerManager {
 					if ( ! layerObj.layerElement.dataset?.hotspotsInitialized ) {
 						this.createHotspots( layerObj );
 						layerObj.layerElement.dataset.hotspotsInitialized = true;
+					} else {
+						requestAnimationFrame( () => {
+							const hotspotDivs = layerObj.layerElement.querySelectorAll( '.hotspot' );
+							hotspotDivs.forEach( ( hotspotDiv ) => {
+								const tooltipDiv = hotspotDiv.querySelector( '.hotspot-tooltip' );
+								if ( tooltipDiv ) {
+									this.positionTooltip( hotspotDiv, tooltipDiv );
+								}
+							} );
+						} );
 					}
 				}
 			} else if ( ! layerObj.layerElement.classList.contains( 'hidden' ) ) {
@@ -508,6 +518,7 @@ export default class HotspotLayerManager {
 		const contentRect = this.computeContentRect();
 
 		this.hotspotLayers.forEach( ( layerObj ) => {
+			const isLayerHidden = layerObj.layerElement.classList.contains( 'hidden' );
 			const hotspotDivs = layerObj.layerElement.querySelectorAll( '.hotspot' );
 			hotspotDivs.forEach( ( hotspotDiv, index ) => {
 				const hotspot = layerObj.hotspots[ index ];
@@ -537,6 +548,11 @@ export default class HotspotLayerManager {
 				hotspotDiv.style.top = `${ pixelY }px`;
 				hotspotDiv.style.width = `${ pixelDiameter }px`;
 				hotspotDiv.style.height = `${ pixelDiameter }px`;
+
+				// Tooltip geometry relies on measurable layout; skip while layer is hidden.
+				if ( isLayerHidden ) {
+					return;
+				}
 
 				const tooltipDiv = hotspotDiv.querySelector( '.hotspot-tooltip' );
 				if ( tooltipDiv ) {

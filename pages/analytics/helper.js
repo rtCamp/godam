@@ -726,3 +726,66 @@ export function generateLineChart( data, selector, videoPlayer, tooltipSelector,
 			filledArea.style( 'opacity', 0 );
 		} );
 }
+
+/**
+ * Ensure all 7 days are represented in a data array, filling missing dates with zeros.
+ *
+ * Produces an array of exactly 7 entries ordered oldest → newest, where any date
+ * absent from `dataArray` is replaced with a zero-value sentinel object.
+ *
+ * @param {Array} dataArray Array of data objects, each with at minimum a `date` (YYYY-MM-DD) field.
+ * @return {Array} Array of 7 objects spanning the last 7 days (including today).
+ */
+export function ensureAll7Days( dataArray ) {
+	const now = new Date();
+	const today = new Date( now.getFullYear(), now.getMonth(), now.getDate() );
+	const last7Days = [];
+	for ( let i = 6; i >= 0; i-- ) {
+		const date = new Date( today );
+		date.setDate( today.getDate() - i );
+		const year = date.getFullYear();
+		const month = String( date.getMonth() + 1 ).padStart( 2, '0' );
+		const day = String( date.getDate() ).padStart( 2, '0' );
+		last7Days.push( `${ year }-${ month }-${ day }` );
+	}
+	const dataMap = {};
+	dataArray.forEach( ( d ) => {
+		dataMap[ d.date ] = d;
+	} );
+	return last7Days.map( ( dateStr ) => dataMap[ dateStr ] || {
+		date: dateStr,
+		plays: 0,
+		engagement_rate: 0,
+		play_rate: 0,
+		watch_time: 0,
+		total_videos: 0,
+	} );
+}
+
+/**
+ * Calculate the percentage trend between the first and last values of a sorted data array.
+ *
+ * @param {Array}  sortedData Chronologically sorted data array (oldest first).
+ * @param {string} key        The numeric property name to compare.
+ * @return {number} Trend percentage (positive = growth, negative = decline).
+ */
+export function calculateTrendPercentage( sortedData, key ) {
+	if ( sortedData.length < 2 ) {
+		return 0;
+	}
+	const first = parseFloat( sortedData[ 0 ][ key ] );
+	const last = parseFloat( sortedData[ sortedData.length - 1 ][ key ] );
+	if ( isNaN( first ) || isNaN( last ) ) {
+		return 0;
+	}
+	if ( first === 0 ) {
+		// last > 0 ? 100 : last < 0 ? -100 : 0;
+		if ( last > 0 ) {
+			return 100;
+		} else if ( last < 0 ) {
+			return -100;
+		}
+		return 0;
+	}
+	return ( ( last - first ) / first ) * 100;
+}

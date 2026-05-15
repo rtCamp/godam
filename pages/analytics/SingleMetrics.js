@@ -10,6 +10,8 @@ import {
 	calculateEngagementRate,
 	calculatePlayRate,
 	singleMetricsChart,
+	ensureAll7Days,
+	calculateTrendPercentage,
 } from './helper';
 
 import './charts.js';
@@ -61,47 +63,6 @@ const SingleMetrics = ( {
 			return;
 		}
 
-		// Function to ensure all 7 days are present
-		const ensureAll7Days = ( dataArray ) => {
-			// Get today's date at midnight in local timezone
-			const now = new Date();
-			const today = new Date( now.getFullYear(), now.getMonth(), now.getDate() );
-
-			// Create an array of all dates for the last 7 days (including today)
-			const last7Days = [];
-			for ( let i = 6; i >= 0; i-- ) {
-				const date = new Date( today );
-				date.setDate( today.getDate() - i );
-				// Format as YYYY-MM-DD in local timezone
-				const year = date.getFullYear();
-				const month = String( date.getMonth() + 1 ).padStart( 2, '0' );
-				const day = String( date.getDate() ).padStart( 2, '0' );
-				const dateStr = `${ year }-${ month }-${ day }`;
-				last7Days.push( dateStr );
-			}
-
-			// Create a map of existing data
-			const dataMap = {};
-			dataArray.forEach( ( d ) => {
-				dataMap[ d.date ] = d;
-			} );
-
-			// Fill in missing days with zero values
-			return last7Days.map( ( dateStr ) => {
-				if ( dataMap[ dateStr ] ) {
-					return dataMap[ dateStr ];
-				}
-				return {
-					date: dateStr,
-					engagement_rate: 0,
-					play_rate: 0,
-					watch_time: 0,
-					plays: 0,
-					total_videos: 0,
-				};
-			} );
-		};
-
 		let finalHistoryArray = [];
 
 		if ( mode === 'analytics' ) {
@@ -138,37 +99,12 @@ const SingleMetrics = ( {
 		const config = chartConfigMap[ metricType ];
 
 		if ( config && config.id ) {
-			let trendChange = 0;
-			let trendPercentage = 0;
-
 			// Ensure we have the data sorted by date (oldest to newest)
 			const sortedData = [ ...finalHistoryArray ].sort( ( a, b ) => {
 				return new Date( a.date ) - new Date( b.date );
 			} );
 
-			if ( sortedData.length >= 2 ) {
-				// First day is the oldest, last day is the most recent
-				const first = parseFloat( sortedData[ 0 ][ config.key ] );
-				const last = parseFloat( sortedData[ sortedData.length - 1 ][ config.key ] );
-				if ( ! isNaN( first ) && ! isNaN( last ) ) {
-					trendChange = last - first;
-					trendPercentage = ( trendChange / first ) * 100;
-
-					// Handle the case when first value is 0
-					if ( first === 0 ) {
-						// If first is 0 and last is > 0, show 100% increase
-						// If first is 0 and last is 0, show 0% change
-						// If first is 0 and last is < 0 (shouldn't happen but just in case), show negative
-						if ( last > 0 ) {
-							trendPercentage = 100;
-						} else if ( last < 0 ) {
-							trendPercentage = -100;
-						} else {
-							trendPercentage = 0;
-						}
-					}
-				}
-			}
+			const trendPercentage = calculateTrendPercentage( sortedData, config.key );
 
 			// Update the change percentage UI
 			const changeEl = document.getElementById( `${ metricType }-change` );

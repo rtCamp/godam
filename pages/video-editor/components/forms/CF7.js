@@ -48,11 +48,6 @@ const CF7 = ( { layerID } ) => {
 
 	const formTheme = layer.theme || 'godam';
 
-	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.validApiKey;
-	// For now we are enabling all the features
-	const isValidAPIKey = true;
-
 	const isCF7PluginActive = Boolean( window?.videoData?.cf7Active );
 
 	const handleThemeChange = ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'theme', value } ) );
@@ -70,7 +65,7 @@ const CF7 = ( { layerID } ) => {
 				</Notice>
 			}
 			{
-				<FormSelector disabled={ ! isValidAPIKey || ! isCF7PluginActive } className="mb-4" formID={ layer.cf7_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector disabled={ ! isCF7PluginActive } className="mb-4" formID={ layer.cf7_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<SelectControl
@@ -80,7 +75,7 @@ const CF7 = ( { layerID } ) => {
 				options={ templateOptions }
 				value={ layer.theme || 'godam' }
 				onChange={ handleThemeChange }
-				disabled={ ! isValidAPIKey || ! isCF7PluginActive }
+				disabled={ ! isCF7PluginActive }
 			/>
 
 			<LayerControl>

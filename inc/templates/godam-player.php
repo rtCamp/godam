@@ -81,17 +81,30 @@ $attributes = apply_filters(
 );
 
 // attributes.
-$godam_autoplay       = ! empty( $attributes['autoplay'] );
-$godam_controls       = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
-$godam_loop           = ! empty( $attributes['loop'] );
-$godam_muted          = ! empty( $attributes['muted'] );
-$godam_poster         = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
-$godam_preload_poster = ! empty( $attributes['preloadPoster'] );
-$godam_preload        = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
-$godam_hover_select   = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSelect'] : 'none';
+$godam_autoplay     = ! empty( $attributes['autoplay'] );
+$godam_controls     = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
+$godam_loop         = ! empty( $attributes['loop'] );
+$godam_muted        = ! empty( $attributes['muted'] );
+$godam_poster       = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
+$godam_hover_select = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSelect'] : 'none';
+
+// Autoplay and hover modes are mutually exclusive – reset hover to 'none' so
+// the frontend player never initialises hover behaviour on autoplay videos,
+// regardless of the stored block/shortcode attribute value.
+if ( $godam_autoplay ) {
+	$godam_hover_select = 'none';
+}
 $godam_caption        = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
 $godam_tracks         = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $godam_show_share_btn = ! empty( $attributes['showShareButton'] );
+
+// Determine if subtitles and transcript should be disabled based on the context (e.g., product gallery or reels contexts not require them).
+$godam_disable_subtitles_and_transcript = isset( $attributes['godam_context'] ) &&
+	in_array(
+		$attributes['godam_context'],
+		array( 'godam-video-product-gallery', 'godam-for-woo-product-page-reels' ),
+		true
+	);
 
 // Resolve the attachment ID (could be WordPress or virtual media).
 $godam_attachment_id = '';
@@ -111,23 +124,34 @@ $godam_is_virtual  = ! empty( $godam_attachment_id ) && ! is_numeric( $godam_att
 $godam_original_id = $godam_attachment_id;
 
 if ( $godam_is_virtual ) {
-	// Query the WordPress Media Library to find an attachment post that has
-	// a meta key `_godam_original_id` matching this virtual media ID.
-	$godam_query = new \WP_Query(
-		array(
-			'post_type'      => 'attachment',
-			'posts_per_page' => 1,
-			'post_status'    => 'any',
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for finding attachment by GoDAM ID.
-			'meta_key'       => '_godam_original_id',
-			'meta_value'     => sanitize_text_field( $godam_attachment_id ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-			'fields'         => 'ids',
-		)
-	);
+	// Resolve virtual GoDAM ID → WordPress attachment ID.
+	// The WP_Query is expensive, so cache the mapping separately.
+	$godam_virtual_map_key = 'work_cache_godam_virtual_' . md5( $godam_attachment_id );
+	$godam_cached_wp_id    = function_exists( 'rtgodam_work_cache_get' )
+		? rtgodam_work_cache_get( $godam_virtual_map_key )
+		: false;
 
-	// If a matching media attachment exists, use its actual WordPress ID.
-	if ( $godam_query->have_posts() ) {
-		$godam_original_id = $godam_query->posts[0];
+	if ( false !== $godam_cached_wp_id ) {
+		$godam_original_id = $godam_cached_wp_id;
+	} else {
+		$godam_query = new \WP_Query(
+			array(
+				'post_type'      => 'attachment',
+				'posts_per_page' => 1,
+				'post_status'    => 'any',
+				'meta_key'       => '_godam_original_id', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key,WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Required for finding attachment by GoDAM ID.
+				'meta_value'     => sanitize_text_field( $godam_attachment_id ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key,WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Required for finding attachment by GoDAM ID.
+				'fields'         => 'ids',
+			)
+		);
+		if ( $godam_query->have_posts() ) {
+			$godam_original_id = $godam_query->posts[0];
+			// Only cache a successful resolution — never cache a miss, so a
+			// newly-created attachment is resolvable on the very next request.
+			if ( function_exists( 'rtgodam_work_cache_set' ) ) {
+				rtgodam_work_cache_set( $godam_virtual_map_key, $godam_original_id );
+			}
+		}
 	}
 }
 
@@ -140,35 +164,84 @@ $godam_src                = ! empty( $attributes['src'] ) ? esc_url( $attributes
 $godam_transcoded_url     = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attributes['transcoded_url'] ) : '';
 $godam_hls_transcoded_url = ! empty( $attributes['hls_transcoded_url'] ) ? esc_url( $attributes['hls_transcoded_url'] ) : '';
 
-// Retrieve 'rtgodam_meta' for the given attachment ID, defaulting to an empty array if not found.
-$godam_meta_data = $godam_attachment_id ? get_post_meta( $godam_attachment_id, 'rtgodam_meta', true ) : array();
-$godam_meta_data = is_array( $godam_meta_data ) ? $godam_meta_data : array();
+// ---------------------------------------------------------------------------
+// Attachment metadata cache
+// ---------------------------------------------------------------------------
+// All DB calls tied to the resolved numeric attachment ID are bundled into a
+// single cache entry (work_cache_godam_meta_{id}).  The invalidation hooks in
+// GoDAM_Player already clear this index whenever rtgodam_meta or the
+// transcoded-URL meta keys change on an attachment post.
+// ---------------------------------------------------------------------------
 
-if ( $godam_is_virtual ) {
-	$godam_meta_data = $godam_original_id ? get_post_meta( $godam_original_id, 'rtgodam_meta', true ) : array();
+// The resolved numeric WP attachment ID used as the cache key.
+$godam_numeric_id = 0;
+if ( $godam_is_virtual && is_numeric( $godam_original_id ) ) {
+	$godam_numeric_id = intval( $godam_original_id );
+} elseif ( ! $godam_is_virtual && is_numeric( $godam_attachment_id ) ) {
+	$godam_numeric_id = intval( $godam_attachment_id );
 }
+
+// Always start as an empty array — safe for all downstream ?? / isset() / empty() access.
+// A populated array means a cache hit; an empty array means miss or no numeric ID.
+$godam_meta_cache_key  = $godam_numeric_id ? 'work_cache_godam_meta_' . $godam_numeric_id : '';
+$godam_attachment_data = array();
+
+if ( $godam_meta_cache_key && function_exists( 'rtgodam_work_cache_get' ) ) {
+	$godam_cached = rtgodam_work_cache_get( $godam_meta_cache_key );
+	if ( is_array( $godam_cached ) ) {
+		$godam_attachment_data = $godam_cached;
+	}
+}
+
+if ( empty( $godam_attachment_data ) && $godam_numeric_id ) {
+	// Cache miss — collect every DB/meta call for this attachment in one pass.
+	$rtgodam_raw_transcoded_url     = rtgodam_get_transcoded_url_from_attachment( $godam_numeric_id );
+	$rtgodam_raw_hls_transcoded_url = rtgodam_get_hls_transcoded_url_from_attachment( $godam_numeric_id );
+	$rtgodam_raw_video_src          = wp_get_attachment_url( $godam_numeric_id );
+	$rtgodam_raw_video_src_type     = get_post_mime_type( $godam_numeric_id );
+	$rtgodam_raw_job_id             = '';
+	if ( ! empty( $rtgodam_raw_transcoded_url ) ) {
+		$rtgodam_raw_job_id = get_post_meta( $godam_numeric_id, 'rtgodam_transcoding_job_id', true );
+		if ( empty( $rtgodam_raw_job_id ) ) {
+			$rtgodam_raw_job_id = get_post_meta( $godam_numeric_id, '_godam_original_id', true );
+		}
+	}
+
+	$godam_attachment_data = array(
+		'meta_data'          => get_post_meta( $godam_numeric_id, 'rtgodam_meta', true ),
+		'poster_image'       => get_post_meta( $godam_numeric_id, 'rtgodam_media_video_thumbnail', true ),
+		'transcoded_url'     => $rtgodam_raw_transcoded_url,
+		'hls_transcoded_url' => $rtgodam_raw_hls_transcoded_url,
+		'video_src'          => $rtgodam_raw_video_src,
+		'video_src_type'     => $rtgodam_raw_video_src_type,
+		'job_id'             => $rtgodam_raw_job_id,
+		'placeholder_map'    => get_post_meta( $godam_numeric_id, 'rtgodam_media_placeholder_thumbnails', true ),
+		'placeholder_single' => get_post_meta( $godam_numeric_id, 'rtgodam_media_video_placeholder_thumbnail', true ),
+		'attachment_meta'    => wp_get_attachment_metadata( $godam_numeric_id ),
+	);
+
+	if ( function_exists( 'rtgodam_work_cache_set' ) && function_exists( 'rtgodam_work_cache_index_add' ) ) {
+		rtgodam_work_cache_set( $godam_meta_cache_key, $godam_attachment_data );
+		rtgodam_work_cache_index_add( $godam_meta_cache_key, $godam_meta_cache_key );
+	}
+}
+
+// Unpack cached (or freshly fetched) attachment data into template variables.
+$godam_meta_data    = isset( $godam_attachment_data['meta_data'] ) && is_array( $godam_attachment_data['meta_data'] )
+	? $godam_attachment_data['meta_data']
+	: array();
+$godam_poster_image = ! empty( $godam_attachment_data['poster_image'] ) ? $godam_attachment_data['poster_image'] : '';
 
 // Resolve aspect ratio after we have all metadata loaded.
 if ( ! empty( $attributes['aspectRatio'] ) && 'responsive' === $attributes['aspectRatio'] ) {
 	if ( ! empty( $attributes['videoWidth'] ) && ! empty( $attributes['videoHeight'] ) ) {
 		// Use explicitly provided dimensions (from block attributes).
 		$godam_aspect_ratio = $attributes['videoWidth'] . ':' . $attributes['videoHeight'];
+	} elseif ( ! empty( $godam_attachment_data['attachment_meta']['width'] ) && ! empty( $godam_attachment_data['attachment_meta']['height'] ) ) {
+		$godam_aspect_ratio = intval( $godam_attachment_data['attachment_meta']['width'] ) . ':' . intval( $godam_attachment_data['attachment_meta']['height'] );
 	} else {
-		// Try to resolve from attachment metadata.
-		$godam_attachment_to_check = $godam_is_virtual && ! empty( $godam_original_id ) ? $godam_original_id : $godam_attachment_id;
-		
-		if ( ! empty( $godam_attachment_to_check ) && is_numeric( $godam_attachment_to_check ) ) {
-			$godam_video_meta = wp_get_attachment_metadata( intval( $godam_attachment_to_check ) );
-			if ( ! empty( $godam_video_meta['width'] ) && ! empty( $godam_video_meta['height'] ) ) {
-				$godam_aspect_ratio = intval( $godam_video_meta['width'] ) . ':' . intval( $godam_video_meta['height'] );
-			} else {
-				// Fallback: let frontend JavaScript detect dimensions dynamically.
-				$godam_aspect_ratio = 'responsive';
-			}
-		} else {
-			// No attachment ID available - let frontend handle it.
-			$godam_aspect_ratio = 'responsive';
-		}
+		// Fallback: let frontend JavaScript detect dimensions dynamically.
+		$godam_aspect_ratio = 'responsive';
 	}
 } elseif ( ! empty( $attributes['aspectRatio'] ) && preg_match( '/^\d+:\d+$/', $attributes['aspectRatio'] ) ) {
 	// Use an explicitly set ratio like "16:9", "4:3", etc.
@@ -176,34 +249,30 @@ if ( ! empty( $attributes['aspectRatio'] ) && 'responsive' === $attributes['aspe
 } else {
 	$godam_aspect_ratio = '16:9';
 }
+
 // Extract control bar settings with a fallback to an empty array.
 $godam_control_bar_settings = $godam_meta_data['videoConfig']['controlBar'] ?? array();
 
-$godam_poster_image = get_post_meta( $godam_attachment_id, 'rtgodam_media_video_thumbnail', true );
-$godam_poster_image = ! empty( $godam_poster_image ) ? $godam_poster_image : '';
-
-$godam_job_id = '';
-
+$godam_job_id  = '';
 $godam_sources = array();
 
 if ( empty( $godam_attachment_id ) ) {
 	$godam_job_id = ! empty( $attributes['cmmId'] ) ? sanitize_text_field( $attributes['cmmId'] ) : '';
 } elseif ( $godam_is_virtual ) {
-	// For virtual media, the attachment_id is the GoDAM ID, which is the job_id.
+	// For virtual media the attachment_id is the GoDAM ID, which is the job_id.
 	$godam_job_id = $godam_attachment_id;
 }
 
 if ( ( empty( $godam_attachment_id ) || ( $godam_is_virtual && ! empty( $godam_original_id ) ) ) &&
-	! empty( $attributes['sources'] ) 
+	! empty( $attributes['sources'] )
 ) {
-	// If media is virtual media.
+	// Virtual media: sources supplied directly via attributes.
 	$godam_sources = $attributes['sources'];
 } elseif ( empty( $godam_attachment_id ) &&
 	! ( empty( $godam_src ) && empty( $godam_transcoded_url ) && empty( $godam_hls_transcoded_url ) )
 ) {
-	// in case of shortcode with src or transcoded_url or hls_transcoded_url attribute.
+	// Shortcode with explicit src / transcoded_url / hls_transcoded_url attributes.
 	$godam_sources = array();
-
 	if ( ! empty( $godam_hls_transcoded_url ) ) {
 		$godam_sources[] = array(
 			'src'  => $godam_hls_transcoded_url,
@@ -223,41 +292,30 @@ if ( ( empty( $godam_attachment_id ) || ( $godam_is_virtual && ! empty( $godam_o
 		);
 	}
 } else {
-
+	// Normal WP attachment — use cached transcoded/source URLs.
 	if ( $godam_is_virtual ) {
-		// For virtual media, we need to get the actual attachment ID first.
 		$godam_attachment_id = $godam_original_id;
 	}
 
-	$godam_transcoded_url     = $godam_attachment_id ? rtgodam_get_transcoded_url_from_attachment( $godam_attachment_id ) : '';
-	$godam_hls_transcoded_url = $godam_attachment_id ? rtgodam_get_hls_transcoded_url_from_attachment( $godam_attachment_id ) : '';
-	$godam_video_src          = $godam_attachment_id ? wp_get_attachment_url( $godam_attachment_id ) : '';
-	$godam_video_src_type     = $godam_attachment_id ? get_post_mime_type( $godam_attachment_id ) : '';
-	$godam_job_id             = '';
+	$godam_transcoded_url     = $godam_attachment_data['transcoded_url'] ?? '';
+	$godam_hls_transcoded_url = $godam_attachment_data['hls_transcoded_url'] ?? '';
+	$godam_video_src          = $godam_attachment_data['video_src'] ?? '';
+	$godam_video_src_type     = $godam_attachment_data['video_src_type'] ?? '';
+	$godam_job_id             = $godam_attachment_data['job_id'] ?? '';
 
-	if ( $godam_attachment_id && ! empty( $godam_transcoded_url ) ) {
-		$godam_job_id = get_post_meta( $godam_attachment_id, 'rtgodam_transcoding_job_id', true );
-
-		if ( empty( $godam_job_id ) ) {
-			$godam_job_id = get_post_meta( $godam_attachment_id, '_godam_original_id', true );
-		}
-	}
 	$godam_sources = array();
-
 	if ( ! empty( $godam_hls_transcoded_url ) ) {
 		$godam_sources[] = array(
 			'src'  => $godam_hls_transcoded_url,
 			'type' => 'application/x-mpegURL',
 		);
 	}
-
 	if ( ! empty( $godam_transcoded_url ) ) {
 		$godam_sources[] = array(
 			'src'  => $godam_transcoded_url,
 			'type' => 'application/dash+xml',
 		);
 	}
-
 	$godam_sources[] = array(
 		'src'  => $godam_video_src,
 		'type' => 'video/quicktime' === $godam_video_src_type ? 'video/mp4' : $godam_video_src_type,
@@ -285,19 +343,92 @@ $godam_brand_color            = isset( $godam_settings['video_player']['brand_co
 $godam_appearance_color       = isset( $godam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $godam_meta_data['videoConfig']['controlBar']['appearanceColor'] : null;
 $godam_brand_image            = isset( $godam_settings['video_player']['brand_image'] ) ? $godam_settings['video_player']['brand_image'] : null;
 $godam_individual_brand_image = isset( $godam_meta_data['videoConfig']['controlBar']['brand_image'] ) ? $godam_meta_data['videoConfig']['controlBar']['brand_image'] : null;
-$godam_player_skin            = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : 'Default';
-$godam_ads_settings           = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : array();
-$godam_ads_settings           = wp_json_encode( $godam_ads_settings );
-$godam_global_video_share     = isset( $godam_settings['video']['enable_global_video_share'] ) ? $godam_settings['video']['enable_global_video_share'] : true;
+
+$godam_woocommerce_allowed_contexts = apply_filters( 'godam_player_woocommerce_contexts', array() );
+
+$godam_woocommerce_context = false;
+
+if ( isset( $attributes['godam_context'] ) && ! empty( $godam_woocommerce_allowed_contexts ) ) {
+	$godam_woocommerce_context = in_array( $attributes['godam_context'], $godam_woocommerce_allowed_contexts, true );
+}
+
+// Check if this video is loaded inside a GoDAM Gallery modal iframe.
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- No nonce needed for this read-only context flag.
+$godam_is_gallery_context = ! empty( $_GET['godam_gallery'] ) && '1' === sanitize_key( $_GET['godam_gallery'] );
+
+if ( isset( $attributes['godam_context'] ) && $godam_woocommerce_context ) {
+	$godam_player_skin = apply_filters( 'godam_player_woocommerce_skin', 'reels', $attributes['godam_context'] );
+} else {
+	$godam_player_skin = isset( $godam_settings['video_player']['player_skin'] )
+		? $godam_settings['video_player']['player_skin']
+		: 'Default';
+}
+
+$godam_ads_settings = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : array();
+
+$godam_ads_settings       = wp_json_encode( $godam_ads_settings );
+$godam_global_video_share = isset( $godam_settings['video']['enable_global_video_share'] ) ? $godam_settings['video']['enable_global_video_share'] : true;
 
 $godam_video_poster = empty( $godam_poster ) ? $godam_poster_image : $godam_poster;
+$godam_performance  = rtgodam_get_video_performance_settings( $attributes );
 
-// Build the video setup options for data-setup.
+/**
+ * Filter the final performance-resolved attributes used to render a GoDAM video block.
+ *
+ * This runs after legacy preload values are mapped to the new performance modes,
+ * and before the HTML attributes are printed.
+ *
+ * @param array $render_attributes {
+ *     Final resolved render attributes.
+ *
+ *     @type string $mode                  Balanced or priority.
+ *     @type array  $video_attributes      Attributes applied to the <video> element.
+ *     @type array  $poster_attributes     Attributes applied to the poster <img>.
+ * }
+ * @param array $attributes Original block or shortcode attributes.
+ */
+$godam_performance = apply_filters(
+	'godam_video_block_attributes',
+	$godam_performance,
+	$attributes
+);
+
+$godam_preload                  = isset( $godam_performance['video_attributes']['preload'] ) ? sanitize_text_field( $godam_performance['video_attributes']['preload'] ) : 'none';
+$godam_poster_render_attributes = isset( $godam_performance['poster_attributes'] ) && is_array( $godam_performance['poster_attributes'] )
+	? $godam_performance['poster_attributes']
+	: array();
+$godam_poster_attribute_string  = rtgodam_format_html_attributes( $godam_poster_render_attributes );
+
+// Resolve the blur-up placeholder thumbnail.
+// For block-editor poster overrides, look up the mapping directly.
+// For auto-selected thumbnails, use the pre-synced single meta key.
+// Supports both normal WP media and virtual GoDAM media.
+$godam_placeholder_thumbnail = '';
+$godam_placeholder_lookup_id = is_numeric( $godam_attachment_id )
+	? intval( $godam_attachment_id )
+	: ( is_numeric( $godam_original_id ) ? intval( $godam_original_id ) : 0 );
+
+if ( $godam_placeholder_lookup_id > 0 ) {
+	if ( ! empty( $godam_poster ) ) {
+		// Use cached placeholder map (array of poster_url → placeholder_url).
+		$godam_placeholder_map = isset( $godam_attachment_data['placeholder_map'] ) && is_array( $godam_attachment_data['placeholder_map'] )
+			? $godam_attachment_data['placeholder_map']
+			: array();
+		if ( isset( $godam_placeholder_map[ $godam_poster ] ) ) {
+			$godam_placeholder_thumbnail = esc_url( $godam_placeholder_map[ $godam_poster ] );
+		}
+	} else {
+		// Use cached single-placeholder thumbnail.
+		$godam_placeholder_thumbnail = ! empty( $godam_attachment_data['placeholder_single'] )
+			? esc_url( $godam_attachment_data['placeholder_single'] )
+			: '';
+	}
+}
 $godam_video_setup = array(
 	'controls'    => $godam_controls,
 	'autoplay'    => $godam_autoplay,
 	'loop'        => $godam_loop,
-	'muted'       => $godam_muted,
+	'muted'       => $godam_autoplay ? true : $godam_muted,
 	'preload'     => $godam_preload,
 	'poster'      => $godam_video_poster,
 	'fluid'       => true,
@@ -336,12 +467,23 @@ if ( ! empty( $godam_control_bar_settings ) ) {
 	$godam_video_setup['controlBar']['volumePanel'] = $godam_volume_panel_setting;
 }
 
+// Allow add-ons to disable double-click-to-fullscreen for specific contexts.
+$godam_no_dblclick_fullscreen_contexts = apply_filters( 'godam_player_no_dblclick_fullscreen_contexts', array() );
+if ( isset( $attributes['godam_context'] ) && in_array( $attributes['godam_context'], $godam_no_dblclick_fullscreen_contexts, true ) ) {
+	if ( ! isset( $godam_video_setup['userActions'] ) || ! is_array( $godam_video_setup['userActions'] ) ) {
+		$godam_video_setup['userActions'] = array();
+	}
+	$godam_video_setup['userActions']['doubleClick'] = false;
+}
+
 $godam_video_setup = wp_json_encode( $godam_video_setup );
+
+$godam_frontend_layers = ! empty( $godam_meta_data['layers'] ) ? $godam_meta_data['layers'] : array();
 
 $godam_video_config = wp_json_encode(
 	array(
 		'preview'          => $godam_video_preview,
-		'layers'           => ! empty( $godam_meta_data['layers'] ) ? $godam_meta_data['layers'] : array(), // contains list of layers.
+		'layers'           => $godam_frontend_layers, // contains list of layers.
 		'chapters'         => ! empty( $godam_meta_data['chapters'] ) ? $godam_meta_data['chapters'] : array(), // contains list of chapters.
 		'overlayTimeRange' => $godam_overlay_time_range, // Add overlay time range to video config.
 		'playerSkin'       => $godam_player_skin, // Add player skin to video config. Add brand image to video config.
@@ -356,19 +498,21 @@ if ( ! empty( $godam_appearance_color ) ) {
 	$godam_easydam_control_bar_color = $godam_brand_color;
 }
 
-$godam_easydam_hover_color        = ! empty( $godam_meta_data['videoConfig']['controlBar']['hoverColor'] ) ? $godam_meta_data['videoConfig']['controlBar']['hoverColor'] : '#fff';
-$godam_easydam_hover_zoom         = ! empty( $godam_meta_data['videoConfig']['controlBar']['zoomLevel'] ) ? $godam_meta_data['videoConfig']['controlBar']['zoomLevel'] : 0;
+$godam_raw_hover_color            = ! empty( $godam_meta_data['videoConfig']['controlBar']['hoverColor'] ) ? $godam_meta_data['videoConfig']['controlBar']['hoverColor'] : '#fff';
+$godam_easydam_hover_color        = preg_match( '/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/', $godam_raw_hover_color ) ? $godam_raw_hover_color : '#fff';
+$godam_easydam_hover_zoom         = (float) ( $godam_meta_data['videoConfig']['controlBar']['zoomLevel'] ?? 0 );
 $godam_easydam_custom_btn_img     = ! empty( $godam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] ) ? $godam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] : '';
 $godam_easydam_control_bar_config = ! empty( $godam_meta_data['videoConfig']['controlBar'] ) ? $godam_meta_data['videoConfig']['controlBar'] : array();
 
 $godam_layers     = $godam_meta_data['layers'] ?? array();
+$godam_ad_tag_url = '';
+
 $godam_ads_layers = array_filter(
 	$godam_layers,
 	function ( $godam_layer ) {
 		return 'ad' === $godam_layer['type'];
 	}
 );
-$godam_ad_tag_url = '';
 
 $godam_ad_server = isset( $godam_meta_data['videoConfig']['adServer'] ) ? sanitize_text_field( $godam_meta_data['videoConfig']['adServer'] ) : 'self-hosted';
 
@@ -383,7 +527,34 @@ if ( ! empty( $godam_ad_tag_url ) ) {
 	IMA_Assets::get_instance();
 }
 
-$godam_instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
+// Allow callers that cache output (e.g. the shortcode renderer) to inject a
+// deterministic ID so cached HTML doesn't embed a random value. When no ID is
+// pre-set, fall back to a random one (non-cached / direct-require path).
+if ( ! isset( $godam_instance_id ) ) {
+	$godam_instance_id = 'video_' . bin2hex( random_bytes( 8 ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_rand
+}
+
+// When a player height is set, derive max-width = height × (arW / arH), mirroring
+// the video-editor approach. This lets Video.js (fluid:true) fill the width and
+// naturally reach the desired height via the aspect-ratio padding trick.
+$godam_player_height      = ! empty( $attributes['playerHeight'] ) ? $attributes['playerHeight'] : '';
+$godam_computed_max_width = '';
+if ( ! empty( $godam_player_height ) && preg_match( '/^\d+:\d+$/', $godam_aspect_ratio ) ) {
+	preg_match( '/^([\d.]+)([a-z%]*)$/', $godam_player_height, $godam_height_match );
+	if ( ! empty( $godam_height_match[1] ) ) {
+		$godam_height_value  = (float) $godam_height_match[1];
+		$godam_allowed_units = array( 'px', 'em', 'rem', 'vh', 'vw', '%' );
+		$godam_height_unit   = ( isset( $godam_height_match[2] ) && in_array( $godam_height_match[2], $godam_allowed_units, true ) )
+			? $godam_height_match[2]
+			: 'px';
+		$godam_ar_parts      = explode( ':', $godam_aspect_ratio );
+		$godam_ar_w          = (float) $godam_ar_parts[0];
+		$godam_ar_h          = (float) $godam_ar_parts[1];
+		if ( $godam_ar_h > 0 && $godam_ar_w > 0 ) {
+			$godam_computed_max_width = round( $godam_height_value * ( $godam_ar_w / $godam_ar_h ) ) . $godam_height_unit;
+		}
+	}
+}
 
 // Create custom inline styles in a more maintainable way.
 $godam_custom_css_properties = array(
@@ -395,6 +566,10 @@ $godam_custom_css_properties = array(
 
 if ( ! empty( $godam_aspect_ratio ) ) {
 	$godam_custom_css_properties['--rtgodam-video-aspect-ratio'] = str_replace( ':', '/', $godam_aspect_ratio );
+}
+
+if ( ! empty( $godam_computed_max_width ) ) {
+	$godam_custom_css_properties['max-width'] = $godam_computed_max_width;
 }
 
 // Build the inline style string, escaping each value.
@@ -452,18 +627,6 @@ if ( empty( $godam_attachment_title ) ) {
 	$godam_attachment_title = basename( get_attached_file( $godam_attachment_id ) );
 }
 
-$godam_should_preload_poster = $godam_preload_poster && ! empty( $godam_video_poster );
-
-// Preload poster image if enabled to improve performance, especially LCP.
-if ( $godam_should_preload_poster ) {
-	add_action(
-		'wp_head',
-		function () use ( $godam_video_poster ) {
-			printf( '<link rel="preload" as="image" fetchpriority="high" href="%s">', esc_url( $godam_video_poster ) );
-		}
-	);
-}
-
 ?>
 
 <?php if ( ! empty( $godam_sources ) ) : ?>
@@ -483,59 +646,98 @@ if ( $godam_should_preload_poster ) {
 					</div>
 				<?php endif; ?>
 
-				<div class="godam-video-placeholder godam-animate-video-loading">
+				<?php if ( ! empty( $godam_video_poster ) && ! empty( $godam_placeholder_thumbnail ) ) : ?>
+				<div
+					class="godam-video-placeholder godam-blurred-img <?php echo esc_attr( 'godam-' . strtolower( $godam_player_skin ) . '-skin' ); ?>"
+					style="background-image: url('<?php echo esc_url( $godam_placeholder_thumbnail ); ?>')"
+				>
 					<div class="animate-play-btn">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
 							<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
 						</svg>
 					</div>
-					<?php if ( ! empty( $godam_video_poster ) ) : ?>
 					<img
 						class="godam-player-poster-image"
 						src="<?php echo esc_url( $godam_video_poster ); ?>"
-						fetchpriority="high"
+						<?php echo $godam_poster_attribute_string ? wp_kses_data( $godam_poster_attribute_string ) : ''; ?>
 						aria-hidden="true"
 						alt="<?php echo esc_attr( $godam_attachment_title ); ?>"
 					/>
-					<?php endif; ?>
 				</div>
+				<?php elseif ( ! empty( $godam_video_poster ) ) : ?>
+				<div class="godam-video-placeholder <?php echo esc_attr( 'godam-' . strtolower( $godam_player_skin ) . '-skin' ); ?>">
+					<div class="animate-play-btn">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+							<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
+						</svg>
+					</div>
+					<img
+						class="godam-player-poster-image"
+						src="<?php echo esc_url( $godam_video_poster ); ?>"
+						<?php echo $godam_poster_attribute_string ? wp_kses_data( $godam_poster_attribute_string ) : ''; ?>
+						aria-hidden="true"
+						alt="<?php echo esc_attr( $godam_attachment_title ); ?>"
+					/>
+				</div>
+				<?php else : ?>
+				<div class="godam-video-placeholder godam-animate-video-loading <?php echo esc_attr( 'godam-' . strtolower( $godam_player_skin ) . '-skin' ); ?>">
+					<div class="animate-play-btn">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+							<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
+						</svg>
+					</div>
+				</div>
+				<?php endif; ?>
 
-				<div class="easydam-video-container loading godam-<?php echo esc_attr( strtolower( $godam_player_skin ) ); ?>-skin" >
+				<div class="easydam-video-container loading <?php echo esc_attr( 'godam-' . strtolower( $godam_player_skin ) . '-skin' ); ?>" >
 					<?php if ( isset( $godam_hover_select ) && 'shadow-overlay' === $godam_hover_select ) : ?>
 						<div class="godam-player-overlay"></div>
 					<?php endif; ?>
 
-					<?php if ( $godam_should_preload_poster ) : ?>
-						<img
-							class="godam-poster-image"
-							src="<?php echo esc_url( $godam_video_poster ); ?>"
-							fetchpriority="high"
-							aria-hidden="true"
-							alt="<?php echo esc_attr( $godam_attachment_title ); ?>"
-						/>
+					<?php if ( ! $godam_woocommerce_context ) : ?>
+						<?php
+						/**
+						 * Action to render the WooCommerce mini-cart inside the player.
+						 *
+						 * @param array   $godam_layers             The layers configuration.
+						 * @param boolean $godam_is_gallery_context Whether this is a gallery iframe context.
+						 */
+						do_action( 'godam_player_render_mini_cart', $godam_layers, $godam_is_gallery_context );
+						?>
 					<?php endif; ?>
+
 					<video
 						class="easydam-player video-js vjs-big-play-centered vjs-hidden"
+						<?php if ( $godam_autoplay || $godam_muted ) : ?>
+							muted
+						<?php endif; ?>
+						<?php if ( $godam_autoplay ) : ?>
+							autoplay
+						<?php endif; ?>
+						playsinline webkit-playsinline
 						data-options="<?php echo esc_attr( $godam_video_config ); ?>"
-						data-ad_tag_url="<?php echo esc_url( $godam_ad_tag_url ); ?>"
+						data-ad_tag_url="<?php echo ! $godam_woocommerce_context ? esc_url( $godam_ad_tag_url ) : ''; ?>"
 						data-id="<?php echo esc_attr( is_numeric( $godam_attachment_id ) ? $godam_attachment_id : $godam_original_id ); ?>"
 						data-instance-id="<?php echo esc_attr( $godam_instance_id ); ?>"
 						data-controls="<?php echo esc_attr( $godam_video_setup ); ?>"
 						data-job_id="<?php echo esc_attr( $godam_job_id ); ?>"
-						data-global_ads_settings="<?php echo esc_attr( $godam_ads_settings ); ?>"
-						data-hover-select="<?php echo esc_attr( $godam_hover_select ); ?>"
-						data-video-title="<?php echo esc_attr( $godam_attachment_title ); ?>"
-						data-autoplay-on-view="<?php echo esc_attr( $godam_autoplay ? 'true' : 'false' ); ?>"
-					>
-						<?php
+							data-global_ads_settings="<?php echo esc_attr( $godam_ads_settings ); ?>"
+							data-hover-select="<?php echo esc_attr( $godam_hover_select ); ?>"
+							data-video-title="<?php echo esc_attr( $godam_attachment_title ); ?>"
+							data-autoplay-on-view="<?php echo esc_attr( ( $godam_autoplay && 'auto' !== $godam_preload ) ? 'true' : 'false' ); ?>"
+							data-disable-transcript="<?php echo esc_attr( $godam_disable_subtitles_and_transcript ? 'true' : 'false' ); ?>"
+						>
+							<?php
 
-						$godam_display_caption = ( ! isset( $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) ) ||
-							( isset( $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) && $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] );
+							$godam_display_caption = ! $godam_disable_subtitles_and_transcript && (
+								( ! isset( $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) ) ||
+								( isset( $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) && $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] )
+							);
 
-						if ( $godam_display_caption ) {
-							foreach ( $godam_tracks as $godam_track ) :
-								if ( ! empty( $godam_track['src'] ) && ! empty( $godam_track['kind'] ) ) :
-									?>
+							if ( $godam_display_caption ) {
+								foreach ( $godam_tracks as $godam_track ) :
+									if ( ! empty( $godam_track['src'] ) && ! empty( $godam_track['kind'] ) ) :
+										?>
 									<track
 										src="<?php echo esc_url( $godam_track['src'] ); ?>"
 										kind="<?php echo esc_attr( $godam_track['kind'] ); ?>"
@@ -544,19 +746,20 @@ if ( $godam_should_preload_poster ) {
 										echo ! empty( $godam_track['label'] ) ? sprintf( 'label="%s"', esc_attr( $godam_track['label'] ) ) : '';
 										?>
 									/>
-									<?php
-								endif;
-							endforeach;
-						}
-						?>
+										<?php
+									endif;
+								endforeach;
+							}
+							?>
 					</video>
 					<!-- Add this to target godam uppy modal inside video. -->
 					<div id="uppy-godam-video-modal-container"></div>
 
 					<!-- Dynamically render shortcodes for form layers. -->
 					<?php
-					if ( ! empty( $godam_meta_data['layers'] ) ) :
+					if ( ! empty( $godam_meta_data['layers'] ) && ! $godam_woocommerce_context ) :
 						foreach ( $godam_meta_data['layers'] as $godam_layer ) :
+
 							$godam_form_type = ! empty( $godam_layer['form_type'] ) ? $godam_layer['form_type'] : 'gravity';
 							// FORM layer.
 							if ( isset( $godam_layer['type'] ) && 'form' === $godam_layer['type'] ) :
@@ -768,6 +971,15 @@ if ( $godam_should_preload_poster ) {
 								>
 								</div>
 								<?php
+								// Extensible layer types (e.g. WooCommerce) rendered by add-ons.
+							else :
+								/**
+								 * Action to render add-on layer containers.
+								 *
+								 * @param array  $godam_layer       Layer configuration.
+								 * @param string $godam_instance_id Player instance ID.
+								 */
+								do_action( 'godam_player_render_layer', $godam_layer, $godam_instance_id );
 							endif;
 						endforeach;
 						?>

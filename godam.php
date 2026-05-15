@@ -3,7 +3,7 @@
  * Plugin Name: GoDAM
  * Plugin URI: https://godam.io
  * Description: Seamlessly manage and deliver your media assets directly from the cloud-based media management. Store assets efficiently, stream them via a CDN, and enhance your website's performance and user experience. Featuring adaptive bit rate streaming, adding interactive layers in videos, and taking full advantage of a digital asset management solution within WordPress.
- * Version: 1.7.2
+ * Version: 1.9.0
  * Requires at least: 6.5
  * Requires PHP: 7.4
  * Text Domain: godam
@@ -43,7 +43,7 @@ if ( ! defined( 'RTGODAM_VERSION' ) ) {
 	/**
 	 * The version of the plugin
 	 */
-	define( 'RTGODAM_VERSION', '1.7.2' );
+	define( 'RTGODAM_VERSION', '1.9.0' );
 }
 
 if ( ! defined( 'RTGODAM_API_BASE' ) ) {
@@ -56,6 +56,10 @@ if ( ! defined( 'RTGODAM_ANALYTICS_BASE' ) ) {
 
 if ( ! defined( 'RTGODAM_IO_API_BASE' ) ) {
 	define( 'RTGODAM_IO_API_BASE', 'https://godam.io' );
+}
+
+if ( ! defined( 'FRAPPE_DISPATCH_SITE_URL' ) ) {
+	define( 'FRAPPE_DISPATCH_SITE_URL', 'https://app.godam.io' );
 }
 
 require_once RTGODAM_PATH . 'inc/helpers/autoloader.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
@@ -121,11 +125,7 @@ add_filter( 'network_admin_plugin_action_links', 'rtgodam_action_links', 11, 2 )
 function rtgodam_plugin_activate() {
 	update_option( 'rtgodam_plugin_activation_time', time() );
 
-	// Explicitly register post types to ensure they are available before flushing.
-	$godam_video = \RTGODAM\Inc\Post_Types\GoDAM_Video::get_instance();
-	$godam_video->register_post_type();
-
-	// Flush rewrite rules to ensure CPT rules are applied.
+	// Flush rewrite rules on activation.
 	flush_rewrite_rules( true );
 }
 
@@ -138,7 +138,7 @@ function rtgodam_plugin_deactivate() {
 	delete_option( 'rtgodam_plugin_activation_time' );
 	delete_option( 'rtgodam_video_metadata_migration_completed' );
 
-	// Flush rewrite rules to remove CPT rules.
+	// Flush rewrite rules on deactivation.
 	flush_rewrite_rules( true );
 }
 
@@ -148,17 +148,24 @@ register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );
  * Runs when the plugin is deleted.
  */
 function rtgodam_plugin_delete() {
-	// Delete options and transients related to Whats New page.
+	// Delete options related to plugin state (What's New, version).
 	// This is to ensure redirection on a fresh install.
 	if ( is_multisite() ) {
 		// Get all blogs in the network and delete options from each blog.
 		$blogs = get_sites( array( 'fields' => 'ids' ) );
 
 		foreach ( $blogs as $blog_id ) {
-			switch_to_blog( $blog_id );
+			switch_to_blog( $blog_id ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.switch_to_blog_switch_to_blog
 
 			delete_option( 'rtgodam_plugin_version' );
-			delete_transient( 'rtgodam_show_whats_new' );
+			delete_option( 'rtgodam_show_whats_new' );
+			delete_transient( 'rtgodam_show_whats_new' ); // Stored as a transient in ≤1.7.2.
+			delete_option( 'rtgodam_user_data' );
+			delete_option( 'rtgodam-api-key' );
+			delete_option( 'rtgodam-api-key-stored' );
+			delete_option( 'rtgodam-account-token' );
+			delete_option( 'rtgodam-api-key-status' );
+			delete_option( 'rtgodam-api-key-error-since' );
 			delete_transient( 'rtgodam_release_data' );
 
 			restore_current_blog();
@@ -166,7 +173,14 @@ function rtgodam_plugin_delete() {
 	} else {
 		// For single site, delete options directly.
 		delete_option( 'rtgodam_plugin_version' );
-		delete_transient( 'rtgodam_show_whats_new' );
+		delete_option( 'rtgodam_show_whats_new' );
+		delete_transient( 'rtgodam_show_whats_new' ); // Stored as a transient in ≤1.7.2.
+		delete_option( 'rtgodam_user_data' );
+		delete_option( 'rtgodam-api-key' );
+		delete_option( 'rtgodam-api-key-stored' );
+		delete_option( 'rtgodam-account-token' );
+		delete_option( 'rtgodam-api-key-status' );
+		delete_option( 'rtgodam-api-key-error-since' );
 		delete_transient( 'rtgodam_release_data' );
 	}
 }
