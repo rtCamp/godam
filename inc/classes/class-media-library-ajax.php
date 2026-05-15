@@ -1262,6 +1262,8 @@ class Media_Library_Ajax {
 			wp_send_json_error( array( 'message' => __( 'Job name not found for this attachment.', 'godam' ) ), 400 );
 		}
 
+		$this->maybe_store_attachment_url( $attachment_id );
+
 		$api_key = get_option( 'rtgodam-api-key', '' );
 		if ( empty( $api_key ) ) {
 			wp_send_json_error( array( 'message' => __( 'GoDAM API key is missing.', 'godam' ) ), 400 );
@@ -1500,6 +1502,8 @@ class Media_Library_Ajax {
 		if ( empty( $job_name ) ) {
 			wp_send_json_error( array( 'message' => __( 'Job name not found for this attachment.', 'godam' ) ), 400 );
 		}
+
+		$this->maybe_store_attachment_url( $attachment_id );
 
 		$api_key = get_option( 'rtgodam-api-key', '' );
 		if ( empty( $api_key ) ) {
@@ -1880,6 +1884,13 @@ class Media_Library_Ajax {
 			return;
 		}
 
+		// Check if there's a pending default attachment URL that should be used as source for replacement instead, to cover the case where the Db contains the default URL instead of the CDN based URL.
+		$saved_attachment_url = (string) get_post_meta( $attachment_id, 'rtgodam_pending_default_attachment_url', true );
+		$search_source_url    = $source_url;
+		if ( ! empty( $saved_attachment_url ) && 'completed' !== $saved_attachment_url ) {
+			$search_source_url = $saved_attachment_url;
+		}
+
 		global $wpdb;
 
 		$public_post_types = array_diff(
@@ -1888,7 +1899,7 @@ class Media_Library_Ajax {
 		);
 		$public_post_types = array_values( $public_post_types );
 
-		$like_source      = '%' . $wpdb->esc_like( $source_url ) . '%';
+		$like_source      = '%' . $wpdb->esc_like( $search_source_url ) . '%';
 		$updated_post_ids = array();
 
 		if ( ! empty( $public_post_types ) ) {
@@ -1909,7 +1920,7 @@ class Media_Library_Ajax {
 					// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Dynamic IN placeholders are generated to match sanitized post IDs.
 					$wpdb->prepare(
 						"UPDATE {$wpdb->posts} SET post_content = REPLACE(post_content, %s, %s) WHERE ID IN (" . implode( ', ', array_fill( 0, count( $updated_post_ids ), '%d' ) ) . ')',
-						$source_url,
+						$search_source_url,
 						$target_url,
 						...$updated_post_ids
 					)
@@ -1951,7 +1962,7 @@ class Media_Library_Ajax {
 		$wpdb->query(
 			$wpdb->prepare(
 				"UPDATE {$wpdb->posts} SET guid = REPLACE(guid, %s, %s) WHERE ID = %d AND post_type = 'attachment' AND guid LIKE %s",
-				$source_url,
+				$search_source_url,
 				$target_url,
 				$attachment_id,
 				$like_source
@@ -1961,6 +1972,16 @@ class Media_Library_Ajax {
 		if ( is_array( $target_version_row ) ) {
 			if ( array_key_exists( 'thumbnail_url', $target_version_row ) && ! empty( $target_version_row['thumbnail_url'] ) ) {
 				update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', (string) $target_version_row['thumbnail_url'] );
+			}
+
+			if ( array_key_exists( 'thumbnails', $target_version_row ) && ! empty( $target_version_row['thumbnails'] ) ) {
+				$thumbnails = array();
+				foreach ( $target_version_row['thumbnails'] as $key => $thumbnail ) {
+					$thumbnails[] = $thumbnail['thumbnail_url'];
+				}
+				if ( ! empty( $thumbnails ) ) {
+					update_post_meta( $attachment_id, 'rtgodam_media_thumbnails', $thumbnails );
+				}
 			}
 
 			if ( array_key_exists( 'transcoded_file_path', $target_version_row ) && ! empty( $target_version_row['transcoded_file_path'] ) ) {
@@ -1981,6 +2002,8 @@ class Media_Library_Ajax {
 		$this->clean_updated_posts_cache( $updated_post_ids );
 		clean_post_cache( $attachment_id );
 		wp_cache_delete( $attachment_id, 'post_meta' );
+		// Mark the pending default attachment URL as completed to break the loop.
+		update_post_meta( $attachment_id, 'rtgodam_pending_default_attachment_url', 'completed' );
 	}
 
 	/**
@@ -2040,6 +2063,31 @@ class Media_Library_Ajax {
 		$uploaded_primary = strtok( $uploaded_mime, '/' );
 
 		return ( ! empty( $current_primary ) && $current_primary === $uploaded_primary );
+	}
+
+	/**
+	 * Store the current attachment URL in post meta before replacement for later reference.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return void
+	 */
+	private function maybe_store_attachment_url( $attachment_id ) {
+		if ( empty( $attachment_id ) ) {
+			return;
+		}
+
+		// If we have already stored the original attachment URL and marked as completed, we can skip storing again.
+		if ( get_post_meta( $attachment_id, 'rtgodam_pending_default_attachment_url', true ) === 'completed' ) {
+			return;
+		}
+
+		remove_filter( 'wp_get_attachment_url', array( $this, 'filter_attachment_url_for_virtual_media' ), 10 );
+		$current_attachment_url = wp_get_attachment_url( $attachment_id );
+		add_filter( 'wp_get_attachment_url', array( $this, 'filter_attachment_url_for_virtual_media' ), 10, 2 );
+
+		if ( ! empty( $current_attachment_url ) ) {
+			update_post_meta( $attachment_id, 'rtgodam_pending_default_attachment_url', esc_url_raw( $current_attachment_url ) );
+		}
 	}
 
 	/**
