@@ -52,11 +52,8 @@ const layerTypes = [
 		icon: thumbsUp,
 		type: 'poll',
 	},
-	{
-		title: __( 'WooCommerce', 'godam' ),
-		icon: customPostType,
-		type: 'woo',
-	},
+	// Merge add-on layer types registered via PHP filters (e.g. WooCommerce).
+	...( window.godamVideoEditorConfig?.layerOptions || [] ),
 ];
 
 export const VideoJS = ( props ) => {
@@ -686,7 +683,13 @@ const Slider = ( props ) => {
 							>
 								<div className="layer-indicator--container">
 									<div className={ `icon ${ layer.id === currentLayerID ? 'active' : '' }` }>
-										<Icon icon={ layerTypes.find( ( type ) => type.type === layer.type )?.icon } />
+										{ ( () => {
+											const layerType = layerTypes.find( ( type ) => type.type === layer.type );
+											if ( layerType?.iconUrl ) {
+												return <img src={ layerType.iconUrl } alt={ layerType.title } className="layer-indicator__addon-icon" />;
+											}
+											return <Icon icon={ layerType?.icon } />;
+										} )() }
 										<div>
 											{ layer?.type?.toUpperCase() }
 											{

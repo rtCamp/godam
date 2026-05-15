@@ -166,6 +166,13 @@ function VideoEdit( {
 		}
 
 		const unit = heightMatch[ 2 ] || 'px';
+
+		// Skip width derivation for percentage units: % resolves against different
+		// axes for width vs. height, so the computed max-width would be meaningless.
+		if ( '%' === unit ) {
+			return null;
+		}
+
 		const arMatch = calculatedAspectRatio.match( /^(\d+(?:\.\d+)?):(\d+(?:\.\d+)?)$/ );
 		if ( ! arMatch ) {
 			return null;
@@ -389,6 +396,23 @@ function VideoEdit( {
 			}
 		}
 	}, [ id, src, attributes.seo, isVideoSelecting, setAttributes ] );
+
+	// When autoplay is enabled, hoverSelect is incompatible — reset it to 'none'.
+	// Only apply this when autoplay is toggled on after mount so older content
+	// is not rewritten as a side effect of opening the editor.
+	const previousAutoplayRef = useRef( autoplay );
+
+	useEffect( () => {
+		const previousAutoplay = previousAutoplayRef.current;
+		if ( previousAutoplay === autoplay ) {
+			return;
+		}
+		previousAutoplayRef.current = autoplay;
+
+		if ( autoplay && attributes.hoverSelect !== 'none' ) {
+			setAttributes( { hoverSelect: 'none' } );
+		}
+	}, [ autoplay ] ); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// Keep overridden SEO thumbnail synced with block poster.
 	useEffect( () => {
@@ -634,7 +658,7 @@ function VideoEdit( {
 					className="block-editor-media-placeholder"
 					withIllustration={ ! isSingleSelected }
 					icon={ icon }
-					label={ __( 'GoDAM video', 'godam' ) }
+					label={ __( 'Video', 'godam' ) }
 					instructions={ __(
 						'Drag and drop a video, upload, or choose from your library.',
 						'godam',
@@ -773,9 +797,12 @@ function VideoEdit( {
 									<SelectControl
 										__nextHasNoMarginBottom
 										label={ __( 'Hover Option', 'godam' ) }
-										help={ __( 'Choose the action to perform on video hover.', 'godam' ) }
+										help={ autoplay
+											? __( 'Hover option is disabled when autoplay is on.', 'godam' )
+											: __( 'Choose the action to perform on video hover.', 'godam' ) }
 										value={ attributes.hoverSelect || 'none' }
 										onChange={ ( value ) => setAttributes( { hoverSelect: value } ) }
+										disabled={ !! autoplay }
 										options={
 											[
 												{ label: __( 'None', 'godam' ), value: 'none' },
@@ -892,7 +919,7 @@ function VideoEdit( {
 					<div { ...blockProps }>
 						<div className="godam-editor-video-placeholder">
 							<span className="godam-editor-video-label">
-								{ __( 'GoDAM Video', 'godam' ) }
+								{ __( 'Video', 'godam' ) }
 							</span>
 						</div>
 					</div>

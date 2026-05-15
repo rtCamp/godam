@@ -36,7 +36,7 @@ defined( 'ABSPATH' ) || exit;
  * | category        | (dropped)          | V2 query does not support category filter |
  * | tag             | (dropped)          | V2 query does not support tag filter      |
  * | search          | (dropped)          | V2 query does not support search filter   |
- * | engagements     | (dropped)          | V2 does not have engagement support       |
+ * | engagements     | engagements        | direct pass-through                       |
  * | openToNewPage   | (dropped)          | V2 does not have single-page linking      |
  */
 class Gallery_V1_To_V2 {
@@ -93,24 +93,29 @@ class Gallery_V1_To_V2 {
 	);
 
 	/**
-	 * Schedule the migration to run on `init` if it has not yet run.
+	 * Run the migration if it has not yet completed.
 	 *
-	 * Called by Runner::run() during plugin bootstrap.
+	 * Called by Runner::maybe_run() on init when the plugin version has changed.
 	 *
-	 * @return void
+	 * Returns true when the migration is already done or was successfully run
+	 * so the runner can advance the stored DB version. Returns false only when
+	 * a concurrency lock is held by another concurrent request, signalling the
+	 * runner to retry on the next request.
+	 *
+	 * @return bool True if migration is complete or was just run; false if it bailed.
 	 */
-	public static function maybe_run() {
+	public static function maybe_run(): bool {
 		if ( get_option( self::OPTION_KEY ) ) {
-			return;
+			return true; // Already done.
 		}
 
-		// Only run during admin requests, WP-CLI, or cron. Bulk content writes
-		// must not be triggered by unauthenticated frontend page loads.
-		if ( ! is_admin() && ! wp_doing_cron() && ! ( defined( 'WP_CLI' ) && WP_CLI ) ) {
-			return;
-		}
+		// Called from Runner::maybe_run() on init — fires on every request
+		// type (frontend, admin, REST, WP-Cron) so no auth gate is needed here.
+		self::run();
 
-		add_action( 'init', array( static::class, 'run' ), 99 );
+		// If run() completed successfully it sets OPTION_KEY; if the lock was
+		// held by another concurrent request the option is still absent.
+		return (bool) get_option( self::OPTION_KEY );
 	}
 
 	/**
@@ -123,6 +128,10 @@ class Gallery_V1_To_V2 {
 	 * @return void
 	 */
 	public static function run() {
+		// This migration only rewrites block markup in post_content — it is a
+		// safe, idempotent, one-time operation. The concurrency lock below
+		// prevents simultaneous runs; no auth check is required.
+
 		global $wpdb;
 
 		// Acquire a short-lived lock so concurrent requests on the same site
@@ -359,6 +368,7 @@ class Gallery_V1_To_V2 {
 			'customDateStart'   => '',
 			'customDateEnd'     => '',
 			'showTitle'         => true,
+			'engagements'       => true,
 		);
 
 		$diff = array();
@@ -407,6 +417,7 @@ class Gallery_V1_To_V2 {
 			'customDateStart',
 			'customDateEnd',
 			'showTitle',
+			'engagements',
 		);
 
 		foreach ( $passthrough as $key ) {
@@ -431,7 +442,7 @@ class Gallery_V1_To_V2 {
 
 		/*
 		 * Intentionally dropped (no equivalent in V2):
-		 * category, tag, search, engagements, openToNewPage, include.
+		 * category, tag, search, openToNewPage, include.
 		 */
 
 		return $v2;

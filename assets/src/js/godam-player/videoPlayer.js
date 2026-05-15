@@ -6,6 +6,9 @@ import videojs from 'video.js';
 /**
  * Internal dependencies
  */
+// Initialize layer registry early so add-ons can register custom layers
+import './utils/layer-registry-init.js';
+
 import ConfigurationManager from './managers/configurationManager.js';
 import ControlsManager from './managers/controlsManager.js';
 import PreviewManager from './managers/previewManager.js';
@@ -29,6 +32,8 @@ export default class GodamVideoPlayer {
 		this.isDisplayingLayers = isDisplayingLayers;
 		this.currentPlayerVideoInstanceId = video.dataset.instanceId;
 		this.player = null;
+		this.metadataPreloadObserver = null;
+		this.deferMetadataPreloadUntilInView = false;
 
 		// Initialize managers
 		this.configManager = new ConfigurationManager( video );
@@ -156,6 +161,8 @@ export default class GodamVideoPlayer {
 			this.player = videojs( this.video, this.configManager.videoSetupControls );
 		}
 
+		this.setupDeferredMetadataPreload();
+
 		// Initialize ads manager (async - loads plugins dynamically)
 		this.adsManager = new AdsManager( this.player, this.configManager );
 		this.adsManager?.setupAdsIntegration().catch( ( error ) => {
@@ -165,6 +172,70 @@ export default class GodamVideoPlayer {
 
 		this.setupAspectRatio();
 		this.setupPlayerReady();
+	}
+
+	/**
+	 * Defer metadata loading until the player is at least 10% visible
+	 * when preload is explicitly disabled.
+	 */
+	setupDeferredMetadataPreload() {
+		const preload = this.configManager.videoSetupControls?.preload;
+
+		if ( preload !== 'none' ) {
+			this.deferMetadataPreloadUntilInView = false;
+			return;
+		}
+
+		this.deferMetadataPreloadUntilInView = true;
+
+		if ( ! ( 'IntersectionObserver' in window ) ) {
+			this.preloadVideoMetadata();
+			return;
+		}
+
+		this.metadataPreloadObserver = new IntersectionObserver(
+			( entries ) => {
+				entries.forEach( ( entry ) => {
+					if ( entry.intersectionRatio >= 0.1 ) {
+						this.preloadVideoMetadata();
+					}
+				} );
+			},
+			{
+				root: null,
+				rootMargin: '0px',
+				threshold: 0.1,
+			},
+		);
+
+		this.metadataPreloadObserver.observe( this.video );
+		this.player.one( 'dispose', () => this.cleanupMetadataPreloadObserver() );
+	}
+
+	/**
+	 * Upgrade preload mode to metadata and start loading video metadata.
+	 */
+	preloadVideoMetadata() {
+		if ( ! this.deferMetadataPreloadUntilInView ) {
+			return;
+		}
+
+		this.deferMetadataPreloadUntilInView = false;
+		this.cleanupMetadataPreloadObserver();
+
+		this.player.preload( 'metadata' );
+		this.video.setAttribute( 'preload', 'metadata' );
+		this.player.load();
+	}
+
+	/**
+	 * Disconnect the metadata preload observer when it is no longer needed.
+	 */
+	cleanupMetadataPreloadObserver() {
+		if ( this.metadataPreloadObserver ) {
+			this.metadataPreloadObserver.disconnect();
+			this.metadataPreloadObserver = null;
+		}
 	}
 
 	/**
@@ -254,182 +325,6 @@ export default class GodamVideoPlayer {
 			// Handle responsive aspect ratio - detect from video dimensions
 			if ( currentAspectRatio === 'responsive' ) {
 				this.detectAndSetAspectRatio();
-			} else if ( currentAspectRatio === 'woo-responsive' ) {
-				// For GoDAM WooCommerce Blocks.
-				// Add a flag to prevent multiple executions.
-				let aspectRatioHandled = false;
-
-				const handleResponsiveAspectRatio = () => {
-					if ( aspectRatioHandled ) {
-						return; // Prevent multiple executions.
-					}
-
-					const width = this.video?.videoWidth;
-					const height = this.video?.videoHeight;
-
-					if ( width > 0 && height > 0 ) {
-						aspectRatioHandled = true;
-					}
-
-					function getSimplifiedAspectRatio( w, h ) {
-						const gcd = ( a, b ) => ( b === 0 ? a : gcd( b, a % b ) );
-						const divisor = gcd( w, h );
-						return ( w / divisor ) + ':' + ( h / divisor );
-					}
-
-					function getClosestAspectRatioOrientation( w, h ) {
-						const knownRatios = {
-							'1:1': 1,
-							'4:3': 4 / 3,
-							'3:2': 3 / 2,
-							'5:4': 5 / 4,
-							'16:9': 16 / 9,
-							'21:9': 21 / 9,
-							'9:16': 9 / 16,
-							'2:3': 2 / 3,
-							'3:4': 3 / 4,
-						};
-
-						const orientationMap = {
-							'1:1': 'landscape',
-							'4:3': 'landscape',
-							'3:2': 'landscape',
-							'5:4': 'landscape',
-							'16:9': 'landscape',
-							'21:9': 'landscape',
-							'9:16': 'portrait',
-							'2:3': 'portrait',
-							'3:4': 'portrait',
-						};
-
-						const value = w / h;
-
-						let closestKey = null;
-						let minDiff = Infinity;
-
-						for ( const key in knownRatios ) {
-							const diff = Math.abs( value - knownRatios[ key ] );
-							if ( diff < minDiff ) {
-								minDiff = diff;
-								closestKey = key;
-							}
-						}
-
-						return orientationMap[ closestKey ] || 'landscape';
-					}
-
-					// Check if dimensions are valid.
-					if ( ! width || ! height || width === 0 || height === 0 ) {
-						// Try to get dimensions from the player.
-						const playerWidth = this.player.videoWidth();
-						const playerHeight = this.player.videoHeight();
-
-						if ( playerWidth && playerHeight && playerWidth > 0 && playerHeight > 0 ) {
-							const aspectRatio = getSimplifiedAspectRatio( playerWidth, playerHeight );
-
-							// Apply the aspect ratio logic here.
-							const aspectRatioOrientation = {
-								'1:1': 'landscape',
-								'4:3': 'landscape',
-								'3:2': 'landscape',
-								'5:4': 'landscape',
-								'16:9': 'landscape',
-								'21:9': 'landscape',
-								'9:16': 'portrait',
-								'2:3': 'portrait',
-								'3:4': 'portrait',
-							};
-
-							let aspectRatioClass = aspectRatioOrientation[ aspectRatio ];
-
-							if ( ! aspectRatioClass ) {
-								aspectRatioClass = getClosestAspectRatioOrientation( playerWidth, playerHeight );
-							}
-
-							const godamProductModalContainer = document.querySelector( '.godam-woo-global-modal-container.open' ) || document.querySelector( '.godam-woocommerce-featured-video-modal-container.open' );
-
-							if ( godamProductModalContainer ) {
-								const videoContainer = godamProductModalContainer.querySelector( '.video-container' );
-
-								if ( videoContainer ) {
-									videoContainer.classList.add( `is-${ aspectRatioClass ? aspectRatioClass : 'portrait' }` );
-								}
-
-								const sidebarContainer = godamProductModalContainer.querySelector( '.godam-product-sidebar' );
-								if ( sidebarContainer ) {
-									sidebarContainer.classList.add( `is-${ aspectRatioClass ? aspectRatioClass : 'portrait' }` );
-								}
-							}
-
-							this.player.aspectRatio( aspectRatio );
-						}
-
-						// If still no valid dimensions, use a default aspect ratio.
-						this.player.aspectRatio( '16:9' );
-					} else {
-						// Original logic for when dimensions are valid.
-						const aspectRatio = getSimplifiedAspectRatio( width, height );
-
-						const aspectRatioOrientation = {
-							'1:1': 'landscape', // or "portrait" - square can go either way.
-							'4:3': 'landscape',
-							'3:2': 'landscape',
-							'5:4': 'landscape',
-							'16:9': 'landscape',
-							'21:9': 'landscape',
-							'9:16': 'portrait',
-							'2:3': 'portrait',
-							'3:4': 'portrait',
-						};
-
-						let aspectRatioClass = aspectRatioOrientation[ aspectRatio ];
-
-						if ( ! aspectRatioClass ) {
-							aspectRatioClass = getClosestAspectRatioOrientation( width, height );
-						}
-
-						const godamProductModalContainer = document.querySelector( '.godam-woo-global-modal-container.open' ) || document.querySelector( '.godam-woocommerce-featured-video-modal-container.open' );
-
-						if ( godamProductModalContainer ) {
-							const videoContainer = godamProductModalContainer.querySelector( '.video-container' );
-
-							if ( videoContainer ) {
-								videoContainer.classList.add( `is-${ aspectRatioClass ? aspectRatioClass : 'portrait' }` );
-							}
-
-							const sidebarContainer = godamProductModalContainer.querySelector( '.godam-product-sidebar' );
-							if ( sidebarContainer ) {
-								sidebarContainer.classList.add( `is-${ aspectRatioClass ? aspectRatioClass : 'portrait' }` );
-							}
-						}
-
-						this.player.aspectRatio( aspectRatio );
-					}
-				};
-
-				// Add the event listener to both the video element and the player.
-				this.video.addEventListener( 'loadedmetadata', handleResponsiveAspectRatio );
-				this.player.on( 'loadedmetadata', handleResponsiveAspectRatio );
-
-				// Also try other events that might fire on mobile.
-				this.video.addEventListener( 'loadeddata', handleResponsiveAspectRatio );
-				this.player.on( 'loadeddata', handleResponsiveAspectRatio );
-
-				// Add a timeout to handle cases where loadedmetadata never fires.
-				const timeoutId = setTimeout( () => {
-					if ( ! aspectRatioHandled ) {
-						handleResponsiveAspectRatio();
-					}
-				}, 5000 ); // 5 second timeout.
-
-				// Clear timeout when metadata loads.
-				const clearTimeoutOnMetadata = () => {
-					clearTimeout( timeoutId );
-					handleResponsiveAspectRatio();
-				};
-
-				this.video.addEventListener( 'loadedmetadata', clearTimeoutOnMetadata );
-				this.player.on( 'loadedmetadata', clearTimeoutOnMetadata );
 			} else if ( /^\d+:\d+$/.test( currentAspectRatio ) ) {
 				// Valid x:y format
 				this.player.aspectRatio( currentAspectRatio );
@@ -562,8 +457,8 @@ export default class GodamVideoPlayer {
 		// Handle hotspot layers
 		this.layersManager.handleHotspotLayersTimeUpdate( currentTime );
 
-		// Handle WooCommerce layers
-		this.layersManager.handleWooCommerceLayersTimeUpdate( currentTime );
+		// Handle custom add-on layers (WooCommerce, etc.)
+		this.layersManager.handleCustomLayersTimeUpdate( currentTime );
 	}
 
 	/**
@@ -590,6 +485,14 @@ export default class GodamVideoPlayer {
 	 * Setup quality selector button in control bar.
 	 */
 	setupQualitySelector() {
+		if ( this.deferMetadataPreloadUntilInView ) {
+			this.player.one( 'loadedmetadata', () => this.renderQualitySelectorButton() );
+			if ( ! this.hasQualitySelectorButton() ) {
+				this.eventsManager.onQualityLevelsAvailable( () => this.renderQualitySelectorButton() );
+			}
+			return;
+		}
+
 		// Force load. Required.
 		if ( this.player.readyState() === 0 ) {
 			this.player.load();

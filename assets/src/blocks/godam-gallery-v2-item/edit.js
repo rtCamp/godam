@@ -13,6 +13,7 @@ import { Button } from '@wordpress/components';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
 import { closeSmall, pencil, video as videoIcon } from '@wordpress/icons';
+import { useRef, useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -53,6 +54,45 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 	const itemWidth = itemWidthMap[ itemWidthRaw ] || itemWidthMap.M;
 	const viewRatio = context[ 'godam/galleryV2/viewRatio' ] || '16:9';
 	const { removeBlock } = useDispatch( 'core/block-editor' );
+
+	// Ref to track the GoDAM virtual media ID from the most recent selection.
+	const pendingVirtualMediaId = useRef( null );
+
+	// Shared handler for both MediaUpload instances.
+	// Skips setAttributes for non-numeric GoDAM virtual IDs — the
+	// godam-virtual-attachment-created event provides the real WP ID.
+	const onSelectVideo = ( mediaItem ) => {
+		if ( ! mediaItem?.id ) {
+			return;
+		}
+		pendingVirtualMediaId.current = mediaItem.id;
+		const numericId = parseInt( mediaItem.id, 10 );
+		if ( numericId > 0 && String( numericId ) === String( mediaItem.id ) ) {
+			setAttributes( { videoId: numericId } );
+		}
+	};
+
+	// Listen for the GoDAM virtual attachment event and update videoId
+	// with the real WP attachment ID once it has been created.
+	useEffect( () => {
+		const handleVirtualAttachmentCreated = ( event ) => {
+			const { attachment, virtualMediaId } = event.detail || {};
+			if (
+				attachment?.id &&
+				pendingVirtualMediaId.current !== null &&
+				String( pendingVirtualMediaId.current ) === String( virtualMediaId )
+			) {
+				pendingVirtualMediaId.current = null;
+				setAttributes( { videoId: attachment.id } );
+			}
+		};
+
+		document.addEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
+
+		return () => {
+			document.removeEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
+		};
+	}, [ setAttributes ] );
 
 	const { media, hasResolvedMedia } = useSelect(
 		( select ) => {
@@ -99,11 +139,7 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 				<div className="godam-gallery-v2-item__preview-overlay">
 					<MediaUploadCheck>
 						<MediaUpload
-							onSelect={ ( mediaItem ) => {
-								if ( mediaItem?.id ) {
-									setAttributes( { videoId: mediaItem.id } );
-								}
-							} }
+							onSelect={ onSelectVideo }
 							allowedTypes={ [ 'video' ] }
 							value={ videoId }
 							render={ ( { open: openMediaModal } ) => (
@@ -156,11 +192,7 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 		<div { ...blockProps }>
 			<MediaUploadCheck>
 				<MediaUpload
-					onSelect={ ( mediaItem ) => {
-						if ( mediaItem?.id ) {
-							setAttributes( { videoId: mediaItem.id } );
-						}
-					} }
+					onSelect={ onSelectVideo }
 					allowedTypes={ [ 'video' ] }
 					value={ videoId }
 					render={ ( { open } ) => (

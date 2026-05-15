@@ -12,7 +12,6 @@ import GFIcon from '../assets/layers/GFIcon.svg';
 import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
 import EverestFormsIcon from '../assets/layers/EverestFormsIcon.svg';
 import CF7Icon from '../assets/layers/CF7Icon.svg';
-import woo from '../assets/layers/woo.svg';
 import JetpackIcon from '../assets/layers/JetpackIcon.svg';
 import SureformsIcon from '../assets/layers/SureFormsIcons.svg';
 import ForminatorIcon from '../assets/layers/Forminator.png';
@@ -129,15 +128,8 @@ export const layerTypes = [
 		isActive: Boolean( window?.easydamMediaLibrary?.isPollPluginActive ) ?? false,
 		tooltipMessage: __( 'Poll plugin is not active', 'godam' ),
 	},
-	{
-		title: __( 'WooCommerce', 'godam' ),
-		icon: woo,
-		type: 'woo',
-		layerText: __( 'WooCommerce', 'godam' ),
-		isActive: Boolean( window?.easydamMediaLibrary?.isWooActive ) ?? false,
-		tooltipMessage: __( 'WooCommerce is not active', 'godam' ),
-		isPremium: false,
-	},
+	// Add-on layers (e.g., WooCommerce) are merged from PHP via godamVideoEditorConfig.
+	...( window.godamVideoEditorConfig?.layerOptions || [] ),
 ];
 
 /**
@@ -248,35 +240,17 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					custom_css: '',
 				} ) );
 				break;
-			case 'woo': {
-				const lastWooLayer = [ ...layers ]
-					.reverse()
-					.find( ( layer ) => layer.type === 'woo' );
-
-				const previousDisplayTime = lastWooLayer?.displayTime ?? null;
-
-				const firstWooLayer = layers.find( ( layer ) => layer.type === 'woo' );
-				const firstWooLayerId = firstWooLayer?.id;
-				const firstWooLayerMiniCart = firstWooLayer?.miniCart;
-
-				dispatch(
-					addLayer( {
-						id: uuidv4(),
-						firstWooLayerId,
-						displayTime: currentTime,
-						previousDisplayTime,
-						type,
-						duration: 5,
-						pauseOnHover: false,
-						miniCart: firstWooLayerMiniCart,
-						productHotspots: [],
-						isNew: true,
-					} ),
-				);
+			default: {
+				// Check for add-on layer creators (registered via window.godamLayerCreators).
+				const addonCreator = window.godamLayerCreators?.[ type ];
+				if ( addonCreator ) {
+					const layerData = addonCreator( { layers, currentTime, type } );
+					if ( layerData ) {
+						dispatch( addLayer( { ...layerData, id: uuidv4() } ) );
+					}
+				}
 				break;
 			}
-			default:
-				break;
 		}
 	};
 
@@ -290,8 +264,8 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								let addWarning = false;
 								const layerData = layerTypes.find( ( l ) => l.type === layer.type );
 								const formType = 'form' === layerData?.type ? layerData?.formType[ layer.form_type ?? 'gravity' ] : false;
-								const icon = formType ? formType?.icon : layerData?.icon;
-								const layerText = formType ? formType?.layerText : layerData?.layerText;
+								const icon = formType ? formType?.icon : ( layerData?.icon || layerData?.iconUrl );
+								const layerText = formType ? formType?.layerText : ( layerData?.layerText || layerData?.title );
 
 								/**
 								 * Get Tooltip message.
@@ -316,10 +290,13 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 									addWarning = true;
 								}
 
+								// Disable the button when the required plugin/feature is inactive
+								// (e.g. form plugin not installed, or WooCommerce layer API key missing/expired).
+								const isLayerDisabled = ( formType && ! formType.isActive ) || layerData?.isActive === false;
+
 								return (
 									<Tooltip
 										key={ layer.id }
-										className="w-full flex justify-between items-center px-2 py-3 border rounded-md mb-2 hover:bg-gray-50 cursor-pointer"
 										text={ tooltipMessage }
 										placement="right"
 									>
@@ -330,19 +307,20 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 													dispatch( setCurrentLayer( layer ) );
 													onSelectLayer( layer.displayTime );
 												} }
+												disabled={ isLayerDisabled }
 											>
 												<div className="flex items-center gap-2">
 													{
-														formType || 'woo' === layer.type ? (
+														formType || ( typeof icon === 'string' && icon ) ? (
 															<img src={ icon } alt={ layer.type } className="w-6 h-6" />
 														) : (
 															<Icon icon={ icon } />
 														)
 													}
 													<p className="m-0 text-base">{ layerText } layer at <b>{ layer.displayTime }s</b></p>
-													{ layer.type === 'woo' && layer.previousDisplayTime === null && (
+													{ layer.badge && (
 														<span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded-full">
-															mini-cart
+															{ layer.badge }
 														</span>
 													) }
 												</div>

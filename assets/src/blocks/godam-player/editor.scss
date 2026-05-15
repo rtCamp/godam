@@ -1,11 +1,16 @@
 /**
- * GoDAM Video Block - Editor styles
+ * Video Block - Editor styles
  * These styles ensure the block works correctly in the editor,
  * including in flex layouts (Row/Stack).
  */
 .wp-block-godam-video {
-	width: 100%;
 	min-width: 0; // Allow shrinking in flex layouts (Row/Stack)
+
+	// Only apply 100% width when no block-level alignment is set.
+	// alignfull/alignwide rely on editor CSS for their own width.
+	&:not(.alignfull):not(.alignwide) {
+		width: 100%;
+	}
 
 	// Ensure the figure takes full width
 	> figure {
@@ -189,36 +194,44 @@
 		&.godam-thumbnail-custom-block-tile {
 			cursor: default;
 
-			.godam-thumbnail-delete-btn {
-				position: absolute;
-				top: 3px;
-				right: 3px;
-				width: 16px;
-				height: 16px;
-				padding: 0;
-				background: rgba(0, 0, 0, 0.55);
-				color: #fff;
-				border: none;
-				border-radius: 50%;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				cursor: pointer;
-				font-size: 10px;
-				line-height: 1;
-				z-index: 2;
-				transition: background 0.1s ease;
-
-				&:hover {
-					background: #cc1818;
-				}
-			}
-
 			/* When selected, push checkmark to bottom-right so it doesn't overlap the delete btn */
 			&.is-selected::after {
 				bottom: 3px;
 				right: 3px;
 				top: auto;
+			}
+		}
+	}
+
+	/* Wrapper for the custom-uploaded tile — provides the positioning context for the X button */
+	.godam-thumbnail-custom-block-wrapper {
+		position: relative;
+		flex: 0 0 auto;
+		width: 72px;
+		height: 48px;
+
+		.godam-thumbnail-delete-btn {
+			position: absolute;
+			top: 4px;
+			right: 4px;
+			width: 16px;
+			height: 16px;
+			padding: 0;
+			background: rgba(0, 0, 0, 0.55);
+			color: #fff;
+			border: none;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			font-size: 10px;
+			line-height: 1;
+			z-index: 2;
+			transition: background 0.1s ease;
+
+			&:hover {
+				background: #cc1818;
 			}
 		}
 	}

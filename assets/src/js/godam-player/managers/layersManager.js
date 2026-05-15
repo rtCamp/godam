@@ -2,15 +2,16 @@
  * Internal dependencies
  */
 import { LAYER_TYPES } from '../utils/constants.js';
+import { getLayerManager } from '../utils/layer-registry.js';
 import LayerValidator from './layers/layerValidator.js';
 import FormLayerManager from './layers/formLayerManager.js';
 import HotspotLayerManager from './layers/hotspotLayerManager.js';
-import WooCommerceLayerManager from './layers/wooCommerceLayerManager.js';
 import { loadFontAwesome, hasHotspotsWithIcons } from '../utils/pluginLoader.js';
 
 /**
  * Layers Manager
  * Orchestrates form and hotspot layers functionality
+ * Supports dynamically registered layer managers from add-ons
  */
 export default class LayersManager {
 	constructor( player, video, config, isDisplayingLayers, currentPlayerVideoInstanceId ) {
@@ -19,11 +20,11 @@ export default class LayersManager {
 		this.config = config;
 		this.isDisplayingLayers = isDisplayingLayers;
 		this.currentPlayerVideoInstanceId = currentPlayerVideoInstanceId;
+		this.customLayerManagers = {}; // Storage for custom manager instances
 
 		// Initialize sub-managers
 		this.formLayerManager = new FormLayerManager( player, isDisplayingLayers, currentPlayerVideoInstanceId );
 		this.hotspotLayerManager = new HotspotLayerManager( player, isDisplayingLayers, currentPlayerVideoInstanceId );
-		this.wooCommerceLayerManager = new WooCommerceLayerManager( player, isDisplayingLayers, currentPlayerVideoInstanceId );
 
 		/**
 		 * Naming convention is bit unusual here to avoid confusion with the main player instance.
@@ -93,8 +94,20 @@ export default class LayersManager {
 			this.formLayerManager.setupFormLayer( layer, layerElement );
 		} else if ( layer.type === LAYER_TYPES.HOTSPOT ) {
 			this.hotspotLayerManager.setupHotspotLayer( layer, layerElement );
-		} else if ( layer.type === LAYER_TYPES.WOOCOMMERCE ) {
-			this.wooCommerceLayerManager.setupWooCommerceLayer( layer, layerElement );
+		} else {
+			// Try to find a custom layer manager registered via the layer registry.
+			const customManagerClass = getLayerManager( layer.type );
+			if ( customManagerClass && ! this.customLayerManagers[ layer.type ] ) {
+				this.customLayerManagers[ layer.type ] = new customManagerClass(
+					this.player,
+					this.isDisplayingLayers,
+					this.currentPlayerVideoInstanceId,
+				);
+			}
+
+			if ( this.customLayerManagers[ layer.type ] && typeof this.customLayerManagers[ layer.type ].setupLayer === 'function' ) {
+				this.customLayerManagers[ layer.type ].setupLayer( layer, layerElement );
+			}
 		}
 	}
 
@@ -127,12 +140,17 @@ export default class LayersManager {
 	}
 
 	/**
-	 * Handle WooCommerce layers time update
+	 * Handle custom layer time update
+	 * Calls timeUpdate on all registered custom layer managers
 	 *
 	 * @param {number} currentTime - Current video time in seconds
 	 */
-	handleWooCommerceLayersTimeUpdate( currentTime ) {
-		this.wooCommerceLayerManager.handleWooCommerceLayersTimeUpdate( currentTime );
+	handleCustomLayersTimeUpdate( currentTime ) {
+		Object.values( this.customLayerManagers ).forEach( ( manager ) => {
+			if ( typeof manager.handleTimeUpdate === 'function' ) {
+				manager.handleTimeUpdate( currentTime );
+			}
+		} );
 	}
 
 	/**
@@ -140,7 +158,13 @@ export default class LayersManager {
 	 */
 	handleVideoResize() {
 		this.hotspotLayerManager.updateHotspotPositions();
-		this.wooCommerceLayerManager.updateProductHotspotPositions();
+
+		// Call update methods on custom layer managers if they exist
+		Object.values( this.customLayerManagers ).forEach( ( manager ) => {
+			if ( typeof manager.handleResize === 'function' ) {
+				manager.handleResize();
+			}
+		} );
 	}
 
 	/**
@@ -152,7 +176,13 @@ export default class LayersManager {
 
 		this.formLayerManager.handleFullscreenChange( isFullscreen, videoContainer );
 		this.hotspotLayerManager.handleFullscreenChange( isFullscreen, videoContainer );
-		this.wooCommerceLayerManager.handleFullscreenChange( isFullscreen, videoContainer );
+
+		// Notify custom layer managers about fullscreen changes
+		Object.values( this.customLayerManagers ).forEach( ( manager ) => {
+			if ( typeof manager.handleFullscreenChange === 'function' ) {
+				manager.handleFullscreenChange( isFullscreen, videoContainer );
+			}
+		} );
 	}
 
 	/**

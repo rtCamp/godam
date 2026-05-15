@@ -76,6 +76,7 @@ function autoloader( $file_resource = '' ) {
 			case 'lifter-lms': // phpcs:ignore
 			case 'migrations': // phpcs:ignore
 			case 'wpbakery-elements': // phpcs:ignore
+			case 'addons': // phpcs:ignore
 				/**
 				 * If there is class name provided for specific directory then load that.
 				 * otherwise find in inc/ directory.

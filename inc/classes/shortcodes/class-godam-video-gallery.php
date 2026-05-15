@@ -296,7 +296,7 @@ class GoDAM_Video_Gallery {
 				data-date-range="' . esc_attr( $atts['date_range'] ) . '"
 				data-custom-date-start="' . esc_attr( $atts['custom_date_start'] ) . '"
 				data-custom-date-end="' . esc_attr( $atts['custom_date_end'] ) . '"
-				data-engagements="' . esc_attr( $atts['engagements'] ) . '"
+				data-engagements="' . esc_attr( rtgodam_is_engagement_feature_enabled() && $atts['engagements'] ? '1' : '0' ) . '"
 
 			>';
 			foreach ( $query->posts as $video ) {
@@ -314,10 +314,9 @@ class GoDAM_Video_Gallery {
 				// Add filter for video date format.
 				$video_date = apply_filters( 'rtgodam_gallery_video_date', $video_date, $video_id );
 
-				$custom_thumbnail = get_post_meta( $video_id, 'rtgodam_media_video_thumbnail', true );
-				$fallback_thumb   = RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png';
-
-				$thumbnail = $custom_thumbnail ?: $fallback_thumb;
+				$thumbnail_data        = rtgodam_get_video_thumbnail_sources( $video_id );
+				$thumbnail             = $thumbnail_data['thumbnail'];
+				$placeholder_thumbnail = $thumbnail_data['placeholder'];
 
 				// Get video duration using file path.
 				$file_path = get_attached_file( $video_id );
@@ -335,7 +334,7 @@ class GoDAM_Video_Gallery {
 				}
 
 				// Check if engagements are enabled for the video.
-				$engagements_enabled      = $atts['engagements'];
+				$engagements_enabled      = rtgodam_is_engagement_feature_enabled() && $atts['engagements'];
 				$item_engagements_enabled = false;
 				if ( $engagements_enabled ) {
 					// Check if the video is transcoded when engagements are enabled.
@@ -360,7 +359,13 @@ class GoDAM_Video_Gallery {
 
 				echo '<div class="godam-video-item">';
 				echo '<div class="godam-video-thumbnail" data-gallery-item-engagements="' . esc_attr( $item_engagements_enabled ? 'true' : 'false' ) . '" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $video_url ) . '">';
-				echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
+				if ( ! empty( $thumbnail ) && ! empty( $placeholder_thumbnail ) ) {
+					echo '<div class="godam-gallery-blurred-img" style="background-image: url(\'' . esc_url( $placeholder_thumbnail ) . '\')">';
+					echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" class="godam-gallery-thumbnail-image" />';
+					echo '</div>';
+				} elseif ( ! empty( $thumbnail ) ) {
+					echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" class="godam-gallery-thumbnail-image" />';
+				}
 				if ( $duration ) {
 					echo '<span class="godam-video-duration">' . esc_html( $duration ) . '</span>';
 				}

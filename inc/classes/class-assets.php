@@ -109,25 +109,31 @@ class Assets {
 		$is_ninja_forms_active     = is_plugin_active( 'ninja-forms/ninja-forms.php' );
 		$is_met_form_active        = is_plugin_active( 'metform/metform.php' );
 
-		$is_woocommerce_active = is_plugin_active( 'woocommerce/woocommerce.php' );
+		$plugin_dependencies = array(
+			'gravityforms' => $is_gf_active,
+			'wpPolls'      => $is_wp_polls_active,
+			'cf7'          => $is_cf7_active,
+			'wpforms'      => $is_wpforms_active,
+			'jetpack'      => $is_jetpack_active,
+			'sureforms'    => $is_sure_form_active,
+			'forminator'   => $is_forminator_form_active,
+			'fluentForms'  => $is_fluent_forms_active,
+			'everestForms' => $is_everest_forms_active,
+			'ninjaForms'   => $is_ninja_forms_active,
+			'metform'      => $is_met_form_active,
+		);
+
+		/**
+		 * Filter the plugin dependencies data exposed to the frontend player.
+		 *
+		 * @param array $plugin_dependencies Associative array of plugin dependency flags.
+		 */
+		$plugin_dependencies = apply_filters( 'godam_plugin_dependencies', $plugin_dependencies );
 
 		wp_localize_script(
 			'rtgodam-script',
 			'godamPluginDependencies',
-			array(
-				'gravityforms' => $is_gf_active,
-				'wpPolls'      => $is_wp_polls_active,
-				'cf7'          => $is_cf7_active,
-				'wpforms'      => $is_wpforms_active,
-				'jetpack'      => $is_jetpack_active,
-				'sureforms'    => $is_sure_form_active,
-				'forminator'   => $is_forminator_form_active,
-				'fluentForms'  => $is_fluent_forms_active,
-				'everestForms' => $is_everest_forms_active,
-				'ninjaForms'   => $is_ninja_forms_active,
-				'metform'      => $is_met_form_active,
-				'woocommerce'  => $is_woocommerce_active,
-			)
+			$plugin_dependencies
 		);
 
 		wp_localize_script(
@@ -138,12 +144,18 @@ class Assets {
 			)
 		);
 
+		/**
+		 * Filter the add-on settings data exposed to the frontend.
+		 * Add-ons can hook into this to provide their own settings.
+		 *
+		 * @param array $addon_settings Add-on settings data.
+		 */
+		$godam_addon_settings = apply_filters( 'godam_addon_settings_data', array() );
+
 		wp_localize_script(
 			'rtgodam-script',
-			'godamWooSettings',
-			array(
-				'url' => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '',
-			)
+			'godamAddonSettings',
+			$godam_addon_settings
 		);
 
 		$this->enqueue_godam_settings();
@@ -268,23 +280,26 @@ class Assets {
 		$enable_folder_organization = get_option( 'rtgodam-settings', array() )['general']['enable_folder_organization'] ?? true;
 		$current_user_id            = get_current_user_id();
 
+		$easydam_media_library_data = array(
+			'ajaxUrl'                  => admin_url( 'admin-ajax.php' ),
+			'nonce'                    => wp_create_nonce( 'easydam_media_library' ),
+			'godamToolsNonce'          => wp_create_nonce( 'rtgodam_tools' ),
+			'enableFolderOrganization' => $enable_folder_organization,
+			'isPollPluginActive'       => is_plugin_active( 'wp-polls/wp-polls.php' ),
+			'page'                     => $screen ? $screen->id : '',
+			'userId'                   => $current_user_id,
+			'canEditOthersMedia'       => current_user_can( 'edit_others_posts' ),
+			'canManageOptions'         => current_user_can( 'manage_options' ),
+			'canEditPages'             => current_user_can( 'edit_pages' ),
+		);
+
+		/** This filter is documented in inc/classes/class-pages.php */
+		$easydam_media_library_data = apply_filters( 'godam_easydam_media_library_data', $easydam_media_library_data );
+
 		wp_localize_script(
 			'easydam-media-library',
 			'easydamMediaLibrary',
-			array(
-				'ajaxUrl'                  => admin_url( 'admin-ajax.php' ),
-				'nonce'                    => wp_create_nonce( 'easydam_media_library' ),
-				'godamToolsNonce'          => wp_create_nonce( 'rtgodam_tools' ),
-				'enableFolderOrganization' => $enable_folder_organization,
-				'isPollPluginActive'       => is_plugin_active( 'wp-polls/wp-polls.php' ),
-				'isWooActive'              => is_plugin_active( 'woocommerce/woocommerce.php' ),
-				'wooCartURL'               => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '',
-				'page'                     => $screen ? $screen->id : '',
-				'userId'                   => $current_user_id,
-				'canEditOthersMedia'       => current_user_can( 'edit_others_posts' ),
-				'canManageOptions'         => current_user_can( 'manage_options' ),
-				'canEditPages'             => current_user_can( 'edit_pages' ),
-			)
+			$easydam_media_library_data
 		);
 
 		if ( $is_upload_screen ) {
@@ -371,6 +386,7 @@ class Assets {
 		$brand_image                    = $godam_settings['video_player']['brand_image'] ?? '';
 		$brand_color                    = $godam_settings['video_player']['brand_color'] ?? '';
 		$enable_gtm_tracking            = $godam_settings['general']['enable_gtm_tracking'] ?? false;
+		$engagement_feature_enabled     = rtgodam_is_engagement_feature_enabled();
 		$enable_global_video_engagement = $godam_settings['video']['enable_global_video_engagement'] ?? true;
 		$enable_global_share            = $godam_settings['video']['enable_global_video_share'] ?? true;
 
@@ -381,7 +397,8 @@ class Assets {
 			'apiBase'                     => RTGODAM_API_BASE,
 			'enableGTMTracking'           => $enable_gtm_tracking,
 			'videoPostSettings'           => get_option( 'rtgodam_video_post_settings', array() ),
-			'enableGlobalVideoEngagement' => $enable_global_video_engagement,
+			'engagementFeatureEnabled'    => $engagement_feature_enabled,
+			'enableGlobalVideoEngagement' => $engagement_feature_enabled ? $enable_global_video_engagement : false,
 			'enableGlobalVideoShare'      => $enable_global_share,
 
 		);

@@ -1149,6 +1149,30 @@ function rtgodam_get_post_id_by_meta_key_and_value( $key, $value ) {
 }
 
 /**
+ * Check whether the engagement feature is available in GoDAM.
+ *
+ * Returning true enables engagement settings and runtime behavior for
+ * GoDAM video, gallery, and embed experiences.
+ *
+ * @since 1.8.0
+ *
+ * @return bool Whether the engagement feature is enabled.
+ */
+function rtgodam_is_engagement_feature_enabled() {
+	/**
+	 * Filters whether the GoDAM engagement feature is enabled.
+	 *
+	 * Return true to enable engagement settings and functionality for GoDAM
+	 * videos, galleries, and embeds.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @param bool $is_enabled Whether the engagement feature is enabled. Default false.
+	 */
+	return (bool) apply_filters( 'rtgodam_enable_engagement_feature', false );
+}
+
+/**
  * Generate HTML content for the video embed page.
  *
  * This function produces the HTML markup for embedding a single video.
@@ -1158,17 +1182,19 @@ function rtgodam_get_post_id_by_meta_key_and_value( $key, $value ) {
  * @param int    $video_id      The ID of the video attachment to embed.
  * @param string $godam_context Optional. The player context passed to the godam_video shortcode (e.g. 'video-only').
  * @param string $bg_color      Optional. Hex background color applied as --godam-video-bg-color CSS variable on the wrapper.
+ * @param bool   $show_engagements Optional. Whether to show engagements in the embed. Default false (no engagements shown).
  *
  * @since 1.5.0
  *
  * @return string The generated HTML content for the video embed page.
  */
-function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '' ) {
+function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '', $show_engagements = false ) {
 	ob_start();
 	// Check if video ID is provided and if video attachment exists.
-	$video_attachment = null;
-	$show_video       = false;
-	$video_id         = intval( $video_id );
+	$video_attachment  = null;
+	$show_video        = false;
+	$video_id          = intval( $video_id );
+	$engagements_value = rtgodam_is_engagement_feature_enabled() && $show_engagements ? 'show' : '';
 
 	if ( ! empty( $video_id ) ) {
 		$video_attachment = get_post( $video_id );
@@ -1188,12 +1214,16 @@ function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '
 		if ( ! empty( $godam_context ) ) {
 			$godam_shortcode .= ' godam_context="' . esc_attr( $godam_context ) . '"';
 		}
+		if ( ! empty( $engagements_value ) ) {
+			$godam_shortcode .= ' engagements="' . esc_attr( $engagements_value ) . '"';
+		}
 		$godam_shortcode .= ']';
 
 		$godam_wrapper_style = ! empty( $bg_color ) ? '--godam-video-bg-color: ' . $bg_color . ';' : '';
 		?>
 		<div 
 			class="godam-video-embed" data-godam-context="<?php echo esc_attr( $godam_context ); ?>"
+			data-show-engagements="<?php echo esc_attr( $show_engagements ? 'true' : 'false' ); ?>"
 			style="<?php echo esc_attr( $godam_wrapper_style ); ?>"
 		>
 			<?php echo do_shortcode( $godam_shortcode ); ?>
@@ -1289,4 +1319,383 @@ function godam_should_load_auth_detector_script( $screen ) {
 	}
 
 	return false;
+}
+
+// ---------------------------------------------------------------------------
+// Work-cache helpers
+// ---------------------------------------------------------------------------
+
+/** Cache group used across all work-cache entries. */
+if ( ! defined( 'RTGODAM_WORK_CACHE_GROUP' ) ) {
+	define( 'RTGODAM_WORK_CACHE_GROUP', 'rtgodam_work_cache' );
+}
+
+/** Cache version — bump to globally invalidate all work-cache entries. */
+if ( ! defined( 'RTGODAM_WORK_CACHE_VERSION' ) ) {
+	define( 'RTGODAM_WORK_CACHE_VERSION', 'v1' );
+}
+
+/** Default TTL (seconds) used as hard-expiry fallback: 30 minutes. */
+if ( ! defined( 'RTGODAM_WORK_CACHE_TTL' ) ) {
+	define( 'RTGODAM_WORK_CACHE_TTL', 30 * MINUTE_IN_SECONDS );
+}
+
+/**
+ * Retrieve a value from the work cache.
+ *
+ * Uses the WordPress object cache when an external cache is active,
+ * otherwise uses transients.
+ *
+ * @since 1.8.0
+ *
+ * @param string $key Cache key (without version prefix).
+ * @return mixed|false Cached value or false on miss.
+ */
+function rtgodam_work_cache_get( $key ) {
+	$versioned_key = RTGODAM_WORK_CACHE_VERSION . '_' . $key;
+
+	if ( wp_using_ext_object_cache() ) {
+		return wp_cache_get( $versioned_key, RTGODAM_WORK_CACHE_GROUP );
+	}
+
+	return get_transient( 'rtgodam_wc_' . md5( $versioned_key ) );
+}
+
+/**
+ * Store a value in the work cache.
+ *
+ * Uses the WordPress object cache when an external cache is active,
+ * otherwise uses transients.
+ *
+ * @since 1.8.0
+ *
+ * @param string $key   Cache key (without version prefix).
+ * @param mixed  $value Value to cache.
+ * @param int    $ttl   Time-to-live in seconds. Defaults to RTGODAM_WORK_CACHE_TTL.
+ */
+function rtgodam_work_cache_set( $key, $value, $ttl = RTGODAM_WORK_CACHE_TTL ) {
+	$versioned_key = RTGODAM_WORK_CACHE_VERSION . '_' . $key;
+
+	if ( wp_using_ext_object_cache() ) {
+		// phpcs:ignore WordPressVIPMinimum.Performance.LowExpiryCacheTime.CacheTimeUndetermined -- $ttl defaults to RTGODAM_WORK_CACHE_TTL (1800s) and callers must pass >= 300s.
+		wp_cache_set( $versioned_key, $value, RTGODAM_WORK_CACHE_GROUP, $ttl );
+	} else {
+		set_transient( 'rtgodam_wc_' . md5( $versioned_key ), $value, $ttl );
+	}
+}
+
+/**
+ * Delete a single entry from the work cache.
+ *
+ * Clears both the dedicated object-cache entry and the transient key so
+ * stale data is removed even if the site's cache backend changed.
+ *
+ * @since 1.8.0
+ *
+ * @param string $key Cache key (without version prefix).
+ */
+function rtgodam_work_cache_delete( $key ) {
+	$versioned_key = RTGODAM_WORK_CACHE_VERSION . '_' . $key;
+
+	wp_cache_delete( $versioned_key, RTGODAM_WORK_CACHE_GROUP );
+	delete_transient( 'rtgodam_wc_' . md5( $versioned_key ) );
+}
+
+/**
+ * Register a cache key under an index so it can be bulk-deleted later.
+ *
+ * The index is stored as a transient with a TTL aligned to the maximum
+ * render-cache TTL (RTGODAM_WORK_CACHE_TTL). This ensures stale keys are
+ * pruned naturally when the index expires rather than accumulating indefinitely
+ * in permanent options.
+ *
+ * If a key is already registered under the index the TTL of the transient is
+ * refreshed so the index stays alive as long as any of its members could still
+ * be cached.
+ *
+ * @since 1.8.0
+ *
+ * @param string $index_key Human-readable index identifier (e.g. `work_cache_godam_meta_{post_id}`).
+ * @param string $cache_key The cache key to register.
+ */
+function rtgodam_work_cache_index_add( $index_key, $cache_key ) {
+	$transient_name = 'rtgodam_wc_idx_' . md5( $index_key );
+	$members        = (array) get_transient( $transient_name );
+
+	if ( ! in_array( $cache_key, $members, true ) ) {
+		$members[] = $cache_key;
+	}
+
+	// Always refresh the TTL so the index outlives the youngest member.
+	set_transient( $transient_name, $members, RTGODAM_WORK_CACHE_TTL );
+}
+
+/**
+ * Return all cache keys registered under an index.
+ *
+ * Returns an empty array when the index transient has expired, which means
+ * all previously registered cache entries have also naturally expired.
+ *
+ * @since 1.8.0
+ *
+ * @param string $index_key Index identifier.
+ * @return string[] List of registered cache keys.
+ */
+function rtgodam_work_cache_index_members( $index_key ) {
+	$members = get_transient( 'rtgodam_wc_idx_' . md5( $index_key ) );
+	return is_array( $members ) ? $members : array();
+}
+
+/**
+ * Delete every cache key registered under an index and remove the index transient.
+ *
+ * @since 1.8.0
+ *
+ * @param string $index_key Index identifier.
+ */
+function rtgodam_work_cache_index_clear( $index_key ) {
+	$members = rtgodam_work_cache_index_members( $index_key );
+
+	foreach ( $members as $cache_key ) {
+		rtgodam_work_cache_delete( $cache_key );
+	}
+
+	delete_transient( 'rtgodam_wc_idx_' . md5( $index_key ) );
+}
+
+// ---------------------------------------------------------------------------
+
+/**
+ * Normalize a GoDAM video performance mode value.
+ *
+ * @since 1.8.0
+ *
+ * @param string $mode     Candidate performance mode.
+ * @param string $fallback Fallback mode when the candidate is invalid.
+ *
+ * @return string
+ */
+function rtgodam_normalize_video_performance_mode( $mode, $fallback = 'balanced' ) {
+	$mode     = is_string( $mode ) ? sanitize_key( $mode ) : '';
+	$fallback = 'priority' === sanitize_key( $fallback ) ? 'priority' : 'balanced';
+
+	if ( in_array( $mode, array( 'balanced', 'priority' ), true ) ) {
+		return $mode;
+	}
+
+	return $fallback;
+}
+
+/**
+ * Resolve the effective performance mode for a video from modern or legacy attributes.
+ *
+ * @since 1.8.0
+ *
+ * @param array  $attributes Block or shortcode attributes.
+ * @param string $default_mode Default performance mode when no stored value exists.
+ *
+ * @return string
+ */
+function rtgodam_resolve_video_performance_mode( $attributes, $default_mode = 'balanced' ) {
+	if ( ! is_array( $attributes ) ) {
+		return rtgodam_normalize_video_performance_mode( '', $default_mode );
+	}
+
+	if ( ! empty( $attributes['performanceMode'] ) ) {
+		return rtgodam_normalize_video_performance_mode( $attributes['performanceMode'], $default_mode );
+	}
+
+	if ( ! empty( $attributes['performance_mode'] ) ) {
+		return rtgodam_normalize_video_performance_mode( $attributes['performance_mode'], $default_mode );
+	}
+
+	$legacy_preload = isset( $attributes['preload'] ) ? strtolower( trim( (string) $attributes['preload'] ) ) : '';
+
+	if ( in_array( $legacy_preload, array( 'metadata', 'auto', 'none' ), true ) ) {
+		return 'balanced';
+	}
+
+	if ( in_array( $legacy_preload, array( 'preload only video thumbnail' ), true ) ) {
+		return 'priority';
+	}
+
+	if ( ! empty( $attributes['preloadPoster'] ) ) {
+		return 'priority';
+	}
+
+	return rtgodam_normalize_video_performance_mode( '', $default_mode );
+}
+
+/**
+ * Resolve the final performance-driven render settings for a single video.
+ *
+ * @since 1.8.0
+ *
+ * @param array  $attributes Block or shortcode attributes.
+ * @param string $default_mode Default performance mode.
+ *
+ * @return array<string, mixed>
+ */
+function rtgodam_get_video_performance_settings( $attributes, $default_mode = 'balanced' ) {
+	$mode = rtgodam_resolve_video_performance_mode( $attributes, $default_mode );
+
+	return array(
+		'mode'              => $mode,
+		'video_attributes'  => array(
+			'preload' => 'priority' === $mode ? 'metadata' : 'none',
+		),
+		'poster_attributes' => 'priority' === $mode
+			? array(
+				'fetchpriority' => 'high',
+			)
+			: array(
+				'loading' => 'lazy',
+			),
+	);
+}
+
+/**
+ * Resolve the render attributes for a gallery tile thumbnail.
+ *
+ * Priority mode is intentionally capped to the leading tiles to avoid over-eager
+ * image loading in multi-video layouts.
+ *
+ * @since 1.8.0
+ *
+ * @param string $performance_mode Requested performance mode.
+ * @param int    $index            Zero-based tile index.
+ * @param int    $priority_cutoff  Number of leading tiles that may stay in priority mode.
+ *
+ * @return array<string, string>
+ */
+function rtgodam_get_gallery_tile_image_attributes( $performance_mode, $index = 0, $priority_cutoff = 3 ) {
+	$performance_mode = rtgodam_normalize_video_performance_mode( $performance_mode );
+	$index            = max( 0, intval( $index ) );
+	$priority_cutoff  = max( 0, intval( $priority_cutoff ) );
+	$is_priority_tile = 'priority' === $performance_mode && $index < $priority_cutoff;
+
+	if ( $is_priority_tile ) {
+		return array(
+			'fetchpriority' => 'high',
+			'loading'       => 'eager',
+		);
+	}
+
+	return array(
+		'loading' => 'lazy',
+	);
+}
+
+/**
+ * Resolve the selected video thumbnail and its matching blur-up placeholder.
+ *
+ * @since 1.8.0
+ *
+ * @param int    $attachment_id Attachment ID.
+ * @param string $thumbnail_url Optional pre-resolved thumbnail URL.
+ * @return array<string, string>
+ */
+function rtgodam_get_video_thumbnail_sources( $attachment_id, $thumbnail_url = '' ) {
+	$attachment_id = absint( $attachment_id );
+
+	if ( ! $attachment_id ) {
+		return array(
+			'thumbnail'   => '',
+			'placeholder' => '',
+		);
+	}
+
+	$resolved_thumbnail   = '';
+	$resolved_placeholder = '';
+
+	if ( ! empty( $thumbnail_url ) && is_string( $thumbnail_url ) ) {
+		$resolved_thumbnail = esc_url_raw( rtgodam_convert_to_https_url( $thumbnail_url ) );
+	}
+
+	if ( empty( $resolved_thumbnail ) ) {
+		$custom_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
+		if ( ! empty( $custom_thumbnail ) && is_string( $custom_thumbnail ) ) {
+			$resolved_thumbnail = esc_url_raw( rtgodam_convert_to_https_url( $custom_thumbnail ) );
+		}
+	}
+
+	if ( empty( $resolved_thumbnail ) ) {
+		$image = wp_get_attachment_image_url( $attachment_id, 'medium' );
+		if ( $image ) {
+			$resolved_thumbnail = esc_url_raw( $image );
+		}
+	}
+
+	if ( ! empty( $resolved_thumbnail ) ) {
+		$placeholder_map = get_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails', true );
+		if ( is_array( $placeholder_map ) ) {
+			$normalized_thumbnail = rtgodam_convert_to_https_url( $resolved_thumbnail );
+			foreach ( $placeholder_map as $thumbnail_key => $placeholder_url ) {
+				if ( empty( $thumbnail_key ) || empty( $placeholder_url ) ) {
+					continue;
+				}
+
+				if ( rtgodam_convert_to_https_url( (string) $thumbnail_key ) === $normalized_thumbnail ) {
+					$resolved_placeholder = esc_url_raw( rtgodam_convert_to_https_url( (string) $placeholder_url ) );
+					break;
+				}
+			}
+		}
+	}
+
+	if ( empty( $resolved_placeholder ) ) {
+		$single_placeholder = get_post_meta( $attachment_id, 'rtgodam_media_video_placeholder_thumbnail', true );
+		if ( ! empty( $single_placeholder ) && is_string( $single_placeholder ) ) {
+			$resolved_placeholder = esc_url_raw( rtgodam_convert_to_https_url( $single_placeholder ) );
+		}
+	}
+
+	if ( empty( $resolved_thumbnail ) ) {
+		$icon = wp_mime_type_icon( $attachment_id );
+		if ( $icon ) {
+			$resolved_thumbnail = esc_url_raw( $icon );
+		}
+	}
+
+	if ( empty( $resolved_thumbnail ) && defined( 'RTGODAM_URL' ) ) {
+		$resolved_thumbnail = trailingslashit( RTGODAM_URL ) . 'assets/src/images/video-thumbnail-default.png';
+	}
+
+	return array(
+		'thumbnail'   => $resolved_thumbnail,
+		'placeholder' => $resolved_placeholder,
+	);
+}
+
+/**
+ * Format an associative array of HTML attributes into a string.
+ *
+ * @since 1.8.0
+ *
+ * @param array<string, scalar> $attributes Attributes to serialize.
+ *
+ * @return string
+ */
+function rtgodam_format_html_attributes( $attributes ) {
+	if ( ! is_array( $attributes ) || empty( $attributes ) ) {
+		return '';
+	}
+
+	$formatted = array();
+
+	foreach ( $attributes as $name => $value ) {
+		if ( ! is_scalar( $value ) || '' === $value ) {
+			continue;
+		}
+
+		$name = strtolower( trim( (string) $name ) );
+
+		if ( ! preg_match( '/^[a-z_:][-a-z0-9_:.]*$/', $name ) ) {
+			continue;
+		}
+
+		$formatted[] = sprintf( '%s="%s"', $name, esc_attr( (string) $value ) );
+	}
+
+	return implode( ' ', $formatted );
 }

@@ -20,6 +20,13 @@ class Update {
 	use Singleton;
 
 	/**
+	 * Option flag used to show the post-update video performance notice once.
+	 *
+	 * @var string
+	 */
+	const VIDEO_PERFORMANCE_NOTICE_OPTION = 'rtgodam_show_video_performance_notice';
+
+	/**
 	 * Construct method.
 	 */
 	protected function __construct() {
@@ -31,6 +38,7 @@ class Update {
 	 */
 	protected function setup_hooks() {
 		add_action( 'admin_init', array( $this, 'rtgodam_update_plugin_version' ) );
+		add_action( 'admin_notices', array( $this, 'maybe_render_video_performance_notice' ) );
 	}
 
 	/**
@@ -57,9 +65,35 @@ class Update {
 				update_option( 'rtgodam_show_whats_new', true );
 			}
 
+			update_option( self::VIDEO_PERFORMANCE_NOTICE_OPTION, true, false );
 			$this->rtgodam_reconcile_api_key_state();
 			update_option( 'rtgodam_plugin_version', $current_version );
 		}
+	}
+
+	/**
+	 * Render a one-time admin notice after the video performance controls change.
+	 *
+	 * @return void
+	 */
+	public function maybe_render_video_performance_notice() {
+		if ( ! current_user_can( 'manage_options' ) || ! get_option( self::VIDEO_PERFORMANCE_NOTICE_OPTION ) ) {
+			return;
+		}
+
+		delete_option( self::VIDEO_PERFORMANCE_NOTICE_OPTION );
+		?>
+		<div class="notice notice-info is-dismissible">
+			<p>
+				<?php
+				esc_html_e(
+					'GoDAM video performance settings have been simplified to Balanced and Priority modes. Please review any hero videos that should stay in Priority mode after this update.',
+					'godam'
+				);
+				?>
+			</p>
+		</div>
+		<?php
 	}
 
 	/**

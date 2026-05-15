@@ -13,6 +13,33 @@ const { __ } = require( '@wordpress/i18n' );
 	let activeGallery = null;
 	let sharedModal = null;
 
+	function initBlurUpPlaceholders( root = document ) {
+		root.querySelectorAll( '.godam-gallery-blurred-img' ).forEach( ( div ) => {
+			if ( div.dataset.godamGalleryBlurInit === '1' ) {
+				return;
+			}
+			div.dataset.godamGalleryBlurInit = '1';
+
+			const img = div.querySelector( 'img' );
+			if ( ! img ) {
+				return;
+			}
+
+			const markLoaded = () => div.classList.add( 'loaded' );
+			const markError = () => {
+				div.style.backgroundImage = '';
+				div.classList.add( 'loaded' );
+			};
+
+			if ( img.complete && img.naturalWidth > 0 ) {
+				markLoaded();
+			} else {
+				img.addEventListener( 'load', markLoaded, { once: true } );
+				img.addEventListener( 'error', markError, { once: true } );
+			}
+		} );
+	}
+
 	function handleModalKeydown( event ) {
 		if ( ! activeGallery ) {
 			return;
@@ -136,6 +163,7 @@ const { __ } = require( '@wordpress/i18n' );
 			this.element = element;
 			this.mode = element.dataset.mode || 'handpicked';
 			this.embedBaseUrl = element.dataset.embedBaseUrl || '/';
+			this.engagements = element.dataset.engagements || '';
 			this.currentIndex = -1;
 			this.previouslyFocusedElement = null;
 			this.isLoading = false;
@@ -158,6 +186,7 @@ const { __ } = require( '@wordpress/i18n' );
 			this.items = [];
 
 			this.refreshItems();
+			initBlurUpPlaceholders( this.element );
 			this.bindEvents();
 			this.initInfiniteScroll();
 			this.updateLoadControls();
@@ -303,6 +332,7 @@ const { __ } = require( '@wordpress/i18n' );
 						const insertionTarget = this.loadMoreItem || this.sentinel;
 						this.queryList.insertBefore( template.content, insertionTarget );
 						this.currentOffset += newItems.length;
+						initBlurUpPlaceholders( this.element );
 					} else {
 						this.currentOffset = this.totalItems;
 					}
@@ -334,7 +364,8 @@ const { __ } = require( '@wordpress/i18n' );
 
 			this.currentIndex = index;
 			activeGallery = this;
-			this.modal.iframe.src = `${ this.embedBaseUrl }?godam_page=video-embed&id=${ encodeURIComponent( videoId ) }`;
+			const engagementsParam = this.engagements === 'show' ? '&engagements=show' : '';
+			this.modal.iframe.src = `${ this.embedBaseUrl }?godam_page=video-embed&id=${ encodeURIComponent( videoId ) }&godam_gallery=1${ engagementsParam }`;
 			this.modal.overlay.classList.add( 'is-active' );
 			this.modal.modal.classList.add( 'is-active' );
 			this.modal.closeButton.classList.add( 'is-active' );

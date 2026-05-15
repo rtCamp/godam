@@ -113,6 +113,10 @@ class Dynamic_Gallery extends Base {
 							'type'    => 'string',
 							'default' => '16:9',
 						),
+						'performance_mode'  => array(
+							'type'    => 'string',
+							'default' => 'balanced',
+						),
 					),
 				),
 			),
@@ -146,6 +150,7 @@ class Dynamic_Gallery extends Base {
 			'engagements'       => $request->get_param( 'engagements' ),
 			'gallery_variant'   => $request->get_param( 'gallery_variant' ),
 			'view_ratio'        => $request->get_param( 'view_ratio' ),
+			'performance_mode'  => $request->get_param( 'performance_mode' ),
 		);
 
 		// Add filter for dynamic gallery attributes.
@@ -278,11 +283,12 @@ class Dynamic_Gallery extends Base {
 		$query = new \WP_Query( $args );
 		ob_start();
 		if ( $query->have_posts() ) {
-			$total_videos    = $query->found_posts;
-			$shown_videos    = count( $query->posts );
-			$alignment_class = '';
-			$is_gallery_v2   = 'gallery-v2' === $atts['gallery_variant'];
-			$ratio_class     = str_replace( ':', '-', $atts['view_ratio'] ?? '16:9' );
+			$total_videos     = $query->found_posts;
+			$shown_videos     = count( $query->posts );
+			$alignment_class  = '';
+			$is_gallery_v2    = 'gallery-v2' === $atts['gallery_variant'];
+			$ratio_class      = str_replace( ':', '-', $atts['view_ratio'] ?? '16:9' );
+			$performance_mode = rtgodam_normalize_video_performance_mode( $atts['performance_mode'] ?? 'balanced' );
 	
 			if ( ! $is_gallery_v2 && intval( $atts['offset'] ) === 0 ) {
 				echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) .
@@ -303,12 +309,12 @@ class Dynamic_Gallery extends Base {
 					data-date-range="' . esc_attr( $atts['date_range'] ?? '' ) . '"
 					data-custom-date-start="' . esc_attr( $atts['custom_date_start'] ?? '' ) . '"
 					data-custom-date-end="' . esc_attr( $atts['custom_date_end'] ?? '' ) . '"
-data-engagements="' . ( $atts['engagements'] ? '1' : '0' ) . '">';
+data-engagements="' . ( rtgodam_is_engagement_feature_enabled() && $atts['engagements'] ? '1' : '0' ) . '">';
 			}
 	
 			do_action( 'rtgodam_dynamic_gallery_before_output', $query, $atts );
 	
-			foreach ( $query->posts as $video ) {
+			foreach ( $query->posts as $index => $video ) {
 				do_action( 'rtgodam_dynamic_gallery_before_video_item', $video, $atts );
 	
 				$video_id    = intval( $video->ID );
@@ -316,9 +322,9 @@ data-engagements="' . ( $atts['engagements'] ? '1' : '0' ) . '">';
 				$video_slug  = get_post_field( 'post_name', $video_id );
 				$video_date  = apply_filters( 'rtgodam_dynamic_gallery_video_date', get_the_date( 'F j, Y', $video_id ), $video_id );
 	
-				$custom_thumbnail = get_post_meta( $video_id, 'rtgodam_media_video_thumbnail', true );
-				$fallback_thumb   = RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png';
-				$thumbnail        = $custom_thumbnail ?: $fallback_thumb;
+				$thumbnail_data        = rtgodam_get_video_thumbnail_sources( $video_id );
+				$thumbnail             = $thumbnail_data['thumbnail'];
+				$placeholder_thumbnail = $thumbnail_data['placeholder'];
 	
 				$file_path = get_attached_file( $video_id );
 				$duration  = null;
@@ -334,7 +340,7 @@ data-engagements="' . ( $atts['engagements'] ? '1' : '0' ) . '">';
 				}
 
 				// Check if engagements are enabled for the video.
-				$engagements_enabled      = $atts['engagements'];
+				$engagements_enabled      = rtgodam_is_engagement_feature_enabled() && $atts['engagements'];
 				$item_engagements_enabled = false;
 				if ( $engagements_enabled ) {
 					// Check if engagements are enabled for the video is transcoded.
@@ -358,12 +364,20 @@ data-engagements="' . ( $atts['engagements'] ? '1' : '0' ) . '">';
 				$video_url = add_query_arg( $query_args, $cpt_base_url );
 
 				if ( $is_gallery_v2 ) {
+					$thumbnail_attributes = rtgodam_format_html_attributes(
+						rtgodam_get_gallery_tile_image_attributes(
+							$performance_mode,
+							intval( $atts['offset'] ) + $index
+						)
+					);
+
 					echo '<div class="godam-gallery-v2__query-item godam-gallery-v2__query-item--ratio-' . esc_attr( $ratio_class ) . '">';
 					/* translators: %s: video title. */
 					echo '<button type="button" class="godam-gallery-v2__query-button" data-godam-gallery-v2-trigger="true" data-video-id="' . esc_attr( $video_id ) . '" aria-label="' . esc_attr( sprintf( __( 'Open video: %s', 'godam' ), $video_title ) ) . '">';
-					echo '<div class="godam-gallery-v2__query-thumb">';
+					echo '<div class="godam-gallery-v2__query-thumb' . ( ! empty( $placeholder_thumbnail ) ? ' godam-gallery-blurred-img godam-blurred-img' : '' ) . '"' . ( ! empty( $placeholder_thumbnail ) ? ' style="background-image: url(\'' . esc_url( $placeholder_thumbnail ) . '\')"' : '' ) . '>';
 					if ( ! empty( $thumbnail ) ) {
-						echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" loading="lazy" />';
+						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $thumbnail_attributes is pre-sanitized via rtgodam_format_html_attributes(), and rtgodam_get_gallery_tile_image_attributes() returns pre-sanitized attributes.
+						echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" class="godam-gallery-v2__thumbnail"' . ( $thumbnail_attributes ? ' ' . $thumbnail_attributes : '' ) . ' />';
 					} else {
 						echo '<span>' . esc_html__( 'GoDAM Video', 'godam' ) . '</span>';
 					}
@@ -381,7 +395,13 @@ data-engagements="' . ( $atts['engagements'] ? '1' : '0' ) . '">';
 				} else {
 					echo '<div class="godam-video-item">';
 					echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $video_url ) . '">';
-					echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
+					if ( ! empty( $thumbnail ) && ! empty( $placeholder_thumbnail ) ) {
+						echo '<div class="godam-gallery-blurred-img" style="background-image: url(\'' . esc_url( $placeholder_thumbnail ) . '\')">';
+						echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" class="godam-gallery-thumbnail-image" />';
+						echo '</div>';
+					} elseif ( ! empty( $thumbnail ) ) {
+						echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" class="godam-gallery-thumbnail-image" />';
+					}
 					if ( $duration ) {
 						echo '<span class="godam-video-duration">' . esc_html( $duration ) . '</span>';
 					}

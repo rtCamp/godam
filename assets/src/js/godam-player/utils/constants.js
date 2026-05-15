@@ -52,6 +52,14 @@ export const PRODUCT_HOTSPOT_CONSTANTS = {
 
 /**
  * Layer types.
+ *
+ * NOTE: Add-ons can register custom layer types using:
+ * import { registerLayerType } from './layer-registry.js';
+ * registerLayerType( 'custom-id', {
+ *   label: 'Custom Layer',
+ *   validator: (layer, dependencies) => true,
+ *   manager: CustomLayerManager // optional
+ * });
  */
 export const LAYER_TYPES = {
 	FORM: 'form',
@@ -60,6 +68,14 @@ export const LAYER_TYPES = {
 	HOTSPOT: 'hotspot',
 	WOOCOMMERCE: 'woo',
 };
+
+/**
+ * Get dynamic layer types (including add-on registered types)
+ * Use this if you need to access dynamically registered layer types
+ *
+ * @return {Object} Object with all available layer types
+ */
+export { getLayerTypes } from './layer-registry.js';
 
 /**
  * Keyboard controls.
