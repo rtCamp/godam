@@ -48,7 +48,7 @@ class Virtual_Media_Registrar {
 		add_action( 'added_post_meta', array( $this, 'maybe_register_from_meta_change' ), 10, 3 );
 		add_action( 'updated_post_meta', array( $this, 'maybe_register_from_meta_change' ), 10, 3 );
 		add_action( 'add_attachment', array( $this, 'maybe_register_from_attachment' ), 22, 1 );
-		add_action( 'before_delete_post', array( $this, 'maybe_remove_virtual_media_site_on_delete' ) );
+		add_action( 'delete_attachment', array( $this, 'maybe_remove_virtual_media_site_on_delete' ) );
 	}
 
 	/**
@@ -178,10 +178,6 @@ class Virtual_Media_Registrar {
 	 */
 	public function maybe_remove_virtual_media_site_on_delete( $post_id ) {
 		$post_id = (int) $post_id;
-
-		if ( 'attachment' !== get_post_type( $post_id ) ) {
-			return;
-		}
 
 		// Only for virtual media attachments.
 		$job_name = get_post_meta( $post_id, self::META_ORIGINAL_ID, true );
