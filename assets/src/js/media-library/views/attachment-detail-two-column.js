@@ -885,6 +885,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		formData.append( 'nonce', nonce );
 		formData.append( 'attachment_id', String( attachmentId ) );
 		formData.append( 'version_attachment_id', String( selectedMedia?.id ) );
+		formData.append( 'version_attachment_url', selectedMedia?.url );
 
 		const response = await fetch( ajaxUrl, {
 			method: 'POST',

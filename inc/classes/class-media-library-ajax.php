@@ -1456,46 +1456,24 @@ class Media_Library_Ajax {
 			wp_send_json_error( array( 'message' => __( 'Please select a valid media file.', 'godam' ) ), 400 );
 		}
 
-		if ( ! is_numeric( $version_attachment_id ) ) {
-			$version_query = new \WP_Query(
-				array(
-					'post_type'      => 'attachment',
-					'post_status'    => 'inherit',
-					'posts_per_page' => 1,
-					'fields'         => 'ids',
-					'no_found_rows'  => true,
-					'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-						array(
-							'key'   => '_godam_original_id',
-							'value' => $version_attachment_id,
-						),
-					),
-				)
-			);
-
-			$version_attachment_id = ! empty( $version_query->posts )
-				? $version_query->posts[0]
-				: 0;
-
-			$version_attachment_id = absint( $version_attachment_id );
-			if ( $version_attachment_id <= 0 ) {
-				wp_send_json_error( array( 'message' => __( 'Please select a valid media file from the Media Library.', 'godam' ) ), 400 );
+		if ( is_numeric( $version_attachment_id ) ) {
+			$version_attachment = get_post( $version_attachment_id );
+			if ( ! $version_attachment || 'attachment' !== $version_attachment->post_type ) {
+				wp_send_json_error( array( 'message' => __( 'Selected media is invalid.', 'godam' ) ), 400 );
 			}
-		}
 
-		$version_attachment = get_post( $version_attachment_id );
-		if ( ! $version_attachment || 'attachment' !== $version_attachment->post_type ) {
-			wp_send_json_error( array( 'message' => __( 'Selected media is invalid.', 'godam' ) ), 400 );
-		}
+			$uploaded_mime = sanitize_mime_type( get_post_mime_type( $version_attachment_id ) );
+			if ( ! $this->is_compatible_version_upload_mime( $attachment_id, $uploaded_mime ) ) {
+				wp_send_json_error( array( 'message' => __( 'Please upload a similar media type for a new version.', 'godam' ) ), 400 );
+			}
 
-		$uploaded_mime = sanitize_mime_type( get_post_mime_type( $version_attachment_id ) );
-		if ( ! $this->is_compatible_version_upload_mime( $attachment_id, $uploaded_mime ) ) {
-			wp_send_json_error( array( 'message' => __( 'Please upload a similar media type for a new version.', 'godam' ) ), 400 );
-		}
-
-		$file_origin = wp_get_attachment_url( $version_attachment_id );
-		if ( empty( $file_origin ) ) {
-			wp_send_json_error( array( 'message' => __( 'Unable to read selected media URL.', 'godam' ) ), 400 );
+			$file_origin = wp_get_attachment_url( $version_attachment_id );
+			if ( empty( $file_origin ) ) {
+				wp_send_json_error( array( 'message' => __( 'Unable to read selected media URL.', 'godam' ) ), 400 );
+			}
+		} else {
+			$version_attachment_url = isset( $_POST['version_attachment_url'] ) ? esc_url_raw( wp_unslash( $_POST['version_attachment_url'] ) ) : '';
+			$file_origin            = $version_attachment_url;
 		}
 
 		$job_name = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
