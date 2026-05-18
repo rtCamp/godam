@@ -7,6 +7,7 @@ import { Analytics } from 'analytics';
  */
 import videoAnalyticsPlugin from './video-analytics-plugin';
 import GTMVideoTracker from './gtm-video-tracker';
+import { shouldSkipAnalytics, buildAnalyticsRequestBody } from './analytics-helpers';
 
 const analytics = Analytics( {
 	app: 'analytics-cdp-plugin',
@@ -398,6 +399,11 @@ function sendPlayerHeatmap( player, video, skipIfKey = null ) {
 			return null;
 		}
 
+		// Skip the same conditions the analytics plugin does.
+		if ( shouldSkipAnalytics() ) {
+			return null;
+		}
+
 		const videoLength = Number( player.duration && player.duration() ) || 0;
 
 		/*
@@ -416,55 +422,18 @@ function sendPlayerHeatmap( player, video, skipIfKey = null ) {
 		 *
 		 * Reference: https://fetch.spec.whatwg.org/#keep-alive-flag
 		 */
-		const {
-			endpoint,
-			token,
-			userId,
-			emailId,
-			locationIP,
-			isPost,
-			isPage,
-			isArchive,
-			postType,
-			postId,
-			postTitle,
-			categories,
-			tags,
-			author,
-		} = window.videoAnalyticsParams || {};
+		const { endpoint, body } = buildAnalyticsRequestBody( {
+			type: 2,
+			userToken: window.analytics?.user?.()?.anonymousId || '',
+			videoId: parseInt( videoId, 10 ),
+			jobId,
+			ranges,
+			videoLength,
+		} );
 
-		// Honour the same skip conditions as the analytics plugin itself.
-		if ( ! endpoint || token === 'unverified' ) {
+		if ( ! endpoint ) {
 			return null;
 		}
-
-		const requestBody = {
-			site_url: window.location.origin,
-			account_token: token || '',
-			wp_user_id: parseInt( userId, 10 ) || 0,
-			email: emailId || '',
-			visitor_timestamp: Date.now(),
-			visit_entry_action_url: window.location.href,
-			visit_entry_action_name: document.title,
-			referer_url: document.referrer || '',
-			referer_name: document.referrer || '',
-			location_ip: locationIP || '',
-			is_post: isPost === '1',
-			is_page: isPage === '1',
-			is_archive: isArchive === '1',
-			post_type: postType,
-			post_id: parseInt( postId, 0 ),
-			post_title: postTitle,
-			categories,
-			tags,
-			author,
-			type: 2,
-			video_id: parseInt( videoId, 10 ),
-			job_id: jobId,
-			video_ids: [],
-			ranges,
-			video_length: videoLength,
-		};
 
 		// keepalive: true guarantees the request outlives the page. We do NOT
 		// await — the browser handles delivery asynchronously at the network
@@ -472,7 +441,7 @@ function sendPlayerHeatmap( player, video, skipIfKey = null ) {
 		fetch( endpoint + '/analytics/', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify( requestBody ),
+			body: JSON.stringify( body ),
 			keepalive: true,
 		} );
 

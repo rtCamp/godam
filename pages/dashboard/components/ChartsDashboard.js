@@ -205,7 +205,6 @@ document.addEventListener( 'DOMContentLoaded', () => {
 
 		const requiredIds = [
 			'play-rate',
-			'plays',
 			'watch-time',
 		];
 
