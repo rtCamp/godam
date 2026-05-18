@@ -19,13 +19,6 @@ class Virtual_Media_Registrar {
 	use Singleton;
 
 	/**
-	 * Meta flag to avoid repeated registrations.
-	 *
-	 * @var string
-	 */
-	const META_REGISTERED = '_godam_virtual_site_registered';
-
-	/**
 	 * Meta key where the virtual job id is stored.
 	 *
 	 * @var string
@@ -97,12 +90,6 @@ class Virtual_Media_Registrar {
 			return true;
 		}
 
-		$already_registered = get_post_meta( $attachment_id, self::META_REGISTERED, true );
-
-		if ( ! empty( $already_registered ) ) {
-			return true;
-		}
-
 		$api_key = get_option( 'rtgodam-api-key' );
 
 		if ( empty( $api_key ) ) {
@@ -164,8 +151,6 @@ class Virtual_Media_Registrar {
 			);
 		}
 
-		update_post_meta( $attachment_id, self::META_REGISTERED, 1 );
-
 		return true;
 	}
 
@@ -186,12 +171,6 @@ class Virtual_Media_Registrar {
 		}
 
 		$job_name = (string) $job_name;
-
-		// If the virtual media registration meta is not present, we can skip the API call.
-		$meta_registered = get_post_meta( $post_id, self::META_REGISTERED, true );
-		if ( empty( $meta_registered ) ) {
-			return;
-		}
 
 		// Call Central to remove the association.
 		$result = $this->remove_virtual_media_site( $job_name );
