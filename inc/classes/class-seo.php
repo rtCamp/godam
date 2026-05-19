@@ -111,7 +111,7 @@ class Seo {
 		 * `godam/video-product-gallery` (Shoppable Video) blocks and return
 		 * the resulting VideoObject SEO entries.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.10.0
 		 *
 		 * @param array  $extra_schemas Array of extra SEO data arrays (initially empty).
 		 * @param string $content       The post content.
@@ -130,7 +130,7 @@ class Seo {
 		 * video attachments from `godam/video-product-gallery` blocks, which
 		 * are not parsed by the core `extract_video_seo_schema_from_block()`.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.10.0
 		 *
 		 * @param int[]  $extra_attachments Array of extra attachment IDs (initially empty).
 		 * @param string $content           The post content.
@@ -148,7 +148,7 @@ class Seo {
 			 * Allows add-ons (e.g. WooCommerce integration) to enrich each video's
 			 * cached SEO data with additional information such as product details.
 			 *
-			 * @since n.e.x.t
+			 * @since 1.10.0
 			 *
 			 * @param array $video_seo_schema Array of video SEO data arrays.
 			 * @param int   $post_ID          The post ID being saved.
@@ -165,7 +165,7 @@ class Seo {
 			 * Add-ons can use this to perform additional save-time operations,
 			 * such as storing reverse-lookup meta for gallery block product IDs.
 			 *
-			 * @since n.e.x.t
+			 * @since 1.10.0
 			 *
 			 * @param int   $post_ID          The post ID.
 			 * @param array $video_seo_schema The saved schema array.
@@ -179,7 +179,7 @@ class Seo {
 			/**
 			 * Fired after video SEO schema is cleared from a post.
 			 *
-			 * @since n.e.x.t
+			 * @since 1.10.0
 			 *
 			 * @param int $post_ID The post ID.
 			 */
@@ -454,7 +454,7 @@ class Seo {
 			 * Allows add-ons to modify or extend a single VideoObject schema,
 			 * e.g. by adding an associatedProduct for WooCommerce integration.
 			 *
-			 * @since n.e.x.t
+			 * @since 1.10.0
 			 *
 			 * @param array $schema  The VideoObject schema array.
 			 * @param array $video   The raw cached video SEO data.
@@ -480,7 +480,7 @@ class Seo {
 		 * the raw cached data (including `_source` markers) without an extra
 		 * `get_post_meta()` call.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.10.0
 		 *
 		 * @param array $output_schemas  Array of schema arrays (VideoObject entries).
 		 * @param int   $post_id         The current post ID.

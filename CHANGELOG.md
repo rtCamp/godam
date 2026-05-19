@@ -1,5 +1,10 @@
 # Changelog #
 
+## v1.10.0 (May 19, 2026) ##
+
+- Feat: Added Unique Viewers and Replay Ratio metrics in Analytics.
+- Feat: Extended Video SEO schema with Shoppable Video support.
+
 ## v1.9.0 (May 8, 2026) ##
 
 - Feat: Introduced WooCommerce integration — first beta release of GoDAM for WooCommerce support.
