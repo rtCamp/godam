@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.10.0
+Stable tag: 1.10.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -219,6 +219,10 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v1.10.1 (May 19, 2026) =
+
+- Fix: Added patch for plugin deployment.
+
 = v1.10.0 (May 19, 2026) =
 
 - Feat: Added Unique Viewers and Replay Ratio metrics in Analytics.
@@ -230,19 +234,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: Disabled hover option when autoplay is enabled in the Video block.
 - Fix: Resolved Gallery Carousel scroll issue on iOS devices.
 - Tweak: Revamped GoDAM blocks to Video, Video Gallery, Audio and Document blocks.
-
-= v1.8.0 (April 29, 2026) =
-
-- Feat: Enhanced GoDAM Gallery block with improved layouts and controls.
-- Feat: Introduced Performance Mode settings for video and gallery blocks.
-- Feat: Implemented blur-up thumbnail optimization in Video and Video Gallery blocks.
-- Tweak: Replaced gallery item width range input with S/M/L size selector.
-- Tweak: Performance improvements for GoDAM blocks.
-- Fix: Improved GoDAM Video and Video Gallery Block UX.
-- Fix: Added GoDAM Gallery migration support.
-- Fix: Removed GoDAM CPT and added migration for existing data.
-- Fix: Fixed alignment issues on GoDAM blocks.
-- Fix: Addressed security vulnerabilities.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
