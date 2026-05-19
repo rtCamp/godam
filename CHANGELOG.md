@@ -2,8 +2,8 @@
 
 ## v1.10.0 (May 19, 2026) ##
 
-- Feat: Added Unique Viewers and Replay Ratio metric in Analytics.
-- Feat: Extended Video SEO schema with Shoppable Video support
+- Feat: Added Unique Viewers and Replay Ratio metrics in Analytics.
+- Feat: Extended Video SEO schema with Shoppable Video support.
 
 ## v1.9.0 (May 8, 2026) ##
 
