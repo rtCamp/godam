@@ -1490,7 +1490,7 @@ class Media_Library_Ajax {
 
 		delete_post_meta( $attachment_id, 'rtgodam_pending_version_source_url' );
 		delete_post_meta( $attachment_id, 'rtgodam_pending_version_source_thumbnail_url' );
-		update_post_meta( $attachment_id, 'rtgodam_pending_version_target_attachment_id', absint( $version_attachment_id ) );
+		update_post_meta( $attachment_id, 'rtgodam_pending_version_target_attachment_id', $version_attachment_id );
 
 		$versions_payload = $this->fetch_media_versions_payload( $job_name, $api_key );
 		if ( ! is_wp_error( $versions_payload ) ) {
@@ -1653,7 +1653,7 @@ class Media_Library_Ajax {
 	private function complete_pending_media_version_replace( $attachment_id, $target_url, $target_version_row = array() ) {
 		$source_url           = (string) get_post_meta( $attachment_id, 'rtgodam_pending_version_source_url', true );
 		$source_thumbnail_url = (string) get_post_meta( $attachment_id, 'rtgodam_pending_version_source_thumbnail_url', true );
-		$target_attachment_id = absint( get_post_meta( $attachment_id, 'rtgodam_pending_version_target_attachment_id', true ) );
+		$target_attachment_id = get_post_meta( $attachment_id, 'rtgodam_pending_version_target_attachment_id', true );
 		$target_thumbnail_url = $this->get_version_thumbnail_url( $target_version_row );
 
 		if ( empty( $source_url ) ) {
@@ -1862,11 +1862,14 @@ class Media_Library_Ajax {
 			return;
 		}
 
-		// Check if there's a pending default attachment URL that should be used as source for replacement instead, to cover the case where the Db contains the default URL instead of the CDN based URL.
-		$saved_attachment_url = (string) get_post_meta( $attachment_id, 'rtgodam_pending_default_attachment_url', true );
-		$search_source_url    = $source_url;
-		if ( ! empty( $saved_attachment_url ) && 'completed' !== $saved_attachment_url ) {
-			$search_source_url = $saved_attachment_url;
+		// Build the list of source URLs to search-replace: always include the CDN URL, and also
+		// include the non-CDN (default WP) URL when stored, so both existing variants in post
+		// content and guid are replaced by the new target URL.
+		$saved_attachment_url = get_post_meta( $attachment_id, 'rtgodam_pending_default_attachment_url', true );
+
+		$search_source_urls = array( $source_url );
+		if ( ! empty( $saved_attachment_url ) && 'completed' !== $saved_attachment_url && $saved_attachment_url !== $source_url ) {
+			$search_source_urls[] = $saved_attachment_url;
 		}
 
 		global $wpdb;
@@ -1877,35 +1880,50 @@ class Media_Library_Ajax {
 		);
 		$public_post_types = array_values( $public_post_types );
 
-		$like_source      = '%' . $wpdb->esc_like( $search_source_url ) . '%';
 		$updated_post_ids = array();
 
-		if ( ! empty( $public_post_types ) ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Required for efficient targeted cache cleanup of changed posts.
-			$updated_post_ids = $wpdb->get_col(
-				$wpdb->prepare(
-					"SELECT ID FROM {$wpdb->posts} WHERE post_type IN (" . implode( ', ', array_fill( 0, count( $public_post_types ), '%s' ) ) . ') AND post_content LIKE %s',
-					...array_merge( $public_post_types, array( $like_source ) )
-				)
-			);
+		foreach ( $search_source_urls as $search_source_url ) {
+			$like_source = '%' . $wpdb->esc_like( $search_source_url ) . '%';
 
-			// Update only the identified posts using their IDs.
-			if ( ! empty( $updated_post_ids ) ) {
-				$updated_post_ids = array_values( array_filter( array_map( 'absint', $updated_post_ids ) ) );
-
-				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Direct update is required for high-volume URL replacement.
-				$wpdb->query(
-					// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Dynamic IN placeholders are generated to match sanitized post IDs.
+			if ( ! empty( $public_post_types ) ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Required for efficient targeted cache cleanup of changed posts.
+				$found_post_ids = $wpdb->get_col(
 					$wpdb->prepare(
-						"UPDATE {$wpdb->posts} SET post_content = REPLACE(post_content, %s, %s) WHERE ID IN (" . implode( ', ', array_fill( 0, count( $updated_post_ids ), '%d' ) ) . ')',
-						$search_source_url,
-						$target_url,
-						...$updated_post_ids
+						"SELECT ID FROM {$wpdb->posts} WHERE post_type IN (" . implode( ', ', array_fill( 0, count( $public_post_types ), '%s' ) ) . ') AND post_content LIKE %s',
+						...array_merge( $public_post_types, array( $like_source ) )
 					)
 				);
+
+				// Update only the identified posts using their IDs.
+				if ( ! empty( $found_post_ids ) ) {
+					$found_post_ids   = array_values( array_filter( array_map( 'absint', $found_post_ids ) ) );
+					$updated_post_ids = array_values( array_unique( array_merge( $updated_post_ids, $found_post_ids ) ) );
+
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Direct update is required for high-volume URL replacement.
+					$wpdb->query(
+						// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Dynamic IN placeholders are generated to match sanitized post IDs.
+						$wpdb->prepare(
+							"UPDATE {$wpdb->posts} SET post_content = REPLACE(post_content, %s, %s) WHERE ID IN (" . implode( ', ', array_fill( 0, count( $found_post_ids ), '%d' ) ) . ')',
+							$search_source_url,
+							$target_url,
+							...$found_post_ids
+						)
+					);
+				}
 			}
 		}
 
+		// Update the attachment guid directly once, since we already know the attachment ID.
+		// This avoids repeating a search-replace pass over the attachment row for each source URL.
+		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$wpdb->prepare(
+				"UPDATE {$wpdb->posts} SET guid = %s WHERE ID = %d",
+				$target_url,
+				$attachment_id
+			)
+		);
+
+		// For video attachments, also replace thumbnail URLs in post content if the thumbnail URL has changed, to ensure embedded video players show the updated thumbnail.
 		if ( ! empty( $source_thumbnail_url ) && ! empty( $target_thumbnail_url ) && $source_thumbnail_url !== $target_thumbnail_url ) {
 			$like_source_thumbnail = '%' . $wpdb->esc_like( $source_thumbnail_url ) . '%';
 
@@ -1936,17 +1954,7 @@ class Media_Library_Ajax {
 			}
 		}
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Direct update is required for atomic guid replacement.
-		$wpdb->query(
-			$wpdb->prepare(
-				"UPDATE {$wpdb->posts} SET guid = REPLACE(guid, %s, %s) WHERE ID = %d AND post_type = 'attachment' AND guid LIKE %s",
-				$search_source_url,
-				$target_url,
-				$attachment_id,
-				$like_source
-			)
-		);
-
+		// Finally, update attachment meta with new active version info.
 		if ( is_array( $target_version_row ) ) {
 			if ( array_key_exists( 'thumbnail_url', $target_version_row ) && ! empty( $target_version_row['thumbnail_url'] ) ) {
 				update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', (string) $target_version_row['thumbnail_url'] );
@@ -1994,6 +2002,26 @@ class Media_Library_Ajax {
 	private function refresh_attachment_file_metadata( $attachment_id, $target_attachment_id = 0 ) {
 		if ( empty( $target_attachment_id ) || $target_attachment_id === $attachment_id ) {
 			return;
+		}
+
+		// If the target attachment ID is not numeric, it might be a job name, we can try to find the attachment ID by the job name stored in post meta.
+		if ( ! is_numeric( $target_attachment_id ) ) {
+			global $wpdb;
+
+			$post_id = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$wpdb->prepare(
+					"SELECT post_id
+					FROM {$wpdb->postmeta}
+					WHERE meta_key = %s
+					AND meta_value = %s",
+					'rtgodam_transcoding_job_id',
+					$target_attachment_id
+				)
+			);
+
+			if ( ! empty( $post_id ) ) {
+				$target_attachment_id = absint( $post_id );
+			}
 		}
 
 		$target_image_sizes = get_post_meta( $target_attachment_id, 'rtgodam_image_sizes', true );
