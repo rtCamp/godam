@@ -50,9 +50,12 @@ class Seo {
 	 * Save SEO schema data from 'godam/video' blocks as post meta.
 	 *
 	 * This function parses the Gutenberg block content of the post and extracts
-	 * any `seo` attribute from blocks of type `godam/video`. The extracted data is
-	 * then saved in the post meta under the key `godam_video_seo_schema`, along with
-	 * a timestamp in `godam_video_seo_schema_updated`.
+	 * any `seo` attribute from blocks of type `godam/video`. The extracted data
+	 * is then saved in the post meta under the key `godam_video_seo_schema`,
+	 * along with a timestamp in `godam_video_seo_schema_updated`.
+	 *
+	 * Add-ons can contribute additional schemas via the
+	 * `godam_video_seo_extra_block_schemas` filter.
 	 *
 	 * Also handles WPBakery shortcodes in the same post.
 	 *
@@ -81,8 +84,10 @@ class Seo {
 		$video_seo_schema = array();
 		$attachments_used = array();
 
-		// Parse Gutenberg blocks if content contains them.
-		if ( ! empty( $content ) && strpos( $content, '<!-- wp:godam/video' ) !== false ) {
+		// Parse Gutenberg blocks if content contains godam/video blocks.
+		$has_video_block = ! empty( $content ) && strpos( $content, '<!-- wp:godam/video' ) !== false;
+
+		if ( $has_video_block ) {
 			$blocks = parse_blocks( $content );
 
 			foreach ( $blocks as $block ) {
@@ -99,14 +104,86 @@ class Seo {
 			$attachments_used = array_merge( $attachments_used, $result['attachments'] );
 		}
 
+		/**
+		 * Filter to let add-ons contribute extra block-based video SEO schemas.
+		 *
+		 * For example, the GoDAM for WooCommerce add-on uses this to parse
+		 * `godam/video-product-gallery` (Shoppable Video) blocks and return
+		 * the resulting VideoObject SEO entries.
+		 *
+		 * @since 1.10.0
+		 *
+		 * @param array  $extra_schemas Array of extra SEO data arrays (initially empty).
+		 * @param string $content       The post content.
+		 * @param int    $post_ID       The post ID.
+		 */
+		$extra_schemas = apply_filters( 'godam_video_seo_extra_block_schemas', array(), $content, $post_ID );
+		if ( is_array( $extra_schemas ) ) {
+			$video_seo_schema = array_merge( $video_seo_schema, $extra_schemas );
+		}
+
+		/**
+		 * Filter to let add-ons contribute extra attachment IDs for the
+		 * attachment ↔ post mapping used by `edit_attachment` SEO resync.
+		 *
+		 * For example, the GoDAM for WooCommerce add-on uses this to register
+		 * video attachments from `godam/video-product-gallery` blocks, which
+		 * are not parsed by the core `extract_video_seo_schema_from_block()`.
+		 *
+		 * @since 1.10.0
+		 *
+		 * @param int[]  $extra_attachments Array of extra attachment IDs (initially empty).
+		 * @param string $content           The post content.
+		 * @param int    $post_ID           The post ID.
+		 */
+		$extra_attachments = apply_filters( 'godam_video_seo_extra_block_attachments', array(), $content, $post_ID );
+		if ( is_array( $extra_attachments ) ) {
+			$attachments_used = array_merge( $attachments_used, $extra_attachments );
+		}
+
 		if ( ! empty( $video_seo_schema ) ) {
+			/**
+			 * Filter the video SEO schema data before it is cached as post meta.
+			 *
+			 * Allows add-ons (e.g. WooCommerce integration) to enrich each video's
+			 * cached SEO data with additional information such as product details.
+			 *
+			 * @since 1.10.0
+			 *
+			 * @param array $video_seo_schema Array of video SEO data arrays.
+			 * @param int   $post_ID          The post ID being saved.
+			 */
+			$video_seo_schema = apply_filters( 'godam_video_seo_cache_data', $video_seo_schema, $post_ID );
+
 			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY, $video_seo_schema );
 			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY, time() );
 			$this->update_attachment_post_mapping( $post_ID, array_unique( $attachments_used ) );
+
+			/**
+			 * Fired after video SEO schema is saved as post meta.
+			 *
+			 * Add-ons can use this to perform additional save-time operations,
+			 * such as storing reverse-lookup meta for gallery block product IDs.
+			 *
+			 * @since 1.10.0
+			 *
+			 * @param int   $post_ID          The post ID.
+			 * @param array $video_seo_schema The saved schema array.
+			 */
+			do_action( 'godam_video_seo_schema_saved', $post_ID, $video_seo_schema );
 		} else {
 			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY );
 			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY );
 			$this->update_attachment_post_mapping( $post_ID, array() );
+
+			/**
+			 * Fired after video SEO schema is cleared from a post.
+			 *
+			 * @since 1.10.0
+			 *
+			 * @param int $post_ID The post ID.
+			 */
+			do_action( 'godam_video_seo_schema_cleared', $post_ID );
 		}
 	}
 
@@ -130,12 +207,21 @@ class Seo {
 
 			if ( $seo_override && isset( $block['attrs']['seo'] ) && ! empty( $block['attrs']['seo'] ) ) {
 				// Use overridden SEO from block attributes.
-				$schemas[] = $block['attrs']['seo'];
+				$seo_entry = $block['attrs']['seo'];
+
+				// Include attachment_id so add-ons can resolve the attachment
+				// on the first save (before _godam_seo_attachments exists).
+				if ( $attachment_id > 0 ) {
+					$seo_entry['attachment_id'] = $attachment_id;
+				}
+
+				$schemas[] = $seo_entry;
 			} elseif ( $attachment_id > 0 ) {
 				// Fetch SEO from media library attachment.
 				$media_seo = $this->get_seo_from_attachment( $attachment_id );
 				if ( ! empty( $media_seo ) ) {
-					$schemas[] = $media_seo;
+					$media_seo['attachment_id'] = $attachment_id;
+					$schemas[]                  = $media_seo;
 					if ( $track_attachments ) {
 						$attachments[] = $attachment_id;
 					}
@@ -310,11 +396,38 @@ class Seo {
 			return;
 		}
 
-		$schemas = array();
+		$output_schemas    = array();
+		$seen_content_urls = array();
+
+		// Build a set of contentUrls claimed by VPG (Shoppable Video) entries.
+		// When the same video appears in both a godam/video block and a VPG block,
+		// the VPG version takes priority (it carries product data via the add-on).
+		$vpg_content_urls = array();
+		foreach ( $cached_schemas as $video ) {
+			if ( ! empty( $video['_source'] ) && 'vpg' === $video['_source'] && ! empty( $video['contentUrl'] ) && is_string( $video['contentUrl'] ) ) {
+				$vpg_content_urls[ $video['contentUrl'] ] = true;
+			}
+		}
 
 		foreach ( $cached_schemas as $video ) {
 			if ( ! is_array( $video ) || empty( $video['headline'] ) ) {
 				continue;
+			}
+
+			$content_url = ! empty( $video['contentUrl'] ) && is_string( $video['contentUrl'] ) ? $video['contentUrl'] : '';
+			$is_vpg      = ! empty( $video['_source'] ) && 'vpg' === $video['_source'];
+
+			// Skip standalone entries whose video already exists in a VPG block.
+			if ( ! $is_vpg && $content_url && isset( $vpg_content_urls[ $content_url ] ) ) {
+				continue;
+			}
+
+			// Deduplicate by contentUrl within the same context.
+			if ( $content_url && isset( $seen_content_urls[ $content_url ] ) ) {
+				continue;
+			}
+			if ( $content_url ) {
+				$seen_content_urls[ $content_url ] = true;
 			}
 
 			$schema = array(
@@ -335,16 +448,53 @@ class Seo {
 				$schema['duration'] = sanitize_text_field( $video['duration'] );
 			}
 
-			$schemas[] = $schema;
+			/**
+			 * Filter an individual video SEO schema entry before output.
+			 *
+			 * Allows add-ons to modify or extend a single VideoObject schema,
+			 * e.g. by adding an associatedProduct for WooCommerce integration.
+			 *
+			 * @since 1.10.0
+			 *
+			 * @param array $schema  The VideoObject schema array.
+			 * @param array $video   The raw cached video SEO data.
+			 * @param int   $post_id The current post ID.
+			 */
+			$schema = apply_filters( 'godam_video_seo_schema', $schema, $video, $post_id );
+
+			$output_schemas[] = $schema;
 		}
 
-		if ( empty( $schemas ) ) {
+		if ( empty( $output_schemas ) ) {
 			return;
 		}
 
-		// Output a single <script> with all VideoObject schemas.
+		/**
+		 * Filter the complete array of video SEO schemas before JSON-LD output.
+		 *
+		 * Allows add-ons to add, remove, reorder, or group schema entries —
+		 * for example, the GoDAM for WooCommerce add-on uses this to wrap
+		 * Shoppable Video schemas in an ItemList for carousel rich results.
+		 *
+		 * A third argument `$cached_schemas` is passed so add-ons can inspect
+		 * the raw cached data (including `_source` markers) without an extra
+		 * `get_post_meta()` call.
+		 *
+		 * @since 1.10.0
+		 *
+		 * @param array $output_schemas  Array of schema arrays (VideoObject entries).
+		 * @param int   $post_id         The current post ID.
+		 * @param array $cached_schemas  Raw cached SEO data from post meta.
+		 */
+		$output_schemas = apply_filters( 'godam_video_seo_schemas', $output_schemas, $post_id, $cached_schemas );
+
+		if ( empty( $output_schemas ) ) {
+			return;
+		}
+
+		// Output a single <script> with all schemas.
 		echo '<script type="application/ld+json">' . wp_json_encode(
-			count( $schemas ) === 1 ? $schemas[0] : $schemas,
+			count( $output_schemas ) === 1 ? $output_schemas[0] : $output_schemas,
 			JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
 		) . '</script>';
 	}
@@ -476,13 +626,18 @@ class Seo {
 		$attachments_used = $result['attachments'];
 
 		if ( ! empty( $video_seo_schema ) ) {
+			/** This filter is documented in inc/classes/class-seo.php */
+			$video_seo_schema = apply_filters( 'godam_video_seo_cache_data', $video_seo_schema, $post_ID );
+
 			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY, $video_seo_schema );
 			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY, time() );
 			$this->update_attachment_post_mapping( $post_ID, array_unique( $attachments_used ) );
+			do_action( 'godam_video_seo_schema_saved', $post_ID, $video_seo_schema );
 		} else {
 			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY );
 			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY );
 			$this->update_attachment_post_mapping( $post_ID, array() );
+			do_action( 'godam_video_seo_schema_cleared', $post_ID );
 		}
 	}
 
@@ -571,6 +726,9 @@ class Seo {
 	 * @param array $attachments Array of attachment IDs used in the post.
 	 */
 	private function update_attachment_post_mapping( $post_id, $attachments ) {
+		// Normalize: cast to positive integers and discard zeroes/non-numeric values.
+		$attachments = array_values( array_unique( array_filter( array_map( 'absint', $attachments ) ) ) );
+
 		// Get current attachments this post was using.
 		$previous_attachments = get_post_meta( $post_id, self::POST_ATTACHMENTS_META_KEY, true );
 		$previous_attachments = is_array( $previous_attachments ) ? $previous_attachments : array();

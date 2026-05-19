@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GoDAM 1.9.0\n"
+"Project-Id-Version: GoDAM 1.10.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-05-07T08:29:36+00:00\n"
+"POT-Creation-Date: 2026-05-19T07:18:29+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -243,14 +243,14 @@ msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:277
 #: inc/classes/class-media-library-ajax.php:820
-#: pages/dashboard/Dashboard.js:238
+#: pages/dashboard/Dashboard.js:239
 #: pages/video-editor/AttachmentPicker.jsx:45
 msgid "Claim the GoDAM New Year Sale 2026 offer"
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:279
 #: inc/classes/class-media-library-ajax.php:822
-#: pages/dashboard/Dashboard.js:242
+#: pages/dashboard/Dashboard.js:243
 #: pages/video-editor/AttachmentPicker.jsx:49
 msgid "New Year Sale 2026 offer from GoDAM"
 msgstr ""
@@ -898,7 +898,7 @@ msgid "Choose Image"
 msgstr ""
 
 #: inc/classes/elementor-controls/class-godam-media.php:140
-#: pages/analytics/Analytics.js:753
+#: pages/analytics/Analytics.js:752
 msgid "Choose Video"
 msgstr ""
 
@@ -1109,7 +1109,7 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:133
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:153
-#: pages/dashboard/Dashboard.js:397
+#: pages/dashboard/Dashboard.js:395
 msgid "Size"
 msgstr ""
 
@@ -1921,30 +1921,30 @@ msgid "The Site URL associated with the video."
 msgstr ""
 
 #: inc/classes/rest-api/class-analytics.php:176
-#: inc/classes/rest-api/class-analytics.php:383
+#: inc/classes/rest-api/class-analytics.php:384
 #: inc/classes/rest-api/class-engagement.php:365
 #: inc/classes/rest-api/class-site.php:169
 msgid "Missing API key."
 msgstr ""
 
 #: inc/classes/rest-api/class-analytics.php:201
-#: inc/classes/rest-api/class-analytics.php:416
+#: inc/classes/rest-api/class-analytics.php:418
 msgid "Unable to reach analytics server."
 msgstr ""
 
 #: inc/classes/rest-api/class-analytics.php:212
-#: inc/classes/rest-api/class-analytics.php:425
+#: inc/classes/rest-api/class-analytics.php:427
 msgid "Unexpected error from analytics server."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:323
-#: inc/classes/rest-api/class-analytics.php:474
-#: inc/classes/rest-api/class-analytics.php:535
+#: inc/classes/rest-api/class-analytics.php:324
+#: inc/classes/rest-api/class-analytics.php:476
+#: inc/classes/rest-api/class-analytics.php:537
 msgid "Invalid or unverified API key."
 msgstr ""
 
 #. translators: %s is the error message from the API response.
-#: inc/classes/rest-api/class-analytics.php:350
+#: inc/classes/rest-api/class-analytics.php:351
 #, php-format
 msgid "Error fetching history data: %s"
 msgstr ""
@@ -2796,7 +2796,7 @@ msgid "WPForms plugin is not active."
 msgstr ""
 
 #: inc/classes/shortcodes/class-godam-video-gallery.php:421
-#: pages/dashboard/Dashboard.js:474
+#: pages/dashboard/Dashboard.js:472
 msgid "No videos found."
 msgstr ""
 
@@ -4014,164 +4014,157 @@ msgstr ""
 msgid "Maximum allowed size: %s MB"
 msgstr ""
 
-#: pages/analytics/Analytics.js:394
+#: pages/analytics/Analytics.js:396
 msgid "Select Video to Perform Performance Comparison Testing"
 msgstr ""
 
-#: pages/analytics/Analytics.js:396
+#: pages/analytics/Analytics.js:398
 msgid "Use this Video"
 msgstr ""
 
-#: pages/analytics/Analytics.js:499
-#: pages/analytics/Analytics.js:544
-#: pages/dashboard/Dashboard.js:215
-#: pages/dashboard/Dashboard.js:285
+#: pages/analytics/Analytics.js:501
+#: pages/analytics/Analytics.js:546
+#: pages/dashboard/Dashboard.js:216
+#: pages/dashboard/Dashboard.js:286
 msgid "Go to plugin settings"
 msgstr ""
 
-#: pages/analytics/Analytics.js:511
-#: pages/dashboard/Dashboard.js:251
+#: pages/analytics/Analytics.js:513
+#: pages/dashboard/Dashboard.js:252
 msgid "Upgrade to unlock the media performance report."
 msgstr ""
 
-#: pages/analytics/Analytics.js:515
-#: pages/dashboard/Dashboard.js:255
+#: pages/analytics/Analytics.js:517
+#: pages/dashboard/Dashboard.js:256
 msgid "If you already have a premium plan, connect your"
 msgstr ""
 
-#: pages/analytics/Analytics.js:518
-#: pages/dashboard/Dashboard.js:258
+#: pages/analytics/Analytics.js:520
+#: pages/dashboard/Dashboard.js:259
 msgid "API in the settings"
 msgstr ""
 
-#: pages/analytics/Analytics.js:532
-#: pages/dashboard/Dashboard.js:272
+#: pages/analytics/Analytics.js:534
+#: pages/dashboard/Dashboard.js:273
 msgid "Buy Plan"
 msgstr ""
 
-#: pages/analytics/Analytics.js:541
-#: pages/dashboard/Dashboard.js:282
+#: pages/analytics/Analytics.js:543
+#: pages/dashboard/Dashboard.js:283
 msgid "An unknown error occurred. Please check your plugin settings."
 msgstr ""
 
-#: pages/analytics/Analytics.js:569
+#: pages/analytics/Analytics.js:571
 msgid "This media doesn't exist."
 msgstr ""
 
-#: pages/analytics/Analytics.js:571
+#: pages/analytics/Analytics.js:573
 msgid "Go to Dashboard"
 msgstr ""
 
-#: pages/analytics/Analytics.js:592
+#: pages/analytics/Analytics.js:594
 msgid "Analytics report of"
 msgstr ""
 
-#: pages/analytics/Analytics.js:595
+#: pages/analytics/Analytics.js:597
 msgid "Analytics report"
 msgstr ""
 
-#: pages/analytics/Analytics.js:597
+#: pages/analytics/Analytics.js:599
 msgid "Back to Video Editor"
 msgstr ""
 
-#: pages/analytics/Analytics.js:611
-#: pages/analytics/Analytics.js:864
-#: pages/dashboard/Dashboard.js:401
+#: pages/analytics/Analytics.js:613
+#: pages/analytics/Analytics.js:863
+#: pages/dashboard/Dashboard.js:399
 msgid "Average Engagement"
 msgstr ""
 
-#: pages/analytics/Analytics.js:612
+#: pages/analytics/Analytics.js:614
 msgid "Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)"
 msgstr ""
 
-#: pages/analytics/Analytics.js:622
-#: pages/analytics/Analytics.js:873
-#: pages/dashboard/Dashboard.js:334
-#: pages/dashboard/Dashboard.js:399
-msgid "Total Plays"
-msgstr ""
-
-#: pages/analytics/Analytics.js:623
-#: pages/dashboard/Dashboard.js:335
-msgid "Plays represent the total number of times the video has been viewed"
-msgstr ""
-
-#: pages/analytics/Analytics.js:633
-#: pages/analytics/Analytics.js:884
+#: pages/analytics/Analytics.js:624
+#: pages/analytics/Analytics.js:883
 #: pages/analytics/helper.js:104
 #: pages/analytics/PlaybackPerformance.js:440
 #: pages/analytics/PlaybackPerformance.js:579
-#: pages/dashboard/Dashboard.js:346
-#: pages/dashboard/Dashboard.js:398
+#: pages/dashboard/Dashboard.js:335
+#: pages/dashboard/Dashboard.js:396
 msgid "Play Rate"
 msgstr ""
 
-#: pages/analytics/Analytics.js:634
-#: pages/dashboard/Dashboard.js:347
+#: pages/analytics/Analytics.js:625
+#: pages/dashboard/Dashboard.js:336
 msgid "Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads"
 msgstr ""
 
-#: pages/analytics/Analytics.js:644
+#: pages/analytics/Analytics.js:635
 #: pages/analytics/helper.js:110
-#: pages/dashboard/Dashboard.js:358
+#: pages/dashboard/Dashboard.js:347
 msgid "Watch Time"
 msgstr ""
 
-#: pages/analytics/Analytics.js:645
-#: pages/dashboard/Dashboard.js:359
+#: pages/analytics/Analytics.js:636
+#: pages/dashboard/Dashboard.js:348
 msgid "Total time the video has been watched, aggregated across all plays"
 msgstr ""
 
-#: pages/analytics/Analytics.js:690
+#: pages/analytics/Analytics.js:689
 msgid "Views by Source"
 msgstr ""
 
-#: pages/analytics/Analytics.js:701
+#: pages/analytics/Analytics.js:700
 msgid "Performance Comparison"
 msgstr ""
 
-#: pages/analytics/Analytics.js:712
+#: pages/analytics/Analytics.js:711
 msgid "In Progress"
 msgstr ""
 
-#: pages/analytics/Analytics.js:717
+#: pages/analytics/Analytics.js:716
 msgid "Initiate the test comparison to generate analytical insights."
 msgstr ""
 
-#: pages/analytics/Analytics.js:722
+#: pages/analytics/Analytics.js:721
 msgid "The test is complete! Review results to identify the best-performing video."
 msgstr ""
 
-#: pages/analytics/Analytics.js:734
+#: pages/analytics/Analytics.js:733
 msgid "Start Test"
 msgstr ""
 
-#: pages/analytics/Analytics.js:765
+#: pages/analytics/Analytics.js:764
 msgid "Test this video against others to see which performs better."
 msgstr ""
 
-#: pages/analytics/Analytics.js:774
+#: pages/analytics/Analytics.js:773
 #: pages/video-editor/components/cta/ImageCTA.js:348
 msgid "Upload or Replace CTA Image"
 msgstr ""
 
-#: pages/analytics/Analytics.js:779
+#: pages/analytics/Analytics.js:778
 msgid "Choose"
 msgstr ""
 
-#: pages/analytics/Analytics.js:850
+#: pages/analytics/Analytics.js:849
 msgid "Views"
 msgstr ""
 
-#: pages/analytics/Analytics.js:898
+#: pages/analytics/Analytics.js:872
+#: pages/dashboard/Dashboard.js:397
+msgid "Total Plays"
+msgstr ""
+
+#: pages/analytics/Analytics.js:897
 msgid "Page Loads"
 msgstr ""
 
-#: pages/analytics/Analytics.js:912
+#: pages/analytics/Analytics.js:911
 msgid "Play Time"
 msgstr ""
 
-#: pages/analytics/Analytics.js:926
+#: pages/analytics/Analytics.js:925
 msgid "Video Length"
 msgstr ""
 
@@ -4182,6 +4175,7 @@ msgid "Engagement Rate"
 msgstr ""
 
 #: pages/analytics/helper.js:116
+#: pages/analytics/PlaysVsViewers.js:125
 msgid "Plays"
 msgstr ""
 
@@ -4239,12 +4233,25 @@ msgctxt "1 year period"
 msgid "1Y"
 msgstr ""
 
-#: pages/analytics/SingleMetrics.js:212
-msgid "All time"
+#: pages/analytics/PlaysVsViewers.js:100
+msgid "Plays / Unique viewers"
 msgstr ""
 
-#: pages/analytics/SingleMetrics.js:216
+#: pages/analytics/PlaysVsViewers.js:126
+msgid "Unique viewers"
+msgstr ""
+
+#: pages/analytics/PlaysVsViewers.js:131
+#: pages/analytics/SingleMetrics.js:152
 msgid "Last 7 days"
+msgstr ""
+
+#: pages/analytics/PlaysVsViewers.js:139
+msgid "Sessions per user:"
+msgstr ""
+
+#: pages/analytics/SingleMetrics.js:148
+msgid "All time"
 msgstr ""
 
 #: pages/dashboard/components/MarketingCarousel.jsx:101
@@ -4255,46 +4262,46 @@ msgstr ""
 msgid "Feature Screenshot"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:320
+#: pages/dashboard/Dashboard.js:321
 msgid "Active Videos"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:321
+#: pages/dashboard/Dashboard.js:322
 msgid "Number of unique videos that received user interactions each day, such as views or plays."
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:386
+#: pages/dashboard/Dashboard.js:384
 msgid "Top Videos"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:389
+#: pages/dashboard/Dashboard.js:387
 msgid "Export"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:396
+#: pages/dashboard/Dashboard.js:394
 msgid "Name"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:400
+#: pages/dashboard/Dashboard.js:398
 msgid "Total Watch Time"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:423
-#: pages/dashboard/Dashboard.js:437
+#: pages/dashboard/Dashboard.js:421
+#: pages/dashboard/Dashboard.js:435
 msgid "Video thumbnail"
 msgstr ""
 
 #. translators: %1$d is the current page number, %2$d is the total number of pages
-#: pages/dashboard/Dashboard.js:486
+#: pages/dashboard/Dashboard.js:484
 #, js-format
 msgid "Page %1$d of %2$d"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:500
+#: pages/dashboard/Dashboard.js:498
 msgid "Previous"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:507
+#: pages/dashboard/Dashboard.js:505
 msgid "Next"
 msgstr ""
 
