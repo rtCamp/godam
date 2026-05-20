@@ -95,7 +95,7 @@ window.godamPageLoadFlushTimer = window.godamPageLoadFlushTimer || null;
 // synchronous flush via a direct keepalive fetch so events are not lost on
 // page teardown.
 const PAGE_LOAD_BATCH_SIZE = 10;
-const PAGE_LOAD_FLUSH_DELAY_MS = 300;
+const PAGE_LOAD_FLUSH_DELAY_MS = 1000;
 
 /**
  * Add a single video instance to the pending page_load batch. Auto-flushes
@@ -138,8 +138,6 @@ function flushPageLoadQueue( sync = false ) {
 		return;
 	}
 
-	const batch = window.godamPageLoadQueue.splice( 0 );
-
 	if ( sync ) {
 		// Unload path: bypass the async DavidWells analytics library so the
 		// request is initiated before the JS context tears down. keepalive
@@ -148,6 +146,8 @@ function flushPageLoadQueue( sync = false ) {
 		if ( shouldSkipAnalytics() ) {
 			return;
 		}
+
+		const batch = window.godamPageLoadQueue.splice( 0 );
 
 		const { endpoint, body } = buildAnalyticsRequestBody( {
 			type: 1,
@@ -169,6 +169,8 @@ function flushPageLoadQueue( sync = false ) {
 		return;
 	}
 
+	const batch = window.godamPageLoadQueue.splice( 0 );
+
 	if ( ! window.analytics ) {
 		// Defensive: re-queue and let a subsequent enqueue/flush retry.
 		window.godamPageLoadQueue.unshift( ...batch );
@@ -188,9 +190,9 @@ function flushPageLoadQueue( sync = false ) {
  *
  * @param {HTMLElement} video - Candidate video or wrapper element.
  * @return {boolean} True when the caller should stop tracking this element
- *                   (event enqueued, duplicate, or malformed); false when the
- *                   caller should keep observing and retry on the next tick
- *                   (analytics library not yet ready).
+ * (event enqueued, duplicate, or malformed); false when the
+ * caller should keep observing and retry on the next tick
+ * (analytics library not yet ready).
  */
 function trackPageLoadForVideo( video ) {
 	const videoInfo = getPageLoadVideoInfo( video );
