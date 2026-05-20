@@ -1339,6 +1339,7 @@ class Media_Library_Ajax {
 		}
 
 		$this->replace_media_url_across_site( $attachment_id, $source_url, $target_url, $target_version_row, $source_thumbnail, $target_thumbnail );
+		$this->maybe_request_image_subsizes_refresh( $attachment_id, $job_name );
 
 		wp_send_json_success(
 			array(
@@ -1680,6 +1681,10 @@ class Media_Library_Ajax {
 		}
 
 		$this->replace_media_url_across_site( $attachment_id, $source_url, $target_url, $target_version_row, $source_thumbnail_url, $target_thumbnail_url, $target_attachment_id );
+
+		$job_name = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+		$this->maybe_request_image_subsizes_refresh( $attachment_id, $job_name );
+
 		delete_post_meta( $attachment_id, 'rtgodam_pending_version_source_url' );
 		delete_post_meta( $attachment_id, 'rtgodam_pending_version_source_thumbnail_url' );
 		delete_post_meta( $attachment_id, 'rtgodam_pending_version_target_attachment_id' );
@@ -1689,6 +1694,32 @@ class Media_Library_Ajax {
 			'sourceUrl' => $source_url,
 			'targetUrl' => $target_url,
 		);
+	}
+
+	/**
+	 * Request image sub-sizes refresh for image attachments after version changes.
+	 *
+	 * @param int    $attachment_id Attachment ID.
+	 * @param string $job_name      GoDAM job ID.
+	 * @return void
+	 */
+	private function maybe_request_image_subsizes_refresh( $attachment_id, $job_name ) {
+		$attachment_mime_type = (string) get_post_mime_type( $attachment_id );
+		if ( 'image' !== substr( $attachment_mime_type, 0, 5 ) ) {
+			return;
+		}
+
+		if ( empty( $job_name ) ) {
+			return;
+		}
+
+		$subsize_result = \RTGODAM\Inc\REST_API\Media_Library::get_instance()->request_image_subsizes_for_attachment( $job_name, $attachment_id );
+
+		if ( ( is_wp_error( $subsize_result ) || empty( $subsize_result ) ) && defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Debug log for troubleshooting metadata refresh.
+				sprintf( 'GoDAM: Failed to request image sub-sizes refresh for attachment ID %d after version update.', (int) $attachment_id )
+			);
+		}
 	}
 
 	/**
