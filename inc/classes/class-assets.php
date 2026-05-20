@@ -70,7 +70,7 @@ class Assets {
 								<div class="rtgodam-manage-versions-empty"><?php esc_html_e( 'No versions found.', 'godam' ); ?></div>
 							<# } else { #>
 								<# _.each( data.versions, function( version, index ) { #>
-									<div class="rtgodam-version-row <# if ( version.isActive ) { #>is-active<# } #>" data-version="{{ version.id }}">
+									<div class="rtgodam-version-row <# if ( version.isActive ) { #>is-active<# } #>">
 										<div class="rtgodam-version-left">
 											<div class="rtgodam-version-badge">{{ version.idUpper }}</div>
 											<div class="rtgodam-version-meta">

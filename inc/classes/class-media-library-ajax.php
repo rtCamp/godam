@@ -1491,7 +1491,6 @@ class Media_Library_Ajax {
 
 		delete_post_meta( $attachment_id, 'rtgodam_pending_version_source_url' );
 		delete_post_meta( $attachment_id, 'rtgodam_pending_version_source_thumbnail_url' );
-		update_post_meta( $attachment_id, 'rtgodam_pending_version_target_attachment_id', $version_attachment_id );
 
 		$versions_payload = $this->fetch_media_versions_payload( $job_name, $api_key );
 		if ( ! is_wp_error( $versions_payload ) ) {
@@ -1542,20 +1541,6 @@ class Media_Library_Ajax {
 					'response' => is_array( $decoded ) ? $decoded : $body,
 				),
 				$status_code
-			);
-		}
-
-		if ( ! is_array( $decoded ) || empty( $decoded['success'] ) ) {
-			$error_message = is_array( $decoded ) && ! empty( $decoded['message'] )
-				? $decoded['message']
-				: __( 'GoDAM did not accept the new version.', 'godam' );
-
-			wp_send_json_error(
-				array(
-					'message'  => $error_message,
-					'response' => is_array( $decoded ) ? $decoded : $body,
-				),
-				400
 			);
 		}
 
@@ -1654,7 +1639,6 @@ class Media_Library_Ajax {
 	private function complete_pending_media_version_replace( $attachment_id, $target_url, $target_version_row = array() ) {
 		$source_url           = (string) get_post_meta( $attachment_id, 'rtgodam_pending_version_source_url', true );
 		$source_thumbnail_url = (string) get_post_meta( $attachment_id, 'rtgodam_pending_version_source_thumbnail_url', true );
-		$target_attachment_id = get_post_meta( $attachment_id, 'rtgodam_pending_version_target_attachment_id', true );
 		$target_thumbnail_url = $this->get_version_thumbnail_url( $target_version_row );
 
 		if ( empty( $source_url ) ) {
@@ -1680,14 +1664,13 @@ class Media_Library_Ajax {
 			);
 		}
 
-		$this->replace_media_url_across_site( $attachment_id, $source_url, $target_url, $target_version_row, $source_thumbnail_url, $target_thumbnail_url, $target_attachment_id );
+		$this->replace_media_url_across_site( $attachment_id, $source_url, $target_url, $target_version_row, $source_thumbnail_url, $target_thumbnail_url );
 
 		$job_name = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
 		$this->maybe_request_image_subsizes_refresh( $attachment_id, $job_name );
 
 		delete_post_meta( $attachment_id, 'rtgodam_pending_version_source_url' );
 		delete_post_meta( $attachment_id, 'rtgodam_pending_version_source_thumbnail_url' );
-		delete_post_meta( $attachment_id, 'rtgodam_pending_version_target_attachment_id' );
 
 		return array(
 			'completed' => true,
@@ -1885,10 +1868,9 @@ class Media_Library_Ajax {
 	 * @param array  $target_version_row Target version row.
 	 * @param string $source_thumbnail_url Previous active thumbnail URL.
 	 * @param string $target_thumbnail_url New active thumbnail URL.
-	 * @param int    $target_attachment_id Attachment ID selected as new version source.
 	 * @return void
 	 */
-	private function replace_media_url_across_site( $attachment_id, $source_url, $target_url, $target_version_row = array(), $source_thumbnail_url = '', $target_thumbnail_url = '', $target_attachment_id = 0 ) {
+	private function replace_media_url_across_site( $attachment_id, $source_url, $target_url, $target_version_row = array(), $source_thumbnail_url = '', $target_thumbnail_url = '' ) {
 		if ( empty( $attachment_id ) || empty( $source_url ) || empty( $target_url ) || $source_url === $target_url ) {
 			return;
 		}
@@ -1913,6 +1895,7 @@ class Media_Library_Ajax {
 
 		$updated_post_ids = array();
 
+		// Replace URL within the post content area of all public post types.
 		foreach ( $search_source_urls as $search_source_url ) {
 			$like_source = '%' . $wpdb->esc_like( $search_source_url ) . '%';
 
@@ -2014,51 +1997,11 @@ class Media_Library_Ajax {
 			}
 		}
 
-		$this->refresh_attachment_file_metadata( $attachment_id, $target_attachment_id );
-
 		$this->clean_updated_posts_cache( $updated_post_ids );
 		clean_post_cache( $attachment_id );
 		wp_cache_delete( $attachment_id, 'post_meta' );
 		// Mark the pending default attachment URL as completed to break the loop.
 		update_post_meta( $attachment_id, 'rtgodam_pending_default_attachment_url', 'completed' );
-	}
-
-	/**
-	 * Refresh rtgodam_image_sizes by copying from target attachment.
-	 *
-	 * @param int $attachment_id        Attachment ID.
-	 * @param int $target_attachment_id Attachment ID selected as new version source.
-	 * @return void
-	 */
-	private function refresh_attachment_file_metadata( $attachment_id, $target_attachment_id = 0 ) {
-		if ( empty( $target_attachment_id ) || $target_attachment_id === $attachment_id ) {
-			return;
-		}
-
-		// If the target attachment ID is not numeric, it might be a job name, we can try to find the attachment ID by the job name stored in post meta.
-		if ( ! is_numeric( $target_attachment_id ) ) {
-			global $wpdb;
-
-			$post_id = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-				$wpdb->prepare(
-					"SELECT post_id
-					FROM {$wpdb->postmeta}
-					WHERE meta_key = %s
-					AND meta_value = %s",
-					'rtgodam_transcoding_job_id',
-					$target_attachment_id
-				)
-			);
-
-			if ( ! empty( $post_id ) ) {
-				$target_attachment_id = absint( $post_id );
-			}
-		}
-
-		$target_image_sizes = get_post_meta( $target_attachment_id, 'rtgodam_image_sizes', true );
-		if ( is_array( $target_image_sizes ) && ! empty( $target_image_sizes ) ) {
-			update_post_meta( $attachment_id, 'rtgodam_image_sizes', $target_image_sizes );
-		}
 	}
 
 	/**

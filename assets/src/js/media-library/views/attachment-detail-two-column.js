@@ -903,11 +903,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			throw new Error( __( 'Failed to upload a new version.', 'godam' ) );
 		}
 
-		// When media replacement starts, it throws payload.success as false with a status 400, because replacement is started and not completed.
-		if ( response.status !== 400 || ! payload?.data?.message?.success ) {
-			throw new Error( payload?.data?.message?.message || __( 'Failed to upload a new version.', 'godam' ) );
-		}
-
 		return payload.data;
 	},
 
@@ -981,21 +976,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * @return {boolean} True when new versions can be added.
 	 */
 	isAddVersionAllowed( mediaVersionsResponse ) {
-		const canAddMore = mediaVersionsResponse?.response?.message?.can_add_more;
-
-		if ( typeof canAddMore === 'boolean' ) {
-			return canAddMore;
-		}
-
-		if ( typeof canAddMore === 'string' ) {
-			return 'true' === canAddMore.toLowerCase();
-		}
-
-		if ( typeof canAddMore === 'number' ) {
-			return canAddMore === 1;
-		}
-
-		return false;
+		return !! mediaVersionsResponse?.response?.message?.can_add_more;
 	},
 
 	/**
@@ -1109,13 +1090,13 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	},
 
 	/**
-	 * Disables or enables all Set Active buttons in the modal.
+	 * Disables or enables all Set Active buttons and delete buttons in the modal.
 	 *
 	 * @param {HTMLElement} modal    Manage versions modal element.
 	 * @param {boolean}     disabled Whether buttons should be disabled.
 	 */
 	setManageVersionButtonsDisabled( modal, disabled ) {
-		const buttons = modal.querySelectorAll( '.rtgodam-version-action' );
+		const buttons = modal.querySelectorAll( '.rtgodam-version-action, .rtgodam-version-delete' );
 		buttons.forEach( ( actionButton ) => {
 			actionButton.disabled = disabled;
 		} );
@@ -1231,6 +1212,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				event.preventDefault();
 				event.stopPropagation();
 
+				// Get version number from button's data attribute and validate it.
 				const versionNumber = Number( button.getAttribute( 'data-version-number' ) );
 				const maxVersions = this.getMaxVersions( this.mediaVersions );
 				if ( ! Number.isInteger( versionNumber ) || versionNumber < 1 || versionNumber > maxVersions ) {
@@ -1239,7 +1221,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				}
 
 				const targetRow = button.closest( '.rtgodam-version-row' );
-				button.textContent = __( 'Setting active', 'godam' );
 				this.setManageVersionButtonsDisabled( modal, true );
 				this.applyOptimisticActiveVersion( modal, targetRow );
 
@@ -1269,9 +1250,11 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				event.preventDefault();
 				event.stopPropagation();
 
-				const targetRow = deleteButton.closest( '.rtgodam-version-row' );
-				const versionNumber = Number( targetRow?.getAttribute( 'data-version' ) );
+				const setActiveButton = deleteButton.previousElementSibling;
+				const versionNumber = Number( setActiveButton?.getAttribute( 'data-version-number' ) );
 
+				// Version 1 is the original file and cannot be deleted
+				// so we check for version number to be at least 2.
 				if ( ! Number.isInteger( versionNumber ) || versionNumber < 2 ) {
 					this.showGodamSnackbar( __( 'Invalid version number.', 'godam' ) );
 					return;
@@ -1281,9 +1264,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 					return;
 				}
 
-				deleteButton.disabled = true;
-				const originalContent = deleteButton.innerHTML;
-				deleteButton.innerHTML = '<span class="spinner" style="float: none; margin: 0;"></span>';
+				this.setManageVersionButtonsDisabled( modal, true );
 
 				try {
 					await this.deleteVersion( versionNumber );
@@ -1291,9 +1272,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 					this.openManageVersionsModal();
 					this.showGodamSnackbar( __( 'Version deleted successfully.', 'godam' ), 'success' );
 				} catch ( error ) {
-					deleteButton.disabled = false;
-					deleteButton.innerHTML = originalContent;
-
 					try {
 						this.mediaVersions = await this.fetchVersionsData();
 						this.openManageVersionsModal();
@@ -1350,7 +1328,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 */
 	formatVersionDuration( duration ) {
 		const seconds = Number( duration );
-		if ( ! Number.isFinite( seconds ) || seconds < 0 ) {
+		if ( seconds <= 0 || ! Number.isFinite( seconds ) ) {
 			return '--';
 		}
 
@@ -1403,9 +1381,9 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				idUpper,
 				versionNumber: Number( versionNumber ),
 				name: title,
-				size: this.formatVersionSize( version?.file_size ?? version?.size ?? version?.filesizeInBytes ),
-				duration: this.formatVersionDuration( version?.playtime ?? version?.duration ?? version?.video_duration ),
-				date: this.formatVersionDate( version?.created_at ?? version?.modified ?? version?.creation ?? version?.date ),
+				size: this.formatVersionSize( version?.file_size ),
+				duration: this.formatVersionDuration( version?.playtime ),
+				date: this.formatVersionDate( version?.created_at ),
 				isDefault,
 				isActive,
 			};
