@@ -33,7 +33,8 @@ import { formatNumber, formatWatchTime } from '../utils/formatters';
  *
  * Add-ons (e.g. godam-for-woo) can register additional dashboard
  * sections by pushing onto `window.godamDashboardSections`. Each entry
- * may be either a React component or an object of the form
+ * may be either a React component (function, class, React.memo, or
+ * React.forwardRef) or an object of the form
  * `{ id, component, priority }`. Sections are rendered below the
  * "Top Videos" table, ordered by `priority` (ascending; default 10).
  *
@@ -50,15 +51,30 @@ import { formatNumber, formatWatchTime } from '../utils/formatters';
  *
  * @return {Array} Sorted array of section descriptors.
  */
+
+/**
+ * Return true for any value React can render as a component — plain
+ * function/class components as well as exotic components produced by
+ * React.memo() and React.forwardRef() which are plain objects carrying
+ * a `$$typeof` Symbol.
+ *
+ * @param {*} value
+ *
+ * @return {boolean} True if the value is a valid React component type.
+ */
+const isReactComponent = ( value ) =>
+	typeof value === 'function' ||
+	( value !== null && typeof value === 'object' && typeof value.$$typeof === 'symbol' );
+
 const getExtendedDashboardSections = () => {
 	const raw = Array.isArray( window.godamDashboardSections ) ? window.godamDashboardSections : [];
 
 	return raw
 		.map( ( entry, idx ) => {
-			if ( typeof entry === 'function' ) {
+			if ( isReactComponent( entry ) ) {
 				return { id: `dashboard-section-${ idx }`, component: entry, priority: 10 };
 			}
-			if ( entry && typeof entry === 'object' && typeof entry.component === 'function' ) {
+			if ( entry && typeof entry === 'object' && isReactComponent( entry.component ) ) {
 				return {
 					id: entry.id || `dashboard-section-${ idx }`,
 					component: entry.component,
