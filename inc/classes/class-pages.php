@@ -695,6 +695,19 @@ class Pages {
 				)
 			);
 
+			/**
+			 * Allow add-ons to enqueue scripts that extend the GoDAM dashboard page.
+			 *
+			 * Add-ons can register their own JS bundles here that register React
+			 * components on `window.godamDashboardSections` to extend the
+			 * dashboard with additional sections. This hook must fire before the
+			 * main dashboard bundle is enqueued so those registrations are
+			 * available when the dashboard app mounts.
+			 *
+			 * @since 1.9.1
+			 */
+			do_action( 'godam_enqueue_dashboard_page_scripts' );
+
 			wp_enqueue_script( 'godam-page-script-dashboard' );
 			wp_enqueue_script( 'd3-js' );
 

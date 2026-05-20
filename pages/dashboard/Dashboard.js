@@ -28,6 +28,49 @@ import NewYearSaleBanner from '../../assets/src/images/new-year-sale-2026.webp';
 import UpgradePlanDashboardBg from '../../assets/src/images/upgrade-plan-dashboard-bg.webp';
 import { formatNumber, formatWatchTime } from '../utils/formatters';
 
+/**
+ * Retrieve dashboard sections registered by add-ons.
+ *
+ * Add-ons (e.g. godam-for-woo) can register additional dashboard
+ * sections by pushing onto `window.godamDashboardSections`. Each entry
+ * may be either a React component or an object of the form
+ * `{ id, component, priority }`. Sections are rendered below the
+ * "Top Videos" table, ordered by `priority` (ascending; default 10).
+ *
+ * Example:
+ *
+ * ```js
+ * window.godamDashboardSections = window.godamDashboardSections || [];
+ * window.godamDashboardSections.push( {
+ *   id: 'reel-pops-analytics',
+ *   priority: 20,
+ *   component: ReelPopsAnalyticsSection,
+ * } );
+ * ```
+ *
+ * @return {Array} Sorted array of section descriptors.
+ */
+const getExtendedDashboardSections = () => {
+	const raw = Array.isArray( window.godamDashboardSections ) ? window.godamDashboardSections : [];
+
+	return raw
+		.map( ( entry, idx ) => {
+			if ( typeof entry === 'function' ) {
+				return { id: `dashboard-section-${ idx }`, component: entry, priority: 10 };
+			}
+			if ( entry && typeof entry === 'object' && typeof entry.component === 'function' ) {
+				return {
+					id: entry.id || `dashboard-section-${ idx }`,
+					component: entry.component,
+					priority: typeof entry.priority === 'number' ? entry.priority : 10,
+				};
+			}
+			return null;
+		} )
+		.filter( Boolean )
+		.sort( ( a, b ) => a.priority - b.priority );
+};
+
 const Dashboard = () => {
 	const [ topVideosPage, setTopVideosPage ] = useState( 1 );
 	const siteUrl = window.location.origin;
@@ -512,6 +555,10 @@ const Dashboard = () => {
 						</div>
 					</div>
 				</div>
+
+				{ getExtendedDashboardSections().map( ( { id, component: SectionComponent } ) => (
+					<SectionComponent key={ id } />
+				) ) }
 			</div>
 		</div>
 	);
