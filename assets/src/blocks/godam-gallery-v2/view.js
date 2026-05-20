@@ -13,6 +13,96 @@ const { __ } = require( '@wordpress/i18n' );
 	let activeGallery = null;
 	let sharedModal = null;
 
+	// Hard upper bound for how long we wait for an iframe to acknowledge an
+	// analytics flush request. The iframe processes the message synchronously
+	// and only needs to initiate a keepalive fetch, which is essentially
+	// instant — 50ms is a generous safety margin that stays imperceptible to
+	// the user closing or navigating the modal.
+	const FLUSH_ACK_TIMEOUT_MS = 50;
+
+	/**
+	 * Ask the embed iframe to send any pending type 2 (heatmap) analytics for
+	 * the video it is currently playing, then resolve once the iframe acks
+	 * (or the safety timeout elapses).
+	 *
+	 * iframes do not reliably fire pagehide / beforeunload when their src is
+	 * mutated — Safari in particular can drop those events on iframe-level
+	 * navigation. Without this explicit handshake, the type 2 heatmap fetch
+	 * that normally runs in those handlers is lost. We send a same-origin
+	 * postMessage that the analytics script inside the iframe handles by
+	 * issuing a synchronous keepalive fetch while its document is still alive.
+	 *
+	 * @param {HTMLIFrameElement} iframe Modal iframe currently hosting the embed.
+	 * @return {Promise<void>} Resolves after ack or timeout — never rejects.
+	 */
+	function flushIframeAnalytics( iframe ) {
+		return new Promise( ( resolve ) => {
+			if ( ! iframe || ! iframe.contentWindow ) {
+				resolve();
+				return;
+			}
+
+			// Nothing to flush if the iframe is empty or already on about:blank.
+			const currentSrc = iframe.src || '';
+			if ( ! currentSrc || currentSrc === 'about:blank' ) {
+				resolve();
+				return;
+			}
+
+			let targetOrigin;
+			try {
+				targetOrigin = new URL( currentSrc, window.location.origin ).origin;
+			} catch ( err ) {
+				resolve();
+				return;
+			}
+
+			// Cross-origin embeds cannot handle our message — bail rather than
+			// leak the request to an unrelated origin via postMessage('*').
+			if ( targetOrigin !== window.location.origin ) {
+				resolve();
+				return;
+			}
+
+			let settled = false;
+
+			const finish = () => {
+				if ( settled ) {
+					return;
+				}
+				settled = true;
+				window.removeEventListener( 'message', ackHandler );
+				clearTimeout( timeoutId );
+				resolve();
+			};
+
+			const ackHandler = ( event ) => {
+				if (
+					event.source === iframe.contentWindow &&
+					event.origin === targetOrigin &&
+					event.data?.type === 'godamFlushAnalyticsAck'
+				) {
+					finish();
+				}
+			};
+
+			window.addEventListener( 'message', ackHandler );
+			const timeoutId = setTimeout( finish, FLUSH_ACK_TIMEOUT_MS );
+
+			try {
+				iframe.contentWindow.postMessage(
+					{ type: 'godamFlushAnalytics' },
+					targetOrigin,
+				);
+			} catch ( err ) {
+				// postMessage can throw if the iframe document is already gone.
+				// In that case fall through to the timeout — there's nothing
+				// useful left to flush anyway.
+				finish();
+			}
+		} );
+	}
+
 	function initBlurUpPlaceholders( root = document ) {
 		root.querySelectorAll( '.godam-gallery-blurred-img' ).forEach( ( div ) => {
 			if ( div.dataset.godamGalleryBlurInit === '1' ) {
@@ -349,7 +439,7 @@ const { __ } = require( '@wordpress/i18n' );
 			}
 		}
 
-		openModalByIndex( index ) {
+		async openModalByIndex( index ) {
 			this.refreshItems();
 			const item = this.items[ index ];
 			const videoId = item?.dataset?.videoId;
@@ -364,6 +454,13 @@ const { __ } = require( '@wordpress/i18n' );
 
 			this.currentIndex = index;
 			activeGallery = this;
+
+			// When the modal is already showing a video, flush its analytics
+			// before reassigning iframe.src. The previous document's
+			// pagehide/beforeunload cannot be relied on for iframe-level
+			// navigation.
+			await flushIframeAnalytics( this.modal.iframe );
+
 			const engagementsParam = this.engagements === 'show' ? '&engagements=show' : '';
 			this.modal.iframe.src = `${ this.embedBaseUrl }?godam_page=video-embed&id=${ encodeURIComponent( videoId ) }&godam_gallery=1${ engagementsParam }`;
 			this.modal.overlay.classList.add( 'is-active' );
@@ -391,13 +488,15 @@ const { __ } = require( '@wordpress/i18n' );
 			this.openModalByIndex( nextIndex );
 		}
 
-		closeModal() {
+		async closeModal() {
+			// Restore the visual state immediately so the modal closing feels
+			// responsive. The iframe teardown is deferred until after the
+			// analytics flush — a sub-50ms wait that the user does not see.
 			this.modal.overlay.classList.remove( 'is-active' );
 			this.modal.modal.classList.remove( 'is-active' );
 			this.modal.closeButton.classList.remove( 'is-active' );
 			this.modal.prevButton.classList.remove( 'is-active' );
 			this.modal.nextButton.classList.remove( 'is-active' );
-			this.modal.iframe.src = 'about:blank';
 			document.body.classList.remove( 'godam-gallery-v2-modal-open' );
 			this.currentIndex = -1;
 
@@ -409,6 +508,11 @@ const { __ } = require( '@wordpress/i18n' );
 				this.previouslyFocusedElement.focus();
 				this.previouslyFocusedElement = null;
 			}
+
+			// Flush analytics before navigating the iframe to about:blank so
+			// the heatmap fetch is initiated while the embed document is alive.
+			await flushIframeAnalytics( this.modal.iframe );
+			this.modal.iframe.src = 'about:blank';
 		}
 	}
 

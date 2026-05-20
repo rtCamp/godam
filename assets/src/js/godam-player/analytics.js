@@ -237,9 +237,56 @@ if ( ! window.godamUnloadListenerBound ) {
 		}
 	};
 
+	/**
+	 * Explicit flush requested by a parent window (e.g. the GoDAM Video Gallery
+	 * modal before it navigates or removes the iframe).
+	 *
+	 * The browser's pagehide / beforeunload events are unreliable for iframes
+	 * whose src is being changed or whose containing element is being removed
+	 * from the DOM — Safari in particular can skip them, and DOM removal does
+	 * not fire them at all. The gallery sends this message synchronously before
+	 * tearing the iframe down so the type 2 heatmap is reliably dispatched via
+	 * the keepalive fetch path while the document still exists.
+	 *
+	 * @param {MessageEvent} event Cross-window message.
+	 */
+	const handleFlushRequest = ( event ) => {
+		// Only accept same-origin messages — the gallery iframe always loads
+		// video-embed.php from the same site that hosts the gallery block.
+		if ( event.origin !== window.location.origin ) {
+			return;
+		}
+
+		if ( event.data?.type !== 'godamFlushAnalytics' ) {
+			return;
+		}
+
+		window.godamTrackedPlayers.forEach( ( entry, playerInstance ) => {
+			const sent = sendPlayerHeatmap( playerInstance, entry.videoEl, entry.lastSentKey );
+			if ( sent ) {
+				// Stamp the ranges so a subsequent pagehide does not re-send.
+				entry.lastSentKey = sent;
+			}
+		} );
+
+		// Ack so the parent can stop waiting and proceed with the teardown
+		// that motivated the flush. Parent also has a timeout fallback.
+		if ( event.source && typeof event.source.postMessage === 'function' ) {
+			try {
+				event.source.postMessage(
+					{ type: 'godamFlushAnalyticsAck' },
+					event.origin,
+				);
+			} catch ( err ) {
+				// Best-effort — parent will fall back to its timeout.
+			}
+		}
+	};
+
 	window.addEventListener( 'beforeunload', handleUnload );
 	window.addEventListener( 'pagehide', handleUnload ); // For better mobile / bfcache support
 	document.addEventListener( 'visibilitychange', handleVisibilityHidden ); // Tab switch, minimize, screen lock
+	window.addEventListener( 'message', handleFlushRequest ); // Explicit flush from gallery parents
 }
 
 /**

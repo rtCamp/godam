@@ -7,6 +7,89 @@ import DOMPurify from 'isomorphic-dompurify';
 // Get the REST URL from localized data, fallback to hardcoded path.
 const galleryRestUrl = window.godamGalleryData?.restUrl || '/wp-json/godam/v1/gallery-shortcode';
 
+// Hard upper bound for how long we wait for an iframe to acknowledge an
+// analytics flush request. The iframe processes the message synchronously and
+// only needs to initiate a keepalive fetch, so 50ms is a generous margin that
+// stays imperceptible to the user closing or navigating the modal.
+const GODAM_GALLERY_FLUSH_ACK_TIMEOUT_MS = 50;
+
+/**
+ * Ask the embed iframe to send any pending type 2 (heatmap) analytics for the
+ * video it is currently playing, then resolve once the iframe acks (or the
+ * safety timeout elapses).
+ *
+ * Required because the V1 gallery removes the modal (and its iframe) from the
+ * DOM on close, which suppresses pagehide / beforeunload — and even on src
+ * changes those events are not fired reliably for iframes across browsers.
+ * The analytics script inside the iframe listens for the postMessage and
+ * issues a synchronous keepalive fetch while its document is still alive.
+ *
+ * @param {HTMLIFrameElement} iframe Modal iframe currently hosting the embed.
+ * @return {Promise<void>} Resolves after ack or timeout — never rejects.
+ */
+function flushGalleryIframeAnalytics( iframe ) {
+	return new Promise( ( resolve ) => {
+		if ( ! iframe || ! iframe.contentWindow ) {
+			resolve();
+			return;
+		}
+
+		const currentSrc = iframe.src || '';
+		if ( ! currentSrc || currentSrc === 'about:blank' ) {
+			resolve();
+			return;
+		}
+
+		let targetOrigin;
+		try {
+			targetOrigin = new URL( currentSrc, window.location.origin ).origin;
+		} catch ( err ) {
+			resolve();
+			return;
+		}
+
+		// Skip cross-origin embeds — postMessage('*') would leak the request.
+		if ( targetOrigin !== window.location.origin ) {
+			resolve();
+			return;
+		}
+
+		let settled = false;
+
+		const finish = () => {
+			if ( settled ) {
+				return;
+			}
+			settled = true;
+			window.removeEventListener( 'message', ackHandler );
+			clearTimeout( timeoutId );
+			resolve();
+		};
+
+		const ackHandler = ( event ) => {
+			if (
+				event.source === iframe.contentWindow &&
+				event.origin === targetOrigin &&
+				event.data?.type === 'godamFlushAnalyticsAck'
+			) {
+				finish();
+			}
+		};
+
+		window.addEventListener( 'message', ackHandler );
+		const timeoutId = setTimeout( finish, GODAM_GALLERY_FLUSH_ACK_TIMEOUT_MS );
+
+		try {
+			iframe.contentWindow.postMessage(
+				{ type: 'godamFlushAnalytics' },
+				targetOrigin,
+			);
+		} catch ( err ) {
+			finish();
+		}
+	} );
+}
+
 function initBlurUpPlaceholders( root = document ) {
 	root.querySelectorAll( '.godam-gallery-blurred-img' ).forEach( ( div ) => {
 		if ( div.dataset.godamGalleryBlurInit === '1' ) {
@@ -256,8 +339,12 @@ document.addEventListener( 'click', function( e ) {
 				const animationClass = direction === 'next' ? 'slide-out-up' : 'slide-out-down';
 				modalBody.classList.add( animationClass );
 
-				// After animation, update iframe
-				setTimeout( () => {
+				// After animation, update iframe. Flush analytics from the
+				// outgoing video first so its heatmap is initiated while the
+				// embed document is still alive — iframe-level src changes
+				// don't reliably fire pagehide/beforeunload.
+				setTimeout( async () => {
+					await flushGalleryIframeAnalytics( _iframe );
 					_iframe.src = DOMPurify.sanitize( newVideoUrl );
 
 					modalBody.classList.remove( animationClass );
@@ -609,7 +696,7 @@ document.addEventListener( 'click', function( e ) {
 		document.addEventListener( 'keydown', handleEscape );
 
 		// Close modal function
-		const closeModal = () => {
+		const closeModal = async () => {
 			document.removeEventListener( 'wheel', handleScroll );
 			document.body.removeEventListener( 'touchstart', handleTouchStart );
 			document.body.removeEventListener( 'touchmove', handleTouchMove );
@@ -617,8 +704,19 @@ document.addEventListener( 'click', function( e ) {
 			window.removeEventListener( 'message', handlePostMessage );
 			document.removeEventListener( 'keydown', handleEscape );
 			iframe.removeEventListener( 'load', showModalContent );
-			modal.remove();
+
+			// Hide the modal and restore body scroll immediately so the close
+			// feels responsive. The DOM removal is deferred until after the
+			// analytics flush — a sub-50ms wait that the user does not see.
+			modal.style.display = 'none';
 			document.body.style.overflow = '';
+
+			// Flush analytics before removing the iframe from the DOM —
+			// DOM removal does not fire pagehide/beforeunload, so the type 2
+			// heatmap would otherwise be lost on every modal close.
+			await flushGalleryIframeAnalytics( iframe );
+
+			modal.remove();
 		};
 
 		// Close on X button click
