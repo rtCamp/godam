@@ -803,12 +803,24 @@ $media-library-active-folder: #f5f5f5;
 					&:active {
 						 transform: translateY(2px) scale(0.98);
 					}
+
+					&:disabled {
+						cursor: not-allowed;
+					}
 				}
 			}
 
 			.rtgodam-manage-versions-list {
 				display: grid;
 				gap: 12px;
+
+				.rtgodam-manage-versions-loading {
+
+					.spinner {
+						float: none;
+						margin-top: 0;
+					}
+				}
 
 				.rtgodam-version-row {
 					display: flex;
@@ -926,6 +938,10 @@ $media-library-active-folder: #f5f5f5;
 						&:active {
 							transform: translateY(2px) scale(0.98);
 						}
+
+						&:disabled {
+							cursor: not-allowed;
+						}
 					}
 
 					.rtgodam-version-delete {
@@ -945,6 +961,11 @@ $media-library-active-folder: #f5f5f5;
 						&:active {
 							border: 1px solid #b32318;
 							transform: translateY(2px) scale(0.98);
+						}
+
+						&:disabled {
+							opacity: 0.5;
+							cursor: not-allowed;
 						}
 					}
 				}

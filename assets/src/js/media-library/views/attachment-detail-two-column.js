@@ -1103,44 +1103,18 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	},
 
 	/**
-	 * Applies an optimistic active state to the clicked version row.
-	 *
-	 * @param {HTMLElement} modal     Manage versions modal element.
-	 * @param {HTMLElement} targetRow Clicked version row.
-	 */
-	applyOptimisticActiveVersion( modal, targetRow ) {
-		if ( ! targetRow ) {
-			return;
-		}
-
-		modal.querySelectorAll( '.rtgodam-version-row' ).forEach( ( row ) => {
-			row.classList.remove( 'is-active' );
-			row.querySelectorAll( '.rtgodam-version-chip--active' ).forEach( ( chip ) => chip.remove() );
-		} );
-
-		targetRow.classList.add( 'is-active' );
-
-		const titleRow = targetRow.querySelector( '.rtgodam-version-title-row' );
-		if ( titleRow ) {
-			const activeChip = document.createElement( 'span' );
-			activeChip.className = 'rtgodam-version-chip rtgodam-version-chip--active';
-			activeChip.textContent = __( 'Active', 'godam' );
-			titleRow.appendChild( activeChip );
-		}
-
-		const rowActions = targetRow.querySelector( '.rtgodam-version-right' );
-		if ( rowActions ) {
-			rowActions.innerHTML = '';
-		}
-	},
-
-	/**
 	 * Sets up actions inside Manage Versions modal.
 	 */
 	setupManageVersionActions() {
 		const modal = document.getElementById( 'rtgodam-manage-versions-modal' );
 		if ( ! modal ) {
 			return;
+		}
+
+		// Check if modal is in loading state and disable action buttons accordingly
+		const isLoading = modal.getAttribute( 'data-is-loading' ) === 'true';
+		if ( isLoading ) {
+			this.setManageVersionButtonsDisabled( modal, true );
 		}
 
 		const addVersionButton = modal.querySelector( '.rtgodam-add-version' );
@@ -1183,7 +1157,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 						replaceResponse?.message?.new_version ??
 						replaceResponse?.new_version,
 					);
-					const versionStartMessage = __( 'New version upload started. It will be updated in a few moments.', 'godam' );
+					const versionStartMessage = __( 'New version upload started. It will be updated in a few moments …', 'godam' );
 					this.openManageVersionsModal( {
 						isLoading: true,
 						loadingMessage: versionStartMessage,
@@ -1220,9 +1194,11 @@ export default AttachmentDetailsTwoColumn?.extend( {
 					return;
 				}
 
-				const targetRow = button.closest( '.rtgodam-version-row' );
-				this.setManageVersionButtonsDisabled( modal, true );
-				this.applyOptimisticActiveVersion( modal, targetRow );
+				const switchingMessage = __( 'Switching active version …', 'godam' );
+				this.openManageVersionsModal( {
+					isLoading: true,
+					loadingMessage: switchingMessage,
+				} );
 
 				try {
 					await this.switchActiveVersion( versionNumber, maxVersions );
@@ -1368,8 +1344,14 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 */
 	normalizeMediaVersions( mediaVersionsResponse, fallbackTitle ) {
 		const response = mediaVersionsResponse?.response ?? mediaVersionsResponse ?? {};
+		const versions = response?.message?.versions;
 
-		const mappedVersions = response?.message?.versions.map( ( version, index ) => {
+		// Return empty array if versions data is not available
+		if ( ! Array.isArray( versions ) ) {
+			return [];
+		}
+
+		const mappedVersions = versions.map( ( version, index ) => {
 			const versionNumber = version?.version ?? index + 1;
 			const title = version?.orignal_file_name || `${ fallbackTitle } ${ index + 1 }`;
 			const isActive = Boolean( version?.is_active );
@@ -1411,7 +1393,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		const { isLoading = false, loadingMessage = '' } = options;
 		const attachmentId = this.model.get( 'id' );
 		const attachmentTitle = this.model.get( 'title' ) || this.model.get( 'filename' ) || __( 'Media File', 'godam' );
-		const versions = isLoading ? [] : this.normalizeMediaVersions( this.mediaVersions, attachmentTitle );
+		const versions = this.normalizeMediaVersions( this.mediaVersions, attachmentTitle );
 
 		const renderModalTemplate = wp.template( 'rtgodam-manage-versions-modal' );
 		const modalHtml = renderModalTemplate( {
@@ -1435,6 +1417,9 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		document.addEventListener( 'keydown', this._onManageVersionsKeydown );
 
 		const modal = document.getElementById( 'rtgodam-manage-versions-modal' );
+		if ( isLoading ) {
+			modal?.setAttribute( 'data-is-loading', 'true' );
+		}
 		modal?.querySelector( '.rtgodam-manage-versions-close' )?.addEventListener( 'click', () => this.closeManageVersionsModal() );
 		modal?.querySelector( '.rtgodam-manage-versions-overlay' )?.addEventListener( 'click', () => this.closeManageVersionsModal() );
 		this.setupManageVersionActions();

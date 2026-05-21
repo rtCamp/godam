@@ -66,7 +66,8 @@ class Assets {
 									<span class="spinner is-active" aria-hidden="true"></span>
 									<span>{{ data.loadingMessage || '<?php echo esc_js( __( 'Loading versions...', 'godam' ) ); ?>' }}</span>
 								</div>
-							<# } else if ( ! data.versions || ! data.versions.length ) { #>
+							<# } #>
+							<# if ( ! data.versions || ! data.versions.length ) { #>
 								<div class="rtgodam-manage-versions-empty"><?php esc_html_e( 'No versions found.', 'godam' ); ?></div>
 							<# } else { #>
 								<# _.each( data.versions, function( version, index ) { #>

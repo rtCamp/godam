@@ -55,6 +55,7 @@ class Media_Library_Ajax {
 		// Add admin notice for HTTP auth and AJAX handler to save HTTP auth status.
 		add_action( 'admin_notices', array( $this, 'http_auth_warning_notice' ) );
 		add_action( 'wp_ajax_godam_save_http_auth_status', array( $this, 'save_http_auth_status' ) );
+
 		add_action( 'wp_ajax_godam_get_media_versions', array( $this, 'get_media_versions' ) );
 		add_action( 'wp_ajax_godam_switch_active_version', array( $this, 'switch_active_version' ) );
 		add_action( 'wp_ajax_godam_delete_version', array( $this, 'delete_version' ) );
