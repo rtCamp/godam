@@ -144,6 +144,10 @@ function flushPageLoadQueue( sync = false ) {
 		// guarantees the browser carries the request to completion at the
 		// network layer.
 		if ( shouldSkipAnalytics() ) {
+			// shouldSkipAnalytics() is constant for the page session, so these
+			// events would never be sendable. Drop them rather than letting the
+			// queue grow unbounded across bfcache restores.
+			window.godamPageLoadQueue.length = 0;
 			return;
 		}
 
@@ -169,13 +173,15 @@ function flushPageLoadQueue( sync = false ) {
 		return;
 	}
 
-	const batch = window.godamPageLoadQueue.splice( 0 );
-
 	if ( ! window.analytics ) {
-		// Defensive: re-queue and let a subsequent enqueue/flush retry.
-		window.godamPageLoadQueue.unshift( ...batch );
+		// Defensive: analytics library was present at enqueue time but is no
+		// longer available. Reschedule so the batch isn't stranded if no
+		// further intersections occur to trigger another enqueue.
+		window.godamPageLoadFlushTimer = setTimeout( flushPageLoadQueue, PAGE_LOAD_FLUSH_DELAY_MS );
 		return;
 	}
+
+	const batch = window.godamPageLoadQueue.splice( 0 );
 
 	window.analytics.track( 'page_load', {
 		type: 1,
