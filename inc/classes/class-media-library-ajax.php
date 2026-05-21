@@ -1269,9 +1269,9 @@ class Media_Library_Ajax {
 			wp_send_json_error( array( 'message' => __( 'GoDAM API key is missing.', 'godam' ) ), 400 );
 		}
 
-		$max_versions = isset( $_POST['max_versions'] ) ? absint( wp_unslash( $_POST['max_versions'] ) ) : 5;
+		$max_versions = isset( $_POST['max_versions'] ) ? absint( wp_unslash( $_POST['max_versions'] ) ) : 25;
 		if ( $max_versions < 1 ) {
-			$max_versions = 5;
+			$max_versions = 25;
 		}
 
 		if ( $version_number > $max_versions ) {

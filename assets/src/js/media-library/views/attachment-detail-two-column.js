@@ -829,7 +829,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * @param {number} maxVersions   Maximum versions available.
 	 * @return {Promise<Object>} API response.
 	 */
-	async switchActiveVersion( versionNumber, maxVersions = 5 ) {
+	async switchActiveVersion( versionNumber, maxVersions = 25 ) {
 		const attachmentId = this.model.get( 'id' );
 		const nonce = window?.easydamMediaLibrary?.nonce || '';
 
@@ -1298,7 +1298,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			return maxVersions;
 		}
 
-		return 5;
+		return 25;
 	},
 
 	/**
