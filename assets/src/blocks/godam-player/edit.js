@@ -752,6 +752,7 @@ function VideoEdit( {
 								label={ __( 'Edit Video', 'godam' ) }
 								href={ `${ window?.pluginInfo?.adminUrl || '/wp-admin/' }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
 								target="_blank"
+								data-test-id="godam-video-toolbar-edit"
 							/>
 						</ToolbarGroup>
 					) }
@@ -760,6 +761,7 @@ function VideoEdit( {
 							icon={ trendingUp }
 							label={ __( 'Video SEO', 'godam' ) }
 							onClick={ () => setIsSEOModelOpen( true ) }
+							data-test-id="godam-video-toolbar-seo"
 						>
 							{ __( 'SEO', 'godam' ) }
 						</ToolbarButton>
@@ -781,7 +783,7 @@ function VideoEdit( {
 				</BlockControls>
 			) }
 			<InspectorControls>
-				<PanelBody title={ __( 'Settings', 'godam' ) }>
+				<PanelBody title={ __( 'Settings', 'godam' ) } data-test-id="godam-video-panel-settings">
 					<VideoCommonSettings
 						setAttributes={ setAttributes }
 						attributes={ attributes }
@@ -797,6 +799,7 @@ function VideoEdit( {
 									<SelectControl
 										__nextHasNoMarginBottom
 										label={ __( 'Hover Option', 'godam' ) }
+										data-test-id="godam-video-control-hover-select"
 										help={ autoplay
 											? __( 'Hover option is disabled when autoplay is on.', 'godam' )
 											: __( 'Choose the action to perform on video hover.', 'godam' ) }
@@ -827,6 +830,7 @@ function VideoEdit( {
 									__nextHasNoMarginBottom
 								>
 									<SelectControl
+										data-test-id="godam-video-control-aspect-ratio"
 										value={ attributes.aspectRatio || 'responsive' }
 										options={ [
 											{ label: __( 'Original', 'godam' ), value: 'responsive' },
@@ -840,6 +844,7 @@ function VideoEdit( {
 								<UnitControl
 									__nextHasNoMarginBottom
 									label={ __( 'Height', 'godam' ) }
+									data-test-id="godam-video-control-player-height"
 									value={ playerHeight || '' }
 									onChange={ ( value ) => setAttributes( { playerHeight: value || '' } ) }
 									help={ __( 'Set the video height. Width is auto-calculated from the aspect ratio.', 'godam' ) }
@@ -864,18 +869,20 @@ function VideoEdit( {
 
 				{ /* Only show additional settings when not inside a Query Loop */ }
 				{ ! isInsideQueryLoop && (
-					<PanelBody title={ __( 'Overlay Blocks', 'godam' ) }>
+					<PanelBody title={ __( 'Overlay Blocks', 'godam' ) } data-test-id="godam-video-panel-overlay-blocks">
 						<ToggleControl
 							label={ __( 'Show overlay blocks', 'godam' ) }
 							checked={ showOverlay }
 							onChange={ ( value ) => setAttributes( { showOverlay: value } ) }
 							help={ __( 'Display blocks on top of the video player.', 'godam' ) }
+							data-test-id="godam-video-control-show-overlay"
 						/>
 
 						{ showOverlay && (
 							<>
 								<SelectControl
 									label={ __( 'Vertical alignment', 'godam' ) }
+									data-test-id="godam-video-control-vertical-alignment"
 									value={ verticalAlignment }
 									options={ [
 										{ label: __( 'Top', 'godam' ), value: 'top' },
@@ -888,6 +895,7 @@ function VideoEdit( {
 
 								<RangeControl
 									label={ __( 'Time range', 'godam' ) }
+									data-test-id="godam-video-control-overlay-time-range"
 									value={ overlayTimeRange }
 									onChange={ ( value ) => setAttributes( { overlayTimeRange: value } ) }
 									min={ 0 }
@@ -918,7 +926,7 @@ function VideoEdit( {
 				isInsideQueryLoop ? (
 					<div { ...blockProps }>
 						<div className="godam-editor-video-placeholder">
-							<span className="godam-editor-video-label">
+							<span className="godam-editor-video-label" data-test-id="godam-video-element-query-label">
 								{ __( 'Video', 'godam' ) }
 							</span>
 						</div>
@@ -932,11 +940,12 @@ function VideoEdit( {
 							setAttributes={ setAttributes }
 						/>
 
-						<figure { ...blockProps }>
+						<figure { ...blockProps } data-test-id="godam-video-canvas">
 							<div className="godam-video-wrapper">
 								{ showOverlay && (
 									<div
 										className={ `godam-video-overlay-container godam-overlay-alignment-${ verticalAlignment }` }
+										data-test-id="godam-video-canvas-overlay"
 									>
 										<InnerBlocks
 											allowedBlocks={ ALLOWED_BLOCKS }
