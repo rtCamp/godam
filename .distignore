@@ -39,4 +39,6 @@ phpunit-integration.xml.dist
 jest.config.js
 .phpunit.result.cache
 coverage/
+.codecov.yml
+.gitattributes
 docs/
