@@ -31,3 +31,12 @@ bin/
 .husky/
 .packagejsonignore
 .distignore
+
+# Tests
+tests/
+phpunit-unit.xml.dist
+phpunit-integration.xml.dist
+jest.config.js
+.phpunit.result.cache
+coverage/
+docs/

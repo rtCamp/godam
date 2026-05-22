@@ -1,0 +1,9 @@
+# Exclude development-only files from `git archive` output.
+/tests                          export-ignore
+/docs                           export-ignore
+/phpunit-unit.xml.dist          export-ignore
+/phpunit-integration.xml.dist   export-ignore
+/jest.config.js                 export-ignore
+/.codecov.yml                   export-ignore
+/.github                        export-ignore
+/bin                            export-ignore
