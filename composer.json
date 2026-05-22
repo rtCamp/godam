@@ -9,7 +9,14 @@
 		"wp-phpunit/wp-phpunit": "^6.2",
 		"yoast/phpunit-polyfills": "^1.0",
 		"wp-cli/i18n-command": "^v2.6",
-		"squizlabs/php_codesniffer": "^3.13"
+		"squizlabs/php_codesniffer": "^3.13",
+		"brain/monkey": "^2.6",
+		"mockery/mockery": "^1.6"
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"GoDAM\\Tests\\": "tests/phpunit/"
+		}
 	},
 	"config": {
 		"allow-plugins": {
