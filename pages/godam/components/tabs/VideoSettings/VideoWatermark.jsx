@@ -97,6 +97,7 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 							__nextHasNoMarginBottom
 							className="godam-toggle"
 							label={ __( 'Enable video watermark', 'godam' ) }
+							data-test-id="godam-settings-video-control-watermark-enabled"
 							checked={ enableWatermark }
 							onChange={ ( value ) => {
 								handleSettingChange( 'watermark', value );
@@ -114,6 +115,7 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 									<ToggleControl
 										label={ __( 'Use image watermark', 'godam' ) }
 										className="godam-toggle"
+										data-test-id="godam-settings-video-control-watermark-image-toggle"
 										checked={ useImage }
 										onChange={ ( value ) => {
 											handleSettingChange( 'use_watermark_image', value );
@@ -190,6 +192,7 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 										<TextControl
 											__next40pxDefaultSize
 											__nextHasNoMarginBottom
+											data-test-id="godam-settings-video-control-watermark-text"
 											value={ watermarkText }
 											onChange={ ( value ) =>
 												handleSettingChange( 'watermark_text', value )
