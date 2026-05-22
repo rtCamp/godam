@@ -9,31 +9,39 @@ const galleryRestUrl = window.godamGalleryData?.restUrl || '/wp-json/godam/v1/ga
 
 /*
  * Pull pending heatmap payloads out of the iframe and POST them from
- * THIS context, then close. Sending from the iframe right before
- * teardown gets cancelled by the browser; sending from here survives.
+ * THIS context. Sending from the iframe right before teardown gets
+ * cancelled by the browser; sending from here survives because the
+ * parent window is not being destroyed. Caller is responsible for
+ * tearing the iframe down after this returns.
+ *
  * Same-origin direct call — no postMessage round-trip, fully synchronous.
- * Cross-origin or missing function: silently fall through to close.
+ * Cross-origin or missing function: silently no-op.
+ *
+ * `keepalive: true` is defense-in-depth here, not the primary mechanism
+ * (the parent isn't unloading). It only matters if the user closes the
+ * entire tab during the close handler's brief window — in that case
+ * keepalive lets the request still reach the wire.
  */
-function flushIframeAnalytics( iframe, onDone ) {
+function flushIframeAnalytics( iframe ) {
 	try {
 		const win = iframe?.contentWindow;
-		if ( win && typeof win.godamGalleryFlushPayloads === 'function' ) {
-			win.godamGalleryFlushPayloads().forEach( ( payload ) => {
-				if ( ! payload?.endpoint || ! payload?.body ) {
-					return;
-				}
-				fetch( `${ payload.endpoint }/analytics/`, {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify( payload.body ),
-					keepalive: true,
-				} ).catch( () => {} );
-			} );
+		if ( ! win || typeof win.godamGalleryFlushPayloads !== 'function' ) {
+			return;
 		}
+		win.godamGalleryFlushPayloads().forEach( ( payload ) => {
+			if ( ! payload?.endpoint || ! payload?.body ) {
+				return;
+			}
+			fetch( `${ payload.endpoint }/analytics/`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify( payload.body ),
+				keepalive: true,
+			} ).catch( () => {} );
+		} );
 	} catch ( e ) {
-		// Cross-origin access or function threw — fall through to close.
+		// Cross-origin access or function threw — silently no-op.
 	}
-	onDone();
 }
 
 function initBlurUpPlaceholders( root = document ) {
@@ -290,18 +298,17 @@ document.addEventListener( 'click', function( e ) {
 				// pagehide handler races the navigation and its keepalive POST
 				// gets cancelled by the browser.
 				setTimeout( () => {
-					flushIframeAnalytics( _iframe, () => {
-						_iframe.src = DOMPurify.sanitize( newVideoUrl );
+					flushIframeAnalytics( _iframe );
+					_iframe.src = DOMPurify.sanitize( newVideoUrl );
 
-						modalBody.classList.remove( animationClass );
-						const slideInClass = direction === 'next' ? 'slide-in-down' : 'slide-in-up';
-						modalBody.classList.add( slideInClass );
+					modalBody.classList.remove( animationClass );
+					const slideInClass = direction === 'next' ? 'slide-in-down' : 'slide-in-up';
+					modalBody.classList.add( slideInClass );
 
-						// Remove animation class after transition
-						setTimeout( () => {
-							modalBody.classList.remove( slideInClass );
-						}, 300 );
-					} );
+					// Remove animation class after transition
+					setTimeout( () => {
+						modalBody.classList.remove( slideInClass );
+					}, 300 );
 				}, 300 );
 			}
 		};
@@ -655,10 +662,9 @@ document.addEventListener( 'click', function( e ) {
 			// Flush analytics from the iframe BEFORE removing it. Removing the
 			// element synchronously cancels every in-flight request — including
 			// the keepalive heatmap POST from the iframe's pagehide handler.
-			flushIframeAnalytics( iframe, () => {
-				modal.remove();
-				document.body.style.overflow = '';
-			} );
+			flushIframeAnalytics( iframe );
+			modal.remove();
+			document.body.style.overflow = '';
 		};
 
 		// Close on X button click

@@ -345,7 +345,7 @@ function sendPlayerHeatmap( player, video, skipIfKey = null ) {
 	 * keepalive: true queues the request at the network layer so it survives
 	 * top-level page unload. Note: keepalive does NOT survive iframe element
 	 * removal by the parent — that case is handled by the gallery's
-	 * `godamGalleryClose` postMessage flow below.
+	 * `godamGalleryFlushPayloads` direct-call flow below.
 	 *
 	 * Reference: https://fetch.spec.whatwg.org/#keep-alive-flag
 	 */
@@ -401,11 +401,14 @@ if ( isGalleryIframeContext ) {
 				payloads.push( { endpoint: payload.endpoint, body: payload.body } );
 				entry.lastSentKey = payload.fingerprint;
 			}
-			// Parent gallery has taken responsibility for this player's type 2
-			// analytics. The iframe-side unload/visibility/dispose handlers must
-			// skip it from here on — sending again would double-count on the
-			// server, and the second attempt is the one the browser cancels
-			// during teardown anyway.
+			// Set unconditionally — even when buildHeatmapPayload returned null.
+			// Every null-return represents "nothing to send right now" (no ranges,
+			// already-sent fingerprint, disposed, skip-analytics flag, etc.), so
+			// suppressing the iframe-side handlers is always safe here. Setting it
+			// only inside `if ( payload )` would be a regression: if more ranges
+			// accumulate between this call and iframe teardown, the iframe's own
+			// pagehide/dispose would fire and get cancelled by the teardown — the
+			// exact failure mode this whole flow exists to prevent.
 			entry.flushedByGallery = true;
 		} );
 		return payloads;

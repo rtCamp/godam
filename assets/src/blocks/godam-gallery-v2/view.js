@@ -15,31 +15,39 @@ const { __ } = require( '@wordpress/i18n' );
 
 	/*
 	 * Pull pending heatmap payloads out of the iframe and POST them from
-	 * THIS context, then close. Sending from the iframe right before
-	 * teardown gets cancelled by the browser; sending from here survives.
+	 * THIS context. Sending from the iframe right before teardown gets
+	 * cancelled by the browser; sending from here survives because the
+	 * parent window is not being destroyed. Caller is responsible for
+	 * tearing the iframe down after this returns.
+	 *
 	 * Same-origin direct call — no postMessage round-trip, fully synchronous.
-	 * Cross-origin or missing function: silently fall through to close.
+	 * Cross-origin or missing function: silently no-op.
+	 *
+	 * `keepalive: true` is defense-in-depth here, not the primary mechanism
+	 * (the parent isn't unloading). It only matters if the user closes the
+	 * entire tab during the close handler's brief window — in that case
+	 * keepalive lets the request still reach the wire.
 	 */
-	function flushIframeAnalytics( iframe, onDone ) {
+	function flushIframeAnalytics( iframe ) {
 		try {
 			const win = iframe?.contentWindow;
-			if ( win && typeof win.godamGalleryFlushPayloads === 'function' ) {
-				win.godamGalleryFlushPayloads().forEach( ( payload ) => {
-					if ( ! payload?.endpoint || ! payload?.body ) {
-						return;
-					}
-					fetch( `${ payload.endpoint }/analytics/`, {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify( payload.body ),
-						keepalive: true,
-					} ).catch( () => {} );
-				} );
+			if ( ! win || typeof win.godamGalleryFlushPayloads !== 'function' ) {
+				return;
 			}
+			win.godamGalleryFlushPayloads().forEach( ( payload ) => {
+				if ( ! payload?.endpoint || ! payload?.body ) {
+					return;
+				}
+				fetch( `${ payload.endpoint }/analytics/`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify( payload.body ),
+					keepalive: true,
+				} ).catch( () => {} );
+			} );
 		} catch ( e ) {
-			// Cross-origin access or function threw — fall through to close.
+			// Cross-origin access or function threw — silently no-op.
 		}
-		onDone();
 	}
 
 	function initBlurUpPlaceholders( root = document ) {
@@ -397,11 +405,10 @@ const { __ } = require( '@wordpress/i18n' );
 			const newIframeSrc = `${ this.embedBaseUrl }?godam_page=video-embed&id=${ encodeURIComponent( videoId ) }&godam_gallery=1${ engagementsParam }`;
 
 			// Flush analytics from the previous video (navigation case) before
-			// the iframe navigates away. Same-document first-open is a no-op
-			// because flushIframeAnalytics short-circuits on empty/about:blank.
-			flushIframeAnalytics( this.modal.iframe, () => {
-				this.modal.iframe.src = newIframeSrc;
-			} );
+			// the iframe navigates away. First-open is a no-op because the
+			// iframe is empty/about:blank — godamGalleryFlushPayloads is undefined.
+			flushIframeAnalytics( this.modal.iframe );
+			this.modal.iframe.src = newIframeSrc;
 
 			this.modal.overlay.classList.add( 'is-active' );
 			this.modal.modal.classList.add( 'is-active' );
@@ -435,12 +442,11 @@ const { __ } = require( '@wordpress/i18n' );
 			this.modal.prevButton.classList.remove( 'is-active' );
 			this.modal.nextButton.classList.remove( 'is-active' );
 
-			// Ask the iframe for its pending heatmap payloads, fire them from
-			// here, then reset src. If we set src first the iframe is torn
+			// Ask the iframe for its pending heatmap payloads and fire them from
+			// here BEFORE resetting src. If we set src first the iframe is torn
 			// down and its in-flight analytics POST is cancelled by the browser.
-			flushIframeAnalytics( this.modal.iframe, () => {
-				this.modal.iframe.src = 'about:blank';
-			} );
+			flushIframeAnalytics( this.modal.iframe );
+			this.modal.iframe.src = 'about:blank';
 
 			document.body.classList.remove( 'godam-gallery-v2-modal-open' );
 			this.currentIndex = -1;
