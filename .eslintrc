@@ -24,6 +24,7 @@
 	  ],
 	  "rules": {
 		// Add Rules for Jest here
+		"jest/unbound-method": "off"
 	  }
 	}]
   }
