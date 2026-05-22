@@ -27,6 +27,30 @@ jobs:
           npm install
           npm run build:prod
 
+      - name: Verify tests are excluded from build artifact
+        shell: bash
+        run: |
+          # Reproduce what 10up/action-wordpress-plugin-deploy will ship.
+          mkdir -p /tmp/godam-stage
+          rsync -a --exclude-from=.distignore --exclude='.git' ./ /tmp/godam-stage/
+
+          fail=0
+          for path in tests phpunit-unit.xml.dist phpunit-integration.xml.dist jest.config.js docs .codecov.yml .github; do
+            if [ -e "/tmp/godam-stage/$path" ]; then
+              echo "::error::$path leaked into the build artifact"
+              fail=1
+            fi
+          done
+
+          # Also confirm the runtime dep we DO need to ship is still present.
+          if [ ! -d /tmp/godam-stage/vendor ]; then
+            echo "::error::vendor/ missing from build artifact (action-scheduler runtime dep required)"
+            fail=1
+          fi
+
+          rm -rf /tmp/godam-stage
+          exit "$fail"
+
       - name: WordPress Plugin Deploy
         id: deploy
         uses: 10up/action-wordpress-plugin-deploy@2.3.0
