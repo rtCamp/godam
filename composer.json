@@ -25,9 +25,16 @@
 	},
 	"scripts": {
 		"pre-commit": [
-		"npm run lint:staged"
+			"npm run lint:staged"
 		],
-		"pot": "WP_CLI_PHP_ARGS='-d memory_limit=1024M' ./vendor/bin/wp i18n make-pot . --exclude=\"assets/src,assets/node_modules,tests,vendor\" ./languages/godam.pot"
+		"pot": "WP_CLI_PHP_ARGS='-d memory_limit=1024M' ./vendor/bin/wp i18n make-pot . --exclude=\"assets/src,assets/node_modules,tests,vendor\" ./languages/godam.pot",
+		"test": [
+			"@test:unit",
+			"@test:integration"
+		],
+		"test:unit": "phpunit -c phpunit-unit.xml.dist",
+		"test:integration": "phpunit -c phpunit-integration.xml.dist",
+		"test:coverage": "phpunit -c phpunit-integration.xml.dist --coverage-html coverage/php"
 	},
 	"require": {
 		"woocommerce/action-scheduler": "^3.9"
