@@ -2,9 +2,9 @@
 Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, mi5t4n, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia, kishu7270, opurockey, utsavladani, whiteshadow01, ahmarzaidi, im3dabasia1
 Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.10.1
+Stable tag: 1.10.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -219,6 +219,11 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v1.10.2 (May 22, 2026) =
+
+- Feat: Enhanced Type 1 video analytics tracking with viewport detection.
+- Fix: Resolved cancelled Type 2 Analytics requests for Gallery iframe.
+
 = v1.10.1 (May 19, 2026) =
 
 - Fix: Added patch for plugin deployment.
@@ -227,13 +232,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 - Feat: Added Unique Viewers and Replay Ratio metrics in Analytics.
 - Feat: Extended Video SEO schema with Shoppable Video support.
-
-= v1.9.0 (May 8, 2026) =
-
-- Feat: Introduced WooCommerce integration — first beta release of GoDAM for WooCommerce support.
-- Fix: Disabled hover option when autoplay is enabled in the Video block.
-- Fix: Resolved Gallery Carousel scroll issue on iOS devices.
-- Tweak: Revamped GoDAM blocks to Video, Video Gallery, Audio and Document blocks.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
