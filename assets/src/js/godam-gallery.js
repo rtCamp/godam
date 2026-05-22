@@ -7,6 +7,35 @@ import DOMPurify from 'isomorphic-dompurify';
 // Get the REST URL from localized data, fallback to hardcoded path.
 const galleryRestUrl = window.godamGalleryData?.restUrl || '/wp-json/godam/v1/gallery-shortcode';
 
+/*
+ * Pull pending heatmap payloads out of the iframe and POST them from
+ * THIS context, then close. Sending from the iframe right before
+ * teardown gets cancelled by the browser; sending from here survives.
+ * Same-origin direct call — no postMessage round-trip, fully synchronous.
+ * Cross-origin or missing function: silently fall through to close.
+ */
+function flushIframeAnalytics( iframe, onDone ) {
+	try {
+		const win = iframe?.contentWindow;
+		if ( win && typeof win.godamGalleryFlushPayloads === 'function' ) {
+			win.godamGalleryFlushPayloads().forEach( ( payload ) => {
+				if ( ! payload?.endpoint || ! payload?.body ) {
+					return;
+				}
+				fetch( `${ payload.endpoint }/analytics/`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify( payload.body ),
+					keepalive: true,
+				} ).catch( () => {} );
+			} );
+		}
+	} catch ( e ) {
+		// Cross-origin access or function threw — fall through to close.
+	}
+	onDone();
+}
+
 function initBlurUpPlaceholders( root = document ) {
 	root.querySelectorAll( '.godam-gallery-blurred-img' ).forEach( ( div ) => {
 		if ( div.dataset.godamGalleryBlurInit === '1' ) {
@@ -256,18 +285,23 @@ document.addEventListener( 'click', function( e ) {
 				const animationClass = direction === 'next' ? 'slide-out-up' : 'slide-out-down';
 				modalBody.classList.add( animationClass );
 
-				// After animation, update iframe
+				// After animation, flush analytics for the outgoing video, THEN
+				// swap the iframe src. Without the flush, the previous page's
+				// pagehide handler races the navigation and its keepalive POST
+				// gets cancelled by the browser.
 				setTimeout( () => {
-					_iframe.src = DOMPurify.sanitize( newVideoUrl );
+					flushIframeAnalytics( _iframe, () => {
+						_iframe.src = DOMPurify.sanitize( newVideoUrl );
 
-					modalBody.classList.remove( animationClass );
-					const slideInClass = direction === 'next' ? 'slide-in-down' : 'slide-in-up';
-					modalBody.classList.add( slideInClass );
+						modalBody.classList.remove( animationClass );
+						const slideInClass = direction === 'next' ? 'slide-in-down' : 'slide-in-up';
+						modalBody.classList.add( slideInClass );
 
-					// Remove animation class after transition
-					setTimeout( () => {
-						modalBody.classList.remove( slideInClass );
-					}, 300 );
+						// Remove animation class after transition
+						setTimeout( () => {
+							modalBody.classList.remove( slideInClass );
+						}, 300 );
+					} );
 				}, 300 );
 			}
 		};
@@ -617,8 +651,14 @@ document.addEventListener( 'click', function( e ) {
 			window.removeEventListener( 'message', handlePostMessage );
 			document.removeEventListener( 'keydown', handleEscape );
 			iframe.removeEventListener( 'load', showModalContent );
-			modal.remove();
-			document.body.style.overflow = '';
+
+			// Flush analytics from the iframe BEFORE removing it. Removing the
+			// element synchronously cancels every in-flight request — including
+			// the keepalive heatmap POST from the iframe's pagehide handler.
+			flushIframeAnalytics( iframe, () => {
+				modal.remove();
+				document.body.style.overflow = '';
+			} );
 		};
 
 		// Close on X button click
