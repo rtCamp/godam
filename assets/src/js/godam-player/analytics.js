@@ -206,6 +206,12 @@ if ( ! window.godamUnloadListenerBound ) {
 	 */
 	const handleUnload = () => {
 		window.godamTrackedPlayers.forEach( ( entry, playerInstance ) => {
+			// Parent gallery already POSTed this player's heatmap from its
+			// own context; skipping here avoids the duplicate (and the
+			// cancelled retry that the browser kills during iframe teardown).
+			if ( entry.flushedByGallery ) {
+				return;
+			}
 			// Pass lastSentKey so sendPlayerHeatmap skips if visibilitychange already
 			// sent these exact ranges (avoids double-send on tab close).
 			sendPlayerHeatmap( playerInstance, entry.videoEl, entry.lastSentKey );
@@ -226,6 +232,10 @@ if ( ! window.godamUnloadListenerBound ) {
 	const handleVisibilityHidden = () => {
 		if ( document.visibilityState === 'hidden' ) {
 			window.godamTrackedPlayers.forEach( ( entry, playerInstance ) => {
+				// Parent gallery has already claimed this player — skip.
+				if ( entry.flushedByGallery ) {
+					return;
+				}
 				const sent = sendPlayerHeatmap( playerInstance, entry.videoEl );
 				if ( sent ) {
 					// Stamp the ranges that were just sent so the unload handler
@@ -243,38 +253,36 @@ if ( ! window.godamUnloadListenerBound ) {
 }
 
 /**
- * Send heatmap data for a single player via a keepalive fetch.
+ * Build a heatmap analytics payload for a single player without sending it.
  *
- * Returns a string fingerprint of the ranges sent (used by the visibilitychange handler
- * to avoid re-sending identical data in the subsequent pagehide/beforeunload), or null
- * if nothing was sent.
+ * Split out from sendPlayerHeatmap so the same payload can be either:
+ * - fetched from this context (the normal unload/dispose path), or
+ * - handed to a parent window via postMessage (the gallery-modal-close path,
+ * where the iframe is about to be torn down and an in-context fetch would
+ * be cancelled by the browser).
  *
  * @param {Object}      player    - VideoJS player instance
  * @param {HTMLElement} video     - Video container element
- * @param {string|null} skipIfKey - If provided, skip sending when current ranges fingerprint matches this key.
- * @return {string|null} Fingerprint of sent ranges, or null if skipped.
+ * @param {string|null} skipIfKey - Skip when current ranges fingerprint matches this key.
+ * @return {{endpoint: string, body: Object, fingerprint: string}|null} - Payload data for the heatmap event, or null if no valid payload could be built or if skipped due to matching skipIfKey.
  */
-function sendPlayerHeatmap( player, video, skipIfKey = null ) {
+function buildHeatmapPayload( player, video, skipIfKey = null ) {
 	if ( ! player || ! video ) {
 		return null;
 	}
 
 	try {
-		// Double check player isn't disposed natively beforehand
 		if ( typeof player.isDisposed === 'function' && player.isDisposed() ) {
 			return null;
 		}
 
 		const ranges = collectPlayedRanges( player );
-
 		if ( ranges.length === 0 ) {
-			return null; // Nothing played — skip
+			return null;
 		}
 
-		const rangesKey = JSON.stringify( ranges );
-
-		// Skip if the caller already sent these exact ranges (visibilitychange → pagehide dedup).
-		if ( skipIfKey && rangesKey === skipIfKey ) {
+		const fingerprint = JSON.stringify( ranges );
+		if ( skipIfKey && fingerprint === skipIfKey ) {
 			return null;
 		}
 
@@ -284,29 +292,12 @@ function sendPlayerHeatmap( player, video, skipIfKey = null ) {
 			return null;
 		}
 
-		// Skip the same conditions the analytics plugin does.
 		if ( shouldSkipAnalytics() ) {
 			return null;
 		}
 
 		const videoLength = Number( player.duration && player.duration() ) || 0;
 
-		/*
-		 * IMPORTANT: We bypass window.analytics.track() here intentionally.
-		 *
-		 * This function is called from beforeunload / pagehide / dispose handlers.
-		 * window.analytics.track() dispatches async work (Promises, microtasks).
-		 * The browser does NOT block page unload waiting for async work to settle —
-		 * the async chain can be silently abandoned mid-flight.
-		 *
-		 * The correct fix is to call fetch() with keepalive: true SYNCHRONOUSLY
-		 * inside the handler. The browser queues a keepalive request at the network
-		 * level and guarantees delivery even after the JS context is torn down.
-		 * This is the spec-compliant equivalent of navigator.sendBeacon() for POST
-		 * requests that need a JSON body.
-		 *
-		 * Reference: https://fetch.spec.whatwg.org/#keep-alive-flag
-		 */
 		const { endpoint, body } = buildAnalyticsRequestBody( {
 			type: 2,
 			userToken: window.analytics?.user?.()?.anonymousId || '',
@@ -320,21 +311,108 @@ function sendPlayerHeatmap( player, video, skipIfKey = null ) {
 			return null;
 		}
 
-		// keepalive: true guarantees the request outlives the page. We do NOT
-		// await — the browser handles delivery asynchronously at the network
-		// layer, entirely outside our JS execution context.
-		fetch( endpoint + '/analytics/', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify( body ),
-			keepalive: true,
-		} );
-
-		return rangesKey; // Return fingerprint so caller can stamp it.
+		return { endpoint, body, fingerprint };
 	} catch ( e ) {
-		// Silently ignore — we are in an unload handler and cannot surface errors.
 		return null;
 	}
+}
+
+/**
+ * Send heatmap data for a single player via a keepalive fetch.
+ *
+ * Returns a string fingerprint of the ranges sent (used by the visibilitychange handler
+ * to avoid re-sending identical data in the subsequent pagehide/beforeunload), or null
+ * if nothing was sent.
+ *
+ * @param {Object}      player    - VideoJS player instance
+ * @param {HTMLElement} video     - Video container element
+ * @param {string|null} skipIfKey - If provided, skip sending when current ranges fingerprint matches this key.
+ * @return {string|null} Fingerprint of sent ranges, or null if skipped.
+ */
+function sendPlayerHeatmap( player, video, skipIfKey = null ) {
+	const payload = buildHeatmapPayload( player, video, skipIfKey );
+	if ( ! payload ) {
+		return null;
+	}
+
+	/*
+	 * IMPORTANT: We bypass window.analytics.track() here intentionally.
+	 *
+	 * This function is called from beforeunload / pagehide / dispose handlers.
+	 * window.analytics.track() dispatches async work (Promises, microtasks).
+	 * The browser does NOT block page unload waiting for async work to settle.
+	 *
+	 * keepalive: true queues the request at the network layer so it survives
+	 * top-level page unload. Note: keepalive does NOT survive iframe element
+	 * removal by the parent — that case is handled by the gallery's
+	 * `godamGalleryFlushPayloads` direct-call flow below.
+	 *
+	 * Reference: https://fetch.spec.whatwg.org/#keep-alive-flag
+	 */
+	fetch( payload.endpoint + '/analytics/', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify( payload.body ),
+		keepalive: true,
+	} );
+
+	return payload.fingerprint;
+}
+
+/*
+ * Gallery-modal-close flush — exposed for the GoDAM gallery modal in the
+ * parent window. Returns the heatmap payloads the parent should POST from
+ * its own (not-being-destroyed) context before tearing this iframe down.
+ * Sending them from here would lose the request to the iframe-teardown
+ * cancel. Stamps each player's lastSentKey so the iframe's own pagehide /
+ * dispose handlers will dedupe and skip the same ranges later.
+ *
+ * Same-origin only. The parent calls `iframe.contentWindow.godamGalleryFlushPayloads()`
+ * directly; if the iframe is cross-origin the access throws SecurityError
+ * which the parent catches and falls through to its normal close path.
+ */
+// Only expose the gallery flush API when this script is running inside a
+// gallery iframe. The gallery embeds the video-embed page with
+// `?godam_gallery=1` in the iframe URL; on any other page (standalone embed,
+// admin preview, regular video on a post) the function is not defined and
+// `flushedByGallery` never gets set — so all non-gallery analytics paths
+// behave exactly as they did before this change.
+const isGalleryIframeContext = ( () => {
+	try {
+		return new URLSearchParams( window.location.search ).get( 'godam_gallery' ) === '1';
+	} catch ( e ) {
+		return false;
+	}
+} )();
+
+if ( isGalleryIframeContext ) {
+	window.godamGalleryFlushPayloads = function() {
+		const payloads = [];
+		if ( ! window.godamTrackedPlayers ) {
+			return payloads;
+		}
+		window.godamTrackedPlayers.forEach( ( entry, playerInstance ) => {
+			const payload = buildHeatmapPayload(
+				playerInstance,
+				entry.videoEl,
+				entry.lastSentKey,
+			);
+			if ( payload ) {
+				payloads.push( { endpoint: payload.endpoint, body: payload.body } );
+				entry.lastSentKey = payload.fingerprint;
+			}
+			// Set unconditionally — even when buildHeatmapPayload returned null.
+			// Every null-return represents "nothing to send right now" (no ranges,
+			// already-sent fingerprint, disposed, skip-analytics flag, etc.), so
+			// suppressing the iframe-side handlers is always safe here. Setting it
+			// only inside `if ( payload )` would be a regression: if more ranges
+			// accumulate between this call and iframe teardown, the iframe's own
+			// pagehide/dispose would fire and get cancelled by the teardown — the
+			// exact failure mode this whole flow exists to prevent.
+			entry.flushedByGallery = true;
+		} );
+		return payloads;
+	};
 }
 
 function setupPlayerAnalytics( player, video ) {
@@ -363,8 +441,13 @@ function setupPlayerAnalytics( player, video ) {
 	// Send heatmap when player is unmounted/disposed (e.g. AJAX navigation)
 	player.on( 'dispose', () => {
 		if ( window.godamTrackedPlayers.has( player ) ) {
-			const { videoEl, lastSentKey } = window.godamTrackedPlayers.get( player );
-			sendPlayerHeatmap( player, videoEl, lastSentKey );
+			const entry = window.godamTrackedPlayers.get( player );
+			// Parent gallery already sent this player's heatmap from its
+			// own context — don't fire a second (cancelled) request as the
+			// iframe tears down.
+			if ( ! entry.flushedByGallery ) {
+				sendPlayerHeatmap( player, entry.videoEl, entry.lastSentKey );
+			}
 			window.godamTrackedPlayers.delete( player );
 		}
 	} );
