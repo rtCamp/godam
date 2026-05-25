@@ -28,8 +28,130 @@ import NewYearSaleBanner from '../../assets/src/images/new-year-sale-2026.webp';
 import UpgradePlanDashboardBg from '../../assets/src/images/upgrade-plan-dashboard-bg.webp';
 import { formatNumber, formatWatchTime } from '../utils/formatters';
 
+/**
+ * Retrieve dashboard sections registered by add-ons.
+ *
+ * Add-ons (e.g. godam-for-woo) can register additional dashboard
+ * sections by pushing onto `window.godamDashboardSections`. Each entry
+ * may be either a React component (function, class, React.memo, or
+ * React.forwardRef) or an object of the form
+ * `{ id, component, priority }`. Sections are rendered below the
+ * "Top Videos" table, ordered by `priority` (ascending; default 10).
+ *
+ * Example:
+ *
+ * ```js
+ * window.godamDashboardSections = window.godamDashboardSections || [];
+ * window.godamDashboardSections.push( {
+ *   id: 'reel-pops-analytics',
+ *   priority: 20,
+ *   component: ReelPopsAnalyticsSection,
+ * } );
+ * ```
+ *
+ * @return {Array} Sorted array of section descriptors.
+ */
+
+/**
+ * Return true for any value React can render as a component — plain
+ * function/class components as well as exotic components produced by
+ * React.memo() and React.forwardRef() which are plain objects carrying
+ * a `$$typeof` Symbol.
+ *
+ * @param {*} value
+ *
+ * @return {boolean} True if the value is a valid React component type.
+ */
+const isReactComponent = ( value ) =>
+	typeof value === 'function' ||
+	( value !== null && typeof value === 'object' && typeof value.$$typeof === 'symbol' );
+
+/**
+ * Normalise a raw entry from `window.godamDashboardSections` or from
+ * `window.registerGodamDashboardSection()` into a canonical descriptor.
+ *
+ * @param {*}      entry Raw entry (component or descriptor object).
+ * @param {number} idx   Fallback index for generating a unique id.
+ *
+ * @return {{ id: string, component: *, priority: number }|null} Descriptor object or null if the entry is invalid.
+ */
+const normaliseSection = ( entry, idx ) => {
+	if ( isReactComponent( entry ) ) {
+		return { id: `dashboard-section-${ idx }`, component: entry, priority: 10 };
+	}
+	if ( entry && typeof entry === 'object' && isReactComponent( entry.component ) ) {
+		return {
+			id: entry.id || `dashboard-section-${ idx }`,
+			component: entry.component,
+			priority: typeof entry.priority === 'number' ? entry.priority : 10,
+		};
+	}
+	return null;
+};
+
+/** Internal event name used to signal that a new section was registered. */
+const SECTION_REGISTERED_EVENT = 'godam:register-section';
+
+/**
+ * Module-level registry populated before the app mounts (from the
+ * legacy `window.godamDashboardSections` array) and kept up-to-date
+ * via `window.registerGodamDashboardSection()`.
+ */
+const sectionRegistry = ( Array.isArray( window.godamDashboardSections )
+	? window.godamDashboardSections
+	: []
+).reduce( ( acc, entry, idx ) => {
+	const descriptor = normaliseSection( entry, idx );
+	if ( descriptor ) {
+		acc[ descriptor.id ] = descriptor;
+	}
+	return acc;
+}, /** @type {Object.<string, *>} */ ( {} ) );
+
+/**
+ * Global registration API for add-ons.
+ *
+ * Add-ons (e.g. godam-for-woo) should call this function to register a
+ * dashboard section. It works whether the dashboard has already mounted or
+ * not: pre-mount calls seed the initial state, post-mount calls dispatch a
+ * DOM event that triggers a React state update.
+ *
+ * Accepts a React component (function, class, React.memo, or React.forwardRef)
+ * or an object of the form `{ id, component, priority }`.
+ *
+ * Example: window.registerGodamDashboardSection( { id: 'reel-pops-analytics', priority: 20, component: MySection } )
+ *
+ * @param {*} entry Component or descriptor object to register.
+ */
+window.registerGodamDashboardSection = ( entry ) => {
+	const idx = Object.keys( sectionRegistry ).length;
+	const descriptor = normaliseSection( entry, idx );
+	if ( ! descriptor ) {
+		return;
+	}
+	sectionRegistry[ descriptor.id ] = descriptor;
+	window.dispatchEvent( new CustomEvent( SECTION_REGISTERED_EVENT ) );
+};
+
+/**
+ * Return a sorted snapshot of the section registry.
+ *
+ * @return {Array} Sorted array of section descriptors.
+ */
+const getSortedSections = () =>
+	Object.values( sectionRegistry ).sort( ( a, b ) => a.priority - b.priority );
+
 const Dashboard = () => {
 	const [ topVideosPage, setTopVideosPage ] = useState( 1 );
+	const [ extendedSections, setExtendedSections ] = useState( getSortedSections );
+
+	// Re-read the registry whenever an add-on registers a section after mount.
+	useEffect( () => {
+		const onSectionRegistered = () => setExtendedSections( getSortedSections() );
+		window.addEventListener( SECTION_REGISTERED_EVENT, onSectionRegistered );
+		return () => window.removeEventListener( SECTION_REGISTERED_EVENT, onSectionRegistered );
+	}, [] );
+
 	const siteUrl = window.location.origin;
 	const adminUrl = window.videoData?.adminUrl;
 
@@ -512,6 +634,10 @@ const Dashboard = () => {
 						</div>
 					</div>
 				</div>
+
+				{ extendedSections.map( ( { id, component: SectionComponent } ) => (
+					<SectionComponent key={ id } />
+				) ) }
 			</div>
 		</div>
 	);
