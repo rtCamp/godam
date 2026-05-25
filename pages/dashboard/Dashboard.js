@@ -27,6 +27,7 @@ import chevronRight from '../../assets/src/images/chevron-right.svg';
 import NewYearSaleBanner from '../../assets/src/images/new-year-sale-2026.webp';
 import UpgradePlanDashboardBg from '../../assets/src/images/upgrade-plan-dashboard-bg.webp';
 import { formatNumber, formatWatchTime } from '../utils/formatters';
+import ReelPopsTable from './components/ReelPopsTable';
 
 const Dashboard = () => {
 	const [ topVideosPage, setTopVideosPage ] = useState( 1 );
@@ -512,6 +513,8 @@ const Dashboard = () => {
 						</div>
 					</div>
 				</div>
+
+				<ReelPopsTable />
 			</div>
 		</div>
 	);
