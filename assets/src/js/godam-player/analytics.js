@@ -7,7 +7,7 @@ import { Analytics } from 'analytics';
  */
 import videoAnalyticsPlugin from './video-analytics-plugin';
 import GTMVideoTracker from './gtm-video-tracker';
-import { shouldSkipAnalytics, buildAnalyticsRequestBody } from './analytics-helpers';
+import { shouldSkipAnalytics, buildAnalyticsRequestBody, getUserAgent, getPageLoadSessionId } from './analytics-helpers';
 
 const analytics = Analytics( {
 	app: 'analytics-cdp-plugin',
@@ -16,6 +16,15 @@ const analytics = Analytics( {
 	],
 } );
 window.analytics = analytics;
+
+// Expose helpers that godam-for-woo (and other plugins) need to call so type=4
+// events produce identical normalized UA strings + share the per-page-load
+// session ID. window.analytics is the Analytics() library instance — keep our
+// helpers on a separate namespace to avoid collisions.
+window.RTGodamAnalyticsHelpers = {
+	getPageLoadSessionId,
+	getUserAgent,
+};
 
 /**
  * Collect all played time ranges from a VideoJS player instance.
@@ -90,7 +99,7 @@ function collectPlayedRanges( player ) {
 	 *
 	 * @since 1.4.2
 	 */
-	window.analytics.trackVideoEvent = ( { type, videoId, root, sendPageLoad = true } = {} ) => {
+	window.analytics.trackVideoEvent = ( { type, videoId, root, sendPageLoad = true, reelPopId = 0 } = {} ) => {
 		if ( ! type ) {
 			return false;
 		}
@@ -120,7 +129,11 @@ function collectPlayedRanges( player ) {
 			// NOTE: This automatically sends a 'page_load' event before the heatmap event, for ease of use.
 			// This is intentional behavior but may cause duplicate type 1 events in some scenarios
 			if ( sendPageLoad ) {
-				window.analytics.track( 'page_load', { type: 1, videoIds: [ [ vid, jobId ] ] } );
+				const pageLoadPayload = { type: 1, videoIds: [ [ vid, jobId ] ] };
+				if ( reelPopId > 0 ) {
+					pageLoadPayload.reel_pop_id = parseInt( reelPopId, 10 );
+				}
+				window.analytics.track( 'page_load', pageLoadPayload );
 			}
 
 			const player = getPlayer( videoEl );
@@ -135,13 +148,17 @@ function collectPlayedRanges( player ) {
 
 			const videoLength = Number( player.duration && player.duration() ) || 0;
 
-			window.analytics.track( 'video_heatmap', {
+			const heatmapPayload = {
 				type: 2,
 				videoId: vid,
 				jobId,
 				ranges,
 				videoLength,
-			} );
+			};
+			if ( reelPopId > 0 ) {
+				heatmapPayload.reel_pop_id = parseInt( reelPopId, 10 );
+			}
+			window.analytics.track( 'video_heatmap', heatmapPayload );
 			return true;
 		}
 
@@ -307,6 +324,11 @@ function sendPlayerHeatmap( player, video, skipIfKey = null ) {
 		 *
 		 * Reference: https://fetch.spec.whatwg.org/#keep-alive-flag
 		 */
+		// Forward reel-pop attribution when the surrounding plugin (e.g. godam-for-woo)
+		// tagged the <video> element. The SDK itself doesn't know what a Reel Pop is —
+		// this just opaquely propagates the attribute when present.
+		const reelPopId = parseInt( video.getAttribute( 'data-reel-pop-id' ), 10 ) || 0;
+
 		const { endpoint, body } = buildAnalyticsRequestBody( {
 			type: 2,
 			userToken: window.analytics?.user?.()?.anonymousId || '',
@@ -314,6 +336,7 @@ function sendPlayerHeatmap( player, video, skipIfKey = null ) {
 			jobId,
 			ranges,
 			videoLength,
+			reelPopId,
 		} );
 
 		if ( ! endpoint ) {

@@ -37,6 +37,7 @@ use RTGODAM\Inc\REST_API\Media_Library;
 use RTGODAM\Inc\REST_API\Ads;
 use RTGODAM\Inc\REST_API\Transcoding;
 use RTGODAM\Inc\REST_API\Analytics;
+use RTGODAM\Inc\REST_API\Dashboard;
 use RTGODAM\Inc\REST_API\Polls;
 use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
 use RTGODAM\Inc\REST_API\Dynamic_Gallery;
@@ -176,6 +177,7 @@ class Plugin {
 		Ads::get_instance();
 		Transcoding::get_instance();
 		Analytics::get_instance();
+		Dashboard::get_instance();
 		Deactivation::get_instance();
 		Polls::get_instance();
 		Dynamic_Shortcode::get_instance();

@@ -7,6 +7,35 @@
  */
 
 /**
+ * Per-page-load session ID — UUID v4, generated once on first call, reused for
+ * the rest of the page load. Lives on the analytics envelope so the microservice
+ * can dedup engagement counters with uniqExact(page_load_session_id), keeping
+ * derived rates (Engagement / Impressions etc.) bounded ≤ 100%.
+ *
+ * Uses crypto.randomUUID() where available, falling back to a hand-rolled v4
+ * via crypto.getRandomValues() for older browsers (e.g. mobile Safari < 15.4).
+ *
+ * @return {string} 36-char UUID v4 string.
+ */
+let _pageLoadSessionId = null;
+export function getPageLoadSessionId() {
+	if ( _pageLoadSessionId ) {
+		return _pageLoadSessionId;
+	}
+	if ( window.crypto?.randomUUID ) {
+		_pageLoadSessionId = window.crypto.randomUUID();
+		return _pageLoadSessionId;
+	}
+	// Fallback for older browsers.
+	const bytes = window.crypto.getRandomValues( new Uint8Array( 16 ) );
+	bytes[ 6 ] = ( bytes[ 6 ] & 0x0f ) | 0x40; // version 4
+	bytes[ 8 ] = ( bytes[ 8 ] & 0x3f ) | 0x80; // variant 10
+	const hex = Array.from( bytes, ( b ) => b.toString( 16 ).padStart( 2, '0' ) ).join( '' );
+	_pageLoadSessionId = `${ hex.slice( 0, 8 ) }-${ hex.slice( 8, 12 ) }-${ hex.slice( 12, 16 ) }-${ hex.slice( 16, 20 ) }-${ hex.slice( 20 ) }`;
+	return _pageLoadSessionId;
+}
+
+/**
  * Check if we should skip analytics tracking.
  *
  * @return {boolean} True if analytics should be skipped, false otherwise.
@@ -124,6 +153,7 @@ export function buildAnalyticsRequestBody( {
 	videoIds = [],
 	ranges = [],
 	videoLength = 0,
+	reelPopId = 0,
 } ) {
 	const {
 		endpoint,
@@ -155,6 +185,7 @@ export function buildAnalyticsRequestBody( {
 	const body = {
 		site_url: window.location.origin,
 		user_token: userToken,
+		page_load_session_id: getPageLoadSessionId(), // Per-page-load UUID v4 for dedup.
 		wp_user_id: parseInt( userId, 10 ) || 0,
 		account_token: token || '',
 		email: emailId || '',
@@ -200,6 +231,12 @@ export function buildAnalyticsRequestBody( {
 	// server-side validation that returns HTTP 400.
 	if ( jobId ) {
 		body.job_id = jobId;
+	}
+
+	// Optional reel-pop attribution — only included when > 0 so non-Reel-Pop
+	// events stay at the same wire shape as before.
+	if ( reelPopId && parseInt( reelPopId, 10 ) > 0 ) {
+		body.reel_pop_id = parseInt( reelPopId, 10 );
 	}
 
 	return { endpoint, body };
