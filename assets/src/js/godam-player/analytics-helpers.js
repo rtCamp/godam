@@ -153,6 +153,7 @@ export function buildAnalyticsRequestBody( {
 	videoIds = [],
 	ranges = [],
 	videoLength = 0,
+	reelPopId = 0,
 } ) {
 	const {
 		endpoint,
@@ -230,6 +231,12 @@ export function buildAnalyticsRequestBody( {
 	// server-side validation that returns HTTP 400.
 	if ( jobId ) {
 		body.job_id = jobId;
+	}
+
+	// Optional reel-pop attribution — only included when > 0 so non-Reel-Pop
+	// events stay at the same wire shape as before.
+	if ( reelPopId && parseInt( reelPopId, 10 ) > 0 ) {
+		body.reel_pop_id = parseInt( reelPopId, 10 );
 	}
 
 	return { endpoint, body };

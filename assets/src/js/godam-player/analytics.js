@@ -90,7 +90,7 @@ function collectPlayedRanges( player ) {
 	 *
 	 * @since 1.4.2
 	 */
-	window.analytics.trackVideoEvent = ( { type, videoId, root, sendPageLoad = true } = {} ) => {
+	window.analytics.trackVideoEvent = ( { type, videoId, root, sendPageLoad = true, reelPopId = 0 } = {} ) => {
 		if ( ! type ) {
 			return false;
 		}
@@ -120,7 +120,11 @@ function collectPlayedRanges( player ) {
 			// NOTE: This automatically sends a 'page_load' event before the heatmap event, for ease of use.
 			// This is intentional behavior but may cause duplicate type 1 events in some scenarios
 			if ( sendPageLoad ) {
-				window.analytics.track( 'page_load', { type: 1, videoIds: [ [ vid, jobId ] ] } );
+				const pageLoadPayload = { type: 1, videoIds: [ [ vid, jobId ] ] };
+				if ( reelPopId > 0 ) {
+					pageLoadPayload.reel_pop_id = parseInt( reelPopId, 10 );
+				}
+				window.analytics.track( 'page_load', pageLoadPayload );
 			}
 
 			const player = getPlayer( videoEl );
@@ -135,13 +139,17 @@ function collectPlayedRanges( player ) {
 
 			const videoLength = Number( player.duration && player.duration() ) || 0;
 
-			window.analytics.track( 'video_heatmap', {
+			const heatmapPayload = {
 				type: 2,
 				videoId: vid,
 				jobId,
 				ranges,
 				videoLength,
-			} );
+			};
+			if ( reelPopId > 0 ) {
+				heatmapPayload.reel_pop_id = parseInt( reelPopId, 10 );
+			}
+			window.analytics.track( 'video_heatmap', heatmapPayload );
 			return true;
 		}
 
