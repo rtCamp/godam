@@ -7,7 +7,7 @@ import { Analytics } from 'analytics';
  */
 import videoAnalyticsPlugin from './video-analytics-plugin';
 import GTMVideoTracker from './gtm-video-tracker';
-import { shouldSkipAnalytics, buildAnalyticsRequestBody } from './analytics-helpers';
+import { shouldSkipAnalytics, buildAnalyticsRequestBody, getUserAgent, getPageLoadSessionId } from './analytics-helpers';
 
 const analytics = Analytics( {
 	app: 'analytics-cdp-plugin',
@@ -16,6 +16,15 @@ const analytics = Analytics( {
 	],
 } );
 window.analytics = analytics;
+
+// Expose helpers that godam-for-woo (and other plugins) need to call so type=4
+// events produce identical normalized UA strings + share the per-page-load
+// session ID. window.analytics is the Analytics() library instance — keep our
+// helpers on a separate namespace to avoid collisions.
+window.RTGodamAnalyticsHelpers = {
+	getPageLoadSessionId,
+	getUserAgent,
+};
 
 /**
  * Collect all played time ranges from a VideoJS player instance.
