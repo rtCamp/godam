@@ -900,7 +900,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 									<div
 										className={ `godam-gallery-v2__query-item godam-gallery-v2__query-item--ratio-${ viewRatio.replace( ':', '-' ) }` }
 										key={ video.id }
-										data-test-id="godam-gallery-v2-element-query-item"
+										data-test-id={ `godam-gallery-v2-element-query-item-${ video.id }` }
 									>
 										<div className="godam-gallery-v2__query-thumb">
 											{ video.thumbnail ? (
