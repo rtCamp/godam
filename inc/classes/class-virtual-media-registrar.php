@@ -26,6 +26,13 @@ class Virtual_Media_Registrar {
 	const META_ORIGINAL_ID = '_godam_original_id';
 
 	/**
+	 * Meta flag to avoid repeated registrations.
+	 *
+	 * @var string
+	 */
+	const META_REGISTERED = '_godam_virtual_site_registered';
+
+	/**
 	 * Construct method.
 	 */
 	protected function __construct() {
@@ -40,8 +47,11 @@ class Virtual_Media_Registrar {
 	protected function setup_hooks() {
 		add_action( 'added_post_meta', array( $this, 'maybe_register_from_meta_change' ), 10, 3 );
 		add_action( 'updated_post_meta', array( $this, 'maybe_register_from_meta_change' ), 10, 3 );
-		add_action( 'add_attachment', array( $this, 'maybe_register_from_attachment' ), 22, 1 );
 		add_action( 'delete_attachment', array( $this, 'maybe_remove_virtual_media_site_on_delete' ) );
+
+		// Async handlers dispatched by Action Scheduler.
+		add_action( 'godam_async_register_virtual_media_site', array( $this, 'async_register_virtual_media_site' ), 10, 2 );
+		add_action( 'godam_async_remove_virtual_media_site', array( $this, 'async_remove_virtual_media_site' ), 10, 2 );
 	}
 
 	/**
@@ -62,33 +72,73 @@ class Virtual_Media_Registrar {
 			return;
 		}
 
-		$this->register_site_for_attachment_if_needed( (int) $post_id );
+		$this->schedule_register_virtual_media_site( $post_id );
 	}
 
 	/**
-	 * Fallback handler when attachment is created.
+	 * Enqueue an async Action Scheduler task to register the virtual media site.
+	 * Guards against duplicate enqueues using the idempotency meta and AS pending-action check.
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *
 	 * @return void
 	 */
-	public function maybe_register_from_attachment( $attachment_id ) {
-		$this->register_site_for_attachment_if_needed( (int) $attachment_id );
+	private function schedule_register_virtual_media_site( int $attachment_id ) {
+		$job_name = get_post_meta( $attachment_id, self::META_ORIGINAL_ID, true );
+		// Bail early if there is nothing to register.
+		if ( empty( $job_name ) ) {
+			return;
+		}
+
+		// Already successfully registered — nothing to do.
+		if ( get_post_meta( $attachment_id, self::META_REGISTERED, true ) ) {
+			return;
+		}
+
+		if ( function_exists( 'as_enqueue_async_action' ) ) {
+			// Avoid stacking duplicate pending actions for the same attachment.
+			if ( ! as_has_scheduled_action( 'godam_async_register_virtual_media_site', array( $attachment_id, $job_name ) ) ) {
+				as_enqueue_async_action( 'godam_async_register_virtual_media_site', array( $attachment_id, $job_name ) );
+			}
+		} else {
+			// Action Scheduler unavailable — call synchronously.
+			$this->async_register_virtual_media_site( $attachment_id, $job_name );
+		}
+	}
+
+	/**
+	 * Async Action Scheduler handler: perform the HTTP registration call.
+	 *
+	 * @param int    $attachment_id Attachment ID passed by Action Scheduler.
+	 * @param string $job_name The original job name associated with this virtual media site.
+	 *
+	 * @return void
+	 */
+	public function async_register_virtual_media_site( $attachment_id, $job_name ) {
+		$attachment_id = (int) $attachment_id;
+		$result        = $this->register_site_for_attachment_if_needed( $attachment_id, $job_name );
+
+		if ( is_wp_error( $result ) ) {
+			error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+				sprintf(
+					'GoDAM: Failed to register virtual media site for attachment %d (job: %s). Error: %s',
+					$attachment_id,
+					$job_name,
+					$result->get_error_message()
+				)
+			);
+		}
 	}
 
 	/**
 	 * Register this site as a virtual media site for the attachment job if needed.
 	 *
-	 * @param int $attachment_id Attachment ID.
+	 * @param int    $attachment_id Attachment ID.
+	 * @param string $job_name The original job name associated with this virtual media site.
 	 *
 	 * @return true|\WP_Error True if registration is successful or not needed, WP_Error if registration fails.
 	 */
-	public function register_site_for_attachment_if_needed( $attachment_id ) {
-		$job_name = get_post_meta( $attachment_id, self::META_ORIGINAL_ID, true );
-
-		if ( empty( $job_name ) ) {
-			return true;
-		}
+	public function register_site_for_attachment_if_needed( $attachment_id, $job_name ) {
 
 		$api_key = get_option( 'rtgodam-api-key' );
 
@@ -151,6 +201,11 @@ class Virtual_Media_Registrar {
 			);
 		}
 
+		update_post_meta( $attachment_id, self::META_REGISTERED, 1 );
+
+		// Invalidate the cached job ids.
+		delete_transient( 'rtgodam_virtual_media_job_ids' );
+
 		return true;
 	}
 
@@ -172,7 +227,26 @@ class Virtual_Media_Registrar {
 
 		$job_name = (string) $job_name;
 
-		// Call Central to remove the association.
+		if ( function_exists( 'as_enqueue_async_action' ) ) {
+			if ( ! as_has_scheduled_action( 'godam_async_remove_virtual_media_site', array( $job_name, $post_id ) ) ) {
+				as_enqueue_async_action( 'godam_async_remove_virtual_media_site', array( $job_name, $post_id ) );
+			}
+		} else {
+			// Action Scheduler unavailable — call synchronously through the same handler.
+			$this->async_remove_virtual_media_site( $job_name, $post_id );
+		}
+	}
+
+	/**
+	 * Async Action Scheduler handler: perform the HTTP removal call.
+	 * Receives job_name directly because post meta is already gone when this runs.
+	 *
+	 * @param string $job_name The original job name passed by Action Scheduler.
+	 * @param int    $post_id Optional attachment ID for richer fallback logging.
+	 *
+	 * @return void
+	 */
+	public function async_remove_virtual_media_site( $job_name, $post_id = 0 ) {
 		$result = $this->remove_virtual_media_site( $job_name );
 
 		if ( is_wp_error( $result ) ) {
@@ -240,6 +314,9 @@ class Virtual_Media_Registrar {
 				)
 			);
 		}
+
+		// Invalidate the cached job ids.
+		delete_transient( 'rtgodam_virtual_media_job_ids' );
 
 		return true;
 	}
