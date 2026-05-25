@@ -184,6 +184,7 @@ export function buildAnalyticsRequestBody( {
 	const body = {
 		site_url: window.location.origin,
 		user_token: userToken,
+		page_load_session_id: getPageLoadSessionId(), // Per-page-load UUID v4 for dedup.
 		wp_user_id: parseInt( userId, 10 ) || 0,
 		account_token: token || '',
 		email: emailId || '',
