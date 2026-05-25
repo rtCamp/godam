@@ -315,6 +315,11 @@ function sendPlayerHeatmap( player, video, skipIfKey = null ) {
 		 *
 		 * Reference: https://fetch.spec.whatwg.org/#keep-alive-flag
 		 */
+		// Forward reel-pop attribution when the surrounding plugin (e.g. godam-for-woo)
+		// tagged the <video> element. The SDK itself doesn't know what a Reel Pop is —
+		// this just opaquely propagates the attribute when present.
+		const reelPopId = parseInt( video.getAttribute( 'data-reel-pop-id' ), 10 ) || 0;
+
 		const { endpoint, body } = buildAnalyticsRequestBody( {
 			type: 2,
 			userToken: window.analytics?.user?.()?.anonymousId || '',
@@ -322,6 +327,7 @@ function sendPlayerHeatmap( player, video, skipIfKey = null ) {
 			jobId,
 			ranges,
 			videoLength,
+			reelPopId,
 		} );
 
 		if ( ! endpoint ) {
