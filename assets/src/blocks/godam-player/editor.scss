@@ -41,15 +41,28 @@
 		width: 100%;
 	}
 
+	// Ensure the loading overlay overlays the video element rather than pushing it
+	// down. video.js needs the video container to be visible/sized at init time, so we
+	// stack the loading overlay on top with absolute positioning.
+	[data-vjs-player] {
+		position: relative;
+	}
+
 	.godam-video-loading {
+		position: absolute;
+		top: 0;
+		left: 0;
 		width: 100%;
 		background-color: #000;
-		display: flex;
-		align-items: center;
-		justify-content: center;
 		z-index: 10;
+		pointer-events: none;
+		transition: opacity 0.2s ease-out;
 
-		.godam-video-loading-spinner:not(.hide) {
+		&.hide {
+			opacity: 0;
+		}
+
+		.godam-video-loading-spinner {
 			position: absolute;
 			top: 50%;
 			left: 50%;

@@ -17,6 +17,23 @@ import 'videojs-flvjs-es6';
  */
 import { useRef, useEffect, useMemo } from '@wordpress/element';
 
+// Mirror Video.js's fluid aspect-ratio padding inline on the player element.
+// Video.js generates this rule in the top document only, which the block-editor iframe
+// can't see — without an explicit padding-top the player collapses to zero height.
+const applyAspectRatioPadding = ( player, aspectRatio ) => {
+	if ( ! player || ! aspectRatio || ! /^\d+:\d+$/.test( aspectRatio ) ) {
+		return;
+	}
+	const [ x, y ] = aspectRatio.split( ':' ).map( Number );
+	if ( ! x || ! y ) {
+		return;
+	}
+	const playerEl = player.el_;
+	if ( playerEl ) {
+		playerEl.style.paddingTop = `${ ( y / x ) * 100 }%`;
+	}
+};
+
 export const VideoJS = ( props ) => {
 	const videoRef = useRef( null );
 	const playerRef = useRef( null );
@@ -56,21 +73,19 @@ export const VideoJS = ( props ) => {
 					onReady( playerRef.current );
 				}
 
-				// Video.js player initialize instantly and hides the video loading spinner, so add a slight delay to hide it smoothly
+				// Video.js writes its fluid padding-top rule to the top-level document, which
+				// doesn't reach the block editor's iframed canvas. Mirror it inline so the
+				// player gets a visible height in either context.
+				applyAspectRatioPadding( playerRef.current, videojsOptions.aspectRatio );
+
+				// Fade the loading overlay out after a short delay so the transition feels smooth.
 				setTimeout( () => {
-					if ( videoRef.current ) {
-						// Hide the video player loading animation
-						const parentElement = videoRef.current.parentElement;
-
-						if ( parentElement ) {
-							// Remove the child element with class name 'godam-video-loading'
-							const childElement = parentElement.querySelector( '.godam-video-loading' );
-							if ( childElement ) {
-								childElement.classList.add( 'hide' );
-							}
-						}
-
-						videoRef.current.style.display = 'block';
+					if ( ! videoRef.current ) {
+						return;
+					}
+					const loadingElement = videoRef.current.parentElement?.querySelector( '.godam-video-loading' );
+					if ( loadingElement ) {
+						loadingElement.classList.add( 'hide' );
 					}
 				}, 500 );
 			} );
@@ -94,13 +109,7 @@ export const VideoJS = ( props ) => {
 			// Verify if aspectRatio is in valid format x:y
 			if ( /^\d+:\d+$/.test( options.aspectRatio ) ) {
 				player.aspectRatio( options.aspectRatio );
-
-				// Get x and y from aspectRatio
-				const [ x, y ] = options.aspectRatio.split( ':' );
-				if ( playerRef.current && x && y ) {
-					const playerEl = playerRef.current.el_;
-					playerEl.style.paddingTop = `${ ( y / x ) * 100 }%`;
-				}
+				applyAspectRatioPadding( player, options.aspectRatio );
 			}
 		}
 	}, [ options, videoRef ] );
@@ -121,10 +130,10 @@ export const VideoJS = ( props ) => {
 
 	return (
 		<div data-vjs-player>
+			<div ref={ videoRef } />
 			<div style={ { paddingTop: paddingTopValue } } className="godam-video-loading">
 				<div className="godam-video-loading-spinner"></div>
 			</div>
-			<div style={ { display: 'none' } } ref={ videoRef } />
 		</div>
 	);
 };
