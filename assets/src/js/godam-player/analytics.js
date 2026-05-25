@@ -71,6 +71,7 @@ function collectPlayedRanges( player ) {
 	 * @param {Element|Document} [params.root]         - Root element to search for video elements. Defaults to document
 	 *
 	 * @param {boolean}          [params.sendPageLoad] - Whether to send a type 1 'page_load' event before the heatmap event. Defaults to true.
+	 * @param                    params.reelPopId
 	 * @return {boolean} Returns true if event was successfully tracked, false otherwise
 	 *
 	 * @description
@@ -90,7 +91,7 @@ function collectPlayedRanges( player ) {
 	 *
 	 * @since 1.4.2
 	 */
-	window.analytics.trackVideoEvent = ( { type, videoId, root, sendPageLoad = true } = {} ) => {
+	window.analytics.trackVideoEvent = ( { type, videoId, root, sendPageLoad = true, reelPopId = 0 } = {} ) => {
 		if ( ! type ) {
 			return false;
 		}
@@ -111,6 +112,14 @@ function collectPlayedRanges( player ) {
 				jobId = videoEl.getAttribute( 'data-job_id' ) || '';
 			}
 
+			// Fall back to the wrapper's own data-reel-pop-id when the caller
+			// didn't pass one explicitly. Lets reel-pop attribution travel with
+			// the DOM for callers that don't know about reel pops.
+			let rpId = parseInt( reelPopId, 10 ) || 0;
+			if ( ! rpId && videoEl ) {
+				rpId = parseInt( videoEl.getAttribute( 'data-reel-pop-id' ), 10 ) || 0;
+			}
+
 			vid = parseInt( vid, 10 ) || 0;
 			if ( ! vid ) {
 				return false;
@@ -120,7 +129,7 @@ function collectPlayedRanges( player ) {
 			// NOTE: This automatically sends a 'page_load' event before the heatmap event, for ease of use.
 			// This is intentional behavior but may cause duplicate type 1 events in some scenarios
 			if ( sendPageLoad ) {
-				window.analytics.track( 'page_load', { type: 1, videoIds: [ [ vid, jobId ] ] } );
+				window.analytics.track( 'page_load', { type: 1, videoIds: [ [ vid, jobId ] ], reelPopId: rpId } );
 			}
 
 			const player = getPlayer( videoEl );
@@ -141,6 +150,7 @@ function collectPlayedRanges( player ) {
 				jobId,
 				ranges,
 				videoLength,
+				reelPopId: rpId,
 			} );
 			return true;
 		}
@@ -155,8 +165,11 @@ if ( ! window.pageLoadEventTracked ) {
 	document.addEventListener( 'DOMContentLoaded', () => {
 		const videos = document.querySelectorAll( '.easydam-player.video-js' );
 
-		// Collect all video IDs and Job IDs
+		// Collect all video IDs and Job IDs. Skip wrappers that opted out of
+		// auto-instrumentation (e.g. reel-pop widget previews — those fire
+		// type=1 explicitly from inside the modal, never from the widget).
 		const videoInfo = Array.from( videos )
+			.filter( ( video ) => video.getAttribute( 'data-godam-no-auto-analytics' ) !== '1' )
 			.map( ( video ) => ( {
 				id: video.getAttribute( 'data-id' ),
 				jobId: video.getAttribute( 'data-job_id' ) || '',
@@ -291,6 +304,11 @@ function sendPlayerHeatmap( player, video, skipIfKey = null ) {
 
 		const videoLength = Number( player.duration && player.duration() ) || 0;
 
+		// Pick up reel-pop attribution from the wrapper element when present,
+		// so the unload-flush heatmap correctly counts against the reel pop
+		// even though the godam SDK itself has no concept of reel pops.
+		const reelPopId = parseInt( video.getAttribute( 'data-reel-pop-id' ), 10 ) || 0;
+
 		/*
 		 * IMPORTANT: We bypass window.analytics.track() here intentionally.
 		 *
@@ -314,6 +332,7 @@ function sendPlayerHeatmap( player, video, skipIfKey = null ) {
 			jobId,
 			ranges,
 			videoLength,
+			reelPopId,
 		} );
 
 		if ( ! endpoint ) {
@@ -345,6 +364,15 @@ function setupPlayerAnalytics( player, video ) {
 	if ( player._godamAnalyticsSetup ) {
 		return;
 	}
+
+	// Skip wrappers that opted out of auto-instrumentation. Reel-pop widget
+	// previews use this so the SDK does not register them in
+	// godamTrackedPlayers — unload-flush would otherwise send type=2 for the
+	// muted preview that the user never engaged with through the modal.
+	if ( video && video.getAttribute && video.getAttribute( 'data-godam-no-auto-analytics' ) === '1' ) {
+		return;
+	}
+
 	player._godamAnalyticsSetup = true;
 	video.dataset.analyticsSetup = 'true'; // Keep for backwards compatibility
 
