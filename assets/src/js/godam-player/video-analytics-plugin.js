@@ -14,7 +14,7 @@ const videoAnalyticsPlugin = () => {
 			const { properties, meta, anonymousId } = payload;
 
 			try {
-				const { ranges = [], videoId, type, videoLength, videoIds, jobId } = properties;
+				const { ranges = [], videoId, type, videoLength, videoIds, jobId, reelPopId } = properties;
 
 				if ( ! type || ( type === 1 && ( ! videoIds || videoIds.length === 0 ) ) ) {
 					return;
@@ -29,6 +29,7 @@ const videoAnalyticsPlugin = () => {
 					videoIds,
 					ranges,
 					videoLength,
+					reelPopId,
 				} );
 
 				if ( ! endpoint ) {
