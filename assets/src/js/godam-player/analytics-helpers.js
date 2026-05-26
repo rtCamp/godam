@@ -6,6 +6,11 @@
  * is the single source of truth for the request schema.
  */
 
+/**
+ * External dependencies
+ */
+import { v4 as uuidv4 } from 'uuid';
+
 // Module-scope cache. Generated once on first event, reused for the rest of
 // the page load. Every type=1/2/3/4 event from the same page load shares this
 // UUID so the microservice can dedup with uniqExact(page_load_session_id).
@@ -14,27 +19,12 @@ let _pageLoadSessionId = null;
 /**
  * Return a stable UUID v4 for this page load.
  *
- * Uses crypto.randomUUID() when available, falls back to
- * crypto.getRandomValues() so older browsers (e.g. mobile Safari < 15.4)
- * still produce a valid UUID v4.
- *
  * @return {string} UUID v4 (36 chars).
  */
 export function getPageLoadSessionId() {
-	if ( _pageLoadSessionId ) {
-		return _pageLoadSessionId;
+	if ( ! _pageLoadSessionId ) {
+		_pageLoadSessionId = uuidv4();
 	}
-
-	if ( window.crypto && typeof window.crypto.randomUUID === 'function' ) {
-		_pageLoadSessionId = window.crypto.randomUUID();
-		return _pageLoadSessionId;
-	}
-
-	const bytes = window.crypto.getRandomValues( new Uint8Array( 16 ) );
-	bytes[ 6 ] = ( bytes[ 6 ] & 0x0f ) | 0x40; // version 4
-	bytes[ 8 ] = ( bytes[ 8 ] & 0x3f ) | 0x80; // variant
-	const hex = Array.from( bytes, ( b ) => b.toString( 16 ).padStart( 2, '0' ) ).join( '' );
-	_pageLoadSessionId = `${ hex.slice( 0, 8 ) }-${ hex.slice( 8, 12 ) }-${ hex.slice( 12, 16 ) }-${ hex.slice( 16, 20 ) }-${ hex.slice( 20 ) }`;
 	return _pageLoadSessionId;
 }
 
