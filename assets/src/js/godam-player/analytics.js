@@ -71,7 +71,7 @@ function collectPlayedRanges( player ) {
 	 * @param {Element|Document} [params.root]         - Root element to search for video elements. Defaults to document
 	 *
 	 * @param {boolean}          [params.sendPageLoad] - Whether to send a type 1 'page_load' event before the heatmap event. Defaults to true.
-	 * @param                    params.reelPopId
+	 * @param {number}           [params.reelPopId]    - Reel popup ID associated with the tracked video event. Defaults to 0.
 	 * @return {boolean} Returns true if event was successfully tracked, false otherwise
 	 *
 	 * @description
