@@ -1,5 +1,14 @@
 # Changelog #
 
+## v1.10.2 (May 22, 2026) ##
+
+- Feat: Enhanced Type 1 video analytics tracking with viewport detection.
+- Fix: Resolved cancelled Type 2 Analytics requests for Gallery iframe.
+
+## v1.10.1 (May 19, 2026) ##
+
+- Fix: Added patch for plugin deployment.
+
 ## v1.10.0 (May 19, 2026) ##
 
 - Feat: Added Unique Viewers and Replay Ratio metrics in Analytics.
