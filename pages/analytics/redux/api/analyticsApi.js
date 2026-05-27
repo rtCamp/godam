@@ -55,10 +55,40 @@ export const analyticsApi = createApi( {
 				return response.processed_analytics || [];
 			},
 		} ),
+		fetchProcessedLayerAnalytics: builder.query( {
+			query: ( { layerType, days, siteUrl, videoId } ) => ( {
+				url: 'godam/v1/analytics/layer-analytics',
+				params: {
+					layer_type: layerType,
+					days,
+					site_url: siteUrl,
+					video_id: videoId,
+				},
+			} ),
+			transformResponse: ( response ) => {
+				// The WP proxy wraps microservice 4xx as 200 + errorType so
+				// RTK Query doesn't trip on benign "no data" cases. Surface
+				// errors as a soft object instead of throwing — the UI
+				// renders a state-specific empty/error panel either way.
+				if ( response.status === 'error' ) {
+					return {
+						errorType: response.errorType || 'unknown_error',
+						message: response.message,
+						layer_analytics: null,
+					};
+				}
+				return {
+					errorType: null,
+					message: null,
+					layer_analytics: response.layer_analytics || null,
+				};
+			},
+		} ),
 	} ),
 } );
 
 export const {
 	useFetchAnalyticsDataQuery,
 	useFetchProcessedAnalyticsHistoryQuery,
+	useFetchProcessedLayerAnalyticsQuery,
 } = analyticsApi;

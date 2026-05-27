@@ -24,10 +24,12 @@ import './charts.js';
  */
 import { __ } from '@wordpress/i18n';
 import { Button, Spinner } from '@wordpress/components';
+// eslint-disable-next-line import/no-extraneous-dependencies -- @wordpress/url is provided by WordPress core; intentionally not in this plugin's package.json.
 import { addQueryArgs } from '@wordpress/url';
 import SingleMetrics from './SingleMetrics.js';
 import PlaysVsViewers from './PlaysVsViewers.js';
 import PlaybackPerformanceDashboard from './PlaybackPerformance.js';
+import InteractiveLayerAnalytics from './InteractiveLayerAnalytics.js';
 import videojs from 'video.js';
 import { arrowLeft } from '@wordpress/icons';
 import { API_KEY_STATUS, ERROR_TYPE } from '../shared/enums';
@@ -672,6 +674,8 @@ const Analytics = ( { attachmentID } ) => {
 							</div>
 						</div>
 					</div>
+					<InteractiveLayerAnalytics attachmentID={ attachmentID } />
+
 					<div className="grid grid-cols-[4fr_2fr_2fr] gap-4 px-10 metrics-container">
 						<PlaybackPerformanceDashboard
 							attachmentID={ attachmentID }
