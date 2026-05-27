@@ -9,6 +9,29 @@ import { __, sprintf } from '@wordpress/i18n';
 import { HOTSPOT_CONSTANTS } from '../../utils/constants';
 
 /**
+ * Resolve the analytics videoKey (data-id or data-job_id) for a player.
+ *
+ * @param {Object} player VideoJS player instance.
+ * @return {string} Non-empty videoKey on success; empty string when no usable identifier is present.
+ */
+function getVideoKey( player ) {
+	try {
+		const el = player?.el && player.el();
+		if ( ! el ) {
+			return '';
+		}
+		const id = el.getAttribute?.( 'data-id' ) || el.dataset?.id;
+		if ( id ) {
+			return String( id );
+		}
+		const jobId = el.getAttribute?.( 'data-job_id' ) || el.dataset?.job_id;
+		return jobId ? String( jobId ) : '';
+	} catch ( e ) {
+		return '';
+	}
+}
+
+/**
  * Hotspot Layer Manager
  * Handles hotspot layer functionality including creation, positioning, and interaction
  */
@@ -22,6 +45,54 @@ export default class HotspotLayerManager {
 		this.wasPlayingBeforeHover = false;
 		this.isDisplayingLayers = isDisplayingLayers;
 		this.currentPlayerVideoInstanceId = currentPlayerVideoInstanceId;
+		// Per-session dedupe set for `viewed` impressions (keyed by layer.id).
+		this._viewedFired = new Set();
+		// Per-session dedupe set for `hovered` events keyed by `${layer.id}::${hotspotIndex}`
+		// so a viewer hovering the same hotspot twice doesn't inflate metrics.
+		this._hoveredFired = new Set();
+	}
+
+	/**
+	 * Emit a layer interaction event into the localStorage buffer.
+	 *
+	 * No-op when window.GoDAM.addLayerInteraction isn't loaded yet.
+	 *
+	 * @param {Object} layer      Layer config (must have id, type, displayTime).
+	 * @param {string} actionType One of LAYER_ACTIONS.hotspot.all (or .woo.all for the woo add-on).
+	 * @param {Object} [metadata] Optional payload merged into layer_metadata.
+	 */
+	emitLayerEvent( layer, actionType, metadata ) {
+		if ( ! window.GoDAM || typeof window.GoDAM.addLayerInteraction !== 'function' ) {
+			return;
+		}
+
+		const videoKey = getVideoKey( this.player );
+		if ( ! videoKey ) {
+			return;
+		}
+
+		const layerId = layer?.id ? String( layer.id ) : '';
+		const layerType = layer?.type ? String( layer.type ) : 'hotspot';
+		if ( ! layerId ) {
+			return;
+		}
+
+		if ( actionType === 'viewed' ) {
+			if ( this._viewedFired.has( layerId ) ) {
+				return;
+			}
+			this._viewedFired.add( layerId );
+		}
+
+		window.GoDAM.addLayerInteraction( videoKey, {
+			layer_id: layerId,
+			layer_type: layerType,
+			action_type: actionType,
+			layer_timestamp: parseFloat( layer?.displayTime ) || 0,
+			layer_name: layer?.name ? String( layer.name ) : '',
+			page_url: window.location.href,
+			layer_metadata: metadata || {},
+		} );
 	}
 
 	/**
@@ -38,6 +109,8 @@ export default class HotspotLayerManager {
 			show: true,
 			hotspots: layer.hotspots || [],
 			pauseOnHover: layer.pauseOnHover || false,
+			// Stash the original config so emitLayerEvent has access to id/name/type.
+			layer,
 		};
 
 		this.hotspotLayers.push( layerObj );
@@ -70,6 +143,8 @@ export default class HotspotLayerManager {
 			if ( isActive ) {
 				if ( layerObj.layerElement.classList.contains( 'hidden' ) ) {
 					layerObj.layerElement.classList.remove( 'hidden' );
+					// Fire `viewed` impression (deduped per layer per session).
+					this.emitLayerEvent( layerObj.layer, 'viewed' );
 					if ( ! layerObj.layerElement.dataset?.hotspotsInitialized ) {
 						this.createHotspots( layerObj );
 						layerObj.layerElement.dataset.hotspotsInitialized = true;
@@ -137,6 +212,11 @@ export default class HotspotLayerManager {
 				this.setupHotspotHoverEvents( hotspotDiv );
 			}
 
+			// Track per-hotspot interactions. The layer event carries the
+			// hotspot's index + link in `layer_metadata` so the analytics UI
+			// can later attribute conversion per sub-hotspot if needed.
+			this.setupHotspotAnalytics( hotspotDiv, layerObj, hotspot, index );
+
 			layerObj.layerElement.appendChild( hotspotDiv );
 
 			const tooltipDiv = hotspotDiv.querySelector( '.hotspot-tooltip' );
@@ -145,6 +225,46 @@ export default class HotspotLayerManager {
 					this.positionTooltip( hotspotDiv, tooltipDiv );
 				} );
 			}
+		} );
+	}
+
+	/**
+	 * Attach click + hover analytics handlers to a single hotspot element.
+	 *
+	 * Click: fires `clicked` per actual click (not deduped).
+	 * Hover: fires `hovered` once per (layer, hotspot, page-session). Repeated
+	 * hovers on the same hotspot during the session count as one — otherwise
+	 * a moving cursor near a hotspot would explode the count.
+	 *
+	 * @param {HTMLElement} hotspotDiv The hotspot DOM element.
+	 * @param {Object}      layerObj   The owning layer object.
+	 * @param {Object}      hotspot    The hotspot config (link, text, index).
+	 * @param {number}      index      The hotspot's index inside layerObj.hotspots.
+	 */
+	setupHotspotAnalytics( hotspotDiv, layerObj, hotspot, index ) {
+		const layerId = layerObj.layer?.id ? String( layerObj.layer.id ) : '';
+		const hoverDedupeKey = `${ layerId }::${ index }`;
+
+		hotspotDiv.addEventListener( 'click', ( ev ) => {
+			// Skip clicks on the tooltip-close affordance, which fires its own
+			// handler and shouldn't be counted as a conversion click.
+			if ( ev.target?.closest?.( '.hotspot-tooltip-close' ) ) {
+				return;
+			}
+			this.emitLayerEvent( layerObj.layer, 'clicked', {
+				hotspot_index: index,
+				hotspot_link: hotspot?.link || '',
+			} );
+		} );
+
+		hotspotDiv.addEventListener( 'mouseenter', () => {
+			if ( this._hoveredFired.has( hoverDedupeKey ) ) {
+				return;
+			}
+			this._hoveredFired.add( hoverDedupeKey );
+			this.emitLayerEvent( layerObj.layer, 'hovered', {
+				hotspot_index: index,
+			} );
 		} );
 	}
 

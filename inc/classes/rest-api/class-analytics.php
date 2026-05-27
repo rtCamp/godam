@@ -149,6 +149,157 @@ class Analytics extends Base {
 					),
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/layer-analytics',
+				'args'      => array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'fetch_layer_analytics' ),
+					'permission_callback' => '__return_true',
+					'args'                => array(
+						'video_id'   => array(
+							'required'          => true,
+							'type'              => 'integer',
+							'sanitize_callback' => 'absint',
+							'validate_callback' => function ( $param ) {
+								return is_numeric( $param ) && intval( $param ) > 0;
+							},
+						),
+						'layer_type' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_text_field',
+							'validate_callback' => function ( $param ) {
+								// Mirror of LAYER_TYPE_WHITELIST in godam-analytics.
+								return in_array( $param, array( 'cta', 'form', 'hotspot', 'woo' ), true );
+							},
+						),
+						'site_url'   => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'esc_url_raw',
+						),
+						'days'       => array(
+							'required'          => false,
+							'type'              => 'integer',
+							'sanitize_callback' => 'absint',
+						),
+					),
+				),
+			),
+		);
+	}
+
+	/**
+	 * Proxy /processed-layer-analytics/ from the analytics microservice.
+	 *
+	 * Looks up the transcoded job_id from the attachment ID so callers only
+	 * need the video_id; the microservice can use either to identify the
+	 * video. Honors the microservice's 4xx codes by returning a 200 with
+	 * errorType so the frontend RTK Query layer can branch on it.
+	 *
+	 * @param WP_REST_Request $request REST API request.
+	 * @return WP_REST_Response
+	 */
+	public function fetch_layer_analytics( WP_REST_Request $request ) {
+		$attachment_id = $request->get_param( 'video_id' );
+		$layer_type    = $request->get_param( 'layer_type' );
+		$site_url      = $request->get_param( 'site_url' );
+		$days          = $request->get_param( 'days' );
+		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $api_key ) || empty( $account_token ) || 'unverified' === $account_token ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => __( 'Missing API key.', 'godam' ),
+					'errorType' => 'missing_key',
+				),
+				200
+			);
+		}
+
+		// Resolve job_id from attachment meta when available — the microservice
+		// can query by job_id when the WP video_id is empty or differs across
+		// sites within the same account.
+		$job_id = '';
+		if ( $attachment_id ) {
+			$job_id = (string) get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+			if ( empty( $job_id ) ) {
+				$job_id = (string) get_post_meta( $attachment_id, '_godam_original_id', true );
+			}
+		}
+
+		$query_params = array(
+			'video_id'      => $attachment_id,
+			'layer_type'    => $layer_type,
+			'site_url'      => $site_url,
+			'account_token' => $account_token,
+			'api_key'       => $api_key,
+		);
+		if ( ! empty( $days ) ) {
+			$query_params['days'] = (int) $days;
+		}
+		if ( ! empty( $job_id ) ) {
+			$query_params['job_id'] = $job_id;
+		}
+
+		$endpoint = add_query_arg( $query_params, RTGODAM_ANALYTICS_BASE . '/processed-layer-analytics/' );
+		$response = wp_remote_get( $endpoint );
+
+		if ( is_wp_error( $response ) ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => __( 'Unable to reach analytics server.', 'godam' ),
+					'errorType' => 'microservice_error',
+				),
+				200
+			);
+		}
+
+		$http_code = wp_remote_retrieve_response_code( $response );
+		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
+		$detail    = $body['detail'] ?? __( 'Unexpected error from analytics server.', 'godam' );
+
+		if ( 400 === $http_code ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => $detail,
+					'errorType' => 'bad_request',
+				),
+				200
+			);
+		}
+		if ( 404 === $http_code ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => $detail,
+					'errorType' => 'not_found',
+				),
+				200
+			);
+		}
+		if ( 200 !== $http_code ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => $detail,
+					'errorType' => 'microservice_error',
+				),
+				200
+			);
+		}
+
+		return new WP_REST_Response(
+			array(
+				'status'          => 'success',
+				'layer_analytics' => $body['layer_analytics'] ?? array(),
+			),
+			200
 		);
 	}
 

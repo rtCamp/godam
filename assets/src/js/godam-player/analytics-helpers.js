@@ -147,7 +147,7 @@ export function getUserAgent( userAgent ) {
  * the async plugin path and the keepalive path produce identical payloads.
  *
  * @param {Object} opts
- * @param {number} opts.type               Event type (1 = page load, 2 = heatmap, 3 = layer).
+ * @param {number} opts.type               Event type (1 = page load, 2 = heatmap, 3 = layer interaction).
  * @param {string} opts.userToken          Anonymous visitor ID (from analytics library).
  * @param {number} [opts.visitorTimestamp] Epoch-ms timestamp; defaults to Date.now().
  * @param {number} [opts.videoId]          Single video ID (type 2/3).
@@ -155,6 +155,7 @@ export function getUserAgent( userAgent ) {
  * @param {Array}  [opts.videoIds]         Array of [videoId, jobId] pairs (type 1).
  * @param {Array}  [opts.ranges]           Played time-range pairs (type 2).
  * @param {number} [opts.videoLength]      Duration in seconds (type 2).
+ * @param {Array}  [opts.layers]           Array of layer interaction event objects (type 3). Each entry must include layer_id, layer_type, action_type, layer_timestamp. Optional: layer_name, page_url, layer_metadata.
  * @param {number} [opts.reelPopId]        Reel Pop CPT post ID (when event originates from a reel-pop modal).
  * @return {{ endpoint: string|null, body: Object|null }} Object with `endpoint` (the base
  * API URL) and `body` (the request payload). Both are `null` when the plugin token is
@@ -169,6 +170,7 @@ export function buildAnalyticsRequestBody( {
 	videoIds = [],
 	ranges = [],
 	videoLength = 0,
+	layers = [],
 	reelPopId = 0,
 } ) {
 	const {
@@ -247,6 +249,14 @@ export function buildAnalyticsRequestBody( {
 	// server-side validation that returns HTTP 400.
 	if ( jobId ) {
 		body.job_id = jobId;
+	}
+
+	// Layer interactions (type=3) — array of {layer_id, layer_type, action_type,
+	// layer_timestamp, layer_name?, page_url?, layer_metadata?}. The microservice
+	// enforces a whitelist on layer_type and a max of 100 entries per request;
+	// callers (storage.js / flushLayerInteractions) chunk if needed.
+	if ( type === 3 && Array.isArray( layers ) && layers.length > 0 ) {
+		body.layers = layers;
 	}
 
 	const reelPopIdInt = parseInt( reelPopId, 10 );

@@ -9,8 +9,38 @@ import { __ } from '@wordpress/i18n';
 import { LAYER_TYPES } from '../../utils/constants.js';
 
 /**
+ * Resolve the analytics videoKey (data-id or data-job_id) for a player.
+ *
+ * Falls back to data-job_id when data-id is missing so reel-pop modals and
+ * job-id-only configurations still produce a stable bucket.
+ *
+ * @param {Object} player VideoJS player instance.
+ * @return {string} Non-empty videoKey on success; empty string when no usable identifier is present.
+ */
+function getVideoKey( player ) {
+	try {
+		const el = player?.el && player.el();
+		if ( ! el ) {
+			return '';
+		}
+		const id = el.getAttribute?.( 'data-id' ) || el.dataset?.id;
+		if ( id ) {
+			return String( id );
+		}
+		const jobId = el.getAttribute?.( 'data-job_id' ) || el.dataset?.job_id;
+		return jobId ? String( jobId ) : '';
+	} catch ( e ) {
+		return '';
+	}
+}
+
+/**
  * Form Layer Manager
- * Handles form layer functionality including skip buttons and form observation
+ *
+ * Handles form layer functionality including skip buttons and form observation.
+ * Despite the name, this manager also runs for CTA and Poll layers — they
+ * share the pause-on-display + skip-button mechanics. Analytics tracking
+ * branches on `layer.type` to emit the right event semantics for each type.
  */
 export default class FormLayerManager {
 	constructor( player, isDisplayingLayers, currentPlayerVideoInstanceId ) {
@@ -19,6 +49,57 @@ export default class FormLayerManager {
 		this.currentPlayerVideoInstanceId = currentPlayerVideoInstanceId;
 		this.formLayers = [];
 		this.currentFormLayerIndex = 0;
+		// Per-session dedupe set for `viewed` impressions. Subsequent
+		// interaction events (clicked, submitted, skipped) are NOT deduped.
+		this._viewedFired = new Set();
+	}
+
+	/**
+	 * Emit a layer interaction event into the localStorage buffer.
+	 *
+	 * No-op when `window.GoDAM.addLayerInteraction` isn't loaded yet (the
+	 * shared analytics bundle ships separately and may not be present on
+	 * editor-side previews).
+	 *
+	 * @param {Object} layer      Layer config (must have id, type, displayTime).
+	 * @param {string} actionType One of LAYER_ACTIONS[layer.type].all.
+	 * @param {Object} [metadata] Optional payload merged into layer_metadata.
+	 */
+	emitLayerEvent( layer, actionType, metadata ) {
+		if ( ! window.GoDAM || typeof window.GoDAM.addLayerInteraction !== 'function' ) {
+			return;
+		}
+
+		const videoKey = getVideoKey( this.player );
+		if ( ! videoKey ) {
+			return;
+		}
+
+		const layerId = layer?.id ? String( layer.id ) : '';
+		const layerType = layer?.type ? String( layer.type ) : '';
+		if ( ! layerId || ! layerType ) {
+			return;
+		}
+
+		// Dedupe `viewed` once per (layer_id, page-session). Interaction
+		// events stay re-emittable so multiple clicks/skips on the same layer
+		// produce multiple events.
+		if ( actionType === 'viewed' ) {
+			if ( this._viewedFired.has( layerId ) ) {
+				return;
+			}
+			this._viewedFired.add( layerId );
+		}
+
+		window.GoDAM.addLayerInteraction( videoKey, {
+			layer_id: layerId,
+			layer_type: layerType,
+			action_type: actionType,
+			layer_timestamp: parseFloat( layer?.displayTime ) || 0,
+			layer_name: layer?.name ? String( layer.name ) : '',
+			page_url: window.location.href,
+			layer_metadata: metadata || {},
+		} );
 	}
 
 	/**
@@ -48,11 +129,49 @@ export default class FormLayerManager {
 				show: true,
 				allowSkip,
 				skipText,
+				// Stash the original config so analytics emit functions have
+				// access to id, name, type without threading them through every
+				// method signature.
+				layer,
 			};
 
 			this.formLayers.push( layerObj );
 			this.setupFormLayerSkipButton( layerObj );
+			// CTA-specific click tracking: anchor / button clicks inside the
+			// layer count as `clicked`. Forms use `submitted` (fired from the
+			// confirmation MutationObserver below); polls don't ship in v1.
+			if ( layer.type === LAYER_TYPES.CTA ) {
+				this.setupCtaClickTracking( layerObj );
+			}
 		}
+	}
+
+	/**
+	 * Hook click events on anchors / buttons inside a CTA layer.
+	 *
+	 * Fires `clicked` per actual user click — not deduped, so a CTA with two
+	 * destinations produces two events. The destination URL is preserved
+	 * in `layer_metadata.click_target_url` to set up native WP attribution
+	 * (resolving the URL to a post/product ID) in v2.
+	 *
+	 * @param {Object} layerObj Layer object stored in this.formLayers.
+	 */
+	setupCtaClickTracking( layerObj ) {
+		layerObj.layerElement.addEventListener( 'click', ( ev ) => {
+			const trigger = ev.target?.closest?.( 'a, button' );
+			if ( ! trigger ) {
+				return;
+			}
+			// Skip the built-in skip button — it fires `skipped` separately
+			// from setupSkipButtonHandler.
+			if ( trigger.classList?.contains( 'skip-button' ) ) {
+				return;
+			}
+			const targetUrl = trigger.getAttribute?.( 'href' ) || '';
+			this.emitLayerEvent( layerObj.layer, 'clicked', {
+				click_target_url: targetUrl,
+			} );
+		} );
 	}
 
 	/**
@@ -145,6 +264,15 @@ export default class FormLayerManager {
 					skipButton.appendChild( this.createArrowIcon() );
 				}
 				skipButton.classList.remove( 'hidden' );
+
+				// Fire `submitted` for form layers when the form-plugin's
+				// confirmation message appears. CTA layers don't have a
+				// submission concept; their click events fire separately
+				// via setupCtaClickTracking.
+				if ( layerObj.layer?.type === LAYER_TYPES.FORM ) {
+					this.emitLayerEvent( layerObj.layer, 'submitted' );
+				}
+
 				observer.disconnect();
 			}
 		} );
@@ -208,6 +336,19 @@ export default class FormLayerManager {
 	 */
 	setupSkipButtonHandler( layerObj, skipButton ) {
 		skipButton.addEventListener( 'click', () => {
+			// Fire `skipped` before tearing the layer down. The button doubles
+			// as a "Continue" after a successful form submit (label swap in
+			// setupFormObserver) — in that case we deliberately do NOT fire
+			// `skipped`, since the form was submitted, not skipped.
+			const isContinueAfterSubmit =
+				layerObj.layer?.type === LAYER_TYPES.FORM &&
+				skipButton.textContent &&
+				skipButton.textContent.includes( __( 'Continue', 'godam' ) );
+
+			if ( ! isContinueAfterSubmit ) {
+				this.emitLayerEvent( layerObj.layer, 'skipped' );
+			}
+
 			layerObj.show = false;
 			layerObj.layerElement.classList.add( 'hidden' );
 			this.player.controls( true );
@@ -240,6 +381,11 @@ export default class FormLayerManager {
 			this.player.pause();
 			this.player.controls( false );
 			this.isDisplayingLayers[ this.currentPlayerVideoInstanceId ] = true;
+
+			// Fire `viewed` impression. Deduped per (layer_id, page-session)
+			// inside emitLayerEvent — re-displaying the same layer after a
+			// time-seek does not produce a second impression.
+			this.emitLayerEvent( layerObj.layer, 'viewed' );
 		}
 	}
 
