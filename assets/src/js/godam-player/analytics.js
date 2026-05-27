@@ -578,22 +578,6 @@ function buildHeatmapPayload( player, video, skipIfKey = null ) {
 		// even though the godam SDK itself has no concept of reel pops.
 		const reelPopId = parseInt( video.getAttribute( 'data-reel-pop-id' ), 10 ) || 0;
 
-		/*
-		 * IMPORTANT: We bypass window.analytics.track() here intentionally.
-		 *
-		 * This function is called from beforeunload / pagehide / dispose handlers.
-		 * window.analytics.track() dispatches async work (Promises, microtasks).
-		 * The browser does NOT block page unload waiting for async work to settle —
-		 * the async chain can be silently abandoned mid-flight.
-		 *
-		 * The correct fix is to call fetch() with keepalive: true SYNCHRONOUSLY
-		 * inside the handler. The browser queues a keepalive request at the network
-		 * level and guarantees delivery even after the JS context is torn down.
-		 * This is the spec-compliant equivalent of navigator.sendBeacon() for POST
-		 * requests that need a JSON body.
-		 *
-		 * Reference: https://fetch.spec.whatwg.org/#keep-alive-flag
-		 */
 		const { endpoint, body } = buildAnalyticsRequestBody( {
 			type: 2,
 			userToken: window.analytics?.user?.()?.anonymousId || '',
