@@ -45,23 +45,66 @@ export default class HotspotLayerManager {
 		this.wasPlayingBeforeHover = false;
 		this.isDisplayingLayers = isDisplayingLayers;
 		this.currentPlayerVideoInstanceId = currentPlayerVideoInstanceId;
-		// Per-session dedupe set for `viewed` impressions (keyed by layer.id).
-		this._viewedFired = new Set();
-		// Per-session dedupe set for `hovered` events keyed by `${layer.id}::${hotspotIndex}`
-		// so a viewer hovering the same hotspot twice doesn't inflate metrics.
-		this._hoveredFired = new Set();
+
+		// Per-(composite layer_id, action_type, page-session) dedupe map.
+		// Composite layer_id is `${parentLayer.id}::${hotspot.id || `idx${index}`}`
+		// so each sub-hotspot is its own atomic unit in the analytics.
+		// Map<compositeLayerId, Set<actionType>>.
+		this._dedupeFired = new Map();
+
+		// First-visible timestamp keyed by composite layer_id (epoch ms).
+		// Used to compute dwell_ms on click/hover. Map<compositeLayerId, number>.
+		this._firstVisibleAt = new Map();
+
+		// Interaction sequence keyed by composite layer_id. Map<compositeLayerId, number>.
+		this._interactionSeq = new Map();
 	}
 
 	/**
-	 * Emit a layer interaction event into the localStorage buffer.
+	 * Build a stable composite layer_id for a sub-hotspot.
+	 *
+	 * Prefers the hotspot's own `id` field (a UUID set by the editor) so
+	 * reordering or removing hotspots doesn't shift the analytics key.
+	 * Falls back to `idx<index>` only when no stable id is available — in
+	 * which case reordering will misattribute, documented as a known limit.
+	 *
+	 * @param {Object} parentLayer Parent layer config with an .id field.
+	 * @param {Object} hotspot     Individual hotspot config.
+	 * @param {number} index       Position within parentLayer.hotspots.
+	 * @return {string} Composite layer_id, e.g. `<uuid>::<sub-uuid>` or `<uuid>::idx0`.
+	 */
+	buildCompositeLayerId( parentLayer, hotspot, index ) {
+		const parentId = parentLayer?.id ? String( parentLayer.id ) : '';
+		if ( ! parentId ) {
+			return '';
+		}
+		const subId = hotspot?.id ? String( hotspot.id ) : `idx${ index }`;
+		return `${ parentId }::${ subId }`;
+	}
+
+	/**
+	 * Emit a sub-hotspot interaction event into the localStorage buffer.
 	 *
 	 * No-op when window.GoDAM.addLayerInteraction isn't loaded yet.
 	 *
-	 * @param {Object} layer      Layer config (must have id, type, displayTime).
-	 * @param {string} actionType One of LAYER_ACTIONS.hotspot.all (or .woo.all for the woo add-on).
-	 * @param {Object} [metadata] Optional payload merged into layer_metadata.
+	 * All actions deduped per (composite layer_id, action_type, page-session)
+	 * — one viewed, one clicked, one hovered per sub-hotspot per session at
+	 * most. Keeps conversion math sensible (clicks ≤ views ≤ 1 per session)
+	 * and matches what a marketer means by "did the viewer click this hotspot".
+	 *
+	 * Enriches every event with parent_layer_id, parent_layer_name,
+	 * hotspot_index, dwell_ms, current_video_time, is_fullscreen,
+	 * interaction_seq so the UI can group sub-hotspots by parent layer
+	 * without parsing composite ids, and future analytics questions can
+	 * be answered without re-instrumenting.
+	 *
+	 * @param {Object} parentLayer Parent layer config (has id, type, displayTime, name).
+	 * @param {Object} hotspot     Individual hotspot config.
+	 * @param {number} index       Hotspot's position in parentLayer.hotspots.
+	 * @param {string} actionType  e.g. 'viewed', 'clicked', 'hovered'.
+	 * @param {Object} [metadata]  Extra fields merged into layer_metadata.
 	 */
-	emitLayerEvent( layer, actionType, metadata ) {
+	emitHotspotEvent( parentLayer, hotspot, index, actionType, metadata ) {
 		if ( ! window.GoDAM || typeof window.GoDAM.addLayerInteraction !== 'function' ) {
 			return;
 		}
@@ -71,27 +114,79 @@ export default class HotspotLayerManager {
 			return;
 		}
 
-		const layerId = layer?.id ? String( layer.id ) : '';
-		const layerType = layer?.type ? String( layer.type ) : 'hotspot';
-		if ( ! layerId ) {
+		const compositeLayerId = this.buildCompositeLayerId( parentLayer, hotspot, index );
+		if ( ! compositeLayerId ) {
 			return;
 		}
 
+		// Per-(composite layer_id, action_type, session) dedupe.
+		let firedActions = this._dedupeFired.get( compositeLayerId );
+		if ( ! firedActions ) {
+			firedActions = new Set();
+			this._dedupeFired.set( compositeLayerId, firedActions );
+		}
+		if ( firedActions.has( actionType ) ) {
+			return;
+		}
+		firedActions.add( actionType );
+
+		// Dwell — set on viewed, computed on subsequent events.
+		const firstVisibleAt = this._firstVisibleAt.get( compositeLayerId );
+		let dwellMs = 0;
 		if ( actionType === 'viewed' ) {
-			if ( this._viewedFired.has( layerId ) ) {
-				return;
-			}
-			this._viewedFired.add( layerId );
+			this._firstVisibleAt.set( compositeLayerId, Date.now() );
+		} else if ( firstVisibleAt ) {
+			dwellMs = Math.max( 0, Date.now() - firstVisibleAt );
 		}
 
+		const prevSeq = this._interactionSeq.get( compositeLayerId ) || 0;
+		const seq = prevSeq + 1;
+		this._interactionSeq.set( compositeLayerId, seq );
+
+		let currentVideoTime = 0;
+		try {
+			currentVideoTime = Number( this.player?.currentTime?.() ) || 0;
+		} catch ( e ) {
+			currentVideoTime = 0;
+		}
+
+		let isFullscreen = false;
+		try {
+			isFullscreen = !! this.player?.isFullscreen?.();
+		} catch ( e ) {
+			isFullscreen = false;
+		}
+
+		const parentLayerId = parentLayer?.id ? String( parentLayer.id ) : '';
+		const parentLayerName = parentLayer?.name ? String( parentLayer.name ) : '';
+
+		// Build a human-readable name like "Parent layer name — Hotspot 1"
+		// so the UI can render each sub-hotspot meaningfully even before
+		// we wire in product-name / link-title enrichment.
+		const subLabel = hotspot?.name || hotspot?.label || hotspot?.title || `Hotspot ${ index + 1 }`;
+		const compositeName = parentLayerName ? `${ parentLayerName } — ${ subLabel }` : String( subLabel );
+
+		const enrichedMetadata = {
+			parent_layer_id: parentLayerId,
+			parent_layer_name: parentLayerName,
+			hotspot_index: index,
+			hotspot_id: hotspot?.id ? String( hotspot.id ) : '',
+			hotspot_link: hotspot?.link || '',
+			dwell_ms: dwellMs,
+			current_video_time: currentVideoTime,
+			is_fullscreen: isFullscreen,
+			interaction_seq: seq,
+			...( metadata || {} ),
+		};
+
 		window.GoDAM.addLayerInteraction( videoKey, {
-			layer_id: layerId,
-			layer_type: layerType,
+			layer_id: compositeLayerId,
+			layer_type: parentLayer?.type || 'hotspot',
 			action_type: actionType,
-			layer_timestamp: parseFloat( layer?.displayTime ) || 0,
-			layer_name: layer?.name ? String( layer.name ) : '',
+			layer_timestamp: parseFloat( parentLayer?.displayTime ) || 0,
+			layer_name: compositeName,
 			page_url: window.location.href,
-			layer_metadata: metadata || {},
+			layer_metadata: enrichedMetadata,
 		} );
 	}
 
@@ -143,8 +238,14 @@ export default class HotspotLayerManager {
 			if ( isActive ) {
 				if ( layerObj.layerElement.classList.contains( 'hidden' ) ) {
 					layerObj.layerElement.classList.remove( 'hidden' );
-					// Fire `viewed` impression (deduped per layer per session).
-					this.emitLayerEvent( layerObj.layer, 'viewed' );
+					// Fire `viewed` once per sub-hotspot (deduped per
+					// composite layer_id per session). Each sub-hotspot is its
+					// own analytics bucket — the UI can group by parent_layer_id
+					// from layer_metadata.
+					const subHotspots = Array.isArray( layerObj.layer?.hotspots ) ? layerObj.layer.hotspots : [];
+					subHotspots.forEach( ( h, hIdx ) => {
+						this.emitHotspotEvent( layerObj.layer, h, hIdx, 'viewed' );
+					} );
 					if ( ! layerObj.layerElement.dataset?.hotspotsInitialized ) {
 						this.createHotspots( layerObj );
 						layerObj.layerElement.dataset.hotspotsInitialized = true;
@@ -231,10 +332,11 @@ export default class HotspotLayerManager {
 	/**
 	 * Attach click + hover analytics handlers to a single hotspot element.
 	 *
-	 * Click: fires `clicked` per actual click (not deduped).
-	 * Hover: fires `hovered` once per (layer, hotspot, page-session). Repeated
-	 * hovers on the same hotspot during the session count as one — otherwise
-	 * a moving cursor near a hotspot would explode the count.
+	 * Both actions deduped per (composite layer_id, page-session) inside
+	 * emitHotspotEvent — one click per sub-hotspot per session, one hover
+	 * per sub-hotspot per session. Matches the analytical question "did the
+	 * viewer click this hotspot at least once?" — repeat clicks within the
+	 * same session aren't more meaningful for conversion-rate analysis.
 	 *
 	 * @param {HTMLElement} hotspotDiv The hotspot DOM element.
 	 * @param {Object}      layerObj   The owning layer object.
@@ -242,29 +344,17 @@ export default class HotspotLayerManager {
 	 * @param {number}      index      The hotspot's index inside layerObj.hotspots.
 	 */
 	setupHotspotAnalytics( hotspotDiv, layerObj, hotspot, index ) {
-		const layerId = layerObj.layer?.id ? String( layerObj.layer.id ) : '';
-		const hoverDedupeKey = `${ layerId }::${ index }`;
-
 		hotspotDiv.addEventListener( 'click', ( ev ) => {
 			// Skip clicks on the tooltip-close affordance, which fires its own
 			// handler and shouldn't be counted as a conversion click.
 			if ( ev.target?.closest?.( '.hotspot-tooltip-close' ) ) {
 				return;
 			}
-			this.emitLayerEvent( layerObj.layer, 'clicked', {
-				hotspot_index: index,
-				hotspot_link: hotspot?.link || '',
-			} );
+			this.emitHotspotEvent( layerObj.layer, hotspot, index, 'clicked' );
 		} );
 
 		hotspotDiv.addEventListener( 'mouseenter', () => {
-			if ( this._hoveredFired.has( hoverDedupeKey ) ) {
-				return;
-			}
-			this._hoveredFired.add( hoverDedupeKey );
-			this.emitLayerEvent( layerObj.layer, 'hovered', {
-				hotspot_index: index,
-			} );
+			this.emitHotspotEvent( layerObj.layer, hotspot, index, 'hovered' );
 		} );
 	}
 

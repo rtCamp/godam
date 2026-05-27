@@ -49,9 +49,21 @@ export default class FormLayerManager {
 		this.currentPlayerVideoInstanceId = currentPlayerVideoInstanceId;
 		this.formLayers = [];
 		this.currentFormLayerIndex = 0;
-		// Per-session dedupe set for `viewed` impressions. Subsequent
-		// interaction events (clicked, submitted, skipped) are NOT deduped.
-		this._viewedFired = new Set();
+
+		// Per-(emitted layer_id, page-session) dedupe sets. CTA/form are atomic,
+		// so each layer_id is a unique unit — and we dedupe every action_type
+		// (viewed, clicked, submitted, skipped) at this granularity. That keeps
+		// conversion-rate math bounded ≤ 100%: one click per (layer, session)
+		// at most, denominator is one viewed event per (layer, session) at most.
+		this._dedupeFired = new Map(); // layer_id -> Set<action_type>
+
+		// Per-layer first-visible timestamp (epoch ms) — used to compute
+		// dwell_ms on click/submit/skip. Map<layer_id, number>.
+		this._firstVisibleAt = new Map();
+
+		// Per-layer interaction sequence — incremented on each emit so the
+		// receiver can distinguish first-touch from repeat events. Map<layer_id, number>.
+		this._interactionSeq = new Map();
 	}
 
 	/**
@@ -61,8 +73,18 @@ export default class FormLayerManager {
 	 * shared analytics bundle ships separately and may not be present on
 	 * editor-side previews).
 	 *
+	 * Dedupes every action per (layer_id, page-session) — keeps conversion
+	 * math sensible (clicks ≤ views) without losing the meaningful event
+	 * (the first click is recorded; subsequent clicks within the same session
+	 * are dropped because the analytical question is "did the viewer click?").
+	 *
+	 * Enriches every event with parent_layer_id, parent_layer_name, dwell_ms,
+	 * current_video_time, is_fullscreen, interaction_seq so future analytics
+	 * questions ("how long after layer appeared do users click?", "do fullscreen
+	 * viewers convert better?") can be answered without re-instrumenting.
+	 *
 	 * @param {Object} layer      Layer config (must have id, type, displayTime).
-	 * @param {string} actionType One of LAYER_ACTIONS[layer.type].all.
+	 * @param {string} actionType e.g. 'viewed', 'clicked', 'submitted', 'skipped'.
 	 * @param {Object} [metadata] Optional payload merged into layer_metadata.
 	 */
 	emitLayerEvent( layer, actionType, metadata ) {
@@ -81,15 +103,63 @@ export default class FormLayerManager {
 			return;
 		}
 
-		// Dedupe `viewed` once per (layer_id, page-session). Interaction
-		// events stay re-emittable so multiple clicks/skips on the same layer
-		// produce multiple events.
-		if ( actionType === 'viewed' ) {
-			if ( this._viewedFired.has( layerId ) ) {
-				return;
-			}
-			this._viewedFired.add( layerId );
+		// Per-(layer_id, action_type, session) dedupe.
+		let firedActions = this._dedupeFired.get( layerId );
+		if ( ! firedActions ) {
+			firedActions = new Set();
+			this._dedupeFired.set( layerId, firedActions );
 		}
+		if ( firedActions.has( actionType ) ) {
+			return;
+		}
+		firedActions.add( actionType );
+
+		// Compute dwell — ms between layer first becoming visible and this event.
+		// 0 for the viewed event itself (since "visible-at" is recorded at the
+		// same instant we emit `viewed`); positive for interactions that follow.
+		const firstVisibleAt = this._firstVisibleAt.get( layerId );
+		let dwellMs = 0;
+		if ( actionType === 'viewed' ) {
+			this._firstVisibleAt.set( layerId, Date.now() );
+		} else if ( firstVisibleAt ) {
+			dwellMs = Math.max( 0, Date.now() - firstVisibleAt );
+		}
+
+		// Bump interaction sequence — 1-indexed; `viewed` is seq 1 by convention.
+		const prevSeq = this._interactionSeq.get( layerId ) || 0;
+		const seq = prevSeq + 1;
+		this._interactionSeq.set( layerId, seq );
+
+		// Current player time — distinct from layer_timestamp (which is when the
+		// layer was *placed* in the editor). When CTA/Form auto-pauses the video,
+		// current_video_time tracks the actual playback position at interaction.
+		let currentVideoTime = 0;
+		try {
+			currentVideoTime = Number( this.player?.currentTime?.() ) || 0;
+		} catch ( e ) {
+			currentVideoTime = 0;
+		}
+
+		// Fullscreen state — useful for "do fullscreen viewers convert better"
+		// questions in v2 without re-instrumenting.
+		let isFullscreen = false;
+		try {
+			isFullscreen = !! this.player?.isFullscreen?.();
+		} catch ( e ) {
+			isFullscreen = false;
+		}
+
+		// CTA/form layers are atomic — the parent IS the layer. We still set
+		// parent_layer_id so the UI can group consistently across all layer types.
+		const enrichedMetadata = {
+			parent_layer_id: layerId,
+			parent_layer_name: layer?.name ? String( layer.name ) : '',
+			dwell_ms: dwellMs,
+			current_video_time: currentVideoTime,
+			is_fullscreen: isFullscreen,
+			interaction_seq: seq,
+			...( metadata || {} ),
+		};
 
 		window.GoDAM.addLayerInteraction( videoKey, {
 			layer_id: layerId,
@@ -98,7 +168,7 @@ export default class FormLayerManager {
 			layer_timestamp: parseFloat( layer?.displayTime ) || 0,
 			layer_name: layer?.name ? String( layer.name ) : '',
 			page_url: window.location.href,
-			layer_metadata: metadata || {},
+			layer_metadata: enrichedMetadata,
 		} );
 	}
 
