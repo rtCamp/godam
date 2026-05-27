@@ -27,27 +27,51 @@ const BUILTIN_TABS = [
 ];
 
 /**
- * Read the extension-registered tabs from the global registry.
+ * Read extension-registered tabs from both supported sources.
  *
- * The registry is a plain array on window.GoDAM.layerAnalyticsTabs —
- * add-ons push into it before this component mounts. We snapshot at
- * mount time so a late-loading add-on doesn't reorder tabs mid-render;
- * the user can refresh to pick up newly-installed add-ons.
+ * Sources in priority order: (1) PHP-localized `window.godamAnalyticsConfig.extensionTabs`
+ * — the canonical source; godam-core applies the `godam_analytics_layer_tabs`
+ * filter at enqueue time and passes the result via wp_localize_script. (2)
+ * `window.GoDAM.layerAnalyticsTabs` — runtime JS registration from frontend
+ * contexts (the admin analytics page rarely sees this populated, but we
+ * merge it for robustness).
+ *
+ * Snapshot at mount time so a late-loading add-on doesn't reorder tabs
+ * mid-render; the user can refresh to pick up newly-installed add-ons.
+ * Duplicate ids (PHP source wins) are removed.
  *
  * @return {Array<{id: string, label: string, component: Function|null}>} Sanitized, shape-checked tab descriptors.
  */
 function readRegisteredTabs() {
-	const reg = window.GoDAM && Array.isArray( window.GoDAM.layerAnalyticsTabs )
+	const phpSource = window.godamAnalyticsConfig &&
+		Array.isArray( window.godamAnalyticsConfig.extensionTabs )
+		? window.godamAnalyticsConfig.extensionTabs
+		: [];
+	const jsSource = window.GoDAM && Array.isArray( window.GoDAM.layerAnalyticsTabs )
 		? window.GoDAM.layerAnalyticsTabs
 		: [];
-	// Defensive copy + shape check.
-	return reg
-		.filter( ( t ) => t && typeof t.id === 'string' && typeof t.label === 'string' )
-		.map( ( t ) => ( {
+
+	const merged = [];
+	const seen = new Set();
+
+	[ ...phpSource, ...jsSource ].forEach( ( t ) => {
+		if ( ! t || typeof t.id !== 'string' || typeof t.label !== 'string' ) {
+			return;
+		}
+		if ( seen.has( t.id ) ) {
+			return;
+		}
+		seen.add( t.id );
+		merged.push( {
 			id: t.id,
 			label: t.label,
+			// PHP-source tabs can't supply a component (PHP doesn't render React).
+			// JS-source tabs may supply one to override the default list view.
 			component: typeof t.component === 'function' ? t.component : null,
-		} ) );
+		} );
+	} );
+
+	return merged;
 }
 
 /**
