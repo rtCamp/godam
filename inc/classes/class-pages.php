@@ -704,7 +704,7 @@ class Pages {
 			 * main dashboard bundle is enqueued so those registrations are
 			 * available when the dashboard app mounts.
 			 *
-			 * @since n.e.x.t
+			 * @since 1.11.0
 			 */
 			do_action( 'godam_enqueue_dashboard_page_scripts' );
 

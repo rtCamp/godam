@@ -1,10 +1,10 @@
 === GoDAM - Organize WordPress Media Library & File Manager with Unlimited Folders for Images, Videos & more ===
-Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, joelabreo, mi5t4n, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia, kishu7270, opurockey, utsavladani, whiteshadow01, ahmarzaidi, im3dabasia1, rudrakshigupta
+Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, joelabreo, mi5t4n, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia, kishu7270, opurockey, utsavladani, whiteshadow01, ahmarzaidi, im3dabasia1, rudrakshigupta, sabbir1991, shreyasikhar26
 Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.10.2
+Stable tag: 1.11.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -219,6 +219,12 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v1.11.0 (May 27, 2026) =
+
+- Tweak: Extended GoDAM analytics scripts to track Reel Pop interactions from GoDAM for Woo.
+- Tweak: Added a migration script to sync existing virtual media to GoDAM Central.
+- Fix: Improved video selection UX in the handpicked mode of the Video Gallery block.
+
 = v1.10.2 (May 22, 2026) =
 
 - Feat: Enhanced Type 1 video analytics tracking with viewport detection.
@@ -227,11 +233,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 = v1.10.1 (May 19, 2026) =
 
 - Fix: Added patch for plugin deployment.
-
-= v1.10.0 (May 19, 2026) =
-
-- Feat: Added Unique Viewers and Replay Ratio metrics in Analytics.
-- Feat: Extended Video SEO schema with Shoppable Video support.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
