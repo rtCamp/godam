@@ -1,5 +1,11 @@
 # Changelog #
 
+## v1.11.0 (May 27, 2026) ##
+
+- Tweak: Extended GoDAM analytics scripts to track Reel Pop interactions from GoDAM for Woo.
+- Tweak: Added a migration script to sync existing virtual media to GoDAM Central.
+- Fix: Improved video selection UX in the handpicked mode of the Video Gallery block.
+
 ## v1.10.2 (May 22, 2026) ##
 
 - Feat: Enhanced Type 1 video analytics tracking with viewport detection.

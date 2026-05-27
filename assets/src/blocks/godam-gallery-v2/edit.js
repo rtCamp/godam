@@ -26,8 +26,9 @@ import {
 	__experimentalToggleGroupControlOptionIcon as ToggleGroupControlOptionIcon,
 	Button,
 } from '@wordpress/components';
-import { useDispatch, useSelect } from '@wordpress/data';
+import { useDispatch, useSelect, select as dataSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
+import { store as noticesStore } from '@wordpress/notices';
 import { useCallback, useEffect, useMemo, useRef, useState } from '@wordpress/element';
 import { columns, grid, listView, plus } from '@wordpress/icons';
 
@@ -172,6 +173,7 @@ const AddVideoAppender = ( { onSelect } ) => (
 	<MediaUploadCheck>
 		<MediaUpload
 			allowedTypes={ [ 'video' ] }
+			multiple
 			onSelect={ onSelect }
 			render={ ( { open } ) => (
 				<Button
@@ -214,7 +216,8 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	const [ startDatePopoverOpen, setStartDatePopoverOpen ] = useState( false );
 	const [ endDatePopoverOpen, setEndDatePopoverOpen ] = useState( false );
 	const [ dateError, setDateError ] = useState( '' );
-	const { insertBlocks, updateBlockAttributes } = useDispatch( blockEditorStore );
+	const { insertBlocks, updateBlockAttributes, removeBlock } = useDispatch( blockEditorStore );
+	const { createNotice } = useDispatch( noticesStore );
 
 	// Tracks {virtualId, blockClientId} pairs for GoDAM virtual insertions
 	// so the godam-virtual-attachment-created event can update the correct block.
@@ -367,28 +370,85 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	);
 
 	const insertHandpickedVideo = useCallback(
-		( mediaItem ) => {
-			if ( ! mediaItem?.id ) {
+		( mediaItemOrArray ) => {
+			const items = Array.isArray( mediaItemOrArray ) ? mediaItemOrArray : [ mediaItemOrArray ];
+			if ( ! items.length ) {
 				return;
 			}
 
-			const numericId = parseInt( mediaItem.id, 10 );
-			const isVirtual = ! ( numericId > 0 && String( numericId ) === String( mediaItem.id ) );
+			// Get existing video IDs from inner blocks to prevent duplicates.
+			const { getBlock } = dataSelect( blockEditorStore );
+			const parentBlock = getBlock( clientId );
+			const existingVideoIds = new Set(
+				( parentBlock?.innerBlocks || [] )
+					.map( ( block ) => block.attributes?.videoId )
+					.filter( Boolean ),
+			);
 
-			const newBlock = createBlock( 'godam/gallery-v2-item', {
-				videoId: isVirtual ? 0 : numericId,
+			const newBlocks = [];
+			let skippedNonVideo = false;
+			let skippedDuplicate = false;
+
+			items.forEach( ( mediaItem ) => {
+				if ( ! mediaItem?.id ) {
+					return;
+				}
+
+				// Only allow video attachments.
+				if ( mediaItem.type && mediaItem.type !== 'video' ) {
+					skippedNonVideo = true;
+					return;
+				}
+				if ( mediaItem.mime && ! mediaItem.mime.startsWith( 'video/' ) ) {
+					skippedNonVideo = true;
+					return;
+				}
+
+				const numericId = parseInt( mediaItem.id, 10 );
+				const isVirtual = ! ( numericId > 0 && String( numericId ) === String( mediaItem.id ) );
+
+				if ( ! isVirtual ) {
+					// Skip if this video is already in the gallery.
+					if ( existingVideoIds.has( numericId ) ) {
+						skippedDuplicate = true;
+						return;
+					}
+					existingVideoIds.add( numericId );
+				}
+
+				const newBlock = createBlock( 'godam/gallery-v2-item', {
+					videoId: isVirtual ? 0 : numericId,
+				} );
+
+				if ( isVirtual ) {
+					pendingVirtualInserts.current.push( {
+						virtualId: mediaItem.id,
+						blockClientId: newBlock.clientId,
+					} );
+				}
+
+				newBlocks.push( newBlock );
 			} );
 
-			if ( isVirtual ) {
-				pendingVirtualInserts.current.push( {
-					virtualId: mediaItem.id,
-					blockClientId: newBlock.clientId,
+			if ( skippedNonVideo ) {
+				createNotice( 'warning', __( 'Only video files can be added to the gallery.', 'godam' ), {
+					type: 'snackbar',
+					isDismissible: true,
 				} );
 			}
 
-			insertBlocks( newBlock, undefined, clientId );
+			if ( skippedDuplicate ) {
+				createNotice( 'warning', __( 'Duplicate videos were skipped.', 'godam' ), {
+					type: 'snackbar',
+					isDismissible: true,
+				} );
+			}
+
+			if ( newBlocks.length > 0 ) {
+				insertBlocks( newBlocks, undefined, clientId );
+			}
 		},
-		[ clientId, insertBlocks ],
+		[ clientId, createNotice, insertBlocks ],
 	);
 
 	// When GoDAM creates a real WP attachment, find the pending child block
@@ -409,6 +469,22 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 			}
 
 			const [ { blockClientId } ] = pendingVirtualInserts.current.splice( idx, 1 );
+
+			// Skip if this video already exists in another gallery item.
+			const { getBlock } = dataSelect( blockEditorStore );
+			const parentBlock = getBlock( clientId );
+			const isDuplicate = ( parentBlock?.innerBlocks || [] ).some(
+				( block ) => block.clientId !== blockClientId && block.attributes?.videoId === attachment.id,
+			);
+			if ( isDuplicate ) {
+				createNotice( 'warning', __( 'Duplicate videos were skipped.', 'godam' ), {
+					type: 'snackbar',
+					isDismissible: true,
+				} );
+				removeBlock( blockClientId );
+				return;
+			}
+
 			updateBlockAttributes( blockClientId, { videoId: attachment.id } );
 		};
 
@@ -417,7 +493,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		return () => {
 			document.removeEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
 		};
-	}, [ updateBlockAttributes ] );
+	}, [ clientId, createNotice, removeBlock, updateBlockAttributes ] );
 
 	const renderVideoAppender = useCallback(
 		() => <AddVideoAppender onSelect={ insertHandpickedVideo } />,

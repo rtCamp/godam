@@ -194,13 +194,14 @@ function flushPageLoadQueue( sync = false ) {
  * Deduplication is per data-instance-id so duplicate renders of the same
  * underlying video each send independently, while re-entries do not.
  *
- * @param {HTMLElement} video - Candidate video or wrapper element.
+ * @param {HTMLElement} video       - Candidate video or wrapper element.
+ * @param {number}      [reelPopId] - Reel Pop CPT post ID. When > 0 the event is sent immediately instead of batched, since each request carries a single reel_pop_id. Defaults to 0 (normal batched page_load).
  * @return {boolean} True when the caller should stop tracking this element
  * (event enqueued, duplicate, or malformed); false when the
  * caller should keep observing and retry on the next tick
  * (analytics library not yet ready).
  */
-function trackPageLoadForVideo( video ) {
+function trackPageLoadForVideo( video, reelPopId = 0 ) {
 	const videoInfo = getPageLoadVideoInfo( video );
 
 	if ( ! videoInfo ) {
@@ -215,7 +216,20 @@ function trackPageLoadForVideo( video ) {
 		return false; // Retry on the next observer tick.
 	}
 
-	enqueuePageLoad( videoInfo );
+	const rpId = parseInt( reelPopId, 10 ) || 0;
+	if ( rpId > 0 ) {
+		// Reel-pop page_loads carry per-modal attribution. The batch sends one
+		// reel_pop_id per request (see buildAnalyticsRequestBody), so a reel-pop
+		// instance can't be folded into the shared batch — dispatch it on its own.
+		window.analytics.track( 'page_load', {
+			type: 1,
+			videoIds: [ [ videoInfo.videoId, videoInfo.jobId ] ],
+			reelPopId: rpId,
+		} );
+	} else {
+		enqueuePageLoad( videoInfo );
+	}
+
 	window.godamTrackedPageLoadInstances.add( videoInfo.instanceId );
 
 	return true;
@@ -228,6 +242,14 @@ function trackPageLoadForVideo( video ) {
  * @param {HTMLElement} video - Candidate video or wrapper element.
  */
 function observePageLoadForVideo( video ) {
+	// Honor the auto-instrumentation opt-out (reel-pop widget previews fire
+	// type=1 explicitly from inside the modal, never automatically). Enforced
+	// here so every call site — DOMContentLoaded, godamPlayerReady, and
+	// setupPlayerAnalytics — respects it.
+	if ( video?.getAttribute?.( 'data-godam-no-auto-analytics' ) === '1' ) {
+		return;
+	}
+
 	const videoInfo = getPageLoadVideoInfo( video );
 
 	if ( ! videoInfo ) {
@@ -312,6 +334,7 @@ function observePageLoadForVideo( video ) {
 	 * @param {Element|Document} [params.root]         - Root element to search for video elements. Defaults to document
 	 *
 	 * @param {boolean}          [params.sendPageLoad] - Whether to send a type 1 'page_load' event before the heatmap event. Defaults to true.
+	 * @param {number}           [params.reelPopId]    - Reel popup ID associated with the tracked video event. Defaults to 0.
 	 * @return {boolean} Returns true if event was successfully tracked, false otherwise
 	 *
 	 * @description
@@ -331,7 +354,7 @@ function observePageLoadForVideo( video ) {
 	 *
 	 * @since 1.4.2
 	 */
-	window.analytics.trackVideoEvent = ( { type, videoId, root, sendPageLoad = true } = {} ) => {
+	window.analytics.trackVideoEvent = ( { type, videoId, root, sendPageLoad = true, reelPopId = 0 } = {} ) => {
 		if ( ! type ) {
 			return false;
 		}
@@ -352,6 +375,14 @@ function observePageLoadForVideo( video ) {
 				jobId = videoEl.getAttribute( 'data-job_id' ) || '';
 			}
 
+			// Fall back to the wrapper's own data-reel-pop-id when the caller
+			// didn't pass one explicitly. Lets reel-pop attribution travel with
+			// the DOM for callers that don't know about reel pops.
+			let rpId = parseInt( reelPopId, 10 ) || 0;
+			if ( ! rpId && videoEl ) {
+				rpId = parseInt( videoEl.getAttribute( 'data-reel-pop-id' ), 10 ) || 0;
+			}
+
 			vid = parseInt( vid, 10 ) || 0;
 			if ( ! vid ) {
 				return false;
@@ -361,7 +392,11 @@ function observePageLoadForVideo( video ) {
 			// This reuses the shared page_load helper so viewport and heatmap paths
 			// follow the same per-instance deduplication rules.
 			if ( sendPageLoad ) {
-				trackPageLoadForVideo( videoEl );
+				// Carry reel-pop attribution through to the page_load. rpId > 0
+				// means this is an explicit reel-pop send, which can't share the
+				// shared batch (one reel_pop_id per request) — trackPageLoadForVideo
+				// dispatches it immediately in that case.
+				trackPageLoadForVideo( videoEl, rpId );
 			}
 
 			const player = getPlayer( videoEl );
@@ -382,6 +417,7 @@ function observePageLoadForVideo( video ) {
 				jobId,
 				ranges,
 				videoLength,
+				reelPopId: rpId,
 			} );
 			return true;
 		}
@@ -397,7 +433,9 @@ if ( ! window.pageLoadEventTracked ) {
 		const videos = document.querySelectorAll( '.easydam-player.video-js' );
 
 		// Observe all current videos and send type 1 only when each individual
-		// player instance first enters the viewport.
+		// player instance first enters the viewport. The opt-out for reel-pop
+		// widget previews (data-godam-no-auto-analytics) is enforced inside
+		// observePageLoadForVideo so every call site honors it.
 		videos.forEach( ( video ) => observePageLoadForVideo( video ) );
 
 		// Set up analytics for each player when it's ready
@@ -535,6 +573,11 @@ function buildHeatmapPayload( player, video, skipIfKey = null ) {
 
 		const videoLength = Number( player.duration && player.duration() ) || 0;
 
+		// Pick up reel-pop attribution from the wrapper element when present,
+		// so the unload-flush heatmap correctly counts against the reel pop
+		// even though the godam SDK itself has no concept of reel pops.
+		const reelPopId = parseInt( video.getAttribute( 'data-reel-pop-id' ), 10 ) || 0;
+
 		const { endpoint, body } = buildAnalyticsRequestBody( {
 			type: 2,
 			userToken: window.analytics?.user?.()?.anonymousId || '',
@@ -542,6 +585,7 @@ function buildHeatmapPayload( player, video, skipIfKey = null ) {
 			jobId,
 			ranges,
 			videoLength,
+			reelPopId,
 		} );
 
 		if ( ! endpoint ) {
@@ -662,6 +706,15 @@ function setupPlayerAnalytics( player, video ) {
 	if ( player._godamAnalyticsSetup ) {
 		return;
 	}
+
+	// Skip wrappers that opted out of auto-instrumentation. Reel-pop widget
+	// previews use this so the SDK does not register them in
+	// godamTrackedPlayers — unload-flush would otherwise send type=2 for the
+	// muted preview that the user never engaged with through the modal.
+	if ( video && video.getAttribute && video.getAttribute( 'data-godam-no-auto-analytics' ) === '1' ) {
+		return;
+	}
+
 	player._godamAnalyticsSetup = true;
 	video.dataset.analyticsSetup = 'true'; // Keep for backwards compatibility
 

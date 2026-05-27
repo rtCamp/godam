@@ -8,10 +8,12 @@ import {
 	useBlockProps,
 	MediaUpload,
 	MediaUploadCheck,
+	store as blockEditorStore,
 } from '@wordpress/block-editor';
 import { Button } from '@wordpress/components';
-import { useDispatch, useSelect } from '@wordpress/data';
+import { useDispatch, useSelect, select as dataSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
+import { store as noticesStore } from '@wordpress/notices';
 import { closeSmall, pencil, video as videoIcon } from '@wordpress/icons';
 import { useRef, useEffect } from '@wordpress/element';
 
@@ -54,6 +56,7 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 	const itemWidth = itemWidthMap[ itemWidthRaw ] || itemWidthMap.M;
 	const viewRatio = context[ 'godam/galleryV2/viewRatio' ] || '16:9';
 	const { removeBlock } = useDispatch( 'core/block-editor' );
+	const { createNotice } = useDispatch( noticesStore );
 
 	// Ref to track the GoDAM virtual media ID from the most recent selection.
 	const pendingVirtualMediaId = useRef( null );
@@ -65,9 +68,38 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 		if ( ! mediaItem?.id ) {
 			return;
 		}
+		// Only allow video attachments.
+		if ( mediaItem.type && mediaItem.type !== 'video' ) {
+			createNotice( 'warning', __( 'Only video files can be added to the gallery.', 'godam' ), {
+				type: 'snackbar',
+				isDismissible: true,
+			} );
+			return;
+		}
+		if ( mediaItem.mime && ! mediaItem.mime.startsWith( 'video/' ) ) {
+			createNotice( 'warning', __( 'Only video files can be added to the gallery.', 'godam' ), {
+				type: 'snackbar',
+				isDismissible: true,
+			} );
+			return;
+		}
 		pendingVirtualMediaId.current = mediaItem.id;
 		const numericId = parseInt( mediaItem.id, 10 );
 		if ( numericId > 0 && String( numericId ) === String( mediaItem.id ) ) {
+			// Prevent selecting a video already used by a sibling.
+			const { getBlockRootClientId, getBlock } = dataSelect( blockEditorStore );
+			const parentClientId = getBlockRootClientId( clientId );
+			const parentBlock = getBlock( parentClientId );
+			const isDuplicate = ( parentBlock?.innerBlocks || [] ).some(
+				( block ) => block.clientId !== clientId && block.attributes?.videoId === numericId,
+			);
+			if ( isDuplicate ) {
+				createNotice( 'warning', __( 'This video is already in the gallery.', 'godam' ), {
+					type: 'snackbar',
+					isDismissible: true,
+				} );
+				return;
+			}
 			setAttributes( { videoId: numericId } );
 		}
 	};
@@ -83,6 +115,22 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 				String( pendingVirtualMediaId.current ) === String( virtualMediaId )
 			) {
 				pendingVirtualMediaId.current = null;
+
+				// Prevent selecting a video already used by a sibling.
+				const { getBlockRootClientId, getBlock } = dataSelect( blockEditorStore );
+				const parentClientId = getBlockRootClientId( clientId );
+				const parentBlock = getBlock( parentClientId );
+				const isDuplicate = ( parentBlock?.innerBlocks || [] ).some(
+					( block ) => block.clientId !== clientId && block.attributes?.videoId === attachment.id,
+				);
+				if ( isDuplicate ) {
+					createNotice( 'warning', __( 'This video is already in the gallery.', 'godam' ), {
+						type: 'snackbar',
+						isDismissible: true,
+					} );
+					return;
+				}
+
 				setAttributes( { videoId: attachment.id } );
 			}
 		};
@@ -92,7 +140,7 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 		return () => {
 			document.removeEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
 		};
-	}, [ setAttributes ] );
+	}, [ clientId, setAttributes, createNotice ] );
 
 	const { media, hasResolvedMedia } = useSelect(
 		( select ) => {

@@ -2,16 +2,16 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GoDAM 1.10.2\n"
+"Project-Id-Version: GoDAM 1.11.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-05-22T11:33:40+00:00\n"
+"POT-Creation-Date: 2026-05-27T12:50:48+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.12.0\n"
+"X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: godam\n"
 
 #. Plugin Name of the plugin
@@ -67,7 +67,6 @@ msgstr ""
 #. translators: Link to the media page.
 #: admin/class-rtgodam-retranscodemedia.php:183
 #: admin/class-rtgodam-retranscodemedia.php:395
-#, php-format
 msgid "Unable to find any media. Are you sure <a href='%s'>some exist</a>?"
 msgstr ""
 
@@ -78,7 +77,6 @@ msgstr ""
 #. translators: The URL to go back to the previous page.
 #: admin/class-rtgodam-retranscodemedia.php:206
 #: admin/class-rtgodam-retranscodemedia.php:475
-#, php-format
 msgid "To go back to the previous page, <a href=\"%s\">click here</a>."
 msgstr ""
 
@@ -117,13 +115,11 @@ msgstr ""
 
 #. translators: Count of media which were successfully and media which were failed transcoded with the time in seconds and previout page link.
 #: admin/class-rtgodam-retranscodemedia.php:478
-#, php-format
 msgid "All done! %1$s media file(s) were successfully sent for transcoding in %2$s seconds and there were %3$s failure(s). To try transcoding the failed media again, <a href=\"%4$s\">click here</a>. %5$s"
 msgstr ""
 
 #. translators: Count of media which were successfully transcoded with the time in seconds and previout page link.
 #: admin/class-rtgodam-retranscodemedia.php:480
-#, php-format
 msgid "All done! %1$s media file(s) were successfully sent for transcoding in %2$s seconds and there were 0 failures. %3$s"
 msgstr ""
 
@@ -142,19 +138,16 @@ msgstr ""
 
 #. translators: Total count of the media.
 #: admin/class-rtgodam-retranscodemedia.php:496
-#, php-format
 msgid "Total Media: %s"
 msgstr ""
 
 #. translators: Count of media which were successfully sent to the transcoder server.
 #: admin/class-rtgodam-retranscodemedia.php:501
-#, php-format
 msgid "Media Sent for Retranscoding: %s"
 msgstr ""
 
 #. translators: Count of media which were failed while sending to the transcoder server.
 #: admin/class-rtgodam-retranscodemedia.php:506
-#, php-format
 msgid "Failed While Sending: %s"
 msgstr ""
 
@@ -168,7 +161,6 @@ msgstr ""
 
 #. translators: Placeholder is for admin media section link.
 #: admin/class-rtgodam-retranscodemedia.php:528
-#, php-format
 msgid "You can retranscode specific media files (rather than ALL media) from the <a href='%s'>Media</a> page using Bulk Action via drop down or mouse hover a specific media (audio/video) file."
 msgstr ""
 
@@ -182,7 +174,6 @@ msgstr ""
 
 #. translators: Media name, Media ID and message for failed transcode.
 #: admin/class-rtgodam-retranscodemedia.php:555
-#, php-format
 msgid "&quot;%1$s&quot; (ID %2$s) failed to send. The error message was: %3$s"
 msgstr ""
 
@@ -194,19 +185,16 @@ msgstr ""
 #: admin/class-rtgodam-transcoder-admin.php:87
 #: admin/class-rtgodam-transcoder-admin.php:149
 #: admin/class-rtgodam-transcoder-admin.php:164
-#, php-format
 msgid "Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock Transcoding, Analytics and more, <a href=\"%s\">please activate your API key.</a>"
 msgstr ""
 
 #. translators: %d: Number of days until trial ends
 #: admin/class-rtgodam-transcoder-admin.php:112
-#, php-format
 msgid "Your product is under trial. You will be charged after <strong>%d days</strong>. If you wish to cancel, please visit <a href=\"https://app.godam.io/subscription/my-account\" target=\"_blank\">your subscription settings</a>."
 msgstr ""
 
 #. translators: %d: Number of days until transcoded videos are deleted after subscription ends
 #: admin/class-rtgodam-transcoder-admin.php:136
-#, php-format
 msgid "Your subscription has ended. No further transcoding can be done. Transcoded videos will be removed after <strong>%d days</strong>, and Pro features will not be accessible. After the 30-day grace period, already transcoded videos will no longer be served from the CDN. Renew your subscription to keep it up and running."
 msgstr ""
 
@@ -243,14 +231,14 @@ msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:277
 #: inc/classes/class-media-library-ajax.php:820
-#: pages/dashboard/Dashboard.js:239
+#: pages/dashboard/Dashboard.js:361
 #: pages/video-editor/AttachmentPicker.jsx:45
 msgid "Claim the GoDAM New Year Sale 2026 offer"
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:279
 #: inc/classes/class-media-library-ajax.php:822
-#: pages/dashboard/Dashboard.js:243
+#: pages/dashboard/Dashboard.js:365
 #: pages/video-editor/AttachmentPicker.jsx:49
 msgid "New Year Sale 2026 offer from GoDAM"
 msgstr ""
@@ -271,19 +259,16 @@ msgstr ""
 
 #. translators: %1$s: bandwidth percentage, %2$s: storage percentage
 #: admin/class-rtgodam-transcoder-admin.php:523
-#, php-format
 msgid "Your bandwidth (%1$s%%) and storage (%2$s%%) usage have exceeded your plan limits."
 msgstr ""
 
 #. translators: %s: bandwidth percentage
 #: admin/class-rtgodam-transcoder-admin.php:530
-#, php-format
 msgid "Your bandwidth usage (%s%%) has exceeded your plan limit."
 msgstr ""
 
 #. translators: %s: storage percentage
 #: admin/class-rtgodam-transcoder-admin.php:536
-#, php-format
 msgid "Your storage usage (%s%%) has exceeded your plan limit."
 msgstr ""
 
@@ -309,19 +294,16 @@ msgstr ""
 
 #. translators: %1$s: bandwidth percentage, %2$s: storage percentage
 #: admin/class-rtgodam-transcoder-admin.php:586
-#, php-format
 msgid "Your bandwidth (%1$s%%) and storage (%2$s%%) usage are approaching your plan limits."
 msgstr ""
 
 #. translators: %s: bandwidth percentage
 #: admin/class-rtgodam-transcoder-admin.php:593
-#, php-format
 msgid "Your bandwidth usage (%s%%) is approaching your plan limit."
 msgstr ""
 
 #. translators: %s: storage percentage
 #: admin/class-rtgodam-transcoder-admin.php:599
-#, php-format
 msgid "Your storage usage (%s%%) is approaching your plan limit."
 msgstr ""
 
@@ -339,7 +321,6 @@ msgstr ""
 
 #. translators: %s: bandwidth percentage
 #: admin/class-rtgodam-transcoder-admin.php:643
-#, php-format
 msgid "Your bandwidth usage (%s%%) has exceeded your plan limit. Videos might not be served from CDN on frontend."
 msgstr ""
 
@@ -381,7 +362,6 @@ msgstr ""
 
 #. translators: %s: PostHog privacy policy URL
 #: admin/class-rtgodam-transcoder-admin.php:728
-#, php-format
 msgid "We are using PostHog to collect anonymous data. <a href=\"%s\" target=\"_blank\">Learn more</a>. This can be disabled from the settings on the Help page."
 msgstr ""
 
@@ -395,49 +375,41 @@ msgstr ""
 
 #. translators: %s: URL to settings page
 #: admin/class-rtgodam-transcoder-admin.php:779
-#, php-format
 msgid "Your GoDAM API key has expired. Transcoding and other Pro features are currently disabled. Please <a href=\"%s\">renew your subscription</a> to restore access."
 msgstr ""
 
 #. translators: %s: URL to settings page
 #: admin/class-rtgodam-transcoder-admin.php:784
-#, php-format
 msgid "Temporarily unable to verify your GoDAM API key. Transcoding may not work. Please <a href=\"%s\">check your settings</a> or try refreshing the status."
 msgstr ""
 
 #. translators: %s: URL to settings page
 #: admin/class-rtgodam-transcoder-admin.php:793
-#, php-format
 msgid "There is an issue with your GoDAM API key. Transcoding may not work. Please <a href=\"%s\">check your settings</a>."
 msgstr ""
 
 #. translators: 1: Opening link tag, 2: Closing link tag
 #: admin/class-rtgodam-transcoder-admin.php:890
-#, php-format
 msgid "<strong>GoDAM API key has expired.</strong> Pro features in GoDAM are currently disabled. %1$sPurchase a new key%2$s to restore access."
 msgstr ""
 
 #. translators: 1: opening link tag, 2: closing link tag
 #: admin/class-rtgodam-transcoder-admin.php:946
-#, php-format
 msgid "<strong>Shoppable video for WooCommerce is live!</strong> %1$sActivate%2$s to start selling directly from your videos."
 msgstr ""
 
 #. translators: 1: opening link tag, 2: closing link tag
 #: admin/class-rtgodam-transcoder-admin.php:954
-#, php-format
 msgid "<strong>GoDAM now supports WooCommerce!</strong> %1$sInstall WooCommerce%2$s to start using shoppable videos with GoDAM."
 msgstr ""
 
 #. translators: 1: opening link tag, 2: closing link tag
 #: admin/class-rtgodam-transcoder-admin.php:962
-#, php-format
 msgid "<strong>Add shoppable videos to your WooCommerce store!</strong> %1$sUpgrade your plan%2$s to unlock this feature."
 msgstr ""
 
 #. translators: %s: storage usage percent
 #: admin/class-rtgodam-transcoder-handler.php:266
-#, php-format
 msgid "Storage exceeded (%s%%)."
 msgstr ""
 
@@ -452,7 +424,6 @@ msgstr ""
 
 #. translators: 1: max retry attempts, 2: retry interval in minutes
 #: admin/class-rtgodam-transcoder-handler.php:503
-#, php-format
 msgid "GoDAM Central returned a server error. Transcoding will be retried automatically (up to %1$d times, every %2$d minutes)."
 msgstr ""
 
@@ -470,7 +441,6 @@ msgstr ""
 
 #. translators: Return an error if the value is neither a string nor an array.
 #: admin/class-rtgodam-transcoder-rest-routes.php:198
-#, php-format
 msgid "%s must be a valid URL or an array of URLs."
 msgstr ""
 
@@ -484,7 +454,6 @@ msgstr ""
 
 #. translators: %s is replaced with the attachment ID for which subsizes generation failed.
 #: admin/class-rtgodam-transcoder-rest-routes.php:327
-#, php-format
 msgid "GoDAM: Failed to request image subsizes for attachment ID %s. The transcoded image URL has been saved; subsizes may be retried separately."
 msgstr ""
 
@@ -580,7 +549,6 @@ msgstr ""
 
 #. translators: %1$s URL to the settings page, %2$s API key label.
 #: admin/godam-transcoder-actions.php:123
-#, php-format
 msgid "Activate the <a href=\"%1$s\" target=\"_blank\" rel=\"noopener noreferrer\">%2$s</a> to enable transcoding and adaptive bitrate streaming."
 msgstr ""
 
@@ -648,7 +616,6 @@ msgstr ""
 #: assets/build/blocks/godam-gallery-v2/render.php:342
 #: assets/build/blocks/godam-gallery-v2/render.php:392
 #: inc/classes/rest-api/class-dynamic-gallery.php:376
-#, php-format
 msgid "Open video: %s"
 msgstr ""
 
@@ -671,7 +638,6 @@ msgstr ""
 
 #. translators: %s: PDF download URL
 #: assets/build/blocks/godam-pdf/render.php:56
-#, php-format
 msgid "Your browser does not support PDFs. <a href=\"%s\">Download the PDF</a>."
 msgstr ""
 
@@ -701,7 +667,6 @@ msgstr ""
 
 #. Translators: %s will be replaced with the maximum file upload size allowed on the server (e.g., "300MB").
 #: assets/build/blocks/sureforms/blocks/recorder/render.php:117
-#, php-format
 msgid "Maximum allowed on this server: %d MB"
 msgstr ""
 
@@ -716,7 +681,6 @@ msgstr ""
 
 #. translators: 1: Add-on name, 2: Required GoDAM version
 #: inc/classes/addons/class-addon-registry.php:97
-#, php-format
 msgid "%1$s requires GoDAM %2$s or higher. Please update the GoDAM plugin."
 msgstr ""
 
@@ -810,7 +774,6 @@ msgstr ""
 
 #. translators: %1$s is the name of the Transcoder plugin, %2$s is the name of the GoDAM plugin.
 #: inc/classes/class-media-tracker.php:209
-#, php-format
 msgid "Please deactivate the <strong>%1$s</strong> plugin to ensure the <strong>%2$s</strong> plugin functions correctly."
 msgstr ""
 
@@ -868,13 +831,34 @@ msgstr ""
 msgid "GoDAM video performance settings have been simplified to Balanced and Priority modes. Please review any hero videos that should stay in Priority mode after this update."
 msgstr ""
 
+#: inc/classes/class-virtual-media-registrar.php:146
+#: inc/classes/class-virtual-media-registrar.php:273
+msgid "GoDAM API key is not configured on this site."
+msgstr ""
+
+#: inc/classes/class-virtual-media-registrar.php:163
+#: inc/classes/class-virtual-media-registrar.php:277
+msgid "RTGODAM_API_BASE is not defined."
+msgstr ""
+
+#: inc/classes/class-virtual-media-registrar.php:183
+msgid "Failed to connect to GoDAM Central."
+msgstr ""
+
+#: inc/classes/class-virtual-media-registrar.php:196
+msgid "Failed to register virtual media site with GoDAM Central."
+msgstr ""
+
+#: inc/classes/class-virtual-media-registrar.php:310
+msgid "Failed to remove virtual media site from GoDAM Central."
+msgstr ""
+
 #: inc/classes/cron-jobs/class-retranscode-failed-media.php:60
 msgid "Retranscode Failed Media"
 msgstr ""
 
 #. translators: %d is the maximum number of retry attempts.
 #: inc/classes/cron-jobs/class-retranscode-failed-media.php:120
-#, php-format
 msgid "Transcoding failed after %d retry attempts. GoDAM Central returned a server error on each attempt."
 msgstr ""
 
@@ -889,7 +873,6 @@ msgstr ""
 
 #. translators: 1: number of media items queued, 2: retry interval in minutes, 3: max retries, 4: Media Library link
 #: inc/classes/cron-jobs/class-retranscode-failed-media.php:176
-#, php-format
 msgid "%1$d media file(s) could not be sent to the GoDAM transcoding server and have been queued for automatic retry (every %2$d minutes, up to %3$d attempts). Visit the %4$s to see their status."
 msgstr ""
 
@@ -1109,7 +1092,7 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:133
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:153
-#: pages/dashboard/Dashboard.js:395
+#: pages/dashboard/Dashboard.js:517
 msgid "Size"
 msgstr ""
 
@@ -1472,7 +1455,6 @@ msgstr ""
 
 #. translators: %s is the max file size in MB
 #: inc/classes/everest-forms/class-everest-forms-field-godam-video.php:248
-#, php-format
 msgid "Max file size: %s MB"
 msgstr ""
 
@@ -1582,7 +1564,6 @@ msgstr ""
 #: inc/classes/fluentforms/fields/class-recorder-field.php:431
 #: inc/classes/ninja-forms/class-ninja-forms-field-godam-recorder.php:259
 #: assets/build/blocks/sureforms/blocks/recorder/index.js:4
-#, php-format,js-format
 msgid "Maximum allowed on this server: %s MB"
 msgstr ""
 
@@ -1650,31 +1631,26 @@ msgstr ""
 
 #. translators: %s is the allowed file types.
 #: inc/classes/gravity-forms/class-gf-field-godam-video.php:152
-#, php-format
 msgid "Accepted file types: %s"
 msgstr ""
 
 #. translators: %s is the maximum file size allowed.
 #: inc/classes/gravity-forms/class-gf-field-godam-video.php:158
-#, php-format
 msgid "Max. file size: %s"
 msgstr ""
 
 #. translators: %s is the maximum duration.
 #: inc/classes/gravity-forms/class-gf-field-godam-video.php:165
-#, php-format
 msgid "Max. duration: %s"
 msgstr ""
 
 #. translators: %s is the maximum number of files allowed.
 #: inc/classes/gravity-forms/class-gf-field-godam-video.php:175
-#, php-format
 msgid "Max. files: %s"
 msgstr ""
 
 #. translators: %d is the number of files.
 #: inc/classes/gravity-forms/class-gf-field-godam-video.php:264
-#, php-format
 msgid "%d files"
 msgstr ""
 
@@ -1755,7 +1731,6 @@ msgstr ""
 
 #. translators: %d is the error code returned by ZipArchive::open()
 #: inc/classes/media-library/class-media-folder-create-zip.php:175
-#, php-format
 msgid "Failed to create ZIP file. Error code: %d"
 msgstr ""
 
@@ -1765,7 +1740,6 @@ msgstr ""
 
 #. translators: %1$d: added files, %2$d: skipped files, %3$d: total attachments
 #: inc/classes/media-library/class-media-folder-create-zip.php:267
-#, php-format
 msgid "ZIP file created successfully. %1$d files added, %2$d files skipped out of %3$d total attachments."
 msgstr ""
 
@@ -1788,7 +1762,6 @@ msgstr ""
 
 #. translators: %d is the Metform ID
 #: inc/classes/metform/class-metform-rest-api.php:152
-#, php-format
 msgid "Unable to find the Metform with ID:%d"
 msgstr ""
 
@@ -1818,7 +1791,6 @@ msgstr ""
 
 #. Translators: %s: Maximum allowed file size in MB.
 #: inc/classes/ninja-forms/class-ninja-forms-field-godam-recorder.php:443
-#, php-format
 msgid "File exceeds maximum file size. File must be under %sMB."
 msgstr ""
 
@@ -1841,7 +1813,6 @@ msgstr ""
 
 #. translators: %d is the Ninja Form ID
 #: inc/classes/ninja-forms/class-ninja-forms-rest-api.php:130
-#, php-format
 msgid "Unable to find the Ninja Form with ID:%d"
 msgstr ""
 
@@ -1945,7 +1916,6 @@ msgstr ""
 
 #. translators: %s is the error message from the API response.
 #: inc/classes/rest-api/class-analytics.php:351
-#, php-format
 msgid "Error fetching history data: %s"
 msgstr ""
 
@@ -2047,13 +2017,11 @@ msgstr ""
 
 #. translators: 1: Parameter.
 #: inc/classes/rest-api/class-engagement.php:957
-#, php-format
 msgid "%1$s is invalid."
 msgstr ""
 
 #. translators: 1: Parameter.
 #: inc/classes/rest-api/class-engagement.php:967
-#, php-format
 msgid "%1$s is empty."
 msgstr ""
 
@@ -2160,7 +2128,6 @@ msgstr ""
 
 #. translators: %s is the field label.
 #: inc/classes/rest-api/class-jetpack.php:711
-#, php-format
 msgid "Valid %s is required."
 msgstr ""
 
@@ -2174,7 +2141,6 @@ msgstr ""
 
 #. translators: %d is the number of errors, %s is the error text, %s is the list of errors.
 #: inc/classes/rest-api/class-jetpack.php:722
-#, php-format
 msgid "Please make sure all fields are valid. You need to fix %1$d %2$s:<br>%3$s"
 msgstr ""
 
@@ -2304,7 +2270,6 @@ msgstr ""
 #. translators: %s is the HTTP status code from the GoDAM API response.
 #: inc/classes/rest-api/class-media-library.php:797
 #: inc/classes/rest-api/class-media-library.php:1504
-#, php-format
 msgid "GoDAM API returned HTTP status: %s"
 msgstr ""
 
@@ -2363,44 +2328,37 @@ msgstr ""
 #. translators: %s is the invalid folder ID.
 #: inc/classes/rest-api/class-media-library.php:1188
 #: inc/classes/rest-api/class-media-library.php:1257
-#, php-format
 msgid "Invalid folder ID: %s"
 msgstr ""
 
 #. translators: %s is the invalid folder ID.
 #: inc/classes/rest-api/class-media-library.php:1196
 #: inc/classes/rest-api/class-media-library.php:1265
-#, php-format
 msgid "Folder ID %s not found or invalid."
 msgstr ""
 
 #. translators: %s is the invalid folder ID where delete failed.
 #: inc/classes/rest-api/class-media-library.php:1204
-#, php-format
 msgid "Failed to delete folder %s"
 msgstr ""
 
 #. translators: %s is the ID of folder not found.
 #: inc/classes/rest-api/class-media-library.php:1207
-#, php-format
 msgid "Folder ID %s not found during deletion attempt."
 msgstr ""
 
 #. translators: %s is the invalid folder ID.
 #: inc/classes/rest-api/class-media-library.php:1210
-#, php-format
 msgid "Folder ID %s cannot be deleted (possibly uncategorized or default term)."
 msgstr ""
 
 #. translators: %d is the number of folders deleted.
 #: inc/classes/rest-api/class-media-library.php:1221
-#, php-format
 msgid "%d folder(s) deleted successfully."
 msgstr ""
 
 #. translators: %1$d is the number of folders deleted, %2$s are the errors.
 #: inc/classes/rest-api/class-media-library.php:1229
-#, php-format
 msgid "Error deleting some folders. Deleted: %1$d. Errors: %2$s"
 msgstr ""
 
@@ -2414,25 +2372,21 @@ msgstr ""
 
 #. translators: %d number of folders.
 #: inc/classes/rest-api/class-media-library.php:1318
-#, php-format
 msgid "%d folder(s) locked successfully."
 msgstr ""
 
 #. translators: %d number of folders.
 #: inc/classes/rest-api/class-media-library.php:1320
-#, php-format
 msgid "%d folder(s) unlocked successfully."
 msgstr ""
 
 #. translators: %d number of folders.
 #: inc/classes/rest-api/class-media-library.php:1334
-#, php-format
 msgid "Some folders locked, but issues occurred with others. Locked: %d."
 msgstr ""
 
 #. translators: %d number of folders.
 #: inc/classes/rest-api/class-media-library.php:1336
-#, php-format
 msgid "Some folders unlocked, but issues occurred with others. Unlocked: %d."
 msgstr ""
 
@@ -2442,25 +2396,21 @@ msgstr ""
 
 #. translators: %d number of folders.
 #: inc/classes/rest-api/class-media-library.php:1376
-#, php-format
 msgid "%d folder(s) bookmarked successfully."
 msgstr ""
 
 #. translators: %d number of folders.
 #: inc/classes/rest-api/class-media-library.php:1378
-#, php-format
 msgid "%d folder(s) unbookmarked successfully."
 msgstr ""
 
 #. translators: %d number of folders.
 #: inc/classes/rest-api/class-media-library.php:1392
-#, php-format
 msgid "Some folders bookmarked, but issues occurred with others. Bookmarked: %d."
 msgstr ""
 
 #. translators: %d number of folders.
 #: inc/classes/rest-api/class-media-library.php:1394
-#, php-format
 msgid "Some folders unbookmarked, but issues occurred with others. Unbookmarked: %d."
 msgstr ""
 
@@ -2470,7 +2420,6 @@ msgstr ""
 
 #. translators: %s is the error message from the GoDAM API request.
 #: inc/classes/rest-api/class-media-library.php:1489
-#, php-format
 msgid "GoDAM API request failed: %s"
 msgstr ""
 
@@ -2637,7 +2586,6 @@ msgstr ""
 
 #. translators: %s is the storage usage percentage.
 #: inc/classes/rest-api/class-transcoding.php:369
-#, php-format
 msgid "Storage limit exceeded (%s%%). Retranscoding is currently blocked. Please upgrade your plan to continue."
 msgstr ""
 
@@ -2647,43 +2595,36 @@ msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
 #: inc/classes/rest-api/class-transcoding.php:518
-#, php-format
 msgid "%1$s (ID %2$d) transcoding request failed. Transcoding requests are not allowed in the localhost environment."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
 #: inc/classes/rest-api/class-transcoding.php:538
-#, php-format
 msgid "%1$s (ID %2$d) is virtual media from GoDAM Central. Please retranscode this media on GoDAM Central."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
 #: inc/classes/rest-api/class-transcoding.php:558
-#, php-format
 msgid "%1$s (ID %2$d) is migrated Vimeo video. Please retranscode this video on GoDAM Central."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID, 3: storage usage percent.
 #: inc/classes/rest-api/class-transcoding.php:581
-#, php-format
 msgid "%1$s (ID %2$d) cannot be retranscoded. Storage limit exceeded (%3$s%%). Please upgrade your plan to continue transcoding."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
 #: inc/classes/rest-api/class-transcoding.php:602
-#, php-format
 msgid "%1$s (ID %2$d) cannot be transcoded. HTTP authentication is enabled on your site. Please disable it to allow transcoding."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
 #: inc/classes/rest-api/class-transcoding.php:652
-#, php-format
 msgid "%1$s (ID %2$d) transcoding request failed. Unknown error"
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
 #: inc/classes/rest-api/class-transcoding.php:668
-#, php-format
 msgid "%1$s (ID %2$d) transcoding request was sent successfully"
 msgstr ""
 
@@ -2703,7 +2644,6 @@ msgstr ""
 
 #. translators: %1$d is the number of posts processed, %2$d is the total number of posts to process and %3$d is the migration name
 #: inc/classes/rest-api/class-video-migration.php:123
-#, php-format
 msgid "Processed %1$d of %2$d posts. %3$s aborted."
 msgstr ""
 
@@ -2729,7 +2669,6 @@ msgstr ""
 
 #. translators: %d is the number of batches scheduled for processing
 #: inc/classes/rest-api/class-video-migration.php:414
-#, php-format
 msgid "Scheduled %d batches for processing"
 msgstr ""
 
@@ -2739,19 +2678,16 @@ msgstr ""
 
 #. translators: %1$d is the number of posts processed, %2$d is the total number of posts, %3$d is the progress percentage
 #: inc/classes/rest-api/class-video-migration.php:541
-#, php-format
 msgid "Processed %1$d/%2$d posts (%3$d%% complete)"
 msgstr ""
 
 #. translators: 1: total posts processed, 2: migrated Vimeo embeds, 3: total Vimeo embeds found
 #: inc/classes/rest-api/class-video-migration.php:554
-#, php-format
 msgid "Migration completed! Processed %1$d posts. Migrated %2$d out of %3$d Vimeo Embed Blocks found."
 msgstr ""
 
 #. translators: %d is the total number of posts processed
 #: inc/classes/rest-api/class-video-migration.php:562
-#, php-format
 msgid "Migration completed! Processed %d posts."
 msgstr ""
 
@@ -2761,7 +2697,6 @@ msgstr ""
 
 #. translators: %s: error message
 #: inc/classes/rest-api/class-video-migration.php:1153
-#, php-format
 msgid "Error fetching video info: %s"
 msgstr ""
 
@@ -2770,6 +2705,7 @@ msgid "Invalid response from GoDAM Central."
 msgstr ""
 
 #: inc/classes/rest-api/class-video-sync.php:42
+#: inc/classes/rest-api/class-virtual-media-migration.php:38
 msgid "API key used to authenticate the request from the GoDAM app."
 msgstr ""
 
@@ -2780,6 +2716,10 @@ msgstr ""
 
 #: inc/classes/rest-api/class-video-sync.php:78
 msgid "Invalid API Key"
+msgstr ""
+
+#: inc/classes/rest-api/class-virtual-media-migration.php:62
+msgid "Invalid API Key."
 msgstr ""
 
 #: inc/classes/rest-api/class-wpforms.php:50
@@ -2796,7 +2736,7 @@ msgid "WPForms plugin is not active."
 msgstr ""
 
 #: inc/classes/shortcodes/class-godam-video-gallery.php:421
-#: pages/dashboard/Dashboard.js:472
+#: pages/dashboard/Dashboard.js:594
 msgid "No videos found."
 msgstr ""
 
@@ -3206,7 +3146,6 @@ msgstr ""
 
 #. translators: %s : Maximum file upload size in human readable format.
 #: inc/classes/wpforms/class-wpforms-field-godam-video.php:255
-#, php-format
 msgid "Maximum allowed on this server: %s "
 msgstr ""
 
@@ -3253,13 +3192,11 @@ msgstr ""
 
 #. translators: %s: Content type (Audio or Video)
 #: inc/classes/wpforms/wpforms-field-godam-record-entry-view.php:50
-#, php-format
 msgid "%s transcoding process has not started."
 msgstr ""
 
 #. translators: %s: Content type (Audio or Video)
 #: inc/classes/wpforms/wpforms-field-godam-record-entry-view.php:57
-#, php-format
 msgid "%s saved and transcoded successfully on GoDAM"
 msgstr ""
 
@@ -3288,13 +3225,11 @@ msgstr ""
 
 #. translators: %s: storage usage percentage
 #: inc/helpers/custom-functions.php:427
-#, php-format
 msgid "Storage limit exceeded (%s%%). Please upgrade your plan to continue."
 msgstr ""
 
 #. translators: %s: bandwidth usage percentage
 #: inc/helpers/custom-functions.php:436
-#, php-format
 msgid "Bandwidth limit exceeded (%s%%). Please upgrade your plan to continue."
 msgstr ""
 
@@ -3312,7 +3247,6 @@ msgstr ""
 
 #. translators: %s: Entry ID for which transcoding failed
 #: inc/helpers/custom-functions.php:790
-#, php-format
 msgid "Transcoding failed | entry Id: %s"
 msgstr ""
 
@@ -3343,7 +3277,6 @@ msgstr ""
 
 #. translators: %s: video ID.
 #: inc/templates/video-embed.php:27
-#, php-format
 msgid "Video Embed: Attachment(%s)"
 msgstr ""
 
@@ -3355,7 +3288,6 @@ msgstr ""
 
 #. translators: %s: video ID.
 #: inc/templates/video-preview.php:23
-#, php-format
 msgid "Video Preview: Attachment(%s)"
 msgstr ""
 
@@ -3437,6 +3369,15 @@ msgid "Audio caption text"
 msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2-item/index.js:1
+#: assets/build/blocks/godam-gallery-v2/index.js:1
+msgid "Only video files can be added to the gallery."
+msgstr ""
+
+#: assets/build/blocks/godam-gallery-v2-item/index.js:1
+msgid "This video is already in the gallery."
+msgstr ""
+
+#: assets/build/blocks/godam-gallery-v2-item/index.js:1
 msgid "Choose a video to add this gallery item."
 msgstr ""
 
@@ -3462,6 +3403,10 @@ msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Add New Video"
+msgstr ""
+
+#: assets/build/blocks/godam-gallery-v2/index.js:1
+msgid "Duplicate videos were skipped."
 msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
@@ -3620,7 +3565,6 @@ msgstr ""
 
 #. translators: %s: video caption label.
 #: assets/build/blocks/godam-player/index.js:4
-#, js-format
 msgctxt "video caption"
 msgid "Edit %s"
 msgstr ""
@@ -3768,7 +3712,6 @@ msgstr ""
 
 #. translators: %s: thumbnail URL
 #: assets/build/blocks/godam-player/index.js:5
-#, js-format
 msgid "Select thumbnail: %s"
 msgstr ""
 
@@ -3786,7 +3729,6 @@ msgstr ""
 
 #. translators: %d: Label of the video text track e.g: "French subtitles".
 #: assets/build/blocks/godam-player/index.js:6
-#, js-format
 msgctxt "video caption"
 msgid "Failed to load video data with id: %d"
 msgstr ""
@@ -3877,13 +3819,11 @@ msgstr ""
 
 #. translators: %s: formatted time
 #: assets/build/blocks/godam-player/index.js:7
-#, js-format
 msgid "Overlay will be visible for %s from the start of the video."
 msgstr ""
 
 #. translators: %s: formatted time
 #: assets/build/blocks/godam-player/index.js:8
-#, js-format
 msgid "Video duration: %s"
 msgstr ""
 
@@ -4010,7 +3950,6 @@ msgstr ""
 
 #. Translators: %s will be replaced with the maximum file upload size allowed on the server (e.g., "300MB").
 #: assets/build/blocks/sureforms/blocks/recorder/index.js:7
-#, js-format
 msgid "Maximum allowed size: %s MB"
 msgstr ""
 
@@ -4024,33 +3963,33 @@ msgstr ""
 
 #: pages/analytics/Analytics.js:501
 #: pages/analytics/Analytics.js:546
-#: pages/dashboard/Dashboard.js:216
-#: pages/dashboard/Dashboard.js:286
+#: pages/dashboard/Dashboard.js:338
+#: pages/dashboard/Dashboard.js:408
 msgid "Go to plugin settings"
 msgstr ""
 
 #: pages/analytics/Analytics.js:513
-#: pages/dashboard/Dashboard.js:252
+#: pages/dashboard/Dashboard.js:374
 msgid "Upgrade to unlock the media performance report."
 msgstr ""
 
 #: pages/analytics/Analytics.js:517
-#: pages/dashboard/Dashboard.js:256
+#: pages/dashboard/Dashboard.js:378
 msgid "If you already have a premium plan, connect your"
 msgstr ""
 
 #: pages/analytics/Analytics.js:520
-#: pages/dashboard/Dashboard.js:259
+#: pages/dashboard/Dashboard.js:381
 msgid "API in the settings"
 msgstr ""
 
 #: pages/analytics/Analytics.js:534
-#: pages/dashboard/Dashboard.js:273
+#: pages/dashboard/Dashboard.js:395
 msgid "Buy Plan"
 msgstr ""
 
 #: pages/analytics/Analytics.js:543
-#: pages/dashboard/Dashboard.js:283
+#: pages/dashboard/Dashboard.js:405
 msgid "An unknown error occurred. Please check your plugin settings."
 msgstr ""
 
@@ -4076,7 +4015,7 @@ msgstr ""
 
 #: pages/analytics/Analytics.js:613
 #: pages/analytics/Analytics.js:863
-#: pages/dashboard/Dashboard.js:399
+#: pages/dashboard/Dashboard.js:521
 msgid "Average Engagement"
 msgstr ""
 
@@ -4089,24 +4028,24 @@ msgstr ""
 #: pages/analytics/helper.js:104
 #: pages/analytics/PlaybackPerformance.js:440
 #: pages/analytics/PlaybackPerformance.js:579
-#: pages/dashboard/Dashboard.js:335
-#: pages/dashboard/Dashboard.js:396
+#: pages/dashboard/Dashboard.js:457
+#: pages/dashboard/Dashboard.js:518
 msgid "Play Rate"
 msgstr ""
 
 #: pages/analytics/Analytics.js:625
-#: pages/dashboard/Dashboard.js:336
+#: pages/dashboard/Dashboard.js:458
 msgid "Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads"
 msgstr ""
 
 #: pages/analytics/Analytics.js:635
 #: pages/analytics/helper.js:110
-#: pages/dashboard/Dashboard.js:347
+#: pages/dashboard/Dashboard.js:469
 msgid "Watch Time"
 msgstr ""
 
 #: pages/analytics/Analytics.js:636
-#: pages/dashboard/Dashboard.js:348
+#: pages/dashboard/Dashboard.js:470
 msgid "Total time the video has been watched, aggregated across all plays"
 msgstr ""
 
@@ -4152,7 +4091,7 @@ msgid "Views"
 msgstr ""
 
 #: pages/analytics/Analytics.js:872
-#: pages/dashboard/Dashboard.js:397
+#: pages/dashboard/Dashboard.js:519
 msgid "Total Plays"
 msgstr ""
 
@@ -4262,46 +4201,45 @@ msgstr ""
 msgid "Feature Screenshot"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:321
+#: pages/dashboard/Dashboard.js:443
 msgid "Active Videos"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:322
+#: pages/dashboard/Dashboard.js:444
 msgid "Number of unique videos that received user interactions each day, such as views or plays."
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:384
+#: pages/dashboard/Dashboard.js:506
 msgid "Top Videos"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:387
+#: pages/dashboard/Dashboard.js:509
 msgid "Export"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:394
+#: pages/dashboard/Dashboard.js:516
 msgid "Name"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:398
+#: pages/dashboard/Dashboard.js:520
 msgid "Total Watch Time"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:421
-#: pages/dashboard/Dashboard.js:435
+#: pages/dashboard/Dashboard.js:543
+#: pages/dashboard/Dashboard.js:557
 msgid "Video thumbnail"
 msgstr ""
 
 #. translators: %1$d is the current page number, %2$d is the total number of pages
-#: pages/dashboard/Dashboard.js:484
-#, js-format
+#: pages/dashboard/Dashboard.js:606
 msgid "Page %1$d of %2$d"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:498
+#: pages/dashboard/Dashboard.js:620
 msgid "Previous"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:505
+#: pages/dashboard/Dashboard.js:627
 msgid "Next"
 msgstr ""
 
@@ -4538,7 +4476,6 @@ msgstr ""
 
 #. translators: %s: Add-on plugin name, e.g. "GoDAM for Woo".
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationActionButton.jsx:66
-#, js-format
 msgid "Install %s"
 msgstr ""
 
@@ -4576,7 +4513,6 @@ msgstr ""
 
 #. translators: %s: Integration name, e.g. "WooCommerce".
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:266
-#, js-format
 msgid "The %s add-on plugin is not installed. Please install it to enable this integration."
 msgstr ""
 
@@ -4592,13 +4528,11 @@ msgstr ""
 
 #. translators: %s: Integration name, e.g. "WooCommerce".
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationToggle.jsx:36
-#, js-format
 msgid "Enable %s Integration"
 msgstr ""
 
 #. translators: %s: Integration name, e.g. "WooCommerce".
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationToggle.jsx:64
-#, js-format
 msgid "Enable or disable the %s integration."
 msgstr ""
 
@@ -5117,7 +5051,6 @@ msgstr ""
 
 #. translators: %s is the error message
 #: pages/media-library/components/folder-tree/FolderTree.jsx:392
-#, js-format
 msgid "Error: %s"
 msgstr ""
 
@@ -5335,13 +5268,11 @@ msgstr ""
 #. translators: %d is the number of selected media files to be transcoded.
 #: pages/tools/components/tabs/RetranscodeTab.jsx:95
 #: pages/tools/components/tabs/RetranscodeTab.jsx:120
-#, js-format
 msgid "%d selected media file(s) will be transcoded."
 msgstr ""
 
 #. translators: %d is the number of selected media files to be retranscoded.
 #: pages/tools/components/tabs/RetranscodeTab.jsx:105
-#, js-format
 msgid "%d selected media file(s) will be retranscoded."
 msgstr ""
 
@@ -5351,7 +5282,6 @@ msgstr ""
 
 #. translators: %s is the error message.
 #: pages/tools/components/tabs/RetranscodeTab.jsx:160
-#, js-format
 msgid "Failed to fetch media for retranscoding: %s"
 msgstr ""
 
@@ -5361,19 +5291,16 @@ msgstr ""
 
 #. translators: %d is the number of virtual media files found.
 #: pages/tools/components/tabs/RetranscodeTab.jsx:286
-#, js-format
 msgid "%d virtual media file(s) found, which need to be retranscoded on GoDAM Central."
 msgstr ""
 
 #. translators: %d is the number of media files retranscoded.
 #: pages/tools/components/tabs/RetranscodeTab.jsx:295
-#, js-format
 msgid "Successfully sent %d media file(s) for retranscoding."
 msgstr ""
 
 #. translators: %d is the number of media files that failed to retranscode.
 #: pages/tools/components/tabs/RetranscodeTab.jsx:310
-#, js-format
 msgid "Failed to send %d media file(s) for retranscoding."
 msgstr ""
 
@@ -5399,7 +5326,6 @@ msgstr ""
 
 #. translators: %s is the storage usage percentage.
 #: pages/tools/components/tabs/RetranscodeTab.jsx:382
-#, js-format
 msgid "Your storage usage has exceeded your plan limit (%s%%). Retranscoding is currently blocked. Please upgrade your plan to continue."
 msgstr ""
 
@@ -5413,31 +5339,26 @@ msgstr ""
 
 #. translators: %d is the number of untranscoded media files.
 #: pages/tools/components/tabs/RetranscodeTab.jsx:438
-#, js-format
 msgid "%d untranscoded media file(s) selected"
 msgstr ""
 
 #. translators: %d is the number of transcoded media files.
 #: pages/tools/components/tabs/RetranscodeTab.jsx:447
-#, js-format
 msgid "%d transcoded media file(s) selected"
 msgstr ""
 
 #. translators: 1: number of media files that require retranscoding, 2: total number of media files.
 #: pages/tools/components/tabs/RetranscodeTab.jsx:460
-#, js-format
 msgid "%1$d/%2$d media file(s) require retranscoding."
 msgstr ""
 
 #. translators: 1: number of media files that will be retranscoded regardless of their current state, 2: total number of media files.
 #: pages/tools/components/tabs/RetranscodeTab.jsx:466
-#, js-format
 msgid "%1$d/%2$d media file(s) will be retranscoded regardless of their current state."
 msgstr ""
 
 #. translators: 1: number of media files sent for retranscoding, 2: total number of media files selected.
 #: pages/tools/components/tabs/RetranscodeTab.jsx:479
-#, js-format
 msgid "%1$d/%2$d media files sent for retranscoding…"
 msgstr ""
 
@@ -5981,13 +5902,11 @@ msgstr ""
 
 #. translators: %d is the hotspot index
 #: pages/video-editor/components/layers/HotspotLayer.js:346
-#, js-format
 msgid "Hotspot %d"
 msgstr ""
 
 #. translators: %d is the hotspot index
 #: pages/video-editor/components/layers/HotspotLayer.js:353
-#, js-format
 msgid "Options for Hotspot %d"
 msgstr ""
 
@@ -6321,7 +6240,6 @@ msgstr ""
 
 #. translators: %s is the current time in seconds.
 #: pages/video-editor/components/SidebarLayers.js:373
-#, js-format
 msgid "Add layer at %ss"
 msgstr ""
 

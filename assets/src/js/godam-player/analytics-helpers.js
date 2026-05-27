@@ -7,6 +7,50 @@
  */
 
 /**
+ * External dependencies
+ */
+import { v4 as uuidv4 } from 'uuid';
+
+// Module-scope cache. Generated once on first event, reused for the rest of
+// the page load. Every type=1/2/3/4 event from the same page load shares this
+// UUID so the microservice can dedup with uniqExact(page_load_session_id).
+let _pageLoadSessionId = null;
+
+/**
+ * Return a stable UUID v4 for this page load.
+ *
+ * @return {string} UUID v4 (36 chars).
+ */
+export function getPageLoadSessionId() {
+	if ( ! _pageLoadSessionId ) {
+		_pageLoadSessionId = uuidv4();
+	}
+	return _pageLoadSessionId;
+}
+
+/**
+ * Normalized browser name (e.g. "Google Chrome", "Apple Safari").
+ *
+ * Wraps getUserAgent so callers outside this module can produce the same
+ * config_browser_name string buildAnalyticsRequestBody emits — guarantees
+ * type=1/2/3 and reel-pop type=4 device buckets line up.
+ *
+ * @return {string} Browser name.
+ */
+export function getBrowserName() {
+	return getUserAgent( window.navigator.userAgent ).name;
+}
+
+/**
+ * Normalized OS / platform name (e.g. "Macintosh", "Windows", "Linux").
+ *
+ * @return {string} OS / platform name.
+ */
+export function getOSName() {
+	return getUserAgent( window.navigator.userAgent ).platform;
+}
+
+/**
  * Check if we should skip analytics tracking.
  *
  * @return {boolean} True if analytics should be skipped, false otherwise.
@@ -111,6 +155,7 @@ export function getUserAgent( userAgent ) {
  * @param {Array}  [opts.videoIds]         Array of [videoId, jobId] pairs (type 1).
  * @param {Array}  [opts.ranges]           Played time-range pairs (type 2).
  * @param {number} [opts.videoLength]      Duration in seconds (type 2).
+ * @param {number} [opts.reelPopId]        Reel Pop CPT post ID (when event originates from a reel-pop modal).
  * @return {{ endpoint: string|null, body: Object|null }} Object with `endpoint` (the base
  * API URL) and `body` (the request payload). Both are `null` when the plugin token is
  * missing or unverified — callers must check `endpoint` before sending.
@@ -124,6 +169,7 @@ export function buildAnalyticsRequestBody( {
 	videoIds = [],
 	ranges = [],
 	videoLength = 0,
+	reelPopId = 0,
 } ) {
 	const {
 		endpoint,
@@ -194,6 +240,7 @@ export function buildAnalyticsRequestBody( {
 		video_ids: type === 1 ? videoIds : [],
 		ranges,
 		video_length: videoLength || 0,
+		page_load_session_id: getPageLoadSessionId(),
 	};
 
 	// Only include job_id when it has a value — an empty string triggers
@@ -202,5 +249,19 @@ export function buildAnalyticsRequestBody( {
 		body.job_id = jobId;
 	}
 
+	const reelPopIdInt = parseInt( reelPopId, 10 );
+	if ( reelPopIdInt > 0 ) {
+		body.reel_pop_id = reelPopIdInt;
+	}
+
 	return { endpoint, body };
 }
+
+// Expose helpers on a global namespace so sibling plugins (e.g. godam-for-woo)
+// that are bundled separately can reuse them without a shared import path.
+// Reusing these guarantees parity between type=1/2/3 and type=4 envelopes.
+window.GoDAM = window.GoDAM || {};
+window.GoDAM.getPageLoadSessionId = getPageLoadSessionId;
+window.GoDAM.getBrowserName = getBrowserName;
+window.GoDAM.getOSName = getOSName;
+window.GoDAM.shouldSkipAnalytics = shouldSkipAnalytics;
