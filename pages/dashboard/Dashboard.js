@@ -55,16 +55,32 @@ import { formatNumber, formatWatchTime } from '../utils/formatters';
 /**
  * Return true for any value React can render as a component — plain
  * function/class components as well as exotic components produced by
- * React.memo() and React.forwardRef() which are plain objects carrying
- * a `$$typeof` Symbol.
+ * React.memo() and React.forwardRef(). React elements created from JSX
+ * are explicitly excluded because they are instances, not component
+ * types, and attempting to render them as `<SectionComponent />` will
+ * throw.
  *
  * @param {*} value
  *
  * @return {boolean} True if the value is a valid React component type.
  */
-const isReactComponent = ( value ) =>
-	typeof value === 'function' ||
-	( value !== null && typeof value === 'object' && typeof value.$$typeof === 'symbol' );
+const REACT_MEMO_TYPE = Symbol.for( 'react.memo' );
+const REACT_FORWARD_REF_TYPE = Symbol.for( 'react.forward_ref' );
+
+const isReactComponent = ( value ) => {
+	if ( typeof value === 'function' ) {
+		return true;
+	}
+	if ( React.isValidElement( value ) ) {
+		return false;
+	}
+	return (
+		value !== null &&
+		typeof value === 'object' &&
+		( value.$$typeof === REACT_MEMO_TYPE ||
+			value.$$typeof === REACT_FORWARD_REF_TYPE )
+	);
+};
 
 /**
  * Normalise a raw entry from `window.godamDashboardSections` or from
