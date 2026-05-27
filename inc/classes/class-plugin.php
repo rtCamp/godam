@@ -20,6 +20,7 @@ use RTGODAM\Inc\Video_Preview;
 use RTGODAM\Inc\Video_Embed;
 use RTGODAM\Inc\Video_Engagement;
 use RTGODAM\Inc\Update;
+use RTGODAM\Inc\Virtual_Media_Registrar;
 use RTGODAM\Inc\Addons\Addon_Registry;
 
 use RTGODAM\Inc\Taxonomies\Media_Folders;
@@ -43,6 +44,7 @@ use RTGODAM\Inc\REST_API\Dynamic_Gallery;
 use RTGODAM\Inc\REST_API\Engagement;
 use RTGODAM\Inc\REST_API\Site;
 use RTGODAM\Inc\REST_API\Video_Migration;
+use RTGODAM\Inc\REST_API\Virtual_Media_Migration;
 use RTGODAM\Inc\REST_API\Release_Post;
 use RTGODAM\Inc\REST_API\Video_Sync;
 use RTGODAM\Inc\REST_API\Addon_Toggle;
@@ -101,6 +103,7 @@ class Plugin {
 		Video_Preview::get_instance();
 		Video_Embed::get_instance();
 		Embed::get_instance();
+		Virtual_Media_Registrar::get_instance();
 		Addon_Registry::get_instance();
 
 		// Load shortcodes.
@@ -183,6 +186,7 @@ class Plugin {
 		Engagement::get_instance();
 		Site::get_instance();
 		Video_Migration::get_instance();
+		Virtual_Media_Migration::get_instance();
 		Release_Post::get_instance();
 		Video_Sync::get_instance();
 		Addon_Toggle::get_instance();
