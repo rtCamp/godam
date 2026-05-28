@@ -435,6 +435,21 @@ function groupRows( rows, layerType, configIndex ) {
 			bucket.formType,
 		);
 
+		// Distinct positions (seconds) this parent has ever been observed
+		// at. Backend's per-day Map<layer_id, positions[]> column is unioned
+		// across the date range in /processed-layer-analytics/ and attached
+		// to each individual_layers row. Powers the "this layer has been
+		// modified" notice in the detail panel.
+		const parentRawPositions = Array.isArray(
+			bucket.parentRow?.historical_positions,
+		)
+			? bucket.parentRow.historical_positions
+			: [];
+		const historicalPositions = parentRawPositions
+			.map( ( p ) => Number( p ) )
+			.filter( ( p ) => Number.isFinite( p ) )
+			.sort( ( a, b ) => a - b );
+
 		parents.push( {
 			id: parentId,
 			name: parentName,
@@ -447,6 +462,7 @@ function groupRows( rows, layerType, configIndex ) {
 			conversion_rate: parentConversion,
 			sub_hotspots: subHotspots,
 			isActive: parentIsActive,
+			historical_positions: historicalPositions,
 		} );
 	} );
 

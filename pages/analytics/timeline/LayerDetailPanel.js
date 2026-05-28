@@ -20,6 +20,7 @@ import {
 import LayerIcon from './LayerIcon';
 import LayerInteractionFunnel from './LayerInteractionFunnel';
 import SubHotspotRail from './SubHotspotRail';
+import LayerModifiedNotice from './LayerModifiedNotice';
 
 /**
  * Build the deep-link URL into the video editor for a layer.
@@ -162,6 +163,17 @@ const LayerDetailPanel = ( { parent, attachmentID } ) => {
 					</span>
 				) }
 			</header>
+
+			{ /* Modification notice — only when the layer's been at more
+			    than one position over the requested date range. Backed by
+			    the layer_positions Map on processed_analytics. */ }
+			{ Array.isArray( parent.historical_positions ) &&
+				parent.historical_positions.length > 1 && (
+				<LayerModifiedNotice
+					layerId={ parent.id }
+					historicalPositions={ parent.historical_positions }
+				/>
+			) }
 
 			{ /* Body */ }
 			<div
