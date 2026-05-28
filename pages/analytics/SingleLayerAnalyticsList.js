@@ -265,6 +265,49 @@ const SingleLayerAnalyticsList = ( { activeTab, dateRange, attachmentID } ) => {
 		);
 	}
 
+	// One-layer hero card. When the tab has exactly one row (one CTA, one
+	// Form, etc.), the 2-column "list + Avg rate" layout creates dead space
+	// in the middle — the row is short, the right card duplicates the same
+	// rate, and there's a visible gap. Render a single hero card instead:
+	// title + Edit at the top, big conv-rate centered below. No sidebar,
+	// no duplication.
+	if ( individualLayers.length === 1 ) {
+		const row = individualLayers[ 0 ];
+		const ratePct = Number( row.conversion_rate ) || 0;
+		const displayName = getDisplayLayerName( row, layerType );
+		return (
+			<div className="px-6 pb-6">
+				<div className="rounded-2xl bg-zinc-50 px-8 py-10">
+					<div className="flex items-center gap-2 justify-center">
+						<p className="text-sm font-semibold text-zinc-800 m-0">
+							{ displayName }
+						</p>
+						{ attachmentID && (
+							<a
+								href={ getEditorUrl( attachmentID, row.layer_id ) }
+								className="text-xs text-[#AB3A6C] hover:underline"
+								aria-label={ __( 'Edit this layer in the video editor', 'godam' ) }
+							>
+								{ __( 'Edit ↗', 'godam' ) }
+							</a>
+						) }
+					</div>
+					<div className="mt-4 flex flex-col items-center">
+						<p
+							className={ `text-5xl font-bold ${ getConversionColorClass( ratePct ) }` }
+						>
+							{ ratePct.toFixed( 1 ) }%
+						</p>
+						<p className="text-sm text-zinc-500 mt-2">
+							{ __( 'Conversion rate', 'godam' ) }
+						</p>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	// Multi-layer view: list on the left, Avg. conversion rate card on the right.
 	return (
 		<div className="grid grid-cols-[5fr_2fr] gap-3 px-6 pb-6">
 			{ /* Left: per-layer rows. Flat layer types (CTA / Form / Poll)
@@ -364,10 +407,13 @@ const SingleLayerAnalyticsList = ( { activeTab, dateRange, attachmentID } ) => {
 				</div>
 			</div>
 
-			{ /* Right: single Avg. conversion rate card. Per-action totals
-			     (Total Views, Total Clicks, etc.) were dropped from this
-			     column because they duplicated the per-row data. The
-			     daily-breakdown chart was also removed pending v1.5 rework. */ }
+			{ /* Right: Avg. conversion rate card. Rendered only when there
+			     are multiple layers — for one-layer tabs this card would
+			     duplicate the single layer's rate (see one-layer hero
+			     branch above). Per-action totals (Total Views, Total
+			     Clicks, etc.) were dropped from this column entirely;
+			     they duplicated per-row data. The daily-breakdown chart
+			     was also removed pending v1.5 rework. */ }
 			<div>
 				<div className="rounded-2xl p-6 bg-zinc-50 flex flex-col items-center justify-center h-full min-h-[160px]">
 					<p
@@ -376,9 +422,7 @@ const SingleLayerAnalyticsList = ( { activeTab, dateRange, attachmentID } ) => {
 						{ Number( cumulative?.conversion_rate || 0 ).toFixed( 1 ) }%
 					</p>
 					<p className="text-sm text-zinc-500 mt-1 text-center">
-						{ groups.length > 1
-							? __( 'Avg. conversion rate', 'godam' )
-							: __( 'Conversion rate', 'godam' ) }
+						{ __( 'Avg. conversion rate', 'godam' ) }
 					</p>
 				</div>
 			</div>
