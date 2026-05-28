@@ -296,12 +296,15 @@ function groupRows( rows, layerType ) {
 							100
 						: 0;
 				const subId = row.layer_id || '';
-				// Sub-hotspot name: prefer tracker-emitted layer_name, then
-				// product_name (Woo). UUID-shape and auto-pattern names are
-				// rejected via the same path the parent uses so a raw
-				// composite UUID never reaches the rail. Falls back to a
-				// generic ordinal "<TypeLabel> #N" when nothing usable.
-				const rawSubName = row.layer_name || md.product_name || '';
+				// Sub-hotspot name: in the rail the parent context ("Products
+				// in this layer") is already implicit, so prefer the bare
+				// product_name (Woo) when available; only fall back to the
+				// tracker-emitted layer_name when no product_name is set.
+				// UUID-shape and auto-pattern names are rejected via the same
+				// path the parent uses so a raw composite UUID never reaches
+				// the rail. Falls back to a generic ordinal "<TypeLabel> #N"
+				// when nothing usable.
+				const rawSubName = md.product_name || row.layer_name || '';
 				let subName;
 				if (
 					rawSubName &&
