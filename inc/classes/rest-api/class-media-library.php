@@ -1581,7 +1581,12 @@ class Media_Library extends Base {
 		}
 
 		// Validate MIME type against an allowed pattern to prevent stored XSS.
-		if ( ! preg_match( '/^(video|audio|image)\/[a-z0-9][a-z0-9!#$&\-^_.+]{0,126}$/i', $data['mime'] ) ) {
+		// Accepts video/*, audio/*, image/* plus the single PDF type — PDFs are
+		// handled by the 'pdf' branch below and otherwise can't form a virtual entry.
+		if (
+			! preg_match( '/^(video|audio|image)\/[a-z0-9][a-z0-9!#$&\-^_.+]{0,126}$/i', $data['mime'] )
+			&& 'application/pdf' !== strtolower( $data['mime'] )
+		) {
 			return new \WP_Error( 'invalid_mime', __( 'Invalid or disallowed MIME type.', 'godam' ), array( 'status' => 400 ) );
 		}
 
