@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 
 /**
  * WordPress dependencies
@@ -12,6 +12,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { useFetchProcessedLayerAnalyticsQuery } from './redux/api/analyticsApi';
+import { layerAnalyticsBarChart } from './helper.js';
 
 // UUID v4 regex — used to detect when layer_name is missing and the server
 // fell back to layer_id. We never want to render a UUID to the marketer.
@@ -173,12 +174,61 @@ const SingleLayerAnalyticsList = ( { activeTab, dateRange, attachmentID } ) => {
 
 	const analytics = data?.layer_analytics || null;
 
-	// Memoize the array field so it has stable identity across renders.
+	// Memoize the array fields so they have stable identity across renders
+	// — the `|| []` fallbacks would otherwise create fresh arrays each call
+	// and re-fire downstream hooks.
 	const individualLayers = useMemo(
 		() => analytics?.individual_layers || [],
 		[ analytics ],
 	);
+	const dailyBreakdown = useMemo(
+		() => analytics?.daily_breakdown || [],
+		[ analytics ],
+	);
 	const cumulative = analytics?.cumulative || null;
+
+	// Action keys to render as bar-chart series per layer type. Same shape
+	// as the per-row breakdown — drives the legend + bar grouping.
+	const chartSeries = useMemo( () => {
+		switch ( layerType ) {
+			case 'cta':
+				return [ 'clicked', 'skipped' ];
+			case 'form':
+				return [ 'submitted', 'skipped' ];
+			case 'hotspot':
+				return [ 'clicked', 'hovered' ];
+			case 'woo':
+				return [ 'clicked', 'added_to_cart', 'hovered' ];
+			case 'poll':
+				return [ 'voted', 'skipped' ];
+			default:
+				return [];
+		}
+	}, [ layerType ] );
+
+	// Render (or clear) the daily-breakdown bar chart on every relevant
+	// data change. Critical: we always clear the container at the top of
+	// the effect even when data is empty — without this, switching from
+	// a tab with data (e.g. Hotspot) to a tab without (e.g. Poll on a
+	// CTA-only video) would leave the previous tab's bars on screen.
+	useEffect( () => {
+		const container = document.querySelector( '#layer-analytics-chart' );
+		if ( container ) {
+			container.innerHTML = '';
+		}
+		if ( ! Array.isArray( dailyBreakdown ) || dailyBreakdown.length === 0 ) {
+			return;
+		}
+		if ( ! chartSeries || chartSeries.length === 0 ) {
+			return;
+		}
+		layerAnalyticsBarChart(
+			dailyBreakdown,
+			'#layer-analytics-chart',
+			dateRange,
+			chartSeries,
+		);
+	}, [ dailyBreakdown, dateRange, chartSeries ] );
 
 	// Group sub-hotspot rows under their parent layer. Composite layer_id
 	// pattern: `<parentId>::<subId>`. Parent context is echoed in
@@ -266,18 +316,17 @@ const SingleLayerAnalyticsList = ( { activeTab, dateRange, attachmentID } ) => {
 	}
 
 	// One-layer hero card. When the tab has exactly one row (one CTA, one
-	// Form, etc.), the 2-column "list + Avg rate" layout creates dead space
-	// in the middle — the row is short, the right card duplicates the same
-	// rate, and there's a visible gap. Render a single hero card instead:
-	// title + Edit at the top, big conv-rate centered below. No sidebar,
-	// no duplication.
+	// Form, etc.), the 2-column "list + Avg rate" layout would create
+	// dead space — the row is short, the right card would duplicate the
+	// same rate. Render a hero card with the conv-rate at the top and the
+	// daily-breakdown chart below instead.
 	if ( individualLayers.length === 1 ) {
 		const row = individualLayers[ 0 ];
 		const ratePct = Number( row.conversion_rate ) || 0;
 		const displayName = getDisplayLayerName( row, layerType );
 		return (
 			<div className="px-6 pb-6">
-				<div className="rounded-2xl bg-zinc-50 px-8 py-10">
+				<div className="rounded-2xl bg-zinc-50 px-8 py-8">
 					<div className="flex items-center gap-2 justify-center">
 						<p className="text-sm font-semibold text-zinc-800 m-0">
 							{ displayName }
@@ -302,14 +351,16 @@ const SingleLayerAnalyticsList = ( { activeTab, dateRange, attachmentID } ) => {
 							{ __( 'Conversion rate', 'godam' ) }
 						</p>
 					</div>
+					<div className="mt-6 flex justify-center" id="layer-analytics-chart" />
 				</div>
 			</div>
 		);
 	}
 
-	// Multi-layer view: list on the left, Avg. conversion rate card on the right.
+	// Multi-layer view: list on the left, daily-breakdown chart in the
+	// middle, Avg. conversion rate card on the right.
 	return (
-		<div className="grid grid-cols-[5fr_2fr] gap-3 px-6 pb-6">
+		<div className="grid grid-cols-[3fr_3fr_2fr] gap-3 px-6 pb-6">
 			{ /* Left: per-layer rows. Flat layer types (CTA / Form / Poll)
 			     collapse the parent-header (since parent == child for
 			     atomic layers); nested types (Hotspot / Woo) keep the
@@ -407,13 +458,18 @@ const SingleLayerAnalyticsList = ( { activeTab, dateRange, attachmentID } ) => {
 				</div>
 			</div>
 
+			{ /* Middle: daily-breakdown bar chart. Series per layer type
+			     (e.g. clicked / skipped for CTA, clicked / hovered for
+			     Hotspot). The useEffect at the top always clears this
+			     container before rendering, so tab switches don't leave
+			     stale bars from the previous tab visible. */ }
+			<div className="overflow-hidden flex items-start justify-center" id="layer-analytics-chart" />
+
 			{ /* Right: Avg. conversion rate card. Rendered only when there
-			     are multiple layers — for one-layer tabs this card would
-			     duplicate the single layer's rate (see one-layer hero
-			     branch above). Per-action totals (Total Views, Total
-			     Clicks, etc.) were dropped from this column entirely;
-			     they duplicated per-row data. The daily-breakdown chart
-			     was also removed pending v1.5 rework. */ }
+			     are multiple layers — for one-layer tabs the hero branch
+			     above carries the rate. Per-action totals (Total Views,
+			     Total Clicks, etc.) were dropped from this column
+			     entirely; they duplicated per-row data. */ }
 			<div>
 				<div className="rounded-2xl p-6 bg-zinc-50 flex flex-col items-center justify-center h-full min-h-[160px]">
 					<p

@@ -793,25 +793,20 @@ export function calculateTrendPercentage( sortedData, key ) {
 /**
  * Render a grouped bar chart of layer-analytics daily counts.
  *
- * Deferred to v1.5 — currently unused. SingleLayerAnalyticsList no
- * longer mounts a chart container. Known issues tracked for the v1.5
- * redesign before this gets re-enabled: (1) tab switch (e.g. Hotspot
- * → Poll) doesn't clear the previously rendered SVG because D3 is
- * imperative and the useEffect bails early when the new tab has
- * empty data — fix: always selectAll().remove() at the top of the
- * effect regardless of whether new data exists; (2) sparse data
- * renders awkwardly — either pad the X axis to the full range with
- * zero bars or hide the chart when fewer than 3 days of data;
- * (3) Y-axis tick formatting on small integer ranges shows duplicate
- * labels ("3, 2, 1, 1, 0") — d3.format('d') needs an explicit
- * .ticks(N) matching the value range; (4) color palette pink
- * (#AB3A6C) collides visually with the active-tab pill background —
- * switch to the dashboard's existing analytics palette.
+ * In active use by SingleLayerAnalyticsList. The tab-switch clearing
+ * bug (stale bars persisting when switching to an empty-data tab)
+ * is now fixed at the call site — the useEffect always clears the
+ * container before any data check.
  *
- * Kept here (not deleted) because the data plumbing is correct —
- * daily_breakdown is returned from the API and would flow straight
- * into this function once mounted. The next iteration only needs to
- * update this function plus mount a container in SingleLayerAnalyticsList.
+ * Three smaller issues remain as v1.5 polish — none block shipping.
+ * (1) Sparse data (1-2 days) renders awkwardly in a 350px-tall chart;
+ * pad the X axis to the full range with zero bars OR hide below a
+ * threshold. (2) Y-axis tick formatting on small integer ranges can
+ * produce duplicate labels ("3, 2, 1, 1, 0"); use .ticks(Math.min(5, yMax))
+ * with d3.format('d') to constrain. (3) Color palette pink (#AB3A6C)
+ * for the "submitted" / "voted" series visually competes with the
+ * active-tab pill background — switch to the dashboard's standard
+ * analytics palette.
  *
  * Each day on the x-axis gets one bar per metric (e.g. clicked / skipped,
  * or clicked / hovered / skipped for hotspots). Y-axis is event count.
