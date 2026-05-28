@@ -7,7 +7,7 @@ import { useMemo } from 'react';
  * Internal dependencies
  */
 import { useFetchProcessedLayerAnalyticsQuery } from '../redux/api/analyticsApi';
-import { LAYER_TYPE_BY_ID } from '../constants/layerTypes';
+import { LAYER_TYPE_BY_ID, FORM_TYPE_LABELS } from '../constants/layerTypes';
 
 /**
  * Convert a UI date range key to the integer days parameter the analytics
@@ -129,9 +129,31 @@ const UUID_SHAPE_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]
  * `<EnglishTypeLabel> layer at <t>s`. When we receive one of these, we
  * regenerate using the live-locale type label so the timeline reads in
  * the admin's current language even when the site language has changed
- * since the events were emitted.
+ * since the events were emitted. The form-integration brands (WPForms /
+ * Gravity Forms / …) are also caught here so we render the brand label
+ * the marketer picked in the editor.
  */
-const TRACKER_AUTO_NAME_RE = /^(CTA|Form|Hotspot|Poll|Woo) layer at \d+(\.\d+)?s$/;
+const TRACKER_AUTO_NAME_RE = new RegExp(
+	'^(' +
+		[
+			'CTA',
+			'Form',
+			'Hotspot',
+			'Poll',
+			'Woo',
+			'Gravity Forms',
+			'WPForms',
+			'Contact Form 7',
+			'Jetpack Forms',
+			'SureForms',
+			'Forminator Forms',
+			'Fluent Forms',
+			'Everest Forms',
+			'Ninja Forms',
+			'MetForm',
+		].join( '|' ) +
+		') layer at \\d+(\\.\\d+)?s$',
+);
 
 /**
  * Resolve the display name for a layer at render time.
@@ -141,12 +163,17 @@ const TRACKER_AUTO_NAME_RE = /^(CTA|Form|Hotspot|Poll|Woo) layer at \d+(\.\d+)?s
  * generate `<TypeLabel> layer at <t>s` locally — using the localized
  * `meta.label` so the admin sees the layer type in its current language.
  *
- * @param {string} rawName   Server-delivered layer_name.
- * @param {Object} meta      LAYER_TYPE_BY_ID entry for this layer's type.
- * @param {number} timestamp Layer timestamp in seconds.
+ * For form layers with a known `form_type`, the type label is replaced by
+ * the form-integration brand name (e.g. "WPForms layer at 2.59s"), so
+ * analytics reads identically to the editor's sidebar.
+ *
+ * @param {string} rawName    Server-delivered layer_name.
+ * @param {Object} meta       LAYER_TYPE_BY_ID entry for this layer's type.
+ * @param {number} timestamp  Layer timestamp in seconds.
+ * @param {string} [formType] Optional form integration id for form layers.
  * @return {string} Display name for the timeline marker / detail header.
  */
-function resolveLayerName( rawName, meta, timestamp ) {
+function resolveLayerName( rawName, meta, timestamp, formType ) {
 	const trimmed = ( rawName || '' ).toString().trim();
 	const isAutoOrMissing =
 		! trimmed ||
@@ -155,7 +182,10 @@ function resolveLayerName( rawName, meta, timestamp ) {
 	if ( ! isAutoOrMissing ) {
 		return trimmed;
 	}
-	const label = meta?.label || 'Layer';
+	let label = meta?.label || 'Layer';
+	if ( meta?.id === 'form' && formType && FORM_TYPE_LABELS[ formType ] ) {
+		label = FORM_TYPE_LABELS[ formType ];
+	}
 	const t = Number.isFinite( Number( timestamp ) ) ? Number( timestamp ) : 0;
 	return `${ label } layer at ${ t.toFixed( 2 ) }s`;
 }
@@ -192,9 +222,16 @@ function groupRows( rows, layerType ) {
 				parentRow: null,
 				subRows: [],
 				parentName: md.parent_layer_name || '',
+				formType: '',
 			} );
 		}
 		const bucket = byParent.get( parentId );
+		// Form layers carry the integration id (gravity/wpforms/…) so the
+		// frontend can pick the brand-specific icon. Any row in the parent's
+		// group should expose the same form_type — first non-empty wins.
+		if ( ! bucket.formType && md.form_type ) {
+			bucket.formType = String( md.form_type );
+		}
 		if ( isParentRow ) {
 			bucket.parentRow = row;
 			if ( ! bucket.parentName ) {
@@ -301,12 +338,14 @@ function groupRows( rows, layerType ) {
 			parentRawName,
 			meta,
 			parentTimestamp,
+			bucket.formType,
 		);
 
 		parents.push( {
 			id: parentId,
 			name: parentName,
 			layer_type: layerType,
+			form_type: bucket.formType || '',
 			timestamp: parentTimestamp,
 			page_url: parentPageUrl,
 			counts: parentCounts,

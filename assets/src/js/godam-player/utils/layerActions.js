@@ -93,6 +93,28 @@ const LAYER_TYPE_LABELS = {
 	woo: 'Woo',
 };
 
+/**
+ * Form-integration labels. Form layers carry `layer.form_type` set by the
+ * marketer in the editor (gravity / wpforms / cf7 / …). Brand names — not
+ * localized, even in non-English locales the editor uses these as-is.
+ *
+ * Mirrors the labels in pages/video-editor/components/SidebarLayers.js
+ * `layerTypes[].formType[*].layerText` so the analytics name reads
+ * identical to what the marketer sees in the sidebar.
+ */
+export const FORM_TYPE_LABELS = {
+	gravity: 'Gravity Forms',
+	wpforms: 'WPForms',
+	cf7: 'Contact Form 7',
+	jetpack: 'Jetpack Forms',
+	sureforms: 'SureForms',
+	forminator: 'Forminator Forms',
+	fluentforms: 'Fluent Forms',
+	everestforms: 'Everest Forms',
+	ninjaforms: 'Ninja Forms',
+	metform: 'MetForm',
+};
+
 const UUID_SHAPE_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
@@ -117,8 +139,15 @@ export function getLayerDisplayName( layer, layerType ) {
 	if ( customName && ! UUID_SHAPE_RE.test( customName ) ) {
 		return customName;
 	}
-	const typeLabel =
-		LAYER_TYPE_LABELS[ layerType ] || ( layerType ? String( layerType ) : 'Layer' );
+	// Form layers prefer the form-integration label (e.g. "WPForms")
+	// over the generic "Form" so analytics reads as it does in the
+	// editor's sidebar.
+	let typeLabel;
+	if ( layerType === 'form' && layer?.form_type && FORM_TYPE_LABELS[ layer.form_type ] ) {
+		typeLabel = FORM_TYPE_LABELS[ layer.form_type ];
+	} else {
+		typeLabel = LAYER_TYPE_LABELS[ layerType ] || ( layerType ? String( layerType ) : 'Layer' );
+	}
 	const t = parseFloat( layer?.displayTime );
 	const tFormatted = Number.isFinite( t ) ? t.toFixed( 2 ) : '0.00';
 	return `${ typeLabel } layer at ${ tFormatted }s`;

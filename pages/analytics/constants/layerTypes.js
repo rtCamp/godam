@@ -9,6 +9,23 @@ import {
 	thumbsUp,
 } from '@wordpress/icons';
 
+// Re-use the same asset files the video editor's sidebar renders for
+// form integrations so analytics reads visually identical to the
+// editor for any given form layer.
+/**
+ * Internal dependencies
+ */
+import GFIcon from '../../video-editor/assets/layers/GFIcon.svg';
+import WPFormsIcon from '../../video-editor/assets/layers/WPForms-Mascot.svg';
+import EverestFormsIcon from '../../video-editor/assets/layers/EverestFormsIcon.svg';
+import CF7Icon from '../../video-editor/assets/layers/CF7Icon.svg';
+import JetpackIcon from '../../video-editor/assets/layers/JetpackIcon.svg';
+import SureformsIcon from '../../video-editor/assets/layers/SureFormsIcons.svg';
+import ForminatorIcon from '../../video-editor/assets/layers/Forminator.png';
+import FluentFormsIcon from '../../video-editor/assets/layers/FluentFormsIcon.png';
+import NinjaFormsIcon from '../../video-editor/assets/layers/NinjaFormsIcon.png';
+import MetformIcon from '../../video-editor/assets/layers/MetFormIcon.png';
+
 /**
  * Per-layer-type metadata for the Video Layer Timeline UI.
  *
@@ -45,6 +62,43 @@ const BUILTIN_ICONS = {
 	form: preformatted,
 	hotspot: customPostType,
 	poll: thumbsUp,
+};
+
+/**
+ * Form-integration icons keyed by `layer.form_type`. When a form layer's
+ * metadata carries one of these keys, the timeline marker renders the
+ * matching brand asset (WPForms mascot, Gravity Forms logo, etc.) instead
+ * of the generic `preformatted` glyph. Mirrors the editor's sidebar
+ * convention.
+ */
+const FORM_TYPE_ICONS = {
+	gravity: GFIcon,
+	wpforms: WPFormsIcon,
+	cf7: CF7Icon,
+	jetpack: JetpackIcon,
+	sureforms: SureformsIcon,
+	forminator: ForminatorIcon,
+	fluentforms: FluentFormsIcon,
+	everestforms: EverestFormsIcon,
+	ninjaforms: NinjaFormsIcon,
+	metform: MetformIcon,
+};
+
+/**
+ * Display labels for `layer.form_type`. Brand names — kept as-is across
+ * locales (the editor's sidebar follows the same convention).
+ */
+export const FORM_TYPE_LABELS = {
+	gravity: 'Gravity Forms',
+	wpforms: 'WPForms',
+	cf7: 'Contact Form 7',
+	jetpack: 'Jetpack Forms',
+	sureforms: 'SureForms',
+	forminator: 'Forminator Forms',
+	fluentforms: 'Fluent Forms',
+	everestforms: 'Everest Forms',
+	ninjaforms: 'Ninja Forms',
+	metform: 'MetForm',
 };
 
 /**
@@ -135,15 +189,23 @@ export const LAYER_TYPE_BY_ID = LAYER_TYPES.reduce( ( acc, t ) => {
  * `{ kind: 'url', url: '/path/to/icon.svg' }` — render via `<img>`.
  *
  * Built-in types (cta/form/hotspot/poll) use the same `@wordpress/icons`
- * glyphs the editor seekbar renders. Add-on types (woo) come in via the
- * PHP `godam_video_editor_layer_options` filter and ship a URL.
+ * glyphs the editor seekbar renders. Form layers can override the generic
+ * glyph with a form-integration brand asset (WPForms / Gravity / CF7 / …)
+ * via the second argument, mirroring the editor sidebar's convention.
+ * Add-on types (woo) come in via the PHP `godam_video_editor_layer_options`
+ * filter and ship a URL.
  *
  * Returns null for unknown types so callers can decide a fallback.
  *
- * @param {string} typeId Layer type id.
+ * @param {string} typeId     Layer type id.
+ * @param {string} [formType] Form integration id for form layers (gravity/wpforms/cf7/…).
  * @return {{kind:'wp'|'url', icon?:Object, url?:string}|null} Icon descriptor.
  */
-export function getLayerIcon( typeId ) {
+export function getLayerIcon( typeId, formType ) {
+	// Form layers with a known form integration → use the brand asset.
+	if ( typeId === 'form' && formType && FORM_TYPE_ICONS[ formType ] ) {
+		return { kind: 'url', url: FORM_TYPE_ICONS[ formType ] };
+	}
 	if ( BUILTIN_ICONS[ typeId ] ) {
 		return { kind: 'wp', icon: BUILTIN_ICONS[ typeId ] };
 	}

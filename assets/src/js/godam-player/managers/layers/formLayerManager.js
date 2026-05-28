@@ -175,13 +175,25 @@ export default class FormLayerManager {
 		// parent_layer_id so the UI can group consistently across all layer types.
 		// `layer.name` (custom name from the editor) wins; otherwise fall back to
 		// `<TypeLabel> layer at <t>s` so the analytics UI never has to render a
-		// bare UUID. Same string is used for parent_layer_name in metadata so
-		// the backend's argMax aggregation surfaces the same value.
+		// bare UUID. For form layers, `<TypeLabel>` resolves to the specific
+		// form-integration label (e.g. "WPForms") via `layer.form_type`. Same
+		// string is used for parent_layer_name in metadata so the backend's
+		// argMax aggregation surfaces the same value.
 		const displayName = getLayerDisplayName( layer, layerType );
+
+		// Stash form_type when present so the analytics UI can pick the
+		// matching form-integration icon at render time (different from the
+		// generic Form glyph). Empty string for non-form layers — keeps the
+		// metadata shape uniform across layer types.
+		const formType =
+			layerType === 'form' && layer?.form_type
+				? String( layer.form_type )
+				: '';
 
 		const enrichedMetadata = {
 			parent_layer_id: layerId,
 			parent_layer_name: displayName,
+			form_type: formType,
 			dwell_ms: dwellMs,
 			current_video_time: currentVideoTime,
 			is_fullscreen: isFullscreen,

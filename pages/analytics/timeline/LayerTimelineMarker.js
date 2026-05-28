@@ -90,6 +90,7 @@ const LayerTimelineMarker = ( { parent, selected, onSelect } ) => {
 			>
 				<LayerIcon
 					layerType={ parent.layer_type }
+					formType={ parent.form_type }
 					size={ 20 }
 					alt={ meta?.label || parent.layer_type }
 					color="#fff"

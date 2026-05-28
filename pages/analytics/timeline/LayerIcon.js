@@ -31,14 +31,15 @@ import './layer-icon.scss';
  * the parent component still renders, just without an icon.
  *
  * @param {Object} props
- * @param {string} props.layerType Layer type id ('cta' / 'form' / 'hotspot' / 'poll' / 'woo' / …).
- * @param {number} [props.size]    Pixel size for both Icon glyph and img height. Defaults to 18.
- * @param {string} [props.alt]     Alt text for URL-based icons.
- * @param {string} [props.color]   Override color for `kind: 'wp'` glyphs. URL-based icons ignore this.
+ * @param {string} props.layerType  Layer type id ('cta' / 'form' / 'hotspot' / 'poll' / 'woo' / …).
+ * @param {string} [props.formType] Form integration id for form layers ('gravity' / 'wpforms' / …). When present, swaps the generic Form glyph for the form's brand asset.
+ * @param {number} [props.size]     Pixel size for both Icon glyph and img height. Defaults to 18.
+ * @param {string} [props.alt]      Alt text for URL-based icons.
+ * @param {string} [props.color]    Override color for `kind: 'wp'` glyphs. URL-based icons ignore this.
  * @return {JSX.Element|null} The icon element, or null when no icon is available.
  */
-const LayerIcon = ( { layerType, size = 18, alt, color } ) => {
-	const descriptor = getLayerIcon( layerType );
+const LayerIcon = ( { layerType, formType, size = 18, alt, color } ) => {
+	const descriptor = getLayerIcon( layerType, formType );
 	if ( ! descriptor ) {
 		return null;
 	}

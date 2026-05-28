@@ -124,6 +124,7 @@ const LayerDetailPanel = ( { parent, attachmentID } ) => {
 					>
 						<LayerIcon
 							layerType={ parent.layer_type }
+							formType={ parent.form_type }
 							size={ 22 }
 							alt={ meta?.label || parent.layer_type }
 							color={ meta.color }
