@@ -55,7 +55,7 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 			<header className="px-4 py-3 border-b border-zinc-200 flex items-center gap-2">
 				<h4 className="text-sm font-semibold text-zinc-800 m-0">
 					{ parent.layer_type === 'woo'
-						? __( 'Hotspots in this layer', 'godam' )
+						? __( 'Products in this layer', 'godam' )
 						: __( 'Hotspots in this layer', 'godam' ) }
 				</h4>
 				<svg

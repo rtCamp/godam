@@ -300,34 +300,57 @@ export function useVideoLayerData( { videoId, siteUrl, dateRange } ) {
 		{ skip: ! videoId },
 	);
 
-	const queries = [ cta, form, hotspot, poll, woo ];
-	const typeIds = [ 'cta', 'form', 'hotspot', 'poll', 'woo' ];
-
-	const isLoading = queries.some(
-		( q ) => q.isLoading || q.isFetching,
-	);
+	const isLoading =
+		cta.isLoading || cta.isFetching ||
+		form.isLoading || form.isFetching ||
+		hotspot.isLoading || hotspot.isFetching ||
+		poll.isLoading || poll.isFetching ||
+		woo.isLoading || woo.isFetching;
 
 	// Soft errors come back as { errorType, message } from the proxy
 	// transformResponse. Per layer type — if all five are errored we
 	// surface the first non-empty error; if some succeed and some error
 	// we just render what we have (silently dropping the failed types).
-	const firstError = queries.find( ( q ) => q.data?.errorType );
-	const allErrored = queries.every( ( q ) => q.data?.errorType );
+	const allErrored =
+		!! cta.data?.errorType &&
+		!! form.data?.errorType &&
+		!! hotspot.data?.errorType &&
+		!! poll.data?.errorType &&
+		!! woo.data?.errorType;
+	let firstErrorPayload = null;
+	if ( cta.data?.errorType ) {
+		firstErrorPayload = cta.data;
+	} else if ( form.data?.errorType ) {
+		firstErrorPayload = form.data;
+	} else if ( hotspot.data?.errorType ) {
+		firstErrorPayload = hotspot.data;
+	} else if ( poll.data?.errorType ) {
+		firstErrorPayload = poll.data;
+	} else if ( woo.data?.errorType ) {
+		firstErrorPayload = woo.data;
+	}
 
 	const parents = useMemo( () => {
 		if ( isLoading ) {
 			return [];
 		}
 		const merged = [];
-		queries.forEach( ( q, idx ) => {
-			const analytics = q.data?.layer_analytics;
+		const sources = [
+			[ cta.data, 'cta' ],
+			[ form.data, 'form' ],
+			[ hotspot.data, 'hotspot' ],
+			[ poll.data, 'poll' ],
+			[ woo.data, 'woo' ],
+		];
+		sources.forEach( ( [ data, typeId ] ) => {
+			const analytics = data?.layer_analytics;
 			if ( ! analytics ) {
 				return;
 			}
 			const rows = Array.isArray( analytics.individual_layers )
 				? analytics.individual_layers
 				: [];
-			merged.push( ...groupRows( rows, typeIds[ idx ] ) );
+			merged.push( ...groupRows( rows, typeId ) );
 		} );
 
 		// Timeline order: by layer_timestamp ascending. Ties broken by name
@@ -339,7 +362,6 @@ export function useVideoLayerData( { videoId, siteUrl, dateRange } ) {
 			}
 			return ( a.name || '' ).localeCompare( b.name || '' );
 		} );
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [
 		isLoading,
 		cta.data,
@@ -352,7 +374,7 @@ export function useVideoLayerData( { videoId, siteUrl, dateRange } ) {
 	return {
 		parents,
 		isLoading,
-		errorType: allErrored ? firstError?.data?.errorType : null,
-		errorMessage: allErrored ? firstError?.data?.message : null,
+		errorType: allErrored ? firstErrorPayload?.errorType : null,
+		errorMessage: allErrored ? firstErrorPayload?.message : null,
 	};
 }

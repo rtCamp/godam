@@ -85,12 +85,16 @@ export default class HotspotLayerManager {
 	/**
 	 * Emit a sub-hotspot interaction event into the localStorage buffer.
 	 *
-	 * No-op when window.GoDAM.addLayerInteraction isn't loaded yet.
+	 * Sub-hotspots emit engagement events only — `hovered` and `clicked`.
+	 * Parent-level `viewed` is the layer-wide visibility signal and is
+	 * emitted separately via emitParentLayerEvent. All sub-hotspots in one
+	 * parent layer become visible at the same moment, so per-sub `viewed`
+	 * counts would be N redundant copies of the parent's visibility count;
+	 * the backend's per-parent aggregation pass derives "All Hotspots
+	 * (Aggregate)" engagement by grouping sub events by `parent_layer_id`.
 	 *
 	 * All actions deduped per (composite layer_id, action_type, page-session)
-	 * — one viewed, one clicked, one hovered per sub-hotspot per session at
-	 * most. Keeps conversion math sensible (clicks ≤ views ≤ 1 per session)
-	 * and matches what a marketer means by "did the viewer click this hotspot".
+	 * — one clicked, one hovered per sub-hotspot per session at most.
 	 *
 	 * Enriches every event with parent_layer_id, parent_layer_name,
 	 * hotspot_index, dwell_ms, current_video_time, is_fullscreen,
@@ -101,7 +105,7 @@ export default class HotspotLayerManager {
 	 * @param {Object} parentLayer Parent layer config (has id, type, displayTime, name).
 	 * @param {Object} hotspot     Individual hotspot config.
 	 * @param {number} index       Hotspot's position in parentLayer.hotspots.
-	 * @param {string} actionType  e.g. 'viewed', 'clicked', 'hovered'.
+	 * @param {string} actionType  e.g. 'clicked', 'hovered'.
 	 * @param {Object} [metadata]  Extra fields merged into layer_metadata.
 	 */
 	emitHotspotEvent( parentLayer, hotspot, index, actionType, metadata ) {
@@ -130,12 +134,16 @@ export default class HotspotLayerManager {
 		}
 		firedActions.add( actionType );
 
-		// Dwell — set on viewed, computed on subsequent events.
-		const firstVisibleAt = this._firstVisibleAt.get( compositeLayerId );
+		// Dwell measures consideration time — gap between parent visibility
+		// and this sub-hotspot interaction. Sub-hotspots no longer emit
+		// `viewed` themselves, so we fall back to the parent's first-visible
+		// timestamp keyed on parentLayer.id (seeded by emitParentLayerEvent).
+		const parentLayerId = parentLayer?.id ? String( parentLayer.id ) : '';
+		const firstVisibleAt =
+			this._firstVisibleAt.get( compositeLayerId ) ||
+			( parentLayerId && this._firstVisibleAt.get( parentLayerId ) );
 		let dwellMs = 0;
-		if ( actionType === 'viewed' ) {
-			this._firstVisibleAt.set( compositeLayerId, Date.now() );
-		} else if ( firstVisibleAt ) {
+		if ( firstVisibleAt ) {
 			dwellMs = Math.max( 0, Date.now() - firstVisibleAt );
 		}
 
@@ -162,7 +170,6 @@ export default class HotspotLayerManager {
 		const deviceType = window.GoDAM?.getDeviceType?.() || 'desktop';
 		const wasFirstView = window.GoDAM?.wasFirstViewForVideo?.( videoKey ) || false;
 
-		const parentLayerId = parentLayer?.id ? String( parentLayer.id ) : '';
 		const parentLayerName = parentLayer?.name ? String( parentLayer.name ) : '';
 
 		// Build a human-readable name like "Parent layer name — Hotspot 1"
@@ -192,6 +199,107 @@ export default class HotspotLayerManager {
 			action_type: actionType,
 			layer_timestamp: parseFloat( parentLayer?.displayTime ) || 0,
 			layer_name: compositeName,
+			page_url: window.location.href,
+			layer_metadata: enrichedMetadata,
+		} );
+	}
+
+	/**
+	 * Emit a parent-layer interaction event (no sub-hotspot identity).
+	 *
+	 * Used for events that belong to the layer as a whole rather than to a
+	 * single sub-hotspot — currently just `viewed`, which fires once when
+	 * the layer becomes visible. Engagement actions (hovered / clicked)
+	 * stay per-sub-hotspot; the godam-analytics processing pipeline
+	 * aggregates those by parent_layer_id for the "All Hotspots
+	 * (Aggregate)" funnel.
+	 *
+	 * `layer_id` = `parentLayer.id` (no `::sub` suffix). Deduped per
+	 * (layer_id, action_type, session) via the same _dedupeFired map that
+	 * gates sub-hotspot events — so a viewer who briefly sees the layer
+	 * twice within one pageload only emits one `viewed`. Also seeds
+	 * `_firstVisibleAt` keyed on the parent's id, so sub-hotspot dwell
+	 * measures from layer visibility rather than from first sub-event.
+	 *
+	 * @param {Object} parentLayer Parent layer config (.id required; .name / .displayTime / .type preferred).
+	 * @param {string} actionType  e.g. 'viewed'.
+	 * @param {Object} [metadata]  Extra fields merged into layer_metadata.
+	 */
+	emitParentLayerEvent( parentLayer, actionType, metadata ) {
+		if ( ! window.GoDAM || typeof window.GoDAM.addLayerInteraction !== 'function' ) {
+			return;
+		}
+
+		const videoKey = getVideoKey( this.player );
+		if ( ! videoKey ) {
+			return;
+		}
+
+		const parentLayerId = parentLayer?.id ? String( parentLayer.id ) : '';
+		if ( ! parentLayerId ) {
+			return;
+		}
+
+		// Shared dedupe map — parent's key (bare id) and sub-hotspots'
+		// composite keys (parent::sub) can't collide.
+		let firedActions = this._dedupeFired.get( parentLayerId );
+		if ( ! firedActions ) {
+			firedActions = new Set();
+			this._dedupeFired.set( parentLayerId, firedActions );
+		}
+		if ( firedActions.has( actionType ) ) {
+			return;
+		}
+		firedActions.add( actionType );
+
+		const firstVisibleAt = this._firstVisibleAt.get( parentLayerId );
+		let dwellMs = 0;
+		if ( actionType === 'viewed' ) {
+			this._firstVisibleAt.set( parentLayerId, Date.now() );
+		} else if ( firstVisibleAt ) {
+			dwellMs = Math.max( 0, Date.now() - firstVisibleAt );
+		}
+
+		const prevSeq = this._interactionSeq.get( parentLayerId ) || 0;
+		const seq = prevSeq + 1;
+		this._interactionSeq.set( parentLayerId, seq );
+
+		let currentVideoTime = 0;
+		try {
+			currentVideoTime = Number( this.player?.currentTime?.() ) || 0;
+		} catch ( e ) {
+			currentVideoTime = 0;
+		}
+
+		let isFullscreen = false;
+		try {
+			isFullscreen = !! this.player?.isFullscreen?.();
+		} catch ( e ) {
+			isFullscreen = false;
+		}
+
+		const deviceType = window.GoDAM?.getDeviceType?.() || 'desktop';
+		const wasFirstView = window.GoDAM?.wasFirstViewForVideo?.( videoKey ) || false;
+		const parentLayerName = parentLayer?.name ? String( parentLayer.name ) : '';
+
+		const enrichedMetadata = {
+			parent_layer_id: parentLayerId,
+			parent_layer_name: parentLayerName,
+			dwell_ms: dwellMs,
+			current_video_time: currentVideoTime,
+			is_fullscreen: isFullscreen,
+			interaction_seq: seq,
+			device_type: deviceType,
+			was_first_view: wasFirstView,
+			...( metadata || {} ),
+		};
+
+		window.GoDAM.addLayerInteraction( videoKey, {
+			layer_id: parentLayerId,
+			layer_type: parentLayer?.type || 'hotspot',
+			action_type: actionType,
+			layer_timestamp: parseFloat( parentLayer?.displayTime ) || 0,
+			layer_name: parentLayerName || `Hotspot layer at ${ ( parseFloat( parentLayer?.displayTime ) || 0 ).toFixed( 2 ) }s`,
 			page_url: window.location.href,
 			layer_metadata: enrichedMetadata,
 		} );
@@ -245,14 +353,15 @@ export default class HotspotLayerManager {
 			if ( isActive ) {
 				if ( layerObj.layerElement.classList.contains( 'hidden' ) ) {
 					layerObj.layerElement.classList.remove( 'hidden' );
-					// Fire `viewed` once per sub-hotspot (deduped per
-					// composite layer_id per session). Each sub-hotspot is its
-					// own analytics bucket — the UI can group by parent_layer_id
-					// from layer_metadata.
-					const subHotspots = Array.isArray( layerObj.layer?.hotspots ) ? layerObj.layer.hotspots : [];
-					subHotspots.forEach( ( h, hIdx ) => {
-						this.emitHotspotEvent( layerObj.layer, h, hIdx, 'viewed' );
-					} );
+					// Parent-level `viewed` fires once per session when the
+					// layer first becomes visible. Sub-hotspots don't emit
+					// their own `viewed` — every hotspot inside one parent
+					// layer becomes visible at the same moment, so per-sub
+					// `viewed` counts would all be identical to this one.
+					// Engagement (hovered / clicked) is still emitted per
+					// sub-hotspot; the backend aggregates those by
+					// parent_layer_id for the "All Hotspots" funnel.
+					this.emitParentLayerEvent( layerObj.layer, 'viewed' );
 					if ( ! layerObj.layerElement.dataset?.hotspotsInitialized ) {
 						this.createHotspots( layerObj );
 						layerObj.layerElement.dataset.hotspotsInitialized = true;

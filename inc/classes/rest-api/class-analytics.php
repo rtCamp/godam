@@ -171,7 +171,7 @@ class Analytics extends Base {
 							'sanitize_callback' => 'sanitize_text_field',
 							'validate_callback' => function ( $param ) {
 								// Mirror of LAYER_TYPE_WHITELIST in godam-analytics.
-								return in_array( $param, array( 'cta', 'form', 'hotspot', 'woo' ), true );
+								return in_array( $param, array( 'cta', 'form', 'hotspot', 'woo', 'poll' ), true );
 							},
 						),
 						'site_url'   => array(
