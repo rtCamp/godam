@@ -1688,6 +1688,15 @@ class Media_Library extends Base {
 				'filesize' => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,
 			);
 
+			// Persist intrinsic dimensions when GoDAM Central provides non-zero values
+			// so the editor can reserve aspect-ratio space without waiting for loadedmetadata.
+			$video_width  = isset( $data['width'] ) ? (int) $data['width'] : 0;
+			$video_height = isset( $data['height'] ) ? (int) $data['height'] : 0;
+			if ( $video_width > 0 && $video_height > 0 ) {
+				$wp_attachment_metadata['width']  = $video_width;
+				$wp_attachment_metadata['height'] = $video_height;
+			}
+
 			if ( ! empty( $video_duration_in_seconds ) ) {
 				update_post_meta( $attach_id, '_video_duration', $video_duration_in_seconds );
 				$wp_attachment_metadata['length']           = $video_duration_in_seconds;
@@ -1707,10 +1716,12 @@ class Media_Library extends Base {
 				'sizes'    => array(),
 			);
 
-			// Add width and height if available.
-			if ( ! empty( $data['width'] ) && ! empty( $data['height'] ) ) {
-				$wp_attachment_metadata['width']  = (int) $data['width'];
-				$wp_attachment_metadata['height'] = (int) $data['height'];
+			// Add width and height if available (non-zero).
+			$image_width  = isset( $data['width'] ) ? (int) $data['width'] : 0;
+			$image_height = isset( $data['height'] ) ? (int) $data['height'] : 0;
+			if ( $image_width > 0 && $image_height > 0 ) {
+				$wp_attachment_metadata['width']  = $image_width;
+				$wp_attachment_metadata['height'] = $image_height;
 			}
 
 			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
