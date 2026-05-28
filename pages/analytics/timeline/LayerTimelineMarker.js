@@ -4,6 +4,11 @@
 import React from 'react';
 
 /**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import {
@@ -46,6 +51,9 @@ function formatTimestamp( seconds ) {
 const LayerTimelineMarker = ( { parent, selected, onSelect } ) => {
 	const meta = LAYER_TYPE_BY_ID[ parent.layer_type ];
 	const color = meta?.color || '#64748B';
+	// Removed layers (no longer in the video's published postmeta) render
+	// with a desaturated card + "Removed" pill below the conversion badge.
+	const isActive = parent.isActive !== false;
 
 	return (
 		<button
@@ -78,7 +86,7 @@ const LayerTimelineMarker = ( { parent, selected, onSelect } ) => {
 					width: 44,
 					height: 44,
 					borderRadius: 10,
-					background: color,
+					background: isActive ? color : withAlpha( color, 0.32 ),
 					color: '#fff',
 					boxShadow: selected
 						? `0 0 0 4px ${ withAlpha( color, 0.22 ) }, 0 6px 18px ${ withAlpha( color, 0.28 ) }`
@@ -86,6 +94,7 @@ const LayerTimelineMarker = ( { parent, selected, onSelect } ) => {
 					transition:
 						'box-shadow 180ms ease-out, transform 140ms cubic-bezier(0.22, 1, 0.36, 1)',
 					transform: selected ? 'translateY(-2px) scale(1.04)' : 'none',
+					opacity: isActive ? 1 : 0.85,
 				} }
 			>
 				<LayerIcon
@@ -121,6 +130,20 @@ const LayerTimelineMarker = ( { parent, selected, onSelect } ) => {
 			>
 				{ ( Number( parent.conversion_rate ) || 0 ).toFixed( 1 ) }%
 			</span>
+
+			{ /* "Removed" pill for historical layers — slate gray to read
+			    as a status indicator rather than a layer-type accent. */ }
+			{ ! isActive && (
+				<span
+					className="text-[10px] font-medium mt-1 px-1.5 py-0.5 rounded uppercase tracking-wide"
+					style={ {
+						color: '#475569',
+						background: '#E2E8F0',
+					} }
+				>
+					{ __( 'Removed', 'godam' ) }
+				</span>
+			) }
 		</button>
 	);
 };

@@ -143,7 +143,7 @@ const LayerDetailPanel = ( { parent, attachmentID } ) => {
 					</div>
 				</div>
 
-				{ attachmentID && (
+				{ attachmentID && parent.isActive !== false && (
 					<a
 						href={ getEditorUrl( attachmentID, parent.id ) }
 						className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-md border border-zinc-200 text-zinc-700 hover:bg-zinc-50"
@@ -152,6 +152,14 @@ const LayerDetailPanel = ( { parent, attachmentID } ) => {
 						{ __( 'Edit Layer', 'godam' ) }
 						<Icon icon={ external } size={ 14 } />
 					</a>
+				) }
+				{ attachmentID && parent.isActive === false && (
+					<span
+						className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-md border border-zinc-200 text-zinc-400 cursor-not-allowed"
+						title={ __( 'This layer is no longer in the video. Historical analytics preserved.', 'godam' ) }
+					>
+						{ __( 'Removed from video', 'godam' ) }
+					</span>
 				) }
 			</header>
 

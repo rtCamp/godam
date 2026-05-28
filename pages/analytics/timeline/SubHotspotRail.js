@@ -111,6 +111,12 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 				{ subs.map( ( sub, idx ) => {
 					const active = selectedSubId === sub.id;
 					const dotColor = subHotspotColor( meta.color, idx );
+					// Sub-hotspot active = present in the parent's
+					// published config. Removed subs render inline with
+					// muted styling + a "Removed" pill so the marketer
+					// can still see their historical performance without
+					// the row competing visually with live sub-hotspots.
+					const subIsActive = sub.isActive !== false;
 					return (
 						<li key={ sub.id }>
 							<button
@@ -122,6 +128,7 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 										? withAlpha( meta.color, 0.08 )
 										: 'transparent',
 									transition: 'background-color 140ms ease-out',
+									opacity: subIsActive ? 1 : 0.55,
 								} }
 							>
 								<span className="flex items-center gap-2 min-w-0">
@@ -140,6 +147,7 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 												background: '#F4F4F5',
 												flexShrink: 0,
 												border: `1px solid ${ withAlpha( meta.color, 0.18 ) }`,
+												filter: subIsActive ? 'none' : 'grayscale(60%)',
 											} }
 										/>
 									) : (
@@ -149,14 +157,30 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 												width: 8,
 												height: 8,
 												borderRadius: '50%',
-												background: dotColor,
+												background: subIsActive ? dotColor : '#94A3B8',
 												flexShrink: 0,
 											} }
 										/>
 									) }
-									<span className="text-sm text-zinc-700 truncate">
+									<span
+										className="text-sm text-zinc-700 truncate"
+										style={ {
+											textDecoration: subIsActive ? 'none' : 'line-through',
+										} }
+									>
 										{ sub.name }
 									</span>
+									{ ! subIsActive && (
+										<span
+											className="text-[10px] font-medium uppercase tracking-wide px-1.5 py-0.5 rounded shrink-0"
+											style={ {
+												color: '#475569',
+												background: '#E2E8F0',
+											} }
+										>
+											{ __( 'Removed', 'godam' ) }
+										</span>
+									) }
 								</span>
 								<span
 									className="text-sm font-medium tabular-nums shrink-0"

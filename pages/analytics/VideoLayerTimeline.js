@@ -18,6 +18,7 @@ import LayerTimelineStrip from './timeline/LayerTimelineStrip';
 import LayerDetailPanel from './timeline/LayerDetailPanel';
 import DateRangePicker from './timeline/DateRangePicker';
 import InfoTooltip from './timeline/InfoTooltip';
+import HistoricalLayersDrawer from './timeline/HistoricalLayersDrawer';
 
 /**
  * Pick the footer hint text based on what the user is currently looking at.
@@ -107,9 +108,18 @@ const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
 
 	const [ selectedParentId, setSelectedParentId ] = useState( null );
 
-	// Auto-select the first parent layer when data arrives. Re-runs only
-	// when the parent set itself changes — so clicking around doesn't
-	// reset selection.
+	// Split parents into the active timeline strip and the "Removed
+	// layers" drawer. Active = layer still in the published rtgodam_meta
+	// config; removed = layer deleted from the editor but still carrying
+	// analytics history (plan §5.8). Failure-open: when isActive is
+	// undefined (config unavailable), treat as active so analytics
+	// doesn't blank out.
+	const activeParents = parents.filter( ( p ) => p.isActive !== false );
+	const removedParents = parents.filter( ( p ) => p.isActive === false );
+
+	// Auto-select the first ACTIVE parent layer when data arrives — so the
+	// detail panel surfaces a currently-live layer by default rather than
+	// a removed one. Re-runs only when the parent set changes.
 	useEffect( () => {
 		if ( parents.length === 0 ) {
 			setSelectedParentId( null );
@@ -119,9 +129,11 @@ const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
 			! selectedParentId ||
 			! parents.find( ( p ) => p.id === selectedParentId )
 		) {
-			setSelectedParentId( parents[ 0 ].id );
+			const firstActive = activeParents[ 0 ] || parents[ 0 ];
+			setSelectedParentId( firstActive.id );
 		}
-	}, [ parents, selectedParentId ] );
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ parents ] );
 
 	const selectedParent =
 		parents.find( ( p ) => p.id === selectedParentId ) || null;
@@ -167,7 +179,7 @@ const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
 			{ ! isLoading && ! errorType && (
 				<>
 					<LayerTimelineStrip
-						parents={ parents }
+						parents={ activeParents }
 						videoDuration={ videoDuration }
 						selectedParentId={ selectedParentId }
 						onSelect={ setSelectedParentId }
@@ -181,6 +193,13 @@ const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
 							/>
 						</div>
 					) }
+
+					<HistoricalLayersDrawer
+						parents={ removedParents }
+						videoDuration={ videoDuration }
+						selectedParentId={ selectedParentId }
+						onSelect={ setSelectedParentId }
+					/>
 
 					{ /* Footer hint */ }
 					<div className="border-t border-zinc-100 px-6 py-3 flex items-center justify-center gap-2 text-xs text-zinc-500">

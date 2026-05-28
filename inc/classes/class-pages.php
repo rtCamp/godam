@@ -780,11 +780,69 @@ class Pages {
 			// hardcoded in the React bundle; this exposes only the URL-based
 			// icons that come from PHP land.
 			$addon_layer_options = apply_filters( 'godam_video_editor_layer_options', array() );
+
+			// Published layer config for the analytics page's "active vs
+			// removed" rendering. The analytics service stores events
+			// indefinitely (plan §5.8), so a layer the marketer deletes
+			// still appears in analytics. We separate it out in the UI by
+			// reading the current postmeta and tagging each layer's
+			// presence — anything in analytics but missing from postmeta
+			// reads as "removed."
+			//
+			// Source of truth: published postmeta (rtgodam_meta.layers).
+			// Mid-edit unsaved changes don't count; the marketer has to
+			// save for the active set to change.
+			$active_layer_config = array();
+			$analytics_video_id  = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( $analytics_video_id > 0 ) {
+				$rtgodam_meta = get_post_meta( $analytics_video_id, 'rtgodam_meta', true );
+				$saved_layers = is_array( $rtgodam_meta ) && ! empty( $rtgodam_meta['layers'] ) && is_array( $rtgodam_meta['layers'] )
+					? $rtgodam_meta['layers']
+					: array();
+				foreach ( $saved_layers as $saved_layer ) {
+					if ( empty( $saved_layer['id'] ) || empty( $saved_layer['type'] ) ) {
+						continue;
+					}
+					$entry = array(
+						'id'   => (string) $saved_layer['id'],
+						'type' => (string) $saved_layer['type'],
+					);
+					// Sub-hotspot IDs by layer type. Composite ids on the
+					// tracker side are `parent.id::<subId>` for hotspot
+					// (where subId is hotspot.id) or `parent.id::p<productId>`
+					// for woo. We expose the trailing suffix as `subIds`
+					// (without the `::` prefix) so the frontend can do a
+					// simple endsWith / split match.
+					if ( 'hotspot' === $saved_layer['type'] && ! empty( $saved_layer['hotspots'] ) && is_array( $saved_layer['hotspots'] ) ) {
+						$sub_ids = array();
+						foreach ( $saved_layer['hotspots'] as $sub ) {
+							if ( ! empty( $sub['id'] ) ) {
+								$sub_ids[] = (string) $sub['id'];
+							}
+						}
+						$entry['subIds'] = $sub_ids;
+					} elseif ( 'woo' === $saved_layer['type'] && ! empty( $saved_layer['productHotspots'] ) && is_array( $saved_layer['productHotspots'] ) ) {
+						$sub_ids = array();
+						foreach ( $saved_layer['productHotspots'] as $product ) {
+							if ( ! empty( $product['productId'] ) ) {
+								$sub_ids[] = 'p' . (int) $product['productId'];
+							}
+						}
+						$entry['subIds'] = $sub_ids;
+					}
+					$active_layer_config[] = $entry;
+				}
+			}
+
 			wp_localize_script(
 				'transcoder-page-script-analytics',
 				'godamAnalyticsConfig',
 				array(
 					'addonLayerOptions' => is_array( $addon_layer_options ) ? array_values( $addon_layer_options ) : array(),
+					// Empty array means "config unknown" — frontend fails
+					// open (treats everything as active) so analytics never
+					// blanks out if postmeta is missing.
+					'activeLayerConfig' => $active_layer_config,
 				)
 			);
 

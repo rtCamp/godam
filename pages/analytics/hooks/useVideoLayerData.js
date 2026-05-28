@@ -191,17 +191,79 @@ function resolveLayerName( rawName, meta, timestamp, formType ) {
 }
 
 /**
+ * Read the published layer config from PHP-localised data. Each entry is
+ * `{ id, type, subIds? }` — subIds are the trailing tokens of composite
+ * layer ids (`<sub.id>` for hotspot, `p<productId>` for woo). When the
+ * config isn't available we return null and the caller treats every
+ * layer as active (fail-open — never blank out analytics if postmeta
+ * lookup is missing).
+ *
+ * @return {Array<{id:string,type:string,subIds?:string[]}>|null} Layer config or null.
+ */
+function readActiveLayerConfig() {
+	if (
+		typeof window === 'undefined' ||
+		! window.godamAnalyticsConfig ||
+		! Array.isArray( window.godamAnalyticsConfig.activeLayerConfig )
+	) {
+		return null;
+	}
+	return window.godamAnalyticsConfig.activeLayerConfig;
+}
+
+/**
+ * Build O(1) lookup maps from the published layer config.
+ *
+ * @param {Array|null} config readActiveLayerConfig() result.
+ * @return {{activeParentIds:Set<string>|null, activeSubIdsByParent:Map<string,Set<string>>}} Lookup helpers.
+ */
+function indexActiveConfig( config ) {
+	if ( ! config ) {
+		return { activeParentIds: null, activeSubIdsByParent: new Map() };
+	}
+	const activeParentIds = new Set();
+	const activeSubIdsByParent = new Map();
+	config.forEach( ( entry ) => {
+		if ( ! entry?.id ) {
+			return;
+		}
+		activeParentIds.add( entry.id );
+		if ( Array.isArray( entry.subIds ) ) {
+			activeSubIdsByParent.set( entry.id, new Set( entry.subIds ) );
+		}
+	} );
+	return { activeParentIds, activeSubIdsByParent };
+}
+
+/**
+ * Extract the sub-hotspot's id suffix from a composite layer_id.
+ * `parent.id::sub-uuid` → `sub-uuid`. `parent.id::p567` → `p567`.
+ * Returns '' when not composite-shaped.
+ *
+ * @param {string} compositeLayerId Sub-hotspot composite id.
+ * @return {string} Suffix or ''.
+ */
+function extractSubIdSuffix( compositeLayerId ) {
+	const idx = ( compositeLayerId || '' ).indexOf( '::' );
+	if ( idx < 0 ) {
+		return '';
+	}
+	return compositeLayerId.slice( idx + 2 );
+}
+
+/**
  * Group the microservice's individual_layers rows into a parent → children
  * tree. Composite layer_id pattern is `<parentId>` (parent / aggregate row)
  * or `<parentId>::<subId>` (sub-hotspot row). The backend's per-parent
  * aggregation pass emits a row at the bare parentId; sub-hotspot rows
  * keep the composite key.
  *
- * @param {Array}  rows      Raw individual_layers rows.
- * @param {string} layerType 'cta' | 'form' | 'hotspot' | 'poll' | 'woo'.
+ * @param {Array}                                                                           rows        Raw individual_layers rows.
+ * @param {string}                                                                          layerType   'cta' | 'form' | 'hotspot' | 'poll' | 'woo'.
+ * @param {{activeParentIds:Set<string>|null,activeSubIdsByParent:Map<string,Set<string>>}} configIndex Active-layer lookup from indexActiveConfig().
  * @return {Array} Parent layer entries with embedded sub_hotspots[].
  */
-function groupRows( rows, layerType ) {
+function groupRows( rows, layerType, configIndex ) {
 	const meta = LAYER_TYPE_BY_ID[ layerType ];
 	if ( ! meta ) {
 		return [];
@@ -280,6 +342,20 @@ function groupRows( rows, layerType ) {
 		const parentTimestamp = Number( parentRowAny.timestamp || 0 );
 		const parentPageUrl = parentRowAny.page_url || '';
 
+		// Parent active state: present in the published activeLayerConfig.
+		// When the config is unknown (e.g. postmeta lookup didn't run),
+		// activeParentIds is null and we fail open — every parent is active.
+		const parentIsActive = configIndex.activeParentIds
+			? configIndex.activeParentIds.has( parentId )
+			: true;
+
+		// Sub-hotspot active set is only meaningful when the parent itself
+		// is active. A removed parent implies removed children, regardless
+		// of the subIds entry (which may be stale or missing).
+		const activeSubSet = parentIsActive
+			? configIndex.activeSubIdsByParent.get( parentId )
+			: null;
+
 		const subHotspots = bucket.subRows
 			.map( ( { row, md }, idx ) => {
 				const counts = pluckCounts( row );
@@ -315,6 +391,20 @@ function groupRows( rows, layerType ) {
 				} else {
 					subName = `${ meta.label } #${ idx + 1 }`;
 				}
+				// Resolve sub-hotspot active state.
+				// - Parent inactive → all children inactive.
+				// - Parent active + activeSubSet present → only suffixes
+				//   in the published config count as active.
+				// - Parent active + no activeSubSet (atomic layer type, or
+				//   missing subIds entry) → fail open, every sub active.
+				let subIsActive;
+				if ( ! parentIsActive ) {
+					subIsActive = false;
+				} else if ( activeSubSet ) {
+					subIsActive = activeSubSet.has( extractSubIdSuffix( subId ) );
+				} else {
+					subIsActive = true;
+				}
 				return {
 					id: subId,
 					name: subName,
@@ -329,6 +419,7 @@ function groupRows( rows, layerType ) {
 					product_image: md.product_image || '',
 					product_price: md.product_price || null,
 					timestamp: Number( row.timestamp || 0 ),
+					isActive: subIsActive,
 				};
 			} )
 			.sort( ( a, b ) => b.conversion_rate - a.conversion_rate );
@@ -355,6 +446,7 @@ function groupRows( rows, layerType ) {
 			no_action: parentNoAction,
 			conversion_rate: parentConversion,
 			sub_hotspots: subHotspots,
+			isActive: parentIsActive,
 		} );
 	} );
 
@@ -439,6 +531,11 @@ export function useVideoLayerData( { videoId, siteUrl, dateRange } ) {
 		if ( isLoading ) {
 			return [];
 		}
+		// Snapshot the published layer config once per data refresh. The
+		// PHP-localised values are static for the page lifetime; reading
+		// inside the memo keeps the source of truth in one place and
+		// avoids leaking window-globals into every component.
+		const configIndex = indexActiveConfig( readActiveLayerConfig() );
 		const merged = [];
 		const sources = [
 			[ cta.data, 'cta' ],
@@ -455,7 +552,7 @@ export function useVideoLayerData( { videoId, siteUrl, dateRange } ) {
 			const rows = Array.isArray( analytics.individual_layers )
 				? analytics.individual_layers
 				: [];
-			merged.push( ...groupRows( rows, typeId ) );
+			merged.push( ...groupRows( rows, typeId, configIndex ) );
 		} );
 
 		// Timeline order: by layer_timestamp ascending. Ties broken by name
