@@ -15,9 +15,9 @@ import { Icon } from '@wordpress/components';
  */
 import {
 	LAYER_TYPE_BY_ID,
-	getLayerIcon,
 	withAlpha,
 } from '../constants/layerTypes';
+import LayerIcon from './LayerIcon';
 import LayerInteractionFunnel from './LayerInteractionFunnel';
 import SubHotspotRail from './SubHotspotRail';
 
@@ -122,7 +122,11 @@ const LayerDetailPanel = ( { parent, attachmentID } ) => {
 							flexShrink: 0,
 						} }
 					>
-						{ getLayerIcon( parent.layer_type ) }
+						<LayerIcon
+							layerType={ parent.layer_type }
+							size={ 22 }
+							alt={ meta?.label || parent.layer_type }
+						/>
 					</span>
 					<div className="min-w-0">
 						<div className="flex items-center gap-2">

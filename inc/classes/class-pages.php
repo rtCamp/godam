@@ -771,6 +771,23 @@ class Pages {
 				)
 			);
 
+			// Add-on layer options (e.g. WooCommerce) so the analytics timeline
+			// renders the same marker icons the video editor seekbar does. The
+			// editor uses `godam_video_editor_layer_options` to let add-ons
+			// supply `iconUrl` for their layer type — we reuse that filter
+			// result here so analytics doesn't have a parallel registration
+			// surface. Built-in types (cta/form/hotspot/poll) have icons
+			// hardcoded in the React bundle; this exposes only the URL-based
+			// icons that come from PHP land.
+			$addon_layer_options = apply_filters( 'godam_video_editor_layer_options', array() );
+			wp_localize_script(
+				'transcoder-page-script-analytics',
+				'godamAnalyticsConfig',
+				array(
+					'addonLayerOptions' => is_array( $addon_layer_options ) ? array_values( $addon_layer_options ) : array(),
+				)
+			);
+
 			wp_enqueue_script( 'transcoder-page-script-analytics' );
 			wp_enqueue_script( 'd3-js' );
 		} elseif ( $screen && $this->help_page_id === $screen->id ) {

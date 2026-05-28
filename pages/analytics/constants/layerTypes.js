@@ -2,6 +2,12 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
+import {
+	customLink,
+	customPostType,
+	preformatted,
+	thumbsUp,
+} from '@wordpress/icons';
 
 /**
  * Per-layer-type metadata for the Video Layer Timeline UI.
@@ -17,83 +23,46 @@ import { __ } from '@wordpress/i18n';
  * ("viewer saw this layer but didn't interact"), but the per-type math
  * differs because the set of observable actions differs.
  *
+ * Icons match the video editor's seekbar markers ([VideoJSPlayer.js](
+ * pages/video-editor/VideoJSPlayer.js#L29-L57)) so the marker users see
+ * on the analytics timeline is recognizable as the same layer they
+ * positioned in the editor. Built-in types use `@wordpress/icons` glyphs
+ * (cards via `<Icon>`); add-on types (Woo) supply an `iconUrl` from the
+ * `godam_video_editor_layer_options` PHP filter, picked up here via
+ * `window.godamAnalyticsConfig.addonLayerOptions` (see class-pages.php
+ * enqueue side).
+ *
  * Colors are hex strings; consumers can convert to rgba() with the
- * shadeAt helper below for partial-opacity backgrounds / glows.
+ * withAlpha helper below for partial-opacity backgrounds / glows.
  */
 
 /**
- * Inline SVG icon for a layer type. Returned as a React element so the
- * marker can pass through className / fill via the parent's currentColor.
+ * Built-in icons keyed by layer type. Add-on types resolve via
+ * `addonIconUrlFor()` below, which reads the PHP-localized layerOptions.
+ */
+const BUILTIN_ICONS = {
+	cta: customLink,
+	form: preformatted,
+	hotspot: customPostType,
+	poll: thumbsUp,
+};
+
+/**
+ * Look up the URL-based icon for an add-on layer type from the
+ * PHP-localized layer options. Returns an empty string when missing.
  *
  * @param {string} typeId Layer type id.
- * @return {JSX.Element} SVG element.
+ * @return {string} Asset URL or ''.
  */
-function layerIcon( typeId ) {
-	const common = {
-		width: 18,
-		height: 18,
-		viewBox: '0 0 24 24',
-		fill: 'none',
-		stroke: 'currentColor',
-		strokeWidth: 2,
-		strokeLinecap: 'round',
-		strokeLinejoin: 'round',
-		'aria-hidden': true,
-	};
-	switch ( typeId ) {
-		case 'cta':
-			// paper plane — send / call to action
-			return (
-				<svg { ...common }>
-					<path d="M22 2L11 13" />
-					<path d="M22 2l-7 20-4-9-9-4 20-7z" />
-				</svg>
-			);
-		case 'form':
-			// document with horizontal lines
-			return (
-				<svg { ...common }>
-					<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-					<path d="M14 2v6h6" />
-					<path d="M8 13h8" />
-					<path d="M8 17h5" />
-				</svg>
-			);
-		case 'hotspot':
-			// crosshair / target
-			return (
-				<svg { ...common }>
-					<circle cx="12" cy="12" r="9" />
-					<circle cx="12" cy="12" r="5" />
-					<circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
-				</svg>
-			);
-		case 'poll':
-			// bar chart
-			return (
-				<svg { ...common }>
-					<line x1="6" y1="20" x2="6" y2="11" />
-					<line x1="12" y1="20" x2="12" y2="4" />
-					<line x1="18" y1="20" x2="18" y2="14" />
-				</svg>
-			);
-		case 'woo':
-			// shopping bag
-			return (
-				<svg { ...common }>
-					<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-					<line x1="3" y1="6" x2="21" y2="6" />
-					<path d="M16 10a4 4 0 0 1-8 0" />
-				</svg>
-			);
-		default:
-			// fallback dot
-			return (
-				<svg { ...common }>
-					<circle cx="12" cy="12" r="4" fill="currentColor" stroke="none" />
-				</svg>
-			);
-	}
+function addonIconUrlFor( typeId ) {
+	const options =
+		( typeof window !== 'undefined' &&
+			window.godamAnalyticsConfig &&
+			Array.isArray( window.godamAnalyticsConfig.addonLayerOptions ) )
+			? window.godamAnalyticsConfig.addonLayerOptions
+			: [];
+	const match = options.find( ( o ) => o && o.type === typeId );
+	return match?.iconUrl || match?.formIcon || '';
 }
 
 /**
@@ -159,15 +128,30 @@ export const LAYER_TYPE_BY_ID = LAYER_TYPES.reduce( ( acc, t ) => {
 }, {} );
 
 /**
- * Get the icon SVG element for a layer type id. Returns a fallback dot
- * for unknown types so the timeline never blanks out for new server-side
- * types we haven't shipped frontend metadata for yet.
+ * Resolve the renderable icon descriptor for a layer type id.
+ *
+ * Two shapes:
+ * `{ kind: 'wp', icon: <@wordpress/icons object> }` — render via `<Icon>`.
+ * `{ kind: 'url', url: '/path/to/icon.svg' }` — render via `<img>`.
+ *
+ * Built-in types (cta/form/hotspot/poll) use the same `@wordpress/icons`
+ * glyphs the editor seekbar renders. Add-on types (woo) come in via the
+ * PHP `godam_video_editor_layer_options` filter and ship a URL.
+ *
+ * Returns null for unknown types so callers can decide a fallback.
  *
  * @param {string} typeId Layer type id.
- * @return {JSX.Element} SVG element.
+ * @return {{kind:'wp'|'url', icon?:Object, url?:string}|null} Icon descriptor.
  */
 export function getLayerIcon( typeId ) {
-	return layerIcon( typeId );
+	if ( BUILTIN_ICONS[ typeId ] ) {
+		return { kind: 'wp', icon: BUILTIN_ICONS[ typeId ] };
+	}
+	const url = addonIconUrlFor( typeId );
+	if ( url ) {
+		return { kind: 'url', url };
+	}
+	return null;
 }
 
 /**

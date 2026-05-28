@@ -8,9 +8,9 @@ import React from 'react';
  */
 import {
 	LAYER_TYPE_BY_ID,
-	getLayerIcon,
 	withAlpha,
 } from '../constants/layerTypes';
+import LayerIcon from './LayerIcon';
 
 /**
  * Format a layer timestamp as M:SS for the marker label.
@@ -88,7 +88,11 @@ const LayerTimelineMarker = ( { parent, selected, onSelect } ) => {
 					transform: selected ? 'translateY(-2px) scale(1.04)' : 'none',
 				} }
 			>
-				{ getLayerIcon( parent.layer_type ) }
+				<LayerIcon
+					layerType={ parent.layer_type }
+					size={ 20 }
+					alt={ meta?.label || parent.layer_type }
+				/>
 			</span>
 
 			{ /* Name */ }
