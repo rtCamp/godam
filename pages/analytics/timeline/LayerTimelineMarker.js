@@ -92,6 +92,7 @@ const LayerTimelineMarker = ( { parent, selected, onSelect } ) => {
 					layerType={ parent.layer_type }
 					size={ 20 }
 					alt={ meta?.label || parent.layer_type }
+					color="#fff"
 				/>
 			</span>
 

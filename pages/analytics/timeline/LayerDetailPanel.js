@@ -126,23 +126,13 @@ const LayerDetailPanel = ( { parent, attachmentID } ) => {
 							layerType={ parent.layer_type }
 							size={ 22 }
 							alt={ meta?.label || parent.layer_type }
+							color={ meta.color }
 						/>
 					</span>
 					<div className="min-w-0">
-						<div className="flex items-center gap-2">
-							<h3 className="text-base font-semibold text-zinc-900 m-0 truncate">
-								{ parent.name || __( 'Untitled layer', 'godam' ) }
-							</h3>
-							<span
-								className="text-[11px] font-medium uppercase tracking-wide px-2 py-0.5 rounded"
-								style={ {
-									color: meta.color,
-									background: withAlpha( meta.color, 0.12 ),
-								} }
-							>
-								{ meta.label }
-							</span>
-						</div>
+						<h3 className="text-base font-semibold text-zinc-900 m-0 truncate">
+							{ parent.name || __( 'Untitled layer', 'godam' ) }
+						</h3>
 						<p className="text-xs text-zinc-500 m-0 mt-0.5">
 							{ __( 'Appeared at', 'godam' ) }{ ' ' }
 							<span className="font-medium text-zinc-700 tabular-nums">
