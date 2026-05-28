@@ -267,6 +267,76 @@ export function buildAnalyticsRequestBody( {
 	return { endpoint, body };
 }
 
+/**
+ * Coarse device-type classification from the User-Agent string.
+ *
+ * 'mobile' / 'tablet' / 'desktop'. UA-string sniffing is imperfect — the
+ * goal here is "good enough to slice analytics by form factor," not
+ * device fingerprinting. Future improvement: switch to navigator.userAgentData
+ * Client Hints API where available.
+ *
+ * @return {'mobile'|'tablet'|'desktop'} The detected device class.
+ */
+export function getDeviceType() {
+	try {
+		const ua = window.navigator.userAgent || '';
+		if ( /iPad|Android(?!.*Mobile)|Tablet|Kindle/i.test( ua ) ) {
+			return 'tablet';
+		}
+		if ( /Mobile|iPhone|iPod|Android.*Mobile|Mobi|webOS|BlackBerry/i.test( ua ) ) {
+			return 'mobile';
+		}
+		return 'desktop';
+	} catch ( e ) {
+		return 'desktop';
+	}
+}
+
+// Memoized first-view answers per (videoKey, page-session). The decision
+// is locked at first call: that call reads localStorage, sets the persistent
+// flag if missing, and caches the answer. Subsequent calls in this page
+// session for the same videoKey return the same answer — so all events
+// for a given video in a single session agree on whether it's the
+// viewer's first time seeing the video.
+const _videoFirstViewCache = {};
+
+/**
+ * Has this browser previously seen the given video?
+ *
+ * First-time-ever lookup, scoped per browser via localStorage. Returns true
+ * the first time it's called for a videoKey (and sets the persistent flag);
+ * returns false on every subsequent call across all future sessions.
+ * Useful for slicing first-touch vs returning-viewer conversion rates.
+ *
+ * Storage key: `godamVideoSeen:<videoKey>`.
+ *
+ * @param {string} videoKey data-id or job_id identifying the video.
+ * @return {boolean} true on the very first call ever in this browser; false thereafter.
+ */
+export function wasFirstViewForVideo( videoKey ) {
+	if ( ! videoKey ) {
+		return false;
+	}
+	if ( _videoFirstViewCache[ videoKey ] !== undefined ) {
+		return _videoFirstViewCache[ videoKey ];
+	}
+	try {
+		const storageKey = `godamVideoSeen:${ videoKey }`;
+		const seen = localStorage.getItem( storageKey );
+		if ( ! seen ) {
+			_videoFirstViewCache[ videoKey ] = true;
+			localStorage.setItem( storageKey, '1' );
+		} else {
+			_videoFirstViewCache[ videoKey ] = false;
+		}
+	} catch ( e ) {
+		// localStorage unavailable (private mode, quota). Treat as not-first
+		// rather than fabricating a true that would inflate first-view metrics.
+		_videoFirstViewCache[ videoKey ] = false;
+	}
+	return _videoFirstViewCache[ videoKey ];
+}
+
 // Expose helpers on a global namespace so sibling plugins (e.g. godam-for-woo)
 // that are bundled separately can reuse them without a shared import path.
 // Reusing these guarantees parity between type=1/2/3 and type=4 envelopes.
@@ -274,4 +344,6 @@ window.GoDAM = window.GoDAM || {};
 window.GoDAM.getPageLoadSessionId = getPageLoadSessionId;
 window.GoDAM.getBrowserName = getBrowserName;
 window.GoDAM.getOSName = getOSName;
+window.GoDAM.getDeviceType = getDeviceType;
+window.GoDAM.wasFirstViewForVideo = wasFirstViewForVideo;
 window.GoDAM.shouldSkipAnalytics = shouldSkipAnalytics;

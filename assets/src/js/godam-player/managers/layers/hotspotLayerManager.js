@@ -157,6 +157,11 @@ export default class HotspotLayerManager {
 			isFullscreen = false;
 		}
 
+		// Device + viewer context for v1.5 slicing dimensions
+		// (conversion-by-device, first-touch vs returning-viewer).
+		const deviceType = window.GoDAM?.getDeviceType?.() || 'desktop';
+		const wasFirstView = window.GoDAM?.wasFirstViewForVideo?.( videoKey ) || false;
+
 		const parentLayerId = parentLayer?.id ? String( parentLayer.id ) : '';
 		const parentLayerName = parentLayer?.name ? String( parentLayer.name ) : '';
 
@@ -176,6 +181,8 @@ export default class HotspotLayerManager {
 			current_video_time: currentVideoTime,
 			is_fullscreen: isFullscreen,
 			interaction_seq: seq,
+			device_type: deviceType,
+			was_first_view: wasFirstView,
 			...( metadata || {} ),
 		};
 

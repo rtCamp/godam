@@ -149,6 +149,13 @@ export default class FormLayerManager {
 			isFullscreen = false;
 		}
 
+		// Device + viewer context — slicing dimensions for v1.5 dashboards
+		// (conversion-by-device, first-time vs returning-viewer rates).
+		// Helpers are no-ops on missing window.GoDAM.* and return safe
+		// defaults, so this is robust against bundle load order.
+		const deviceType = window.GoDAM?.getDeviceType?.() || 'desktop';
+		const wasFirstView = window.GoDAM?.wasFirstViewForVideo?.( videoKey ) || false;
+
 		// CTA/form layers are atomic — the parent IS the layer. We still set
 		// parent_layer_id so the UI can group consistently across all layer types.
 		const enrichedMetadata = {
@@ -158,6 +165,8 @@ export default class FormLayerManager {
 			current_video_time: currentVideoTime,
 			is_fullscreen: isFullscreen,
 			interaction_seq: seq,
+			device_type: deviceType,
+			was_first_view: wasFirstView,
 			...( metadata || {} ),
 		};
 
