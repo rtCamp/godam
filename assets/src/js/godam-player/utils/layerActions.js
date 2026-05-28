@@ -43,9 +43,22 @@ export const LAYER_ACTIONS = {
 		displayMetrics: [ 'clicked', 'hovered' ],
 	},
 	woo: {
-		all: [ 'viewed', 'clicked', 'hovered' ],
+		// 'clicked'        — viewer clicked the hotspot icon / through to the WC product page.
+		// 'added_to_cart'  — viewer used the in-hotspot Add-to-Cart button (deeper conversion).
+		// Both count toward total_conversion at the dashboard level; the
+		// per-product UI renders them as separate cards so marketers see
+		// "47 clicks, 12 added to cart" rather than a single number.
+		all: [ 'viewed', 'clicked', 'hovered', 'added_to_cart' ],
 		conversion: 'clicked',
-		displayMetrics: [ 'clicked', 'hovered' ],
+		displayMetrics: [ 'clicked', 'added_to_cart', 'hovered' ],
+	},
+	poll: {
+		// WP-Polls integration: 'voted' fires when the WP-Polls confirmation
+		// state appears (form gone, results visible). 'skipped' fires when
+		// the viewer dismisses without voting via the layer's skip button.
+		all: [ 'viewed', 'voted', 'skipped' ],
+		conversion: 'voted',
+		displayMetrics: [ 'voted', 'skipped' ],
 	},
 };
 

@@ -335,12 +335,17 @@ export default class FormLayerManager {
 				}
 				skipButton.classList.remove( 'hidden' );
 
-				// Fire `submitted` for form layers when the form-plugin's
-				// confirmation message appears. CTA layers don't have a
-				// submission concept; their click events fire separately
-				// via setupCtaClickTracking.
+				// Fire the conversion event when the integration's
+				// confirmation appears. For FORM that's `submitted`; for
+				// POLL it's `voted` (WP-Polls confirmation = the form was
+				// replaced by the results view, detected in hasConfirmationMessage
+				// via the .wp-polls-form → .wp-polls-answer transition).
+				// CTA layers don't run this observer — their click events
+				// fire separately via setupCtaClickTracking.
 				if ( layerObj.layer?.type === LAYER_TYPES.FORM ) {
 					this.emitLayerEvent( layerObj.layer, 'submitted' );
+				} else if ( layerObj.layer?.type === LAYER_TYPES.POLL ) {
+					this.emitLayerEvent( layerObj.layer, 'voted' );
 				}
 
 				observer.disconnect();
@@ -407,15 +412,16 @@ export default class FormLayerManager {
 	setupSkipButtonHandler( layerObj, skipButton ) {
 		skipButton.addEventListener( 'click', () => {
 			// Fire `skipped` before tearing the layer down. The button doubles
-			// as a "Continue" after a successful form submit (label swap in
-			// setupFormObserver) — in that case we deliberately do NOT fire
-			// `skipped`, since the form was submitted, not skipped.
-			const isContinueAfterSubmit =
-				layerObj.layer?.type === LAYER_TYPES.FORM &&
+			// as a "Continue" after a successful form submit / poll vote
+			// (label swap in setupFormObserver) — in that case we deliberately
+			// do NOT fire `skipped`, since the conversion event already fired.
+			const layerType = layerObj.layer?.type;
+			const isConversionContinue =
+				( layerType === LAYER_TYPES.FORM || layerType === LAYER_TYPES.POLL ) &&
 				skipButton.textContent &&
 				skipButton.textContent.includes( __( 'Continue', 'godam' ) );
 
-			if ( ! isContinueAfterSubmit ) {
+			if ( ! isConversionContinue ) {
 				this.emitLayerEvent( layerObj.layer, 'skipped' );
 			}
 

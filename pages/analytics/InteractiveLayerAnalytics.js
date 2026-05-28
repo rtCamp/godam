@@ -24,6 +24,7 @@ const BUILTIN_TABS = [
 	{ id: 'cta', label: __( 'CTA', 'godam' ) },
 	{ id: 'form', label: __( 'Form', 'godam' ) },
 	{ id: 'hotspot', label: __( 'Hotspot', 'godam' ) },
+	{ id: 'poll', label: __( 'Poll', 'godam' ) },
 ];
 
 /**

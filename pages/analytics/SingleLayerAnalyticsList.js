@@ -48,8 +48,39 @@ function actionLabel( actionKey ) {
 		submitted: __( 'Submissions', 'godam' ),
 		hovered: __( 'Hovers', 'godam' ),
 		skipped: __( 'Skips', 'godam' ),
+		voted: __( 'Votes', 'godam' ),
+		added_to_cart: __( 'Added to cart', 'godam' ),
 	};
 	return labels[ actionKey ] || actionKey;
+}
+
+/**
+ * Build the deep-link URL into the video editor for a specific layer.
+ *
+ * Lands on /wp-admin/admin.php?page=rtgodam_video_editor&id=<videoId>
+ * with `#layer=<layerId>` so the editor can focus the parent layer.
+ * Sub-hotspot rows (composite layer_id `<parent>::<sub>`) always link
+ * to the parent layer — individual hotspots inside a layer aren't
+ * separately editable in the sidebar, only the parent layer is.
+ *
+ * @param {number|string} attachmentID WP attachment ID of the video.
+ * @param {string}        layerId      The parent layer's UUID.
+ * @return {string} Absolute admin URL.
+ */
+function getEditorUrl( attachmentID, layerId ) {
+	try {
+		const url = new URL( window.location.href );
+		// Replace current page param with the editor's page slug.
+		url.searchParams.set( 'page', 'rtgodam_video_editor' );
+		url.searchParams.set( 'id', String( attachmentID ) );
+		// Strip any other query params (e.g. the analytics page's id param
+		// is already overwritten by the line above; nothing else to clean).
+		url.hash = `layer=${ layerId }`;
+		return url.toString();
+	} catch ( e ) {
+		// Fallback (very defensive — URL constructor is universally supported in WP-admin).
+		return `?page=rtgodam_video_editor&id=${ encodeURIComponent( attachmentID ) }#layer=${ encodeURIComponent( layerId ) }`;
+	}
 }
 
 /**
@@ -71,7 +102,11 @@ function summaryActionsFor( layerType ) {
 		// never emits 'skipped' for hotspot, so showing a Skipped card
 		// would always be 0 and would be misleading.
 		hotspot: [ 'clicked', 'hovered' ],
-		woo: [ 'clicked', 'hovered' ],
+		// Woo: 'clicked' (browse intent — through to product page) and
+		// 'added_to_cart' (deeper purchase intent — in-hotspot cart-add
+		// button). Both deduped per session per product.
+		woo: [ 'clicked', 'added_to_cart', 'hovered' ],
+		poll: [ 'voted', 'skipped' ],
 	};
 	return map[ layerType ] || [];
 }
@@ -232,10 +267,21 @@ const SingleLayerAnalyticsList = ( { activeTab, dateRange, attachmentID } ) => {
 				<div className="divide-y divide-zinc-100">
 					{ groups.map( ( group ) => (
 						<div key={ group.parentId } className="py-3">
-							<p className="text-sm font-semibold text-zinc-800">
-								{ group.parentName ||
-									__( 'Untitled layer', 'godam' ) }
-							</p>
+							<div className="flex items-center justify-between gap-2">
+								<p className="text-sm font-semibold text-zinc-800 truncate m-0">
+									{ group.parentName ||
+										__( 'Untitled layer', 'godam' ) }
+								</p>
+								{ attachmentID && (
+									<a
+										href={ getEditorUrl( attachmentID, group.parentId ) }
+										className="text-xs text-[#AB3A6C] hover:underline shrink-0"
+										aria-label={ __( 'Edit this layer in the video editor', 'godam' ) }
+									>
+										{ __( 'Edit ↗', 'godam' ) }
+									</a>
+								) }
+							</div>
 							<div className="mt-1 divide-y divide-zinc-50">
 								{ group.rows.map( ( row ) => {
 									const ratePct = Number( row.conversion_rate ) || 0;
