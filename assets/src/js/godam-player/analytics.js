@@ -330,6 +330,34 @@ function observePageLoadForVideo( video ) {
 	// instead of leaking the raw UUID into analytics.
 	window.GoDAM.getLayerDisplayName = getLayerDisplayName;
 
+	// Tab-hidden accounting for dwell_ms. Wall-clock dwell would otherwise
+	// include time the user spent on a different tab — inflates v1.5
+	// "consideration time" metrics. Layer managers snapshot this on
+	// `_firstVisibleAt` and subtract the delta when computing dwell, so
+	// dwell becomes "active foreground time between layer visibility and
+	// engagement" rather than wall-clock.
+	let tabHiddenAccumulatedMs = 0;
+	let tabHiddenSinceMs = null;
+	window.GoDAM.getTabHiddenAccumulatedMs = function getTabHiddenAccumulatedMs() {
+		if ( tabHiddenSinceMs !== null ) {
+			return tabHiddenAccumulatedMs + Math.max( 0, Date.now() - tabHiddenSinceMs );
+		}
+		return tabHiddenAccumulatedMs;
+	};
+	// Track the visibility transitions alongside the existing flush listener
+	// rather than adding a second handler (single source of truth for
+	// visibility state, avoids ordering bugs).
+	document.addEventListener( 'visibilitychange', () => {
+		if ( document.visibilityState === 'hidden' ) {
+			if ( tabHiddenSinceMs === null ) {
+				tabHiddenSinceMs = Date.now();
+			}
+		} else if ( tabHiddenSinceMs !== null ) {
+			tabHiddenAccumulatedMs += Math.max( 0, Date.now() - tabHiddenSinceMs );
+			tabHiddenSinceMs = null;
+		}
+	} );
+
 	/**
 	 * Flush the localStorage layer-interactions buffer to /analytics/ as
 	 * one or more type=3 POSTs, one per videoKey.

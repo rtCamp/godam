@@ -57,6 +57,12 @@ export default class HotspotLayerManager {
 		// Used to compute dwell_ms on click/hover. Map<compositeLayerId, number>.
 		this._firstVisibleAt = new Map();
 
+		// Snapshot of `window.GoDAM.getTabHiddenAccumulatedMs()` at the moment
+		// `_firstVisibleAt` is set — subtracted from wall-clock dwell so tab-
+		// away time doesn't inflate "consideration time" reporting.
+		// Map<compositeLayerId | parentLayerId, number>.
+		this._hiddenAtFirstVisible = new Map();
+
 		// Interaction sequence keyed by composite layer_id. Map<compositeLayerId, number>.
 		this._interactionSeq = new Map();
 	}
@@ -136,16 +142,22 @@ export default class HotspotLayerManager {
 		firedActions.add( actionType );
 
 		// Dwell measures consideration time — gap between parent visibility
-		// and this sub-hotspot interaction. Sub-hotspots no longer emit
-		// `viewed` themselves, so we fall back to the parent's first-visible
-		// timestamp keyed on parentLayer.id (seeded by emitParentLayerEvent).
+		// and this sub-hotspot interaction, minus time the tab was hidden
+		// during that window. Sub-hotspots no longer emit `viewed` themselves,
+		// so we fall back to the parent's first-visible timestamp keyed on
+		// parentLayer.id (seeded by emitParentLayerEvent).
 		const parentLayerId = parentLayer?.id ? String( parentLayer.id ) : '';
-		const firstVisibleAt =
-			this._firstVisibleAt.get( compositeLayerId ) ||
-			( parentLayerId && this._firstVisibleAt.get( parentLayerId ) );
+		let firstVisibleAt = this._firstVisibleAt.get( compositeLayerId );
+		let hiddenAtStart = this._hiddenAtFirstVisible.get( compositeLayerId );
+		if ( ! firstVisibleAt && parentLayerId ) {
+			firstVisibleAt = this._firstVisibleAt.get( parentLayerId );
+			hiddenAtStart = this._hiddenAtFirstVisible.get( parentLayerId );
+		}
 		let dwellMs = 0;
 		if ( firstVisibleAt ) {
-			dwellMs = Math.max( 0, Date.now() - firstVisibleAt );
+			const wallMs = Date.now() - firstVisibleAt;
+			const hiddenNow = window.GoDAM?.getTabHiddenAccumulatedMs?.() || 0;
+			dwellMs = Math.max( 0, wallMs - ( hiddenNow - ( hiddenAtStart || 0 ) ) );
 		}
 
 		const prevSeq = this._interactionSeq.get( compositeLayerId ) || 0;
@@ -264,8 +276,15 @@ export default class HotspotLayerManager {
 		let dwellMs = 0;
 		if ( actionType === 'viewed' ) {
 			this._firstVisibleAt.set( parentLayerId, Date.now() );
+			this._hiddenAtFirstVisible.set(
+				parentLayerId,
+				window.GoDAM?.getTabHiddenAccumulatedMs?.() || 0,
+			);
 		} else if ( firstVisibleAt ) {
-			dwellMs = Math.max( 0, Date.now() - firstVisibleAt );
+			const wallMs = Date.now() - firstVisibleAt;
+			const hiddenAtStart = this._hiddenAtFirstVisible.get( parentLayerId ) || 0;
+			const hiddenNow = window.GoDAM?.getTabHiddenAccumulatedMs?.() || 0;
+			dwellMs = Math.max( 0, wallMs - ( hiddenNow - hiddenAtStart ) );
 		}
 
 		const prevSeq = this._interactionSeq.get( parentLayerId ) || 0;

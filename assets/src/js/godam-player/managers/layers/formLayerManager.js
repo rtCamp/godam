@@ -62,6 +62,12 @@ export default class FormLayerManager {
 		// dwell_ms on click/submit/skip. Map<layer_id, number>.
 		this._firstVisibleAt = new Map();
 
+		// Snapshot of `window.GoDAM.getTabHiddenAccumulatedMs()` at the moment
+		// `_firstVisibleAt` is set. dwell = (now - firstVisibleAt) - (current
+		// hidden total - snapshot) so time the viewer spent on another tab
+		// doesn't pollute "consideration time." Map<layer_id, number>.
+		this._hiddenAtFirstVisible = new Map();
+
 		// Per-layer interaction sequence — incremented on each emit so the
 		// receiver can distinguish first-touch from repeat events. Map<layer_id, number>.
 		this._interactionSeq = new Map();
@@ -115,15 +121,23 @@ export default class FormLayerManager {
 		}
 		firedActions.add( actionType );
 
-		// Compute dwell — ms between layer first becoming visible and this event.
-		// 0 for the viewed event itself (since "visible-at" is recorded at the
-		// same instant we emit `viewed`); positive for interactions that follow.
+		// Compute dwell — ms between layer first becoming visible and this
+		// event, minus time the tab was hidden during that window. 0 for the
+		// viewed event itself (since "visible-at" is recorded at the same
+		// instant); positive for interactions that follow.
 		const firstVisibleAt = this._firstVisibleAt.get( layerId );
 		let dwellMs = 0;
 		if ( actionType === 'viewed' ) {
 			this._firstVisibleAt.set( layerId, Date.now() );
+			this._hiddenAtFirstVisible.set(
+				layerId,
+				window.GoDAM?.getTabHiddenAccumulatedMs?.() || 0,
+			);
 		} else if ( firstVisibleAt ) {
-			dwellMs = Math.max( 0, Date.now() - firstVisibleAt );
+			const wallMs = Date.now() - firstVisibleAt;
+			const hiddenAtStart = this._hiddenAtFirstVisible.get( layerId ) || 0;
+			const hiddenNow = window.GoDAM?.getTabHiddenAccumulatedMs?.() || 0;
+			dwellMs = Math.max( 0, wallMs - ( hiddenNow - hiddenAtStart ) );
 		}
 
 		// Bump interaction sequence — 1-indexed; `viewed` is seq 1 by convention.
