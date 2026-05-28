@@ -11,6 +11,7 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+// eslint-disable-next-line import/no-extraneous-dependencies -- @wordpress/url is provided by WordPress core; intentionally not in this plugin's package.json.
 import { addQueryArgs } from '@wordpress/url';
 import { API_KEY_STATUS, ERROR_TYPE } from '../shared/enums';
 import { generateCountryHeatmap } from '../analytics/helper';
@@ -264,6 +265,7 @@ const Dashboard = () => {
 			'Total Plays',
 			'Watch Time',
 			'Engagement Rate',
+			'Conversion Rate',
 		];
 
 		const rows = topVideosData?.map( ( item ) => {
@@ -275,6 +277,9 @@ const Dashboard = () => {
 				item.plays,
 				item.play_time?.toFixed( 2 ) + 's',
 				( ( item.play_time / ( item.plays * item.video_length ) ) * 100 ).toFixed( 2 ) + '%',
+				item.video_conversion_rate !== undefined && item.video_conversion_rate !== null
+					? Number( item.video_conversion_rate ).toFixed( 2 ) + '%'
+					: '-',
 			];
 		} );
 
@@ -535,10 +540,11 @@ const Dashboard = () => {
 									<th>{ __( 'Total Plays', 'godam' ) }</th>
 									<th>{ __( 'Total Watch Time', 'godam' ) }</th>
 									<th>{ __( 'Average Engagement', 'godam' ) }</th>
+									<th>{ __( 'Conversion Rate', 'godam' ) }</th>
 								</tr>
 								{ isTopVideosFetching ? (
 									<tr>
-										<td colSpan="6">
+										<td colSpan="7">
 											<div className="space-y-4 mt-3">
 												<div className="skeleton h-4 w-full"></div>
 												<div className="skeleton h-4 w-full"></div>
@@ -601,12 +607,23 @@ const Dashboard = () => {
 													? ( ( item.play_time / ( item.plays * item.video_length ) ) * 100 ).toFixed( 2 ) + '%'
 													: '-' }
 											</td>
+											<td
+												title={
+													item.total_converting_sessions > 0
+														? `${ item.total_converting_sessions } of ${ item.plays } sessions converted`
+														: __( 'No layer conversions in this period', 'godam' )
+												}
+											>
+												{ item.video_conversion_rate !== undefined && item.video_conversion_rate !== null
+													? `${ Number( item.video_conversion_rate ).toFixed( 2 ) }%`
+													: '-' }
+											</td>
 										</tr>
 									) )
 								) }
 								{ topVideosData.length === 0 && (
 									<tr>
-										<td colSpan="6" className="text-center py-4 text-lg">
+										<td colSpan="7" className="text-center py-4 text-lg">
 											{ __( 'No videos found.', 'godam' ) }
 										</td>
 									</tr>
