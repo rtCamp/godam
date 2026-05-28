@@ -7,6 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { LAYER_TYPES } from '../../utils/constants.js';
+import { getLayerDisplayName } from '../../utils/layerActions.js';
 
 /**
  * Resolve the analytics videoKey (data-id or data-job_id) for a player.
@@ -158,9 +159,15 @@ export default class FormLayerManager {
 
 		// CTA/form layers are atomic — the parent IS the layer. We still set
 		// parent_layer_id so the UI can group consistently across all layer types.
+		// `layer.name` (custom name from the editor) wins; otherwise fall back to
+		// `<TypeLabel> layer at <t>s` so the analytics UI never has to render a
+		// bare UUID. Same string is used for parent_layer_name in metadata so
+		// the backend's argMax aggregation surfaces the same value.
+		const displayName = getLayerDisplayName( layer, layerType );
+
 		const enrichedMetadata = {
 			parent_layer_id: layerId,
-			parent_layer_name: layer?.name ? String( layer.name ) : '',
+			parent_layer_name: displayName,
 			dwell_ms: dwellMs,
 			current_video_time: currentVideoTime,
 			is_fullscreen: isFullscreen,
@@ -175,7 +182,7 @@ export default class FormLayerManager {
 			layer_type: layerType,
 			action_type: actionType,
 			layer_timestamp: parseFloat( layer?.displayTime ) || 0,
-			layer_name: layer?.name ? String( layer.name ) : '',
+			layer_name: displayName,
 			page_url: window.location.href,
 			layer_metadata: enrichedMetadata,
 		} );

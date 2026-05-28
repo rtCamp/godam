@@ -13,7 +13,7 @@ import {
 	getLayerInteractions as bufferGetLayerInteractions,
 	clearLayerInteractions as bufferClearLayerInteractions,
 } from './utils/storage';
-import { LAYER_ACTIONS, LAYER_TYPE_WHITELIST } from './utils/layerActions';
+import { LAYER_ACTIONS, LAYER_TYPE_WHITELIST, getLayerDisplayName } from './utils/layerActions';
 
 const analytics = Analytics( {
 	app: 'analytics-cdp-plugin',
@@ -325,6 +325,10 @@ function observePageLoadForVideo( video ) {
 	window.GoDAM.clearLayerInteractions = bufferClearLayerInteractions;
 	window.GoDAM.LAYER_ACTIONS = LAYER_ACTIONS;
 	window.GoDAM.LAYER_TYPE_WHITELIST = LAYER_TYPE_WHITELIST;
+	// Display-name fallback. Add-ons (godam-for-woo) call this when they
+	// emit events so unnamed layers carry "<TypeLabel> layer at <t>s"
+	// instead of leaking the raw UUID into analytics.
+	window.GoDAM.getLayerDisplayName = getLayerDisplayName;
 
 	/**
 	 * Flush the localStorage layer-interactions buffer to /analytics/ as

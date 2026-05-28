@@ -77,3 +77,49 @@ export const LAYER_TYPE_WHITELIST = Object.freeze( Object.keys( LAYER_ACTIONS ) 
 export function getLayerActionConfig( layerType ) {
 	return LAYER_ACTIONS[ layerType ] || null;
 }
+
+/**
+ * English type labels used in the auto-generated fallback name. Kept
+ * non-localized at emission time — the canonical record on the analytics
+ * service should be locale-stable so a site that switches languages
+ * doesn't fragment its historical layer names. The admin UI re-localizes
+ * for display (see useVideoLayerData.js).
+ */
+const LAYER_TYPE_LABELS = {
+	cta: 'CTA',
+	form: 'Form',
+	hotspot: 'Hotspot',
+	poll: 'Poll',
+	woo: 'Woo',
+};
+
+const UUID_SHAPE_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Resolve the display name for a layer at emission time.
+ *
+ * Future custom-naming UI will set `layer.name` from the editor; that path
+ * wins whenever a non-empty, non-UUID-shape value is present. When the
+ * marketer hasn't named the layer, fall back to `<TypeLabel> layer at <t>s`
+ * — matches the editor's sidebar label convention so the analytics UI
+ * reads the same as the timeline marker in the editor.
+ *
+ * UUID-shape guard catches the legacy case where older clients sent the
+ * layer's UUID as its name; we don't want a raw UUID flowing onto the
+ * timeline.
+ *
+ * @param {Object} layer     Layer config with optional .name and .displayTime.
+ * @param {string} layerType One of LAYER_TYPE_WHITELIST.
+ * @return {string} Display name suitable for the `layer_name` wire field.
+ */
+export function getLayerDisplayName( layer, layerType ) {
+	const customName = layer?.name ? String( layer.name ).trim() : '';
+	if ( customName && ! UUID_SHAPE_RE.test( customName ) ) {
+		return customName;
+	}
+	const typeLabel =
+		LAYER_TYPE_LABELS[ layerType ] || ( layerType ? String( layerType ) : 'Layer' );
+	const t = parseFloat( layer?.displayTime );
+	const tFormatted = Number.isFinite( t ) ? t.toFixed( 2 ) : '0.00';
+	return `${ typeLabel } layer at ${ tFormatted }s`;
+}

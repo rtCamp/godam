@@ -117,6 +117,50 @@ function pluckCounts( row ) {
 }
 
 /**
+ * UUID v1-v5 shape: 8-4-4-4-12 hex chars. Defensive — older clients (or
+ * misconfigured ones) may emit the layer's UUID as its `layer_name`; we
+ * detect that here and re-render with the type+timestamp fallback so the
+ * timeline marker never shows a bare UUID.
+ */
+const UUID_SHAPE_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Tracker-side auto-generated fallback names follow the pattern
+ * `<EnglishTypeLabel> layer at <t>s`. When we receive one of these, we
+ * regenerate using the live-locale type label so the timeline reads in
+ * the admin's current language even when the site language has changed
+ * since the events were emitted.
+ */
+const TRACKER_AUTO_NAME_RE = /^(CTA|Form|Hotspot|Poll|Woo) layer at \d+(\.\d+)?s$/;
+
+/**
+ * Resolve the display name for a layer at render time.
+ *
+ * Custom name (from the future editor naming UI) wins whenever the server
+ * delivered a non-empty, non-UUID, non-auto-pattern value. Otherwise we
+ * generate `<TypeLabel> layer at <t>s` locally — using the localized
+ * `meta.label` so the admin sees the layer type in its current language.
+ *
+ * @param {string} rawName   Server-delivered layer_name.
+ * @param {Object} meta      LAYER_TYPE_BY_ID entry for this layer's type.
+ * @param {number} timestamp Layer timestamp in seconds.
+ * @return {string} Display name for the timeline marker / detail header.
+ */
+function resolveLayerName( rawName, meta, timestamp ) {
+	const trimmed = ( rawName || '' ).toString().trim();
+	const isAutoOrMissing =
+		! trimmed ||
+		UUID_SHAPE_RE.test( trimmed ) ||
+		TRACKER_AUTO_NAME_RE.test( trimmed );
+	if ( ! isAutoOrMissing ) {
+		return trimmed;
+	}
+	const label = meta?.label || 'Layer';
+	const t = Number.isFinite( Number( timestamp ) ) ? Number( timestamp ) : 0;
+	return `${ label } layer at ${ t.toFixed( 2 ) }s`;
+}
+
+/**
  * Group the microservice's individual_layers rows into a parent → children
  * tree. Composite layer_id pattern is `<parentId>` (parent / aggregate row)
  * or `<parentId>::<subId>` (sub-hotspot row). The backend's per-parent
@@ -215,11 +259,22 @@ function groupRows( rows, layerType ) {
 							100
 						: 0;
 				const subId = row.layer_id || '';
-				const subName =
-					row.layer_name ||
-					md.product_name ||
-					subId ||
-					`#${ idx + 1 }`;
+				// Sub-hotspot name: prefer tracker-emitted layer_name, then
+				// product_name (Woo). UUID-shape and auto-pattern names are
+				// rejected via the same path the parent uses so a raw
+				// composite UUID never reaches the rail. Falls back to a
+				// generic ordinal "<TypeLabel> #N" when nothing usable.
+				const rawSubName = row.layer_name || md.product_name || '';
+				let subName;
+				if (
+					rawSubName &&
+					! UUID_SHAPE_RE.test( rawSubName ) &&
+					! TRACKER_AUTO_NAME_RE.test( rawSubName )
+				) {
+					subName = rawSubName;
+				} else {
+					subName = `${ meta.label } #${ idx + 1 }`;
+				}
 				return {
 					id: subId,
 					name: subName,
@@ -237,12 +292,19 @@ function groupRows( rows, layerType ) {
 			} )
 			.sort( ( a, b ) => b.conversion_rate - a.conversion_rate );
 
+		const parentRawName =
+			bucket.parentName ||
+			bucket.parentRow?.layer_name ||
+			'';
+		const parentName = resolveLayerName(
+			parentRawName,
+			meta,
+			parentTimestamp,
+		);
+
 		parents.push( {
 			id: parentId,
-			name:
-				bucket.parentName ||
-				bucket.parentRow?.layer_name ||
-				parentId,
+			name: parentName,
 			layer_type: layerType,
 			timestamp: parentTimestamp,
 			page_url: parentPageUrl,

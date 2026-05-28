@@ -7,6 +7,7 @@ import { __, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { HOTSPOT_CONSTANTS } from '../../utils/constants';
+import { getLayerDisplayName } from '../../utils/layerActions.js';
 
 /**
  * Resolve the analytics videoKey (data-id or data-job_id) for a player.
@@ -170,11 +171,18 @@ export default class HotspotLayerManager {
 		const deviceType = window.GoDAM?.getDeviceType?.() || 'desktop';
 		const wasFirstView = window.GoDAM?.wasFirstViewForVideo?.( videoKey ) || false;
 
-		const parentLayerName = parentLayer?.name ? String( parentLayer.name ) : '';
+		// `parent_layer_name` carries the resolved display name (custom if set,
+		// otherwise `<TypeLabel> layer at <t>s`) so backend `argMax` aggregation
+		// and the per-parent timeline marker have a non-UUID label even when
+		// the marketer hasn't named the layer.
+		const parentLayerName = getLayerDisplayName(
+			parentLayer,
+			parentLayer?.type || 'hotspot',
+		);
 
-		// Build a human-readable name like "Parent layer name — Hotspot 1"
-		// so the UI can render each sub-hotspot meaningfully even before
-		// we wire in product-name / link-title enrichment.
+		// Sub-hotspot label: "<parentName> — Hotspot N". Fallback to
+		// "Hotspot N" alone if the parent name is missing (defensive — should
+		// always be populated via getLayerDisplayName above).
 		const subLabel = hotspot?.name || hotspot?.label || hotspot?.title || `Hotspot ${ index + 1 }`;
 		const compositeName = parentLayerName ? `${ parentLayerName } — ${ subLabel }` : String( subLabel );
 
@@ -280,7 +288,10 @@ export default class HotspotLayerManager {
 
 		const deviceType = window.GoDAM?.getDeviceType?.() || 'desktop';
 		const wasFirstView = window.GoDAM?.wasFirstViewForVideo?.( videoKey ) || false;
-		const parentLayerName = parentLayer?.name ? String( parentLayer.name ) : '';
+		const parentLayerName = getLayerDisplayName(
+			parentLayer,
+			parentLayer?.type || 'hotspot',
+		);
 
 		const enrichedMetadata = {
 			parent_layer_id: parentLayerId,
@@ -299,7 +310,7 @@ export default class HotspotLayerManager {
 			layer_type: parentLayer?.type || 'hotspot',
 			action_type: actionType,
 			layer_timestamp: parseFloat( parentLayer?.displayTime ) || 0,
-			layer_name: parentLayerName || `Hotspot layer at ${ ( parseFloat( parentLayer?.displayTime ) || 0 ).toFixed( 2 ) }s`,
+			layer_name: parentLayerName,
 			page_url: window.location.href,
 			layer_metadata: enrichedMetadata,
 		} );
