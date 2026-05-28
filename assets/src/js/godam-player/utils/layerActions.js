@@ -35,9 +35,12 @@ export const LAYER_ACTIONS = {
 		displayMetrics: [ 'submitted', 'skipped' ],
 	},
 	hotspot: {
-		all: [ 'viewed', 'clicked', 'hovered', 'skipped' ],
+		// No 'skipped' action — hotspots have no skip affordance; they
+		// auto-hide when their display window ends, which isn't a user
+		// dismissal. The manager never emits 'skipped' for hotspot.
+		all: [ 'viewed', 'clicked', 'hovered' ],
 		conversion: 'clicked',
-		displayMetrics: [ 'clicked', 'hovered', 'skipped' ],
+		displayMetrics: [ 'clicked', 'hovered' ],
 	},
 	woo: {
 		all: [ 'viewed', 'clicked', 'hovered' ],

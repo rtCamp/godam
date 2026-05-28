@@ -66,7 +66,11 @@ function summaryActionsFor( layerType ) {
 	const map = {
 		cta: [ 'clicked', 'skipped' ],
 		form: [ 'submitted', 'skipped' ],
-		hotspot: [ 'clicked', 'hovered', 'skipped' ],
+		// Hotspots have no 'skipped' action — they auto-hide when their
+		// display window ends, which isn't a user dismissal. The tracker
+		// never emits 'skipped' for hotspot, so showing a Skipped card
+		// would always be 0 and would be misleading.
+		hotspot: [ 'clicked', 'hovered' ],
 		woo: [ 'clicked', 'hovered' ],
 	};
 	return map[ layerType ] || [];
