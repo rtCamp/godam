@@ -771,53 +771,6 @@ class Pages {
 				)
 			);
 
-			/**
-			 * Filter the list of extension tabs shown in the Interactive Layer
-			 * Performance section.
-			 *
-			 * Add-ons (e.g. godam-for-woo) register an analytics tab by adding
-			 * a tab descriptor to this array. Built-in tabs (CTA / Form /
-			 * Hotspot) are always rendered by the React side and do not need
-			 * to be added here.
-			 *
-			 * Each descriptor must be an associative array with at least:
-			 *  - 'id'    (string)  the layer_type to query (whitelisted server-side)
-			 *  - 'label' (string)  user-visible tab label, localized by the add-on
-			 *
-			 * @since vNEXT
-			 *
-			 * @param array $tabs Tab descriptors. Default empty array.
-			 */
-			$extension_tabs = apply_filters( 'godam_analytics_layer_tabs', array() );
-
-			// Defensive: drop anything that isn't a well-formed descriptor.
-			// PHP-side filtering keeps malformed entries from polluting the
-			// React-side render where they'd silently break.
-			if ( ! is_array( $extension_tabs ) ) {
-				$extension_tabs = array();
-			} else {
-				$extension_tabs = array_values(
-					array_filter(
-						$extension_tabs,
-						function ( $tab ) {
-							return is_array( $tab )
-								&& ! empty( $tab['id'] )
-								&& is_string( $tab['id'] )
-								&& ! empty( $tab['label'] )
-								&& is_string( $tab['label'] );
-						}
-					)
-				);
-			}
-
-			wp_localize_script(
-				'transcoder-page-script-analytics',
-				'godamAnalyticsConfig',
-				array(
-					'extensionTabs' => $extension_tabs,
-				)
-			);
-
 			wp_enqueue_script( 'transcoder-page-script-analytics' );
 			wp_enqueue_script( 'd3-js' );
 		} elseif ( $screen && $this->help_page_id === $screen->id ) {

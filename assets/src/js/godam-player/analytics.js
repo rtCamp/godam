@@ -326,40 +326,6 @@ function observePageLoadForVideo( video ) {
 	window.GoDAM.LAYER_ACTIONS = LAYER_ACTIONS;
 	window.GoDAM.LAYER_TYPE_WHITELIST = LAYER_TYPE_WHITELIST;
 
-	// Registry of analytics tabs contributed by add-ons (e.g. godam-for-woo).
-	// The Interactive Layer Performance UI in the admin reads this array at
-	// mount time and renders each entry as an additional tab. Add-ons should
-	// call window.GoDAM.registerLayerTab({ id, label, component? }) before
-	// the analytics page mounts — registration order is preserved.
-	window.GoDAM.layerAnalyticsTabs = window.GoDAM.layerAnalyticsTabs || [];
-
-	/**
-	 * Register an analytics tab from an add-on.
-	 *
-	 * When `tab.component` is omitted, SingleLayerAnalyticsList is used and
-	 * the tab queries /processed-layer-analytics/ for the given layer_type
-	 * — sufficient for any layer type that follows the standard wire contract.
-	 *
-	 * @param {Object}   tab             Tab descriptor.
-	 * @param {string}   tab.id          layer_type the tab represents (e.g. 'woo').
-	 * @param {string}   tab.label       User-visible tab label.
-	 * @param {Function} [tab.component] Optional React component override.
-	 */
-	window.GoDAM.registerLayerTab = function registerLayerTab( tab ) {
-		if ( ! tab || typeof tab.id !== 'string' || typeof tab.label !== 'string' ) {
-			return;
-		}
-		// Skip duplicate registrations (idempotent for hot-reload scenarios).
-		if ( window.GoDAM.layerAnalyticsTabs.some( ( t ) => t.id === tab.id ) ) {
-			return;
-		}
-		window.GoDAM.layerAnalyticsTabs.push( {
-			id: tab.id,
-			label: tab.label,
-			component: typeof tab.component === 'function' ? tab.component : null,
-		} );
-	};
-
 	/**
 	 * Flush the localStorage layer-interactions buffer to /analytics/ as
 	 * one or more type=3 POSTs, one per videoKey.

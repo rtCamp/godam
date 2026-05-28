@@ -152,11 +152,11 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	/**
 	 * Update the store with the fetched forms.
 	 */
-	// Deep-link from the layer analytics page: a URL with `#layer=<uuid>`
-	// (constructed by SingleLayerAnalyticsList) should land here with the
-	// matching layer focused. Runs once per layers-state-change; the
-	// `_godamHashFocusApplied` ref guards against re-firing if the user
-	// navigates within the editor and the layers array re-references.
+	// Deep-link from the Video Layer Timeline on the analytics page: a URL
+	// with `#layer=<uuid>` should land here with the matching layer focused.
+	// Runs once per layers-state-change; the `hashFocusAppliedRef` guards
+	// against re-firing if the user navigates within the editor and the
+	// layers array re-references.
 	const hashFocusAppliedRef = useRef( false );
 	useEffect( () => {
 		if ( hashFocusAppliedRef.current ) {
