@@ -16,6 +16,7 @@ import {
 	subHotspotColor,
 	withAlpha,
 } from '../constants/layerTypes';
+import InfoTooltip from './InfoTooltip';
 
 /**
  * SubHotspotRail
@@ -58,22 +59,19 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 						? __( 'Products in this layer', 'godam' )
 						: __( 'Hotspots in this layer', 'godam' ) }
 				</h4>
-				<svg
-					width="14"
-					height="14"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					strokeWidth="2"
-					strokeLinecap="round"
-					strokeLinejoin="round"
-					className="text-zinc-400"
-					aria-hidden="true"
-				>
-					<circle cx="12" cy="12" r="10" />
-					<line x1="12" y1="16" x2="12" y2="12" />
-					<circle cx="12" cy="8" r="0.5" fill="currentColor" />
-				</svg>
+				<InfoTooltip
+					text={
+						parent.layer_type === 'woo'
+							? __(
+								'Each row is one product hotspot inside this layer. Select a row to see its individual funnel; "All Products (Aggregate)" rolls up unique sessions across every product.',
+								'godam',
+							)
+							: __(
+								'Each row is one hotspot inside this layer. Select a row to see its individual funnel; "All Hotspots (Aggregate)" rolls up unique sessions across every hotspot.',
+								'godam',
+							)
+					}
+				/>
 			</header>
 
 			<ul className="m-0 p-0 list-none overflow-y-auto" style={ { maxHeight: 340 } }>
@@ -127,16 +125,35 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 								} }
 							>
 								<span className="flex items-center gap-2 min-w-0">
-									<span
-										aria-hidden="true"
-										style={ {
-											width: 8,
-											height: 8,
-											borderRadius: '50%',
-											background: dotColor,
-											flexShrink: 0,
-										} }
-									/>
+									{ sub.product_image ? (
+										<img
+											src={ sub.product_image }
+											alt=""
+											width={ 28 }
+											height={ 28 }
+											loading="lazy"
+											style={ {
+												width: 28,
+												height: 28,
+												borderRadius: 6,
+												objectFit: 'cover',
+												background: '#F4F4F5',
+												flexShrink: 0,
+												border: `1px solid ${ withAlpha( meta.color, 0.18 ) }`,
+											} }
+										/>
+									) : (
+										<span
+											aria-hidden="true"
+											style={ {
+												width: 8,
+												height: 8,
+												borderRadius: '50%',
+												background: dotColor,
+												flexShrink: 0,
+											} }
+										/>
+									) }
 									<span className="text-sm text-zinc-700 truncate">
 										{ sub.name }
 									</span>

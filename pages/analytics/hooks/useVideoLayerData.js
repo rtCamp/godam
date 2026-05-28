@@ -286,6 +286,7 @@ function groupRows( rows, layerType ) {
 					no_action: noAction,
 					conversion_rate: conversion,
 					product_id: md.product_id || null,
+					product_image: md.product_image || '',
 					product_price: md.product_price || null,
 					timestamp: Number( row.timestamp || 0 ),
 				};

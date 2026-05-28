@@ -17,6 +17,7 @@ import { useVideoLayerData } from './hooks/useVideoLayerData';
 import LayerTimelineStrip from './timeline/LayerTimelineStrip';
 import LayerDetailPanel from './timeline/LayerDetailPanel';
 import DateRangePicker from './timeline/DateRangePicker';
+import InfoTooltip from './timeline/InfoTooltip';
 
 /**
  * Pick the footer hint text based on what the user is currently looking at.
@@ -134,15 +135,13 @@ const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
 						<h3 className="text-lg font-semibold text-zinc-900 m-0">
 							{ __( 'Video Layer Timeline', 'godam' ) }
 						</h3>
-						<span
-							className="text-zinc-400"
-							title={ __(
+						<InfoTooltip
+							size={ 16 }
+							text={ __(
 								'Each marker represents an interactive layer in this video. Click a marker to see how viewers interacted with it.',
 								'godam',
 							) }
-						>
-							<Icon icon={ info } size={ 16 } />
-						</span>
+						/>
 					</div>
 					<p className="text-sm text-zinc-500 m-0 mt-1">
 						{ __(
