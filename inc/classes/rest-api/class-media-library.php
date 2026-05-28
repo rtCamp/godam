@@ -1581,14 +1581,31 @@ class Media_Library extends Base {
 		}
 
 		// Validate MIME type against an allowed pattern to prevent stored XSS.
+		// The endpoint doesn't declare argument schemas, so guard against
+		// non-string payloads (array/object/number) before string operations —
+		// otherwise preg_match()/strtolower() raise a TypeError → 500.
+		if ( ! is_string( $data['mime'] ) ) {
+			return new \WP_Error( 'invalid_mime', __( 'Invalid or disallowed MIME type.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		// Normalize via sanitize_mime_type(): strips characters outside the RFC
+		// 2045 token set, lowercases, and returns '' for completely invalid input.
+		$mime = sanitize_mime_type( $data['mime'] );
+		if ( '' === $mime ) {
+			return new \WP_Error( 'invalid_mime', __( 'Invalid or disallowed MIME type.', 'godam' ), array( 'status' => 400 ) );
+		}
+
 		// Accepts video/*, audio/*, image/* plus the single PDF type — PDFs are
 		// handled by the 'pdf' branch below and otherwise can't form a virtual entry.
 		if (
-			! preg_match( '/^(video|audio|image)\/[a-z0-9][a-z0-9!#$&\-^_.+]{0,126}$/i', $data['mime'] )
-			&& 'application/pdf' !== strtolower( $data['mime'] )
+			! preg_match( '/^(video|audio|image)\/[a-z0-9][a-z0-9!#$&\-^_.+]{0,126}$/', $mime )
+			&& 'application/pdf' !== $mime
 		) {
 			return new \WP_Error( 'invalid_mime', __( 'Invalid or disallowed MIME type.', 'godam' ), array( 'status' => 400 ) );
 		}
+
+		// Use the normalized value for the rest of the handler.
+		$data['mime'] = $mime;
 
 		// Sanitize the GoDAM ID.
 		$godam_id = sanitize_text_field( $data['id'] );
