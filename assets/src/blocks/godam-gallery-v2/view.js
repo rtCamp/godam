@@ -480,4 +480,28 @@ const { __ } = require( '@wordpress/i18n' );
 	} else {
 		initGalleries();
 	}
+
+	// Re-initialize galleries injected by the WP Interactivity Router (client-side navigation / pagination).
+	// The godam/gallery-v2 block declares clientNavigation:true so its DOM is swapped by the router without
+	// a full page reload, meaning DOMContentLoaded never fires again for the new elements.
+	const galleryNavObserver = new MutationObserver( ( mutations ) => {
+		for ( const { addedNodes } of mutations ) {
+			for ( const node of addedNodes ) {
+				if ( node.nodeType !== Node.ELEMENT_NODE ) {
+					continue;
+				}
+				if ( node.classList.contains( 'godam-gallery-v2' ) || node.querySelector( '.godam-gallery-v2' ) ) {
+					initGalleries();
+					return;
+				}
+			}
+		}
+	} );
+
+	const startGalleryNavObserver = () => galleryNavObserver.observe( document.body, { childList: true, subtree: true } );
+	if ( document.readyState === 'loading' ) {
+		document.addEventListener( 'DOMContentLoaded', startGalleryNavObserver );
+	} else {
+		startGalleryNavObserver();
+	}
 }() );

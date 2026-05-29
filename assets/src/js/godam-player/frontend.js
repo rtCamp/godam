@@ -25,7 +25,53 @@ import './api/godam-api.js';
  * Initialize player on DOM content loaded
  */
 document.addEventListener( 'DOMContentLoaded', () => {
-	new PlayerManager();
+	const manager = new PlayerManager();
+
+	// Re-initialize players injected by the WP Interactivity Router (client-side navigation / pagination).
+	// The godam-player block declares clientNavigation:true so its DOM is swapped by the router without a
+	// full page reload, meaning DOMContentLoaded never fires again for the new elements.
+	const navObserver = new MutationObserver( ( mutations ) => {
+		const addedVideos = [];
+		const removedVideos = [];
+
+		for ( const { addedNodes, removedNodes } of mutations ) {
+			for ( const node of addedNodes ) {
+				if ( node.nodeType !== Node.ELEMENT_NODE ) {
+					continue;
+				}
+				if ( node.classList.contains( 'easydam-player' ) ) {
+					addedVideos.push( node );
+				}
+				node.querySelectorAll( '.easydam-player.video-js' ).forEach( ( v ) => addedVideos.push( v ) );
+			}
+			for ( const node of removedNodes ) {
+				if ( node.nodeType !== Node.ELEMENT_NODE ) {
+					continue;
+				}
+				if ( node.classList.contains( 'easydam-player' ) ) {
+					removedVideos.push( node );
+				}
+				node.querySelectorAll( '.easydam-player.video-js' ).forEach( ( v ) => removedVideos.push( v ) );
+			}
+		}
+
+		// Dispose VideoJS instances for elements removed from the DOM, otherwise
+		// they leak memory and keep the old media pipeline running in the background.
+		removedVideos.forEach( ( el ) => {
+			const videoTag = el.querySelector( 'video' );
+			const vjsPlayer = videoTag && window.videojs?.getPlayer( videoTag );
+			if ( vjsPlayer && ! vjsPlayer.isDisposed() ) {
+				vjsPlayer.dispose();
+			}
+		} );
+
+		if ( addedVideos.length > 0 ) {
+			addedVideos.forEach( ( video ) => manager.initializeVideo( video ) );
+			manager.initBlurUpPlaceholders();
+		}
+	} );
+
+	navObserver.observe( document.body, { childList: true, subtree: true } );
 
 	// Scroll to a specific video and optionally seek to a timestamp when the URL
 	// hash matches #godam-video-{jobId} and an optional ?t={seconds} query param is present.
