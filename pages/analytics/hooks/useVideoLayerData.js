@@ -331,12 +331,16 @@ function groupRows( rows, layerType, configIndex ) {
 		}
 
 		const parentNoAction = computeNoAction( layerType, parentCounts );
-		const parentConversion =
+		// Raw rate then clamp to ≤ 100: the numerator (parent-aggregate uniqExact
+		// sessions) and denominator (parent viewed) come from different
+		// aggregation passes, so cross-day session skew could nudge it past 100.
+		const parentRawConversion =
 			parentCounts.viewed > 0
 				? ( ( parentCounts[ meta.conversionAction ] || 0 ) /
 						parentCounts.viewed ) *
 					100
 				: 0;
+		const parentConversion = Math.min( 100, parentRawConversion );
 
 		const parentRowAny = bucket.parentRow || ( bucket.subRows[ 0 ]?.row || {} );
 		const parentTimestamp = Number( parentRowAny.timestamp || 0 );
@@ -365,12 +369,16 @@ function groupRows( rows, layerType, configIndex ) {
 					// hotspots in one layer become visible together).
 					viewed: parentCounts.viewed,
 				} );
-				const conversion =
+				// Per-sub conversion = sub conversions / PARENT viewed (subs
+				// don't emit their own viewed); clamp to ≤ 100 for the same
+				// cross-aggregation reason as the parent rate.
+				const subRawConversion =
 					parentCounts.viewed > 0
 						? ( ( counts[ meta.conversionAction ] || 0 ) /
 								parentCounts.viewed ) *
 							100
 						: 0;
+				const conversion = Math.min( 100, subRawConversion );
 				const subId = row.layer_id || '';
 				// Sub-hotspot name: in the rail the parent context ("Products
 				// in this layer") is already implicit, so prefer the bare
