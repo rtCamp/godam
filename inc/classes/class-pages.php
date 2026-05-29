@@ -1117,9 +1117,10 @@ class Pages {
 
 		// form_type => array( saved-id field, admin URL template with {id} ).
 		// Integrations without a native entries page (Contact Form 7) are
-		// intentionally absent so no link renders. Entries pages with no
-		// per-form URL filter (SureForms, Jetpack) use an empty id field and
-		// link to the list.
+		// intentionally absent so no link renders. SureForms deep-links to a
+		// specific form via its entries SPA hash route (#/?form={id}); Jetpack's
+		// responses screen has no per-form URL filter, so it uses an empty id
+		// field and links to the list.
 		$map = array(
 			'gravity'      => array( 'gf_id', 'admin.php?page=gf_entries&id={id}' ),
 			'wpforms'      => array( 'wpform_id', 'admin.php?page=wpforms-entries&view=list&form_id={id}' ),
@@ -1128,7 +1129,7 @@ class Pages {
 			'everestforms' => array( 'everest_form_id', 'admin.php?page=evf-entries&form_id={id}' ),
 			'ninjaforms'   => array( 'ninja_form_id', 'admin.php?page=nf-submissions&form_id={id}' ),
 			'metform'      => array( 'metform_id', 'edit.php?post_type=metform-entry&mf_form_id={id}' ),
-			'sureforms'    => array( '', 'admin.php?page=sureforms_entries' ),
+			'sureforms'    => array( 'sureform_id', 'admin.php?page=sureforms_entries#/?form={id}' ),
 			'jetpack'      => array( '', 'admin.php?page=jetpack-forms-admin#/responses' ),
 		);
 
