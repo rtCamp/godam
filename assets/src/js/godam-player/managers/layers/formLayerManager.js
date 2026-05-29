@@ -261,10 +261,13 @@ export default class FormLayerManager {
 	/**
 	 * Hook click events on anchors / buttons inside a CTA layer.
 	 *
-	 * Fires `clicked` per actual user click — not deduped, so a CTA with two
-	 * destinations produces two events. The destination URL is preserved
-	 * in `layer_metadata.click_target_url` to set up native WP attribution
-	 * (resolving the URL to a post/product ID) in v2.
+	 * Fires `clicked` on the first click of the session — deduped per
+	 * (layer_id, action_type, session) by emitLayerEvent, like every other
+	 * action, so repeat clicks don't inflate the count and the conversion rate
+	 * stays bounded ≤ 100%. The destination URL is preserved in
+	 * `layer_metadata.click_target_url` to set up native WP attribution
+	 * (resolving the URL to a post/product ID) in v2. (Per-destination counts
+	 * for a multi-link CTA would need a composite layer_id — out of scope.)
 	 *
 	 * @param {Object} layerObj Layer object stored in this.formLayers.
 	 */
@@ -357,7 +360,21 @@ export default class FormLayerManager {
 	 * @param {HTMLElement} skipButton - Skip button element
 	 */
 	setupFormObserver( layerObj, skipButton ) {
+		const isPoll = layerObj.layer?.type === LAYER_TYPES.POLL;
+		// Polls: only count a vote on a genuine voting-form → results-view
+		// transition. WP-Polls renders the results immediately for a viewer who
+		// already voted in a prior session, which would otherwise be miscounted
+		// as a fresh vote. Seed from the current DOM, then keep it updated as
+		// the form (re)appears (some WP-Polls setups AJAX-load the form too).
+		let pollFormSeen = isPoll
+			? !! layerObj.layerElement?.querySelector( '.wp-polls-form' )
+			: false;
+
 		const observer = new MutationObserver( () => {
+			if ( isPoll && ! pollFormSeen &&
+				layerObj.layerElement?.querySelector( '.wp-polls-form' ) ) {
+				pollFormSeen = true;
+			}
 			if ( this.hasConfirmationMessage( layerObj.layerElement ) ) {
 				// Update button text while preserving the arrow icon
 				let textNode = null;
@@ -381,12 +398,14 @@ export default class FormLayerManager {
 				// confirmation appears. For FORM that's `submitted`; for
 				// POLL it's `voted` (WP-Polls confirmation = the form was
 				// replaced by the results view, detected in hasConfirmationMessage
-				// via the .wp-polls-form → .wp-polls-answer transition).
+				// via the .wp-polls-form → .wp-polls-ans transition).
 				// CTA layers don't run this observer — their click events
 				// fire separately via setupCtaClickTracking.
 				if ( layerObj.layer?.type === LAYER_TYPES.FORM ) {
 					this.emitLayerEvent( layerObj.layer, 'submitted' );
-				} else if ( layerObj.layer?.type === LAYER_TYPES.POLL ) {
+				} else if ( isPoll && pollFormSeen ) {
+					// pollFormSeen guards against counting an already-voted
+					// viewer (results shown without a vote this session).
 					this.emitLayerEvent( layerObj.layer, 'voted' );
 				}
 
