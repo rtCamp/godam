@@ -496,6 +496,15 @@ export default class HotspotLayerManager {
 			if ( ev.target?.closest?.( '.hotspot-tooltip-close' ) ) {
 				return;
 			}
+			// Touch devices fire `click`/tap without a preceding `mouseenter`,
+			// so a tap would otherwise record `clicked` with no `hovered` —
+			// making clicked > hovered and miscounting tappers in the funnel's
+			// "No Action" bucket (No Action = viewed − hovered). Count the tap
+			// as a hover first; the per-(composite layer_id, action_type,
+			// session) dedupe in emitHotspotEvent makes it a no-op when a real
+			// mouseenter already fired (desktop), so hovered ≥ clicked holds on
+			// every device.
+			this.emitHotspotEvent( layerObj.layer, hotspot, index, 'hovered' );
 			this.emitHotspotEvent( layerObj.layer, hotspot, index, 'clicked' );
 		} );
 
