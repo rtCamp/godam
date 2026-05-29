@@ -120,6 +120,8 @@ class Media_Library_Ajax {
 			'hls_url'               => $item['transcoded_hls_path'] ?? '',
 			'mpd_url'               => $item['transcoded_file_path'] ?? '',
 			'video_duration'        => $video_duration ?? 0,
+			'width'                 => $item['width'] ?? 0,
+			'height'                => $item['height'] ?? 0,
 		);
 
 		// Set icon with fallback to default mime type icon for audio and PDF.

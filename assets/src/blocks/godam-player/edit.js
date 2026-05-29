@@ -149,6 +149,12 @@ function VideoEdit( {
 			return aspectRatio;
 		}
 
+		// Fallback to 16:9 while intrinsic dimensions are still loading, so the
+		// player reserves vertical space instead of collapsing to the controls.
+		if ( aspectRatio === 'responsive' ) {
+			return '16:9';
+		}
+
 		return '';
 	}, [ aspectRatio, videoWidth, videoHeight ] );
 
@@ -189,10 +195,15 @@ function VideoEdit( {
 
 	// Memoize video options to prevent unnecessary rerenders.
 	const videoOptions = useMemo( () => {
+		// In the editor, always preload at least metadata so `loadedmetadata`
+		// fires and we can capture intrinsic videoWidth/videoHeight/duration.
+		// The saved `preload` attribute still drives the frontend.
+		const editorPreload = preload === 'none' ? 'metadata' : preload;
+
 		const options = {
 			controls,
 			autoplay,
-			preload,
+			preload: editorPreload,
 			fluid: true,
 			playsinline: true,
 			flvjs: {
