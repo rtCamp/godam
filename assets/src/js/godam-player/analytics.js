@@ -416,8 +416,14 @@ function observePageLoadForVideo( video ) {
 			}
 		}
 
-		// Clear after dispatch. keepalive will carry the requests at the
-		// network layer even if the JS context tears down before they complete.
+		// Clear after dispatch — deliberately unconditional. keepalive carries
+		// the requests at the network layer even if the JS context tears down,
+		// and re-sending the same events on a later flush (this also fires on
+		// visibilitychange:hidden, not just pagehide) would double-count
+		// server-side: composite-layer rows aggregate with COUNT(*), not
+		// uniqExact. If a keepalive POST is genuinely dropped (offline at
+		// unload) those events are lost — accepted v1 data loss (plan §10),
+		// preferred over inflated counts.
 		bufferClearLayerInteractions();
 	};
 

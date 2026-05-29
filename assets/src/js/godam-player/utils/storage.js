@@ -22,6 +22,13 @@
 
 const STORAGE_KEY = 'godamLayerInteractions';
 
+// Defensive upper bound on buffered events per video per page session.
+// Per-session dedupe in the manager classes already bounds normal growth to
+// one event per (layer_id, action_type), but a pathological page (hundreds of
+// sub-hotspots) shouldn't be able to grow the buffer until setItem throws on
+// quota. Generous vs. the server's 100-events-per-POST chunking.
+const MAX_EVENTS_PER_VIDEO = 1000;
+
 /**
  * Safely read and JSON-parse a localStorage key.
  *
@@ -91,6 +98,10 @@ export function addLayerInteraction( videoKey, event ) {
 	const buffer = getLayerInteractions();
 	if ( ! Array.isArray( buffer[ videoKey ] ) ) {
 		buffer[ videoKey ] = [];
+	}
+	// Drop new events past the cap rather than risk a quota-exceeded throw.
+	if ( buffer[ videoKey ].length >= MAX_EVENTS_PER_VIDEO ) {
+		return;
 	}
 	buffer[ videoKey ].push( event );
 	writeJSON( STORAGE_KEY, buffer );

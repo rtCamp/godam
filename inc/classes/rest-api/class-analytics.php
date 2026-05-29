@@ -231,6 +231,11 @@ class Analytics extends Base {
 			}
 		}
 
+		// site_url is a client-supplied *filter*, not a trust boundary: the
+		// account_token above is read from this site's own stored option (never
+		// from the request), and the microservice scopes every query by
+		// account_token — so a caller cannot read another account's data
+		// regardless of the site_url passed.
 		$query_params = array(
 			'video_id'      => $attachment_id,
 			'layer_type'    => $layer_type,
@@ -246,7 +251,10 @@ class Analytics extends Base {
 		}
 
 		$endpoint = add_query_arg( $query_params, RTGODAM_ANALYTICS_BASE . '/processed-layer-analytics/' );
-		$response = wp_remote_get( $endpoint );
+		// Bounded timeout: useVideoLayerData fires one of these per layer type
+		// (5 in parallel) on page load, so a hung upstream must not pin a PHP
+		// worker for the full default (5s) — and certainly not 5s × 5.
+		$response = wp_remote_get( $endpoint, array( 'timeout' => 3 ) );
 
 		if ( is_wp_error( $response ) ) {
 			return new WP_REST_Response(
