@@ -219,10 +219,18 @@ function readActiveLayerConfig() {
  */
 function indexActiveConfig( config ) {
 	if ( ! config ) {
-		return { activeParentIds: null, activeSubIdsByParent: new Map() };
+		return {
+			activeParentIds: null,
+			activeSubIdsByParent: new Map(),
+			entriesUrlByParent: new Map(),
+		};
 	}
 	const activeParentIds = new Set();
 	const activeSubIdsByParent = new Map();
+	// parent layer id -> wp-admin entries/results URL (form & poll layers).
+	// PHP builds the URL (admin_url + the saved integration id); we just carry
+	// it through to the detail panel.
+	const entriesUrlByParent = new Map();
 	config.forEach( ( entry ) => {
 		if ( ! entry?.id ) {
 			return;
@@ -231,8 +239,11 @@ function indexActiveConfig( config ) {
 		if ( Array.isArray( entry.subIds ) ) {
 			activeSubIdsByParent.set( entry.id, new Set( entry.subIds ) );
 		}
+		if ( entry.entries_url ) {
+			entriesUrlByParent.set( entry.id, entry.entries_url );
+		}
 	} );
-	return { activeParentIds, activeSubIdsByParent };
+	return { activeParentIds, activeSubIdsByParent, entriesUrlByParent };
 }
 
 /**
@@ -471,6 +482,9 @@ function groupRows( rows, layerType, configIndex ) {
 			sub_hotspots: subHotspots,
 			isActive: parentIsActive,
 			historical_positions: historicalPositions,
+			// wp-admin link to this form's entries / poll's results, when the
+			// integration has one (empty string otherwise → link hidden).
+			entries_url: configIndex.entriesUrlByParent?.get( parentId ) || '',
 		} );
 	} );
 

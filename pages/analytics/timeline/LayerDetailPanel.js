@@ -144,24 +144,47 @@ const LayerDetailPanel = ( { parent, attachmentID } ) => {
 					</div>
 				</div>
 
-				{ attachmentID && parent.isActive !== false && (
-					<a
-						href={ getEditorUrl( attachmentID, parent.id ) }
-						className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-md border border-zinc-200 text-zinc-700 hover:bg-zinc-50"
-						aria-label={ __( 'Edit this layer in the video editor', 'godam' ) }
-					>
-						{ __( 'Edit Layer', 'godam' ) }
-						<Icon icon={ external } size={ 14 } />
-					</a>
-				) }
-				{ attachmentID && parent.isActive === false && (
-					<span
-						className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-md border border-zinc-200 text-zinc-400 cursor-not-allowed"
-						title={ __( 'This layer is no longer in the video. Historical analytics preserved.', 'godam' ) }
-					>
-						{ __( 'Removed from video', 'godam' ) }
-					</span>
-				) }
+				<div className="flex items-center gap-2 flex-shrink-0">
+					{ /* Deep-link to the integration's entries (Form) or the
+					    poll's results (Poll), when the server resolved one.
+					    Shown for removed layers too — the underlying form/poll
+					    and its submissions still exist. Opens in a new tab so
+					    the analytics view is preserved. */ }
+					{ parent.entries_url && (
+						<a
+							href={ parent.entries_url }
+							target="_blank"
+							rel="noopener noreferrer"
+							className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-md border border-zinc-200 text-zinc-700 hover:bg-zinc-50"
+							aria-label={ parent.layer_type === 'poll'
+								? __( 'View this poll’s results', 'godam' )
+								: __( 'View this form’s entries', 'godam' ) }
+						>
+							{ parent.layer_type === 'poll'
+								? __( 'View Poll results', 'godam' )
+								: __( 'View Form entries', 'godam' ) }
+							<Icon icon={ external } size={ 14 } />
+						</a>
+					) }
+					{ attachmentID && parent.isActive !== false && (
+						<a
+							href={ getEditorUrl( attachmentID, parent.id ) }
+							className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-md border border-zinc-200 text-zinc-700 hover:bg-zinc-50"
+							aria-label={ __( 'Edit this layer in the video editor', 'godam' ) }
+						>
+							{ __( 'Edit Layer', 'godam' ) }
+							<Icon icon={ external } size={ 14 } />
+						</a>
+					) }
+					{ attachmentID && parent.isActive === false && (
+						<span
+							className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-md border border-zinc-200 text-zinc-400 cursor-not-allowed"
+							title={ __( 'This layer is no longer in the video. Historical analytics preserved.', 'godam' ) }
+						>
+							{ __( 'Removed from video', 'godam' ) }
+						</span>
+					) }
+				</div>
 			</header>
 
 			{ /* Modification notice — only when the layer's been at more

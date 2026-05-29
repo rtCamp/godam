@@ -830,6 +830,17 @@ class Pages {
 						}
 						$entry['subIds'] = $sub_ids;
 					}
+
+					// For form / poll layers, expose a deep link to the
+					// integration's entries (or the poll's results) admin page,
+					// when one exists. Built here because PHP has admin_url() and
+					// the saved integration ids; the React detail panel just
+					// renders it.
+					$entries_url = $this->get_layer_entries_url( $saved_layer );
+					if ( ! empty( $entries_url ) ) {
+						$entry['entries_url'] = $entries_url;
+					}
+
 					$active_layer_config[] = $entry;
 				}
 			}
@@ -1073,6 +1084,71 @@ class Pages {
 			'posthogConfig',
 			$this->get_posthog_config()
 		);
+	}
+
+	/**
+	 * Build the wp-admin URL to a form layer's entries page (or a poll layer's
+	 * results), based on the integration the layer points to.
+	 *
+	 * Returns '' when there is no native entries view (e.g. Contact Form 7,
+	 * which stores nothing without an add-on) or the layer has no saved id —
+	 * the analytics detail panel hides the link in that case. SureForms and
+	 * Jetpack expose SPA entries screens with no reliable per-form URL filter,
+	 * so they link to the list rather than a specific form.
+	 *
+	 * @param array $layer Saved layer array from rtgodam_meta['layers'].
+	 * @return string Absolute admin URL, or '' if not linkable.
+	 */
+	private function get_layer_entries_url( $layer ) {
+		$type = isset( $layer['type'] ) ? (string) $layer['type'] : '';
+
+		if ( 'poll' === $type ) {
+			$poll_id = isset( $layer['poll_id'] ) ? absint( $layer['poll_id'] ) : 0;
+			return $poll_id
+				? admin_url( 'admin.php?page=wp-polls/polls-manager.php&mode=edit&id=' . $poll_id )
+				: '';
+		}
+
+		if ( 'form' !== $type ) {
+			return '';
+		}
+
+		$form_type = isset( $layer['form_type'] ) ? (string) $layer['form_type'] : '';
+
+		// form_type => array( saved-id field, admin URL template with {id} ).
+		// Integrations without a native entries page (Contact Form 7) are
+		// intentionally absent so no link renders. Entries pages with no
+		// per-form URL filter (SureForms, Jetpack) use an empty id field and
+		// link to the list.
+		$map = array(
+			'gravity'      => array( 'gf_id', 'admin.php?page=gf_entries&id={id}' ),
+			'wpforms'      => array( 'wpform_id', 'admin.php?page=wpforms-entries&view=list&form_id={id}' ),
+			'fluentforms'  => array( 'fluent_form_id', 'admin.php?page=fluent_forms&route=entries&form_id={id}' ),
+			'forminator'   => array( 'forminator_id', 'admin.php?page=forminator-entries&form_type=forminator_forms&form_id={id}' ),
+			'everestforms' => array( 'everest_form_id', 'admin.php?page=evf-entries&form_id={id}' ),
+			'ninjaforms'   => array( 'ninja_form_id', 'admin.php?page=nf-submissions&form_id={id}' ),
+			'metform'      => array( 'metform_id', 'edit.php?post_type=metform-entry&mf_form_id={id}' ),
+			'sureforms'    => array( '', 'admin.php?page=sureforms_entries' ),
+			'jetpack'      => array( '', 'admin.php?page=jetpack-forms-admin#/responses' ),
+		);
+
+		if ( ! isset( $map[ $form_type ] ) ) {
+			return '';
+		}
+
+		list( $id_field, $template ) = $map[ $form_type ];
+
+		// List-style screens take no form id.
+		if ( '' === $id_field ) {
+			return admin_url( $template );
+		}
+
+		$form_id = isset( $layer[ $id_field ] ) ? absint( $layer[ $id_field ] ) : 0;
+		if ( ! $form_id ) {
+			return '';
+		}
+
+		return admin_url( str_replace( '{id}', (string) $form_id, $template ) );
 	}
 
 	/**
