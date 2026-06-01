@@ -317,6 +317,7 @@ const ImageCTA = ( { layerID } ) => {
 											: 'border-gray-300 bg-white'
 									}` }
 									aria-label={ layout.label }
+									data-test-id={ `godam-cta-layout-${ layout.value.replace( 'card-layout--', '' ).replace( 'desktop-', '' ) }` }
 									style={ {
 										color: isSelected ? 'var(--wp-components-color-accent, #3858e9)' : '#6b7280',
 									} }
@@ -346,6 +347,7 @@ const ImageCTA = ( { layerID } ) => {
 								variant="primary"
 								className="ml-2 godam-button"
 								aria-label={ __( 'Upload or Replace CTA Image', 'godam' ) }
+								data-test-id="godam-cta-upload-image-button"
 							>
 								{ __( 'Upload', 'godam' ) }
 							</Button>
@@ -362,10 +364,10 @@ const ImageCTA = ( { layerID } ) => {
 								/>
 								<div className="ml-[6px] flex flex-col">
 									<Tooltip text={ __( 'Replace Image', 'godam' ) } placement="right">
-										<Button className="!text-brand-neutral-900" icon={ replace } isDestructive onClick={ openImageCTAUploader } />
+										<Button className="!text-brand-neutral-900" icon={ replace } isDestructive onClick={ openImageCTAUploader } data-test-id="godam-cta-replace-image-button" />
 									</Tooltip>
 									<Tooltip text={ __( 'Remove Image', 'godam' ) } placement="right">
-										<Button className="mt-1" icon={ trash } isDestructive onClick={ removeCTAImage } />
+										<Button className="mt-1" icon={ trash } isDestructive onClick={ removeCTAImage } data-test-id="godam-cta-remove-image-button" />
 									</Tooltip>
 								</div>
 							</div>
@@ -406,6 +408,7 @@ const ImageCTA = ( { layerID } ) => {
 					updateField( 'imageText', value );
 				} }
 				placeholder={ __( 'Add title here', 'godam' ) }
+				data-test-id="godam-cta-title-input"
 			/>
 
 			<div>
@@ -418,6 +421,7 @@ const ImageCTA = ( { layerID } ) => {
 					value={ layer.imageLink }
 					onChange={ handleUrlChange }
 					placeholder="https://rtcamp.com"
+					data-test-id="godam-cta-url-input"
 				/>
 				{ urlError && (
 					<p className="text-yellow-600 text-sm mt-1 flex items-center gap-1">
@@ -436,6 +440,7 @@ const ImageCTA = ( { layerID } ) => {
 					updateField( 'imageDescription', value );
 				} }
 				placeholder={ __( 'Your Description', 'godam' ) }
+				data-test-id="godam-cta-description-input"
 			/>
 
 			<TextControl
@@ -448,6 +453,7 @@ const ImageCTA = ( { layerID } ) => {
 					updateField( 'imageCtaButtonText', value );
 				} }
 				placeholder={ __( 'Check now', 'godam' ) }
+				data-test-id="godam-cta-button-text-input"
 			/>
 
 			<div className="flex items-center gap-2">

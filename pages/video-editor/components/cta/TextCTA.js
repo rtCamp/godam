@@ -66,23 +66,25 @@ const TextCTA = ( { layerID } ) => {
 	}
 
 	return (
-		<>
-			<div className="mb-2 flex items-end justify-between">
-				<label htmlFor="custom-css" className="text-[11px] uppercase font-medium">{ __( 'Content', 'godam' ) }</label>
-			</div>
-			<QuillEditor
-				intialValue={ layer.text }
-				onHTMLChange={ ( val ) => {
-					dispatch( updateLayerField( {
-						id: layer.id,
-						field: 'text',
-						value: DOMPurify.sanitize( replaceRgbaWithHex( val ) ), // Quill Editor stores rgb values for the color selected by user which is causing issues while escaping in Wordpress.
-					} ) );
-				} }
-				toolbarOptions={ layer.FullEditor ? allToolbarOptions : minmalToolbarOptions }
-				className="mb-4 wysiwyg-editor"
-			/>
-		</>
+		<div data-test-id="godam-cta-text-editor">
+			<>
+				<div className="mb-2 flex items-end justify-between">
+					<label htmlFor="custom-css" className="text-[11px] uppercase font-medium">{ __( 'Content', 'godam' ) }</label>
+				</div>
+				<QuillEditor
+					intialValue={ layer.text }
+					onHTMLChange={ ( val ) => {
+						dispatch( updateLayerField( {
+							id: layer.id,
+							field: 'text',
+							value: DOMPurify.sanitize( replaceRgbaWithHex( val ) ), // Quill Editor stores rgb values for the color selected by user which is causing issues while escaping in Wordpress.
+						} ) );
+					} }
+					toolbarOptions={ layer.FullEditor ? allToolbarOptions : minmalToolbarOptions }
+					className="mb-4 wysiwyg-editor"
+				/>
+			</>
+		</div>
 	);
 };
 

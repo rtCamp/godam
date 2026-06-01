@@ -321,6 +321,7 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 					{ allTabs.map( ( type ) => (
 						<button
 							key={ type }
+							data-test-id={ `godam-layer-selector-tab-${ type }` }
 							className={ `layer-tab ${ activeTab === type ? 'active' : '' } ${ searchQuery ? 'disabled' : '' }` }
 							onClick={ () => {
 								if ( ! searchQuery ) {
@@ -414,6 +415,7 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 				<Button
 					variant="primary"
 					className="godam-button"
+					data-test-id="godam-layer-selector-customise-button"
 					disabled={ ! selectedLayer }
 					onClick={ () => handleCustomiseLayer() }
 				>

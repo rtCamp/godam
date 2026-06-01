@@ -21,21 +21,23 @@ const HtmlCTA = ( { layerID } ) => {
 	const dispatch = useDispatch();
 
 	return (
-		<>
-			<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mb-2">{ __( 'Custom HTML', 'godam' ) }</label>
-			<Editor
-				id="custom-css"
-				className="code-editor"
-				defaultLanguage="html"
-				defaultValue={ layer.html }
-				options={ {
-					minimap: { enabled: false },
-				} }
-				onChange={ ( value ) =>
-					dispatch( updateLayerField( { id: layer.id, field: 'html', value } ) )
-				}
-			/>
-		</>
+		<div data-test-id="godam-cta-html-editor">
+			<>
+				<span className="text-[11px] uppercase font-medium mb-2 block">{ __( 'Custom HTML', 'godam' ) }</span>
+				<Editor
+					id="custom-css"
+					className="code-editor"
+					defaultLanguage="html"
+					defaultValue={ layer.html }
+					options={ {
+						minimap: { enabled: false },
+					} }
+					onChange={ ( value ) =>
+						dispatch( updateLayerField( { id: layer.id, field: 'html', value } ) )
+					}
+				/>
+			</>
+		</div>
 	);
 };
 

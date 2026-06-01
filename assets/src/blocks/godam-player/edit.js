@@ -668,7 +668,11 @@ function VideoEdit( {
 						onSelect={ onSelectVideo }
 						allowedTypes={ ALLOWED_MEDIA_TYPES }
 						render={ ( { open } ) => (
-							<Button onClick={ open } variant="primary">
+							<Button
+								onClick={ open }
+								variant="primary"
+								data-test-id="godam-video-select-video"
+							>
 								{ __( 'Select Video', 'godam' ) }
 							</Button>
 						) }
