@@ -38,13 +38,16 @@ if ( empty( $godam_player_wrapper_inline_css_added ) ) {
 			}
 		}
 
-			// If wp_head already fired, output inline immediately.
-		if ( did_action( 'wp_head' ) ) {
+			// In admin context wp_head never fires (admin_head does), so target the
+			// appropriate head action and fall back to inline output if both have
+			// already run by the time the shortcode renders.
+			$godam_head_action = is_admin() ? 'admin_head' : 'wp_head';
+
+		if ( did_action( $godam_head_action ) ) {
 			echo '<style id="godam-player-wrapper-inline-css">' . wp_strip_all_tags( $godam_player_wrapper_css ) . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS is stripped to plain text before inline output.
 		} else {
-			// Output inline style in wp_head for high priority rendering.
 			add_action(
-				'wp_head',
+				$godam_head_action,
 				function () use ( $godam_player_wrapper_css ) {
 					echo '<style id="godam-player-wrapper-inline-css">' . wp_strip_all_tags( $godam_player_wrapper_css ) . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS is stripped to plain text before inline output.
 				},
