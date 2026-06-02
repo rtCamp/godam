@@ -127,6 +127,54 @@ $media-frame-width: calc(300px + 2 * 24px);
 	}
 }
 
+/* Style for GoDAM admin pages container */
+.godam-admin-root {
+	margin-left: -20px;
+
+	&.not-safari {
+		color: #000;
+		min-height: calc(100vh - var(--wp-admin--admin-bar--height, 0));
+		padding-top: var(--wp-admin--admin-bar--height, 0);
+		position: fixed;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		margin-left: 160px;
+		overflow: auto;
+
+		&.godam-video-editor-page {
+			background-color: #fff;
+		}
+	}
+
+	#root-video-help {
+		margin-left: 20px;
+	}
+}
+
+.folded .godam-admin-root.not-safari {
+	margin-left: 36px;
+}
+
+@media screen and (max-width: 960px) {
+
+	.auto-fold .godam-admin-root.not-safari {
+		margin-left: 36px;
+	}
+}
+
+@media screen and (max-width: 782px) {
+
+	.godam-admin-root {
+		margin-left: -10px;
+	}
+
+	.auto-fold .godam-admin-root.not-safari {
+		margin-left: 0;
+	}
+}
+
 .media-frame-menu:has(#menu-item-gallery) {
 
 	#media-folder-toggle-button {
