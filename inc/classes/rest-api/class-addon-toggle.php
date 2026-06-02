@@ -120,7 +120,14 @@ class Addon_Toggle extends Base {
 			ob_end_clean();
 
 			if ( is_wp_error( $result ) ) {
-				return $result;
+				$error_data = $result->get_error_data();
+				$status     = ( is_array( $error_data ) && isset( $error_data['status'] ) ) ? (int) $error_data['status'] : 400;
+
+				return new \WP_Error(
+					'addon_activation_failed',
+					wp_strip_all_tags( (string) $result->get_error_message() ),
+					array( 'status' => $status )
+				);
 			}
 
 			return rest_ensure_response(

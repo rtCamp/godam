@@ -46,6 +46,8 @@ import integrationTabs from './integration-tabs.js';
 const getExtendedSettings = ( tabName ) =>
 	window.godamIntegrationComponents?.[ tabName ] || null;
 
+const TOGGLE_SUCCESS_NOTICE_KEY = 'godam_integration_toggle_notice';
+
 const IntegrationSettings = () => {
 	const tabs = integrationTabs;
 
@@ -62,6 +64,15 @@ const IntegrationSettings = () => {
 	const [ togglingPlugin, setTogglingPlugin ] = useState( null );
 	const [ installingPlugin, setInstallingPlugin ] = useState( null );
 	const [ installError, setInstallError ] = useState( null );
+
+	useEffect( () => {
+		const persistedNotice = window.sessionStorage?.getItem( TOGGLE_SUCCESS_NOTICE_KEY );
+
+		if ( persistedNotice ) {
+			showNotice( persistedNotice, 'success' );
+			window.sessionStorage?.removeItem( TOGGLE_SUCCESS_NOTICE_KEY );
+		}
+	}, [] );
 
 	// Function to show a notice message
 	const showNotice = ( message, status = 'success' ) => {
@@ -86,6 +97,10 @@ const IntegrationSettings = () => {
 				} );
 
 				if ( response?.status === 'success' ) {
+					window.sessionStorage?.setItem(
+						TOGGLE_SUCCESS_NOTICE_KEY,
+						response?.message || __( 'Integration status updated successfully.', 'godam' ),
+					);
 					window.location.reload();
 				}
 			} catch ( error ) {
