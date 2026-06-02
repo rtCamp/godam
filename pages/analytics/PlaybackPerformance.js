@@ -85,7 +85,9 @@ export default function PlaybackPerformanceDashboard( {
 				if ( mode === 'dashboard' ) {
 					return {
 						date,
-						engagement_rate: +entry.avg_engagement?.toFixed( 2 ) || 0,
+						// Engagement is a share of the video watched: cap at 100%
+						// as a display guard (the backend already bounds it).
+						engagement_rate: Math.min( +entry.avg_engagement?.toFixed( 2 ) || 0, 100 ),
 						play_rate: +( entry.play_rate * 100 || 0 ).toFixed( 2 ),
 						watch_time: +( entry.watch_time || 0 ).toFixed( 2 ),
 					};
@@ -98,10 +100,12 @@ export default function PlaybackPerformanceDashboard( {
 					plays: dailyPlays,
 				} = entry;
 
-				const dailyEngagementRate =
+				const dailyEngagementRate = Math.min(
 					dailyPlays && dailyVideoLength
 						? ( dailyPlayTime / ( dailyPlays * dailyVideoLength ) ) * 100
-						: 0;
+						: 0,
+					100,
+				);
 
 				const dailyPlayRate = dailyPageLoad
 					? ( dailyPlays / dailyPageLoad ) * 100

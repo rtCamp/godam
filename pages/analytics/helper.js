@@ -289,7 +289,11 @@ export function singleMetricsChart(
 export function calculateEngagementRate( plays, videoLength, playTime ) {
 	const engagementRate =
     plays && videoLength ? ( playTime / ( plays * videoLength ) ) * 100 : 0;
-	return engagementRate.toFixed( 2 );
+	// Engagement is the share of the video watched, so it can never exceed
+	// 100%. play_time and plays are kept consistent server-side (orphan
+	// playback is excluded from both); this cap guards the display against
+	// stale or legacy data that predates that fix.
+	return Math.min( engagementRate, 100 ).toFixed( 2 );
 }
 
 export function calculatePlayRate( pageLoad, plays ) {
