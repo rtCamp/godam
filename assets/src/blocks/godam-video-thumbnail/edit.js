@@ -36,7 +36,7 @@ function Edit( { attributes, setAttributes } ) {
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody title={ __( 'Thumbnail Settings', 'godam' ) }>
+				<PanelBody title={ __( 'Thumbnail Settings', 'godam' ) } data-test-id="godam-video-thumbnail-panel-settings">
 					<ToggleControl
 						label={ __( 'Show play button overlay', 'godam' ) }
 						checked={ showPlayButton }
@@ -45,6 +45,7 @@ function Edit( { attributes, setAttributes } ) {
 							? __( 'Play button will be displayed.', 'godam' )
 							: __( 'No play button will be displayed.', 'godam' )
 						}
+						data-test-id="godam-video-thumbnail-control-show-play-button"
 					/>
 					<ToggleControl
 						label={ __( 'Link to post', 'godam' ) }
@@ -54,6 +55,7 @@ function Edit( { attributes, setAttributes } ) {
 							? __( 'Thumbnail will link to the video page.', 'godam' )
 							: __( 'Thumbnail will not be linked.', 'godam' )
 						}
+						data-test-id="godam-video-thumbnail-control-link-to-video"
 					/>
 					{ linkToVideo && (
 						<ToggleControl
@@ -64,21 +66,22 @@ function Edit( { attributes, setAttributes } ) {
 								? __( 'Link will open in a new tab.', 'godam' )
 								: __( 'Link will open in the same tab.', 'godam' )
 							}
+							data-test-id="godam-video-thumbnail-control-open-in-new-tab"
 						/>
 					) }
 				</PanelBody>
 			</InspectorControls>
-			<div { ...blockProps }>
+			<div { ...blockProps } data-test-id="godam-video-thumbnail-canvas">
 				<div className="godam-editor-video-thumbnail">
 
 					{ /* Placeholder text */ }
-					<span className="godam-editor-video-label">
+					<span className="godam-editor-video-label" data-test-id="godam-video-thumbnail-element-label">
 						{ __( 'GoDAM Video Thumbnail', 'godam' ) }
 					</span>
 
 					{ /* Play button overlay */ }
 					{ showPlayButton && (
-						<div className="godam-editor-video-play-button">
+						<div className="godam-editor-video-play-button" data-test-id="godam-video-thumbnail-element-play-button">
 							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="60" height="60" aria-hidden="true" focusable="false">
 								<path d="M8 5v14l11-7z" fill="currentColor"></path>
 							</svg>

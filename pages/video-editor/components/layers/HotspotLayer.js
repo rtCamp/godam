@@ -303,6 +303,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 			{ /* Duration */ }
 			<div className="mb-6">
 				<TextControl
+					data-test-id="godam-hotspot-control-duration"
 					label={ __( 'Layer Duration (seconds)', 'godam' ) }
 					className="godam-input"
 					type="number"
@@ -318,6 +319,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 			{ /* Pause on hover */ }
 			<div className="mb-4">
 				<ToggleControl
+					data-test-id="godam-hotspot-control-pause-on-hover"
 					className="godam-toggle"
 					label={ __( 'Pause video on hover', 'godam' ) }
 					checked={ layer?.pauseOnHover || false }
@@ -337,6 +339,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 					<div key={ hotspot.id } className="p-2 w-full border rounded">
 						<div className="flex justify-between items-center">
 							<Button
+								data-test-id={ `godam-hotspot-control-select-${ index }` }
 								icon={ expandedHotspotIndex === index ? chevronUp : chevronDown }
 								className="flex-1 text-left"
 								onClick={ () => toggleHotspotExpansion( index ) }
@@ -350,12 +353,13 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 								icon={ moreVertical }
 								label={ `Hotspot ${ index + 1 } options` }
 								/* translators: %d is the hotspot index */
-								toggleProps={ { 'aria-label': sprintf( __( 'Options for Hotspot %d', 'godam' ), index + 1 ) } }
+								toggleProps={ { 'aria-label': sprintf( __( 'Options for Hotspot %d', 'godam' ), index + 1 ), 'data-test-id': `godam-hotspot-button-options-${ index }` } }
 
 							>
 								{ () => (
 									<>
 										<MenuItem
+											data-test-id={ `godam-hotspot-control-show-style-${ index }` }
 											icon={ hotspot.showStyle ? check : '' }
 											onClick={ () => {
 												updateField(
@@ -376,6 +380,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 											{ __( 'Show Style', 'godam' ) }
 										</MenuItem>
 										<MenuItem
+											data-test-id={ `godam-hotspot-control-show-icon-${ index }` }
 											icon={ hotspot.showIcon ? check : '' }
 											onClick={ () => {
 												updateField(
@@ -395,6 +400,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 											{ __( 'Show Icon', 'godam' ) }
 										</MenuItem>
 										<MenuItem
+											data-test-id={ `godam-hotspot-button-delete-${ index }` }
 											icon={ trash }
 											onClick={ () => handleDeleteHotspot( index ) }
 											className="text-red-500"
@@ -409,6 +415,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 						{ expandedHotspotIndex === index && (
 							<div className="mt-3">
 								<TextControl
+									data-test-id={ `godam-hotspot-control-tooltip-text-${ index }` }
 									className="godam-input"
 									label={ __( 'Tooltip Text', 'godam' ) }
 									placeholder={ __( 'Click Me!', 'godam' ) }
@@ -423,6 +430,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 									}
 								/>
 								<TextControl
+									data-test-id={ `godam-hotspot-control-link-${ index }` }
 									label={ __( 'Link', 'godam' ) }
 									placeholder="https://www.example.com"
 									value={ hotspot.link }
@@ -460,6 +468,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 											{ __( 'BACKGROUND COLOR', 'godam' ) }
 										</label>
 										<ColorPalette
+											data-test-id={ `godam-hotspot-control-background-color-${ index }` }
 											id={ `hotspot-color-${ index }` }
 											value={ hotspot.backgroundColor || '#0c80dfa6' }
 											className=""
@@ -486,6 +495,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 				) ) }
 
 				<Button
+					data-test-id="godam-hotspot-button-add"
 					variant="primary"
 					id="add-hotspot-btn"
 					icon={ plus }

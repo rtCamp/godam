@@ -135,6 +135,7 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 			<AjaxWarning formType={ layer?.form_type } formId={ getFormId() } />
 
 			<ToggleControl
+				data-test-id="godam-form-control-allow-skip"
 				__nextHasNoMarginBottom
 				className="mb-4 godam-toggle"
 				label={ __( 'Allow user to skip', 'godam' ) }

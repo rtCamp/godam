@@ -39,6 +39,7 @@ const PollLayer = ( { layerID, goBack, duration } ) => {
 			{
 				polls?.length > 0 &&
 					<ComboboxControl
+						data-test-id="godam-poll-control-select"
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
 						label={ __( 'Select poll', 'godam' ) }
@@ -50,6 +51,7 @@ const PollLayer = ( { layerID, goBack, duration } ) => {
 			}
 
 			<ToggleControl
+				data-test-id="godam-poll-control-allow-skip"
 				className="mb-4 godam-toggle"
 				label={ __( 'Allow user to skip', 'godam' ) }
 				checked={ layer.allow_skip }
@@ -110,6 +112,7 @@ const PollLayer = ( { layerID, goBack, duration } ) => {
 					</div>
 					{ layer.allow_skip &&
 					<Button
+						data-test-id="godam-poll-button-skip"
 						className="skip-button"
 						variant="primary"
 						icon={ chevronRight }

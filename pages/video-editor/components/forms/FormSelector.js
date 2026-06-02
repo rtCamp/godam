@@ -31,6 +31,7 @@ function FormSelector( { className, disabled, formID, forms, handleChange } ) {
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
 				label={ __( 'Select form', 'godam' ) }
+				data-test-id="godam-form-control-select"
 				className={ `${ className } ${ disabled ? 'disabled' : '' }` }
 				value={ form }
 				onChange={ setFormData }

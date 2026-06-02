@@ -66,9 +66,9 @@ const TextCTA = ( { layerID } ) => {
 	}
 
 	return (
-		<>
+		<div data-test-id="godam-cta-editor-text">
 			<div className="mb-2 flex items-end justify-between">
-				<label htmlFor="custom-css" className="text-[11px] uppercase font-medium">{ __( 'Content', 'godam' ) }</label>
+				<label className="text-[11px] uppercase font-medium">{ __( 'Content', 'godam' ) }</label>
 			</div>
 			<QuillEditor
 				intialValue={ layer.text }
@@ -82,7 +82,7 @@ const TextCTA = ( { layerID } ) => {
 				toolbarOptions={ layer.FullEditor ? allToolbarOptions : minmalToolbarOptions }
 				className="mb-4 wysiwyg-editor"
 			/>
-		</>
+		</div>
 	);
 };
 

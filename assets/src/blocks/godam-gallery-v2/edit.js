@@ -589,11 +589,12 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody title={ __( 'Source', 'godam' ) } initialOpen={ true }>
+				<PanelBody title={ __( 'Source', 'godam' ) } initialOpen={ true } data-test-id="godam-gallery-v2-panel-source">
 					<ToggleGroupControl
 						__nextHasNoMarginBottom
 						isBlock
 						label={ __( 'Gallery Source', 'godam' ) }
+						data-test-id="godam-gallery-v2-control-mode"
 						value={ mode }
 						onChange={ ( value ) => {
 							if ( value ) {
@@ -606,11 +607,12 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					</ToggleGroupControl>
 				</PanelBody>
 
-				<PanelBody title={ __( 'Gallery Settings', 'godam' ) } initialOpen={ true }>
+				<PanelBody title={ __( 'Gallery Settings', 'godam' ) } initialOpen={ true } data-test-id="godam-gallery-v2-panel-settings">
 					<ToggleGroupControl
 						__nextHasNoMarginBottom
 						isBlock
 						label={ __( 'Layout', 'godam' ) }
+						data-test-id="godam-gallery-v2-control-layout"
 						value={ layout }
 						onChange={ ( value ) => {
 							if ( ! value ) {
@@ -649,6 +651,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						__nextHasNoMarginBottom
 						isBlock
 						label={ __( 'View Ratio', 'godam' ) }
+						data-test-id="godam-gallery-v2-control-view-ratio"
 						value={ viewRatio }
 						onChange={ ( value ) => value && setAttributes( { viewRatio: value } ) }
 					>
@@ -662,6 +665,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						__nextHasNoMarginBottom
 						isBlock
 						label={ __( 'Item Size', 'godam' ) }
+						data-test-id="godam-gallery-v2-control-item-width"
 						value={ itemWidth }
 						onChange={ ( value ) => value && setAttributes( { itemWidth: value } ) }
 						help={ __( 'Size of each gallery item.', 'godam' ) }
@@ -672,6 +676,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					</ToggleGroupControl>
 					<ToggleControl
 						label={ __( 'Show Video Titles and Dates', 'godam' ) }
+						data-test-id="godam-gallery-v2-control-show-title"
 						checked={ !! showTitle }
 						onChange={ ( value ) => setAttributes( { showTitle: value } ) }
 					/>
@@ -695,9 +700,10 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 				</PanelBody>
 
 				{ mode === 'query' && (
-					<PanelBody title={ __( 'Query Settings', 'godam' ) } initialOpen={ true }>
+					<PanelBody title={ __( 'Query Settings', 'godam' ) } initialOpen={ true } data-test-id="godam-gallery-v2-panel-query">
 						<RangeControl
 							label={ __( 'Number of videos', 'godam' ) }
+							data-test-id="godam-gallery-v2-control-count"
 							value={ count }
 							onChange={ ( value ) => setAttributes( { count: value } ) }
 							min={ 1 }
@@ -829,6 +835,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						) }
 						<ToggleControl
 							label={ __( 'Enable More Items', 'godam' ) }
+							data-test-id="godam-gallery-v2-control-enable-more-items"
 							checked={ !! resolvedEnableMoreItems }
 							onChange={ ( value ) => updateMoreItemsSettings( value ) }
 						/>
@@ -853,11 +860,12 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 				) }
 			</InspectorControls>
 
-			<div { ...blockProps }>
+			<div { ...blockProps } data-test-id="godam-gallery-v2-canvas">
 
 				{ mode === 'handpicked' && (
 					<div
 						className={ `godam-gallery-v2__canvas godam-gallery-v2__canvas--${ layout }` }
+						data-test-id="godam-gallery-v2-canvas-handpicked"
 					>
 						<InnerBlocks
 							allowedBlocks={ ALLOWED_BLOCKS }
@@ -870,6 +878,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 				{ mode === 'query' && (
 					<div
 						className={ `godam-gallery-v2__canvas godam-gallery-v2__canvas--${ layout }` }
+						data-test-id="godam-gallery-v2-canvas-query"
 					>
 						{ queryPreviewVideos === null && (
 							<div className="godam-gallery-v2__state godam-gallery-v2__state--loading">
@@ -891,12 +900,13 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 									<div
 										className={ `godam-gallery-v2__query-item godam-gallery-v2__query-item--ratio-${ viewRatio.replace( ':', '-' ) }` }
 										key={ video.id }
+										data-test-id={ `godam-gallery-v2-element-query-item-${ video.id }` }
 									>
 										<div className="godam-gallery-v2__query-thumb">
 											{ video.thumbnail ? (
 												<img src={ video.thumbnail } alt={ video.title } />
 											) : (
-												<span>{ __( 'Video', 'godam' ) }</span>
+												<span data-test-id="godam-gallery-v2-element-thumbnail-fallback">{ __( 'Video', 'godam' ) }</span>
 											) }
 										</div>
 										{ showTitle && (
