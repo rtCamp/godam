@@ -223,7 +223,7 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 - Fix: GoDAM Video block aspect ratio for editor and frontend.
 - Fix: Silent PHP Linter errors.
-- Fix: Broken Admin Notice when WooCommerce is not present in the Site in multisite.
+- Fix: Broken Admin Notice when WooCommerce is not present on a site in a multisite network.
 
 = v1.11.0 (May 27, 2026) =
 
