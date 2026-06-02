@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.11.0
+Stable tag: 1.11.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -219,6 +219,12 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v1.11.1 (June 2, 2026) =
+
+- Fix: GoDAM Video block aspect ratio for editor and frontend.
+- Fix: Silent PHP Linter errors.
+- Fix: Broken Admin Notice when WooCommerce is not present on a site in a multisite network.
+
 = v1.11.0 (May 27, 2026) =
 
 - Tweak: Extended GoDAM analytics scripts to track Reel Pop interactions from GoDAM for Woo.
@@ -229,10 +235,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 - Feat: Enhanced Type 1 video analytics tracking with viewport detection.
 - Fix: Resolved cancelled Type 2 Analytics requests for Gallery iframe.
-
-= v1.10.1 (May 19, 2026) =
-
-- Fix: Added patch for plugin deployment.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
