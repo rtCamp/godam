@@ -318,13 +318,14 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 
 			{ /* Pause on hover */ }
 			<div className="mb-4">
-				<ToggleControl
-					data-test-id="godam-hotspot-control-pause-on-hover"
-					className="godam-toggle"
-					label={ __( 'Pause video on hover', 'godam' ) }
-					checked={ layer?.pauseOnHover || false }
-					onChange={ ( isChecked ) => updateField( 'pauseOnHover', isChecked ) }
-				/>
+				<div data-test-id="godam-hotspot-control-pause-on-hover">
+					<ToggleControl
+						className="godam-toggle"
+						label={ __( 'Pause video on hover', 'godam' ) }
+						checked={ layer?.pauseOnHover || false }
+						onChange={ ( isChecked ) => updateField( 'pauseOnHover', isChecked ) }
+					/>
+				</div>
 				<p className="text-xs text-gray-500 mt-1">
 					{ __(
 						'Player will pause the video while the layer is displayed and users hover over the hotspots.',

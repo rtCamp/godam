@@ -37,37 +37,40 @@ function Edit( { attributes, setAttributes } ) {
 		<>
 			<InspectorControls>
 				<PanelBody title={ __( 'Thumbnail Settings', 'godam' ) } data-test-id="godam-video-thumbnail-panel-settings">
-					<ToggleControl
-						label={ __( 'Show play button overlay', 'godam' ) }
-						checked={ showPlayButton }
-						onChange={ ( value ) => setAttributes( { showPlayButton: value } ) }
-						help={ showPlayButton
-							? __( 'Play button will be displayed.', 'godam' )
-							: __( 'No play button will be displayed.', 'godam' )
-						}
-						data-test-id="godam-video-thumbnail-control-show-play-button"
-					/>
-					<ToggleControl
-						label={ __( 'Link to post', 'godam' ) }
-						checked={ linkToVideo }
-						onChange={ ( value ) => setAttributes( { linkToVideo: value } ) }
-						help={ linkToVideo
-							? __( 'Thumbnail will link to the video page.', 'godam' )
-							: __( 'Thumbnail will not be linked.', 'godam' )
-						}
-						data-test-id="godam-video-thumbnail-control-link-to-video"
-					/>
-					{ linkToVideo && (
+					<div data-test-id="godam-video-thumbnail-control-show-play-button">
 						<ToggleControl
-							label={ __( 'Open in new tab', 'godam' ) }
-							checked={ openInNewTab }
-							onChange={ ( value ) => setAttributes( { openInNewTab: value } ) }
-							help={ openInNewTab
-								? __( 'Link will open in a new tab.', 'godam' )
-								: __( 'Link will open in the same tab.', 'godam' )
+							label={ __( 'Show play button overlay', 'godam' ) }
+							checked={ showPlayButton }
+							onChange={ ( value ) => setAttributes( { showPlayButton: value } ) }
+							help={ showPlayButton
+								? __( 'Play button will be displayed.', 'godam' )
+								: __( 'No play button will be displayed.', 'godam' )
 							}
-							data-test-id="godam-video-thumbnail-control-open-in-new-tab"
 						/>
+					</div>
+					<div data-test-id="godam-video-thumbnail-control-link-to-video">
+						<ToggleControl
+							label={ __( 'Link to post', 'godam' ) }
+							checked={ linkToVideo }
+							onChange={ ( value ) => setAttributes( { linkToVideo: value } ) }
+							help={ linkToVideo
+								? __( 'Thumbnail will link to the video page.', 'godam' )
+								: __( 'Thumbnail will not be linked.', 'godam' )
+							}
+						/>
+					</div>
+					{ linkToVideo && (
+						<div data-test-id="godam-video-thumbnail-control-open-in-new-tab">
+							<ToggleControl
+								label={ __( 'Open in new tab', 'godam' ) }
+								checked={ openInNewTab }
+								onChange={ ( value ) => setAttributes( { openInNewTab: value } ) }
+								help={ openInNewTab
+									? __( 'Link will open in a new tab.', 'godam' )
+									: __( 'Link will open in the same tab.', 'godam' )
+								}
+							/>
+						</div>
 					) }
 				</PanelBody>
 			</InspectorControls>

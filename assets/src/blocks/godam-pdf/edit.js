@@ -102,16 +102,17 @@ function PdfEdit( {
 	if ( ! src && ! temporaryURL ) {
 		return (
 			<div { ...blockProps } data-test-id="godam-pdf-canvas-placeholder">
-				<MediaPlaceholder
-					icon={ <BlockIcon icon={ icon } /> }
-					onSelect={ onSelectPdf }
-					accept="application/pdf"
-					allowedTypes={ ALLOWED_MEDIA_TYPES }
-					value={ attributes }
-					onError={ onUploadError }
-					labels={ { title: __( 'Document', 'godam' ) } }
-					data-test-id="godam-pdf-button-select"
-				/>
+				<div data-test-id="godam-pdf-button-select">
+					<MediaPlaceholder
+						icon={ <BlockIcon icon={ icon } /> }
+						onSelect={ onSelectPdf }
+						accept="application/pdf"
+						allowedTypes={ ALLOWED_MEDIA_TYPES }
+						value={ attributes }
+						onError={ onUploadError }
+						labels={ { title: __( 'Document', 'godam' ) } }
+					/>
+				</div>
 			</div>
 		);
 	}

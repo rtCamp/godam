@@ -194,18 +194,19 @@ const CustomAdSettings = ( { layerID } ) => {
 				) }
 			</div>
 
-			<ToggleControl
-				__nextHasNoMarginBottom
-				className="mb-4 godam-toggle"
-				label={ __( 'Skippable', 'godam' ) }
-				data-test-id="godam-ad-control-skippable"
-				checked={ layer?.skippable ?? false }
-				onChange={ ( value ) =>
-					dispatch( updateLayerField( { id: layer.id, field: 'skippable', value } ) )
-				}
-				help={ __( 'Allow user to skip ad', 'godam' ) }
-				disabled={ adServer === 'ad-server' }
-			/>
+			<div data-test-id="godam-ad-control-skippable">
+				<ToggleControl
+					__nextHasNoMarginBottom
+					className="mb-4 godam-toggle"
+					label={ __( 'Skippable', 'godam' ) }
+					checked={ layer?.skippable ?? false }
+					onChange={ ( value ) =>
+						dispatch( updateLayerField( { id: layer.id, field: 'skippable', value } ) )
+					}
+					help={ __( 'Allow user to skip ad', 'godam' ) }
+					disabled={ adServer === 'ad-server' }
+				/>
+			</div>
 			{
 				layer?.skippable &&
 				<TextControl

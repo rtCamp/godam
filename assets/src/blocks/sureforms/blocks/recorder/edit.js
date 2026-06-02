@@ -267,12 +267,13 @@ export default function Edit( props ) {
 		{
 			id: 'required',
 			component: (
-				<ToggleControl
-					checked={ required }
-					label={ __( 'Is recorder field required?', 'godam' ) }
-					onChange={ () => setAttributes( { required: ! required } ) }
-					data-test-id="godam-srfm-recorder-control-required"
-				/>
+				<div data-test-id="godam-srfm-recorder-control-required">
+					<ToggleControl
+						checked={ required }
+						label={ __( 'Is recorder field required?', 'godam' ) }
+						onChange={ () => setAttributes( { required: ! required } ) }
+					/>
+				</div>
 			),
 		},
 		{

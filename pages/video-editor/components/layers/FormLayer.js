@@ -134,18 +134,19 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 
 			<AjaxWarning formType={ layer?.form_type } formId={ getFormId() } />
 
-			<ToggleControl
-				data-test-id="godam-form-control-allow-skip"
-				__nextHasNoMarginBottom
-				className="mb-4 godam-toggle"
-				label={ __( 'Allow user to skip', 'godam' ) }
-				checked={ layer.allow_skip }
-				onChange={ ( value ) =>
-					dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
-				}
-				help={ __( 'If enabled, the user will be able to skip the form submission.', 'godam' ) }
-				disabled={ ! isPluginActive }
-			/>
+			<div data-test-id="godam-form-control-allow-skip">
+				<ToggleControl
+					__nextHasNoMarginBottom
+					className="mb-4 godam-toggle"
+					label={ __( 'Allow user to skip', 'godam' ) }
+					checked={ layer.allow_skip }
+					onChange={ ( value ) =>
+						dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
+					}
+					help={ __( 'If enabled, the user will be able to skip the form submission.', 'godam' ) }
+					disabled={ ! isPluginActive }
+				/>
+			</div>
 
 			<Panel className="-mx-4 border-x-0">
 				<PanelBody

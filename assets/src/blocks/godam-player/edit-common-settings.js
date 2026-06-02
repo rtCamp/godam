@@ -98,44 +98,48 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 
 	return (
 		<>
-			<ToggleControl
-				__nextHasNoMarginBottom
-				label={ __( 'Autoplay', 'godam' ) }
-				data-test-id="godam-video-control-autoplay"
-				onChange={ ( e ) => {
-					/**
-					 * When autoplay is enabled, mute the video.
-					 * This behaviour follows core/video block.
-					 */
-					toggleFactory.muted( e );
-					toggleFactory.autoplay( e );
-				} }
-				checked={ !! autoplay }
-				help={ getAutoplayHelp }
-			/>
-			<ToggleControl
-				__nextHasNoMarginBottom
-				label={ __( 'Loop', 'godam' ) }
-				data-test-id="godam-video-control-loop"
-				onChange={ toggleFactory.loop }
-				checked={ !! loop }
-			/>
-			<ToggleControl
-				__nextHasNoMarginBottom
-				label={ __( 'Muted', 'godam' ) }
-				data-test-id="godam-video-control-muted"
-				onChange={ toggleFactory.muted }
-				disabled={ autoplay }
-				checked={ !! muted }
-				help={ getMutedHelp }
-			/>
-			<ToggleControl
-				__nextHasNoMarginBottom
-				label={ __( 'Playback controls', 'godam' ) }
-				data-test-id="godam-video-control-controls"
-				onChange={ toggleFactory.controls }
-				checked={ !! controls }
-			/>
+			<div data-test-id="godam-video-control-autoplay">
+				<ToggleControl
+					__nextHasNoMarginBottom
+					label={ __( 'Autoplay', 'godam' ) }
+					onChange={ ( e ) => {
+						/**
+						 * When autoplay is enabled, mute the video.
+						 * This behaviour follows core/video block.
+						 */
+						toggleFactory.muted( e );
+						toggleFactory.autoplay( e );
+					} }
+					checked={ !! autoplay }
+					help={ getAutoplayHelp }
+				/>
+			</div>
+			<div data-test-id="godam-video-control-loop">
+				<ToggleControl
+					__nextHasNoMarginBottom
+					label={ __( 'Loop', 'godam' ) }
+					onChange={ toggleFactory.loop }
+					checked={ !! loop }
+				/>
+			</div>
+			<div data-test-id="godam-video-control-muted">
+				<ToggleControl
+					__nextHasNoMarginBottom
+					label={ __( 'Muted', 'godam' ) }
+					onChange={ toggleFactory.muted }
+					disabled={ autoplay }
+					checked={ !! muted }
+					help={ getMutedHelp }
+				/>
+			</div>
+			<div data-test-id="godam-video-control-controls">
+				<ToggleControl
+					__nextHasNoMarginBottom
+					label={ __( 'Playback controls', 'godam' ) }
+					onChange={ toggleFactory.controls }
+					checked={ !! controls }
+				/>
+			</div>
 			{
 				showShareButtonSetting && (
 					<ToggleControl

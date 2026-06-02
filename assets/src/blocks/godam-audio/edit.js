@@ -115,16 +115,17 @@ function AudioEdit( {
 	if ( ! src && ! temporaryURL ) {
 		return (
 			<div { ...blockProps } data-test-id="godam-audio-canvas-placeholder">
-				<MediaPlaceholder
-					icon={ <BlockIcon icon={ icon } /> }
-					onSelect={ onSelectAudio }
-					accept="audio/*"
-					allowedTypes={ ALLOWED_MEDIA_TYPES }
-					value={ attributes }
-					onError={ onUploadError }
-					labels={ { title: __( 'Audio', 'godam' ) } }
-					data-test-id="godam-audio-button-select"
-				/>
+				<div data-test-id="godam-audio-button-select">
+					<MediaPlaceholder
+						icon={ <BlockIcon icon={ icon } /> }
+						onSelect={ onSelectAudio }
+						accept="audio/*"
+						allowedTypes={ ALLOWED_MEDIA_TYPES }
+						value={ attributes }
+						onError={ onUploadError }
+						labels={ { title: __( 'Audio', 'godam' ) } }
+					/>
+				</div>
 			</div>
 		);
 	}
@@ -146,21 +147,23 @@ function AudioEdit( {
 			) }
 			<InspectorControls>
 				<PanelBody title={ __( 'Settings', 'godam' ) } data-test-id="godam-audio-panel-settings">
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={ __( 'Autoplay', 'godam' ) }
-						onChange={ toggleAttribute( 'autoplay' ) }
-						checked={ autoplay }
-						help={ getAutoplayHelp }
-						data-test-id="godam-audio-control-autoplay"
-					/>
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={ __( 'Loop', 'godam' ) }
-						onChange={ toggleAttribute( 'loop' ) }
-						checked={ loop }
-						data-test-id="godam-audio-control-loop"
-					/>
+					<div data-test-id="godam-audio-control-autoplay">
+						<ToggleControl
+							__nextHasNoMarginBottom
+							label={ __( 'Autoplay', 'godam' ) }
+							onChange={ toggleAttribute( 'autoplay' ) }
+							checked={ autoplay }
+							help={ getAutoplayHelp }
+						/>
+					</div>
+					<div data-test-id="godam-audio-control-loop">
+						<ToggleControl
+							__nextHasNoMarginBottom
+							label={ __( 'Loop', 'godam' ) }
+							onChange={ toggleAttribute( 'loop' ) }
+							checked={ loop }
+						/>
+					</div>
 					<SelectControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom

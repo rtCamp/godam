@@ -881,13 +881,14 @@ function VideoEdit( {
 				{ /* Only show additional settings when not inside a Query Loop */ }
 				{ ! isInsideQueryLoop && (
 					<PanelBody title={ __( 'Overlay Blocks', 'godam' ) } data-test-id="godam-video-panel-overlay-blocks">
-						<ToggleControl
-							label={ __( 'Show overlay blocks', 'godam' ) }
-							checked={ showOverlay }
-							onChange={ ( value ) => setAttributes( { showOverlay: value } ) }
-							help={ __( 'Display blocks on top of the video player.', 'godam' ) }
-							data-test-id="godam-video-control-show-overlay"
-						/>
+						<div data-test-id="godam-video-control-show-overlay">
+							<ToggleControl
+								label={ __( 'Show overlay blocks', 'godam' ) }
+								checked={ showOverlay }
+								onChange={ ( value ) => setAttributes( { showOverlay: value } ) }
+								help={ __( 'Display blocks on top of the video player.', 'godam' ) }
+							/>
+						</div>
 
 						{ showOverlay && (
 							<>

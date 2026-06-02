@@ -674,12 +674,13 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						<ToggleGroupControlOption label={ __( 'M', 'godam' ) } value="M" />
 						<ToggleGroupControlOption label={ __( 'L', 'godam' ) } value="L" />
 					</ToggleGroupControl>
-					<ToggleControl
-						label={ __( 'Show Video Titles and Dates', 'godam' ) }
-						data-test-id="godam-gallery-v2-control-show-title"
-						checked={ !! showTitle }
-						onChange={ ( value ) => setAttributes( { showTitle: value } ) }
-					/>
+					<div data-test-id="godam-gallery-v2-control-show-title">
+						<ToggleControl
+							label={ __( 'Show Video Titles and Dates', 'godam' ) }
+							checked={ !! showTitle }
+							onChange={ ( value ) => setAttributes( { showTitle: value } ) }
+						/>
+					</div>
 					{
 						showEngagementSetting && (
 							<ToggleControl
@@ -833,12 +834,13 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 								</div>
 							</div>
 						) }
-						<ToggleControl
-							label={ __( 'Enable More Items', 'godam' ) }
-							data-test-id="godam-gallery-v2-control-enable-more-items"
-							checked={ !! resolvedEnableMoreItems }
-							onChange={ ( value ) => updateMoreItemsSettings( value ) }
-						/>
+						<div data-test-id="godam-gallery-v2-control-enable-more-items">
+							<ToggleControl
+								label={ __( 'Enable More Items', 'godam' ) }
+								checked={ !! resolvedEnableMoreItems }
+								onChange={ ( value ) => updateMoreItemsSettings( value ) }
+							/>
+						</div>
 						{ resolvedEnableMoreItems && (
 							<SelectControl
 								label={ __( 'More Items Behavior', 'godam' ) }

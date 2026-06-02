@@ -93,29 +93,29 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 			>
 				<PanelBody>
 					<div className="flex flex-col gap-2 opacity-90 relative">
-						<ToggleControl
-							__nextHasNoMarginBottom
-							className="godam-toggle"
-							label={ __( 'Enable video watermark', 'godam' ) }
-							data-test-id="godam-settings-video-control-watermark-enabled"
-							checked={ enableWatermark }
-							onChange={ ( value ) => {
-								handleSettingChange( 'watermark', value );
-								setNotice( { ...notice, isVisible: false } );
-							} }
-							disabled={ ! hasAPIKey }
-							help={ __(
-								'If enabled, GoDAM will add a watermark to the transcoded video',
-								'godam',
-							) }
-						/>
+						<div data-test-id="godam-settings-video-control-watermark-enabled">
+							<ToggleControl
+								__nextHasNoMarginBottom
+								className="godam-toggle"
+								label={ __( 'Enable video watermark', 'godam' ) }
+								checked={ enableWatermark }
+								onChange={ ( value ) => {
+									handleSettingChange( 'watermark', value );
+									setNotice( { ...notice, isVisible: false } );
+								} }
+								disabled={ ! hasAPIKey }
+								help={ __(
+									'If enabled, GoDAM will add a watermark to the transcoded video',
+									'godam',
+								) }
+							/>
+						</div>
 						{ enableWatermark && (
 							<>
-								<div>
+								<div data-test-id="godam-settings-video-control-watermark-image-toggle">
 									<ToggleControl
 										label={ __( 'Use image watermark', 'godam' ) }
 										className="godam-toggle"
-										data-test-id="godam-settings-video-control-watermark-image-toggle"
 										checked={ useImage }
 										onChange={ ( value ) => {
 											handleSettingChange( 'use_watermark_image', value );
