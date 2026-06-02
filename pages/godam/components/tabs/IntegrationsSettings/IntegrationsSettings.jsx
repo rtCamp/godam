@@ -66,11 +66,18 @@ const IntegrationSettings = () => {
 	const [ installError, setInstallError ] = useState( null );
 
 	useEffect( () => {
-		const persistedNotice = window.sessionStorage?.getItem( TOGGLE_SUCCESS_NOTICE_KEY );
+		try {
+			const persistedNotice = window.sessionStorage?.getItem( TOGGLE_SUCCESS_NOTICE_KEY );
 
-		if ( persistedNotice ) {
-			showNotice( persistedNotice, 'success' );
-			window.sessionStorage?.removeItem( TOGGLE_SUCCESS_NOTICE_KEY );
+			if ( persistedNotice ) {
+				setNotice( { message: persistedNotice, status: 'success', isVisible: true } );
+				if ( window.scrollY > 0 ) {
+					scrollToTop();
+				}
+				window.sessionStorage?.removeItem( TOGGLE_SUCCESS_NOTICE_KEY );
+			}
+		} catch ( error ) {
+			// Ignore storage access issues (e.g. blocked/disabled sessionStorage).
 		}
 	}, [] );
 
@@ -97,10 +104,14 @@ const IntegrationSettings = () => {
 				} );
 
 				if ( response?.status === 'success' ) {
-					window.sessionStorage?.setItem(
-						TOGGLE_SUCCESS_NOTICE_KEY,
-						response?.message || __( 'Integration status updated successfully.', 'godam' ),
-					);
+					try {
+						window.sessionStorage?.setItem(
+							TOGGLE_SUCCESS_NOTICE_KEY,
+							response?.message || __( 'Integration status updated successfully.', 'godam' ),
+						);
+					} catch ( error ) {
+						// Ignore storage write issues; notice just will not persist across reload.
+					}
 					window.location.reload();
 				}
 			} catch ( error ) {

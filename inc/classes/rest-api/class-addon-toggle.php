@@ -121,7 +121,7 @@ class Addon_Toggle extends Base {
 
 			if ( is_wp_error( $result ) ) {
 				$error_data = $result->get_error_data();
-				$status     = ( is_array( $error_data ) && isset( $error_data['status'] ) ) ? (int) $error_data['status'] : 400;
+				$status     = ( is_array( $error_data ) && isset( $error_data['status'] ) ) ? (int) $error_data['status'] : 500;
 
 				return new \WP_Error(
 					'addon_activation_failed',
