@@ -1,6 +1,6 @@
 # Changelog #
 
-## v1.11.1 (June 02, 2026) ##
+## v1.11.1 (June 2, 2026) ##
 
 - Fix: GoDAM Video block aspect ratio for editor and frontend.
 - Fix: Silent PHP Linter errors.
