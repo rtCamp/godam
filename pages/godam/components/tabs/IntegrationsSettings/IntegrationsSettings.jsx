@@ -210,11 +210,12 @@ const IntegrationSettings = () => {
 		<>
 			{ notice.isVisible && (
 				<Notice
-					className="mb-4"
+					className="mb-4 godam-notice-message"
 					status={ notice.status }
 					onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
+					// dangerouslySetInnerHTML={ { __html: notice.message } }
 				>
-					{ notice.message }
+					<div dangerouslySetInnerHTML={ { __html: notice.message } } />
 				</Notice>
 			) }
 

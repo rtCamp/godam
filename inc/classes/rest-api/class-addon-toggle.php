@@ -125,7 +125,7 @@ class Addon_Toggle extends Base {
 
 				return new \WP_Error(
 					'addon_activation_failed',
-					wp_strip_all_tags( (string) $result->get_error_message() ),
+					wp_kses_post( (string) $result->get_error_message() ),
 					array( 'status' => $status )
 				);
 			}
