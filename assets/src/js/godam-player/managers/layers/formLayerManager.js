@@ -116,6 +116,20 @@ export default class FormLayerManager {
 			firedActions = new Set();
 			this._dedupeFired.set( layerId, firedActions );
 		}
+		// A skip that lands after the viewer already took this layer's positive
+		// action (clicked a CTA, submitted a form, voted in a poll) is not a real
+		// skip — e.g. a CTA opens in a new tab, the viewer returns and presses
+		// Continue, which would otherwise log a `skipped` on top of the `clicked`
+		// and push clicked + skipped past viewed. Drop it so the two stay
+		// mutually exclusive per session (the click is the meaningful outcome).
+		if (
+			actionType === 'skipped' &&
+			( firedActions.has( 'clicked' ) ||
+				firedActions.has( 'submitted' ) ||
+				firedActions.has( 'voted' ) )
+		) {
+			return;
+		}
 		if ( firedActions.has( actionType ) ) {
 			return;
 		}
