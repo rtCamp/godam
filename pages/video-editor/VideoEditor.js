@@ -420,6 +420,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 						onClick={ handleSaveAttachmentMeta }
 						isBusy={ isSavingMeta }
 						disabled={ ! isChanged }
+						data-test-id="godam-video-editor-button-save"
 					>
 						{ isSavingMeta ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 					</Button>
@@ -453,6 +454,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 								target="_blank"
 								className="godam-button"
 								icon={ chartBar }
+								data-test-id="godam-video-editor-button-analytics"
 							>
 								{ __( 'Analytics', 'godam' ) }
 							</Button>
@@ -474,6 +476,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 								iconPosition="left"
 								onClick={ handleCopyGoDAMVideoBlock }
 								className="godam-button"
+								data-test-id="godam-video-editor-button-copy-block"
 							>
 								{ __( 'Copy Block', 'godam' ) }
 							</Button>
@@ -484,6 +487,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 							target="_blank"
 							className="godam-button"
 							icon={ seen }
+							data-test-id="godam-video-editor-button-preview"
 						>
 							{ __( 'Preview', 'godam' ) }
 						</Button>

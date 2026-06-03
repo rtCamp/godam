@@ -1581,9 +1581,31 @@ class Media_Library extends Base {
 		}
 
 		// Validate MIME type against an allowed pattern to prevent stored XSS.
-		if ( ! preg_match( '/^(video|audio|image)\/[a-z0-9][a-z0-9!#$&\-^_.+]{0,126}$/i', $data['mime'] ) ) {
+		// The endpoint doesn't declare argument schemas, so guard against
+		// non-string payloads (array/object/number) before string operations —
+		// otherwise preg_match()/strtolower() raise a TypeError → 500.
+		if ( ! is_string( $data['mime'] ) ) {
 			return new \WP_Error( 'invalid_mime', __( 'Invalid or disallowed MIME type.', 'godam' ), array( 'status' => 400 ) );
 		}
+
+		// Normalize via sanitize_mime_type(): strips characters outside the RFC
+		// 2045 token set, lowercases, and returns '' for completely invalid input.
+		$mime = sanitize_mime_type( $data['mime'] );
+		if ( '' === $mime ) {
+			return new \WP_Error( 'invalid_mime', __( 'Invalid or disallowed MIME type.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		// Accepts video/*, audio/*, image/* plus the single PDF type — PDFs are
+		// handled by the 'pdf' branch below and otherwise can't form a virtual entry.
+		if (
+			! preg_match( '/^(video|audio|image)\/[a-z0-9][a-z0-9!#$&\-^_.+]{0,126}$/', $mime )
+			&& 'application/pdf' !== $mime
+		) {
+			return new \WP_Error( 'invalid_mime', __( 'Invalid or disallowed MIME type.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		// Use the normalized value for the rest of the handler.
+		$data['mime'] = $mime;
 
 		// Sanitize the GoDAM ID.
 		$godam_id = sanitize_text_field( $data['id'] );
@@ -1688,6 +1710,15 @@ class Media_Library extends Base {
 				'filesize' => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,
 			);
 
+			// Persist intrinsic dimensions when GoDAM Central provides non-zero values
+			// so the editor can reserve aspect-ratio space without waiting for loadedmetadata.
+			$video_width  = isset( $data['width'] ) ? (int) $data['width'] : 0;
+			$video_height = isset( $data['height'] ) ? (int) $data['height'] : 0;
+			if ( $video_width > 0 && $video_height > 0 ) {
+				$wp_attachment_metadata['width']  = $video_width;
+				$wp_attachment_metadata['height'] = $video_height;
+			}
+
 			if ( ! empty( $video_duration_in_seconds ) ) {
 				update_post_meta( $attach_id, '_video_duration', $video_duration_in_seconds );
 				$wp_attachment_metadata['length']           = $video_duration_in_seconds;
@@ -1707,10 +1738,12 @@ class Media_Library extends Base {
 				'sizes'    => array(),
 			);
 
-			// Add width and height if available.
-			if ( ! empty( $data['width'] ) && ! empty( $data['height'] ) ) {
-				$wp_attachment_metadata['width']  = (int) $data['width'];
-				$wp_attachment_metadata['height'] = (int) $data['height'];
+			// Add width and height if available (non-zero).
+			$image_width  = isset( $data['width'] ) ? (int) $data['width'] : 0;
+			$image_height = isset( $data['height'] ) ? (int) $data['height'] : 0;
+			if ( $image_width > 0 && $image_height > 0 ) {
+				$wp_attachment_metadata['width']  = $image_width;
+				$wp_attachment_metadata['height'] = $image_height;
 			}
 
 			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );

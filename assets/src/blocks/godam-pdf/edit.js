@@ -101,16 +101,18 @@ function PdfEdit( {
 
 	if ( ! src && ! temporaryURL ) {
 		return (
-			<div { ...blockProps }>
-				<MediaPlaceholder
-					icon={ <BlockIcon icon={ icon } /> }
-					onSelect={ onSelectPdf }
-					accept="application/pdf"
-					allowedTypes={ ALLOWED_MEDIA_TYPES }
-					value={ attributes }
-					onError={ onUploadError }
-					labels={ { title: __( 'Document', 'godam' ) } }
-				/>
+			<div { ...blockProps } data-test-id="godam-pdf-canvas-placeholder">
+				<div data-test-id="godam-pdf-button-select">
+					<MediaPlaceholder
+						icon={ <BlockIcon icon={ icon } /> }
+						onSelect={ onSelectPdf }
+						accept="application/pdf"
+						allowedTypes={ ALLOWED_MEDIA_TYPES }
+						value={ attributes }
+						onError={ onUploadError }
+						labels={ { title: __( 'Document', 'godam' ) } }
+					/>
+				</div>
 			</div>
 		);
 	}
@@ -131,10 +133,11 @@ function PdfEdit( {
 				</BlockControls>
 			) }
 			<InspectorControls>
-				<PanelBody title={ __( 'Settings', 'godam' ) }>
+				<PanelBody title={ __( 'Settings', 'godam' ) } data-test-id="godam-pdf-panel-settings">
 					<RangeControl
 						__nextHasNoMarginBottom
 						label={ __( 'Height (px)', 'godam' ) }
+						data-test-id="godam-pdf-control-height"
 						value={ height }
 						onChange={ ( value ) =>
 							setAttributes( { height: value } )
@@ -145,7 +148,7 @@ function PdfEdit( {
 					/>
 				</PanelBody>
 			</InspectorControls>
-			<figure { ...blockProps }>
+			<figure { ...blockProps } data-test-id="godam-pdf-canvas">
 				{ /*
 				Disable the embed if the block is not selected
 				so the user clicking on it won't interact with the PDF.

@@ -224,9 +224,11 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
 
 			<div className="flex flex-col godam-form-group">
-				<label htmlFor="cta-type-select" className="mb-4 label-text">{ __( 'Call to Action', 'godam' ) }</label>
+				<label htmlFor="godam-cta-control-type" className="mb-4 label-text">{ __( 'Call to Action', 'godam' ) }</label>
 				<SelectControl
 					__next40pxDefaultSize
+					id="godam-cta-control-type"
+					data-test-id="godam-cta-control-type"
 					className="mb-4"
 					onChange={ handleCTATypeSelect }
 					options={ ctaLayerOptions }

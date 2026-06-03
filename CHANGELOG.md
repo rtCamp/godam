@@ -1,5 +1,11 @@
 # Changelog #
 
+## v1.11.1 (June 2, 2026) ##
+
+- Fix: GoDAM Video block aspect ratio for editor and frontend.
+- Fix: Silent PHP Linter errors.
+- Fix: Broken Admin Notice when WooCommerce is not present on a site in a multisite network.
+
 ## v1.11.0 (May 27, 2026) ##
 
 - Tweak: Extended GoDAM analytics scripts to track Reel Pop interactions from GoDAM for Woo.
