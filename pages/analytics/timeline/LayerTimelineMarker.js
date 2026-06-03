@@ -71,7 +71,9 @@ const LayerTimelineMarker = ( { parent, selected, onSelect, laneOffset = 0 } ) =
 			{ /* Vertical connector from horizontal axis to the icon card. Grows
 			    by laneOffset so a marker pushed into a lower lane (to avoid
 			    overlapping a near-simultaneous neighbour) still hangs from its
-			    true position on the axis. */ }
+			    true position on the axis. `pointerEvents: none` keeps the line
+			    from intercepting hover/click — a long connector crossing another
+			    marker's card must not steal that card's clicks. */ }
 			<span
 				aria-hidden="true"
 				style={ {
@@ -80,6 +82,7 @@ const LayerTimelineMarker = ( { parent, selected, onSelect, laneOffset = 0 } ) =
 					background: color,
 					borderRadius: 1,
 					marginBottom: -1,
+					pointerEvents: 'none',
 				} }
 			/>
 

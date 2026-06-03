@@ -242,11 +242,16 @@ const LayerTimelineStrip = ( {
 								100,
 								Math.max( 0, ( parent.timestamp / safeDuration ) * 100 ),
 							);
+							// Shallower lanes stack above deeper ones, so a deeper
+							// lane's long connector renders BEHIND the cards it
+							// crosses (a lane-0 card stays fully clickable even when
+							// a lower marker's line passes over it).
+							const zIndex = laneCount - lanes[ idx ];
 							return (
 								<div
 									key={ parent.id }
 									className="absolute top-0"
-									style={ { left: `${ pct }%` } }
+									style={ { left: `${ pct }%`, zIndex } }
 									role="listitem"
 								>
 									<LayerTimelineMarker
