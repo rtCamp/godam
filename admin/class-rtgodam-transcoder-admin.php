@@ -742,12 +742,12 @@ class RTGODAM_Transcoder_Admin {
 	}
 
 	/**
-	 * Display admin notice when API key is expired or invalid in media library.
+	 * Display admin notice when API key is expired or invalid in dashboard, and media library.
 	 *
 	 * @since 1.7.0
 	 */
 	public function api_key_status_notice() {
-		// Only show on dashboard, media library, and upload pages.
+		// Only show on dashboard, media library pages.
 		$screen = get_current_screen();
 		if ( ! $screen || ! in_array( $screen->id, array( 'dashboard', 'upload', 'media' ), true ) ) {
 			return;
