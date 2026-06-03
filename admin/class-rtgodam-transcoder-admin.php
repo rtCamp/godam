@@ -42,7 +42,6 @@ class RTGODAM_Transcoder_Admin {
 			add_action( 'admin_notices', array( $this, 'usage_limit_notices' ) );
 			add_action( 'admin_notices', array( $this, 'posthog_tracking_notice' ) );
 			add_action( 'admin_notices', array( $this, 'api_key_status_notice' ) );
-			add_action( 'admin_notices', array( $this, 'expired_api_key_notice' ) );
 			add_action( 'admin_notices', array( $this, 'woo_integration_promo_notice' ) );
 			add_action( 'admin_init', array( $this, 'handle_posthog_tracking_action' ) );
 			add_action( 'admin_init', array( $this, 'handle_clear_godam_cache' ) );
@@ -748,9 +747,9 @@ class RTGODAM_Transcoder_Admin {
 	 * @since 1.7.0
 	 */
 	public function api_key_status_notice() {
-		// Only show in media library and upload pages.
+		// Only show on dashboard, media library, and upload pages.
 		$screen = get_current_screen();
-		if ( ! $screen || ! in_array( $screen->id, array( 'upload', 'media' ), true ) ) {
+		if ( ! $screen || ! in_array( $screen->id, array( 'dashboard', 'upload', 'media' ), true ) ) {
 			return;
 		}
 
@@ -839,60 +838,6 @@ class RTGODAM_Transcoder_Admin {
 
 		wp_safe_redirect( esc_url_raw( remove_query_arg( array( 'godam_tracker_optin', 'godam_tracker_optout', '_wpnonce' ) ) ) );
 		exit;
-	}
-
-	/**
-	 * Show a warning notice on all admin pages when the GoDAM API key has expired.
-	 *
-	 * Only displayed when:
-	 * - An API key is configured but is no longer valid.
-	 *
-	 * @since 1.8.0
-	 */
-	public function expired_api_key_notice() {
-
-		$api_key = \RTGODAM\Inc\Helpers\Api_Key::get_key();
-		if ( empty( $api_key ) || rtgodam_is_api_key_valid() ) {
-			return;
-		}
-
-		// rtgodam_get_api_key_status() only reads the persistent DB status option
-		// ('rtgodam-api-key-status') which can NEVER contain 'verification_failed'
-		// because that state is transient and not persistable. The actual runtime
-		// status — including transient 'verification_failed' — is stored in the
-		// 'rtgodam_user_data' option by rtgodam_get_user_data(). Read from there
-		// so we don't show a false "expired" banner when the server is temporarily
-		// unreachable.
-		$cached_user_data = get_option( 'rtgodam_user_data', array() );
-		$runtime_status   = isset( $cached_user_data['api_key_status'] )
-			? $cached_user_data['api_key_status']
-			: rtgodam_get_api_key_status();
-
-		if ( \RTGODAM\Inc\Enums\Api_Key_Status::VERIFICATION_FAILED === $runtime_status ) {
-			return;
-		}
-
-		$pricing_url = add_query_arg(
-			array(
-				'utm_campaign' => 'expired-key',
-				'utm_source'   => rawurlencode( site_url() ),
-				'utm_medium'   => 'plugin',
-				'utm_content'  => 'godam-admin-notice',
-			),
-			'https://godam.io/pricing'
-		);
-
-		printf(
-			'<div class="notice notice-warning"><p>%s</p></div>',
-			wp_kses_post(
-				sprintf(
-					/* translators: 1: Opening link tag, 2: Closing link tag */
-					__( '<strong>GoDAM API key has expired.</strong> Pro features in GoDAM are currently disabled. %1$sPurchase a new key%2$s to restore access.', 'godam' ),
-					'<a href="' . esc_url( $pricing_url ) . '" target="_blank" rel="noopener noreferrer">',
-					'</a>'
-				)
-			)
-		);
 	}
 
 	/**
