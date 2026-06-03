@@ -1,10 +1,19 @@
 /**
- * localStorage buffer for layer interaction events.
+ * Per-tab sessionStorage buffer for layer interaction events.
  *
  * All layer managers (CTA, Form, Hotspot, and any add-on like the Woo
  * hotspot manager in godam-for-woo) push events here via
  * `window.GoDAM.addLayerInteraction`. The buffer is flushed once per
  * page session, on `pagehide`, by `trackLayerInteraction()` in analytics.js.
+ *
+ * Uses `sessionStorage` (per browser tab), NOT `localStorage`. The flush
+ * stamps the request with the tab's per-pageload `page_load_session_id` and
+ * clears the buffer. With a shared `localStorage` buffer, a second tab/page
+ * with a GoDAM video — and the flush fires on `visibilitychange:hidden`, i.e.
+ * every tab switch — would read the *other* tab's buffered events, stamp them
+ * with its own session id, and clear them: distinct converting sessions get
+ * undercounted and events lost. `sessionStorage` is scoped to the tab, so each
+ * tab buffers and flushes only its own events under a single session id.
  *
  * Key: 'godamLayerInteractions' (single map keyed by videoKey, which is
  * the video's data-id or job_id).
@@ -30,15 +39,15 @@ const STORAGE_KEY = 'godamLayerInteractions';
 const MAX_EVENTS_PER_VIDEO = 1000;
 
 /**
- * Safely read and JSON-parse a localStorage key.
+ * Safely read and JSON-parse a sessionStorage key.
  *
- * @param {string} key          The localStorage key.
+ * @param {string} key          The sessionStorage key.
  * @param {*}      defaultValue Value returned when the key is missing or unparseable.
  * @return {*} Parsed value, or defaultValue on miss/error.
  */
 function readJSON( key, defaultValue ) {
 	try {
-		const raw = localStorage.getItem( key );
+		const raw = sessionStorage.getItem( key );
 		if ( ! raw ) {
 			return defaultValue;
 		}
@@ -50,7 +59,7 @@ function readJSON( key, defaultValue ) {
 }
 
 /**
- * Safely JSON-stringify a value and write it to localStorage.
+ * Safely JSON-stringify a value and write it to sessionStorage.
  *
  * Silently swallows errors (quota exceeded, private-mode restrictions);
  * analytics is best-effort and must not break user-facing video playback.
@@ -60,7 +69,7 @@ function readJSON( key, defaultValue ) {
  */
 function writeJSON( key, value ) {
 	try {
-		localStorage.setItem( key, JSON.stringify( value ) );
+		sessionStorage.setItem( key, JSON.stringify( value ) );
 	} catch ( e ) {
 		// Silent fail — analytics is best-effort.
 	}
@@ -113,7 +122,7 @@ export function addLayerInteraction( videoKey, event ) {
  */
 export function clearLayerInteractions() {
 	try {
-		localStorage.removeItem( STORAGE_KEY );
+		sessionStorage.removeItem( STORAGE_KEY );
 	} catch ( e ) {
 		// Silent fail.
 	}
