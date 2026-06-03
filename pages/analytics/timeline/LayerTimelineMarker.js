@@ -43,12 +43,13 @@ function formatTimestamp( seconds ) {
  * VideoLayerTimeline.
  *
  * @param {Object}   props
- * @param {Object}   props.parent   Parent layer entry.
- * @param {boolean}  props.selected Whether this marker is currently selected.
- * @param {Function} props.onSelect () => void called when clicked.
+ * @param {Object}   props.parent     Parent layer entry.
+ * @param {boolean}  props.selected   Whether this marker is currently selected.
+ * @param {Function} props.onSelect   () => void called when clicked.
+ * @param {number}   props.laneOffset Extra connector length (px) to drop this marker into a lower lane when it would overlap a near-simultaneous neighbour; 0 = top lane.
  * @return {JSX.Element} Marker element.
  */
-const LayerTimelineMarker = ( { parent, selected, onSelect } ) => {
+const LayerTimelineMarker = ( { parent, selected, onSelect, laneOffset = 0 } ) => {
 	const meta = LAYER_TYPE_BY_ID[ parent.layer_type ];
 	const color = meta?.color || '#64748B';
 	// Removed layers (no longer in the video's published postmeta) render
@@ -67,12 +68,15 @@ const LayerTimelineMarker = ( { parent, selected, onSelect } ) => {
 			aria-pressed={ selected }
 			aria-label={ `${ meta?.label || parent.layer_type }: ${ parent.name }` }
 		>
-			{ /* Vertical connector from horizontal axis to the icon card. */ }
+			{ /* Vertical connector from horizontal axis to the icon card. Grows
+			    by laneOffset so a marker pushed into a lower lane (to avoid
+			    overlapping a near-simultaneous neighbour) still hangs from its
+			    true position on the axis. */ }
 			<span
 				aria-hidden="true"
 				style={ {
 					width: 2,
-					height: 18,
+					height: 18 + laneOffset,
 					background: color,
 					borderRadius: 1,
 					marginBottom: -1,

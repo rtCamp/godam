@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useState, useLayoutEffect } from 'react';
 
 /**
  * WordPress dependencies
@@ -12,6 +12,55 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import LayerTimelineMarker from './LayerTimelineMarker';
+
+// Two markers whose centres are closer than this (in px, along the strip) would
+// overlap, so the second is pushed down into the next vertical lane. Set just
+// above the marker label's max width (110px) so even two full-width labels in
+// the same lane keep a small gap.
+const MIN_GAP_PX = 112;
+
+// Vertical distance between lanes (px). Clears a full marker — icon card + name
+// + timestamp + conversion badge, plus the "Removed" pill on the historical
+// strip — so a lower-lane marker never collides with the one above it.
+const LANE_STEP_PX = 124;
+
+// Height of the marker area for a single lane (matches the tallest marker tree).
+const BASE_TRACK_HEIGHT_PX = 130;
+
+/**
+ * Assign each marker to a vertical lane so near-simultaneous layers don't
+ * overlap. Walks the time-sorted markers left to right; each one takes the
+ * topmost lane whose previous marker ended at least MIN_GAP_PX earlier, else
+ * opens a new lane below. So three layers within MIN_GAP_PX of each other land
+ * on lanes 0/1/2 (a descending staircase), while well-spaced layers all stay on
+ * lane 0. Pixel positions need the strip's rendered width.
+ *
+ * @param {Array}  parents    Time-sorted parent layers.
+ * @param {number} duration   Video duration in seconds (denominator for position).
+ * @param {number} trackWidth Rendered strip width in px.
+ * @return {{ lanes: number[], laneCount: number }} Lane per marker + total lanes.
+ */
+function assignLanes( parents, duration, trackWidth ) {
+	const laneLastX = [];
+	const lanes = [];
+	const width = trackWidth || 512; // fall back to the min track width pre-measure.
+	parents.forEach( ( parent ) => {
+		const pct = Math.min(
+			100,
+			Math.max( 0, ( parent.timestamp / duration ) * 100 ),
+		);
+		const x = ( pct / 100 ) * width;
+		let lane = laneLastX.findIndex( ( lastX ) => x - lastX >= MIN_GAP_PX );
+		if ( lane === -1 ) {
+			lane = laneLastX.length;
+			laneLastX.push( x );
+		} else {
+			laneLastX[ lane ] = x;
+		}
+		lanes.push( lane );
+	} );
+	return { lanes, laneCount: laneLastX.length };
+}
 
 /**
  * Generate tick label positions for the timeline axis.
@@ -58,12 +107,13 @@ function computeTicks( duration ) {
  *
  * Horizontal axis + absolutely-positioned markers for each parent layer.
  * Markers position themselves by `layer_timestamp / videoDuration * 100%`.
- * If two layers fire at near-identical timestamps the markers will visually
- * overlap; this is rare in practice (marketers don't stack five CTAs on
- * one frame), so v1 keeps overlap detection out of scope. The strip keeps a
- * minimum width and scrolls horizontally on narrow viewports, so the axis,
- * ticks and markers stay legible (and aligned) on mobile instead of
- * crushing together.
+ * Layers firing at near-identical timestamps would overlap, so markers are
+ * packed into vertical lanes (see `assignLanes`): each keeps its true
+ * horizontal position but the connector lengthens to drop colliding markers
+ * onto lower rows. The strip also keeps a minimum width and scrolls
+ * horizontally on narrow viewports, so the axis, ticks and markers stay
+ * legible (and aligned) on mobile instead of crushing together. Shared by the
+ * active timeline and the removed-layers drawer.
  *
  * @param {Object}   props
  * @param {Array}    props.parents          Sorted parent layers.
@@ -81,6 +131,36 @@ const LayerTimelineStrip = ( {
 	const safeDuration = Math.max( 1, Number( videoDuration ) || 1 );
 
 	const ticks = useMemo( () => computeTicks( safeDuration ), [ safeDuration ] );
+
+	// Measure the marker track so lane collisions are computed against the real
+	// pixel width (it grows past the 560px minimum on wider screens, and scrolls
+	// below it). Re-measures on resize.
+	const trackRef = useRef( null );
+	const [ trackWidth, setTrackWidth ] = useState( 0 );
+	useLayoutEffect( () => {
+		const el = trackRef.current;
+		if ( ! el ) {
+			return undefined;
+		}
+		const measure = () => setTrackWidth( el.clientWidth );
+		measure();
+		if ( typeof ResizeObserver === 'undefined' ) {
+			return undefined;
+		}
+		const observer = new ResizeObserver( measure );
+		observer.observe( el );
+		return () => observer.disconnect();
+	}, [] );
+
+	const { lanes, laneCount } = useMemo(
+		() => assignLanes( parents, safeDuration, trackWidth ),
+		[ parents, safeDuration, trackWidth ],
+	);
+
+	// One lane fits in the base height; each extra lane drops markers further
+	// down, so the track has to grow to hold them.
+	const trackHeight =
+		BASE_TRACK_HEIGHT_PX + ( Math.max( 0, laneCount - 1 ) * LANE_STEP_PX );
 
 	return (
 		<div className="pt-4 pb-2 overflow-x-auto">
@@ -143,8 +223,9 @@ const LayerTimelineStrip = ( {
 			    height matches the marker tree so the connector line sits
 			    flush against the axis above. */ }
 				<div
+					ref={ trackRef }
 					className="relative"
-					style={ { height: 130, marginTop: 0 } }
+					style={ { height: trackHeight, marginTop: 0 } }
 					role="list"
 					aria-label={ __( 'Interactive layers on the video timeline', 'godam' ) }
 				>
@@ -156,7 +237,7 @@ const LayerTimelineStrip = ( {
 							) }
 						</p>
 					) : (
-						parents.map( ( parent ) => {
+						parents.map( ( parent, idx ) => {
 							const pct = Math.min(
 								100,
 								Math.max( 0, ( parent.timestamp / safeDuration ) * 100 ),
@@ -172,6 +253,7 @@ const LayerTimelineStrip = ( {
 										parent={ parent }
 										selected={ selectedParentId === parent.id }
 										onSelect={ () => onSelect( parent.id ) }
+										laneOffset={ lanes[ idx ] * LANE_STEP_PX }
 									/>
 								</div>
 							);
