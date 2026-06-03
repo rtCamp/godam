@@ -53,25 +53,46 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 			className="flex flex-col rounded-xl border border-zinc-200 bg-white overflow-hidden"
 			style={ { minHeight: 280 } }
 		>
-			<header className="px-4 py-3 border-b border-zinc-200 flex items-center gap-2">
-				<h4 className="text-sm font-semibold text-zinc-800 m-0">
-					{ parent.layer_type === 'woo'
-						? __( 'Products in this layer', 'godam' )
-						: __( 'Hotspots in this layer', 'godam' ) }
-				</h4>
-				<InfoTooltip
-					text={
-						parent.layer_type === 'woo'
-							? __(
-								'Each row is one product hotspot inside this layer. Select a row to see its individual funnel; "All Products (Aggregate)" rolls up unique sessions across every product.',
-								'godam',
-							)
-							: __(
-								'Each row is one hotspot inside this layer. Select a row to see its individual funnel; "All Hotspots (Aggregate)" rolls up unique sessions across every hotspot.',
-								'godam',
-							)
-					}
-				/>
+			<header className="px-4 py-3 border-b border-zinc-200 flex items-center justify-between gap-2">
+				<div className="flex items-center gap-2 min-w-0">
+					<h4 className="text-sm font-semibold text-zinc-800 m-0">
+						{ parent.layer_type === 'woo'
+							? __( 'Products in this layer', 'godam' )
+							: __( 'Hotspots in this layer', 'godam' ) }
+					</h4>
+					<InfoTooltip
+						text={
+							parent.layer_type === 'woo'
+								? __(
+									'Each row is one product hotspot inside this layer. Select a row to see its individual funnel; "All Products (Aggregate)" rolls up unique sessions across every product.',
+									'godam',
+								)
+								: __(
+									'Each row is one hotspot inside this layer. Select a row to see its individual funnel; "All Hotspots (Aggregate)" rolls up unique sessions across every hotspot.',
+									'godam',
+								)
+						}
+					/>
+				</div>
+				<div className="flex items-center gap-1 flex-shrink-0">
+					<span className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
+						{ __( 'Conversion', 'godam' ) }
+					</span>
+					<InfoTooltip
+						size={ 13 }
+						text={
+							parent.layer_type === 'woo'
+								? __(
+									'Share of sessions that saw the product and converted — clicked through to it or added it to the cart. Each session counts once, so this never exceeds 100%.',
+									'godam',
+								)
+								: __(
+									'Share of sessions that saw the hotspot and clicked it. Each session counts once, so this never exceeds 100%.',
+									'godam',
+								)
+						}
+					/>
+				</div>
 			</header>
 
 			<ul className="m-0 p-0 list-none overflow-y-auto" style={ { maxHeight: 340 } }>

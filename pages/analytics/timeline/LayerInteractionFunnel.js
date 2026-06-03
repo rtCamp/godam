@@ -16,6 +16,7 @@ import {
 	actionLabel,
 	withAlpha,
 } from '../constants/layerTypes';
+import InfoTooltip from './InfoTooltip';
 
 /**
  * Inline icon for a funnel action. Matches the mockup's iconography.
@@ -169,6 +170,12 @@ const LayerInteractionFunnel = ( { layerType, counts, noAction } ) => {
 				<h4 className="text-sm font-semibold text-zinc-800 m-0">
 					{ __( 'Interaction Outcomes', 'godam' ) }
 				</h4>
+				<InfoTooltip
+					text={ __(
+						'Of everyone who saw this layer (Viewed = 100%), the share who took each action. "No action" saw the layer but never interacted. A viewer can appear in more than one action, so the bars need not add up to 100%.',
+						'godam',
+					) }
+				/>
 			</div>
 			<p className="text-xs text-zinc-500 m-0 mb-4">
 				{ __( 'Out of all viewers who saw this layer', 'godam' ) }

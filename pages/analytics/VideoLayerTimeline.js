@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { info } from '@wordpress/icons';
 import { Icon } from '@wordpress/components';
 
@@ -100,11 +100,21 @@ const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
 	const [ dateRange, setDateRange ] = useState( '7d' );
 	const siteUrl = window.location.origin;
 
-	const { parents, isLoading, errorType, errorMessage } = useVideoLayerData( {
-		videoId: attachmentID,
-		siteUrl,
-		dateRange,
-	} );
+	const { parents, isLoading, errorType, errorMessage, videoConversion } =
+		useVideoLayerData( {
+			videoId: attachmentID,
+			siteUrl,
+			dateRange,
+		} );
+
+	// Cumulative video conversion — same metric as the Dashboard's per-video
+	// column, scoped to this video and the selected range. Hidden when there
+	// are no plays (rate is null) so we never render "0 of 0 plays".
+	const hasConversion =
+		videoConversion && videoConversion.rate !== null && videoConversion.plays > 0;
+	const conversionRateLabel = hasConversion
+		? `${ +videoConversion.rate.toFixed( 1 ) }%`
+		: null;
 
 	const [ selectedParentId, setSelectedParentId ] = useState( null );
 
@@ -164,6 +174,41 @@ const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
 				</div>
 				<DateRangePicker value={ dateRange } onChange={ setDateRange } />
 			</header>
+
+			{ /* Video-level conversion — cumulative for the selected range */ }
+			{ ! isLoading && ! errorType && hasConversion && (
+				<div className="px-6 pb-3">
+					<div className="inline-flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-2.5">
+						<div>
+							<div className="flex items-center gap-1.5">
+								<span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+									{ __( 'Video conversion', 'godam' ) }
+								</span>
+								<InfoTooltip
+									size={ 14 }
+									text={ __(
+										'Share of plays where the viewer converted on any layer (clicked a CTA, submitted a form, voted in a poll, or added a product to cart). A play counts once even if the viewer converts on several layers, so this never exceeds 100%.',
+										'godam',
+									) }
+								/>
+							</div>
+							<div className="mt-0.5 flex items-baseline gap-2">
+								<span className="text-2xl font-semibold text-zinc-900">
+									{ conversionRateLabel }
+								</span>
+								<span className="text-xs text-zinc-500">
+									{ sprintf(
+										/* translators: 1: converting sessions, 2: total plays. */
+										__( '%1$s of %2$s plays', 'godam' ),
+										videoConversion.converting.toLocaleString(),
+										videoConversion.plays.toLocaleString(),
+									) }
+								</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			) }
 
 			{ /* Body */ }
 			{ isLoading && <TimelineSkeleton /> }

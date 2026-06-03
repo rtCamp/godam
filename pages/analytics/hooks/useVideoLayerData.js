@@ -6,7 +6,10 @@ import { useMemo } from 'react';
 /**
  * Internal dependencies
  */
-import { useFetchProcessedLayerAnalyticsQuery } from '../redux/api/analyticsApi';
+import {
+	useFetchProcessedLayerAnalyticsQuery,
+	useFetchProcessedAnalyticsHistoryQuery,
+} from '../redux/api/analyticsApi';
 import { LAYER_TYPE_BY_ID, FORM_TYPE_LABELS } from '../constants/layerTypes';
 
 /**
@@ -540,6 +543,37 @@ export function useVideoLayerData( { videoId, siteUrl, dateRange } ) {
 		{ skip: ! videoId },
 	);
 
+	// Video-level conversion rate — the same metric the Dashboard shows per
+	// video (unique converting sessions / plays), but for THIS video over the
+	// selected range. Reuses the processed-analytics history feed (one row per
+	// day) so it tracks the same date pill as the layer data above. The
+	// numerator is already type=1 gated server-side, so the ratio is ≤ 100%.
+	const history = useFetchProcessedAnalyticsHistoryQuery(
+		{ days, videoId, siteUrl },
+		{ skip: ! videoId },
+	);
+
+	const videoConversion = useMemo( () => {
+		const rows = Array.isArray( history.data ) ? history.data : [];
+		const totals = rows.reduce(
+			( acc, row ) => {
+				acc.plays += Number( row.plays ) || 0;
+				acc.converting += Number( row.unique_converting_sessions ) || 0;
+				return acc;
+			},
+			{ plays: 0, converting: 0 },
+		);
+		const rate =
+			totals.plays > 0
+				? Math.min( 100, ( totals.converting / totals.plays ) * 100 )
+				: null;
+		return {
+			rate,
+			plays: totals.plays,
+			converting: totals.converting,
+		};
+	}, [ history.data ] );
+
 	const isLoading =
 		cta.isLoading || cta.isFetching ||
 		form.isLoading || form.isFetching ||
@@ -621,5 +655,6 @@ export function useVideoLayerData( { videoId, siteUrl, dateRange } ) {
 		isLoading,
 		errorType: allErrored ? firstErrorPayload?.errorType : null,
 		errorMessage: allErrored ? firstErrorPayload?.message : null,
+		videoConversion,
 	};
 }

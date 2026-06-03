@@ -127,6 +127,10 @@ const LayerTimelineMarker = ( { parent, selected, onSelect } ) => {
 					color,
 					background: withAlpha( color, 0.12 ),
 				} }
+				title={ __(
+					'Conversion rate — share of viewers who saw this layer and interacted with it.',
+					'godam',
+				) }
 			>
 				{ ( Number( parent.conversion_rate ) || 0 ).toFixed( 1 ) }%
 			</span>
