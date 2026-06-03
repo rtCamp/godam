@@ -9,11 +9,14 @@ import React from 'react';
 import { __ } from '@wordpress/i18n';
 
 /**
- * Pill-toggle for the timeline's global date range. 7D / 30D / 90D / 1Y.
+ * Pill-toggle for the timeline's global date range. 7D / 30D / 90D / 1Y / All.
  *
  * Plain unstyled radio group via buttons — matches the mockup. Selected
  * pill gets a soft pink-tinted background so it reads as the active
- * filter; remaining pills are neutral.
+ * filter; remaining pills are neutral. "All" mirrors the Playback
+ * Performance chart's all-time option — it maps to no `days` param so the
+ * microservice returns the full history (see rangeToDays in
+ * useVideoLayerData).
  *
  * @param {Object}   props
  * @param {string}   props.value    Currently selected key.
@@ -26,13 +29,14 @@ const DateRangePicker = ( { value, onChange } ) => {
 		{ id: '30d', label: __( '30D', 'godam' ), aria: __( 'Last 30 days', 'godam' ) },
 		{ id: '90d', label: __( '90D', 'godam' ), aria: __( 'Last 90 days', 'godam' ) },
 		{ id: '1y', label: __( '1Y', 'godam' ), aria: __( 'Last year', 'godam' ) },
+		{ id: 'all', label: __( 'All', 'godam' ), aria: __( 'All time', 'godam' ) },
 	];
 
 	return (
 		<div
 			role="radiogroup"
 			aria-label={ __( 'Date range', 'godam' ) }
-			className="inline-flex rounded-lg border border-zinc-200 bg-white p-0.5"
+			className="inline-flex flex-wrap rounded-lg border border-zinc-200 bg-white p-0.5"
 		>
 			{ options.map( ( opt ) => {
 				const active = value === opt.id;

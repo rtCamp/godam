@@ -139,7 +139,7 @@ const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
 		parents.find( ( p ) => p.id === selectedParentId ) || null;
 
 	return (
-		<section className="mx-10 my-6 bg-white border border-zinc-200 rounded-lg overflow-hidden">
+		<section className="mx-4 my-6 md:mx-10 bg-white border border-zinc-200 rounded-lg overflow-hidden">
 			{ /* Header */ }
 			<header className="px-6 pt-6 pb-2 flex flex-wrap items-start justify-between gap-4">
 				<div>

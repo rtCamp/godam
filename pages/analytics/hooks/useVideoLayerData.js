@@ -12,9 +12,12 @@ import { LAYER_TYPE_BY_ID, FORM_TYPE_LABELS } from '../constants/layerTypes';
 /**
  * Convert a UI date range key to the integer days parameter the analytics
  * endpoint expects. '1y' is mapped to 365 as a reasonable upper bound.
+ * 'all' returns undefined so the `days` query param is omitted entirely —
+ * the microservice then applies no date lower-bound and returns the full
+ * history (matching the Playback Performance chart's "All" option).
  *
- * @param {string} dateRange '7d' | '30d' | '90d' | '1y'.
- * @return {number} Days.
+ * @param {string} dateRange '7d' | '30d' | '90d' | '1y' | 'all'.
+ * @return {number|undefined} Days, or undefined for all-time.
  */
 function rangeToDays( dateRange ) {
 	switch ( dateRange ) {
@@ -24,6 +27,8 @@ function rangeToDays( dateRange ) {
 			return 30;
 		case '90d':
 			return 90;
+		case 'all':
+			return undefined;
 		case '1y':
 		default:
 			return 365;
@@ -504,7 +509,7 @@ function groupRows( rows, layerType, configIndex ) {
  * @param {Object}        params
  * @param {number|string} params.videoId   WP attachment ID.
  * @param {string}        params.siteUrl   site_url query param.
- * @param {string}        params.dateRange '7d' | '30d' | '90d' | '1y'.
+ * @param {string}        params.dateRange '7d' | '30d' | '90d' | '1y' | 'all'.
  * @return {Object} { parents, isLoading, errorType, errorMessage }.
  */
 export function useVideoLayerData( { videoId, siteUrl, dateRange } ) {

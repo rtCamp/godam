@@ -155,7 +155,14 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_layer_analytics' ),
-					'permission_callback' => '__return_true',
+					// Unlike the sibling ingest/fetch routes (publicly accessible
+					// for the player), this route only feeds the admin Analytics
+					// page, which render_analytics_page() gates on 'upload_files'
+					// (authors and above). Require the same capability so the
+					// per-layer funnel data isn't world-readable by attachment_id.
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
 					'args'                => array(
 						'video_id'   => array(
 							'required'          => true,
@@ -209,12 +216,23 @@ class Analytics extends Base {
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
 
-		if ( empty( $api_key ) || empty( $account_token ) || 'unverified' === $account_token ) {
+		if ( empty( $api_key ) ) {
 			return new WP_REST_Response(
 				array(
 					'status'    => 'error',
 					'message'   => __( 'Missing API key.', 'godam' ),
 					'errorType' => 'missing_key',
+				),
+				200
+			);
+		}
+
+		if ( empty( $account_token ) || 'unverified' === $account_token ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => __( 'GoDAM account is not verified. Connect your account in GoDAM settings to view layer analytics.', 'godam' ),
+					'errorType' => 'unverified_account',
 				),
 				200
 			);

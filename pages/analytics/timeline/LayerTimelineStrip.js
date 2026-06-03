@@ -60,8 +60,10 @@ function computeTicks( duration ) {
  * Markers position themselves by `layer_timestamp / videoDuration * 100%`.
  * If two layers fire at near-identical timestamps the markers will visually
  * overlap; this is rare in practice (marketers don't stack five CTAs on
- * one frame), so v1 keeps overlap detection out of scope — horizontal
- * scroll absorbs the rest.
+ * one frame), so v1 keeps overlap detection out of scope. The strip keeps a
+ * minimum width and scrolls horizontally on narrow viewports, so the axis,
+ * ticks and markers stay legible (and aligned) on mobile instead of
+ * crushing together.
  *
  * @param {Object}   props
  * @param {Array}    props.parents          Sorted parent layers.
@@ -81,96 +83,101 @@ const LayerTimelineStrip = ( {
 	const ticks = useMemo( () => computeTicks( safeDuration ), [ safeDuration ] );
 
 	return (
-		<div className="px-6 pt-4 pb-2">
-			{ /* Tick label row */ }
-			<div className="relative h-5">
-				{ ticks.map( ( tick, idx ) => {
-					let transform = 'translateX(-50%)';
-					if ( tick.pct === 0 ) {
-						transform = 'translateX(0)';
-					} else if ( tick.pct === 100 ) {
-						transform = 'translateX(-100%)';
-					}
-					return (
-						<span
-							key={ `${ tick.pct }-${ idx }` }
-							className="absolute text-[11px] font-medium text-zinc-500 tabular-nums"
-							style={ {
-								left: `${ tick.pct }%`,
-								transform,
-							} }
-						>
-							{ tick.label }
-						</span>
-					);
-				} ) }
-			</div>
+		<div className="pt-4 pb-2 overflow-x-auto">
+			{ /* Inner track keeps a usable minimum width so ticks/axis/markers
+			    stay aligned and legible; the wrapper scrolls horizontally on
+			    narrow (mobile) viewports rather than letting markers collide. */ }
+			<div className="px-6" style={ { minWidth: 560 } }>
+				{ /* Tick label row */ }
+				<div className="relative h-5">
+					{ ticks.map( ( tick, idx ) => {
+						let transform = 'translateX(-50%)';
+						if ( tick.pct === 0 ) {
+							transform = 'translateX(0)';
+						} else if ( tick.pct === 100 ) {
+							transform = 'translateX(-100%)';
+						}
+						return (
+							<span
+								key={ `${ tick.pct }-${ idx }` }
+								className="absolute text-[11px] font-medium text-zinc-500 tabular-nums"
+								style={ {
+									left: `${ tick.pct }%`,
+									transform,
+								} }
+							>
+								{ tick.label }
+							</span>
+						);
+					} ) }
+				</div>
 
-			{ /* Axis line + tick dots */ }
-			<div className="relative mt-1">
-				<div
-					className="w-full"
-					style={ {
-						height: 1,
-						background: '#E5E7EB',
-					} }
-				/>
-				{ ticks.map( ( tick, idx ) => (
-					<span
-						key={ `dot-${ tick.pct }-${ idx }` }
-						aria-hidden="true"
-						className="absolute"
+				{ /* Axis line + tick dots */ }
+				<div className="relative mt-1">
+					<div
+						className="w-full"
 						style={ {
-							top: -2,
-							left: `${ tick.pct }%`,
-							width: 5,
-							height: 5,
-							borderRadius: '50%',
-							background: '#CBD5E1',
-							transform: 'translateX(-50%)',
+							height: 1,
+							background: '#E5E7EB',
 						} }
 					/>
-				) ) }
-			</div>
+					{ ticks.map( ( tick, idx ) => (
+						<span
+							key={ `dot-${ tick.pct }-${ idx }` }
+							aria-hidden="true"
+							className="absolute"
+							style={ {
+								top: -2,
+								left: `${ tick.pct }%`,
+								width: 5,
+								height: 5,
+								borderRadius: '50%',
+								background: '#CBD5E1',
+								transform: 'translateX(-50%)',
+							} }
+						/>
+					) ) }
+				</div>
 
-			{ /* Markers — absolutely positioned by layer_timestamp. The
+				{ /* Markers — absolutely positioned by layer_timestamp. The
 			    height matches the marker tree so the connector line sits
 			    flush against the axis above. */ }
-			<div
-				className="relative"
-				style={ { height: 130, marginTop: 0 } }
-				role="list"
-				aria-label={ __( 'Interactive layers on the video timeline', 'godam' ) }
-			>
-				{ parents.length === 0 ? (
-					<p className="absolute inset-0 flex items-center justify-center text-sm text-zinc-500 m-0">
-						{ __(
-							'No interactive layers in this video yet.',
-							'godam',
-						) }
-					</p>
-				) : (
-					parents.map( ( parent ) => {
-						const pct = Math.min(
-							100,
-							Math.max( 0, ( parent.timestamp / safeDuration ) * 100 ),
-						);
-						return (
-							<div
-								key={ parent.id }
-								className="absolute top-0"
-								style={ { left: `${ pct }%` } }
-								role="listitem"
-							>
-								<LayerTimelineMarker
-									parent={ parent }
-									selected={ selectedParentId === parent.id }
-									onSelect={ () => onSelect( parent.id ) }
-								/>
-							</div>
-						);
-					} )
-				) }
+				<div
+					className="relative"
+					style={ { height: 130, marginTop: 0 } }
+					role="list"
+					aria-label={ __( 'Interactive layers on the video timeline', 'godam' ) }
+				>
+					{ parents.length === 0 ? (
+						<p className="absolute inset-0 flex items-center justify-center text-sm text-zinc-500 m-0">
+							{ __(
+								'No interactive layers in this video yet.',
+								'godam',
+							) }
+						</p>
+					) : (
+						parents.map( ( parent ) => {
+							const pct = Math.min(
+								100,
+								Math.max( 0, ( parent.timestamp / safeDuration ) * 100 ),
+							);
+							return (
+								<div
+									key={ parent.id }
+									className="absolute top-0"
+									style={ { left: `${ pct }%` } }
+									role="listitem"
+								>
+									<LayerTimelineMarker
+										parent={ parent }
+										selected={ selectedParentId === parent.id }
+										onSelect={ () => onSelect( parent.id ) }
+									/>
+								</div>
+							);
+						} )
+					) }
+				</div>
 			</div>
 		</div>
 	);

@@ -198,14 +198,15 @@ const LayerDetailPanel = ( { parent, attachmentID } ) => {
 				/>
 			) }
 
-			{ /* Body */ }
+			{ /* Body. Single column on mobile (the sub-hotspot rail stacks
+			    above the funnel); two columns from md up. Avoids the rail +
+			    funnel overflowing on narrow screens. */ }
 			<div
-				className="grid gap-4 p-6"
-				style={ {
-					gridTemplateColumns: showRail
-						? 'minmax(260px, 320px) minmax(0, 1fr)'
-						: 'minmax(0, 1fr)',
-				} }
+				className={ `grid gap-4 p-6 grid-cols-1 ${
+					showRail
+						? 'md:grid-cols-[minmax(240px,300px)_minmax(0,1fr)]'
+						: ''
+				}` }
 			>
 				{ showRail && (
 					<SubHotspotRail

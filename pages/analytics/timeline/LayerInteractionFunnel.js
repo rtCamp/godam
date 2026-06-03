@@ -164,12 +164,7 @@ const LayerInteractionFunnel = ( { layerType, counts, noAction } ) => {
 	}
 
 	return (
-		<div
-			className="rounded-xl p-5 border border-zinc-200 bg-white"
-			style={ {
-				// Generous internal padding; let the parent panel decide width.
-			} }
-		>
+		<div className="rounded-xl p-3 sm:p-5 border border-zinc-200 bg-white">
 			<div className="flex items-center gap-2 mb-1">
 				<h4 className="text-sm font-semibold text-zinc-800 m-0">
 					{ __( 'Interaction Outcomes', 'godam' ) }
@@ -179,115 +174,123 @@ const LayerInteractionFunnel = ( { layerType, counts, noAction } ) => {
 				{ __( 'Out of all viewers who saw this layer', 'godam' ) }
 			</p>
 
-			{ /* Counts row */ }
-			<div
-				className="grid gap-3 mb-3"
-				style={ {
-					gridTemplateColumns: `repeat(${ bars.length }, minmax(0, 1fr))`,
-				} }
-			>
-				{ bars.map( ( bar ) => (
+			{ /* The three rows (counts / bars / percentages) share one
+			    horizontal-scroll track with a per-bar minimum width, so on
+			    narrow (mobile) widths the bars stay legible and the rows stay
+			    column-aligned instead of crushing together. */ }
+			<div className="overflow-x-auto">
+				<div style={ { minWidth: bars.length * 64 } }>
+					{ /* Counts row */ }
 					<div
-						key={ bar.action }
-						className="flex flex-col items-center text-center"
+						className="grid gap-3 mb-3"
+						style={ {
+							gridTemplateColumns: `repeat(${ bars.length }, minmax(0, 1fr))`,
+						} }
 					>
-						<div
-							className="flex items-center gap-1.5 text-zinc-500"
-							style={ { lineHeight: 1 } }
-						>
-							{ actionIcon( bar.action ) }
-							<span className="text-[11px] uppercase tracking-wide">
-								{ actionLabel( bar.action ) }
-							</span>
-						</div>
-						<p className="text-xl font-semibold text-zinc-900 mt-1.5 mb-0">
-							{ bar.value.toLocaleString() }
-						</p>
-					</div>
-				) ) }
-			</div>
-
-			{ /* Bars row — heights as % of the tallest bar (viewed). */ }
-			<div
-				className="grid gap-3 items-end"
-				style={ {
-					gridTemplateColumns: `repeat(${ bars.length }, minmax(0, 1fr))`,
-					height: '160px',
-				} }
-			>
-				{ bars.map( ( bar, idx ) => {
-					const tone = toneFor( bar.action );
-					const heightPct = Math.max( bar.pct, bar.value > 0 ? 4 : 0 );
-					const color = tone.useGrey ? '#94A3B8' : meta.color;
-					const background = withAlpha( color, tone.fillAlpha );
-					let ariaLabel;
-					if ( bar.action === 'no_action' ) {
-						ariaLabel = sprintf(
-							/* translators: %1$s value, %2$s percentage */
-							__( '%1$s viewers (%2$s%%) saw this layer but didn\'t interact with it.', 'godam' ),
-							bar.value.toLocaleString(),
-							bar.pct.toFixed( 1 ),
-						);
-					} else {
-						ariaLabel = sprintf(
-							/* translators: %1$s action name, %2$s value, %3$s percentage */
-							__( '%1$s: %2$s viewers (%3$s%%).', 'godam' ),
-							actionLabel( bar.action ),
-							bar.value.toLocaleString(),
-							bar.pct.toFixed( 1 ),
-						);
-					}
-					return (
-						<div
-							key={ bar.action }
-							className="flex items-end h-full"
-							title={ ariaLabel }
-						>
+						{ bars.map( ( bar ) => (
 							<div
-								className="w-full rounded-t-md"
-								style={ {
-									height: `${ heightPct }%`,
-									background,
-									minHeight: bar.value > 0 ? 8 : 0,
-									transition:
-										'height 360ms cubic-bezier(0.22, 1, 0.36, 1)',
-									transitionDelay: `${ idx * 40 }ms`,
-								} }
-								role="img"
-								aria-label={ ariaLabel }
-							/>
-						</div>
-					);
-				} ) }
-			</div>
-
-			{ /* Percentage row */ }
-			<div
-				className="grid gap-3 mt-3"
-				style={ {
-					gridTemplateColumns: `repeat(${ bars.length }, minmax(0, 1fr))`,
-				} }
-			>
-				{ bars.map( ( bar ) => {
-					const tone = toneFor( bar.action );
-					const color = tone.useGrey ? '#475569' : meta.color;
-					return (
-						<div
-							key={ bar.action }
-							className="text-center"
-						>
-							<p
-								className="text-lg font-semibold m-0"
-								style={ { color } }
+								key={ bar.action }
+								className="flex flex-col items-center text-center"
 							>
-								{ bar.pct.toFixed( 1 ) }%
-							</p>
-							<p className="text-[11px] text-zinc-500 m-0">
-								{ __( 'of viewers', 'godam' ) }
-							</p>
-						</div>
-					);
-				} ) }
+								<div
+									className="flex items-center gap-1.5 text-zinc-500"
+									style={ { lineHeight: 1 } }
+								>
+									{ actionIcon( bar.action ) }
+									<span className="text-[11px] uppercase tracking-wide">
+										{ actionLabel( bar.action ) }
+									</span>
+								</div>
+								<p className="text-xl font-semibold text-zinc-900 mt-1.5 mb-0">
+									{ bar.value.toLocaleString() }
+								</p>
+							</div>
+						) ) }
+					</div>
+
+					{ /* Bars row — heights as % of the tallest bar (viewed). */ }
+					<div
+						className="grid gap-3 items-end"
+						style={ {
+							gridTemplateColumns: `repeat(${ bars.length }, minmax(0, 1fr))`,
+							height: '160px',
+						} }
+					>
+						{ bars.map( ( bar, idx ) => {
+							const tone = toneFor( bar.action );
+							const heightPct = Math.max( bar.pct, bar.value > 0 ? 4 : 0 );
+							const color = tone.useGrey ? '#94A3B8' : meta.color;
+							const background = withAlpha( color, tone.fillAlpha );
+							let ariaLabel;
+							if ( bar.action === 'no_action' ) {
+								ariaLabel = sprintf(
+									/* translators: %1$s value, %2$s percentage */
+									__( '%1$s viewers (%2$s%%) saw this layer but didn\'t interact with it.', 'godam' ),
+									bar.value.toLocaleString(),
+									bar.pct.toFixed( 1 ),
+								);
+							} else {
+								ariaLabel = sprintf(
+									/* translators: %1$s action name, %2$s value, %3$s percentage */
+									__( '%1$s: %2$s viewers (%3$s%%).', 'godam' ),
+									actionLabel( bar.action ),
+									bar.value.toLocaleString(),
+									bar.pct.toFixed( 1 ),
+								);
+							}
+							return (
+								<div
+									key={ bar.action }
+									className="flex items-end h-full"
+									title={ ariaLabel }
+								>
+									<div
+										className="w-full rounded-t-md"
+										style={ {
+											height: `${ heightPct }%`,
+											background,
+											minHeight: bar.value > 0 ? 8 : 0,
+											transition:
+										'height 360ms cubic-bezier(0.22, 1, 0.36, 1)',
+											transitionDelay: `${ idx * 40 }ms`,
+										} }
+										role="img"
+										aria-label={ ariaLabel }
+									/>
+								</div>
+							);
+						} ) }
+					</div>
+
+					{ /* Percentage row */ }
+					<div
+						className="grid gap-3 mt-3"
+						style={ {
+							gridTemplateColumns: `repeat(${ bars.length }, minmax(0, 1fr))`,
+						} }
+					>
+						{ bars.map( ( bar ) => {
+							const tone = toneFor( bar.action );
+							const color = tone.useGrey ? '#475569' : meta.color;
+							return (
+								<div
+									key={ bar.action }
+									className="text-center"
+								>
+									<p
+										className="text-lg font-semibold m-0"
+										style={ { color } }
+									>
+										{ bar.pct.toFixed( 1 ) }%
+									</p>
+									<p className="text-[11px] text-zinc-500 m-0">
+										{ __( 'of viewers', 'godam' ) }
+									</p>
+								</div>
+							);
+						} ) }
+					</div>
+				</div>
 			</div>
 		</div>
 	);
