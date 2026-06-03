@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
  * Internal dependencies
@@ -35,6 +35,14 @@ const App = () => {
 	const dispatch = useDispatch();
 	const [ attachmentID, setAttachmentID ] = useState( null );
 	const [ rawID, setRawID ] = useState( null );
+
+	// Track the current attachment id in a ref so the popstate handler can
+	// compare against it without re-subscribing the listener on every change.
+	const attachmentIDRef = useRef( attachmentID );
+	useEffect( () => {
+		attachmentIDRef.current = attachmentID;
+	}, [ attachmentID ] );
+
 	const {
 		data: resolvedAttachment,
 		isSuccess,
@@ -97,18 +105,24 @@ const App = () => {
 
 		// Handle back/forward navigation
 		const handlePopState = () => {
-			resetStore();
-
 			const newParams = new URLSearchParams( window.location.search );
 			const newId = newParams.get( 'id' );
+			const normalizedId = newId && ! isNaN( newId ) ? newId : null;
 
-			if ( newId && ! isNaN( newId ) ) {
-				setRawID( newId );
-				setAttachmentID( newId );
-			} else {
-				setRawID( null );
-				setAttachmentID( null );
+			// A popstate that does NOT change the current attachment must be a
+			// no-op. resetStore() clears the RTK Query cache; when the id is
+			// unchanged, <VideoEditor key={ attachmentID } /> does not remount
+			// and the already-mounted useGetAttachmentMetaQuery hook does not
+			// refetch, which would leave the editor permanently stuck on its
+			// loading skeleton. Only reset + reinitialise when the attachment
+			// actually changes (back to the picker, or to a different video).
+			if ( String( normalizedId ) === String( attachmentIDRef.current ) ) {
+				return;
 			}
+
+			resetStore();
+			setRawID( normalizedId );
+			setAttachmentID( normalizedId );
 		};
 
 		window.addEventListener( 'popstate', handlePopState );
