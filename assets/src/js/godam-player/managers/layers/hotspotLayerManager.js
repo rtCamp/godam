@@ -133,9 +133,7 @@ export default class HotspotLayerManager {
 		layerObj.hotspots.forEach( ( hotspot, index ) => {
 			const hotspotDiv = this.createHotspotElement( hotspot, index, containerWidth, containerHeight, baseWidth, baseHeight );
 
-			if ( layerObj.pauseOnHover ) {
-				this.setupHotspotHoverEvents( hotspotDiv );
-			}
+			this.setupHotspotHoverEvents( hotspotDiv, layerObj.pauseOnHover );
 
 			layerObj.layerElement.appendChild( hotspotDiv );
 
@@ -391,17 +389,33 @@ export default class HotspotLayerManager {
 	/**
 	 * Setup hotspot hover events
 	 *
-	 * @param {HTMLElement} hotspotDiv - The hotspot element to add hover events to
+	 * @param {HTMLElement} hotspotDiv   - The hotspot element to add hover events to
+	 * @param {boolean}     pauseOnHover - Whether to pause video playback on hover
 	 */
-	setupHotspotHoverEvents( hotspotDiv ) {
+	setupHotspotHoverEvents( hotspotDiv, pauseOnHover = false ) {
 		hotspotDiv.addEventListener( 'mouseenter', () => {
-			this.wasPlayingBeforeHover = ! this.player.paused();
-			this.player.pause();
+			if ( pauseOnHover ) {
+				this.wasPlayingBeforeHover = ! this.player.paused();
+				this.player.pause();
+			}
+
+			const layer = hotspotDiv.closest( '.easydam-layer.hotspot-layer' );
+
+			if ( layer ) {
+				const computedZ = window.getComputedStyle( layer ).zIndex;
+				const current = parseInt( computedZ, 10 ) || 0;
+				layer.style.zIndex = current + 1;
+			}
 		} );
 
 		hotspotDiv.addEventListener( 'mouseleave', () => {
-			if ( this.wasPlayingBeforeHover ) {
+			if ( pauseOnHover && this.wasPlayingBeforeHover ) {
 				this.player.play();
+			}
+
+			const layer = hotspotDiv.closest( '.easydam-layer.hotspot-layer' );
+			if ( layer ) {
+				layer.style.zIndex = '';
 			}
 		} );
 	}
