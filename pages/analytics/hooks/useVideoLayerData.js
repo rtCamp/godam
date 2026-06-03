@@ -350,16 +350,28 @@ function groupRows( rows, layerType, configIndex ) {
 		}
 
 		const parentNoAction = computeNoAction( layerType, parentCounts );
-		// Raw rate then clamp to ≤ 100: the numerator (parent-aggregate uniqExact
-		// sessions) and denominator (parent viewed) come from different
-		// aggregation passes, so cross-day session skew could nudge it past 100.
-		const parentRawConversion =
+		// Use the server's conversion_rate. It's a session UNION over ALL of this
+		// layer type's conversion actions (e.g. Woo's clicked ∪ added_to_cart),
+		// already type=1 gated and bounded ≤ 100%. Recomputing client-side from a
+		// single `conversionAction` undercounts Woo, which also converts on
+		// cart-adds (a cart-only product would wrongly read 0%). Legacy rows with
+		// no parent impression (older Hotspot tracker) have no server aggregate
+		// row, so fall back to the single-action rate over the synthesized viewed.
+		const parentFallbackConversion =
 			parentCounts.viewed > 0
-				? ( ( parentCounts[ meta.conversionAction ] || 0 ) /
-						parentCounts.viewed ) *
-					100
+				? Math.min(
+					100,
+					( ( parentCounts[ meta.conversionAction ] || 0 ) /
+							parentCounts.viewed ) *
+						100,
+				)
 				: 0;
-		const parentConversion = Math.min( 100, parentRawConversion );
+		const parentConversion = bucket.parentRow
+			? Math.min(
+				100,
+				Math.max( 0, Number( bucket.parentRow.conversion_rate ) || 0 ),
+			)
+			: parentFallbackConversion;
 
 		const parentRowAny = bucket.parentRow || ( bucket.subRows[ 0 ]?.row || {} );
 		const parentTimestamp = Number( parentRowAny.timestamp || 0 );
@@ -388,16 +400,15 @@ function groupRows( rows, layerType, configIndex ) {
 					// hotspots in one layer become visible together).
 					viewed: parentCounts.viewed,
 				} );
-				// Per-sub conversion = sub conversions / PARENT viewed (subs
-				// don't emit their own viewed); clamp to ≤ 100 for the same
-				// cross-aggregation reason as the parent rate.
-				const subRawConversion =
-					parentCounts.viewed > 0
-						? ( ( counts[ meta.conversionAction ] || 0 ) /
-								parentCounts.viewed ) *
-							100
-						: 0;
-				const conversion = Math.min( 100, subRawConversion );
+				// Per-sub conversion comes from the server: the sub's converting
+				// sessions over the PARENT's viewed (subs don't emit their own
+				// viewed), a UNION over the layer type's conversion actions — so
+				// Woo counts cart-adds too — and already bounded ≤ 100%. Don't
+				// recompute from a single action.
+				const conversion = Math.min(
+					100,
+					Math.max( 0, Number( row.conversion_rate ) || 0 ),
+				);
 				const subId = row.layer_id || '';
 				// Sub-hotspot name: in the rail the parent context ("Products
 				// in this layer") is already implicit, so prefer the bare
