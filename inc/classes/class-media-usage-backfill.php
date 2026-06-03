@@ -40,6 +40,9 @@ class Media_Usage_Backfill {
 	// ----- Number of posts processed per batch -----
 	const BATCH_SIZE = 50;
 
+	// ----- Seconds to spend inside a single AS action call -----
+	const TIME_LIMIT_SECONDS = 20;
+
 	// ----- wp_options keys -----
 	const OPT_STATUS    = 'godam_media_backfill_status';
 	const OPT_PROCESSED = 'godam_media_backfill_processed';
@@ -254,58 +257,67 @@ class Media_Usage_Backfill {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Process one batch of untracked posts.
+	 * Process posts in a timed loop within a single Action Scheduler action.
 	 *
-	 * A guard on the stored status means the batch is a no-op if the backfill
-	 * was reset externally while the action was queued. Only one batch action
-	 * is scheduled at a time (as_has_scheduled_action dedup), so there is no
-	 * risk of concurrent execution or double-counting.
+	 * Instead of one batch per AS action, iterates over batches of BATCH_SIZE
+	 * posts until TIME_LIMIT_SECONDS is reached, then schedules a single
+	 * continuation action. This dramatically reduces AS invocations and the
+	 * associated WordPress boot overhead for large sites.
+	 *
+	 * The status is re-read at the top of every iteration so an external stop()
+	 * call is honoured promptly without waiting for a full batch to complete.
 	 *
 	 * @return void
 	 */
 	public function process_batch() {
-		if ( self::STATUS_RUNNING !== get_option( self::OPT_STATUS ) ) {
-			return;
-		}
+		$start_time = microtime( true );
+		$tracker    = Media_Usage_Tracker::get_instance();
 
-		$posts = $this->fetch_pending_posts( self::BATCH_SIZE );
+		while ( true ) {
+			// Re-check status each iteration — handles an external stop() call.
+			if ( self::STATUS_RUNNING !== get_option( self::OPT_STATUS ) ) {
+				return;
+			}
 
-		if ( empty( $posts ) ) {
-			update_option( self::OPT_STATUS, self::STATUS_COMPLETED, false );
+			$posts = $this->fetch_pending_posts( self::BATCH_SIZE );
+
+			if ( empty( $posts ) ) {
+				update_option( self::OPT_STATUS, self::STATUS_COMPLETED, false );
+				wp_cache_delete( self::CACHE_KEY, self::CACHE_GROUP );
+				return;
+			}
+
+			foreach ( $posts as $post ) {
+				// sync_post_attachments() writes _godam_tracked_media to the post,
+				// so this post will not appear in fetch_pending_posts() again.
+				$tracker->sync_post_attachments( (int) $post->ID, (string) $post->post_content );
+			}
+
+			$batch_count = count( $posts );
+			update_option( self::OPT_PROCESSED, (int) get_option( self::OPT_PROCESSED, 0 ) + $batch_count, false );
 			wp_cache_delete( self::CACHE_KEY, self::CACHE_GROUP );
-			return;
+
+			// Release memory accumulated by this batch before the next iteration.
+			$this->free_memory();
+
+			// A partial batch means no more posts remain.
+			if ( $batch_count < self::BATCH_SIZE ) {
+				update_option( self::OPT_STATUS, self::STATUS_COMPLETED, false );
+				wp_cache_delete( self::CACHE_KEY, self::CACHE_GROUP );
+				return;
+			}
+
+			// Stop iterating if approaching the time limit.
+			if ( ( microtime( true ) - $start_time ) >= self::TIME_LIMIT_SECONDS ) {
+				break;
+			}
 		}
 
-		$tracker = Media_Usage_Tracker::get_instance();
-
-		foreach ( $posts as $post ) {
-			// sync_post_attachments() writes _godam_tracked_media to the post,
-			// so this post will not appear in fetch_pending_posts() again.
-			$tracker->sync_post_attachments( (int) $post->ID, (string) $post->post_content );
-		}
-
-		$batch_count = count( $posts );
-		update_option( self::OPT_PROCESSED, (int) get_option( self::OPT_PROCESSED, 0 ) + $batch_count, false );
-		wp_cache_delete( self::CACHE_KEY, self::CACHE_GROUP );
-
-		// Cancel any pending stale action unconditionally before deciding what
-		// comes next. The dedup guard (as_has_scheduled_action) is intentionally
-		// avoided here: a stale pending action from a previous interrupted run
-		// would make the guard return true and silently swallow the next batch.
+		// Time limit reached with more posts remaining — schedule a continuation.
+		// Cancel any stale pending action first (same guard as before) so a
+		// leftover action cannot block the fresh one.
 		as_unschedule_action( self::AS_BATCH_ACTION );
-
-		if ( $batch_count >= self::BATCH_SIZE ) {
-			// Full batch — more posts may remain; schedule the next run.
-			as_enqueue_async_action( self::AS_BATCH_ACTION );
-		} else {
-			update_option( self::OPT_STATUS, self::STATUS_COMPLETED, false );
-			wp_cache_delete( self::CACHE_KEY, self::CACHE_GROUP );
-		}
-
-		// Free memory last — wp_cache_flush_runtime() clears all in-process
-		// cache, so it must run after options are written and the next batch
-		// action is scheduled to avoid interfering with Action Scheduler state.
-		$this->free_memory();
+		as_enqueue_async_action( self::AS_BATCH_ACTION );
 	}
 
 	// -------------------------------------------------------------------------
