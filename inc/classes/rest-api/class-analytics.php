@@ -155,14 +155,13 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_layer_analytics' ),
-					// Unlike the sibling ingest/fetch routes (publicly accessible
-					// for the player), this route only feeds the admin Analytics
-					// page, which render_analytics_page() gates on 'upload_files'
-					// (authors and above). Require the same capability so the
-					// per-layer funnel data isn't world-readable by attachment_id.
-					'permission_callback' => function () {
-						return current_user_can( 'upload_files' );
-					},
+					// Matches the sibling analytics routes: the api_key / account_token
+					// are injected server-side (never client-supplied) and the
+					// microservice scopes every query by account, so this can only ever
+					// return this site's own non-PII aggregate analytics. Locking down
+					// analytics reads, if ever wanted, should be done uniformly across
+					// all analytics routes rather than just this one.
+					'permission_callback' => '__return_true',
 					'args'                => array(
 						'video_id'   => array(
 							'required'          => true,
