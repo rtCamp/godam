@@ -32,9 +32,10 @@ bin/
 .packagejsonignore
 .distignore
 
-# JS unit tests — never ship in the distribution build.
+# JS unit tests + their config — never ship in the distribution build.
 # (Tests under assets/src/js are already covered by that dir's exclusion above;
 # these patterns also catch co-located tests under pages/.)
+jest.config.js
 *.test.js
 *.spec.js
 __tests__/

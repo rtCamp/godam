@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { LAYER_TYPES } from '../../utils/constants.js';
-import { getLayerDisplayName } from '../../utils/layerActions.js';
+import { getLayerDisplayName, shouldSuppressSkip } from '../../utils/layerActions.js';
 
 /**
  * Resolve the analytics videoKey (data-id or data-job_id) for a player.
@@ -117,17 +117,11 @@ export default class FormLayerManager {
 			this._dedupeFired.set( layerId, firedActions );
 		}
 		// A skip that lands after the viewer already took this layer's positive
-		// action (clicked a CTA, submitted a form, voted in a poll) is not a real
-		// skip — e.g. a CTA opens in a new tab, the viewer returns and presses
-		// Continue, which would otherwise log a `skipped` on top of the `clicked`
-		// and push clicked + skipped past viewed. Drop it so the two stay
-		// mutually exclusive per session (the click is the meaningful outcome).
-		if (
-			actionType === 'skipped' &&
-			( firedActions.has( 'clicked' ) ||
-				firedActions.has( 'submitted' ) ||
-				firedActions.has( 'voted' ) )
-		) {
+		// action isn't a real skip (see shouldSuppressSkip) — drop it so
+		// clicked/submitted/voted and skipped stay mutually exclusive per
+		// session (e.g. a CTA opens in a new tab, the viewer returns and presses
+		// Continue, which must not log a skip on top of the click).
+		if ( shouldSuppressSkip( firedActions, actionType ) ) {
 			return;
 		}
 		if ( firedActions.has( actionType ) ) {

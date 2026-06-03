@@ -79,6 +79,31 @@ export function getLayerActionConfig( layerType ) {
 }
 
 /**
+ * The "positive" terminal actions across skip-capable layer types — clicking a
+ * CTA, submitting a form, voting in a poll. Once one of these has fired for a
+ * layer in a session, a later `skipped` is not a genuine skip.
+ */
+export const TERMINAL_ACTIONS = Object.freeze( [ 'clicked', 'submitted', 'voted' ] );
+
+/**
+ * Whether a `skipped` event should be dropped because the viewer already took
+ * the layer's positive action in this page-load session — e.g. a CTA opens in a
+ * new tab, the viewer returns and presses Continue, which would otherwise log a
+ * skip on top of the click. Keeps clicked/submitted/voted and skipped mutually
+ * exclusive per session.
+ *
+ * @param {Set<string>} firedActions Action types already emitted for this layer this session.
+ * @param {string}      actionType   The action about to be emitted.
+ * @return {boolean} True to suppress the emit.
+ */
+export function shouldSuppressSkip( firedActions, actionType ) {
+	return (
+		actionType === 'skipped' &&
+		TERMINAL_ACTIONS.some( ( action ) => firedActions.has( action ) )
+	);
+}
+
+/**
  * English type labels used in the auto-generated fallback name. Kept
  * non-localized at emission time — the canonical record on the analytics
  * service should be locale-stable so a site that switches languages

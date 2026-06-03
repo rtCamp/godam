@@ -78,7 +78,7 @@ function parseMetadata( raw ) {
  * @param {Object} counts    Action counts for the layer.
  * @return {number} Non-negative integer.
  */
-function computeNoAction( layerType, counts ) {
+export function computeNoAction( layerType, counts ) {
 	const v = Number( counts.viewed ) || 0;
 	switch ( layerType ) {
 		case 'hotspot':
@@ -282,7 +282,7 @@ function extractSubIdSuffix( compositeLayerId ) {
  * @param {{activeParentIds:Set<string>|null,activeSubIdsByParent:Map<string,Set<string>>}} configIndex Active-layer lookup from indexActiveConfig().
  * @return {Array} Parent layer entries with embedded sub_hotspots[].
  */
-function groupRows( rows, layerType, configIndex ) {
+export function groupRows( rows, layerType, configIndex ) {
 	const meta = LAYER_TYPE_BY_ID[ layerType ];
 	if ( ! meta ) {
 		return [];

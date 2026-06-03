@@ -20,10 +20,13 @@
 		"tests/js/**/*.js"
 	  ],
 	  "extends": [
-		"plugin:jest/all"
+		"plugin:jest/recommended"
 	  ],
 	  "rules": {
-		// Add Rules for Jest here
+		// Add stricter Jest rules here as the suite grows. `jest/recommended`
+		// (the baseline @wordpress/scripts uses) avoids `jest/all`'s pedantic
+		// rules and its `unbound-method`, which needs TS parser services this
+		// JS project doesn't configure.
 	  }
 	}]
   }
