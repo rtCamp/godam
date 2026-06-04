@@ -122,6 +122,7 @@ const APISettings = ( { setNotice } ) => {
 							disabled={ isAPIKeyLoading || hasAPIKey || ! apiKey.trim() }
 							variant="primary"
 							isBusy={ isAPIKeyLoading }
+							data-test-id="godam-settings-video-button-save-api-key"
 						>
 							{ isAPIKeyLoading ? __( 'Saving…', 'godam' ) : __( 'Save API Key', 'godam' ) }
 						</Button>
@@ -132,6 +133,7 @@ const APISettings = ( { setNotice } ) => {
 							variant="secondary"
 							isDestructive
 							isBusy={ isDeactivateLoading }
+							data-test-id="godam-settings-video-button-remove-api-key"
 						>
 							{ __( 'Remove API Key', 'godam' ) }
 						</Button>

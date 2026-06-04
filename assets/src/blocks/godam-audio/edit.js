@@ -114,16 +114,18 @@ function AudioEdit( {
 
 	if ( ! src && ! temporaryURL ) {
 		return (
-			<div { ...blockProps }>
-				<MediaPlaceholder
-					icon={ <BlockIcon icon={ icon } /> }
-					onSelect={ onSelectAudio }
-					accept="audio/*"
-					allowedTypes={ ALLOWED_MEDIA_TYPES }
-					value={ attributes }
-					onError={ onUploadError }
-					labels={ { title: __( 'Audio', 'godam' ) } }
-				/>
+			<div { ...blockProps } data-test-id="godam-audio-canvas-placeholder">
+				<div data-test-id="godam-audio-button-select">
+					<MediaPlaceholder
+						icon={ <BlockIcon icon={ icon } /> }
+						onSelect={ onSelectAudio }
+						accept="audio/*"
+						allowedTypes={ ALLOWED_MEDIA_TYPES }
+						value={ attributes }
+						onError={ onUploadError }
+						labels={ { title: __( 'Audio', 'godam' ) } }
+					/>
+				</div>
 			</div>
 		);
 	}
@@ -144,24 +146,29 @@ function AudioEdit( {
 				</BlockControls>
 			) }
 			<InspectorControls>
-				<PanelBody title={ __( 'Settings', 'godam' ) }>
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={ __( 'Autoplay', 'godam' ) }
-						onChange={ toggleAttribute( 'autoplay' ) }
-						checked={ autoplay }
-						help={ getAutoplayHelp }
-					/>
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={ __( 'Loop', 'godam' ) }
-						onChange={ toggleAttribute( 'loop' ) }
-						checked={ loop }
-					/>
+				<PanelBody title={ __( 'Settings', 'godam' ) } data-test-id="godam-audio-panel-settings">
+					<div data-test-id="godam-audio-control-autoplay">
+						<ToggleControl
+							__nextHasNoMarginBottom
+							label={ __( 'Autoplay', 'godam' ) }
+							onChange={ toggleAttribute( 'autoplay' ) }
+							checked={ autoplay }
+							help={ getAutoplayHelp }
+						/>
+					</div>
+					<div data-test-id="godam-audio-control-loop">
+						<ToggleControl
+							__nextHasNoMarginBottom
+							label={ __( 'Loop', 'godam' ) }
+							onChange={ toggleAttribute( 'loop' ) }
+							checked={ loop }
+						/>
+					</div>
 					<SelectControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
 						label={ _x( 'Preload', 'noun; Audio block parameter', 'godam' ) }
+						data-test-id="godam-audio-control-preload"
 						value={ preload || '' }
 						// `undefined` is required for the preload attribute to be unset.
 						onChange={ ( value ) =>
@@ -181,7 +188,7 @@ function AudioEdit( {
 					/>
 				</PanelBody>
 			</InspectorControls>
-			<figure { ...blockProps }>
+			<figure { ...blockProps } data-test-id="godam-audio-canvas">
 				{ /*
 				Disable the audio tag if the block is not selected
 				so the user clicking on it won't play the
