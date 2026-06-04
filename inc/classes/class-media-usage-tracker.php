@@ -173,6 +173,12 @@ class Media_Usage_Tracker {
 		$old_ids = $this->get_tracked_attachment_ids( $post_id );
 		$new_ids = $this->extract_attachment_ids( $post_content );
 
+		// Featured image lives outside post_content — add it separately.
+		$thumbnail_id = (int) get_post_meta( $post_id, '_thumbnail_id', true );
+		if ( $thumbnail_id > 0 ) {
+			$new_ids = array_values( array_unique( array_merge( $new_ids, array( $thumbnail_id ) ) ) );
+		}
+
 		$added   = array_diff( $new_ids, $old_ids );
 		$removed = array_diff( $old_ids, $new_ids );
 
