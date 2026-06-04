@@ -604,7 +604,7 @@ const Analytics = ( { attachmentID } ) => {
 					</div>
 
 					{ /* Page-level FYI — analytics aren't real-time. */ }
-					<div className="godam-analytics-fyi flex items-center gap-1.5 mt-2 text-xs text-zinc-500">
+					<div className="godam-analytics-fyi flex items-center gap-1.5 mx-10 mt-2 text-xs text-zinc-500">
 						<Icon icon={ info } size={ 15 } />
 						<span>
 							{ __(

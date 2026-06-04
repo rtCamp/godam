@@ -7,6 +7,8 @@ import React, { useEffect, useState, useRef } from 'react';
  * WordPress dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
+import { Icon } from '@wordpress/components';
+import { info } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -455,6 +457,16 @@ const Dashboard = () => {
 			</div>
 
 			<div id="dashboard-container" className="dashboard-container hidden">
+				{ /* Page-level FYI — analytics aren't real-time. */ }
+				<div className="godam-analytics-fyi flex items-center gap-1.5 mb-3 text-xs text-zinc-500">
+					<Icon icon={ info } size={ 15 } />
+					<span>
+						{ __(
+							'Heads up: analytics update periodically, so new activity may take up to 30 minutes to show here.',
+							'godam',
+						) }
+					</span>
+				</div>
 				<div className="flex-grow">
 					<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-nowrap">
 
