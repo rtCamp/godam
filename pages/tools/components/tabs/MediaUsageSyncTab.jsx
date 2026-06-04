@@ -62,7 +62,7 @@ const MediaUsageSyncTab = () => {
 		}
 		pollRef.current = setInterval( async () => {
 			const nextStatus = await fetchStatus();
-			if ( nextStatus !== 'running' ) {
+			if ( nextStatus && nextStatus !== 'running' ) {
 				stopPolling();
 				if ( nextStatus === 'completed' ) {
 					setNotice( {
