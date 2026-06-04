@@ -299,9 +299,22 @@ class Media_Usage_Backfill {
 			}
 
 			foreach ( $posts as $post ) {
-				// sync_post_attachments() writes _godam_tracked_media to the post,
-				// so this post will not appear in fetch_pending_posts() again.
-				$tracker->sync_post_attachments( (int) $post->ID, (string) $post->post_content );
+				try {
+					// sync_post_attachments() writes _godam_tracked_media to the post,
+					// so this post will not appear in fetch_pending_posts() again.
+					$tracker->sync_post_attachments( (int) $post->ID, (string) $post->post_content );
+				} catch ( \Throwable $e ) {
+					// Mark the post as processed so a single poisoned post cannot
+					// stall the backfill in an infinite retry loop.
+					update_post_meta( (int) $post->ID, Media_Usage_Tracker::POST_META_KEY, array() );
+					error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+						sprintf(
+							'GoDAM: media usage backfill skipped post %d after error: %s',
+							(int) $post->ID,
+							$e->getMessage()
+						)
+					);
+				}
 			}
 
 			$batch_count = count( $posts );
