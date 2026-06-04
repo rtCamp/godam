@@ -571,13 +571,13 @@ function rtgodam_is_api_key_valid() {
  * additive mode. This helper resolves that toggle with the code-level overrides.
  *
  * Resolution precedence (code-level is authoritative):
- *  1. Constant `RTGODAM_DISABLE_MEDIA_LIBRARY_UI === true` forces it off and
- *     cannot be overridden.
+ *  1. A defined, truthy `RTGODAM_DISABLE_MEDIA_LIBRARY_UI` constant forces it
+ *     off and cannot be overridden.
  *  2. Otherwise the `rtgodam-settings` → general → `enable_folder_organization`
  *     option (default `true`).
  *  3. The `rtgodam_enable_media_library_ui` filter can override the option value.
  *
- * @since n.e.x.t
+ * @since 1.11.1
  *
  * @return bool True when the media-library UI should load (default), false in additive mode.
  */
@@ -596,7 +596,7 @@ function rtgodam_is_media_library_ui_enabled() {
 	 * constant is not set. Return false to run GoDAM in additive mode
 	 * (suppress the media-library takeover).
 	 *
-	 * @since n.e.x.t
+	 * @since 1.11.1
 	 *
 	 * @param bool $enabled Whether the media-library UI is enabled.
 	 */
@@ -610,7 +610,7 @@ function rtgodam_is_media_library_ui_enabled() {
  * admin can't fight a code-level value set via the constant or the
  * `rtgodam_enable_media_library_ui` filter.
  *
- * @since n.e.x.t
+ * @since 1.11.1
  *
  * @return bool True when the constant is defined-truthy or the filter has a callback hooked.
  */
