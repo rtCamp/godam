@@ -38,13 +38,17 @@ if ( empty( $godam_player_wrapper_inline_css_added ) ) {
 			}
 		}
 
-			// If wp_head already fired, output inline immediately.
-		if ( did_action( 'wp_head' ) ) {
+
+		// Hook into the appropriate head action depending on context.
+		$godam_head_hook = is_admin() ? 'admin_head' : 'wp_head';
+
+		// Output immediately when the head action already fired, or in AJAX/REST
+		// contexts where head actions never fire (e.g. Elementor widget re-render).
+		if ( did_action( $godam_head_hook ) || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
 			echo '<style id="godam-player-wrapper-inline-css">' . wp_strip_all_tags( $godam_player_wrapper_css ) . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS is stripped to plain text before inline output.
 		} else {
-			// Output inline style in wp_head for high priority rendering.
 			add_action(
-				'wp_head',
+				$godam_head_hook,
 				function () use ( $godam_player_wrapper_css ) {
 					echo '<style id="godam-player-wrapper-inline-css">' . wp_strip_all_tags( $godam_player_wrapper_css ) . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS is stripped to plain text before inline output.
 				},

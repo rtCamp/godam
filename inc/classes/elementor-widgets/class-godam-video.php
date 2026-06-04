@@ -311,17 +311,72 @@ class GoDAM_Video extends Base {
 		);
 
 		$this->add_control(
-			'preload',
+			'performance_mode',
 			array(
-				'label'     => esc_html__( 'Preload', 'godam' ),
+				'label'     => esc_html__( 'Performance Mode', 'godam' ),
 				'type'      => Controls_Manager::SELECT,
-				'default'   => 'metadata',
+				'default'   => 'balanced',
 				'options'   => array(
-					'auto'     => esc_html__( 'Auto', 'godam' ),
-					'metadata' => esc_html__( 'Metadata', 'godam' ),
-					'none'     => esc_html_x( 'None', 'Preload value', 'godam' ),
+					'balanced' => esc_html__( 'Balanced', 'godam' ),
+					'priority' => esc_html__( 'Priority', 'godam' ),
 				),
 				'condition' => array(
+					'video-file[url]!' => '',
+				),
+			)
+		);
+
+		$this->add_control(
+			'hover_select',
+			array(
+				'label'     => esc_html__( 'Hover Interaction', 'godam' ),
+				'type'      => Controls_Manager::SELECT,
+				'default'   => 'none',
+				'options'   => array(
+					'none'           => esc_html__( 'None', 'godam' ),
+					'hover-to-play'  => esc_html__( 'Hover to play', 'godam' ),
+					'shadow-overlay' => esc_html__( 'Shadow overlay', 'godam' ),
+				),
+				'condition' => array(
+					'video-file[url]!' => '',
+				),
+			)
+		);
+
+		$this->add_control(
+			'show_share_button',
+			array(
+				'label'     => esc_html__( 'Show Share Button', 'godam' ),
+				'type'      => Controls_Manager::SWITCHER,
+				'default'   => '',
+				'condition' => array(
+					'video-file[url]!' => '',
+				),
+			)
+		);
+
+		if ( rtgodam_is_engagement_feature_enabled() ) {
+			$this->add_control(
+				'engagements',
+				array(
+					'label'     => esc_html__( 'Enable Engagements', 'godam' ),
+					'type'      => Controls_Manager::SWITCHER,
+					'default'   => '',
+					'condition' => array(
+						'video-file[url]!' => '',
+					),
+				)
+			);
+		}
+
+		$this->add_control(
+			'player_height',
+			array(
+				'label'       => esc_html__( 'Player Height', 'godam' ),
+				'type'        => Controls_Manager::TEXT,
+				'placeholder' => '400px',
+				'description' => esc_html__( 'Constrain player height (e.g. 400px, 50vh). Width is derived from aspect ratio.', 'godam' ),
+				'condition'   => array(
 					'video-file[url]!' => '',
 				),
 			)
@@ -374,16 +429,20 @@ class GoDAM_Video extends Base {
 	 * @access protected
 	 */
 	protected function render() {
-		$widget_video_file   = $this->get_settings_for_display( 'video-file' );
-		$widget_poster_file  = $this->get_settings_for_display( 'poster' );
-		$widget_autoplay     = 'yes' === $this->get_settings_for_display( 'autoplay' ) ? true : false;
-		$widget_controls     = 'yes' === $this->get_settings_for_display( 'controls' ) ? true : false;
-		$widget_muted        = 'yes' === $this->get_settings_for_display( 'muted' ) ? true : false;
-		$widget_loop         = 'yes' === $this->get_settings_for_display( 'loop' ) ? true : false;
-		$widget_preload      = $this->get_settings_for_display( 'preload' ) ?? 'auto';
-		$widget_show_caption = 'yes' === $this->get_settings_for_display( 'enable_caption' );
-		$widget_caption      = $this->get_settings_for_display( 'caption' ) ?? '';
-		$widget_text_tracks  = $this->get_settings_for_display( 'text_tracks' ) ?? '';
+		$widget_video_file        = $this->get_settings_for_display( 'video-file' );
+		$widget_poster_file       = $this->get_settings_for_display( 'poster' );
+		$widget_autoplay          = 'yes' === $this->get_settings_for_display( 'autoplay' ) ? true : false;
+		$widget_controls          = 'yes' === $this->get_settings_for_display( 'controls' ) ? true : false;
+		$widget_muted             = 'yes' === $this->get_settings_for_display( 'muted' ) ? true : false;
+		$widget_loop              = 'yes' === $this->get_settings_for_display( 'loop' ) ? true : false;
+		$widget_show_caption      = 'yes' === $this->get_settings_for_display( 'enable_caption' );
+		$widget_caption           = $this->get_settings_for_display( 'caption' ) ?? '';
+		$widget_text_tracks       = $this->get_settings_for_display( 'text_tracks' ) ?? '';
+		$widget_performance_mode  = $this->get_settings_for_display( 'performance_mode' ) ?? 'balanced';
+		$widget_hover_select      = $this->get_settings_for_display( 'hover_select' ) ?? 'none';
+		$widget_show_share_button = 'yes' === $this->get_settings_for_display( 'show_share_button' );
+		$widget_engagements       = rtgodam_is_engagement_feature_enabled() && 'yes' === $this->get_settings_for_display( 'engagements' );
+		$widget_player_height     = $this->get_settings_for_display( 'player_height' ) ?? '';
 
 		$formatted_tracks = array();
 
@@ -406,19 +465,23 @@ class GoDAM_Video extends Base {
 		}
 
 		$attributes = array(
-			'id'             => ! isset( $widget_video_file['sources'] ) ? $widget_video_file['id'] : null,
-			'sources'        => isset( $widget_video_file['sources'] ) ? $widget_video_file['sources'] : array(),
-			'src'            => $widget_video_file['url'],
-			'transcoded_url' => '',
-			'poster'         => $widget_poster_file['url'],
-			'aspectRatio'    => '',
-			'autoplay'       => $widget_autoplay,
-			'controls'       => $widget_controls,
-			'muted'          => $widget_muted,
-			'loop'           => $widget_loop,
-			'preload'        => $widget_preload,
-			'caption'        => $widget_caption,
-			'tracks'         => $formatted_tracks,
+			'id'              => ! isset( $widget_video_file['sources'] ) ? $widget_video_file['id'] : null,
+			'sources'         => isset( $widget_video_file['sources'] ) ? $widget_video_file['sources'] : array(),
+			'src'             => $widget_video_file['url'],
+			'transcoded_url'  => '',
+			'poster'          => $widget_poster_file['url'],
+			'aspectRatio'     => 'responsive',
+			'autoplay'        => $widget_autoplay,
+			'controls'        => $widget_controls,
+			'muted'           => $widget_muted,
+			'loop'            => $widget_loop,
+			'caption'         => $widget_caption,
+			'tracks'          => $formatted_tracks,
+			'performanceMode' => $widget_performance_mode,
+			'hoverSelect'     => $widget_hover_select,
+			'showShareButton' => $widget_show_share_button,
+			'engagements'     => $widget_engagements,
+			'playerHeight'    => $widget_player_height,
 		);
 
 		$is_elementor_widget = true;
