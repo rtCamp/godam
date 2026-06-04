@@ -554,7 +554,9 @@ class Pages {
 			);
 
 			// Localize easydamMediaLibrary data for the video editor.
-			$enable_folder_organization = get_option( 'rtgodam-settings', array() )['general']['enable_folder_organization'] ?? true;
+			// Resolve through the helper so the code-level constant/filter override applies here too,
+			// keeping this global consistent on the video-editor page.
+			$enable_folder_organization = rtgodam_is_media_library_ui_enabled();
 			$current_user_id            = get_current_user_id();
 
 			$easydam_media_library_data = array(

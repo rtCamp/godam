@@ -558,6 +558,66 @@ function rtgodam_is_api_key_valid() {
 }
 
 /**
+ * Resolve whether GoDAM's WordPress media-library admin UI is enabled.
+ *
+ * "Additive mode" lets GoDAM coexist with another DAM/media plugin by
+ * suppressing GoDAM's media-library takeover (folder UI, "Manage Media"
+ * button, search override, attachment-browser folder/date filters) while
+ * leaving blocks, the front-end player, analytics, transcoding, REST, the
+ * GoDAM media-modal tab, and GoDAM's own admin pages intact.
+ *
+ * The single "enable folder organization" toggle (`general.enable_folder_organization`)
+ * is GoDAM's media-library integration master switch; turning it off runs GoDAM in
+ * additive mode. This helper resolves that toggle with the code-level overrides.
+ *
+ * Resolution precedence (code-level is authoritative):
+ *  1. Constant `RTGODAM_DISABLE_MEDIA_LIBRARY_UI === true` forces it off.
+ *  2. Otherwise the `rtgodam-settings` → general → `enable_folder_organization`
+ *     option (default `true`).
+ *  3. The `rtgodam_enable_media_library_ui` filter can override last.
+ *
+ * @since n.e.x.t
+ *
+ * @return bool True when the media-library UI should load (default), false in additive mode.
+ */
+function rtgodam_is_media_library_ui_enabled() {
+	if ( defined( 'RTGODAM_DISABLE_MEDIA_LIBRARY_UI' ) && RTGODAM_DISABLE_MEDIA_LIBRARY_UI ) {
+		$enabled = false;
+	} else {
+		$settings = get_option( 'rtgodam-settings', array() );
+		$enabled  = $settings['general']['enable_folder_organization'] ?? true;
+	}
+
+	/**
+	 * Filters whether GoDAM's media-library admin UI is enabled.
+	 *
+	 * Authoritative code-level override for coexistence deployments. Return
+	 * false to run GoDAM in additive mode (suppress the media-library takeover).
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param bool $enabled Whether the media-library UI is enabled.
+	 */
+	return (bool) apply_filters( 'rtgodam_enable_media_library_ui', $enabled );
+}
+
+/**
+ * Check whether the media-library UI value is forced from code.
+ *
+ * Used to render the dashboard toggle as locked ("managed in code") so an
+ * admin can't fight a code-level value set via the constant or the
+ * `rtgodam_enable_media_library_ui` filter.
+ *
+ * @since n.e.x.t
+ *
+ * @return bool True when the constant is defined-truthy or the filter has a callback hooked.
+ */
+function rtgodam_is_media_library_ui_code_managed() {
+	return ( defined( 'RTGODAM_DISABLE_MEDIA_LIBRARY_UI' ) && RTGODAM_DISABLE_MEDIA_LIBRARY_UI )
+		|| has_filter( 'rtgodam_enable_media_library_ui' );
+}
+
+/**
  * Checks if the given filename is an audio file based on its name.
  *
  * Note: The files created by uppy webcam, screen capture, and audio plugin are in the same format. So we are checking the filename to determine if it's an audio file.
