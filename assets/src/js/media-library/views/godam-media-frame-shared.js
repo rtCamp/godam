@@ -131,6 +131,20 @@ const GoDAMMediaFrameShared = {
 		// Attaches callback to create attachment entry in WordPress for GoDAM Video.
 		state.off( 'select', this.onGoDAMSelect, this );
 		state.on( 'select', this.onGoDAMSelect, this );
+
+		// Track models added to the selection while on GoDAM tab (for gallery workflow).
+		// GalleryLibrary never fires 'select' — it calls setState('gallery-edit') directly.
+		// We need to know which items came from GoDAM before that transition happens.
+		if ( ! this._godamTrackedModels ) {
+			this._godamTrackedModels = new WeakSet();
+		}
+		const selection = state.get( 'selection' );
+		selection.off( 'add', this._onGoDAMSelectionAdd, this );
+		selection.on( 'add', this._onGoDAMSelectionAdd, this );
+
+		// GalleryEdit fires frame-level 'update' (not 'select') when "Insert gallery" is clicked.
+		this.off( 'update', this.onGoDAMGalleryUpdate, this );
+		this.on( 'update', this.onGoDAMGalleryUpdate, this );
 	},
 
 	async onGoDAMSelect() {
@@ -144,58 +158,94 @@ const GoDAMMediaFrameShared = {
 		const selection = this.state().get( 'selection' );
 
 		// Process every selected item (supports multi-select).
-		selection.each( async ( selected ) => {
-			const data = selected.attributes;
+		selection.each( ( selected ) => {
+			this.processGoDAMItem( selected );
+		} );
+	},
 
-			try {
-				// apiFetch uses the WordPress REST API configuration, including nonce handling.
-				const response = await apiFetch( {
-					path: '/godam/v1/media-library/create-media-entry',
-					method: 'POST',
-					data: {
-						id: data.id,
-						title: data.title,
-						filename: data.filename,
-						name: data.title,
-						url: data.url,
-						hls_url: data.hls_url,
-						mpd_url: data.mpd_url,
-						mime: data.mime,
-						type: data.type,
-						subtype: data.subtype,
-						status: data.status,
-						date: data.date,
-						modified: data.modified,
-						filesizeInBytes: data.filesizeInBytes,
-						filesizeHumanReadable: data.filesizeHumanReadable,
-						owner: data.owner,
-						label: data.label,
-						icon: data.icon,
-						thumbnail_url: data.thumbnail_url,
-						caption: data.caption,
-						description: data.description,
-						video_duration: data.video_duration || 0,
-						width: data.width || 0,
-						height: data.height || 0,
-					},
+	async processGoDAMItem( selected ) {
+		const data = selected.attributes;
+
+		try {
+			// apiFetch uses the WordPress REST API configuration, including nonce handling.
+			const response = await apiFetch( {
+				path: '/godam/v1/media-library/create-media-entry',
+				method: 'POST',
+				data: {
+					id: data.id,
+					title: data.title,
+					filename: data.filename,
+					name: data.title,
+					url: data.url,
+					hls_url: data.hls_url,
+					mpd_url: data.mpd_url,
+					mime: data.mime,
+					type: data.type,
+					subtype: data.subtype,
+					status: data.status,
+					date: data.date,
+					modified: data.modified,
+					filesizeInBytes: data.filesizeInBytes,
+					filesizeHumanReadable: data.filesizeHumanReadable,
+					owner: data.owner,
+					label: data.label,
+					icon: data.icon,
+					thumbnail_url: data.thumbnail_url,
+					caption: data.caption,
+					description: data.description,
+					video_duration: data.video_duration || 0,
+					width: data.width || 0,
+					height: data.height || 0,
+				},
+			} );
+
+			if ( response && response.success ) {
+				const attachment = response.attachment;
+
+				// Trigger custom JS event godam-virtual-attachment-created
+				const event = new CustomEvent( 'godam-virtual-attachment-created', {
+					detail: { virtualMediaId: data.id, attachment },
 				} );
 
-				if ( response && response.success ) {
-					const attachment = response.attachment;
+				document.dispatchEvent( event );
 
-					// Trigger custom JS event godam-virtual-attachment-created
-					const event = new CustomEvent( 'godam-virtual-attachment-created', {
-						detail: { virtualMediaId: data.id, attachment },
-					} );
+				// Also trigger count refresh for React components
+				const countRefreshEvent = new CustomEvent( 'godam-attachment-browser:changed' );
+				document.dispatchEvent( countRefreshEvent );
+			}
+		} catch {
+			// Swallow request failures so one item does not break the rest of the selection flow.
+		}
+	},
 
-					document.dispatchEvent( event );
+	// Tracks Backbone models added to the selection while the GoDAM tab is active.
+	// Called via selection.on('add', ...) registered in GoDAMCreate().
+	_onGoDAMSelectionAdd( model ) {
+		if ( this.content.mode() === 'godam' ) {
+			if ( ! this._godamTrackedModels ) {
+				this._godamTrackedModels = new WeakSet();
+			}
+			this._godamTrackedModels.add( model );
+		}
+	},
 
-					// Also trigger count refresh for React components
-					const countRefreshEvent = new CustomEvent( 'godam-attachment-browser:changed' );
-					document.dispatchEvent( countRefreshEvent );
-				}
-			} catch {
-				// Swallow request failures so one item does not break the rest of the selection flow.
+	// Handles the gallery workflow: GalleryEdit fires frame-level 'update' (not 'select')
+	// when the user clicks "Insert gallery". GalleryLibrary never fires 'select' — it
+	// transitions directly to gallery-edit via setState() without any select event.
+	async onGoDAMGalleryUpdate( library ) {
+		if ( ! this._godamTrackedModels ) {
+			return;
+		}
+
+		// Snapshot and reset so the next gallery session starts with a clean slate.
+		const trackedModels = this._godamTrackedModels;
+		this._godamTrackedModels = new WeakSet();
+
+		// Only call create-media-entry for items that originated from the GoDAM tab.
+		// Native WP attachments selected from the browse tab are NOT in the WeakSet.
+		library.each( ( selected ) => {
+			if ( trackedModels.has( selected ) ) {
+				this.processGoDAMItem( selected );
 			}
 		} );
 	},
