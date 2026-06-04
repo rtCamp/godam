@@ -45,21 +45,31 @@ function getAllBlocksFlat( blocks ) {
  * @param {number}        realId         - The newly created WP attachment ID.
  */
 function replaceVirtualIdInCoreImageBlocks( virtualMediaId, realId ) {
-	const allBlocks = getAllBlocksFlat(
-		select( 'core/block-editor' ).getBlocks(),
-	);
+	let blocks;
+	let blockEditorDispatch;
+
+	try {
+		blocks = select( 'core/block-editor' ).getBlocks();
+		blockEditorDispatch = dispatch( 'core/block-editor' );
+	} catch {
+		// Not in a block-editor context (e.g. classic editor / media library screen).
+		return;
+	}
+
+	if ( ! Array.isArray( blocks ) || blocks.length === 0 ) {
+		return;
+	}
+
+	const allBlocks = getAllBlocksFlat( blocks );
 
 	for ( const block of allBlocks ) {
 		if (
 			block.name === 'core/image' &&
-			block.attributes.id !== undefined &&
-			block.attributes.id !== null &&
+			block.attributes?.id !== undefined &&
+			block.attributes?.id !== null &&
 			String( block.attributes.id ) === String( virtualMediaId )
 		) {
-			dispatch( 'core/block-editor' ).updateBlockAttributes(
-				block.clientId,
-				{ id: realId },
-			);
+			blockEditorDispatch.updateBlockAttributes( block.clientId, { id: realId } );
 		}
 	}
 }
