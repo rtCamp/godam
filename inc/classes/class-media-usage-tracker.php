@@ -671,7 +671,7 @@ class Media_Usage_Tracker {
 
 		$payload = array(
 			'media_id'   => $godam_id,
-			'embed_type' => 'WordPress',
+			'platform'   => 'WordPress',
 			'wp_site'    => $wp_site,
 			'post_id'    => $post_id,
 			'post_type'  => $post_type,
@@ -743,7 +743,7 @@ class Media_Usage_Tracker {
 
 		$payload = array(
 			'media_id'   => $godam_id,
-			'embed_type' => 'WordPress',
+			'platform'   => 'WordPress',
 			'wp_site'    => $wp_site,
 			'post_id'    => $post_id,
 			'parent_url' => get_permalink( $post_id ),
