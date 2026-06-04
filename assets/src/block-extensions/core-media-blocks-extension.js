@@ -15,6 +15,8 @@ const SINGLE_ID_BLOCKS = {
 	'core/file': 'id',
 	'core/cover': 'id',
 	'core/media-text': 'mediaId',
+	'godam/audio': 'id',
+	'godam/pdf': 'id',
 };
 
 /**
@@ -22,8 +24,8 @@ const SINGLE_ID_BLOCKS = {
  * to handle the godam-virtual-attachment-created event.
  *
  * Covers single-ID blocks: core/image, core/video, core/audio, core/file, core/cover,
- * core/media-text. Modern WP 5.9+ gallery inner core/image blocks are handled via
- * replaceVirtualIdInCoreImageBlocks in godam-media-frame-shared.js.
+ * core/media-text, godam/audio, godam/pdf. Modern WP 5.9+ gallery inner core/image
+ * blocks are handled via replaceVirtualIdInCoreImageBlocks in godam-media-frame-shared.js.
  *
  * @param {Function} BlockEdit - Original block edit component.
  * @return {Function} Enhanced block edit component.
