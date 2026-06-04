@@ -175,7 +175,9 @@ class Media_Usage_Backfill {
 	 * @return void
 	 */
 	public function start() {
-		if ( self::STATUS_RUNNING === get_option( self::OPT_STATUS ) ) {
+		$current_status = get_option( self::OPT_STATUS );
+
+		if ( self::STATUS_RUNNING === $current_status ) {
 			// Self-heal: reschedule if the AS action somehow disappeared.
 			if ( ! as_has_scheduled_action( self::AS_BATCH_ACTION ) ) {
 				as_enqueue_async_action( self::AS_BATCH_ACTION );
@@ -186,7 +188,9 @@ class Media_Usage_Backfill {
 		$total = $this->count_pending_posts();
 
 		update_option( self::OPT_STATUS, self::STATUS_RUNNING, false );
-		update_option( self::OPT_PROCESSED, 0, false );
+		if ( self::STATUS_STOPPED !== $current_status ) {
+			update_option( self::OPT_PROCESSED, 0, false );
+		}
 		update_option( self::OPT_TOTAL, $total, false );
 		wp_cache_delete( self::CACHE_KEY, self::CACHE_GROUP );
 
