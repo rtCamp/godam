@@ -185,7 +185,14 @@ class Media_Usage_Backfill {
 			return;
 		}
 
-		$total = $this->count_pending_posts();
+		$pending = $this->count_pending_posts();
+
+		// On resume the total must cover work already done plus what remains,
+		// otherwise OPT_PROCESSED will climb past OPT_TOTAL and the progress
+		// bar exceeds 100%. On a fresh start the total is just the pending count.
+		$total = ( self::STATUS_STOPPED === $current_status )
+			? (int) get_option( self::OPT_PROCESSED, 0 ) + $pending
+			: $pending;
 
 		update_option( self::OPT_STATUS, self::STATUS_RUNNING, false );
 		if ( self::STATUS_STOPPED !== $current_status ) {
@@ -194,7 +201,7 @@ class Media_Usage_Backfill {
 		update_option( self::OPT_TOTAL, $total, false );
 		wp_cache_delete( self::CACHE_KEY, self::CACHE_GROUP );
 
-		if ( 0 === $total ) {
+		if ( 0 === $pending ) {
 			update_option( self::OPT_STATUS, self::STATUS_COMPLETED, false );
 			wp_cache_delete( self::CACHE_KEY, self::CACHE_GROUP );
 			return;
