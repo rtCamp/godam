@@ -10,6 +10,7 @@
  * WordPress dependencies
  */
 import apiFetch from '@wordpress/api-fetch';
+import { select, dispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -17,6 +18,51 @@ import apiFetch from '@wordpress/api-fetch';
 import { getQuery } from '../utility.js';
 
 const l10n = wp?.media?.view?.l10n;
+
+/**
+ * Recursively collects all blocks (including inner blocks at any depth) into a flat array.
+ *
+ * @param {Array} blocks - Top-level blocks from the block editor store.
+ * @return {Array} Flat list of all blocks.
+ */
+function getAllBlocksFlat( blocks ) {
+	const result = [];
+	for ( const block of blocks ) {
+		result.push( block );
+		if ( block.innerBlocks?.length ) {
+			result.push( ...getAllBlocksFlat( block.innerBlocks ) );
+		}
+	}
+	return result;
+}
+
+/**
+ * Replaces the virtual GoDAM ID with the real WP attachment ID on any core/image block
+ * that is currently holding the virtual ID. Handles modern core/gallery inner blocks
+ * synchronously at the point of attachment creation, avoiding event-listener timing issues.
+ *
+ * @param {string|number} virtualMediaId - The GoDAM item ID used as a placeholder.
+ * @param {number}        realId         - The newly created WP attachment ID.
+ */
+function replaceVirtualIdInCoreImageBlocks( virtualMediaId, realId ) {
+	const allBlocks = getAllBlocksFlat(
+		select( 'core/block-editor' ).getBlocks(),
+	);
+
+	for ( const block of allBlocks ) {
+		if (
+			block.name === 'core/image' &&
+			block.attributes.id !== undefined &&
+			block.attributes.id !== null &&
+			String( block.attributes.id ) === String( virtualMediaId )
+		) {
+			dispatch( 'core/block-editor' ).updateBlockAttributes(
+				block.clientId,
+				{ id: realId },
+			);
+		}
+	}
+}
 
 /**
  * Check if the current frame is a featured image context.
@@ -201,6 +247,11 @@ const GoDAMMediaFrameShared = {
 
 			if ( response && response.success ) {
 				const attachment = response.attachment;
+
+				// Directly update any core/image blocks (e.g. inside core/gallery) that still
+				// carry the virtual GoDAM ID. This runs synchronously before the custom event
+				// so that inner blocks are resolved without relying on React effect timing.
+				replaceVirtualIdInCoreImageBlocks( data.id, attachment.id );
 
 				// Trigger custom JS event godam-virtual-attachment-created
 				const event = new CustomEvent( 'godam-virtual-attachment-created', {
