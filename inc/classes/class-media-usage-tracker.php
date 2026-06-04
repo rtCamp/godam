@@ -664,6 +664,11 @@ class Media_Usage_Tracker {
 	 * @return void
 	 */
 	public function async_log_media_view( $godam_id, $post_id, $wp_site, $post_type ) {
+		$api_key = get_option( 'rtgodam-api-key', '' );
+		if ( empty( $api_key ) ) {
+			return;
+		}
+
 		$godam_id  = sanitize_text_field( $godam_id );
 		$post_id   = (int) $post_id;
 		$wp_site   = sanitize_text_field( $wp_site );
@@ -691,6 +696,7 @@ class Media_Usage_Tracker {
 				'timeout' => 10, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
 				'headers' => array(
 					'Content-Type' => 'application/json',
+					// This is an unauthenticated endpoint, so no X-Api-Key header is sent.
 				),
 				'body'    => wp_json_encode( $payload ),
 			)
