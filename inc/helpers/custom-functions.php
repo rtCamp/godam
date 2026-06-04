@@ -587,7 +587,16 @@ function rtgodam_is_media_library_ui_enabled() {
 	}
 
 	$settings = get_option( 'rtgodam-settings', array() );
-	$enabled  = $settings['general']['enable_folder_organization'] ?? true;
+	if ( ! is_array( $settings ) ) {
+		$settings = array();
+	}
+
+	$general_settings = $settings['general'] ?? array();
+	if ( ! is_array( $general_settings ) ) {
+		$general_settings = array();
+	}
+
+	$enabled = $general_settings['enable_folder_organization'] ?? true;
 
 	/**
 	 * Filters whether GoDAM's media-library admin UI is enabled.

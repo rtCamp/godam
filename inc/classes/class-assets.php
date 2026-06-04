@@ -249,22 +249,25 @@ class Assets {
 		// When off (additive mode), the WP media-library takeover is gated in JS; the bundle
 		// still loads so the GoDAM media-modal tab survives.
 		$enable_folder_organization = rtgodam_is_media_library_ui_enabled();
+		$folder_terms               = array();
 
 		// Folder taxonomy terms power the folder filter UI only; skip the query when suppressed.
 		if ( $enable_folder_organization ) {
-			wp_localize_script(
-				'easydam-media-library',
-				'MediaLibraryTaxonomyFilterData',
+			$folder_terms = get_terms(
 				array(
-					'terms' => get_terms(
-						array(
-							'taxonomy'   => 'media-folder',
-							'hide_empty' => false,
-						)
-					),
+					'taxonomy'   => 'media-folder',
+					'hide_empty' => false,
 				)
 			);
 		}
+
+		wp_localize_script(
+			'easydam-media-library',
+			'MediaLibraryTaxonomyFilterData',
+			array(
+				'terms' => $folder_terms,
+			)
+		);
 
 		wp_localize_script(
 			'easydam-media-library',
