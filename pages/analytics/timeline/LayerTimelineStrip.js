@@ -187,12 +187,17 @@ const LayerTimelineStrip = ( {
 					aria-label={ __( 'Interactive layers on the video timeline', 'godam' ) }
 				>
 					{ parents.length === 0 ? (
-						<p className="absolute inset-0 flex items-center justify-center text-sm text-zinc-500 m-0">
-							{ __(
-								'No interactive layers in this video yet.',
-								'godam',
-							) }
-						</p>
+						<div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 m-0">
+							<p className="text-sm font-medium text-zinc-700 m-0">
+								{ __( 'Nothing to show yet', 'godam' ) }
+							</p>
+							<p className="text-xs text-zinc-500 m-0 mt-1 max-w-md">
+								{ __(
+									'Layer analytics appear after the video is played on the front end and the activity is processed. A layer you just added won\'t have data until viewers interact with it.',
+									'godam',
+								) }
+							</p>
+						</div>
 					) : (
 						parents.map( ( parent, idx ) => {
 							const pct = Math.min(
