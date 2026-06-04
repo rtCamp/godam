@@ -75,10 +75,18 @@ class MediaLibrary {
 
 	onDOMContentLoaded() {
 		this.setupMediaLibraryRoot();
+		this.handleBannerClose();
+
+		// Additive mode (folder organization off): suppress GoDAM's WP media-library takeover
+		// (date-range filter, "Manage Media" button, search override, delete-refresh listeners).
+		// The GoDAM media-modal tab, wired in setupAttachmentBrowser(), is intentionally left intact.
+		if ( isFolderOrgDisabled() ) {
+			return;
+		}
+
 		this.initializeDateRangeFilter();
 		addManageMediaButton();
 		this.addInputPlaceholder();
-		this.handleBannerClose();
 		this.setupDeleteEventListeners();
 	}
 
