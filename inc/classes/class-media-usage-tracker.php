@@ -36,12 +36,12 @@ class Media_Usage_Tracker {
 	use Singleton;
 
 	/**
-	 * Meta key on attachments: sorted int[] of post IDs that reference this attachment.
+	 * Meta key on attachments: int[] of unique post IDs that reference this attachment.
 	 */
 	const ATTACHMENT_META_KEY = '_godam_usage_post_ids';
 
 	/**
-	 * Meta key on posts: sorted int[] of WP attachment post IDs tracked for this post.
+	 * Meta key on posts: int[] of unique WP attachment post IDs tracked for this post.
 	 * Stored so the next save can diff cheaply instead of re-querying every attachment.
 	 */
 	const POST_META_KEY = '_godam_tracked_media';
@@ -283,7 +283,7 @@ class Media_Usage_Tracker {
 	 *            rendered HTML may not yet be present (e.g. dynamic/SSR blocks).
 	 *
 	 * @param string $post_content Raw post content as stored in the database.
-	 * @return int[] Unique sorted array of WP attachment post IDs.
+	 * @return int[] array of unique WP attachment post IDs.
 	 */
 	public function extract_attachment_ids( $post_content ) {
 		if ( empty( $post_content ) ) {
