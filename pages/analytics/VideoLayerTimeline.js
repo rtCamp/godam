@@ -246,13 +246,16 @@ const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
 						onSelect={ setSelectedParentId }
 					/>
 
-					{ /* Footer hint */ }
-					<div className="border-t border-zinc-100 px-6 py-3 flex items-center justify-center gap-2 text-xs text-zinc-500">
-						<span className="text-zinc-400">
-							<Icon icon={ info } size={ 14 } />
-						</span>
-						{ getFooterHint( parents, selectedParent ) }
-					</div>
+					{ /* Footer hint — only when there are layers; the empty state
+					    already covers the no-data case, so don't double up on text. */ }
+					{ parents.length > 0 && (
+						<div className="border-t border-zinc-100 px-6 py-3 flex items-center justify-center gap-2 text-xs text-zinc-500">
+							<span className="text-zinc-400">
+								<Icon icon={ info } size={ 14 } />
+							</span>
+							{ getFooterHint( parents, selectedParent ) }
+						</div>
+					) }
 				</>
 			) }
 		</section>
