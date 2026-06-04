@@ -571,10 +571,11 @@ function rtgodam_is_api_key_valid() {
  * additive mode. This helper resolves that toggle with the code-level overrides.
  *
  * Resolution precedence (code-level is authoritative):
- *  1. Constant `RTGODAM_DISABLE_MEDIA_LIBRARY_UI === true` forces it off.
+ *  1. Constant `RTGODAM_DISABLE_MEDIA_LIBRARY_UI === true` forces it off and
+ *     cannot be overridden.
  *  2. Otherwise the `rtgodam-settings` → general → `enable_folder_organization`
  *     option (default `true`).
- *  3. The `rtgodam_enable_media_library_ui` filter can override last.
+ *  3. The `rtgodam_enable_media_library_ui` filter can override the option value.
  *
  * @since n.e.x.t
  *
@@ -582,17 +583,18 @@ function rtgodam_is_api_key_valid() {
  */
 function rtgodam_is_media_library_ui_enabled() {
 	if ( defined( 'RTGODAM_DISABLE_MEDIA_LIBRARY_UI' ) && RTGODAM_DISABLE_MEDIA_LIBRARY_UI ) {
-		$enabled = false;
-	} else {
-		$settings = get_option( 'rtgodam-settings', array() );
-		$enabled  = $settings['general']['enable_folder_organization'] ?? true;
+		return false;
 	}
+
+	$settings = get_option( 'rtgodam-settings', array() );
+	$enabled  = $settings['general']['enable_folder_organization'] ?? true;
 
 	/**
 	 * Filters whether GoDAM's media-library admin UI is enabled.
 	 *
-	 * Authoritative code-level override for coexistence deployments. Return
-	 * false to run GoDAM in additive mode (suppress the media-library takeover).
+	 * Code-level override for coexistence deployments when the disabling
+	 * constant is not set. Return false to run GoDAM in additive mode
+	 * (suppress the media-library takeover).
 	 *
 	 * @since n.e.x.t
 	 *
