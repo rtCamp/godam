@@ -152,7 +152,7 @@ const MediaUsageSyncTab = () => {
 			return __( 'Resume Sync', 'godam' );
 		}
 		if ( status === 'completed' ) {
-			return __( 'Re-run Sync', 'godam' );
+			return __( 'Sync Completed', 'godam' );
 		}
 		return __( 'Start Sync', 'godam' );
 	};
@@ -226,7 +226,7 @@ const MediaUsageSyncTab = () => {
 							variant="primary"
 							className="godam-button"
 							onClick={ handleStart }
-							disabled={ starting || stopping || status === 'running' }
+							disabled={ starting || stopping || status === 'running' || status === 'completed' }
 						>
 							{ primaryButtonLabel() }
 						</Button>
