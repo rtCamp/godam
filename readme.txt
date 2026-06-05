@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.11.1
+Stable tag: 1.11.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -219,6 +219,13 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v1.11.2 (June 5, 2026) =
+
+- Feat: Added a setting to disable GoDAM's media library features, allowing GoDAM to coexist with another media or DAM plugin without changing the WordPress media library.
+- Fix: Removed a redundant expired API key notice and refined when the API key status notice is shown.
+- Tweak: Ensured compatibility with WordPress 7.0.
+- Tweak: Made GoDAM admin styles globally available for add-ons.
+
 = v1.11.1 (June 3, 2026) =
 
 - Fix: GoDAM Video block aspect ratio for editor and frontend.
@@ -230,11 +237,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Tweak: Extended GoDAM analytics scripts to track Reel Pop interactions from GoDAM for Woo.
 - Tweak: Added a migration script to sync existing virtual media to GoDAM Central.
 - Fix: Improved video selection UX in the handpicked mode of the Video Gallery block.
-
-= v1.10.2 (May 22, 2026) =
-
-- Feat: Enhanced Type 1 video analytics tracking with viewport detection.
-- Fix: Resolved cancelled Type 2 Analytics requests for Gallery iframe.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
