@@ -1,5 +1,9 @@
 # Changelog #
 
+## v1.11.2 (June 5, 2026) ##
+
+- Feat: Added a setting to disable GoDAM's media library features, allowing GoDAM to coexist with another media or DAM plugin without changing the WordPress media library.
+
 ## v1.11.1 (June 3, 2026) ##
 
 - Fix: GoDAM Video block aspect ratio for editor and frontend.

@@ -577,7 +577,7 @@ function rtgodam_is_api_key_valid() {
  *     option (default `true`).
  *  3. The `rtgodam_enable_media_library_ui` filter can override the option value.
  *
- * @since 1.11.1
+ * @since 1.11.2
  *
  * @return bool True when the media-library UI should load (default), false in additive mode.
  */
@@ -605,7 +605,7 @@ function rtgodam_is_media_library_ui_enabled() {
 	 * constant is not set. Return false to run GoDAM in additive mode
 	 * (suppress the media-library takeover).
 	 *
-	 * @since 1.11.1
+	 * @since 1.11.2
 	 *
 	 * @param bool $enabled Whether the media-library UI is enabled.
 	 */
@@ -623,7 +623,7 @@ function rtgodam_is_media_library_ui_enabled() {
  * stored option — a passthrough or observe-only hook (e.g. logging) must not lock
  * the toggle for a setting no code really controls.
  *
- * @since 1.11.1
+ * @since 1.11.2
  *
  * @return bool True when the constant is defined-truthy, or a filter changes the stored value.
  */
