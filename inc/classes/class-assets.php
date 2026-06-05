@@ -320,11 +320,14 @@ class Assets {
 		wp_enqueue_script( 'easydam-media-library' );
 
 		/**
-		 * Dependency library for date range picker.
+		 * Dependency library for the date range picker. Its only consumers (the media-library
+		 * date-range filters) are suppressed in additive mode, so skip the payload when disabled.
 		 */
-		wp_enqueue_script( 'moment-js', RTGODAM_URL . 'assets/src/libs/moment-js.min.js', array(), filemtime( RTGODAM_PATH . 'assets/src/libs/moment-js.min.js' ), true );
-		wp_enqueue_script( 'daterangepicker-js', RTGODAM_URL . 'assets/src/libs/daterangepicker.min.js', array( 'moment-js' ), filemtime( RTGODAM_PATH . 'assets/src/libs/daterangepicker.min.js' ), true );
-		wp_enqueue_style( 'daterangepicker-css', RTGODAM_URL . 'assets/src/libs/daterangepicker.css', array(), filemtime( RTGODAM_PATH . 'assets/src/libs/daterangepicker.css' ) );
+		if ( $enable_folder_organization ) {
+			wp_enqueue_script( 'moment-js', RTGODAM_URL . 'assets/src/libs/moment-js.min.js', array(), filemtime( RTGODAM_PATH . 'assets/src/libs/moment-js.min.js' ), true );
+			wp_enqueue_script( 'daterangepicker-js', RTGODAM_URL . 'assets/src/libs/daterangepicker.min.js', array( 'moment-js' ), filemtime( RTGODAM_PATH . 'assets/src/libs/daterangepicker.min.js' ), true );
+			wp_enqueue_style( 'daterangepicker-css', RTGODAM_URL . 'assets/src/libs/daterangepicker.css', array(), filemtime( RTGODAM_PATH . 'assets/src/libs/daterangepicker.css' ) );
+		}
 
 		// Only enqueue HTTP auth detector on uploads page or pages where media uploading is possible.
 		if ( godam_should_load_auth_detector_script( $screen ) ) {
