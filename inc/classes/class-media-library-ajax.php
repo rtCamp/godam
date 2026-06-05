@@ -31,10 +31,15 @@ class Media_Library_Ajax {
 	 * @return void
 	 */
 	public function setup_hooks() {
-		add_filter( 'ajax_query_attachments_args', array( $this, 'filter_media_library_by_taxonomy' ) );
-		add_action( 'pre_get_posts', array( $this, 'pre_get_post_filter' ) );
+		// Folder/date filtering and the list-view filter UI are part of GoDAM's media-library
+		// takeover. Skip them in additive mode so the WordPress media library stays native
+		// server-side (no GoDAM folder dropdown or orphaned date inputs on upload.php).
+		if ( rtgodam_is_media_library_ui_enabled() ) {
+			add_filter( 'ajax_query_attachments_args', array( $this, 'filter_media_library_by_taxonomy' ) );
+			add_action( 'pre_get_posts', array( $this, 'pre_get_post_filter' ) );
+			add_action( 'restrict_manage_posts', array( $this, 'restrict_manage_media_filter' ) );
+		}
 
-		add_action( 'restrict_manage_posts', array( $this, 'restrict_manage_media_filter' ) );
 		add_action( 'add_attachment', array( $this, 'add_media_library_taxonomy_on_media_upload' ), 10, 1 );
 		add_action( 'add_attachment', array( $this, 'upload_media_to_frappe_backend' ), 10, 1 );
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_media_transcoding_status_js' ), 10, 2 );
