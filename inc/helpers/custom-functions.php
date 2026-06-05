@@ -619,13 +619,31 @@ function rtgodam_is_media_library_ui_enabled() {
  * admin can't fight a code-level value set via the constant or the
  * `rtgodam_enable_media_library_ui` filter.
  *
+ * The filter only counts as "managing" the value when it actually overrides the
+ * stored option — a passthrough or observe-only hook (e.g. logging) must not lock
+ * the toggle for a setting no code really controls.
+ *
  * @since 1.11.1
  *
- * @return bool True when the constant is defined-truthy or the filter has a callback hooked.
+ * @return bool True when the constant is defined-truthy, or a filter changes the stored value.
  */
 function rtgodam_is_media_library_ui_code_managed() {
-	return ( defined( 'RTGODAM_DISABLE_MEDIA_LIBRARY_UI' ) && RTGODAM_DISABLE_MEDIA_LIBRARY_UI )
-		|| has_filter( 'rtgodam_enable_media_library_ui' );
+	if ( defined( 'RTGODAM_DISABLE_MEDIA_LIBRARY_UI' ) && RTGODAM_DISABLE_MEDIA_LIBRARY_UI ) {
+		return true;
+	}
+
+	if ( ! has_filter( 'rtgodam_enable_media_library_ui' ) ) {
+		return false;
+	}
+
+	$settings = get_option( 'rtgodam-settings', array() );
+	$general  = is_array( $settings ) && isset( $settings['general'] ) && is_array( $settings['general'] )
+		? $settings['general']
+		: array();
+	$stored   = (bool) ( $general['enable_folder_organization'] ?? true );
+
+	// Locked only if the filter resolves to something other than the stored option.
+	return rtgodam_is_media_library_ui_enabled() !== $stored;
 }
 
 /**
