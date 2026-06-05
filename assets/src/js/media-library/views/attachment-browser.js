@@ -7,7 +7,7 @@ import MediaLibraryTaxonomyFilter from './filters/media-library-taxonomy-filter'
 import MediaDateRangeFilter from './filters/media-date-range-filter';
 import MediaRetranscode from './filters/media-retranscode';
 
-import { isAPIKeyValid, isUploadPage } from '../utility';
+import { isAPIKeyValid, isUploadPage, isFolderOrgDisabled } from '../utility';
 
 const AttachmentsBrowser = wp?.media?.view?.AttachmentsBrowser;
 
@@ -36,6 +36,13 @@ export default AttachmentsBrowser?.extend( {
 	async createToolbar() {
 		// Make sure to load the original toolbar
 		AttachmentsBrowser.prototype.createToolbar.call( this );
+
+		// Additive mode (folder organization off): skip GoDAM's folder/date/retranscode toolbar
+		// filters so the toolbar stays native. Applies to both the native Browse tab and the
+		// GoDAM tab's browser.
+		if ( isFolderOrgDisabled() ) {
+			return;
+		}
 
 		if ( MediaLibraryTaxonomyFilter ) {
 			this.toolbar.set(
