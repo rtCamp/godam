@@ -103,11 +103,11 @@ const GeneralSettings = () => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						className="godam-toggle godam-margin-bottom"
-						label={ __( 'Enable folder organization in media library.', 'godam' ) }
+						label={ __( 'Enable GoDAM media library features', 'godam' ) }
 						help={
 							mediaLibraryUICodeManaged
 								? __( 'This setting is managed by your site administrator and can’t be changed here.', 'godam' )
-								: __( 'Keep this option enabled to organize media into folders within the media library. Disabling it will remove folder organization.', 'godam' )
+								: __( 'Turn this on to organize and manage media with GoDAM — folders, search, and filters. Turn it off to keep the WordPress media library as it is.', 'godam' )
 						}
 						checked={ folderOrgEnabled }
 						disabled={ mediaLibraryUICodeManaged }
