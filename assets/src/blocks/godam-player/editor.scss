@@ -3,6 +3,14 @@
  * These styles ensure the block works correctly in the editor,
  * including in flex layouts (Row/Stack).
  */
+
+// WP 7.0+ collapses ToggleControl bottom margin to zero (the
+// `__nextHasNoMarginBottom` prop is now a no-op). Restore consistent
+// vertical spacing for toggles rendered in the block inspector sidebar.
+.block-editor-block-inspector .components-panel__body .components-toggle-control {
+	margin-bottom: 12px;
+}
+
 .wp-block-godam-video {
 	min-width: 0; // Allow shrinking in flex layouts (Row/Stack)
 
