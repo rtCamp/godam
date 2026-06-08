@@ -219,7 +219,7 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
-= v1.11.2 (June 5, 2026) =
+= v1.11.2 (June 8, 2026) =
 
 - Feat: Added a setting to disable GoDAM's media library features, allowing GoDAM to coexist with another media or DAM plugin without changing the WordPress media library.
 
