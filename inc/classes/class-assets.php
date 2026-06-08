@@ -207,6 +207,7 @@ class Assets {
 				'adminUrl' => admin_url(),
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
 				'apiBase'  => RTGODAM_API_BASE,
+				'isAdmin'  => current_user_can( 'manage_options' ),
 			)
 		);
 
