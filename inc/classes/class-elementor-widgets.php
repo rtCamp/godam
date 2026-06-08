@@ -15,6 +15,8 @@ use RTGODAM\Inc\Elementor_Controls\Godam_Media;
 use RTGODAM\Inc\Elementor_Widgets\Godam_Audio;
 use RTGODAM\Inc\Elementor_Widgets\Godam_Gallery;
 use RTGODAM\Inc\Elementor_Widgets\GoDAM_Video;
+use RTGODAM\Inc\Elementor_Widgets\GoDAM_PDF;
+
 use RTGODAM\Inc\Traits\Singleton;
 
 /**
@@ -123,6 +125,7 @@ class Elementor_Widgets {
 		\Elementor\Plugin::$instance->widgets_manager->register( new GoDAM_Video() );
 		\Elementor\Plugin::$instance->widgets_manager->register( new Godam_Gallery() );
 		\Elementor\Plugin::$instance->widgets_manager->register( new Godam_Audio() );
+		\Elementor\Plugin::$instance->widgets_manager->register( new GoDAM_PDF() );
 	}
 
 	/**
