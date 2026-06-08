@@ -245,16 +245,27 @@ class Assets {
 			filemtime( RTGODAM_PATH . 'assets/build/css/media-library.css' )
 		);
 
+		// The folder-organization toggle is GoDAM's media-library integration kill-switch.
+		// When off (additive mode), the WP media-library takeover is gated in JS; the bundle
+		// still loads so the GoDAM media-modal tab survives.
+		$enable_folder_organization = rtgodam_is_media_library_ui_enabled();
+		$folder_terms               = array();
+
+		// Folder taxonomy terms power the folder filter UI only; skip the query when suppressed.
+		if ( $enable_folder_organization ) {
+			$folder_terms = get_terms(
+				array(
+					'taxonomy'   => 'media-folder',
+					'hide_empty' => false,
+				)
+			);
+		}
+
 		wp_localize_script(
 			'easydam-media-library',
 			'MediaLibraryTaxonomyFilterData',
 			array(
-				'terms' => get_terms(
-					array(
-						'taxonomy'   => 'media-folder',
-						'hide_empty' => false,
-					)
-				),
+				'terms' => $folder_terms,
 			)
 		);
 
@@ -277,8 +288,7 @@ class Assets {
 			)
 		);
 
-		$enable_folder_organization = get_option( 'rtgodam-settings', array() )['general']['enable_folder_organization'] ?? true;
-		$current_user_id            = get_current_user_id();
+		$current_user_id = get_current_user_id();
 
 		$easydam_media_library_data = array(
 			'ajaxUrl'                  => admin_url( 'admin-ajax.php' ),
@@ -310,11 +320,14 @@ class Assets {
 		wp_enqueue_script( 'easydam-media-library' );
 
 		/**
-		 * Dependency library for date range picker.
+		 * Dependency library for the date range picker. Its only consumers (the media-library
+		 * date-range filters) are suppressed in additive mode, so skip the payload when disabled.
 		 */
-		wp_enqueue_script( 'moment-js', RTGODAM_URL . 'assets/src/libs/moment-js.min.js', array(), filemtime( RTGODAM_PATH . 'assets/src/libs/moment-js.min.js' ), true );
-		wp_enqueue_script( 'daterangepicker-js', RTGODAM_URL . 'assets/src/libs/daterangepicker.min.js', array( 'moment-js' ), filemtime( RTGODAM_PATH . 'assets/src/libs/daterangepicker.min.js' ), true );
-		wp_enqueue_style( 'daterangepicker-css', RTGODAM_URL . 'assets/src/libs/daterangepicker.css', array(), filemtime( RTGODAM_PATH . 'assets/src/libs/daterangepicker.css' ) );
+		if ( $enable_folder_organization ) {
+			wp_enqueue_script( 'moment-js', RTGODAM_URL . 'assets/src/libs/moment-js.min.js', array(), filemtime( RTGODAM_PATH . 'assets/src/libs/moment-js.min.js' ), true );
+			wp_enqueue_script( 'daterangepicker-js', RTGODAM_URL . 'assets/src/libs/daterangepicker.min.js', array( 'moment-js' ), filemtime( RTGODAM_PATH . 'assets/src/libs/daterangepicker.min.js' ), true );
+			wp_enqueue_style( 'daterangepicker-css', RTGODAM_URL . 'assets/src/libs/daterangepicker.css', array(), filemtime( RTGODAM_PATH . 'assets/src/libs/daterangepicker.css' ) );
+		}
 
 		// Only enqueue HTTP auth detector on uploads page or pages where media uploading is possible.
 		if ( godam_should_load_auth_detector_script( $screen ) ) {
@@ -400,6 +413,10 @@ class Assets {
 			'engagementFeatureEnabled'    => $engagement_feature_enabled,
 			'enableGlobalVideoEngagement' => $engagement_feature_enabled ? $enable_global_video_engagement : false,
 			'enableGlobalVideoShare'      => $enable_global_share,
+
+			// Media-library UI kill-switch: effective value + whether it's locked from code (constant/filter).
+			'mediaLibraryUIEffective'     => rtgodam_is_media_library_ui_enabled(),
+			'mediaLibraryUICodeManaged'   => rtgodam_is_media_library_ui_code_managed(),
 
 		);
 

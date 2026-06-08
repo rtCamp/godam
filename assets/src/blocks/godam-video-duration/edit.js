@@ -59,7 +59,7 @@ function Edit( { attributes, setAttributes } ) {
 			</InspectorControls>
 			<div { ...blockProps }>
 				<p className="godam-duration-preview">
-					<span>
+					<span data-test-id="godam-video-duration-element-preview">
 						{ durationOptions.find( ( option ) => option.value === durationFormat )?.placeholder || __( '00:00:00', 'godam' ) }
 					</span>
 				</p>

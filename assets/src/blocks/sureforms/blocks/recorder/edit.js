@@ -170,6 +170,7 @@ export default function Edit( props ) {
 						setAttributes( { label: value } );
 					} }
 					value={ label }
+					data-test-id="godam-srfm-recorder-control-label"
 				/>
 			),
 		},
@@ -185,6 +186,7 @@ export default function Edit( props ) {
 						setAttributes( { description: value } );
 					} }
 					value={ description }
+					data-test-id="godam-srfm-recorder-control-description"
 				/>
 			),
 		},
@@ -212,24 +214,28 @@ export default function Edit( props ) {
 						label={ __( 'Local files', 'godam' ) }
 						checked={ checkFileSelector( 'file_input' ) }
 						onChange={ () => updateFileSelector( 'file_input' ) }
+						data-test-id="godam-srfm-recorder-control-file-selector-local"
 					/>
 					<CheckboxControl
 						__nextHasNoMarginBottom
 						label={ __( 'Webcam', 'godam' ) }
 						checked={ checkFileSelector( 'webcam' ) }
 						onChange={ () => updateFileSelector( 'webcam' ) }
+						data-test-id="godam-srfm-recorder-control-file-selector-webcam"
 					/>
 					<CheckboxControl
 						__nextHasNoMarginBottom
 						label={ __( 'Screencast', 'godam' ) }
 						checked={ checkFileSelector( 'screen_capture' ) }
 						onChange={ () => updateFileSelector( 'screen_capture' ) }
+						data-test-id="godam-srfm-recorder-control-file-selector-screencast"
 					/>
 					<CheckboxControl
 						__nextHasNoMarginBottom
 						label={ __( 'Audio', 'godam' ) }
 						checked={ checkFileSelector( 'audio' ) }
 						onChange={ () => updateFileSelector( 'audio' ) }
+						data-test-id="godam-srfm-recorder-control-file-selector-audio"
 					/>
 				</>
 			),
@@ -242,6 +248,7 @@ export default function Edit( props ) {
 					__nextHasNoMarginBottom
 					placeholder={ __( '100 MB', 'godam' ) }
 					label={ __( 'Maximum file size (in MB)', 'godam' ) }
+					data-test-id="godam-srfm-recorder-control-max-file-size"
 					help={ sprintf(
 						// Translators: %s will be replaced with the maximum file upload size allowed on the server (e.g., "300MB").
 						__( 'Maximum allowed on this server: %s MB', 'godam' ),
@@ -260,11 +267,13 @@ export default function Edit( props ) {
 		{
 			id: 'required',
 			component: (
-				<ToggleControl
-					checked={ required }
-					label={ __( 'Is recorder field required?', 'godam' ) }
-					onChange={ () => setAttributes( { required: ! required } ) }
-				/>
+				<div data-test-id="godam-srfm-recorder-control-required">
+					<ToggleControl
+						checked={ required }
+						label={ __( 'Is recorder field required?', 'godam' ) }
+						onChange={ () => setAttributes( { required: ! required } ) }
+					/>
+				</div>
 			),
 		},
 		{
@@ -277,6 +286,7 @@ export default function Edit( props ) {
 					__nextHasNoMarginBottom
 					help={ __( 'Enter the required error message', 'godam' ) }
 					value={ currentErrorMsg }
+					data-test-id="godam-srfm-recorder-control-error-message"
 					onChange={ ( value ) => {
 						setCurrentErrorMsg( value );
 						setAttributes( { errorMsg: value } );
@@ -288,9 +298,9 @@ export default function Edit( props ) {
 
 	return (
 		<>
-			<div { ...blockProps }>
+			<div { ...blockProps } data-test-id="godam-srfm-recorder-canvas">
 				<InspectorControls>
-					<PanelBody title={ __( 'Field settings', 'godam' ) }>
+					<PanelBody title={ __( 'Field settings', 'godam' ) } data-test-id="godam-srfm-recorder-panel-settings">
 						{ fieldOptions.map( ( option ) => option.component ) }
 					</PanelBody>
 				</InspectorControls>
@@ -324,6 +334,7 @@ export default function Edit( props ) {
 							margin: '4px 0',
 						} }
 						className="srfm-button"
+						data-test-id="godam-srfm-recorder-button-record"
 					>
 						<RichText
 							type="label"

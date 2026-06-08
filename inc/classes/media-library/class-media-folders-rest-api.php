@@ -143,6 +143,6 @@ class Media_Folders_REST_API {
 	 * @param string $zip_path The path to the ZIP file to be cleaned up.
 	 */
 	public function godam_cleanup_zip_file( $zip_path ) {
-		Media_Folder_Utils::get_instance()->godam_cleanup_zip_file( $zip_path );
+		Media_Folder_Create_Zip::get_instance()->godam_cleanup_zip_file( $zip_path );
 	}
 }

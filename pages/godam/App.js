@@ -122,7 +122,7 @@ const App = () => {
 			) }
 
 			<div className="godam-settings__container">
-				<nav className={ `godam-settings__container__tabs ${ isSidebarOpen ? 'open' : '' } ${ isSafari() ? 'is-safari' : '' }` }>
+				<nav className={ `godam-settings__container__tabs ${ isSidebarOpen ? 'open' : '' } ${ isSafari() ? 'is-safari' : '' }` } data-test-id="godam-settings-nav">
 					<button
 						className={ `godam-settings__close-btn ${ isSidebarOpen ? 'open' : '' }` }
 						onClick={ () => setIsSidebarOpen( false ) }
@@ -137,6 +137,7 @@ const App = () => {
 							key={ id }
 							href={ `#${ id }` }
 							className={ `sidebar-nav-item whitespace-nowrap ${ activeTab === id ? 'active' : '' }` }
+							data-test-id={ `godam-settings-nav-${ id }` }
 							onClick={ () => {
 								setActiveTab( id );
 								setIsSidebarOpen( false );
@@ -147,7 +148,7 @@ const App = () => {
 						</a>
 					) ) }
 				</nav>
-				<div id="main-content" className="godam-settings__container__content">
+				<div id="main-content" className="godam-settings__container__content" data-test-id="godam-settings-content">
 					{ activeTabData && <activeTabData.component /> }
 				</div>
 			</div>
