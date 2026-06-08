@@ -201,14 +201,19 @@ const MediaUsageSyncTab = () => {
 				<PanelBody opened>
 					<p>
 						{ __(
-							'Scans all existing posts and pages to record which media files are used where. Run this once for content that was published before GoDAM tracking was enabled.',
+							'Scans all existing posts and pages to record which media files are used where. GoDAM starts this scan automatically in the background — use this page to monitor progress or trigger it manually if needed.',
 							'godam',
 						) }
 					</p>
 					<p>
+						<strong>{ __( 'This sync is completely non-destructive.', 'godam' ) }</strong>
+						{ ' ' }
+						{ __( 'It will not alter, move, or delete any of your existing media files.', 'godam' ) }
+					</p>
+					<p>
 						<i>
 							{ __(
-								'The sync runs in the background in small batches, so your site stays responsive throughout.',
+								'Processing runs in small background batches so your site stays fully responsive throughout.',
 								'godam',
 							) }
 						</i>

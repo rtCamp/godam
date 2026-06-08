@@ -44,9 +44,10 @@ class Media_Usage_Backfill {
 	const TIME_LIMIT_SECONDS = 20;
 
 	// ----- wp_options keys -----
-	const OPT_STATUS    = 'godam_media_backfill_status';
-	const OPT_PROCESSED = 'godam_media_backfill_processed';
-	const OPT_TOTAL     = 'godam_media_backfill_total';
+	const OPT_STATUS         = 'godam_media_backfill_status';
+	const OPT_PROCESSED      = 'godam_media_backfill_processed';
+	const OPT_TOTAL          = 'godam_media_backfill_total';
+	const OPT_AUTO_TRIGGERED = 'godam_media_backfill_auto_triggered';
 
 	// ----- Object cache -----
 	const CACHE_KEY   = 'status';
@@ -74,6 +75,81 @@ class Media_Usage_Backfill {
 	protected function __construct() {
 		add_action( self::AS_BATCH_ACTION, array( $this, 'process_batch' ) );
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
+		add_action( 'admin_init', array( $this, 'maybe_auto_start' ) );
+		add_action( 'admin_notices', array( $this, 'render_background_notice' ) );
+	}
+
+	// -------------------------------------------------------------------------
+	// Background auto-start
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Automatically start the backfill on the first admin page load after the
+	 * plugin is installed or updated — completely invisible to the user.
+	 *
+	 * The OPT_AUTO_TRIGGERED flag is written before start() is called so a
+	 * failed or slow start cannot trigger a second run on the next page load.
+	 * If Action Scheduler is unavailable the flag is still set and the admin
+	 * can trigger manually from the GoDAM Tools page.
+	 *
+	 * @return void
+	 */
+	public function maybe_auto_start() {
+		// Guard: fire only once ever.
+		if ( get_option( self::OPT_AUTO_TRIGGERED ) ) {
+			return;
+		}
+
+		// Mark triggered immediately — prevents re-entry on the next page load
+		// regardless of whether start() succeeds.
+		update_option( self::OPT_AUTO_TRIGGERED, true, false );
+
+		$status = get_option( self::OPT_STATUS, self::STATUS_IDLE );
+
+		// Don't interfere if the admin has already run or is running the backfill.
+		if ( self::STATUS_IDLE !== $status ) {
+			return;
+		}
+
+		if ( function_exists( 'as_enqueue_async_action' ) ) {
+			$this->start();
+		}
+	}
+
+	/**
+	 * Show an unobtrusive admin notice while the background sync is running.
+	 *
+	 * @return void
+	 */
+	public function render_background_notice() {
+		if ( self::STATUS_RUNNING !== get_option( self::OPT_STATUS ) ) {
+			return;
+		}
+
+		$data      = $this->get_status();
+		$tools_url = admin_url( 'admin.php?page=rtgodam_tools#media-usage-sync' );
+
+		?>
+		<div class="notice notice-info">
+			<p>
+				<strong><?php esc_html_e( 'GoDAM:', 'godam' ); ?></strong>
+				<?php esc_html_e( 'Scanning your existing media usage in the background. This is completely non-destructive — it will not alter, move, or delete any of your media files.', 'godam' ); ?>
+				<?php if ( $data['total'] > 0 ) : ?>
+					<?php
+					echo esc_html(
+						sprintf(
+							/* translators: 1: posts scanned so far, 2: total posts to scan */
+							__( '(%1$d of %2$d posts scanned)', 'godam' ),
+							$data['processed'],
+							$data['total']
+						)
+					);
+					?>
+				<?php endif; ?>
+				&nbsp;<a href="<?php echo esc_url( $tools_url ); ?>"><?php esc_html_e( 'View progress', 'godam' ); ?></a>
+			</p>
+		</div>
+		<?php
 	}
 
 	// -------------------------------------------------------------------------
