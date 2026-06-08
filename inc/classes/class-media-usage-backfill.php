@@ -95,6 +95,12 @@ class Media_Usage_Backfill {
 	 * @return void
 	 */
 	public function maybe_auto_start() {
+		// Only administrators may trigger the auto-start — non-admin roles
+		// visiting wp-admin must not consume the one-time trigger flag.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
 		// Guard: fire only once ever.
 		if ( get_option( self::OPT_AUTO_TRIGGERED ) ) {
 			return;
@@ -122,6 +128,10 @@ class Media_Usage_Backfill {
 	 * @return void
 	 */
 	public function render_background_notice() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
 		if ( self::STATUS_RUNNING !== get_option( self::OPT_STATUS ) ) {
 			return;
 		}

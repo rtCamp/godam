@@ -20,6 +20,7 @@ const headers = () => ( {
 	'Content-Type': 'application/json',
 	'X-WP-Nonce': window.godamRestRoute?.nonce,
 } );
+const isAdmin = () => !! window.godamRestRoute?.isAdmin;
 
 const POLL_INTERVAL_MS = 4000;
 
@@ -226,12 +227,18 @@ const MediaUsageSyncTab = () => {
 						</div>
 					) }
 
+					{ ! isAdmin() && (
+						<Notice status="warning" isDismissible={ false }>
+							{ __( 'Only administrators can start or stop the media usage sync.', 'godam' ) }
+						</Notice>
+					) }
+
 					<div className="flex gap-2 mt-4">
 						<Button
 							variant="primary"
 							className="godam-button"
 							onClick={ handleStart }
-							disabled={ starting || stopping || status === 'running' || status === 'completed' }
+							disabled={ ! isAdmin() || starting || stopping || status === 'running' || status === 'completed' }
 						>
 							{ primaryButtonLabel() }
 						</Button>
@@ -241,7 +248,7 @@ const MediaUsageSyncTab = () => {
 								variant="secondary"
 								className="godam-button"
 								onClick={ handleStop }
-								disabled={ stopping }
+								disabled={ ! isAdmin() || stopping }
 								style={ { backgroundColor: '#dc3545', color: 'white' } }
 							>
 								{ stopping
