@@ -2,6 +2,8 @@
 /**
  * Autoloader file for plugin.
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -11,6 +13,8 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Auto loader function.
+ *
+ * @since 1.0.0
  *
  * @param string $file_resource Source namespace.
  *

@@ -2,6 +2,8 @@
 /**
  * Class RTGODAM_Transcoder_Rest_Routes
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -10,6 +12,8 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Handle REST Routes for Transcoder.
+ *
+ * @since 1.0.0
  */
 class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
@@ -45,6 +49,8 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 	/**
 	 * Function to register routes.
+	 *
+	 * @since 1.0.0
 	 */
 	public function register_routes() {
 
@@ -173,6 +179,8 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 	/**
 	 * Return the callback URL for the transcoder.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @return string
 	 */
 	public static function get_callback_url() {
@@ -181,6 +189,8 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 	/**
 	 * Sanitizes a single URL or an array of URLs.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @param mixed           $value The incoming data (can be a single URL or an array of URLs).
 	 * @param WP_REST_Request $request Full details about the request.
@@ -217,6 +227,8 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 	/**
 	 * Function to handle the callback request by the FFMPEG transcoding server.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @param WP_REST_Request $request Object of WP_REST_Request.
 	 *
@@ -463,6 +475,8 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 	/**
 	 * Function to handle the transcription callback request.
 	 *
+	 * @since 1.4.6
+	 *
 	 * @param WP_REST_Request $request Object of WP_REST_Request.
 	 *
 	 * @return WP_Error|WP_REST_Response REST API response.
@@ -521,6 +535,8 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 	/**
 	 * Verify callback permission by checking API key.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param WP_REST_Request $request The request object.
 	 * @return bool|WP_Error True if permission granted, WP_Error otherwise.

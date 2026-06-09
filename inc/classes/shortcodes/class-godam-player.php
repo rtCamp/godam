@@ -2,6 +2,8 @@
 /**
  * GoDAM Player Shortcode Class.
  *
+ * @since 1.1.4
+ *
  * @package GoDAM
  */
 
@@ -15,12 +17,16 @@ use RTGODAM\Inc\Traits\Singleton;
  * Class GoDAM_Player.
  *
  * This class handles the GoDAM player shortcode functionality.
+ *
+ * @since 1.1.0
  */
 class GoDAM_Player {
 	use Singleton;
 
 	/**
 	 * Constructor.
+	 *
+	 * @since 1.1.0
 	 */
 	final protected function __construct() {
 		add_shortcode( 'godam_video', array( $this, 'render' ) );
@@ -103,6 +109,8 @@ class GoDAM_Player {
 
 	/**
 	 * Outputs custom css from video player settings tab input field.
+	 *
+	 * @since 1.1.4
 	 */
 	public function godam_output_admin_player_css() {
 		$godam_settings = get_option( 'rtgodam-settings', array() );
@@ -115,6 +123,8 @@ class GoDAM_Player {
 
 	/**
 	 * Register scripts and styles for the GoDAM player.
+	 *
+	 * @since 1.1.0
 	 */
 	public function register_scripts() {
 		// Allow external stylesheets to be enqueued.
@@ -205,6 +215,8 @@ class GoDAM_Player {
 
 	/**
 	 * Enqueue all player skin styles on the admin settings page.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param string $hook_suffix The current admin page.
 	 */

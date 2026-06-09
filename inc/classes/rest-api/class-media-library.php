@@ -2,6 +2,8 @@
 /**
  * REST API class for Media Library Pages.
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -16,6 +18,8 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Media_Library
+ *
+ * @since 1.0.0
  */
 class Media_Library extends Base {
 
@@ -28,6 +32,8 @@ class Media_Library extends Base {
 
 	/**
 	 * Register custom REST API routes for Settings Pages.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return array Array of registered REST API routes
 	 */
@@ -592,6 +598,8 @@ class Media_Library extends Base {
 	/**
 	 * Verify the API key using external API.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response
 	 */
@@ -647,6 +655,8 @@ class Media_Library extends Base {
 	/**
 	 * Remove all terms of a specific taxonomy for a given post ID.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param int    $post_id   The ID of the post or object.
 	 * @param string $taxonomy  The taxonomy to remove terms from.
 	 *
@@ -671,6 +681,8 @@ class Media_Library extends Base {
 	 * Get EXIF data.
 	 *
 	 * Get the EXIF data for the attachment ID.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response
@@ -726,6 +738,8 @@ class Media_Library extends Base {
 	/**
 	 * Format FNumber value.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param string|int $fnumber The FNumber value.
 	 * @return string Formatted FNumber value.
 	 */
@@ -744,6 +758,8 @@ class Media_Library extends Base {
 	 * Get video thumbnails.
 	 *
 	 * Get the video thumbnail for the attachment ID.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response
@@ -946,6 +962,8 @@ class Media_Library extends Base {
 	 *
 	 * Upload the custom video thumbnail for the thumbnail ID.
 	 *
+	 * @since 1.4.0
+	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response
 	 */
@@ -1002,6 +1020,8 @@ class Media_Library extends Base {
 	 * Remove video thumbnail.
 	 *
 	 * Remove the video thumbnail for the thumbnail URL.
+	 *
+	 * @since 1.4.0
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response
@@ -1060,6 +1080,8 @@ class Media_Library extends Base {
 	 * Set video thumbnail.
 	 *
 	 * Set the video thumbnail for the attachment ID.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response
@@ -1161,6 +1183,8 @@ class Media_Library extends Base {
 	 *
 	 * Deletes an array of folder IDs.
 	 *
+	 * @since 1.3.0
+	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response|\WP_Error
 	 */
@@ -1241,6 +1265,8 @@ class Media_Library extends Base {
 	 * Update meta status for multiple folders.
 	 * This is a helper method used by bulk_update_folder_lock_status and bulk_update_folder_bookmark_status.
 	 *
+	 * @since 1.3.0
+	 *
 	 * @param array  $folder_ids Array of folder IDs.
 	 * @param string $meta_key   The meta key to update ('locked' or 'bookmark').
 	 * @param bool   $value      The boolean value to set (true or false).
@@ -1286,6 +1312,8 @@ class Media_Library extends Base {
 	 * Bulk update folder lock status.
 	 *
 	 * Sets the 'locked' meta status for an array of folder IDs.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response|\WP_Error
@@ -1353,6 +1381,8 @@ class Media_Library extends Base {
 	 *
 	 * Sets the 'bookmark' meta status for an array of folder IDs.
 	 *
+	 * @since 1.3.0
+	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response|\WP_Error
 	 */
@@ -1418,6 +1448,8 @@ class Media_Library extends Base {
 	 *
 	 * The returned response contains the processed list of media items with additional meta
 	 * fields (like artist and album for audio), total count, and pagination information.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response JSON-formatted response containing:
@@ -1567,6 +1599,8 @@ class Media_Library extends Base {
 	 * This is primarily used to allow external media (like GoDAM-hosted videos/audios)
 	 * to be represented within the native Media Library interface, enabling support
 	 * for layering, editing, or interaction via Gutenberg/Elementor blocks.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param \WP_REST_Request $request REST API request object.
 	 * @return \WP_REST_Response|\WP_Error API response with attachment data or error.
@@ -1793,6 +1827,8 @@ class Media_Library extends Base {
 	 * This is useful for clients who want to retrieve media metadata via REST,
 	 * regardless of whether it's a native or virtual entry.
 	 *
+	 * @since 1.3.0
+	 *
 	 * @param \WP_REST_Request $request The REST request containing the GoDAM media ID.
 	 * @return \WP_REST_Response|\WP_Error The media object response or an error if not found.
 	 */
@@ -1832,6 +1868,8 @@ class Media_Library extends Base {
 
 	/**
 	 * Get the number of items in a media folder by id with mime type filtering support.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response|\WP_Error
@@ -1896,6 +1934,8 @@ class Media_Library extends Base {
 
 	/**
 	 * Get media-folders terms by various parameters.
+	 *
+	 * @since 1.4.0
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 *
@@ -1993,6 +2033,8 @@ class Media_Library extends Base {
 	 *
 	 * This method retrieves all child terms for the provided terms in the specified taxonomy.
 	 *
+	 * @since 1.4.0
+	 *
 	 * @param array|\WP_Error $terms    The terms to get children for.
 	 * @param string          $taxonomy The taxonomy to query.
 	 *
@@ -2026,6 +2068,8 @@ class Media_Library extends Base {
 	/**
 	 * Get the total count of top-level (parent) media folders only.
 	 *
+	 * @since 1.4.0
+	 *
 	 * @return int Total count of parent media folders.
 	 */
 	private function get_total_parent_media_folders_count() {
@@ -2049,6 +2093,8 @@ class Media_Library extends Base {
 	 * Prepare term responses for media folders.
 	 *
 	 * This method formats the term data for the REST API response.
+	 *
+	 * @since 1.4.0
 	 *
 	 * @param array|\WP_Error $terms The terms to prepare.
 	 *

@@ -2,6 +2,8 @@
 /**
  * Base class to register taxonomy.
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -13,6 +15,8 @@ use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class Base
+ *
+ * @since 1.0.0
  */
 abstract class Base {
 
@@ -20,6 +24,8 @@ abstract class Base {
 
 	/**
 	 * Base constructor.
+	 *
+	 * @since 1.0.0
 	 */
 	protected function __construct() {
 
@@ -28,6 +34,8 @@ abstract class Base {
 
 	/**
 	 * To setup action/filter.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
@@ -38,6 +46,8 @@ abstract class Base {
 
 	/**
 	 * Register taxonomy.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
@@ -69,6 +79,8 @@ abstract class Base {
 	/**
 	 * To get argument to register taxonomy.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @return array
 	 */
 	public function get_args() {
@@ -85,12 +97,16 @@ abstract class Base {
 	/**
 	 * Labels for taxonomy.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @return array
 	 */
 	abstract public function get_labels();
 
 	/**
 	 * List of post types for taxonomy.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return array
 	 */

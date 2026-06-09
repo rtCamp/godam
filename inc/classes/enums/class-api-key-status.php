@@ -5,6 +5,8 @@
  * Acts as a PHP enum for API key statuses since PHP native enums
  * require PHP 8.1+ which may not be available in all environments.
  *
+ * @since 1.7.0
+ *
  * @package GoDAM
  */
 
@@ -21,6 +23,8 @@ defined( 'ABSPATH' ) || exit;
  * EXPIRED: API key was previously valid but has expired.
  * VERIFICATION_FAILED: Temporary server error during verification (stored in user data cache).
  * NO_API_KEY: No API key has been entered yet (default state for new installs / free users).
+ *
+ * @since 1.7.0
  */
 class Api_Key_Status {
 
@@ -62,6 +66,8 @@ class Api_Key_Status {
 	/**
 	 * Get the status message for a given API key status.
 	 *
+	 * @since 1.7.0
+	 *
 	 * @param string $status The API key status.
 	 *
 	 * @return string The human-readable status message.
@@ -74,6 +80,8 @@ class Api_Key_Status {
 
 	/**
 	 * Get all status messages.
+	 *
+	 * @since 1.7.0
 	 *
 	 * @return array Associative array of status => message.
 	 */
@@ -88,6 +96,8 @@ class Api_Key_Status {
 
 	/**
 	 * Get all valid statuses.
+	 *
+	 * @since 1.7.0
 	 *
 	 * @return array List of all valid status values.
 	 */
@@ -105,6 +115,8 @@ class Api_Key_Status {
 	 *
 	 * Only permanent states can be saved. VERIFICATION_FAILED is transient.
 	 *
+	 * @since 1.7.0
+	 *
 	 * @return array List of persistable status values.
 	 */
 	public static function get_persistable() {
@@ -117,6 +129,8 @@ class Api_Key_Status {
 
 	/**
 	 * Check if a given status value is valid.
+	 *
+	 * @since 1.7.0
 	 *
 	 * @param string $status The status to validate.
 	 *

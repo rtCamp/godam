@@ -2,6 +2,8 @@
 /**
  * Migration: godam/gallery (V1) → godam/gallery-v2 (V2).
  *
+ * @since 1.8.0
+ *
  * @package GoDAM
  */
 
@@ -38,6 +40,8 @@ defined( 'ABSPATH' ) || exit;
  * | search          | (dropped)          | V2 query does not support search filter   |
  * | engagements     | engagements        | direct pass-through                       |
  * | openToNewPage   | (dropped)          | V2 does not have single-page linking      |
+ *
+ * @since 1.8.0
  */
 class Gallery_V1_To_V2 {
 
@@ -102,6 +106,8 @@ class Gallery_V1_To_V2 {
 	 * a concurrency lock is held by another concurrent request, signalling the
 	 * runner to retry on the next request.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @return bool True if migration is complete or was just run; false if it bailed.
 	 */
 	public static function maybe_run(): bool {
@@ -124,6 +130,8 @@ class Gallery_V1_To_V2 {
 	 * Iterates all posts whose content contains a V1 godam/gallery block
 	 * comment, converts each block in place, persists the updated content,
 	 * then marks the migration as complete.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @return void
 	 */
@@ -242,6 +250,8 @@ class Gallery_V1_To_V2 {
 	 * case a compare-and-swap UPDATE is used so two concurrent requests racing
 	 * on the same expired timestamp cannot both succeed.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @return bool True when the lock was acquired, false otherwise.
 	 */
 	private static function acquire_lock(): bool {
@@ -279,6 +289,8 @@ class Gallery_V1_To_V2 {
 	/**
 	 * Release the concurrency lock after the migration finishes.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @return void
 	 */
 	private static function release_lock(): void {
@@ -292,6 +304,8 @@ class Gallery_V1_To_V2 {
 	/**
 	 * Return true when $content contains at least one V1 godam/gallery block.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @param string $content Raw post content.
 	 * @return bool
 	 */
@@ -302,6 +316,8 @@ class Gallery_V1_To_V2 {
 	/**
 	 * Replace every V1 godam/gallery block comment in $content with its V2
 	 * equivalent. Content without any V1 blocks is returned unchanged.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @param string $content Raw post content.
 	 * @return string
@@ -324,6 +340,8 @@ class Gallery_V1_To_V2 {
 	 *
 	 * The negative lookahead `(?!-)` prevents matching godam/gallery-v2.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @return string
 	 */
 	private static function block_pattern() {
@@ -332,6 +350,8 @@ class Gallery_V1_To_V2 {
 
 	/**
 	 * Preg_replace_callback handler – converts a single V1 block match to V2.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @param array $block_match Regex match array.
 	 * @return string Replacement V2 block comment.
@@ -385,6 +405,8 @@ class Gallery_V1_To_V2 {
 
 	/**
 	 * Convert a V1 attribute array to the equivalent V2 attribute array.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @param array $v1 V1 attributes as decoded from the block comment JSON.
 	 * @return array V2 attributes.

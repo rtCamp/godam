@@ -2,6 +2,8 @@
 /**
  * Jetpack Form Assets class.
  *
+ * @since 1.4.8
+ *
  * @package GoDAM
  */
 
@@ -15,6 +17,8 @@ use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Jetpack Form Assets class.
+ *
+ * @since 1.4.8
  */
 class Jetpack_Form_Assets {
 	use Singleton;

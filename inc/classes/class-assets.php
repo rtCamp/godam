@@ -2,6 +2,8 @@
 /**
  * Assets class.
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -13,6 +15,8 @@ use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class Assets
+ *
+ * @since 1.0.0
  */
 class Assets {
 
@@ -20,6 +24,8 @@ class Assets {
 
 	/**
 	 * Construct method.
+	 *
+	 * @since 1.0.0
 	 */
 	protected function __construct() {
 		$this->setup_hooks();
@@ -27,6 +33,8 @@ class Assets {
 
 	/**
 	 * To setup action/filter.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
@@ -41,6 +49,8 @@ class Assets {
 
 	/**
 	 * To enqueue scripts and styles.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
@@ -167,6 +177,8 @@ class Assets {
 
 	/**
 	 * To enqueue scripts and styles. in admin.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
@@ -390,6 +402,8 @@ class Assets {
 
 	/**
 	 * Enqueue GoDAM Settings JS localization.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */

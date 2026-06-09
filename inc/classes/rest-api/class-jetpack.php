@@ -4,6 +4,8 @@
  *
  * Get all Jetpack Forms and a single Jetpack Form.
  *
+ * @since 1.1.4
+ *
  * @package GoDAM
  */
 
@@ -15,6 +17,8 @@ use Automattic\Jetpack\Forms\ContactForm\Contact_Form;
 
 /**
  * Class Jetpack
+ *
+ * @since 1.1.4
  */
 class Jetpack extends Base {
 
@@ -48,6 +52,8 @@ class Jetpack extends Base {
 
 	/**
 	 * Setup hooks and initialization.
+	 *
+	 * @since 1.1.4
 	 */
 	protected function setup_hooks() {
 
@@ -61,6 +67,8 @@ class Jetpack extends Base {
 
 	/**
 	 * Get REST routes.
+	 *
+	 * @since 1.1.4
 	 */
 	public function get_rest_routes() {
 		return array(
@@ -141,6 +149,8 @@ class Jetpack extends Base {
 	/**
 	 * Get all Jetpack Forms.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @param \WP_REST_Request $request Request Object.
 	 * @return \WP_REST_Response
 	 */
@@ -212,6 +222,8 @@ class Jetpack extends Base {
 	/**
 	 * Recursively extract Jetpack forms from blocks.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @param array  $blocks The blocks to search.
 	 * @param int    $post_id The post ID.
 	 * @param string $post_title The post title.
@@ -228,6 +240,8 @@ class Jetpack extends Base {
 
 	/**
 	 * Helper method to recursively search blocks for forms.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param array  $blocks The blocks to search.
 	 * @param int    $post_id The post ID.
@@ -275,6 +289,8 @@ class Jetpack extends Base {
 
 	/**
 	 * Get a single Jetpack Form.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param \WP_REST_Request $request Request Object.
 	 * @return \WP_REST_Response
@@ -327,6 +343,8 @@ class Jetpack extends Base {
 	/**
 	 * Find a specific form block by its number in the blocks.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @param array $blocks The blocks to search.
 	 * @param int   $form_number The form number to find.
 	 * @return array|false The form block or false if not found.
@@ -338,6 +356,8 @@ class Jetpack extends Base {
 
 	/**
 	 * Helper method to recursively search for a form block by number.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param array $blocks The blocks to search.
 	 * @param int   $target_form_number The form number to find.
@@ -368,6 +388,8 @@ class Jetpack extends Base {
 
 	/**
 	 * Render a Jetpack form directly using the Contact_Form class.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param array $form_block The form block data.
 	 * @param int   $post_id The post ID containing the form.
@@ -411,6 +433,8 @@ class Jetpack extends Base {
 
 	/**
 	 * Static helper method to get rendered form HTML (for use in templates).
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param string $form_id The form ID.
 	 * @return string|false The rendered HTML or false on error.
@@ -457,6 +481,8 @@ class Jetpack extends Base {
 	/**
 	 * Static helper method to find form block by number in blocks.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @param array $blocks The blocks to search.
 	 * @param int   $form_number The form number to find.
 	 * @return array|false The form block or false if not found.
@@ -468,6 +494,8 @@ class Jetpack extends Base {
 
 	/**
 	 * Static helper method to recursively search for a form block by number.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param array $blocks The blocks to search.
 	 * @param int   $target_form_number The form number to find.
@@ -498,6 +526,8 @@ class Jetpack extends Base {
 
 	/**
 	 * Static helper method to render Jetpack form directly.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param array $form_block The form block data.
 	 * @param int   $post_id The post ID containing the form.
@@ -541,6 +571,8 @@ class Jetpack extends Base {
 
 	/**
 	 * Handle Jetpack form submission via REST API.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param \WP_REST_Request $request Request Object.
 	 * @return \WP_REST_Response
@@ -633,6 +665,8 @@ class Jetpack extends Base {
 	/**
 	 * Process Jetpack form submission and return appropriate response.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @param object $form The Jetpack form object.
 	 * @return array Response data.
 	 */
@@ -690,6 +724,8 @@ class Jetpack extends Base {
 	/**
 	 * Validate Jetpack form fields.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @param object $form The Jetpack form object.
 	 * @return array Validation result.
 	 */
@@ -732,6 +768,8 @@ class Jetpack extends Base {
 	/**
 	 * Map field names from frontend format to original form format.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @param array  $frontend_fields The frontend field data.
 	 * @param object $original_form The original Jetpack form object.
 	 * @return array Mapped field names and values.
@@ -757,6 +795,8 @@ class Jetpack extends Base {
 
 	/**
 	 * Load form into memory using the origin post ID.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param string $form_id The form ID.
 	 * @param string $form_hash The form hash.
@@ -822,6 +862,8 @@ class Jetpack extends Base {
 	/**
 	 * Find the first Jetpack contact form block in the blocks.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @param array $blocks The blocks to search.
 	 * @return array|false The form block or false if not found.
 	 */
@@ -831,6 +873,8 @@ class Jetpack extends Base {
 
 	/**
 	 * Helper method to recursively search for the first form block.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param array $blocks The blocks to search.
 	 * @return array|false The form block or false if not found.
@@ -856,6 +900,8 @@ class Jetpack extends Base {
 
 	/**
 	 * Invalidate the Jetpack forms cache on post save, delete, or trash.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param int $post_id The post ID that was saved, deleted, or trashed.
 	 */

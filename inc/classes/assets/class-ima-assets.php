@@ -2,6 +2,8 @@
 /**
  * IMA Assets class.
  *
+ * @since 1.4.8
+ *
  * @package GoDAM
  */
 
@@ -15,6 +17,8 @@ use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * IMA Assets class.
+ *
+ * @since 1.4.8
  */
 class IMA_Assets {
 	use Singleton;

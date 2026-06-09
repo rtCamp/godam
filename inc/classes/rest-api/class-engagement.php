@@ -4,6 +4,8 @@
  *
  * Get all Engagement data for a video.
  *
+ * @since 1.4.0
+ *
  * @package GoDAM
  */
 
@@ -18,6 +20,8 @@ use WP_Error;
 
 /**
  * Class Engagement
+ *
+ * @since 1.4.0
  */
 class Engagement extends Base {
 
@@ -30,6 +34,8 @@ class Engagement extends Base {
 
 	/**
 	 * Get REST routes.
+	 *
+	 * @since 1.4.0
 	 */
 	public function get_rest_routes() {
 		return array(
@@ -247,6 +253,8 @@ class Engagement extends Base {
 	/**
 	 * Get all activities for a video.
 	 *
+	 * @since 1.4.0
+	 *
 	 * @param WP_REST_Request $request Request Object.
 	 *
 	 * @return WP_REST_Response
@@ -299,6 +307,8 @@ class Engagement extends Base {
 	/**
 	 * Handle microservice responses and convert them into a standard format.
 	 *
+	 * @since 1.4.0
+	 *
 	 * @param \WP_Error|\WP_HTTP_Response $response Microservice response.
 	 *
 	 * @return WP_REST_Response Response in standard format.
@@ -349,6 +359,8 @@ class Engagement extends Base {
 	/**
 	 * Checks if access credentials (API key and account token) are valid.
 	 *
+	 * @since 1.4.0
+	 *
 	 * @return WP_REST_Response|array Returns an error response if credentials are invalid,
 	 *                                otherwise an array with account token and API key.
 	 */
@@ -377,6 +389,8 @@ class Engagement extends Base {
 
 	/**
 	 * Get analytics data for given query parameters.
+	 *
+	 * @since 1.4.0
 	 *
 	 * @param array $query_params Query parameters for analytics microservice.
 	 * @return array|WP_REST_Response Analytics data or error response.
@@ -410,6 +424,8 @@ class Engagement extends Base {
 	 * Handle like/dislike request from user.
 	 *
 	 * Handles the REST request to like or dislike a video.
+	 *
+	 * @since 1.4.0
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 *
@@ -497,6 +513,8 @@ class Engagement extends Base {
 	 * Response:
 	 * status - The status of the request (success or error).
 	 * data   - An array containing the comment data.
+	 *
+	 * @since 1.4.0
 	 *
 	 * @param WP_REST_Request $request The request object.
 	 *
@@ -607,6 +625,8 @@ class Engagement extends Base {
 	 * status - The status of the request (success or error).
 	 * data   - An array containing the comment data.
 	 *
+	 * @since 1.4.0
+	 *
 	 * @param WP_REST_Request $request The request object.
 	 *
 	 * @return WP_REST_Response The response object.
@@ -691,6 +711,8 @@ class Engagement extends Base {
 
 	/**
 	 * Gets comments for a transcoder job ID.
+	 *
+	 * @since 1.4.0
 	 *
 	 * @param string $transcoder_job_id     Transcoder job ID.
 	 * @param array  $account_credentials   Account credentials.
@@ -782,6 +804,8 @@ class Engagement extends Base {
 	 * specific video based on the transcoder job ID. It checks if the current user
 	 * has liked the video and returns the like data.
 	 *
+	 * @since 1.4.0
+	 *
 	 * @param string $transcoder_job_id   The ID of the transcoder job associated with the video.
 	 * @param array  $account_credentials The API credentials for accessing Godam services.
 	 *
@@ -835,6 +859,8 @@ class Engagement extends Base {
 	 * a string representation of the difference in days and the given date in
 	 * 12-hour format.
 	 *
+	 * @since 1.4.0
+	 *
 	 * @param string $given_date The date to compare with the current date.
 	 *
 	 * @return array             Array containing 'date_str' and 'time' keys.
@@ -866,6 +892,8 @@ class Engagement extends Base {
 	 * The function takes a guest user email as input and logs them in by setting a cookie.
 	 * The cookie is set for an hour and contains the guest user's email and name. If the
 	 * guest user name is empty, it defaults to 'Guest'.
+	 *
+	 * @since 1.4.0
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 *
@@ -909,6 +937,8 @@ class Engagement extends Base {
 	 *
 	 * Guests are not allowed to interact with engagement endpoints.
 	 *
+	 * @since 1.4.0
+	 *
 	 * @return bool True if the user is not a guest, false otherwise.
 	 */
 	public function engagement_permission_check() {
@@ -924,6 +954,8 @@ class Engagement extends Base {
 
 	/**
 	 * Returns the transcoding job ID for a given video ID.
+	 *
+	 * @since 1.4.0
 	 *
 	 * @param int|string $video_id The video ID. If it starts with 'cmmid_', the rest is the transcoding job ID.
 	 *
@@ -941,6 +973,8 @@ class Engagement extends Base {
 	 * Validates a request argument.
 	 *
 	 * Checks if the value is not empty and, if not, delegates to rest_validate_request_arg().
+	 *
+	 * @since 1.4.0
 	 *
 	 * @param mixed           $value   Value to validate.
 	 * @param WP_REST_Request $request Request instance.

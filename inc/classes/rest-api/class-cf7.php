@@ -4,6 +4,8 @@
  *
  * Get a single Contact Form 7 Form.
  *
+ * @since 1.1.4
+ *
  * @package GoDAM
  */
 
@@ -13,11 +15,15 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class LocationAPI
+ *
+ * @since 1.1.4
  */
 class CF7 extends Base {
 
 	/**
 	 * Get REST routes.
+	 *
+	 * @since 1.1.4
 	 */
 	public function get_rest_routes() {
 		return array(
@@ -54,6 +60,8 @@ class CF7 extends Base {
 
 	/**
 	 * Get a single Contact Form 7 form.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param \WP_REST_Request $request Request object.
 	 * @return \WP_REST_Response|\WP_Error

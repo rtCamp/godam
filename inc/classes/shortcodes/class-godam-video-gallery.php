@@ -2,6 +2,8 @@
 /**
  * GoDAM Video Gallery Shortcode Class.
  *
+ * @since 1.1.4
+ *
  * @package GoDAM
  */
 
@@ -15,12 +17,16 @@ use RTGODAM\Inc\Traits\Singleton;
  * Class GoDAM_Video_Gallery.
  *
  * Handles [godam_video_gallery] shortcode.
+ *
+ * @since 1.1.4
  */
 class GoDAM_Video_Gallery {
 	use Singleton;
 
 	/**
 	 * Constructor.
+	 *
+	 * @since 1.1.4
 	 */
 	final protected function __construct() {
 		add_shortcode( 'godam_video_gallery', array( $this, 'render' ) );
@@ -29,6 +35,8 @@ class GoDAM_Video_Gallery {
 
 	/**
 	 * Register gallery-specific scripts and styles.
+	 *
+	 * @since 1.1.4
 	 */
 	public function register_scripts() {
 		wp_register_style(
@@ -77,6 +85,8 @@ class GoDAM_Video_Gallery {
 
 	/**
 	 * Render the video gallery shortcode.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return string HTML output of the gallery.

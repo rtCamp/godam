@@ -2,6 +2,8 @@
 /**
  * To load all classes that register elementor widget.
  *
+ * @since 1.1.4
+ *
  * @package GoDAM
  */
 
@@ -19,12 +21,16 @@ use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class Elementor Widgets.
+ *
+ * @since 1.1.4
  */
 class Elementor_Widgets {
 	use Singleton;
 
 	/**
 	 * Construct method.
+	 *
+	 * @since 1.1.4
 	 */
 	protected function __construct() {
 		$this->setup_hooks();
@@ -32,6 +38,8 @@ class Elementor_Widgets {
 
 	/**
 	 * To setup action/filter.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @return void
 	 */
@@ -49,6 +57,8 @@ class Elementor_Widgets {
 	/**
 	 * Scripts for elementor frontend rendering.
 	 * 
+	 * @since 1.1.4
+	 *
 	 * @return void
 	 */
 	public function enqueue_scripts() {
@@ -60,6 +70,8 @@ class Elementor_Widgets {
 
 	/**
 	 * Registers required scripts and styles.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @return void
 	 */
@@ -92,6 +104,8 @@ class Elementor_Widgets {
 	/**
 	 * Get the available menus.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @access private
 	 * @return array
 	 */
@@ -111,6 +125,8 @@ class Elementor_Widgets {
 
 	/**
 	 * Register Controls.
+	 *
+	 * @since 1.1.4
 	 */
 	public function widgets_controls() {
 		\Elementor\Plugin::$instance->controls_manager->register( new Godam_Media(), 'godam-media' );
@@ -118,6 +134,8 @@ class Elementor_Widgets {
 
 	/**
 	 * Register Widgets.
+	 *
+	 * @since 1.1.4
 	 */
 	public function widgets_registered() {
 		\Elementor\Plugin::$instance->widgets_manager->register( new GoDAM_Video() );
@@ -127,6 +145,8 @@ class Elementor_Widgets {
 
 	/**
 	 * Add custom category.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param object $elements_manager Elements Manager Object.
 	 */

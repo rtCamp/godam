@@ -4,6 +4,8 @@
  *
  * This file dynamically renders the video player block on the frontend.
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 

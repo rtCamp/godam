@@ -2,6 +2,8 @@
 /**
  * GoDAM video engagement class.
  *
+ * @since 1.4.0
+ *
  * @package godam
  */
 
@@ -16,6 +18,8 @@ use WP_Error;
 
 /**
  * Class Video_Engagement
+ *
+ * @since 1.4.0
  */
 class Video_Engagement {
 
@@ -23,6 +27,8 @@ class Video_Engagement {
 
 	/**
 	 * Construct method.
+	 *
+	 * @since 1.4.0
 	 */
 	protected function __construct() {
 		add_action( 'rtgodam_after_video_html', array( $this, 'add_engagement_to_video' ), 10, 4 );
@@ -30,6 +36,8 @@ class Video_Engagement {
 
 	/**
 	 * Adds engagement elements to the video.
+	 *
+	 * @since 1.4.0
 	 *
 	 * @param array $attributes  Video block attributes.
 	 * @param int   $instance_id The instance ID.
@@ -142,6 +150,8 @@ class Video_Engagement {
 
 	/**
 	 * Checks if engagements are enabled for a video.
+	 *
+	 * @since 1.4.8
 	 *
 	 * @param int|string $attachment_id The attachment ID of the video.
 	 * @param array      $attributes    The block attributes.

@@ -22,6 +22,8 @@ class Video_Migration extends Base {
 
 	/**
 	 * Construct method.
+	 *
+	 * @since 1.4.0
 	 */
 	public function __construct() {
 		parent::__construct();

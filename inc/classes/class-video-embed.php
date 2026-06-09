@@ -16,6 +16,8 @@ use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class Video_Embed
+ *
+ * @since 1.5.0
  */
 class Video_Embed {
 
@@ -23,6 +25,8 @@ class Video_Embed {
 
 	/**
 	 * Construct method.
+	 *
+	 * @since 1.5.0
 	 */
 	protected function __construct() {
 		$this->setup_hooks();

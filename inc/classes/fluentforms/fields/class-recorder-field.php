@@ -2,6 +2,8 @@
 /**
  * Recorder field for fluent forms.
  *
+ * @since 1.3.0
+ *
  * @package GoDAM
  */
 
@@ -18,6 +20,8 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Recorder_Field.
+ *
+ * @since 1.3.0
  */
 class Recorder_Field extends BaseFieldManager {
 
@@ -42,6 +46,8 @@ class Recorder_Field extends BaseFieldManager {
 
 	/**
 	 * Constructor.
+	 *
+	 * @since 1.3.0
 	 */
 	public function __construct() {
 
@@ -86,6 +92,8 @@ class Recorder_Field extends BaseFieldManager {
 
 	/**
 	 * Register the script to enqueue on entries.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */
@@ -154,6 +162,8 @@ class Recorder_Field extends BaseFieldManager {
 	/**
 	 * Create component for the Recorder field.
 	 *
+	 * @since 1.3.0
+	 *
 	 * @return array<mixed>
 	 */
 	public function getComponent() {
@@ -211,6 +221,8 @@ class Recorder_Field extends BaseFieldManager {
 	/**
 	 * Get general editor elements.
 	 *
+	 * @since 1.3.0
+	 *
 	 * @return string[]
 	 */
 	public function getGeneralEditorElements() {
@@ -225,6 +237,8 @@ class Recorder_Field extends BaseFieldManager {
 	/**
 	 * Get Advanced Editor Elements.
 	 *
+	 * @since 1.3.0
+	 *
 	 * @return string[]
 	 */
 	public function getAdvancedEditorElements() {
@@ -236,6 +250,8 @@ class Recorder_Field extends BaseFieldManager {
 
 	/**
 	 * Create custom general element, like selection for file selectors.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @return array<mixed>
 	 */
@@ -264,6 +280,8 @@ class Recorder_Field extends BaseFieldManager {
 
 	/**
 	 * Render the uppy recorder script.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */
@@ -335,6 +353,8 @@ class Recorder_Field extends BaseFieldManager {
 
 	/**
 	 * Render the input field.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param array<mixed> $data Field data.
 	 * @param object       $form Form data.
@@ -450,6 +470,8 @@ class Recorder_Field extends BaseFieldManager {
 	/**
 	 * Filter the submitted value for the recorder element.
 	 *
+	 * @since 1.3.0
+	 *
 	 * @param array|string $value Value from request.
 	 * @param array<mixed> $field Current field.
 	 *
@@ -490,6 +512,8 @@ class Recorder_Field extends BaseFieldManager {
 
 	/**
 	 * Handle validation for the required field.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param string       $error_message Error Message.
 	 * @param array<mixed> $field         Current Field.
@@ -534,6 +558,8 @@ class Recorder_Field extends BaseFieldManager {
 
 	/**
 	 * Upload the file to temp folder.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */
@@ -673,6 +699,8 @@ class Recorder_Field extends BaseFieldManager {
 	/**
 	 * Change upload dir to godam directory in uploads.
 	 *
+	 * @since 1.3.0
+	 *
 	 * @param array<mixed> $dirs upload directory.
 	 *
 	 * @return array<mixed>
@@ -688,6 +716,8 @@ class Recorder_Field extends BaseFieldManager {
 
 	/**
 	 * Update the filename to be unique.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param string $filename Current filename.
 	 *
@@ -705,6 +735,8 @@ class Recorder_Field extends BaseFieldManager {
 
 	/**
 	 * Validate the given file with the validation errors.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param array<mixed> $validation_rules Validation rules.
 	 * @param array<mixed> $file_data        File data.
@@ -757,6 +789,8 @@ class Recorder_Field extends BaseFieldManager {
 	/**
 	 * Function to decrypt the URL.
 	 *
+	 * @since 1.3.0
+	 *
 	 * @param string $url URL to be decrypted.
 	 *
 	 * @return string
@@ -787,6 +821,8 @@ class Recorder_Field extends BaseFieldManager {
 
 	/**
 	 * To add the entry detail markup for the recorder field.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param array<mixed> $response Response.
 	 * @param array<mixed> $field    Field Id.

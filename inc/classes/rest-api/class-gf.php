@@ -4,6 +4,8 @@
  *
  * Get all Gravity Forms and a single Gravity Form.
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -13,11 +15,15 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class GF
+ *
+ * @since 1.0.0
  */
 class GF extends Base {
 
 	/**
 	 * Get REST routes.
+	 *
+	 * @since 1.0.0
 	 */
 	public function get_rest_routes() {
 		return array(
@@ -67,6 +73,8 @@ class GF extends Base {
 	/**
 	 * Get all Gravity Forms.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param \WP_REST_Request $request Request Object.
 	 * @return \WP_REST_Response
 	 */
@@ -98,6 +106,8 @@ class GF extends Base {
 
 	/**
 	 * Get a single Gravity Form.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @param \WP_REST_Request $request Request Object.
 	 * @return \WP_REST_Response

@@ -172,6 +172,8 @@ class RTGODAM_Transcoder_Admin {
 	/**
 	 * Render an admin notice for API key activation or expiry warnings.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param string $message The message to display.
 	 * @param string $notice_type Type of notice (warning, error, etc.).
 	 * @param bool   $include_buttons Whether to include action buttons (default: false).
@@ -230,6 +232,8 @@ class RTGODAM_Transcoder_Admin {
 
 	/**
 	 * Display New Year Sale offer banner on the WordPress dashboard.
+	 *
+	 * @since 1.4.7
 	 *
 	 * @return void
 	 */
@@ -309,6 +313,8 @@ class RTGODAM_Transcoder_Admin {
 	/**
 	 * Display free plan admin notice for users without API key.
 	 *
+	 * @since 1.4.9
+	 *
 	 * @return void
 	 */
 	public function free_plan_admin_notice() {
@@ -373,6 +379,8 @@ class RTGODAM_Transcoder_Admin {
 	/**
 	 * Dismiss the free plan notice.
 	 *
+	 * @since 1.4.9
+	 *
 	 * @return void
 	 */
 	public function dismiss_free_plan_notice() {
@@ -387,6 +395,8 @@ class RTGODAM_Transcoder_Admin {
 	/**
 	 * Dismiss the WooCommerce integration promo notice.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @return void
 	 */
 	public function dismiss_woo_promo_notice() {
@@ -400,6 +410,8 @@ class RTGODAM_Transcoder_Admin {
 
 	/**
 	 * Check if the current screen is the dashboard.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return bool
 	 */
@@ -445,6 +457,8 @@ class RTGODAM_Transcoder_Admin {
 
 	/**
 	 * Display usage limit notices when bandwidth/storage usage is high.
+	 *
+	 * @since 1.4.9
 	 */
 	public function usage_limit_notices() {
 		// Only show on admin pages.
@@ -507,6 +521,8 @@ class RTGODAM_Transcoder_Admin {
 
 	/**
 	 * Display notice when usage limits are exceeded.
+	 *
+	 * @since 1.4.9
 	 *
 	 * @param bool  $bandwidth_exceeded Whether bandwidth limit is exceeded.
 	 * @param bool  $storage_exceeded Whether storage limit is exceeded.
@@ -571,6 +587,8 @@ class RTGODAM_Transcoder_Admin {
 	/**
 	 * Display warning notice when usage reaches 80%.
 	 *
+	 * @since 1.4.9
+	 *
 	 * @param bool  $bandwidth_warning Whether bandwidth is at warning level.
 	 * @param bool  $storage_warning Whether storage is at warning level.
 	 * @param float $bandwidth_percentage Current bandwidth usage percentage.
@@ -633,6 +651,8 @@ class RTGODAM_Transcoder_Admin {
 
 	/**
 	 * Display notice when bandwidth limit is exceeded (but transcoding still works).
+	 *
+	 * @since 1.4.9
 	 *
 	 * @param float $bandwidth_percentage Current bandwidth usage percentage.
 	 */

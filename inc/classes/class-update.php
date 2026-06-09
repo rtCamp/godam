@@ -2,6 +2,8 @@
 /**
  * Class to handle plugin update logic.
  *
+ * @since 1.4.0
+ *
  * @package GoDAM
  */
 
@@ -14,6 +16,8 @@ use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class Update
+ *
+ * @since 1.4.0
  */
 class Update {
 
@@ -28,6 +32,8 @@ class Update {
 
 	/**
 	 * Construct method.
+	 *
+	 * @since 1.4.0
 	 */
 	protected function __construct() {
 		$this->setup_hooks();
@@ -35,6 +41,8 @@ class Update {
 
 	/**
 	 * Register hooks related to plugin updates.
+	 *
+	 * @since 1.4.0
 	 */
 	protected function setup_hooks() {
 		add_action( 'admin_init', array( $this, 'rtgodam_update_plugin_version' ) );
@@ -46,6 +54,8 @@ class Update {
 	 *
 	 * Fresh install: sets options for What's New page.
 	 * Version bump:  sets option for What's New page only.
+	 *
+	 * @since 1.4.0
 	 */
 	public function rtgodam_update_plugin_version() {
 		$saved_version   = get_option( 'rtgodam_plugin_version' );
@@ -73,6 +83,8 @@ class Update {
 
 	/**
 	 * Render a one-time admin notice after the video performance controls change.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @return void
 	 */
@@ -104,6 +116,8 @@ class Update {
 	 * upgrade and corrects it to 'no_api_key', preventing the dashboard from
 	 * loading indefinitely because the JS thinks the key is valid but no key
 	 * is actually stored.
+	 *
+	 * @since 1.8.0
 	 */
 	private function rtgodam_reconcile_api_key_state() {
 		$api_key       = get_option( 'rtgodam-api-key', '' );
@@ -129,6 +143,8 @@ class Update {
 
 	/**
 	 * Determine whether there's a new release bump in the plugin version.
+	 *
+	 * @since 1.4.0
 	 *
 	 * @param string $old_version Previous plugin version.
 	 * @param string $new_version Current plugin version.

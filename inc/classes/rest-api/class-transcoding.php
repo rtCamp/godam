@@ -2,6 +2,8 @@
 /**
  * REST API class for Transcoding Pages.
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -13,6 +15,8 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Transcoding
+ *
+ * @since 1.0.0
  */
 class Transcoding extends Base {
 
@@ -25,6 +29,8 @@ class Transcoding extends Base {
 
 	/**
 	 * Register custom REST API.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return array Array of registered REST API routes
 	 */
@@ -142,6 +148,8 @@ class Transcoding extends Base {
 	/**
 	 * Update transcoding status of a media.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param \WP_REST_Request $request REST request object.
 	 */
 	public function update_transcoding_status( \WP_REST_Request $request ) {
@@ -183,6 +191,8 @@ class Transcoding extends Base {
 	/**
 	 * Return transcoding status of a media.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param \WP_REST_Request $request REST request object.
 	 *
 	 * @return WP_REST_Response|WP_Error
@@ -203,6 +213,8 @@ class Transcoding extends Base {
 
 	/**
 	 * Get transcoding status of an attachment.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *
@@ -293,6 +305,8 @@ class Transcoding extends Base {
 	 *
 	 * Taken the function from the rt-transcoder-handler.php file.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param string $key   Meta key.
 	 * @param mixed  $value Meta value.
 	 *
@@ -322,6 +336,8 @@ class Transcoding extends Base {
 
 	/**
 	 * Permission callback for the transcoding status endpoint.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param \WP_REST_Request $request REST request object.
 	 *
@@ -450,6 +466,8 @@ class Transcoding extends Base {
 
 	/**
 	 * Check if specific media IDs are transcoded.
+	 *
+	 * @since 1.5.0
 	 *
 	 * @param \WP_REST_Request $request REST request object.
 	 *

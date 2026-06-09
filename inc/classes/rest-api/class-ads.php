@@ -2,6 +2,8 @@
 /**
  * Register REST API endpoints for any Assets file endpoints.
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -11,11 +13,15 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class LocationAPI
+ *
+ * @since 1.0.0
  */
 class Ads extends Base {
 
 	/**
 	 * Setup hooks and initialization.
+	 *
+	 * @since 1.0.0
 	 */
 	protected function setup_hooks() {
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
@@ -24,6 +30,8 @@ class Ads extends Base {
 
 	/**
 	 * Get REST routes.
+	 *
+	 * @since 1.0.0
 	 */
 	public function get_rest_routes() {
 		return array(
@@ -57,6 +65,8 @@ class Ads extends Base {
 	 * Check if request  is for /godam/v1/ad endpoint.
 	 * Return the XML response if it is.
 	 * 
+	 * @since 1.0.0
+	 *
 	 * @param bool              $served Whether the request has already been served.
 	 * @param \WP_REST_Response $result Result to send to the client. Usually a \WP_REST_Response.
 	 * @param \WP_REST_Request  $request Request used to generate the response.
@@ -88,6 +98,8 @@ class Ads extends Base {
 
 	/**
 	 * Get a single Gravity Form.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @param \WP_REST_Request $request Request Object.
 	 * @return \WP_REST_Response
@@ -193,6 +205,8 @@ class Ads extends Base {
 	/**
 	 * Get a single Gravity Form.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param \WP_REST_Request $request Request Object.
 	 * @return \WP_REST_Response
 	 */
@@ -284,6 +298,8 @@ class Ads extends Base {
 	 *
 	 * Because we are routing to other endpoints,
 	 * we don't need to check permissions.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @param \WP_REST_Request $request Request Object.
 	 * @return bool

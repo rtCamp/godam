@@ -5,6 +5,8 @@
  * Frontend output is intentionally deferred. The block currently stores only
  * the selected `videoId` for editor-side composition.
  *
+ * @since 1.8.0
+ *
  * @package GoDAM
  */
 

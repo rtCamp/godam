@@ -2,6 +2,8 @@
 /**
  * Class to handle Media Folders.
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -13,6 +15,8 @@ use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class Media_Library
+ *
+ * @since 1.0.0
  */
 class Media_Library_Ajax {
 
@@ -20,6 +24,8 @@ class Media_Library_Ajax {
 
 	/**
 	 * Construct method.
+	 *
+	 * @since 1.0.0
 	 */
 	protected function __construct() {
 		$this->setup_hooks();
@@ -27,6 +33,8 @@ class Media_Library_Ajax {
 
 	/**
 	 * Setup hooks.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
@@ -79,6 +87,8 @@ class Media_Library_Ajax {
 
 	/**
 	 * Prepare a single Godam media item to match WordPress media format.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param array $item The media item data from the API.
 	 * @return array
@@ -151,6 +161,8 @@ class Media_Library_Ajax {
 	/**
 	 * Get appropriate MIME type based on job type.
 	 *
+	 * @since 1.4.7
+	 *
 	 * @param string $job_type Job type from GoDAM API.
 	 * @param string $mime_type Original MIME type from API.
 	 * @return string Appropriate MIME type.
@@ -170,6 +182,8 @@ class Media_Library_Ajax {
 
 	/**
 	 * Upload media to the Frappe backend.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param int  $attachment_id Attachment ID.
 	 * @param bool $manual_retranscode Whether this is a retranscode request.
@@ -338,6 +352,8 @@ class Media_Library_Ajax {
 	/**
 	 * Add the media library taxonomy to the uploaded media.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param int $attachment_id Attachment ID.
 	 * @return void
 	 */
@@ -368,6 +384,8 @@ class Media_Library_Ajax {
 	/**
 	 * Recursively delete child media folders.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param int    $term     Term ID.
 	 * @param string $taxonomy Taxonomy.
 	 *
@@ -397,6 +415,8 @@ class Media_Library_Ajax {
 
 	/**
 	 * Add transcoding URL, virtual status to the media JS Object.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @param array   $response Attachment response.
 	 * @param WP_Post $attachment Attachment object.
@@ -542,6 +562,8 @@ class Media_Library_Ajax {
 	/**
 	 * Filter the media library arguments to include folders.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param array $query_args Query arguments.
 	 *
 	 * @return array
@@ -607,6 +629,8 @@ class Media_Library_Ajax {
 	/**
 	 * Filter the media library by folder.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param Object $query Query object.
 	 * @return void
 	 */
@@ -669,6 +693,8 @@ class Media_Library_Ajax {
 	/**
 	 * Add a dropdown filter to the media library.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @return void
 	 */
 	public function restrict_manage_media_filter() {
@@ -730,6 +756,8 @@ class Media_Library_Ajax {
 	 *
 	 * Filter the date_query to only allow specific date formats and the valid relation.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param array $date_query Date query.
 	 *
 	 * @return array $date_query sanitized date query.
@@ -765,6 +793,8 @@ class Media_Library_Ajax {
 	/**
 	 * Dismiss the offer banner by updating the option in the database.
 	 *
+	 * @since 1.4.0
+	 *
 	 * @return void
 	 */
 	public function dismiss_offer_banner() {
@@ -781,6 +811,8 @@ class Media_Library_Ajax {
 
 	/**
 	 * Renders an offer banner on the media library page for non-premium users.
+	 *
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
@@ -934,6 +966,8 @@ class Media_Library_Ajax {
 
 	/**
 	 * Download the transcoded MP4 source and replace the existing attachment file.
+	 *
+	 * @since 1.4.2
 	 *
 	 * @param int             $attachment_id Attachment ID.
 	 * @param string          $job_id        Job ID.

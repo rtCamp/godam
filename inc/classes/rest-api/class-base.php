@@ -2,6 +2,8 @@
 /**
  * Abstract class for REST API endpoints with register_meta support.
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -13,6 +15,8 @@ use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Base class for REST API endpoints with register_meta support.
+ *
+ * @since 1.0.0
  */
 abstract class Base extends \WP_REST_Controller {
 
@@ -34,6 +38,8 @@ abstract class Base extends \WP_REST_Controller {
 
 	/**
 	 * Construct method.
+	 *
+	 * @since 1.0.0
 	 */
 	protected function __construct() {
 		$this->setup_hooks();
@@ -41,6 +47,8 @@ abstract class Base extends \WP_REST_Controller {
 
 	/**
 	 * Setup hooks and initialization.
+	 *
+	 * @since 1.0.0
 	 */
 	protected function setup_hooks() {
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
@@ -48,6 +56,8 @@ abstract class Base extends \WP_REST_Controller {
 
 	/**
 	 * Register REST routes.
+	 *
+	 * @since 1.0.0
 	 */
 	public function register_rest_routes() {
 		$routes = $this->get_rest_routes();
@@ -63,11 +73,15 @@ abstract class Base extends \WP_REST_Controller {
 
 	/**
 	 * Get REST routes.
+	 *
+	 * @since 1.0.0
 	 */
 	abstract public function get_rest_routes();
 
 	/**
 	 * Sets up the proper HTTP status code for authorization.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return int The HTTP status code.
 	 */

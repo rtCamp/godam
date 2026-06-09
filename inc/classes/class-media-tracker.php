@@ -2,6 +2,8 @@
 /**
  * Check if Media Transcoding is functional.
  *
+ * @since 1.0.4
+ *
  * @package GoDAM
  */
 
@@ -15,12 +17,16 @@ use RTGODAM\Inc\Traits\Singleton;
  * GoDAM Media_Tracker class.
  *
  * This class is responsible for tracking the transcoding status of media attachments.
+ *
+ * @since 1.0.4
  */
 class Media_Tracker {
 	use Singleton;
 
 	/**
 	 * Constructor.
+	 *
+	 * @since 1.0.4
 	 */
 	public function __construct() {
 		$this->setup_hooks();
@@ -28,6 +34,8 @@ class Media_Tracker {
 
 	/**
 	 * Setup hooks.
+	 *
+	 * @since 1.0.4
 	 *
 	 * @return void
 	 */
@@ -40,6 +48,8 @@ class Media_Tracker {
 
 	/**
 	 * Track new attachment.
+	 *
+	 * @since 1.0.4
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 */
@@ -59,6 +69,8 @@ class Media_Tracker {
 	/**
 	 * Delete new attachment option.
 	 *
+	 * @since 1.0.4
+	 *
 	 * @param int $attachment_id Attachment ID.
 	 */
 	public function delete_attachment( $attachment_id ) {
@@ -75,6 +87,8 @@ class Media_Tracker {
 
 	/**
 	 * Check new attachment transcoding status.
+	 *
+	 * @since 1.0.4
 	 *
 	 * @return void
 	 */
@@ -107,6 +121,8 @@ class Media_Tracker {
 
 	/**
 	 * Get transcoding status of attachment.
+	 *
+	 * @since 1.0.4
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 * @return string Transcoding status.
@@ -141,6 +157,8 @@ class Media_Tracker {
 
 	/**
 	 * Display admin notice.
+	 *
+	 * @since 1.0.4
 	 *
 	 * @return void
 	 */
@@ -193,6 +211,8 @@ class Media_Tracker {
 
 	/**
 	 * Check if the Transcoder plugin is active and display an admin notice if it is.
+	 *
+	 * @since 1.1.2
 	 *
 	 * @return void
 	 */

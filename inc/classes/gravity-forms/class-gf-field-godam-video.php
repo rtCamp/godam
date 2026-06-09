@@ -2,6 +2,8 @@
 /**
  * Register the Uppy Video field for Gravity Forms.
  *
+ * @since 1.1.4
+ *
  * @package GoDAM
  */
 
@@ -14,6 +16,8 @@ if ( class_exists( 'GF_Field' ) ) {
 	// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 	/**
 	 * Class GF_Field_GoDAM_Video
+	 *
+	 * @since 1.1.0
 	 *
 	 * @package GoDAM
 	 */
@@ -29,6 +33,8 @@ if ( class_exists( 'GF_Field' ) ) {
 		/**
 		 * Returns the field's form editor title.
 		 *
+		 * @since 1.1.0
+		 *
 		 * @return string
 		 */
 		public function get_form_editor_field_title() {
@@ -37,6 +43,8 @@ if ( class_exists( 'GF_Field' ) ) {
 
 		/**
 		 * Returns the field's form editor description.
+		 *
+		 * @since 1.1.0
 		 *
 		 * @return string
 		 */
@@ -49,6 +57,8 @@ if ( class_exists( 'GF_Field' ) ) {
 		 *
 		 * This could be an icon url or a gform-icon class.
 		 *
+		 * @since 1.1.0
+		 *
 		 * @return string
 		 */
 		public function get_form_editor_field_icon() {
@@ -57,6 +67,8 @@ if ( class_exists( 'GF_Field' ) ) {
 
 		/**
 		 * Returns the form editor field settings.
+		 *
+		 * @since 1.1.0
 		 *
 		 * @return array
 		 */
@@ -78,6 +90,8 @@ if ( class_exists( 'GF_Field' ) ) {
 
 		/**
 		 * Format seconds as readable time.
+		 *
+		 * @since 1.6.0
 		 *
 		 * @param int $seconds Seconds.
 		 * @return string
@@ -112,6 +126,8 @@ if ( class_exists( 'GF_Field' ) ) {
 
 		/**
 		 * Generates the HTML markup for the field input in the form.
+		 *
+		 * @since 1.1.0
 		 *
 		 * @param array  $form  The form object.
 		 * @param string $value The field value.
@@ -239,6 +255,8 @@ if ( class_exists( 'GF_Field' ) ) {
 		/**
 		 * Returns the field value for the entry list.
 		 *
+		 * @since 1.1.0
+		 *
 		 * @param string $value The field value.
 		 * @param array  $entry The entry object (optional).
 		 * @param int    $field_id The field ID.
@@ -283,6 +301,8 @@ if ( class_exists( 'GF_Field' ) ) {
 
 		/**
 		 * Returns the field value for the entry detail page.
+		 *
+		 * @since 1.1.0
 		 *
 		 * @param string $value The field value.
 		 * @param string $currency The currency code (optional).

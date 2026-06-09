@@ -17,6 +17,8 @@ use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class Addon_Registry.
+ *
+ * @since 1.8.0
  */
 class Addon_Registry {
 
@@ -38,6 +40,8 @@ class Addon_Registry {
 
 	/**
 	 * Constructor.
+	 *
+	 * @since 1.8.0
 	 */
 	protected function __construct() {
 		add_action( 'plugins_loaded', array( $this, 'init' ), 15 );
@@ -45,6 +49,8 @@ class Addon_Registry {
 
 	/**
 	 * Fire the registration hook, then boot qualifying add-ons.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @return void
 	 */
@@ -66,6 +72,8 @@ class Addon_Registry {
 	/**
 	 * Register an add-on.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @param Abstract_Addon $addon The add-on instance.
 	 *
 	 * @return bool True when registered, false on duplicate slug.
@@ -84,6 +92,8 @@ class Addon_Registry {
 
 	/**
 	 * Boot all registered add-ons that satisfy dependency and version checks.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @return void
 	 */
@@ -128,6 +138,8 @@ class Addon_Registry {
 	/**
 	 * Get a registered add-on by slug.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @param string $slug Add-on slug.
 	 *
 	 * @return Abstract_Addon|null
@@ -139,6 +151,8 @@ class Addon_Registry {
 	/**
 	 * Get all registered add-ons.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @return Abstract_Addon[]
 	 */
 	public function get_all() {
@@ -147,6 +161,8 @@ class Addon_Registry {
 
 	/**
 	 * Check if an add-on is registered and booted.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @param string $slug Add-on slug.
 	 *
@@ -158,6 +174,8 @@ class Addon_Registry {
 
 	/**
 	 * Helper: queue an admin notice.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @param string $message HTML notice content.
 	 *

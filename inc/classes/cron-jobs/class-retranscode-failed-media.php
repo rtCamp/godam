@@ -2,6 +2,8 @@
 /**
  * Class to handle re-transcoding of media files that encountered transcoding errors.
  *
+ * @since 1.1.4
+ *
  * @package GoDAM
  */
 
@@ -16,6 +18,8 @@ use RTGODAM\Inc\Traits\Singleton;
  *
  * This class is responsible for managing the re-transcoding of media files that failed during the initial transcoding process.
  * It sets up a cron job to periodically check for failed media and attempts to re-transcode them.
+ *
+ * @since 1.1.4
  */
 class Retranscode_Failed_Media {
 	use Singleton;
@@ -29,6 +33,8 @@ class Retranscode_Failed_Media {
 
 	/**
 	 * Construct method.
+	 *
+	 * @since 1.1.4
 	 */
 	final protected function __construct() {
 		$this->setup_hooks();
@@ -36,6 +42,8 @@ class Retranscode_Failed_Media {
 
 	/**
 	 * Setup hooks and initialization.
+	 *
+	 * @since 1.1.4
 	 */
 	protected function setup_hooks() {
 		add_action( 'cron_schedules', array( $this, 'add_re_transcoding_schedule' ) );
@@ -49,6 +57,8 @@ class Retranscode_Failed_Media {
 	 *
 	 * This function adds a new cron schedule that runs every 10 minutes,
 	 * allowing the system to periodically check for media that needs to be re-transcoded.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param array $schedules Existing cron schedules.
 	 * @return array Modified cron schedules with the new 'retranscode_failed_media' schedule added.
@@ -68,6 +78,8 @@ class Retranscode_Failed_Media {
 	 *
 	 * This function checks if the retranscoding event is already scheduled,
 	 * and if not, schedules it to run at the specified interval.
+	 *
+	 * @since 1.1.4
 	 */
 	public function schedule_event() {
 		if ( ! wp_next_scheduled( 'retranscode_failed_media_event' ) ) {
@@ -85,6 +97,8 @@ class Retranscode_Failed_Media {
 	 * IMPORTANT: Every mutation of the option is persisted immediately inside the loop so that
 	 * a successful job dispatch (which removes the entry inside wp_media_transcoding) is never
 	 * accidentally re-added by a blanket save after the loop finishes.
+	 *
+	 * @since 1.1.4
 	 */
 	public function retranscode_failed_media() {
 
@@ -142,6 +156,8 @@ class Retranscode_Failed_Media {
 	 * Display a notice when transcoding fails.
 	 *
 	 * The notice is shown for up to 5 minutes after the last failure.
+	 *
+	 * @since 1.1.4
 	 */
 	public function failed_transcoding_notice() {
 

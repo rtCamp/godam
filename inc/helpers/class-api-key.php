@@ -21,6 +21,8 @@ use RTGODAM\Inc\Enums\Api_Key_Status;
  * Class Api_Key
  *
  * Utility class for API key management operations.
+ *
+ * @since 1.7.0
  */
 class Api_Key {
 

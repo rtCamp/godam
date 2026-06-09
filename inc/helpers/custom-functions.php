@@ -2,6 +2,8 @@
 /**
  * Custom functions.
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -14,6 +16,8 @@ defined( 'ABSPATH' ) || exit;
  * Reference:
  * - https://bugs.php.net/bug.php?id=49184
  * - https://bugs.php.net/bug.php?id=54672
+ *
+ * @since 1.0.0
  *
  * @param int    $type One of INPUT_GET, INPUT_POST, INPUT_COOKIE, INPUT_SERVER, or INPUT_ENV.
  * @param string $variable_name Name of a variable to get.
@@ -128,6 +132,8 @@ function rtgodam_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT, 
  * This function retrieves the URL of a media attachment in WordPress based on the provided media ID.
  * It validates the ID, ensures the media exists, and is of the correct type (attachment).
  *
+ * @since 1.0.0
+ *
  * @param int $media_id The ID of the media attachment.
  *
  * @return string The URL of the media file, or an empty string if invalid or not found.
@@ -153,6 +159,8 @@ function rtgodam_fetch_overlay_media_url( $media_id ) {
  *
  * This function creates a dynamic HTML structure for displaying an image CTA overlay.
  * It uses the provided `$layer` data to populate the content, including image, text, and links.
+ *
+ * @since 1.0.0
  *
  * @param array $layer Associative array containing CTA details:
  *     - 'image' (int): Media ID for the image.
@@ -293,6 +301,8 @@ function rtgodam_image_cta_html( $layer ) {
 
 /**
  * Verify the api key for the plugin and return user data.
+ *
+ * @since 1.0.0
  *
  * @param bool $use_for_localize_array Whether to use the data for localizing scripts. Defaults to false.
  * @param int  $timeout                The time in seconds after which the user data should be refreshed.
@@ -494,6 +504,8 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 /**
  * Get the storage and bandwidth usage data.
  *
+ * @since 1.0.0
+ *
  * @return array|WP_Error
  */
 function rtgodam_get_usage_data() {
@@ -548,6 +560,8 @@ function rtgodam_get_usage_data() {
 
 /**
  * Check if the api key is valid.
+ *
+ * @since 1.0.0
  *
  * @return bool
  */
@@ -706,6 +720,8 @@ function godam_is_audio_file( $file_path_or_url ) {
 
 /**
  * Send Video file to GoDAM for transcoding.
+ *
+ * @since 1.3.0
  *
  * @param string  $form_type  Form Type.
  * @param string  $form_title Form Title.
@@ -888,6 +904,8 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 /**
  * Format video duration based on the selected format for GoDAM block.
  *
+ * @since 1.4.0
+ *
  * @param string $duration        The raw duration value in seconds.
  * @param string $duration_format The format to use (default, minutes, seconds).
  *
@@ -929,6 +947,8 @@ function rtgodam_block_format_video_duration( $duration, $duration_format = 'def
  * email and constructed name. If neither is available, it defaults to a bot email and
  * guest name.
  *
+ * @since 1.4.0
+ *
  * @return array An associative array containing 'email' and 'name' of the user or guest.
  */
 function rtgodam_get_current_logged_in_user_data() {
@@ -958,6 +978,8 @@ function rtgodam_get_current_logged_in_user_data() {
  * If so, it retrieves the cached value using the WordPress cache API.
  * Otherwise, it retrieves the value from the transient API.
  *
+ * @since 1.4.0
+ *
  * @param string $key The cache key to retrieve the value for.
  * @return mixed The cached value, or false if the value does not exist.
  */
@@ -975,6 +997,8 @@ function rtgodam_cache_get( $key ) {
  * This function checks if the external object cache is being used.
  * If so, it sets the value using the WordPress cache API.
  * Otherwise, it sets the value using the transient API.
+ *
+ * @since 1.4.0
  *
  * @param string $key     The cache key to set the value for.
  * @param mixed  $value   The value to set.
@@ -999,6 +1023,8 @@ function rtgodam_cache_set( $key, $value, $expiration = 900 ) {
  * This function checks if the external object cache is being used.
  * If so, it deletes the cached value using the WordPress cache API.
  * Otherwise, it deletes the value using the transient API.
+ *
+ * @since 1.4.0
  *
  * @param string $key The cache key to delete the value for.
  * @return bool True on success, false on failure.
@@ -1079,6 +1105,8 @@ function rtgodam_has_http_auth(): bool {
 
 /**
  * Fetch AI-generated video transcript path.
+ *
+ * @since 1.4.0
  *
  * @param int         $attachment_id The attachment ID (must be numeric).
  * @param string|null $job_id        Optional. The transcription job ID. If not provided, will be retrieved from post meta.
@@ -1168,6 +1196,8 @@ function godam_get_transcript_path( $attachment_id, $job_id = null ) {
  *
  * This function constructs the HTML structure for a video preview page based on the provided video ID.
  * It checks if the video exists and displays either the video player or an error message accordingly.
+ *
+ * @since 1.4.8
  *
  * @param int $video_id The ID of the video attachment to preview.
  * @return string The generated HTML content for the video preview page.
@@ -1374,6 +1404,8 @@ function rtgodam_convert_to_https_url( $urls ) {
 
 /**
  * Check if auth detector scripts should be loaded on current screen.
+ *
+ * @since 1.8.0
  *
  * @param WP_Screen|null $screen Current screen object.
  *

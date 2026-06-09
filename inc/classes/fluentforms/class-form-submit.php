@@ -2,6 +2,8 @@
 /**
  * Extend FluentForms for form submission.
  *
+ * @since 1.3.0
+ *
  * @package GoDAM
  */
 
@@ -15,6 +17,8 @@ use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class Form_Submit.
+ *
+ * @since 1.3.0
  */
 class Form_Submit {
 
@@ -22,6 +26,8 @@ class Form_Submit {
 
 	/**
 	 * Constructor.
+	 *
+	 * @since 1.3.0
 	 */
 	public function __construct() {
 
@@ -30,6 +36,8 @@ class Form_Submit {
 
 	/**
 	 * Function to setup hooks.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */
@@ -43,6 +51,8 @@ class Form_Submit {
 
 	/**
 	 * Handle godam recorder submission.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param int          $insert_id Inserted Id.
 	 * @param array<mixed> $form_data Form data.
@@ -77,6 +87,8 @@ class Form_Submit {
 
 	/**
 	 * Send files to GoDam for transcoding.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param string $form_title Form Name.
 	 * @param int    $form_id    Form Id.

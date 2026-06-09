@@ -2,6 +2,8 @@
 /**
  * Abstract class to register Elementor Widget.
  *
+ * @since 1.1.4
+ *
  * @package GoDAM
  */
 
@@ -12,6 +14,8 @@ use Elementor\Widget_Base;
 
 /**
  * Base class to register GoDAM Elementor Widget.
+ *
+ * @since 1.1.4
  */
 abstract class Base extends Widget_Base {
 
@@ -69,6 +73,8 @@ abstract class Base extends Widget_Base {
 	/**
 	 * Construct method.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @param array      $data Widget data. Default is an empty array.
 	 * @param array|null $args Optional. Widget default arguments. Default is null.
 	 *
@@ -92,6 +98,8 @@ abstract class Base extends Widget_Base {
 	/**
 	 * To get list of default arguments for Widget.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @return array
 	 */
 	abstract public function set_default_config();
@@ -100,6 +108,8 @@ abstract class Base extends Widget_Base {
 	 * Get element name.
 	 *
 	 * Retrieve the element name.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @access public
 	 *
@@ -114,6 +124,8 @@ abstract class Base extends Widget_Base {
 	 *
 	 * Retrieve the element title.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @access public
 	 *
 	 * @return string Element title.
@@ -126,6 +138,8 @@ abstract class Base extends Widget_Base {
 	 * Get widget icon.
 	 *
 	 * Retrieve the widget icon.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @access public
 	 *
@@ -140,6 +154,8 @@ abstract class Base extends Widget_Base {
 	 *
 	 * Retrieve the widget categories.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @access public
 	 *
 	 * @return array Widget categories.
@@ -152,6 +168,8 @@ abstract class Base extends Widget_Base {
 	 * Get widget keywords.
 	 *
 	 * Retrieve the widget keywords.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @access public
 	 *
@@ -166,6 +184,8 @@ abstract class Base extends Widget_Base {
 	 *
 	 * Retrieve the list of script dependencies the element requires.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @access public
 	 *
 	 * @return array Element scripts dependencies.
@@ -178,6 +198,8 @@ abstract class Base extends Widget_Base {
 	 * Get style dependencies.
 	 *
 	 * Retrieve the list of style dependencies the element requires.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @access public
 	 *

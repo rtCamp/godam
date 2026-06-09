@@ -33,6 +33,8 @@ class Embed {
 
 	/**
 	 * Construct method.
+	 *
+	 * @since 1.4.0
 	 */
 	protected function __construct() {
 		$this->setup_hooks();
@@ -40,6 +42,8 @@ class Embed {
 
 	/**
 	 * Setup hooks.
+	 *
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */
