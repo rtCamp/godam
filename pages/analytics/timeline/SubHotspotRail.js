@@ -22,7 +22,7 @@ import InfoTooltip from './InfoTooltip';
  * SubHotspotRail
  *
  * Left rail in the detail panel for Hotspot / Woo layers. Pinned "All
- * Products (Aggregate)" row at the top, then per-sub-hotspot rows sorted
+ * Products (Cumulative)" row at the top, then per-sub-hotspot rows sorted
  * by conversion-rate descending. Selecting a row swaps the funnel on the
  * right; the parent layer's color border on the detail panel doesn't
  * change — it identifies the layer, not the selected sub.
@@ -64,11 +64,11 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 						text={
 							parent.layer_type === 'woo'
 								? __(
-									'Each row is one product hotspot inside this layer. Select a row to see its individual funnel; "All Products (Aggregate)" rolls up unique sessions across every product.',
+									'Each row is one product hotspot inside this layer. Select a row to see its individual funnel; "All Products (Cumulative)" counts sessions that converted on any product.',
 									'godam',
 								)
 								: __(
-									'Each row is one hotspot inside this layer. Select a row to see its individual funnel; "All Hotspots (Aggregate)" rolls up unique sessions across every hotspot.',
+									'Each row is one hotspot inside this layer. Select a row to see its individual funnel; "All Hotspots (Cumulative)" counts sessions that converted on any hotspot.',
 									'godam',
 								)
 						}
@@ -96,17 +96,21 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 			</header>
 
 			<ul className="m-0 p-0 list-none overflow-y-auto" style={ { maxHeight: 340 } }>
-				{ /* "All Products (Aggregate)" pinned at the top. */ }
-				<li>
+				{ /* "All Products (Cumulative)" pinned at the top. The InfoTooltip
+				     renders its own <button>, so it sits as a sibling of the row
+				     button (button-in-button is invalid HTML). */ }
+				<li
+					className="flex items-center border-b border-zinc-100"
+					style={ {
+						background: aggregateActive
+							? withAlpha( meta.color, 0.08 )
+							: 'transparent',
+					} }
+				>
 					<button
 						type="button"
 						onClick={ () => onSelect( null ) }
-						className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left border-b border-zinc-100 cursor-pointer"
-						style={ {
-							background: aggregateActive
-								? withAlpha( meta.color, 0.08 )
-								: 'transparent',
-						} }
+						className="flex-1 flex items-center justify-between gap-2 px-4 py-3 text-left cursor-pointer bg-transparent border-0"
 					>
 						<span
 							className="text-sm font-semibold"
@@ -115,8 +119,8 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 							} }
 						>
 							{ parent.layer_type === 'woo'
-								? __( 'All Products (Aggregate)', 'godam' )
-								: __( 'All Hotspots (Aggregate)', 'godam' ) }
+								? __( 'All Products (Cumulative)', 'godam' )
+								: __( 'All Hotspots (Cumulative)', 'godam' ) }
 						</span>
 						<span
 							className="text-sm font-semibold tabular-nums"
@@ -127,6 +131,22 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 							{ ( Number( parent.conversion_rate ) || 0 ).toFixed( 1 ) }%
 						</span>
 					</button>
+					<span className="pr-4 flex items-center">
+						<InfoTooltip
+							size={ 13 }
+							text={
+								parent.layer_type === 'woo'
+									? __(
+										'A session counts as converted here when it converts on any one product in this layer — clicks it or adds it to the cart. Each session counts once, so this can read higher than every single product\'s rate.',
+										'godam',
+									)
+									: __(
+										'A session counts as converted here when it clicks any one hotspot in this layer. Each session counts once, so this can read higher than every single hotspot\'s rate.',
+										'godam',
+									)
+							}
+						/>
+					</span>
 				</li>
 
 				{ subs.map( ( sub, idx ) => {

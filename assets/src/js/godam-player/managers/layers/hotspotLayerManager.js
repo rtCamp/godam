@@ -98,7 +98,7 @@ export default class HotspotLayerManager {
 	 * parent layer become visible at the same moment, so per-sub `viewed`
 	 * counts would be N redundant copies of the parent's visibility count;
 	 * the backend's per-parent aggregation pass derives "All Hotspots
-	 * (Aggregate)" engagement by grouping sub events by `parent_layer_id`.
+	 * (Cumulative)" engagement by grouping sub events by `parent_layer_id`.
 	 *
 	 * All actions deduped per (composite layer_id, action_type, page-session)
 	 * — one clicked, one hovered per sub-hotspot per session at most.
@@ -232,7 +232,7 @@ export default class HotspotLayerManager {
 	 * the layer becomes visible. Engagement actions (hovered / clicked)
 	 * stay per-sub-hotspot; the godam-analytics processing pipeline
 	 * aggregates those by parent_layer_id for the "All Hotspots
-	 * (Aggregate)" funnel.
+	 * (Cumulative)" funnel.
 	 *
 	 * `layer_id` = `parentLayer.id` (no `::sub` suffix). Deduped per
 	 * (layer_id, action_type, session) via the same _dedupeFired map that
