@@ -32,7 +32,7 @@ class Godam_Gallery extends Base {
 			'icon'            => 'eicon-gallery-grid',
 			'categories'      => array( 'godam' ),
 			'keywords'        => array( 'godam', 'gallery', 'video' ),
-			'depended_script' => array( 'godam-player-frontend-script', 'godam-player-analytics-script', 'godam-gallery-v2-view-script' ),
+			'depended_script' => array( 'godam-player-frontend-script', 'godam-player-analytics-script', 'godam-gallery-v2-view-script', 'godam-elementor-frontend' ),
 			'depended_styles' => array( 'godam-player-style', 'godam-gallery-v2-style' ),
 		);
 	}
