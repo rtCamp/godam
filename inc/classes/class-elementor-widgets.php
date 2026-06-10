@@ -56,6 +56,19 @@ class Elementor_Widgets {
 		 * The below script is only required in elementor editor experience.
 		 */
 		wp_enqueue_script( 'godam-elementor-frontend' );
+
+		// Editor-only stylesheet for control-panel polish (e.g. SELECT2 width).
+		// Registered inline here because register_scripts() is hooked to
+		// wp_enqueue_scripts (frontend) and the editor hook runs in admin,
+		// where that registration never fires.
+		// Source: assets/src/css/godam-elementor-editor.scss.
+		wp_register_style(
+			'godam-elementor-editor-style',
+			RTGODAM_URL . 'assets/build/css/godam-elementor-editor.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/godam-elementor-editor.css' )
+		);
+		wp_enqueue_style( 'godam-elementor-editor-style' );
 	}
 
 	/**

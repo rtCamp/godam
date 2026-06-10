@@ -44,6 +44,12 @@ class Godam_Gallery extends Base {
 	 */
 	protected function register_controls() {
 
+		// -----------------------------------------------------------------
+		// Section 1 — Gallery Settings.
+		// Everything that decides WHICH videos appear: mode toggle, the
+		// handpicked Repeater, the query-mode filters, and performance
+		// (since it affects how those items are loaded).
+		// -----------------------------------------------------------------
 		$this->start_controls_section(
 			'section_gallery_settings',
 			array(
@@ -104,49 +110,6 @@ class Godam_Gallery extends Base {
 		);
 
 		$this->add_control(
-			'layout',
-			array(
-				'label'   => esc_html__( 'Layout', 'godam' ),
-				'type'    => Controls_Manager::SELECT,
-				'default' => 'grid',
-				'options' => array(
-					'grid'     => esc_html__( 'Grid', 'godam' ),
-					'carousel' => esc_html__( 'Carousel', 'godam' ),
-				),
-			)
-		);
-
-		$this->add_control(
-			'item_width',
-			array(
-				'label'   => esc_html__( 'Item Width', 'godam' ),
-				'type'    => Controls_Manager::SELECT,
-				'default' => 'S',
-				'options' => array(
-					'S' => esc_html__( 'Small (200px)', 'godam' ),
-					'M' => esc_html__( 'Medium (260px)', 'godam' ),
-					'L' => esc_html__( 'Large (320px)', 'godam' ),
-				),
-			)
-		);
-
-		$this->add_control(
-			'view_ratio',
-			array(
-				'label'   => esc_html__( 'View Ratio', 'godam' ),
-				'type'    => Controls_Manager::SELECT,
-				'default' => '16:9',
-				'options' => array(
-					'16:9' => esc_html__( '16:9', 'godam' ),
-					'4:3'  => esc_html__( '4:3', 'godam' ),
-					'9:16' => esc_html__( '9:16', 'godam' ),
-					'3:4'  => esc_html__( '3:4', 'godam' ),
-					'1:1'  => esc_html__( '1:1', 'godam' ),
-				),
-			)
-		);
-
-		$this->add_control(
 			'count',
 			array(
 				'label'     => esc_html__( 'Number of videos', 'godam' ),
@@ -165,15 +128,6 @@ class Godam_Gallery extends Base {
 				'condition' => array(
 					'mode' => 'query',
 				),
-			)
-		);
-
-		$this->add_control(
-			'show_title',
-			array(
-				'label'   => esc_html__( 'Show Video Titles and Dates', 'godam' ),
-				'type'    => Controls_Manager::SWITCHER,
-				'default' => 'yes',
 			)
 		);
 
@@ -320,6 +274,72 @@ class Godam_Gallery extends Base {
 					'priority' => esc_html__( 'Priority', 'godam' ),
 				),
 				'description' => esc_html__( 'Priority preloads leading thumbnails with fetchpriority="high".', 'godam' ),
+			)
+		);
+
+		$this->end_controls_section();
+
+		// -----------------------------------------------------------------
+		// Section 2 — Display Settings.
+		// How the picked/queried items LOOK and behave: layout, sizing,
+		// title visibility, and the load-more switches.
+		// -----------------------------------------------------------------
+		$this->start_controls_section(
+			'section_display_settings',
+			array(
+				'label' => esc_html__( 'Display Settings', 'godam' ),
+			)
+		);
+
+		$this->add_control(
+			'layout',
+			array(
+				'label'   => esc_html__( 'Layout', 'godam' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => 'grid',
+				'options' => array(
+					'grid'     => esc_html__( 'Grid', 'godam' ),
+					'carousel' => esc_html__( 'Carousel', 'godam' ),
+				),
+			)
+		);
+
+		$this->add_control(
+			'item_width',
+			array(
+				'label'   => esc_html__( 'Item Width', 'godam' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => 'S',
+				'options' => array(
+					'S' => esc_html__( 'Small (200px)', 'godam' ),
+					'M' => esc_html__( 'Medium (260px)', 'godam' ),
+					'L' => esc_html__( 'Large (320px)', 'godam' ),
+				),
+			)
+		);
+
+		$this->add_control(
+			'view_ratio',
+			array(
+				'label'   => esc_html__( 'View Ratio', 'godam' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => '16:9',
+				'options' => array(
+					'16:9' => esc_html__( '16:9', 'godam' ),
+					'4:3'  => esc_html__( '4:3', 'godam' ),
+					'9:16' => esc_html__( '9:16', 'godam' ),
+					'3:4'  => esc_html__( '3:4', 'godam' ),
+					'1:1'  => esc_html__( '1:1', 'godam' ),
+				),
+			)
+		);
+
+		$this->add_control(
+			'show_title',
+			array(
+				'label'   => esc_html__( 'Show Video Titles and Dates', 'godam' ),
+				'type'    => Controls_Manager::SWITCHER,
+				'default' => 'yes',
 			)
 		);
 
