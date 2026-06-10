@@ -17,7 +17,7 @@ use RTGODAM\Inc\Traits\Singleton;
 /**
  * Class Rewrite
  *
- * @since 1.3.0
+ * @since 1.2.0
  */
 class Video_Preview {
 
@@ -26,7 +26,7 @@ class Video_Preview {
 	/**
 	 * Construct method.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 */
 	protected function __construct() {
 		$this->setup_hooks();

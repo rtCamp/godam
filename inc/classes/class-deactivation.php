@@ -1,6 +1,6 @@
 <?php
 /**
- * Plguin Deactivation Survey Class.
+ * Plugin Deactivation Survey Class.
  *
  * @since 1.0.0
  *

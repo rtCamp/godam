@@ -32,6 +32,11 @@ namespace RTGODAM\Inc\Traits;
 defined( 'ABSPATH' ) || exit;
 
 /**
+ * Trait Singleton
+ *
+ * This trait implements the Singleton pattern, ensuring that only one instance
+ * of a class exists and providing a global point of access to it.
+ *
  * @since 1.0.0
  */
 trait Singleton {
