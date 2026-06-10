@@ -2,6 +2,11 @@
 /**
  * GoDAM Video Gallery Shortcode Class.
  *
+ * Delegates to inc/templates/godam-video-gallery.php so the shortcode produces
+ * the same markup and JS contract as the `godam/gallery-v2` block. The
+ * shortcode-specific attribute names are mapped to the block-shaped camelCase
+ * keys the template expects.
+ *
  * @package GoDAM
  */
 
@@ -24,55 +29,6 @@ class GoDAM_Video_Gallery {
 	 */
 	final protected function __construct() {
 		add_shortcode( 'godam_video_gallery', array( $this, 'render' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
-	}
-
-	/**
-	 * Register gallery-specific scripts and styles.
-	 */
-	public function register_scripts() {
-		wp_register_style(
-			'godam-gallery-style',
-			RTGODAM_URL . 'assets/build/css/godam-gallery.css',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/css/godam-gallery.css' )
-		);
-
-		$asset_file                  = RTGODAM_PATH . 'assets/build/js/godam-gallery.min.asset.php';
-		$godam_gallery_script_assets = array(
-			'dependencies' => array(),
-			'version'      => RTGODAM_VERSION,
-		);
-
-		if ( file_exists( $asset_file ) ) {
-			$maybe_asset = include $asset_file;
-			if ( is_array( $maybe_asset ) ) {
-				$godam_gallery_script_assets = wp_parse_args(
-					$maybe_asset,
-					array(
-						'dependencies' => array(),
-						'version'      => RTGODAM_VERSION,
-					)
-				);
-			}
-		}
-
-		wp_register_script(
-			'godam-gallery-script',
-			RTGODAM_URL . 'assets/build/js/godam-gallery.min.js',
-			$godam_gallery_script_assets['dependencies'],
-			$godam_gallery_script_assets['version'],
-			true
-		);
-		
-		// For multisite compatibility, use localized REST URL if available.
-		wp_localize_script(
-			'godam-gallery-script',
-			'godamGalleryData',
-			array(
-				'restUrl' => esc_url_raw( rest_url( 'godam/v1/gallery-shortcode' ) ),
-			)
-		);
 	}
 
 	/**
@@ -82,54 +38,80 @@ class GoDAM_Video_Gallery {
 	 * @return string HTML output of the gallery.
 	 */
 	public function render( $atts ) {
-		// Add filter for default attributes.
-		$default_atts = apply_filters(
-			'rtgodam_gallery_default_attributes',
+		$atts = shortcode_atts(
 			array(
-				'count'             => 6,
-				'orderby'           => 'date',
-				'order'             => 'DESC',
-				'columns'           => 3,
-				'layout'            => 'grid',
-				'infinite_scroll'   => false,
-				'category'          => '',
-				'tag'               => '',
-				'media_folder'      => '',
-				'author'            => 0,
-				'date_range'        => '',
-				'include'           => '',
-				'search'            => '',
-				'custom_date_start' => '',
-				'custom_date_end'   => '',
-				'show_title'        => true,
-				'align'             => '',
-				'engagements'       => true,
-				'css'               => '',
-			)
+				'mode'                => 'query',
+				'ids'                 => '',
+				'count'               => 6,
+				'orderby'             => 'date',
+				'order'               => 'desc',
+				'layout'              => 'grid',
+				'item_width'          => 'S',
+				'view_ratio'          => '16:9',
+				'infinite_scroll'     => false,
+				'enable_more_items'   => false,
+				'more_items_behavior' => 'button',
+				'media_folder'        => '',
+				'author'              => '',
+				'date_range'          => '',
+				'custom_date_start'   => '',
+				'custom_date_end'     => '',
+				'show_title'          => true,
+				'performance_mode'    => 'balanced',
+				'engagements'         => true,
+			),
+			$atts,
+			'godam_video_gallery'
 		);
 
-		$atts                     = shortcode_atts( $default_atts, $atts, 'godam_video_gallery' );
-		$video_post_settings      = get_option( 'rtgodam_video_post_settings', array() );
-		$godam_allow_single_video = isset( $video_post_settings['allow_single'] ) ? $video_post_settings['allow_single'] : false;
-
-		// Add filter for processed attributes.
-		$atts = apply_filters( 'rtgodam_gallery_attributes', $atts );
-
-		// Handle boolean attributes passed as strings.
-		$boolean_attributes = array( 'infinite_scroll', 'show_title', 'engagements' );
-		foreach ( $boolean_attributes as $bool_attr ) {
-			$atts[ $bool_attr ] = filter_var( $atts[ $bool_attr ], FILTER_VALIDATE_BOOLEAN );
+		foreach ( array( 'infinite_scroll', 'enable_more_items', 'show_title', 'engagements' ) as $bool_key ) {
+			$atts[ $bool_key ] = filter_var( $atts[ $bool_key ], FILTER_VALIDATE_BOOLEAN );
 		}
 
-		// Get WPBakery Design Options CSS class if available.
-		$atts['css_class'] = '';
-		if ( ! empty( $atts['css'] ) && function_exists( 'vc_shortcode_custom_css_class' ) ) {
-			$atts['css_class'] = vc_shortcode_custom_css_class( $atts['css'], ' ' );
+		// Load the template now (no-op render — $attributes is not in scope yet)
+		// so the rtgodam_gallery_v2_* helpers are available for the handpicked
+		// IDs parse below. The actual render happens at the bottom of this
+		// method via a second `require`.
+		require_once RTGODAM_PATH . 'inc/templates/godam-video-gallery.php';
+
+		$mode = 'handpicked' === sanitize_key( $atts['mode'] ) ? 'handpicked' : 'query';
+
+		// itemWidth is case-sensitive in the template's S/M/L → pixel map.
+		// sanitize_key() lowercases, so it must be uppercased back and clamped
+		// to a known token — otherwise every non-S value silently fell back to S.
+		$item_width = strtoupper( (string) $atts['item_width'] );
+		if ( ! in_array( $item_width, array( 'S', 'M', 'L' ), true ) ) {
+			$item_width = 'S';
 		}
 
-		wp_enqueue_style( 'godam-gallery-style' );
+		// Map snake_case shortcode keys to the block-shaped camelCase keys the
+		// shared template consumes. Drops nothing: shortcode_atts has already
+		// constrained the attribute set to the block-aligned list above.
+		$attributes = array(
+			'mode'              => $mode,
+			'count'             => max( 1, absint( $atts['count'] ) ),
+			'orderby'           => sanitize_key( $atts['orderby'] ),
+			'order'             => strtolower( sanitize_key( $atts['order'] ) ),
+			'layout'            => sanitize_key( $atts['layout'] ),
+			'itemWidth'         => $item_width,
+			'viewRatio'         => $atts['view_ratio'],
+			'infiniteScroll'    => $atts['infinite_scroll'],
+			'enableMoreItems'   => $atts['enable_more_items'],
+			'moreItemsBehavior' => sanitize_key( $atts['more_items_behavior'] ),
+			'mediaFolder'       => $atts['media_folder'],
+			'author'            => $atts['author'],
+			'dateRange'         => sanitize_key( $atts['date_range'] ),
+			'customDateStart'   => $atts['custom_date_start'],
+			'customDateEnd'     => $atts['custom_date_end'],
+			'showTitle'         => $atts['show_title'],
+			'performanceMode'   => sanitize_key( $atts['performance_mode'] ),
+			'engagements'       => $atts['engagements'],
+		);
 
-		wp_enqueue_script( 'godam-gallery-script' );
+		// Enqueue the block's frontend assets so the shortcode reuses the same
+		// view.js / style-index.css as the godam/gallery-v2 block.
+		wp_enqueue_script( 'godam-gallery-v2-view-script' );
+		wp_enqueue_style( 'godam-gallery-v2-style' );
 
 		if ( ! is_admin() ) {
 			wp_enqueue_script( 'godam-player-frontend-script' );
@@ -137,291 +119,17 @@ class GoDAM_Video_Gallery {
 			wp_enqueue_style( 'godam-player-style' );
 		}
 
-		$args = array(
-			'post_type'      => 'attachment',
-			'post_status'    => 'inherit',
-			'post_mime_type' => 'video',
-			'posts_per_page' => intval( $atts['count'] ),
-			'orderby'        => sanitize_text_field( $atts['orderby'] ),
-			'order'          => sanitize_text_field( $atts['order'] ),
-		);
+		$is_shortcode = true;
 
-		// Add filter for query arguments.
-		$args = apply_filters( 'rtgodam_gallery_query_args', $args, $atts );
-
-		// Add category filter.
-		if ( ! empty( $atts['category'] ) ) {
-			$args['tax_query'][] = array(
-				'taxonomy' => 'category',
-				'field'    => 'term_id',
-				'terms'    => intval( $atts['category'] ),
-			);
-		}
-
-		// Add tag filter.
-		if ( ! empty( $atts['tag'] ) ) {
-			$args['tax_query'][] = array(
-				'taxonomy' => 'post_tag',
-				'field'    => 'term_id',
-				'terms'    => intval( $atts['tag'] ),
-			);
-		}
-
-		// Add media_folder filter.
-		if ( ! empty( $atts['media_folder'] ) ) {
-			$args['tax_query'][] = array(
-				'taxonomy' => 'media-folder',
-				'field'    => 'term_id',
-				'terms'    => intval( $atts['media_folder'] ),
-			);
-		}
-
-		// Add author filter.
-		if ( ! empty( $atts['author'] ) ) {
-			$args['author'] = intval( $atts['author'] );
-		}
-
-		// Add date range filter.
-		if ( ! empty( $atts['date_range'] ) ) {
-			$date_query = array();
-			switch ( $atts['date_range'] ) {
-				case '7days':
-					$date_query = array(
-						'after' => '1 week ago',
-					);
-					break;
-				case '30days':
-					$date_query = array(
-						'after' => '1 month ago',
-					);
-					break;
-				case '90days':
-					$date_query = array(
-						'after' => '3 months ago',
-					);
-					break;
-				case 'custom':
-					if ( ! empty( $atts['custom_date_start'] ) && ! empty( $atts['custom_date_end'] ) ) {
-						// Convert UTC dates to local timezone.
-						$start_date = new \DateTime( $atts['custom_date_start'] );
-						$end_date   = new \DateTime( $atts['custom_date_end'] );
-
-						// Set timezone to WordPress timezone.
-						$wp_timezone = new \DateTimeZone( wp_timezone_string() );
-						$start_date->setTimezone( $wp_timezone );
-						$end_date->setTimezone( $wp_timezone );
-
-						// Set start date to beginning of day (00:00:00).
-						$start_date->setTime( 0, 0, 0 );
-
-						// Set end date to end of day (23:59:59).
-						$end_date->setTime( 23, 59, 59 );
-
-						$date_query = array(
-							'after'     => $start_date->format( 'Y-m-d H:i:s' ),
-							'before'    => $end_date->format( 'Y-m-d H:i:s' ),
-							'inclusive' => true,
-						);
-					}
-					break;
-			}
-			if ( ! empty( $date_query ) ) {
-				$args['date_query'] = array( $date_query );
-			}
-		}
-
-		// Add include filter.
-		if ( ! empty( $atts['include'] ) ) {
-			$args['post__in'] = array_map( 'intval', explode( ',', $atts['include'] ) );
-		}
-
-		// Add search filter.
-		if ( ! empty( $atts['search'] ) ) {
-			$args['s'] = $atts['search'];
-		}
-
-		// Handle custom orderby options.
-		if ( 'duration' === $atts['orderby'] ) {
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for sorting by video duration.
-			$args['meta_key'] = '_video_duration';
-			$args['orderby']  = 'meta_value_num';
-		} elseif ( 'size' === $atts['orderby'] ) {
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for sorting by video file size.
-			$args['meta_key'] = '_video_file_size';
-			$args['orderby']  = 'meta_value_num';
-		}
-
-		$video_settings = get_option( 'rtgodam_video_post_settings', array() );
-		$cpt_url_slug   = ! empty( $video_settings['video_slug'] ) ? sanitize_title( $video_settings['video_slug'] ) : 'videos';
-		$cpt_base_url   = home_url( '/' );
-
-		$query = new \WP_Query( $args );
+		// In handpicked mode, route the comma-separated `ids` attr through the
+		// same $inner_block_video_ids path the block uses for its inner
+		// godam/gallery-v2-item blocks.
+		$inner_block_video_ids = 'handpicked' === $mode
+			? rtgodam_gallery_v2_parse_id_list( $atts['ids'] )
+			: array();
 
 		ob_start();
-
-		if ( $query->have_posts() ) {
-			// Add action before gallery output.
-			do_action( 'rtgodam_gallery_before_output', $query, $atts );
-
-			$godam_figure_attributes = get_block_wrapper_attributes(
-				array(
-					'class' => 'godam-video-gallery-wrapper',
-				)
-			);
-
-			// Calculate these values before using them.
-			$total_videos = $query->found_posts;
-			$shown_videos = count( $query->posts );
-
-			$alignment_class = ! empty( $atts['align'] ) ? ' align' . $atts['align'] : '';
-			$css_class       = ! empty( $atts['css_class'] ) ? ' ' . trim( $atts['css_class'] ) : '';
-
-			echo '<div ' . wp_kses_data( $godam_figure_attributes ) . '>';
-			echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) . 
-				( 'grid' === $atts['layout'] ? ' columns-' . intval( $atts['columns'] ) : '' ) . 
-				esc_attr( $alignment_class ) . esc_attr( $css_class ) . '"
-				data-infinite-scroll="' . esc_attr( $atts['infinite_scroll'] ) . '"
-				data-offset="' . esc_attr( $shown_videos ) . '"
-				data-columns="' . esc_attr( $atts['columns'] ) . '"
-				data-orderby="' . esc_attr( $atts['orderby'] ) . '"
-				data-order="' . esc_attr( $atts['order'] ) . '"
-				data-total="' . esc_attr( $total_videos ) . '"
-				data-show-title="' . ( $atts['show_title'] ? '1' : '0' ) . '"
-				data-layout="' . esc_attr( $atts['layout'] ) . '"
-				data-search="' . esc_attr( $atts['search'] ) . '"
-				data-category="' . esc_attr( $atts['category'] ) . '"
-				data-tag="' . esc_attr( $atts['tag'] ) . '"
-				data-author="' . esc_attr( $atts['author'] ) . '"
-				data-include="' . esc_attr( $atts['include'] ) . '"
-				data-date-range="' . esc_attr( $atts['date_range'] ) . '"
-				data-custom-date-start="' . esc_attr( $atts['custom_date_start'] ) . '"
-				data-custom-date-end="' . esc_attr( $atts['custom_date_end'] ) . '"
-				data-engagements="' . esc_attr( rtgodam_is_engagement_feature_enabled() && $atts['engagements'] ? '1' : '0' ) . '"
-
-			>';
-			foreach ( $query->posts as $video ) {
-				// Add action before each video item.
-				do_action( 'rtgodam_gallery_before_video_item', $video, $atts );
-
-				$video_id    = intval( $video->ID );
-				$video_title = get_the_title( $video_id );
-				$video_slug  = get_post_field( 'post_name', $video_id );
-				$video_date  = get_the_date( 'F j, Y', $video_id );
-
-				// Add filter for video title.
-				$video_title = apply_filters( 'rtgodam_gallery_video_title', $video_title, $video_id );
-
-				// Add filter for video date format.
-				$video_date = apply_filters( 'rtgodam_gallery_video_date', $video_date, $video_id );
-
-				$thumbnail_data        = rtgodam_get_video_thumbnail_sources( $video_id );
-				$thumbnail             = $thumbnail_data['thumbnail'];
-				$placeholder_thumbnail = $thumbnail_data['placeholder'];
-
-				// Get video duration using file path.
-				$file_path = get_attached_file( $video_id );
-				$duration  = null;
-
-				if ( file_exists( $file_path ) ) {
-					if ( ! function_exists( 'wp_read_video_metadata' ) ) {
-						require_once ABSPATH . 'wp-admin/includes/media.php';
-					}
-
-					$metadata = wp_read_video_metadata( $file_path );
-					if ( ! empty( $metadata['length_formatted'] ) ) {
-						$duration = $metadata['length_formatted'];
-					}
-				}
-
-				// Check if engagements are enabled for the video.
-				$engagements_enabled      = rtgodam_is_engagement_feature_enabled() && $atts['engagements'];
-				$item_engagements_enabled = false;
-				if ( $engagements_enabled ) {
-					// Check if the video is transcoded when engagements are enabled.
-					$transcoded_job_id        = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
-					$transcoded_status        = get_post_meta( $video_id, 'rtgodam_transcoding_status', true );
-					$item_engagements_enabled = ! empty( $transcoded_job_id ) && 'transcoded' === strtolower( $transcoded_status );
-				}
-
-				// Build the query arguments for the video embed page.
-				$query_args = array(
-					'godam_page'    => 'video-embed',
-					'id'            => $video_id,
-					'godam_gallery' => '1',
-				);
-
-				// Add the engagements query argument if it is enabled.
-				if ( $item_engagements_enabled ) {
-					$query_args['engagements'] = 'show';
-				}
-
-				$video_url = add_query_arg( $query_args, $cpt_base_url );
-
-				echo '<div class="godam-video-item">';
-				echo '<div class="godam-video-thumbnail" data-gallery-item-engagements="' . esc_attr( $item_engagements_enabled ? 'true' : 'false' ) . '" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $video_url ) . '">';
-				if ( ! empty( $thumbnail ) && ! empty( $placeholder_thumbnail ) ) {
-					echo '<div class="godam-gallery-blurred-img" style="background-image: url(\'' . esc_url( $placeholder_thumbnail ) . '\')">';
-					echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" class="godam-gallery-thumbnail-image" />';
-					echo '</div>';
-				} elseif ( ! empty( $thumbnail ) ) {
-					echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" class="godam-gallery-thumbnail-image" />';
-				}
-				if ( $duration ) {
-					echo '<span class="godam-video-duration">' . esc_html( $duration ) . '</span>';
-				}
-				echo '</div>';
-				if ( ! empty( $atts['show_title'] ) ) {
-					echo '<div class="godam-video-info">';
-					echo '<div class="godam-video-title">' . esc_html( $video_title ) . '</div>';
-					echo '<div class="godam-video-date">' . esc_html( $video_date ) . '</div>';
-					echo '</div>';
-				}
-				echo '</div>';
-
-				// Add action after each video item.
-				do_action( 'rtgodam_gallery_after_video_item', $video, $atts );
-			}
-			echo '</div>';
-
-			if ( $shown_videos < $total_videos ) {
-				if ( ! $atts['infinite_scroll'] ) {
-					echo '<button
-						class="godam-load-more wp-element-button"
-						data-offset="' . esc_attr( $shown_videos ) . '"
-						data-columns="' . esc_attr( $atts['columns'] ) . '"
-						data-count="' . esc_attr( $atts['count'] ) . '"
-						data-orderby="' . esc_attr( $atts['orderby'] ) . '"
-						data-order="' . esc_attr( $atts['order'] ) . '"
-						data-total="' . esc_attr( $total_videos ) . '"
-						data-engagements="' . esc_attr( $atts['engagements'] ) . '"
-					>' . esc_html__( 'Load More', 'godam' ) . '</button>';
-				}
-				echo '<div class="godam-spinner-container"><div class="godam-spinner"></div></div>';
-			}
-
-			echo '</div>';
-
-			echo '
-			<div id="godam-video-modal" class="godam-modal hidden">
-				<div class="godam-modal-overlay"></div>
-				<div class="godam-modal-content">
-					<div class="easydam-video-container animate-video-loading"></div>
-					<div class="godam-modal-footer">
-						<div class="godam-video-info">
-							<h3 class="godam-video-title"></h3>
-							<span class="godam-video-date"></span>
-						</div>
-					</div>
-				</div>
-			</div>';
-
-			// Add action after gallery output.
-			do_action( 'rtgodam_gallery_after_output', $query, $atts );
-		} else {
-			echo '<p>' . esc_html__( 'No videos found.', 'godam' ) . '</p>';
-		}
-
-		wp_reset_postdata();
+		require RTGODAM_PATH . 'inc/templates/godam-video-gallery.php';
 		return ob_get_clean();
 	}
 }

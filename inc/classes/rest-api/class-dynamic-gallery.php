@@ -1,6 +1,11 @@
 <?php
 /**
- * Register REST API endpoint for Dynamic Gallery Blocks.
+ * Register REST API endpoint for the GoDAM Video Gallery V2.
+ *
+ * Serves Load More / infinite-scroll pagination for the godam/gallery-v2
+ * block and the [godam_video_gallery] shortcode, which now share the same
+ * markup and JS contract. Item HTML produced here must match the markup
+ * emitted by inc/templates/godam-video-gallery.php.
  *
  * @package GoDAM
  */
@@ -45,10 +50,6 @@ class Dynamic_Gallery extends Base {
 							'type'    => 'integer',
 							'default' => 0,
 						),
-						'columns'           => array(
-							'type'    => 'integer',
-							'default' => 3,
-						),
 						'count'             => array(
 							'type'    => 'integer',
 							'default' => 6,
@@ -69,23 +70,11 @@ class Dynamic_Gallery extends Base {
 							'type'    => 'string',
 							'default' => 'grid',
 						),
-						'category'          => array(
-							'type'    => 'integer',
-							'default' => 0,
-						),
-						'tag'               => array(
-							'type'    => 'integer',
-							'default' => 0,
-						),
 						'author'            => array(
 							'type'    => 'string',
 							'default' => '',
 						),
 						'media_folder'      => array(
-							'type'    => 'string',
-							'default' => '',
-						),
-						'search'            => array(
 							'type'    => 'string',
 							'default' => '',
 						),
@@ -105,10 +94,6 @@ class Dynamic_Gallery extends Base {
 							'type'    => 'boolean',
 							'default' => true,
 						),
-						'gallery_variant'   => array(
-							'type'    => 'string',
-							'default' => '',
-						),
 						'view_ratio'        => array(
 							'type'    => 'string',
 							'default' => '16:9',
@@ -124,315 +109,106 @@ class Dynamic_Gallery extends Base {
 	}
 
 	/**
-	 * Render the gallery block.
-	 * 
-	 * @param WP_REST_Request $request The REST request object.
+	 * Render the gallery items for a Load More / infinite-scroll page.
 	 *
+	 * @param WP_REST_Request $request The REST request object.
 	 * @return WP_REST_Response
 	 */
 	public function render_gallery( WP_REST_Request $request ) {
-		$atts = array(
-			'count'             => $request->get_param( 'count' ),
-			'orderby'           => $request->get_param( 'orderby' ),
-			'order'             => $request->get_param( 'order' ),
-			'columns'           => $request->get_param( 'columns' ),
-			'offset'            => $request->get_param( 'offset' ),
-			'show_title'        => $request->get_param( 'show_title' ),
-			'layout'            => $request->get_param( 'layout' ),
-			'category'          => $request->get_param( 'category' ),
-			'tag'               => $request->get_param( 'tag' ),
-			'author'            => $request->get_param( 'author' ),
-			'media_folder'      => $request->get_param( 'media_folder' ),
-			'search'            => $request->get_param( 'search' ),
-			'date_range'        => $request->get_param( 'date_range' ),
-			'custom_date_start' => $request->get_param( 'custom_date_start' ),
-			'custom_date_end'   => $request->get_param( 'custom_date_end' ),
-			'engagements'       => $request->get_param( 'engagements' ),
-			'gallery_variant'   => $request->get_param( 'gallery_variant' ),
-			'view_ratio'        => $request->get_param( 'view_ratio' ),
-			'performance_mode'  => $request->get_param( 'performance_mode' ),
+		// The gallery template carries the rtgodam_gallery_v2_* helpers used
+		// below. Requiring it without an $attributes variable in scope is a
+		// no-op render — only the function declarations are loaded.
+		require_once RTGODAM_PATH . 'inc/templates/godam-video-gallery.php';
+
+		$gallery_attributes = array(
+			'mode'            => 'query',
+			'count'           => max( 1, absint( $request->get_param( 'count' ) ) ),
+			'orderby'         => sanitize_key( $request->get_param( 'orderby' ) ),
+			'order'           => strtoupper( sanitize_key( $request->get_param( 'order' ) ) ),
+			'layout'          => sanitize_key( $request->get_param( 'layout' ) ),
+			'viewRatio'       => $request->get_param( 'view_ratio' ),
+			'showTitle'       => (bool) $request->get_param( 'show_title' ),
+			'mediaFolder'     => (string) $request->get_param( 'media_folder' ),
+			'author'          => (string) $request->get_param( 'author' ),
+			'dateRange'       => sanitize_key( $request->get_param( 'date_range' ) ),
+			'customDateStart' => (string) $request->get_param( 'custom_date_start' ),
+			'customDateEnd'   => (string) $request->get_param( 'custom_date_end' ),
+			'engagements'     => (bool) $request->get_param( 'engagements' ),
+			'performanceMode' => sanitize_key( $request->get_param( 'performance_mode' ) ),
 		);
 
-		// Add filter for dynamic gallery attributes.
-		$atts = apply_filters( 'rtgodam_dynamic_gallery_attributes', $atts, $request );
+		$offset           = max( 0, absint( $request->get_param( 'offset' ) ) );
+		$ratio_class      = str_replace( ':', '-', $gallery_attributes['viewRatio'] );
+		$performance_mode = rtgodam_resolve_video_performance_mode( $gallery_attributes, 'balanced' );
+		$show_title       = $gallery_attributes['showTitle'];
 
-		$args = array(
-			'post_type'      => 'attachment',
-			'post_status'    => 'inherit',
-			'post_mime_type' => 'video',
-			'posts_per_page' => $atts['count'],
-			'orderby'        => $atts['orderby'],
-			'order'          => $atts['order'],
-			'offset'         => $atts['offset'],
-		);
+		$args           = rtgodam_gallery_v2_build_query_args( $gallery_attributes, 1 );
+		$args['offset'] = $offset;
 
-		// Add category filter.
-		if ( ! empty( $atts['category'] ) ) {
-			$args['tax_query'][] = array(
-				'taxonomy' => 'category',
-				'field'    => 'term_id',
-				'terms'    => intval( $atts['category'] ),
-			);
-		}
-
-		// Add tag filter.
-		if ( ! empty( $atts['tag'] ) ) {
-			$args['tax_query'][] = array(
-				'taxonomy' => 'post_tag',
-				'field'    => 'term_id',
-				'terms'    => intval( $atts['tag'] ),
-			);
-		}
-
-		// Add author filter.
-		if ( ! empty( $atts['author'] ) ) {
-			$author_ids = array_map( 'absint', array_filter( array_map( 'trim', explode( ',', (string) $atts['author'] ) ) ) );
-
-			if ( 1 === count( $author_ids ) ) {
-				$args['author'] = $author_ids[0];
-			} elseif ( ! empty( $author_ids ) ) {
-				$args['author__in'] = $author_ids;
-			}
-		}
-
-		// Add media folder filter.
-		if ( ! empty( $atts['media_folder'] ) ) {
-			$media_folder_ids = array_map( 'absint', array_filter( array_map( 'trim', explode( ',', (string) $atts['media_folder'] ) ) ) );
-
-			if ( ! empty( $media_folder_ids ) ) {
-				$args['tax_query'][] = array(
-					'taxonomy' => 'media-folder',
-					'field'    => 'term_id',
-					'terms'    => $media_folder_ids,
-				);
-			}
-		}
-
-		// Add search filter.
-		if ( ! empty( $atts['search'] ) ) {
-			$args['s'] = $atts['search'];
-		}
-
-		// Add date range filter.
-		if ( ! empty( $atts['date_range'] ) ) {
-			$date_query = array();
-			switch ( $atts['date_range'] ) {
-				case '7days':
-					$date_query = array( 'after' => '1 week ago' );
-					break;
-				case '30days':
-					$date_query = array( 'after' => '1 month ago' );
-					break;
-				case '90days':
-					$date_query = array( 'after' => '3 months ago' );
-					break;
-				case 'custom':
-					if ( ! empty( $atts['custom_date_start'] ) || ! empty( $atts['custom_date_end'] ) ) {
-						try {
-							$wp_timezone = new \DateTimeZone( wp_timezone_string() );
-							$date_query  = array( 'inclusive' => true );
-
-							if ( ! empty( $atts['custom_date_start'] ) ) {
-								$start_date = new \DateTime( $atts['custom_date_start'] );
-								$start_date->setTimezone( $wp_timezone );
-								$start_date->setTime( 0, 0, 0 );
-								$date_query['after'] = $start_date->format( 'Y-m-d H:i:s' );
-							}
-
-							if ( ! empty( $atts['custom_date_end'] ) ) {
-								$end_date = new \DateTime( $atts['custom_date_end'] );
-								$end_date->setTimezone( $wp_timezone );
-								$end_date->setTime( 23, 59, 59 );
-								$date_query['before'] = $end_date->format( 'Y-m-d H:i:s' );
-							}
-						} catch ( \Exception $e ) {
-							return new WP_REST_Response(
-								array(
-									'status'  => 'error',
-									'message' => __( 'Invalid custom date format provided.', 'godam' ),
-								),
-								400
-							);
-						}
-					}
-					break;
-			}
-			if ( ! empty( $date_query ) ) {
-				$args['date_query'] = array( $date_query );
-			}
-		}
-
-		// Handle duration and size sorting.
-		if ( 'duration' === $atts['orderby'] ) {
+		// rtgodam_gallery_v2_build_query_args() restricts orderby to date/title.
+		// The REST endpoint additionally supports duration and size to mirror
+		// the block's full orderby UI on Load More responses.
+		$raw_orderby = sanitize_key( $request->get_param( 'orderby' ) );
+		if ( 'duration' === $raw_orderby ) {
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for sorting by video duration.
 			$args['meta_key'] = '_video_duration';
 			$args['orderby']  = 'meta_value_num';
-		} elseif ( 'size' === $atts['orderby'] ) {
+		} elseif ( 'size' === $raw_orderby ) {
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for sorting by video file size.
 			$args['meta_key'] = '_video_file_size';
 			$args['orderby']  = 'meta_value_num';
 		}
 
-		// Add filter for dynamic gallery query args.
-		$args = apply_filters( 'rtgodam_dynamic_gallery_query_args', $args, $atts );
-
-		$video_settings = get_option( 'rtgodam_video_post_settings', array() );
-		$cpt_url_slug   = ! empty( $video_settings['video_slug'] ) ? sanitize_title( $video_settings['video_slug'] ) : 'videos';
-		$cpt_base_url   = home_url( '/' );
-
 		$query = new \WP_Query( $args );
 		ob_start();
+
 		if ( $query->have_posts() ) {
-			$total_videos     = $query->found_posts;
-			$shown_videos     = count( $query->posts );
-			$alignment_class  = '';
-			$is_gallery_v2    = 'gallery-v2' === $atts['gallery_variant'];
-			$ratio_class      = str_replace( ':', '-', $atts['view_ratio'] ?? '16:9' );
-			$performance_mode = rtgodam_normalize_video_performance_mode( $atts['performance_mode'] ?? 'balanced' );
-	
-			if ( ! $is_gallery_v2 && intval( $atts['offset'] ) === 0 ) {
-				echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) .
-					( 'grid' === $atts['layout'] ? ' columns-' . intval( $atts['columns'] ) : '' ) .
-					esc_attr( $alignment_class ) . '" 
-					data-infinite-scroll="true"
-					data-offset="' . esc_attr( $shown_videos + $atts['offset'] ) . '"
-					data-columns="' . esc_attr( $atts['columns'] ) . '"
-					data-orderby="' . esc_attr( $atts['orderby'] ) . '"
-					data-order="' . esc_attr( $atts['order'] ) . '"
-					data-total="' . esc_attr( $total_videos ) . '"
-					data-show-title="' . ( $atts['show_title'] ? '1' : '0' ) . '"
-					data-layout="' . esc_attr( $atts['layout'] ) . '"
-					data-category="' . esc_attr( $atts['category'] ?? '' ) . '"
-					data-tag="' . esc_attr( $atts['tag'] ?? '' ) . '"
-					data-author="' . esc_attr( $atts['author'] ?? '' ) . '"
-					data-search="' . esc_attr( $atts['search'] ?? '' ) . '"
-					data-date-range="' . esc_attr( $atts['date_range'] ?? '' ) . '"
-					data-custom-date-start="' . esc_attr( $atts['custom_date_start'] ?? '' ) . '"
-					data-custom-date-end="' . esc_attr( $atts['custom_date_end'] ?? '' ) . '"
-data-engagements="' . ( rtgodam_is_engagement_feature_enabled() && $atts['engagements'] ? '1' : '0' ) . '">';
-			}
-	
-			do_action( 'rtgodam_dynamic_gallery_before_output', $query, $atts );
-	
-			foreach ( $query->posts as $index => $video ) {
-				do_action( 'rtgodam_dynamic_gallery_before_video_item', $video, $atts );
-	
-				$video_id    = intval( $video->ID );
-				$video_title = apply_filters( 'rtgodam_dynamic_gallery_video_title', get_the_title( $video_id ), $video_id );
-				$video_slug  = get_post_field( 'post_name', $video_id );
-				$video_date  = apply_filters( 'rtgodam_dynamic_gallery_video_date', get_the_date( 'F j, Y', $video_id ), $video_id );
-	
-				$thumbnail_data        = rtgodam_get_video_thumbnail_sources( $video_id );
-				$thumbnail             = $thumbnail_data['thumbnail'];
-				$placeholder_thumbnail = $thumbnail_data['placeholder'];
-	
-				$file_path = get_attached_file( $video_id );
-				$duration  = null;
-	
-				if ( file_exists( $file_path ) ) {
-					if ( ! function_exists( 'wp_read_video_metadata' ) ) {
-						require_once ABSPATH . 'wp-admin/includes/media.php';
-					}
-					$metadata = wp_read_video_metadata( $file_path );
-					if ( ! empty( $metadata['length_formatted'] ) ) {
-						$duration = $metadata['length_formatted'];
-					}
+			foreach ( $query->posts as $index => $video_post ) {
+				$item = rtgodam_gallery_v2_get_video_data( $video_post->ID );
+
+				if ( ! $item ) {
+					continue;
 				}
 
-				// Check if engagements are enabled for the video.
-				$engagements_enabled      = rtgodam_is_engagement_feature_enabled() && $atts['engagements'];
-				$item_engagements_enabled = false;
-				if ( $engagements_enabled ) {
-					// Check if engagements are enabled for the video is transcoded.
-					$transcoded_job_id        = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
-					$tanscoded_status         = get_post_meta( $video_id, 'rtgodam_transcoding_status', true );
-					$item_engagements_enabled = ! empty( $transcoded_job_id ) && 'transcoded' === strtolower( $tanscoded_status );
-				}
-
-				// Build the query arguments for the video embed page.
-				$query_args = array(
-					'godam_page'    => 'video-embed',
-					'id'            => $video_id,
-					'godam_gallery' => '1',
+				$thumbnail_attributes = rtgodam_format_html_attributes(
+					rtgodam_get_gallery_tile_image_attributes(
+						$performance_mode,
+						$offset + $index
+					)
 				);
 
-				// Add the engagements query argument if it is enabled.
-				if ( $item_engagements_enabled ) {
-					$query_args['engagements'] = 'show';
-				}
-
-				$video_url = add_query_arg( $query_args, $cpt_base_url );
-
-				if ( $is_gallery_v2 ) {
-					$thumbnail_attributes = rtgodam_format_html_attributes(
-						rtgodam_get_gallery_tile_image_attributes(
-							$performance_mode,
-							intval( $atts['offset'] ) + $index
-						)
-					);
-
-					echo '<div class="godam-gallery-v2__query-item godam-gallery-v2__query-item--ratio-' . esc_attr( $ratio_class ) . '">';
-					/* translators: %s: video title. */
-					echo '<button type="button" class="godam-gallery-v2__query-button" data-godam-gallery-v2-trigger="true" data-video-id="' . esc_attr( $video_id ) . '" aria-label="' . esc_attr( sprintf( __( 'Open video: %s', 'godam' ), $video_title ) ) . '">';
-					echo '<div class="godam-gallery-v2__query-thumb' . ( ! empty( $placeholder_thumbnail ) ? ' godam-gallery-blurred-img godam-blurred-img' : '' ) . '"' . ( ! empty( $placeholder_thumbnail ) ? ' style="background-image: url(\'' . esc_url( $placeholder_thumbnail ) . '\')"' : '' ) . '>';
-					if ( ! empty( $thumbnail ) ) {
-						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $thumbnail_attributes is pre-sanitized via rtgodam_format_html_attributes(), and rtgodam_get_gallery_tile_image_attributes() returns pre-sanitized attributes.
-						echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" class="godam-gallery-v2__thumbnail"' . ( $thumbnail_attributes ? ' ' . $thumbnail_attributes : '' ) . ' />';
-					} else {
-						echo '<span>' . esc_html__( 'GoDAM Video', 'godam' ) . '</span>';
-					}
-					echo '</div>';
-
-					if ( ! empty( $atts['show_title'] ) ) {
-						echo '<div class="godam-gallery-v2__query-meta">';
-						echo '<strong>' . esc_html( $video_title ) . '</strong>';
-						echo '<span>' . esc_html( $video_date ) . '</span>';
-						echo '</div>';
-					}
-
-					echo '</button>';
-					echo '</div>';
+				echo '<div class="godam-gallery-v2__query-item godam-gallery-v2__query-item--ratio-' . esc_attr( $ratio_class ) . '">';
+				/* translators: %s: video title. */
+				echo '<button type="button" class="godam-gallery-v2__query-button" data-godam-gallery-v2-trigger="true" data-video-id="' . esc_attr( $item['id'] ) . '" aria-label="' . esc_attr( sprintf( __( 'Open video: %s', 'godam' ), $item['title'] ) ) . '">';
+				echo '<div class="godam-gallery-v2__query-thumb' . ( ! empty( $item['placeholder'] ) ? ' godam-gallery-blurred-img' : '' ) . '"' . ( ! empty( $item['placeholder'] ) ? ' style="background-image: url(\'' . esc_url( $item['placeholder'] ) . '\')"' : '' ) . '>';
+				if ( ! empty( $item['thumbnail'] ) ) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $thumbnail_attributes comes from rtgodam_format_html_attributes() which pre-sanitizes.
+					echo '<img src="' . esc_url( $item['thumbnail'] ) . '" alt="' . esc_attr( $item['title'] ) . '" class="godam-gallery-v2__thumbnail"' . ( $thumbnail_attributes ? ' ' . $thumbnail_attributes : '' ) . ' />';
 				} else {
-					echo '<div class="godam-video-item">';
-					echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '" data-video-url="' . esc_url( $video_url ) . '">';
-					if ( ! empty( $thumbnail ) && ! empty( $placeholder_thumbnail ) ) {
-						echo '<div class="godam-gallery-blurred-img" style="background-image: url(\'' . esc_url( $placeholder_thumbnail ) . '\')">';
-						echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" class="godam-gallery-thumbnail-image" />';
-						echo '</div>';
-					} elseif ( ! empty( $thumbnail ) ) {
-						echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" class="godam-gallery-thumbnail-image" />';
-					}
-					if ( $duration ) {
-						echo '<span class="godam-video-duration">' . esc_html( $duration ) . '</span>';
-					}
-					echo '</div>';
-		
-					if ( ! empty( $atts['show_title'] ) ) {
-						echo '<div class="godam-video-info">';
-						echo '<div class="godam-video-title">' . esc_html( $video_title ) . '</div>';
-						echo '<div class="godam-video-date">' . esc_html( $video_date ) . '</div>';
-						echo '</div>';
+					echo '<span>' . esc_html__( 'Video', 'godam' ) . '</span>';
+				}
+				echo '</div>';
+
+				if ( $show_title ) {
+					echo '<div class="godam-gallery-v2__query-meta">';
+					echo '<strong>' . esc_html( $item['title'] ) . '</strong>';
+					if ( ! empty( $item['date'] ) ) {
+						echo '<span>' . esc_html( $item['date'] ) . '</span>';
 					}
 					echo '</div>';
 				}
-	
-				do_action( 'rtgodam_dynamic_gallery_after_video_item', $video, $atts );
-			}
-	
-			if ( ! $is_gallery_v2 && intval( $atts['offset'] ) === 0 ) {
+
+				echo '</button>';
 				echo '</div>';
 			}
-	
-			do_action( 'rtgodam_dynamic_gallery_after_output', $query, $atts );
 		}
-	
-		$html = ob_get_clean();
-		$html = apply_filters( 'rtgodam_dynamic_gallery_html', $html, $query, $atts );
-	
+
+		wp_reset_postdata();
+
 		return new WP_REST_Response(
 			array(
 				'status' => 'success',
-				'html'   => $html,
+				'html'   => ob_get_clean(),
 			),
 			200
 		);
