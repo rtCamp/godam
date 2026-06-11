@@ -8,6 +8,12 @@ import { Analytics } from 'analytics';
 import videoAnalyticsPlugin from './video-analytics-plugin';
 import GTMVideoTracker from './gtm-video-tracker';
 import { shouldSkipAnalytics, buildAnalyticsRequestBody } from './analytics-helpers';
+import {
+	addLayerInteraction as bufferAddLayerInteraction,
+	getLayerInteractions as bufferGetLayerInteractions,
+	clearLayerInteractions as bufferClearLayerInteractions,
+} from './utils/storage';
+import { LAYER_ACTIONS, LAYER_TYPE_WHITELIST, getLayerDisplayName } from './utils/layerActions';
 
 const analytics = Analytics( {
 	app: 'analytics-cdp-plugin',
@@ -310,6 +316,117 @@ function observePageLoadForVideo( video ) {
 	window.GoDAM = window.GoDAM || {};
 	window.GoDAM.findVideoElementById = findVideoElementById; // Exposed for other plugins as a global helper.
 
+	// Layer analytics buffer + constants — exposed for add-ons (e.g. godam-for-woo)
+	// so they can write into the same localStorage buffer and benefit from the
+	// shared pagehide flush. Single source of truth for layer-action semantics
+	// lives in utils/layerActions.js.
+	window.GoDAM.addLayerInteraction = bufferAddLayerInteraction;
+	window.GoDAM.getLayerInteractions = bufferGetLayerInteractions;
+	window.GoDAM.clearLayerInteractions = bufferClearLayerInteractions;
+	window.GoDAM.LAYER_ACTIONS = LAYER_ACTIONS;
+	window.GoDAM.LAYER_TYPE_WHITELIST = LAYER_TYPE_WHITELIST;
+	// Display-name fallback. Add-ons (godam-for-woo) call this when they
+	// emit events so unnamed layers carry "<TypeLabel> layer at <t>s"
+	// instead of leaking the raw UUID into analytics.
+	window.GoDAM.getLayerDisplayName = getLayerDisplayName;
+
+	// Tab-hidden accounting for dwell_ms. Wall-clock dwell would otherwise
+	// include time the user spent on a different tab — inflates v1.5
+	// "consideration time" metrics. Layer managers snapshot this on
+	// `_firstVisibleAt` and subtract the delta when computing dwell, so
+	// dwell becomes "active foreground time between layer visibility and
+	// engagement" rather than wall-clock.
+	let tabHiddenAccumulatedMs = 0;
+	let tabHiddenSinceMs = null;
+	window.GoDAM.getTabHiddenAccumulatedMs = function getTabHiddenAccumulatedMs() {
+		if ( tabHiddenSinceMs !== null ) {
+			return tabHiddenAccumulatedMs + Math.max( 0, Date.now() - tabHiddenSinceMs );
+		}
+		return tabHiddenAccumulatedMs;
+	};
+	// Track the visibility transitions alongside the existing flush listener
+	// rather than adding a second handler (single source of truth for
+	// visibility state, avoids ordering bugs).
+	document.addEventListener( 'visibilitychange', () => {
+		if ( document.visibilityState === 'hidden' ) {
+			if ( tabHiddenSinceMs === null ) {
+				tabHiddenSinceMs = Date.now();
+			}
+		} else if ( tabHiddenSinceMs !== null ) {
+			tabHiddenAccumulatedMs += Math.max( 0, Date.now() - tabHiddenSinceMs );
+			tabHiddenSinceMs = null;
+		}
+	} );
+
+	/**
+	 * Flush the localStorage layer-interactions buffer to /analytics/ as
+	 * one or more type=3 POSTs, one per videoKey.
+	 *
+	 * Called on pagehide (and via the gallery iframe teardown path, if needed
+	 * in future) alongside the existing type=1 / type=2 flushes.
+	 */
+	window.GoDAM.flushLayerInteractions = function flushLayerInteractions() {
+		if ( shouldSkipAnalytics() ) {
+			bufferClearLayerInteractions();
+			return;
+		}
+
+		const buffer = bufferGetLayerInteractions();
+		const videoKeys = Object.keys( buffer );
+		if ( videoKeys.length === 0 ) {
+			return;
+		}
+
+		// The microservice enforces a max of 100 layer entries per request.
+		// In practice a session almost never exceeds this; if it does we
+		// chunk so the back-half doesn't get rejected with 400.
+		const MAX_PER_REQUEST = 100;
+
+		for ( const videoKey of videoKeys ) {
+			const events = Array.isArray( buffer[ videoKey ] ) ? buffer[ videoKey ] : [];
+			if ( events.length === 0 ) {
+				continue;
+			}
+
+			// videoKey is either the WP attachment ID (numeric) or the job_id.
+			// Numeric → ride on `video_id`; non-numeric → ride on `job_id`.
+			const numericId = parseInt( videoKey, 10 );
+			const isNumeric = Number.isFinite( numericId ) && String( numericId ) === videoKey;
+
+			for ( let i = 0; i < events.length; i += MAX_PER_REQUEST ) {
+				const chunk = events.slice( i, i + MAX_PER_REQUEST );
+				const { endpoint, body } = buildAnalyticsRequestBody( {
+					type: 3,
+					userToken: window.analytics?.user?.()?.anonymousId || '',
+					videoId: isNumeric ? numericId : 0,
+					jobId: isNumeric ? '' : videoKey,
+					layers: chunk,
+				} );
+
+				if ( ! endpoint ) {
+					continue;
+				}
+
+				fetch( endpoint + '/analytics/', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify( body ),
+					keepalive: true,
+				} );
+			}
+		}
+
+		// Clear after dispatch — deliberately unconditional. keepalive carries
+		// the requests at the network layer even if the JS context tears down,
+		// and re-sending the same events on a later flush (this also fires on
+		// visibilitychange:hidden, not just pagehide) would double-count
+		// server-side: composite-layer rows aggregate with COUNT(*), not
+		// uniqExact. If a keepalive POST is genuinely dropped (offline at
+		// unload) those events are lost — accepted v1 data loss (plan §10),
+		// preferred over inflated counts.
+		bufferClearLayerInteractions();
+	};
+
 	function getPlayer( el ) {
 		if ( ! el ) {
 			return null;
@@ -476,6 +593,14 @@ if ( ! window.godamUnloadListenerBound ) {
 		// keepalive path so they survive page teardown.
 		flushPageLoadQueue( true );
 
+		// Flush buffered type 3 layer interactions in the same window.
+		// Uses keepalive fetches just like the heatmap/page-load paths.
+		try {
+			window.GoDAM?.flushLayerInteractions?.();
+		} catch ( e ) {
+			// Best-effort: layer analytics must never break heatmap flush.
+		}
+
 		window.godamTrackedPlayers.forEach( ( entry, playerInstance ) => {
 			// Parent gallery already POSTed this player's heatmap from its
 			// own context; skipping here avoids the duplicate (and the
@@ -505,6 +630,14 @@ if ( ! window.godamUnloadListenerBound ) {
 			// Flush any pending type 1 page_load events with keepalive so
 			// the user backgrounding the tab does not lose in-flight batches.
 			flushPageLoadQueue( true );
+
+			// Same for buffered type 3 layer interactions — best-effort
+			// guard so this never blocks the heatmap flush below.
+			try {
+				window.GoDAM?.flushLayerInteractions?.();
+			} catch ( e ) {
+				// noop
+			}
 
 			window.godamTrackedPlayers.forEach( ( entry, playerInstance ) => {
 				// Parent gallery has already claimed this player — skip.
