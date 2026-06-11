@@ -7,4 +7,4 @@
 /**
  * Internal dependencies
  */
-import './core-media-blocks-extension';
+import './core-image-extension';
