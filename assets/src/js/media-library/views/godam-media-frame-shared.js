@@ -294,7 +294,7 @@ const GoDAMMediaFrameShared = {
 	// when the user clicks "Insert gallery". GalleryLibrary never fires 'select' — it
 	// transitions directly to gallery-edit via setState() without any select event.
 	async onGoDAMGalleryUpdate( library ) {
-		if ( ! this._godamTrackedModels ) {
+		if ( ! this._godamTrackedModels || ! library || typeof library.each !== 'function' ) {
 			return;
 		}
 
