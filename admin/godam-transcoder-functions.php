@@ -626,11 +626,15 @@ function rtgodam_get_localize_array() {
 
 	$localize_array = array();
 
-	$localize_array['endpoint']   = RTGODAM_ANALYTICS_BASE;
-	$localize_array['isPost']     = empty( is_single() ) ? 0 : is_single();
-	$localize_array['isPage']     = empty( is_page() ) ? 0 : is_page();
-	$localize_array['isArchive']  = empty( is_archive() ) ? 0 : is_archive();
-	$localize_array['postTitle']  = get_the_title();
+	$localize_array['endpoint']  = RTGODAM_ANALYTICS_BASE;
+	$localize_array['isPost']    = empty( is_single() ) ? 0 : is_single();
+	$localize_array['isPage']    = empty( is_page() ) ? 0 : is_page();
+	$localize_array['isArchive'] = empty( is_archive() ) ? 0 : is_archive();
+	// Resolve the title from the queried object, not the global $post: this runs
+	// on wp_enqueue_scripts, where the loop global can hold an unrelated post
+	// (first post on archives, or one left behind by a secondary query). Empty
+	// on non-singular pages — there is no single post to attribute the view to.
+	$localize_array['postTitle']  = is_singular() ? get_the_title( get_queried_object_id() ) : '';
 	$localize_array['locationIP'] = rtgodam_get_user_ip();
 
 	/**
