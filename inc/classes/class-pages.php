@@ -852,10 +852,14 @@ class Pages {
 				'godamAnalyticsConfig',
 				array(
 					'addonLayerOptions' => is_array( $addon_layer_options ) ? array_values( $addon_layer_options ) : array(),
-					// Empty array means "config unknown" — frontend fails
-					// open (treats everything as active) so analytics never
-					// blanks out if postmeta is missing.
-					'activeLayerConfig' => $active_layer_config,
+					// null means "config unknown" — the frontend fails open
+					// (treats everything as active). That's the case when the
+					// page loads without a video id: the media-selector flow
+					// sets the id client-side via history.replaceState with no
+					// reload, so this localization never re-runs. An empty
+					// ARRAY is meaningful: valid id, zero published layers —
+					// the frontend then renders every layer as removed.
+					'activeLayerConfig' => $analytics_video_id > 0 ? $active_layer_config : null,
 				)
 			);
 

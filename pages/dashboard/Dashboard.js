@@ -622,7 +622,12 @@ const Dashboard = () => {
 											<td
 												title={
 													item.total_converting_sessions > 0
-														? `${ item.total_converting_sessions } of ${ item.plays } sessions converted`
+														? sprintf(
+															/* translators: 1: converting sessions, 2: total plays. */
+															__( '%1$s of %2$s sessions converted', 'godam' ),
+															Number( item.total_converting_sessions ).toLocaleString(),
+															Number( item.plays ).toLocaleString(),
+														)
 														: __( 'No layer conversions in this period', 'godam' )
 												}
 											>

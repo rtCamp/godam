@@ -317,7 +317,7 @@ function observePageLoadForVideo( video ) {
 	window.GoDAM.findVideoElementById = findVideoElementById; // Exposed for other plugins as a global helper.
 
 	// Layer analytics buffer + constants — exposed for add-ons (e.g. godam-for-woo)
-	// so they can write into the same localStorage buffer and benefit from the
+	// so they can write into the same sessionStorage buffer and benefit from the
 	// shared pagehide flush. Single source of truth for layer-action semantics
 	// lives in utils/layerActions.js.
 	window.GoDAM.addLayerInteraction = bufferAddLayerInteraction;
@@ -359,7 +359,7 @@ function observePageLoadForVideo( video ) {
 	} );
 
 	/**
-	 * Flush the localStorage layer-interactions buffer to /analytics/ as
+	 * Flush the sessionStorage layer-interactions buffer to /analytics/ as
 	 * one or more type=3 POSTs, one per videoKey.
 	 *
 	 * Called on pagehide (and via the gallery iframe teardown path, if needed
