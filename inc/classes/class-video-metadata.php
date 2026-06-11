@@ -2,6 +2,8 @@
 /**
  * Video Metadata Handler Class.
  *
+ * @since 1.1.4
+ *
  * @package GoDAM
  */
 
@@ -14,6 +16,8 @@ use WP_Post;
 
 /**
  * Class Video_Metadata
+ *
+ * @since 1.1.4
  */
 class Video_Metadata {
 	use Singleton;
@@ -35,6 +39,8 @@ class Video_Metadata {
 
 	/**
 	 * Constructor.
+	 *
+	 * @since 1.1.4
 	 */
 	final protected function __construct() {
 		$this->setup_hooks();
@@ -42,6 +48,8 @@ class Video_Metadata {
 
 	/**
 	 * Setup hooks.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @return void
 	 */
@@ -58,6 +66,8 @@ class Video_Metadata {
 	/**
 	 * Run migration for existing videos only once after plugin activation.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @return void
 	 */
 	public function maybe_migrate_existing_videos() {
@@ -73,6 +83,8 @@ class Video_Metadata {
 	/**
 	 * Save video duration and file size as meta fields when attachment is added.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @param int $attachment_id The attachment ID.
 	 * @return void
 	 */
@@ -82,6 +94,8 @@ class Video_Metadata {
 
 	/**
 	 * Process a single video to save its duration and file size meta fields.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param int $attachment_id The attachment ID.
 	 * @return void
@@ -118,6 +132,8 @@ class Video_Metadata {
 	/**
 	 * Check if attachment is a video.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @param int $attachment_id The attachment ID.
 	 * @return bool True if attachment is a video, false otherwise.
 	 */
@@ -129,6 +145,8 @@ class Video_Metadata {
 	/**
 	 * Migrate existing videos to have duration and file size meta fields.
 	 * This runs once on init after plugin activation in batches.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @return void
 	 */
@@ -182,6 +200,8 @@ class Video_Metadata {
 
 	/**
 	 * Show thumbnails in the media library from URL present in the post meta.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param array       $response Array of attachment data.
 	 * @param WP_Post     $attachment Attachment object.
@@ -241,6 +261,8 @@ class Video_Metadata {
 	 * This filter targets the media library list view (upload screen) and
 	 * replaces the default icon/thumbnail with a custom video thumbnail
 	 * from post meta, if available.
+	 *
+	 * @since 1.4.0
 	 *
 	 * @param string     $html          The HTML output for the attachment.
 	 * @param int        $attachment_id The ID of the attachment.

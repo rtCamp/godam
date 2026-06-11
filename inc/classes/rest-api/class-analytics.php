@@ -2,6 +2,8 @@
 /**
  * REST API class for Analytics.
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -15,6 +17,8 @@ use WP_REST_Response;
 
 /**
  * Class Analytics.
+ *
+ * @since 1.0.0
  */
 class Analytics extends Base {
 
@@ -27,6 +31,8 @@ class Analytics extends Base {
 
 	/**
 	 * Register custom REST API routes for Analytics.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return array Array of registered REST API routes.
 	 */
@@ -154,6 +160,8 @@ class Analytics extends Base {
 
 	/**
 	 * Fetch analytics data from the external API securely.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @param WP_REST_Request $request REST API request.
 	 * @return WP_REST_Response
@@ -307,6 +315,8 @@ class Analytics extends Base {
 	/**
 	 * Fetch analytics history from the external API securely.
 	 *
+	 * @since 1.1.0
+	 *
 	 * @param WP_REST_Request $request REST API request.
 	 * @return WP_REST_Response
 	 */
@@ -368,6 +378,8 @@ class Analytics extends Base {
 
 	/**
 	 * Fetch dashboard metrics from the external API securely.
+	 *
+	 * @since 1.1.0
 	 *
 	 * @param WP_REST_Request $request REST API request.
 	 * @return WP_REST_Response
@@ -460,6 +472,8 @@ class Analytics extends Base {
 	/**
 	 * Fetch dashboard metrics history from the external API securely.
 	 *
+	 * @since 1.1.0
+	 *
 	 * @param WP_REST_Request $request REST API request.
 	 * @return WP_REST_Response
 	 */
@@ -519,6 +533,8 @@ class Analytics extends Base {
 
 	/**
 	 * Fetch top videos from the external API securely.
+	 *
+	 * @since 1.1.0
 	 *
 	 * @param WP_REST_Request $request REST API request.
 	 * @return WP_REST_Response

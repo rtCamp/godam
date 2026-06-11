@@ -2,6 +2,8 @@
 /**
  * REST API class for Settings Pages.
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -15,6 +17,8 @@ use RTGODAM\Inc\Helpers\Api_Key;
 
 /**
  * Class Settings
+ *
+ * @since 1.0.0
  */
 class Settings extends Base {
 
@@ -27,6 +31,8 @@ class Settings extends Base {
 
 		/**
 		 * Default settings structure.
+		 *
+		 * @since 1.0.4
 		 *
 		 * @return array
 		 */
@@ -70,6 +76,8 @@ class Settings extends Base {
 
 	/**
 	 * Register custom REST API routes for Settings Pages.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return array Array of registered REST API routes
 	 */
@@ -206,6 +214,8 @@ class Settings extends Base {
 
 	 * Verify the API key using external API.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response
 	 */
@@ -251,6 +261,8 @@ class Settings extends Base {
 	/**
 	 * Deactivate the API key.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @return \WP_REST_Response
 	 */
 	public function deactivate_api_key() {
@@ -286,6 +298,8 @@ class Settings extends Base {
 
 	/**
 	 * Refresh API key status by forcing verification.
+	 *
+	 * @since 1.7.0
 	 *
 	 * @return \WP_REST_Response
 	 */
@@ -323,6 +337,8 @@ class Settings extends Base {
 	/**
 	 * Fetch the saved API key.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @return \WP_REST_Response
 	 */
 	public function get_api_key() {
@@ -339,6 +355,8 @@ class Settings extends Base {
 	/**
 	 * Fetch the EasyDAM settings.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @return \WP_REST_Response
 	 */
 	public function get_easydam_settings() {
@@ -354,6 +372,8 @@ class Settings extends Base {
 
 	/**
 	 * Update the easydam settings.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response
@@ -386,6 +406,8 @@ class Settings extends Base {
 
 	/**
 	 * Sanitize easydam settings.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @param array $settings EasyDAM settings to sanitize.
 	 * @return array
@@ -433,6 +455,8 @@ class Settings extends Base {
 
 	/**
 	 * Sanitize color value to handle both hex and rgba colors.
+	 *
+	 * @since 1.4.0
 	 *
 	 * @param string $color The color value to sanitize.
 	 * @return string

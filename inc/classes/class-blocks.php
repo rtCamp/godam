@@ -2,6 +2,8 @@
 /**
  * Class to handle file system.
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -13,6 +15,8 @@ use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class Blocks
+ *
+ * @since 1.0.0
  */
 class Blocks {
 
@@ -20,6 +24,8 @@ class Blocks {
 
 	/**
 	 * Construct method.
+	 *
+	 * @since 1.0.0
 	 */
 	protected function __construct() {
 
@@ -29,6 +35,8 @@ class Blocks {
 	/**
 	 * Setup hooks.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @return void
 	 */
 	public function setup_hooks() {
@@ -37,6 +45,8 @@ class Blocks {
 
 	/**
 	 * Register all custom gutenberg blocks.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */

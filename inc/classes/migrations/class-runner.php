@@ -2,6 +2,8 @@
 /**
  * GoDAM Migrations Runner.
  *
+ * @since 1.8.0
+ *
  * @package GoDAM
  */
 
@@ -60,6 +62,8 @@ defined( 'ABSPATH' ) || exit;
  *   wp option --url=sub.example.com delete rtgodam_db_version
  *   wp option --url=sub.example.com delete rtgodam_gallery_v1_v2_migration_done
  *   wp option --url=sub.example.com delete rtgodam_godam_cpt_cleanup_done
+ *
+ * @since 1.8.0
  */
 class Runner {
 
@@ -120,6 +124,8 @@ class Runner {
 	 * ensures this is a single option read on requests where no migrations
 	 * are pending.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @return void
 	 */
 	public static function init(): void {
@@ -143,6 +149,8 @@ class Runner {
 	 * which subsite the current request targets. Each site tracks its own
 	 * DB_VERSION_OPTION, so the version compare gate is evaluated independently
 	 * per site.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @return void
 	 */
@@ -200,6 +208,8 @@ class Runner {
 	 * If any migration bails (e.g. the concurrency lock is held), the runner
 	 * stops without bumping the stored version so the whole batch retries
 	 * on the next qualifying init.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @return void
 	 */

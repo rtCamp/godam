@@ -2,6 +2,8 @@
 /**
  * REST API endpoint for installing add-on plugins via Frappe Dispatch.
  *
+ * @since 1.8.0
+ *
  * @package GoDAM
  */
 
@@ -14,6 +16,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * Downloads, installs, and optionally activates a GoDAM add-on plugin
  * using the Frappe Dispatch Installer.
+ *
+ * @since 1.8.0
  */
 class Addon_Install extends Base {
 
@@ -26,6 +30,8 @@ class Addon_Install extends Base {
 
 	/**
 	 * Get REST routes.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @return array
 	 */
@@ -54,6 +60,8 @@ class Addon_Install extends Base {
 
 	/**
 	 * Install an add-on plugin via Frappe Dispatch.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @param \WP_REST_Request $request Request object.
 	 *

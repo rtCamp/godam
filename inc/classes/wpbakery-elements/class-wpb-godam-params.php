@@ -2,6 +2,8 @@
 /**
  * WPBakery GoDAM Params Class
  *
+ * @since 1.6.0
+ *
  * @package GoDAM
  */
 

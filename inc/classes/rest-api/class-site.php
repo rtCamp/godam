@@ -4,6 +4,8 @@
  *
  * Get site data.
  *
+ * @since 1.4.8
+ *
  * @package GoDAM
  */
 
@@ -16,6 +18,8 @@ use WP_REST_Response;
 
 /**
  * Class Site
+ *
+ * @since 1.4.8
  */
 class Site extends Base {
 
@@ -28,6 +32,8 @@ class Site extends Base {
 
 	/**
 	 * Get REST routes.
+	 *
+	 * @since 1.4.8
 	 */
 	public function get_rest_routes() {
 		return array(
@@ -49,6 +55,8 @@ class Site extends Base {
 
 	/**
 	 * Get remote data of the site.
+	 *
+	 * @since 1.4.8
 	 *
 	 * @param \WP_REST_Request $request Request Object.
 	 *
@@ -103,6 +111,8 @@ class Site extends Base {
 	/**
 	 * Handle microservice responses and convert them into a standard format.
 	 *
+	 * @since 1.4.8
+	 *
 	 * @param array|\WP_HTTP_Response $response Microservice response.
 	 *
 	 * @return WP_REST_Response|array Response in standard format or decoded data array.
@@ -152,6 +162,8 @@ class Site extends Base {
 
 	/**
 	 * Checks if access credentials (API key and account token) are valid.
+	 *
+	 * @since 1.4.8
 	 *
 	 * @return WP_REST_Response|array Returns an error response if credentials are invalid,
 	 *                                otherwise an array with account token and API key.

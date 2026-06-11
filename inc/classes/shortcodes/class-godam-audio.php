@@ -2,6 +2,8 @@
 /**
  * GoDAM Audio Shortcode Class.
  *
+ * @since 1.6.0
+ *
  * @package GoDAM
  */
 
@@ -15,12 +17,16 @@ use RTGODAM\Inc\Traits\Singleton;
  * Class GoDAM_Audio.
  *
  * This class handles the GoDAM audio shortcode functionality.
+ *
+ * @since 1.6.0
  */
 class GoDAM_Audio {
 	use Singleton;
 
 	/**
 	 * Constructor.
+	 *
+	 * @since 1.6.0
 	 */
 	final protected function __construct() {
 		add_shortcode( 'godam_audio', array( $this, 'render' ) );
@@ -28,6 +34,8 @@ class GoDAM_Audio {
 
 	/**
 	 * Render the GoDAM audio shortcode.
+	 *
+	 * @since 1.6.0
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return string HTML output of the audio player.

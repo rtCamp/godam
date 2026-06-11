@@ -4,6 +4,8 @@
  *
  * Get a single WPForm.
  *
+ * @since 1.1.4
+ *
  * @package GoDAM
  */
 
@@ -15,11 +17,15 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class LocationAPI
+ *
+ * @since 1.1.0
  */
 class WPForms extends Base {
 
 	/**
 	 * Get REST routes.
+	 *
+	 * @since 1.1.0
 	 */
 	public function get_rest_routes() {
 		return array(
@@ -68,6 +74,8 @@ class WPForms extends Base {
 
 	/**
 	 * Get all WPForms.
+	 *
+	 * @since 1.1.3
 	 *
 	 * @param \WP_REST_Request $request Request Object.
 	 * @return \WP_REST_Response
@@ -120,6 +128,8 @@ class WPForms extends Base {
 
 	/**
 	 * Get a single WPForms Form.
+	 *
+	 * @since 1.1.0
 	 *
 	 * @param \WP_REST_Request $request Request Object.
 	 * @return \WP_REST_Response

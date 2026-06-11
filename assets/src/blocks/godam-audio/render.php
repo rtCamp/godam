@@ -2,6 +2,8 @@
 /**
  * Render template for the GoDAM Audio Block.
  *
+ * @since 1.1.4
+ *
  * @package GoDAM
  */
 

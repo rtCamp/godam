@@ -2,6 +2,8 @@
 /**
  * Register REST API endpoint for Dynamic Gallery Blocks.
  *
+ * @since 1.1.4
+ *
  * @package GoDAM
  */
 
@@ -16,6 +18,8 @@ use WP_REST_Response;
 
 /**
  * Class Dynamic_Gallery
+ *
+ * @since 1.1.4
  */
 class Dynamic_Gallery extends Base {
 
@@ -28,6 +32,8 @@ class Dynamic_Gallery extends Base {
 
 	/**
 	 * Get registered REST routes.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @return array
 	 */
@@ -126,6 +132,8 @@ class Dynamic_Gallery extends Base {
 	/**
 	 * Render the gallery block.
 	 * 
+	 * @since 1.1.4
+	 *
 	 * @param WP_REST_Request $request The REST request object.
 	 *
 	 * @return WP_REST_Response

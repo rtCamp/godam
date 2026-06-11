@@ -2,6 +2,8 @@
 /**
  * Assets class.
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -14,6 +16,8 @@ use WP_REST_Request;
 
 /**
  * Class Assets
+ *
+ * @since 1.0.0
  */
 class Pages {
 	use Singleton;
@@ -118,6 +122,8 @@ class Pages {
 
 	/**
 	 * Construct method.
+	 *
+	 * @since 1.0.0
 	 */
 	protected function __construct() {
 		$this->setup_hooks();
@@ -125,6 +131,8 @@ class Pages {
 
 	/**
 	 * To setup action/filter.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
@@ -148,6 +156,8 @@ class Pages {
 
 	/**
 	 * To add admin pages.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
@@ -257,6 +267,8 @@ class Pages {
 	/**
 	 * Handle admin head to remove admin notices.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @return void
 	 */
 	public function handle_admin_head() {
@@ -295,6 +307,8 @@ class Pages {
 	/**
 	 * To render the help page.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @return void
 	 */
 	public function render_help_page() {
@@ -307,6 +321,8 @@ class Pages {
 
 	/**
 	 * To render the godam page.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
@@ -362,6 +378,8 @@ class Pages {
 	/**
 	 * To render the video-editor page.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @return void
 	 */
 	public function render_video_editor_page() {
@@ -393,6 +411,8 @@ class Pages {
 	/**
 	 * To render the dashboard page.
 	 *
+	 * @since 1.1.0
+	 *
 	 * @return void
 	 */
 	public function render_dashboard_page() {
@@ -406,6 +426,8 @@ class Pages {
 
 	/**
 	 * To render the analytics page.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
@@ -421,6 +443,8 @@ class Pages {
 	/**
 	 * To render the what's new page.
 	 *
+	 * @since 1.4.0
+	 *
 	 * @return void
 	 */
 	public function render_whats_new_page() {
@@ -431,6 +455,8 @@ class Pages {
 
 	/**
 	 * To enqueue scripts and styles in admin.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
@@ -1006,6 +1032,8 @@ class Pages {
 	 * Get PostHog configuration for internal GoDAM analytics tracking.
 	 * These are hardcoded public keys - clients don't need to configure anything.
 	 *
+	 * @since 1.5.0
+	 *
 	 * @return array PostHog configuration array with 'key', 'host', and 'enabled' settings.
 	 */
 	private function get_posthog_config() {
@@ -1046,6 +1074,8 @@ class Pages {
 	/**
 	 * Enqueue Gravity Forms styles.
 	 *
+	 * @since 1.1.0
+	 *
 	 * @return void
 	 */
 	public function enqueue_gravity_forms_styles() {
@@ -1072,6 +1102,8 @@ class Pages {
 	/**
 	 * Enqueue Jetpack Forms styles.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @return void
 	 */
 	public function enqueue_jetpack_forms_styles() {
@@ -1088,6 +1120,8 @@ class Pages {
 
 	/**
 	 * Enqueue sureforms styles.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */
@@ -1109,6 +1143,8 @@ class Pages {
 	/**
 	 * Enqueue the Forminator assets.
 	 *
+	 * @since 1.3.0
+	 *
 	 * @return void
 	 */
 	public function enqueue_forminator_forms_styles() {
@@ -1127,6 +1163,8 @@ class Pages {
 
 	/**
 	 * Enqueue Fluent Forms styles.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */
@@ -1230,6 +1268,8 @@ class Pages {
 	/**
 	 * Redirects to "What's New" submenu page after a plugin update.
 	 *
+	 * @since 1.4.0
+	 *
 	 * @param object $screen The current screen object.
 	 */
 	public function redirect_to_whats_new( $screen ) {
@@ -1255,6 +1295,8 @@ class Pages {
 
 	/**
 	 * Remove the "What's New" submenu page once the user navigates away.
+	 *
+	 * @since 1.4.0
 	 */
 	public function remove_whats_new_page() {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended

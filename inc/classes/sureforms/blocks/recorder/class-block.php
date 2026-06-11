@@ -2,6 +2,8 @@
 /**
  * PHP render form Recorder Block.
  *
+ * @since 1.3.0
+ *
  * @package GoDAM.
  */
 
@@ -14,11 +16,15 @@ use SRFM\Inc\Blocks\Base;
 
 /**
  * Recorder Block.
+ *
+ * @since 1.3.0
  */
 class Block extends Base {
 
 	/**
 	 * Register the field for sureforms.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */

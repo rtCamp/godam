@@ -2,6 +2,8 @@
 /**
  * Class to handle the SEO functionality for the GoDAM block.
  *
+ * @since 1.1.4
+ *
  * @package GoDAM
  */
 
@@ -13,6 +15,8 @@ use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class Seo
+ *
+ * @since 1.1.4
  */
 class Seo {
 
@@ -25,6 +29,8 @@ class Seo {
 
 	/**
 	 * Construct method.
+	 *
+	 * @since 1.1.4
 	 */
 	protected function __construct() {
 		$this->setup_hooks();
@@ -32,6 +38,8 @@ class Seo {
 
 	/**
 	 * Setup hooks.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @return void
 	 */
@@ -58,6 +66,8 @@ class Seo {
 	 * `godam_video_seo_extra_block_schemas` filter.
 	 *
 	 * Also handles WPBakery shortcodes in the same post.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param int     $post_ID Post ID.
 	 * @param WP_Post $post    Post object.
@@ -193,6 +203,8 @@ class Seo {
 	 * If the block has seoOverride set to false or not set, it will fetch SEO from the media library.
 	 * Otherwise, it will use the SEO data from the block attributes.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @param array $block             Block data.
 	 * @param bool  $track_attachments Whether to track attachments used.
 	 * @return array Contains 'schemas' and 'attachments' arrays when tracking, otherwise just schemas.
@@ -315,6 +327,8 @@ class Seo {
 	/**
 	 * Convert seconds to ISO 8601 duration format.
 	 *
+	 * @since 1.7.0
+	 *
 	 * @param int $seconds Duration in seconds.
 	 * @return string ISO 8601 duration string.
 	 */
@@ -340,6 +354,8 @@ class Seo {
 	/**
 	 * Check if a post is built with Elementor.
 	 *
+	 * @since 1.7.0
+	 *
 	 * @param int $post_id The post ID.
 	 * @return bool True if it's an Elementor post, false otherwise.
 	 */
@@ -349,6 +365,8 @@ class Seo {
 
 	/**
 	 * Add ISO 8601 video duration to REST API response for video attachments.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param WP_REST_Response $response  The response object.
 	 * @param WP_Post          $post      The attachment post object.
@@ -376,6 +394,8 @@ class Seo {
 	 * thumbnail, upload date, duration, and family-friendly status.
 	 *
 	 * Only executes on singular pages and if valid cached SEO data exists.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @return void
 	 */
@@ -502,6 +522,8 @@ class Seo {
 	/**
 	 * Extract SEO data from Elementor godam_video widget for a given post.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @param int  $post_id           The ID of the post.
 	 * @param bool $track_attachments Whether to track attachments used.
 	 * @return array Contains 'schemas' and 'attachments' arrays when tracking, otherwise just schemas.
@@ -607,6 +629,8 @@ class Seo {
 	/**
 	 * Stores the SEO data for elementor.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @param int $post_ID Post ID.
 	 * @return void
 	 */
@@ -643,6 +667,8 @@ class Seo {
 
 	/**
 	 * Extract SEO data from WPBakery godam_video shortcodes.
+	 *
+	 * @since 1.7.0
 	 *
 	 * @param string $content           The post content containing shortcodes.
 	 * @param bool   $track_attachments Whether to track attachments used.
@@ -722,6 +748,8 @@ class Seo {
 	/**
 	 * Update the mapping of which posts use a specific attachment for SEO schema generation.
 	 *
+	 * @since 1.7.0
+	 *
 	 * @param int   $post_id     The post ID.
 	 * @param array $attachments Array of attachment IDs used in the post.
 	 */
@@ -768,6 +796,8 @@ class Seo {
 	/**
 	 * Schedule a background job to sync SEO for all posts using an attachment.
 	 *
+	 * @since 1.7.0
+	 *
 	 * @param int $attachment_id The attachment ID.
 	 */
 	public function schedule_seo_sync_for_attachment( $attachment_id ) {
@@ -793,6 +823,8 @@ class Seo {
 	/**
 	 * Sync SEO for all posts using a specific attachment.
 	 * This runs as a background task when an attachment is updated.
+	 *
+	 * @since 1.7.0
 	 *
 	 * @param int $attachment_id The attachment ID.
 	 */

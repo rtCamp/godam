@@ -2,6 +2,8 @@
 /**
  * Extend FluentForms.
  *
+ * @since 1.3.0
+ *
  * @package GoDAM
  */
 
@@ -14,6 +16,8 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Init.
+ *
+ * @since 1.3.0
  */
 class Init {
 
@@ -29,6 +33,8 @@ class Init {
 
 	/**
 	 * Constructor.
+	 *
+	 * @since 1.3.0
 	 */
 	protected function __construct() {
 
@@ -44,6 +50,8 @@ class Init {
 
 	/**
 	 * To check if fluentforms plugins is active.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @return bool
 	 */
@@ -61,6 +69,8 @@ class Init {
 
 	/**
 	 * Function to load the fluentforms integration class with GoDAM.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */
@@ -80,6 +90,8 @@ class Init {
 	/**
 	 * Add functionality on loaded.
 	 *
+	 * @since 1.3.0
+	 *
 	 * @return void
 	 */
 	public function on_fluentforms_loaded() {
@@ -97,6 +109,8 @@ class Init {
 
 	/**
 	 * Exclude slugs from dequeue.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param array $slugs Script handle to exclude from dequeue.
 	 *

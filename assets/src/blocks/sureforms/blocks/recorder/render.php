@@ -2,6 +2,8 @@
 /**
  * Render template for the GoDAM Gallery Block.
  *
+ * @since 1.3.0
+ *
  * @package GoDAM
  */
 

@@ -4,6 +4,8 @@
  *
  * Get all Fluent Forms and a single Fluent Form.
  *
+ * @since 1.3.0
+ *
  * @package GoDAM
  */
 
@@ -13,11 +15,15 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Fluent_Forms
+ *
+ * @since 1.3.0
  */
 class Fluent_Forms extends Base {
 
 	/**
 	 * Get REST routes.
+	 *
+	 * @since 1.3.0
 	 */
 	public function get_rest_routes() {
 		return array(
@@ -61,6 +67,8 @@ class Fluent_Forms extends Base {
 	/**
 	 * Get all Gravity Forms.
 	 *
+	 * @since 1.3.0
+	 *
 	 * @return \WP_REST_Response
 	 */
 	public function get_fluent_forms() {
@@ -89,6 +97,8 @@ class Fluent_Forms extends Base {
 
 	/**
 	 * Get a single Gravity Form.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param \WP_REST_Request $request Request Object.
 	 * @return \WP_REST_Response
@@ -119,6 +129,8 @@ class Fluent_Forms extends Base {
 	/**
 	 * Returns true if Fluent Form plugin is active.
 	 * 
+	 * @since 1.3.0
+	 *
 	 * @return boolean
 	 */
 	public function is_plugin_active() {

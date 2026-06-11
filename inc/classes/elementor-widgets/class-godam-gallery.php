@@ -2,6 +2,8 @@
 /**
  * Register Custom Widget - GoDAM Gallery
  *
+ * @since 1.1.4
+ *
  * @package GoDAM
  */
 
@@ -11,11 +13,15 @@ use Elementor\Controls_Manager;
 
 /**
  * GoDAM Gallery Widget.
+ *
+ * @since 1.1.4
  */
 class Godam_Gallery extends Base {
 
 	/**
 	 * Default config for GoDAM Gallery Widget.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @return array
 	 */
@@ -33,6 +39,8 @@ class Godam_Gallery extends Base {
 
 	/**
 	 * Register Widget Controls.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @access protected
 	 */
@@ -288,6 +296,8 @@ class Godam_Gallery extends Base {
 
 	/**
 	 * Render GoDAM Gallery widget output on the frontend.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @access protected
 	 */

@@ -2,6 +2,8 @@
 /**
  * Register Custom Widget - GoDAM Audio
  *
+ * @since 1.1.4
+ *
  * @package GoDAM
  */
 
@@ -11,11 +13,15 @@ use Elementor\Controls_Manager;
 
 /**
  * GoDAM Gallery Widget.
+ *
+ * @since 1.1.4
  */
 class Godam_Audio extends Base {
 
 	/**
 	 * Default config for GoDAM Audio Widget.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @return array
 	 */
@@ -32,6 +38,8 @@ class Godam_Audio extends Base {
 
 	/**
 	 * Register Widget Controls.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @access protected
 	 */
@@ -113,6 +121,8 @@ class Godam_Audio extends Base {
 
 	/**
 	 * Render GoDAM Audio widget output on the frontend.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @access protected
 	 */

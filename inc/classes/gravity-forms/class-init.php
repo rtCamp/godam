@@ -2,6 +2,8 @@
 /**
  * Extend gravity forms
  *
+ * @since 1.1.4
+ *
  * @package GoDAM
  */
 
@@ -15,6 +17,8 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Init
  *
+ * @since 1.1.4
+ *
  * @package GoDAM
  */
 class Init {
@@ -23,6 +27,8 @@ class Init {
 
 	/**
 	 * Constructor method.
+	 *
+	 * @since 1.1.4
 	 */
 	protected function __construct() {
 		$this->setup_hooks();
@@ -30,6 +36,8 @@ class Init {
 
 	/**
 	 * Setup hooks.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @return void
 	 */
@@ -54,6 +62,8 @@ class Init {
 	/**
 	 * Register custom gravity form field.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @return void
 	 */
 	public function register_custom_gf_field() {
@@ -64,6 +74,8 @@ class Init {
 
 	/**
 	 * Enqueue scripts and styles for the form.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param array $form The form object.
 	 */
@@ -128,6 +140,8 @@ class Init {
 	/**
 	 * Add identifier tooltip.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @param Array $tooltips A list of tooltip content.
 	 *
 	 * @return Array
@@ -141,6 +155,8 @@ class Init {
 
 	/**
 	 * Add custom field settings to the form editor.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param int $position The position of the field setting.
 	 */
@@ -219,6 +235,8 @@ class Init {
 
 	/**
 	 * Add editor script
+	 *
+	 * @since 1.1.4
 	 */
 	public function add_editor_script() {
 
@@ -233,6 +251,8 @@ class Init {
 
 	/**
 	 * Process file upload to GoDAM.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param array $entry The entry object.
 	 * @param array $form The form object.
@@ -291,6 +311,8 @@ class Init {
 
 	/**
 	 * Send file to GoDAM for transcoding.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @param string $form_title The title of the form.
 	 * @param string $file_url The URL of the file to be sent.
@@ -371,6 +393,8 @@ class Init {
 	 *
 	 * This ensures the global `gform` object (from gforms_hooks.js) is available in the document head
 	 * on the GoDAM video-preview page.
+	 *
+	 * @since 1.4.0
 	 *
 	 * @return void
 	 */

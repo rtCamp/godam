@@ -2,6 +2,8 @@
 /**
  * Register REST API endpoints for any Assets file endpoints.
  *
+ * @since 1.1.4
+ *
  * @package transcoder
  */
 
@@ -9,11 +11,15 @@ namespace RTGODAM\Inc\REST_API;
 
 /**
  * Class Polls
+ *
+ * @since 1.0.4
  */
 class Polls extends Base {
 
 	/**
 	 * Get REST routes.
+	 *
+	 * @since 1.0.4
 	 */
 	public function get_rest_routes() {
 		return array(
@@ -54,6 +60,8 @@ class Polls extends Base {
 	/**
 	 * Get all Polls.
 	 *
+	 * @since 1.0.4
+	 *
 	 * @return \WP_REST_Response
 	 */
 	public function get_polls() {
@@ -83,6 +91,8 @@ class Polls extends Base {
 	/**
 	 * Get a single Poll.
 	 *
+	 * @since 1.0.4
+	 *
 	 * @param \WP_REST_Request $request The request object.
 	 * @return \WP_REST_Response
 	 */
@@ -109,6 +119,8 @@ class Polls extends Base {
 
 	/**
 	 * Check if the Poll plugin is active.
+	 *
+	 * @since 1.0.4
 	 *
 	 * @return bool
 	 */

@@ -2,6 +2,8 @@
 /**
  * REST API class to render [godam_video] shortcode output.
  *
+ * @since 1.1.4
+ *
  * @package GoDAM
  */
 
@@ -15,6 +17,8 @@ use WP_REST_Response;
 
 /**
  * Class Dynamic_Shortcode.
+ *
+ * @since 1.1.2
  */
 class Dynamic_Shortcode extends Base {
 
@@ -27,6 +31,8 @@ class Dynamic_Shortcode extends Base {
 
 	/**
 	 * Get registered REST routes.
+	 *
+	 * @since 1.1.2
 	 *
 	 * @return array
 	 */
@@ -68,6 +74,8 @@ class Dynamic_Shortcode extends Base {
 
 	/**
 	 * Callback to render the shortcode.
+	 *
+	 * @since 1.1.2
 	 *
 	 * @param WP_REST_Request $request REST request.
 	 * @return WP_REST_Response

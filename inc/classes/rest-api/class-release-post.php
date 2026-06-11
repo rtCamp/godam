@@ -2,6 +2,8 @@
 /**
  * Register REST API endpoints for the latest release post.
  *
+ * @since 1.4.0
+ *
  * @package GoDAM
  */
 
@@ -11,11 +13,15 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Release_Post
+ *
+ * @since 1.4.0
  */
 class Release_Post extends Base {
 
 	/**
 	 * Get REST routes.
+	 *
+	 * @since 1.4.0
 	 */
 	public function get_rest_routes() {
 		return array(
@@ -36,6 +42,8 @@ class Release_Post extends Base {
 	/**
 	 * Get the latest release post.
 	 * 
+	 * @since 1.4.0
+	 *
 	 * @return \WP_REST_Response
 	 */
 	public function get_release_post() {
@@ -90,6 +98,8 @@ class Release_Post extends Base {
 
 	/**
 	 * Parse features from post content by extracting headings and their content.
+	 *
+	 * @since 1.4.0
 	 *
 	 * @param string $content The post content HTML.
 	 * @param string $default_image Default image URL for features.
@@ -185,6 +195,8 @@ class Release_Post extends Base {
 
 	/**
 	 * Check if a DOM node is a heading element
+	 *
+	 * @since 1.4.0
 	 *
 	 * @param \DOMNode $node The DOM node to check.
 	 *

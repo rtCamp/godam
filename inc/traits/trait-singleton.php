@@ -22,6 +22,8 @@
  *
  * If you specifically need multiple objects, then use a normal class.
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -29,6 +31,14 @@ namespace RTGODAM\Inc\Traits;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Trait Singleton
+ *
+ * This trait implements the Singleton pattern, ensuring that only one instance
+ * of a class exists and providing a global point of access to it.
+ *
+ * @since 1.0.0
+ */
 trait Singleton {
 
 	/**
@@ -37,12 +47,16 @@ trait Singleton {
 	 * This is meant to be overridden in the classes which implement
 	 * this trait. This is ideal for doing stuff that you only want to
 	 * do once, such as hooking into actions and filters, etc.
+	 *
+	 * @since 1.0.0
 	 */
 	protected function __construct() {
 	}
 
 	/**
 	 * Prevent object cloning
+	 *
+	 * @since 1.0.0
 	 */
 	final protected function __clone() {
 	}
@@ -51,6 +65,8 @@ trait Singleton {
 	 * This method returns new or existing Singleton instance
 	 * of the class for which it is called. This method is set
 	 * as final intentionally, it is not meant to be overridden.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return object Singleton instance of the class.
 	 */

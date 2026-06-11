@@ -2,6 +2,8 @@
 /**
  * Render template for the GoDAM Video Thumbnail Block.
  *
+ * @since 1.4.0
+ *
  * @package GoDAM
  */
 

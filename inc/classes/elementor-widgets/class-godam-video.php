@@ -2,6 +2,8 @@
 /**
  * Register Custom Widget - GoDAM Video.
  *
+ * @since 1.1.4
+ *
  * @package GoDAM
  */
 
@@ -11,11 +13,15 @@ use Elementor\Controls_Manager;
 
 /**
  * GoDAM Video Widget.
+ *
+ * @since 1.1.4
  */
 class GoDAM_Video extends Base {
 
 	/**
 	 * Default config for GoDAM Video Widget.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @return array
 	 */
@@ -33,6 +39,8 @@ class GoDAM_Video extends Base {
 
 	/**
 	 * Register Widget Controls.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @access protected
 	 */
@@ -370,6 +378,8 @@ class GoDAM_Video extends Base {
 
 	/**
 	 * Render GoDAM Video widget output on the frontend.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @access protected
 	 */

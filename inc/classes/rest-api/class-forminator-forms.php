@@ -4,6 +4,8 @@
  * 
  * Get all Forminator Forms and a single Forminator Form.
  * 
+ * @since 1.3.0
+ *
  * @package GoDAM
  */
 
@@ -34,6 +36,8 @@ class Forminator_Forms extends Base {
 	/**
 	 * Check if Forminator is active or not.
 	 * 
+	 * @since 1.3.0
+	 *
 	 * @return true|false true on active and false on not active.
 	 */
 	private function is_forminator_active() {
@@ -43,6 +47,8 @@ class Forminator_Forms extends Base {
 	/**
 	 * Get REST routes.
 	 * 
+	 * @since 1.3.0
+	 *
 	 * @return array
 	 */
 	public function get_rest_routes() {
@@ -98,6 +104,8 @@ class Forminator_Forms extends Base {
 	/**
 	 * Get all Forminator Forms.
 	 * 
+	 * @since 1.3.0
+	 *
 	 * @param WP_REST_Request $request Request Object.
 	 * @return WP_REST_Response|WP_Error
 	 */
@@ -147,6 +155,8 @@ class Forminator_Forms extends Base {
 	/**
 	 * Get a single Forminator Form.
 	 * 
+	 * @since 1.3.0
+	 *
 	 * @param WP_REST_Request $request Request Object.
 	 * @return WP_REST_Response|WP_Error
 	 */
