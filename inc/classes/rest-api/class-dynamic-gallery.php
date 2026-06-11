@@ -142,9 +142,9 @@ class Dynamic_Gallery extends Base {
 		$performance_mode = rtgodam_resolve_video_performance_mode( $gallery_attributes, 'balanced' );
 		$show_title       = $gallery_attributes['showTitle'];
 
-		$args           = rtgodam_gallery_v2_build_query_args( $gallery_attributes, 1 );
-		$args['offset'] = $offset;
-
+		$args                 = rtgodam_gallery_v2_build_query_args( $gallery_attributes, 1 );
+		$args['offset']       = $offset;
+		$args['no_found_rows'] = true;
 		// rtgodam_gallery_v2_build_query_args() restricts orderby to date/title.
 		// The REST endpoint additionally supports duration and size to mirror
 		// the block's full orderby UI on Load More responses.
