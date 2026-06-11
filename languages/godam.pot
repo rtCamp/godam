@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GoDAM 1.11.2\n"
+"Project-Id-Version: GoDAM 1.12.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-06-05T11:33:07+00:00\n"
+"POT-Creation-Date: 2026-06-11T11:27:19+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -243,14 +243,14 @@ msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:276
 #: inc/classes/class-media-library-ajax.php:827
-#: pages/dashboard/Dashboard.js:377
+#: pages/dashboard/Dashboard.js:384
 #: pages/video-editor/AttachmentPicker.jsx:45
 msgid "Claim the GoDAM New Year Sale 2026 offer"
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:278
 #: inc/classes/class-media-library-ajax.php:829
-#: pages/dashboard/Dashboard.js:381
+#: pages/dashboard/Dashboard.js:388
 #: pages/video-editor/AttachmentPicker.jsx:49
 msgid "New Year Sale 2026 offer from GoDAM"
 msgstr ""
@@ -821,7 +821,7 @@ msgstr ""
 #: inc/classes/class-pages.php:201
 #: inc/classes/class-pages.php:202
 #: inc/templates/video-preview.php:53
-#: pages/video-editor/VideoEditor.js:459
+#: pages/video-editor/VideoEditor.js:488
 msgid "Analytics"
 msgstr ""
 
@@ -914,7 +914,7 @@ msgid "Choose Image"
 msgstr ""
 
 #: inc/classes/elementor-controls/class-godam-media.php:140
-#: pages/analytics/Analytics.js:752
+#: pages/analytics/Analytics.js:771
 msgid "Choose Video"
 msgstr ""
 
@@ -1125,7 +1125,7 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:133
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:153
-#: pages/dashboard/Dashboard.js:533
+#: pages/dashboard/Dashboard.js:550
 msgid "Size"
 msgstr ""
 
@@ -1256,7 +1256,7 @@ msgid "GoDAM Video"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:43
-#: pages/video-editor/VideoEditor.js:346
+#: pages/video-editor/VideoEditor.js:375
 msgid "Player Settings"
 msgstr ""
 
@@ -1334,7 +1334,7 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:110
 #: assets/build/blocks/godam-player/index.js:1
-#: pages/video-editor/VideoEditor.js:352
+#: pages/video-editor/VideoEditor.js:381
 msgid "Chapters"
 msgstr ""
 
@@ -1936,31 +1936,38 @@ msgstr ""
 msgid "The Site URL associated with the video."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:176
-#: inc/classes/rest-api/class-analytics.php:384
+#: inc/classes/rest-api/class-analytics.php:222
+#: inc/classes/rest-api/class-analytics.php:352
+#: inc/classes/rest-api/class-analytics.php:560
 #: inc/classes/rest-api/class-engagement.php:365
 #: inc/classes/rest-api/class-site.php:169
 msgid "Missing API key."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:201
-#: inc/classes/rest-api/class-analytics.php:418
+#: inc/classes/rest-api/class-analytics.php:233
+msgid "GoDAM account is not verified. Connect your account in GoDAM settings to view layer analytics."
+msgstr ""
+
+#: inc/classes/rest-api/class-analytics.php:280
+#: inc/classes/rest-api/class-analytics.php:377
+#: inc/classes/rest-api/class-analytics.php:594
 msgid "Unable to reach analytics server."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:212
-#: inc/classes/rest-api/class-analytics.php:427
+#: inc/classes/rest-api/class-analytics.php:289
+#: inc/classes/rest-api/class-analytics.php:388
+#: inc/classes/rest-api/class-analytics.php:603
 msgid "Unexpected error from analytics server."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:324
-#: inc/classes/rest-api/class-analytics.php:476
-#: inc/classes/rest-api/class-analytics.php:537
+#: inc/classes/rest-api/class-analytics.php:500
+#: inc/classes/rest-api/class-analytics.php:652
+#: inc/classes/rest-api/class-analytics.php:713
 msgid "Invalid or unverified API key."
 msgstr ""
 
 #. translators: %s is the error message from the API response.
-#: inc/classes/rest-api/class-analytics.php:351
+#: inc/classes/rest-api/class-analytics.php:527
 #, php-format
 msgid "Error fetching history data: %s"
 msgstr ""
@@ -2819,7 +2826,7 @@ msgid "WPForms plugin is not active."
 msgstr ""
 
 #: inc/classes/shortcodes/class-godam-video-gallery.php:421
-#: pages/dashboard/Dashboard.js:610
+#: pages/dashboard/Dashboard.js:639
 msgid "No videos found."
 msgstr ""
 
@@ -3774,7 +3781,7 @@ msgstr ""
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:359
 #: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:522
 #: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:147
-#: pages/video-editor/VideoEditor.js:425
+#: pages/video-editor/VideoEditor.js:454
 msgid "Save"
 msgstr ""
 
@@ -4050,158 +4057,227 @@ msgstr ""
 msgid "Maximum allowed size: %s MB"
 msgstr ""
 
-#: pages/analytics/Analytics.js:396
+#: pages/analytics/Analytics.js:398
 msgid "Select Video to Perform Performance Comparison Testing"
 msgstr ""
 
-#: pages/analytics/Analytics.js:398
+#: pages/analytics/Analytics.js:400
 msgid "Use this Video"
 msgstr ""
 
-#: pages/analytics/Analytics.js:501
-#: pages/analytics/Analytics.js:546
-#: pages/dashboard/Dashboard.js:354
-#: pages/dashboard/Dashboard.js:424
+#: pages/analytics/Analytics.js:503
+#: pages/analytics/Analytics.js:548
+#: pages/dashboard/Dashboard.js:361
+#: pages/dashboard/Dashboard.js:431
 msgid "Go to plugin settings"
 msgstr ""
 
-#: pages/analytics/Analytics.js:513
-#: pages/dashboard/Dashboard.js:390
+#: pages/analytics/Analytics.js:515
+#: pages/dashboard/Dashboard.js:397
 msgid "Upgrade to unlock the media performance report."
 msgstr ""
 
-#: pages/analytics/Analytics.js:517
-#: pages/dashboard/Dashboard.js:394
+#: pages/analytics/Analytics.js:519
+#: pages/dashboard/Dashboard.js:401
 msgid "If you already have a premium plan, connect your"
 msgstr ""
 
-#: pages/analytics/Analytics.js:520
-#: pages/dashboard/Dashboard.js:397
+#: pages/analytics/Analytics.js:522
+#: pages/dashboard/Dashboard.js:404
 msgid "API in the settings"
 msgstr ""
 
-#: pages/analytics/Analytics.js:534
-#: pages/dashboard/Dashboard.js:411
+#: pages/analytics/Analytics.js:536
+#: pages/dashboard/Dashboard.js:418
 msgid "Buy Plan"
 msgstr ""
 
-#: pages/analytics/Analytics.js:543
-#: pages/dashboard/Dashboard.js:421
+#: pages/analytics/Analytics.js:545
+#: pages/dashboard/Dashboard.js:428
 msgid "An unknown error occurred. Please check your plugin settings."
 msgstr ""
 
-#: pages/analytics/Analytics.js:571
+#: pages/analytics/Analytics.js:573
 msgid "This media doesn't exist."
 msgstr ""
 
-#: pages/analytics/Analytics.js:573
+#: pages/analytics/Analytics.js:575
 msgid "Go to Dashboard"
 msgstr ""
 
-#: pages/analytics/Analytics.js:594
+#: pages/analytics/Analytics.js:596
 msgid "Analytics report of"
 msgstr ""
 
-#: pages/analytics/Analytics.js:597
+#: pages/analytics/Analytics.js:599
 msgid "Analytics report"
 msgstr ""
 
-#: pages/analytics/Analytics.js:599
+#: pages/analytics/Analytics.js:601
 msgid "Back to Video Editor"
 msgstr ""
 
-#: pages/analytics/Analytics.js:613
-#: pages/analytics/Analytics.js:863
-#: pages/dashboard/Dashboard.js:537
+#: pages/analytics/Analytics.js:610
+#: pages/dashboard/Dashboard.js:464
+msgid "Heads up: analytics update periodically, so new activity may take up to 30 minutes to show here."
+msgstr ""
+
+#: pages/analytics/Analytics.js:627
+#: pages/analytics/Analytics.js:882
+#: pages/dashboard/Dashboard.js:554
 msgid "Average Engagement"
 msgstr ""
 
-#: pages/analytics/Analytics.js:614
+#: pages/analytics/Analytics.js:628
 msgid "Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)"
 msgstr ""
 
-#: pages/analytics/Analytics.js:624
-#: pages/analytics/Analytics.js:883
+#: pages/analytics/Analytics.js:638
+#: pages/analytics/Analytics.js:902
 #: pages/analytics/helper.js:104
 #: pages/analytics/PlaybackPerformance.js:440
 #: pages/analytics/PlaybackPerformance.js:579
-#: pages/dashboard/Dashboard.js:473
-#: pages/dashboard/Dashboard.js:534
+#: pages/dashboard/Dashboard.js:490
+#: pages/dashboard/Dashboard.js:551
 msgid "Play Rate"
 msgstr ""
 
-#: pages/analytics/Analytics.js:625
-#: pages/dashboard/Dashboard.js:474
+#: pages/analytics/Analytics.js:639
+#: pages/dashboard/Dashboard.js:491
 msgid "Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads"
 msgstr ""
 
-#: pages/analytics/Analytics.js:635
+#: pages/analytics/Analytics.js:649
 #: pages/analytics/helper.js:110
-#: pages/dashboard/Dashboard.js:485
+#: pages/dashboard/Dashboard.js:502
 msgid "Watch Time"
 msgstr ""
 
-#: pages/analytics/Analytics.js:636
-#: pages/dashboard/Dashboard.js:486
+#: pages/analytics/Analytics.js:650
+#: pages/dashboard/Dashboard.js:503
 msgid "Total time the video has been watched, aggregated across all plays"
 msgstr ""
 
-#: pages/analytics/Analytics.js:689
+#: pages/analytics/Analytics.js:708
 msgid "Views by Source"
 msgstr ""
 
-#: pages/analytics/Analytics.js:700
+#: pages/analytics/Analytics.js:719
 msgid "Performance Comparison"
 msgstr ""
 
-#: pages/analytics/Analytics.js:711
+#: pages/analytics/Analytics.js:730
 msgid "In Progress"
 msgstr ""
 
-#: pages/analytics/Analytics.js:716
+#: pages/analytics/Analytics.js:735
 msgid "Initiate the test comparison to generate analytical insights."
 msgstr ""
 
-#: pages/analytics/Analytics.js:721
+#: pages/analytics/Analytics.js:740
 msgid "The test is complete! Review results to identify the best-performing video."
 msgstr ""
 
-#: pages/analytics/Analytics.js:733
+#: pages/analytics/Analytics.js:752
 msgid "Start Test"
 msgstr ""
 
-#: pages/analytics/Analytics.js:764
+#: pages/analytics/Analytics.js:783
 msgid "Test this video against others to see which performs better."
 msgstr ""
 
-#: pages/analytics/Analytics.js:773
+#: pages/analytics/Analytics.js:792
 #: pages/video-editor/components/cta/ImageCTA.js:349
 msgid "Upload or Replace CTA Image"
 msgstr ""
 
-#: pages/analytics/Analytics.js:778
+#: pages/analytics/Analytics.js:797
 msgid "Choose"
 msgstr ""
 
-#: pages/analytics/Analytics.js:849
+#: pages/analytics/Analytics.js:868
 msgid "Views"
 msgstr ""
 
-#: pages/analytics/Analytics.js:872
-#: pages/dashboard/Dashboard.js:535
+#: pages/analytics/Analytics.js:891
+#: pages/dashboard/Dashboard.js:552
 msgid "Total Plays"
 msgstr ""
 
-#: pages/analytics/Analytics.js:897
+#: pages/analytics/Analytics.js:916
 msgid "Page Loads"
 msgstr ""
 
-#: pages/analytics/Analytics.js:911
+#: pages/analytics/Analytics.js:930
 msgid "Play Time"
 msgstr ""
 
-#: pages/analytics/Analytics.js:925
+#: pages/analytics/Analytics.js:944
 msgid "Video Length"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:129
+#: pages/video-editor/components/LayerSelector.jsx:38
+#: pages/video-editor/components/SidebarLayers.js:38
+#: pages/video-editor/components/SidebarLayers.js:41
+#: pages/video-editor/VideoJSPlayer.js:36
+msgid "CTA"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:139
+msgid "Form"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:147
+#: pages/video-editor/components/LayerSelector.jsx:45
+#: pages/video-editor/components/SidebarLayers.js:44
+#: pages/video-editor/components/SidebarLayers.js:47
+#: pages/video-editor/VideoJSPlayer.js:41
+msgid "Hotspot"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:157
+#: pages/video-editor/components/LayerSelector.jsx:185
+#: pages/video-editor/components/SidebarLayers.js:124
+#: pages/video-editor/components/SidebarLayers.js:127
+#: pages/video-editor/VideoJSPlayer.js:51
+msgid "Poll"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:165
+msgid "Woo Hotspot"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:228
+msgid "Viewed"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:229
+msgid "Clicked"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:230
+msgid "Submitted"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:231
+msgid "Hovered"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:232
+msgid "Skipped"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:233
+msgid "Voted"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:234
+msgid "Added to Cart"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:235
+msgid "No Action"
 msgstr ""
 
 #: pages/analytics/helper.js:98
@@ -4279,6 +4355,7 @@ msgstr ""
 
 #: pages/analytics/PlaysVsViewers.js:131
 #: pages/analytics/SingleMetrics.js:152
+#: pages/analytics/timeline/DateRangePicker.js:28
 msgid "Last 7 days"
 msgstr ""
 
@@ -4287,7 +4364,258 @@ msgid "Sessions per user:"
 msgstr ""
 
 #: pages/analytics/SingleMetrics.js:148
+#: pages/analytics/timeline/DateRangePicker.js:32
 msgid "All time"
+msgstr ""
+
+#: pages/analytics/timeline/DateRangePicker.js:28
+msgid "7D"
+msgstr ""
+
+#: pages/analytics/timeline/DateRangePicker.js:29
+msgid "30D"
+msgstr ""
+
+#: pages/analytics/timeline/DateRangePicker.js:29
+msgid "Last 30 days"
+msgstr ""
+
+#: pages/analytics/timeline/DateRangePicker.js:30
+msgid "90D"
+msgstr ""
+
+#: pages/analytics/timeline/DateRangePicker.js:30
+msgid "Last 90 days"
+msgstr ""
+
+#: pages/analytics/timeline/DateRangePicker.js:31
+msgid "1Y"
+msgstr ""
+
+#: pages/analytics/timeline/DateRangePicker.js:31
+msgid "Last year"
+msgstr ""
+
+#: pages/analytics/timeline/DateRangePicker.js:32
+#: pages/video-editor/components/LayerSelector.jsx:237
+msgid "All"
+msgstr ""
+
+#: pages/analytics/timeline/DateRangePicker.js:38
+msgid "Date range"
+msgstr ""
+
+#. translators: %d is the count of removed layers.
+#: pages/analytics/timeline/HistoricalLayersDrawer.js:55
+#, js-format
+msgid "Removed layers (%d)"
+msgid_plural "Removed layers (%d)"
+msgstr[0] ""
+msgstr[1] ""
+
+#: pages/analytics/timeline/HistoricalLayersDrawer.js:70
+msgid "No longer in the video; historical analytics preserved."
+msgstr ""
+
+#: pages/analytics/timeline/InfoTooltip.js:49
+msgid "Info"
+msgstr ""
+
+#: pages/analytics/timeline/LayerDetailPanel.js:143
+msgid "Untitled layer"
+msgstr ""
+
+#: pages/analytics/timeline/LayerDetailPanel.js:147
+msgid "Appeared at"
+msgstr ""
+
+#: pages/analytics/timeline/LayerDetailPanel.js:169
+msgid "View this poll’s results"
+msgstr ""
+
+#: pages/analytics/timeline/LayerDetailPanel.js:170
+msgid "View this form’s entries"
+msgstr ""
+
+#: pages/analytics/timeline/LayerDetailPanel.js:173
+msgid "View Poll results"
+msgstr ""
+
+#: pages/analytics/timeline/LayerDetailPanel.js:174
+msgid "View Form entries"
+msgstr ""
+
+#: pages/analytics/timeline/LayerDetailPanel.js:182
+msgid "Edit this layer in the video editor"
+msgstr ""
+
+#: pages/analytics/timeline/LayerDetailPanel.js:184
+msgid "Edit Layer"
+msgstr ""
+
+#: pages/analytics/timeline/LayerDetailPanel.js:191
+msgid "This layer is no longer in the video. Historical analytics preserved."
+msgstr ""
+
+#: pages/analytics/timeline/LayerDetailPanel.js:193
+msgid "Removed from video"
+msgstr ""
+
+#: pages/analytics/timeline/LayerInteractionFunnel.js:171
+msgid "Interaction Outcomes"
+msgstr ""
+
+#: pages/analytics/timeline/LayerInteractionFunnel.js:174
+msgid "Of everyone who saw this layer (Viewed = 100%), the share who took each action. \"No action\" saw the layer but never interacted. A viewer can appear in more than one action, so the bars need not add up to 100%."
+msgstr ""
+
+#: pages/analytics/timeline/LayerInteractionFunnel.js:181
+msgid "Out of all viewers who saw this layer"
+msgstr ""
+
+#. translators: %1$s value, %2$s percentage
+#: pages/analytics/timeline/LayerInteractionFunnel.js:235
+#, js-format
+msgid "%1$s viewers (%2$s%%) saw this layer but didn't interact with it."
+msgstr ""
+
+#. translators: %1$s action name, %2$s value, %3$s percentage
+#: pages/analytics/timeline/LayerInteractionFunnel.js:242
+#, js-format
+msgid "%1$s: %2$s viewers (%3$s%%)."
+msgstr ""
+
+#: pages/analytics/timeline/LayerInteractionFunnel.js:294
+msgid "of viewers"
+msgstr ""
+
+#. translators: 1: first position, 2: second position.
+#. translators: 1: comma-separated positions, 2: last position.
+#: pages/analytics/timeline/LayerModifiedNotice.js:63
+#: pages/analytics/timeline/LayerModifiedNotice.js:71
+#, js-format
+msgid "%1$s and %2$s"
+msgstr ""
+
+#: pages/analytics/timeline/LayerModifiedNotice.js:162
+msgid "This layer has been modified."
+msgstr ""
+
+#. translators: %s is a comma-separated list of timestamps like "0:01 and 0:03".
+#: pages/analytics/timeline/LayerModifiedNotice.js:166
+#, js-format
+msgid "It was previously at %s. Analytics shown here are cumulative across all changes."
+msgstr ""
+
+#: pages/analytics/timeline/LayerModifiedNotice.js:174
+msgid "Dismiss notice"
+msgstr ""
+
+#: pages/analytics/timeline/LayerTimelineMarker.js:137
+msgid "Conversion rate — share of viewers who saw this layer and interacted with it."
+msgstr ""
+
+#: pages/analytics/timeline/LayerTimelineMarker.js:155
+#: pages/analytics/timeline/SubHotspotRail.js:222
+msgid "Removed"
+msgstr ""
+
+#: pages/analytics/timeline/LayerTimelineStrip.js:192
+msgid "Interactive layers on the video timeline"
+msgstr ""
+
+#: pages/analytics/timeline/LayerTimelineStrip.js:197
+msgid "Nothing to show yet"
+msgstr ""
+
+#: pages/analytics/timeline/LayerTimelineStrip.js:200
+msgid "Layer analytics appear after the video is played on the front end and the activity is processed. A layer you just added won't have data until viewers interact with it."
+msgstr ""
+
+#: pages/analytics/timeline/SubHotspotRail.js:60
+msgid "Products in this layer"
+msgstr ""
+
+#: pages/analytics/timeline/SubHotspotRail.js:61
+msgid "Hotspots in this layer"
+msgstr ""
+
+#: pages/analytics/timeline/SubHotspotRail.js:66
+msgid "Each row is one product hotspot inside this layer. Select a row to see its individual funnel; \"All Products (Cumulative)\" counts sessions that converted on any product."
+msgstr ""
+
+#: pages/analytics/timeline/SubHotspotRail.js:70
+msgid "Each row is one hotspot inside this layer. Select a row to see its individual funnel; \"All Hotspots (Cumulative)\" counts sessions that converted on any hotspot."
+msgstr ""
+
+#: pages/analytics/timeline/SubHotspotRail.js:79
+msgid "Conversion"
+msgstr ""
+
+#: pages/analytics/timeline/SubHotspotRail.js:85
+msgid "Share of sessions that saw the product and converted — clicked through to it or added it to the cart. Each session counts once, so this never exceeds 100%."
+msgstr ""
+
+#: pages/analytics/timeline/SubHotspotRail.js:89
+msgid "Share of sessions that saw the hotspot and clicked it. Each session counts once, so this never exceeds 100%."
+msgstr ""
+
+#: pages/analytics/timeline/SubHotspotRail.js:122
+msgid "All Products (Cumulative)"
+msgstr ""
+
+#: pages/analytics/timeline/SubHotspotRail.js:123
+msgid "All Hotspots (Cumulative)"
+msgstr ""
+
+#: pages/analytics/timeline/SubHotspotRail.js:139
+msgid "A session counts as converted here when it converts on any one product in this layer — clicks it or adds it to the cart. Each session counts once, so this can read higher than every single product's rate."
+msgstr ""
+
+#: pages/analytics/timeline/SubHotspotRail.js:143
+msgid "A session counts as converted here when it clicks any one hotspot in this layer. Each session counts once, so this can read higher than every single hotspot's rate."
+msgstr ""
+
+#: pages/analytics/VideoLayerTimeline.js:35
+msgid "Add an interactive layer in the video editor to start tracking performance."
+msgstr ""
+
+#: pages/analytics/VideoLayerTimeline.js:45
+msgid "Click on any hotspot on the left to see its performance."
+msgstr ""
+
+#: pages/analytics/VideoLayerTimeline.js:50
+msgid "Click on any layer above to view its performance details."
+msgstr ""
+
+#: pages/analytics/VideoLayerTimeline.js:158
+msgid "Video Layer Timeline"
+msgstr ""
+
+#: pages/analytics/VideoLayerTimeline.js:162
+msgid "Each marker represents an interactive layer in this video. Click a marker to see how viewers interacted with it."
+msgstr ""
+
+#: pages/analytics/VideoLayerTimeline.js:169
+msgid "See when interactive layers appeared in your video and how they performed."
+msgstr ""
+
+#: pages/analytics/VideoLayerTimeline.js:185
+msgid "Video conversion"
+msgstr ""
+
+#: pages/analytics/VideoLayerTimeline.js:189
+msgid "Share of plays where the viewer converted on any layer (clicked a CTA, submitted a form, voted in a poll, or added a product to cart). A play counts once even if the viewer converts on several layers, so this never exceeds 100%."
+msgstr ""
+
+#. translators: 1: converting sessions, 2: total plays.
+#: pages/analytics/VideoLayerTimeline.js:202
+#, js-format
+msgid "%1$s of %2$s plays"
+msgstr ""
+
+#: pages/analytics/VideoLayerTimeline.js:218
+msgid "Unable to load layer analytics. Please try again."
 msgstr ""
 
 #: pages/dashboard/components/MarketingCarousel.jsx:101
@@ -4298,46 +4626,54 @@ msgstr ""
 msgid "Feature Screenshot"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:459
+#: pages/dashboard/Dashboard.js:476
 msgid "Active Videos"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:460
+#: pages/dashboard/Dashboard.js:477
 msgid "Number of unique videos that received user interactions each day, such as views or plays."
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:522
+#: pages/dashboard/Dashboard.js:539
 msgid "Top Videos"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:525
+#: pages/dashboard/Dashboard.js:542
 msgid "Export"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:532
+#: pages/dashboard/Dashboard.js:549
 msgid "Name"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:536
+#: pages/dashboard/Dashboard.js:553
 msgid "Total Watch Time"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:559
-#: pages/dashboard/Dashboard.js:573
+#: pages/dashboard/Dashboard.js:555
+msgid "Conversion Rate"
+msgstr ""
+
+#: pages/dashboard/Dashboard.js:577
+#: pages/dashboard/Dashboard.js:591
 msgid "Video thumbnail"
 msgstr ""
 
+#: pages/dashboard/Dashboard.js:626
+msgid "No layer conversions in this period"
+msgstr ""
+
 #. translators: %1$d is the current page number, %2$d is the total number of pages
-#: pages/dashboard/Dashboard.js:622
+#: pages/dashboard/Dashboard.js:651
 #, js-format
 msgid "Page %1$d of %2$d"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:636
+#: pages/dashboard/Dashboard.js:665
 msgid "Previous"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:643
+#: pages/dashboard/Dashboard.js:672
 msgid "Next"
 msgstr ""
 
@@ -4462,7 +4798,7 @@ msgstr ""
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:197
 #: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:379
 #: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:82
-#: pages/video-editor/VideoEditor.js:81
+#: pages/video-editor/VideoEditor.js:82
 msgid "You have unsaved changes. Are you sure you want to leave?"
 msgstr ""
 
@@ -4499,7 +4835,7 @@ msgstr ""
 #: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:522
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:127
 #: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:147
-#: pages/video-editor/VideoEditor.js:425
+#: pages/video-editor/VideoEditor.js:454
 msgid "Saving…"
 msgstr ""
 
@@ -6096,22 +6432,8 @@ msgstr ""
 msgid "Select poll"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:38
-#: pages/video-editor/components/SidebarLayers.js:38
-#: pages/video-editor/components/SidebarLayers.js:41
-#: pages/video-editor/VideoJSPlayer.js:36
-msgid "CTA"
-msgstr ""
-
 #: pages/video-editor/components/LayerSelector.jsx:39
 msgid "Guide users toward a specific action"
-msgstr ""
-
-#: pages/video-editor/components/LayerSelector.jsx:45
-#: pages/video-editor/components/SidebarLayers.js:44
-#: pages/video-editor/components/SidebarLayers.js:47
-#: pages/video-editor/VideoJSPlayer.js:41
-msgid "Hotspot"
 msgstr ""
 
 #: pages/video-editor/components/LayerSelector.jsx:46
@@ -6237,13 +6559,6 @@ msgstr ""
 msgid "Redirect user to custom advertisement"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:185
-#: pages/video-editor/components/SidebarLayers.js:124
-#: pages/video-editor/components/SidebarLayers.js:127
-#: pages/video-editor/VideoJSPlayer.js:51
-msgid "Poll"
-msgstr ""
-
 #: pages/video-editor/components/LayerSelector.jsx:186
 msgid "Gather opinions through interactive voting"
 msgstr ""
@@ -6256,12 +6571,8 @@ msgstr ""
 msgid "plugin is required to use Poll layer"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:237
-msgid "All"
-msgstr ""
-
 #: pages/video-editor/components/LayerSelector.jsx:316
-#: pages/video-editor/VideoEditor.js:333
+#: pages/video-editor/VideoEditor.js:362
 msgid "Layers"
 msgstr ""
 
@@ -6290,12 +6601,12 @@ msgid "to use them in GoDAM."
 msgstr ""
 
 #: pages/video-editor/components/media-grid/MediaItem.jsx:41
-#: pages/video-editor/VideoEditor.js:318
+#: pages/video-editor/VideoEditor.js:347
 msgid "GoDAM Video Block copied to clipboard"
 msgstr ""
 
 #: pages/video-editor/components/media-grid/MediaItem.jsx:44
-#: pages/video-editor/VideoEditor.js:321
+#: pages/video-editor/VideoEditor.js:350
 msgid "Failed to copy GoDAM Video Block"
 msgstr ""
 
@@ -6377,33 +6688,33 @@ msgstr ""
 msgid "Play video to add layer."
 msgstr ""
 
-#: pages/video-editor/VideoEditor.js:271
+#: pages/video-editor/VideoEditor.js:300
 msgid "Please select a form for the layer at timestamp:"
 msgid_plural "Please select a form for the layers at timestamps:"
 msgstr[0] ""
 msgstr[1] ""
 
-#: pages/video-editor/VideoEditor.js:435
+#: pages/video-editor/VideoEditor.js:464
 msgid "Video changes saved successfully"
 msgstr ""
 
-#: pages/video-editor/VideoEditor.js:465
+#: pages/video-editor/VideoEditor.js:494
 msgid "You can copy the block into one of the two options:"
 msgstr ""
 
-#: pages/video-editor/VideoEditor.js:467
+#: pages/video-editor/VideoEditor.js:496
 msgid "1. Insert as a block in the Block editor."
 msgstr ""
 
-#: pages/video-editor/VideoEditor.js:469
+#: pages/video-editor/VideoEditor.js:498
 msgid "2. Insert as HTML content in the Block editor."
 msgstr ""
 
-#: pages/video-editor/VideoEditor.js:481
+#: pages/video-editor/VideoEditor.js:510
 msgid "Copy Block"
 msgstr ""
 
-#: pages/video-editor/VideoEditor.js:492
+#: pages/video-editor/VideoEditor.js:521
 msgid "Preview"
 msgstr ""
 
