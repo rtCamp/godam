@@ -359,6 +359,23 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 		$should_verify = true;
 	}
 
+	if ( $skip_verification ) {
+		$rtgodam_user_data = is_array( $rtgodam_user_data ) ? $rtgodam_user_data : array();
+		$user_data         = isset( $rtgodam_user_data['user_data'] ) ? $rtgodam_user_data['user_data'] : array();
+		$user_data         = is_object( $user_data ) ? (array) $user_data : $user_data;
+		$user_data         = is_array( $user_data ) ? $user_data : array();
+
+		$user_data['masked_api_key'] = rtgodam_mask_string( $api_key );
+
+		$rtgodam_user_data['currentUserId']  = get_current_user_id();
+		$rtgodam_user_data['valid_api_key']  = false;
+		$rtgodam_user_data['api_key_status'] = \RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED;
+		$rtgodam_user_data['user_data']      = $user_data;
+		$rtgodam_user_data['timestamp']      = time();
+
+		update_option( 'rtgodam_user_data', $rtgodam_user_data );
+	}
+
 	if ( $should_verify ) {
 		// Verify the user's API Key.
 		$result = rtgodam_verify_api_key( $api_key );

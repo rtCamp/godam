@@ -495,6 +495,7 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		if ( $has_existing_key && ( Api_Key_Status::VALID === $previous_status ) ) {
 			// Previously saved key is expired - preserve it and mark as expired. This function will also check if it is already expired.
 			rtgodam_mark_api_key_expired();
+			delete_option( 'rtgodam_user_data' );
 			// Key is already in DB, no need to save again.
 			return new \WP_Error( 'expired_api_key', $error_message, array( 'status' => 400 ) );
 		}
