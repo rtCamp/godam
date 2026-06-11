@@ -1,5 +1,9 @@
 # Changelog #
 
+## v1.12.0 (June 11, 2026) ##
+
+- Feat: Added Layer Analytics feature to track how viewers interact with video layers (CTAs, hotspots, forms, and more), with per-layer engagement and conversion metrics in the analytics dashboard.
+
 ## v1.11.2 (June 8, 2026) ##
 
 - Feat: Added a setting to disable GoDAM's media library features, allowing GoDAM to coexist with another media or DAM plugin without changing the WordPress media library.

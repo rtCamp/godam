@@ -1,0 +1,243 @@
+/**
+ * External dependencies
+ */
+import React from 'react';
+
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
+ * Internal dependencies
+ */
+import {
+	LAYER_TYPE_BY_ID,
+	subHotspotColor,
+	withAlpha,
+} from '../constants/layerTypes';
+import InfoTooltip from './InfoTooltip';
+
+/**
+ * SubHotspotRail
+ *
+ * Left rail in the detail panel for Hotspot / Woo layers. Pinned "All
+ * Products (Cumulative)" row at the top, then per-sub-hotspot rows sorted
+ * by conversion-rate descending. Selecting a row swaps the funnel on the
+ * right; the parent layer's color border on the detail panel doesn't
+ * change — it identifies the layer, not the selected sub.
+ *
+ * For Woo layers, sub-rows are products with names + prices ("Red Hoodie
+ * 24%"). For plain Hotspot layers, sub-rows usually lack meaningful names
+ * — the fallback shows "Hotspot N" with a sequential color dot.
+ *
+ * @param {Object}      props
+ * @param {Object}      props.parent        The parent layer entry.
+ * @param {string|null} props.selectedSubId Currently selected sub-hotspot id, or null for aggregate.
+ * @param {Function}    props.onSelect      (subId | null) => void — called when a row is clicked.
+ * @return {JSX.Element|null} The rail, or null if the parent has no sub-hotspots.
+ */
+const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
+	const meta = LAYER_TYPE_BY_ID[ parent?.layer_type ];
+
+	if ( ! meta || ! meta.hasSubHotspots ) {
+		return null;
+	}
+
+	const subs = Array.isArray( parent.sub_hotspots ) ? parent.sub_hotspots : [];
+
+	const aggregateActive = ! selectedSubId;
+
+	return (
+		<aside
+			className="flex flex-col rounded-xl border border-zinc-200 bg-white overflow-hidden"
+			style={ { minHeight: 280 } }
+		>
+			<header className="px-4 py-3 border-b border-zinc-200 flex items-center justify-between gap-2">
+				<div className="flex items-center gap-2 min-w-0">
+					<h4 className="text-sm font-semibold text-zinc-800 m-0">
+						{ parent.layer_type === 'woo'
+							? __( 'Products in this layer', 'godam' )
+							: __( 'Hotspots in this layer', 'godam' ) }
+					</h4>
+					<InfoTooltip
+						text={
+							parent.layer_type === 'woo'
+								? __(
+									'Each row is one product hotspot inside this layer. Select a row to see its individual funnel; "All Products (Cumulative)" counts sessions that converted on any product.',
+									'godam',
+								)
+								: __(
+									'Each row is one hotspot inside this layer. Select a row to see its individual funnel; "All Hotspots (Cumulative)" counts sessions that converted on any hotspot.',
+									'godam',
+								)
+						}
+					/>
+				</div>
+				<div className="flex items-center gap-1 flex-shrink-0">
+					<span className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
+						{ __( 'Conversion', 'godam' ) }
+					</span>
+					<InfoTooltip
+						size={ 13 }
+						text={
+							parent.layer_type === 'woo'
+								? __(
+									'Share of sessions that saw the product and converted — clicked through to it or added it to the cart. Each session counts once, so this never exceeds 100%.',
+									'godam',
+								)
+								: __(
+									'Share of sessions that saw the hotspot and clicked it. Each session counts once, so this never exceeds 100%.',
+									'godam',
+								)
+						}
+					/>
+				</div>
+			</header>
+
+			<ul className="m-0 p-0 list-none overflow-y-auto" style={ { maxHeight: 340 } }>
+				{ /* "All Products (Cumulative)" pinned at the top. The InfoTooltip
+				     renders its own <button>, so it sits as a sibling of the row
+				     button (button-in-button is invalid HTML). */ }
+				<li
+					className="flex items-center border-b border-zinc-100"
+					style={ {
+						background: aggregateActive
+							? withAlpha( meta.color, 0.08 )
+							: 'transparent',
+					} }
+				>
+					<button
+						type="button"
+						onClick={ () => onSelect( null ) }
+						className="flex-1 flex items-center justify-between gap-2 px-4 py-3 text-left cursor-pointer bg-transparent border-0"
+					>
+						<span
+							className="text-sm font-semibold"
+							style={ {
+								color: aggregateActive ? meta.color : '#1F2937',
+							} }
+						>
+							{ parent.layer_type === 'woo'
+								? __( 'All Products (Cumulative)', 'godam' )
+								: __( 'All Hotspots (Cumulative)', 'godam' ) }
+						</span>
+						<span
+							className="text-sm font-semibold tabular-nums"
+							style={ {
+								color: aggregateActive ? meta.color : '#475569',
+							} }
+						>
+							{ ( Number( parent.conversion_rate ) || 0 ).toFixed( 1 ) }%
+						</span>
+					</button>
+					<span className="pr-4 flex items-center">
+						<InfoTooltip
+							size={ 13 }
+							text={
+								parent.layer_type === 'woo'
+									? __(
+										'A session counts as converted here when it converts on any one product in this layer — clicks it or adds it to the cart. Each session counts once, so this can read higher than every single product\'s rate.',
+										'godam',
+									)
+									: __(
+										'A session counts as converted here when it clicks any one hotspot in this layer. Each session counts once, so this can read higher than every single hotspot\'s rate.',
+										'godam',
+									)
+							}
+						/>
+					</span>
+				</li>
+
+				{ subs.map( ( sub, idx ) => {
+					const active = selectedSubId === sub.id;
+					const dotColor = subHotspotColor( meta.color, idx );
+					// Sub-hotspot active = present in the parent's
+					// published config. Removed subs render inline with
+					// muted styling + a "Removed" pill so the marketer
+					// can still see their historical performance without
+					// the row competing visually with live sub-hotspots.
+					const subIsActive = sub.isActive !== false;
+					return (
+						<li key={ sub.id }>
+							<button
+								type="button"
+								onClick={ () => onSelect( sub.id ) }
+								className="w-full flex items-center justify-between gap-2 px-4 py-2.5 text-left cursor-pointer"
+								style={ {
+									background: active
+										? withAlpha( meta.color, 0.08 )
+										: 'transparent',
+									transition: 'background-color 140ms ease-out',
+									opacity: subIsActive ? 1 : 0.55,
+								} }
+							>
+								<span className="flex items-center gap-2 min-w-0">
+									{ sub.product_image ? (
+										<img
+											src={ sub.product_image }
+											alt=""
+											width={ 28 }
+											height={ 28 }
+											loading="lazy"
+											style={ {
+												width: 28,
+												height: 28,
+												borderRadius: 6,
+												objectFit: 'cover',
+												background: '#F4F4F5',
+												flexShrink: 0,
+												border: `1px solid ${ withAlpha( meta.color, 0.18 ) }`,
+												filter: subIsActive ? 'none' : 'grayscale(60%)',
+											} }
+										/>
+									) : (
+										<span
+											aria-hidden="true"
+											style={ {
+												width: 8,
+												height: 8,
+												borderRadius: '50%',
+												background: subIsActive ? dotColor : '#94A3B8',
+												flexShrink: 0,
+											} }
+										/>
+									) }
+									<span
+										className="text-sm text-zinc-700 truncate"
+										style={ {
+											textDecoration: subIsActive ? 'none' : 'line-through',
+										} }
+									>
+										{ sub.name }
+									</span>
+									{ ! subIsActive && (
+										<span
+											className="text-[10px] font-medium uppercase tracking-wide px-1.5 py-0.5 rounded shrink-0"
+											style={ {
+												color: '#475569',
+												background: '#E2E8F0',
+											} }
+										>
+											{ __( 'Removed', 'godam' ) }
+										</span>
+									) }
+								</span>
+								<span
+									className="text-sm font-medium tabular-nums shrink-0"
+									style={ {
+										color: active ? meta.color : '#475569',
+									} }
+								>
+									{ ( Number( sub.conversion_rate ) || 0 ).toFixed( 1 ) }%
+								</span>
+							</button>
+						</li>
+					);
+				} ) }
+			</ul>
+		</aside>
+	);
+};
+
+export default SubHotspotRail;
