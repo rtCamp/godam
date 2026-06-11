@@ -32,6 +32,12 @@ Thank you for your interest in contributing to GoDAM! This document provides gui
 		- [Commit Messages](#commit-messages)
 			- [Types](#types)
 			- [Examples](#examples)
+	- [Running Tests](#running-tests)
+		- [Tier 1 — Fast PHP unit tests (Brain Monkey)](#tier-1--fast-php-unit-tests-brain-monkey)
+		- [Tier 2 — PHP integration tests (wp-phpunit)](#tier-2--php-integration-tests-wp-phpunit)
+		- [JavaScript tests (Jest + Testing Library)](#javascript-tests-jest--testing-library)
+		- [Running everything](#running-everything)
+		- [Coverage reports](#coverage-reports)
 
 
 ## About GoDAM
@@ -290,3 +296,59 @@ perf(media): optimize thumbnail generation
 test(unit): add video migration tests
 chore(deps): update action-scheduler
 ```
+
+## Running Tests
+
+GoDAM ships with two PHP test tiers and a Jest suite for the React/block layer.
+
+### Tier 1 — Fast PHP unit tests (Brain Monkey)
+
+No WordPress required. Runs on the host PHP CLI.
+
+```bash
+composer test:unit
+```
+
+These tests live in `tests/phpunit/unit/`, extend `GoDAM\Tests\TestCase`, and use Brain Monkey to fake WordPress functions. Target: < 5 s total runtime.
+
+### Tier 2 — PHP integration tests (wp-phpunit)
+
+Boots WordPress through `wp-phpunit`. First-time setup requires a MySQL server and the WordPress test suite:
+
+```bash
+# One-time setup (uses ~/mysql; adjust the host/user/password as needed):
+bash bin/install-wp-tests.sh wordpress_test root '' 127.0.0.1 latest
+
+# Then:
+composer test:integration
+```
+
+These tests live in `tests/phpunit/integration/`, extend `GoDAM\Tests\IntegrationTestCase`, and use the standard `WP_UnitTestCase` factories.
+
+### JavaScript tests (Jest + Testing Library)
+
+Block and React component tests:
+
+```bash
+npm run test:js                # one-shot
+npm run test:js:watch          # watch mode
+npm run test:js:coverage       # with coverage report
+```
+
+JS tests live alongside source (`assets/src/**/__tests__/*.test.js`) or under `tests/js/`. The Jest preset is `@wordpress/jest-preset-default` plus `@testing-library/jest-dom` matchers.
+
+### Running everything
+
+```bash
+composer test       # PHP unit + integration
+npm test            # PHP + JS in parallel
+```
+
+### Coverage reports
+
+```bash
+composer test:coverage             # writes coverage/php/ HTML
+npm run test:js:coverage           # writes coverage/js/
+```
+
+Coverage uploads to Codecov in CI; see `.codecov.yml` for the flag layout and `docs/superpowers/plans/2026-05-22-unit-testing-setup.md` for the architectural rationale and per-section coverage targets.

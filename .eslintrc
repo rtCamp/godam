@@ -24,7 +24,9 @@
 	  ],
 	  "rules": {
 		// Add Rules for Jest here
+		"jest/unbound-method": "off",
+		"jest/prefer-expect-assertions": "off",
+		"@wordpress/dependency-group": "off"
 	  }
 	}]
   }
-  

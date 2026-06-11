@@ -4,3 +4,7 @@ node_modules
 vendor/
 assets/build/
 
+# Test artifacts
+.phpunit.result.cache
+coverage/
+
