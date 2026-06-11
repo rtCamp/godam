@@ -93,6 +93,13 @@ const LayerDetailPanel = ( { parent, attachmentID } ) => {
 		return null;
 	}
 
+	// Auto-generated names already encode the position ("<Type> layer at
+	// <t>s"), so a separate "Appeared at X:XX" line just repeats it. Show that
+	// line only for custom-named layers, where the name carries no timestamp.
+	// resolveLayerName emits the " layer at <t>s" suffix in English regardless
+	// of locale, so this literal match is locale-safe.
+	const nameEncodesTimestamp = / layer at \d+(\.\d+)?s$/.test( parent.name || '' );
+
 	// Resolve the active funnel data — parent aggregate by default, sub-hotspot
 	// when one is selected from the rail.
 	const activeSub = selectedSubId
@@ -135,12 +142,14 @@ const LayerDetailPanel = ( { parent, attachmentID } ) => {
 						<h3 className="text-base font-semibold text-zinc-900 m-0 truncate">
 							{ parent.name || __( 'Untitled layer', 'godam' ) }
 						</h3>
-						<p className="text-xs text-zinc-500 m-0 mt-0.5">
-							{ __( 'Appeared at', 'godam' ) }{ ' ' }
-							<span className="font-medium text-zinc-700 tabular-nums">
-								{ formatTimestamp( parent.timestamp ) }
-							</span>
-						</p>
+						{ ! nameEncodesTimestamp && (
+							<p className="text-xs text-zinc-500 m-0 mt-0.5">
+								{ __( 'Appeared at', 'godam' ) }{ ' ' }
+								<span className="font-medium text-zinc-700 tabular-nums">
+									{ formatTimestamp( parent.timestamp ) }
+								</span>
+							</p>
+						) }
 					</div>
 				</div>
 

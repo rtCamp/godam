@@ -123,8 +123,13 @@ const LayerTimelineStrip = ( {
 		<div className="pt-4 pb-2 overflow-x-auto">
 			{ /* Inner track keeps a usable minimum width so ticks/axis/markers
 			    stay aligned and legible; the wrapper scrolls horizontally on
-			    narrow (mobile) viewports rather than letting markers collide. */ }
-			<div className="px-6" style={ { minWidth: 560 } }>
+			    narrow (mobile) viewports rather than letting markers collide.
+			    Horizontal padding is a gutter (≥ half a marker label) so a
+			    marker near t=0 or t=end — translateX(-50%) centred on its
+			    position — can overhang with its name without being clipped by
+			    the overflow-x-auto wrapper. Ticks and markers share this padded
+			    box, so they stay aligned. */ }
+			<div style={ { minWidth: 560, paddingLeft: 56, paddingRight: 56 } }>
 				{ /* Tick label row */ }
 				<div className="relative h-5">
 					{ ticks.map( ( tick, idx ) => {

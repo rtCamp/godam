@@ -11,6 +11,11 @@ import { Tooltip, Icon } from '@wordpress/components';
 import { info } from '@wordpress/icons';
 
 /**
+ * Internal dependencies
+ */
+import './InfoTooltip.scss';
+
+/**
  * Info-icon trigger paired with the WordPress `<Tooltip>` popover.
  *
  * `<Tooltip>` requires its child to be a focusable element so the popover
@@ -31,7 +36,14 @@ import { info } from '@wordpress/icons';
  */
 const InfoTooltip = ( { text, size = 14, ariaLabel } ) => {
 	return (
-		<Tooltip text={ text }>
+		// `placement="bottom"` drops the popover below the icon (like the
+		// dashboard's standard-metric tooltips) instead of over the content
+		// above. `className` lands on the `.components-tooltip` popover so the
+		// `.godam-readable-tooltip` rule (analytics index.scss) can cap its
+		// width and let long copy wrap — the default WP tooltip renders on a
+		// single unreadable line. The popover still portals to <body>, so it's
+		// never clipped inside the timeline's overflow-hidden cards.
+		<Tooltip text={ text } placement="bottom" className="godam-readable-tooltip">
 			<button
 				type="button"
 				aria-label={ ariaLabel || __( 'Info', 'godam' ) }
