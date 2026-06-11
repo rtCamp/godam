@@ -4,6 +4,11 @@
 import { useMemo } from 'react';
 
 /**
+ * WordPress dependencies
+ */
+import { __, sprintf } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import {
@@ -164,12 +169,34 @@ const TRACKER_AUTO_NAME_RE = new RegExp(
 );
 
 /**
+ * Whether a server-delivered layer_name is missing, a bare UUID, or a
+ * tracker-side auto-generated name — i.e. anything we should replace with
+ * a locally generated (localized) fallback. Also drives the `name_is_auto`
+ * flag on parent entries, which the detail panel uses to suppress the
+ * redundant "Appeared at" line (auto names already encode the timestamp).
+ *
+ * @param {string} rawName Server-delivered layer_name.
+ * @return {boolean} True when the name should be auto-generated locally.
+ */
+export function isAutoOrMissingName( rawName ) {
+	const trimmed = ( rawName || '' ).toString().trim();
+	return (
+		! trimmed ||
+		UUID_SHAPE_RE.test( trimmed ) ||
+		TRACKER_AUTO_NAME_RE.test( trimmed )
+	);
+}
+
+/**
  * Resolve the display name for a layer at render time.
  *
  * Custom name (from the future editor naming UI) wins whenever the server
  * delivered a non-empty, non-UUID, non-auto-pattern value. Otherwise we
- * generate `<TypeLabel> layer at <t>s` locally — using the localized
- * `meta.label` so the admin sees the layer type in its current language.
+ * generate a localized "<TypeLabel> layer at <t>s" fallback — both the
+ * type label and the surrounding template go through i18n, so the admin
+ * sees the whole name in their current language. (The tracker's wire-side
+ * auto names stay English by design — TRACKER_AUTO_NAME_RE catches those
+ * and we regenerate here.)
  *
  * For form layers with a known `form_type`, the type label is replaced by
  * the form-integration brand name (e.g. "WPForms layer at 2.59s"), so
@@ -183,19 +210,20 @@ const TRACKER_AUTO_NAME_RE = new RegExp(
  */
 function resolveLayerName( rawName, meta, timestamp, formType ) {
 	const trimmed = ( rawName || '' ).toString().trim();
-	const isAutoOrMissing =
-		! trimmed ||
-		UUID_SHAPE_RE.test( trimmed ) ||
-		TRACKER_AUTO_NAME_RE.test( trimmed );
-	if ( ! isAutoOrMissing ) {
+	if ( ! isAutoOrMissingName( trimmed ) ) {
 		return trimmed;
 	}
-	let label = meta?.label || 'Layer';
+	let label = meta?.label || __( 'Layer', 'godam' );
 	if ( meta?.id === 'form' && formType && FORM_TYPE_LABELS[ formType ] ) {
 		label = FORM_TYPE_LABELS[ formType ];
 	}
 	const t = Number.isFinite( Number( timestamp ) ) ? Number( timestamp ) : 0;
-	return `${ label } layer at ${ t.toFixed( 2 ) }s`;
+	return sprintf(
+		/* translators: 1: layer type label (e.g. "CTA"), 2: position in the video in seconds. */
+		__( '%1$s layer at %2$ss', 'godam' ),
+		label,
+		t.toFixed( 2 ),
+	);
 }
 
 /**
@@ -491,6 +519,11 @@ export function groupRows( rows, layerType, configIndex ) {
 		parents.push( {
 			id: parentId,
 			name: parentName,
+			// True when `name` was generated locally (localized "<Type> layer
+			// at <t>s") rather than a custom name. The detail panel keys its
+			// "Appeared at" suppression on this — a locale-proof flag instead
+			// of pattern-matching the (now translated) name.
+			name_is_auto: isAutoOrMissingName( parentRawName ),
 			layer_type: layerType,
 			form_type: bucket.formType || '',
 			timestamp: parentTimestamp,

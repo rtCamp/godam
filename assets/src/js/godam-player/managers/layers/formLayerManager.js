@@ -74,7 +74,7 @@ export default class FormLayerManager {
 	}
 
 	/**
-	 * Emit a layer interaction event into the localStorage buffer.
+	 * Emit a layer interaction event into the sessionStorage buffer.
 	 *
 	 * No-op when `window.GoDAM.addLayerInteraction` isn't loaded yet (the
 	 * shared analytics bundle ships separately and may not be present on

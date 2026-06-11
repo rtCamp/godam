@@ -90,7 +90,7 @@ export default class HotspotLayerManager {
 	}
 
 	/**
-	 * Emit a sub-hotspot interaction event into the localStorage buffer.
+	 * Emit a sub-hotspot interaction event into the sessionStorage buffer.
 	 *
 	 * Sub-hotspots emit engagement events only — `hovered` and `clicked`.
 	 * Parent-level `viewed` is the layer-wide visibility signal and is

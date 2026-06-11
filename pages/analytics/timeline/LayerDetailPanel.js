@@ -96,9 +96,9 @@ const LayerDetailPanel = ( { parent, attachmentID } ) => {
 	// Auto-generated names already encode the position ("<Type> layer at
 	// <t>s"), so a separate "Appeared at X:XX" line just repeats it. Show that
 	// line only for custom-named layers, where the name carries no timestamp.
-	// resolveLayerName emits the " layer at <t>s" suffix in English regardless
-	// of locale, so this literal match is locale-safe.
-	const nameEncodesTimestamp = / layer at \d+(\.\d+)?s$/.test( parent.name || '' );
+	// `name_is_auto` is set by the data hook when it generated the (localized)
+	// fallback name — a locale-proof flag, unlike matching the name text.
+	const nameEncodesTimestamp = parent.name_is_auto === true;
 
 	// Resolve the active funnel data — parent aggregate by default, sub-hotspot
 	// when one is selected from the rail.
