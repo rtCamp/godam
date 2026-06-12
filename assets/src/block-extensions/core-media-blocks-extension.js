@@ -83,6 +83,6 @@ const withVirtualAttachmentHandler = createHigherOrderComponent(
  */
 addFilter(
 	'editor.BlockEdit',
-	'godam/core-image-virtual-attachment',
+	'godam/core-media-virtual-attachment',
 	withVirtualAttachmentHandler,
 );
