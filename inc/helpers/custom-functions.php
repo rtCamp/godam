@@ -358,6 +358,7 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 		$should_verify = true;
 	}
 
+	// If we're skipping verification due to expired key past grace period, ensure the cache reflects that status.
 	if ( $skip_verification ) {
 		$rtgodam_user_data = is_array( $rtgodam_user_data ) ? $rtgodam_user_data : array();
 
@@ -379,6 +380,9 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 		$rtgodam_user_data['valid_api_key']  = false;
 		$rtgodam_user_data['api_key_status'] = \RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED;
 		$rtgodam_user_data['user_data']      = $user_data;
+
+		// Clear any stale usage error — it is irrelevant once the key is expired.
+		unset( $rtgodam_user_data['storageBandwidthError'] );
 
 		if ( $cache_needs_correction ) {
 			$rtgodam_user_data['timestamp'] = time();

@@ -495,6 +495,14 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		if ( $has_existing_key && ( Api_Key_Status::VALID === $previous_status ) ) {
 			// Previously saved key is expired - preserve it and mark as expired. This function will also check if it is already expired.
 			rtgodam_mark_api_key_expired();
+
+			/*
+			 * Purge the stale "valid" cache so it is rebuilt with corrected data.
+			 * Automatic path (via rtgodam_get_user_data): cache is immediately rewritten
+			 * in the same request with valid_api_key=false and api_key_status=EXPIRED.
+			 * Manual settings path (class-settings.php): caller returns early on this
+			 * WP_Error, so the delete sticks until the next page load.
+			 */
 			delete_option( 'rtgodam_user_data' );
 			// Key is already in DB, no need to save again.
 			return new \WP_Error( 'expired_api_key', $error_message, array( 'status' => 400 ) );
