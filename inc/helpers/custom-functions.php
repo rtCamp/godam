@@ -114,7 +114,6 @@ function rtgodam_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT, 
 
 		default:
 			return null;
-
 	}
 
 	// phpcs:enable WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing, WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___COOKIE
@@ -361,9 +360,18 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 
 	if ( $skip_verification ) {
 		$rtgodam_user_data = is_array( $rtgodam_user_data ) ? $rtgodam_user_data : array();
-		$user_data         = isset( $rtgodam_user_data['user_data'] ) ? $rtgodam_user_data['user_data'] : array();
-		$user_data         = is_object( $user_data ) ? (array) $user_data : $user_data;
-		$user_data         = is_array( $user_data ) ? $user_data : array();
+
+		// Determine whether the DB needs correcting before we overwrite the in-memory array.
+		// Once the cache already reflects EXPIRED + valid_api_key=false, subsequent requests
+		// must not write to wp_options again — the timestamp would always differ and cause a
+		// real DB write on every admin page load for the entire post-grace lifetime of the key.
+		$cache_needs_correction =
+			( $rtgodam_user_data['api_key_status'] ?? null ) !== \RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED ||
+			false !== ( $rtgodam_user_data['valid_api_key'] ?? null );
+
+		$user_data = isset( $rtgodam_user_data['user_data'] ) ? $rtgodam_user_data['user_data'] : array();
+		$user_data = is_object( $user_data ) ? (array) $user_data : $user_data;
+		$user_data = is_array( $user_data ) ? $user_data : array();
 
 		$user_data['masked_api_key'] = rtgodam_mask_string( $api_key );
 
@@ -371,9 +379,11 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 		$rtgodam_user_data['valid_api_key']  = false;
 		$rtgodam_user_data['api_key_status'] = \RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED;
 		$rtgodam_user_data['user_data']      = $user_data;
-		$rtgodam_user_data['timestamp']      = time();
 
-		update_option( 'rtgodam_user_data', $rtgodam_user_data );
+		if ( $cache_needs_correction ) {
+			$rtgodam_user_data['timestamp'] = time();
+			update_option( 'rtgodam_user_data', $rtgodam_user_data );
+		}
 	}
 
 	if ( $should_verify ) {
