@@ -78,8 +78,8 @@ import { stripHtmlTags } from '../../blocks/godam-player/utils/index.js';
 		const $input = $container.find( '.video_selector_field' );
 
 		const frame = wp.media( {
-			title: 'Select or Upload Video',
-			button: { text: 'Select Video' },
+			title: __( 'Select or Upload Video', 'godam' ),
+			button: { text: __( 'Select Video', 'godam' ) },
 			library: { type: 'video' },
 			multiple: false,
 		} );
@@ -107,7 +107,9 @@ import { stripHtmlTags } from '../../blocks/godam-player/utils/index.js';
 			const $buttonsWrapper = $container.find( '.video_selector-buttons-wrapper' );
 			if ( 0 === $buttonsWrapper.find( '.video-selector-remove' ).length ) {
 				$buttonsWrapper.append(
-					'<button type="button" class="button video-selector-remove" data-param="' + paramName + '" style="margin-left: 5px;">Remove</button>',
+					'<button type="button" class="button video-selector-remove" data-param="' + paramName + '" style="margin-left: 5px;">' +
+					__( 'Remove', 'godam' ) +
+					'</button>',
 				);
 			}
 		} );
@@ -131,8 +133,7 @@ import { stripHtmlTags } from '../../blocks/godam-player/utils/index.js';
 		$input.val( '' ).trigger( 'change' );
 		$container.find( '.video-selector-preview' ).remove();
 		$button.remove();
-		$selectButton.text( 'Select video' );
-	}
+		$selectButton.text( __( 'Select video', 'godam' ) );
 
 	/**
 	 * Watch for video-selector buttons added dynamically by WPBakery's

@@ -269,11 +269,12 @@ class WPBakery_Gallery_Shortcode_V1_To_V2 {
 	 * The preg_replace_callback handler — rewrite a single shortcode match.
 	 *
 	 * Capture group indices from get_shortcode_regex():
+	 *   1 = second opening bracket for escaping shortcodes ("[[tag]]")
 	 *   2 = tag name
 	 *   3 = attribute string (with leading space)
-	 *   5 = self-closing slash or empty
-	 *   6 = enclosed content (we re-emit it as-is)
-	 *   7 = closing tag (we re-emit it as-is)
+	 *   4 = self-closing slash or empty
+	 *   5 = enclosed content (we re-emit it as-is)
+	 *   6 = second closing bracket for escaping shortcodes
 	 *
 	 * @since n.e.x.t
 	 *
@@ -282,8 +283,12 @@ class WPBakery_Gallery_Shortcode_V1_To_V2 {
 	 */
 	private static function rewrite_match( array $identical ) {
 		$original = $identical[0];
-		$attrs    = isset( $identical[3] ) ? shortcode_parse_atts( $identical[3] ) : array();
 
+		// Preserve WordPress's shortcode escaping: [[tag]] should remain escaped.
+		if ( isset( $identical[1], $identical[6] ) && '[' === $identical[1] && ']' === $identical[6] ) {
+			return $original;
+		}
+		$attrs    = isset( $identical[3] ) ? shortcode_parse_atts( $identical[3] ) : array();
 		if ( ! is_array( $attrs ) ) {
 			$attrs = array();
 		}
