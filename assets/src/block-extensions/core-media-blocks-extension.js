@@ -37,16 +37,16 @@ const withVirtualAttachmentHandler = createHigherOrderComponent(
 
 			const singleIdAttr = SINGLE_ID_BLOCKS[ name ];
 
-			// Skip blocks that don't use a single media attachment ID.
-			if ( ! singleIdAttr ) {
-				return <BlockEdit { ...props } />;
-			}
-
 			// Current media ID (primitive — safe as effect dep).
-			const mediaId = attributes[ singleIdAttr ];
+			const mediaId = singleIdAttr ? attributes[ singleIdAttr ] : undefined;
 
 			// Re-registers when mediaId changes so the closure captures the new value.
 			useEffect( () => {
+				// Skip blocks that don't use a single media attachment ID.
+				if ( ! singleIdAttr ) {
+					return;
+				}
+
 				const handleVirtualAttachmentCreated = ( event ) => {
 					const { attachment, virtualMediaId } = event.detail || {};
 
@@ -58,7 +58,6 @@ const withVirtualAttachmentHandler = createHigherOrderComponent(
 						setAttributes( { [ singleIdAttr ]: attachment.id } );
 					}
 				};
-
 				document.addEventListener(
 					'godam-virtual-attachment-created',
 					handleVirtualAttachmentCreated,
