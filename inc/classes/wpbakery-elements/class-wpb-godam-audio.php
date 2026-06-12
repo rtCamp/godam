@@ -63,7 +63,7 @@ class WPB_GoDAM_Audio {
 
 		vc_map(
 			array(
-				'name'        => esc_html__( 'GoDAM Audio', 'godam' ),
+				'name'        => esc_html__( 'Audio', 'godam' ),
 				'base'        => 'godam_audio',
 				'category'    => esc_html__( 'GoDAM', 'godam' ),
 				'description' => esc_html__( 'Embed audio from GoDAM Media Library', 'godam' ),

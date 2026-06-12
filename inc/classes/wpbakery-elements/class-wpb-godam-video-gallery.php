@@ -340,7 +340,7 @@ class WPB_GoDAM_Video_Gallery {
 
 		vc_map(
 			array(
-				'name'        => esc_html__( 'GoDAM Video Gallery', 'godam' ),
+				'name'        => esc_html__( 'Video Gallery', 'godam' ),
 				'base'        => 'godam_video_gallery',
 				'category'    => esc_html__( 'GoDAM', 'godam' ),
 				'description' => esc_html__( 'Embed a video gallery from the GoDAM media library.', 'godam' ),

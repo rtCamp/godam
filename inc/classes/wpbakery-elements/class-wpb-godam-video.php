@@ -339,7 +339,7 @@ class WPB_GoDAM_Video {
 
 		vc_map(
 			array(
-				'name'        => esc_html__( 'GoDAM Video', 'godam' ),
+				'name'        => esc_html__( 'Video', 'godam' ),
 				'base'        => 'godam_video',
 				'category'    => esc_html__( 'GoDAM', 'godam' ),
 				'description' => esc_html__( 'Embed video from GoDAM Media Library', 'godam' ),
