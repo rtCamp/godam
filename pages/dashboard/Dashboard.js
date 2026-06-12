@@ -7,7 +7,7 @@ import React, { useEffect, useState, useRef } from 'react';
  * WordPress dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { Icon } from '@wordpress/components';
+import { Icon, ToggleControl } from '@wordpress/components';
 import { info } from '@wordpress/icons';
 
 /**
@@ -162,6 +162,7 @@ const getSortedSections = () =>
 
 const Dashboard = () => {
 	const [ topVideosPage, setTopVideosPage ] = useState( 1 );
+	const [ showDeletedMedia, setShowDeletedMedia ] = useState( false );
 	const [ extendedSections, setExtendedSections ] = useState( getSortedSections );
 
 	// Re-read the registry whenever an add-on registers a section after mount.
@@ -195,6 +196,12 @@ const Dashboard = () => {
 
 	const topVideosData = topVideosResponse?.videos || [];
 	const totalTopVideosPages = topVideosResponse?.totalPages || 1;
+
+	// Videos whose attachment was deleted from the media library still have
+	// analytics rows; hide them unless the user opts in via the toggle.
+	const visibleTopVideos = showDeletedMedia
+		? topVideosData
+		: topVideosData.filter( ( item ) => item.exists !== false );
 
 	const showNewYearSaleBanner = window.videoData?.showNewYearSaleBanner;
 	const shouldShowUpgradeMessage =
@@ -270,7 +277,7 @@ const Dashboard = () => {
 			'Conversion Rate',
 		];
 
-		const rows = topVideosData?.map( ( item ) => {
+		const rows = visibleTopVideos?.map( ( item ) => {
 			return [
 				item.title || item.video_id,
 				`ID: ${ item.video_id }`,
@@ -537,10 +544,19 @@ const Dashboard = () => {
 				<div className="top-media-container">
 					<div className="flex justify-between pt-4">
 						<h2>{ __( 'Top Videos', 'godam' ) }</h2>
-						<button onClick={ handleExportCSV } className="export-button">
-							<img src={ ExportBtn } alt="Export" className="export-icon" />
-							{ __( 'Export', 'godam' ) }
-						</button>
+						<div className="flex items-center gap-6">
+							<ToggleControl
+								__nextHasNoMarginBottom
+								className="godam-toggle"
+								label={ __( 'Deleted Media', 'godam' ) }
+								checked={ showDeletedMedia }
+								onChange={ setShowDeletedMedia }
+							/>
+							<button onClick={ handleExportCSV } className="export-button">
+								<img src={ ExportBtn } alt="Export" className="export-icon" />
+								{ __( 'Export', 'godam' ) }
+							</button>
+						</div>
 					</div>
 					<div className="table-container overflow-x-auto">
 						<table className="w-full">
@@ -565,7 +581,7 @@ const Dashboard = () => {
 										</td>
 									</tr>
 								) : (
-									topVideosData?.map( ( item, index ) => (
+									visibleTopVideos?.map( ( item, index ) => (
 										<tr key={ index }>
 											<td>
 												<div className="video-info">
@@ -638,7 +654,7 @@ const Dashboard = () => {
 										</tr>
 									) )
 								) }
-								{ topVideosData.length === 0 && (
+								{ ! isTopVideosFetching && visibleTopVideos.length === 0 && (
 									<tr>
 										<td colSpan="7" className="text-center py-4 text-lg">
 											{ __( 'No videos found.', 'godam' ) }
