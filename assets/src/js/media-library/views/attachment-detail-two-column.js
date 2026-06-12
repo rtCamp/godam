@@ -8,7 +8,7 @@ import videojs from 'video.js';
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -33,6 +33,8 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * Cleans up event listeners and player instances.
 	 */
 	dispose() {
+		this.closeManageVersionsModal();
+
 		// Clean up native player observer timeout
 		if ( this._nativeObserverTimeout ) {
 			clearTimeout( this._nativeObserverTimeout );
@@ -237,17 +239,29 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			} );
 	},
 
-	showGodamSnackbar( message ) {
+	showGodamSnackbar( message, type = 'error' ) {
 		let snackbar = document.getElementById( 'godam-snackbar' );
 		if ( ! snackbar ) {
 			snackbar = document.createElement( 'div' );
 			snackbar.id = 'godam-snackbar';
+			snackbar.className = 'godam-snackbar';
 			document.body.appendChild( snackbar );
 		}
+
+		const allowedTypes = [ 'success', 'error' ];
+		const variant = allowedTypes.includes( type ) ? type : 'error';
+
 		snackbar.textContent = message;
-		snackbar.className = 'show';
-		setTimeout( () => {
-			snackbar.className = snackbar.className.replace( 'show', '' );
+		snackbar.className = `godam-snackbar godam-snackbar-${ variant } show`;
+
+		if ( this._snackbarTimeout ) {
+			clearTimeout( this._snackbarTimeout );
+			this._snackbarTimeout = null;
+		}
+
+		this._snackbarTimeout = setTimeout( () => {
+			snackbar.classList.remove( 'show' );
+			this._snackbarTimeout = null;
 		}, 3000 ); // 3 seconds
 	},
 
@@ -738,6 +752,695 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	},
 
 	/**
+	 * Renders Manage Versions action for all media types.
+	 *
+	 * If .attachment-video-actions exists, append Manage Versions there.
+	 * Otherwise, append it inside a dedicated .manage-versions-container.
+	 */
+	renderManageVersionsAction() {
+		const actionsEl = this.$el.find( '.attachment-actions' );
+
+		if ( ! actionsEl.length ) {
+			return;
+		}
+
+		const manageVersions = `<a href="#" class="button button-secondary manage-versions-button" id="rtgodam-manage-versions">${ __( 'Manage Versions', 'godam' ) }</a>`;
+		const videoActionsEl = actionsEl.find( '.attachment-video-actions' ).first();
+
+		if ( videoActionsEl.length ) {
+			videoActionsEl.append( DOMPurify.sanitize( manageVersions ) );
+			this.setupManageVersionsAction();
+			return;
+		}
+
+		actionsEl.append( DOMPurify.sanitize( `<div class="manage-versions-container">${ manageVersions }</div>` ) );
+		this.setupManageVersionsAction();
+	},
+
+	/**
+	 * Sets up Manage Versions button interaction.
+	 */
+	setupManageVersionsAction() {
+		const $button = this.$el.find( '#rtgodam-manage-versions' );
+
+		$button.off( 'click' ).on( 'click', async ( event ) => {
+			event.preventDefault();
+			event.stopPropagation();
+			this.openManageVersionsModal( { isLoading: true } );
+
+			try {
+				this.mediaVersions = await this.fetchVersionsData();
+				this.openManageVersionsModal();
+			} catch {
+				this.closeManageVersionsModal();
+				this.showGodamSnackbar( __( 'Unable to fetch media versions.', 'godam' ) );
+			}
+		} );
+	},
+
+	/**
+	 * Fetches media versions data via ajax.
+	 *
+	 * @return {Promise<Object>} Manage versions API response.
+	 */
+	async fetchVersionsData() {
+		const attachmentId = this.model.get( 'id' );
+
+		if ( ! attachmentId ) {
+			throw new Error( 'Missing attachment id' );
+		}
+
+		const nonce = window?.easydamMediaLibrary?.nonce || '';
+
+		return new Promise( ( resolve, reject ) => {
+			window.wp.ajax.post( 'godam_get_media_versions', {
+				nonce,
+				attachment_id: String( attachmentId ),
+			} )
+				.done( ( data ) => resolve( data ) )
+				.fail( ( error ) => reject( new Error( error?.message || __( 'Failed to fetch versions.', 'godam' ) ) ) );
+		} );
+	},
+
+	/**
+	 * Switches active version for current media item.
+	 *
+	 * @param {number} versionNumber Version number to mark active.
+	 * @param {number} maxVersions   Maximum versions available.
+	 * @return {Promise<Object>} API response.
+	 */
+	async switchActiveVersion( versionNumber, maxVersions = 25 ) {
+		const attachmentId = this.model.get( 'id' );
+		const nonce = window?.easydamMediaLibrary?.nonce || '';
+
+		return new Promise( ( resolve, reject ) => {
+			window.wp.ajax.post( 'godam_switch_active_version', {
+				nonce,
+				attachment_id: String( attachmentId ),
+				version_number: String( versionNumber ),
+				max_versions: String( maxVersions ),
+			} )
+				.done( ( data ) => resolve( data ) )
+				.fail( ( error ) => reject( new Error( error?.message || __( 'Failed to switch active version.', 'godam' ) ) ) );
+		} );
+	},
+
+	/**
+	 * Deletes a media version.
+	 *
+	 * @param {number} versionNumber Version number to delete.
+	 * @return {Promise<Object>} API response.
+	 */
+	async deleteVersion( versionNumber ) {
+		const attachmentId = this.model.get( 'id' );
+		const nonce = window?.easydamMediaLibrary?.nonce || '';
+
+		return new Promise( ( resolve, reject ) => {
+			window.wp.ajax.post( 'godam_delete_version', {
+				nonce,
+				attachment_id: String( attachmentId ),
+				version_number: String( versionNumber ),
+			} )
+				.done( ( data ) => resolve( data ) )
+				.fail( ( error ) => reject( new Error( error?.message || __( 'Failed to delete version.', 'godam' ) ) ) );
+		} );
+	},
+
+	/**
+	 * Replaces media source and starts creation of a new version.
+	 *
+	 * @param {Object} selectedMedia Selected media object.
+	 * @return {Promise<Object>} API response.
+	 */
+	async replaceMediaVersion( selectedMedia ) {
+		const attachmentId = this.model.get( 'id' );
+		const nonce = window?.easydamMediaLibrary?.nonce || '';
+		const ajaxUrl =
+			window?.ajaxurl ||
+			window?.easydamMediaLibrary?.ajaxurl ||
+			`${ window.location.origin }/wp-admin/admin-ajax.php`;
+
+		const formData = new FormData();
+		formData.append( 'action', 'godam_replace_media_version' );
+		formData.append( 'nonce', nonce );
+		formData.append( 'attachment_id', String( attachmentId ) );
+		formData.append( 'version_attachment_id', String( selectedMedia?.id ) );
+		formData.append( 'version_attachment_url', selectedMedia?.url );
+
+		const response = await fetch( ajaxUrl, {
+			method: 'POST',
+			body: formData,
+			credentials: 'same-origin',
+			headers: {
+				'X-Requested-With': 'XMLHttpRequest',
+			},
+		} );
+
+		let payload = null;
+		try {
+			payload = await response.json();
+		} catch {
+			throw new Error( __( 'Failed to upload a new version.', 'godam' ) );
+		}
+
+		return payload.data;
+	},
+
+	/**
+	 * Finalizes a pending media URL replacement after a new version appears.
+	 *
+	 * @return {Promise<Object>} API response.
+	 */
+	async finalizePendingVersionReplace() {
+		const attachmentId = this.model.get( 'id' );
+		const nonce = window?.easydamMediaLibrary?.nonce || '';
+
+		return new Promise( ( resolve, reject ) => {
+			window.wp.ajax.post( 'godam_finalize_media_version_replace', {
+				nonce,
+				attachment_id: String( attachmentId ),
+			} )
+				.done( ( data ) => resolve( data ) )
+				.fail( ( error ) => reject( new Error( error?.message || __( 'Failed to finalize media version update.', 'godam' ) ) ) );
+		} );
+	},
+
+	/**
+	 * Refreshes current attachment model and library item from WP media API.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async refreshCurrentAttachmentInFrame() {
+		const attachmentId = Number( this.model?.get( 'id' ) || 0 );
+
+		if ( attachmentId < 1 || ! window?.wp?.media?.attachment ) {
+			return;
+		}
+
+		try {
+			const attachment = wp.media.attachment( attachmentId );
+			await attachment.fetch();
+
+			const selectedAttachmentElement = document.querySelector( `[data-id="${ attachmentId }"]` );
+
+			const newUrl = attachment.get( 'url' );
+
+			// Update File URL input field manually.
+			const urlInput = document.querySelector(
+				'#attachment-details-two-column-copy-link' );
+
+			// Also update the download link manually in case the URL has changed, to ensure users can still download the correct file.
+			const downloadUrlLink = document.querySelector( '.attachment-info .actions a[download]' );
+
+			if ( urlInput ) {
+				urlInput.value = newUrl;
+			}
+
+			if ( downloadUrlLink ) {
+				downloadUrlLink.href = newUrl;
+			}
+
+			if ( selectedAttachmentElement ) {
+				// To trigger media refresh in attachment details view
+				selectedAttachmentElement.click();
+			}
+		} catch {
+			// Keep UX non-blocking; modal refresh already handles fallback UI updates.
+		}
+	},
+
+	/**
+	 * Returns whether more versions can be added from versions API response.
+	 *
+	 * @param {Object} mediaVersionsResponse API response from admin-ajax.
+	 * @return {boolean} True when new versions can be added.
+	 */
+	isAddVersionAllowed( mediaVersionsResponse ) {
+		return !! mediaVersionsResponse?.response?.message?.can_add_more;
+	},
+
+	/**
+	 * Opens WordPress media uploader and resolves selected media for add-version action.
+	 *
+	 * @return {Promise<Object|null>} Selected media object or null.
+	 */
+	openAddVersionUploader() {
+		if ( ! window?.wp?.media ) {
+			return Promise.resolve( null );
+		}
+
+		const attachmentType = String( this.model.get( 'type' ) || '' ).toLowerCase();
+
+		return new Promise( ( resolve ) => {
+			const mediaFrame = wp.media( {
+				title: __( 'Select or Upload Media Version', 'godam' ),
+				button: { text: __( 'Use this media', 'godam' ) },
+				multiple: false,
+				library: attachmentType ? { type: [ attachmentType ] } : {},
+			} );
+
+			mediaFrame.on( 'select', () => {
+				const selection = mediaFrame.state().get( 'selection' ).first();
+				resolve( selection ? selection.toJSON() : null );
+			} );
+
+			mediaFrame.on( 'close', () => {
+				const hasSelection = mediaFrame.state().get( 'selection' )?.length;
+				if ( ! hasSelection ) {
+					resolve( null );
+				}
+			} );
+
+			mediaFrame.open();
+		} );
+	},
+
+	/**
+	 * Polls versions using setTimeout until a newly added version appears.
+	 *
+	 * @param {Object}      options                 Poll options.
+	 * @param {number}      options.baseCount       Existing version count before replace.
+	 * @param {number}      options.attempt         Current polling attempt.
+	 * @param {number|null} options.expectedVersion Expected version number from replace API.
+	 */
+	pollForNewVersion( { baseCount = 0, attempt = 1, expectedVersion = null } = {} ) {
+		const maxAttempts = 24;
+		const pollDelay = 5000;
+
+		setTimeout( async () => {
+			try {
+				const versionsData = await this.fetchVersionsData();
+				const versions = Array.isArray( versionsData?.response?.message?.versions )
+					? versionsData.response.message.versions
+					: [];
+
+				const matchedExpected = Number.isInteger( expectedVersion ) && expectedVersion > 0
+					? versions.some( ( version ) => Number( version?.version ) === expectedVersion )
+					: false;
+				const detectedByCount = versions.length > baseCount;
+
+				this.mediaVersions = versionsData;
+
+				if ( matchedExpected || detectedByCount ) {
+					const replaceResult = await this.finalizePendingVersionReplace();
+
+					// Treat as completed if finalized, or if source URL was already cleaned up
+					// by the GoDAM callback before this poll had a chance to finalize.
+					if ( replaceResult?.completed || replaceResult?.reason === 'missing_source_url' ) {
+						this.mediaVersions = await this.fetchVersionsData();
+						await this.refreshCurrentAttachmentInFrame();
+						this.openManageVersionsModal();
+						this.showGodamSnackbar( __( 'New version added successfully.', 'godam' ), 'success' );
+						return;
+					}
+				}
+			} catch {
+				// Keep polling until max attempts are reached.
+			}
+
+			if ( attempt >= maxAttempts ) {
+				this.openManageVersionsModal();
+				this.showGodamSnackbar( __( 'New version is still processing. Please check again in a few moments.', 'godam' ) );
+				return;
+			}
+
+			this.pollForNewVersion( {
+				baseCount,
+				attempt: attempt + 1,
+				expectedVersion,
+			} );
+		}, pollDelay );
+	},
+
+	/**
+	 * Shows a confirmation dialog for deleting a version.
+	 *
+	 * @param {number} versionNumber Version number to confirm deletion for.
+	 * @return {boolean} Whether user confirmed the deletion.
+	 */
+	showDeleteConfirmation( versionNumber ) {
+		// eslint-disable-next-line no-alert
+		const message = sprintf(
+			// translators: %d is the version number being deleted.
+			__( 'Are you sure you want to permanently delete Version %d?', 'godam' ),
+			versionNumber,
+		);
+		// eslint-disable-next-line no-alert
+		return confirm( message );
+	},
+
+	/**
+	 * Disables or enables all Set Active buttons and delete buttons in the modal.
+	 *
+	 * @param {HTMLElement} modal    Manage versions modal element.
+	 * @param {boolean}     disabled Whether buttons should be disabled.
+	 */
+	setManageVersionButtonsDisabled( modal, disabled ) {
+		const buttons = modal.querySelectorAll( '.rtgodam-version-action, .rtgodam-version-delete' );
+		buttons.forEach( ( actionButton ) => {
+			actionButton.disabled = disabled;
+		} );
+	},
+
+	/**
+	 * Sets up actions inside Manage Versions modal.
+	 */
+	setupManageVersionActions() {
+		const modal = document.getElementById( 'rtgodam-manage-versions-modal' );
+		if ( ! modal ) {
+			return;
+		}
+
+		// Check if modal is in loading state and disable action buttons accordingly
+		const isLoading = modal.getAttribute( 'data-is-loading' ) === 'true';
+		if ( isLoading ) {
+			this.setManageVersionButtonsDisabled( modal, true );
+		}
+
+		const addVersionButton = modal.querySelector( '.rtgodam-add-version' );
+		if ( addVersionButton ) {
+			addVersionButton.addEventListener( 'click', async ( event ) => {
+				event.preventDefault();
+				event.stopPropagation();
+
+				addVersionButton.disabled = true;
+
+				try {
+					const latestVersions = await this.fetchVersionsData();
+					this.mediaVersions = latestVersions;
+					const baseVersionsCount = Array.isArray( latestVersions?.response?.message?.versions )
+						? latestVersions.response.message.versions.length
+						: 0;
+
+					if ( ! this.isAddVersionAllowed( latestVersions ) ) {
+						this.showGodamSnackbar( __( 'Maximum version limit reached. Please delete an old version first.', 'godam' ) );
+						this.openManageVersionsModal();
+						return;
+					}
+
+					this.closeManageVersionsModal();
+					const selectedMedia = await this.openAddVersionUploader();
+					if ( ! selectedMedia ) {
+						this.openManageVersionsModal();
+						return;
+					}
+
+					if ( ! selectedMedia?.id ) {
+						this.showGodamSnackbar( __( 'Please select a valid media file from the Media Library.', 'godam' ) );
+						this.openManageVersionsModal();
+						return;
+					}
+
+					const replaceResponse = await this.replaceMediaVersion( selectedMedia );
+					const expectedVersion = Number(
+						replaceResponse?.response?.new_version ??
+						replaceResponse?.message?.new_version ??
+						replaceResponse?.new_version,
+					);
+					const versionStartMessage = __( 'New version upload started. It will be updated in a few moments …', 'godam' );
+					this.openManageVersionsModal( {
+						isLoading: true,
+						loadingMessage: versionStartMessage,
+					} );
+					this.showGodamSnackbar( versionStartMessage, 'success' );
+					this.pollForNewVersion( {
+						baseCount: baseVersionsCount,
+						expectedVersion: Number.isInteger( expectedVersion ) && expectedVersion > 0 ? expectedVersion : null,
+					} );
+				} catch ( error ) {
+					this.showGodamSnackbar( error?.message || __( 'Unable to add a new version.', 'godam' ) );
+					try {
+						this.mediaVersions = await this.fetchVersionsData();
+						this.openManageVersionsModal();
+					} catch {
+						this.closeManageVersionsModal();
+					}
+				}
+			} );
+		}
+
+		// Setup Set Active buttons
+		const buttons = modal.querySelectorAll( '.rtgodam-version-action' );
+		buttons.forEach( ( button ) => {
+			button.addEventListener( 'click', async ( event ) => {
+				event.preventDefault();
+				event.stopPropagation();
+
+				// Get version number from button's data attribute and validate it.
+				const versionNumber = Number( button.getAttribute( 'data-version-number' ) );
+				const maxVersions = this.getMaxVersions( this.mediaVersions );
+				if ( ! Number.isInteger( versionNumber ) || versionNumber < 1 || versionNumber > maxVersions ) {
+					this.showGodamSnackbar( __( 'Invalid version number.', 'godam' ) );
+					return;
+				}
+
+				const switchingMessage = __( 'Switching active version …', 'godam' );
+				this.openManageVersionsModal( {
+					isLoading: true,
+					loadingMessage: switchingMessage,
+				} );
+
+				try {
+					await this.switchActiveVersion( versionNumber, maxVersions );
+					this.mediaVersions = await this.fetchVersionsData();
+					await this.refreshCurrentAttachmentInFrame();
+					this.openManageVersionsModal();
+					this.showGodamSnackbar( __( 'Active version updated successfully.', 'godam' ), 'success' );
+				} catch {
+					try {
+						this.mediaVersions = await this.fetchVersionsData();
+						this.openManageVersionsModal();
+					} catch {
+						this.closeManageVersionsModal();
+					}
+
+					this.showGodamSnackbar( __( 'Unable to set active version.', 'godam' ) );
+				}
+			} );
+		} );
+
+		// Setup Delete buttons
+		const deleteButtons = modal.querySelectorAll( '.rtgodam-version-delete' );
+		deleteButtons.forEach( ( deleteButton ) => {
+			deleteButton.addEventListener( 'click', async ( event ) => {
+				event.preventDefault();
+				event.stopPropagation();
+
+				const setActiveButton = deleteButton.previousElementSibling;
+				const versionNumber = Number( setActiveButton?.getAttribute( 'data-version-number' ) );
+
+				// Version 1 is the original file and cannot be deleted
+				// so we check for version number to be at least 2.
+				if ( ! Number.isInteger( versionNumber ) || versionNumber < 2 ) {
+					this.showGodamSnackbar( __( 'Invalid version number.', 'godam' ) );
+					return;
+				}
+
+				if ( ! this.showDeleteConfirmation( versionNumber ) ) {
+					return;
+				}
+
+				this.setManageVersionButtonsDisabled( modal, true );
+
+				try {
+					await this.deleteVersion( versionNumber );
+					this.mediaVersions = await this.fetchVersionsData();
+					this.openManageVersionsModal();
+					this.showGodamSnackbar( __( 'Version deleted successfully.', 'godam' ), 'success' );
+				} catch ( error ) {
+					try {
+						this.mediaVersions = await this.fetchVersionsData();
+						this.openManageVersionsModal();
+					} catch {
+						this.closeManageVersionsModal();
+					}
+
+					this.showGodamSnackbar( error?.message || __( 'Unable to delete version.', 'godam' ) );
+				}
+			} );
+		} );
+	},
+
+	/**
+	 * Extracts max versions count from list-all-versions response.
+	 *
+	 * @param {Object} mediaVersionsResponse API response from admin-ajax.
+	 * @return {number} Maximum allowed versions.
+	 */
+	getMaxVersions( mediaVersionsResponse ) {
+		const maxVersions = Number( mediaVersionsResponse?.response?.message?.max_versions );
+
+		if ( Number.isInteger( maxVersions ) && maxVersions > 0 ) {
+			return maxVersions;
+		}
+
+		return 25;
+	},
+
+	/**
+	 * Formats bytes as a human-readable file size.
+	 *
+	 * @param {number|string} bytes File size in bytes.
+	 * @return {string} Human-readable file size.
+	 */
+	formatVersionSize( bytes ) {
+		const numericBytes = Number( bytes );
+		if ( ! Number.isFinite( numericBytes ) || numericBytes <= 0 ) {
+			return '--';
+		}
+
+		const units = [ 'B', 'KB', 'MB', 'GB', 'TB' ];
+		const exponent = Math.min( Math.floor( Math.log( numericBytes ) / Math.log( 1024 ) ), units.length - 1 );
+		const value = numericBytes / ( 1024 ** exponent );
+
+		return `${ value.toFixed( exponent === 0 ? 0 : 2 ) } ${ units[ exponent ] }`;
+	},
+
+	/**
+	 * Formats duration seconds as HH:MM:SS or MM:SS.
+	 *
+	 * @param {number|string} duration Duration in seconds.
+	 * @return {string} Formatted duration.
+	 */
+	formatVersionDuration( duration ) {
+		const seconds = Number( duration );
+		if ( seconds <= 0 || ! Number.isFinite( seconds ) ) {
+			return '--';
+		}
+
+		const totalSeconds = Math.round( seconds );
+		const hrs = Math.floor( totalSeconds / 3600 );
+		const mins = Math.floor( ( totalSeconds % 3600 ) / 60 );
+		const secs = totalSeconds % 60;
+
+		if ( hrs > 0 ) {
+			return `${ String( hrs ).padStart( 2, '0' ) }:${ String( mins ).padStart( 2, '0' ) }:${ String( secs ).padStart( 2, '0' ) }`;
+		}
+
+		return `${ String( mins ).padStart( 2, '0' ) }:${ String( secs ).padStart( 2, '0' ) }`;
+	},
+
+	/**
+	 * Formats ISO date/time into the local date string.
+	 *
+	 * @param {string} value Date value.
+	 * @return {string} Formatted date.
+	 */
+	formatVersionDate( value ) {
+		if ( ! value ) {
+			return '--';
+		}
+
+		const parsed = new Date( value );
+		return Number.isNaN( parsed.getTime() ) ? '--' : parsed.toLocaleDateString();
+	},
+
+	/**
+	 * Normalizes API response into modal version rows.
+	 *
+	 * @param {Object} mediaVersionsResponse API response from admin-ajax.
+	 * @param {string} fallbackTitle         Fallback title for version names.
+	 * @return {Array<Object>} Normalized versions.
+	 */
+	normalizeMediaVersions( mediaVersionsResponse, fallbackTitle ) {
+		const response = mediaVersionsResponse?.response ?? mediaVersionsResponse ?? {};
+		const versions = response?.message?.versions;
+
+		// Return empty array if versions data is not available
+		if ( ! Array.isArray( versions ) ) {
+			return [];
+		}
+
+		const mappedVersions = versions.map( ( version, index ) => {
+			const versionNumber = version?.version ?? index + 1;
+			const title = version?.orignal_file_name || `${ fallbackTitle } ${ index + 1 }`;
+			const isActive = Boolean( version?.is_active );
+			const isDefault = versionNumber === 1;
+			const idUpper = Number.isFinite( Number( versionNumber ) ) ? `V${ versionNumber }` : versionNumber.toUpperCase();
+
+			return {
+				id: versionNumber,
+				idUpper,
+				versionNumber: Number( versionNumber ),
+				name: title,
+				size: this.formatVersionSize( version?.file_size ),
+				duration: this.formatVersionDuration( version?.playtime ),
+				date: this.formatVersionDate( version?.created_at ),
+				isDefault,
+				isActive,
+			};
+		} );
+
+		if ( ! mappedVersions.length ) {
+			return [];
+		}
+
+		return mappedVersions;
+	},
+
+	/**
+	 * Opens the Manage Versions modal.
+	 *
+	 * @param {Object} options Modal options.
+	 */
+	openManageVersionsModal( options = {} ) {
+		this.closeManageVersionsModal();
+
+		if ( ! wp?.template ) {
+			return;
+		}
+
+		const { isLoading = false, loadingMessage = '' } = options;
+		const attachmentId = this.model.get( 'id' );
+		const attachmentTitle = this.model.get( 'title' ) || this.model.get( 'filename' ) || __( 'Media File', 'godam' );
+		const versions = this.normalizeMediaVersions( this.mediaVersions, attachmentTitle );
+
+		const renderModalTemplate = wp.template( 'rtgodam-manage-versions-modal' );
+		const modalHtml = renderModalTemplate( {
+			attachmentId,
+			versions,
+			isLoading,
+			loadingMessage,
+			totalVersions: versions.length,
+			maxVersions: this.getMaxVersions( this.mediaVersions ),
+			trashIcon: DOMPurify.sanitize( trashIcon ),
+		} );
+
+		document.body.insertAdjacentHTML( 'beforeend', DOMPurify.sanitize( modalHtml ) );
+
+		this._onManageVersionsKeydown = ( event ) => {
+			if ( event.key === 'Escape' ) {
+				this.closeManageVersionsModal();
+			}
+		};
+
+		document.addEventListener( 'keydown', this._onManageVersionsKeydown );
+
+		const modal = document.getElementById( 'rtgodam-manage-versions-modal' );
+		if ( isLoading ) {
+			modal?.setAttribute( 'data-is-loading', 'true' );
+		}
+		modal?.querySelector( '.rtgodam-manage-versions-close' )?.addEventListener( 'click', () => this.closeManageVersionsModal() );
+		modal?.querySelector( '.rtgodam-manage-versions-overlay' )?.addEventListener( 'click', () => this.closeManageVersionsModal() );
+		this.setupManageVersionActions();
+	},
+
+	/**
+	 * Closes the Manage Versions modal.
+	 */
+	closeManageVersionsModal() {
+		const modal = document.getElementById( 'rtgodam-manage-versions-modal' );
+		if ( modal ) {
+			modal.remove();
+		}
+
+		if ( this._onManageVersionsKeydown ) {
+			document.removeEventListener( 'keydown', this._onManageVersionsKeydown );
+			this._onManageVersionsKeydown = null;
+		}
+	},
+
+	/**
 	 * Generates HTML for the Edit Video and Analytics buttons.
 	 *
 	 * @return {string} - The generated button HTML.
@@ -1098,6 +1801,8 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				'exif',
 			);
 		}
+
+		this.renderManageVersionsAction();
 
 		if ( this.model.get( 'type' ) === 'application' && this.model.get( 'subtype' ) === 'pdf' ) {
 			const imagePreview = this.model.get( 'image' );

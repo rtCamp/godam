@@ -36,7 +36,93 @@ class Assets {
 		 */
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
+		add_action( 'admin_footer', array( $this, 'print_manage_versions_media_template' ) );
 		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_block_editor_assets' ) );
+	}
+
+	/**
+	 * Print media modal template for Manage Versions.
+	 *
+	 * @return void
+	 */
+	public function print_manage_versions_media_template() {
+		?>
+		<script type="text/html" id="tmpl-rtgodam-manage-versions-modal">
+			<div id="rtgodam-manage-versions-modal" class="rtgodam-manage-versions-modal" role="dialog" aria-modal="true" aria-labelledby="rtgodam-manage-versions-title" data-attachment-id="{{ data.attachmentId }}">
+				<div class="rtgodam-manage-versions-overlay"></div>
+				<div class="rtgodam-manage-versions-card">
+					<div class="rtgodam-manage-versions-header">
+						<h2 id="rtgodam-manage-versions-title"><?php esc_html_e( 'Manage Versions', 'godam' ); ?></h2>
+						<button type="button" class="rtgodam-manage-versions-close" aria-label="<?php esc_attr_e( 'Close', 'godam' ); ?>">&times;</button>
+					</div>
+					<div class="rtgodam-manage-versions-body">
+						<div class="rtgodam-manage-versions-toolbar">
+							<div class="rtgodam-manage-versions-count"><?php esc_html_e( 'Versions', 'godam' ); ?> ({{ data.totalVersions }}/{{ data.maxVersions }})</div>
+							<button type="button" class="button button-primary rtgodam-add-version" <# if ( data.isLoading ) { #>disabled<# } #>>+ <?php esc_html_e( 'Add New Version', 'godam' ); ?></button>
+						</div>
+						<div class="rtgodam-manage-versions-list">
+							<# if ( data.isLoading ) { #>
+								<div class="rtgodam-manage-versions-loading">
+									<span class="spinner is-active" aria-hidden="true"></span>
+									<span>{{ data.loadingMessage || '<?php echo esc_js( __( 'Loading versions...', 'godam' ) ); ?>' }}</span>
+								</div>
+							<# } #>
+							<# if ( ! data.versions || ! data.versions.length ) { #>
+								<div class="rtgodam-manage-versions-empty"><?php esc_html_e( 'No versions found.', 'godam' ); ?></div>
+							<# } else { #>
+								<# _.each( data.versions, function( version, index ) { #>
+									<div class="rtgodam-version-row <# if ( version.isActive ) { #>is-active<# } #>">
+										<div class="rtgodam-version-left">
+											<div class="rtgodam-version-badge">{{ version.idUpper }}</div>
+											<div class="rtgodam-version-meta">
+												<div class="rtgodam-version-title-row">
+													<span class="rtgodam-version-title">{{ version.name }}</span>
+													<# if ( version.isDefault ) { #>
+														<span class="rtgodam-version-chip rtgodam-version-chip--default"><?php esc_html_e( 'Default', 'godam' ); ?></span>
+													<# } #>
+													<# if ( version.isActive ) { #>
+														<span class="rtgodam-version-chip rtgodam-version-chip--active"><?php esc_html_e( 'Active', 'godam' ); ?></span>
+													<# } #>
+												</div>
+												<div class="rtgodam-version-details">
+													<span class="rtgodam-version-size">
+														<span>
+															<svg xmlns="http://www.w3.org/2000/svg" width="11" height="15" viewBox="0 0 11 15" fill="none">
+																<path d="M1.8 0C1.32261 0 0.864773 0.189642 0.527208 0.527208C0.189642 0.864773 0 1.32261 0 1.8V12.6C0 13.0774 0.189642 13.5352 0.527208 13.8728C0.864773 14.2104 1.32261 14.4 1.8 14.4H9C9.47739 14.4 9.93523 14.2104 10.2728 13.8728C10.6104 13.5352 10.8 13.0774 10.8 12.6V4.8726C10.7997 4.51468 10.6572 4.17153 10.404 3.9186L6.8814 0.3951C6.62832 0.142183 6.28519 7.63932e-05 5.9274 0H1.8ZM0.9 1.8C0.9 1.56131 0.994821 1.33239 1.1636 1.1636C1.33239 0.994821 1.56131 0.9 1.8 0.9H5.4V4.05C5.4 4.40804 5.54223 4.75142 5.79541 5.00459C6.04858 5.25777 6.39196 5.4 6.75 5.4H9.9V12.6C9.9 12.8387 9.80518 13.0676 9.6364 13.2364C9.46761 13.4052 9.2387 13.5 9 13.5H1.8C1.56131 13.5 1.33239 13.4052 1.1636 13.2364C0.994821 13.0676 0.9 12.8387 0.9 12.6V1.8ZM9.7137 4.5H6.75C6.63065 4.5 6.51619 4.45259 6.4318 4.3682C6.34741 4.28381 6.3 4.16935 6.3 4.05V1.0863L9.7137 4.5Z" fill="#777777"/>
+															</svg>
+														</span>
+														<span>{{ version.size }}</span>
+													</span>
+													<span class="rtgodam-version-duration">
+														<span>
+															<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" fill="none">
+																<path fill-rule="evenodd" clip-rule="evenodd" d="M7.95 7.12725L10.8682 10.0455L10.2323 10.6823L7.05 7.5V3H7.95V7.12725ZM7.5 15C3.35775 15 0 11.6423 0 7.5C0 3.35775 3.35775 0 7.5 0C11.6423 0 15 3.35775 15 7.5C15 11.6423 11.6423 15 7.5 15ZM7.5 14.1C9.25043 14.1 10.9292 13.4046 12.1669 12.1669C13.4046 10.9292 14.1 9.25043 14.1 7.5C14.1 5.74957 13.4046 4.07084 12.1669 2.8331C10.9292 1.59535 9.25043 0.9 7.5 0.9C5.74957 0.9 4.07084 1.59535 2.8331 2.8331C1.59535 4.07084 0.9 5.74957 0.9 7.5C0.9 9.25043 1.59535 10.9292 2.8331 12.1669C4.07084 13.4046 5.74957 14.1 7.5 14.1Z" fill="#777777"/>
+															</svg>
+														</span>
+														<span>{{ version.duration }}</span>
+													</span>
+													<span class="rtgodam-version-date">{{ version.date }}</span>
+												</div>
+											</div>
+										</div>
+										<div class="rtgodam-version-right">
+											<# if ( ! version.isActive ) { #>
+												<button type="button" class="button button-secondary rtgodam-version-action" data-version-number="{{ version.versionNumber }}"><?php esc_html_e( 'Set Active', 'godam' ); ?></button>
+												<# if ( index !== 0 ) { #>
+													<?php // phpcs:ignore WordPressVIPMinimum.Security.Mustache.OutputNotation ?>
+													<button type="button" class="rtgodam-version-delete" aria-label="<?php esc_attr_e( 'Delete Version', 'godam' ); ?>">{{{ data.trashIcon }}}</button>
+												<# } #>
+											<# } #>
+										</div>
+									</div>
+								<# } ); #>
+							<# } #>
+						</div>
+					</div>
+				</div>
+			</div>
+		</script>
+		<?php
 	}
 
 	/**
@@ -338,7 +424,7 @@ class Assets {
 				filemtime( RTGODAM_PATH . 'assets/build/js/http-auth-detector.min.js' ),
 				true
 			);
-	
+
 			wp_localize_script(
 				'godam-http-auth-detector',
 				'godamHttpAuthDetector',
@@ -348,7 +434,7 @@ class Assets {
 					'nonce'   => wp_create_nonce( 'godam-http-auth-detector' ),
 				)
 			);
-	
+
 			wp_enqueue_script( 'godam-http-auth-detector' );
 		}
 	}

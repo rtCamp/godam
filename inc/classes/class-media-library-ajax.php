@@ -61,6 +61,13 @@ class Media_Library_Ajax {
 		add_action( 'admin_notices', array( $this, 'http_auth_warning_notice' ) );
 		add_action( 'wp_ajax_godam_save_http_auth_status', array( $this, 'save_http_auth_status' ) );
 
+		add_action( 'wp_ajax_godam_get_media_versions', array( $this, 'get_media_versions' ) );
+		add_action( 'wp_ajax_godam_switch_active_version', array( $this, 'switch_active_version' ) );
+		add_action( 'wp_ajax_godam_delete_version', array( $this, 'delete_version' ) );
+		add_action( 'wp_ajax_godam_replace_media_version', array( $this, 'replace_media_version' ) );
+		add_action( 'wp_ajax_godam_finalize_media_version_replace', array( $this, 'finalize_media_version_replace' ) );
+		add_action( 'rtgodam_handle_callback_finished', array( $this, 'replace_media_urls_after_version_callback' ), 20, 4 );
+
 		add_filter( 'wp_content_img_tag', array( $this, 'filter_rtgodam_content_img_tag' ), 10, 3 );
 	}
 
@@ -518,7 +525,7 @@ class Media_Library_Ajax {
 			// Set the icon to be used for the virtual media preview.
 			// Populate the image field used by the media library to show previews.
 			$icon_url = wp_mime_type_icon( $attachment->ID );
-			
+
 			// For audio and PDF, ensure we use the default icons.
 			if ( empty( $icon_url ) || strpos( $icon_url, '.svg' ) !== false ) {
 				if ( $is_audio ) {
@@ -527,7 +534,7 @@ class Media_Library_Ajax {
 					$icon_url = includes_url( 'images/media/document.png' );
 				}
 			}
-			
+
 			$response['image'] = array();
 
 			if ( ! empty( $icon_url ) ) {
@@ -1106,7 +1113,7 @@ class Media_Library_Ajax {
 			return $sources;
 		}
 
-		// If rtgodam_image_sizes meta exists, use it to build the srcset. 
+		// If rtgodam_image_sizes meta exists, use it to build the srcset.
 		// This is the case for GoDAM-managed images which may not be virtual but still need correct srcset URLs.
 		if ( ! empty( $rtgodam_image_sizes ) ) {
 
@@ -1129,7 +1136,7 @@ class Media_Library_Ajax {
 
 			$sources = $new_sources;
 		} elseif ( ! empty( $godam_original_id ) ) {
-			// Compatibility handling for virtual media created before GoDAM image sizes meta was implemented. 
+			// Compatibility handling for virtual media created before GoDAM image sizes meta was implemented.
 			// In this case, we will reconstruct the URLs based on the original image URL and the file names in the sources array.
 
 			// Use the current image URL as the base for all subsizes.
@@ -1161,14 +1168,14 @@ class Media_Library_Ajax {
 	 */
 	public function save_http_auth_status() {
 		check_ajax_referer( 'godam-http-auth-detector', 'nonce' );
-	
+
 		if ( ! current_user_can( 'upload_files' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'godam' ) ) );
 		}
 
 		$has_http_auth_raw = isset( $_POST['has_http_auth'] ) ? sanitize_text_field( wp_unslash( $_POST['has_http_auth'] ) ) : '';
 		$has_http_auth     = ( '1' === $has_http_auth_raw );
-	
+
 		// Save status.
 		update_option(
 			'rtgodam_http_auth_status',
@@ -1185,7 +1192,892 @@ class Media_Library_Ajax {
 			)
 		);
 	}
-	
+
+	/**
+	 * Fetch media versions from GoDAM API for a given attachment.
+	 *
+	 * @return void
+	 */
+	public function get_media_versions() {
+		check_ajax_referer( 'easydam_media_library', 'nonce' );
+
+		if ( ! current_user_can( 'upload_files' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'godam' ) ), 403 );
+		}
+
+		$attachment_id = isset( $_POST['attachment_id'] ) ? absint( wp_unslash( $_POST['attachment_id'] ) ) : 0;
+
+		if ( empty( $attachment_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'Attachment ID is required.', 'godam' ) ), 400 );
+		}
+
+		$job_name = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+
+		if ( empty( $job_name ) ) {
+			wp_send_json_error( array( 'message' => __( 'Job name not found for this attachment.', 'godam' ) ), 400 );
+		}
+
+		$api_key = get_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $api_key ) ) {
+			wp_send_json_error( array( 'message' => __( 'GoDAM API key is missing.', 'godam' ) ), 400 );
+		}
+
+		$decoded = $this->fetch_media_versions_payload( $job_name, $api_key );
+
+		if ( is_wp_error( $decoded ) ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'Failed to fetch media versions from GoDAM.', 'godam' ),
+					'error'   => $decoded->get_error_message(),
+				),
+				500
+			);
+		}
+
+		wp_send_json_success(
+			array(
+				'job_name' => $job_name,
+				'response' => $decoded,
+			)
+		);
+	}
+
+	/**
+	 * Switch active media version in GoDAM.
+	 *
+	 * @return void
+	 */
+	public function switch_active_version() {
+		check_ajax_referer( 'easydam_media_library', 'nonce' );
+
+		if ( ! current_user_can( 'upload_files' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'godam' ) ), 403 );
+		}
+
+		$attachment_id = isset( $_POST['attachment_id'] ) ? absint( wp_unslash( $_POST['attachment_id'] ) ) : 0;
+		if ( empty( $attachment_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'Attachment ID is required.', 'godam' ) ), 400 );
+		}
+
+		$version_number = isset( $_POST['version_number'] ) ? absint( wp_unslash( $_POST['version_number'] ) ) : 0;
+		if ( $version_number < 1 ) {
+			wp_send_json_error( array( 'message' => __( 'Version number must be greater than 0.', 'godam' ) ), 400 );
+		}
+
+		$job_name = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+		if ( empty( $job_name ) ) {
+			wp_send_json_error( array( 'message' => __( 'Job name not found for this attachment.', 'godam' ) ), 400 );
+		}
+
+		$this->maybe_store_attachment_url( $attachment_id );
+
+		$api_key = get_option( 'rtgodam-api-key', '' );
+		if ( empty( $api_key ) ) {
+			wp_send_json_error( array( 'message' => __( 'GoDAM API key is missing.', 'godam' ) ), 400 );
+		}
+
+		$max_versions = isset( $_POST['max_versions'] ) ? absint( wp_unslash( $_POST['max_versions'] ) ) : 25;
+		if ( $max_versions < 1 ) {
+			$max_versions = 25;
+		}
+
+		if ( $version_number > $max_versions ) {
+			// translators: %d is the maximum number of versions allowed.
+			wp_send_json_error( array( 'message' => sprintf( __( 'Version number must be between 1 and %d.', 'godam' ), $max_versions ) ), 400 );
+		}
+
+		$source_url         = '';
+		$source_thumbnail   = '';
+		$target_url         = '';
+		$target_thumbnail   = '';
+		$target_version_row = array();
+		$versions_payload   = $this->fetch_media_versions_payload( $job_name, $api_key );
+
+		if ( ! is_wp_error( $versions_payload ) ) {
+			$versions           = $this->extract_media_versions_from_payload( $versions_payload );
+			$current_active_row = $this->get_active_media_version_row( $versions );
+			$target_version_row = $this->get_media_version_row_by_number( $versions, $version_number );
+			$source_url         = $this->get_version_media_source_url( $current_active_row, $attachment_id );
+			$source_thumbnail   = $this->get_version_thumbnail_url( $current_active_row );
+			$target_url         = $this->get_version_media_source_url( $target_version_row, $attachment_id );
+			$target_thumbnail   = $this->get_version_thumbnail_url( $target_version_row );
+		}
+
+		$endpoint = trailingslashit( RTGODAM_API_BASE ) . 'api/method/godam_core.api.media.switch_active_version';
+		$url      = add_query_arg(
+			array(
+				'job_name'       => $job_name,
+				'api_key'        => $api_key,
+				'version_number' => $version_number,
+			),
+			$endpoint
+		);
+
+		$response = wp_remote_post(
+			$url,
+			array(
+				'timeout' => 5,  // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'Failed to switch active version.', 'godam' ),
+					'error'   => $response->get_error_message(),
+				),
+				500
+			);
+		}
+
+		$status_code = wp_remote_retrieve_response_code( $response );
+		$body        = wp_remote_retrieve_body( $response );
+		$decoded     = json_decode( $body, true );
+
+		if ( 200 !== $status_code ) {
+			wp_send_json_error(
+				array(
+					'message'  => __( 'GoDAM API returned an error while switching version.', 'godam' ),
+					'status'   => $status_code,
+					'response' => is_array( $decoded ) ? $decoded : $body,
+				),
+				$status_code
+			);
+		}
+
+		$this->replace_media_url_across_site( $attachment_id, $source_url, $target_url, $target_version_row, $source_thumbnail, $target_thumbnail );
+		$this->maybe_request_image_subsizes_refresh( $attachment_id, $job_name );
+
+		wp_send_json_success(
+			array(
+				'job_name'       => $job_name,
+				'version_number' => $version_number,
+				'response'       => is_array( $decoded ) ? $decoded : $body,
+			)
+		);
+	}
+
+	/**
+	 * Delete a media version in GoDAM.
+	 *
+	 * @return void
+	 */
+	public function delete_version() {
+		check_ajax_referer( 'easydam_media_library', 'nonce' );
+
+		if ( ! current_user_can( 'upload_files' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'godam' ) ), 403 );
+		}
+
+		$attachment_id = isset( $_POST['attachment_id'] ) ? absint( wp_unslash( $_POST['attachment_id'] ) ) : 0;
+		if ( empty( $attachment_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'Attachment ID is required.', 'godam' ) ), 400 );
+		}
+
+		$version_number = isset( $_POST['version_number'] ) ? absint( wp_unslash( $_POST['version_number'] ) ) : 0;
+		if ( $version_number < 2 ) {
+			wp_send_json_error( array( 'message' => __( 'Cannot delete this version.', 'godam' ) ), 400 );
+		}
+
+		$job_name = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+		if ( empty( $job_name ) ) {
+			wp_send_json_error( array( 'message' => __( 'Job name not found for this attachment.', 'godam' ) ), 400 );
+		}
+
+		$api_key = get_option( 'rtgodam-api-key', '' );
+		if ( empty( $api_key ) ) {
+			wp_send_json_error( array( 'message' => __( 'GoDAM API key is missing.', 'godam' ) ), 400 );
+		}
+
+		$endpoint = trailingslashit( RTGODAM_API_BASE ) . 'api/method/godam_core.api.media.delete_version';
+		$url      = add_query_arg(
+			array(
+				'job_name'       => $job_name,
+				'api_key'        => $api_key,
+				'version_number' => $version_number,
+			),
+			$endpoint
+		);
+
+		$response = wp_remote_post(
+			$url,
+			array(
+				'timeout' => 5,  // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'Failed to delete version.', 'godam' ),
+					'error'   => $response->get_error_message(),
+				),
+				500
+			);
+		}
+
+		$status_code = wp_remote_retrieve_response_code( $response );
+		$body        = wp_remote_retrieve_body( $response );
+		$decoded     = json_decode( $body, true );
+
+		if ( 200 !== $status_code ) {
+			wp_send_json_error(
+				array(
+					'message'  => __( 'GoDAM API returned an error while deleting version.', 'godam' ),
+					'status'   => $status_code,
+					'response' => is_array( $decoded ) ? $decoded : $body,
+				),
+				$status_code
+			);
+		}
+
+		wp_send_json_success(
+			array(
+				'job_name'        => $job_name,
+				'deleted_version' => $version_number,
+				'response'        => is_array( $decoded ) ? $decoded : $body,
+			)
+		);
+	}
+
+	/**
+	 * Replaces source media and starts new version creation in GoDAM.
+	 *
+	 * @return void
+	 */
+	public function replace_media_version() {
+		check_ajax_referer( 'easydam_media_library', 'nonce' );
+
+		if ( ! current_user_can( 'upload_files' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'godam' ) ), 403 );
+		}
+
+		$attachment_id = isset( $_POST['attachment_id'] ) ? absint( wp_unslash( $_POST['attachment_id'] ) ) : 0;
+		if ( empty( $attachment_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'Attachment ID is required.', 'godam' ) ), 400 );
+		}
+
+		$version_attachment_id = isset( $_POST['version_attachment_id'] ) ? sanitize_text_field( wp_unslash( $_POST['version_attachment_id'] ) ) : '';
+		$file_origin           = '';
+
+		if ( empty( $version_attachment_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'Please select a valid media file.', 'godam' ) ), 400 );
+		}
+
+		if ( is_numeric( $version_attachment_id ) ) {
+			$version_attachment = get_post( $version_attachment_id );
+			if ( ! $version_attachment || 'attachment' !== $version_attachment->post_type ) {
+				wp_send_json_error( array( 'message' => __( 'Selected media is invalid.', 'godam' ) ), 400 );
+			}
+
+			$uploaded_mime = sanitize_mime_type( get_post_mime_type( $version_attachment_id ) );
+			if ( ! $this->is_compatible_version_upload_mime( $attachment_id, $uploaded_mime ) ) {
+				wp_send_json_error( array( 'message' => __( 'Please upload a similar media type for a new version.', 'godam' ) ), 400 );
+			}
+
+			$file_origin = wp_get_attachment_url( $version_attachment_id );
+			if ( empty( $file_origin ) ) {
+				wp_send_json_error( array( 'message' => __( 'Unable to read selected media URL.', 'godam' ) ), 400 );
+			}
+		} else {
+			$version_attachment_url = isset( $_POST['version_attachment_url'] ) ? esc_url_raw( wp_unslash( $_POST['version_attachment_url'] ) ) : '';
+			$file_origin            = $version_attachment_url;
+		}
+
+		$job_name = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+		if ( empty( $job_name ) ) {
+			wp_send_json_error( array( 'message' => __( 'Job name not found for this attachment.', 'godam' ) ), 400 );
+		}
+
+		$this->maybe_store_attachment_url( $attachment_id );
+
+		$api_key = get_option( 'rtgodam-api-key', '' );
+		if ( empty( $api_key ) ) {
+			wp_send_json_error( array( 'message' => __( 'GoDAM API key is missing.', 'godam' ) ), 400 );
+		}
+
+		delete_post_meta( $attachment_id, 'rtgodam_pending_version_source_url' );
+		delete_post_meta( $attachment_id, 'rtgodam_pending_version_source_thumbnail_url' );
+
+		$versions_payload = $this->fetch_media_versions_payload( $job_name, $api_key );
+		if ( ! is_wp_error( $versions_payload ) ) {
+			$active_version = $this->get_active_media_version_row( $this->extract_media_versions_from_payload( $versions_payload ) );
+			$source_url     = $this->get_version_media_source_url( $active_version, $attachment_id );
+			$source_thumb   = $this->get_version_thumbnail_url( $active_version );
+			if ( ! empty( $source_url ) ) {
+				update_post_meta( $attachment_id, 'rtgodam_pending_version_source_url', $source_url );
+			}
+			if ( ! empty( $source_thumb ) ) {
+				update_post_meta( $attachment_id, 'rtgodam_pending_version_source_thumbnail_url', $source_thumb );
+			}
+		}
+
+		$endpoint = trailingslashit( RTGODAM_API_BASE ) . 'api/method/godam_core.api.retranscode.replace_media';
+
+		$response = wp_remote_post(
+			$endpoint,
+			array(
+				'timeout' => 5,  // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
+				'body'    => array(
+					'job_id'      => $job_name,
+					'file_origin' => rawurlencode( $file_origin ),
+					'api_key'     => $api_key,
+				),
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'Failed to replace media version.', 'godam' ),
+					'error'   => $response->get_error_message(),
+				),
+				500
+			);
+		}
+
+		$status_code = wp_remote_retrieve_response_code( $response );
+		$body        = wp_remote_retrieve_body( $response );
+		$decoded     = json_decode( $body, true );
+
+		if ( 200 !== $status_code ) {
+			wp_send_json_error(
+				array(
+					'message'  => __( 'GoDAM API returned an error while adding a new version.', 'godam' ),
+					'status'   => $status_code,
+					'response' => is_array( $decoded ) ? $decoded : $body,
+				),
+				$status_code
+			);
+		}
+
+		wp_send_json_success(
+			array(
+				'job_name' => $job_name,
+				'response' => $decoded,
+			)
+		);
+	}
+
+	/**
+	 * Finalize pending media URL replacement after polling detects a new version.
+	 *
+	 * @return void
+	 */
+	public function finalize_media_version_replace() {
+		check_ajax_referer( 'easydam_media_library', 'nonce' );
+
+		if ( ! current_user_can( 'upload_files' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'godam' ) ), 403 );
+		}
+
+		$attachment_id = isset( $_POST['attachment_id'] ) ? absint( wp_unslash( $_POST['attachment_id'] ) ) : 0;
+		if ( empty( $attachment_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'Attachment ID is required.', 'godam' ) ), 400 );
+		}
+
+		$job_name = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+		if ( empty( $job_name ) ) {
+			wp_send_json_error( array( 'message' => __( 'Job name not found for this attachment.', 'godam' ) ), 400 );
+		}
+
+		$api_key = get_option( 'rtgodam-api-key', '' );
+		if ( empty( $api_key ) ) {
+			wp_send_json_error( array( 'message' => __( 'GoDAM API key is missing.', 'godam' ) ), 400 );
+		}
+
+		$target_url         = '';
+		$target_version_row = array();
+		$versions_payload   = $this->fetch_media_versions_payload( $job_name, $api_key );
+
+		if ( ! is_wp_error( $versions_payload ) ) {
+			$target_version_row = $this->get_active_media_version_row( $this->extract_media_versions_from_payload( $versions_payload ) );
+			$target_url         = $this->get_version_media_source_url( $target_version_row, $attachment_id );
+		}
+
+		wp_send_json_success( $this->complete_pending_media_version_replace( $attachment_id, $target_url, $target_version_row ) );
+	}
+
+	/**
+	 * Replace media URL references when a callback finishes for wp-media jobs.
+	 *
+	 * @param int              $attachment_id Attachment ID.
+	 * @param string           $job_id        GoDAM job ID.
+	 * @param string           $job_for       Job target.
+	 * @param \WP_REST_Request $request      Callback request.
+	 * @return void
+	 */
+	public function replace_media_urls_after_version_callback( $attachment_id, $job_id, $job_for, $request ) {
+		if ( 'wp-media' !== $job_for || empty( $attachment_id ) || ! ( $request instanceof \WP_REST_Request ) ) {
+			return;
+		}
+
+		$target_url         = $this->get_target_url_from_callback_request( $attachment_id, $request );
+		$target_version_row = array(
+			'thumbnail_url'        => (string) $request->get_param( 'thumbnail_url' ),
+			'transcoded_file_path' => (string) $request->get_param( 'download_url' ),
+			'transcoded_hls_path'  => (string) $request->get_param( 'hls_path' ),
+			'transcript_path'      => '',
+			'transcoded_mp4_url'   => (string) $request->get_param( 'mp4_url' ),
+		);
+
+		if ( empty( $target_url ) ) {
+			$api_key = get_option( 'rtgodam-api-key', '' );
+			if ( ! empty( $api_key ) && ! empty( $job_id ) ) {
+				$versions_payload = $this->fetch_media_versions_payload( $job_id, $api_key );
+				if ( ! is_wp_error( $versions_payload ) ) {
+					$target_version_row = $this->get_active_media_version_row( $this->extract_media_versions_from_payload( $versions_payload ) );
+					$target_url         = $this->get_version_media_source_url( $target_version_row, $attachment_id );
+				}
+			}
+		}
+
+		$this->complete_pending_media_version_replace( $attachment_id, $target_url, $target_version_row );
+	}
+
+	/**
+	 * Complete pending media URL replacement when both source and target URLs are known.
+	 *
+	 * @param int    $attachment_id      Attachment ID.
+	 * @param string $target_url         New active source URL.
+	 * @param array  $target_version_row Target version row.
+	 * @return array
+	 */
+	private function complete_pending_media_version_replace( $attachment_id, $target_url, $target_version_row = array() ) {
+		$source_url           = (string) get_post_meta( $attachment_id, 'rtgodam_pending_version_source_url', true );
+		$source_thumbnail_url = (string) get_post_meta( $attachment_id, 'rtgodam_pending_version_source_thumbnail_url', true );
+		$target_thumbnail_url = $this->get_version_thumbnail_url( $target_version_row );
+
+		if ( empty( $source_url ) ) {
+			return array(
+				'completed' => false,
+				'reason'    => 'missing_source_url',
+			);
+		}
+
+		if ( empty( $target_url ) ) {
+			return array(
+				'completed' => false,
+				'reason'    => 'missing_target_url',
+			);
+		}
+
+		if ( $source_url === $target_url ) {
+			return array(
+				'completed' => false,
+				'reason'    => 'target_matches_source',
+				'sourceUrl' => $source_url,
+				'targetUrl' => $target_url,
+			);
+		}
+
+		$this->replace_media_url_across_site( $attachment_id, $source_url, $target_url, $target_version_row, $source_thumbnail_url, $target_thumbnail_url );
+
+		$job_name = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+		$this->maybe_request_image_subsizes_refresh( $attachment_id, $job_name );
+
+		delete_post_meta( $attachment_id, 'rtgodam_pending_version_source_url' );
+		delete_post_meta( $attachment_id, 'rtgodam_pending_version_source_thumbnail_url' );
+
+		return array(
+			'completed' => true,
+			'sourceUrl' => $source_url,
+			'targetUrl' => $target_url,
+		);
+	}
+
+	/**
+	 * Request image sub-sizes refresh for image attachments after version changes.
+	 *
+	 * @param int    $attachment_id Attachment ID.
+	 * @param string $job_name      GoDAM job ID.
+	 * @return void
+	 */
+	private function maybe_request_image_subsizes_refresh( $attachment_id, $job_name ) {
+		$attachment_mime_type = (string) get_post_mime_type( $attachment_id );
+		if ( 'image' !== substr( $attachment_mime_type, 0, 5 ) ) {
+			return;
+		}
+
+		if ( empty( $job_name ) ) {
+			return;
+		}
+
+		$subsize_result = \RTGODAM\Inc\REST_API\Media_Library::get_instance()->request_image_subsizes_for_attachment( $job_name, $attachment_id );
+
+		if ( ( is_wp_error( $subsize_result ) || empty( $subsize_result ) ) && defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Debug log for troubleshooting metadata refresh.
+				sprintf( 'GoDAM: Failed to request image sub-sizes refresh for attachment ID %d after version update.', (int) $attachment_id )
+			);
+		}
+	}
+
+	/**
+	 * Fetch all versions payload from GoDAM API.
+	 *
+	 * @param string $job_name GoDAM job name.
+	 * @param string $api_key  API key.
+	 * @return array|\WP_Error
+	 */
+	private function fetch_media_versions_payload( $job_name, $api_key ) {
+		$endpoint = trailingslashit( RTGODAM_API_BASE ) . 'api/method/godam_core.api.media.list_all_versions';
+		$url      = add_query_arg(
+			array(
+				'job_name' => $job_name,
+				'api_key'  => $api_key,
+			),
+			$endpoint
+		);
+
+		$response = wp_remote_get(
+			$url,
+			array(
+				'timeout' => 5, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$status_code = wp_remote_retrieve_response_code( $response );
+		$body        = wp_remote_retrieve_body( $response );
+		$decoded     = json_decode( $body, true );
+
+		if ( 200 !== $status_code || ! is_array( $decoded ) ) {
+			return new \WP_Error( 'godam_versions_fetch_failed', __( 'Failed to fetch media versions from GoDAM.', 'godam' ) );
+		}
+
+		return $decoded;
+	}
+
+	/**
+	 * Extract versions array from GoDAM list versions payload.
+	 *
+	 * @param array $payload API payload.
+	 * @return array
+	 */
+	private function extract_media_versions_from_payload( $payload ) {
+		if ( ! is_array( $payload ) || empty( $payload['message']['versions'] ) || ! is_array( $payload['message']['versions'] ) ) {
+			return array();
+		}
+
+		return $payload['message']['versions'];
+	}
+
+	/**
+	 * Get active version row from versions list.
+	 *
+	 * @param array $versions Versions list.
+	 * @return array
+	 */
+	private function get_active_media_version_row( $versions ) {
+		if ( empty( $versions ) || ! is_array( $versions ) ) {
+			return array();
+		}
+
+		foreach ( $versions as $version ) {
+			if ( ! empty( $version['is_active'] ) ) {
+				return is_array( $version ) ? $version : array();
+			}
+		}
+
+		return array();
+	}
+
+	/**
+	 * Get version row by version number.
+	 *
+	 * @param array $versions       Versions list.
+	 * @param int   $version_number Version number.
+	 * @return array
+	 */
+	private function get_media_version_row_by_number( $versions, $version_number ) {
+		if ( empty( $versions ) || ! is_array( $versions ) ) {
+			return array();
+		}
+
+		foreach ( $versions as $version ) {
+			if ( isset( $version['version'] ) && absint( $version['version'] ) === absint( $version_number ) ) {
+				return is_array( $version ) ? $version : array();
+			}
+		}
+
+		return array();
+	}
+
+	/**
+	 * Resolve media source URL for a version row by attachment type.
+	 *
+	 * @param array $version_row   Version row.
+	 * @param int   $attachment_id Attachment ID.
+	 * @return string
+	 */
+	private function get_version_media_source_url( $version_row, $attachment_id ) {
+		if ( empty( $version_row ) || ! is_array( $version_row ) ) {
+			return '';
+		}
+
+		$is_video = ( 'video' === substr( (string) get_post_mime_type( $attachment_id ), 0, 5 ) );
+
+		if ( $is_video ) {
+			$url = isset( $version_row['transcoded_mp4_url'] ) ? (string) $version_row['transcoded_mp4_url'] : '';
+			if ( empty( $url ) ) {
+				$url = isset( $version_row['transcoded_file_path'] ) ? (string) $version_row['transcoded_file_path'] : '';
+			}
+
+			return $url;
+		}
+
+		return isset( $version_row['transcoded_file_path'] ) ? (string) $version_row['transcoded_file_path'] : '';
+	}
+
+	/**
+	 * Resolve thumbnail URL for a version row.
+	 *
+	 * @param array $version_row Version row.
+	 * @return string
+	 */
+	private function get_version_thumbnail_url( $version_row ) {
+		if ( empty( $version_row ) || ! is_array( $version_row ) ) {
+			return '';
+		}
+
+		return isset( $version_row['thumbnail_url'] ) ? (string) $version_row['thumbnail_url'] : '';
+	}
+
+	/**
+	 * Get target URL from callback request as fallback.
+	 *
+	 * @param int              $attachment_id Attachment ID.
+	 * @param \WP_REST_Request $request      Callback request.
+	 * @return string
+	 */
+	private function get_target_url_from_callback_request( $attachment_id, $request ) {
+		$is_video = ( 'video' === substr( (string) get_post_mime_type( $attachment_id ), 0, 5 ) );
+
+		if ( $is_video ) {
+			$mp4_url = (string) $request->get_param( 'mp4_url' );
+			if ( ! empty( $mp4_url ) ) {
+				return $mp4_url;
+			}
+		}
+
+		return (string) $request->get_param( 'download_url' );
+	}
+
+	/**
+	 * Replace source URL with target URL in post content, attachment guid and related meta.
+	 *
+	 * @param int    $attachment_id      Attachment ID.
+	 * @param string $source_url         Previous active source URL.
+	 * @param string $target_url         New active source URL.
+	 * @param array  $target_version_row Target version row.
+	 * @param string $source_thumbnail_url Previous active thumbnail URL.
+	 * @param string $target_thumbnail_url New active thumbnail URL.
+	 * @return void
+	 */
+	private function replace_media_url_across_site( $attachment_id, $source_url, $target_url, $target_version_row = array(), $source_thumbnail_url = '', $target_thumbnail_url = '' ) {
+		if ( empty( $attachment_id ) || empty( $source_url ) || empty( $target_url ) || $source_url === $target_url ) {
+			return;
+		}
+
+		// Build the list of source URLs to search-replace: always include the CDN URL, and also
+		// include the non-CDN (default WP) URL when stored, so both existing variants in post
+		// content and guid are replaced by the new target URL.
+		$saved_attachment_url = get_post_meta( $attachment_id, 'rtgodam_pending_default_attachment_url', true );
+
+		$search_source_urls = array( $source_url );
+		if ( ! empty( $saved_attachment_url ) && 'completed' !== $saved_attachment_url && $saved_attachment_url !== $source_url ) {
+			$search_source_urls[] = $saved_attachment_url;
+		}
+
+		global $wpdb;
+
+		$public_post_types = array_diff(
+			get_post_types( array( 'public' => true ), 'names' ),
+			array( 'attachment' )
+		);
+		$public_post_types = array_values( $public_post_types );
+
+		$updated_post_ids = array();
+
+		// Replace URL within the post content area of all public post types.
+		foreach ( $search_source_urls as $search_source_url ) {
+			$like_source = '%' . $wpdb->esc_like( $search_source_url ) . '%';
+
+			if ( ! empty( $public_post_types ) ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Required for efficient targeted cache cleanup of changed posts.
+				$found_post_ids = $wpdb->get_col(
+					$wpdb->prepare(
+						"SELECT ID FROM {$wpdb->posts} WHERE post_type IN (" . implode( ', ', array_fill( 0, count( $public_post_types ), '%s' ) ) . ') AND post_content LIKE %s',
+						...array_merge( $public_post_types, array( $like_source ) )
+					)
+				);
+
+				// Update only the identified posts using their IDs.
+				if ( ! empty( $found_post_ids ) ) {
+					$found_post_ids   = array_values( array_filter( array_map( 'absint', $found_post_ids ) ) );
+					$updated_post_ids = array_values( array_unique( array_merge( $updated_post_ids, $found_post_ids ) ) );
+
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Direct update is required for high-volume URL replacement.
+					$wpdb->query(
+						// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Dynamic IN placeholders are generated to match sanitized post IDs.
+						$wpdb->prepare(
+							"UPDATE {$wpdb->posts} SET post_content = REPLACE(post_content, %s, %s) WHERE ID IN (" . implode( ', ', array_fill( 0, count( $found_post_ids ), '%d' ) ) . ')',
+							$search_source_url,
+							$target_url,
+							...$found_post_ids
+						)
+					);
+				}
+			}
+		}
+
+		// Update the attachment guid directly once, since we already know the attachment ID.
+		// This avoids repeating a search-replace pass over the attachment row for each source URL.
+		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$wpdb->prepare(
+				"UPDATE {$wpdb->posts} SET guid = %s WHERE ID = %d",
+				$target_url,
+				$attachment_id
+			)
+		);
+
+		// For video attachments, also replace thumbnail URLs in post content if the thumbnail URL has changed, to ensure embedded video players show the updated thumbnail.
+		if ( ! empty( $source_thumbnail_url ) && ! empty( $target_thumbnail_url ) && $source_thumbnail_url !== $target_thumbnail_url ) {
+			$like_source_thumbnail = '%' . $wpdb->esc_like( $source_thumbnail_url ) . '%';
+
+			if ( ! empty( $public_post_types ) ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Required for efficient targeted cache cleanup of changed posts.
+				$thumbnail_post_ids = $wpdb->get_col(
+					$wpdb->prepare(
+						"SELECT ID FROM {$wpdb->posts} WHERE post_type IN (" . implode( ', ', array_fill( 0, count( $public_post_types ), '%s' ) ) . ') AND post_content LIKE %s',
+						...array_merge( $public_post_types, array( $like_source_thumbnail ) )
+					)
+				);
+
+				if ( ! empty( $thumbnail_post_ids ) ) {
+					$thumbnail_post_ids = array_values( array_filter( array_map( 'absint', $thumbnail_post_ids ) ) );
+					$updated_post_ids   = array_values( array_unique( array_merge( $updated_post_ids, $thumbnail_post_ids ) ) );
+
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Direct update is required for high-volume poster URL replacement.
+					$wpdb->query(
+						// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Dynamic IN placeholders are generated to match sanitized post IDs.
+						$wpdb->prepare(
+							"UPDATE {$wpdb->posts} SET post_content = REPLACE(post_content, %s, %s) WHERE ID IN (" . implode( ', ', array_fill( 0, count( $thumbnail_post_ids ), '%d' ) ) . ')',
+							$source_thumbnail_url,
+							$target_thumbnail_url,
+							...$thumbnail_post_ids
+						)
+					);
+				}
+			}
+		}
+
+		// Finally, update attachment meta with new active version info.
+		if ( is_array( $target_version_row ) ) {
+			if ( array_key_exists( 'thumbnail_url', $target_version_row ) && ! empty( $target_version_row['thumbnail_url'] ) ) {
+				update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', (string) $target_version_row['thumbnail_url'] );
+			}
+
+			if ( array_key_exists( 'thumbnails', $target_version_row ) && ! empty( $target_version_row['thumbnails'] ) ) {
+				$thumbnails = array();
+				foreach ( $target_version_row['thumbnails'] as $key => $thumbnail ) {
+					$thumbnails[] = $thumbnail['thumbnail_url'];
+				}
+				if ( ! empty( $thumbnails ) ) {
+					update_post_meta( $attachment_id, 'rtgodam_media_thumbnails', $thumbnails );
+				}
+			}
+
+			if ( array_key_exists( 'transcoded_file_path', $target_version_row ) && ! empty( $target_version_row['transcoded_file_path'] ) ) {
+				update_post_meta( $attachment_id, 'rtgodam_transcoded_url', (string) $target_version_row['transcoded_file_path'] );
+			}
+
+			if ( array_key_exists( 'transcoded_hls_path', $target_version_row ) && ! empty( $target_version_row['transcoded_hls_path'] ) ) {
+				update_post_meta( $attachment_id, 'rtgodam_hls_transcoded_url', (string) $target_version_row['transcoded_hls_path'] );
+			}
+
+			if ( array_key_exists( 'transcript_path', $target_version_row ) && ! empty( $target_version_row['transcript_path'] ) ) {
+				update_post_meta( $attachment_id, 'rtgodam_transcript_path', (string) $target_version_row['transcript_path'] );
+			}
+		}
+
+		$this->clean_updated_posts_cache( $updated_post_ids );
+		clean_post_cache( $attachment_id );
+		wp_cache_delete( $attachment_id, 'post_meta' );
+		// Mark the pending default attachment URL as completed to break the loop.
+		update_post_meta( $attachment_id, 'rtgodam_pending_default_attachment_url', 'completed' );
+	}
+
+	/**
+	 * Clean post cache for updated post IDs.
+	 *
+	 * @param array $post_ids Updated post IDs.
+	 * @return void
+	 */
+	private function clean_updated_posts_cache( $post_ids ) {
+		if ( empty( $post_ids ) || ! is_array( $post_ids ) ) {
+			return;
+		}
+
+		foreach ( array_unique( array_map( 'absint', $post_ids ) ) as $post_id ) {
+			if ( $post_id > 0 ) {
+				clean_post_cache( $post_id );
+			}
+		}
+	}
+
+	/**
+	 * Validates if uploaded file mime is compatible with existing attachment.
+	 *
+	 * @param int    $attachment_id Attachment ID.
+	 * @param string $uploaded_mime Uploaded file mime.
+	 * @return bool True if compatible.
+	 */
+	private function is_compatible_version_upload_mime( $attachment_id, $uploaded_mime ) {
+		$current_mime = sanitize_mime_type( get_post_mime_type( $attachment_id ) );
+		if ( empty( $current_mime ) || empty( $uploaded_mime ) ) {
+			return false;
+		}
+
+		if ( $current_mime === $uploaded_mime ) {
+			return true;
+		}
+
+		$current_primary  = strtok( $current_mime, '/' );
+		$uploaded_primary = strtok( $uploaded_mime, '/' );
+
+		return ( ! empty( $current_primary ) && $current_primary === $uploaded_primary );
+	}
+
+	/**
+	 * Store the current attachment URL in post meta before replacement for later reference.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return void
+	 */
+	private function maybe_store_attachment_url( $attachment_id ) {
+		if ( empty( $attachment_id ) ) {
+			return;
+		}
+
+		// If we have already stored the original attachment URL and marked as completed, we can skip storing again.
+		if ( get_post_meta( $attachment_id, 'rtgodam_pending_default_attachment_url', true ) === 'completed' ) {
+			return;
+		}
+
+		remove_filter( 'wp_get_attachment_url', array( $this, 'filter_attachment_url_for_virtual_media' ), 10 );
+		$current_attachment_url = wp_get_attachment_url( $attachment_id );
+		add_filter( 'wp_get_attachment_url', array( $this, 'filter_attachment_url_for_virtual_media' ), 10, 2 );
+
+		if ( ! empty( $current_attachment_url ) ) {
+			update_post_meta( $attachment_id, 'rtgodam_pending_default_attachment_url', esc_url_raw( $current_attachment_url ) );
+		}
+	}
+
 	/**
 	 * Display HTTP authentication warning notice.
 	 *
