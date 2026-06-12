@@ -107,6 +107,7 @@ class Runner {
 		),
 		'1.12.0' => array(
 			Elementor_Gallery_Widget_V1_To_V2::class,
+			WPBakery_Gallery_Shortcode_V1_To_V2::class,
 		),
 	);
 

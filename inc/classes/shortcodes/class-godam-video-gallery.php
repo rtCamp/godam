@@ -42,6 +42,10 @@ class GoDAM_Video_Gallery {
 			array(
 				'mode'                => 'query',
 				'ids'                 => '',
+				// WPBakery `param_group` value (URL-encoded JSON array of rows,
+				// each row a {video_id: <id>}). When present and `ids` is
+				// empty, it is decoded and folded into `ids` below.
+				'handpicked_items'    => '',
 				'count'               => 6,
 				'orderby'             => 'date',
 				'order'               => 'desc',
@@ -66,6 +70,27 @@ class GoDAM_Video_Gallery {
 
 		foreach ( array( 'infinite_scroll', 'enable_more_items', 'show_title', 'engagements' ) as $bool_key ) {
 			$atts[ $bool_key ] = filter_var( $atts[ $bool_key ], FILTER_VALIDATE_BOOLEAN );
+		}
+
+		// WPBakery saves param_group as rawurlencode(json_encode([{video_id: …}, …])).
+		// Decode it and fold each row's video_id into the comma-separated `ids`
+		// list the template path expects. Explicit `ids` always wins so a
+		// hand-written shortcode stays predictable.
+		if ( '' === trim( (string) $atts['ids'] ) && ! empty( $atts['handpicked_items'] ) ) {
+			$decoded_group = json_decode( rawurldecode( (string) $atts['handpicked_items'] ), true );
+
+			if ( is_array( $decoded_group ) ) {
+				$collected_ids = array();
+				foreach ( $decoded_group as $row ) {
+					if ( is_array( $row ) && ! empty( $row['video_id'] ) ) {
+						$collected_ids[] = absint( $row['video_id'] );
+					}
+				}
+				$collected_ids = array_filter( $collected_ids );
+				if ( ! empty( $collected_ids ) ) {
+					$atts['ids'] = implode( ',', $collected_ids );
+				}
+			}
 		}
 
 		// Load the template now (no-op render — $attributes is not in scope yet)
