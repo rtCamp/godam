@@ -81,6 +81,9 @@ const LayersHeader = ( { layer, goBack, duration, layerName: customLayerName } )
 								// Remove leading zeros
 								let normalizedValue = value.replace( /^0+(?=\d)/, '' );
 
+								// Prevent negative values
+								normalizedValue = parseFloat( normalizedValue ) < 0 ? '0' : normalizedValue;
+
 								// Limit to 2 decimal places
 								if ( normalizedValue.includes( '.' ) ) {
 									const [ intPart, decimalPart ] = normalizedValue.split( '.' );
