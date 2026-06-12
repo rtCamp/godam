@@ -69,7 +69,7 @@ const LayersHeader = ( { layer, goBack, duration, layerName: customLayerName } )
 				<Button icon={ arrowLeft } onClick={ goBack } />
 				<p className="text-base flex items-center gap-1">
 					{ layerName }
-					{ __( ' layer at', 'godam' ) }{ isEditing ? (
+					{ ' ' + __( 'layer at', 'godam' ) }{ isEditing ? (
 						<TextControl
 							__nextHasNoMarginBottom={ true }
 							__next40pxDefaultSize={ false }
@@ -90,7 +90,8 @@ const LayersHeader = ( { layer, goBack, duration, layerName: customLayerName } )
 								// Convert to number for validation
 								const floatValue = parseFloat( normalizedValue );
 
-								if ( floatValue > duration ) {
+								// Reject negative or over-duration values
+								if ( floatValue < 0 || floatValue > duration ) {
 									return;
 								}
 
