@@ -22,8 +22,8 @@ class GoDAM_Video extends Base {
 	public function set_default_config() {
 		return array(
 			'name'            => 'godam-video',
-			'title'           => _x( 'GoDAM Video', 'Widget Title', 'godam' ),
-			'icon'            => 'eicon-video',
+			'title'           => _x( 'Video', 'Widget Title', 'godam' ),
+			'icon'            => 'godam-eicon-video',
 			'categories'      => array( 'godam' ),
 			'keywords'        => array( 'godam', 'video' ),
 			'depended_script' => array( 'godam-player-frontend-script', 'godam-player-analytics-script', 'godam-player-frontend-script', 'godam-elementor-frontend' ),

@@ -28,8 +28,8 @@ class Godam_Gallery extends Base {
 	public function set_default_config() {
 		return array(
 			'name'            => 'godam-gallery',
-			'title'           => esc_html_x( 'GoDAM Gallery', 'Widget Title', 'godam' ),
-			'icon'            => 'eicon-gallery-grid',
+			'title'           => esc_html_x( 'Video Gallery', 'Widget Title', 'godam' ),
+			'icon'            => 'godam-eicon-gallery',
 			'categories'      => array( 'godam' ),
 			'keywords'        => array( 'godam', 'gallery', 'video' ),
 			'depended_script' => array( 'godam-player-frontend-script', 'godam-player-analytics-script', 'godam-gallery-v2-view-script', 'godam-elementor-frontend' ),
