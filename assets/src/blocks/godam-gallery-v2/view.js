@@ -480,4 +480,9 @@ const { __ } = require( '@wordpress/i18n' );
 	} else {
 		initGalleries();
 	}
+
+	// Expose init so dynamic renderers (e.g. the Elementor editor preview, where
+	// the widget is injected after DOMContentLoaded) can re-initialise galleries.
+	// initGalleries() is idempotent via the data-initialized guard.
+	window.GodamGalleryV2 = { init: initGalleries };
 }() );

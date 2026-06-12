@@ -22,8 +22,8 @@ class GoDAM_Video extends Base {
 	public function set_default_config() {
 		return array(
 			'name'            => 'godam-video',
-			'title'           => _x( 'GoDAM Video', 'Widget Title', 'godam' ),
-			'icon'            => 'eicon-video',
+			'title'           => _x( 'Video', 'Widget Title', 'godam' ),
+			'icon'            => 'godam-eicon-video',
 			'categories'      => array( 'godam' ),
 			'keywords'        => array( 'godam', 'video' ),
 			'depended_script' => array( 'godam-player-frontend-script', 'godam-player-analytics-script', 'godam-player-frontend-script', 'godam-elementor-frontend' ),
@@ -289,10 +289,14 @@ class GoDAM_Video extends Base {
 		$this->add_control(
 			'muted',
 			array(
-				'label'     => esc_html__( 'Muted', 'godam' ),
-				'type'      => Controls_Manager::SWITCHER,
-				'default'   => 'no',
-				'condition' => array(
+				'label'       => esc_html__( 'Muted', 'godam' ),
+				'type'        => Controls_Manager::SWITCHER,
+				'default'     => 'no',
+				'description' => esc_html__( 'Forced on when Autoplay is enabled — most browsers block autoplay with sound.', 'godam' ),
+				// Visual disable when autoplay is on is applied by editor.js
+				// (mirrors the block, which disables rather than hides).
+				'classes'     => 'godam-elementor-autoplay-locked',
+				'condition'   => array(
 					'video-file[url]!' => '',
 				),
 			)
@@ -311,17 +315,93 @@ class GoDAM_Video extends Base {
 		);
 
 		$this->add_control(
-			'preload',
+			'performance_mode',
 			array(
-				'label'     => esc_html__( 'Preload', 'godam' ),
+				'label'     => esc_html__( 'Performance Mode', 'godam' ),
 				'type'      => Controls_Manager::SELECT,
-				'default'   => 'metadata',
+				'default'   => 'balanced',
 				'options'   => array(
-					'auto'     => esc_html__( 'Auto', 'godam' ),
-					'metadata' => esc_html__( 'Metadata', 'godam' ),
-					'none'     => esc_html_x( 'None', 'Preload value', 'godam' ),
+					'balanced' => esc_html__( 'Balanced', 'godam' ),
+					'priority' => esc_html__( 'Priority', 'godam' ),
 				),
 				'condition' => array(
+					'video-file[url]!' => '',
+				),
+			)
+		);
+
+		$this->add_control(
+			'hover_select',
+			array(
+				'label'       => esc_html__( 'Hover Option', 'godam' ),
+				'type'        => Controls_Manager::SELECT,
+				'default'     => 'none',
+				'options'     => array(
+					'none'                 => esc_html__( 'None', 'godam' ),
+					'show-player-controls' => esc_html__( 'Show Player Controls', 'godam' ),
+					'start-preview'        => esc_html__( 'Start Preview', 'godam' ),
+				),
+				'description' => esc_html__( 'Choose the action to perform on video hover. Disabled when Autoplay is on.', 'godam' ),
+				// Visual disable when autoplay is on is applied by editor.js
+				// (mirrors the block, which disables rather than hides).
+				'classes'     => 'godam-elementor-autoplay-locked',
+				'condition'   => array(
+					'video-file[url]!' => '',
+				),
+			)
+		);
+
+		$this->add_control(
+			'show_share_button',
+			array(
+				'label'     => esc_html__( 'Show Share Button', 'godam' ),
+				'type'      => Controls_Manager::SWITCHER,
+				'default'   => '',
+				'condition' => array(
+					'video-file[url]!' => '',
+				),
+			)
+		);
+
+		if ( rtgodam_is_engagement_feature_enabled() ) {
+			$this->add_control(
+				'engagements',
+				array(
+					'label'     => esc_html__( 'Enable Engagements', 'godam' ),
+					'type'      => Controls_Manager::SWITCHER,
+					'default'   => '',
+					'condition' => array(
+						'video-file[url]!' => '',
+					),
+				)
+			);
+		}
+
+		$this->add_control(
+			'aspect_ratio',
+			array(
+				'label'       => esc_html__( 'Aspect Ratio', 'godam' ),
+				'type'        => Controls_Manager::SELECT,
+				'default'     => 'responsive',
+				'options'     => array(
+					'responsive' => esc_html__( 'Original', 'godam' ),
+					'16:9'       => esc_html__( '16:9 (Standard)', 'godam' ),
+				),
+				'description' => esc_html__( 'Choose the aspect ratio for the video player.', 'godam' ),
+				'condition'   => array(
+					'video-file[url]!' => '',
+				),
+			)
+		);
+
+		$this->add_control(
+			'player_height',
+			array(
+				'label'       => esc_html__( 'Player Height', 'godam' ),
+				'type'        => Controls_Manager::TEXT,
+				'placeholder' => '400px',
+				'description' => esc_html__( 'Constrain player height (e.g. 400px, 50vh). Width is derived from aspect ratio.', 'godam' ),
+				'condition'   => array(
 					'video-file[url]!' => '',
 				),
 			)
@@ -337,6 +417,26 @@ class GoDAM_Video extends Base {
 				'label_block' => true,
 				'condition'   => array(
 					'video-file[url]!' => '',
+				),
+			)
+		);
+
+		// Container for the JS-rendered thumbnail grid (auto-generated and
+		// custom thumbnails for the selected video). Hydrated by
+		// assets/src/js/elementor/editor.js — see the
+		// `panel/open_editor/widget/godam-video` handler.
+		$this->add_control(
+			'godam_thumbnail_picker',
+			array(
+				'type'      => Controls_Manager::RAW_HTML,
+				'raw'       => '<div class="godam-elementor-thumbnail-picker" data-godam-thumbnail-picker>'
+					. '<p class="godam-elementor-thumbnail-picker__label">' . esc_html__( 'Or pick an auto-generated thumbnail', 'godam' ) . '</p>'
+					. '<div class="godam-elementor-thumbnail-picker__grid" data-godam-thumbnail-grid></div>'
+					. '<p class="godam-elementor-thumbnail-picker__empty" data-godam-thumbnail-empty hidden>' . esc_html__( 'No auto-generated thumbnails available for this video.', 'godam' ) . '</p>'
+					. '</div>',
+				'condition' => array(
+					'video-file[url]!' => '',
+					'video-file[id]!'  => '',
 				),
 			)
 		);
@@ -374,16 +474,32 @@ class GoDAM_Video extends Base {
 	 * @access protected
 	 */
 	protected function render() {
-		$widget_video_file   = $this->get_settings_for_display( 'video-file' );
-		$widget_poster_file  = $this->get_settings_for_display( 'poster' );
-		$widget_autoplay     = 'yes' === $this->get_settings_for_display( 'autoplay' ) ? true : false;
-		$widget_controls     = 'yes' === $this->get_settings_for_display( 'controls' ) ? true : false;
-		$widget_muted        = 'yes' === $this->get_settings_for_display( 'muted' ) ? true : false;
-		$widget_loop         = 'yes' === $this->get_settings_for_display( 'loop' ) ? true : false;
-		$widget_preload      = $this->get_settings_for_display( 'preload' ) ?? 'auto';
-		$widget_show_caption = 'yes' === $this->get_settings_for_display( 'enable_caption' );
-		$widget_caption      = $this->get_settings_for_display( 'caption' ) ?? '';
-		$widget_text_tracks  = $this->get_settings_for_display( 'text_tracks' ) ?? '';
+		$widget_video_file        = $this->get_settings_for_display( 'video-file' );
+		$widget_poster_file       = $this->get_settings_for_display( 'poster' );
+		$widget_autoplay          = 'yes' === $this->get_settings_for_display( 'autoplay' ) ? true : false;
+		$widget_controls          = 'yes' === $this->get_settings_for_display( 'controls' ) ? true : false;
+		$widget_muted             = 'yes' === $this->get_settings_for_display( 'muted' ) ? true : false;
+		$widget_loop              = 'yes' === $this->get_settings_for_display( 'loop' ) ? true : false;
+		$widget_show_caption      = 'yes' === $this->get_settings_for_display( 'enable_caption' );
+		$widget_caption           = $this->get_settings_for_display( 'caption' ) ?? '';
+		$widget_text_tracks       = $this->get_settings_for_display( 'text_tracks' ) ?? '';
+		$widget_performance_mode  = $this->get_settings_for_display( 'performance_mode' ) ?? 'balanced';
+		$widget_hover_select      = $this->get_settings_for_display( 'hover_select' ) ?? 'none';
+		$widget_show_share_button = 'yes' === $this->get_settings_for_display( 'show_share_button' );
+		$widget_engagements       = rtgodam_is_engagement_feature_enabled() && 'yes' === $this->get_settings_for_display( 'engagements' );
+		$widget_player_height     = $this->get_settings_for_display( 'player_height' ) ?? '';
+		$widget_aspect_ratio      = $this->get_settings_for_display( 'aspect_ratio' ) ?? 'responsive';
+
+		// Mirror the block: hoverSelect is mutually exclusive with autoplay.
+		if ( $widget_autoplay ) {
+			$widget_hover_select = 'none';
+		}
+
+		// Mirror the block: autoplay must be muted (browser policies block
+		// autoplay-with-sound), so force muted on whenever autoplay is enabled.
+		if ( $widget_autoplay ) {
+			$widget_muted = true;
+		}
 
 		$formatted_tracks = array();
 
@@ -405,20 +521,29 @@ class GoDAM_Video extends Base {
 			return;
 		}
 
+		// Always pass the attachment ID when available so the template can fall
+		// back to the media-library default thumbnail (rtgodam_media_video_thumbnail
+		// meta) when no explicit poster is set — matching the block's behavior.
+		$widget_attachment_id = isset( $widget_video_file['id'] ) ? $widget_video_file['id'] : null;
+
 		$attributes = array(
-			'id'             => ! isset( $widget_video_file['sources'] ) ? $widget_video_file['id'] : null,
-			'sources'        => isset( $widget_video_file['sources'] ) ? $widget_video_file['sources'] : array(),
-			'src'            => $widget_video_file['url'],
-			'transcoded_url' => '',
-			'poster'         => $widget_poster_file['url'],
-			'aspectRatio'    => '',
-			'autoplay'       => $widget_autoplay,
-			'controls'       => $widget_controls,
-			'muted'          => $widget_muted,
-			'loop'           => $widget_loop,
-			'preload'        => $widget_preload,
-			'caption'        => $widget_caption,
-			'tracks'         => $formatted_tracks,
+			'id'              => $widget_attachment_id,
+			'sources'         => isset( $widget_video_file['sources'] ) ? $widget_video_file['sources'] : array(),
+			'src'             => $widget_video_file['url'],
+			'transcoded_url'  => '',
+			'poster'          => $widget_poster_file['url'],
+			'aspectRatio'     => $widget_aspect_ratio,
+			'autoplay'        => $widget_autoplay,
+			'controls'        => $widget_controls,
+			'muted'           => $widget_muted,
+			'loop'            => $widget_loop,
+			'caption'         => $widget_caption,
+			'tracks'          => $formatted_tracks,
+			'performanceMode' => $widget_performance_mode,
+			'hoverSelect'     => $widget_hover_select,
+			'showShareButton' => $widget_show_share_button,
+			'engagements'     => $widget_engagements,
+			'playerHeight'    => $widget_player_height,
 		);
 
 		$is_elementor_widget = true;
