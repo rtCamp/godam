@@ -146,20 +146,6 @@ class Dynamic_Gallery extends Base {
 		$args['offset']        = $offset;
 		$args['no_found_rows'] = true;
 
-		// rtgodam_gallery_v2_build_query_args() restricts orderby to date/title.
-		// The REST endpoint additionally supports duration and size to mirror
-		// the block's full orderby UI on Load More responses.
-		$raw_orderby = sanitize_key( $request->get_param( 'orderby' ) );
-		if ( 'duration' === $raw_orderby ) {
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for sorting by video duration.
-			$args['meta_key'] = '_video_duration';
-			$args['orderby']  = 'meta_value_num';
-		} elseif ( 'size' === $raw_orderby ) {
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for sorting by video file size.
-			$args['meta_key'] = '_video_file_size';
-			$args['orderby']  = 'meta_value_num';
-		}
-
 		$query = new \WP_Query( $args );
 		ob_start();
 
