@@ -288,7 +288,7 @@ class WPBakery_Gallery_Shortcode_V1_To_V2 {
 		if ( isset( $identical[1], $identical[6] ) && '[' === $identical[1] && ']' === $identical[6] ) {
 			return $original;
 		}
-		$attrs    = isset( $identical[3] ) ? shortcode_parse_atts( $identical[3] ) : array();
+		$attrs = isset( $identical[3] ) ? shortcode_parse_atts( $identical[3] ) : array();
 		if ( ! is_array( $attrs ) ) {
 			$attrs = array();
 		}
