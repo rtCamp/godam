@@ -1,10 +1,10 @@
 === GoDAM - Organize WordPress Media Library & File Manager with Unlimited Folders for Images, Videos & more ===
-Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, joelabreo, mi5t4n, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia, kishu7270, opurockey, utsavladani, whiteshadow01, ahmarzaidi, im3dabasia1, rudrakshigupta
+Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, joelabreo, mi5t4n, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia, kishu7270, opurockey, utsavladani, whiteshadow01, ahmarzaidi, im3dabasia1, rudrakshigupta, sabbir1991, shreyasikhar26
 Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.10.0
+Stable tag: 1.12.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -219,30 +219,19 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
-= v1.10.0 (May 19, 2026) =
+= v1.12.0 (June 11, 2026) =
 
-- Feat: Added Unique Viewers and Replay Ratio metrics in Analytics.
-- Feat: Extended Video SEO schema with Shoppable Video support.
+- Feat: Added Layer Analytics feature to track how viewers interact with video layers (CTAs, hotspots, forms, and more), with per-layer engagement and conversion metrics in the analytics dashboard.
 
-= v1.9.0 (May 8, 2026) =
+= v1.11.2 (June 8, 2026) =
 
-- Feat: Introduced WooCommerce integration — first beta release of GoDAM for WooCommerce support.
-- Fix: Disabled hover option when autoplay is enabled in the Video block.
-- Fix: Resolved Gallery Carousel scroll issue on iOS devices.
-- Tweak: Revamped GoDAM blocks to Video, Video Gallery, Audio and Document blocks.
+- Feat: Added a setting to disable GoDAM's media library features, allowing GoDAM to coexist with another media or DAM plugin without changing the WordPress media library.
 
-= v1.8.0 (April 29, 2026) =
+= v1.11.1 (June 3, 2026) =
 
-- Feat: Enhanced GoDAM Gallery block with improved layouts and controls.
-- Feat: Introduced Performance Mode settings for video and gallery blocks.
-- Feat: Implemented blur-up thumbnail optimization in Video and Video Gallery blocks.
-- Tweak: Replaced gallery item width range input with S/M/L size selector.
-- Tweak: Performance improvements for GoDAM blocks.
-- Fix: Improved GoDAM Video and Video Gallery Block UX.
-- Fix: Added GoDAM Gallery migration support.
-- Fix: Removed GoDAM CPT and added migration for existing data.
-- Fix: Fixed alignment issues on GoDAM blocks.
-- Fix: Addressed security vulnerabilities.
+- Fix: GoDAM Video block aspect ratio for editor and frontend.
+- Fix: Silent PHP Linter errors.
+- Fix: Broken Admin Notice when WooCommerce is not present on a site in a multisite network.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 

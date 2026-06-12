@@ -789,3 +789,4 @@ export function calculateTrendPercentage( sortedData, key ) {
 	}
 	return ( ( last - first ) / first ) * 100;
 }
+

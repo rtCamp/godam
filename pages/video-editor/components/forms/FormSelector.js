@@ -26,25 +26,27 @@ function FormSelector( { className, disabled, formID, forms, handleChange } ) {
 
 	return (
 		<>
-			<ComboboxControl
-				disabled={ disabled }
-				__next40pxDefaultSize
-				__nextHasNoMarginBottom
-				label={ __( 'Select form', 'godam' ) }
-				className={ `${ className } ${ disabled ? 'disabled' : '' }` }
-				value={ form }
-				onChange={ setFormData }
-				options={ filteredOptions }
-				onFilterValueChange={ ( inputValue ) => {
-					setFilteredOptions(
-						forms?.filter( ( _form ) =>
-							_form.label
-								.toLowerCase()
-								.startsWith( inputValue.toLowerCase() ),
-						),
-					);
-				} }
-			/>
+			<div data-test-id="godam-form-control-select">
+				<ComboboxControl
+					disabled={ disabled }
+					__next40pxDefaultSize
+					__nextHasNoMarginBottom
+					label={ __( 'Select form', 'godam' ) }
+					className={ `${ className } ${ disabled ? 'disabled' : '' }` }
+					value={ form }
+					onChange={ setFormData }
+					options={ filteredOptions }
+					onFilterValueChange={ ( inputValue ) => {
+						setFilteredOptions(
+							forms?.filter( ( _form ) =>
+								_form.label
+									.toLowerCase()
+									.startsWith( inputValue.toLowerCase() ),
+							),
+						);
+					} }
+				/>
+			</div>
 		</>
 	);
 }

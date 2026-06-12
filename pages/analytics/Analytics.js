@@ -23,13 +23,15 @@ import './charts.js';
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button, Spinner } from '@wordpress/components';
+import { Button, Spinner, Icon } from '@wordpress/components';
+// eslint-disable-next-line import/no-extraneous-dependencies -- @wordpress/url is provided by WordPress core; intentionally not in this plugin's package.json.
 import { addQueryArgs } from '@wordpress/url';
 import SingleMetrics from './SingleMetrics.js';
 import PlaysVsViewers from './PlaysVsViewers.js';
 import PlaybackPerformanceDashboard from './PlaybackPerformance.js';
+import VideoLayerTimeline from './VideoLayerTimeline.js';
 import videojs from 'video.js';
-import { arrowLeft } from '@wordpress/icons';
+import { arrowLeft, info } from '@wordpress/icons';
 import { API_KEY_STATUS, ERROR_TYPE } from '../shared/enums';
 import { formatNumber, formatWatchTime } from '../utils/formatters';
 import UpgradePlanAnalyticsBg from '../../assets/src/images/upgrade-plan-analytics-bg.webp';
@@ -600,6 +602,18 @@ const Analytics = ( { attachmentID } ) => {
 
 						</div>
 					</div>
+
+					{ /* Page-level FYI — analytics aren't real-time. */ }
+					<div className="godam-analytics-fyi flex items-center gap-1.5 mx-10 mt-2 text-xs text-zinc-500">
+						<Icon icon={ info } size={ 15 } />
+						<span>
+							{ __(
+								'Heads up: analytics update periodically, so new activity may take up to 30 minutes to show here.',
+								'godam',
+							) }
+						</span>
+					</div>
+
 					<div
 						id="video-analytics-container"
 						className="video-analytics-container hidden"
@@ -672,6 +686,11 @@ const Analytics = ( { attachmentID } ) => {
 							</div>
 						</div>
 					</div>
+					<VideoLayerTimeline
+						attachmentID={ attachmentID }
+						videoDuration={ analyticsData?.video_length || 0 }
+					/>
+
 					<div className="grid grid-cols-[4fr_2fr_2fr] gap-4 px-10 metrics-container">
 						<PlaybackPerformanceDashboard
 							attachmentID={ attachmentID }

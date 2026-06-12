@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GoDAM 1.10.0\n"
+"Project-Id-Version: GoDAM 1.12.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-05-19T07:18:29+00:00\n"
+"POT-Creation-Date: 2026-06-11T11:27:19+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -191,246 +191,240 @@ msgid "Insufficient bandwidth!"
 msgstr ""
 
 #. translators: %s is the URL to the plugin settings page where the API key can be activated.
-#: admin/class-rtgodam-transcoder-admin.php:87
-#: admin/class-rtgodam-transcoder-admin.php:149
-#: admin/class-rtgodam-transcoder-admin.php:164
+#: admin/class-rtgodam-transcoder-admin.php:86
+#: admin/class-rtgodam-transcoder-admin.php:148
+#: admin/class-rtgodam-transcoder-admin.php:163
 #, php-format
 msgid "Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock Transcoding, Analytics and more, <a href=\"%s\">please activate your API key.</a>"
 msgstr ""
 
 #. translators: %d: Number of days until trial ends
-#: admin/class-rtgodam-transcoder-admin.php:112
+#: admin/class-rtgodam-transcoder-admin.php:111
 #, php-format
 msgid "Your product is under trial. You will be charged after <strong>%d days</strong>. If you wish to cancel, please visit <a href=\"https://app.godam.io/subscription/my-account\" target=\"_blank\">your subscription settings</a>."
 msgstr ""
 
 #. translators: %d: Number of days until transcoded videos are deleted after subscription ends
-#: admin/class-rtgodam-transcoder-admin.php:136
+#: admin/class-rtgodam-transcoder-admin.php:135
 #, php-format
 msgid "Your subscription has ended. No further transcoding can be done. Transcoded videos will be removed after <strong>%d days</strong>, and Pro features will not be accessible. After the 30-day grace period, already transcoded videos will no longer be served from the CDN. Renew your subscription to keep it up and running."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:186
-#: admin/class-rtgodam-transcoder-admin.php:347
+#: admin/class-rtgodam-transcoder-admin.php:185
+#: admin/class-rtgodam-transcoder-admin.php:346
 msgid "Activate API Key"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:186
+#: admin/class-rtgodam-transcoder-admin.php:185
 msgid "Use Video Editor"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:193
-#: admin/class-rtgodam-transcoder-admin.php:337
+#: admin/class-rtgodam-transcoder-admin.php:192
+#: admin/class-rtgodam-transcoder-admin.php:336
 #: admin/godam-transcoder-functions.php:319
-#: inc/classes/class-media-library-ajax.php:1207
+#: inc/classes/class-media-library-ajax.php:1214
 #: inc/templates/video-preview.php:42
 #: pages/godam/components/GoDAMHeader.jsx:71
 #: pages/whats-new/components/Header.js:19
 msgid "GoDAM Logo"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:197
+#: admin/class-rtgodam-transcoder-admin.php:196
 msgid "Welcome to GoDAM! Thank you for using our product."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:222
-#: admin/class-rtgodam-transcoder-admin.php:560
-#: admin/class-rtgodam-transcoder-admin.php:623
-#: admin/class-rtgodam-transcoder-admin.php:662
+#: admin/class-rtgodam-transcoder-admin.php:221
+#: admin/class-rtgodam-transcoder-admin.php:559
+#: admin/class-rtgodam-transcoder-admin.php:622
+#: admin/class-rtgodam-transcoder-admin.php:661
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationActionButton.jsx:84
 msgid "Learn More"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:277
-#: inc/classes/class-media-library-ajax.php:820
-#: pages/dashboard/Dashboard.js:239
+#: admin/class-rtgodam-transcoder-admin.php:276
+#: inc/classes/class-media-library-ajax.php:827
+#: pages/dashboard/Dashboard.js:384
 #: pages/video-editor/AttachmentPicker.jsx:45
 msgid "Claim the GoDAM New Year Sale 2026 offer"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:279
-#: inc/classes/class-media-library-ajax.php:822
-#: pages/dashboard/Dashboard.js:243
+#: admin/class-rtgodam-transcoder-admin.php:278
+#: inc/classes/class-media-library-ajax.php:829
+#: pages/dashboard/Dashboard.js:388
 #: pages/video-editor/AttachmentPicker.jsx:49
 msgid "New Year Sale 2026 offer from GoDAM"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:280
-#: inc/classes/class-media-library-ajax.php:823
+#: admin/class-rtgodam-transcoder-admin.php:279
+#: inc/classes/class-media-library-ajax.php:830
 #: pages/video-editor/AttachmentPicker.jsx:58
 msgid "Dismiss banner"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:340
+#: admin/class-rtgodam-transcoder-admin.php:339
 msgid "Unlock Video Analytics, Transcoding and more with GoDAM Pro. Start with a free 60-day trial."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:344
+#: admin/class-rtgodam-transcoder-admin.php:343
 msgid "Get your Free Plan"
 msgstr ""
 
 #. translators: %1$s: bandwidth percentage, %2$s: storage percentage
-#: admin/class-rtgodam-transcoder-admin.php:523
+#: admin/class-rtgodam-transcoder-admin.php:522
 #, php-format
 msgid "Your bandwidth (%1$s%%) and storage (%2$s%%) usage have exceeded your plan limits."
 msgstr ""
 
 #. translators: %s: bandwidth percentage
-#: admin/class-rtgodam-transcoder-admin.php:530
+#: admin/class-rtgodam-transcoder-admin.php:529
 #, php-format
 msgid "Your bandwidth usage (%s%%) has exceeded your plan limit."
 msgstr ""
 
 #. translators: %s: storage percentage
-#: admin/class-rtgodam-transcoder-admin.php:536
+#: admin/class-rtgodam-transcoder-admin.php:535
 #, php-format
 msgid "Your storage usage (%s%%) has exceeded your plan limit."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:541
+#: admin/class-rtgodam-transcoder-admin.php:540
 msgid "Transcoding requests may be blocked until you upgrade your plan."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:553
+#: admin/class-rtgodam-transcoder-admin.php:552
 msgid "GoDAM Usage Limit Exceeded"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:557
-#: admin/class-rtgodam-transcoder-admin.php:659
+#: admin/class-rtgodam-transcoder-admin.php:556
+#: admin/class-rtgodam-transcoder-admin.php:658
 msgid "Upgrade Your Plan"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:563
-#: admin/class-rtgodam-transcoder-admin.php:626
-#: admin/class-rtgodam-transcoder-admin.php:665
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:146
+#: admin/class-rtgodam-transcoder-admin.php:562
+#: admin/class-rtgodam-transcoder-admin.php:625
+#: admin/class-rtgodam-transcoder-admin.php:664
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:148
 msgid "Refresh Status"
 msgstr ""
 
 #. translators: %1$s: bandwidth percentage, %2$s: storage percentage
-#: admin/class-rtgodam-transcoder-admin.php:586
+#: admin/class-rtgodam-transcoder-admin.php:585
 #, php-format
 msgid "Your bandwidth (%1$s%%) and storage (%2$s%%) usage are approaching your plan limits."
 msgstr ""
 
 #. translators: %s: bandwidth percentage
-#: admin/class-rtgodam-transcoder-admin.php:593
+#: admin/class-rtgodam-transcoder-admin.php:592
 #, php-format
 msgid "Your bandwidth usage (%s%%) is approaching your plan limit."
 msgstr ""
 
 #. translators: %s: storage percentage
-#: admin/class-rtgodam-transcoder-admin.php:599
+#: admin/class-rtgodam-transcoder-admin.php:598
 #, php-format
 msgid "Your storage usage (%s%%) is approaching your plan limit."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:604
+#: admin/class-rtgodam-transcoder-admin.php:603
 msgid "Consider upgrading your plan to avoid service interruptions."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:616
+#: admin/class-rtgodam-transcoder-admin.php:615
 msgid "GoDAM Usage Warning"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:620
+#: admin/class-rtgodam-transcoder-admin.php:619
 msgid "View Plans"
 msgstr ""
 
 #. translators: %s: bandwidth percentage
-#: admin/class-rtgodam-transcoder-admin.php:643
+#: admin/class-rtgodam-transcoder-admin.php:642
 #, php-format
 msgid "Your bandwidth usage (%s%%) has exceeded your plan limit. Videos might not be served from CDN on frontend."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:655
+#: admin/class-rtgodam-transcoder-admin.php:654
 msgid "GoDAM Bandwidth Exceeded"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:656
+#: admin/class-rtgodam-transcoder-admin.php:655
 msgid "Transcoding will continue to work."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:708
+#: admin/class-rtgodam-transcoder-admin.php:707
 msgid "Want to help make <strong>GoDAM</strong> even more awesome? Allow GoDAM to collect anonymous diagnostic data and usage information."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:715
+#: admin/class-rtgodam-transcoder-admin.php:714
 msgid "what we collect"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:717
+#: admin/class-rtgodam-transcoder-admin.php:716
 msgid "Data we collect:"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:719
+#: admin/class-rtgodam-transcoder-admin.php:718
 msgid "Server environment details (PHP, MySQL, Server, and WordPress versions)"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:720
+#: admin/class-rtgodam-transcoder-admin.php:719
 msgid "Site and user count (Language and number of users)"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:721
+#: admin/class-rtgodam-transcoder-admin.php:720
 msgid "Plugin details (Number of active and inactive plugins)"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:722
+#: admin/class-rtgodam-transcoder-admin.php:721
 msgid "Usage data (Interactions, navigation, session replays, heatmaps, and errors via PostHog)"
 msgstr ""
 
 #. translators: %s: PostHog privacy policy URL
-#: admin/class-rtgodam-transcoder-admin.php:728
+#: admin/class-rtgodam-transcoder-admin.php:727
 #, php-format
 msgid "We are using PostHog to collect anonymous data. <a href=\"%s\" target=\"_blank\">Learn more</a>. This can be disabled from the settings on the Help page."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:740
+#: admin/class-rtgodam-transcoder-admin.php:739
 msgid "Allow"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:741
+#: admin/class-rtgodam-transcoder-admin.php:740
 msgid "No thanks"
 msgstr ""
 
 #. translators: %s: URL to settings page
-#: admin/class-rtgodam-transcoder-admin.php:779
+#: admin/class-rtgodam-transcoder-admin.php:778
 #, php-format
 msgid "Your GoDAM API key has expired. Transcoding and other Pro features are currently disabled. Please <a href=\"%s\">renew your subscription</a> to restore access."
 msgstr ""
 
 #. translators: %s: URL to settings page
-#: admin/class-rtgodam-transcoder-admin.php:784
+#: admin/class-rtgodam-transcoder-admin.php:783
 #, php-format
 msgid "Temporarily unable to verify your GoDAM API key. Transcoding may not work. Please <a href=\"%s\">check your settings</a> or try refreshing the status."
 msgstr ""
 
 #. translators: %s: URL to settings page
-#: admin/class-rtgodam-transcoder-admin.php:793
+#: admin/class-rtgodam-transcoder-admin.php:792
 #, php-format
 msgid "There is an issue with your GoDAM API key. Transcoding may not work. Please <a href=\"%s\">check your settings</a>."
 msgstr ""
 
-#. translators: 1: Opening link tag, 2: Closing link tag
-#: admin/class-rtgodam-transcoder-admin.php:890
-#, php-format
-msgid "<strong>GoDAM API key has expired.</strong> Pro features in GoDAM are currently disabled. %1$sPurchase a new key%2$s to restore access."
-msgstr ""
-
 #. translators: 1: opening link tag, 2: closing link tag
-#: admin/class-rtgodam-transcoder-admin.php:946
+#: admin/class-rtgodam-transcoder-admin.php:891
 #, php-format
 msgid "<strong>Shoppable video for WooCommerce is live!</strong> %1$sActivate%2$s to start selling directly from your videos."
 msgstr ""
 
 #. translators: 1: opening link tag, 2: closing link tag
-#: admin/class-rtgodam-transcoder-admin.php:954
+#: admin/class-rtgodam-transcoder-admin.php:899
 #, php-format
 msgid "<strong>GoDAM now supports WooCommerce!</strong> %1$sInstall WooCommerce%2$s to start using shoppable videos with GoDAM."
 msgstr ""
 
 #. translators: 1: opening link tag, 2: closing link tag
-#: admin/class-rtgodam-transcoder-admin.php:962
+#: admin/class-rtgodam-transcoder-admin.php:907
 #, php-format
 msgid "<strong>Add shoppable videos to your WooCommerce store!</strong> %1$sUpgrade your plan%2$s to unlock this feature."
 msgstr ""
@@ -446,7 +440,7 @@ msgid "Please upgrade your plan to continue transcoding."
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-handler.php:295
-#: inc/classes/class-media-library-ajax.php:232
+#: inc/classes/class-media-library-ajax.php:239
 msgid "HTTP authentication is enabled on your site, preventing transcoding."
 msgstr ""
 
@@ -754,49 +748,49 @@ msgstr ""
 msgid "Invalid data."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:686
+#: inc/classes/class-media-library-ajax.php:693
 #: pages/media-library/App.js:214
 msgid "Uncategorized"
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:690
+#: inc/classes/class-media-library-ajax.php:697
 msgid "All collections"
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:772
+#: inc/classes/class-media-library-ajax.php:779
 msgid "Offer banner dismissed successfully."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:866
+#: inc/classes/class-media-library-ajax.php:873
 msgid "Invalid attachment ID or URL."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:872
+#: inc/classes/class-media-library-ajax.php:879
 #: inc/classes/rest-api/class-media-library.php:629
 msgid "Invalid attachment ID."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:884
+#: inc/classes/class-media-library-ajax.php:891
 msgid "Could not initialize WordPress filesystem."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:904
+#: inc/classes/class-media-library-ajax.php:911
 msgid "Could not move file into uploads directory."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1159
+#: inc/classes/class-media-library-ajax.php:1166
 msgid "Insufficient permissions."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1176
+#: inc/classes/class-media-library-ajax.php:1183
 msgid "HTTP auth status saved."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1209
+#: inc/classes/class-media-library-ajax.php:1216
 msgid "GoDAM Transcoding Blocked"
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1212
+#: inc/classes/class-media-library-ajax.php:1219
 msgid "HTTP authentication is enabled on your site, which prevents GoDAM from accessing media files for transcoding. Please disable HTTP authentication to enable transcoding."
 msgstr ""
 
@@ -827,7 +821,7 @@ msgstr ""
 #: inc/classes/class-pages.php:201
 #: inc/classes/class-pages.php:202
 #: inc/templates/video-preview.php:53
-#: pages/video-editor/VideoEditor.js:457
+#: pages/video-editor/VideoEditor.js:488
 msgid "Analytics"
 msgstr ""
 
@@ -852,20 +846,42 @@ msgstr ""
 msgid "Sorry, you are not allowed to edit this item."
 msgstr ""
 
-#: inc/classes/class-pages.php:637
+#: inc/classes/class-pages.php:639
 msgid "Your last request is still being processed. Please wait a while ..."
 msgstr ""
 
-#: inc/classes/class-pages.php:638
+#: inc/classes/class-pages.php:640
 msgid "Please choose a valid poll answer."
 msgstr ""
 
-#: inc/classes/class-pages.php:639
+#: inc/classes/class-pages.php:641
 msgid "Maximum number of choices allowed: "
 msgstr ""
 
 #: inc/classes/class-update.php:89
 msgid "GoDAM video performance settings have been simplified to Balanced and Priority modes. Please review any hero videos that should stay in Priority mode after this update."
+msgstr ""
+
+#: inc/classes/class-virtual-media-registrar.php:146
+#: inc/classes/class-virtual-media-registrar.php:273
+msgid "GoDAM API key is not configured on this site."
+msgstr ""
+
+#: inc/classes/class-virtual-media-registrar.php:163
+#: inc/classes/class-virtual-media-registrar.php:277
+msgid "RTGODAM_API_BASE is not defined."
+msgstr ""
+
+#: inc/classes/class-virtual-media-registrar.php:183
+msgid "Failed to connect to GoDAM Central."
+msgstr ""
+
+#: inc/classes/class-virtual-media-registrar.php:196
+msgid "Failed to register virtual media site with GoDAM Central."
+msgstr ""
+
+#: inc/classes/class-virtual-media-registrar.php:310
+msgid "Failed to remove virtual media site from GoDAM Central."
 msgstr ""
 
 #: inc/classes/cron-jobs/class-retranscode-failed-media.php:60
@@ -898,7 +914,7 @@ msgid "Choose Image"
 msgstr ""
 
 #: inc/classes/elementor-controls/class-godam-media.php:140
-#: pages/analytics/Analytics.js:752
+#: pages/analytics/Analytics.js:771
 msgid "Choose Video"
 msgstr ""
 
@@ -924,7 +940,7 @@ msgstr ""
 #: pages/video-editor/components/appearance/Appearance.js:502
 #: pages/video-editor/components/appearance/Appearance.js:549
 #: pages/video-editor/components/appearance/Appearance.js:605
-#: pages/video-editor/components/cta/ImageCTA.js:468
+#: pages/video-editor/components/cta/ImageCTA.js:474
 msgid "Remove"
 msgstr ""
 
@@ -942,7 +958,7 @@ msgstr ""
 #: pages/godam/components/tabs/GeneralSettings/BrandImageSelector.jsx:99
 #: pages/video-editor/components/appearance/Appearance.js:498
 #: pages/video-editor/components/appearance/Appearance.js:545
-#: pages/video-editor/components/cta/ImageCTA.js:350
+#: pages/video-editor/components/cta/ImageCTA.js:352
 msgid "Upload"
 msgstr ""
 
@@ -1095,7 +1111,7 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-gallery.php:131
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:151
 #: assets/build/blocks/godam-gallery-v2/index.js:1
-#: pages/video-editor/components/cta/ImageCTA.js:403
+#: pages/video-editor/components/cta/ImageCTA.js:405
 msgid "Title"
 msgstr ""
 
@@ -1109,7 +1125,7 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:133
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:153
-#: pages/dashboard/Dashboard.js:395
+#: pages/dashboard/Dashboard.js:550
 msgid "Size"
 msgstr ""
 
@@ -1240,7 +1256,7 @@ msgid "GoDAM Video"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:43
-#: pages/video-editor/VideoEditor.js:346
+#: pages/video-editor/VideoEditor.js:375
 msgid "Player Settings"
 msgstr ""
 
@@ -1318,7 +1334,7 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:110
 #: assets/build/blocks/godam-player/index.js:1
-#: pages/video-editor/VideoEditor.js:352
+#: pages/video-editor/VideoEditor.js:381
 msgid "Chapters"
 msgstr ""
 
@@ -1371,7 +1387,7 @@ msgstr ""
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:283
 #: assets/build/blocks/godam-player/index.js:4
 #: assets/build/blocks/sureforms/blocks/recorder/index.js:1
-#: pages/video-editor/components/cta/ImageCTA.js:433
+#: pages/video-editor/components/cta/ImageCTA.js:437
 msgid "Description"
 msgstr ""
 
@@ -1724,7 +1740,7 @@ msgid "Leave empty to allow any duration. Example: 180 = 3 minutes."
 msgstr ""
 
 #: inc/classes/gravity-forms/class-init.php:314
-#: inc/helpers/custom-functions.php:754
+#: inc/helpers/custom-functions.php:843
 msgid "Gravity forms"
 msgstr ""
 
@@ -1897,15 +1913,15 @@ msgstr ""
 msgid "Plugin is already active."
 msgstr ""
 
-#: inc/classes/rest-api/class-addon-toggle.php:130
+#: inc/classes/rest-api/class-addon-toggle.php:137
 msgid "Plugin activated successfully."
 msgstr ""
 
-#: inc/classes/rest-api/class-addon-toggle.php:140
+#: inc/classes/rest-api/class-addon-toggle.php:147
 msgid "Plugin is already inactive."
 msgstr ""
 
-#: inc/classes/rest-api/class-addon-toggle.php:153
+#: inc/classes/rest-api/class-addon-toggle.php:160
 msgid "Plugin deactivated successfully."
 msgstr ""
 
@@ -1920,31 +1936,38 @@ msgstr ""
 msgid "The Site URL associated with the video."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:176
-#: inc/classes/rest-api/class-analytics.php:384
+#: inc/classes/rest-api/class-analytics.php:222
+#: inc/classes/rest-api/class-analytics.php:352
+#: inc/classes/rest-api/class-analytics.php:560
 #: inc/classes/rest-api/class-engagement.php:365
 #: inc/classes/rest-api/class-site.php:169
 msgid "Missing API key."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:201
-#: inc/classes/rest-api/class-analytics.php:418
+#: inc/classes/rest-api/class-analytics.php:233
+msgid "GoDAM account is not verified. Connect your account in GoDAM settings to view layer analytics."
+msgstr ""
+
+#: inc/classes/rest-api/class-analytics.php:280
+#: inc/classes/rest-api/class-analytics.php:377
+#: inc/classes/rest-api/class-analytics.php:594
 msgid "Unable to reach analytics server."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:212
-#: inc/classes/rest-api/class-analytics.php:427
+#: inc/classes/rest-api/class-analytics.php:289
+#: inc/classes/rest-api/class-analytics.php:388
+#: inc/classes/rest-api/class-analytics.php:603
 msgid "Unexpected error from analytics server."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:324
-#: inc/classes/rest-api/class-analytics.php:476
-#: inc/classes/rest-api/class-analytics.php:537
+#: inc/classes/rest-api/class-analytics.php:500
+#: inc/classes/rest-api/class-analytics.php:652
+#: inc/classes/rest-api/class-analytics.php:713
 msgid "Invalid or unverified API key."
 msgstr ""
 
 #. translators: %s is the error message from the API response.
-#: inc/classes/rest-api/class-analytics.php:351
+#: inc/classes/rest-api/class-analytics.php:527
 #, php-format
 msgid "Error fetching history data: %s"
 msgstr ""
@@ -2486,20 +2509,22 @@ msgstr ""
 msgid "Required fields are missing."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1585
+#: inc/classes/rest-api/class-media-library.php:1588
+#: inc/classes/rest-api/class-media-library.php:1595
+#: inc/classes/rest-api/class-media-library.php:1604
 msgid "Invalid or disallowed MIME type."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1599
-#: inc/classes/rest-api/class-media-library.php:1626
+#: inc/classes/rest-api/class-media-library.php:1621
+#: inc/classes/rest-api/class-media-library.php:1648
 msgid "Attachment already exists"
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1745
+#: inc/classes/rest-api/class-media-library.php:1778
 msgid "Attachment created"
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1810
+#: inc/classes/rest-api/class-media-library.php:1843
 msgid "A Folder ID is required"
 msgstr ""
 
@@ -2770,6 +2795,7 @@ msgid "Invalid response from GoDAM Central."
 msgstr ""
 
 #: inc/classes/rest-api/class-video-sync.php:42
+#: inc/classes/rest-api/class-virtual-media-migration.php:38
 msgid "API key used to authenticate the request from the GoDAM app."
 msgstr ""
 
@@ -2780,6 +2806,10 @@ msgstr ""
 
 #: inc/classes/rest-api/class-video-sync.php:78
 msgid "Invalid API Key"
+msgstr ""
+
+#: inc/classes/rest-api/class-virtual-media-migration.php:62
+msgid "Invalid API Key."
 msgstr ""
 
 #: inc/classes/rest-api/class-wpforms.php:50
@@ -2796,7 +2826,7 @@ msgid "WPForms plugin is not active."
 msgstr ""
 
 #: inc/classes/shortcodes/class-godam-video-gallery.php:421
-#: pages/dashboard/Dashboard.js:472
+#: pages/dashboard/Dashboard.js:639
 msgid "No videos found."
 msgstr ""
 
@@ -3272,7 +3302,7 @@ msgid "Video transcoding process is in-progress."
 msgstr ""
 
 #: inc/helpers/custom-functions.php:209
-#: pages/video-editor/components/cta/ImageCTA.js:450
+#: pages/video-editor/components/cta/ImageCTA.js:456
 #: pages/video-editor/components/layers/CTALayer.js:155
 msgid "Check now"
 msgstr ""
@@ -3306,33 +3336,33 @@ msgstr ""
 msgid "Error fetching data for storage and bandwidth ( remove and add again the API key to get usage analytics )"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:649
+#: inc/helpers/custom-functions.php:738
 msgid "Form transcoding has been disabled by the site administrator."
 msgstr ""
 
 #. translators: %s: Entry ID for which transcoding failed
-#: inc/helpers/custom-functions.php:790
+#: inc/helpers/custom-functions.php:879
 #, php-format
 msgid "Transcoding failed | entry Id: %s"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:826
+#: inc/helpers/custom-functions.php:915
 msgid "s"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:860
+#: inc/helpers/custom-functions.php:949
 msgid "Anonymous"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1102
+#: inc/helpers/custom-functions.php:1191
 msgid "Oops! We could not locate your video"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1109
+#: inc/helpers/custom-functions.php:1198
 msgid "Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1208
+#: inc/helpers/custom-functions.php:1297
 msgid "Video not found"
 msgstr ""
 
@@ -3405,7 +3435,7 @@ msgid "Unified GoDAM Central media library"
 msgstr ""
 
 #: inc/templates/video-preview.php:110
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:283
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:310
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationToggle.jsx:55
 msgid "Upgrade to Pro"
 msgstr ""
@@ -3437,6 +3467,15 @@ msgid "Audio caption text"
 msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2-item/index.js:1
+#: assets/build/blocks/godam-gallery-v2/index.js:1
+msgid "Only video files can be added to the gallery."
+msgstr ""
+
+#: assets/build/blocks/godam-gallery-v2-item/index.js:1
+msgid "This video is already in the gallery."
+msgstr ""
+
+#: assets/build/blocks/godam-gallery-v2-item/index.js:1
 msgid "Choose a video to add this gallery item."
 msgstr ""
 
@@ -3462,6 +3501,10 @@ msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Add New Video"
+msgstr ""
+
+#: assets/build/blocks/godam-gallery-v2/index.js:1
+msgid "Duplicate videos were skipped."
 msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
@@ -3728,17 +3771,17 @@ msgstr ""
 #: pages/media-library/components/modal/FolderCreationModal.jsx:132
 #: pages/media-library/components/modal/RenameModal.jsx:104
 #: pages/video-editor/components/layers/LayersHeader.js:156
-#: pages/video-editor/components/LayerSelector.jsx:412
+#: pages/video-editor/components/LayerSelector.jsx:413
 msgid "Cancel"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:4
 #: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:130
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:123
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:332
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:137
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:359
 #: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:522
-#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:146
-#: pages/video-editor/VideoEditor.js:424
+#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:147
+#: pages/video-editor/VideoEditor.js:454
 msgid "Save"
 msgstr ""
 
@@ -4014,158 +4057,227 @@ msgstr ""
 msgid "Maximum allowed size: %s MB"
 msgstr ""
 
-#: pages/analytics/Analytics.js:396
+#: pages/analytics/Analytics.js:398
 msgid "Select Video to Perform Performance Comparison Testing"
 msgstr ""
 
-#: pages/analytics/Analytics.js:398
+#: pages/analytics/Analytics.js:400
 msgid "Use this Video"
 msgstr ""
 
-#: pages/analytics/Analytics.js:501
-#: pages/analytics/Analytics.js:546
-#: pages/dashboard/Dashboard.js:216
-#: pages/dashboard/Dashboard.js:286
+#: pages/analytics/Analytics.js:503
+#: pages/analytics/Analytics.js:548
+#: pages/dashboard/Dashboard.js:361
+#: pages/dashboard/Dashboard.js:431
 msgid "Go to plugin settings"
 msgstr ""
 
-#: pages/analytics/Analytics.js:513
-#: pages/dashboard/Dashboard.js:252
+#: pages/analytics/Analytics.js:515
+#: pages/dashboard/Dashboard.js:397
 msgid "Upgrade to unlock the media performance report."
 msgstr ""
 
-#: pages/analytics/Analytics.js:517
-#: pages/dashboard/Dashboard.js:256
+#: pages/analytics/Analytics.js:519
+#: pages/dashboard/Dashboard.js:401
 msgid "If you already have a premium plan, connect your"
 msgstr ""
 
-#: pages/analytics/Analytics.js:520
-#: pages/dashboard/Dashboard.js:259
+#: pages/analytics/Analytics.js:522
+#: pages/dashboard/Dashboard.js:404
 msgid "API in the settings"
 msgstr ""
 
-#: pages/analytics/Analytics.js:534
-#: pages/dashboard/Dashboard.js:273
+#: pages/analytics/Analytics.js:536
+#: pages/dashboard/Dashboard.js:418
 msgid "Buy Plan"
 msgstr ""
 
-#: pages/analytics/Analytics.js:543
-#: pages/dashboard/Dashboard.js:283
+#: pages/analytics/Analytics.js:545
+#: pages/dashboard/Dashboard.js:428
 msgid "An unknown error occurred. Please check your plugin settings."
 msgstr ""
 
-#: pages/analytics/Analytics.js:571
+#: pages/analytics/Analytics.js:573
 msgid "This media doesn't exist."
 msgstr ""
 
-#: pages/analytics/Analytics.js:573
+#: pages/analytics/Analytics.js:575
 msgid "Go to Dashboard"
 msgstr ""
 
-#: pages/analytics/Analytics.js:594
+#: pages/analytics/Analytics.js:596
 msgid "Analytics report of"
 msgstr ""
 
-#: pages/analytics/Analytics.js:597
+#: pages/analytics/Analytics.js:599
 msgid "Analytics report"
 msgstr ""
 
-#: pages/analytics/Analytics.js:599
+#: pages/analytics/Analytics.js:601
 msgid "Back to Video Editor"
 msgstr ""
 
-#: pages/analytics/Analytics.js:613
-#: pages/analytics/Analytics.js:863
-#: pages/dashboard/Dashboard.js:399
+#: pages/analytics/Analytics.js:610
+#: pages/dashboard/Dashboard.js:464
+msgid "Heads up: analytics update periodically, so new activity may take up to 30 minutes to show here."
+msgstr ""
+
+#: pages/analytics/Analytics.js:627
+#: pages/analytics/Analytics.js:882
+#: pages/dashboard/Dashboard.js:554
 msgid "Average Engagement"
 msgstr ""
 
-#: pages/analytics/Analytics.js:614
+#: pages/analytics/Analytics.js:628
 msgid "Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)"
 msgstr ""
 
-#: pages/analytics/Analytics.js:624
-#: pages/analytics/Analytics.js:883
+#: pages/analytics/Analytics.js:638
+#: pages/analytics/Analytics.js:902
 #: pages/analytics/helper.js:104
 #: pages/analytics/PlaybackPerformance.js:440
 #: pages/analytics/PlaybackPerformance.js:579
-#: pages/dashboard/Dashboard.js:335
-#: pages/dashboard/Dashboard.js:396
+#: pages/dashboard/Dashboard.js:490
+#: pages/dashboard/Dashboard.js:551
 msgid "Play Rate"
 msgstr ""
 
-#: pages/analytics/Analytics.js:625
-#: pages/dashboard/Dashboard.js:336
+#: pages/analytics/Analytics.js:639
+#: pages/dashboard/Dashboard.js:491
 msgid "Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads"
 msgstr ""
 
-#: pages/analytics/Analytics.js:635
+#: pages/analytics/Analytics.js:649
 #: pages/analytics/helper.js:110
-#: pages/dashboard/Dashboard.js:347
+#: pages/dashboard/Dashboard.js:502
 msgid "Watch Time"
 msgstr ""
 
-#: pages/analytics/Analytics.js:636
-#: pages/dashboard/Dashboard.js:348
+#: pages/analytics/Analytics.js:650
+#: pages/dashboard/Dashboard.js:503
 msgid "Total time the video has been watched, aggregated across all plays"
 msgstr ""
 
-#: pages/analytics/Analytics.js:689
+#: pages/analytics/Analytics.js:708
 msgid "Views by Source"
 msgstr ""
 
-#: pages/analytics/Analytics.js:700
+#: pages/analytics/Analytics.js:719
 msgid "Performance Comparison"
 msgstr ""
 
-#: pages/analytics/Analytics.js:711
+#: pages/analytics/Analytics.js:730
 msgid "In Progress"
 msgstr ""
 
-#: pages/analytics/Analytics.js:716
+#: pages/analytics/Analytics.js:735
 msgid "Initiate the test comparison to generate analytical insights."
 msgstr ""
 
-#: pages/analytics/Analytics.js:721
+#: pages/analytics/Analytics.js:740
 msgid "The test is complete! Review results to identify the best-performing video."
 msgstr ""
 
-#: pages/analytics/Analytics.js:733
+#: pages/analytics/Analytics.js:752
 msgid "Start Test"
 msgstr ""
 
-#: pages/analytics/Analytics.js:764
+#: pages/analytics/Analytics.js:783
 msgid "Test this video against others to see which performs better."
 msgstr ""
 
-#: pages/analytics/Analytics.js:773
-#: pages/video-editor/components/cta/ImageCTA.js:348
+#: pages/analytics/Analytics.js:792
+#: pages/video-editor/components/cta/ImageCTA.js:349
 msgid "Upload or Replace CTA Image"
 msgstr ""
 
-#: pages/analytics/Analytics.js:778
+#: pages/analytics/Analytics.js:797
 msgid "Choose"
 msgstr ""
 
-#: pages/analytics/Analytics.js:849
+#: pages/analytics/Analytics.js:868
 msgid "Views"
 msgstr ""
 
-#: pages/analytics/Analytics.js:872
-#: pages/dashboard/Dashboard.js:397
+#: pages/analytics/Analytics.js:891
+#: pages/dashboard/Dashboard.js:552
 msgid "Total Plays"
 msgstr ""
 
-#: pages/analytics/Analytics.js:897
+#: pages/analytics/Analytics.js:916
 msgid "Page Loads"
 msgstr ""
 
-#: pages/analytics/Analytics.js:911
+#: pages/analytics/Analytics.js:930
 msgid "Play Time"
 msgstr ""
 
-#: pages/analytics/Analytics.js:925
+#: pages/analytics/Analytics.js:944
 msgid "Video Length"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:129
+#: pages/video-editor/components/LayerSelector.jsx:38
+#: pages/video-editor/components/SidebarLayers.js:38
+#: pages/video-editor/components/SidebarLayers.js:41
+#: pages/video-editor/VideoJSPlayer.js:36
+msgid "CTA"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:139
+msgid "Form"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:147
+#: pages/video-editor/components/LayerSelector.jsx:45
+#: pages/video-editor/components/SidebarLayers.js:44
+#: pages/video-editor/components/SidebarLayers.js:47
+#: pages/video-editor/VideoJSPlayer.js:41
+msgid "Hotspot"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:157
+#: pages/video-editor/components/LayerSelector.jsx:185
+#: pages/video-editor/components/SidebarLayers.js:124
+#: pages/video-editor/components/SidebarLayers.js:127
+#: pages/video-editor/VideoJSPlayer.js:51
+msgid "Poll"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:165
+msgid "Woo Hotspot"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:228
+msgid "Viewed"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:229
+msgid "Clicked"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:230
+msgid "Submitted"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:231
+msgid "Hovered"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:232
+msgid "Skipped"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:233
+msgid "Voted"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:234
+msgid "Added to Cart"
+msgstr ""
+
+#: pages/analytics/constants/layerTypes.js:235
+msgid "No Action"
 msgstr ""
 
 #: pages/analytics/helper.js:98
@@ -4243,6 +4355,7 @@ msgstr ""
 
 #: pages/analytics/PlaysVsViewers.js:131
 #: pages/analytics/SingleMetrics.js:152
+#: pages/analytics/timeline/DateRangePicker.js:28
 msgid "Last 7 days"
 msgstr ""
 
@@ -4251,7 +4364,258 @@ msgid "Sessions per user:"
 msgstr ""
 
 #: pages/analytics/SingleMetrics.js:148
+#: pages/analytics/timeline/DateRangePicker.js:32
 msgid "All time"
+msgstr ""
+
+#: pages/analytics/timeline/DateRangePicker.js:28
+msgid "7D"
+msgstr ""
+
+#: pages/analytics/timeline/DateRangePicker.js:29
+msgid "30D"
+msgstr ""
+
+#: pages/analytics/timeline/DateRangePicker.js:29
+msgid "Last 30 days"
+msgstr ""
+
+#: pages/analytics/timeline/DateRangePicker.js:30
+msgid "90D"
+msgstr ""
+
+#: pages/analytics/timeline/DateRangePicker.js:30
+msgid "Last 90 days"
+msgstr ""
+
+#: pages/analytics/timeline/DateRangePicker.js:31
+msgid "1Y"
+msgstr ""
+
+#: pages/analytics/timeline/DateRangePicker.js:31
+msgid "Last year"
+msgstr ""
+
+#: pages/analytics/timeline/DateRangePicker.js:32
+#: pages/video-editor/components/LayerSelector.jsx:237
+msgid "All"
+msgstr ""
+
+#: pages/analytics/timeline/DateRangePicker.js:38
+msgid "Date range"
+msgstr ""
+
+#. translators: %d is the count of removed layers.
+#: pages/analytics/timeline/HistoricalLayersDrawer.js:55
+#, js-format
+msgid "Removed layers (%d)"
+msgid_plural "Removed layers (%d)"
+msgstr[0] ""
+msgstr[1] ""
+
+#: pages/analytics/timeline/HistoricalLayersDrawer.js:70
+msgid "No longer in the video; historical analytics preserved."
+msgstr ""
+
+#: pages/analytics/timeline/InfoTooltip.js:49
+msgid "Info"
+msgstr ""
+
+#: pages/analytics/timeline/LayerDetailPanel.js:143
+msgid "Untitled layer"
+msgstr ""
+
+#: pages/analytics/timeline/LayerDetailPanel.js:147
+msgid "Appeared at"
+msgstr ""
+
+#: pages/analytics/timeline/LayerDetailPanel.js:169
+msgid "View this poll’s results"
+msgstr ""
+
+#: pages/analytics/timeline/LayerDetailPanel.js:170
+msgid "View this form’s entries"
+msgstr ""
+
+#: pages/analytics/timeline/LayerDetailPanel.js:173
+msgid "View Poll results"
+msgstr ""
+
+#: pages/analytics/timeline/LayerDetailPanel.js:174
+msgid "View Form entries"
+msgstr ""
+
+#: pages/analytics/timeline/LayerDetailPanel.js:182
+msgid "Edit this layer in the video editor"
+msgstr ""
+
+#: pages/analytics/timeline/LayerDetailPanel.js:184
+msgid "Edit Layer"
+msgstr ""
+
+#: pages/analytics/timeline/LayerDetailPanel.js:191
+msgid "This layer is no longer in the video. Historical analytics preserved."
+msgstr ""
+
+#: pages/analytics/timeline/LayerDetailPanel.js:193
+msgid "Removed from video"
+msgstr ""
+
+#: pages/analytics/timeline/LayerInteractionFunnel.js:171
+msgid "Interaction Outcomes"
+msgstr ""
+
+#: pages/analytics/timeline/LayerInteractionFunnel.js:174
+msgid "Of everyone who saw this layer (Viewed = 100%), the share who took each action. \"No action\" saw the layer but never interacted. A viewer can appear in more than one action, so the bars need not add up to 100%."
+msgstr ""
+
+#: pages/analytics/timeline/LayerInteractionFunnel.js:181
+msgid "Out of all viewers who saw this layer"
+msgstr ""
+
+#. translators: %1$s value, %2$s percentage
+#: pages/analytics/timeline/LayerInteractionFunnel.js:235
+#, js-format
+msgid "%1$s viewers (%2$s%%) saw this layer but didn't interact with it."
+msgstr ""
+
+#. translators: %1$s action name, %2$s value, %3$s percentage
+#: pages/analytics/timeline/LayerInteractionFunnel.js:242
+#, js-format
+msgid "%1$s: %2$s viewers (%3$s%%)."
+msgstr ""
+
+#: pages/analytics/timeline/LayerInteractionFunnel.js:294
+msgid "of viewers"
+msgstr ""
+
+#. translators: 1: first position, 2: second position.
+#. translators: 1: comma-separated positions, 2: last position.
+#: pages/analytics/timeline/LayerModifiedNotice.js:63
+#: pages/analytics/timeline/LayerModifiedNotice.js:71
+#, js-format
+msgid "%1$s and %2$s"
+msgstr ""
+
+#: pages/analytics/timeline/LayerModifiedNotice.js:162
+msgid "This layer has been modified."
+msgstr ""
+
+#. translators: %s is a comma-separated list of timestamps like "0:01 and 0:03".
+#: pages/analytics/timeline/LayerModifiedNotice.js:166
+#, js-format
+msgid "It was previously at %s. Analytics shown here are cumulative across all changes."
+msgstr ""
+
+#: pages/analytics/timeline/LayerModifiedNotice.js:174
+msgid "Dismiss notice"
+msgstr ""
+
+#: pages/analytics/timeline/LayerTimelineMarker.js:137
+msgid "Conversion rate — share of viewers who saw this layer and interacted with it."
+msgstr ""
+
+#: pages/analytics/timeline/LayerTimelineMarker.js:155
+#: pages/analytics/timeline/SubHotspotRail.js:222
+msgid "Removed"
+msgstr ""
+
+#: pages/analytics/timeline/LayerTimelineStrip.js:192
+msgid "Interactive layers on the video timeline"
+msgstr ""
+
+#: pages/analytics/timeline/LayerTimelineStrip.js:197
+msgid "Nothing to show yet"
+msgstr ""
+
+#: pages/analytics/timeline/LayerTimelineStrip.js:200
+msgid "Layer analytics appear after the video is played on the front end and the activity is processed. A layer you just added won't have data until viewers interact with it."
+msgstr ""
+
+#: pages/analytics/timeline/SubHotspotRail.js:60
+msgid "Products in this layer"
+msgstr ""
+
+#: pages/analytics/timeline/SubHotspotRail.js:61
+msgid "Hotspots in this layer"
+msgstr ""
+
+#: pages/analytics/timeline/SubHotspotRail.js:66
+msgid "Each row is one product hotspot inside this layer. Select a row to see its individual funnel; \"All Products (Cumulative)\" counts sessions that converted on any product."
+msgstr ""
+
+#: pages/analytics/timeline/SubHotspotRail.js:70
+msgid "Each row is one hotspot inside this layer. Select a row to see its individual funnel; \"All Hotspots (Cumulative)\" counts sessions that converted on any hotspot."
+msgstr ""
+
+#: pages/analytics/timeline/SubHotspotRail.js:79
+msgid "Conversion"
+msgstr ""
+
+#: pages/analytics/timeline/SubHotspotRail.js:85
+msgid "Share of sessions that saw the product and converted — clicked through to it or added it to the cart. Each session counts once, so this never exceeds 100%."
+msgstr ""
+
+#: pages/analytics/timeline/SubHotspotRail.js:89
+msgid "Share of sessions that saw the hotspot and clicked it. Each session counts once, so this never exceeds 100%."
+msgstr ""
+
+#: pages/analytics/timeline/SubHotspotRail.js:122
+msgid "All Products (Cumulative)"
+msgstr ""
+
+#: pages/analytics/timeline/SubHotspotRail.js:123
+msgid "All Hotspots (Cumulative)"
+msgstr ""
+
+#: pages/analytics/timeline/SubHotspotRail.js:139
+msgid "A session counts as converted here when it converts on any one product in this layer — clicks it or adds it to the cart. Each session counts once, so this can read higher than every single product's rate."
+msgstr ""
+
+#: pages/analytics/timeline/SubHotspotRail.js:143
+msgid "A session counts as converted here when it clicks any one hotspot in this layer. Each session counts once, so this can read higher than every single hotspot's rate."
+msgstr ""
+
+#: pages/analytics/VideoLayerTimeline.js:35
+msgid "Add an interactive layer in the video editor to start tracking performance."
+msgstr ""
+
+#: pages/analytics/VideoLayerTimeline.js:45
+msgid "Click on any hotspot on the left to see its performance."
+msgstr ""
+
+#: pages/analytics/VideoLayerTimeline.js:50
+msgid "Click on any layer above to view its performance details."
+msgstr ""
+
+#: pages/analytics/VideoLayerTimeline.js:158
+msgid "Video Layer Timeline"
+msgstr ""
+
+#: pages/analytics/VideoLayerTimeline.js:162
+msgid "Each marker represents an interactive layer in this video. Click a marker to see how viewers interacted with it."
+msgstr ""
+
+#: pages/analytics/VideoLayerTimeline.js:169
+msgid "See when interactive layers appeared in your video and how they performed."
+msgstr ""
+
+#: pages/analytics/VideoLayerTimeline.js:185
+msgid "Video conversion"
+msgstr ""
+
+#: pages/analytics/VideoLayerTimeline.js:189
+msgid "Share of plays where the viewer converted on any layer (clicked a CTA, submitted a form, voted in a poll, or added a product to cart). A play counts once even if the viewer converts on several layers, so this never exceeds 100%."
+msgstr ""
+
+#. translators: 1: converting sessions, 2: total plays.
+#: pages/analytics/VideoLayerTimeline.js:202
+#, js-format
+msgid "%1$s of %2$s plays"
+msgstr ""
+
+#: pages/analytics/VideoLayerTimeline.js:218
+msgid "Unable to load layer analytics. Please try again."
 msgstr ""
 
 #: pages/dashboard/components/MarketingCarousel.jsx:101
@@ -4262,51 +4626,59 @@ msgstr ""
 msgid "Feature Screenshot"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:321
+#: pages/dashboard/Dashboard.js:476
 msgid "Active Videos"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:322
+#: pages/dashboard/Dashboard.js:477
 msgid "Number of unique videos that received user interactions each day, such as views or plays."
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:384
+#: pages/dashboard/Dashboard.js:539
 msgid "Top Videos"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:387
+#: pages/dashboard/Dashboard.js:542
 msgid "Export"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:394
+#: pages/dashboard/Dashboard.js:549
 msgid "Name"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:398
+#: pages/dashboard/Dashboard.js:553
 msgid "Total Watch Time"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:421
-#: pages/dashboard/Dashboard.js:435
+#: pages/dashboard/Dashboard.js:555
+msgid "Conversion Rate"
+msgstr ""
+
+#: pages/dashboard/Dashboard.js:577
+#: pages/dashboard/Dashboard.js:591
 msgid "Video thumbnail"
 msgstr ""
 
+#: pages/dashboard/Dashboard.js:626
+msgid "No layer conversions in this period"
+msgstr ""
+
 #. translators: %1$d is the current page number, %2$d is the total number of pages
-#: pages/dashboard/Dashboard.js:484
+#: pages/dashboard/Dashboard.js:651
 #, js-format
 msgid "Page %1$d of %2$d"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:498
+#: pages/dashboard/Dashboard.js:665
 msgid "Previous"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:505
+#: pages/dashboard/Dashboard.js:672
 msgid "Next"
 msgstr ""
 
 #: pages/godam/App.js:34
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:92
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:101
 #: pages/help/App.js:55
 msgid "General Settings"
 msgstr ""
@@ -4401,8 +4773,8 @@ msgid "Get GoDAM"
 msgstr ""
 
 #: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:59
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:58
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:156
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:67
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:182
 #: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:90
 #: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:67
 msgid "Settings saved successfully."
@@ -4410,10 +4782,10 @@ msgstr ""
 
 #: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:62
 #: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:65
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:61
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:64
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:159
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:162
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:70
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:73
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:185
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:188
 #: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:93
 #: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:96
 #: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:70
@@ -4422,11 +4794,11 @@ msgid "Failed to save settings."
 msgstr ""
 
 #: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:74
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:73
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:171
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:82
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:197
 #: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:379
 #: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:82
-#: pages/video-editor/VideoEditor.js:81
+#: pages/video-editor/VideoEditor.js:82
 msgid "You have unsaved changes. Are you sure you want to leave?"
 msgstr ""
 
@@ -4458,12 +4830,12 @@ msgid "Learn more."
 msgstr ""
 
 #: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:130
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:123
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:332
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:137
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:359
 #: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:522
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:126
-#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:146
-#: pages/video-editor/VideoEditor.js:424
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:127
+#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:147
+#: pages/video-editor/VideoEditor.js:454
 msgid "Saving…"
 msgstr ""
 
@@ -4491,7 +4863,7 @@ msgid "Custom brand logo"
 msgstr ""
 
 #: pages/godam/components/tabs/GeneralSettings/BrandImageSelector.jsx:118
-#: pages/video-editor/components/cta/ImageCTA.js:360
+#: pages/video-editor/components/cta/ImageCTA.js:362
 msgid "Selected custom brand"
 msgstr ""
 
@@ -4503,19 +4875,23 @@ msgstr ""
 msgid "Upload a custom brand logo to display beside the player controls when selected. This can be overridden for individual videos"
 msgstr ""
 
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:97
-msgid "Enable folder organization in media library."
-msgstr ""
-
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:98
-msgid "Keep this option enabled to organize media into folders within the media library. Disabling it will remove folder organization."
-msgstr ""
-
 #: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:106
+msgid "Enable GoDAM media library features"
+msgstr ""
+
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:109
+msgid "This setting is managed by your site administrator and can’t be changed here."
+msgstr ""
+
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:110
+msgid "Turn this on to organize and manage media with GoDAM — folders, search, and filters. Turn it off to keep the WordPress media library as it is."
+msgstr ""
+
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:120
 msgid "Enable GTM Tracking"
 msgstr ""
 
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:107
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:121
 msgid "Enable Google Tag Manager video tracking for analytics and conversion tracking."
 msgstr ""
 
@@ -4546,46 +4922,50 @@ msgstr ""
 msgid "Upgrade Plan"
 msgstr ""
 
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:93
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:110
+msgid "Integration status updated successfully."
+msgstr ""
+
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:119
 msgid "Failed to toggle add-on."
 msgstr ""
 
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:122
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:148
 msgid "Add-on installed successfully! Reloading…"
 msgstr ""
 
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:130
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:156
 msgid "Installation failed."
 msgstr ""
 
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:196
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:223
 msgid "Integration Settings"
 msgstr ""
 
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:236
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:263
 msgid "Installation failed. Please download the ZIP and install it like any other WordPress plugin."
 msgstr ""
 
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:245
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:272
 msgid "Download ZIP"
 msgstr ""
 
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:255
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:282
 msgid "View Installation Guide"
 msgstr ""
 
 #. translators: %s: Integration name, e.g. "WooCommerce".
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:266
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:293
 #, js-format
 msgid "The %s add-on plugin is not installed. Please install it to enable this integration."
 msgstr ""
 
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:275
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:302
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationToggle.jsx:47
 msgid "This is a Pro feature."
 msgstr ""
 
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:287
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:314
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationToggle.jsx:59
 msgid "to use this integration."
 msgstr ""
@@ -4604,8 +4984,8 @@ msgstr ""
 
 #: pages/godam/components/tabs/VideoPlayer/CustomVideoPlayerCSS.jsx:50
 #: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:507
-#: pages/video-editor/components/layers/FormLayer.js:166
-#: pages/video-editor/components/layers/PollLayer.js:84
+#: pages/video-editor/components/layers/FormLayer.js:168
+#: pages/video-editor/components/layers/PollLayer.js:88
 msgid "Custom CSS"
 msgstr ""
 
@@ -4666,23 +5046,23 @@ msgstr ""
 msgid "API Settings"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:126
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:127
 msgid "Save API Key"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:136
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:138
 msgid "Remove API Key"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:146
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:148
 msgid "Refreshing…"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:151
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:153
 msgid "Having any issues?"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:158
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:160
 msgid "Contact Support"
 msgstr ""
 
@@ -4832,51 +5212,51 @@ msgstr ""
 msgid "Video Watermark"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:99
+#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:100
 msgid "Enable video watermark"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:106
+#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:107
 msgid "If enabled, GoDAM will add a watermark to the transcoded video"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:115
+#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:117
 msgid "Use image watermark"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:124
+#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:126
 msgid "If enabled, Transcoder will use an image instead of text as the watermark for the transcoded video"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:129
+#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:131
 msgid "(Recommended dimensions: 200 px width × 70 px height)"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:147
+#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:149
 msgid "Change Watermark"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:148
+#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:150
 msgid "Select Watermark"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:160
+#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:162
 msgid "Remove Watermark"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:168
+#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:170
 msgid "Selected watermark"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:188
+#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:190
 msgid "Watermark Text"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:197
+#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:200
 msgid "Enter watermark text"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:199
+#: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:202
 msgid "Specify the watermark text that will be added to transcoded videos"
 msgstr ""
 
@@ -5494,46 +5874,46 @@ msgstr ""
 msgid "Custom Ad"
 msgstr ""
 
-#: pages/video-editor/components/ads/CustomAdSettings.js:173
+#: pages/video-editor/components/ads/CustomAdSettings.js:174
 msgid "Select Ad video"
 msgstr ""
 
-#: pages/video-editor/components/ads/CustomAdSettings.js:185
+#: pages/video-editor/components/ads/CustomAdSettings.js:186
 msgid "Replace Ad Video"
 msgstr ""
 
-#: pages/video-editor/components/ads/CustomAdSettings.js:188
+#: pages/video-editor/components/ads/CustomAdSettings.js:189
 msgid "Remove Ad Video"
 msgstr ""
 
-#: pages/video-editor/components/ads/CustomAdSettings.js:199
+#: pages/video-editor/components/ads/CustomAdSettings.js:201
 msgid "Skippable"
 msgstr ""
 
-#: pages/video-editor/components/ads/CustomAdSettings.js:204
+#: pages/video-editor/components/ads/CustomAdSettings.js:206
 msgid "Allow user to skip ad"
 msgstr ""
 
-#: pages/video-editor/components/ads/CustomAdSettings.js:210
+#: pages/video-editor/components/ads/CustomAdSettings.js:213
 msgid "Skip time"
 msgstr ""
 
-#: pages/video-editor/components/ads/CustomAdSettings.js:211
+#: pages/video-editor/components/ads/CustomAdSettings.js:215
 msgid "Time in seconds after which the skip button will appear"
 msgstr ""
 
-#: pages/video-editor/components/ads/CustomAdSettings.js:223
+#: pages/video-editor/components/ads/CustomAdSettings.js:227
 msgid "Click link"
 msgstr ""
 
-#: pages/video-editor/components/ads/CustomAdSettings.js:225
+#: pages/video-editor/components/ads/CustomAdSettings.js:230
 msgid "Enter the URL to redirect when the ad is clicked"
 msgstr ""
 
-#: pages/video-editor/components/ads/CustomAdSettings.js:234
+#: pages/video-editor/components/ads/CustomAdSettings.js:239
 #: pages/video-editor/components/cta/ImageCTA.js:236
 #: pages/video-editor/components/cta/ImageCTA.js:254
-#: pages/video-editor/components/layers/HotspotLayer.js:441
+#: pages/video-editor/components/layers/HotspotLayer.js:450
 msgid "Please enter a valid URL (e.g., https://example.com)"
 msgstr ""
 
@@ -5699,43 +6079,43 @@ msgstr ""
 msgid "Text Only (No Image)"
 msgstr ""
 
-#: pages/video-editor/components/cta/ImageCTA.js:341
+#: pages/video-editor/components/cta/ImageCTA.js:342
 msgid "Add Image"
 msgstr ""
 
-#: pages/video-editor/components/cta/ImageCTA.js:364
+#: pages/video-editor/components/cta/ImageCTA.js:366
 msgid "Replace Image"
 msgstr ""
 
-#: pages/video-editor/components/cta/ImageCTA.js:367
+#: pages/video-editor/components/cta/ImageCTA.js:369
 msgid "Remove Image"
 msgstr ""
 
-#: pages/video-editor/components/cta/ImageCTA.js:387
+#: pages/video-editor/components/cta/ImageCTA.js:389
 msgid "Image Width (%)"
 msgstr ""
 
-#: pages/video-editor/components/cta/ImageCTA.js:393
+#: pages/video-editor/components/cta/ImageCTA.js:395
 msgid "Applies to horizontal layouts only"
 msgstr ""
 
-#: pages/video-editor/components/cta/ImageCTA.js:408
+#: pages/video-editor/components/cta/ImageCTA.js:411
 msgid "Add title here"
 msgstr ""
 
-#: pages/video-editor/components/cta/ImageCTA.js:417
+#: pages/video-editor/components/cta/ImageCTA.js:420
 msgid "URL"
 msgstr ""
 
-#: pages/video-editor/components/cta/ImageCTA.js:438
+#: pages/video-editor/components/cta/ImageCTA.js:443
 msgid "Your Description"
 msgstr ""
 
-#: pages/video-editor/components/cta/ImageCTA.js:445
+#: pages/video-editor/components/cta/ImageCTA.js:450
 msgid "CTA Button Text"
 msgstr ""
 
-#: pages/video-editor/components/cta/ImageCTA.js:456
+#: pages/video-editor/components/cta/ImageCTA.js:462
 msgid "CTA Button Background Color"
 msgstr ""
 
@@ -5800,8 +6180,8 @@ msgstr ""
 #: pages/video-editor/components/forms/NinjaForm.js:110
 #: pages/video-editor/components/forms/Sureform.js:97
 #: pages/video-editor/components/forms/WPForm.js:97
-#: pages/video-editor/components/layers/CTALayer.js:291
-#: pages/video-editor/components/layers/PollLayer.js:119
+#: pages/video-editor/components/layers/CTALayer.js:293
+#: pages/video-editor/components/layers/PollLayer.js:124
 msgid "Skip"
 msgstr ""
 
@@ -5817,7 +6197,7 @@ msgstr ""
 msgid "Please activate the Forminator Forms plugin to use this feature."
 msgstr ""
 
-#: pages/video-editor/components/forms/FormSelector.js:33
+#: pages/video-editor/components/forms/FormSelector.js:34
 msgid "Select form"
 msgstr ""
 
@@ -5896,7 +6276,7 @@ msgstr ""
 #: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:231
 #: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:238
 #: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:241
-#: pages/video-editor/components/layers/HotspotLayer.js:660
+#: pages/video-editor/components/layers/HotspotLayer.js:671
 msgid "Custom Icon"
 msgstr ""
 
@@ -5920,38 +6300,38 @@ msgstr ""
 msgid "Call to Action"
 msgstr ""
 
-#: pages/video-editor/components/layers/CTALayer.js:234
+#: pages/video-editor/components/layers/CTALayer.js:236
 msgid "Select the type of Call to Action layer."
 msgstr ""
 
-#: pages/video-editor/components/layers/CTALayer.js:243
+#: pages/video-editor/components/layers/CTALayer.js:245
 msgid "Advanced"
 msgstr ""
 
-#: pages/video-editor/components/layers/CTALayer.js:247
-#: pages/video-editor/components/layers/FormLayer.js:156
-#: pages/video-editor/components/layers/PollLayer.js:74
+#: pages/video-editor/components/layers/CTALayer.js:249
+#: pages/video-editor/components/layers/FormLayer.js:158
+#: pages/video-editor/components/layers/PollLayer.js:78
 msgid "Color"
 msgstr ""
 
-#: pages/video-editor/components/layers/CTALayer.js:251
-#: pages/video-editor/components/layers/FormLayer.js:160
-#: pages/video-editor/components/layers/PollLayer.js:79
+#: pages/video-editor/components/layers/CTALayer.js:253
+#: pages/video-editor/components/layers/FormLayer.js:162
+#: pages/video-editor/components/layers/PollLayer.js:83
 msgid "Layer background color"
 msgstr ""
 
-#: pages/video-editor/components/layers/FormLayer.js:140
-#: pages/video-editor/components/layers/PollLayer.js:54
+#: pages/video-editor/components/layers/FormLayer.js:141
+#: pages/video-editor/components/layers/PollLayer.js:57
 msgid "Allow user to skip"
 msgstr ""
 
-#: pages/video-editor/components/layers/FormLayer.js:145
-#: pages/video-editor/components/layers/PollLayer.js:59
+#: pages/video-editor/components/layers/FormLayer.js:146
+#: pages/video-editor/components/layers/PollLayer.js:62
 msgid "If enabled, the user will be able to skip the form submission."
 msgstr ""
 
-#: pages/video-editor/components/layers/FormLayer.js:151
-#: pages/video-editor/components/layers/PollLayer.js:65
+#: pages/video-editor/components/layers/FormLayer.js:153
+#: pages/video-editor/components/layers/PollLayer.js:69
 msgid "Advance"
 msgstr ""
 
@@ -5963,63 +6343,63 @@ msgstr ""
 msgid "New Hotspot"
 msgstr ""
 
-#: pages/video-editor/components/layers/HotspotLayer.js:306
+#: pages/video-editor/components/layers/HotspotLayer.js:307
 msgid "Layer Duration (seconds)"
 msgstr ""
 
-#: pages/video-editor/components/layers/HotspotLayer.js:314
+#: pages/video-editor/components/layers/HotspotLayer.js:315
 msgid "Duration (in seconds) this layer will stay visible. Maximum: 10 hours (36000 seconds)"
 msgstr ""
 
-#: pages/video-editor/components/layers/HotspotLayer.js:322
+#: pages/video-editor/components/layers/HotspotLayer.js:324
 msgid "Pause video on hover"
 msgstr ""
 
-#: pages/video-editor/components/layers/HotspotLayer.js:327
+#: pages/video-editor/components/layers/HotspotLayer.js:330
 msgid "Player will pause the video while the layer is displayed and users hover over the hotspots."
 msgstr ""
 
 #. translators: %d is the hotspot index
-#: pages/video-editor/components/layers/HotspotLayer.js:346
+#: pages/video-editor/components/layers/HotspotLayer.js:350
 #, js-format
 msgid "Hotspot %d"
 msgstr ""
 
 #. translators: %d is the hotspot index
-#: pages/video-editor/components/layers/HotspotLayer.js:353
+#: pages/video-editor/components/layers/HotspotLayer.js:357
 #, js-format
 msgid "Options for Hotspot %d"
 msgstr ""
 
-#: pages/video-editor/components/layers/HotspotLayer.js:376
+#: pages/video-editor/components/layers/HotspotLayer.js:381
 msgid "Show Style"
 msgstr ""
 
-#: pages/video-editor/components/layers/HotspotLayer.js:395
+#: pages/video-editor/components/layers/HotspotLayer.js:401
 msgid "Show Icon"
 msgstr ""
 
-#: pages/video-editor/components/layers/HotspotLayer.js:402
+#: pages/video-editor/components/layers/HotspotLayer.js:409
 msgid "Delete Hotspot"
 msgstr ""
 
-#: pages/video-editor/components/layers/HotspotLayer.js:413
+#: pages/video-editor/components/layers/HotspotLayer.js:421
 msgid "Tooltip Text"
 msgstr ""
 
-#: pages/video-editor/components/layers/HotspotLayer.js:414
+#: pages/video-editor/components/layers/HotspotLayer.js:422
 msgid "Click Me!"
 msgstr ""
 
-#: pages/video-editor/components/layers/HotspotLayer.js:426
+#: pages/video-editor/components/layers/HotspotLayer.js:435
 msgid "Link"
 msgstr ""
 
-#: pages/video-editor/components/layers/HotspotLayer.js:460
+#: pages/video-editor/components/layers/HotspotLayer.js:469
 msgid "BACKGROUND COLOR"
 msgstr ""
 
-#: pages/video-editor/components/layers/HotspotLayer.js:496
+#: pages/video-editor/components/layers/HotspotLayer.js:507
 msgid "Add Hotspot"
 msgstr ""
 
@@ -6048,26 +6428,12 @@ msgstr ""
 msgid "The timestamp cannot be an empty value!"
 msgstr ""
 
-#: pages/video-editor/components/layers/PollLayer.js:44
+#: pages/video-editor/components/layers/PollLayer.js:45
 msgid "Select poll"
-msgstr ""
-
-#: pages/video-editor/components/LayerSelector.jsx:38
-#: pages/video-editor/components/SidebarLayers.js:38
-#: pages/video-editor/components/SidebarLayers.js:41
-#: pages/video-editor/VideoJSPlayer.js:36
-msgid "CTA"
 msgstr ""
 
 #: pages/video-editor/components/LayerSelector.jsx:39
 msgid "Guide users toward a specific action"
-msgstr ""
-
-#: pages/video-editor/components/LayerSelector.jsx:45
-#: pages/video-editor/components/SidebarLayers.js:44
-#: pages/video-editor/components/SidebarLayers.js:47
-#: pages/video-editor/VideoJSPlayer.js:41
-msgid "Hotspot"
 msgstr ""
 
 #: pages/video-editor/components/LayerSelector.jsx:46
@@ -6193,13 +6559,6 @@ msgstr ""
 msgid "Redirect user to custom advertisement"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:185
-#: pages/video-editor/components/SidebarLayers.js:124
-#: pages/video-editor/components/SidebarLayers.js:127
-#: pages/video-editor/VideoJSPlayer.js:51
-msgid "Poll"
-msgstr ""
-
 #: pages/video-editor/components/LayerSelector.jsx:186
 msgid "Gather opinions through interactive voting"
 msgstr ""
@@ -6212,24 +6571,20 @@ msgstr ""
 msgid "plugin is required to use Poll layer"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:237
-msgid "All"
-msgstr ""
-
 #: pages/video-editor/components/LayerSelector.jsx:316
-#: pages/video-editor/VideoEditor.js:333
+#: pages/video-editor/VideoEditor.js:362
 msgid "Layers"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:345
+#: pages/video-editor/components/LayerSelector.jsx:346
 msgid "search layers…"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:391
+#: pages/video-editor/components/LayerSelector.jsx:392
 msgid "Layer"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:420
+#: pages/video-editor/components/LayerSelector.jsx:422
 msgid "Customise Layer"
 msgstr ""
 
@@ -6246,12 +6601,12 @@ msgid "to use them in GoDAM."
 msgstr ""
 
 #: pages/video-editor/components/media-grid/MediaItem.jsx:41
-#: pages/video-editor/VideoEditor.js:318
+#: pages/video-editor/VideoEditor.js:347
 msgid "GoDAM Video Block copied to clipboard"
 msgstr ""
 
 #: pages/video-editor/components/media-grid/MediaItem.jsx:44
-#: pages/video-editor/VideoEditor.js:321
+#: pages/video-editor/VideoEditor.js:350
 msgid "Failed to copy GoDAM Video Block"
 msgstr ""
 
@@ -6333,33 +6688,33 @@ msgstr ""
 msgid "Play video to add layer."
 msgstr ""
 
-#: pages/video-editor/VideoEditor.js:271
+#: pages/video-editor/VideoEditor.js:300
 msgid "Please select a form for the layer at timestamp:"
 msgid_plural "Please select a form for the layers at timestamps:"
 msgstr[0] ""
 msgstr[1] ""
 
-#: pages/video-editor/VideoEditor.js:434
+#: pages/video-editor/VideoEditor.js:464
 msgid "Video changes saved successfully"
 msgstr ""
 
-#: pages/video-editor/VideoEditor.js:463
+#: pages/video-editor/VideoEditor.js:494
 msgid "You can copy the block into one of the two options:"
 msgstr ""
 
-#: pages/video-editor/VideoEditor.js:465
+#: pages/video-editor/VideoEditor.js:496
 msgid "1. Insert as a block in the Block editor."
 msgstr ""
 
-#: pages/video-editor/VideoEditor.js:467
+#: pages/video-editor/VideoEditor.js:498
 msgid "2. Insert as HTML content in the Block editor."
 msgstr ""
 
-#: pages/video-editor/VideoEditor.js:478
+#: pages/video-editor/VideoEditor.js:510
 msgid "Copy Block"
 msgstr ""
 
-#: pages/video-editor/VideoEditor.js:488
+#: pages/video-editor/VideoEditor.js:521
 msgid "Preview"
 msgstr ""
 

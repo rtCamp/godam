@@ -21,6 +21,7 @@ import {
 	initializeStore,
 	saveVideoMeta,
 	setCurrentTab,
+	setCurrentLayer,
 	setGravityForms,
 	setCF7Forms,
 	setWPForms,
@@ -151,6 +152,34 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	/**
 	 * Update the store with the fetched forms.
 	 */
+	// Deep-link from the Video Layer Timeline on the analytics page: a URL
+	// with `#layer=<uuid>` should land here with the matching layer focused.
+	// Runs once per layers-state-change; the `hashFocusAppliedRef` guards
+	// against re-firing if the user navigates within the editor and the
+	// layers array re-references.
+	const hashFocusAppliedRef = useRef( false );
+	useEffect( () => {
+		if ( hashFocusAppliedRef.current ) {
+			return;
+		}
+		if ( ! Array.isArray( layers ) || layers.length === 0 ) {
+			return;
+		}
+		// Match exactly `#layer=<uuid>`; accept hex/uuid-ish chars only so
+		// stray hashes don't trigger.
+		const hash = window.location.hash || '';
+		const match = hash.match( /^#layer=([A-Za-z0-9_-]{1,64})$/ );
+		if ( ! match ) {
+			return;
+		}
+		const targetLayerId = match[ 1 ];
+		const layer = layers.find( ( l ) => l.id === targetLayerId );
+		if ( layer ) {
+			dispatch( setCurrentLayer( layer ) );
+			hashFocusAppliedRef.current = true;
+		}
+	}, [ layers, dispatch ] );
+
 	useEffect( () => {
 		if ( ! isFetching ) {
 			if ( cf7Forms && cf7Forms.length > 0 ) {
@@ -420,6 +449,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 						onClick={ handleSaveAttachmentMeta }
 						isBusy={ isSavingMeta }
 						disabled={ ! isChanged }
+						data-test-id="godam-video-editor-button-save"
 					>
 						{ isSavingMeta ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 					</Button>
@@ -453,6 +483,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 								target="_blank"
 								className="godam-button"
 								icon={ chartBar }
+								data-test-id="godam-video-editor-button-analytics"
 							>
 								{ __( 'Analytics', 'godam' ) }
 							</Button>
@@ -474,6 +505,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 								iconPosition="left"
 								onClick={ handleCopyGoDAMVideoBlock }
 								className="godam-button"
+								data-test-id="godam-video-editor-button-copy-block"
 							>
 								{ __( 'Copy Block', 'godam' ) }
 							</Button>
@@ -484,6 +516,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 							target="_blank"
 							className="godam-button"
 							icon={ seen }
+							data-test-id="godam-video-editor-button-preview"
 						>
 							{ __( 'Preview', 'godam' ) }
 						</Button>

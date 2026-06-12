@@ -554,7 +554,9 @@ class Pages {
 			);
 
 			// Localize easydamMediaLibrary data for the video editor.
-			$enable_folder_organization = get_option( 'rtgodam-settings', array() )['general']['enable_folder_organization'] ?? true;
+			// Resolve through the helper so the code-level constant/filter override applies here too,
+			// keeping this global consistent on the video-editor page.
+			$enable_folder_organization = rtgodam_is_media_library_ui_enabled();
 			$current_user_id            = get_current_user_id();
 
 			$easydam_media_library_data = array(
@@ -704,7 +706,7 @@ class Pages {
 			 * main dashboard bundle is enqueued so those registrations are
 			 * available when the dashboard app mounts.
 			 *
-			 * @since n.e.x.t
+			 * @since 1.11.0
 			 */
 			do_action( 'godam_enqueue_dashboard_page_scripts' );
 
@@ -768,6 +770,96 @@ class Pages {
 				'godamPluginData',
 				array(
 					'flagBasePath' => RTGODAM_URL . 'assets/src/images/flags',
+				)
+			);
+
+			// Add-on layer options (e.g. WooCommerce) so the analytics timeline
+			// renders the same marker icons the video editor seekbar does. The
+			// editor uses `godam_video_editor_layer_options` to let add-ons
+			// supply `iconUrl` for their layer type — we reuse that filter
+			// result here so analytics doesn't have a parallel registration
+			// surface. Built-in types (cta/form/hotspot/poll) have icons
+			// hardcoded in the React bundle; this exposes only the URL-based
+			// icons that come from PHP land.
+			$addon_layer_options = apply_filters( 'godam_video_editor_layer_options', array() );
+
+			// Published layer config for the analytics page's "active vs
+			// removed" rendering. The analytics service stores events
+			// indefinitely (plan §5.8), so a layer the marketer deletes
+			// still appears in analytics. We separate it out in the UI by
+			// reading the current postmeta and tagging each layer's
+			// presence — anything in analytics but missing from postmeta
+			// reads as "removed."
+			//
+			// Source of truth: published postmeta (rtgodam_meta.layers).
+			// Mid-edit unsaved changes don't count; the marketer has to
+			// save for the active set to change.
+			$active_layer_config = array();
+			$analytics_video_id  = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( $analytics_video_id > 0 ) {
+				$rtgodam_meta = get_post_meta( $analytics_video_id, 'rtgodam_meta', true );
+				$saved_layers = is_array( $rtgodam_meta ) && ! empty( $rtgodam_meta['layers'] ) && is_array( $rtgodam_meta['layers'] )
+					? $rtgodam_meta['layers']
+					: array();
+				foreach ( $saved_layers as $saved_layer ) {
+					if ( empty( $saved_layer['id'] ) || empty( $saved_layer['type'] ) ) {
+						continue;
+					}
+					$entry = array(
+						'id'   => (string) $saved_layer['id'],
+						'type' => (string) $saved_layer['type'],
+					);
+					// Sub-hotspot IDs by layer type. Composite ids on the
+					// tracker side are `parent.id::<subId>` for hotspot
+					// (where subId is hotspot.id) or `parent.id::p<productId>`
+					// for woo. We expose the trailing suffix as `subIds`
+					// (without the `::` prefix) so the frontend can do a
+					// simple endsWith / split match.
+					if ( 'hotspot' === $saved_layer['type'] && ! empty( $saved_layer['hotspots'] ) && is_array( $saved_layer['hotspots'] ) ) {
+						$sub_ids = array();
+						foreach ( $saved_layer['hotspots'] as $sub ) {
+							if ( ! empty( $sub['id'] ) ) {
+								$sub_ids[] = (string) $sub['id'];
+							}
+						}
+						$entry['subIds'] = $sub_ids;
+					} elseif ( 'woo' === $saved_layer['type'] && ! empty( $saved_layer['productHotspots'] ) && is_array( $saved_layer['productHotspots'] ) ) {
+						$sub_ids = array();
+						foreach ( $saved_layer['productHotspots'] as $product ) {
+							if ( ! empty( $product['productId'] ) ) {
+								$sub_ids[] = 'p' . (int) $product['productId'];
+							}
+						}
+						$entry['subIds'] = $sub_ids;
+					}
+
+					// For form / poll layers, expose a deep link to the
+					// integration's entries (or the poll's results) admin page,
+					// when one exists. Built here because PHP has admin_url() and
+					// the saved integration ids; the React detail panel just
+					// renders it.
+					$entries_url = $this->get_layer_entries_url( $saved_layer );
+					if ( ! empty( $entries_url ) ) {
+						$entry['entries_url'] = $entries_url;
+					}
+
+					$active_layer_config[] = $entry;
+				}
+			}
+
+			wp_localize_script(
+				'transcoder-page-script-analytics',
+				'godamAnalyticsConfig',
+				array(
+					'addonLayerOptions' => is_array( $addon_layer_options ) ? array_values( $addon_layer_options ) : array(),
+					// null means "config unknown" — the frontend fails open
+					// (treats everything as active). That's the case when the
+					// page loads without a video id: the media-selector flow
+					// sets the id client-side via history.replaceState with no
+					// reload, so this localization never re-runs. An empty
+					// ARRAY is meaningful: valid id, zero published layers —
+					// the frontend then renders every layer as removed.
+					'activeLayerConfig' => $analytics_video_id > 0 ? $active_layer_config : null,
 				)
 			);
 
@@ -998,6 +1090,72 @@ class Pages {
 			'posthogConfig',
 			$this->get_posthog_config()
 		);
+	}
+
+	/**
+	 * Build the wp-admin URL to a form layer's entries page (or a poll layer's
+	 * results), based on the integration the layer points to.
+	 *
+	 * Returns '' when there is no native entries view (e.g. Contact Form 7,
+	 * which stores nothing without an add-on) or the layer has no saved id —
+	 * the analytics detail panel hides the link in that case. SureForms and
+	 * Jetpack expose SPA entries screens with no reliable per-form URL filter,
+	 * so they link to the list rather than a specific form.
+	 *
+	 * @param array $layer Saved layer array from rtgodam_meta['layers'].
+	 * @return string Absolute admin URL, or '' if not linkable.
+	 */
+	private function get_layer_entries_url( $layer ) {
+		$type = isset( $layer['type'] ) ? (string) $layer['type'] : '';
+
+		if ( 'poll' === $type ) {
+			$poll_id = isset( $layer['poll_id'] ) ? absint( $layer['poll_id'] ) : 0;
+			return $poll_id
+				? admin_url( 'admin.php?page=wp-polls/polls-manager.php&mode=edit&id=' . $poll_id )
+				: '';
+		}
+
+		if ( 'form' !== $type ) {
+			return '';
+		}
+
+		$form_type = isset( $layer['form_type'] ) ? (string) $layer['form_type'] : '';
+
+		// form_type => array( saved-id field, admin URL template with {id} ).
+		// Integrations without a native entries page (Contact Form 7) are
+		// intentionally absent so no link renders. SureForms deep-links to a
+		// specific form via its entries SPA hash route (#/?form={id}); Jetpack's
+		// responses screen has no per-form URL filter, so it uses an empty id
+		// field and links to the list.
+		$map = array(
+			'gravity'      => array( 'gf_id', 'admin.php?page=gf_entries&id={id}' ),
+			'wpforms'      => array( 'wpform_id', 'admin.php?page=wpforms-entries&view=list&form_id={id}' ),
+			'fluentforms'  => array( 'fluent_form_id', 'admin.php?page=fluent_forms&route=entries&form_id={id}' ),
+			'forminator'   => array( 'forminator_id', 'admin.php?page=forminator-entries&form_type=forminator_forms&form_id={id}' ),
+			'everestforms' => array( 'everest_form_id', 'admin.php?page=evf-entries&form_id={id}' ),
+			'ninjaforms'   => array( 'ninja_form_id', 'admin.php?page=nf-submissions&form_id={id}' ),
+			'metform'      => array( 'metform_id', 'edit.php?post_type=metform-entry&mf_form_id={id}' ),
+			'sureforms'    => array( 'sureform_id', 'admin.php?page=sureforms_entries#/?form={id}' ),
+			'jetpack'      => array( '', 'admin.php?page=jetpack-forms-admin#/responses' ),
+		);
+
+		if ( ! isset( $map[ $form_type ] ) ) {
+			return '';
+		}
+
+		list( $id_field, $template ) = $map[ $form_type ];
+
+		// List-style screens take no form id.
+		if ( '' === $id_field ) {
+			return admin_url( $template );
+		}
+
+		$form_id = isset( $layer[ $id_field ] ) ? absint( $layer[ $id_field ] ) : 0;
+		if ( ! $form_id ) {
+			return '';
+		}
+
+		return admin_url( str_replace( '{id}', (string) $form_id, $template ) );
 	}
 
 	/**

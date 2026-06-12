@@ -14,9 +14,14 @@ const videoAnalyticsPlugin = () => {
 			const { properties, meta, anonymousId } = payload;
 
 			try {
-				const { ranges = [], videoId, type, videoLength, videoIds, jobId } = properties;
+				const { ranges = [], videoId, type, videoLength, videoIds, jobId, layers = [], reelPopId } = properties;
 
 				if ( ! type || ( type === 1 && ( ! videoIds || videoIds.length === 0 ) ) ) {
+					return;
+				}
+
+				// type=3 needs at least one layer event to be worth sending.
+				if ( type === 3 && ( ! Array.isArray( layers ) || layers.length === 0 ) ) {
 					return;
 				}
 
@@ -29,6 +34,8 @@ const videoAnalyticsPlugin = () => {
 					videoIds,
 					ranges,
 					videoLength,
+					layers,
+					reelPopId,
 				} );
 
 				if ( ! endpoint ) {
