@@ -413,7 +413,6 @@ class WPB_GoDAM_Video_Gallery {
 				'fields'  => array( 'ID', 'display_name' ),
 				'orderby' => 'display_name',
 				'order'   => 'ASC',
-				'number'  => 200,
 			)
 		);
 
