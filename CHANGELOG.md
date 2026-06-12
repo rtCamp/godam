@@ -1,5 +1,9 @@
 # Changelog #
 
+## v1.12.1 (June 12, 2026) ##
+
+- Fix: Resolved security issues.
+
 ## v1.12.0 (June 11, 2026) ##
 
 - Feat: Added Layer Analytics feature to track how viewers interact with video layers (CTAs, hotspots, forms, and more), with per-layer engagement and conversion metrics in the analytics dashboard.
