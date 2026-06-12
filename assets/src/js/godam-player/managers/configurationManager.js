@@ -65,6 +65,15 @@ export default class ConfigurationManager {
 		this.videoSetupOptions = parseDataAttribute( this.video, 'options', {} );
 		const videoSetupControls = parseDataAttribute( this.video, 'controls', this.getDefaultControls() );
 
+		// Track whether the block's "Playback controls" toggle is enabled.
+		// When false, we still pass controls:true to Video.js so the big play
+		// button remains functional; the control bar is hidden separately in
+		// ControlsManager.setupControlBarConfiguration().
+		this.playbackControlsEnabled = videoSetupControls.controls !== false;
+		if ( ! this.playbackControlsEnabled ) {
+			videoSetupControls.controls = true;
+		}
+
 		// Disable default autoplay if autoplay-on-view is enabled
 		// This allows intersection observer to handle autoplay when video enters viewport
 		if ( this.video.dataset.autoplayOnView === 'true' ) {
