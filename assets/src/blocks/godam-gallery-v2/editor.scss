@@ -1,3 +1,10 @@
+// WP 7.0+ collapses ToggleControl bottom margin to zero (the
+// `__nextHasNoMarginBottom` prop is now a no-op). Restore consistent
+// vertical spacing for toggles rendered in the block inspector sidebar.
+.block-editor-block-inspector .components-panel__body .components-toggle-control {
+	margin-bottom: 12px;
+}
+
 .godam-gallery-v2 {
 	// Only apply 100% width when no block-level alignment is set.
 	// alignfull/alignwide rely on theme/editor CSS for their own width.
