@@ -208,7 +208,11 @@ export function buildAnalyticsRequestBody( {
 		email: emailId || '',
 		visitor_timestamp: visitorTimestamp || Date.now(),
 		visit_entry_action_url: window.location.href,
-		visit_entry_action_name: document.title,
+		// Prefer the WP-resolved post title: document.title is the SEO/document
+		// title ("Post – Site Name", or whatever an SEO plugin emits), not the
+		// post title. PHP localizes postTitle only on singular pages; elsewhere
+		// document.title is the best page name available.
+		visit_entry_action_name: postTitle || document.title,
 		referer_type: '',
 		referer_name: document.referrer || '',
 		referer_url: document.referrer || '',
