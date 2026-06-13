@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GoDAM 1.12.0\n"
+"Project-Id-Version: GoDAM 1.12.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-06-11T11:27:19+00:00\n"
+"POT-Creation-Date: 2026-06-12T10:39:40+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -2826,7 +2826,7 @@ msgid "WPForms plugin is not active."
 msgstr ""
 
 #: inc/classes/shortcodes/class-godam-video-gallery.php:421
-#: pages/dashboard/Dashboard.js:639
+#: pages/dashboard/Dashboard.js:644
 msgid "No videos found."
 msgstr ""
 
@@ -4303,6 +4303,17 @@ msgstr ""
 msgid "View"
 msgstr ""
 
+#: pages/analytics/hooks/useVideoLayerData.js:216
+#: pages/video-editor/components/LayerSelector.jsx:392
+msgid "Layer"
+msgstr ""
+
+#. translators: 1: layer type label (e.g. "CTA"), 2: position in the video in seconds.
+#: pages/analytics/hooks/useVideoLayerData.js:223
+#, js-format
+msgid "%1$s layer at %2$ss"
+msgstr ""
+
 #: pages/analytics/index.js:39
 #: pages/video-editor/components/media-grid/MediaItem.jsx:118
 msgid "View analytics"
@@ -4659,21 +4670,27 @@ msgstr ""
 msgid "Video thumbnail"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:626
+#. translators: 1: converting sessions, 2: total plays.
+#: pages/dashboard/Dashboard.js:627
+#, js-format
+msgid "%1$s of %2$s sessions converted"
+msgstr ""
+
+#: pages/dashboard/Dashboard.js:631
 msgid "No layer conversions in this period"
 msgstr ""
 
 #. translators: %1$d is the current page number, %2$d is the total number of pages
-#: pages/dashboard/Dashboard.js:651
+#: pages/dashboard/Dashboard.js:656
 #, js-format
 msgid "Page %1$d of %2$d"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:665
+#: pages/dashboard/Dashboard.js:670
 msgid "Previous"
 msgstr ""
 
-#: pages/dashboard/Dashboard.js:672
+#: pages/dashboard/Dashboard.js:677
 msgid "Next"
 msgstr ""
 
@@ -6578,10 +6595,6 @@ msgstr ""
 
 #: pages/video-editor/components/LayerSelector.jsx:346
 msgid "search layers…"
-msgstr ""
-
-#: pages/video-editor/components/LayerSelector.jsx:392
-msgid "Layer"
 msgstr ""
 
 #: pages/video-editor/components/LayerSelector.jsx:422
