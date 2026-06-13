@@ -13,6 +13,7 @@ import { stripHtmlTags } from '../../blocks/godam-player/utils/index.js';
 
 	let isVirtualAttachmentListenerBound = false;
 	let isSeoPrefillListenerBound = false;
+	let isParamGroupObserverSetup = false;
 
 	const ATTACHMENT_CACHE_MAX_ENTRIES = 100;
 
@@ -45,70 +46,140 @@ import { stripHtmlTags } from '../../blocks/godam-player/utils/index.js';
 	function initVideoSelector() {
 		bindVirtualAttachmentReplacement();
 		bindSeoPrefillHandlers();
+		setupParamGroupObserver();
 
-		$( '.video-selector-button' ).off( 'click' ).on( 'click', function( e ) {
-			e.preventDefault();
+		// Direct-bind to ALL current video-selector buttons in the DOM. This
+		// covers both top-level params (GoDAM Video element) and any param_group
+		// items that are already rendered when vc.reload fires. Direct binding
+		// fires before WPBakery's panel click guards can stop propagation.
+		// The namespace `.godam-vs` prevents duplicate handlers across reloads.
+		$( '.video-selector-button' )
+			.off( 'click.godam-vs' )
+			.on( 'click.godam-vs', openVideoSelectorFrame );
 
-			const $button = $( this );
-			const paramName = $button.data( 'param' );
-			const $container = $button.closest( '.video_selector_block' );
-			const $input = $container.find( '.video_selector_field' );
+		$( '.video-selector-remove' )
+			.off( 'click.godam-vs' )
+			.on( 'click.godam-vs', removeVideoSelector );
+	}
 
-			// Create WordPress media frame
-			const frame = wp.media( {
-				title: 'Select or Upload Video',
-				button: {
-					text: 'Select Video',
-				},
-				library: {
-					type: 'video',
-				},
-				multiple: false,
-			} );
+	/**
+	 * Open the WP media frame for a video-selector button.
+	 * Shared by both the direct-bind path (top-level params) and
+	 * the delegated path (param_group rows).
+	 *
+	 * @param {jQuery.Event} e
+	 */
+	function openVideoSelectorFrame( e ) {
+		e.preventDefault();
 
-			// When a video is selected
-			frame.on( 'select', function() {
-				const attachment = frame.state().get( 'selection' ).first().toJSON();
+		const $button = $( this );
+		const paramName = $button.data( 'param' );
+		const $container = $button.closest( '.video_selector_block' );
+		const $input = $container.find( '.video_selector_field' );
 
-				// Update the hidden input value
-				$input.val( attachment.id ).trigger( 'change' );
-
-				// Update button text
-				$button.text( __( 'Replace', 'godam' ) );
-
-				// Add or update preview
-				let $preview = $container.find( '.video-selector-preview' );
-				if ( $preview.length === 0 ) {
-					$preview = $( '<div class="video-selector-preview" style="margin-top: 10px;"></div>' );
-					$container.append( $preview );
-				}
-
-				$preview.html(
-					'<video width="100%" height="auto" controls style="max-width: 300px;">' +
-					'<source src="' + attachment.url + '" type="' + attachment.mime + '">' +
-					'</video>',
-				);
-
-				maybePrefillSeoFields( $container );
-
-				// Add or update remove button in the buttons wrapper
-				const $buttonsWrapper = $container.find( '.video_selector-buttons-wrapper' );
-				let $removeButton = $buttonsWrapper.find( '.video-selector-remove' );
-				if ( $removeButton.length === 0 ) {
-					$removeButton = $( '<button class="button video-selector-remove" data-param="' + paramName + '" style="margin-left: 5px;">Remove</button>' );
-					$buttonsWrapper.append( $removeButton );
-				}
-
-				// Re-attach remove handler
-				initRemoveHandler();
-			} );
-
-			// Open the media frame
-			frame.open();
+		const frame = wp.media( {
+			title: __( 'Select or Upload Video', 'godam' ),
+			button: { text: __( 'Select Video', 'godam' ) },
+			library: { type: 'video' },
+			multiple: false,
 		} );
 
-		// Initialize remove handler
-		initRemoveHandler();
+		frame.on( 'select', function() {
+			const attachment = frame.state().get( 'selection' ).first().toJSON();
+
+			$input.val( attachment.id ).trigger( 'change' );
+			$button.text( __( 'Replace', 'godam' ) );
+
+			let $preview = $container.find( '.video-selector-preview' );
+			if ( $preview.length === 0 ) {
+				$preview = $( '<div class="video-selector-preview" style="margin-top: 10px;"></div>' );
+				$container.append( $preview );
+			}
+
+			$preview.html(
+				'<video width="100%" height="auto" controls style="max-width: 300px;">' +
+				'<source src="' + attachment.url + '" type="' + attachment.mime + '">' +
+				'</video>',
+			);
+
+			maybePrefillSeoFields( $container );
+
+			const $buttonsWrapper = $container.find( '.video_selector-buttons-wrapper' );
+			if ( 0 === $buttonsWrapper.find( '.video-selector-remove' ).length ) {
+				$buttonsWrapper.append(
+					'<button type="button" class="button video-selector-remove" data-param="' + paramName + '" style="margin-left: 5px;">' +
+					__( 'Remove', 'godam' ) +
+					'</button>',
+				);
+			}
+		} );
+
+		frame.open();
+	}
+
+	/**
+	 * Remove the selected video from a video-selector field.
+	 *
+	 * @param {jQuery.Event} e
+	 */
+	function removeVideoSelector( e ) {
+		e.preventDefault();
+
+		const $button = $( this );
+		const $container = $button.closest( '.video_selector_block' );
+		const $input = $container.find( '.video_selector_field' );
+		const $selectButton = $container.find( '.video-selector-button' );
+
+		$input.val( '' ).trigger( 'change' );
+		$container.find( '.video-selector-preview' ).remove();
+		$button.remove();
+		$selectButton.text( __( 'Select video', 'godam' ) );
+
+	/**
+	 * Watch for video-selector buttons added dynamically by WPBakery's
+	 * param_group (e.g. when the user clicks "Add Item"). Delegation on
+	 * `document` is unreliable because WPBakery's panel click guards stop
+	 * propagation before events reach document. A MutationObserver lets us
+	 * direct-bind to each new button the moment it enters the DOM, so the
+	 * handler fires at the element level before any stopPropagation can
+	 * intercept it. Only set up once per page load.
+	 */
+	function setupParamGroupObserver() {
+		if ( isParamGroupObserverSetup ) {
+			return;
+		}
+
+		const observer = new MutationObserver( function( mutations ) {
+			for ( const mutation of mutations ) {
+				for ( const node of mutation.addedNodes ) {
+					if ( node.nodeType !== Node.ELEMENT_NODE ) {
+						continue;
+					}
+
+					// Collect any video-selector-button elements inside the
+					// added subtree (and the node itself if it matches).
+					const $buttons = $( node )
+						.find( '.video-selector-button' )
+						.add( $( node ).filter( '.video-selector-button' ) );
+
+					$buttons
+						.off( 'click.godam-vs' )
+						.on( 'click.godam-vs', openVideoSelectorFrame );
+
+					const $removes = $( node )
+						.find( '.video-selector-remove' )
+						.add( $( node ).filter( '.video-selector-remove' ) );
+
+					$removes
+						.off( 'click.godam-vs' )
+						.on( 'click.godam-vs', removeVideoSelector );
+				}
+			}
+		} );
+
+		observer.observe( document.body, { childList: true, subtree: true } );
+
+		isParamGroupObserverSetup = true;
 	}
 
 	function bindSeoPrefillHandlers() {
@@ -286,36 +357,12 @@ import { stripHtmlTags } from '../../blocks/godam-player/utils/index.js';
 
 				let $removeButton = $buttonsWrapper.find( '.video-selector-remove' );
 				if ( $removeButton.length === 0 ) {
-					$removeButton = $( `<button class="button video-selector-remove" style="margin-left: 5px;">${ __( 'Remove', 'godam' ) }</button>` );
+					$removeButton = $( `<button type="button" class="button video-selector-remove" style="margin-left: 5px;">${ __( 'Remove', 'godam' ) }</button>` );
 					$buttonsWrapper.append( $removeButton );
-					initRemoveHandler();
 				}
 			} );
 		} );
 
 		isVirtualAttachmentListenerBound = true;
-	}
-
-	function initRemoveHandler() {
-		$( '.video-selector-remove' ).off( 'click' ).on( 'click', function( e ) {
-			e.preventDefault();
-
-			const $button = $( this );
-			const $container = $button.closest( '.video_selector_block' );
-			const $input = $container.find( '.video_selector_field' );
-			const $selectButton = $container.find( '.video-selector-button' );
-
-			// Clear the input value
-			$input.val( '' ).trigger( 'change' );
-
-			// Remove preview
-			$container.find( '.video-selector-preview' ).remove();
-
-			// Remove the remove button itself
-			$button.remove();
-
-			// Update button text
-			$selectButton.text( 'Select video' );
-		} );
 	}
 }( window.jQuery ) );
