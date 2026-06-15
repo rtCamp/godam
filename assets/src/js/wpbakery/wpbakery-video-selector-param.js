@@ -134,6 +134,7 @@ import { stripHtmlTags } from '../../blocks/godam-player/utils/index.js';
 		$container.find( '.video-selector-preview' ).remove();
 		$button.remove();
 		$selectButton.text( __( 'Select video', 'godam' ) );
+	}
 
 	/**
 	 * Watch for video-selector buttons added dynamically by WPBakery's
