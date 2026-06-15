@@ -422,12 +422,11 @@ export function groupRows( rows, layerType, configIndex ) {
 		const subHotspots = bucket.subRows
 			.map( ( { row, md }, idx ) => {
 				const counts = pluckCounts( row );
-				const noAction = computeNoAction( layerType, {
-					...counts,
-					// Sub-hotspots inherit viewed from the parent (all sub-
-					// hotspots in one layer become visible together).
-					viewed: parentCounts.viewed,
-				} );
+				// Use the server's per-sub `viewed`: it inherits the parent's
+				// impression, sliced to the sub's lifetime when the proxy
+				// forwards a lifetime map (#196), else the full range — identical
+				// to the parent's count until the map is populated.
+				const noAction = computeNoAction( layerType, counts );
 				// Per-sub conversion comes from the server: the sub's converting
 				// sessions over the PARENT's viewed (subs don't emit their own
 				// viewed), a UNION over the layer type's conversion actions — so
@@ -474,11 +473,10 @@ export function groupRows( rows, layerType, configIndex ) {
 				return {
 					id: subId,
 					name: subName,
-					counts: {
-						...counts,
-						// Inherit viewed; per-sub viewed isn't emitted anymore.
-						viewed: parentCounts.viewed,
-					},
+					// `viewed` is the server's per-sub value: the parent's
+					// impression, sliced to the sub's lifetime when a lifetime
+					// map is forwarded (#196), else the full range.
+					counts,
 					no_action: noAction,
 					conversion_rate: conversion,
 					product_id: md.product_id || null,

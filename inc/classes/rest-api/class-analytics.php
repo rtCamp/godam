@@ -267,11 +267,37 @@ class Analytics extends Base {
 			$query_params['job_id'] = $job_id;
 		}
 
+		// #196: for layer types that have sub-hotspots, forward the per-sub
+		// lifetime map (added_at / deleted_at, recorded on save) so the service
+		// credits a sub's inherited `viewed` only for the days it existed. The
+		// endpoint accepts GET or POST and reads `layer_lifetimes` from the body;
+		// atomic layer types send nothing and keep the GET path. A sub absent
+		// from the map is treated as full-history, so this is a no-op until the
+		// map is populated.
+		$layer_lifetimes = array();
+		if ( $attachment_id && in_array( $layer_type, array( 'hotspot', 'woo' ), true ) ) {
+			$meta = get_post_meta( $attachment_id, 'rtgodam_meta', true );
+			if ( is_array( $meta ) && ! empty( $meta['layer_lifetimes'] ) && is_array( $meta['layer_lifetimes'] ) ) {
+				$layer_lifetimes = $meta['layer_lifetimes'];
+			}
+		}
+
 		$endpoint = add_query_arg( $query_params, RTGODAM_ANALYTICS_BASE . '/processed-layer-analytics/' );
 		// Bounded timeout: useVideoLayerData fires one of these per layer type
 		// (5 in parallel) on page load, so a hung upstream must not pin a PHP
 		// worker for the full default (5s) — and certainly not 5s × 5.
-		$response = wp_remote_get( $endpoint, array( 'timeout' => 3 ) );
+		if ( ! empty( $layer_lifetimes ) ) {
+			$response = wp_remote_post(
+				$endpoint,
+				array(
+					'timeout' => 3,
+					'headers' => array( 'Content-Type' => 'application/json' ),
+					'body'    => wp_json_encode( $layer_lifetimes ),
+				)
+			);
+		} else {
+			$response = wp_remote_get( $endpoint, array( 'timeout' => 3 ) );
+		}
 
 		if ( is_wp_error( $response ) ) {
 			return new WP_REST_Response(
