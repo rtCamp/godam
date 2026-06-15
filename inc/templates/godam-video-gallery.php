@@ -180,6 +180,16 @@ if ( ! function_exists( 'rtgodam_gallery_v2_build_query_args' ) ) {
 			'update_post_term_cache' => true,
 		);
 
+		if ( 'duration' === $orderby ) {
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for sorting by video duration.
+			$query_args['meta_key'] = '_video_duration';
+			$query_args['orderby']  = 'meta_value_num';
+		} elseif ( 'size' === $orderby ) {
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for sorting by video file size.
+			$query_args['meta_key'] = '_video_file_size';
+			$query_args['orderby']  = 'meta_value_num';
+		}
+
 		if ( ! empty( $media_folder_ids ) ) {
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- Tax query is necessary for folder filtering.
 			$query_args['tax_query'] = array(

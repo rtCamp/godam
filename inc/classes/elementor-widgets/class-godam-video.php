@@ -489,6 +489,16 @@ class GoDAM_Video extends Base {
 		$widget_engagements       = rtgodam_is_engagement_feature_enabled() && 'yes' === $this->get_settings_for_display( 'engagements' );
 		$widget_player_height     = $this->get_settings_for_display( 'player_height' ) ?? '';
 		$widget_aspect_ratio      = $this->get_settings_for_display( 'aspect_ratio' ) ?? 'responsive';
+		$widget_seo_override      = 'yes' === $this->get_settings_for_display( 'seo_override' );
+		$widget_seo               = array(
+			'contentUrl'       => $this->get_settings_for_display( 'seo_content_url' ) ?? '',
+			'headline'         => $this->get_settings_for_display( 'seo_content_headline' ) ?? '',
+			'description'      => $this->get_settings_for_display( 'seo_content_description' ) ?? '',
+			'uploadDate'       => $this->get_settings_for_display( 'seo_content_upload_date' ) ?? '',
+			'duration'         => $this->get_settings_for_display( 'seo_content_duration' ) ?? '',
+			'thumbnailUrl'     => $this->get_settings_for_display( 'seo_content_video_thumbnail_url' ) ?? '',
+			'isFamilyFriendly' => 'yes' === ( $this->get_settings_for_display( 'seo_content_family_friendly' ) ?? 'yes' ),
+		);
 
 		// Mirror the block: hoverSelect is mutually exclusive with autoplay.
 		if ( $widget_autoplay ) {
@@ -544,6 +554,8 @@ class GoDAM_Video extends Base {
 			'showShareButton' => $widget_show_share_button,
 			'engagements'     => $widget_engagements,
 			'playerHeight'    => $widget_player_height,
+			'seo'             => $widget_seo,
+			'seoOverride'     => $widget_seo_override,
 		);
 
 		$is_elementor_widget = true;
