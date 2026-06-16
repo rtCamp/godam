@@ -1,5 +1,15 @@
 # Changelog #
 
+## v1.12.2 (June 16, 2026) ##
+
+- Tweak: Aligned `[godam_video]` and `[godam_video_gallery]` shortcode attributes with responsive block attributes.
+- Tweak: Refactored GoDAM Video and GoDAM Video Gallery widgets for both Elementor and WPBakery.
+- Fix: Resolved hotspot layer popup overlapping issues.
+- Fix: Added validation to prevent non-video file selections in the GoDAM Video block.
+- Fix: Added validation to prevent non-audio file selections in the GoDAM Audio block.
+- Fix: Restored vertical spacing for toggle controls in the block inspector across audio, gallery, and player blocks.
+- Fix: Resolved style and spacing issues in the video editor.
+
 ## v1.12.1 (June 12, 2026) ##
 
 - Fix: Resolved security issues.

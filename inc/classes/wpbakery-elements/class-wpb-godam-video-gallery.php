@@ -356,7 +356,7 @@ class WPB_GoDAM_Video_Gallery {
 	 * Mirrors the Elementor widget's `get_media_folder_options()` and the
 	 * block editor's mediaFolders query (all terms, including empty ones).
 	 *
-	 * @since n.e.x.t
+	 * @since 1.12.2
 	 *
 	 * @return array<string, string>
 	 */

@@ -37,7 +37,7 @@ defined( 'ABSPATH' ) || exit;
  * | (absent)  | view_ratio='16:9' | new default                           |
  * | (absent)  | performance_mode='balanced' | new default                 |
  *
- * @since n.e.x.t
+ * @since 1.12.2
  */
 class WPBakery_Gallery_Shortcode_V1_To_V2 {
 
@@ -80,7 +80,7 @@ class WPBakery_Gallery_Shortcode_V1_To_V2 {
 	/**
 	 * Run the migration if it has not yet completed.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.12.2
 	 *
 	 * @return bool True if migration is complete or was just run; false if it bailed.
 	 */
@@ -97,7 +97,7 @@ class WPBakery_Gallery_Shortcode_V1_To_V2 {
 	/**
 	 * Execute the full migration.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.12.2
 	 *
 	 * @return void
 	 */
@@ -189,7 +189,7 @@ class WPBakery_Gallery_Shortcode_V1_To_V2 {
 	/**
 	 * Acquire a short-lived option-based lock.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.12.2
 	 *
 	 * @return bool True when the lock was acquired, false otherwise.
 	 */
@@ -225,7 +225,7 @@ class WPBakery_Gallery_Shortcode_V1_To_V2 {
 	/**
 	 * Release the concurrency lock.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.12.2
 	 *
 	 * @return void
 	 */
@@ -242,7 +242,7 @@ class WPBakery_Gallery_Shortcode_V1_To_V2 {
 	 * V2-aligned attributes. Content with no V1-shaped instances is returned
 	 * unchanged so a no-op pass leaves post_content byte-identical.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.12.2
 	 *
 	 * @param string $content Raw post content.
 	 * @return string
@@ -276,7 +276,7 @@ class WPBakery_Gallery_Shortcode_V1_To_V2 {
 	 *   5 = enclosed content (we re-emit it as-is)
 	 *   6 = second closing bracket for escaping shortcodes
 	 *
-	 * @since n.e.x.t
+	 * @since 1.12.2
 	 *
 	 * @param array $identical Regex match array.
 	 * @return string Replacement shortcode (or the original on failure).
@@ -328,7 +328,7 @@ class WPBakery_Gallery_Shortcode_V1_To_V2 {
 	/**
 	 * Apply the V1 → V2 attribute mapping to a single shortcode's attrs.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.12.2
 	 *
 	 * @param array $attrs Attrs parsed from a single shortcode instance.
 	 * @return array V2-shaped attrs.
