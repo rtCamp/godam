@@ -191,7 +191,51 @@ class Media_Usage_Tracker {
 			return;
 		}
 
+		// Skip post types that never carry GoDAM media but can save very
+		// frequently (WooCommerce orders, Action Scheduler rows, etc.), so we
+		// don't pay parse_blocks()/regex/meta-read cost on every such save.
+		if ( ! $this->is_tracked_post_type( $post->post_type ) ) {
+			return;
+		}
+
 		$this->sync_post_attachments( $post_id, $post->post_content );
+	}
+
+	/**
+	 * Whether the media usage tracker should scan a given post type on save.
+	 *
+	 * Excludes high-frequency, non-content post types by default. The delete path
+	 * is intentionally NOT gated by this, so previously-tracked data is still
+	 * cleaned up if a type is later added to the skip list.
+	 *
+	 * @param string $post_type Post type slug.
+	 * @return bool
+	 */
+	private function is_tracked_post_type( $post_type ) {
+		$skip = array(
+			'attachment',
+			'revision',
+			'nav_menu_item',
+			'custom_css',
+			'customize_changeset',
+			'oembed_cache',
+			'user_request',
+			'wp_global_styles',
+			'scheduled-action',     // Action Scheduler.
+			'shop_order',           // WooCommerce (legacy/compat storage).
+			'shop_order_refund',
+			'shop_subscription',
+		);
+
+		/**
+		 * Filters the post types the media usage tracker skips on save.
+		 *
+		 * @param string[] $skip      Post type slugs to skip.
+		 * @param string   $post_type The post type being evaluated.
+		 */
+		$skip = (array) apply_filters( 'godam_media_usage_skip_post_types', $skip, $post_type );
+
+		return ! in_array( $post_type, $skip, true );
 	}
 
 	/**
@@ -596,6 +640,12 @@ class Media_Usage_Tracker {
 	 * @return int[]
 	 */
 	private function extract_ids_from_elementor( $post_id ) {
+		// Skip entirely on sites without Elementor — avoids a meta read on every
+		// save for the common case. Mirrors the guard in the Seo class.
+		if ( ! did_action( 'elementor/loaded' ) ) {
+			return array();
+		}
+
 		$data = get_post_meta( $post_id, '_elementor_data', true );
 		if ( empty( $data ) || ! is_string( $data ) ) {
 			return array();
@@ -1161,6 +1211,8 @@ class Media_Usage_Tracker {
 				'timeout' => 10, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
 				'headers' => array(
 					'Content-Type' => 'application/json',
+					// Unlike log_media_view (a public ingest endpoint), the remove
+					// endpoint is authenticated, so the API key is sent here.
 					'X-Api-Key'    => $api_key,
 				),
 				'body'    => wp_json_encode( $payload ),
