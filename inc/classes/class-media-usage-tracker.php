@@ -18,6 +18,13 @@ use RTGODAM\Inc\Traits\Singleton;
  * this class stores the list of referencing post IDs in the attachment's
  * `_godam_usage_post_ids` meta.
  *
+ * The index is reference-counted by source (see SOURCES_META_KEY) so multiple
+ * independent trackers — this content scanner plus the WooCommerce add-on, which
+ * stores video references in post meta rather than content — can share one index
+ * without clobbering each other. Other plugins register usage via the public
+ * register_media_usage()/unregister_media_usage() methods (or the matching
+ * `godam_register_media_usage` / `godam_unregister_media_usage` actions).
+ *
  * Supports both WP-native numeric attachment IDs and GoDAM Central string IDs
  * (stored in `_godam_original_id` meta on virtual-media attachments).
  *
@@ -30,6 +37,17 @@ use RTGODAM\Inc\Traits\Singleton;
  *    GoDAM's own blocks are handled the same way.
  * 3. A `godam_attachment_ids_from_block` filter lets custom blocks contribute
  *    additional IDs without patching this class.
+ * 4. GoDAM shortcodes ([godam_video], [godam_audio], [godam_video_gallery]) left
+ *    raw in content — used by the Classic Editor and by WPBakery elements, which
+ *    persist as shortcodes — are parsed directly (neither rendered HTML nor a block).
+ * 5. Elementor-built posts store their widget tree in `_elementor_data` post meta
+ *    (not post_content); media controls there are walked separately on save.
+ * 6. Block-based widgets live in the `widget_block` option (no post), tracked via
+ *    option-change hooks under the WIDGET_SOURCE anchor.
+ *
+ * Detection is asset-agnostic: images, audio, PDFs and video are all handled the
+ * same way, and any attachment carrying `_godam_original_id` (i.e. transcoded
+ * GoDAM Central media) additionally triggers Central tracking.
  */
 class Media_Usage_Tracker {
 
@@ -37,14 +55,46 @@ class Media_Usage_Tracker {
 
 	/**
 	 * Meta key on attachments: int[] of unique post IDs that reference this attachment.
+	 *
+	 * This is the derived, public query list — the set of post IDs with at least
+	 * one referencing source. Kept in sync from SOURCES_META_KEY so existing
+	 * consumers of get_usage_post_ids() are unaffected.
 	 */
 	const ATTACHMENT_META_KEY = '_godam_usage_post_ids';
+
+	/**
+	 * Meta key on attachments: source-aware reference map.
+	 *
+	 * Shape: `array<int $post_id, string[] $sources>` — for each referencing post,
+	 * the list of distinct sources that reference this attachment from that post
+	 * (e.g. 'content', 'woo_reel_pop', 'woo_featured').
+	 *
+	 * Multiple independent trackers (this content scanner plus the WooCommerce
+	 * add-on) write through register_media_usage()/unregister_media_usage(), which
+	 * reference-count by source so a removal by one source does not wipe a usage
+	 * another source still holds. A GoDAM Central log fires only on the FIRST
+	 * source for a (attachment, post) pair; a remove only when the LAST one drops.
+	 */
+	const SOURCES_META_KEY = '_godam_usage_sources';
 
 	/**
 	 * Meta key on posts: int[] of unique WP attachment post IDs tracked for this post.
 	 * Stored so the next save can diff cheaply instead of re-querying every attachment.
 	 */
 	const POST_META_KEY = '_godam_tracked_media';
+
+	/**
+	 * Source label for media embedded in block-based widgets (the `widget_block`
+	 * option). Block widgets are site-global, not attached to any post, so usage
+	 * is anchored to a synthetic post ID of 0 under this source.
+	 */
+	const WIDGET_SOURCE = 'block_widget';
+
+	/**
+	 * Option storing the int[] of attachment IDs currently tracked across all
+	 * block widgets, so changes to the `widget_block` option can be diffed cheaply.
+	 */
+	const WIDGET_TRACKED_OPTION = 'godam_widget_tracked_media';
 
 	/**
 	 * Lazily-resolved hostname of this WordPress site (e.g. "blog.example.com").
@@ -99,6 +149,17 @@ class Media_Usage_Tracker {
 		// Async Action Scheduler handlers for GoDAM Central tracking API.
 		add_action( 'godam_async_log_media_view', array( $this, 'async_log_media_view' ), 10, 4 );
 		add_action( 'godam_async_remove_media_view', array( $this, 'async_remove_media_view' ), 10, 3 );
+
+		// Public usage-registration API for other plugins (e.g. the WooCommerce
+		// add-on) that store media references outside post_content. Reference-counted
+		// by source so concurrent trackers cannot clobber each other's usage.
+		add_action( 'godam_register_media_usage', array( $this, 'register_media_usage' ), 10, 3 );
+		add_action( 'godam_unregister_media_usage', array( $this, 'unregister_media_usage' ), 10, 3 );
+
+		// Block-based widgets store their blocks in the `widget_block` option, not
+		// in any post, so save_post never sees them. Track that option directly.
+		add_action( 'add_option_widget_block', array( $this, 'on_block_widgets_added' ), 10, 2 );
+		add_action( 'update_option_widget_block', array( $this, 'on_block_widgets_updated' ), 10, 2 );
 	}
 
 	// -------------------------------------------------------------------------
@@ -144,16 +205,13 @@ class Media_Usage_Tracker {
 			return;
 		}
 
-		// Schedule removes before wiping local meta so the tracked list is still readable.
-		$wp_site = $this->get_wp_site();
+		// Unregister the 'content' source before wiping local meta so the tracked
+		// list is still readable. unregister_media_usage() fires the Central remove
+		// only when no other source still references the pair.
 		foreach ( $this->get_tracked_attachment_ids( $post_id ) as $attachment_id ) {
-			$godam_id = $this->get_godam_id_for_attachment( $attachment_id );
-			if ( $godam_id ) {
-				$this->schedule_remove_media_view( $godam_id, $post_id, $wp_site );
-			}
+			$this->unregister_media_usage( $attachment_id, $post_id, 'content' );
 		}
 
-		$this->remove_post_from_all_attachments( $post_id );
 		delete_post_meta( $post_id, self::POST_META_KEY );
 	}
 
@@ -179,80 +237,136 @@ class Media_Usage_Tracker {
 			$new_ids = array_values( array_unique( array_merge( $new_ids, array( $thumbnail_id ) ) ) );
 		}
 
+		// Elementor-built posts store their widget tree in _elementor_data, not content.
+		$elementor_ids = $this->extract_ids_from_elementor( $post_id );
+		if ( ! empty( $elementor_ids ) ) {
+			$new_ids = array_values( array_unique( array_merge( $new_ids, $elementor_ids ) ) );
+		}
+
 		$added   = array_diff( $new_ids, $old_ids );
 		$removed = array_diff( $old_ids, $new_ids );
 
-		$wp_site   = $this->get_wp_site();
-		$post_type = get_post_type( $post_id );
-
+		// Route through the reference-counted index under the 'content' source.
 		foreach ( $added as $attachment_id ) {
-			$this->add_post_to_attachment( $attachment_id, $post_id );
-
-			$godam_id = $this->get_godam_id_for_attachment( $attachment_id );
-			if ( $godam_id ) {
-				$this->schedule_log_media_view( $godam_id, $post_id, $wp_site, $post_type );
-			}
+			$this->register_media_usage( $attachment_id, $post_id, 'content' );
 		}
 
 		foreach ( $removed as $attachment_id ) {
-			$this->remove_post_from_attachment( $attachment_id, $post_id );
-
-			$godam_id = $this->get_godam_id_for_attachment( $attachment_id );
-			if ( $godam_id ) {
-				$this->schedule_remove_media_view( $godam_id, $post_id, $wp_site );
-			}
+			$this->unregister_media_usage( $attachment_id, $post_id, 'content' );
 		}
 
 		// Persist the new set so the next save can diff cheaply.
 		update_post_meta( $post_id, self::POST_META_KEY, array_values( $new_ids ) );
 	}
 
+	// -------------------------------------------------------------------------
+	// Reference-counted usage registry (public API)
+	// -------------------------------------------------------------------------
+
 	/**
-	 * Remove a post ID from every attachment it was previously tracking.
+	 * Register that an attachment is used by a post from a given source.
 	 *
-	 * @param int $post_id Post ID to untrack everywhere.
+	 * Reference-counted by source: a GoDAM Central log_media_view fires only when
+	 * this is the FIRST source to reference the (attachment, post) pair, so two
+	 * independent trackers referencing the same media on the same post do not
+	 * generate duplicate logs — nor will one's removal drop the other's usage.
+	 *
+	 * Also exposed as the `godam_register_media_usage` action for plugins that
+	 * cannot call this method directly.
+	 *
+	 * @param int    $attachment_id WP attachment post ID.
+	 * @param int    $post_id       Referencing post ID. 0 is allowed for global,
+	 *                              non-post contexts (e.g. block widgets).
+	 * @param string $source        Source identifier (e.g. 'content', 'woo_reel_pop').
+	 * @param string $post_type     Optional explicit post type for the Central payload.
+	 *                              Defaults to get_post_type($post_id); pass this for
+	 *                              synthetic anchors where get_post_type() is meaningless.
 	 * @return void
 	 */
-	private function remove_post_from_all_attachments( $post_id ) {
-		$tracked = $this->get_tracked_attachment_ids( $post_id );
+	public function register_media_usage( $attachment_id, $post_id, $source = 'content', $post_type = '' ) {
+		$attachment_id = (int) $attachment_id;
+		$post_id       = (int) $post_id;
+		$source        = sanitize_key( (string) $source );
 
-		foreach ( $tracked as $attachment_id ) {
-			$this->remove_post_from_attachment( $attachment_id, $post_id );
+		if ( $attachment_id <= 0 || $post_id < 0 || '' === $source ) {
+			return;
+		}
+
+		$map      = $this->get_usage_sources( $attachment_id );
+		$existing = isset( $map[ $post_id ] ) ? $map[ $post_id ] : array();
+
+		$was_referenced = ! empty( $existing );
+
+		if ( in_array( $source, $existing, true ) ) {
+			return; // Already recorded for this source; nothing changes.
+		}
+
+		$existing[]      = $source;
+		$map[ $post_id ] = $existing;
+		$this->save_usage_sources( $attachment_id, $map );
+
+		// First source to reference this pair → notify GoDAM Central.
+		if ( ! $was_referenced ) {
+			$godam_id = $this->get_godam_id_for_attachment( $attachment_id );
+			if ( $godam_id ) {
+				$type = '' !== $post_type ? $post_type : (string) get_post_type( $post_id );
+				$this->schedule_log_media_view( $godam_id, $post_id, $this->get_wp_site(), $type );
+			}
 		}
 	}
 
-	// -------------------------------------------------------------------------
-	// Attachment meta read/write
-	// -------------------------------------------------------------------------
-
 	/**
-	 * Add $post_id to the usage list of an attachment.
+	 * Unregister a source's reference to an attachment from a post.
 	 *
-	 * @param int $attachment_id Attachment WP post ID.
-	 * @param int $post_id       Post ID using the attachment.
+	 * A GoDAM Central remove_media_view fires only when the LAST source for the
+	 * (attachment, post) pair is removed.
+	 *
+	 * Also exposed as the `godam_unregister_media_usage` action.
+	 *
+	 * @param int    $attachment_id WP attachment post ID.
+	 * @param int    $post_id       Referencing post ID.
+	 * @param string $source        Source identifier.
 	 * @return void
 	 */
-	private function add_post_to_attachment( $attachment_id, $post_id ) {
-		$ids   = $this->get_usage_post_ids( $attachment_id );
-		$ids[] = (int) $post_id;
-		update_post_meta( $attachment_id, self::ATTACHMENT_META_KEY, array_values( array_unique( $ids ) ) );
-	}
+	public function unregister_media_usage( $attachment_id, $post_id, $source = 'content' ) {
+		$attachment_id = (int) $attachment_id;
+		$post_id       = (int) $post_id;
+		$source        = sanitize_key( (string) $source );
 
-	/**
-	 * Remove $post_id from the usage list of an attachment.
-	 *
-	 * @param int $attachment_id Attachment WP post ID.
-	 * @param int $post_id       Post ID to remove.
-	 * @return void
-	 */
-	private function remove_post_from_attachment( $attachment_id, $post_id ) {
-		$ids     = $this->get_usage_post_ids( $attachment_id );
-		$new_ids = array_values( array_diff( $ids, array( (int) $post_id ) ) );
-		update_post_meta( $attachment_id, self::ATTACHMENT_META_KEY, $new_ids );
+		if ( $attachment_id <= 0 || $post_id < 0 || '' === $source ) {
+			return;
+		}
+
+		$map = $this->get_usage_sources( $attachment_id );
+
+		if ( ! isset( $map[ $post_id ] ) || ! in_array( $source, $map[ $post_id ], true ) ) {
+			return; // Nothing to remove for this source.
+		}
+
+		$remaining = array_values( array_diff( $map[ $post_id ], array( $source ) ) );
+
+		if ( empty( $remaining ) ) {
+			unset( $map[ $post_id ] );
+		} else {
+			$map[ $post_id ] = $remaining;
+		}
+
+		$this->save_usage_sources( $attachment_id, $map );
+
+		// Last source removed → notify GoDAM Central.
+		if ( empty( $remaining ) ) {
+			$godam_id = $this->get_godam_id_for_attachment( $attachment_id );
+			if ( $godam_id ) {
+				$this->schedule_remove_media_view( $godam_id, $post_id, $this->get_wp_site() );
+			}
+		}
 	}
 
 	/**
 	 * Get the list of post IDs that reference a given attachment.
+	 *
+	 * The derived, public query list — one entry per post with at least one
+	 * referencing source. Unchanged signature for existing consumers.
 	 *
 	 * @param int $attachment_id Attachment WP post ID.
 	 * @return int[]
@@ -260,6 +374,74 @@ class Media_Usage_Tracker {
 	public function get_usage_post_ids( $attachment_id ) {
 		$ids = get_post_meta( $attachment_id, self::ATTACHMENT_META_KEY, true );
 		return is_array( $ids ) ? array_map( 'intval', $ids ) : array();
+	}
+
+	/**
+	 * Read the source-aware reference map for an attachment.
+	 *
+	 * Lazily migrates legacy data: on installs predating the source map, the
+	 * existing `_godam_usage_post_ids` entries are treated as the 'content'
+	 * source (the only writer before this API existed). The migration is
+	 * persisted on the next save_usage_sources() call.
+	 *
+	 * @param int $attachment_id Attachment WP post ID.
+	 * @return array<int, string[]> Map of post ID → source list.
+	 */
+	private function get_usage_sources( $attachment_id ) {
+		$map = get_post_meta( $attachment_id, self::SOURCES_META_KEY, true );
+
+		if ( is_array( $map ) ) {
+			$normalized = array();
+			foreach ( $map as $post_id => $sources ) {
+				$normalized[ (int) $post_id ] = array_values( array_filter( array_map( 'strval', (array) $sources ) ) );
+			}
+			return $normalized;
+		}
+
+		// Lazy migration from the legacy post-ID list.
+		$legacy = $this->get_usage_post_ids( $attachment_id );
+		$map    = array();
+		foreach ( $legacy as $post_id ) {
+			$map[ (int) $post_id ] = array( 'content' );
+		}
+		return $map;
+	}
+
+	/**
+	 * Persist the source-aware reference map and keep the derived post-ID list in sync.
+	 *
+	 * @param int                  $attachment_id Attachment WP post ID.
+	 * @param array<int, string[]> $map           Map of post ID → source list.
+	 * @return void
+	 */
+	private function save_usage_sources( $attachment_id, array $map ) {
+		$clean = array();
+		foreach ( $map as $post_id => $sources ) {
+			$sources = array_values( array_unique( array_filter( (array) $sources ) ) );
+			if ( ! empty( $sources ) ) {
+				$clean[ (int) $post_id ] = $sources;
+			}
+		}
+
+		if ( empty( $clean ) ) {
+			delete_post_meta( $attachment_id, self::SOURCES_META_KEY );
+			delete_post_meta( $attachment_id, self::ATTACHMENT_META_KEY );
+			return;
+		}
+
+		update_post_meta( $attachment_id, self::SOURCES_META_KEY, $clean );
+
+		// Derived public list holds real post IDs only — the synthetic anchor 0
+		// (block widgets, other non-post contexts) is recorded in the source map
+		// but never leaks into get_usage_post_ids().
+		$post_ids = array();
+		foreach ( array_keys( $clean ) as $post_id ) {
+			$post_id = (int) $post_id;
+			if ( $post_id > 0 ) {
+				$post_ids[] = $post_id;
+			}
+		}
+		update_post_meta( $attachment_id, self::ATTACHMENT_META_KEY, $post_ids );
 	}
 
 	/**
@@ -280,13 +462,16 @@ class Media_Usage_Tracker {
 	/**
 	 * Extract all WP attachment post IDs referenced in $post_content.
 	 *
-	 * Two-pass approach:
+	 * Three-pass approach:
 	 *  Pass 1 — HTML URL extraction: covers every block that renders inline HTML
 	 *            (Gutenberg blocks, Classic Editor, custom blocks) plus any
 	 *            background-image or data-src references.
 	 *  Pass 2 — Block attribute parsing: catches WP core and GoDAM blocks that
 	 *            store an attachment ID in their block comment JSON even when the
 	 *            rendered HTML may not yet be present (e.g. dynamic/SSR blocks).
+	 *  Pass 3 — Shortcode parsing: catches GoDAM shortcodes left raw in content
+	 *            (Classic Editor, text widgets, WPBakery elements) which are
+	 *            neither rendered HTML nor parsed blocks at save time.
 	 *
 	 * @param string $post_content Raw post content as stored in the database.
 	 * @return int[] array of unique WP attachment post IDs.
@@ -312,6 +497,12 @@ class Media_Usage_Tracker {
 			$this->extract_ids_from_blocks( parse_blocks( $post_content ) )
 		);
 
+		// Pass 3: GoDAM shortcodes left raw in content.
+		$attachment_ids = array_merge(
+			$attachment_ids,
+			$this->extract_ids_from_shortcodes( $post_content )
+		);
+
 		/**
 		 * Filters the complete set of attachment IDs extracted from post content.
 		 *
@@ -324,6 +515,208 @@ class Media_Usage_Tracker {
 		$attachment_ids = (array) apply_filters( 'godam_extracted_attachment_ids', $attachment_ids, $post_content );
 
 		return array_values( array_unique( array_filter( array_map( 'intval', $attachment_ids ) ) ) );
+	}
+
+	/**
+	 * Extract attachment IDs from GoDAM shortcodes in raw content.
+	 *
+	 * The HTML pass only sees rendered markup and the block pass only sees parsed
+	 * blocks, so a raw shortcode left in post_content — Classic Editor, a text
+	 * widget, or a WPBakery element (which persists as a shortcode) — is invisible
+	 * to both. This pass closes that gap.
+	 *
+	 * Asset-agnostic: `id`/`src`/`transcoded_url` resolve any transcoded media
+	 * (image, audio, video, PDF); `include` is the CSV used by the gallery shortcode.
+	 *
+	 * @param string $content Raw content.
+	 * @return int[]
+	 */
+	private function extract_ids_from_shortcodes( $content ) {
+		// Cheap bail-out before the (relatively expensive) regex.
+		if ( false === strpos( $content, '[godam_' ) ) {
+			return array();
+		}
+
+		$pattern = get_shortcode_regex( array( 'godam_video', 'godam_audio', 'godam_video_gallery' ) );
+		if ( empty( $pattern ) || ! preg_match_all( '/' . $pattern . '/', $content, $matches ) ) {
+			return array();
+		}
+
+		$ids = array();
+
+		// Group 3 of the shortcode regex is the raw attribute string.
+		foreach ( $matches[3] as $attr_string ) {
+			$atts = shortcode_parse_atts( $attr_string );
+			if ( ! is_array( $atts ) ) {
+				continue;
+			}
+
+			// Single-asset shortcodes: numeric WP id or GoDAM Central string id.
+			if ( ! empty( $atts['id'] ) ) {
+				$id = $this->resolve_attachment_id( $atts['id'] );
+				if ( $id > 0 ) {
+					$ids[] = $id;
+				}
+			}
+
+			// Fallback to a media URL carried in src / transcoded_url.
+			foreach ( array( 'src', 'transcoded_url' ) as $url_attr ) {
+				if ( ! empty( $atts[ $url_attr ] ) ) {
+					$id = $this->resolve_url_to_attachment_id( $atts[ $url_attr ] );
+					if ( $id > 0 ) {
+						$ids[] = $id;
+					}
+				}
+			}
+
+			// Gallery shortcode: include="1,2,3".
+			if ( ! empty( $atts['include'] ) ) {
+				foreach ( preg_split( '/[\s,]+/', (string) $atts['include'] ) as $raw_id ) {
+					$id = $this->resolve_attachment_id( $raw_id );
+					if ( $id > 0 ) {
+						$ids[] = $id;
+					}
+				}
+			}
+		}
+
+		return $ids;
+	}
+
+	/**
+	 * Extract attachment IDs from an Elementor-built post's `_elementor_data`.
+	 *
+	 * Elementor stores its widget tree as JSON in post meta, not in post_content,
+	 * so neither the HTML nor the block pass can see it. This walks the tree for
+	 * Elementor media controls — `{ "id": <attachment id>, "url": "..." }` — which
+	 * covers GoDAM's own godam-video / godam-audio widgets as well as native
+	 * Elementor image / video / gallery widgets pointing at transcoded media.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return int[]
+	 */
+	private function extract_ids_from_elementor( $post_id ) {
+		$data = get_post_meta( $post_id, '_elementor_data', true );
+		if ( empty( $data ) || ! is_string( $data ) ) {
+			return array();
+		}
+
+		$tree = json_decode( $data, true );
+		if ( ! is_array( $tree ) ) {
+			return array();
+		}
+
+		$ids = array();
+		$this->collect_elementor_media_ids( $tree, $ids );
+
+		return $ids;
+	}
+
+	/**
+	 * Recursively collect attachment IDs from Elementor media controls.
+	 *
+	 * Recognises the Elementor media-control shape `{ id: <numeric>, url: <string> }`
+	 * wherever it appears in the widget tree (single media and gallery items),
+	 * without coupling to specific widget types. Element nodes use string id hashes
+	 * and carry no `url`, so they don't match and are simply recursed into.
+	 *
+	 * @param mixed $node Elementor elements/settings subtree.
+	 * @param int[] $ids  Accumulator (by reference).
+	 * @return void
+	 */
+	private function collect_elementor_media_ids( $node, array &$ids ) {
+		if ( ! is_array( $node ) ) {
+			return;
+		}
+
+		// A media control: an array holding both a numeric 'id' and a non-empty 'url'.
+		if (
+			isset( $node['id'], $node['url'] ) &&
+			is_numeric( $node['id'] ) &&
+			is_string( $node['url'] ) &&
+			'' !== $node['url']
+		) {
+			$id = (int) $node['id'];
+			if ( $id > 0 ) {
+				$ids[] = $id;
+			}
+			return; // A media-control node has no deeper media to find.
+		}
+
+		foreach ( $node as $value ) {
+			if ( is_array( $value ) ) {
+				$this->collect_elementor_media_ids( $value, $ids );
+			}
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// Block widgets
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Sync block-widget media when the `widget_block` option is first created.
+	 *
+	 * @param string $option Option name (unused).
+	 * @param mixed  $value  New option value.
+	 * @return void
+	 */
+	public function on_block_widgets_added( $option, $value ) {
+		unset( $option );
+		$this->sync_block_widget_media( $value );
+	}
+
+	/**
+	 * Sync block-widget media when the `widget_block` option changes.
+	 *
+	 * @param mixed $old_value Previous option value (unused).
+	 * @param mixed $value     New option value.
+	 * @return void
+	 */
+	public function on_block_widgets_updated( $old_value, $value ) {
+		unset( $old_value );
+		$this->sync_block_widget_media( $value );
+	}
+
+	/**
+	 * Diff the attachment set across all block widgets and register the changes.
+	 *
+	 * Block widgets are site-global (not tied to a post), so usage is anchored to
+	 * a synthetic context (post ID 0, post type WIDGET_SOURCE) under the
+	 * WIDGET_SOURCE source. The previously-tracked set is cached in the
+	 * WIDGET_TRACKED_OPTION option to keep diffs cheap. The synthetic anchor is
+	 * recorded in the per-attachment source map but never appears in the public
+	 * get_usage_post_ids() list (see save_usage_sources()).
+	 *
+	 * @param mixed $widget_block_option The `widget_block` option value.
+	 * @return void
+	 */
+	private function sync_block_widget_media( $widget_block_option ) {
+		$new_ids = array();
+
+		if ( is_array( $widget_block_option ) ) {
+			foreach ( $widget_block_option as $key => $instance ) {
+				if ( '_multiwidget' === $key || empty( $instance['content'] ) ) {
+					continue;
+				}
+				$new_ids = array_merge( $new_ids, $this->extract_attachment_ids( $instance['content'] ) );
+			}
+		}
+
+		$new_ids = array_values( array_unique( array_filter( array_map( 'intval', $new_ids ) ) ) );
+
+		$old_ids = get_option( self::WIDGET_TRACKED_OPTION, array() );
+		$old_ids = is_array( $old_ids ) ? array_map( 'intval', $old_ids ) : array();
+
+		foreach ( array_diff( $new_ids, $old_ids ) as $attachment_id ) {
+			$this->register_media_usage( $attachment_id, 0, self::WIDGET_SOURCE, self::WIDGET_SOURCE );
+		}
+
+		foreach ( array_diff( $old_ids, $new_ids ) as $attachment_id ) {
+			$this->unregister_media_usage( $attachment_id, 0, self::WIDGET_SOURCE );
+		}
+
+		update_option( self::WIDGET_TRACKED_OPTION, $new_ids, false );
 	}
 
 	/**
