@@ -23,7 +23,7 @@ class Godam_Audio extends Base {
 		return array(
 			'name'            => 'godam-audio',
 			'title'           => _x( 'GoDAM Audio', 'Widget Title', 'godam' ),
-			'icon'            => 'eicon-headphones',
+			'icon'            => 'godam-eicon-audio',
 			'categories'      => array( 'godam' ),
 			'keywords'        => array( 'godam', 'audio' ),
 			'depended_styles' => array( 'elementor-godam-audio-style' ),

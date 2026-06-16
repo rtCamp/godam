@@ -14,8 +14,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// Enqueue player wrapper styles inline for high priority rendering.
-// Uses a global flag to ensure it's only output once per page.
+// Output player wrapper styles inline at render time. We deliberately do NOT
+// defer to wp_head/admin_head: those hooks never fire in some render paths
+// (Elementor editor preview, Elementor Pro REST-based widget refresh, custom
+// REST renders), so deferring would drop the styles on the editor canvas.
+// Inline <style> in body is valid HTML5 and applies document-wide in every
+// browser. The global flag guarantees it's emitted at most once per request.
 global $godam_player_wrapper_inline_css_added, $wp_filesystem;
 if ( empty( $godam_player_wrapper_inline_css_added ) ) {
 	$godam_player_wrapper_inline_css_added = true;
@@ -38,18 +42,8 @@ if ( empty( $godam_player_wrapper_inline_css_added ) ) {
 			}
 		}
 
-			// If wp_head already fired, output inline immediately.
-		if ( did_action( 'wp_head' ) ) {
+		if ( ! empty( $godam_player_wrapper_css ) ) {
 			echo '<style id="godam-player-wrapper-inline-css">' . wp_strip_all_tags( $godam_player_wrapper_css ) . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS is stripped to plain text before inline output.
-		} else {
-			// Output inline style in wp_head for high priority rendering.
-			add_action(
-				'wp_head',
-				function () use ( $godam_player_wrapper_css ) {
-					echo '<style id="godam-player-wrapper-inline-css">' . wp_strip_all_tags( $godam_player_wrapper_css ) . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS is stripped to plain text before inline output.
-				},
-				1 // High priority.
-			);
 		}
 	}
 }

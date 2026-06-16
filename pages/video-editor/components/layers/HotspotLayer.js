@@ -417,7 +417,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 							<div className="mt-3">
 								<TextControl
 									data-test-id={ `godam-hotspot-control-tooltip-text-${ index }` }
-									className="godam-input"
+									className="godam-input mb-2"
 									label={ __( 'Tooltip Text', 'godam' ) }
 									placeholder={ __( 'Click Me!', 'godam' ) }
 									value={ hotspot.tooltipText }

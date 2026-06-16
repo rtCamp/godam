@@ -245,30 +245,32 @@ class GoDAM_Player {
 	public function render( $atts ) {
 		$attributes = shortcode_atts(
 			array(
-				'id'                => '',
-				'autoplay'          => false,
-				'controls'          => true,
-				'loop'              => false,
-				'muted'             => false,
-				'hoverSelect'       => 'none',
-				'hover_select'      => 'none', // WPBakery format (lowercase with underscore).
-				'poster'            => '',
-				'performanceMode'   => 'balanced',
-				'performance_mode'  => 'balanced',
-				'preload'           => 'metadata',
-				'src'               => '',
-				'sources'           => '',
-				'transcoded_url'    => '',
-				'aspectratio'       => 'responsive',
-				'aspect_ratio'      => '', // WPBakery format (lowercase with underscore).
-				'tracks'            => '',
-				'caption'           => '',
-				'engagements'       => false,
-				'preview'           => false,
-				'showShareButton'   => false,
-				'show_share_button' => false, // WPBakery format (lowercase with underscore).
-				'css'               => '',
-				'godam_context'     => '',
+				'id'                 => '',
+				'autoplay'           => false,
+				'controls'           => true,
+				'loop'               => false,
+				'muted'              => false,
+				'hoverSelect'        => 'none',
+				'hover_select'       => 'none', // WPBakery format (lowercase with underscore).
+				'poster'             => '',
+				'performanceMode'    => 'balanced',
+				'performance_mode'   => 'balanced',
+				'src'                => '',
+				'sources'            => '',
+				'transcoded_url'     => '',
+				'hls_transcoded_url' => '',
+				'aspectratio'        => 'responsive',
+				'aspect_ratio'       => '', // WPBakery format (lowercase with underscore).
+				'tracks'             => '',
+				'caption'            => '',
+				'engagements'        => false,
+				'preview'            => false,
+				'showShareButton'    => false,
+				'show_share_button'  => false, // WPBakery format (lowercase with underscore).
+				'playerHeight'       => '',
+				'player_height'      => '', // WPBakery format (lowercase with underscore).
+				'css'                => '',
+				'godam_context'      => '',
 			),
 			$atts,
 			'godam_video'
@@ -301,6 +303,9 @@ class GoDAM_Player {
 		}
 		if ( isset( $attributes['show_share_button'] ) && '' !== $attributes['show_share_button'] && ( ! isset( $attributes['showShareButton'] ) || false === $attributes['showShareButton'] ) ) {
 			$attributes['showShareButton'] = $attributes['show_share_button'];
+		}
+		if ( isset( $attributes['player_height'] ) && '' !== $attributes['player_height'] && ( ! isset( $attributes['playerHeight'] ) || '' === $attributes['playerHeight'] ) ) {
+			$attributes['playerHeight'] = $attributes['player_height'];
 		}
 		$raw_has_performance_mode            = is_array( $atts ) && array_key_exists( 'performance_mode', $atts );
 		$raw_has_performance_mode_camel_case = is_array( $atts ) && array_key_exists( 'performanceMode', $atts );
