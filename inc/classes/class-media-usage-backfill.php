@@ -221,11 +221,12 @@ class Media_Usage_Backfill {
 	 */
 	public function start() {
 		$current_status = get_option( self::OPT_STATUS );
+		$blog_id        = get_current_blog_id();
 
 		if ( self::STATUS_RUNNING === $current_status ) {
 			// Self-heal: reschedule if the AS action somehow disappeared.
 			if ( ! as_has_scheduled_action( self::AS_BATCH_ACTION ) ) {
-				as_enqueue_async_action( self::AS_BATCH_ACTION );
+				as_enqueue_async_action( self::AS_BATCH_ACTION, array( $blog_id ) );
 			}
 			return;
 		}
@@ -255,8 +256,12 @@ class Media_Usage_Backfill {
 		// Clear any stale pending action from a previous interrupted run before
 		// enqueuing a fresh one — a leftover pending action would otherwise
 		// trigger the dedup guard inside process_batch() and stall the chain.
+		// The blog ID is passed so the batch can switch_to_blog() before running:
+		// on multisite with a system cron, AS jobs fire in the main-site context
+		// regardless of which subsite queued them, so without it the batch would
+		// scan the wrong site and never complete the one that started the backfill.
 		as_unschedule_action( self::AS_BATCH_ACTION );
-		as_enqueue_async_action( self::AS_BATCH_ACTION );
+		as_enqueue_async_action( self::AS_BATCH_ACTION, array( $blog_id ) );
 	}
 
 	/**
@@ -323,9 +328,40 @@ class Media_Usage_Backfill {
 	 * The status is re-read at the top of every iteration so an external stop()
 	 * call is honoured promptly without waiting for a full batch to complete.
 	 *
+	 * @param int $blog_id Blog ID that queued this batch. On multisite the batch
+	 *                     switches to it before running, because Action Scheduler
+	 *                     fires jobs in the main-site context regardless of which
+	 *                     subsite queued them. 0/absent on single-site.
 	 * @return void
 	 */
-	public function process_batch() {
+	public function process_batch( $blog_id = 0 ) {
+		$blog_id  = (int) $blog_id;
+		$switched = false;
+		if ( is_multisite() && $blog_id > 0 && get_current_blog_id() !== $blog_id ) {
+			switch_to_blog( $blog_id );
+			$switched = true;
+		}
+
+		try {
+			$this->run_timed_batches( $blog_id );
+		} finally {
+			if ( $switched ) {
+				restore_current_blog();
+			}
+		}
+	}
+
+	/**
+	 * Run posts through the tracker in a time-boxed loop, scheduling a
+	 * continuation when the time limit is hit with posts still pending.
+	 *
+	 * Split out of process_batch() so the multisite switch_to_blog()/restore can
+	 * wrap it cleanly with a single try/finally regardless of where the loop exits.
+	 *
+	 * @param int $blog_id Blog ID to carry into the continuation action.
+	 * @return void
+	 */
+	private function run_timed_batches( $blog_id ) {
 		$start_time = microtime( true );
 		$tracker    = Media_Usage_Tracker::get_instance();
 
@@ -352,13 +388,15 @@ class Media_Usage_Backfill {
 					// Mark the post as processed so a single poisoned post cannot
 					// stall the backfill in an infinite retry loop.
 					update_post_meta( (int) $post->ID, Media_Usage_Tracker::POST_META_KEY, array() );
-					error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-						sprintf(
-							'GoDAM: media usage backfill skipped post %d after error: %s',
-							(int) $post->ID,
-							$e->getMessage()
-						)
-					);
+					if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+						error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+							sprintf(
+								'GoDAM: media usage backfill skipped post %d after error: %s',
+								(int) $post->ID,
+								$e->getMessage()
+							)
+						);
+					}
 				}
 			}
 
@@ -382,11 +420,12 @@ class Media_Usage_Backfill {
 			}
 		}
 
-		// Time limit reached with more posts remaining — schedule a continuation.
+		// Time limit reached with more posts remaining — schedule a continuation,
+		// carrying the blog ID so the next batch runs in the same site context.
 		// Cancel any stale pending action first (same guard as before) so a
 		// leftover action cannot block the fresh one.
 		as_unschedule_action( self::AS_BATCH_ACTION );
-		as_enqueue_async_action( self::AS_BATCH_ACTION );
+		as_enqueue_async_action( self::AS_BATCH_ACTION, array( $blog_id ) );
 	}
 
 	// -------------------------------------------------------------------------
@@ -396,21 +435,44 @@ class Media_Usage_Backfill {
 	/**
 	 * Count posts that have no `_godam_tracked_media` meta row yet.
 	 *
+	 * Uses a direct `COUNT(*)` with a `NOT EXISTS` subquery rather than WP_Query
+	 * with `SQL_CALC_FOUND_ROWS`: the latter materialises and counts the full
+	 * joined result set, which is very slow on large `wp_postmeta` tables. The
+	 * subquery form lets MySQL use the `(post_id, meta_key)` index and stop early.
+	 *
 	 * @return int
 	 */
 	private function count_pending_posts() {
-		$query = new \WP_Query(
-			array_merge(
-				$this->build_wp_query_args(),
-				array(
-					'posts_per_page' => 1,
-					'fields'         => 'ids',
-					'no_found_rows'  => false, // required to populate found_rows.
-				)
+		global $wpdb;
+
+		$post_types = $this->get_post_types();
+		$statuses   = $this->get_post_statuses();
+
+		if ( empty( $post_types ) || empty( $statuses ) ) {
+			return 0;
+		}
+
+		$type_placeholders   = implode( ', ', array_fill( 0, count( $post_types ), '%s' ) );
+		$status_placeholders = implode( ', ', array_fill( 0, count( $statuses ), '%s' ) );
+
+		$params = array_merge( $post_types, $statuses, array( Media_Usage_Tracker::POST_META_KEY ) );
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$count = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->posts} p
+				WHERE p.post_type IN ( {$type_placeholders} )
+				AND p.post_status IN ( {$status_placeholders} )
+				AND NOT EXISTS (
+					SELECT 1 FROM {$wpdb->postmeta} pm
+					WHERE pm.post_id = p.ID AND pm.meta_key = %s
+				)",
+				$params
 			)
 		);
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
-		return (int) $query->found_posts;
+		return $count;
 	}
 
 	/**
@@ -432,6 +494,12 @@ class Media_Usage_Backfill {
 				array(
 					'posts_per_page'         => (int) $limit,
 					'update_post_term_cache' => false,  // avoids querying terms for posts that won't be needed here.
+					// Order by ID so MySQL walks the PRIMARY key instead of
+					// filesorting by date each batch. Already-processed posts drop
+					// out via the NOT EXISTS meta clause, so page 1 always returns
+					// fresh work — no growing OFFSET needed.
+					'orderby'                => 'ID',
+					'order'                  => 'ASC',
 				)
 			)
 		);
@@ -534,5 +602,11 @@ class Media_Usage_Backfill {
 		// Clear the in-process object cache. This is the primary memory sink
 		// during backfill — post meta and query results pile up here each batch.
 		wp_cache_flush_runtime();
+
+		// Also reset the tracker's per-request URL/ID resolution caches, which
+		// wp_cache_flush_runtime() does not touch. The tracker singleton is
+		// reused across the whole timed loop, so without this its caches grow
+		// with the number of distinct media references scanned.
+		Media_Usage_Tracker::get_instance()->flush_request_caches();
 	}
 }

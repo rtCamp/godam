@@ -97,6 +97,12 @@ class Media_Usage_Tracker {
 	const WIDGET_TRACKED_OPTION = 'godam_widget_tracked_media';
 
 	/**
+	 * Maximum number of attempts (initial + retries) for a GoDAM Central
+	 * tracking request before the event is logged as permanently failed.
+	 */
+	const CENTRAL_MAX_ATTEMPTS = 5;
+
+	/**
 	 * Lazily-resolved hostname of this WordPress site (e.g. "blog.example.com").
 	 * Computed once per request from home_url() and reused everywhere.
 	 *
@@ -146,9 +152,11 @@ class Media_Usage_Tracker {
 		// the if($godam_id) guard in sync_post_attachments prevents a spurious
 		// remove_media_view call because _godam_original_id meta is already gone.
 
-		// Async Action Scheduler handlers for GoDAM Central tracking API.
-		add_action( 'godam_async_log_media_view', array( $this, 'async_log_media_view' ), 10, 4 );
-		add_action( 'godam_async_remove_media_view', array( $this, 'async_remove_media_view' ), 10, 3 );
+		// Async Action Scheduler handlers for GoDAM Central tracking API. The
+		// trailing attempt-counter arg drives the retry/backoff logic, so the
+		// callbacks accept one more arg than the base scheduling payload.
+		add_action( 'godam_async_log_media_view', array( $this, 'async_log_media_view' ), 10, 5 );
+		add_action( 'godam_async_remove_media_view', array( $this, 'async_remove_media_view' ), 10, 4 );
 
 		// Public usage-registration API for other plugins (e.g. the WooCommerce
 		// add-on) that store media references outside post_content. Reference-counted
@@ -1104,9 +1112,10 @@ class Media_Usage_Tracker {
 	 * @param int    $post_id   WordPress post ID.
 	 * @param string $wp_site   WordPress site hostname.
 	 * @param string $post_type WordPress post type.
+	 * @param int    $attempt   Attempt number (1-based); incremented on each retry.
 	 * @return void
 	 */
-	public function async_log_media_view( $godam_id, $post_id, $wp_site, $post_type ) {
+	public function async_log_media_view( $godam_id, $post_id, $wp_site, $post_type, $attempt = 1 ) {
 		$api_key = get_option( 'rtgodam-api-key', '' );
 		if ( empty( $api_key ) ) {
 			return;
@@ -1116,6 +1125,7 @@ class Media_Usage_Tracker {
 		$post_id   = (int) $post_id;
 		$wp_site   = sanitize_text_field( $wp_site );
 		$post_type = sanitize_text_field( $post_type );
+		$attempt   = max( 1, (int) $attempt );
 
 		if ( empty( $godam_id ) ) {
 			return;
@@ -1139,36 +1149,25 @@ class Media_Usage_Tracker {
 				'timeout' => 10, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
 				'headers' => array(
 					'Content-Type' => 'application/json',
-					// This is an unauthenticated endpoint, so no X-Api-Key header is sent.
+					// Sent so GoDAM Central can authenticate the request and reject
+					// spoofed usage logs. The call is server-to-server only (fired
+					// from Action Scheduler, never the browser), so the key is never
+					// exposed to the frontend.
+					'X-Api-Key'    => $api_key,
 				),
 				'body'    => wp_json_encode( $payload ),
 			)
 		);
 
-		if ( is_wp_error( $response ) ) {
-			error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-				sprintf(
-					'GoDAM: log_media_view request failed for media "%s" on post %d. Error: %s',
-					$godam_id,
-					$post_id,
-					$response->get_error_message()
-				)
-			);
-			return;
-		}
-
-		$status_code = wp_remote_retrieve_response_code( $response );
-		if ( 200 !== $status_code ) {
-			error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-				sprintf(
-					'GoDAM: log_media_view returned HTTP %d for media "%s" on post %d. Body: %s',
-					$status_code,
-					$godam_id,
-					$post_id,
-					wp_remote_retrieve_body( $response )
-				)
-			);
-		}
+		$this->handle_central_response(
+			$response,
+			'godam_async_log_media_view',
+			array( $godam_id, $post_id, $wp_site, $post_type ),
+			$attempt,
+			'log_media_view',
+			$godam_id,
+			$post_id
+		);
 	}
 
 	/**
@@ -1178,9 +1177,10 @@ class Media_Usage_Tracker {
 	 * @param string $godam_id GoDAM Central media ID (Transcoder Job name).
 	 * @param int    $post_id  WordPress post ID.
 	 * @param string $wp_site  WordPress site hostname.
+	 * @param int    $attempt  Attempt number (1-based); incremented on each retry.
 	 * @return void
 	 */
-	public function async_remove_media_view( $godam_id, $post_id, $wp_site ) {
+	public function async_remove_media_view( $godam_id, $post_id, $wp_site, $attempt = 1 ) {
 		$api_key = get_option( 'rtgodam-api-key', '' );
 		if ( empty( $api_key ) ) {
 			return;
@@ -1189,6 +1189,7 @@ class Media_Usage_Tracker {
 		$godam_id = sanitize_text_field( $godam_id );
 		$post_id  = (int) $post_id;
 		$wp_site  = sanitize_text_field( $wp_site );
+		$attempt  = max( 1, (int) $attempt );
 
 		if ( empty( $godam_id ) ) {
 			return;
@@ -1211,38 +1212,147 @@ class Media_Usage_Tracker {
 				'timeout' => 10, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
 				'headers' => array(
 					'Content-Type' => 'application/json',
-					// Unlike log_media_view (a public ingest endpoint), the remove
-					// endpoint is authenticated, so the API key is sent here.
 					'X-Api-Key'    => $api_key,
 				),
 				'body'    => wp_json_encode( $payload ),
 			)
 		);
 
+		$this->handle_central_response(
+			$response,
+			'godam_async_remove_media_view',
+			array( $godam_id, $post_id, $wp_site ),
+			$attempt,
+			'remove_media_view',
+			$godam_id,
+			$post_id
+		);
+	}
+
+	/**
+	 * Evaluate a GoDAM Central tracking response: retry on transient failure,
+	 * log on permanent failure, no-op on success.
+	 *
+	 * Action Scheduler does not auto-retry a callback that returns normally, and
+	 * register_media_usage()/unregister_media_usage() persist the local usage map
+	 * BEFORE the request fires — so the normal sync path never re-sends a dropped
+	 * notification. To avoid silently losing events during a transient Central
+	 * outage (very likely during an unattended bulk backfill), we re-enqueue the
+	 * action ourselves with exponential backoff, up to CENTRAL_MAX_ATTEMPTS.
+	 *
+	 * @param array|\WP_Error $response  Result of wp_remote_post().
+	 * @param string          $hook      Action Scheduler hook to re-enqueue on retry.
+	 * @param array           $base_args Scheduling args WITHOUT the trailing attempt counter.
+	 * @param int             $attempt   Current attempt number (1-based).
+	 * @param string          $label     Endpoint label for logging (e.g. 'log_media_view').
+	 * @param string          $godam_id  Media ID, for logging.
+	 * @param int             $post_id   Post ID, for logging.
+	 * @return void
+	 */
+	private function handle_central_response( $response, $hook, array $base_args, $attempt, $label, $godam_id, $post_id ) {
 		if ( is_wp_error( $response ) ) {
-			error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			// Transport-level error (timeout, DNS, connection refused) — transient.
+			if ( $this->maybe_retry_central_request( $hook, $base_args, $attempt, null ) ) {
+				return;
+			}
+			$this->log_error(
 				sprintf(
-					'GoDAM: remove_media_view request failed for media "%s" on post %d. Error: %s',
+					'GoDAM: %s failed for media "%s" on post %d after %d attempt(s): %s',
+					$label,
 					$godam_id,
 					$post_id,
+					$attempt,
 					$response->get_error_message()
 				)
 			);
 			return;
 		}
 
-		$status_code = wp_remote_retrieve_response_code( $response );
-		if ( 200 !== $status_code ) {
-			error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-				sprintf(
-					'GoDAM: remove_media_view returned HTTP %d for media "%s" on post %d. Body: %s',
-					$status_code,
-					$godam_id,
-					$post_id,
-					wp_remote_retrieve_body( $response )
-				)
-			);
+		$status_code = (int) wp_remote_retrieve_response_code( $response );
+
+		// 2xx — success, nothing to do.
+		if ( $status_code >= 200 && $status_code < 300 ) {
+			return;
 		}
+
+		if ( $this->maybe_retry_central_request( $hook, $base_args, $attempt, $status_code ) ) {
+			return;
+		}
+
+		$this->log_error(
+			sprintf(
+				'GoDAM: %s returned HTTP %d for media "%s" on post %d after %d attempt(s).',
+				$label,
+				$status_code,
+				$godam_id,
+				$post_id,
+				$attempt
+			)
+		);
+	}
+
+	/**
+	 * Re-enqueue a failed GoDAM Central request with exponential backoff, unless
+	 * the failure is permanent or the attempt budget is exhausted.
+	 *
+	 * Retries transport errors, HTTP 5xx, and HTTP 429 (rate limited). Other 4xx
+	 * responses are treated as permanent and are not retried.
+	 *
+	 * @param string   $hook      Action Scheduler hook.
+	 * @param array    $base_args Scheduling args without the trailing attempt counter.
+	 * @param int      $attempt   Current attempt number (1-based).
+	 * @param int|null $code      HTTP status code, or null for a transport error.
+	 * @return bool True if a retry was scheduled.
+	 */
+	private function maybe_retry_central_request( $hook, array $base_args, $attempt, $code ) {
+		// Permanent client errors (except 429 Too Many Requests) are not retryable.
+		if ( null !== $code && $code >= 400 && $code < 500 && 429 !== $code ) {
+			return false;
+		}
+
+		if ( $attempt >= self::CENTRAL_MAX_ATTEMPTS || ! function_exists( 'as_schedule_single_action' ) ) {
+			return false;
+		}
+
+		// Exponential backoff, capped at 5 minutes: 30s, 60s, 120s, 240s.
+		$delay      = (int) min( 300, 30 * ( 2 ** ( $attempt - 1 ) ) );
+		$retry_args = array_merge( $base_args, array( $attempt + 1 ) );
+
+		as_schedule_single_action( time() + $delay, $hook, $retry_args );
+		return true;
+	}
+
+	/**
+	 * Log an error to the PHP error log, gated behind WP_DEBUG.
+	 *
+	 * Tracking failures are non-fatal and self-recovering (retried, or harmless
+	 * to drop), so logging is gated to avoid flooding production error logs —
+	 * e.g. a Central outage during a bulk backfill would otherwise emit one line
+	 * per media-post pair. Response bodies are never logged.
+	 *
+	 * @param string $message Pre-formatted message.
+	 * @return void
+	 */
+	private function log_error( $message ) {
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( $message ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		}
+	}
+
+	/**
+	 * Reset the per-request attachment-resolution caches.
+	 *
+	 * These memoise URL/GoDAM-ID → attachment-ID lookups for the lifetime of the
+	 * tracker instance. During a long-running backfill the singleton is reused
+	 * across thousands of posts in one Action Scheduler invocation, so the caches
+	 * would grow with the number of distinct media references. The backfill calls
+	 * this between batches to bound that growth.
+	 *
+	 * @return void
+	 */
+	public function flush_request_caches() {
+		$this->godam_id_cache = array();
+		$this->url_id_cache   = array();
 	}
 
 	// -------------------------------------------------------------------------

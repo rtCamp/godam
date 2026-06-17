@@ -37,14 +37,20 @@ defined( 'ABSPATH' ) || exit;
  *
  * 1. `Runner::maybe_run()` (hooked to `init`) calls `maybe_run()` once the stored
  *    db version is behind the current plugin version.
- * 2. `maybe_run()` returns true immediately for the terminal states (completed, or
- *    manually stopped from the Tools page) so the runner advances the stored
- *    version and never re-triggers.
- * 3. Otherwise it calls {@see Media_Usage_Backfill::start()}, which is idempotent:
- *    it begins a fresh run, no-ops an already-pending one, or reschedules a
- *    dropped Action Scheduler batch.
- * 4. While batches are still running it returns false, so the runner holds the
- *    stored version and retries on the next `init` until the chain completes.
+ * 2. `maybe_run()` calls {@see Media_Usage_Backfill::start()} (unless the backfill
+ *    is already running or finished), which is idempotent: it begins a fresh run,
+ *    no-ops an already-pending one, or reschedules a dropped batch.
+ * 3. It then returns true as soon as the backfill is kicked off — running, or
+ *    finished — so the runner advances the stored version immediately. The
+ *    Action Scheduler batch chain (and the Tools page) own progress and
+ *    completion from here.
+ *
+ * This mirrors {@see Godam_Cpt_Cleanup}: the migration is considered done once it
+ * has successfully started, *not* once every batch has finished. Returning false
+ * for the whole (potentially hours-long) backfill would hold back the stored db
+ * version, re-enter start() on every request, and — worse — block any migration
+ * keyed after this one until the backfill completed, wedging the runner entirely
+ * if the backfill ever stalled.
  *
  * The Action Scheduler batch callback is registered unconditionally by the
  * {@see Media_Usage_Backfill} singleton's constructor (instantiated in the
@@ -60,27 +66,24 @@ defined( 'ABSPATH' ) || exit;
 class Media_Usage_Backfill_Trigger {
 
 	/**
-	 * Start (or resume) the media usage backfill.
+	 * Start the media usage backfill, then report it as done to the runner.
 	 *
-	 * Returns true only when there is nothing left for the migration to do, so
-	 * the runner advances the stored db version. While the backfill is still
-	 * processing it returns false and the runner retries on the next `init`.
+	 * Returns true once the backfill has been kicked off (running) or finished
+	 * (completed, or manually stopped), so the runner advances the stored db
+	 * version and does not babysit the long-running batch chain. Returns false
+	 * only when Action Scheduler is not yet loaded, so the runner retries on a
+	 * later request rather than advancing past an un-started backfill.
 	 *
 	 * @since 1.13.0
 	 *
-	 * @return bool True when complete (or a terminal state), false while pending.
+	 * @return bool True once the backfill is running or finished; false only if it could not be started.
 	 */
 	public static function maybe_run(): bool {
 		$status = get_option( Media_Usage_Backfill::OPT_STATUS, Media_Usage_Backfill::STATUS_IDLE );
 
-		// Terminal states — nothing more for the migration to do. A manual Stop
-		// from the Tools page is respected here: we do not resume it, and
-		// returning true lets the runner stop re-triggering.
-		if ( in_array(
-			$status,
-			array( Media_Usage_Backfill::STATUS_COMPLETED, Media_Usage_Backfill::STATUS_STOPPED ),
-			true
-		) ) {
+		// Already running or finished (a manual Stop from the Tools page is
+		// respected — we do not resume it). Nothing more for the migration to do.
+		if ( self::is_kicked_off( $status ) ) {
 			return true;
 		}
 
@@ -90,16 +93,31 @@ class Media_Usage_Backfill_Trigger {
 			return false;
 		}
 
-		// Idempotent: starts a fresh run, no-ops an already-pending one, or
-		// reschedules a dropped batch action.
+		// Kicks off the batch chain (or completes immediately when there are no
+		// posts to scan). From here Action Scheduler drives it to completion.
 		Media_Usage_Backfill::get_instance()->start();
 
-		// start() flips status straight to COMPLETED when there are no posts to
-		// scan; otherwise it is now RUNNING and we report incomplete so the
-		// runner retries until the batch chain finishes.
-		return Media_Usage_Backfill::STATUS_COMPLETED === get_option(
-			Media_Usage_Backfill::OPT_STATUS,
-			Media_Usage_Backfill::STATUS_IDLE
+		return self::is_kicked_off( get_option( Media_Usage_Backfill::OPT_STATUS, Media_Usage_Backfill::STATUS_IDLE ) );
+	}
+
+	/**
+	 * Whether a status means the backfill has been started or finished — i.e. the
+	 * runner has nothing left to do and can advance the stored db version.
+	 *
+	 * @since 1.13.0
+	 *
+	 * @param string $status Current backfill status option value.
+	 * @return bool
+	 */
+	private static function is_kicked_off( string $status ): bool {
+		return in_array(
+			$status,
+			array(
+				Media_Usage_Backfill::STATUS_RUNNING,
+				Media_Usage_Backfill::STATUS_COMPLETED,
+				Media_Usage_Backfill::STATUS_STOPPED,
+			),
+			true
 		);
 	}
 }
