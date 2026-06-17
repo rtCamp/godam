@@ -74,6 +74,51 @@ class Media_Usage_Backfill {
 	protected function __construct() {
 		add_action( self::AS_BATCH_ACTION, array( $this, 'process_batch' ) );
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
+		add_action( 'admin_notices', array( $this, 'render_background_notice' ) );
+	}
+
+	// -------------------------------------------------------------------------
+	// Background notice
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Show an unobtrusive admin notice while the background sync is running.
+	 *
+	 * @return void
+	 */
+	public function render_background_notice() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		if ( self::STATUS_RUNNING !== get_option( self::OPT_STATUS ) ) {
+			return;
+		}
+
+		$data      = $this->get_status();
+		$tools_url = admin_url( 'admin.php?page=rtgodam_tools#media-usage-sync' );
+
+		?>
+		<div class="notice notice-info">
+			<p>
+				<strong><?php esc_html_e( 'GoDAM:', 'godam' ); ?></strong>
+				<?php esc_html_e( 'Scanning your existing media usage in the background. This is completely non-destructive — it will not alter, move, or delete any of your media files.', 'godam' ); ?>
+				<?php if ( $data['total'] > 0 ) : ?>
+					<?php
+					echo esc_html(
+						sprintf(
+							/* translators: 1: posts scanned so far, 2: total posts to scan */
+							__( '(%1$d of %2$d posts scanned)', 'godam' ),
+							$data['processed'],
+							$data['total']
+						)
+					);
+					?>
+				<?php endif; ?>
+				&nbsp;<a href="<?php echo esc_url( $tools_url ); ?>"><?php esc_html_e( 'View progress', 'godam' ); ?></a>
+			</p>
+		</div>
+		<?php
 	}
 
 	// -------------------------------------------------------------------------
