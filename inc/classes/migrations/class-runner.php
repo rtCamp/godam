@@ -50,6 +50,7 @@ defined( 'ABSPATH' ) || exit;
  *   wp option delete rtgodam_db_version
  *   wp option delete rtgodam_gallery_v1_v2_migration_done
  *   wp option delete rtgodam_godam_cpt_cleanup_done
+ *   wp option delete godam_media_backfill_status
  *
  * Multisite (also clear the network-level fast-path flag):
  *   wp network meta delete 1 rtgodam_db_version_network
@@ -101,9 +102,12 @@ class Runner {
 	 * @var array<string, class-string[]>
 	 */
 	private static $migrations = array(
-		'1.8.0' => array(
+		'1.8.0'  => array(
 			Gallery_V1_To_V2::class,
 			Godam_Cpt_Cleanup::class,
+		),
+		'1.13.0' => array(
+			Media_Usage_Backfill_Trigger::class,
 		),
 	);
 
