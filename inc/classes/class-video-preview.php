@@ -72,11 +72,22 @@ class Video_Preview {
 		);
 
 		// Register and enqueue the video preview JavaScript.
+		$video_preview_asset_file = RTGODAM_PATH . 'assets/build/js/godam-video-preview.min.asset.php';
+		$video_preview_asset      = array(
+			'dependencies' => array(),
+			'version'      => filemtime( RTGODAM_PATH . 'assets/build/js/godam-video-preview.min.js' ),
+		);
+
+		if ( file_exists( $video_preview_asset_file ) ) {
+			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+			$video_preview_asset = include $video_preview_asset_file;
+		}
+
 		wp_register_script(
 			'godam-video-preview-script',
 			RTGODAM_URL . 'assets/build/js/godam-video-preview.min.js',
-			array( 'godam-player-frontend-script' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/godam-video-preview.min.js' ),
+			array_merge( $video_preview_asset['dependencies'], array( 'godam-player-frontend-script' ) ),
+			$video_preview_asset['version'],
 			true
 		);
 	}

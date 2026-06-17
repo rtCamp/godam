@@ -89,11 +89,22 @@ class Ninja_Forms_Integration {
 			return;
 		}
 
+		$nf_submissions_asset_file = RTGODAM_PATH . 'assets/build/js/ninja-forms-submissions-list.min.asset.php';
+		$nf_submissions_asset      = array(
+			'dependencies' => array(),
+			'version'      => filemtime( RTGODAM_PATH . 'assets/build/js/ninja-forms-submissions-list.min.js' ),
+		);
+
+		if ( file_exists( $nf_submissions_asset_file ) ) {
+			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+			$nf_submissions_asset = include $nf_submissions_asset_file;
+		}
+
 		wp_enqueue_script(
 			'rtgodam-ninja-forms-submissions-list',
 			RTGODAM_URL . 'assets/build/js/ninja-forms-submissions-list.min.js',
-			array( 'jquery', 'rtgodam-script' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/ninja-forms-submissions-list.min.js' ),
+			array_merge( $nf_submissions_asset['dependencies'], array( 'rtgodam-script' ) ),
+			$nf_submissions_asset['version'],
 			true
 		);
 	}

@@ -41,11 +41,22 @@ class Deactivation {
 	public function load_scripts() {
 		global $pagenow;
 
+		$deactivation_asset_file = RTGODAM_PATH . 'assets/build/js/deactivation-feedback.min.asset.php';
+		$deactivation_asset      = array(
+			'dependencies' => array(),
+			'version'      => filemtime( RTGODAM_PATH . 'assets/build/js/deactivation-feedback.min.js' ),
+		);
+
+		if ( file_exists( $deactivation_asset_file ) ) {
+			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+			$deactivation_asset = include $deactivation_asset_file;
+		}
+
 		wp_register_script(
 			'godam-deactivation-survey-script',
 			RTGODAM_URL . 'assets/build/js/deactivation-feedback.min.js',
-			array( 'wp-i18n' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/deactivation-feedback.min.js' ),
+			$deactivation_asset['dependencies'],
+			$deactivation_asset['version'],
 			true
 		);
 

@@ -157,12 +157,45 @@ class Lifter_LMS {
 	public function load_lifterlms_integration_script() {
 		// Load LifterLMS integration script only if LifterLMS is active, the content is LifterLMS, and the Godam video block is present.
 		if ( $this->is_lifterlms_active() && $this->is_lifterlms_advanced_video_active() && $this->is_lifterlms_content() && $this->has_godam_video_block() ) {
-			wp_enqueue_script( 'rtgodam-lifterlms-integration', RTGODAM_URL . 'assets/build/js/godam-lifterlms-block.min.js', array( 'jquery' ), filemtime( RTGODAM_PATH . 'assets/build/js/godam-lifterlms-block.min.js' ), true );
+			$lifterlms_block_asset_file = RTGODAM_PATH . 'assets/build/js/godam-lifterlms-block.min.asset.php';
+			$lifterlms_block_asset      = array(
+				'dependencies' => array(),
+				'version'      => filemtime( RTGODAM_PATH . 'assets/build/js/godam-lifterlms-block.min.js' ),
+			);
+
+			if ( file_exists( $lifterlms_block_asset_file ) ) {
+				// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+				$lifterlms_block_asset = include $lifterlms_block_asset_file;
+			}
+
+			wp_enqueue_script( 'rtgodam-lifterlms-integration', RTGODAM_URL . 'assets/build/js/godam-lifterlms-block.min.js', $lifterlms_block_asset['dependencies'], $lifterlms_block_asset['version'], true );
 		}
 
 		if ( $this->is_lifterlms_active() && $this->is_lifterlms_advanced_video_active() && $this->is_lifterlms_content() ) {
-			wp_enqueue_script( 'rtgodam-player-sdk', RTGODAM_URL . 'assets/build/js/godam-player-sdk.min.js', array(), filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-sdk.min.js' ), true );
-			wp_enqueue_script( 'rtgodam-lifterlms-integration', RTGODAM_URL . 'assets/build/js/godam-lifterlms-embed.min.js', array( 'jquery' ), filemtime( RTGODAM_PATH . 'assets/build/js/godam-lifterlms-embed.min.js' ), true );
+			$player_sdk_asset_file = RTGODAM_PATH . 'assets/build/js/godam-player-sdk.min.asset.php';
+			$player_sdk_asset      = array(
+				'dependencies' => array(),
+				'version'      => filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-sdk.min.js' ),
+			);
+
+			if ( file_exists( $player_sdk_asset_file ) ) {
+				// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+				$player_sdk_asset = include $player_sdk_asset_file;
+			}
+
+			$lifterlms_embed_asset_file = RTGODAM_PATH . 'assets/build/js/godam-lifterlms-embed.min.asset.php';
+			$lifterlms_embed_asset      = array(
+				'dependencies' => array(),
+				'version'      => filemtime( RTGODAM_PATH . 'assets/build/js/godam-lifterlms-embed.min.js' ),
+			);
+
+			if ( file_exists( $lifterlms_embed_asset_file ) ) {
+				// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+				$lifterlms_embed_asset = include $lifterlms_embed_asset_file;
+			}
+
+			wp_enqueue_script( 'rtgodam-player-sdk', RTGODAM_URL . 'assets/build/js/godam-player-sdk.min.js', $player_sdk_asset['dependencies'], $player_sdk_asset['version'], true );
+			wp_enqueue_script( 'rtgodam-lifterlms-integration', RTGODAM_URL . 'assets/build/js/godam-lifterlms-embed.min.js', $lifterlms_embed_asset['dependencies'], $lifterlms_embed_asset['version'], true );
 		}
 	}
 

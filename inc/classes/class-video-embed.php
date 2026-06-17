@@ -74,11 +74,22 @@ class Video_Embed {
 		);
 
 		// Enqueue script for the video embed page.
+		$video_embed_asset_file = RTGODAM_PATH . 'assets/build/js/godam-video-embed.min.asset.php';
+		$video_embed_asset      = array(
+			'dependencies' => array(),
+			'version'      => filemtime( RTGODAM_PATH . 'assets/build/js/godam-video-embed.min.js' ),
+		);
+
+		if ( file_exists( $video_embed_asset_file ) ) {
+			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+			$video_embed_asset = include $video_embed_asset_file;
+		}
+
 		wp_register_script(
 			'godam-video-embed-script',
 			RTGODAM_URL . 'assets/build/js/godam-video-embed.min.js',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/js/godam-video-embed.min.js' ),
+			$video_embed_asset['dependencies'],
+			$video_embed_asset['version'],
 			true
 		);
 	}

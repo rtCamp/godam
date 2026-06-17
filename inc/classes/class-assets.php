@@ -46,11 +46,22 @@ class Assets {
 	 */
 	public function enqueue_scripts() {
 
+		$main_asset_file = RTGODAM_PATH . 'assets/build/js/main.min.asset.php';
+		$main_asset      = array(
+			'dependencies' => array(),
+			'version'      => filemtime( RTGODAM_PATH . 'assets/build/js/main.min.js' ),
+		);
+
+		if ( file_exists( $main_asset_file ) ) {
+			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+			$main_asset = include $main_asset_file;
+		}
+
 		wp_register_script(
 			'rtgodam-script',
 			RTGODAM_URL . 'assets/build/js/main.min.js',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/js/main.min.js' ),
+			$main_asset['dependencies'],
+			$main_asset['version'],
 			true
 		);
 
@@ -179,11 +190,22 @@ class Assets {
 			wp_enqueue_media();
 		}
 
+		$admin_asset_file = RTGODAM_PATH . 'assets/build/js/admin.min.asset.php';
+		$admin_asset      = array(
+			'dependencies' => array(),
+			'version'      => filemtime( RTGODAM_PATH . 'assets/build/js/admin.min.js' ),
+		);
+
+		if ( file_exists( $admin_asset_file ) ) {
+			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+			$admin_asset = include $admin_asset_file;
+		}
+
 		wp_register_script(
 			'rtgodam-script',
 			RTGODAM_URL . 'assets/build/js/admin.min.js',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/js/admin.min.js' ),
+			$admin_asset['dependencies'],
+			$admin_asset['version'],
 			true
 		);
 
@@ -331,11 +353,22 @@ class Assets {
 
 		// Only enqueue HTTP auth detector on uploads page or pages where media uploading is possible.
 		if ( godam_should_load_auth_detector_script( $screen ) ) {
+			$http_auth_asset_file = RTGODAM_PATH . 'assets/build/js/http-auth-detector.min.asset.php';
+			$http_auth_asset      = array(
+				'dependencies' => array(),
+				'version'      => filemtime( RTGODAM_PATH . 'assets/build/js/http-auth-detector.min.js' ),
+			);
+
+			if ( file_exists( $http_auth_asset_file ) ) {
+				// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+				$http_auth_asset = include $http_auth_asset_file;
+			}
+
 			wp_register_script(
 				'godam-http-auth-detector',
 				RTGODAM_URL . 'assets/build/js/http-auth-detector.min.js',
-				array( 'jquery' ),
-				filemtime( RTGODAM_PATH . 'assets/build/js/http-auth-detector.min.js' ),
+				$http_auth_asset['dependencies'],
+				$http_auth_asset['version'],
 				true
 			);
 	

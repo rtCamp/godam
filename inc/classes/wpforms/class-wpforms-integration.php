@@ -61,11 +61,22 @@ class WPForms_Integration {
 			filemtime( RTGODAM_PATH . 'assets/build/css/wpforms-uppy-video.css' )
 		);
 
+		$wpforms_recorder_editor_asset_file = RTGODAM_PATH . 'assets/build/js/wpforms-godam-recorder-editor.min.asset.php';
+		$wpforms_recorder_editor_asset      = array(
+			'dependencies' => array(),
+			'version'      => filemtime( RTGODAM_PATH . 'assets/build/js/wpforms-godam-recorder-editor.min.js' ),
+		);
+
+		if ( file_exists( $wpforms_recorder_editor_asset_file ) ) {
+			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+			$wpforms_recorder_editor_asset = include $wpforms_recorder_editor_asset_file;
+		}
+
 		wp_register_script(
 			'wpforms-godam-recorder-editor',
 			RTGODAM_URL . 'assets/build/js/wpforms-godam-recorder-editor.min.js',
-			array( 'godam-player-frontend-script' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/wpforms-godam-recorder-editor.min.js' ),
+			array_merge( $wpforms_recorder_editor_asset['dependencies'], array( 'godam-player-frontend-script' ) ),
+			$wpforms_recorder_editor_asset['version'],
 			true
 		);
 

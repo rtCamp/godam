@@ -104,15 +104,22 @@ class Elementor_Widgets {
 		);
 		
 
+		$elementor_frontend_asset_file = RTGODAM_PATH . 'assets/build/js/godam-elementor-frontend.min.asset.php';
+		$elementor_frontend_asset      = array(
+			'dependencies' => array(),
+			'version'      => filemtime( RTGODAM_PATH . 'assets/build/js/godam-elementor-frontend.min.js' ),
+		);
+
+		if ( file_exists( $elementor_frontend_asset_file ) ) {
+			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+			$elementor_frontend_asset = include $elementor_frontend_asset_file;
+		}
+
 		wp_register_script(
 			'godam-elementor-frontend',
 			RTGODAM_URL . 'assets/build/js/godam-elementor-frontend.min.js',
-			array(
-				'jquery',
-				'wp-i18n',
-				'godam-player-frontend-script',
-			),
-			filemtime( RTGODAM_PATH . 'assets/build/js/godam-elementor-frontend.min.js' ),
+			array_merge( $elementor_frontend_asset['dependencies'], array( 'godam-player-frontend-script' ) ),
+			$elementor_frontend_asset['version'],
 			true
 		);
 	}

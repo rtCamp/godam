@@ -358,11 +358,22 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 			/**
 			 * Enqueue script if not already enqueued.
 			 */
+			$ninja_forms_asset_file = RTGODAM_PATH . 'assets/build/js/ninja-forms.min.asset.php';
+			$ninja_forms_asset      = array(
+				'dependencies' => array(),
+				'version'      => filemtime( RTGODAM_PATH . 'assets/build/js/ninja-forms.min.js' ),
+			);
+
+			if ( file_exists( $ninja_forms_asset_file ) ) {
+				// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+				$ninja_forms_asset = include $ninja_forms_asset_file;
+			}
+
 			wp_enqueue_script(
 				'nf-godam-recorder-upload',
 				RTGODAM_URL . 'assets/build/js/ninja-forms.min.js',
-				array( 'backbone', 'jquery', 'wp-i18n' ),
-				filemtime( RTGODAM_PATH . 'assets/build/js/ninja-forms.min.js' ),
+				array_merge( $ninja_forms_asset['dependencies'], array( 'backbone' ) ),
+				$ninja_forms_asset['version'],
 				true
 			);
 
