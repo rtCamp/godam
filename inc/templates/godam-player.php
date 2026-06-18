@@ -683,7 +683,7 @@ if ( empty( $godam_attachment_title ) ) {
 				</div>
 				<?php endif; ?>
 
-				<div class="easydam-video-container loading <?php echo esc_attr( 'godam-' . strtolower( $godam_player_skin ) . '-skin' ); ?>" >
+				<div class="easydam-video-container loading <?php echo esc_attr( 'godam-' . strtolower( $godam_player_skin ) . '-skin' ); ?>" data-test-id="godam-video-render" >
 					<?php if ( isset( $godam_hover_select ) && 'shadow-overlay' === $godam_hover_select ) : ?>
 						<div class="godam-player-overlay"></div>
 					<?php endif; ?>
