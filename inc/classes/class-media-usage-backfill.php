@@ -338,7 +338,13 @@ class Media_Usage_Backfill {
 		$blog_id  = (int) $blog_id;
 		$switched = false;
 		if ( is_multisite() && $blog_id > 0 && get_current_blog_id() !== $blog_id ) {
-			switch_to_blog( $blog_id );
+			// Only the subsite's DB/option/URL context is needed here: the batch
+			// reads $wpdb->posts/postmeta, get_option(), home_url(), get_permalink()
+			// and wp_upload_dir() for the site that queued it. The tracker relies
+			// only on GoDAM's own (already-loaded) filters, not on per-subsite
+			// plugin/theme hooks, so the switch_to_blog() caveat does not apply.
+			// restore_current_blog() always runs via the finally block below.
+			switch_to_blog( $blog_id ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.switch_to_blog_switch_to_blog
 			$switched = true;
 		}
 
