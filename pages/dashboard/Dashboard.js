@@ -29,7 +29,7 @@ import chevronLeft from '../../assets/src/images/chevron-left.svg';
 import chevronRight from '../../assets/src/images/chevron-right.svg';
 import NewYearSaleBanner from '../../assets/src/images/new-year-sale-2026.webp';
 import UpgradePlanDashboardBg from '../../assets/src/images/upgrade-plan-dashboard-bg.webp';
-import { formatNumber, formatWatchTime } from '../utils/formatters';
+import { formatWatchTime } from '../utils/formatters';
 
 /**
  * Retrieve dashboard sections registered by add-ons.
@@ -608,10 +608,10 @@ const Dashboard = () => {
 													? ( ( item.plays / item.page_load ) * 100 ).toFixed( 2 ) + '%'
 													: '0%' }
 											</td>
-											<td title={ item.plays?.toLocaleString() ?? '-' }>
-												{ item.plays ? formatNumber( item.plays ) : '-' }
+											<td>
+												{ item.plays ? Number( item.plays ).toLocaleString() : '-' }
 											</td>
-											<td title={ item.play_time ? `${ item.play_time.toFixed( 2 ) }s` : '-' }>
+											<td>
 												{ item.play_time ? formatWatchTime( item.play_time ) : '-' }
 											</td>
 											<td>
