@@ -1075,7 +1075,19 @@ class Media_Usage_Tracker {
 
 		$wp_site = trim( (string) $wp_site );
 		if ( '' !== $wp_site ) {
-			return 'https://' . $wp_site . '/';
+			// $wp_site is expected to be a bare host (set via
+			// wp_parse_url( home_url(), PHP_URL_HOST )), but harden against a full
+			// URL or host+path ever being enqueued: reduce it to the host so we
+			// never emit "https://https://…" or a malformed parent_url that Central
+			// would reject. Prepend a scheme first so wp_parse_url() can find the host.
+			$with_scheme = ( false === strpos( $wp_site, '://' ) ) ? 'https://' . $wp_site : $wp_site;
+			$host        = wp_parse_url( $with_scheme, PHP_URL_HOST );
+			if ( ! empty( $host ) ) {
+				$url = esc_url_raw( 'https://' . $host . '/' );
+				if ( ! empty( $url ) ) {
+					return $url;
+				}
+			}
 		}
 
 		return home_url( '/' );
