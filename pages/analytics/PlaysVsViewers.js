@@ -7,6 +7,7 @@ import React, { useEffect } from 'react';
  * Internal dependencies
  */
 import { calculateEngagementRate, calculatePlayRate, singleMetricsChart, ensureAll7Days, calculateTrendPercentage } from './helper';
+import { formatNumber } from '../utils/formatters';
 import './charts.js';
 
 /**
@@ -46,8 +47,14 @@ const PlaysVsViewers = ( {
 			? ( plays / uniqueViewers ).toFixed( 2 )
 			: null;
 
-	const formattedPlays = Number( plays ).toLocaleString();
-	const formattedViewers = Number( uniqueViewers ).toLocaleString();
+	// P0: human-readable numbers (1.2K / 3.4M) with the exact value on hover,
+	// consistent with the other dashboard KPI cards.
+	const playsNum = Number( plays ) || 0;
+	const viewersNum = Number( uniqueViewers ) || 0;
+	const formattedPlays = formatNumber( playsNum );
+	const formattedViewers = formatNumber( viewersNum );
+	const exactPlays = playsNum.toLocaleString();
+	const exactViewers = viewersNum.toLocaleString();
 
 	useEffect( () => {
 		if ( ! processedAnalyticsHistory || processedAnalyticsHistory.length === 0 ) {
@@ -119,9 +126,9 @@ const PlaysVsViewers = ( {
 					<div className="flex flex-row justify-between gap-2 items-end">
 						<div className="flex flex-col gap-2">
 							<div className="flex flex-row items-baseline gap-2">
-								<span className="single-metrics-value">{ formattedPlays }</span>
+								<span className="single-metrics-value" title={ exactPlays }>{ formattedPlays }</span>
 								<span className="text-zinc-300 text-xl select-none" aria-hidden="true">/</span>
-								<span className="single-metrics-value text-zinc-400">{ formattedViewers }</span>
+								<span className="single-metrics-value text-zinc-400" title={ exactViewers }>{ formattedViewers }</span>
 							</div>
 							<div className="flex flex-row gap-6">
 								<p className="text-zinc-500 text-xs">{ __( 'Plays', 'godam' ) }</p>
