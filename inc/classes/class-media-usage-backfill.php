@@ -225,7 +225,7 @@ class Media_Usage_Backfill {
 
 		if ( self::STATUS_RUNNING === $current_status ) {
 			// Self-heal: reschedule if the AS action somehow disappeared.
-			if ( ! as_has_scheduled_action( self::AS_BATCH_ACTION ) ) {
+			if ( ! $this->has_scheduled_batch_action( $blog_id ) ) {
 				as_enqueue_async_action( self::AS_BATCH_ACTION, array( $blog_id ) );
 			}
 			return;
@@ -260,7 +260,7 @@ class Media_Usage_Backfill {
 		// on multisite with a system cron, AS jobs fire in the main-site context
 		// regardless of which subsite queued them, so without it the batch would
 		// scan the wrong site and never complete the one that started the backfill.
-		as_unschedule_action( self::AS_BATCH_ACTION );
+		$this->unschedule_batch_actions_for_blog( $blog_id );
 		as_enqueue_async_action( self::AS_BATCH_ACTION, array( $blog_id ) );
 	}
 
@@ -279,12 +279,12 @@ class Media_Usage_Backfill {
 			return;
 		}
 
+		$blog_id = get_current_blog_id();
+
 		update_option( self::OPT_STATUS, self::STATUS_STOPPED, false );
 		wp_cache_delete( self::CACHE_KEY, self::CACHE_GROUP );
 
-		if ( function_exists( 'as_unschedule_action' ) ) {
-			as_unschedule_action( self::AS_BATCH_ACTION );
-		}
+		$this->unschedule_batch_actions_for_blog( $blog_id );
 	}
 
 	/**
@@ -430,8 +430,50 @@ class Media_Usage_Backfill {
 		// carrying the blog ID so the next batch runs in the same site context.
 		// Cancel any stale pending action first (same guard as before) so a
 		// leftover action cannot block the fresh one.
-		as_unschedule_action( self::AS_BATCH_ACTION );
+		$this->unschedule_batch_actions_for_blog( $blog_id );
 		as_enqueue_async_action( self::AS_BATCH_ACTION, array( $blog_id ) );
+	}
+
+	/**
+	 * Whether a batch action is currently scheduled for the given blog ID.
+	 *
+	 * @param int $blog_id Blog ID.
+	 * @return bool
+	 */
+	private function has_scheduled_batch_action( $blog_id ) {
+		if ( ! function_exists( 'as_has_scheduled_action' ) ) {
+			return false;
+		}
+
+		return (bool) as_has_scheduled_action( self::AS_BATCH_ACTION, array( (int) $blog_id ) );
+	}
+
+	/**
+	 * Unschedule all pending batch actions for a specific blog ID.
+	 *
+	 * @param int $blog_id Blog ID.
+	 * @return void
+	 */
+	private function unschedule_batch_actions_for_blog( $blog_id ) {
+		$args = array( (int) $blog_id );
+
+		if ( function_exists( 'as_unschedule_all_actions' ) ) {
+			as_unschedule_all_actions( self::AS_BATCH_ACTION, $args );
+			return;
+		}
+
+		if ( ! function_exists( 'as_unschedule_action' ) ) {
+			return;
+		}
+
+		if ( ! function_exists( 'as_has_scheduled_action' ) ) {
+			as_unschedule_action( self::AS_BATCH_ACTION, $args );
+			return;
+		}
+
+		while ( as_has_scheduled_action( self::AS_BATCH_ACTION, $args ) ) {
+			as_unschedule_action( self::AS_BATCH_ACTION, $args );
+		}
 	}
 
 	// -------------------------------------------------------------------------

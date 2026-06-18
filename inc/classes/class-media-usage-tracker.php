@@ -161,7 +161,7 @@ class Media_Usage_Tracker {
 		// Public usage-registration API for other plugins (e.g. the WooCommerce
 		// add-on) that store media references outside post_content. Reference-counted
 		// by source so concurrent trackers cannot clobber each other's usage.
-		add_action( 'godam_register_media_usage', array( $this, 'register_media_usage' ), 10, 3 );
+		add_action( 'godam_register_media_usage', array( $this, 'register_media_usage' ), 10, 4 );
 		add_action( 'godam_unregister_media_usage', array( $this, 'unregister_media_usage' ), 10, 3 );
 
 		// Block-based widgets store their blocks in the `widget_block` option, not
@@ -1050,6 +1050,25 @@ class Media_Usage_Tracker {
 	}
 
 	/**
+	 * Resolve a safe parent URL for GoDAM Central payloads.
+	 *
+	 * @param int $post_id WordPress post ID (0 for synthetic/non-post contexts).
+	 * @return string
+	 */
+	private function get_parent_url_for_payload( $post_id ) {
+		$post_id = (int) $post_id;
+
+		if ( $post_id > 0 ) {
+			$permalink = get_permalink( $post_id );
+			if ( ! empty( $permalink ) && is_string( $permalink ) ) {
+				return $permalink;
+			}
+		}
+
+		return home_url( '/' );
+	}
+
+	/**
 	 * Return the GoDAM Central ID for a WP attachment, or an empty string if it
 	 * is not a GoDAM Central media item.
 	 *
@@ -1159,7 +1178,7 @@ class Media_Usage_Tracker {
 			'wp_site'    => $wp_site,
 			'post_id'    => $post_id,
 			'post_type'  => $post_type,
-			'parent_url' => get_permalink( $post_id ),
+			'parent_url' => $this->get_parent_url_for_payload( $post_id ),
 		);
 
 		$response = wp_remote_post(
@@ -1222,7 +1241,7 @@ class Media_Usage_Tracker {
 			'platform'   => 'WordPress',
 			'wp_site'    => $wp_site,
 			'post_id'    => $post_id,
-			'parent_url' => get_permalink( $post_id ),
+			'parent_url' => $this->get_parent_url_for_payload( $post_id ),
 		);
 
 		$response = wp_remote_post(
