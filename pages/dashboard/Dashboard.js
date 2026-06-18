@@ -638,10 +638,17 @@ const Dashboard = () => {
 										</tr>
 									) )
 								) }
-								{ topVideosData.length === 0 && (
+								{ ! isTopVideosFetching && topVideosData.length === 0 && (
 									<tr>
-										<td colSpan="7" className="text-center py-4 text-lg">
-											{ __( 'No videos found.', 'godam' ) }
+										<td colSpan="7">
+											<div className="godam-empty-state">
+												<p className="godam-empty-state__title">
+													{ __( 'No video plays yet', 'godam' ) }
+												</p>
+												<p className="godam-empty-state__hint">
+													{ __( 'Once your videos start getting views, your top performers will show up here.', 'godam' ) }
+												</p>
+											</div>
 										</td>
 									</tr>
 								) }

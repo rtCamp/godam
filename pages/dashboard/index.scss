@@ -414,3 +414,27 @@
 		border-radius: 8px;
 	}
 }
+
+// P0: friendly empty state for the Top Videos table (no plays recorded yet).
+.godam-empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+	padding: 40px 16px;
+	text-align: center;
+
+	&__title {
+		margin: 0;
+		font-size: 15px;
+		font-weight: 600;
+		color: #1e1e1e;
+	}
+
+	&__hint {
+		margin: 0;
+		font-size: 13px;
+		color: #757575;
+		max-width: 420px;
+	}
+}
