@@ -138,7 +138,7 @@
 	}
 
 	.godam-analytics-back-btn:hover {
-		color: #AB3A6C;
+		color: var(--wp-admin-theme-color, #ab3a6c);
 	}
 
 	.godam-analytics-back-btn:focus {
@@ -364,7 +364,7 @@
 }
 
 .api-key-message a {
-	color: #ab3a6c;
+	color: var(--wp-admin-theme-color, #ab3a6c);
 	text-decoration: none;
 	font-weight: 600;
 }
@@ -491,7 +491,7 @@
 	cursor: pointer;
 	position: relative;
 	font-weight: 500;
-	border-bottom: 2px solid #AB3A6C;
+	border-bottom: 2px solid var(--wp-admin-theme-color, #ab3a6c);
 	padding: 8px 0;
 }
 
