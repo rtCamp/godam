@@ -155,13 +155,13 @@ class Media_Usage_Tracker {
 		// Async Action Scheduler handlers for GoDAM Central tracking API. The
 		// trailing attempt-counter arg drives the retry/backoff logic, so the
 		// callbacks accept one more arg than the base scheduling payload.
-		add_action( 'godam_async_log_media_view', array( $this, 'async_log_media_view' ), 10, 5 );
-		add_action( 'godam_async_remove_media_view', array( $this, 'async_remove_media_view' ), 10, 4 );
+		add_action( 'godam_async_log_media_view', array( $this, 'async_log_media_view' ), 10, 6 );
+		add_action( 'godam_async_remove_media_view', array( $this, 'async_remove_media_view' ), 10, 5 );
 
 		// Public usage-registration API for other plugins (e.g. the WooCommerce
 		// add-on) that store media references outside post_content. Reference-counted
 		// by source so concurrent trackers cannot clobber each other's usage.
-		add_action( 'godam_register_media_usage', array( $this, 'register_media_usage' ), 10, 3 );
+		add_action( 'godam_register_media_usage', array( $this, 'register_media_usage' ), 10, 4 );
 		add_action( 'godam_unregister_media_usage', array( $this, 'unregister_media_usage' ), 10, 3 );
 
 		// Block-based widgets store their blocks in the `widget_block` option, not
@@ -1050,6 +1050,73 @@ class Media_Usage_Tracker {
 	}
 
 	/**
+	 * Resolve a safe parent URL for GoDAM Central payloads.
+	 *
+	 * For synthetic anchors (post_id <= 0, e.g. block widgets) or an unresolvable
+	 * permalink, the fallback is derived from the originating site host carried in
+	 * the payload ($wp_site) rather than home_url(): on multisite the Central
+	 * Action Scheduler callbacks run without a switch_to_blog() (they take no
+	 * blog_id arg), so home_url() can resolve to the main site and produce a
+	 * parent_url whose host disagrees with the $wp_site already in the payload.
+	 *
+	 * @param int    $post_id WordPress post ID (0 for synthetic/non-post contexts).
+	 * @param string $wp_site Originating site host (payload's wp_site), e.g. "sub.example.com".
+	 * @return string
+	 */
+	private function get_parent_url_for_payload( $post_id, $wp_site = '' ) {
+		$post_id = (int) $post_id;
+
+		if ( $post_id > 0 ) {
+			$permalink = get_permalink( $post_id );
+			if ( ! empty( $permalink ) && is_string( $permalink ) ) {
+				return $permalink;
+			}
+		}
+
+		$wp_site = trim( (string) $wp_site );
+		if ( '' !== $wp_site ) {
+			// $wp_site is expected to be a bare host (set via
+			// wp_parse_url( home_url(), PHP_URL_HOST )), but harden against a full
+			// URL or host+path ever being enqueued: reduce it to the host so we
+			// never emit "https://https://…" or a malformed parent_url that Central
+			// would reject. Prepend a scheme first so wp_parse_url() can find the host.
+			$with_scheme = ( false === strpos( $wp_site, '://' ) ) ? 'https://' . $wp_site : $wp_site;
+			$host        = wp_parse_url( $with_scheme, PHP_URL_HOST );
+			if ( ! empty( $host ) ) {
+				$url = esc_url_raw( 'https://' . $host . '/' );
+				if ( ! empty( $url ) ) {
+					return $url;
+				}
+			}
+		}
+
+		return home_url( '/' );
+	}
+
+	/**
+	 * Switch to the originating blog for an async Central call on multisite.
+	 *
+	 * Action Scheduler fires its callbacks in the main-site context regardless of
+	 * which subsite queued them, so the per-site API key (rtgodam-api-key option)
+	 * and get_permalink() would otherwise resolve against the wrong site — sending
+	 * the wrong key (Central silently drops the log) and a wrong-site parent_url.
+	 * The caller MUST pair a true return with restore_current_blog() (try/finally).
+	 *
+	 * @param int $blog_id Blog ID to switch to. 0/absent or single-site is a no-op.
+	 * @return bool True if a switch_to_blog() occurred (caller must restore).
+	 */
+	private function maybe_switch_to_blog( $blog_id ) {
+		$blog_id = (int) $blog_id;
+
+		if ( ! is_multisite() || $blog_id <= 0 || get_current_blog_id() === $blog_id ) {
+			return false;
+		}
+
+		switch_to_blog( $blog_id ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.switch_to_blog_switch_to_blog
+		return true;
+	}
+
+	/**
 	 * Return the GoDAM Central ID for a WP attachment, or an empty string if it
 	 * is not a GoDAM Central media item.
 	 *
@@ -1091,7 +1158,11 @@ class Media_Usage_Tracker {
 	 * @return void
 	 */
 	private function schedule_log_media_view( $godam_id, $post_id, $wp_site, $post_type ) {
-		$args = array( $godam_id, (int) $post_id, $wp_site, $post_type );
+		// Capture the current blog ID so the async handler can switch_to_blog() back
+		// to it: Action Scheduler fires callbacks in the main-site context, but the
+		// per-site API key (rtgodam-api-key) and get_permalink() must resolve against
+		// the site that queued this notification.
+		$args = array( $godam_id, (int) $post_id, $wp_site, $post_type, get_current_blog_id() );
 
 		if ( ! function_exists( 'as_enqueue_async_action' ) ) {
 			$this->async_log_media_view( ...$args );
@@ -1113,7 +1184,9 @@ class Media_Usage_Tracker {
 	 * @return void
 	 */
 	private function schedule_remove_media_view( $godam_id, $post_id, $wp_site ) {
-		$args = array( $godam_id, (int) $post_id, $wp_site );
+		// See schedule_log_media_view(): carry the blog ID so the handler restores
+		// the originating site context before reading the API key / permalink.
+		$args = array( $godam_id, (int) $post_id, $wp_site, get_current_blog_id() );
 
 		if ( ! function_exists( 'as_enqueue_async_action' ) ) {
 			$this->async_remove_media_view( ...$args );
@@ -1132,62 +1205,72 @@ class Media_Usage_Tracker {
 	 * @param int    $post_id   WordPress post ID.
 	 * @param string $wp_site   WordPress site hostname.
 	 * @param string $post_type WordPress post type.
+	 * @param int    $blog_id   Blog ID that queued this notification (0/absent on single-site).
 	 * @param int    $attempt   Attempt number (1-based); incremented on each retry.
 	 * @return void
 	 */
-	public function async_log_media_view( $godam_id, $post_id, $wp_site, $post_type, $attempt = 1 ) {
-		$api_key = get_option( 'rtgodam-api-key', '' );
-		if ( empty( $api_key ) ) {
-			return;
+	public function async_log_media_view( $godam_id, $post_id, $wp_site, $post_type, $blog_id = 0, $attempt = 1 ) {
+		$blog_id  = (int) $blog_id;
+		$switched = $this->maybe_switch_to_blog( $blog_id );
+
+		try {
+			$api_key = get_option( 'rtgodam-api-key', '' );
+			if ( empty( $api_key ) ) {
+				return;
+			}
+
+			$godam_id  = sanitize_text_field( $godam_id );
+			$post_id   = (int) $post_id;
+			$wp_site   = sanitize_text_field( $wp_site );
+			$post_type = sanitize_text_field( $post_type );
+			$attempt   = max( 1, (int) $attempt );
+
+			if ( empty( $godam_id ) ) {
+				return;
+			}
+
+			$endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.tracking.log_media_view';
+
+			$payload = array(
+				'media_id'   => $godam_id,
+				'platform'   => 'WordPress',
+				'wp_site'    => $wp_site,
+				'post_id'    => $post_id,
+				'post_type'  => $post_type,
+				'parent_url' => $this->get_parent_url_for_payload( $post_id, $wp_site ),
+			);
+
+			$response = wp_remote_post(
+				$endpoint,
+				array(
+					'method'  => 'POST',
+					'timeout' => 10, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
+					'headers' => array(
+						'Content-Type' => 'application/json',
+						// Sent so GoDAM Central can authenticate the request and reject
+						// spoofed usage logs. The call is server-to-server only (fired
+						// from Action Scheduler, never the browser), so the key is never
+						// exposed to the frontend.
+						'X-Api-Key'    => $api_key,
+					),
+					'body'    => wp_json_encode( $payload ),
+				)
+			);
+
+			$this->handle_central_response(
+				$response,
+				'godam_async_log_media_view',
+				array( $godam_id, $post_id, $wp_site, $post_type, $blog_id ),
+				$attempt,
+				'log_media_view',
+				$godam_id,
+				$post_id
+			);
+		} finally {
+			if ( $switched ) {
+				restore_current_blog();
+			}
 		}
-
-		$godam_id  = sanitize_text_field( $godam_id );
-		$post_id   = (int) $post_id;
-		$wp_site   = sanitize_text_field( $wp_site );
-		$post_type = sanitize_text_field( $post_type );
-		$attempt   = max( 1, (int) $attempt );
-
-		if ( empty( $godam_id ) ) {
-			return;
-		}
-
-		$endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.tracking.log_media_view';
-
-		$payload = array(
-			'media_id'   => $godam_id,
-			'platform'   => 'WordPress',
-			'wp_site'    => $wp_site,
-			'post_id'    => $post_id,
-			'post_type'  => $post_type,
-			'parent_url' => get_permalink( $post_id ),
-		);
-
-		$response = wp_remote_post(
-			$endpoint,
-			array(
-				'method'  => 'POST',
-				'timeout' => 10, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
-				'headers' => array(
-					'Content-Type' => 'application/json',
-					// Sent so GoDAM Central can authenticate the request and reject
-					// spoofed usage logs. The call is server-to-server only (fired
-					// from Action Scheduler, never the browser), so the key is never
-					// exposed to the frontend.
-					'X-Api-Key'    => $api_key,
-				),
-				'body'    => wp_json_encode( $payload ),
-			)
-		);
-
-		$this->handle_central_response(
-			$response,
-			'godam_async_log_media_view',
-			array( $godam_id, $post_id, $wp_site, $post_type ),
-			$attempt,
-			'log_media_view',
-			$godam_id,
-			$post_id
-		);
 	}
 
 	/**
@@ -1197,56 +1280,66 @@ class Media_Usage_Tracker {
 	 * @param string $godam_id GoDAM Central media ID (Transcoder Job name).
 	 * @param int    $post_id  WordPress post ID.
 	 * @param string $wp_site  WordPress site hostname.
+	 * @param int    $blog_id  Blog ID that queued this notification (0/absent on single-site).
 	 * @param int    $attempt  Attempt number (1-based); incremented on each retry.
 	 * @return void
 	 */
-	public function async_remove_media_view( $godam_id, $post_id, $wp_site, $attempt = 1 ) {
-		$api_key = get_option( 'rtgodam-api-key', '' );
-		if ( empty( $api_key ) ) {
-			return;
+	public function async_remove_media_view( $godam_id, $post_id, $wp_site, $blog_id = 0, $attempt = 1 ) {
+		$blog_id  = (int) $blog_id;
+		$switched = $this->maybe_switch_to_blog( $blog_id );
+
+		try {
+			$api_key = get_option( 'rtgodam-api-key', '' );
+			if ( empty( $api_key ) ) {
+				return;
+			}
+
+			$godam_id = sanitize_text_field( $godam_id );
+			$post_id  = (int) $post_id;
+			$wp_site  = sanitize_text_field( $wp_site );
+			$attempt  = max( 1, (int) $attempt );
+
+			if ( empty( $godam_id ) ) {
+				return;
+			}
+
+			$endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.tracking.remove_media_view';
+
+			$payload = array(
+				'media_id'   => $godam_id,
+				'platform'   => 'WordPress',
+				'wp_site'    => $wp_site,
+				'post_id'    => $post_id,
+				'parent_url' => $this->get_parent_url_for_payload( $post_id, $wp_site ),
+			);
+
+			$response = wp_remote_post(
+				$endpoint,
+				array(
+					'method'  => 'POST',
+					'timeout' => 10, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
+					'headers' => array(
+						'Content-Type' => 'application/json',
+						'X-Api-Key'    => $api_key,
+					),
+					'body'    => wp_json_encode( $payload ),
+				)
+			);
+
+			$this->handle_central_response(
+				$response,
+				'godam_async_remove_media_view',
+				array( $godam_id, $post_id, $wp_site, $blog_id ),
+				$attempt,
+				'remove_media_view',
+				$godam_id,
+				$post_id
+			);
+		} finally {
+			if ( $switched ) {
+				restore_current_blog();
+			}
 		}
-
-		$godam_id = sanitize_text_field( $godam_id );
-		$post_id  = (int) $post_id;
-		$wp_site  = sanitize_text_field( $wp_site );
-		$attempt  = max( 1, (int) $attempt );
-
-		if ( empty( $godam_id ) ) {
-			return;
-		}
-
-		$endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.tracking.remove_media_view';
-
-		$payload = array(
-			'media_id'   => $godam_id,
-			'platform'   => 'WordPress',
-			'wp_site'    => $wp_site,
-			'post_id'    => $post_id,
-			'parent_url' => get_permalink( $post_id ),
-		);
-
-		$response = wp_remote_post(
-			$endpoint,
-			array(
-				'method'  => 'POST',
-				'timeout' => 10, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
-				'headers' => array(
-					'Content-Type' => 'application/json',
-					'X-Api-Key'    => $api_key,
-				),
-				'body'    => wp_json_encode( $payload ),
-			)
-		);
-
-		$this->handle_central_response(
-			$response,
-			'godam_async_remove_media_view',
-			array( $godam_id, $post_id, $wp_site ),
-			$attempt,
-			'remove_media_view',
-			$godam_id,
-			$post_id
-		);
 	}
 
 	/**
