@@ -4,9 +4,15 @@
 import { useState, useEffect, useRef } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
-import { Button, Spinner } from '@wordpress/components';
+import { Button, Spinner, Tooltip } from '@wordpress/components';
 import { MediaUpload, MediaUploadCheck } from '@wordpress/block-editor';
 import { __, sprintf } from '@wordpress/i18n';
+import { edit } from '@wordpress/icons';
+
+/**
+ * Internal dependencies
+ */
+import { SparklesIcon } from '../icons';
 
 const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
 
@@ -193,24 +199,45 @@ export default function ThumbnailPanel( {
 							aria-pressed={ activePoster === thumb.url }
 						>
 							<img src={ thumb.url } alt="" draggable="false" />
+							{ ! thumb.isCustom && activePoster !== thumb.url && (
+								<Tooltip text={ __( 'Auto-generated from video', 'godam' ) }>
+									<span className="godam-thumbnail-ai-badge">
+										<SparklesIcon />
+									</span>
+								</Tooltip>
+							) }
 						</button>
 					) ) }
 				</div>
 			) }
 
-			{ !! poster && (
-				<p className="godam-thumbnail-override-notice">
-					{ __( 'Block override active.', 'godam' ) }
-					{ ' ' }
-					<Button
-						variant="link"
-						isDestructive
-						onClick={ handleRemoveCustom }
-					>
-						{ __( 'Reset to global', 'godam' ) }
-					</Button>
-				</p>
-			) }
+			<div className="godam-thumbnail-actions">
+				<MediaUploadCheck>
+					<MediaUpload
+						title={ __( 'Upload Custom Thumbnail', 'godam' ) }
+						onSelect={ handleCustomUpload }
+						allowedTypes={ VIDEO_POSTER_ALLOWED_MEDIA_TYPES }
+						render={ ( { open } ) => (
+							<Button
+								variant="secondary"
+								onClick={ open }
+								icon={ edit }
+								className="godam-thumbnail-actions__btn"
+							>
+								{ __( 'Edit', 'godam' ) }
+							</Button>
+						) }
+					/>
+				</MediaUploadCheck>
+				<Button
+					variant="secondary"
+					onClick={ handleRemoveCustom }
+					disabled={ ! poster }
+					className="godam-thumbnail-actions__btn"
+				>
+					{ __( 'Reset', 'godam' ) }
+				</Button>
+			</div>
 		</div>
 	);
 }

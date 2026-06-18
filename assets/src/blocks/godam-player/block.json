@@ -2,7 +2,7 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "godam/video",
-	"title": "Video",
+	"title": "GoDAM Video",
 	"category": "media",
 	"description": "Embed a video from your media library or upload a new one.",
 	"keywords": [ "movie", "video", "player", "godam" ],
@@ -120,6 +120,10 @@
 		"playerHeight": {
 			"type": "string",
 			"default": ""
+		},
+		"showSubtitles": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"supports": {

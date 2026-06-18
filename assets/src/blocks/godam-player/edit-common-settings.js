@@ -2,111 +2,65 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { ToggleControl, SelectControl } from '@wordpress/components';
+import {
+	Disabled,
+	PanelBody,
+	ToggleControl,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
+	__experimentalToggleGroupControl as ToggleGroupControl,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
+	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
+} from '@wordpress/components';
 import { useMemo, useCallback } from '@wordpress/element';
 
-const options = [
-	{ value: 'balanced', label: __( 'Balanced', 'godam' ) },
-	{ value: 'priority', label: __( 'Priority', 'godam' ) },
-];
-
-const performanceHelpText = {
-	balanced: __( 'Recommended for most videos. Loads thumbnails as visitors scroll and prepares the video just before they reach it. Best for overall page performance.', 'godam' ),
-	priority: __( 'For hero videos above the fold. Loads the thumbnail immediately and prepares the video for the fastest possible first play. Use sparingly - one or two per page.', 'godam' ),
-};
-
-const resolveLegacyPerformanceMode = ( preload, preloadPoster ) => {
-	const normalizedPreload = typeof preload === 'string' ? preload.toLowerCase() : '';
-
-	if ( preloadPoster ) {
-		return 'priority';
-	}
-
-	if ( normalizedPreload === 'preload only video thumbnail' ) {
-		return 'priority';
-	}
-
-	return 'balanced';
-};
-
 /**
- * Video settings component.
+ * Playback-specific toggles: Autoplay, Loop, Muted, Playback controls, Share Button.
  *
- * This component is used to render common settings like autoplay, loop for a video block.
- *
- * @param {Object}   props                           Component props.
- * @param {Function} props.setAttributes             Function to set block attributes.
- * @param {Object}   props.attributes                Block attributes.
- * @param {boolean}  [props.isInsideQueryLoop=false] Whether the video is inside a query loop.
- *
- * @return {WPElement} The video settings component.
+ * @param {Object}   props               Component props.
+ * @param {Function} props.setAttributes Function to set block attributes.
+ * @param {Object}   props.attributes    Block attributes.
  */
-const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false } ) => {
-	const { autoplay, controls, loop, muted, preload, preloadPoster, performanceMode, showShareButton, engagements } =
-	attributes;
+export const PlaybackControls = ( { setAttributes, attributes } ) => {
+	const { autoplay, controls, loop, muted, showShareButton, showSubtitles, tracks, id, cmmId } = attributes;
 	const showShareButtonSetting = window?.godamSettings?.enableGlobalVideoShare ?? false;
-	const engagementFeatureEnabled = window?.godamSettings?.engagementFeatureEnabled ?? false;
-	const showEngagementSetting = engagementFeatureEnabled && ( window?.godamSettings?.enableGlobalVideoEngagement ?? false );
+	const videoEditorUrl = `${ window?.pluginInfo?.adminUrl || '/wp-admin/' }admin.php?page=rtgodam_video_editor&id=${ id || cmmId }`;
+	const hasNoTracks = ! tracks || tracks.length === 0;
 
-	// Show a specific help for autoplay setting.
 	const getAutoplayHelp = useMemo( () => {
 		if ( autoplay && muted ) {
 			return __( 'Autoplay may cause usability issues for some users.', 'godam' );
 		}
-
 		return null;
 	}, [ autoplay, muted ] );
 
-	// Show a specific help for muted setting.
 	const getMutedHelp = useMemo( () => {
 		if ( autoplay && muted ) {
 			return __( 'Muted because of Autoplay.', 'godam' );
 		}
-
 		return null;
 	}, [ autoplay, muted ] );
 
 	const toggleFactory = useMemo( () => {
-		const toggleAttribute = ( attribute ) => {
-			return ( newValue ) => {
-				setAttributes( { [ attribute ]: newValue } );
-			};
+		const toggleAttribute = ( attribute ) => ( newValue ) => {
+			setAttributes( { [ attribute ]: newValue } );
 		};
-
 		return {
 			autoplay: toggleAttribute( 'autoplay' ),
 			loop: toggleAttribute( 'loop' ),
 			muted: toggleAttribute( 'muted' ),
 			controls: toggleAttribute( 'controls' ),
 			showShareButton: toggleAttribute( 'showShareButton' ),
-			engagements: toggleAttribute( 'engagements' ),
+			showSubtitles: toggleAttribute( 'showSubtitles' ),
 		};
 	}, [ setAttributes ] );
 
-	const selectedPerformanceMode = useMemo(
-		() => performanceMode || resolveLegacyPerformanceMode( preload, preloadPoster ),
-		[ performanceMode, preload, preloadPoster ],
-	);
-
-	const onChangePerformanceMode = useCallback( ( value ) => {
-		setAttributes( {
-			performanceMode: value,
-			preload: value === 'priority' ? 'metadata' : 'none',
-			preloadPoster: false,
-		} );
-	}, [ setAttributes ] );
-
 	return (
-		<>
+		<div className="godam-playback-controls">
 			<div data-test-id="godam-video-control-autoplay">
 				<ToggleControl
 					__nextHasNoMarginBottom
 					label={ __( 'Autoplay', 'godam' ) }
 					onChange={ ( e ) => {
-						/**
-						 * When autoplay is enabled, mute the video.
-						 * This behaviour follows core/video block.
-						 */
 						toggleFactory.muted( e );
 						toggleFactory.autoplay( e );
 					} }
@@ -117,7 +71,7 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 			<div data-test-id="godam-video-control-loop">
 				<ToggleControl
 					__nextHasNoMarginBottom
-					label={ __( 'Loop', 'godam' ) }
+					label={ __( 'Play on loop', 'godam' ) }
 					onChange={ toggleFactory.loop }
 					checked={ !! loop }
 				/>
@@ -140,43 +94,116 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 					checked={ !! controls }
 				/>
 			</div>
-			{
-				showShareButtonSetting && (
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={ __( 'Share Button', 'godam' ) }
-						onChange={ toggleFactory.showShareButton }
-						checked={ !! showShareButton }
-						help={ __( 'Adds a share button on the video player for transcoded videos', 'godam' ) }
-					/>
-				)
-			}
-			{ ! isInsideQueryLoop && (
-				<SelectControl
-					__next40pxDefaultSize
+			{ showShareButtonSetting && (
+				<ToggleControl
 					__nextHasNoMarginBottom
-					label={ __( 'Performance', 'godam' ) }
-					data-test-id="godam-video-control-performance"
-					value={ selectedPerformanceMode }
-					onChange={ onChangePerformanceMode }
-					options={ options }
-					hideCancelButton
-					help={ performanceHelpText[ selectedPerformanceMode ] }
+					label={ __( 'Show share button', 'godam' ) }
+					onChange={ toggleFactory.showShareButton }
+					checked={ !! showShareButton }
+					help={ __( 'Adds a share button on the video player for transcoded videos', 'godam' ) }
 				/>
 			) }
-			{
-				showEngagementSetting && (
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={ __( 'Enable Likes & Comments', 'godam' ) }
-						onChange={ toggleFactory.engagements }
-						checked={ !! engagements }
-						help={ __( 'Engagement will only be visible for transcoded videos', 'godam' ) }
-					/>
-				)
-			}
-		</>
+			{ /* TODO: Add "Show transcription" toggle control here when it is ready. */ }
+			<ToggleControl
+				__nextHasNoMarginBottom
+				label={ __( 'Show subtitles', 'godam' ) }
+				onChange={ toggleFactory.showSubtitles }
+				checked={ !! showSubtitles }
+			/>
+			{ showSubtitles && hasNoTracks && (
+				<div className="godam-subtitle-notice notice notice-warning">
+					<p>
+						{ __( 'No subtitle file uploaded.', 'godam' ) }
+						{ ' ' }
+						<a href={ videoEditorUrl } target="_blank" rel="noopener noreferrer">
+							{ __( 'Click here to upload subtitles.', 'godam' ) }
+						</a>
+					</p>
+				</div>
+			) }
+		</div>
 	);
 };
 
-export default VideoSettings;
+const performanceHelpText = {
+	balanced: __( 'Recommended for most videos. Loads thumbnails as visitors scroll and prepares the video just before they reach it. Best for overall page performance.', 'godam' ),
+	priority: __( 'For hero videos above the fold. Loads the thumbnail immediately and prepares the video for the fastest possible first play. Use sparingly - one or two per page.', 'godam' ),
+};
+
+const resolveLegacyPerformanceMode = ( preload, preloadPoster ) => {
+	const normalizedPreload = typeof preload === 'string' ? preload.toLowerCase() : '';
+
+	if ( preloadPoster ) {
+		return 'priority';
+	}
+
+	if ( normalizedPreload === 'preload only video thumbnail' ) {
+		return 'priority';
+	}
+
+	return 'balanced';
+};
+
+export const PerformanceControl = ( { setAttributes, attributes } ) => {
+	const { preload, preloadPoster, performanceMode } = attributes;
+
+	const selectedPerformanceMode = useMemo(
+		() => performanceMode || resolveLegacyPerformanceMode( preload, preloadPoster ),
+		[ performanceMode, preload, preloadPoster ],
+	);
+
+	const onChangePerformanceMode = useCallback( ( value ) => {
+		setAttributes( {
+			performanceMode: value,
+			preload: value === 'priority' ? 'metadata' : 'none',
+			preloadPoster: false,
+		} );
+	}, [ setAttributes ] );
+
+	return (
+		<ToggleGroupControl
+			__nextHasNoMarginBottom
+			isBlock
+			data-test-id="godam-video-control-performance"
+			value={ selectedPerformanceMode }
+			onChange={ onChangePerformanceMode }
+			help={ performanceHelpText[ selectedPerformanceMode ] }
+		>
+			<ToggleGroupControlOption value="priority" label={ __( 'Priority', 'godam' ) } />
+			<ToggleGroupControlOption value="balanced" label={ __( 'Balanced', 'godam' ) } />
+		</ToggleGroupControl>
+	);
+};
+
+export const LikesAndComments = ( { setAttributes, attributes, isInsideQueryLoop = false } ) => {
+	const { engagements } = attributes;
+	const engagementFeatureEnabled = window?.godamSettings?.engagementFeatureEnabled ?? false;
+	const showEngagementSetting = engagementFeatureEnabled && ( window?.godamSettings?.enableGlobalVideoEngagement ?? false );
+
+	const toggleEngagements = useMemo( () => ( newValue ) => {
+		setAttributes( { engagements: newValue } );
+	}, [ setAttributes ] );
+
+	if ( isInsideQueryLoop || ! showEngagementSetting ) {
+		return null;
+	}
+
+	const toggleControl = (
+		<ToggleControl
+			__nextHasNoMarginBottom
+			label={ __( 'Enable Likes & Comments', 'godam' ) }
+			onChange={ toggleEngagements }
+			checked={ !! engagements }
+			help={ __( 'Engagement will only be visible for transcoded videos', 'godam' ) }
+		/>
+	);
+
+	return (
+		<PanelBody title={ __( 'Likes & Comments', 'godam' ) } data-test-id="godam-video-panel-likes-comments">
+			{ window.pluginInfo?.validApiKey
+				? toggleControl
+				: <div className="godam-components-disabled"><Disabled>{ toggleControl }</Disabled></div>
+			}
+		</PanelBody>
+	);
+};

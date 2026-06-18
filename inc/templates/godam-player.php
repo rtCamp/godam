@@ -89,7 +89,8 @@ if ( $godam_autoplay ) {
 	$godam_hover_select = 'none';
 }
 $godam_caption        = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
-$godam_tracks         = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
+$godam_show_subtitles = ! empty( $attributes['showSubtitles'] );
+$godam_tracks         = $godam_show_subtitles && ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $godam_show_share_btn = ! empty( $attributes['showShareButton'] );
 
 // Determine if subtitles and transcript should be disabled based on the context (e.g., product gallery or reels contexts not require them).
