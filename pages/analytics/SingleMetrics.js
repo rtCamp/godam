@@ -58,6 +58,11 @@ const SingleMetrics = ( {
 	processedAnalyticsHistory,
 	analyticsDataFetched,
 } ) => {
+	// P0 design refresh: the dashboard "Insights" cards hide the % change
+	// badge. The current value is a client-side within-period trend, not a
+	// true period-over-period delta; the real "vs previous range" delta lands
+	// in P2 alongside range-scoped KPIs. Other surfaces keep their badge.
+	const showChange = mode !== 'dashboard';
 	useEffect( () => {
 		if ( ! processedAnalyticsHistory || ! analyticsDataFetched ) {
 			return;
@@ -135,7 +140,9 @@ const SingleMetrics = ( {
 						<p className="text-xs text-[#525252]">{ label }</p>
 						<Tooltip text={ tooltipText } />
 					</div>
-					<p id={ `${ metricType }-change` } className="metric-change">+0%</p>
+					{ showChange && (
+						<p id={ `${ metricType }-change` } className="metric-change">+0%</p>
+					) }
 				</div>
 				<div className="flex flex-row justify-between gap-2 items-end">
 					<div className="flex flex-col gap-3">

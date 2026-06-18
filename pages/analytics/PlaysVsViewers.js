@@ -99,7 +99,9 @@ const PlaysVsViewers = ( {
 					<div className="analytics-info-heading">
 						<p className="text-xs text-[#525252]">{ __( 'Plays / Unique viewers', 'godam' ) }</p>
 					</div>
-					<p id="plays-vs-viewers-change" className="metric-change">+0%</p>
+					{ mode !== 'dashboard' && (
+						<p id="plays-vs-viewers-change" className="metric-change">+0%</p>
+					) }
 				</div>
 
 				{ isLoading ? (
