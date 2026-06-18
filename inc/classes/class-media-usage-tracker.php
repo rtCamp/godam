@@ -1052,10 +1052,18 @@ class Media_Usage_Tracker {
 	/**
 	 * Resolve a safe parent URL for GoDAM Central payloads.
 	 *
-	 * @param int $post_id WordPress post ID (0 for synthetic/non-post contexts).
+	 * For synthetic anchors (post_id <= 0, e.g. block widgets) or an unresolvable
+	 * permalink, the fallback is derived from the originating site host carried in
+	 * the payload ($wp_site) rather than home_url(): on multisite the Central
+	 * Action Scheduler callbacks run without a switch_to_blog() (they take no
+	 * blog_id arg), so home_url() can resolve to the main site and produce a
+	 * parent_url whose host disagrees with the $wp_site already in the payload.
+	 *
+	 * @param int    $post_id WordPress post ID (0 for synthetic/non-post contexts).
+	 * @param string $wp_site Originating site host (payload's wp_site), e.g. "sub.example.com".
 	 * @return string
 	 */
-	private function get_parent_url_for_payload( $post_id ) {
+	private function get_parent_url_for_payload( $post_id, $wp_site = '' ) {
 		$post_id = (int) $post_id;
 
 		if ( $post_id > 0 ) {
@@ -1063,6 +1071,11 @@ class Media_Usage_Tracker {
 			if ( ! empty( $permalink ) && is_string( $permalink ) ) {
 				return $permalink;
 			}
+		}
+
+		$wp_site = trim( (string) $wp_site );
+		if ( '' !== $wp_site ) {
+			return 'https://' . $wp_site . '/';
 		}
 
 		return home_url( '/' );
@@ -1178,7 +1191,7 @@ class Media_Usage_Tracker {
 			'wp_site'    => $wp_site,
 			'post_id'    => $post_id,
 			'post_type'  => $post_type,
-			'parent_url' => $this->get_parent_url_for_payload( $post_id ),
+			'parent_url' => $this->get_parent_url_for_payload( $post_id, $wp_site ),
 		);
 
 		$response = wp_remote_post(
@@ -1241,7 +1254,7 @@ class Media_Usage_Tracker {
 			'platform'   => 'WordPress',
 			'wp_site'    => $wp_site,
 			'post_id'    => $post_id,
-			'parent_url' => $this->get_parent_url_for_payload( $post_id ),
+			'parent_url' => $this->get_parent_url_for_payload( $post_id, $wp_site ),
 		);
 
 		$response = wp_remote_post(

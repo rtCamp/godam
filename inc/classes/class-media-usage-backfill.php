@@ -442,7 +442,11 @@ class Media_Usage_Backfill {
 	 */
 	private function has_scheduled_batch_action( $blog_id ) {
 		if ( ! function_exists( 'as_has_scheduled_action' ) ) {
-			return false;
+			// Cannot determine pending state on this Action Scheduler version.
+			// Assume one IS pending so the "no-op if already scheduled" callers
+			// (e.g. the RUNNING self-heal in start()) do not enqueue a duplicate
+			// on every call and flood the queue. Fail safe, not open.
+			return true;
 		}
 
 		return (bool) as_has_scheduled_action( self::AS_BATCH_ACTION, array( (int) $blog_id ) );
