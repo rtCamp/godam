@@ -337,7 +337,7 @@ class Transcoding extends Base {
 		if ( empty( $stored_api_key ) ) {
 			return new \WP_Error( 'forbidden', __( 'API key not configured.', 'godam' ), array( 'status' => 403 ) );
 		}
-		if ( $provided_api_key !== $stored_api_key ) {
+		if ( ! hash_equals( $stored_api_key, $provided_api_key ) ) {
 			return new \WP_Error( 'forbidden', __( 'Invalid API key.', 'godam' ), array( 'status' => 403 ) );
 		}
 		return true;

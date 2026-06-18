@@ -299,7 +299,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 							if ( ! empty( $latest_attachment ) && $latest_attachment['attachment_id'] === $attachment_id ) {
 								$latest_attachment['transcoding_status'] = 'success';
-								update_option( 'rtgodam_new_attachment', $latest_attachment, '', true );
+								update_option( 'rtgodam_new_attachment', $latest_attachment, true );
 							}
 						} else {
 							$this->rtgodam_transcoder_handler->add_transcoded_files( $post_array['files'], $attachment_id, $job_for );

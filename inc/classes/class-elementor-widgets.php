@@ -56,6 +56,34 @@ class Elementor_Widgets {
 		 * The below script is only required in elementor editor experience.
 		 */
 		wp_enqueue_script( 'godam-elementor-frontend' );
+
+		// Editor-only stylesheet for control-panel polish (e.g. SELECT2 width).
+		// Registered inline here because register_scripts() is hooked to
+		// wp_enqueue_scripts (frontend) and the editor hook runs in admin,
+		// where that registration never fires.
+		// Source: assets/src/css/godam-elementor-editor.scss.
+		wp_register_style(
+			'godam-elementor-editor-style',
+			RTGODAM_URL . 'assets/build/css/godam-elementor-editor.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/godam-elementor-editor.css' )
+		);
+		wp_enqueue_style( 'godam-elementor-editor-style' );
+
+		// Use the same brand SVGs as the Gutenberg blocks / WPBakery elements for
+		// the widget panel icons. Elementor renders the icon as <i class="…">, so
+		// each class is backed by the SVG via background-image (absolute URLs, so
+		// no build-time url() resolution is needed).
+		$godam_icon_css = sprintf(
+			'.godam-eicon-video,.godam-eicon-gallery,.godam-eicon-audio{display:inline-block;width:1em;height:1em;vertical-align:middle;background-size:contain;background-repeat:no-repeat;background-position:center;}' .
+			'.godam-eicon-video{background-image:url(%1$s);}' .
+			'.godam-eicon-gallery{background-image:url(%2$s);}' .
+			'.godam-eicon-audio{background-image:url(%3$s);}',
+			esc_url( RTGODAM_URL . 'assets/images/godam-video-filled.svg' ),
+			esc_url( RTGODAM_URL . 'assets/images/godam-gallery-filled.svg' ),
+			esc_url( RTGODAM_URL . 'assets/images/godam-audio-filled.svg' )
+		);
+		wp_add_inline_style( 'godam-elementor-editor-style', $godam_icon_css );
 	}
 
 	/**

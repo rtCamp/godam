@@ -147,7 +147,7 @@ export function getUserAgent( userAgent ) {
  * the async plugin path and the keepalive path produce identical payloads.
  *
  * @param {Object} opts
- * @param {number} opts.type               Event type (1 = page load, 2 = heatmap, 3 = layer).
+ * @param {number} opts.type               Event type (1 = page load, 2 = heatmap, 3 = layer interaction).
  * @param {string} opts.userToken          Anonymous visitor ID (from analytics library).
  * @param {number} [opts.visitorTimestamp] Epoch-ms timestamp; defaults to Date.now().
  * @param {number} [opts.videoId]          Single video ID (type 2/3).
@@ -155,6 +155,7 @@ export function getUserAgent( userAgent ) {
  * @param {Array}  [opts.videoIds]         Array of [videoId, jobId] pairs (type 1).
  * @param {Array}  [opts.ranges]           Played time-range pairs (type 2).
  * @param {number} [opts.videoLength]      Duration in seconds (type 2).
+ * @param {Array}  [opts.layers]           Array of layer interaction event objects (type 3). Each entry must include layer_id, layer_type, action_type, layer_timestamp. Optional: layer_name, page_url, layer_metadata.
  * @param {number} [opts.reelPopId]        Reel Pop CPT post ID (when event originates from a reel-pop modal).
  * @return {{ endpoint: string|null, body: Object|null }} Object with `endpoint` (the base
  * API URL) and `body` (the request payload). Both are `null` when the plugin token is
@@ -169,6 +170,7 @@ export function buildAnalyticsRequestBody( {
 	videoIds = [],
 	ranges = [],
 	videoLength = 0,
+	layers = [],
 	reelPopId = 0,
 } ) {
 	const {
@@ -249,12 +251,90 @@ export function buildAnalyticsRequestBody( {
 		body.job_id = jobId;
 	}
 
+	// Layer interactions (type=3) — array of {layer_id, layer_type, action_type,
+	// layer_timestamp, layer_name?, page_url?, layer_metadata?}. The microservice
+	// enforces a whitelist on layer_type and a max of 100 entries per request;
+	// callers (storage.js / flushLayerInteractions) chunk if needed.
+	if ( type === 3 && Array.isArray( layers ) && layers.length > 0 ) {
+		body.layers = layers;
+	}
+
 	const reelPopIdInt = parseInt( reelPopId, 10 );
 	if ( reelPopIdInt > 0 ) {
 		body.reel_pop_id = reelPopIdInt;
 	}
 
 	return { endpoint, body };
+}
+
+/**
+ * Coarse device-type classification from the User-Agent string.
+ *
+ * 'mobile' / 'tablet' / 'desktop'. UA-string sniffing is imperfect — the
+ * goal here is "good enough to slice analytics by form factor," not
+ * device fingerprinting. Future improvement: switch to navigator.userAgentData
+ * Client Hints API where available.
+ *
+ * @return {'mobile'|'tablet'|'desktop'} The detected device class.
+ */
+export function getDeviceType() {
+	try {
+		const ua = window.navigator.userAgent || '';
+		if ( /iPad|Android(?!.*Mobile)|Tablet|Kindle/i.test( ua ) ) {
+			return 'tablet';
+		}
+		if ( /Mobile|iPhone|iPod|Android.*Mobile|Mobi|webOS|BlackBerry/i.test( ua ) ) {
+			return 'mobile';
+		}
+		return 'desktop';
+	} catch ( e ) {
+		return 'desktop';
+	}
+}
+
+// Memoized first-view answers per (videoKey, page-session). The decision
+// is locked at first call: that call reads localStorage, sets the persistent
+// flag if missing, and caches the answer. Subsequent calls in this page
+// session for the same videoKey return the same answer — so all events
+// for a given video in a single session agree on whether it's the
+// viewer's first time seeing the video.
+const _videoFirstViewCache = {};
+
+/**
+ * Has this browser previously seen the given video?
+ *
+ * First-time-ever lookup, scoped per browser via localStorage. Returns true
+ * the first time it's called for a videoKey (and sets the persistent flag);
+ * returns false on every subsequent call across all future sessions.
+ * Useful for slicing first-touch vs returning-viewer conversion rates.
+ *
+ * Storage key: `godamVideoSeen:<videoKey>`.
+ *
+ * @param {string} videoKey data-id or job_id identifying the video.
+ * @return {boolean} true on the very first call ever in this browser; false thereafter.
+ */
+export function wasFirstViewForVideo( videoKey ) {
+	if ( ! videoKey ) {
+		return false;
+	}
+	if ( _videoFirstViewCache[ videoKey ] !== undefined ) {
+		return _videoFirstViewCache[ videoKey ];
+	}
+	try {
+		const storageKey = `godamVideoSeen:${ videoKey }`;
+		const seen = localStorage.getItem( storageKey );
+		if ( ! seen ) {
+			_videoFirstViewCache[ videoKey ] = true;
+			localStorage.setItem( storageKey, '1' );
+		} else {
+			_videoFirstViewCache[ videoKey ] = false;
+		}
+	} catch ( e ) {
+		// localStorage unavailable (private mode, quota). Treat as not-first
+		// rather than fabricating a true that would inflate first-view metrics.
+		_videoFirstViewCache[ videoKey ] = false;
+	}
+	return _videoFirstViewCache[ videoKey ];
 }
 
 // Expose helpers on a global namespace so sibling plugins (e.g. godam-for-woo)
@@ -264,4 +344,6 @@ window.GoDAM = window.GoDAM || {};
 window.GoDAM.getPageLoadSessionId = getPageLoadSessionId;
 window.GoDAM.getBrowserName = getBrowserName;
 window.GoDAM.getOSName = getOSName;
+window.GoDAM.getDeviceType = getDeviceType;
+window.GoDAM.wasFirstViewForVideo = wasFirstViewForVideo;
 window.GoDAM.shouldSkipAnalytics = shouldSkipAnalytics;

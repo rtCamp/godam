@@ -443,6 +443,13 @@ $settings-page-breakpoint: 782px;
 		}
 	}
 
+	/* GoDAM notice message */
+	.godam-notice-message {
+		a {
+			text-decoration: underline;
+		}
+	}
+
 	/* Animation */
 	@keyframes godamFadeSlide {
 		from {

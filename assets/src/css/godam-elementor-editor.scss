@@ -1,0 +1,55 @@
+/**
+ * GoDAM — Elementor editor polish.
+ *
+ * Enqueued only in the Elementor editor via
+ * RTGODAM\Inc\Elementor_Widgets::enqueue_scripts() (hooked to
+ * elementor/editor/before_enqueue_scripts in inc/classes/class-elementor-widgets.php).
+ *
+ * Add new editor-side polish below. Keep selectors scoped — ideally via
+ * `.elementor-control-type-*` so rules cannot leak outside the Elementor
+ * editor panel, and so frontend rendering is never affected.
+ */
+
+.select2-container {
+
+	.select2-dropdown {
+
+		.select2-results__options {
+
+			.select2-results__option {
+				color: var(--e-a-bg-default, #565656);
+			}
+		}
+	}
+}
+
+.elementor-control-type-select2 {
+
+	.select2-container {
+		width: 100% !important; // stylelint-disable-line declaration-no-important -- needed to override select2's own inline width.
+
+		.select2-selection--multiple {
+
+			ul.select2-selection__rendered {
+				width: 100%;
+				overflow: auto;
+	
+				.select2-selection__choice {
+					background-color: var(--e-a-bg-active-bold, #565656) !important;
+					color: var(--e-a-color-txt, #fff) !important;
+				}
+			}
+		}
+		
+
+		.select2-dropdown {
+
+			.select2-results__options {
+
+				.select2-results__option {
+					color: var(--e-a-color-txt, #000) !important;
+				}
+			}
+		}
+	}
+}

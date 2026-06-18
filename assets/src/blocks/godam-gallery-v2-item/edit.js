@@ -273,8 +273,8 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 								</div>
 							) : (
 								<div className="godam-gallery-v2-item__copy">
-									<strong title={ videoTitle }>{ videoTitle }</strong>
-									{ videoDate && <span>{ videoDate }</span> }
+									<strong title={ videoTitle } data-test-id="godam-gallery-v2-item-element-title">{ videoTitle }</strong>
+									{ videoDate && <span data-test-id="godam-gallery-v2-item-element-date">{ videoDate }</span> }
 								</div>
 							) }
 						</div>

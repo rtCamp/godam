@@ -38,26 +38,30 @@ const PollLayer = ( { layerID, goBack, duration } ) => {
 			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
 			{
 				polls?.length > 0 &&
-					<ComboboxControl
-						__next40pxDefaultSize
-						__nextHasNoMarginBottom
-						label={ __( 'Select poll', 'godam' ) }
-						className="godam-combobox mb-4"
-						value={ layer.poll_id }
-						onChange={ handlePollChange }
-						options={ polls.map( ( poll ) => ( { value: poll.pollq_id, label: poll.pollq_question } ) ) }
-					/>
+					<div data-test-id="godam-poll-control-select">
+						<ComboboxControl
+							__next40pxDefaultSize
+							__nextHasNoMarginBottom
+							label={ __( 'Select poll', 'godam' ) }
+							className="godam-combobox mb-4"
+							value={ layer.poll_id }
+							onChange={ handlePollChange }
+							options={ polls.map( ( poll ) => ( { value: poll.pollq_id, label: poll.pollq_question } ) ) }
+						/>
+					</div>
 			}
 
-			<ToggleControl
-				className="mb-4 godam-toggle"
-				label={ __( 'Allow user to skip', 'godam' ) }
-				checked={ layer.allow_skip }
-				onChange={ ( value ) =>
-					dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
-				}
-				help={ __( 'If enabled, the user will be able to skip the form submission.', 'godam' ) }
-			/>
+			<div data-test-id="godam-poll-control-allow-skip">
+				<ToggleControl
+					className="mb-4 godam-toggle"
+					label={ __( 'Allow user to skip', 'godam' ) }
+					checked={ layer.allow_skip }
+					onChange={ ( value ) =>
+						dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
+					}
+					help={ __( 'If enabled, the user will be able to skip the form submission.', 'godam' ) }
+				/>
+			</div>
 
 			<Panel
 				className="-mx-4 border-x-0 godam-advance-panel">
@@ -110,6 +114,7 @@ const PollLayer = ( { layerID, goBack, duration } ) => {
 					</div>
 					{ layer.allow_skip &&
 					<Button
+						data-test-id="godam-poll-button-skip"
 						className="skip-button"
 						variant="primary"
 						icon={ chevronRight }

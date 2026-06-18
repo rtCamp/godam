@@ -46,6 +46,8 @@ import integrationTabs from './integration-tabs.js';
 const getExtendedSettings = ( tabName ) =>
 	window.godamIntegrationComponents?.[ tabName ] || null;
 
+const TOGGLE_SUCCESS_NOTICE_KEY = 'godam_integration_toggle_notice';
+
 const IntegrationSettings = () => {
 	const tabs = integrationTabs;
 
@@ -62,6 +64,22 @@ const IntegrationSettings = () => {
 	const [ togglingPlugin, setTogglingPlugin ] = useState( null );
 	const [ installingPlugin, setInstallingPlugin ] = useState( null );
 	const [ installError, setInstallError ] = useState( null );
+
+	useEffect( () => {
+		try {
+			const persistedNotice = window.sessionStorage?.getItem( TOGGLE_SUCCESS_NOTICE_KEY );
+
+			if ( persistedNotice ) {
+				setNotice( { message: persistedNotice, status: 'success', isVisible: true } );
+				if ( window.scrollY > 0 ) {
+					scrollToTop();
+				}
+				window.sessionStorage?.removeItem( TOGGLE_SUCCESS_NOTICE_KEY );
+			}
+		} catch ( error ) {
+			// Ignore storage access issues (e.g. blocked/disabled sessionStorage).
+		}
+	}, [] );
 
 	// Function to show a notice message
 	const showNotice = ( message, status = 'success' ) => {
@@ -86,6 +104,14 @@ const IntegrationSettings = () => {
 				} );
 
 				if ( response?.status === 'success' ) {
+					try {
+						window.sessionStorage?.setItem(
+							TOGGLE_SUCCESS_NOTICE_KEY,
+							response?.message || __( 'Integration status updated successfully.', 'godam' ),
+						);
+					} catch ( error ) {
+						// Ignore storage write issues; notice just will not persist across reload.
+					}
 					window.location.reload();
 				}
 			} catch ( error ) {
@@ -184,11 +210,12 @@ const IntegrationSettings = () => {
 		<>
 			{ notice.isVisible && (
 				<Notice
-					className="mb-4"
+					className="mb-4 godam-notice-message"
 					status={ notice.status }
 					onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
+					// dangerouslySetInnerHTML={ { __html: notice.message } }
 				>
-					{ notice.message }
+					<div dangerouslySetInnerHTML={ { __html: notice.message } } />
 				</Notice>
 			) }
 

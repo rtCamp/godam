@@ -87,7 +87,7 @@ const VideoSettings = () => {
 	}, [ isChanged ] );
 
 	return (
-		<div>
+		<div data-test-id="godam-settings-video">
 			{ notice.isVisible && (
 				<Notice
 					className="mb-4"
@@ -142,6 +142,7 @@ const VideoSettings = () => {
 					icon={ saveMediaSettingsLoading && <Spinner /> }
 					isBusy={ saveMediaSettingsLoading }
 					disabled={ saveMediaSettingsLoading || ! isChanged }
+					data-test-id="godam-settings-video-button-save"
 				>
 					{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 				</Button>

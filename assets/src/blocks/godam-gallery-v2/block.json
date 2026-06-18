@@ -94,6 +94,9 @@
 			"margin": true,
 			"padding": true,
 			"blockGap": true
+		},
+		"interactivity": {
+			"clientNavigation": true
 		}
 	},
 	"editorScript": [ "file:./index.js" ],

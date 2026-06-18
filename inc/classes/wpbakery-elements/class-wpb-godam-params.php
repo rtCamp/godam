@@ -94,16 +94,16 @@ class WPB_GoDAM_Params {
 						<source src="' . esc_url( $attachment ) . '" type="video/mp4">
 					</video>
 				</div>';
-				$remove_button = '<button class="button video-selector-remove" data-param="' . esc_attr( $settings['param_name'] ) . '" style="margin-left: 5px;">' . esc_html__( 'Remove', 'godam' ) . '</button>';
+				$remove_button = '<button type="button" class="button video-selector-remove" data-param="' . esc_attr( $settings['param_name'] ) . '" style="margin-left: 5px;">' . esc_html__( 'Remove', 'godam' ) . '</button>';
 			}
 		}
-		
+
 		return '<div class="video_selector_block">'
 			. '<input name="' . esc_attr( $settings['param_name'] ) . '" class="wpb_vc_param_value wpb-textinput video_selector_field ' .
 			esc_attr( $settings['param_name'] ) . ' ' .
 			esc_attr( $settings['type'] ) . '_field" type="hidden" value="' . esc_attr( $value ) . '" />'
 			. '<div class="video_selector-buttons-wrapper" style="display: flex; align-items: center;">'
-			. '<button class="button video-selector-button" data-param="' . esc_attr( $settings['param_name'] ) . '">' . $button_text . '</button>'
+			. '<button type="button" class="button video-selector-button" data-param="' . esc_attr( $settings['param_name'] ) . '">' . $button_text . '</button>'
 			. $remove_button
 			. '</div>'
 			. $preview_html
@@ -133,16 +133,16 @@ class WPB_GoDAM_Params {
 						<source src="' . esc_url( $attachment ) . '" type="audio/mpeg">
 					</audio>
 				</div>';
-				$remove_button = '<button class="button audio-selector-remove" data-param="' . esc_attr( $settings['param_name'] ) . '" style="margin-left: 5px;">' . esc_html__( 'Remove', 'godam' ) . '</button>';
+				$remove_button = '<button type="button" class="button audio-selector-remove" data-param="' . esc_attr( $settings['param_name'] ) . '" style="margin-left: 5px;">' . esc_html__( 'Remove', 'godam' ) . '</button>';
 			}
 		}
-		
+
 		return '<div class="audio_selector_block">'
 			. '<input name="' . esc_attr( $settings['param_name'] ) . '" class="wpb_vc_param_value wpb-textinput audio_selector_field ' .
 			esc_attr( $settings['param_name'] ) . ' ' .
 			esc_attr( $settings['type'] ) . '_field" type="hidden" value="' . esc_attr( $value ) . '" />'
 			. '<div class="audio_selector-buttons-wrapper" style="display: flex; align-items: center;">'
-			. '<button class="button audio-selector-button" data-param="' . esc_attr( $settings['param_name'] ) . '">' . $button_text . '</button>'
+			. '<button type="button" class="button audio-selector-button" data-param="' . esc_attr( $settings['param_name'] ) . '">' . $button_text . '</button>'
 			. $remove_button
 			. '</div>'
 			. $preview_html
@@ -168,15 +168,15 @@ class WPB_GoDAM_Params {
 			$preview_html  = '<div class="image-src-selector-preview" style="margin-top: 10px;">
                 <img src="' . esc_url( $value ) . '" alt="" style="max-width: 300px; height: auto;" />
             </div>';
-			$remove_button = '<button class="button image-src-selector-remove" data-param="' . esc_attr( $settings['param_name'] ) . '" style="margin-left: 5px;">' . esc_html__( 'Remove', 'godam' ) . '</button>';            
+			$remove_button = '<button type="button" class="button image-src-selector-remove" data-param="' . esc_attr( $settings['param_name'] ) . '" style="margin-left: 5px;">' . esc_html__( 'Remove', 'godam' ) . '</button>';
 		}
-		
+
 		return '<div class="image_src_selector_block">'
 			. '<input name="' . esc_attr( $settings['param_name'] ) . '" class="wpb_vc_param_value wpb-textinput image_src_selector_field ' .
 			esc_attr( $settings['param_name'] ) . ' ' .
 			esc_attr( $settings['type'] ) . '_field" type="hidden" value="' . esc_attr( $value ) . '" />'
 			. '<div class="image_src_selector-buttons-wrapper" style="display: flex; align-items: center;">'
-			. '<button class="button image-src-selector-button" data-param="' . esc_attr( $settings['param_name'] ) . '">' . $button_text . '</button>'
+			. '<button type="button" class="button image-src-selector-button" data-param="' . esc_attr( $settings['param_name'] ) . '">' . $button_text . '</button>'
 			. $remove_button
 			. '</div>'
 			. $preview_html

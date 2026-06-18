@@ -317,6 +317,7 @@ const ImageCTA = ( { layerID } ) => {
 											: 'border-gray-300 bg-white'
 									}` }
 									aria-label={ layout.label }
+									data-test-id={ `godam-cta-button-layout-${ layout.value.replace( 'card-layout--', '' ).replace( 'desktop-', '' ) }` }
 									style={ {
 										color: isSelected ? 'var(--wp-components-color-accent, #3858e9)' : '#6b7280',
 									} }
@@ -346,6 +347,7 @@ const ImageCTA = ( { layerID } ) => {
 								variant="primary"
 								className="ml-2 godam-button"
 								aria-label={ __( 'Upload or Replace CTA Image', 'godam' ) }
+								data-test-id="godam-cta-button-upload-image"
 							>
 								{ __( 'Upload', 'godam' ) }
 							</Button>
@@ -362,10 +364,10 @@ const ImageCTA = ( { layerID } ) => {
 								/>
 								<div className="ml-[6px] flex flex-col">
 									<Tooltip text={ __( 'Replace Image', 'godam' ) } placement="right">
-										<Button className="!text-brand-neutral-900" icon={ replace } isDestructive onClick={ openImageCTAUploader } />
+										<Button className="!text-brand-neutral-900" icon={ replace } isDestructive onClick={ openImageCTAUploader } data-test-id="godam-cta-button-replace-image" />
 									</Tooltip>
 									<Tooltip text={ __( 'Remove Image', 'godam' ) } placement="right">
-										<Button className="mt-1" icon={ trash } isDestructive onClick={ removeCTAImage } />
+										<Button className="mt-1" icon={ trash } isDestructive onClick={ removeCTAImage } data-test-id="godam-cta-button-remove-image" />
 									</Tooltip>
 								</div>
 							</div>
@@ -401,6 +403,7 @@ const ImageCTA = ( { layerID } ) => {
 				__next40pxDefaultSize
 				className="godam-input"
 				label={ __( 'Title', 'godam' ) }
+				data-test-id="godam-cta-control-title"
 				value={ layer.imageText }
 				onChange={ ( value ) => {
 					updateField( 'imageText', value );
@@ -415,6 +418,7 @@ const ImageCTA = ( { layerID } ) => {
 					__next40pxDefaultSize
 					className="godam-input"
 					label={ __( 'URL', 'godam' ) }
+					data-test-id="godam-cta-control-url"
 					value={ layer.imageLink }
 					onChange={ handleUrlChange }
 					placeholder="https://rtcamp.com"
@@ -431,6 +435,7 @@ const ImageCTA = ( { layerID } ) => {
 				__next40pxDefaultSize
 				className="godam-input"
 				label={ __( 'Description', 'godam' ) }
+				data-test-id="godam-cta-control-description"
 				value={ layer.imageDescription }
 				onChange={ ( value ) => {
 					updateField( 'imageDescription', value );
@@ -443,6 +448,7 @@ const ImageCTA = ( { layerID } ) => {
 				__next40pxDefaultSize
 				className="godam-input"
 				label={ __( 'CTA Button Text', 'godam' ) }
+				data-test-id="godam-cta-control-button-text"
 				value={ layer.imageCtaButtonText }
 				onChange={ ( value ) => {
 					updateField( 'imageCtaButtonText', value );

@@ -69,16 +69,31 @@ class MediaLibrary {
 
 	initialize() {
 		this.setupAttachmentBrowser();
-		this.setupModalCloseCleanup();
+
+		// setupModalCloseCleanup patches wp.media.view.Modal.prototype.close globally. In additive
+		// mode keep GoDAM's footprint minimal alongside another DAM plugin and skip it; the GoDAM
+		// media-modal tab still works without it.
+		if ( ! isFolderOrgDisabled() ) {
+			this.setupModalCloseCleanup();
+		}
+
 		document.addEventListener( 'DOMContentLoaded', () => this.onDOMContentLoaded() );
 	}
 
 	onDOMContentLoaded() {
 		this.setupMediaLibraryRoot();
+		this.handleBannerClose();
+
+		// Additive mode (folder organization off): suppress GoDAM's WP media-library takeover
+		// (date-range filter, "Manage Media" button, search override, delete-refresh listeners).
+		// The GoDAM media-modal tab, wired in setupAttachmentBrowser(), is intentionally left intact.
+		if ( isFolderOrgDisabled() ) {
+			return;
+		}
+
 		this.initializeDateRangeFilter();
 		addManageMediaButton();
 		this.addInputPlaceholder();
-		this.handleBannerClose();
 		this.setupDeleteEventListeners();
 	}
 
@@ -141,12 +156,19 @@ class MediaLibrary {
 	}
 
 	setupAttachmentBrowser() {
-		if ( wp?.media?.view?.AttachmentsBrowser && AttachmentsBrowser ) {
-			wp.media.view.AttachmentsBrowser = AttachmentsBrowser;
-		}
+		// Additive mode (folder organization off): do NOT replace WordPress's library browser/grid
+		// views. Those global replacements are the main clash surface with another DAM/media
+		// plugin's directory UI. The detail-pane views and the GoDAM media-modal tab (below) are
+		// kept — they don't conflict with a folder plugin and preserve transcoding info + the cloud
+		// picker, which render on the native browser/grid.
+		if ( ! isFolderOrgDisabled() ) {
+			if ( wp?.media?.view?.AttachmentsBrowser && AttachmentsBrowser ) {
+				wp.media.view.AttachmentsBrowser = AttachmentsBrowser;
+			}
 
-		if ( wp?.media?.view?.Attachments && Attachments ) {
-			wp.media.view.Attachments = Attachments;
+			if ( wp?.media?.view?.Attachments && Attachments ) {
+				wp.media.view.Attachments = Attachments;
+			}
 		}
 
 		if ( wp?.media?.view?.Attachment?.Details && AttachmentDetails ) {
@@ -308,7 +330,10 @@ class MediaLibrary {
 			} );
 		}
 
-		new MediaListViewTableDragHandler();
+		// List-view drag-to-folder is a folder-organization feature; skip it in additive mode.
+		if ( ! isFolderOrgDisabled() ) {
+			new MediaListViewTableDragHandler();
+		}
 	}
 
 	setupMediaLibraryRoot() {

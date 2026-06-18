@@ -1,0 +1,19 @@
+/*
+ * Layer-timeline info tooltips (InfoTooltip.js).
+ *
+ * The @wordpress/components Tooltip renders its text on a single line, so the
+ * longer explanatory copy (e.g. the Video Conversion tooltip) spills into one
+ * unreadable strip. Cap the width and let it wrap into a tidy block, matching
+ * the dashboard's standard-metric tooltips. Keyed on the custom class
+ * InfoTooltip passes to the Tooltip; the popover portals to <body> (outside
+ * #root-video-analytics), so this rule is intentionally unscoped. The
+ * `.components-tooltip.godam-readable-tooltip` pairing out-specifies the
+ * default `.components-tooltip`, and the positioning library only sets inline
+ * placement styles (not width/white-space), so no !important is needed.
+ */
+.components-tooltip.godam-readable-tooltip {
+	max-width: 240px;
+	white-space: normal;
+	text-align: center;
+	line-height: 1.4;
+}

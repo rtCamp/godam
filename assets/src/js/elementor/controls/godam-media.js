@@ -32,6 +32,71 @@ if ( window.elementor ) {
 		initialize() {
 			// eslint-disable-next-line no-undef
 			elementor.modules.controls.BaseMultiple.prototype.initialize.apply( this, arguments );
+
+			// When a GoDAM virtual media item is picked from the media library's
+			// "GoDAM" tab, onGoDAMSelect() creates the real WordPress attachment
+			// and dispatches `godam-virtual-attachment-created` with the original
+			// attachment. Each control view (including every repeater row) listens
+			// and swaps the temporary virtual id it currently holds for the real
+			// attachment id — mirroring how the Gutenberg blocks handle it.
+			this.onGodamVirtualAttachmentCreated = this.handleGodamVirtualAttachment.bind( this );
+			document.addEventListener( 'godam-virtual-attachment-created', this.onGodamVirtualAttachmentCreated );
+		},
+
+		handleGodamVirtualAttachment( event ) {
+			const detail = event?.detail || {};
+			const attachment = detail.attachment;
+			const virtualMediaId = detail.virtualMediaId;
+
+			if ( ! attachment || ! attachment.id ) {
+				return;
+			}
+
+			// Only the control that currently holds this virtual id should adopt
+			// the freshly-created real attachment. In a repeater each row is its
+			// own control view, so this targets exactly the row the user selected
+			// the virtual media in — and never touches other rows or widgets.
+			if ( String( this.getControlValue( 'id' ) ) !== String( virtualMediaId ) ) {
+				return;
+			}
+
+			if ( attachment.mime && 'application/dash+xml' === attachment.mime ) {
+				this.setValue( {
+					id: attachment.id,
+					url: attachment.url,
+					title: attachment.title,
+					name: attachment.filename,
+					icon: attachment.icon || '',
+					sources: [
+						{
+							src: attachment.url,
+							type: attachment.mime,
+						},
+					],
+				} );
+			} else {
+				this.setValue( {
+					id: attachment.id,
+					url: attachment.url,
+					title: attachment.title,
+					name: attachment.filename,
+					icon: '',
+				} );
+			}
+
+			this.applySavedValue();
+		},
+
+		onDestroy() {
+			if ( this.onGodamVirtualAttachmentCreated ) {
+				document.removeEventListener( 'godam-virtual-attachment-created', this.onGodamVirtualAttachmentCreated );
+			}
+
+			// eslint-disable-next-line no-undef
+			const parentProto = elementor.modules.controls.BaseMultiple.prototype;
+			if ( 'function' === typeof parentProto.onDestroy ) {
+				parentProto.onDestroy.apply( this, arguments );
+			}
 		},
 
 		applySavedValue() {

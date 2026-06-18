@@ -47,6 +47,12 @@ function isUploadPage() {
 /**
  * Check if folder organization is disabled.
  *
+ * This is GoDAM's media-library integration kill-switch: when disabled (additive mode),
+ * GoDAM's WordPress media-library takeover — folder sidebar, "Manage Media" button, search
+ * override, attachment-browser folder/date filters — is suppressed so GoDAM can coexist with
+ * another media/DAM plugin. The GoDAM media-modal tab, blocks, the player, and transcoding
+ * are unaffected.
+ *
  * @return {boolean} True if folder organization is disabled, false otherwise.
  */
 function isFolderOrgDisabled() {

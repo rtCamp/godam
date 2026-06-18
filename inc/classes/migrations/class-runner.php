@@ -106,6 +106,10 @@ class Runner {
 			Gallery_V1_To_V2::class,
 			Godam_Cpt_Cleanup::class,
 		),
+		'1.12.2' => array(
+			Elementor_Gallery_Widget_V1_To_V2::class,
+			WPBakery_Gallery_Shortcode_V1_To_V2::class,
+		),
 		'1.13.0' => array(
 			Media_Usage_Backfill_Trigger::class,
 		),

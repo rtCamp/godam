@@ -170,6 +170,7 @@ const CustomAdSettings = ( { layerID } ) => {
 						variant="primary"
 						onClick={ () => OpenVideoSelector() }
 						disabled={ adServer === 'ad-server' }
+						data-test-id="godam-ad-button-select-video"
 					>{ __( 'Select Ad video', 'godam' ) }</Button> ) }
 				</div>
 				{ layer?.ad_url && (
@@ -183,31 +184,34 @@ const CustomAdSettings = ( { layerID } ) => {
 						</div>
 						<div className="ml-[6px] flex flex-col">
 							<Tooltip text={ __( 'Replace Ad Video', 'godam' ) } placement="right">
-								<Button className="!text-brand-neutral-900" icon={ replace } onClick={ OpenVideoSelector } disabled={ adServer === 'ad-server' } />
+								<Button className="!text-brand-neutral-900" icon={ replace } onClick={ OpenVideoSelector } disabled={ adServer === 'ad-server' } data-test-id="godam-ad-button-replace-video" />
 							</Tooltip>
 							<Tooltip text={ __( 'Remove Ad Video', 'godam' ) } placement="right">
-								<Button className="mt-1" icon={ trash } isDestructive onClick={ () => dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: '' } ) ) } disabled={ adServer === 'ad-server' } />
+								<Button className="mt-1" icon={ trash } isDestructive onClick={ () => dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: '' } ) ) } disabled={ adServer === 'ad-server' } data-test-id="godam-ad-button-remove-video" />
 							</Tooltip>
 						</div>
 					</div>
 				) }
 			</div>
 
-			<ToggleControl
-				__nextHasNoMarginBottom
-				className="mb-4 godam-toggle"
-				label={ __( 'Skippable', 'godam' ) }
-				checked={ layer?.skippable ?? false }
-				onChange={ ( value ) =>
-					dispatch( updateLayerField( { id: layer.id, field: 'skippable', value } ) )
-				}
-				help={ __( 'Allow user to skip ad', 'godam' ) }
-				disabled={ adServer === 'ad-server' }
-			/>
+			<div data-test-id="godam-ad-control-skippable">
+				<ToggleControl
+					__nextHasNoMarginBottom
+					className="mb-4 godam-toggle"
+					label={ __( 'Skippable', 'godam' ) }
+					checked={ layer?.skippable ?? false }
+					onChange={ ( value ) =>
+						dispatch( updateLayerField( { id: layer.id, field: 'skippable', value } ) )
+					}
+					help={ __( 'Allow user to skip ad', 'godam' ) }
+					disabled={ adServer === 'ad-server' }
+				/>
+			</div>
 			{
 				layer?.skippable &&
 				<TextControl
 					label={ __( 'Skip time', 'godam' ) }
+					data-test-id="godam-ad-control-skip-time"
 					help={ __( 'Time in seconds after which the skip button will appear', 'godam' ) }
 					value={ layer?.skip_offset }
 					className="mb-4 godam-input"
@@ -221,6 +225,7 @@ const CustomAdSettings = ( { layerID } ) => {
 			<div className="mb-4">
 				<TextControl
 					label={ __( 'Click link', 'godam' ) }
+					data-test-id="godam-ad-control-link"
 					placeholder="https://example"
 					help={ __( 'Enter the URL to redirect when the ad is clicked', 'godam' ) }
 					value={ layer?.click_link }

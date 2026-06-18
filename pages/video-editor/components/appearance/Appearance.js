@@ -14,6 +14,7 @@ import {
 	Button,
 	CustomSelectControl,
 	Notice,
+	SelectControl,
 	TextareaControl,
 	ToggleControl,
 	Icon,
@@ -366,8 +367,8 @@ const Appearance = () => {
 		setOpenSections( ( prev ) => ( { ...prev, [ section ]: ! prev[ section ] } ) );
 	};
 
-	function handleSkipTimeSettings( e ) {
-		const selectedSkipVal = parseFloat( e.selectedItem.name );
+	function handleSkipTimeSettings( value ) {
+		const selectedSkipVal = parseFloat( value );
 		dispatch(
 			updateVideoConfig( {
 				controlBar: {
@@ -447,21 +448,18 @@ const Appearance = () => {
 								onChange={ handleCaptionsToggle }
 								checked={ videoConfig.controlBar.subsCapsButton }
 							/>
-							<CustomSelectControl
-								__next40pxDefaultSize
-								className="godam-input"
-								onChange={ handleSkipTimeSettings }
-								options={ [
-									{ key: '5', name: '5' },
-									{ key: '10', name: '10' },
-									{ key: '30', name: '30' },
-								] }
-								label={ __( 'Adjust Skip Duration', 'godam' ) }
-								value={ {
-									key: videoConfig.controlBar.skipButtons?.forward?.toString() || '10',
-									name: videoConfig.controlBar.skipButtons?.forward?.toString() || '10',
-								} }
-							/>
+							<div className="godam-input">
+								<SelectControl
+									onChange={ handleSkipTimeSettings }
+									options={ [
+										{ label: '5', value: '5' },
+										{ label: '10', value: '10' },
+										{ label: '30', value: '30' },
+									] }
+									label={ __( 'Adjust Skip Duration', 'godam' ) }
+									value={ videoConfig.controlBar.skipButtons?.forward?.toString() || '10' }
+								/>
+							</div>
 						</div>
 					) }
 				</div>

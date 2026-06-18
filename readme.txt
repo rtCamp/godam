@@ -225,20 +225,23 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Feat: Automatically backfill media usage for existing content in the background, via the migration runner in Action Scheduler batches, on upgrade.
 - Tweak: Authenticate GoDAM Central media-usage logging and retry failed notifications with backoff so transient outages do not lose events.
 
-= v1.11.0 (May 27, 2026) =
+= v1.12.2 (June 16, 2026) =
 
-- Tweak: Extended GoDAM analytics scripts to track Reel Pop interactions from GoDAM for Woo.
-- Tweak: Added a migration script to sync existing virtual media to GoDAM Central.
-- Fix: Improved video selection UX in the handpicked mode of the Video Gallery block.
+- Tweak: Aligned `[godam_video]` and `[godam_video_gallery]` shortcode attributes with responsive block attributes.
+- Tweak: Refactored GoDAM Video and GoDAM Video Gallery widgets for both Elementor and WPBakery.
+- Fix: Resolved hotspot layer popup overlapping issues.
+- Fix: Added validation to prevent non-video file selections in the GoDAM Video block.
+- Fix: Added validation to prevent non-audio file selections in the GoDAM Audio block.
+- Fix: Restored vertical spacing for toggle controls in the block inspector across audio, gallery, and player blocks.
+- Fix: Resolved style and spacing issues in the video editor.
 
-= v1.10.2 (May 22, 2026) =
+= v1.12.1 (June 12, 2026) =
 
-- Feat: Enhanced Type 1 video analytics tracking with viewport detection.
-- Fix: Resolved cancelled Type 2 Analytics requests for Gallery iframe.
+- Fix: Resolved security issues.
 
-= v1.10.1 (May 19, 2026) =
+= v1.12.0 (June 11, 2026) =
 
-- Fix: Added patch for plugin deployment.
+- Feat: Added Layer Analytics feature to track how viewers interact with video layers (CTAs, hotspots, forms, and more), with per-layer engagement and conversion metrics in the analytics dashboard.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
