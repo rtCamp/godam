@@ -98,6 +98,8 @@ class Plugin {
 		Pages::get_instance();
 		Media_Library_Ajax::get_instance();
 		Media_Tracker::get_instance();
+		Media_Usage_Tracker::get_instance();
+		Media_Usage_Backfill::get_instance();
 		Seo::get_instance();
 		Rewrite::get_instance();
 		Video_Preview::get_instance();
