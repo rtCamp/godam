@@ -1,6 +1,6 @@
 # Changelog #
 
-## v1.13.0 (June 17, 2026) ##
+## v1.13.0 (June 18, 2026) ##
 
 - Feat: Track GoDAM media usage across post content, blocks, shortcodes, Elementor, block widgets, and featured images — recording where each asset is used and notifying GoDAM Central.
 - Feat: Automatically backfill media usage for existing content in the background, via the migration runner in Action Scheduler batches, on upgrade.
