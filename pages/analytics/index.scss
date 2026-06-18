@@ -661,3 +661,22 @@
 		}
 	}
 }
+
+// GoDAM 2.0 (analytics surface): follow the active WP admin colour scheme.
+// Active period chip on the Playback Performance chart — accent text on a
+// 10% accent tint (replaces the hardcoded GoDAM pink).
+.godam-period-chip--active {
+	background-color: color-mix(in srgb, var(--wp-admin-theme-color) 10%, transparent);
+	color: var(--wp-admin-theme-color);
+}
+
+// Primary CTAs in the shared GoDAM header (Manage Media / Upgrade plan) use a
+// plugin-wide brand gradient. Scope an admin-scheme override to the analytics
+// surfaces only, so the rest of GoDAM keeps the brand gradient for now.
+.toplevel_page_rtgodam,
+.godam_page_rtgodam_analytics {
+
+	.godam-button.is-primary:not(:disabled) {
+		background: var(--wp-admin-theme-color) !important;
+	}
+}

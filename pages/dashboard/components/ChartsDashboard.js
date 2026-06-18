@@ -47,13 +47,17 @@ export function generateUsageDonutChart( selector, usedRaw, totalRaw, type = 'ba
 			.attr( 'x2', '100%' )
 			.attr( 'y2', '0%' );
 
+		// GoDAM 2.0: storage gradient follows the active WP admin colour scheme.
+		const accent = getComputedStyle( document.body ).getPropertyValue( '--wp-admin-theme-color' ).trim() || '#ab3a6c';
+		const accentDark = getComputedStyle( document.body ).getPropertyValue( '--wp-admin-theme-color-darker-20' ).trim() || accent;
+
 		gradient.append( 'stop' )
 			.attr( 'offset', '0%' )
-			.attr( 'stop-color', '#AB3A6C' );
+			.attr( 'stop-color', accent );
 
 		gradient.append( 'stop' )
 			.attr( 'offset', '100%' )
-			.attr( 'stop-color', '#E6533A' );
+			.attr( 'stop-color', accentDark );
 	}
 
 	const fillColor = ( d ) => {

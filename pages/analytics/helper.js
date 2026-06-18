@@ -11,6 +11,21 @@ import DurationIcon from '../../assets/src/images/duration.svg';
  */
 import { __ } from '@wordpress/i18n';
 
+/**
+ * Resolve the active WP admin accent colour. GoDAM 2.0 follows the admin
+ * colour scheme on the analytics surface, so data-viz that used the hardcoded
+ * brand pink reads the live `--wp-admin-theme-color` instead.
+ *
+ * @return {string} A colour string, falling back to the GoDAM pink.
+ */
+function getGodamAccent() {
+	return (
+		getComputedStyle( document.body )
+			.getPropertyValue( '--wp-admin-theme-color' )
+			.trim() || '#ab3a6c'
+	);
+}
+
 function formatTime( seconds ) {
 	const minutes = Math.floor( seconds / 60 );
 	const remainingSeconds = seconds % 60;
@@ -430,7 +445,7 @@ export function generateCountryHeatmap(
 		const colorScale = d3
 			.scaleSequential()
 			.domain( [ 0, maxViews ] )
-			.interpolator( ( t ) => d3.interpolateRgb( '#ddd', '#AB3A6C' )( t ) );
+			.interpolator( ( t ) => d3.interpolateRgb( '#ddd', getGodamAccent() )( t ) );
 
 		const features = worldData.features.filter(
 			( f ) => f.properties.name !== 'Antarctica',
@@ -486,7 +501,7 @@ export function generateCountryHeatmap(
 										fill="none" stroke="#eee" stroke-width="4"/>
 								<!-- progress arc -->
 								<circle cx="25" cy="25" r="${ radius }"
-										fill="none" stroke="#AB3A6C" stroke-width="4"
+										fill="none" stroke="${ getGodamAccent() }" stroke-width="4"
 										stroke-dasharray="${ dash } ${ circumference - dash }"
 										transform="rotate(-90 25 25)"/>
 								 <text
@@ -598,7 +613,7 @@ export function generateCountryHeatmap(
 				.append( 'div' )
 				.style( 'height', '100%' )
 				.style( 'width', `${ ( d.views / totalViews ) * 100 }%` )
-				.style( 'background-color', '#AB3A6C' )
+				.style( 'background-color', 'var(--wp-admin-theme-color)' )
 				.style( 'border-radius', '8px' );
 		} );
 }

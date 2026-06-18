@@ -103,13 +103,22 @@ $media-frame-width: calc(300px + 2 * 24px);
 /**
 * Admin page CSS changes for the top-level EasyDAM page.
 */
+// GoDAM 2.0: the analytics surface (dashboard + per-video analytics) follows
+// the user's WP admin colour scheme; the rest of the plugin keeps the brand
+// pink for now (migrated in a later phase). Capture the real scheme accent on
+// the analytics page bodies *before* the brand pink is applied below, so we can
+// restore it once .godam-admin-root has overridden --wp-admin-theme-color.
 .toplevel_page_rtgodam,
-.godam_page_rtgodam_video_editor,
-.godam_page_rtgodam_help,
-.godam-analytics-container,
-.godam-dashboard-container,
+.godam_page_rtgodam_analytics {
+	--godam-scheme-accent: var(--wp-admin-theme-color);
+}
+
+/* Style for GoDAM admin pages container. Brand pink is the default accent for
+   every GoDAM admin surface; the analytics surface opts back into the WP admin
+   colour scheme via the higher-specificity rule above. */
 .godam-admin-root {
 	--wp-admin-theme-color: #ab3a6c;
+	margin-left: -20px;
 
 	button,
 	a,
@@ -125,11 +134,6 @@ $media-frame-width: calc(300px + 2 * 24px);
 	.circle {
 		--wp-components-color-accent: #e6533a;
 	}
-}
-
-/* Style for GoDAM admin pages container */
-.godam-admin-root {
-	margin-left: -20px;
 
 	&.not-safari {
 		color: #000;
@@ -150,6 +154,25 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 	#root-video-help {
 		margin-left: 20px;
+	}
+}
+
+// Analytics surface (dashboard + per-video analytics) opts back into the WP
+// admin colour scheme. Higher specificity than the base .godam-admin-root rule
+// and placed after it, so it wins without descending-specificity churn.
+.toplevel_page_rtgodam .godam-admin-root,
+.godam_page_rtgodam_analytics .godam-admin-root {
+	--wp-admin-theme-color: var(--godam-scheme-accent);
+
+	button,
+	a,
+	input {
+
+		&:not(.is-destructive) {
+			--wp-components-color-accent: var(--godam-scheme-accent);
+			--wp-components-color-accent-darker-10: var(--wp-admin-theme-color-darker-10);
+			--wp-components-color-accent-darker-20: var(--wp-admin-theme-color-darker-20);
+		}
 	}
 }
 

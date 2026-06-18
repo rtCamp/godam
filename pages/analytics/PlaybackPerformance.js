@@ -524,7 +524,7 @@ export default function PlaybackPerformanceDashboard( {
 							<div
 								className={ `w-4 h-4 rounded ${
 									selectedMetrics.includes( 'engagement_rate' )
-										? 'bg-[#AB3A6C]'
+										? 'bg-[var(--wp-admin-theme-color)]'
 										: 'bg-gray-300'
 								} flex items-center justify-center` }
 							>
@@ -555,7 +555,7 @@ export default function PlaybackPerformanceDashboard( {
 							<div
 								className={ `w-4 h-4 rounded ${
 									selectedMetrics.includes( 'play_rate' )
-										? 'bg-[#AB3A6C]'
+										? 'bg-[var(--wp-admin-theme-color)]'
 										: 'bg-gray-300'
 								} flex items-center justify-center` }
 							>
@@ -582,31 +582,31 @@ export default function PlaybackPerformanceDashboard( {
 
 					<div className="flex gap-1 text-sm">
 						<button
-							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === 'All' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
+							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === 'All' ? 'godam-period-chip--active' : 'bg-zinc-50' }` }
 							onClick={ () => setSelectedPeriod( 'All' ) }
 						>
 							{ _x( 'All', 'All time period', 'godam' ) }
 						</button>
 						<button
-							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '7D' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
+							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '7D' ? 'godam-period-chip--active' : 'bg-zinc-50' }` }
 							onClick={ () => setSelectedPeriod( '7D' ) }
 						>
 							{ _x( '7D', '7 days period', 'godam' ) }
 						</button>
 						<button
-							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '1M' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
+							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '1M' ? 'godam-period-chip--active' : 'bg-zinc-50' }` }
 							onClick={ () => setSelectedPeriod( '1M' ) }
 						>
 							{ _x( '1M', '1 month period', 'godam' ) }
 						</button>
 						<button
-							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '6M' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
+							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '6M' ? 'godam-period-chip--active' : 'bg-zinc-50' }` }
 							onClick={ () => setSelectedPeriod( '6M' ) }
 						>
 							{ _x( '6M', '6 months period', 'godam' ) }
 						</button>
 						<button
-							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '1Y' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
+							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '1Y' ? 'godam-period-chip--active' : 'bg-zinc-50' }` }
 							onClick={ () => setSelectedPeriod( '1Y' ) }
 						>
 							{ _x( '1Y', '1 year period', 'godam' ) }
