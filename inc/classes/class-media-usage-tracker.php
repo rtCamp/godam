@@ -1053,11 +1053,31 @@ class Media_Usage_Tracker {
 	 * Return the GoDAM Central ID for a WP attachment, or an empty string if it
 	 * is not a GoDAM Central media item.
 	 *
+	 * Two distinct workflows attach a GoDAM identity to a WP attachment, each
+	 * storing it under a different meta key — both resolve to the same value: the
+	 * Central Transcoder Job name (e.g. "bdaeqo67q7"), which is exactly what the
+	 * log_media_view / remove_media_view endpoints expect as `media_id`:
+	 *
+	 *   - `_godam_original_id`        — Central media imported into the library as a
+	 *                                   virtual attachment (Media Library picker).
+	 *   - `rtgodam_transcoding_job_id`— media uploaded locally and then transcoded by
+	 *                                   GoDAM (the common upload→transcode workflow);
+	 *                                   set to the Transcoder Job name on submission.
+	 *
+	 * Without the second fallback, the entire upload-then-transcode workflow would
+	 * never notify Central, even though its local usage index is built correctly.
+	 *
 	 * @param int $attachment_id WP attachment post ID.
 	 * @return string GoDAM Central ID, or '' if not a Central media item.
 	 */
 	private function get_godam_id_for_attachment( $attachment_id ) {
-		return get_post_meta( $attachment_id, '_godam_original_id', true );
+		$godam_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+		if ( ! empty( $godam_id ) ) {
+			return $godam_id;
+		}
+
+		$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+		return ! empty( $job_id ) ? $job_id : '';
 	}
 
 	/**
