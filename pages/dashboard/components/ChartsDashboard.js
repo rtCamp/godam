@@ -157,6 +157,7 @@ function main() {
 		page_load: pageLoad,
 		play_time: playTime,
 		total_videos: totalVideos,
+		avg_engagement: avgEngagement,
 	} = dashboardMetrics;
 
 	const totalVideosEl = document.getElementById( 'total-videos' );
@@ -181,6 +182,11 @@ function main() {
 	if ( watchTimeEl ) {
 		// Watch time stays in h m s format; no exact-seconds hover tooltip.
 		watchTimeEl.innerText = formatWatchTime( playTime );
+	}
+
+	const engagementEl = document.getElementById( 'engagement-rate' );
+	if ( engagementEl ) {
+		engagementEl.innerText = `${ ( avgEngagement ?? 0 ).toFixed( 2 ) }%`;
 	}
 
 	const analyticsContainer = document.getElementById( 'video-analytics-container' );

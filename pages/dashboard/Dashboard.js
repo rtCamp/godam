@@ -23,7 +23,7 @@ import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, us
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
 import SingleMetrics from '../analytics/SingleMetrics';
-import PlaysVsViewers from '../analytics/PlaysVsViewers';
+import ViewersGauge from './components/ViewersGauge';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
 import chevronLeft from '../../assets/src/images/chevron-left.svg';
 import chevronRight from '../../assets/src/images/chevron-right.svg';
@@ -467,69 +467,92 @@ const Dashboard = () => {
 						) }
 					</span>
 				</div>
-				<div className="flex-grow">
-					<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-nowrap">
-
-						<SingleMetrics
-							mode="dashboard"
-							metricType="total-videos"
-							label={ __( 'Active Videos', 'godam' ) }
-							tooltipText={ __(
-								'Number of unique videos that received user interactions each day, such as views or plays.',
-								'godam',
-							) }
-							processedAnalyticsHistory={ dashboardMetricsHistory }
-							analyticsDataFetched={ {
-								total_videos: dashboardMetrics?.total_videos ?? 0,
-							} }
-						/>
-
-						<SingleMetrics
-							mode="dashboard"
-							metricType={ 'play-rate' }
-							label={ __( 'Play Rate', 'godam' ) }
-							tooltipText={ __(
-								'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads',
-								'godam',
-							) }
-							processedAnalyticsHistory={ dashboardMetricsHistory }
-							analyticsDataFetched={ dashboardMetrics }
-						/>
-
-						<SingleMetrics
-							mode="dashboard"
-							metricType={ 'watch-time' }
-							label={ __( 'Watch Time', 'godam' ) }
-							tooltipText={ __(
-								'Total time the video has been watched, aggregated across all plays',
-								'godam',
-							) }
-							processedAnalyticsHistory={ dashboardMetricsHistory }
-							analyticsDataFetched={ dashboardMetrics }
-						/>
-
-						<PlaysVsViewers
-							mode="dashboard"
-							plays={ dashboardMetrics?.plays ?? 0 }
-							uniqueViewers={ dashboardMetrics?.unique_viewers ?? 0 }
-							showRatio={ true }
-							isLoading={ isDashboardMetricsLoading }
-							processedAnalyticsHistory={ dashboardMetricsHistory }
-						/>
-					</div>
+				<div className="godam-dashboard-head">
+					<h1 className="godam-dashboard-title">{ __( 'Dashboard', 'godam' ) }</h1>
 				</div>
 
-				<div className="mx-auto py-4">
-					<div className="playback-country-container flex flex-wrap">
-						<div className="playback-performance min-w-full lg:min-w-[600px]" id="global-analytics-container">
+				<div className="godam-dashboard-grid">
+					{ /* Left column — Total Plays / Unique Viewers + geography. */ }
+					<div className="godam-card godam-viewers-card">
+						<div className="godam-card__head">
+							<h2>{ __( 'Total Plays / Unique Viewers', 'godam' ) }</h2>
+						</div>
+						<ViewersGauge
+							plays={ dashboardMetrics?.plays ?? 0 }
+							uniqueViewers={ dashboardMetrics?.unique_viewers ?? 0 }
+						/>
+						<div className="country-views">
+							<div className="country-views-map" id="map-container"></div>
+							<div className="country-views-table" id="table-container"></div>
+						</div>
+					</div>
+
+					{ /* Right column — Insights KPIs + Playback Performance. */ }
+					<div className="godam-dashboard-right">
+						<div className="godam-card godam-insights-card">
+							<div className="godam-card__head">
+								<h2>{ __( 'Insights', 'godam' ) }</h2>
+								<span className="godam-pill">{ __( 'All time', 'godam' ) }</span>
+							</div>
+							<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-nowrap">
+
+								<SingleMetrics
+									mode="dashboard"
+									metricType="total-videos"
+									label={ __( 'Active Videos', 'godam' ) }
+									tooltipText={ __(
+										'Number of unique videos that received user interactions each day, such as views or plays.',
+										'godam',
+									) }
+									processedAnalyticsHistory={ dashboardMetricsHistory }
+									analyticsDataFetched={ {
+										total_videos: dashboardMetrics?.total_videos ?? 0,
+									} }
+								/>
+
+								<SingleMetrics
+									mode="dashboard"
+									metricType={ 'play-rate' }
+									label={ __( 'Avg. Play Rate', 'godam' ) }
+									tooltipText={ __(
+										'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads',
+										'godam',
+									) }
+									processedAnalyticsHistory={ dashboardMetricsHistory }
+									analyticsDataFetched={ dashboardMetrics }
+								/>
+
+								<SingleMetrics
+									mode="dashboard"
+									metricType={ 'watch-time' }
+									label={ __( 'Watch Time', 'godam' ) }
+									tooltipText={ __(
+										'Total time the video has been watched, aggregated across all plays',
+										'godam',
+									) }
+									processedAnalyticsHistory={ dashboardMetricsHistory }
+									analyticsDataFetched={ dashboardMetrics }
+								/>
+
+								<SingleMetrics
+									mode="dashboard"
+									metricType={ 'engagement-rate' }
+									label={ __( 'Engagement Rate', 'godam' ) }
+									tooltipText={ __(
+										'Average share of each video that viewers watched, across all plays.',
+										'godam',
+									) }
+									processedAnalyticsHistory={ dashboardMetricsHistory }
+									analyticsDataFetched={ dashboardMetrics }
+								/>
+							</div>
+						</div>
+
+						<div className="playback-performance" id="global-analytics-container">
 							<PlaybackPerformanceDashboard
 								initialData={ dashboardMetricsHistory }
 								mode="dashboard"
 							/>
-						</div>
-						<div className="country-views min-w-full md:min-w-[300px]">
-							<div className="country-views-map" id="map-container"></div>
-							<div className="country-views-table" id="table-container"></div>
 						</div>
 					</div>
 				</div>

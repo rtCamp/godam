@@ -438,3 +438,186 @@
 		max-width: 420px;
 	}
 }
+
+// =====================================================================
+// GoDAM 2.0 dashboard reskin (P0, FE-only) — "Insights" layout.
+// =====================================================================
+.godam-dashboard-head {
+	margin-bottom: 16px;
+
+	.godam-dashboard-title {
+		margin: 0;
+		font-size: 22px;
+		font-weight: 600;
+		color: #1e1e1e;
+	}
+}
+
+.godam-dashboard-grid {
+	display: grid;
+	grid-template-columns: minmax(280px, 1fr) 2fr;
+	gap: 16px;
+	align-items: start;
+
+	@media (max-width: 1024px) {
+		grid-template-columns: 1fr;
+	}
+}
+
+.godam-dashboard-right {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	// Allow the responsive chart/SVG to shrink within the grid track.
+	min-width: 0;
+}
+
+.godam-card {
+	background: #fff;
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	padding: 20px;
+
+	&__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		margin-bottom: 16px;
+
+		h2 {
+			margin: 0;
+			font-size: 16px;
+			font-weight: 600;
+			color: #1e1e1e;
+		}
+	}
+}
+
+.godam-pill {
+	font-size: 12px;
+	font-weight: 500;
+	color: #50575e;
+	border: 1px solid #e5e7eb;
+	border-radius: 6px;
+	padding: 4px 10px;
+	white-space: nowrap;
+}
+
+// Left card: viewers gauge + geography. The geography block is the plain
+// .country-views markup (its card styling only applies inside the old
+// .playback-country-container, so style it for this context here).
+.godam-viewers-card {
+
+	.country-views {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		margin-top: 8px;
+
+		.country-views-map {
+			width: 100%;
+		}
+
+		.country-views-table {
+			width: 100%;
+			max-height: 220px;
+			overflow-y: auto;
+			padding-right: 4px;
+
+			scrollbar-width: thin;
+			scrollbar-color: var(--wp-admin-theme-color, #ab3a6c) #f0f0f0;
+
+			&::-webkit-scrollbar {
+				width: 4px;
+			}
+
+			&::-webkit-scrollbar-thumb {
+				background-color: var(--wp-admin-theme-color, #ab3a6c);
+				border-radius: 3px;
+			}
+		}
+	}
+}
+
+.godam-gauge {
+
+	&__chart {
+		position: relative;
+		width: 100%;
+		max-width: 260px;
+		margin: 0 auto;
+	}
+
+	&__svg {
+		display: block;
+		width: 100%;
+		height: auto;
+		overflow: visible;
+	}
+
+	&__track {
+		stroke: #eef0f2;
+	}
+
+	&__fill {
+		stroke: var(--wp-admin-theme-color, #ab3a6c);
+		transition: stroke-dasharray 0.4s ease;
+	}
+
+	&__center {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 4px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 2px;
+	}
+
+	&__value {
+		font-size: 30px;
+		font-weight: 700;
+		line-height: 1;
+		color: #1e1e1e;
+	}
+
+	&__label {
+		font-size: 12px;
+		color: #757575;
+	}
+
+	&__stats {
+		display: flex;
+		justify-content: center;
+		gap: 28px;
+		margin-top: 12px;
+	}
+
+	&__stat {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	&__stat-value {
+		font-size: 16px;
+		font-weight: 600;
+		color: #1e1e1e;
+	}
+
+	&__stat-label {
+		font-size: 11px;
+		color: #757575;
+	}
+}
+
+// Insights card: the KPI cards keep their existing responsive flex layout
+// (4-across at desktop, wrapping below). Just let them shrink within the card.
+.godam-insights-card {
+
+	.single-metrics-info-container > * {
+		min-width: 0;
+	}
+}
