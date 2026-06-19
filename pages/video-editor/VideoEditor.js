@@ -7,9 +7,8 @@ import { useSelector, useDispatch } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, TabPanel, Snackbar, Tooltip, Spinner } from '@wordpress/components';
+import { Snackbar } from '@wordpress/components';
 import { __, _n } from '@wordpress/i18n';
-import { chartBar, copy, seen } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -17,6 +16,10 @@ import { chartBar, copy, seen } from '@wordpress/icons';
 import VideoJSPlayer from './VideoJSPlayer';
 import SidebarLayers from './components/SidebarLayers';
 import Appearance from './components/appearance/Appearance';
+import EditorTopBar from './components/editor-shell/EditorTopBar';
+import EditorStatsRow from './components/editor-shell/EditorStatsRow';
+import EditorTabRail from './components/editor-shell/EditorTabRail';
+import ConfigurationPanel from './components/editor-shell/ConfigurationPanel';
 import {
 	initializeStore,
 	saveVideoMeta,
@@ -69,6 +72,8 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
 	const chapters = useSelector( ( state ) => state.videoReducer.chapters );
 	const isChanged = useSelector( ( state ) => state.videoReducer.isChanged );
+	const currentTab = useSelector( ( state ) => state.videoReducer.currentTab );
+	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
 
 	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
@@ -88,6 +93,27 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 			window.removeEventListener( 'beforeunload', handleBeforeUnload );
 		};
 	}, [ isChanged ] );
+
+	// Backspace returns from a selected layer to the layer list (ignoring text fields).
+	useEffect( () => {
+		const handleKeyDown = ( event ) => {
+			if (
+				event.target.tagName === 'INPUT' ||
+				event.target.tagName === 'TEXTAREA' ||
+				event.target.isContentEditable
+			) {
+				return;
+			}
+
+			if ( event.key === 'Backspace' && currentLayer ) {
+				event.preventDefault();
+				dispatch( setCurrentLayer( null ) );
+			}
+		};
+
+		document.addEventListener( 'keydown', handleKeyDown );
+		return () => document.removeEventListener( 'keydown', handleKeyDown );
+	}, [ currentLayer, dispatch ] );
 
 	useEffect( () => {
 		// Collapse the admin sidebar
@@ -356,40 +382,6 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		setShowSnackbar( false );
 	};
 
-	const tabConfig = [
-		{
-			name: 'layers',
-			title: __( 'Layers', 'godam' ),
-			className: 'flex-1 justify-center items-center',
-			component: (
-				<SidebarLayers
-					currentTime={ currentTime }
-					onSelectLayer={ seekToTime }
-					onPauseVideo={ pauseVideo }
-					duration={ duration }
-				/>
-			),
-		},
-		{
-			name: 'player-settings',
-			title: __( 'Player Settings', 'godam' ),
-			className: 'flex-1 justify-center items-center',
-			component: <Appearance />,
-		},
-		{
-			name: 'chapters',
-			title: __( 'Chapters', 'godam' ),
-			className: 'flex-1 justify-center items-center',
-			component: (
-				<Chapters
-					currentTime={ currentTime }
-					duration={ duration }
-					formatTimeForInput={ formatTimeForInput }
-				/>
-			),
-		},
-	];
-
 	if ( isAttachmentConfigLoading ) {
 		return (
 			<div className="flex gap-5 p-5">
@@ -409,54 +401,51 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		);
 	}
 
-	document.addEventListener( 'keydown', ( event ) => {
-		if (
-			event.target.tagName === 'INPUT' ||
-			event.target.tagName === 'TEXTAREA' ||
-			event.target.isContentEditable
-		) {
-			return;
-		}
-
-		if ( event.key === 'Backspace' ) {
-			event.preventDefault();
-
-			const backButton = document.querySelector( '.components-button.has-icon' );
-			if ( backButton ) {
-				backButton.click();
-			}
-		}
-	} );
+	const videoTitle =
+		attachmentConfig?.title?.rendered ||
+		attachmentConfig?.title ||
+		__( 'Untitled video', 'godam' );
 
 	return (
-		<>
-			<div className="video-editor-container">
-				<div className="py-3 aside relative pl-4">
-					<div id="sidebar-content" className="godam-video-editor">
-						<TabPanel
-							className="godam-video-editor-tabs"
-							tabs={ tabConfig }
-							onSelect={ ( tabName ) => dispatch( setCurrentTab( tabName ) ) }
-						>
-							{ ( tab ) => tab.component }
-						</TabPanel>
-					</div>
+		<div className="godam-video-editor">
+			<EditorTopBar
+				title={ videoTitle }
+				layerCount={ layers.length }
+				attachmentID={ attachmentID }
+				isChanged={ isChanged }
+				isSaving={ isSavingMeta }
+				onBack={ onBackToAttachmentPicker }
+				onSave={ handleSaveAttachmentMeta }
+				onCopy={ handleCopyGoDAMVideoBlock }
+			/>
 
-					<Button
-						className="godam-button absolute right-4 bottom-8 video-editor-save-button"
-						variant="primary"
-						icon={ isSavingMeta && <Spinner /> }
-						onClick={ handleSaveAttachmentMeta }
-						isBusy={ isSavingMeta }
-						disabled={ ! isChanged }
-						data-test-id="godam-video-editor-button-save"
-					>
-						{ isSavingMeta ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
-					</Button>
-				</div>
+			<EditorStatsRow attachmentID={ attachmentID } />
 
-				<main className="flex flex-col items-center p-4 overflow-y-auto">
+			<div className="godam-video-editor__body">
+				<EditorTabRail
+					currentTab={ currentTab }
+					onSelect={ ( tabName ) => dispatch( setCurrentTab( tabName ) ) }
+				/>
 
+				<aside className="godam-video-editor__panel">
+					{ currentTab === 'layers' && (
+						<SidebarLayers
+							currentTime={ currentTime }
+							onSelectLayer={ seekToTime }
+							onPauseVideo={ pauseVideo }
+						/>
+					) }
+					{ currentTab === 'player-settings' && <Appearance /> }
+					{ currentTab === 'chapters' && (
+						<Chapters
+							currentTime={ currentTime }
+							duration={ duration }
+							formatTimeForInput={ formatTimeForInput }
+						/>
+					) }
+				</aside>
+
+				<main className="godam-video-editor__stage">
 					{
 						// Display a success message when video changes are saved.
 						showSaveMessage && (
@@ -473,54 +462,6 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 							{ snackbarMessage }
 						</Snackbar>
 					) }
-
-					<div className="flex space-x-2 justify-end items-center w-full mb-4">
-						{
-							window?.userData?.validApiKey &&
-							<Button
-								variant="secondary"
-								href={ `${ window?.godamRestRoute?.homeUrl }/wp-admin/admin.php?page=rtgodam_analytics&id=${ attachmentID }` }
-								target="_blank"
-								className="godam-button"
-								icon={ chartBar }
-								data-test-id="godam-video-editor-button-analytics"
-							>
-								{ __( 'Analytics', 'godam' ) }
-							</Button>
-						}
-						<Tooltip
-							text={
-								<p>
-									{ __( 'You can copy the block into one of the two options:', 'godam' ) }
-									<br />
-									{ __( '1. Insert as a block in the Block editor.', 'godam' ) }
-									<br />
-									{ __( '2. Insert as HTML content in the Block editor.', 'godam' ) }
-								</p>
-							}
-						>
-							<Button
-								variant="primary"
-								icon={ copy }
-								iconPosition="left"
-								onClick={ handleCopyGoDAMVideoBlock }
-								className="godam-button"
-								data-test-id="godam-video-editor-button-copy-block"
-							>
-								{ __( 'Copy Block', 'godam' ) }
-							</Button>
-						</Tooltip>
-						<Button
-							variant="primary"
-							href={ `${ window?.godamRestRoute?.homeUrl }?godam_page=video-preview&id=${ attachmentID }` }
-							target="_blank"
-							className="godam-button"
-							icon={ seen }
-							data-test-id="godam-video-editor-button-preview"
-						>
-							{ __( 'Preview', 'godam' ) }
-						</Button>
-					</div>
 
 					{ attachmentConfig && sources.length > 0 && (
 						<div className="w-full video-canvas-wrapper">
@@ -569,8 +510,14 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 						</div>
 					) }
 				</main>
+
+				{ currentTab === 'layers' && (
+					<aside className="godam-video-editor__config">
+						<ConfigurationPanel duration={ duration } />
+					</aside>
+				) }
 			</div>
-		</>
+		</div>
 	);
 };
 

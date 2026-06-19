@@ -27,7 +27,6 @@ import { Button, Icon, Tooltip } from '@wordpress/components';
 import { plus, preformatted, customLink, arrowRight, video, customPostType, thumbsUp, error } from '@wordpress/icons';
 import { useState, useEffect, useCallback } from '@wordpress/element';
 
-import Layer from './layers/Layer';
 import LayerSelector from './LayerSelector.jsx';
 
 /**
@@ -139,11 +138,10 @@ export const layerTypes = [
  * @param {number}   param0.currentTime   - The current playback time of the video (in seconds or milliseconds).
  * @param {Function} param0.onSelectLayer - Callback function invoked when a layer is selected.
  * @param {Function} param0.onPauseVideo  - Function to pause the video playback.
- * @param {number}   param0.duration      - The total duration of the video (in seconds or milliseconds).
  *
  * @return {JSX.Element} The rendered SidebarLayers component.
  */
-const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } ) => {
+const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const loading = useSelector( ( state ) => state.videoReducer.loading );
 	const addLayerModalTime = useSelector( ( state ) => state.videoReducer.addLayerModalTime );
@@ -170,7 +168,6 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 	}, [ addLayerModalTime, openModal ] );
 
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
-	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
 	const adServer = videoConfig?.adServer ?? 'self-hosted';
 
@@ -255,153 +252,143 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 	};
 
 	return (
-		<>
+		<div id="sidebar-layers" className="pt-4 h-max">
 			{
-				! currentLayer ? (
-					<div id="sidebar-layers" className="pt-4 h-max">
-						{
-							sortedLayers?.map( ( layer ) => {
-								let addWarning = false;
-								const layerData = layerTypes.find( ( l ) => l.type === layer.type );
-								const formType = 'form' === layerData?.type ? layerData?.formType[ layer.form_type ?? 'gravity' ] : false;
-								const icon = formType ? formType?.icon : ( layerData?.icon || layerData?.iconUrl );
-								const layerText = formType ? formType?.layerText : ( layerData?.layerText || layerData?.title );
+				sortedLayers?.map( ( layer ) => {
+					let addWarning = false;
+					const layerData = layerTypes.find( ( l ) => l.type === layer.type );
+					const formType = 'form' === layerData?.type ? layerData?.formType[ layer.form_type ?? 'gravity' ] : false;
+					const icon = formType ? formType?.icon : ( layerData?.icon || layerData?.iconUrl );
+					const layerText = formType ? formType?.layerText : ( layerData?.layerText || layerData?.title );
 
-								/**
-								 * Get Tooltip message.
-								 */
-								const tooltipMessage = ( () => {
-									if ( formType && ! formType.isActive ) {
-										return formType.tooltipMessage;
-									}
-
-									if ( 'ad-server' === adServer && 'ad' === layerData?.type ) {
-										return layerData?.tooltipMessage;
-									}
-
-									if ( layerData?.isActive === false ) {
-										return layerData?.tooltipMessage ?? '';
-									}
-
-									return '';
-								} )();
-
-								if ( '' !== tooltipMessage ) {
-									addWarning = true;
-								}
-
-								// Disable the button when the required plugin/feature is inactive
-								// (e.g. form plugin not installed, or WooCommerce layer API key missing/expired).
-								const isLayerDisabled = ( formType && ! formType.isActive ) || layerData?.isActive === false;
-
-								return (
-									<Tooltip
-										key={ layer.id }
-										text={ tooltipMessage }
-										placement="right"
-									>
-										<div className="border rounded-lg mb-2">
-											<Button
-												className={ `w-full flex justify-between items-center px-2 py-3 border-1 rounded-lg h-auto hover:bg-gray-50 cursor-pointer border-[#e5e7eb] ${ addWarning ? 'bg-orange-50 hover:bg-orange-50' : '' }` }
-												onClick={ () => {
-													dispatch( setCurrentLayer( layer ) );
-													onSelectLayer( layer.displayTime );
-												} }
-												disabled={ isLayerDisabled }
-											>
-												<div className="flex items-center gap-2">
-													{
-														formType || ( typeof icon === 'string' && icon ) ? (
-															<img src={ icon } alt={ layer.type } className="w-6 h-6" />
-														) : (
-															<Icon icon={ icon } />
-														)
-													}
-													<p className="m-0 text-base">{ layerText } layer at <b>{ layer.displayTime }s</b></p>
-													{ layer.badge && (
-														<span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded-full">
-															{ layer.badge }
-														</span>
-													) }
-												</div>
-												<div>
-													<Icon icon={ arrowRight } />
-												</div>
-											</Button>
-										</div>
-									</Tooltip>
-								);
-							} )
-						}
-						{
-							! loading && layers.length === 0 && (
-								<>
-									<h3 className="text-2xl m-0 text-center">{ __( 'No layers added', 'godam' ) }</h3>
-								</>
-							)
-						}
-						{
-							loading && (
-								<div className="loading-skeleton">
-									<div className="skeleton-container skeleton-container-short">
-										<div className="skeleton-header"></div>
-									</div>
-									<div className="skeleton-container skeleton-container-short">
-										<div className="skeleton-header"></div>
-									</div>
-									<div className="skeleton-container skeleton-container-short">
-										<div className="skeleton-header"></div>
-									</div>
-								</div>
-							)
+					/**
+					 * Get Tooltip message.
+					 */
+					const tooltipMessage = ( () => {
+						if ( formType && ! formType.isActive ) {
+							return formType.tooltipMessage;
 						}
 
-						{
-							! loading && (
-								<div className="mt-10 flex justify-center flex-col items-center">
-									<Button
-										className="godam-button w-fit"
-										variant="primary"
-										id="add-layer-btn"
-										icon={ plus }
-										iconPosition="left"
-										onClick={ openModal }
-										disabled={ ! currentTime || layers.find( ( l ) => ( l.displayTime ) === ( currentTime ) ) }
-									>
+						if ( 'ad-server' === adServer && 'ad' === layerData?.type ) {
+							return layerData?.tooltipMessage;
+						}
+
+						if ( layerData?.isActive === false ) {
+							return layerData?.tooltipMessage ?? '';
+						}
+
+						return '';
+					} )();
+
+					if ( '' !== tooltipMessage ) {
+						addWarning = true;
+					}
+
+					// Disable the button when the required plugin/feature is inactive
+					// (e.g. form plugin not installed, or WooCommerce layer API key missing/expired).
+					const isLayerDisabled = ( formType && ! formType.isActive ) || layerData?.isActive === false;
+
+					return (
+						<Tooltip
+							key={ layer.id }
+							text={ tooltipMessage }
+							placement="right"
+						>
+							<div className="border rounded-lg mb-2">
+								<Button
+									className={ `w-full flex justify-between items-center px-2 py-3 border-1 rounded-lg h-auto hover:bg-gray-50 cursor-pointer border-[#e5e7eb] ${ addWarning ? 'bg-orange-50 hover:bg-orange-50' : '' }` }
+									onClick={ () => {
+										dispatch( setCurrentLayer( layer ) );
+										onSelectLayer( layer.displayTime );
+									} }
+									disabled={ isLayerDisabled }
+								>
+									<div className="flex items-center gap-2">
 										{
-											// translators: %s is the current time in seconds.
-											sprintf( __( 'Add layer at %ss', 'godam' ), currentTime )
+											formType || ( typeof icon === 'string' && icon ) ? (
+												<img src={ icon } alt={ layer.type } className="w-6 h-6" />
+											) : (
+												<Icon icon={ icon } />
+											)
 										}
-									</Button>
-									{ layers.find( ( l ) => l.displayTime === currentTime ) && (
-										<p className="text-slate-500 text-center">
-											{ __( 'There is already a layer at this timestamp. Please choose a different timestamp.', 'godam' ) }
-										</p>
-									) }
-									{ ! currentTime && (
-										<div className="flex items-center gap-2">
-											<Icon icon={ error } className="w-4 h-4" style={ { fill: '#EAB308' } } />
-											<p className="text-center text-[#AB3A6C]">{ __( 'Play video to add layer.', 'godam' ) }</p>
-										</div>
-									) }
-								</div>
-							)
-						}
-
-						{ isOpen && (
-							<LayerSelector
-								closeModal={ closeModal }
-								addNewLayer={ addNewLayer }
-							/>
-						) }
-					</div>
-				) : (
-					<div id="sidebar-layers">
-						<Layer layer={ currentLayer } goBack={ () => dispatch( setCurrentLayer( null ) ) } duration={ duration } />
+										<p className="m-0 text-base">{ layerText } layer at <b>{ layer.displayTime }s</b></p>
+										{ layer.badge && (
+											<span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded-full">
+												{ layer.badge }
+											</span>
+										) }
+									</div>
+									<div>
+										<Icon icon={ arrowRight } />
+									</div>
+								</Button>
+							</div>
+						</Tooltip>
+					);
+				} )
+			}
+			{
+				! loading && layers.length === 0 && (
+					<>
+						<h3 className="text-2xl m-0 text-center">{ __( 'No layers added', 'godam' ) }</h3>
+					</>
+				)
+			}
+			{
+				loading && (
+					<div className="loading-skeleton">
+						<div className="skeleton-container skeleton-container-short">
+							<div className="skeleton-header"></div>
+						</div>
+						<div className="skeleton-container skeleton-container-short">
+							<div className="skeleton-header"></div>
+						</div>
+						<div className="skeleton-container skeleton-container-short">
+							<div className="skeleton-header"></div>
+						</div>
 					</div>
 				)
 			}
-		</>
+
+			{
+				! loading && (
+					<div className="mt-10 flex justify-center flex-col items-center">
+						<Button
+							className="godam-button w-fit"
+							variant="primary"
+							id="add-layer-btn"
+							icon={ plus }
+							iconPosition="left"
+							onClick={ openModal }
+							disabled={ ! currentTime || layers.find( ( l ) => ( l.displayTime ) === ( currentTime ) ) }
+						>
+							{
+								// translators: %s is the current time in seconds.
+								sprintf( __( 'Add layer at %ss', 'godam' ), currentTime )
+							}
+						</Button>
+						{ layers.find( ( l ) => l.displayTime === currentTime ) && (
+							<p className="text-slate-500 text-center">
+								{ __( 'There is already a layer at this timestamp. Please choose a different timestamp.', 'godam' ) }
+							</p>
+						) }
+						{ ! currentTime && (
+							<div className="flex items-center gap-2">
+								<Icon icon={ error } className="w-4 h-4" style={ { fill: '#EAB308' } } />
+								<p className="text-center text-[#AB3A6C]">{ __( 'Play video to add layer.', 'godam' ) }</p>
+							</div>
+						) }
+					</div>
+				)
+			}
+
+			{ isOpen && (
+				<LayerSelector
+					closeModal={ closeModal }
+					addNewLayer={ addNewLayer }
+				/>
+			) }
+		</div>
 	);
 };
 
