@@ -941,7 +941,7 @@ function VideoEdit( {
 							</strong>
 						</div>
 						<p className="godam-upgrade-notice__description">
-							{ __( "You don't have an active plan to use this feature. Upgrade now to use unlimited features as part of GoDAM suit.", 'godam' ) }
+							{ __( "You don't have an active plan to use this feature. Upgrade now to use unlimited features as part of GoDAM suite.", 'godam' ) }
 						</p>
 						<Button
 							variant="primary"
@@ -988,9 +988,10 @@ function VideoEdit( {
 				) }
 				{ ! isInsideQueryLoop && (
 					<PanelBody title={ __( 'Hover Options', 'godam' ) } data-test-id="godam-video-panel-hover-options">
-						{ window.pluginInfo?.validApiKey
-							? hoverOptionsPanelContent
-							: <div className="godam-components-disabled"><Disabled>{ hoverOptionsPanelContent }</Disabled></div>
+						{ /* Hover Options are disabled when autoplay is enabled or API key is invalid */ }
+						{ ( ! window.pluginInfo?.validApiKey || autoplay )
+							? <div className="godam-components-disabled"><Disabled>{ hoverOptionsPanelContent }</Disabled></div>
+							: hoverOptionsPanelContent
 						}
 					</PanelBody>
 				) }

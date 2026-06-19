@@ -110,7 +110,7 @@ export const PlaybackControls = ( { setAttributes, attributes } ) => {
 				onChange={ toggleFactory.showSubtitles }
 				checked={ !! showSubtitles }
 			/>
-			{ showSubtitles && hasNoTracks && (
+			{ showSubtitles && hasNoTracks && ( id || cmmId ) && (
 				<div className="godam-subtitle-notice notice notice-warning">
 					<p>
 						{ __( 'No subtitle file uploaded.', 'godam' ) }
