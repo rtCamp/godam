@@ -9,7 +9,7 @@ import { Button, Modal, TextControl, Notice } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
 import { useDispatch, useSelector } from 'react-redux';
 import { arrowLeft, trash } from '@wordpress/icons';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -68,8 +68,11 @@ const LayersHeader = ( { layer, goBack, duration, layerName: customLayerName } )
 			<div className="flex justify-between items-center border-b mb-3">
 				<Button icon={ arrowLeft } onClick={ goBack } />
 				<p className="text-base flex items-center gap-1">
-					{ layerName }
-					{ __( 'layer at', 'godam' ) }{ isEditing ? (
+					{ sprintf(
+						/* translators: %s is the layer type name, e.g. CTA or Hotspot. */
+						__( '%s layer at', 'godam' ),
+						layerName || '',
+					) }{ isEditing ? (
 						<TextControl
 							__nextHasNoMarginBottom={ true }
 							__next40pxDefaultSize={ false }

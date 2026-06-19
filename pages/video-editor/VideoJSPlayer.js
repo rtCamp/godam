@@ -59,7 +59,7 @@ const layerTypes = [
 export const VideoJS = ( props ) => {
 	const videoRef = useRef( null );
 	const playerRef = useRef( null );
-	const { options, onReady, onTimeupdate, playbackTime, formatTimeForInput } =
+	const { options, onReady, onTimeupdate, formatTimeForInput } =
     props;
 
 	const [ duration, setDuration ] = useState( 0 );
@@ -372,8 +372,6 @@ export const VideoJS = ( props ) => {
 					<div id="easydam-layer-placeholder" />
 				</div>
 			</div>
-
-			<div className="mt-2">Time: { playbackTime }</div>
 
 			{
 				currentTab === 'layers' && (

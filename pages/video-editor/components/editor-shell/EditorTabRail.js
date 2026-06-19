@@ -3,7 +3,11 @@
  */
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { stack, cog, postList } from '@wordpress/icons';
+
+/**
+ * Internal dependencies
+ */
+import { LayersTabIcon, SettingsTabIcon, ChaptersTabIcon } from './icons';
 
 /**
  * Vertical icon rail that switches the active editor section.
@@ -20,9 +24,9 @@ import { stack, cog, postList } from '@wordpress/icons';
  */
 const EditorTabRail = ( { currentTab, onSelect } ) => {
 	const tabs = [
-		{ name: 'layers', label: __( 'Layers', 'godam' ), icon: stack },
-		{ name: 'player-settings', label: __( 'Settings', 'godam' ), icon: cog },
-		{ name: 'chapters', label: __( 'Chapters', 'godam' ), icon: postList },
+		{ name: 'layers', label: __( 'Layers', 'godam' ), icon: LayersTabIcon },
+		{ name: 'player-settings', label: __( 'Settings', 'godam' ), icon: SettingsTabIcon },
+		{ name: 'chapters', label: __( 'Chapters', 'godam' ), icon: ChaptersTabIcon },
 	];
 
 	return (

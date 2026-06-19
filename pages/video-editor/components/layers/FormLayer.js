@@ -7,7 +7,7 @@ import Editor from '@monaco-editor/react';
 /**
  * WordPress dependencies
  */
-import { ToggleControl, Panel, PanelBody } from '@wordpress/components';
+import { ToggleControl, Panel, PanelBody, SelectControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -104,6 +104,22 @@ export const FormLayerComponentType = {
 };
 
 /**
+ * Display labels for the supported form plugins (used by the plugin selector).
+ */
+const FORM_PLUGIN_LABELS = {
+	gravity: __( 'Gravity Forms', 'godam' ),
+	cf7: __( 'Contact Form 7', 'godam' ),
+	jetpack: __( 'Jetpack Forms', 'godam' ),
+	wpforms: __( 'WPForms', 'godam' ),
+	sureforms: __( 'SureForms', 'godam' ),
+	forminator: __( 'Forminator Forms', 'godam' ),
+	fluentforms: __( 'Fluent Forms', 'godam' ),
+	everestforms: __( 'Everest Forms', 'godam' ),
+	ninjaforms: __( 'Ninja Forms', 'godam' ),
+	metform: __( 'MetForm', 'godam' ),
+};
+
+/**
  * Component to render and manage a form layer within the video editor.
  *
  * @param {Object}   param0          - Props passed to the FormLayer component.
@@ -121,6 +137,12 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 	const FormLayerComponent = FormLayerData?.component;
 	const isPluginActive = FormLayerData?.isActive;
 
+	// Active form plugins, offered as a switcher when more than one is available
+	// (the "Add layer" menu only seeds a default plugin).
+	const activeFormOptions = Object.entries( FormLayerComponentType )
+		.filter( ( [ , cfg ] ) => cfg.isActive )
+		.map( ( [ key ] ) => ( { label: FORM_PLUGIN_LABELS[ key ] || key, value: key } ) );
+
 	// Get the form ID using the centralized configuration
 	const getFormId = () => {
 		return getFormIdFromLayer( layer, layer?.form_type );
@@ -130,6 +152,18 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 		<>
 			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
 
+			{ activeFormOptions.length > 1 && (
+				<SelectControl
+					__nextHasNoMarginBottom
+					__next40pxDefaultSize
+					className="mb-4"
+					label={ __( 'Form plugin', 'godam' ) }
+					value={ layer?.form_type ?? 'gravity' }
+					options={ activeFormOptions }
+					onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'form_type', value } ) ) }
+				/>
+			) }
+
 			<FormLayerComponent layerID={ layer.id } />
 
 			<AjaxWarning formType={ layer?.form_type } formId={ getFormId() } />
@@ -137,7 +171,7 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 			<div data-test-id="godam-form-control-allow-skip">
 				<ToggleControl
 					__nextHasNoMarginBottom
-					className="mb-4 godam-toggle"
+					className="mb-4"
 					label={ __( 'Allow user to skip', 'godam' ) }
 					checked={ layer.allow_skip }
 					onChange={ ( value ) =>

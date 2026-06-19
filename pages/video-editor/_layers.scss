@@ -1,12 +1,18 @@
 // =============================================================
-// Video Editor — Layers tab (list panel)
+// Video Editor — Layers tab (list panel + add-layer menu)
 // Scoped under `.godam-video-editor`. Self-contained; no
-// `_common.scss` usage. Chrome is @wordpress/components.
+// `_common.scss` usage and NO hardcoded colours — accent comes
+// from the WordPress component accent variable and neutrals are
+// derived from `currentColor`.
+// The add-layer dropdown content is portaled to <body>, so its
+// rules live OUTSIDE the editor scope (keyed off the popover class).
 // =============================================================
 
-$ve-border: #e0e0e0;
-$ve-muted: #757575;
-$ve-ink: #1e1e1e;
+$ve-accent: var(--wp-components-color-accent);
+$ve-accent-tint: color-mix(in srgb, var(--wp-components-color-accent) 8%, transparent);
+$ve-muted: color-mix(in srgb, currentcolor 55%, transparent);
+$ve-faint: color-mix(in srgb, currentcolor 5%, transparent);
+$ve-circle: color-mix(in srgb, currentcolor 6%, transparent);
 
 .godam-video-editor {
 
@@ -23,20 +29,24 @@ $ve-ink: #1e1e1e;
 			line-height: 1.4;
 		}
 
+		// Split "Add layer" button (Dropdown wrapper holds both buttons).
 		&__add {
 			display: flex;
 			align-items: stretch;
-			gap: 0.5rem;
 			margin-bottom: 0.5rem;
 		}
 
 		&__add-button {
 			flex: 1 1 auto;
 			justify-content: center;
+			border-top-right-radius: 0;
+			border-bottom-right-radius: 0;
 		}
 
 		&__add-plus {
 			flex: 0 0 auto;
+			border-top-left-radius: 0;
+			border-bottom-left-radius: 0;
 		}
 
 		&__hint {
@@ -73,7 +83,7 @@ $ve-ink: #1e1e1e;
 		&__list {
 			display: flex;
 			flex-direction: column;
-			gap: 0.5rem;
+			gap: 0.25rem;
 			margin: 0;
 			padding: 0;
 			list-style: none;
@@ -81,18 +91,7 @@ $ve-ink: #1e1e1e;
 	}
 
 	.godam-ve-layer-row {
-		border: 1px solid $ve-border;
-		border-radius: 8px;
-
-		&.is-active {
-			border-color: var(--wp-admin-theme-color, #3858e9);
-			box-shadow: inset 3px 0 0 0 var(--wp-admin-theme-color, #3858e9);
-		}
-
-		&.has-warning {
-			border-color: #f0b849;
-			background: #fcf9e8;
-		}
+		margin: 0 -1rem;
 
 		&__hit {
 			display: flex;
@@ -103,12 +102,13 @@ $ve-ink: #1e1e1e;
 			display: flex;
 			flex: 1 1 auto;
 			align-items: center;
-			gap: 0.5rem;
+			gap: 0.75rem;
 			width: 100%;
 			height: auto;
-			min-height: 48px;
-			padding: 0.5rem;
+			min-height: 60px;
+			padding: 0.625rem 1rem;
 			text-align: left;
+			background: transparent;
 		}
 
 		&__icon {
@@ -116,13 +116,15 @@ $ve-ink: #1e1e1e;
 			flex: 0 0 auto;
 			align-items: center;
 			justify-content: center;
-			width: 24px;
-			height: 24px;
+			width: 36px;
+			height: 36px;
+			background: $ve-circle;
+			border-radius: 50%;
 		}
 
 		&__icon-img {
-			width: 24px;
-			height: 24px;
+			width: 20px;
+			height: 20px;
 			object-fit: contain;
 		}
 
@@ -130,23 +132,103 @@ $ve-ink: #1e1e1e;
 			display: flex;
 			flex-direction: column;
 			min-width: 0;
+			line-height: 1.3;
 		}
 
 		&__name {
 			font-size: 0.875rem;
 			font-weight: 600;
-			line-height: 1.4;
 		}
 
 		&__meta {
 			font-size: 0.75rem;
-			line-height: 1.4;
 			color: $ve-muted;
 		}
 
 		&__menu {
 			flex: 0 0 auto;
-			margin-right: 0.25rem;
+			margin-right: 0.5rem;
 		}
+
+		&:hover {
+			background: $ve-faint;
+		}
+
+		// Active state + its tinted icon circle. Declared after the base rules
+		// so they win without descending specificity.
+		&.is-active {
+			background: $ve-accent-tint;
+			box-shadow: inset 3px 0 0 0 $ve-accent;
+		}
+
+		&.is-active .godam-ve-layer-row__icon {
+			background: color-mix(in srgb, var(--wp-components-color-accent) 14%, transparent);
+		}
+	}
+}
+
+// -------------------------------------------------------------
+// Add-layer dropdown content (portaled to <body>).
+// -------------------------------------------------------------
+.godam-ve-add-menu__popover {
+
+	.godam-ve-add-menu {
+		min-width: 264px;
+	}
+
+	.godam-ve-add-menu__item {
+		height: auto;
+		padding-top: 0.5rem;
+		padding-bottom: 0.5rem;
+
+		.components-menu-item__item {
+			display: flex;
+			gap: 0.625rem;
+			align-items: center;
+			width: 100%;
+		}
+	}
+
+	.godam-ve-add-menu__icon {
+		display: flex;
+		flex: 0 0 auto;
+		align-items: center;
+		justify-content: center;
+		width: 20px;
+		height: 20px;
+
+		img {
+			width: 20px;
+			height: 20px;
+			object-fit: contain;
+		}
+	}
+
+	.godam-ve-add-menu__text {
+		display: flex;
+		flex-direction: column;
+		line-height: 1.3;
+	}
+
+	.godam-ve-add-menu__title {
+		font-size: 0.875rem;
+		font-weight: 500;
+		text-align: left;
+	}
+
+	.godam-ve-add-menu__desc {
+		font-size: 0.75rem;
+		color: color-mix(in srgb, currentcolor 55%, transparent);
+		text-align: left;
+	}
+
+	// Submenu (e.g. Form -> form plugins) opens to the side.
+	.godam-ve-add-menu__submenu {
+		display: block;
+	}
+
+	.godam-ve-add-menu__chevron {
+		flex: 0 0 auto;
+		margin-left: auto;
 	}
 }

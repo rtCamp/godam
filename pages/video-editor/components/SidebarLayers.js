@@ -18,14 +18,18 @@ import ForminatorIcon from '../assets/layers/Forminator.png';
 import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
 import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
 import MetformIcon from '../assets/layers/MetFormIcon.png';
+import ctaIcon from '../assets/layers/cta.svg';
+import hotspotIcon from '../assets/layers/hotspot.svg';
+import formIcon from '../assets/layers/form.svg';
+import pollIcon from '../assets/layers/poll.svg';
 
 /**
  * WordPress dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { Button, Icon, Tooltip, DropdownMenu, MenuGroup, MenuItem } from '@wordpress/components';
-import { plus, preformatted, customLink, video, customPostType, thumbsUp, moreVertical, copy, trash } from '@wordpress/icons';
-import { useState, useEffect, useCallback } from '@wordpress/element';
+import { Button, Icon, Tooltip, Dropdown, DropdownMenu, MenuGroup, MenuItem, NavigableMenu, Popover } from '@wordpress/components';
+import { plus, preformatted, customLink, video, customPostType, thumbsUp, moreVertical, copy, trash, chevronRight } from '@wordpress/icons';
+import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
 
 import LayerSelector from './LayerSelector.jsx';
 
@@ -130,6 +134,79 @@ export const layerTypes = [
 	// Add-on layers (e.g., WooCommerce) are merged from PHP via godamVideoEditorConfig.
 	...( window.godamVideoEditorConfig?.layerOptions || [] ),
 ];
+
+/**
+ * A submenu item for the "Add layer" menu (e.g. Form) that opens a side Popover
+ * listing the choices. The trigger is a real MenuItem button inside a plain
+ * wrapper (no tabindex), so it is keyboard-navigable within the parent
+ * NavigableMenu (arrow keys move to it, Enter/Space opens the submenu).
+ *
+ * @param {Object}   param0               Props.
+ * @param {Object}   param0.opt           The option, including a `submenu` array.
+ * @param {Function} param0.onParentClose Closes the parent Add-layer menu.
+ *
+ * @return {JSX.Element} The submenu item.
+ */
+const AddLayerSubmenuItem = ( { opt, onParentClose } ) => {
+	const [ isSubOpen, setSubOpen ] = useState( false );
+	const anchorRef = useRef( null );
+
+	return (
+		<div className="godam-ve-add-menu__submenu" ref={ anchorRef }>
+			<MenuItem
+				className="godam-ve-add-menu__item"
+				aria-haspopup="menu"
+				aria-expanded={ isSubOpen }
+				onClick={ () => setSubOpen( ( value ) => ! value ) }
+			>
+				<span className="godam-ve-add-menu__icon">
+					{ opt.iconUrl
+						? <img src={ opt.iconUrl } alt="" />
+						: <Icon icon={ opt.iconComponent } /> }
+				</span>
+				<span className="godam-ve-add-menu__text">
+					<span className="godam-ve-add-menu__title">{ opt.title }</span>
+					{ opt.description && (
+						<span className="godam-ve-add-menu__desc">{ opt.description }</span>
+					) }
+				</span>
+				<Icon className="godam-ve-add-menu__chevron" icon={ chevronRight } />
+			</MenuItem>
+			{ isSubOpen && (
+				<Popover
+					className="godam-ve-add-menu__popover"
+					anchor={ anchorRef.current }
+					placement="right-start"
+					onClose={ () => setSubOpen( false ) }
+					onFocusOutside={ () => setSubOpen( false ) }
+				>
+					<NavigableMenu orientation="vertical" className="godam-ve-add-menu">
+						{ opt.submenu.map( ( sub ) => (
+							<MenuItem
+								key={ sub.key }
+								className="godam-ve-add-menu__item"
+								onClick={ () => {
+									sub.onSelect();
+									setSubOpen( false );
+									onParentClose();
+								} }
+							>
+								<span className="godam-ve-add-menu__icon">
+									{ sub.iconUrl
+										? <img src={ sub.iconUrl } alt="" />
+										: <Icon icon={ sub.iconComponent } /> }
+								</span>
+								<span className="godam-ve-add-menu__text">
+									<span className="godam-ve-add-menu__title">{ sub.title }</span>
+								</span>
+							</MenuItem>
+						) ) }
+					</NavigableMenu>
+				</Popover>
+			) }
+		</div>
+	);
+};
 
 /**
  * Sidebar component to display and select different types of layers to be added to the video.
@@ -289,6 +366,93 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 	const hasLayerAtCurrentTime = Boolean( layers.find( ( l ) => l.displayTime === currentTime ) );
 	const isAddDisabled = ! currentTime || hasLayerAtCurrentTime;
 
+	// Colored layer-type icons (from design) used in the list rows + add menu.
+	const layerTypeIcons = {
+		cta: ctaIcon,
+		hotspot: hotspotIcon,
+		poll: pollIcon,
+	};
+
+	// Build the "Add layer" dropdown options from the live layer types so that
+	// plugin availability (forms/poll/ad/add-ons) is reflected here, mirroring
+	// the modal's behaviour.
+	const buildAddOptions = () => {
+		const options = [
+			{ key: 'cta', iconUrl: ctaIcon, title: __( 'CTA', 'godam' ), description: __( 'Add a clickable button', 'godam' ), onSelect: () => addNewLayer( 'cta' ) },
+			{ key: 'hotspot', iconUrl: hotspotIcon, title: __( 'Hotspot', 'godam' ), description: __( 'Add an info hotspot', 'godam' ), onSelect: () => addNewLayer( 'hotspot' ) },
+		];
+
+		// "Form" entry. With multiple active form plugins it opens a side submenu
+		// to choose one; with a single plugin it adds directly; disabled when none
+		// are active.
+		const formLayer = layerTypes.find( ( l ) => l.type === 'form' );
+		const activeForms = Object.entries( formLayer?.formType ?? {} )
+			.filter( ( [ , ft ] ) => ft.isActive )
+			.map( ( [ ftKey, ft ] ) => ( {
+				key: ftKey,
+				title: ft.layerText,
+				iconUrl: ft.icon,
+				onSelect: () => addNewLayer( 'form', ftKey ),
+			} ) );
+		const formOption = {
+			key: 'form',
+			iconUrl: formIcon,
+			title: __( 'Form', 'godam' ),
+			description: __( 'Embed a lead form', 'godam' ),
+		};
+		if ( activeForms.length === 0 ) {
+			formOption.disabled = true;
+			formOption.tooltip = __( 'No form plugin is active', 'godam' );
+		} else if ( activeForms.length === 1 ) {
+			formOption.onSelect = activeForms[ 0 ].onSelect;
+		} else {
+			formOption.submenu = activeForms;
+		}
+		options.push( formOption );
+
+		const pollLayer = layerTypes.find( ( l ) => l.type === 'poll' );
+		options.push( {
+			key: 'poll',
+			iconUrl: pollIcon,
+			title: __( 'Poll', 'godam' ),
+			description: __( 'Create an interactive poll', 'godam' ),
+			disabled: pollLayer?.isActive === false,
+			tooltip: pollLayer?.isActive === false ? pollLayer?.tooltipMessage : '',
+			onSelect: () => addNewLayer( 'poll' ),
+		} );
+
+		const adLayer = layerTypes.find( ( l ) => l.type === 'ad' );
+		const adDisabled = 'ad-server' === adServer;
+		options.push( {
+			key: 'ad',
+			iconComponent: adLayer?.icon,
+			title: __( 'Ad', 'godam' ),
+			description: __( 'Insert an advertisement', 'godam' ),
+			disabled: adDisabled,
+			tooltip: adDisabled ? adLayer?.tooltipMessage : '',
+			onSelect: () => addNewLayer( 'ad' ),
+		} );
+
+		// Add-on layers (e.g., WooCommerce) merged from PHP.
+		layerTypes
+			.filter( ( lt ) => ! [ 'cta', 'hotspot', 'form', 'ad', 'poll' ].includes( lt.type ) )
+			.forEach( ( lt ) => {
+				options.push( {
+					key: lt.type,
+					iconUrl: lt.iconUrl,
+					iconComponent: lt.iconUrl ? undefined : lt.icon,
+					title: lt.title || lt.layerText,
+					description: ( lt.title && lt.layerText ) ? lt.layerText : '',
+					disabled: lt.isActive === false,
+					tooltip: lt.isActive === false ? ( lt.tooltipMessage ?? '' ) : '',
+					onSelect: () => addNewLayer( lt.type ),
+				} );
+			} );
+
+		return options;
+	};
+	const addOptions = buildAddOptions();
+
 	return (
 		<div id="sidebar-layers" className="godam-ve-layers">
 			<div className="godam-ve-layers__head">
@@ -301,33 +465,87 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 				</h2>
 			</div>
 
-			<div className="godam-ve-layers__add">
-				<Button
-					variant="primary"
-					className="godam-ve-layers__add-button"
-					icon={ plus }
-					iconPosition="left"
-					id="add-layer-btn"
-					onClick={ openModal }
-					disabled={ isAddDisabled }
-				>
-					{ __( 'Add layer', 'godam' ) }
-				</Button>
-				<Button
-					variant="secondary"
-					className="godam-ve-layers__add-plus"
-					icon={ plus }
-					label={ __( 'Add layer', 'godam' ) }
-					onClick={ openModal }
-					disabled={ isAddDisabled }
-				/>
-			</div>
+			<Dropdown
+				className="godam-ve-layers__add"
+				contentClassName="godam-ve-add-menu__popover"
+				popoverProps={ { placement: 'bottom-start' } }
+				renderToggle={ ( { isOpen: menuOpen, onToggle } ) => {
+					const handleToggle = () => {
+						if ( onPauseVideo ) {
+							onPauseVideo();
+						}
+						onToggle();
+					};
+					return (
+						<>
+							<Button
+								variant="primary"
+								className="godam-ve-layers__add-button"
+								iconPosition="left"
+								id="add-layer-btn"
+								onClick={ handleToggle }
+								aria-expanded={ menuOpen }
+								disabled={ isAddDisabled }
+							>
+								{ __( 'Add layer', 'godam' ) }
+							</Button>
+							<Button
+								variant="primary"
+								className="godam-ve-layers__add-plus"
+								icon={ plus }
+								label={ __( 'Add layer', 'godam' ) }
+								onClick={ handleToggle }
+								aria-expanded={ menuOpen }
+								disabled={ isAddDisabled }
+							/>
+						</>
+					);
+				} }
+				renderContent={ ( { onClose } ) => (
+					<NavigableMenu orientation="vertical" className="godam-ve-add-menu">
+						{ addOptions.map( ( opt ) => {
+							// Options with a submenu (e.g. Form) open a side submenu.
+							if ( opt.submenu ) {
+								return (
+									<AddLayerSubmenuItem
+										key={ opt.key }
+										opt={ opt }
+										onParentClose={ onClose }
+									/>
+								);
+							}
 
-			{ hasLayerAtCurrentTime && (
-				<p className="godam-ve-layers__hint">
-					{ __( 'There is already a layer at this timestamp. Please choose a different timestamp.', 'godam' ) }
-				</p>
-			) }
+							const item = (
+								<MenuItem
+									className="godam-ve-add-menu__item"
+									disabled={ opt.disabled }
+									onClick={ () => {
+										opt.onSelect?.();
+										onClose();
+									} }
+								>
+									<span className="godam-ve-add-menu__icon">
+										{ opt.iconUrl
+											? <img src={ opt.iconUrl } alt="" />
+											: <Icon icon={ opt.iconComponent } /> }
+									</span>
+									<span className="godam-ve-add-menu__text">
+										<span className="godam-ve-add-menu__title">{ opt.title }</span>
+										{ opt.description && (
+											<span className="godam-ve-add-menu__desc">{ opt.description }</span>
+										) }
+									</span>
+								</MenuItem>
+							);
+
+							return opt.tooltip
+								? <Tooltip key={ opt.key } text={ opt.tooltip } placement="right">{ item }</Tooltip>
+								: <span key={ opt.key }>{ item }</span>;
+						} ) }
+					</NavigableMenu>
+				) }
+			/>
+
 			{ ! currentTime && ! hasLayerAtCurrentTime && (
 				<p className="godam-ve-layers__hint">
 					{ __( 'To add a layer, pick a spot on the timeline where you want the layer.', 'godam' ) }
@@ -362,7 +580,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					{ sortedLayers.map( ( layer, index ) => {
 						const layerData = layerTypes.find( ( l ) => l.type === layer.type );
 						const formType = 'form' === layerData?.type ? layerData?.formType[ layer.form_type ?? 'gravity' ] : false;
-						const icon = formType ? formType?.icon : ( layerData?.icon || layerData?.iconUrl );
+						const icon = formType ? formType?.icon : ( layerTypeIcons[ layer.type ] || layerData?.iconUrl || layerData?.icon );
 						const layerText = formType ? formType?.layerText : ( layerData?.layerText || layerData?.title );
 
 						// Tooltip shown when the layer's required plugin/feature is unavailable.

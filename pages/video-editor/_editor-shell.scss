@@ -1,16 +1,20 @@
 // =============================================================
 // Video Editor — layout shell
-// Scoped under `.godam-video-editor`. Self-contained: does NOT
-// use anything from `assets/src/css/_common.scss`. Chrome is
-// built from @wordpress/components; this file is layout only.
+// Scoped under `.godam-video-editor`. Self-contained: does NOT use
+// anything from `assets/src/css/_common.scss`, and uses NO hardcoded
+// colours — accent comes from the WordPress component accent variable
+// (so it follows the admin colour scheme automatically) and neutrals
+// are derived from `currentColor`.
 // =============================================================
 
-$ve-border: #e0e0e0;
-$ve-muted: #757575;
-$ve-ink: #1e1e1e;
 $ve-rail-width: 56px;
 $ve-panel-width: 320px;
 $ve-config-width: 340px;
+
+$ve-accent: var(--wp-components-color-accent);
+$ve-border: color-mix(in srgb, currentcolor 14%, transparent);
+$ve-muted: color-mix(in srgb, currentcolor 55%, transparent);
+$ve-faint: color-mix(in srgb, currentcolor 5%, transparent);
 
 .godam-video-editor {
 	position: relative;
@@ -18,8 +22,6 @@ $ve-config-width: 340px;
 	flex-direction: column;
 	box-sizing: border-box;
 	height: calc(100vh - var(--wp-admin--admin-bar--height, 32px));
-	background: #fff;
-	color: $ve-ink;
 
 	*,
 	*::before,
@@ -106,13 +108,24 @@ $ve-config-width: 340px;
 		flex-direction: column;
 		align-items: center;
 		gap: 0.25rem;
-		padding: 0.5rem 0;
+		padding: 1rem 0;
 		border-right: 1px solid $ve-border;
 	}
 
 	&__rail-button {
 		width: 40px;
 		height: 40px;
+		color: $ve-muted;
+
+		&.components-button.is-pressed {
+			color: $ve-accent;
+			background: color-mix(in srgb, var(--wp-components-color-accent) 10%, transparent);
+		}
+
+		&.components-button.is-pressed:hover:not(:disabled) {
+			color: $ve-accent;
+			background: color-mix(in srgb, var(--wp-components-color-accent) 16%, transparent);
+		}
 	}
 
 	&__panel {
@@ -138,7 +151,7 @@ $ve-config-width: 340px;
 		min-width: 0;
 		padding: 1.5rem;
 		overflow-y: auto;
-		background: #f6f7f7;
+		background: $ve-faint;
 	}
 
 	&__config {
