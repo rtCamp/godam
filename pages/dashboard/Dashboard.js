@@ -174,6 +174,13 @@ const Dashboard = () => {
 	const siteUrl = window.location.origin;
 	const adminUrl = window.videoData?.adminUrl;
 
+	// Reel Pops live in the godam-for-woo add-on, which registers the
+	// "reel-pops-analytics" dashboard section. Only surface the link when it's
+	// available so the page exists to navigate to.
+	const hasReelPops = extendedSections.some(
+		( section ) => section.id === 'reel-pops-analytics',
+	);
+
 	const apiKeyError = getAPIKeyErrorInfo();
 	const apiKeyErrorType = apiKeyError?.type || null;
 
@@ -469,6 +476,15 @@ const Dashboard = () => {
 							) }
 						</span>
 					</div>
+					{ hasReelPops && (
+						<a
+							className="godam-reel-pop-link"
+							href="admin.php?page=rtgodam_reel_pop_analytics"
+						>
+							{ __( 'See Reel Pop Analytics', 'godam' ) }
+							<span className="godam-reel-pop-link__arrow" aria-hidden="true">↗</span>
+						</a>
+					) }
 				</div>
 
 				<div className="godam-dashboard-grid">

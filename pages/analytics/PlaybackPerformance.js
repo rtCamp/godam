@@ -348,6 +348,39 @@ export default function PlaybackPerformanceDashboard( {
 			.domain( [ 0, maxValue * 1.1 ] )
 			.range( [ height, 0 ] );
 
+		// Faint dashed gridlines (horizontal + vertical), inserted first so they
+		// sit behind the axes and the data lines.
+		svg
+			.insert( 'g', ':first-child' )
+			.attr( 'class', 'godam-chart-grid' )
+			.call( d3.axisLeft( y ).ticks( 5 ).tickSize( -width ).tickFormat( () => '' ) )
+			.call( ( g ) => g.select( '.domain' ).remove() )
+			.call( ( g ) =>
+				g
+					.selectAll( '.tick line' )
+					.attr( 'stroke', '#e5e7eb' )
+					.attr( 'stroke-dasharray', '4 4' ),
+			);
+
+		svg
+			.insert( 'g', ':first-child' )
+			.attr( 'class', 'godam-chart-grid' )
+			.attr( 'transform', `translate(0, ${ height })` )
+			.call(
+				d3
+					.axisBottom( x )
+					.tickValues( tickValues )
+					.tickSize( -height )
+					.tickFormat( () => '' ),
+			)
+			.call( ( g ) => g.select( '.domain' ).remove() )
+			.call( ( g ) =>
+				g
+					.selectAll( '.tick line' )
+					.attr( 'stroke', '#e5e7eb' )
+					.attr( 'stroke-dasharray', '4 4' ),
+			);
+
 		svg
 			.append( 'g' )
 			.call( d3.axisLeft( y ) )
