@@ -556,8 +556,9 @@
 		overflow: visible;
 	}
 
+	// Light track = background (Total Plays); dark fill = Unique Viewers portion.
 	&__track {
-		stroke: #eef0f2;
+		stroke: color-mix(in srgb, var(--wp-admin-theme-color, #ab3a6c) 20%, #fff);
 	}
 
 	&__fill {
@@ -588,28 +589,64 @@
 		color: #757575;
 	}
 
-	&__stats {
-		display: flex;
-		justify-content: center;
-		gap: 28px;
-		margin-top: 12px;
-	}
-
-	&__stat {
+	// Hover tooltip: legend of the two arc segments + their raw values.
+	&__tooltip {
+		position: absolute;
+		top: 6px;
+		left: 50%;
+		transform: translateX(-50%);
 		display: flex;
 		flex-direction: column;
+		gap: 6px;
+		padding: 12px 16px;
+		background: #1e1e1e;
+		border-radius: 10px;
+		box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+		white-space: nowrap;
+		opacity: 0;
+		visibility: hidden;
+		pointer-events: none;
+		transition: opacity 0.15s ease;
+		z-index: 5;
+	}
+
+	&__chart:hover &__tooltip,
+	&__chart:focus-within &__tooltip {
+		opacity: 1;
+		visibility: visible;
+	}
+
+	&__tooltip-row {
+		display: flex;
 		align-items: center;
+		gap: 10px;
+		font-size: 13px;
+		color: #fff;
 	}
 
-	&__stat-value {
-		font-size: 16px;
+	&__swatch {
+		width: 12px;
+		height: 12px;
+		border-radius: 3px;
+		flex-shrink: 0;
+
+		&--light {
+			background: color-mix(in srgb, var(--wp-admin-theme-color, #ab3a6c) 20%, #fff);
+		}
+
+		&--dark {
+			background: var(--wp-admin-theme-color, #ab3a6c);
+		}
+	}
+
+	&__tooltip-label {
+		flex: 1;
+		color: #e5e7eb;
+	}
+
+	&__tooltip-value {
 		font-weight: 600;
-		color: #1e1e1e;
-	}
-
-	&__stat-label {
-		font-size: 11px;
-		color: #757575;
+		margin-left: 20px;
 	}
 }
 

@@ -11,12 +11,12 @@ import { __ } from '@wordpress/i18n';
 /**
  * ViewersGauge — a semicircle gauge for the "Total Plays / Unique Viewers" card.
  *
- * The headline is the unique-viewer count; the arc shows the unique-viewer share
- * of total plays (uniqueViewers / plays), i.e. how concentrated the audience is.
- * Total plays and the sessions-per-user ratio are shown as supporting stats.
+ * The arc is two-tone in the admin accent colour: the light track is the
+ * background (Total Plays) and the dark fill is the Unique Viewers portion
+ * (uniqueViewers / plays). The center shows the unique-viewer count; hovering
+ * the gauge reveals a tooltip with both raw values.
  *
- * FE-only: uses data already in the dashboard metrics payload. Full numbers, no
- * hover tooltips (per the Figma design review).
+ * FE-only: uses data already in the dashboard metrics payload. Full numbers.
  *
  * @param {Object} props
  * @param {number} props.plays         Total plays.
@@ -32,8 +32,6 @@ const ViewersGauge = ( { plays = 0, uniqueViewers = 0 } ) => {
 	const arcLength = Math.PI * radius;
 	const ratio = playsNum > 0 ? Math.min( viewersNum / playsNum, 1 ) : 0;
 	const dash = ratio * arcLength;
-
-	const sessionsPerUser = viewersNum > 0 ? ( playsNum / viewersNum ).toFixed( 2 ) : null;
 	const arcPath = 'M 20 100 A 80 80 0 0 1 180 100';
 
 	return (
@@ -43,40 +41,41 @@ const ViewersGauge = ( { plays = 0, uniqueViewers = 0 } ) => {
 					className="godam-gauge__svg"
 					viewBox="0 0 200 112"
 					role="img"
-					aria-label={ `${ viewersNum.toLocaleString() } ${ __( 'unique viewers', 'godam' ) }` }
+					aria-label={ `${ viewersNum.toLocaleString() } ${ __( 'unique viewers of', 'godam' ) } ${ playsNum.toLocaleString() } ${ __( 'total plays', 'godam' ) }` }
 				>
 					<path
 						className="godam-gauge__track"
 						d={ arcPath }
 						fill="none"
-						strokeWidth="14"
+						strokeWidth="16"
 						strokeLinecap="round"
 					/>
 					<path
 						className="godam-gauge__fill"
 						d={ arcPath }
 						fill="none"
-						strokeWidth="14"
+						strokeWidth="16"
 						strokeLinecap="round"
 						strokeDasharray={ `${ dash } ${ arcLength }` }
 					/>
 				</svg>
+
 				<div className="godam-gauge__center">
 					<span className="godam-gauge__value">{ viewersNum.toLocaleString() }</span>
 					<span className="godam-gauge__label">{ __( 'Unique viewers', 'godam' ) }</span>
 				</div>
-			</div>
 
-			<div className="godam-gauge__stats">
-				<div className="godam-gauge__stat">
-					<span className="godam-gauge__stat-value">{ playsNum.toLocaleString() }</span>
-					<span className="godam-gauge__stat-label">{ __( 'Total plays', 'godam' ) }</span>
-				</div>
-				<div className="godam-gauge__stat">
-					<span className="godam-gauge__stat-value">
-						{ sessionsPerUser !== null ? `${ sessionsPerUser }×` : '—' }
-					</span>
-					<span className="godam-gauge__stat-label">{ __( 'Sessions / user', 'godam' ) }</span>
+				<div className="godam-gauge__tooltip" role="tooltip">
+					<div className="godam-gauge__tooltip-row">
+						<span className="godam-gauge__swatch godam-gauge__swatch--light" aria-hidden="true" />
+						<span className="godam-gauge__tooltip-label">{ __( 'Total Plays', 'godam' ) }</span>
+						<span className="godam-gauge__tooltip-value">{ playsNum.toLocaleString() }</span>
+					</div>
+					<div className="godam-gauge__tooltip-row">
+						<span className="godam-gauge__swatch godam-gauge__swatch--dark" aria-hidden="true" />
+						<span className="godam-gauge__tooltip-label">{ __( 'Unique Viewers', 'godam' ) }</span>
+						<span className="godam-gauge__tooltip-value">{ viewersNum.toLocaleString() }</span>
+					</div>
 				</div>
 			</div>
 		</div>
