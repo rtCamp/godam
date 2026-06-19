@@ -175,6 +175,9 @@ export default function PlaybackPerformanceDashboard( {
 				case '7D':
 					cutoffDate.setDate( today.getDate() - 6 ); // 6 days ago + today = 7 days
 					break;
+				case '15D':
+					cutoffDate.setDate( today.getDate() - 14 ); // 14 days ago + today = 15 days
+					break;
 				case '1M':
 					cutoffDate.setMonth( today.getMonth() - 1 );
 					break;
@@ -211,6 +214,9 @@ export default function PlaybackPerformanceDashboard( {
 			switch ( selectedPeriod ) {
 				case '7D':
 					startDate.setDate( today.getDate() - 6 ); // 6 days ago + today = 7 days
+					break;
+				case '15D':
+					startDate.setDate( today.getDate() - 14 ); // 14 days ago + today = 15 days
 					break;
 				case '1M':
 					startDate.setMonth( today.getMonth() - 1 );
