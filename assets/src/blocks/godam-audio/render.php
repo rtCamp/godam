@@ -40,7 +40,7 @@ $godam_block_wrapper_attributes = get_block_wrapper_attributes();
 $godam_css_classes              = trim( $godam_block_wrapper_attributes . ' ' . $godam_css_class );
 ?>
 
-<figure <?php echo wp_kses_data( get_block_wrapper_attributes( array( 'class' => $godam_css_classes ) ) ); ?>>
+<figure data-test-id="godam-audio-render" <?php echo wp_kses_data( get_block_wrapper_attributes( array( 'class' => $godam_css_classes ) ) ); ?>>
 	<audio style="display: block; width: 100%;" controls <?php echo esc_attr( $godam_autoplay ); ?> <?php echo esc_attr( $godam_loop ); ?> preload="<?php echo esc_attr( $godam_preload ); ?>">
 		<?php if ( ! empty( $godam_primary_audio ) ) : ?>
 			<source src="<?php echo esc_url( $godam_primary_audio ); ?>" type="audio/mpeg" />

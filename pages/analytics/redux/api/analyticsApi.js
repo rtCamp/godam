@@ -55,10 +55,48 @@ export const analyticsApi = createApi( {
 				return response.processed_analytics || [];
 			},
 		} ),
+		fetchProcessedLayerAnalytics: builder.query( {
+			query: ( { layerType, days, siteUrl, videoId } ) => {
+				const params = {
+					layer_type: layerType,
+					site_url: siteUrl,
+					video_id: videoId,
+				};
+				// `days` is undefined for the "All" range — omit it so the
+				// proxy forwards no date filter and the microservice returns
+				// the full history. (Sending days=0 would 400.)
+				if ( days !== undefined ) {
+					params.days = days;
+				}
+				return {
+					url: 'godam/v1/analytics/layer-analytics',
+					params,
+				};
+			},
+			transformResponse: ( response ) => {
+				// The WP proxy wraps microservice 4xx as 200 + errorType so
+				// RTK Query doesn't trip on benign "no data" cases. Surface
+				// errors as a soft object instead of throwing — the UI
+				// renders a state-specific empty/error panel either way.
+				if ( response.status === 'error' ) {
+					return {
+						errorType: response.errorType || 'unknown_error',
+						message: response.message,
+						layer_analytics: null,
+					};
+				}
+				return {
+					errorType: null,
+					message: null,
+					layer_analytics: response.layer_analytics || null,
+				};
+			},
+		} ),
 	} ),
 } );
 
 export const {
 	useFetchAnalyticsDataQuery,
 	useFetchProcessedAnalyticsHistoryQuery,
+	useFetchProcessedLayerAnalyticsQuery,
 } = analyticsApi;

@@ -1,0 +1,17 @@
+// Force layer-type icons (from @wordpress/icons) to inherit their
+// container's `color` and re-apply it as the SVG `fill`. Some
+// @wordpress/icons paths hardcode `fill="#1e1e1e"` which would otherwise
+// stay dark on the timeline marker's colored background. URL-based
+// icons (e.g. the Woo logo) keep their baked-in colors — `.godam-layer-icon`
+// is only added to the WP-glyph branch in LayerIcon.js, so these
+// selectors don't reach the `<img>` path.
+.godam-layer-icon {
+
+	svg {
+		fill: currentcolor;
+	}
+
+	svg * {
+		fill: currentcolor;
+	}
+}

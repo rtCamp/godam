@@ -464,6 +464,18 @@ function VideoEdit( {
 			return;
 		}
 
+		// Guard against non-video selections. The media library lets users pick
+		// any attachment type even when allowedTypes is set, so re-check here.
+		const mediaType = media.type || ( media.mime || media.mime_type || '' ).split( '/' )[ 0 ];
+		if ( mediaType && mediaType !== 'video' ) {
+			createErrorNotice(
+				__( 'Only video files are allowed in the GoDAM Video block.', 'godam' ),
+				{ type: 'snackbar' },
+			);
+			setIsVideoSelecting( false );
+			return;
+		}
+
 		if ( isBlobURL( media.url ) ) {
 			setTemporaryURL( media.url );
 			setIsVideoSelecting( false );

@@ -89,6 +89,17 @@ function AudioEdit( {
 			return;
 		}
 
+		// Guard against non-audio selections. The media library lets users pick
+		// any attachment type even when allowedTypes is set, so re-check here.
+		const mediaType = media.type || ( media.mime || media.mime_type || '' ).split( '/' )[ 0 ];
+		if ( mediaType && mediaType !== 'audio' ) {
+			createErrorNotice(
+				__( 'Only audio files are allowed in the GoDAM Audio block.', 'godam' ),
+				{ type: 'snackbar' },
+			);
+			return;
+		}
+
 		if ( isBlobURL( media.url ) ) {
 			setTemporaryURL( media.url );
 			return;
