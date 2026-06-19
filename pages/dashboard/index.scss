@@ -493,37 +493,10 @@
 	min-width: 0;
 }
 
-.godam-card {
-	background: #fff;
-	border: 1px solid #e5e7eb;
-	border-radius: 12px;
-	padding: 20px;
-
-	&__head {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-		margin-bottom: 16px;
-
-		h2 {
-			margin: 0;
-			font-size: 16px;
-			font-weight: 600;
-			color: #1e1e1e;
-		}
-	}
-}
-
-.godam-pill {
-	font-size: 12px;
-	font-weight: 500;
-	color: #50575e;
-	border: 1px solid #e5e7eb;
-	border-radius: 6px;
-	padding: 4px 10px;
-	white-space: nowrap;
-}
+// Note: the shared card primitives (.godam-card, .godam-pill, .godam-insights-card)
+// live in pages/analytics/index.scss so the per-video Analytics page (which only
+// bundles that stylesheet) can use them too. The dashboard imports analytics/index.scss,
+// so they remain available here as well.
 
 // Left card: viewers gauge + geography. The geography block is the plain
 // .country-views markup (its card styling only applies inside the old
@@ -671,11 +644,4 @@
 	}
 }
 
-// Insights card: the KPI cards keep their existing responsive flex layout
-// (4-across at desktop, wrapping below). Just let them shrink within the card.
-.godam-insights-card {
-
-	.single-metrics-info-container > * {
-		min-width: 0;
-	}
-}
+// (.godam-insights-card moved to pages/analytics/index.scss — shared by both surfaces.)

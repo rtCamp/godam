@@ -580,9 +580,9 @@ export default function PlaybackPerformanceDashboard( {
 	};
 
 	return (
-		<div className="w-full border rounded-lg p-4 shadow-sm h-[400px]">
+		<div className="godam-card playback-performance-card w-full h-[400px]">
 			<div className="flex flex-col justify-between gap-2 lg:gap-8 lg:flex-row lg:w-full">
-				<h2 className="text-base font-bold text-gray-800 m-0 whitespace-nowrap">
+				<h2 className="text-base font-semibold text-gray-800 m-0 whitespace-nowrap">
 					{ __( 'Playback Performance', 'godam' ) }
 				</h2>
 				<div className="godam-chart-controls">
