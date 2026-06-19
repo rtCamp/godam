@@ -457,18 +457,18 @@ const Dashboard = () => {
 			</div>
 
 			<div id="dashboard-container" className="dashboard-container hidden">
-				{ /* Page-level FYI — analytics aren't real-time. */ }
-				<div className="godam-analytics-fyi flex items-center gap-1.5 mb-3 text-xs text-zinc-500">
-					<Icon icon={ info } size={ 15 } />
-					<span>
-						{ __(
-							'Heads up: analytics update periodically, so new activity may take up to 30 minutes to show here.',
-							'godam',
-						) }
-					</span>
-				</div>
 				<div className="godam-dashboard-head">
 					<h1 className="godam-dashboard-title">{ __( 'Dashboard', 'godam' ) }</h1>
+					{ /* Page-level FYI — analytics aren't real-time. Sits beside the title. */ }
+					<div className="godam-analytics-fyi flex items-center gap-1.5 text-xs text-zinc-500">
+						<Icon icon={ info } size={ 15 } />
+						<span>
+							{ __(
+								'Heads up: analytics update periodically, so new activity may take up to 30 minutes to show here.',
+								'godam',
+							) }
+						</span>
+					</div>
 				</div>
 
 				<div className="godam-dashboard-grid">

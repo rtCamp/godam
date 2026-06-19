@@ -386,23 +386,11 @@ export default function PlaybackPerformanceDashboard( {
 		selectedMetrics.forEach( ( metric ) => {
 			const color = colorScale( metric );
 
-			// Add filled area
-			const area = d3
-				.area()
-				.x( ( d ) => x( d.date ) )
-				.y0( height )
-				.y1( ( d ) => y( d[ metric ] ) );
-
-			svg
-				.append( 'path' )
-				.datum( completeData )
-				.attr( 'fill', color )
-				.attr( 'fill-opacity', 0.2 )
-				.attr( 'd', area );
-
-			// Add the line
+			// Smooth line, no filled area (matches the Figma chart). curveMonotoneX
+			// keeps the curve passing through each point without dipping below 0.
 			const line = d3
 				.line()
+				.curve( d3.curveMonotoneX )
 				.x( ( d ) => x( d.date ) )
 				.y( ( d ) => y( d[ metric ] ) );
 

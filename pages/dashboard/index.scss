@@ -443,6 +443,10 @@
 // GoDAM 2.0 dashboard reskin (P0, FE-only) — "Insights" layout.
 // =====================================================================
 .godam-dashboard-head {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px 16px;
 	margin-bottom: 16px;
 
 	.godam-dashboard-title {
