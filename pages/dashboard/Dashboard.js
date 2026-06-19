@@ -244,17 +244,16 @@ const Dashboard = () => {
 	}, [ dashboardMetrics, isDashboardMetricsLoading, isDashboardMetricsError, apiKeyErrorType ] );
 
 	useEffect( () => {
-		if (
-			! isDashboardMetricsLoading &&
-			dashboardMetrics?.country_views
-		) {
+		// Render once metrics have loaded. generateCountryHeatmap shows an
+		// empty-state placeholder when there is no geography data yet.
+		if ( ! isDashboardMetricsLoading && dashboardMetrics ) {
 			const interval = setInterval( () => {
 				const mapContainer = document.querySelector( '#map-container' );
 				const tableContainer = document.querySelector( '#table-container' );
 				if ( mapContainer && tableContainer ) {
 					clearInterval( interval );
 					generateCountryHeatmap(
-						dashboardMetrics.country_views,
+						dashboardMetrics.country_views || {},
 						'#map-container',
 						'#table-container',
 					);

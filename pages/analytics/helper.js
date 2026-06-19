@@ -322,7 +322,7 @@ export function generateCountryHeatmap(
 	tableSelector,
 ) {
 	// Convert object to array for table sorting
-	const countryDataArray = Object.entries( countryData )
+	const countryDataArray = Object.entries( countryData || {} )
 		.map( ( [ country, views ] ) => ( {
 			country,
 			views,
@@ -340,13 +340,30 @@ export function generateCountryHeatmap(
 		.style( 'width', '100%' )
 		.style( 'height', 'auto' );
 
+	// Idempotent: clear any previous render before redrawing.
+	container.selectAll( '*' ).remove();
+
 	container
 		.append( 'h2' )
-		.text( 'Views by Location' )
+		.text( __( 'Views by Location', 'godam' ) )
 		.style( 'font-size', '16px' )
 		.style( 'font-weight', '700' )
 		.style( 'text-align', 'left' )
 		.style( 'margin-bottom', '16px' );
+
+	// Empty state — no geography recorded yet (e.g. a brand-new site).
+	if ( countryDataArray.length === 0 ) {
+		d3.select( tableSelector ).html( '' );
+		container
+			.append( 'p' )
+			.text( __( 'Views by location will show up here', 'godam' ) )
+			.style( 'color', '#757575' )
+			.style( 'font-size', '13px' )
+			.style( 'text-align', 'center' )
+			.style( 'padding', '28px 8px' )
+			.style( 'margin', '0' );
+		return;
+	}
 
 	// Create the SVG for the map
 	const svg = container
