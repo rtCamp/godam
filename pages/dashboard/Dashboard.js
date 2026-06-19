@@ -7,7 +7,7 @@ import React, { useEffect, useState, useRef } from 'react';
  * WordPress dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { Icon, ToggleControl } from '@wordpress/components';
+import { Icon } from '@wordpress/components';
 import { info } from '@wordpress/icons';
 
 /**
@@ -162,7 +162,6 @@ const getSortedSections = () =>
 
 const Dashboard = () => {
 	const [ topVideosPage, setTopVideosPage ] = useState( 1 );
-	const [ showDeleted, setShowDeleted ] = useState( false );
 	const [ extendedSections, setExtendedSections ] = useState( getSortedSections );
 
 	// Re-read the registry whenever an add-on registers a section after mount.
@@ -195,11 +194,6 @@ const Dashboard = () => {
 	} = useFetchTopVideosQuery( { siteUrl, page: topVideosPage, limit: 10 }, { skip: shouldSkipSecondaryQueries } );
 
 	const topVideosData = topVideosResponse?.videos || [];
-	// "Show deleted videos" — deletion is detected per-row in WP (item.exists),
-	// so this filters the current page client-side. Default off (hidden).
-	const visibleTopVideos = showDeleted
-		? topVideosData
-		: topVideosData.filter( ( video ) => video.exists !== false );
 	const totalTopVideosPages = topVideosResponse?.totalPages || 1;
 
 	const showNewYearSaleBanner = window.videoData?.showNewYearSaleBanner;
@@ -564,21 +558,12 @@ const Dashboard = () => {
 				</div>
 
 				<div className="top-media-container">
-					<div className="flex justify-between items-center pt-4">
+					<div className="flex justify-between pt-4">
 						<h2>{ __( 'Top Videos', 'godam' ) }</h2>
-						<div className="flex items-center gap-4">
-							<ToggleControl
-								__nextHasNoMarginBottom
-								className="godam-show-deleted-toggle"
-								label={ __( 'Show deleted videos', 'godam' ) }
-								checked={ showDeleted }
-								onChange={ setShowDeleted }
-							/>
-							<button onClick={ handleExportCSV } className="export-button">
-								<img src={ ExportBtn } alt="Export" className="export-icon" />
-								{ __( 'Export', 'godam' ) }
-							</button>
-						</div>
+						<button onClick={ handleExportCSV } className="export-button">
+							<img src={ ExportBtn } alt="Export" className="export-icon" />
+							{ __( 'Export', 'godam' ) }
+						</button>
 					</div>
 					<div className="table-container overflow-x-auto">
 						<table className="w-full">
@@ -603,7 +588,7 @@ const Dashboard = () => {
 										</td>
 									</tr>
 								) : (
-									visibleTopVideos.map( ( item, index ) => (
+									topVideosData?.map( ( item, index ) => (
 										<tr key={ index }>
 											<td>
 												<div className="video-info">
@@ -676,7 +661,7 @@ const Dashboard = () => {
 										</tr>
 									) )
 								) }
-								{ ! isTopVideosFetching && visibleTopVideos.length === 0 && (
+								{ ! isTopVideosFetching && topVideosData.length === 0 && (
 									<tr>
 										<td colSpan="7">
 											<div className="godam-empty-state">
