@@ -479,7 +479,7 @@ const Dashboard = () => {
 					{ hasReelPops && (
 						<a
 							className="godam-reel-pop-link"
-							href="admin.php?page=rtgodam_reel_pop_analytics"
+							href="admin.php?page=rtgodam_reel_pops"
 						>
 							{ __( 'See Reel Pop Analytics', 'godam' ) }
 							<span className="godam-reel-pop-link__arrow" aria-hidden="true">↗</span>
