@@ -101,10 +101,12 @@ export function singleMetricsChart(
 	selectedDays,
 	changeTrend,
 ) {
-	// Set the dimensions and margins of the graph - smaller to match card design
-	const margin = { top: 10, right: 10, bottom: 0, left: 0 },
+	// Set the dimensions and margins of the graph - smaller to match card design.
+	// top/bottom padding keeps the spike and the flat zero-baseline off the
+	// clipped viewBox edges so the whole sparkline (not just its peak) is visible.
+	const margin = { top: 8, right: 10, bottom: 6, left: 0 },
 		width = 170 - margin.left - margin.right,
-		height = 40 - margin.top - margin.bottom;
+		height = 48 - margin.top - margin.bottom;
 
 	// Define metric options to display proper labels and units with color
 	const metricsOptions = [
@@ -158,9 +160,11 @@ export function singleMetricsChart(
 			'viewBox',
 			`0 0 ${ width + margin.left + margin.right } ${ height + margin.top + margin.bottom }`,
 		)
-		.attr( 'preserveAspectRatio', 'xMidYMid meet' )
+		.attr( 'preserveAspectRatio', 'xMidYMax meet' )
 		.style( 'width', '100%' )
-		.style( 'height', 'auto' );
+		// Fixed render height so a narrow flex column can't shrink the chart to a
+		// sliver (height:auto ties height to width). Bottom-aligned via YMax.
+		.style( 'height', '44px' );
 
 	// Create main chart group
 	const chartGroup = svg

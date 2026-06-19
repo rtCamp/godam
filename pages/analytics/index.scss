@@ -319,6 +319,9 @@
 
 .metrics-chart {
 	position: relative;
+	width: 100%;
+	// Keep the sparkline from collapsing to a sliver in the narrow Insights track.
+	min-width: 96px;
 }
 
 .mini-chart-tooltip {
