@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 /**
  * Internal dependencies
  */
-import { addLayer, setCurrentLayer, setAddLayerModalTime } from '../redux/slice/videoSlice';
+import { addLayer, setCurrentLayer, setAddLayerModalTime, removeLayer } from '../redux/slice/videoSlice';
 import { v4 as uuidv4 } from 'uuid';
 import GFIcon from '../assets/layers/GFIcon.svg';
 import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
@@ -23,8 +23,8 @@ import MetformIcon from '../assets/layers/MetFormIcon.png';
  * WordPress dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { Button, Icon, Tooltip } from '@wordpress/components';
-import { plus, preformatted, customLink, arrowRight, video, customPostType, thumbsUp, error } from '@wordpress/icons';
+import { Button, Icon, Tooltip, DropdownMenu, MenuGroup, MenuItem } from '@wordpress/components';
+import { plus, preformatted, customLink, video, customPostType, thumbsUp, moreVertical, copy, trash } from '@wordpress/icons';
 import { useState, useEffect, useCallback } from '@wordpress/element';
 
 import LayerSelector from './LayerSelector.jsx';
@@ -138,10 +138,11 @@ export const layerTypes = [
  * @param {number}   param0.currentTime   - The current playback time of the video (in seconds or milliseconds).
  * @param {Function} param0.onSelectLayer - Callback function invoked when a layer is selected.
  * @param {Function} param0.onPauseVideo  - Function to pause the video playback.
+ * @param {number}   param0.duration      - The total duration of the video (used to bound duplicated layers).
  *
  * @return {JSX.Element} The rendered SidebarLayers component.
  */
-const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo } ) => {
+const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const loading = useSelector( ( state ) => state.videoReducer.loading );
 	const addLayerModalTime = useSelector( ( state ) => state.videoReducer.addLayerModalTime );
@@ -168,6 +169,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo } ) => {
 	}, [ addLayerModalTime, openModal ] );
 
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
+	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
 	const adServer = videoConfig?.adServer ?? 'self-hosted';
 
@@ -251,136 +253,206 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo } ) => {
 		}
 	};
 
+	const formatTime = ( seconds ) => {
+		const total = Math.max( 0, Math.floor( Number( seconds ) || 0 ) );
+		const mins = Math.floor( total / 60 );
+		const secs = total % 60;
+		return `${ mins }:${ secs < 10 ? '0' : '' }${ secs }`;
+	};
+
+	const handleDeleteLayer = ( layer ) => {
+		if ( currentLayer?.id === layer.id ) {
+			dispatch( setCurrentLayer( null ) );
+		}
+		dispatch( removeLayer( { id: layer.id } ) );
+	};
+
+	// Duplicate a layer at the next free whole-second slot (layers can't share a timestamp).
+	const handleDuplicateLayer = ( layer ) => {
+		const usedTimes = new Set( layers.map( ( l ) => Number( l.displayTime ) ) );
+		const maxTime = duration ? Math.floor( duration ) : Number( layer.displayTime ) + layers.length + 1;
+		let nextTime = Math.floor( Number( layer.displayTime ) ) + 1;
+		while ( usedTimes.has( nextTime ) && nextTime <= maxTime ) {
+			nextTime += 1;
+		}
+		if ( usedTimes.has( nextTime ) ) {
+			nextTime = Number( layer.displayTime ) + 0.5;
+		}
+		const clone = {
+			...JSON.parse( JSON.stringify( layer ) ),
+			id: uuidv4(),
+			displayTime: nextTime,
+		};
+		dispatch( addLayer( clone ) );
+	};
+
+	const hasLayerAtCurrentTime = Boolean( layers.find( ( l ) => l.displayTime === currentTime ) );
+	const isAddDisabled = ! currentTime || hasLayerAtCurrentTime;
+
 	return (
-		<div id="sidebar-layers" className="pt-4 h-max">
-			{
-				sortedLayers?.map( ( layer ) => {
-					let addWarning = false;
-					const layerData = layerTypes.find( ( l ) => l.type === layer.type );
-					const formType = 'form' === layerData?.type ? layerData?.formType[ layer.form_type ?? 'gravity' ] : false;
-					const icon = formType ? formType?.icon : ( layerData?.icon || layerData?.iconUrl );
-					const layerText = formType ? formType?.layerText : ( layerData?.layerText || layerData?.title );
+		<div id="sidebar-layers" className="godam-ve-layers">
+			<div className="godam-ve-layers__head">
+				<h2 className="godam-ve-layers__title">
+					{ sprintf(
+						// translators: %d is the number of layers.
+						__( 'Layers (%d)', 'godam' ),
+						layers.length,
+					) }
+				</h2>
+			</div>
 
-					/**
-					 * Get Tooltip message.
-					 */
-					const tooltipMessage = ( () => {
-						if ( formType && ! formType.isActive ) {
-							return formType.tooltipMessage;
-						}
+			<div className="godam-ve-layers__add">
+				<Button
+					variant="primary"
+					className="godam-ve-layers__add-button"
+					icon={ plus }
+					iconPosition="left"
+					id="add-layer-btn"
+					onClick={ openModal }
+					disabled={ isAddDisabled }
+				>
+					{ __( 'Add layer', 'godam' ) }
+				</Button>
+				<Button
+					variant="secondary"
+					className="godam-ve-layers__add-plus"
+					icon={ plus }
+					label={ __( 'Add layer', 'godam' ) }
+					onClick={ openModal }
+					disabled={ isAddDisabled }
+				/>
+			</div>
 
-						if ( 'ad-server' === adServer && 'ad' === layerData?.type ) {
-							return layerData?.tooltipMessage;
-						}
+			{ hasLayerAtCurrentTime && (
+				<p className="godam-ve-layers__hint">
+					{ __( 'There is already a layer at this timestamp. Please choose a different timestamp.', 'godam' ) }
+				</p>
+			) }
+			{ ! currentTime && ! hasLayerAtCurrentTime && (
+				<p className="godam-ve-layers__hint">
+					{ __( 'To add a layer, pick a spot on the timeline where you want the layer.', 'godam' ) }
+				</p>
+			) }
 
-						if ( layerData?.isActive === false ) {
-							return layerData?.tooltipMessage ?? '';
-						}
-
-						return '';
-					} )();
-
-					if ( '' !== tooltipMessage ) {
-						addWarning = true;
-					}
-
-					// Disable the button when the required plugin/feature is inactive
-					// (e.g. form plugin not installed, or WooCommerce layer API key missing/expired).
-					const isLayerDisabled = ( formType && ! formType.isActive ) || layerData?.isActive === false;
-
-					return (
-						<Tooltip
-							key={ layer.id }
-							text={ tooltipMessage }
-							placement="right"
-						>
-							<div className="border rounded-lg mb-2">
-								<Button
-									className={ `w-full flex justify-between items-center px-2 py-3 border-1 rounded-lg h-auto hover:bg-gray-50 cursor-pointer border-[#e5e7eb] ${ addWarning ? 'bg-orange-50 hover:bg-orange-50' : '' }` }
-									onClick={ () => {
-										dispatch( setCurrentLayer( layer ) );
-										onSelectLayer( layer.displayTime );
-									} }
-									disabled={ isLayerDisabled }
-								>
-									<div className="flex items-center gap-2">
-										{
-											formType || ( typeof icon === 'string' && icon ) ? (
-												<img src={ icon } alt={ layer.type } className="w-6 h-6" />
-											) : (
-												<Icon icon={ icon } />
-											)
-										}
-										<p className="m-0 text-base">{ layerText } layer at <b>{ layer.displayTime }s</b></p>
-										{ layer.badge && (
-											<span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded-full">
-												{ layer.badge }
-											</span>
-										) }
-									</div>
-									<div>
-										<Icon icon={ arrowRight } />
-									</div>
-								</Button>
-							</div>
-						</Tooltip>
-					);
-				} )
-			}
-			{
-				! loading && layers.length === 0 && (
-					<>
-						<h3 className="text-2xl m-0 text-center">{ __( 'No layers added', 'godam' ) }</h3>
-					</>
-				)
-			}
-			{
-				loading && (
-					<div className="loading-skeleton">
-						<div className="skeleton-container skeleton-container-short">
-							<div className="skeleton-header"></div>
-						</div>
-						<div className="skeleton-container skeleton-container-short">
-							<div className="skeleton-header"></div>
-						</div>
-						<div className="skeleton-container skeleton-container-short">
-							<div className="skeleton-header"></div>
-						</div>
+			{ loading && (
+				<div className="loading-skeleton">
+					<div className="skeleton-container skeleton-container-short">
+						<div className="skeleton-header"></div>
 					</div>
-				)
-			}
+					<div className="skeleton-container skeleton-container-short">
+						<div className="skeleton-header"></div>
+					</div>
+					<div className="skeleton-container skeleton-container-short">
+						<div className="skeleton-header"></div>
+					</div>
+				</div>
+			) }
 
-			{
-				! loading && (
-					<div className="mt-10 flex justify-center flex-col items-center">
-						<Button
-							className="godam-button w-fit"
-							variant="primary"
-							id="add-layer-btn"
-							icon={ plus }
-							iconPosition="left"
-							onClick={ openModal }
-							disabled={ ! currentTime || layers.find( ( l ) => ( l.displayTime ) === ( currentTime ) ) }
-						>
-							{
-								// translators: %s is the current time in seconds.
-								sprintf( __( 'Add layer at %ss', 'godam' ), currentTime )
+			{ ! loading && sortedLayers.length === 0 && (
+				<div className="godam-ve-layers__empty">
+					<p className="godam-ve-layers__empty-title">{ __( 'No layers yet', 'godam' ) }</p>
+					<p className="godam-ve-layers__empty-text">
+						{ __( 'Add interactive elements like CTAs, polls, and forms to your video', 'godam' ) }
+					</p>
+				</div>
+			) }
+
+			{ ! loading && sortedLayers.length > 0 && (
+				<ul className="godam-ve-layers__list">
+					{ sortedLayers.map( ( layer, index ) => {
+						const layerData = layerTypes.find( ( l ) => l.type === layer.type );
+						const formType = 'form' === layerData?.type ? layerData?.formType[ layer.form_type ?? 'gravity' ] : false;
+						const icon = formType ? formType?.icon : ( layerData?.icon || layerData?.iconUrl );
+						const layerText = formType ? formType?.layerText : ( layerData?.layerText || layerData?.title );
+
+						// Tooltip shown when the layer's required plugin/feature is unavailable.
+						const tooltipMessage = ( () => {
+							if ( formType && ! formType.isActive ) {
+								return formType.tooltipMessage;
 							}
-						</Button>
-						{ layers.find( ( l ) => l.displayTime === currentTime ) && (
-							<p className="text-slate-500 text-center">
-								{ __( 'There is already a layer at this timestamp. Please choose a different timestamp.', 'godam' ) }
-							</p>
-						) }
-						{ ! currentTime && (
-							<div className="flex items-center gap-2">
-								<Icon icon={ error } className="w-4 h-4" style={ { fill: '#EAB308' } } />
-								<p className="text-center text-[#AB3A6C]">{ __( 'Play video to add layer.', 'godam' ) }</p>
-							</div>
-						) }
-					</div>
-				)
-			}
+							if ( 'ad-server' === adServer && 'ad' === layerData?.type ) {
+								return layerData?.tooltipMessage;
+							}
+							if ( layerData?.isActive === false ) {
+								return layerData?.tooltipMessage ?? '';
+							}
+							return '';
+						} )();
+
+						const isLayerDisabled = ( formType && ! formType.isActive ) || layerData?.isActive === false;
+						const isActive = currentLayer?.id === layer.id;
+						const hasImageIcon = formType || ( typeof icon === 'string' && icon );
+
+						return (
+							<li
+								key={ layer.id }
+								className={ `godam-ve-layer-row${ isActive ? ' is-active' : '' }${ tooltipMessage ? ' has-warning' : '' }` }
+							>
+								<Tooltip text={ tooltipMessage } placement="right">
+									<div className="godam-ve-layer-row__hit">
+										<Button
+											className="godam-ve-layer-row__main"
+											onClick={ () => {
+												dispatch( setCurrentLayer( layer ) );
+												onSelectLayer( layer.displayTime );
+											} }
+											disabled={ isLayerDisabled }
+										>
+											<span className="godam-ve-layer-row__icon">
+												{ hasImageIcon
+													? <img src={ icon } alt="" className="godam-ve-layer-row__icon-img" />
+													: <Icon icon={ icon } /> }
+											</span>
+											<span className="godam-ve-layer-row__text">
+												<span className="godam-ve-layer-row__name">
+													{ sprintf(
+														// translators: %d is the layer position in the list.
+														__( 'Layer %d', 'godam' ),
+														index + 1,
+													) }
+												</span>
+												<span className="godam-ve-layer-row__meta">
+													{ layerText } • { formatTime( layer.displayTime ) }
+												</span>
+											</span>
+										</Button>
+										<DropdownMenu
+											className="godam-ve-layer-row__menu"
+											icon={ moreVertical }
+											label={ __( 'Layer options', 'godam' ) }
+											popoverProps={ { placement: 'bottom-end' } }
+										>
+											{ ( { onClose } ) => (
+												<MenuGroup>
+													<MenuItem
+														icon={ copy }
+														onClick={ () => {
+															handleDuplicateLayer( layer );
+															onClose();
+														} }
+													>
+														{ __( 'Duplicate', 'godam' ) }
+													</MenuItem>
+													<MenuItem
+														icon={ trash }
+														isDestructive
+														onClick={ () => {
+															handleDeleteLayer( layer );
+															onClose();
+														} }
+													>
+														{ __( 'Delete', 'godam' ) }
+													</MenuItem>
+												</MenuGroup>
+											) }
+										</DropdownMenu>
+									</div>
+								</Tooltip>
+							</li>
+						);
+					} ) }
+				</ul>
+			) }
 
 			{ isOpen && (
 				<LayerSelector

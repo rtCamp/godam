@@ -20,10 +20,10 @@ import { layerTypes } from '../SidebarLayers';
 /**
  * Component that renders the header section for the selected layer.
  *
- * @param {Object}   param0          - Props passed to the LayersHeader component.
- * @param {Object}   param0.layer    - The layer object containing type and metadata.
- * @param {Function} param0.goBack   - Callback to navigate back to the previous view.
- * @param {number}   param0.duration - Total duration of the video (in seconds or milliseconds).
+ * @param {Object}   param0           - Props passed to the LayersHeader component.
+ * @param {Object}   param0.layer     - The layer object containing type and metadata.
+ * @param {Function} param0.goBack    - Callback to navigate back to the previous view.
+ * @param {number}   param0.duration  - Total duration of the video (in seconds or milliseconds).
  * @param {string}   param0.layerName - Optional custom layer label for add-ons.
  *
  * @return {JSX.Element} The rendered LayersHeader component.
@@ -69,7 +69,7 @@ const LayersHeader = ( { layer, goBack, duration, layerName: customLayerName } )
 				<Button icon={ arrowLeft } onClick={ goBack } />
 				<p className="text-base flex items-center gap-1">
 					{ layerName }
-					{ __( ' layer at', 'godam' ) }{ isEditing ? (
+					{ __( 'layer at', 'godam' ) }{ isEditing ? (
 						<TextControl
 							__nextHasNoMarginBottom={ true }
 							__next40pxDefaultSize={ false }
@@ -149,14 +149,15 @@ const LayersHeader = ( { layer, goBack, duration, layerName: customLayerName } )
 					>
 						<div className="flex justify-between items-center gap-3">
 							<Button
-								isTertiary
-								className="w-full justify-center godam-button"
+								variant="tertiary"
+								className="w-full justify-center"
 								onClick={ () => setOpen( false ) }
 							>
 								{ __( 'Cancel', 'godam' ) }
 							</Button>
 							<Button
-								className="w-full justify-center godam-button"
+								variant="primary"
+								className="w-full justify-center"
 								isDestructive
 								onClick={ handleDeleteLayer }
 							>

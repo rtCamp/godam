@@ -433,6 +433,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 							currentTime={ currentTime }
 							onSelectLayer={ seekToTime }
 							onPauseVideo={ pauseVideo }
+							duration={ duration }
 						/>
 					) }
 					{ currentTab === 'player-settings' && <Appearance /> }

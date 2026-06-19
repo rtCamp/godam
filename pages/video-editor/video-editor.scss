@@ -10,6 +10,7 @@
 // Self-contained: does NOT use `_common.scss`.
 // ============================================
 @use 'editor-shell';
+@use 'layers';
 
 // Hide layer controls fallback when portal target is not available
 .layer-controls-fallback {

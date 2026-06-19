@@ -1,0 +1,152 @@
+// =============================================================
+// Video Editor — Layers tab (list panel)
+// Scoped under `.godam-video-editor`. Self-contained; no
+// `_common.scss` usage. Chrome is @wordpress/components.
+// =============================================================
+
+$ve-border: #e0e0e0;
+$ve-muted: #757575;
+$ve-ink: #1e1e1e;
+
+.godam-video-editor {
+
+	.godam-ve-layers {
+
+		&__head {
+			margin-bottom: 0.75rem;
+		}
+
+		&__title {
+			margin: 0;
+			font-size: 0.9375rem;
+			font-weight: 600;
+			line-height: 1.4;
+		}
+
+		&__add {
+			display: flex;
+			align-items: stretch;
+			gap: 0.5rem;
+			margin-bottom: 0.5rem;
+		}
+
+		&__add-button {
+			flex: 1 1 auto;
+			justify-content: center;
+		}
+
+		&__add-plus {
+			flex: 0 0 auto;
+		}
+
+		&__hint {
+			margin: 0 0 0.75rem;
+			font-size: 0.75rem;
+			line-height: 1.4;
+			color: $ve-muted;
+		}
+
+		&__empty {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			min-height: 200px;
+			padding: 1rem;
+			text-align: center;
+		}
+
+		&__empty-title {
+			margin: 0;
+			font-size: 0.875rem;
+			font-weight: 600;
+			line-height: 1.4;
+		}
+
+		&__empty-text {
+			margin: 0.25rem 0 0;
+			font-size: 0.75rem;
+			line-height: 1.4;
+			color: $ve-muted;
+		}
+
+		&__list {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+			margin: 0;
+			padding: 0;
+			list-style: none;
+		}
+	}
+
+	.godam-ve-layer-row {
+		border: 1px solid $ve-border;
+		border-radius: 8px;
+
+		&.is-active {
+			border-color: var(--wp-admin-theme-color, #3858e9);
+			box-shadow: inset 3px 0 0 0 var(--wp-admin-theme-color, #3858e9);
+		}
+
+		&.has-warning {
+			border-color: #f0b849;
+			background: #fcf9e8;
+		}
+
+		&__hit {
+			display: flex;
+			align-items: center;
+		}
+
+		&__main {
+			display: flex;
+			flex: 1 1 auto;
+			align-items: center;
+			gap: 0.5rem;
+			width: 100%;
+			height: auto;
+			min-height: 48px;
+			padding: 0.5rem;
+			text-align: left;
+		}
+
+		&__icon {
+			display: flex;
+			flex: 0 0 auto;
+			align-items: center;
+			justify-content: center;
+			width: 24px;
+			height: 24px;
+		}
+
+		&__icon-img {
+			width: 24px;
+			height: 24px;
+			object-fit: contain;
+		}
+
+		&__text {
+			display: flex;
+			flex-direction: column;
+			min-width: 0;
+		}
+
+		&__name {
+			font-size: 0.875rem;
+			font-weight: 600;
+			line-height: 1.4;
+		}
+
+		&__meta {
+			font-size: 0.75rem;
+			line-height: 1.4;
+			color: $ve-muted;
+		}
+
+		&__menu {
+			flex: 0 0 auto;
+			margin-right: 0.25rem;
+		}
+	}
+}
