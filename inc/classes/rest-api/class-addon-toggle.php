@@ -2,6 +2,8 @@
 /**
  * REST API endpoint for toggling add-on plugin activation.
  *
+ * @since 1.8.0
+ *
  * @package GoDAM
  */
 
@@ -13,6 +15,8 @@ defined( 'ABSPATH' ) || exit;
  * Addon_Toggle REST endpoint.
  *
  * Activates or deactivates a GoDAM add-on plugin.
+ *
+ * @since 1.8.0
  */
 class Addon_Toggle extends Base {
 
@@ -25,6 +29,8 @@ class Addon_Toggle extends Base {
 
 	/**
 	 * Get REST routes.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @return array
 	 */
@@ -57,6 +63,8 @@ class Addon_Toggle extends Base {
 
 	/**
 	 * Toggle add-on plugin activation.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @param \WP_REST_Request $request Request object.
 	 *

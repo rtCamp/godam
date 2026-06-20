@@ -2,6 +2,8 @@
 /**
  * Manage media edit page and related functionality.
  *
+ * @since 1.3.0
+ *
  * @package GoDAM
  */
 
@@ -13,6 +15,8 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Media Edit class for handling media-related functionality.
+ *
+ * @since 1.3.0
  */
 class Media_Edit_Enhancements {
 
@@ -20,6 +24,8 @@ class Media_Edit_Enhancements {
 
 	/**
 	 * Construct method.
+	 *
+	 * @since 1.3.0
 	 */
 	protected function __construct() {
 		$this->setup_hooks();
@@ -27,6 +33,8 @@ class Media_Edit_Enhancements {
 
 	/**
 	 * Setup hooks for the media edit functionality.
+	 *
+	 * @since 1.3.0
 	 */
 	protected function setup_hooks() {
 		add_filter( 'wp_video_shortcode_override', array( $this, 'video_shortcode_override' ), 10, 2 );
@@ -34,6 +42,8 @@ class Media_Edit_Enhancements {
 
 	/**
 	 * Override the default video shortcode to handle .mov files playback within media edit page.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param string|false $html    The video HTML markup. Default empty.
 	 * @param array        $attrs    Array of video shortcode attributes.
@@ -65,6 +75,8 @@ class Media_Edit_Enhancements {
 	/**
 	 * Generate video HTML markup.
 	 *
+	 * @since 1.3.0
+	 *
 	 * @param string $src        Video source URL.
 	 * @param array  $attributes Video element attributes.
 	 *
@@ -84,6 +96,8 @@ class Media_Edit_Enhancements {
 
 	/**
 	 * Build HTML attributes string from array.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param array $attributes Associative array of attributes.
 	 *

@@ -20,6 +20,8 @@
  *                                    for the block's handpicked mode. Ignored
  *                                    when the resolved mode is 'query'.
  *
+ * @since 1.12.2
+ *
  * @package GoDAM
  */
 
@@ -38,6 +40,8 @@ if ( ! function_exists( 'rtgodam_gallery_v2_parse_id_list' ) ) {
 
 	/**
 	 * Parse a comma-separated ID list used by the godam/gallery-v2 surfaces.
+	 *
+	 * @since 1.12.2
 	 *
 	 * @param string $value Raw attribute value.
 	 * @return int[]
@@ -64,6 +68,8 @@ if ( ! function_exists( 'rtgodam_gallery_v2_get_thumbnail_url' ) ) {
 	/**
 	 * Resolve the best available thumbnail URL for a video attachment.
 	 *
+	 * @since 1.12.2
+	 *
 	 * @param int $attachment_id Attachment ID.
 	 * @return string
 	 */
@@ -79,6 +85,8 @@ if ( ! function_exists( 'rtgodam_gallery_v2_get_placeholder_thumbnail_url' ) ) {
 	/**
 	 * Resolve the blur-up placeholder URL for a video attachment.
 	 *
+	 * @since 1.12.2
+	 *
 	 * @param int $attachment_id Attachment ID.
 	 * @return string
 	 */
@@ -93,6 +101,8 @@ if ( ! function_exists( 'rtgodam_gallery_v2_format_display_date' ) ) {
 
 	/**
 	 * Format a post date for gallery output.
+	 *
+	 * @since 1.12.2
 	 *
 	 * @param string $date_string Raw date string.
 	 * @return string
@@ -113,6 +123,8 @@ if ( ! function_exists( 'rtgodam_gallery_v2_get_relative_date' ) ) {
 	/**
 	 * Get a GMT datetime string for a relative number of days back from now.
 	 *
+	 * @since 1.12.2
+	 *
 	 * @param int $days Number of days back.
 	 * @return string
 	 */
@@ -127,6 +139,8 @@ if ( ! function_exists( 'rtgodam_gallery_v2_build_query_args' ) ) {
 
 	/**
 	 * Build attachment query args from godam/gallery-v2 block-shaped attributes.
+	 *
+	 * @since 1.12.2
 	 *
 	 * @param array $attributes Block-shaped attributes (camelCase keys).
 	 * @param int   $page       Results page number.
@@ -217,6 +231,8 @@ if ( ! function_exists( 'rtgodam_gallery_v2_get_video_data' ) ) {
 
 	/**
 	 * Resolve normalized video card data for a gallery item.
+	 *
+	 * @since 1.12.2
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 * @return array|null

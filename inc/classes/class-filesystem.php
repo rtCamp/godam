@@ -2,6 +2,8 @@
 /**
  * Class to handle file system.
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -13,6 +15,8 @@ use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class FileSystem
+ *
+ * @since 1.0.0
  */
 class FileSystem {
 
@@ -20,6 +24,8 @@ class FileSystem {
 
 	/**
 	 * Construct method.
+	 *
+	 * @since 1.0.0
 	 */
 	protected function __construct() {
 
@@ -28,6 +34,8 @@ class FileSystem {
 
 	/**
 	 * To initialize file system.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
@@ -46,6 +54,8 @@ class FileSystem {
 	/**
 	 * Check if file exists in upload directory or not.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param string $file File path to check. Either absolute or relative path.
 	 *
 	 * @return bool True if file is exists, Otherwise False.
@@ -63,6 +73,8 @@ class FileSystem {
 
 	/**
 	 * To delete file within upload directory directory.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @param string $file File path.
 	 *

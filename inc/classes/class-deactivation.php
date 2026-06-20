@@ -2,6 +2,8 @@
 /**
  * Plguin Deactivation Survey Class.
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -13,6 +15,8 @@ use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Deactivation Class.
+ *
+ * @since 1.0.0
  */
 class Deactivation {
 
@@ -27,6 +31,8 @@ class Deactivation {
 
 	/**
 	 * Constructor function.
+	 *
+	 * @since 1.0.0
 	 */
 	public function __construct() {
 		add_action( 'admin_enqueue_scripts', array( $this, 'load_scripts' ) );
@@ -35,6 +41,8 @@ class Deactivation {
 
 	/**
 	 * Loading scripts.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
@@ -71,6 +79,8 @@ class Deactivation {
 
 	/**
 	 * Ajax Function call.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */

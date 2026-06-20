@@ -2,6 +2,8 @@
 /**
  * Extend SureForms.
  *
+ * @since 1.3.0
+ *
  * @package GoDAM
  */
 
@@ -15,6 +17,8 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Assets.
+ *
+ * @since 1.3.0
  */
 class Assets {
 
@@ -22,6 +26,8 @@ class Assets {
 
 	/**
 	 * Constructor.
+	 *
+	 * @since 1.3.0
 	 */
 	protected function __construct() {
 		$this->setup_hooks();
@@ -29,6 +35,8 @@ class Assets {
 
 	/**
 	 * To check if sureforms plugins is active.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */
@@ -42,6 +50,8 @@ class Assets {
 
 	/**
 	 * Function to enqueue script related to recorder field.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */
@@ -75,6 +85,8 @@ class Assets {
 	 * Load the necessary scripts for sureforms and godam.
 	 *
 	 * This function will enqueue the godam-recorder-script and godam-uppy-video-style if they are not already enqueued.
+	 *
+	 * @since 1.5.0
 	 *
 	 * @return void
 	 */

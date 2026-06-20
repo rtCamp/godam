@@ -2,6 +2,8 @@
 /**
  * Sureforms after form submit process.
  *
+ * @since 1.3.0
+ *
  * @package GoDAM
  */
 
@@ -13,6 +15,8 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Form_Submit.
+ *
+ * @since 1.3.0
  */
 class Form_Submit {
 
@@ -20,6 +24,8 @@ class Form_Submit {
 
 	/**
 	 * Constructor.
+	 *
+	 * @since 1.3.0
 	 */
 	public function __construct() {
 		$this->setup_hooks();
@@ -27,6 +33,8 @@ class Form_Submit {
 
 	/**
 	 * Setup hooks for after submission process.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */
@@ -55,6 +63,8 @@ class Form_Submit {
 
 	/**
 	 * Prepare submission data.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param array<mixed> $submission_data Current submitted data.
 	 *
@@ -178,6 +188,8 @@ class Form_Submit {
 	/**
 	 * On form submission response.
 	 *
+	 * @since 1.3.0
+	 *
 	 * @param array<mixed> $form_submit_response Response on form submission.
 	 *
 	 * @return void
@@ -211,6 +223,8 @@ class Form_Submit {
 
 	/**
 	 * Send files to GoDam for transcoding.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param string $form_title Form Name.
 	 * @param int    $form_id    Form Id.
@@ -289,6 +303,8 @@ class Form_Submit {
 	/**
 	 * To render the custom value for the upload field.
 	 *
+	 * @since 1.3.0
+	 *
 	 * @param bool   $value        Render custom markup.
 	 * @param string $field_name   Field Name.
 	 *
@@ -307,6 +323,8 @@ class Form_Submit {
 
 	/**
 	 * To render the custom markup for the recorder field.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param string $markup Current markup.
 	 * @param string $value  Field value.
@@ -390,6 +408,8 @@ class Form_Submit {
 
 	/**
 	 * Change upload dir to godam directory in uploads.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param array<mixed> $dirs upload directory.
 	 *

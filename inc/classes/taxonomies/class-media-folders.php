@@ -2,6 +2,8 @@
 /**
  * Register taxonomy of the Media Folders.
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -11,6 +13,8 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Media_Folders
+ *
+ * @since 1.0.0
  */
 class Media_Folders extends Base {
 
@@ -37,6 +41,8 @@ class Media_Folders extends Base {
 	/**
 	 * Labels for taxonomy.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @return array
 	 */
 	public function get_labels() {
@@ -59,6 +65,8 @@ class Media_Folders extends Base {
 	/**
 	 * List of post types for taxonomy.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @return array
 	 */
 	public function get_post_types() {
@@ -70,6 +78,8 @@ class Media_Folders extends Base {
 
 	/**
 	 * To get argument to register taxonomy.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return array
 	 */

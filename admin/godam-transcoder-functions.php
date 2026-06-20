@@ -264,6 +264,8 @@ function rtgodam_get_upload_dir() {
 /**
  * Get remote IP address
  *
+ * @since 1.0.0
+ *
  * @return string Remote IP address
  */
 function rtgodam_get_remote_ip_address() {
@@ -399,6 +401,8 @@ add_filter( 'manage_upload_sortable_columns', 'rtgodam_status_column_register_so
 /**
  * To get sanitized server variables.
  *
+ * @since 1.0.0
+ *
  * @param string $server_key Key of the $_SERVER superglobal variable.
  * @param int    $filter_type The ID of the filter to apply.
  *
@@ -416,6 +420,8 @@ function rtgodam_get_server_var( $server_key, $filter_type = FILTER_SANITIZE_FUL
 
 /**
  * Helper function to verify the api key.
+ *
+ * @since 1.0.0
  *
  * @param string $api_key The api key to verify.
  * @param bool   $save        Whether to save the API key in the site options.
@@ -551,6 +557,8 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 /**
  * Mask string.
  *
+ * @since 1.0.0
+ *
  * @param string $input  Input string.
  * @param int    $offset Offset.
  *
@@ -568,6 +576,8 @@ function rtgodam_mask_string( $input, $offset = 4 ) {
 
 /**
  * Get the List of Categories for the post.
+ *
+ * @since 1.0.0
  *
  * @param int $post_id Current Post Id.
  *
@@ -595,6 +605,8 @@ function rtgodam_get_categories_list( $post_id ) {
 /**
  * Get the List of Categories for the post.
  *
+ * @since 1.0.0
+ *
  * @param int $post_id Current Post Id.
  *
  * @return array|string List of Tags or empty string on failure.
@@ -619,6 +631,8 @@ function rtgodam_get_tags_list( $post_id ) {
 
 /**
  * Utility function to get the array to localize.
+ *
+ * @since 1.0.0
  *
  * @return array The array to localize
  */
@@ -679,6 +693,8 @@ function rtgodam_get_localize_array() {
 
 /**
  * Get the user's IP address.
+ *
+ * @since 1.0.0
  *
  * @return string The user's IP address.
  */

@@ -15,6 +15,8 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 	/**
 	 * Add a field for the transcoded URL to the media attachment edit screen.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param array  $form_fields An array of attachment form fields.
 	 * @param object $post The attachment post object.
 	 * @return array The modified array of attachment form fields.
@@ -139,6 +141,8 @@ if ( ! function_exists( 'rtgodam_save_transcoded_url_field' ) ) {
 	/**
 	 * Save the transcoded URL field when the attachment is saved.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param array $post The post data for the attachment.
 	 * @param array $attachment The attachment data.
 	 * @return array The post data for the attachment.
@@ -173,6 +177,8 @@ if ( ! function_exists( 'rtgodam_register_transcoded_url_meta' ) ) {
 
 	/**
 	 * Register the transcoded URL meta field.
+	 *
+	 * @since 1.0.0
 	 */
 	function rtgodam_register_transcoded_url_meta() {
 		register_post_meta(

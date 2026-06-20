@@ -2,6 +2,8 @@
 /**
  * Register REST API endpoints for Video Sync.
  *
+ * @since 1.6.0
+ *
  * @package GoDAM
  */
 
@@ -12,6 +14,8 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Video_Sync
+ *
+ * @since 1.6.0
  */
 class Video_Sync extends Base {
 
@@ -24,6 +28,8 @@ class Video_Sync extends Base {
 
 	/**
 	 * Get REST routes.
+	 *
+	 * @since 1.6.0
 	 */
 	public function get_rest_routes() {
 		return array(
@@ -51,6 +57,8 @@ class Video_Sync extends Base {
 
 	/**
 	 * Verify permission for video sync endpoint.
+	 *
+	 * @since 1.6.0
 	 *
 	 * @param \WP_REST_Request $request Request object.
 	 *
@@ -83,6 +91,8 @@ class Video_Sync extends Base {
 
 	/**
 	 * Check videos and return (video_id, job_id) tuples.
+	 *
+	 * @since 1.6.0
 	 *
 	 * @param \WP_REST_Request $request Request object.
 	 *
