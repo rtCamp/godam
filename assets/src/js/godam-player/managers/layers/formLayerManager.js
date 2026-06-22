@@ -235,7 +235,7 @@ export default class FormLayerManager {
 			layerElement.appendChild( styleElement );
 		}
 
-		const skipText = this.getSkipText( layer.type );
+		const skipText = this.getSkipText( layer.type, layer.trigger );
 		const allowSkip = layer.allow_skip !== undefined ? layer.allow_skip : true;
 
 		const existingLayer = this.formLayers.some(
@@ -306,12 +306,20 @@ export default class FormLayerManager {
 	}
 
 	/**
-	 * Get skip text based on layer type
+	 * Get skip-button text based on layer type and trigger.
+	 *
+	 * An end-of-video CTA has nothing left to skip to, so its dismiss button
+	 * reads "Done" instead of "Skip".
 	 *
 	 * @param {string} layerType - Type of layer
+	 * @param {string} [trigger] - Layer trigger (e.g. 'end_of_video')
 	 * @return {string} Skip button text
 	 */
-	getSkipText( layerType ) {
+	getSkipText( layerType, trigger ) {
+		if ( layerType === LAYER_TYPES.CTA && trigger === 'end_of_video' ) {
+			return __( 'Done', 'godam' );
+		}
+
 		const skipTexts = {
 			[ LAYER_TYPES.FORM ]: __( 'Skip Form', 'godam' ),
 			[ LAYER_TYPES.CTA ]: __( 'Skip', 'godam' ),

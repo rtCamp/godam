@@ -196,7 +196,7 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 					{
 						! godamMigrationCompleted && (
 							<div className="godam-migration-status my-2 bg-gray-100 p-2 rounded">
-								{ __( 'Vimeo video migration in WordPress can only begin after all Vimeo videos have been successfully migrated to GoDAM Central, ', 'godam' ) }
+								{ __( 'Vimeo video migration in WordPress can only begin after all Vimeo videos have been successfully migrated to GoDAM Central,', 'godam' ) }
 								<a className="godam-url" href={ `${ window.godamRestRoute?.apiBase || 'https://app.godam.io' }/web/settings` } target="_blank" rel="noreferrer">
 									{ __( 'Check here!', 'godam' ) }
 								</a>

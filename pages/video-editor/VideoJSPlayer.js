@@ -395,10 +395,14 @@ export const VideoJS = ( props ) => {
 						onLayerSelect={ ( selectedLayer ) => {
 							dispatch( setCurrentLayer( selectedLayer ) );
 							if ( playerRef.current ) {
-								// Watch-depth layers fire at a % of the video, not at displayTime.
-								const seekTime = selectedLayer?.trigger === 'watch_depth'
-									? ( ( Number( selectedLayer.watchDepth ) || 0 ) / 100 ) * ( duration || 0 )
-									: selectedLayer.displayTime;
+								// Trigger drives where the preview seeks: watch-depth to its
+								// watch %, end-of-video to the end, others to displayTime.
+								let seekTime = selectedLayer?.displayTime;
+								if ( selectedLayer?.trigger === 'watch_depth' ) {
+									seekTime = ( ( Number( selectedLayer.watchDepth ) || 0 ) / 100 ) * ( duration || 0 );
+								} else if ( selectedLayer?.trigger === 'end_of_video' ) {
+									seekTime = duration || 0;
+								}
 								playerRef.current.currentTime( seekTime );
 							}
 						} }
@@ -520,11 +524,14 @@ const Slider = ( props ) => {
 		}
 
 		if ( draggingLayer ) {
-			// Finish drag — watch-depth layers update their watch %, others displayTime.
+			// Finish drag — watch-depth updates its watch %, end-of-video is fixed
+			// at the end (no update), others update displayTime.
 			if ( draggingLayer.trigger === 'watch_depth' ) {
 				const watchDepthValue = Math.max( 1, Math.min( 100, Math.round( dragPosition ) ) );
 				onLayerDrag?.( draggingLayer.id, watchDepthValue, 'watchDepth' );
 				onLayerSelect( { ...draggingLayer, watchDepth: watchDepthValue } );
+			} else if ( draggingLayer.trigger === 'end_of_video' ) {
+				onLayerSelect( draggingLayer );
 			} else {
 				const newDisplayTime = Math.max( 0, Math.min( Math.round( ( dragPosition / 100 ) * max * 100 ) / 100, max ) );
 				onLayerDrag?.( draggingLayer.id, newDisplayTime, 'displayTime' );
@@ -580,6 +587,8 @@ const Slider = ( props ) => {
 					const watchDepthValue = Math.max( 1, Math.min( 100, Math.round( dragPosition ) ) );
 					onLayerDrag?.( draggingLayer.id, watchDepthValue, 'watchDepth' );
 					onLayerSelect( { ...draggingLayer, watchDepth: watchDepthValue } );
+				} else if ( draggingLayer.trigger === 'end_of_video' ) {
+					onLayerSelect( draggingLayer );
 				} else {
 					const newDisplayTime = Math.max( 0, Math.min( Math.round( ( dragPosition / 100 ) * max * 100 ) / 100, max ) );
 					onLayerDrag?.( draggingLayer.id, newDisplayTime, 'displayTime' );
@@ -673,9 +682,12 @@ const Slider = ( props ) => {
 				{
 					sortedLayers?.map( ( layer ) => {
 						const isBeingDragged = draggingLayer?.id === layer.id;
-						// Watch-depth layers sit at their watch % on the timeline; others at displayTime.
+						// Trigger drives the marker position: end-of-video pins to the
+						// end, watch-depth to its watch %, others to displayTime.
 						let layerLeft;
-						if ( isBeingDragged ) {
+						if ( layer.trigger === 'end_of_video' ) {
+							layerLeft = 100;
+						} else if ( isBeingDragged ) {
 							layerLeft = dragPosition;
 						} else if ( layer.trigger === 'watch_depth' ) {
 							layerLeft = Math.max( 0, Math.min( Number( layer.watchDepth ) || 0, 100 ) );

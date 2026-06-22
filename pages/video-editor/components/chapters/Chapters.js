@@ -108,7 +108,7 @@ const Chapters = ( { currentTime, duration, formatTimeForInput } ) => {
                 ( ! currentTime && parseFloat( l.startTime ) === 0 ),
 						) }
 					>
-						{ __( 'Add chapter at ', 'godam' ) }{ ' ' }
+						{ __( 'Add chapter at', 'godam' ) }{ ' ' }
 						{ formatTimeForInput( currentTime ) || '00:00' }s
 					</Button>
 					{ chapters.find(
@@ -125,7 +125,7 @@ const Chapters = ( { currentTime, duration, formatTimeForInput } ) => {
 					) }
 					<div>
 						<p className="text-slate-800">
-							{ __( 'Read more about timestamp format ', 'godam' ) }
+							{ __( 'Read more about timestamp format', 'godam' ) }
 							<a
 								href="https://godam.io/docs/overview/chapters/#h-timestamps-formatting-instructions"
 								target="_blank"

@@ -262,7 +262,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 							iconSize="18"
 							iconPosition="right"
 						>
-							{ __( 'Skip', 'godam' ) }
+							{ layer?.trigger === 'end_of_video' ? __( 'Done', 'godam' ) : __( 'Skip', 'godam' ) }
 						</Button>
 					) }
 				</>

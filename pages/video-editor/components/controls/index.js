@@ -16,7 +16,7 @@
 /**
  * WordPress dependencies
  */
-import { TextControl, TextareaControl, RangeControl, Icon } from '@wordpress/components';
+import { TextControl, TextareaControl, RangeControl, SelectControl, ToggleControl, Icon } from '@wordpress/components';
 import { chevronUp, chevronDown } from '@wordpress/icons';
 import { useState } from '@wordpress/element';
 
@@ -146,6 +146,53 @@ export const VeSlider = ( { label, help, value = 0, onChange, min = 0, max = 100
 		min={ min }
 		max={ max }
 		step={ step }
+	/>
+);
+
+/**
+ * Dropdown select — WordPress `SelectControl` with a `godam-ve-control` class.
+ *
+ * @param {Object}   props             Props.
+ * @param {string}   [props.label]     Field label.
+ * @param {string}   [props.help]      Help text shown below the select.
+ * @param {string}   props.value       Selected value.
+ * @param {Function} props.onChange    Receives the chosen value.
+ * @param {Array}    props.options     `[{ label, value }]`.
+ * @param {string}   [props.className] Extra class names.
+ * @return {JSX.Element} Select control.
+ */
+export const VeSelect = ( { label, help, value, onChange, options = [], className = '' } ) => (
+	<SelectControl
+		__next40pxDefaultSize
+		__nextHasNoMarginBottom
+		className={ `godam-ve-control godam-ve-select ${ className }`.trim() }
+		label={ label }
+		help={ help }
+		value={ value }
+		options={ options }
+		onChange={ onChange }
+	/>
+);
+
+/**
+ * On/off toggle — WordPress `ToggleControl` with a `godam-ve-control` class.
+ *
+ * @param {Object}   props             Props.
+ * @param {string}   props.label       Toggle label.
+ * @param {string}   [props.help]      Help text shown below the toggle.
+ * @param {boolean}  props.checked     Current state.
+ * @param {Function} props.onChange    Receives the new boolean.
+ * @param {string}   [props.className] Extra class names.
+ * @return {JSX.Element} Toggle control.
+ */
+export const VeToggle = ( { label, help, checked, onChange, className = '' } ) => (
+	<ToggleControl
+		__nextHasNoMarginBottom
+		className={ `godam-ve-control godam-ve-toggle ${ className }`.trim() }
+		label={ label }
+		help={ help }
+		checked={ checked }
+		onChange={ onChange }
 	/>
 );
 
