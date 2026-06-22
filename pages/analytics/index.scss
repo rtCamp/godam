@@ -317,31 +317,6 @@
 	}
 }
 
-// The sparkline column sits beside the (wide) KPI value in a narrow card. Let it
-// shrink instead of pushing the row — and itself — past the card's right edge.
-// `min-width: 0` overrides the flex default (`auto` = content width) so the column
-// can give way to the value; the chart then fills whatever width is left.
-.godam-spark-col {
-	min-width: 0;
-}
-
-.metrics-chart {
-	position: relative;
-	// Compact: fill the (shrinking) column, capped so it stays inside the narrow
-	// KPI card. The SVG's inline width:100% (set by D3) keeps it within this box,
-	// so no overflow clip is needed — and not clipping lets the hover tooltip
-	// (`.mini-chart-tooltip`, appended here) show above the sparkline.
-	width: 100%;
-	max-width: 64px;
-}
-
-.mini-chart-tooltip {
-	position: absolute;
-	pointer-events: none;
-	z-index: 100;
-	left: 0;
-}
-
 .blurred {
 	filter: blur(5px);
 	pointer-events: none;
