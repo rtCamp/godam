@@ -111,12 +111,7 @@ const LayerDetailPanel = ( { parent, attachmentID } ) => {
 	const showRail = meta.hasSubHotspots && ( parent.sub_hotspots || [] ).length > 0;
 
 	return (
-		<section
-			className="rounded-xl border border-zinc-200 bg-white overflow-hidden"
-			style={ {
-				borderLeft: `4px solid ${ meta.color }`,
-			} }
-		>
+		<section className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
 			{ /* Header */ }
 			<header className="px-6 py-4 flex flex-wrap items-center gap-4 justify-between border-b border-zinc-100">
 				<div className="flex items-center gap-3 min-w-0">
