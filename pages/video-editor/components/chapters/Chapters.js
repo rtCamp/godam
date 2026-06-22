@@ -1,75 +1,88 @@
 /**
  * External dependencies
  */
-import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
-import { plus } from '@wordpress/icons';
+import { edit, trash } from '@wordpress/icons';
 import { useState } from '@wordpress/element';
+
 /**
  * Internal dependencies
  */
-import AddChapter from './AddChapter';
-import { addChapter } from '../../redux/slice/videoSlice';
-import { v4 as uuidv4 } from 'uuid';
+import ChapterForm from './ChapterForm';
+import { addChapter, removeChapter, updateChapterField } from '../../redux/slice/videoSlice';
+import { formatClock, getChapterRows } from './utils';
 
-const Chapters = ( { currentTime, duration, formatTimeForInput } ) => {
+/**
+ * Chapters tab panel: a header, the list of chapters (clickable cards that load
+ * into the form for editing, each with a delete action), and the add / edit
+ * form. Each chapter has an editable start and end; chapters may not overlap.
+ *
+ * @param {Object}   props                    Props.
+ * @param {number}   props.duration           Video duration, in seconds.
+ * @param {Function} props.formatTimeForInput Formats seconds to the editable time string.
+ * @param {Function} [props.onSelectChapter]  Seeks the player to a chapter's start.
+ * @return {JSX.Element} The Chapters panel.
+ */
+const Chapters = ( { duration, formatTimeForInput, onSelectChapter } ) => {
 	const loading = useSelector( ( state ) => state.videoReducer.loading );
 	const chapters = useSelector( ( state ) => state.videoReducer.chapters );
 	const dispatch = useDispatch();
-	const [ isError, setIsError ] = useState( {} );
 
-	// Sort the array (ascending order)
-	const sortedChapters = [ ...chapters ].sort(
-		( a, b ) => a.startTime - b.startTime,
-	);
+	const [ editingId, setEditingId ] = useState( null );
 
-	useEffect( () => {
-		const errors = {};
+	const rows = getChapterRows( chapters, duration );
+	const editingRow = rows.find( ( row ) => row.id === editingId ) || null;
 
-		for ( let i = 1; i < sortedChapters.length; i++ ) {
-			const chapter = sortedChapters[ i ];
-			if ( chapter.originalTime !== '' && parseFloat( chapter.startTime ) === parseFloat( sortedChapters[ i - 1 ].startTime ) ) {
-				errors[ chapter.id ] = 'similar time';
-			}
+	const handleEdit = ( row ) => {
+		setEditingId( row.id );
+		onSelectChapter?.( row.startSeconds );
+	};
+
+	const handleDelete = ( id ) => {
+		if ( editingId === id ) {
+			setEditingId( null );
 		}
+		dispatch( removeChapter( { id } ) );
+	};
 
-		sortedChapters.forEach( ( chapter ) => {
-			if ( chapter.startTime > duration ) {
-				errors[ chapter.id ] = 'greater than duration';
-			} else if ( chapter.startTime < 0 ) {
-				errors[ chapter.id ] = 'less than 0';
-			} else if ( chapter.originalTime === '' ) {
-				errors[ chapter.id ] = 'empty time';
-			}
-		} );
+	const handleSubmit = ( { id, title, startSeconds, endSeconds } ) => {
+		const fields = {
+			text: title,
+			startTime: String( startSeconds ),
+			originalTime: formatTimeForInput( startSeconds ) || '0:00',
+			endTime: String( endSeconds ),
+			originalEndTime: formatTimeForInput( endSeconds ) || '0:00',
+		};
 
-		setIsError( errors );
-	}, [ chapters, duration ] );
+		if ( id ) {
+			Object.entries( fields ).forEach( ( [ field, value ] ) => {
+				dispatch( updateChapterField( { id, field, value } ) );
+			} );
+			setEditingId( null );
+		} else {
+			dispatch( addChapter( { id: uuidv4(), ...fields } ) );
+		}
+	};
 
 	return (
-		<>
-			{ sortedChapters?.map( ( chapter ) => {
-				return (
-					<AddChapter
-						chapterID={ chapter.id }
-						key={ chapter?.id }
-						isError={ isError }
-					/>
-				);
-			} ) }
-			{ ! loading && chapters.length === 0 && (
-				<>
-					<h3 className="text-2xl m-0 text-center pt-4">
-						{ __( 'No chapters added', 'godam' ) }
-					</h3>
-				</>
-			) }
+		<div className="godam-ve-chapters">
+			<div className="godam-ve-chapters__head">
+				<h2 className="godam-ve-chapters__title">
+					{ sprintf(
+						// translators: %d is the number of chapters.
+						__( 'Chapters (%d)', 'godam' ),
+						chapters.length,
+					) }
+				</h2>
+			</div>
+
 			{ loading && (
 				<div className="loading-skeleton">
 					<div className="skeleton-container skeleton-container-short">
@@ -83,62 +96,77 @@ const Chapters = ( { currentTime, duration, formatTimeForInput } ) => {
 					</div>
 				</div>
 			) }
-			{ ! loading && (
-				<div className="mt-10 flex justify-center flex-col items-center">
-					<Button
-						className="godam-button w-fit"
-						variant="primary"
-						id="add-layer-btn"
-						icon={ plus }
-						iconPosition="left"
-						onClick={ () => {
-							const newID = uuidv4();
-							dispatch(
-								addChapter( {
-									id: newID,
-									text: '',
-									originalTime: formatTimeForInput( currentTime ) || '0.0',
-									startTime: currentTime || '0',
-								} ),
+
+			{ ! loading && rows.length > 0 && (
+				<ul className="godam-ve-chapters__list">
+					{ rows.map( ( row, index ) => {
+						// The chapter being edited is replaced by the edit form in place.
+						if ( editingId === row.id ) {
+							return (
+								<li key={ row.id } className="godam-ve-chapters__edit-row">
+									<ChapterForm
+										rows={ rows }
+										duration={ duration }
+										formatTimeForInput={ formatTimeForInput }
+										editingRow={ editingRow }
+										onSubmit={ handleSubmit }
+										onCancel={ () => setEditingId( null ) }
+									/>
+								</li>
 							);
-						} }
-						disabled={ chapters.find(
-							( l ) =>
-								l.startTime === currentTime ||
-                ( ! currentTime && parseFloat( l.startTime ) === 0 ),
-						) }
-					>
-						{ __( 'Add chapter at', 'godam' ) }{ ' ' }
-						{ formatTimeForInput( currentTime ) || '00:00' }s
-					</Button>
-					{ chapters.find(
-						( l ) =>
-							l.startTime === currentTime ||
-              ( ! currentTime && parseFloat( l.startTime ) === 0 ),
-					) && (
-						<p className="text-slate-500 text-center">
-							{ __(
-								'There is already a chapter at this timestamp. Please choose a different timestamp.',
-								'godam',
-							) }
-						</p>
-					) }
-					<div>
-						<p className="text-slate-800">
-							{ __( 'Read more about timestamp format', 'godam' ) }
-							<a
-								href="https://godam.io/docs/overview/chapters/#h-timestamps-formatting-instructions"
-								target="_blank"
-								className="text-[#AB3A6C]"
-								rel="noreferrer"
-							>
-								{ __( 'here', 'godam' ) }
-							</a>
-						</p>
-					</div>
-				</div>
+						}
+
+						return (
+							<li key={ row.id } className="godam-ve-chapter-row">
+								<Button
+									className="godam-ve-chapter-row__main"
+									onClick={ () => handleEdit( row ) }
+								>
+									<span className="godam-ve-chapter-row__swatch" aria-hidden="true" />
+									<span className="godam-ve-chapter-row__text">
+										<span className="godam-ve-chapter-row__name">
+											{ row.text?.trim() || sprintf(
+												// translators: %d is the chapter position in the list.
+												__( 'Chapter %d', 'godam' ),
+												index + 1,
+											) }
+										</span>
+										<span className="godam-ve-chapter-row__meta">
+											{ formatClock( row.startSeconds ) } - { formatClock( row.endSeconds ) }
+										</span>
+									</span>
+								</Button>
+								<Button
+									className="godam-ve-chapter-row__edit"
+									icon={ edit }
+									label={ __( 'Edit chapter', 'godam' ) }
+									onClick={ () => handleEdit( row ) }
+								/>
+								<Button
+									className="godam-ve-chapter-row__delete"
+									icon={ trash }
+									isDestructive
+									label={ __( 'Delete chapter', 'godam' ) }
+									onClick={ () => handleDelete( row.id ) }
+								/>
+							</li>
+						);
+					} ) }
+				</ul>
 			) }
-		</>
+
+			{ /* The bottom form adds a new chapter; editing happens inline above. */ }
+			{ ! loading && ! editingId && (
+				<ChapterForm
+					rows={ rows }
+					duration={ duration }
+					formatTimeForInput={ formatTimeForInput }
+					editingRow={ null }
+					onSubmit={ handleSubmit }
+					onCancel={ () => setEditingId( null ) }
+				/>
+			) }
+		</div>
 	);
 };
 

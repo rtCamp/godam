@@ -12,6 +12,7 @@
 @use 'editor-shell';
 @use 'controls';
 @use 'layers';
+@use 'chapters';
 
 // Hide layer controls fallback when portal target is not available
 .layer-controls-fallback {

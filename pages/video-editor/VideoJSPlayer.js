@@ -768,12 +768,23 @@ const Slider = ( props ) => {
 				}
 				{
 					sortedChapters?.map( ( chapter, index ) => {
-						const chapterLeft = ( chapter.startTime / max ) * 100;
+						const chapterStart = parseFloat( chapter.startTime ) || 0;
+						const chapterLeft = ( chapterStart / max ) * 100;
 
-						// Calculate difference to next chapter
+						// Each chapter spans its own start to its own end. Older data
+						// (no endTime) falls back to the next chapter's start, or the
+						// video end for the last one.
 						const nextChapter = sortedChapters[ index + 1 ];
-						const nextStart = nextChapter ? nextChapter.startTime : max; // fallback to end
-						const hoverWidth = ( ( nextStart - chapter.startTime ) / max ) * 100;
+						let chapterEnd;
+						let endLabel;
+						if ( chapter.endTime !== undefined && chapter.endTime !== null && chapter.endTime !== '' ) {
+							chapterEnd = parseFloat( chapter.endTime );
+							endLabel = chapter.originalEndTime || formatTimeForInput( chapterEnd );
+						} else {
+							chapterEnd = nextChapter ? ( parseFloat( nextChapter.startTime ) || 0 ) : max;
+							endLabel = nextChapter ? nextChapter.originalTime : formatTimeForInput( max );
+						}
+						const hoverWidth = ( ( chapterEnd - chapterStart ) / max ) * 100;
 
 						return (
 							<div
@@ -785,7 +796,7 @@ const Slider = ( props ) => {
 								} }
 							>
 								<div className="chapter-indicator--duration">
-									{ `${ chapter?.originalTime } - ${ nextChapter ? nextChapter?.originalTime : formatTimeForInput( max ) }` }
+									{ `${ chapter?.originalTime } - ${ endLabel }` }
 								</div>
 								<div
 									className="chapter-indicator--text"

@@ -1,0 +1,180 @@
+// =============================================================
+// Video Editor — Chapters tab (list panel + add/edit form).
+// Scoped under `.godam-video-editor`. Mirrors the Layers tab
+// design-system primitives (`godam-ve-layers` / `godam-ve-layer-row`):
+// accent comes from the WordPress component accent variable and
+// neutrals are derived from `currentColor`.
+// =============================================================
+
+$ve-border: #E0E0E0;
+$ve-accent: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+$ve-accent-tint: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 8%, transparent);
+$ve-muted: #0000008c;
+$ve-faint: color-mix(in srgb, currentcolor 5%, transparent);
+
+.godam-video-editor {
+
+	.godam-ve-chapters {
+
+		&__head {
+			padding: 1rem;
+			border-bottom: 1px solid $ve-border;
+		}
+
+		&__title {
+			margin: 0;
+			font-size: 0.9375rem;
+			font-weight: 600;
+			line-height: 1.4;
+		}
+
+		// Chapter cards list.
+		&__list {
+			width: 100%;
+			margin: 0;
+			padding: 0;
+			list-style: none;
+			border-bottom: 1px solid $ve-border;
+
+			li:not(:last-child) {
+				border-bottom: 1px solid $ve-border;
+			}
+		}
+
+		// Inline edit form, shown in place of the chapter being edited.
+		&__edit-row {
+			display: block;
+			background: $ve-accent-tint;
+			box-shadow: inset 3px 0 0 0 $ve-accent;
+		}
+
+		// Add / edit form.
+		&__form {
+			display: flex;
+			flex-direction: column;
+			gap: 0.75rem;
+			padding: 1rem;
+		}
+
+		&__form-head {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			min-height: 24px;
+		}
+
+		&__form-title {
+			font-size: 0.75rem;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.04em;
+			color: $ve-muted;
+		}
+
+		&__form-cancel.components-button.is-tertiary {
+			height: auto;
+			padding: 0;
+		}
+
+		// Start / End fields, side by side.
+		&__times {
+			display: flex;
+			gap: 0.75rem;
+
+			> * {
+				flex: 1 1 0;
+				min-width: 0;
+			}
+		}
+
+		&__submit.components-button {
+			width: 100%;
+			justify-content: center;
+		}
+
+		&__help {
+			margin: 0;
+			font-size: 0.75rem;
+			line-height: 1.4;
+			color: $ve-muted;
+
+			a {
+				color: #AB3A6C;
+				text-decoration: none;
+
+				&:hover {
+					text-decoration: underline;
+				}
+			}
+		}
+	}
+
+	.godam-ve-chapter-row {
+		display: flex;
+		align-items: center;
+		width: 100%;
+
+		&__main {
+			display: flex;
+			flex: 1 1 auto;
+			align-items: center;
+			gap: 0.75rem;
+			width: 100%;
+			height: auto;
+			min-height: 64px;
+			padding: 0.625rem 1rem;
+			text-align: left;
+			background: transparent;
+			outline: none;
+			box-shadow: none !important;
+		}
+
+		// Solid accent thumbnail swatch (matches the design mockup).
+		&__swatch {
+			flex: 0 0 auto;
+			width: 40px;
+			height: 40px;
+			background: $ve-accent;
+			border-radius: 8px;
+		}
+
+		&__text {
+			display: flex;
+			flex-direction: column;
+			min-width: 0;
+			line-height: 1.5;
+		}
+
+		&__name {
+			overflow: hidden;
+			font-size: 0.875rem;
+			font-weight: 600;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		&__meta {
+			font-size: 0.75rem;
+			color: $ve-muted;
+		}
+
+		&__edit {
+			flex: 0 0 auto;
+		}
+
+		&__delete {
+			flex: 0 0 auto;
+			margin-right: 0.5rem;
+		}
+
+		&:hover {
+			background: $ve-faint;
+		}
+
+		// Active (currently being edited) state + accent rail.
+		&.is-active {
+			background: $ve-accent-tint;
+			box-shadow: inset 3px 0 0 0 $ve-accent;
+		}
+	}
+}

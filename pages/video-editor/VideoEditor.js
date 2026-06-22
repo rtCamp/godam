@@ -439,9 +439,9 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 					{ currentTab === 'player-settings' && <Appearance attachmentID={ attachmentID } /> }
 					{ currentTab === 'chapters' && (
 						<Chapters
-							currentTime={ currentTime }
 							duration={ duration }
 							formatTimeForInput={ formatTimeForInput }
+							onSelectChapter={ seekToTime }
 						/>
 					) }
 				</aside>
