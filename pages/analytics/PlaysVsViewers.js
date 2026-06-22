@@ -98,7 +98,10 @@ const PlaysVsViewers = ( {
 						<p className="text-xs text-[#525252]">{ __( 'Plays / Unique viewers', 'godam' ) }</p>
 					</div>
 					{ mode !== 'dashboard' && (
-						<p id="plays-vs-viewers-change" className="metric-change">+0%</p>
+						<div className="flex items-center gap-1.5">
+							<p id="plays-vs-viewers-change" className="metric-change">+0%</p>
+							<span className="text-[11px] text-zinc-400 whitespace-nowrap">{ __( 'vs 7 days ago', 'godam' ) }</span>
+						</div>
 					) }
 				</div>
 

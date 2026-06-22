@@ -113,7 +113,10 @@ const SingleMetrics = ( {
 						<Tooltip text={ tooltipText } />
 					</div>
 					{ showChange && (
-						<p id={ `${ metricType }-change` } className="metric-change">+0%</p>
+						<div className="flex items-center gap-1.5">
+							<p id={ `${ metricType }-change` } className="metric-change">+0%</p>
+							<span className="text-[11px] text-zinc-400 whitespace-nowrap">{ __( 'vs 7 days ago', 'godam' ) }</span>
+						</div>
 					) }
 				</div>
 				<div className="flex flex-row justify-between gap-2 items-end">
