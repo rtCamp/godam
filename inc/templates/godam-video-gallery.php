@@ -373,7 +373,7 @@ if ( 'query' === $godam_gallery_mode ) {
 }
 
 ?>
-<div <?php echo wp_kses_data( $godam_wrapper_attributes ); ?>>
+<div data-test-id="godam-gallery-render" <?php echo wp_kses_data( $godam_wrapper_attributes ); ?>>
 	<div class="<?php echo esc_attr( sprintf( 'godam-gallery-v2__canvas godam-gallery-v2__canvas--%s', $godam_layout ) ); ?>">
 		<?php if ( empty( $godam_items ) && 'query' === $godam_gallery_mode ) : ?>
 			<div class="godam-gallery-v2__state">

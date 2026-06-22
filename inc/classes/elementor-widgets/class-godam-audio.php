@@ -176,7 +176,7 @@ class Godam_Audio extends Base {
 		}
 		?>
 
-		<figure class="elementor-godam-audio">
+		<figure class="elementor-godam-audio" data-test-id="godam-audio-render">
 			<audio controls <?php echo esc_attr( $autoplay ); ?> <?php echo esc_attr( $loop ); ?> preload="<?php echo esc_attr( $preload ); ?>">
 				<?php foreach ( $sources as $source ) : ?>
 					<source src="<?php echo esc_url( $source['src'] ); ?>" type="<?php echo esc_attr( $source['type'] ); ?>" />
