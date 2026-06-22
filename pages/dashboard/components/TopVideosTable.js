@@ -158,6 +158,7 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 					<SearchControl
 						__nextHasNoMarginBottom
 						className="top-media-container__search"
+						data-test-id="godam-top-videos-search"
 						value={ searchInput }
 						onChange={ setSearchInput }
 						placeholder={ __( 'Search videos', 'godam' ) }
@@ -166,11 +167,12 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 					/>
 					<ToggleControl
 						__nextHasNoMarginBottom
+						data-test-id="godam-top-videos-toggle-deleted"
 						label={ __( 'Show deleted videos', 'godam' ) }
 						checked={ showDeleted }
 						onChange={ onToggleDeleted }
 					/>
-					<button onClick={ handleExportCSV } className="export-button">
+					<button onClick={ handleExportCSV } className="export-button" data-test-id="godam-top-videos-export">
 						<img src={ ExportBtn } alt="" className="export-icon" />
 						{ __( 'Export', 'godam' ) }
 					</button>
@@ -283,9 +285,10 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 			</div>
 
 			{ totalPages > 1 && (
-				<nav className="godam-pagination" aria-label={ __( 'Top videos pagination', 'godam' ) }>
+				<nav className="godam-pagination" data-test-id="godam-top-videos-pagination" aria-label={ __( 'Top videos pagination', 'godam' ) }>
 					<button
 						className="godam-pagination__nav"
+						data-test-id="godam-top-videos-prev"
 						disabled={ page === 1 }
 						onClick={ () => setPage( ( prev ) => Math.max( prev - 1, 1 ) ) }
 						aria-label={ __( 'Previous page', 'godam' ) }
@@ -300,6 +303,7 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 							<button
 								key={ entry }
 								className={ `godam-pagination__page${ entry === page ? ' is-current' : '' }` }
+								data-test-id={ `godam-top-videos-page-${ entry }` }
 								aria-current={ entry === page ? 'page' : undefined }
 								onClick={ () => setPage( entry ) }
 							>
@@ -310,6 +314,7 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 
 					<button
 						className="godam-pagination__nav"
+						data-test-id="godam-top-videos-next"
 						disabled={ page >= totalPages }
 						onClick={ () => setPage( ( prev ) => Math.min( prev + 1, totalPages ) ) }
 						aria-label={ __( 'Next page', 'godam' ) }
