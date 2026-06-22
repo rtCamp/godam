@@ -6,7 +6,7 @@ import React from 'react';
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * ViewersGauge — a semicircle gauge for the "Total Plays / Unique Viewers" card.
@@ -41,7 +41,12 @@ const ViewersGauge = ( { plays = 0, uniqueViewers = 0 } ) => {
 					className="godam-gauge__svg"
 					viewBox="0 0 200 112"
 					role="img"
-					aria-label={ `${ viewersNum.toLocaleString() } ${ __( 'unique viewers of', 'godam' ) } ${ playsNum.toLocaleString() } ${ __( 'total plays', 'godam' ) }` }
+					aria-label={ sprintf(
+						/* translators: 1: unique viewers count, 2: total plays count. */
+						__( '%1$s unique viewers of %2$s total plays', 'godam' ),
+						viewersNum.toLocaleString(),
+						playsNum.toLocaleString(),
+					) }
 				>
 					<path
 						className="godam-gauge__track"

@@ -146,6 +146,18 @@ class Analytics extends Base {
 							'type'              => 'string',
 							'sanitize_callback' => 'esc_url_raw',
 						),
+						'search'   => array(
+							'required'          => false,
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'hide_deleted' => array(
+							'required'          => false,
+							'type'              => 'boolean',
+							'default'           => false,
+							'sanitize_callback' => 'rest_sanitize_boolean',
+						),
 					),
 				),
 			),
@@ -741,13 +753,13 @@ class Analytics extends Base {
 			$response = wp_remote_post(
 				$endpoint,
 				array(
-					'timeout' => 30,
+					'timeout' => 10,
 					'headers' => array( 'Content-Type' => 'application/json' ),
 					'body'    => wp_json_encode( array( 'video_ids' => array_values( array_map( 'intval', $video_ids ) ) ) ),
 				)
 			);
 		} else {
-			$response = wp_remote_get( $endpoint, array( 'timeout' => 30 ) );
+			$response = wp_remote_get( $endpoint, array( 'timeout' => 10 ) );
 		}
 		if ( is_wp_error( $response ) ) {
 			return new WP_REST_Response(
@@ -836,25 +848,47 @@ class Analytics extends Base {
 			return null;
 		}
 
+		// The default the UI sends on every load / page change is no-search +
+		// hide-deleted, which resolves to the full set of existing video
+		// attachment IDs — that set rarely changes, so cache it briefly to avoid
+		// re-querying a large media library on each request. (Up to 5 min stale,
+		// which is fine for analytics — it isn't real-time.) Search results vary
+		// per term, so they're not cached.
+		$cache_key   = 'rtgodam_top_videos_existing_ids';
+		$is_full_set = ( ! $has_search && $hide_deleted );
+		if ( $is_full_set ) {
+			$cached = get_transient( $cache_key );
+			if ( is_array( $cached ) ) {
+				return $cached;
+			}
+		}
+
 		// Existing video attachments, optionally matching the search term.
 		// Capped at the microservice's `video_ids` limit (10000).
 		$query_args = array(
-			'post_type'      => 'attachment',
-			'post_status'    => 'inherit',
-			'post_mime_type' => 'video',
-			'fields'         => 'ids',
-			'posts_per_page' => 10000,
-			'no_found_rows'  => true,
-			'orderby'        => 'ID',
-			'order'          => 'ASC',
+			'post_type'        => 'attachment',
+			'post_status'      => 'inherit',
+			'post_mime_type'   => 'video',
+			'fields'           => 'ids',
+			// phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- intentional: we need the full existing-attachment set to build the include-filter, bounded by the microservice's 10000 video_ids cap, and the common case is cached above.
+			'posts_per_page'   => 10000,
+			'no_found_rows'    => true,
+			'suppress_filters' => false,
+			'orderby'          => 'ID',
+			'order'            => 'ASC',
 		);
 
 		if ( $has_search ) {
 			$query_args['s'] = $search;
 		}
 
-		$ids = get_posts( $query_args );
+		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- bounded, `suppress_filters => false` (cacheable), and the common no-search case is transient-cached; matches the existing convention in this class.
+		$ids = array_map( 'intval', (array) get_posts( $query_args ) );
 
-		return array_map( 'intval', (array) $ids );
+		if ( $is_full_set ) {
+			set_transient( $cache_key, $ids, 5 * MINUTE_IN_SECONDS );
+		}
+
+		return $ids;
 	}
 }

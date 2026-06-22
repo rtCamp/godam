@@ -129,11 +129,11 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 		const csvContent = [ headers, ...rows ]
 			.map( ( row ) =>
 				row
-					.map( ( value ) =>
-						typeof value === 'string' && ( value.includes( ',' ) || value.includes( '\n' ) )
-							? `"${ value.replace( /"/g, '""' ) }"`
-							: value,
-					)
+					.map( ( value ) => {
+						const str = String( value );
+						// Quote + escape when the field contains a quote, comma, or newline.
+						return /["\n,]/.test( str ) ? `"${ str.replace( /"/g, '""' ) }"` : str;
+					} )
 					.join( ',' ),
 			)
 			.join( '\n' );
@@ -179,16 +179,18 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 
 			<div className="table-container overflow-x-auto">
 				<table className="w-full">
-					<tbody>
+					<thead>
 						<tr>
-							<th>{ __( 'Name', 'godam' ) }</th>
-							<th>{ __( 'Size', 'godam' ) }</th>
-							<th>{ __( 'Play Rate', 'godam' ) }</th>
-							<th>{ __( 'Total Plays', 'godam' ) }</th>
-							<th>{ __( 'Total Watch Time', 'godam' ) }</th>
-							<th>{ __( 'Average Engagement', 'godam' ) }</th>
-							<th>{ __( 'Conversion Rate', 'godam' ) }</th>
+							<th scope="col">{ __( 'Name', 'godam' ) }</th>
+							<th scope="col">{ __( 'Size', 'godam' ) }</th>
+							<th scope="col">{ __( 'Play Rate', 'godam' ) }</th>
+							<th scope="col">{ __( 'Total Plays', 'godam' ) }</th>
+							<th scope="col">{ __( 'Total Watch Time', 'godam' ) }</th>
+							<th scope="col">{ __( 'Average Engagement', 'godam' ) }</th>
+							<th scope="col">{ __( 'Conversion Rate', 'godam' ) }</th>
 						</tr>
+					</thead>
+					<tbody>
 
 						{ isFetching ? (
 							<tr>

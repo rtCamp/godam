@@ -34,7 +34,7 @@ input, textarea, select {
 .godam-button-icon {
 
 	svg {
-		fill: var(--wp-admin-theme-color) !important;
+		fill: var(--wp-admin-theme-color, #ab3a6c) !important;
 	}
 }
 

@@ -329,6 +329,10 @@ export function generateCountryHeatmap(
 		} ) )
 		.sort( ( a, b ) => b.views - a.views );
 
+	// Clear the table container on every render (the map is rebuilt below) so a
+	// refetch replaces rows instead of appending a second <table>.
+	d3.select( tableSelector ).html( '' );
+
 	// ===== MAP VISUALIZATION =====
 	const width = 800,
 		height = 500;

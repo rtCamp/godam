@@ -327,12 +327,12 @@
 
 .metrics-chart {
 	position: relative;
-	// Fill the (shrinking) column, but stay compact. `overflow: hidden` clips the
-	// SVG to this box — guarding against it falling back to its ~300px
-	// replaced-element default and spilling past the card.
+	// Compact: fill the (shrinking) column, capped so it stays inside the narrow
+	// KPI card. The SVG's inline width:100% (set by D3) keeps it within this box,
+	// so no overflow clip is needed — and not clipping lets the hover tooltip
+	// (`.mini-chart-tooltip`, appended here) show above the sparkline.
 	width: 100%;
 	max-width: 64px;
-	overflow: hidden;
 }
 
 .mini-chart-tooltip {
