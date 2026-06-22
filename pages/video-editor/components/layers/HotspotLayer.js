@@ -305,7 +305,6 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 				<TextControl
 					data-test-id="godam-hotspot-control-duration"
 					label={ __( 'Layer Duration (seconds)', 'godam' ) }
-					className="godam-input"
 					type="number"
 					min="1"
 					max="36000"
@@ -320,7 +319,6 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 			<div className="mb-4">
 				<div data-test-id="godam-hotspot-control-pause-on-hover">
 					<ToggleControl
-						className="godam-toggle"
 						label={ __( 'Pause video on hover', 'godam' ) }
 						checked={ layer?.pauseOnHover || false }
 						onChange={ ( isChecked ) => updateField( 'pauseOnHover', isChecked ) }
@@ -417,7 +415,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 							<div className="mt-3">
 								<TextControl
 									data-test-id={ `godam-hotspot-control-tooltip-text-${ index }` }
-									className="godam-input mb-2"
+									className="mb-2"
 									label={ __( 'Tooltip Text', 'godam' ) }
 									placeholder={ __( 'Click Me!', 'godam' ) }
 									value={ hotspot.tooltipText }
@@ -443,7 +441,6 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 										);
 										updateField( 'hotspots', updated );
 									} }
-									className="godam-input"
 								/>
 								{ hotspot.linkInvalid && (
 									<div className="text-yellow-600 text-sm mt-1 flex items-center gap-1">
@@ -501,7 +498,6 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 					id="add-hotspot-btn"
 					icon={ plus }
 					iconPosition="left"
-					className="godam-button"
 					onClick={ handleAddHotspot }
 				>
 					{ __( 'Add Hotspot', 'godam' ) }

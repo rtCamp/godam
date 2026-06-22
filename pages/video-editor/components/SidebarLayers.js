@@ -18,17 +18,14 @@ import ForminatorIcon from '../assets/layers/Forminator.png';
 import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
 import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
 import MetformIcon from '../assets/layers/MetFormIcon.png';
-import ctaIcon from '../assets/layers/cta.svg';
-import hotspotIcon from '../assets/layers/hotspot.svg';
-import formIcon from '../assets/layers/form.svg';
-import pollIcon from '../assets/layers/poll.svg';
+import { CtaLayerIcon, HotspotLayerIcon, FormLayerIcon, PollLayerIcon } from './editor-shell/icons';
 
 /**
  * WordPress dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { Button, Icon, Tooltip, Dropdown, DropdownMenu, MenuGroup, MenuItem, NavigableMenu, Popover } from '@wordpress/components';
-import { plus, preformatted, customLink, video, customPostType, thumbsUp, moreVertical, copy, trash, chevronRight } from '@wordpress/icons';
+import { plus, preformatted, customLink, video, customPostType, thumbsUp, moreVertical, copy, trash, chevronRight, info } from '@wordpress/icons';
 import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
 
 import LayerSelector from './LayerSelector.jsx';
@@ -368,9 +365,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 
 	// Colored layer-type icons (from design) used in the list rows + add menu.
 	const layerTypeIcons = {
-		cta: ctaIcon,
-		hotspot: hotspotIcon,
-		poll: pollIcon,
+		cta: CtaLayerIcon,
+		hotspot: HotspotLayerIcon,
+		poll: PollLayerIcon,
 	};
 
 	// Build the "Add layer" dropdown options from the live layer types so that
@@ -378,8 +375,8 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 	// the modal's behaviour.
 	const buildAddOptions = () => {
 		const options = [
-			{ key: 'cta', iconUrl: ctaIcon, title: __( 'CTA', 'godam' ), description: __( 'Add a clickable button', 'godam' ), onSelect: () => addNewLayer( 'cta' ) },
-			{ key: 'hotspot', iconUrl: hotspotIcon, title: __( 'Hotspot', 'godam' ), description: __( 'Add an info hotspot', 'godam' ), onSelect: () => addNewLayer( 'hotspot' ) },
+			{ key: 'cta', iconComponent: CtaLayerIcon, title: __( 'CTA', 'godam' ), description: __( 'Add a clickable button', 'godam' ), onSelect: () => addNewLayer( 'cta' ) },
+			{ key: 'hotspot', iconComponent: HotspotLayerIcon, title: __( 'Hotspot', 'godam' ), description: __( 'Add an info hotspot', 'godam' ), onSelect: () => addNewLayer( 'hotspot' ) },
 		];
 
 		// "Form" entry. With multiple active form plugins it opens a side submenu
@@ -396,7 +393,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 			} ) );
 		const formOption = {
 			key: 'form',
-			iconUrl: formIcon,
+			iconComponent: FormLayerIcon,
 			title: __( 'Form', 'godam' ),
 			description: __( 'Embed a lead form', 'godam' ),
 		};
@@ -413,7 +410,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 		const pollLayer = layerTypes.find( ( l ) => l.type === 'poll' );
 		options.push( {
 			key: 'poll',
-			iconUrl: pollIcon,
+			iconComponent: PollLayerIcon,
 			title: __( 'Poll', 'godam' ),
 			description: __( 'Create an interactive poll', 'godam' ),
 			disabled: pollLayer?.isActive === false,
@@ -463,94 +460,95 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 						layers.length,
 					) }
 				</h2>
-			</div>
 
-			<Dropdown
-				className="godam-ve-layers__add"
-				contentClassName="godam-ve-add-menu__popover"
-				popoverProps={ { placement: 'bottom-start' } }
-				renderToggle={ ( { isOpen: menuOpen, onToggle } ) => {
-					const handleToggle = () => {
-						if ( onPauseVideo ) {
-							onPauseVideo();
-						}
-						onToggle();
-					};
-					return (
-						<>
-							<Button
-								variant="primary"
-								className="godam-ve-layers__add-button"
-								iconPosition="left"
-								id="add-layer-btn"
-								onClick={ handleToggle }
-								aria-expanded={ menuOpen }
-								disabled={ isAddDisabled }
-							>
-								{ __( 'Add layer', 'godam' ) }
-							</Button>
-							<Button
-								variant="primary"
-								className="godam-ve-layers__add-plus"
-								icon={ plus }
-								label={ __( 'Add layer', 'godam' ) }
-								onClick={ handleToggle }
-								aria-expanded={ menuOpen }
-								disabled={ isAddDisabled }
-							/>
-						</>
-					);
-				} }
-				renderContent={ ( { onClose } ) => (
-					<NavigableMenu orientation="vertical" className="godam-ve-add-menu">
-						{ addOptions.map( ( opt ) => {
-							// Options with a submenu (e.g. Form) open a side submenu.
-							if ( opt.submenu ) {
-								return (
-									<AddLayerSubmenuItem
-										key={ opt.key }
-										opt={ opt }
-										onParentClose={ onClose }
-									/>
-								);
+				<Dropdown
+					className="godam-ve-layers__add"
+					contentClassName="godam-ve-add-menu__popover"
+					popoverProps={ { placement: 'bottom-start' } }
+					renderToggle={ ( { isOpen: menuOpen, onToggle } ) => {
+						const handleToggle = () => {
+							if ( onPauseVideo ) {
+								onPauseVideo();
 							}
-
-							const item = (
-								<MenuItem
-									className="godam-ve-add-menu__item"
-									disabled={ opt.disabled }
-									onClick={ () => {
-										opt.onSelect?.();
-										onClose();
-									} }
+							onToggle();
+						};
+						return (
+							<>
+								<Button
+									variant="primary"
+									className="godam-ve-layers__add-button"
+									iconPosition="left"
+									id="add-layer-btn"
+									onClick={ handleToggle }
+									aria-expanded={ menuOpen }
+									disabled={ isAddDisabled }
 								>
-									<span className="godam-ve-add-menu__icon">
-										{ opt.iconUrl
-											? <img src={ opt.iconUrl } alt="" />
-											: <Icon icon={ opt.iconComponent } /> }
-									</span>
-									<span className="godam-ve-add-menu__text">
-										<span className="godam-ve-add-menu__title">{ opt.title }</span>
-										{ opt.description && (
-											<span className="godam-ve-add-menu__desc">{ opt.description }</span>
-										) }
-									</span>
-								</MenuItem>
-							);
+									{ __( 'Add layer', 'godam' ) }
+								</Button>
+								<Button
+									variant="primary"
+									className="godam-ve-layers__add-plus"
+									icon={ plus }
+									label={ __( 'Add layer', 'godam' ) }
+									onClick={ handleToggle }
+									aria-expanded={ menuOpen }
+									disabled={ isAddDisabled }
+								/>
+							</>
+						);
+					} }
+					renderContent={ ( { onClose } ) => (
+						<NavigableMenu orientation="vertical" className="godam-ve-add-menu">
+							{ addOptions.map( ( opt ) => {
+								// Options with a submenu (e.g. Form) open a side submenu.
+								if ( opt.submenu ) {
+									return (
+										<AddLayerSubmenuItem
+											key={ opt.key }
+											opt={ opt }
+											onParentClose={ onClose }
+										/>
+									);
+								}
 
-							return opt.tooltip
-								? <Tooltip key={ opt.key } text={ opt.tooltip } placement="right">{ item }</Tooltip>
-								: <span key={ opt.key }>{ item }</span>;
-						} ) }
-					</NavigableMenu>
+								const item = (
+									<MenuItem
+										className="godam-ve-add-menu__item"
+										disabled={ opt.disabled }
+										onClick={ () => {
+											opt.onSelect?.();
+											onClose();
+										} }
+									>
+										<span className="godam-ve-add-menu__icon">
+											{ opt.iconUrl
+												? <img src={ opt.iconUrl } alt="" />
+												: <Icon icon={ opt.iconComponent } /> }
+										</span>
+										<span className="godam-ve-add-menu__text">
+											<span className="godam-ve-add-menu__title">{ opt.title }</span>
+											{ opt.description && (
+												<span className="godam-ve-add-menu__desc">{ opt.description }</span>
+											) }
+										</span>
+									</MenuItem>
+								);
+
+								return opt.tooltip
+									? <Tooltip key={ opt.key } text={ opt.tooltip } placement="right">{ item }</Tooltip>
+									: <span key={ opt.key }>{ item }</span>;
+							} ) }
+						</NavigableMenu>
+					) }
+				/>
+
+				{ ! currentTime && ! hasLayerAtCurrentTime && (
+					<p className="godam-ve-layers__hint">
+						<Icon icon={ info } size={ 24 } />
+						{ __( 'To add a layer, pick a spot on the timeline where you want the layer.', 'godam' ) }
+					</p>
 				) }
-			/>
-
-			{ ! currentTime && ! hasLayerAtCurrentTime && (
-				<p className="godam-ve-layers__hint">
-					{ __( 'To add a layer, pick a spot on the timeline where you want the layer.', 'godam' ) }
-				</p>
-			) }
+			</div>
 
 			{ loading && (
 				<div className="loading-skeleton">

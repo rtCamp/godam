@@ -344,7 +344,6 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 							handleSearchChange( value );
 						} }
 						placeholder={ __( 'search layers…', 'godam' ) }
-						className="godam-input"
 					/>
 
 				</div>
@@ -407,14 +406,12 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 			<div className="godam-layer-selector__buttons">
 				<Button
 					variant="tertiary"
-					className="godam-button"
 					onClick={ closeModal }
 				>
 					{ __( 'Cancel', 'godam' ) }
 				</Button>
 				<Button
 					variant="primary"
-					className="godam-button"
 					disabled={ ! selectedLayer }
 					onClick={ () => handleCustomiseLayer() }
 					data-test-id="godam-layer-selector-button-customise"

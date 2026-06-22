@@ -6,11 +6,6 @@ $GREEN: #4CAF50;
 $RED: #F44336;
 $LIGHT_BLUE: #2196F3;
 
-#root-easydam,
-#root-video-editor {
-	--wp-components-color-accent: #ab3a6c;
-}
-
 $media-library-sidebar-bg: #fff;
 $media-library-sidebar-bg-dark: #a3a3a3;
 $media-library-sidebar-border: #E0E0E0;
@@ -98,33 +93,6 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 .media-frame-content {
 	left: $media-frame-width;
-}
-
-/**
-* Admin page CSS changes for the top-level EasyDAM page.
-*/
-.toplevel_page_rtgodam,
-.godam_page_rtgodam_video_editor,
-.godam_page_rtgodam_help,
-.godam-analytics-container,
-.godam-dashboard-container,
-.godam-admin-root {
-	--wp-admin-theme-color: #ab3a6c;
-
-	button,
-	a,
-	input {
-
-		&:not(.is-destructive) {
-			--wp-components-color-accent: #ab3a6c;
-			--wp-components-color-accent-darker-10: #9a2d5e;
-			--wp-components-color-accent-darker-20: #6e2445;
-		}
-	}
-
-	.circle {
-		--wp-components-color-accent: #e6533a;
-	}
 }
 
 /* Style for GoDAM admin pages container */
@@ -1118,6 +1086,7 @@ to ensure proper responsiveness and avoid layout issues.
 }
 
 @keyframes godam-elementor-thumbnail-spin {
+
 	to {
 		transform: rotate(360deg);
 	}

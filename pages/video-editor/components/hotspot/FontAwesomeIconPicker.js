@@ -133,7 +133,7 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 							aria-expanded={ isDropDownOpen }
 							variant="secondary"
 							size="compact"
-							className="flex-grow flex items-center gap-2 godam-button px-3"
+							className="flex-grow flex items-center gap-2 px-3"
 							disabled={ disabled }
 						>
 							{ hotspot.icon ? (
@@ -221,7 +221,7 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 					variant="secondary"
 					size="compact"
 					onClick={ handleUploadCustomIcon }
-					className="flex-shrink-0 flex items-center gap-2 godam-button px-3"
+					className="flex-shrink-0 flex items-center gap-2 px-3"
 					disabled={ disabled }
 				>
 					{ hotspot.customIconUrl ? (
@@ -247,7 +247,7 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 						variant="secondary"
 						size="compact"
 						onClick={ handleReset }
-						className="flex-shrink-0 godam-button"
+						className="flex-shrink-0"
 						icon={ trash }
 					>
 					</Button>

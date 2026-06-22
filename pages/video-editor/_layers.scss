@@ -8,22 +8,24 @@
 // rules live OUTSIDE the editor scope (keyed off the popover class).
 // =============================================================
 
-$ve-accent: var(--wp-components-color-accent);
-$ve-accent-tint: color-mix(in srgb, var(--wp-components-color-accent) 8%, transparent);
-$ve-muted: color-mix(in srgb, currentcolor 55%, transparent);
+$ve-border: #E0E0E0;
+$ve-accent: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+$ve-accent-tint: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 8%, transparent);
+$ve-muted: #0000008c;
 $ve-faint: color-mix(in srgb, currentcolor 5%, transparent);
-$ve-circle: color-mix(in srgb, currentcolor 6%, transparent);
+$ve-circle: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 10%, transparent);
 
 .godam-video-editor {
 
 	.godam-ve-layers {
 
 		&__head {
-			margin-bottom: 0.75rem;
+			padding: 1rem;
+			border-bottom: 1px solid $ve-border;
 		}
 
 		&__title {
-			margin: 0;
+			margin: 0 0 0.75rem 0;
 			font-size: 0.9375rem;
 			font-weight: 600;
 			line-height: 1.4;
@@ -34,6 +36,7 @@ $ve-circle: color-mix(in srgb, currentcolor 6%, transparent);
 			display: flex;
 			align-items: stretch;
 			margin-bottom: 0.5rem;
+			gap: 1px;
 		}
 
 		&__add-button {
@@ -47,13 +50,23 @@ $ve-circle: color-mix(in srgb, currentcolor 6%, transparent);
 			flex: 0 0 auto;
 			border-top-left-radius: 0;
 			border-bottom-left-radius: 0;
+			border-left: 1px solid #fff;
 		}
 
 		&__hint {
-			margin: 0 0 0.75rem;
+			margin: 0;
 			font-size: 0.75rem;
 			line-height: 1.4;
 			color: $ve-muted;
+			display: flex;
+			align-items: flex-start;
+
+			svg {
+				fill: $ve-muted;
+				margin-right: 0.25rem;
+				position: relative;
+				bottom: 4px;
+			}
 		}
 
 		&__empty {
@@ -81,17 +94,23 @@ $ve-circle: color-mix(in srgb, currentcolor 6%, transparent);
 		}
 
 		&__list {
-			display: flex;
-			flex-direction: column;
-			gap: 0.25rem;
+			width: 100%;
 			margin: 0;
 			padding: 0;
 			list-style: none;
+
+			li {
+
+				&:not(:last-child) {
+					border-bottom: 1px solid $ve-border;
+				}
+			}
 		}
 	}
 
 	.godam-ve-layer-row {
-		margin: 0 -1rem;
+		width: 100%;
+		margin: 0;
 
 		&__hit {
 			display: flex;
@@ -109,6 +128,8 @@ $ve-circle: color-mix(in srgb, currentcolor 6%, transparent);
 			padding: 0.625rem 1rem;
 			text-align: left;
 			background: transparent;
+			outline: none;
+			box-shadow: none !important;
 		}
 
 		&__icon {
@@ -120,6 +141,10 @@ $ve-circle: color-mix(in srgb, currentcolor 6%, transparent);
 			height: 36px;
 			background: $ve-circle;
 			border-radius: 50%;
+
+			svg {
+				fill: none;
+			}
 		}
 
 		&__icon-img {
@@ -132,7 +157,7 @@ $ve-circle: color-mix(in srgb, currentcolor 6%, transparent);
 			display: flex;
 			flex-direction: column;
 			min-width: 0;
-			line-height: 1.3;
+			line-height: 1.5;
 		}
 
 		&__name {
@@ -159,10 +184,7 @@ $ve-circle: color-mix(in srgb, currentcolor 6%, transparent);
 		&.is-active {
 			background: $ve-accent-tint;
 			box-shadow: inset 3px 0 0 0 $ve-accent;
-		}
-
-		&.is-active .godam-ve-layer-row__icon {
-			background: color-mix(in srgb, var(--wp-components-color-accent) 14%, transparent);
+			// border-left: 2px solid $ve-accent;
 		}
 	}
 }

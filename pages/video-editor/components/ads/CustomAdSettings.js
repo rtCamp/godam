@@ -166,7 +166,7 @@ const CustomAdSettings = ( { layerID } ) => {
 				<div className="flex gap-2">
 					{ ! layer?.ad_url && ( <Button
 						__nextHasNoMarginBottom
-						className="mb-2 godam-button"
+						className="mb-2"
 						variant="primary"
 						onClick={ () => OpenVideoSelector() }
 						disabled={ adServer === 'ad-server' }
@@ -197,7 +197,7 @@ const CustomAdSettings = ( { layerID } ) => {
 			<div data-test-id="godam-ad-control-skippable">
 				<ToggleControl
 					__nextHasNoMarginBottom
-					className="mb-4 godam-toggle"
+					className="mb-4"
 					label={ __( 'Skippable', 'godam' ) }
 					checked={ layer?.skippable ?? false }
 					onChange={ ( value ) =>
@@ -214,7 +214,7 @@ const CustomAdSettings = ( { layerID } ) => {
 					data-test-id="godam-ad-control-skip-time"
 					help={ __( 'Time in seconds after which the skip button will appear', 'godam' ) }
 					value={ layer?.skip_offset }
-					className="mb-4 godam-input"
+					className="mb-4"
 					onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'skip_offset', value } ) ) }
 					type="number"
 					min="0"
@@ -229,7 +229,6 @@ const CustomAdSettings = ( { layerID } ) => {
 					placeholder="https://example"
 					help={ __( 'Enter the URL to redirect when the ad is clicked', 'godam' ) }
 					value={ layer?.click_link }
-					className="godam-input"
 					onChange={ handleChange }
 					disabled={ adServer === 'ad-server' }
 					type="url"

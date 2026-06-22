@@ -345,7 +345,7 @@ const ImageCTA = ( { layerID } ) => {
 							<Button
 								onClick={ openImageCTAUploader }
 								variant="primary"
-								className="ml-2 godam-button"
+								className="ml-2"
 								aria-label={ __( 'Upload or Replace CTA Image', 'godam' ) }
 								data-test-id="godam-cta-button-upload-image"
 							>
@@ -401,7 +401,6 @@ const ImageCTA = ( { layerID } ) => {
 			<TextControl
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
-				className="godam-input"
 				label={ __( 'Title', 'godam' ) }
 				data-test-id="godam-cta-control-title"
 				value={ layer.imageText }
@@ -416,7 +415,6 @@ const ImageCTA = ( { layerID } ) => {
 				<TextControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
-					className="godam-input"
 					label={ __( 'URL', 'godam' ) }
 					data-test-id="godam-cta-control-url"
 					value={ layer.imageLink }
@@ -433,7 +431,6 @@ const ImageCTA = ( { layerID } ) => {
 			<TextareaControl
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
-				className="godam-input"
 				label={ __( 'Description', 'godam' ) }
 				data-test-id="godam-cta-control-description"
 				value={ layer.imageDescription }
@@ -446,7 +443,6 @@ const ImageCTA = ( { layerID } ) => {
 			<TextControl
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
-				className="godam-input"
 				label={ __( 'CTA Button Text', 'godam' ) }
 				data-test-id="godam-cta-control-button-text"
 				value={ layer.imageCtaButtonText }
