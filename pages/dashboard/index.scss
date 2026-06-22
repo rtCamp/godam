@@ -81,6 +81,26 @@
 		align-items: center;
 	}
 
+	&__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		padding-top: 1rem;
+		flex-wrap: wrap;
+	}
+
+	&__tools {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		flex-wrap: wrap;
+	}
+
+	&__search {
+		min-width: 220px;
+	}
+
 	.export-button {
 		background-color: #F4F4F5;
 		display: flex;
@@ -167,6 +187,59 @@
 		}
 	}
 
+	.godam-pagination {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 4px;
+		margin-top: 16px;
+
+		&__nav,
+		&__page {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-width: 32px;
+			height: 32px;
+			padding: 0 8px;
+			border: 1px solid #E4E4E7;
+			border-radius: 6px;
+			background-color: #fff;
+			color: #3F3F46;
+			font-size: 13px;
+			cursor: pointer;
+
+			&:disabled {
+				opacity: 0.4;
+				cursor: default;
+			}
+
+			&:hover:not( :disabled ) {
+				background-color: #F4F4F5;
+			}
+		}
+
+		&__page.is-current {
+			border-color: var( --wp-admin-theme-color, #2271b1 );
+			color: var( --wp-admin-theme-color, #2271b1 );
+			font-weight: 600;
+		}
+
+		&__gap {
+			min-width: 24px;
+			text-align: center;
+			color: #A1A1AA;
+		}
+
+		.chevron-icon {
+			width: 16px;
+			height: 16px;
+		}
+	}
+
+	// Prev/next pagination for the Reel Pops analytics table (godam-for-woo),
+	// which renders inside `.top-media-container` and reuses these classes.
+	// Keep them even though the Top Videos table above uses `.godam-pagination`.
 	.previous-btn {
 		background-color: transparent;
 	}

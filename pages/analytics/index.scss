@@ -317,11 +317,22 @@
 	}
 }
 
+// The sparkline column sits beside the (wide) KPI value in a narrow card. Let it
+// shrink instead of pushing the row — and itself — past the card's right edge.
+// `min-width: 0` overrides the flex default (`auto` = content width) so the column
+// can give way to the value; the chart then fills whatever width is left.
+.godam-spark-col {
+	min-width: 0;
+}
+
 .metrics-chart {
 	position: relative;
+	// Fill the (shrinking) column, but stay compact. `overflow: hidden` clips the
+	// SVG to this box — guarding against it falling back to its ~300px
+	// replaced-element default and spilling past the card.
 	width: 100%;
-	// Keep the sparkline from collapsing to a sliver in the narrow Insights track.
-	min-width: 96px;
+	max-width: 64px;
+	overflow: hidden;
 }
 
 .mini-chart-tooltip {

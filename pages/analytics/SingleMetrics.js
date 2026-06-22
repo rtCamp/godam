@@ -154,7 +154,7 @@ const SingleMetrics = ( {
 						</p>
 						<p className="text-zinc-500 text-xs">{ dataLabel || __( 'All time', 'godam' ) }</p>
 					</div>
-					<div className="flex flex-col gap-1 items-end">
+					<div className="flex flex-col gap-1 items-end godam-spark-col">
 						<div id={ `single-${ metricType }-chart` } className="metrics-chart"></div>
 						<p className="text-zinc-400 text-[10px]">{ __( 'Last 7 days', 'godam' ) }</p>
 					</div>

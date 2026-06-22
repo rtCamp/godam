@@ -703,6 +703,8 @@ class Analytics extends Base {
 		$page          = $request->get_param( 'page' ) ?? 1;
 		$limit         = $request->get_param( 'limit' ) ?? 10;
 		$site_url      = $request->get_param( 'site_url' );
+		$search        = trim( (string) $request->get_param( 'search' ) );
+		$hide_deleted  = rest_sanitize_boolean( $request->get_param( 'hide_deleted' ) );
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
 
@@ -716,6 +718,12 @@ class Analytics extends Base {
 			);
 		}
 
+		// Name search + hide-deleted are WordPress-only concerns (titles and
+		// deletion state live in WP, not the microservice). Resolve them into the
+		// microservice's `video_ids` include-filter. null => no restriction;
+		// an array (including []) => restrict to that set ([] yields zero rows).
+		$video_ids = $this->resolve_top_videos_id_filter( $search, $hide_deleted );
+
 		$endpoint = add_query_arg(
 			array(
 				'page'          => $page,
@@ -727,7 +735,20 @@ class Analytics extends Base {
 			RTGODAM_ANALYTICS_BASE . '/dashboard/top-videos/'
 		);
 
-		$response = wp_remote_get( $endpoint );
+		// When a `video_ids` include-filter applies, POST it (the list can be
+		// large); otherwise fall back to a plain GET.
+		if ( is_array( $video_ids ) ) {
+			$response = wp_remote_post(
+				$endpoint,
+				array(
+					'timeout' => 30,
+					'headers' => array( 'Content-Type' => 'application/json' ),
+					'body'    => wp_json_encode( array( 'video_ids' => array_values( array_map( 'intval', $video_ids ) ) ) ),
+				)
+			);
+		} else {
+			$response = wp_remote_get( $endpoint, array( 'timeout' => 30 ) );
+		}
 		if ( is_wp_error( $response ) ) {
 			return new WP_REST_Response(
 				array(
@@ -788,8 +809,52 @@ class Analytics extends Base {
 				'status'      => 'success',
 				'top_videos'  => $top_videos,
 				'total_pages' => $body['total_pages'] ?? 1,
+				'total_items' => $body['total_items'] ?? 0,
 			),
 			200
 		);
+	}
+
+	/**
+	 * Resolve the `video_ids` include-filter for name-search + hide-deleted.
+	 *
+	 * Titles and deletion state live in WordPress, not the microservice, so both
+	 * concerns are turned into an explicit list of existing video-attachment IDs
+	 * (optionally matching the search term) for the microservice to filter on.
+	 *
+	 * @param string $search       Search term (matched against attachment titles).
+	 * @param bool   $hide_deleted Whether to restrict to existing attachments.
+	 *
+	 * @return array|null Attachment IDs, or null when neither concern is active.
+	 */
+	private function resolve_top_videos_id_filter( $search, $hide_deleted ) {
+		$has_search = ( '' !== (string) $search );
+
+		// Neither concern active => let the microservice return everything
+		// (deleted rows are still flagged `exists:false` during enrichment).
+		if ( ! $has_search && ! $hide_deleted ) {
+			return null;
+		}
+
+		// Existing video attachments, optionally matching the search term.
+		// Capped at the microservice's `video_ids` limit (10000).
+		$query_args = array(
+			'post_type'      => 'attachment',
+			'post_status'    => 'inherit',
+			'post_mime_type' => 'video',
+			'fields'         => 'ids',
+			'posts_per_page' => 10000,
+			'no_found_rows'  => true,
+			'orderby'        => 'ID',
+			'order'          => 'ASC',
+		);
+
+		if ( $has_search ) {
+			$query_args['s'] = $search;
+		}
+
+		$ids = get_posts( $query_args );
+
+		return array_map( 'intval', (array) $ids );
 	}
 }

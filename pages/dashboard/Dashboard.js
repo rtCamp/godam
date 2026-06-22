@@ -1,12 +1,12 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 
 /**
  * WordPress dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { Icon } from '@wordpress/components';
 import { info } from '@wordpress/icons';
 
@@ -17,19 +17,15 @@ import { info } from '@wordpress/icons';
 import { addQueryArgs } from '@wordpress/url';
 import { API_KEY_STATUS, ERROR_TYPE } from '../shared/enums';
 import { generateCountryHeatmap } from '../analytics/helper';
-import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.png';
-import ExportBtn from '../../assets/src/images/export.svg';
-import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, useFetchTopVideosQuery } from './redux/api/dashboardAnalyticsApi';
+import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery } from './redux/api/dashboardAnalyticsApi';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
 import SingleMetrics from '../analytics/SingleMetrics';
 import ViewersGauge from './components/ViewersGauge';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
-import chevronLeft from '../../assets/src/images/chevron-left.svg';
-import chevronRight from '../../assets/src/images/chevron-right.svg';
 import NewYearSaleBanner from '../../assets/src/images/new-year-sale-2026.webp';
 import UpgradePlanDashboardBg from '../../assets/src/images/upgrade-plan-dashboard-bg.webp';
-import { formatWatchTime } from '../utils/formatters';
+import TopVideosTable from './components/TopVideosTable';
 
 /**
  * Retrieve dashboard sections registered by add-ons.
@@ -161,7 +157,6 @@ const getSortedSections = () =>
 	Object.values( sectionRegistry ).sort( ( a, b ) => a.priority - b.priority );
 
 const Dashboard = () => {
-	const [ topVideosPage, setTopVideosPage ] = useState( 1 );
 	const [ extendedSections, setExtendedSections ] = useState( getSortedSections );
 
 	// Re-read the registry whenever an add-on registers a section after mount.
@@ -195,13 +190,6 @@ const Dashboard = () => {
 	const shouldSkipSecondaryQueries = shouldSkipAnalytics || ! dashboardMetrics || !! dashboardMetrics?.errorType;
 
 	const { data: dashboardMetricsHistory } = useFetchDashboardMetricsHistoryQuery( { days: 60, siteUrl }, { skip: shouldSkipSecondaryQueries } );
-	const {
-		data: topVideosResponse,
-		isFetching: isTopVideosFetching,
-	} = useFetchTopVideosQuery( { siteUrl, page: topVideosPage, limit: 10 }, { skip: shouldSkipSecondaryQueries } );
-
-	const topVideosData = topVideosResponse?.videos || [];
-	const totalTopVideosPages = topVideosResponse?.totalPages || 1;
 
 	const showNewYearSaleBanner = window.videoData?.showNewYearSaleBanner;
 	const shouldShowUpgradeMessage =
@@ -263,76 +251,6 @@ const Dashboard = () => {
 			return () => clearInterval( interval );
 		}
 	}, [ isDashboardMetricsLoading, dashboardMetrics ] );
-
-	const handleExportCSV = () => {
-		const headers = [
-			'Title',
-			'Media ID',
-			'Size',
-			'Play Rate',
-			'Total Plays',
-			'Watch Time',
-			'Engagement Rate',
-			'Conversion Rate',
-		];
-
-		const rows = topVideosData?.map( ( item ) => {
-			return [
-				item.title || item.video_id,
-				`ID: ${ item.video_id }`,
-				( item.video_size ? item.video_size.toFixed( 2 ) : 0 ) + ' MB',
-				( ( item.plays / ( item.plays + 5 ) ) * 100 ).toFixed( 2 ) + '%',
-				item.plays,
-				item.play_time?.toFixed( 2 ) + 's',
-				( ( item.play_time / ( item.plays * item.video_length ) ) * 100 ).toFixed( 2 ) + '%',
-				item.video_conversion_rate !== undefined && item.video_conversion_rate !== null
-					? Number( item.video_conversion_rate ).toFixed( 2 ) + '%'
-					: '-',
-			];
-		} );
-
-		const csvContent = [
-			headers.join( ',' ),
-			...rows.map( ( row ) =>
-				row
-					.map( ( value ) => {
-						if (
-							typeof value === 'string' &&
-							( value.includes( ',' ) || value.includes( '\n' ) )
-						) {
-							return `"${ value.replace( /"/g, '""' ) }"`; // escape double quotes
-						}
-						return value;
-					} )
-					.join( ',' ),
-			),
-		].join( '\n' );
-
-		// Trigger download
-		const blob = new Blob( [ csvContent ], { type: 'text/csv;charset=utf-8;' } );
-		const url = URL.createObjectURL( blob );
-		const link = document.createElement( 'a' );
-		link.setAttribute( 'href', url );
-		link.setAttribute( 'download', 'godam-video-analytics.csv' );
-		link.style.display = 'none';
-		document.body.appendChild( link );
-		link.click();
-		document.body.removeChild( link );
-	};
-
-	const isFirstLoadRef = useRef( true );
-
-	useEffect( () => {
-		if ( isFirstLoadRef.current ) {
-			isFirstLoadRef.current = false;
-			return;
-		}
-
-		const container = document.querySelector( '.top-media-container' );
-		if ( container ) {
-			container.scrollIntoView( { behavior: 'smooth' } );
-		}
-	}, [ topVideosPage ] );
 
 	useEffect( () => {
 		const checkExist = setInterval( () => {
@@ -572,163 +490,7 @@ const Dashboard = () => {
 					</div>
 				</div>
 
-				<div className="top-media-container">
-					<div className="flex justify-between pt-4">
-						<h2>{ __( 'Top Videos', 'godam' ) }</h2>
-						<button onClick={ handleExportCSV } className="export-button">
-							<img src={ ExportBtn } alt="Export" className="export-icon" />
-							{ __( 'Export', 'godam' ) }
-						</button>
-					</div>
-					<div className="table-container overflow-x-auto">
-						<table className="w-full">
-							<tbody>
-								<tr>
-									<th>{ __( 'Name', 'godam' ) }</th>
-									<th>{ __( 'Size', 'godam' ) }</th>
-									<th>{ __( 'Play Rate', 'godam' ) }</th>
-									<th>{ __( 'Total Plays', 'godam' ) }</th>
-									<th>{ __( 'Total Watch Time', 'godam' ) }</th>
-									<th>{ __( 'Average Engagement', 'godam' ) }</th>
-									<th>{ __( 'Conversion Rate', 'godam' ) }</th>
-								</tr>
-								{ isTopVideosFetching ? (
-									<tr>
-										<td colSpan="7">
-											<div className="space-y-4 mt-3">
-												<div className="skeleton h-4 w-full"></div>
-												<div className="skeleton h-4 w-full"></div>
-												<div className="skeleton h-4 w-full"></div>
-											</div>
-										</td>
-									</tr>
-								) : (
-									topVideosData?.map( ( item, index ) => (
-										<tr key={ index }>
-											<td>
-												<div className="video-info">
-													{ item.exists ? (
-														<>
-															<a className="thumbnail-link" href={ `admin.php?page=rtgodam_analytics&id=${ item.video_id }` }>
-																<img
-																	src={ item.thumbnail_url || DefaultThumbnail }
-																	alt={ item.title || __( 'Video thumbnail', 'godam' ) }
-																/>
-															</a>
-															<a className="title-link" href={ `admin.php?page=rtgodam_analytics&id=${ item.video_id }` }>
-																<div className="w-full max-w-40 text-left flex-1">
-																	<p className="font-semibold">{ item.title || `Video ID: ${ item.video_id }` }</p>
-																</div>
-															</a>
-														</>
-													) : (
-														<>
-															<div className="thumbnail-link">
-																<img
-																	src={ DefaultThumbnail }
-																	alt={ item.title || __( 'Video thumbnail', 'godam' ) }
-																/>
-															</div>
-															<div className="title-link">
-																<div className="w-full max-w-40 text-left flex-1">
-																	<p className="font-semibold">{ item.title }</p>
-																</div>
-															</div>
-														</>
-													) }
-												</div>
-											</td>
-											<td>
-												{ item.video_size ? `${ item.video_size.toFixed( 2 ) } MB` : '' }
-											</td>
-											<td>
-												{ item.plays > 0 && item.page_load > 0
-													? ( ( item.plays / item.page_load ) * 100 ).toFixed( 2 ) + '%'
-													: '0%' }
-											</td>
-											<td>
-												{ item.plays ? Number( item.plays ).toLocaleString() : '-' }
-											</td>
-											<td>
-												{ item.play_time ? formatWatchTime( item.play_time ) : '-' }
-											</td>
-											<td>
-												{ item.plays > 0 && item.video_length > 0
-													? ( ( item.play_time / ( item.plays * item.video_length ) ) * 100 ).toFixed( 2 ) + '%'
-													: '-' }
-											</td>
-											<td
-												title={
-													item.total_converting_sessions > 0
-														? sprintf(
-															/* translators: 1: converting sessions, 2: total plays. */
-															__( '%1$s of %2$s sessions converted', 'godam' ),
-															Number( item.total_converting_sessions ).toLocaleString(),
-															Number( item.plays ).toLocaleString(),
-														)
-														: __( 'No layer conversions in this period', 'godam' )
-												}
-											>
-												{ item.video_conversion_rate !== undefined && item.video_conversion_rate !== null
-													? `${ Number( item.video_conversion_rate ).toFixed( 2 ) }%`
-													: '-' }
-											</td>
-										</tr>
-									) )
-								) }
-								{ ! isTopVideosFetching && topVideosData.length === 0 && (
-									<tr>
-										<td colSpan="7">
-											<div className="godam-empty-state">
-												<p className="godam-empty-state__title">
-													{ __( 'No video plays yet', 'godam' ) }
-												</p>
-												<p className="godam-empty-state__hint">
-													{ __( 'Once your videos start getting views, your top performers will show up here.', 'godam' ) }
-												</p>
-											</div>
-										</td>
-									</tr>
-								) }
-							</tbody>
-
-						</table>
-					</div>
-					<div className="flex items-center justify-between mt-4">
-						<p className="text-sm text-gray-500">
-							{
-								/* translators: %1$d is the current page number, %2$d is the total number of pages */
-								sprintf( __( 'Page %1$d of %2$d', 'godam' ), topVideosPage, totalTopVideosPages )
-							}
-						</p>
-						<div className="flex items-center gap-4">
-							<button
-								className="previous-btn flex items-center gap-1"
-								disabled={ topVideosPage === 1 }
-								onClick={ () => setTopVideosPage( ( prev ) => Math.max( prev - 1, 1 ) ) }
-							>
-								<img
-									src={ chevronLeft }
-									alt="Previous"
-									className={ `w-4 h-4 chevron-icon ${ topVideosPage === 1 ? 'icon-disabled' : '' }` }
-								/>
-								<span>{ __( 'Previous', 'godam' ) }</span>
-							</button>
-							<button
-								className="next-btn flex items-center gap-1"
-								disabled={ topVideosPage >= totalTopVideosPages }
-								onClick={ () => setTopVideosPage( ( prev ) => prev + 1 ) }
-							>
-								<span>{ __( 'Next', 'godam' ) }</span>
-								<img
-									src={ chevronRight }
-									alt="Next"
-									className={ `w-4 h-4 chevron-icon ${ topVideosPage >= totalTopVideosPages ? 'icon-disabled' : '' }` }
-								/>
-							</button>
-						</div>
-					</div>
-				</div>
+				<TopVideosTable siteUrl={ siteUrl } skip={ shouldSkipSecondaryQueries } />
 
 				{ extendedSections.map( ( { id, component: SectionComponent } ) => (
 					<SectionComponent key={ id } />
