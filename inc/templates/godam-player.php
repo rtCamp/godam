@@ -939,11 +939,7 @@ if ( empty( $godam_attachment_title ) ) {
 							elseif ( isset( $godam_layer['type'] ) && 'cta' === $godam_layer['type'] ) :
 								?>
 								<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
-									<?php if ( 'text' === $godam_layer['cta_type'] ) : ?>
-										<div class="ql-editor easydam-layer--cta-text">
-											<?php echo wp_kses_post( $godam_layer['text'] ); ?>
-										</div>
-									<?php elseif ( 'html' === $godam_layer['cta_type'] && ! empty( $godam_layer['html'] ) ) : ?>
+									<?php if ( 'html' === $godam_layer['cta_type'] && ! empty( $godam_layer['html'] ) ) : ?>
 										<div class="easydam-layer--cta-html">
 											<?php echo wp_kses_post( $godam_layer['html'] ); ?>
 										</div>

@@ -1,0 +1,497 @@
+// =============================================================
+// Video Editor — reusable layer-config controls (`godam-ve-*`).
+// Self-contained replacements for `_common.scss` controls, used by
+// the redesigned layer configuration panels (CTA first, then the
+// other layer types). Everything is scoped under `.godam-video-editor`
+// so the rules can't leak and the global `_common.scss` rules can't
+// bleed in. No `_common.scss` usage. No hardcoded brand colour — the
+// accent comes from the WordPress component accent variable so it
+// follows the admin colour scheme; neutrals derive from `currentColor`.
+// =============================================================
+
+$ve-accent: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+$ve-accent-tint: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 8%, transparent);
+$ve-accent-tint-strong: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 14%, transparent);
+$ve-border: #e0e0e0;
+$ve-border-strong: color-mix(in srgb, currentcolor 22%, transparent);
+$ve-muted: color-mix(in srgb, currentcolor 55%, transparent);
+$ve-faint: color-mix(in srgb, currentcolor 4%, transparent);
+$ve-danger: #cc1818;
+$ve-radius: 4px;
+
+.godam-video-editor {
+
+	// ---------------------------------------------------------
+	// Config-panel scroll body: a vertical stack of sections.
+	// ---------------------------------------------------------
+	.godam-ve-config {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+		padding-bottom: 1.5rem;
+	}
+
+	// ---------------------------------------------------------
+	// Section + heading
+	// ---------------------------------------------------------
+	.godam-ve-section {
+		display: flex;
+		flex-direction: column;
+		padding: 0 1rem;
+		gap: 0.75rem;
+
+		&__title {
+			margin: 0;
+			font-size: 0.9375rem;
+			font-weight: 600;
+			line-height: 1.4;
+		}
+	}
+
+	// ---------------------------------------------------------
+	// Field grouping wrapper (a label over a composite control,
+	// e.g. the button colour rows). Single inputs carry their own
+	// label via the WordPress component instead.
+	// ---------------------------------------------------------
+	.godam-ve-field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.375rem;
+
+		&__label {
+			font-size: 0.8125rem;
+			font-weight: 600;
+			line-height: 1.4;
+		}
+
+		&__help {
+			margin: 0;
+			font-size: 0.75rem;
+			line-height: 1.4;
+			color: $ve-muted;
+		}
+	}
+
+	// ---------------------------------------------------------
+	// WordPress form controls (TextControl / TextareaControl /
+	// RangeControl) restyled via the `.godam-ve-control` class —
+	// the same override approach the editor used with `_common.scss`,
+	// but on new self-contained classes.
+	// ---------------------------------------------------------
+	.godam-ve-control {
+
+		&--textarea .components-textarea-control__input {
+			min-height: 96px;
+		}
+
+		.components-base-control__label {
+			margin-bottom: 0.375rem;
+			font-size: 0.8125rem;
+			font-weight: 600;
+			line-height: 1.4;
+			color: inherit;
+			text-transform: none;
+		}
+
+		.components-base-control__help {
+			margin-top: 0.375rem;
+			font-size: 0.75rem;
+			line-height: 1.4;
+			color: $ve-muted;
+		}
+
+		.components-text-control__input,
+		.components-textarea-control__input {
+			background: #fff;
+			border: 1px solid $ve-border-strong;
+			border-radius: $ve-radius;
+			box-shadow: none;
+
+			&::placeholder {
+				color: $ve-muted;
+			}
+
+			&:focus {
+				border-color: $ve-accent;
+				box-shadow: 0 0 0 1px $ve-accent;
+			}
+		}
+
+		// Validation error: red message + red input border.
+		&.is-error {
+
+			.components-base-control__help {
+				color: $ve-danger;
+			}
+
+			.components-text-control__input {
+				border-color: $ve-danger;
+			}
+		}
+	}
+
+	// ---------------------------------------------------------
+	// Segmented control — big card-style 2-up toggle
+	// (e.g. "Card Style" / "HTML").
+	// ---------------------------------------------------------
+	.godam-ve-segmented {
+		display: grid;
+		grid-auto-columns: 1fr;
+		grid-auto-flow: column;
+		gap: 0.75rem;
+
+		&__option {
+			display: flex;
+			flex-direction: column;
+			gap: 0.125rem;
+			padding: 0.75rem 1rem;
+			text-align: center;
+			cursor: pointer;
+			background: #fff;
+			border: 1px solid $ve-border-strong;
+			border-radius: $ve-radius;
+
+			&:disabled {
+				cursor: not-allowed;
+				opacity: 0.5;
+			}
+
+			&:hover:not(:disabled) {
+				border-color: $ve-accent;
+			}
+		}
+
+		&__title {
+			font-size: 0.875rem;
+			font-weight: 600;
+			line-height: 1.4;
+		}
+
+		&__desc {
+			font-size: 0.75rem;
+			line-height: 1.4;
+			color: $ve-muted;
+		}
+
+		&__option.is-selected {
+			background: $ve-accent-tint;
+			border-color: $ve-accent;
+		}
+	}
+
+	// ---------------------------------------------------------
+	// Layout grid — visual thumbnail picker.
+	// ---------------------------------------------------------
+	.godam-ve-layout-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 0.625rem;
+
+		&__item {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 1rem;
+			color: $ve-muted;
+			cursor: pointer;
+			background: #fff;
+			border: 1px solid $ve-border-strong;
+			border-radius: $ve-radius;
+
+			svg {
+				display: block;
+			}
+
+			&:hover:not(:disabled) {
+				color: $ve-accent;
+				border-color: $ve-accent;
+			}
+		}
+
+		&__item.is-selected {
+			color: $ve-accent;
+			background: $ve-accent-tint;
+			border-color: $ve-accent;
+		}
+	}
+
+	// ---------------------------------------------------------
+	// CTA Trigger radios — custom radio cards (native radio + bold label +
+	// muted description). The SELECTED option reveals its settings inline,
+	// indented under the option text (matches the design).
+	// ---------------------------------------------------------
+	.godam-ve-radio-group {
+		display: flex;
+		flex-direction: column;
+		gap: 0.875rem;
+	}
+
+	.godam-ve-radio {
+
+		&__option {
+			display: grid;
+			grid-template-columns: auto 1fr;
+			gap: 0.625rem;
+			align-items: start;
+			cursor: pointer;
+		}
+
+		&__input {
+			width: 16px;
+			height: 16px;
+			margin: 2px 0 0;
+			accent-color: $ve-accent;
+		}
+
+		&__text {
+			display: flex;
+			flex-direction: column;
+		}
+
+		&__label {
+			font-size: 0.875rem;
+			font-weight: 600;
+			line-height: 1.4;
+		}
+
+		&__desc {
+			font-size: 0.75rem;
+			line-height: 1.4;
+			color: $ve-muted;
+		}
+
+		// Selected option's settings, aligned under the label (past the radio).
+		&__expand {
+			margin: 0.625rem 0 0 calc(16px + 0.625rem);
+		}
+
+		&.is-disabled {
+
+			.godam-ve-radio__option {
+				cursor: not-allowed;
+			}
+
+			.godam-ve-radio__label,
+			.godam-ve-radio__desc {
+				color: $ve-muted;
+			}
+		}
+	}
+
+	// ---------------------------------------------------------
+	// Button colours — two `ColorPickerButton` rows (swatch + label)
+	// stacked in a bordered list.
+	// ---------------------------------------------------------
+	.godam-ve-color-list {
+		overflow: hidden;
+		border: 1px solid $ve-border;
+		border-radius: $ve-radius;
+
+		.godam-color-picker {
+			width: 100%;
+			margin: 0;
+		}
+
+		.godam-color-picker__toggle {
+			gap: 0.625rem;
+			padding: 0.75rem;
+			border: 0;
+			border-radius: 0;
+
+			&:hover {
+				background: $ve-faint;
+			}
+		}
+
+		// Divider between stacked rows (after the base toggle rule to keep
+		// specificity ascending for stylelint's no-descending-specificity).
+		.godam-color-picker + .godam-color-picker .godam-color-picker__toggle {
+			border-top: 1px solid $ve-border;
+		}
+
+		.godam-color-picker__label {
+			font-size: 0.875rem;
+			font-weight: 500;
+		}
+	}
+
+	// ---------------------------------------------------------
+	// Collapsible section (Button Settings, Advanced) — a self-contained
+	// disclosure: a divider, a bold header toggle with a chevron, and a body.
+	// Horizontal padding matches `.godam-ve-section`.
+	// ---------------------------------------------------------
+	.godam-ve-collapsible {
+		border-top: 1px solid $ve-border;
+
+		&__head {
+			display: flex;
+			gap: 0.5rem;
+			align-items: center;
+			justify-content: space-between;
+			width: 100%;
+			padding: 0.875rem 1rem;
+			cursor: pointer;
+			background: transparent;
+			border: 0;
+		}
+
+		&__title {
+			font-size: 0.9375rem;
+			font-weight: 600;
+			line-height: 1.4;
+		}
+
+		&__chevron {
+			flex: 0 0 auto;
+			fill: currentcolor;
+		}
+
+		&__body {
+			display: flex;
+			flex-direction: column;
+			gap: 0.875rem;
+			padding: 0 1rem 1rem;
+		}
+	}
+
+	// ---------------------------------------------------------
+	// Media picker (image): click the card to replace, trash to remove.
+	// ---------------------------------------------------------
+	.godam-ve-media {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+		padding: 0.5rem;
+		border: 1px solid $ve-border-strong;
+		border-radius: $ve-radius;
+
+		&__main {
+			display: flex;
+			flex: 1 1 auto;
+			gap: 0.625rem;
+			align-items: center;
+			min-width: 0;
+			min-height: auto;
+			padding: 0.25rem;
+			text-align: left;
+			cursor: pointer;
+			background: transparent;
+			border: none;
+			border-radius: 6px;
+
+			&:hover {
+				background: $ve-faint;
+			}
+		}
+
+		&__thumb {
+			flex: 0 0 auto;
+			width: 44px;
+			height: 44px;
+			object-fit: cover;
+			border-radius: 6px;
+		}
+
+		&__meta {
+			display: flex;
+			flex-direction: column;
+			min-width: 0;
+			line-height: 1.4;
+		}
+
+		&__name {
+			overflow: hidden;
+			font-size: 0.875rem;
+			font-weight: 600;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		&__size {
+			font-size: 0.75rem;
+			color: $ve-muted;
+		}
+
+		&__remove {
+			flex: 0 0 auto;
+		}
+	}
+
+	.godam-ve-media-select {
+		justify-content: center;
+		width: 100%;
+	}
+
+	.godam-ve-media-hint {
+		margin: 0;
+		font-size: 0.75rem;
+		line-height: 1.4;
+		color: $ve-muted;
+	}
+
+	// ---------------------------------------------------------
+	// Layer config header (shared by every layer type):
+	// editable name + "TYPE • time" subtitle · delete. Matches the
+	// design — no back affordance, read-only timestamp.
+	// ---------------------------------------------------------
+	.godam-ve-layer-head {
+		display: flex;
+		gap: 0.5rem;
+		align-items: flex-start;
+		padding: 1rem;
+		padding-bottom: 0.875rem;
+		margin-bottom: 1.25rem;
+		border-bottom: 1px solid $ve-border;
+
+
+		&__body {
+			display: flex;
+			flex: 1 1 auto;
+			flex-direction: column;
+			min-width: 0;
+		}
+
+		&__name {
+			width: calc(100% + 0.5rem);
+			padding: 0.125rem 0.25rem;
+			margin-left: -0.25rem;
+			font-size: 15px;
+			font-weight: 600;
+			line-height: 1.4;
+			color: inherit;
+			background: transparent;
+			border: 1px solid transparent;
+			border-radius: 6px;
+			min-height: auto;
+
+			&::placeholder {
+				color: inherit;
+			}
+
+			&:hover {
+				border-color: $ve-border;
+			}
+
+			&:focus {
+				background: #fff;
+				border-color: $ve-accent;
+				outline: none;
+			}
+		}
+
+		&__subtitle {
+			display: flex;
+			gap: 0.375rem;
+			align-items: center;
+			margin: 0.25rem 0 0;
+			font-size: 0.75rem;
+			line-height: 1.4;
+			color: $ve-muted;
+			text-transform: uppercase;
+		}
+
+		&__delete {
+			flex: 0 0 auto;
+		}
+	}
+}

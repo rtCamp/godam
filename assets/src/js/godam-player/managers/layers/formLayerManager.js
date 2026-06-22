@@ -249,6 +249,14 @@ export default class FormLayerManager {
 				show: true,
 				allowSkip,
 				skipText,
+				// How this layer is triggered. `timestamp` (the default, and the
+				// value for every layer created before triggers existed) appears
+				// at `displayTime`; the others fire on their own player events.
+				trigger: layer.trigger || 'timestamp',
+				// Watch-% threshold for the `watch_depth` trigger.
+				watchDepth: Number( layer.watchDepth ) || 0,
+				// Whether an event-driven trigger has already fired (one-shot).
+				triggered: false,
 				// Stash the original config so analytics emit functions have
 				// access to id, name, type without threading them through every
 				// method signature.
@@ -507,30 +515,152 @@ export default class FormLayerManager {
 	}
 
 	/**
+	 * Reveal a layer: pause the video, hide native controls and fire the
+	 * `viewed` impression. `isDisplayingLayers` is flipped BEFORE pausing so
+	 * the `pause` event we generate here doesn't re-enter `handlePause()`.
+	 *
+	 * @param {Object}  layerObj     - Layer object stored in this.formLayers.
+	 * @param {boolean} [pauseVideo] - Whether to pause (false for end-of-video, already ended).
+	 */
+	showLayer( layerObj, pauseVideo = true ) {
+		if ( ! layerObj.layerElement.classList.contains( 'hidden' ) ) {
+			return;
+		}
+		this.isDisplayingLayers[ this.currentPlayerVideoInstanceId ] = true;
+		layerObj.layerElement.classList.remove( 'hidden' );
+		this.player.controls( false );
+		if ( pauseVideo ) {
+			this.player.pause();
+		}
+		// Fire `viewed` impression. Deduped per (layer_id, page-session) inside
+		// emitLayerEvent — re-displaying the same layer does not produce a
+		// second impression.
+		this.emitLayerEvent( layerObj.layer, 'viewed' );
+	}
+
+	/**
 	 * Handle form layers time update
 	 *
 	 * @param {number} currentTime - Current video time in seconds
 	 */
 	handleFormLayersTimeUpdate( currentTime ) {
-		if ( this.isDisplayingLayers[ this.currentPlayerVideoInstanceId ] ||
-			this.currentFormLayerIndex >= this.formLayers.length ) {
+		if ( this.isDisplayingLayers[ this.currentPlayerVideoInstanceId ] ) {
 			return;
 		}
 
-		const layerObj = this.formLayers[ this.currentFormLayerIndex ];
+		// Advance the queue pointer past event-driven layers (watch_depth,
+		// on_pause, end_of_video). They are shown by their own handlers, not by
+		// playback time, so they must not block timestamp layers behind them.
+		while ( this.currentFormLayerIndex < this.formLayers.length &&
+			this.formLayers[ this.currentFormLayerIndex ].trigger !== 'timestamp' ) {
+			this.currentFormLayerIndex++;
+		}
 
-		if ( layerObj.show &&
-			currentTime >= layerObj.displayTime &&
-			layerObj.layerElement.classList.contains( 'hidden' ) ) {
-			layerObj.layerElement.classList.remove( 'hidden' );
-			this.player.pause();
-			this.player.controls( false );
-			this.isDisplayingLayers[ this.currentPlayerVideoInstanceId ] = true;
+		if ( this.currentFormLayerIndex < this.formLayers.length ) {
+			const layerObj = this.formLayers[ this.currentFormLayerIndex ];
 
-			// Fire `viewed` impression. Deduped per (layer_id, page-session)
-			// inside emitLayerEvent — re-displaying the same layer after a
-			// time-seek does not produce a second impression.
-			this.emitLayerEvent( layerObj.layer, 'viewed' );
+			if ( layerObj.show &&
+				currentTime >= layerObj.displayTime &&
+				layerObj.layerElement.classList.contains( 'hidden' ) ) {
+				this.showLayer( layerObj );
+				return;
+			}
+		}
+
+		// Watch-depth layers fire independently of the timestamp queue.
+		this.handleWatchDepthLayers( currentTime );
+	}
+
+	/**
+	 * Show the first not-yet-fired `watch_depth` layer once the viewer has
+	 * crossed its watch-percentage threshold.
+	 *
+	 * @param {number} currentTime - Current video time in seconds.
+	 */
+	handleWatchDepthLayers( currentTime ) {
+		if ( this.isDisplayingLayers[ this.currentPlayerVideoInstanceId ] ) {
+			return;
+		}
+
+		let videoDuration = 0;
+		try {
+			videoDuration = Number( this.player.duration() ) || 0;
+		} catch ( e ) {
+			videoDuration = 0;
+		}
+		if ( ! videoDuration ) {
+			return;
+		}
+
+		const watchedPercent = Math.min( 100, ( currentTime / videoDuration ) * 100 );
+
+		const layerObj = this.formLayers.find(
+			( l ) => l.trigger === 'watch_depth' &&
+				l.show &&
+				! l.triggered &&
+				watchedPercent >= l.watchDepth &&
+				l.layerElement.classList.contains( 'hidden' ),
+		);
+
+		if ( layerObj ) {
+			layerObj.triggered = true;
+			this.showLayer( layerObj );
+		}
+	}
+
+	/**
+	 * Show an `on_pause` layer when the viewer pauses the video. Ignores the
+	 * pauses the manager itself generates while showing a layer (guarded by
+	 * `isDisplayingLayers`).
+	 */
+	handlePause() {
+		if ( this.isDisplayingLayers[ this.currentPlayerVideoInstanceId ] ) {
+			return;
+		}
+
+		// A natural end-of-playback often emits `pause` just before `ended`.
+		// Let `handleEnded` own that moment so an `on_pause` CTA doesn't hijack
+		// the final frame from an `end_of_video` CTA.
+		try {
+			if ( this.player.ended && this.player.ended() ) {
+				return;
+			}
+		} catch ( e ) {
+			// Ignore — fall through and treat as a normal pause.
+		}
+
+		const layerObj = this.formLayers.find(
+			( l ) => l.trigger === 'on_pause' &&
+				l.show &&
+				! l.triggered &&
+				l.layerElement.classList.contains( 'hidden' ),
+		);
+
+		if ( layerObj ) {
+			layerObj.triggered = true;
+			this.showLayer( layerObj );
+		}
+	}
+
+	/**
+	 * Overlay an `end_of_video` layer on the final frame when playback ends.
+	 * The video has already stopped, so it is revealed without re-pausing.
+	 */
+	handleEnded() {
+		if ( this.isDisplayingLayers[ this.currentPlayerVideoInstanceId ] ) {
+			return;
+		}
+
+		const layerObj = this.formLayers.find(
+			( l ) => l.trigger === 'end_of_video' &&
+				l.show &&
+				! l.triggered &&
+				l.layerElement.classList.contains( 'hidden' ),
+		);
+
+		if ( layerObj ) {
+			layerObj.triggered = true;
+			this.showLayer( layerObj, false );
 		}
 	}
 
@@ -678,6 +808,7 @@ export default class FormLayerManager {
 		this.currentFormLayerIndex = 0;
 		this.formLayers.forEach( ( layerObj ) => {
 			layerObj.show = true;
+			layerObj.triggered = false;
 			layerObj.layerElement.classList.add( 'hidden' );
 		} );
 	}

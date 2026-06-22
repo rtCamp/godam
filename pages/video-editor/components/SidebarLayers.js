@@ -259,6 +259,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					id: uuidv4(),
 					displayTime: currentTime,
 					type,
+					name: '',
 					form_type: formType || 'gravity',
 					submitted: false,
 					allow_skip: true,
@@ -271,9 +272,11 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					id: uuidv4(),
 					displayTime: currentTime,
 					type,
+					name: '',
 					cta_type: 'image',
 					cardLayout: 'card-layout--imagecover-text',
-					text: '',
+					trigger: 'timestamp',
+					watchDepth: 50,
 					html: '',
 					link: '',
 					allow_skip: true,
@@ -285,6 +288,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 						id: uuidv4(),
 						displayTime: currentTime,
 						type,
+						name: '',
 						duration: 5,
 						pauseOnHover: false,
 						hotspots: [],
@@ -297,6 +301,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					id: uuidv4(),
 					displayTime: currentTime,
 					type,
+					name: '',
 					adTagUrl: '',
 					ad_url: '',
 					skippable: false,
@@ -308,6 +313,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					id: uuidv4(),
 					displayTime: currentTime,
 					type,
+					name: '',
 					poll_id: '',
 					allow_skip: true,
 					custom_css: '',
@@ -621,7 +627,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 											</span>
 											<span className="godam-ve-layer-row__text">
 												<span className="godam-ve-layer-row__name">
-													{ sprintf(
+													{ layer.name || sprintf(
 														// translators: %d is the layer position in the list.
 														__( 'Layer %d', 'godam' ),
 														index + 1,

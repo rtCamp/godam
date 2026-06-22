@@ -2,13 +2,14 @@
  * External dependencies
  */
 import React from 'react';
+import { useDispatch } from 'react-redux';
+
 /**
  * WordPress dependencies
  */
-import { Button, Modal, TextControl, Notice } from '@wordpress/components';
-import { useState, useEffect } from '@wordpress/element';
-import { useDispatch, useSelector } from 'react-redux';
-import { arrowLeft, trash } from '@wordpress/icons';
+import { Button, Modal } from '@wordpress/components';
+import { useState } from '@wordpress/element';
+import { trash } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
@@ -18,45 +19,31 @@ import { updateLayerField, removeLayer } from '../../redux/slice/videoSlice';
 import { layerTypes } from '../SidebarLayers';
 
 /**
- * Component that renders the header section for the selected layer.
+ * Header for the selected layer's configuration panel: an editable layer name,
+ * a static "TYPE • time" subtitle, and a delete action. Shared by every layer
+ * type. The timestamp is read-only here (it is set on the timeline / in the
+ * layer's own trigger config), so the header is purely informational + naming.
  *
  * @param {Object}   param0           - Props passed to the LayersHeader component.
  * @param {Object}   param0.layer     - The layer object containing type and metadata.
- * @param {Function} param0.goBack    - Callback to navigate back to the previous view.
- * @param {number}   param0.duration  - Total duration of the video (in seconds or milliseconds).
+ * @param {Function} param0.goBack    - Callback used to clear the selection after delete.
  * @param {string}   param0.layerName - Optional custom layer label for add-ons.
  *
  * @return {JSX.Element} The rendered LayersHeader component.
  */
-const LayersHeader = ( { layer, goBack, duration, layerName: customLayerName } ) => {
+const LayersHeader = ( { layer, goBack, layerName: customLayerName } ) => {
 	const [ isOpen, setOpen ] = useState( false );
-	const [ isEditing, setIsEditing ] = useState( false );
-	const [ initialTimePeriod, setInitialTimePeriod ] = useState( '' );
-	const [ layerTime, setLayerTime ] = useState( layer?.id );
 	const dispatch = useDispatch();
 
-	useEffect( () => {
-		setLayerTime( layer?.displayTime );
-		setInitialTimePeriod( layer?.displayTime );
-	}, [ layer?.displayTime ] );
-
-	const layers = useSelector( ( state ) => state.videoReducer.layers );
-
-	const isDuplicateTime = layers?.some(
-		( singleLayer ) =>
-			Number( singleLayer.displayTime ) === Number( layerTime ) &&
-        singleLayer?.id !== layer?.id,
-	);
-
 	/**
-	 * Get the layer data.
+	 * Resolve the layer type label (e.g. "CTA", or the specific form integration).
 	 */
 	const layerTypeData = layerTypes.find( ( l ) => l.type === layer.type );
-	const layerName = customLayerName || (
+	const typeLabel = customLayerName || (
 		'form' === layer.type
 			? layerTypeData?.formType[ layer?.form_type ?? 'gravity' ]?.layerText
 			: layerTypeData?.layerText
-	);
+	) || '';
 
 	const handleDeleteLayer = () => {
 		dispatch( removeLayer( { id: layer.id } ) );
@@ -65,86 +52,37 @@ const LayersHeader = ( { layer, goBack, duration, layerName: customLayerName } )
 
 	return (
 		<>
-			<div className="flex justify-between items-center border-b mb-3">
-				<Button icon={ arrowLeft } onClick={ goBack } />
-				<p className="text-base flex items-center gap-1">
-					{ sprintf(
-						/* translators: %s is the layer type name, e.g. CTA or Hotspot. */
-						__( '%s layer at', 'godam' ),
-						layerName || '',
-					) }{ isEditing ? (
-						<TextControl
-							__nextHasNoMarginBottom={ true }
-							__next40pxDefaultSize={ false }
-							value={ layerTime }
-							style={ { width: 60, height: 20 } }
-							onClick={ ( e ) => e.stopPropagation() }
-							type="number"
-							onChange={ ( value ) => {
-								// Remove leading zeros
-								let normalizedValue = value.replace( /^0+(?=\d)/, '' );
+			<div className="godam-ve-layer-head">
+				<div className="godam-ve-layer-head__body">
+					<input
+						type="text"
+						className="godam-ve-layer-head__name"
+						value={ layer?.name ?? '' }
+						placeholder={ __( 'Layer name', 'godam' ) }
+						aria-label={ __( 'Layer name', 'godam' ) }
+						onChange={ ( e ) => dispatch( updateLayerField( { id: layer.id, field: 'name', value: e.target.value } ) ) }
+					/>
+					<p className="godam-ve-layer-head__subtitle">
+						<span>{ typeLabel }</span>
+						<span aria-hidden="true">•</span>
+						<span>
+							{ sprintf(
+								/* translators: %s is the layer display time in seconds. */
+								__( '%ss', 'godam' ),
+								layer.displayTime,
+							) }
+						</span>
+					</p>
+				</div>
 
-								// Limit to 2 decimal places
-								if ( normalizedValue.includes( '.' ) ) {
-									const [ intPart, decimalPart ] = normalizedValue.split( '.' );
-									normalizedValue = intPart + '.' + decimalPart.slice( 0, 2 );
-								}
+				<Button
+					className="godam-ve-layer-head__delete"
+					icon={ trash }
+					isDestructive
+					label={ __( 'Delete layer', 'godam' ) }
+					onClick={ () => setOpen( true ) }
+				/>
 
-								// Convert to number for validation
-								const floatValue = parseFloat( normalizedValue );
-
-								if ( floatValue > duration ) {
-									return;
-								}
-
-								// Reject empty or over-duration values
-								if ( normalizedValue === '' || isNaN( floatValue ) ) {
-									setLayerTime( normalizedValue );
-									dispatch( updateLayerField( {
-										id: layer.id,
-										field: 'displayTime',
-										value: initialTimePeriod,
-									} ) );
-									return;
-								}
-
-								setLayerTime( normalizedValue );
-
-								// Check for duplicate timestamp
-								const isTimestampExists = layers?.some(
-									( singleLayer ) =>
-										Number( singleLayer.displayTime ) === floatValue &&
-																			singleLayer?.id !== layer?.id,
-								);
-
-								if ( isTimestampExists ) {
-									dispatch( updateLayerField( {
-										id: layer.id,
-										field: 'displayTime',
-										value: initialTimePeriod,
-									} ) );
-								} else {
-									dispatch( updateLayerField( {
-										id: layer.id,
-										field: 'displayTime',
-										value: normalizedValue,
-									} ) );
-								}
-							} }
-							min={ 0 }
-							max={ duration }
-							step={ 0.1 }
-						/>
-					) : (
-						<button
-							onClick={ () => setIsEditing( true ) }
-							className="cursor-pointer bg-transparent text-inherit p-0"
-						>
-							{ layer.displayTime }s
-						</button>
-					) }
-				</p>
-				<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
 				{ isOpen && (
 					<Modal
 						title={ __( 'Delete layer', 'godam' ) }
@@ -170,23 +108,6 @@ const LayersHeader = ( { layer, goBack, duration, layerName: customLayerName } )
 					</Modal>
 				) }
 			</div>
-			{ isDuplicateTime && isEditing && <Notice
-				className="mb-4"
-				status="error"
-				isDismissible={ false }
-			>
-				{ __( 'A layer already exists at this timestamp!', 'godam' ) }
-			</Notice>
-			}
-			{
-				isEditing && '' === layerTime && <Notice
-					className="mb-4"
-					status="error"
-					isDismissible={ false }
-				>
-					{ __( 'The timestamp cannot be an empty value!', 'godam' ) }
-				</Notice>
-			}
 		</>
 	);
 };

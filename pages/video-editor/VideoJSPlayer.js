@@ -392,9 +392,15 @@ export const VideoJS = ( props ) => {
 						} }
 						max={ duration }
 						layers={ layers }
-						onLayerSelect={ ( layer ) => {
-							dispatch( setCurrentLayer( layer ) );
-							playerRef.current.currentTime( layer.displayTime );
+						onLayerSelect={ ( selectedLayer ) => {
+							dispatch( setCurrentLayer( selectedLayer ) );
+							if ( playerRef.current ) {
+								// Watch-depth layers fire at a % of the video, not at displayTime.
+								const seekTime = selectedLayer?.trigger === 'watch_depth'
+									? ( ( Number( selectedLayer.watchDepth ) || 0 ) / 100 ) * ( duration || 0 )
+									: selectedLayer.displayTime;
+								playerRef.current.currentTime( seekTime );
+							}
 						} }
 						disabled={ false }
 						currentLayerID={ currentLayer?.id }
@@ -403,8 +409,8 @@ export const VideoJS = ( props ) => {
 						onAddLayer={ ( time ) => {
 							dispatch( setAddLayerModalTime( time ) );
 						} }
-						onLayerDrag={ ( layerId, newDisplayTime ) => {
-							dispatch( updateLayerField( { id: layerId, field: 'displayTime', value: newDisplayTime } ) );
+						onLayerDrag={ ( layerId, value, field = 'displayTime' ) => {
+							dispatch( updateLayerField( { id: layerId, field, value } ) );
 						} }
 					/>
 				)
@@ -514,13 +520,16 @@ const Slider = ( props ) => {
 		}
 
 		if ( draggingLayer ) {
-			// Finish drag - update the layer's displayTime and select the layer
-			const newDisplayTime = Math.round( ( dragPosition / 100 ) * max * 100 ) / 100;
-			if ( onLayerDrag ) {
-				onLayerDrag( draggingLayer.id, Math.max( 0, Math.min( newDisplayTime, max ) ) );
+			// Finish drag — watch-depth layers update their watch %, others displayTime.
+			if ( draggingLayer.trigger === 'watch_depth' ) {
+				const watchDepthValue = Math.max( 1, Math.min( 100, Math.round( dragPosition ) ) );
+				onLayerDrag?.( draggingLayer.id, watchDepthValue, 'watchDepth' );
+				onLayerSelect( { ...draggingLayer, watchDepth: watchDepthValue } );
+			} else {
+				const newDisplayTime = Math.max( 0, Math.min( Math.round( ( dragPosition / 100 ) * max * 100 ) / 100, max ) );
+				onLayerDrag?.( draggingLayer.id, newDisplayTime, 'displayTime' );
+				onLayerSelect( { ...draggingLayer, displayTime: newDisplayTime } );
 			}
-			// Select the dragged layer
-			onLayerSelect( { ...draggingLayer, displayTime: Math.max( 0, Math.min( newDisplayTime, max ) ) } );
 			setDraggingLayer( null );
 			setDragPosition( null );
 			document.body.style.cursor = '';
@@ -567,12 +576,15 @@ const Slider = ( props ) => {
 
 		const handleGlobalPointerUp = () => {
 			if ( draggingLayer ) {
-				const newDisplayTime = Math.round( ( dragPosition / 100 ) * max * 100 ) / 100;
-				if ( onLayerDrag ) {
-					onLayerDrag( draggingLayer.id, Math.max( 0, Math.min( newDisplayTime, max ) ) );
+				if ( draggingLayer.trigger === 'watch_depth' ) {
+					const watchDepthValue = Math.max( 1, Math.min( 100, Math.round( dragPosition ) ) );
+					onLayerDrag?.( draggingLayer.id, watchDepthValue, 'watchDepth' );
+					onLayerSelect( { ...draggingLayer, watchDepth: watchDepthValue } );
+				} else {
+					const newDisplayTime = Math.max( 0, Math.min( Math.round( ( dragPosition / 100 ) * max * 100 ) / 100, max ) );
+					onLayerDrag?.( draggingLayer.id, newDisplayTime, 'displayTime' );
+					onLayerSelect( { ...draggingLayer, displayTime: newDisplayTime } );
 				}
-				// Select the dragged layer
-				onLayerSelect( { ...draggingLayer, displayTime: Math.max( 0, Math.min( newDisplayTime, max ) ) } );
 				setDraggingLayer( null );
 				setDragPosition( null );
 				document.body.style.cursor = '';
@@ -661,7 +673,15 @@ const Slider = ( props ) => {
 				{
 					sortedLayers?.map( ( layer ) => {
 						const isBeingDragged = draggingLayer?.id === layer.id;
-						const layerLeft = isBeingDragged ? dragPosition : ( layer.displayTime / max * 100 );
+						// Watch-depth layers sit at their watch % on the timeline; others at displayTime.
+						let layerLeft;
+						if ( isBeingDragged ) {
+							layerLeft = dragPosition;
+						} else if ( layer.trigger === 'watch_depth' ) {
+							layerLeft = Math.max( 0, Math.min( Number( layer.watchDepth ) || 0, 100 ) );
+						} else {
+							layerLeft = ( layer.displayTime / max ) * 100;
+						}
 
 						return (
 							// eslint-disable-next-line jsx-a11y/click-events-have-key-events

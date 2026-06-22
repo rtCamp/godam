@@ -54,6 +54,12 @@ export default class LayersManager {
 
 		if ( ! this.config.isPreviewEnabled ) {
 			layers.forEach( ( layer ) => this.processLayer( layer ) );
+
+			// Event-driven CTA triggers: `on_pause` shows a layer when the viewer
+			// pauses, `end_of_video` overlays one when playback ends. (The
+			// `timestamp` and `watch_depth` triggers run off `timeupdate`.)
+			this.player.on( 'pause', () => this.formLayerManager.handlePause() );
+			this.player.on( 'ended', () => this.formLayerManager.handleEnded() );
 		}
 
 		this.formLayerManager.sortLayers();
