@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * Internal dependencies
  */
-import OnboardingLayout from './components/OnboardingLayout';
+import OnboardingModal from './components/OnboardingModal';
 import EntryScreen from './components/screens/EntryScreen';
 import SignupScreen from './components/screens/SignupScreen';
 import VerifyEmailScreen from './components/screens/VerifyEmailScreen';
@@ -26,15 +26,16 @@ import { setNotice } from './redux/slice/onboarding';
 import { useGoogleLoginMutation } from './redux/api/onboarding';
 import { useProceedToWorkspace } from './utils/use-connect';
 
+// Each step → its screen + how the modal frames it (split two-pane vs small dialog).
 const SCREENS = {
-	[ STEPS.ENTRY ]: EntryScreen,
-	[ STEPS.SIGNUP ]: SignupScreen,
-	[ STEPS.VERIFY_EMAIL ]: VerifyEmailScreen,
-	[ STEPS.LOGIN ]: LoginScreen,
-	[ STEPS.FORGOT_PASSWORD ]: ForgotPasswordScreen,
-	[ STEPS.LICENSE ]: LicenseKeyScreen,
-	[ STEPS.WORKSPACE ]: WorkspaceScreen,
-	[ STEPS.WELCOME ]: WelcomeScreen,
+	[ STEPS.ENTRY ]: { Comp: EntryScreen, layout: 'split', sidePanel: 'social' },
+	[ STEPS.SIGNUP ]: { Comp: SignupScreen, layout: 'split', sidePanel: 'features' },
+	[ STEPS.VERIFY_EMAIL ]: { Comp: VerifyEmailScreen, layout: 'split', sidePanel: 'features' },
+	[ STEPS.LOGIN ]: { Comp: LoginScreen, layout: 'split', sidePanel: 'features' },
+	[ STEPS.FORGOT_PASSWORD ]: { Comp: ForgotPasswordScreen, layout: 'split', sidePanel: 'features' },
+	[ STEPS.LICENSE ]: { Comp: LicenseKeyScreen, layout: 'split', sidePanel: 'features' },
+	[ STEPS.WORKSPACE ]: { Comp: WorkspaceScreen, layout: 'dialog' },
+	[ STEPS.WELCOME ]: { Comp: WelcomeScreen, layout: 'dialog' },
 };
 
 const App = () => {
@@ -44,7 +45,7 @@ const App = () => {
 	const [ googleLogin ] = useGoogleLoginMutation();
 	const handledCode = useRef( false );
 
-	// Google OAuth code lands back in this SPA (single-use) → exchange it for a JWT.
+	// Google OAuth code lands back in this SPA (single-use) → exchange for a JWT.
 	useEffect( () => {
 		if ( handledCode.current ) {
 			return;
@@ -55,7 +56,6 @@ const App = () => {
 			return;
 		}
 		handledCode.current = true;
-		// Strip the single-use code from the URL so a refresh can't replay it.
 		params.delete( 'code' );
 		window.history.replaceState( {}, '', `${ window.location.pathname }?${ params.toString() }` );
 		( async () => {
@@ -68,12 +68,12 @@ const App = () => {
 		} )();
 	}, [ dispatch, googleLogin, proceedToWorkspace ] );
 
-	const Screen = SCREENS[ step ] || EntryScreen;
+	const { Comp, layout, sidePanel } = SCREENS[ step ] || SCREENS[ STEPS.ENTRY ];
 
 	return (
-		<OnboardingLayout>
-			<Screen />
-		</OnboardingLayout>
+		<OnboardingModal layout={ layout } sidePanel={ sidePanel }>
+			<Comp />
+		</OnboardingModal>
 	);
 };
 

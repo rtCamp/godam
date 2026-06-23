@@ -2,7 +2,7 @@
  * WordPress dependencies
  */
 import { useState } from '@wordpress/element';
-import { Button, TextControl, Spinner } from '@wordpress/components';
+import { Button, TextControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -19,9 +19,8 @@ import { STEPS } from '../../utils/constants';
 import { isValidEmail } from '../../utils/validators';
 
 /**
- * O4 — request a reset link. The actual password reset completes on the web
- * (godam-core emails a link → Frappe's update_password page), so this screen
- * only triggers the email and confirms it was sent.
+ * O4 — request a reset link. The reset itself completes on the web
+ * (godam-core emails a link → Frappe's update-password page).
  */
 const ForgotPasswordScreen = () => {
 	const dispatch = useDispatch();
@@ -43,7 +42,10 @@ const ForgotPasswordScreen = () => {
 	};
 
 	return (
-		<div className="godam-onboarding__form">
+		<>
+			<button type="button" className="godam-onboarding__back" onClick={ () => dispatch( goToStep( STEPS.LOGIN ) ) } data-test-id="godam-onboarding-button-back">
+				‹ { __( 'BACK', 'godam' ) }
+			</button>
 			<h1 className="godam-onboarding__title">{ __( 'Reset your password', 'godam' ) }</h1>
 
 			{ sent ? (
@@ -53,17 +55,19 @@ const ForgotPasswordScreen = () => {
 			) : (
 				<>
 					<p className="godam-onboarding__subtitle">{ __( "Confirm your email and we'll send you a link to set up a new password.", 'godam' ) }</p>
-					<TextControl __nextHasNoMarginBottom type="email" label={ __( 'Email', 'godam' ) } value={ email } onChange={ setEmailValue } data-test-id="godam-onboarding-input-email" />
-					<Button variant="primary" className="godam-onboarding__cta" onClick={ handleSubmit } disabled={ isLoading } isBusy={ isLoading } icon={ isLoading && <Spinner /> } data-test-id="godam-onboarding-button-reset">
-						{ isLoading ? __( 'Sending…', 'godam' ) : __( 'Reset password', 'godam' ) }
+					<div className="godam-onboarding__form">
+						<TextControl __nextHasNoMarginBottom type="email" label={ __( 'Email', 'godam' ) } value={ email } onChange={ setEmailValue } placeholder="you@example.com" data-test-id="godam-onboarding-input-email" />
+					</div>
+					<Button variant="primary" className="godam-onb-btn godam-onb-btn--primary godam-onboarding__cta" onClick={ handleSubmit } disabled={ isLoading } isBusy={ isLoading } data-test-id="godam-onboarding-button-reset">
+						{ isLoading ? __( 'Sending…', 'godam' ) : __( 'Reset Password', 'godam' ) }
 					</Button>
 				</>
 			) }
 
 			<p className="godam-onboarding__alt">
-				<Button variant="link" onClick={ () => dispatch( goToStep( STEPS.LOGIN ) ) } data-test-id="godam-onboarding-link-back-signin">{ __( 'Go back to sign in', 'godam' ) }</Button>
+				<button type="button" className="godam-onboarding__link" onClick={ () => dispatch( goToStep( STEPS.LOGIN ) ) } data-test-id="godam-onboarding-link-back-signin">{ __( 'Go back to sign in', 'godam' ) }</button>
 			</p>
-		</div>
+		</>
 	);
 };
 

@@ -2,7 +2,7 @@
  * WordPress dependencies
  */
 import { useState } from '@wordpress/element';
-import { Button, TextControl, CheckboxControl, Spinner, ExternalLink } from '@wordpress/components';
+import { Button, TextControl, CheckboxControl, ExternalLink } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -19,9 +19,8 @@ import { STEPS } from '../../utils/constants';
 import { isValidLicenseKey } from '../../utils/validators';
 
 /**
- * O5 — "Activate with license key". This is NOT a JWT login; it reuses the
- * existing `verify_api_key` flow (validates the key + registers the site), so
- * on success the plugin is connected directly.
+ * O5 — "Activate with license key" (reuses the existing verify_api_key flow;
+ * not a JWT login). On success the plugin connects directly.
  */
 const LicenseKeyScreen = () => {
 	const dispatch = useDispatch();
@@ -43,14 +42,19 @@ const LicenseKeyScreen = () => {
 	};
 
 	return (
-		<div className="godam-onboarding__form">
+		<>
+			<button type="button" className="godam-onboarding__back" onClick={ () => dispatch( goToStep( STEPS.ENTRY ) ) } data-test-id="godam-onboarding-button-back">
+				‹ { __( 'BACK', 'godam' ) }
+			</button>
 			<h1 className="godam-onboarding__title">{ __( 'Sign in with license key', 'godam' ) }</h1>
 
-			<TextControl __nextHasNoMarginBottom label={ __( 'License key', 'godam' ) } placeholder="GODAM-XXXX-XXXX-XXXX" value={ key } onChange={ setKey } data-test-id="godam-onboarding-input-license" />
-			<CheckboxControl __nextHasNoMarginBottom label={ __( 'Keep me signed in', 'godam' ) } checked={ remember } onChange={ setRemember } data-test-id="godam-onboarding-checkbox-remember" />
+			<div className="godam-onboarding__form">
+				<TextControl __nextHasNoMarginBottom label={ __( 'License key', 'godam' ) } placeholder="GODAM-XXXX-XXXX-XXXX" value={ key } onChange={ setKey } data-test-id="godam-onboarding-input-license" />
+				<CheckboxControl __nextHasNoMarginBottom label={ __( 'Keep me signed in', 'godam' ) } checked={ remember } onChange={ setRemember } data-test-id="godam-onboarding-checkbox-remember" />
+			</div>
 
-			<Button variant="primary" className="godam-onboarding__cta" onClick={ handleSubmit } disabled={ isLoading } isBusy={ isLoading } icon={ isLoading && <Spinner /> } data-test-id="godam-onboarding-button-verify-license">
-				{ isLoading ? __( 'Verifying…', 'godam' ) : __( 'Verify to sign in', 'godam' ) }
+			<Button variant="primary" className="godam-onb-btn godam-onb-btn--primary godam-onboarding__cta" onClick={ handleSubmit } disabled={ isLoading } isBusy={ isLoading } data-test-id="godam-onboarding-button-verify-license">
+				{ isLoading ? __( 'Verifying…', 'godam' ) : __( 'Verify to Sign in', 'godam' ) }
 			</Button>
 
 			<p className="godam-onboarding__alt">
@@ -58,9 +62,9 @@ const LicenseKeyScreen = () => {
 			</p>
 			<p className="godam-onboarding__alt">
 				{ __( 'Login with email instead?', 'godam' ) }{ ' ' }
-				<Button variant="link" onClick={ () => dispatch( goToStep( STEPS.LOGIN ) ) } data-test-id="godam-onboarding-link-login">{ __( 'Sign in', 'godam' ) }</Button>
+				<button type="button" className="godam-onboarding__link" onClick={ () => dispatch( goToStep( STEPS.LOGIN ) ) } data-test-id="godam-onboarding-link-login">{ __( 'Sign in', 'godam' ) }</button>
 			</p>
-		</div>
+		</>
 	);
 };
 

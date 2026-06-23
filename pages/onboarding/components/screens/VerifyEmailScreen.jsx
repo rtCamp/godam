@@ -17,10 +17,8 @@ import { goToStep, setNotice } from '../../redux/slice/onboarding';
 import { STEPS } from '../../utils/constants';
 
 /**
- * Verify-email gate (NOT in the Figma — flagged as a design follow-up).
- *
- * `signup` returns no JWT; the account is disabled until the user clicks the
- * emailed verification link. Once verified, they sign in to mint the JWT.
+ * Verify-email gate (not in the Figma — design follow-up). `signup` returns no
+ * JWT; the account is disabled until the emailed link is clicked.
  */
 const VerifyEmailScreen = () => {
 	const dispatch = useDispatch();
@@ -37,7 +35,7 @@ const VerifyEmailScreen = () => {
 	};
 
 	return (
-		<div className="godam-onboarding__form">
+		<>
 			<h1 className="godam-onboarding__title">{ __( 'Verify your email', 'godam' ) }</h1>
 			<p className="godam-onboarding__subtitle">
 				{ email
@@ -45,14 +43,13 @@ const VerifyEmailScreen = () => {
 					: __( 'We sent you a verification link. Click it to activate your account, then sign in.', 'godam' ) }
 			</p>
 
-			<Button variant="primary" className="godam-onboarding__cta" onClick={ () => dispatch( goToStep( STEPS.LOGIN ) ) } data-test-id="godam-onboarding-button-verified-continue">
+			<Button variant="primary" className="godam-onb-btn godam-onb-btn--primary godam-onboarding__cta" onClick={ () => dispatch( goToStep( STEPS.LOGIN ) ) } data-test-id="godam-onboarding-button-verified-continue">
 				{ __( "I've verified — sign in", 'godam' ) }
 			</Button>
-
-			<Button variant="secondary" className="godam-onboarding__cta" onClick={ handleResend } disabled={ isLoading } isBusy={ isLoading } icon={ isLoading && <Spinner /> } data-test-id="godam-onboarding-button-resend">
-				{ isLoading ? __( 'Resending…', 'godam' ) : __( 'Resend email', 'godam' ) }
+			<Button className="godam-onb-btn godam-onb-btn--secondary" onClick={ handleResend } disabled={ isLoading } data-test-id="godam-onboarding-button-resend">
+				{ isLoading ? <Spinner /> : null } { isLoading ? __( 'Resending…', 'godam' ) : __( 'Resend email', 'godam' ) }
 			</Button>
-		</div>
+		</>
 	);
 };
 

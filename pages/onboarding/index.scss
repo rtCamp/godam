@@ -1,166 +1,307 @@
 /**
  * GoDAM onboarding SPA styles.
  *
- * Two-pane shell: auth form (left) + marketing panel (right). Interactive
- * accents derive from the WP admin colour scheme (`--wp-admin-theme-color`)
- * rather than a hardcoded Figma accent. Layout-only — copy/visuals are
- * placeholder pending design sign-off.
+ * A centered modal over a dimmed scrim (the dashboard sits behind). Tokens
+ * (colours, radii, spacing, type) are taken from the Figma onboarding board.
+ * The brand accent is a fixed GoDAM purple (not the WP admin colour scheme),
+ * per the design. Copy is placeholder pending final strings.
  */
 
 .godam-onboarding {
+	// --- design tokens (from Figma) ---
+	--godam-onb-accent: #5d31ff;
+	--godam-onb-accent-hover: #4a27d6;
+	--godam-onb-accent-soft: rgba( 93, 49, 255, 0.08 );
+	--godam-onb-panel-bg: #f2f2ff;
+	--godam-onb-panel-border: #e2dbef;
+	--godam-onb-chip-bg: #e8e7ff;
+	--godam-onb-text: #020617;
+	--godam-onb-text-muted: #64748b;
+	--godam-onb-required: #cc1818;
+	--godam-onb-border: #ccc;
+	--godam-onb-input-border: #949494;
+	--godam-onb-scrim: rgba( 2, 6, 23, 0.55 );
+	--godam-onb-font: "Geist", -apple-system, "Segoe UI", roboto, sans-serif;
+
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
 	display: flex;
-	min-height: calc( 100vh - 32px );
-	margin: 0 0 0 -20px; // bleed under the wp-admin content padding
-	background: #fff;
+	align-items: center;
+	justify-content: center;
+	font-family: var( --godam-onb-font );
+	color: var( --godam-onb-text );
 
-	&__main {
-		flex: 1 1 55%;
+	*, *::before, *::after { box-sizing: border-box; }
+
+	&__scrim {
+		position: absolute;
+		inset: 0;
+		background: var( --godam-onb-scrim );
+	}
+
+	// --- modal card ---
+	&__modal {
+		position: relative;
+		display: flex;
+		background: #fff;
+		border-radius: 16px;
+		box-shadow: 0 24px 64px rgba( 2, 6, 23, 0.28 );
+		overflow: hidden;
+		max-height: calc( 100vh - 64px );
+
+		&--split { width: min( 1000px, calc( 100vw - 48px ) ); }
+
+		&--dialog { width: min( 620px, calc( 100vw - 48px ) ); }
+	}
+
+	&__content {
+		flex: 1 1 50%;
 		display: flex;
 		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		padding: 48px 24px;
+		gap: 16px;
+		padding: 40px 48px;
+		overflow-y: auto;
 	}
 
-	&__aside {
-		flex: 1 1 45%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 48px 40px;
-		background: #1e1e2f;
-		color: #fff;
-	}
+	&__modal--dialog &__content { padding: 32px; }
 
-	&__aside-inner {
-		max-width: 420px;
-	}
-
+	// --- brand ---
 	&__brand {
-		margin-bottom: 24px;
-	}
-
-	&__logo {
-		font-size: 22px;
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		color: var( --godam-onb-accent );
 		font-weight: 700;
-		letter-spacing: 0.04em;
 	}
 
-	&__screen {
-		width: 100%;
-		max-width: 400px;
+	&__brand-word { font-size: 20px; letter-spacing: -0.01em; }
+
+	// --- typography ---
+	&__back {
+		align-self: flex-start;
+		background: none;
+		border: 0;
+		padding: 0;
+		font: 600 13px/1 var( --godam-onb-font );
+		color: var( --godam-onb-text );
+		cursor: pointer;
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
 	}
 
-	&__form {
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
-		width: 100%;
-		max-width: 400px;
+	&__title { margin: 0; font-size: 28px; line-height: 1.2; font-weight: 600; letter-spacing: -0.01em; }
 
-		&--center {
-			text-align: center;
-			align-items: center;
+	&__subtitle { margin: 0; font-size: 15px; line-height: 1.35; color: var( --godam-onb-text-muted ); }
+
+	&__trial-note { margin: 0; font-size: 13px; line-height: 1.4; color: var( --godam-onb-text-muted ); }
+
+	&__alt { margin: 0; font-size: 13px; line-height: 1.4; color: var( --godam-onb-text-muted ); }
+
+	// --- form ---
+	&__form { display: flex; flex-direction: column; gap: 16px; }
+
+	&__row { display: flex; gap: 12px;
+
+ > * { flex: 1; min-width: 0; } }
+
+	// --- buttons (override @wordpress/components) ---
+	.components-button {
+
+		&.godam-onb-btn {
+			height: 40px;
+			justify-content: center;
+			width: 100%;
+			font: 500 14px/1 var( --godam-onb-font );
+			border-radius: 4px;
+			gap: 8px;
+		}
+
+		&.godam-onb-btn--primary {
+			background: var( --godam-onb-accent );
+			color: #fff;
+			border-radius: 2px;
+
+			&:disabled { background: var( --godam-onb-accent ); opacity: 0.5; }
+
+			&:hover:not( :disabled ) { background: var( --godam-onb-accent-hover ); color: #fff; }
+		}
+
+		&.godam-onb-btn--secondary {
+			background: #fff;
+			color: var( --godam-onb-text );
+			border: 1px solid var( --godam-onb-border );
+
+			&:hover:not( :disabled ) { border-color: var( --godam-onb-accent ); color: var( --godam-onb-text ); }
 		}
 	}
 
-	&__row {
-		display: flex;
-		gap: 12px;
+	&__link {
+		background: none;
+		border: 0;
+		padding: 0;
+		color: var( --godam-onb-accent );
+		font: inherit;
+		font-weight: 500;
+		cursor: pointer;
+		text-decoration: none;
 
-		> * {
-			flex: 1;
-		}
+		&:hover { text-decoration: underline; }
 	}
 
-	&__title {
-		margin: 0 0 4px;
-		font-size: 24px;
-		line-height: 1.3;
-	}
-
-	&__subtitle {
-		margin: 0 0 12px;
-		color: #50575e;
-	}
-
-	&__cta {
-		justify-content: center;
-		width: 100%;
-		margin-top: 4px;
-	}
-
-	&__inline {
+	// --- or divider ---
+	&__or {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
 		gap: 12px;
-	}
-
-	&__alt {
-		margin: 8px 0 0;
-		color: #50575e;
-		font-size: 13px;
-	}
-
-	&__notice {
-		margin: 0 0 12px;
-	}
-
-	&__eyebrow {
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
+		color: var( --godam-onb-text-muted );
 		font-size: 12px;
-		opacity: 0.7;
-		margin: 0 0 8px;
+
+		&::before, &::after { content: ""; flex: 1; height: 1px; background: #e6e6e6; }
 	}
 
-	&__aside-title {
-		font-size: 28px;
-		line-height: 1.25;
-		margin: 0 0 12px;
-		color: #fff;
+	// --- inputs (override @wordpress/components) ---
+	.components-base-control__label {
+		font: 500 13px/1 var( --godam-onb-font );
+		color: var( --godam-onb-text );
+		text-transform: none;
+		margin-bottom: 6px;
 	}
 
-	&__aside-sub {
-		opacity: 0.8;
-		margin: 0 0 24px;
+	.components-text-control__input,
+	.components-input-control__input {
+		min-height: 40px;
+		border-radius: 4px;
+		border-color: var( --godam-onb-input-border );
+		font-family: var( --godam-onb-font );
+
+		&:focus { border-color: var( --godam-onb-accent ); box-shadow: 0 0 0 1px var( --godam-onb-accent ); }
 	}
 
-	&__highlights {
-		list-style: none;
-		margin: 0 0 24px;
-		padding: 0;
+	.godam-onboarding__required { color: var( --godam-onb-required ); margin-left: 2px; }
+
+	.components-checkbox-control__label { font-size: 13px; line-height: 1.4; color: var( --godam-onb-text-muted ); }
+
+	// --- right side panel ---
+	&__aside {
+		flex: 1 1 50%;
+		background: var( --godam-onb-panel-bg );
+		border-left: 1px solid var( --godam-onb-panel-border );
+		padding: 40px 32px;
 		display: flex;
-		flex-direction: column;
-		gap: 12px;
+		align-items: center;
 	}
 
-	&__highlight {
+	&__aside-inner { width: 100%; }
+
+	&__features { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 28px 20px; }
+
+	&__feature { display: flex; gap: 12px; }
+
+	&__feature-chip {
+		flex: 0 0 auto;
+		width: 36px;
+		height: 36px;
+		border-radius: 8px;
+		background: var( --godam-onb-chip-bg );
+		color: var( --godam-onb-accent );
 		display: flex;
-		flex-direction: column;
+		align-items: center;
+		justify-content: center;
 	}
 
-	&__highlight-title {
-		font-weight: 600;
-	}
+	&__feature-text { display: flex; flex-direction: column; gap: 2px; }
 
-	&__highlight-body {
-		opacity: 0.75;
+	&__feature-title { font-weight: 600; font-size: 14px; }
+
+	&__feature-body { font-size: 12px; line-height: 1.35; color: var( --godam-onb-text-muted ); }
+
+	// social variant
+	&__eyebrow { text-transform: uppercase; letter-spacing: 0.06em; font-size: 12px; color: var( --godam-onb-text-muted ); margin: 0 0 16px; }
+
+	&__checklist { list-style: none; margin: 0 0 20px; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+
+	&__checklist li { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+
+	&__check { color: var( --godam-onb-accent ); display: inline-flex; }
+
+	&__social-proof { font-size: 13px; color: var( --godam-onb-text-muted ); margin: 0 0 16px; }
+
+	&__media-placeholder { width: 100%; height: 160px; border-radius: 12px; background: #fff; border: 1px solid var( --godam-onb-panel-border ); }
+
+	// --- workspace dialog ---
+	&__dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+
+	&__close { background: none; border: 0; cursor: pointer; color: var( --godam-onb-text-muted ); padding: 4px; line-height: 0; }
+
+	&__ws-note {
+		display: flex;
+		gap: 10px;
+		background: var( --godam-onb-accent-soft );
+		border-left: 3px solid var( --godam-onb-accent );
+		border-radius: 4px;
+		padding: 12px 14px;
 		font-size: 13px;
+		line-height: 1.4;
+		color: var( --godam-onb-text );
 	}
 
-	&__social-proof {
-		opacity: 0.7;
-		font-size: 13px;
-		margin: 0;
+	&__dialog-footer { display: flex; justify-content: flex-end; }
+
+	.godam-onboarding__modal--dialog .godam-onboarding__cta { width: auto; min-width: 120px; }
+
+	&__inline { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+	&__center { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; }
+
+	// workspace dropdown
+	&__ws-row { display: flex; align-items: center; gap: 12px; min-width: 0; }
+
+	&__ws-avatar {
+		flex: 0 0 auto; width: 36px; height: 36px; border-radius: 8px;
+		background: #f97316; color: #fff; font-weight: 600; font-size: 15px;
+		display: flex; align-items: center; justify-content: center;
 	}
+
+	&__ws-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; text-align: left; }
+
+	&__ws-name { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; }
+
+	&__ws-badge {
+		font-size: 11px; font-weight: 600; line-height: 1; padding: 3px 8px; border-radius: 999px;
+		background: var( --godam-onb-accent ); color: #fff;
+	}
+
+	&__ws-role { font-size: 12px; color: var( --godam-onb-text-muted ); }
+
+	&__ws-dropdown { display: block; }
+
+	&__ws-select {
+		width: 100%; display: flex; align-items: center; justify-content: space-between;
+		gap: 8px; padding: 10px 12px; border: 1px solid var( --godam-onb-border );
+		border-radius: 6px; background: #fff; cursor: pointer;
+	}
+
+	&__ws-chevron { color: var( --godam-onb-text-muted ); }
+
+	&__ws-options { list-style: none; margin: 0; padding: 4px; min-width: 320px; }
+
+	&__ws-option {
+		width: 100%; display: flex; align-items: center; justify-content: space-between;
+		gap: 8px; padding: 8px; border: 0; background: none; border-radius: 6px; cursor: pointer;
+
+		&:hover { background: var( --godam-onb-panel-bg ); }
+	}
+
+	&__ws-check { color: var( --godam-onb-accent ); }
 
 	@media ( max-width: 782px ) {
-		flex-direction: column;
 
-		&__aside {
-			display: none;
-		}
+		&__modal--split { flex-direction: column; }
+
+		&__aside { display: none; }
+
+		&__content { padding: 28px 24px; }
 	}
 }

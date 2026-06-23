@@ -12,13 +12,15 @@ import { useDispatch } from 'react-redux';
 /**
  * Internal dependencies
  */
+import BrandLogo from '../BrandLogo';
+import { MailIcon, GoogleIcon, KeyIcon } from '../icons';
 import { goToStep, setNotice } from '../../redux/slice/onboarding';
 import { STEPS, config } from '../../utils/constants';
 import { useGoogleLoginMutation } from '../../redux/api/onboarding';
 import { useProceedToWorkspace } from '../../utils/use-connect';
 
 /**
- * Entry — "Welcome to GoDAM Pro!" with the three entry CTAs.
+ * Entry — "Welcome to GoDAM Pro!" with the trial CTA + sign-in options.
  */
 const EntryScreen = () => {
 	const dispatch = useDispatch();
@@ -26,9 +28,6 @@ const EntryScreen = () => {
 	const [ googleLogin, { isLoading: isGoogleLoading } ] = useGoogleLoginMutation();
 
 	const handleGoogle = async () => {
-		// Real flow: redirect to godam-core's get_oauth2_url; the OAuth `code`
-		// then lands back in this SPA and is POSTed to google_login. In mock
-		// mode we short-circuit with a fake code so the flow stays clickable.
 		if ( ! config.mock && config.googleOauthUrl ) {
 			window.location.href = config.googleOauthUrl;
 			return;
@@ -42,46 +41,32 @@ const EntryScreen = () => {
 	};
 
 	return (
-		<div className="godam-onboarding__form">
+		<>
+			<BrandLogo markOnly />
 			<h1 className="godam-onboarding__title">{ __( 'Welcome to GoDAM Pro!', 'godam' ) }</h1>
-			<p className="godam-onboarding__subtitle">{ __( 'Start your 30-day free trial. No credit card required.', 'godam' ) }</p>
-
-			<Button
-				variant="primary"
-				className="godam-onboarding__cta"
-				onClick={ () => dispatch( goToStep( STEPS.SIGNUP ) ) }
-				data-test-id="godam-onboarding-button-start-trial"
-			>
-				{ __( 'Start free trial', 'godam' ) }
-			</Button>
-
-			<Button
-				variant="secondary"
-				className="godam-onboarding__cta"
-				onClick={ handleGoogle }
-				disabled={ isGoogleLoading }
-				icon={ isGoogleLoading && <Spinner /> }
-				data-test-id="godam-onboarding-button-google"
-			>
-				{ __( 'Continue with Google', 'godam' ) }
-			</Button>
-
-			<Button
-				variant="tertiary"
-				className="godam-onboarding__cta"
-				onClick={ () => dispatch( goToStep( STEPS.LICENSE ) ) }
-				data-test-id="godam-onboarding-button-license"
-			>
-				{ __( 'Activate with license key', 'godam' ) }
-			</Button>
-
-			<p className="godam-onboarding__alt">
-				{ __( 'Already have an account?', 'godam' ) }{ ' ' }
-				<Button variant="link" onClick={ () => dispatch( goToStep( STEPS.LOGIN ) ) } data-test-id="godam-onboarding-link-login">
-					{ __( 'Sign in', 'godam' ) }
-				</Button>
+			<p className="godam-onboarding__subtitle">
+				{ __( 'A scalable digital asset management platform for WordPress, optimized for conversion-driven video content.', 'godam' ) }
 			</p>
-		</div>
+
+			<Button variant="primary" className="godam-onb-btn godam-onb-btn--primary godam-onboarding__cta" onClick={ () => dispatch( goToStep( STEPS.SIGNUP ) ) } data-test-id="godam-onboarding-button-start-trial">
+				{ __( 'New here? Start your 30-day free trial now.', 'godam' ) }
+			</Button>
+			<p className="godam-onboarding__trial-note">
+				{ __( 'Enjoy a 30-day free trial. After that, continue for $290/year or cancel anytime. No payment required today.', 'godam' ) }
+			</p>
+
+			<div className="godam-onboarding__or">{ __( 'OR', 'godam' ) }</div>
+
+			<Button className="godam-onb-btn godam-onb-btn--secondary" onClick={ () => dispatch( goToStep( STEPS.LOGIN ) ) } data-test-id="godam-onboarding-button-login-email">
+				<MailIcon /> { __( 'Login with Email', 'godam' ) }
+			</Button>
+			<Button className="godam-onb-btn godam-onb-btn--secondary" onClick={ handleGoogle } disabled={ isGoogleLoading } data-test-id="godam-onboarding-button-google">
+				{ isGoogleLoading ? <Spinner /> : <GoogleIcon /> } { __( 'Continue with Google', 'godam' ) }
+			</Button>
+			<Button className="godam-onb-btn godam-onb-btn--secondary" onClick={ () => dispatch( goToStep( STEPS.LICENSE ) ) } data-test-id="godam-onboarding-button-license">
+				<KeyIcon /> { __( 'Already have a License key?', 'godam' ) }
+			</Button>
+		</>
 	);
 };
 
