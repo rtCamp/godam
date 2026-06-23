@@ -14,11 +14,10 @@ import { useDispatch } from 'react-redux';
  * Internal dependencies
  */
 import { GoogleIcon } from '../icons';
-import { useSignupMutation, useGoogleLoginMutation } from '../../redux/api/onboarding';
+import { useSignupMutation, useGoogleOauthUrlMutation } from '../../redux/api/onboarding';
 import { goToStep, setEmail, setNotice } from '../../redux/slice/onboarding';
-import { STEPS, config } from '../../utils/constants';
+import { STEPS } from '../../utils/constants';
 import { validateSignup } from '../../utils/validators';
-import { useProceedToWorkspace } from '../../utils/use-connect';
 
 const Required = () => <span className="godam-onboarding__required">*</span>;
 
@@ -29,23 +28,20 @@ const Required = () => <span className="godam-onboarding__required">*</span>;
 const SignupScreen = () => {
 	const dispatch = useDispatch();
 	const [ signup, { isLoading } ] = useSignupMutation();
-	const [ googleLogin, { isLoading: isGoogleLoading } ] = useGoogleLoginMutation();
-	const proceedToWorkspace = useProceedToWorkspace();
+	const [ getGoogleOauthUrl, { isLoading: isGoogleLoading } ] = useGoogleOauthUrlMutation();
 	const [ fields, setFields ] = useState( { firstName: '', lastName: '', email: '', password: '', confirm: '', tnc: false, newsletter: false } );
 	const [ errors, setErrors ] = useState( {} );
 
 	const set = ( key ) => ( value ) => setFields( ( f ) => ( { ...f, [ key ]: value } ) );
 
 	const handleGoogle = async () => {
-		if ( ! config.mock && config.googleOauthUrl ) {
-			window.location.href = config.googleOauthUrl;
-			return;
-		}
 		try {
-			const session = await googleLogin( 'mock-oauth-code' ).unwrap();
-			await proceedToWorkspace( session );
+			const { url } = await getGoogleOauthUrl().unwrap();
+			if ( url ) {
+				window.location.href = url;
+			}
 		} catch ( error ) {
-			dispatch( setNotice( { status: 'error', message: error?.data?.message || __( 'Google sign-in failed.', 'godam' ) } ) );
+			dispatch( setNotice( { status: 'error', message: error?.data?.message || __( 'Could not start Google sign-in.', 'godam' ) } ) );
 		}
 	};
 
@@ -63,7 +59,6 @@ const SignupScreen = () => {
 				password: fields.password,
 				tnc: fields.tnc ? 1 : 0,
 				newsletter: fields.newsletter ? 1 : 0,
-				wordpress_site: config.siteUrl,
 			} ).unwrap();
 			dispatch( setEmail( fields.email.trim().toLowerCase() ) );
 			dispatch( goToStep( STEPS.VERIFY_EMAIL ) );

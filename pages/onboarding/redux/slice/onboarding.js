@@ -44,8 +44,10 @@ const onboardingSlice = createSlice( {
 		selectOrganization( state, action ) {
 			state.selectedOrganization = action.payload;
 		},
-		setConnected( state, action ) {
-			state.apiKey = action.payload;
+		setConnected( state ) {
+			// The durable org API key is stored server-side by the proxy; the
+			// SPA only needs to advance to the welcome screen.
+			state.connected = true;
 			state.step = STEPS.WELCOME;
 		},
 		setNotice( state, action ) {

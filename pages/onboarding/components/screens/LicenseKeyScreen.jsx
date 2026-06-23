@@ -35,7 +35,7 @@ const LicenseKeyScreen = () => {
 		}
 		try {
 			await verifyLicenseKey( key.trim() ).unwrap();
-			dispatch( setConnected( key.trim() ) );
+			dispatch( setConnected() );
 		} catch ( error ) {
 			dispatch( setNotice( { status: 'error', message: error?.data?.message || __( 'That license key could not be verified.', 'godam' ) } ) );
 		}

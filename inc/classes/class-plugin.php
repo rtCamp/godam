@@ -33,6 +33,7 @@ use RTGODAM\Inc\REST_API\Forminator_Forms;
 use RTGODAM\INC\REST_API\SureForms;
 use RTGODAM\Inc\REST_API\Fluent_Forms;
 use RTGODAM\Inc\REST_API\Settings;
+use RTGODAM\Inc\REST_API\Onboarding;
 use RTGODAM\Inc\REST_API\Meta_Rest_Fields;
 use RTGODAM\Inc\REST_API\Media_Library;
 use RTGODAM\Inc\REST_API\Ads;
@@ -176,6 +177,7 @@ class Plugin {
 		Ninja_Forms_Rest_Api::get_instance();
 		Metform_Rest_Api::get_instance();
 		Settings::get_instance();
+		Onboarding::get_instance();
 		Meta_Rest_Fields::get_instance();
 		Media_Library::get_instance();
 		Ads::get_instance();

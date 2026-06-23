@@ -6,18 +6,17 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 /**
  * Internal dependencies
  */
-import { mockBaseQuery } from './mock';
 import { config } from '../../utils/constants';
 
 const restURL = config.restUrl || window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 const base = window.pathJoin ? window.pathJoin( [ restURL, '/godam/v1/onboarding/' ] ) : `${ restURL }godam/v1/onboarding/`;
 
 /**
- * Real proxy baseQuery — every onboarding call goes through the WP proxy
- * (`/godam/v1/onboarding/*`), which attaches the godam-core auth headers
- * server-side and unwraps Frappe's `message` wrapper.
+ * Every onboarding call goes through the WP proxy (`/godam/v1/onboarding/*`),
+ * which attaches the godam-core auth (the JWT is held server-side and never
+ * reaches the browser) and unwraps Frappe's `message` wrapper.
  */
-const proxyBaseQuery = fetchBaseQuery( {
+const baseQuery = fetchBaseQuery( {
 	baseUrl: base,
 	prepareHeaders: ( headers ) => {
 		headers.set( 'Content-Type', 'application/json' );
@@ -25,9 +24,6 @@ const proxyBaseQuery = fetchBaseQuery( {
 		return headers;
 	},
 } );
-
-// Until the develop endpoints are live, run against the mock adapter.
-const baseQuery = config.mock ? mockBaseQuery : proxyBaseQuery;
 
 const post = ( url, body ) => ( { url, method: 'POST', body } );
 
@@ -38,6 +34,7 @@ export const onboardingAPI = createApi( {
 		checkUserExists: builder.mutation( { query: ( email ) => post( 'check-user-exists', { email } ) } ),
 		signup: builder.mutation( { query: ( body ) => post( 'signup', body ) } ),
 		passwordLogin: builder.mutation( { query: ( body ) => post( 'password-login', body ) } ),
+		googleOauthUrl: builder.mutation( { query: () => post( 'google-oauth-url', {} ) } ),
 		googleLogin: builder.mutation( { query: ( code ) => post( 'google-login', { code } ) } ),
 		listOrganizations: builder.mutation( { query: () => post( 'list-organizations', {} ) } ),
 		getOrganizationApiKey: builder.mutation( { query: ( organization ) => post( 'organization-api-key', { organization } ) } ),
@@ -51,6 +48,7 @@ export const {
 	useCheckUserExistsMutation,
 	useSignupMutation,
 	usePasswordLoginMutation,
+	useGoogleOauthUrlMutation,
 	useGoogleLoginMutation,
 	useListOrganizationsMutation,
 	useGetOrganizationApiKeyMutation,

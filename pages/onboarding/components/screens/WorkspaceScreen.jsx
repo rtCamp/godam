@@ -47,8 +47,8 @@ const WorkspaceScreen = () => {
 		}
 		dispatch( selectOrganization( selected.name ) );
 		try {
-			const res = await getOrganizationApiKey( selected.name ).unwrap();
-			dispatch( setConnected( res.api_key ) );
+			await getOrganizationApiKey( selected.name ).unwrap();
+			dispatch( setConnected() );
 		} catch ( error ) {
 			dispatch( setNotice( { status: 'error', message: error?.data?.message || __( 'Could not get the workspace key.', 'godam' ) } ) );
 		}

@@ -548,8 +548,6 @@ class Pages {
 					'dashboardUrl' => admin_url( 'admin.php?page=' . $this->menu_slug ),
 					'isConnected'  => rtgodam_is_api_key_valid(),
 					'displayName'  => $current_user->display_name,
-					// Until the godam-core auth endpoints are live on develop, run the SPA against the client-side mock.
-					'mock'         => ( defined( 'RTGODAM_ONBOARDING_MOCK' ) && RTGODAM_ONBOARDING_MOCK ),
 					'isE2E'        => ( defined( 'GODAM_E2E' ) && GODAM_E2E ),
 				)
 			);
