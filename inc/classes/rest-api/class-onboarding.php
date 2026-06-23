@@ -100,7 +100,7 @@ class Onboarding extends Base {
 	 * @param string $path     Dotted method path.
 	 * @param array  $args     Request params.
 	 * @param string $method   HTTP method (GET|POST).
-	 * @param bool   $with_jwt Attach the stored Bearer JWT.
+	 * @param bool   $with_jwt Attach the stored JWT (as the X-GoDAM-Token header).
 	 * @return array|string|\WP_Error Unwrapped `message` payload, or WP_Error.
 	 */
 	private function call_core( $path, $args = array(), $method = 'POST', $with_jwt = false ) {
@@ -112,7 +112,9 @@ class Onboarding extends Base {
 			if ( empty( $jwt ) ) {
 				return new \WP_Error( 'godam_no_session', __( 'Your session has expired. Please sign in again.', 'godam' ), array( 'status' => 401 ) );
 			}
-			$headers['Authorization'] = 'Bearer ' . $jwt;
+			// godam-core carries the JWT in a dedicated X-GoDAM-Token header — NOT
+			// `Authorization: Bearer`, which Frappe's framework auth would reject.
+			$headers['X-GoDAM-Token'] = $jwt;
 		}
 
 		$request_args = array(
