@@ -76,7 +76,18 @@ class Godam_Media extends \Elementor\Base_Data_Control {
 		wp_enqueue_script( 'media-upload' );
 		wp_enqueue_script( 'thickbox' );
 
-		wp_register_script( 'godam-elementor-editor', RTGODAM_URL . 'assets/build/js/godam-elementor-editor.min.js', array( 'jquery' ), '1.0.0', true );
+		$elementor_editor_asset_file = RTGODAM_PATH . 'assets/build/js/godam-elementor-editor.min.asset.php';
+		$elementor_editor_asset      = array(
+			'dependencies' => array(),
+			'version'      => filemtime( RTGODAM_PATH . 'assets/build/js/godam-elementor-editor.min.js' ),
+		);
+
+		if ( file_exists( $elementor_editor_asset_file ) ) {
+			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+			$elementor_editor_asset = include $elementor_editor_asset_file;
+		}
+
+		wp_register_script( 'godam-elementor-editor', RTGODAM_URL . 'assets/build/js/godam-elementor-editor.min.js', $elementor_editor_asset['dependencies'], $elementor_editor_asset['version'], true );
 		wp_enqueue_script( 'godam-elementor-editor' );
 		wp_enqueue_style( 'easydam-media-library' );
 

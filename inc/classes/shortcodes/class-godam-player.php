@@ -145,11 +145,17 @@ class GoDAM_Player {
 		$player_analytics_path = RTGODAM_PATH . 'assets/build/js/godam-player-analytics.min.js';
 
 		if ( file_exists( $player_analytics_path ) ) {
+			$player_analytics_asset_file = RTGODAM_PATH . 'assets/build/js/godam-player-analytics.min.asset.php';
+			$player_analytics_asset      = file_exists( $player_analytics_asset_file ) ? include $player_analytics_asset_file : array(
+				'dependencies' => array(),
+				'version'      => filemtime( $player_analytics_path ),
+			);
+
 			wp_register_script(
 				'godam-player-analytics-script',
 				RTGODAM_URL . 'assets/build/js/godam-player-analytics.min.js',
-				array( 'godam-player-frontend-script', 'wp-i18n' ),
-				filemtime( $player_analytics_path ),
+				array_merge( $player_analytics_asset['dependencies'], array( 'godam-player-frontend-script' ) ),
+				$player_analytics_asset['version'],
 				true
 			);
 		}

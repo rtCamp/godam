@@ -222,11 +222,22 @@ class Init {
 	 */
 	public function add_editor_script() {
 
+		$gf_editor_asset_file = RTGODAM_PATH . 'assets/build/js/gf-godam-recorder-editor.min.asset.php';
+		$gf_editor_asset      = array(
+			'dependencies' => array(),
+			'version'      => filemtime( RTGODAM_PATH . 'assets/build/js/gf-godam-recorder-editor.min.js' ),
+		);
+
+		if ( file_exists( $gf_editor_asset_file ) ) {
+			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+			$gf_editor_asset = include $gf_editor_asset_file;
+		}
+
 		wp_enqueue_script(
 			'gf-godam-recorder-editor-script',
 			RTGODAM_URL . 'assets/build/js/gf-godam-recorder-editor.min.js',
-			array( 'jquery' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/gf-godam-recorder-editor.min.js' ),
+			$gf_editor_asset['dependencies'],
+			$gf_editor_asset['version'],
 			true
 		);
 	}

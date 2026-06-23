@@ -310,11 +310,22 @@ class Recorder_Field extends BaseFieldManager {
 			/**
 			 * Enqueue script if not already enqueued.
 			 */
+			$fluentforms_asset_file = RTGODAM_PATH . 'assets/build/js/fluentforms.min.asset.php';
+			$fluentforms_asset      = array(
+				'dependencies' => array(),
+				'version'      => filemtime( RTGODAM_PATH . 'assets/build/js/fluentforms.min.js' ),
+			);
+
+			if ( file_exists( $fluentforms_asset_file ) ) {
+				// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+				$fluentforms_asset = include $fluentforms_asset_file;
+			}
+
 			wp_enqueue_script(
 				'fluentforms-godam',
 				RTGODAM_URL . 'assets/build/js/fluentforms.min.js',
-				array( 'jquery', 'wp-i18n' ),
-				filemtime( RTGODAM_PATH . 'assets/build/js/fluentforms.min.js' ),
+				$fluentforms_asset['dependencies'],
+				$fluentforms_asset['version'],
 				true
 			);
 

@@ -439,11 +439,22 @@ class Pages {
 
 		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id, $this->tools_page_id, $this->whats_new_page_id ), true ) ) {
 
+			$page_css_asset_file = RTGODAM_PATH . 'assets/build/pages/page-css.min.asset.php';
+			$page_css_asset      = array(
+				'dependencies' => array(),
+				'version'      => filemtime( RTGODAM_PATH . 'assets/build/pages/page-css.min.js' ),
+			);
+
+			if ( file_exists( $page_css_asset_file ) ) {
+				// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+				$page_css_asset = include $page_css_asset_file;
+			}
+
 			wp_register_script(
 				'rtgodam-page-style',
 				RTGODAM_URL . 'assets/build/pages/page-css.min.js',
-				array( 'wp-components' ),
-				filemtime( RTGODAM_PATH . 'assets/build/pages/page-css.min.js' ),
+				$page_css_asset['dependencies'],
+				$page_css_asset['version'],
 				true
 			);
 
@@ -462,11 +473,22 @@ class Pages {
 		}
 		// Check if this is your custom admin page.
 		if ( $screen && $this->video_editor_page_id === $screen->id ) {
+			$video_editor_asset_file = RTGODAM_PATH . 'assets/build/pages/video-editor.min.asset.php';
+			$video_editor_asset      = array(
+				'dependencies' => array( 'wp-element', 'wp-i18n' ),
+				'version'      => filemtime( RTGODAM_PATH . 'assets/build/pages/video-editor.min.js' ),
+			);
+
+			if ( file_exists( $video_editor_asset_file ) ) {
+				// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+				$video_editor_asset = include $video_editor_asset_file;
+			}
+
 			wp_register_script(
 				'transcoder-page-script-video-editor',
 				RTGODAM_URL . 'assets/build/pages/video-editor.min.js',
-				array( 'wp-element', 'wp-i18n' ),
-				filemtime( RTGODAM_PATH . 'assets/build/pages/video-editor.min.js' ),
+				$video_editor_asset['dependencies'],
+				$video_editor_asset['version'],
 				true
 			);
 
@@ -653,11 +675,22 @@ class Pages {
 				false
 			);
 
+			$dashboard_asset_file = RTGODAM_PATH . 'assets/build/pages/dashboard.min.asset.php';
+			$dashboard_asset      = array(
+				'dependencies' => array(),
+				'version'      => filemtime( RTGODAM_PATH . 'assets/build/pages/dashboard.min.js' ),
+			);
+
+			if ( file_exists( $dashboard_asset_file ) ) {
+				// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+				$dashboard_asset = include $dashboard_asset_file;
+			}
+
 			wp_register_script(
 				'godam-page-script-dashboard',
 				RTGODAM_URL . 'assets/build/pages/dashboard.min.js',
-				array( 'wp-element' ),
-				filemtime( RTGODAM_PATH . 'assets/build/pages/dashboard.min.js' ),
+				$dashboard_asset['dependencies'],
+				$dashboard_asset['version'],
 				true
 			);
 
@@ -728,11 +761,22 @@ class Pages {
 				false
 			);
 
+			$analytics_asset_file = RTGODAM_PATH . 'assets/build/pages/analytics.min.asset.php';
+			$analytics_asset      = array(
+				'dependencies' => array(),
+				'version'      => filemtime( RTGODAM_PATH . 'assets/build/pages/analytics.min.js' ),
+			);
+
+			if ( file_exists( $analytics_asset_file ) ) {
+				// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+				$analytics_asset = include $analytics_asset_file;
+			}
+
 			wp_register_script(
 				'transcoder-page-script-analytics',
 				RTGODAM_URL . 'assets/build/pages/analytics.min.js',
-				array( 'wp-element', 'wp-i18n' ),
-				filemtime( RTGODAM_PATH . 'assets/build/pages/analytics.min.js' ),
+				$analytics_asset['dependencies'],
+				$analytics_asset['version'],
 				true
 			);
 
@@ -866,11 +910,22 @@ class Pages {
 			wp_enqueue_script( 'transcoder-page-script-analytics' );
 			wp_enqueue_script( 'd3-js' );
 		} elseif ( $screen && $this->help_page_id === $screen->id ) {
+			$help_asset_file = RTGODAM_PATH . 'assets/build/pages/help.min.asset.php';
+			$help_asset      = array(
+				'dependencies' => array(),
+				'version'      => filemtime( RTGODAM_PATH . 'assets/build/pages/help.min.js' ),
+			);
+
+			if ( file_exists( $help_asset_file ) ) {
+				// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+				$help_asset = include $help_asset_file;
+			}
+
 			wp_register_script(
 				'godam-page-script-help',
 				RTGODAM_URL . 'assets/build/pages/help.min.js',
-				array( 'wp-element' ),
-				filemtime( RTGODAM_PATH . 'assets/build/pages/help.min.js' ),
+				$help_asset['dependencies'],
+				$help_asset['version'],
 				true
 			);
 
@@ -900,11 +955,22 @@ class Pages {
 			wp_set_script_translations( 'godam-page-script-help', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'godam-page-script-help' );
 		} elseif ( $screen && $this->settings_page_id === $screen->id ) {
+			$godam_asset_file = RTGODAM_PATH . 'assets/build/pages/godam.min.asset.php';
+			$godam_asset      = array(
+				'dependencies' => array(),
+				'version'      => filemtime( RTGODAM_PATH . 'assets/build/pages/godam.min.js' ),
+			);
+
+			if ( file_exists( $godam_asset_file ) ) {
+				// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+				$godam_asset = include $godam_asset_file;
+			}
+
 			wp_register_script(
 				'transcoder-page-script-godam',
 				RTGODAM_URL . 'assets/build/pages/godam.min.js',
-				array( 'wp-element', 'wp-i18n', 'wp-api-fetch' ),
-				filemtime( RTGODAM_PATH . 'assets/build/pages/godam.min.js' ),
+				$godam_asset['dependencies'],
+				$godam_asset['version'],
 				true
 			);
 
@@ -992,11 +1058,22 @@ class Pages {
 			do_action( 'godam_enqueue_settings_page_scripts' );
 		} elseif ( $screen && $this->tools_page_id === $screen->id ) {
 
+			$tools_asset_file = RTGODAM_PATH . 'assets/build/pages/tools.min.asset.php';
+			$tools_asset      = array(
+				'dependencies' => array(),
+				'version'      => filemtime( RTGODAM_PATH . 'assets/build/pages/tools.min.js' ),
+			);
+
+			if ( file_exists( $tools_asset_file ) ) {
+				// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+				$tools_asset = include $tools_asset_file;
+			}
+
 			wp_register_script(
 				'godam-page-script-tools',
 				RTGODAM_URL . 'assets/build/pages/tools.min.js',
-				array( 'wp-element', 'wp-i18n' ),
-				filemtime( RTGODAM_PATH . 'assets/build/pages/tools.min.js' ),
+				$tools_asset['dependencies'],
+				$tools_asset['version'],
 				true
 			);
 
@@ -1028,11 +1105,22 @@ class Pages {
 			wp_enqueue_script( 'godam-page-script-tools' );
 		} elseif ( $screen && $this->whats_new_page_id === $screen->id ) {
 
+			$whats_new_asset_file = RTGODAM_PATH . 'assets/build/pages/whats-new.min.asset.php';
+			$whats_new_asset      = array(
+				'dependencies' => array(),
+				'version'      => filemtime( RTGODAM_PATH . 'assets/build/pages/whats-new.min.js' ),
+			);
+
+			if ( file_exists( $whats_new_asset_file ) ) {
+				// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+				$whats_new_asset = include $whats_new_asset_file;
+			}
+
 			wp_register_script(
 				'godam-page-script-whats-new',
 				RTGODAM_URL . 'assets/build/pages/whats-new.min.js',
-				array( 'wp-element', 'wp-i18n' ),
-				filemtime( RTGODAM_PATH . 'assets/build/pages/whats-new.min.js' ),
+				$whats_new_asset['dependencies'],
+				$whats_new_asset['version'],
 				true
 			);
 
@@ -1057,11 +1145,22 @@ class Pages {
 
 		wp_enqueue_style( 'wp-components' );
 
+		$media_library_asset_file = RTGODAM_PATH . 'assets/build/pages/media-library.min.asset.php';
+		$media_library_asset      = array(
+			'dependencies' => array(),
+			'version'      => filemtime( RTGODAM_PATH . 'assets/build/pages/media-library.min.js' ),
+		);
+
+		if ( file_exists( $media_library_asset_file ) ) {
+			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+			$media_library_asset = include $media_library_asset_file;
+		}
+
 		wp_register_script(
 			'media-library-react',
 			RTGODAM_URL . 'assets/build/pages/media-library.min.js',
-			array( 'wp-element', 'wp-i18n' ),
-			filemtime( RTGODAM_PATH . 'assets/build/pages/media-library.min.js' ),
+			$media_library_asset['dependencies'],
+			$media_library_asset['version'],
 			true
 		);
 

@@ -497,11 +497,22 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 				/**
 				 * Enqueue script if not already enqueued.
 				 */
+				$everestforms_asset_file = RTGODAM_PATH . 'assets/build/js/everestforms.min.asset.php';
+				$everestforms_asset      = array(
+					'dependencies' => array(),
+					'version'      => filemtime( RTGODAM_PATH . 'assets/build/js/everestforms.min.js' ),
+				);
+
+				if ( file_exists( $everestforms_asset_file ) ) {
+					// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is constant.
+					$everestforms_asset = include $everestforms_asset_file;
+				}
+
 				wp_enqueue_script(
 					'everestforms-godam',
 					RTGODAM_URL . 'assets/build/js/everestforms.min.js',
-					array( 'jquery', 'wp-i18n' ),
-					filemtime( RTGODAM_PATH . 'assets/build/js/everestforms.min.js' ),
+					$everestforms_asset['dependencies'],
+					$everestforms_asset['version'],
 					true
 				);
 

@@ -10,6 +10,7 @@ const RemoveEmptyScriptsPlugin = require( 'webpack-remove-empty-scripts' );
  * WordPress dependencies
  */
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
+const DependencyExtractionWebpackPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
 
 const isProduction = process.env.NODE_ENV === 'production';
 const mode = isProduction ? 'production' : 'development';
@@ -342,6 +343,11 @@ const pages = {
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
 	},
+	plugins: [
+		new DependencyExtractionWebpackPlugin( {
+			outputFilename: '[name].min.asset.php',
+		} ),
+	],
 	// Only generate source maps in development mode
 	devtool: isProduction ? false : 'source-map',
 };
