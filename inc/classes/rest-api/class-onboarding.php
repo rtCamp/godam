@@ -136,49 +136,12 @@ class Onboarding extends Base {
 		$body   = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		if ( $status >= 400 ) {
-			return new \WP_Error( 'godam_core_error', $this->extract_error_message( $body ), array( 'status' => $status ) );
+			$message = Onboarding_Response::error_message( $body );
+			return new \WP_Error( 'godam_core_error', $message ? $message : __( 'Request failed. Please try again.', 'godam' ), array( 'status' => $status ) );
 		}
 
 		// Frappe wraps the return value under a top-level `message` key.
-		return ( is_array( $body ) && array_key_exists( 'message', $body ) ) ? $body['message'] : $body;
-	}
-
-	/**
-	 * Pull a human-readable message out of a godam-core error body.
-	 *
-	 * Errors arrive as `{ message: { message, error_type } }` (Frappe nests the
-	 * payload under `message`); some are a plain string or `_server_messages`.
-	 *
-	 * @param mixed $body Decoded response body.
-	 * @return string
-	 */
-	private function extract_error_message( $body ) {
-		$fallback = __( 'Request failed. Please try again.', 'godam' );
-
-		if ( ! is_array( $body ) ) {
-			return $fallback;
-		}
-
-		$inner = isset( $body['message'] ) ? $body['message'] : null;
-		if ( is_array( $inner ) && isset( $inner['message'] ) && is_string( $inner['message'] ) ) {
-			return $inner['message'];
-		}
-		if ( is_string( $inner ) && '' !== $inner ) {
-			return $inner;
-		}
-
-		// Frappe sometimes returns user-facing text in `_server_messages`.
-		if ( ! empty( $body['_server_messages'] ) ) {
-			$messages = json_decode( $body['_server_messages'], true );
-			if ( is_array( $messages ) && ! empty( $messages[0] ) ) {
-				$first = json_decode( $messages[0], true );
-				if ( isset( $first['message'] ) && is_string( $first['message'] ) ) {
-					return wp_strip_all_tags( $first['message'] );
-				}
-			}
-		}
-
-		return $fallback;
+		return Onboarding_Response::unwrap( $body );
 	}
 
 	/**

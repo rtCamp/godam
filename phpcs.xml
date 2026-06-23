@@ -16,6 +16,11 @@
 
 	<rule ref="WordPress-Extra" />
 
+	<!-- Test classes follow PHPUnit's ClassNameTest.php naming, not the WP file-name rule. -->
+	<rule ref="WordPress.Files.FileName">
+		<exclude-pattern>tests/*</exclude-pattern>
+	</rule>
+
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
