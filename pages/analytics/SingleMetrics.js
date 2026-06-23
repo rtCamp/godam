@@ -9,7 +9,6 @@ import Tooltip from './Tooltip';
 import {
 	calculateEngagementRate,
 	calculatePlayRate,
-	singleMetricsChart,
 	ensureAll7Days,
 	calculateTrendPercentage,
 } from './helper';
@@ -21,32 +20,13 @@ import './charts.js';
  */
 import { __ } from '@wordpress/i18n';
 
+// Maps the card's metricType to the history field used for the trend-% badge.
 const chartConfigMap = {
-	'engagement-rate': {
-		id: '#single-engagement-rate-chart',
-		key: 'engagement_rate',
-		changeKey: 'avg_engagement_change',
-	},
-	plays: {
-		id: '#single-plays-chart',
-		key: 'plays',
-		changeKey: 'views_change',
-	},
-	'play-rate': {
-		id: '#single-play-rate-chart',
-		key: 'play_rate',
-		changeKey: 'play_rate_change',
-	},
-	'watch-time': {
-		id: '#single-watch-time-chart',
-		key: 'watch_time',
-		changeKey: 'watch_time_change',
-	},
-	'total-videos': {
-		id: '#single-total-videos-chart',
-		key: 'total_videos',
-		changeKey: 'total_videos_change',
-	},
+	'engagement-rate': { key: 'engagement_rate', changeKey: 'avg_engagement_change' },
+	plays: { key: 'plays', changeKey: 'views_change' },
+	'play-rate': { key: 'play_rate', changeKey: 'play_rate_change' },
+	'watch-time': { key: 'watch_time', changeKey: 'watch_time_change' },
+	'total-videos': { key: 'total_videos', changeKey: 'total_videos_change' },
 };
 
 const SingleMetrics = ( {
@@ -58,6 +38,11 @@ const SingleMetrics = ( {
 	processedAnalyticsHistory,
 	analyticsDataFetched,
 } ) => {
+	// P0 design refresh: the dashboard "Insights" cards hide the % change
+	// badge. The current value is a client-side within-period trend, not a
+	// true period-over-period delta; the real "vs previous range" delta lands
+	// in P2 alongside range-scoped KPIs. Other surfaces keep their badge.
+	const showChange = mode !== 'dashboard';
 	useEffect( () => {
 		if ( ! processedAnalyticsHistory || ! analyticsDataFetched ) {
 			return;
@@ -98,7 +83,7 @@ const SingleMetrics = ( {
 
 		const config = chartConfigMap[ metricType ];
 
-		if ( config && config.id ) {
+		if ( config ) {
 			// Ensure we have the data sorted by date (oldest to newest)
 			const sortedData = [ ...finalHistoryArray ].sort( ( a, b ) => {
 				return new Date( a.date ) - new Date( b.date );
@@ -116,14 +101,6 @@ const SingleMetrics = ( {
 				changeEl.classList.remove( 'change-rise', 'change-drop' );
 				changeEl.classList.add( trendPercentage >= 0 ? 'change-rise' : 'change-drop' );
 			}
-
-			singleMetricsChart(
-				sortedData,
-				config.id,
-				config.key,
-				7, // Always show last 7 days
-				trendPercentage,
-			);
 		}
 	}, [ processedAnalyticsHistory, analyticsDataFetched, metricType, mode ] );
 
@@ -135,7 +112,12 @@ const SingleMetrics = ( {
 						<p className="text-xs text-[#525252]">{ label }</p>
 						<Tooltip text={ tooltipText } />
 					</div>
-					<p id={ `${ metricType }-change` } className="metric-change">+0%</p>
+					{ showChange && (
+						<div className="flex items-center gap-1.5">
+							<p id={ `${ metricType }-change` } className="metric-change">+0%</p>
+							<span className="text-[11px] text-zinc-400 whitespace-nowrap">{ __( 'vs 7 days ago', 'godam' ) }</span>
+						</div>
+					) }
 				</div>
 				<div className="flex flex-row justify-between gap-2 items-end">
 					<div className="flex flex-col gap-3">
@@ -146,10 +128,6 @@ const SingleMetrics = ( {
 							0%
 						</p>
 						<p className="text-zinc-500 text-xs">{ dataLabel || __( 'All time', 'godam' ) }</p>
-					</div>
-					<div className="flex flex-col gap-1 items-end">
-						<div id={ `single-${ metricType }-chart` } className="metrics-chart"></div>
-						<p className="text-zinc-400 text-[10px]">{ __( 'Last 7 days', 'godam' ) }</p>
 					</div>
 				</div>
 			</div>
