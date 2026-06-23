@@ -102,6 +102,7 @@ $ve-circle: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-
 			margin: 0;
 			padding: 0;
 			list-style: none;
+			margin-bottom: 1rem;
 
 			li {
 
@@ -227,6 +228,10 @@ $ve-circle: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-
 			width: 20px;
 			height: 20px;
 			object-fit: contain;
+		}
+
+		svg {
+			fill: none;
 		}
 	}
 

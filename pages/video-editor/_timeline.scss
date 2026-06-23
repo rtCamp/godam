@@ -216,6 +216,14 @@ $ve-accent: var(--wp-components-color-accent, var(--wp-admin-theme-color, #5d31f
 			padding: 0 14px;
 		}
 
+		// Form markers show the form-plugin logo on a white chip (the logo keeps
+		// its own colours), so the label needs dark text and the chip a border.
+		&__marker--form .godam-ve-timeline__chip {
+			background: #fff;
+			color: #1e1e1e;
+			border: 1px solid #e0e0e0;
+		}
+
 		// Expanded pill — reveal the label and widen the chip on hover, or when
 		// force-expanded (the always-on add-layer / chapter chips). A *selected*
 		// layer is intentionally NOT expanded — only hover expands a layer chip.

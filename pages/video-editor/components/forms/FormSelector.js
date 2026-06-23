@@ -31,8 +31,8 @@ function FormSelector( { className, disabled, formID, forms, handleChange } ) {
 					disabled={ disabled }
 					__next40pxDefaultSize
 					__nextHasNoMarginBottom
-					label={ __( 'Select form', 'godam' ) }
-					className={ `${ className } ${ disabled ? 'disabled' : '' }` }
+					label={ __( 'Select Form', 'godam' ) }
+					className={ `godam-ve-control godam-ve-select ${ className } ${ disabled ? 'disabled' : '' }`.trim() }
 					value={ form }
 					onChange={ setFormData }
 					options={ filteredOptions }

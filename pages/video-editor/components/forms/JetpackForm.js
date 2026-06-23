@@ -7,8 +7,6 @@ import { useEffect } from 'react';
 /**
  * WordPress dependencies
  */
-import { Button, Notice } from '@wordpress/components';
-import { chevronRight, pencil } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -16,8 +14,8 @@ import { __ } from '@wordpress/i18n';
  */
 import { updateLayerField, setJetpackForms, setJetpackPluginActive } from '../../redux/slice/videoSlice';
 import { useGetSingleJetpackFormQuery, useGetJetpackFormsQuery } from '../../redux/api/jetpack-forms';
-import LayerControl from '../LayerControls';
-import FormSelector from './FormSelector';
+import FormFields from './FormFields';
+import FormPreview from './FormPreview';
 
 const JetpackForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
@@ -161,112 +159,75 @@ const JetpackForm = ( { layerID } ) => {
 
 	return (
 		<>
-			{
-				! isJetpackPluginActive &&
-				<Notice
-					className="mb-4"
-					status="warning"
-					isDismissible={ false }
-				>
-					{ __( 'Please activate the Jetpack plugin to use this feature.', 'godam' ) }
-				</Notice>
-			}
+			<FormFields
+				isActive={ isJetpackPluginActive }
+				pluginLabel={ __( 'Jetpack', 'godam' ) }
+				formID={ layer.jp_id }
+				formType={ layer.form_type }
+				forms={ forms }
+				onSelectForm={ changeFormID }
+				selectorClassName="jetpack-form-selector"
+				editUrl={ getEditFormUrl( layer.jp_id ) }
+				showEditButton={ Boolean( layer.jp_id ) }
+			/>
 
-			{
-				<FormSelector
-					disabled={ ! isJetpackPluginActive }
-					className="jetpack-form-selector mb-4"
-					formID={ layer.jp_id }
-					forms={ forms }
-					handleChange={ changeFormID }
-				/>
-			}
+			<FormPreview
+				bgColor={ layer.bg_color }
+				allowSkip={ layer.allow_skip }
+			>
+				{
+					// Only show form preview if a form is selected
+					layer.jp_id && (
+						<>
+							{
+								( formHTML && ! isFetching && ! error ) &&
+								<div className="form-container jetpack-form-preview" dangerouslySetInnerHTML={ { __html: formHTML } } />
+							}
 
-			<LayerControl>
-				<>
-					<div
-						style={ {
-							backgroundColor: layer.bg_color,
-						} }
-						className="easydam-layer"
-					>
-						{
-							// Only show form preview if a form is selected
-							layer.jp_id && (
-								<>
-									{
-										( formHTML && ! isFetching && ! error ) &&
-										<div className="form-container jetpack-form-preview" dangerouslySetInnerHTML={ { __html: formHTML } } />
-									}
-
-									{
-										isFetching &&
-										<div className="form-container">
-											<p>{ __( 'Loading form…', 'godam' ) }</p>
-										</div>
-									}
-
-									{
-										error &&
-										<div className="form-container">
-											<p>{ __( 'Error loading form. Please check if the form exists.', 'godam' ) }</p>
-										</div>
-									}
-
-									{
-										! isFetching && ! formHTML && ! error &&
-										<div className="form-container">
-											<p>{ __( 'No form selected or form not found.', 'godam' ) }</p>
-										</div>
-									}
-
-									{
-										layer.jp_id &&
-										<Button
-											href={ getEditFormUrl( layer.jp_id ) }
-											target="_blank"
-											variant="secondary"
-											icon={ pencil }
-											className="absolute top-2 right-2"
-										>{ __( 'Edit form', 'godam' ) }</Button>
-									}
-								</>
-							)
-						}
-
-						{
-							// Show message when no forms are available
-							! layer.jp_id && forms.length === 0 && (
+							{
+								isFetching &&
 								<div className="form-container">
-									<p>
-										{ __( 'No Jetpack forms found. Please', 'godam' ) }{ ' ' }
-										<a
-											href={ `${ window?.videoData?.adminUrl }admin.php?page=jetpack-forms-admin#/responses` }
-											target="_blank"
-											rel="noopener noreferrer"
-											style={ { color: '#007cba', textDecoration: 'underline' } }
-										>
-											{ __( 'create a Jetpack contact form', 'godam' ) }
-										</a>
-										{ ' ' }{ __( 'first.', 'godam' ) }
-									</p>
+									<p>{ __( 'Loading form…', 'godam' ) }</p>
 								</div>
-							)
-						}
-					</div>
-					{ layer.allow_skip &&
-					<Button
-						className="skip-button"
-						variant="primary"
-						icon={ chevronRight }
-						iconSize="18"
-						iconPosition="right"
-					>
-						{ __( 'Skip', 'godam' ) }
-					</Button>
-					}
-				</>
-			</LayerControl>
+							}
+
+							{
+								error &&
+								<div className="form-container">
+									<p>{ __( 'Error loading form. Please check if the form exists.', 'godam' ) }</p>
+								</div>
+							}
+
+							{
+								! isFetching && ! formHTML && ! error &&
+								<div className="form-container">
+									<p>{ __( 'No form selected or form not found.', 'godam' ) }</p>
+								</div>
+							}
+						</>
+					)
+				}
+
+				{
+					// Show message when no forms are available
+					! layer.jp_id && forms.length === 0 && (
+						<div className="form-container">
+							<p>
+								{ __( 'No Jetpack forms found. Please', 'godam' ) }{ ' ' }
+								<a
+									href={ `${ window?.videoData?.adminUrl }admin.php?page=jetpack-forms-admin#/responses` }
+									target="_blank"
+									rel="noopener noreferrer"
+									style={ { color: '#007cba', textDecoration: 'underline' } }
+								>
+									{ __( 'create a Jetpack contact form', 'godam' ) }
+								</a>
+								{ ' ' }{ __( 'first.', 'godam' ) }
+							</p>
+						</div>
+					)
+				}
+			</FormPreview>
 		</>
 	);
 };

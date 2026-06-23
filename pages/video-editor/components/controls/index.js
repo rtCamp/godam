@@ -16,7 +16,7 @@
 /**
  * WordPress dependencies
  */
-import { TextControl, TextareaControl, RangeControl, SelectControl, ToggleControl, Icon } from '@wordpress/components';
+import { TextControl, TextareaControl, RangeControl, SelectControl, CustomSelectControl, ToggleControl, Icon } from '@wordpress/components';
 import { chevronUp, chevronDown } from '@wordpress/icons';
 import { useState } from '@wordpress/element';
 
@@ -158,10 +158,11 @@ export const VeSlider = ( { label, help, value = 0, onChange, min = 0, max = 100
  * @param {string}   props.value       Selected value.
  * @param {Function} props.onChange    Receives the chosen value.
  * @param {Array}    props.options     `[{ label, value }]`.
+ * @param {boolean}  [props.disabled]  Whether the control is disabled.
  * @param {string}   [props.className] Extra class names.
  * @return {JSX.Element} Select control.
  */
-export const VeSelect = ( { label, help, value, onChange, options = [], className = '' } ) => (
+export const VeSelect = ( { label, help, value, onChange, options = [], disabled = false, className = '' } ) => (
 	<SelectControl
 		__next40pxDefaultSize
 		__nextHasNoMarginBottom
@@ -171,8 +172,48 @@ export const VeSelect = ( { label, help, value, onChange, options = [], classNam
 		value={ value }
 		options={ options }
 		onChange={ onChange }
+		disabled={ disabled }
 	/>
 );
+
+/**
+ * Dropdown built on WordPress `CustomSelectControl` (a custom-rendered listbox
+ * trigger, unlike the native `<select>` used by `VeSelect`). It exposes the
+ * SAME simple `{ label, value }` option API as `VeSelect`: `value` is the
+ * option's string `value` and `onChange` receives that string.
+ *
+ * `CustomSelectControl` has no native `help` or `disabled` props, so both are
+ * handled by the wrapper (help rendered below; disabled greys out + blocks
+ * pointer events).
+ *
+ * @param {Object}   props             Props.
+ * @param {string}   [props.label]     Field label.
+ * @param {string}   [props.help]      Help text shown below the control.
+ * @param {string}   props.value       Selected value.
+ * @param {Function} props.onChange    Receives the chosen value.
+ * @param {Array}    props.options     `[{ label, value }]`.
+ * @param {boolean}  [props.disabled]  Whether the control is disabled.
+ * @param {string}   [props.className] Extra class names.
+ * @return {JSX.Element} Custom select control.
+ */
+export const VeCustomSelect = ( { label, help, value, onChange, options = [], disabled = false, className = '' } ) => {
+	const items = options.map( ( opt ) => ( { key: String( opt.value ), name: opt.label } ) );
+	const selected = items.find( ( item ) => item.key === String( value ) ) ?? items[ 0 ];
+
+	return (
+		<div className={ `godam-ve-custom-select-field ${ disabled ? 'is-disabled' : '' } ${ className }`.trim() }>
+			<CustomSelectControl
+				__next40pxDefaultSize
+				className="godam-ve-control godam-ve-custom-select"
+				label={ label }
+				options={ items }
+				value={ selected }
+				onChange={ ( next ) => onChange?.( next?.selectedItem?.key ) }
+			/>
+			{ help && <p className="godam-ve-field__help">{ help }</p> }
+		</div>
+	);
+};
 
 /**
  * On/off toggle — WordPress `ToggleControl` with a `godam-ve-control` class.
@@ -182,10 +223,11 @@ export const VeSelect = ( { label, help, value, onChange, options = [], classNam
  * @param {string}   [props.help]      Help text shown below the toggle.
  * @param {boolean}  props.checked     Current state.
  * @param {Function} props.onChange    Receives the new boolean.
+ * @param {boolean}  [props.disabled]  Whether the control is disabled.
  * @param {string}   [props.className] Extra class names.
  * @return {JSX.Element} Toggle control.
  */
-export const VeToggle = ( { label, help, checked, onChange, className = '' } ) => (
+export const VeToggle = ( { label, help, checked, onChange, disabled = false, className = '' } ) => (
 	<ToggleControl
 		__nextHasNoMarginBottom
 		className={ `godam-ve-control godam-ve-toggle ${ className }`.trim() }
@@ -193,6 +235,7 @@ export const VeToggle = ( { label, help, checked, onChange, className = '' } ) =
 		help={ help }
 		checked={ checked }
 		onChange={ onChange }
+		disabled={ disabled }
 	/>
 );
 

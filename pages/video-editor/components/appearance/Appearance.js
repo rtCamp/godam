@@ -19,7 +19,7 @@ import '../../video-control.scss';
 import { updateVideoConfig, setCurrentLayer } from '../../redux/slice/videoSlice';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 import ThumbnailSelector from './ThumbnailSelector.jsx';
-import { VeSection, VeToggle, VeSelect, VeTextInput, VeColorList } from '../controls';
+import { VeSection, VeToggle, VeCustomSelect, VeTextInput, VeColorList } from '../controls';
 
 const DEFAULT_APPEARANCE_COLOR = '#2b333fb3';
 const DEFAULT_HOVER_COLOR = '#fff';
@@ -137,7 +137,7 @@ const Appearance = ( { attachmentID } ) => {
 						checked={ controlBar.subsCapsButton }
 						onChange={ handleCaptionsToggle }
 					/>
-					<VeSelect
+					<VeCustomSelect
 						label={ __( 'Adjust Skip Duration', 'godam' ) }
 						help={ __( 'Number of seconds the skip-forward / skip-backward buttons jump.', 'godam' ) }
 						value={ controlBar.skipButtons?.forward?.toString() || '10' }

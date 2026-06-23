@@ -24,7 +24,7 @@ import { Icon } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { layerTypes } from '../../utils/layerTypes';
+import { layerTypes, FORM_PLUGIN_META } from '../../utils/layerTypes';
 import { setCurrentLayer, setAddLayerModalTime, updateLayerField } from '../../redux/slice/videoSlice';
 
 // Timeline accent — mirrors the rest of the editor (uses the live WordPress
@@ -346,16 +346,19 @@ const Slider = ( props ) => {
 						const layerType = layerTypes.find( ( type ) => type.type === layer.type );
 						const isActive = layer.id === currentLayerID;
 						const markerColor = LAYER_MARKER_COLORS[ layer.type ] || TIMELINE_ACCENT;
+						// Form layers resolve to their specific plugin (icon + name) so the
+						// chip shows e.g. "WPForms" with the WPForms logo on a white chip.
+						const formMeta = layer.type === 'form' ? FORM_PLUGIN_META[ layer.form_type ] : null;
 						// Timeline chips identify the layer by its type (e.g. "Hotspot"),
 						// not its custom name — the sidebar already shows the custom name.
-						const markerName = layerType?.title || layer.name || layer?.type;
+						const markerName = formMeta?.name || layerType?.title || layer.name || layer?.type;
 						const markerTime = formatTime( isBeingDragged ? ( dragPosition / 100 ) * max : layer.displayTime );
 
 						return (
 							// eslint-disable-next-line jsx-a11y/click-events-have-key-events
 							<div
 								key={ layer.id }
-								className={ `godam-ve-timeline__marker ${ isActive ? 'is-active' : '' } ${ isBeingDragged ? 'is-dragging' : '' }` }
+								className={ `godam-ve-timeline__marker ${ formMeta ? 'godam-ve-timeline__marker--form' : '' } ${ isActive ? 'is-active' : '' } ${ isBeingDragged ? 'is-dragging' : '' }` }
 								style={ {
 									left: `${ layerLeft }%`,
 									'--marker-color': markerColor,
@@ -370,6 +373,9 @@ const Slider = ( props ) => {
 								<div className="godam-ve-timeline__chip">
 									<span className="godam-ve-timeline__chip-icon">
 										{ ( () => {
+											if ( formMeta?.icon ) {
+												return <img src={ formMeta.icon } alt={ markerName } />;
+											}
 											const OverrideIcon = LAYER_MARKER_ICONS[ layer.type ];
 											if ( OverrideIcon ) {
 												return <OverrideIcon />;
