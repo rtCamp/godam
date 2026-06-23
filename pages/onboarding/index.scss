@@ -25,7 +25,10 @@
 
 	position: fixed;
 	inset: 0;
-	z-index: 100000;
+	// Sit *below* the WP admin menu (9990) and admin bar (99999) so they stay
+	// visible and clickable — the scrim only dims/blocks the content area, never
+	// trapping the user on the page.
+	z-index: 9989;
 	display: flex;
 	align-items: center;
 	justify-content: center;
