@@ -117,6 +117,20 @@ class Pages {
 	private $whats_new_page_id = 'godam_page_rtgodam_whats_new';
 
 	/**
+	 * Slug for the onboarding page.
+	 *
+	 * @var string
+	 */
+	private $onboarding_slug = 'rtgodam_onboarding';
+
+	/**
+	 * Onboarding page ID.
+	 *
+	 * @var string
+	 */
+	private $onboarding_page_id = 'godam_page_rtgodam_onboarding';
+
+	/**
 	 * Construct method.
 	 */
 	protected function __construct() {
@@ -238,6 +252,19 @@ class Pages {
 			array( $this, 'render_help_page' ),
 			7
 		);
+
+		// GoDAM 2.0 onboarding SPA — behind a feature flag while in development.
+		if ( $this->is_onboarding_v2_enabled() ) {
+			add_submenu_page(
+				$this->menu_slug,
+				__( 'Onboarding (beta)', 'godam' ),
+				__( 'Onboarding (beta)', 'godam' ),
+				'manage_options',
+				$this->onboarding_slug,
+				array( $this, 'render_onboarding_page' ),
+				9
+			);
+		}
 
 		// Only add "What's New" submenu page if we are on a GoDAM menu.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -430,6 +457,39 @@ class Pages {
 	}
 
 	/**
+	 * Whether the GoDAM 2.0 onboarding SPA is enabled.
+	 *
+	 * Off by default while in development. Enable with the
+	 * `RTGODAM_ONBOARDING_V2` constant or the `rtgodam_onboarding_v2_enabled`
+	 * filter.
+	 *
+	 * @return bool
+	 */
+	private function is_onboarding_v2_enabled() {
+		$enabled = defined( 'RTGODAM_ONBOARDING_V2' ) && RTGODAM_ONBOARDING_V2;
+
+		/**
+		 * Toggle the 2.0 onboarding SPA.
+		 *
+		 * @param bool $enabled Whether the onboarding SPA is enabled.
+		 */
+		return (bool) apply_filters( 'rtgodam_onboarding_v2_enabled', $enabled );
+	}
+
+	/**
+	 * Render the onboarding SPA mount point.
+	 *
+	 * @return void
+	 */
+	public function render_onboarding_page() {
+		?>
+		<div class="godam-onboarding-page">
+			<div id="root-godam-onboarding"></div>
+		</div>
+		<?php
+	}
+
+	/**
 	 * To enqueue scripts and styles in admin.
 	 *
 	 * @return void
@@ -437,7 +497,7 @@ class Pages {
 	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
 
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id, $this->tools_page_id, $this->whats_new_page_id ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id, $this->tools_page_id, $this->whats_new_page_id, $this->onboarding_page_id ), true ) ) {
 
 			wp_register_script(
 				'rtgodam-page-style',
@@ -460,6 +520,47 @@ class Pages {
 			wp_enqueue_style( 'easydam-media-library' );
 
 		}
+		// GoDAM 2.0 onboarding SPA.
+		if ( $screen && $this->onboarding_page_id === $screen->id ) {
+			$onboarding_asset = RTGODAM_PATH . 'assets/build/pages/onboarding.min.js';
+
+			wp_register_script(
+				'godam-page-script-onboarding',
+				RTGODAM_URL . 'assets/build/pages/onboarding.min.js',
+				array( 'wp-element', 'wp-i18n', 'wp-components' ),
+				file_exists( $onboarding_asset ) ? filemtime( $onboarding_asset ) : RTGODAM_VERSION,
+				true
+			);
+
+			wp_set_script_translations( 'godam-page-script-onboarding', 'godam' );
+			wp_enqueue_script( 'godam-page-script-onboarding' );
+
+			$current_user = wp_get_current_user();
+
+			wp_localize_script(
+				'godam-page-script-onboarding',
+				'godamOnboarding',
+				array(
+					'restUrl'      => esc_url_raw( rest_url() ),
+					'nonce'        => wp_create_nonce( 'wp_rest' ),
+					'siteUrl'      => home_url(),
+					'adminUrl'     => admin_url(),
+					'dashboardUrl' => admin_url( 'admin.php?page=' . $this->menu_slug ),
+					'isConnected'  => rtgodam_is_api_key_valid(),
+					'displayName'  => $current_user->display_name,
+					// Until the godam-core auth endpoints are live on develop, run the SPA against the client-side mock.
+					'mock'         => ( defined( 'RTGODAM_ONBOARDING_MOCK' ) && RTGODAM_ONBOARDING_MOCK ),
+					'isE2E'        => ( defined( 'GODAM_E2E' ) && GODAM_E2E ),
+				)
+			);
+
+			wp_localize_script(
+				'godam-page-script-onboarding',
+				'posthogConfig',
+				$this->get_posthog_config()
+			);
+		}
+
 		// Check if this is your custom admin page.
 		if ( $screen && $this->video_editor_page_id === $screen->id ) {
 			wp_register_script(

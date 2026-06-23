@@ -1,0 +1,166 @@
+/**
+ * GoDAM onboarding SPA styles.
+ *
+ * Two-pane shell: auth form (left) + marketing panel (right). Interactive
+ * accents derive from the WP admin colour scheme (`--wp-admin-theme-color`)
+ * rather than a hardcoded Figma accent. Layout-only — copy/visuals are
+ * placeholder pending design sign-off.
+ */
+
+.godam-onboarding {
+	display: flex;
+	min-height: calc( 100vh - 32px );
+	margin: 0 0 0 -20px; // bleed under the wp-admin content padding
+	background: #fff;
+
+	&__main {
+		flex: 1 1 55%;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		padding: 48px 24px;
+	}
+
+	&__aside {
+		flex: 1 1 45%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 48px 40px;
+		background: #1e1e2f;
+		color: #fff;
+	}
+
+	&__aside-inner {
+		max-width: 420px;
+	}
+
+	&__brand {
+		margin-bottom: 24px;
+	}
+
+	&__logo {
+		font-size: 22px;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+	}
+
+	&__screen {
+		width: 100%;
+		max-width: 400px;
+	}
+
+	&__form {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		width: 100%;
+		max-width: 400px;
+
+		&--center {
+			text-align: center;
+			align-items: center;
+		}
+	}
+
+	&__row {
+		display: flex;
+		gap: 12px;
+
+		> * {
+			flex: 1;
+		}
+	}
+
+	&__title {
+		margin: 0 0 4px;
+		font-size: 24px;
+		line-height: 1.3;
+	}
+
+	&__subtitle {
+		margin: 0 0 12px;
+		color: #50575e;
+	}
+
+	&__cta {
+		justify-content: center;
+		width: 100%;
+		margin-top: 4px;
+	}
+
+	&__inline {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	&__alt {
+		margin: 8px 0 0;
+		color: #50575e;
+		font-size: 13px;
+	}
+
+	&__notice {
+		margin: 0 0 12px;
+	}
+
+	&__eyebrow {
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		font-size: 12px;
+		opacity: 0.7;
+		margin: 0 0 8px;
+	}
+
+	&__aside-title {
+		font-size: 28px;
+		line-height: 1.25;
+		margin: 0 0 12px;
+		color: #fff;
+	}
+
+	&__aside-sub {
+		opacity: 0.8;
+		margin: 0 0 24px;
+	}
+
+	&__highlights {
+		list-style: none;
+		margin: 0 0 24px;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	&__highlight {
+		display: flex;
+		flex-direction: column;
+	}
+
+	&__highlight-title {
+		font-weight: 600;
+	}
+
+	&__highlight-body {
+		opacity: 0.75;
+		font-size: 13px;
+	}
+
+	&__social-proof {
+		opacity: 0.7;
+		font-size: 13px;
+		margin: 0;
+	}
+
+	@media ( max-width: 782px ) {
+		flex-direction: column;
+
+		&__aside {
+			display: none;
+		}
+	}
+}
