@@ -41,7 +41,7 @@ const EntryScreen = () => {
 	return (
 		<>
 			<BrandLogo markOnly />
-			<h1 className="godam-onboarding__title">{ __( 'Welcome to GoDAM Pro!', 'godam' ) }</h1>
+			<h1 className="godam-onboarding__title godam-onboarding__title--lg">{ __( 'Welcome to GoDAM Pro!', 'godam' ) }</h1>
 			<p className="godam-onboarding__subtitle">
 				{ __( 'A scalable digital asset management platform for WordPress, optimized for conversion-driven video content.', 'godam' ) }
 			</p>

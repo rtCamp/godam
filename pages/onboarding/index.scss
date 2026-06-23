@@ -91,7 +91,10 @@
 		gap: 4px;
 	}
 
-	&__title { margin: 0; font-size: 28px; line-height: 1.2; font-weight: 600; letter-spacing: -0.01em; }
+	// Form-screen H1 = Geist 28/32 (Figma); entry/welcome use --lg = 32/40.
+	&__title { margin: 0; font-size: 28px; line-height: 1.14; font-weight: 600; letter-spacing: -0.01em; }
+
+	&__title--lg { font-size: 32px; line-height: 1.25; }
 
 	&__subtitle { margin: 0; font-size: 15px; line-height: 1.35; color: var( --godam-onb-text-muted ); }
 

@@ -16,7 +16,7 @@ import { config } from '../../utils/constants';
 const WelcomeScreen = () => (
 	<div className="godam-onboarding__center">
 		<BrandLogo markOnly />
-		<h1 className="godam-onboarding__title">{ __( 'Welcome to GoDAM Pro!', 'godam' ) }</h1>
+		<h1 className="godam-onboarding__title godam-onboarding__title--lg">{ __( 'Welcome to GoDAM Pro!', 'godam' ) }</h1>
 		<p className="godam-onboarding__subtitle">{ __( "You're all set. Upload videos to your WordPress Media Library and GoDAM auto-syncs them here.", 'godam' ) }</p>
 		<Button
 			variant="primary"

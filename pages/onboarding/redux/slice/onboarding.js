@@ -6,19 +6,17 @@ import { createSlice } from '@reduxjs/toolkit';
 /**
  * Internal dependencies
  */
-import { STEPS, config } from '../../utils/constants';
+import { STEPS } from '../../utils/constants';
 
+// The GoDAM JWT and the durable org API key both live server-side (held/stored
+// by the WP proxy); the SPA only tracks UI state + the resolved user/workspaces.
 const initialState = {
 	step: STEPS.ENTRY,
 	email: '',
-	// Transient session minted by login/google; the durable credential is the
-	// org API key fetched after workspace selection (stored server-side by PHP).
-	jwt: null,
-	authMethod: null,
 	user: null,
 	organizations: [],
 	selectedOrganization: null,
-	apiKey: null,
+	connected: false,
 	notice: null, // { message, status }
 };
 
@@ -34,8 +32,6 @@ const onboardingSlice = createSlice( {
 			state.email = action.payload;
 		},
 		setSession( state, action ) {
-			state.jwt = action.payload.token;
-			state.authMethod = action.payload.auth_method;
 			state.user = action.payload.user;
 		},
 		setOrganizations( state, action ) {
@@ -57,7 +53,7 @@ const onboardingSlice = createSlice( {
 			state.notice = null;
 		},
 		reset() {
-			return { ...initialState, email: config.lastEmail || '' };
+			return { ...initialState };
 		},
 	},
 } );
