@@ -135,24 +135,24 @@ class Analytics extends Base {
 						return current_user_can( 'upload_files' );
 					},
 					'args'                => array(
-						'page'     => array(
+						'page'         => array(
 							'required'          => false,
 							'type'              => 'integer',
 							'default'           => 1,
 							'sanitize_callback' => 'absint',
 						),
-						'limit'    => array(
+						'limit'        => array(
 							'required'          => false,
 							'type'              => 'integer',
 							'default'           => 10,
 							'sanitize_callback' => 'absint',
 						),
-						'site_url' => array(
+						'site_url'     => array(
 							'required'          => true,
 							'type'              => 'string',
 							'sanitize_callback' => 'esc_url_raw',
 						),
-						'search'   => array(
+						'search'       => array(
 							'required'          => false,
 							'type'              => 'string',
 							'default'           => '',
@@ -759,13 +759,13 @@ class Analytics extends Base {
 			$response = wp_remote_post(
 				$endpoint,
 				array(
-					'timeout' => 10,
+					'timeout' => 3,
 					'headers' => array( 'Content-Type' => 'application/json' ),
 					'body'    => wp_json_encode( array( 'video_ids' => array_values( array_map( 'intval', $video_ids ) ) ) ),
 				)
 			);
 		} else {
-			$response = wp_remote_get( $endpoint, array( 'timeout' => 10 ) );
+			$response = wp_remote_get( $endpoint, array( 'timeout' => 3 ) );
 		}
 		if ( is_wp_error( $response ) ) {
 			return new WP_REST_Response(
