@@ -4,7 +4,7 @@
  * External dependencies
  */
 import { useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import 'video.js/dist/video-js.css';
 import 'videojs-contrib-ads/dist/videojs.ads.css';
 import 'videojs-ima/dist/videojs.ima.css';
@@ -17,71 +17,22 @@ import 'videojs-flvjs-es6';
  * Internal dependencies
  */
 import GoDAM from '../../assets/src/images/GoDAM.png';
-import { setCurrentLayer, setAddLayerModalTime, updateLayerField } from './redux/slice/videoSlice';
 
 /**
  * WordPress dependencies
  */
-import { customLink, customPostType, preformatted, video, thumbsUp, plus } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
-import { Icon } from '@wordpress/components';
-
-const layerTypes = [
-	{
-		title: __( 'Gravity Forms', 'godam' ),
-		icon: preformatted,
-		type: 'form',
-	},
-	{
-		title: __( 'CTA', 'godam' ),
-		icon: customLink,
-		type: 'cta',
-	},
-	{
-		title: __( 'Hotspot', 'godam' ),
-		icon: customPostType,
-		type: 'hotspot',
-	},
-	{
-		title: __( 'Ad', 'godam' ),
-		icon: video,
-		type: 'ad',
-	},
-	{
-		title: __( 'Poll', 'godam' ),
-		icon: thumbsUp,
-		type: 'poll',
-	},
-	// Merge add-on layer types registered via PHP filters (e.g. WooCommerce).
-	...( window.godamVideoEditorConfig?.layerOptions || [] ),
-];
 
 export const VideoJS = ( props ) => {
 	const videoRef = useRef( null );
 	const playerRef = useRef( null );
-	const { options, onReady, onTimeupdate, formatTimeForInput } =
-    props;
+	const { options, onReady, onTimeupdate } = props;
 
-	const [ duration, setDuration ] = useState( 0 );
-	const [ sliderValue, setSliderValue ] = useState( 0 );
 	const [ displayVideoControls, setDisplayVideoControls ] = useState( true );
-
-	const dispatch = useDispatch();
 
 	const videoMeta = useSelector( ( state ) => state.videoReducer );
 	const videoConfig = videoMeta.videoConfig;
-	// Exclude layers with unknown types (e.g. added in a different branch/version)
-	// so they don't appear on the seeker.
-	const layers = videoMeta.layers.filter(
-		( layer ) => layerTypes.some( ( lt ) => lt.type === layer.type ),
-	);
-	const chapters = videoMeta.chapters;
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
-	const currentTab = useSelector( ( state ) => state.videoReducer.currentTab );
-
-	const setCurrentTime = ( timeInSeconds ) => {
-		setSliderValue( timeInSeconds );
-	};
 
 	useEffect( () => {
 		// Make sure Video.js player is only initialized once
@@ -102,16 +53,9 @@ export const VideoJS = ( props ) => {
 			// Add a 'timeupdate' event listener
 			if ( onTimeupdate ) {
 				player.on( 'timeupdate', () => {
-					const currentTime = player.currentTime();
-					onTimeupdate( player, currentTime );
-					setCurrentTime( currentTime );
-					setSliderValue( currentTime );
+					onTimeupdate( player, player.currentTime() );
 				} );
 			}
-
-			player.on( 'loadedmetadata', () => {
-				setDuration( player.duration() );
-			} );
 		}
 	}, [ videoRef, videoConfig ] );
 
@@ -278,24 +222,6 @@ export const VideoJS = ( props ) => {
 	}, [ videoConfig ] );
 
 	useEffect( () => {
-		if ( playerRef.current ) {
-			const player = playerRef.current;
-
-			// Remove the old event listener on 'timeupdate' event.
-			player.off( 'timeupdate' );
-
-			// Add a new 'timeupdate' event listener
-			if ( onTimeupdate ) {
-				player.on( 'timeupdate', () => {
-					const currentTime = player.currentTime();
-					onTimeupdate( player, currentTime );
-					setSliderValue( currentTime );
-				} );
-			}
-		}
-	}, [ layers, chapters ] );
-
-	useEffect( () => {
 		if ( ! playerRef.current ) {
 			return;
 		}
@@ -361,457 +287,14 @@ export const VideoJS = ( props ) => {
 	}, [ playerRef ] );
 
 	return (
-		<>
-			<div
-				style={ {
-					'--is-controls-visible': displayVideoControls ? '' : 'none',
-				} }
-			>
-				<div id="easydam-video-player" className="relative rounded-lg overflow-hidden" data-vjs-player>
-					<div ref={ videoRef } />
-					<div id="easydam-layer-placeholder" />
-				</div>
-			</div>
-
-			{
-				currentTab === 'layers' && (
-					<Slider
-						className="mt-12 mb-6"
-						value={ sliderValue }
-						onInteract={ () => {
-							// Allow scrubbing even when a layer is selected by clearing it first.
-							if ( currentLayer ) {
-								dispatch( setCurrentLayer( null ) );
-							}
-						} }
-						onChange={ ( value ) => {
-							setSliderValue( value );
-							if ( playerRef.current ) {
-								playerRef.current.currentTime( value );
-							}
-						} }
-						max={ duration }
-						layers={ layers }
-						onLayerSelect={ ( selectedLayer ) => {
-							dispatch( setCurrentLayer( selectedLayer ) );
-							if ( playerRef.current ) {
-								// Trigger drives where the preview seeks: watch-depth to its
-								// watch %, end-of-video to the end, others to displayTime.
-								let seekTime = selectedLayer?.displayTime;
-								if ( selectedLayer?.trigger === 'watch_depth' ) {
-									seekTime = ( ( Number( selectedLayer.watchDepth ) || 0 ) / 100 ) * ( duration || 0 );
-								} else if ( selectedLayer?.trigger === 'end_of_video' ) {
-									seekTime = duration || 0;
-								}
-								playerRef.current.currentTime( seekTime );
-							}
-						} }
-						disabled={ false }
-						currentLayerID={ currentLayer?.id }
-						chapters={ [] }
-						formatTimeForInput={ formatTimeForInput }
-						onAddLayer={ ( time ) => {
-							dispatch( setAddLayerModalTime( time ) );
-						} }
-						onLayerDrag={ ( layerId, value, field = 'displayTime' ) => {
-							dispatch( updateLayerField( { id: layerId, field, value } ) );
-						} }
-					/>
-				)
-			}
-
-			{
-				currentTab === 'chapters' && (
-					<Slider
-						className="mt-12 mb-6"
-						value={ sliderValue }
-						onInteract={ () => {
-							// Keep behavior consistent across tabs.
-							if ( currentLayer ) {
-								dispatch( setCurrentLayer( null ) );
-							}
-						} }
-						onChange={ ( value ) => {
-							setSliderValue( value );
-							if ( playerRef.current ) {
-								playerRef.current.currentTime( value );
-							}
-						} }
-						max={ duration }
-						chapters={ chapters }
-						onLayerSelect={ ( chapter ) => {
-							playerRef.current.currentTime( chapter?.originalTime );
-						} }
-						layers={ [] }
-						formatTimeForInput={ formatTimeForInput }
-					/>
-				)
-			}
-		</>
-	);
-};
-
-const Slider = ( props ) => {
-	const { max, value, onChange, className, layers, onLayerSelect, disabled, currentLayerID, chapters, formatTimeForInput, onInteract, onAddLayer, onLayerDrag } = props;
-
-	const sliderRef = useRef( null );
-	const [ sliderValue, setSliderValue ] = useState( value );
-	const [ hoverValue, setHoverValue ] = useState( null ); // Hover value
-	const [ isDragging, setIsDragging ] = useState( false ); // Track if user is dragging the slider
-	const [ isHovering, setIsHovering ] = useState( false ); // Track if mouse is over slider area
-	const [ draggingLayer, setDraggingLayer ] = useState( null ); // Track which layer is being dragged
-	const [ dragPosition, setDragPosition ] = useState( null ); // Track drag position as percentage
-	const pressTimerRef = useRef( null ); // Timer for press-and-hold detection
-
-	useEffect( () => {
-		setSliderValue( value );
-	}, [ value ] );
-
-	// Sort the array (ascending order) and remove garbage values
-	const seenTimes = new Set();
-	const sortedChapters = chapters
-		?.filter( ( chapter ) => {
-			const time = parseFloat( chapter.startTime );
-			if (
-				isNaN( time ) ||
-			time < 0 ||
-			seenTimes.has( time )
-			) {
-				return false;
-			}
-			seenTimes.add( time );
-			return true;
-		} )
-		.sort( ( a, b ) => a.startTime - b.startTime );
-
-	const sortedLayers = [ ...layers ]?.sort( ( a, b ) => a.displayTime - b.displayTime );
-
-	const handleHover = ( e ) => {
-		const rect = e.target.getBoundingClientRect();
-		const offsetX = e.clientX - rect.left;
-		const percentage = offsetX / rect.width;
-		const val = percentage * max;
-		setHoverValue( val.toFixed( 2 ) );
-	};
-
-	const handleLeave = () => {
-		setHoverValue( null ); // Hide tooltip when not hovering
-	};
-
-	const formatTime = ( seconds ) => {
-		const minutes = Math.floor( seconds / 60 );
-		const remainingSeconds = Math.floor( seconds % 60 );
-		return `${ minutes }:${ remainingSeconds < 10 ? '0' : '' }${ remainingSeconds }`;
-	};
-
-	// Handle layer drag start (after press-and-hold delay)
-	const handleLayerPointerDown = ( e, layer ) => {
-		e.stopPropagation();
-		const PRESS_HOLD_DELAY = 200; // milliseconds
-
-		pressTimerRef.current = setTimeout( () => {
-			setDraggingLayer( layer );
-			setDragPosition( ( layer.displayTime / max ) * 100 );
-			document.body.style.cursor = 'grabbing';
-		}, PRESS_HOLD_DELAY );
-	};
-
-	// Handle pointer up - either select layer or finish drag
-	const handleLayerPointerUp = ( layer ) => {
-		if ( pressTimerRef.current ) {
-			clearTimeout( pressTimerRef.current );
-			pressTimerRef.current = null;
-		}
-
-		if ( draggingLayer ) {
-			// Finish drag — watch-depth updates its watch %, end-of-video is fixed
-			// at the end (no update), others update displayTime.
-			if ( draggingLayer.trigger === 'watch_depth' ) {
-				const watchDepthValue = Math.max( 1, Math.min( 100, Math.round( dragPosition ) ) );
-				onLayerDrag?.( draggingLayer.id, watchDepthValue, 'watchDepth' );
-				onLayerSelect( { ...draggingLayer, watchDepth: watchDepthValue } );
-			} else if ( draggingLayer.trigger === 'end_of_video' ) {
-				onLayerSelect( draggingLayer );
-			} else {
-				const newDisplayTime = Math.max( 0, Math.min( Math.round( ( dragPosition / 100 ) * max * 100 ) / 100, max ) );
-				onLayerDrag?.( draggingLayer.id, newDisplayTime, 'displayTime' );
-				onLayerSelect( { ...draggingLayer, displayTime: newDisplayTime } );
-			}
-			setDraggingLayer( null );
-			setDragPosition( null );
-			document.body.style.cursor = '';
-		} else {
-			// Normal click - select layer
-			onLayerSelect( layer );
-		}
-	};
-
-	// Handle pointer move during drag
-	const handlePointerMove = ( e ) => {
-		if ( ! draggingLayer || ! sliderRef.current ) {
-			return;
-		}
-
-		const rect = sliderRef.current.getBoundingClientRect();
-		const offsetX = e.clientX - rect.left;
-		const percentage = Math.max( 0, Math.min( ( offsetX / rect.width ) * 100, 100 ) );
-		setDragPosition( percentage );
-	};
-
-	// Handle pointer leave during drag
-	const handlePointerLeaveWhileDragging = () => {
-		if ( pressTimerRef.current ) {
-			clearTimeout( pressTimerRef.current );
-			pressTimerRef.current = null;
-		}
-	};
-
-	// Cleanup on unmount
-	useEffect( () => {
-		return () => {
-			if ( pressTimerRef.current ) {
-				clearTimeout( pressTimerRef.current );
-			}
-		};
-	}, [] );
-
-	// Add global pointer up listener when dragging
-	useEffect( () => {
-		if ( ! draggingLayer ) {
-			return;
-		}
-
-		const handleGlobalPointerUp = () => {
-			if ( draggingLayer ) {
-				if ( draggingLayer.trigger === 'watch_depth' ) {
-					const watchDepthValue = Math.max( 1, Math.min( 100, Math.round( dragPosition ) ) );
-					onLayerDrag?.( draggingLayer.id, watchDepthValue, 'watchDepth' );
-					onLayerSelect( { ...draggingLayer, watchDepth: watchDepthValue } );
-				} else if ( draggingLayer.trigger === 'end_of_video' ) {
-					onLayerSelect( draggingLayer );
-				} else {
-					const newDisplayTime = Math.max( 0, Math.min( Math.round( ( dragPosition / 100 ) * max * 100 ) / 100, max ) );
-					onLayerDrag?.( draggingLayer.id, newDisplayTime, 'displayTime' );
-					onLayerSelect( { ...draggingLayer, displayTime: newDisplayTime } );
-				}
-				setDraggingLayer( null );
-				setDragPosition( null );
-				document.body.style.cursor = '';
-			}
-		};
-
-		const handleGlobalPointerMove = ( e ) => {
-			if ( draggingLayer && sliderRef.current ) {
-				const rect = sliderRef.current.getBoundingClientRect();
-				const offsetX = e.clientX - rect.left;
-				const percentage = Math.max( 0, Math.min( ( offsetX / rect.width ) * 100, 100 ) );
-				setDragPosition( percentage );
-			}
-		};
-
-		document.addEventListener( 'pointerup', handleGlobalPointerUp );
-		document.addEventListener( 'pointermove', handleGlobalPointerMove );
-
-		return () => {
-			document.removeEventListener( 'pointerup', handleGlobalPointerUp );
-			document.removeEventListener( 'pointermove', handleGlobalPointerMove );
-		};
-	}, [ draggingLayer, dragPosition, max, onLayerDrag ] );
-
-	return (
 		<div
-			className={ `slider-hover-area ${ className }` }
-			style={ { padding: '48px 20px', margin: '0 -20px' } }
-			onMouseEnter={ () => setIsHovering( true ) }
-			onMouseLeave={ () => {
-				setIsHovering( false );
-				handlePointerLeaveWhileDragging();
+			style={ {
+				'--is-controls-visible': displayVideoControls ? '' : 'none',
 			} }
 		>
-			<div className="slider" ref={ sliderRef } onPointerMove={ handlePointerMove }>
-				<input
-					style={ {
-						'--progress-value': `${ sliderValue / max * 100 }%`,
-					} }
-					disabled={ disabled }
-					type="range"
-					min="0"
-					step={ 0.01 }
-					max={ max }
-					className="slider-input"
-					value={ sliderValue }
-					onPointerDown={ () => {
-						setIsDragging( true );
-						onInteract?.();
-					} }
-					onPointerUp={ () => setIsDragging( false ) }
-					onMouseDown={ () => {
-						setIsDragging( true );
-						onInteract?.();
-					} }
-					onMouseUp={ () => setIsDragging( false ) }
-					onTouchStart={ () => {
-						setIsDragging( true );
-						onInteract?.();
-					} }
-					onTouchEnd={ () => setIsDragging( false ) }
-					onFocus={ () => onInteract?.() }
-					onChange={ ( e ) => {
-						if ( onChange ) {
-							onChange( e.target.value );
-						}
-						setSliderValue( e.target.value );
-					} }
-					onMouseMove={ handleHover }
-					onMouseLeave={ handleLeave }
-				/>
-				<span
-					className="slider-progress"
-					style={ {
-						width: `${ sliderValue / max * 100 }%`,
-					} }
-				>
-				</span>
-				{
-					hoverValue && hoverValue >= 0 && hoverValue <= max && (
-						<div className="tooltip" style={ { left: `${ hoverValue / max * 100 }%` } }>
-							{ formatTime( hoverValue ) }
-						</div>
-					)
-				}
-				{
-					sortedLayers?.map( ( layer ) => {
-						const isBeingDragged = draggingLayer?.id === layer.id;
-						// Trigger drives the marker position: end-of-video pins to the
-						// end, watch-depth to its watch %, others to displayTime.
-						let layerLeft;
-						if ( layer.trigger === 'end_of_video' ) {
-							layerLeft = 100;
-						} else if ( isBeingDragged ) {
-							layerLeft = dragPosition;
-						} else if ( layer.trigger === 'watch_depth' ) {
-							layerLeft = Math.max( 0, Math.min( Number( layer.watchDepth ) || 0, 100 ) );
-						} else {
-							layerLeft = ( layer.displayTime / max ) * 100;
-						}
-
-						return (
-							// eslint-disable-next-line jsx-a11y/click-events-have-key-events
-							<div
-								key={ layer.id }
-								className={ `layer-indicator ${ layer.type === 'hotspot' ? 'hotspot-indicator' : '' } ${ isBeingDragged ? 'dragging' : '' }` }
-								style={ {
-									left: `${ layerLeft }%`,
-									'--hover-width': layer?.duration ? `${ Math.min( ( layer.duration / max ) * 100, 100 - layerLeft ) }%` : '8px',
-									cursor: isBeingDragged ? 'grabbing' : 'grab',
-								} }
-								onPointerDown={ ( e ) => handleLayerPointerDown( e, layer ) }
-								onPointerUp={ () => handleLayerPointerUp( layer ) }
-								onPointerCancel={ handlePointerLeaveWhileDragging }
-								role="button"
-								tabIndex={ 0 }
-							>
-								<div className="layer-indicator--container">
-									<div className={ `icon ${ layer.id === currentLayerID ? 'active' : '' }` }>
-										{ ( () => {
-											const layerType = layerTypes.find( ( type ) => type.type === layer.type );
-											if ( layerType?.iconUrl ) {
-												return <img src={ layerType.iconUrl } alt={ layerType.title } className="layer-indicator__addon-icon" />;
-											}
-											return <Icon icon={ layerType?.icon } />;
-										} )() }
-										<div>
-											{ layer?.type?.toUpperCase() }
-											{
-												layer?.duration && (
-													<div className="duration">
-														for { layer.duration }s
-													</div>
-												)
-											}
-										</div>
-									</div>
-									<div className="info">{ formatTime( isBeingDragged ? ( dragPosition / 100 ) * max : layer.displayTime ) }</div>
-								</div>
-							</div>
-						);
-					} )
-				}
-				{
-					/* Add New Layer Indicator at current time */
-					onAddLayer && sliderValue > 0 && ! currentLayerID && ! isDragging && isHovering && (
-						<div
-							className="layer-indicator add-layer-indicator"
-							style={ {
-								left: `${ ( sliderValue / max ) * 100 }%`,
-							} }
-							onClick={ () => onAddLayer( sliderValue ) }
-							onKeyDown={ ( e ) => {
-								if ( e.key === 'Enter' || e.key === ' ' ) {
-									e.preventDefault();
-									onAddLayer( sliderValue );
-								}
-							} }
-							role="button"
-							tabIndex={ 0 }
-							title={ __( 'Add layer at this time', 'godam' ) }
-						>
-							<div className="layer-indicator--container add-layer-container">
-								<div className="icon add-icon">
-									<Icon icon={ plus } />
-									<div>{ __( 'ADD LAYER', 'godam' ) }</div>
-								</div>
-								<div className="info">{ formatTime( sliderValue ) }</div>
-							</div>
-						</div>
-					)
-				}
-				{
-					sortedChapters?.map( ( chapter, index ) => {
-						const chapterStart = parseFloat( chapter.startTime ) || 0;
-						const chapterLeft = ( chapterStart / max ) * 100;
-
-						// Each chapter spans its own start to its own end. Older data
-						// (no endTime) falls back to the next chapter's start, or the
-						// video end for the last one.
-						const nextChapter = sortedChapters[ index + 1 ];
-						let chapterEnd;
-						let endLabel;
-						if ( chapter.endTime !== undefined && chapter.endTime !== null && chapter.endTime !== '' ) {
-							chapterEnd = parseFloat( chapter.endTime );
-							endLabel = chapter.originalEndTime || formatTimeForInput( chapterEnd );
-						} else {
-							chapterEnd = nextChapter ? ( parseFloat( nextChapter.startTime ) || 0 ) : max;
-							endLabel = nextChapter ? nextChapter.originalTime : formatTimeForInput( max );
-						}
-						const hoverWidth = ( ( chapterEnd - chapterStart ) / max ) * 100;
-
-						return (
-							<div
-								key={ chapter.id }
-								className="layer-indicator hotspot-indicator chapter-indicator"
-								style={ {
-									left: `${ chapterLeft }%`,
-									'--hover-width': `${ hoverWidth }%`,
-								} }
-							>
-								<div className="chapter-indicator--duration">
-									{ `${ chapter?.originalTime } - ${ endLabel }` }
-								</div>
-								<div
-									className="chapter-indicator--text"
-									style={ {
-										'--hover-width': `${ hoverWidth }%`,
-									} }
-								>
-									{ chapter?.text?.length > 13
-										? `${ chapter.text.slice( 0, 13 ) }...`
-										: chapter?.text }
-								</div>
-							</div>
-						);
-					} )
-				}
+			<div id="easydam-video-player" className="relative rounded-lg overflow-hidden" data-vjs-player>
+				<div ref={ videoRef } />
+				<div id="easydam-layer-placeholder" />
 			</div>
 		</div>
 	);

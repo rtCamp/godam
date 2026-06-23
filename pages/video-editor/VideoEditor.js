@@ -40,6 +40,7 @@ import './video-editor.scss';
 import { useGetAttachmentMetaQuery, useSaveAttachmentMetaMutation } from './redux/api/attachment';
 import { useFetchForms } from './components/forms/fetchForms';
 import Chapters from './components/chapters/Chapters';
+import Timeline from './components/timeline/Timeline';
 import { copyGoDAMVideoBlock, prefetchMediaDataForCopy } from './utils/index';
 import { getFormIdFromLayer } from './utils/formUtils';
 import { canManageAttachment } from '../../assets/src/js/media-library/utility.js';
@@ -464,50 +465,63 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 						</Snackbar>
 					) }
 
-					{ attachmentConfig && sources.length > 0 && (
-						<div className="w-full video-canvas-wrapper">
-							<div className="relative">
-								<VideoJSPlayer
-									options={ {
-										controls: true,
-										fluid: true,
-										preload: 'auto',
-										flvjs: {
-											mediaDataSource: {
-												isLive: true,
-												cors: false,
-												withCredentials: false,
+					<div className="godam-video-editor__stage-canvas">
+						{ attachmentConfig && sources.length > 0 && (
+							<div className="w-full video-canvas-wrapper">
+								<div className="relative">
+									<VideoJSPlayer
+										options={ {
+											controls: true,
+											fluid: true,
+											preload: 'auto',
+											flvjs: {
+												mediaDataSource: {
+													isLive: true,
+													cors: false,
+													withCredentials: false,
+												},
 											},
-										},
-										aspectRatio,
-										sources,
-										// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
-										// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
-										html5: {
-											vhs: {
-												bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
-												bandwidthVariance: 1.0, // allow renditions close to estimate
-												limitRenditionByPlayerDimensions: false, // don't cap by video element size
+											aspectRatio,
+											sources,
+											// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
+											// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
+											html5: {
+												vhs: {
+													bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
+													bandwidthVariance: 1.0, // allow renditions close to estimate
+													limitRenditionByPlayerDimensions: false, // don't cap by video element size
+												},
 											},
-										},
-										controlBar: {
-											playToggle: true,
-											volumePanel: true,
-											currentTimeDisplay: true,
-											timeDivider: true,
-											durationDisplay: true,
-											fullscreenToggle: false,
-											subsCapsButton: true,
-											skipButtons: false,
-											pictureInPictureToggle: false,
-										},
-									} }
-									onTimeupdate={ handleTimeUpdate }
-									onReady={ handlePlayerReady }
-									playbackTime={ currentTime }
-									formatTimeForInput={ formatTimeForInput }
-								/>
+											controlBar: {
+												playToggle: true,
+												volumePanel: true,
+												currentTimeDisplay: true,
+												timeDivider: true,
+												durationDisplay: true,
+												fullscreenToggle: false,
+												subsCapsButton: true,
+												skipButtons: false,
+												pictureInPictureToggle: false,
+											},
+										} }
+										onTimeupdate={ handleTimeUpdate }
+										onReady={ handlePlayerReady }
+										playbackTime={ currentTime }
+									/>
+								</div>
 							</div>
+						) }
+					</div>
+
+					{ attachmentConfig && sources.length > 0 &&
+						( currentTab === 'layers' || currentTab === 'chapters' ) && (
+						<div className="godam-video-editor__timeline-dock">
+							<Timeline
+								currentTime={ currentTime }
+								duration={ duration }
+								onSeek={ seekToTime }
+								formatTimeForInput={ formatTimeForInput }
+							/>
 						</div>
 					) }
 				</main>

@@ -28,8 +28,6 @@ import { Button, Icon, Tooltip, Dropdown, DropdownMenu, MenuGroup, MenuItem, Nav
 import { plus, preformatted, customLink, video, customPostType, thumbsUp, moreVertical, copy, trash, chevronRight, info } from '@wordpress/icons';
 import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
 
-import LayerSelector from './LayerSelector.jsx';
-
 /**
  * Layer types with their labels, icons, and integration-specific state.
  */
@@ -223,24 +221,33 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 
 	const dispatch = useDispatch();
 
-	const openModal = useCallback( () => {
+	// Open the "Add layer" dropdown menu (from the sidebar button or the timeline).
+	const openAddMenu = useCallback( () => {
 		setOpen( true );
 		if ( onPauseVideo ) {
 			onPauseVideo();
 		}
 	}, [ onPauseVideo ] );
-	const closeModal = () => {
+
+	// Controlled toggle for the dropdown. Closing also clears any pending
+	// add-time requested from the timeline's "Add layer" chip.
+	const handleAddMenuToggle = ( next ) => {
+		if ( next ) {
+			openAddMenu();
+			return;
+		}
 		setOpen( false );
-		// Clear the addLayerModalTime when closing the modal
-		dispatch( setAddLayerModalTime( null ) );
+		if ( addLayerModalTime !== null ) {
+			dispatch( setAddLayerModalTime( null ) );
+		}
 	};
 
-	// Listen for addLayerModalTime changes to open the modal from the slider
+	// The timeline's "Add layer" chip requests the menu by setting addLayerModalTime.
 	useEffect( () => {
 		if ( addLayerModalTime !== null ) {
-			openModal();
+			openAddMenu();
 		}
-	}, [ addLayerModalTime, openModal ] );
+	}, [ addLayerModalTime, openAddMenu ] );
 
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
@@ -253,11 +260,14 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 		.sort( ( a, b ) => a.displayTime - b.displayTime );
 
 	const addNewLayer = ( type, formType ) => {
+		// Add at the time requested from the timeline ("Add layer" chip), else at
+		// the current playhead. `??` keeps a valid 0:00. Cleared on menu close.
+		const addTime = addLayerModalTime ?? currentTime;
 		switch ( type ) {
 			case 'form':
 				dispatch( addLayer( {
 					id: uuidv4(),
-					displayTime: currentTime,
+					displayTime: addTime,
 					type,
 					name: '',
 					form_type: formType || 'gravity',
@@ -270,7 +280,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 			case 'cta':
 				dispatch( addLayer( {
 					id: uuidv4(),
-					displayTime: currentTime,
+					displayTime: addTime,
 					type,
 					name: '',
 					cta_type: 'image',
@@ -286,7 +296,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 				dispatch(
 					addLayer( {
 						id: uuidv4(),
-						displayTime: currentTime,
+						displayTime: addTime,
 						type,
 						name: '',
 						duration: 5,
@@ -299,7 +309,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 			case 'ad':
 				dispatch( addLayer( {
 					id: uuidv4(),
-					displayTime: currentTime,
+					displayTime: addTime,
 					type,
 					name: '',
 					adTagUrl: '',
@@ -311,7 +321,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 			case 'poll':
 				dispatch( addLayer( {
 					id: uuidv4(),
-					displayTime: currentTime,
+					displayTime: addTime,
 					type,
 					name: '',
 					poll_id: '',
@@ -323,7 +333,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 				// Check for add-on layer creators (registered via window.godamLayerCreators).
 				const addonCreator = window.godamLayerCreators?.[ type ];
 				if ( addonCreator ) {
-					const layerData = addonCreator( { layers, currentTime, type } );
+					const layerData = addonCreator( { layers, currentTime: addTime, type } );
 					if ( layerData ) {
 						dispatch( addLayer( { ...layerData, id: uuidv4() } ) );
 					}
@@ -471,6 +481,8 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					className="godam-ve-layers__add"
 					contentClassName="godam-ve-add-menu__popover"
 					popoverProps={ { placement: 'bottom-start' } }
+					open={ isOpen }
+					onToggle={ handleAddMenuToggle }
 					renderToggle={ ( { isOpen: menuOpen, onToggle } ) => {
 						const handleToggle = () => {
 							if ( onPauseVideo ) {
@@ -676,12 +688,6 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 				</ul>
 			) }
 
-			{ isOpen && (
-				<LayerSelector
-					closeModal={ closeModal }
-					addNewLayer={ addNewLayer }
-				/>
-			) }
 		</div>
 	);
 };

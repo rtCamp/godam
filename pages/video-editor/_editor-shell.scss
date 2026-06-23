@@ -77,7 +77,7 @@ $ve-faint: color-mix(in srgb, currentcolor 5%, transparent);
 	}
 
 	&__stat-label {
-		margin: 0 0 0.25rem;
+		margin: 0;
 		font-size: 15px;
 		line-height: 1.5;
 		color: $ve-muted;
@@ -151,9 +151,31 @@ $ve-faint: color-mix(in srgb, currentcolor 5%, transparent);
 		flex-direction: column;
 		align-items: center;
 		min-width: 0;
-		padding: 1.5rem;
 		overflow-y: auto;
 		background: $ve-faint;
+	}
+
+	// Holds the video preview; grows to fill the stage and keeps the video
+	// centred so the timeline can dock at the bottom.
+	&__stage-canvas {
+		display: flex;
+		flex: 1 1 auto;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		min-height: 0;
+	}
+
+	// Timeline pinned to the bottom of the stage. Its marker chips float up
+	// into the empty space above the track.
+	&__timeline-dock {
+		flex: 0 0 auto;
+		width: 100%;
+		margin-top: auto;
+		border-top: 1px solid $ve-border;
+		z-index: 10;
+		background-color: #fff;
+		padding: 0.25rem 1.5rem 1rem 1.5rem;
 	}
 
 	&__config {

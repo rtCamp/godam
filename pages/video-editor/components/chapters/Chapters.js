@@ -122,7 +122,6 @@ const Chapters = ( { duration, formatTimeForInput, onSelectChapter } ) => {
 									className="godam-ve-chapter-row__main"
 									onClick={ () => handleEdit( row ) }
 								>
-									<span className="godam-ve-chapter-row__swatch" aria-hidden="true" />
 									<span className="godam-ve-chapter-row__text">
 										<span className="godam-ve-chapter-row__name">
 											{ row.text?.trim() || sprintf(

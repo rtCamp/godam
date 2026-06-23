@@ -19,6 +19,10 @@ $ve-faint: color-mix(in srgb, currentcolor 5%, transparent);
 		&__head {
 			padding: 1rem;
 			border-bottom: 1px solid $ve-border;
+			position: sticky;
+			top: 0;
+			background: #fff;
+			z-index: 10;
 		}
 
 		&__title {

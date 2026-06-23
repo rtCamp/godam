@@ -13,6 +13,7 @@
 @use 'controls';
 @use 'layers';
 @use 'chapters';
+@use 'timeline';
 
 // Hide layer controls fallback when portal target is not available
 .layer-controls-fallback {
