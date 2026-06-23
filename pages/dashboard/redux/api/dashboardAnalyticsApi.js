@@ -82,4 +82,5 @@ export const {
 	useFetchDashboardMetricsQuery,
 	useFetchDashboardMetricsHistoryQuery,
 	useFetchTopVideosQuery,
+	useLazyFetchTopVideosQuery,
 } = dashboardAnalyticsApi;

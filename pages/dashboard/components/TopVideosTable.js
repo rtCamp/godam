@@ -2,13 +2,13 @@
  * WordPress dependencies
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { SearchControl, ToggleControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { useFetchTopVideosQuery } from '../redux/api/dashboardAnalyticsApi';
+import { useFetchTopVideosQuery, useLazyFetchTopVideosQuery } from '../redux/api/dashboardAnalyticsApi';
 import { formatWatchTime } from '../../utils/formatters';
 import DefaultThumbnail from '../../../assets/src/images/video-thumbnail-default.png';
 import ExportBtn from '../../../assets/src/images/export.svg';
@@ -16,7 +16,29 @@ import chevronLeft from '../../../assets/src/images/chevron-left.svg';
 import chevronRight from '../../../assets/src/images/chevron-right.svg';
 
 const PER_PAGE = 10;
+// The analytics microservice caps `limit` at 100 per request, so a full-set
+// export pages through it 100 at a time rather than asking for everything at once.
+const EXPORT_PAGE_SIZE = 100;
 const ANALYTICS_LINK = ( id ) => `admin.php?page=rtgodam_analytics&id=${ id }`;
+
+/**
+ * Escape a value for a CSV cell.
+ *
+ * Guards against CSV formula injection: a cell beginning with =, +, -, @, tab or
+ * CR is executed as a formula by Excel/Sheets, and video titles are user-settable.
+ * Such values are prefixed with a single quote. The value is then quote-wrapped
+ * when it contains a double quote, comma, or newline.
+ *
+ * @param {*} value Raw cell value.
+ * @return {string} CSV-safe field.
+ */
+function escapeCsvCell( value ) {
+	let str = String( value );
+	if ( /^[=+\-@\t\r]/.test( str ) ) {
+		str = `'${ str }`;
+	}
+	return /["\n,]/.test( str ) ? `"${ str.replace( /"/g, '""' ) }"` : str;
+}
 
 /**
  * Compact page list with ellipses, e.g. [ 1, '…', 4, 5, 6, '…', 12 ].
@@ -62,6 +84,7 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 	// Off by default: hide rows whose media was deleted. Toggle on to also show
 	// deleted-media videos that still have analytics.
 	const [ showDeleted, setShowDeleted ] = useState( false );
+	const [ isExporting, setIsExporting ] = useState( false );
 
 	// Debounce the search box and reset to the first page on a new term.
 	useEffect( () => {
@@ -79,6 +102,10 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 
 	const videos = data?.videos || [];
 	const totalPages = data?.totalPages || 1;
+	const totalItems = data?.totalItems || 0;
+
+	// Lazy trigger reused to page through the full result set for CSV export.
+	const [ fetchForExport ] = useLazyFetchTopVideosQuery();
 
 	// Scroll the table back into view when paging (skip the initial render).
 	const firstLoad = useRef( true );
@@ -107,35 +134,54 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 			? ( ( item.play_time / ( item.plays * item.video_length ) ) * 100 ).toFixed( 2 ) + '%'
 			: '-';
 
-	const handleExportCSV = () => {
+	const buildCsvRow = ( item ) => [
+		item.title || item.video_id,
+		`ID: ${ item.video_id }`,
+		( item.video_size ? item.video_size.toFixed( 2 ) : 0 ) + ' MB',
+		playRate( item ),
+		item.plays || 0,
+		formatWatchTime( item.play_time || 0 ),
+		engagement( item ),
+		item.video_conversion_rate !== undefined && item.video_conversion_rate !== null
+			? Number( item.video_conversion_rate ).toFixed( 2 ) + '%'
+			: '-',
+	];
+
+	const handleExportCSV = async () => {
+		setIsExporting( true );
+
+		// Export the full result set for the current search/filter — not just the
+		// page on screen. The microservice caps `limit` at 100, so page through it.
+		// A failed page resolves to empty rather than rejecting the whole export.
+		const pageCount = Math.max( 1, Math.ceil( ( totalItems || videos.length ) / EXPORT_PAGE_SIZE ) );
+		const results = await Promise.all(
+			Array.from( { length: pageCount }, ( _, i ) =>
+				fetchForExport( {
+					siteUrl,
+					page: i + 1,
+					limit: EXPORT_PAGE_SIZE,
+					search,
+					hideDeleted: ! showDeleted,
+				} ).unwrap().catch( () => ( { videos: [] } ) ),
+			),
+		);
+		const fetched = results.flatMap( ( result ) => result?.videos || [] );
+		// Fall back to the rows already on screen if the full fetch returned nothing.
+		const exportVideos = fetched.length ? fetched : videos;
+
 		const headers = [
-			'Title', 'Media ID', 'Size', 'Play Rate', 'Total Plays',
-			'Watch Time', 'Engagement Rate', 'Conversion Rate',
+			__( 'Title', 'godam' ),
+			__( 'Media ID', 'godam' ),
+			__( 'Size', 'godam' ),
+			__( 'Play Rate', 'godam' ),
+			__( 'Total Plays', 'godam' ),
+			__( 'Watch Time', 'godam' ),
+			__( 'Engagement Rate', 'godam' ),
+			__( 'Conversion Rate', 'godam' ),
 		];
 
-		const rows = videos.map( ( item ) => [
-			item.title || item.video_id,
-			`ID: ${ item.video_id }`,
-			( item.video_size ? item.video_size.toFixed( 2 ) : 0 ) + ' MB',
-			playRate( item ),
-			item.plays || 0,
-			formatWatchTime( item.play_time || 0 ),
-			engagement( item ),
-			item.video_conversion_rate !== undefined && item.video_conversion_rate !== null
-				? Number( item.video_conversion_rate ).toFixed( 2 ) + '%'
-				: '-',
-		] );
-
-		const csvContent = [ headers, ...rows ]
-			.map( ( row ) =>
-				row
-					.map( ( value ) => {
-						const str = String( value );
-						// Quote + escape when the field contains a quote, comma, or newline.
-						return /["\n,]/.test( str ) ? `"${ str.replace( /"/g, '""' ) }"` : str;
-					} )
-					.join( ',' ),
-			)
+		const csvContent = [ headers, ...exportVideos.map( buildCsvRow ) ]
+			.map( ( row ) => row.map( escapeCsvCell ).join( ',' ) )
 			.join( '\n' );
 
 		const blob = new Blob( [ csvContent ], { type: 'text/csv;charset=utf-8;' } );
@@ -148,12 +194,25 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 		link.click();
 		document.body.removeChild( link );
 		URL.revokeObjectURL( url );
+
+		setIsExporting( false );
 	};
 
 	return (
 		<div className="top-media-container">
 			<div className="top-media-container__head">
-				<h2>{ __( 'Top Videos', 'godam' ) }</h2>
+				<h2>
+					{ __( 'Top Videos', 'godam' ) }
+					{ totalItems > 0 && (
+						<span className="ml-2 text-sm font-normal text-zinc-400">
+							{ sprintf(
+								/* translators: %s: number of videos (already locale-formatted). */
+								_n( '%s video', '%s videos', totalItems, 'godam' ),
+								totalItems.toLocaleString(),
+							) }
+						</span>
+					) }
+				</h2>
 				<div className="top-media-container__tools">
 					<SearchControl
 						__nextHasNoMarginBottom
@@ -172,9 +231,9 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 						checked={ showDeleted }
 						onChange={ onToggleDeleted }
 					/>
-					<button onClick={ handleExportCSV } className="export-button" data-test-id="godam-top-videos-export">
+					<button onClick={ handleExportCSV } disabled={ isExporting } className="export-button" data-test-id="godam-top-videos-export">
 						<img src={ ExportBtn } alt="" className="export-icon" />
-						{ __( 'Export', 'godam' ) }
+						{ isExporting ? __( 'Exporting…', 'godam' ) : __( 'Export', 'godam' ) }
 					</button>
 				</div>
 			</div>

@@ -127,7 +127,13 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_top_videos' ),
-					'permission_callback' => '__return_true',
+					// Admin-dashboard read: gate to users who can see the analytics
+					// dashboard (authors and above — matches the menu's `upload_files`
+					// capability). The search path resolves an uncached WP_Query, so
+					// this also closes the unauthenticated DB-amplification vector.
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
 					'args'                => array(
 						'page'     => array(
 							'required'          => false,
@@ -834,7 +840,7 @@ class Analytics extends Base {
 	 * concerns are turned into an explicit list of existing video-attachment IDs
 	 * (optionally matching the search term) for the microservice to filter on.
 	 *
-	 * @param string $search       Search term (matched against attachment titles).
+	 * @param string $search       Search term. Passed to WP_Query `s`, which matches the attachment title, content (description) and excerpt (caption) — not title-only.
 	 * @param bool   $hide_deleted Whether to restrict to existing attachments.
 	 *
 	 * @return array|null Attachment IDs, or null when neither concern is active.

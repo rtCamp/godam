@@ -55,14 +55,19 @@ const ViewersGauge = ( { plays = 0, uniqueViewers = 0 } ) => {
 						strokeWidth="16"
 						strokeLinecap="round"
 					/>
-					<path
-						className="godam-gauge__fill"
-						d={ arcPath }
-						fill="none"
-						strokeWidth="16"
-						strokeLinecap="round"
-						strokeDasharray={ `${ dash } ${ arcLength }` }
-					/>
+					{ /* Only draw the fill arc when there's something to show — a
+					    zero-length dash with a round linecap would otherwise render
+					    a stray dot at the arc start. */ }
+					{ dash > 0 && (
+						<path
+							className="godam-gauge__fill"
+							d={ arcPath }
+							fill="none"
+							strokeWidth="16"
+							strokeLinecap="round"
+							strokeDasharray={ `${ dash } ${ arcLength }` }
+						/>
+					) }
 				</svg>
 
 				<div className="godam-gauge__center">
