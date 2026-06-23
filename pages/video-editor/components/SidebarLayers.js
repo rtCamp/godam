@@ -302,6 +302,16 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 						duration: 5,
 						pauseOnHover: false,
 						hotspots: [],
+						// Shared style for all hotspot points (new model). The
+						// presence of `styleType` marks a layer as using the
+						// shared style; legacy layers without it fall back to
+						// per-hotspot style on the player.
+						styleType: 'pulse',
+						pulseColor: '#0c80dfa6',
+						icon: '',
+						customIconUrl: null,
+						customIconId: null,
+						iconColor: '#0c80dfa6',
 						isNew: true,
 					} ),
 				);

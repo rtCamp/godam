@@ -686,4 +686,178 @@ $ve-radius: 4px;
 			flex: 0 0 auto;
 		}
 	}
+
+	// ---------------------------------------------------------
+	// Inline hint row (e.g. "Drag the hotspot to reposition it").
+	// ---------------------------------------------------------
+	.godam-ve-hint {
+		display: flex;
+		gap: 0.375rem;
+		align-items: center;
+		margin: 0;
+		font-size: 0.75rem;
+		line-height: 1.4;
+		color: $ve-muted;
+
+		&__icon {
+			flex: 0 0 auto;
+			fill: currentcolor;
+		}
+	}
+
+	// ---------------------------------------------------------
+	// Hotspot list — collapsible point cards + the outline "Add Hotspot"
+	// button (full-width, accent border).
+	// ---------------------------------------------------------
+	.godam-ve-hotspot-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.godam-ve-hotspot-card {
+		border: 1px solid $ve-border;
+		border-radius: $ve-radius;
+
+		&__head {
+			display: flex;
+			gap: 0.25rem;
+			align-items: center;
+			justify-content: space-between;
+			padding: 0.25rem 0.5rem 0.25rem 0.25rem;
+		}
+
+		&__body {
+			display: flex;
+			flex-direction: column;
+			gap: 0.75rem;
+			padding: 0 0.625rem 0.75rem;
+		}
+	}
+
+	.godam-ve-hotspot-card__toggle.godam-ve-hotspot-card__toggle {
+		flex: 1 1 auto;
+		gap: 0.375rem;
+		justify-content: flex-start !important;
+		height: auto;
+		min-height: 40px;
+		font-weight: 600;
+		color: inherit;
+
+		svg {
+			fill: currentcolor;
+		}
+	}
+
+	.godam-ve-add-hotspot.godam-ve-add-hotspot {
+		justify-content: center;
+		width: 100%;
+		gap: 0.375rem;
+		height: auto;
+		min-height: 40px;
+		color: $ve-accent;
+		background: transparent;
+		border: 1px solid $ve-accent;
+		border-radius: $ve-radius;
+		box-shadow: none;
+
+		svg {
+			fill: currentcolor;
+		}
+
+		&:hover:not(:disabled) {
+			color: $ve-accent;
+			background: $ve-accent-tint;
+		}
+
+		&:focus:not(:disabled) {
+			box-shadow: 0 0 0 1px $ve-accent;
+		}
+	}
+
+	// ---------------------------------------------------------
+	// Shared hotspot icon picker — "Add Icon": two dashed tiles
+	// (library / custom) when empty; a bordered preview row when set.
+	// ---------------------------------------------------------
+	.godam-ve-icon-picker {
+		display: flex;
+		flex-direction: column;
+		gap: 0.375rem;
+
+		&__tiles {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 0.75rem;
+		}
+
+		// The library tile anchors a Dropdown; its wrapper must fill the cell.
+		.godam-ve-icon-picker__library {
+			display: block;
+		}
+
+		&__tile {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 100%;
+			min-height: 44px;
+			padding: 0.625rem 0.75rem;
+			font-size: 0.8125rem;
+			color: $ve-muted;
+			text-align: center;
+			cursor: pointer;
+			background: #fff;
+			border: 1px dashed $ve-border-strong;
+			border-radius: $ve-radius;
+
+			&:disabled {
+				cursor: not-allowed;
+				opacity: 0.5;
+			}
+
+			&:hover:not(:disabled) {
+				color: $ve-accent;
+				border-color: $ve-accent;
+			}
+		}
+
+		&__selected {
+			display: flex;
+			gap: 0.625rem;
+			align-items: center;
+			padding: 0.5rem;
+			border: 1px solid $ve-border;
+			border-radius: $ve-radius;
+		}
+
+		&__preview {
+			display: flex;
+			flex: 0 0 auto;
+			align-items: center;
+			justify-content: center;
+			width: 40px;
+			height: 40px;
+			overflow: hidden;
+			background: $ve-faint;
+			border-radius: 6px;
+
+			img {
+				width: 100%;
+				height: 100%;
+				object-fit: contain;
+			}
+		}
+
+		&__change {
+			display: flex;
+			flex: 1 1 auto;
+			flex-wrap: wrap;
+			gap: 0.25rem 0.75rem;
+			align-items: center;
+		}
+
+		&__remove {
+			flex: 0 0 auto;
+		}
+	}
 }

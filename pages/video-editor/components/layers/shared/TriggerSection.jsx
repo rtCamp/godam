@@ -13,6 +13,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { updateLayerField } from '../../../redux/slice/videoSlice';
 import { VeSection, VeRadioGroup, VeTextInput, VeSlider } from '../../controls';
+import { formatClock, parseClock } from '../../../utils/time';
 
 /**
  * Trigger types. `timestamp` maps to the existing `displayTime` behaviour
@@ -42,38 +43,6 @@ export const TRIGGER_OPTIONS = [
 		description: __( 'Overlays on the final frame when playback ends', 'godam' ),
 	},
 ];
-
-/**
- * Format a seconds value as `m:ss`.
- *
- * @param {number} seconds Time in seconds.
- * @return {string} Clock-formatted string.
- */
-const formatClock = ( seconds ) => {
-	const total = Math.max( 0, Math.floor( Number( seconds ) || 0 ) );
-	const mins = Math.floor( total / 60 );
-	const secs = total % 60;
-	return `${ mins }:${ secs < 10 ? '0' : '' }${ secs }`;
-};
-
-/**
- * Parse a `m:ss` (or plain seconds) string to seconds.
- *
- * @param {string} value Clock string.
- * @return {number} Seconds.
- */
-const parseClock = ( value ) => {
-	if ( typeof value !== 'string' ) {
-		return Number( value ) || 0;
-	}
-	const parts = value.split( ':' ).map( ( p ) => p.trim() );
-	if ( parts.length === 2 ) {
-		const mins = parseInt( parts[ 0 ], 10 ) || 0;
-		const secs = parseInt( parts[ 1 ], 10 ) || 0;
-		return ( mins * 60 ) + secs;
-	}
-	return parseInt( parts[ 0 ], 10 ) || 0;
-};
 
 /**
  * Reusable "CTA Trigger" configuration section, built on WordPress
