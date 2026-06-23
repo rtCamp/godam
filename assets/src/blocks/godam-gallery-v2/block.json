@@ -79,6 +79,18 @@
 		"engagements": {
 			"type": "boolean",
 			"default": true
+		},
+		"autoplay": {
+			"type": "boolean",
+			"default": false
+		},
+		"playOnHover": {
+			"type": "boolean",
+			"default": true
+		},
+		"showPlayButton": {
+			"type": "boolean",
+			"default": true
 		}
 	},
 	"providesContext": {
