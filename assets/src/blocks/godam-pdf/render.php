@@ -18,7 +18,8 @@ $godam_doc_title     = ! empty( $attributes['docTitle'] ) ? sanitize_text_field(
 $godam_description   = ! empty( $attributes['description'] ) ? sanitize_textarea_field( $attributes['description'] ) : '';
 $godam_show_cover    = ! empty( $attributes['showCover'] );
 // customCover stores the URL of whichever tile the editor selected (auto or uploaded).
-$godam_custom_cover = ! empty( $attributes['customCover'] ) ? esc_url( $attributes['customCover'] ) : '';
+// Store raw; esc_url() is applied at output to avoid double-escaping.
+$godam_custom_cover = ! empty( $attributes['customCover'] ) ? sanitize_url( $attributes['customCover'] ) : '';
 $godam_page_count   = ! empty( $attributes['pageCount'] ) ? intval( $attributes['pageCount'] ) : 0;
 
 if ( ! $godam_attachment_id && empty( $godam_src ) ) {
@@ -66,7 +67,7 @@ $godam_file_name = basename( $godam_sources[0] );
 			} elseif ( ! empty( $godam_attachment_id ) && is_numeric( $godam_attachment_id ) ) {
 				$godam_thumb = get_post_meta( $godam_attachment_id, 'rtgodam_media_pdf_thumbnail', true );
 				if ( $godam_thumb ) {
-					$godam_cover_url = esc_url( $godam_thumb );
+					$godam_cover_url = $godam_thumb; // escaped at output below.
 				}
 			}
 		}
