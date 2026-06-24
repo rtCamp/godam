@@ -13,6 +13,8 @@
 	--godam-onb-accent-hover: #4a27d6;
 	--godam-onb-accent-soft: rgba( 93, 49, 255, 0.08 );
 	--godam-onb-panel-bg: #f2f2ff;
+	// Side-panel gradient — exact Figma stops (#FFFEFC → #7049FF brand purple), diagonal.
+	--godam-onb-panel-gradient: linear-gradient( 135deg, #fffefc 0%, #7049ff 100% );
 	--godam-onb-panel-border: #e2dbef;
 	--godam-onb-chip-bg: #e8e7ff;
 	--godam-onb-text: #020617;
@@ -210,7 +212,7 @@
 	// --- right side panel ---
 	&__aside {
 		flex: 1 1 50%;
-		background: var( --godam-onb-panel-bg );
+		background: var( --godam-onb-panel-gradient );
 		border-left: 1px solid var( --godam-onb-panel-border );
 		padding: 40px 32px;
 		display: flex;
