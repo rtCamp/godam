@@ -1,22 +1,26 @@
 /**
  * GoDAM onboarding SPA styles.
  *
- * A centered modal over a dimmed scrim (the dashboard sits behind). Tokens
- * (colours, radii, spacing, type) are taken from the Figma onboarding board.
- * The brand accent is a fixed GoDAM purple (not the WP admin colour scheme),
- * per the design. Copy is placeholder pending final strings.
+ * A centered modal over a dimmed scrim (the dashboard sits behind). Radii,
+ * spacing and type are taken from the Figma onboarding board; the accent and
+ * brand surfaces follow the WP admin colour scheme the user picks in their
+ * profile (--wp-admin-theme-color), falling back to the GoDAM purple from the
+ * design when that variable isn't present.
  */
 
 .godam-onboarding {
 	// --- design tokens (from Figma) ---
-	--godam-onb-accent: #5d31ff;
-	--godam-onb-accent-hover: #4a27d6;
-	--godam-onb-accent-soft: rgba( 93, 49, 255, 0.08 );
-	--godam-onb-panel-bg: #f2f2ff;
-	// Side-panel gradient — exact Figma stops (#FFFEFC → #7049FF brand purple), diagonal.
-	--godam-onb-panel-gradient: linear-gradient( 135deg, #fffefc 0%, #7049ff 100% );
-	--godam-onb-panel-border: #e2dbef;
-	--godam-onb-chip-bg: #e8e7ff;
+	// All derive from the admin colour scheme (--wp-admin-theme-color), with the
+	// GoDAM purple from Figma as the fallback. Light tints use color-mix so the
+	// chips / borders / hover surfaces track whatever accent the user picks.
+	--godam-onb-accent: var( --wp-admin-theme-color, #5d31ff );
+	--godam-onb-accent-hover: var( --wp-admin-theme-color-darker-10, #4a27d6 );
+	--godam-onb-accent-soft: color-mix( in srgb, var( --wp-admin-theme-color, #5d31ff ) 8%, transparent );
+	--godam-onb-panel-bg: color-mix( in srgb, var( --wp-admin-theme-color, #5d31ff ) 6%, #fff );
+	// Side-panel gradient: near-white → the admin accent (Figma: #FFFEFC → #7049FF).
+	--godam-onb-panel-gradient: linear-gradient( 135deg, #fffefc 0%, var( --wp-admin-theme-color, #7049ff ) 100% );
+	--godam-onb-panel-border: color-mix( in srgb, var( --wp-admin-theme-color, #5d31ff ) 16%, #fff );
+	--godam-onb-chip-bg: color-mix( in srgb, var( --wp-admin-theme-color, #5d31ff ) 12%, #fff );
 	--godam-onb-text: #020617;
 	--godam-onb-text-muted: #64748b;
 	--godam-onb-required: #cc1818;
