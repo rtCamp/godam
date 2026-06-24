@@ -20,7 +20,7 @@ import { FEATURE_ICONS, CheckIcon } from './icons';
 const FEATURES = [
 	{ icon: 'globe', title: __( 'Sites', 'godam' ), body: __( 'Use GoDAM on unlimited WordPress sites.', 'godam' ) },
 	{ icon: 'gauge', title: __( 'Bandwidth', 'godam' ), body: __( 'Generous bandwidth that resets every month.', 'godam' ) },
-	{ icon: 'team', title: __( 'Users', 'godam' ), body: __( 'Invite unlimited editors and contributors.', 'godam' ) },
+	{ icon: 'team', title: __( 'Teams', 'godam' ), body: __( 'Invite unlimited editors and contributors.', 'godam' ) },
 	{ icon: 'shield', title: __( 'Security', 'godam' ), body: __( 'Enterprise-grade encryption.', 'godam' ) },
 	{ icon: 'storage', title: __( 'Storage', 'godam' ), body: __( 'A one-time storage allocation that stays yours.', 'godam' ) },
 ];

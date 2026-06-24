@@ -16,7 +16,8 @@ const stroke = {
 export const GlobeIcon = ( props ) => (
 	<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" { ...props }>
 		<circle cx="12" cy="12" r="9" { ...stroke } />
-		<path d="M3 12h18M12 3c2.5 2.5 2.5 15.5 0 18M12 3c-2.5 2.5-2.5 15.5 0 18" { ...stroke } />
+		<path d="M3 12h18" { ...stroke } />
+		<path d="M12 3a12 12 0 0 1 0 18 12 12 0 0 1 0-18z" { ...stroke } />
 	</svg>
 );
 
