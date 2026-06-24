@@ -22,8 +22,9 @@ export const GlobeIcon = ( props ) => (
 
 export const GaugeIcon = ( props ) => (
 	<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" { ...props }>
-		<path d="M4 18a8 8 0 1 1 16 0" { ...stroke } />
-		<path d="M12 14l4-4" { ...stroke } />
+		<path d="M4.5 17.5a7.5 7.5 0 1 1 15 0" { ...stroke } />
+		<path d="M12 17.5l4.2-4" { ...stroke } />
+		<circle cx="12" cy="17.5" r="1.4" fill="currentColor" />
 	</svg>
 );
 

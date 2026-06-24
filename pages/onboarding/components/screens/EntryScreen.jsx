@@ -50,7 +50,7 @@ const EntryScreen = () => {
 				{ __( 'New here? Start your 30-day free trial now.', 'godam' ) }
 			</Button>
 			<p className="godam-onboarding__trial-note">
-				{ __( 'Enjoy a 30-day free trial. After that, continue for $9/month or cancel anytime — no credit card or payment required today.', 'godam' ) }
+				{ __( 'Enjoy a 30-day free trial. After that, continue for $9/month or cancel anytime. No credit card or payment required today.', 'godam' ) }
 			</p>
 
 			<div className="godam-onboarding__or">{ __( 'OR', 'godam' ) }</div>

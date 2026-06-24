@@ -219,6 +219,18 @@
 
 	&__aside-inner { width: 100%; }
 
+	// Social variant fills its height so the preview card reaches the modal's
+	// bottom edge (no gap below it).
+	&__aside--social {
+		align-items: stretch;
+		padding-bottom: 0;
+	}
+
+	&__aside--social &__aside-inner {
+		display: flex;
+		flex-direction: column;
+	}
+
 	&__features { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 28px 20px; }
 
 	&__feature { display: flex; gap: 12px; }
@@ -250,11 +262,13 @@
 
 	&__check { color: var( --godam-onb-accent ); display: inline-flex; }
 
-	// Preview card that bleeds past the modal's right edge (clipped by the
-	// modal's overflow:hidden) so only its top-left corner is rounded — per design.
+	// Preview card that bleeds past the modal's right + bottom edges (clipped by
+	// the modal's overflow:hidden) so only its top-left corner is rounded.
 	&__media-placeholder {
+		align-self: flex-start;
+		flex: 1 1 auto;
+		min-height: 200px;
 		width: calc( 100% + 92px );
-		height: 300px;
 		margin-top: 16px;
 		border-radius: 12px 0 0 0;
 		background: #fff;
