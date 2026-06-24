@@ -117,20 +117,6 @@ class Pages {
 	private $whats_new_page_id = 'godam_page_rtgodam_whats_new';
 
 	/**
-	 * Slug for the onboarding page.
-	 *
-	 * @var string
-	 */
-	private $onboarding_slug = 'rtgodam_onboarding';
-
-	/**
-	 * Onboarding page ID.
-	 *
-	 * @var string
-	 */
-	private $onboarding_page_id = 'godam_page_rtgodam_onboarding';
-
-	/**
 	 * Construct method.
 	 */
 	protected function __construct() {
@@ -253,18 +239,8 @@ class Pages {
 			7
 		);
 
-		// GoDAM 2.0 onboarding SPA — behind a feature flag while in development.
-		if ( $this->is_onboarding_v2_enabled() ) {
-			add_submenu_page(
-				$this->menu_slug,
-				__( 'Onboarding (beta)', 'godam' ),
-				__( 'Onboarding (beta)', 'godam' ),
-				'manage_options',
-				$this->onboarding_slug,
-				array( $this, 'render_onboarding_page' ),
-				9
-			);
-		}
+		// GoDAM 2.0 onboarding has no menu item — it overlays the Dashboard when
+		// the site isn't connected (see render_dashboard_page()).
 
 		// Only add "What's New" submenu page if we are on a GoDAM menu.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -429,6 +405,11 @@ class Pages {
 			<div id="root-video-dashboard" class="<?php echo $is_premium_user ? '' : 'free-user'; ?>"></div>
 		</div>
 		<?php
+		// When the site isn't connected, overlay the 2.0 onboarding modal on the
+		// (empty-state) dashboard that renders behind it.
+		if ( ! $is_premium_user && $this->is_onboarding_v2_enabled() ) {
+			echo '<div id="root-godam-onboarding"></div>';
+		}
 	}
 
 	/**
@@ -477,19 +458,6 @@ class Pages {
 	}
 
 	/**
-	 * Render the onboarding SPA mount point.
-	 *
-	 * @return void
-	 */
-	public function render_onboarding_page() {
-		?>
-		<div class="godam-onboarding-page">
-			<div id="root-godam-onboarding"></div>
-		</div>
-		<?php
-	}
-
-	/**
 	 * To enqueue scripts and styles in admin.
 	 *
 	 * @return void
@@ -497,7 +465,7 @@ class Pages {
 	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
 
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id, $this->tools_page_id, $this->whats_new_page_id, $this->onboarding_page_id ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id, $this->tools_page_id, $this->whats_new_page_id ), true ) ) {
 
 			wp_register_script(
 				'rtgodam-page-style',
@@ -520,8 +488,8 @@ class Pages {
 			wp_enqueue_style( 'easydam-media-library' );
 
 		}
-		// GoDAM 2.0 onboarding SPA.
-		if ( $screen && $this->onboarding_page_id === $screen->id ) {
+		// GoDAM 2.0 onboarding SPA — overlays the Dashboard when not connected.
+		if ( $screen && $this->menu_page_id === $screen->id && $this->is_onboarding_v2_enabled() && ! rtgodam_is_api_key_valid() ) {
 			$onboarding_asset = RTGODAM_PATH . 'assets/build/pages/onboarding.min.js';
 
 			wp_register_script(
