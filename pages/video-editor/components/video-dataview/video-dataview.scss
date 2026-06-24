@@ -1,0 +1,483 @@
+/**
+ * Video Editor list view (DataViews) styles.
+ *
+ * Scoped under `.godam-ve-list`. Overrides the bundled DataViews grid chrome to
+ * match the GoDAM design: 5-col responsive grid, card media overlays
+ * (GoDAM-Central badge, duration, hover Edit), footer meta, and hides the
+ * built-in search / filters / view-config / pagination (a custom toolbar drives
+ * the query instead).
+ */
+
+// Accent comes from the WordPress component accent variable (same convention as
+// the rest of the video-editor styles, e.g. _controls.scss / _layers.scss) — no
+// hardcoded brand colours.
+$ve-accent: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+$ve-accent-tint: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 12%, transparent);
+$ve-accent-tint-strong: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 20%, transparent);
+$ve-accent-hover: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 88%, #000);
+$ve-accent-soft: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 10%, #fff);
+$godam-border: rgba(246, 246, 246, 1);
+
+.godam-ve-list {
+	height: 100%;
+	overflow: auto;
+	padding: 0 1.5rem;
+	margin: 0 auto;
+	width: 100%;
+	max-width: 1440px;
+	background-color: #fff;
+	max-height: calc(100vh - 70px); // 70px = GoDAM header height (fixed)
+
+	display: flex;
+	flex-direction: column;
+
+	/* ---------- Header ---------- */
+	&__header {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		gap: 1rem;
+		flex-wrap: wrap;
+		padding: 1rem 0 1.25rem;
+	}
+
+	&__title {
+		font-size: 1.75rem;
+		font-weight: 600;
+		margin: 0 0 0.25rem;
+		line-height: 1.2;
+	}
+
+	&__subtitle {
+		margin: 0;
+		color: rgba(85, 85, 85, 1);
+		font-size: 0.875rem;
+		line-height: 1.4;
+	}
+
+	&__how-it-works {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.375rem;
+		padding: 0.5rem 0.875rem;
+		border-radius: 0.5rem;
+		background: $ve-accent-tint;
+		color: #1c1c1c;
+		font-weight: 600;
+		font-size: 0.8125rem;
+		text-decoration: none;
+		white-space: nowrap;
+
+		&:hover {
+			background: $ve-accent-tint-strong;
+			color: #1c1c1c;
+		}
+
+		svg {
+			fill: $ve-accent;
+		}
+	}
+
+	/* ---------- Empty state ---------- */
+	&__empty {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		padding: 6rem 1rem;
+		text-align: center;
+
+		svg {
+			fill: #d4d4d8;
+		}
+
+		h2 {
+			margin: 0.5rem 0 0;
+			font-size: 1.25rem;
+		}
+
+		p {
+			margin: 0;
+			color: rgba(119, 119, 119, 1);
+			font-size: 0.875rem;
+		}
+	}
+
+	/* ---------- Load more (count + button) ---------- */
+	&__loadmore {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 2rem 0 2.5rem;
+		text-align: center;
+	}
+
+	&__count {
+		margin: 0;
+		color: rgba(119, 119, 119, 1);
+		font-size: 0.875rem;
+	}
+
+	&__loadmore-button.components-button {
+		height: auto;
+		padding: 0.5rem 1.25rem;
+		border-radius: 0.5rem;
+		border: 1px solid rgba(225, 225, 225, 1);
+		font-weight: 600;
+		justify-content: center;
+
+		&:hover:not(:disabled) {
+			border-color: $ve-accent;
+			color: $ve-accent;
+		}
+	}
+}
+
+/* ---------- Toolbar (search + filter / sort dropdowns) ---------- */
+.godam-ve-toolbar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+	flex-wrap: wrap;
+	padding: 1rem 0;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	background-color: #fff;
+
+	&__search {
+		position: relative;
+		flex: 0 1 24rem;
+
+		svg {
+			position: absolute;
+			top: 50%;
+			left: 0.75rem;
+			transform: translateY(-50%);
+			fill: rgba(119, 119, 119, 1);
+		}
+
+		input {
+			height: 2.75rem;
+			width: 100%;
+			border: 1px solid rgba(225, 225, 225, 1);
+			border-radius: 0.5rem;
+			padding-left: 2.5rem;
+			font-size: 0.875rem;
+
+			&::placeholder {
+				color: rgba(119, 119, 119, 1);
+			}
+
+			&:focus {
+				border-color: $ve-accent;
+				box-shadow: none;
+				outline: none;
+			}
+		}
+	}
+
+	&__filters {
+		display: flex;
+		gap: 0.75rem;
+	}
+
+	&__dropdown-toggle.components-button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		height: 2.75rem;
+		min-width: 11rem;
+		padding: 0 0.875rem;
+		border: 1px solid rgba(225, 225, 225, 1);
+		border-radius: 0.5rem;
+		background: #fff;
+		color: #1c1c1c;
+		font-weight: 500;
+
+		&:hover {
+			border-color: $ve-accent;
+		}
+	}
+}
+
+.godam-ve-toolbar__dropdown-menu {
+	.components-menu-item__button {
+		min-width: 13rem;
+	}
+}
+
+/* ---------- DataViews grid overrides ---------- */
+.godam-ve-list {
+
+	/* Hide the built-in chrome — the custom toolbar drives search/filter/sort,
+	   and pagination is replaced by infinite scroll. */
+	.dataviews__view-actions,
+	.dataviews__search,
+	.dataviews-search,
+	.dataviews-filters__container,
+	.dataviews-pagination,
+	.dataviews-footer {
+		display: none !important;
+	}
+
+	/* DataViews' wrapper is normally height:100% + overflow:auto (its own scroll
+	   region). Let it grow with its content instead, so the whole page —
+	   grid + "Load more" footer — scrolls together inside `.godam-ve-list`, and
+	   the count/button sit at the end of the list rather than below a nested
+	   scroller. */
+	.dataviews-wrapper {
+		padding: 0;
+		height: auto;
+		overflow: visible;
+	}
+
+	.dataviews-view-grid {
+		grid-template-columns: repeat(5, 1fr) !important;
+		gap: 1.5rem;
+		padding: 0;
+
+		@media (max-width: 1600px) {
+			grid-template-columns: repeat(4, 1fr) !important;
+		}
+
+		@media (max-width: 1200px) {
+			grid-template-columns: repeat(3, 1fr) !important;
+		}
+
+		@media (max-width: 768px) {
+			grid-template-columns: repeat(2, 1fr) !important;
+		}
+
+		@media (max-width: 480px) {
+			grid-template-columns: repeat(1, 1fr) !important;
+		}
+	}
+
+	.dataviews-view-grid__card {
+		border: 1px solid #e0e0e0;
+		border-radius: 12px;
+		overflow: hidden;
+		transition: border-color 0.2s ease, box-shadow 0.2s ease;
+		gap: 0;
+
+		&:hover,
+		&:focus-within {
+			border-color: $ve-accent;
+			box-shadow: 0 4px 16px rgba(28, 28, 28, 0.08);
+
+			.godam-ve-card__edit-overlay {
+				opacity: 1;
+				pointer-events: auto;
+			}
+		}
+	}
+
+	/* Media slot — full-bleed cover thumbnail; positioning context for the
+	   overlays and the GoDAM source badge. The card's overflow:hidden rounds the
+	   top corners. */
+	.dataviews-view-grid__media {
+		position: relative;
+		aspect-ratio: 3 / 2;
+		min-height: 0;
+		padding: 0;
+		background: #e7e7e9;
+		border-radius: 0;
+
+		&.dataviews-view-grid__media--clickable {
+			cursor: pointer;
+		}
+	}
+
+	/* The title + kebab + details are rendered together in the `meta` field
+	   (`.godam-ve-card__footer`), so DataViews' own (now empty) title row is
+	   hidden. */
+	.dataviews-view-grid__title-actions {
+		display: none;
+	}
+}
+
+/* ---------- Card internals (rendered inside the field `render`s) ---------- */
+.godam-ve-card {
+	&__media-frame {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+		background: #e7e7e9;
+	}
+
+	&__thumb {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+
+		&.is-fallback {
+			object-fit: cover;
+		}
+	}
+
+	&__source-badge {
+		position: absolute;
+		top: 0.5rem;
+		left: 0.5rem;
+		z-index: 2;
+		width: 1.75rem;
+		height: 1.75rem;
+		border-radius: 100%;
+		background: $ve-accent-soft;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-shadow: 0 1px 2px rgba(28, 28, 28, 0.1);
+
+		img {
+			max-width: 1.25rem;
+			max-height: 1.25rem;
+			min-width: 1.25rem;
+			min-height: 1.25rem;
+			object-fit: contain;
+			position: relative;
+			bottom: 1px;
+			left: 1px;
+		}
+	}
+
+	&__duration {
+		position: absolute;
+		right: 0.5rem;
+		bottom: 0.5rem;
+		padding: 0.125rem 0.375rem;
+		border-radius: 0.25rem;
+		background: rgba(33, 33, 33, 0.85);
+		color: #fff;
+		font-size: 0.75rem;
+		font-weight: 700;
+		line-height: 1.4;
+	}
+
+	&__edit-overlay {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(28, 28, 28, 0.45);
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.2s ease;
+	}
+
+	&__edit-button.components-button.is-primary {
+		background: $ve-accent;
+		border-color: $ve-accent;
+		box-shadow: none;
+
+		&:hover:not(:disabled) {
+			background: $ve-accent-hover;
+			border-color: $ve-accent-hover;
+		}
+	}
+
+	// Single footer wrapper holding the title row + details, padded uniformly.
+	&__footer {
+		display: flex;
+		flex-direction: column;
+		gap: 0.375rem;
+		width: 100%;
+		padding: 0.75rem;
+	}
+
+	&__title-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+	}
+
+	&__title {
+		flex: 1;
+		min-width: 0;
+		margin: 0;
+		font-size: 0.9375rem;
+		font-weight: 600;
+		color: #1c1c1c;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	&__menu-toggle.components-button {
+		flex-shrink: 0;
+		min-width: 28px;
+		height: 28px;
+		padding: 0;
+		color: #1c1c1c;
+
+		svg {
+			fill: currentColor;
+		}
+	}
+
+	&__date {
+		color: rgba(119, 119, 119, 1);
+		font-size: 0.8125rem;
+		line-height: 1.3;
+	}
+
+	&__stats {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		min-height: 1.25rem;
+	}
+
+	&__layers {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.375rem;
+		color: rgba(85, 85, 85, 1);
+		font-size: 0.8125rem;
+		font-weight: 500;
+
+		/* Same icon as the editor's Layers tab — authored with
+		   `fill="currentColor"`, so it picks up the row's text colour. */
+		svg {
+			width: 15px;
+			height: 15px;
+		}
+	}
+
+	&__badge {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+		padding: 0.125rem 0.5rem;
+		border-radius: 0.25rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+
+		&--warning {
+			background: rgba(245, 158, 11, 0.12);
+			color: #b45309;
+
+			svg {
+				fill: #b45309;
+			}
+		}
+	}
+}
+
+.godam-ve-snackbar.components-snackbar {
+	position: fixed;
+	bottom: 1rem;
+	right: 1rem;
+	z-index: 100000;
+	opacity: 0.92;
+}

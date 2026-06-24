@@ -35,6 +35,7 @@ use RTGODAM\Inc\REST_API\Fluent_Forms;
 use RTGODAM\Inc\REST_API\Settings;
 use RTGODAM\Inc\REST_API\Meta_Rest_Fields;
 use RTGODAM\Inc\REST_API\Media_Library;
+use RTGODAM\Inc\REST_API\Video_Editor;
 use RTGODAM\Inc\REST_API\Ads;
 use RTGODAM\Inc\REST_API\Transcoding;
 use RTGODAM\Inc\REST_API\Analytics;
@@ -176,6 +177,7 @@ class Plugin {
 		Settings::get_instance();
 		Meta_Rest_Fields::get_instance();
 		Media_Library::get_instance();
+		Video_Editor::get_instance();
 		Ads::get_instance();
 		Transcoding::get_instance();
 		Analytics::get_instance();

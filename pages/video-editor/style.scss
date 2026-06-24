@@ -105,6 +105,10 @@
 }
 
 #root-video-editor {
+	height: 100%;
+	background-color: #fff;
+	display: flex;
+	flex-direction: column;
 
 	.godam-settings-header-content {
 
@@ -118,6 +122,17 @@
 
 		@media (max-width: 640px) {
 			padding: .75rem 0.75rem;
+		}
+	}
+
+	// Canvas wrapper for the single-video editor. Migrated from the now-removed
+	// attachment-picker.scss (the old list-view stylesheet) so it survives once
+	// that file is gone.
+	.video-canvas-wrapper {
+		max-width: 90%;
+
+		@media screen and (min-width: 1440px) {
+			max-width: 80%;
 		}
 	}
 }

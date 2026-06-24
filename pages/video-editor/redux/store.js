@@ -8,6 +8,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import videoReducer from './slice/videoSlice';
 
 import { videosAPI } from './api/video';
+import { videoEditorAPI } from './api/video-editor';
 import { pollsAPI } from './api/polls';
 import { attachmentAPI } from './api/attachment';
 import { gravityFormsAPI } from './api/gravity-forms';
@@ -26,6 +27,7 @@ export default configureStore( {
 	reducer: {
 		videoReducer,
 		[ videosAPI.reducerPath ]: videosAPI.reducer,
+		[ videoEditorAPI.reducerPath ]: videoEditorAPI.reducer,
 		[ pollsAPI.reducerPath ]: pollsAPI.reducer,
 		[ attachmentAPI.reducerPath ]: attachmentAPI.reducer,
 		[ gravityFormsAPI.reducerPath ]: gravityFormsAPI.reducer,
@@ -42,6 +44,7 @@ export default configureStore( {
 	},
 	middleware: ( getDefaultMiddleware ) => getDefaultMiddleware().concat(
 		videosAPI.middleware,
+		videoEditorAPI.middleware,
 		pollsAPI.middleware,
 		attachmentAPI.middleware,
 		gravityFormsAPI.middleware,

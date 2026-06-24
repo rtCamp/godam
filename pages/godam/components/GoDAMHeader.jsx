@@ -13,6 +13,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { ChromeExtensionSvg } from '../assets/svgs';
 import godamLogo from '../../../assets/src/images/godam-logo.png';
 import { hasAPIKey } from '../utils/index.js';
+import './GoDAMHeader.scss';
 
 const GodamHeader = () => {
 	const isVideoEditorPage = window.location.href.includes( 'page=rtgodam_video_editor' );
@@ -63,12 +64,12 @@ const GodamHeader = () => {
 	}, [ godamMediaLink ] );
 
 	return (
-		<header>
+		<header className="sticky top-0 z-[999]">
 			<div className="godam-settings-header border-b -ml-[32px] pl-[32px] bg-white">
 				<div className={ `godam-settings-header-content max-w-[1440px] mx-auto ${ paddingClass } flex items-center justify-between` }>
-					<div className="py-6 m-0 text-4xl leading-4 font-semibold text-slate-900 flex items-center max-[410px]:flex-col max-[410px]:items-start max-[410px]:gap-1 gap-2">
+					<div className="godam-settings-header-brand m-0 leading-none font-semibold text-slate-900 flex items-center max-[410px]:flex-col max-[410px]:items-start max-[410px]:gap-1 gap-2">
 						<div className="flex items-end gap-1">
-							<img className="h-8 sm:h-9 md:h-12" src={ godamLogo } alt={ __( 'GoDAM Logo', 'godam' ) } />
+							<img className="h-7 sm:h-8 md:h-10" src={ godamLogo } alt={ __( 'GoDAM Logo', 'godam' ) } />
 							<div className="text-xs font-normal leading-4 pb-1 godam-version-label">{ `v${ window?.pluginInfo?.version }` }</div>
 						</div>
 						<div>
@@ -79,7 +80,7 @@ const GodamHeader = () => {
 							}
 						</div>
 					</div>
-					<div className="flex items-center gap-2 sm:gap-3 md:gap-6 transform translate-x-[20px] scale-[0.8] sm:scale-100 sm:translate-x-0">
+					<div className="godam-settings-header-actions flex items-center gap-2 sm:gap-3 md:gap-4">
 						<div className="flex flex-col sm:flex-row md:items-center gap-1 sm:gap-2 md:gap-3">
 							<Button
 								variant="tertiary"
@@ -100,8 +101,8 @@ const GodamHeader = () => {
 						</div>
 						<div className="flex flex-col sm:flex-row md:items-center gap-1 sm:gap-2 md:gap-3">
 							<Button
-								className={ `godam-button text-xs md:text-sm ${ ( ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan ) ? 'disabled' : '' }` }
-								variant="primary"
+								className={ `godam-header-manage-media text-xs md:text-sm ${ ( ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan ) ? 'disabled' : '' }` }
+								variant="secondary"
 								size="compact"
 								target={ ( window?.userData?.validApiKey && window?.userData?.userApiData?.active_plan ) ? '_blank' : undefined }
 								text={ __( 'Manage Media', 'godam' ) }
@@ -123,7 +124,7 @@ const GodamHeader = () => {
 							{
 								( window?.userData?.validApiKey && window?.userData?.userApiData?.active_plan && ( window?.userData?.userApiData?.active_plan )?.toLowerCase() !== 'platinum' ) && (
 									<Button
-										className="godam-button text-xs md:text-sm"
+										className="godam-header-cta text-xs md:text-sm"
 										variant="primary"
 										size="compact"
 										href={ upgradePlanLink }
@@ -136,7 +137,7 @@ const GodamHeader = () => {
 							{
 								( ! hasAPIKey ) && (
 									<Button
-										className="godam-button text-xs md:text-sm"
+										className="godam-header-cta text-xs md:text-sm"
 										variant="primary"
 										size="compact"
 										href={ pricingLink }
