@@ -1,23 +1,106 @@
 .wp-block-godam-audio {
 	// This block has customizable padding, border-box makes that more predictable.
 	box-sizing: border-box;
-	// Supply caption styles to audio blocks, even if the theme hasn't opted in.
-	// Reason being: the new markup, <figcaptions>, are not likely to be styled in the majority of existing themes,
-	// so we supply the styles so as to not appear broken or unstyled in those themes.
-	
+
 	figcaption {
 		margin-top: 0.5em;
 		color: #555d66;
 		text-align: center;
 		font-size: 13px;
 	}
+}
 
-	// Show full-width when not aligned.
-	audio {
+// ── Frontend card ─────────────────────────────────────────────────────────────
+.godam-audio-card {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 16px;
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+
+	&__cover {
+		flex-shrink: 0;
+		width: 123px;
+		height: 98px;
+		border-radius: 6px;
+		overflow: hidden;
+
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+	}
+
+	&__cover-placeholder {
 		width: 100%;
+		height: 100%;
+		background: #eef2ff;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 6px;
 
-		// The browser natively applies a 300px width to the audio block.
-		// We restore this as a min-width instead, for alignments.
-		min-width: 300px;
+		.dashicons {
+			font-size: 36px;
+			width: 36px;
+			height: 36px;
+			color: #a5b4fc;
+		}
+	}
+
+	&__body {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		min-width: 0;
+		justify-content: center;
+	}
+
+	&__title {
+		margin: 0;
+		font-size: 15px;
+		font-weight: 600;
+		color: #1e1e1e;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	&__description {
+		margin: 0;
+		font-size: 13px;
+		color: #757575;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	&__player {
+		width: 100%;
+		min-width: 0;
+		height: 25px;
+		margin-top: auto;
+		margin-left: -8px;
+
+		&::-webkit-media-controls-panel {
+			background: #fff;
+			padding: 0;
+			margin: 0;
+		}
+	}
+
+	// Mobile: stack vertically
+	@media ( max-width: 480px ) {
+		flex-direction: column;
+
+		&__cover {
+			width: 100%;
+			height: 160px;
+		}
 	}
 }

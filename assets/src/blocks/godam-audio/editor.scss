@@ -11,6 +11,11 @@
 	margin-right: 0;
 	position: relative;
 
+	padding: 30px;
+    border: 3px dotted #B2AEFF;
+    background: #F2F2FF;
+    border-radius: 6px;
+
 	&.is-transient audio {
 		opacity: 0.3;
 	}
@@ -22,5 +27,177 @@
 		left: 50%;
 		margin-top: -9px;
 		margin-left: -9px;
+	}
+}
+
+// ── Empty state ──────────────────────────────────────────────────────────────
+.godam-audio-empty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 40px 24px;
+	background: #eef2ff;
+	border: 2px dashed #a5b4fc;
+	border-radius: 6px;
+	text-align: center;
+
+	&__title {
+		margin: 0;
+		font-size: 16px;
+		font-weight: 600;
+		color: var(--wp-components-color-foreground, #1e1e1e);
+	}
+
+	&__subtitle {
+		margin: 0;
+		font-size: 13px;
+		color: var(--wp-components-color-foreground-muted, #757575);
+	}
+
+	&__btn {
+		margin-top: 8px;
+		background: #6366f1 !important;
+		border-color: #6366f1 !important;
+		color: #fff !important;
+
+		&:hover {
+			background: #4f46e5 !important;
+			border-color: #4f46e5 !important;
+		}
+	}
+}
+
+// ── Inspector: full-width add buttons ────────────────────────────────────────
+.godam-audio__add-btn {
+	width: 100%;
+	justify-content: center;
+}
+
+// ── Inspector: file row ───────────────────────────────────────────────────────
+.godam-audio-file-row {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-bottom: 12px;
+	padding: 6px 8px;
+	background: #f0f0f0;
+	border-radius: 4px;
+
+	&__icon {
+		flex-shrink: 0;
+		font-size: 16px;
+		color: var(--wp-components-color-foreground-muted, #757575);
+	}
+
+	&__name {
+		flex: 1;
+		font-size: 12px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		color: var(--wp-components-color-foreground, #1e1e1e);
+	}
+}
+
+// ── Inspector: thumbnail preview ──────────────────────────────────────────────
+.godam-audio-thumbnail-preview {
+	img {
+		display: block;
+		width: 100%;
+		height: 120px;
+		object-fit: cover;
+		border-radius: 4px;
+		margin-bottom: 8px;
+	}
+
+	&__actions {
+		display: flex;
+		gap: 8px;
+	}
+}
+
+// ── Editor canvas: card ───────────────────────────────────────────────────────
+.godam-audio-card {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 16px;
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+
+	&__cover {
+		flex-shrink: 0;
+		width: 123px;
+		height: 98px;
+		border-radius: 6px;
+		overflow: hidden;
+
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+	}
+
+	&__cover-placeholder {
+		width: 100%;
+		height: 100%;
+		background: #eef2ff;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 6px;
+
+		.dashicons {
+			font-size: 36px;
+			width: 36px;
+			height: 36px;
+			color: #a5b4fc;
+		}
+	}
+
+	&__body {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		min-width: 0;
+		justify-content: center;
+
+		audio {
+			width: 100%;
+			height: 15px;
+			margin-top: auto;
+			margin-left: -8px;
+
+			&::-webkit-media-controls-panel {
+				background: #fff;
+				padding: 0;
+				margin: 0;
+			}
+		}
+	}
+
+	&__title {
+		margin: 0;
+		font-size: 15px;
+		font-weight: 600;
+		color: var(--wp-components-color-foreground, #1e1e1e);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	&__description {
+		margin: 0;
+		font-size: 13px;
+		color: var(--wp-components-color-foreground-muted, #757575);
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
 	}
 }
