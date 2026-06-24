@@ -23,17 +23,35 @@
 	--godam-onb-scrim: rgba( 2, 6, 23, 0.55 );
 	--godam-onb-font: "Geist", -apple-system, "Segoe UI", roboto, sans-serif;
 
+	// Cover only the wp-admin content area — clear of the admin bar (top) and
+	// the admin menu (left) — so the modal centres in the visible whitespace and
+	// the WP chrome stays usable. Sits *below* the menu (9990) + bar (99999).
 	position: fixed;
-	inset: 0;
-	// Sit *below* the WP admin menu (9990) and admin bar (99999) so they stay
-	// visible and clickable — the scrim only dims/blocks the content area, never
-	// trapping the user on the page.
+	top: 32px;    // admin bar
+	right: 0;
+	bottom: 0;
+	left: 160px;  // expanded admin menu
 	z-index: 9989;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	font-family: var( --godam-onb-font );
 	color: var( --godam-onb-text );
+
+	// Folded / auto-fold menu (≤ 960px) is 36px wide.
+	@media screen and ( max-width: 960px ) { left: 36px; }
+
+	// Manually-folded menu at wider widths.
+	@media screen and ( min-width: 961px ) {
+
+		body.folded & { left: 36px; }
+	}
+
+	// Responsive breakpoint: menu is off-canvas, admin bar is 46px tall.
+	@media screen and ( max-width: 782px ) {
+		left: 0;
+		top: 46px;
+	}
 
 	*, *::before, *::after { box-sizing: border-box; }
 
@@ -232,9 +250,16 @@
 
 	&__check { color: var( --godam-onb-accent ); display: inline-flex; }
 
-	&__social-proof { font-size: 13px; color: var( --godam-onb-text-muted ); margin: 0 0 16px; }
-
-	&__media-placeholder { width: 100%; height: 160px; border-radius: 12px; background: #fff; border: 1px solid var( --godam-onb-panel-border ); }
+	// Preview card that bleeds past the modal's right edge (clipped by the
+	// modal's overflow:hidden) so only its top-left corner is rounded — per design.
+	&__media-placeholder {
+		width: calc( 100% + 92px );
+		height: 300px;
+		margin-top: 16px;
+		border-radius: 12px 0 0 0;
+		background: #fff;
+		border: 1px solid var( --godam-onb-panel-border );
+	}
 
 	// --- workspace dialog ---
 	&__dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
