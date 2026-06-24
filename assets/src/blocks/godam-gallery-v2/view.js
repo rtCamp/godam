@@ -236,6 +236,11 @@ const { __ } = require( '@wordpress/i18n' );
 			// Track items that already have preview listeners attached.
 			this.initializedPreviewItems = new WeakSet();
 
+			// AbortControllers keyed by video element — used to cancel stale
+			// loadeddata/canplay listeners when a new play attempt starts before
+			// the previous one resolved (e.g. rapid hover in/out).
+			this.pendingPlayControllers = new WeakMap();
+
 			this.refreshItems();
 			initBlurUpPlaceholders( this.element );
 			this.bindEvents();
@@ -393,7 +398,6 @@ const { __ } = require( '@wordpress/i18n' );
 					this.currentOffset = this.totalItems;
 				}
 				this.refreshItems();
-				this.initFirstFrameThumbnails();
 				this.initNewItemsBehavior();
 			} catch ( error ) {
 				// eslint-disable-next-line no-console
@@ -414,6 +418,13 @@ const { __ } = require( '@wordpress/i18n' );
 				return;
 			}
 
+			// Respect the user's OS-level motion preference (WCAG 2.2.2).
+			// Skip autoplay entirely; hover-play is still allowed since it requires
+			// deliberate user interaction.
+			if ( this.autoplay && window.matchMedia?.( '(prefers-reduced-motion: reduce)' ).matches ) {
+				this.autoplay = false;
+			}
+
 			this.items.forEach( ( item ) => this.initVideoPreviewItem( item ) );
 
 			// Proactively load metadata for visible items so hover play is instant.
@@ -426,19 +437,23 @@ const { __ } = require( '@wordpress/i18n' );
 
 		/**
 		 * Called after new items are injected by load-more / infinite scroll.
-		 * Wires up hover, autoplay, and preload for any uninitialised items.
+		 * Wires up hover, autoplay, preload, and first-frame thumbnails for
+		 * any uninitialised items only — avoids rescanning the full item list.
 		 */
 		initNewItemsBehavior() {
-			if ( ! this.autoplay && ! this.playOnHover ) {
-				return;
-			}
-
 			// Find items that haven't been initialised yet.
 			const uninitialised = this.items.filter(
 				( item ) => ! this.initializedPreviewItems.has( item ),
 			);
 
 			if ( uninitialised.length === 0 ) {
+				return;
+			}
+
+			// First-frame thumbnails work regardless of hover/autoplay settings.
+			this.initFirstFrameThumbnails( uninitialised );
+
+			if ( ! this.autoplay && ! this.playOnHover ) {
 				return;
 			}
 
@@ -538,9 +553,20 @@ const { __ } = require( '@wordpress/i18n' );
 		 * The pending <img> placeholder is hidden and the item receives
 		 * `godam-gallery-v2-item--no-thumb` so CSS keeps the video visible at
 		 * all times (not only on hover).
+		 *
+		 * @param {Element[]} items Gallery tiles.
 		 */
-		initFirstFrameThumbnails() {
-			this.items.forEach( ( item ) => {
+		initFirstFrameThumbnails( items = null ) {
+			// Default to all items, but accept a subset (e.g. newly loaded tiles)
+			// to avoid scanning the entire list on every load-more append.
+			const targets = items || this.items;
+
+			targets.forEach( ( item ) => {
+				// Skip items that have already been processed.
+				if ( item.classList.contains( 'godam-gallery-v2-item--no-thumb' ) ) {
+					return;
+				}
+
 				const pending = item.querySelector( '.godam-gallery-v2__thumbnail--pending' );
 				if ( ! pending ) {
 					return;
@@ -647,6 +673,16 @@ const { __ } = require( '@wordpress/i18n' );
 				return;
 			}
 
+			// Cancel any stale pending-play callback for this video before doing
+			// anything else. This prevents listener accumulation when syncPreviewVideo
+			// is called multiple times before the video has loaded (e.g. rapid
+			// hover in/out or autoplay re-sequencing).
+			const staleController = this.pendingPlayControllers.get( video );
+			if ( staleController ) {
+				staleController.abort();
+				this.pendingPlayControllers.delete( video );
+			}
+
 			if ( shouldPlay ) {
 				const shouldMute = Object.prototype.hasOwnProperty.call( options, 'muted' )
 					? !! options.muted
@@ -670,8 +706,15 @@ const { __ } = require( '@wordpress/i18n' );
 						video.preload = 'metadata';
 						video.load();
 					}
-					video.addEventListener( 'loadeddata', attemptPlay, { once: true } );
-					video.addEventListener( 'canplay', attemptPlay, { once: true } );
+
+					// Use an AbortController so we can cancel these listeners if
+					// syncPreviewVideo is called again before they fire.
+					const controller = new AbortController();
+					this.pendingPlayControllers.set( video, controller );
+					const { signal } = controller;
+
+					video.addEventListener( 'loadeddata', attemptPlay, { once: true, signal } );
+					video.addEventListener( 'canplay', attemptPlay, { once: true, signal } );
 				}
 				return;
 			}
