@@ -216,7 +216,10 @@
 	// --- right side panel ---
 	&__aside {
 		flex: 1 1 50%;
-		background: var( --godam-onb-panel-gradient );
+		// Default: a solid light tint of the scheme accent, so the feature-grid
+		// text (Sites / Bandwidth / Storage …) stays readable. The gradient is
+		// reserved for the social (entry) variant below.
+		background: var( --godam-onb-panel-bg );
 		border-left: 1px solid var( --godam-onb-panel-border );
 		padding: 40px 32px;
 		display: flex;
@@ -225,11 +228,12 @@
 
 	&__aside-inner { width: 100%; }
 
-	// Social variant fills its height so the preview card reaches the modal's
-	// bottom edge (no gap below it).
+	// Social (entry) variant: keeps the accent gradient, and fills its height so
+	// the preview card reaches the modal's bottom edge (no gap below it).
 	&__aside--social {
 		align-items: stretch;
 		padding-bottom: 0;
+		background: var( --godam-onb-panel-gradient );
 	}
 
 	&__aside--social &__aside-inner {
@@ -354,5 +358,27 @@
 		&__aside { display: none; }
 
 		&__content { padding: 28px 24px; }
+	}
+}
+
+// @wordpress/components inside the modal (the CheckboxControl checked state, the
+// Google-button Spinner, input focus rings, …) read --wp-components-color-accent,
+// which GoDAM pins to its brand pink plugin-wide on `.toplevel_page_rtgodam`
+// button/a/input. Re-point that var (and its darker stops) at the scheme accent,
+// scoped by the mount id so it outranks the pin.
+#root-godam-onboarding {
+	--wp-components-color-accent: var( --godam-onb-accent );
+	--wp-components-color-accent-darker-10: var( --godam-onb-accent-hover );
+	--wp-components-color-accent-darker-20: var( --godam-onb-accent-hover );
+
+	button,
+	a,
+	input {
+
+		&:not( .is-destructive ) {
+			--wp-components-color-accent: var( --godam-onb-accent );
+			--wp-components-color-accent-darker-10: var( --godam-onb-accent-hover );
+			--wp-components-color-accent-darker-20: var( --godam-onb-accent-hover );
+		}
 	}
 }
