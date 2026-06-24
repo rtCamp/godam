@@ -35,16 +35,6 @@ export const passwordsMatch = ( password, confirm ) =>
 	!! password && password === confirm;
 
 /**
- * GoDAM license-key shape: `GODAM-XXXX-XXXX-XXXX` (case-insensitive, the
- * grouping is a hint — godam-core validates the real key).
- *
- * @param {string} key License key.
- * @return {boolean} Whether the key matches the expected mask.
- */
-export const isValidLicenseKey = ( key ) =>
-	typeof key === 'string' && /^GODAM-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/i.test( key.trim() );
-
-/**
  * Validate the whole signup form, returning a field→error map ({} when valid).
  *
  * @param {Object}  fields           Signup fields.

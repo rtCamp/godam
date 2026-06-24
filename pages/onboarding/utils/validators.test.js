@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { isValidEmail, isValidPassword, passwordsMatch, isValidLicenseKey, validateSignup } from './validators';
+import { isValidEmail, isValidPassword, passwordsMatch, validateSignup } from './validators';
 
 describe( 'onboarding validators', () => {
 	it( 'validates email shape', () => {
@@ -19,12 +19,6 @@ describe( 'onboarding validators', () => {
 		expect( passwordsMatch( 'abc', 'abc' ) ).toBe( true );
 		expect( passwordsMatch( 'abc', 'xyz' ) ).toBe( false );
 		expect( passwordsMatch( '', '' ) ).toBe( false );
-	} );
-
-	it( 'validates the GODAM license mask', () => {
-		expect( isValidLicenseKey( 'GODAM-AB12-CD34-EF56' ) ).toBe( true );
-		expect( isValidLicenseKey( 'godam-ab12-cd34-ef56' ) ).toBe( true );
-		expect( isValidLicenseKey( 'GODAM-123' ) ).toBe( false );
 	} );
 
 	it( 'returns field errors for an empty signup form', () => {

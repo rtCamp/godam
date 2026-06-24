@@ -132,6 +132,24 @@
 	// --- form ---
 	&__form { display: flex; flex-direction: column; gap: 16px; }
 
+	// License-key field with a show/hide toggle (mirrors Settings → API key).
+	&__pw {
+		position: relative;
+
+		.components-text-control__input { padding-right: 40px; }
+
+		.components-button.godam-onboarding__pw-toggle {
+			position: absolute;
+			right: 4px;
+			bottom: 0;
+			height: 40px;
+			width: 36px;
+			min-width: 36px;
+			padding: 0;
+			color: var( --godam-onb-text-muted );
+		}
+	}
+
 	&__row { display: flex; gap: 12px;
 
  > * { flex: 1; min-width: 0; } }
@@ -141,6 +159,7 @@
 
 		&.godam-onb-btn {
 			height: 40px;
+			flex-shrink: 0; // never compress when a notice pushes the column past its height
 			justify-content: center;
 			width: 100%;
 			font: 500 14px/1 var( --godam-onb-font );
@@ -382,3 +401,9 @@
 		}
 	}
 }
+
+// The free-user dashboard's old "connect your API key" overlay card is
+// redundant behind the new onboarding modal — hide it so only the empty-state
+// dashboard shows as the backdrop. (This stylesheet only loads while the
+// onboarding overlay is active, so no extra guard is needed.)
+.api-key-overlay .api-key-message { display: none; }

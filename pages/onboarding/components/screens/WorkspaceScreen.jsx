@@ -68,7 +68,7 @@ const WorkspaceScreen = () => {
 			<div className="godam-onboarding__dialog-head">
 				<div>
 					<h1 className="godam-onboarding__title">{ __( 'Select a workspace', 'godam' ) }</h1>
-					<p className="godam-onboarding__subtitle">{ __( 'Your account is attached to multiple workspaces. Choose one to start working!', 'godam' ) }</p>
+					<p className="godam-onboarding__subtitle">{ __( 'Choose a workspace to start working!', 'godam' ) }</p>
 				</div>
 				<button type="button" className="godam-onboarding__close" aria-label={ __( 'Close', 'godam' ) } onClick={ () => dispatch( reset() ) } data-test-id="godam-onboarding-button-close">✕</button>
 			</div>
