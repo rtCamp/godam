@@ -239,6 +239,7 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 									variant="secondary"
 									icon={ pencil }
 									className="godam-gallery-v2-item__overlay-action"
+									data-test-id="godam-gallery-v2-item-button-replace"
 									onClick={ ( event ) => {
 										event.stopPropagation();
 										openMediaModal();
@@ -254,6 +255,7 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 						icon={ closeSmall }
 						isDestructive
 						className="godam-gallery-v2-item__overlay-action"
+						data-test-id="godam-gallery-v2-item-button-remove"
 						onClick={ ( event ) => {
 							event.stopPropagation();
 							removeBlock( clientId );

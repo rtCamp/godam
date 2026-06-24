@@ -211,6 +211,7 @@ function VideoListItemContent( { block, onRemove, dragHandleProps = {}, isDraggi
 		<div className={ `godam-gallery-v2__video-item${ isDragging ? ' is-dragging' : '' }` }>
 			<span
 				className="godam-gallery-v2__drag-handle"
+				data-test-id={ `godam-gallery-v2-element-drag-handle-${ block.clientId }` }
 				{ ...dragHandleProps }
 			>
 				<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -247,6 +248,7 @@ function VideoListItemContent( { block, onRemove, dragHandleProps = {}, isDraggi
 				isDestructive
 				size="small"
 				onClick={ onRemove }
+				data-test-id={ `godam-gallery-v2-button-remove-video-${ block.clientId }` }
 			/>
 		</div>
 	);
@@ -793,6 +795,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					<PanelBody
 						title={ __( 'Video Selection', 'godam' ) }
 						initialOpen={ true }
+						data-test-id="godam-gallery-v2-panel-video-selection"
 					>
 						<p className="godam-gallery-v2__panel-hint">
 							{ __( 'Videos play on mute by default', 'godam' ) }
@@ -841,6 +844,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 										variant="secondary"
 										onClick={ open }
 										className="godam-gallery-v2__add-video-btn"
+										data-test-id="godam-gallery-v2-button-add-video"
 									>
 										{ __( '+ Add Video', 'godam' ) }
 									</Button>
@@ -931,7 +935,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 				</PanelBody>
 
 				{ /* ── Info Display ─────────────────────────────────────────── */ }
-				<PanelBody title={ __( 'Info Display', 'godam' ) } initialOpen={ true }>
+				<PanelBody title={ __( 'Info Display', 'godam' ) } initialOpen={ true } data-test-id="godam-gallery-v2-panel-info-display">
 					<RadioControl
 						label={ __( 'Info Display', 'godam' ) }
 						hideLabelFromVision
@@ -954,7 +958,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 				</PanelBody>
 
 				{ /* ── Interaction ──────────────────────────────────────────── */ }
-				<PanelBody title={ __( 'Interaction', 'godam' ) } initialOpen={ true }>
+				<PanelBody title={ __( 'Interaction', 'godam' ) } initialOpen={ true } data-test-id="godam-gallery-v2-panel-interaction">
 					<div className="godam-gallery-v2__radio-group">
 						{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
 						<label className="godam-gallery-v2__radio-option">
@@ -966,6 +970,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 								onChange={ () =>
 									setAttributes( { autoplay: true, playOnHover: false } )
 								}
+								data-test-id="godam-gallery-v2-control-autoplay"
 							/>
 							<span className="godam-gallery-v2__radio-label">
 								{ __( 'Autoplay all videos', 'godam' ) }
@@ -984,6 +989,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 								onChange={ () =>
 									setAttributes( { autoplay: false, playOnHover: true } )
 								}
+								data-test-id="godam-gallery-v2-control-play-on-hover"
 							/>
 							<span className="godam-gallery-v2__radio-label">
 								{ __( 'Play on hover', 'godam' ) }
@@ -999,6 +1005,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						label={ __( 'Show play button', 'godam' ) }
 						checked={ showPlayButton !== false }
 						onChange={ ( value ) => setAttributes( { showPlayButton: value } ) }
+						data-test-id="godam-gallery-v2-control-show-play-button"
 						help={ showPlayButton !== false
 							? __( 'Play button overlay is visible on each tile.', 'godam' )
 							: __( 'Play button overlay is hidden.', 'godam' )
@@ -1007,12 +1014,13 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 				</PanelBody>
 
 				{ /* ── Performance ──────────────────────────────────────────── */ }
-				<PanelBody title={ __( 'Performance', 'godam' ) } initialOpen={ true }>
+				<PanelBody title={ __( 'Performance', 'godam' ) } initialOpen={ true } data-test-id="godam-gallery-v2-panel-performance">
 					<ToggleGroupControl
 						__nextHasNoMarginBottom
 						isBlock
 						label={ __( 'Performance', 'godam' ) }
 						hideLabelFromVision
+						data-test-id="godam-gallery-v2-control-performance"
 						value={ performanceMode || 'balanced' }
 						onChange={ ( value ) =>
 							value && setAttributes( { performanceMode: value } )
@@ -1032,7 +1040,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 
 				{ /* ── Engagements (conditional) ────────────────────────────── */ }
 				{ showEngagementSetting && (
-					<PanelBody title={ __( 'Engagement', 'godam' ) } initialOpen={ false }>
+					<PanelBody title={ __( 'Engagement', 'godam' ) } initialOpen={ false } data-test-id="godam-gallery-v2-panel-engagement">
 						<ToggleControl
 							label={ __( 'Enable Likes & Comments', 'godam' ) }
 							checked={ !! engagements }
@@ -1281,6 +1289,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 												variant="primary"
 												onClick={ open }
 												className="godam-gallery-v2__empty-btn"
+												data-test-id="godam-gallery-v2-button-empty-add-video"
 											>
 												{ __( '+ Add Video', 'godam' ) }
 											</Button>
