@@ -406,9 +406,8 @@ class Pages {
 		</div>
 		<?php
 		// When the site isn't connected, overlay the 2.0 onboarding modal on the
-		// (empty-state) dashboard that renders behind it. Gated to manage_options
-		// so the UI matches the onboarding REST routes' capability.
-		if ( ! $is_premium_user && $this->is_onboarding_v2_enabled() && current_user_can( 'manage_options' ) ) {
+		// (empty-state) dashboard that renders behind it.
+		if ( $this->should_overlay_onboarding() ) {
 			echo '<div id="root-godam-onboarding"></div>';
 		}
 	}
@@ -425,6 +424,11 @@ class Pages {
 			<div id="root-video-analytics" class="<?php echo $is_premium_user ? '' : 'free-user'; ?>"></div>
 		</div>
 		<?php
+		// When the site isn't connected, overlay the onboarding modal here too —
+		// the analytics view sits behind it (same gate as the dashboard).
+		if ( $this->should_overlay_onboarding() ) {
+			echo '<div id="root-godam-onboarding"></div>';
+		}
 	}
 
 	/**
@@ -459,6 +463,20 @@ class Pages {
 	}
 
 	/**
+	 * Whether to overlay the 2.0 onboarding modal on the current GoDAM screen.
+	 *
+	 * True only when the site isn't connected, the SPA is enabled, and the user
+	 * can manage options (matching the onboarding REST routes' capability).
+	 *
+	 * @return bool
+	 */
+	private function should_overlay_onboarding() {
+		return ! rtgodam_is_api_key_valid()
+			&& $this->is_onboarding_v2_enabled()
+			&& current_user_can( 'manage_options' );
+	}
+
+	/**
 	 * To enqueue scripts and styles in admin.
 	 *
 	 * @return void
@@ -489,8 +507,8 @@ class Pages {
 			wp_enqueue_style( 'easydam-media-library' );
 
 		}
-		// GoDAM 2.0 onboarding SPA — overlays the Dashboard when not connected.
-		if ( $screen && $this->menu_page_id === $screen->id && $this->is_onboarding_v2_enabled() && ! rtgodam_is_api_key_valid() && current_user_can( 'manage_options' ) ) {
+		// GoDAM 2.0 onboarding SPA — overlays the Dashboard + Analytics when not connected.
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->analytics_page_id ), true ) && $this->should_overlay_onboarding() ) {
 			$onboarding_asset = RTGODAM_PATH . 'assets/build/pages/onboarding.min.js';
 
 			wp_register_script(
