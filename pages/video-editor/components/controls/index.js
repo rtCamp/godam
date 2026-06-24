@@ -244,7 +244,8 @@ export const VeToggle = ( { label, help, checked, onChange, disabled = false, cl
  * `ToggleGroupControl` can't render the two-line option design.
  *
  * @param {Object}   props          Props.
- * @param {Array}    props.options  `[{ value, label, description, disabled }]`.
+ * @param {Array}    props.options  `[{ value, label, description, icon, disabled }]`. `icon` is an optional JSX element rendered above the label.
+ *
  * @param {string}   props.value    Selected value.
  * @param {Function} props.onChange Receives the chosen value.
  * @return {JSX.Element} Segmented control.
@@ -260,6 +261,9 @@ export const VeSegmented = ( { options = [], value, onChange } ) => (
 				className={ `godam-ve-segmented__option${ value === opt.value ? ' is-selected' : '' }` }
 				onClick={ () => onChange?.( opt.value ) }
 			>
+				{ opt.icon && (
+					<span className="godam-ve-segmented__icon">{ opt.icon }</span>
+				) }
 				<span className="godam-ve-segmented__title">{ opt.label }</span>
 				{ opt.description && (
 					<span className="godam-ve-segmented__desc">{ opt.description }</span>

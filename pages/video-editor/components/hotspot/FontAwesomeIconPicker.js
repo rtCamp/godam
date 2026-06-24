@@ -202,24 +202,28 @@ const FontAwesomeIconPicker = ( { icon, customIconUrl, customIconId, onChange, d
 					</span>
 
 					<div className="godam-ve-icon-picker__change">
-						<Dropdown
-							className="godam-ve-icon-picker__library"
-							popoverProps={ { placement: 'bottom-start' } }
-							renderToggle={ ( { isOpen, onToggle } ) => (
-								<Button
-									variant="link"
-									onClick={ onToggle }
-									aria-expanded={ isOpen }
-									disabled={ disabled }
-								>
-									{ __( 'Select from library', 'godam' ) }
-								</Button>
-							) }
-							renderContent={ renderLibraryContent }
-						/>
-						<Button variant="link" onClick={ handleUploadCustomIcon } disabled={ disabled }>
-							{ __( 'Add custom', 'godam' ) }
-						</Button>
+						{ icon && (
+							<Dropdown
+								className="godam-ve-icon-picker__library"
+								popoverProps={ { placement: 'bottom-start' } }
+								renderToggle={ ( { isOpen, onToggle } ) => (
+									<Button
+										variant="link"
+										onClick={ onToggle }
+										aria-expanded={ isOpen }
+										disabled={ disabled }
+									>
+										{ __( 'Select from library', 'godam' ) }
+									</Button>
+								) }
+								renderContent={ renderLibraryContent }
+							/>
+						) }
+						{ customIconUrl && (
+							<Button variant="link" onClick={ handleUploadCustomIcon } disabled={ disabled }>
+								{ __( 'Add custom', 'godam' ) }
+							</Button>
+						) }
 					</div>
 
 					<Button

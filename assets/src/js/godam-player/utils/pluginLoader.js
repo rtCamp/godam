@@ -201,13 +201,20 @@ export function hasHotspotsWithIcons( layers ) {
 	}
 
 	return layers.some( ( layer ) => {
-		// Check if it's a hotspot layer
-		if ( layer.type !== 'hotspot' ) {
-			return false;
+		// Regular hotspot layer
+		if ( layer.type === 'hotspot' ) {
+			return layer.hotspots?.some( ( hotspot ) => hotspot.showIcon );
 		}
 
-		// Check if any hotspot in this layer has an icon
-		return layer.hotspots?.some( ( hotspot ) => hotspot.showIcon );
+		// Woo layer: layer-level FA icon (new model) or per-hotspot legacy icon
+		if ( layer.type === 'woo' ) {
+			if ( layer.styleType === 'icon' && layer.icon ) {
+				return true;
+			}
+			return layer.productHotspots?.some( ( hotspot ) => hotspot.icon );
+		}
+
+		return false;
 	} );
 }
 

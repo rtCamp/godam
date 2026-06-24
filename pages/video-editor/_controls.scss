@@ -240,6 +240,14 @@ $ve-radius: 4px;
 			}
 		}
 
+		&__icon {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			height: 1.5rem;
+			font-size: 1.125rem;
+		}
+
 		&__title {
 			font-size: 0.875rem;
 			font-weight: 600;
@@ -747,6 +755,46 @@ $ve-radius: 4px;
 		svg {
 			fill: currentcolor;
 		}
+
+		.godam-ve-hotspot-card__toggle-content {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 4px;
+		}
+	}
+
+	// Product chip shown in collapsed card row (Woo hotspot layer)
+	.godam-ve-hotspot-card__chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		padding: 5px 6px 5px 6px;
+		max-width: 160px;
+		background: rgba(124, 58, 237, 0.08);
+		border-radius: 4px;
+		font-size: 11px;
+		font-weight: 400;
+		color: #3c434a;
+	}
+
+	.godam-ve-hotspot-card__chip-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 16px;
+		height: 16px;
+		background: var(--wp-admin-theme-color, #3858e9);
+		border-radius: 3px;
+		color: #fff;
+		font-size: 9px;
+	}
+
+	.godam-ve-hotspot-card__chip-text {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.godam-ve-add-hotspot.godam-ve-add-hotspot {
@@ -854,6 +902,7 @@ $ve-radius: 4px;
 			flex-wrap: wrap;
 			gap: 0.25rem 0.75rem;
 			align-items: center;
+			justify-content: flex-end;
 		}
 
 		&__remove {
