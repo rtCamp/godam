@@ -406,8 +406,9 @@ class Pages {
 		</div>
 		<?php
 		// When the site isn't connected, overlay the 2.0 onboarding modal on the
-		// (empty-state) dashboard that renders behind it.
-		if ( ! $is_premium_user && $this->is_onboarding_v2_enabled() ) {
+		// (empty-state) dashboard that renders behind it. Gated to manage_options
+		// so the UI matches the onboarding REST routes' capability.
+		if ( ! $is_premium_user && $this->is_onboarding_v2_enabled() && current_user_can( 'manage_options' ) ) {
 			echo '<div id="root-godam-onboarding"></div>';
 		}
 	}
@@ -489,7 +490,7 @@ class Pages {
 
 		}
 		// GoDAM 2.0 onboarding SPA — overlays the Dashboard when not connected.
-		if ( $screen && $this->menu_page_id === $screen->id && $this->is_onboarding_v2_enabled() && ! rtgodam_is_api_key_valid() ) {
+		if ( $screen && $this->menu_page_id === $screen->id && $this->is_onboarding_v2_enabled() && ! rtgodam_is_api_key_valid() && current_user_can( 'manage_options' ) ) {
 			$onboarding_asset = RTGODAM_PATH . 'assets/build/pages/onboarding.min.js';
 
 			wp_register_script(

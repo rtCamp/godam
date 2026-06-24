@@ -2,7 +2,7 @@
  * WordPress dependencies
  */
 import { useState } from '@wordpress/element';
-import { Button, TextControl, CheckboxControl, ExternalLink } from '@wordpress/components';
+import { Button, TextControl, ExternalLink } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -26,7 +26,6 @@ const LicenseKeyScreen = () => {
 	const dispatch = useDispatch();
 	const [ verifyLicenseKey, { isLoading } ] = useVerifyLicenseKeyMutation();
 	const [ key, setKey ] = useState( '' );
-	const [ remember, setRemember ] = useState( true );
 
 	const handleSubmit = async () => {
 		if ( ! isValidLicenseKey( key ) ) {
@@ -50,7 +49,6 @@ const LicenseKeyScreen = () => {
 
 			<div className="godam-onboarding__form">
 				<TextControl __nextHasNoMarginBottom label={ __( 'License key', 'godam' ) } placeholder="GODAM-XXXX-XXXX-XXXX" value={ key } onChange={ setKey } data-test-id="godam-onboarding-input-license" />
-				<CheckboxControl __nextHasNoMarginBottom label={ __( 'Keep me signed in', 'godam' ) } checked={ remember } onChange={ setRemember } data-test-id="godam-onboarding-checkbox-remember" />
 			</div>
 
 			<Button variant="primary" className="godam-onb-btn godam-onb-btn--primary godam-onboarding__cta" onClick={ handleSubmit } disabled={ isLoading } isBusy={ isLoading } data-test-id="godam-onboarding-button-verify-license">

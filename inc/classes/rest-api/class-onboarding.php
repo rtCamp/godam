@@ -124,7 +124,8 @@ class Onboarding extends Base {
 		);
 
 		if ( 'GET' === $method ) {
-			$response = wp_remote_get( add_query_arg( array_map( 'rawurlencode', $args ), $url ), $request_args );
+			// add_query_arg() URL-encodes values itself — don't pre-encode (would double-encode).
+			$response = wp_remote_get( add_query_arg( $args, $url ), $request_args );
 		} else {
 			$request_args['body'] = $args; // Form-encoded — matches the godam-core API.
 			$response             = wp_remote_post( $url, $request_args );

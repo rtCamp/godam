@@ -83,7 +83,7 @@ const SignupScreen = () => {
 			<div className="godam-onboarding__form">
 				<div className="godam-onboarding__row">
 					<TextControl __nextHasNoMarginBottom label={ <>{ __( 'First Name', 'godam' ) } <Required /></> } value={ fields.firstName } onChange={ set( 'firstName' ) } help={ errors.firstName } placeholder={ __( 'First Name', 'godam' ) } data-test-id="godam-onboarding-input-first-name" />
-					<TextControl __nextHasNoMarginBottom label={ <>{ __( 'Last Name', 'godam' ) } <Required /></> } value={ fields.lastName } onChange={ set( 'lastName' ) } placeholder={ __( 'Last Name', 'godam' ) } data-test-id="godam-onboarding-input-last-name" />
+					<TextControl __nextHasNoMarginBottom label={ __( 'Last Name', 'godam' ) } value={ fields.lastName } onChange={ set( 'lastName' ) } placeholder={ __( 'Last Name', 'godam' ) } data-test-id="godam-onboarding-input-last-name" />
 				</div>
 				<TextControl __nextHasNoMarginBottom type="email" label={ <>{ __( 'Email', 'godam' ) } <Required /></> } value={ fields.email } onChange={ set( 'email' ) } help={ errors.email } placeholder="you@example.com" data-test-id="godam-onboarding-input-email" />
 				<TextControl __nextHasNoMarginBottom type="password" label={ <>{ __( 'Password', 'godam' ) } <Required /></> } value={ fields.password } onChange={ set( 'password' ) } help={ errors.password } placeholder={ __( 'Enter password', 'godam' ) } data-test-id="godam-onboarding-input-password" />
@@ -91,7 +91,7 @@ const SignupScreen = () => {
 
 				<CheckboxControl __nextHasNoMarginBottom checked={ fields.tnc } onChange={ set( 'tnc' ) } help={ errors.tnc } data-test-id="godam-onboarding-checkbox-tnc"
 					label={ <>{ __( 'I agree to', 'godam' ) } <a className="godam-onboarding__link" href="https://godam.io/terms/" target="_blank" rel="noreferrer">{ __( 'Terms and Conditions, Privacy Policy, Refund Policy', 'godam' ) }</a></> } />
-				<CheckboxControl __nextHasNoMarginBottom checked={ fields.newsletter } onChange={ set( 'newsletter' ) } label={ __( 'I agree to Subscribe Newsletter to receive future updates and releases news.', 'godam' ) } data-test-id="godam-onboarding-checkbox-newsletter" />
+				<CheckboxControl __nextHasNoMarginBottom checked={ fields.newsletter } onChange={ set( 'newsletter' ) } label={ __( 'Email me product updates and release news.', 'godam' ) } data-test-id="godam-onboarding-checkbox-newsletter" />
 			</div>
 
 			<Button variant="primary" className="godam-onb-btn godam-onb-btn--primary godam-onboarding__cta" onClick={ handleSubmit } disabled={ isLoading } isBusy={ isLoading } data-test-id="godam-onboarding-button-signup">

@@ -59,7 +59,11 @@ class Onboarding_Response {
 			if ( is_array( $messages ) && ! empty( $messages[0] ) ) {
 				$first = json_decode( (string) $messages[0], true );
 				if ( isset( $first['message'] ) && is_string( $first['message'] ) ) {
-					return trim( wp_strip_all_tags( $first['message'] ) );
+					// function_exists fallback keeps this helper framework-free (testable without WP).
+					$text = function_exists( 'wp_strip_all_tags' )
+						? wp_strip_all_tags( $first['message'] )
+						: strip_tags( $first['message'] ); // phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags, WordPressVIPMinimum.Functions.StripTags.StripTagsOneParameter
+					return trim( $text );
 				}
 			}
 		}
