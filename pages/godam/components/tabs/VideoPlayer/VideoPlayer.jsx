@@ -418,10 +418,7 @@ const VideoPlayer = () => {
 							__next40pxDefaultSize
 							hideLabelFromVision
 							label={ __( 'Player Skin', 'godam' ) }
-							className="godam-player-skin-dropdown"
-							options={ PLAYER_SKIN_OPTIONS }
-							value={ PLAYER_SKIN_OPTIONS.find( ( option ) => option.key === ( mediaSettings?.video_player?.player_skin || 'Default' ) ) }
-							onChange={ ( { selectedItem } ) => handleSettingChange( 'player_skin', selectedItem.key ) }
+						value={ PLAYER_SKIN_OPTIONS.find( ( option ) => option.key === ( mediaSettings?.video_player?.player_skin || 'Default' ) ) ?? PLAYER_SKIN_OPTIONS[ 0 ] }
 						/>
 					</div>
 				</PanelBody>
