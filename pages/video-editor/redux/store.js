@@ -11,6 +11,7 @@ import { videosAPI } from './api/video';
 import { videoEditorAPI } from './api/video-editor';
 import { pollsAPI } from './api/polls';
 import { attachmentAPI } from './api/attachment';
+import { transcriptionAPI } from './api/transcription';
 import { gravityFormsAPI } from './api/gravity-forms';
 import { contactForm7Api } from './api/cf7-forms';
 import { wpFormsApi } from './api/wpforms';
@@ -30,6 +31,7 @@ export default configureStore( {
 		[ videoEditorAPI.reducerPath ]: videoEditorAPI.reducer,
 		[ pollsAPI.reducerPath ]: pollsAPI.reducer,
 		[ attachmentAPI.reducerPath ]: attachmentAPI.reducer,
+		[ transcriptionAPI.reducerPath ]: transcriptionAPI.reducer,
 		[ gravityFormsAPI.reducerPath ]: gravityFormsAPI.reducer,
 		[ contactForm7Api.reducerPath ]: contactForm7Api.reducer,
 		[ wpFormsApi.reducerPath ]: wpFormsApi.reducer,
@@ -47,6 +49,7 @@ export default configureStore( {
 		videoEditorAPI.middleware,
 		pollsAPI.middleware,
 		attachmentAPI.middleware,
+		transcriptionAPI.middleware,
 		gravityFormsAPI.middleware,
 		contactForm7Api.middleware,
 		wpFormsApi.middleware,

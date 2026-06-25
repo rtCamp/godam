@@ -1,0 +1,229 @@
+// =============================================================
+// Video Editor — Transcription tab.
+// Scoped under `.godam-video-editor`. Mirrors the Chapters / Settings
+// tab primitives (sticky head, `$ve-*` neutrals, accent from the
+// WordPress component accent variable).
+// =============================================================
+
+$ve-border: #E0E0E0;
+$ve-accent: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+$ve-muted: #0000008c;
+$ve-faint: color-mix(in srgb, currentcolor 4%, transparent);
+
+.godam-video-editor {
+
+	.godam-ve-transcription {
+
+		&__head {
+			padding: 1rem;
+			border-bottom: 1px solid $ve-border;
+			position: sticky;
+			top: 0;
+			background: #fff;
+			z-index: 10;
+		}
+
+		&__title {
+			margin: 0;
+			font-size: 0.9375rem;
+			font-weight: 600;
+			line-height: 1.4;
+		}
+
+		&__subtitle {
+			margin: 0.25rem 0 0;
+			font-size: 0.75rem;
+			color: $ve-muted;
+		}
+
+		&__body {
+			padding: 1rem;
+		}
+
+		// ---- Empty / busy state (Flow 32 + 33) ----
+		&__generate {
+			display: flex;
+			flex-direction: column;
+			align-items: stretch;
+			gap: 0.75rem;
+		}
+
+		&__help {
+			margin: 0;
+			font-size: 0.8125rem;
+			line-height: 1.5;
+			color: $ve-muted;
+			text-align: center;
+		}
+
+		&__generate-btn.components-button,
+		&__upload-btn.components-button {
+			width: 100%;
+			justify-content: center;
+			height: 44px;
+		}
+
+		// Accent-tinted primary action (the "Generate" call to action).
+		&__generate-btn.components-button.is-secondary {
+			color: $ve-accent;
+			box-shadow: inset 0 0 0 1px $ve-accent;
+			background: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 6%, transparent);
+
+			&:hover:not(:disabled) {
+				background: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 12%, transparent);
+			}
+		}
+
+		// "OR" divider with rules either side.
+		&__divider {
+			display: flex;
+			align-items: center;
+			gap: 0.75rem;
+			color: $ve-muted;
+			font-size: 0.75rem;
+
+			&::before,
+			&::after {
+				content: '';
+				flex: 1 1 auto;
+				height: 1px;
+				background: $ve-border;
+			}
+		}
+
+		// In-progress block (spinner + copy + indeterminate bar).
+		&__progress {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 0.5rem;
+			padding: 0.5rem 0 0.25rem;
+			text-align: center;
+		}
+
+		&__progress-title {
+			margin: 0;
+			font-size: 0.875rem;
+			font-weight: 600;
+		}
+
+		&__progress-note {
+			margin: 0;
+			font-size: 0.75rem;
+			line-height: 1.4;
+			color: $ve-muted;
+		}
+
+		&__progress-bar {
+			position: relative;
+			width: 100%;
+			height: 3px;
+			margin-top: 0.5rem;
+			overflow: hidden;
+			background: $ve-border;
+			border-radius: 2px;
+
+			&::after {
+				content: '';
+				position: absolute;
+				inset: 0;
+				width: 40%;
+				background: $ve-accent;
+				border-radius: 2px;
+				animation: godam-ve-transcription-indeterminate 1.4s ease-in-out infinite;
+			}
+		}
+
+		// ---- Ready state (Flow 35) ----
+		&__file {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 0.5rem;
+			margin-bottom: 0.75rem;
+		}
+
+		&__file-name {
+			overflow: hidden;
+			font-size: 0.875rem;
+			font-weight: 600;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		&__file-actions {
+			display: flex;
+			flex: 0 0 auto;
+			gap: 0.25rem;
+		}
+
+		&__loader {
+			display: flex;
+			justify-content: center;
+			padding: 2rem 0;
+		}
+
+		// Scrollable cue list.
+		&__cues {
+			margin: 0;
+			padding: 0;
+			list-style: none;
+			max-height: calc(100vh - 320px);
+			overflow-y: auto;
+			border: 1px solid $ve-border;
+			border-radius: 8px;
+		}
+
+		&__cue {
+			padding: 0.75rem 1rem;
+
+			&:not(:last-child) {
+				border-bottom: 1px solid $ve-border;
+			}
+
+			&:hover {
+				background: $ve-faint;
+			}
+		}
+
+		&__cue-time {
+			display: block;
+			margin-bottom: 0.25rem;
+			font-size: 0.75rem;
+			color: $ve-muted;
+		}
+
+		&__cue-text {
+			margin: 0;
+			font-size: 0.875rem;
+			line-height: 1.5;
+		}
+
+		&__cue-empty {
+			padding: 1rem;
+			font-size: 0.8125rem;
+			color: $ve-muted;
+			text-align: center;
+		}
+
+		// Success toast (Flow 34) — centred near the bottom of the editor.
+		&__toast.components-snackbar {
+			position: fixed;
+			bottom: 2rem;
+			left: 50%;
+			transform: translateX(-50%);
+			z-index: 1000;
+		}
+	}
+}
+
+@keyframes godam-ve-transcription-indeterminate {
+
+	0% {
+		left: -40%;
+	}
+
+	100% {
+		left: 100%;
+	}
+}

@@ -41,6 +41,8 @@ import './video-editor.scss';
 import { useGetAttachmentMetaQuery, useSaveAttachmentMetaMutation } from './redux/api/attachment';
 import { useFetchForms } from './components/forms/fetchForms';
 import Chapters from './components/chapters/Chapters';
+import Transcription from './components/transcription/Transcription';
+import { formatBytes } from './components/transcription/utils';
 import Timeline from './components/timeline/Timeline';
 import { copyGoDAMVideoBlock, prefetchMediaDataForCopy } from './utils/index';
 import { getFormIdFromLayer } from './utils/formUtils';
@@ -424,6 +426,13 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 						/>
 					) }
 					{ currentTab === 'player-settings' && <Appearance attachmentID={ attachmentID } /> }
+					{ currentTab === 'transcription' && (
+						<Transcription
+							attachmentID={ attachmentID }
+							duration={ duration }
+							fileSize={ formatBytes( attachmentConfig?.media_details?.filesize ) }
+						/>
+					) }
 					{ currentTab === 'chapters' && (
 						<Chapters
 							duration={ duration }
