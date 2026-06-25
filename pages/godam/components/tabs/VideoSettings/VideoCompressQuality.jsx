@@ -22,7 +22,7 @@ const VideoCompressQuality = ( { handleSettingChange } ) => {
 	const selectedOption = QUALITY_OPTIONS.find( ( option ) => option.key === String( videoQuality ) ) || QUALITY_OPTIONS[ 0 ];
 
 	return (
-		<div className="godam-form-group">
+		<div className="godam-form-group" data-test-id="godam-settings-video-control-quality">
 			<CustomSelectControl
 				__next40pxDefaultSize
 				label={ __( 'Video Quality', 'godam' ) }

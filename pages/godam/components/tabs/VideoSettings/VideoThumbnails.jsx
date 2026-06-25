@@ -49,6 +49,7 @@ const VideoThumbnails = ( { handleSettingChange } ) => {
 			</label>
 			<TextControl
 				id="video_thumbnails_count"
+				data-test-id="godam-settings-video-control-thumbnails-count"
 				type="number"
 				min="1"
 				max="10"

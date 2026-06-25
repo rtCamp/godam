@@ -127,6 +127,7 @@ const ChapterForm = ( { rows, duration, formatTimeForInput, editingRow, onSubmit
 			</div>
 
 			<VeTextInput
+				data-test-id="godam-video-editor-control-chapter-title"
 				label={ __( 'Chapter title', 'godam' ) }
 				placeholder={ __( 'e.g. Introduction', 'godam' ) }
 				value={ title }
@@ -135,6 +136,7 @@ const ChapterForm = ( { rows, duration, formatTimeForInput, editingRow, onSubmit
 
 			<div className="godam-ve-chapters__times">
 				<VeTextInput
+					data-test-id="godam-video-editor-control-chapter-start"
 					label={ __( 'Start time', 'godam' ) }
 					value={ startInput }
 					placeholder="0:00"
@@ -142,6 +144,7 @@ const ChapterForm = ( { rows, duration, formatTimeForInput, editingRow, onSubmit
 					onChange={ setStartInput }
 				/>
 				<VeTextInput
+					data-test-id="godam-video-editor-control-chapter-end"
 					label={ __( 'End time', 'godam' ) }
 					value={ endInput }
 					placeholder={ durationLabel }
@@ -151,6 +154,7 @@ const ChapterForm = ( { rows, duration, formatTimeForInput, editingRow, onSubmit
 			</div>
 
 			<Button
+				data-test-id="godam-video-editor-button-chapter-submit"
 				variant="secondary"
 				className="godam-ve-chapters__submit"
 				icon={ editingId ? undefined : plus }

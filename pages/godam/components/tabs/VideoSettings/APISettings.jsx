@@ -150,6 +150,7 @@ const APISettings = ( { setNotice } ) => {
 								disabled={ ! hasAPIKey }
 								label={ __( 'Copy API key', 'godam' ) }
 								showTooltip
+								data-test-id="godam-settings-api-key-button-copy"
 							/>
 							<Button
 								icon={ trash }
@@ -171,7 +172,7 @@ const APISettings = ( { setNotice } ) => {
 							disabled={ isAPIKeyLoading || hasAPIKey || ! apiKey.trim() }
 							variant="primary"
 							isBusy={ isAPIKeyLoading }
-							data-test-id="godam-settings-video-button-save-api-key"
+							data-test-id="godam-settings-api-key-button-save"
 						>
 							{ isAPIKeyLoading ? __( 'Saving…', 'godam' ) : __( 'Save API Key', 'godam' ) }
 						</Button>
@@ -181,6 +182,7 @@ const APISettings = ( { setNotice } ) => {
 								disabled={ isRefreshLoading }
 								variant="secondary"
 								isBusy={ isRefreshLoading }
+								data-test-id="godam-settings-api-key-button-refresh"
 							>
 								{ isRefreshLoading ? __( 'Refreshing…', 'godam' ) : __( 'Refresh Status', 'godam' ) }
 							</Button>
@@ -227,6 +229,7 @@ const APISettings = ( { setNotice } ) => {
 				isBusy={ isDeactivateLoading }
 				onCancel={ () => setIsRemoveModalOpen( false ) }
 				onConfirm={ handleDeactivateAPIKey }
+				data-test-id="godam-settings-api-key-button-confirm-remove"
 			>
 				{ __( 'If you remove the API key, your account will be deactivated and you’ll lose access to the platform.', 'godam' ) }
 			</ConfirmModal>

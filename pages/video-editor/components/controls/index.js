@@ -29,8 +29,8 @@ import { useState } from '@wordpress/element';
  * @param {JSX.Element} props.children    Section body.
  * @return {JSX.Element} Section element.
  */
-export const VeSection = ( { title, className = '', children } ) => (
-	<section className={ `godam-ve-section ${ className }`.trim() }>
+export const VeSection = ( { title, className = '', children, ...rest } ) => (
+	<section className={ `godam-ve-section ${ className }`.trim() } { ...rest }>
 		{ title && <h3 className="godam-ve-section__title">{ title }</h3> }
 		{ children }
 	</section>
@@ -48,8 +48,8 @@ export const VeSection = ( { title, className = '', children } ) => (
  * @param {JSX.Element} props.children    The grouped controls.
  * @return {JSX.Element} Field element.
  */
-export const VeField = ( { label, help, className = '', children } ) => (
-	<div className={ `godam-ve-field ${ className }`.trim() }>
+export const VeField = ( { label, help, className = '', children, ...rest } ) => (
+	<div className={ `godam-ve-field ${ className }`.trim() } { ...rest }>
 		{ label && <span className="godam-ve-field__label">{ label }</span> }
 		{ children }
 		{ help && <p className="godam-ve-field__help">{ help }</p> }
@@ -103,7 +103,7 @@ export const VeTextInput = ( { label, help, error, value = '', onChange, placeho
  * @param {string}   [props.className]   Extra class names.
  * @return {JSX.Element} Textarea control.
  */
-export const VeTextarea = ( { label, help, value = '', onChange, placeholder, rows = 4, maxLength, className = '' } ) => (
+export const VeTextarea = ( { label, help, value = '', onChange, placeholder, rows = 4, maxLength, className = '', ...rest } ) => (
 	<TextareaControl
 		__nextHasNoMarginBottom
 		className={ `godam-ve-control godam-ve-control--textarea ${ className }`.trim() }
@@ -115,6 +115,7 @@ export const VeTextarea = ( { label, help, value = '', onChange, placeholder, ro
 		placeholder={ placeholder }
 		maxLength={ maxLength }
 		onChange={ onChange }
+		{ ...rest }
 	/>
 );
 
@@ -133,7 +134,7 @@ export const VeTextarea = ( { label, help, value = '', onChange, placeholder, ro
  * @param {string}   [props.className] Extra class names.
  * @return {JSX.Element} Range control.
  */
-export const VeSlider = ( { label, help, value = 0, onChange, min = 0, max = 100, step = 1, className = '' } ) => (
+export const VeSlider = ( { label, help, value = 0, onChange, min = 0, max = 100, step = 1, className = '', ...rest } ) => (
 	<RangeControl
 		__next40pxDefaultSize
 		__nextHasNoMarginBottom
@@ -146,6 +147,7 @@ export const VeSlider = ( { label, help, value = 0, onChange, min = 0, max = 100
 		min={ min }
 		max={ max }
 		step={ step }
+		{ ...rest }
 	/>
 );
 
@@ -162,7 +164,7 @@ export const VeSlider = ( { label, help, value = 0, onChange, min = 0, max = 100
  * @param {string}   [props.className] Extra class names.
  * @return {JSX.Element} Select control.
  */
-export const VeSelect = ( { label, help, value, onChange, options = [], disabled = false, className = '' } ) => (
+export const VeSelect = ( { label, help, value, onChange, options = [], disabled = false, className = '', ...rest } ) => (
 	<SelectControl
 		__next40pxDefaultSize
 		__nextHasNoMarginBottom
@@ -173,6 +175,7 @@ export const VeSelect = ( { label, help, value, onChange, options = [], disabled
 		options={ options }
 		onChange={ onChange }
 		disabled={ disabled }
+		{ ...rest }
 	/>
 );
 
@@ -196,12 +199,12 @@ export const VeSelect = ( { label, help, value, onChange, options = [], disabled
  * @param {string}   [props.className] Extra class names.
  * @return {JSX.Element} Custom select control.
  */
-export const VeCustomSelect = ( { label, help, value, onChange, options = [], disabled = false, className = '' } ) => {
+export const VeCustomSelect = ( { label, help, value, onChange, options = [], disabled = false, className = '', ...rest } ) => {
 	const items = options.map( ( opt ) => ( { key: String( opt.value ), name: opt.label } ) );
 	const selected = items.find( ( item ) => item.key === String( value ) ) ?? items[ 0 ];
 
 	return (
-		<div className={ `godam-ve-custom-select-field ${ disabled ? 'is-disabled' : '' } ${ className }`.trim() }>
+		<div className={ `godam-ve-custom-select-field ${ disabled ? 'is-disabled' : '' } ${ className }`.trim() } { ...rest }>
 			<CustomSelectControl
 				__next40pxDefaultSize
 				className="godam-ve-control godam-ve-custom-select"
@@ -227,7 +230,7 @@ export const VeCustomSelect = ( { label, help, value, onChange, options = [], di
  * @param {string}   [props.className] Extra class names.
  * @return {JSX.Element} Toggle control.
  */
-export const VeToggle = ( { label, help, checked, onChange, disabled = false, className = '' } ) => (
+export const VeToggle = ( { label, help, checked, onChange, disabled = false, className = '', ...rest } ) => (
 	<ToggleControl
 		__nextHasNoMarginBottom
 		className={ `godam-ve-control godam-ve-toggle ${ className }`.trim() }
@@ -236,6 +239,7 @@ export const VeToggle = ( { label, help, checked, onChange, disabled = false, cl
 		checked={ checked }
 		onChange={ onChange }
 		disabled={ disabled }
+		{ ...rest }
 	/>
 );
 
@@ -250,14 +254,15 @@ export const VeToggle = ( { label, help, checked, onChange, disabled = false, cl
  * @param {Function} props.onChange Receives the chosen value.
  * @return {JSX.Element} Segmented control.
  */
-export const VeSegmented = ( { options = [], value, onChange } ) => (
-	<div className="godam-ve-segmented">
+export const VeSegmented = ( { options = [], value, onChange, ...rest } ) => (
+	<div className="godam-ve-segmented" { ...rest }>
 		{ options.map( ( opt ) => (
 			<button
 				key={ opt.value }
 				type="button"
 				disabled={ opt.disabled }
 				aria-pressed={ value === opt.value }
+				data-test-id={ opt.testId }
 				className={ `godam-ve-segmented__option${ value === opt.value ? ' is-selected' : '' }` }
 				onClick={ () => onChange?.( opt.value ) }
 			>
@@ -283,8 +288,8 @@ export const VeSegmented = ( { options = [], value, onChange } ) => (
  * @param {Function} props.onChange Receives the chosen value.
  * @return {JSX.Element} Grid control.
  */
-export const VeLayoutGrid = ( { options = [], value, onChange } ) => (
-	<div className="godam-ve-layout-grid">
+export const VeLayoutGrid = ( { options = [], value, onChange, ...rest } ) => (
+	<div className="godam-ve-layout-grid" { ...rest }>
 		{ options.map( ( opt ) => {
 			const ItemIcon = opt.Icon;
 			return (
@@ -294,6 +299,7 @@ export const VeLayoutGrid = ( { options = [], value, onChange } ) => (
 					aria-label={ opt.label }
 					aria-pressed={ value === opt.value }
 					title={ opt.label }
+					data-test-id={ opt.testId }
 					className={ `godam-ve-layout-grid__item${ value === opt.value ? ' is-selected' : '' }` }
 					onClick={ () => onChange?.( opt.value ) }
 				>
@@ -320,8 +326,8 @@ export const VeLayoutGrid = ( { options = [], value, onChange } ) => (
  * @param {Function} props.onChange Receives the chosen value.
  * @return {JSX.Element} Radio group.
  */
-export const VeRadioGroup = ( { name, options = [], value, onChange } ) => (
-	<div className="godam-ve-radio-group" role="radiogroup">
+export const VeRadioGroup = ( { name, options = [], value, onChange, ...rest } ) => (
+	<div className="godam-ve-radio-group" role="radiogroup" { ...rest }>
 		{ options.map( ( opt ) => {
 			const selected = value === opt.value;
 			const optionId = `${ name }-${ opt.value }`;
@@ -339,6 +345,7 @@ export const VeRadioGroup = ( { name, options = [], value, onChange } ) => (
 							value={ opt.value }
 							checked={ selected }
 							disabled={ opt.disabled }
+							data-test-id={ opt.testId }
 							onChange={ () => onChange?.( opt.value ) }
 						/>
 						<span className="godam-ve-radio__text">
@@ -368,10 +375,10 @@ export const VeRadioGroup = ( { name, options = [], value, onChange } ) => (
  * @param {JSX.Element} props.children      Body content.
  * @return {JSX.Element} Collapsible section.
  */
-export const VeCollapsible = ( { title, defaultOpen = true, children } ) => {
+export const VeCollapsible = ( { title, defaultOpen = true, children, ...rest } ) => {
 	const [ open, setOpen ] = useState( defaultOpen );
 	return (
-		<div className={ `godam-ve-collapsible${ open ? ' is-open' : '' }` }>
+		<div className={ `godam-ve-collapsible${ open ? ' is-open' : '' }` } { ...rest }>
 			<button
 				type="button"
 				className="godam-ve-collapsible__head"
@@ -397,6 +404,6 @@ export const VeCollapsible = ( { title, defaultOpen = true, children } ) => {
  * @param {JSX.Element} props.children `ColorPickerButton` rows.
  * @return {JSX.Element} Colour list.
  */
-export const VeColorList = ( { children } ) => (
-	<div className="godam-ve-color-list">{ children }</div>
+export const VeColorList = ( { children, ...rest } ) => (
+	<div className="godam-ve-color-list" { ...rest }>{ children }</div>
 );

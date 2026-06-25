@@ -180,6 +180,7 @@ const AddLayerSubmenuItem = ( { opt, onParentClose } ) => {
 		<div className="godam-ve-add-menu__submenu" ref={ anchorRef }>
 			<MenuItem
 				className="godam-ve-add-menu__item"
+				data-test-id={ `godam-video-editor-control-add-${ opt.key }` }
 				aria-haspopup="menu"
 				aria-expanded={ isSubOpen }
 				onClick={ () => setSubOpen( ( value ) => ! value ) }
@@ -213,6 +214,7 @@ const AddLayerSubmenuItem = ( { opt, onParentClose } ) => {
 							<MenuItem
 								key={ sub.key }
 								className="godam-ve-add-menu__item"
+								data-test-id={ `godam-video-editor-control-add-form-${ sub.key }` }
 								onClick={ () => {
 									sub.onSelect();
 									setSubOpen( false );
@@ -543,6 +545,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 									className="godam-ve-layers__add-button"
 									iconPosition="left"
 									id="add-layer-btn"
+									data-test-id="godam-video-editor-button-add-layer"
 									onClick={ handleToggle }
 									aria-expanded={ menuOpen }
 									disabled={ isAddDisabled }
@@ -578,6 +581,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								const item = (
 									<MenuItem
 										className="godam-ve-add-menu__item"
+										data-test-id={ `godam-video-editor-control-add-${ opt.key }` }
 										disabled={ opt.disabled }
 										onClick={ () => {
 											opt.onSelect?.();

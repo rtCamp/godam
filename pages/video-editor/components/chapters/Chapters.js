@@ -72,7 +72,7 @@ const Chapters = ( { duration, formatTimeForInput, onSelectChapter } ) => {
 	};
 
 	return (
-		<div className="godam-ve-chapters">
+		<div className="godam-ve-chapters" data-test-id="godam-video-editor-panel-chapters">
 			<div className="godam-ve-chapters__head">
 				<h2 className="godam-ve-chapters__title">
 					{ sprintf(
@@ -117,7 +117,7 @@ const Chapters = ( { duration, formatTimeForInput, onSelectChapter } ) => {
 						}
 
 						return (
-							<li key={ row.id } className="godam-ve-chapter-row">
+							<li key={ row.id } className="godam-ve-chapter-row" data-test-id={ `godam-video-editor-element-chapter-${ row.id }` }>
 								<Button
 									className="godam-ve-chapter-row__main"
 									onClick={ () => handleEdit( row ) }
@@ -136,12 +136,14 @@ const Chapters = ( { duration, formatTimeForInput, onSelectChapter } ) => {
 									</span>
 								</Button>
 								<Button
+									data-test-id={ `godam-video-editor-button-edit-chapter-${ row.id }` }
 									className="godam-ve-chapter-row__edit"
 									icon={ edit }
 									label={ __( 'Edit chapter', 'godam' ) }
 									onClick={ () => handleEdit( row ) }
 								/>
 								<Button
+									data-test-id={ `godam-video-editor-button-delete-chapter-${ row.id }` }
 									className="godam-ve-chapter-row__delete"
 									icon={ trash }
 									isDestructive

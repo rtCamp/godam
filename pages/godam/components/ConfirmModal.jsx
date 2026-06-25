@@ -39,6 +39,7 @@ const ConfirmModal = ( {
 	onCancel,
 	isBusy = false,
 	isDestructive = false,
+	...rest
 } ) => {
 	if ( ! isOpen ) {
 		return null;
@@ -71,6 +72,7 @@ const ConfirmModal = ( {
 					isBusy={ isBusy }
 					icon={ isBusy && <Spinner /> }
 					disabled={ isBusy }
+					{ ...rest }
 				>
 					{ confirmLabel }
 				</Button>

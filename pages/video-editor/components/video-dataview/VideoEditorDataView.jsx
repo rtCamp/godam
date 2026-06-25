@@ -113,7 +113,7 @@ const DEFAULT_VIEW = {
  * @param {Function} props.onChange Called with the selected option key.
  * @return {JSX.Element} Dropdown control.
  */
-const ToolbarDropdown = ( { label, options, value, onChange } ) => {
+const ToolbarDropdown = ( { label, options, value, onChange, toggleTestId, itemTestIdPrefix } ) => {
 	const selected = options.find( ( o ) => o.key === value ) || options[ 0 ];
 
 	return (
@@ -124,6 +124,7 @@ const ToolbarDropdown = ( { label, options, value, onChange } ) => {
 			renderToggle={ ( { isOpen, onToggle } ) => (
 				<Button
 					className="godam-ve-toolbar__dropdown-toggle"
+					data-test-id={ toggleTestId }
 					onClick={ onToggle }
 					aria-expanded={ isOpen }
 					aria-label={ label }
@@ -138,6 +139,7 @@ const ToolbarDropdown = ( { label, options, value, onChange } ) => {
 						{ options.map( ( option ) => (
 							<MenuItem
 								key={ option.key }
+								data-test-id={ `${ itemTestIdPrefix }${ option.key }` }
 								role="menuitemradio"
 								isSelected={ option.key === value }
 								icon={ option.key === value ? check : undefined }
@@ -360,7 +362,10 @@ const VideoEditorDataView = ( { onEdit } ) => {
 
 					return (
 						<>
-							<div className="godam-ve-card__media-frame">
+							<div
+								className="godam-ve-card__media-frame"
+								data-test-id={ `godam-video-editor-element-card-${ item.id }` }
+							>
 								<img
 									src={ isFallback ? NoThumbnailImage : item.thumbnail }
 									alt={ item.title || '' }
@@ -376,6 +381,7 @@ const VideoEditorDataView = ( { onEdit } ) => {
 										<Button
 											variant="primary"
 											icon={ editIcon }
+											data-test-id={ `godam-video-editor-button-edit-${ item.id }` }
 											className="godam-ve-card__edit-button"
 											onClick={ ( event ) => {
 												event.stopPropagation();
@@ -489,11 +495,12 @@ const VideoEditorDataView = ( { onEdit } ) => {
 				</a>
 			</div>
 
-			<div className="godam-ve-toolbar">
+			<div className="godam-ve-toolbar" data-test-id="godam-video-editor-toolbar-list">
 				<div className="godam-ve-toolbar__search">
 					<Icon icon={ searchIcon } size={ 20 } />
 					<input
 						type="text"
+						data-test-id="godam-video-editor-control-search"
 						value={ search }
 						placeholder={ __( 'Search', 'godam' ) }
 						onChange={ handleSearchChange }
@@ -507,18 +514,22 @@ const VideoEditorDataView = ( { onEdit } ) => {
 						options={ FILTER_OPTIONS }
 						value={ filter }
 						onChange={ handleFilterChange }
+						toggleTestId="godam-video-editor-button-filter"
+						itemTestIdPrefix="godam-video-editor-control-filter-"
 					/>
 					<ToolbarDropdown
 						label={ __( 'Sort videos', 'godam' ) }
 						options={ SORT_OPTIONS }
 						value={ sortKey }
 						onChange={ handleSortChange }
+						toggleTestId="godam-video-editor-button-sort"
+						itemTestIdPrefix="godam-video-editor-control-sort-"
 					/>
 				</div>
 			</div>
 
 			{ isEmpty ? (
-				<div className="godam-ve-list__empty">
+				<div className="godam-ve-list__empty" data-test-id="godam-video-editor-content-empty">
 					<Icon icon={ mediaIcon } size={ 120 } />
 					<h2>{ __( 'You have no media yet!', 'godam' ) }</h2>
 					<p>
@@ -535,6 +546,7 @@ const VideoEditorDataView = ( { onEdit } ) => {
 				</div>
 			) : (
 				<DataViews
+					data-test-id="godam-video-editor-content-list"
 					data={ items }
 					fields={ fields }
 					view={ view }
@@ -556,7 +568,7 @@ const VideoEditorDataView = ( { onEdit } ) => {
 			{ /* "Showing X of Y" count + manual Load more button. */ }
 			{ items.length > 0 && (
 				<div className="godam-ve-list__loadmore">
-					<p className="godam-ve-list__count">
+					<p className="godam-ve-list__count" data-test-id="godam-video-editor-element-count">
 						{ sprintf(
 							/* translators: 1: number of loaded media items, 2: total media items. */
 							__( 'Showing %1$d of %2$d media items', 'godam' ),
@@ -567,6 +579,7 @@ const VideoEditorDataView = ( { onEdit } ) => {
 					{ hasMore && (
 						<Button
 							variant="secondary"
+							data-test-id="godam-video-editor-button-load-more"
 							className="godam-ve-list__loadmore-button"
 							onClick={ loadMore }
 							isBusy={ fetching }

@@ -119,7 +119,7 @@ const Appearance = ( { attachmentID } ) => {
 	const hasLogo = controlBar.customBrandImg?.length > 0;
 
 	return (
-		<div id="easydam-player-settings" className="godam-ve-settings">
+		<div id="easydam-player-settings" className="godam-ve-settings" data-test-id="godam-video-editor-panel-player-settings">
 			<div className="godam-ve-settings__head">
 				<h2 className="godam-ve-settings__title">{ __( 'Settings', 'godam' ) }</h2>
 			</div>
@@ -128,16 +128,19 @@ const Appearance = ( { attachmentID } ) => {
 
 				<VeSection title={ __( 'Display Settings', 'godam' ) }>
 					<VeToggle
+						data-test-id="godam-video-editor-control-volume"
 						label={ __( 'Show volume slider', 'godam' ) }
 						checked={ controlBar.volumePanel }
 						onChange={ handleVolumeToggle }
 					/>
 					<VeToggle
+						data-test-id="godam-video-editor-control-captions"
 						label={ __( 'Display captions', 'godam' ) }
 						checked={ controlBar.subsCapsButton }
 						onChange={ handleCaptionsToggle }
 					/>
 					<VeCustomSelect
+						data-test-id="godam-video-editor-control-skip-duration"
 						label={ __( 'Adjust Skip Duration', 'godam' ) }
 						help={ __( 'Number of seconds the skip-forward / skip-backward buttons jump.', 'godam' ) }
 						value={ controlBar.skipButtons?.forward?.toString() || '10' }
@@ -153,6 +156,7 @@ const Appearance = ( { attachmentID } ) => {
 				<VeSection title={ __( 'Customisation Settings', 'godam' ) }>
 					{ ! hasLogo ? (
 						<Button
+							data-test-id="godam-video-editor-button-logo"
 							className="godam-ve-media-select"
 							variant="secondary"
 							icon={ plus }
@@ -164,6 +168,7 @@ const Appearance = ( { attachmentID } ) => {
 						<div className="godam-ve-media">
 							<button
 								type="button"
+								data-test-id="godam-video-editor-button-replace-logo"
 								className="godam-ve-media__main"
 								onClick={ openBrandLogoPicker }
 								aria-label={ __( 'Replace logo', 'godam' ) }
@@ -175,7 +180,7 @@ const Appearance = ( { attachmentID } ) => {
 								</span>
 							</button>
 							<Tooltip text={ __( 'Remove logo', 'godam' ) } placement="top">
-								<Button className="godam-ve-media__remove" icon={ trash } isDestructive onClick={ removeBrandLogo } />
+								<Button data-test-id="godam-video-editor-button-remove-logo" className="godam-ve-media__remove" icon={ trash } isDestructive onClick={ removeBrandLogo } />
 							</Tooltip>
 						</div>
 					) }
@@ -207,6 +212,7 @@ const Appearance = ( { attachmentID } ) => {
 
 				<VeSection title={ __( 'Ad Server', 'godam' ) }>
 					<VeToggle
+						data-test-id="godam-video-editor-control-ad-server"
 						label={ __( 'Use ad server\'s ad', 'godam' ) }
 						help={ __( 'Enable this option to use ads from the ad server. This option will disable the ads layer', 'godam' ) }
 						checked={ videoConfig.adServer === 'ad-server' }
@@ -214,6 +220,7 @@ const Appearance = ( { attachmentID } ) => {
 					/>
 					{ videoConfig.adServer === 'ad-server' && (
 						<VeTextInput
+							data-test-id="godam-video-editor-control-ad-tag-url"
 							label={ __( 'Ad Tag URL', 'godam' ) }
 							type="url"
 							value={ videoConfig.adTagURL }

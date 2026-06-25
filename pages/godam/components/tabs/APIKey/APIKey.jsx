@@ -46,6 +46,7 @@ const APIKey = () => {
 								href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=settings` }
 								target="_blank"
 								variant="primary"
+								data-test-id="godam-settings-api-key-button-choose-plan"
 							>
 								{ __( 'Choose GoDAM Plan', 'godam' ) }
 							</Button>
