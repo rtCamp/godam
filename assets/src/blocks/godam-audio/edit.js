@@ -175,6 +175,7 @@ function AudioEdit( {
 										variant="secondary"
 										onClick={ open }
 										className="godam-audio__add-btn"
+										data-test-id="godam-audio-button-select"
 									>
 										{ __( '+ Add Audio File', 'godam' ) }
 									</Button>
@@ -184,7 +185,7 @@ function AudioEdit( {
 					</PanelBody>
 				</InspectorControls>
 
-				<figure { ...blockProps }>
+				<figure { ...blockProps } data-test-id="godam-audio-canvas-placeholder">
 					<div className="godam-audio-empty">
 						<h3 className="godam-audio-empty__title">
 							{ __( 'Add an audio file', 'godam' ) }
@@ -203,6 +204,7 @@ function AudioEdit( {
 										variant="primary"
 										onClick={ open }
 										className="godam-audio-empty__btn"
+										data-test-id="godam-audio-button-upload"
 									>
 										{ __( '+ Upload Audio', 'godam' ) }
 									</Button>
@@ -237,7 +239,7 @@ function AudioEdit( {
 			<InspectorControls>
 
 				{ /* Audio Selection */ }
-				<PanelBody title={ __( 'Audio Selection', 'godam' ) } initialOpen={ true }>
+				<PanelBody title={ __( 'Audio Selection', 'godam' ) } initialOpen={ true } data-test-id="godam-audio-panel-selection">
 					{ fileName && (
 						<div className="godam-audio-file-row">
 							<span className="godam-audio-file-row__icon dashicons dashicons-media-audio" />
@@ -250,6 +252,7 @@ function AudioEdit( {
 								isDestructive
 								size="small"
 								onClick={ onRemoveAudio }
+								data-test-id="godam-audio-button-remove"
 							/>
 						</div>
 					) }
@@ -258,6 +261,7 @@ function AudioEdit( {
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
 						label={ __( 'Audio Title', 'godam' ) }
+						data-test-id="godam-audio-control-title"
 						value={ audioTitle }
 						placeholder={ __( 'Add a title…', 'godam' ) }
 						onChange={ ( value ) => setAttributes( { audioTitle: value } ) }
@@ -266,6 +270,7 @@ function AudioEdit( {
 					<TextareaControl
 						__nextHasNoMarginBottom
 						label={ __( 'Description', 'godam' ) }
+						data-test-id="godam-audio-control-description"
 						value={ description }
 						placeholder={ __( 'Add a short description…', 'godam' ) }
 						rows={ 4 }
@@ -274,7 +279,7 @@ function AudioEdit( {
 				</PanelBody>
 
 				{ /* Thumbnail */ }
-				<PanelBody title={ __( 'Thumbnail', 'godam' ) } initialOpen={ true }>
+				<PanelBody title={ __( 'Thumbnail', 'godam' ) } initialOpen={ true } data-test-id="godam-audio-panel-thumbnail">
 					{ thumbnail ? (
 						<div className="godam-audio-thumbnail-preview">
 							<img src={ thumbnail } alt={ __( 'Audio thumbnail', 'godam' ) } />
@@ -285,7 +290,7 @@ function AudioEdit( {
 										allowedTypes={ ALLOWED_THUMBNAIL_TYPES }
 										value={ thumbnailId }
 										render={ ( { open } ) => (
-											<Button variant="secondary" size="small" onClick={ open }>
+											<Button variant="secondary" size="small" onClick={ open } data-test-id="godam-audio-button-replace-thumbnail">
 												{ __( 'Replace', 'godam' ) }
 											</Button>
 										) }
@@ -296,6 +301,7 @@ function AudioEdit( {
 									size="small"
 									isDestructive
 									onClick={ onRemoveThumbnail }
+									data-test-id="godam-audio-button-remove-thumbnail"
 								>
 									{ __( 'Remove', 'godam' ) }
 								</Button>
@@ -313,6 +319,7 @@ function AudioEdit( {
 										variant="secondary"
 										onClick={ open }
 										className="godam-audio__add-btn"
+										data-test-id="godam-audio-button-upload-thumbnail"
 									>
 										{ __( '+ Upload Image', 'godam' ) }
 									</Button>
@@ -365,7 +372,7 @@ function AudioEdit( {
 			<figure { ...blockProps } data-test-id="godam-audio-canvas">
 				<div className="godam-audio-card">
 					{ /* Thumbnail */ }
-					<div className="godam-audio-card__cover">
+					<div className="godam-audio-card__cover" data-test-id="godam-audio-element-cover">
 						{ thumbnail ? (
 							<img src={ thumbnail } alt={ audioTitle || __( 'Audio thumbnail', 'godam' ) } />
 						) : (
@@ -378,10 +385,10 @@ function AudioEdit( {
 					{ /* Info + player */ }
 					<div className="godam-audio-card__body">
 						{ audioTitle && (
-							<p className="godam-audio-card__title">{ audioTitle }</p>
+							<p className="godam-audio-card__title" data-test-id="godam-audio-element-title">{ audioTitle }</p>
 						) }
 						{ description && (
-							<p className="godam-audio-card__description">{ description }</p>
+							<p className="godam-audio-card__description" data-test-id="godam-audio-element-description">{ description }</p>
 						) }
 						<Disabled isDisabled={ ! isSingleSelected }>
 							<audio controls src={ src ?? temporaryURL } style={ { width: '100%' } } />
