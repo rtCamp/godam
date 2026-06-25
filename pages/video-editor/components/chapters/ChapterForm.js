@@ -59,14 +59,18 @@ const ChapterForm = ( { rows, duration, formatTimeForInput, editingRow, onSubmit
 	let startError = '';
 	let endError = '';
 
-	if ( parsedStart < 0 ) {
+	if ( startInput.trim() !== '' && Number.isNaN( parsedStart ) ) {
+		startError = __( 'Invalid start time format', 'godam' );
+	} else if ( parsedStart < 0 ) {
 		startError = __( 'Start time cannot be negative', 'godam' );
 	} else if ( duration > 0 && parsedStart > duration ) {
 		startError = __( 'Start time exceeds the video duration', 'godam' );
 	}
 
 	if ( ! startError ) {
-		if ( parsedEnd <= parsedStart ) {
+		if ( endInput.trim() !== '' && Number.isNaN( parsedEnd ) ) {
+			endError = __( 'Invalid end time format', 'godam' );
+		} else if ( parsedEnd <= parsedStart ) {
 			endError = __( 'End time must be after the start time', 'godam' );
 		} else if ( duration > 0 && parsedEnd > duration ) {
 			endError = __( 'End time exceeds the video duration', 'godam' );
