@@ -187,6 +187,13 @@ $ve-accent: var(--wp-components-color-accent, var(--wp-admin-theme-color, #5d31f
 				display: block;
 			}
 
+			// Outline layer icons (CTA / Hotspot / Form / Poll) are themed via
+			// `stroke`; filled icons keep the `fill: #fff` above.
+			svg.godam-ve-stroke-icon {
+				fill: none;
+				stroke: currentcolor;
+			}
+
 			img {
 				width: 18px;
 				height: 18px;

@@ -31,42 +31,46 @@ export const ChaptersTabIcon = () => (
 
 // -------------------------------------------------------------
 // Layer-type icons (design-supplied). Rendered as inline SVG via
-// `<Icon icon={...} />`. Each keeps its distinct type colour.
+// `<Icon icon={...} />`. These are STROKE-based outline icons: they
+// carry the `godam-ve-stroke-icon` class and `stroke="currentColor"`,
+// so they are themed via the `stroke` property (with `fill: none`),
+// unlike the filled layer icons (Ad / WooCommerce) which are themed
+// via `fill`. See the `godam-ve-stroke-icon` rules in the SCSS.
 // -------------------------------------------------------------
 
 export const CtaLayerIcon = () => (
-	<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-		<path d="M11.6667 3.41797L10 5.0013" stroke="#9234EA" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-		<path d="M4.24967 6.66471L1.83301 5.99805" stroke="#9234EA" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-		<path d="M5.00033 10L3.41699 11.6667" stroke="#9234EA" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-		<path d="M6 1.83398L6.66667 4.25065" stroke="#9234EA" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-		<path d="M7.53104 8.07521C7.49873 7.99908 7.48989 7.91504 7.50567 7.83387C7.52145 7.75269 7.56112 7.67807 7.6196 7.6196C7.67807 7.56112 7.75269 7.52145 7.83387 7.50567C7.91504 7.48989 7.99908 7.49873 8.07521 7.53104L17.2419 11.281C17.3235 11.3145 17.3923 11.373 17.4385 11.4481C17.4848 11.5232 17.506 11.611 17.4991 11.6989C17.4923 11.7868 17.4577 11.8703 17.4004 11.9373C17.3431 12.0043 17.266 12.0515 17.1802 12.0719L13.556 12.9394C13.4064 12.9751 13.2696 13.0516 13.1608 13.1603C13.0519 13.2689 12.9753 13.4056 12.9394 13.5552L12.0727 17.1802C12.0525 17.2663 12.0055 17.3437 11.9383 17.4013C11.8712 17.4588 11.7876 17.4936 11.6994 17.5004C11.6113 17.5073 11.5232 17.4859 11.448 17.4395C11.3728 17.393 11.3143 17.3238 11.281 17.2419L7.53104 8.07521Z" stroke="#9234EA" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+	<svg className="godam-ve-stroke-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+		<path d="M11.6667 3.41797L10 5.0013" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+		<path d="M4.24967 6.66471L1.83301 5.99805" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+		<path d="M5.00033 10L3.41699 11.6667" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+		<path d="M6 1.83398L6.66667 4.25065" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+		<path d="M7.53104 8.07521C7.49873 7.99908 7.48989 7.91504 7.50567 7.83387C7.52145 7.75269 7.56112 7.67807 7.6196 7.6196C7.67807 7.56112 7.75269 7.52145 7.83387 7.50567C7.91504 7.48989 7.99908 7.49873 8.07521 7.53104L17.2419 11.281C17.3235 11.3145 17.3923 11.373 17.4385 11.4481C17.4848 11.5232 17.506 11.611 17.4991 11.6989C17.4923 11.7868 17.4577 11.8703 17.4004 11.9373C17.3431 12.0043 17.266 12.0515 17.1802 12.0719L13.556 12.9394C13.4064 12.9751 13.2696 13.0516 13.1608 13.1603C13.0519 13.2689 12.9753 13.4056 12.9394 13.5552L12.0727 17.1802C12.0525 17.2663 12.0055 17.3437 11.9383 17.4013C11.8712 17.4588 11.7876 17.4936 11.6994 17.5004C11.6113 17.5073 11.5232 17.4859 11.448 17.4395C11.3728 17.393 11.3143 17.3238 11.281 17.2419L7.53104 8.07521Z" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
 	</svg>
 );
 
 export const HotspotLayerIcon = () => (
-	<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-		<path d="M9.99935 18.3327C14.6017 18.3327 18.3327 14.6017 18.3327 9.99935C18.3327 5.39698 14.6017 1.66602 9.99935 1.66602C5.39698 1.66602 1.66602 5.39698 1.66602 9.99935C1.66602 14.6017 5.39698 18.3327 9.99935 18.3327Z" stroke="#10B77F" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-		<path d="M10 15C12.7614 15 15 12.7614 15 10C15 7.23858 12.7614 5 10 5C7.23858 5 5 7.23858 5 10C5 12.7614 7.23858 15 10 15Z" stroke="#10B77F" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-		<path d="M10.0007 11.6673C10.9211 11.6673 11.6673 10.9211 11.6673 10.0007C11.6673 9.08018 10.9211 8.33398 10.0007 8.33398C9.08018 8.33398 8.33398 9.08018 8.33398 10.0007C8.33398 10.9211 9.08018 11.6673 10.0007 11.6673Z" stroke="#10B77F" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+	<svg className="godam-ve-stroke-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+		<path d="M9.99935 18.3327C14.6017 18.3327 18.3327 14.6017 18.3327 9.99935C18.3327 5.39698 14.6017 1.66602 9.99935 1.66602C5.39698 1.66602 1.66602 5.39698 1.66602 9.99935C1.66602 14.6017 5.39698 18.3327 9.99935 18.3327Z" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+		<path d="M10 15C12.7614 15 15 12.7614 15 10C15 7.23858 12.7614 5 10 5C7.23858 5 5 7.23858 5 10C5 12.7614 7.23858 15 10 15Z" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+		<path d="M10.0007 11.6673C10.9211 11.6673 11.6673 10.9211 11.6673 10.0007C11.6673 9.08018 10.9211 8.33398 10.0007 8.33398C9.08018 8.33398 8.33398 9.08018 8.33398 10.0007C8.33398 10.9211 9.08018 11.6673 10.0007 11.6673Z" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
 	</svg>
 );
 
 export const FormLayerIcon = () => (
-	<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-		<path d="M12.5007 1.66602H5.00065C4.55862 1.66602 4.1347 1.84161 3.82214 2.15417C3.50958 2.46673 3.33398 2.89065 3.33398 3.33268V16.666C3.33398 17.108 3.50958 17.532 3.82214 17.8445C4.1347 18.1571 4.55862 18.3327 5.00065 18.3327H15.0007C15.4427 18.3327 15.8666 18.1571 16.1792 17.8445C16.4917 17.532 16.6673 17.108 16.6673 16.666V5.83268L12.5007 1.66602Z" stroke="#088EAF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-		<path d="M11.666 1.66602V4.99935C11.666 5.44138 11.8416 5.8653 12.1542 6.17786C12.4667 6.49042 12.8907 6.66602 13.3327 6.66602H16.666" stroke="#088EAF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-		<path d="M8.33268 7.5H6.66602" stroke="#088EAF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-		<path d="M13.3327 10.834H6.66602" stroke="#088EAF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-		<path d="M13.3327 14.166H6.66602" stroke="#088EAF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+	<svg className="godam-ve-stroke-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+		<path d="M12.5007 1.66602H5.00065C4.55862 1.66602 4.1347 1.84161 3.82214 2.15417C3.50958 2.46673 3.33398 2.89065 3.33398 3.33268V16.666C3.33398 17.108 3.50958 17.532 3.82214 17.8445C4.1347 18.1571 4.55862 18.3327 5.00065 18.3327H15.0007C15.4427 18.3327 15.8666 18.1571 16.1792 17.8445C16.4917 17.532 16.6673 17.108 16.6673 16.666V5.83268L12.5007 1.66602Z" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+		<path d="M11.666 1.66602V4.99935C11.666 5.44138 11.8416 5.8653 12.1542 6.17786C12.4667 6.49042 12.8907 6.66602 13.3327 6.66602H16.666" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+		<path d="M8.33268 7.5H6.66602" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+		<path d="M13.3327 10.834H6.66602" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+		<path d="M13.3327 14.166H6.66602" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
 	</svg>
 );
 
 export const PollLayerIcon = () => (
-	<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-		<path d="M2.5 2.5V15.8333C2.5 16.2754 2.67559 16.6993 2.98816 17.0118C3.30072 17.3244 3.72464 17.5 4.16667 17.5H17.5" stroke="#E8499E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-		<path d="M15 14.1667V7.5" stroke="#E8499E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-		<path d="M10.832 14.166V4.16602" stroke="#E8499E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-		<path d="M6.66602 14.166V11.666" stroke="#E8499E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+	<svg className="godam-ve-stroke-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+		<path d="M2.5 2.5V15.8333C2.5 16.2754 2.67559 16.6993 2.98816 17.0118C3.30072 17.3244 3.72464 17.5 4.16667 17.5H17.5" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+		<path d="M15 14.1667V7.5" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+		<path d="M10.832 14.166V4.16602" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+		<path d="M6.66602 14.166V11.666" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
 	</svg>
 );
