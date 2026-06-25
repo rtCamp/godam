@@ -10,7 +10,6 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import { ChromeExtensionSvg } from '../assets/svgs';
 import godamLogo from '../../../assets/src/images/godam-logo.png';
 import { hasAPIKey } from '../utils/index.js';
 import './GoDAMHeader.scss';
@@ -89,14 +88,6 @@ const GodamHeader = () => {
 								className="rounded-full godam-button-icon sm:h-10 sm:w-10 [&>svg]:sm:w-7 [&>svg]:sm:h-7"
 								label={ __( 'Need help?', 'godam' ) }
 								icon={ help }
-							/>
-							<Button
-								variant="tertiary"
-								href="https://chromewebstore.google.com/detail/godam-screen-recorder-ann/ojmbobnoagdgblhpbemfamfkcfjdfejl"
-								target="_blank"
-								className="rounded-full godam-button-icon sm:h-10 sm:w-10 [&>svg]:sm:w-6 [&>svg]:sm:h-6"
-								label={ __( 'Install GoDAM Screen Recorder', 'godam' ) }
-								icon={ ChromeExtensionSvg }
 							/>
 						</div>
 						<div className="flex flex-col sm:flex-row md:items-center gap-1 sm:gap-2 md:gap-3">
