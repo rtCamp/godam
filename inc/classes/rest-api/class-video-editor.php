@@ -186,6 +186,13 @@ class Video_Editor extends Base {
 	 * serializes as `"layers";a:<N>:{` with N > 0, and an empty/edited-then-
 	 * cleared one as `"layers";a:0:{`.
 	 *
+	 * Trade-off / scale caveat: the edited/unedited `LIKE`/`NOT LIKE` clauses run
+	 * unindexed full scans of `wp_postmeta` and the serialized signature is brittle
+	 * to any future change in how `rtgodam_meta` is stored (e.g. JSON). On very
+	 * large libraries this filter will get slow; the indexed fix is a dedicated
+	 * boolean meta (e.g. `_rtgodam_has_layers`) written on save plus a one-time
+	 * backfill, which `meta_query` can hit via an index instead of scanning.
+	 *
 	 * @param string $filter One of all|edited|unedited|transcoded|non_transcoded.
 	 * @return array meta_query fragment (empty for 'all').
 	 */

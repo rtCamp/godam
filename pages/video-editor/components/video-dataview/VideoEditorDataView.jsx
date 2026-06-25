@@ -4,10 +4,10 @@
  * Replaces the bespoke AttachmentPicker / MediaGrid / MediaItem stack with a
  * single `@wordpress/dataviews` grid. Data is fetched server-side (paginated /
  * sorted / filtered / searched by the `godam/v1/video-editor/videos` REST
- * endpoint); the component accumulates pages and drives an infinite scroll via
- * an IntersectionObserver sentinel. DataViews' own search / filter / sort /
- * pagination chrome is hidden (see video-dataview.scss) — a custom toolbar
- * drives the query, mirroring the provided design.
+ * endpoint); the component accumulates pages and appends the next page on
+ * demand via a manual "Load more" button (see `loadMore`). DataViews' own
+ * search / filter / sort / pagination chrome is hidden (see video-dataview.scss)
+ * — a custom toolbar drives the query, mirroring the provided design.
  *
  * @package
  */
