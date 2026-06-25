@@ -119,7 +119,7 @@ const ThumbnailSelector = ( { attachmentID } ) => {
 		<div key={ url } className="godam-ve-thumb-tile-wrap">
 			<button
 				type="button"
-				data-test-id={ `godam-video-editor-element-thumbnail-${ index }` }
+				data-test-id={ `godam-video-editor-element-thumbnail-${ isCustom ? 'custom' : 'auto' }-${ index }` }
 				className={ `godam-ve-thumb-tile${ selected === url ? ' is-selected' : '' }` }
 				onClick={ () => selectThumbnail( url ) }
 				aria-pressed={ selected === url }
@@ -133,7 +133,7 @@ const ThumbnailSelector = ( { attachmentID } ) => {
 			{ isCustom && (
 				<button
 					type="button"
-					data-test-id={ `godam-video-editor-button-delete-thumbnail-${ index }` }
+					data-test-id={ `godam-video-editor-button-delete-thumbnail-custom-${ index }` }
 					className="godam-ve-thumb-tile__delete"
 					onClick={ () => deleteCustom( url ) }
 					aria-label={ __( 'Remove custom thumbnail', 'godam' ) }
