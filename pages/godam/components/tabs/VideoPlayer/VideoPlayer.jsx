@@ -427,12 +427,22 @@ const VideoPlayer = () => {
 			<Panel header={ __( 'Branding', 'godam' ) } className="godam-panel godam-margin-bottom">
 				<PanelBody opened>
 					<div className="godam-form-group godam-margin-bottom">
-						<ColorPickerButton
-							label={ __( 'Pulse colour', 'godam' ) }
-							value={ mediaSettings?.video_player?.brand_color }
-							onChange={ ( value ) => handleSettingChange( 'brand_color', value ) }
-							disabled={ isMinimalOrClassic }
-						/>
+						<div className="flex items-center gap-2 flex-wrap">
+							<ColorPickerButton
+								label={ __( 'Brand color', 'godam' ) }
+								value={ mediaSettings?.video_player?.brand_color }
+								onChange={ ( value ) => handleSettingChange( 'brand_color', value ) }
+								disabled={ isMinimalOrClassic }
+							/>
+							{ mediaSettings?.video_player?.brand_color && ! isMinimalOrClassic && (
+								<Button
+									variant="tertiary"
+									onClick={ () => handleSettingChange( 'brand_color', '' ) }
+								>
+									{ __( 'Clear', 'godam' ) }
+								</Button>
+							) }
+						</div>
 
 						{ isMinimalOrClassic ? (
 							<div className="flex items-center gap-2 mt-1">
