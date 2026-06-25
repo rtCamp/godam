@@ -73,7 +73,7 @@ $godam_file_name = basename( $godam_sources[0] );
 		}
 		?>
 
-		<div class="godam-pdf-card-wrapper">
+		<div class="godam-pdf-card-wrapper" data-test-id="godam-pdf-render-card">
 			<a
 				class="godam-pdf-card"
 				href="<?php echo esc_url( $godam_sources[0] ); ?>"
@@ -142,6 +142,7 @@ $godam_file_name = basename( $godam_sources[0] );
 
 		<div
 			class="godam-pdf-wrapper"
+			data-test-id="godam-pdf-render"
 			style="height: <?php echo esc_attr( $godam_height ); ?>px;"
 		>
 			<object
