@@ -21,6 +21,218 @@
 		width: 100%;
 	}
 
+	// ── Video Selection panel ─────────────────────────────────────────────────
+
+	&__panel-hint {
+		font-size: 12px;
+		color: var(--wp-components-color-foreground-muted, #757575);
+		margin: 0 0 12px;
+	}
+
+	&__video-list {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		margin-bottom: 12px;
+	}
+
+	&__video-item {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 6px 4px;
+		border-radius: 4px;
+		background: #fff;
+		border: 1px solid #e0e0e0;
+
+		&:hover {
+			border-color: #b0b0b0;
+		}
+	}
+
+	&__drag-handle {
+		flex: 0 0 18px;
+		color: #999;
+		cursor: grab;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		touch-action: none;
+
+		&:active {
+			cursor: grabbing;
+		}
+	}
+
+	&__video-item.is-dragging {
+		opacity: 0.4;
+	}
+
+	// DragOverlay ghost card
+	.godam-gallery-v2__video-item[data-dnd-overlay] {
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		border-color: var(--wp-admin-theme-color, #007cba);
+		background: #f0f7fb;
+		opacity: 1;
+		cursor: grabbing;
+	}
+
+	&__video-thumb-wrap {
+		flex: 0 0 44px;
+		height: 44px;
+		border-radius: 4px;
+		overflow: hidden;
+		background: #f0f0f0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	&__video-thumb {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	&__video-thumb-fallback {
+		font-size: 22px;
+		color: #999;
+	}
+
+	&__video-meta {
+		flex: 1 1 auto;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	&__video-name {
+		font-size: 12px;
+		font-weight: 500;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		color: var(--wp-components-color-foreground, #1e1e1e);
+	}
+
+	&__video-date {
+		font-size: 11px;
+		color: var(--wp-components-color-foreground-muted, #757575);
+	}
+
+	&__add-video-btn {
+		width: 100%;
+		justify-content: center;
+	}
+
+	// ── Interaction panel custom radio group ──────────────────────────────────
+
+	&__radio-group {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		margin-bottom: 16px;
+	}
+
+	&__radio-option {
+		display: flex;
+		align-items: flex-start;
+		gap: 10px;
+		padding: 10px 12px;
+		border-radius: 6px;
+		border: 1px solid #e0e0e0;
+		cursor: pointer;
+		transition: border-color 0.15s ease, background 0.15s ease;
+
+		input[type="radio"] {
+			flex: 0 0 auto;
+			margin-top: 2px;
+			cursor: pointer;
+		}
+
+		&:has(input:checked) {
+			border-color: var(--wp-admin-theme-color, #007cba);
+			background: #f0f7fb;
+		}
+
+		&:hover:not(:has(input:checked)) {
+			border-color: #b0b0b0;
+			background: #fafafa;
+		}
+	}
+
+	&__radio-content {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	&__radio-label {
+		font-size: 13px;
+		font-weight: 500;
+		color: var(--wp-components-color-foreground, #1e1e1e);
+		line-height: 1.4;
+	}
+
+	&__radio-hint {
+		font-size: 11px;
+		color: var(--wp-components-color-foreground-muted, #757575);
+		line-height: 1.4;
+	}
+
+	// ── Empty state (handpicked, no videos selected) ──────────────────────────
+
+	&__empty-state {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		padding: 24px 16px;
+	}
+
+	&__empty-tiles {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 12px;
+		width: 100%;
+		margin-bottom: 24px;
+		background: #F2F2FF;
+		border-radius: 8px;
+		padding: 46px;
+	}
+
+	&__empty-tile {
+		aspect-ratio: 4 / 3;
+		border-radius: 6px;
+		background: #fbfbfb;
+		box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.06);
+	}
+
+	&__empty-heading {
+		font-size: 15px;
+		font-weight: 600;
+		color: var(--wp-components-color-foreground, #1e1e1e);
+		margin: 0 0 8px;
+	}
+
+	&__empty-desc {
+		font-size: 13px;
+		color: var(--wp-components-color-foreground-muted, #757575);
+		margin: 0 0 16px;
+	}
+
+	&__empty-btn {
+		padding: 8px 18px;
+		letter-spacing: 1px;
+	}
+
+	// InnerBlocks always mounted but hidden when no videos exist
+	// so the block tree stays properly registered.
+	&__inner-blocks-mount {
+		display: none;
+	}
+
 	&__state--loading {
 		display: flex;
 		align-items: center;
@@ -32,6 +244,15 @@
 		position: initial;
 		width: 100%;
 	}
+}
+
+.godam-gallery-v2__canvas {
+	width: 90%;
+	margin: 12px auto;
+	background: #F2F2FF;
+	border: 4px dotted #5A13D51A;
+	padding: 30px;
+	border-radius: 6px;
 }
 
 .godam-gallery-v2__canvas--list {

@@ -24,21 +24,12 @@ import { Icon } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { layerTypes, FORM_PLUGIN_META } from '../../utils/layerTypes';
+import { layerTypes, FORM_PLUGIN_META, LAYER_TYPE_COLORS } from '../../utils/layerTypes';
 import { setCurrentLayer, setAddLayerModalTime, updateLayerField } from '../../redux/slice/videoSlice';
 
 // Timeline accent — mirrors the rest of the editor (uses the live WordPress
 // admin theme colour, falling back to the GoDAM purple from the design).
 const TIMELINE_ACCENT = 'var(--wp-components-color-accent, var(--wp-admin-theme-color, #5d31ff))';
-
-// Per-type marker colour. Types without an entry (incl. add-on layers) fall
-// back to the accent — matching the indigo hotspot chip in the design.
-const LAYER_MARKER_COLORS = {
-	cta: '#d98c1a',
-	ad: '#9b51e0',
-	form: '#2d9cdb',
-	poll: '#ab3a6c',
-};
 
 /**
  * Shopping-cart glyph (white line art) for commerce layer markers.
@@ -345,7 +336,7 @@ const Slider = ( props ) => {
 
 						const layerType = layerTypes.find( ( type ) => type.type === layer.type );
 						const isActive = layer.id === currentLayerID;
-						const markerColor = LAYER_MARKER_COLORS[ layer.type ] || TIMELINE_ACCENT;
+						const markerColor = LAYER_TYPE_COLORS[ layer.type ] || TIMELINE_ACCENT;
 						// Form layers resolve to their specific plugin (icon + name) so the
 						// chip shows e.g. "WPForms" with the WPForms logo on a white chip.
 						const formMeta = layer.type === 'form' ? FORM_PLUGIN_META[ layer.form_type ] : null;
@@ -449,13 +440,11 @@ const Slider = ( props ) => {
 						// (no endTime) falls back to the next chapter's start, or the
 						// video end for the last one.
 						const nextChapter = sortedChapters[ index + 1 ];
-						let chapterEnd;
 						let endLabel;
 						if ( chapter.endTime !== undefined && chapter.endTime !== null && chapter.endTime !== '' ) {
-							chapterEnd = parseFloat( chapter.endTime );
-							endLabel = chapter.originalEndTime || formatTimeForInput( chapterEnd );
+							const parsedEndTime = parseFloat( chapter.endTime );
+							endLabel = chapter.originalEndTime || formatTimeForInput( parsedEndTime );
 						} else {
-							chapterEnd = nextChapter ? ( parseFloat( nextChapter.startTime ) || 0 ) : max;
 							endLabel = nextChapter ? nextChapter.originalTime : formatTimeForInput( max );
 						}
 

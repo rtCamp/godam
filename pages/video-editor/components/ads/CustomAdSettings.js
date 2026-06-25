@@ -6,16 +6,29 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, TextControl, ToggleControl, Notice, Tooltip } from '@wordpress/components';
+import { Button, Notice, Tooltip } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect } from 'react';
+import { plus, trash } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
 import { isValidURL } from '../../utils';
-import { replace, trash } from '@wordpress/icons';
+import { VeSection, VeTextInput, VeToggle } from '../controls';
+
+/**
+ * Format a whole-second duration as m:ss.
+ *
+ * @param {number} totalSeconds Duration in seconds.
+ * @return {string} Formatted duration.
+ */
+const formatDuration = ( totalSeconds ) => {
+	const secs = Math.max( 0, Math.floor( Number( totalSeconds ) || 0 ) );
+	const mins = Math.floor( secs / 60 );
+	const rem = secs % 60;
+	return `${ mins }:${ rem < 10 ? '0' : '' }${ rem }`;
+};
 
 const CustomAdSettings = ( { layerID } ) => {
 	const layer = useSelector( ( state ) =>
@@ -23,8 +36,12 @@ const CustomAdSettings = ( { layerID } ) => {
 	);
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
 	const adServer = videoConfig?.adServer ?? 'self-hosted';
-	const [ isValid, setIsValid ] = useState( true );
+	const isAdServer = adServer === 'ad-server';
 	const dispatch = useDispatch();
+
+	// Click link is valid unless it is non-empty and not a URL (mirrors the
+	// inline validation on the CTA button link / hotspot link).
+	const linkInvalid = Boolean( layer?.click_link ) && ! isValidURL( layer.click_link );
 
 	/**
 	 * Convert duration from minute:seconds format to total seconds
@@ -128,14 +145,7 @@ const CustomAdSettings = ( { layerID } ) => {
 		fileFrame.open();
 	};
 
-	// Validate URL on component load
-	useEffect( () => {
-		if ( layer?.click_link && ! isValidURL( layer.click_link ) ) {
-			setIsValid( false );
-		}
-	}, [] );
-
-	const handleChange = ( value ) => {
+	const handleLinkChange = ( value ) => {
 		dispatch(
 			updateLayerField( {
 				id: layer.id,
@@ -143,103 +153,126 @@ const CustomAdSettings = ( { layerID } ) => {
 				value,
 			} ),
 		);
-
-		const valid = isValidURL( value );
-		setIsValid( valid );
 	};
 
+	// Friendly file name + duration shown on the media card.
+	const adFileName = layer?.ad_url
+		? decodeURIComponent( layer.ad_url.split( '/' ).pop().split( '?' )[ 0 ] ) || __( 'Ad video', 'godam' )
+		: '';
+	const adDurationLabel = layer?.ad_duration ? formatDuration( layer.ad_duration ) : '';
+
 	return (
-		<div className="relative">
+		<>
+			{ isAdServer && (
+				<VeSection>
+					<Notice status="warning" isDismissible={ false }>
+						{ __( 'This ad will be overridden by the Ad server\'s ads.', 'godam' ) }
+					</Notice>
+				</VeSection>
+			) }
 
-			{
-				adServer === 'ad-server' &&
-				<Notice
-					className="mb-4"
-					status="warning"
-					isDismissible={ false }
-				>
-					{ __( 'This ad will be overridden by Ad server\'s ads', 'godam' ) }
-				</Notice>
-			}
-			<div className="flex flex-col items-start mb-4">
-				<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mt-2 godam-input-label">{ __( 'Custom Ad', 'godam' ) }</label>
-				<div className="flex gap-2">
-					{ ! layer?.ad_url && ( <Button
-						__nextHasNoMarginBottom
-						className="mb-2"
-						variant="primary"
-						onClick={ () => OpenVideoSelector() }
-						disabled={ adServer === 'ad-server' }
-						data-test-id="godam-ad-button-select-video"
-					>{ __( 'Select Ad video', 'godam' ) }</Button> ) }
-				</div>
+			{ /* Ad video: select, then click the card to replace or trash to remove. */ }
+			<VeSection title={ __( 'Ad Video', 'godam' ) }>
+				{ ! layer?.ad_url && (
+					<>
+						<Button
+							className="godam-ve-media-select"
+							variant="secondary"
+							icon={ plus }
+							onClick={ OpenVideoSelector }
+							disabled={ isAdServer }
+							data-test-id="godam-ad-button-select-video"
+						>
+							{ __( 'Select Ad Video', 'godam' ) }
+						</Button>
+						<p className="godam-ve-media-hint">
+							{ __( 'Upload or choose a self-hosted video (MP4 recommended).', 'godam' ) }
+						</p>
+					</>
+				) }
+
 				{ layer?.ad_url && (
-					<div className="flex mt-3">
-						<div className={ `sidebar-video-container rounded-xl overflow-scroll ${ adServer === 'ad-server' ? 'disabled-video' : '' }` }>
-							<video
-								src={ layer.ad_url }
-								controls={ adServer !== 'ad-server' }
+					<div className="godam-ve-media">
+						<Tooltip text={ __( 'Click to replace video', 'godam' ) } placement="top">
+							<button
+								type="button"
+								className="godam-ve-media__main"
+								onClick={ OpenVideoSelector }
+								aria-label={ __( 'Replace ad video', 'godam' ) }
+								disabled={ isAdServer }
+								data-test-id="godam-ad-button-replace-video"
+							>
+								<video
+									src={ layer.ad_url }
+									className="godam-ve-media__thumb"
+									muted
+									preload="metadata"
+								/>
+								<span className="godam-ve-media__meta">
+									<span className="godam-ve-media__name">{ adFileName }</span>
+									{ adDurationLabel && (
+										<span className="godam-ve-media__size">{ adDurationLabel }</span>
+									) }
+								</span>
+							</button>
+						</Tooltip>
+						<Tooltip text={ __( 'Remove video', 'godam' ) } placement="top">
+							<Button
+								className="godam-ve-media__remove"
+								icon={ trash }
+								isDestructive
+								onClick={ () => dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: '' } ) ) }
+								disabled={ isAdServer }
+								data-test-id="godam-ad-button-remove-video"
 							/>
-							{ ( adServer === 'ad-server' ) && <div className="video-overlay" /> }
-						</div>
-						<div className="ml-[6px] flex flex-col">
-							<Tooltip text={ __( 'Replace Ad Video', 'godam' ) } placement="right">
-								<Button className="!text-brand-neutral-900" icon={ replace } onClick={ OpenVideoSelector } disabled={ adServer === 'ad-server' } data-test-id="godam-ad-button-replace-video" />
-							</Tooltip>
-							<Tooltip text={ __( 'Remove Ad Video', 'godam' ) } placement="right">
-								<Button className="mt-1" icon={ trash } isDestructive onClick={ () => dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: '' } ) ) } disabled={ adServer === 'ad-server' } data-test-id="godam-ad-button-remove-video" />
-							</Tooltip>
-						</div>
+						</Tooltip>
 					</div>
 				) }
-			</div>
+			</VeSection>
 
-			<div data-test-id="godam-ad-control-skippable">
-				<ToggleControl
-					__nextHasNoMarginBottom
-					className="mb-4"
-					label={ __( 'Skippable', 'godam' ) }
-					checked={ layer?.skippable ?? false }
-					onChange={ ( value ) =>
-						dispatch( updateLayerField( { id: layer.id, field: 'skippable', value } ) )
-					}
-					help={ __( 'Allow user to skip ad', 'godam' ) }
-					disabled={ adServer === 'ad-server' }
-				/>
-			</div>
-			{
-				layer?.skippable &&
-				<TextControl
-					label={ __( 'Skip time', 'godam' ) }
-					data-test-id="godam-ad-control-skip-time"
-					help={ __( 'Time in seconds after which the skip button will appear', 'godam' ) }
-					value={ layer?.skip_offset }
-					className="mb-4"
-					onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'skip_offset', value } ) ) }
-					type="number"
-					min="0"
-					disabled={ adServer === 'ad-server' }
-				/>
-			}
+			{ /* Playback: skip behaviour. */ }
+			<VeSection title={ __( 'Playback', 'godam' ) }>
+				<div data-test-id="godam-ad-control-skippable">
+					<VeToggle
+						label={ __( 'Skippable', 'godam' ) }
+						help={ __( 'Allow viewers to skip the ad', 'godam' ) }
+						checked={ layer?.skippable ?? false }
+						onChange={ ( value ) =>
+							dispatch( updateLayerField( { id: layer.id, field: 'skippable', value } ) )
+						}
+						disabled={ isAdServer }
+					/>
+				</div>
 
-			<div className="mb-4">
-				<TextControl
+				{ layer?.skippable && (
+					<VeTextInput
+						label={ __( 'Skip after (seconds)', 'godam' ) }
+						help={ __( 'Time in seconds before the skip button appears', 'godam' ) }
+						type="number"
+						min="0"
+						value={ layer?.skip_offset ?? '' }
+						onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'skip_offset', value } ) ) }
+						disabled={ isAdServer }
+						data-test-id="godam-ad-control-skip-time"
+					/>
+				) }
+			</VeSection>
+
+			{ /* Click-through link with inline URL validation. */ }
+			<VeSection title={ __( 'Click-through', 'godam' ) }>
+				<VeTextInput
 					label={ __( 'Click link', 'godam' ) }
-					data-test-id="godam-ad-control-link"
-					placeholder="https://example"
-					help={ __( 'Enter the URL to redirect when the ad is clicked', 'godam' ) }
-					value={ layer?.click_link }
-					onChange={ handleChange }
-					disabled={ adServer === 'ad-server' }
 					type="url"
+					placeholder="https://example.com"
+					help={ __( 'URL to open when the ad is clicked', 'godam' ) }
+					error={ linkInvalid ? __( 'Please enter a valid URL (e.g., https://example.com)', 'godam' ) : '' }
+					value={ layer?.click_link ?? '' }
+					onChange={ handleLinkChange }
+					disabled={ isAdServer }
+					data-test-id="godam-ad-control-link"
 				/>
-				{ ! isValid && (
-					<div className="text-yellow-600 text-sm -mt-2 flex items-center gap-1">
-						{ __( 'Please enter a valid URL (e.g., https://example.com)', 'godam' ) }
-					</div>
-				) }
-			</div>
-		</div>
+			</VeSection>
+		</>
 	);
 };
 

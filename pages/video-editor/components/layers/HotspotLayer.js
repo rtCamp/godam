@@ -33,14 +33,35 @@ import LayerControls from '../LayerControls';
 import FontAwesomeIconPicker from '../hotspot/FontAwesomeIconPicker';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import LayersHeader from './LayersHeader';
 import { HOTSPOT_CONSTANTS } from '../../../../assets/src/js/godam-player/utils/constants';
 import { resolveHotspotStyle, DEFAULT_HOTSPOT_COLOR } from '../../../../assets/src/js/godam-player/utils/hotspotStyle';
 import { VeSection, VeColorList, VeSegmented, VeTextInput, VeToggle } from '../controls';
 
+/**
+ * Small purple pulse-dot glyph for the Style segmented control, matching the
+ * WooCommerce hotspot layer's "Pulse" option.
+ *
+ * @return {JSX.Element} The pulse-dot icon.
+ */
+const PulseDotIcon = () => (
+	<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+		<circle cx="9" cy="9" r="4" fill="#7c3aed" />
+		<circle cx="9" cy="9" r="7.5" stroke="#7c3aed" strokeWidth="1.5" strokeOpacity="0.35" />
+	</svg>
+);
+
+const CartIconOption = () => (
+	<FontAwesomeIcon icon={ faShoppingCart } style={ { fontSize: '1rem' } } />
+);
+
+// Icon-on-top segmented cards, matching the WooCommerce hotspot layer's Style
+// field. Woo uses a cart for its "Icon" option (product-specific); a generic
+// hotspot uses a map-marker glyph instead.
 const STYLE_OPTIONS = [
-	{ value: 'pulse', label: __( 'Pulse dot', 'godam' ), description: __( 'A pulsing coloured dot', 'godam' ) },
-	{ value: 'icon', label: __( 'Icon', 'godam' ), description: __( 'A library or custom icon', 'godam' ) },
+	{ value: 'pulse', label: __( 'Pulse', 'godam' ), icon: <PulseDotIcon /> },
+	{ value: 'icon', label: __( 'Icon', 'godam' ), icon: <CartIconOption /> },
 ];
 
 const HotspotLayer = ( { layerID, goBack, duration } ) => {

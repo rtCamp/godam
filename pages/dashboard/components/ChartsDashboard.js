@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import { formatNumber, formatWatchTime } from '../../utils/formatters';
+import { formatWatchTime } from '../../utils/formatters';
 
 export function generateUsageDonutChart( selector, usedRaw, totalRaw, type = 'bandwidth', label = 'Used' ) {
 	const used = parseFloat( usedRaw ) || 0;
@@ -47,13 +47,17 @@ export function generateUsageDonutChart( selector, usedRaw, totalRaw, type = 'ba
 			.attr( 'x2', '100%' )
 			.attr( 'y2', '0%' );
 
+		// GoDAM 2.0: storage gradient follows the active WP admin colour scheme.
+		const accent = getComputedStyle( document.body ).getPropertyValue( '--wp-admin-theme-color' ).trim() || '#ab3a6c';
+		const accentDark = getComputedStyle( document.body ).getPropertyValue( '--wp-admin-theme-color-darker-20' ).trim() || accent;
+
 		gradient.append( 'stop' )
 			.attr( 'offset', '0%' )
-			.attr( 'stop-color', '#AB3A6C' );
+			.attr( 'stop-color', accent );
 
 		gradient.append( 'stop' )
 			.attr( 'offset', '100%' )
-			.attr( 'stop-color', '#E6533A' );
+			.attr( 'stop-color', accentDark );
 	}
 
 	const fillColor = ( d ) => {
@@ -153,13 +157,13 @@ function main() {
 		page_load: pageLoad,
 		play_time: playTime,
 		total_videos: totalVideos,
+		avg_engagement: avgEngagement,
 	} = dashboardMetrics;
 
 	const totalVideosEl = document.getElementById( 'total-videos' );
 	if ( totalVideosEl ) {
-		const formattedVideos = formatNumber( totalVideos ?? 0 );
-		totalVideosEl.innerText = formattedVideos;
-		totalVideosEl.setAttribute( 'title', ( totalVideos ?? 0 ).toLocaleString() );
+		// Full numbers, no hover tooltip (Figma review: Riya, 2026-06-18).
+		totalVideosEl.innerText = ( totalVideos ?? 0 ).toLocaleString();
 	}
 
 	const playRate = pageLoad ? ( plays / pageLoad ) * 100 : 0;
@@ -171,16 +175,18 @@ function main() {
 
 	const playsEl = document.getElementById( 'plays' );
 	if ( playsEl ) {
-		const formattedPlays = formatNumber( plays ?? 0 );
-		playsEl.innerText = formattedPlays;
-		playsEl.setAttribute( 'title', ( plays ?? 0 ).toLocaleString() );
+		playsEl.innerText = ( plays ?? 0 ).toLocaleString();
 	}
 
 	const watchTimeEl = document.getElementById( 'watch-time' );
 	if ( watchTimeEl ) {
-		const formattedTime = formatWatchTime( playTime );
-		watchTimeEl.innerText = formattedTime;
-		watchTimeEl.setAttribute( 'title', `${ playTime?.toFixed( 2 ) }s` );
+		// Watch time stays in h m s format; no exact-seconds hover tooltip.
+		watchTimeEl.innerText = formatWatchTime( playTime );
+	}
+
+	const engagementEl = document.getElementById( 'engagement-rate' );
+	if ( engagementEl ) {
+		engagementEl.innerText = `${ ( avgEngagement ?? 0 ).toFixed( 2 ) }%`;
 	}
 
 	const analyticsContainer = document.getElementById( 'video-analytics-container' );

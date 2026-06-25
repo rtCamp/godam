@@ -95,6 +95,16 @@ $media-frame-width: calc(300px + 2 * 24px);
 	left: $media-frame-width;
 }
 
+// GoDAM 2.0: the analytics surface (dashboard + per-video analytics) follows
+// the user's WP admin colour scheme; the rest of the plugin keeps the brand
+// pink for now (migrated in a later phase). Capture the real scheme accent on
+// the analytics page bodies *before* the brand pink is applied below, so we can
+// restore it once .godam-admin-root has overridden --wp-admin-theme-color.
+.toplevel_page_rtgodam,
+.godam_page_rtgodam_analytics {
+	--godam-scheme-accent: var(--wp-admin-theme-color);
+}
+
 /* Style for GoDAM admin pages container */
 .godam-admin-root {
 	margin-left: -20px;
@@ -118,6 +128,28 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 	#root-video-help {
 		margin-left: 20px;
+	}
+}
+
+// Analytics surface (dashboard + per-video analytics) opts back into the WP
+// admin colour scheme. Higher specificity than the base .godam-admin-root rule
+// and placed after it, so it wins without descending-specificity churn.
+.toplevel_page_rtgodam .godam-admin-root,
+.godam_page_rtgodam_analytics .godam-admin-root {
+	--wp-admin-theme-color: var(--godam-scheme-accent);
+
+	button,
+	a,
+	input {
+
+		&:not(.is-destructive) {
+			--wp-components-color-accent: var(--godam-scheme-accent);
+			// Fall back to the captured scheme accent when the admin scheme
+			// doesn't define darker shades, so hover/active never reverts to the
+			// pinned brand pink (mirrors the guard in godam-for-woo #152).
+			--wp-components-color-accent-darker-10: var(--wp-admin-theme-color-darker-10, var(--godam-scheme-accent));
+			--wp-components-color-accent-darker-20: var(--wp-admin-theme-color-darker-20, var(--godam-scheme-accent));
+		}
 	}
 }
 

@@ -14,7 +14,6 @@ import { __, sprintf } from '@wordpress/i18n';
 import {
 	LAYER_TYPE_BY_ID,
 	actionLabel,
-	withAlpha,
 } from '../constants/layerTypes';
 import InfoTooltip from './InfoTooltip';
 
@@ -95,32 +94,21 @@ function actionIcon( actionKey ) {
 }
 
 /**
- * Tone — how each bar relates to the layer's accent color. Viewed sits at
- * full opacity (the denominator), the conversion-side actions step through
- * lighter opacities, and No Action sits in muted grey so it reads as "the
- * leftover," not as engagement.
+ * Admin-theme shade for the bar at position `idx` of `count` bars: the first
+ * bar (Viewed) sits at the full accent and each subsequent bar steps lighter,
+ * down to a legibility floor. Monochrome shades of the WP admin scheme accent
+ * (`--wp-admin-theme-color`, captured on the analytics surface) — the bars
+ * carry the data, while the per-layer-type colour stays on the icon/marker
+ * for identity.
  *
- * @param {string} actionKey Funnel position id.
- * @return {{ fillAlpha: number, useGrey: boolean }} Visual descriptor.
+ * @param {number} idx   Bar position (0-based, in display order).
+ * @param {number} count Total bars for this layer type.
+ * @return {string} A `color-mix()` value usable as a CSS background.
  */
-function toneFor( actionKey ) {
-	switch ( actionKey ) {
-		case 'viewed':
-			return { fillAlpha: 1.0, useGrey: false };
-		case 'hovered':
-		case 'submitted':
-		case 'voted':
-			return { fillAlpha: 0.72, useGrey: false };
-		case 'clicked':
-			return { fillAlpha: 0.5, useGrey: false };
-		case 'added_to_cart':
-			return { fillAlpha: 0.36, useGrey: false };
-		case 'skipped':
-			return { fillAlpha: 0.55, useGrey: true };
-		case 'no_action':
-		default:
-			return { fillAlpha: 1.0, useGrey: true };
-	}
+function barShade( idx, count ) {
+	const t = count > 1 ? idx / ( count - 1 ) : 0; // 0 (first) → 1 (last)
+	const mix = Math.round( 100 - ( t * 80 ) ); // base accent (100%) → lightest (20%)
+	return `color-mix(in srgb, var(--wp-admin-theme-color, #ab3a6c) ${ mix }%, white)`;
 }
 
 /**
@@ -224,10 +212,8 @@ const LayerInteractionFunnel = ( { layerType, counts, noAction } ) => {
 						} }
 					>
 						{ bars.map( ( bar, idx ) => {
-							const tone = toneFor( bar.action );
 							const heightPct = Math.max( bar.pct, bar.value > 0 ? 4 : 0 );
-							const color = tone.useGrey ? '#94A3B8' : meta.color;
-							const background = withAlpha( color, tone.fillAlpha );
+							const background = barShade( idx, bars.length );
 							let ariaLabel;
 							if ( bar.action === 'no_action' ) {
 								ariaLabel = sprintf(
@@ -277,8 +263,6 @@ const LayerInteractionFunnel = ( { layerType, counts, noAction } ) => {
 						} }
 					>
 						{ bars.map( ( bar ) => {
-							const tone = toneFor( bar.action );
-							const color = tone.useGrey ? '#475569' : meta.color;
 							return (
 								<div
 									key={ bar.action }
@@ -286,7 +270,7 @@ const LayerInteractionFunnel = ( { layerType, counts, noAction } ) => {
 								>
 									<p
 										className="text-lg font-semibold m-0"
-										style={ { color } }
+										style={ { color: 'var(--wp-admin-theme-color, #ab3a6c)' } }
 									>
 										{ bar.pct.toFixed( 1 ) }%
 									</p>

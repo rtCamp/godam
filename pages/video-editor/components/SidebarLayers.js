@@ -19,6 +19,7 @@ import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
 import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
 import MetformIcon from '../assets/layers/MetFormIcon.png';
 import { CtaLayerIcon, HotspotLayerIcon, FormLayerIcon, PollLayerIcon } from './editor-shell/icons';
+import { LAYER_TYPE_COLORS } from '../utils/layerTypes';
 
 /**
  * WordPress dependencies
@@ -131,6 +132,35 @@ export const layerTypes = [
 ];
 
 /**
+ * Build the default display name for a layer, e.g. "CTA Layer", "Hotspot Layer",
+ * "Gravity Forms Layer". The label is pulled from the layer-type registry above
+ * (including add-on layers merged via `godamVideoEditorConfig`) so it stays in
+ * sync with the Add-layer menu. Returns `''` for unknown types.
+ *
+ * @param {string} type       Layer type (e.g. 'cta', 'hotspot', 'form').
+ * @param {string} [formType] Form integration key for `form` layers (e.g. 'gravity').
+ * @return {string} The default layer name.
+ */
+export const getDefaultLayerName = ( type, formType ) => {
+	const data = layerTypes.find( ( l ) => l.type === type );
+	const label = (
+		'form' === type
+			? data?.formType?.[ formType || 'gravity' ]?.layerText
+			: ( data?.layerText || data?.title )
+	) || '';
+
+	if ( ! label ) {
+		return '';
+	}
+
+	return sprintf(
+		/* translators: %s is the layer type label; e.g. "CTA" produces "CTA Layer". */
+		__( '%s Layer', 'godam' ),
+		label,
+	);
+};
+
+/**
  * A submenu item for the "Add layer" menu (e.g. Form) that opens a side Popover
  * listing the choices. The trigger is a real MenuItem button inside a plain
  * wrapper (no tabindex), so it is keyboard-navigable within the parent
@@ -154,7 +184,10 @@ const AddLayerSubmenuItem = ( { opt, onParentClose } ) => {
 				aria-expanded={ isSubOpen }
 				onClick={ () => setSubOpen( ( value ) => ! value ) }
 			>
-				<span className="godam-ve-add-menu__icon">
+				<span
+					className="godam-ve-add-menu__icon"
+					style={ { '--godam-layer-color': LAYER_TYPE_COLORS[ opt.key ] } }
+				>
 					{ opt.iconUrl
 						? <img src={ opt.iconUrl } alt="" />
 						: <Icon icon={ opt.iconComponent } /> }
@@ -269,7 +302,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					id: uuidv4(),
 					displayTime: addTime,
 					type,
-					name: '',
+					name: getDefaultLayerName( type, formType ),
 					form_type: formType || 'gravity',
 					submitted: false,
 					allow_skip: true,
@@ -282,7 +315,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					id: uuidv4(),
 					displayTime: addTime,
 					type,
-					name: '',
+					name: getDefaultLayerName( type ),
 					cta_type: 'image',
 					cardLayout: 'card-layout--imagecover-text',
 					trigger: 'timestamp',
@@ -298,7 +331,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 						id: uuidv4(),
 						displayTime: addTime,
 						type,
-						name: '',
+						name: getDefaultLayerName( type ),
 						duration: 5,
 						pauseOnHover: false,
 						hotspots: [],
@@ -321,7 +354,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					id: uuidv4(),
 					displayTime: addTime,
 					type,
-					name: '',
+					name: getDefaultLayerName( type ),
 					adTagUrl: '',
 					ad_url: '',
 					skippable: false,
@@ -333,7 +366,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					id: uuidv4(),
 					displayTime: addTime,
 					type,
-					name: '',
+					name: getDefaultLayerName( type ),
 					poll_id: '',
 					allow_skip: true,
 					custom_css: '',
@@ -345,7 +378,10 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 				if ( addonCreator ) {
 					const layerData = addonCreator( { layers, currentTime: addTime, type } );
 					if ( layerData ) {
-						dispatch( addLayer( { ...layerData, id: uuidv4() } ) );
+						// Seed a registry-derived default name; the add-on creator can
+						// override it by returning its own `name` (e.g. the WooCommerce
+						// layer names itself "Product Hotspot Layer").
+						dispatch( addLayer( { name: getDefaultLayerName( type ), ...layerData, id: uuidv4() } ) );
 					}
 				}
 				break;
@@ -548,7 +584,10 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 											onClose();
 										} }
 									>
-										<span className="godam-ve-add-menu__icon">
+										<span
+											className="godam-ve-add-menu__icon"
+											style={ { '--godam-layer-color': LAYER_TYPE_COLORS[ opt.key ] } }
+										>
 											{ opt.iconUrl
 												? <img src={ opt.iconUrl } alt="" />
 												: <Icon icon={ opt.iconComponent } /> }
@@ -603,7 +642,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 
 			{ ! loading && sortedLayers.length > 0 && (
 				<ul className="godam-ve-layers__list">
-					{ sortedLayers.map( ( layer, index ) => {
+					{ sortedLayers.map( ( layer ) => {
 						const layerData = layerTypes.find( ( l ) => l.type === layer.type );
 						const formType = 'form' === layerData?.type ? layerData?.formType[ layer.form_type ?? 'gravity' ] : false;
 						const icon = formType ? formType?.icon : ( layerTypeIcons[ layer.type ] || layerData?.iconUrl || layerData?.icon );
@@ -642,7 +681,10 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 											} }
 											disabled={ isLayerDisabled }
 										>
-											<span className="godam-ve-layer-row__icon">
+											<span
+												className="godam-ve-layer-row__icon"
+												style={ { '--godam-layer-color': LAYER_TYPE_COLORS[ layer.type ] } }
+											>
 												{ hasImageIcon
 													? <img src={ icon } alt="" className="godam-ve-layer-row__icon-img" />
 													: <Icon icon={ icon } /> }
@@ -650,9 +692,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 											<span className="godam-ve-layer-row__text">
 												<span className="godam-ve-layer-row__name">
 													{ layer.name || sprintf(
-														// translators: %d is the layer position in the list.
-														__( 'Layer %d', 'godam' ),
-														index + 1,
+														// translators: %s is the layer type label; e.g. "CTA Layer".
+														__( '%s Layer', 'godam' ),
+														layerText,
 													) }
 												</span>
 												<span className="godam-ve-layer-row__meta">

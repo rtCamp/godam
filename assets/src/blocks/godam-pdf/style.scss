@@ -1,10 +1,6 @@
 .wp-block-godam-pdf {
-	// This block has customizable padding, border-box makes that more predictable.
 	box-sizing: border-box;
-	// Supply caption styles to PDF blocks, even if the theme hasn't opted in.
-	// Reason being: the new markup, <figcaptions>, are not likely to be styled in the majority of existing themes,
-	// so we supply the styles so as to not appear broken or unstyled in those themes.
-	
+
 	figcaption {
 		margin-top: 0.5em;
 		color: #555d66;
@@ -12,6 +8,7 @@
 		font-size: 13px;
 	}
 
+	// ── Default embed view ───────────────────────────────────────────────────
 	.godam-pdf-wrapper {
 		width: 100%;
 		min-height: 300px;
@@ -25,6 +22,105 @@
 			display: block;
 		}
 	}
+
+	// ── Card view ────────────────────────────────────────────────────────────
+	.godam-pdf-card-wrapper {
+		width: 100%;
+	}
+
+	.godam-pdf-card {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		border: 1px solid #ddd;
+		border-radius: 10px;
+		background: #fff;
+		text-decoration: none;
+		color: inherit;
+		transition: box-shadow 0.15s ease, border-color 0.15s ease;
+
+		&:hover {
+			border-color: #c0c0c0;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+		}
+
+		&__cover {
+			flex: 0 0 151px;
+			height: 120px;
+			border-radius: 10px 0 0 10px;
+			overflow: hidden;
+
+			img {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				display: block;
+			}
+		}
+
+		&__cover-placeholder {
+			width: 100%;
+			height: 100%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: #e5e7eb;
+			border-radius: 4px;
+
+			.dashicons {
+				font-size: 32px;
+				width: 32px;
+				height: 32px;
+				color: #9ca3af;
+			}
+		}
+
+		&__info {
+			flex: 1;
+			min-width: 0;
+		}
+
+		&__title {
+			font-weight: 600;
+			font-size: 15px;
+			margin: 0 0 8px;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			color: #1e1e1e;
+		}
+
+		&__description {
+			font-size: 13px;
+			color: #555;
+			margin: 0 0 8px;
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+		}
+
+		&__meta {
+			font-size: 12px;
+			color: #9ca3af;
+			margin: 0;
+		}
+
+		// Stack vertically on small screens.
+		@media ( max-width: 480px ) {
+			flex-direction: column;
+			align-items: flex-start;
+
+			&__cover {
+				width: 100%;
+				height: 250px;
+				flex: none;
+				border-radius: 10px 10px 0 0;
+			}
+
+			&__info {
+				padding: 0 16px 16px 16px;
+			}
+		}
+	}
 }
-
-

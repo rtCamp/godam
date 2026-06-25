@@ -10,7 +10,6 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import { ChromeExtensionSvg } from '../assets/svgs';
 import godamLogo from '../../../assets/src/images/godam-logo.png';
 import { hasAPIKey } from '../utils/index.js';
 import './GoDAMHeader.scss';
@@ -90,41 +89,24 @@ const GodamHeader = () => {
 								label={ __( 'Need help?', 'godam' ) }
 								icon={ help }
 							/>
-							<Button
-								variant="tertiary"
-								href="https://chromewebstore.google.com/detail/godam-screen-recorder-ann/ojmbobnoagdgblhpbemfamfkcfjdfejl"
-								target="_blank"
-								className="rounded-full godam-button-icon sm:h-10 sm:w-10 [&>svg]:sm:w-6 [&>svg]:sm:h-6"
-								label={ __( 'Install GoDAM Screen Recorder', 'godam' ) }
-								icon={ ChromeExtensionSvg }
-							/>
 						</div>
 						<div className="flex flex-col sm:flex-row md:items-center gap-1 sm:gap-2 md:gap-3">
 							<Button
-								className={ `godam-header-manage-media text-xs md:text-sm ${ ( ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan ) ? 'disabled' : '' }` }
-								variant="secondary"
+								className={ `${ ( ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan ) ? 'disabled' : '' }` }
+								variant="tertiary"
 								size="compact"
 								target={ ( window?.userData?.validApiKey && window?.userData?.userApiData?.active_plan ) ? '_blank' : undefined }
 								text={ __( 'Manage Media', 'godam' ) }
 								href={ ( window?.userData?.validApiKey && window?.userData?.userApiData?.active_plan ) ? mediaLink : '#' }
-								icon={
-									<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
-										<path d="M25.5578 20.0911L8.05587 37.593L3.46397 33.0011C0.818521 30.3556 2.0821 25.8336 5.72228 24.9464L25.5632 20.0964L25.5578 20.0911Z" fill="white" />
-										<path d="M47.3773 21.8867L45.5438 29.3875L22.6972 52.2341L11.2605 40.7974L34.1662 17.8916L41.5703 16.0796C45.0706 15.2247 48.2323 18.3863 47.372 21.8813L47.3773 21.8867Z" fill="white" />
-										<path d="M43.5059 38.1036L38.6667 57.8907C37.7741 61.5255 33.2521 62.7891 30.6066 60.1436L26.0363 55.5732L43.5059 38.1036Z" fill="white" />
-									</svg>
-								}
 								iconSize={ 16 }
 								showTooltip={ true }
 								tooltipPosition="bottom center"
 								label={ ( ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan ) ? __( 'Premium feature', 'godam' ) : __( 'GoDAM Central', 'godam' ) }
-								// disabled={ ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan }
 							/>
 
 							{
 								( window?.userData?.validApiKey && window?.userData?.userApiData?.active_plan && ( window?.userData?.userApiData?.active_plan )?.toLowerCase() !== 'platinum' ) && (
 									<Button
-										className="godam-header-cta text-xs md:text-sm"
 										variant="primary"
 										size="compact"
 										href={ upgradePlanLink }
@@ -137,7 +119,6 @@ const GodamHeader = () => {
 							{
 								( ! hasAPIKey ) && (
 									<Button
-										className="godam-header-cta text-xs md:text-sm"
 										variant="primary"
 										size="compact"
 										href={ pricingLink }

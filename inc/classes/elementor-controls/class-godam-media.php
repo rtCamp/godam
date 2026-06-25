@@ -160,7 +160,7 @@ class Godam_Media extends \Elementor\Base_Data_Control {
 				<div class="{{{ inputWrapperClasses }}}"><?php // phpcs:ignore WordPressVIPMinimum.Security.Mustache.OutputNotation ?>
 					<div class="elementor-control-media__content elementor-control-tag-area elementor-control-preview-area">
 						<div class="elementor-control-media-area">
-							<div class="elementor-control-media__remove elementor-control-media__content__remove" data-tooltip="<?php echo esc_attr__( 'Remove', 'godam' ); ?>">
+							<div class="elementor-control-media__remove elementor-control-media__content__remove" data-test-id="godam-media-button-remove" data-tooltip="<?php echo esc_attr__( 'Remove', 'godam' ); ?>">
 								<i class="eicon-trash-o" aria-hidden="true"></i>
 								<span class="elementor-screen-only"><?php echo esc_html__( 'Remove', 'godam' ); ?></span>
 							</div>
@@ -168,20 +168,20 @@ class Godam_Media extends \Elementor\Base_Data_Control {
 								switch( getPreviewType() ) {
 									case 'image':
 										#>
-										<div class="elementor-control-media__preview"></div>
+										<div class="elementor-control-media__preview" data-test-id="godam-media-preview"></div>
 										<#
 										break;
 
 									case 'video':
 										#>
-										<video class="elementor-control-media-video" preload="metadata"></video>
+										<video class="elementor-control-media-video" data-test-id="godam-media-preview" preload="metadata"></video>
 										<i class="eicon-video-camera" aria-hidden="true"></i>
 										<#
 										break;
 								}
 							#>
 						</div>
-						<div class="elementor-control-media-upload-button elementor-control-media__content__upload-button">
+						<div class="elementor-control-media-upload-button elementor-control-media__content__upload-button" data-test-id="godam-media-button-select">
 							<i class="eicon-plus-circle" aria-hidden="true"></i>
 							<span class="elementor-screen-only"><?php echo esc_html__( 'Add', 'godam' ); ?></span>
 						</div>
@@ -208,11 +208,11 @@ class Godam_Media extends \Elementor\Base_Data_Control {
 						</div>
 					</div>
 					<div class="elementor-control-media__file__controls">
-						<div class="elementor-control-media__remove elementor-control-media__file__controls__remove" data-tooltip="<?php echo esc_attr__( 'Remove', 'godam' ); ?>">
+						<div class="elementor-control-media__remove elementor-control-media__file__controls__remove" data-test-id="godam-media-button-remove" data-tooltip="<?php echo esc_attr__( 'Remove', 'godam' ); ?>">
 							<i class="eicon-trash-o" aria-hidden="true"></i>
 							<span class="elementor-screen-only"><?php echo esc_html__( 'Remove', 'godam' ); ?></span>
 						</div>
-						<div class="elementor-control-media__file__controls__upload-button elementor-control-media-upload-button" data-tooltip="<?php echo esc_attr__( 'Upload', 'godam' ); ?>">
+						<div class="elementor-control-media__file__controls__upload-button elementor-control-media-upload-button" data-test-id="godam-media-button-select" data-tooltip="<?php echo esc_attr__( 'Upload', 'godam' ); ?>">
 							<i class="eicon-upload" aria-hidden="true"></i>
 							<span class="elementor-screen-only"><?php echo esc_html__( 'Upload', 'godam' ); ?></span>
 						</div>

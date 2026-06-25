@@ -164,6 +164,7 @@ $ve-faint: color-mix(in srgb, currentcolor 5%, transparent);
 		justify-content: center;
 		width: 100%;
 		min-height: 0;
+		overflow: auto;
 	}
 
 	// Timeline pinned to the bottom of the stage. Its marker chips float up

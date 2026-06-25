@@ -13,7 +13,6 @@ $ve-accent: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e
 $ve-accent-tint: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 8%, transparent);
 $ve-muted: #0000008c;
 $ve-faint: color-mix(in srgb, currentcolor 5%, transparent);
-$ve-circle: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 10%, transparent);
 
 .godam-video-editor {
 
@@ -144,11 +143,20 @@ $ve-circle: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-
 			justify-content: center;
 			width: 36px;
 			height: 36px;
-			background: $ve-circle;
+			color: var(--godam-layer-color, currentcolor);
+			background: color-mix(in srgb, var(--godam-layer-color, #{$ve-accent}) 10%, transparent);
 			border-radius: 50%;
 
+			// Filled layer icons (Ad / WooCommerce) are themed via `fill`.
 			svg {
+				fill: currentcolor;
+			}
+
+			// Outline layer icons (CTA / Hotspot / Form / Poll) are themed via
+			// `stroke`, with no fill.
+			svg.godam-ve-stroke-icon {
 				fill: none;
+				stroke: currentcolor;
 			}
 		}
 
@@ -223,6 +231,7 @@ $ve-circle: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-
 		justify-content: center;
 		width: 20px;
 		height: 20px;
+		color: var(--godam-layer-color, currentcolor);
 
 		img {
 			width: 20px;
@@ -230,8 +239,16 @@ $ve-circle: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-
 			object-fit: contain;
 		}
 
+		// Filled layer icons (Ad / WooCommerce) are themed via `fill`.
 		svg {
+			fill: currentcolor;
+		}
+
+		// Outline layer icons (CTA / Hotspot / Form / Poll) are themed via
+		// `stroke`, with no fill.
+		svg.godam-ve-stroke-icon {
 			fill: none;
+			stroke: currentcolor;
 		}
 	}
 

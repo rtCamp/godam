@@ -1,12 +1,12 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 
 /**
  * WordPress dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { Icon } from '@wordpress/components';
 import { info } from '@wordpress/icons';
 
@@ -17,19 +17,15 @@ import { info } from '@wordpress/icons';
 import { addQueryArgs } from '@wordpress/url';
 import { API_KEY_STATUS, ERROR_TYPE } from '../shared/enums';
 import { generateCountryHeatmap } from '../analytics/helper';
-import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.png';
-import ExportBtn from '../../assets/src/images/export.svg';
-import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, useFetchTopVideosQuery } from './redux/api/dashboardAnalyticsApi';
+import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery } from './redux/api/dashboardAnalyticsApi';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
 import SingleMetrics from '../analytics/SingleMetrics';
-import PlaysVsViewers from '../analytics/PlaysVsViewers';
+import ViewersGauge from './components/ViewersGauge';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
-import chevronLeft from '../../assets/src/images/chevron-left.svg';
-import chevronRight from '../../assets/src/images/chevron-right.svg';
 import NewYearSaleBanner from '../../assets/src/images/new-year-sale-2026.webp';
 import UpgradePlanDashboardBg from '../../assets/src/images/upgrade-plan-dashboard-bg.webp';
-import { formatNumber, formatWatchTime } from '../utils/formatters';
+import TopVideosTable from './components/TopVideosTable';
 
 /**
  * Retrieve dashboard sections registered by add-ons.
@@ -161,7 +157,6 @@ const getSortedSections = () =>
 	Object.values( sectionRegistry ).sort( ( a, b ) => a.priority - b.priority );
 
 const Dashboard = () => {
-	const [ topVideosPage, setTopVideosPage ] = useState( 1 );
 	const [ extendedSections, setExtendedSections ] = useState( getSortedSections );
 
 	// Re-read the registry whenever an add-on registers a section after mount.
@@ -173,6 +168,13 @@ const Dashboard = () => {
 
 	const siteUrl = window.location.origin;
 	const adminUrl = window.videoData?.adminUrl;
+
+	// Reel Pops live in the godam-for-woo add-on, which registers the
+	// "reel-pops-analytics" dashboard section. Only surface the link when it's
+	// available so the page exists to navigate to.
+	const hasReelPops = extendedSections.some(
+		( section ) => section.id === 'reel-pops-analytics',
+	);
 
 	const apiKeyError = getAPIKeyErrorInfo();
 	const apiKeyErrorType = apiKeyError?.type || null;
@@ -188,13 +190,6 @@ const Dashboard = () => {
 	const shouldSkipSecondaryQueries = shouldSkipAnalytics || ! dashboardMetrics || !! dashboardMetrics?.errorType;
 
 	const { data: dashboardMetricsHistory } = useFetchDashboardMetricsHistoryQuery( { days: 60, siteUrl }, { skip: shouldSkipSecondaryQueries } );
-	const {
-		data: topVideosResponse,
-		isFetching: isTopVideosFetching,
-	} = useFetchTopVideosQuery( { siteUrl, page: topVideosPage, limit: 10 }, { skip: shouldSkipSecondaryQueries } );
-
-	const topVideosData = topVideosResponse?.videos || [];
-	const totalTopVideosPages = topVideosResponse?.totalPages || 1;
 
 	const showNewYearSaleBanner = window.videoData?.showNewYearSaleBanner;
 	const shouldShowUpgradeMessage =
@@ -237,17 +232,16 @@ const Dashboard = () => {
 	}, [ dashboardMetrics, isDashboardMetricsLoading, isDashboardMetricsError, apiKeyErrorType ] );
 
 	useEffect( () => {
-		if (
-			! isDashboardMetricsLoading &&
-			dashboardMetrics?.country_views
-		) {
+		// Render once metrics have loaded. generateCountryHeatmap shows an
+		// empty-state placeholder when there is no geography data yet.
+		if ( ! isDashboardMetricsLoading && dashboardMetrics ) {
 			const interval = setInterval( () => {
 				const mapContainer = document.querySelector( '#map-container' );
 				const tableContainer = document.querySelector( '#table-container' );
 				if ( mapContainer && tableContainer ) {
 					clearInterval( interval );
 					generateCountryHeatmap(
-						dashboardMetrics.country_views,
+						dashboardMetrics.country_views || {},
 						'#map-container',
 						'#table-container',
 					);
@@ -257,76 +251,6 @@ const Dashboard = () => {
 			return () => clearInterval( interval );
 		}
 	}, [ isDashboardMetricsLoading, dashboardMetrics ] );
-
-	const handleExportCSV = () => {
-		const headers = [
-			'Title',
-			'Media ID',
-			'Size',
-			'Play Rate',
-			'Total Plays',
-			'Watch Time',
-			'Engagement Rate',
-			'Conversion Rate',
-		];
-
-		const rows = topVideosData?.map( ( item ) => {
-			return [
-				item.title || item.video_id,
-				`ID: ${ item.video_id }`,
-				( item.video_size ? item.video_size.toFixed( 2 ) : 0 ) + ' MB',
-				( ( item.plays / ( item.plays + 5 ) ) * 100 ).toFixed( 2 ) + '%',
-				item.plays,
-				item.play_time?.toFixed( 2 ) + 's',
-				( ( item.play_time / ( item.plays * item.video_length ) ) * 100 ).toFixed( 2 ) + '%',
-				item.video_conversion_rate !== undefined && item.video_conversion_rate !== null
-					? Number( item.video_conversion_rate ).toFixed( 2 ) + '%'
-					: '-',
-			];
-		} );
-
-		const csvContent = [
-			headers.join( ',' ),
-			...rows.map( ( row ) =>
-				row
-					.map( ( value ) => {
-						if (
-							typeof value === 'string' &&
-							( value.includes( ',' ) || value.includes( '\n' ) )
-						) {
-							return `"${ value.replace( /"/g, '""' ) }"`; // escape double quotes
-						}
-						return value;
-					} )
-					.join( ',' ),
-			),
-		].join( '\n' );
-
-		// Trigger download
-		const blob = new Blob( [ csvContent ], { type: 'text/csv;charset=utf-8;' } );
-		const url = URL.createObjectURL( blob );
-		const link = document.createElement( 'a' );
-		link.setAttribute( 'href', url );
-		link.setAttribute( 'download', 'godam-video-analytics.csv' );
-		link.style.display = 'none';
-		document.body.appendChild( link );
-		link.click();
-		document.body.removeChild( link );
-	};
-
-	const isFirstLoadRef = useRef( true );
-
-	useEffect( () => {
-		if ( isFirstLoadRef.current ) {
-			isFirstLoadRef.current = false;
-			return;
-		}
-
-		const container = document.querySelector( '.top-media-container' );
-		if ( container ) {
-			container.scrollIntoView( { behavior: 'smooth' } );
-		}
-	}, [ topVideosPage ] );
 
 	useEffect( () => {
 		const checkExist = setInterval( () => {
@@ -457,233 +381,116 @@ const Dashboard = () => {
 			</div>
 
 			<div id="dashboard-container" className="dashboard-container hidden">
-				{ /* Page-level FYI — analytics aren't real-time. */ }
-				<div className="godam-analytics-fyi flex items-center gap-1.5 mb-3 text-xs text-zinc-500">
-					<Icon icon={ info } size={ 15 } />
-					<span>
-						{ __(
-							'Heads up: analytics update periodically, so new activity may take up to 30 minutes to show here.',
-							'godam',
-						) }
-					</span>
+				<div className="godam-dashboard-head">
+					<h1 className="godam-dashboard-title">{ __( 'Dashboard', 'godam' ) }</h1>
+					{ /* Page-level FYI — analytics aren't real-time. Sits beside the title. */ }
+					<div className="godam-analytics-fyi flex items-center gap-1.5 text-xs text-zinc-500">
+						<Icon icon={ info } size={ 15 } />
+						<span>
+							{ __(
+								'Heads up: analytics update periodically, so new activity may take up to 30 minutes to show here.',
+								'godam',
+							) }
+						</span>
+					</div>
+					{ hasReelPops && (
+						<a
+							className="godam-reel-pop-link"
+							href="admin.php?page=rtgodam_reel_pops"
+						>
+							{ __( 'See Reel Pop Analytics', 'godam' ) }
+							<span className="godam-reel-pop-link__arrow" aria-hidden="true">↗</span>
+						</a>
+					) }
 				</div>
-				<div className="flex-grow">
-					<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-nowrap">
 
-						<SingleMetrics
-							mode="dashboard"
-							metricType="total-videos"
-							label={ __( 'Active Videos', 'godam' ) }
-							tooltipText={ __(
-								'Number of unique videos that received user interactions each day, such as views or plays.',
-								'godam',
-							) }
-							processedAnalyticsHistory={ dashboardMetricsHistory }
-							analyticsDataFetched={ {
-								total_videos: dashboardMetrics?.total_videos ?? 0,
-							} }
-						/>
-
-						<SingleMetrics
-							mode="dashboard"
-							metricType={ 'play-rate' }
-							label={ __( 'Play Rate', 'godam' ) }
-							tooltipText={ __(
-								'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads',
-								'godam',
-							) }
-							processedAnalyticsHistory={ dashboardMetricsHistory }
-							analyticsDataFetched={ dashboardMetrics }
-						/>
-
-						<SingleMetrics
-							mode="dashboard"
-							metricType={ 'watch-time' }
-							label={ __( 'Watch Time', 'godam' ) }
-							tooltipText={ __(
-								'Total time the video has been watched, aggregated across all plays',
-								'godam',
-							) }
-							processedAnalyticsHistory={ dashboardMetricsHistory }
-							analyticsDataFetched={ dashboardMetrics }
-						/>
-
-						<PlaysVsViewers
-							mode="dashboard"
+				<div className="godam-dashboard-grid">
+					{ /* Left column — Total Plays / Unique Viewers + geography. */ }
+					<div className="godam-card godam-viewers-card">
+						<div className="godam-card__head">
+							<h2>{ __( 'Total Plays / Unique Viewers', 'godam' ) }</h2>
+						</div>
+						<ViewersGauge
 							plays={ dashboardMetrics?.plays ?? 0 }
 							uniqueViewers={ dashboardMetrics?.unique_viewers ?? 0 }
-							showRatio={ true }
-							isLoading={ isDashboardMetricsLoading }
-							processedAnalyticsHistory={ dashboardMetricsHistory }
 						/>
+						<div className="country-views">
+							<div className="country-views-map" id="map-container"></div>
+							<div className="country-views-table" id="table-container"></div>
+						</div>
 					</div>
-				</div>
 
-				<div className="mx-auto py-4">
-					<div className="playback-country-container flex flex-wrap">
-						<div className="playback-performance min-w-full lg:min-w-[600px]" id="global-analytics-container">
+					{ /* Right column — Insights KPIs + Playback Performance. */ }
+					<div className="godam-dashboard-right">
+						<div className="godam-card godam-insights-card">
+							<div className="godam-card__head">
+								<h2>{ __( 'Insights', 'godam' ) }</h2>
+								<span className="godam-pill">{ __( 'All time', 'godam' ) }</span>
+							</div>
+							<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-nowrap">
+
+								<SingleMetrics
+									mode="dashboard"
+									metricType="total-videos"
+									label={ __( 'Active Videos', 'godam' ) }
+									tooltipText={ __(
+										'Number of unique videos that received user interactions each day, such as views or plays.',
+										'godam',
+									) }
+									processedAnalyticsHistory={ dashboardMetricsHistory }
+									analyticsDataFetched={ {
+										total_videos: dashboardMetrics?.total_videos ?? 0,
+									} }
+								/>
+
+								<SingleMetrics
+									mode="dashboard"
+									metricType={ 'play-rate' }
+									label={ __( 'Avg. Play Rate', 'godam' ) }
+									tooltipText={ __(
+										'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads',
+										'godam',
+									) }
+									processedAnalyticsHistory={ dashboardMetricsHistory }
+									analyticsDataFetched={ dashboardMetrics }
+								/>
+
+								<SingleMetrics
+									mode="dashboard"
+									metricType={ 'watch-time' }
+									label={ __( 'Watch Time', 'godam' ) }
+									tooltipText={ __(
+										'Total time the video has been watched, aggregated across all plays',
+										'godam',
+									) }
+									processedAnalyticsHistory={ dashboardMetricsHistory }
+									analyticsDataFetched={ dashboardMetrics }
+								/>
+
+								<SingleMetrics
+									mode="dashboard"
+									metricType={ 'engagement-rate' }
+									label={ __( 'Engagement Rate', 'godam' ) }
+									tooltipText={ __(
+										'Average share of each video that viewers watched, across all plays.',
+										'godam',
+									) }
+									processedAnalyticsHistory={ dashboardMetricsHistory }
+									analyticsDataFetched={ dashboardMetrics }
+								/>
+							</div>
+						</div>
+
+						<div className="playback-performance" id="global-analytics-container">
 							<PlaybackPerformanceDashboard
 								initialData={ dashboardMetricsHistory }
 								mode="dashboard"
 							/>
 						</div>
-						<div className="country-views min-w-full md:min-w-[300px]">
-							<div className="country-views-map" id="map-container"></div>
-							<div className="country-views-table" id="table-container"></div>
-						</div>
 					</div>
 				</div>
 
-				<div className="top-media-container">
-					<div className="flex justify-between pt-4">
-						<h2>{ __( 'Top Videos', 'godam' ) }</h2>
-						<button onClick={ handleExportCSV } className="export-button">
-							<img src={ ExportBtn } alt="Export" className="export-icon" />
-							{ __( 'Export', 'godam' ) }
-						</button>
-					</div>
-					<div className="table-container overflow-x-auto">
-						<table className="w-full">
-							<tbody>
-								<tr>
-									<th>{ __( 'Name', 'godam' ) }</th>
-									<th>{ __( 'Size', 'godam' ) }</th>
-									<th>{ __( 'Play Rate', 'godam' ) }</th>
-									<th>{ __( 'Total Plays', 'godam' ) }</th>
-									<th>{ __( 'Total Watch Time', 'godam' ) }</th>
-									<th>{ __( 'Average Engagement', 'godam' ) }</th>
-									<th>{ __( 'Conversion Rate', 'godam' ) }</th>
-								</tr>
-								{ isTopVideosFetching ? (
-									<tr>
-										<td colSpan="7">
-											<div className="space-y-4 mt-3">
-												<div className="skeleton h-4 w-full"></div>
-												<div className="skeleton h-4 w-full"></div>
-												<div className="skeleton h-4 w-full"></div>
-											</div>
-										</td>
-									</tr>
-								) : (
-									topVideosData?.map( ( item, index ) => (
-										<tr key={ index }>
-											<td>
-												<div className="video-info">
-													{ item.exists ? (
-														<>
-															<a className="thumbnail-link" href={ `admin.php?page=rtgodam_analytics&id=${ item.video_id }` }>
-																<img
-																	src={ item.thumbnail_url || DefaultThumbnail }
-																	alt={ item.title || __( 'Video thumbnail', 'godam' ) }
-																/>
-															</a>
-															<a className="title-link" href={ `admin.php?page=rtgodam_analytics&id=${ item.video_id }` }>
-																<div className="w-full max-w-40 text-left flex-1">
-																	<p className="font-semibold">{ item.title || `Video ID: ${ item.video_id }` }</p>
-																</div>
-															</a>
-														</>
-													) : (
-														<>
-															<div className="thumbnail-link">
-																<img
-																	src={ DefaultThumbnail }
-																	alt={ item.title || __( 'Video thumbnail', 'godam' ) }
-																/>
-															</div>
-															<div className="title-link">
-																<div className="w-full max-w-40 text-left flex-1">
-																	<p className="font-semibold">{ item.title }</p>
-																</div>
-															</div>
-														</>
-													) }
-												</div>
-											</td>
-											<td>
-												{ item.video_size ? `${ item.video_size.toFixed( 2 ) } MB` : '' }
-											</td>
-											<td>
-												{ item.plays > 0 && item.page_load > 0
-													? ( ( item.plays / item.page_load ) * 100 ).toFixed( 2 ) + '%'
-													: '0%' }
-											</td>
-											<td title={ item.plays?.toLocaleString() ?? '-' }>
-												{ item.plays ? formatNumber( item.plays ) : '-' }
-											</td>
-											<td title={ item.play_time ? `${ item.play_time.toFixed( 2 ) }s` : '-' }>
-												{ item.play_time ? formatWatchTime( item.play_time ) : '-' }
-											</td>
-											<td>
-												{ item.plays > 0 && item.video_length > 0
-													? ( ( item.play_time / ( item.plays * item.video_length ) ) * 100 ).toFixed( 2 ) + '%'
-													: '-' }
-											</td>
-											<td
-												title={
-													item.total_converting_sessions > 0
-														? sprintf(
-															/* translators: 1: converting sessions, 2: total plays. */
-															__( '%1$s of %2$s sessions converted', 'godam' ),
-															Number( item.total_converting_sessions ).toLocaleString(),
-															Number( item.plays ).toLocaleString(),
-														)
-														: __( 'No layer conversions in this period', 'godam' )
-												}
-											>
-												{ item.video_conversion_rate !== undefined && item.video_conversion_rate !== null
-													? `${ Number( item.video_conversion_rate ).toFixed( 2 ) }%`
-													: '-' }
-											</td>
-										</tr>
-									) )
-								) }
-								{ topVideosData.length === 0 && (
-									<tr>
-										<td colSpan="7" className="text-center py-4 text-lg">
-											{ __( 'No videos found.', 'godam' ) }
-										</td>
-									</tr>
-								) }
-							</tbody>
-
-						</table>
-					</div>
-					<div className="flex items-center justify-between mt-4">
-						<p className="text-sm text-gray-500">
-							{
-								/* translators: %1$d is the current page number, %2$d is the total number of pages */
-								sprintf( __( 'Page %1$d of %2$d', 'godam' ), topVideosPage, totalTopVideosPages )
-							}
-						</p>
-						<div className="flex items-center gap-4">
-							<button
-								className="previous-btn flex items-center gap-1"
-								disabled={ topVideosPage === 1 }
-								onClick={ () => setTopVideosPage( ( prev ) => Math.max( prev - 1, 1 ) ) }
-							>
-								<img
-									src={ chevronLeft }
-									alt="Previous"
-									className={ `w-4 h-4 chevron-icon ${ topVideosPage === 1 ? 'icon-disabled' : '' }` }
-								/>
-								<span>{ __( 'Previous', 'godam' ) }</span>
-							</button>
-							<button
-								className="next-btn flex items-center gap-1"
-								disabled={ topVideosPage >= totalTopVideosPages }
-								onClick={ () => setTopVideosPage( ( prev ) => prev + 1 ) }
-							>
-								<span>{ __( 'Next', 'godam' ) }</span>
-								<img
-									src={ chevronRight }
-									alt="Next"
-									className={ `w-4 h-4 chevron-icon ${ topVideosPage >= totalTopVideosPages ? 'icon-disabled' : '' }` }
-								/>
-							</button>
-						</div>
-					</div>
-				</div>
+				<TopVideosTable siteUrl={ siteUrl } skip={ shouldSkipSecondaryQueries } />
 
 				{ extendedSections.map( ( { id, component: SectionComponent } ) => (
 					<SectionComponent key={ id } />

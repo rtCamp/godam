@@ -13,6 +13,7 @@ import {
 } from '@wordpress/block-editor';
 import {
 	PanelBody,
+	RadioControl,
 	RangeControl,
 	SelectControl,
 	ToggleControl,
@@ -21,16 +22,34 @@ import {
 	Popover,
 	Notice,
 	Spinner,
+	Button,
 	__experimentalToggleGroupControl as ToggleGroupControl,
 	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
 	__experimentalToggleGroupControlOptionIcon as ToggleGroupControlOptionIcon,
-	Button,
 } from '@wordpress/components';
 import { useDispatch, useSelect, select as dataSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
 import { store as noticesStore } from '@wordpress/notices';
 import { useCallback, useEffect, useMemo, useRef, useState } from '@wordpress/element';
-import { columns, grid, listView, plus } from '@wordpress/icons';
+import { columns, grid, listView, plus, trash } from '@wordpress/icons';
+
+/**
+ * External dependencies
+ */
+import {
+	DndContext,
+	closestCenter,
+	PointerSensor,
+	useSensor,
+	useSensors,
+	DragOverlay,
+} from '@dnd-kit/core';
+import {
+	SortableContext,
+	verticalListSortingStrategy,
+	useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 /**
  * Internal dependencies
@@ -38,13 +57,10 @@ import { columns, grid, listView, plus } from '@wordpress/icons';
 import './editor.scss';
 
 const ALLOWED_BLOCKS = [ 'godam/gallery-v2-item' ];
-const performanceModeOptions = [
-	{ label: __( 'Balanced', 'godam' ), value: 'balanced' },
-	{ label: __( 'Priority', 'godam' ), value: 'priority' },
-];
+
 const performanceModeHelpText = {
-	balanced: __( 'Recommended for most videos. Loads thumbnails as visitors scroll and prepares the video just before they reach it. Best for overall page performance.', 'godam' ),
-	priority: __( 'For hero videos above the fold. Loads the thumbnail immediately and prepares the video for the fastest possible first play. Use sparingly - one or two per page.', 'godam' ),
+	balanced: __( 'Recommended for most videos. Loads thumbnails as visitors scroll and prepares the video just before they reach it.', 'godam' ),
+	priority: __( 'For hero videos above the fold. Loads the thumbnail immediately and prepares the video for the fastest possible first play. Use sparingly.', 'godam' ),
 };
 
 const formatDisplayDate = ( dateString ) => {
@@ -126,8 +142,12 @@ const getPreviewQueryArgs = ( attributes ) => {
 		customDateEnd,
 	} = attributes;
 
-	const mediaFolderIds = parseIdList( mediaFolder ).map( ( value ) => parseInt( value, 10 ) ).filter( ( value ) => ! Number.isNaN( value ) && value > 0 );
-	const authorIds = parseIdList( author ).map( ( value ) => parseInt( value, 10 ) ).filter( ( value ) => ! Number.isNaN( value ) && value > 0 );
+	const mediaFolderIds = parseIdList( mediaFolder )
+		.map( ( value ) => parseInt( value, 10 ) )
+		.filter( ( value ) => ! Number.isNaN( value ) && value > 0 );
+	const authorIds = parseIdList( author )
+		.map( ( value ) => parseInt( value, 10 ) )
+		.filter( ( value ) => ! Number.isNaN( value ) && value > 0 );
 	const queryArgs = {
 		per_page: count,
 		orderby,
@@ -169,6 +189,99 @@ const getPreviewQueryArgs = ( attributes ) => {
 	return queryArgs;
 };
 
+// ── Video list item in inspector panel ───────────────────────────────────────
+
+function VideoListItemContent( { block, onRemove, dragHandleProps = {}, isDragging = false } ) {
+	const { media } = useSelect(
+		( select ) => {
+			const videoId = block.attributes?.videoId;
+			if ( ! videoId ) {
+				return { media: null };
+			}
+			return { media: select( coreStore ).getMedia( videoId ) };
+		},
+		[ block.attributes?.videoId ],
+	);
+
+	const thumbnail = getVideoThumbnail( media );
+	const title = media?.title?.rendered || __( 'Loading…', 'godam' );
+	const date = formatDisplayDate( media?.date );
+
+	return (
+		<div className={ `godam-gallery-v2__video-item${ isDragging ? ' is-dragging' : '' }` }>
+			<span
+				className="godam-gallery-v2__drag-handle"
+				{ ...dragHandleProps }
+			>
+				<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<circle cx="6.5" cy="5" r="1.5" fill="currentColor" />
+					<circle cx="11.5" cy="5" r="1.5" fill="currentColor" />
+					<circle cx="6.5" cy="9" r="1.5" fill="currentColor" />
+					<circle cx="11.5" cy="9" r="1.5" fill="currentColor" />
+					<circle cx="6.5" cy="13" r="1.5" fill="currentColor" />
+					<circle cx="11.5" cy="13" r="1.5" fill="currentColor" />
+				</svg>
+			</span>
+			<div className="godam-gallery-v2__video-thumb-wrap">
+				{ thumbnail ? (
+					<img
+						src={ thumbnail }
+						alt=""
+						className="godam-gallery-v2__video-thumb"
+					/>
+				) : (
+					<span className="dashicons dashicons-video-alt2 godam-gallery-v2__video-thumb-fallback" />
+				) }
+			</div>
+			<div className="godam-gallery-v2__video-meta">
+				<span className="godam-gallery-v2__video-name" title={ title }>
+					{ title }
+				</span>
+				{ date && (
+					<span className="godam-gallery-v2__video-date">{ date }</span>
+				) }
+			</div>
+			<Button
+				icon={ trash }
+				label={ __( 'Remove', 'godam' ) }
+				isDestructive
+				size="small"
+				onClick={ onRemove }
+			/>
+		</div>
+	);
+}
+
+function VideoListItem( { block, onRemove } ) {
+	const {
+		attributes,
+		listeners,
+		setNodeRef,
+		transform,
+		transition,
+		isDragging,
+	} = useSortable( { id: block.clientId } );
+
+	const style = {
+		transform: CSS.Transform.toString( transform ),
+		transition,
+		opacity: isDragging ? 0.4 : 1,
+	};
+
+	return (
+		<div ref={ setNodeRef } style={ style }>
+			<VideoListItemContent
+				block={ block }
+				onRemove={ onRemove }
+				dragHandleProps={ { ...attributes, ...listeners } }
+				isDragging={ isDragging }
+			/>
+		</div>
+	);
+}
+
+// ── AddVideoAppender used inside canvas ──────────────────────────────────────
+
 const AddVideoAppender = ( { onSelect } ) => (
 	<MediaUploadCheck>
 		<MediaUpload
@@ -190,6 +303,8 @@ const AddVideoAppender = ( { onSelect } ) => (
 	</MediaUploadCheck>
 );
 
+// ── Main Edit component ───────────────────────────────────────────────────────
+
 export default function Edit( { attributes, setAttributes, clientId } ) {
 	const {
 		mode,
@@ -210,39 +325,80 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		layout,
 		performanceMode,
 		engagements,
+		autoplay,
+		showPlayButton,
 	} = attributes;
+
 	const engagementFeatureEnabled = window?.godamSettings?.engagementFeatureEnabled ?? false;
-	const showEngagementSetting = engagementFeatureEnabled && ( window?.godamSettings?.enableGlobalVideoEngagement ?? false );
+	const showEngagementSetting =
+		engagementFeatureEnabled && ( window?.godamSettings?.enableGlobalVideoEngagement ?? false );
+
 	const [ startDatePopoverOpen, setStartDatePopoverOpen ] = useState( false );
 	const [ endDatePopoverOpen, setEndDatePopoverOpen ] = useState( false );
 	const [ dateError, setDateError ] = useState( '' );
-	const { insertBlocks, updateBlockAttributes, removeBlock } = useDispatch( blockEditorStore );
+
+	const { insertBlocks, updateBlockAttributes, removeBlock, moveBlockToPosition } = useDispatch( blockEditorStore );
 	const { createNotice } = useDispatch( noticesStore );
 
-	// Tracks {virtualId, blockClientId} pairs for GoDAM virtual insertions
-	// so the godam-virtual-attachment-created event can update the correct block.
 	const pendingVirtualInserts = useRef( [] );
 
-	const { mediaFolders, authors, queryPreviewVideos, wasJustInserted } = useSelect(
-		( select ) => {
-			const coreSelect = select( coreStore );
-			const blockEditorSelect = select( blockEditorStore );
-			const queryArgs = getPreviewQueryArgs( attributes );
+	const { mediaFolders, authors, queryPreviewVideos, wasJustInserted, handpickedBlocks } =
+		useSelect(
+			( select ) => {
+				const coreSelect = select( coreStore );
+				const blockEditorSelect = select( blockEditorStore );
+				const queryArgs = getPreviewQueryArgs( attributes );
 
-			return {
-				mediaFolders: coreSelect.getEntityRecords( 'taxonomy', 'media-folder', { per_page: -1 } ),
-				authors: coreSelect.getUsers( { per_page: -1 } ),
-				queryPreviewVideos:
-					mode === 'query'
-						? coreSelect.getEntityRecords( 'postType', 'attachment', queryArgs )
-						: [],
-				wasJustInserted:
-					blockEditorSelect.wasBlockJustInserted( clientId, 'inserter' ) ||
-					blockEditorSelect.wasBlockJustInserted( clientId, 'directInsert' ) ||
-					blockEditorSelect.wasBlockJustInserted( clientId, 'transform' ),
-			};
+				return {
+					mediaFolders: coreSelect.getEntityRecords( 'taxonomy', 'media-folder', {
+						per_page: -1,
+					} ),
+					authors: coreSelect.getUsers( { per_page: -1 } ),
+					queryPreviewVideos:
+						mode === 'query'
+							? coreSelect.getEntityRecords( 'postType', 'attachment', queryArgs )
+							: [],
+					wasJustInserted:
+						blockEditorSelect.wasBlockJustInserted( clientId, 'inserter' ) ||
+						blockEditorSelect.wasBlockJustInserted( clientId, 'directInsert' ) ||
+						blockEditorSelect.wasBlockJustInserted( clientId, 'transform' ),
+					handpickedBlocks:
+						mode === 'handpicked'
+							? ( blockEditorSelect.getBlocks( clientId ) || [] )
+							: [],
+				};
+			},
+			[ attributes, clientId, mode ],
+		);
+
+	// ── Drag-and-drop (defined after useSelect so handpickedBlocks is in scope) ──
+
+	const [ activeId, setActiveId ] = useState( null );
+
+	const sensors = useSensors(
+		useSensor( PointerSensor, {
+			activationConstraint: { distance: 5 },
+		} ),
+	);
+
+	const handleDragStart = useCallback( ( { active } ) => {
+		setActiveId( active.id );
+	}, [] );
+
+	const handleDragEnd = useCallback(
+		( { active, over } ) => {
+			setActiveId( null );
+			if ( ! over || active.id === over.id ) {
+				return;
+			}
+			const oldIndex = handpickedBlocks.findIndex( ( b ) => b.clientId === active.id );
+			const newIndex = handpickedBlocks.findIndex( ( b ) => b.clientId === over.id );
+			if ( oldIndex === -1 || newIndex === -1 ) {
+				return;
+			}
+			moveBlockToPosition( active.id, clientId, clientId, newIndex );
 		},
-		[ attributes, clientId, mode ],
+		[ handpickedBlocks, clientId, moveBlockToPosition ],
 	);
 
 	useEffect( () => {
@@ -260,14 +416,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 			moreItemsBehavior: 'button',
 			infiniteScroll: false,
 		} );
-	}, [
-		enableMoreItems,
-		infiniteScroll,
-		mode,
-		moreItemsBehavior,
-		setAttributes,
-		wasJustInserted,
-	] );
+	}, [ enableMoreItems, infiniteScroll, mode, moreItemsBehavior, setAttributes, wasJustInserted ] );
 
 	const resolvedEnableMoreItems =
 		typeof enableMoreItems === 'boolean' ? enableMoreItems : true;
@@ -277,7 +426,10 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 			? 'infinite'
 			: moreItemsBehavior || ( infiniteScroll ? 'infinite' : 'button' );
 
-	const updateMoreItemsSettings = ( nextEnableMoreItems, nextBehavior = resolvedMoreItemsBehavior ) => {
+	const updateMoreItemsSettings = (
+		nextEnableMoreItems,
+		nextBehavior = resolvedMoreItemsBehavior,
+	) => {
 		const behavior =
 			isCarouselLayout && nextEnableMoreItems ? 'infinite' : nextBehavior;
 
@@ -346,7 +498,10 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	const selectedMediaFolderToken = useMemo(
 		() =>
 			parseIdList( mediaFolder )
-				.map( ( id ) => mediaFolderOptions.find( ( option ) => option.id === id )?.value )
+				.map(
+					( id ) =>
+						mediaFolderOptions.find( ( option ) => option.id === id )?.value,
+				)
 				.filter( Boolean ),
 		[ mediaFolder, mediaFolderOptions ],
 	);
@@ -354,7 +509,10 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	const selectedAuthorToken = useMemo(
 		() =>
 			parseIdList( author )
-				.map( ( id ) => authorOptions.find( ( option ) => `${ option.id }` === id )?.value )
+				.map(
+					( id ) =>
+						authorOptions.find( ( option ) => `${ option.id }` === id )?.value,
+				)
 				.filter( Boolean ),
 		[ author, authorOptions ],
 	);
@@ -371,12 +529,13 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 
 	const insertHandpickedVideo = useCallback(
 		( mediaItemOrArray ) => {
-			const items = Array.isArray( mediaItemOrArray ) ? mediaItemOrArray : [ mediaItemOrArray ];
+			const items = Array.isArray( mediaItemOrArray )
+				? mediaItemOrArray
+				: [ mediaItemOrArray ];
 			if ( ! items.length ) {
 				return;
 			}
 
-			// Get existing video IDs from inner blocks to prevent duplicates.
 			const { getBlock } = dataSelect( blockEditorStore );
 			const parentBlock = getBlock( clientId );
 			const existingVideoIds = new Set(
@@ -394,7 +553,6 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					return;
 				}
 
-				// Only allow video attachments.
 				if ( mediaItem.type && mediaItem.type !== 'video' ) {
 					skippedNonVideo = true;
 					return;
@@ -405,10 +563,11 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 				}
 
 				const numericId = parseInt( mediaItem.id, 10 );
-				const isVirtual = ! ( numericId > 0 && String( numericId ) === String( mediaItem.id ) );
+				const isVirtual = ! (
+					numericId > 0 && String( numericId ) === String( mediaItem.id )
+				);
 
 				if ( ! isVirtual ) {
-					// Skip if this video is already in the gallery.
 					if ( existingVideoIds.has( numericId ) ) {
 						skippedDuplicate = true;
 						return;
@@ -431,17 +590,19 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 			} );
 
 			if ( skippedNonVideo ) {
-				createNotice( 'warning', __( 'Only video files can be added to the gallery.', 'godam' ), {
-					type: 'snackbar',
-					isDismissible: true,
-				} );
+				createNotice(
+					'warning',
+					__( 'Only video files can be added to the gallery.', 'godam' ),
+					{ type: 'snackbar', isDismissible: true },
+				);
 			}
 
 			if ( skippedDuplicate ) {
-				createNotice( 'warning', __( 'Duplicate videos were skipped.', 'godam' ), {
-					type: 'snackbar',
-					isDismissible: true,
-				} );
+				createNotice(
+					'warning',
+					__( 'Duplicate videos were skipped.', 'godam' ),
+					{ type: 'snackbar', isDismissible: true },
+				);
 			}
 
 			if ( newBlocks.length > 0 ) {
@@ -451,8 +612,6 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		[ clientId, createNotice, insertBlocks ],
 	);
 
-	// When GoDAM creates a real WP attachment, find the pending child block
-	// and set its videoId to the actual attachment ID.
 	useEffect( () => {
 		const handleVirtualAttachmentCreated = ( event ) => {
 			const { attachment, virtualMediaId } = event.detail || {};
@@ -470,28 +629,34 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 
 			const [ { blockClientId } ] = pendingVirtualInserts.current.splice( idx, 1 );
 
-			// Skip if this video already exists in another gallery item.
 			const { getBlock } = dataSelect( blockEditorStore );
 			const parentBlock = getBlock( clientId );
 			const isDuplicate = ( parentBlock?.innerBlocks || [] ).some(
-				( block ) => block.clientId !== blockClientId && block.attributes?.videoId === attachment.id,
+				( block ) =>
+					block.clientId !== blockClientId &&
+					block.attributes?.videoId === attachment.id,
 			);
 			if ( isDuplicate ) {
-				createNotice( 'warning', __( 'Duplicate videos were skipped.', 'godam' ), {
-					type: 'snackbar',
-					isDismissible: true,
-				} );
+				createNotice(
+					'warning',
+					__( 'Duplicate videos were skipped.', 'godam' ),
+					{ type: 'snackbar', isDismissible: true },
+				);
 				removeBlock( blockClientId );
 				return;
 			}
 
 			updateBlockAttributes( blockClientId, { videoId: attachment.id } );
 		};
-
-		document.addEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
-
+		document.addEventListener(
+			'godam-virtual-attachment-created',
+			handleVirtualAttachmentCreated,
+		);
 		return () => {
-			document.removeEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
+			document.removeEventListener(
+				'godam-virtual-attachment-created',
+				handleVirtualAttachmentCreated,
+			);
 		};
 	}, [ clientId, createNotice, removeBlock, updateBlockAttributes ] );
 
@@ -507,16 +672,16 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		}
 
 		const selectedIds = tokens
-			.map( ( token ) =>
-				mediaFolderOptions.find(
-					( option ) => normalizeTokenValue( option.value ) === normalizeTokenValue( token ),
-				)?.id,
+			.map(
+				( token ) =>
+					mediaFolderOptions.find(
+						( option ) =>
+							normalizeTokenValue( option.value ) ===
+							normalizeTokenValue( token ),
+					)?.id,
 			)
 			.filter( Boolean );
-
-		setAttributes( {
-			mediaFolder: selectedIds.join( ',' ),
-		} );
+		setAttributes( { mediaFolder: selectedIds.join( ',' ) } );
 	};
 
 	const updateAuthorToken = ( tokens ) => {
@@ -526,16 +691,16 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		}
 
 		const selectedIds = tokens
-			.map( ( token ) =>
-				authorOptions.find(
-					( option ) => normalizeTokenValue( option.value ) === normalizeTokenValue( token ),
-				)?.id,
+			.map(
+				( token ) =>
+					authorOptions.find(
+						( option ) =>
+							normalizeTokenValue( option.value ) ===
+							normalizeTokenValue( token ),
+					)?.id,
 			)
 			.filter( Boolean );
-
-		setAttributes( {
-			author: selectedIds.join( ',' ),
-		} );
+		setAttributes( { author: selectedIds.join( ',' ) } );
 	};
 
 	const previewItems = useMemo( () => {
@@ -562,8 +727,9 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 
 		const selectedDate = new Date( nextDate );
 		selectedDate.setHours( 0, 0, 0, 0 );
-
-		const compareDate = new Date( type === 'start' ? customDateEnd : customDateStart );
+		const compareDate = new Date(
+			type === 'start' ? customDateEnd : customDateStart,
+		);
 		if ( ! Number.isNaN( compareDate.getTime() ) ) {
 			compareDate.setHours( 0, 0, 0, 0 );
 		}
@@ -582,14 +748,23 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 
 		setDateError( '' );
 		setAttributes( {
-			[ type === 'start' ? 'customDateStart' : 'customDateEnd' ]: getStoredDateValue( nextDate, type ),
+			[ type === 'start' ? 'customDateStart' : 'customDateEnd' ]:
+				getStoredDateValue( nextDate, type ),
 		} );
 	};
+
+	const hasHandpickedVideos = handpickedBlocks.length > 0;
 
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody title={ __( 'Source', 'godam' ) } initialOpen={ true } data-test-id="godam-gallery-v2-panel-source">
+
+				{ /* ── Source ─────────────────────────────────────────────── */ }
+				<PanelBody
+					title={ __( 'Source', 'godam' ) }
+					initialOpen={ true }
+					data-test-id="godam-gallery-v2-panel-source"
+				>
 					<ToggleGroupControl
 						__nextHasNoMarginBottom
 						isBlock
@@ -602,12 +777,85 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 							}
 						} }
 					>
-						<ToggleGroupControlOption value="handpicked" label={ __( 'Handpicked', 'godam' ) } />
-						<ToggleGroupControlOption value="query" label={ __( 'Query', 'godam' ) } />
+						<ToggleGroupControlOption
+							value="handpicked"
+							label={ __( 'Handpicked', 'godam' ) }
+						/>
+						<ToggleGroupControlOption
+							value="query"
+							label={ __( 'Query', 'godam' ) }
+						/>
 					</ToggleGroupControl>
 				</PanelBody>
 
-				<PanelBody title={ __( 'Gallery Settings', 'godam' ) } initialOpen={ true } data-test-id="godam-gallery-v2-panel-settings">
+				{ /* ── Video Selection (handpicked only) ───────────────────── */ }
+				{ mode === 'handpicked' && (
+					<PanelBody
+						title={ __( 'Video Selection', 'godam' ) }
+						initialOpen={ true }
+					>
+						<p className="godam-gallery-v2__panel-hint">
+							{ __( 'Videos play on mute by default', 'godam' ) }
+						</p>
+
+						{ handpickedBlocks.length > 0 && (
+							<DndContext
+								sensors={ sensors }
+								collisionDetection={ closestCenter }
+								onDragStart={ handleDragStart }
+								onDragEnd={ handleDragEnd }
+							>
+								<SortableContext
+									items={ handpickedBlocks.map( ( b ) => b.clientId ) }
+									strategy={ verticalListSortingStrategy }
+								>
+									<div className="godam-gallery-v2__video-list">
+										{ handpickedBlocks.map( ( block ) => (
+											<VideoListItem
+												key={ block.clientId }
+												block={ block }
+												onRemove={ () => removeBlock( block.clientId ) }
+											/>
+										) ) }
+									</div>
+								</SortableContext>
+								<DragOverlay>
+									{ activeId ? (
+										<VideoListItemContent
+											block={ handpickedBlocks.find( ( b ) => b.clientId === activeId ) }
+											onRemove={ () => {} }
+											isDragging
+										/>
+									) : null }
+								</DragOverlay>
+							</DndContext>
+						) }
+
+						<MediaUploadCheck>
+							<MediaUpload
+								allowedTypes={ [ 'video' ] }
+								multiple
+								onSelect={ insertHandpickedVideo }
+								render={ ( { open } ) => (
+									<Button
+										variant="secondary"
+										onClick={ open }
+										className="godam-gallery-v2__add-video-btn"
+									>
+										{ __( '+ Add Video', 'godam' ) }
+									</Button>
+								) }
+							/>
+						</MediaUploadCheck>
+					</PanelBody>
+				) }
+
+				{ /* ── Gallery Settings ────────────────────────────────────── */ }
+				<PanelBody
+					title={ __( 'Gallery Settings', 'godam' ) }
+					initialOpen={ true }
+					data-test-id="godam-gallery-v2-panel-settings"
+				>
 					<ToggleGroupControl
 						__nextHasNoMarginBottom
 						isBlock
@@ -647,13 +895,16 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 							value="list"
 						/>
 					</ToggleGroupControl>
+
 					<ToggleGroupControl
 						__nextHasNoMarginBottom
 						isBlock
 						label={ __( 'View Ratio', 'godam' ) }
 						data-test-id="godam-gallery-v2-control-view-ratio"
 						value={ viewRatio }
-						onChange={ ( value ) => value && setAttributes( { viewRatio: value } ) }
+						onChange={ ( value ) =>
+							value && setAttributes( { viewRatio: value } )
+						}
 					>
 						<ToggleGroupControlOption label="4:3" value="4:3" />
 						<ToggleGroupControlOption label="9:16" value="9:16" />
@@ -661,47 +912,146 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						<ToggleGroupControlOption label="1:1" value="1:1" />
 						<ToggleGroupControlOption label="16:9" value="16:9" />
 					</ToggleGroupControl>
+
 					<ToggleGroupControl
 						__nextHasNoMarginBottom
 						isBlock
 						label={ __( 'Item Size', 'godam' ) }
 						data-test-id="godam-gallery-v2-control-item-width"
 						value={ itemWidth }
-						onChange={ ( value ) => value && setAttributes( { itemWidth: value } ) }
+						onChange={ ( value ) =>
+							value && setAttributes( { itemWidth: value } )
+						}
 						help={ __( 'Size of each gallery item.', 'godam' ) }
 					>
 						<ToggleGroupControlOption label={ __( 'S', 'godam' ) } value="S" />
 						<ToggleGroupControlOption label={ __( 'M', 'godam' ) } value="M" />
 						<ToggleGroupControlOption label={ __( 'L', 'godam' ) } value="L" />
 					</ToggleGroupControl>
-					<div data-test-id="godam-gallery-v2-control-show-title">
-						<ToggleControl
-							label={ __( 'Show Video Titles and Dates', 'godam' ) }
-							checked={ !! showTitle }
-							onChange={ ( value ) => setAttributes( { showTitle: value } ) }
-						/>
-					</div>
-					{
-						showEngagementSetting && (
-							<ToggleControl
-								label={ __( 'Enable Likes & Comments', 'godam' ) }
-								checked={ !! engagements }
-								onChange={ ( value ) => setAttributes( { engagements: value } ) }
-								help={ __( 'Engagement will only be visible for transcoded videos', 'godam' ) }
-							/>
-						)
-					}
-					<SelectControl
-						label={ __( 'Performance', 'godam' ) }
-						value={ performanceMode || 'balanced' }
-						options={ performanceModeOptions }
-						help={ performanceModeHelpText[ performanceMode || 'balanced' ] }
-						onChange={ ( value ) => setAttributes( { performanceMode: value } ) }
+				</PanelBody>
+
+				{ /* ── Info Display ─────────────────────────────────────────── */ }
+				<PanelBody title={ __( 'Info Display', 'godam' ) } initialOpen={ true }>
+					<RadioControl
+						label={ __( 'Info Display', 'godam' ) }
+						hideLabelFromVision
+						selected={ showTitle ? 'title' : 'image' }
+						options={ [
+							{
+								label: __( 'Only Image', 'godam' ),
+								value: 'image',
+							},
+							{
+								label: __( 'Show Video Title and Date', 'godam' ),
+								value: 'title',
+							},
+						] }
+						onChange={ ( value ) =>
+							setAttributes( { showTitle: value === 'title' } )
+						}
+						data-test-id="godam-gallery-v2-control-show-title"
 					/>
 				</PanelBody>
 
+				{ /* ── Interaction ──────────────────────────────────────────── */ }
+				<PanelBody title={ __( 'Interaction', 'godam' ) } initialOpen={ true }>
+					<div className="godam-gallery-v2__radio-group">
+						{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
+						<label className="godam-gallery-v2__radio-option">
+							<input
+								type="radio"
+								name={ `godam-gallery-interaction-${ clientId }` }
+								value="autoplay"
+								checked={ !! autoplay }
+								onChange={ () =>
+									setAttributes( { autoplay: true, playOnHover: false } )
+								}
+							/>
+							<span className="godam-gallery-v2__radio-label">
+								{ __( 'Autoplay all videos', 'godam' ) }
+							</span>
+							<span className="godam-gallery-v2__radio-hint">
+								{ __( 'Visible videos autoplay one at a time and continue through the full video.', 'godam' ) }
+							</span>
+						</label>
+						{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
+						<label className="godam-gallery-v2__radio-option">
+							<input
+								type="radio"
+								name={ `godam-gallery-interaction-${ clientId }` }
+								value="hover"
+								checked={ ! autoplay }
+								onChange={ () =>
+									setAttributes( { autoplay: false, playOnHover: true } )
+								}
+							/>
+							<span className="godam-gallery-v2__radio-label">
+								{ __( 'Play on hover', 'godam' ) }
+							</span>
+							<span className="godam-gallery-v2__radio-hint">
+								{ __( 'Videos will play when hovered over', 'godam' ) }
+							</span>
+						</label>
+					</div>
+
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ __( 'Show play button', 'godam' ) }
+						checked={ showPlayButton !== false }
+						onChange={ ( value ) => setAttributes( { showPlayButton: value } ) }
+						help={ showPlayButton !== false
+							? __( 'Play button overlay is visible on each tile.', 'godam' )
+							: __( 'Play button overlay is hidden.', 'godam' )
+						}
+					/>
+				</PanelBody>
+
+				{ /* ── Performance ──────────────────────────────────────────── */ }
+				<PanelBody title={ __( 'Performance', 'godam' ) } initialOpen={ true }>
+					<ToggleGroupControl
+						__nextHasNoMarginBottom
+						isBlock
+						label={ __( 'Performance', 'godam' ) }
+						hideLabelFromVision
+						value={ performanceMode || 'balanced' }
+						onChange={ ( value ) =>
+							value && setAttributes( { performanceMode: value } )
+						}
+						help={ performanceModeHelpText[ performanceMode || 'balanced' ] }
+					>
+						<ToggleGroupControlOption
+							label={ __( 'Priority', 'godam' ) }
+							value="priority"
+						/>
+						<ToggleGroupControlOption
+							label={ __( 'Balanced', 'godam' ) }
+							value="balanced"
+						/>
+					</ToggleGroupControl>
+				</PanelBody>
+
+				{ /* ── Engagements (conditional) ────────────────────────────── */ }
+				{ showEngagementSetting && (
+					<PanelBody title={ __( 'Engagement', 'godam' ) } initialOpen={ false }>
+						<ToggleControl
+							label={ __( 'Enable Likes & Comments', 'godam' ) }
+							checked={ !! engagements }
+							onChange={ ( value ) => setAttributes( { engagements: value } ) }
+							help={ __(
+								'Engagement will only be visible for transcoded videos',
+								'godam',
+							) }
+						/>
+					</PanelBody>
+				) }
+
+				{ /* ── Query Settings (query mode only) ────────────────────── */ }
 				{ mode === 'query' && (
-					<PanelBody title={ __( 'Query Settings', 'godam' ) } initialOpen={ true } data-test-id="godam-gallery-v2-panel-query">
+					<PanelBody
+						title={ __( 'Query Settings', 'godam' ) }
+						initialOpen={ true }
+						data-test-id="godam-gallery-v2-panel-query"
+					>
 						<RangeControl
 							label={ __( 'Number of videos', 'godam' ) }
 							data-test-id="godam-gallery-v2-control-count"
@@ -719,7 +1069,9 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 										{ label: __( 'Date', 'godam' ), value: 'date' },
 										{ label: __( 'Title', 'godam' ), value: 'title' },
 									] }
-									onChange={ ( value ) => setAttributes( { orderby: value } ) }
+									onChange={ ( value ) =>
+										setAttributes( { orderby: value } )
+									}
 								/>
 							</div>
 							<div className="godam-gallery-v2__query-col">
@@ -727,8 +1079,14 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 									label={ __( 'Order', 'godam' ) }
 									value={ order }
 									options={ [
-										{ label: __( 'Descending', 'godam' ), value: 'desc' },
-										{ label: __( 'Ascending', 'godam' ), value: 'asc' },
+										{
+											label: __( 'Descending', 'godam' ),
+											value: 'desc',
+										},
+										{
+											label: __( 'Ascending', 'godam' ),
+											value: 'asc',
+										},
 									] }
 									onChange={ ( value ) => setAttributes( { order: value } ) }
 								/>
@@ -763,16 +1121,21 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 								{ label: __( 'Last 7 Days', 'godam' ), value: '7days' },
 								{ label: __( 'Last 30 Days', 'godam' ), value: '30days' },
 								{ label: __( 'Last 90 Days', 'godam' ), value: '90days' },
-								{ label: __( 'Custom Range', 'godam' ), value: 'custom' },
+								{
+									label: __( 'Custom Range', 'godam' ),
+									value: 'custom',
+								},
 							] }
 							onChange={ ( value ) =>
 								setAttributes( {
 									dateRange: value,
-									customDateStart: value === 'custom' ? customDateStart : '',
+									customDateStart:
+										value === 'custom' ? customDateStart : '',
 									customDateEnd: value === 'custom' ? customDateEnd : '',
 								} )
 							}
 						/>
+
 						{ dateRange === 'custom' && (
 							<div className="godam-gallery-v2__date-range-picker">
 								{ dateError && (
@@ -781,14 +1144,18 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 									</Notice>
 								) }
 								<div className="godam-gallery-v2__date-field">
-									<label htmlFor="godam-gallery-v2-start-date">{ __( 'Start Date', 'godam' ) }</label>
+									<label htmlFor="godam-gallery-v2-start-date">
+										{ __( 'Start Date', 'godam' ) }
+									</label>
 									<button
 										id="godam-gallery-v2-start-date"
 										type="button"
 										className={ `godam-gallery-v2__date-button ${ dateError ? 'has-error' : '' }` }
 										onClick={ () => setStartDatePopoverOpen( true ) }
 									>
-										{ customDateStart ? formatDisplayDate( customDateStart ) : __( 'Select Start Date', 'godam' ) }
+										{ customDateStart
+											? formatDisplayDate( customDateStart )
+											: __( 'Select Start Date', 'godam' ) }
 									</button>
 									{ startDatePopoverOpen && (
 										<Popover
@@ -807,14 +1174,18 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 									) }
 								</div>
 								<div className="godam-gallery-v2__date-field">
-									<label htmlFor="godam-gallery-v2-end-date">{ __( 'End Date', 'godam' ) }</label>
+									<label htmlFor="godam-gallery-v2-end-date">
+										{ __( 'End Date', 'godam' ) }
+									</label>
 									<button
 										id="godam-gallery-v2-end-date"
 										type="button"
 										className={ `godam-gallery-v2__date-button ${ dateError ? 'has-error' : '' }` }
 										onClick={ () => setEndDatePopoverOpen( true ) }
 									>
-										{ customDateEnd ? formatDisplayDate( customDateEnd ) : __( 'Select End Date', 'godam' ) }
+										{ customDateEnd
+											? formatDisplayDate( customDateEnd )
+											: __( 'Select End Date', 'godam' ) }
 									</button>
 									{ endDatePopoverOpen && (
 										<Popover
@@ -834,6 +1205,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 								</div>
 							</div>
 						) }
+
 						<div data-test-id="godam-gallery-v2-control-enable-more-items">
 							<ToggleControl
 								label={ __( 'Enable More Items', 'godam' ) }
@@ -846,8 +1218,14 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 								label={ __( 'More Items Behavior', 'godam' ) }
 								value={ resolvedMoreItemsBehavior }
 								options={ [
-									{ label: __( 'Load More Button', 'godam' ), value: 'button' },
-									{ label: __( 'Infinite Scroll', 'godam' ), value: 'infinite' },
+									{
+										label: __( 'Load More Button', 'godam' ),
+										value: 'button',
+									},
+									{
+										label: __( 'Infinite Scroll', 'godam' ),
+										value: 'infinite',
+									},
 								] }
 								disabled={ isCarouselLayout }
 								help={
@@ -855,32 +1233,89 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 										? __( 'Carousel layout always uses Infinite Scroll when more items are enabled.', 'godam' )
 										: __( 'Choose how visitors load more videos in query galleries.', 'godam' )
 								}
-								onChange={ ( value ) => updateMoreItemsSettings( true, value ) }
+								onChange={ ( value ) =>
+									updateMoreItemsSettings( true, value )
+								}
 							/>
 						) }
 					</PanelBody>
 				) }
+
 			</InspectorControls>
 
+			{ /* ── Block Canvas ──────────────────────────────────────────────── */ }
 			<div { ...blockProps } data-test-id="godam-gallery-v2-canvas">
 
+				{ /* Handpicked mode */ }
 				{ mode === 'handpicked' && (
 					<div
 						className={ `godam-gallery-v2__canvas godam-gallery-v2__canvas--${ layout }` }
 						data-test-id="godam-gallery-v2-canvas-handpicked"
+						data-show-play-button={ showPlayButton !== false ? 'true' : 'false' }
 					>
-						<InnerBlocks
-							allowedBlocks={ ALLOWED_BLOCKS }
-							orientation={ layout === 'carousel' ? 'horizontal' : 'vertical' }
-							renderAppender={ renderVideoAppender }
-						/>
+						{ /* Custom empty state shown when no videos are selected */ }
+						{ ! hasHandpickedVideos && (
+							<div className="godam-gallery-v2__empty-state">
+								<div className="godam-gallery-v2__empty-tiles">
+									{ [ ...Array( 6 ) ].map( ( _, i ) => (
+										<div
+											key={ i }
+											className="godam-gallery-v2__empty-tile"
+											aria-hidden="true"
+										/>
+									) ) }
+								</div>
+								<h3 className="godam-gallery-v2__empty-heading">
+									{ __( 'Create your media gallery', 'godam' ) }
+								</h3>
+								<p className="godam-gallery-v2__empty-desc">
+									{ __( 'Upload or select videos to add to your gallery.', 'godam' ) }
+								</p>
+								<MediaUploadCheck>
+									<MediaUpload
+										allowedTypes={ [ 'video' ] }
+										multiple
+										onSelect={ insertHandpickedVideo }
+										render={ ( { open } ) => (
+											<Button
+												variant="primary"
+												onClick={ open }
+												className="godam-gallery-v2__empty-btn"
+											>
+												{ __( '+ Add Video', 'godam' ) }
+											</Button>
+										) }
+									/>
+								</MediaUploadCheck>
+								{ /* InnerBlocks always mounted so block tree stays registered */ }
+								<div className="godam-gallery-v2__inner-blocks-mount">
+									<InnerBlocks
+										allowedBlocks={ ALLOWED_BLOCKS }
+										renderAppender={ false }
+									/>
+								</div>
+							</div>
+						) }
+
+						{ /* Videos list */ }
+						{ hasHandpickedVideos && (
+							<InnerBlocks
+								allowedBlocks={ ALLOWED_BLOCKS }
+								orientation={
+									layout === 'carousel' ? 'horizontal' : 'vertical'
+								}
+								renderAppender={ renderVideoAppender }
+							/>
+						) }
 					</div>
 				) }
 
+				{ /* Query mode */ }
 				{ mode === 'query' && (
 					<div
 						className={ `godam-gallery-v2__canvas godam-gallery-v2__canvas--${ layout }` }
 						data-test-id="godam-gallery-v2-canvas-query"
+						data-show-play-button={ showPlayButton !== false ? 'true' : 'false' }
 					>
 						{ queryPreviewVideos === null && (
 							<div className="godam-gallery-v2__state godam-gallery-v2__state--loading">
@@ -889,10 +1324,16 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 							</div>
 						) }
 
-						{ Array.isArray( queryPreviewVideos ) && queryPreviewVideos.length === 0 && (
+						{ Array.isArray( queryPreviewVideos ) &&
+							queryPreviewVideos.length === 0 && (
 							<div className="godam-gallery-v2__state">
 								<strong>{ __( 'No videos found', 'godam' ) }</strong>
-								<p>{ __( 'Try changing the selected folder, author, or dates.', 'godam' ) }</p>
+								<p>
+									{ __(
+										'Try changing the selected folder, author, or dates.',
+										'godam',
+									) }
+								</p>
 							</div>
 						) }
 
@@ -906,9 +1347,21 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 									>
 										<div className="godam-gallery-v2__query-thumb">
 											{ video.thumbnail ? (
-												<img src={ video.thumbnail } alt={ video.title } />
+												<img
+													src={ video.thumbnail }
+													alt={ video.title }
+												/>
 											) : (
-												<span data-test-id="godam-gallery-v2-element-thumbnail-fallback">{ __( 'Video', 'godam' ) }</span>
+												<span data-test-id="godam-gallery-v2-element-thumbnail-fallback">
+													{ __( 'Video', 'godam' ) }
+												</span>
+											) }
+											{ showPlayButton !== false && (
+												<div className="godam-gallery-v2__play-icon" aria-hidden="true">
+													<svg viewBox="0 0 24 24" fill="currentColor">
+														<path d="M8 5v14l11-7z" />
+													</svg>
+												</div>
 											) }
 										</div>
 										{ showTitle && (
@@ -923,6 +1376,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						) }
 					</div>
 				) }
+
 			</div>
 		</>
 	);

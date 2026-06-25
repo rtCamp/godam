@@ -6,7 +6,7 @@ import React, { useEffect } from 'react';
 /**
  * Internal dependencies
  */
-import { calculateEngagementRate, calculatePlayRate, singleMetricsChart, ensureAll7Days, calculateTrendPercentage } from './helper';
+import { calculateEngagementRate, calculatePlayRate, ensureAll7Days, calculateTrendPercentage } from './helper';
 import './charts.js';
 
 /**
@@ -88,8 +88,6 @@ const PlaysVsViewers = ( {
 			changeEl.classList.remove( 'change-rise', 'change-drop' );
 			changeEl.classList.add( trendPercentage >= 0 ? 'change-rise' : 'change-drop' );
 		}
-
-		singleMetricsChart( sortedData, '#single-plays-vs-viewers-chart', 'plays', 7, trendPercentage );
 	}, [ processedAnalyticsHistory, plays, mode ] );
 
 	return (
@@ -99,7 +97,12 @@ const PlaysVsViewers = ( {
 					<div className="analytics-info-heading">
 						<p className="text-xs text-[#525252]">{ __( 'Plays / Unique viewers', 'godam' ) }</p>
 					</div>
-					<p id="plays-vs-viewers-change" className="metric-change">+0%</p>
+					{ mode !== 'dashboard' && (
+						<div className="flex items-center gap-1.5">
+							<p id="plays-vs-viewers-change" className="metric-change">+0%</p>
+							<span className="text-[11px] text-zinc-400 whitespace-nowrap">{ __( 'vs 7 days ago', 'godam' ) }</span>
+						</div>
+					) }
 				</div>
 
 				{ isLoading ? (
@@ -125,10 +128,6 @@ const PlaysVsViewers = ( {
 								<p className="text-zinc-500 text-xs">{ __( 'Plays', 'godam' ) }</p>
 								<p className="text-zinc-500 text-xs">{ __( 'Unique viewers', 'godam' ) }</p>
 							</div>
-						</div>
-						<div className="flex flex-col gap-1 items-end">
-							<div id="single-plays-vs-viewers-chart" className="metrics-chart"></div>
-							<p className="text-zinc-400 text-[10px]">{ __( 'Last 7 days', 'godam' ) }</p>
 						</div>
 					</div>
 				) }

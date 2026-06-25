@@ -4,6 +4,11 @@
  */
 
 /**
+ * Internal dependencies
+ */
+import { resolveHotspotStyle } from './hotspotStyle';
+
+/**
  * Cache for loaded plugins to avoid duplicate loads
  */
 const loadedPlugins = {
@@ -201,9 +206,15 @@ export function hasHotspotsWithIcons( layers ) {
 	}
 
 	return layers.some( ( layer ) => {
-		// Regular hotspot layer
+		// Regular hotspot layer. Resolve each point's effective style (shared
+		// layer-level model for refactored layers, per-hotspot for legacy ones)
+		// so detection matches exactly when the player renders a FontAwesome
+		// glyph. Previously this only checked the pre-refactor `hotspot.showIcon`
+		// flag, so icon-style hotspots on the new model never triggered the
+		// FontAwesome load and rendered blank on the frontend. Mirrors the Woo
+		// branch below, which already moved to the layer-level style model.
 		if ( layer.type === 'hotspot' ) {
-			return layer.hotspots?.some( ( hotspot ) => hotspot.showIcon );
+			return layer.hotspots?.some( ( hotspot ) => resolveHotspotStyle( layer, hotspot ).icon );
 		}
 
 		// Woo layer: layer-level FA icon (new model) or per-hotspot legacy icon
