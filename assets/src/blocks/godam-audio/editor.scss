@@ -11,10 +11,12 @@
 	margin-right: 0;
 	position: relative;
 
-	padding: 30px;
-    border: 3px dotted #B2AEFF;
-    background: #F2F2FF;
-    border-radius: 6px;
+	&:not(:has(.godam-audio-empty)) {
+		padding: 30px;
+		border: 3px dotted #b2aeff;
+		background: #f2f2ff;
+		border-radius: 6px;
+	}
 
 	&.is-transient audio {
 		opacity: 0.3;
@@ -58,14 +60,6 @@
 
 	&__btn {
 		margin-top: 8px;
-		background: #6366f1 !important;
-		border-color: #6366f1 !important;
-		color: #fff !important;
-
-		&:hover {
-			background: #4f46e5 !important;
-			border-color: #4f46e5 !important;
-		}
 	}
 }
 

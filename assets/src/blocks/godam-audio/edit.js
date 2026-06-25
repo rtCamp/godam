@@ -122,11 +122,23 @@ function AudioEdit( {
 			id: undefined,
 			caption: undefined,
 			blob: undefined,
+			audioTitle: '',
+			description: '',
+			thumbnail: '',
+			thumbnailId: undefined,
 		} );
 	}
 
 	function onSelectThumbnail( media ) {
 		if ( ! media || ! media.url ) {
+			return;
+		}
+		const mediaType = media.type || ( media.mime || media.mime_type || '' ).split( '/' )[ 0 ];
+		if ( mediaType && mediaType !== 'image' ) {
+			createErrorNotice(
+				__( 'Only image files are allowed for the GoDAM Audio thumbnail.', 'godam' ),
+				{ type: 'snackbar' },
+			);
 			return;
 		}
 		setAttributes( { thumbnail: media.url, thumbnailId: media.id } );
@@ -156,6 +168,7 @@ function AudioEdit( {
 								onSelect={ onSelectAudio }
 								allowedTypes={ ALLOWED_MEDIA_TYPES }
 								accept="audio/*"
+								onError={ onUploadError }
 								render={ ( { open } ) => (
 									<Button
 										__next40pxDefaultSize
@@ -184,6 +197,7 @@ function AudioEdit( {
 								onSelect={ onSelectAudio }
 								allowedTypes={ ALLOWED_MEDIA_TYPES }
 								accept="audio/*"
+								onError={ onUploadError }
 								render={ ( { open } ) => (
 									<Button
 										variant="primary"
@@ -245,7 +259,7 @@ function AudioEdit( {
 						__nextHasNoMarginBottom
 						label={ __( 'Audio Title', 'godam' ) }
 						value={ audioTitle }
-						placeholder={ __( 'Placeholder', 'godam' ) }
+						placeholder={ __( 'Add a title…', 'godam' ) }
 						onChange={ ( value ) => setAttributes( { audioTitle: value } ) }
 					/>
 
@@ -253,7 +267,7 @@ function AudioEdit( {
 						__nextHasNoMarginBottom
 						label={ __( 'Description', 'godam' ) }
 						value={ description }
-						placeholder={ __( 'This is a sample description.', 'godam' ) }
+						placeholder={ __( 'Add a short description…', 'godam' ) }
 						rows={ 4 }
 						onChange={ ( value ) => setAttributes( { description: value } ) }
 					/>

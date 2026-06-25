@@ -45,7 +45,7 @@ if ( ! $godam_attachment_id && ! empty( $godam_src ) ) {
 			<?php if ( $godam_thumbnail ) : ?>
 				<img
 					src="<?php echo esc_url( $godam_thumbnail ); ?>"
-					alt="<?php echo esc_attr( $godam_audio_title ); ?>"
+					alt="<?php echo esc_attr( $godam_audio_title ? $godam_audio_title : __( 'Audio thumbnail', 'godam' ) ); ?>"
 				/>
 			<?php else : ?>
 				<div class="godam-audio-card__cover-placeholder">
