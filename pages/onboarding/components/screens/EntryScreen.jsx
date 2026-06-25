@@ -47,10 +47,10 @@ const EntryScreen = () => {
 			</p>
 
 			<Button variant="primary" className="godam-onb-btn godam-onb-btn--primary godam-onboarding__cta" onClick={ () => dispatch( goToStep( STEPS.SIGNUP ) ) } data-test-id="godam-onboarding-button-start-trial">
-				{ __( 'New here? Start your 30-day free trial now.', 'godam' ) }
+				{ __( 'New here? Start your 60-day free trial now.', 'godam' ) }
 			</Button>
 			<p className="godam-onboarding__trial-note">
-				{ __( 'Enjoy a 30-day free trial. After that, continue for $9/month or cancel anytime. No credit card or payment required today.', 'godam' ) }
+				{ __( 'Enjoy a 60-day free trial. After that, continue for $9/month or cancel anytime. No credit card or payment required today.', 'godam' ) }
 			</p>
 
 			<div className="godam-onboarding__or">{ __( 'OR', 'godam' ) }</div>

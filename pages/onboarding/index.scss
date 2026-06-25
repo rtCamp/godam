@@ -230,6 +230,11 @@
 
 	.godam-onboarding__required { color: var( --godam-onb-required ); margin-left: 2px; }
 
+	// Field-level validation errors (passed via `help`) render in red, not the
+	// default muted help colour — every `help` in these forms is an error.
+	.components-base-control__help,
+	.components-checkbox-control__help { color: var( --godam-onb-required ); }
+
 	.components-checkbox-control__label { font-size: 13px; line-height: 1.4; color: var( --godam-onb-text-muted ); }
 
 	// --- right side panel ---
