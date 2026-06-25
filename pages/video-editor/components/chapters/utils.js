@@ -27,7 +27,7 @@ export const parseTimeToSeconds = ( input ) => {
 
 	const parts = String( input ).split( ':' ).map( Number );
 	if ( parts.some( isNaN ) ) {
-		return 0;
+		return NaN;
 	}
 
 	let seconds = 0;
