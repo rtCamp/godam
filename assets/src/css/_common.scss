@@ -335,8 +335,24 @@
 	}
 
 	.components-panel__body {
-		padding: 1.25rem;
 		border-top: 0;
+
+		&-title {
+			outline: none;
+			box-shadow: none;
+
+			&:hover {
+				background: transparent;
+			}
+		}
+
+		&.is-opened {
+
+			.components-panel__body-title {
+				border-bottom: 1px solid #e0e0e0;
+				margin-bottom: 1rem;
+			}
+		}
 	}
 
 
