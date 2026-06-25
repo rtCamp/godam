@@ -8,7 +8,7 @@ import React from 'react';
  */
 import { Dropdown, Button, MenuGroup, MenuItem, Icon } from '@wordpress/components';
 import { chevronDown } from '@wordpress/icons';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Date-range dropdown for the timeline's global range. 7D / 30D / 90D / 1Y / All.
@@ -36,6 +36,14 @@ const DateRangePicker = ( { value, onChange } ) => {
 	const currentLabel =
 		options.find( ( o ) => o.id === value )?.label || options[ 0 ].label;
 
+	// Fold the current selection into the toggle's accessible name so screen
+	// readers keep it (a bare aria-label="Date range" overrode it — Copilot note).
+	const rangeAriaLabel = sprintf(
+		/* translators: %s: the selected range label, e.g. "Last 7 days". */
+		__( 'Date range: %s', 'godam' ),
+		currentLabel,
+	);
+
 	return (
 		<Dropdown
 			className="godam-period-dropdown"
@@ -45,7 +53,7 @@ const DateRangePicker = ( { value, onChange } ) => {
 					variant="secondary"
 					onClick={ onToggle }
 					aria-expanded={ isOpen }
-					aria-label={ __( 'Date range', 'godam' ) }
+					aria-label={ rangeAriaLabel }
 					className="godam-period-dropdown__toggle"
 				>
 					{ currentLabel }
