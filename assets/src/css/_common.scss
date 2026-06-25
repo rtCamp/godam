@@ -389,12 +389,13 @@
 
 .godam-form-group {
 
-	.label-text {
-		font-size: 0.875rem !important;
-		line-height: 1.375 !important;
+	label, .label-text, .components-base-control__label {
+		font-size: 13px;
+		line-height: 1.375;
 		display: block;
 		margin-bottom: 0.5rem;
 		font-weight: 500;
+		text-transform: none !important;
 	}
 
 	.help-text {

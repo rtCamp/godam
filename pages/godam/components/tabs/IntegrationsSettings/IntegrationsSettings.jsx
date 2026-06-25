@@ -348,16 +348,17 @@ const IntegrationSettings = () => {
 				</TabPanel>
 			</Panel>
 
-			<Button
-				variant="primary"
-				className="godam-button"
-				onClick={ handleSaveSettings }
-				icon={ saveMediaSettingsLoading && <Spinner /> }
-				isBusy={ saveMediaSettingsLoading }
-				disabled={ saveMediaSettingsLoading || ! isChanged || ! hasValidAPIKey }
-			>
-				{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
-			</Button>
+			<div className="godam-settings__save-row">
+				<Button
+					variant="primary"
+					onClick={ handleSaveSettings }
+					icon={ saveMediaSettingsLoading && <Spinner /> }
+					isBusy={ saveMediaSettingsLoading }
+					disabled={ saveMediaSettingsLoading || ! isChanged || ! hasValidAPIKey }
+				>
+					{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
+				</Button>
+			</div>
 		</>
 	);
 };

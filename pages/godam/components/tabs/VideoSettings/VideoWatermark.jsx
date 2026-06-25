@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Notice, ToggleControl, TextControl, Button, Panel, PanelBody } from '@wordpress/components';
+import { Notice, ToggleControl, TextControl, Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
@@ -38,11 +38,7 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 	};
 
 	/**
-	 * Function to open the WordPress media picker for selecting a brand image.
-	 * It restricts the selection to images only and handles the selection event.
-	 *
-	 * For the uploader tab of WordPress media library, it checks if the selected file is an image.
-	 * If not, it shows an error notice.
+	 * Function to open the WordPress media picker for selecting a watermark image.
 	 */
 	const openMediaPicker = () => {
 		const fileFrame = wp.media( {
@@ -51,17 +47,14 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 				text: __( 'Use this watermark', 'godam' ),
 			},
 			library: {
-				type: 'image', // Restrict to images only
+				type: 'image',
 			},
-			multiple: false, // Disable multiple selection
+			multiple: false,
 		} );
 
 		fileFrame.on( 'select', function() {
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
 
-			/**
-			 * This handles the case for the uploader tab of WordPress media library.
-			 */
 			if ( attachment.type !== 'image' ) {
 				showNotice( __( 'Only Image files are allowed', 'godam' ), 'error' );
 				return;
@@ -86,131 +79,103 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 	};
 
 	return (
-		<div className="relative">
-			<Panel
-				heading={ __( 'Video Watermark', 'godam' ) }
-				className="godam-panel godam-margin-bottom"
-			>
-				<PanelBody>
-					<div className="flex flex-col gap-2 opacity-90 relative">
-						<div data-test-id="godam-settings-video-control-watermark-enabled">
-							<ToggleControl
-								__nextHasNoMarginBottom
-								className="godam-toggle"
-								label={ __( 'Enable video watermark', 'godam' ) }
-								checked={ enableWatermark }
-								onChange={ ( value ) => {
-									handleSettingChange( 'watermark', value );
-									setNotice( { ...notice, isVisible: false } );
-								} }
-								disabled={ ! hasAPIKey }
-								help={ __(
-									'If enabled, GoDAM will add a watermark to the transcoded video',
-									'godam',
-								) }
-							/>
-						</div>
-						{ enableWatermark && (
-							<>
-								<div data-test-id="godam-settings-video-control-watermark-image-toggle">
-									<ToggleControl
-										label={ __( 'Use image watermark', 'godam' ) }
-										className="godam-toggle"
-										checked={ useImage }
-										onChange={ ( value ) => {
-											handleSettingChange( 'use_watermark_image', value );
-											setNotice( { ...notice, isVisible: false } );
-										} }
-										help={
-											<>
-												{ __(
-													'If enabled, Transcoder will use an image instead of text as the watermark for the transcoded video',
-													'godam',
-												) }
-												<strong className="font-semibold">
-													{ __(
-														'(Recommended dimensions: 200 px width × 70 px height)',
-														'godam',
-													) }
-												</strong>
-											</>
-										}
-									/>
+		<div className="flex flex-col gap-2 relative">
+			<div data-test-id="godam-settings-video-control-watermark-enabled">
+				<ToggleControl
+					__nextHasNoMarginBottom
+					label={ __( 'Enable video watermark', 'godam' ) }
+					checked={ enableWatermark }
+					onChange={ ( value ) => {
+						handleSettingChange( 'watermark', value );
+						setNotice( { ...notice, isVisible: false } );
+					} }
+					disabled={ ! hasAPIKey }
+					help={ __( 'If enabled, GoDAM will add a watermark to the transcoded video', 'godam' ) }
+				/>
+			</div>
+			{ enableWatermark && (
+				<>
+					<div data-test-id="godam-settings-video-control-watermark-image-toggle">
+						<ToggleControl
+							label={ __( 'Use image watermark', 'godam' ) }
+							checked={ useImage }
+							onChange={ ( value ) => {
+								handleSettingChange( 'use_watermark_image', value );
+								setNotice( { ...notice, isVisible: false } );
+							} }
+							help={
+								<>
+									{ __( 'If enabled, Transcoder will use an image instead of text as the watermark for the transcoded video', 'godam' ) }
+									<strong className="font-semibold">
+										{ __( '(Recommended dimensions: 200 px width × 70 px height)', 'godam' ) }
+									</strong>
+								</>
+							}
+						/>
 
-									{ useImage && (
-										<div className="mt-2">
-											<div className="flex gap-2">
-												<Button
-													variant="primary"
-													onClick={ openMediaPicker }
-													className="godam-button"
-												>
-													{ selectedMedia
-														? __( 'Change Watermark', 'godam' )
-														: __( 'Select Watermark', 'godam' ) }
-												</Button>
-												{ selectedMedia && (
-													<Button
-														isDestructive
-														className="godam-button"
-														onClick={ () => {
-															handleSettingChange( 'watermark_url', '' );
-															handleSettingChange( 'watermark_image_id', null );
-														} }
-														variant="secondary"
-													>
-														{ __( 'Remove Watermark', 'godam' ) }
-													</Button>
-												) }
-											</div>
-											{ selectedMedia && (
-												<div className="mt-2 border-2 border-blue-700 rounded-lg p-2 inline-block bg-gray-200">
-													<img
-														src={ selectedMedia }
-														alt={ __( 'Selected watermark', 'godam' ) }
-														className="max-w-[200px]"
-													/>
-												</div>
-											) }
-											{ notice.isVisible && (
-												<Notice
-													className="my-4"
-													status={ notice.status }
-													onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
-												>
-													{ notice.message }
-												</Notice>
-											) }
-										</div>
+						{ useImage && (
+							<div className="mt-2">
+								<div className="flex gap-2">
+									<Button
+										variant="primary"
+										onClick={ openMediaPicker }
+									>
+										{ selectedMedia
+											? __( 'Change Watermark', 'godam' )
+											: __( 'Select Watermark', 'godam' ) }
+									</Button>
+									{ selectedMedia && (
+										<Button
+											isDestructive
+											onClick={ () => {
+												handleSettingChange( 'watermark_url', '' );
+												handleSettingChange( 'watermark_image_id', null );
+											} }
+											variant="secondary"
+										>
+											{ __( 'Remove Watermark', 'godam' ) }
+										</Button>
 									) }
 								</div>
-								{ ! useImage && (
-									<div className="godam-form-group">
-										<label className="label-text" htmlFor="watermark_text">
-											{ __( 'Watermark Text', 'godam' ) }
-										</label>
-										<TextControl
-											__next40pxDefaultSize
-											__nextHasNoMarginBottom
-											data-test-id="godam-settings-video-control-watermark-text"
-											value={ watermarkText }
-											onChange={ ( value ) =>
-												handleSettingChange( 'watermark_text', value )
-											}
-											placeholder={ __( 'Enter watermark text', 'godam' ) }
-											className="godam-input"
-											help={ __(
-												'Specify the watermark text that will be added to transcoded videos',
-												'godam',
-											) }
+								{ selectedMedia && (
+									<div className="mt-2 border-2 border-blue-700 rounded-lg p-2 inline-block bg-gray-200">
+										<img
+											src={ selectedMedia }
+											alt={ __( 'Selected watermark', 'godam' ) }
+											className="max-w-[200px]"
 										/>
 									</div>
 								) }
-							</>
+								{ notice.isVisible && (
+									<Notice
+										className="my-4"
+										status={ notice.status }
+										onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
+									>
+										{ notice.message }
+									</Notice>
+								) }
+							</div>
 						) }
 					</div>
-				</PanelBody>
-			</Panel>
+					{ ! useImage && (
+						<div className="godam-form-group">
+							<label className="label-text" htmlFor="watermark_text">
+								{ __( 'Watermark Text', 'godam' ) }
+							</label>
+							<TextControl
+								__next40pxDefaultSize
+								__nextHasNoMarginBottom
+								data-test-id="godam-settings-video-control-watermark-text"
+								value={ watermarkText }
+								onChange={ ( value ) => handleSettingChange( 'watermark_text', value ) }
+								placeholder={ __( 'Enter watermark text', 'godam' ) }
+								help={ __( 'Specify the watermark text that will be added to transcoded videos', 'godam' ) }
+							/>
+						</div>
+					) }
+				</>
+			) }
 		</div>
 	);
 };

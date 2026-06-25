@@ -1,3 +1,15 @@
+.godam-video-settings__fields {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+
+.godam-settings__save-row {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 1rem;
+}
+
 .godam-api-key-banner {
 
 	h2 {

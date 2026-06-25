@@ -6,43 +6,34 @@ import { useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Panel, PanelBody, SelectControl } from '@wordpress/components';
+import { CustomSelectControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 const QUALITY_OPTIONS = [
-	{ label: __( 'Highest quality (100%)', 'godam' ), value: 100 },
-	{ label: __( 'Higher quality (80%)', 'godam' ), value: 80 },
-	{ label: __( 'Medium quality (60%)', 'godam' ), value: 60 },
-	{ label: __( 'Lower quality (40%)', 'godam' ), value: 40 },
-	{ label: __( 'Lowest quality (20%)', 'godam' ), value: 20 },
+	{ key: '100', name: __( 'Highest quality (100%)', 'godam' ) },
+	{ key: '80', name: __( 'Higher quality (80%)', 'godam' ) },
+	{ key: '60', name: __( 'Medium quality (60%)', 'godam' ) },
+	{ key: '40', name: __( 'Lower quality (40%)', 'godam' ) },
+	{ key: '20', name: __( 'Lowest quality (20%)', 'godam' ) },
 ];
 
 const VideoCompressQuality = ( { handleSettingChange } ) => {
 	const videoQuality = useSelector( ( state ) => state.mediaSettings.video?.video_compress_quality );
+	const selectedOption = QUALITY_OPTIONS.find( ( option ) => option.key === String( videoQuality ) ) || QUALITY_OPTIONS[ 0 ];
 
 	return (
-		<Panel
-			heading={ __( 'Video Quality', 'godam' ) }
-			className="godam-panel"
-		>
-			<PanelBody>
-				<div className="godam-form-group">
-					<SelectControl
-						className="godam-select"
-						value={ videoQuality }
-						onChange={ ( value ) => {
-							handleSettingChange( 'video_compress_quality', value );
-						} }
-						label={ __( 'Video quality', 'godam' ) }
-						options={ QUALITY_OPTIONS }
-					/>
-					<div className="help-text">
-						{ __( 'Select the video quality.', 'godam' ) }
-					</div>
-				</div>
-			</PanelBody>
-
-		</Panel>
+		<div className="godam-form-group">
+			<CustomSelectControl
+				__next40pxDefaultSize
+				label={ __( 'Video Quality', 'godam' ) }
+				options={ QUALITY_OPTIONS }
+				value={ selectedOption }
+				onChange={ ( { selectedItem } ) => handleSettingChange( 'video_compress_quality', Number( selectedItem.key ) ) }
+			/>
+			<p className="godam-settings-help">
+				{ __( 'Select the video quality.', 'godam' ) }
+			</p>
+		</div>
 	);
 };
 
