@@ -1,23 +1,28 @@
 /**
  * WordPress dependencies
  */
-import { __, _x } from '@wordpress/i18n';
+import { __, _x, sprintf } from '@wordpress/i18n';
 
 /**
- * A Utility function to calculate the percentage of used storage or bandwidth.
+ * Internal dependencies
+ */
+import '../APIKey/api-key.scss';
+
+/**
+ * A utility function to calculate the percentage of used storage or bandwidth.
  *
  * @param {number} used  - The amount of storage or bandwidth used.
  * @param {number} total - The total amount of storage or bandwidth available.
  * @return {number} - The percentage of used storage or bandwidth, rounded to two decimal places.
  */
 const calculatePercentage = ( used, total ) => {
-	// Handle undefined, null, or non-numeric values.
 	const usedValue = parseFloat( used ) || 0;
 	const totalValue = parseFloat( total ) || 0;
 
 	if ( totalValue === 0 ) {
 		return 0;
 	}
+
 	try {
 		const result = ( usedValue / totalValue ) * 100;
 		return result.toFixed( 2 );
@@ -26,47 +31,74 @@ const calculatePercentage = ( used, total ) => {
 	}
 };
 
+/**
+ * Single usage card (label, percentage, progress bar and totals).
+ *
+ * @param {Object} param0       - Component props.
+ * @param {string} param0.label - The meter label (e.g. "Bandwidth").
+ * @param {number} param0.used  - The amount used.
+ * @param {number} param0.total - The total amount available on the plan.
+ *
+ * @return {JSX.Element} The rendered card.
+ */
+const PlanUsageCard = ( { label, used, total } ) => {
+	const usedValue = parseFloat( used ) || 0;
+	const totalValue = parseFloat( total ) || 0;
+	const percentage = calculatePercentage( usedValue, totalValue );
+
+	return (
+		<div className="godam-plan-usage__card">
+			<div className="godam-plan-usage__head">
+				<span className="godam-plan-usage__label">{ label }</span>
+				<span className="godam-plan-usage__pct">{ percentage }%</span>
+			</div>
+			<div className="godam-plan-usage__bar">
+				<div
+					className={ `godam-plan-usage__bar-fill ${ percentage > 90 ? 'is-over' : '' }` }
+					style={ { width: `${ percentage }%` } }
+				/>
+			</div>
+			<div className="godam-plan-usage__meta">
+				<span className="godam-plan-usage__used">
+					{ usedValue.toFixed( 2 ) } { _x( 'GB', 'gigabyte', 'godam' ) }
+				</span>
+				<span className="godam-plan-usage__avail">
+					{ sprintf(
+						/* translators: %s: total plan size in gigabytes */
+						__( 'of %s GB available', 'godam' ),
+						Math.round( totalValue ).toLocaleString( 'en-US' ),
+					) }
+				</span>
+			</div>
+		</div>
+	);
+};
+
+/**
+ * Plan Usage — bandwidth and storage consumption for the active plan.
+ *
+ * Rendered inside the API Settings card. Usage figures are provided by the
+ * server via `window.userData`.
+ *
+ * @return {JSX.Element} The rendered section.
+ */
 const UsageData = () => {
 	const userData = window?.userData || {};
 
-	const percentageBandwidthUsed = calculatePercentage( userData.bandwidthUsed, userData.totalBandwidth );
-	const percentageStorageUsed = calculatePercentage( userData.storageUsed, userData.totalStorage );
-
 	return (
-		<div className="flex gap-4 flex-wrap">
-			<div className="flex gap-3 items-center">
-				<div className="circle-container">
-					<div className="data text-xs">{ percentageBandwidthUsed }%</div>
-					<div
-						className={ `circle ${
-							percentageBandwidthUsed > 90 ? 'red' : ''
-						}` }
-						style={ { '--percentage': percentageBandwidthUsed + '%' } }
-					></div>
-				</div>
-				<div className="leading-6">
-					<div className="easydam-settings-label text-base">{ __( 'BANDWIDTH', 'godam' ) }</div>
-					<strong>{ __( 'Available:', 'godam' ) } </strong>{ parseFloat( Math.max( 0, ( userData.totalBandwidth || 0 ) - ( userData.bandwidthUsed || 0 ) ) ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
-					<br />
-					<strong>{ __( 'Used:', 'godam' ) } </strong>{ parseFloat( userData.bandwidthUsed || 0 ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
-				</div>
-			</div>
-			<div className="flex gap-3 items-center">
-				<div className="circle-container">
-					<div className="data text-xs">{ percentageStorageUsed }%</div>
-					<div
-						className={ `circle ${
-							percentageStorageUsed > 90 ? 'red' : ''
-						}` }
-						style={ { '--percentage': percentageStorageUsed + '%' } }
-					></div>
-				</div>
-				<div className="leading-6">
-					<div className="easydam-settings-label text-base">{ __( 'STORAGE', 'godam' ) }</div>
-					<strong>{ __( 'Available:', 'godam' ) } </strong>{ parseFloat( Math.max( 0, ( userData.totalStorage || 0 ) - ( userData.storageUsed || 0 ) ) ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
-					<br />
-					<strong>{ __( 'Used:', 'godam' ) } </strong>{ parseFloat( userData.storageUsed || 0 ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
-				</div>
+		<div className="godam-plan-usage">
+			<h3 className="godam-plan-usage__title">{ __( 'Plan Usage', 'godam' ) }</h3>
+			<div className="godam-plan-usage__cards">
+				<PlanUsageCard
+					label={ __( 'Bandwidth', 'godam' ) }
+					used={ userData.bandwidthUsed }
+					total={ userData.totalBandwidth }
+				/>
+				<PlanUsageCard
+					label={ __( 'Storage', 'godam' ) }
+					used={ userData.storageUsed }
+					total={ userData.totalStorage }
+				/>
 			</div>
 		</div>
 	);

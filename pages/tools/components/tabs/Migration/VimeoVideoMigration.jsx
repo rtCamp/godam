@@ -179,8 +179,8 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 					</p>
 
 					<div className="flex items-center gap-2">
-						<Icon icon={ error } className="w-4 h-4" style={ { fill: '#EAB308' } } />
-						<p className="text-center m-0 text-[#AB3A6C]">{ __( 'This migrator will only migrate Vimeo videos that are already fetched on GoDAM Central.', 'godam' ) }</p>
+						<Icon icon={ error } className="w-4 h-4" style={ { fill: '#a77f06' } } />
+						<p className="m-0 text-[#a77f06]">{ __( 'This migrator will only migrate Vimeo videos that are already fetched on GoDAM Central.', 'godam' ) }</p>
 						<ExternalLink href={ `${ window.godamRestRoute?.apiBase }/web` } className="godam-url">{ __( 'Open', 'godam' ) }</ExternalLink>
 					</div>
 
@@ -217,7 +217,7 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 						<Button
 							variant="secondary"
 							onClick={ handleAbortClick }
-							className="godam-button mt-2"
+							className="mt-2"
 						>
 							{ __( 'Abort', 'godam' ) }
 						</Button>
@@ -225,7 +225,7 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 						<Button
 							variant="primary"
 							onClick={ handleMigrationClick }
-							className="godam-button mt-2"
+							className="mt-2"
 							disabled={ ! migrationStatus }
 						>
 							{ migrationStatus?.status === 'completed' ? __( 'Restart Migration', 'godam' ) : __( 'Start Migration', 'godam' ) }
