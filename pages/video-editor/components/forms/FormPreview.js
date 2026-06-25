@@ -13,8 +13,8 @@ import LayerControl from '../LayerControls';
 /**
  * Shared preview for every form-plugin layer.
  *
- * Renders the coloured layer backdrop, the form body, an "Edit form" shortcut
- * and the optional "Skip" button so all form layers look and behave the same.
+ * Renders the coloured layer backdrop, the form body, and the optional "Skip"
+ * button so all form layers look and behave the same.
  *
  * The body comes from one of two sources. `html` is a string rendered via
  * `dangerouslySetInnerHTML` (used by plugins whose preview is fetched as

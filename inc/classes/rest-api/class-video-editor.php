@@ -139,6 +139,12 @@ class Video_Editor extends Base {
 			'order'          => $order,
 		);
 
+		// Match core's `query-attachments` behaviour: users who can't edit others'
+		// content should only see their own uploads.
+		if ( ! current_user_can( 'edit_others_posts' ) ) {
+			$args['author'] = get_current_user_id();
+		}
+
 		if ( '' !== $search ) {
 			$args['s'] = $search;
 		}
