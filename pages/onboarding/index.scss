@@ -17,8 +17,9 @@
 	--godam-onb-accent-hover: var( --wp-admin-theme-color-darker-10, #4a27d6 );
 	--godam-onb-accent-soft: color-mix( in srgb, var( --wp-admin-theme-color, #5d31ff ) 8%, transparent );
 	--godam-onb-panel-bg: color-mix( in srgb, var( --wp-admin-theme-color, #5d31ff ) 6%, #fff );
-	// Side-panel gradient: near-white → the admin accent (Figma: #FFFEFC → #7049FF).
-	--godam-onb-panel-gradient: linear-gradient( 135deg, #fffefc 0%, var( --wp-admin-theme-color, #7049ff ) 100% );
+	// Side-panel gradient: a single diagonal, light at the bottom-left → the
+	// admin accent (dark) at the top-right (Figma: #FFFEFC → #7049FF).
+	--godam-onb-panel-gradient: linear-gradient( 45deg, #fffefc 0%, var( --wp-admin-theme-color, #7049ff ) 100% );
 	--godam-onb-panel-border: color-mix( in srgb, var( --wp-admin-theme-color, #5d31ff ) 16%, #fff );
 	--godam-onb-chip-bg: color-mix( in srgb, var( --wp-admin-theme-color, #5d31ff ) 12%, #fff );
 	--godam-onb-text: #020617;
