@@ -26,7 +26,7 @@ import './confirm-modal.scss';
  * @param {Function}    param0.onCancel      - Called when the modal is dismissed or cancelled.
  * @param {boolean}     param0.isBusy        - Whether the confirm action is in progress.
  * @param {boolean}     param0.isDestructive - Whether the confirm action is destructive.
- * @param {string}      [param0.testId]      - data-test-id for the confirm button (E2E hook).
+ * @param {string}      [param0.'data-test-id'] - data-test-id forwarded to the confirm button (E2E hook).
  *
  * @return {JSX.Element|null} The rendered modal or null when closed.
  */

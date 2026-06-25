@@ -248,7 +248,7 @@ export const VeToggle = ( { label, help, checked, onChange, disabled = false, cl
  * `ToggleGroupControl` can't render the two-line option design.
  *
  * @param {Object}   props          Props.
- * @param {Array}    props.options  `[{ value, label, description, icon, disabled }]`. `icon` is an optional JSX element rendered above the label.
+ * @param {Array}    props.options  `[{ value, label, description, icon, disabled, testId }]`. `icon` is an optional JSX element rendered above the label; `testId` is rendered as `data-test-id` on the option button.
  *
  * @param {string}   props.value    Selected value.
  * @param {Function} props.onChange Receives the chosen value.
@@ -283,7 +283,7 @@ export const VeSegmented = ( { options = [], value, onChange, ...rest } ) => (
  * component renders a selectable icon grid.
  *
  * @param {Object}   props          Props.
- * @param {Array}    props.options  `[{ value, label, Icon }]` where `Icon` is a component.
+ * @param {Array}    props.options  `[{ value, label, Icon, testId }]` where `Icon` is a component; `testId` is rendered as `data-test-id` on the grid button.
  * @param {string}   props.value    Selected value.
  * @param {Function} props.onChange Receives the chosen value.
  * @return {JSX.Element} Grid control.
@@ -321,7 +321,7 @@ export const VeLayoutGrid = ( { options = [], value, onChange, ...rest } ) => (
  *
  * @param {Object}   props          Props.
  * @param {string}   props.name     Shared radio group name (unique per layer).
- * @param {Array}    props.options  `[{ value, label, description, disabled, content }]`.
+ * @param {Array}    props.options  `[{ value, label, description, disabled, content, testId }]`. `testId` is rendered as `data-test-id` on the option's `<input>`.
  * @param {string}   props.value    Selected value.
  * @param {Function} props.onChange Receives the chosen value.
  * @return {JSX.Element} Radio group.

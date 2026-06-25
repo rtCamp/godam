@@ -109,8 +109,10 @@ const DEFAULT_VIEW = {
  * @param {Object}   props
  * @param {string}   props.label    Accessible label / aria for the control.
  * @param {Array}    props.options  `{ key, label }` options.
- * @param {string}   props.value    Currently selected option key.
- * @param {Function} props.onChange Called with the selected option key.
+ * @param {string}   props.value              Currently selected option key.
+ * @param {Function} props.onChange           Called with the selected option key.
+ * @param {string}   [props.toggleTestId]     data-test-id for the toggle button (E2E hook).
+ * @param {string}   [props.itemTestIdPrefix] Prefix for each menu item's data-test-id; the option key is appended.
  * @return {JSX.Element} Dropdown control.
  */
 const ToolbarDropdown = ( { label, options, value, onChange, toggleTestId, itemTestIdPrefix } ) => {
