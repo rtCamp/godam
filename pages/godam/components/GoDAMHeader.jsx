@@ -93,7 +93,7 @@ const GodamHeader = () => {
 						<div className="flex flex-col sm:flex-row md:items-center gap-1 sm:gap-2 md:gap-3">
 							<Button
 								className={ `${ ( ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan ) ? 'disabled' : '' }` }
-								variant="ghost"
+								variant="tertiary"
 								size="compact"
 								target={ ( window?.userData?.validApiKey && window?.userData?.userApiData?.active_plan ) ? '_blank' : undefined }
 								text={ __( 'Manage Media', 'godam' ) }
@@ -102,7 +102,6 @@ const GodamHeader = () => {
 								showTooltip={ true }
 								tooltipPosition="bottom center"
 								label={ ( ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan ) ? __( 'Premium feature', 'godam' ) : __( 'GoDAM Central', 'godam' ) }
-								// disabled={ ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan }
 							/>
 
 							{
