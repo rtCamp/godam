@@ -449,13 +449,11 @@ const Slider = ( props ) => {
 						// (no endTime) falls back to the next chapter's start, or the
 						// video end for the last one.
 						const nextChapter = sortedChapters[ index + 1 ];
-						let chapterEnd;
 						let endLabel;
 						if ( chapter.endTime !== undefined && chapter.endTime !== null && chapter.endTime !== '' ) {
-							chapterEnd = parseFloat( chapter.endTime );
-							endLabel = chapter.originalEndTime || formatTimeForInput( chapterEnd );
+							const parsedEndTime = parseFloat( chapter.endTime );
+							endLabel = chapter.originalEndTime || formatTimeForInput( parsedEndTime );
 						} else {
-							chapterEnd = nextChapter ? ( parseFloat( nextChapter.startTime ) || 0 ) : max;
 							endLabel = nextChapter ? nextChapter.originalTime : formatTimeForInput( max );
 						}
 
