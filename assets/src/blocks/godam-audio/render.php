@@ -41,7 +41,7 @@ if ( ! $godam_attachment_id && ! empty( $godam_src ) ) {
 	<div class="godam-audio-card">
 
 		<?php /* Thumbnail */ ?>
-		<div class="godam-audio-card__cover">
+		<div class="godam-audio-card__cover" data-test-id="godam-audio-render-cover">
 			<?php if ( $godam_thumbnail ) : ?>
 				<img
 					src="<?php echo esc_url( $godam_thumbnail ); ?>"
@@ -57,15 +57,16 @@ if ( ! $godam_attachment_id && ! empty( $godam_src ) ) {
 		<?php /* Info + player */ ?>
 		<div class="godam-audio-card__body">
 			<?php if ( $godam_audio_title ) : ?>
-				<p class="godam-audio-card__title"><?php echo esc_html( $godam_audio_title ); ?></p>
+				<p class="godam-audio-card__title" data-test-id="godam-audio-render-title"><?php echo esc_html( $godam_audio_title ); ?></p>
 			<?php endif; ?>
 
 			<?php if ( $godam_description ) : ?>
-				<p class="godam-audio-card__description"><?php echo esc_html( $godam_description ); ?></p>
+				<p class="godam-audio-card__description" data-test-id="godam-audio-render-description"><?php echo esc_html( $godam_description ); ?></p>
 			<?php endif; ?>
 
 			<audio
 				class="godam-audio-card__player"
+				data-test-id="godam-audio-render-player"
 				controls
 				<?php echo esc_attr( $godam_autoplay ); ?>
 				<?php echo esc_attr( $godam_loop ); ?>
