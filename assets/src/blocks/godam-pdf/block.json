@@ -27,6 +27,40 @@
 		"height": {
 			"type": "number",
 			"default": 600
+		},
+		"docTitle": {
+			"type": "string",
+			"default": ""
+		},
+		"description": {
+			"type": "string",
+			"default": ""
+		},
+		"previewMode": {
+			"type": "string",
+			"default": "default"
+		},
+		"showCover": {
+			"type": "boolean",
+			"default": false
+		},
+		"customCover": {
+			"type": "string",
+			"default": ""
+		},
+		"customCoverId": {
+			"type": "number"
+		},
+		"coverImages": {
+			"type": "array",
+			"default": [],
+			"items": {
+				"type": "object"
+			}
+		},
+		"pageCount": {
+			"type": "number",
+			"default": 0
 		}
 	},
 	"supports": {

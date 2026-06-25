@@ -92,7 +92,7 @@ import { stripHtmlTags } from '../../blocks/godam-player/utils/index.js';
 
 			let $preview = $container.find( '.video-selector-preview' );
 			if ( $preview.length === 0 ) {
-				$preview = $( '<div class="video-selector-preview" style="margin-top: 10px;"></div>' );
+				$preview = $( '<div class="video-selector-preview" data-test-id="godam-wpb-preview-video" style="margin-top: 10px;"></div>' );
 				$container.append( $preview );
 			}
 
@@ -107,7 +107,7 @@ import { stripHtmlTags } from '../../blocks/godam-player/utils/index.js';
 			const $buttonsWrapper = $container.find( '.video_selector-buttons-wrapper' );
 			if ( 0 === $buttonsWrapper.find( '.video-selector-remove' ).length ) {
 				$buttonsWrapper.append(
-					'<button type="button" class="button video-selector-remove" data-param="' + paramName + '" style="margin-left: 5px;">' +
+					'<button type="button" class="button video-selector-remove" data-test-id="godam-wpb-button-remove-video" data-param="' + paramName + '" style="margin-left: 5px;">' +
 					__( 'Remove', 'godam' ) +
 					'</button>',
 				);
@@ -342,7 +342,7 @@ import { stripHtmlTags } from '../../blocks/godam-player/utils/index.js';
 
 				let $preview = $container.find( '.video-selector-preview' );
 				if ( $preview.length === 0 ) {
-					$preview = $( '<div class="video-selector-preview" style="margin-top: 10px;"></div>' );
+					$preview = $( '<div class="video-selector-preview" data-test-id="godam-wpb-preview-video" style="margin-top: 10px;"></div>' );
 					$container.append( $preview );
 				}
 
@@ -358,7 +358,7 @@ import { stripHtmlTags } from '../../blocks/godam-player/utils/index.js';
 
 				let $removeButton = $buttonsWrapper.find( '.video-selector-remove' );
 				if ( $removeButton.length === 0 ) {
-					$removeButton = $( `<button type="button" class="button video-selector-remove" style="margin-left: 5px;">${ __( 'Remove', 'godam' ) }</button>` );
+					$removeButton = $( `<button type="button" class="button video-selector-remove" data-test-id="godam-wpb-button-remove-video" style="margin-left: 5px;">${ __( 'Remove', 'godam' ) }</button>` );
 					$buttonsWrapper.append( $removeButton );
 				}
 			} );
