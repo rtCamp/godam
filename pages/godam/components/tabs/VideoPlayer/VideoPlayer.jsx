@@ -409,7 +409,7 @@ const VideoPlayer = () => {
 				<PanelBody opened>
 					<div ref={ wrapperRef } className="max-w-[650px] shadow-xl rounded-lg overflow-hidden mb-6"></div>
 
-					<div className="godam-form-group max-w-[520px]">
+					<div className="godam-form-group max-w-[520px]" data-test-id="godam-settings-player-control-skin">
 						<label className="label-text" htmlFor="player_skin">
 							{ __( 'Player Skin', 'godam' ) }
 						</label>
@@ -428,16 +428,19 @@ const VideoPlayer = () => {
 				<PanelBody opened>
 					<div className="godam-form-group godam-margin-bottom">
 						<div className="flex items-center gap-2 flex-wrap">
-							<ColorPickerButton
-								label={ __( 'Brand color', 'godam' ) }
-								value={ mediaSettings?.video_player?.brand_color }
-								onChange={ ( value ) => handleSettingChange( 'brand_color', value ) }
-								disabled={ isMinimalOrClassic }
-							/>
+							<div data-test-id="godam-settings-player-control-brand-color">
+								<ColorPickerButton
+									label={ __( 'Brand color', 'godam' ) }
+									value={ mediaSettings?.video_player?.brand_color }
+									onChange={ ( value ) => handleSettingChange( 'brand_color', value ) }
+									disabled={ isMinimalOrClassic }
+								/>
+							</div>
 							{ mediaSettings?.video_player?.brand_color && ! isMinimalOrClassic && (
 								<Button
 									variant="tertiary"
 									onClick={ () => handleSettingChange( 'brand_color', '' ) }
+									data-test-id="godam-settings-player-button-brand-color-clear"
 								>
 									{ __( 'Clear', 'godam' ) }
 								</Button>
@@ -467,7 +470,7 @@ const VideoPlayer = () => {
 
 			<Panel header={ __( 'Custom CSS', 'godam' ) } className="godam-panel godam-margin-bottom">
 				<PanelBody opened>
-					<div className="godam-form-group godam-settings__container__custom-css">
+					<div className="godam-form-group godam-settings__container__custom-css" data-test-id="godam-settings-player-editor-custom-css">
 						<CustomVideoPlayerCSS handleSettingChange={ handleSettingChange } />
 						<div className="text-[0.75rem] leading-[1.2] text-[#777] mt-2">
 							{ __( 'Any custom CSS you add will be applied to all player skins. It\'s global and not tied to a specific skin style.', 'godam' ) }
@@ -483,6 +486,7 @@ const VideoPlayer = () => {
 					icon={ saveMediaSettingsLoading && <Spinner /> }
 					isBusy={ saveMediaSettingsLoading }
 					disabled={ saveMediaSettingsLoading || ! isChanged }
+					data-test-id="godam-settings-player-button-save"
 				>
 					{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 				</Button>

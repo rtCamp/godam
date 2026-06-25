@@ -115,10 +115,11 @@ const ThumbnailSelector = ( { attachmentID } ) => {
 		return null;
 	}
 
-	const renderTile = ( url, isCustom ) => (
+	const renderTile = ( url, isCustom, index ) => (
 		<div key={ url } className="godam-ve-thumb-tile-wrap">
 			<button
 				type="button"
+				data-test-id={ `godam-video-editor-element-thumbnail-${ isCustom ? 'custom' : 'auto' }-${ index }` }
 				className={ `godam-ve-thumb-tile${ selected === url ? ' is-selected' : '' }` }
 				onClick={ () => selectThumbnail( url ) }
 				aria-pressed={ selected === url }
@@ -132,6 +133,7 @@ const ThumbnailSelector = ( { attachmentID } ) => {
 			{ isCustom && (
 				<button
 					type="button"
+					data-test-id={ `godam-video-editor-button-delete-thumbnail-custom-${ index }` }
 					className="godam-ve-thumb-tile__delete"
 					onClick={ () => deleteCustom( url ) }
 					aria-label={ __( 'Remove custom thumbnail', 'godam' ) }
@@ -150,14 +152,15 @@ const ThumbnailSelector = ( { attachmentID } ) => {
 				<div className="godam-ve-thumb-grid">
 					<button
 						type="button"
+						data-test-id="godam-video-editor-button-upload-thumbnail"
 						className="godam-ve-thumb-tile godam-ve-thumb-upload"
 						onClick={ uploadCustom }
 						aria-label={ __( 'Upload custom thumbnail', 'godam' ) }
 					>
 						<span aria-hidden="true">+</span>
 					</button>
-					{ customThumbnails.map( ( url ) => renderTile( url, true ) ) }
-					{ autoThumbnails.map( ( url ) => renderTile( url, false ) ) }
+					{ customThumbnails.map( ( url, index ) => renderTile( url, true, index ) ) }
+					{ autoThumbnails.map( ( url, index ) => renderTile( url, false, index ) ) }
 				</div>
 			) }
 		</div>

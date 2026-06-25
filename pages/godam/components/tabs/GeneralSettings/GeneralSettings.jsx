@@ -133,6 +133,7 @@ const GeneralSettings = () => {
 						checked={ folderOrgEnabled }
 						disabled={ mediaLibraryUICodeManaged }
 						onChange={ ( value ) => handleSettingChange( 'enable_folder_organization', value ) }
+						data-test-id="godam-settings-general-control-folder-org"
 					/>
 
 					<ToggleControl
@@ -142,6 +143,7 @@ const GeneralSettings = () => {
 						help={ __( 'Enable Google Tag Manager video tracking for analytics and conversion tracking.', 'godam' ) }
 						checked={ mediaSettings?.general?.enable_gtm_tracking }
 						onChange={ ( value ) => handleSettingChange( 'enable_gtm_tracking', value ) }
+						data-test-id="godam-settings-general-control-gtm"
 					/>
 
 				</PanelBody>
@@ -171,6 +173,7 @@ const GeneralSettings = () => {
 					icon={ saveMediaSettingsLoading && <Spinner /> }
 					isBusy={ saveMediaSettingsLoading }
 					disabled={ saveMediaSettingsLoading || ! isChanged }
+					data-test-id="godam-settings-general-button-save"
 				>
 					{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 				</Button>
@@ -183,6 +186,7 @@ const GeneralSettings = () => {
 				cancelLabel={ __( 'Cancel', 'godam' ) }
 				onCancel={ () => setIsResetOnboardingOpen( false ) }
 				onConfirm={ handleResetOnboarding }
+				data-test-id="godam-settings-general-button-confirm-reset"
 			>
 				{ __( 'We’ll restart the guided tour. The next time you open your dashboard, you’ll see the welcome screen where you can pick a guide and step through it again. This won’t sign you out or affect your media, settings, or content.', 'godam' ) }
 			</ConfirmModal>

@@ -26,6 +26,7 @@ import './confirm-modal.scss';
  * @param {Function}    param0.onCancel      - Called when the modal is dismissed or cancelled.
  * @param {boolean}     param0.isBusy        - Whether the confirm action is in progress.
  * @param {boolean}     param0.isDestructive - Whether the confirm action is destructive.
+ * @param {string}      [param0.'data-test-id'] - data-test-id forwarded to the confirm button (E2E hook).
  *
  * @return {JSX.Element|null} The rendered modal or null when closed.
  */
@@ -39,6 +40,7 @@ const ConfirmModal = ( {
 	onCancel,
 	isBusy = false,
 	isDestructive = false,
+	'data-test-id': testId,
 } ) => {
 	if ( ! isOpen ) {
 		return null;
@@ -71,6 +73,7 @@ const ConfirmModal = ( {
 					isBusy={ isBusy }
 					icon={ isBusy && <Spinner /> }
 					disabled={ isBusy }
+					data-test-id={ testId }
 				>
 					{ confirmLabel }
 				</Button>

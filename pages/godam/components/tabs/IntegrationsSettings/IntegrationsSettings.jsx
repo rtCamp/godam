@@ -355,6 +355,7 @@ const IntegrationSettings = () => {
 					icon={ saveMediaSettingsLoading && <Spinner /> }
 					isBusy={ saveMediaSettingsLoading }
 					disabled={ saveMediaSettingsLoading || ! isChanged || ! hasValidAPIKey }
+					data-test-id="godam-settings-integrations-button-save"
 				>
 					{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 				</Button>

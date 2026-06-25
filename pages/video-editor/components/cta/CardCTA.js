@@ -291,14 +291,14 @@ const CardCTA = ( { layerID, triggerSlot } ) => {
 
 	// Layout options
 	const layoutOptions = [
-		{ label: __( 'Image Left, Text Right (Full Height)', 'godam' ), value: 'card-layout--imagecover-text', Icon: LayoutIcons.MediaTextCover },
-		{ label: __( 'Text Left, Image Right (Full Height)', 'godam' ), value: 'card-layout--text-imagecover', Icon: LayoutIcons.TextMediaCover },
-		{ label: __( 'Image Left, Text Right', 'godam' ), value: 'card-layout--image-text', Icon: LayoutIcons.MediaText },
-		{ label: __( 'Text Left, Image Right', 'godam' ), value: 'card-layout--text-image', Icon: LayoutIcons.TextMedia },
-		{ label: __( 'Image Top, Text Bottom', 'godam' ), value: 'card-layout--image-top', Icon: LayoutIcons.MediaTop },
-		{ label: __( 'Text Top, Image Bottom', 'godam' ), value: 'card-layout--image-bottom', Icon: LayoutIcons.MediaBottom },
-		{ label: __( 'Image Background', 'godam' ), value: 'card-layout--image-background', Icon: LayoutIcons.TextCoverMedia },
-		{ label: __( 'Text Only (No Image)', 'godam' ), value: 'desktop-text-only', Icon: LayoutIcons.TextOnly },
+		{ label: __( 'Image Left, Text Right (Full Height)', 'godam' ), value: 'card-layout--imagecover-text', Icon: LayoutIcons.MediaTextCover, testId: 'godam-cta-button-layout-imagecover-text' },
+		{ label: __( 'Text Left, Image Right (Full Height)', 'godam' ), value: 'card-layout--text-imagecover', Icon: LayoutIcons.TextMediaCover, testId: 'godam-cta-button-layout-text-imagecover' },
+		{ label: __( 'Image Left, Text Right', 'godam' ), value: 'card-layout--image-text', Icon: LayoutIcons.MediaText, testId: 'godam-cta-button-layout-image-text' },
+		{ label: __( 'Text Left, Image Right', 'godam' ), value: 'card-layout--text-image', Icon: LayoutIcons.TextMedia, testId: 'godam-cta-button-layout-text-image' },
+		{ label: __( 'Image Top, Text Bottom', 'godam' ), value: 'card-layout--image-top', Icon: LayoutIcons.MediaTop, testId: 'godam-cta-button-layout-image-top' },
+		{ label: __( 'Text Top, Image Bottom', 'godam' ), value: 'card-layout--image-bottom', Icon: LayoutIcons.MediaBottom, testId: 'godam-cta-button-layout-image-bottom' },
+		{ label: __( 'Image Background', 'godam' ), value: 'card-layout--image-background', Icon: LayoutIcons.TextCoverMedia, testId: 'godam-cta-button-layout-image-background' },
+		{ label: __( 'Text Only (No Image)', 'godam' ), value: 'desktop-text-only', Icon: LayoutIcons.TextOnly, testId: 'godam-cta-button-layout-text-only' },
 	];
 
 	const layoutsWithWidth = [ 'card-layout--text-imagecover', 'card-layout--imagecover-text', 'card-layout--text-image', 'card-layout--image-text' ];
@@ -432,6 +432,7 @@ const CardCTA = ( { layerID, triggerSlot } ) => {
 					onChange={ ( value ) => updateField( 'imageDescription', value ) }
 					placeholder={ __( 'Your description', 'godam' ) }
 					maxLength={ DESCRIPTION_LIMIT }
+					data-test-id="godam-cta-control-description"
 				/>
 			</VeSection>
 

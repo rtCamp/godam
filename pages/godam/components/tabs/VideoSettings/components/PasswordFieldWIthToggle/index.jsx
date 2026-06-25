@@ -106,6 +106,7 @@ const PasswordFieldWithToggle = ( { hasValidAPIKey, hasAPIKey, apiKey, setAPIKey
 			className={ `godam-input__api-key godam-form-group ${ ( validationError || ( hasAPIKey && ! hasValidAPIKey ) ) ? 'invalid-api-key' : '' }` }
 			disabled={ hasAPIKey }
 			type="text"
+			data-test-id="godam-settings-api-key-control-key"
 		/>
 	);
 };

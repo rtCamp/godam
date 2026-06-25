@@ -53,8 +53,8 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 
 	// Two CTA styles in the new design: a card builder and a raw-HTML editor.
 	const ctaTypeOptions = [
-		{ value: 'image', label: __( 'Card Style', 'godam' ), description: __( 'Perfect for everyone', 'godam' ) },
-		{ value: 'html', label: __( 'HTML', 'godam' ), description: __( 'Great for developers', 'godam' ) },
+		{ value: 'image', label: __( 'Card Style', 'godam' ), description: __( 'Perfect for everyone', 'godam' ), testId: 'godam-cta-control-type-image' },
+		{ value: 'html', label: __( 'HTML', 'godam' ), description: __( 'Great for developers', 'godam' ), testId: 'godam-cta-control-type-html' },
 	];
 
 	// Normalize legacy / unknown types (e.g. the removed "text" type) to "image".

@@ -107,6 +107,7 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 					onClick={ openBrandMediaPicker }
 					variant="secondary"
 					disabled={ isBubbleOrClassic }
+					data-test-id="godam-settings-player-button-logo-upload"
 				>
 					{ mediaSettings?.video_player?.brand_image ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
 				</Button>
@@ -116,6 +117,7 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 						variant="secondary"
 						isDestructive
 						disabled={ isBubbleOrClassic }
+						data-test-id="godam-settings-player-button-logo-remove"
 					>
 						{ __( 'Remove', 'godam' ) }
 					</Button>

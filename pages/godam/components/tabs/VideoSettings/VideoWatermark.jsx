@@ -119,6 +119,7 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 									<Button
 										variant="primary"
 										onClick={ openMediaPicker }
+										data-test-id="godam-settings-video-button-watermark-select"
 									>
 										{ selectedMedia
 											? __( 'Change Watermark', 'godam' )
@@ -132,6 +133,7 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 												handleSettingChange( 'watermark_image_id', null );
 											} }
 											variant="secondary"
+											data-test-id="godam-settings-video-button-watermark-remove"
 										>
 											{ __( 'Remove Watermark', 'godam' ) }
 										</Button>
