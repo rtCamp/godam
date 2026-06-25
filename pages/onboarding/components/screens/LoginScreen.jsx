@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * Internal dependencies
  */
+import BackButton from '../BackButton';
 import { usePasswordLoginMutation } from '../../redux/api/onboarding';
 import { goToStep, setEmail, setNotice } from '../../redux/slice/onboarding';
 import { STEPS, config } from '../../utils/constants';
@@ -47,9 +48,7 @@ const LoginScreen = () => {
 
 	return (
 		<>
-			<button type="button" className="godam-onboarding__back" onClick={ () => dispatch( goToStep( STEPS.ENTRY ) ) } data-test-id="godam-onboarding-button-back">
-				‹ { __( 'BACK', 'godam' ) }
-			</button>
+			<BackButton onClick={ () => dispatch( goToStep( STEPS.ENTRY ) ) } />
 			<h1 className="godam-onboarding__title">{ __( 'Sign in to your account', 'godam' ) }</h1>
 
 			<div className="godam-onboarding__form">

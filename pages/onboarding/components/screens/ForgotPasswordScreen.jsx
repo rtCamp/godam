@@ -13,6 +13,7 @@ import { useDispatch } from 'react-redux';
 /**
  * Internal dependencies
  */
+import BackButton from '../BackButton';
 import { useResetPasswordMutation } from '../../redux/api/onboarding';
 import { goToStep, setNotice } from '../../redux/slice/onboarding';
 import { STEPS } from '../../utils/constants';
@@ -43,9 +44,7 @@ const ForgotPasswordScreen = () => {
 
 	return (
 		<>
-			<button type="button" className="godam-onboarding__back" onClick={ () => dispatch( goToStep( STEPS.LOGIN ) ) } data-test-id="godam-onboarding-button-back">
-				‹ { __( 'BACK', 'godam' ) }
-			</button>
+			<BackButton onClick={ () => dispatch( goToStep( STEPS.LOGIN ) ) } />
 			<h1 className="godam-onboarding__title">{ __( 'Reset your password', 'godam' ) }</h1>
 
 			{ sent ? (

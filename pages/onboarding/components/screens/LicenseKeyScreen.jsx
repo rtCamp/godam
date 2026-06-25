@@ -14,6 +14,7 @@ import { useDispatch } from 'react-redux';
 /**
  * Internal dependencies
  */
+import BackButton from '../BackButton';
 import { useVerifyLicenseKeyMutation } from '../../redux/api/onboarding';
 import { goToStep, setConnected, setNotice } from '../../redux/slice/onboarding';
 import { STEPS } from '../../utils/constants';
@@ -45,9 +46,7 @@ const LicenseKeyScreen = () => {
 
 	return (
 		<>
-			<button type="button" className="godam-onboarding__back" onClick={ () => dispatch( goToStep( STEPS.ENTRY ) ) } data-test-id="godam-onboarding-button-back">
-				‹ { __( 'BACK', 'godam' ) }
-			</button>
+			<BackButton onClick={ () => dispatch( goToStep( STEPS.ENTRY ) ) } />
 			<h1 className="godam-onboarding__title">{ __( 'Sign in with license key', 'godam' ) }</h1>
 
 			<div className="godam-onboarding__form">

@@ -70,6 +70,12 @@ export const CheckIcon = ( props ) => (
 	</svg>
 );
 
+export const ChevronLeftIcon = ( props ) => (
+	<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" { ...props }>
+		<path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+	</svg>
+);
+
 export const GoogleIcon = ( props ) => (
 	<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" { ...props }>
 		<path fill="#4285F4" d="M21.6 12.2c0-.6-.05-1.2-.16-1.8H12v3.4h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.1z" />

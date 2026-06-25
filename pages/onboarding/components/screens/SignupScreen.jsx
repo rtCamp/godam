@@ -13,6 +13,7 @@ import { useDispatch } from 'react-redux';
 /**
  * Internal dependencies
  */
+import BackButton from '../BackButton';
 import { GoogleIcon } from '../icons';
 import { useSignupMutation, useGoogleOauthUrlMutation } from '../../redux/api/onboarding';
 import { goToStep, setEmail, setNotice } from '../../redux/slice/onboarding';
@@ -69,9 +70,7 @@ const SignupScreen = () => {
 
 	return (
 		<>
-			<button type="button" className="godam-onboarding__back" onClick={ () => dispatch( goToStep( STEPS.ENTRY ) ) } data-test-id="godam-onboarding-button-back">
-				‹ { __( 'BACK', 'godam' ) }
-			</button>
+			<BackButton onClick={ () => dispatch( goToStep( STEPS.ENTRY ) ) } />
 			<h1 className="godam-onboarding__title">{ __( 'Create your account', 'godam' ) }</h1>
 
 			<Button className="godam-onb-btn godam-onb-btn--secondary" onClick={ handleGoogle } disabled={ isGoogleLoading } data-test-id="godam-onboarding-button-google">
