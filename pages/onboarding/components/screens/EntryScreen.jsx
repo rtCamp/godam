@@ -14,29 +14,16 @@ import { useDispatch } from 'react-redux';
  */
 import BrandLogo from '../BrandLogo';
 import { MailIcon, GoogleIcon, KeyIcon } from '../icons';
-import { goToStep, setNotice } from '../../redux/slice/onboarding';
+import { goToStep } from '../../redux/slice/onboarding';
 import { STEPS } from '../../utils/constants';
-import { useGoogleOauthUrlMutation } from '../../redux/api/onboarding';
+import { useGoogleSignIn } from '../../utils/use-google-signin';
 
 /**
  * Entry — "Welcome to GoDAM Pro!" with the trial CTA + sign-in options.
  */
 const EntryScreen = () => {
 	const dispatch = useDispatch();
-	const [ getGoogleOauthUrl, { isLoading: isGoogleLoading } ] = useGoogleOauthUrlMutation();
-
-	const handleGoogle = async () => {
-		// godam-core builds the Google URL; the OAuth code lands back in this
-		// SPA (App.js) and is exchanged for a session via the proxy.
-		try {
-			const { url } = await getGoogleOauthUrl().unwrap();
-			if ( url ) {
-				window.location.href = url;
-			}
-		} catch ( error ) {
-			dispatch( setNotice( { status: 'error', message: error?.data?.message || __( 'Could not start Google sign-in.', 'godam' ) } ) );
-		}
-	};
+	const { signIn: handleGoogle, isLoading: isGoogleLoading } = useGoogleSignIn();
 
 	return (
 		<>

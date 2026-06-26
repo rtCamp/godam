@@ -24,20 +24,14 @@ import './charts.js';
  */
 import { __ } from '@wordpress/i18n';
 import { Button, Spinner, Icon } from '@wordpress/components';
-// eslint-disable-next-line import/no-extraneous-dependencies -- @wordpress/url is provided by WordPress core; intentionally not in this plugin's package.json.
-import { addQueryArgs } from '@wordpress/url';
 import SingleMetrics from './SingleMetrics.js';
 import PlaysVsViewers from './PlaysVsViewers.js';
 import PlaybackPerformanceDashboard from './PlaybackPerformance.js';
 import VideoLayerTimeline from './VideoLayerTimeline.js';
 import videojs from 'video.js';
 import { arrowLeft, info } from '@wordpress/icons';
-import { API_KEY_STATUS, ERROR_TYPE } from '../shared/enums';
 import { formatNumber, formatWatchTime } from '../utils/formatters';
 import UpgradePlanAnalyticsBg from '../../assets/src/images/upgrade-plan-analytics-bg.webp';
-
-const adminUrl =
-  window.videoData?.adminUrl;
 const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
 const RenderVideo = ( { attachmentID, attachmentData, className, videoId } ) => {
@@ -96,12 +90,6 @@ const Analytics = ( { attachmentID } ) => {
 		{ videoId: attachmentID, siteUrl },
 		{ skip: ! attachmentID || shouldSkipAnalytics },
 	);
-	const shouldShowUpgradeMessage =
-		apiKeyErrorType === ERROR_TYPE.MISSING_KEY ||
-		( apiKeyErrorType === null &&
-			( analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY ||
-				analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ) );
-
 	window.analyticsDataFetched = analyticsDataFetched;
 
 	// Skip secondary queries until the primary analytics call has returned without an error.
@@ -128,30 +116,17 @@ const Analytics = ( { attachmentID } ) => {
 		{ skip: ! abTestComparisonAttachmentData?.id || !! apiKeyErrorType || !! analyticsDataFetched?.errorType },
 	);
 
-	// Sync main analytics data
+	// Sync main analytics data. The onboarding overlay handles the disconnected
+	// case, so on a key/backend error we just stop the loader; otherwise render.
 	useEffect( () => {
 		const loadingEl = document.getElementById( 'loading-analytics-animation' );
-		const container = document.getElementById( 'video-analytics-container' );
-		const overlay = document.getElementById( 'api-key-overlay' );
-
-		// Check for server-side errors OR local API key status issues
-		const shouldShowOverlay =
-			analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY ||
-			analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ||
-			analyticsDataFetched?.errorType === ERROR_TYPE.MICROSERVICE_ERROR ||
-			apiKeyErrorType !== null;
-
-		if ( shouldShowOverlay ) {
+		if ( apiKeyErrorType !== null || analyticsDataFetched?.errorType ) {
 			if ( loadingEl ) {
 				loadingEl.style.display = 'none';
 			}
-			if ( container ) {
-				container.classList.add( 'blurred' );
-			}
-			if ( overlay ) {
-				overlay.classList.remove( 'hidden' );
-			}
-		} else if ( analyticsDataFetched ) {
+			return;
+		}
+		if ( analyticsDataFetched ) {
 			setAnalyticsData( analyticsDataFetched );
 		}
 	}, [ analyticsDataFetched, apiKeyErrorType ] );
@@ -483,74 +458,6 @@ const Analytics = ( { attachmentID } ) => {
 		return () => window.removeEventListener( 'resize', handleResize );
 	}, [] );
 
-	/**
-	 * Renders the appropriate overlay content based on API key status.
-	 *
-	 * @return {JSX.Element} The overlay content to display.
-	 */
-	const renderOverlayContent = () => {
-		// Check for local API key status first (expired, verification_failed)
-		if ( apiKeyError?.type === API_KEY_STATUS.EXPIRED || apiKeyError?.type === API_KEY_STATUS.VERIFICATION_FAILED ) {
-			return (
-				<div className="api-key-overlay-banner">
-					<p className="api-key-overlay-banner-header">
-						{ apiKeyError.title }
-					</p>
-					<p className="api-key-overlay-banner-footer">
-						{ apiKeyError.message }
-						{ ' ' }
-						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-							{ __( 'Go to plugin settings', 'godam' ) }
-						</a>
-					</p>
-				</div>
-			);
-		}
-
-		// Show upgrade message for missing/invalid keys
-		if ( shouldShowUpgradeMessage ) {
-			return (
-				<div className="api-key-overlay-banner">
-					<p className="api-key-overlay-banner-header">
-						{ __( 'Upgrade to unlock the media performance report.', 'godam' ) }
-					</p>
-
-					<p className="api-key-overlay-banner-footer">
-						{ __( 'If you already have a premium plan, connect your', 'godam' ) }
-						{ ' ' }
-						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-							{ __( 'API in the settings', 'godam' ) }
-						</a>
-					</p>
-
-					<a
-						href={ addQueryArgs( 'https://godam.io/pricing', {
-							utm_campaign: 'buy-plan',
-							utm_source: window?.location?.host || '',
-							utm_medium: 'plugin',
-							utm_content: 'analytics',
-						} ) }
-						className="components-button godam-button is-primary"
-						target="_blank"
-						rel="noopener noreferrer"
-					>{ __( 'Buy Plan', 'godam' ) }</a>
-				</div>
-			);
-		}
-
-		// Default error message for microservice errors or other issues
-		return (
-			<div className="api-key-overlay-banner">
-				<p>
-					{ analyticsDataFetched?.message || __( 'An unknown error occurred. Please check your plugin settings.', 'godam' ) }
-				</p>
-				<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-					{ __( 'Go to plugin settings', 'godam' ) }
-				</a>
-			</div>
-		);
-	};
-
 	return (
 		<div className="godam-analytics-container">
 			<GodamHeader />
@@ -575,16 +482,6 @@ const Analytics = ( { attachmentID } ) => {
 							{ __( 'Go to Dashboard', 'godam' ) }
 						</a>
 					</p>
-				</div>
-			</div>
-
-			<div
-				id="api-key-overlay"
-				className="api-key-overlay api-key-overlay--upgrade hidden"
-				style={ { backgroundImage: `url(${ UpgradePlanAnalyticsBg })` } }
-			>
-				<div className="api-key-message">
-					{ renderOverlayContent() }
 				</div>
 			</div>
 

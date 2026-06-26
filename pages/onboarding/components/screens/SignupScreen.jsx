@@ -15,10 +15,11 @@ import { useDispatch } from 'react-redux';
  */
 import BackButton from '../BackButton';
 import { GoogleIcon } from '../icons';
-import { useSignupMutation, useGoogleOauthUrlMutation } from '../../redux/api/onboarding';
+import { useSignupMutation } from '../../redux/api/onboarding';
 import { goToStep, setEmail, setNotice } from '../../redux/slice/onboarding';
 import { STEPS } from '../../utils/constants';
 import { validateSignup } from '../../utils/validators';
+import { useGoogleSignIn } from '../../utils/use-google-signin';
 
 const Required = () => <span className="godam-onboarding__required">*</span>;
 
@@ -29,22 +30,11 @@ const Required = () => <span className="godam-onboarding__required">*</span>;
 const SignupScreen = () => {
 	const dispatch = useDispatch();
 	const [ signup, { isLoading } ] = useSignupMutation();
-	const [ getGoogleOauthUrl, { isLoading: isGoogleLoading } ] = useGoogleOauthUrlMutation();
+	const { signIn: handleGoogle, isLoading: isGoogleLoading } = useGoogleSignIn();
 	const [ fields, setFields ] = useState( { firstName: '', lastName: '', email: '', password: '', confirm: '', tnc: false, newsletter: false } );
 	const [ errors, setErrors ] = useState( {} );
 
 	const set = ( key ) => ( value ) => setFields( ( f ) => ( { ...f, [ key ]: value } ) );
-
-	const handleGoogle = async () => {
-		try {
-			const { url } = await getGoogleOauthUrl().unwrap();
-			if ( url ) {
-				window.location.href = url;
-			}
-		} catch ( error ) {
-			dispatch( setNotice( { status: 'error', message: error?.data?.message || __( 'Could not start Google sign-in.', 'godam' ) } ) );
-		}
-	};
 
 	const handleSubmit = async () => {
 		const validation = validateSignup( fields );

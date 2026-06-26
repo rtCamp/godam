@@ -85,7 +85,7 @@ class Onboarding extends Base {
 			$route( $base . '/signup', 'signup' ),
 			$route( $base . '/password-login', 'password_login' ),
 			$route( $base . '/google-oauth-url', 'google_oauth_url' ),
-			$route( $base . '/google-login', 'google_login' ),
+			$route( $base . '/exchange-oauth-code', 'exchange_oauth_code' ),
 			$route( $base . '/list-organizations', 'list_organizations' ),
 			$route( $base . '/organization-api-key', 'organization_api_key' ),
 			$route( $base . '/verify-license-key', 'verify_license_key' ),
@@ -199,15 +199,21 @@ class Onboarding extends Base {
 	}
 
 	/**
-	 * Build the Google OAuth URL (redirect lands back in the SPA).
+	 * Build the Google authorize URL for the popup flow.
 	 *
+	 * `wordpress_site` opts godam-core into the WordPress popup flow and is the
+	 * only origin its completion page will postMessage the handoff code to, so
+	 * it must match the browser window's origin (passed as `wp_origin`).
+	 *
+	 * @param \WP_REST_Request $request Request.
 	 * @return \WP_REST_Response|\WP_Error
 	 */
-	public function google_oauth_url() {
-		// Google returns the browser here with the one-time ?code; the onboarding
-		// SPA overlays the Dashboard (page=rtgodam) and reads that code on load.
-		$redirect_to = admin_url( 'admin.php?page=rtgodam' );
-		$result      = $this->call_core( 'godam_core.api.user.get_oauth2_url', array( 'redirect_to' => $redirect_to ), 'GET' );
+	public function google_oauth_url( $request ) {
+		$wp_origin = esc_url_raw( (string) $request->get_param( 'wp_origin' ) );
+		if ( empty( $wp_origin ) ) {
+			$wp_origin = home_url();
+		}
+		$result = $this->call_core( 'godam_core.api.user.get_oauth2_url', array( 'wordpress_site' => $wp_origin ), 'GET' );
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
@@ -216,18 +222,16 @@ class Onboarding extends Base {
 	}
 
 	/**
-	 * Exchange a Google OAuth code for a JWT (auto-provisions on first sign-in).
+	 * Exchange the one-time handoff code (relayed from the popup's completion
+	 * page via postMessage) for a JWT. Auto-provisions on first sign-in.
 	 *
 	 * @param \WP_REST_Request $request Request.
 	 * @return \WP_REST_Response|\WP_Error
 	 */
-	public function google_login( $request ) {
+	public function exchange_oauth_code( $request ) {
 		$result = $this->call_core(
-			'godam_core.api.login.google_login',
-			array(
-				'code'           => (string) $request->get_param( 'code' ),
-				'wordpress_site' => get_site_url(),
-			)
+			'godam_core.api.login.exchange_oauth_code',
+			array( 'code' => (string) $request->get_param( 'code' ) )
 		);
 		return $this->handle_token_response( $result );
 	}

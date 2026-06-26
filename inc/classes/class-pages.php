@@ -443,37 +443,15 @@ class Pages {
 	}
 
 	/**
-	 * Whether the GoDAM 2.0 onboarding SPA is enabled.
+	 * Whether to overlay the onboarding modal on the current GoDAM screen.
 	 *
-	 * Off by default while in development. Enable with the
-	 * `RTGODAM_ONBOARDING_V2` constant or the `rtgodam_onboarding_v2_enabled`
-	 * filter.
-	 *
-	 * @return bool
-	 */
-	private function is_onboarding_v2_enabled() {
-		$enabled = defined( 'RTGODAM_ONBOARDING_V2' ) && RTGODAM_ONBOARDING_V2;
-
-		/**
-		 * Toggle the 2.0 onboarding SPA.
-		 *
-		 * @param bool $enabled Whether the onboarding SPA is enabled.
-		 */
-		return (bool) apply_filters( 'rtgodam_onboarding_v2_enabled', $enabled );
-	}
-
-	/**
-	 * Whether to overlay the 2.0 onboarding modal on the current GoDAM screen.
-	 *
-	 * True only when the site isn't connected, the SPA is enabled, and the user
-	 * can manage options (matching the onboarding REST routes' capability).
+	 * True when the site isn't connected and the user can manage options
+	 * (matching the onboarding REST routes' capability).
 	 *
 	 * @return bool
 	 */
 	private function should_overlay_onboarding() {
-		return ! rtgodam_is_api_key_valid()
-			&& $this->is_onboarding_v2_enabled()
-			&& current_user_can( 'manage_options' );
+		return ! rtgodam_is_api_key_valid() && current_user_can( 'manage_options' );
 	}
 
 	/**
@@ -524,6 +502,13 @@ class Pages {
 
 			$current_user = wp_get_current_user();
 
+			// Origin of the GoDAM app host — the SPA pins the Google popup's
+			// postMessage to this origin before trusting the handoff code.
+			$api_parts  = wp_parse_url( defined( 'RTGODAM_API_BASE' ) ? RTGODAM_API_BASE : '' );
+			$app_origin = ( ! empty( $api_parts['scheme'] ) && ! empty( $api_parts['host'] ) )
+				? $api_parts['scheme'] . '://' . $api_parts['host'] . ( empty( $api_parts['port'] ) ? '' : ':' . $api_parts['port'] )
+				: '';
+
 			wp_localize_script(
 				'godam-page-script-onboarding',
 				'godamOnboarding',
@@ -535,6 +520,7 @@ class Pages {
 					'dashboardUrl' => admin_url( 'admin.php?page=' . $this->menu_slug ),
 					'isConnected'  => rtgodam_is_api_key_valid(),
 					'displayName'  => $current_user->display_name,
+					'appOrigin'    => $app_origin,
 					'isE2E'        => ( defined( 'GODAM_E2E' ) && GODAM_E2E ),
 				)
 			);
