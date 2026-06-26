@@ -14,6 +14,7 @@ import { ChromeExtensionSvg } from '../assets/svgs';
 import godamLogo from '../../../assets/src/images/godam-logo.png';
 import { hasAPIKey } from '../utils/index.js';
 import ProUpgradeNotice, { markUpgradePending } from './ProUpgradeNotice';
+import TrialCountdownBanner from './TrialCountdownBanner';
 
 const GodamHeader = () => {
 	const isVideoEditorPage = window.location.href.includes( 'page=rtgodam_video_editor' );
@@ -65,6 +66,7 @@ const GodamHeader = () => {
 
 	return (
 		<header>
+			<TrialCountdownBanner />
 			<div className="godam-settings-header border-b -ml-[32px] pl-[32px] bg-white">
 				<div className={ `godam-settings-header-content max-w-[1440px] mx-auto ${ paddingClass } flex items-center justify-between` }>
 					<div className="py-6 m-0 text-4xl leading-4 font-semibold text-slate-900 flex items-center max-[410px]:flex-col max-[410px]:items-start max-[410px]:gap-1 gap-2">
