@@ -17,7 +17,13 @@ $godam_loop          = ! empty( $attributes['loop'] ) ? 'loop' : '';
 $godam_preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'metadata';
 $godam_audio_title   = ! empty( $attributes['audioTitle'] ) ? $attributes['audioTitle'] : '';
 $godam_description   = ! empty( $attributes['description'] ) ? $attributes['description'] : '';
-$godam_thumbnail     = ! empty( $attributes['thumbnail'] ) ? esc_url( $attributes['thumbnail'] ) : '';
+// Resolve thumbnail from attachment ID for robustness (survives domain migration / image regeneration).
+// Fall back to the stored URL if the attachment no longer exists.
+$godam_thumbnail_id  = ! empty( $attributes['thumbnailId'] ) ? intval( $attributes['thumbnailId'] ) : 0;
+$godam_thumbnail     = $godam_thumbnail_id ? wp_get_attachment_image_url( $godam_thumbnail_id, 'medium' ) : '';
+if ( ! $godam_thumbnail && ! empty( $attributes['thumbnail'] ) ) {
+	$godam_thumbnail = esc_url( $attributes['thumbnail'] );
+}
 
 if ( ! $godam_attachment_id && empty( $godam_src ) ) {
 	return;

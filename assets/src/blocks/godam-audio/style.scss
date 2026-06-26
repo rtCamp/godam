@@ -76,6 +76,7 @@
 		color: #757575;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}
@@ -96,19 +97,26 @@
 
 	// Mobile: stack vertically
 	@media ( max-width: 480px ) {
-		.godam-audio-card {
-			&__player {
+		flex-direction: column;
+		align-items: stretch;
 
-				&::-webkit-media-controls-timeline {
-					padding: 1px;
-					width: 100%;
-				}
+		&__cover {
+			width: 100%;
+			height: 160px;
+		}
 
-				&::-webkit-media-controls-volume-control-container,
-				&::-webkit-media-controls-mute-button,
-				&::-webkit-media-controls-fullscreen-button {
-					display: none;
-				}
+		&__player {
+			margin-left: 0;
+
+			&::-webkit-media-controls-timeline {
+				padding: 1px;
+				width: 100%;
+			}
+
+			&::-webkit-media-controls-volume-control-container,
+			&::-webkit-media-controls-mute-button,
+			&::-webkit-media-controls-fullscreen-button {
+				display: none;
 			}
 		}
 	}
