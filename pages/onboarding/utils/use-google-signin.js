@@ -36,6 +36,13 @@ export const useGoogleSignIn = () => {
 	const [ isLoading, setIsLoading ] = useState( false );
 
 	const signIn = useCallback( () => {
+		// Without the GoDAM app origin we can't trust (or even receive) the popup's
+		// handoff message, so sign-in could never complete — fail fast instead of
+		// opening a popup that hangs and reports a misleading "cancelled".
+		if ( ! config.appOrigin ) {
+			dispatch( setNotice( { status: 'error', message: __( 'Google sign-in is unavailable right now. Please use another sign-in method.', 'godam' ) } ) );
+			return;
+		}
 		// Open the popup synchronously on the click, or the browser blocks it.
 		const popup = window.open( 'about:blank', 'godam_google', 'width=480,height=640' );
 		if ( ! popup ) {

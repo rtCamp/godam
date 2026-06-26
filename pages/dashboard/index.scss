@@ -19,57 +19,6 @@
 	margin-right: auto;
 }
 
-.api-key-message a {
-	color: #ab3a6c;
-	text-decoration: none;
-	font-weight: 600;
-}
-
-.api-key-overlay-banner {
-	display: flex;
-	flex-direction: column;
-	margin: 0 2rem;
-	font-size: 1rem;
-	font-weight: 400;
-
-	&-header {
-		font-size: 1.25rem;
-		font-weight: 500;
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
-	}
-
-	&-header a {
-		margin: auto;
-	}
-
-	&-footer a {
-		margin: auto;
-	}
-
-	&-footer {
-		font-size: 0.975rem;
-		font-weight: 400;
-		margin-top: 0;
-	}
-
-	// Style the buy button to not take full width
-	a.components-button.godam-button.is-primary {
-		align-self: center;
-		width: auto;
-		display: inline-block;
-	}
-}
-
-.api-key-message a:hover {
-	text-decoration: underline;
-}
-
-.api-key-overlay-banner-header a:hover {
-	text-decoration: none;
-}
-
 .top-media-container {
 	margin-bottom: 1.5rem;
 
@@ -257,42 +206,6 @@
 	pointer-events: none;
 }
 
-.api-key-overlay {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	background: rgba(0, 0, 0, 0.4);
-	backdrop-filter: blur(5px);
-	z-index: 99;
-}
-
-.api-key-overlay--upgrade {
-	background-size: 100% calc(100% - 32px);
-	background-repeat: no-repeat;
-	background-position: center 32px;
-}
-
-.api-key-message {
-	background: #fff;
-	padding: 15px 20px;
-	border-radius: 5px;
-	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-	text-align: center;
-	font-size: 16px;
-	font-weight: 700;
-	max-width: 1200px;
-	width: 95vw;
-}
-
-.api-key-message .annual-plan-offer-banner {
-	margin-left: 0;
-}
-
 .hidden {
 	display: none;
 }
@@ -393,25 +306,6 @@
 	transform: translateY(-1px);
 	text-decoration: none;
 	color: #fff;
-}
-
-.dashboard-modal-banner {
-	margin-bottom: 2rem;
-	
-	.annual-plan-offer-banner__link {
-		display: block;
-		width: 100%;
-		text-align: center;
-	}
-
-	.annual-plan-offer-banner__image {
-		display: block;
-		max-width: 100%;
-		height: auto;
-		max-height: 200px;
-		object-fit: contain;
-		border-radius: 8px;
-	}
 }
 
 /* O8 — trial-countdown banner */
