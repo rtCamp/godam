@@ -97,6 +97,7 @@ export const PlaybackControls = ( { setAttributes, attributes } ) => {
 			{ showShareButtonSetting && (
 				<ToggleControl
 					__nextHasNoMarginBottom
+					data-test-id="godam-video-control-show-share-button"
 					label={ __( 'Show share button', 'godam' ) }
 					onChange={ toggleFactory.showShareButton }
 					checked={ !! showShareButton }
@@ -106,12 +107,13 @@ export const PlaybackControls = ( { setAttributes, attributes } ) => {
 			{ /* TODO: Add "Show transcription" toggle control here when it is ready. */ }
 			<ToggleControl
 				__nextHasNoMarginBottom
+				data-test-id="godam-video-control-show-subtitles"
 				label={ __( 'Show subtitles', 'godam' ) }
 				onChange={ toggleFactory.showSubtitles }
 				checked={ !! showSubtitles }
 			/>
 			{ showSubtitles && hasNoTracks && ( id || cmmId ) && (
-				<div className="godam-subtitle-notice notice notice-warning">
+				<div className="godam-subtitle-notice notice notice-warning" data-test-id="godam-video-element-subtitle-notice">
 					<p>
 						{ __( 'No subtitle file uploaded.', 'godam' ) }
 						{ ' ' }
@@ -191,6 +193,7 @@ export const LikesAndComments = ( { setAttributes, attributes, isInsideQueryLoop
 	const toggleControl = (
 		<ToggleControl
 			__nextHasNoMarginBottom
+			data-test-id="godam-video-control-engagements"
 			label={ __( 'Enable Likes & Comments', 'godam' ) }
 			onChange={ toggleEngagements }
 			checked={ !! engagements }

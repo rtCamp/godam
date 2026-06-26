@@ -748,6 +748,7 @@ function VideoEdit( {
 							onClick={ open }
 							icon={ plus }
 							className="godam-video-selection__add-btn"
+							data-test-id="godam-video-button-add-video"
 						>
 							{ __( 'Add Video', 'godam' ) }
 						</Button>
@@ -761,6 +762,7 @@ function VideoEdit( {
 						className="godam-video-selection__customize-btn"
 						icon={ CustomizeVideoIcon }
 						iconSize={ 14 }
+						data-test-id="godam-video-button-customize"
 					>
 						{ __( 'Customize Video', 'godam' ) }
 					</Button>
@@ -783,6 +785,7 @@ function VideoEdit( {
 							label={ __( 'Remove video', 'godam' ) }
 							onClick={ () => onSelectVideo( undefined ) }
 							className="godam-video-selection__item-delete"
+							data-test-id="godam-video-button-remove-video"
 						/>
 					</div>
 				</>
@@ -949,6 +952,7 @@ function VideoEdit( {
 							target="_blank"
 							rel="noopener noreferrer"
 							className="godam-upgrade-notice__button"
+							data-test-id="godam-video-button-upgrade"
 						>
 							{ __( 'Upgrade Now', 'godam' ) }
 						</Button>
