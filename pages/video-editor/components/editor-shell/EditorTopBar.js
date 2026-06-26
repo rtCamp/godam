@@ -6,6 +6,11 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 import { arrowLeft, copy, seen, chartBar, moreVertical } from '@wordpress/icons';
 
 /**
+ * Internal dependencies
+ */
+import { notify as notifyGuide } from '../../onboarding/productGuide';
+
+/**
  * Top bar for the video editor shell.
  *
  * Renders the back button, video title + layer count, and the primary
@@ -82,7 +87,12 @@ const EditorTopBar = ( {
 						<Button
 							variant="tertiary"
 							icon={ copy }
-							onClick={ onCopy }
+							onClick={ () => {
+								onCopy();
+								// Final product-guide step: copying completes the tour
+								// and prompts to drop the video into a new page.
+								notifyGuide( 'copy' );
+							} }
 							data-test-id="godam-video-editor-button-copy-block"
 						>
 							{ __( 'Copy', 'godam' ) }
@@ -103,7 +113,11 @@ const EditorTopBar = ( {
 				<FlexItem>
 					<Button
 						variant="primary"
-						onClick={ onSave }
+						onClick={ () => {
+							onSave();
+							// Advances the product guide's "save the video" step.
+							notifyGuide( 'save-video' );
+						} }
 						isBusy={ isSaving }
 						disabled={ ! isChanged }
 						data-test-id="godam-video-editor-button-save"

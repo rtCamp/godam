@@ -78,17 +78,26 @@ const GeneralSettings = () => {
 
 	// Reset onboarding.
 	//
-	// The guided-tour system is not wired up yet, so for now this clears any
-	// client-side onboarding progress flags so the welcome flow can show again.
-	// Once the tour ships, replace this with the appropriate reset call.
-	const handleResetOnboarding = () => {
+	// Resets the per-user product-guide state to "pending" (so the Video Editor
+	// guided tour auto-shows again) and clears any legacy client-side flags.
+	const handleResetOnboarding = async () => {
 		try {
 			Object.keys( window.localStorage )
 				.filter( ( key ) => /onboarding|godam.*tour|welcome/i.test( key ) )
 				.forEach( ( key ) => window.localStorage.removeItem( key ) );
 
+			const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
+			await fetch( window.pathJoin( [ restURL, 'godam/v1/onboarding/product-guide' ] ), {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': window?.wpApiSettings?.nonce,
+				},
+				body: JSON.stringify( { status: 'pending' } ),
+			} );
+
 			setIsResetOnboardingOpen( false );
-			showNotice( __( 'Onboarding has been reset. The guided tour will start again the next time you open your dashboard.', 'godam' ) );
+			showNotice( __( 'Onboarding has been reset. The guided tour will start again the next time you open the Video Editor.', 'godam' ) );
 		} catch ( error ) {
 			setIsResetOnboardingOpen( false );
 			showNotice( __( 'Failed to reset onboarding.', 'godam' ), 'error' );
