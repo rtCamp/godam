@@ -413,3 +413,80 @@
 		border-radius: 8px;
 	}
 }
+
+/* O8 — trial-countdown banner */
+.godam-trial-banner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	flex-wrap: wrap;
+	margin: 0 0 16px;
+	padding: 14px 18px;
+	border-radius: 8px;
+	background: #f6f5fb;
+	border: 1px solid #e4e2ef;
+
+	&__info {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	&__title {
+		font-size: 14px;
+		font-weight: 600;
+		color: #1f2937;
+	}
+
+	&__sub {
+		font-size: 13px;
+		color: #555;
+	}
+
+	&__cta {
+		flex: 0 0 auto;
+	}
+}
+
+/* O8 — usage / quota widget */
+.godam-usage-widget {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 24px;
+	justify-content: center;
+	margin: 8px 0 16px;
+
+	&__item {
+		flex: 1 1 240px;
+		max-width: 340px;
+		background: #fff;
+		border: 1px solid #e6e6e6;
+		border-radius: 8px;
+		padding: 16px;
+		text-align: center;
+	}
+
+	&__title {
+		margin: 0 0 8px;
+		font-size: 14px;
+		font-weight: 600;
+	}
+
+	&__chart {
+		display: flex;
+		justify-content: center;
+	}
+}
+
+/* O8 — empty media state */
+.godam-empty-media__cta {
+	margin-top: 4px;
+}
+
+/* O11 — pro-member confirmation modal */
+.godam-pro-modal__footer {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 16px;
+}

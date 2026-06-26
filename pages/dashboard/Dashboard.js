@@ -30,6 +30,8 @@ import chevronRight from '../../assets/src/images/chevron-right.svg';
 import NewYearSaleBanner from '../../assets/src/images/new-year-sale-2026.webp';
 import UpgradePlanDashboardBg from '../../assets/src/images/upgrade-plan-dashboard-bg.webp';
 import { formatNumber, formatWatchTime } from '../utils/formatters';
+import TrialBanner from './components/TrialBanner';
+import UsageWidget from './components/UsageWidget';
 
 /**
  * Retrieve dashboard sections registered by add-ons.
@@ -438,6 +440,9 @@ const Dashboard = () => {
 		<div className="godam-dashboard-container">
 			<GodamHeader />
 
+			{ /* O8 trial-countdown banner + O11 upgrade hand-off / pro confirmation. */ }
+			<TrialBanner />
+
 			<div id="loading-analytics-animation" className="progress-bar-wrapper">
 				<div className="progress-bar-container">
 					<div className="progress-bar">
@@ -528,11 +533,19 @@ const Dashboard = () => {
 							/>
 						</div>
 						<div className="country-views min-w-full md:min-w-[300px]">
+							{ ( ! dashboardMetrics?.country_views || Object.keys( dashboardMetrics.country_views ).length === 0 ) && (
+								<p className="country-views-placeholder text-sm text-zinc-500 py-8 text-center">
+									{ __( 'Views by location will show up here once your videos get plays.', 'godam' ) }
+								</p>
+							) }
 							<div className="country-views-map" id="map-container"></div>
 							<div className="country-views-table" id="table-container"></div>
 						</div>
 					</div>
 				</div>
+
+				{ /* O8 usage / quota widget (bandwidth + storage). */ }
+				<UsageWidget />
 
 				<div className="top-media-container">
 					<div className="flex justify-between pt-4">
@@ -640,8 +653,9 @@ const Dashboard = () => {
 								) }
 								{ topVideosData.length === 0 && (
 									<tr>
-										<td colSpan="7" className="text-center py-4 text-lg">
-											{ __( 'No videos found.', 'godam' ) }
+										<td colSpan="7" className="godam-empty-media text-center py-6">
+											<p className="godam-empty-media__title text-lg mb-2">{ __( 'You have no media yet!', 'godam' ) }</p>
+											<a href="upload.php" className="components-button godam-button is-primary godam-empty-media__cta">{ __( 'Add Media', 'godam' ) }</a>
 										</td>
 									</tr>
 								) }
