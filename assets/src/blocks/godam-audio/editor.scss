@@ -32,6 +32,38 @@
 	}
 }
 
+// ── Empty state ──────────────────────────────────────────────────────────────
+.godam-audio-empty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 40px 24px;
+	background: #eef2ff;
+	border: 2px dashed #a5b4fc;
+	border-radius: 6px;
+	text-align: center;
+
+	&__title {
+		margin: 0;
+		font-size: 16px;
+		font-weight: 600;
+		color: var(--wp-components-color-foreground, #1e1e1e);
+	}
+
+	&__subtitle {
+		margin: 0;
+		font-size: 13px;
+		color: var(--wp-components-color-foreground-muted, #757575);
+	}
+
+	&__btn {
+		margin-top: 8px;
+		letter-spacing: 1px;
+	}
+}
+
 // ── Inspector: full-width add buttons ────────────────────────────────────────
 .godam-audio__add-btn {
 	width: 100%;

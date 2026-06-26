@@ -74,6 +74,11 @@
 		margin: 0;
 		font-size: 13px;
 		color: #757575;
+	}
+
+	// Double-class specificity (.godam-audio-card .godam-audio-card__description = 0,2,0)
+	// beats theme/WP rules like .entry-content p (0,1,1) that override display.
+	& &__description {
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
 		line-clamp: 2;
@@ -98,6 +103,7 @@
 	// Mobile: compact media controls
 	@media ( max-width: 480px ) {
 		&__player {
+
 			&::-webkit-media-controls-timeline {
 				padding: 1px;
 				width: 100%;

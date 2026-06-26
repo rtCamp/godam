@@ -20,7 +20,6 @@ import {
 import {
 	BlockControls,
 	InspectorControls,
-	MediaPlaceholder,
 	MediaUpload,
 	MediaUploadCheck,
 	MediaReplaceFlow,
@@ -161,20 +160,60 @@ function AudioEdit( {
 	// ── Empty state ───────────────────────────────────────────────────────────
 	if ( ! hasAudio ) {
 		return (
-			<figure { ...blockProps } data-test-id="godam-audio-canvas-placeholder">
-				<MediaPlaceholder
-					icon="media-audio"
-					labels={ {
-						title: __( 'GoDAM Audio', 'godam' ),
-						instructions: __( 'Upload an audio file or pick one from your media library.', 'godam' ),
-					} }
-					onSelect={ onSelectAudio }
-					onError={ onUploadError }
-					accept="audio/*"
-					allowedTypes={ ALLOWED_MEDIA_TYPES }
-					data-test-id="godam-audio-button-upload"
-				/>
-			</figure>
+			<>
+				<InspectorControls>
+					<PanelBody title={ __( 'Audio Selection', 'godam' ) } initialOpen={ true }>
+						<MediaUploadCheck>
+							<MediaUpload
+								onSelect={ onSelectAudio }
+								allowedTypes={ ALLOWED_MEDIA_TYPES }
+								accept="audio/*"
+								onError={ onUploadError }
+								render={ ( { open } ) => (
+									<Button
+										__next40pxDefaultSize
+										variant="secondary"
+										onClick={ open }
+										className="godam-audio__add-btn"
+										data-test-id="godam-audio-button-select"
+									>
+										{ __( '+ Add Audio File', 'godam' ) }
+									</Button>
+								) }
+							/>
+						</MediaUploadCheck>
+					</PanelBody>
+				</InspectorControls>
+
+				<figure { ...blockProps } data-test-id="godam-audio-canvas-placeholder">
+					<div className="godam-audio-empty">
+						<h3 className="godam-audio-empty__title">
+							{ __( 'Add an audio file', 'godam' ) }
+						</h3>
+						<p className="godam-audio-empty__subtitle">
+							{ __( 'Upload an audio file to embed a player on your page or post.', 'godam' ) }
+						</p>
+						<MediaUploadCheck>
+							<MediaUpload
+								onSelect={ onSelectAudio }
+								allowedTypes={ ALLOWED_MEDIA_TYPES }
+								accept="audio/*"
+								onError={ onUploadError }
+								render={ ( { open } ) => (
+									<Button
+										variant="primary"
+										onClick={ open }
+										className="godam-audio-empty__btn"
+										data-test-id="godam-audio-button-upload"
+									>
+										{ __( '+ Upload Audio', 'godam' ) }
+									</Button>
+								) }
+							/>
+						</MediaUploadCheck>
+					</div>
+				</figure>
+			</>
 		);
 	}
 
