@@ -95,23 +95,27 @@ export const PlaybackControls = ( { setAttributes, attributes } ) => {
 				/>
 			</div>
 			{ showShareButtonSetting && (
-				<ToggleControl
-					__nextHasNoMarginBottom
-					label={ __( 'Show share button', 'godam' ) }
-					onChange={ toggleFactory.showShareButton }
-					checked={ !! showShareButton }
-					help={ __( 'Adds a share button on the video player for transcoded videos', 'godam' ) }
-				/>
+				<div data-test-id="godam-video-control-show-share-button">
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ __( 'Show share button', 'godam' ) }
+						onChange={ toggleFactory.showShareButton }
+						checked={ !! showShareButton }
+						help={ __( 'Adds a share button on the video player for transcoded videos', 'godam' ) }
+					/>
+				</div>
 			) }
 			{ /* TODO: Add "Show transcription" toggle control here when it is ready. */ }
-			<ToggleControl
-				__nextHasNoMarginBottom
-				label={ __( 'Show subtitles', 'godam' ) }
-				onChange={ toggleFactory.showSubtitles }
-				checked={ !! showSubtitles }
-			/>
+			<div data-test-id="godam-video-control-show-subtitles">
+				<ToggleControl
+					__nextHasNoMarginBottom
+					label={ __( 'Show subtitles', 'godam' ) }
+					onChange={ toggleFactory.showSubtitles }
+					checked={ !! showSubtitles }
+				/>
+			</div>
 			{ showSubtitles && hasNoTracks && ( id || cmmId ) && (
-				<div className="godam-subtitle-notice notice notice-warning">
+				<div className="godam-subtitle-notice notice notice-warning" data-test-id="godam-video-element-subtitle-notice">
 					<p>
 						{ __( 'No subtitle file uploaded.', 'godam' ) }
 						{ ' ' }
@@ -189,13 +193,15 @@ export const LikesAndComments = ( { setAttributes, attributes, isInsideQueryLoop
 	}
 
 	const toggleControl = (
-		<ToggleControl
-			__nextHasNoMarginBottom
-			label={ __( 'Enable Likes & Comments', 'godam' ) }
-			onChange={ toggleEngagements }
-			checked={ !! engagements }
-			help={ __( 'Engagement will only be visible for transcoded videos', 'godam' ) }
-		/>
+		<div data-test-id="godam-video-control-engagements">
+			<ToggleControl
+				__nextHasNoMarginBottom
+				label={ __( 'Enable Likes & Comments', 'godam' ) }
+				onChange={ toggleEngagements }
+				checked={ !! engagements }
+				help={ __( 'Engagement will only be visible for transcoded videos', 'godam' ) }
+			/>
+		</div>
 	);
 
 	return (

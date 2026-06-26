@@ -223,6 +223,7 @@ export default function ThumbnailPanel( {
 								onClick={ open }
 								icon={ edit }
 								className="godam-thumbnail-actions__btn"
+								data-test-id="godam-video-button-thumbnail-edit"
 							>
 								{ __( 'Edit', 'godam' ) }
 							</Button>
@@ -234,6 +235,7 @@ export default function ThumbnailPanel( {
 					onClick={ handleRemoveCustom }
 					disabled={ ! poster }
 					className="godam-thumbnail-actions__btn"
+					data-test-id="godam-video-button-thumbnail-reset"
 				>
 					{ __( 'Reset', 'godam' ) }
 				</Button>
