@@ -17,6 +17,7 @@ import { trash, plus } from '@wordpress/icons';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 import { updateLayerField } from '../../redux/slice/videoSlice';
 import { isValidURL } from '../../utils';
+import { isActive as isGuideActive, suspend as suspendGuide, resume as resumeGuide } from '../../onboarding/productGuide';
 import {
 	VeSection,
 	VeField,
@@ -198,6 +199,17 @@ const CardCTA = ( { layerID, triggerSlot } ) => {
 				updateField( 'imageUrlExt', '' );
 			}
 		} );
+
+		// While the product guide is running, its overlay + popover (z-index 1e9)
+		// would sit on top of the media modal and conflict with selecting an image.
+		// Hide the guide visuals for the duration of the picker and restore the
+		// current step once it closes (whether the user selects or cancels).
+		if ( isGuideActive() ) {
+			suspendGuide();
+			fileFrame.on( 'close', function() {
+				resumeGuide();
+			} );
+		}
 
 		fileFrame.open();
 	};

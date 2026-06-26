@@ -291,6 +291,18 @@ export const destroy = () => {
 };
 
 /**
+ * Temporarily hide the guide's overlay + popover without changing logical
+ * state, so a native UI can take the foreground (e.g. the wp.media image
+ * picker, whose modal would otherwise sit below the driver overlay and have
+ * its clicks swallowed). Pair with `resume()` once that UI closes.
+ */
+export const suspend = () => {
+	if ( active ) {
+		teardownVisuals();
+	}
+};
+
+/**
  * Re-show the current step (used after the End-guide modal is cancelled).
  */
 export const resume = () => {
