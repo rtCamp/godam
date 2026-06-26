@@ -204,10 +204,8 @@ class Onboarding extends Base {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function google_oauth_url() {
-		// Google returns the browser here with the one-time ?code. The onboarding
-		// SPA overlays the Dashboard (page=rtgodam) and reads that code on load, so
-		// the redirect must land there — NOT the old rtgodam_onboarding submenu,
-		// which was removed (it would wp_die "not allowed to access this page").
+		// Google returns the browser here with the one-time ?code; the onboarding
+		// SPA overlays the Dashboard (page=rtgodam) and reads that code on load.
 		$redirect_to = admin_url( 'admin.php?page=rtgodam' );
 		$result      = $this->call_core( 'godam_core.api.user.get_oauth2_url', array( 'redirect_to' => $redirect_to ), 'GET' );
 		if ( is_wp_error( $result ) ) {
