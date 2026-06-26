@@ -290,7 +290,9 @@
 	&__feature-body { font-size: 12px; line-height: 1.35; color: var( --godam-onb-text-muted ); }
 
 	// social variant
-	&__eyebrow { text-transform: uppercase; letter-spacing: 0.06em; font-size: 12px; color: var( --godam-onb-text-muted ); margin: 0 0 16px; }
+	// Social-panel heading (Figma: large, bold, black — sentence case, not an
+	// uppercase eyebrow).
+	&__eyebrow { font-size: 28px; line-height: 1.2; font-weight: 700; letter-spacing: -0.01em; color: var( --godam-onb-text ); margin: 0 0 32px; }
 
 	&__checklist { list-style: none; margin: 0 0 20px; padding: 0; display: flex; flex-direction: column; gap: 12px; }
 

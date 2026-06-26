@@ -35,7 +35,7 @@ const SidePanel = ( { variant = 'features' } ) => (
 	<aside className={ `godam-onboarding__aside godam-onboarding__aside--${ variant }` } data-test-id={ `godam-onboarding-panel-${ variant }` }>
 		{ variant === 'social' ? (
 			<div className="godam-onboarding__aside-inner">
-				<p className="godam-onboarding__eyebrow">{ __( 'Used by forward-thinking teams', 'godam' ) }</p>
+				<p className="godam-onboarding__eyebrow">{ __( 'Used by forward thinking teams', 'godam' ) }</p>
 				<ul className="godam-onboarding__checklist">
 					{ SOCIAL_POINTS.map( ( point ) => (
 						<li key={ point }>
