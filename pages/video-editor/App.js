@@ -16,6 +16,8 @@ import '../../assets/src/css/godam-player.scss';
 import { useDispatch } from 'react-redux';
 import VideoEditorDataView from './components/video-dataview/VideoEditorDataView.jsx';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
+import ProductGuide from './onboarding/ProductGuide.jsx';
+import { isActive as isGuideActive, dismiss as dismissGuide } from './onboarding/productGuide';
 import { useGetResolvedAttachmentQuery, attachmentAPI } from './redux/api/attachment.js';
 import { resetVideoState } from './redux/slice/videoSlice';
 import { videosAPI } from './redux/api/video';
@@ -127,6 +129,11 @@ const App = () => {
 	};
 
 	const handleBackToAttachmentPicker = () => {
+		// Leaving the editor mid-tour would strip the editor-specific coachmark
+		// targets, so end the guide cleanly.
+		if ( isGuideActive() ) {
+			dismissGuide();
+		}
 		resetStore();
 		setAttachmentID( null );
 		setRawID( null );
@@ -135,17 +142,20 @@ const App = () => {
 		window.history.replaceState( {}, '', newUrl );
 	};
 
-	if ( ! attachmentID ) {
-		return (
-			<>
-				<GodamHeader />
-				<VideoEditorDataView onEdit={ handleAttachmentClick } />
-			</>
-		);
-	}
-
 	return (
-		<VideoEditor key={ attachmentID } attachmentID={ attachmentID } onBackToAttachmentPicker={ handleBackToAttachmentPicker } />
+		<>
+			{ ! attachmentID ? (
+				<>
+					<GodamHeader />
+					<VideoEditorDataView onEdit={ handleAttachmentClick } />
+				</>
+			) : (
+				<VideoEditor key={ attachmentID } attachmentID={ attachmentID } onBackToAttachmentPicker={ handleBackToAttachmentPicker } />
+			) }
+			{ /* Mounted once, above the list/editor switch, so navigating between
+			     views doesn't remount it and re-trigger the welcome modal. */ }
+			<ProductGuide attachmentID={ attachmentID } />
+		</>
 	);
 };
 

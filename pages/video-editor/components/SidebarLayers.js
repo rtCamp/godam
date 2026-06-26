@@ -20,6 +20,7 @@ import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
 import MetformIcon from '../assets/layers/MetFormIcon.png';
 import { CtaLayerIcon, HotspotLayerIcon, FormLayerIcon, PollLayerIcon } from './editor-shell/icons';
 import { LAYER_TYPE_COLORS } from '../utils/layerTypes';
+import { notify as notifyGuide } from '../onboarding/productGuide';
 
 /**
  * WordPress dependencies
@@ -262,6 +263,8 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 		if ( onPauseVideo ) {
 			onPauseVideo();
 		}
+		// Advances the product guide's "open the dropdown" step.
+		notifyGuide( 'open-add-layer' );
 	}, [ onPauseVideo ] );
 
 	// Controlled toggle for the dropdown. Closing also clears any pending
@@ -389,6 +392,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 				break;
 			}
 		}
+
+		// Advance the product guide's "add a layer" step once a layer is added.
+		notifyGuide( 'layer-added' );
 	};
 
 	const formatTime = ( seconds ) => {

@@ -50,6 +50,7 @@ import {
  * Internal dependencies
  */
 import { copyGoDAMVideoBlock, prefetchMediaDataForCopy } from '../../utils';
+import { notify as notifyGuide, start as startGuide } from '../../onboarding/productGuide';
 import { useGetVideoEditorVideosMutation } from '../../redux/api/video-editor';
 import { canManageAttachment } from '../../../../assets/src/js/media-library/utility.js';
 import { LayersTabIcon } from '../editor-shell/icons';
@@ -107,8 +108,8 @@ const DEFAULT_VIEW = {
  * button showing the current selection that opens a single-select menu.
  *
  * @param {Object}   props
- * @param {string}   props.label    Accessible label / aria for the control.
- * @param {Array}    props.options  `{ key, label }` options.
+ * @param {string}   props.label              Accessible label / aria for the control.
+ * @param {Array}    props.options            `{ key, label }` options.
  * @param {string}   props.value              Currently selected option key.
  * @param {Function} props.onChange           Called with the selected option key.
  * @param {string}   [props.toggleTestId]     data-test-id for the toggle button (E2E hook).
@@ -387,6 +388,8 @@ const VideoEditorDataView = ( { onEdit } ) => {
 											className="godam-ve-card__edit-button"
 											onClick={ ( event ) => {
 												event.stopPropagation();
+												// Advance the product guide's "open a video" step.
+												notifyGuide( 'edit-video' );
 												onEdit( item.id );
 											} }
 										>
@@ -486,15 +489,14 @@ const VideoEditorDataView = ( { onEdit } ) => {
 						{ __( 'Upload videos to WordPress Media Library, GoDAM auto-syncs them here.', 'godam' ) }
 					</p>
 				</div>
-				<a
+				<Button
 					className="godam-ve-list__how-it-works"
-					href={ `${ window?.videoData?.godamBaseUrl || 'https://godam.io' }/docs/` }
-					target="_blank"
-					rel="noopener noreferrer"
+					onClick={ () => startGuide() }
+					data-test-id="godam-video-editor-button-how-it-works"
 				>
 					<Icon icon={ videoIcon } size={ 20 } />
 					{ __( 'See how it works', 'godam' ) }
-				</a>
+				</Button>
 			</div>
 
 			<div className="godam-ve-toolbar" data-test-id="godam-video-editor-toolbar-list">
@@ -560,6 +562,7 @@ const VideoEditorDataView = ( { onEdit } ) => {
 					search={ false }
 					onClickItem={ ( item ) => {
 						if ( canManageAttachment( item.author ) ) {
+							notifyGuide( 'edit-video' );
 							onEdit( item.id );
 						}
 					} }

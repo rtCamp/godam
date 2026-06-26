@@ -26,6 +26,7 @@ import { Icon } from '@wordpress/components';
  */
 import { layerTypes, FORM_PLUGIN_META, LAYER_TYPE_COLORS } from '../../utils/layerTypes';
 import { setCurrentLayer, setAddLayerModalTime, updateLayerField } from '../../redux/slice/videoSlice';
+import { notify as notifyGuide } from '../../onboarding/productGuide';
 
 // Timeline accent — mirrors the rest of the editor (uses the live WordPress
 // admin theme colour, falling back to the GoDAM purple from the design).
@@ -557,7 +558,11 @@ const Timeline = ( { currentTime, duration, onSeek, formatTimeForInput } ) => {
 			currentLayerID={ currentLayer?.id }
 			formatTimeForInput={ formatTimeForInput }
 			onInteract={ clearSelectedLayer }
-			onChange={ ( value ) => onSeek?.( value ) }
+			onChange={ ( value ) => {
+				onSeek?.( value );
+				// Advances the product guide's "pick a spot on the timeline" step.
+				notifyGuide( 'timeline-select' );
+			} }
 			onLayerSelect={ ( selectedLayer ) => {
 				dispatch( setCurrentLayer( selectedLayer ) );
 				// Trigger drives where the preview seeks: watch-depth to its watch %,

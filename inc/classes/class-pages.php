@@ -498,6 +498,7 @@ class Pages {
 					'currentUserId'      => get_current_user_id(),          // Current user ID.
 					'currentUserRoles'   => wp_get_current_user()->roles,   // Current user roles.
 					'validApiKey'        => rtgodam_is_api_key_valid(),
+					'productGuideState'  => \RTGODAM\Inc\REST_API\Onboarding::get_product_guide_state(),
 					'adminUrl'           => admin_url(),
 					'godamBaseUrl'       => RTGODAM_IO_API_BASE,
 					'gfActive'           => $is_gf_active,
