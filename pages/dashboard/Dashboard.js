@@ -13,6 +13,8 @@ import { info } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
+import { ERROR_TYPE } from '../shared/enums';
+import AnalyticsUnavailableNotice from '../shared/AnalyticsUnavailableNotice';
 import { generateCountryHeatmap } from '../analytics/helper';
 import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.png';
 import ExportBtn from '../../assets/src/images/export.svg';
@@ -183,6 +185,11 @@ const Dashboard = () => {
 	// This prevents parallel requests being sent when the server rejects the API key.
 	const shouldSkipSecondaryQueries = shouldSkipAnalytics || ! dashboardMetrics || !! dashboardMetrics?.errorType;
 
+	// Connected, but the analytics backend is unreachable (server down) or returned
+	// a microservice error. Gated on a valid key so it never shows for a
+	// disconnected site — that case is handled by the onboarding overlay.
+	const analyticsUnreachable = !! window.userData?.validApiKey && ! shouldSkipAnalytics && ( isDashboardMetricsError || dashboardMetrics?.errorType === ERROR_TYPE.MICROSERVICE_ERROR );
+
 	const { data: dashboardMetricsHistory } = useFetchDashboardMetricsHistoryQuery( { days: 60, siteUrl }, { skip: shouldSkipSecondaryQueries } );
 	const {
 		data: topVideosResponse,
@@ -203,10 +210,12 @@ const Dashboard = () => {
 		if ( loadingEl ) {
 			loadingEl.style.display = 'none';
 		}
-		if ( container ) {
+		// Don't reveal the (data-less) dashboard when the backend is unreachable —
+		// the unavailable notice is shown instead.
+		if ( container && ! analyticsUnreachable ) {
 			container.classList.remove( 'hidden' );
 		}
-	}, [ dashboardMetrics, isDashboardMetricsLoading, isDashboardMetricsError ] );
+	}, [ dashboardMetrics, isDashboardMetricsLoading, isDashboardMetricsError, analyticsUnreachable ] );
 
 	useEffect( () => {
 		if (
@@ -314,6 +323,8 @@ const Dashboard = () => {
 					</div>
 				</div>
 			</div>
+
+			{ analyticsUnreachable && <AnalyticsUnavailableNotice area="dashboard" /> }
 
 			<div id="dashboard-container" className="dashboard-container hidden">
 				{ /* Page-level FYI — analytics aren't real-time. */ }

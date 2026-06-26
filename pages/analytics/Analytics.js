@@ -30,6 +30,8 @@ import PlaybackPerformanceDashboard from './PlaybackPerformance.js';
 import VideoLayerTimeline from './VideoLayerTimeline.js';
 import videojs from 'video.js';
 import { arrowLeft, info } from '@wordpress/icons';
+import { ERROR_TYPE } from '../shared/enums';
+import AnalyticsUnavailableNotice from '../shared/AnalyticsUnavailableNotice';
 import { formatNumber, formatWatchTime } from '../utils/formatters';
 import UpgradePlanAnalyticsBg from '../../assets/src/images/upgrade-plan-analytics-bg.webp';
 const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
@@ -86,11 +88,17 @@ const Analytics = ( { attachmentID } ) => {
 	const {
 		data: analyticsDataFetched,
 		isLoading: isAnalyticsDataLoading,
+		isError: isAnalyticsDataError,
 	} = useFetchAnalyticsDataQuery(
 		{ videoId: attachmentID, siteUrl },
 		{ skip: ! attachmentID || shouldSkipAnalytics },
 	);
 	window.analyticsDataFetched = analyticsDataFetched;
+
+	// Connected, but the analytics backend is unreachable (server down) or returned
+	// a microservice error. Gated on a valid key so it never shows for a
+	// disconnected site — that case is handled by the onboarding overlay.
+	const analyticsUnreachable = !! window.userData?.validApiKey && !! attachmentID && ! shouldSkipAnalytics && ( isAnalyticsDataError || analyticsDataFetched?.errorType === ERROR_TYPE.MICROSERVICE_ERROR );
 
 	// Skip secondary queries until the primary analytics call has returned without an error.
 	// This prevents parallel requests being sent when the server rejects the API key.
@@ -120,7 +128,7 @@ const Analytics = ( { attachmentID } ) => {
 	// case, so on a key/backend error we just stop the loader; otherwise render.
 	useEffect( () => {
 		const loadingEl = document.getElementById( 'loading-analytics-animation' );
-		if ( apiKeyErrorType !== null || analyticsDataFetched?.errorType ) {
+		if ( apiKeyErrorType !== null || analyticsDataFetched?.errorType || isAnalyticsDataError ) {
 			if ( loadingEl ) {
 				loadingEl.style.display = 'none';
 			}
@@ -129,7 +137,7 @@ const Analytics = ( { attachmentID } ) => {
 		if ( analyticsDataFetched ) {
 			setAnalyticsData( analyticsDataFetched );
 		}
-	}, [ analyticsDataFetched, apiKeyErrorType ] );
+	}, [ analyticsDataFetched, apiKeyErrorType, isAnalyticsDataError ] );
 
 	// Sync A/B test comparison data
 	useEffect( () => {
@@ -469,6 +477,8 @@ const Analytics = ( { attachmentID } ) => {
 					</div>
 				</div>
 			</div>
+
+			{ analyticsUnreachable && <AnalyticsUnavailableNotice area="analytics" /> }
 
 			<div
 				id="media-not-found-overlay"
