@@ -6,9 +6,8 @@ import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 
 const PENDING_KEY = 'godam_upgrade_pending';
-const LAST_TRY_KEY = 'godam_upgrade_last_try';
+const RELOADED_KEY = 'godam_upgrade_reloaded'; // we re-verify + reload at most once per checkout
 const WINDOW_MS = 30 * 60 * 1000; // how long a started checkout stays "live"
-const COOLDOWN_MS = 8 * 1000; // min gap between re-verify reloads
 
 /**
  * Snapshot the pre-upgrade plan when the user opens the web checkout, so the
@@ -22,7 +21,7 @@ export const markUpgradePending = () => {
 			plan: window?.userData?.userApiData?.active_plan || '',
 			storage: window?.userData?.totalStorage || 0,
 		} ) );
-		window.localStorage.removeItem( LAST_TRY_KEY );
+		window.localStorage.removeItem( RELOADED_KEY );
 	} catch ( e ) {
 		// localStorage unavailable — the confirmation just won't auto-show.
 	}
@@ -55,7 +54,7 @@ const ProUpgradeNotice = () => {
 
 			const clear = () => {
 				window.localStorage.removeItem( PENDING_KEY );
-				window.localStorage.removeItem( LAST_TRY_KEY );
+				window.localStorage.removeItem( RELOADED_KEY );
 			};
 
 			// Give up on a checkout that wasn't completed within the window.
@@ -65,22 +64,33 @@ const ProUpgradeNotice = () => {
 			}
 
 			const u = window.userData || {};
+			// Disconnected sites are owned by the onboarding overlay — never act
+			// (and never reload) here.
+			if ( ! u.validApiKey ) {
+				return;
+			}
+
 			const plan = u.userApiData?.active_plan || '';
-			const upgraded = !! u.validApiKey &&
-				( ( plan && plan !== pending.plan ) || ( u.totalStorage && u.totalStorage !== pending.storage ) );
+			// A real upgrade = the plan name changed between two known plans, or the
+			// storage quota went up. Requiring both sides non-empty avoids a false
+			// "pro member" when the snapshot simply had no plan and one appears later.
+			const upgraded =
+				( pending.plan && plan && plan !== pending.plan ) ||
+				( u.totalStorage && pending.storage && u.totalStorage > pending.storage );
 			if ( upgraded ) {
 				setShow( true );
 				clear();
 				return;
 			}
 
-			// Plan not updated yet — re-verify (throttled) and reload to pull the
-			// fresh plan/quota into window.userData, then re-check on next run.
-			const lastTry = parseInt( window.localStorage.getItem( LAST_TRY_KEY ) || '0', 10 );
-			if ( Date.now() - lastTry < COOLDOWN_MS ) {
+			// Not reflected yet: re-verify and reload ONCE to pull the fresh
+			// plan/quota into window.userData (refresh-api-key-status only updates
+			// the server cache). Capped at a single reload so refocusing the tab
+			// never reloads the page repeatedly while the user is working.
+			if ( window.localStorage.getItem( RELOADED_KEY ) ) {
 				return;
 			}
-			window.localStorage.setItem( LAST_TRY_KEY, String( Date.now() ) );
+			window.localStorage.setItem( RELOADED_KEY, '1' );
 			const restUrl = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 			fetch( restUrl + 'godam/v1/settings/refresh-api-key-status', {
 				method: 'POST',
