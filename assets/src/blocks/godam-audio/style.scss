@@ -95,19 +95,9 @@
 		}
 	}
 
-	// Mobile: stack vertically
+	// Mobile: compact media controls
 	@media ( max-width: 480px ) {
-		flex-direction: column;
-		align-items: stretch;
-
-		&__cover {
-			width: 100%;
-			height: 160px;
-		}
-
 		&__player {
-			margin-left: 0;
-
 			&::-webkit-media-controls-timeline {
 				padding: 1px;
 				width: 100%;
