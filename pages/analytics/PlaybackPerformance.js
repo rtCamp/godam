@@ -13,7 +13,17 @@ import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
 /**
  * WordPress dependencies
  */
-import { __, _x } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
+import { Dropdown, Button, MenuGroup, MenuItem, Icon } from '@wordpress/components';
+import { chevronDown } from '@wordpress/icons';
+
+// Distinct multi-series palette for the chart lines + legend dots (Figma:
+// Play Rate cyan, Engagement Rate pink). Not the admin accent — these must stay
+// distinguishable from each other.
+const METRIC_COLORS = {
+	play_rate: '#06B6D4',
+	engagement_rate: '#EC4899',
+};
 
 export default function PlaybackPerformanceDashboard( {
 	attachmentID,
@@ -37,6 +47,8 @@ export default function PlaybackPerformanceDashboard( {
 		switch ( period ) {
 			case '7D':
 				return 7;
+			case '15D':
+				return 15;
 			case '1M':
 				return 30;
 			case '6M':
@@ -163,6 +175,9 @@ export default function PlaybackPerformanceDashboard( {
 				case '7D':
 					cutoffDate.setDate( today.getDate() - 6 ); // 6 days ago + today = 7 days
 					break;
+				case '15D':
+					cutoffDate.setDate( today.getDate() - 14 ); // 14 days ago + today = 15 days
+					break;
 				case '1M':
 					cutoffDate.setMonth( today.getMonth() - 1 );
 					break;
@@ -199,6 +214,9 @@ export default function PlaybackPerformanceDashboard( {
 			switch ( selectedPeriod ) {
 				case '7D':
 					startDate.setDate( today.getDate() - 6 ); // 6 days ago + today = 7 days
+					break;
+				case '15D':
+					startDate.setDate( today.getDate() - 14 ); // 14 days ago + today = 15 days
 					break;
 				case '1M':
 					startDate.setMonth( today.getMonth() - 1 );
@@ -330,6 +348,39 @@ export default function PlaybackPerformanceDashboard( {
 			.domain( [ 0, maxValue * 1.1 ] )
 			.range( [ height, 0 ] );
 
+		// Faint dashed gridlines (horizontal + vertical), inserted first so they
+		// sit behind the axes and the data lines.
+		svg
+			.insert( 'g', ':first-child' )
+			.attr( 'class', 'godam-chart-grid' )
+			.call( d3.axisLeft( y ).ticks( 5 ).tickSize( -width ).tickFormat( () => '' ) )
+			.call( ( g ) => g.select( '.domain' ).remove() )
+			.call( ( g ) =>
+				g
+					.selectAll( '.tick line' )
+					.attr( 'stroke', '#e5e7eb' )
+					.attr( 'stroke-dasharray', '4 4' ),
+			);
+
+		svg
+			.insert( 'g', ':first-child' )
+			.attr( 'class', 'godam-chart-grid' )
+			.attr( 'transform', `translate(0, ${ height })` )
+			.call(
+				d3
+					.axisBottom( x )
+					.tickValues( tickValues )
+					.tickSize( -height )
+					.tickFormat( () => '' ),
+			)
+			.call( ( g ) => g.select( '.domain' ).remove() )
+			.call( ( g ) =>
+				g
+					.selectAll( '.tick line' )
+					.attr( 'stroke', '#e5e7eb' )
+					.attr( 'stroke-dasharray', '4 4' ),
+			);
+
 		svg
 			.append( 'g' )
 			.call( d3.axisLeft( y ) )
@@ -352,7 +403,7 @@ export default function PlaybackPerformanceDashboard( {
 		const colorScale = d3
 			.scaleOrdinal()
 			.domain( [ 'engagement_rate', 'play_rate' ] )
-			.range( [ '#9333EA', '#5CC8BE' ] );
+			.range( [ METRIC_COLORS.engagement_rate, METRIC_COLORS.play_rate ] );
 
 		// Create a tooltip div
 		const tooltip = d3
@@ -374,23 +425,11 @@ export default function PlaybackPerformanceDashboard( {
 		selectedMetrics.forEach( ( metric ) => {
 			const color = colorScale( metric );
 
-			// Add filled area
-			const area = d3
-				.area()
-				.x( ( d ) => x( d.date ) )
-				.y0( height )
-				.y1( ( d ) => y( d[ metric ] ) );
-
-			svg
-				.append( 'path' )
-				.datum( completeData )
-				.attr( 'fill', color )
-				.attr( 'fill-opacity', 0.2 )
-				.attr( 'd', area );
-
-			// Add the line
+			// Smooth line, no filled area (matches the Figma chart). curveMonotoneX
+			// keeps the curve passing through each point without dipping below 0.
 			const line = d3
 				.line()
+				.curve( d3.curveMonotoneX )
 				.x( ( d ) => x( d.date ) )
 				.y( ( d ) => y( d[ metric ] ) );
 
@@ -509,109 +548,80 @@ export default function PlaybackPerformanceDashboard( {
 		};
 	}, [ parsedData, selectedMetrics, selectedPeriod ] );
 
+	// Date-range presets. Each maps to the existing `days` history param; a
+	// custom from/to range would need a backend change, so it's deferred.
+	const periodOptions = [
+		{ value: '7D', label: __( 'Last 7 days', 'godam' ) },
+		{ value: '15D', label: __( 'Last 15 days', 'godam' ) },
+		{ value: '1M', label: __( 'Last 1 month', 'godam' ) },
+		{ value: 'All', label: __( 'All time', 'godam' ) },
+	];
+	const currentPeriodLabel =
+		periodOptions.find( ( o ) => o.value === selectedPeriod )?.label ||
+		periodOptions[ 0 ].label;
+
+	// Dot-style legend item that toggles its metric on the chart.
+	const renderLegendItem = ( metricKey, label ) => {
+		const active = selectedMetrics.includes( metricKey );
+		return (
+			<button
+				type="button"
+				className="godam-chart-legend__item"
+				onClick={ () => toggleMetric( metricKey ) }
+				aria-pressed={ active }
+			>
+				<span
+					className="godam-legend-dot"
+					style={ { backgroundColor: active ? METRIC_COLORS[ metricKey ] : '#d1d5db' } }
+				/>
+				<span className={ active ? '' : 'godam-chart-legend__label--off' }>{ label }</span>
+			</button>
+		);
+	};
+
 	return (
-		<div className="w-full border rounded-lg p-4 shadow-sm h-[400px]">
+		<div className="godam-card playback-performance-card w-full h-[400px]">
 			<div className="flex flex-col justify-between gap-2 lg:gap-8 lg:flex-row lg:w-full">
-				<h2 className="text-base font-bold text-gray-800 m-0 whitespace-nowrap">
+				<h2 className="text-base font-semibold text-gray-800 m-0 whitespace-nowrap">
 					{ __( 'Playback Performance', 'godam' ) }
 				</h2>
-				<div className="flex gap-4 flex-col">
-					<div className="flex">
-						<button
-							className={ `flex items-center gap-1 rounded-md bg-transparent` }
-							onClick={ () => toggleMetric( 'engagement_rate' ) }
-						>
-							<div
-								className={ `w-4 h-4 rounded ${
-									selectedMetrics.includes( 'engagement_rate' )
-										? 'bg-[#AB3A6C]'
-										: 'bg-gray-300'
-								} flex items-center justify-center` }
-							>
-								{ selectedMetrics.includes( 'engagement_rate' ) && (
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="10"
-										height="10"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										strokeWidth="3"
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										className="text-white"
-									>
-										<polyline points="20 6 9 17 4 12"></polyline>
-									</svg>
-								) }
-							</div>
-							<span className="whitespace-nowrap">{ __( 'Engagement Rate', 'godam' ) }</span>
-						</button>
-
-						<button
-							className={ `flex items-center gap-1 rounded-md bg-transparent` }
-							onClick={ () => toggleMetric( 'play_rate' ) }
-						>
-							<div
-								className={ `w-4 h-4 rounded ${
-									selectedMetrics.includes( 'play_rate' )
-										? 'bg-[#AB3A6C]'
-										: 'bg-gray-300'
-								} flex items-center justify-center` }
-							>
-								{ selectedMetrics.includes( 'play_rate' ) && (
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="10"
-										height="10"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										strokeWidth="3"
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										className="text-white"
-									>
-										<polyline points="20 6 9 17 4 12"></polyline>
-									</svg>
-								) }
-							</div>
-							<span className="whitespace-nowrap">{ __( 'Play Rate', 'godam' ) }</span>
-						</button>
+				<div className="godam-chart-controls">
+					<div className="godam-chart-legend">
+						{ renderLegendItem( 'play_rate', __( 'Play Rate', 'godam' ) ) }
+						{ renderLegendItem( 'engagement_rate', __( 'Engagement Rate', 'godam' ) ) }
 					</div>
 
-					<div className="flex gap-1 text-sm">
-						<button
-							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === 'All' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
-							onClick={ () => setSelectedPeriod( 'All' ) }
-						>
-							{ _x( 'All', 'All time period', 'godam' ) }
-						</button>
-						<button
-							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '7D' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
-							onClick={ () => setSelectedPeriod( '7D' ) }
-						>
-							{ _x( '7D', '7 days period', 'godam' ) }
-						</button>
-						<button
-							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '1M' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
-							onClick={ () => setSelectedPeriod( '1M' ) }
-						>
-							{ _x( '1M', '1 month period', 'godam' ) }
-						</button>
-						<button
-							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '6M' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
-							onClick={ () => setSelectedPeriod( '6M' ) }
-						>
-							{ _x( '6M', '6 months period', 'godam' ) }
-						</button>
-						<button
-							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '1Y' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
-							onClick={ () => setSelectedPeriod( '1Y' ) }
-						>
-							{ _x( '1Y', '1 year period', 'godam' ) }
-						</button>
-					</div>
+					<Dropdown
+						className="godam-period-dropdown"
+						popoverProps={ { placement: 'bottom-end' } }
+						renderToggle={ ( { isOpen, onToggle } ) => (
+							<Button
+								variant="secondary"
+								onClick={ onToggle }
+								aria-expanded={ isOpen }
+								className="godam-period-dropdown__toggle"
+							>
+								{ currentPeriodLabel }
+								<Icon icon={ chevronDown } size={ 20 } />
+							</Button>
+						) }
+						renderContent={ ( { onClose } ) => (
+							<MenuGroup>
+								{ periodOptions.map( ( opt ) => (
+									<MenuItem
+										key={ opt.value }
+										isSelected={ selectedPeriod === opt.value }
+										onClick={ () => {
+											setSelectedPeriod( opt.value );
+											onClose();
+										} }
+									>
+										{ opt.label }
+									</MenuItem>
+								) ) }
+							</MenuGroup>
+						) }
+					/>
 				</div>
 			</div>
 

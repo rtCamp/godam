@@ -32,8 +32,9 @@ import videojs from 'video.js';
 import { arrowLeft, info } from '@wordpress/icons';
 import { ERROR_TYPE } from '../shared/enums';
 import AnalyticsUnavailableNotice from '../shared/AnalyticsUnavailableNotice';
-import { formatNumber, formatWatchTime } from '../utils/formatters';
+import { formatWatchTime } from '../utils/formatters';
 import UpgradePlanAnalyticsBg from '../../assets/src/images/upgrade-plan-analytics-bg.webp';
+
 const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
 const RenderVideo = ( { attachmentID, attachmentData, className, videoId } ) => {
@@ -93,12 +94,13 @@ const Analytics = ( { attachmentID } ) => {
 		{ videoId: attachmentID, siteUrl },
 		{ skip: ! attachmentID || shouldSkipAnalytics },
 	);
-	window.analyticsDataFetched = analyticsDataFetched;
 
 	// Connected, but the analytics backend is unreachable (server down) or returned
 	// a microservice error. Gated on a valid key so it never shows for a
 	// disconnected site — that case is handled by the onboarding overlay.
 	const analyticsUnreachable = !! window.userData?.validApiKey && !! attachmentID && ! shouldSkipAnalytics && ( isAnalyticsDataError || analyticsDataFetched?.errorType === ERROR_TYPE.MICROSERVICE_ERROR );
+
+	window.analyticsDataFetched = analyticsDataFetched;
 
 	// Skip secondary queries until the primary analytics call has returned without an error.
 	// This prevents parallel requests being sent when the server rejects the API key.
@@ -525,68 +527,72 @@ const Analytics = ( { attachmentID } ) => {
 						id="video-analytics-container"
 						className="video-analytics-container hidden"
 					>
-						<div>
-							<div className="flex gap-6 items-center flex-wrap lg:flex-nowrap flex-row">
-								<div className="flex-grow w-full lg:w-auto">
-									<div className="w-full analytics-info-container flex flex-wrap flex-row items-center lg:flex-col lg:items-start lg:gap-4">
-										<SingleMetrics
-											metricType={ 'engagement-rate' }
-											label={ __( 'Average Engagement', 'godam' ) }
-											tooltipText={ __(
-												'Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)',
-												'godam',
-											) }
-											processedAnalyticsHistory={ processedAnalyticsHistory }
-											analyticsDataFetched={ analyticsDataFetched }
-										/>
-
-										<SingleMetrics
-											metricType={ 'play-rate' }
-											label={ __( 'Play Rate', 'godam' ) }
-											tooltipText={ __(
-												'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads',
-												'godam',
-											) }
-											processedAnalyticsHistory={ processedAnalyticsHistory }
-											analyticsDataFetched={ analyticsDataFetched }
-										/>
-
-										<SingleMetrics
-											metricType={ 'watch-time' }
-											label={ __( 'Watch Time', 'godam' ) }
-											tooltipText={ __(
-												'Total time the video has been watched, aggregated across all plays',
-												'godam',
-											) }
-											processedAnalyticsHistory={ processedAnalyticsHistory }
-											analyticsDataFetched={ analyticsDataFetched }
-										/>
-
-										<PlaysVsViewers
-											plays={ analyticsDataFetched?.plays ?? 0 }
-											uniqueViewers={ analyticsDataFetched?.unique_viewers ?? 0 }
-											showRatio={ true }
-											isLoading={ isAnalyticsDataLoading }
-											processedAnalyticsHistory={ processedAnalyticsHistory }
-										/>
-									</div>
+						<div className="godam-analytics-stack">
+							{ /* All Time Insights — existing KPIs grouped into the shared card. */ }
+							<div className="godam-card godam-insights-card">
+								<div className="godam-card__head">
+									<h2>{ __( 'All Time Insights', 'godam' ) }</h2>
+									<span className="godam-pill">{ __( 'All time', 'godam' ) }</span>
 								</div>
-								<div className="w-full lg:w-auto lg:flex-grow lg:min-w-[650px] 2xl:min-w-[750px]">
-									<div>
-										<div className="video-container">
-											<RenderVideo
-												attachmentData={ attachmentData }
-												attachmentID={ attachmentID }
-												videoId={ 'analytics-video' }
-											/>
-											<div className="video-chart-container">
-												<div id="chart-container">
-													<svg id="line-chart" width="640" height="300"></svg>
-													<div className="line-chart-tooltip"></div>
-												</div>
-											</div>
-										</div>
-										<div className="video-container">
+								<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-nowrap">
+									<SingleMetrics
+										metricType={ 'engagement-rate' }
+										label={ __( 'Average Engagement', 'godam' ) }
+										tooltipText={ __(
+											'Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)',
+											'godam',
+										) }
+										processedAnalyticsHistory={ processedAnalyticsHistory }
+										analyticsDataFetched={ analyticsDataFetched }
+									/>
+
+									<SingleMetrics
+										metricType={ 'play-rate' }
+										label={ __( 'Play Rate', 'godam' ) }
+										tooltipText={ __(
+											'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads',
+											'godam',
+										) }
+										processedAnalyticsHistory={ processedAnalyticsHistory }
+										analyticsDataFetched={ analyticsDataFetched }
+									/>
+
+									<SingleMetrics
+										metricType={ 'watch-time' }
+										label={ __( 'Watch Time', 'godam' ) }
+										tooltipText={ __(
+											'Total time the video has been watched, aggregated across all plays',
+											'godam',
+										) }
+										processedAnalyticsHistory={ processedAnalyticsHistory }
+										analyticsDataFetched={ analyticsDataFetched }
+									/>
+
+									<PlaysVsViewers
+										plays={ analyticsDataFetched?.plays ?? 0 }
+										uniqueViewers={ analyticsDataFetched?.unique_viewers ?? 0 }
+										showRatio={ true }
+										isLoading={ isAnalyticsDataLoading }
+										processedAnalyticsHistory={ processedAnalyticsHistory }
+									/>
+								</div>
+							</div>
+
+							{ /* Views across the video — player with the per-second overlay. */ }
+							<div className="godam-card godam-video-card">
+								<div className="godam-card__head">
+									<h2>{ __( 'Views across the video', 'godam' ) }</h2>
+								</div>
+								<div className="video-container">
+									<RenderVideo
+										attachmentData={ attachmentData }
+										attachmentID={ attachmentID }
+										videoId={ 'analytics-video' }
+									/>
+									<div className="video-chart-container">
+										<div id="chart-container">
+											<svg id="line-chart" width="640" height="300"></svg>
+											<div className="line-chart-tooltip"></div>
 										</div>
 									</div>
 								</div>
@@ -604,16 +610,17 @@ const Analytics = ( { attachmentID } ) => {
 							initialData={ processedAnalyticsHistory }
 						/>
 						<div
-							className="country-heatmap-container text-center bg-white border border-zinc-200 rounded p-4"
+							className="godam-card country-heatmap-container text-center"
 							id="country-heatmap-container"
 						>
+							{ /* The "Views by Location" heading + map are injected here by the map helper. */ }
 							<div id="map-container"></div>
 							<div id="table-container" className="px-12"></div>
 						</div>
-						<div className="posts-count-container lg:col-span-1 bg-white border border-zinc-200 rounded p-4">
-							<h2 className="text-base font-medium text-zinc-700 mb-2">
-								{ __( 'Views by Source', 'godam' ) }
-							</h2>
+						<div className="godam-card posts-count-container lg:col-span-1">
+							<div className="godam-card__head">
+								<h2>{ __( 'Views by Source', 'godam' ) }</h2>
+							</div>
 							<div id="post-views-count-chart" className="text-center"></div>
 							<div className="legend" id="legend"></div>
 							<div className="total-views" id="total-views"></div>
@@ -769,12 +776,12 @@ const Analytics = ( { attachmentID } ) => {
 													abTestComparisonAnalyticsData?.plays ?? 0,
 												) }
 											>
-												<td title={ analyticsData?.plays?.toLocaleString() }>
-													{ formatNumber( analyticsData?.plays ) }
+												<td>
+													{ Number( analyticsData?.plays ?? 0 ).toLocaleString() }
 												</td>
 												<td>{ __( 'Views', 'godam' ) }</td>
-												<td title={ abTestComparisonAnalyticsData?.plays?.toLocaleString() }>
-													{ formatNumber( abTestComparisonAnalyticsData?.plays ?? 0 ) }
+												<td>
+													{ Number( abTestComparisonAnalyticsData?.plays ?? 0 ).toLocaleString() }
 												</td>
 											</tr>
 											<tr
@@ -783,33 +790,25 @@ const Analytics = ( { attachmentID } ) => {
 													comparisonEngagementRate,
 												) }
 											>
-												<td title={ `${ engagementRate }%` }>
-													{ engagementRate }%
-												</td>
+												<td>{ engagementRate }%</td>
 												<td>{ __( 'Average Engagement', 'godam' ) }</td>
-												<td title={ `${ comparisonEngagementRate }%` }>
-													{ comparisonEngagementRate }%
-												</td>
+												<td>{ comparisonEngagementRate }%</td>
 											</tr>
 											<tr className={ highlightClass( plays, comparisonPlays ) }>
-												<td title={ plays?.toLocaleString() }>
-													{ formatNumber( plays ) }
+												<td>
+													{ Number( plays ?? 0 ).toLocaleString() }
 												</td>
 												<td>{ __( 'Total Plays', 'godam' ) }</td>
-												<td title={ comparisonPlays?.toLocaleString() }>
-													{ formatNumber( comparisonPlays ?? 0 ) }
+												<td>
+													{ Number( comparisonPlays ?? 0 ).toLocaleString() }
 												</td>
 											</tr>
 											<tr
 												className={ highlightClass( playRate, comparisonPlayRate ) }
 											>
-												<td title={ `${ playRate }%` }>
-													{ playRate }%
-												</td>
+												<td>{ playRate }%</td>
 												<td>{ __( 'Play Rate', 'godam' ) }</td>
-												<td title={ `${ comparisonPlayRate }%` }>
-													{ comparisonPlayRate }%
-												</td>
+												<td>{ comparisonPlayRate }%</td>
 											</tr>
 											<tr
 												className={ highlightClass(
@@ -817,12 +816,12 @@ const Analytics = ( { attachmentID } ) => {
 													abTestComparisonAnalyticsData?.page_load,
 												) }
 											>
-												<td title={ analyticsData?.page_load?.toLocaleString() }>
-													{ formatNumber( analyticsData?.page_load ) }
+												<td>
+													{ Number( analyticsData?.page_load ?? 0 ).toLocaleString() }
 												</td>
 												<td>{ __( 'Page Loads', 'godam' ) }</td>
-												<td title={ abTestComparisonAnalyticsData?.page_load?.toLocaleString() }>
-													{ formatNumber( abTestComparisonAnalyticsData?.page_load ) }
+												<td>
+													{ Number( abTestComparisonAnalyticsData?.page_load ?? 0 ).toLocaleString() }
 												</td>
 											</tr>
 											<tr
@@ -831,11 +830,11 @@ const Analytics = ( { attachmentID } ) => {
 													abTestComparisonAnalyticsData?.play_time,
 												) }
 											>
-												<td title={ `${ analyticsData?.play_time?.toFixed( 2 ) }s` }>
+												<td>
 													{ formatWatchTime( analyticsData?.play_time ) }
 												</td>
 												<td>{ __( 'Play Time', 'godam' ) }</td>
-												<td title={ `${ abTestComparisonAnalyticsData?.play_time?.toFixed( 2 ) }s` }>
+												<td>
 													{ formatWatchTime( abTestComparisonAnalyticsData?.play_time ) }
 												</td>
 											</tr>
@@ -845,11 +844,11 @@ const Analytics = ( { attachmentID } ) => {
 													abTestComparisonAnalyticsData?.video_length,
 												) }
 											>
-												<td title={ `${ analyticsData?.video_length }s` }>
+												<td>
 													{ formatWatchTime( analyticsData?.video_length ) }
 												</td>
 												<td>{ __( 'Video Length', 'godam' ) }</td>
-												<td title={ `${ abTestComparisonAnalyticsData?.video_length }s` }>
+												<td>
 													{ formatWatchTime( abTestComparisonAnalyticsData?.video_length ) }
 												</td>
 											</tr>
