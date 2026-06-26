@@ -130,8 +130,8 @@ const slice = createSlice( {
 			state.currentLayer = action.payload;
 		},
 		setCurrentTab: ( state, action ) => {
-			// check if action.payload is either 'layers' or 'player-settings'.
-			if ( action.payload === 'layers' || action.payload === 'player-settings' || action.payload === 'chapters' ) {
+			// Only accept known editor tab names.
+			if ( [ 'layers', 'player-settings', 'transcription', 'chapters' ].includes( action.payload ) ) {
 				state.currentTab = action.payload;
 			}
 		},

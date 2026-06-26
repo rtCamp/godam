@@ -39,6 +39,7 @@ use RTGODAM\Inc\REST_API\Media_Library;
 use RTGODAM\Inc\REST_API\Video_Editor;
 use RTGODAM\Inc\REST_API\Ads;
 use RTGODAM\Inc\REST_API\Transcoding;
+use RTGODAM\Inc\REST_API\Transcription;
 use RTGODAM\Inc\REST_API\Analytics;
 use RTGODAM\Inc\REST_API\Polls;
 use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
@@ -184,6 +185,7 @@ class Plugin {
 		Video_Editor::get_instance();
 		Ads::get_instance();
 		Transcoding::get_instance();
+		Transcription::get_instance();
 		Analytics::get_instance();
 		Deactivation::get_instance();
 		Polls::get_instance();

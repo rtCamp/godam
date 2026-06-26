@@ -14,6 +14,7 @@
 @use 'controls';
 @use 'layers';
 @use 'chapters';
+@use 'transcription';
 @use 'timeline';
 
 // Hide layer controls fallback when portal target is not available
