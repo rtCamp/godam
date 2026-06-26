@@ -13,6 +13,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { ChromeExtensionSvg } from '../assets/svgs';
 import godamLogo from '../../../assets/src/images/godam-logo.png';
 import { hasAPIKey } from '../utils/index.js';
+import ProUpgradeNotice, { markUpgradePending } from './ProUpgradeNotice';
 
 const GodamHeader = () => {
 	const isVideoEditorPage = window.location.href.includes( 'page=rtgodam_video_editor' );
@@ -128,6 +129,7 @@ const GodamHeader = () => {
 										size="compact"
 										href={ upgradePlanLink }
 										target="_blank"
+										onClick={ markUpgradePending }
 										icon={ trendingUp }
 										iconSize={ 16 }
 										text={ __( 'Upgrade plan', 'godam' ) }
@@ -150,6 +152,7 @@ const GodamHeader = () => {
 					</div>
 				</div>
 			</div>
+			<ProUpgradeNotice />
 		</header>
 	);
 };
