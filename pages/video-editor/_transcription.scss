@@ -205,15 +205,6 @@ $ve-faint: color-mix(in srgb, currentcolor 4%, transparent);
 			color: $ve-muted;
 			text-align: center;
 		}
-
-		// Success toast (Flow 34) — centred near the bottom of the editor.
-		&__toast.components-snackbar {
-			position: fixed;
-			bottom: 2rem;
-			left: 50%;
-			transform: translateX(-50%);
-			z-index: 1000;
-		}
 	}
 }
 

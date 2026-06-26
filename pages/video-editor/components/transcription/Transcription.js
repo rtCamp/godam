@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 /**
  * WordPress dependencies
  */
-import { Button, Spinner, Notice, Snackbar, Modal } from '@wordpress/components';
+import { Button, Spinner, Notice, Modal } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { plus, update, trash } from '@wordpress/icons';
 
@@ -30,9 +30,11 @@ const BoltIcon = (
 /**
  * Transcription tab panel.
  *
- * Drives the four design states off the SaaS job status: an empty state with
- * "Generate" / "Upload" actions, a busy state with progress copy, a success
- * toast, and the ready state showing the file meta and a timestamped cue list.
+ * Drives the design states off the SaaS job status: an empty state with
+ * "Generate" / "Upload" actions, a busy state with progress copy while AI
+ * transcription runs, and the ready state showing the file meta + cue list
+ * (with Replace / Delete actions). Uploading a caption file is a quiet action
+ * — it just opens the media picker and swaps the transcript in.
  *
  * The transcript is stored on the attachment (not in `rtgodam_meta`), so this
  * panel owns its data via the transcription API rather than the editor store.
@@ -44,17 +46,16 @@ const BoltIcon = (
  * @return {JSX.Element} The Transcription panel.
  */
 const Transcription = ( { attachmentID, duration, fileSize } ) => {
-	const [ busyKind, setBusyKind ] = useState( null ); // 'generate' | 'upload' | null
+	const [ isGenerating, setIsGenerating ] = useState( false );
 	const [ cues, setCues ] = useState( [] );
 	const [ cuesLoading, setCuesLoading ] = useState( false );
 	const [ error, setError ] = useState( '' );
-	const [ toast, setToast ] = useState( false );
 	const [ confirmDelete, setConfirmDelete ] = useState( false );
 
 	const { data: transcription } = useGetTranscriptionQuery( attachmentID, {
 		// Poll while a generation job is running so the panel flips to "ready"
 		// on its own once the SaaS finishes.
-		pollingInterval: busyKind === 'generate' ? 8000 : 0,
+		pollingInterval: isGenerating ? 8000 : 0,
 	} );
 
 	const [ generateTranscription ] = useGenerateTranscriptionMutation();
@@ -65,15 +66,15 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 	const status = transcription?.status || '';
 	const isReady = Boolean( transcriptPath );
 
-	// Once a job we're polling for resolves, drop out of the busy state.
+	// Once a generation job we're polling for resolves, drop out of the busy state.
 	useEffect( () => {
-		if ( busyKind === 'generate' && ( isReady || status === 'Failed' ) ) {
-			setBusyKind( null );
+		if ( isGenerating && ( isReady || status === 'Failed' ) ) {
+			setIsGenerating( false );
 			if ( status === 'Failed' ) {
 				setError( __( 'Transcription failed. Please try again.', 'godam' ) );
 			}
 		}
-	}, [ busyKind, isReady, status ] );
+	}, [ isGenerating, isReady, status ] );
 
 	// Fetch and parse the caption file whenever the path changes.
 	useEffect( () => {
@@ -107,23 +108,26 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 
 	const handleGenerate = async () => {
 		setError( '' );
-		setBusyKind( 'generate' );
+		setIsGenerating( true );
 		try {
 			const result = await generateTranscription( attachmentID ).unwrap();
 			// SaaS may answer synchronously when the transcript already exists.
 			if ( result?.transcript_path ) {
-				setBusyKind( null );
+				setIsGenerating( false );
 			} else if ( result?.success === false && result?.error && ! isTranscribingStatus( result?.current_status ) ) {
 				// Anything other than "already in progress" surfaces as an error.
-				setBusyKind( null );
+				setIsGenerating( false );
 				setError( result.error );
 			}
 		} catch ( err ) {
-			setBusyKind( null );
+			setIsGenerating( false );
 			setError( err?.data?.message || __( 'Could not start transcription. Please try again.', 'godam' ) );
 		}
 	};
 
+	// Open the media picker and attach the chosen .vtt / .srt as the transcript.
+	// Used by both "Upload File" (empty state) and "Replace" (ready state) — a
+	// quiet action with no progress/success messaging; the panel just updates.
 	const handleUpload = () => {
 		setError( '' );
 		const frame = wp.media( {
@@ -140,14 +144,10 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 				setError( __( 'Please choose a .vtt or .srt caption file.', 'godam' ) );
 				return;
 			}
-			setBusyKind( 'upload' );
 			try {
 				await uploadTranscription( { attachmentID, url } ).unwrap();
-				setToast( true );
 			} catch ( err ) {
 				setError( err?.data?.message || __( 'Could not attach the caption file.', 'godam' ) );
-			} finally {
-				setBusyKind( null );
 			}
 		} );
 
@@ -168,7 +168,7 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 	const durationLabel = formatClock( duration );
 	const sizeLabel = fileSize || formatBytes( transcription?.file_size );
 	const fileName = transcription?.file_name || __( 'Transcript', 'godam' );
-	const showReady = isReady && busyKind !== 'generate';
+	const showReady = isReady && ! isGenerating;
 
 	return (
 		<div className="godam-ve-transcription">
@@ -196,9 +196,9 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 							<div className="godam-ve-transcription__file-actions">
 								<Button
 									icon={ update }
-									label={ __( 'Regenerate transcription', 'godam' ) }
+									label={ __( 'Replace transcription file', 'godam' ) }
 									showTooltip
-									onClick={ handleGenerate }
+									onClick={ handleUpload }
 								/>
 								<Button
 									icon={ trash }
@@ -232,7 +232,7 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 						) }
 					</>
 				) : (
-					/* ---- Empty / Busy (Flow 32 + 33) ---- */
+					/* ---- Empty / Generating (Flow 32 + 33) ---- */
 					<div className="godam-ve-transcription__generate">
 						<p className="godam-ve-transcription__help">
 							{ __( "Automatically transcribe the audio using GoDAM's AI engine", 'godam' ) }
@@ -241,7 +241,7 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 							className="godam-ve-transcription__generate-btn"
 							variant="secondary"
 							icon={ BoltIcon }
-							disabled={ Boolean( busyKind ) }
+							disabled={ isGenerating }
 							onClick={ handleGenerate }
 						>
 							{ __( 'Generate Transcription', 'godam' ) }
@@ -251,13 +251,11 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 							<span>{ __( 'OR', 'godam' ) }</span>
 						</div>
 
-						{ busyKind ? (
+						{ isGenerating ? (
 							<div className="godam-ve-transcription__progress">
 								<Spinner />
 								<p className="godam-ve-transcription__progress-title">
-									{ busyKind === 'upload'
-										? __( 'Uploading transcript…', 'godam' )
-										: __( 'Generating transcription…', 'godam' ) }
+									{ __( 'Generating transcription…', 'godam' ) }
 								</p>
 								<p className="godam-ve-transcription__progress-note">
 									{ __( "This usually takes 10–15 minutes. We'll notify you once it's ready", 'godam' ) }
@@ -265,34 +263,18 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 								<span className="godam-ve-transcription__progress-bar" aria-hidden="true" />
 							</div>
 						) : (
-							<>
-								<p className="godam-ve-transcription__help">
-									{ __( 'Use an existing .srt or .vtt caption file', 'godam' ) }
-								</p>
-								<Button
-									className="godam-ve-transcription__upload-btn"
-									variant="secondary"
-									icon={ plus }
-									onClick={ handleUpload }
-								>
-									{ __( 'Upload File', 'godam' ) }
-								</Button>
-							</>
+							<Button
+								className="godam-ve-transcription__upload-btn"
+								variant="secondary"
+								icon={ plus }
+								onClick={ handleUpload }
+							>
+								{ __( 'Upload File', 'godam' ) }
+							</Button>
 						) }
 					</div>
 				) }
 			</div>
-
-			{ /* ---- Success toast (Flow 34) ---- */ }
-			{ toast && (
-				<Snackbar
-					className="godam-ve-transcription__toast"
-					actions={ [ { label: __( 'Review', 'godam' ), onClick: () => setToast( false ) } ] }
-					onRemove={ () => setToast( false ) }
-				>
-					{ __( 'Transcription file added successfully', 'godam' ) }
-				</Snackbar>
-			) }
 
 			{ confirmDelete && (
 				<Modal

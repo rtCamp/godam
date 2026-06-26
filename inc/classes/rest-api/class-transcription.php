@@ -34,6 +34,16 @@ class Transcription extends Base {
 	const STATUS_META = 'rtgodam_transcript_status';
 
 	/**
+	 * Meta flag set when the user deletes the transcript. While set, the GET
+	 * endpoint will NOT auto-resurrect the transcript from the SaaS (otherwise
+	 * `godam_get_transcript_path()` re-caches it and the delete is undone). It
+	 * is cleared on generate / upload so a fresh transcript can replace it.
+	 *
+	 * @var string
+	 */
+	const DELETED_META = 'rtgodam_transcript_deleted';
+
+	/**
 	 * Register custom REST API.
 	 *
 	 * @return array Array of registered REST API routes.
@@ -123,12 +133,14 @@ class Transcription extends Base {
 	public function get_transcription( \WP_REST_Request $request ) {
 		$attachment_id = absint( $request->get_param( 'attachment_id' ) );
 
-		// `godam_get_transcript_path()` returns the cached meta when present,
-		// otherwise fetches + caches it from the SaaS.
-		$path = godam_get_transcript_path( $attachment_id );
+		// Locally-stored transcript takes precedence.
+		$path = get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
 
-		if ( empty( $path ) ) {
-			$path = get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
+		// Auto-discover from the SaaS only when the user has NOT deleted the
+		// transcript. Otherwise `godam_get_transcript_path()` would re-cache it
+		// and silently undo the delete.
+		if ( empty( $path ) && ! get_post_meta( $attachment_id, self::DELETED_META, true ) ) {
+			$path = godam_get_transcript_path( $attachment_id );
 		}
 
 		$status = $path ? 'Transcribed' : (string) get_post_meta( $attachment_id, self::STATUS_META, true );
@@ -197,12 +209,16 @@ class Transcription extends Base {
 		$current_status = isset( $payload['current_status'] ) ? sanitize_text_field( $payload['current_status'] ) : '';
 
 		if ( ! empty( $path ) ) {
+			// A (re)generated transcript supersedes any prior delete.
+			delete_post_meta( $attachment_id, self::DELETED_META );
 			update_post_meta( $attachment_id, 'rtgodam_transcript_path', $path );
 			update_post_meta( $attachment_id, self::STATUS_META, 'Transcribed' );
-		} else {
-			// No path yet — remember whatever in-flight status the SaaS reported
-			// so the editor keeps polling.
-			$track = $current_status ? $current_status : ( $status ? $status : 'Transcribing' );
+		} elseif ( '' !== $current_status || '' !== $status ) {
+			// A job is genuinely in progress — clear the delete marker and
+			// remember the in-flight status so the editor keeps polling. On a
+			// hard error we leave the delete marker intact.
+			delete_post_meta( $attachment_id, self::DELETED_META );
+			$track = $current_status ? $current_status : $status;
 			update_post_meta( $attachment_id, self::STATUS_META, $track );
 		}
 
@@ -237,6 +253,8 @@ class Transcription extends Base {
 			);
 		}
 
+		// An uploaded transcript supersedes any prior delete.
+		delete_post_meta( $attachment_id, self::DELETED_META );
 		update_post_meta( $attachment_id, 'rtgodam_transcript_path', $url );
 		update_post_meta( $attachment_id, self::STATUS_META, 'Transcribed' );
 
@@ -254,6 +272,8 @@ class Transcription extends Base {
 
 		delete_post_meta( $attachment_id, 'rtgodam_transcript_path' );
 		delete_post_meta( $attachment_id, self::STATUS_META );
+		// Mark as deleted so GET won't auto-resurrect it from the SaaS.
+		update_post_meta( $attachment_id, self::DELETED_META, '1' );
 
 		return rest_ensure_response( $this->shape( '', '' ) );
 	}
