@@ -16,11 +16,17 @@ import { Button, Modal } from '@wordpress/components';
  */
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const UPGRADE_PENDING = 'godam_upgrade_pending';
-const UPGRADE_REFRESHED = 'godam_upgrade_refreshed';
+const UPGRADE_PENDING = 'godam_upgrade_pending'; // timestamp (ms) of the in-flight checkout
+const UPGRADE_LAST_TRY = 'godam_upgrade_last_try'; // timestamp (ms) of the last re-verify
+const UPGRADE_WINDOW_MS = 30 * 60 * 1000; // how long a pending checkout stays "live"
+const UPGRADE_COOLDOWN_MS = 8 * 1000; // min gap between re-verify reloads
 
 /**
  * Parse a Frappe date/datetime ("YYYY-MM-DD HH:MM:SS") or unix timestamp.
+ *
+ * Frappe sends naive datetimes in the server timezone (UTC); we mark them as
+ * UTC so the countdown doesn't shift by the viewer's local offset. Strings that
+ * already carry a Z or ±HH:MM offset are left as-is.
  *
  * @param {string|number|null} value Raw date value.
  * @return {Date|null} Parsed date, or null when absent/invalid.
@@ -29,7 +35,15 @@ const parseDate = ( value ) => {
 	if ( ! value ) {
 		return null;
 	}
-	const date = new Date( typeof value === 'number' ? value * 1000 : String( value ).replace( ' ', 'T' ) );
+	if ( typeof value === 'number' ) {
+		const ts = new Date( value * 1000 );
+		return Number.isNaN( ts.getTime() ) ? null : ts;
+	}
+	let str = String( value ).trim().replace( ' ', 'T' );
+	if ( ! /[zZ]|[+-]\d{2}:?\d{2}$/.test( str ) ) {
+		str += 'Z';
+	}
+	const date = new Date( str );
 	return Number.isNaN( date.getTime() ) ? null : date;
 };
 
@@ -46,27 +60,44 @@ const TrialBanner = () => {
 
 	const [ showProModal, setShowProModal ] = useState( false );
 
-	// O11: handle the return leg from web checkout (runs on mount and whenever the
-	// dashboard tab regains focus, since the upgrade completes in another tab).
+	// O11: handle the return leg from web checkout. Runs on mount and whenever the
+	// dashboard tab regains focus, since checkout completes in another tab. The
+	// plan flip is async on godam-core's side, so we re-verify on each focus until
+	// it turns paid — capped to a short window after the click so an abandoned
+	// checkout never lingers (and never falsely confirms a later trial expiry).
 	useEffect( () => {
 		const handleReturn = () => {
-			if ( ! window.localStorage.getItem( UPGRADE_PENDING ) ) {
+			const pendingTs = parseInt( window.localStorage.getItem( UPGRADE_PENDING ) || '', 10 );
+			if ( Number.isNaN( pendingTs ) ) {
 				return;
 			}
-			// Plan now reflects paid → congratulate once, clear the flags.
+
+			const clearPending = () => {
+				window.localStorage.removeItem( UPGRADE_PENDING );
+				window.localStorage.removeItem( UPGRADE_LAST_TRY );
+			};
+
+			// Plan now reflects paid → congratulate once and stop.
 			if ( isPaid ) {
 				setShowProModal( true );
-				window.localStorage.removeItem( UPGRADE_PENDING );
-				window.localStorage.removeItem( UPGRADE_REFRESHED );
+				clearPending();
 				return;
 			}
-			// Still showing the trial: the verify cache may be stale right after
-			// checkout. Force one re-verify, then reload so the fresh plan loads.
-			// The REFRESHED guard runs this at most once per upgrade (no loop).
-			if ( window.localStorage.getItem( UPGRADE_REFRESHED ) ) {
+
+			// Give up on a checkout that wasn't completed within the window.
+			if ( Date.now() - pendingTs > UPGRADE_WINDOW_MS ) {
+				clearPending();
 				return;
 			}
-			window.localStorage.setItem( UPGRADE_REFRESHED, '1' );
+
+			// Still on trial: re-verify, throttled so rapid focus events don't
+			// fire back-to-back reloads. refresh-api-key-status only refreshes the
+			// server cache, so reload to pull the fresh plan into window.userData.
+			const lastTry = parseInt( window.localStorage.getItem( UPGRADE_LAST_TRY ) || '0', 10 );
+			if ( Date.now() - lastTry < UPGRADE_COOLDOWN_MS ) {
+				return;
+			}
+			window.localStorage.setItem( UPGRADE_LAST_TRY, String( Date.now() ) );
 			const restUrl = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 			fetch( restUrl + 'godam/v1/settings/refresh-api-key-status', {
 				method: 'POST',
@@ -80,13 +111,17 @@ const TrialBanner = () => {
 	}, [ isPaid ] );
 
 	const onUpgrade = () => {
-		// Mark a checkout in flight so the return leg can confirm + re-verify.
-		window.localStorage.setItem( UPGRADE_PENDING, '1' );
-		window.localStorage.removeItem( UPGRADE_REFRESHED );
+		// Mark a checkout in flight (timestamped) so the return leg can re-verify
+		// within the window and confirm the upgrade.
+		window.localStorage.setItem( UPGRADE_PENDING, String( Date.now() ) );
+		window.localStorage.removeItem( UPGRADE_LAST_TRY );
 	};
 
-	const totalDays = trialStart && trialEnd ? Math.max( 1, Math.round( ( trialEnd - trialStart ) / DAY_MS ) ) : null;
-	const daysLeft = trialEnd ? Math.max( 0, Math.ceil( ( trialEnd - now ) / DAY_MS ) ) : 0;
+	// Both use ceil (a partial day still counts), and days-left is clamped to the
+	// total so the banner can never read "15 of 14 days left".
+	const totalDays = trialStart && trialEnd ? Math.max( 1, Math.ceil( ( trialEnd - trialStart ) / DAY_MS ) ) : null;
+	const daysLeftRaw = trialEnd ? Math.max( 0, Math.ceil( ( trialEnd - now ) / DAY_MS ) ) : 0;
+	const daysLeft = totalDays ? Math.min( totalDays, daysLeftRaw ) : daysLeftRaw;
 	const endLabel = trialEnd ? trialEnd.toLocaleDateString( undefined, { year: 'numeric', month: 'long', day: 'numeric' } ) : '';
 
 	return (

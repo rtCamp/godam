@@ -330,19 +330,6 @@ const Dashboard = () => {
 		}
 	}, [ topVideosPage ] );
 
-	useEffect( () => {
-		const checkExist = setInterval( () => {
-			const bandwidthEl = document.querySelector( '#bandwidth-donut-chart' );
-			const storageEl = document.querySelector( '#storage-donut-chart' );
-
-			if ( bandwidthEl && storageEl && window?.userData ) {
-				clearInterval( checkExist );
-			}
-		}, 100 );
-
-		return () => clearInterval( checkExist );
-	}, [] );
-
 	/**
 	 * Renders the appropriate overlay content based on API key status.
 	 *
@@ -651,7 +638,7 @@ const Dashboard = () => {
 										</tr>
 									) )
 								) }
-								{ topVideosData.length === 0 && (
+								{ ! isTopVideosFetching && topVideosData.length === 0 && (
 									<tr>
 										<td colSpan="7" className="godam-empty-media text-center py-6">
 											<p className="godam-empty-media__title text-lg mb-2">{ __( 'You have no media yet!', 'godam' ) }</p>
