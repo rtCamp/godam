@@ -36,25 +36,27 @@ const parseDate = ( value ) => {
 };
 
 /**
- * O8 — trial-countdown banner.
+ * O8 — free-trial countdown banner.
  *
- * A full-width strip shown across GoDAM admin pages while the connected account
- * is on an active free trial: "Free trial ends on <date>" + an "Upgrade Now" CTA
- * that opens the web checkout (and marks the upgrade pending so the "pro member"
- * confirmation shows on return).
+ * The "60-day free trial" is modelled in godam-core as a **Free subscription**
+ * (active_plan "Free"), not a Frappe trial — so `trial_end_date` is null and the
+ * period end lives in `end_date` (current_invoice_end). Shows a full-width strip
+ * ("Free trial ends on <date>" + "Upgrade Now") while the connected account is on
+ * the Free plan and that end date is still in the future.
  *
- * @return {JSX.Element|null} The banner, or null when not on a trial.
+ * @return {JSX.Element|null} The banner, or null when not on the free plan.
  */
 const TrialCountdownBanner = () => {
 	const userData = window.userData || {};
-	const trialEnd = parseDate( userData.userApiData?.trial_end_date );
-	const isTrial = !! userData.validApiKey && !! trialEnd && trialEnd.getTime() > Date.now();
+	const plan = ( userData.userApiData?.active_plan || '' ).toLowerCase();
+	const planEnd = parseDate( userData.userApiData?.end_date );
+	const isFreeTrial = !! userData.validApiKey && 'free' === plan && !! planEnd && planEnd.getTime() > Date.now();
 
-	if ( ! isTrial ) {
+	if ( ! isFreeTrial ) {
 		return null;
 	}
 
-	const endLabel = trialEnd.toLocaleDateString( undefined, { year: 'numeric', month: 'long', day: 'numeric' } );
+	const endLabel = planEnd.toLocaleDateString( undefined, { year: 'numeric', month: 'long', day: 'numeric' } );
 
 	return (
 		<div className="godam-trial-banner -ml-[32px] bg-[#5d31ff] pl-[32px]" data-test-id="godam-header-banner-trial">
