@@ -116,7 +116,7 @@ const ProUpgradeNotice = () => {
 			<div className="p-4">
 				<p className="m-0 text-sm font-bold text-slate-900">{ __( 'You are now a pro member', 'godam' ) }</p>
 				<p className="mb-3 mt-1 text-xs leading-relaxed text-slate-600">
-					{ __( 'With a paid plan, you get 50 GB storage, 50 GB bandwidth and unlimited usage limits.', 'godam' ) }
+					{ __( 'With a paid plan, you get fixed storage, bandwidth that resets monthly, and unlimited sites.', 'godam' ) }
 				</p>
 				<div className="flex justify-end">
 					<Button variant="primary" size="compact" onClick={ () => setShow( false ) } data-test-id="godam-header-button-pro-got-it">
