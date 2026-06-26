@@ -8,7 +8,7 @@ import { info } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import { markUpgradePending } from './ProUpgradeNotice';
+import { startUpgrade } from './ProUpgradeNotice';
 
 /**
  * Parse a Frappe date/datetime ("YYYY-MM-DD HH:MM:SS") or unix timestamp.
@@ -55,12 +55,6 @@ const TrialCountdownBanner = () => {
 	}
 
 	const endLabel = trialEnd.toLocaleDateString( undefined, { year: 'numeric', month: 'long', day: 'numeric' } );
-	const checkoutUrl = ( window.godamRestRoute?.apiBase || 'https://app.godam.io' ) + '/web/billing?tab=Plans';
-
-	const onUpgrade = () => {
-		markUpgradePending();
-		window.open( checkoutUrl, '_blank', 'noopener,noreferrer' );
-	};
 
 	return (
 		<div className="godam-trial-banner -ml-[32px] bg-[#5d31ff] pl-[32px]" data-test-id="godam-header-banner-trial">
@@ -75,7 +69,7 @@ const TrialCountdownBanner = () => {
 				</span>
 				<button
 					type="button"
-					onClick={ onUpgrade }
+					onClick={ startUpgrade }
 					className="rounded bg-white px-3 py-1 text-xs font-medium text-slate-900 hover:bg-slate-100"
 					data-test-id="godam-header-button-upgrade-now"
 				>

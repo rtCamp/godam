@@ -5,102 +5,83 @@ import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 
-const PENDING_KEY = 'godam_upgrade_pending';
-const RELOADED_KEY = 'godam_upgrade_reloaded'; // we re-verify + reload at most once per checkout
-const WINDOW_MS = 30 * 60 * 1000; // how long a started checkout stays "live"
+const REFRESHED_KEY = 'godam_upgrade_refreshed'; // one-shot guard for the post-return re-verify
 
 /**
- * Snapshot the pre-upgrade plan when the user opens the web checkout, so the
- * return leg can tell an actual upgrade apart from an abandoned one. Called from
- * the "Upgrade plan" button in GoDAMHeader.
+ * Build the upgrade hand-off (godam-core "WordPress → app → back" flow).
+ *
+ * Preferred: `/godam_upgrade?organization=&wp_return=` — runs the in-app upgrade
+ * and 302s back here with `?godam_upgrade=success`. Needs the org name (persisted
+ * at workspace-connect). Without it (license-key / pre-existing sites) we fall
+ * back to the plain billing page.
+ *
+ * @return {{ url: string, roundTrip: boolean }} The URL + whether it returns here.
  */
-export const markUpgradePending = () => {
-	try {
-		window.localStorage.setItem( PENDING_KEY, JSON.stringify( {
-			ts: Date.now(),
-			plan: window?.userData?.userApiData?.active_plan || '',
-			storage: window?.userData?.totalStorage || 0,
-		} ) );
-		window.localStorage.removeItem( RELOADED_KEY );
-	} catch ( e ) {
-		// localStorage unavailable — the confirmation just won't auto-show.
+export const getUpgrade = () => {
+	const apiBase = window.godamRestRoute?.apiBase || 'https://app.godam.io';
+	const org = window.userData?.organization || '';
+	if ( org ) {
+		return {
+			url: `${ apiBase }/godam_upgrade?organization=${ encodeURIComponent( org ) }&wp_return=${ encodeURIComponent( window.location.href ) }`,
+			roundTrip: true,
+		};
+	}
+	return { url: `${ apiBase }/web/billing?tab=Plans`, roundTrip: false };
+};
+
+/**
+ * Start the upgrade from a CTA click. Round-trip → same-tab navigation (godam-core
+ * redirects back); fallback → new tab so WordPress isn't lost.
+ */
+export const startUpgrade = () => {
+	const { url, roundTrip } = getUpgrade();
+	if ( roundTrip ) {
+		window.location.href = url;
+	} else {
+		window.open( url, '_blank', 'noopener,noreferrer' );
 	}
 };
 
 /**
  * O11 — "You are now a pro member" confirmation.
  *
- * The web checkout opens in another tab; on return to WordPress this re-verifies
- * the API key and, once the plan reflects the upgrade (plan name or storage quota
- * changed from the pre-checkout snapshot), shows a bottom-right toast. Bounded to
- * a short window so an abandoned checkout never triggers it.
+ * godam-core's upgrade flow returns the user here with `?godam_upgrade=success`
+ * after flushing the license cache. We re-verify once (so window.userData picks up
+ * the new plan), then show a bottom-right toast and strip the query.
  *
- * @return {JSX.Element|null} The toast, or null when there's nothing to confirm.
+ * @return {JSX.Element|null} The toast, or null.
  */
 const ProUpgradeNotice = () => {
 	const [ show, setShow ] = useState( false );
 
 	useEffect( () => {
-		const handleReturn = () => {
-			let pending = null;
-			try {
-				pending = JSON.parse( window.localStorage.getItem( PENDING_KEY ) || 'null' );
-			} catch ( e ) {
-				pending = null;
-			}
-			if ( ! pending || ! pending.ts ) {
-				return;
-			}
+		const params = new URLSearchParams( window.location.search );
+		if ( params.get( 'godam_upgrade' ) !== 'success' ) {
+			return;
+		}
 
-			const clear = () => {
-				window.localStorage.removeItem( PENDING_KEY );
-				window.localStorage.removeItem( RELOADED_KEY );
-			};
-
-			// Give up on a checkout that wasn't completed within the window.
-			if ( Date.now() - pending.ts > WINDOW_MS ) {
-				clear();
-				return;
-			}
-
-			const u = window.userData || {};
-			// Disconnected sites are owned by the onboarding overlay — never act
-			// (and never reload) here.
-			if ( ! u.validApiKey ) {
-				return;
-			}
-
-			const plan = u.userApiData?.active_plan || '';
-			// A real upgrade = the plan name changed between two known plans, or the
-			// storage quota went up. Requiring both sides non-empty avoids a false
-			// "pro member" when the snapshot simply had no plan and one appears later.
-			const upgraded =
-				( pending.plan && plan && plan !== pending.plan ) ||
-				( u.totalStorage && pending.storage && u.totalStorage > pending.storage );
-			if ( upgraded ) {
-				setShow( true );
-				clear();
-				return;
-			}
-
-			// Not reflected yet: re-verify and reload ONCE to pull the fresh
-			// plan/quota into window.userData (refresh-api-key-status only updates
-			// the server cache). Capped at a single reload so refocusing the tab
-			// never reloads the page repeatedly while the user is working.
-			if ( window.localStorage.getItem( RELOADED_KEY ) ) {
-				return;
-			}
-			window.localStorage.setItem( RELOADED_KEY, '1' );
+		// First pass after the return: re-verify (godam-core already flushed its
+		// cache, so this pulls the new plan) and reload so window.userData updates.
+		// One-shot via sessionStorage so it can't loop.
+		if ( ! window.sessionStorage.getItem( REFRESHED_KEY ) ) {
+			window.sessionStorage.setItem( REFRESHED_KEY, '1' );
 			const restUrl = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 			fetch( restUrl + 'godam/v1/settings/refresh-api-key-status', {
 				method: 'POST',
 				headers: { 'X-WP-Nonce': window.wpApiSettings?.nonce || '' },
 			} ).finally( () => window.location.reload() );
-		};
+			return;
+		}
 
-		handleReturn();
-		window.addEventListener( 'focus', handleReturn );
-		return () => window.removeEventListener( 'focus', handleReturn );
+		// Second pass (post-reload): plan is fresh → confirm, then strip the query
+		// so a later reload doesn't re-trigger.
+		window.sessionStorage.removeItem( REFRESHED_KEY );
+		params.delete( 'godam_upgrade' );
+		params.delete( 'plan' );
+		params.delete( 'organization' );
+		const qs = params.toString();
+		window.history.replaceState( {}, '', window.location.pathname + ( qs ? `?${ qs }` : '' ) );
+		setShow( true );
 	}, [] );
 
 	if ( ! show ) {

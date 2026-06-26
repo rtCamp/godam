@@ -462,6 +462,8 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 			'apiKeyStatus'  => $rtgodam_user_data['api_key_status'],
 			'userApiData'   => $rtgodam_user_data['user_data'],
 			'timestamp'     => $rtgodam_user_data['timestamp'],
+			// Org name (set at workspace-connect) — used to build the /godam_upgrade URL.
+			'organization'  => get_option( 'rtgodam_organization', '' ),
 		);
 
 		if ( isset( $rtgodam_user_data['storageBandwidthError'] ) && ! empty( $rtgodam_user_data['storageBandwidthError'] ) ) {
