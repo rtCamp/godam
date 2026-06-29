@@ -23,7 +23,7 @@ import { useMemo, useCallback } from '@wordpress/element';
 export const PlaybackControls = ( { setAttributes, attributes } ) => {
 	const { autoplay, controls, loop, muted, showShareButton, showSubtitles, tracks, id, cmmId } = attributes;
 	const showShareButtonSetting = window?.godamSettings?.enableGlobalVideoShare ?? false;
-	const videoEditorUrl = `${ window?.pluginInfo?.adminUrl || '/wp-admin/' }admin.php?page=rtgodam_video_editor&id=${ id || cmmId }`;
+	const videoEditorUrl = `${ window?.pluginInfo?.adminUrl || '/wp-admin/' }admin.php?page=rtgodam_video_editor&id=${ id || cmmId }&tab=transcription`;
 	const hasNoTracks = ! tracks || tracks.length === 0;
 
 	const getAutoplayHelp = useMemo( () => {
