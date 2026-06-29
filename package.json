@@ -61,7 +61,7 @@
 		"videojs-ima": "2.4.0"
 	},
 	"devDependencies": {
-		"@babel/core": "7.28.0",
+		"@babel/core": "7.29.6",
 		"@tailwindcss/typography": "^0.5.16",
 		"@wordpress/api-fetch": "7.39.0",
 		"@wordpress/babel-preset-default": "8.34.0",
