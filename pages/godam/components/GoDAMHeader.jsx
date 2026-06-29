@@ -68,7 +68,7 @@ const GodamHeader = () => {
 				<div className={ `godam-settings-header-content max-w-[1440px] mx-auto ${ paddingClass } flex items-center justify-between` }>
 					<div className="godam-settings-header-brand m-0 leading-none font-semibold text-slate-900 flex items-center max-[410px]:flex-col max-[410px]:items-start max-[410px]:gap-1 gap-2">
 						<div className="flex items-end gap-1">
-							<img className="h-7 sm:h-8 md:h-10" src={ godamLogo } alt={ __( 'GoDAM Logo', 'godam' ) } />
+							<img className="h-5 sm:h-6 md:h-7" src={ godamLogo } alt={ __( 'GoDAM Logo', 'godam' ) } />
 							<div className="text-xs font-normal leading-4 pb-1 godam-version-label">{ `v${ window?.pluginInfo?.version }` }</div>
 						</div>
 						<div>
