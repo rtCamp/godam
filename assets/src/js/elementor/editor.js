@@ -239,6 +239,7 @@ function updateSelectionRing( settings, grid ) {
  * `change:video-file.url` — NOT `change:video-file`. Listening to the
  * generic 'change' event and inspecting `model.changed` is the only way to
  * catch both shapes reliably across Elementor versions.
+ * @param changedModel
  */
 function onSettingsChange( changedModel ) {
 	const changed = changedModel?.changed || {};

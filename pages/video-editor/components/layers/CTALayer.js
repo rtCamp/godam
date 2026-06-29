@@ -1,17 +1,14 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * WordPress dependencies
  */
-import {
-	Button,
-	Panel,
-	PanelBody, SelectControl,
-} from '@wordpress/components';
+import { Button } from '@wordpress/components';
 import { chevronRight } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
@@ -20,13 +17,13 @@ import { useState, useEffect } from '@wordpress/element';
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
-import TextCTA from '../cta/TextCTA';
-import ImageCTA from '../cta/ImageCTA';
+import CardCTA from '../cta/CardCTA';
 import HtmlCTA from '../cta/HtmlCTA';
 import LayerControls from '../LayerControls';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 import LayersHeader from './LayersHeader.js';
-import React from 'react';
+import TriggerSection from './shared/TriggerSection.jsx';
+import { VeSection, VeField, VeSegmented, VeCollapsible } from '../controls';
 
 // A DOMPurify config similar to what wp_kses_post() allows
 const wpKsesAllowed = {
@@ -54,29 +51,17 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
 	);
 
-	const ctaLayerOptions = [
-		{
-			label: __( 'Card', 'godam' ),
-			value: 'image',
-		},
-		{
-			label: __( 'Text', 'godam' ),
-			value: 'text',
-		},
-		{
-			label: __( 'HTML', 'godam' ),
-			value: 'html',
-		},
+	// Two CTA styles in the new design: a card builder and a raw-HTML editor.
+	const ctaTypeOptions = [
+		{ value: 'image', label: __( 'Card Style', 'godam' ), description: __( 'Perfect for everyone', 'godam' ), testId: 'godam-cta-control-type-image' },
+		{ value: 'html', label: __( 'HTML', 'godam' ), description: __( 'Great for developers', 'godam' ), testId: 'godam-cta-control-type-html' },
 	];
 
+	// Normalize legacy / unknown types (e.g. the removed "text" type) to "image".
+	const ctaType = layer?.cta_type === 'html' ? 'html' : 'image';
+
 	const handleCTATypeSelect = ( val ) => {
-		dispatch(
-			updateLayerField( {
-				id: layer.id,
-				field: 'cta_type',
-				value: val,
-			} ),
-		);
+		dispatch( updateLayerField( { id: layer.id, field: 'cta_type', value: val } ) );
 	};
 
 	const fetchOverlayMediaURL = ( mediaId ) => {
@@ -104,24 +89,11 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 				return response.json();
 			} )
 			.then( ( media ) => {
-				setImageCtaUrl( media.source_url ); // URL of the media file
+				setImageCtaUrl( media.source_url );
 			} )
 			.catch( () => {
 				setImageCtaUrl( '' );
 			} );
-	};
-
-	const renderSelectedCTAInputs = () => {
-		switch ( layer?.cta_type ) {
-			case 'text':
-				return <TextCTA layerID={ layer.id } />;
-			case 'image':
-				return <ImageCTA layerID={ layer.id } />;
-			case 'html':
-				return <HtmlCTA layerID={ layer.id } />;
-			default:
-				return <ImageCTA layerID={ layer.id } />;
-		}
 	};
 
 	const renderImageCTA = () => {
@@ -129,7 +101,6 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 		const hasImage = imageCtaUrl && imageCtaUrl !== '';
 		const opacity = layer?.imageOpacity ?? 1;
 
-		// Image element component
 		const imageElement = hasImage ? (
 			<img src={ imageCtaUrl } alt="CTA Card" style={ { opacity } } />
 		) : (
@@ -138,7 +109,6 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 			</div>
 		);
 
-		// Content element component
 		const contentElement = (
 			<div className="godam-cta-card-content">
 				{ layer?.imageText && <h2 className="card-title">{ layer.imageText }</h2> }
@@ -150,7 +120,11 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 							href={ layer?.imageLink || '#' }
 							target="_blank"
 							rel="noreferrer"
-							style={ { backgroundColor: layer?.imageCtaButtonColor ?? '#EEAB95', textDecoration: 'none' } }
+							style={ {
+								color: layer?.imageCtaButtonTextColor ?? '#ffffff',
+								backgroundColor: layer?.imageCtaButtonColor ?? '#EEAB95',
+								textDecoration: 'none',
+							} }
 						>
 							{ layer?.imageCtaButtonText || __( 'Check now', 'godam' ) }
 						</a>
@@ -159,7 +133,6 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 			</div>
 		);
 
-		// Handle different layouts
 		if ( layout === 'desktop-text-only' ) {
 			return contentElement;
 		}
@@ -176,11 +149,9 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 			);
 		}
 
-		// All other layouts with image element
 		const imageContent = <div className="godam-cta-card-image">{ imageElement }</div>;
 		const textMediaLayerouts = [ 'card-layout--text-imagecover', 'card-layout--text-image', 'card-layout--image-bottom' ];
 
-		// Return based on layout order
 		if ( textMediaLayerouts.includes( layout ) ) {
 			return (
 				<>
@@ -198,79 +169,80 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 		);
 	};
 
+	// Migrate legacy / removed CTA types (e.g. the deprecated "text" type) to
+	// "image" so the stored value stays consistent with what the editor and the
+	// frontend can render.
+	useEffect( () => {
+		if ( layer && layer.cta_type !== 'image' && layer.cta_type !== 'html' ) {
+			dispatch( updateLayerField( { id: layer.id, field: 'cta_type', value: 'image' } ) );
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ layer?.id ] );
+
 	useEffect( () => {
 		if ( ! layer ) {
 			return;
 		}
 
-		if ( 'text' === layer?.cta_type ) {
-			setFormHTML( layer.text );
-		} else if ( 'html' === layer?.cta_type ) {
+		if ( 'html' === layer?.cta_type ) {
 			setFormHTML( layer.html );
 		}
 	}, [ layer ] );
 
 	// Fetch the media URL when the image ID changes
 	useEffect( () => {
-		if ( 'image' === layer?.cta_type && layer?.image && layer?.image !== 0 ) {
+		if ( 'html' !== ctaType && layer?.image && layer?.image !== 0 ) {
 			fetchOverlayMediaURL( layer.image );
 		} else {
 			setImageCtaUrl( '' );
 		}
-	}, [ layer?.cta_type, layer?.image ] );
+	}, [ ctaType, layer?.image ] );
 
 	return (
 		<>
 			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
 
-			<div className="flex flex-col godam-form-group">
-				<label htmlFor="godam-cta-control-type" className="mb-4 label-text">{ __( 'Call to Action', 'godam' ) }</label>
-				<SelectControl
-					__next40pxDefaultSize
-					id="godam-cta-control-type"
-					data-test-id="godam-cta-control-type"
-					className="mb-4"
-					onChange={ handleCTATypeSelect }
-					options={ ctaLayerOptions }
-					value={ layer.cta_type }
-					help={ __( 'Select the type of Call to Action layer.', 'godam' ) }
-				/>
+			<div className="godam-ve-config">
+				<VeSection title={ __( 'Call To Action', 'godam' ) }>
+					<VeSegmented
+						options={ ctaTypeOptions }
+						value={ ctaType }
+						onChange={ handleCTATypeSelect }
+					/>
+				</VeSection>
 
-				{ renderSelectedCTAInputs() }
+				{ ctaType === 'html' ? (
+					<>
+						<HtmlCTA layerID={ layer.id } />
+						<TriggerSection layerID={ layer.id } duration={ duration } />
+					</>
+				) : (
+					<CardCTA
+						layerID={ layer.id }
+						triggerSlot={ <TriggerSection layerID={ layer.id } duration={ duration } /> }
+					/>
+				) }
 
-				{ /* Common settings */ }
-
-				<Panel className="-mx-4 border-x-0 mb-4">
-					<PanelBody
-						title={ __( 'Advanced', 'godam' ) }
-						initialOpen={ false }
-					>
-						{ /* Layer background color */ }
-						<label htmlFor="color" className="easydam-label">{ __( 'Color', 'godam' ) }</label>
+				<VeCollapsible title={ __( 'Advanced', 'godam' ) } defaultOpen={ false }>
+					<VeField label={ __( 'Layer Background Colour', 'godam' ) }>
 						<ColorPickerButton
-							className="mb-4"
 							value={ layer?.bg_color ?? '#FFFFFFB3' }
 							label={ __( 'Layer background color', 'godam' ) }
 							enableAlpha={ true }
 							onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
 						/>
-					</PanelBody>
-				</Panel>
-
+					</VeField>
+				</VeCollapsible>
 			</div>
+
 			<LayerControls>
 				<>
-					{ layer?.cta_type === 'text' && (
-						<div className="easydam-layer" style={ { backgroundColor: layer.bg_color } }>
-							<div className="ql-editor easydam-layer--cta-text" dangerouslySetInnerHTML={ { __html: formHTML } } />
-						</div>
-					) }
-					{ layer?.cta_type === 'html' && (
+					{ ctaType === 'html' && (
 						<div className="easydam-layer" style={ { backgroundColor: layer.bg_color } }>
 							<div className="easydam-layer--cta-html" dangerouslySetInnerHTML={ { __html: DOMPurify.sanitize( formHTML, wpKsesAllowed ) } } />
 						</div>
 					) }
-					{ layer?.cta_type === 'image' && (
+					{ ctaType === 'image' && (
 						<div className="easydam-layer" style={ { backgroundColor: layer.bg_color } }>
 							<div className="godam-cta-overlay-container">
 								<div
@@ -290,7 +262,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 							iconSize="18"
 							iconPosition="right"
 						>
-							{ __( 'Skip', 'godam' ) }
+							{ layer?.trigger === 'end_of_video' ? __( 'Done', 'godam' ) : __( 'Skip', 'godam' ) }
 						</Button>
 					) }
 				</>

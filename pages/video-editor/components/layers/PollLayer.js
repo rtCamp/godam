@@ -1,26 +1,23 @@
 /**
  * External dependencies
  */
-
 import { useDispatch, useSelector } from 'react-redux';
-import Editor from '@monaco-editor/react';
 
 /**
  * WordPress dependencies
  */
-import { Button, ToggleControl, ComboboxControl, Panel, PanelBody } from '@wordpress/components';
-import { chevronRight } from '@wordpress/icons';
+import { ComboboxControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
-import LayerControl from '../LayerControls';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
-
 import { useGetPollsQuery, useGetPollQuery } from '../../redux/api/polls';
 import LayersHeader from './LayersHeader.js';
+import FormPreview from '../forms/FormPreview';
+import { VeSection, VeToggle, VeColorList } from '../controls';
 
 const PollLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
@@ -36,96 +33,53 @@ const PollLayer = ( { layerID, goBack, duration } ) => {
 	return (
 		<>
 			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
-			{
-				polls?.length > 0 &&
-					<div data-test-id="godam-poll-control-select">
-						<ComboboxControl
-							__next40pxDefaultSize
-							__nextHasNoMarginBottom
-							label={ __( 'Select poll', 'godam' ) }
-							className="godam-combobox mb-4"
-							value={ layer.poll_id }
-							onChange={ handlePollChange }
-							options={ polls.map( ( poll ) => ( { value: poll.pollq_id, label: poll.pollq_question } ) ) }
+
+			<div className="godam-ve-config">
+				{ polls?.length > 0 && (
+					<VeSection title={ __( 'Poll', 'godam' ) }>
+						<div data-test-id="godam-poll-control-select">
+							<ComboboxControl
+								__next40pxDefaultSize
+								__nextHasNoMarginBottom
+								className="godam-ve-control godam-ve-select"
+								label={ __( 'Select Poll', 'godam' ) }
+								value={ layer.poll_id }
+								onChange={ handlePollChange }
+								options={ polls.map( ( poll ) => ( { value: poll.pollq_id, label: poll.pollq_question } ) ) }
+							/>
+						</div>
+					</VeSection>
+				) }
+
+				<VeSection title={ __( 'Behaviour', 'godam' ) }>
+					<div data-test-id="godam-poll-control-allow-skip">
+						<VeToggle
+							label={ __( 'Allow user to skip', 'godam' ) }
+							checked={ layer.allow_skip }
+							onChange={ ( value ) =>
+								dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
+							}
+							help={ __( 'If enabled, the user will be able to skip the poll.', 'godam' ) }
 						/>
 					</div>
-			}
+				</VeSection>
 
-			<div data-test-id="godam-poll-control-allow-skip">
-				<ToggleControl
-					className="mb-4 godam-toggle"
-					label={ __( 'Allow user to skip', 'godam' ) }
-					checked={ layer.allow_skip }
-					onChange={ ( value ) =>
-						dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
-					}
-					help={ __( 'If enabled, the user will be able to skip the form submission.', 'godam' ) }
-				/>
+				<VeSection title={ __( 'Background Colour', 'godam' ) }>
+					<VeColorList>
+						<ColorPickerButton
+							className="godam-ve-color-row"
+							value={ layer?.bg_color ?? '#FFFFFFB3' }
+							label={ __( 'Background', 'godam' ) }
+							enableAlpha={ true }
+							onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
+						/>
+					</VeColorList>
+				</VeSection>
 			</div>
 
-			<Panel
-				className="-mx-4 border-x-0 godam-advance-panel">
-				<PanelBody
-					title={ __( 'Advance', 'godam' ) }
-					initialOpen={ false }
-				>
-
-					{ /* Layer background color */ }
-					<label
-						htmlFor="color"
-						className="text-base font-medium block mb-2"
-					>
-						{ __( 'Color', 'godam' ) }
-					</label>
-					<ColorPickerButton
-						className="mb-4"
-						value={ layer?.bg_color ?? '#FFFFFFB3' }
-						label={ __( 'Layer background color', 'godam' ) }
-						enableAlpha={ true }
-						onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
-					/>
-
-					<label htmlFor="custom-css" className="text-base font-medium block mb-2">{ __( 'Custom CSS', 'godam' ) }</label>
-
-					<div>
-						<Editor
-							id="custom-css"
-							className="code-editor"
-							defaultLanguage="css"
-							options={ {
-								minimap: { enabled: false },
-							} }
-							defaultValue={ layer.custom_css }
-							onChange={ ( value ) =>
-								dispatch( updateLayerField( { id: layer.id, field: 'custom_css', value } ) )
-							}
-						/>
-					</div>
-				</PanelBody>
-			</Panel>
-
-			<LayerControl>
-				<>
-					<div
-						style={ {
-							backgroundColor: layer.bg_color,
-						} } className="easydam-layer">
-						<div className="form-container poll-container" dangerouslySetInnerHTML={ { __html: currentPoll?.html } } />
-					</div>
-					{ layer.allow_skip &&
-					<Button
-						data-test-id="godam-poll-button-skip"
-						className="skip-button"
-						variant="primary"
-						icon={ chevronRight }
-						iconSize="18"
-						iconPosition="right"
-					>
-						{ __( 'Skip', 'godam' ) }
-					</Button>
-					}
-				</>
-			</LayerControl>
+			<FormPreview bgColor={ layer.bg_color } allowSkip={ layer.allow_skip }>
+				<div className="form-container poll-container" dangerouslySetInnerHTML={ { __html: currentPoll?.html } } />
+			</FormPreview>
 		</>
 	);
 };

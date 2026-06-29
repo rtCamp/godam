@@ -6,8 +6,6 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, Notice, SelectControl } from '@wordpress/components';
-import { chevronRight, pencil } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -15,8 +13,8 @@ import { __ } from '@wordpress/i18n';
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
 import { useGetSingleGravityFormQuery } from '../../redux/api/gravity-forms';
-import LayerControl from '../LayerControls';
-import FormSelector from './FormSelector';
+import FormFields from './FormFields';
+import FormPreview from './FormPreview';
 
 const templateOptions = [
 	{
@@ -52,75 +50,28 @@ const GravityForm = ( { layerID } ) => {
 
 	return (
 		<>
-			{
-				! isGFPluginActive &&
-				<Notice
-					className="mb-4"
-					status="warning"
-					isDismissible={ false }
-				>
-					{ __( 'Please activate the Gravity Forms plugin to use this feature.', 'godam' ) }
-				</Notice>
-			}
-
-			{
-				<FormSelector disabled={ ! isGFPluginActive } className="mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
-			}
-
-			<SelectControl
-				__next40pxDefaultSize
-				className="mb-4"
-				label={ __( 'Select form theme', 'godam' ) }
-				options={ templateOptions }
-				value={ layer.theme || 'orbital' }
-				onChange={ handleThemeChange }
-				disabled={ ! isGFPluginActive }
+			<FormFields
+				isActive={ isGFPluginActive }
+				pluginLabel={ __( 'Gravity Forms', 'godam' ) }
+				formID={ layer.gf_id }
+				formType={ layer.form_type }
+				forms={ forms }
+				onSelectForm={ changeFormID }
+				theme={ {
+					value: layer.theme || 'orbital',
+					options: templateOptions,
+					onChange: handleThemeChange,
+				} }
+				editUrl={ `${ window?.videoData?.adminUrl }admin.php?page=gf_edit_forms&id=${ layer.gf_id }` }
+				showEditButton={ Boolean( formHTML ) }
 			/>
 
-			<LayerControl>
-				<>
-					<div
-						style={ {
-							backgroundColor: layer.bg_color,
-						} }
-						className="easydam-layer"
-					>
-						{
-							( formHTML && ! isFetching ) &&
-							<div className="form-container" dangerouslySetInnerHTML={ { __html: formHTML } } />
-						}
-
-						{
-							isFetching &&
-							<div className="form-container">
-								<p>{ __( 'Loading form…', 'godam' ) }</p>
-							</div>
-						}
-
-						{
-							formHTML &&
-							<Button
-								href={ `${ window?.videoData?.adminUrl }admin.php?page=gf_edit_forms&id=${ layer.gf_id }` }
-								target="_blank"
-								variant="secondary"
-								icon={ pencil }
-								className="absolute top-2 right-2"
-							>{ __( 'Edit form', 'godam' ) }</Button>
-						}
-					</div>
-					{ layer.allow_skip &&
-					<Button
-						className="skip-button"
-						variant="primary"
-						icon={ chevronRight }
-						iconSize="18"
-						iconPosition="right"
-					>
-						{ __( 'Skip', 'godam' ) }
-					</Button>
-					}
-				</>
-			</LayerControl>
+			<FormPreview
+				bgColor={ layer.bg_color }
+				allowSkip={ layer.allow_skip }
+				isFetching={ isFetching }
+				html={ formHTML }
+			/>
 		</>
 	);
 };

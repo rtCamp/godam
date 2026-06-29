@@ -83,18 +83,31 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 	return (
 		<div className="godam-form-group">
 			<label
-				className="label-text"
+				className="mb-1"
 				htmlFor="custom-brand-logo"
 			>
-				{ __( 'Custom brand logo', 'godam' ) }
+				{ __( 'Brand Logo', 'godam' ) }
 			</label>
+
+			{ isBubbleOrClassic ? (
+				<div className="flex items-center gap-2 mb-2">
+					<Icon icon={ error } style={ { fill: '#EAB308' } } size={ 28 } />
+					<p className="text-[#AB3A6C] text-[0.75rem] leading-[1.2] m-0">
+						{ __( 'The brand logo will not be applied to the player skin.', 'godam' ) }
+					</p>
+				</div>
+			) : (
+				<p className="text-[0.75rem] leading-[1.2] text-[#777] -mt-1 mb-2">
+					{ __( 'Shown beside player controls. Can be overridden per video.', 'godam' ) }
+				</p>
+			) }
 
 			<div className="flex items-center flex-wrap gap-2">
 				<Button
 					onClick={ openBrandMediaPicker }
-					variant="primary"
+					variant="secondary"
 					disabled={ isBubbleOrClassic }
-					className="godam-button"
+					data-test-id="godam-settings-player-button-logo-upload"
 				>
 					{ mediaSettings?.video_player?.brand_image ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
 				</Button>
@@ -103,8 +116,8 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 						onClick={ removeBrandImage }
 						variant="secondary"
 						isDestructive
-						className="godam-button"
 						disabled={ isBubbleOrClassic }
+						data-test-id="godam-settings-player-button-logo-remove"
 					>
 						{ __( 'Remove', 'godam' ) }
 					</Button>
@@ -129,21 +142,6 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 					{ notice.message }
 				</Notice>
 			) }
-
-			<p className="text-[0.75rem] leading-[1.2] text-[#777]">
-				{
-					isBubbleOrClassic
-						? ( <div className="flex items-center gap-2">
-							<Icon icon={ error } style={ { fill: '#EAB308' } } size={ 28 } />
-							<p className="text-[#AB3A6C] text-[0.75rem] leading-[1.2]">{ __(
-								'The brand logo will not be applied to the player skin.',
-								'godam',
-							) }
-							</p>
-						</div>
-						) : __( 'Upload a custom brand logo to display beside the player controls when selected. This can be overridden for individual videos', 'godam' )
-				}
-			</p>
 		</div>
 	);
 };

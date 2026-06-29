@@ -22,7 +22,6 @@ import { __ } from '@wordpress/i18n';
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
 import { scrollToTop, hasAPIKey } from '../../../utils/index.js';
-import APISettings from './APISettings.jsx';
 import VideoCompressQuality from './VideoCompressQuality.jsx';
 import VideoThumbnails from './VideoThumbnails.jsx';
 import VideoWatermark from './VideoWatermark.jsx';
@@ -98,56 +97,41 @@ const VideoSettings = () => {
 				</Notice>
 			) }
 
-			{ ! hasAPIKey && (
-				<Panel className="godam-panel godam-margin-bottom godam-api-key-banner">
+			{ ! hasAPIKey ? (
+				<Panel header={ __( 'Video Settings', 'godam' ) } className="godam-panel">
 					<PanelBody opened>
-						<h2>{ __( 'Ensure Smooth Video Playback', 'godam' ) }</h2>
-
-						<p>{ __( 'Set up your video transcoding settings to optimize playback across all devices and network conditions. 🚀', 'godam' ) }</p>
-
-						<div className="button-group">
-							<Button
-								href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=settings` }
-								target="_blank"
-								variant="primary"
-								className="godam-button"
-							>
-								{ __( 'Choose GoDAM plan', 'godam' ) }
-							</Button>
-						</div>
-
-						<p className="text-sm text-gray-600 mt-3">
-							{ __( 'Start with GoDAM Free for 60 days, or plans starting from $9/mo.', 'godam' ) }
+						<p className="description">
+							{ __( 'Connect your GoDAM API key from the API Key tab to configure video settings.', 'godam' ) }
 						</p>
 					</PanelBody>
 				</Panel>
-			) }
-
-			<APISettings setNotice={ setNotice } />
-
-			{ hasAPIKey && (
+			) : (
 				<>
-					<VideoCompressQuality handleSettingChange={ handleSettingChange } />
-					<VideoThumbnails handleSettingChange={ handleSettingChange } />
-					<VideoWatermark handleSettingChange={ handleSettingChange } />
-					<VideoEngagement handleSettingChange={ handleSettingChange } />
+					<Panel header={ __( 'Video Settings', 'godam' ) } className="godam-panel godam-margin-bottom">
+						<PanelBody opened>
+							<div className="godam-video-settings__fields">
+								<VideoCompressQuality handleSettingChange={ handleSettingChange } />
+								<VideoThumbnails handleSettingChange={ handleSettingChange } />
+								<VideoWatermark handleSettingChange={ handleSettingChange } />
+								<VideoEngagement handleSettingChange={ handleSettingChange } />
+							</div>
+						</PanelBody>
+					</Panel>
+
+					<div className="godam-settings__save-row">
+						<Button
+							variant="primary"
+							onClick={ handleSaveSettings }
+							icon={ saveMediaSettingsLoading && <Spinner /> }
+							isBusy={ saveMediaSettingsLoading }
+							disabled={ saveMediaSettingsLoading || ! isChanged }
+							data-test-id="godam-settings-video-button-save"
+						>
+							{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
+						</Button>
+					</div>
 				</>
 			) }
-
-			{ hasAPIKey && (
-				<Button
-					variant="primary"
-					className="godam-button"
-					onClick={ handleSaveSettings }
-					icon={ saveMediaSettingsLoading && <Spinner /> }
-					isBusy={ saveMediaSettingsLoading }
-					disabled={ saveMediaSettingsLoading || ! isChanged }
-					data-test-id="godam-settings-video-button-save"
-				>
-					{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
-				</Button>
-			) }
-
 		</div>
 	);
 };

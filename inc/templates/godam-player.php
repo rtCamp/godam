@@ -688,18 +688,6 @@ if ( empty( $godam_attachment_title ) ) {
 						<div class="godam-player-overlay"></div>
 					<?php endif; ?>
 
-					<?php if ( ! $godam_woocommerce_context ) : ?>
-						<?php
-						/**
-						 * Action to render the WooCommerce mini-cart inside the player.
-						 *
-						 * @param array   $godam_layers             The layers configuration.
-						 * @param boolean $godam_is_gallery_context Whether this is a gallery iframe context.
-						 */
-						do_action( 'godam_player_render_mini_cart', $godam_layers, $godam_is_gallery_context );
-						?>
-					<?php endif; ?>
-
 					<video
 						class="easydam-player video-js vjs-big-play-centered vjs-hidden"
 						<?php if ( $godam_autoplay || $godam_muted ) : ?>
@@ -937,21 +925,27 @@ if ( empty( $godam_attachment_title ) ) {
 								<?php
 								// CTA layer.
 							elseif ( isset( $godam_layer['type'] ) && 'cta' === $godam_layer['type'] ) :
-								?>
-								<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
-									<?php if ( 'text' === $godam_layer['cta_type'] ) : ?>
-										<div class="ql-editor easydam-layer--cta-text">
-											<?php echo wp_kses_post( $godam_layer['text'] ); ?>
-										</div>
-									<?php elseif ( 'html' === $godam_layer['cta_type'] && ! empty( $godam_layer['html'] ) ) : ?>
-										<div class="easydam-layer--cta-html">
-											<?php echo wp_kses_post( $godam_layer['html'] ); ?>
-										</div>
-									<?php elseif ( 'image' === $godam_layer['cta_type'] ) : ?>
-										<?php echo wp_kses_post( rtgodam_image_cta_html( $godam_layer ) ); ?>
-									<?php endif; ?>
-								</div>
-								<?php
+								$godam_cta_type         = isset( $godam_layer['cta_type'] ) ? $godam_layer['cta_type'] : '';
+								$godam_render_html_cta  = ( 'html' === $godam_cta_type && ! empty( $godam_layer['html'] ) );
+								$godam_render_image_cta = ( 'image' === $godam_cta_type );
+								// Only HTML and Card (image) CTAs are supported. Legacy "text" CTAs
+								// (and any other unknown/empty type) render nothing — skipping the
+								// overlay container avoids an empty box that would otherwise pause
+								// playback with no content. The frontend layer JS no-ops when the
+								// matching DOM element is absent, so the video just plays through.
+								if ( $godam_render_html_cta || $godam_render_image_cta ) :
+									?>
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+										<?php if ( $godam_render_html_cta ) : ?>
+											<div class="easydam-layer--cta-html">
+												<?php echo wp_kses_post( $godam_layer['html'] ); ?>
+											</div>
+										<?php else : ?>
+											<?php echo wp_kses_post( rtgodam_image_cta_html( $godam_layer ) ); ?>
+										<?php endif; ?>
+									</div>
+									<?php
+								endif;
 								// HOTSPOT layer.
 							elseif ( isset( $godam_layer['type'] ) && 'hotspot' === $godam_layer['type'] ) :
 								?>
