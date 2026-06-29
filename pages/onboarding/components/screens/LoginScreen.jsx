@@ -2,7 +2,7 @@
  * WordPress dependencies
  */
 import { useState } from '@wordpress/element';
-import { Button, TextControl, CheckboxControl } from '@wordpress/components';
+import { Button, TextControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -30,7 +30,6 @@ const LoginScreen = () => {
 	const [ login, { isLoading } ] = usePasswordLoginMutation();
 	const [ email, setLocalEmail ] = useState( storedEmail || '' );
 	const [ password, setPassword ] = useState( '' );
-	const [ remember, setRemember ] = useState( true );
 
 	const handleSubmit = async () => {
 		if ( ! isValidEmail( email ) || ! password ) {
@@ -38,7 +37,7 @@ const LoginScreen = () => {
 			return;
 		}
 		try {
-			const session = await login( { email: email.trim().toLowerCase(), password, remember, wordpress_site: config.siteUrl } ).unwrap();
+			const session = await login( { email: email.trim().toLowerCase(), password, wordpress_site: config.siteUrl } ).unwrap();
 			dispatch( setEmail( email.trim().toLowerCase() ) );
 			await proceedToWorkspace( session );
 		} catch ( error ) {
@@ -55,7 +54,6 @@ const LoginScreen = () => {
 				<TextControl __nextHasNoMarginBottom type="email" label={ __( 'Email', 'godam' ) } value={ email } onChange={ setLocalEmail } placeholder="you@example.com" data-test-id="godam-onboarding-input-email" />
 				<TextControl __nextHasNoMarginBottom type="password" label={ __( 'Password', 'godam' ) } value={ password } onChange={ setPassword } placeholder={ __( 'Enter Password', 'godam' ) } data-test-id="godam-onboarding-input-password" />
 				<div className="godam-onboarding__inline">
-					<CheckboxControl __nextHasNoMarginBottom label={ __( 'Keep me signed in', 'godam' ) } checked={ remember } onChange={ setRemember } data-test-id="godam-onboarding-checkbox-remember" />
 					<button type="button" className="godam-onboarding__link" onClick={ () => dispatch( goToStep( STEPS.FORGOT_PASSWORD ) ) } data-test-id="godam-onboarding-link-forgot">{ __( 'Forgot Password?', 'godam' ) }</button>
 				</div>
 			</div>

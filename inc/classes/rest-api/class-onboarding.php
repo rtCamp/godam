@@ -54,6 +54,13 @@ class Onboarding extends Base {
 	const PRODUCT_GUIDE_STATES = array( 'pending', 'completed', 'dismissed' );
 
 	/**
+	 * User meta key — whether the user dismissed the "unlocked Woo features" nudge (O10).
+	 *
+	 * @var string
+	 */
+	const WOO_NUDGE_META_KEY = 'rtgodam_woo_nudge_seen';
+
+	/**
 	 * GoDAM-core base URL (follows the site's RTGODAM_API_BASE; filterable).
 	 *
 	 * @return string
@@ -140,6 +147,23 @@ class Onboarding extends Base {
 								'enum'     => self::PRODUCT_GUIDE_STATES,
 							),
 						),
+					),
+				),
+			),
+			// O10: post-install "unlocked Woo features" nudge — dismissal persisted per user.
+			array(
+				'namespace' => $this->namespace,
+				'route'     => $base . '/woo-nudge',
+				'args'      => array(
+					array(
+						'methods'             => WP_REST_Server::READABLE,
+						'callback'            => array( $this, 'get_woo_nudge' ),
+						'permission_callback' => array( $this, 'permissions_check' ),
+					),
+					array(
+						'methods'             => WP_REST_Server::CREATABLE,
+						'callback'            => array( $this, 'dismiss_woo_nudge' ),
+						'permission_callback' => array( $this, 'permissions_check' ),
 					),
 				),
 			),
@@ -470,5 +494,36 @@ class Onboarding extends Base {
 		update_user_meta( get_current_user_id(), self::PRODUCT_GUIDE_META_KEY, $status );
 
 		return new WP_REST_Response( array( 'status' => $status ), 200 );
+	}
+
+	/**
+	 * GET handler (O10) — whether to show the "unlocked Woo features" nudge:
+	 * WooCommerce is active and the current user hasn't dismissed it yet.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function get_woo_nudge() {
+		$active = class_exists( 'WooCommerce' );
+		$seen   = (bool) get_user_meta( get_current_user_id(), self::WOO_NUDGE_META_KEY, true );
+
+		return new WP_REST_Response(
+			array(
+				'active' => $active,
+				'seen'   => $seen,
+				'show'   => $active && ! $seen,
+			),
+			200
+		);
+	}
+
+	/**
+	 * POST handler (O10) — mark the Woo nudge dismissed for the current user.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function dismiss_woo_nudge() {
+		update_user_meta( get_current_user_id(), self::WOO_NUDGE_META_KEY, 1 );
+
+		return new WP_REST_Response( array( 'seen' => true ), 200 );
 	}
 }

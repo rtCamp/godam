@@ -1,8 +1,15 @@
 /**
- * Pure, framework-free input validators for the onboarding forms.
+ * Input validators for the onboarding forms.
  *
- * Kept side-effect free so they can be unit-tested without React/WP.
+ * Side-effect free (no React, no DOM) so they can be unit-tested in isolation.
+ * The only dependency is @wordpress/i18n, so the user-facing error messages are
+ * translatable (extracted into the .pot like the rest of the SPA).
  */
+
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
 
 /**
  * Basic email shape check (intentionally permissive — godam-core is the
@@ -48,19 +55,19 @@ export const passwordsMatch = ( password, confirm ) =>
 export const validateSignup = ( { firstName, email, password, confirm, tnc } ) => {
 	const errors = {};
 	if ( ! firstName || ! firstName.trim() ) {
-		errors.firstName = 'First name is required.';
+		errors.firstName = __( 'First name is required.', 'godam' );
 	}
 	if ( ! isValidEmail( email ) ) {
-		errors.email = 'Enter a valid email address.';
+		errors.email = __( 'Enter a valid email address.', 'godam' );
 	}
 	if ( ! isValidPassword( password ) ) {
-		errors.password = 'Password must be at least 8 characters.';
+		errors.password = __( 'Password must be at least 8 characters.', 'godam' );
 	}
 	if ( ! passwordsMatch( password, confirm ) ) {
-		errors.confirm = 'Passwords do not match.';
+		errors.confirm = __( 'Passwords do not match.', 'godam' );
 	}
 	if ( ! tnc ) {
-		errors.tnc = 'Please accept the Terms to continue.';
+		errors.tnc = __( 'Please accept the Terms to continue.', 'godam' );
 	}
 	return errors;
 };

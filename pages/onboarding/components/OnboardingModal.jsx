@@ -2,6 +2,7 @@
  * WordPress dependencies
  */
 import { Notice } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 
 /**
  * External dependencies
@@ -32,7 +33,7 @@ const OnboardingModal = ( { children, layout = 'split', sidePanel = 'features' }
 	return (
 		<div className="godam-onboarding" data-test-id="godam-onboarding-root">
 			<div className="godam-onboarding__scrim" />
-			<div className={ `godam-onboarding__modal godam-onboarding__modal--${ layout }` } role="dialog" aria-modal="true">
+			<div className={ `godam-onboarding__modal godam-onboarding__modal--${ layout }` } role="dialog" aria-modal="true" aria-label={ __( 'GoDAM onboarding', 'godam' ) }>
 				<div className="godam-onboarding__content">
 					{ notice && (
 						<Notice

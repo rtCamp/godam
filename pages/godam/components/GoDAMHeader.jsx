@@ -14,6 +14,7 @@ import godamLogo from '../../../assets/src/images/godam-logo.png';
 import { hasAPIKey } from '../utils/index.js';
 import ProUpgradeNotice, { startUpgrade } from './ProUpgradeNotice';
 import TrialCountdownBanner from './TrialCountdownBanner';
+import WooUnlockedNotice from './WooUnlockedNotice';
 import './GoDAMHeader.scss';
 
 const GodamHeader = () => {
@@ -134,6 +135,7 @@ const GodamHeader = () => {
 				</div>
 			</div>
 			<ProUpgradeNotice />
+			<WooUnlockedNotice />
 		</header>
 	);
 };

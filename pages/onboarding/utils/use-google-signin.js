@@ -36,6 +36,24 @@ export const useGoogleSignIn = () => {
 	const [ isLoading, setIsLoading ] = useState( false );
 
 	const signIn = useCallback( () => {
+		// E2E hook (GODAM_E2E): skip the real Google popup + OAuth round-trip and
+		// drive the flow deterministically with a fixed handoff code, so automated
+		// tests can complete Google sign-in. The WP proxy / godam-core mock accepts
+		// the code in E2E mode; no popup is opened.
+		if ( config.isE2E ) {
+			setIsLoading( true );
+			( async () => {
+				try {
+					const session = await exchangeOauthCode( config.e2eGoogleCode || 'e2e-google-code' ).unwrap();
+					await proceedToWorkspace( session );
+				} catch ( error ) {
+					dispatch( setNotice( { status: 'error', message: error?.data?.message || __( 'Google sign-in failed.', 'godam' ) } ) );
+				} finally {
+					setIsLoading( false );
+				}
+			} )();
+			return;
+		}
 		// Without the GoDAM app origin we can't trust (or even receive) the popup's
 		// handoff message, so sign-in could never complete — fail fast instead of
 		// opening a popup that hangs and reports a misleading "cancelled".

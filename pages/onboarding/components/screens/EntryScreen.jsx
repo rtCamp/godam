@@ -15,22 +15,28 @@ import { useDispatch } from 'react-redux';
 import BrandLogo from '../BrandLogo';
 import { MailIcon, GoogleIcon, KeyIcon } from '../icons';
 import { goToStep } from '../../redux/slice/onboarding';
-import { STEPS } from '../../utils/constants';
+import { STEPS, config } from '../../utils/constants';
 import { useGoogleSignIn } from '../../utils/use-google-signin';
 
 /**
- * Entry — "Welcome to GoDAM Pro!" with the trial CTA + sign-in options.
+ * Entry — the trial CTA + sign-in options. O9: when WooCommerce is active
+ * (config.isWoo) the heading/intro switch to the Woo-specific variant.
  */
 const EntryScreen = () => {
 	const dispatch = useDispatch();
 	const { signIn: handleGoogle, isLoading: isGoogleLoading } = useGoogleSignIn();
+	const isWoo = !! config.isWoo;
 
 	return (
 		<>
 			<BrandLogo markOnly />
-			<h1 className="godam-onboarding__title godam-onboarding__title--lg">{ __( 'Welcome to GoDAM Pro!', 'godam' ) }</h1>
+			<h1 className="godam-onboarding__title godam-onboarding__title--lg">
+				{ isWoo ? __( "You've Unlocked Woo-Specific GoDAM", 'godam' ) : __( 'Welcome to GoDAM Pro!', 'godam' ) }
+			</h1>
 			<p className="godam-onboarding__subtitle">
-				{ __( 'A scalable digital asset management platform for WordPress, optimized for conversion-driven video content.', 'godam' ) }
+				{ isWoo
+					? __( 'Turn your product videos into interactive shopping experiences — focused video content for WooCommerce.', 'godam' )
+					: __( 'A scalable digital asset management platform for WordPress, optimized for conversion-driven video content.', 'godam' ) }
 			</p>
 
 			<Button variant="primary" className="godam-onb-btn godam-onb-btn--primary godam-onboarding__cta" onClick={ () => dispatch( goToStep( STEPS.SIGNUP ) ) } data-test-id="godam-onboarding-button-start-trial">

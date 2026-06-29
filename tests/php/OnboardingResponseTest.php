@@ -28,7 +28,7 @@ class OnboardingResponseTest extends TestCase {
 						'token' => 'abc',
 						'user'  => 'a@b.com',
 					),
-				) 
+				)
 			)
 		);
 	}
@@ -43,7 +43,7 @@ class OnboardingResponseTest extends TestCase {
 		$this->assertSame( array( 'a' => 1 ), Onboarding_Response::unwrap( array( 'a' => 1 ) ) );
 	}
 
-	/** The real develop error shape: { message: { message, error_type } }. */
+	/** The real development error shape: { message: { message, error_type } }. */
 	public function test_error_message_nested() {
 		$body = array(
 			'message' => array(
@@ -72,5 +72,24 @@ class OnboardingResponseTest extends TestCase {
 		$this->assertNull( Onboarding_Response::error_message( array( 'foo' => 'bar' ) ) );
 		$this->assertNull( Onboarding_Response::error_message( 'not-an-array' ) );
 		$this->assertNull( Onboarding_Response::error_message( array( 'message' => array( 'error_type' => 'X' ) ) ) );
+	}
+
+	/** Non-array bodies pass through unwrap unchanged (plain string / null). */
+	public function test_unwrap_passthrough_non_array() {
+		$this->assertSame( 'disabled', Onboarding_Response::unwrap( 'disabled' ) );
+		$this->assertNull( Onboarding_Response::unwrap( null ) );
+	}
+
+	/** Frappe `_server_messages` HTML is stripped and the result trimmed. */
+	public function test_error_message_server_messages_strips_html() {
+		$body = array(
+			'_server_messages' => json_encode( array( json_encode( array( 'message' => '  <b>Email</b> already exists  ' ) ) ) ), // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode
+		);
+		$this->assertSame( 'Email already exists', Onboarding_Response::error_message( $body ) );
+	}
+
+	/** Malformed `_server_messages` (not valid JSON) degrades to null, not a warning. */
+	public function test_error_message_server_messages_malformed() {
+		$this->assertNull( Onboarding_Response::error_message( array( '_server_messages' => 'not-json' ) ) );
 	}
 }

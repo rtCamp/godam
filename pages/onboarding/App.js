@@ -15,11 +15,12 @@ import ForgotPasswordScreen from './components/screens/ForgotPasswordScreen';
 import LicenseKeyScreen from './components/screens/LicenseKeyScreen';
 import WorkspaceScreen from './components/screens/WorkspaceScreen';
 import WelcomeScreen from './components/screens/WelcomeScreen';
-import { STEPS } from './utils/constants';
+import { STEPS, config } from './utils/constants';
 
 // Each step → its screen + how the modal frames it (split two-pane vs small dialog).
+// O9: Woo users see the feature grid on the entry screen (the design's Woo variant).
 const SCREENS = {
-	[ STEPS.ENTRY ]: { Comp: EntryScreen, layout: 'split', sidePanel: 'social' },
+	[ STEPS.ENTRY ]: { Comp: EntryScreen, layout: 'split', sidePanel: config.isWoo ? 'features' : 'social' },
 	[ STEPS.SIGNUP ]: { Comp: SignupScreen, layout: 'split', sidePanel: 'features' },
 	[ STEPS.VERIFY_EMAIL ]: { Comp: VerifyEmailScreen, layout: 'split', sidePanel: 'features' },
 	[ STEPS.LOGIN ]: { Comp: LoginScreen, layout: 'split', sidePanel: 'features' },

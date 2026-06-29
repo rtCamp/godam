@@ -77,15 +77,23 @@ const ProUpgradeNotice = () => {
 			return;
 		}
 
-		// Second pass (post-reload): plan is fresh → confirm, then strip the query
-		// so a later reload doesn't re-trigger.
+		// Second pass (post-reload): the plan is now fresh. Strip the query first so
+		// a later reload can't re-trigger, then confirm ONLY if the account is
+		// actually on a paid plan. The ?godam_upgrade=success param alone is
+		// spoofable (hand-edited URL) or stale, so gating on the refreshed plan +
+		// a valid key avoids showing a false "you're now pro" confirmation.
 		window.sessionStorage.removeItem( REFRESHED_KEY );
 		params.delete( 'godam_upgrade' );
 		params.delete( 'plan' );
 		params.delete( 'organization' );
 		const qs = params.toString();
 		window.history.replaceState( {}, '', window.location.pathname + ( qs ? `?${ qs }` : '' ) );
-		setShow( true );
+
+		const plan = ( window.userData?.userApiData?.active_plan || '' ).toLowerCase();
+		const isPaid = !! window.userData?.validApiKey && '' !== plan && 'free' !== plan;
+		if ( isPaid ) {
+			setShow( true );
+		}
 	}, [] );
 
 	if ( ! show ) {

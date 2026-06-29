@@ -522,6 +522,8 @@ class Pages {
 					'displayName'  => $current_user->display_name,
 					'appOrigin'    => $app_origin,
 					'isE2E'        => ( defined( 'GODAM_E2E' ) && GODAM_E2E ),
+					// O9: WooCommerce active → the entry screen shows the Woo signup variant.
+					'isWoo'        => class_exists( 'WooCommerce' ),
 				)
 			);
 
@@ -583,6 +585,8 @@ class Pages {
 					'everestFormsActive' => $is_everest_forms_active,
 					'ninjaFormsActive'   => $is_ninja_forms_active,
 					'metformActive'      => $is_met_form_active,
+					// O9: Woo empty-state copy on the connected Video Editor.
+					'wooActive'          => class_exists( 'WooCommerce' ),
 				)
 			);
 
