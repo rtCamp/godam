@@ -210,6 +210,23 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		}
 	}, [ layers, dispatch ] );
 
+	// Deep-link to a specific editor section: a URL with `?tab=<name>` lands
+	// here with the matching tab pre-selected (e.g. the block editor's
+	// "Click here to upload subtitles" notice links to `&tab=transcription`).
+	// `setCurrentTab` ignores unknown names, so invalid values are harmless.
+	// Applied once per mount so manual tab switches aren't overridden.
+	const tabFocusAppliedRef = useRef( false );
+	useEffect( () => {
+		if ( tabFocusAppliedRef.current ) {
+			return;
+		}
+		const requestedTab = new URLSearchParams( window.location.search ).get( 'tab' );
+		if ( requestedTab ) {
+			dispatch( setCurrentTab( requestedTab ) );
+		}
+		tabFocusAppliedRef.current = true;
+	}, [ dispatch ] );
+
 	useEffect( () => {
 		if ( ! isFetching ) {
 			if ( cf7Forms && cf7Forms.length > 0 ) {
@@ -386,6 +403,16 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		setShowSnackbar( false );
 	};
 
+	// Switch the active section and reflect it in the URL so a refresh or
+	// bookmark preserves the user's place. `replaceState` is used so each tab
+	// switch doesn't push a new browser-history entry.
+	const handleSelectTab = ( tabName ) => {
+		dispatch( setCurrentTab( tabName ) );
+		const url = new URL( window.location.href );
+		url.searchParams.set( 'tab', tabName );
+		window.history.replaceState( {}, '', url );
+	};
+
 	if ( isAttachmentConfigLoading ) {
 		return <EditorSkeleton />;
 	}
@@ -413,7 +440,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 			<div className="godam-video-editor__body">
 				<EditorTabRail
 					currentTab={ currentTab }
-					onSelect={ ( tabName ) => dispatch( setCurrentTab( tabName ) ) }
+					onSelect={ handleSelectTab }
 				/>
 
 				<aside className="godam-video-editor__panel">
