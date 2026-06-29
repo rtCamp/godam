@@ -19,11 +19,9 @@ const REFRESHED_KEY = 'godam_upgrade_refreshed'; // one-shot guard for the post-
  */
 export const getUpgrade = () => {
 	const apiBase = window.godamRestRoute?.apiBase || 'https://app.godam.io';
-	// Prefer the org name from the verify_api_key response — that covers EVERY
-	// connected site (incl. license-key / Settings-pasted) once godam-core returns
-	// it. Fall back to the name persisted at workspace-connect (interim, workspace
-	// sites only), then to the plain billing page.
-	const org = window.userData?.userApiData?.organization || window.userData?.organization || '';
+	// Org name comes from the verify_api_key response, so it covers every connected
+	// site (incl. license-key). When it is absent we fall back to the billing page.
+	const org = window.userData?.userApiData?.organization || '';
 	if ( org ) {
 		return {
 			url: `${ apiBase }/godam_upgrade?organization=${ encodeURIComponent( org ) }&wp_return=${ encodeURIComponent( window.location.href ) }`,

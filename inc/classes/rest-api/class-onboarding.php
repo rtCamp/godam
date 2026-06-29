@@ -369,10 +369,6 @@ class Onboarding extends Base {
 			return $connected;
 		}
 
-		// Persist the organization name — the upgrade flow needs it to build the
-		// godam-core /godam_upgrade URL (verify_api_key doesn't return it).
-		update_option( 'rtgodam_organization', sanitize_text_field( $result['organization'] ?? '' ) );
-
 		delete_transient( $this->jwt_key() );
 		return rest_ensure_response(
 			array(
@@ -393,9 +389,6 @@ class Onboarding extends Base {
 		if ( is_wp_error( $connected ) ) {
 			return $connected;
 		}
-		// License-key connect doesn't surface the org name — clear any stale one so
-		// the upgrade flow falls back to billing rather than targeting the wrong org.
-		delete_option( 'rtgodam_organization' );
 		return rest_ensure_response( array( 'connected' => true ) );
 	}
 
