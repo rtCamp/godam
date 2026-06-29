@@ -81,7 +81,7 @@ const WooUnlockedNotice = () => {
 				<div className="flex-1 p-6">
 					<h2 className="m-0 text-lg font-bold text-slate-900">{ __( "You've Unlocked Woo Features", 'godam' ) }</h2>
 					<p className="mb-4 mt-1 text-sm leading-relaxed text-slate-600">
-						{ __( 'Turn your product videos into interactive shopping experiences — focused video content for WooCommerce.', 'godam' ) }
+						{ __( 'Turn your product videos into interactive shopping experiences, focused video content for WooCommerce.', 'godam' ) }
 					</p>
 					<ul className="m-0 mb-5 list-none space-y-3 p-0">
 						{ FEATURES.map( ( feature ) => (

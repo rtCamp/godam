@@ -64,7 +64,7 @@ export const useGoogleSignIn = () => {
 		// Open the popup synchronously on the click, or the browser blocks it.
 		const popup = window.open( 'about:blank', 'godam_google', 'width=480,height=640' );
 		if ( ! popup ) {
-			dispatch( setNotice( { status: 'error', message: __( 'Popup blocked — allow popups for this site and try again.', 'godam' ) } ) );
+			dispatch( setNotice( { status: 'error', message: __( 'Popup blocked. Allow popups for this site and try again.', 'godam' ) } ) );
 			return;
 		}
 		setIsLoading( true );

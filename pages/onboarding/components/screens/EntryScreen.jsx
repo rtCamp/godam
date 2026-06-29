@@ -35,7 +35,7 @@ const EntryScreen = () => {
 			</h1>
 			<p className="godam-onboarding__subtitle">
 				{ isWoo
-					? __( 'Turn your product videos into interactive shopping experiences — focused video content for WooCommerce.', 'godam' )
+					? __( 'Turn your product videos into interactive shopping experiences, focused video content for WooCommerce.', 'godam' )
 					: __( 'A scalable digital asset management platform for WordPress, optimized for conversion-driven video content.', 'godam' ) }
 			</p>
 

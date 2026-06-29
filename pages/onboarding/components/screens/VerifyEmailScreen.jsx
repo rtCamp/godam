@@ -44,7 +44,7 @@ const VerifyEmailScreen = () => {
 			</p>
 
 			<Button variant="primary" className="godam-onb-btn godam-onb-btn--primary godam-onboarding__cta" onClick={ () => dispatch( goToStep( STEPS.LOGIN ) ) } data-test-id="godam-onboarding-button-verified-continue">
-				{ __( "I've verified — sign in", 'godam' ) }
+				{ __( "I've verified, sign in", 'godam' ) }
 			</Button>
 			<Button className="godam-onb-btn godam-onb-btn--secondary" onClick={ handleResend } disabled={ isLoading } data-test-id="godam-onboarding-button-resend">
 				{ isLoading ? <Spinner /> : null } { isLoading ? __( 'Resending…', 'godam' ) : __( 'Resend email', 'godam' ) }
