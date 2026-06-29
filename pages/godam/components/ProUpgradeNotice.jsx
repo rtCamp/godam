@@ -4,6 +4,7 @@
 import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
+import apiFetch from '@wordpress/api-fetch';
 
 const REFRESHED_KEY = 'godam_upgrade_refreshed'; // one-shot guard for the post-return re-verify
 
@@ -68,10 +69,12 @@ const ProUpgradeNotice = () => {
 		if ( ! window.sessionStorage.getItem( REFRESHED_KEY ) ) {
 			window.sessionStorage.setItem( REFRESHED_KEY, '1' );
 			const restUrl = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
-			fetch( restUrl + 'godam/v1/settings/refresh-api-key-status', {
+			// apiFetch injects (and refreshes) the REST nonce itself, so the re-verify
+			// works even if window.wpApiSettings is absent on the page.
+			apiFetch( {
+				url: restUrl + 'godam/v1/settings/refresh-api-key-status',
 				method: 'POST',
-				headers: { 'X-WP-Nonce': window.wpApiSettings?.nonce || '' },
-			} ).finally( () => window.location.reload() );
+			} ).catch( () => {} ).finally( () => window.location.reload() );
 			return;
 		}
 

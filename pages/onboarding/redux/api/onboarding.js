@@ -31,7 +31,6 @@ export const onboardingAPI = createApi( {
 	reducerPath: 'onboardingAPI',
 	baseQuery,
 	endpoints: ( builder ) => ( {
-		checkUserExists: builder.mutation( { query: ( email ) => post( 'check-user-exists', { email } ) } ),
 		signup: builder.mutation( { query: ( body ) => post( 'signup', body ) } ),
 		passwordLogin: builder.mutation( { query: ( body ) => post( 'password-login', body ) } ),
 		googleOauthUrl: builder.mutation( { query: ( wpOrigin ) => post( 'google-oauth-url', { wp_origin: wpOrigin } ) } ),
@@ -45,7 +44,6 @@ export const onboardingAPI = createApi( {
 } );
 
 export const {
-	useCheckUserExistsMutation,
 	useSignupMutation,
 	usePasswordLoginMutation,
 	useGoogleOauthUrlMutation,

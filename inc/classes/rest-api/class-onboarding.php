@@ -114,7 +114,6 @@ class Onboarding extends Base {
 		};
 
 		return array(
-			$route( $base . '/check-user-exists', 'check_user_exists' ),
 			$route( $base . '/signup', 'signup' ),
 			$route( $base . '/password-login', 'password_login' ),
 			$route( $base . '/google-oauth-url', 'google_oauth_url' ),
@@ -180,7 +179,18 @@ class Onboarding extends Base {
 	 * @return array|string|\WP_Error Unwrapped `message` payload, or WP_Error.
 	 */
 	private function call_core( $path, $args = array(), $method = 'POST', $with_jwt = false ) {
-		$url     = trailingslashit( $this->api_base() ) . 'api/method/' . $path;
+		$url = trailingslashit( $this->api_base() ) . 'api/method/' . $path;
+
+		// Never send credentials / the JWT over cleartext: require https for the
+		// godam-core endpoint, allowing http only for a localhost dev backend.
+		$host = (string) wp_parse_url( $url, PHP_URL_HOST );
+		if ( 'https' !== wp_parse_url( $url, PHP_URL_SCHEME ) && ! in_array( $host, array( 'localhost', '127.0.0.1', '::1' ), true ) ) {
+			return new \WP_Error( 'godam_insecure_endpoint', __( 'GoDAM onboarding requires a secure (HTTPS) connection to the GoDAM service.', 'godam' ), array( 'status' => 500 ) );
+		}
+
+		// godam-core (Frappe) rate-limits the account/email endpoints these methods
+		// proxy (signup, reset_password, resend_verification), so there is no
+		// second WP-side throttle here; the routes are also admin-gated.
 		$headers = array( 'X-GoDAM-Site' => get_site_url() );
 
 		if ( $with_jwt ) {
@@ -221,17 +231,6 @@ class Onboarding extends Base {
 
 		// Frappe wraps the return value under a top-level `message` key.
 		return Onboarding_Response::unwrap( $body );
-	}
-
-	/**
-	 * Probe whether an email already has an account (branch signup vs login).
-	 *
-	 * @param \WP_REST_Request $request Request.
-	 * @return \WP_REST_Response|\WP_Error
-	 */
-	public function check_user_exists( $request ) {
-		$result = $this->call_core( 'godam_core.api.user.check_user_exists', array( 'email' => $request->get_param( 'email' ) ), 'GET' );
-		return is_wp_error( $result ) ? $result : rest_ensure_response( $result );
 	}
 
 	/**
@@ -326,6 +325,8 @@ class Onboarding extends Base {
 			return new \WP_Error( 'godam_no_token', __( 'Sign-in failed. Please try again.', 'godam' ), array( 'status' => 502 ) );
 		}
 		$ttl = isset( $result['expires_in'] ) ? (int) $result['expires_in'] : DAY_IN_SECONDS;
+		// Clamp the server-provided TTL so a 0/huge value can't pin (or never expire) the JWT.
+		$ttl = min( max( $ttl, MINUTE_IN_SECONDS ), DAY_IN_SECONDS );
 		set_transient( $this->jwt_key(), $result['token'], $ttl );
 		return rest_ensure_response( array( 'user' => $result['user'] ?? '' ) );
 	}

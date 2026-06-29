@@ -103,6 +103,11 @@ const WooUnlockedNotice = () => {
 			.catch( () => {} );
 	}, [] );
 
+	// Backdrop click only hides the nudge for this view; it does NOT persist `seen`,
+	// so an accidental click can't permanently kill a one-time nudge.
+	const closeOnly = () => setShow( false );
+
+	// The explicit "Get Started" CTA is what marks the nudge seen for good.
 	const dismiss = () => {
 		setShow( false );
 		fetch( restBase() + 'godam/v1/onboarding/woo-nudge', {
@@ -120,7 +125,7 @@ const WooUnlockedNotice = () => {
 			className="godam-woo-nudge fixed inset-0 z-[100000] flex items-center justify-center p-4"
 			data-test-id="godam-header-notice-woo-unlocked"
 		>
-			<div className="godam-woo-nudge__scrim absolute inset-0 bg-black/40" onClick={ dismiss } aria-hidden="true" />
+			<div className="godam-woo-nudge__scrim absolute inset-0 bg-black/40" onClick={ closeOnly } aria-hidden="true" />
 			<div
 				className="godam-woo-nudge__card relative z-10 flex w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl"
 				role="dialog"
