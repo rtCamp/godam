@@ -688,18 +688,6 @@ if ( empty( $godam_attachment_title ) ) {
 						<div class="godam-player-overlay"></div>
 					<?php endif; ?>
 
-					<?php if ( ! $godam_woocommerce_context ) : ?>
-						<?php
-						/**
-						 * Action to render the WooCommerce mini-cart inside the player.
-						 *
-						 * @param array   $godam_layers             The layers configuration.
-						 * @param boolean $godam_is_gallery_context Whether this is a gallery iframe context.
-						 */
-						do_action( 'godam_player_render_mini_cart', $godam_layers, $godam_is_gallery_context );
-						?>
-					<?php endif; ?>
-
 					<video
 						class="easydam-player video-js vjs-big-play-centered vjs-hidden"
 						<?php if ( $godam_autoplay || $godam_muted ) : ?>
