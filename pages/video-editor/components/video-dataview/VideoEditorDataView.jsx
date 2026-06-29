@@ -55,7 +55,7 @@ import { useGetVideoEditorVideosMutation } from '../../redux/api/video-editor';
 import { canManageAttachment } from '../../../../assets/src/js/media-library/utility.js';
 import { LayersTabIcon } from '../editor-shell/icons';
 import NoThumbnailImage from '../../assets/no-thumbnail.jpg';
-import GodamIcon from '../../../../assets/src/images/godam-icon-colored.png';
+import GodamIcon from '../../../../assets/src/images/godam-icon.svg';
 import '@wordpress/dataviews/build-style/style.css';
 import './video-dataview.scss';
 

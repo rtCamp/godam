@@ -10,7 +10,7 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import godamLogo from '../../../assets/src/images/godam-logo.png';
+import godamLogo from '../../../assets/src/images/godam-logo.svg';
 import { hasAPIKey } from '../utils/index.js';
 import './GoDAMHeader.scss';
 

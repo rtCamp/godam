@@ -1206,7 +1206,7 @@ class Media_Library_Ajax {
 		}
 
 		// Get the GoDAM logo URL.
-		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', dirname( __DIR__ ) );
+		$logo_url = plugins_url( 'assets/src/images/godam-logo.svg', dirname( __DIR__ ) );
 
 		?>
 		<div class="notice notice-error godam-http-auth-notice">
