@@ -65,7 +65,12 @@ $godam_file_name = basename( $godam_sources[0] );
 			if ( $godam_custom_cover ) {
 				$godam_cover_url = $godam_custom_cover;
 			} elseif ( ! empty( $godam_attachment_id ) && is_numeric( $godam_attachment_id ) ) {
-				$godam_thumb = get_post_meta( $godam_attachment_id, 'rtgodam_media_pdf_thumbnail', true );
+				// Mirror set_media_library_thumbnail(): video thumbnail (transcoding callback)
+				// takes priority over pdf-specific key (GoDAM tab import).
+				$godam_thumb = get_post_meta( $godam_attachment_id, 'rtgodam_media_video_thumbnail', true );
+				if ( empty( $godam_thumb ) ) {
+					$godam_thumb = get_post_meta( $godam_attachment_id, 'rtgodam_media_pdf_thumbnail', true );
+				}
 				if ( $godam_thumb ) {
 					$godam_cover_url = $godam_thumb; // escaped at output below.
 				}
