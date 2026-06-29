@@ -1,7 +1,7 @@
 /**
  * WordPress dependencies
  */
-import { useState } from '@wordpress/element';
+import { useState, createInterpolateElement } from '@wordpress/element';
 import { Button, Dropdown } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useGetOrganizationApiKeyMutation } from '../../redux/api/onboarding';
 import { selectOrganization, setConnected, setNotice, reset } from '../../redux/slice/onboarding';
 import { CheckIcon } from '../icons';
+import { config } from '../../utils/constants';
 
 const WorkspaceRow = ( { org } ) => (
 	<span className="godam-onboarding__ws-row">
@@ -55,10 +56,19 @@ const WorkspaceScreen = () => {
 	};
 
 	if ( ! organizations.length ) {
+		const appUrl = `${ config.appOrigin || 'https://app.godam.io' }/web/`;
 		return (
 			<>
 				<h1 className="godam-onboarding__title">{ __( 'No workspaces yet', 'godam' ) }</h1>
-				<p className="godam-onboarding__subtitle">{ __( 'This account has no workspaces. Create one in the GoDAM app, then come back.', 'godam' ) }</p>
+				<p className="godam-onboarding__subtitle">
+					{ createInterpolateElement(
+						__( 'This account has no workspaces. <a>Create one in the GoDAM app</a>, then come back.', 'godam' ),
+						{
+							// eslint-disable-next-line jsx-a11y/anchor-has-content
+							a: <a className="godam-onboarding__link" href={ appUrl } target="_blank" rel="noreferrer" data-test-id="godam-onboarding-link-create-workspace" />,
+						},
+					) }
+				</p>
 			</>
 		);
 	}
