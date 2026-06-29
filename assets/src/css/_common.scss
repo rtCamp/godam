@@ -16,7 +16,7 @@
 	height: auto;
 
 	&.is-primary.is-busy:disabled {
-		background: linear-gradient(-45deg, #AB3A6C 20%, #E6533A 50%, #AB3A6C 80%);
+		background: var(--wp-admin-theme-color, #AB3A6C);
 
 	}
 

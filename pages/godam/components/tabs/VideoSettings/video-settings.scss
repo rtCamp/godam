@@ -193,6 +193,6 @@
 	pointer-events: auto;
 
 	&:hover{
-		background-color: #AB3A6C;
+		background-color: var(--wp-admin-theme-color, #AB3A6C);
 	}
 }
