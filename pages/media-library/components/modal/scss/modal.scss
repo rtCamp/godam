@@ -33,11 +33,11 @@
 		width: 100%;
 
 		.is-primary.is-primary {
-			background: linear-gradient(83.85deg, var(--wp-admin-theme-color, #AB3A6C) -9.3%, #E6533A 120.31%);
+			background: var(--wp-admin-theme-color);
 			border-radius: 0.25rem;
 
 			&:hover {
-				background: linear-gradient(83.85deg, var(--wp-admin-theme-color, #AB3A6C) -9.3%, #E6533A 120.31%);
+				background: var(--wp-admin-theme-color);
 			}
 		}
 
