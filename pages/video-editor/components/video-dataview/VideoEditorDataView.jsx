@@ -547,6 +547,9 @@ const VideoEditorDataView = ( { onEdit } ) => {
 						</a>{ ' ' }
 						{ __( 'and GoDAM will sync them here.', 'godam' ) }
 					</p>
+					{ window?.videoData?.wooActive && (
+						<p>{ __( 'You can start selling as soon as you add a product.', 'godam' ) }</p>
+					) }
 				</div>
 			) : (
 				<DataViews

@@ -239,6 +239,9 @@ class Pages {
 			7
 		);
 
+		// GoDAM 2.0 onboarding has no menu item — it overlays the Dashboard when
+		// the site isn't connected (see render_dashboard_page()).
+
 		// Only add "What's New" submenu page if we are on a GoDAM menu.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['page'] ) && false !== strpos( sanitize_key( $_GET['page'] ), $this->menu_slug ) ) {
@@ -402,6 +405,11 @@ class Pages {
 			<div id="root-video-dashboard" class="<?php echo $is_premium_user ? '' : 'free-user'; ?>"></div>
 		</div>
 		<?php
+		// When the site isn't connected, overlay the 2.0 onboarding modal on the
+		// (empty-state) dashboard that renders behind it.
+		if ( $this->should_overlay_onboarding() ) {
+			echo '<div id="root-godam-onboarding"></div>';
+		}
 	}
 
 	/**
@@ -416,6 +424,11 @@ class Pages {
 			<div id="root-video-analytics" class="<?php echo $is_premium_user ? '' : 'free-user'; ?>"></div>
 		</div>
 		<?php
+		// When the site isn't connected, overlay the onboarding modal here too —
+		// the analytics view sits behind it (same gate as the dashboard).
+		if ( $this->should_overlay_onboarding() ) {
+			echo '<div id="root-godam-onboarding"></div>';
+		}
 	}
 
 	/**
@@ -427,6 +440,18 @@ class Pages {
 		?>
 		<div id="root-whats-new"></div>
 		<?php
+	}
+
+	/**
+	 * Whether to overlay the onboarding modal on the current GoDAM screen.
+	 *
+	 * True when the site isn't connected and the user can manage options
+	 * (matching the onboarding REST routes' capability).
+	 *
+	 * @return bool
+	 */
+	private function should_overlay_onboarding() {
+		return ! rtgodam_is_api_key_valid() && current_user_can( 'manage_options' );
 	}
 
 	/**
@@ -460,6 +485,55 @@ class Pages {
 			wp_enqueue_style( 'easydam-media-library' );
 
 		}
+		// GoDAM 2.0 onboarding SPA — overlays the Dashboard + Analytics when not connected.
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->analytics_page_id ), true ) && $this->should_overlay_onboarding() ) {
+			$onboarding_asset = RTGODAM_PATH . 'assets/build/pages/onboarding.min.js';
+
+			wp_register_script(
+				'godam-page-script-onboarding',
+				RTGODAM_URL . 'assets/build/pages/onboarding.min.js',
+				array( 'wp-element', 'wp-i18n', 'wp-components' ),
+				file_exists( $onboarding_asset ) ? filemtime( $onboarding_asset ) : RTGODAM_VERSION,
+				true
+			);
+
+			wp_set_script_translations( 'godam-page-script-onboarding', 'godam' );
+			wp_enqueue_script( 'godam-page-script-onboarding' );
+
+			$current_user = wp_get_current_user();
+
+			// Origin of the GoDAM app host — the SPA pins the Google popup's
+			// postMessage to this origin before trusting the handoff code.
+			$api_parts  = wp_parse_url( defined( 'RTGODAM_API_BASE' ) ? RTGODAM_API_BASE : '' );
+			$app_origin = ( ! empty( $api_parts['scheme'] ) && ! empty( $api_parts['host'] ) )
+				? $api_parts['scheme'] . '://' . $api_parts['host'] . ( empty( $api_parts['port'] ) ? '' : ':' . $api_parts['port'] )
+				: '';
+
+			wp_localize_script(
+				'godam-page-script-onboarding',
+				'godamOnboarding',
+				array(
+					'restUrl'      => esc_url_raw( rest_url() ),
+					'nonce'        => wp_create_nonce( 'wp_rest' ),
+					'siteUrl'      => home_url(),
+					'adminUrl'     => admin_url(),
+					'dashboardUrl' => admin_url( 'admin.php?page=' . $this->menu_slug ),
+					'isConnected'  => rtgodam_is_api_key_valid(),
+					'displayName'  => $current_user->display_name,
+					'appOrigin'    => $app_origin,
+					'isE2E'        => ( defined( 'GODAM_E2E' ) && GODAM_E2E ),
+					// O9: WooCommerce active → the entry screen shows the Woo signup variant.
+					'isWoo'        => class_exists( 'WooCommerce' ),
+				)
+			);
+
+			wp_localize_script(
+				'godam-page-script-onboarding',
+				'posthogConfig',
+				$this->get_posthog_config()
+			);
+		}
+
 		// Check if this is your custom admin page.
 		if ( $screen && $this->video_editor_page_id === $screen->id ) {
 			wp_register_script(
@@ -511,6 +585,8 @@ class Pages {
 					'everestFormsActive' => $is_everest_forms_active,
 					'ninjaFormsActive'   => $is_ninja_forms_active,
 					'metformActive'      => $is_met_form_active,
+					// O9: Woo empty-state copy on the connected Video Editor.
+					'wooActive'          => class_exists( 'WooCommerce' ),
 				)
 			);
 
