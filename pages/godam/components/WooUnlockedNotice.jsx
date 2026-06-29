@@ -8,7 +8,17 @@ import { Button } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import godamMark from '../../../assets/src/images/godam-icon-colored.png';
+import './godam-woo-nudge.scss';
+
+// GoDAM brand mark (same shape as the onboarding BrandLogo); fill="currentColor"
+// so it takes the admin theme color via the .godam-woo-nudge__mark class.
+const GodamMark = ( props ) => (
+	<svg viewBox="0 0 64 64" fill="none" aria-hidden="true" { ...props }>
+		<path d="M25.5578 20.0911L8.05587 37.593L3.46397 33.0011C0.818521 30.3556 2.0821 25.8336 5.72228 24.9464L25.5632 20.0964L25.5578 20.0911Z" fill="currentColor" />
+		<path d="M47.3773 21.8867L45.5438 29.3875L22.6972 52.2341L11.2605 40.7974L34.1662 17.8916L41.5703 16.0796C45.0706 15.2247 48.2323 18.3863 47.372 21.8813L47.3773 21.8867Z" fill="currentColor" />
+		<path d="M43.5059 38.1036L38.6667 57.8907C37.7741 61.5255 33.2521 62.7891 30.6066 60.1436L26.0363 55.5732L43.5059 38.1036Z" fill="currentColor" />
+	</svg>
+);
 
 const stroke = {
 	fill: 'none',
@@ -133,7 +143,7 @@ const WooUnlockedNotice = () => {
 				aria-label={ __( 'You have unlocked Woo features', 'godam' ) }
 			>
 				<div className="flex-1 p-8">
-					<img className="mb-5 h-8 w-8" src={ godamMark } alt="" aria-hidden="true" />
+					<GodamMark className="godam-woo-nudge__mark mb-5 h-8 w-8" />
 					<h2 className="m-0 text-2xl font-bold leading-tight text-slate-900">{ __( "You've Unlocked Woo Features", 'godam' ) }</h2>
 					<p className="mb-6 mt-2 text-sm leading-relaxed text-slate-500">
 						{ __( 'Turn your product videos into interactive shopping experiences, focused video content for WooCommerce.', 'godam' ) }
@@ -141,7 +151,7 @@ const WooUnlockedNotice = () => {
 					<div className="mb-7 grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
 						{ FEATURES.map( ( { Icon, title, body } ) => (
 							<div key={ title } className="flex gap-3">
-								<span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-[#5d31ff]">
+								<span className="godam-woo-nudge__chip flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg">
 									<Icon />
 								</span>
 								<span>
@@ -156,7 +166,7 @@ const WooUnlockedNotice = () => {
 					</Button>
 				</div>
 				{ /* Right rail reserved for a future Pro-features preview. Intentionally empty for now (no placeholder UI yet). */ }
-				<div className="godam-woo-nudge__media hidden w-72 flex-shrink-0 bg-gradient-to-br from-[#5d31ff] to-[#9b6bff] md:block" aria-hidden="true" />
+				<div className="godam-woo-nudge__media hidden w-72 flex-shrink-0 md:block" aria-hidden="true" />
 			</div>
 		</div>
 	);

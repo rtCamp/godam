@@ -1,0 +1,24 @@
+/* "You've unlocked Woo features" nudge (O10). Accent colors follow the
+   WordPress admin theme color (--wp-admin-theme-color) so the modal matches the
+   user's color scheme, with the default "Fresh" blue as a fallback. */
+.godam-woo-nudge {
+
+	&__mark {
+		color: var( --wp-admin-theme-color, #3858e9 );
+	}
+
+	&__chip {
+		color: var( --wp-admin-theme-color, #3858e9 );
+		background: #eef0fb; /* fallback when color-mix is unsupported */
+		background: color-mix( in srgb, var( --wp-admin-theme-color, #3858e9 ) 12%, #fff );
+	}
+
+	&__media {
+		background: var( --wp-admin-theme-color, #3858e9 ); /* fallback solid */
+		background: linear-gradient(
+			to bottom right,
+			var( --wp-admin-theme-color, #3858e9 ),
+			color-mix( in srgb, var( --wp-admin-theme-color, #3858e9 ) 55%, #fff )
+		);
+	}
+}
