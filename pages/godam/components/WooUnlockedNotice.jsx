@@ -44,7 +44,7 @@ const ShoppableIcon = () => (
 
 const ReelIcon = () => (
 	<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-		<circle cx="12" cy="12" r="8" { ...stroke } />
+		<rect x="7" y="3" width="10" height="18" rx="2" { ...stroke } />
 		<path d="M10.5 9l4 3-4 3V9z" fill="currentColor" />
 	</svg>
 );
