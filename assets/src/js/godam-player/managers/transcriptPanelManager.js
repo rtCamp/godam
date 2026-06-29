@@ -288,6 +288,7 @@ export default class TranscriptPanelManager {
 				element.setAttribute( 'aria-label', __( 'Toggle transcript', 'godam' ) );
 				element.setAttribute( 'aria-expanded', 'false' );
 				element.setAttribute( 'title', __( 'Transcript', 'godam' ) );
+				element.setAttribute( 'data-test-id', 'godam-video-transcript-button' );
 				element.insertAdjacentHTML( 'beforeend', TRANSCRIPT_ICON_SVG );
 				return element;
 			}
@@ -344,6 +345,7 @@ export default class TranscriptPanelManager {
 	createPanel() {
 		const panel = document.createElement( 'div' );
 		panel.className = PANEL_CLASS;
+		panel.setAttribute( 'data-test-id', 'godam-video-transcript-panel' );
 
 		const header = document.createElement( 'div' );
 		header.className = `${ PANEL_CLASS }__header`;
@@ -359,6 +361,7 @@ export default class TranscriptPanelManager {
 		copyButton.type = 'button';
 		copyButton.className = `${ PANEL_CLASS }__copy`;
 		copyButton.setAttribute( 'aria-label', __( 'Copy transcript', 'godam' ) );
+		copyButton.setAttribute( 'data-test-id', 'godam-video-transcript-copy' );
 		copyButton.title = __( 'Copy transcript', 'godam' );
 		copyButton.innerHTML = COPY_ICON_SVG;
 		copyButton.addEventListener( 'click', () => this.copyTranscript( copyButton ) );
@@ -367,6 +370,7 @@ export default class TranscriptPanelManager {
 		closeButton.type = 'button';
 		closeButton.className = `${ PANEL_CLASS }__close`;
 		closeButton.setAttribute( 'aria-label', __( 'Close transcript', 'godam' ) );
+		closeButton.setAttribute( 'data-test-id', 'godam-video-transcript-close' );
 		closeButton.title = __( 'Close transcript', 'godam' );
 		closeButton.innerHTML = '&times;';
 		closeButton.addEventListener( 'click', () => this.close() );
@@ -384,6 +388,7 @@ export default class TranscriptPanelManager {
 			row.type = 'button';
 			row.className = CUE_CLASS;
 			row.dataset.start = String( cue.start );
+			row.setAttribute( 'data-test-id', `godam-video-transcript-cue-${ index }` );
 
 			const time = document.createElement( 'span' );
 			time.className = `${ CUE_CLASS }__time`;
