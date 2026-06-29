@@ -1799,7 +1799,7 @@ body.godam-share-modal-open {
 		right: 10px;
 		z-index: 10;
 		padding: 10px;
-		background-color: rgba(0, 0, 0, 0.7);
+		background-color: var(--rtgodam-control-bar-color, rgba(0, 0, 0, 0.7));
 		color: #fff;
 		border: none;
 		cursor: pointer !important;
@@ -1828,7 +1828,7 @@ body.godam-share-modal-open {
 		&--active {
 			opacity: 1;
 			visibility: visible;
-			background-color: #ab3a6c;
+			filter: brightness(0.9);
 		}
 
 		.godam-transcript-icon {
@@ -1904,7 +1904,7 @@ body.godam-share-modal-open {
 			pointer-events: auto;
 
 			&:hover{
-				background-color: #AB3A6C;
+				filter: brightness(0.9);
 			}
 		}
 	}
@@ -2415,14 +2415,14 @@ body.godam-share-modal-open {
 	}
 
 	&--active {
-		background-color: #f0e6ec;
+		background-color: #f0f0f1;
 	}
 
 	&__time {
 		flex-shrink: 0;
 		font-size: 12px;
 		font-weight: 600;
-		color: #ab3a6c;
+		color: var(--rtgodam-control-bar-color, rgba(0, 0, 0, 0.7));
 		padding-top: 2px;
 	}
 
