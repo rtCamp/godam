@@ -23,6 +23,7 @@ const FEATURES = [
 	{ icon: 'team', title: __( 'Teams', 'godam' ), body: __( 'Invite unlimited editors and contributors.', 'godam' ) },
 	{ icon: 'shield', title: __( 'Security', 'godam' ), body: __( 'Enterprise-grade encryption.', 'godam' ) },
 	{ icon: 'storage', title: __( 'Storage', 'godam' ), body: __( 'A one-time storage allocation that stays yours.', 'godam' ) },
+	{ icon: 'cdn', title: __( 'Global CDN', 'godam' ), body: __( 'Media served from 100+ locations.', 'godam' ) },
 ];
 
 const SOCIAL_POINTS = [
