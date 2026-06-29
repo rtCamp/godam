@@ -15,16 +15,39 @@ import posthog from '../utils/posthog';
 import LayerControls from './components/LayerControls';
 import LayersHeader from './components/layers/LayersHeader';
 import { updateLayerField } from './redux/slice/videoSlice';
+import {
+	VeSection,
+	VeTextInput,
+	VeSegmented,
+	VeColorList,
+	VeRadioGroup,
+} from './components/controls';
+import FontAwesomeIconPicker from './components/hotspot/FontAwesomeIconPicker';
+import ColorPickerButton from './components/shared/color-picker/ColorPickerButton.jsx';
+import { formatClock, parseClock } from './utils/time';
 
 window.godamVideoEditorComponents = {
 	...( window.godamVideoEditorComponents || {} ),
 	LayerControls,
 	LayersHeader,
+	VeSection,
+	VeTextInput,
+	VeSegmented,
+	VeColorList,
+	VeRadioGroup,
+	FontAwesomeIconPicker,
+	ColorPickerButton,
 };
 
 window.godamVideoEditorActions = {
 	...( window.godamVideoEditorActions || {} ),
 	updateLayerField,
+};
+
+window.godamVideoEditorUtils = {
+	...( window.godamVideoEditorUtils || {} ),
+	formatClock,
+	parseClock,
 };
 
 const Index = () => {

@@ -220,6 +220,52 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 				</div>
 			</>
 		);
+	} else if ( videoId ) {
+		// Video selected but no thumbnail yet — show a generic video placeholder
+		// with the title so the editor tile looks populated, not empty.
+		previewContent = (
+			<>
+				<div className="godam-gallery-v2-item__placeholder godam-gallery-v2-item__placeholder--no-thumb">
+					{ videoIcon }
+				</div>
+				<div className="godam-gallery-v2-item__preview-overlay">
+					<MediaUploadCheck>
+						<MediaUpload
+							onSelect={ onSelectVideo }
+							allowedTypes={ [ 'video' ] }
+							value={ videoId }
+							render={ ( { open: openMediaModal } ) => (
+								<Button
+									variant="secondary"
+									icon={ pencil }
+									className="godam-gallery-v2-item__overlay-action"
+									data-test-id="godam-gallery-v2-item-button-replace"
+									onClick={ ( event ) => {
+										event.stopPropagation();
+										openMediaModal();
+									} }
+								>
+									{ __( 'Replace', 'godam' ) }
+								</Button>
+							) }
+						/>
+					</MediaUploadCheck>
+					<Button
+						variant="secondary"
+						icon={ closeSmall }
+						isDestructive
+						className="godam-gallery-v2-item__overlay-action"
+						data-test-id="godam-gallery-v2-item-button-remove"
+						onClick={ ( event ) => {
+							event.stopPropagation();
+							removeBlock( clientId );
+						} }
+					>
+						{ __( 'Remove', 'godam' ) }
+					</Button>
+				</div>
+			</>
+		);
 	} else {
 		previewContent = (
 			<div className="godam-gallery-v2-item__placeholder">

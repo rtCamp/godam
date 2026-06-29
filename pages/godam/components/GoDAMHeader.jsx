@@ -10,9 +10,9 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import { ChromeExtensionSvg } from '../assets/svgs';
 import godamLogo from '../../../assets/src/images/godam-logo.png';
 import { hasAPIKey } from '../utils/index.js';
+import './GoDAMHeader.scss';
 
 const GodamHeader = () => {
 	const isVideoEditorPage = window.location.href.includes( 'page=rtgodam_video_editor' );
@@ -63,12 +63,12 @@ const GodamHeader = () => {
 	}, [ godamMediaLink ] );
 
 	return (
-		<header>
+		<header className="sticky top-0 z-[999]">
 			<div className="godam-settings-header border-b -ml-[32px] pl-[32px] bg-white">
 				<div className={ `godam-settings-header-content max-w-[1440px] mx-auto ${ paddingClass } flex items-center justify-between` }>
-					<div className="py-6 m-0 text-4xl leading-4 font-semibold text-slate-900 flex items-center max-[410px]:flex-col max-[410px]:items-start max-[410px]:gap-1 gap-2">
+					<div className="godam-settings-header-brand m-0 leading-none font-semibold text-slate-900 flex items-center max-[410px]:flex-col max-[410px]:items-start max-[410px]:gap-1 gap-2">
 						<div className="flex items-end gap-1">
-							<img className="h-8 sm:h-9 md:h-12" src={ godamLogo } alt={ __( 'GoDAM Logo', 'godam' ) } />
+							<img className="h-7 sm:h-8 md:h-10" src={ godamLogo } alt={ __( 'GoDAM Logo', 'godam' ) } />
 							<div className="text-xs font-normal leading-4 pb-1 godam-version-label">{ `v${ window?.pluginInfo?.version }` }</div>
 						</div>
 						<div>
@@ -79,7 +79,7 @@ const GodamHeader = () => {
 							}
 						</div>
 					</div>
-					<div className="flex items-center gap-2 sm:gap-3 md:gap-6 transform translate-x-[20px] scale-[0.8] sm:scale-100 sm:translate-x-0">
+					<div className="godam-settings-header-actions flex items-center gap-2 sm:gap-3 md:gap-4">
 						<div className="flex flex-col sm:flex-row md:items-center gap-1 sm:gap-2 md:gap-3">
 							<Button
 								variant="tertiary"
@@ -89,41 +89,24 @@ const GodamHeader = () => {
 								label={ __( 'Need help?', 'godam' ) }
 								icon={ help }
 							/>
-							<Button
-								variant="tertiary"
-								href="https://chromewebstore.google.com/detail/godam-screen-recorder-ann/ojmbobnoagdgblhpbemfamfkcfjdfejl"
-								target="_blank"
-								className="rounded-full godam-button-icon sm:h-10 sm:w-10 [&>svg]:sm:w-6 [&>svg]:sm:h-6"
-								label={ __( 'Install GoDAM Screen Recorder', 'godam' ) }
-								icon={ ChromeExtensionSvg }
-							/>
 						</div>
 						<div className="flex flex-col sm:flex-row md:items-center gap-1 sm:gap-2 md:gap-3">
 							<Button
-								className={ `godam-button text-xs md:text-sm ${ ( ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan ) ? 'disabled' : '' }` }
-								variant="primary"
+								className={ `${ ( ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan ) ? 'disabled' : '' }` }
+								variant="tertiary"
 								size="compact"
 								target={ ( window?.userData?.validApiKey && window?.userData?.userApiData?.active_plan ) ? '_blank' : undefined }
 								text={ __( 'Manage Media', 'godam' ) }
 								href={ ( window?.userData?.validApiKey && window?.userData?.userApiData?.active_plan ) ? mediaLink : '#' }
-								icon={
-									<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
-										<path d="M25.5578 20.0911L8.05587 37.593L3.46397 33.0011C0.818521 30.3556 2.0821 25.8336 5.72228 24.9464L25.5632 20.0964L25.5578 20.0911Z" fill="white" />
-										<path d="M47.3773 21.8867L45.5438 29.3875L22.6972 52.2341L11.2605 40.7974L34.1662 17.8916L41.5703 16.0796C45.0706 15.2247 48.2323 18.3863 47.372 21.8813L47.3773 21.8867Z" fill="white" />
-										<path d="M43.5059 38.1036L38.6667 57.8907C37.7741 61.5255 33.2521 62.7891 30.6066 60.1436L26.0363 55.5732L43.5059 38.1036Z" fill="white" />
-									</svg>
-								}
 								iconSize={ 16 }
 								showTooltip={ true }
 								tooltipPosition="bottom center"
 								label={ ( ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan ) ? __( 'Premium feature', 'godam' ) : __( 'GoDAM Central', 'godam' ) }
-								// disabled={ ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan }
 							/>
 
 							{
 								( window?.userData?.validApiKey && window?.userData?.userApiData?.active_plan && ( window?.userData?.userApiData?.active_plan )?.toLowerCase() !== 'platinum' ) && (
 									<Button
-										className="godam-button text-xs md:text-sm"
 										variant="primary"
 										size="compact"
 										href={ upgradePlanLink }
@@ -136,7 +119,6 @@ const GodamHeader = () => {
 							{
 								( ! hasAPIKey ) && (
 									<Button
-										className="godam-button text-xs md:text-sm"
 										variant="primary"
 										size="compact"
 										href={ pricingLink }

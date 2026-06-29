@@ -189,17 +189,21 @@ $tools-page-breakpoint: 782px;
 	}
 
 	.godam-url {
-		color: #ab3a6c;
+		color: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+		text-decoration: underline;
 
 		&:hover {
-			color: #9a2b5c;
+			opacity: 0.85;
 		}
-		text-decoration: underline;
+	}
+
+	.godam-accent-spinner {
+		fill: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
 	}
 
 	.sidebar-nav-item {
-		
-		@apply flex items-center gap-2 p-2 font-medium rounded-md focus:ring-2 ring-indigo-200 text-gray-600 hover:text-gray-900 border border-transparent transition-all;
+
+		@apply flex items-center gap-2 p-2 mb-0.5 font-medium rounded-md text-gray-600 hover:text-gray-900 border border-transparent transition-all;
 
 		&.active {
 
@@ -218,7 +222,7 @@ $tools-page-breakpoint: 782px;
 		@apply w-full h-2 bg-gray-200 rounded-full overflow-hidden;
 
 		&--fill {
-			background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
+			background: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
 
 			@apply h-full transition-all duration-300 ease-in-out;
 		}

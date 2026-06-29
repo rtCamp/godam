@@ -127,24 +127,42 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_top_videos' ),
-					'permission_callback' => '__return_true',
+					// Admin-dashboard read: gate to users who can see the analytics
+					// dashboard (authors and above — matches the menu's `upload_files`
+					// capability). The search path resolves an uncached WP_Query, so
+					// this also closes the unauthenticated DB-amplification vector.
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
 					'args'                => array(
-						'page'     => array(
+						'page'         => array(
 							'required'          => false,
 							'type'              => 'integer',
 							'default'           => 1,
 							'sanitize_callback' => 'absint',
 						),
-						'limit'    => array(
+						'limit'        => array(
 							'required'          => false,
 							'type'              => 'integer',
 							'default'           => 10,
 							'sanitize_callback' => 'absint',
 						),
-						'site_url' => array(
+						'site_url'     => array(
 							'required'          => true,
 							'type'              => 'string',
 							'sanitize_callback' => 'esc_url_raw',
+						),
+						'search'       => array(
+							'required'          => false,
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'hide_deleted' => array(
+							'required'          => false,
+							'type'              => 'boolean',
+							'default'           => false,
+							'sanitize_callback' => 'rest_sanitize_boolean',
 						),
 					),
 				),
@@ -703,6 +721,8 @@ class Analytics extends Base {
 		$page          = $request->get_param( 'page' ) ?? 1;
 		$limit         = $request->get_param( 'limit' ) ?? 10;
 		$site_url      = $request->get_param( 'site_url' );
+		$search        = trim( (string) $request->get_param( 'search' ) );
+		$hide_deleted  = rest_sanitize_boolean( $request->get_param( 'hide_deleted' ) );
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
 
@@ -716,6 +736,12 @@ class Analytics extends Base {
 			);
 		}
 
+		// Name search + hide-deleted are WordPress-only concerns (titles and
+		// deletion state live in WP, not the microservice). Resolve them into the
+		// microservice's `video_ids` include-filter. null => no restriction;
+		// an array (including []) => restrict to that set ([] yields zero rows).
+		$video_ids = $this->resolve_top_videos_id_filter( $search, $hide_deleted );
+
 		$endpoint = add_query_arg(
 			array(
 				'page'          => $page,
@@ -727,7 +753,20 @@ class Analytics extends Base {
 			RTGODAM_ANALYTICS_BASE . '/dashboard/top-videos/'
 		);
 
-		$response = wp_remote_get( $endpoint );
+		// When a `video_ids` include-filter applies, POST it (the list can be
+		// large); otherwise fall back to a plain GET.
+		if ( is_array( $video_ids ) ) {
+			$response = wp_remote_post(
+				$endpoint,
+				array(
+					'timeout' => 3,
+					'headers' => array( 'Content-Type' => 'application/json' ),
+					'body'    => wp_json_encode( array( 'video_ids' => array_values( array_map( 'intval', $video_ids ) ) ) ),
+				)
+			);
+		} else {
+			$response = wp_remote_get( $endpoint, array( 'timeout' => 3 ) );
+		}
 		if ( is_wp_error( $response ) ) {
 			return new WP_REST_Response(
 				array(
@@ -788,8 +827,74 @@ class Analytics extends Base {
 				'status'      => 'success',
 				'top_videos'  => $top_videos,
 				'total_pages' => $body['total_pages'] ?? 1,
+				'total_items' => $body['total_items'] ?? 0,
 			),
 			200
 		);
+	}
+
+	/**
+	 * Resolve the `video_ids` include-filter for name-search + hide-deleted.
+	 *
+	 * Titles and deletion state live in WordPress, not the microservice, so both
+	 * concerns are turned into an explicit list of existing video-attachment IDs
+	 * (optionally matching the search term) for the microservice to filter on.
+	 *
+	 * @param string $search       Search term. Passed to WP_Query `s`, which matches the attachment title, content (description) and excerpt (caption) — not title-only.
+	 * @param bool   $hide_deleted Whether to restrict to existing attachments.
+	 *
+	 * @return array|null Attachment IDs, or null when neither concern is active.
+	 */
+	private function resolve_top_videos_id_filter( $search, $hide_deleted ) {
+		$has_search = ( '' !== (string) $search );
+
+		// Neither concern active => let the microservice return everything
+		// (deleted rows are still flagged `exists:false` during enrichment).
+		if ( ! $has_search && ! $hide_deleted ) {
+			return null;
+		}
+
+		// The default the UI sends on every load / page change is no-search +
+		// hide-deleted, which resolves to the full set of existing video
+		// attachment IDs — that set rarely changes, so cache it briefly to avoid
+		// re-querying a large media library on each request. (Up to 5 min stale,
+		// which is fine for analytics — it isn't real-time.) Search results vary
+		// per term, so they're not cached.
+		$cache_key   = 'rtgodam_top_videos_existing_ids';
+		$is_full_set = ( ! $has_search && $hide_deleted );
+		if ( $is_full_set ) {
+			$cached = get_transient( $cache_key );
+			if ( is_array( $cached ) ) {
+				return $cached;
+			}
+		}
+
+		// Existing video attachments, optionally matching the search term.
+		// Capped at the microservice's `video_ids` limit (10000).
+		$query_args = array(
+			'post_type'        => 'attachment',
+			'post_status'      => 'inherit',
+			'post_mime_type'   => 'video',
+			'fields'           => 'ids',
+			// phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- intentional: we need the full existing-attachment set to build the include-filter, bounded by the microservice's 10000 video_ids cap, and the common case is cached above.
+			'posts_per_page'   => 10000,
+			'no_found_rows'    => true,
+			'suppress_filters' => false,
+			'orderby'          => 'ID',
+			'order'            => 'ASC',
+		);
+
+		if ( $has_search ) {
+			$query_args['s'] = $search;
+		}
+
+		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- bounded, `suppress_filters => false` (cacheable), and the common no-search case is transient-cached; matches the existing convention in this class.
+		$ids = array_map( 'intval', (array) get_posts( $query_args ) );
+
+		if ( $is_full_set ) {
+			set_transient( $cache_key, $ids, 5 * MINUTE_IN_SECONDS );
+		}
+
+		return $ids;
 	}
 }

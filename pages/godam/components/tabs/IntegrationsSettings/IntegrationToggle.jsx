@@ -28,7 +28,7 @@ const IntegrationToggle = ( {
 	return (
 		<ToggleControl
 			__nextHasNoMarginBottom
-			className="godam-toggle godam-margin-bottom"
+			className="godam-margin-bottom"
 			label={
 				<>
 					{ sprintf(

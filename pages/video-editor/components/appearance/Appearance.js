@@ -2,688 +2,248 @@
  * External dependencies
  */
 import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
+/**
+ * WordPress dependencies
+ */
+import { Button, Notice, Tooltip } from '@wordpress/components';
+import { useState } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
+import { plus, trash } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import '../../video-control.scss';
-/**
- * WordPress dependencies
- */
-import {
-	Button,
-	CustomSelectControl,
-	Notice,
-	TextareaControl,
-	ToggleControl,
-	Icon,
-} from '@wordpress/components';
-import { useState } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
-import { useDispatch, useSelector } from 'react-redux';
 import { updateVideoConfig, setCurrentLayer } from '../../redux/slice/videoSlice';
-import GoDAM from '../../../../assets/src/images/GoDAM.png';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
-import { closeSmall, chevronDown, chevronUp } from '@wordpress/icons';
+import ThumbnailSelector from './ThumbnailSelector.jsx';
+import { VeSection, VeToggle, VeCustomSelect, VeTextInput, VeColorList } from '../controls';
 
-const Appearance = () => {
+const DEFAULT_APPEARANCE_COLOR = '#2b333fb3';
+const DEFAULT_HOVER_COLOR = '#fff';
+
+/**
+ * Player Settings tab — redesigned to the new flat-section layout.
+ *
+ * @param {Object} props              Props.
+ * @param {number} props.attachmentID WordPress attachment id (for the thumbnail selector).
+ * @return {JSX.Element} The settings panel.
+ */
+const Appearance = ( { attachmentID } ) => {
 	const dispatch = useDispatch();
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
+	const controlBar = videoConfig.controlBar;
 
-	/**
-	 * State to manage the notice message and visibility.
-	 */
-	const [ customBrandNotice, setCustomBrandNotice ] = useState( { message: '', status: 'success', isVisible: false } );
-	const [ customPlayNotice, setCustomPlayNotice ] = useState( { message: '', status: 'success', isVisible: false } );
-
-	/**
-	 * To show a notice message for custom brand upload field.
-	 *
-	 * @param {string} message Text to display in the notice.
-	 * @param {string} status  Status of the notice, can be 'success', 'error', etc.
-	 */
-	const showCustomBrandNotice = ( message, status = 'success' ) => {
-		setCustomBrandNotice( { message, status, isVisible: true } );
-	};
-
-	/**
-	 * To show a notice message for custom play button upload field.
-	 *
-	 * @param {string} message Text to display in the notice.
-	 * @param {string} status  Status of the notice, can be 'success', 'error', etc.
-	 */
-	const showCustomPlayNotice = ( message, status = 'success' ) => {
-		setCustomPlayNotice( { message, status, isVisible: true } );
-	};
+	const [ brandNotice, setBrandNotice ] = useState( { message: '', status: 'error', isVisible: false } );
 
 	useEffect( () => {
-		//class gets re added upon component load, so we need to remove it.
+		// Keep the captions button visibility in sync (it re-adds on load).
 		const captionsButton = document.querySelector( '.vjs-subs-caps-button' );
-		if ( videoConfig.controlBar.subsCapsButton && captionsButton ) {
+		if ( controlBar.subsCapsButton && captionsButton ) {
 			captionsButton.classList.remove( 'vjs-hidden' );
 		}
 		dispatch( setCurrentLayer( null ) );
-	}, [ dispatch, videoConfig.controlBar.subsCapsButton ] );
+	}, [ dispatch, controlBar.subsCapsButton ] );
 
-	function handleVolumeToggle() {
+	const updateControlBar = ( patch ) => {
+		dispatch( updateVideoConfig( { controlBar: { ...controlBar, ...patch } } ) );
+	};
+
+	const handleVolumeToggle = () => {
 		const volumeSlider = document.querySelector( '.vjs-volume-panel' );
-		dispatch(
-			updateVideoConfig( {
-				controlBar: {
-					...videoConfig.controlBar,
-					volumePanel: ! videoConfig.controlBar.volumePanel,
-				},
-			} ),
-		);
-
-		if ( ! volumeSlider ) {
-			return;
+		updateControlBar( { volumePanel: ! controlBar.volumePanel } );
+		if ( volumeSlider ) {
+			volumeSlider.classList.toggle( 'hide', controlBar.volumePanel );
+			volumeSlider.classList.toggle( 'show', ! controlBar.volumePanel );
 		}
+	};
 
-		if ( volumeSlider.classList.contains( 'hide' ) ) {
-			volumeSlider.classList.remove( 'hide' );
-			volumeSlider.classList.add( 'show' );
-		} else {
-			volumeSlider.classList.add( 'hide' );
-			volumeSlider.classList.remove( 'show' );
-		}
-	}
-
-	function handleCaptionsToggle() {
+	const handleCaptionsToggle = () => {
 		const captionsButton = document.querySelector( '.vjs-subs-caps-button' );
-		dispatch(
-			updateVideoConfig( {
-				controlBar: {
-					...videoConfig.controlBar,
-					subsCapsButton: ! videoConfig.controlBar.subsCapsButton,
-				},
-			} ),
-		);
+		updateControlBar( { subsCapsButton: ! controlBar.subsCapsButton } );
+		if ( captionsButton ) {
+			captionsButton.classList.toggle( 'hide', controlBar.subsCapsButton );
+			captionsButton.classList.toggle( 'show', ! controlBar.subsCapsButton );
+		}
+	};
 
-		if ( ! captionsButton ) {
+	const handleSkipDuration = ( value ) => {
+		const seconds = parseInt( value, 10 );
+		if ( Number.isNaN( seconds ) || seconds < 1 ) {
 			return;
 		}
+		updateControlBar( {
+			skipButtons: { forward: seconds, backward: seconds },
+		} );
+	};
 
-		if ( captionsButton.classList.contains( 'show' ) ) {
-			captionsButton.classList.add( 'hide' );
-			captionsButton.classList.remove( 'show' );
-		} else {
-			captionsButton.classList.remove( 'hide' );
-			captionsButton.classList.add( 'show' );
-		}
-	}
-
-	function handleBrandingToggle() {
-		const brandingLogo = document.querySelector( '#branding-icon' );
-		const controlBar = document.querySelector( '.vjs-control-bar' );
-
-		setCustomBrandNotice( { ...customBrandNotice, isVisible: false } );
-
-		dispatch(
-			updateVideoConfig( {
-				controlBar: {
-					...videoConfig.controlBar,
-					brandingIcon: ! videoConfig.controlBar.brandingIcon,
-				},
-			} ),
-		);
-
-		if ( brandingLogo && controlBar ) {
-			if ( ! videoConfig.controlBar.brandingIcon ) { // added opposite condition due to delayed update of redux state.
-				controlBar.appendChild( brandingLogo );
-			} else {
-				controlBar.removeChild( brandingLogo );
-			}
-		}
-	}
-
-	function handlePlayButtonPosition( e ) {
-		const playButton = document.querySelector( '.vjs-big-play-button' );
-
-		dispatch(
-			updateVideoConfig( {
-				controlBar: {
-					...videoConfig.controlBar,
-					playButtonPosition: e.selectedItem.key,
-					playButtonPositionName: e.selectedItem.name,
-				},
-			} ),
-		);
-
-		if ( playButton ) {
-			const alignments = [
-				'left-align',
-				'center-align',
-				'right-align',
-				'top-align',
-				'bottom-align',
-			];
-			playButton.classList.remove( ...alignments ); // Remove all alignment classes
-			if ( alignments.includes( `${ e.selectedItem.key }-align` ) ) {
-				playButton.classList.add( `${ e.selectedItem.key }-align` ); // Add the selected alignment class
-			}
-		}
-	}
-
-	let originalPlayButton = null;
-
-	const openCustomBtnImg = () => {
+	const openBrandLogoPicker = () => {
 		const fileFrame = wp.media( {
-			title: __( 'Select Custom Play Button Image', 'godam' ),
-			button: {
-				text: __( 'Use this Image', 'godam' ),
-			},
-			library: {
-				type: 'image', // Restrict to images only
-			},
-			multiple: false, // Disable multiple selection
+			title: __( 'Select Custom Logo', 'godam' ),
+			button: { text: __( 'Use this logo', 'godam' ) },
+			library: { type: 'image' },
+			multiple: false,
 		} );
 
-		fileFrame.on( 'open', function() {
-			const selection = fileFrame.state().get( 'selection' );
-
-			if ( videoConfig.controlBar.customPlayBtnImgId ) {
-				const attachment = wp.media.attachment( videoConfig.controlBar.customPlayBtnImgId );
-				attachment.fetch();
-				selection.add( attachment );
-			}
-		} );
-
-		fileFrame.on( 'select', function() {
+		fileFrame.on( 'select', () => {
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
-
-			/**
-			 * This handles the case for the uploader tab of WordPress media library.
-			 */
 			if ( attachment?.type !== 'image' ) {
-				showCustomPlayNotice( __( 'Only Image files are allowed', 'godam' ), 'error' );
+				setBrandNotice( { message: __( 'Only image files are allowed', 'godam' ), status: 'error', isVisible: true } );
 				return;
 			}
-
-			dispatch(
-				updateVideoConfig( {
-					controlBar: {
-						...videoConfig.controlBar,
-						customPlayBtnImg: attachment.url,
-						customPlayBtnImgId: attachment.id,
-					},
-				} ),
-			);
-
-			const playButtonElement = document.querySelector( '.vjs-big-play-button' );
-
-			// Replace button with image tag
-			if ( playButtonElement ) {
-				if ( ! originalPlayButton ) {
-					originalPlayButton = playButtonElement.cloneNode( true );
-				}
-
-				// Create new image element
-				const imgElement = document.createElement( 'img' );
-				imgElement.src = attachment.url;
-				imgElement.alt = __( 'Custom Play Button', 'godam' );
-
-				playButtonElement.classList.forEach( ( cls ) => {
-					imgElement.classList.add( cls );
-				} );
-
-				imgElement.classList.add( 'custom-play-image' );
-
-				imgElement.style.cursor = 'pointer';
-
-				// Replace the original button with the new image
-				playButtonElement.parentNode.replaceChild( imgElement, playButtonElement );
-			}
+			setBrandNotice( { ...brandNotice, isVisible: false } );
+			updateControlBar( {
+				customBrandImg: attachment.url,
+				customBrandImgId: attachment.id,
+				brandingIcon: true,
+			} );
 		} );
 
 		fileFrame.open();
 	};
 
-	const openBrandMediaPicker = () => {
-		const fileFrame = wp.media( {
-			title: __( 'Select Brand Image', 'godam' ),
-			button: {
-				text: __( 'Use this brand image', 'godam' ),
-			},
-			library: {
-				type: 'image', // Restrict to images only
-			},
-			multiple: false, // Disable multiple selection
+	const removeBrandLogo = () => {
+		updateControlBar( {
+			customBrandImg: '',
+			customBrandImgId: null,
+			brandingIcon: false,
 		} );
-
-		fileFrame.on( 'open', function() {
-			const selection = fileFrame.state().get( 'selection' );
-
-			if ( videoConfig.controlBar.customBrandImgId ) {
-				const attachment = wp.media.attachment( videoConfig.controlBar.customBrandImgId );
-				attachment.fetch();
-				selection.add( attachment );
-			}
-		} );
-
-		fileFrame.on( 'select', function() {
-			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
-
-			/**
-			 * This handles the case for the uploader tab of WordPress media library.
-			 */
-			if ( attachment?.type !== 'image' ) {
-				showCustomBrandNotice( __( 'Only Image files are allowed', 'godam' ), 'error' );
-				return;
-			}
-
-			dispatch(
-				updateVideoConfig( {
-					controlBar: {
-						...videoConfig.controlBar,
-						customBrandImg: attachment.url,
-						customBrandImgId: attachment.id,
-					},
-				} ),
-			);
-
-			const brandImg = document.querySelector( '#branding-icon' );
-
-			if ( brandImg ) {
-				brandImg.src = `${ attachment.url }`;
-			}
-		} );
-
-		fileFrame.open();
 	};
 
-	const removeBrandImage = () => {
-		dispatch(
-			updateVideoConfig( {
-				controlBar: {
-					...videoConfig.controlBar,
-					customBrandImg: '',
-					customBrandImgId: null,
-				},
-			} ),
-		);
-		const brandImg = document.querySelector( '#branding-icon' );
-		if ( brandImg ) {
-			brandImg.src = GoDAM;
-		}
+	const handleColorChange = ( field, fallback ) => ( value ) => {
+		updateControlBar( { [ field ]: value || fallback } );
 	};
 
-	const removeCustomPlayBtnImage = () => {
-		dispatch(
-			updateVideoConfig( {
-				controlBar: {
-					...videoConfig.controlBar,
-					customPlayBtnImg: '',
-					customPlayBtnImgId: null,
-				},
-			} ),
-		);
-
-		// Find the custom image element and restore original button
-		const customImageElement = document.querySelector( '.custom-play-image' );
-
-		if ( customImageElement && originalPlayButton ) {
-		// Clone the original button to avoid issues with reusing DOM nodes
-			const restoredButton = originalPlayButton.cloneNode( true );
-
-			// Replace the image with the original button
-			if ( customImageElement.parentNode ) {
-				customImageElement.parentNode.replaceChild( restoredButton, customImageElement );
-			}
-		} else {
-		// Fallback: create a new default play button if original is not available
-			const playButtonContainer = document.querySelector( '.video-js' );
-			const existingCustomImage = document.querySelector( '.custom-play-image' );
-
-			if ( playButtonContainer && existingCustomImage ) {
-			// Create default Video.js play button
-				const defaultButton = document.createElement( 'button' );
-				defaultButton.className = 'vjs-big-play-button';
-				defaultButton.type = 'button';
-				defaultButton.setAttribute( 'aria-label', 'Play Video' );
-
-				// Add the play icon span
-				const iconSpan = document.createElement( 'span' );
-				iconSpan.setAttribute( 'aria-hidden', 'true' );
-				iconSpan.className = 'vjs-icon-placeholder';
-				defaultButton.appendChild( iconSpan );
-
-				// Replace the image with the default button
-				if ( existingCustomImage.parentNode ) {
-					existingCustomImage.parentNode.replaceChild( defaultButton, existingCustomImage );
-				}
-			}
-		}
-	};
-
-	const [ openSections, setOpenSections ] = useState( {
-		display: true,
-		customization: false,
-		adServer: false,
-	} );
-
-	const toggleSection = ( section ) => {
-		setOpenSections( ( prev ) => ( { ...prev, [ section ]: ! prev[ section ] } ) );
-	};
-
-	function handleSkipTimeSettings( e ) {
-		const selectedSkipVal = parseFloat( e.selectedItem.name );
-		dispatch(
-			updateVideoConfig( {
-				controlBar: {
-					...videoConfig.controlBar,
-					skipButtons: {
-						forward: selectedSkipVal,
-						backward: selectedSkipVal,
-					},
-				},
-			} ),
-		);
-		const skipBackwardButton = document.querySelector(
-			'[class^="vjs-skip-backward-"]',
-		);
-		const skipForwardButton = document.querySelector(
-			'[class^="vjs-skip-forward-"]',
-		);
-
-		if ( skipBackwardButton ) {
-			const backwardClasses = Array.from( skipBackwardButton.classList );
-			const existingBackwardClass = backwardClasses.find( ( cls ) =>
-				cls.startsWith( 'vjs-skip-backward-' ),
-			);
-
-			if ( existingBackwardClass ) {
-				skipBackwardButton.classList.replace(
-					existingBackwardClass,
-					`vjs-skip-backward-${ selectedSkipVal }`,
-				);
-			}
-		}
-
-		if ( skipForwardButton ) {
-			const forwardClasses = Array.from( skipForwardButton.classList );
-			const existingForwardClass = forwardClasses.find( ( cls ) =>
-				cls.startsWith( 'vjs-skip-forward-' ),
-			);
-
-			if ( existingForwardClass ) {
-				skipForwardButton.classList.replace(
-					existingForwardClass,
-					`vjs-skip-forward-${ selectedSkipVal }`,
-				);
-			}
-		}
-	}
+	const hasLogo = controlBar.customBrandImg?.length > 0;
 
 	return (
-		<div id="easydam-player-settings" className="pb-20">
-			<div className="accordion-item--content mt-4 flex flex-col gap-2">
+		<div id="easydam-player-settings" className="godam-ve-settings" data-test-id="godam-video-editor-panel-player-settings">
+			<div className="godam-ve-settings__head">
+				<h2 className="godam-ve-settings__title">{ __( 'Settings', 'godam' ) }</h2>
+			</div>
 
-				{ /* ── Section 1: Display Settings (free) ── */ }
-				<div className="godam-collapsible-section">
-					<button
-						type="button"
-						className={ `godam-collapsible-section__header${ openSections.display ? ' is-open' : '' }` }
-						onClick={ () => toggleSection( 'display' ) }
-						aria-expanded={ openSections.display }
-						aria-controls="godam-appearance-display-settings"
-					>
-						<span>{ __( 'Display Settings', 'godam' ) }</span>
-						<Icon icon={ openSections.display ? chevronUp : chevronDown } />
-					</button>
-					{ openSections.display && (
-						<div id="godam-appearance-display-settings" className="godam-collapsible-section__body flex flex-col gap-3">
-							<ToggleControl
-								__nextHasNoMarginBottom
-								className="godam-toggle"
-								label={ __( 'Show Volume Slider', 'godam' ) }
-								checked={ videoConfig.controlBar.volumePanel }
-								onChange={ handleVolumeToggle }
-							/>
-							<ToggleControl
-								__nextHasNoMarginBottom
-								className="godam-toggle"
-								label={ __( 'Display Captions', 'godam' ) }
-								onChange={ handleCaptionsToggle }
-								checked={ videoConfig.controlBar.subsCapsButton }
-							/>
-							<CustomSelectControl
-								__next40pxDefaultSize
-								className="godam-input"
-								onChange={ handleSkipTimeSettings }
-								options={ [
-									{ key: '5', name: '5' },
-									{ key: '10', name: '10' },
-									{ key: '30', name: '30' },
-								] }
-								label={ __( 'Adjust Skip Duration', 'godam' ) }
-								value={ {
-									key: videoConfig.controlBar.skipButtons?.forward?.toString() || '10',
-									name: videoConfig.controlBar.skipButtons?.forward?.toString() || '10',
-								} }
-							/>
+			<div className="godam-ve-config">
+
+				<VeSection title={ __( 'Display Settings', 'godam' ) }>
+					<VeToggle
+						data-test-id="godam-video-editor-control-volume"
+						label={ __( 'Show volume slider', 'godam' ) }
+						checked={ controlBar.volumePanel }
+						onChange={ handleVolumeToggle }
+					/>
+					<VeToggle
+						data-test-id="godam-video-editor-control-captions"
+						label={ __( 'Display captions', 'godam' ) }
+						checked={ controlBar.subsCapsButton }
+						onChange={ handleCaptionsToggle }
+					/>
+					<VeCustomSelect
+						data-test-id="godam-video-editor-control-skip-duration"
+						label={ __( 'Adjust Skip Duration', 'godam' ) }
+						help={ __( 'Number of seconds the skip-forward / skip-backward buttons jump.', 'godam' ) }
+						value={ controlBar.skipButtons?.forward?.toString() || '10' }
+						onChange={ handleSkipDuration }
+						options={ [
+							{ label: __( '5 seconds', 'godam' ), value: '5' },
+							{ label: __( '10 seconds', 'godam' ), value: '10' },
+							{ label: __( '30 seconds', 'godam' ), value: '30' },
+						] }
+					/>
+				</VeSection>
+
+				<VeSection title={ __( 'Customisation Settings', 'godam' ) }>
+					{ ! hasLogo ? (
+						<Button
+							data-test-id="godam-video-editor-button-logo"
+							className="godam-ve-media-select"
+							variant="secondary"
+							icon={ plus }
+							onClick={ openBrandLogoPicker }
+						>
+							{ __( 'Add Custom logo', 'godam' ) }
+						</Button>
+					) : (
+						<div className="godam-ve-media">
+							<button
+								type="button"
+								data-test-id="godam-video-editor-button-replace-logo"
+								className="godam-ve-media__main"
+								onClick={ openBrandLogoPicker }
+								aria-label={ __( 'Replace logo', 'godam' ) }
+							>
+								<img src={ controlBar.customBrandImg } alt={ __( 'Custom logo', 'godam' ) } className="godam-ve-media__thumb" />
+								<span className="godam-ve-media__meta">
+									<span className="godam-ve-media__name">{ __( 'Custom logo', 'godam' ) }</span>
+									<span className="godam-ve-media__size">{ __( 'Click to replace', 'godam' ) }</span>
+								</span>
+							</button>
+							<Tooltip text={ __( 'Remove logo', 'godam' ) } placement="top">
+								<Button data-test-id="godam-video-editor-button-remove-logo" className="godam-ve-media__remove" icon={ trash } isDestructive onClick={ removeBrandLogo } />
+							</Tooltip>
 						</div>
 					) }
-				</div>
-
-				{ /* ── Section 2: Customization Settings ── */ }
-				<div className="godam-collapsible-section">
-					<button
-						type="button"
-						className={ `godam-collapsible-section__header${ openSections.customization ? ' is-open' : '' }` }
-						onClick={ () => toggleSection( 'customization' ) }
-						aria-expanded={ openSections.customization }
-						aria-controls="godam-appearance-customization-settings"
-					>
-						<span className="flex items-center gap-2">
-							{ __( 'Customization Settings', 'godam' ) }
-						</span>
-						<Icon icon={ openSections.customization ? chevronUp : chevronDown } />
-					</button>
-					{ openSections.customization && (
-						<fieldset id="godam-appearance-customization-settings" className="godam-collapsible-section__body flex flex-col gap-4">
-							<ToggleControl
-								__nextHasNoMarginBottom
-								className="godam-toggle"
-								label={ __( 'Show Branding', 'godam' ) }
-								onChange={ handleBrandingToggle }
-								checked={ videoConfig.controlBar.brandingIcon }
-							/>
-							{ videoConfig.controlBar.brandingIcon && (
-								<div className="godam-form-group">
-									<label htmlFor="custom-brand-logo" className="label-text">
-										{ __( 'Custom Brand Logo', 'godam' ) }
-									</label>
-									<Button onClick={ openBrandMediaPicker } variant="primary" className="mr-2 godam-button">
-										{ videoConfig.controlBar.customBrandImg?.length > 0 ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
-									</Button>
-									{ videoConfig.controlBar.customBrandImg?.length > 0 && (
-										<Button onClick={ removeBrandImage } variant="secondary" isDestructive className="godam-button">
-											{ __( 'Remove', 'godam' ) }
-										</Button>
-									) }
-									{ videoConfig.controlBar.customBrandImg?.length > 0 && (
-										<div className="mt-2">
-											<img src={ videoConfig.controlBar.customBrandImg } alt="Selected custom brand" className="max-w-[200px]" />
-										</div>
-									) }
-									{ customBrandNotice.isVisible && (
-										<Notice
-											className="my-4"
-											status={ customBrandNotice.status }
-											onRemove={ () => setCustomBrandNotice( { ...customBrandNotice, isVisible: false } ) }
-										>
-											{ customBrandNotice.message }
-										</Notice>
-									) }
-								</div>
-							) }
-							<div className="godam-form-group">
-								<CustomSelectControl
-									__next40pxDefaultSize
-									className="godam-input"
-									label={ __( 'Play Button Position', 'godam' ) }
-									onChange={ handlePlayButtonPosition }
-									options={ [
-										{ key: 'center', name: __( 'Center', 'godam' ) },
-										{ key: 'left', name: __( 'Left', 'godam' ) },
-										{ key: 'top', name: __( 'Top', 'godam' ) },
-										{ key: 'bottom', name: __( 'Bottom', 'godam' ) },
-										{ key: 'right', name: __( 'Right', 'godam' ) },
-									] }
-									value={ {
-										key: videoConfig.controlBar.playButtonPosition,
-										name: videoConfig.controlBar.playButtonPositionName || ( videoConfig.controlBar.playButtonPosition ? videoConfig.controlBar.playButtonPosition.charAt( 0 ).toUpperCase() + videoConfig.controlBar.playButtonPosition.slice( 1 ) : __( 'Center', 'godam' ) ),
-									} }
-								/>
-							</div>
-							<div className="godam-form-group">
-								<label htmlFor="custom-play-btn" className="label-text">
-									{ __( 'Custom Play Button', 'godam' ) }
-								</label>
-								<Button onClick={ openCustomBtnImg } variant="primary" className="mr-2 godam-button">
-									{ videoConfig.controlBar.customPlayBtnImg?.length > 0 ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
-								</Button>
-								{ videoConfig.controlBar.customPlayBtnImg?.length > 0 && (
-									<Button onClick={ removeCustomPlayBtnImage } variant="secondary" isDestructive className="godam-button">
-										{ __( 'Remove', 'godam' ) }
-									</Button>
-								) }
-								{ videoConfig.controlBar.customPlayBtnImg?.length > 0 && (
-									<div className="mt-2">
-										<img src={ videoConfig.controlBar.customPlayBtnImg } alt="Selected custom play button" className="max-w-[200px] mt-2" />
-									</div>
-								) }
-								{ customPlayNotice.isVisible && (
-									<Notice
-										className="my-4"
-										status={ customPlayNotice.status }
-										onRemove={ () => setCustomPlayNotice( { ...customPlayNotice, isVisible: false } ) }
-									>
-										{ customPlayNotice.message }
-									</Notice>
-								) }
-							</div>
-							<div className="godam-form-group">
-								<label htmlFor="appearance-color" className="label-text">
-									{ __( 'Player Theme', 'godam' ) }
-								</label>
-								<div className="flex items-center gap-2">
-									<ColorPickerButton
-										value={ videoConfig.controlBar.appearanceColor }
-										label={ __( 'Player Appearance', 'godam' ) }
-										className="mb-0"
-										contentClassName="border-b-0"
-										enableAlpha={ true }
-										onChange={ ( value ) => {
-											if ( ! value ) {
-												value = '#2b333fb3';
-											}
-											dispatch(
-												updateVideoConfig( {
-													controlBar: {
-														...videoConfig.controlBar,
-														appearanceColor: value,
-													},
-												} ),
-											);
-										} }
-									/>
-									{ videoConfig.controlBar.appearanceColor && (
-										<button
-											type="button"
-											className="text-xs text-red-500 underline hover:text-red-600 bg-transparent cursor-pointer"
-											onClick={ () => dispatch(
-												updateVideoConfig( {
-													controlBar: {
-														...videoConfig.controlBar,
-														appearanceColor: '',
-													},
-												} ),
-											) }
-											aria-haspopup="true"
-											aria-label={ __( 'Remove', 'godam' ) }
-										>
-											<Icon icon={ closeSmall } />
-										</button>
-									) }
-								</div>
-								<ColorPickerButton
-									value={ videoConfig.controlBar.hoverColor }
-									label={ __( 'Icons hover color', 'godam' ) }
-									enableAlpha={ true }
-									onChange={ ( value ) => {
-										if ( ! value ) {
-											value = '#2b333fb3';
-										}
-										dispatch(
-											updateVideoConfig( {
-												controlBar: {
-													...videoConfig.controlBar,
-													hoverColor: value,
-												},
-											} ),
-										);
-									} }
-								/>
-							</div>
-						</fieldset>
+					{ brandNotice.isVisible && (
+						<Notice status={ brandNotice.status } onRemove={ () => setBrandNotice( { ...brandNotice, isVisible: false } ) }>
+							{ brandNotice.message }
+						</Notice>
 					) }
-				</div>
+				</VeSection>
 
-				{ /* ── Section 3: Ad Server ── */ }
-				<div className="godam-collapsible-section">
-					<button
-						type="button"
-						className={ `godam-collapsible-section__header${ openSections.adServer ? ' is-open' : '' }` }
-						onClick={ () => toggleSection( 'adServer' ) }
-						aria-expanded={ openSections.adServer }
-						aria-controls="godam-appearance-ad-server-settings"
-					>
-						<span className="flex items-center gap-2">
-							{ __( 'Ad Server', 'godam' ) }
+				<VeSection title={ __( 'Player Theme', 'godam' ) }>
+					<VeColorList>
+						<ColorPickerButton
+							className="godam-ve-color-row"
+							value={ controlBar.appearanceColor ?? DEFAULT_APPEARANCE_COLOR }
+							label={ __( 'Player Appearance', 'godam' ) }
+							enableAlpha={ true }
+							onChange={ handleColorChange( 'appearanceColor', DEFAULT_APPEARANCE_COLOR ) }
+						/>
+						<ColorPickerButton
+							className="godam-ve-color-row"
+							value={ controlBar.hoverColor ?? DEFAULT_HOVER_COLOR }
+							label={ __( 'Icons hover colour', 'godam' ) }
+							enableAlpha={ true }
+							onChange={ handleColorChange( 'hoverColor', DEFAULT_HOVER_COLOR ) }
+						/>
+					</VeColorList>
+				</VeSection>
 
-						</span>
-						<Icon icon={ openSections.adServer ? chevronUp : chevronDown } />
-					</button>
-					{ openSections.adServer && (
-						<fieldset id="godam-appearance-ad-server-settings" className="godam-collapsible-section__body flex flex-col gap-3">
-							<ToggleControl
-								className="godam-toggle"
-								label={ __( 'Use ad server\'s ads', 'godam' ) }
-								help={ __( 'Enable this option to use ads from the ad server. This option will disable the ads layer', 'godam' ) }
-								checked={ videoConfig.adServer === 'ad-server' }
-								onChange={ ( checked ) => {
-									dispatch(
-										updateVideoConfig( {
-											adServer: checked ? 'ad-server' : 'self-hosted',
-										} ),
-									);
-								} }
-							/>
-							{ videoConfig.adServer === 'ad-server' && (
-								<TextareaControl
-									className="godam-input"
-									label={ __( 'Ad Tag URL', 'godam' ) }
-									help={
-										<div>
-											{ __( 'A VAST ad tag URL is used by a player to retrieve video and audio ads', 'godam' ) }{ ' ' }
-											<a href="https://support.google.com/admanager/answer/177207?hl=en" target="_blank" rel="noreferrer noopener" className="text-blue-500 underline">{ __( 'Learn more.', 'godam' ) }</a>
-										</div>
-									}
-									value={ videoConfig.adTagURL }
-									onChange={ ( val ) => {
-										dispatch(
-											updateVideoConfig( {
-												adTagURL: val,
-											} ),
-										);
-									} }
-								/>
-							) }
-						</fieldset>
+				<VeSection title={ __( 'Ad Server', 'godam' ) }>
+					<VeToggle
+						data-test-id="godam-video-editor-control-ad-server"
+						label={ __( 'Use ad server\'s ad', 'godam' ) }
+						help={ __( 'Enable this option to use ads from the ad server. This option will disable the ads layer', 'godam' ) }
+						checked={ videoConfig.adServer === 'ad-server' }
+						onChange={ ( checked ) => dispatch( updateVideoConfig( { adServer: checked ? 'ad-server' : 'self-hosted' } ) ) }
+					/>
+					{ videoConfig.adServer === 'ad-server' && (
+						<VeTextInput
+							data-test-id="godam-video-editor-control-ad-tag-url"
+							label={ __( 'Ad Tag URL', 'godam' ) }
+							type="url"
+							value={ videoConfig.adTagURL }
+							onChange={ ( value ) => dispatch( updateVideoConfig( { adTagURL: value } ) ) }
+							placeholder="https://"
+							help={
+								<span>
+									{ __( 'A VAST ad tag URL is used by a player to retrieve video and audio ads.', 'godam' ) }{ ' ' }
+									<a href="https://support.google.com/admanager/answer/177207?hl=en" target="_blank" rel="noreferrer noopener">
+										{ __( 'Learn more.', 'godam' ) }
+									</a>
+								</span>
+							}
+						/>
 					) }
-				</div>
+				</VeSection>
+
+				<VeSection title={ __( 'Thumbnail', 'godam' ) }>
+					<p className="godam-ve-field__help">
+						{ __( 'Select a default thumbnail for this video. You can also override the default thumbnail for different video placements.', 'godam' ) }
+					</p>
+					<ThumbnailSelector attachmentID={ attachmentID } />
+				</VeSection>
 
 			</div>
 		</div>

@@ -97,6 +97,19 @@
 		font-weight: 400;
 	}
 
+	select {
+		border: 1px solid rgba(225, 225, 225, 1) !important;
+		background: rgba(255, 255, 255, 1) !important;
+		border-radius: 0.5rem !important;
+		padding: 0.75rem !important;
+		height: auto !important;
+
+		font-size: 0.875rem !important;
+		line-height: 1.375 !important;
+		font-weight: 400;
+		margin-top: -0.75rem !important;
+	}
+
 	&.godam-input__api-key {
 
 		.components-text-control__input{
@@ -322,8 +335,24 @@
 	}
 
 	.components-panel__body {
-		padding: 1.25rem;
 		border-top: 0;
+
+		&-title {
+			outline: none;
+			box-shadow: none;
+
+			&:hover {
+				background: transparent;
+			}
+		}
+
+		&.is-opened {
+
+			.components-panel__body-title {
+				border-bottom: 1px solid #e0e0e0;
+				margin-bottom: 1rem;
+			}
+		}
 	}
 
 
@@ -376,12 +405,13 @@
 
 .godam-form-group {
 
-	.label-text {
-		font-size: 0.875rem !important;
-		line-height: 1.375 !important;
+	label, .label-text, .components-base-control__label {
+		font-size: 13px;
+		line-height: 1.375;
 		display: block;
 		margin-bottom: 0.5rem;
 		font-weight: 500;
+		text-transform: none !important;
 	}
 
 	.help-text {

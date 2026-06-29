@@ -42,7 +42,7 @@
 				// Add or update preview
 				let $preview = $container.find( '.audio-selector-preview' );
 				if ( $preview.length === 0 ) {
-					$preview = $( '<div class="audio-selector-preview" style="margin-top: 10px;"></div>' );
+					$preview = $( '<div class="audio-selector-preview" data-test-id="godam-wpb-preview-audio" style="margin-top: 10px;"></div>' );
 					$container.append( $preview );
 				}
 
@@ -56,7 +56,7 @@
 				const $buttonsWrapper = $container.find( '.audio_selector-buttons-wrapper' );
 				let $removeButton = $buttonsWrapper.find( '.audio-selector-remove' );
 				if ( $removeButton.length === 0 ) {
-					$removeButton = $( '<button class="button audio-selector-remove" data-param="' + paramName + '" style="margin-left: 5px;">Remove</button>' );
+					$removeButton = $( '<button class="button audio-selector-remove" data-test-id="godam-wpb-button-remove-audio" data-param="' + paramName + '" style="margin-left: 5px;">Remove</button>' );
 					$buttonsWrapper.append( $removeButton );
 				}
 

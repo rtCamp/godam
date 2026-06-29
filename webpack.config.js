@@ -315,6 +315,10 @@ const pages = {
 			},
 			{
 				test: /\.(css|scss)$/, // Handle CSS files
+				// `sideEffects: true` keeps bare CSS imports (e.g.
+				// `@wordpress/dataviews/build-style/style.css`) from being
+				// tree-shaken out of the bundle in production mode.
+				sideEffects: true,
 				use: [ 'style-loader', 'css-loader', 'postcss-loader', 'sass-loader' ],
 			},
 			{
@@ -338,6 +342,18 @@ const pages = {
 		'@wordpress/i18n': [ 'wp', 'i18n' ],
 		'@wordpress/components': [ 'wp', 'components' ],
 		'@wordpress/api-fetch': [ 'wp', 'apiFetch' ],
+		'@wordpress/primitives': [ 'wp', 'primitives' ],
+		'@wordpress/data': [ 'wp', 'data' ],
+		'@wordpress/notices': [ 'wp', 'notices' ],
+		// `@wordpress/dataviews` reaches into `@wordpress/components` private
+		// APIs through `@wordpress/private-apis`. The lock store is keyed on a
+		// per-module-instance WeakMap, so a locally bundled copy of
+		// private-apis would fail to unlock the WP-provided components build
+		// ("Cannot unlock an object that was not locked before"). Externalize
+		// it to wp.privateApis so the bundled DataViews shares the same
+		// instance core registered. DataViews itself is still bundled because
+		// core ships no `wp-dataviews` script handle.
+		'@wordpress/private-apis': [ 'wp', 'privateApis' ],
 	},
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions

@@ -233,9 +233,9 @@ async function main() {
 
 	// Note: Change percentages are calculated and updated by SingleMetrics.js component
 
-	if ( countryViews ) {
-		generateCountryHeatmap( countryViews, '#map-container', '#table-container' );
-	}
+	// Always render — generateCountryHeatmap shows an empty-state placeholder
+	// when there is no geography data yet.
+	generateCountryHeatmap( countryViews || {}, '#map-container', '#table-container' );
 
 	const analyticsContainer = document.getElementById( 'video-analytics-container' );
 	if ( analyticsContainer ) {

@@ -89,21 +89,21 @@ class WPB_GoDAM_Params {
 		if ( ! empty( $value ) && is_numeric( $value ) ) {
 			$attachment = wp_get_attachment_url( $value );
 			if ( $attachment ) {
-				$preview_html  = '<div class="video-selector-preview" style="margin-top: 10px;">
+				$preview_html  = '<div class="video-selector-preview" data-test-id="godam-wpb-preview-video" style="margin-top: 10px;">
 					<video width="100%" height="auto" controls style="max-width: 300px;">
 						<source src="' . esc_url( $attachment ) . '" type="video/mp4">
 					</video>
 				</div>';
-				$remove_button = '<button class="button video-selector-remove" data-param="' . esc_attr( $settings['param_name'] ) . '" style="margin-left: 5px;">' . esc_html__( 'Remove', 'godam' ) . '</button>';
+				$remove_button = '<button type="button" class="button video-selector-remove" data-test-id="godam-wpb-button-remove-video" data-param="' . esc_attr( $settings['param_name'] ) . '" style="margin-left: 5px;">' . esc_html__( 'Remove', 'godam' ) . '</button>';
 			}
 		}
-		
+
 		return '<div class="video_selector_block">'
-			. '<input name="' . esc_attr( $settings['param_name'] ) . '" class="wpb_vc_param_value wpb-textinput video_selector_field ' .
+			. '<input name="' . esc_attr( $settings['param_name'] ) . '" data-test-id="godam-wpb-input-video" class="wpb_vc_param_value wpb-textinput video_selector_field ' .
 			esc_attr( $settings['param_name'] ) . ' ' .
 			esc_attr( $settings['type'] ) . '_field" type="hidden" value="' . esc_attr( $value ) . '" />'
 			. '<div class="video_selector-buttons-wrapper" style="display: flex; align-items: center;">'
-			. '<button class="button video-selector-button" data-param="' . esc_attr( $settings['param_name'] ) . '">' . $button_text . '</button>'
+			. '<button type="button" class="button video-selector-button" data-test-id="godam-wpb-button-select-video" data-param="' . esc_attr( $settings['param_name'] ) . '">' . $button_text . '</button>'
 			. $remove_button
 			. '</div>'
 			. $preview_html
@@ -128,21 +128,21 @@ class WPB_GoDAM_Params {
 		if ( ! empty( $value ) && is_numeric( $value ) ) {
 			$attachment = wp_get_attachment_url( $value );
 			if ( $attachment ) {
-				$preview_html  = '<div class="audio-selector-preview" style="margin-top: 10px;">
+				$preview_html  = '<div class="audio-selector-preview" data-test-id="godam-wpb-preview-audio" style="margin-top: 10px;">
 					<audio controls style="max-width: 300px; width: 100%;">
 						<source src="' . esc_url( $attachment ) . '" type="audio/mpeg">
 					</audio>
 				</div>';
-				$remove_button = '<button class="button audio-selector-remove" data-param="' . esc_attr( $settings['param_name'] ) . '" style="margin-left: 5px;">' . esc_html__( 'Remove', 'godam' ) . '</button>';
+				$remove_button = '<button type="button" class="button audio-selector-remove" data-test-id="godam-wpb-button-remove-audio" data-param="' . esc_attr( $settings['param_name'] ) . '" style="margin-left: 5px;">' . esc_html__( 'Remove', 'godam' ) . '</button>';
 			}
 		}
-		
+
 		return '<div class="audio_selector_block">'
-			. '<input name="' . esc_attr( $settings['param_name'] ) . '" class="wpb_vc_param_value wpb-textinput audio_selector_field ' .
+			. '<input name="' . esc_attr( $settings['param_name'] ) . '" data-test-id="godam-wpb-input-audio" class="wpb_vc_param_value wpb-textinput audio_selector_field ' .
 			esc_attr( $settings['param_name'] ) . ' ' .
 			esc_attr( $settings['type'] ) . '_field" type="hidden" value="' . esc_attr( $value ) . '" />'
 			. '<div class="audio_selector-buttons-wrapper" style="display: flex; align-items: center;">'
-			. '<button class="button audio-selector-button" data-param="' . esc_attr( $settings['param_name'] ) . '">' . $button_text . '</button>'
+			. '<button type="button" class="button audio-selector-button" data-test-id="godam-wpb-button-select-audio" data-param="' . esc_attr( $settings['param_name'] ) . '">' . $button_text . '</button>'
 			. $remove_button
 			. '</div>'
 			. $preview_html
@@ -165,18 +165,18 @@ class WPB_GoDAM_Params {
 		
 		// If an image is selected, show preview and remove button.
 		if ( ! empty( $value ) ) {
-			$preview_html  = '<div class="image-src-selector-preview" style="margin-top: 10px;">
+			$preview_html  = '<div class="image-src-selector-preview" data-test-id="godam-wpb-preview-image" style="margin-top: 10px;">
                 <img src="' . esc_url( $value ) . '" alt="" style="max-width: 300px; height: auto;" />
             </div>';
-			$remove_button = '<button class="button image-src-selector-remove" data-param="' . esc_attr( $settings['param_name'] ) . '" style="margin-left: 5px;">' . esc_html__( 'Remove', 'godam' ) . '</button>';            
+			$remove_button = '<button type="button" class="button image-src-selector-remove" data-test-id="godam-wpb-button-remove-image" data-param="' . esc_attr( $settings['param_name'] ) . '" style="margin-left: 5px;">' . esc_html__( 'Remove', 'godam' ) . '</button>';
 		}
-		
+
 		return '<div class="image_src_selector_block">'
-			. '<input name="' . esc_attr( $settings['param_name'] ) . '" class="wpb_vc_param_value wpb-textinput image_src_selector_field ' .
+			. '<input name="' . esc_attr( $settings['param_name'] ) . '" data-test-id="godam-wpb-input-image" class="wpb_vc_param_value wpb-textinput image_src_selector_field ' .
 			esc_attr( $settings['param_name'] ) . ' ' .
 			esc_attr( $settings['type'] ) . '_field" type="hidden" value="' . esc_attr( $value ) . '" />'
 			. '<div class="image_src_selector-buttons-wrapper" style="display: flex; align-items: center;">'
-			. '<button class="button image-src-selector-button" data-param="' . esc_attr( $settings['param_name'] ) . '">' . $button_text . '</button>'
+			. '<button type="button" class="button image-src-selector-button" data-test-id="godam-wpb-button-select-image" data-param="' . esc_attr( $settings['param_name'] ) . '">' . $button_text . '</button>'
 			. $remove_button
 			. '</div>'
 			. $preview_html

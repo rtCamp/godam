@@ -171,7 +171,6 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 	 * @param {string}  url                 - The URL of the file to download
 	 * @param {string}  [filename]          - Optional filename for the downloaded file. If not provided, browser will use default from URL
 	 * @param {boolean} [openInNewTab=true] - Whether to set target="_blank" as fallback
-	 *
 	 */
 	const downloadFile = useCallback( ( url, filename = null, openInNewTab = true ) => {
 		const link = document.createElement( 'a' );

@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.12.1
+Stable tag: 1.13.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -219,6 +219,22 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v1.13.0 (June 18, 2026) =
+
+- Feat: Track GoDAM media usage across post content, blocks, shortcodes, Elementor, block widgets, and featured images — recording where each asset is used and notifying GoDAM Central.
+- Feat: Automatically backfill media usage for existing content in the background, via the migration runner in Action Scheduler batches, on upgrade.
+- Tweak: Authenticate GoDAM Central media-usage logging and retry failed notifications with backoff so transient outages do not lose events.
+
+= v1.12.2 (June 16, 2026) =
+
+- Tweak: Aligned `[godam_video]` and `[godam_video_gallery]` shortcode attributes with responsive block attributes.
+- Tweak: Refactored GoDAM Video and GoDAM Video Gallery widgets for both Elementor and WPBakery.
+- Fix: Resolved hotspot layer popup overlapping issues.
+- Fix: Added validation to prevent non-video file selections in the GoDAM Video block.
+- Fix: Added validation to prevent non-audio file selections in the GoDAM Audio block.
+- Fix: Restored vertical spacing for toggle controls in the block inspector across audio, gallery, and player blocks.
+- Fix: Resolved style and spacing issues in the video editor.
+
 = v1.12.1 (June 12, 2026) =
 
 - Fix: Resolved security issues.
@@ -226,10 +242,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 = v1.12.0 (June 11, 2026) =
 
 - Feat: Added Layer Analytics feature to track how viewers interact with video layers (CTAs, hotspots, forms, and more), with per-layer engagement and conversion metrics in the analytics dashboard.
-
-= v1.11.2 (June 8, 2026) =
-
-- Feat: Added a setting to disable GoDAM's media library features, allowing GoDAM to coexist with another media or DAM plugin without changing the WordPress media library.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 

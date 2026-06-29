@@ -251,13 +251,24 @@ $settings-page-breakpoint: 782px;
 		color: #fb2c36;
 	}
 
-	input[type="number"] {
-		max-width: 100px;
+	span.valid-api-key {
+		color: #15803d;
+	}
+
+	.godam-api-key-msg {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+
+		svg {
+			flex-shrink: 0;
+			fill: currentcolor;
+		}
 	}
 
 	.sidebar-nav-item {
 		
-		@apply flex items-center gap-2 p-2 mb-0.5 font-medium rounded-md focus:ring-2 ring-indigo-200 text-gray-600 hover:text-gray-900 border border-transparent transition-all;
+		@apply flex items-center gap-2 p-2 mb-0.5 font-medium rounded-md text-gray-600 hover:text-gray-900 border border-transparent transition-all;
 
 		&.active {
 
@@ -356,7 +367,7 @@ $settings-page-breakpoint: 782px;
 					--wp-components-color-accent,
 					var(--wp-admin-theme-color, #3858e9)
 				);
-				color: #ffffff;
+				color: #fff;
 				font-weight: 600;
 				box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 				transform: translateY(-1px);
@@ -376,7 +387,7 @@ $settings-page-breakpoint: 782px;
 
 	/* Button settings group */
 	.godam-button-settings-group {
-		background: #ffffff;
+		background: #fff;
 		padding: 16px;
 		border-radius: 8px;
 		border: 1px solid #e5e7eb;
@@ -386,7 +397,6 @@ $settings-page-breakpoint: 782px;
 	.godam-settings-section-title {
 		font-size: 14px;
 		font-weight: 600;
-		margin: 10px 0 16px 0;
 		color: #1d2327;
 	}
 

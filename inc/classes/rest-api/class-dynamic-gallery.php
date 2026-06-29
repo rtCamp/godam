@@ -146,20 +146,6 @@ class Dynamic_Gallery extends Base {
 		$args['offset']        = $offset;
 		$args['no_found_rows'] = true;
 
-		// rtgodam_gallery_v2_build_query_args() restricts orderby to date/title.
-		// The REST endpoint additionally supports duration and size to mirror
-		// the block's full orderby UI on Load More responses.
-		$raw_orderby = sanitize_key( $request->get_param( 'orderby' ) );
-		if ( 'duration' === $raw_orderby ) {
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for sorting by video duration.
-			$args['meta_key'] = '_video_duration';
-			$args['orderby']  = 'meta_value_num';
-		} elseif ( 'size' === $raw_orderby ) {
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for sorting by video file size.
-			$args['meta_key'] = '_video_file_size';
-			$args['orderby']  = 'meta_value_num';
-		}
-
 		$query = new \WP_Query( $args );
 		ob_start();
 
@@ -182,12 +168,19 @@ class Dynamic_Gallery extends Base {
 				/* translators: %s: video title. */
 				echo '<button type="button" class="godam-gallery-v2__query-button" data-godam-gallery-v2-trigger="true" data-video-id="' . esc_attr( $item['id'] ) . '" aria-label="' . esc_attr( sprintf( __( 'Open video: %s', 'godam' ), $item['title'] ) ) . '">';
 				echo '<div class="godam-gallery-v2__query-thumb' . ( ! empty( $item['placeholder'] ) ? ' godam-gallery-blurred-img' : '' ) . '"' . ( ! empty( $item['placeholder'] ) ? ' style="background-image: url(\'' . esc_url( $item['placeholder'] ) . '\')"' : '' ) . '>';
+
 				if ( ! empty( $item['thumbnail'] ) ) {
 					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $thumbnail_attributes comes from rtgodam_format_html_attributes() which pre-sanitizes.
 					echo '<img src="' . esc_url( $item['thumbnail'] ) . '" alt="' . esc_attr( $item['title'] ) . '" class="godam-gallery-v2__thumbnail"' . ( $thumbnail_attributes ? ' ' . $thumbnail_attributes : '' ) . ' />';
 				} else {
-					echo '<span>' . esc_html__( 'Video', 'godam' ) . '</span>';
+					echo '<img class="godam-gallery-v2__thumbnail godam-gallery-v2__thumbnail--pending" alt="' . esc_attr( $item['title'] ) . '" aria-hidden="true" />';
 				}
+
+				if ( ! empty( $item['video_url'] ) ) {
+					echo '<video class="godam-gallery-v2-item__preview-video" src="' . esc_url( $item['video_url'] ) . '" muted playsinline preload="none" aria-hidden="true" tabindex="-1"></video>';
+				}
+
+				echo '<div class="godam-gallery-v2__play-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg></div>';
 				echo '</div>';
 
 				if ( $show_title ) {

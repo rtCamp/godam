@@ -50,7 +50,6 @@ const IntegrationActionButton = ( {
 		return (
 			<Button
 				variant="primary"
-				className="godam-button godam-margin-bottom"
 				onClick={ onInstall }
 				disabled={ isInstalling }
 				isBusy={ isInstalling }
@@ -76,7 +75,6 @@ const IntegrationActionButton = ( {
 		return (
 			<Button
 				variant="primary"
-				className="godam-button godam-margin-bottom"
 				href={ learnMoreUrl || getPricingUrl( featureSlug ) }
 				target="_blank"
 				rel="noopener noreferrer"
@@ -90,7 +88,6 @@ const IntegrationActionButton = ( {
 	return (
 		<Button
 			variant="primary"
-			className="godam-button godam-margin-bottom"
 			href={ getPricingUrl( featureSlug ) }
 			target="_blank"
 			rel="noopener noreferrer"

@@ -6,8 +6,6 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, Notice } from '@wordpress/components';
-import { chevronRight, pencil } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -15,8 +13,8 @@ import { __ } from '@wordpress/i18n';
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
 import { useGetSingleSureformQuery } from '../../redux/api/sureforms';
-import LayerControl from '../LayerControls';
-import FormSelector from './FormSelector';
+import FormFields from './FormFields';
+import FormPreview from './FormPreview';
 
 const SureForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
@@ -39,66 +37,23 @@ const SureForm = ( { layerID } ) => {
 
 	return (
 		<>
-			{
-				! isSureformsPluginActive &&
-				<Notice
-					className="mb-4"
-					status="warning"
-					isDismissible={ false }
-				>
-					{ __( 'Please activate the SureForms plugin to use this feature.', 'godam' ) }
-				</Notice>
-			}
+			<FormFields
+				isActive={ isSureformsPluginActive }
+				pluginLabel={ __( 'SureForms', 'godam' ) }
+				formID={ layer.sureform_id }
+				formType={ layer.form_type }
+				forms={ forms }
+				onSelectForm={ changeFormID }
+				editUrl={ `${ window?.videoData?.adminUrl }post.php?post=${ layer.sureform_id }&action=edit` }
+				showEditButton={ Boolean( formHTML ) }
+			/>
 
-			{
-				<FormSelector disabled={ ! isSureformsPluginActive } className="mb-4" formID={ layer.sureform_id } forms={ forms } handleChange={ changeFormID } />
-			}
-
-			<LayerControl>
-				<>
-					<div
-						style={ {
-							backgroundColor: layer.bg_color,
-						} }
-						className="easydam-layer"
-					>
-
-						{
-							( formHTML && ! isFetching ) &&
-							<div className="form-container" dangerouslySetInnerHTML={ { __html: formHTML } } />
-						}
-
-						{
-							isFetching &&
-							<div className="form-container">
-								<p>{ __( 'Loading form…', 'godam' ) }</p>
-							</div>
-						}
-
-						{
-							formHTML &&
-							<Button
-								href={ `${ window?.videoData?.adminUrl }post.php?post=${ layer.sureform_id }&action=edit` }
-								target="_blank"
-								variant="secondary"
-								icon={ pencil }
-								className="absolute top-2 right-2"
-							>{ __( 'Edit form', 'godam' ) }</Button>
-						}
-					</div>
-					{ layer.allow_skip &&
-						<Button
-							className="skip-button"
-							variant="primary"
-							icon={ chevronRight }
-							iconSize="18"
-							iconPosition="right"
-						>
-							{ __( 'Skip', 'godam' ) }
-						</Button>
-					}
-				</>
-			</LayerControl>
+			<FormPreview
+				bgColor={ layer.bg_color }
+				allowSkip={ layer.allow_skip }
+				isFetching={ isFetching }
+				html={ formHTML }
+			/>
 		</>
 	);
 };

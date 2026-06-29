@@ -1,5 +1,21 @@
 # Changelog #
 
+## v1.13.0 (June 18, 2026) ##
+
+- Feat: Track GoDAM media usage across post content, blocks, shortcodes, Elementor, block widgets, and featured images — recording where each asset is used and notifying GoDAM Central.
+- Feat: Automatically backfill media usage for existing content in the background, via the migration runner in Action Scheduler batches, on upgrade.
+- Tweak: Authenticate GoDAM Central media-usage logging and retry failed notifications with backoff so transient outages do not lose events.
+
+## v1.12.2 (June 16, 2026) ##
+
+- Tweak: Aligned `[godam_video]` and `[godam_video_gallery]` shortcode attributes with responsive block attributes.
+- Tweak: Refactored GoDAM Video and GoDAM Video Gallery widgets for both Elementor and WPBakery.
+- Fix: Resolved hotspot layer popup overlapping issues.
+- Fix: Added validation to prevent non-video file selections in the GoDAM Video block.
+- Fix: Added validation to prevent non-audio file selections in the GoDAM Audio block.
+- Fix: Restored vertical spacing for toggle controls in the block inspector across audio, gallery, and player blocks.
+- Fix: Resolved style and spacing issues in the video editor.
+
 ## v1.12.1 (June 12, 2026) ##
 
 - Fix: Resolved security issues.
