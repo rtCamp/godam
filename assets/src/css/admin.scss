@@ -907,7 +907,7 @@ to ensure proper responsiveness and avoid layout issues.
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 	color: #fff;
-	background: #5D31FF;
+	background: var(--wp-admin-theme-color, #5D31FF);
 	border-radius: 0.25rem;
 	vertical-align: middle;
 	line-height: 1.5;
