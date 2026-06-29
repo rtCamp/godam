@@ -35,6 +35,25 @@
 		"preload": {
 			"type": "string",
 			"default": "metadata"
+		},
+		"audioTitle": {
+			"type": "string",
+			"default": "",
+			"role": "content"
+		},
+		"description": {
+			"type": "string",
+			"default": "",
+			"role": "content"
+		},
+		"thumbnail": {
+			"type": "string",
+			"default": "",
+			"role": "content"
+		},
+		"thumbnailId": {
+			"type": "number",
+			"role": "content"
 		}
 	},
 	"supports": {

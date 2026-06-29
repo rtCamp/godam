@@ -537,7 +537,11 @@ class Pages {
 			wp_register_script(
 				'transcoder-page-script-video-editor',
 				RTGODAM_URL . 'assets/build/pages/video-editor.min.js',
-				array( 'wp-element', 'wp-i18n' ),
+				// `@wordpress/dataviews` (used by the videos list view) is bundled
+				// but depends on the WP-provided builds of these packages being
+				// present. `wp-private-apis` in particular must load so the
+				// bundled DataViews can unlock `@wordpress/components` private APIs.
+				array( 'wp-element', 'wp-components', 'wp-primitives', 'wp-api-fetch', 'wp-data', 'wp-notices', 'wp-private-apis', 'wp-i18n' ),
 				filemtime( RTGODAM_PATH . 'assets/build/pages/video-editor.min.js' ),
 				true
 			);
@@ -566,6 +570,7 @@ class Pages {
 					'currentUserId'      => get_current_user_id(),          // Current user ID.
 					'currentUserRoles'   => wp_get_current_user()->roles,   // Current user roles.
 					'validApiKey'        => rtgodam_is_api_key_valid(),
+					'productGuideState'  => \RTGODAM\Inc\REST_API\Onboarding::get_product_guide_state(),
 					'adminUrl'           => admin_url(),
 					'godamBaseUrl'       => RTGODAM_IO_API_BASE,
 					'gfActive'           => $is_gf_active,

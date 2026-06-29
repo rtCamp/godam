@@ -1,0 +1,195 @@
+// =============================================================
+// Video Editor — loading skeleton
+// Mirrors the 3-zone shell (top bar · stats · rail · panel · stage ·
+// config) with shimmer placeholders. Self-contained: does NOT use
+// `assets/src/css/_common.scss`. Neutrals are derived from
+// `currentColor` so the skeleton follows the admin colour scheme; the
+// "Save" placeholder picks up the WordPress component accent.
+// =============================================================
+
+$ve-sk-base: color-mix(in srgb, currentcolor 11%, transparent);
+$ve-sk-shine: color-mix(in srgb, currentcolor 4%, transparent);
+$ve-sk-accent: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 24%, transparent);
+$ve-sk-accent-shine: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 12%, transparent);
+
+.godam-video-editor {
+
+	// Base shimmer block.
+	.ve-skeleton {
+		display: block;
+		flex: 0 0 auto;
+		height: 14px;
+		border-radius: 4px;
+		background: linear-gradient(90deg, $ve-sk-base 25%, $ve-sk-shine 37%, $ve-sk-base 63%);
+		background-size: 400% 100%;
+		animation: ve-skeleton-shimmer 1.4s ease infinite;
+	}
+
+	// Shape modifiers.
+	.ve-skeleton--text {
+		height: 14px;
+	}
+
+	.ve-skeleton--text-sm {
+		height: 10px;
+	}
+
+	.ve-skeleton--title {
+		height: 18px;
+	}
+
+	.ve-skeleton--btn {
+		height: 32px;
+		border-radius: 4px;
+	}
+
+	.ve-skeleton--pill {
+		height: 24px;
+		border-radius: 999px;
+	}
+
+	.ve-skeleton--icon {
+		width: 32px;
+		height: 32px;
+		border-radius: 6px;
+	}
+
+	.ve-skeleton--square {
+		width: 40px;
+		height: 40px;
+		border-radius: 8px;
+	}
+
+	.ve-skeleton--circle {
+		border-radius: 50%;
+	}
+
+	.ve-skeleton--gap-top {
+		margin-top: 8px;
+	}
+
+	// Accent-tinted block (the "Save Video" button placeholder).
+	.ve-skeleton--accent {
+		background: linear-gradient(90deg, $ve-sk-accent 25%, $ve-sk-accent-shine 37%, $ve-sk-accent 63%);
+		background-size: 400% 100%;
+	}
+
+	.ve-skeleton--video {
+		width: 100%;
+		max-width: 760px;
+		height: auto;
+		aspect-ratio: 16 / 9;
+		border-radius: 10px;
+	}
+
+	.ve-skeleton--track {
+		width: 100%;
+		height: 8px;
+		border-radius: 999px;
+	}
+
+	// Top bar.
+	.ve-skeleton__topbar-left,
+	.ve-skeleton__topbar-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.ve-skeleton__titles {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	// Layers panel.
+	.ve-skeleton__panel {
+		padding: 1rem;
+	}
+
+	.ve-skeleton__panel-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 1rem;
+	}
+
+	.ve-skeleton__rows {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.ve-skeleton__row {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.625rem 0.5rem;
+	}
+
+	.ve-skeleton__row-lines {
+		display: flex;
+		flex: 1 1 auto;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	// Timeline dock.
+	.ve-skeleton__timeline {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		padding-top: 2rem;
+	}
+
+	.ve-skeleton__chips {
+		position: absolute;
+		inset: 0 0 auto;
+		height: 24px;
+	}
+
+	.ve-skeleton__chip {
+		position: absolute;
+		top: 0;
+		transform: translateX(-50%);
+	}
+
+	.ve-skeleton__ruler {
+		display: flex;
+		justify-content: space-between;
+	}
+
+	// Configuration panel.
+	.ve-skeleton__config-body {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+		padding: 0 1rem 1rem;
+	}
+
+	.ve-skeleton__field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+}
+
+@keyframes ve-skeleton-shimmer {
+
+	0% {
+		background-position: 100% 0;
+	}
+
+	100% {
+		background-position: 0 0;
+	}
+}
+
+// Respect reduced-motion: hold a static placeholder instead of shimmering.
+@media (prefers-reduced-motion: reduce) {
+
+	.godam-video-editor .ve-skeleton {
+		animation: none;
+	}
+}

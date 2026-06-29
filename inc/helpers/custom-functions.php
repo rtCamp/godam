@@ -206,6 +206,7 @@ function rtgodam_image_cta_html( $layer ) {
 	$image_description    = isset( $layer['imageDescription'] ) ? sanitize_text_field( $layer['imageDescription'] ) : '';
 	$image_link           = isset( $layer['imageLink'] ) ? $layer['imageLink'] : '#';
 	$cta_background_color = isset( $layer['imageCtaButtonColor'] ) ? sanitize_hex_color( $layer['imageCtaButtonColor'] ) : '#EEAB95';
+	$cta_text_color       = isset( $layer['imageCtaButtonTextColor'] ) ? sanitize_hex_color( $layer['imageCtaButtonTextColor'] ) : '#ffffff';
 	$cta_button_text      = ! empty( $layer['imageCtaButtonText'] ) ? sanitize_text_field( $layer['imageCtaButtonText'] ) : __( 'Check now', 'godam' );
 
 	// Ensure opacity is within valid range.
@@ -248,9 +249,10 @@ function rtgodam_image_cta_html( $layer ) {
 
 	if ( ! empty( $cta_button_text ) || ! empty( $image_link ) ) {
 		$content_element .= sprintf(
-			'<div class="btns"><a class="godam-cta-btn" href="%s" target="_blank" rel="noopener noreferrer" style="background-color: %s; text-decoration: none;">%s</a></div>',
+			'<div class="btns"><a class="godam-cta-btn" href="%s" target="_blank" rel="noopener noreferrer" style="background-color: %s; color: %s; text-decoration: none;">%s</a></div>',
 			esc_url( $image_link ),
 			esc_attr( $cta_background_color ),
+			esc_attr( $cta_text_color ),
 			esc_html( $cta_button_text )
 		);
 	}

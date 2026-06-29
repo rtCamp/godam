@@ -6,8 +6,6 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, Notice } from '@wordpress/components';
-import { chevronRight, pencil } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -15,8 +13,8 @@ import { __ } from '@wordpress/i18n';
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
 import { useGetSingleForminatorFormQuery } from '../../redux/api/forminator-forms';
-import LayerControl from '../LayerControls';
-import FormSelector from './FormSelector';
+import FormFields from './FormFields';
+import FormPreview from './FormPreview';
 
 const ForminatorForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
@@ -39,66 +37,23 @@ const ForminatorForm = ( { layerID } ) => {
 
 	return (
 		<>
-			{
-				! isForminatorFormsPluginActive &&
-				<Notice
-					className="mb-4"
-					status="warning"
-					isDismissible={ false }
-				>
-					{ __( 'Please activate the Forminator Forms plugin to use this feature.', 'godam' ) }
-				</Notice>
-			}
+			<FormFields
+				isActive={ isForminatorFormsPluginActive }
+				pluginLabel={ __( 'Forminator Forms', 'godam' ) }
+				formID={ layer.forminator_id }
+				formType={ layer.form_type }
+				forms={ forms }
+				onSelectForm={ changeFormID }
+				editUrl={ `${ window?.videoData?.adminUrl }admin.php?page=forminator-cform-wizard&id=${ layer.forminator_id }` }
+				showEditButton={ Boolean( formHTML ) }
+			/>
 
-			{
-				<FormSelector disabled={ ! isForminatorFormsPluginActive } className="mb-4" formID={ layer.forminator_id } forms={ forms } handleChange={ changeFormID } />
-			}
-
-			<LayerControl>
-				<>
-					<div
-						style={ {
-							backgroundColor: layer.bg_color,
-						} }
-						className="easydam-layer"
-					>
-
-						{
-							( formHTML && ! isFetching ) &&
-							<div className="form-container" dangerouslySetInnerHTML={ { __html: formHTML } } />
-						}
-
-						{
-							isFetching &&
-							<div className="form-container">
-								<p>{ __( 'Loading form…', 'godam' ) }</p>
-							</div>
-						}
-
-						{
-							formHTML &&
-							<Button
-								href={ `${ window?.videoData?.adminUrl }admin.php?page=forminator-cform-wizard&id=${ layer.forminator_id }` }
-								target="_blank"
-								variant="secondary"
-								icon={ pencil }
-								className="absolute top-2 right-2"
-							>{ __( 'Edit form', 'godam' ) }</Button>
-						}
-					</div>
-					{ layer.allow_skip &&
-						<Button
-							className="skip-button"
-							variant="primary"
-							icon={ chevronRight }
-							iconSize="18"
-							iconPosition="right"
-						>
-							{ __( 'Skip', 'godam' ) }
-						</Button>
-					}
-				</>
-			</LayerControl>
+			<FormPreview
+				bgColor={ layer.bg_color }
+				allowSkip={ layer.allow_skip }
+				isFetching={ isFetching }
+				html={ formHTML }
+			/>
 		</>
 	);
 };

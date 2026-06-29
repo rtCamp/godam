@@ -1,12 +1,20 @@
 <?php
 /**
- * REST API proxy for the GoDAM onboarding flow.
+ * REST API for the GoDAM onboarding flow + product-guide state.
  *
- * The onboarding SPA never talks to godam-core directly. These routes proxy
- * the `godam_core.api.login` / `organization_access` endpoints, hold the
- * short-lived GoDAM JWT server-side (never exposed to the browser), and — once
- * a workspace is chosen — store the durable Organization API key through the
- * existing `rtgodam_verify_api_key()` path (which also registers the site).
+ * Two concerns share the `onboarding` REST base:
+ *
+ * 1. Onboarding SPA proxy — the SPA never talks to godam-core directly. These
+ *    routes proxy the `godam_core.api.login` / `organization_access` endpoints,
+ *    hold the short-lived GoDAM JWT server-side (never exposed to the browser),
+ *    and — once a workspace is chosen — store the durable Organization API key
+ *    through the existing `rtgodam_verify_api_key()` path (which also registers
+ *    the site).
+ *
+ * 2. Product-guide state — persists per-user product-guide progress (the Video
+ *    Editor guided tour) in user meta so the "Get Started" welcome modal only
+ *    auto-shows until the user has either completed or dismissed the guide.
+ *    State is per-user (not per-browser) so it stays consistent across devices.
  *
  * @package GoDAM
  */
@@ -14,6 +22,10 @@
 namespace RTGODAM\Inc\REST_API;
 
 defined( 'ABSPATH' ) || exit;
+
+use WP_REST_Server;
+use WP_REST_Request;
+use WP_REST_Response;
 
 /**
  * Class Onboarding
@@ -26,6 +38,20 @@ class Onboarding extends Base {
 	 * @var string
 	 */
 	protected $rest_base = 'onboarding';
+
+	/**
+	 * User meta key storing the product-guide state.
+	 *
+	 * @var string
+	 */
+	const PRODUCT_GUIDE_META_KEY = 'rtgodam_product_guide_state';
+
+	/**
+	 * Allowed product-guide states.
+	 *
+	 * @var string[]
+	 */
+	const PRODUCT_GUIDE_STATES = array( 'pending', 'completed', 'dismissed' );
 
 	/**
 	 * GoDAM-core base URL (follows the site's RTGODAM_API_BASE; filterable).
@@ -60,7 +86,7 @@ class Onboarding extends Base {
 	}
 
 	/**
-	 * Register the onboarding proxy routes.
+	 * Register the onboarding proxy + product-guide routes.
 	 *
 	 * @return array
 	 */
@@ -73,7 +99,7 @@ class Onboarding extends Base {
 				'namespace' => $this->namespace,
 				'route'     => $path,
 				'args'      => array(
-					'methods'             => \WP_REST_Server::CREATABLE,
+					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, $callback ),
 					'permission_callback' => $perm,
 				),
@@ -91,6 +117,32 @@ class Onboarding extends Base {
 			$route( $base . '/verify-license-key', 'verify_license_key' ),
 			$route( $base . '/reset-password', 'reset_password' ),
 			$route( $base . '/resend-verification', 'resend_verification' ),
+			// Product-guide (Video Editor guided tour) state. Uses a lighter
+			// capability (upload_files) than the proxy routes — any editor user
+			// drives the tour, not just connected-capable admins.
+			array(
+				'namespace' => $this->namespace,
+				'route'     => $base . '/product-guide',
+				'args'      => array(
+					array(
+						'methods'             => WP_REST_Server::READABLE,
+						'callback'            => array( $this, 'get_product_guide' ),
+						'permission_callback' => array( $this, 'permissions_check' ),
+					),
+					array(
+						'methods'             => WP_REST_Server::CREATABLE,
+						'callback'            => array( $this, 'update_product_guide' ),
+						'permission_callback' => array( $this, 'permissions_check' ),
+						'args'                => array(
+							'status' => array(
+								'type'     => 'string',
+								'required' => true,
+								'enum'     => self::PRODUCT_GUIDE_STATES,
+							),
+						),
+					),
+				),
+			),
 		);
 	}
 
@@ -369,5 +421,54 @@ class Onboarding extends Base {
 			array( 'email' => sanitize_email( $request->get_param( 'email' ) ) )
 		);
 		return is_wp_error( $result ) ? $result : rest_ensure_response( is_array( $result ) ? $result : array( 'message' => $result ) );
+	}
+
+	/**
+	 * Get the stored product-guide state for a user, falling back to "pending".
+	 *
+	 * @param int $user_id User ID. Defaults to the current user.
+	 * @return string One of self::PRODUCT_GUIDE_STATES.
+	 */
+	public static function get_product_guide_state( $user_id = 0 ) {
+		$user_id = $user_id ? $user_id : get_current_user_id();
+		$state   = get_user_meta( $user_id, self::PRODUCT_GUIDE_META_KEY, true );
+
+		return in_array( $state, self::PRODUCT_GUIDE_STATES, true ) ? $state : 'pending';
+	}
+
+	/**
+	 * Permission check for the product-guide routes — same capability the Video
+	 * Editor page requires.
+	 *
+	 * @return bool Whether the current user can manage their product-guide state.
+	 */
+	public function permissions_check() {
+		return current_user_can( 'upload_files' );
+	}
+
+	/**
+	 * GET handler — return the current user's product-guide state.
+	 *
+	 * @return WP_REST_Response Response with the current state.
+	 */
+	public function get_product_guide() {
+		return new WP_REST_Response(
+			array( 'status' => self::get_product_guide_state() ),
+			200
+		);
+	}
+
+	/**
+	 * POST handler — persist the current user's product-guide state.
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return WP_REST_Response Response with the saved state.
+	 */
+	public function update_product_guide( WP_REST_Request $request ) {
+		$status = $request->get_param( 'status' );
+
+		update_user_meta( get_current_user_id(), self::PRODUCT_GUIDE_META_KEY, $status );
+
+		return new WP_REST_Response( array( 'status' => $status ), 200 );
 	}
 }

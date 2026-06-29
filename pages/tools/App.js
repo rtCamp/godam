@@ -1,7 +1,7 @@
 /**
  * WordPress dependencies
  */
-import { addSubmenu, cloudDownload, alignJustify, close, update } from '@wordpress/icons';
+import { addSubmenu, cloudDownload, alignJustify, close, chevronRight, update } from '@wordpress/icons';
 import { Icon } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
@@ -102,6 +102,9 @@ const App = () => {
 						>
 							<Icon icon={ icon } />
 							{ label }
+							{ activeTab === id && (
+								<Icon icon={ chevronRight } className="sidebar-nav-item__chevron ml-auto" />
+							) }
 						</a>
 					) ) }
 				</nav>

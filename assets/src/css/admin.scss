@@ -6,11 +6,6 @@ $GREEN: #4CAF50;
 $RED: #F44336;
 $LIGHT_BLUE: #2196F3;
 
-#root-easydam,
-#root-video-editor {
-	--wp-components-color-accent: #ab3a6c;
-}
-
 $media-library-sidebar-bg: #fff;
 $media-library-sidebar-bg-dark: #a3a3a3;
 $media-library-sidebar-border: #E0E0E0;
@@ -100,9 +95,6 @@ $media-frame-width: calc(300px + 2 * 24px);
 	left: $media-frame-width;
 }
 
-/**
-* Admin page CSS changes for the top-level EasyDAM page.
-*/
 // GoDAM 2.0: the analytics surface (dashboard + per-video analytics) follows
 // the user's WP admin colour scheme; the rest of the plugin keeps the brand
 // pink for now (migrated in a later phase). Capture the real scheme accent on
@@ -113,27 +105,9 @@ $media-frame-width: calc(300px + 2 * 24px);
 	--godam-scheme-accent: var(--wp-admin-theme-color);
 }
 
-/* Style for GoDAM admin pages container. Brand pink is the default accent for
-   every GoDAM admin surface; the analytics surface opts back into the WP admin
-   colour scheme via the higher-specificity rule above. */
+/* Style for GoDAM admin pages container */
 .godam-admin-root {
-	--wp-admin-theme-color: #ab3a6c;
 	margin-left: -20px;
-
-	button,
-	a,
-	input {
-
-		&:not(.is-destructive) {
-			--wp-components-color-accent: #ab3a6c;
-			--wp-components-color-accent-darker-10: #9a2d5e;
-			--wp-components-color-accent-darker-20: #6e2445;
-		}
-	}
-
-	.circle {
-		--wp-components-color-accent: #e6533a;
-	}
 
 	&.not-safari {
 		color: #000;
@@ -1144,6 +1118,7 @@ to ensure proper responsiveness and avoid layout issues.
 }
 
 @keyframes godam-elementor-thumbnail-spin {
+
 	to {
 		transform: rotate(360deg);
 	}
