@@ -180,7 +180,7 @@ class RTGODAM_Transcoder_Admin {
 	 */
 	private function render_admin_notice( $message, $notice_type = 'warning', $include_buttons = false, $show_godam_message = false, $button_type = 'editor' ) {
 		// Get the GoDAM logo URL.
-		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', __DIR__ );
+		$logo_url = plugins_url( 'assets/src/images/godam-logo.svg', __DIR__ );
 
 		$button_label = ( 'activate' === $button_type ) ? esc_html__( 'Activate API Key', 'godam' ) : esc_html__( 'Use Video Editor', 'godam' );
 		$button_link  = ( 'activate' === $button_type ) ? admin_url( 'admin.php?page=rtgodam_settings' ) : admin_url( 'admin.php?page=rtgodam_video_editor' );
@@ -328,7 +328,7 @@ class RTGODAM_Transcoder_Admin {
 		}
 
 		// Get the GoDAM logo URL.
-		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', __DIR__ );
+		$logo_url = plugins_url( 'assets/src/images/godam-logo.svg', __DIR__ );
 
 		?>
 		<div class="notice notice-info is-dismissible rtgodam-free-plan-notice">
@@ -542,7 +542,7 @@ class RTGODAM_Transcoder_Admin {
 		$message = implode( ' ', $message_parts );
 
 		// Get the GoDAM logo URL.
-		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', __DIR__ );
+		$logo_url = plugins_url( 'assets/src/images/godam-logo.svg', __DIR__ );
 
 		?>
 		<div class="notice notice-error is-dismissible">
@@ -605,7 +605,7 @@ class RTGODAM_Transcoder_Admin {
 		$message = implode( ' ', $message_parts );
 
 		// Get the GoDAM logo URL.
-		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', __DIR__ );
+		$logo_url = plugins_url( 'assets/src/images/godam-logo.svg', __DIR__ );
 
 		?>
 		<div class="notice notice-warning is-dismissible">
@@ -644,7 +644,7 @@ class RTGODAM_Transcoder_Admin {
 		);
 
 		// Get the GoDAM logo URL.
-		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', __DIR__ );
+		$logo_url = plugins_url( 'assets/src/images/godam-logo.svg', __DIR__ );
 
 		?>
 		<div class="notice notice-error is-dismissible">

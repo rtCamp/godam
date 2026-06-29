@@ -10,15 +10,17 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import godamLogo from '../../../assets/src/images/godam-logo.png';
+import godamLogo from '../../../assets/src/images/godam-logo.svg';
 import { hasAPIKey } from '../utils/index.js';
+import ProUpgradeNotice, { startUpgrade } from './ProUpgradeNotice';
+import TrialCountdownBanner from './TrialCountdownBanner';
+import WooUnlockedNotice from './WooUnlockedNotice';
 import './GoDAMHeader.scss';
 
 const GodamHeader = () => {
 	const isVideoEditorPage = window.location.href.includes( 'page=rtgodam_video_editor' );
 	const isAnalyticsPage = window.location.href.includes( 'page=rtgodam_analytics' );
 	const helpLink = window.godamRestRoute?.apiBase + '/helpdesk';
-	const upgradePlanLink = window.godamRestRoute?.apiBase + '/web/billing?tab=Plans';
 	const pricingLink = `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=header`;
 	const godamMediaLink = window.godamRestRoute?.apiBase + '/web/media-library';
 	const [ mediaLink, setMediaLink ] = useState( godamMediaLink );
@@ -64,11 +66,12 @@ const GodamHeader = () => {
 
 	return (
 		<header className="sticky top-0 z-[999]">
+			<TrialCountdownBanner />
 			<div className="godam-settings-header border-b -ml-[32px] pl-[32px] bg-white">
 				<div className={ `godam-settings-header-content max-w-[1440px] mx-auto ${ paddingClass } flex items-center justify-between` }>
 					<div className="godam-settings-header-brand m-0 leading-none font-semibold text-slate-900 flex items-center max-[410px]:flex-col max-[410px]:items-start max-[410px]:gap-1 gap-2">
 						<div className="flex items-end gap-1">
-							<img className="h-7 sm:h-8 md:h-10" src={ godamLogo } alt={ __( 'GoDAM Logo', 'godam' ) } />
+							<img className="h-5 sm:h-6 md:h-7" src={ godamLogo } alt={ __( 'GoDAM Logo', 'godam' ) } />
 							<div className="text-xs font-normal leading-4 pb-1 godam-version-label">{ `v${ window?.pluginInfo?.version }` }</div>
 						</div>
 						<div>
@@ -109,8 +112,7 @@ const GodamHeader = () => {
 									<Button
 										variant="primary"
 										size="compact"
-										href={ upgradePlanLink }
-										target="_blank"
+										onClick={ startUpgrade }
 										icon={ trendingUp }
 										iconSize={ 16 }
 										text={ __( 'Upgrade plan', 'godam' ) }
@@ -132,6 +134,8 @@ const GodamHeader = () => {
 					</div>
 				</div>
 			</div>
+			<ProUpgradeNotice />
+			<WooUnlockedNotice />
 		</header>
 	);
 };

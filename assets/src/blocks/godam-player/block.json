@@ -120,6 +120,13 @@
 		"playerHeight": {
 			"type": "string",
 			"default": ""
+		},
+		"showCaption": {
+			"type": "boolean"
+		},
+		"showTranscription": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"supports": {

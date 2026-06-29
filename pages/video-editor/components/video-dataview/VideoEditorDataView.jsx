@@ -55,7 +55,7 @@ import { useGetVideoEditorVideosMutation } from '../../redux/api/video-editor';
 import { canManageAttachment } from '../../../../assets/src/js/media-library/utility.js';
 import { LayersTabIcon } from '../editor-shell/icons';
 import NoThumbnailImage from '../../assets/no-thumbnail.jpg';
-import GodamIcon from '../../../../assets/src/images/godam-icon-colored.png';
+import GodamIcon from '../../../../assets/src/images/godam-logo-gradient.svg';
 import '@wordpress/dataviews/build-style/style.css';
 import './video-dataview.scss';
 
@@ -547,6 +547,9 @@ const VideoEditorDataView = ( { onEdit } ) => {
 						</a>{ ' ' }
 						{ __( 'and GoDAM will sync them here.', 'godam' ) }
 					</p>
+					{ window?.videoData?.wooActive && (
+						<p>{ __( 'You can start selling as soon as you add a product.', 'godam' ) }</p>
+					) }
 				</div>
 			) : (
 				<DataViews

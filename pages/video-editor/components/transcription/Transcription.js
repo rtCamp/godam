@@ -171,7 +171,7 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 	const showReady = isReady && ! isGenerating;
 
 	return (
-		<div className="godam-ve-transcription">
+		<div className="godam-ve-transcription" data-test-id="godam-video-editor-panel-transcription">
 			<div className="godam-ve-transcription__head">
 				<h2 className="godam-ve-transcription__title">{ __( 'Transcription', 'godam' ) }</h2>
 				{ showReady && (
@@ -192,12 +192,13 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 					/* ---- Ready: file row + cue list (Flow 35) ---- */
 					<>
 						<div className="godam-ve-transcription__file">
-							<span className="godam-ve-transcription__file-name">{ fileName }</span>
+							<span className="godam-ve-transcription__file-name" data-test-id="godam-video-editor-element-transcription-file">{ fileName }</span>
 							<div className="godam-ve-transcription__file-actions">
 								<Button
 									icon={ update }
 									label={ __( 'Replace transcription file', 'godam' ) }
 									showTooltip
+									data-test-id="godam-video-editor-button-replace-transcription"
 									onClick={ handleUpload }
 								/>
 								<Button
@@ -206,6 +207,7 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 									showTooltip
 									isDestructive
 									isBusy={ isDeleting }
+									data-test-id="godam-video-editor-button-delete-transcription"
 									onClick={ () => setConfirmDelete( true ) }
 								/>
 							</div>
@@ -218,7 +220,7 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 						) : (
 							<ul className="godam-ve-transcription__cues">
 								{ cues.map( ( cue, index ) => (
-									<li key={ index } className="godam-ve-transcription__cue">
+									<li key={ index } className="godam-ve-transcription__cue" data-test-id={ `godam-video-editor-element-transcription-cue-${ index }` }>
 										<span className="godam-ve-transcription__cue-time">{ formatClock( cue.start ) }</span>
 										<p className="godam-ve-transcription__cue-text">{ cue.text }</p>
 									</li>
@@ -242,6 +244,7 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 							variant="secondary"
 							icon={ BoltIcon }
 							disabled={ isGenerating }
+							data-test-id="godam-video-editor-button-generate-transcription"
 							onClick={ handleGenerate }
 						>
 							{ __( 'Generate Transcription', 'godam' ) }
@@ -267,6 +270,7 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 								className="godam-ve-transcription__upload-btn"
 								variant="secondary"
 								icon={ plus }
+								data-test-id="godam-video-editor-button-upload-transcription"
 								onClick={ handleUpload }
 							>
 								{ __( 'Upload File', 'godam' ) }
@@ -294,6 +298,7 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 							variant="primary"
 							className="w-full justify-center"
 							isDestructive
+							data-test-id="godam-video-editor-button-confirm-delete-transcription"
 							onClick={ handleDelete }
 						>
 							{ __( 'Delete', 'godam' ) }

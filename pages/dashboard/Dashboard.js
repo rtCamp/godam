@@ -13,9 +13,8 @@ import { info } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-// eslint-disable-next-line import/no-extraneous-dependencies -- @wordpress/url is provided by WordPress core; intentionally not in this plugin's package.json.
-import { addQueryArgs } from '@wordpress/url';
-import { API_KEY_STATUS, ERROR_TYPE } from '../shared/enums';
+import { ERROR_TYPE } from '../shared/enums';
+import AnalyticsUnavailableNotice from '../shared/AnalyticsUnavailableNotice';
 import { generateCountryHeatmap } from '../analytics/helper';
 import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery } from './redux/api/dashboardAnalyticsApi';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
@@ -23,8 +22,6 @@ import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
 import SingleMetrics from '../analytics/SingleMetrics';
 import ViewersGauge from './components/ViewersGauge';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
-import NewYearSaleBanner from '../../assets/src/images/new-year-sale-2026.webp';
-import UpgradePlanDashboardBg from '../../assets/src/images/upgrade-plan-dashboard-bg.webp';
 import TopVideosTable from './components/TopVideosTable';
 
 /**
@@ -167,7 +164,6 @@ const Dashboard = () => {
 	}, [] );
 
 	const siteUrl = window.location.origin;
-	const adminUrl = window.videoData?.adminUrl;
 
 	// Reel Pops live in the godam-for-woo add-on, which registers the
 	// "reel-pops-analytics" dashboard section. Only surface the link when it's
@@ -191,45 +187,28 @@ const Dashboard = () => {
 
 	const { data: dashboardMetricsHistory } = useFetchDashboardMetricsHistoryQuery( { days: 60, siteUrl }, { skip: shouldSkipSecondaryQueries } );
 
-	const showNewYearSaleBanner = window.videoData?.showNewYearSaleBanner;
-	const shouldShowUpgradeMessage =
-		apiKeyErrorType === ERROR_TYPE.MISSING_KEY ||
-		( apiKeyErrorType === null &&
-			( dashboardMetrics?.errorType === ERROR_TYPE.INVALID_KEY ||
-				dashboardMetrics?.errorType === ERROR_TYPE.MISSING_KEY ) );
+	// Connected, but the analytics backend is unreachable (server down) or returned
+	// a microservice error. Gated on a valid key so it never shows for a
+	// disconnected site — that case is handled by the onboarding overlay.
+	const analyticsUnreachable = !! window.userData?.validApiKey && ! shouldSkipAnalytics && ( isDashboardMetricsError || dashboardMetrics?.errorType === ERROR_TYPE.MICROSERVICE_ERROR );
 
+	// Reveal the dashboard once the primary metrics call settles. The onboarding
+	// overlay handles the disconnected case, so there's no in-dashboard overlay.
 	useEffect( () => {
+		if ( ! ( ( ! isDashboardMetricsLoading && dashboardMetrics ) || isDashboardMetricsError ) ) {
+			return;
+		}
 		const loadingEl = document.getElementById( 'loading-analytics-animation' );
 		const container = document.getElementById( 'dashboard-container' );
-		const overlay = document.getElementById( 'api-key-overlay' );
-
-		// Check for server-side errors OR local API key status issues
-		const shouldShowOverlay =
-			dashboardMetrics?.errorType === ERROR_TYPE.INVALID_KEY ||
-			dashboardMetrics?.errorType === ERROR_TYPE.MISSING_KEY ||
-			dashboardMetrics?.errorType === ERROR_TYPE.MICROSERVICE_ERROR ||
-			apiKeyErrorType !== null;
-
-		if ( shouldShowOverlay ) {
-			if ( loadingEl ) {
-				loadingEl.style.display = 'none';
-			}
-			if ( container ) {
-				container.classList.add( 'hidden' );
-				container.classList.add( 'blurred' );
-			}
-			if ( overlay ) {
-				overlay.classList.remove( 'hidden' );
-			}
-		} else if ( ( ! isDashboardMetricsLoading && dashboardMetrics ) || isDashboardMetricsError ) {
-			if ( loadingEl ) {
-				loadingEl.style.display = 'none';
-			}
-			if ( container ) {
-				container.classList.remove( 'hidden' );
-			}
+		if ( loadingEl ) {
+			loadingEl.style.display = 'none';
 		}
-	}, [ dashboardMetrics, isDashboardMetricsLoading, isDashboardMetricsError, apiKeyErrorType ] );
+		// Don't reveal the (data-less) dashboard when the backend is unreachable —
+		// the unavailable notice is shown instead.
+		if ( container && ! analyticsUnreachable ) {
+			container.classList.remove( 'hidden' );
+		}
+	}, [ dashboardMetrics, isDashboardMetricsLoading, isDashboardMetricsError, analyticsUnreachable ] );
 
 	useEffect( () => {
 		// Render once metrics have loaded. generateCountryHeatmap shows an
@@ -265,99 +244,6 @@ const Dashboard = () => {
 		return () => clearInterval( checkExist );
 	}, [] );
 
-	/**
-	 * Renders the appropriate overlay content based on API key status.
-	 *
-	 * @return {JSX.Element} The overlay content to display.
-	 */
-	const renderOverlayContent = () => {
-		// Check for local API key status first (expired, verification_failed)
-		if ( apiKeyError?.type === API_KEY_STATUS.EXPIRED || apiKeyError?.type === API_KEY_STATUS.VERIFICATION_FAILED ) {
-			return (
-				<div className="api-key-overlay-banner">
-					<p className="api-key-overlay-banner-header">
-						{ apiKeyError.title }
-					</p>
-					<p className="api-key-overlay-banner-footer">
-						{ apiKeyError.message }
-						{ ' ' }
-						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-							{ __( 'Go to plugin settings', 'godam' ) }
-						</a>
-					</p>
-				</div>
-			);
-		}
-
-		// Show upgrade message for missing/invalid keys
-		if ( shouldShowUpgradeMessage ) {
-			return (
-				<>
-					{ showNewYearSaleBanner && (
-						<div className="annual-plan-offer-banner dashboard-modal-banner">
-							<a
-								href={ addQueryArgs( `${ window?.videoData?.godamBaseUrl }/pricing`, {
-									utm_campaign: 'new-year-sale-2026',
-									utm_source: window?.location?.host || '',
-									utm_medium: 'plugin',
-									utm_content: 'dashboard-modal-banner',
-								} ) }
-								className="annual-plan-offer-banner__link"
-								target="_blank"
-								rel="noopener noreferrer"
-								aria-label={ __( 'Claim the GoDAM New Year Sale 2026 offer', 'godam' ) }
-							>
-								<img
-									src={ NewYearSaleBanner }
-									alt={ __( 'New Year Sale 2026 offer from GoDAM', 'godam' ) }
-									className="annual-plan-offer-banner__image"
-									loading="lazy"
-								/>
-							</a>
-						</div>
-					) }
-					<div className="api-key-overlay-banner">
-						<p className="api-key-overlay-banner-header">
-							{ __( 'Upgrade to unlock the media performance report.', 'godam' ) }
-						</p>
-
-						<p className="api-key-overlay-banner-footer">
-							{ __( 'If you already have a premium plan, connect your', 'godam' ) }
-							{ ' ' }
-							<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-								{ __( 'API in the settings', 'godam' ) }
-							</a>
-						</p>
-
-						<a
-							href={ addQueryArgs( 'https://godam.io/pricing', {
-								utm_campaign: 'buy-plan',
-								utm_source: window?.location?.host || '',
-								utm_medium: 'plugin',
-								utm_content: 'dashboard',
-							} ) }
-							className="components-button godam-button is-primary"
-							target="_blank"
-							rel="noopener noreferrer"
-						>{ __( 'Buy Plan', 'godam' ) }</a>
-					</div>
-				</>
-			);
-		}
-
-		// Default error message for microservice errors or other issues.
-		return (
-			<div className="api-key-overlay-banner">
-				<p>
-					{ dashboardMetrics?.message || __( 'An unknown error occurred. Please check your plugin settings.', 'godam' ) }
-				</p>
-				<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-					{ __( 'Go to plugin settings', 'godam' ) }
-				</a>
-			</div>
-		);
-	};
-
 	return (
 		<div className="godam-dashboard-container">
 			<GodamHeader />
@@ -370,15 +256,7 @@ const Dashboard = () => {
 				</div>
 			</div>
 
-			<div
-				id="api-key-overlay"
-				className="api-key-overlay api-key-overlay--upgrade hidden"
-				style={ { backgroundImage: `url(${ UpgradePlanDashboardBg })` } }
-			>
-				<div className="api-key-message">
-					{ renderOverlayContent() }
-				</div>
-			</div>
+			{ analyticsUnreachable && <AnalyticsUnavailableNotice area="dashboard" /> }
 
 			<div id="dashboard-container" className="dashboard-container hidden">
 				<div className="godam-dashboard-head">
