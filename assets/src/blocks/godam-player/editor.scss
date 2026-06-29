@@ -32,6 +32,37 @@
 		width: 100%;
 	}
 
+	// Presentational share + transcript buttons reflecting the "Show share
+	// button" / "Show transcription" settings on the editor canvas. The real
+	// interactive controls run on the frontend, so these are non-interactive
+	// (pointer-events disabled) to avoid interfering with block selection.
+	// They stack vertically at the top-right: share on top, transcript below.
+	.godam-editor-share-button,
+	.godam-editor-transcript-button {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		z-index: 10;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 8px;
+		color: #fff;
+		background-color: rgba(0, 0, 0, 0.7);
+		border-radius: 50%;
+		pointer-events: none;
+
+		svg {
+			display: block;
+		}
+	}
+
+	// The transcript button sits on top; the share button drops below it when
+	// a transcript is also shown.
+	.godam-editor-share-button--below {
+		top: 58px;
+	}
+
 	.godam-editor-video-placeholder {
 		width: 100%;
 		height: 100%;

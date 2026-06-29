@@ -129,6 +129,8 @@ function VideoEdit( {
 		videoWidth,
 		videoHeight,
 		playerHeight,
+		showShareButton,
+		showTranscription,
 	} = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 	const [ defaultPoster, setDefaultPoster ] = useState( '' );
@@ -306,6 +308,14 @@ function VideoEdit( {
 					}
 
 					if ( response ) {
+						// Default "Show caption" from the attachment's Display-captions
+						// setting (Video Editor > Display Settings) the first time, unless
+						// already set on the block. The block value then overrides it.
+						if ( attributes.showCaption === undefined ) {
+							const attachmentSubsCaps = response?.rtgodam_meta?.videoConfig?.controlBar?.subsCapsButton;
+							setAttributes( { showCaption: attachmentSubsCaps !== false } );
+						}
+
 						// Set dimensions if available.
 						if ( response.media_details?.width && response.media_details?.height ) {
 							setAttributes( {
@@ -357,6 +367,10 @@ function VideoEdit( {
 				}
 			} )();
 		}
+		// Intentionally runs only when the selected video (`id`) changes; the
+		// `attributes.showCaption` read is a one-time default guarded by
+		// `=== undefined`, so it must not re-trigger this attachment fetch.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [ id, setAttributes, dispatch ] );
 
 	// Backward compatibility: Initialize SEO data for existing blocks
@@ -1121,6 +1135,29 @@ function VideoEdit( {
 									</div>
 								) }
 								{ videoComponent }
+								{ showShareButton && (
+									<span
+										className={ `godam-editor-share-button${ showTranscription !== false ? ' godam-editor-share-button--below' : '' }` }
+										aria-hidden="true"
+										data-test-id="godam-video-element-share-button"
+									>
+										<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" focusable="false">
+											<path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z" />
+										</svg>
+									</span>
+								) }
+								{ showTranscription !== false && (
+									<span
+										className="godam-transcript-button godam-editor-transcript-button"
+										aria-hidden="true"
+										data-test-id="godam-video-element-transcript-button"
+									>
+										<svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
+											<path d="M5 3.5h14a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19V5A1.5 1.5 0 0 1 5 3.5Z" stroke="currentColor" strokeWidth="1.6" />
+											<path d="M7 8h10M7 12h10M7 16h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+										</svg>
+									</span>
+								) }
 								{ !! temporaryURL && <Spinner /> }
 							</div>
 						</div>

@@ -11,7 +11,8 @@ import {
 	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
 } from '@wordpress/components';
-import { useMemo, useCallback } from '@wordpress/element';
+import { useMemo, useCallback, useState, useEffect } from '@wordpress/element';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Playback-specific toggles: Autoplay, Loop, Muted, Playback controls, Share Button.
@@ -21,10 +22,39 @@ import { useMemo, useCallback } from '@wordpress/element';
  * @param {Object}   props.attributes    Block attributes.
  */
 export const PlaybackControls = ( { setAttributes, attributes } ) => {
-	const { autoplay, controls, loop, muted, showShareButton, showSubtitles, tracks, id, cmmId } = attributes;
+	const { autoplay, controls, loop, muted, showShareButton, showCaption, showTranscription, tracks, id, cmmId } = attributes;
 	const showShareButtonSetting = window?.godamSettings?.enableGlobalVideoShare ?? false;
 	const videoEditorUrl = `${ window?.pluginInfo?.adminUrl || '/wp-admin/' }admin.php?page=rtgodam_video_editor&id=${ id || cmmId }&tab=transcription`;
 	const hasNoTracks = ! tracks || tracks.length === 0;
+
+	// The "upload subtitles" notice is irrelevant once a transcript exists for
+	// the attachment. Look up the transcript path whenever the selected video
+	// (`id`) changes, and suppress the notice when one is found.
+	const [ hasTranscript, setHasTranscript ] = useState( false );
+
+	useEffect( () => {
+		if ( ! id ) {
+			setHasTranscript( false );
+			return;
+		}
+
+		let cancelled = false;
+		apiFetch( { path: `/godam/v1/transcription?attachment_id=${ id }` } )
+			.then( ( res ) => {
+				if ( ! cancelled ) {
+					setHasTranscript( !! res?.transcript_path );
+				}
+			} )
+			.catch( () => {
+				if ( ! cancelled ) {
+					setHasTranscript( false );
+				}
+			} );
+
+		return () => {
+			cancelled = true;
+		};
+	}, [ id ] );
 
 	const getAutoplayHelp = useMemo( () => {
 		if ( autoplay && muted ) {
@@ -50,7 +80,8 @@ export const PlaybackControls = ( { setAttributes, attributes } ) => {
 			muted: toggleAttribute( 'muted' ),
 			controls: toggleAttribute( 'controls' ),
 			showShareButton: toggleAttribute( 'showShareButton' ),
-			showSubtitles: toggleAttribute( 'showSubtitles' ),
+			showCaption: toggleAttribute( 'showCaption' ),
+			showTranscription: toggleAttribute( 'showTranscription' ),
 		};
 	}, [ setAttributes ] );
 
@@ -101,23 +132,29 @@ export const PlaybackControls = ( { setAttributes, attributes } ) => {
 						label={ __( 'Show share button', 'godam' ) }
 						onChange={ toggleFactory.showShareButton }
 						checked={ !! showShareButton }
-						help={ __( 'Adds a share button on the video player for transcoded videos', 'godam' ) }
 					/>
 				</div>
 			) }
-			{ /* TODO: Add "Show transcription" toggle control here when it is ready. */ }
-			<div data-test-id="godam-video-control-show-subtitles">
+			<div data-test-id="godam-video-control-show-transcription">
 				<ToggleControl
 					__nextHasNoMarginBottom
-					label={ __( 'Show subtitles', 'godam' ) }
-					onChange={ toggleFactory.showSubtitles }
-					checked={ !! showSubtitles }
+					label={ __( 'Show transcription', 'godam' ) }
+					onChange={ toggleFactory.showTranscription }
+					checked={ showTranscription ?? true }
 				/>
 			</div>
-			{ showSubtitles && hasNoTracks && ( id || cmmId ) && (
+			<div data-test-id="godam-video-control-show-caption">
+				<ToggleControl
+					__nextHasNoMarginBottom
+					label={ __( 'Show caption', 'godam' ) }
+					onChange={ toggleFactory.showCaption }
+					checked={ showCaption ?? true }
+				/>
+			</div>
+			{ ( showTranscription || showCaption ) && hasNoTracks && ( id || cmmId ) && ! hasTranscript && (
 				<div className="godam-subtitle-notice notice notice-warning" data-test-id="godam-video-element-subtitle-notice">
 					<p>
-						{ __( 'No subtitle file uploaded.', 'godam' ) }
+						{ __( 'No subtitle/transcript file uploaded.', 'godam' ) }
 						{ ' ' }
 						<a href={ videoEditorUrl } target="_blank" rel="noopener noreferrer">
 							{ __( 'Click here to upload subtitles.', 'godam' ) }

@@ -568,7 +568,7 @@
 	text-transform: capitalize;
 }
 
-.vjs-control:not(.godam-share-button),
+.vjs-control:not(.godam-share-button):not(.godam-transcript-button),
 .vjs-menu-button {
     background-color: unset !important;
 }
@@ -1786,7 +1786,11 @@ body.godam-share-modal-open {
 		bottom: 4em !important;
 	}
 
-	.vjs-button.godam-share-button {
+	// Share and transcript buttons share the same on-video circular UI. The
+	// transcript button is a custom Video.js Button (like GodamShareButton), so
+	// it reuses these styles for consistency and stacks directly below share.
+	.vjs-button.godam-share-button,
+	.vjs-button.godam-transcript-button {
 
 		position: absolute;
 		opacity: 0;
@@ -1802,6 +1806,8 @@ body.godam-share-modal-open {
 		font-size: 15px !important;
 		border-radius: 50%;
 		display: flex;
+		align-items: center;
+		justify-content: center;
 		transition: all 0.3s ease;
 		min-height: unset;
 		margin: 0;
@@ -1815,10 +1821,34 @@ body.godam-share-modal-open {
 		}
 	}
 
+	// Transcript-specific tweaks on top of the shared button styles.
+	.vjs-button.godam-transcript-button {
+
+		// Keep it visible while the panel is open, even without hover.
+		&--active {
+			opacity: 1;
+			visibility: visible;
+			background-color: #ab3a6c;
+		}
+
+		.godam-transcript-icon {
+			display: block;
+			flex-shrink: 0;
+		}
+	}
+
+	// The transcript button sits at the top of the stack; when it is present the
+	// share button drops directly below it. (Bubble skin positions both via the
+	// control-bar column and is unaffected — its rules win on specificity.)
+	&.godam-has-transcript .vjs-button.godam-share-button {
+		top: 58px;
+	}
+
 	// FULLSCREEN CONTAINER STYLES - Critical for iOS Safari compatibility
 	&.godam-video-fullscreen {
 		// Hide share button in custom fullscreen (consistency with other devices)
-		.vjs-button.godam-share-button {
+		.vjs-button.godam-share-button,
+		.vjs-button.godam-transcript-button {
 			display: none !important;
 		}
 
@@ -1867,7 +1897,8 @@ body.godam-share-modal-open {
 			opacity: 0.7;
 		}
 
-		.vjs-button.godam-share-button {
+		.vjs-button.godam-share-button,
+		.vjs-button.godam-transcript-button {
 			opacity: 1;
 			visibility: visible;
 			pointer-events: auto;
@@ -1879,7 +1910,8 @@ body.godam-share-modal-open {
 	}
 
 	// Hide share button in standard fullscreen
-	.video-js.vjs-fullscreen .vjs-button.godam-share-button {
+	.video-js.vjs-fullscreen .vjs-button.godam-share-button,
+	.video-js.vjs-fullscreen .vjs-button.godam-transcript-button {
 		display: none !important;
 	}
 
@@ -2271,6 +2303,148 @@ body.godam-share-modal-open {
 
 		.uppy-Dashboard-close {
 			font-size: 35px;
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Transcript side panel
+// ---------------------------------------------------------------------------
+// The video and the transcript panel share the block's full width. When the
+// panel is open the wrapper becomes a flex row: the video flexes down and the
+// panel takes a column beside it. The wrapper is a size container, so below a
+// container-query threshold the two items wrap onto separate rows and the
+// panel drops beneath the video (responsive without media queries).
+.godam-video-wrapper {
+	container-type: inline-size;
+	container-name: godam-video-wrapper;
+}
+
+.godam-video-wrapper.godam-transcript-open {
+	display: flex;
+	flex-wrap: wrap;
+	// Top-align so the panel doesn't stretch the video to its content height;
+	// the panel's height is matched to the video in JS (with internal scroll).
+	align-items: flex-start;
+
+	// Grow from a zero basis so the video fills whatever width the fixed-width
+	// panel leaves — keeps them side by side instead of wrapping.
+	.easydam-video-container {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+}
+
+.godam-transcript-panel {
+	display: none;
+	flex-direction: column;
+	min-height: 0;
+	background-color: #fff;
+	color: #1e1e1e;
+	border: 1px solid #e0e0e0;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+	.godam-transcript-open & {
+		display: flex;
+		flex: 0 0 clamp(260px, 38%, 340px);
+	}
+
+	&__header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+		padding: 12px 14px;
+		border-bottom: 1px solid #e0e0e0;
+	}
+
+	&__title {
+		font-size: 15px;
+		font-weight: 600;
+	}
+
+	&__actions {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+	}
+
+	&__copy,
+	&__close {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 4px;
+		color: #50575e;
+		background: none;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		line-height: 1;
+
+		&:hover {
+			background-color: #f0f0f1;
+		}
+	}
+
+	&__close {
+		font-size: 22px;
+	}
+
+	&__body {
+		flex: 1;
+		overflow-y: auto;
+		padding: 8px 6px 14px;
+	}
+}
+
+.godam-transcript-cue {
+	display: flex;
+	gap: 10px;
+	width: 100%;
+	padding: 8px 10px;
+	text-align: left;
+	background: none;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+
+	&:hover {
+		background-color: #f6f7f7;
+	}
+
+	&--active {
+		background-color: #f0e6ec;
+	}
+
+	&__time {
+		flex-shrink: 0;
+		font-size: 12px;
+		font-weight: 600;
+		color: #ab3a6c;
+		padding-top: 2px;
+	}
+
+	&__text {
+		font-size: 13px;
+		line-height: 1.5;
+		color: #3c434a;
+	}
+}
+
+// Below this width the video + panel stack vertically (panel under the video).
+@container godam-video-wrapper (max-width: 560px) {
+
+	.godam-transcript-open {
+
+		.easydam-video-container,
+		.godam-transcript-panel {
+			flex-basis: 100%;
+		}
+
+		.godam-transcript-panel {
+			max-height: 320px;
 		}
 	}
 }
