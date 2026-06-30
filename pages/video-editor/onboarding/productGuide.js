@@ -244,6 +244,21 @@ export const start = () => {
 };
 
 /**
+ * Request the welcome dialog (used by the "See how it works" re-launch). Lets
+ * the React layer re-open the welcome modal — the two-card chooser on Woo sites,
+ * or the single Get-Started modal otherwise — so a restart begins from the same
+ * entry point as a first run. Falls back to starting the tour directly if no
+ * welcome handler is registered.
+ */
+export const requestWelcome = () => {
+	if ( callbacks.onRequestWelcome ) {
+		callbacks.onRequestWelcome();
+	} else {
+		start();
+	}
+};
+
+/**
  * Advance to the next step, or complete the guide if on the last step.
  */
 export const next = () => {

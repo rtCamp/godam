@@ -21,9 +21,12 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import ConfirmModal from '../../godam/components/ConfirmModal.jsx';
+import WelcomeChooserModal, { WELCOME_CHOICES } from './WelcomeChooserModal.jsx';
+import WelcomeIntroModal from './WelcomeIntroModal.jsx';
 import { useProductGuide } from './useProductGuide';
 import { shouldAutoStartGuide, setProductGuideState, PRODUCT_GUIDE_STATES } from './productGuideState';
 import { getGoDAMVideoBlockMarkup } from '../utils';
+import { launchWooBlockTour } from './wooTour';
 
 const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
@@ -37,10 +40,17 @@ const ProductGuide = ( { attachmentID } ) => {
 	const [ modal, setModal ] = useState( null );
 	const [ isBusy, setBusy ] = useState( false );
 
+	// The welcome becomes a two-card chooser only when the GoDAM-for-Woo plugin is
+	// active (it owns the Shoppable Video block the Woo path walks through);
+	// otherwise the single Get-Started welcome is used.
+	const wooActive = Boolean( window?.videoData?.wooGuideActive );
+
 	const onRequestEnd = useCallback( () => setModal( 'end' ), [] );
 	const onFinalAction = useCallback( () => setModal( 'addToPage' ), [] );
+	// "See how it works" re-opens the welcome dialog (chooser or single).
+	const onRequestWelcome = useCallback( () => setModal( 'welcome' ), [] );
 
-	const { start, resume, dismiss } = useProductGuide( { onRequestEnd, onFinalAction } );
+	const { start, resume, dismiss } = useProductGuide( { onRequestEnd, onFinalAction, onRequestWelcome } );
 
 	// Auto-show the welcome modal once, for first-time users — but only when the
 	// app opens on the list view (no `?id=`), never when deep-linking straight
@@ -65,6 +75,22 @@ const ProductGuide = ( { attachmentID } ) => {
 	const handleSkipWelcome = () => {
 		setModal( null );
 		setProductGuideState( PRODUCT_GUIDE_STATES.DISMISSED );
+	};
+
+	// Welcome chooser → branch on the selected card.
+	const handleChooseWelcome = async ( choice ) => {
+		if ( choice === WELCOME_CHOICES.WOO ) {
+			// Hand off to the in-editor Shoppable Video tour. Mark the core guide
+			// dismissed so this welcome won't auto-show again (the "See how it
+			// works" re-launch stays available for the interactive path).
+			setBusy( true );
+			setProductGuideState( PRODUCT_GUIDE_STATES.DISMISSED );
+			await launchWooBlockTour();
+			setBusy( false );
+			setModal( null );
+			return;
+		}
+		handleStart();
 	};
 
 	// End-guide confirm.
@@ -116,17 +142,20 @@ const ProductGuide = ( { attachmentID } ) => {
 
 	return (
 		<>
-			<ConfirmModal
-				isOpen={ modal === 'welcome' }
-				title={ __( 'Get Started with GoDAM', 'godam' ) }
-				confirmLabel={ __( 'Get Started', 'godam' ) }
-				cancelLabel={ __( 'Skip for now', 'godam' ) }
-				onConfirm={ handleStart }
-				onCancel={ handleSkipWelcome }
-				data-test-id="godam-product-guide-button-start"
-			>
-				{ __( 'Get started by adding interactive layers to your video. We’ll walk you through making your first video interactive.', 'godam' ) }
-			</ConfirmModal>
+			{ wooActive ? (
+				<WelcomeChooserModal
+					isOpen={ modal === 'welcome' }
+					onSkip={ handleSkipWelcome }
+					onChoose={ handleChooseWelcome }
+					isBusy={ isBusy }
+				/>
+			) : (
+				<WelcomeIntroModal
+					isOpen={ modal === 'welcome' }
+					onSkip={ handleSkipWelcome }
+					onConfirm={ handleStart }
+				/>
+			) }
 
 			<ConfirmModal
 				isOpen={ modal === 'end' }

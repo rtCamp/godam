@@ -492,12 +492,15 @@ class Onboarding extends Base {
 
 	/**
 	 * GET handler (O10) — whether to show the "unlocked Woo features" nudge:
-	 * WooCommerce is active and the current user hasn't dismissed it yet.
+	 * the GoDAM-for-Woo plugin is active and the current user hasn't dismissed it
+	 * yet. Gated on GoDAM-for-Woo (not just WooCommerce) because the nudge's "Get
+	 * Started" launches the Shoppable Video block workflow, which that plugin owns
+	 * — so the modal never offers a workflow that can't run.
 	 *
 	 * @return WP_REST_Response
 	 */
 	public function get_woo_nudge() {
-		$active = class_exists( 'WooCommerce' );
+		$active = class_exists( 'WooCommerce' ) && defined( 'GODAM_WOO_VERSION' );
 		$seen   = (bool) get_user_meta( get_current_user_id(), self::WOO_NUDGE_META_KEY, true );
 
 		return new WP_REST_Response(

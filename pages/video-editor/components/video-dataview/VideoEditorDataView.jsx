@@ -50,7 +50,7 @@ import {
  * Internal dependencies
  */
 import { copyGoDAMVideoBlock, prefetchMediaDataForCopy } from '../../utils';
-import { notify as notifyGuide, start as startGuide } from '../../onboarding/productGuide';
+import { notify as notifyGuide, requestWelcome as openGuideWelcome } from '../../onboarding/productGuide';
 import { useGetVideoEditorVideosMutation } from '../../redux/api/video-editor';
 import { canManageAttachment } from '../../../../assets/src/js/media-library/utility.js';
 import { LayersTabIcon } from '../editor-shell/icons';
@@ -491,7 +491,7 @@ const VideoEditorDataView = ( { onEdit } ) => {
 				</div>
 				<Button
 					className="godam-ve-list__how-it-works"
-					onClick={ () => startGuide() }
+					onClick={ () => openGuideWelcome() }
 					data-test-id="godam-video-editor-button-how-it-works"
 				>
 					<Icon icon={ videoIcon } size={ 20 } />

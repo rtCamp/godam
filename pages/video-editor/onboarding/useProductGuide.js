@@ -45,8 +45,9 @@ export const useProductGuide = ( handlers = {} ) => {
 		configure( {
 			onRequestEnd: handlers.onRequestEnd,
 			onFinalAction: handlers.onFinalAction,
+			onRequestWelcome: handlers.onRequestWelcome,
 		} );
-	}, [ handlers.onRequestEnd, handlers.onFinalAction ] );
+	}, [ handlers.onRequestEnd, handlers.onFinalAction, handlers.onRequestWelcome ] );
 
 	useEffect( () => subscribe( setState ), [] );
 
