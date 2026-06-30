@@ -148,14 +148,14 @@
     }
 
     &.button-primary {
-        background: linear-gradient(83.85deg, #ab3a6c -9.3%, #e6533a 120.31%) !important;
+        background: #5D31FF !important;
         color: #fff;
     }
 
     &.button-secondary {
         background-color: #fff;
-        color: #ab3a6c;
-        border: 2px solid #ab3a6c;
+        color: #5D31FF;
+        border: 2px solid #5D31FF;
     }
 }
 
@@ -187,7 +187,7 @@
             margin-bottom: 0.5rem;
             
             .godam-pro-features__icon {
-                color: #ab3a6c;
+                color: #5D31FF;
                 margin-right: 0.5rem;
                 margin-top: 2px;
             }
