@@ -77,10 +77,60 @@ $ve-faint: color-mix(in srgb, currentcolor 5%, transparent);
 	}
 
 	&__stat-label {
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
 		margin: 0;
 		font-size: 15px;
 		line-height: 1.5;
 		color: $ve-muted;
+
+		// Info-icon tooltip on each stat label. Mirrors the analytics page
+		// pattern (pages/analytics/Tooltip.js + index.scss), but scoped here
+		// because those styles are bound to the analytics/dashboard roots.
+		.tooltip-container {
+			position: relative;
+			display: inline-flex;
+			align-items: center;
+			cursor: pointer;
+		}
+
+		.tooltip-text {
+			position: absolute;
+			top: 100%;
+			left: 0;
+			margin-top: 4px;
+			visibility: hidden;
+			background-color: rgba(0, 0, 0, 0.8);
+			color: #fff;
+			text-align: left;
+			padding: 8px;
+			border-radius: 5px;
+			min-width: 160px;
+			width: max-content;
+			max-width: 240px;
+			z-index: 100;
+			pointer-events: none;
+			font-size: 12px;
+			font-weight: 400;
+			line-height: 1.3;
+			opacity: 0;
+			transition: opacity 0.2s ease, visibility 0.2s ease;
+			word-wrap: break-word;
+			overflow-wrap: break-word;
+		}
+
+		.tooltip-container:hover .tooltip-text {
+			visibility: visible;
+			opacity: 1;
+		}
+	}
+
+	// The right-most card sits against the viewport edge, so its tooltip would
+	// overflow and clip. Open that one leftward instead.
+	&__stat:last-child &__stat-label .tooltip-text {
+		right: 0;
+		left: auto;
 	}
 
 	&__stat-value {

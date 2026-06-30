@@ -11,6 +11,7 @@ import {
 	useFetchAnalyticsDataQuery,
 	useFetchProcessedAnalyticsHistoryQuery,
 } from '../../../analytics/redux/api/analyticsApi';
+import Tooltip from '../../../analytics/Tooltip';
 
 /**
  * Format a whole-number count (e.g. 12345 -> "12,345").
@@ -100,17 +101,36 @@ const EditorStatsRow = ( { attachmentID } ) => {
 	} )();
 
 	const stats = [
-		{ label: __( 'Total Plays', 'godam' ), value: formatCount( plays ) },
-		{ label: __( 'Layer CTR', 'godam' ), value: ctr === null ? '—' : `${ ctr.toFixed( 1 ) }%` },
-		{ label: __( 'Avg. Watch Time', 'godam' ), value: formatWatchTime( avgWatch ) },
-		{ label: __( 'Total Impressions', 'godam' ), value: formatCount( impressions ) },
+		{
+			label: __( 'Total Plays', 'godam' ),
+			value: formatCount( plays ),
+			tooltip: __( 'The total number of times this video has been played.', 'godam' ),
+		},
+		{
+			label: __( 'Layer CTR', 'godam' ),
+			value: ctr === null ? '—' : `${ ctr.toFixed( 1 ) }%`,
+			tooltip: __( 'Click-through rate of interactive layers: the share of plays where a viewer interacted with a layer. Layer CTR = Converting sessions / Total plays.', 'godam' ),
+		},
+		{
+			label: __( 'Avg. Watch Time', 'godam' ),
+			value: formatWatchTime( avgWatch ),
+			tooltip: __( 'Average time watched per play. Avg. Watch Time = Total watch time / Total plays.', 'godam' ),
+		},
+		{
+			label: __( 'Total Impressions', 'godam' ),
+			value: formatCount( impressions ),
+			tooltip: __( 'How many times the video player loaded on a page, whether or not it was played.', 'godam' ),
+		},
 	];
 
 	return (
 		<div className="godam-video-editor__stats">
 			{ stats.map( ( stat ) => (
 				<div key={ stat.label } className="godam-video-editor__stat">
-					<p className="godam-video-editor__stat-label">{ stat.label }</p>
+					<div className="godam-video-editor__stat-label">
+						{ stat.label }
+						{ stat.tooltip && <Tooltip text={ stat.tooltip } /> }
+					</div>
 					<p className="godam-video-editor__stat-value">
 						{ isAnalyticsLoading ? <Spinner /> : stat.value }
 					</p>
