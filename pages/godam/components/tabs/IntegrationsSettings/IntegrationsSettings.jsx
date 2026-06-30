@@ -305,7 +305,7 @@ const IntegrationSettings = () => {
 											href={ getPricingUrl( `${ tab.name }-integration` ) }
 											target="_blank"
 											rel="noopener noreferrer"
-											style={ { color: '#b02544', textDecoration: 'underline', fontWeight: 500 } }
+											style={ { color: 'var(--wp-admin-theme-color, #5D31FF)', textDecoration: 'underline', fontWeight: 500 } }
 										>
 											{ __( 'Upgrade to Pro', 'godam' ) }
 											{ ' ↗' }
