@@ -218,15 +218,14 @@ const WooUnlockedNotice = () => {
 						<span className="godam-woo-nudge__caption">
 							{ __( 'A glimpse of the Pro features you’ve unlocked.', 'godam' ) }
 						</span>
-						<div className="godam-woo-nudge__dots" role="tablist">
+						<div className="godam-woo-nudge__dots" role="group" aria-label={ __( 'Feature preview slides', 'godam' ) }>
 							{ FEATURES.map( ( { title }, i ) => (
 								<button
 									key={ title }
 									type="button"
 									className={ `godam-woo-nudge__dot${ i === slide ? ' is-active' : '' }` }
 									aria-label={ title }
-									role="tab"
-									aria-selected={ i === slide }
+									aria-pressed={ i === slide }
 									onClick={ () => setSlide( i ) }
 								/>
 							) ) }

@@ -1,10 +1,10 @@
 /**
- * First-run welcome chooser shown when WooCommerce is active.
+ * First-run welcome chooser shown when GoDAM-for-Woo is active.
  *
- * Replaces the single-message welcome for Woo sites with a two-card picker:
- * the shopper-focused Woo path (pre-populated Shoppable Video block + in-editor
- * tour) or the interactive-layers path (the core Video Editor product guide).
- * When WooCommerce is inactive the caller keeps using the plain ConfirmModal.
+ * Replaces the single-option welcome with a two-card picker: the shopper-focused
+ * Woo path (Shoppable Video block + in-editor tour) or the interactive-layers
+ * path (the core Video Editor product guide).
+ * When GoDAM-for-Woo is inactive the caller shows WelcomeIntroModal instead.
  */
 
 /**
@@ -66,7 +66,7 @@ const WelcomeChooserModal = ( { isOpen, onSkip, onChoose, isBusy = false } ) => 
 				{ __( 'Choose what you’d like to explore first.', 'godam' ) }
 			</p>
 
-			<div className="godam-welcome-chooser__cards" role="radiogroup">
+			<div className="godam-welcome-chooser__cards" role="radiogroup" aria-label={ __( 'Welcome options', 'godam' ) }>
 				{ CARDS.map( ( card ) => {
 					const isActive = selected === card.key;
 					return (
