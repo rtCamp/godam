@@ -214,7 +214,7 @@ function PdfEdit( {
 			blob: undefined,
 			src: media.url,
 			id: media.id,
-			caption: media.caption,
+			caption: media.caption || undefined,
 			docTitle: media.title || '',
 			description: media.description || '',
 			pageCount: 0, // Reset so useEffect re-counts pages for the new file.
@@ -669,7 +669,6 @@ function PdfEdit( {
 					setAttributes={ setAttributes }
 					isSelected={ isSingleSelected }
 					insertBlocksAfter={ insertBlocksAfter }
-					label={ __( 'Document caption text', 'godam' ) }
 					showToolbarButton={ isSingleSelected }
 				/>
 			</figure>
