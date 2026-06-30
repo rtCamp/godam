@@ -181,11 +181,6 @@
         background: #fff;
     }
 
-	.components-form-token-field__suggestion:hover,
-    .components-form-token-field__suggestion.is-selected {
-        background: variables.$godam-primary-gradient !important;
-    }
-
     .components-combobox-control__input {
         width: 100%;
         background: rgba(255, 255, 255, 1) !important;
