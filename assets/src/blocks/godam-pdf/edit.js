@@ -292,7 +292,7 @@ function PdfEdit( {
 				<InspectorControls>
 					<PanelBody title={ __( 'Doc Selection', 'godam' ) } initialOpen={ true }>
 						<p className="godam-pdf-panel-description">
-							{ __( 'Add subtitles, layers, and more to make your document stand out.', 'godam' ) }
+							{ __( 'Add title, description, and more to make your document stand out.', 'godam' ) }
 						</p>
 						<MediaUploadCheck>
 							<MediaUpload
@@ -479,7 +479,7 @@ function PdfEdit( {
 						__nextHasNoMarginBottom
 						label={ __( 'Doc Title', 'godam' ) }
 						value={ docTitle }
-						placeholder={ __( 'Placeholder', 'godam' ) }
+						placeholder={ __( 'Add document title', 'godam' ) }
 						onChange={ ( value ) => setAttributes( { docTitle: value } ) }
 						data-test-id="godam-pdf-control-doc-title"
 					/>
@@ -488,7 +488,7 @@ function PdfEdit( {
 						__nextHasNoMarginBottom
 						label={ __( 'Description', 'godam' ) }
 						value={ description }
-						placeholder={ __( 'This is a sample description.', 'godam' ) }
+						placeholder={ __( 'Add document description', 'godam' ) }
 						rows={ 4 }
 						onChange={ ( value ) => setAttributes( { description: value } ) }
 						data-test-id="godam-pdf-control-description"
@@ -628,7 +628,7 @@ function PdfEdit( {
 													className="godam-pdf__upload-cover-btn"
 													data-test-id="godam-pdf-button-upload-cover"
 												>
-													{ __( '+ Upload Cover', 'godam' ) }
+													{ __( '+ Add Cover', 'godam' ) }
 												</Button>
 											) }
 										/>
