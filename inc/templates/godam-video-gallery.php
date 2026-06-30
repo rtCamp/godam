@@ -432,7 +432,7 @@ if ( 'query' === $godam_gallery_mode ) {
 										src="<?php echo esc_url( $godam_item['video_url'] ); ?>"
 										muted
 										playsinline
-										preload="<?php echo empty( $godam_item['thumbnail'] ) ? 'metadata' : 'none'; ?>"
+										preload="<?php echo esc_attr( empty( $godam_item['thumbnail'] ) ? 'metadata' : 'none' ); ?>"
 										aria-hidden="true"
 										tabindex="-1"
 									></video>
@@ -507,7 +507,7 @@ if ( 'query' === $godam_gallery_mode ) {
 										src="<?php echo esc_url( $godam_item['video_url'] ); ?>"
 										muted
 										playsinline
-										preload="<?php echo empty( $godam_item['thumbnail'] ) ? 'metadata' : 'none'; ?>"
+										preload="<?php echo esc_attr( empty( $godam_item['thumbnail'] ) ? 'metadata' : 'none' ); ?>"
 										aria-hidden="true"
 										tabindex="-1"
 									></video>
