@@ -215,8 +215,8 @@ function PdfEdit( {
 			src: media.url,
 			id: media.id,
 			caption: media.caption,
-			docTitle: docTitle || media.title || '',
-			description: description || media.description || '',
+			docTitle: media.title || '',
+			description: media.description || '',
 			pageCount: 0, // Reset so useEffect re-counts pages for the new file.
 		} );
 		setTemporaryURL();
@@ -456,7 +456,7 @@ function PdfEdit( {
 				{ /* Doc Selection */ }
 				<PanelBody title={ __( 'Doc Selection', 'godam' ) } initialOpen={ true } data-test-id="godam-pdf-panel-selection">
 					<p className="godam-pdf-panel-description">
-						{ __( 'Add subtitles, layers, and more to make your document stand out.', 'godam' ) }
+						{ __( 'Add title, description, and more to make your document stand out.', 'godam' ) }
 					</p>
 
 					<div className="godam-pdf-file-row">
@@ -634,7 +634,7 @@ function PdfEdit( {
 										/>
 									</MediaUploadCheck>
 									<p className="godam-pdf-panel-hint">
-										{ __( 'Recommended aspect ratio: 16:9', 'godam' ) }
+										{ __( 'Recommended aspect ratio: 16:9.', 'godam' ) }
 									</p>
 								</div>
 							) }
