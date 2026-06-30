@@ -9,7 +9,6 @@ $media-library-sidebar-border: #E0E0E0;
 $media-library-active-folder: #F5F5F5;
 $media-library-button-border: #949494;
 $media-library-scrollbar-color:  rgba(128, 128, 128, 0.2);
-$godam-gradient: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
 
 #rt-transcoder-media-library-root {
 	$sidebar-width: 280px;
@@ -120,7 +119,6 @@ $godam-gradient: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
 	}
 
 	.new-folder-button {
-		background: $godam-gradient;
 		border-radius: 0.25rem;
 		box-shadow: none;
 	}
@@ -235,7 +233,7 @@ $godam-gradient: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
 	}
 
 	#media-folder-toggle-button {
-		background: $godam-gradient;
+		background: var(--wp-admin-theme-color);
 		color: $media-library-sidebar-bg;
 		box-shadow: 2px 2px 3px $media-library-scrollbar-color;
 		position: absolute;

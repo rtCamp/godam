@@ -103,7 +103,7 @@ $ve-faint: color-mix(in srgb, currentcolor 5%, transparent);
 			color: $ve-muted;
 
 			a {
-				color: #AB3A6C;
+				color: var(--wp-admin-theme-color, #AB3A6C);
 				text-decoration: none;
 
 				&:hover {

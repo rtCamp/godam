@@ -55,7 +55,7 @@
 
 .godam-link {
 	text-decoration: none;
-	color: #AB3A6C;
+	color: var(--wp-admin-theme-color, #AB3A6C);
 
 	&:hover {
 		text-decoration: underline;
@@ -89,7 +89,7 @@
 		}
 
 		&:focus-visible {
-			outline: 2px solid #ab3a6c;
+			outline: 2px solid var(--wp-admin-theme-color, #ab3a6c);
 			outline-offset: -2px;
 		}
 

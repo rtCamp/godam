@@ -59,7 +59,7 @@ const TrialCountdownBanner = () => {
 	const endLabel = planEnd.toLocaleDateString( undefined, { year: 'numeric', month: 'long', day: 'numeric' } );
 
 	return (
-		<div className="godam-trial-banner -ml-[32px] bg-[#5d31ff] pl-[32px]" data-test-id="godam-header-banner-trial">
+		<div className="godam-trial-banner -ml-[32px] bg-[var(--wp-admin-theme-color)] pl-[32px]" data-test-id="godam-header-banner-trial">
 			<div className="mx-auto flex max-w-[1440px] items-center justify-center gap-3 px-4 py-2 text-sm text-white">
 				<span className="flex items-center gap-1.5 [&>svg]:fill-current">
 					<Icon icon={ info } size={ 18 } />

@@ -1183,7 +1183,7 @@ body.godam-share-modal-open {
 
 .chapter-fill {
 	height: 100%;
-	background-color: #AB3A6C;
+	background-color: var(--rtgodam-control-bar-color, #3858e9);
 	width: 0%;
 	transition: width 0.1s linear;
 	pointer-events: none;
