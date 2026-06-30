@@ -27,6 +27,12 @@ let flvPluginPromise = null;
 let quillPromise = null;
 let fontAwesomePromise = null;
 
+// Ad blockers commonly block the `videojs-contrib-ads` chunk (its filename
+// contains "ads"), which rejects the dynamic import with a ChunkLoadError on
+// every player init. Ads are optional and playback is unaffected, so warn once
+// instead of logging a hard error per player.
+let adsLoadWarned = false;
+
 /**
  * Load video.js ads plugins (videojs-contrib-ads and videojs-ima)
  * Only loads when ads are actually needed
@@ -55,8 +61,11 @@ export async function loadAdsPlugins() {
 		adsPluginsPromise = null; // Clear promise cache after success
 	} ).catch( ( error ) => {
 		adsPluginsPromise = null; // Clear promise cache on error to allow retry
-		// eslint-disable-next-line no-console
-		console.error( 'Failed to load ads plugins:', error );
+		if ( ! adsLoadWarned ) {
+			adsLoadWarned = true;
+			// eslint-disable-next-line no-console
+			console.warn( 'GoDAM: video ad plugins could not be loaded (often blocked by an ad blocker). Video playback is unaffected.' );
+		}
 		throw error;
 	} );
 
