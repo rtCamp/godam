@@ -129,7 +129,7 @@ const EditorStatsRow = ( { attachmentID } ) => {
 				<div key={ stat.label } className="godam-video-editor__stat">
 					<div className="godam-video-editor__stat-label">
 						{ stat.label }
-						{ stat.tooltip && <Tooltip text={ stat.tooltip } /> }
+						<Tooltip text={ stat.tooltip } />
 					</div>
 					<p className="godam-video-editor__stat-value">
 						{ isAnalyticsLoading ? <Spinner /> : stat.value }
