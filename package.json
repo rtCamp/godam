@@ -43,7 +43,7 @@
 		"clsx": "^2.1.1",
 		"flv.js": "^1.6.2",
 		"isomorphic-dompurify": "^2.26.0",
-		"posthog-js": "^1.282.0",
+		"posthog-js": "^1.386.8",
 		"quill": "2.0.2",
 		"react": "^18.0.0",
 		"react-bootstrap-icons": "^1.11.6",
@@ -61,7 +61,7 @@
 		"videojs-ima": "2.4.0"
 	},
 	"devDependencies": {
-		"@babel/core": "7.28.0",
+		"@babel/core": "7.29.6",
 		"@tailwindcss/typography": "^0.5.16",
 		"@wordpress/api-fetch": "7.39.0",
 		"@wordpress/babel-preset-default": "8.34.0",
@@ -98,12 +98,13 @@
 		"webpack-remove-empty-scripts": "1.1.1"
 	},
 	"overrides": {
+		"@babel/core": "7.29.6",
 		"@xmldom/xmldom": "0.8.13",
 		"@babel/plugin-transform-modules-systemjs": "7.29.4",
 		"@protobufjs/utf8": "1.1.1",
 		"axios": "1.16.1",
 		"basic-ftp": "5.2.2",
-		"dompurify": "3.4.5",
+		"dompurify": "3.4.11",
 		"fast-uri": "3.1.2",
 		"follow-redirects": "1.16.0",
 		"ip-address": "10.1.1",
@@ -113,13 +114,13 @@
 		"picomatch@<=2.3.1": "2.3.2",
 		"picomatch@>=4.0.0 <=4.0.3": "4.0.4",
 		"postcss": "8.5.15",
-		"protobufjs": "7.5.8",
+		"protobufjs": "7.6.3",
 		"qs": "6.15.2",
 		"serialize-javascript": "7.0.5",
 		"shell-quote": "1.8.4",
 		"simple-git": "3.36.0",
 		"uuid@<11.1.1": "11.1.1",
-		"ws@<8.20.1": "8.20.1",
+		"ws@<8.21.0": "8.21.0",
 		"@wordpress/scripts": {
 			"svgo@>3.0.0 <3.3.3": "3.3.3",
 			"minimatch@<3.1.5": "3.1.5",
