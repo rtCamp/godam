@@ -1741,16 +1741,10 @@ function rtgodam_get_video_thumbnail_sources( $attachment_id, $thumbnail_url = '
 		}
 	}
 
-	if ( empty( $resolved_thumbnail ) ) {
-		$icon = wp_mime_type_icon( $attachment_id );
-		if ( $icon ) {
-			$resolved_thumbnail = esc_url_raw( $icon );
-		}
-	}
-
-	if ( empty( $resolved_thumbnail ) && defined( 'RTGODAM_URL' ) ) {
-		$resolved_thumbnail = trailingslashit( RTGODAM_URL ) . 'assets/src/images/video-thumbnail-default.png';
-	}
+	// Do NOT fall back to wp_mime_type_icon() or a generic default image here.
+	// When no real thumbnail is available, returning '' lets the gallery template
+	// emit a --pending sentinel instead, which the frontend JS replaces with the
+	// video's first frame via initFirstFrameThumbnails().
 
 	return array(
 		'thumbnail'   => $resolved_thumbnail,
