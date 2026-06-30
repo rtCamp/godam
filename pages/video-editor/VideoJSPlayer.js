@@ -16,7 +16,7 @@ import 'videojs-flvjs-es6';
 /**
  * Internal dependencies
  */
-import GoDAM from '../../assets/src/images/GoDAM.png';
+import GoDAM from '../../assets/src/images/godam-branding.svg';
 
 /**
  * WordPress dependencies
