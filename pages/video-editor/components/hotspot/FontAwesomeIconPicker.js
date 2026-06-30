@@ -213,7 +213,7 @@ const FontAwesomeIconPicker = ( { icon, customIconUrl, customIconId, onChange, d
 										aria-expanded={ isOpen }
 										disabled={ disabled }
 									>
-										{ __( 'Select from library', 'godam' ) }
+										{ __( 'Replace icon', 'godam' ) }
 									</Button>
 								) }
 								renderContent={ renderLibraryContent }
@@ -221,7 +221,7 @@ const FontAwesomeIconPicker = ( { icon, customIconUrl, customIconId, onChange, d
 						) }
 						{ customIconUrl && (
 							<Button variant="link" onClick={ handleUploadCustomIcon } disabled={ disabled }>
-								{ __( 'Add custom', 'godam' ) }
+								{ __( 'Replace icon', 'godam' ) }
 							</Button>
 						) }
 					</div>
