@@ -158,6 +158,15 @@ const show = async () => {
 		return;
 	}
 
+	// If the next step's target isn't on screen yet (e.g. after "edit-video" we
+	// navigate to the editor and wait for the timeline to load), tear down the
+	// current popover now so the previous step doesn't linger over the new page
+	// — the list card's coachmark showing on the single-video edit page.
+	const immediate = document.querySelector( step.element );
+	if ( ! immediate || ( step.ready && ! step.ready( immediate ) ) ) {
+		teardownVisuals();
+	}
+
 	const element = await waitForStep( step );
 
 	// Bail if the guide was ended while we were waiting.
