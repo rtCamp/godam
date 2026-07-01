@@ -27,8 +27,42 @@ import { useProductGuide } from './useProductGuide';
 import { shouldAutoStartGuide, setProductGuideState, PRODUCT_GUIDE_STATES } from './productGuideState';
 import { getGoDAMVideoBlockMarkup } from '../utils';
 import { launchWooBlockTour } from './wooTour';
+import { setTourPrioritizeId } from './tourPrioritize';
 
 const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
+
+/**
+ * Poll until the demo video is the FIRST card in the list (up to `timeout` ms),
+ * so the guide's first step highlights the demo — not whatever card was first
+ * before the list re-ordered. Waiting on mere existence isn't enough: a demo
+ * created earlier may already sit lower in the list by date until the reorder
+ * lands.
+ *
+ * @param {number} attachmentId Demo attachment id.
+ * @param {number} [timeout]    Max wait in ms.
+ * @return {Promise<void>} Resolves when the demo is first, or the timeout elapses.
+ */
+const waitForDemoFirst = ( attachmentId, timeout = 6000 ) =>
+	new Promise( ( resolve ) => {
+		const target = `godam-video-editor-element-card-${ attachmentId }`;
+		const isFirst = () => {
+			const first = document.querySelector( '[data-test-id^="godam-video-editor-element-card-"]' );
+			return first && first.getAttribute( 'data-test-id' ) === target;
+		};
+		if ( isFirst() ) {
+			resolve();
+			return;
+		}
+		let waited = 0;
+		const interval = 120;
+		const timer = setInterval( () => {
+			if ( isFirst() || waited >= timeout ) {
+				clearInterval( timer );
+				resolve();
+			}
+			waited += interval;
+		}, interval );
+	} );
 
 /**
  * @param {Object}  props
@@ -48,7 +82,11 @@ const ProductGuide = ( { attachmentID } ) => {
 	const wooGuideActive = Boolean( window?.videoData?.wooGuideActive );
 
 	const onRequestEnd = useCallback( () => setModal( 'end' ), [] );
-	const onFinalAction = useCallback( () => setModal( 'addToPage' ), [] );
+	const onFinalAction = useCallback( () => {
+		// Final step reached — stop pinning the demo first in the list.
+		setTourPrioritizeId( 0 );
+		setModal( 'addToPage' );
+	}, [] );
 	// "See how it works" re-opens the welcome dialog (chooser or single).
 	const onRequestWelcome = useCallback( () => setModal( 'welcome' ), [] );
 
@@ -66,9 +104,23 @@ const ProductGuide = ( { attachmentID } ) => {
 		}
 	}, [] );
 
-	// Welcome → start the tour.
-	const handleStart = () => {
+	// Welcome → start the interactive tour. First ensure the demo video exists and
+	// pin it first in the list, so step 1 highlights real demo content.
+	const handleStart = async () => {
 		setModal( null );
+		try {
+			const res = await fetch( window.pathJoin( [ restURL, 'godam/v1/onboarding/demo-video' ] ), {
+				headers: { 'X-WP-Nonce': window?.videoData?.nonce || window?.wpApiSettings?.nonce },
+			} );
+			const data = await res.json();
+			const demoId = Number( data?.id ) || 0;
+			if ( demoId ) {
+				setTourPrioritizeId( demoId );
+				await waitForDemoFirst( demoId );
+			}
+		} catch {
+			// Demo unavailable — start anyway; the tour highlights whatever's first.
+		}
 		start();
 	};
 
@@ -98,6 +150,7 @@ const ProductGuide = ( { attachmentID } ) => {
 	// End-guide confirm.
 	const handleEndConfirm = () => {
 		setModal( null );
+		setTourPrioritizeId( 0 );
 		dismiss();
 	};
 

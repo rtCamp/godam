@@ -84,6 +84,12 @@ class Virtual_Media_Registrar {
 	 * @return void
 	 */
 	private function schedule_register_virtual_media_site( int $attachment_id ) {
+		// Demo assets are shared/public GoDAM media seeded for the onboarding tours,
+		// not this site's own uploads — don't register the site as a consumer.
+		if ( get_post_meta( $attachment_id, 'rtgodam_is_demo_attachment', true ) ) {
+			return;
+		}
+
 		$job_name = get_post_meta( $attachment_id, self::META_ORIGINAL_ID, true );
 		// Bail early if there is nothing to register.
 		if ( empty( $job_name ) ) {

@@ -51,6 +51,7 @@ import {
  */
 import { copyGoDAMVideoBlock, prefetchMediaDataForCopy } from '../../utils';
 import { notify as notifyGuide, requestWelcome as openGuideWelcome } from '../../onboarding/productGuide';
+import { getTourPrioritizeId, subscribeTourPrioritize } from '../../onboarding/tourPrioritize';
 import { useGetVideoEditorVideosMutation } from '../../redux/api/video-editor';
 import { canManageAttachment } from '../../../../assets/src/js/media-library/utility.js';
 import { LayersTabIcon } from '../editor-shell/icons';
@@ -241,6 +242,10 @@ const VideoEditorDataView = ( { onEdit } ) => {
 	const [ filter, setFilter ] = useState( 'all' );
 	const [ sortKey, setSortKey ] = useState( 'newest' );
 
+	// Attachment id the onboarding tour wants pinned first (the demo video).
+	const [ prioritizeId, setPrioritizeId ] = useState( getTourPrioritizeId() );
+	useEffect( () => subscribeTourPrioritize( setPrioritizeId ), [] );
+
 	// Accumulated infinite-scroll state.
 	const [ items, setItems ] = useState( [] );
 	const [ page, setPage ] = useState( 1 );
@@ -298,6 +303,7 @@ const VideoEditorDataView = ( { onEdit } ) => {
 				orderby: sortOption.orderby,
 				order: sortOption.order,
 				filter,
+				prioritizeId,
 			} );
 
 			// Ignore responses for superseded requests.
@@ -326,7 +332,7 @@ const VideoEditorDataView = ( { onEdit } ) => {
 
 		const debounce = setTimeout( run, search ? 400 : 0 );
 		return () => clearTimeout( debounce );
-	}, [ getVideos, search, filter, sortOption.orderby, sortOption.order, page ] );
+	}, [ getVideos, search, filter, sortOption.orderby, sortOption.order, page, prioritizeId ] );
 
 	// Load the next page on demand (manual "Load more" button).
 	const loadMore = useCallback( () => {

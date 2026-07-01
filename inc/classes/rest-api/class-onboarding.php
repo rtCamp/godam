@@ -166,7 +166,35 @@ class Onboarding extends Base {
 					),
 				),
 			),
+			// Ensure (creating if needed) the demo video the Video Editor tour pins first.
+			array(
+				'namespace' => $this->namespace,
+				'route'     => $base . '/demo-video',
+				'args'      => array(
+					array(
+						'methods'             => WP_REST_Server::READABLE,
+						'callback'            => array( $this, 'get_demo_video' ),
+						'permission_callback' => array( $this, 'permissions_check' ),
+					),
+				),
+			),
 		);
+	}
+
+	/**
+	 * Ensure the Video Editor tour's demo video exists and return its attachment id.
+	 * Returns id 0 when the demo can't be resolved (SaaS demo API unavailable); the
+	 * tour then simply doesn't pin a demo.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function get_demo_video() {
+		$id = 0;
+		if ( method_exists( '\RTGODAM\Inc\Demo_Assets', 'get_video' ) ) {
+			$id = (int) \RTGODAM\Inc\Demo_Assets::get_video( 'demo 1' );
+		}
+
+		return new WP_REST_Response( array( 'id' => $id ), 200 );
 	}
 
 	/**
