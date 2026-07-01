@@ -4,6 +4,8 @@
  *
  * This class handles the migration of virtual media.
  *
+ * @since 1.11.0
+ *
  * @package GoDAM
  */
 
@@ -15,11 +17,15 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Virtual_Media_Migration
+ *
+ * @since 1.11.0
  */
 class Virtual_Media_Migration extends Base {
 
 	/**
 	 * Get REST routes.
+	 *
+	 * @since 1.11.0
 	 */
 	public function get_rest_routes() {
 		return array(
@@ -48,6 +54,8 @@ class Virtual_Media_Migration extends Base {
 	/**
 	 * Permission check for virtual media migration.
 	 *
+	 * @since 1.11.0
+	 *
 	 * @param \WP_REST_Request $request The REST request.
 	 *
 	 * @return bool|\WP_Error True if permission is granted, WP_Error otherwise.
@@ -67,6 +75,8 @@ class Virtual_Media_Migration extends Base {
 
 	/**
 	 * Migrate virtual media.
+	 *
+	 * @since 1.11.0
 	 *
 	 * @param \WP_REST_Request $request The REST request.
 	 *
@@ -94,6 +104,8 @@ class Virtual_Media_Migration extends Base {
 
 	/**
 	 * Get the list of job ids from the meta of attachment posts.
+	 *
+	 * @since 1.11.0
 	 *
 	 * @return array Array of job ids.
 	 */

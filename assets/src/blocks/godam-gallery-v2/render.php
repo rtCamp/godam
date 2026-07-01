@@ -7,6 +7,8 @@
  * Elementor Godam_Gallery widget so all three surfaces produce the same
  * markup and JS contract.
  *
+ * @since 1.8.0
+ *
  * @package GoDAM
  */
 

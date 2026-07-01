@@ -5,6 +5,8 @@
  * Acts as a PHP enum for HTTP status codes since PHP native enums
  * require PHP 8.1+ which may not be available in all environments.
  *
+ * @since 1.7.0
+ *
  * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status
  *
  * @package GoDAM
@@ -18,6 +20,8 @@ defined( 'ABSPATH' ) || exit;
  * Class HTTP_Status_Code
  *
  * Common HTTP status codes used throughout the plugin.
+ *
+ * @since 1.7.0
  */
 class HTTP_Status_Code {
 
@@ -50,6 +54,8 @@ class HTTP_Status_Code {
 	/**
 	 * Check if a status code indicates a server error (5xx).
 	 *
+	 * @since 1.7.0
+	 *
 	 * @param int $code HTTP status code.
 	 *
 	 * @return bool True if the code is a 5xx server error.
@@ -61,6 +67,8 @@ class HTTP_Status_Code {
 	/**
 	 * Check if a status code indicates a client error (4xx).
 	 *
+	 * @since 1.7.0
+	 *
 	 * @param int $code HTTP status code.
 	 *
 	 * @return bool True if the code is a 4xx client error.
@@ -71,6 +79,8 @@ class HTTP_Status_Code {
 
 	/**
 	 * Check if a status code indicates success (2xx).
+	 *
+	 * @since 1.7.0
 	 *
 	 * @param int $code HTTP status code.
 	 *

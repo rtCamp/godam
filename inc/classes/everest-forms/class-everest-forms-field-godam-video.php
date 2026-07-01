@@ -313,6 +313,8 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		/**
 		 * Type field option.
 		 *
+		 * @since 1.4.0
+		 *
 		 * @param array $video_field Field data.
 		 */
 		public function file_selector( $video_field ) {

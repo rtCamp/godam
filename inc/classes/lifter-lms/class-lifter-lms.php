@@ -36,6 +36,8 @@ class Lifter_LMS {
 
 	/**
 	 * Constructor.
+	 *
+	 * @since 1.4.0
 	 */
 	protected function __construct() {
 		$this->setup_hooks();
@@ -43,6 +45,8 @@ class Lifter_LMS {
 
 	/**
 	 * Setup WordPress hooks and filters.
+	 *
+	 * @since 1.4.0
 	 */
 	private function setup_hooks() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'load_lifterlms_integration_script' ) );

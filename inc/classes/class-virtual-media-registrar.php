@@ -2,6 +2,8 @@
 /**
  * Register virtual media sites with GoDAM Central.
  *
+ * @since 1.11.0
+ *
  * @package GoDAM
  */
 
@@ -13,6 +15,8 @@ use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class Virtual_Media_Registrar.
+ *
+ * @since 1.11.0
  */
 class Virtual_Media_Registrar {
 
@@ -34,6 +38,8 @@ class Virtual_Media_Registrar {
 
 	/**
 	 * Construct method.
+	 *
+	 * @since 1.11.0
 	 */
 	protected function __construct() {
 		$this->setup_hooks();
@@ -41,6 +47,8 @@ class Virtual_Media_Registrar {
 
 	/**
 	 * Boot hooks.
+	 *
+	 * @since 1.11.0
 	 *
 	 * @return void
 	 */
@@ -56,6 +64,8 @@ class Virtual_Media_Registrar {
 
 	/**
 	 * If _godam_original_id meta is added/updated, attempt registration.
+	 *
+	 * @since 1.11.0
 	 *
 	 * @param int    $meta_id    Meta ID.
 	 * @param int    $post_id    Post ID.
@@ -78,6 +88,8 @@ class Virtual_Media_Registrar {
 	/**
 	 * Enqueue an async Action Scheduler task to register the virtual media site.
 	 * Guards against duplicate enqueues using the idempotency meta and AS pending-action check.
+	 *
+	 * @since 1.11.0
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *
@@ -109,6 +121,8 @@ class Virtual_Media_Registrar {
 	/**
 	 * Async Action Scheduler handler: perform the HTTP registration call.
 	 *
+	 * @since 1.11.0
+	 *
 	 * @param int    $attachment_id Attachment ID passed by Action Scheduler.
 	 * @param string $job_name The original job name associated with this virtual media site.
 	 *
@@ -132,6 +146,8 @@ class Virtual_Media_Registrar {
 
 	/**
 	 * Register this site as a virtual media site for the attachment job if needed.
+	 *
+	 * @since 1.11.0
 	 *
 	 * @param int    $attachment_id Attachment ID.
 	 * @param string $job_name The original job name associated with this virtual media site.
@@ -212,6 +228,8 @@ class Virtual_Media_Registrar {
 	/**
 	 * When an attachment is deleted, if it has a _godam_original_id meta, call Central to remove the virtual media site.
 	 *
+	 * @since 1.11.0
+	 *
 	 * @param int $post_id Post ID.
 	 *
 	 * @return void
@@ -241,6 +259,8 @@ class Virtual_Media_Registrar {
 	 * Async Action Scheduler handler: perform the HTTP removal call.
 	 * Receives job_name directly because post meta is already gone when this runs.
 	 *
+	 * @since 1.11.0
+	 *
 	 * @param string $job_name The original job name passed by Action Scheduler.
 	 * @param int    $post_id Optional attachment ID for richer fallback logging.
 	 *
@@ -263,6 +283,8 @@ class Virtual_Media_Registrar {
 
 	/**
 	 * Call GoDAM Central: remove_virtual_media_site
+	 *
+	 * @since 1.11.0
 	 *
 	 * @param string $job_name The original job name associated with this virtual media site.
 	 * @return true|\WP_Error True if removal is successful, WP_Error if it fails.

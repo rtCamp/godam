@@ -2,6 +2,8 @@
 /**
  * Frappe Dispatch - First Install Client
  *
+ * @since 1.8.0
+ *
  * @package FrappeDispatch\Client
  * @author  rtCamp
  */
@@ -13,6 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * A client class to handle first-time plugin installations
  * directly from your Frappe Dispatch backend.
+ *
+ * @since 1.8.0
  */
 class Godam_Frappe_Dispatch_Installer {
 
@@ -54,6 +58,8 @@ class Godam_Frappe_Dispatch_Installer {
 	/**
 	 * Constructor.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @param string $api_url Base URL for Frappe Dispatch.
 	 * @param string $license_key License key for authentication.
 	 * @param array  $args    Optional installation arguments.
@@ -84,6 +90,8 @@ class Godam_Frappe_Dispatch_Installer {
 
 	/**
 	 * Install a plugin by slug using the Frappe Dispatch API.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @param string $plugin_slug The plugin slug to install.
 	 * @param bool   $auto_activate Whether to auto-activate after install.
@@ -144,6 +152,8 @@ class Godam_Frappe_Dispatch_Installer {
 	/**
 	 * Fetches plugin metadata from the Frappe server.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @param string $plugin_slug The plugin slug.
 	 * @return object|false
 	 */
@@ -175,6 +185,8 @@ class Godam_Frappe_Dispatch_Installer {
 	 * Calls the same `get_plugin_for_install` endpoint used by `install_plugin()`
 	 * and returns only the download URL.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @param string $plugin_slug The plugin slug.
 	 * @return string|null The download URL, or null on failure.
 	 */
@@ -190,6 +202,8 @@ class Godam_Frappe_Dispatch_Installer {
 
 	/**
 	 * Download and install the plugin from the secure download link.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @param object $plugin_data Plugin data from API.
 	 * @param string $plugin_slug Plugin slug.
@@ -266,6 +280,8 @@ class Godam_Frappe_Dispatch_Installer {
 	/**
 	 * Extract plugin zip to plugins directory.
 	 * Handles nested folder structures properly.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @param string $zip_file    Path to zip file.
 	 * @param string $plugin_slug Plugin slug.
@@ -377,6 +393,8 @@ class Godam_Frappe_Dispatch_Installer {
 	/**
 	 * Check if plugin already exists.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @param string $plugin_slug Plugin slug to check.
 	 * @return bool True if plugin exists.
 	 */
@@ -387,6 +405,8 @@ class Godam_Frappe_Dispatch_Installer {
 
 	/**
 	 * Activate a plugin after installation.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @param string $plugin_slug Plugin slug to activate.
 	 * @return bool True if activated successfully.
@@ -412,6 +432,8 @@ class Godam_Frappe_Dispatch_Installer {
 	/**
 	 * Validate license key with server.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @return bool True if license key is valid.
 	 */
 	public function validate_license_key() {
@@ -436,6 +458,8 @@ class Godam_Frappe_Dispatch_Installer {
 	/**
 	 * Resolve the final slug used for installation.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @param string $requested_slug Requested plugin slug.
 	 * @param object $plugin_data    Plugin metadata response.
 	 * @return string
@@ -454,6 +478,8 @@ class Godam_Frappe_Dispatch_Installer {
 
 	/**
 	 * Execute a POST request with shared defaults.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @param string $url     Request URL.
 	 * @param array  $body    Request body.
@@ -477,6 +503,8 @@ class Godam_Frappe_Dispatch_Installer {
 	/**
 	 * Execute a GET request with shared defaults.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @param string $url     Request URL.
 	 * @param int    $timeout Timeout in seconds.
 	 * @return array|\WP_Error
@@ -497,6 +525,8 @@ class Godam_Frappe_Dispatch_Installer {
 	/**
 	 * Load WordPress filesystem dependencies.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @return void
 	 */
 	private function load_wordpress_filesystem_dependencies() {
@@ -508,6 +538,8 @@ class Godam_Frappe_Dispatch_Installer {
 	/**
 	 * Load WordPress plugin dependencies.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @return void
 	 */
 	private function load_wordpress_plugin_dependencies() {
@@ -518,6 +550,8 @@ class Godam_Frappe_Dispatch_Installer {
 
 	/**
 	 * Get directory entries excluding dotfiles.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @param string $directory Directory path.
 	 * @return array
@@ -535,6 +569,8 @@ class Godam_Frappe_Dispatch_Installer {
 	/**
 	 * Get PHP files directly within a directory.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @param string $directory Directory path.
 	 * @return array
 	 */
@@ -546,6 +582,8 @@ class Godam_Frappe_Dispatch_Installer {
 
 	/**
 	 * Determine whether a directory contains PHP files.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @param string $directory Directory path.
 	 * @return bool

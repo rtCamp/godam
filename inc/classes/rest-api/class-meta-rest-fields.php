@@ -2,6 +2,8 @@
 /**
  * Register REST API endpoints for meta fields.
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -14,6 +16,8 @@ use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Modify Rest fields.
+ *
+ * @since 1.0.0
  */
 class Meta_Rest_Fields {
 
@@ -21,6 +25,8 @@ class Meta_Rest_Fields {
 
 	/**
 	 * Construct method.
+	 *
+	 * @since 1.0.0
 	 */
 	final protected function __construct() {
 		add_action( 'rest_api_init', array( $this, 'add_meta_rest_fields' ), 10, 3 );
@@ -28,6 +34,8 @@ class Meta_Rest_Fields {
 
 	/**
 	 * Modify the response to include the 'post-related-posts' field.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */

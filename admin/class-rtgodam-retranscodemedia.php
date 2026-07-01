@@ -3,6 +3,8 @@
  * Retranscode media https://wordpress.org/plugins/regenerate-thumbnails/
  * The code and UI is borrowed from the following plugin (Author: Alex Mills).
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -11,6 +13,8 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Media retranscode module.
+ *
+ * @since 1.0.0
  */
 class RTGODAM_RetranscodeMedia {
 	/**
@@ -51,6 +55,8 @@ class RTGODAM_RetranscodeMedia {
 
 	/**
 	 * Functinallity initialization
+	 *
+	 * @since 1.0.0
 	 */
 	public function __construct() {
 
@@ -97,6 +103,8 @@ class RTGODAM_RetranscodeMedia {
 	/**
 	 * Function to load rest api endpoints.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @return void
 	 */
 	public function load_rest_endpoints() {
@@ -109,6 +117,8 @@ class RTGODAM_RetranscodeMedia {
 
 	/**
 	 * Add the Retranscode Media meta box to the EasyDam Tools page.
+	 *
+	 * @since 1.0.0
 	 */
 	public function render_tools_page() {
 		$this->add_easydam_meta_boxes();
@@ -126,6 +136,8 @@ class RTGODAM_RetranscodeMedia {
 
 	/**
 	 * Register the meta box for the EasyDam Tools page.
+	 *
+	 * @since 1.0.0
 	 */
 	public function add_easydam_meta_boxes() {
 
@@ -141,6 +153,8 @@ class RTGODAM_RetranscodeMedia {
 
 	/**
 	 * Enqueue the needed Javascript and CSS
+	 *
+	 * @since 1.0.0
 	 *
 	 * @param string $hook_suffix Suffix of the hook.
 	 *
@@ -232,6 +246,8 @@ class RTGODAM_RetranscodeMedia {
 	/**
 	 * Add a "Re Transcode Media" link to the media row actions
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param array   $actions   An array of action links for each attachment.
 	 *                           Default 'Edit', 'Delete Permanently', 'View'.
 	 * @param WP_Post $post      WP_Post object for the current attachment.
@@ -269,6 +285,8 @@ class RTGODAM_RetranscodeMedia {
 	/**
 	 * Add "Re Transcode Media" to the Bulk Actions media dropdown
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param array $actions Actions to perform.
 	 *
 	 * @return array
@@ -292,6 +310,8 @@ class RTGODAM_RetranscodeMedia {
 
 	/**
 	 * Add new items to the Bulk Actions using Javascript
+	 *
+	 * @since 1.0.0
 	 */
 	public function add_bulk_actions_via_javascript() {
 		if ( ! current_user_can( $this->capability ) ) {
@@ -309,6 +329,8 @@ class RTGODAM_RetranscodeMedia {
 
 	/**
 	 * Handles the bulk actions POST
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
@@ -344,6 +366,8 @@ class RTGODAM_RetranscodeMedia {
 
 	/**
 	 * The user interface
+	 *
+	 * @since 1.0.0
 	 */
 	public function retranscode_interface() {
 		?>
@@ -547,6 +571,8 @@ class RTGODAM_RetranscodeMedia {
 	/**
 	 * Helper to make a JSON error message
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param int    $id ID of the attachment.
 	 * @param string $message Error message.
 	 */
@@ -557,6 +583,8 @@ class RTGODAM_RetranscodeMedia {
 
 	/**
 	 * Helper function to escape quotes in strings for use in Javascript
+	 *
+	 * @since 1.0.0
 	 *
 	 * @param string $str String to escape quotes from.
 	 */
@@ -582,6 +610,8 @@ class RTGODAM_RetranscodeMedia {
 	/**
 	 * Delete the previously added media thumbnail files
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param  number $media_id     Post ID of the media.
 	 * @param  array  $post_request Post request coming for the transcoder API.
 	 */
@@ -595,6 +625,8 @@ class RTGODAM_RetranscodeMedia {
 
 	/**
 	 * Delete the previously transcoded media files
+	 *
+	 * @since 1.0.0
 	 *
 	 * @param  number $media_id     Post ID of the media.
 	 * @param  array  $transcoded_files Post request coming for the transcoder API.
@@ -618,6 +650,8 @@ class RTGODAM_RetranscodeMedia {
 
 	/**
 	 * Update the primary thumbnail image with the newly added thumbnails.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @param  number $media_id     Post ID of the media.
 	 */
@@ -661,6 +695,8 @@ class RTGODAM_RetranscodeMedia {
 	 * Callback request from the transcoder has been processed, so delete the flags
 	 * which are not necessary after processing the callback request
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param  number $attachment_id      Post ID of the media.
 	 * @param  string $job_id             Unique job ID of the transcoding request.
 	 */
@@ -681,6 +717,8 @@ class RTGODAM_RetranscodeMedia {
 	/**
 	 * WHERE search query to check attachment mime-type.
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param string $where The WHERE clause of the query.
 	 *
 	 * @return string The WHERE clause of the query.
@@ -696,6 +734,8 @@ add_action( 'init', 'rtgodam_retranscode_media' );
 
 /**
  * Execute RetranscodeMedia constructor.
+ *
+ * @since 1.0.0
  */
 function rtgodam_retranscode_media() { // phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed
 

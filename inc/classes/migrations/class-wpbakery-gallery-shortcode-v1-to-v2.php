@@ -2,6 +2,8 @@
 /**
  * Migration: WPBakery [godam_video_gallery] shortcode V1 → V2.
  *
+ * @since 1.12.2
+ *
  * @package GoDAM
  */
 

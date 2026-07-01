@@ -11,6 +11,8 @@
  *   - Section 1 "Gallery Settings": content selection + filters + performance.
  *   - Section 2 "Display Settings": layout / sizing / pagination / engagements.
  *
+ * @since 1.6.0
+ *
  * @package GoDAM
  */
 

@@ -2,6 +2,8 @@
 /**
  * Extend SureForms.
  *
+ * @since 1.3.0
+ *
  * @package GoDAM
  */
 
@@ -17,6 +19,8 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Init.
+ *
+ * @since 1.3.0
  */
 class Init {
 
@@ -32,6 +36,8 @@ class Init {
 
 	/**
 	 * Constructor.
+	 *
+	 * @since 1.3.0
 	 */
 	protected function __construct() {
 
@@ -47,6 +53,8 @@ class Init {
 
 	/**
 	 * To check if sureforms plugins is active.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @return bool
 	 */
@@ -64,6 +72,8 @@ class Init {
 
 	/**
 	 * Function to load the sureforms integration class with GoDAM.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */

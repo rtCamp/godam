@@ -2,6 +2,8 @@
 /**
  * Render template for the GoDAM Document Block.
  *
+ * @since 1.4.8
+ *
  * @package GoDAM
  */
 

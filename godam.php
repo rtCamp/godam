@@ -13,6 +13,8 @@
  * License: GPLv2 or later
  * License URI: http://www.gnu.org/licenses/gpl-2.0.html
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -121,6 +123,8 @@ add_filter( 'network_admin_plugin_action_links', 'rtgodam_action_links', 11, 2 )
 
 /**
  * Runs when the plugin is activated.
+ *
+ * @since 1.0.0
  */
 function rtgodam_plugin_activate() {
 	update_option( 'rtgodam_plugin_activation_time', time() );
@@ -133,6 +137,8 @@ register_activation_hook( __FILE__, 'rtgodam_plugin_activate' );
 
 /**
  * Runs when the plugin is deactivated.
+ *
+ * @since 1.0.0
  */
 function rtgodam_plugin_deactivate() {
 	delete_option( 'rtgodam_plugin_activation_time' );
@@ -146,6 +152,8 @@ register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );
 
 /**
  * Runs when the plugin is deleted.
+ *
+ * @since 1.4.0
  */
 function rtgodam_plugin_delete() {
 	// Delete options related to plugin state (What's New, version).

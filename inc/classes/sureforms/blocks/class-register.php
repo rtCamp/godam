@@ -2,6 +2,8 @@
 /**
  * Extend SureForms.
  *
+ * @since 1.3.0
+ *
  * @package GoDAM
  */
 
@@ -16,6 +18,8 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Register.
+ *
+ * @since 1.3.0
  */
 class Register {
 
@@ -23,6 +27,8 @@ class Register {
 
 	/**
 	 * Constructor.
+	 *
+	 * @since 1.3.0
 	 */
 	protected function __construct() {
 		$this->setup_hooks();
@@ -30,6 +36,8 @@ class Register {
 
 	/**
 	 * Setup hooks for sureforms.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */
@@ -53,6 +61,8 @@ class Register {
 
 	/**
 	 * Function to add the additional blocks as fields for SureForms.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param array $blocks Blocks to be registered.
 	 *
@@ -81,6 +91,8 @@ class Register {
 	/**
 	 * List of allowed blocks for sureforms edit forms page.
 	 *
+	 * @since 1.3.0
+	 *
 	 * @param array $allowed_blocks Allowed Blocks.
 	 *
 	 * @return array
@@ -95,6 +107,8 @@ class Register {
 
 	/**
 	 * Disallow srfm specific blocks for form fields to other post types
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param bool|array<string>      $allowed_block_types Array of block types.
 	 * @param WP_Block_Editor_Context $editor_context      The current block editor context.

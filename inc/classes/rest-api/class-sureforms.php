@@ -4,6 +4,8 @@
  *
  * Get all Sure forms and single Sure form.
  *
+ * @since 1.3.0
+ *
  * @package GoDAM
  */
 
@@ -35,6 +37,8 @@ class SureForms extends Base {
 	/**
 	 * Check if sureforms is active or not.
 	 *
+	 * @since 1.3.0
+	 *
 	 * @return true|false true on active and false on not active.
 	 */
 	private function check_sureforms_active() {
@@ -43,6 +47,8 @@ class SureForms extends Base {
 
 	/**
 	 * Get REST routes.
+	 *
+	 * @since 1.3.0
 	 */
 	public function get_rest_routes() {
 
@@ -93,6 +99,8 @@ class SureForms extends Base {
 
 	/**
 	 * Get all Sure Forms.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param WP_REST_Request $request Request Object.
 	 *
@@ -146,6 +154,8 @@ class SureForms extends Base {
 
 	/**
 	 * Get a single Sure Form.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @param WP_REST_Request $request Request Object.
 	 *

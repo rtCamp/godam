@@ -2,6 +2,8 @@
 /**
  * Migration: Elementor godam-gallery widget V1 → V2.
  *
+ * @since 1.12.2
+ *
  * @package GoDAM
  */
 
@@ -33,6 +35,8 @@ defined( 'ABSPATH' ) || exit;
  * | (absent)                | performance_mode    | new default 'balanced'                             |
  * | (absent)                | enable_more_items   | new default '' (off)                               |
  * | (absent)                | more_items_behavior | new default 'button'                               |
+ *
+ * @since 1.12.2
  */
 class Elementor_Gallery_Widget_V1_To_V2 {
 
@@ -68,6 +72,8 @@ class Elementor_Gallery_Widget_V1_To_V2 {
 	/**
 	 * Run the migration if it has not yet completed.
 	 *
+	 * @since 1.12.2
+	 *
 	 * @return bool True if migration is complete or was just run; false if it bailed.
 	 */
 	public static function maybe_run(): bool {
@@ -82,6 +88,8 @@ class Elementor_Gallery_Widget_V1_To_V2 {
 
 	/**
 	 * Execute the full migration.
+	 *
+	 * @since 1.12.2
 	 *
 	 * @return void
 	 */
@@ -188,6 +196,8 @@ class Elementor_Gallery_Widget_V1_To_V2 {
 	/**
 	 * Acquire a short-lived option-based lock.
 	 *
+	 * @since 1.12.2
+	 *
 	 * @return bool True when the lock was acquired, false otherwise.
 	 */
 	private static function acquire_lock(): bool {
@@ -222,6 +232,8 @@ class Elementor_Gallery_Widget_V1_To_V2 {
 	/**
 	 * Release the concurrency lock.
 	 *
+	 * @since 1.12.2
+	 *
 	 * @return void
 	 */
 	private static function release_lock(): void {
@@ -235,6 +247,8 @@ class Elementor_Gallery_Widget_V1_To_V2 {
 	/**
 	 * Recursively walk the Elementor element tree, migrating every
 	 * godam-gallery widget's settings in place.
+	 *
+	 * @since 1.12.2
 	 *
 	 * @param array $elements Element tree (sections, columns, widgets).
 	 * @param bool  $changed  Reference set to true when any settings were rewritten.
@@ -262,6 +276,8 @@ class Elementor_Gallery_Widget_V1_To_V2 {
 
 	/**
 	 * Migrate a single godam-gallery widget's settings array.
+	 *
+	 * @since 1.12.2
 	 *
 	 * @param array $settings V1 settings.
 	 * @return array V2 settings.

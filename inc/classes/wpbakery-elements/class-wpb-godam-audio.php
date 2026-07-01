@@ -2,6 +2,8 @@
 /**
  * WPBakery GoDAM Audio Element
  *
+ * @since 1.6.0
+ *
  * @package GoDAM
  */
 

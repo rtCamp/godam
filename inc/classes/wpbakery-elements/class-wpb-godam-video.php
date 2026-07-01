@@ -2,6 +2,8 @@
 /**
  * WPBakery GoDAM Video Element
  *
+ * @since 1.6.0
+ *
  * @package GoDAM
  */
 
@@ -13,6 +15,8 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class WPB_GoDAM_Video
+ *
+ * @since 1.6.0
  *
  * @package GoDAM
  */

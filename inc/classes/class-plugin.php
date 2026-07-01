@@ -2,6 +2,8 @@
 /**
  * Plugin manifest class.
  *
+ * @since 1.0.0
+ *
  * @package GoDAM
  */
 
@@ -81,6 +83,8 @@ use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Audio;
 
 /**
  * Class Plugin.
+ *
+ * @since 1.0.0
  */
 class Plugin {
 
@@ -88,6 +92,8 @@ class Plugin {
 
 	/**
 	 * Construct method.
+	 *
+	 * @since 1.0.0
 	 */
 	protected function __construct() {
 
@@ -152,6 +158,8 @@ class Plugin {
 
 	/**
 	 * Load Taxonomies.
+	 *
+	 * @since 1.0.0
 	 */
 	public function load_taxonomies() {
 		Media_Folders::get_instance();
@@ -159,12 +167,16 @@ class Plugin {
 
 	/**
 	 * Load Plugin Configs.
+	 *
+	 * @since 1.0.0
 	 */
 	public function load_plugin_configs() {
 	}
 
 	/**
 	 * Load REST API.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
@@ -216,6 +228,8 @@ class Plugin {
 	/**
 	 * Registers the elementor widgets if required.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @return void
 	 */
 	public function load_elementor_widgets() {
@@ -232,6 +246,8 @@ class Plugin {
 
 	/**
 	 * Registers the WPBakery elements if required.
+	 *
+	 * @since 1.6.0
 	 *
 	 * @return void
 	 */
@@ -253,6 +269,8 @@ class Plugin {
 
 	/**
 	 * Init Gravity Forms
+	 *
+	 * @since 1.1.0
 	 */
 	public function init_gravity_forms() {
 		Gravity_Forms\Init::get_instance();
@@ -260,6 +278,8 @@ class Plugin {
 
 	/**
 	 * Initialize SureForms Extension class.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */
@@ -269,6 +289,8 @@ class Plugin {
 
 	/**
 	 * Initialize FluentForms Extension class.
+	 *
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */

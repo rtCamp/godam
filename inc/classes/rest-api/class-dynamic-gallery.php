@@ -7,6 +7,8 @@
  * markup and JS contract. Item HTML produced here must match the markup
  * emitted by inc/templates/godam-video-gallery.php.
  *
+ * @since 1.1.2
+ *
  * @package GoDAM
  */
 
@@ -21,6 +23,8 @@ use WP_REST_Response;
 
 /**
  * Class Dynamic_Gallery
+ *
+ * @since 1.1.2
  */
 class Dynamic_Gallery extends Base {
 
@@ -33,6 +37,8 @@ class Dynamic_Gallery extends Base {
 
 	/**
 	 * Get registered REST routes.
+	 *
+	 * @since 1.1.2
 	 *
 	 * @return array
 	 */
@@ -110,6 +116,8 @@ class Dynamic_Gallery extends Base {
 
 	/**
 	 * Render the gallery items for a Load More / infinite-scroll page.
+	 *
+	 * @since 1.1.2
 	 *
 	 * @param WP_REST_Request $request The REST request object.
 	 * @return WP_REST_Response

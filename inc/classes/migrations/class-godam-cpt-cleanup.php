@@ -2,6 +2,8 @@
 /**
  * Migration: GoDAM CPT (godam-video) cleanup.
  *
+ * @since 1.8.0
+ *
  * @package GoDAM
  */
 
@@ -38,6 +40,8 @@ defined( 'ABSPATH' ) || exit;
  * ## Re-running (e.g. for testing)
  *
  *   wp option delete rtgodam_godam_cpt_cleanup_done
+ *
+ * @since 1.8.0
  */
 class Godam_Cpt_Cleanup {
 
@@ -101,6 +105,8 @@ class Godam_Cpt_Cleanup {
 	 *
 	 * Called by Runner::init() during plugin bootstrap.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @return void
 	 */
 	public static function register_hooks(): void {
@@ -117,6 +123,8 @@ class Godam_Cpt_Cleanup {
 	 * Priority 1 ensures this runs before WordPress's redirect_canonical handler
 	 * (default priority 10). Without this, canonical trailing-slash redirects on
 	 * URLs like /videos would issue a 301 before our 410 ever fires.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @return void
 	 */
@@ -147,6 +155,8 @@ class Godam_Cpt_Cleanup {
 	 *
 	 * 410 is a permanent status; a public Cache-Control header lets CDNs and reverse
 	 * proxies cache the response so repeated crawls do not hit the PHP origin.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @return void
 	 */
@@ -226,6 +236,8 @@ class Godam_Cpt_Cleanup {
 	 * the concurrency lock is held by another request, signalling the runner to
 	 * retry on the next request.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @return bool True if migration is complete, in progress, or just queued; false if it bailed.
 	 */
 	public static function maybe_run(): bool {
@@ -248,6 +260,8 @@ class Godam_Cpt_Cleanup {
 	 *
 	 * Called directly from maybe_run() on init. A concurrency lock prevents
 	 * two simultaneous requests from each queuing a batch.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @return void
 	 */
@@ -331,6 +345,8 @@ class Godam_Cpt_Cleanup {
 	 * the main site). Passing the queuing site's blog ID and calling
 	 * switch_to_blog() guarantees that $wpdb->posts, get_option(), and
 	 * wp_delete_post() all operate against the correct subsite's tables.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @param int $blog_id Blog ID that queued this batch. 0 or 1 on single-site.
 	 * @return void
@@ -433,6 +449,8 @@ class Godam_Cpt_Cleanup {
 	 * sitemap generators (Yoast SEO, Rank Math, AIOSEO, Jetpack) no longer
 	 * emit those URLs.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @return void
 	 */
 	private static function flush_sitemap_caches() {
@@ -474,6 +492,8 @@ class Godam_Cpt_Cleanup {
 	 * `add_option()` is atomic (MySQL INSERT IGNORE) so only one caller wins.
 	 * A compare-and-swap UPDATE handles stale locks.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @return bool True when the lock was acquired, false otherwise.
 	 */
 	private static function acquire_lock(): bool {
@@ -507,6 +527,8 @@ class Godam_Cpt_Cleanup {
 
 	/**
 	 * Release the concurrency lock.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @return void
 	 */

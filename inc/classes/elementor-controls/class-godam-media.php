@@ -2,6 +2,8 @@
 /**
  * Elementor control - Godam Media control.
  * 
+ * @since 1.1.4
+ *
  * @package GoDAM
  */
 
@@ -24,6 +26,8 @@ class Godam_Media extends \Elementor\Base_Data_Control {
 	 *
 	 * Retrieve the control type, in this case `media`.
 	 *
+	 * @since 1.1.4
+	 *
 	 * @return string Control type.
 	 */
 	public function get_type() {
@@ -35,6 +39,8 @@ class Godam_Media extends \Elementor\Base_Data_Control {
 	 *
 	 * Retrieve the default value of the media control. Used to return the default
 	 * values while initializing the media control.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @return array Control default value.
 	 */
@@ -50,6 +56,8 @@ class Godam_Media extends \Elementor\Base_Data_Control {
 	 *
 	 * Retrieve the default settings of the media control. Used to return the default
 	 * values while initializing the media control.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @return array Control default settings.
 	 */
@@ -67,6 +75,8 @@ class Godam_Media extends \Elementor\Base_Data_Control {
 	 *
 	 * Used to register and enqueue custom scripts and styles used by the media
 	 * control.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @return void
 	 */
@@ -90,6 +100,8 @@ class Godam_Media extends \Elementor\Base_Data_Control {
 	 * Used to generate the control HTML in the editor using Underscore JS
 	 * template. The variables for the class are available using `data` JS
 	 * object.
+	 *
+	 * @since 1.1.4
 	 *
 	 * @return void
 	 */

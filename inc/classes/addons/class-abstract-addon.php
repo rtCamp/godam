@@ -16,11 +16,15 @@ defined( 'ABSPATH' ) || exit;
  * Abstract class Abstract_Addon.
  *
  * Provides standard interface for GoDAM add-ons (e.g., GoDAM for Woo).
+ *
+ * @since 1.8.0
  */
 abstract class Abstract_Addon {
 
 	/**
 	 * Unique add-on slug. Must be overridden.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @return string
 	 */
@@ -29,12 +33,16 @@ abstract class Abstract_Addon {
 	/**
 	 * Human-readable add-on name.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @return string
 	 */
 	abstract public function get_name();
 
 	/**
 	 * Add-on version string.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @return string
 	 */
@@ -43,12 +51,16 @@ abstract class Abstract_Addon {
 	/**
 	 * Absolute path to the add-on's root directory (with trailing slash).
 	 *
+	 * @since 1.8.0
+	 *
 	 * @return string
 	 */
 	abstract public function get_path();
 
 	/**
 	 * URL to the add-on's root directory (with trailing slash).
+	 *
+	 * @since 1.8.0
 	 *
 	 * @return string
 	 */
@@ -58,6 +70,8 @@ abstract class Abstract_Addon {
 	 * Bootstrap the add-on: register hooks, load files, etc.
 	 *
 	 * Called only when all dependency checks pass.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @return void
 	 */
@@ -71,6 +85,8 @@ abstract class Abstract_Addon {
 	 *   'check'     => (callable) Returns true when the dependency is satisfied.
 	 *   'message'   => (string) Admin notice text when the dependency is missing.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @return array<int, array{name: string, check: callable, message: string}>
 	 */
 	public function get_dependencies() {
@@ -79,6 +95,8 @@ abstract class Abstract_Addon {
 
 	/**
 	 * Check whether all dependencies are satisfied.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @return bool
 	 */
@@ -93,6 +111,8 @@ abstract class Abstract_Addon {
 
 	/**
 	 * Get missing dependency messages.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @return string[]
 	 */
@@ -113,6 +133,8 @@ abstract class Abstract_Addon {
 	 *
 	 * Override in your add-on to enforce a version requirement.
 	 *
+	 * @since 1.8.0
+	 *
 	 * @return string Semantic version, e.g. '1.7.0'.
 	 */
 	public function get_minimum_godam_version() {
@@ -121,6 +143,8 @@ abstract class Abstract_Addon {
 
 	/**
 	 * Check if the running GoDAM version satisfies the minimum requirement.
+	 *
+	 * @since 1.8.0
 	 *
 	 * @return bool
 	 */
