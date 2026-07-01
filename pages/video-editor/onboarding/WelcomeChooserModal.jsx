@@ -109,7 +109,7 @@ const WelcomeChooserModal = ( { isOpen, onSkip, onChoose, isBusy = false } ) => 
 									<img className="godam-welcome-chooser__media-img" src={ card.image } alt="" />
 								) }
 								{ card.badge && (
-									<span className="godam-welcome-chooser__badge">{ card.badge }</span>
+									<span className="godam-welcome-chooser__badge woo-badge">{ card.badge }</span>
 								) }
 							</span>
 							<span className="godam-welcome-chooser__card-foot">

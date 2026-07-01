@@ -28,73 +28,63 @@
 		align-self: stretch;
 		min-height: 320px;
 		width: 100%;
-		text-align: center;
+	}
+
+	// White preview panel — inset from the left, with a purple margin below it for
+	// the caption + dots. Bleeds off the top/right edges of the rail (the modal
+	// card clips the overflow), so purple frames only the left and bottom.
+	&__frame {
+		position: absolute;
+		top: 0;
+		right: -18px;
+		left: 28px;
+		bottom: 96px;
+		background: #fff;
+		border-radius: 0 0 0 1rem;
+		overflow: hidden;
 	}
 
 	&__slide {
 		position: absolute;
-		top: 0;
-		left: 0;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 14px;
-		width: 100%;
-		height: 100%;
-		padding: 24px;
+		inset: 0;
 		opacity: 0;
-		transform: translateY(8px);
-		transition: opacity 0.4s ease, transform 0.4s ease;
+		transition: opacity 0.4s ease;
 		pointer-events: none;
 
 		&.is-active {
 			opacity: 1;
-			transform: translateY(0);
 		}
 	}
 
-	&__slide-icon {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 64px;
-		height: 64px;
-		color: #fff;
-		background: rgba(255, 255, 255, 0.16);
-		border-radius: 16px;
-
-		svg {
-			width: 32px;
-			height: 32px;
-		}
+	&__slide-img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		object-position: center;
+		display: block;
+		padding: 1rem;
 	}
 
-	&__slide-title {
-		font-size: 15px;
-		font-weight: 600;
-		color: #fff;
-	}
-
+	// Caption + dots sit in the bottom-left purple margin, left-aligned.
 	&__caption {
 		position: absolute;
-		bottom: 30px;
-		left: 0;
-		width: 100%;
-		padding: 0 24px;
-		font-size: 11px;
+		left: 24px;
+		right: 20px;
+		bottom: 46px;
+		font-size: 13px;
+		font-weight: 500;
 		line-height: 1.4;
-		color: rgba(255, 255, 255, 0.85);
+		color: rgba(255, 255, 255, 0.9);
+		text-align: left;
 	}
 
 	&__dots {
 		position: absolute;
-		bottom: 14px;
-		left: 0;
+		left: 24px;
+		bottom: 22px;
 		display: flex;
-		justify-content: center;
+		justify-content: flex-start;
 		gap: 6px;
-		width: 100%;
 	}
 
 	&__dot {

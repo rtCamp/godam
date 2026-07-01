@@ -11,6 +11,10 @@ import apiFetch from '@wordpress/api-fetch';
  */
 import './godam-woo-nudge.scss';
 import { launchWooBlockTour } from '../../video-editor/onboarding/wooTour';
+import hotspotsImage from './images/interactive-product-hotspots.webp';
+import shoppableImage from './images/shoppable-video.webp';
+import reelPopsImage from './images/reel-pops.webp';
+import productPageImage from './images/enhanced-product-page.webp';
 
 // GoDAM brand mark (same shape as the onboarding BrandLogo); fill="currentColor"
 // so it takes the admin theme color via the .godam-woo-nudge__mark class.
@@ -61,21 +65,25 @@ const ProductPageIcon = () => (
 const FEATURES = [
 	{
 		Icon: HotspotIcon,
+		image: hotspotsImage,
 		title: __( 'Interactive product hotspots', 'godam' ),
 		body: __( 'Tag products directly on your videos so viewers can buy in a click.', 'godam' ),
 	},
 	{
 		Icon: ShoppableIcon,
+		image: shoppableImage,
 		title: __( 'Shoppable video', 'godam' ),
 		body: __( 'Turn any product video into a storefront that drives conversions.', 'godam' ),
 	},
 	{
 		Icon: ReelIcon,
+		image: reelPopsImage,
 		title: __( 'Reel Pops', 'godam' ),
 		body: __( 'Surface short, shoppable product reels across your store.', 'godam' ),
 	},
 	{
 		Icon: ProductPageIcon,
+		image: productPageImage,
 		title: __( 'Enhanced product page', 'godam' ),
 		body: __( 'Showcase your videos right on the WooCommerce product page.', 'godam' ),
 	},
@@ -190,7 +198,7 @@ const WooUnlockedNotice = () => {
 						) ) }
 					</div>
 					<div className="godam-woo-nudge__actions flex gap-3">
-						<Button variant="secondary" className="godam-woo-nudge__skip justify-center" onClick={ handleSkip } data-test-id="godam-header-button-woo-skip">
+						<Button variant="secondary" className="godam-woo-nudge__skip justify-center w-[30%]" onClick={ handleSkip } data-test-id="godam-header-button-woo-skip">
 							{ __( 'Skip', 'godam' ) }
 						</Button>
 						<Button variant="primary" className="godam-woo-nudge__cta flex-1 justify-center" onClick={ handleGetStarted } data-test-id="godam-header-button-woo-get-started">
@@ -201,18 +209,19 @@ const WooUnlockedNotice = () => {
 				{ /* Right rail: rotating preview of the Pro features being unlocked. */ }
 				<div className="godam-woo-nudge__media hidden w-72 flex-shrink-0 md:flex">
 					<div className="godam-woo-nudge__carousel">
-						{ FEATURES.map( ( { Icon, title }, i ) => (
-							<div
-								key={ title }
-								className={ `godam-woo-nudge__slide${ i === slide ? ' is-active' : '' }` }
-								aria-hidden={ i === slide ? 'false' : 'true' }
-							>
-								<span className="godam-woo-nudge__slide-icon"><Icon /></span>
-								<span className="godam-woo-nudge__slide-title">{ title }</span>
-							</div>
-						) ) }
+						<div className="godam-woo-nudge__frame">
+							{ FEATURES.map( ( { image, title }, i ) => (
+								<div
+									key={ title }
+									className={ `godam-woo-nudge__slide${ i === slide ? ' is-active' : '' }` }
+									aria-hidden={ i === slide ? 'false' : 'true' }
+								>
+									<img className="godam-woo-nudge__slide-img" src={ image } alt={ title } />
+								</div>
+							) ) }
+						</div>
 						<span className="godam-woo-nudge__caption">
-							{ __( 'A glimpse of the Pro features you’ve unlocked.', 'godam' ) }
+							{ FEATURES[ slide ]?.title }
 						</span>
 						<div className="godam-woo-nudge__dots" role="group" aria-label={ __( 'Feature preview slides', 'godam' ) }>
 							{ FEATURES.map( ( { title }, i ) => (
