@@ -102,16 +102,25 @@
 }
 
 // Preview video — shared by both handpicked and query tiles.
+// Hidden by default so it never flashes over a real thumbnail.
+// Revealed only when hovering/autoplay (is-previewing) or when the tile
+// has no server-side thumbnail and uses the first video frame instead (--no-thumb).
 .godam-gallery-v2-item__preview-video {
 	position: absolute;
 	inset: 0;
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
-	opacity: 1;
+	opacity: 0;
 	pointer-events: none;
 	transition: opacity 0.3s ease;
 	z-index: 1;
+}
+
+// No-thumbnail tiles: video first frame IS the thumbnail.
+// Must come before .is-previewing (lower specificity → must precede higher).
+.godam-gallery-v2-item--no-thumb .godam-gallery-v2-item__preview-video {
+	opacity: 1;
 }
 
 .godam-gallery-v2__query-button.is-previewing,
@@ -229,6 +238,7 @@
 		// only for items that have a placeholder image.
 	}
 
+	// stylelint-disable-next-line no-descending-specificity
 	&__play-icon {
 		position: absolute;
 		width: 52px;
@@ -409,6 +419,7 @@
 // ── Show play button toggle ───────────────────────────────────────────────────
 // When the editor sets data-show-play-button="false" on the gallery wrapper,
 // hide the play icon overlays on all tile types.
+// stylelint-disable no-descending-specificity
 [data-show-play-button="false"] {
 
 	.godam-gallery-v2__play-icon,
@@ -416,6 +427,7 @@
 		display: none;
 	}
 }
+// stylelint-enable no-descending-specificity
 
 @keyframes godam_gallery_v2_blur_pulse {
 

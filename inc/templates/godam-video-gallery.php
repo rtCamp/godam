@@ -414,7 +414,7 @@ if ( 'query' === $godam_gallery_mode ) {
 					<div class="<?php echo esc_attr( sprintf( 'godam-gallery-v2__query-item godam-gallery-v2__query-item--ratio-%s', $godam_ratio_class ) ); ?>">
 						<button
 							type="button"
-							class="godam-gallery-v2__query-button"
+							class="godam-gallery-v2__query-button<?php echo ( empty( $godam_item['thumbnail'] ) && ! empty( $godam_item['video_url'] ) ) ? ' godam-gallery-v2-item--no-thumb' : ''; ?>"
 							data-godam-gallery-v2-trigger="true"
 							data-video-id="<?php echo esc_attr( $godam_item['id'] ); ?>"
 							<?php /* translators: %s: video title. */ ?>
@@ -424,7 +424,7 @@ if ( 'query' === $godam_gallery_mode ) {
 								<?php if ( ! empty( $godam_item['thumbnail'] ) ) : ?>
 									<img src="<?php echo esc_url( $godam_item['thumbnail'] ); ?>" alt="<?php echo esc_attr( $godam_item['title'] ); ?>" class="godam-gallery-v2__thumbnail" <?php echo $godam_thumbnail_attributes ? wp_kses_data( $godam_thumbnail_attributes ) : ''; ?> />
 								<?php else : ?>
-									<img class="godam-gallery-v2__thumbnail godam-gallery-v2__thumbnail--pending" alt="<?php echo esc_attr( $godam_item['title'] ); ?>" aria-hidden="true" />
+									<span class="godam-gallery-v2__thumbnail godam-gallery-v2__thumbnail--pending" aria-hidden="true" hidden></span>
 								<?php endif; ?>
 								<?php if ( ! empty( $godam_item['video_url'] ) ) : ?>
 									<video
@@ -432,7 +432,7 @@ if ( 'query' === $godam_gallery_mode ) {
 										src="<?php echo esc_url( $godam_item['video_url'] ); ?>"
 										muted
 										playsinline
-										preload="none"
+										preload="<?php echo esc_attr( empty( $godam_item['thumbnail'] ) ? 'metadata' : 'none' ); ?>"
 										aria-hidden="true"
 										tabindex="-1"
 									></video>
@@ -480,7 +480,7 @@ if ( 'query' === $godam_gallery_mode ) {
 					<div class="<?php echo esc_attr( sprintf( 'godam-gallery-v2-item godam-gallery-v2-item--%s godam-gallery-v2-item--ratio-%s', $godam_layout, $godam_ratio_class ) ); ?>">
 						<button
 							type="button"
-							class="godam-gallery-v2-item__button"
+							class="godam-gallery-v2-item__button<?php echo ( empty( $godam_item['thumbnail'] ) && ! empty( $godam_item['video_url'] ) ) ? ' godam-gallery-v2-item--no-thumb' : ''; ?>"
 							data-godam-gallery-v2-trigger="true"
 							data-video-id="<?php echo esc_attr( $godam_item['id'] ); ?>"
 							<?php /* translators: %s: video title. */ ?>
@@ -495,11 +495,11 @@ if ( 'query' === $godam_gallery_mode ) {
 										<?php echo $godam_thumbnail_attributes ? wp_kses_data( $godam_thumbnail_attributes ) : ''; ?>
 									/>
 								<?php else : ?>
-									<img
+									<span
 										class="godam-gallery-v2-item__thumbnail godam-gallery-v2__thumbnail godam-gallery-v2__thumbnail--pending"
-										alt="<?php echo esc_attr( $godam_item['title'] ); ?>"
 										aria-hidden="true"
-									/>
+										hidden
+									></span>
 								<?php endif; ?>
 								<?php if ( ! empty( $godam_item['video_url'] ) ) : ?>
 									<video
@@ -507,7 +507,7 @@ if ( 'query' === $godam_gallery_mode ) {
 										src="<?php echo esc_url( $godam_item['video_url'] ); ?>"
 										muted
 										playsinline
-										preload="none"
+										preload="<?php echo esc_attr( empty( $godam_item['thumbnail'] ) ? 'metadata' : 'none' ); ?>"
 										aria-hidden="true"
 										tabindex="-1"
 									></video>
