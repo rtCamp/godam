@@ -43,6 +43,25 @@ const EditorTopBar = ( {
 	const previewUrl = `${ homeUrl }?godam_page=video-preview&id=${ attachmentID }`;
 	const analyticsUrl = `${ homeUrl }/wp-admin/admin.php?page=rtgodam_analytics&id=${ attachmentID }`;
 
+	/**
+	 * Leaving the editor via the back button discards any unsaved layer changes,
+	 * so confirm first when there are unsaved changes. Mirrors the native
+	 * `beforeunload` guard in VideoEditor (tab close / reload / browser back) so
+	 * every exit path warns consistently.
+	 */
+	const handleBack = () => {
+		if ( isChanged ) {
+			// eslint-disable-next-line no-alert
+			const leave = window.confirm( __( 'You have unsaved changes. Are you sure you want to leave?', 'godam' ) );
+
+			if ( ! leave ) {
+				return;
+			}
+		}
+
+		onBack();
+	};
+
 	return (
 		<div className="godam-video-editor__topbar">
 			<Flex justify="flex-start" align="center" gap={ 2 } expanded={ false }>
@@ -50,7 +69,8 @@ const EditorTopBar = ( {
 					<Button
 						icon={ arrowLeft }
 						label={ __( 'Back to media library', 'godam' ) }
-						onClick={ onBack }
+						onClick={ handleBack }
+						data-test-id="godam-video-editor-button-back"
 					/>
 				</FlexItem>
 				<FlexItem>
