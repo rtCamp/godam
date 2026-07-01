@@ -120,7 +120,8 @@ $ve-faint: color-mix(in srgb, currentcolor 5%, transparent);
 			overflow-wrap: break-word;
 		}
 
-		.tooltip-container:hover .tooltip-text {
+		.tooltip-container:hover .tooltip-text,
+		.tooltip-container:focus-within .tooltip-text {
 			visibility: visible;
 			opacity: 1;
 		}
