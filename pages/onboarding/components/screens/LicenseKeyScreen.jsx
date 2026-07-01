@@ -17,7 +17,7 @@ import { useDispatch } from 'react-redux';
 import BackButton from '../BackButton';
 import { useVerifyLicenseKeyMutation } from '../../redux/api/onboarding';
 import { goToStep, setConnected, setNotice } from '../../redux/slice/onboarding';
-import { STEPS } from '../../utils/constants';
+import { config, STEPS } from '../../utils/constants';
 
 /**
  * O5 — "Activate with license key" (reuses the existing verify_api_key flow;
@@ -75,7 +75,7 @@ const LicenseKeyScreen = () => {
 			</Button>
 
 			<p className="godam-onboarding__alt">
-				<ExternalLink href="https://app.godam.io/">{ __( 'Lost your key? Find it on your GoDAM app', 'godam' ) }</ExternalLink>
+				<ExternalLink href={ `${ config.appOrigin || 'https://app.godam.io' }/web/billing?tab=API` }>{ __( 'Lost your key? Find it on your GoDAM app', 'godam' ) }</ExternalLink>
 			</p>
 			<p className="godam-onboarding__alt">
 				{ __( 'Login with email instead?', 'godam' ) }{ ' ' }

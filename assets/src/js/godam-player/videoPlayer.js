@@ -93,10 +93,10 @@ export default class GodamVideoPlayer {
 
 		if ( needsAds ) {
 			loadPromises.push(
-				loadAdsPlugins().catch( ( error ) => {
-					// eslint-disable-next-line no-console
-					console.error( 'Failed to load ads plugins:', error );
-				} ),
+				// Ads are optional and loadAdsPlugins() already warns once when
+				// the chunk is blocked (e.g. by an ad blocker). Swallow here so a
+				// blocked ad script doesn't reject Promise.all and halt init.
+				loadAdsPlugins().catch( () => {} ),
 			);
 		}
 
@@ -167,9 +167,10 @@ export default class GodamVideoPlayer {
 
 		// Initialize ads manager (async - loads plugins dynamically)
 		this.adsManager = new AdsManager( this.player, this.configManager );
-		this.adsManager?.setupAdsIntegration().catch( ( error ) => {
-			// eslint-disable-next-line no-console
-			console.error( 'Ads integration failed:', error );
+		this.adsManager?.setupAdsIntegration().catch( () => {
+			// Ads are optional (the ads chunk is commonly blocked by ad
+			// blockers); pluginLoader already warns once. Don't surface a hard
+			// error — playback is unaffected.
 		} );
 
 		this.setupAspectRatio();
