@@ -4,6 +4,7 @@
 import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
@@ -80,8 +81,6 @@ const FEATURES = [
 	},
 ];
 
-const restBase = () => window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
-
 /**
  * O10: "You've unlocked Woo features" post-install nudge.
  *
@@ -110,10 +109,10 @@ const WooUnlockedNotice = () => {
 		if ( ! window?.userData?.validApiKey ) {
 			return;
 		}
-		fetch( restBase() + 'godam/v1/onboarding/woo-nudge', {
-			headers: { 'X-WP-Nonce': window.wpApiSettings?.nonce || '' },
-		} )
-			.then( ( res ) => ( res.ok ? res.json() : null ) )
+		// apiFetch (not raw fetch): resolves the REST root + nonce on any admin
+		// page. window.wpApiSettings isn't reliably present on the Dashboard, so a
+		// manual-nonce fetch could silently fail and re-show / fail to persist.
+		apiFetch( { path: '/godam/v1/onboarding/woo-nudge' } )
 			.then( ( data ) => {
 				if ( data?.show ) {
 					setShow( true );
@@ -139,10 +138,7 @@ const WooUnlockedNotice = () => {
 
 	// Persist the one-time "seen" state so the nudge never re-appears.
 	const markSeen = () => {
-		fetch( restBase() + 'godam/v1/onboarding/woo-nudge', {
-			method: 'POST',
-			headers: { 'X-WP-Nonce': window.wpApiSettings?.nonce || '' },
-		} ).catch( () => {} );
+		apiFetch( { path: '/godam/v1/onboarding/woo-nudge', method: 'POST' } ).catch( () => {} );
 	};
 
 	// "Skip" — mark seen and close, without launching the tour.

@@ -11,7 +11,7 @@
  * WordPress dependencies
  */
 import { Modal, Button } from '@wordpress/components';
-import { useState } from '@wordpress/element';
+import { useState, useRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -48,6 +48,27 @@ const CARDS = [
  */
 const WelcomeChooserModal = ( { isOpen, onSkip, onChoose, isBusy = false } ) => {
 	const [ selected, setSelected ] = useState( WELCOME_CHOICES.WOO );
+	const cardRefs = useRef( [] );
+
+	// ARIA radio-group keyboard pattern: arrow keys move selection (with roving
+	// tabindex, only the selected card is tab-focusable). Buttons keep the card
+	// layout that a stock WP radio control can't render.
+	const moveSelection = ( delta ) => {
+		const current = CARDS.findIndex( ( c ) => c.key === selected );
+		const nextIndex = ( current + delta + CARDS.length ) % CARDS.length;
+		setSelected( CARDS[ nextIndex ].key );
+		cardRefs.current[ nextIndex ]?.focus();
+	};
+
+	const onCardKeyDown = ( event ) => {
+		if ( event.key === 'ArrowRight' || event.key === 'ArrowDown' ) {
+			event.preventDefault();
+			moveSelection( 1 );
+		} else if ( event.key === 'ArrowLeft' || event.key === 'ArrowUp' ) {
+			event.preventDefault();
+			moveSelection( -1 );
+		}
+	};
 
 	if ( ! isOpen ) {
 		return null;
@@ -67,16 +88,19 @@ const WelcomeChooserModal = ( { isOpen, onSkip, onChoose, isBusy = false } ) => 
 			</p>
 
 			<div className="godam-welcome-chooser__cards" role="radiogroup" aria-label={ __( 'Welcome options', 'godam' ) }>
-				{ CARDS.map( ( card ) => {
+				{ CARDS.map( ( card, index ) => {
 					const isActive = selected === card.key;
 					return (
 						<button
 							key={ card.key }
+							ref={ ( el ) => ( cardRefs.current[ index ] = el ) }
 							type="button"
 							role="radio"
 							aria-checked={ isActive }
+							tabIndex={ isActive ? 0 : -1 }
 							className={ `godam-welcome-chooser__card${ isActive ? ' is-selected' : '' }` }
 							onClick={ () => setSelected( card.key ) }
+							onKeyDown={ onCardKeyDown }
 							data-test-id={ `godam-product-guide-card-${ card.key }` }
 						>
 							{ /* Image placeholder — artwork drops in here later. */ }

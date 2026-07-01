@@ -40,10 +40,12 @@ const ProductGuide = ( { attachmentID } ) => {
 	const [ modal, setModal ] = useState( null );
 	const [ isBusy, setBusy ] = useState( false );
 
-	// The welcome becomes a two-card chooser only when the GoDAM-for-Woo plugin is
-	// active (it owns the Shoppable Video block the Woo path walks through);
-	// otherwise the single Get-Started welcome is used.
-	const wooActive = Boolean( window?.videoData?.wooGuideActive );
+	// The welcome becomes a two-card chooser only when the GoDAM-for-Woo Shoppable
+	// Video tour is available (it owns the block the Woo path walks through);
+	// otherwise the single Get-Started welcome is used. Named to match the
+	// videoData.wooGuideActive flag and avoid confusion with the separate
+	// `wooActive` (= WooCommerce) flag also localized in class-pages.php.
+	const wooGuideActive = Boolean( window?.videoData?.wooGuideActive );
 
 	const onRequestEnd = useCallback( () => setModal( 'end' ), [] );
 	const onFinalAction = useCallback( () => setModal( 'addToPage' ), [] );
@@ -142,7 +144,7 @@ const ProductGuide = ( { attachmentID } ) => {
 
 	return (
 		<>
-			{ wooActive ? (
+			{ wooGuideActive ? (
 				<WelcomeChooserModal
 					isOpen={ modal === 'welcome' }
 					onSkip={ handleSkipWelcome }

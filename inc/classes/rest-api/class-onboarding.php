@@ -455,6 +455,22 @@ class Onboarding extends Base {
 	}
 
 	/**
+	 * Whether the WooCommerce Shoppable Video guide can actually run.
+	 *
+	 * Capability gate, not just "is GoDAM-for-Woo active": checks that the tour
+	 * code itself ships (the tour-state helper added alongside the tour route +
+	 * block-tour script). An older GoDAM-for-Woo defines GODAM_WOO_VERSION but has
+	 * no tour, so this avoids sending users to a dead-end blank page. Whoever
+	 * surfaces the Woo welcome / nudge should gate on this.
+	 *
+	 * @return bool
+	 */
+	public static function is_woo_guide_available() {
+		return class_exists( 'WooCommerce' )
+			&& method_exists( '\GoDAM_Woo\Classes\Product_Gallery_Rest', 'get_tour_state_value' );
+	}
+
+	/**
 	 * Permission check for the product-guide routes — same capability the Video
 	 * Editor page requires.
 	 *
@@ -492,15 +508,16 @@ class Onboarding extends Base {
 
 	/**
 	 * GET handler (O10) — whether to show the "unlocked Woo features" nudge:
-	 * the GoDAM-for-Woo plugin is active and the current user hasn't dismissed it
+	 * the GoDAM-for-Woo tour is available and the current user hasn't dismissed it
 	 * yet. Gated on GoDAM-for-Woo (not just WooCommerce) because the nudge's "Get
 	 * Started" launches the Shoppable Video block workflow, which that plugin owns
-	 * — so the modal never offers a workflow that can't run.
+	 * — so the modal never offers a workflow that can't run. Restricted to users
+	 * who can create pages (`edit_pages`), since Get Started opens a page editor.
 	 *
 	 * @return WP_REST_Response
 	 */
 	public function get_woo_nudge() {
-		$active = class_exists( 'WooCommerce' ) && defined( 'GODAM_WOO_VERSION' );
+		$active = self::is_woo_guide_available() && current_user_can( 'edit_pages' );
 		$seen   = (bool) get_user_meta( get_current_user_id(), self::WOO_NUDGE_META_KEY, true );
 
 		return new WP_REST_Response(
