@@ -25,7 +25,7 @@ const integrationTabs = [
 			<>
 				{ __( 'WooCommerce', 'godam' ) }
 				<span className="godam-pro-badge">
-					{ __( 'Beta', 'godam' ) }
+					{ __( 'Pro', 'godam' ) }
 				</span>
 			</>
 		),

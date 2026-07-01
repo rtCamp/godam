@@ -23,7 +23,6 @@ import { __ } from '@wordpress/i18n';
 import { scrollToTop } from '../../../utils/index.js';
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
-import ConfirmModal from '../../ConfirmModal.jsx';
 
 const GeneralSettings = () => {
 	const dispatch = useDispatch();
@@ -36,7 +35,6 @@ const GeneralSettings = () => {
 
 	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] = useSaveMediaSettingsMutation();
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
-	const [ isResetOnboardingOpen, setIsResetOnboardingOpen ] = useState( false );
 
 	// The "folder organization" toggle is GoDAM's media-library integration kill-switch.
 	// When set from code (constant/filter) the toggle is locked and the effective value
@@ -73,34 +71,6 @@ const GeneralSettings = () => {
 			}
 		} catch ( error ) {
 			showNotice( __( 'Failed to save settings.', 'godam' ), 'error' );
-		}
-	};
-
-	// Reset onboarding.
-	//
-	// Resets the per-user product-guide state to "pending" (so the Video Editor
-	// guided tour auto-shows again) and clears any legacy client-side flags.
-	const handleResetOnboarding = async () => {
-		try {
-			Object.keys( window.localStorage )
-				.filter( ( key ) => /onboarding|godam.*tour|welcome/i.test( key ) )
-				.forEach( ( key ) => window.localStorage.removeItem( key ) );
-
-			const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
-			await fetch( window.pathJoin( [ restURL, 'godam/v1/onboarding/product-guide' ] ), {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'X-WP-Nonce': window?.wpApiSettings?.nonce,
-				},
-				body: JSON.stringify( { status: 'pending' } ),
-			} );
-
-			setIsResetOnboardingOpen( false );
-			showNotice( __( 'Onboarding has been reset. The guided tour will start again the next time you open the Video Editor.', 'godam' ) );
-		} catch ( error ) {
-			setIsResetOnboardingOpen( false );
-			showNotice( __( 'Failed to reset onboarding.', 'godam' ), 'error' );
 		}
 	};
 
@@ -158,23 +128,6 @@ const GeneralSettings = () => {
 				</PanelBody>
 			</Panel>
 
-			<Panel header={ __( 'Onboarding', 'godam' ) } className="godam-panel godam-margin-bottom">
-				<PanelBody opened>
-					<h3 className="godam-settings-section-title">{ __( 'Reset Onboarding', 'godam' ) }</h3>
-					<p className="godam-settings-help">
-						{ __( 'Start the guided tour again from the beginning. The next time you open your dashboard, you’ll see the welcome screen where you can pick a guide and we’ll walk you through it. This won’t sign you out or affect any of your media, settings, or content.', 'godam' ) }
-					</p>
-					<Button
-						variant="primary"
-						className="mt-3"
-						onClick={ () => setIsResetOnboardingOpen( true ) }
-						data-test-id="godam-settings-reset-onboarding"
-					>
-						{ __( 'Reset onboarding', 'godam' ) }
-					</Button>
-				</PanelBody>
-			</Panel>
-
 			<div className="godam-settings__save-row">
 				<Button
 					variant="primary"
@@ -187,18 +140,6 @@ const GeneralSettings = () => {
 					{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 				</Button>
 			</div>
-
-			<ConfirmModal
-				isOpen={ isResetOnboardingOpen }
-				title={ __( 'Reset onboarding?', 'godam' ) }
-				confirmLabel={ __( 'Yes, Restart', 'godam' ) }
-				cancelLabel={ __( 'Cancel', 'godam' ) }
-				onCancel={ () => setIsResetOnboardingOpen( false ) }
-				onConfirm={ handleResetOnboarding }
-				data-test-id="godam-settings-general-button-confirm-reset"
-			>
-				{ __( 'We’ll restart the guided tour. The next time you open your dashboard, you’ll see the welcome screen where you can pick a guide and step through it again. This won’t sign you out or affect your media, settings, or content.', 'godam' ) }
-			</ConfirmModal>
 		</>
 	);
 };

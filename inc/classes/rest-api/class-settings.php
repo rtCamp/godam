@@ -11,7 +11,6 @@ defined( 'ABSPATH' ) || exit;
 
 use RTGODAM\Inc\Enums\Api_Key_Status;
 use RTGODAM\Inc\Enums\HTTP_Status_Code;
-use RTGODAM\Inc\Helpers\Api_Key;
 
 /**
  * Class Settings
@@ -111,17 +110,6 @@ class Settings extends Base {
 				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'refresh_api_key_status' ),
-					'permission_callback' => function () {
-						return current_user_can( 'manage_options' );
-					},
-				),
-			),
-			array(
-				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/get-api-key',
-				'args'      => array(
-					'methods'             => \WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'get_api_key' ),
 					'permission_callback' => function () {
 						return current_user_can( 'manage_options' );
 					},
@@ -315,22 +303,6 @@ class Settings extends Base {
 				'message'        => $status_messages[ $api_key_status ] ?? __( 'API key status refreshed.', 'godam' ),
 				'api_key_status' => $api_key_status,
 				'valid_api_key'  => $is_valid,
-			),
-			200
-		);
-	}
-
-	/**
-	 * Fetch the saved API key.
-	 *
-	 * @return \WP_REST_Response
-	 */
-	public function get_api_key() {
-		$api_key = Api_Key::get_key();
-
-		return new \WP_REST_Response(
-			array(
-				'api_key' => $api_key,
 			),
 			200
 		);

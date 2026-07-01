@@ -554,19 +554,11 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 									data-test-id="godam-video-editor-button-add-layer"
 									onClick={ handleToggle }
 									aria-expanded={ menuOpen }
+									icon={ plus }
 									disabled={ isAddDisabled }
 								>
 									{ __( 'Add layer', 'godam' ) }
 								</Button>
-								<Button
-									variant="primary"
-									className="godam-ve-layers__add-plus"
-									icon={ plus }
-									label={ __( 'Add layer', 'godam' ) }
-									onClick={ handleToggle }
-									aria-expanded={ menuOpen }
-									disabled={ isAddDisabled }
-								/>
 							</>
 						);
 					} }

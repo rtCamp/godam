@@ -7,9 +7,8 @@ import { useState } from 'react';
  * WordPress dependencies
  */
 import { Button, Panel, PanelBody, Spinner } from '@wordpress/components';
-import { copySmall, trash } from '@wordpress/icons';
+import { trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
-import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
@@ -101,32 +100,6 @@ const APISettings = ( { setNotice } ) => {
 		scrollToTop();
 	};
 
-	// Copy the actual (unmasked) API key to the clipboard.
-	// The field only holds the masked key, so fetch the real one on demand.
-	const handleCopyAPIKey = async () => {
-		try {
-			const response = await apiFetch( { path: '/godam/v1/settings/get-api-key' } );
-			const key = response?.api_key;
-
-			if ( ! key ) {
-				throw new Error( 'No API key returned' );
-			}
-
-			await window.navigator.clipboard.writeText( key );
-			setNotice( {
-				message: __( 'API key copied to clipboard.', 'godam' ),
-				status: 'success',
-				isVisible: true,
-			} );
-		} catch ( error ) {
-			setNotice( {
-				message: __( 'Failed to copy API key.', 'godam' ),
-				status: 'error',
-				isVisible: true,
-			} );
-		}
-	};
-
 	return (
 		<Panel header={ __( 'API Settings', 'godam' ) } className="godam-panel godam-margin-bottom">
 			<PanelBody initialOpen>
@@ -143,15 +116,6 @@ const APISettings = ( { setNotice } ) => {
 							/>
 						</div>
 						<div className="godam-api-key-row__actions">
-							<Button
-								icon={ copySmall }
-								variant="secondary"
-								onClick={ handleCopyAPIKey }
-								disabled={ ! hasAPIKey }
-								label={ __( 'Copy API key', 'godam' ) }
-								showTooltip
-								data-test-id="godam-settings-api-key-button-copy"
-							/>
 							<Button
 								icon={ trash }
 								variant="secondary"
