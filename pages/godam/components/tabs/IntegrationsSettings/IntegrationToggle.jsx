@@ -65,7 +65,7 @@ const IntegrationToggle = ( {
 						label,
 					)
 			}
-			disabled={ isToggling || ( ! hasValidAPIKey && ! enabled ) }
+			disabled={ isToggling || ! hasValidAPIKey }
 			onChange={ onChange }
 		/>
 	);
