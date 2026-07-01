@@ -191,7 +191,7 @@ class Onboarding extends Base {
 	public function get_demo_video() {
 		$id = 0;
 		if ( method_exists( '\RTGODAM\Inc\Demo_Assets', 'get_video' ) ) {
-			$id = (int) \RTGODAM\Inc\Demo_Assets::get_video( 'demo 1' );
+			$id = (int) \RTGODAM\Inc\Demo_Assets::get_video( 'video-editor-demo-video' );
 		}
 
 		return new WP_REST_Response( array( 'id' => $id ), 200 );
