@@ -39,7 +39,7 @@ const IntegrationToggle = ( {
 					{ isToggling && <Spinner /> }
 				</>
 			}
-			checked={ enabled }
+			checked={ hasValidAPIKey && enabled }
 			help={
 				! hasValidAPIKey
 					? (
