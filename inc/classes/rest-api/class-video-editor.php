@@ -70,14 +70,14 @@ class Video_Editor extends Base {
 	 */
 	private function get_videos_args() {
 		return array(
-			'page'     => array(
+			'page'          => array(
 				'description'       => __( 'Current page of the collection.', 'godam' ),
 				'type'              => 'integer',
 				'default'           => 1,
 				'minimum'           => 1,
 				'sanitize_callback' => 'absint',
 			),
-			'per_page' => array(
+			'per_page'      => array(
 				'description'       => __( 'Maximum number of items to be returned in result set.', 'godam' ),
 				'type'              => 'integer',
 				'default'           => 20,
@@ -85,20 +85,20 @@ class Video_Editor extends Base {
 				'maximum'           => 100,
 				'sanitize_callback' => 'absint',
 			),
-			'search'   => array(
+			'search'        => array(
 				'description'       => __( 'Limit results to those matching a string.', 'godam' ),
 				'type'              => 'string',
 				'default'           => '',
 				'sanitize_callback' => 'sanitize_text_field',
 			),
-			'orderby'  => array(
+			'orderby'       => array(
 				'description'       => __( 'Sort collection by attribute.', 'godam' ),
 				'type'              => 'string',
 				'default'           => 'date',
 				'enum'              => array( 'date', 'modified', 'title' ),
 				'sanitize_callback' => 'sanitize_key',
 			),
-			'order'    => array(
+			'order'         => array(
 				'description'       => __( 'Order sort attribute ascending or descending.', 'godam' ),
 				'type'              => 'string',
 				'default'           => 'desc',
@@ -168,11 +168,12 @@ class Video_Editor extends Base {
 			$items[] = $this->prepare_video_item( $post );
 		}
 
-		// Pin a specific attachment (the tour's demo video) to the front of page 1,
-		// without affecting normal browsing/pagination when the param is absent.
+		// Pin a specific attachment (the tour's demo video) to the front of page 1.
+		// Only for the unfiltered, unsearched first page, so a filter/search view
+		// isn't shown a card that violates it; capped to per_page so counts hold.
 		$prioritize_id = (int) $request->get_param( 'prioritize_id' );
-		if ( $prioritize_id > 0 && 1 === $page && '' === $search ) {
-			$items = $this->prioritize_item( $items, $prioritize_id );
+		if ( $prioritize_id > 0 && 1 === $page && '' === $search && 'all' === $filter ) {
+			$items = $this->prioritize_item( $items, $prioritize_id, $per_page );
 		}
 
 		$response = new WP_REST_Response(
@@ -199,9 +200,10 @@ class Video_Editor extends Base {
 	 *
 	 * @param array $items         Prepared video items.
 	 * @param int   $prioritize_id Attachment id to surface first.
+	 * @param int   $per_page      Page size to cap the result at.
 	 * @return array
 	 */
-	private function prioritize_item( $items, $prioritize_id ) {
+	private function prioritize_item( $items, $prioritize_id, $per_page ) {
 		$pinned = null;
 		$rest   = array();
 
@@ -226,7 +228,11 @@ class Video_Editor extends Base {
 		}
 
 		array_unshift( $rest, $pinned );
-		return $rest;
+
+		// Keep page 1 at per_page: when the pinned item wasn't already on the page
+		// we'd otherwise return per_page + 1 (inflating counts). The dropped item
+		// still surfaces on its natural page (the client dedups the pinned one).
+		return array_slice( $rest, 0, $per_page );
 	}
 
 	/**

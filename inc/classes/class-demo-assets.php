@@ -152,7 +152,9 @@ class Demo_Assets {
 			RTGODAM_API_BASE . '/api/method/godam_core.api.demo.get_demo_file'
 		);
 
-		$args = array( 'timeout' => 15 );
+		// Short timeout so a slow/unreachable demo API can't block tour start (the
+		// client awaits /demo-video). Matches the VIP branch's 3s.
+		$args = array( 'timeout' => 3 );
 
 		if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
 			$response = vip_safe_wp_remote_get( $url, '', 3, 3, 20, $args );

@@ -273,6 +273,13 @@ const VideoEditorDataView = ( { onEdit } ) => {
 		setHasMore( true );
 	}, [] );
 
+	// A pin change (tour start / end) is a query change like search/filter/sort —
+	// reset the collection so page 1 re-fetches with the new prioritize_id and the
+	// pinned demo isn't left duplicated in the accumulated list.
+	useEffect( () => {
+		resetCollection();
+	}, [ prioritizeId, resetCollection ] );
+
 	const handleSearchChange = ( event ) => {
 		setSearch( event.target.value );
 		resetCollection();
@@ -321,7 +328,16 @@ const VideoEditorDataView = ( { onEdit } ) => {
 			const totalPages = Number( response?.data?.paginationInfo?.totalPages ) || 0;
 
 			setTotal( Number( response?.data?.paginationInfo?.totalItems ) || 0 );
-			setItems( ( prev ) => ( page === 1 ? fetched : [ ...prev, ...fetched ] ) );
+			// Dedup by id on append: the pinned demo (prioritize_id) can also come
+			// back at its natural position on a later page, which would otherwise
+			// produce two cards with the same DataViews item id.
+			setItems( ( prev ) => {
+				if ( page === 1 ) {
+					return fetched;
+				}
+				const seen = new Set( prev.map( ( it ) => it.id ) );
+				return [ ...prev, ...fetched.filter( ( it ) => ! seen.has( it.id ) ) ];
+			} );
 
 			if ( ( totalPages && page >= totalPages ) || fetched.length === 0 ) {
 				setHasMore( false );

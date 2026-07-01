@@ -109,9 +109,15 @@ const ProductGuide = ( { attachmentID } ) => {
 	const handleStart = async () => {
 		setModal( null );
 		try {
+			// Cap the wait so a slow demo API can't delay tour start; on
+			// timeout/error we just start without a pinned demo.
+			const controller = new AbortController();
+			const timeout = setTimeout( () => controller.abort(), 4000 );
 			const res = await fetch( window.pathJoin( [ restURL, 'godam/v1/onboarding/demo-video' ] ), {
 				headers: { 'X-WP-Nonce': window?.videoData?.nonce || window?.wpApiSettings?.nonce },
+				signal: controller.signal,
 			} );
+			clearTimeout( timeout );
 			const data = await res.json();
 			const demoId = Number( data?.id ) || 0;
 			if ( demoId ) {
