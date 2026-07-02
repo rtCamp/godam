@@ -45,9 +45,10 @@ const EditorTopBar = ( {
 
 	/**
 	 * Leaving the editor via the back button discards any unsaved layer changes,
-	 * so confirm first when there are unsaved changes. Mirrors the native
-	 * `beforeunload` guard in VideoEditor (tab close / reload / browser back) so
-	 * every exit path warns consistently.
+	 * so confirm first when there are unsaved changes. Complements the other two
+	 * guards: the native `beforeunload` in VideoEditor (tab close / reload /
+	 * cross-page navigation) and the `popstate` confirm in App.js (browser
+	 * back/forward within the editor), so every exit path warns consistently.
 	 */
 	const handleBack = () => {
 		if ( isChanged ) {
