@@ -1607,25 +1607,60 @@ class Media_Library extends Base {
 		// Use the normalized value for the rest of the handler.
 		$data['mime'] = $mime;
 
+		// Build (or find an existing) virtual attachment for this payload.
+		$attach_id = $this->create_virtual_attachment( $data );
+
+		if ( is_wp_error( $attach_id ) ) {
+			return new \WP_REST_Response(
+				array(
+					'success' => false,
+					'error'   => $attach_id->get_error_message(),
+				),
+				500
+			);
+		}
+
+		return new \WP_REST_Response(
+			array(
+				'success'    => true,
+				'attachment' => wp_prepare_attachment_for_js( $attach_id ),
+				'message'    => __( 'Attachment ready', 'godam' ),
+			),
+			200
+		);
+	}
+
+	/**
+	 * Create (or return an existing) virtual media attachment from a GoDAM media
+	 * payload — a WordPress attachment that represents GoDAM-hosted media via its
+	 * transcoding metadata, without downloading the file.
+	 *
+	 * Extracted from create_media_entry() so it can be reused server-side (e.g. by
+	 * the demo-assets helper). Dedupes by `rtgodam_transcoding_job_id`, so repeat
+	 * calls for the same GoDAM id return the existing attachment.
+	 *
+	 * @param array $data GoDAM media payload: id, title, url, mime, type, plus
+	 *                    optional mpd_url, hls_url, icon, filename, width, height,
+	 *                    filesizeInBytes, video_duration, description, owner.
+	 * @param array $opts Options. `is_demo` (bool): tag as a demo asset
+	 *                    (`rtgodam_is_demo_attachment`) and skip SaaS registration.
+	 * @return int|\WP_Error Attachment ID, or WP_Error on failure.
+	 */
+	public function create_virtual_attachment( $data, $opts = array() ) {
+		$is_demo = ! empty( $opts['is_demo'] );
+
 		// Sanitize the GoDAM ID.
 		$godam_id = sanitize_text_field( $data['id'] );
 
-		// Check if godam_id is numeric; if yes, check if an attachment with this ID exists before returning.
+		// If godam_id is numeric and already an attachment, reuse it.
 		if ( is_numeric( $godam_id ) ) {
 			$attachment_post = get_post( $godam_id );
 			if ( $attachment_post && 'attachment' === $attachment_post->post_type ) {
-				return new \WP_REST_Response(
-					array(
-						'success'    => true,
-						'attachment' => wp_prepare_attachment_for_js( $godam_id ),
-						'message'    => __( 'Attachment already exists', 'godam' ),
-					),
-					200
-				);
+				return (int) $godam_id;
 			}
 		}
 
-		// Check if a media entry already exists for this GoDAM ID.
+		// Reuse an existing entry for this GoDAM id instead of duplicating.
 		$existing = new \WP_Query(
 			array(
 				'post_type'      => 'attachment',
@@ -1638,17 +1673,8 @@ class Media_Library extends Base {
 			)
 		);
 
-		// If found, return existing attachment instead of duplicating.
 		if ( $existing->have_posts() ) {
-			$existing_id = $existing->posts[0];
-			return new \WP_REST_Response(
-				array(
-					'success'    => true,
-					'attachment' => wp_prepare_attachment_for_js( $existing_id ),
-					'message'    => __( 'Attachment already exists', 'godam' ),
-				),
-				200
-			);
+			return (int) $existing->posts[0];
 		}
 
 		// Prepare post data for the virtual media entry.
@@ -1661,49 +1687,45 @@ class Media_Library extends Base {
 			'guid'           => esc_url_raw( $data['url'] ),
 		);
 
-		// Pre-set virtual media marker before insertion so transcoding handler can detect it.
-		$pre_setter = function ( $new_id ) use ( $godam_id ) {
-			// Ensure virtual marker is available for any listeners on add_attachment.
+		// Pre-set markers before insertion so add_attachment listeners see them. The
+		// demo marker is set first so the virtual-media registrar can skip demos.
+		$pre_setter = function ( $new_id ) use ( $godam_id, $is_demo ) {
+			if ( $is_demo ) {
+				update_post_meta( $new_id, 'rtgodam_is_demo_attachment', 1 );
+			}
 			update_post_meta( $new_id, '_godam_original_id', $godam_id );
 		};
-		// Set at early priority so it runs before the handler's priority 21.
 		add_action( 'add_attachment', $pre_setter, 1, 1 );
 
-		// Insert the attachment into WordPress.
 		$attach_id = wp_insert_attachment( $attachment, $data['title'] );
 
-		// Remove the temporary setter.
 		remove_action( 'add_attachment', $pre_setter, 1 );
 
-		// If creation fails, return an error response.
 		if ( is_wp_error( $attach_id ) ) {
-			return new \WP_REST_Response(
-				array(
-					'success' => false,
-					'error'   => $attach_id->get_error_message(),
-				),
-				500
-			);
+			return $attach_id;
 		}
 
-		// Set custom metadata to track GoDAM-related properties.
+		// Ensure markers are persisted (idempotent with the pre-setter).
+		if ( $is_demo ) {
+			update_post_meta( $attach_id, 'rtgodam_is_demo_attachment', 1 );
+		}
 		update_post_meta( $attach_id, '_godam_original_id', $godam_id );
 		update_post_meta( $attach_id, '_owner_email', sanitize_email( $data['owner'] ?? '' ) );
 		update_post_meta( $attach_id, 'rtgodam_transcoded_url', esc_url_raw( $data['mpd_url'] ?? '' ) );
 		update_post_meta( $attach_id, 'rtgodam_transcoding_status', 'transcoded' );
 		update_post_meta( $attach_id, 'rtgodam_transcoding_job_id', $godam_id );
-		update_post_meta( $attach_id, '_wp_attached_file', sanitize_text_field( $data['filename'] ) ); // Virtual media path.
+		update_post_meta( $attach_id, '_wp_attached_file', sanitize_text_field( $data['filename'] ?? '' ) ); // Virtual media path.
 
 		$video_duration_in_seconds = 0;
 		$video_duration_formatted  = '';
 		if ( isset( $data['video_duration'] ) && ! empty( $data['video_duration'] ) ) {
-			// Convert into number of seconds.
 			$video_duration_in_seconds = is_numeric( $data['video_duration'] ) ? (int) $data['video_duration'] : 0;
-			// Convert into formatted i:s.
-			$video_duration_formatted = gmdate( 'i:s', $video_duration_in_seconds );
+			$video_duration_formatted  = gmdate( 'i:s', $video_duration_in_seconds );
 		}
 
-		if ( 'video' === $data['type'] ) {
+		$type = $data['type'] ?? '';
+
+		if ( 'video' === $type ) {
 			update_post_meta( $attach_id, 'rtgodam_hls_transcoded_url', esc_url_raw( $data['hls_url'] ?? '' ) );
 
 			$wp_attachment_metadata = array(
@@ -1731,7 +1753,7 @@ class Media_Library extends Base {
 			}
 
 			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
-		} elseif ( 'image' === $data['type'] ) {
+		} elseif ( 'image' === $type ) {
 			// Initialize metadata with basic info.
 			$wp_attachment_metadata = array(
 				'filesize' => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,
@@ -1750,14 +1772,14 @@ class Media_Library extends Base {
 
 			// Request image subsizes from GoDAM Central.
 			$this->request_image_subsizes_from_godam( $godam_id, $attach_id );
-		} elseif ( 'audio' === $data['type'] ) {
+		} elseif ( 'audio' === $type ) {
 			$wp_attachment_metadata = array(
 				'filesize'  => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,
 				'mime_type' => $data['mime'],
 			);
 
 			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
-		} elseif ( 'pdf' === $data['type'] ) {
+		} elseif ( 'pdf' === $type ) {
 			$wp_attachment_metadata = array(
 				'filesize' => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,
 			);
@@ -1770,15 +1792,7 @@ class Media_Library extends Base {
 			}
 		}
 
-		// Return the newly created media object.
-		return new \WP_REST_Response(
-			array(
-				'success'    => true,
-				'attachment' => wp_prepare_attachment_for_js( $attach_id ),
-				'message'    => __( 'Attachment created', 'godam' ),
-			),
-			201
-		);
+		return (int) $attach_id;
 	}
 
 	/**

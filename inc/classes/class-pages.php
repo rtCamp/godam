@@ -587,6 +587,10 @@ class Pages {
 					'metformActive'      => $is_met_form_active,
 					// O9: Woo empty-state copy on the connected Video Editor.
 					'wooActive'          => class_exists( 'WooCommerce' ),
+					// Woo product-guide entry: only when GoDAM-for-Woo ships the
+					// Shoppable Video tour (capability gate, not just plugin-active),
+					// so the Woo card never leads to a missing block or dead-end page.
+					'wooGuideActive'     => \RTGODAM\Inc\REST_API\Onboarding::is_woo_guide_available(),
 				)
 			);
 

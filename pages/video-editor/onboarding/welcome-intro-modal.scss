@@ -1,0 +1,41 @@
+/**
+ * Single-option "Get Started with GoDAM" welcome (non-Woo sites).
+ * Scoped to the `.godam-welcome-intro` Modal className. Accents follow the
+ * WordPress admin theme color, matching the chooser modal.
+ */
+
+$accent: var( --wp-admin-theme-color, #3858e9 );
+
+.godam-welcome-intro {
+
+	.godam-welcome-intro__subtitle {
+		margin: 0 0 16px;
+		font-size: 14px;
+		color: #4b5563;
+	}
+
+	// Full-width image placeholder; artwork drops in later (shared with the
+	// chooser's "interactive" card).
+	.godam-welcome-intro__media {
+		display: block;
+		height: 320px;
+		background: color-mix( in srgb, #{ $accent } 8%, #fff );
+		border-radius: 0.5rem;
+		overflow: hidden;
+	}
+
+	.godam-welcome-intro__media-img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+
+	.godam-welcome-intro__actions {
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		gap: 8px;
+		margin-top: 22px;
+	}
+}

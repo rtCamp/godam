@@ -122,7 +122,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 							rel="noreferrer"
 							style={ {
 								color: layer?.imageCtaButtonTextColor ?? '#ffffff',
-								backgroundColor: layer?.imageCtaButtonColor ?? '#EEAB95',
+								backgroundColor: layer?.imageCtaButtonColor ?? '#111',
 								textDecoration: 'none',
 							} }
 						>

@@ -70,14 +70,14 @@ class Video_Editor extends Base {
 	 */
 	private function get_videos_args() {
 		return array(
-			'page'     => array(
+			'page'          => array(
 				'description'       => __( 'Current page of the collection.', 'godam' ),
 				'type'              => 'integer',
 				'default'           => 1,
 				'minimum'           => 1,
 				'sanitize_callback' => 'absint',
 			),
-			'per_page' => array(
+			'per_page'      => array(
 				'description'       => __( 'Maximum number of items to be returned in result set.', 'godam' ),
 				'type'              => 'integer',
 				'default'           => 20,
@@ -85,32 +85,39 @@ class Video_Editor extends Base {
 				'maximum'           => 100,
 				'sanitize_callback' => 'absint',
 			),
-			'search'   => array(
+			'search'        => array(
 				'description'       => __( 'Limit results to those matching a string.', 'godam' ),
 				'type'              => 'string',
 				'default'           => '',
 				'sanitize_callback' => 'sanitize_text_field',
 			),
-			'orderby'  => array(
+			'orderby'       => array(
 				'description'       => __( 'Sort collection by attribute.', 'godam' ),
 				'type'              => 'string',
 				'default'           => 'date',
 				'enum'              => array( 'date', 'modified', 'title' ),
 				'sanitize_callback' => 'sanitize_key',
 			),
-			'order'    => array(
+			'order'         => array(
 				'description'       => __( 'Order sort attribute ascending or descending.', 'godam' ),
 				'type'              => 'string',
 				'default'           => 'desc',
 				'enum'              => array( 'asc', 'desc' ),
 				'sanitize_callback' => 'sanitize_key',
 			),
-			'filter'   => array(
+			'filter'        => array(
 				'description'       => __( 'Limit the collection to a subset of videos.', 'godam' ),
 				'type'              => 'string',
 				'default'           => 'all',
 				'enum'              => array( 'all', 'edited', 'unedited', 'transcoded', 'non_transcoded' ),
 				'sanitize_callback' => 'sanitize_key',
+			),
+			'prioritize_id' => array(
+				'description'       => __( 'Attachment id to surface first on page 1 (used to pin the demo video during the onboarding tour).', 'godam' ),
+				'type'              => 'integer',
+				'default'           => 0,
+				'minimum'           => 0,
+				'sanitize_callback' => 'absint',
 			),
 		);
 	}
@@ -161,6 +168,14 @@ class Video_Editor extends Base {
 			$items[] = $this->prepare_video_item( $post );
 		}
 
+		// Pin a specific attachment (the tour's demo video) to the front of page 1.
+		// Only for the unfiltered, unsearched first page, so a filter/search view
+		// isn't shown a card that violates it; capped to per_page so counts hold.
+		$prioritize_id = (int) $request->get_param( 'prioritize_id' );
+		if ( $prioritize_id > 0 && 1 === $page && '' === $search && 'all' === $filter ) {
+			$items = $this->prioritize_item( $items, $prioritize_id, $per_page );
+		}
+
 		$response = new WP_REST_Response(
 			array(
 				'items'      => $items,
@@ -174,6 +189,50 @@ class Video_Editor extends Base {
 		$response->header( 'X-WP-TotalPages', (int) $query->max_num_pages );
 
 		return $response;
+	}
+
+	/**
+	 * Move (or insert) a given attachment to the front of a prepared items list.
+	 *
+	 * Keeps the item once (dedupes if already in the page), and prepends it if it
+	 * wasn't on the page — so the demo video is always the first card during the
+	 * tour regardless of its date.
+	 *
+	 * @param array $items         Prepared video items.
+	 * @param int   $prioritize_id Attachment id to surface first.
+	 * @param int   $per_page      Page size to cap the result at.
+	 * @return array
+	 */
+	private function prioritize_item( $items, $prioritize_id, $per_page ) {
+		$pinned = null;
+		$rest   = array();
+
+		foreach ( $items as $item ) {
+			if ( isset( $item['id'] ) && (int) $item['id'] === $prioritize_id ) {
+				$pinned = $item;
+			} else {
+				$rest[] = $item;
+			}
+		}
+
+		// Not on this page — prepare it directly if it's a valid video attachment.
+		if ( null === $pinned ) {
+			$post = get_post( $prioritize_id );
+			if ( $post && 'attachment' === $post->post_type && 0 === strpos( (string) get_post_mime_type( $post ), 'video/' ) ) {
+				$pinned = $this->prepare_video_item( $post );
+			}
+		}
+
+		if ( null === $pinned ) {
+			return $items;
+		}
+
+		array_unshift( $rest, $pinned );
+
+		// Keep page 1 at per_page: when the pinned item wasn't already on the page
+		// we'd otherwise return per_page + 1 (inflating counts). The dropped item
+		// still surfaces on its natural page (the client dedups the pinned one).
+		return array_slice( $rest, 0, $per_page );
 	}
 
 	/**

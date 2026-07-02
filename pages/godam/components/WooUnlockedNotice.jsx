@@ -4,11 +4,17 @@
 import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
  */
 import './godam-woo-nudge.scss';
+import { launchWooBlockTour } from '../../video-editor/onboarding/wooTour';
+import hotspotsImage from './images/interactive-product-hotspots.webp';
+import shoppableImage from './images/shoppable-video.webp';
+import reelPopsImage from './images/reel-pops.webp';
+import productPageImage from './images/enhanced-product-page.webp';
 
 // GoDAM brand mark (same shape as the onboarding BrandLogo); fill="currentColor"
 // so it takes the admin theme color via the .godam-woo-nudge__mark class.
@@ -59,27 +65,29 @@ const ProductPageIcon = () => (
 const FEATURES = [
 	{
 		Icon: HotspotIcon,
+		image: hotspotsImage,
 		title: __( 'Interactive product hotspots', 'godam' ),
 		body: __( 'Tag products directly on your videos so viewers can buy in a click.', 'godam' ),
 	},
 	{
 		Icon: ShoppableIcon,
+		image: shoppableImage,
 		title: __( 'Shoppable video', 'godam' ),
 		body: __( 'Turn any product video into a storefront that drives conversions.', 'godam' ),
 	},
 	{
 		Icon: ReelIcon,
+		image: reelPopsImage,
 		title: __( 'Reel Pops', 'godam' ),
 		body: __( 'Surface short, shoppable product reels across your store.', 'godam' ),
 	},
 	{
 		Icon: ProductPageIcon,
+		image: productPageImage,
 		title: __( 'Enhanced product page', 'godam' ),
 		body: __( 'Showcase your videos right on the WooCommerce product page.', 'godam' ),
 	},
 ];
-
-const restBase = () => window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
 /**
  * O10: "You've unlocked Woo features" post-install nudge.
@@ -94,17 +102,25 @@ const restBase = () => window.godamRestRoute?.url || window.wpApiSettings?.root 
  */
 const WooUnlockedNotice = () => {
 	const [ show, setShow ] = useState( false );
+	// Right-rail Pro-features preview carousel.
+	const [ slide, setSlide ] = useState( 0 );
 
 	useEffect( () => {
+		// Never on the Video Editor page — that screen has its own first-run
+		// welcome chooser (Flow 2); the nudge (Flow 3) belongs to the other
+		// GoDAM admin screens (e.g. the Dashboard) that share GoDAMHeader.
+		if ( new URLSearchParams( window.location.search ).get( 'page' ) === 'rtgodam_video_editor' ) {
+			return;
+		}
 		// Only connected sites can have "unlocked" Woo features; skip the request
 		// entirely otherwise so disconnected/onboarding pages stay quiet.
 		if ( ! window?.userData?.validApiKey ) {
 			return;
 		}
-		fetch( restBase() + 'godam/v1/onboarding/woo-nudge', {
-			headers: { 'X-WP-Nonce': window.wpApiSettings?.nonce || '' },
-		} )
-			.then( ( res ) => ( res.ok ? res.json() : null ) )
+		// apiFetch (not raw fetch): resolves the REST root + nonce on any admin
+		// page. window.wpApiSettings isn't reliably present on the Dashboard, so a
+		// manual-nonce fetch could silently fail and re-show / fail to persist.
+		apiFetch( { path: '/godam/v1/onboarding/woo-nudge' } )
 			.then( ( data ) => {
 				if ( data?.show ) {
 					setShow( true );
@@ -113,17 +129,37 @@ const WooUnlockedNotice = () => {
 			.catch( () => {} );
 	}, [] );
 
+	// Auto-advance the preview carousel while the nudge is open.
+	useEffect( () => {
+		if ( ! show ) {
+			return undefined;
+		}
+		const timer = setInterval( () => {
+			setSlide( ( s ) => ( s + 1 ) % FEATURES.length );
+		}, 3500 );
+		return () => clearInterval( timer );
+	}, [ show ] );
+
 	// Backdrop click only hides the nudge for this view; it does NOT persist `seen`,
 	// so an accidental click can't permanently kill a one-time nudge.
 	const closeOnly = () => setShow( false );
 
-	// The explicit "Get Started" CTA is what marks the nudge seen for good.
-	const dismiss = () => {
+	// Persist the one-time "seen" state so the nudge never re-appears.
+	const markSeen = () => {
+		apiFetch( { path: '/godam/v1/onboarding/woo-nudge', method: 'POST' } ).catch( () => {} );
+	};
+
+	// "Skip" — mark seen and close, without launching the tour.
+	const handleSkip = () => {
 		setShow( false );
-		fetch( restBase() + 'godam/v1/onboarding/woo-nudge', {
-			method: 'POST',
-			headers: { 'X-WP-Nonce': window.wpApiSettings?.nonce || '' },
-		} ).catch( () => {} );
+		markSeen();
+	};
+
+	// "Get Started" — mark seen, then hand off to the in-editor Shoppable Video tour.
+	const handleGetStarted = () => {
+		setShow( false );
+		markSeen();
+		launchWooBlockTour();
 	};
 
 	if ( ! show ) {
@@ -161,12 +197,46 @@ const WooUnlockedNotice = () => {
 							</div>
 						) ) }
 					</div>
-					<Button variant="primary" className="godam-woo-nudge__cta w-full justify-center" onClick={ dismiss } data-test-id="godam-header-button-woo-get-started">
-						{ __( 'Get Started', 'godam' ) }
-					</Button>
+					<div className="godam-woo-nudge__actions flex gap-3">
+						<Button variant="secondary" className="godam-woo-nudge__skip justify-center w-[30%]" onClick={ handleSkip } data-test-id="godam-header-button-woo-skip">
+							{ __( 'Skip', 'godam' ) }
+						</Button>
+						<Button variant="primary" className="godam-woo-nudge__cta flex-1 justify-center" onClick={ handleGetStarted } data-test-id="godam-header-button-woo-get-started">
+							{ __( 'Get Started', 'godam' ) }
+						</Button>
+					</div>
 				</div>
-				{ /* Right rail reserved for a future Pro-features preview. Intentionally empty for now (no placeholder UI yet). */ }
-				<div className="godam-woo-nudge__media hidden w-72 flex-shrink-0 md:block" aria-hidden="true" />
+				{ /* Right rail: rotating preview of the Pro features being unlocked. */ }
+				<div className="godam-woo-nudge__media hidden w-72 flex-shrink-0 md:flex">
+					<div className="godam-woo-nudge__carousel">
+						<div className="godam-woo-nudge__frame">
+							{ FEATURES.map( ( { image, title }, i ) => (
+								<div
+									key={ title }
+									className={ `godam-woo-nudge__slide${ i === slide ? ' is-active' : '' }` }
+									aria-hidden={ i === slide ? 'false' : 'true' }
+								>
+									<img className="godam-woo-nudge__slide-img" src={ image } alt={ title } />
+								</div>
+							) ) }
+						</div>
+						<span className="godam-woo-nudge__caption">
+							{ FEATURES[ slide ]?.title }
+						</span>
+						<div className="godam-woo-nudge__dots" role="group" aria-label={ __( 'Feature preview slides', 'godam' ) }>
+							{ FEATURES.map( ( { title }, i ) => (
+								<button
+									key={ title }
+									type="button"
+									className={ `godam-woo-nudge__dot${ i === slide ? ' is-active' : '' }` }
+									aria-label={ title }
+									aria-pressed={ i === slide }
+									onClick={ () => setSlide( i ) }
+								/>
+							) ) }
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	);

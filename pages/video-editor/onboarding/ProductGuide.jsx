@@ -21,11 +21,48 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import ConfirmModal from '../../godam/components/ConfirmModal.jsx';
+import WelcomeChooserModal, { WELCOME_CHOICES } from './WelcomeChooserModal.jsx';
+import WelcomeIntroModal from './WelcomeIntroModal.jsx';
 import { useProductGuide } from './useProductGuide';
 import { shouldAutoStartGuide, setProductGuideState, PRODUCT_GUIDE_STATES } from './productGuideState';
 import { getGoDAMVideoBlockMarkup } from '../utils';
+import { launchWooBlockTour } from './wooTour';
+import { setTourPrioritizeId } from './tourPrioritize';
 
 const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
+
+/**
+ * Poll until the demo video is the FIRST card in the list (up to `timeout` ms),
+ * so the guide's first step highlights the demo — not whatever card was first
+ * before the list re-ordered. Waiting on mere existence isn't enough: a demo
+ * created earlier may already sit lower in the list by date until the reorder
+ * lands.
+ *
+ * @param {number} attachmentId Demo attachment id.
+ * @param {number} [timeout]    Max wait in ms.
+ * @return {Promise<void>} Resolves when the demo is first, or the timeout elapses.
+ */
+const waitForDemoFirst = ( attachmentId, timeout = 6000 ) =>
+	new Promise( ( resolve ) => {
+		const target = `godam-video-editor-element-card-${ attachmentId }`;
+		const isFirst = () => {
+			const first = document.querySelector( '[data-test-id^="godam-video-editor-element-card-"]' );
+			return first && first.getAttribute( 'data-test-id' ) === target;
+		};
+		if ( isFirst() ) {
+			resolve();
+			return;
+		}
+		let waited = 0;
+		const interval = 120;
+		const timer = setInterval( () => {
+			if ( isFirst() || waited >= timeout ) {
+				clearInterval( timer );
+				resolve();
+			}
+			waited += interval;
+		}, interval );
+	} );
 
 /**
  * @param {Object}  props
@@ -37,10 +74,23 @@ const ProductGuide = ( { attachmentID } ) => {
 	const [ modal, setModal ] = useState( null );
 	const [ isBusy, setBusy ] = useState( false );
 
-	const onRequestEnd = useCallback( () => setModal( 'end' ), [] );
-	const onFinalAction = useCallback( () => setModal( 'addToPage' ), [] );
+	// The welcome becomes a two-card chooser only when the GoDAM-for-Woo Shoppable
+	// Video tour is available (it owns the block the Woo path walks through);
+	// otherwise the single Get-Started welcome is used. Named to match the
+	// videoData.wooGuideActive flag and avoid confusion with the separate
+	// `wooActive` (= WooCommerce) flag also localized in class-pages.php.
+	const wooGuideActive = Boolean( window?.videoData?.wooGuideActive );
 
-	const { start, resume, dismiss } = useProductGuide( { onRequestEnd, onFinalAction } );
+	const onRequestEnd = useCallback( () => setModal( 'end' ), [] );
+	const onFinalAction = useCallback( () => {
+		// Final step reached — stop pinning the demo first in the list.
+		setTourPrioritizeId( 0 );
+		setModal( 'addToPage' );
+	}, [] );
+	// "See how it works" re-opens the welcome dialog (chooser or single).
+	const onRequestWelcome = useCallback( () => setModal( 'welcome' ), [] );
+
+	const { start, resume, dismiss } = useProductGuide( { onRequestEnd, onFinalAction, onRequestWelcome } );
 
 	// Auto-show the welcome modal once, for first-time users — but only when the
 	// app opens on the list view (no `?id=`), never when deep-linking straight
@@ -54,9 +104,29 @@ const ProductGuide = ( { attachmentID } ) => {
 		}
 	}, [] );
 
-	// Welcome → start the tour.
-	const handleStart = () => {
+	// Welcome → start the interactive tour. First ensure the demo video exists and
+	// pin it first in the list, so step 1 highlights real demo content.
+	const handleStart = async () => {
 		setModal( null );
+		try {
+			// Cap the wait so a slow demo API can't delay tour start; on
+			// timeout/error we just start without a pinned demo.
+			const controller = new AbortController();
+			const timeout = setTimeout( () => controller.abort(), 4000 );
+			const res = await fetch( window.pathJoin( [ restURL, 'godam/v1/onboarding/demo-video' ] ), {
+				headers: { 'X-WP-Nonce': window?.videoData?.nonce || window?.wpApiSettings?.nonce },
+				signal: controller.signal,
+			} );
+			clearTimeout( timeout );
+			const data = await res.json();
+			const demoId = Number( data?.id ) || 0;
+			if ( demoId ) {
+				setTourPrioritizeId( demoId );
+				await waitForDemoFirst( demoId );
+			}
+		} catch {
+			// Demo unavailable — start anyway; the tour highlights whatever's first.
+		}
 		start();
 	};
 
@@ -67,9 +137,26 @@ const ProductGuide = ( { attachmentID } ) => {
 		setProductGuideState( PRODUCT_GUIDE_STATES.DISMISSED );
 	};
 
+	// Welcome chooser → branch on the selected card.
+	const handleChooseWelcome = async ( choice ) => {
+		if ( choice === WELCOME_CHOICES.WOO ) {
+			// Hand off to the in-editor Shoppable Video tour. Mark the core guide
+			// dismissed so this welcome won't auto-show again (the "See how it
+			// works" re-launch stays available for the interactive path).
+			setBusy( true );
+			setProductGuideState( PRODUCT_GUIDE_STATES.DISMISSED );
+			await launchWooBlockTour();
+			setBusy( false );
+			setModal( null );
+			return;
+		}
+		handleStart();
+	};
+
 	// End-guide confirm.
 	const handleEndConfirm = () => {
 		setModal( null );
+		setTourPrioritizeId( 0 );
 		dismiss();
 	};
 
@@ -116,17 +203,20 @@ const ProductGuide = ( { attachmentID } ) => {
 
 	return (
 		<>
-			<ConfirmModal
-				isOpen={ modal === 'welcome' }
-				title={ __( 'Get Started with GoDAM', 'godam' ) }
-				confirmLabel={ __( 'Get Started', 'godam' ) }
-				cancelLabel={ __( 'Skip for now', 'godam' ) }
-				onConfirm={ handleStart }
-				onCancel={ handleSkipWelcome }
-				data-test-id="godam-product-guide-button-start"
-			>
-				{ __( 'Get started by adding interactive layers to your video. We’ll walk you through making your first video interactive.', 'godam' ) }
-			</ConfirmModal>
+			{ wooGuideActive ? (
+				<WelcomeChooserModal
+					isOpen={ modal === 'welcome' }
+					onSkip={ handleSkipWelcome }
+					onChoose={ handleChooseWelcome }
+					isBusy={ isBusy }
+				/>
+			) : (
+				<WelcomeIntroModal
+					isOpen={ modal === 'welcome' }
+					onSkip={ handleSkipWelcome }
+					onConfirm={ handleStart }
+				/>
+			) }
 
 			<ConfirmModal
 				isOpen={ modal === 'end' }
