@@ -111,7 +111,8 @@ function AudioEdit( {
 			src: media.url,
 			id: media.id,
 			caption: media.caption || media.title,
-			audioTitle: audioTitle || media.title || '',
+			audioTitle: media.title || '',
+			description: media.description || '',
 		} );
 		setTemporaryURL();
 	}

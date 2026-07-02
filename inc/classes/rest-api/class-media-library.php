@@ -1543,12 +1543,19 @@ class Media_Library extends Base {
 			}
 		}
 
+		// Backfill title/description from the local WordPress copy (matched by the
+		// transcoding job id) when the central record doesn't carry them. The
+		// GoDAM description is often set on the WP attachment *after* the media was
+		// uploaded to GoDAM, so it won't exist on the central record — this keeps
+		// the GoDAM tab's Attachment Details (and the imported entry) in sync.
+		$all_items = $this->backfill_local_media_meta( array_values( $all_items ) );
+
 		// Return a REST response with pagination and status details.
 		return rest_ensure_response(
 			array(
 				'success'      => true,
 				'message'      => __( 'Filtered GoDAM files by MIME type.', 'godam' ),
-				'data'         => array_values( $all_items ),
+				'data'         => $all_items,
 				'total_items'  => $total,
 				'total_count'  => $total,
 				'total_pages'  => $total_pages,
@@ -1559,6 +1566,85 @@ class Media_Library extends Base {
 				'has_more'     => $has_more,
 			)
 		);
+	}
+
+	/**
+	 * Backfill title and description on GoDAM listing items from the local
+	 * WordPress attachment (matched by the transcoding job id).
+	 *
+	 * Descriptions (and often titles) are set on the WP attachment after the
+	 * media has already been uploaded to GoDAM, so the central record returns
+	 * them empty. When a local copy exists we use its values so the GoDAM tab
+	 * and the imported virtual attachment reflect the WordPress metadata.
+	 *
+	 * @param array $items Prepared GoDAM media items (each keyed with an `id` = job id).
+	 * @return array The items with title/description backfilled where available.
+	 */
+	private function backfill_local_media_meta( $items ) {
+		if ( empty( $items ) || ! is_array( $items ) ) {
+			return $items;
+		}
+
+		// Collect the GoDAM job ids for the current page of items.
+		$job_ids = array();
+		foreach ( $items as $item ) {
+			if ( ! empty( $item['id'] ) ) {
+				$job_ids[] = $item['id'];
+			}
+		}
+
+		if ( empty( $job_ids ) ) {
+			return $items;
+		}
+
+		// One query maps job id => local attachment for the whole page.
+		$local_attachments = get_posts(
+			array(
+				'post_type'      => 'attachment',
+				'post_status'    => 'any',
+				'posts_per_page' => count( $job_ids ),
+				'no_found_rows'  => true,
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Matching virtual media to its GoDAM job id.
+				'meta_key'       => 'rtgodam_transcoding_job_id',
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'meta_value'     => $job_ids,
+				'meta_compare'   => 'IN',
+			)
+		);
+
+		if ( empty( $local_attachments ) ) {
+			return $items;
+		}
+
+		$map = array();
+		foreach ( $local_attachments as $attachment ) {
+			$job_id = get_post_meta( $attachment->ID, 'rtgodam_transcoding_job_id', true );
+			if ( $job_id ) {
+				$map[ (string) $job_id ] = $attachment;
+			}
+		}
+
+		foreach ( $items as $key => $item ) {
+			$job_id = isset( $item['id'] ) ? (string) $item['id'] : '';
+			if ( '' === $job_id || ! isset( $map[ $job_id ] ) ) {
+				continue;
+			}
+
+			$attachment = $map[ $job_id ];
+
+			// Use the local description when the central record has none.
+			if ( empty( $item['description'] ) && ! empty( $attachment->post_content ) ) {
+				$items[ $key ]['description'] = $attachment->post_content;
+			}
+
+			// Use the local title when the central record has none (the mapper
+			// otherwise falls back to the file name).
+			if ( empty( $item['title'] ) && ! empty( $attachment->post_title ) ) {
+				$items[ $key ]['title'] = $attachment->post_title;
+			}
+		}
+
+		return $items;
 	}
 
 	/**
