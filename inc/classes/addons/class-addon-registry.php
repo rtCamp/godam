@@ -61,6 +61,62 @@ class Addon_Registry {
 		do_action( 'godam_register_addons', $this );
 
 		$this->boot_addons();
+		$this->warn_incompatible_addons();
+	}
+
+	/**
+	 * Warn about known add-on plugins that are active but did not register
+	 * through the add-on framework.
+	 *
+	 * An add-on that is active yet absent from the registry could not hook
+	 * `godam_register_addons`, which means it predates this framework and is
+	 * therefore too old to be compatible with the current GoDAM version (e.g.
+	 * GoDAM for WooCommerce 1.4.0 running under GoDAM 2.0). Rather than let it
+	 * inject broken UI, tell the user to update it. This is version-agnostic:
+	 * any future add-on gets the same treatment automatically once it ships a
+	 * registering version.
+	 *
+	 * @return void
+	 */
+	private function warn_incompatible_addons() {
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
+		/**
+		 * Known GoDAM add-ons, keyed by plugin file, mapped to the slug they
+		 * are expected to register under and their display name.
+		 *
+		 * @param array<string,array{slug:string,name:string}> $known_addons Known add-ons.
+		 */
+		$known_addons = apply_filters(
+			'godam_known_addon_plugins',
+			array(
+				'godam-for-woo/godam-for-woo.php' => array(
+					'slug' => 'godam-for-woo',
+					'name' => __( 'GoDAM for WooCommerce', 'godam' ),
+				),
+			)
+		);
+
+		foreach ( $known_addons as $plugin_file => $info ) {
+			if ( ! is_plugin_active( $plugin_file ) ) {
+				continue;
+			}
+
+			// Active but it registered correctly: nothing to warn about.
+			if ( isset( $this->addons[ $info['slug'] ] ) ) {
+				continue;
+			}
+
+			$this->show_admin_notice(
+				sprintf(
+					/* translators: %s: Add-on name */
+					esc_html__( '%s is out of date and may not work correctly with this version of GoDAM. Please update it to the latest version.', 'godam' ),
+					'<strong>' . esc_html( $info['name'] ) . '</strong>'
+				)
+			);
+		}
 	}
 
 	/**

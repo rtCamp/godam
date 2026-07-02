@@ -13,6 +13,7 @@ import CTALayer from './CTALayer';
 import HotspotLayer from './HotspotLayer';
 import Ads from './AdsLayer';
 import PollLayer from './PollLayer';
+import LayerErrorBoundary from './LayerErrorBoundary';
 
 /**
  * Core Layer Components.
@@ -87,9 +88,11 @@ const Layer = ( { layer, goBack, duration } ) => {
 	}
 
 	return (
-		<Suspense fallback={ <div>{ __( 'Loading layer…', 'godam' ) }</div> }>
-			<Component layerID={ layer.id } goBack={ goBack } duration={ duration } />
-		</Suspense>
+		<LayerErrorBoundary resetKey={ layer.id } goBack={ goBack }>
+			<Suspense fallback={ <div>{ __( 'Loading layer…', 'godam' ) }</div> }>
+				<Component layerID={ layer.id } goBack={ goBack } duration={ duration } />
+			</Suspense>
+		</LayerErrorBoundary>
 	);
 };
 
