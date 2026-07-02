@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.13.0
+Stable tag: 2.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -219,6 +219,18 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v2.0.0 (July 2, 2026) =
+
+- Feat: GoDAM 2.0 brings a complete visual redesign across the admin and front end, with refreshed branding, new logos, and updated block icons.
+- Feat: Rebuilt the Video Editor with a streamlined layout for managing layers, hotspots, CTAs, and forms.
+- Feat: Added a guided onboarding experience, embedded in the plugin and integrated with GoDAM Central.
+- Feat: Redesigned the analytics dashboard with a cleaner layout, a Layer Timeline range control, and Top Videos improvements.
+- Feat: Redesigned the Video Player, Video Gallery, Audio, and Document blocks.
+- Tweak: The admin UI now follows the WordPress admin colour scheme, and the front end follows the configured brand colour.
+- Tweak: The Video Layer editor now warns before leaving with unsaved changes.
+- Tweak: The WooCommerce integration toggle is disabled when no valid API key is present, as it is a Pro feature.
+- Fix: Various QA fixes across blocks, the video editor, and the media gallery.
+
 = v1.13.0 (June 18, 2026) =
 
 - Feat: Track GoDAM media usage across post content, blocks, shortcodes, Elementor, block widgets, and featured images — recording where each asset is used and notifying GoDAM Central.
@@ -238,10 +250,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 = v1.12.1 (June 12, 2026) =
 
 - Fix: Resolved security issues.
-
-= v1.12.0 (June 11, 2026) =
-
-- Feat: Added Layer Analytics feature to track how viewers interact with video layers (CTAs, hotspots, forms, and more), with per-layer engagement and conversion metrics in the analytics dashboard.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 

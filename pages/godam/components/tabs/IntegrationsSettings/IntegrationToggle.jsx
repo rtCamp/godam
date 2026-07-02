@@ -39,7 +39,7 @@ const IntegrationToggle = ( {
 					{ isToggling && <Spinner /> }
 				</>
 			}
-			checked={ enabled }
+			checked={ hasValidAPIKey && enabled }
 			help={
 				! hasValidAPIKey
 					? (
@@ -65,7 +65,7 @@ const IntegrationToggle = ( {
 						label,
 					)
 			}
-			disabled={ isToggling || ( ! hasValidAPIKey && ! enabled ) }
+			disabled={ isToggling || ! hasValidAPIKey }
 			onChange={ onChange }
 		/>
 	);

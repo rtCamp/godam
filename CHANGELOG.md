@@ -1,5 +1,17 @@
 # Changelog #
 
+## v2.0.0 (July 2, 2026) ##
+
+- Feat: GoDAM 2.0 brings a complete visual redesign across the admin and front end, with refreshed branding, new logos, and updated block icons.
+- Feat: Rebuilt the Video Editor with a streamlined layout for managing layers, hotspots, CTAs, and forms.
+- Feat: Added a guided onboarding experience, embedded in the plugin and integrated with GoDAM Central.
+- Feat: Redesigned the analytics dashboard with a cleaner layout, a Layer Timeline range control, and Top Videos improvements.
+- Feat: Redesigned the Video Player, Video Gallery, Audio, and Document blocks.
+- Tweak: The admin UI now follows the WordPress admin colour scheme, and the front end follows the configured brand colour.
+- Tweak: The Video Layer editor now warns before leaving with unsaved changes.
+- Tweak: The WooCommerce integration toggle is disabled when no valid API key is present, as it is a Pro feature.
+- Fix: Various QA fixes across blocks, the video editor, and the media gallery.
+
 ## v1.13.0 (June 18, 2026) ##
 
 - Feat: Track GoDAM media usage across post content, blocks, shortcodes, Elementor, block widgets, and featured images — recording where each asset is used and notifying GoDAM Central.

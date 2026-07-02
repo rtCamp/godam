@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
  * Internal dependencies
@@ -13,7 +13,8 @@ import '../../assets/src/css/godam-player.scss';
 /**
  * WordPress dependencies
  */
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { __ } from '@wordpress/i18n';
 import VideoEditorDataView from './components/video-dataview/VideoEditorDataView.jsx';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import ProductGuide from './onboarding/ProductGuide.jsx';
@@ -38,6 +39,20 @@ const App = () => {
 	const dispatch = useDispatch();
 	const [ attachmentID, setAttachmentID ] = useState( null );
 	const [ rawID, setRawID ] = useState( null );
+
+	// Track the latest dirty state + current video so the (once-registered)
+	// popstate listener can read them without a stale closure.
+	const isChanged = useSelector( ( state ) => state.videoReducer.isChanged );
+	const isChangedRef = useRef( isChanged );
+	const attachmentIDRef = useRef( attachmentID );
+
+	useEffect( () => {
+		isChangedRef.current = isChanged;
+	}, [ isChanged ] );
+
+	useEffect( () => {
+		attachmentIDRef.current = attachmentID;
+	}, [ attachmentID ] );
 	const {
 		data: resolvedAttachment,
 		isSuccess,
@@ -101,6 +116,21 @@ const App = () => {
 
 		// Handle back/forward navigation
 		const handlePopState = () => {
+			// SPA history navigation (browser back/forward) does not fire the
+			// beforeunload guard, so confirm here before discarding unsaved layer
+			// changes. On cancel, re-push the current video URL to stay put.
+			if ( attachmentIDRef.current && isChangedRef.current ) {
+				// eslint-disable-next-line no-alert
+				const leave = window.confirm( __( 'You have unsaved changes. Are you sure you want to leave?', 'godam' ) );
+
+				if ( ! leave ) {
+					const restoredUrl = new URL( window.location );
+					restoredUrl.searchParams.set( 'id', attachmentIDRef.current );
+					window.history.pushState( {}, '', restoredUrl );
+					return;
+				}
+			}
+
 			resetStore();
 
 			const newParams = new URLSearchParams( window.location.search );
