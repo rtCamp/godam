@@ -56,7 +56,9 @@ const WorkspaceScreen = () => {
 	};
 
 	if ( ! organizations.length ) {
-		const appUrl = `${ config.appOrigin || 'https://app.godam.io' }/web/`;
+		// Workspace creation starts from picking a plan, so send the user to the
+		// plans page (same path the upgrade flow uses), not the app root.
+		const plansUrl = `${ config.appOrigin || 'https://app.godam.io' }/web/billing?tab=Plans`;
 		return (
 			<>
 				<h1 className="godam-onboarding__title">{ __( 'No workspaces yet', 'godam' ) }</h1>
@@ -65,7 +67,7 @@ const WorkspaceScreen = () => {
 						__( 'This account has no workspaces. <a>Create one in the GoDAM app</a>, then come back.', 'godam' ),
 						{
 							// eslint-disable-next-line jsx-a11y/anchor-has-content
-							a: <a className="godam-onboarding__link" href={ appUrl } target="_blank" rel="noreferrer" data-test-id="godam-onboarding-link-create-workspace" />,
+							a: <a className="godam-onboarding__link" href={ plansUrl } target="_blank" rel="noreferrer" data-test-id="godam-onboarding-link-create-workspace" />,
 						},
 					) }
 				</p>
