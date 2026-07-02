@@ -1600,15 +1600,16 @@ class Media_Library extends Base {
 		// One query maps job id => local attachment for the whole page.
 		$local_attachments = get_posts(
 			array(
-				'post_type'      => 'attachment',
-				'post_status'    => 'any',
-				'posts_per_page' => count( $job_ids ),
-				'no_found_rows'  => true,
+				'post_type'        => 'attachment',
+				'post_status'      => 'any',
+				'posts_per_page'   => count( $job_ids ),
+				'no_found_rows'    => true,
+				'suppress_filters' => false,
 				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Matching virtual media to its GoDAM job id.
-				'meta_key'       => 'rtgodam_transcoding_job_id',
+				'meta_key'         => 'rtgodam_transcoding_job_id',
 				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-				'meta_value'     => $job_ids,
-				'meta_compare'   => 'IN',
+				'meta_value'       => $job_ids,
+				'meta_compare'     => 'IN',
 			)
 		);
 
