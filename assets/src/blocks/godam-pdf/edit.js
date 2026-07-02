@@ -214,7 +214,7 @@ function PdfEdit( {
 			blob: undefined,
 			src: media.url,
 			id: media.id,
-			caption: media.caption || undefined,
+			caption: media.caption,
 			docTitle: media.title || '',
 			description: media.description || '',
 			pageCount: 0, // Reset so useEffect re-counts pages for the new file.
