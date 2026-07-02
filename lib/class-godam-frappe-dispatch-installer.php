@@ -45,13 +45,6 @@ class Godam_Frappe_Dispatch_Installer {
 	const REQUEST_TIMEOUT = 30;
 
 	/**
-	 * HTTP timeout for downloads.
-	 *
-	 * @var int
-	 */
-	const DOWNLOAD_TIMEOUT = 60;
-
-	/**
 	 * Constructor.
 	 *
 	 * @param string $api_url Base URL for Frappe Dispatch.
@@ -203,175 +196,85 @@ class Godam_Frappe_Dispatch_Installer {
 			);
 		}
 
-		// Download the plugin file.
-		$download_response = $this->get_request( $plugin_data->download_link, self::DOWNLOAD_TIMEOUT );
+		$this->load_wordpress_upgrader_dependencies();
 
-		if ( is_wp_error( $download_response ) || 200 !== wp_remote_retrieve_response_code( $download_response ) ) {
+		// Force the installed folder name to match the resolved slug so that
+		// plugin_exists() and activate_plugin() can locate it deterministically,
+		// regardless of the top-level folder name inside the downloaded archive.
+		$rename_source = $this->get_source_rename_callback( $plugin_slug );
+		add_filter( 'upgrader_source_selection', $rename_source, 10, 4 );
+
+		// Let WordPress core handle the download, extraction and install into the
+		// plugins directory via the sanctioned upgrader, instead of writing into
+		// the plugins folder from this plugin's own code (which Plugin Check flags).
+		$skin     = new \Automatic_Upgrader_Skin();
+		$upgrader = new \Plugin_Upgrader( $skin );
+
+		$result = $upgrader->install(
+			esc_url_raw( $plugin_data->download_link ),
+			array( 'overwrite_package' => false )
+		);
+
+		remove_filter( 'upgrader_source_selection', $rename_source, 10 );
+
+		if ( is_wp_error( $result ) ) {
 			return array(
 				'success' => false,
-				'message' => 'Failed to download plugin file.',
+				'message' => 'Failed to install plugin: ' . $result->get_error_message(),
 			);
 		}
 
-		$plugin_zip = wp_remote_retrieve_body( $download_response );
-
-		if ( empty( $plugin_zip ) ) {
-			return array(
-				'success' => false,
-				'message' => 'Downloaded plugin file is empty.',
-			);
-		}
-
-		// Create temporary file.
-		$temp_file = wp_tempnam( $plugin_slug . '.zip' );
-
-		if ( empty( $temp_file ) ) {
-			return array(
-				'success' => false,
-				'message' => 'Could not create a temporary file for the download.',
-			);
-		}
-
-		global $wp_filesystem;
-
-		if ( ! $wp_filesystem ) {
-			$this->load_wordpress_filesystem_dependencies();
-			WP_Filesystem();
-		}
-
-		$bytes_written = $wp_filesystem->put_contents( $temp_file, $plugin_zip, FS_CHMOD_FILE );
-
-		if ( false === $bytes_written ) {
-			if ( $wp_filesystem->exists( $temp_file ) ) {
-				$wp_filesystem->delete( $temp_file );
-			}
+		if ( true !== $result ) {
+			$skin_errors = $skin->get_errors();
+			$message     = ( is_wp_error( $skin_errors ) && $skin_errors->has_errors() )
+				? $skin_errors->get_error_message()
+				: 'Plugin installation failed.';
 
 			return array(
 				'success' => false,
-				'message' => 'Could not write the downloaded plugin archive to disk.',
-			);
-		}
-
-		// Extract to plugins directory.
-		$extract_result = $this->extract_plugin( $temp_file, $plugin_slug );
-
-		// Clean up temp file.
-		if ( $wp_filesystem->exists( $temp_file ) ) {
-			$wp_filesystem->delete( $temp_file );
-		}
-
-		return $extract_result;
-	}
-
-	/**
-	 * Extract plugin zip to plugins directory.
-	 * Handles nested folder structures properly.
-	 *
-	 * @param string $zip_file    Path to zip file.
-	 * @param string $plugin_slug Plugin slug.
-	 * @return array Extraction result.
-	 */
-	private function extract_plugin( $zip_file, $plugin_slug ) {
-		$this->load_wordpress_filesystem_dependencies();
-
-		WP_Filesystem();
-		global $wp_filesystem;
-
-		if ( ! $wp_filesystem ) {
-			return array(
-				'success' => false,
-				'message' => 'WordPress filesystem could not be initialized.',
-			);
-		}
-
-		$plugins_dir      = WP_PLUGIN_DIR;
-		$final_plugin_dir = $plugins_dir . DIRECTORY_SEPARATOR . $plugin_slug;
-
-		// Ensure plugins directory is writable.
-		if ( ! $wp_filesystem->is_writable( $plugins_dir ) ) {
-			return array(
-				'success' => false,
-				'message' => 'Plugins directory is not writable.',
-			);
-		}
-
-		// Create a temporary extraction directory.
-		$temp_extract_dir = $plugins_dir . DIRECTORY_SEPARATOR . $plugin_slug . '_temp_' . wp_generate_password( 8, false );
-
-		// Extract zip file to temporary directory.
-		$unzip_result = unzip_file( $zip_file, $temp_extract_dir );
-
-		if ( is_wp_error( $unzip_result ) ) {
-			// Clean up temp directory if it was created.
-			if ( is_dir( $temp_extract_dir ) ) {
-				$wp_filesystem->rmdir( $temp_extract_dir, true );
-			}
-			return array(
-				'success' => false,
-				'message' => 'Failed to extract plugin: ' . $unzip_result->get_error_message(),
-			);
-		}
-
-		// Check the extracted structure.
-		$extracted_items = $this->get_directory_entries( $temp_extract_dir );
-
-		// If there's only one directory, we likely have a nested structure.
-		if ( count( $extracted_items ) === 1 ) {
-			$single_item      = reset( $extracted_items );
-			$single_item_path = $temp_extract_dir . DIRECTORY_SEPARATOR . $single_item;
-
-			if ( is_dir( $single_item_path ) ) {
-				// Check if this directory contains plugin files (*.php files).
-				if ( $this->directory_contains_php_files( $single_item_path ) ) {
-					$source_dir = $single_item_path;
-				} else {
-					$source_dir = $temp_extract_dir;
-				}
-			} else {
-				$source_dir = $temp_extract_dir;
-			}
-		} else {
-			$source_dir = $temp_extract_dir;
-		}
-
-		// Remove existing plugin directory if it exists.
-		if ( is_dir( $final_plugin_dir ) ) {
-			$wp_filesystem->rmdir( $final_plugin_dir, true );
-		}
-
-		// Move the source directory to final location.
-		$move_result = $wp_filesystem->move( $source_dir, $final_plugin_dir );
-
-		if ( ! $move_result ) {
-			// If move failed, try copying.
-			$copy_result = copy_dir( $source_dir, $final_plugin_dir );
-			if ( is_wp_error( $copy_result ) ) {
-				$wp_filesystem->rmdir( $temp_extract_dir, true );
-				return array(
-					'success' => false,
-					'message' => 'Failed to move plugin to plugins directory: ' . $copy_result->get_error_message(),
-				);
-			}
-		}
-
-		// Clean up temp directory.
-		if ( is_dir( $temp_extract_dir ) ) {
-			$wp_filesystem->rmdir( $temp_extract_dir, true );
-		}
-
-		// Verify the plugin was installed correctly by checking for PHP files.
-		if ( ! $this->directory_contains_php_files( $final_plugin_dir ) ) {
-			return array(
-				'success' => false,
-				'message' => 'Plugin installation failed: No PHP files found in extracted plugin.',
+				'message' => $message,
 			);
 		}
 
 		return array(
 			'success' => true,
 			'message' => 'Plugin installed successfully.',
-			'path'    => $final_plugin_dir,
+			'path'    => WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . $plugin_slug,
 		);
+	}
+
+	/**
+	 * Build an `upgrader_source_selection` callback that renames the extracted
+	 * source folder to the desired slug before WordPress installs it.
+	 *
+	 * The rename happens inside the upgrader's working directory (not the plugins
+	 * directory), so it does not trip the Plugin Check filesystem warnings.
+	 *
+	 * @param string $desired_slug Folder name the plugin should be installed under.
+	 * @return callable
+	 */
+	private function get_source_rename_callback( $desired_slug ) {
+		return function ( $source, $remote_source, $upgrader, $hook_extra = array() ) use ( $desired_slug ) {
+			global $wp_filesystem;
+
+			if ( empty( $desired_slug ) || is_wp_error( $source ) || ! $wp_filesystem ) {
+				return $source;
+			}
+
+			$current_name = basename( untrailingslashit( $source ) );
+
+			if ( $current_name === $desired_slug ) {
+				return $source;
+			}
+
+			$new_source = trailingslashit( $remote_source ) . $desired_slug;
+
+			if ( $wp_filesystem->move( untrailingslashit( $source ), $new_source, true ) ) {
+				return trailingslashit( $new_source );
+			}
+
+			return $source;
+		};
 	}
 
 	/**
@@ -475,33 +378,21 @@ class Godam_Frappe_Dispatch_Installer {
 	}
 
 	/**
-	 * Execute a GET request with shared defaults.
-	 *
-	 * @param string $url     Request URL.
-	 * @param int    $timeout Timeout in seconds.
-	 * @return array|\WP_Error
-	 */
-	private function get_request( $url, $timeout ) {
-		$request_options = array(
-			'timeout'   => $timeout,
-			'sslverify' => apply_filters( 'godam_frappe_dispatch_verify_ssl', true ),
-		);
-
-		if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
-			return vip_safe_wp_remote_get( $url, false, 3, 3, $timeout, $request_options );
-		}
-
-		return wp_remote_get( $url, $request_options ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
-	}
-
-	/**
-	 * Load WordPress filesystem dependencies.
+	 * Load the WordPress core upgrader dependencies used to install plugins.
 	 *
 	 * @return void
 	 */
-	private function load_wordpress_filesystem_dependencies() {
-		if ( ! function_exists( 'unzip_file' ) || ! class_exists( 'WP_Filesystem' ) ) {
+	private function load_wordpress_upgrader_dependencies() {
+		if ( ! function_exists( 'request_filesystem_credentials' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+
+		if ( ! class_exists( 'WP_Upgrader' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+		}
+
+		if ( ! function_exists( 'get_plugin_data' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
 	}
 
@@ -517,22 +408,6 @@ class Godam_Frappe_Dispatch_Installer {
 	}
 
 	/**
-	 * Get directory entries excluding dotfiles.
-	 *
-	 * @param string $directory Directory path.
-	 * @return array
-	 */
-	private function get_directory_entries( $directory ) {
-		$entries = scandir( $directory ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.directory_listing_scandir
-
-		if ( false === $entries ) {
-			return array();
-		}
-
-		return array_values( array_diff( $entries, array( '.', '..' ) ) );
-	}
-
-	/**
 	 * Get PHP files directly within a directory.
 	 *
 	 * @param string $directory Directory path.
@@ -542,15 +417,5 @@ class Godam_Frappe_Dispatch_Installer {
 		$files = glob( trailingslashit( $directory ) . '*.php' );
 
 		return is_array( $files ) ? $files : array();
-	}
-
-	/**
-	 * Determine whether a directory contains PHP files.
-	 *
-	 * @param string $directory Directory path.
-	 * @return bool
-	 */
-	private function directory_contains_php_files( $directory ) {
-		return ! empty( $this->get_php_files_in_directory( $directory ) );
 	}
 }
