@@ -141,13 +141,23 @@ class Addon_Registry {
 	 * @return void
 	 */
 	private function show_addon_update_notice( $message ) {
+		$render = static function () use ( $message ) {
+			printf(
+				'<div class="notice notice-warning is-dismissible"><p>%s</p></div>',
+				wp_kses_post( $message )
+			);
+		};
+
+		// GoDAM's own admin screens strip every admin_notices callback in
+		// admin_head (see Pages::handle_admin_head) to keep the app UI clean.
+		// Register this notice from in_admin_header — which fires AFTER
+		// admin_head — so the compatibility warning survives that strip and is
+		// visible on the screens where an outdated add-on actually matters
+		// (Settings, Video Editor), not only on the Dashboard/Plugins pages.
 		add_action(
-			'admin_notices',
-			function () use ( $message ) {
-				printf(
-					'<div class="notice notice-warning is-dismissible"><p>%s</p></div>',
-					wp_kses_post( $message )
-				);
+			'in_admin_header',
+			static function () use ( $render ) {
+				add_action( 'admin_notices', $render );
 			}
 		);
 	}
