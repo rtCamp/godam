@@ -162,6 +162,14 @@ class Addon_Registry {
 		add_action(
 			'admin_notices',
 			static function () use ( $message ) {
+				// The notice links to GoDAM Integration Settings, which requires
+				// `manage_options`. Don't show it to roles that land on the
+				// Dashboard but can't act on it (matches every other notice in
+				// the plugin, e.g. class-update.php).
+				if ( ! current_user_can( 'manage_options' ) ) {
+					return;
+				}
+
 				$screen          = get_current_screen();
 				$allowed_screens = array( 'dashboard', 'plugins' );
 
