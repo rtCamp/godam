@@ -65,58 +65,76 @@ class Addon_Registry {
 	}
 
 	/**
-	 * Warn about known add-on plugins that are active but did not register
-	 * through the add-on framework.
+	 * Warn (do NOT disable) when a registered add-on is older than the minimum
+	 * version that is compatible with this GoDAM release.
 	 *
-	 * An add-on that is active yet absent from the registry could not hook
-	 * `godam_register_addons`, which means it predates this framework and is
-	 * therefore too old to be compatible with the current GoDAM version (e.g.
-	 * GoDAM for WooCommerce 1.4.0 running under GoDAM 2.0). Rather than let it
-	 * inject broken UI, tell the user to update it. This is version-agnostic:
-	 * any future add-on gets the same treatment automatically once it ships a
-	 * registering version.
+	 * The add-on still loads and runs — nothing is switched off — but an older
+	 * add-on's integration may not match this GoDAM version's editor APIs or
+	 * saved-data shape (e.g. GoDAM for WooCommerce 1.4.0 under GoDAM 2.0), so we
+	 * surface a dismissible admin notice pointing the user at the update. The
+	 * minimum-version map is filterable so future add-ons can declare their own.
 	 *
 	 * @return void
 	 */
 	private function warn_incompatible_addons() {
-		if ( ! function_exists( 'is_plugin_active' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		}
-
 		/**
-		 * Known GoDAM add-ons, keyed by plugin file, mapped to the slug they
-		 * are expected to register under and their display name.
+		 * Minimum add-on version compatible with the current GoDAM version,
+		 * keyed by the slug the add-on registers under.
 		 *
-		 * @param array<string,array{slug:string,name:string}> $known_addons Known add-ons.
+		 * @param array<string,array{version:string,name:string}> $minimums Minimum compatible versions.
 		 */
-		$known_addons = apply_filters(
-			'godam_known_addon_plugins',
+		$minimums = apply_filters(
+			'godam_addon_minimum_compatible_versions',
 			array(
-				'godam-for-woo/godam-for-woo.php' => array(
-					'slug' => 'godam-for-woo',
-					'name' => __( 'GoDAM for WooCommerce', 'godam' ),
+				'godam-for-woo' => array(
+					'version' => '2.0.0',
+					'name'    => __( 'GoDAM for WooCommerce', 'godam' ),
 				),
 			)
 		);
 
-		foreach ( $known_addons as $plugin_file => $info ) {
-			if ( ! is_plugin_active( $plugin_file ) ) {
+		foreach ( $minimums as $slug => $info ) {
+			$addon = $this->addons[ $slug ] ?? null;
+
+			// Only registered (active) add-ons can be version-checked.
+			if ( ! $addon ) {
 				continue;
 			}
 
-			// Active but it registered correctly: nothing to warn about.
-			if ( isset( $this->addons[ $info['slug'] ] ) ) {
+			// A compatible (or newer) version is installed: nothing to warn about.
+			if ( version_compare( $addon->get_version(), $info['version'], '>=' ) ) {
 				continue;
 			}
 
-			$this->show_admin_notice(
+			$this->show_addon_update_notice(
 				sprintf(
-					/* translators: %s: Add-on name */
-					esc_html__( '%s is out of date and may not work correctly with this version of GoDAM. Please update it to the latest version.', 'godam' ),
-					'<strong>' . esc_html( $info['name'] ) . '</strong>'
+					/* translators: 1: Add-on name, 2: opening link tag, 3: closing link tag */
+					__( '%1$s is out of date and may not work correctly with this version of GoDAM. %2$sUpdate it to the latest version%3$s.', 'godam' ),
+					'<strong>' . esc_html( $info['name'] ) . '</strong>',
+					'<a href="' . esc_url( self_admin_url( 'plugins.php' ) ) . '">',
+					'</a>'
 				)
 			);
 		}
+	}
+
+	/**
+	 * Queue a dismissible "update this add-on" admin notice.
+	 *
+	 * @param string $message HTML notice content (may contain a link).
+	 *
+	 * @return void
+	 */
+	private function show_addon_update_notice( $message ) {
+		add_action(
+			'admin_notices',
+			function () use ( $message ) {
+				printf(
+					'<div class="notice notice-warning is-dismissible"><p>%s</p></div>',
+					wp_kses_post( $message )
+				);
+			}
+		);
 	}
 
 	/**
