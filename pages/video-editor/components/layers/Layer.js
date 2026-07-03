@@ -76,21 +76,19 @@ const getLayerComponents = () => {
 const Layer = ( { layer, goBack, duration } ) => {
 	const LayerComponents = getLayerComponents();
 	const layerType = layer?.type ?? 'cta';
-	const Component = LayerComponents[ layerType ]?.component;
+	// Fall back to the CTA layer when the requested type has no registered component.
+	const Component = LayerComponents[ layerType ]?.component ?? LayerComponents.cta?.component;
 
-	// Fallback to CTA layer if component is not found
-	if ( ! Component ) {
-		const FallbackComponent = LayerComponents.cta?.component;
-		if ( ! FallbackComponent ) {
-			return <div>{ __( 'Error: No layer components registered', 'godam' ) }</div>;
-		}
-		return <FallbackComponent layerID={ layer.id } goBack={ goBack } duration={ duration } />;
-	}
-
+	// The boundary wraps every return path (including the fallback) so no layer
+	// editor — core or add-on — can throw and white-screen the whole editor.
 	return (
 		<LayerErrorBoundary resetKey={ layer.id } goBack={ goBack }>
 			<Suspense fallback={ <div>{ __( 'Loading layer…', 'godam' ) }</div> }>
-				<Component layerID={ layer.id } goBack={ goBack } duration={ duration } />
+				{ Component ? (
+					<Component layerID={ layer.id } goBack={ goBack } duration={ duration } />
+				) : (
+					<div>{ __( 'Error: No layer components registered', 'godam' ) }</div>
+				) }
 			</Suspense>
 		</LayerErrorBoundary>
 	);
