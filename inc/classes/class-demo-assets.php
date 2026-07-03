@@ -191,6 +191,7 @@ class Demo_Assets {
 	 */
 	private static function create_from_payload( $key, $file_name, $payload ) {
 		$mp4 = ! empty( $payload['transcoded_mp4_url'] ) ? $payload['transcoded_mp4_url'] : '';
+		$mpd = ! empty( $payload['transcoded_file_path'] ) ? $payload['transcoded_file_path'] : '';
 		$hls = ! empty( $payload['transcoded_hls_path'] ) ? $payload['transcoded_hls_path'] : '';
 
 		$data = array(
@@ -199,7 +200,7 @@ class Demo_Assets {
 			'url'      => $mp4 ? $mp4 : $hls,
 			'mime'     => 'video/mp4',
 			'type'     => 'video',
-			'mpd_url'  => $mp4,
+			'mpd_url'  => $mpd,
 			'hls_url'  => $hls,
 			'icon'     => ! empty( $payload['thumbnail_url'] ) ? $payload['thumbnail_url'] : '',
 			'filename' => ! empty( $payload['orignal_file_name'] ) ? $payload['orignal_file_name'] : ( $file_name . '.mp4' ),
