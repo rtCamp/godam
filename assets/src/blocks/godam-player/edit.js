@@ -307,11 +307,7 @@ function VideoEdit( {
 					// attachment: apply its thumbnail when present, and clear any
 					// stale one (e.g. carried over from a previously selected
 					// video) when this attachment has none.
-					if ( response.meta.rtgodam_media_video_thumbnail !== '' ) {
-						setDefaultPoster( response.meta.rtgodam_media_video_thumbnail );
-					} else {
-						setDefaultPoster( '' );
-					}
+					setDefaultPoster( response.meta?.rtgodam_media_video_thumbnail || '' );
 
 					if ( response ) {
 						// Default "Show caption" from the attachment's Display-captions
