@@ -161,16 +161,18 @@ class Addon_Registry {
 	}
 
 	/**
-	 * Queue a dismissible "update this add-on" admin notice on the Dashboard.
+	 * Queue a dismissible "update this add-on" admin notice.
 	 *
-	 * The warning is shown only on the main WordPress Dashboard (index.php). It
-	 * is deliberately kept off GoDAM's own app screens (Video Editor, Analytics,
-	 * Reel Pops) where a standard admin notice would overlap the single-page-app
-	 * header. The Dashboard is the one screen every admin lands on and where a
-	 * plain admin_notices callback is not stripped by Pages::handle_admin_head.
+	 * The warning is shown only on the main WordPress Dashboard (index.php) and
+	 * the Plugins screen (plugins.php) — the two places an admin naturally looks
+	 * for update prompts. It is deliberately kept off GoDAM's own app screens
+	 * (Video Editor, Analytics, Reel Pops) where a standard admin notice would
+	 * overlap the single-page-app header. Both allowed screens also leave the
+	 * admin_notices hook intact (Pages::handle_admin_head only strips it on
+	 * GoDAM's own screens), so a plain admin_notices callback is enough.
 	 *
-	 * The screen is not known yet when this runs (plugins_loaded), so the
-	 * Dashboard check happens inside the admin_notices callback, by which point
+	 * The screen is not known yet when this runs (plugins_loaded), so the screen
+	 * check happens inside the admin_notices callback, by which point
 	 * get_current_screen() is populated.
 	 *
 	 * @param string $message HTML notice content (may contain a link).
@@ -181,9 +183,10 @@ class Addon_Registry {
 		add_action(
 			'admin_notices',
 			static function () use ( $message ) {
-				$screen = get_current_screen();
+				$screen          = get_current_screen();
+				$allowed_screens = array( 'dashboard', 'plugins' );
 
-				if ( ! $screen || 'dashboard' !== $screen->id ) {
+				if ( ! $screen || ! in_array( $screen->id, $allowed_screens, true ) ) {
 					return;
 				}
 
