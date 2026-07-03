@@ -29,7 +29,7 @@ import {
 	VeColorList,
 } from '../controls';
 
-const DEFAULT_BUTTON_BG = '#111';
+const DEFAULT_BUTTON_BG = '#000';
 const DEFAULT_BUTTON_TEXT = '#ffffff';
 const DESCRIPTION_LIMIT = 200;
 
