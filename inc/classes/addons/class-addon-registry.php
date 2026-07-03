@@ -161,30 +161,36 @@ class Addon_Registry {
 	}
 
 	/**
-	 * Queue a dismissible "update this add-on" admin notice.
+	 * Queue a dismissible "update this add-on" admin notice on the Dashboard.
+	 *
+	 * The warning is shown only on the main WordPress Dashboard (index.php). It
+	 * is deliberately kept off GoDAM's own app screens (Video Editor, Analytics,
+	 * Reel Pops) where a standard admin notice would overlap the single-page-app
+	 * header. The Dashboard is the one screen every admin lands on and where a
+	 * plain admin_notices callback is not stripped by Pages::handle_admin_head.
+	 *
+	 * The screen is not known yet when this runs (plugins_loaded), so the
+	 * Dashboard check happens inside the admin_notices callback, by which point
+	 * get_current_screen() is populated.
 	 *
 	 * @param string $message HTML notice content (may contain a link).
 	 *
 	 * @return void
 	 */
 	private function show_addon_update_notice( $message ) {
-		$render = static function () use ( $message ) {
-			printf(
-				'<div class="notice notice-warning is-dismissible"><p>%s</p></div>',
-				wp_kses_post( $message )
-			);
-		};
-
-		// GoDAM's own admin screens strip every admin_notices callback in
-		// admin_head (see Pages::handle_admin_head) to keep the app UI clean.
-		// Register this notice from in_admin_header — which fires AFTER
-		// admin_head — so the compatibility warning survives that strip and is
-		// visible on the screens where an outdated add-on actually matters
-		// (Settings, Video Editor), not only on the Dashboard/Plugins pages.
 		add_action(
-			'in_admin_header',
-			static function () use ( $render ) {
-				add_action( 'admin_notices', $render );
+			'admin_notices',
+			static function () use ( $message ) {
+				$screen = get_current_screen();
+
+				if ( ! $screen || 'dashboard' !== $screen->id ) {
+					return;
+				}
+
+				printf(
+					'<div class="notice notice-warning is-dismissible"><p>%s</p></div>',
+					wp_kses_post( $message )
+				);
 			}
 		);
 	}
