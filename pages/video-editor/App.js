@@ -149,16 +149,22 @@ const App = () => {
 		return () => window.removeEventListener( 'popstate', handlePopState );
 	}, [ resetStore ] );
 
-	const handleAttachmentClick = ( id ) => {
+	const handleAttachmentClick = useCallback( ( id ) => {
 		resetStore();
 		setAttachmentID( id );
 		setRawID( id );
 		const newUrl = new URL( window.location );
 		newUrl.searchParams.set( 'id', id );
 		window.history.pushState( {}, '', newUrl );
-	};
+	}, [ resetStore ] );
 
-	const handleBackToAttachmentPicker = () => {
+	// Memoized so its reference is stable across App re-renders. App re-renders
+	// whenever `isChanged` toggles (see the useSelector above), and this callback
+	// is forwarded to <VideoEditor> where it sits in the dependency array of the
+	// effect that calls `initializeStore`. An unstable reference made that effect
+	// re-run on every edit, re-initializing the store from the saved meta and
+	// silently reverting the user's add/update/delete of layers.
+	const handleBackToAttachmentPicker = useCallback( () => {
 		// Leaving the editor mid-tour would strip the editor-specific coachmark
 		// targets, so end the guide cleanly.
 		if ( isGuideActive() ) {
@@ -170,7 +176,7 @@ const App = () => {
 		const newUrl = new URL( window.location );
 		newUrl.searchParams.delete( 'id' );
 		window.history.replaceState( {}, '', newUrl );
-	};
+	}, [ resetStore ] );
 
 	return (
 		<>
