@@ -77,6 +77,12 @@ class Addon_Registry {
 	 * @return void
 	 */
 	private function warn_incompatible_addons() {
+		// The notice only ever renders in wp-admin, so skip the whole check on
+		// front-end / REST / cron requests instead of running it every load.
+		if ( ! is_admin() ) {
+			return;
+		}
+
 		/**
 		 * Minimum add-on version compatible with the current GoDAM version,
 		 * keyed by the slug the add-on registers under.
@@ -93,7 +99,16 @@ class Addon_Registry {
 			)
 		);
 
+		if ( ! is_array( $minimums ) ) {
+			return;
+		}
+
 		foreach ( $minimums as $slug => $info ) {
+			// Skip malformed filter entries: each needs a version and a name.
+			if ( ! is_array( $info ) || empty( $info['version'] ) || empty( $info['name'] ) ) {
+				continue;
+			}
+
 			$addon = $this->addons[ $slug ] ?? null;
 
 			// Only registered (active) add-ons can be version-checked.
