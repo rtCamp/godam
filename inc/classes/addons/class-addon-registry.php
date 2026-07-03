@@ -85,10 +85,9 @@ class Addon_Registry {
 
 		/**
 		 * Minimum add-on version compatible with the current GoDAM version,
-		 * keyed by the slug the add-on registers under. `file` is the plugin's
-		 * basename, used to build a one-click update link.
+		 * keyed by the slug the add-on registers under.
 		 *
-		 * @param array<string,array{version:string,name:string,file:string}> $minimums Minimum compatible versions.
+		 * @param array<string,array{version:string,name:string}> $minimums Minimum compatible versions.
 		 */
 		$minimums = apply_filters(
 			'godam_addon_minimum_compatible_versions',
@@ -96,7 +95,6 @@ class Addon_Registry {
 				'godam-for-woo' => array(
 					'version' => '2.0.0',
 					'name'    => __( 'GoDAM for WooCommerce', 'godam' ),
-					'file'    => 'godam-for-woo/godam-for-woo.php',
 				),
 			)
 		);
@@ -123,7 +121,11 @@ class Addon_Registry {
 				continue;
 			}
 
-			$update_url = $this->addon_update_url( isset( $info['file'] ) ? $info['file'] : '' );
+			// GoDAM add-ons are installed and updated from GoDAM's own Integration
+			// Settings screen, not wp.org, so send the user there. The WordPress
+			// plugin updater (update.php) has no update source for these add-ons
+			// and would just fail.
+			$update_url = admin_url( 'admin.php?page=rtgodam_settings#integrations-settings' );
 
 			$this->show_addon_update_notice(
 				sprintf(
@@ -135,29 +137,6 @@ class Addon_Registry {
 				)
 			);
 		}
-	}
-
-	/**
-	 * Build the best available "update this add-on" URL.
-	 *
-	 * Prefers a one-click update of the specific plugin (WordPress' native
-	 * update flow, which the add-on's updater feeds) when the user can update
-	 * plugins and we know the plugin file; otherwise falls back to the Updates
-	 * screen so the link is never a dead-end back to the current page.
-	 *
-	 * @param string $plugin_file Plugin basename, e.g. 'godam-for-woo/godam-for-woo.php'.
-	 *
-	 * @return string
-	 */
-	private function addon_update_url( $plugin_file ) {
-		if ( $plugin_file && current_user_can( 'update_plugins' ) ) {
-			return wp_nonce_url(
-				self_admin_url( 'update.php?action=upgrade-plugin&plugin=' . rawurlencode( $plugin_file ) ),
-				'upgrade-plugin_' . $plugin_file
-			);
-		}
-
-		return self_admin_url( 'update-core.php' );
 	}
 
 	/**
