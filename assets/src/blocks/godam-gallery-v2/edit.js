@@ -555,11 +555,12 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					return;
 				}
 
-				if ( mediaItem.type && mediaItem.type !== 'video' ) {
-					skippedNonVideo = true;
-					return;
-				}
-				if ( mediaItem.mime && ! mediaItem.mime.startsWith( 'video/' ) ) {
+				// Check the MIME string, not `mediaItem.type`: uploads report
+				// the REST post type ("attachment") there, which would wrongly
+				// skip freshly uploaded videos. `mime` is set on library
+				// selections, `mime_type` on uploads.
+				const mimeString = mediaItem.mime || mediaItem.mime_type || '';
+				if ( mimeString && ! mimeString.startsWith( 'video/' ) ) {
 					skippedNonVideo = true;
 					return;
 				}

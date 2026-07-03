@@ -63,6 +63,11 @@ export default function ThumbnailPanel( {
 		let cancelled = false;
 		setIsLoading( true );
 		setCustomUploadedPoster( null );
+		// Clear the previous video's thumbnails up front. `thumbnails` is only
+		// overwritten on a successful response, so without this a replacement
+		// video that has no thumbnails (empty/failed response) would keep
+		// showing the old video's tiles.
+		setThumbnails( [] );
 
 		apiFetch( {
 			path: addQueryArgs( '/godam/v1/media-library/get-video-thumbnail', { attachment_id: attachmentId } ),

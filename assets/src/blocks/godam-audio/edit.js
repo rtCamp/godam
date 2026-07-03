@@ -91,8 +91,13 @@ function AudioEdit( {
 			return;
 		}
 
-		// Guard against non-audio selections.
-		const mediaType = media.type || ( media.mime || media.mime_type || '' ).split( '/' )[ 0 ];
+		// Guard against non-audio selections. Derive the type from the MIME
+		// string rather than `media.type`: the latter is the top-level type
+		// ("audio") for library selections but the REST post type
+		// ("attachment") for freshly uploaded files, which would reject every
+		// uploaded audio file. `mime` is set on library selections,
+		// `mime_type` on uploads.
+		const mediaType = ( media.mime || media.mime_type || '' ).split( '/' )[ 0 ];
 		if ( mediaType && mediaType !== 'audio' ) {
 			createErrorNotice(
 				__( 'Only audio files are allowed in the GoDAM Audio block.', 'godam' ),
@@ -106,13 +111,22 @@ function AudioEdit( {
 			return;
 		}
 
+		// Normalize the description to a string. Library selections expose it as
+		// a plain string, but freshly uploaded files come from the REST API where
+		// `description` is an object ( { raw, rendered } ). Storing the object
+		// would make React throw "Objects are not valid as a React child" when
+		// the description is rendered.
+		const mediaDescription = typeof media.description === 'string'
+			? media.description
+			: ( media.description?.raw ?? '' );
+
 		setAttributes( {
 			blob: undefined,
 			src: media.url,
 			id: media.id,
 			caption: media.caption || media.title,
 			audioTitle: media.title || '',
-			description: media.description || '',
+			description: mediaDescription,
 		} );
 		setTemporaryURL();
 	}
@@ -134,7 +148,9 @@ function AudioEdit( {
 		if ( ! media || ! media.url ) {
 			return;
 		}
-		const mediaType = media.type || ( media.mime || media.mime_type || '' ).split( '/' )[ 0 ];
+		// Derive the type from the MIME string; `media.type` is "attachment"
+		// for freshly uploaded files and would reject valid image uploads.
+		const mediaType = ( media.mime || media.mime_type || '' ).split( '/' )[ 0 ];
 		if ( mediaType && mediaType !== 'image' ) {
 			createErrorNotice(
 				__( 'Only image files are allowed for the GoDAM Audio thumbnail.', 'godam' ),

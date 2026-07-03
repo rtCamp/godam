@@ -68,15 +68,13 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 		if ( ! mediaItem?.id ) {
 			return;
 		}
-		// Only allow video attachments.
-		if ( mediaItem.type && mediaItem.type !== 'video' ) {
-			createNotice( 'warning', __( 'Only video files can be added to the gallery.', 'godam' ), {
-				type: 'snackbar',
-				isDismissible: true,
-			} );
-			return;
-		}
-		if ( mediaItem.mime && ! mediaItem.mime.startsWith( 'video/' ) ) {
+		// Only allow video attachments. Check the MIME string rather than
+		// `mediaItem.type`: for library selections that is the top-level type
+		// ("video"), but for freshly uploaded files it is the REST post type
+		// ("attachment"), which would wrongly reject every uploaded video.
+		// `mime` is set on library selections, `mime_type` on uploads.
+		const mimeString = mediaItem.mime || mediaItem.mime_type || '';
+		if ( mimeString && ! mimeString.startsWith( 'video/' ) ) {
 			createNotice( 'warning', __( 'Only video files can be added to the gallery.', 'godam' ), {
 				type: 'snackbar',
 				isDismissible: true,

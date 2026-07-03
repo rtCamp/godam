@@ -303,8 +303,14 @@ function VideoEdit( {
 
 					setVideoTitle( stripHtmlTags( response.title?.rendered || '' ) );
 
+					// Keep the auto-generated poster in sync with the current
+					// attachment: apply its thumbnail when present, and clear any
+					// stale one (e.g. carried over from a previously selected
+					// video) when this attachment has none.
 					if ( response.meta.rtgodam_media_video_thumbnail !== '' ) {
 						setDefaultPoster( response.meta.rtgodam_media_video_thumbnail );
+					} else {
+						setDefaultPoster( '' );
 					}
 
 					if ( response ) {
@@ -486,7 +492,12 @@ function VideoEdit( {
 
 		// Guard against non-video selections. The media library lets users pick
 		// any attachment type even when allowedTypes is set, so re-check here.
-		const mediaType = media.type || ( media.mime || media.mime_type || '' ).split( '/' )[ 0 ];
+		// Derive the type from the MIME string: `media.type` is the top-level
+		// type ("video") only for library selections — for freshly uploaded
+		// files it is the REST post type ("attachment"), so trusting it would
+		// reject every uploaded video. `mime` is set on library selections,
+		// `mime_type` on uploads.
+		const mediaType = ( media.mime || media.mime_type || '' ).split( '/' )[ 0 ];
 		if ( mediaType && mediaType !== 'video' ) {
 			createErrorNotice(
 				__( 'Only video files are allowed in the GoDAM Video block.', 'godam' ),
@@ -502,11 +513,25 @@ function VideoEdit( {
 			return;
 		}
 
-		if ( media.image?.src !== media.icon ) {
-			setDefaultPoster( media.image?.src );
+		// Clear the previously selected video's auto-generated poster. The
+		// displayed thumbnail is `poster || defaultPoster`; since `poster` is
+		// reset to undefined below, a stale `defaultPoster` would otherwise keep
+		// showing the old video's thumbnail when the replacement has none (a
+		// freshly uploaded / not-yet-transcoded video, or a video with no
+		// thumbnail). The paths below set it again when a real thumbnail exists.
+		setDefaultPoster( '' );
+
+		if ( media.image?.src && media.image.src !== media.icon ) {
+			setDefaultPoster( media.image.src );
 		}
 
 		if ( media?.origin === 'godam' ) {
+			// GoDAM media carries its thumbnail directly, so apply it right away
+			// (the numeric-id meta fetch may not run for virtual attachments).
+			if ( media?.thumbnail_url ) {
+				setDefaultPoster( media.thumbnail_url );
+			}
+
 			// Create new SEO data from GoDAM media
 			const newSEOData = {
 				contentUrl: media?.url,
@@ -671,6 +696,9 @@ function VideoEdit( {
 				poster: undefined,
 				seo: undefined, // Clear SEO data when new URL is selected
 			} );
+			// No attachment id here, so the id-based effect can't clear the
+			// previous video's auto-generated poster — do it explicitly.
+			setDefaultPoster( '' );
 			setTemporaryURL();
 
 			// Reset flag after a brief delay to allow attribute changes to settle
