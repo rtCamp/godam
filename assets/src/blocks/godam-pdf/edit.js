@@ -191,7 +191,10 @@ function PdfEdit( {
 		// Validate MIME type — reject anything that isn't a PDF.
 		// The MediaUpload allowedTypes filter restricts the library UI, but a
 		// runtime check is needed as a safety net (e.g. drag-and-drop bypasses it).
-		const mime = media.mime || media.type || '';
+		// Use the MIME string, not `media.type`: library selections expose
+		// `mime` ("application/pdf") while uploads expose `mime_type`; `media.type`
+		// is the REST post type ("attachment") for uploads and would wrongly reject them.
+		const mime = media.mime || media.mime_type || '';
 		if ( mime && mime !== 'application/pdf' ) {
 			createWarningNotice(
 				__( 'Only PDF files can be attached to this block. Please select a PDF document.', 'godam' ),
@@ -210,13 +213,22 @@ function PdfEdit( {
 			return;
 		}
 
+		// Normalize the description to a string. Library selections expose it as
+		// a plain string, but freshly uploaded files come from the REST API where
+		// `description` is an object ( { raw, rendered } ). Storing the object
+		// would make React throw "Objects are not valid as a React child" when
+		// the description is rendered.
+		const mediaDescription = typeof media.description === 'string'
+			? media.description
+			: ( media.description?.raw ?? '' );
+
 		setAttributes( {
 			blob: undefined,
 			src: media.url,
 			id: media.id,
 			caption: media.caption,
 			docTitle: media.title || '',
-			description: media.description || '',
+			description: mediaDescription,
 			pageCount: 0, // Reset so useEffect re-counts pages for the new file.
 		} );
 		setTemporaryURL();
