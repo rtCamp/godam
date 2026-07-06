@@ -126,61 +126,6 @@
 		justify-content: center;
 	}
 
-	// ── Interaction panel custom radio group ──────────────────────────────────
-
-	&__radio-group {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-		margin-bottom: 16px;
-	}
-
-	&__radio-option {
-		display: flex;
-		align-items: flex-start;
-		gap: 10px;
-		padding: 10px 12px;
-		border-radius: 6px;
-		border: 1px solid #e0e0e0;
-		cursor: pointer;
-		transition: border-color 0.15s ease, background 0.15s ease;
-
-		input[type="radio"] {
-			flex: 0 0 auto;
-			margin-top: 2px;
-			cursor: pointer;
-		}
-
-		&:has(input:checked) {
-			border-color: var(--wp-admin-theme-color, #007cba);
-			background: #f0f7fb;
-		}
-
-		&:hover:not(:has(input:checked)) {
-			border-color: #b0b0b0;
-			background: #fafafa;
-		}
-	}
-
-	&__radio-content {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-	}
-
-	&__radio-label {
-		font-size: 13px;
-		font-weight: 500;
-		color: var(--wp-components-color-foreground, #1e1e1e);
-		line-height: 1.4;
-	}
-
-	&__radio-hint {
-		font-size: 11px;
-		color: var(--wp-components-color-foreground-muted, #757575);
-		line-height: 1.4;
-	}
-
 	// ── Empty state (handpicked, no videos selected) ──────────────────────────
 
 	&__empty-state {
@@ -296,6 +241,10 @@
 
 .godam-gallery-v2__date-range-picker {
 	margin: 10px 0;
+}
+
+.godam-gallery-v2__interaction-radio {
+	margin-bottom: 1rem;
 }
 
 .godam-gallery-v2__query-row {

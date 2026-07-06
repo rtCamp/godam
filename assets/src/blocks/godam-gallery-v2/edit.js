@@ -960,45 +960,31 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 
 				{ /* ── Interaction ──────────────────────────────────────────── */ }
 				<PanelBody title={ __( 'Interaction', 'godam' ) } initialOpen={ true } data-test-id="godam-gallery-v2-panel-interaction">
-					<div className="godam-gallery-v2__radio-group">
-						{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
-						<label className="godam-gallery-v2__radio-option">
-							<input
-								type="radio"
-								name={ `godam-gallery-interaction-${ clientId }` }
-								value="autoplay"
-								checked={ !! autoplay }
-								onChange={ () =>
-									setAttributes( { autoplay: true, playOnHover: false } )
-								}
-								data-test-id="godam-gallery-v2-control-autoplay"
-							/>
-							<span className="godam-gallery-v2__radio-label">
-								{ __( 'Autoplay all videos', 'godam' ) }
-							</span>
-							<span className="godam-gallery-v2__radio-hint">
-								{ __( 'Visible videos autoplay one at a time and continue through the full video.', 'godam' ) }
-							</span>
-						</label>
-						{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
-						<label className="godam-gallery-v2__radio-option">
-							<input
-								type="radio"
-								name={ `godam-gallery-interaction-${ clientId }` }
-								value="hover"
-								checked={ ! autoplay }
-								onChange={ () =>
-									setAttributes( { autoplay: false, playOnHover: true } )
-								}
-								data-test-id="godam-gallery-v2-control-play-on-hover"
-							/>
-							<span className="godam-gallery-v2__radio-label">
-								{ __( 'Play on hover', 'godam' ) }
-							</span>
-							<span className="godam-gallery-v2__radio-hint">
-								{ __( 'Videos will play when hovered over', 'godam' ) }
-							</span>
-						</label>
+					<div data-test-id="godam-gallery-v2-control-interaction">
+						<RadioControl
+							className="godam-gallery-v2__interaction-radio"
+							label={ __( 'Interaction', 'godam' ) }
+							hideLabelFromVision
+							selected={ autoplay ? 'autoplay' : 'hover' }
+							options={ [
+								{
+									label: __( 'Autoplay all videos', 'godam' ),
+									value: 'autoplay',
+									description: __( 'Visible videos autoplay one at a time and continue through the full video.', 'godam' ),
+								},
+								{
+									label: __( 'Play on hover', 'godam' ),
+									value: 'hover',
+									description: __( 'Videos will play when hovered over', 'godam' ),
+								},
+							] }
+							onChange={ ( value ) =>
+								setAttributes( {
+									autoplay: value === 'autoplay',
+									playOnHover: value === 'hover',
+								} )
+							}
+						/>
 					</div>
 
 					<ToggleControl

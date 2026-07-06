@@ -218,7 +218,11 @@ class Video_Editor extends Base {
 		// Not on this page — prepare it directly if it's a valid video attachment.
 		if ( null === $pinned ) {
 			$post = get_post( $prioritize_id );
-			if ( $post && 'attachment' === $post->post_type && 0 === strpos( (string) get_post_mime_type( $post ), 'video/' ) ) {
+			// Enforce the same author scoping as the list query: users who can't
+			// edit others' content may only surface their own uploads, otherwise
+			// this becomes an IDOR that leaks other users' private video metadata.
+			$owned = $post && ( current_user_can( 'edit_others_posts' ) || get_current_user_id() === (int) $post->post_author || 1 === (int) get_post_meta( $post->ID, 'rtgodam_is_demo_attachment', true ) );
+			if ( $owned && 'attachment' === $post->post_type && 0 === strpos( (string) get_post_mime_type( $post ), 'video/' ) ) {
 				$pinned = $this->prepare_video_item( $post );
 			}
 		}
