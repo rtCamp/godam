@@ -71,12 +71,15 @@ export const useGoogleSignIn = () => {
 
 		let settled = false;
 		let poll = null;
+		// Tear down listeners/timers only. Loading state is cleared explicitly by
+		// each terminal path — critically, the success path keeps `isLoading` true
+		// across the code exchange so the button can't be re-clicked mid-flow and
+		// start a duplicate OAuth popup.
 		const cleanup = () => {
 			window.removeEventListener( 'message', onMessage );
 			if ( poll ) {
 				clearInterval( poll );
 			}
-			setIsLoading( false );
 		};
 		const fail = ( message ) => {
 			if ( settled ) {
@@ -84,6 +87,7 @@ export const useGoogleSignIn = () => {
 			}
 			settled = true;
 			cleanup();
+			setIsLoading( false );
 			if ( ! popup.closed ) {
 				popup.close();
 			}
@@ -108,6 +112,8 @@ export const useGoogleSignIn = () => {
 				await proceedToWorkspace( session );
 			} catch ( error ) {
 				dispatch( setNotice( { status: 'error', message: error?.data?.message || __( 'Google sign-in failed.', 'godam' ) } ) );
+			} finally {
+				setIsLoading( false );
 			}
 		}
 

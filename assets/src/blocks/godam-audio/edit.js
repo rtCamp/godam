@@ -111,21 +111,27 @@ function AudioEdit( {
 			return;
 		}
 
-		// Normalize the description to a string. Library selections expose it as
-		// a plain string, but freshly uploaded files come from the REST API where
-		// `description` is an object ( { raw, rendered } ). Storing the object
-		// would make React throw "Objects are not valid as a React child" when
-		// the description is rendered.
+		// Normalize the description/title/caption to strings. Library selections
+		// expose them as plain strings, but freshly uploaded files come from the
+		// REST API where each is an object ( { raw, rendered } ). Storing the
+		// object would make React throw "Objects are not valid as a React child"
+		// when the value is rendered (and PHP `esc_html()` warns on the frontend).
 		const mediaDescription = typeof media.description === 'string'
 			? media.description
 			: ( media.description?.raw ?? '' );
+		const mediaTitle = typeof media.title === 'string'
+			? media.title
+			: ( media.title?.raw ?? '' );
+		const mediaCaption = typeof media.caption === 'string'
+			? media.caption
+			: ( media.caption?.raw ?? '' );
 
 		setAttributes( {
 			blob: undefined,
 			src: media.url,
 			id: media.id,
-			caption: media.caption || media.title,
-			audioTitle: media.title || '',
+			caption: mediaCaption || mediaTitle,
+			audioTitle: mediaTitle,
 			description: mediaDescription,
 		} );
 		setTemporaryURL();

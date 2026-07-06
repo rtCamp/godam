@@ -461,13 +461,21 @@ export default class GodamVideoPlayer {
 			return;
 		}
 
+		// Auto-enable at most once. After the first track is turned on (or one is
+		// already showing), a viewer who turns captions back off must be respected
+		// even when a late-loading track (the async AI transcript) fires `addtrack`.
+		let hasAutoEnabled = false;
 		const enableFirstSubtitle = () => {
+			if ( hasAutoEnabled ) {
+				return;
+			}
 			const subtitleTracks = [];
 			for ( let i = 0; i < textTracks.length; i++ ) {
 				const track = textTracks[ i ];
 				if ( track.kind === 'subtitles' || track.kind === 'captions' ) {
 					// A subtitle track is already active — respect the viewer's choice.
 					if ( track.mode === 'showing' ) {
+						hasAutoEnabled = true;
 						return;
 					}
 					subtitleTracks.push( track );
@@ -475,11 +483,14 @@ export default class GodamVideoPlayer {
 			}
 			if ( subtitleTracks.length > 0 ) {
 				subtitleTracks[ 0 ].mode = 'showing';
+				hasAutoEnabled = true;
 			}
 		};
 
 		enableFirstSubtitle();
 		textTracks.addEventListener( 'addtrack', enableFirstSubtitle );
+		// Avoid leaking the listener on SPA / infinite-scroll teardowns.
+		this.player.one( 'dispose', () => textTracks.removeEventListener( 'addtrack', enableFirstSubtitle ) );
 	}
 
 	/**

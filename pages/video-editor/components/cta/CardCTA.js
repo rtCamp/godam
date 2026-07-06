@@ -288,14 +288,18 @@ const CardCTA = ( { layerID, triggerSlot } ) => {
 	};
 
 	// prevent color picker flickering.
-	const colorDebounceRef = useRef();
+	// Timers are keyed per-field so editing two colors (text + background)
+	// within the debounce window doesn't make the second edit's clearTimeout
+	// cancel the first, silently dropping one color update.
+	const colorDebounceRef = useRef( {} );
 	const debouncedColorUpdate = useCallback(
 		( field, value ) => {
-			if ( colorDebounceRef.current ) {
-				clearTimeout( colorDebounceRef.current );
+			if ( colorDebounceRef.current[ field ] ) {
+				clearTimeout( colorDebounceRef.current[ field ] );
 			}
-			colorDebounceRef.current = setTimeout( () => {
+			colorDebounceRef.current[ field ] = setTimeout( () => {
 				dispatch( updateLayerField( { id: layerID, field, value } ) );
+				delete colorDebounceRef.current[ field ];
 			}, 150 );
 		},
 		[ dispatch, layerID ],
