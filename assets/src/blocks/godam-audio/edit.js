@@ -118,13 +118,13 @@ function AudioEdit( {
 		// when the value is rendered (and PHP `esc_html()` warns on the frontend).
 		const mediaDescription = typeof media.description === 'string'
 			? media.description
-			: ( media.description?.raw ?? '' );
+			: ( media.description?.raw ?? media.description?.rendered ?? '' );
 		const mediaTitle = typeof media.title === 'string'
 			? media.title
-			: ( media.title?.raw ?? '' );
+			: ( media.title?.raw ?? media.title?.rendered ?? '' );
 		const mediaCaption = typeof media.caption === 'string'
 			? media.caption
-			: ( media.caption?.raw ?? '' );
+			: ( media.caption?.raw ?? media.caption?.rendered ?? '' );
 
 		setAttributes( {
 			blob: undefined,
