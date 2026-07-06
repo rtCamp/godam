@@ -61,6 +61,128 @@ class Addon_Registry {
 		do_action( 'godam_register_addons', $this );
 
 		$this->boot_addons();
+		$this->warn_incompatible_addons();
+	}
+
+	/**
+	 * Warn (do NOT disable) when a registered add-on is older than the minimum
+	 * version that is compatible with this GoDAM release.
+	 *
+	 * The add-on still loads and runs — nothing is switched off — but an older
+	 * add-on's integration may not match this GoDAM version's editor APIs or
+	 * saved-data shape (e.g. GoDAM for WooCommerce 1.4.0 under GoDAM 2.0), so we
+	 * surface a dismissible admin notice pointing the user at the update. The
+	 * minimum-version map is filterable so future add-ons can declare their own.
+	 *
+	 * @return void
+	 */
+	private function warn_incompatible_addons() {
+		// The notice only ever renders in wp-admin, so skip the whole check on
+		// front-end / REST / cron requests instead of running it every load.
+		if ( ! is_admin() ) {
+			return;
+		}
+
+		/**
+		 * Minimum add-on version compatible with the current GoDAM version,
+		 * keyed by the slug the add-on registers under.
+		 *
+		 * @param array<string,array{version:string,name:string}> $minimums Minimum compatible versions.
+		 */
+		$minimums = apply_filters(
+			'godam_addon_minimum_compatible_versions',
+			array(
+				'godam-for-woo' => array(
+					'version' => '2.0.0',
+					'name'    => __( 'GoDAM for WooCommerce', 'godam' ),
+				),
+			)
+		);
+
+		if ( ! is_array( $minimums ) ) {
+			return;
+		}
+
+		foreach ( $minimums as $slug => $info ) {
+			// Skip malformed filter entries: each needs a version and a name.
+			if ( ! is_array( $info ) || empty( $info['version'] ) || empty( $info['name'] ) ) {
+				continue;
+			}
+
+			$addon = $this->addons[ $slug ] ?? null;
+
+			// Only registered (active) add-ons can be version-checked.
+			if ( ! $addon ) {
+				continue;
+			}
+
+			// A compatible (or newer) version is installed: nothing to warn about.
+			if ( version_compare( $addon->get_version(), $info['version'], '>=' ) ) {
+				continue;
+			}
+
+			// GoDAM add-ons are installed and updated from GoDAM's own Integration
+			// Settings screen, not wp.org, so send the user there. The WordPress
+			// plugin updater (update.php) has no update source for these add-ons
+			// and would just fail.
+			$update_url = admin_url( 'admin.php?page=rtgodam_settings#integrations-settings' );
+
+			$this->show_addon_update_notice(
+				sprintf(
+					/* translators: 1: Add-on name, 2: opening link tag, 3: closing link tag */
+					__( '%1$s is out of date and may not work correctly with this version of GoDAM. %2$sUpdate it to the latest version%3$s.', 'godam' ),
+					'<strong>' . esc_html( $info['name'] ) . '</strong>',
+					'<a href="' . esc_url( $update_url ) . '">',
+					'</a>'
+				)
+			);
+		}
+	}
+
+	/**
+	 * Queue a dismissible "update this add-on" admin notice.
+	 *
+	 * The warning is shown only on the main WordPress Dashboard (index.php) and
+	 * the Plugins screen (plugins.php) — the two places an admin naturally looks
+	 * for update prompts. It is deliberately kept off GoDAM's own app screens
+	 * (Video Editor, Analytics, Reel Pops) where a standard admin notice would
+	 * overlap the single-page-app header. Both allowed screens also leave the
+	 * admin_notices hook intact (Pages::handle_admin_head only strips it on
+	 * GoDAM's own screens), so a plain admin_notices callback is enough.
+	 *
+	 * The screen is not known yet when this runs (plugins_loaded), so the screen
+	 * check happens inside the admin_notices callback, by which point
+	 * get_current_screen() is populated.
+	 *
+	 * @param string $message HTML notice content (may contain a link).
+	 *
+	 * @return void
+	 */
+	private function show_addon_update_notice( $message ) {
+		add_action(
+			'admin_notices',
+			static function () use ( $message ) {
+				// The notice links to GoDAM Integration Settings, which requires
+				// `manage_options`. Don't show it to roles that land on the
+				// Dashboard but can't act on it (matches every other notice in
+				// the plugin, e.g. class-update.php).
+				if ( ! current_user_can( 'manage_options' ) ) {
+					return;
+				}
+
+				$screen          = get_current_screen();
+				$allowed_screens = array( 'dashboard', 'plugins' );
+
+				if ( ! $screen || ! in_array( $screen->id, $allowed_screens, true ) ) {
+					return;
+				}
+
+				printf(
+					'<div class="notice notice-warning is-dismissible"><p>%s</p></div>',
+					wp_kses_post( $message )
+				);
+			}
+		);
 	}
 
 	/**
