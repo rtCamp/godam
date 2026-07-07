@@ -323,8 +323,8 @@ $godam-border: rgba(246, 246, 246, 1);
 		top: 0.5rem;
 		left: 0.5rem;
 		z-index: 2;
-		width: 1.75rem;
-		height: 1.75rem;
+		width: 2rem;
+		height: 2rem;
 		border-radius: 100%;
 		background: $ve-accent-soft;
 		display: flex;
@@ -338,6 +338,8 @@ $godam-border: rgba(246, 246, 246, 1);
 			min-width: 1.25rem;
 			min-height: 1.25rem;
 			object-fit: contain;
+			position: relative;
+			right: 2px; // optical centering for the GoDAM logo
 		}
 	}
 
