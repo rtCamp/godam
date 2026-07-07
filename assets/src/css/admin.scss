@@ -566,6 +566,11 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 		--status-text: "Not Started";
 
+		img {
+			position: relative;
+			right: 2px; // optical centering for the GoDAM logo
+		}
+
 		&__progress {
 			transform: rotate(-90deg); /* Rotates the circle so progress starts from top */
 			width: 100%;
