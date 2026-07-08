@@ -9,7 +9,6 @@ import clsx from 'clsx';
 import { isBlobURL } from '@wordpress/blob';
 import {
 	Button,
-	Disabled,
 	PanelBody,
 	SelectControl,
 	Spinner,
@@ -26,41 +25,77 @@ import {
 	useBlockProps,
 } from '@wordpress/block-editor';
 import { __, _x } from '@wordpress/i18n';
-import { useDispatch } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 import { store as noticesStore } from '@wordpress/notices';
 import { useState } from '@wordpress/element';
-import { trash } from '@wordpress/icons';
+import { plus, trash, edit as editIcon } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
-import { Caption } from './caption';
+import AudioMiniPlayer from './player';
+import AudioTabs from './tabs';
 import './editor.scss';
 
 const ALLOWED_MEDIA_TYPES = [ 'audio' ];
 const ALLOWED_THUMBNAIL_TYPES = [ 'image' ];
 
 /**
+ * Sliders/adjustments icon for the "Customize Audio" button (matches the design).
+ */
+const customizeIcon = (
+	<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+		<line x1="4" y1="9" x2="20" y2="9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+		<line x1="4" y1="15" x2="20" y2="15" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+		<circle cx="9" cy="9" r="2.4" fill="currentColor" />
+		<circle cx="15" cy="15" r="2.4" fill="currentColor" />
+	</svg>
+);
+
+/**
+ * Format a byte count as a human-readable size (e.g. "84 KB").
+ *
+ * @param {number} bytes Byte count.
+ * @return {string} Formatted size, or '' when unknown.
+ */
+const formatBytes = ( bytes ) => {
+	if ( ! bytes || Number.isNaN( bytes ) ) {
+		return '';
+	}
+	const units = [ 'B', 'KB', 'MB', 'GB' ];
+	let value = bytes;
+	let unit = 0;
+	while ( value >= 1024 && unit < units.length - 1 ) {
+		value /= 1024;
+		unit += 1;
+	}
+	return `${ value.toFixed( unit === 0 ? 0 : 1 ) } ${ units[ unit ] }`;
+};
+
+/**
  * Edit component for the GoDAM Audio block.
  *
- * @param {Object}   props                   - The properties passed to the component.
- * @param {Object}   props.attributes        - The block attributes.
- * @param {string}   props.className         - The class name for the component for styling.
- * @param {Function} props.setAttributes     - Function to update the block's attributes.
- * @param {boolean}  props.isSelected        - Whether the block is currently selected.
- * @param {Function} props.insertBlocksAfter - Function to insert blocks after the current block.
+ * @param {Object}   props               - The properties passed to the component.
+ * @param {Object}   props.attributes    - The block attributes.
+ * @param {string}   props.className     - The class name for the component for styling.
+ * @param {Function} props.setAttributes - Function to update the block's attributes.
+ * @param {boolean}  props.isSelected    - Whether the block is currently selected.
  *
- * @return {JSX.Element} The rendered audio block component with optional controls and captions.
+ * @return {JSX.Element} The rendered audio block component.
  */
 function AudioEdit( {
 	attributes,
 	className,
 	setAttributes,
 	isSelected: isSingleSelected,
-	insertBlocksAfter,
 } ) {
-	const { id, autoplay, loop, preload, src, audioTitle, description, thumbnail, thumbnailId } = attributes;
+	const { id, autoplay, loop, preload, src, audioTitle, description, thumbnail, thumbnailId, showTranscript } = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
+
+	// The customization editor (transcription + chapters) is the video editor in
+	// audio mode, opened by attachment ID. Relative to /wp-admin/ so it works in
+	// any install path; opened in a new tab so block edits aren't lost.
+	const editorUrl = id ? `admin.php?page=rtgodam_video_editor&id=${ id }` : '';
 
 	function toggleAttribute( attribute ) {
 		return ( newValue ) => {
@@ -84,7 +119,6 @@ function AudioEdit( {
 			setAttributes( {
 				src: undefined,
 				id: undefined,
-				caption: undefined,
 				blob: undefined,
 			} );
 			setTemporaryURL();
@@ -111,26 +145,28 @@ function AudioEdit( {
 			return;
 		}
 
-		// Normalize the description/title/caption to strings. Library selections
-		// expose them as plain strings, but freshly uploaded files come from the
-		// REST API where each is an object ( { raw, rendered } ). Storing the
-		// object would make React throw "Objects are not valid as a React child"
-		// when the value is rendered (and PHP `esc_html()` warns on the frontend).
-		const mediaDescription = typeof media.description === 'string'
+		// Normalize the description/title to strings. Library selections expose
+		// them as plain strings, but freshly uploaded files come from the REST
+		// API where each is an object ( { raw, rendered } ). Storing the object
+		// would make React throw "Objects are not valid as a React child" when
+		// the value is rendered (and PHP `esc_html()` warns on the frontend).
+		const rawMediaDescription = typeof media.description === 'string'
 			? media.description
 			: ( media.description?.raw ?? media.description?.rendered ?? '' );
+		// WordPress sometimes seeds an attachment's description with the raw
+		// media URL; strip any URLs so the file path isn't shown as copy.
+		const mediaDescription = rawMediaDescription
+			.replace( /https?:\/\/\S+/g, '' )
+			.replace( /\s+/g, ' ' )
+			.trim();
 		const mediaTitle = typeof media.title === 'string'
 			? media.title
 			: ( media.title?.raw ?? media.title?.rendered ?? '' );
-		const mediaCaption = typeof media.caption === 'string'
-			? media.caption
-			: ( media.caption?.raw ?? media.caption?.rendered ?? '' );
 
 		setAttributes( {
 			blob: undefined,
 			src: media.url,
 			id: media.id,
-			caption: mediaCaption || mediaTitle,
 			audioTitle: mediaTitle,
 			description: mediaDescription,
 		} );
@@ -141,7 +177,6 @@ function AudioEdit( {
 		setAttributes( {
 			src: undefined,
 			id: undefined,
-			caption: undefined,
 			blob: undefined,
 			audioTitle: '',
 			description: '',
@@ -174,37 +209,100 @@ function AudioEdit( {
 	const hasAudio = !! ( src || temporaryURL );
 	const fileName = src ? decodeURIComponent( src.split( '/' ).pop().split( '?' )[ 0 ] ) : '';
 
+	// The selected attachment's file size, shown in the Audio Selection file row.
+	const audioMedia = useSelect( ( select ) => ( id ? select( 'core' ).getMedia( id ) : null ), [ id ] );
+	const fileSize = formatBytes( audioMedia?.media_details?.filesize );
+
 	const classes = clsx( className, {
 		'is-transient': !! temporaryURL,
 	} );
 
 	const blockProps = useBlockProps( { className: classes } );
 
+	// Audio Selection panel content (matches the ToolsPanel design): an "Add
+	// Audio File" button when empty, or a primary "Customize Audio" button, a
+	// file row (icon + name + size + remove), plus Title and Description fields.
+	const audioSelectionPanelContent = ( ! src && ! temporaryURL ) ? (
+		<MediaUpload
+			onSelect={ onSelectAudio }
+			allowedTypes={ ALLOWED_MEDIA_TYPES }
+			accept="audio/*"
+			onError={ onUploadError }
+			render={ ( { open } ) => (
+				<Button
+					__next40pxDefaultSize
+					variant="secondary"
+					onClick={ open }
+					icon={ plus }
+					className="godam-audio__btn"
+					data-test-id="godam-audio-button-add-audio"
+				>
+					{ __( 'Add Audio File', 'godam' ) }
+				</Button>
+			) }
+		/>
+	) : (
+		<>
+			{ id && (
+				<Button
+					__next40pxDefaultSize
+					variant="primary"
+					href={ editorUrl }
+					target="_blank"
+					rel="noopener noreferrer"
+					icon={ customizeIcon }
+					className="godam-audio__btn"
+					data-test-id="godam-audio-button-customize"
+				>
+					{ __( 'Customize Audio', 'godam' ) }
+				</Button>
+			) }
+
+			<div className="godam-audio-file" data-test-id="godam-audio-file">
+				<span className="godam-audio-file__icon">
+					<span className="dashicons dashicons-media-default"></span>
+				</span>
+				<span className="godam-audio-file__meta">
+					<span className="godam-audio-file__name" title={ fileName }>{ fileName }</span>
+					{ fileSize && <span className="godam-audio-file__size">{ fileSize }</span> }
+				</span>
+				<Button
+					icon={ trash }
+					label={ __( 'Remove audio', 'godam' ) }
+					onClick={ onRemoveAudio }
+					className="godam-audio-file__delete"
+					data-test-id="godam-audio-button-remove"
+				/>
+			</div>
+
+			<TextControl
+				__next40pxDefaultSize
+				__nextHasNoMarginBottom
+				label={ __( 'Audio Title', 'godam' ) }
+				placeholder={ __( 'Add a title…', 'godam' ) }
+				value={ audioTitle }
+				onChange={ ( value ) => setAttributes( { audioTitle: value } ) }
+				data-test-id="godam-audio-control-title"
+			/>
+
+			<TextareaControl
+				__nextHasNoMarginBottom
+				label={ __( 'Description', 'godam' ) }
+				placeholder={ __( 'Add a short description…', 'godam' ) }
+				value={ description }
+				onChange={ ( value ) => setAttributes( { description: value } ) }
+				data-test-id="godam-audio-control-description"
+			/>
+		</>
+	);
+
 	// ── Empty state ───────────────────────────────────────────────────────────
 	if ( ! hasAudio ) {
 		return (
 			<>
 				<InspectorControls>
-					<PanelBody title={ __( 'Audio Selection', 'godam' ) } initialOpen={ true }>
-						<MediaUploadCheck>
-							<MediaUpload
-								onSelect={ onSelectAudio }
-								allowedTypes={ ALLOWED_MEDIA_TYPES }
-								accept="audio/*"
-								onError={ onUploadError }
-								render={ ( { open } ) => (
-									<Button
-										__next40pxDefaultSize
-										variant="secondary"
-										onClick={ open }
-										className="godam-audio__add-btn"
-										data-test-id="godam-audio-button-select"
-									>
-										{ __( '+ Add Audio File', 'godam' ) }
-									</Button>
-								) }
-							/>
-						</MediaUploadCheck>
+					<PanelBody title={ __( 'Audio Selection', 'godam' ) } initialOpen={ true } data-test-id="godam-audio-panel-selection">
+						{ audioSelectionPanelContent }
 					</PanelBody>
 				</InspectorControls>
 
@@ -263,42 +361,7 @@ function AudioEdit( {
 
 				{ /* Audio Selection */ }
 				<PanelBody title={ __( 'Audio Selection', 'godam' ) } initialOpen={ true } data-test-id="godam-audio-panel-selection">
-					{ fileName && (
-						<div className="godam-audio-file-row">
-							<span className="godam-audio-file-row__icon dashicons dashicons-media-audio" />
-							<span className="godam-audio-file-row__name" title={ fileName }>
-								{ fileName }
-							</span>
-							<Button
-								icon={ trash }
-								label={ __( 'Remove audio', 'godam' ) }
-								isDestructive
-								size="small"
-								onClick={ onRemoveAudio }
-								data-test-id="godam-audio-button-remove"
-							/>
-						</div>
-					) }
-
-					<TextControl
-						__next40pxDefaultSize
-						__nextHasNoMarginBottom
-						label={ __( 'Audio Title', 'godam' ) }
-						data-test-id="godam-audio-control-title"
-						value={ audioTitle }
-						placeholder={ __( 'Add a title…', 'godam' ) }
-						onChange={ ( value ) => setAttributes( { audioTitle: value } ) }
-					/>
-
-					<TextareaControl
-						__nextHasNoMarginBottom
-						label={ __( 'Description', 'godam' ) }
-						data-test-id="godam-audio-control-description"
-						value={ description }
-						placeholder={ __( 'Add a short description…', 'godam' ) }
-						rows={ 4 }
-						onChange={ ( value ) => setAttributes( { description: value } ) }
-					/>
+					{ audioSelectionPanelContent }
 				</PanelBody>
 
 				{ /* Thumbnail */ }
@@ -341,10 +404,11 @@ function AudioEdit( {
 										__next40pxDefaultSize
 										variant="secondary"
 										onClick={ open }
-										className="godam-audio__add-btn"
+										icon={ plus }
+										className="godam-audio__btn"
 										data-test-id="godam-audio-button-upload-thumbnail"
 									>
-										{ __( '+ Upload Image', 'godam' ) }
+										{ __( 'Upload Image', 'godam' ) }
 									</Button>
 								) }
 							/>
@@ -353,6 +417,31 @@ function AudioEdit( {
 				</PanelBody>
 
 				{ /* Settings */ }
+				<PanelBody title={ __( 'Transcription', 'godam' ) } initialOpen={ false } data-test-id="godam-audio-panel-transcription">
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ __( 'Show transcript', 'godam' ) }
+						checked={ showTranscript }
+						onChange={ toggleAttribute( 'showTranscript' ) }
+						help={ __( 'Display the Chapters / Transcript panel below the player on the front end.', 'godam' ) }
+						data-test-id="godam-audio-control-show-transcript"
+					/>
+					{ id && (
+						<Button
+							__next40pxDefaultSize
+							variant="secondary"
+							href={ `${ editorUrl }&tab=transcription` }
+							target="_blank"
+							rel="noopener noreferrer"
+							icon={ editIcon }
+							className="godam-audio__btn"
+							data-test-id="godam-audio-button-edit-transcript"
+						>
+							{ __( 'Edit', 'godam' ) }
+						</Button>
+					) }
+				</PanelBody>
+
 				<PanelBody title={ __( 'Settings', 'godam' ) } initialOpen={ false } data-test-id="godam-audio-panel-settings">
 					<div data-test-id="godam-audio-control-autoplay">
 						<ToggleControl
@@ -394,40 +483,27 @@ function AudioEdit( {
 			{ /* ── Block canvas ─────────────────────────────────────────────── */ }
 			<figure { ...blockProps } data-test-id="godam-audio-canvas">
 				<div className="godam-audio-card">
-					{ /* Thumbnail */ }
-					<div className="godam-audio-card__cover" data-test-id="godam-audio-element-cover">
-						{ thumbnail ? (
-							<img src={ thumbnail } alt={ audioTitle || __( 'Audio thumbnail', 'godam' ) } />
-						) : (
-							<div className="godam-audio-card__cover-placeholder">
-								<span className="dashicons dashicons-media-audio" />
-							</div>
-						) }
+					<div className="godam-audio-card__head">
+						<div className="godam-audio-card__cover" data-test-id="godam-audio-element-cover">
+							{ thumbnail && (
+								<img src={ thumbnail } alt={ audioTitle || __( 'Audio thumbnail', 'godam' ) } />
+							) }
+						</div>
+
+						<div className="godam-audio-card__body">
+							<p className="godam-audio-card__title" data-test-id="godam-audio-element-title">
+								{ audioTitle || __( 'Untitled audio', 'godam' ) }
+							</p>
+							{ description && (
+								<p className="godam-audio-card__description" data-test-id="godam-audio-element-description">{ description }</p>
+							) }
+							<AudioMiniPlayer src={ src ?? temporaryURL } />
+							{ !! temporaryURL && <Spinner /> }
+						</div>
 					</div>
 
-					{ /* Info + player */ }
-					<div className="godam-audio-card__body">
-						{ audioTitle && (
-							<p className="godam-audio-card__title" data-test-id="godam-audio-element-title">{ audioTitle }</p>
-						) }
-						{ description && (
-							<p className="godam-audio-card__description" data-test-id="godam-audio-element-description">{ description }</p>
-						) }
-						<Disabled isDisabled={ ! isSingleSelected }>
-							<audio controls src={ src ?? temporaryURL } style={ { width: '100%' } } />
-						</Disabled>
-						{ !! temporaryURL && <Spinner /> }
-					</div>
+					<AudioTabs id={ id } showTranscript={ showTranscript } />
 				</div>
-
-				<Caption
-					attributes={ attributes }
-					setAttributes={ setAttributes }
-					isSelected={ isSingleSelected }
-					insertBlocksAfter={ insertBlocksAfter }
-					label={ __( 'Audio caption text', 'godam' ) }
-					showToolbarButton={ isSingleSelected }
-				/>
 			</figure>
 		</>
 	);

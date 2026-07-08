@@ -1,119 +1,13 @@
+/**
+ * Front-end (and block editor) styles for the GoDAM Audio block.
+ *
+ * The card / player / Chapters+Transcript panel styles are shared with the
+ * customization editor preview so all three surfaces look identical — see
+ * assets/src/css/_godam-audio-card.scss.
+ */
+
+@import "../../css/godam-audio-card";
+
 .wp-block-godam-audio {
-	// This block has customizable padding, border-box makes that more predictable.
 	box-sizing: border-box;
-
-	figcaption {
-		margin-top: 0.5em;
-		color: #555d66;
-		text-align: center;
-		font-size: 13px;
-	}
-}
-
-// ── Frontend card ─────────────────────────────────────────────────────────────
-.godam-audio-card {
-	display: flex;
-	align-items: center;
-	gap: 16px;
-	padding: 16px;
-	background: #fff;
-	border: 1px solid #e0e0e0;
-	border-radius: 8px;
-
-	&__cover {
-		flex-shrink: 0;
-		width: 123px;
-		height: 98px;
-		border-radius: 6px;
-		overflow: hidden;
-
-		img {
-			width: 100%;
-			height: 100%;
-			object-fit: cover;
-		}
-	}
-
-	&__cover-placeholder {
-		width: 100%;
-		height: 100%;
-		background: #eef2ff;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border-radius: 6px;
-
-		.dashicons {
-			font-size: 36px;
-			width: 36px;
-			height: 36px;
-			color: #a5b4fc;
-		}
-	}
-
-	&__body {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-		min-width: 0;
-		justify-content: center;
-	}
-
-	&__title {
-		margin: 0;
-		font-size: 15px;
-		font-weight: 600;
-		color: #1e1e1e;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	&__description {
-		margin: 0;
-		font-size: 13px;
-		color: #757575;
-	}
-
-	// Double-class specificity (.godam-audio-card .godam-audio-card__description = 0,2,0)
-	// beats theme/WP rules like .entry-content p (0,1,1) that override display.
-	& &__description {
-		display: -webkit-box;
-		-webkit-line-clamp: 2;
-		line-clamp: 2;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-	}
-
-	&__player {
-		width: 100%;
-		min-width: 0;
-		height: 25px;
-		margin-top: auto;
-		margin-left: -8px;
-
-		&::-webkit-media-controls-panel {
-			background: #fff;
-			padding: 0;
-			margin: 0;
-		}
-	}
-
-	// Mobile: compact media controls
-	@media ( max-width: 480px ) {
-		&__player {
-
-			&::-webkit-media-controls-timeline {
-				padding: 1px;
-				width: 100%;
-			}
-
-			&::-webkit-media-controls-volume-control-container,
-			&::-webkit-media-controls-mute-button,
-			&::-webkit-media-controls-fullscreen-button {
-				display: none;
-			}
-		}
-	}
 }

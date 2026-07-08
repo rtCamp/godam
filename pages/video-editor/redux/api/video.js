@@ -14,7 +14,9 @@ export const videosAPI = createApi( {
 			query: ( data ) => {
 				const params = new URLSearchParams();
 				params.append( 'action', 'query-attachments' );
-				params.append( 'query[post_mime_type]', 'video' );
+				// Media-type is optional so the picker can list audio as well as
+				// video; callers pass `mimeType` (e.g. 'audio') to narrow it.
+				params.append( 'query[post_mime_type]', data?.mimeType || 'video' );
 				params.append( 'query[posts_per_page]', '40' );
 				params.append( 'query[orderby]', 'date' );
 				params.append( 'query[order]', 'DESC' );

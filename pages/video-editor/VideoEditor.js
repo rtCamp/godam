@@ -14,6 +14,7 @@ import { __, _n } from '@wordpress/i18n';
  * Internal dependencies
  */
 import VideoJSPlayer from './VideoJSPlayer';
+import AudioCardPreview from './components/audio/AudioCardPreview';
 import SidebarLayers from './components/SidebarLayers';
 import Appearance from './components/appearance/Appearance';
 import EditorTopBar from './components/editor-shell/EditorTopBar';
@@ -21,11 +22,13 @@ import EditorStatsRow from './components/editor-shell/EditorStatsRow';
 import EditorTabRail from './components/editor-shell/EditorTabRail';
 import ConfigurationPanel from './components/editor-shell/ConfigurationPanel';
 import EditorSkeleton from './components/editor-shell/EditorSkeleton';
+import { getCapabilityForMime } from './config/mediaCapabilities';
 import {
 	initializeStore,
 	saveVideoMeta,
 	setCurrentTab,
 	setCurrentLayer,
+	setMediaType,
 	setGravityForms,
 	setCF7Forms,
 	setWPForms,
@@ -58,17 +61,15 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const [ showSnackbar, setShowSnackbar ] = useState( false );
 	const [ aspectRatio, setAspectRatio ] = useState( '16:9' );
 
-	// Pre-fetch data on mount to ensure copy always works
-	useEffect( () => {
-		prefetchMediaDataForCopy( attachmentID );
-	}, [ attachmentID ] );
-
 	useEffect( () => {
 		// Verify add-on layer components are registered via PHP filters.
 		ensureAddonLayersRegistered();
 	}, [] );
 
 	const playerRef = useRef( null );
+	// For audio, playback is owned by AudioCardPreview; it assigns a seek fn here
+	// so the Chapters tab can scrub the preview (video uses `playerRef`).
+	const audioSeekRef = useRef( null );
 
 	const dispatch = useDispatch();
 
@@ -81,6 +82,19 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 
 	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
+
+	// Resolve the media-type capability from the attachment MIME. Before the
+	// attachment loads this falls back to the video descriptor (a no-op).
+	const capability = getCapabilityForMime( attachmentConfig?.mime_type );
+
+	// Pre-fetch data so copy always works. Re-runs once the capability is known
+	// (after the attachment loads) so the correct block markup is cached.
+	useEffect( () => {
+		prefetchMediaDataForCopy( attachmentID, {
+			blockName: capability.copyBlockName,
+			mediaType: capability.mediaType,
+		} );
+	}, [ attachmentID, capability.copyBlockName, capability.mediaType ] );
 
 	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, ninjaForms, metforms, isFetching } = useFetchForms();
 
@@ -147,6 +161,16 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 			const calculatedAspectRatio = `${ videoWidth }:${ videoHeight }`;
 			setAspectRatio( calculatedAspectRatio );
 		}
+
+		// Apply the media-type capability (allowed tabs / layer types, default
+		// tab) before seeding the store so the correct tab is active on open.
+		const mediaCapability = getCapabilityForMime( mimeType );
+		dispatch( setMediaType( {
+			mediaType: mediaCapability.mediaType,
+			tabs: mediaCapability.tabs,
+			defaultTab: mediaCapability.defaultTab,
+			allowedLayerTypes: mediaCapability.allowedLayerTypes,
+		} ) );
 
 		// Initialize the store if meta exists
 		if ( rtGodamMeta ) {
@@ -322,7 +346,15 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 			}
 		}
 	};
-	const seekToTime = ( time ) => playerRef.current?.currentTime( time );
+	// Seek the active preview: the VideoJS player for video, or the audio
+	// preview's element (via `audioSeekRef`) for audio.
+	const seekToTime = ( time ) => {
+		if ( playerRef.current ) {
+			playerRef.current.currentTime( time );
+		} else if ( audioSeekRef.current ) {
+			audioSeekRef.current( time );
+		}
+	};
 	const pauseVideo = () => playerRef.current?.pause();
 
 	const validateLayers = ( videoLayers ) => {
@@ -388,13 +420,16 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	};
 
 	const handleCopyGoDAMVideoBlock = async () => {
-		const result = await copyGoDAMVideoBlock( attachmentID );
+		const result = await copyGoDAMVideoBlock( attachmentID, {
+			blockName: capability.copyBlockName,
+			mediaType: capability.mediaType,
+		} );
 
 		if ( result ) {
-			setSnackbarMessage( __( 'GoDAM Video Block copied to clipboard', 'godam' ) );
+			setSnackbarMessage( __( 'GoDAM block copied to clipboard', 'godam' ) );
 			setShowSnackbar( true );
 		} else {
-			setSnackbarMessage( __( 'Failed to copy GoDAM Video Block', 'godam' ) );
+			setSnackbarMessage( __( 'Failed to copy GoDAM block', 'godam' ) );
 			setShowSnackbar( true );
 		}
 	};
@@ -420,7 +455,9 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const videoTitle =
 		attachmentConfig?.title?.rendered ||
 		attachmentConfig?.title ||
-		__( 'Untitled video', 'godam' );
+		( capability.mediaType === 'audio'
+			? __( 'Untitled audio', 'godam' )
+			: __( 'Untitled video', 'godam' ) );
 
 	return (
 		<div className="godam-video-editor">
@@ -430,16 +467,18 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 				attachmentID={ attachmentID }
 				isChanged={ isChanged }
 				isSaving={ isSavingMeta }
+				capability={ capability }
 				onBack={ onBackToAttachmentPicker }
 				onSave={ handleSaveAttachmentMeta }
 				onCopy={ handleCopyGoDAMVideoBlock }
 			/>
 
-			<EditorStatsRow attachmentID={ attachmentID } />
+			{ capability.showStats && <EditorStatsRow attachmentID={ attachmentID } /> }
 
 			<div className="godam-video-editor__body">
 				<EditorTabRail
 					currentTab={ currentTab }
+					tabs={ capability.tabs }
 					onSelect={ handleSelectTab }
 				/>
 
@@ -474,7 +513,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 						// Display a success message when video changes are saved.
 						showSaveMessage && (
 							<Snackbar className="absolute bottom-4 right-4 opacity-70 z-50">
-								{ __( 'Video changes saved successfully', 'godam' ) }
+								{ __( 'Changes saved successfully', 'godam' ) }
 							</Snackbar>
 						)
 					}
@@ -488,7 +527,16 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 					) }
 
 					<div className="godam-video-editor__stage-canvas">
-						{ attachmentConfig && sources.length > 0 && (
+						{ attachmentConfig && sources.length > 0 && capability.preview === 'audio' && (
+							<AudioCardPreview
+								attachmentID={ attachmentID }
+								attachmentConfig={ attachmentConfig }
+								sources={ sources }
+								seekRef={ audioSeekRef }
+								onDuration={ setDuration }
+							/>
+						) }
+						{ attachmentConfig && sources.length > 0 && capability.preview === 'videojs' && (
 							<div className="w-full video-canvas-wrapper">
 								<div className="relative">
 									<VideoJSPlayer
@@ -535,7 +583,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 						) }
 					</div>
 
-					{ attachmentConfig && sources.length > 0 &&
+					{ capability.showTimeline && attachmentConfig && sources.length > 0 &&
 						( currentTab === 'layers' || currentTab === 'chapters' ) && (
 						<div className="godam-video-editor__timeline-dock">
 							<Timeline

@@ -290,11 +290,19 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
+	// Media-type gate: `'*'` (video) allows every layer type; a restricted media
+	// type (e.g. a future image editor with `[ 'hotspot' ]`) narrows the add menu
+	// and the rendered list.
+	const allowedLayerTypes = useSelector( ( state ) => state.videoReducer.allowedLayerTypes );
+	const isLayerTypeAllowed = useCallback(
+		( type ) => allowedLayerTypes === '*' || ! Array.isArray( allowedLayerTypes ) || allowedLayerTypes.includes( type ),
+		[ allowedLayerTypes ],
+	);
 	const adServer = videoConfig?.adServer ?? 'self-hosted';
 
-	// Sort the array (ascending order), excluding layers with unknown types.
+	// Sort the array (ascending order), excluding unknown and disallowed types.
 	const sortedLayers = [ ...layers ]
-		.filter( ( layer ) => layerTypes.some( ( lt ) => lt.type === layer.type ) )
+		.filter( ( layer ) => layerTypes.some( ( lt ) => lt.type === layer.type ) && isLayerTypeAllowed( layer.type ) )
 		.sort( ( a, b ) => a.displayTime - b.displayTime );
 
 	const addNewLayer = ( type, formType ) => {
@@ -516,7 +524,8 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 				} );
 			} );
 
-		return options;
+		// Restrict to the layer types the current media type allows.
+		return options.filter( ( opt ) => isLayerTypeAllowed( opt.key ) );
 	};
 	const addOptions = buildAddOptions();
 

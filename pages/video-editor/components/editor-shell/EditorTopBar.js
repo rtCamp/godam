@@ -18,11 +18,12 @@ import { notify as notifyGuide } from '../../onboarding/productGuide';
  * All handlers are passed in from `VideoEditor` so behaviour is unchanged.
  *
  * @param {Object}   props
- * @param {string}   props.title        Video title.
+ * @param {string}   props.title        Media title.
  * @param {number}   props.layerCount   Number of layers.
  * @param {number}   props.attachmentID Attachment ID for Preview/Analytics links.
  * @param {boolean}  props.isChanged    Whether there are unsaved changes.
  * @param {boolean}  props.isSaving     Whether a save is in progress.
+ * @param {Object}   props.capability   Active media-type capability descriptor.
  * @param {Function} props.onBack       Back-to-picker handler.
  * @param {Function} props.onSave       Save handler.
  * @param {Function} props.onCopy       Copy-block handler.
@@ -34,13 +35,25 @@ const EditorTopBar = ( {
 	attachmentID,
 	isChanged,
 	isSaving,
+	capability = {},
 	onBack,
 	onSave,
 	onCopy,
 } ) => {
 	const homeUrl = window?.godamRestRoute?.homeUrl || '';
 	const hasValidApiKey = Boolean( window?.userData?.validApiKey );
-	const previewUrl = `${ homeUrl }?godam_page=video-preview&id=${ attachmentID }`;
+	const previewPage = capability.previewPage || 'video-preview';
+	// Media types without a front-end preview page (e.g. audio) hide the button.
+	const showPreview = capability.showPreview !== false;
+	// Analytics is tied to stats support — audio has neither.
+	const showAnalytics = hasValidApiKey && capability.showStats !== false;
+	// Only media types with a Layers tab show the layer count subtitle.
+	const showLayerCount = Array.isArray( capability.tabs ) ? capability.tabs.includes( 'layers' ) : true;
+	// Video keeps its historic "Save Video" label; other media types use "Save".
+	const saveLabel = capability.mediaType === 'audio' || capability.mediaType === 'image'
+		? __( 'Save', 'godam' )
+		: __( 'Save Video', 'godam' );
+	const previewUrl = `${ homeUrl }?godam_page=${ previewPage }&id=${ attachmentID }`;
 	const analyticsUrl = `${ homeUrl }/wp-admin/admin.php?page=rtgodam_analytics&id=${ attachmentID }`;
 
 	/**
@@ -76,13 +89,15 @@ const EditorTopBar = ( {
 				</FlexItem>
 				<FlexItem>
 					<h1 className="godam-video-editor__title">{ title }</h1>
-					<p className="godam-video-editor__subtitle">
-						{ sprintf(
-							// translators: %d is the number of layers.
-							_n( '%d layer', '%d layers', layerCount, 'godam' ),
-							layerCount,
-						) }
-					</p>
+					{ showLayerCount && (
+						<p className="godam-video-editor__subtitle">
+							{ sprintf(
+								// translators: %d is the number of layers.
+								_n( '%d layer', '%d layers', layerCount, 'godam' ),
+								layerCount,
+							) }
+						</p>
+					) }
 				</FlexItem>
 			</Flex>
 
@@ -120,17 +135,19 @@ const EditorTopBar = ( {
 						</Button>
 					</Tooltip>
 				</FlexItem>
-				<FlexItem>
-					<Button
-						variant="tertiary"
-						icon={ seen }
-						href={ previewUrl }
-						target="_blank"
-						data-test-id="godam-video-editor-button-preview"
-					>
-						{ __( 'Preview', 'godam' ) }
-					</Button>
-				</FlexItem>
+				{ showPreview && (
+					<FlexItem>
+						<Button
+							variant="tertiary"
+							icon={ seen }
+							href={ previewUrl }
+							target="_blank"
+							data-test-id="godam-video-editor-button-preview"
+						>
+							{ __( 'Preview', 'godam' ) }
+						</Button>
+					</FlexItem>
+				) }
 				<FlexItem>
 					<Button
 						variant="primary"
@@ -143,10 +160,10 @@ const EditorTopBar = ( {
 						disabled={ ! isChanged }
 						data-test-id="godam-video-editor-button-save"
 					>
-						{ isSaving ? __( 'Saving…', 'godam' ) : __( 'Save Video', 'godam' ) }
+						{ isSaving ? __( 'Saving…', 'godam' ) : saveLabel }
 					</Button>
 				</FlexItem>
-				{ hasValidApiKey && (
+				{ showAnalytics && (
 					<FlexItem>
 						<DropdownMenu
 							icon={ moreVertical }
