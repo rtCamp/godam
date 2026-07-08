@@ -83,6 +83,21 @@
 	border: 1px solid #e0e0e0;
 	border-radius: 6px;
 
+	// The icon + name/size, wrapped in a button so clicking the row opens the
+	// media picker to replace the audio file.
+	&__main {
+		display: flex;
+		flex: 1 1 auto;
+		align-items: center;
+		gap: 12px;
+		min-width: 0;
+		padding: 0;
+		border: 0;
+		background: none;
+		text-align: left;
+		cursor: pointer;
+	}
+
 	&__icon {
 		flex: 0 0 auto;
 		width: 40px;
@@ -114,6 +129,11 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+
+		// Tint the file name when the row (button) is hovered.
+		.godam-audio-file__main:hover & {
+			color: var(--wp-admin-theme-color, #3858e9);
+		}
 	}
 
 	&__size {
@@ -131,20 +151,81 @@
 	}
 }
 
-// ── Inspector: thumbnail preview ──────────────────────────────────────────────
-.godam-audio-thumbnail-preview {
+// ── Inspector: thumbnail (mirrors the core/video "PosterImage" control) ─────
+// The image is a button that opens the media picker to replace it; the Replace
+// and Remove actions reveal as a frosted overlay on hover / focus. When there
+// is no thumbnail, a "Set thumbnail" button shows in place of the overlay.
+/* stylelint-disable no-descending-specificity */
+.godam-audio-thumbnail__container {
+	position: relative;
 
-	img {
-		display: block;
-		width: 100%;
-		height: 120px;
-		object-fit: cover;
-		border-radius: 4px;
-		margin-bottom: 8px;
+	&:hover,
+	&:focus,
+	&:focus-within {
+
+		.godam-audio-thumbnail__actions {
+			opacity: 1;
+		}
 	}
 
-	&__actions {
-		display: flex;
-		gap: 8px;
+	.godam-audio-thumbnail__actions.godam-audio-thumbnail__actions-select {
+		opacity: 1;
+		margin-top: 16px;
+	}
+
+	.components-spinner {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		margin-top: -9px;
+		margin-left: -9px;
 	}
 }
+
+.godam-audio-thumbnail__preview {
+	width: 100%;
+	min-height: 40px;
+	padding: 0;
+	overflow: hidden;
+	outline: 1px solid rgba(0, 0, 0, 0.1);
+	outline-offset: -1px;
+	display: flex;
+	justify-content: center;
+	height: auto !important;
+
+	.godam-audio-thumbnail__preview-image {
+		width: 100%;
+		object-fit: cover;
+		object-position: 50% 50%;
+		aspect-ratio: 2 / 1;
+	}
+}
+
+.godam-audio-thumbnail__actions {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+
+	&:not( .godam-audio-thumbnail__actions-select ) {
+		position: absolute;
+		bottom: 0;
+		padding: 8px;
+		opacity: 0;
+
+		@media (prefers-reduced-motion: no-preference) {
+			transition: opacity 50ms ease-out;
+		}
+
+		.godam-audio-thumbnail__action {
+			background: rgba(255, 255, 255, 0.75);
+			-webkit-backdrop-filter: blur(16px) saturate(180%);
+			backdrop-filter: blur(16px) saturate(180%);
+		}
+	}
+
+	.godam-audio-thumbnail__action {
+		flex-grow: 1;
+		justify-content: center;
+	}
+}
+/* stylelint-enable no-descending-specificity */

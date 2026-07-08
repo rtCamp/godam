@@ -2,6 +2,8 @@
  * WordPress dependencies
  */
 import { useState, useEffect } from '@wordpress/element';
+import { Icon } from '@wordpress/components';
+import { check, copy } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 
@@ -22,20 +24,31 @@ import { parseCaptions } from '../../js/godam-player/utils/parseCaptions';
  *
  * @param {Object}   props                Props.
  * @param {number}   props.id             Attachment ID.
- * @param {boolean}  props.showTranscript Whether the panel is enabled.
+ * @param {boolean}  props.showTranscript Whether the Transcript tab is enabled.
+ * @param {boolean}  [props.showChapters] Whether the Chapters tab is enabled (default true).
  * @param {Function} [props.onRendered]   Called with whether the panel renders so the card can join it visually.
  * @return {JSX.Element|null} The panel, or null when there's nothing to show.
  */
-const AudioTabs = ( { id, showTranscript, onRendered } ) => {
+const AudioTabs = ( { id, showTranscript, showChapters = true, onRendered } ) => {
 	const [ chapters, setChapters ] = useState( [] );
 	const [ cues, setCues ] = useState( [] );
 	const [ activeTab, setActiveTab ] = useState( 'chapters' );
 	const [ collapsed, setCollapsed ] = useState( false );
+	const [ copied, setCopied ] = useState( false );
+
+	const handleCopyTranscript = async () => {
+		if ( ! cues.length || ! navigator.clipboard?.writeText ) {
+			return;
+		}
+		await navigator.clipboard.writeText( cues.map( ( cue ) => cue.text ).join( '\n' ) );
+		setCopied( true );
+		setTimeout( () => setCopied( false ), 2000 );
+	};
 
 	useEffect( () => {
 		let cancelled = false;
 
-		if ( ! id || ! showTranscript ) {
+		if ( ! id || ( ! showTranscript && ! showChapters ) ) {
 			setChapters( [] );
 			setCues( [] );
 			return undefined;
@@ -83,11 +96,18 @@ const AudioTabs = ( { id, showTranscript, onRendered } ) => {
 		return () => {
 			cancelled = true;
 		};
-	}, [ id, showTranscript ] );
+	}, [ id, showTranscript, showChapters ] );
 
 	// Match the front end: the panel appears only when enabled and there's
 	// something to show.
-	const shouldRender = showTranscript && ( chapters.length > 0 || cues.length > 0 );
+	const chaptersVisible = showChapters && chapters.length > 0;
+	const transcriptVisible = showTranscript && cues.length > 0;
+	const shouldRender = chaptersVisible || transcriptVisible;
+
+	// Resolve the active tab against what's actually visible, so hiding a tab
+	// falls back to the other instead of showing an empty body.
+	const availableTabs = [ chaptersVisible && 'chapters', transcriptVisible && 'transcript' ].filter( Boolean );
+	const currentTab = availableTabs.includes( activeTab ) ? activeTab : availableTabs[ 0 ];
 
 	useEffect( () => {
 		onRendered?.( shouldRender );
@@ -101,24 +121,28 @@ const AudioTabs = ( { id, showTranscript, onRendered } ) => {
 		<div className="godam-audio-tabs" data-test-id="godam-audio-editor-tabs">
 			<div className="godam-audio-tabs__bar">
 				<div className="godam-audio-tabs__nav" role="tablist">
-					<button
-						type="button"
-						className={ `godam-audio-tabs__tab${ activeTab === 'chapters' ? ' is-active' : '' }` }
-						role="tab"
-						aria-selected={ activeTab === 'chapters' }
-						onClick={ () => setActiveTab( 'chapters' ) }
-					>
-						{ __( 'Chapters', 'godam' ) }
-					</button>
-					<button
-						type="button"
-						className={ `godam-audio-tabs__tab${ activeTab === 'transcript' ? ' is-active' : '' }` }
-						role="tab"
-						aria-selected={ activeTab === 'transcript' }
-						onClick={ () => setActiveTab( 'transcript' ) }
-					>
-						{ __( 'Transcript', 'godam' ) }
-					</button>
+					{ chaptersVisible && (
+						<button
+							type="button"
+							className={ `godam-audio-tabs__tab${ currentTab === 'chapters' ? ' is-active' : '' }` }
+							role="tab"
+							aria-selected={ currentTab === 'chapters' }
+							onClick={ () => setActiveTab( 'chapters' ) }
+						>
+							{ __( 'Chapters', 'godam' ) }
+						</button>
+					) }
+					{ transcriptVisible && (
+						<button
+							type="button"
+							className={ `godam-audio-tabs__tab${ currentTab === 'transcript' ? ' is-active' : '' }` }
+							role="tab"
+							aria-selected={ currentTab === 'transcript' }
+							onClick={ () => setActiveTab( 'transcript' ) }
+						>
+							{ __( 'Transcript', 'godam' ) }
+						</button>
+					) }
 				</div>
 				<button
 					type="button"
@@ -133,7 +157,7 @@ const AudioTabs = ( { id, showTranscript, onRendered } ) => {
 
 			{ ! collapsed && (
 				<div className="godam-audio-tabs__body">
-					{ activeTab === 'chapters' && (
+					{ currentTab === 'chapters' && (
 						<div className="godam-audio-tabs__panel">
 							{ chapters.length === 0 && (
 								<p className="godam-audio-tabs__empty">{ __( 'No chapters to show', 'godam' ) }</p>
@@ -153,20 +177,30 @@ const AudioTabs = ( { id, showTranscript, onRendered } ) => {
 						</div>
 					) }
 
-					{ activeTab === 'transcript' && (
+					{ currentTab === 'transcript' && (
 						<div className="godam-audio-tabs__panel">
 							{ cues.length === 0 && (
 								<p className="godam-audio-tabs__empty">{ __( 'No transcript to show', 'godam' ) }</p>
 							) }
 							{ cues.length > 0 && (
-								<div className="godam-audio-tabs__transcript">
-									{ cues.map( ( cue, index ) => (
-										<div className="godam-audio-tabs__row" key={ index }>
-											<span className="godam-audio-tabs__stamp">{ formatTime( cue.start ) }</span>
-											<span className="godam-audio-tabs__row-text">{ cue.text }</span>
-										</div>
-									) ) }
-								</div>
+								<>
+									<button
+										type="button"
+										className={ `godam-audio-tabs__copy${ copied ? ' is-copied' : '' }` }
+										aria-label={ copied ? __( 'Copied', 'godam' ) : __( 'Copy transcript', 'godam' ) }
+										onClick={ handleCopyTranscript }
+									>
+										<Icon icon={ copied ? check : copy } size={ 20 } />
+									</button>
+									<div className="godam-audio-tabs__transcript">
+										{ cues.map( ( cue, index ) => (
+											<div className="godam-audio-tabs__row" key={ index }>
+												<span className="godam-audio-tabs__stamp">{ formatTime( cue.start ) }</span>
+												<span className="godam-audio-tabs__row-text">{ cue.text }</span>
+											</div>
+										) ) }
+									</div>
+								</>
 							) }
 						</div>
 					) }

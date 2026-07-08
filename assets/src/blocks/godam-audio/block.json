@@ -54,6 +54,10 @@
 		"showTranscript": {
 			"type": "boolean",
 			"default": true
+		},
+		"showChapters": {
+			"type": "boolean",
+			"default": true
 		}
 	},
 	"supports": {

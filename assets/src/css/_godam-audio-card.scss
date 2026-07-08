@@ -271,20 +271,76 @@
 	&__transcript {
 		max-height: 320px;
 		overflow-y: auto;
+
+		// Transcript cues drop the chapter row's pill + hover/active background
+		// for the cleaner design: a plain timestamp column, grey by default, with
+		// the whole active cue turning dark. (Chapters keep their own styling.)
+		.godam-audio-tabs__row {
+			align-items: flex-start;
+			gap: 16px;
+			padding: 12px 4px;
+			border-radius: 0;
+
+			&:hover,
+			&.is-active {
+				background: none;
+			}
+		}
+
+		.godam-audio-tabs__stamp {
+			min-width: 44px;
+			padding: 0;
+			background: none;
+			border-radius: 0;
+			font-size: 14px;
+			font-weight: 500;
+			line-height: 1.6;
+			color: #9ca3af;
+		}
+
+		.godam-audio-tabs__row-text {
+			font-size: 15px;
+			line-height: 1.6;
+			color: #9ca3af;
+		}
+
+		// Active cue: timestamp + text go dark (design).
+		.godam-audio-tabs__row.is-active {
+
+			.godam-audio-tabs__stamp {
+				color: #1e1e1e;
+				font-weight: 700;
+			}
+
+			.godam-audio-tabs__row-text {
+				color: #1e1e1e;
+			}
+		}
 	}
 
 	&__copy {
 		background: none;
 		border: 1px solid #e0e0e0;
-		border-radius: 4px;
-		width: 32px;
-		height: 32px;
+		border-radius: 6px;
+		width: 36px;
+		height: 36px;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
 		cursor: pointer;
 		color: #4b5563;
-		margin-bottom: 8px;
+		margin-bottom: 12px;
+
+		svg {
+			width: 20px;
+			height: 20px;
+			fill: currentcolor;
+		}
+
+		&:hover {
+			background: #f9fafb;
+			color: #1e1e1e;
+		}
 
 		&.is-copied {
 			color: #10b77f;

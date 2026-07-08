@@ -96,14 +96,23 @@ function initAudioPanel( panel ) {
 		copyBtn.type = 'button';
 		copyBtn.className = 'godam-audio-tabs__copy';
 		copyBtn.setAttribute( 'aria-label', __( 'Copy transcript', 'godam' ) );
-		copyBtn.innerHTML = '<span class="dashicons dashicons-admin-page"></span>';
+		copyBtn.innerHTML = COPY_ICON;
+		let copyResetTimer;
 		copyBtn.addEventListener( 'click', async () => {
 			if ( ! navigator.clipboard?.writeText ) {
 				return;
 			}
 			await navigator.clipboard.writeText( cues.map( ( cue ) => cue.text ).join( '\n' ) );
+			// Confirm the copy with a check mark for a moment, then restore.
 			copyBtn.classList.add( 'is-copied' );
-			setTimeout( () => copyBtn.classList.remove( 'is-copied' ), 2000 );
+			copyBtn.innerHTML = CHECK_ICON;
+			copyBtn.setAttribute( 'aria-label', __( 'Copied', 'godam' ) );
+			clearTimeout( copyResetTimer );
+			copyResetTimer = setTimeout( () => {
+				copyBtn.classList.remove( 'is-copied' );
+				copyBtn.innerHTML = COPY_ICON;
+				copyBtn.setAttribute( 'aria-label', __( 'Copy transcript', 'godam' ) );
+			}, 2000 );
 		} );
 		transcriptPanel.appendChild( copyBtn );
 
@@ -169,6 +178,9 @@ function initAudioPanel( panel ) {
 
 const PLAY_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
 const PAUSE_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z" fill="currentColor"/></svg>';
+// WordPress "copy" / "check" icons (match @wordpress/icons `copy` / `check`).
+const COPY_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="M5 4.5h11a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-.5.5H5a.5.5 0 0 1-.5-.5V5a.5.5 0 0 1 .5-.5ZM3 5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5Zm17 3v10.75c0 .69-.56 1.25-1.25 1.25H6v1.5h12.75a2.75 2.75 0 0 0 2.75-2.75V8H20Z"/></svg>';
+const CHECK_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="currentColor" d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"/></svg>';
 
 /**
  * Replace the native `<audio controls>` chrome with the minimal custom player

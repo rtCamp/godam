@@ -7,6 +7,8 @@ import { useSelector } from 'react-redux';
  * WordPress dependencies
  */
 import { useState, useRef, useEffect, useMemo } from '@wordpress/element';
+import { Icon } from '@wordpress/components';
+import { check, copy } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -282,7 +284,7 @@ const AudioCardPreview = ( { attachmentID, attachmentConfig, sources, onDuration
 												aria-label={ copied ? __( 'Copied', 'godam' ) : __( 'Copy transcript', 'godam' ) }
 												onClick={ handleCopyTranscript }
 											>
-												<span className="dashicons dashicons-admin-page"></span>
+												<Icon icon={ copied ? check : copy } size={ 20 } />
 											</button>
 											<div className="godam-audio-tabs__transcript">
 												{ cues.map( ( cue, index ) => (

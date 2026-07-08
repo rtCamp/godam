@@ -20,6 +20,7 @@ $godam_thumbnail     = ! empty( $attributes['thumbnail'] ) ? esc_url( $attribute
 
 // The transcript toggle defaults to on when the attribute is absent.
 $godam_show_transcript = ! array_key_exists( 'showTranscript', $attributes ) || ! empty( $attributes['showTranscript'] );
+$godam_show_chapters   = ! array_key_exists( 'showChapters', $attributes ) || ! empty( $attributes['showChapters'] );
 
 // Chapters live on the attachment's rtgodam_meta; the transcript is a caption
 // file URL stored in rtgodam_transcript_path (resolved by the helper).
@@ -36,9 +37,23 @@ foreach ( $godam_chapters_raw as $godam_chapter ) {
 	);
 }
 
-// The Chapters / Transcript panel shows only when enabled and there is
-// something to show.
-$godam_has_panel = $godam_show_transcript && ( ! empty( $godam_chapters ) || ! empty( $godam_transcript_url ) );
+// Each tab shows only when its own toggle is on and it has content; the panel
+// appears when at least one tab is visible.
+$godam_chapters_visible   = $godam_show_chapters && ! empty( $godam_chapters );
+$godam_transcript_visible = $godam_show_transcript && ! empty( $godam_transcript_url );
+$godam_has_panel          = $godam_chapters_visible || $godam_transcript_visible;
+
+// Chapters is the first tab, so it is active when visible; the transcript is
+// active only when chapters is hidden. Pre-build class / aria / hidden strings
+// so the markup only echoes escaped values.
+$godam_chapters_active      = $godam_chapters_visible;
+$godam_transcript_active    = $godam_transcript_visible && ! $godam_chapters_visible;
+$godam_chapters_tab_class   = 'godam-audio-tabs__tab' . ( $godam_chapters_active ? ' is-active' : '' );
+$godam_transcript_tab_class = 'godam-audio-tabs__tab' . ( $godam_transcript_active ? ' is-active' : '' );
+$godam_chapters_aria        = $godam_chapters_active ? 'true' : 'false';
+$godam_transcript_aria      = $godam_transcript_active ? 'true' : 'false';
+$godam_chapters_hidden      = $godam_chapters_active ? '' : 'hidden';
+$godam_transcript_hidden    = $godam_transcript_active ? '' : 'hidden';
 
 if ( ! $godam_attachment_id && empty( $godam_src ) ) {
 	return;
@@ -112,12 +127,16 @@ if ( ! $godam_attachment_id && ! empty( $godam_src ) ) {
 		>
 			<div class="godam-audio-tabs__bar">
 				<div class="godam-audio-tabs__nav" role="tablist">
-					<button type="button" class="godam-audio-tabs__tab is-active" role="tab" aria-selected="true" data-godam-tab="chapters">
-						<?php esc_html_e( 'Chapters', 'godam' ); ?>
-					</button>
-					<button type="button" class="godam-audio-tabs__tab" role="tab" aria-selected="false" data-godam-tab="transcript">
-						<?php esc_html_e( 'Transcript', 'godam' ); ?>
-					</button>
+					<?php if ( $godam_chapters_visible ) : ?>
+						<button type="button" class="<?php echo esc_attr( $godam_chapters_tab_class ); ?>" role="tab" aria-selected="<?php echo esc_attr( $godam_chapters_aria ); ?>" data-godam-tab="chapters">
+							<?php esc_html_e( 'Chapters', 'godam' ); ?>
+						</button>
+					<?php endif; ?>
+					<?php if ( $godam_transcript_visible ) : ?>
+						<button type="button" class="<?php echo esc_attr( $godam_transcript_tab_class ); ?>" role="tab" aria-selected="<?php echo esc_attr( $godam_transcript_aria ); ?>" data-godam-tab="transcript">
+							<?php esc_html_e( 'Transcript', 'godam' ); ?>
+						</button>
+					<?php endif; ?>
 				</div>
 				<button type="button" class="godam-audio-tabs__toggle" aria-expanded="true" aria-label="<?php esc_attr_e( 'Toggle panel', 'godam' ); ?>">
 					<span class="dashicons dashicons-arrow-down-alt2"></span>
@@ -125,7 +144,8 @@ if ( ! $godam_attachment_id && ! empty( $godam_src ) ) {
 			</div>
 
 			<div class="godam-audio-tabs__body">
-				<div class="godam-audio-tabs__panel" data-godam-panel="chapters" role="tabpanel">
+				<?php if ( $godam_chapters_visible ) : ?>
+				<div class="godam-audio-tabs__panel" data-godam-panel="chapters" role="tabpanel" <?php echo esc_attr( $godam_chapters_hidden ); ?>>
 					<?php if ( ! empty( $godam_chapters ) ) : ?>
 						<ul class="godam-audio-tabs__list">
 							<?php foreach ( $godam_chapters as $godam_chapter ) : ?>
@@ -147,14 +167,17 @@ if ( ! $godam_attachment_id && ! empty( $godam_src ) ) {
 						<p class="godam-audio-tabs__empty"><?php esc_html_e( 'No chapters to show', 'godam' ); ?></p>
 					<?php endif; ?>
 				</div>
+				<?php endif; ?>
 
-				<div class="godam-audio-tabs__panel" data-godam-panel="transcript" role="tabpanel" hidden>
+				<?php if ( $godam_transcript_visible ) : ?>
+				<div class="godam-audio-tabs__panel" data-godam-panel="transcript" role="tabpanel" <?php echo esc_attr( $godam_transcript_hidden ); ?>>
 					<?php if ( ! empty( $godam_transcript_url ) ) : ?>
 						<p class="godam-audio-tabs__empty" data-godam-transcript-loading><?php esc_html_e( 'Loading transcript…', 'godam' ); ?></p>
 					<?php else : ?>
 						<p class="godam-audio-tabs__empty"><?php esc_html_e( 'No transcript to show', 'godam' ); ?></p>
 					<?php endif; ?>
 				</div>
+				<?php endif; ?>
 			</div>
 		</div>
 	<?php endif; ?>

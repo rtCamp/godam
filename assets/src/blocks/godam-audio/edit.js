@@ -9,6 +9,7 @@ import clsx from 'clsx';
 import { isBlobURL } from '@wordpress/blob';
 import {
 	Button,
+	DropZone,
 	PanelBody,
 	SelectControl,
 	Spinner,
@@ -23,11 +24,12 @@ import {
 	MediaUploadCheck,
 	MediaReplaceFlow,
 	useBlockProps,
+	store as blockEditorStore,
 } from '@wordpress/block-editor';
-import { __, _x } from '@wordpress/i18n';
+import { __, _x, sprintf } from '@wordpress/i18n';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { store as noticesStore } from '@wordpress/notices';
-import { useState } from '@wordpress/element';
+import { useState, useRef } from '@wordpress/element';
 import { plus, trash, edit as editIcon } from '@wordpress/icons';
 
 /**
@@ -80,6 +82,7 @@ const formatBytes = ( bytes ) => {
  * @param {string}   props.className     - The class name for the component for styling.
  * @param {Function} props.setAttributes - Function to update the block's attributes.
  * @param {boolean}  props.isSelected    - Whether the block is currently selected.
+ * @param {string}   props.clientId      - The block's client ID.
  *
  * @return {JSX.Element} The rendered audio block component.
  */
@@ -88,8 +91,9 @@ function AudioEdit( {
 	className,
 	setAttributes,
 	isSelected: isSingleSelected,
+	clientId,
 } ) {
-	const { id, autoplay, loop, preload, src, audioTitle, description, thumbnail, thumbnailId, showTranscript } = attributes;
+	const { id, autoplay, loop, preload, src, audioTitle, description, thumbnail, thumbnailId, showTranscript, showChapters } = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 
 	// The customization editor (transcription + chapters) is the video editor in
@@ -206,6 +210,28 @@ function AudioEdit( {
 		setAttributes( { thumbnail: '', thumbnailId: undefined } );
 	}
 
+	const thumbnailButtonRef = useRef();
+	const thumbnailDescriptionId = `godam-audio-thumbnail-description-${ clientId }`;
+	const { getSettings } = useSelect( blockEditorStore );
+
+	// Drag-and-drop upload for the thumbnail, mirroring core's poster control.
+	function onDropThumbnail( filesList ) {
+		getSettings().mediaUpload( {
+			allowedTypes: ALLOWED_THUMBNAIL_TYPES,
+			filesList,
+			onFileChange: ( [ image ] ) => {
+				if ( isBlobURL( image?.url ) ) {
+					return;
+				}
+				if ( image ) {
+					onSelectThumbnail( image );
+				}
+			},
+			onError: onUploadError,
+			multiple: false,
+		} );
+	}
+
 	const hasAudio = !! ( src || temporaryURL );
 	const fileName = src ? decodeURIComponent( src.split( '/' ).pop().split( '?' )[ 0 ] ) : '';
 
@@ -259,13 +285,32 @@ function AudioEdit( {
 			) }
 
 			<div className="godam-audio-file" data-test-id="godam-audio-file">
-				<span className="godam-audio-file__icon">
-					<span className="dashicons dashicons-media-default"></span>
-				</span>
-				<span className="godam-audio-file__meta">
-					<span className="godam-audio-file__name" title={ fileName }>{ fileName }</span>
-					{ fileSize && <span className="godam-audio-file__size">{ fileSize }</span> }
-				</span>
+				<MediaUploadCheck>
+					<MediaUpload
+						onSelect={ onSelectAudio }
+						allowedTypes={ ALLOWED_MEDIA_TYPES }
+						accept="audio/*"
+						value={ id }
+						onError={ onUploadError }
+						render={ ( { open } ) => (
+							<button
+								type="button"
+								className="godam-audio-file__main"
+								onClick={ open }
+								aria-label={ __( 'Replace audio file', 'godam' ) }
+								data-test-id="godam-audio-button-replace-audio"
+							>
+								<span className="godam-audio-file__icon">
+									<span className="dashicons dashicons-media-default"></span>
+								</span>
+								<span className="godam-audio-file__meta">
+									<span className="godam-audio-file__name" title={ fileName }>{ fileName }</span>
+									{ fileSize && <span className="godam-audio-file__size">{ fileSize }</span> }
+								</span>
+							</button>
+						) }
+					/>
+				</MediaUploadCheck>
 				<Button
 					icon={ trash }
 					label={ __( 'Remove audio', 'godam' ) }
@@ -366,65 +411,92 @@ function AudioEdit( {
 
 				{ /* Thumbnail */ }
 				<PanelBody title={ __( 'Thumbnail', 'godam' ) } initialOpen={ true } data-test-id="godam-audio-panel-thumbnail">
-					{ thumbnail ? (
-						<div className="godam-audio-thumbnail-preview">
-							<img src={ thumbnail } alt={ __( 'Audio thumbnail', 'godam' ) } />
-							<div className="godam-audio-thumbnail-preview__actions">
-								<MediaUploadCheck>
-									<MediaUpload
-										onSelect={ onSelectThumbnail }
-										allowedTypes={ ALLOWED_THUMBNAIL_TYPES }
-										value={ thumbnailId }
-										render={ ( { open } ) => (
-											<Button variant="secondary" size="small" onClick={ open } data-test-id="godam-audio-button-replace-thumbnail">
-												{ __( 'Replace', 'godam' ) }
+					<MediaUploadCheck>
+						<MediaUpload
+							title={ __( 'Select thumbnail', 'godam' ) }
+							onSelect={ onSelectThumbnail }
+							allowedTypes={ ALLOWED_THUMBNAIL_TYPES }
+							value={ thumbnailId }
+							render={ ( { open } ) => (
+								<div className="godam-audio-thumbnail__container">
+									{ thumbnail && (
+										<Button
+											__next40pxDefaultSize
+											onClick={ open }
+											aria-haspopup="dialog"
+											aria-label={ __( 'Edit or replace the thumbnail.', 'godam' ) }
+											className="godam-audio-thumbnail__preview"
+											data-test-id="godam-audio-thumbnail-preview"
+										>
+											<img
+												src={ thumbnail }
+												alt={ __( 'Thumbnail preview', 'godam' ) }
+												className="godam-audio-thumbnail__preview-image"
+											/>
+										</Button>
+									) }
+									<div
+										className={ clsx( 'godam-audio-thumbnail__actions', {
+											'godam-audio-thumbnail__actions-select': ! thumbnail,
+										} ) }
+									>
+										<Button
+											__next40pxDefaultSize
+											onClick={ open }
+											ref={ thumbnailButtonRef }
+											className="godam-audio-thumbnail__action"
+											aria-describedby={ thumbnailDescriptionId }
+											aria-haspopup="dialog"
+											variant={ ! thumbnail ? 'secondary' : undefined }
+											data-test-id="godam-audio-button-replace-thumbnail"
+										>
+											{ ! thumbnail ? __( 'Set thumbnail', 'godam' ) : __( 'Replace', 'godam' ) }
+										</Button>
+										<p id={ thumbnailDescriptionId } hidden>
+											{ thumbnail
+												? sprintf(
+													/* translators: %s: thumbnail image URL. */
+													__( 'The current thumbnail url is %s.', 'godam' ),
+													thumbnail,
+												)
+												: __( 'There is no thumbnail currently selected.', 'godam' ) }
+										</p>
+										{ !! thumbnail && (
+											<Button
+												__next40pxDefaultSize
+												onClick={ () => {
+													onRemoveThumbnail();
+													thumbnailButtonRef.current?.focus();
+												} }
+												className="godam-audio-thumbnail__action"
+												data-test-id="godam-audio-button-remove-thumbnail"
+											>
+												{ __( 'Remove', 'godam' ) }
 											</Button>
 										) }
-									/>
-								</MediaUploadCheck>
-								<Button
-									variant="secondary"
-									size="small"
-									isDestructive
-									onClick={ onRemoveThumbnail }
-									data-test-id="godam-audio-button-remove-thumbnail"
-								>
-									{ __( 'Remove', 'godam' ) }
-								</Button>
-							</div>
-						</div>
-					) : (
-						<MediaUploadCheck>
-							<MediaUpload
-								onSelect={ onSelectThumbnail }
-								allowedTypes={ ALLOWED_THUMBNAIL_TYPES }
-								value={ thumbnailId }
-								render={ ( { open } ) => (
-									<Button
-										__next40pxDefaultSize
-										variant="secondary"
-										onClick={ open }
-										icon={ plus }
-										className="godam-audio__btn"
-										data-test-id="godam-audio-button-upload-thumbnail"
-									>
-										{ __( 'Upload Image', 'godam' ) }
-									</Button>
-								) }
-							/>
-						</MediaUploadCheck>
-					) }
+									</div>
+									<DropZone onFilesDrop={ onDropThumbnail } />
+								</div>
+							) }
+						/>
+					</MediaUploadCheck>
 				</PanelBody>
 
 				{ /* Settings */ }
-				<PanelBody title={ __( 'Transcription', 'godam' ) } initialOpen={ false } data-test-id="godam-audio-panel-transcription">
+				<PanelBody title={ __( 'Transcription', 'godam' ) } initialOpen={ true } data-test-id="godam-audio-panel-transcription">
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={ __( 'Show transcript', 'godam' ) }
 						checked={ showTranscript }
 						onChange={ toggleAttribute( 'showTranscript' ) }
-						help={ __( 'Display the Chapters / Transcript panel below the player on the front end.', 'godam' ) }
 						data-test-id="godam-audio-control-show-transcript"
+					/>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ __( 'Show chapters', 'godam' ) }
+						checked={ showChapters }
+						onChange={ toggleAttribute( 'showChapters' ) }
+						data-test-id="godam-audio-control-show-chapters"
 					/>
 					{ id && (
 						<Button
@@ -442,7 +514,7 @@ function AudioEdit( {
 					) }
 				</PanelBody>
 
-				<PanelBody title={ __( 'Settings', 'godam' ) } initialOpen={ false } data-test-id="godam-audio-panel-settings">
+				<PanelBody title={ __( 'Settings', 'godam' ) } initialOpen={ true } data-test-id="godam-audio-panel-settings">
 					<div data-test-id="godam-audio-control-autoplay">
 						<ToggleControl
 							__nextHasNoMarginBottom
@@ -502,7 +574,7 @@ function AudioEdit( {
 						</div>
 					</div>
 
-					<AudioTabs id={ id } showTranscript={ showTranscript } />
+					<AudioTabs id={ id } showTranscript={ showTranscript } showChapters={ showChapters } />
 				</div>
 			</figure>
 		</>
