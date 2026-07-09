@@ -48,6 +48,66 @@ $ve-faint: color-mix(in srgb, currentcolor 5%, transparent);
 		line-height: 1.4;
 	}
 
+	// Click-to-edit affordance: the title text is a bare button that reveals a
+	// subtle hover background so it reads as editable.
+	&__title-button {
+		display: block;
+		max-width: 32ch;
+		margin: 0;
+		padding: 0.125rem 0.375rem;
+		overflow: hidden;
+		font: inherit;
+		color: inherit;
+		font-size: 1rem;
+		font-weight: 600;
+		text-align: left;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		background: transparent;
+		border: 1px solid transparent;
+		border-radius: 4px;
+		line-height: 1;
+		cursor: text;
+
+		&:hover {
+			background: $ve-faint;
+		}
+
+		&:focus-visible {
+			outline: none;
+			border-color: $ve-accent;
+			box-shadow: 0 0 0 1px $ve-accent;
+		}
+	}
+
+	// Inline title editor. Nested under the topbar so the two-class specificity
+	// (0,2,0) beats wp-admin's global `input[type="text"]` rules (0,1,1), which
+	// otherwise force a 40px min-height and shift the layout on focus. Its box
+	// (line-height, padding and 1px border) mirrors the display button exactly,
+	// so switching between view and edit modes never changes the row height.
+	&__topbar &__title-input {
+		box-sizing: border-box;
+		width: 100%;
+		max-width: 32ch;
+		min-width: 16ch;
+		min-height: 0;
+		margin: 0;
+		padding: 0.125rem 0.375rem;
+		font-family: inherit;
+		font-size: 1rem;
+		font-weight: 600;
+		line-height: 1.4;
+		color: inherit;
+		background: var(--wp-components-color-background, #fff);
+		border: 1px solid $ve-accent;
+		border-radius: 4px;
+
+		&:focus {
+			outline: none;
+			box-shadow: 0 0 0 1px $ve-accent;
+		}
+	}
+
 	&__subtitle {
 		margin: 0;
 		font-size: 0.75rem;
