@@ -31,7 +31,7 @@ const EntryScreen = () => {
 		<>
 			<BrandLogo markOnly />
 			<h1 className="godam-onboarding__title godam-onboarding__title--lg">
-				{ isWoo ? __( "You've Unlocked Woo-Specific GoDAM", 'godam' ) : __( 'Welcome to GoDAM Pro!', 'godam' ) }
+				{ isWoo ? __( 'You have unlocked GoDAM for Woo', 'godam' ) : __( 'Welcome to GoDAM Pro!', 'godam' ) }
 			</h1>
 			<p className="godam-onboarding__subtitle">
 				{ isWoo

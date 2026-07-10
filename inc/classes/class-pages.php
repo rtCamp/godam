@@ -689,6 +689,12 @@ class Pages {
 			wp_set_script_translations( 'transcoder-page-script-video-editor', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
 
+			// The "Edit metadata" action reuses the native two-column attachment
+			// details modal (wp.media.view.MediaFrame.EditAttachments), which is
+			// defined in core's media-grid script. wp_enqueue_media() does not
+			// pull it in, so enqueue it explicitly on the video editor screen.
+			wp_enqueue_script( 'media-grid' );
+
 			/**
 			 * Fires after the video editor scripts are enqueued.
 			 * Add-ons can use this to enqueue their own scripts on the video editor page.

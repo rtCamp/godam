@@ -45,9 +45,29 @@ import Transcription from './components/transcription/Transcription';
 import { formatBytes } from './components/transcription/utils';
 import Timeline from './components/timeline/Timeline';
 import { copyGoDAMVideoBlock, prefetchMediaDataForCopy } from './utils/index';
+import { openAttachmentDetailsModal } from './utils/openAttachmentDetails';
 import { getFormIdFromLayer } from './utils/formUtils';
 import { canManageAttachment } from '../../assets/src/js/media-library/utility.js';
 import { ensureAddonLayersRegistered } from './utils/loadAddonLayers';
+
+/**
+ * Decode HTML entities in a string (e.g. `&amp;` → `&`).
+ *
+ * The REST API returns the attachment title as `title.rendered`, which is
+ * entity-encoded. We decode it so the editable input shows the human-readable
+ * title rather than raw entities.
+ *
+ * @param {string} str Possibly entity-encoded string.
+ * @return {string} Decoded string.
+ */
+const decodeHtmlEntities = ( str ) => {
+	if ( ! str ) {
+		return '';
+	}
+	const textarea = document.createElement( 'textarea' );
+	textarea.innerHTML = str;
+	return textarea.value;
+};
 
 const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );
@@ -57,6 +77,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const [ snackbarMessage, setSnackbarMessage ] = useState( '' );
 	const [ showSnackbar, setShowSnackbar ] = useState( false );
 	const [ aspectRatio, setAspectRatio ] = useState( '16:9' );
+	const [ videoTitle, setVideoTitle ] = useState( '' );
 
 	// Pre-fetch data on mount to ensure copy always works
 	useEffect( () => {
@@ -69,6 +90,8 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	}, [] );
 
 	const playerRef = useRef( null );
+	// Teardown for the "Edit metadata" popup's title-sync listener; called on unmount.
+	const detachTitleSyncRef = useRef( null );
 
 	const dispatch = useDispatch();
 
@@ -81,6 +104,9 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 
 	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
+	// A separate mutation instance so saving the title doesn't flip the
+	// "Save Video" button into its busy state.
+	const [ saveTitle ] = useSaveAttachmentMetaMutation();
 
 	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, ninjaForms, metforms, isFetching } = useFetchForms();
 
@@ -178,6 +204,18 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 
 		setSources( videoSources );
 	}, [ attachmentConfig, dispatch, onBackToAttachmentPicker ] );
+
+	// Seed the editable title from the fetched attachment. `title.raw` is only
+	// present in edit context; otherwise decode the entity-encoded rendered
+	// title so the input shows plain text.
+	useEffect( () => {
+		if ( ! attachmentConfig ) {
+			return;
+		}
+		const rawTitle = attachmentConfig?.title?.raw;
+		const renderedTitle = attachmentConfig?.title?.rendered ?? attachmentConfig?.title;
+		setVideoTitle( rawTitle ?? decodeHtmlEntities( renderedTitle ) );
+	}, [ attachmentConfig ] );
 
 	/**
 	 * Update the store with the fetched forms.
@@ -403,6 +441,81 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		setShowSnackbar( false );
 	};
 
+	// Opens the same attachment-details popup used in the media library, so
+	// core metadata (title, alt text, caption, description) can be edited
+	// without leaving the editor. Title edits made in the popup are mirrored
+	// back to the editor's top bar so the two stay in sync.
+	const handleEditMetadata = () => {
+		const teardown = openAttachmentDetailsModal( attachmentID, {
+			onChange: ( attributes ) => {
+				const nextTitle = attributes?.title;
+				if ( typeof nextTitle === 'string' ) {
+					setVideoTitle( decodeHtmlEntities( nextTitle ) );
+				}
+			},
+		} );
+		detachTitleSyncRef.current = typeof teardown === 'function' ? teardown : null;
+	};
+
+	// The wp.media attachment model is cached globally and outlives this
+	// component, so unbind the popup's title-sync listener on unmount to avoid
+	// retaining a stale reference to this instance's setVideoTitle.
+	useEffect( () => {
+		return () => {
+			detachTitleSyncRef.current?.();
+			detachTitleSyncRef.current = null;
+		};
+	}, [] );
+
+	// Label the "Edit metadata" action by the attachment's media type. In the
+	// video editor this is always a video, but derive it generically so the
+	// wording stays correct if other media types are ever edited here.
+	const getEditMetadataLabel = () => {
+		const mimeGroup = ( attachmentConfig?.mime_type || '' ).split( '/' )[ 0 ];
+
+		switch ( mimeGroup ) {
+			case 'video':
+				return __( 'Edit video metadata', 'godam' );
+			case 'image':
+				return __( 'Edit image metadata', 'godam' );
+			case 'audio':
+				return __( 'Edit audio metadata', 'godam' );
+			default:
+				return __( 'Edit metadata', 'godam' );
+		}
+	};
+
+	// Persist an edited video title to the attachment. Updates the display
+	// optimistically and reverts if the request fails.
+	const handleSaveTitle = async ( newTitle ) => {
+		const previousTitle = videoTitle;
+		setVideoTitle( newTitle );
+
+		try {
+			await saveTitle( { id: attachmentID, data: { title: newTitle } } ).unwrap();
+
+			// Keep the wp.media Backbone model — the data layer the "Edit
+			// metadata" popup reads — in sync so the two don't drift.
+			//
+			// We deliberately do NOT invalidate/refetch the getAttachmentMeta
+			// RTK query: that same query seeds the layer store via the init
+			// effect, so a refetch would re-run initializeStore() and discard
+			// unsaved layer edits (and reload the video). The title display is
+			// driven by local `videoTitle` state, which we already updated.
+			const attachmentModel = window.wp?.media?.attachment?.( attachmentID );
+			if ( attachmentModel && attachmentModel.get( 'title' ) !== newTitle ) {
+				attachmentModel.set( 'title', newTitle );
+			}
+
+			setSnackbarMessage( __( 'Video title updated', 'godam' ) );
+			setShowSnackbar( true );
+		} catch ( error ) {
+			setVideoTitle( previousTitle );
+			setSnackbarMessage( __( 'Failed to update video title', 'godam' ) );
+			setShowSnackbar( true );
+		}
+	};
+
 	// Switch the active section and reflect it in the URL so a refresh or
 	// bookmark preserves the user's place. `replaceState` is used so each tab
 	// switch doesn't push a new browser-history entry.
@@ -417,15 +530,12 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		return <EditorSkeleton />;
 	}
 
-	const videoTitle =
-		attachmentConfig?.title?.rendered ||
-		attachmentConfig?.title ||
-		__( 'Untitled video', 'godam' );
+	const displayTitle = videoTitle || __( 'Untitled video', 'godam' );
 
 	return (
 		<div className="godam-video-editor">
 			<EditorTopBar
-				title={ videoTitle }
+				title={ displayTitle }
 				layerCount={ layers.length }
 				attachmentID={ attachmentID }
 				isChanged={ isChanged }
@@ -433,6 +543,9 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 				onBack={ onBackToAttachmentPicker }
 				onSave={ handleSaveAttachmentMeta }
 				onCopy={ handleCopyGoDAMVideoBlock }
+				onEditMetadata={ handleEditMetadata }
+				editMetadataLabel={ getEditMetadataLabel() }
+				onSaveTitle={ handleSaveTitle }
 			/>
 
 			<EditorStatsRow attachmentID={ attachmentID } />
