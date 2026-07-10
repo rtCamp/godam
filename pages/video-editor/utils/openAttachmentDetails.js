@@ -17,8 +17,8 @@
  *
  * @param {number}   attachmentID       The attachment ID to edit.
  * @param {Object}   [options]          Optional settings.
- * @param {Function} [options.onChange] Called with the attachment's attributes whenever the modal mutates the model (e.g. a title edit), so the editor can stay in sync.
- * @return {boolean} `true` if the modal could be opened, `false` otherwise.
+ * @param {Function} [options.onChange] Called with the attachment's attributes when the title is edited in the modal, so the editor can stay in sync.
+ * @return {Function|boolean} A teardown that unbinds the title listener, or `false` if the modal could not be opened.
  */
 export function openAttachmentDetailsModal( attachmentID, { onChange } = {} ) {
 	const wp = window.wp;
@@ -35,18 +35,32 @@ export function openAttachmentDetailsModal( attachmentID, { onChange } = {} ) {
 
 	const model = wp.media.attachment( attachmentID );
 
-	// Keep the editor in sync with edits made inside the modal. WordPress saves
-	// each field through this Backbone model, so its `change` event fires as soon
-	// as a field (e.g. the title) is saved. Replace any prior listener we added
-	// so repeat opens don't stack callbacks.
-	if ( model._godamOnChange ) {
-		model.off( 'change', model._godamOnChange );
-		delete model._godamOnChange;
+	// Keep the editor's title in sync with edits made inside the modal.
+	// WordPress saves each field through this Backbone model, so `change:title`
+	// fires when the title is saved. We scope to `change:title` (not the broad
+	// `change`) so unrelated field edits and internal sets like `skipHistory`
+	// don't trigger it. Replace any prior listener so repeat opens don't stack.
+	if ( model._godamOnTitleChange ) {
+		model.off( 'change:title', model._godamOnTitleChange );
+		delete model._godamOnTitleChange;
 	}
+
+	let listener = null;
 	if ( typeof onChange === 'function' ) {
-		model._godamOnChange = () => onChange( model.attributes );
-		model.on( 'change', model._godamOnChange );
+		listener = () => onChange( model.attributes );
+		model._godamOnTitleChange = listener;
+		model.on( 'change:title', listener );
 	}
+
+	// The model is cached globally by wp.media and outlives the React component,
+	// so hand back a teardown the caller unbinds on unmount. The guard ensures a
+	// stale teardown can't remove a newer listener bound by a later open.
+	const teardown = () => {
+		if ( listener && model._godamOnTitleChange === listener ) {
+			model.off( 'change:title', listener );
+			delete model._godamOnTitleChange;
+		}
+	};
 
 	// Prevent the EditAttachments frame from rewriting the browser URL (its
 	// grid router expects the `upload.php` grid). We also hand it a no-op
@@ -83,5 +97,5 @@ export function openAttachmentDetailsModal( attachmentID, { onChange } = {} ) {
 		} );
 	} );
 
-	return true;
+	return teardown;
 }

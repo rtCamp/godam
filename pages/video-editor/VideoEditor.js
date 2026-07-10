@@ -90,6 +90,8 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	}, [] );
 
 	const playerRef = useRef( null );
+	// Teardown for the "Edit metadata" popup's title-sync listener; called on unmount.
+	const detachTitleSyncRef = useRef( null );
 
 	const dispatch = useDispatch();
 
@@ -444,7 +446,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	// without leaving the editor. Title edits made in the popup are mirrored
 	// back to the editor's top bar so the two stay in sync.
 	const handleEditMetadata = () => {
-		openAttachmentDetailsModal( attachmentID, {
+		const teardown = openAttachmentDetailsModal( attachmentID, {
 			onChange: ( attributes ) => {
 				const nextTitle = attributes?.title;
 				if ( typeof nextTitle === 'string' ) {
@@ -452,7 +454,18 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 				}
 			},
 		} );
+		detachTitleSyncRef.current = typeof teardown === 'function' ? teardown : null;
 	};
+
+	// The wp.media attachment model is cached globally and outlives this
+	// component, so unbind the popup's title-sync listener on unmount to avoid
+	// retaining a stale reference to this instance's setVideoTitle.
+	useEffect( () => {
+		return () => {
+			detachTitleSyncRef.current?.();
+			detachTitleSyncRef.current = null;
+		};
+	}, [] );
 
 	// Label the "Edit metadata" action by the attachment's media type. In the
 	// video editor this is always a video, but derive it generically so the
