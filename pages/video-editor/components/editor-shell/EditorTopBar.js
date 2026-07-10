@@ -136,6 +136,7 @@ const EditorTopBar = ( {
 	onSaveTitle,
 } ) => {
 	const homeUrl = window?.godamRestRoute?.homeUrl || '';
+	const hasValidApiKey = Boolean( window?.userData?.validApiKey );
 	const previewUrl = `${ homeUrl }?godam_page=video-preview&id=${ attachmentID }`;
 	const analyticsUrl = `${ homeUrl }/wp-admin/admin.php?page=rtgodam_analytics&id=${ attachmentID }`;
 
@@ -249,14 +250,16 @@ const EditorTopBar = ( {
 					>
 						{ ( { onClose } ) => (
 							<MenuGroup>
-								<MenuItem
-									icon={ chartBar }
-									href={ analyticsUrl }
-									target="_blank"
-									data-test-id="godam-video-editor-button-analytics"
-								>
-									{ __( 'Analytics', 'godam' ) }
-								</MenuItem>
+								{ hasValidApiKey && (
+									<MenuItem
+										icon={ chartBar }
+										href={ analyticsUrl }
+										target="_blank"
+										data-test-id="godam-video-editor-button-analytics"
+									>
+										{ __( 'Analytics', 'godam' ) }
+									</MenuItem>
+								) }
 								<MenuItem
 									icon={ pencil }
 									onClick={ () => {
