@@ -39,10 +39,11 @@ export function openAttachmentDetailsModal( attachmentID, { onChange } = {} ) {
 	// each field through this Backbone model, so its `change` event fires as soon
 	// as a field (e.g. the title) is saved. Replace any prior listener we added
 	// so repeat opens don't stack callbacks.
+	if ( model._godamOnChange ) {
+		model.off( 'change', model._godamOnChange );
+		delete model._godamOnChange;
+	}
 	if ( typeof onChange === 'function' ) {
-		if ( model._godamOnChange ) {
-			model.off( 'change', model._godamOnChange );
-		}
 		model._godamOnChange = () => onChange( model.attributes );
 		model.on( 'change', model._godamOnChange );
 	}
