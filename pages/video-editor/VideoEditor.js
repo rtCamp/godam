@@ -480,6 +480,20 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 
 		try {
 			await saveTitle( { id: attachmentID, data: { title: newTitle } } ).unwrap();
+
+			// Keep the wp.media Backbone model — the data layer the "Edit
+			// metadata" popup reads — in sync so the two don't drift.
+			//
+			// We deliberately do NOT invalidate/refetch the getAttachmentMeta
+			// RTK query: that same query seeds the layer store via the init
+			// effect, so a refetch would re-run initializeStore() and discard
+			// unsaved layer edits (and reload the video). The title display is
+			// driven by local `videoTitle` state, which we already updated.
+			const attachmentModel = window.wp?.media?.attachment?.( attachmentID );
+			if ( attachmentModel && attachmentModel.get( 'title' ) !== newTitle ) {
+				attachmentModel.set( 'title', newTitle );
+			}
+
 			setSnackbarMessage( __( 'Video title updated', 'godam' ) );
 			setShowSnackbar( true );
 		} catch ( error ) {

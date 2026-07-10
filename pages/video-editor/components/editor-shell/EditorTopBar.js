@@ -28,6 +28,12 @@ const EditableTitle = ( { title, onSave } ) => {
 	const [ isEditing, setIsEditing ] = useState( false );
 	const [ draft, setDraft ] = useState( title );
 	const inputRef = useRef( null );
+	const buttonRef = useRef( null );
+	// `editingRef` guards commit/cancel against a double-invocation (the input's
+	// blur can fire as it unmounts right after Enter). `refocusRef` records
+	// whether focus should return to the trigger button once edit mode ends.
+	const editingRef = useRef( false );
+	const refocusRef = useRef( false );
 
 	// Keep the draft aligned with upstream title changes while not editing
 	// (e.g. after a successful save or an external refresh).
@@ -37,16 +43,32 @@ const EditableTitle = ( { title, onSave } ) => {
 		}
 	}, [ title, isEditing ] );
 
-	// Focus and select the field when entering edit mode.
+	// Move focus with the mode change: to the field when editing starts, and
+	// back to the trigger button when it ends — otherwise blur/Enter/Escape
+	// leaves focus on <body> and breaks keyboard flow.
 	useEffect( () => {
-		if ( isEditing && inputRef.current ) {
-			inputRef.current.focus();
-			inputRef.current.select();
+		if ( isEditing ) {
+			inputRef.current?.focus();
+			inputRef.current?.select();
+		} else if ( refocusRef.current ) {
+			refocusRef.current = false;
+			buttonRef.current?.focus();
 		}
 	}, [ isEditing ] );
 
-	const commit = () => {
+	const startEditing = () => {
+		editingRef.current = true;
+		setIsEditing( true );
+	};
+
+	const commit = ( refocus ) => {
+		if ( ! editingRef.current ) {
+			return;
+		}
+		editingRef.current = false;
+		refocusRef.current = refocus;
 		setIsEditing( false );
+
 		const trimmed = draft.trim();
 		if ( trimmed && trimmed !== title ) {
 			onSave( trimmed );
@@ -56,6 +78,11 @@ const EditableTitle = ( { title, onSave } ) => {
 	};
 
 	const cancel = () => {
+		if ( ! editingRef.current ) {
+			return;
+		}
+		editingRef.current = false;
+		refocusRef.current = true;
 		setDraft( title );
 		setIsEditing( false );
 	};
@@ -63,11 +90,18 @@ const EditableTitle = ( { title, onSave } ) => {
 	const handleKeyDown = ( event ) => {
 		if ( event.key === 'Enter' ) {
 			event.preventDefault();
-			commit();
+			commit( true );
 		} else if ( event.key === 'Escape' ) {
 			event.preventDefault();
 			cancel();
 		}
+	};
+
+	// On blur, only pull focus back to the button when it would otherwise fall
+	// to <body>; if the user clicked another control, let focus go there.
+	const handleBlur = ( event ) => {
+		const goingNowhere = ! event.relatedTarget || event.relatedTarget === document.body;
+		commit( goingNowhere );
 	};
 
 	if ( isEditing ) {
@@ -78,7 +112,7 @@ const EditableTitle = ( { title, onSave } ) => {
 				className="godam-video-editor__title-input"
 				value={ draft }
 				onChange={ ( event ) => setDraft( event.target.value ) }
-				onBlur={ commit }
+				onBlur={ handleBlur }
 				onKeyDown={ handleKeyDown }
 				aria-label={ __( 'Video title', 'godam' ) }
 				data-test-id="godam-video-editor-title-input"
@@ -89,9 +123,10 @@ const EditableTitle = ( { title, onSave } ) => {
 	return (
 		<h1 className="godam-video-editor__title">
 			<button
+				ref={ buttonRef }
 				type="button"
 				className="godam-video-editor__title-button"
-				onClick={ () => setIsEditing( true ) }
+				onClick={ startEditing }
 				title={ __( 'Click to edit title', 'godam' ) }
 				data-test-id="godam-video-editor-title"
 			>
@@ -247,6 +282,7 @@ const EditorTopBar = ( {
 					<DropdownMenu
 						icon={ moreVertical }
 						label={ __( 'More options', 'godam' ) }
+						toggleProps={ { 'data-test-id': 'godam-video-editor-button-more-options' } }
 					>
 						{ ( { onClose } ) => (
 							<MenuGroup>
