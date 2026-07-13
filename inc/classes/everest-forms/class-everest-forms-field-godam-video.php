@@ -76,6 +76,10 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 
 			// To display field HTML in the entry meta.
 			add_filter( 'everest_forms_html_field_value', array( $this, 'update_entry_meta_display_godam_recorder' ), 10, 4 );
+
+			// Allow the player markup to survive the single-entry view sanitization.
+			add_filter( 'everest_forms_entry_view_field_types_allowing_html', array( $this, 'allow_godam_html_in_entry_view' ), 10, 3 );
+			add_action( 'everest_forms_entry_details_content', array( $this, 'remove_player_kses_filter' ), 20 );
 		}
 
 		/**
@@ -179,6 +183,104 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 			$output = $style . $download_url . $transcoded_url_output . $media_output;
 
 			return $output;
+		}
+
+		/**
+		 * Allow the GoDAM Record field value to output HTML on the Everest Forms
+		 * single-entry view.
+		 *
+		 * Recent Everest Forms versions route each entry field value through one of
+		 * three sinks based on its field type: wp_kses_post() for HTML-allowed types,
+		 * make_clickable() for file/media types, or esc_html() for everything else.
+		 * The GoDAM Record field is not in either allow-list, so it falls through to
+		 * esc_html(), which escapes the whole video/audio player markup and renders it
+		 * as a literal HTML string. Registering the field type here switches it to the
+		 * wp_kses_post() sink; the companion wp_kses_allowed_html filter (added here so
+		 * it is active for the echo that immediately follows) keeps the player's
+		 * <style>/<source>/<svg>/<path> tags, which wp_kses_post() strips by default.
+		 *
+		 * On older Everest Forms builds this filter simply never fires and the entry
+		 * view echoes the value unescaped, so this is a no-op there.
+		 *
+		 * @since 1.4.0
+		 *
+		 * @param array  $types     Field types whose entry value may contain HTML.
+		 * @param string $meta_key  Meta key of the field currently being rendered.
+		 * @param mixed  $form_data Form data.
+		 *
+		 * @return array
+		 */
+		public function allow_godam_html_in_entry_view( $types, $meta_key = '', $form_data = array() ) {
+			if ( is_string( $meta_key ) && false !== strpos( $meta_key, 'godam_record' ) ) {
+				$types[] = $this->type;
+				add_filter( 'wp_kses_allowed_html', array( $this, 'allow_player_tags_in_kses' ), 10, 2 );
+			}
+
+			return (array) $types;
+		}
+
+		/**
+		 * Whitelist the tags the GoDAM player emits so they survive wp_kses_post()
+		 * on the Everest Forms single-entry view.
+		 *
+		 * The player wrapper styles are printed as an inline <style> block, which
+		 * wp_kses_post() strips by default (leaking the CSS onto the page as raw
+		 * text). <source> (audio/video), <svg> and <path> (the play-button icon) are
+		 * likewise not allowed in the 'post' context.
+		 *
+		 * @since 1.4.0
+		 *
+		 * @param array  $allowed_tags Allowed tags.
+		 * @param string $context      Context.
+		 *
+		 * @return array
+		 */
+		public function allow_player_tags_in_kses( $allowed_tags, $context ) {
+			if ( 'post' !== $context ) {
+				return $allowed_tags;
+			}
+
+			$allowed_tags['style'] = array(
+				'id'    => true,
+				'type'  => true,
+				'media' => true,
+			);
+
+			$allowed_tags['source'] = array(
+				'src'  => true,
+				'type' => true,
+			);
+
+			$allowed_tags['svg'] = array(
+				'xlmns'   => true,
+				'width'   => true,
+				'height'  => true,
+				'src'     => true,
+				'style'   => true,
+				'class'   => true,
+				'fill'    => true,
+				'viewbox' => true,
+				'data-*'  => true,
+				'aria-*'  => true,
+			);
+
+			$allowed_tags['path'] = array(
+				'd' => true,
+			);
+
+			return $allowed_tags;
+		}
+
+		/**
+		 * Detach the player wp_kses_allowed_html filter once the single-entry view
+		 * has finished rendering, so it does not affect other requests/contexts.
+		 *
+		 * @since 1.4.0
+		 *
+		 * @return void
+		 */
+		public function remove_player_kses_filter() {
+			remove_filter( 'wp_kses_allowed_html', array( $this, 'allow_player_tags_in_kses' ), 10 );
 		}
 
 		/**
