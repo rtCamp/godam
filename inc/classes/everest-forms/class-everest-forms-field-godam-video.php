@@ -202,7 +202,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		 * On older Everest Forms builds this filter simply never fires and the entry
 		 * view echoes the value unescaped, so this is a no-op there.
 		 *
-		 * @since 1.4.0
+		 * @since n.e.x.t
 		 *
 		 * @param array  $types     Field types whose entry value may contain HTML.
 		 * @param string $meta_key  Meta key of the field currently being rendered.
@@ -213,6 +213,13 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		public function allow_godam_html_in_entry_view( $types, $meta_key = '', $form_data = array() ) {
 			if ( is_string( $meta_key ) && false !== strpos( $meta_key, 'godam_record' ) ) {
 				$types[] = $this->type;
+
+				// Everest Forms exposes no per-field "after echo" hook, so the tag
+				// allow-list is intentionally left active until remove_player_kses_filter()
+				// detaches it on everest_forms_entry_details_content (after the whole
+				// field loop). Any field rendered after this one in the same loop
+				// therefore also sees the expanded tags — benign on this admin-gated,
+				// plugin-generated view.
 				add_filter( 'wp_kses_allowed_html', array( $this, 'allow_player_tags_in_kses' ), 10, 2 );
 			}
 
@@ -228,7 +235,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		 * text). <source> (audio/video), <svg> and <path> (the play-button icon) are
 		 * likewise not allowed in the 'post' context.
 		 *
-		 * @since 1.4.0
+		 * @since n.e.x.t
 		 *
 		 * @param array  $allowed_tags Allowed tags.
 		 * @param string $context      Context.
@@ -252,7 +259,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 			);
 
 			$allowed_tags['svg'] = array(
-				'xlmns'   => true,
+				'xmlns'   => true,
 				'width'   => true,
 				'height'  => true,
 				'src'     => true,
@@ -275,7 +282,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		 * Detach the player wp_kses_allowed_html filter once the single-entry view
 		 * has finished rendering, so it does not affect other requests/contexts.
 		 *
-		 * @since 1.4.0
+		 * @since n.e.x.t
 		 *
 		 * @return void
 		 */

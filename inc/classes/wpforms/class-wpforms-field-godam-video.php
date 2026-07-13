@@ -79,7 +79,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			);
 
 			$allowed_tags['svg'] = array(
-				'xlmns'   => true,
+				'xmlns'   => true,
 				'width'   => true,
 				'height'  => true,
 				'src'     => true,
