@@ -373,52 +373,60 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$files = $this->format_global_files_array( $_FILES );
 
-			// Loop through each file, and creates attachments for video files.
-			foreach ( $files as $field_id => $file ) {
-				// Only process files submitted through an actual GoDAM Record field.
-				if ( ! in_array( (int) $field_id, $godam_field_ids, true ) ) {
-					continue;
+			// Route GoDAM uploads to `uploads/godam/wpforms`. The filter is registered once
+			// around the whole loop and torn down in `finally`, so the global `upload_dir`
+			// filter is always removed even if wp_handle_upload() (or a callback hooked into
+			// it) throws.
+			add_filter( 'upload_dir', array( $this, 'filter_upload_dir_to_godam_wpforms' ) );
+
+			try {
+				// Loop through each file, and creates attachments for video files.
+				foreach ( $files as $field_id => $file ) {
+					// Only process files submitted through an actual GoDAM Record field.
+					if ( ! in_array( (int) $field_id, $godam_field_ids, true ) ) {
+						continue;
+					}
+
+					// Bail if there is not error set.
+					if ( ! isset( $file['error'] ) ) {
+						continue;
+					}
+
+					// Check for upload errors.
+					if ( UPLOAD_ERR_OK !== $file['error'] ) {
+						$entry['fields'][ $field_id ] = '';
+						continue;
+					}
+
+					if ( empty( $file['tmp_name'] ) || ! is_uploaded_file( $file['tmp_name'] ) ) {
+						continue;
+					}
+
+					// wp_handle_upload() validates the file's real type/extension against
+					// $overrides['mimes'] instead of trusting $file['type'] or the original filename.
+					$moved_file = wp_handle_upload(
+						$file,
+						array(
+							'test_form' => false,
+							'mimes'     => $this->get_allowed_video_audio_mimes(),
+						)
+					);
+
+					if ( ! empty( $moved_file['url'] ) && empty( $moved_file['error'] ) ) {
+						$entry['fields'][ $field_id ] = $moved_file['url'];
+					}
 				}
-
-				// Bail if there is not error set.
-				if ( ! isset( $file['error'] ) ) {
-					continue;
-				}
-
-				// Check for upload errors.
-				if ( UPLOAD_ERR_OK !== $file['error'] ) {
-					$entry['fields'][ $field_id ] = '';
-					continue;
-				}
-
-				if ( empty( $file['tmp_name'] ) || ! is_uploaded_file( $file['tmp_name'] ) ) {
-					continue;
-				}
-
-				add_filter( 'upload_dir', array( $this, 'change_upload_dir' ) );
-
-				// wp_handle_upload() validates the file's real type/extension against
-				// $overrides['mimes'] instead of trusting $file['type'] or the original filename.
-				$moved_file = wp_handle_upload(
-					$file,
-					array(
-						'test_form' => false,
-						'mimes'     => $this->get_allowed_video_audio_mimes(),
-					)
-				);
-
-				remove_filter( 'upload_dir', array( $this, 'change_upload_dir' ) );
-
-				if ( ! empty( $moved_file['url'] ) && empty( $moved_file['error'] ) ) {
-					$entry['fields'][ $field_id ] = $moved_file['url'];
-				}
+			} finally {
+				remove_filter( 'upload_dir', array( $this, 'filter_upload_dir_to_godam_wpforms' ) );
 			}
 
 			return $entry;
 		}
 
 		/**
-		 * Change upload dir to `godam/wpforms`.
+		 * Route GoDAM WPForms uploads to the `godam/wpforms` sub-directory.
+		 *
+		 * Registered as an `upload_dir` filter callback in {@see save_video_file()}.
 		 *
 		 * @since 1.12.3
 		 *
@@ -426,7 +434,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 *
 		 * @return array
 		 */
-		public function change_upload_dir( $dirs ) {
+		public function filter_upload_dir_to_godam_wpforms( $dirs ) {
 			$dirs['subdir'] = '/godam/wpforms';
 			$dirs['path']   = $dirs['basedir'] . $dirs['subdir'];
 			$dirs['url']    = $dirs['baseurl'] . $dirs['subdir'];
