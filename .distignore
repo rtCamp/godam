@@ -39,3 +39,4 @@ jest.config.js
 *.test.js
 *.spec.js
 __tests__/
+phpunit.xml.dist

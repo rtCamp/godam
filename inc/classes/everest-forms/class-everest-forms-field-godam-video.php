@@ -202,7 +202,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		 * On older Everest Forms builds this filter simply never fires and the entry
 		 * view echoes the value unescaped, so this is a no-op there.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.0.0
 		 *
 		 * @param array  $types     Field types whose entry value may contain HTML.
 		 * @param string $meta_key  Meta key of the field currently being rendered.
@@ -235,7 +235,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		 * text). <source> (audio/video), <svg> and <path> (the play-button icon) are
 		 * likewise not allowed in the 'post' context.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.0.0
 		 *
 		 * @param array  $allowed_tags Allowed tags.
 		 * @param string $context      Context.
@@ -282,7 +282,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		 * Detach the player wp_kses_allowed_html filter once the single-entry view
 		 * has finished rendering, so it does not affect other requests/contexts.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.0.0
 		 *
 		 * @return void
 		 */
