@@ -202,7 +202,7 @@ class Godam_Frappe_Dispatch_Installer {
 		// plugin_exists() and activate_plugin() can locate it deterministically,
 		// regardless of the top-level folder name inside the downloaded archive.
 		$rename_source = $this->get_source_rename_callback( $plugin_slug );
-		add_filter( 'upgrader_source_selection', $rename_source, 10, 4 );
+		add_filter( 'upgrader_source_selection', $rename_source, 10, 2 );
 
 		// Let WordPress core handle the download, extraction and install into the
 		// plugins directory via the sanctioned upgrader, instead of writing into
@@ -254,7 +254,7 @@ class Godam_Frappe_Dispatch_Installer {
 	 * @return callable
 	 */
 	private function get_source_rename_callback( $desired_slug ) {
-		return function ( $source, $remote_source, $upgrader, $hook_extra = array() ) use ( $desired_slug ) {
+		return function ( $source, $remote_source ) use ( $desired_slug ) {
 			global $wp_filesystem;
 
 			if ( empty( $desired_slug ) || is_wp_error( $source ) || ! $wp_filesystem ) {

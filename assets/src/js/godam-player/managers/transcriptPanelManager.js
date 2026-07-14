@@ -184,7 +184,7 @@ export default class TranscriptPanelManager {
 				.map( ( cue ) => ( {
 					start: cue.startTime,
 					end: cue.endTime,
-					text: ( cue.text || '' ).replace( /<[^>]+>/g, '' ).trim(),
+					text: ( cue.text || '' ).replace( /[<>]/g, '' ).trim(),
 				} ) )
 				.filter( ( cue ) => cue.text !== '' );
 
