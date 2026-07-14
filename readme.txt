@@ -219,7 +219,7 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
-= v2.0.0 (July 2, 2026) =
+= v2.0.0 (July 14, 2026) =
 
 - Feat: GoDAM 2.0 brings a complete visual redesign across the admin and front end, with refreshed branding, new logos, and updated block icons.
 - Feat: Rebuilt the Video Editor with a streamlined layout for managing layers, hotspots, CTAs, and forms.
