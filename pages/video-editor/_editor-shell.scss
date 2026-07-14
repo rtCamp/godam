@@ -271,8 +271,9 @@ $ve-faint: color-mix(in srgb, currentcolor 5%, transparent);
 	&__stage-canvas {
 		display: flex;
 		flex: 1 1 auto;
-		align-items: center;
-		justify-content: center;
+		align-items: safe center;
+		justify-content: safe center;
+		padding: 1rem 0;
 		width: 100%;
 		min-height: 0;
 		overflow: auto;
