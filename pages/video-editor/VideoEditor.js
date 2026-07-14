@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 /**
@@ -90,6 +90,11 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	}, [] );
 
 	const playerRef = useRef( null );
+	// Wraps the video preview; its width drives the player's computed width.
+	const canvasWrapperRef = useRef( null );
+	// The stage area that holds the preview; its width AND height bound the
+	// preview (the layers/chapters tabs dock a timeline that eats vertical room).
+	const stageCanvasRef = useRef( null );
 	// Teardown for the "Edit metadata" popup's title-sync listener; called on unmount.
 	const detachTitleSyncRef = useRef( null );
 
@@ -311,6 +316,63 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		}
 	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms, ninjaForms, metforms ] );
 
+	// Size the video preview so it fits the stage in BOTH dimensions.
+	//
+	// The preview is height-driven: it aims for a 500px-tall preview, but never
+	// taller than the vertical room the stage actually has — the layers/chapters
+	// tabs dock a timeline at the bottom, so on shorter viewports there is less
+	// height to work with. The width follows from the winning height and is then
+	// clamped to the container width.
+	//
+	// A minimum width keeps short viewports from shrinking the preview to
+	// nothing: once the width hits `MIN_PREVIEW_WIDTH` it stops shrinking and the
+	// stage scrolls instead. The floor never exceeds the video's natural
+	// (500px-tall) width, so portrait clips are never stretched wider than their
+	// own aspect ratio. A ResizeObserver on the stage drives re-runs.
+	const resizeVideoPlayer = useCallback( () => {
+		const player = playerRef.current;
+		const video = player?.el_?.querySelector( 'video' );
+
+		// Prefer metadata dimensions; fall back to the aspect-ratio state
+		// (virtual media can be missing intrinsic video dimensions).
+		const [ fallbackW, fallbackH ] = String( aspectRatio || '16:9' )
+			.split( ':' )
+			.map( ( value ) => Number( value ) );
+		const widthForCalc = video?.videoWidth || ( Number.isFinite( fallbackW ) && fallbackW > 0 ? fallbackW : 16 );
+		const heightForCalc = video?.videoHeight || ( Number.isFinite( fallbackH ) && fallbackH > 0 ? fallbackH : 9 );
+		const ratio = widthForCalc / heightForCalc;
+
+		const MAX_PREVIEW_HEIGHT = 500;
+		const MIN_PREVIEW_WIDTH = 400;
+		// Breathing room so the preview never butts against the timeline dock.
+		const VERTICAL_BUFFER = 16;
+
+		// Vertical room: the stage-canvas height, minus buffer. Fall back to the
+		// full target height when the element isn't measurable yet.
+		const stageHeight = stageCanvasRef.current?.clientHeight;
+		const availableHeight = stageHeight ? stageHeight - VERTICAL_BUFFER : MAX_PREVIEW_HEIGHT;
+		const targetHeight = Math.max( 1, Math.min( MAX_PREVIEW_HEIGHT, availableHeight ) );
+
+		// Horizontal room: the preview wrapper (already capped at a fraction of
+		// the stage via CSS `max-width`).
+		const containerWidth = canvasWrapperRef.current?.getBoundingClientRect().width;
+		const maxWidth = containerWidth ? Math.floor( containerWidth ) : window.innerWidth;
+
+		const naturalWidth = MAX_PREVIEW_HEIGHT * ratio; // width at the full 500px height
+		const heightFitWidth = targetHeight * ratio; // width that fits the available height
+
+		// Never floor above the natural width (portrait clips) or the container.
+		const floor = Math.min( MIN_PREVIEW_WIDTH, Math.floor( naturalWidth ), maxWidth );
+		const constrainedWidth = Math.round(
+			Math.max( floor, Math.min( heightFitWidth, maxWidth ) ),
+		);
+
+		const videoPlayerElement = document.querySelector( '#easydam-video-player' );
+		if ( videoPlayerElement ) {
+			videoPlayerElement.style.width = `${ constrainedWidth }px`;
+		}
+	}, [ aspectRatio ] );
+
 	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
 	const handlePlayerReady = ( player ) => {
 		if ( player ) {
@@ -333,25 +395,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 						player.aspectRatio( metadataAspectRatio );
 					}
 
-					const [ fallbackW, fallbackH ] = String( aspectRatio || '16:9' )
-						.split( ':' )
-						.map( ( value ) => Number( value ) );
-					const widthForCalc = videoWidth || ( Number.isFinite( fallbackW ) && fallbackW > 0 ? fallbackW : 16 );
-					const heightForCalc = videoHeight || ( Number.isFinite( fallbackH ) && fallbackH > 0 ? fallbackH : 9 );
-
-					// Set width based on aspect ratio for 500px height
-					const targetHeight = 500;
-					const calculatedWidth = Math.round( targetHeight * ( widthForCalc / heightForCalc ) );
-					const canvasWrapper = document.querySelector( '.video-canvas-wrapper' );
-					const containerWidth = canvasWrapper?.getBoundingClientRect().width;
-					const maxWidth = containerWidth ? Math.floor( containerWidth ) : window.innerWidth;
-					const constrainedWidth = Math.min( calculatedWidth, maxWidth );
-
-					// Find the easydam-video-player wrapper and set its width
-					const videoPlayerElement = document.querySelector( '#easydam-video-player' );
-					if ( videoPlayerElement ) {
-						videoPlayerElement.style.width = `${ constrainedWidth }px`;
-					}
+					resizeVideoPlayer();
 				};
 
 				if ( video.readyState >= 1 ) {
@@ -360,6 +404,39 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 			}
 		}
 	};
+
+	// Keep the preview sized to the stage whenever the stage changes size. We
+	// observe the stage-canvas (not the preview wrapper) because it reflects
+	// BOTH axes: its width changes on tab switches (the Configuration Panel
+	// appears only on the "layers" tab) and the admin-sidebar collapse, and its
+	// height changes when the timeline dock mounts/unmounts or the window is
+	// resized. The stage-canvas is flex-sized by its parent and scrolls its
+	// overflow, so re-sizing the preview inside it never changes its own size —
+	// the observer can't feed back into itself.
+	useEffect( () => {
+		const stageCanvas = stageCanvasRef.current;
+		if ( ! stageCanvas || typeof ResizeObserver === 'undefined' ) {
+			return;
+		}
+
+		let rafId = null;
+		const observer = new ResizeObserver( () => {
+			// Defer to the next frame so the resize runs after layout settles,
+			// avoiding ResizeObserver loop warnings.
+			if ( rafId ) {
+				cancelAnimationFrame( rafId );
+			}
+			rafId = requestAnimationFrame( resizeVideoPlayer );
+		} );
+		observer.observe( stageCanvas );
+
+		return () => {
+			if ( rafId ) {
+				cancelAnimationFrame( rafId );
+			}
+			observer.disconnect();
+		};
+	}, [ resizeVideoPlayer, sources ] );
 	const seekToTime = ( time ) => playerRef.current?.currentTime( time );
 	const pauseVideo = () => playerRef.current?.pause();
 
@@ -600,9 +677,9 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 						</Snackbar>
 					) }
 
-					<div className="godam-video-editor__stage-canvas">
+					<div className="godam-video-editor__stage-canvas" ref={ stageCanvasRef }>
 						{ attachmentConfig && sources.length > 0 && (
-							<div className="w-full video-canvas-wrapper">
+							<div className="w-full video-canvas-wrapper" ref={ canvasWrapperRef }>
 								<div className="relative">
 									<VideoJSPlayer
 										options={ {
